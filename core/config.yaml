@@ -1,0 +1,352 @@
+# Revenue Forecast 配置文件
+# 修改此文件即可调整系统配置，无需修改代码
+# 版本: v2.5.1
+# 更新日期: 2026-03-01
+
+version: "2.5.1"
+
+# ============ 目录配置 ============
+directories:
+  # 缓存根目录（相对于工作目录）
+  cache_base_dir: "revenue-forecast-cache"
+  # 输出目录
+  output_dir: "outputs"
+  # 搜索结果子目录
+  search_results_subdir: "search-results"
+  # 模板目录
+  templates_dir: "modules/templates"
+
+# ============ 路径配置 ============
+paths:
+  cache_base_dir: "revenue-forecast-cache"
+  output_dir: "outputs"
+  modules:
+    scoring: "modules/scoring/scoring-framework.md"
+    report: "modules/output/save-report.md"
+    cache: "modules/cache/memory-cache.md"
+    language_strategy: "modules/search/language-strategy.md"
+    search_strategy: "modules/analysis/search-strategy.md"
+    cache_structure: "modules/cache/cache-structure.md"
+    product_driven: "modules/company-types/product-driven.md"
+
+# ============ 维度文件命名配置 ============
+dimension_files:
+  # 默认9个维度（通用）
+  default:
+    - "dimension-1-company-basic.md"
+    - "dimension-2-dual-curve.md"
+    - "dimension-3-industry-market.md"
+    - "dimension-4-competition.md"
+    - "dimension-5-capacity.md"
+    - "dimension-6-technology.md"
+    - "dimension-7-macro-policy.md"
+    - "dimension-8-customers.md"
+    - "dimension-9-demand.md"
+
+  # 产品驱动型（9 + 品牌矩阵 = 10个）
+  product-driven:
+    - "dimension-1-company-basic.md"
+    - "dimension-2-dual-curve.md"
+    - "dimension-3-industry-market.md"
+    - "dimension-4-competition.md"
+    - "dimension-5-capacity.md"
+    - "dimension-6-technology.md"
+    - "dimension-7-macro-policy.md"
+    - "dimension-8-customers.md"
+    - "dimension-9-demand.md"
+    - "dimension-10-brand-matrix.md"
+
+  # 设备驱动型（9个，同默认）
+  equipment-driven: null
+
+  # 资源驱动型（9个，同默认）
+  resource-driven: null
+
+  # 爆发式增长型（9个，同默认）
+  explosive-growth: null
+
+  # 服务驱动型（9个，同默认）
+  service-driven: null
+
+  # 代工驱动型（9个，同默认）
+  foundry-driven: null
+
+  # 资本驱动型（9个，同默认）
+  capital-driven: null
+
+  # 研发驱动型（9个，同默认）
+  r-and-d-driven: null
+
+  # 订阅驱动型（9个，同默认）
+  subscription-driven: null
+  # 平台驱动型（9个，同默认）
+  platform-driven: null
+  # 基础设施驱动型（9个，同默认）
+  infrastructure-driven: null
+  # 项目制驱动型（9个，同默认）
+  project-driven: null
+
+# ============ 公司类型配置 ============
+company_types:
+  product-driven:
+    name: "产品驱动型"
+    description: "通过销售产品获得收入，如消费品、汽车、家电"
+    has_brand_matrix: true
+  equipment-driven:
+    name: "设备驱动型"
+    description: "通过销售设备获得收入，如半导体设备、工业装备、医疗设备"
+    has_brand_matrix: false
+  resource-driven:
+    name: "资源驱动型"
+    description: "通过开采/销售资源获得收入，如采矿、能源、大宗商品"
+    has_brand_matrix: false
+  explosive-growth:
+    name: "爆发式增长型"
+    description: "国产替代、关键零部件突破型企业"
+    has_brand_matrix: false
+  service-driven:
+    name: "服务驱动型"
+    description: "CXO、CRO、CDMO等人力/产能密集型服务企业"
+    has_brand_matrix: false
+  foundry-driven:
+    name: "代工驱动型"
+    description: "半导体代工、生物药CDMO等资本密集型代工企业"
+    has_brand_matrix: false
+  capital-driven:
+    name: "资本驱动型"
+    description: "银行、保险、证券等金融机构"
+    has_brand_matrix: false
+  r-and-d-driven:
+    name: "研发驱动型"
+    description: "创新药、生物科技、创新医疗器械企业"
+    has_brand_matrix: false
+  subscription-driven:
+    name: "订阅驱动型"
+    description: "SaaS软件、内容订阅、会员制企业"
+    has_brand_matrix: false
+  platform-driven:
+    name: "平台驱动型"
+    description: "通过构建平台生态系统获得收入，如电商平台、内容平台、服务平台"
+    has_brand_matrix: false
+  infrastructure-driven:
+    name: "基础设施驱动型"
+    description: "电力、水务、燃气、交通等具有特许经营权的公用事业企业"
+    has_brand_matrix: false
+  project-driven:
+    name: "项目制驱动型"
+    description: "建筑工程、造船、EPC总承包、军工订单等以项目为核心的企业"
+    has_brand_matrix: false
+  realestate-driven:
+    name: "房地产/REITs驱动型"
+    description: "商业地产、物流地产、REITs等以资产租金和增值为核心价值的企业"
+    has_brand_matrix: false
+
+# ============ 搜索结果配置 ============
+search_results:
+  # 搜索结果目录名
+  subdir: "search-results"
+  # 维度缓存文件名模式
+  dimension_pattern: "dimension-{number}.md"
+  # 品牌矩阵文件名
+  brand_matrix_filename: "dimension-10-brand-matrix.md"
+
+# ============ 语言策略配置 ============
+language_strategy:
+  # 报告强制语言
+  report_language: "zh-CN"
+  # 默认搜索语言
+  default_search_language: "auto"
+  # 搜索语言映射
+  search_language_map:
+    chinese: "zh"
+    foreign: "en"
+    mixed: "zh+en"
+
+# ============ 文件输出配置 ============
+file_patterns:
+  json_output: "RevGrowth_{company}.json"
+  md_output: "RevGrowth_FullReport_{company}.md"
+  metadata: "metadata.json"
+
+# ============ 格式配置 ============
+formats:
+  date: "%Y-%m-%d"
+  datetime: "%Y-%m-%d %H:%M:%S"
+  separator_length: 60
+  timestamp: "**缓存时间**：{timestamp}"
+
+# ============ 预测时间窗口配置 ============
+forecast:
+  start_year: "dynamic"  # 使用当前年份
+  end_year_offset: 5
+  historical_year_offset: 1
+
+# ============ 情景概率配置 ============
+scenario_probabilities:
+  default:
+    optimistic: 0.25
+    base: 0.50
+    pessimistic: 0.25
+  high_certainty:  # 护城河深、确定性高
+    optimistic: 0.25
+    base: 0.55
+    pessimistic: 0.20
+  high_risk:  # 地缘政治风险高
+    optimistic: 0.20
+    base: 0.55
+    pessimistic: 0.25
+  national_strategy:  # 国家战略驱动
+    optimistic: 0.30
+    base: 0.60
+    pessimistic: 0.10
+
+# ============ 验证配置 ============
+validation:
+  metadata_required_fields:
+    - company_name
+    - created_at
+    - last_analyzed
+    - analysis_count
+    - cache_status
+  report_required_fields:
+    - company_name
+    - score
+    - key_metrics
+    - scenario_analysis
+  cache_required_fields:
+    - dimension_cache_status
+    - search_keywords_history
+
+# ============ 评分表配置 ============
+scoring_table:
+  - cagr_range: [30, 100]
+    score_range: [9.5, 10.0]
+    rating: "强烈推荐"
+  - cagr_range: [25, 30]
+    score_range: [8.5, 9.4]
+    rating: "推荐"
+  - cagr_range: [20, 25]
+    score_range: [7.5, 8.4]
+    rating: "推荐"
+  - cagr_range: [18, 20]
+    score_range: [7.0, 7.4]
+    rating: "接近推荐"
+  - cagr_range: [15, 18]
+    score_range: [6.5, 6.9]
+    rating: "适度配置"
+  - cagr_range: [12, 15]
+    score_range: [5.5, 6.4]
+    rating: "适度配置"
+  - cagr_range: [10, 12]
+    score_range: [4.5, 5.4]
+    rating: "观望"
+  - cagr_range: [8, 10]
+    score_range: [3.5, 4.4]
+    rating: "观望"
+  - cagr_range: [5, 8]
+    score_range: [2.5, 3.4]
+    rating: "不推荐"
+  - cagr_range: [0, 5]
+    score_range: [0.5, 2.4]
+    rating: "不推荐"
+
+# ============ 缓存新鲜度配置 ============
+cache_freshness:
+  fresh_hours: 24      # < 24小时为"新鲜"
+  stale_days: 7        # < 7天为"较新"
+  outdated_days: 30    # > 30天为"过期"
+
+# ============ 搜索策略配置 ============
+search_strategy:
+  # 每个维度最少搜索次数
+  min_search_per_dimension: 2
+  # 每个维度最多搜索次数
+  max_search_per_dimension: 5
+  # 总搜索次数范围
+  total_search_range: [18, 25]
+  # 搜索深度配置
+  depth:
+    basic: "basic"
+    advanced: "advanced"
+    fast: "fast"
+
+# ============ v2.5.1 新增：检查点系统配置 ============
+checkpoint_v251:
+  # 是否启用v2.5.1检查点系统
+  enabled: true
+  
+  # 失败时是否回退到旧版验证
+  fallback_to_legacy: true
+  
+  # 内容质量验证配置
+  content_quality:
+    enabled: true
+    # 数据点数量要求
+    min_data_points:
+      step4: 20
+      step5: 15
+      step6: 10
+    # 最大冗余度（0-1）
+    max_redundancy: 0.3
+    # 最小数据新鲜度（0-1）
+    min_freshness: 0.6
+  
+  # 工具使用细分验证配置
+  tool_usage_detailed:
+    enabled: true
+    # 各类型最小调用次数
+    min_by_type:
+      step4:
+        web_search: 10
+        file_read: 5
+        file_write: 3
+      step5:
+        web_search: 6
+        file_read: 3
+        file_write: 2
+  
+  # CAGR合理性验证配置
+  cagr_validation:
+    enabled: true
+    # 与行业平均的最大倍数
+    max_vs_industry_multiple: 3.0
+    # 与历史的最大差异（pp）
+    max_vs_historical_deviation: 15
+    # 绝对值限制
+    absolute_limits:
+      extreme_high: 50
+      warning_high: 30
+      extreme_low: -20
+  
+  # 参数溯源验证配置
+  tracing_validation:
+    enabled: true
+    # 最小溯源率（0-1）
+    min_trace_ratio: 0.8
+    # 关键参数必须100%溯源
+    critical_params_required: true
+    # 关键参数列表
+    critical_params:
+      - revenue_base
+      - cagr
+      - market_share
+      - market_growth_rate
+  
+  # 检查清单自动化配置
+  checklist_automation:
+    enabled: true
+    # 自动执行检查项比例目标
+    target_automation_ratio: 0.8
+  
+  # 动态阈值配置
+  dynamic_threshold:
+    enabled: true
+    # 复杂度因子权重
+    factors:
+      market_cap: true
+      business_segments: true
+      industry: true
+      global_exposure: true
+      data_availability: true
+    # 调整范围限制
+    adjustment_range: [0.7, 1.5]
