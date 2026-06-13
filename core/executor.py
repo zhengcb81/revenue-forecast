@@ -3,6 +3,15 @@
 用途: 强制执行框架要求,防止人为错误
 """
 
+# v2.6.0 统一 UTF-8 编码引导（避免 Windows cp936/gbk 中文乱码）
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+try:
+    from core.encoding import setup_utf8_console as _setup_utf8_console
+    _setup_utf8_console()
+except Exception:
+    pass
+
 import os
 import json
 import sys

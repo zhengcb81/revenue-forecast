@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import sys
 import json
 import re
 import datetime
 from pathlib import Path
+
+# v2.6.0 统一 UTF-8 编码引导（避免 Windows cp936/gbk 中文乱码）
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from core.encoding import setup_utf8_console
+setup_utf8_console()
 
 
 def sanitize_company_name(name):

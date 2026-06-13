@@ -11,6 +11,18 @@ Revenue Forecast - 内容质量验证器 v2.5.1
 5. 综合质量评分
 """
 
+# v2.6.0 统一 UTF-8 编码引导（避免 Windows cp936/gbk 中文乱码）
+import os as _os, sys as _sys
+for _p in (_os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))),
+           _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))):
+    if _p not in _sys.path:
+        _sys.path.insert(0, _p)
+try:
+    from core.encoding import setup_utf8_console as _setup_utf8_console
+    _setup_utf8_console()
+except Exception:
+    pass
+
 import re
 import os
 import sys
@@ -51,7 +63,7 @@ class ContentQualityMetrics:
     freshness_score: float = 0.0   # 0-1, 越高越好
     citation_count: int = 0
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "char_count": self.char_count,
             "line_count": self.line_count,
@@ -108,7 +120,7 @@ class ContentQualityValidator:
         }
     }
     
-    def __init__(self, thresholds: Optional[Dict] = None):
+    def __init__(self, thresholds: Optional[Dict[str, Any]] = None):
         """
         初始化验证器
         
@@ -364,7 +376,7 @@ class ContentQualityValidator:
         }
         return suggestions.get(check_name, "")
     
-    def quick_check(self, content: str, step_id: str = "step4") -> Dict:
+    def quick_check(self, content: str, step_id: str = "step4") -> Dict[str, Any]:
         """
         快速检查 - 返回简化结果
         
@@ -392,7 +404,7 @@ class ContentQualityValidator:
 
 
 # 便捷的验证函数
-def validate_content_quality(content: str, step_id: str, thresholds: Optional[Dict] = None) -> CheckpointResult:
+def validate_content_quality(content: str, step_id: str, thresholds: Optional[Dict[str, Any]] = None) -> CheckpointResult:
     """
     便捷函数：验证内容质量
     
@@ -408,7 +420,7 @@ def validate_content_quality(content: str, step_id: str, thresholds: Optional[Di
     return validator.validate(content, step_id)
 
 
-def quick_quality_check(content: str, step_id: str = "step4") -> Dict:
+def quick_quality_check(content: str, step_id: str = "step4") -> Dict[str, Any]:
     """
     便捷函数：快速质量检查
     

@@ -10,6 +10,15 @@ Revenue Forecast - 统一检查点注册中心
 4. 支持检查点依赖管理
 """
 
+# v2.6.0 统一 UTF-8 编码引导（避免 Windows cp936/gbk 中文乱码）
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+try:
+    from core.encoding import setup_utf8_console as _setup_utf8_console
+    _setup_utf8_console()
+except Exception:
+    pass
+
 import json
 import os
 from pathlib import Path

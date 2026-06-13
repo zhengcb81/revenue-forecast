@@ -10,6 +10,18 @@ Revenue Forecast - 工具使用验证器 v2.5.1
 4. 异常使用检测
 """
 
+# v2.6.0 统一 UTF-8 编码引导（避免 Windows cp936/gbk 中文乱码）
+import os as _os, sys as _sys
+for _p in (_os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))),
+           _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))):
+    if _p not in _sys.path:
+        _sys.path.insert(0, _p)
+try:
+    from core.encoding import setup_utf8_console as _setup_utf8_console
+    _setup_utf8_console()
+except Exception:
+    pass
+
 import re
 import os
 import sys

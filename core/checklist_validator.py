@@ -10,6 +10,15 @@ Checklist验证器 - 解析和验证checklist.md文件
 4. 与EnforcementController集成
 """
 
+# v2.6.0 统一 UTF-8 编码引导（避免 Windows cp936/gbk 中文乱码）
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+try:
+    from core.encoding import setup_utf8_console as _setup_utf8_console
+    _setup_utf8_console()
+except Exception:
+    pass
+
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple

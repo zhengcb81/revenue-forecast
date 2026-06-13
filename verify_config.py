@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """配置验证脚本"""
+import os
 import sys
-import io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+# v2.6.0 统一 UTF-8 编码引导（避免 Windows cp936/gbk 中文乱码）
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from core.encoding import setup_utf8_console
+setup_utf8_console()
 
 from core.config import (
     validate_config,
