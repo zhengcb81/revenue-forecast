@@ -1,4 +1,4 @@
-## 五、保存报告 ⭐️ 新增章节
+## 五、保存报告 ⭐️ 新增章节（模板版本 v2.6.0）
 
 在完成完整的营收增长预测分析报告后，必须将结果保存到两个文件中。
 
@@ -918,6 +918,147 @@ CAGR = 14.5% 命中区间：12-15%
       "interpolation": "5.5 + (14.5-12)/(15-12) × (6.4-5.5) = 6.25",
       "final_score": 6.3
     }
+  }
+}
+```
+
+### 5.10 证据链强制呈现规范 ⭐️ v2.6.0 新增
+
+> 关联规范: `modules/parameter-tracing/evidence-chain-spec.md`
+> 关联验证: `validate_report.py` → `validate_evidence_chain()`
+
+#### 5.10.1 每个关键数字必须使用脚注溯源
+
+**正文写法**（关键数字后加脚注标记）：
+
+```markdown
+季度营收为 **$82.9B**[^1]，同比增长 18%。
+其中智能云业务收入 **$30.3B**[^2]，同比增长 33%。
+```
+
+**脚注区**（报告末尾「参数溯源」章节）：
+
+> **v2.6.1 脚注语言规范**：脚注区的语言规则与正文不同——脚注的作用是提供可审计的溯源证据，因此：
+> - **中国公司**：脚注全部使用中文（包括摘录字段）
+> - **外国公司**：脚注的**结构字段**（来源、日期、可靠度）使用中文；**quote 摘录字段**可使用中文译文摘录（推荐），也可保留英文原文。推荐做法是：将英文原文翻译为中文摘录，既降低报告整体英文比例，又保留可审计性。完整的英文原文已保存在 `search-results/search-*.md` 中，如有需要可回溯。
+> - **混合公司**：混合使用中英文，中文摘录为主
+
+**脚注区示例 - 中国公司**：
+
+```markdown
+## 参数溯源
+
+[^1]: 腾讯控股 2025 年第一季度业绩公告（香港交易所，发布日期 2025-03-19）
+      链接: `https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0319/...`
+      原文要点: 第一季度营收 1610 亿元人民币，同比增长 13%。
+      可靠度: 高。采集时间: 2026-06-13T11:45:00。
+
+[^2]: 腾讯控股 2025 年第一季度业绩公告（同上）
+      原文要点: 毛利 890 亿元人民币，毛利率 55.3%，同比提升 2.1 个百分点。
+      可靠度: 高。采集时间: 2026-06-13T11:45:00。
+```
+
+**脚注区示例 - 外国公司（v2.6.1 推荐写法）**：
+
+```markdown
+## 参数溯源
+
+> 说明：以下脚注的原文要点已翻译为中文以便审阅，完整英文原文见缓存目录搜索结果文件。
+
+[^1]: 来源：Snowflake 公司 FY2026 第四季度财报（美国证监会 EDGAR 官方文件，附件 99.1，发布日期 2026-02-26）。
+      链接: `https://www.sec.gov/Archives/edgar/data/1640147/000162828026011631/fy2026q4earnings.htm`
+      原文要点：2026 完整财年产品收入 44.72 亿美元，同比增长百分之二十九。
+      可靠度: 高。采集时间: 2026-06-13T12:42:00。
+
+[^2]: 来源：同 [^1]（Snowflake 公司 FY2026 第四季度财报电话会议实录，Motley Fool 转录）。
+      原文要点：第四季度产品收入同比增长百分之三十；非公认会计准则营业利润率达到百分之十点五。
+      可靠度: 高。采集时间: 2026-06-13T12:42:00。
+```
+
+#### 5.10.2 必须包含的可追溯性字段
+
+每个脚注至少包含以下 5 个字段，缺一不可：
+
+| 字段 | 说明 |
+|------|------|
+| 链接 (URL) | 可点击的原始来源链接（http/https 开头） |
+| 来源 | 发布机构 + 标题 + 发布日期 |
+| 原文摘录 / 原文要点 | 来自 URL 页面的关键字句（10-500 字符）。**中国公司**使用中文原文；**外国公司**推荐使用中文译文摘录（降低报告英文比例），完整英文原文保存在 search-results 中可回溯 |
+| 可靠度 | 高 / 中 / 低（评级标准见 evidence-chain-spec.md 第八节） |
+| 采集时间 | ISO 8601 时间戳 |
+
+#### 5.10.3 搜索结果原文保存要求
+
+每次 `web_search` 调用后，必须立即使用 Write 工具将结果保存到缓存：
+
+- **文件路径**: `revenue-forecast-cache/{公司}/search-results/search-{序号}-{简短关键词}.md`
+- **内容**:
+  ```markdown
+  # 搜索结果 #{序号}: {查询字符串}
+
+  > 搜索时间: {ISO 8601 时间戳}
+
+  ## 结果 1
+  - **URL**: {url}
+  - **标题**: {title}
+  - **摘要**: {snippet}
+  - **发布日期**: {published_date}
+
+  ## 结果 2
+  ...
+  ```
+- **数量要求**: 每个搜索保存前 3-5 条结果
+- **用途**: 后续报告生成时，脚注的「原文摘录」字段从这里引用，保证可追溯
+
+#### 5.10.4 双向链接要求
+
+- Markdown 脚注 `[^ref1]` ↔ JSON `evidence_chain.params[].evidence`
+- 编号必须一一对应、数据一致
+- `validate_report.py` 会交叉校验：
+  - JSON 中 `evidence_chain.params` 数量 ≥ 10
+  - Markdown 末尾脚注数量 ≥ 10
+  - 每个 JSON 证据条目包含 9 个必填字段（详见 evidence-chain-spec.md 第三节）
+
+#### 5.10.5 必溯参数清单（与 evidence-chain-spec.md 第二节同步）
+
+以下参数必须 100% 全链路溯源（任一缺失 → 验证失败）：
+
+**财务数据**: current_revenue, revenue_growth_yoy, operating_margin, net_margin, capex, fcf, rpo
+
+**业务指标**: market_share, segment_revenue, customer_count, seat_count, growth_rate_by_segment
+
+**预测假设**: scenario_probability, growth_assumption, market_growth_rate
+
+**评分输入**: composite_cagr, score_lookup
+
+#### 5.10.6 JSON evidence_chain 字段示例（完整）
+
+```json
+{
+  "evidence_chain": {
+    "version": "1.0",
+    "level": 3,
+    "total_params_traced": 15,
+    "params": [
+      {
+        "param_name": "current_revenue_q3_fy2026_b_usd",
+        "value": 82.9,
+        "unit": "亿USD",
+        "evidence": {
+          "search_query": "Microsoft FY2026 Q3 earnings revenue",
+          "source_url": "https://www.microsoft.com/en-us/investor/earnings/fy-2026/q3/press-release-webcast",
+          "source_title": "FY26 Q3 - Press Releases - Investor Relations",
+          "source_date": "2026-04-29",
+          "source_type": "company_report",
+          "quote": "Revenue was $82.9 billion and increased 18%",
+          "extracted_value": 82.9,
+          "reliability": "高",
+          "timestamp": "2026-06-13T11:45:00"
+        }
+      }
+    ],
+    "untraced_critical_params": [],
+    "coverage_pct": 100.0
   }
 }
 ```

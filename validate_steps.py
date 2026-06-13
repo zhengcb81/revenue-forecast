@@ -4,9 +4,9 @@
 revenue-forecast 步骤完整性验证脚本
 
 用途：验证9个维度分析文件和报告文件的完整性
-版本：v1.0
+版本：v1.1 (v2.6.0)
 创建日期：2026-01-23
-对应框架版本：v2.3.3
+对应框架版本：v2.6.0
 """
 
 import os
@@ -15,11 +15,10 @@ import json
 import re
 from pathlib import Path
 
-# 设置Windows控制台UTF-8编码
-if sys.platform == 'win32':
-    import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+# 设置Windows控制台UTF-8编码（v2.6.0 统一编码引导）
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from core.encoding import setup_utf8_console
+setup_utf8_console()
 
 
 class StepsValidator:
@@ -142,6 +141,78 @@ class StepsValidator:
                 self.warnings.append(f"⚠️ 产品驱动型公司缺失品牌矩阵分析文件")
 
         return True
+
+    def validate_search_results(self):
+        """验证第4步搜索结果原文保存（v2.6.0 强制）
+
+        对应 skill.md 第4步第5子步、modules/parameter-tracing/evidence-chain-spec.md 第七节。
+        """
+        print(f"\n检查第4步搜索结果原文（v2.6.0）")
+
+        cache_dir = self.get_cache_dir()
+        search_dir = os.path.join(cache_dir, "search-results")
+
+        if not os.path.exists(search_dir):
+            self.errors.append(
+                f"❌ search-results 目录不存在: {search_dir}（第4步未执行搜索结果保存）"
+            )
+            return False
+
+        # 收集所有 search-*.md 文件
+        import glob
+        pattern = os.path.join(search_dir, "search-*.md")
+        search_files = glob.glob(pattern)
+
+        # 检查1: 文件数量 ≥ 9（每维度至少1个）
+        if len(search_files) < 9:
+            self.errors.append(
+                f"❌ search-results/search-*.md 文件数量不足: {len(search_files)} < 9（每维度至少1个）"
+            )
+        else:
+            print(f"✅ 搜索结果文件数量: {len(search_files)} (≥ 9)")
+
+        # 检查2: 每个文件至少包含1条 URL
+        no_url_files = []
+        for sf in search_files:
+            try:
+                with open(sf, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                if 'http://' not in content and 'https://' not in content:
+                    no_url_files.append(os.path.basename(sf))
+            except Exception:
+                no_url_files.append(os.path.basename(sf))
+
+        if no_url_files:
+            self.errors.append(
+                f"❌ 以下搜索结果文件无 URL: {', '.join(no_url_files[:5])}{'...' if len(no_url_files) > 5 else ''}"
+            )
+        else:
+            print(f"✅ 所有搜索结果文件包含至少1条 URL")
+
+        # 检查3: 抽样3个文件，检查是否包含原文 snippet
+        import random
+        sample_files = random.sample(search_files, min(3, len(search_files))) if search_files else []
+        no_snippet_files = []
+        for sf in sample_files:
+            try:
+                with open(sf, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                # snippet 判定：包含"摘要"或"snippet"或长度>100字符的正文
+                if '摘要' not in content and 'snippet' not in content.lower() and len(content) < 100:
+                    no_snippet_files.append(os.path.basename(sf))
+            except Exception:
+                no_snippet_files.append(os.path.basename(sf))
+
+        if no_snippet_files:
+            self.warnings.append(
+                f"⚠️ 抽样文件缺少原文 snippet: {', '.join(no_snippet_files)}"
+            )
+        else:
+            print(f"✅ 抽样检查通过: 文件包含原文 snippet")
+
+        return not any("search-results" in e or "文件数量不足" in e or "无 URL" in e
+                       for e in self.errors)
+
 
     def validate_json_report(self):
         """验证JSON报告文件"""
@@ -266,6 +337,7 @@ class StepsValidator:
         # 执行所有验证
         metadata_ok = self.validate_metadata()
         dimensions_ok = self.validate_dimension_files()
+        search_ok = self.validate_search_results()  # v2.6.0 新增
         json_ok = self.validate_json_report()
         md_ok = self.validate_markdown_report()
         results_ok = self.validate_analysis_results()

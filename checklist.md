@@ -1,7 +1,7 @@
-# Revenue-Forecast Skill 执行检查清单 v1.1
+# Revenue-Forecast Skill 执行检查清单 v1.2
 
 **创建日期**: 2026-01-15
-**框架版本**: v2.5.0
+**框架版本**: v2.6.0
 **目的**: 确保每个步骤100%严格执行，防止遗漏和违规操作
 
 ---
@@ -143,7 +143,15 @@
   - ✅ 文件内容完整: 每份分析>500字
   - 📝 生成时间: _____
 
-**完成标志**: 9个缓存文件生成，搜索结果保存完整
+- [ ] **4.4 搜索原文保存（v2.6.0 强制）** ⭐️⭐️⭐️
+  - ✅ 每次 `web_search` 后已用 Write 工具保存结果到 `search-results/search-{序号}-{关键词}.md`
+  - ✅ 每个文件包含查询字符串 + 前 3-5 条结果（URL/title/snippet/date）
+  - ✅ search-*.md 文件数量 ≥ 9（每维度至少1个）
+  - ✅ 抽样检查: 每个 search-*.md 至少含1条 http(s):// URL
+  - 📝 保存时间: _____
+  - ⚠️ 缺失后果: 后续 validate_steps.py 第4步证据检查失败、validate_report.py 证据链检查失败
+
+**完成标志**: 9个缓存文件生成，搜索结果保存完整，search-*.md 文件 ≥ 9 个
 
 ---
 
@@ -383,7 +391,26 @@
   - ✅ **文件大小**: >10KB (建议)
   - 📝 检查时间: _____
 
-- [ ] **9.6.5 验证结果处理**
+- [ ] **9.6.5 证据链检查（v2.6.0 强制）** ⭐️⭐️⭐️
+  - ✅ **JSON evidence_chain**: 包含 evidence_chain 字段，Level 3
+  - ✅ **溯源参数数量**: evidence_chain.params ≥ 10
+  - ✅ **每条证据9字段**: search_query/source_url/source_title/source_date/source_type/quote/extracted_value/reliability/timestamp
+  - ✅ **URL 合法**: 每条 source_url 以 http:// 或 https:// 开头
+  - ✅ **quote 长度**: 每条 quote 10-500 字符
+  - ✅ **必溯清单覆盖**: current_revenue / market_share / composite_cagr 等 100% 覆盖
+  - ✅ **覆盖率**: coverage_pct ≥ 85%
+  - ✅ **Markdown 脚注**: 末尾参数溯源章节脚注数 ≥ 10
+  - 📝 检查时间: _____
+
+- [ ] **9.6.6 计算过程检查（v2.6.0 强制）** ⭐️⭐️⭐️
+  - ✅ **四段落结构**: 情景预测章节含"假设依据/计算过程/验证检查/结论"
+  - ✅ **加权计算**: 综合CAGR章节含"加权"+"概率"关键词
+  - ✅ **线性插值**: 评分章节含"插值"+"评分"关键词
+  - ✅ **calculation_trace**: JSON 含 calculation_trace 字段
+  - ✅ **计算一致性**: 重算加权结果/CAGR 与报告值一致（validate_report.py 自动检查）
+  - 📝 检查时间: _____
+
+- [ ] **9.6.7 验证结果处理**
   - ✅ **全部通过**: 可以继续第10步 (更新缓存)
   - ❌ **任何失败**: 必须修正错误并重新验证，禁止进入第10步
   - 📝 处理时间: _____

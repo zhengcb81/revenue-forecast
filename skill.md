@@ -1,7 +1,7 @@
 ---
 name: revenue-forecast
-version: 2.5.0
-description: 对公司进行全面的营收增长预测分析，包含双曲线业务分析（第一、二、三曲线）、1-10分量化评分及未来5年趋势预测。包含渠道反身性效应HRI指数评估、国家战略需求加成。新增10种公司类型专项分析框架（包含资本驱动型、研发驱动型、订阅驱动型、代工驱动型、平台驱动型）。新增智能语言搜索策略（中文/英文/双语）和品牌矩阵分析模块。支持17,500个参数设定依据（310+项参数具体数据来源）。新增第0步配置加载机制，统一管理缓存目录、输出目录、维度文件等系统配置。新增强制执行控制器，确保所有分析步骤必须完整执行。
+version: 2.6.1
+description: 对公司进行全面的营收增长预测分析，包含双曲线业务分析（第一、二、三曲线）、1-10分量化评分及未来5年趋势预测。包含渠道反身性效应HRI指数评估、国家战略需求加成。新增10种公司类型专项分析框架（包含资本驱动型、研发驱动型、订阅驱动型、代工驱动型、平台驱动型）。新增智能语言搜索策略（中文/英文/双语）和品牌矩阵分析模块。支持17,500个参数设定依据（310+项参数具体数据来源）。新增第0步配置加载机制，统一管理缓存目录、输出目录、维度文件等系统配置。新增强制执行控制器，确保所有分析步骤必须完整执行。v2.6.0：全链路证据链（Level 3）+ Windows UTF-8 编码修复 + 计算过程强制展示验证。v2.6.1：语言检查软指标化（剥离脚注/URL 后按 origin_type 分级判定）+ 脚注模板支持中文译文。
 changelog: |
   ## v2.4.0 更新（2026-02-13）强制执行控制器集成
 
@@ -335,6 +335,16 @@ changelog: |
 
 ## 第0步: 加载配置 ⭐️⭐️⭐️ 新增v2.3.0 (强制执行)
 
+> ⚠️ **Windows 编码提醒** (v2.6.0): 在 Git Bash / PowerShell 中执行 Python 脚本或 `python << EOF` heredoc 前，必须先设置环境变量，否则中文输出会乱码：
+>
+> **Git Bash**: `export PYTHONIOENCODING=utf-8` 和 `export PYTHONUTF8=1`
+>
+> **PowerShell**: `$env:PYTHONIOENCODING="utf-8"` 和 `$env:PYTHONUTF8="1"`
+>
+> 或者每次在 heredoc 首行加入：`import sys, io; if sys.platform=='win32': sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')`
+>
+> 所有自带脚本（`validate_report.py`、`init_cache.py` 等）已通过 `core/encoding.py` 自动处理，仅内联 heredoc 需手动设置。详见 `docs/windows-encoding-guide.md`。
+
 **⚠️ 核心变更**: 新增配置加载步骤 - **必须执行!**
 
 **执行目的**: 在开始分析前加载系统配置,确保缓存目录、输出目录、维度文件等配置正确
@@ -428,7 +438,7 @@ def validate_config_loading():
 
 ---
 
-# 营收增长预测 Skill 执行指令 v2.5.0
+# 营收增长预测 Skill 执行指令 v2.6.1
 
 **当用户调用 `/revenue-forecast [公司名称]` 时，请立即严格按照以下步骤执行分析：**
 
@@ -563,7 +573,32 @@ def validate_config_loading():
    - 总搜索次数: 18-25次
    - 保存搜索结果到缓存目录
 
-5. **验证检查点**
+5. **保存搜索原文（v2.6.0 强制执行）** ⭐️⭐️⭐️
+
+   每次 `web_search` 调用后，必须立即使用 Write 工具保存结果，这是后续报告证据链溯源的依据：
+
+   - **文件**: `{缓存目录}/search-results/search-{序号}-{简短关键词}.md`
+   - **内容**:
+     ```markdown
+     # 搜索结果 #{序号}: {查询字符串}
+
+     > 搜索时间: {ISO 8601 时间戳}
+
+     ## 结果 1
+     - **URL**: {url}
+     - **标题**: {title}
+     - **摘要**: {snippet}
+     - **发布日期**: {published_date}
+
+     ## 结果 2
+     ...
+     ```
+   - **数量要求**: 每个文件保存前 3-5 条结果
+   - **缺失后果**: 后续 `validate_report.py` 证据链验证将失败（缺 `evidence_chain.params[].evidence.quote`），`validate_steps.py` Step4 检查也会失败（search-*.md 文件数 < 9）
+
+   详见 `modules/output/save-report.md` 第 5.10.3 节、`modules/parameter-tracing/evidence-chain-spec.md`。
+
+6. **验证检查点**
    ```
    ✅ 已读取: modules/analysis/search-strategy.md
    ✅ 搜索语言策略: {中文/英文/中英双语}
@@ -1029,6 +1064,20 @@ def validate_brand_matrix_execution():
 
 ## 更新日志
 
+### v2.6.1 (2026-06-13) 语言检查软指标化 + 脚注中文译文
+
+**问题背景**: v2.6.0 的语言检查 `english_ratio > 30%` 一刀切硬卡，对外国公司天然不公。根因是脚注区包含大量英文原文摘录（SEC 文件、英文新闻稿），导致整体英文比例被严重高估（实测 Snowflake 报告 75.1%）。
+
+**核心改进**:
+- ✅ 新增 `strip_non_prose()`: 剥离脚注/引用/URL/代码块后检测正文英文比例
+- ✅ 新增 `detect_long_english_runs(min_length=80)`: 检测连续长英文段落
+- ✅ 新增 `_detect_origin_type()`: 从 metadata.json 读取公司地域类型
+- ✅ 语言检查按 origin_type 分级: chinese 20%/foreign 55%/mixed 40%
+- ✅ 脚注模板支持中文译文摘录（外国公司），evidence-chain-spec.md 同步更新
+- ✅ 回归测试: Snowflake 报告正文英文比例 23.2%（<55%），长英文段 0 处，验证通过
+
+**向后兼容**: v2.6.0 格式的报告在 v2.6.1 下验证通过（更宽松的语言策略不影响现有报告）
+
 ### v2.2.0 (2026-01-12) 语言策略与品牌矩阵增强
 
 **核心功能**:
@@ -1061,7 +1110,7 @@ def validate_brand_matrix_execution():
 
 ---
 
-**📚 文档结束 | skill.md v2.5.0 | 强制检查机制 + 语言策略 + 品牌矩阵**
+**📚 文档结束 | skill.md v2.6.1 | 强制检查机制 + 语言策略 + 品牌矩阵 + 语言检查软指标化**
 
 *Copyright © 2026 Claude AI | 营收增长预测分析系统*
 

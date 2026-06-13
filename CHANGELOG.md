@@ -1,5 +1,93 @@
 # Revenue Forecast Skill - 更新日志
 
+## v2.6.1 (2026-06-13) 语言检查软指标化 + 脚注中文译文 📝
+
+### 问题背景
+
+v2.6.0 的语言检查存在设计缺陷：`english_ratio > 30%` 一刀切硬卡，对外国公司（Snowflake、Apple、Tesla 等美股）天然不公。根因是脚注区包含大量英文原文摘录（SEC 文件、英文新闻稿），导致整体英文比例被严重高估（实测 Snowflake 报告 75.1%），正文中为了"凑字数"堆砌中文叙述反而降低了报告质量。
+
+### 核心改进
+
+| 改进项 | v2.6.0 | v2.6.1 |
+|--------|--------|--------|
+| 语言检查范围 | 整体（含脚注/URL） | **仅正文**（剥离脚注/引用/URL） |
+| 判定方式 | 30% 硬卡 → 失败 | **按 origin_type 分级阈值**（chinese 20%/foreign 55%/mixed 40%） |
+| 长英文段检测 | 无 | **≥80 词连续英文段数量**（chinese 1/foreign 3/mixed 3） |
+| 脚注 quote 字段 | 必须英文原文 | **允许中文译文摘录**（外国公司） |
+
+### 修改文件
+
+- **`validate_report.py`**:
+  - 新增 `strip_non_prose()`: 剥离脚注区 `[^xx]:`、脚注章节（## 参数溯源/脚注/引用）、代码块、纯 URL 行、行内 URL 和引用标记
+  - 新增 `detect_long_english_runs(min_length=80)`: 检测正文中连续 ≥80 词的英文段落
+  - 新增 `_detect_origin_type()`: 从 metadata.json 读取公司地域类型（复用第3步判定结果）
+  - 改造 `validate_markdown_file()` 检查4: 正文英文比例（剥离后）+ 长英文段数量，按 chinese/foreign/mixed 分级判定
+- **`modules/output/save-report.md` 5.10.1 节**: 新增"脚注语言规范"段落，区分中国公司/外国公司/混合公司的脚注写法，附中外公司两种示例
+- **`modules/output/save-report.md` 5.10.2 节**: "原文摘录"字段说明更新为"原文摘录/原文要点"，明确外国公司允许中文译文
+- **`modules/parameter-tracing/evidence-chain-spec.md`**: quote 字段说明新增外国公司中文译文许可
+- **`skill.md`**: 版本号 v2.6.0 → v2.6.1
+- **`core/config.yaml`**: 版本号 v2.6.0 → v2.6.1
+
+### 回归测试
+
+- Snowflake 报告（外国公司）：正文英文比例 23.2%（< 55% 阈值），长英文段 0 处，验证通过 ✅
+- 保留 v2.6.0 所有其他验证（证据链、计算过程、四段落结构等）不变
+
+### 升级指南
+
+- **向后兼容**: v2.6.0 格式的报告在 v2.6.1 下验证通过（更宽松的语言策略不影响现有通过的报告）
+- **无需重新生成**: 已有报告无需修改，新分析按新规则执行
+
+---
+
+## v2.6.0 (2026-06-13) 证据链强制化 + Windows 编码修复 🔧
+
+### 破坏性变更
+
+- **所有 Python 脚本必须通过 `core/encoding.py` 设置 UTF-8 输出**：Windows cp936/gbk 默认编码导致中文乱码，现已统一修复。
+- **JSON 报告必须包含 `evidence_chain` 字段（Level 3 全链路）**：`RevGrowth_{公司}.json` 顶层需增加 `evidence_chain` 对象，每个关键参数必须包含 9 个溯源字段（search_query/source_url/source_title/source_date/source_type/quote/extracted_value/reliability/timestamp）。
+- **Markdown 报告必须使用脚注标注关键数字来源**：报告末尾「参数溯源」章节必须包含 ≥10 条脚注，每条含 URL、来源标题、发布日期、原文摘录、可靠度、采集时间。
+- **第4步必须保存搜索结果原文**：每次 `web_search` 后必须用 Write 工具保存结果到 `search-results/search-{N}-{关键词}.md`，否则 `validate_steps.py` Step4 证据检查失败。
+- **旧报告（v2.5.1 及之前）重新验证会失败**：保留 `validate_report_v1.py` 作为旧版备用命令。
+
+### 新增功能
+
+- **`core/encoding.py`**: 统一 Windows UTF-8 编码处理模块（幂等、跨平台）。
+- **`modules/parameter-tracing/evidence-chain-spec.md`**: 全链路证据链规范 v1.0（Level 3 强制，含必溯参数清单、JSON 格式、覆盖率要求）。
+- **`docs/windows-encoding-guide.md`**: Windows 编码问题完整指南（三种解决方案 + 验证方法 + FAQ）。
+- **`validate_report.py` v2.0**: 新增三项强制验证
+  - `validate_calculation_trace()`: 检查四段落结构、加权公式、线性插值
+  - `validate_evidence_chain()`: 检查 evidence_chain 字段、9字段完整性、URL/quote合法性、必溯参数覆盖率、脚注数
+  - `validate_calculation_consistency()`: 重算加权结果/CAGR 与报告值对比，防止数字造假
+- **`validate_steps.py` v1.1**: 新增 `validate_search_results()` 检查 search-*.md 文件数 ≥9、URL 完整性、原文 snippet
+- **`skill.md` 第4步**: 新增第5子步「保存搜索原文」强制要求
+- **`modules/output/save-report.md` 第 5.10 节**: 证据链强制呈现规范（脚注格式、可追溯性字段、双向链接）
+
+### 修复
+
+- 修复 Windows cp936/gbk 默认编码导致 Python 中文输出乱码（影响 22 个 core 文件 + 2 个入口脚本）。
+- 修复内联 `python << EOF` heredoc 示例未引导编码设置的问题（skill.md 第0步新增编码提醒）。
+
+### 改造范围
+
+| 类别 | 文件 | 改动 |
+|------|------|------|
+| 新增 | `core/encoding.py` | 统一编码引导模块 |
+| 新增 | `modules/parameter-tracing/evidence-chain-spec.md` | 证据链规范 |
+| 新增 | `docs/windows-encoding-guide.md` | Windows 编码指南 |
+| 新增 | `validate_report_v1.py` | 旧版验证脚本备份 |
+| 修改 | `validate_report.py` → v2.0 | 头部编码 + 3 项新验证 |
+| 修改 | `validate_steps.py` → v1.1 | 头部编码 + Step4 证据检查 |
+| 修改 | `init_cache.py`, `verify_config.py` | 头部编码引导 |
+| 修改 | `core/*.py` (14 个) | 头部 try/except 编码引导 |
+| 修改 | `core/validators/*.py` (8 个) | 头部 try/except 编码引导 |
+| 修改 | `skill.md` → v2.6.0 | 第0步编码提醒 + 第4步搜索原文 + 版本号 |
+| 修改 | `modules/output/save-report.md` | 第 5.10 节 + 模板版本号 |
+| 修改 | `checklist.md` → v1.2 | 第4.4项 + 第9.6.5/9.6.6项 + 框架版本 |
+| 修改 | `core/config.yaml` | 版本号 → 2.6.0 |
+
+---
+
 ## v2.5.0 (2026-03-01) - 全面升级：Phase 1-3 完成 🚀
 
 ### 🎯 本次更新总览
