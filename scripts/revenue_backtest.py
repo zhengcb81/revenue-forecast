@@ -16,6 +16,7 @@ from revenue_core import (
     ForecastInputError,
     ENGINE_VERSION,
     FORECAST_SCHEMA_VERSION,
+    SUPPORTED_FORECAST_SCHEMA_VERSIONS,
     calculate_cagr,
     canonical_sha256,
     finite_number,
@@ -67,7 +68,7 @@ def validate_snapshot(snapshot: dict[str, Any]) -> None:
         require(key in snapshot, f"snapshot missing field: {key}")
     require(snapshot["snapshot_schema_version"] == "2.0", "unsupported snapshot schema version")
     require(snapshot["engine_version"] == ENGINE_VERSION, "snapshot engine_version mismatch")
-    require(snapshot["forecast_schema_version"] == FORECAST_SCHEMA_VERSION, "snapshot forecast_schema_version mismatch")
+    require(snapshot["forecast_schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS, "snapshot forecast_schema_version mismatch")
     expected_input_hash = canonical_sha256(snapshot["input_document"])
     require(expected_input_hash == snapshot["input_sha256"], "snapshot input fingerprint mismatch")
     validate_forecast_output(snapshot["forecast_result"])

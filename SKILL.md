@@ -1,6 +1,6 @@
 ---
 name: revenue-forecast
-description: Build auditable company revenue forecasts by segment from source-linked operating drivers, revenue-recognition timing, low/base/high scenarios, annual paths, CAGR, incremental revenue, sensitivity, confidence, immutable snapshots, and historical forecast errors. Use for revenue, sales growth, segment growth, order or backlog conversion, capacity, subscribers, users, transaction activity, volume-price, market-share, or theme-driven revenue elasticity. Keep the scope strictly on revenue and hand non-revenue investment analysis to the relevant invest skill.
+description: Build auditable company revenue forecasts by segment from source-linked operating drivers, management targets, revenue-recognition timing, low/base/high scenarios, annual paths, CAGR, incremental revenue, sensitivity, confidence, immutable snapshots, and historical forecast errors. Use for revenue, sales growth, guidance or long-term revenue goals, segment growth, order or backlog conversion, capacity, subscribers, users, transaction activity, volume-price, market-share, or theme-driven revenue elasticity. Keep the scope strictly on revenue and hand non-revenue investment analysis to the relevant invest skill.
 ---
 
 # Revenue Forecast
@@ -23,6 +23,7 @@ Read only what the task needs:
 
 - Read [references/data-governance.md](references/data-governance.md) before collecting or accepting data.
 - Read [references/research-coverage.md](references/research-coverage.md) before deciding which research conclusions enter the model.
+- Read [references/management-targets.md](references/management-targets.md) before accepting that official communications and forward revenue targets are complete.
 - Read [references/accounting-boundaries.md](references/accounting-boundaries.md) when contracts, projects, platforms, banks, or insurers require accounting judgment.
 - Read [references/model-library.md](references/model-library.md) before assigning segment driver models.
 - Read [references/input-schema.md](references/input-schema.md) when building a calculation input.
@@ -45,6 +46,12 @@ Use this gate to prevent omissions. Never add a research dimension directly to C
 ### 1. Freeze the information set
 
 Record company identity, `as_of_date`, currency, unit, fiscal-year end, base year, forecast years, forecast version, and reported-revenue definition. Exclude every source published after `as_of_date`.
+
+### 1A. Complete the management-communication and target gate
+
+Open and record the latest annual filing, results release, earnings call, investor presentation, strategy communication, and material announcements since the last filing. Mark an unavailable or inapplicable category explicitly; never infer that silence means no target.
+
+Register every material dated revenue target with its exact source wording, commitment strength, raw currency/unit, target period, metric perimeter, normalized comparison value, and treatment. A comparable in-horizon target must enter at least one low/base/high scenario or the forecast fails. A perimeter mismatch or out-of-horizon target must remain a prominent data gap. Do not silently treat an aspiration as base-case guidance.
 
 ### 2. Verify history and the base
 
@@ -127,7 +134,8 @@ Deliver:
 4. operating-driver trace;
 5. recognition assumptions;
 6. sensitivities and confidence limitations;
-7. parameter-level source table.
+7. official-communication coverage and management-target attainment;
+8. parameter-level source table.
 
 ### 11. Freeze and backtest
 
@@ -154,6 +162,10 @@ Block output when any of these is true:
 - a citation was not opened and checked against the parameter;
 - an evidence claim target, excerpt hash, extracted value, unit, period, or information date does not match;
 - any of the nine research dimensions is missing, maps to an unused parameter, or lacks the required gap/immaterial rationale;
+- any required official communication category is neither checked nor explicitly unavailable/inapplicable;
+- a material revenue target found in official communications is absent from the target ledger;
+- an in-horizon comparable material target does not enter a scenario, or its mapped scenario does not numerically satisfy the target;
+- a target's external/internal, segment, currency, unit, period, gross/net, recurring/run-rate, or recognized-revenue perimeter is unresolved but modeled as if matched;
 - historical base revenue does not equal reported base revenue;
 - segment base revenue plus adjustments does not reconcile to reported revenue;
 - a driver has the wrong period, scenario, unit, range, or parameter identity;

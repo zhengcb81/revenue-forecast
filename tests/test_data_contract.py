@@ -23,6 +23,15 @@ RESEARCH_DIMENSIONS = (
     "demand",
 )
 
+MANAGEMENT_COMMUNICATION_CATEGORIES = (
+    "latest_annual_filing",
+    "latest_results_release",
+    "latest_earnings_call",
+    "latest_investor_presentation",
+    "latest_strategy_communication",
+    "material_announcements_since_last_filing",
+)
+
 
 def apply_parameter_contract(data: dict, parameter: dict, dimension: str | None = None) -> None:
     if dimension is None:
@@ -56,7 +65,19 @@ def _claim(claim_id: str, source_id: str, target_type: str, target_id: str, supp
 
 
 def finalize_contract(data: dict) -> dict:
-    data["schema_version"] = "3.0"
+    data["schema_version"] = "3.1"
+    data.setdefault("management_communication_coverage", [
+        {
+            "category": category,
+            "status": "checked",
+            "source_ids": ["filing"],
+            "checked_date": data["as_of_date"],
+            "conclusion": "Synthetic fixture review found no material forward revenue target.",
+            "material_revenue_target_ids": [],
+        }
+        for category in MANAGEMENT_COMMUNICATION_CATEGORIES
+    ])
+    data.setdefault("management_targets", [])
     claims: list[dict] = []
     for parameter in data["parameters"]:
         if "dimension" not in parameter:
@@ -225,9 +246,9 @@ def valid_document() -> dict:
 
 class DataContractTests(unittest.TestCase):
     def test_release_and_schema_versions_are_explicit(self) -> None:
-        self.assertEqual(SKILL_VERSION, "3.0.0")
+        self.assertEqual(SKILL_VERSION, "3.1.0")
         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
-        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.0")
+        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.1")
 
     def test_valid_document(self) -> None:
         validated = validate_document(valid_document())

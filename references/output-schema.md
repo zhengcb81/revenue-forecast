@@ -7,6 +7,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - identity: company, information date, currency, unit, fiscal-year end, base year, forecast years, version;
 - history: source-linked historical company revenue;
 - research coverage: all nine dimensions, status, revenue mechanism, used parameter IDs, sources, and exclusions or gaps;
+- management target coverage: six official-communication checks, complete target ledger, perimeter treatment, mapped scenarios and numerical attainment;
 - segments: model, formula, driver values, modeled activity, recognized revenue, recognition metadata, carry-in, and unrecognized tail;
 - consolidated forecast: low/base/high segment bridge, adjustment bridge, annual revenue, annual growth, terminal revenue, CAGR, and incremental contribution;
 - optional probability-weighted forecast: annual expected revenue and expected-terminal-implied CAGR;
@@ -30,6 +31,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - theme counterfactual arithmetic, sensitivity impacts, and confidence components;
 - presence of source and parameter traces.
 - nine-dimension completeness, counts, parameter/source identities, and propagation of research data gaps.
+- official-communication completeness, target-ledger identity, mapped-scenario attainment, and propagation of unmodeled targets.
 
 It rejects fields for stock prices, valuation, profitability, cash generation, investment ratings, shareholder returns, and position sizing.
 
@@ -41,14 +43,15 @@ The standard renderer includes:
 2. low/base/high terminal revenue, CAGR, and increment;
 3. historical revenue;
 4. nine-dimension research coverage and model mapping;
-5. annual scenario paths;
-6. segment models and recognition;
-7. base-case incremental contribution;
-8. sensitivities;
-9. confidence components;
-10. disconfirming indicators and data gaps;
-11. parameter-to-claim-to-source table;
-12. linked source registry.
+5. management communication and revenue-target coverage;
+6. annual scenario paths;
+7. segment models and recognition;
+8. base-case incremental contribution;
+9. sensitivities;
+10. confidence components;
+11. disconfirming indicators and data gaps;
+12. parameter-to-claim-to-source table;
+13. linked source registry.
 
 Generate both outputs with:
 

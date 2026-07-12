@@ -12,6 +12,10 @@ from revenue_core import (
     SCENARIOS,
     ENGINE_VERSION,
     FORECAST_SCHEMA_VERSION,
+    SUPPORTED_FORECAST_SCHEMA_VERSIONS,
+    MANAGEMENT_COMMUNICATION_CATEGORIES,
+    MANAGEMENT_COMMUNICATION_STATUSES,
+    MANAGEMENT_TARGET_TREATMENTS,
     calculate_model_path,
     calculate_cagr,
     calculate_confidence,
@@ -84,8 +88,12 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
     )
     for key in required:
         require(key in result, f"forecast output missing field: {key}")
-    require(result["schema_version"] == FORECAST_SCHEMA_VERSION, "forecast output schema_version mismatch")
-    require(result["engine_version"] == ENGINE_VERSION, "forecast output engine_version mismatch")
+    require(result["schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS, "forecast output schema_version mismatch")
+    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+        require(result["engine_version"] == ENGINE_VERSION, "forecast output engine_version mismatch")
+        require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
+    else:
+        require(result["engine_version"] == "3.0.0", "legacy forecast output engine_version mismatch")
     hash_payload = {key: value for key, value in result.items() if key != "result_sha256"}
     years = list(map(str, result["forecast_years"]))
     base = float(result["base_revenue"])
@@ -182,6 +190,54 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             expected_gap = f"{record['dimension']}: {record['conclusion']}"
             require(expected_gap in result.get("data_gaps", []), f"research data gap missing from output: {record['dimension']}")
     require(coverage.get("counts") == recomputed_counts, "research_coverage counts mismatch")
+    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+        target_coverage = result["management_target_coverage"]
+        require(isinstance(target_coverage, dict), "management_target_coverage output must be an object")
+        communications = target_coverage.get("communications")
+        targets = target_coverage.get("targets")
+        counts = target_coverage.get("counts")
+        require(isinstance(communications, list) and len(communications) == len(MANAGEMENT_COMMUNICATION_CATEGORIES), "management communication output is incomplete")
+        require([record.get("category") for record in communications] == list(MANAGEMENT_COMMUNICATION_CATEGORIES), "management communication categories are missing or out of order")
+        observed_target_ids: set[str] = set()
+        for record in communications:
+            require(record.get("status") in MANAGEMENT_COMMUNICATION_STATUSES, f"invalid management communication status: {record.get('category')}")
+            require(isinstance(record.get("conclusion"), str) and record["conclusion"].strip(), f"management communication conclusion is required: {record.get('category')}")
+            require(set(record.get("source_ids", [])) <= source_ids, f"management communication contains unknown source: {record.get('category')}")
+            observed_target_ids.update(record.get("material_revenue_target_ids", []))
+        require(isinstance(targets, list), "management target output must be a list")
+        target_ids = {target.get("target_id") for target in targets}
+        require(len(target_ids) == len(targets) and None not in target_ids, "management target IDs must be unique")
+        require(target_ids == observed_target_ids, "management communication and target output IDs do not match")
+        recomputed_target_counts = {
+            "communications_checked": sum(record["status"] == "checked" for record in communications),
+            "targets_total": len(targets),
+            "targets_modeled": sum(target.get("treatment") in {"modeled_scenario", "scenario_boundary"} for target in targets),
+            "targets_unmodeled": sum(target.get("treatment") not in {"modeled_scenario", "scenario_boundary"} for target in targets),
+        }
+        require(counts == recomputed_target_counts, "management target coverage counts mismatch")
+        for target in targets:
+            target_id = target["target_id"]
+            require(target.get("treatment") in MANAGEMENT_TARGET_TREATMENTS, f"invalid management target treatment: {target_id}")
+            comparisons = target.get("scenario_comparison")
+            require(isinstance(comparisons, dict), f"management target scenario comparison must be an object: {target_id}")
+            if target["treatment"] in {"modeled_scenario", "scenario_boundary"}:
+                require(set(comparisons) == set(target.get("mapped_scenarios", [])), f"management target scenario comparison mismatch: {target_id}")
+                year = str(int(target["target_period"][2:]))
+                for scenario, comparison in comparisons.items():
+                    if target["scope"]["type"] == "company":
+                        modeled_value = float(result["consolidated_forecast"][scenario]["annual_revenue"][year])
+                    else:
+                        modeled_value = float(segment_index[target["scope"]["name"]]["scenarios"][scenario]["recognized_revenue"][year])
+                    require(math.isclose(modeled_value, float(comparison["modeled_value"]), rel_tol=1e-9, abs_tol=1e-9), f"management target modeled value mismatch: {target_id}/{scenario}")
+                    target_value = float(target["comparison_value"])
+                    require(math.isclose(target_value, float(comparison["target_value"]), rel_tol=1e-9, abs_tol=1e-9), f"management target comparison value mismatch: {target_id}/{scenario}")
+                    expected_ratio = None if target_value == 0 else modeled_value / target_value
+                    require((expected_ratio is None and comparison["attainment_ratio"] is None) or math.isclose(expected_ratio, float(comparison["attainment_ratio"]), rel_tol=1e-9, abs_tol=1e-9), f"management target attainment mismatch: {target_id}/{scenario}")
+                    require(comparison.get("meets_target") is True, f"mapped management target is not met: {target_id}/{scenario}")
+            else:
+                require(not comparisons, f"unmodeled management target cannot contain scenario comparisons: {target_id}")
+                expected_gap_prefix = f"management_target:{target_id}:"
+                require(any(str(gap).startswith(expected_gap_prefix) for gap in result.get("data_gaps", [])), f"unmodeled management target gap missing from output: {target_id}")
     for sensitivity in result.get("sensitivities", []):
         baseline = float(sensitivity["baseline_terminal_revenue"])
         impact = max(abs(float(sensitivity["down_terminal_revenue"]) - baseline), abs(float(sensitivity["up_terminal_revenue"]) - baseline))
@@ -218,6 +274,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             },
         })
     reconstructed_data = {
+        "schema_version": result["schema_version"],
         "segments": reconstructed_segments,
         "forecast_adjustments": reconstructed_adjustments,
         "historical_accuracy_records": result.get("historical_accuracy_records", []),
@@ -229,6 +286,8 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         "as_of_date": parse_iso_date(result["as_of_date"], "as_of_date"),
         "research_coverage": {"counts": coverage["counts"]},
     }
+    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+        reconstructed_validated["management_target_coverage"] = {"counts": result["management_target_coverage"]["counts"]}
     expected_confidence = calculate_confidence(reconstructed_data, reconstructed_validated, result, result.get("sensitivities", []))
     require(expected_confidence["components"] == confidence["components"], "confidence components recomputation mismatch")
     require(math.isclose(float(expected_confidence["score"]), float(confidence["score"]), rel_tol=1e-9, abs_tol=1e-9), "confidence score recomputation mismatch")
@@ -316,6 +375,40 @@ def render_markdown(result: dict[str, Any]) -> str:
             f"{_escape(record['revenue_mechanism'])} | {_escape(', '.join(record['parameter_ids']) or '—')} | "
             f"{_escape(', '.join(record['source_ids']) or '—')} | {_escape(record.get('rationale', '—'))} |"
         )
+
+    if result.get("management_target_coverage") is not None:
+        target_coverage = result["management_target_coverage"]
+        target_counts = target_coverage["counts"]
+        lines.extend([
+            "",
+            "## 管理层沟通与营收目标覆盖",
+            "",
+            f"- 已检查官方沟通类别：{target_counts['communications_checked']}/{len(MANAGEMENT_COMMUNICATION_CATEGORIES)}；重大/相关目标：{target_counts['targets_total']}；已进入情景：{target_counts['targets_modeled']}；未建模：{target_counts['targets_unmodeled']}。",
+            "",
+            "| 沟通类别 | 状态 | 结论 | 目标ID | 来源ID |",
+            "|---|---|---|---|---|",
+        ])
+        for record in target_coverage["communications"]:
+            lines.append(
+                f"| {_escape(record['category'])} | {_escape(record['status'])} | {_escape(record['conclusion'])} | "
+                f"{_escape(', '.join(record['material_revenue_target_ids']) or '—')} | {_escape(', '.join(record['source_ids']) or '—')} |"
+            )
+        lines.extend([
+            "",
+            "| 目标 | 强度 | 原始目标 | 期间 | 口径 | 处理 | 映射情景 | 模型兑现度 |",
+            "|---|---|---:|---|---|---|---|---|",
+        ])
+        for target in target_coverage["targets"]:
+            attainment = ", ".join(
+                f"{scenario}:{_pct(values['attainment_ratio'])}"
+                for scenario, values in target["scenario_comparison"].items()
+            ) or "—"
+            lines.append(
+                f"| {_escape(target['target_id'])} | {_escape(target['commitment_strength'])} | "
+                f"{_num(target['raw_target_value'])} {_escape(target['raw_unit'])} | {_escape(target['target_period'])} | "
+                f"{_escape(target['perimeter_status'])}: {_escape(target['perimeter_notes'])} | {_escape(target['treatment'])} | "
+                f"{_escape(', '.join(target['mapped_scenarios']) or '—')} | {_escape(attainment)} |"
+            )
 
     lines.extend(["", "## 年度情景路径", "", "| 年度 | Low | Base | High | Base同比 |", "|---:|---:|---:|---:|---:|"])
     for year in years:

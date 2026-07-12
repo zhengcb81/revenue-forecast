@@ -2,7 +2,7 @@
 
 ## 1. Identity
 
-Require `schema_version="3.0"`, company, `as_of_date`, currency, scale in `unit`, fiscal-year end, base year, consecutive forecast years, sources, evidence claims, parameters, history, segments, reported-total parameter ID, and nine-dimension research coverage.
+Require `schema_version="3.1"`, company, `as_of_date`, currency, scale in `unit`, fiscal-year end, base year, consecutive forecast years, sources, evidence claims, parameters, history, segments, reported-total parameter ID, nine-dimension research coverage, management-communication coverage, and a management-target ledger.
 
 Use `pre_revenue=true` only when reported and segment base revenue are zero. A genuinely pre-revenue company may use an empty history.
 
@@ -88,3 +88,9 @@ The output records requested values, effective bounded values, and clamp flags. 
 ## 9. Theme and historical accuracy
 
 Theme counterfactual IDs must be non-negative terminal-year revenue assumptions for low/base/high. Historical accuracy accepts only `historical_accuracy_records` emitted by backtesting; the engine verifies each record hash and imports WAPE automatically.
+
+## 10. Management communication and targets
+
+`management_communication_coverage` contains exactly the six categories defined in `management-targets.md`. Every record contains status, checked date, conclusion, source IDs and `material_revenue_target_ids`; unavailable/inapplicable records require a rationale.
+
+`management_targets` contains the exact statement, raw target value/unit/currency/scale, strict `FYyyyy` period, materiality, commitment strength, scope, metric definition, perimeter status/notes, comparison direction, treatment, mapped parameter/scenario IDs, exact-value target claims, and rationale. Comparable targets also require a model-currency comparison value and normalization rationale.

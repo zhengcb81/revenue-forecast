@@ -2,6 +2,8 @@
 
 Use this layer before numerical forecasting. Its purpose is to prevent omitted research, not to add points to CAGR or confidence.
 
+This layer is necessary but not sufficient for forward statements. Complete the separate management-communication and target ledger in `management-targets.md`; do not hide a dated management target inside the generic `growth_curve` narrative.
+
 ## Required dimensions
 
 | Dimension | Question | Typical revenue mapping |

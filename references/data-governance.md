@@ -57,6 +57,8 @@ Do not cite a source as if it published an analyst assumption. Cite the evidence
 
 Complete all nine records defined in [research-coverage.md](research-coverage.md) before numerical forecasting. The gate checks whether material research conclusions enter used revenue parameters, remain explicit data gaps, or are excluded with a horizon-specific rationale. Coverage status is not a confidence-score component.
 
+Separately complete the official management-communication and target gate in [management-targets.md](management-targets.md). Nine-dimensional thematic coverage does not prove that the latest earnings call or strategy communication was reviewed.
+
 ## Conflict handling
 
 Normalize period, unit, currency, gross/net presentation, restatements, and fiscal calendars before comparing values. Parameters with the same definition, period, unit, and scenario but different values fail as unresolved conflicts. Resolve them by documenting different definitions or selecting the authoritative source before calculation.
