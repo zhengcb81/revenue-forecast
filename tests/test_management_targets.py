@@ -20,8 +20,11 @@ def add_target(
     period: str = "FY2027",
     treatment: str = "scenario_boundary",
     perimeter_status: str = "matched",
+    measurement_basis: str = "annual_period",
+    measurement_periods: list[str] | None = None,
 ) -> dict:
     target_id = "five_year_revenue_goal"
+    comparable = perimeter_status != "mismatch" and measurement_basis != "ambiguous"
     mapped_ids = []
     mapped_scenarios = []
     if treatment in {"modeled_scenario", "scenario_boundary"}:
@@ -56,15 +59,18 @@ def add_target(
         "raw_unit": "USD million",
         "raw_currency": "USD",
         "raw_scale": "million",
+        "measurement_basis": measurement_basis,
+        "measurement_periods": measurement_periods if measurement_periods is not None else ([] if measurement_basis == "ambiguous" else [period]),
+        "measurement_rationale": "The source target is interpreted using the explicitly registered model periods.",
         "materiality": "material",
         "commitment_strength": "goal",
         "scope": {"type": "segment", "name": "Segment A"},
         "perimeter_status": perimeter_status,
         "perimeter_notes": "The target metric matches the modeled segment perimeter.",
         "comparison": "at_least",
-        "comparison_value": target_value if perimeter_status != "mismatch" else None,
-        "comparison_currency": "USD" if perimeter_status != "mismatch" else None,
-        "comparison_scale": "million" if perimeter_status != "mismatch" else None,
+        "comparison_value": target_value if comparable else None,
+        "comparison_currency": "USD" if comparable else None,
+        "comparison_scale": "million" if comparable else None,
         "normalization_rationale": "Source and model use the same currency, unit and revenue definition.",
         "treatment": treatment,
         "mapped_parameter_ids": mapped_ids,
@@ -107,6 +113,43 @@ class ManagementTargetCoverageTests(unittest.TestCase):
         target = result["management_target_coverage"]["targets"][0]
         self.assertAlmostEqual(target["scenario_comparison"]["high"]["attainment_ratio"], 1.0)
         self.assertIn("## 管理层沟通与营收目标覆盖", render_markdown(result))
+
+    def test_cumulative_target_sums_every_registered_period(self) -> None:
+        result = run_forecast(add_target(
+            forecast_document(),
+            target_value=260.0,
+            period="FY2026-FY2027",
+            measurement_basis="cumulative_periods",
+            measurement_periods=["FY2026", "FY2027"],
+        ))
+        comparison = result["management_target_coverage"]["targets"][0]["scenario_comparison"]["high"]
+        self.assertEqual(comparison["measurement_basis"], "cumulative_periods")
+        self.assertEqual(comparison["measurement_periods"], ["FY2026", "FY2027"])
+        self.assertAlmostEqual(comparison["modeled_value"], sum(comparison["modeled_period_values"].values()))
+
+    def test_ambiguous_measurement_cannot_be_mapped(self) -> None:
+        data = add_target(forecast_document(), measurement_basis="ambiguous")
+        with self.assertRaisesRegex(ForecastInputError, "must remain an unmodeled data gap"):
+            run_forecast(data)
+
+    def test_measurement_basis_is_required(self) -> None:
+        data = add_target(forecast_document())
+        data["management_targets"][0].pop("measurement_basis")
+        with self.assertRaisesRegex(ForecastInputError, "measurement basis"):
+            run_forecast(data)
+
+    def test_immutable_schema_31_target_output_still_validates(self) -> None:
+        legacy = run_forecast(add_target(forecast_document()))
+        legacy["schema_version"] = "3.1"
+        legacy["engine_version"] = "3.1.0"
+        target = legacy["management_target_coverage"]["targets"][0]
+        for field in ("measurement_basis", "measurement_periods", "measurement_rationale"):
+            target.pop(field)
+        for comparison in target["scenario_comparison"].values():
+            for field in ("measurement_basis", "measurement_periods", "modeled_period_values"):
+                comparison.pop(field)
+        legacy["result_sha256"] = canonical_sha256({key: value for key, value in legacy.items() if key != "result_sha256"})
+        validate_forecast_output(legacy)
 
     def test_out_of_horizon_target_is_propagated_as_gap(self) -> None:
         result = run_forecast(add_target(forecast_document(), target_value=250.0, period="FY2030", treatment="out_of_horizon"))

@@ -65,7 +65,7 @@ def _claim(claim_id: str, source_id: str, target_type: str, target_id: str, supp
 
 
 def finalize_contract(data: dict) -> dict:
-    data["schema_version"] = "3.1"
+    data["schema_version"] = FORECAST_SCHEMA_VERSION
     data.setdefault("management_communication_coverage", [
         {
             "category": category,
@@ -246,9 +246,9 @@ def valid_document() -> dict:
 
 class DataContractTests(unittest.TestCase):
     def test_release_and_schema_versions_are_explicit(self) -> None:
-        self.assertEqual(SKILL_VERSION, "3.1.0")
+        self.assertEqual(SKILL_VERSION, "3.2.0")
         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
-        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.1")
+        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.2")
 
     def test_valid_document(self) -> None:
         validated = validate_document(valid_document())

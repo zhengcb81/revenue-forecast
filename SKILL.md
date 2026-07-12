@@ -51,7 +51,7 @@ Record company identity, `as_of_date`, currency, unit, fiscal-year end, base yea
 
 Open and record the latest annual filing, results release, earnings call, investor presentation, strategy communication, and material announcements since the last filing. Mark an unavailable or inapplicable category explicitly; never infer that silence means no target.
 
-Register every material dated revenue target with its exact source wording, commitment strength, raw currency/unit, target period, metric perimeter, normalized comparison value, and treatment. A comparable in-horizon target must enter at least one low/base/high scenario or the forecast fails. A perimeter mismatch or out-of-horizon target must remain a prominent data gap. Do not silently treat an aspiration as base-case guidance.
+Register every material dated revenue target with its exact source wording, commitment strength, raw currency/unit, source period, measurement basis, explicit model periods, metric perimeter, normalized comparison value, and treatment. Distinguish a single-year amount, period-end run-rate, multi-period cumulative amount, and ambiguous wording. A comparable in-horizon target must enter at least one low/base/high scenario or the forecast fails. A perimeter mismatch, ambiguous measurement basis, or out-of-horizon target must remain a prominent data gap. Do not silently treat an aspiration as base-case guidance.
 
 ### 2. Verify history and the base
 
@@ -166,6 +166,7 @@ Block output when any of these is true:
 - a material revenue target found in official communications is absent from the target ledger;
 - an in-horizon comparable material target does not enter a scenario, or its mapped scenario does not numerically satisfy the target;
 - a target's external/internal, segment, currency, unit, period, gross/net, recurring/run-rate, or recognized-revenue perimeter is unresolved but modeled as if matched;
+- cumulative, annual, and run-rate target language is not explicitly classified, or an ambiguous measurement basis is modeled directly;
 - historical base revenue does not equal reported base revenue;
 - segment base revenue plus adjustments does not reconcile to reported revenue;
 - a driver has the wrong period, scenario, unit, range, or parameter identity;

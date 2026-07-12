@@ -2,6 +2,13 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## v3.2.0 — 2026-07-12
+
+- Added forecast schema 3.2 with explicit management-target measurement semantics: annual period, period-end run-rate, cumulative periods, or ambiguous.
+- Cumulative targets now sum every declared contiguous fiscal period and disclose the per-period modeled values; annual and run-rate targets remain visibly distinct.
+- Ambiguous target language cannot be scenario-mapped and must propagate as an unmodeled data gap.
+- Preserved immutable output validation for schema 3.0/engine 3.0.0 and schema 3.1/engine 3.1.0 artifacts.
+
 ## v3.1.0 — 2026-07-12
 
 - Added forecast schema 3.1 with six-category official management-communication coverage and a source-linked forward revenue-target ledger.

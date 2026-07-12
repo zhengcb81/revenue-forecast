@@ -15,11 +15,11 @@ from urllib.parse import urlparse
 
 
 SCENARIOS = ("low", "base", "high")
-SKILL_VERSION = "3.1.0"
+SKILL_VERSION = "3.2.0"
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
-FORECAST_SCHEMA_VERSION = "3.1"
-SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", FORECAST_SCHEMA_VERSION}
+FORECAST_SCHEMA_VERSION = "3.2"
+SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", "3.1", FORECAST_SCHEMA_VERSION}
 PARAMETER_KINDS = {
     "reported_fact",
     "derived_fact",
@@ -268,6 +268,12 @@ MANAGEMENT_TARGET_TREATMENTS = {
 }
 MANAGEMENT_TARGET_PERIMETERS = {"matched", "reconciled", "mismatch"}
 MANAGEMENT_TARGET_COMPARISONS = {"at_least", "at_most", "approximately"}
+MANAGEMENT_TARGET_MEASUREMENT_BASES = {
+    "annual_period",
+    "run_rate_at_period_end",
+    "cumulative_periods",
+    "ambiguous",
+}
 
 
 class ForecastInputError(ValueError):
@@ -1740,11 +1746,23 @@ def validate_management_target_coverage(
         target_id = target.get("target_id")
         require(isinstance(target_id, str) and target_id.strip(), f"{prefix}.target_id is required")
         require(target_id not in normalized_targets, f"duplicate management target: {target_id}")
-        for field in ("statement", "metric_name", "metric_definition", "target_period", "raw_unit", "raw_currency", "raw_scale", "perimeter_notes", "rationale"):
+        for field in ("statement", "metric_name", "metric_definition", "target_period", "raw_unit", "raw_currency", "raw_scale", "measurement_rationale", "perimeter_notes", "rationale"):
             require(isinstance(target.get(field), str) and target[field].strip(), f"{target_id}.{field} is required")
         raw_value = finite_number(target.get("raw_target_value"), f"{target_id}.raw_target_value")
         require(raw_value >= 0, f"management target cannot be negative: {target_id}")
-        target_year = period_year(target["target_period"], f"{target_id}.target_period")
+        measurement_basis = target.get("measurement_basis")
+        require(measurement_basis in MANAGEMENT_TARGET_MEASUREMENT_BASES, f"invalid management target measurement basis: {target_id}")
+        measurement_periods = target.get("measurement_periods")
+        require(isinstance(measurement_periods, list) and len(measurement_periods) == len(set(measurement_periods)), f"invalid management target measurement periods: {target_id}")
+        measurement_years = [period_year(period, f"{target_id}.measurement_periods") for period in measurement_periods]
+        require(measurement_years == sorted(measurement_years), f"management target measurement periods must be ordered: {target_id}")
+        if measurement_basis in {"annual_period", "run_rate_at_period_end"}:
+            require(len(measurement_years) == 1, f"single-period management target requires exactly one measurement period: {target_id}")
+        elif measurement_basis == "cumulative_periods":
+            require(len(measurement_years) >= 2, f"cumulative management target requires at least two measurement periods: {target_id}")
+            require(measurement_years == list(range(measurement_years[0], measurement_years[-1] + 1)), f"cumulative management target periods must be contiguous: {target_id}")
+        else:
+            require(not measurement_years, f"ambiguous management target cannot claim measurement periods: {target_id}")
         materiality = target.get("materiality")
         require(materiality in {"material", "contextual"}, f"invalid management target materiality: {target_id}")
         commitment_strength = target.get("commitment_strength")
@@ -1781,8 +1799,12 @@ def validate_management_target_coverage(
             require(parameter_id in parameter_index, f"unknown management target parameter: {target_id}/{parameter_id}")
             require(parameter_id in roles["forecast"], f"management target parameter is not used by the forecast: {target_id}/{parameter_id}")
 
-        within_horizon = target_year in data["forecast_years"]
-        comparable = perimeter_status in {"matched", "reconciled"} and scope["type"] in {"company", "segment"}
+        within_horizon = bool(measurement_years) and set(measurement_years) <= set(data["forecast_years"])
+        comparable = (
+            measurement_basis != "ambiguous"
+            and perimeter_status in {"matched", "reconciled"}
+            and scope["type"] in {"company", "segment"}
+        )
         comparison_value = target.get("comparison_value")
         if comparable:
             comparison_value = finite_number(comparison_value, f"{target_id}.comparison_value")
@@ -1793,12 +1815,16 @@ def validate_management_target_coverage(
         else:
             require(comparison_value is None, f"non-comparable management target cannot contain comparison_value: {target_id}")
 
+        if measurement_basis == "ambiguous":
+            require(treatment == "unmodeled_data_gap", f"measurement-ambiguous target must remain an unmodeled data gap: {target_id}")
+            require(not mapped_ids and not mapped_scenarios, f"measurement-ambiguous target cannot claim scenario mapping: {target_id}")
+
         if treatment in {"modeled_scenario", "scenario_boundary"}:
             require(within_horizon, f"modeled management target must be inside forecast horizon: {target_id}")
             require(comparable, f"modeled management target requires matched or reconciled perimeter: {target_id}")
             require(bool(mapped_ids) and bool(mapped_scenarios), f"modeled management target requires mapped parameters and scenarios: {target_id}")
         elif treatment == "out_of_horizon":
-            require(target_year > max(data["forecast_years"]), f"out_of_horizon target must be after forecast horizon: {target_id}")
+            require(bool(measurement_years) and max(measurement_years) > max(data["forecast_years"]), f"out_of_horizon target must extend after forecast horizon: {target_id}")
             require(not mapped_ids and not mapped_scenarios, f"out_of_horizon target cannot claim scenario mapping: {target_id}")
             gap_messages.append(f"management_target:{target_id}: target period {target['target_period']} is outside the forecast horizon")
         else:
@@ -1812,6 +1838,7 @@ def validate_management_target_coverage(
 
         normalized = copy.deepcopy(target)
         normalized["raw_target_value"] = raw_value
+        normalized["measurement_periods"] = list(measurement_periods)
         normalized["source_ids"] = list(dict.fromkeys(source_ids))
         if comparable:
             normalized["comparison_value"] = float(comparison_value)
@@ -1843,15 +1870,20 @@ def add_management_target_analysis(
         item = copy.deepcopy(target)
         comparisons: dict[str, Any] = {}
         if target["treatment"] in {"modeled_scenario", "scenario_boundary"}:
-            year = str(period_year(target["target_period"], f"{target['target_id']}.target_period"))
+            measurement_periods = list(target["measurement_periods"])
             target_value = float(target["comparison_value"])
             tolerance = finite_number(target.get("comparison_tolerance", 0.01), f"{target['target_id']}.comparison_tolerance")
             require(0 <= tolerance <= 0.25, f"management target comparison_tolerance outside 0..0.25: {target['target_id']}")
             for scenario in target["mapped_scenarios"]:
                 if target["scope"]["type"] == "company":
-                    observed = float(result["consolidated_forecast"][scenario]["annual_revenue"][year])
+                    revenue_path = result["consolidated_forecast"][scenario]["annual_revenue"]
                 else:
-                    observed = float(segment_index[target["scope"]["name"]]["scenarios"][scenario]["recognized_revenue"][year])
+                    revenue_path = segment_index[target["scope"]["name"]]["scenarios"][scenario]["recognized_revenue"]
+                period_values = {period: float(revenue_path[period[2:]]) for period in measurement_periods}
+                if target["measurement_basis"] == "cumulative_periods":
+                    observed = sum(period_values.values())
+                else:
+                    observed = period_values[measurement_periods[0]]
                 if target["comparison"] == "at_least":
                     meets = observed >= target_value * (1 - tolerance)
                 elif target["comparison"] == "at_most":
@@ -1860,6 +1892,9 @@ def add_management_target_analysis(
                     meets = math.isclose(observed, target_value, rel_tol=tolerance, abs_tol=max(1.0, abs(target_value)) * tolerance)
                 require(meets, f"mapped scenario does not satisfy management target: {target['target_id']}/{scenario}")
                 comparisons[scenario] = {
+                    "measurement_basis": target["measurement_basis"],
+                    "measurement_periods": measurement_periods,
+                    "modeled_period_values": period_values,
                     "modeled_value": observed,
                     "target_value": target_value,
                     "attainment_ratio": None if target_value == 0 else observed / target_value,

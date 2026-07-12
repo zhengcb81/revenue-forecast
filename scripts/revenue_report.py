@@ -15,6 +15,7 @@ from revenue_core import (
     SUPPORTED_FORECAST_SCHEMA_VERSIONS,
     MANAGEMENT_COMMUNICATION_CATEGORIES,
     MANAGEMENT_COMMUNICATION_STATUSES,
+    MANAGEMENT_TARGET_MEASUREMENT_BASES,
     MANAGEMENT_TARGET_TREATMENTS,
     calculate_model_path,
     calculate_cagr,
@@ -91,6 +92,9 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
     require(result["schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS, "forecast output schema_version mismatch")
     if result["schema_version"] == FORECAST_SCHEMA_VERSION:
         require(result["engine_version"] == ENGINE_VERSION, "forecast output engine_version mismatch")
+        require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
+    elif result["schema_version"] == "3.1":
+        require(result["engine_version"] == "3.1.0", "legacy forecast output engine_version mismatch")
         require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
     else:
         require(result["engine_version"] == "3.0.0", "legacy forecast output engine_version mismatch")
@@ -190,7 +194,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             expected_gap = f"{record['dimension']}: {record['conclusion']}"
             require(expected_gap in result.get("data_gaps", []), f"research data gap missing from output: {record['dimension']}")
     require(coverage.get("counts") == recomputed_counts, "research_coverage counts mismatch")
-    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+    if result["schema_version"] in {"3.1", FORECAST_SCHEMA_VERSION}:
         target_coverage = result["management_target_coverage"]
         require(isinstance(target_coverage, dict), "management_target_coverage output must be an object")
         communications = target_coverage.get("communications")
@@ -220,14 +224,26 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             require(target.get("treatment") in MANAGEMENT_TARGET_TREATMENTS, f"invalid management target treatment: {target_id}")
             comparisons = target.get("scenario_comparison")
             require(isinstance(comparisons, dict), f"management target scenario comparison must be an object: {target_id}")
+            if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+                require(target.get("measurement_basis") in MANAGEMENT_TARGET_MEASUREMENT_BASES, f"invalid management target measurement basis: {target_id}")
+                require(isinstance(target.get("measurement_periods"), list), f"invalid management target measurement periods: {target_id}")
             if target["treatment"] in {"modeled_scenario", "scenario_boundary"}:
                 require(set(comparisons) == set(target.get("mapped_scenarios", [])), f"management target scenario comparison mismatch: {target_id}")
-                year = str(int(target["target_period"][2:]))
                 for scenario, comparison in comparisons.items():
                     if target["scope"]["type"] == "company":
-                        modeled_value = float(result["consolidated_forecast"][scenario]["annual_revenue"][year])
+                        revenue_path = result["consolidated_forecast"][scenario]["annual_revenue"]
                     else:
-                        modeled_value = float(segment_index[target["scope"]["name"]]["scenarios"][scenario]["recognized_revenue"][year])
+                        revenue_path = segment_index[target["scope"]["name"]]["scenarios"][scenario]["recognized_revenue"]
+                    if result["schema_version"] == "3.1":
+                        year = str(int(target["target_period"][2:]))
+                        modeled_value = float(revenue_path[year])
+                    else:
+                        periods = target["measurement_periods"]
+                        period_values = {period: float(revenue_path[period[2:]]) for period in periods}
+                        require(comparison.get("measurement_basis") == target["measurement_basis"], f"management target comparison basis mismatch: {target_id}/{scenario}")
+                        require(comparison.get("measurement_periods") == periods, f"management target comparison periods mismatch: {target_id}/{scenario}")
+                        require(comparison.get("modeled_period_values") == period_values, f"management target period values mismatch: {target_id}/{scenario}")
+                        modeled_value = sum(period_values.values()) if target["measurement_basis"] == "cumulative_periods" else period_values[periods[0]]
                     require(math.isclose(modeled_value, float(comparison["modeled_value"]), rel_tol=1e-9, abs_tol=1e-9), f"management target modeled value mismatch: {target_id}/{scenario}")
                     target_value = float(target["comparison_value"])
                     require(math.isclose(target_value, float(comparison["target_value"]), rel_tol=1e-9, abs_tol=1e-9), f"management target comparison value mismatch: {target_id}/{scenario}")
@@ -286,7 +302,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         "as_of_date": parse_iso_date(result["as_of_date"], "as_of_date"),
         "research_coverage": {"counts": coverage["counts"]},
     }
-    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+    if result["schema_version"] in {"3.1", FORECAST_SCHEMA_VERSION}:
         reconstructed_validated["management_target_coverage"] = {"counts": result["management_target_coverage"]["counts"]}
     expected_confidence = calculate_confidence(reconstructed_data, reconstructed_validated, result, result.get("sensitivities", []))
     require(expected_confidence["components"] == confidence["components"], "confidence components recomputation mismatch")
@@ -395,8 +411,8 @@ def render_markdown(result: dict[str, Any]) -> str:
             )
         lines.extend([
             "",
-            "| 目标 | 强度 | 原始目标 | 期间 | 口径 | 处理 | 映射情景 | 模型兑现度 |",
-            "|---|---|---:|---|---|---|---|---|",
+            "| 目标 | 强度 | 原始目标 | 来源期间 | 测量口径/模型期间 | 业务口径 | 处理 | 映射情景 | 模型兑现度 |",
+            "|---|---|---:|---|---|---|---|---|---|",
         ])
         for target in target_coverage["targets"]:
             attainment = ", ".join(
@@ -406,6 +422,7 @@ def render_markdown(result: dict[str, Any]) -> str:
             lines.append(
                 f"| {_escape(target['target_id'])} | {_escape(target['commitment_strength'])} | "
                 f"{_num(target['raw_target_value'])} {_escape(target['raw_unit'])} | {_escape(target['target_period'])} | "
+                f"{_escape(target.get('measurement_basis', 'legacy_unspecified'))}: {_escape(', '.join(target.get('measurement_periods', [])) or '—')} | "
                 f"{_escape(target['perimeter_status'])}: {_escape(target['perimeter_notes'])} | {_escape(target['treatment'])} | "
                 f"{_escape(', '.join(target['mapped_scenarios']) or '—')} | {_escape(attainment)} |"
             )

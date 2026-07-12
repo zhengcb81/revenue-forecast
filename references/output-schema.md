@@ -7,7 +7,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - identity: company, information date, currency, unit, fiscal-year end, base year, forecast years, version;
 - history: source-linked historical company revenue;
 - research coverage: all nine dimensions, status, revenue mechanism, used parameter IDs, sources, and exclusions or gaps;
-- management target coverage: six official-communication checks, complete target ledger, perimeter treatment, mapped scenarios and numerical attainment;
+- management target coverage: six official-communication checks, complete target ledger, measurement basis and model periods, perimeter treatment, mapped scenarios, per-period modeled values and numerical attainment;
 - segments: model, formula, driver values, modeled activity, recognized revenue, recognition metadata, carry-in, and unrecognized tail;
 - consolidated forecast: low/base/high segment bridge, adjustment bridge, annual revenue, annual growth, terminal revenue, CAGR, and incremental contribution;
 - optional probability-weighted forecast: annual expected revenue and expected-terminal-implied CAGR;
@@ -31,7 +31,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - theme counterfactual arithmetic, sensitivity impacts, and confidence components;
 - presence of source and parameter traces.
 - nine-dimension completeness, counts, parameter/source identities, and propagation of research data gaps.
-- official-communication completeness, target-ledger identity, mapped-scenario attainment, and propagation of unmodeled targets.
+- official-communication completeness, target-ledger identity, cumulative/annual/run-rate measurement arithmetic, mapped-scenario attainment, and propagation of ambiguous or otherwise unmodeled targets.
 
 It rejects fields for stock prices, valuation, profitability, cash generation, investment ratings, shareholder returns, and position sizing.
 
