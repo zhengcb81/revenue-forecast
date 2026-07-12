@@ -53,6 +53,8 @@ Open and record the latest annual filing, results release, earnings call, invest
 
 Register every material dated revenue target with its exact source wording, commitment strength, raw currency/unit, source period, measurement basis, explicit model periods, metric perimeter, normalized comparison value, and treatment. Distinguish a single-year amount, period-end run-rate, multi-period cumulative amount, and ambiguous wording. A comparable in-horizon target must enter at least one low/base/high scenario or the forecast fails. A perimeter mismatch, ambiguous measurement basis, or out-of-horizon target must remain a prominent data gap. Do not silently treat an aspiration as base-case guidance.
 
+Determine measurement semantics from the complete evidence hierarchy: original management remarks and Q&A, official presentation or transcript, official cross-language wording, and explicit current-to-target arithmetic. Do not infer cumulative versus annual/run-rate from an isolated English preposition such as “over the next five years.” If sources conflict, preserve the conflict and use `ambiguous` until reconciled.
+
 ### 2. Verify history and the base
 
 Collect at least two historical company-revenue observations unless the company is explicitly pre-revenue. Link every observation to primary evidence. Reconcile:

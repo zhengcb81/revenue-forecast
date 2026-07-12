@@ -29,7 +29,9 @@ For every material or contextually relevant revenue statement record:
 - treatment: `modeled_scenario`, `scenario_boundary`, `sensitivity_only`, `unmodeled_data_gap`, or `out_of_horizon`;
 - mapped scenario and parameter IDs when modeled.
 
-Do not equate external revenue with segment total revenue, ARR/run-rate with annual recognized revenue, bookings with revenue, gross transaction value with net commission revenue, or “over five years” cumulative revenue with fifth-year annual revenue.
+Do not equate external revenue with segment total revenue, ARR/run-rate with annual recognized revenue, bookings with revenue, or gross transaction value with net commission revenue. Do not infer that “over the next five years” means cumulative: it can describe the time allowed to reach a fifth-year annualized target.
+
+Resolve measurement basis using, in order: explicit management definition or Q&A; official transcript/presentation; official cross-language wording; management's disclosed current-to-target bridge or CAGR; then corroborating direct reporting. An isolated translated phrase is insufficient when the surrounding arithmetic implies another basis. Record conflicting evidence; use `ambiguous` if it cannot be reconciled.
 
 For `cumulative_periods`, provide at least two ordered, contiguous fiscal years; attainment is the sum of those modeled annual revenues. `annual_period` and `run_rate_at_period_end` each use exactly one period but remain separately labeled. If primary wording and context do not resolve the basis, use `ambiguous`, leave periods empty, and set treatment to `unmodeled_data_gap`.
 

@@ -91,7 +91,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         require(key in result, f"forecast output missing field: {key}")
     require(result["schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS, "forecast output schema_version mismatch")
     if result["schema_version"] == FORECAST_SCHEMA_VERSION:
-        require(result["engine_version"] == ENGINE_VERSION, "forecast output engine_version mismatch")
+        require(result["engine_version"] in {"3.2.0", ENGINE_VERSION}, "forecast output engine_version mismatch")
         require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
     elif result["schema_version"] == "3.1":
         require(result["engine_version"] == "3.1.0", "legacy forecast output engine_version mismatch")

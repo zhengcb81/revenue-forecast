@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 
 
 SCENARIOS = ("low", "base", "high")
-SKILL_VERSION = "3.2.0"
+SKILL_VERSION = "3.2.1"
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
 FORECAST_SCHEMA_VERSION = "3.2"

@@ -2,6 +2,11 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## v3.2.1 — 2026-07-12
+
+- Corrected target-semantic research guidance: “over the next five years” must not be classified as cumulative without checking management Q&A, official cross-language wording, and current-to-target arithmetic.
+- Preserved validation for immutable schema-3.2/engine-3.2.0 outputs while emitting engine 3.2.1 for new forecasts.
+
 ## v3.2.0 — 2026-07-12
 
 - Added forecast schema 3.2 with explicit management-target measurement semantics: annual period, period-end run-rate, cumulative periods, or ambiguous.
