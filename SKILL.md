@@ -17,6 +17,8 @@ Do not produce stock-price, valuation, profitability, cash-generation, investmen
 
 Continue the legacy release line with Semantic Versioning. `SKILL_VERSION` in `scripts/revenue_core.py` is the runtime source of truth; `ENGINE_VERSION` remains a compatibility alias in serialized outputs. Keep the forecast input/output schema on its own version because schema compatibility can change independently from skill behavior. See [CHANGELOG.md](CHANGELOG.md) for release history.
 
+Revenue model metadata and pure calculators are registered in `scripts/model_registry.py`. Add or change a model there; do not add formula dispatch branches to `revenue_core.py`.
+
 ## Resource routing
 
 Read only what the task needs:
@@ -106,7 +108,9 @@ Do not create scenario probabilities by default. If probabilities are used, docu
 
 ### 7. Aggregate and bridge
 
-Calculate recognized segment revenue before company revenue. Add signed company-level adjustments for intersegment eliminations, acquisitions, disposals, foreign exchange, and reclassifications. Reconcile every forecast year.
+Calculate recognized segment revenue before company revenue. When segments share a hard ceiling, depend on another segment, or contain measured internal revenue, apply explicit `revenue_constraints` after recognition and before aggregation. Preserve both `recognized_revenue` and constrained `effective_revenue`, plus a deterministic before/adjustment/after audit. Never use a constraint as an unexplained growth plug.
+
+Add signed company-level adjustments for acquisitions, disposals, foreign exchange, reclassifications, and items that genuinely belong only at company scope. Do not duplicate an elimination already applied to segment effective revenue. Reconcile every forecast year.
 
 Calculate company CAGR only from aggregated base and terminal company revenue. Never average segment or scenario CAGRs.
 
@@ -176,6 +180,9 @@ Block output when any of these is true:
 - project backlog or delivery orders fail base opening, stock-flow, or annual continuity;
 - revenue-recognition metadata is incomplete;
 - low/base/high paths cross;
+- a revenue constraint has an unknown type, segment, parameter, period, scenario, dimension, allocation, sign, or extra field;
+- fixed constraint weights do not cover every segment and sum to one in every scenario/year;
+- a constraint makes segment effective revenue negative, its audit cannot be recomputed, or effective low/base/high paths cross;
 - probabilities do not sum to one or lack an evidence rationale;
 - company CAGR, bridge, or incremental contribution cannot be recomputed;
 - output contains a non-revenue investment field;

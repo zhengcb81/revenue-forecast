@@ -8,7 +8,8 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - history: source-linked historical company revenue;
 - research coverage: all nine dimensions, status, revenue mechanism, used parameter IDs, sources, and exclusions or gaps;
 - management target coverage: six official-communication checks, complete target ledger, measurement basis and model periods, perimeter treatment, mapped scenarios, per-period modeled values and numerical attainment;
-- segments: model, formula, driver values, modeled activity, recognized revenue, recognition metadata, carry-in, and unrecognized tail;
+- segments: model, formula, driver values, modeled activity, accounting `recognized_revenue`, constraint-adjusted `effective_revenue`, recognition metadata, carry-in, and unrecognized tail;
+- revenue constraints: frozen definitions plus one audit row per constraint/scenario/year with parameter IDs, affected segments, before value, signed adjustment, after value, and before/after totals;
 - consolidated forecast: low/base/high segment bridge, adjustment bridge, annual revenue, annual growth, terminal revenue, CAGR, and incremental contribution;
 - optional probability-weighted forecast: annual expected revenue and expected-terminal-implied CAGR;
 - sensitivities: parameter shocks and terminal revenue impact;
@@ -23,10 +24,12 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 
 - every segment formula from driver IDs and values;
 - modeled-to-recognized revenue, including progress and lag;
+- every cross-segment constraint and its complete audit, independently recomputed from recognized revenue and registered parameters;
 - terminal revenue, annual growth, and CAGR;
 - segment plus adjustment bridge for every scenario/year;
 - incremental contribution;
 - low/base/high ordering;
+- effective segment low/base/high ordering after all constraints;
 - probability-weighted annual revenue, terminal, implied CAGR, and increment;
 - theme counterfactual arithmetic, sensitivity impacts, and confidence components;
 - presence of source and parameter traces.

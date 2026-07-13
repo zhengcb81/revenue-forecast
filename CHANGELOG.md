@@ -2,6 +2,14 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## v3.3.0 — 2026-07-13
+
+- Replaced the central formula dispatcher with an immutable, validated model registry while preserving all 22 model IDs and compatibility exports.
+- Added deterministic `sum_cap`, `linked_ratio`, and `elimination` cross-segment constraints owned by revenue-forecast.
+- Preserved accounting `recognized_revenue` and added audited `effective_revenue` for company aggregation and downstream segment adapters.
+- Added independent output recomputation for constraint definitions, audit rows, effective paths, and ordering.
+- Expanded the revenue suite from 101 to 112 tests, including registry immutability, strict constraint schema, invalid weights/signs/segments, audit mutation, and heterogeneous downstream integration fixtures.
+
 ## v3.2.1 — 2026-07-12
 
 - Corrected target-semantic research guidance: “over the next five years” must not be classified as cumulative without checking management Q&A, official cross-language wording, and current-to-target arithmetic.

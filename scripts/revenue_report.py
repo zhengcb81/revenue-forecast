@@ -24,6 +24,7 @@ from revenue_core import (
     parse_iso_date,
     require,
 )
+from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 
 
 PROHIBITED_OUTPUT_KEYS = {
@@ -91,7 +92,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         require(key in result, f"forecast output missing field: {key}")
     require(result["schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS, "forecast output schema_version mismatch")
     if result["schema_version"] == FORECAST_SCHEMA_VERSION:
-        require(result["engine_version"] in {"3.2.0", ENGINE_VERSION}, "forecast output engine_version mismatch")
+        require(result["engine_version"] in {"3.2.0", "3.2.1", ENGINE_VERSION}, "forecast output engine_version mismatch")
         require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
     elif result["schema_version"] == "3.1":
         require(result["engine_version"] == "3.1.0", "legacy forecast output engine_version mismatch")
@@ -127,6 +128,42 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             require(all(math.isclose(left, right, rel_tol=1e-9, abs_tol=1e-9) for left, right in zip(expected_recognized, observed_recognized)), f"segment recognized revenue mismatch: {segment['name']}/{scenario}")
         for year in years:
             require(segment["scenarios"]["low"]["recognized_revenue"][year] <= segment["scenarios"]["base"]["recognized_revenue"][year] <= segment["scenarios"]["high"]["recognized_revenue"][year], f"segment scenario ordering mismatch: {segment['name']}/{year}")
+
+    current_constraint_contract = result["schema_version"] == FORECAST_SCHEMA_VERSION and result["engine_version"] == ENGINE_VERSION
+    if current_constraint_contract:
+        require(isinstance(result.get("revenue_constraints"), list), "forecast output missing revenue_constraints")
+        require(isinstance(result.get("constraint_audit"), list), "forecast output missing constraint_audit")
+        try:
+            expected_segments, expected_audit = apply_revenue_constraints(
+                result["segments"], result["revenue_constraints"], parameter_index,
+                list(map(int, result["forecast_years"])),
+            )
+        except RevenueConstraintError as exc:
+            raise ForecastInputError(str(exc)) from exc
+        require(expected_audit == result["constraint_audit"], "constraint audit recomputation mismatch")
+        expected_index = {segment["name"]: segment for segment in expected_segments}
+        for segment in result["segments"]:
+            for scenario in SCENARIOS:
+                require(
+                    segment["scenarios"][scenario].get("effective_revenue")
+                    == expected_index[segment["name"]]["scenarios"][scenario]["effective_revenue"],
+                    f"segment effective revenue mismatch: {segment['name']}/{scenario}",
+                )
+    else:
+        require(not result.get("revenue_constraints"), "legacy forecast cannot contain revenue_constraints")
+
+    def effective_path(segment: dict[str, Any], scenario: str) -> dict[str, Any]:
+        output = segment["scenarios"][scenario]
+        return output.get("effective_revenue", output["recognized_revenue"])
+
+    for segment in result["segments"]:
+        for year in years:
+            require(
+                effective_path(segment, "low")[year]
+                <= effective_path(segment, "base")[year]
+                <= effective_path(segment, "high")[year],
+                f"segment effective scenario ordering mismatch: {segment['name']}/{year}",
+            )
     require(set(consolidated) == set(SCENARIOS), "consolidated_forecast must contain low/base/high")
     for scenario in SCENARIOS:
         forecast = consolidated[scenario]
@@ -149,7 +186,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             adjustment_sum = sum(float(adjustment["annual_adjustment"][year]) for adjustment in forecast["adjustment_bridge"])
             require(math.isclose(segment_sum + adjustment_sum, float(annual[year]), rel_tol=1e-9, abs_tol=1e-9), f"company bridge mismatch in {scenario}/{year}")
             for bridge in forecast["segment_bridge"]:
-                require(math.isclose(float(bridge["annual_revenue"][year]), float(segment_index[bridge["name"]]["scenarios"][scenario]["recognized_revenue"][year]), rel_tol=1e-9, abs_tol=1e-9), f"segment bridge cross-check mismatch in {scenario}/{bridge['name']}/{year}")
+                require(math.isclose(float(bridge["annual_revenue"][year]), float(effective_path(segment_index[bridge["name"]], scenario)[year]), rel_tol=1e-9, abs_tol=1e-9), f"segment bridge cross-check mismatch in {scenario}/{bridge['name']}/{year}")
         contribution = forecast["incremental_contribution"]
         require(math.isclose(float(contribution["total"]), float(forecast["incremental_revenue"]), rel_tol=1e-9, abs_tol=1e-9), f"incremental contribution mismatch in {scenario}")
     for year in years:
@@ -233,7 +270,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
                     if target["scope"]["type"] == "company":
                         revenue_path = result["consolidated_forecast"][scenario]["annual_revenue"]
                     else:
-                        revenue_path = segment_index[target["scope"]["name"]]["scenarios"][scenario]["recognized_revenue"]
+                        revenue_path = effective_path(segment_index[target["scope"]["name"]], scenario)
                     if result["schema_version"] == "3.1":
                         year = str(int(target["target_period"][2:]))
                         modeled_value = float(revenue_path[year])
@@ -311,7 +348,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
     if theme is not None:
         for scenario in SCENARIOS:
             values = theme["scenarios"][scenario]
-            expected_theme_terminal = sum(float(list(segment_index[name]["scenarios"][scenario]["recognized_revenue"].values())[-1]) for name in theme["segment_names"])
+            expected_theme_terminal = sum(float(list(effective_path(segment_index[name], scenario).values())[-1]) for name in theme["segment_names"])
             require(math.isclose(expected_theme_terminal, float(values["theme_terminal_revenue"]), rel_tol=1e-9, abs_tol=1e-9), f"theme terminal mismatch: {scenario}")
             counterfactual_parameter = parameter_index[values["counterfactual_parameter_id"]]
             require(math.isclose(float(counterfactual_parameter["value"]), float(values["counterfactual_terminal_revenue"]), rel_tol=1e-9, abs_tol=1e-9), f"theme counterfactual mismatch: {scenario}")

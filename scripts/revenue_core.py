@@ -13,9 +13,24 @@ from datetime import date
 from typing import Any, Iterable
 from urllib.parse import urlparse
 
+from model_registry import (
+    MODEL_DRIVER_DIMENSIONS as REGISTERED_MODEL_DRIVER_DIMENSIONS,
+    MODEL_RATIO_DRIVERS as REGISTERED_MODEL_RATIO_DRIVERS,
+    MODEL_REGISTRY,
+    MODEL_SPECS as REGISTERED_MODEL_SPECS,
+    ModelRegistryError,
+    calculate_registered_model,
+)
+from revenue_constraints import (
+    RevenueConstraintError,
+    apply_revenue_constraints,
+    constraint_parameter_ids,
+    validate_revenue_constraints,
+)
+
 
 SCENARIOS = ("low", "base", "high")
-SKILL_VERSION = "3.2.1"
+SKILL_VERSION = "3.3.0"
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
 FORECAST_SCHEMA_VERSION = "3.2"
@@ -58,167 +73,9 @@ BLOCKED_HOSTS = {
     "www.baidu.com",
 }
 
-MODEL_SPECS: dict[str, dict[str, Any]] = {
-    "direct_growth": {
-        "required": ("growth_rate",),
-        "optional": (),
-        "formula": "revenue[t] = revenue[t-1] * (1 + growth_rate[t])",
-    },
-    "direct_revenue": {
-        "required": ("revenue",),
-        "optional": (),
-        "formula": "revenue[t] = direct_revenue[t]",
-    },
-    "unit_sales": {
-        "required": ("units", "unit_revenue"),
-        "optional": ("timing_factor", "other_revenue"),
-        "defaults": {"timing_factor": 1.0},
-        "formula": "revenue = units * unit_revenue * timing_factor + other_revenue",
-    },
-    "capacity_utilization": {
-        "required": ("capacity", "utilization", "yield", "unit_revenue"),
-        "optional": ("timing_factor", "other_revenue"),
-        "defaults": {"timing_factor": 1.0},
-        "formula": "revenue = capacity * utilization * yield * unit_revenue * timing_factor + other_revenue",
-    },
-    "subscription": {
-        "required": ("average_customers", "revenue_per_customer"),
-        "optional": ("timing_factor", "usage_revenue"),
-        "defaults": {"timing_factor": 1.0},
-        "formula": "revenue = average_customers * revenue_per_customer * timing_factor + usage_revenue",
-    },
-    "usage_platform": {
-        "required": ("eligible_activity", "monetization_rate"),
-        "optional": ("fixed_revenue",),
-        "formula": "revenue = eligible_activity * monetization_rate + fixed_revenue",
-    },
-    "services": {
-        "required": ("billable_capacity", "utilization", "billing_rate"),
-        "optional": ("timing_factor", "other_revenue"),
-        "defaults": {"timing_factor": 1.0},
-        "formula": "revenue = billable_capacity * utilization * billing_rate * timing_factor + other_revenue",
-    },
-    "project_backlog": {
-        "required": ("opening_backlog", "bookings", "cancellations", "contract_changes", "closing_backlog"),
-        "optional": (),
-        "formula": "revenue = opening_backlog + bookings - cancellations + contract_changes - closing_backlog",
-    },
-    "resource": {
-        "required": ("saleable_volume", "realized_price"),
-        "optional": ("other_revenue",),
-        "formula": "revenue = saleable_volume * realized_price + other_revenue",
-    },
-    "infrastructure": {
-        "required": ("billable_volume", "tariff"),
-        "optional": ("other_revenue",),
-        "formula": "revenue = billable_volume * tariff + other_revenue",
-    },
-    "bank_revenue": {
-        "required": ("average_earning_assets", "asset_yield", "average_interest_bearing_liabilities", "funding_cost", "fee_revenue"),
-        "optional": ("other_revenue",),
-        "formula": "revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue",
-    },
-    "asset_management": {
-        "required": ("average_aum", "management_fee_rate"),
-        "optional": ("performance_fee_revenue", "other_revenue"),
-        "formula": "revenue = average_aum * management_fee_rate + performance_fee_revenue + other_revenue",
-    },
-    "retail_franchise": {
-        "required": ("average_owned_stores", "revenue_per_owned_store"),
-        "optional": ("franchise_system_sales", "recognized_fee_rate", "supply_revenue"),
-        "formula": "revenue = average_owned_stores * revenue_per_owned_store + franchise_system_sales * recognized_fee_rate + supply_revenue",
-    },
-    "transport": {
-        "required": ("capacity", "utilization", "yield"),
-        "optional": ("ancillary_revenue",),
-        "formula": "revenue = capacity * utilization * yield + ancillary_revenue",
-    },
-    "real_estate_rental": {
-        "required": ("average_occupied_area", "rent_per_area"),
-        "optional": ("other_revenue",),
-        "formula": "revenue = average_occupied_area * rent_per_area + other_revenue",
-    },
-    "licensing_commercial": {
-        "required": ("treated_units", "net_revenue_per_unit"),
-        "optional": ("milestone_revenue", "royalty_revenue", "service_revenue"),
-        "formula": "revenue = treated_units * net_revenue_per_unit + milestone_revenue + royalty_revenue + service_revenue",
-    },
-    "advertising": {
-        "required": ("eligible_impressions", "fill_rate", "revenue_per_thousand_impressions"),
-        "optional": ("other_revenue",),
-        "formula": "revenue = eligible_impressions / 1000 * fill_rate * revenue_per_thousand_impressions + other_revenue",
-    },
-    "gaming": {
-        "required": ("active_users", "payer_conversion", "revenue_per_payer"),
-        "optional": ("other_revenue",),
-        "formula": "revenue = active_users * payer_conversion * revenue_per_payer + other_revenue",
-    },
-    "cohort_subscription": {
-        "required": ("opening_customers", "new_customers", "churned_customers", "ending_customers", "revenue_per_customer"),
-        "optional": ("timing_factor", "usage_revenue"),
-        "defaults": {"timing_factor": 1.0},
-        "formula": "revenue = average(opening_customers, ending_customers) * revenue_per_customer * timing_factor + usage_revenue",
-    },
-    "delivery_pipeline": {
-        "required": ("opening_orders", "new_orders", "cancellations", "deliveries", "ending_orders", "unit_revenue"),
-        "optional": ("timing_factor", "other_revenue"),
-        "defaults": {"timing_factor": 1.0},
-        "formula": "revenue = deliveries * unit_revenue * timing_factor + other_revenue",
-    },
-    "milestone_royalty": {
-        "required": ("eligible_sales", "royalty_rate"),
-        "optional": ("milestone_revenue", "service_revenue"),
-        "formula": "revenue = eligible_sales * royalty_rate + milestone_revenue + service_revenue",
-    },
-    "insurance_service": {
-        "required": ("coverage_units", "revenue_per_coverage_unit"),
-        "optional": ("timing_factor", "other_revenue"),
-        "defaults": {"timing_factor": 1.0},
-        "formula": "revenue = coverage_units * revenue_per_coverage_unit * timing_factor + other_revenue",
-    },
-}
-
-MODEL_RATIO_DRIVERS = {
-    "capacity_utilization": {"utilization", "yield"},
-    "usage_platform": {"monetization_rate"},
-    "services": {"utilization"},
-    "bank_revenue": {"asset_yield", "funding_cost"},
-    "asset_management": {"management_fee_rate"},
-    "retail_franchise": {"recognized_fee_rate"},
-    "transport": {"utilization"},
-    "advertising": {"fill_rate"},
-    "gaming": {"payer_conversion"},
-    "cohort_subscription": {"timing_factor"},
-    "delivery_pipeline": {"timing_factor"},
-    "milestone_royalty": {"royalty_rate"},
-    "insurance_service": {"timing_factor"},
-}
-
-MODEL_DRIVER_DIMENSIONS: dict[str, dict[str, str]] = {
-    "direct_growth": {"growth_rate": "ratio"},
-    "direct_revenue": {"revenue": "revenue"},
-    "unit_sales": {"units": "quantity", "unit_revenue": "revenue_per_unit", "timing_factor": "ratio", "other_revenue": "revenue"},
-    "capacity_utilization": {"capacity": "quantity", "utilization": "ratio", "yield": "ratio", "unit_revenue": "revenue_per_unit", "timing_factor": "ratio", "other_revenue": "revenue"},
-    "subscription": {"average_customers": "quantity", "revenue_per_customer": "revenue_per_unit", "timing_factor": "ratio", "usage_revenue": "revenue"},
-    "usage_platform": {"eligible_activity": "activity", "monetization_rate": "revenue_per_activity", "fixed_revenue": "revenue"},
-    "services": {"billable_capacity": "activity", "utilization": "ratio", "billing_rate": "revenue_per_activity", "timing_factor": "ratio", "other_revenue": "revenue"},
-    "project_backlog": {"opening_backlog": "backlog", "bookings": "backlog", "cancellations": "backlog", "contract_changes": "backlog", "closing_backlog": "backlog"},
-    "resource": {"saleable_volume": "quantity", "realized_price": "revenue_per_unit", "other_revenue": "revenue"},
-    "infrastructure": {"billable_volume": "activity", "tariff": "revenue_per_activity", "other_revenue": "revenue"},
-    "bank_revenue": {"average_earning_assets": "monetary_balance", "asset_yield": "ratio", "average_interest_bearing_liabilities": "monetary_balance", "funding_cost": "ratio", "fee_revenue": "revenue", "other_revenue": "revenue"},
-    "asset_management": {"average_aum": "monetary_balance", "management_fee_rate": "ratio", "performance_fee_revenue": "revenue", "other_revenue": "revenue"},
-    "retail_franchise": {"average_owned_stores": "quantity", "revenue_per_owned_store": "revenue_per_unit", "franchise_system_sales": "revenue", "recognized_fee_rate": "ratio", "supply_revenue": "revenue"},
-    "transport": {"capacity": "quantity", "utilization": "ratio", "yield": "revenue_per_unit", "ancillary_revenue": "revenue"},
-    "real_estate_rental": {"average_occupied_area": "area", "rent_per_area": "revenue_per_area", "other_revenue": "revenue"},
-    "licensing_commercial": {"treated_units": "quantity", "net_revenue_per_unit": "revenue_per_unit", "milestone_revenue": "revenue", "royalty_revenue": "revenue", "service_revenue": "revenue"},
-    "advertising": {"eligible_impressions": "activity", "fill_rate": "ratio", "revenue_per_thousand_impressions": "revenue_per_activity", "other_revenue": "revenue"},
-    "gaming": {"active_users": "quantity", "payer_conversion": "ratio", "revenue_per_payer": "revenue_per_unit", "other_revenue": "revenue"},
-    "cohort_subscription": {"opening_customers": "quantity", "new_customers": "quantity", "churned_customers": "quantity", "ending_customers": "quantity", "revenue_per_customer": "revenue_per_unit", "timing_factor": "ratio", "usage_revenue": "revenue"},
-    "delivery_pipeline": {"opening_orders": "quantity", "new_orders": "quantity", "cancellations": "quantity", "deliveries": "quantity", "ending_orders": "quantity", "unit_revenue": "revenue_per_unit", "timing_factor": "ratio", "other_revenue": "revenue"},
-    "milestone_royalty": {"eligible_sales": "revenue", "royalty_rate": "ratio", "milestone_revenue": "revenue", "service_revenue": "revenue"},
-    "insurance_service": {"coverage_units": "coverage_units", "revenue_per_coverage_unit": "revenue_per_unit", "timing_factor": "ratio", "other_revenue": "revenue"},
-}
-
+MODEL_SPECS = REGISTERED_MODEL_SPECS
+MODEL_RATIO_DRIVERS = REGISTERED_MODEL_RATIO_DRIVERS
+MODEL_DRIVER_DIMENSIONS = REGISTERED_MODEL_DRIVER_DIMENSIONS
 PARAMETER_DIMENSIONS = {
     "revenue", "quantity", "ratio", "revenue_per_unit", "activity",
     "revenue_per_activity", "monetary_balance", "area", "revenue_per_area",
@@ -739,69 +596,12 @@ def calculate_model_path(
     for driver in spec["optional"]:
         drivers[driver] = _optional_series(driver_ids, driver, parameter_index, years, scenario, model, float(spec.get("defaults", {}).get(driver, 0.0)))
 
-    revenue: list[float] = []
-    if model == "direct_growth":
-        current = base_revenue
-        for growth_rate in drivers["growth_rate"]:
-            current *= 1 + growth_rate
-            revenue.append(current)
-    elif model == "direct_revenue":
-        revenue = list(drivers["revenue"])
-    else:
-        for index in range(len(years)):
-            d = {name: values[index] for name, values in drivers.items()}
-            if model == "unit_sales":
-                value = d["units"] * d["unit_revenue"] * d["timing_factor"] + d["other_revenue"]
-            elif model == "capacity_utilization":
-                value = d["capacity"] * d["utilization"] * d["yield"] * d["unit_revenue"] * d["timing_factor"] + d["other_revenue"]
-            elif model == "subscription":
-                value = d["average_customers"] * d["revenue_per_customer"] * d["timing_factor"] + d["usage_revenue"]
-            elif model == "usage_platform":
-                value = d["eligible_activity"] * d["monetization_rate"] + d["fixed_revenue"]
-            elif model == "services":
-                value = d["billable_capacity"] * d["utilization"] * d["billing_rate"] * d["timing_factor"] + d["other_revenue"]
-            elif model == "project_backlog":
-                if index > 0:
-                    require(math.isclose(d["opening_backlog"], drivers["closing_backlog"][index - 1], rel_tol=1e-9, abs_tol=1e-9), "project backlog continuity failed")
-                value = d["opening_backlog"] + d["bookings"] - d["cancellations"] + d["contract_changes"] - d["closing_backlog"]
-            elif model == "resource":
-                value = d["saleable_volume"] * d["realized_price"] + d["other_revenue"]
-            elif model == "infrastructure":
-                value = d["billable_volume"] * d["tariff"] + d["other_revenue"]
-            elif model == "bank_revenue":
-                value = d["average_earning_assets"] * d["asset_yield"] - d["average_interest_bearing_liabilities"] * d["funding_cost"] + d["fee_revenue"] + d["other_revenue"]
-            elif model == "asset_management":
-                value = d["average_aum"] * d["management_fee_rate"] + d["performance_fee_revenue"] + d["other_revenue"]
-            elif model == "retail_franchise":
-                value = d["average_owned_stores"] * d["revenue_per_owned_store"] + d["franchise_system_sales"] * d["recognized_fee_rate"] + d["supply_revenue"]
-            elif model == "transport":
-                value = d["capacity"] * d["utilization"] * d["yield"] + d["ancillary_revenue"]
-            elif model == "real_estate_rental":
-                value = d["average_occupied_area"] * d["rent_per_area"] + d["other_revenue"]
-            elif model == "licensing_commercial":
-                value = d["treated_units"] * d["net_revenue_per_unit"] + d["milestone_revenue"] + d["royalty_revenue"] + d["service_revenue"]
-            elif model == "advertising":
-                value = d["eligible_impressions"] / 1000 * d["fill_rate"] * d["revenue_per_thousand_impressions"] + d["other_revenue"]
-            elif model == "gaming":
-                value = d["active_users"] * d["payer_conversion"] * d["revenue_per_payer"] + d["other_revenue"]
-            elif model == "cohort_subscription":
-                require(math.isclose(d["ending_customers"], d["opening_customers"] + d["new_customers"] - d["churned_customers"], rel_tol=1e-9, abs_tol=1e-9), "cohort customer bridge failed")
-                if index > 0:
-                    require(math.isclose(d["opening_customers"], drivers["ending_customers"][index - 1], rel_tol=1e-9, abs_tol=1e-9), "cohort customer continuity failed")
-                value = (d["opening_customers"] + d["ending_customers"]) / 2 * d["revenue_per_customer"] * d["timing_factor"] + d["usage_revenue"]
-            elif model == "delivery_pipeline":
-                require(math.isclose(d["ending_orders"], d["opening_orders"] + d["new_orders"] - d["cancellations"] - d["deliveries"], rel_tol=1e-9, abs_tol=1e-9), "delivery order bridge failed")
-                if index > 0:
-                    require(math.isclose(d["opening_orders"], drivers["ending_orders"][index - 1], rel_tol=1e-9, abs_tol=1e-9), "delivery order continuity failed")
-                value = d["deliveries"] * d["unit_revenue"] * d["timing_factor"] + d["other_revenue"]
-            elif model == "milestone_royalty":
-                value = d["eligible_sales"] * d["royalty_rate"] + d["milestone_revenue"] + d["service_revenue"]
-            elif model == "insurance_service":
-                value = d["coverage_units"] * d["revenue_per_coverage_unit"] * d["timing_factor"] + d["other_revenue"]
-            else:  # pragma: no cover - guarded by registry
-                raise ForecastInputError(f"calculator missing for model: {model}")
-            require(value >= 0 and math.isfinite(value), f"calculated revenue must be finite and non-negative for {model}/{years[index]}")
-            revenue.append(value)
+    try:
+        revenue = calculate_registered_model(model, base_revenue, drivers, years)
+    except ModelRegistryError as exc:
+        raise ForecastInputError(str(exc)) from exc
+    for year, value in zip(years, revenue):
+        require(value >= 0 and math.isfinite(value), f"calculated revenue must be finite and non-negative for {model}/{year}")
 
     return {
         "model": model,
@@ -1024,7 +824,8 @@ def calculate_company_forecast(
         segment_totals = [0.0] * len(years)
         segment_bridge: list[dict[str, Any]] = []
         for segment in recognized_segments:
-            values = list(segment["scenarios"][scenario]["recognized_revenue"].values())
+            scenario_output = segment["scenarios"][scenario]
+            values = list(scenario_output.get("effective_revenue", scenario_output["recognized_revenue"]).values())
             segment_totals = [left + right for left, right in zip(segment_totals, values)]
             segment_bridge.append({"name": segment["name"], "annual_revenue": dict(zip(map(str, years), values))})
         adjustment_totals = [0.0] * len(years)
@@ -1042,7 +843,11 @@ def calculate_company_forecast(
         segment_contributions = [
             {
                 "name": segment["name"],
-                "terminal_incremental_revenue": list(segment["scenarios"][scenario]["recognized_revenue"].values())[-1] - segment["base_revenue"],
+                "terminal_incremental_revenue": list(
+                    segment["scenarios"][scenario].get(
+                        "effective_revenue", segment["scenarios"][scenario]["recognized_revenue"]
+                    ).values()
+                )[-1] - segment["base_revenue"],
             }
             for segment in recognized_segments
         ]
@@ -1078,7 +883,16 @@ def _run_forecast_core(data: dict[str, Any]) -> dict[str, Any]:
     validated = validate_document(data)
     modeled_segments = calculate_segment_forecasts(data, validated)
     recognized_segments = apply_revenue_recognition(data, validated, modeled_segments)
-    company = calculate_company_forecast(data, validated, recognized_segments)
+    try:
+        effective_segments, constraint_audit = apply_revenue_constraints(
+            recognized_segments,
+            data.get("revenue_constraints", []),
+            validated["parameter_index"],
+            validated["years"],
+        )
+    except RevenueConstraintError as exc:
+        raise ForecastInputError(str(exc)) from exc
+    company = calculate_company_forecast(data, validated, effective_segments)
     return {
         "company_name": data["company_name"],
         "as_of_date": data["as_of_date"],
@@ -1088,6 +902,8 @@ def _run_forecast_core(data: dict[str, Any]) -> dict[str, Any]:
         "base_year": data["base_year"],
         "forecast_years": validated["years"],
         "historical_revenue": data["historical_revenue"],
+        "revenue_constraints": copy.deepcopy(data.get("revenue_constraints", [])),
+        "constraint_audit": constraint_audit,
         **company,
     }
 
@@ -1114,9 +930,9 @@ def add_scenario_analysis(data: dict[str, Any], validated: dict[str, Any], resul
     consolidated = result["consolidated_forecast"]
     for segment in result["segments"]:
         for year in map(str, years):
-            low = segment["scenarios"]["low"]["recognized_revenue"][year]
-            base = segment["scenarios"]["base"]["recognized_revenue"][year]
-            high = segment["scenarios"]["high"]["recognized_revenue"][year]
+            low = segment["scenarios"]["low"].get("effective_revenue", segment["scenarios"]["low"]["recognized_revenue"])[year]
+            base = segment["scenarios"]["base"].get("effective_revenue", segment["scenarios"]["base"]["recognized_revenue"])[year]
+            high = segment["scenarios"]["high"].get("effective_revenue", segment["scenarios"]["high"]["recognized_revenue"])[year]
             require(low <= base <= high, f"segment scenario ordering failed for {segment['name']}/{year}")
     for year in map(str, years):
         low = consolidated["low"]["annual_revenue"][year]
@@ -1281,7 +1097,9 @@ def calculate_theme_analysis(data: dict[str, Any], validated: dict[str, Any], re
         require(period_year(parameter["period"], f"{parameter_id}.period") == validated["years"][-1], f"theme counterfactual must use terminal forecast year: {parameter_id}")
         require(float(parameter["value"]) >= 0, f"theme counterfactual cannot be negative: {parameter_id}")
         theme_revenue = sum(
-            list(segment["scenarios"][scenario]["recognized_revenue"].values())[-1]
+            list(segment["scenarios"][scenario].get(
+                "effective_revenue", segment["scenarios"][scenario]["recognized_revenue"]
+            ).values())[-1]
             for segment in result["segments"]
             if segment["name"] in segment_names
         )
@@ -1330,7 +1148,8 @@ def parameter_revenue_weights(data: dict[str, Any], result: dict[str, Any]) -> d
     segment_inputs = {segment["name"]: segment for segment in data["segments"]}
     for segment_result in result["segments"]:
         segment = segment_inputs[segment_result["name"]]
-        terminal = abs(float(list(segment_result["scenarios"]["base"]["recognized_revenue"].values())[-1]))
+        base_output = segment_result["scenarios"]["base"]
+        terminal = abs(float(list(base_output.get("effective_revenue", base_output["recognized_revenue"]).values())[-1]))
         refs: set[str] = set()
         for ids in segment["scenarios"]["base"]["driver_parameter_ids"].values():
             refs.update(ids)
@@ -1379,9 +1198,13 @@ def calculate_confidence(
     source_quality = 0 if covered_weight == 0 else quality_numerator / covered_weight
     freshness = 0 if covered_weight == 0 else freshness_numerator / covered_weight
 
-    segment_total = sum(abs(float(list(segment["scenarios"]["base"]["recognized_revenue"].values())[-1])) for segment in result["segments"])
+    segment_total = sum(abs(float(list(segment["scenarios"]["base"].get(
+        "effective_revenue", segment["scenarios"]["base"]["recognized_revenue"]
+    ).values())[-1])) for segment in result["segments"])
     explicit_total = sum(
-        abs(float(list(segment["scenarios"]["base"]["recognized_revenue"].values())[-1]))
+        abs(float(list(segment["scenarios"]["base"].get(
+            "effective_revenue", segment["scenarios"]["base"]["recognized_revenue"]
+        ).values())[-1]))
         for segment in result["segments"]
         if segment["scenarios"]["base"]["model"] not in {"direct_growth", "direct_revenue"}
     )
@@ -1588,6 +1411,8 @@ def collect_parameter_roles(
         if isinstance(scenario_ids, dict):
             for ids in scenario_ids.values():
                 forecast.update(_listed_parameter_ids(ids))
+
+    forecast.update(constraint_parameter_ids(data.get("revenue_constraints", [])))
 
     foundation = _expand_derived_inputs(foundation, parameter_index)
     forecast = _expand_derived_inputs(forecast, parameter_index)
@@ -1878,7 +1703,8 @@ def add_management_target_analysis(
                 if target["scope"]["type"] == "company":
                     revenue_path = result["consolidated_forecast"][scenario]["annual_revenue"]
                 else:
-                    revenue_path = segment_index[target["scope"]["name"]]["scenarios"][scenario]["recognized_revenue"]
+                    scenario_output = segment_index[target["scope"]["name"]]["scenarios"][scenario]
+                    revenue_path = scenario_output.get("effective_revenue", scenario_output["recognized_revenue"])
                 period_values = {period: float(revenue_path[period[2:]]) for period in measurement_periods}
                 if target["measurement_basis"] == "cumulative_periods":
                     observed = sum(period_values.values())
@@ -1917,6 +1743,15 @@ def validate_document(data: dict[str, Any]) -> dict[str, Any]:
     claim_index = validate_evidence_claims(data, source_index, parameter_index, as_of)
     validate_historical_revenue(data, source_index, parameter_index, claim_index)
     validate_base_reconciliation(data, parameter_index)
+    try:
+        revenue_constraints = validate_revenue_constraints(
+            data.get("revenue_constraints", []),
+            [segment.get("name") for segment in data.get("segments", []) if isinstance(segment, dict)],
+            parameter_index,
+            years,
+        )
+    except RevenueConstraintError as exc:
+        raise ForecastInputError(str(exc)) from exc
     research_coverage = validate_research_coverage(data, source_index, parameter_index)
     management_target_coverage = validate_management_target_coverage(
         data, source_index, parameter_index, claim_index, as_of
@@ -1927,6 +1762,7 @@ def validate_document(data: dict[str, Any]) -> dict[str, Any]:
         "source_index": source_index,
         "parameter_index": parameter_index,
         "claim_index": claim_index,
+        "revenue_constraints": revenue_constraints,
         "research_coverage": research_coverage,
         "management_target_coverage": management_target_coverage,
     }

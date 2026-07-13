@@ -157,6 +157,12 @@ class ManagementTargetCoverageTests(unittest.TestCase):
         legacy["result_sha256"] = canonical_sha256({key: value for key, value in legacy.items() if key != "result_sha256"})
         validate_forecast_output(legacy)
 
+    def test_immutable_engine_321_output_still_validates(self) -> None:
+        legacy = run_forecast(add_target(forecast_document()))
+        legacy["engine_version"] = "3.2.1"
+        legacy["result_sha256"] = canonical_sha256({key: value for key, value in legacy.items() if key != "result_sha256"})
+        validate_forecast_output(legacy)
+
     def test_out_of_horizon_target_is_propagated_as_gap(self) -> None:
         result = run_forecast(add_target(forecast_document(), target_value=250.0, period="FY2030", treatment="out_of_horizon"))
         self.assertTrue(any(gap.startswith("management_target:five_year_revenue_goal:") for gap in result["data_gaps"]))

@@ -72,6 +72,77 @@ Each segment contains the same model in low/base/high and one parameter-ID serie
 
 Forecast adjustments contain name, accepted category, and low/base/high annual revenue-parameter IDs. Eliminations and disposals are non-positive; acquisitions are non-negative.
 
+## 6A. Cross-segment revenue constraints
+
+`revenue_constraints` is optional and defaults to an empty list. Constraints run in declared list order after accounting recognition and before company aggregation. Every constraint requires a unique `constraint_id`, an exact `type`, a non-empty `rationale`, known segment names, and registered annual parameters for every low/base/high year. Unknown fields fail closed.
+
+### Shared sum cap
+
+```json
+{
+  "constraint_id": "shared_capacity_cap",
+  "type": "sum_cap",
+  "segments": ["Equipment", "Subscription"],
+  "allocation": "proportional",
+  "scenario_parameter_ids": {
+    "low": ["cap_low_2026", "cap_low_2027"],
+    "base": ["cap_base_2026", "cap_base_2027"],
+    "high": ["cap_high_2026", "cap_high_2027"]
+  },
+  "rationale": "Both curves consume one measured external capacity ceiling."
+}
+```
+
+Cap parameters use dimension `revenue` and must be non-negative. `proportional` scales the currently effective constrained segments only when their sum exceeds the cap. `fixed_weights` additionally requires:
+
+```json
+"weight_parameter_ids": {
+  "Equipment": {"low": ["..."], "base": ["..."], "high": ["..."]},
+  "Subscription": {"low": ["..."], "base": ["..."], "high": ["..."]}
+}
+```
+
+Weight parameters use dimension `ratio`, are non-negative, cover every constrained segment exactly, and sum to one for every scenario/year. Never infer weights from historical mix.
+
+### Linked ratio
+
+```json
+{
+  "constraint_id": "service_attach_limit",
+  "type": "linked_ratio",
+  "source_segment": "Equipment",
+  "target_segment": "Services",
+  "relation": "maximum",
+  "scenario_parameter_ids": {
+    "low": ["attach_low_2026", "attach_low_2027"],
+    "base": ["attach_base_2026", "attach_base_2027"],
+    "high": ["attach_high_2026", "attach_high_2027"]
+  },
+  "rationale": "Services cannot exceed the source installed-base relationship."
+}
+```
+
+Ratio parameters are non-negative. `maximum` caps the target at `source × ratio`; `exact` explicitly sets it to that amount and may increase or decrease the target. Source and target must differ. Use `exact` only when the identity is genuinely definitional.
+
+### Segment elimination
+
+```json
+{
+  "constraint_id": "internal_service_elimination",
+  "type": "elimination",
+  "segment_adjustment_parameter_ids": {
+    "Services": {
+      "low": ["elim_low_2026", "elim_low_2027"],
+      "base": ["elim_base_2026", "elim_base_2027"],
+      "high": ["elim_high_2026", "elim_high_2027"]
+    }
+  },
+  "rationale": "Remove measured internal revenue from the segment before valuation."
+}
+```
+
+Elimination parameters use dimension `revenue`, must be non-positive, and may not make a segment negative. Do not also include the same amount in `forecast_adjustments`.
+
 ## 7. Scenario probabilities
 
 Probabilities are optional. When supplied, require low/base/high values summing to one, a rationale, and `probability_claim_ids` targeting `scenario_probability`.

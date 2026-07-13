@@ -2,6 +2,8 @@
 
 Assign models per segment. The exact model and driver names below match `scripts/revenue_core.py`.
 
+The runtime source of truth is the immutable `MODEL_REGISTRY` in `scripts/model_registry.py`. `revenue_core.py` exports compatibility views but contains no formula-selection branch.
+
 | Model | Required drivers | Optional additive drivers | Formula |
 |---|---|---|---|
 | `direct_growth` | `growth_rate` | — | prior revenue × (1 + growth rate) |
@@ -51,3 +53,11 @@ Assign models per segment. The exact model and driver names below match `scripts
 ## Fallback policy
 
 Use `direct_growth` only when an operating identity cannot be built from disclosed data. State the missing drivers in `data_gaps`. Use `direct_revenue` for accounting-defined streams whose internal mechanics cannot be represented safely, including many IFRS 17 insurance-revenue forecasts. Both fallbacks reduce the explicit-model component of confidence.
+
+## Adding a model safely
+
+1. Create one frozen `ModelSpec` with a unique `model_id`, complete required/optional drivers, defaults, dimensions, ratio-driver metadata, displayed formula, and a pure calculator.
+2. The calculator receives only base revenue, resolved driver arrays, and forecast years. It must not read files, call an LLM, fetch data, mutate inputs, or introduce assumptions.
+3. Register the spec once in `MODEL_REGISTRY`; duplicate IDs and incomplete dimension coverage must fail at import time.
+4. Add the model to `tests/test_models.py` and `tests/test_industry_end_to_end.py`. Registry IDs, formula cases, and industry fixtures must remain exactly aligned.
+5. Never add `if model == ...` or `elif model == ...` to `calculate_model_path`. Parameter resolution and common finite/non-negative checks remain in `revenue_core.py`; model-specific stock-flow continuity belongs in the registered calculator.
