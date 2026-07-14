@@ -2,11 +2,13 @@
 
 ## 1. Identity
 
-Require `schema_version="3.3"`, company, `as_of_date`, currency, scale in `unit`, fiscal-year end, base year, consecutive forecast years, sources, evidence claims, parameters, history, segments, reported-total parameter ID, nine-dimension research coverage, a causal growth-driver tree, management-communication coverage, and a management-target ledger.
+Require `schema_version="3.4"`, company, `as_of_date`, currency, scale in `unit`, fiscal-year end, base year, consecutive forecast years, sources, evidence claims, parameters, history, segments, reported-total parameter ID, nine-dimension research coverage, a causal growth-driver tree, management-communication coverage, and a management-target ledger.
 
 Use `pre_revenue=true` only when reported and segment base revenue are zero. A genuinely pre-revenue company may use an empty history.
 
 ## 2. Evidence claims
+
+Every source first carries the capture object defined in `compliance-contract.md`. Its whole-source `snapshot_sha256` must equal each linked claim's `content_sha256`; each claim also carries `capture_receipt_sha256` equal to the source capture receipt.
 
 Every claim requires:
 

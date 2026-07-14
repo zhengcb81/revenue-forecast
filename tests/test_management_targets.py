@@ -45,6 +45,7 @@ def add_target(
         "verification_status": "opened_and_checked",
         "verified_by": "target-test",
         "verified_date": data["as_of_date"],
+        "capture_receipt_sha256": data["sources"][0]["capture"]["receipt_sha256"],
         "extracted_value": target_value,
         "unit": "USD million",
         "period": period,

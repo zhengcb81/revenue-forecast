@@ -21,10 +21,12 @@ from revenue_core import (
     calculate_cagr,
     calculate_confidence,
     calculate_growth_driver_analysis,
+    build_workflow_compliance_receipt,
     canonical_sha256,
     parse_iso_date,
     require,
     validate_growth_driver_tree,
+    validate_source_capture,
 )
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 
@@ -97,6 +99,11 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         require(result["engine_version"] == ENGINE_VERSION, "forecast output engine_version mismatch")
         require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
         require("growth_driver_analysis" in result, "forecast output missing field: growth_driver_analysis")
+        require("workflow_compliance_receipt" in result, "forecast output missing field: workflow_compliance_receipt")
+    elif result["schema_version"] == "3.3":
+        require(result["engine_version"] == "3.4.0", "legacy forecast output engine_version mismatch")
+        require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
+        require("growth_driver_analysis" in result, "forecast output missing field: growth_driver_analysis")
     elif result["schema_version"] == "3.2":
         require(result["engine_version"] in {"3.2.0", "3.2.1", "3.3.0"}, "legacy forecast output engine_version mismatch")
         require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
@@ -137,7 +144,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
 
     current_constraint_contract = (
         (result["schema_version"], result["engine_version"])
-        in {("3.2", "3.3.0"), (FORECAST_SCHEMA_VERSION, ENGINE_VERSION)}
+        in {("3.2", "3.3.0"), ("3.3", "3.4.0"), (FORECAST_SCHEMA_VERSION, ENGINE_VERSION)}
     )
     if current_constraint_contract:
         require(isinstance(result.get("revenue_constraints"), list), "forecast output missing revenue_constraints")
@@ -220,6 +227,17 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
     require(isinstance(result["sources"], list) and result["sources"], "forecast output requires sources")
     require(isinstance(result["parameter_trace"], list) and result["parameter_trace"], "forecast output requires parameter trace")
     require(isinstance(result["evidence_claims"], list) and result["evidence_claims"], "forecast output requires evidence claims")
+    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+        as_of = parse_iso_date(result["as_of_date"], "as_of_date")
+        source_capture_index = {}
+        for source in result["sources"]:
+            capture = validate_source_capture(source, as_of)
+            source_capture_index[source["source_id"]] = capture
+        for claim in result["evidence_claims"]:
+            capture = source_capture_index.get(claim.get("source_id"))
+            require(isinstance(capture, dict), f"claim source capture is missing: {claim.get('claim_id')}")
+            require(claim.get("capture_receipt_sha256") == capture["receipt_sha256"], f"claim capture receipt mismatch: {claim.get('claim_id')}")
+            require(claim.get("content_sha256") == capture["snapshot_sha256"], f"claim/source snapshot mismatch: {claim.get('claim_id')}")
     coverage = result["research_coverage"]
     require(isinstance(coverage, dict), "research_coverage output must be an object")
     dimensions = coverage.get("dimensions")
@@ -240,7 +258,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             expected_gap = f"{record['dimension']}: {record['conclusion']}"
             require(expected_gap in result.get("data_gaps", []), f"research data gap missing from output: {record['dimension']}")
     require(coverage.get("counts") == recomputed_counts, "research_coverage counts mismatch")
-    if result["schema_version"] in {"3.1", "3.2", FORECAST_SCHEMA_VERSION}:
+    if result["schema_version"] in {"3.1", "3.2", "3.3", FORECAST_SCHEMA_VERSION}:
         target_coverage = result["management_target_coverage"]
         require(isinstance(target_coverage, dict), "management_target_coverage output must be an object")
         communications = target_coverage.get("communications")
@@ -270,7 +288,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             require(target.get("treatment") in MANAGEMENT_TARGET_TREATMENTS, f"invalid management target treatment: {target_id}")
             comparisons = target.get("scenario_comparison")
             require(isinstance(comparisons, dict), f"management target scenario comparison must be an object: {target_id}")
-            if result["schema_version"] in {"3.2", FORECAST_SCHEMA_VERSION}:
+            if result["schema_version"] in {"3.2", "3.3", FORECAST_SCHEMA_VERSION}:
                 require(target.get("measurement_basis") in MANAGEMENT_TARGET_MEASUREMENT_BASES, f"invalid management target measurement basis: {target_id}")
                 require(isinstance(target.get("measurement_periods"), list), f"invalid management target measurement periods: {target_id}")
             if target["treatment"] in {"modeled_scenario", "scenario_boundary"}:
@@ -348,9 +366,9 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         "as_of_date": parse_iso_date(result["as_of_date"], "as_of_date"),
         "research_coverage": {"counts": coverage["counts"]},
     }
-    if result["schema_version"] in {"3.1", "3.2", FORECAST_SCHEMA_VERSION}:
+    if result["schema_version"] in {"3.1", "3.2", "3.3", FORECAST_SCHEMA_VERSION}:
         reconstructed_validated["management_target_coverage"] = {"counts": result["management_target_coverage"]["counts"]}
-    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+    if result["schema_version"] in {"3.3", FORECAST_SCHEMA_VERSION}:
         analysis = result["growth_driver_analysis"]
         require(isinstance(analysis, dict), "growth_driver_analysis output must be an object")
         status = analysis.get("status")
@@ -401,6 +419,12 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             require(math.isclose(expected_increment, float(values["theme_incremental_revenue"]), rel_tol=1e-9, abs_tol=1e-9), f"theme increment mismatch: {scenario}")
             expected_elasticity = None if base == 0 else expected_increment / base
             require((expected_elasticity is None and values["theme_elasticity_to_company_base"] is None) or math.isclose(float(expected_elasticity), float(values["theme_elasticity_to_company_base"]), rel_tol=1e-9, abs_tol=1e-9), f"theme elasticity mismatch: {scenario}")
+    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+        expected_receipt = build_workflow_compliance_receipt(
+            result["input_sha256"], result["sources"], result["evidence_claims"],
+            result["parameter_trace"], result.get("data_gaps", []),
+        )
+        require(result["workflow_compliance_receipt"] == expected_receipt, "workflow compliance receipt mismatch")
     require(result["result_sha256"] == canonical_sha256(hash_payload), "forecast result hash mismatch")
 
 

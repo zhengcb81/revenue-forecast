@@ -29,11 +29,13 @@ from revenue_constraints import (
 
 
 SCENARIOS = ("low", "base", "high")
-SKILL_VERSION = "3.4.0"
+SKILL_VERSION = "3.5.0"
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
-FORECAST_SCHEMA_VERSION = "3.3"
-SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", "3.1", "3.2", FORECAST_SCHEMA_VERSION}
+FORECAST_SCHEMA_VERSION = "3.4"
+SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", "3.1", "3.2", "3.3", FORECAST_SCHEMA_VERSION}
+EVIDENCE_CAPTURE_SCHEMA_VERSION = "1.0"
+WORKFLOW_RECEIPT_SCHEMA_VERSION = "1.0"
 PARAMETER_KINDS = {
     "reported_fact",
     "derived_fact",
@@ -71,6 +73,8 @@ BLOCKED_HOSTS = {
     "baidu.com",
     "www.baidu.com",
 }
+CAPTURE_METHODS = {"browser_open", "api_response", "local_document", "structured_connector", "manual_open"}
+PROMPT_INJECTION_STATUSES = {"not_detected", "detected_and_ignored"}
 
 MODEL_SPECS = REGISTERED_MODEL_SPECS
 MODEL_RATIO_DRIVERS = REGISTERED_MODEL_RATIO_DRIVERS
@@ -225,6 +229,33 @@ def valid_source_url(url: Any) -> bool:
     return "." in host
 
 
+def validate_source_capture(source: dict[str, Any], as_of: date) -> dict[str, Any]:
+    """Validate a tool-linked source snapshot without claiming external fact truth."""
+    source_id = source.get("source_id", "<unknown>")
+    capture = source.get("capture")
+    require(isinstance(capture, dict), f"{source_id}.capture is required")
+    required = {
+        "capture_schema_version", "capture_method", "tool_name", "tool_call_id",
+        "captured_date", "snapshot_sha256", "content_treatment",
+        "prompt_injection_status", "receipt_sha256",
+    }
+    require(set(capture) == required, f"invalid capture fields for {source_id}")
+    require(capture["capture_schema_version"] == EVIDENCE_CAPTURE_SCHEMA_VERSION, f"unsupported capture schema for {source_id}")
+    require(capture["capture_method"] in CAPTURE_METHODS, f"unsupported capture method for {source_id}")
+    for field in ("tool_name", "tool_call_id"):
+        require(isinstance(capture[field], str) and capture[field].strip(), f"{source_id}.capture.{field} is required")
+    captured = parse_iso_date(capture["captured_date"], f"{source_id}.capture.captured_date")
+    published = parse_iso_date(source.get("published_date"), f"{source_id}.published_date")
+    require(published <= captured <= as_of, f"source capture is outside the allowed information set: {source_id}")
+    require(source.get("accessed_date") == capture["captured_date"], f"source accessed_date/capture date mismatch: {source_id}")
+    require(isinstance(capture["snapshot_sha256"], str) and re.fullmatch(r"[0-9a-f]{64}", capture["snapshot_sha256"]), f"invalid source snapshot hash: {source_id}")
+    require(capture["content_treatment"] == "untrusted_data_only", f"source content must be treated as untrusted data: {source_id}")
+    require(capture["prompt_injection_status"] in PROMPT_INJECTION_STATUSES, f"invalid prompt-injection status: {source_id}")
+    payload = {key: value for key, value in capture.items() if key != "receipt_sha256"}
+    require(capture["receipt_sha256"] == canonical_sha256(payload), f"source capture receipt hash mismatch: {source_id}")
+    return dict(capture)
+
+
 def validate_top_level(data: dict[str, Any]) -> tuple[list[int], date]:
     required = (
         "schema_version",
@@ -322,7 +353,9 @@ def validate_historical_revenue(
     require(abs(base_records[0] - total) <= tolerance, "historical base-year revenue does not match reported total revenue")
 
 
-def validate_sources(data: dict[str, Any], as_of: date) -> dict[str, dict[str, Any]]:
+def validate_sources(
+    data: dict[str, Any], as_of: date, *, require_capture: bool = False,
+) -> dict[str, dict[str, Any]]:
     sources = data["sources"]
     require(isinstance(sources, list) and sources, "sources must be a non-empty list")
     index: dict[str, dict[str, Any]] = {}
@@ -341,6 +374,8 @@ def validate_sources(data: dict[str, Any], as_of: date) -> dict[str, dict[str, A
         require(published <= as_of, f"future information leak: {source_id} was published after as_of_date")
         if source.get("accessed_date") is not None:
             parse_iso_date(source["accessed_date"], f"{source_id}.accessed_date")
+        if require_capture:
+            validate_source_capture(source, as_of)
         enriched = dict(source)
         enriched["source_rank"] = SOURCE_RANKS[source_type]
         index[source_id] = enriched
@@ -470,6 +505,11 @@ def validate_evidence_claims(
         require(claim.get("excerpt_sha256") == text_sha256(excerpt), f"claim excerpt hash mismatch: {claim_id}")
         require(isinstance(claim.get("content_sha256"), str) and re.fullmatch(r"[0-9a-f]{64}", claim["content_sha256"]), f"{claim_id}.content_sha256 must be lowercase SHA-256")
         require(claim.get("verification_status") == "opened_and_checked", f"claim {claim_id} must be opened_and_checked")
+        source_capture = source_index[source_id].get("capture")
+        if data["schema_version"] == FORECAST_SCHEMA_VERSION:
+            require(isinstance(source_capture, dict), f"claim source capture is missing: {claim_id}")
+            require(claim.get("capture_receipt_sha256") == source_capture["receipt_sha256"], f"claim capture receipt mismatch: {claim_id}")
+            require(claim["content_sha256"] == source_capture["snapshot_sha256"], f"claim/source snapshot mismatch: {claim_id}")
         verified_date = parse_iso_date(claim.get("verified_date"), f"{claim_id}.verified_date")
         published_date = parse_iso_date(source_index[source_id]["published_date"], f"{source_id}.published_date")
         require(published_date <= verified_date <= as_of, f"claim verification date is outside the allowed information set: {claim_id}")
@@ -1317,8 +1357,52 @@ def run_forecast(data: dict[str, Any]) -> dict[str, Any]:
     result["sources"] = list(validated["source_index"].values())
     result["evidence_claims"] = list(validated["claim_index"].values())
     result["historical_accuracy_records"] = copy.deepcopy(data.get("historical_accuracy_records", []))
+    result["workflow_compliance_receipt"] = build_workflow_compliance_receipt(
+        result["input_sha256"], result["sources"], result["evidence_claims"],
+        result["parameter_trace"], result["data_gaps"],
+    )
     result["result_sha256"] = canonical_sha256(result)
     return result
+
+
+def build_workflow_compliance_receipt(
+    input_sha256: str,
+    sources: list[dict[str, Any]],
+    evidence_claims: list[dict[str, Any]],
+    parameters: list[dict[str, Any]],
+    data_gaps: list[str],
+) -> dict[str, Any]:
+    """Recompute the formal workflow receipt from validated revenue artifacts."""
+    capture_hashes = sorted(source["capture"]["receipt_sha256"] for source in sources)
+    receipt = {
+        "receipt_schema_version": WORKFLOW_RECEIPT_SCHEMA_VERSION,
+        "status": "pass",
+        "workflow": "revenue_forecast_nine_dimension_driver_model",
+        "execution_mode": "deterministic_runtime",
+        "gate_ids": [
+            "input_contract", "source_capture", "evidence_claims", "research_coverage",
+            "management_targets", "growth_driver_tree", "revenue_model", "output_recomputation",
+        ],
+        "input_sha256": input_sha256,
+        "source_capture_receipt_sha256s": capture_hashes,
+        "source_capture_count": len(capture_hashes),
+        "checked_claim_count": len(evidence_claims),
+        "assumption_parameter_ids": sorted(
+            parameter["parameter_id"] for parameter in parameters
+            if parameter["kind"] in {"analyst_assumption", "scenario_stress"}
+        ),
+        "data_gap_count": len(data_gaps),
+        "data_gaps_sha256": canonical_sha256(data_gaps),
+        "prompt_injection_flagged_source_ids": sorted(
+            source["source_id"] for source in sources
+            if source["capture"]["prompt_injection_status"] == "detected_and_ignored"
+        ),
+        "untrusted_content_treatment": "data_only_never_instructions",
+        "formal_output_authority": "validated_runtime_renderer_only",
+        "freeform_formal_output_allowed": False,
+    }
+    receipt["receipt_sha256"] = canonical_sha256(receipt)
+    return receipt
 
 
 def validate_base_reconciliation(data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]) -> None:
@@ -2143,7 +2227,7 @@ def add_management_target_analysis(
 def validate_document(data: dict[str, Any]) -> dict[str, Any]:
     """Validate and return indexes used by the forecast engine."""
     years, as_of = validate_top_level(data)
-    source_index = validate_sources(data, as_of)
+    source_index = validate_sources(data, as_of, require_capture=True)
     parameter_index = validate_parameters(data, source_index)
     claim_index = validate_evidence_claims(data, source_index, parameter_index, as_of)
     validate_historical_revenue(data, source_index, parameter_index, claim_index)

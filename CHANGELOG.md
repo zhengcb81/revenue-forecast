@@ -2,6 +2,14 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## v3.5.0 — 2026-07-14
+
+- Added forecast schema 3.4 source-capture receipts that bind claims to opened-source snapshot hashes, capture traces, explicit untrusted-data treatment, and prompt-injection disposition.
+- Added a machine-recomputed workflow compliance receipt covering the input, evidence, research, target, driver, model, and output gates; formal output authority is renderer-only and free-form override is forbidden.
+- Made the independent output validator revalidate capture receipts, claim-to-snapshot binding, and the workflow receipt even after a result is rehashed.
+- Added an atomic, exact-manifest installation synchronizer for the Agents and Claude skill directories.
+- Preserved immutable schema 3.0-3.3 validation and expanded the suite to 129 tests plus 85 model subtests.
+
 ## v3.4.0 — 2026-07-14
 
 - Added schema 3.3 causal growth-driver trees with concise top-driver summaries, full evidence branches, persistence, leading indicators, falsifiers, and explicit counterevidence search status.

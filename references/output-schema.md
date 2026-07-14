@@ -17,6 +17,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - optional theme analysis: explicit counterfactual, increment, elasticity, and terminal mix;
 - confidence: score, rating, components, evidence coverage, concentration, and limitations;
 - traceability: complete parameter trace, evidence-claim registry, source registry, input hash, result hash, schema, and engine version;
+- workflow compliance: captured-source receipt hashes, checked-claim and assumption inventory, data-gap hash, prompt-injection flags, mandatory gate IDs, and formal-output authority;
 - data gaps and disconfirming indicators.
 
 ## Output validation
@@ -37,6 +38,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - nine-dimension completeness, counts, parameter/source identities, and propagation of research data gaps.
 - official-communication completeness, target-ledger identity, cumulative/annual/run-rate measurement arithmetic, mapped-scenario attainment, and propagation of ambiguous or otherwise unmodeled targets.
 - every growth-driver claim/source identity, Base-parameter mapping, segment attribution weight, evidence status, terminal increment, ranking, share, and reconciliation to segment contribution.
+- every current-schema source capture and claim-to-capture snapshot binding, plus exact recomputation of the workflow compliance receipt.
 
 It rejects fields for stock prices, valuation, profitability, cash generation, investment ratings, shareholder returns, and position sizing.
 

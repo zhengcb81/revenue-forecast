@@ -88,6 +88,24 @@ class OutputReportTests(unittest.TestCase):
         with self.assertRaisesRegex(ForecastInputError, "growth driver analysis recomputation mismatch"):
             validate_forecast_output(result)
 
+    def test_missing_workflow_receipt_is_rejected(self) -> None:
+        result = run_forecast(forecast_document())
+        del result["workflow_compliance_receipt"]
+        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
+        with self.assertRaisesRegex(ForecastInputError, "workflow_compliance_receipt"):
+            validate_forecast_output(result)
+
+    def test_tampered_workflow_receipt_is_rejected_even_after_rehash(self) -> None:
+        result = run_forecast(forecast_document())
+        result["workflow_compliance_receipt"]["freeform_formal_output_allowed"] = True
+        result["workflow_compliance_receipt"]["receipt_sha256"] = canonical_sha256({
+            key: value for key, value in result["workflow_compliance_receipt"].items()
+            if key != "receipt_sha256"
+        })
+        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
+        with self.assertRaisesRegex(ForecastInputError, "workflow compliance receipt mismatch"):
+            validate_forecast_output(result)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, ForecastInputError, MONETARY_DIMENSIONS, SKILL_VERSION, text_sha256, validate_document  # noqa: E402
+from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, ForecastInputError, MONETARY_DIMENSIONS, SKILL_VERSION, canonical_sha256, text_sha256, validate_document  # noqa: E402
 
 
 RESEARCH_DIMENSIONS = (
@@ -67,6 +67,20 @@ def _claim(claim_id: str, source_id: str, target_type: str, target_id: str, supp
 
 def finalize_contract(data: dict) -> dict:
     data["schema_version"] = FORECAST_SCHEMA_VERSION
+    for source in data["sources"]:
+        source.setdefault("accessed_date", data["as_of_date"])
+        capture = {
+            "capture_schema_version": "1.0",
+            "capture_method": "browser_open",
+            "tool_name": "test-browser",
+            "tool_call_id": f"fixture-{source['source_id']}",
+            "captured_date": source["accessed_date"],
+            "snapshot_sha256": "a" * 64,
+            "content_treatment": "untrusted_data_only",
+            "prompt_injection_status": "not_detected",
+        }
+        capture["receipt_sha256"] = canonical_sha256(capture)
+        source["capture"] = capture
     data.setdefault("management_communication_coverage", [
         {
             "category": category,
@@ -168,6 +182,12 @@ def finalize_contract(data: dict) -> dict:
             "rationale": "This contract-only fixture does not yet contain a complete base-case segment forecast.",
         }
     )
+    capture_by_source = {
+        source["source_id"]: source["capture"]["receipt_sha256"]
+        for source in data["sources"]
+    }
+    for claim in claims:
+        claim["capture_receipt_sha256"] = capture_by_source[claim["source_id"]]
     data["evidence_claims"] = claims
     return data
 
@@ -307,14 +327,40 @@ def valid_document() -> dict:
 
 class DataContractTests(unittest.TestCase):
     def test_release_and_schema_versions_are_explicit(self) -> None:
-        self.assertEqual(SKILL_VERSION, "3.4.0")
+        self.assertEqual(SKILL_VERSION, "3.5.0")
         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
-        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.3")
+        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.4")
 
     def test_valid_document(self) -> None:
         validated = validate_document(valid_document())
         self.assertEqual(validated["years"], [2026, 2027])
         self.assertEqual(validated["source_index"]["filing"]["source_rank"], 1)
+
+    def test_current_schema_requires_tool_linked_source_capture(self) -> None:
+        data = valid_document()
+        del data["sources"][0]["capture"]
+        with self.assertRaisesRegex(ForecastInputError, "capture is required"):
+            validate_document(data)
+
+    def test_tampered_capture_receipt_is_rejected(self) -> None:
+        data = valid_document()
+        data["sources"][0]["capture"]["tool_call_id"] = "tampered"
+        with self.assertRaisesRegex(ForecastInputError, "capture receipt hash mismatch"):
+            validate_document(data)
+
+    def test_source_content_cannot_be_treated_as_instructions(self) -> None:
+        data = valid_document()
+        capture = data["sources"][0]["capture"]
+        capture["content_treatment"] = "trusted_instructions"
+        capture["receipt_sha256"] = canonical_sha256({key: value for key, value in capture.items() if key != "receipt_sha256"})
+        with self.assertRaisesRegex(ForecastInputError, "untrusted data"):
+            validate_document(data)
+
+    def test_claim_must_bind_to_captured_snapshot(self) -> None:
+        data = valid_document()
+        data["evidence_claims"][0]["content_sha256"] = "b" * 64
+        with self.assertRaisesRegex(ForecastInputError, "claim/source snapshot mismatch"):
+            validate_document(data)
 
     def test_rejects_placeholder_url(self) -> None:
         data = valid_document()

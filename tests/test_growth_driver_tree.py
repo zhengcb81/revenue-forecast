@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from revenue_core import ForecastInputError, run_forecast  # noqa: E402
+from revenue_core import ForecastInputError, canonical_sha256, run_forecast  # noqa: E402
 from test_data_contract import _claim  # noqa: E402
 from test_recognition_bridge import forecast_document  # noqa: E402
 
@@ -46,11 +46,13 @@ class GrowthDriverTreeTests(unittest.TestCase):
         second["segment_attribution"][0]["weight"] = 0.3
         second["evidence_nodes"][0]["evidence_id"] = "second_generic_evidence"
         second["evidence_nodes"][0]["claim_ids"] = ["claim_second_generic_evidence"]
-        data["evidence_claims"].append(_claim(
+        added_claim = _claim(
             "claim_second_generic_evidence", "filing", "growth_driver", "second_generic_evidence",
             "rationale_support", "A second checked source claim supports this generic causal mechanism.",
             data["as_of_date"],
-        ))
+        )
+        added_claim["capture_receipt_sha256"] = data["sources"][0]["capture"]["receipt_sha256"]
+        data["evidence_claims"].append(added_claim)
         data["growth_driver_tree"]["drivers"].insert(1, second)
         result = run_forecast(data)
         impacts = {
@@ -90,7 +92,7 @@ class GrowthDriverTreeTests(unittest.TestCase):
 
     def test_two_evidence_types_and_sources_are_marked_triangulated(self) -> None:
         data = forecast_document()
-        data["sources"].append({
+        source = {
             "source_id": "industry_source",
             "source_type": "industry_association",
             "title": "Independent operating indicator",
@@ -99,7 +101,16 @@ class GrowthDriverTreeTests(unittest.TestCase):
             "published_date": "2026-06-01",
             "accessed_date": data["as_of_date"],
             "page_or_section": "Operating indicator",
-        })
+        }
+        capture = {
+            "capture_schema_version": "1.0", "capture_method": "browser_open",
+            "tool_name": "test-browser", "tool_call_id": "fixture-industry-source",
+            "captured_date": data["as_of_date"], "snapshot_sha256": "a" * 64,
+            "content_treatment": "untrusted_data_only", "prompt_injection_status": "not_detected",
+        }
+        capture["receipt_sha256"] = canonical_sha256(capture)
+        source["capture"] = capture
+        data["sources"].append(source)
         driver = data["growth_driver_tree"]["drivers"][0]
         driver["evidence_nodes"].append({
             "evidence_id": "independent_demand_signal",
@@ -108,12 +119,14 @@ class GrowthDriverTreeTests(unittest.TestCase):
             "conclusion": "An independent checked indicator supports the direction of the modeled demand path.",
             "claim_ids": ["claim_independent_demand_signal"],
         })
-        data["evidence_claims"].append(_claim(
+        added_claim = _claim(
             "claim_independent_demand_signal", "industry_source", "growth_driver",
             "independent_demand_signal", "rationale_support",
             "Independent operating data supports the direction of the modeled demand path.",
             data["as_of_date"],
-        ))
+        )
+        added_claim["capture_receipt_sha256"] = capture["receipt_sha256"]
+        data["evidence_claims"].append(added_claim)
         result = run_forecast(data)
         first = next(item for item in result["growth_driver_analysis"]["drivers"] if item["driver_id"] == driver["driver_id"])
         self.assertEqual(first["evidence_status"], "triangulated")

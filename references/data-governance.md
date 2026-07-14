@@ -24,10 +24,11 @@ Every source requires:
 - HTTPS URL to the underlying page or filing;
 - `published_date` and optional `accessed_date`;
 - page, table, note, paragraph, or section locator.
+- a schema-1.0 capture receipt binding the tool trace, capture date, whole-source snapshot hash, untrusted-data treatment, and prompt-injection disposition.
 
 The script rejects placeholder domains, local addresses, common search-result hosts, unsupported source types, malformed dates, and sources published after the model `as_of_date`.
 
-Important: syntax validation cannot prove that a URL is accessible or that its content supports a parameter. The research agent must open the underlying page and verify the cited passage before registering it.
+Important: syntax and receipt validation cannot prove that a URL is accessible, that a model truly used the named tool, or that the content supports a parameter. They prove internal linkage and tamper evidence. The research agent must open the underlying page and verify the cited passage before registering it; authenticated invocation proof belongs to the host harness.
 
 Source rank does not directly raise forecast confidence. Confidence uses revenue-weighted verified claim coverage, claim support type, and freshness, preventing a user-declared high-rank source from mechanically increasing the score.
 
