@@ -4,6 +4,8 @@ Use this layer before numerical forecasting. Its purpose is to prevent omitted r
 
 This layer is necessary but not sufficient for forward statements. Complete the separate management-communication and target ledger in `management-targets.md`; do not hide a dated management target inside the generic `growth_curve` narrative.
 
+It is also not the growth-driver explanation. The nine dimensions are a flat omission gate; the separate `growth_driver_tree` selects the material causal mechanisms, links them to Base parameters, branches into checked evidence and counterevidence, and ranks them by modeled revenue increment.
+
 ## Required dimensions
 
 | Dimension | Question | Typical revenue mapping |

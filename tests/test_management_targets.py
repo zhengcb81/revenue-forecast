@@ -153,13 +153,28 @@ class ManagementTargetCoverageTests(unittest.TestCase):
 
     def test_immutable_engine_320_output_still_validates(self) -> None:
         legacy = run_forecast(add_target(forecast_document()))
+        legacy["schema_version"] = "3.2"
         legacy["engine_version"] = "3.2.0"
         legacy["result_sha256"] = canonical_sha256({key: value for key, value in legacy.items() if key != "result_sha256"})
         validate_forecast_output(legacy)
 
     def test_immutable_engine_321_output_still_validates(self) -> None:
         legacy = run_forecast(add_target(forecast_document()))
+        legacy["schema_version"] = "3.2"
         legacy["engine_version"] = "3.2.1"
+        legacy["result_sha256"] = canonical_sha256({key: value for key, value in legacy.items() if key != "result_sha256"})
+        validate_forecast_output(legacy)
+
+    def test_immutable_schema_32_engine_330_output_still_validates(self) -> None:
+        legacy = run_forecast(add_target(forecast_document()))
+        legacy["schema_version"] = "3.2"
+        legacy["engine_version"] = "3.3.0"
+        legacy.pop("growth_driver_analysis")
+        legacy["confidence"]["quality_gates"].pop("growth_driver_tree")
+        legacy["confidence"]["limitations"] = [
+            item for item in legacy["confidence"]["limitations"]
+            if not item.startswith("Growth driver")
+        ]
         legacy["result_sha256"] = canonical_sha256({key: value for key, value in legacy.items() if key != "result_sha256"})
         validate_forecast_output(legacy)
 

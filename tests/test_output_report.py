@@ -19,6 +19,8 @@ class OutputReportTests(unittest.TestCase):
         validate_forecast_output(result)
         markdown = render_markdown(result)
         self.assertIn("## 核心营收结论", markdown)
+        self.assertIn("## 未来收入主要驱动力", markdown)
+        self.assertIn("## 收入增长驱动树", markdown)
         self.assertIn("## 九维研究覆盖", markdown)
         self.assertIn("## 三情景经营驱动", markdown)
         self.assertIn("## 分部驱动与收入确认", markdown)
@@ -77,6 +79,13 @@ class OutputReportTests(unittest.TestCase):
         result["consolidated_forecast"]["base"]["annual_growth"]["2026"] = 123
         result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
         with self.assertRaisesRegex(ForecastInputError, "annual growth mismatch"):
+            validate_forecast_output(result)
+
+    def test_tampered_growth_driver_impact_is_rejected_even_after_rehash(self) -> None:
+        result = run_forecast(forecast_document())
+        result["growth_driver_analysis"]["drivers"][0]["estimated_base_terminal_increment"] += 1
+        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
+        with self.assertRaisesRegex(ForecastInputError, "growth driver analysis recomputation mismatch"):
             validate_forecast_output(result)
 
 

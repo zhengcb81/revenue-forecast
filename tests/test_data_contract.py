@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -107,6 +108,66 @@ def finalize_contract(data: dict) -> dict:
     probability_claim_id = "claim_scenario_probability"
     claims.append(_claim(probability_claim_id, "filing", "scenario_probability", "scenario_probability", "rationale_support", "Scenario probability calibration uses the disclosed operating evidence.", data["as_of_date"]))
     data["probability_claim_ids"] = [probability_claim_id]
+    modeled_drivers: list[dict] = []
+    all_segments_modeled = bool(data.get("segments"))
+    growth_source_id = data["sources"][0]["source_id"]
+    for segment in data.get("segments", []):
+        base_scenario = segment.get("scenarios", {}).get("base", {})
+        driver_map = base_scenario.get("driver_parameter_ids", {}) if isinstance(base_scenario, dict) else {}
+        parameter_ids = [parameter_id for ids in driver_map.values() for parameter_id in ids]
+        recognition = segment.get("recognition", {})
+        for container in ("carry_in_parameter_ids", "progress_parameter_ids"):
+            scenario_map = recognition.get(container, {}) if isinstance(recognition, dict) else {}
+            if isinstance(scenario_map, dict):
+                parameter_ids.extend(scenario_map.get("base", []))
+        parameter_ids = list(dict.fromkeys(parameter_ids))
+        if not parameter_ids:
+            all_segments_modeled = False
+            continue
+        stable_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", segment["name"]).strip("_") or "segment"
+        driver_id = f"fixture_driver_{stable_name}"
+        evidence_id = f"fixture_evidence_{stable_name}"
+        claim_id = f"claim_growth_driver_{stable_name}"
+        claims.append(_claim(
+            claim_id, growth_source_id, "growth_driver", evidence_id, "rationale_support",
+            f"Synthetic operating evidence supports the modeled revenue path for {segment['name']}.",
+            data["as_of_date"],
+        ))
+        modeled_drivers.append({
+            "driver_id": driver_id,
+            "title": f"Modeled revenue path for {segment['name']}",
+            "thesis": f"The registered base-case operating inputs determine {segment['name']} revenue growth.",
+            "causal_chain": [
+                "operating evidence informs the base-case inputs",
+                "registered model converts the inputs into activity",
+                "revenue-recognition rules convert activity into reported revenue",
+            ],
+            "parameter_ids": parameter_ids,
+            "segment_attribution": [{"segment_name": segment["name"], "weight": 1.0}],
+            "horizon": {"start_year": data["forecast_years"][0], "end_year": data["forecast_years"][-1]},
+            "persistence": "uncertain",
+            "persistence_rationale": "Synthetic fixtures do not assert a real-world structural duration.",
+            "evidence_nodes": [{
+                "evidence_id": evidence_id,
+                "evidence_type": "company_execution",
+                "inference_distance": "direct",
+                "conclusion": f"The fixture source supports the modeled path for {segment['name']}.",
+                "claim_ids": [claim_id],
+            }],
+            "leading_indicators": [f"actual {segment['name']} revenue versus the modeled annual path"],
+            "falsifiers": [f"actual {segment['name']} revenue falls below the low scenario"],
+            "counterevidence_status": "searched_none_found",
+            "counterevidence_rationale": "The synthetic fixture records no contrary test evidence.",
+        })
+    data["growth_driver_tree"] = (
+        {"status": "modeled", "drivers": modeled_drivers}
+        if all_segments_modeled and len(modeled_drivers) == len(data.get("segments", []))
+        else {
+            "status": "data_gap",
+            "drivers": [],
+            "rationale": "This contract-only fixture does not yet contain a complete base-case segment forecast.",
+        }
+    )
     data["evidence_claims"] = claims
     return data
 
@@ -246,9 +307,9 @@ def valid_document() -> dict:
 
 class DataContractTests(unittest.TestCase):
     def test_release_and_schema_versions_are_explicit(self) -> None:
-        self.assertEqual(SKILL_VERSION, "3.3.0")
+        self.assertEqual(SKILL_VERSION, "3.4.0")
         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
-        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.2")
+        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.3")
 
     def test_valid_document(self) -> None:
         validated = validate_document(valid_document())

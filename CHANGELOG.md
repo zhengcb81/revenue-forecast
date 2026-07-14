@@ -2,6 +2,14 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## v3.4.0 — 2026-07-14
+
+- Added schema 3.3 causal growth-driver trees with concise top-driver summaries, full evidence branches, persistence, leading indicators, falsifiers, and explicit counterevidence search status.
+- Ranked drivers deterministically by Base terminal segment-revenue increment using analyst-declared segment weights that reconcile to one, while disclosing company-level forecast adjustments separately.
+- Reused the existing parameter, evidence-claim, source, recognition, and segment-contribution contracts instead of introducing a parallel research or calculation system.
+- Added independent output recomputation for driver evidence identities, Base-parameter mappings, attribution, impact, shares, ranking, and reconciliation.
+- Preserved validation for immutable schema 3.0-3.2 outputs and expanded the suite to 123 tests across all 22 registered revenue models.
+
 ## v3.3.0 — 2026-07-13
 
 - Replaced the central formula dispatcher with an immutable, validated model registry while preserving all 22 model IDs and compatibility exports.

@@ -2,7 +2,7 @@
 
 ## 1. Identity
 
-Require `schema_version="3.2"`, company, `as_of_date`, currency, scale in `unit`, fiscal-year end, base year, consecutive forecast years, sources, evidence claims, parameters, history, segments, reported-total parameter ID, nine-dimension research coverage, management-communication coverage, and a management-target ledger.
+Require `schema_version="3.3"`, company, `as_of_date`, currency, scale in `unit`, fiscal-year end, base year, consecutive forecast years, sources, evidence claims, parameters, history, segments, reported-total parameter ID, nine-dimension research coverage, a causal growth-driver tree, management-communication coverage, and a management-target ledger.
 
 Use `pre_revenue=true` only when reported and segment base revenue are zero. A genuinely pre-revenue company may use an empty history.
 
@@ -27,7 +27,7 @@ Every claim requires:
 }
 ```
 
-`reported_fact` and `management_guidance` require an `exact_value` claim whose extracted value, unit, and period match the parameter. Source-linked assumptions require a linked rationale-support claim. Historical revenue, recognition policies, scenario probabilities, and actual revenue use their dedicated target types.
+`reported_fact` and `management_guidance` require an `exact_value` claim whose extracted value, unit, and period match the parameter. Source-linked assumptions require a linked rationale-support claim. Historical revenue, recognition policies, scenario probabilities, growth-driver evidence nodes, and actual revenue use their dedicated target types. A growth-driver evidence claim uses `target_type="growth_driver"`, targets the stable `evidence_id`, and uses `rationale_support`.
 
 The deterministic validator proves mapping, identity, hash, date, and extracted-value consistency. It cannot understand a live webpage; the research agent must open the page before creating the claim.
 
@@ -143,11 +143,47 @@ Ratio parameters are non-negative. `maximum` caps the target at `source × ratio
 
 Elimination parameters use dimension `revenue`, must be non-positive, and may not make a segment negative. Do not also include the same amount in `forecast_adjustments`.
 
-## 7. Scenario probabilities
+## 7. Causal growth-driver tree
+
+`growth_driver_tree.status` is `modeled` or `data_gap`. A data gap has no drivers and requires a rationale. A modeled tree contains one to ten roots; the report ranks at most five positive roots.
+
+Each root requires a stable ID, concise title/thesis, two-to-eight-step causal chain, Base-path parameter IDs, segment attribution weights, in-horizon start/end years, persistence and rationale, checked evidence nodes, leading indicators, falsifiers, and counterevidence status/rationale. Evidence types are non-empty analyst-defined labels rather than an industry enum. `inference_distance` is `direct`, `one_step`, `analogical`, or `contrary`.
+
+```json
+{
+  "status": "modeled",
+  "drivers": [{
+    "driver_id": "category_and_geography_expansion",
+    "title": "Category and geography expansion broadens demand",
+    "thesis": "New offers and distribution expand recognized product revenue.",
+    "causal_chain": ["new offers and channels", "more eligible customers", "higher delivered volume", "recognized segment revenue"],
+    "parameter_ids": ["units_2026_base", "units_2027_base"],
+    "segment_attribution": [{"segment_name": "Products", "weight": 1.0}],
+    "horizon": {"start_year": 2026, "end_year": 2027},
+    "persistence": "multi_year_structural",
+    "persistence_rationale": "The offer and distribution build-out spans the forecast horizon.",
+    "evidence_nodes": [{
+      "evidence_id": "checked_launch_and_channel_plan",
+      "evidence_type": "company_execution",
+      "inference_distance": "direct",
+      "conclusion": "Checked plans support the modeled launch and channel timing.",
+      "claim_ids": ["claim_checked_launch_and_channel_plan"]
+    }],
+    "leading_indicators": ["launch cadence", "active channels", "delivered units"],
+    "falsifiers": ["launches or delivered units remain below the low case"],
+    "counterevidence_status": "searched_none_found",
+    "counterevidence_rationale": "Primary and independent sources were checked for delays and weak demand."
+  }]
+}
+```
+
+Within each root, a segment may appear once. Across all roots, weights for every segment must sum to one. Every mapped parameter must actually enter the Base forecast and be Base/shared. See `growth-driver-tree.md` for research and inference rules.
+
+## 8. Scenario probabilities
 
 Probabilities are optional. When supplied, require low/base/high values summing to one, a rationale, and `probability_claim_ids` targeting `scenario_probability`.
 
-## 8. Sensitivities
+## 9. Sensitivities
 
 Each base-referenced assumption can appear once. Supported shocks:
 
@@ -156,11 +192,11 @@ Each base-referenced assumption can appear once. Supported shocks:
 
 The output records requested values, effective bounded values, and clamp flags. Use absolute/range shocks for zero-base parameters.
 
-## 9. Theme and historical accuracy
+## 10. Theme and historical accuracy
 
 Theme counterfactual IDs must be non-negative terminal-year revenue assumptions for low/base/high. Historical accuracy accepts only `historical_accuracy_records` emitted by backtesting; the engine verifies each record hash and imports WAPE automatically.
 
-## 10. Management communication and targets
+## 11. Management communication and targets
 
 `management_communication_coverage` contains exactly the six categories defined in `management-targets.md`. Every record contains status, checked date, conclusion, source IDs and `material_revenue_target_ids`; unavailable/inapplicable records require a rationale.
 

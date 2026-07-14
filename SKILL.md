@@ -1,6 +1,6 @@
 ---
 name: revenue-forecast
-description: Build auditable company revenue forecasts by segment from source-linked operating drivers, management targets, revenue-recognition timing, low/base/high scenarios, annual paths, CAGR, incremental revenue, sensitivity, confidence, immutable snapshots, and historical forecast errors. Use for revenue, sales growth, guidance or long-term revenue goals, segment growth, order or backlog conversion, capacity, subscribers, users, transaction activity, volume-price, market-share, or theme-driven revenue elasticity. Keep the scope strictly on revenue and hand non-revenue investment analysis to the relevant invest skill.
+description: Build auditable company revenue forecasts by segment from source-linked operating drivers, ranked causal growth-driver trees, management targets, revenue-recognition timing, low/base/high scenarios, annual paths, CAGR, incremental revenue, sensitivity, confidence, immutable snapshots, and historical forecast errors. Use for revenue, sales growth, main multi-year growth drivers, guidance or long-term revenue goals, segment growth, order or backlog conversion, capacity, subscribers, users, transaction activity, volume-price, market-share, or theme-driven revenue elasticity. Keep the scope strictly on revenue and hand non-revenue investment analysis to the relevant invest skill.
 ---
 
 # Revenue Forecast
@@ -9,7 +9,7 @@ Forecast recognized revenue from explicit, source-traceable operating drivers. T
 
 ## Scope boundary
 
-Produce historical revenue, segment revenue, recognized company revenue, annual growth, CAGR, incremental revenue, revenue mix, theme elasticity, scenario ranges, sensitivities, confidence, sources, and forecast errors.
+Produce historical revenue, a concise ranked list of future revenue drivers, an auditable causal/evidence tree, segment revenue, recognized company revenue, annual growth, CAGR, incremental revenue, revenue mix, theme elasticity, scenario ranges, sensitivities, confidence, sources, and forecast errors.
 
 Do not produce stock-price, valuation, profitability, cash-generation, investment-rating, expected-return, or position-sizing conclusions. Use the relevant `invest-*` skill if the user separately requests them.
 
@@ -25,6 +25,7 @@ Read only what the task needs:
 
 - Read [references/data-governance.md](references/data-governance.md) before collecting or accepting data.
 - Read [references/research-coverage.md](references/research-coverage.md) before deciding which research conclusions enter the model.
+- Read [references/growth-driver-tree.md](references/growth-driver-tree.md) before selecting, evidencing, and ranking the main future revenue drivers.
 - Read [references/management-targets.md](references/management-targets.md) before accepting that official communications and forward revenue targets are complete.
 - Read [references/accounting-boundaries.md](references/accounting-boundaries.md) when contracts, projects, platforms, banks, or insurers require accounting judgment.
 - Read [references/model-library.md](references/model-library.md) before assigning segment driver models.
@@ -106,6 +107,14 @@ Construct low, base, and high cases from parameter-level drivers. Require the sa
 
 Do not create scenario probabilities by default. If probabilities are used, document their calibration rationale and source IDs.
 
+### 6A. Build the causal revenue-driver tree
+
+Identify the smallest set of causal mechanisms that explains the complete Base segment path. For each root driver, write a short thesis, a two-to-eight-step causal chain, its forecast horizon and persistence, the actual Base parameter IDs it informs, leading indicators, falsifiers, and the result of an explicit counterevidence search.
+
+Attach checked evidence nodes by evidence type and inference distance. Keep evidence categories open-ended so the same contract works across industries. Treat product reviews, weather, peer sales, channel stock-outs, and search snippets as indirect leads unless a checked causal bridge connects them to the company's modeled volume, price, mix, customers, utilization, backlog conversion, or recognized revenue.
+
+Allocate each segment across root drivers with explicit weights that sum to one. Rank the positive roots by Base terminal segment-revenue increment, not narrative conviction or growth rate. Show at most five main drivers and allow fewer when evidence is insufficient. Preserve negative roots as revenue headwinds and disclose company-level forecast adjustments separately.
+
 ### 7. Aggregate and bridge
 
 Calculate recognized segment revenue before company revenue. When segments share a hard ceiling, depend on another segment, or contain measured internal revenue, apply explicit `revenue_constraints` after recognition and before aggregation. Preserve both `recognized_revenue` and constrained `effective_revenue`, plus a deterministic before/adjustment/after audit. Never use a constraint as an unexplained growth plug.
@@ -136,12 +145,13 @@ Deliver:
 
 1. base revenue and information date;
 2. low/base/high annual revenue and CAGR;
-3. segment contribution to incremental revenue;
-4. operating-driver trace;
-5. recognition assumptions;
-6. sensitivities and confidence limitations;
-7. official-communication coverage and management-target attainment;
-8. parameter-level source table.
+3. three-to-five concise main future revenue drivers, or fewer rather than fabricated entries;
+4. the causal/evidence tree, quantified driver attribution, leading indicators, and falsifiers;
+5. segment contribution to incremental revenue;
+6. operating-driver trace and recognition assumptions;
+7. sensitivities and confidence limitations;
+8. official-communication coverage and management-target attainment;
+9. parameter-level source table.
 
 ### 11. Freeze and backtest
 
@@ -176,6 +186,8 @@ Block output when any of these is true:
 - historical base revenue does not equal reported base revenue;
 - segment base revenue plus adjustments does not reconcile to reported revenue;
 - a driver has the wrong period, scenario, unit, range, or parameter identity;
+- a modeled growth-driver tree is missing, maps to a parameter outside the Base path, lacks checked supporting evidence, omits leading indicators or falsifiers, or fails to allocate every segment exactly once in aggregate;
+- claimed counterevidence is not represented by a contrary evidence node, or a driver/evidence claim cannot be traced to its checked source;
 - a derived formula cannot be safely recomputed to its stored value;
 - project backlog or delivery orders fail base opening, stock-flow, or annual continuity;
 - revenue-recognition metadata is incomplete;

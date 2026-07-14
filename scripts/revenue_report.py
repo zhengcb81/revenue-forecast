@@ -20,9 +20,11 @@ from revenue_core import (
     calculate_model_path,
     calculate_cagr,
     calculate_confidence,
+    calculate_growth_driver_analysis,
     canonical_sha256,
     parse_iso_date,
     require,
+    validate_growth_driver_tree,
 )
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 
@@ -63,7 +65,7 @@ def _walk_keys(value: Any, path: str = "root") -> None:
 def validate_forecast_output(result: dict[str, Any]) -> None:
     for key in result:
         require(str(key).strip().lower() not in PROHIBITED_OUTPUT_KEYS, f"prohibited non-revenue output key: root.{key}")
-    for key in ("consolidated_forecast", "confidence", "theme_analysis", "probability_weighted_forecast"):
+    for key in ("consolidated_forecast", "confidence", "theme_analysis", "probability_weighted_forecast", "growth_driver_analysis"):
         if result.get(key) is not None:
             _walk_keys(result[key], f"root.{key}")
     required = (
@@ -92,7 +94,11 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         require(key in result, f"forecast output missing field: {key}")
     require(result["schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS, "forecast output schema_version mismatch")
     if result["schema_version"] == FORECAST_SCHEMA_VERSION:
-        require(result["engine_version"] in {"3.2.0", "3.2.1", ENGINE_VERSION}, "forecast output engine_version mismatch")
+        require(result["engine_version"] == ENGINE_VERSION, "forecast output engine_version mismatch")
+        require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
+        require("growth_driver_analysis" in result, "forecast output missing field: growth_driver_analysis")
+    elif result["schema_version"] == "3.2":
+        require(result["engine_version"] in {"3.2.0", "3.2.1", "3.3.0"}, "legacy forecast output engine_version mismatch")
         require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
     elif result["schema_version"] == "3.1":
         require(result["engine_version"] == "3.1.0", "legacy forecast output engine_version mismatch")
@@ -129,7 +135,10 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         for year in years:
             require(segment["scenarios"]["low"]["recognized_revenue"][year] <= segment["scenarios"]["base"]["recognized_revenue"][year] <= segment["scenarios"]["high"]["recognized_revenue"][year], f"segment scenario ordering mismatch: {segment['name']}/{year}")
 
-    current_constraint_contract = result["schema_version"] == FORECAST_SCHEMA_VERSION and result["engine_version"] == ENGINE_VERSION
+    current_constraint_contract = (
+        (result["schema_version"], result["engine_version"])
+        in {("3.2", "3.3.0"), (FORECAST_SCHEMA_VERSION, ENGINE_VERSION)}
+    )
     if current_constraint_contract:
         require(isinstance(result.get("revenue_constraints"), list), "forecast output missing revenue_constraints")
         require(isinstance(result.get("constraint_audit"), list), "forecast output missing constraint_audit")
@@ -231,7 +240,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             expected_gap = f"{record['dimension']}: {record['conclusion']}"
             require(expected_gap in result.get("data_gaps", []), f"research data gap missing from output: {record['dimension']}")
     require(coverage.get("counts") == recomputed_counts, "research_coverage counts mismatch")
-    if result["schema_version"] in {"3.1", FORECAST_SCHEMA_VERSION}:
+    if result["schema_version"] in {"3.1", "3.2", FORECAST_SCHEMA_VERSION}:
         target_coverage = result["management_target_coverage"]
         require(isinstance(target_coverage, dict), "management_target_coverage output must be an object")
         communications = target_coverage.get("communications")
@@ -261,7 +270,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             require(target.get("treatment") in MANAGEMENT_TARGET_TREATMENTS, f"invalid management target treatment: {target_id}")
             comparisons = target.get("scenario_comparison")
             require(isinstance(comparisons, dict), f"management target scenario comparison must be an object: {target_id}")
-            if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+            if result["schema_version"] in {"3.2", FORECAST_SCHEMA_VERSION}:
                 require(target.get("measurement_basis") in MANAGEMENT_TARGET_MEASUREMENT_BASES, f"invalid management target measurement basis: {target_id}")
                 require(isinstance(target.get("measurement_periods"), list), f"invalid management target measurement periods: {target_id}")
             if target["treatment"] in {"modeled_scenario", "scenario_boundary"}:
@@ -339,8 +348,44 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         "as_of_date": parse_iso_date(result["as_of_date"], "as_of_date"),
         "research_coverage": {"counts": coverage["counts"]},
     }
-    if result["schema_version"] in {"3.1", FORECAST_SCHEMA_VERSION}:
+    if result["schema_version"] in {"3.1", "3.2", FORECAST_SCHEMA_VERSION}:
         reconstructed_validated["management_target_coverage"] = {"counts": result["management_target_coverage"]["counts"]}
+    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+        analysis = result["growth_driver_analysis"]
+        require(isinstance(analysis, dict), "growth_driver_analysis output must be an object")
+        status = analysis.get("status")
+        require(status in {"modeled", "data_gap"}, f"invalid growth_driver_analysis status: {status}")
+        normalized_drivers = []
+        for driver in analysis.get("drivers", []):
+            require(isinstance(driver, dict), "growth_driver_analysis driver must be an object")
+            normalized_drivers.append({
+                key: value
+                for key, value in driver.items()
+                if key not in {
+                    "terminal_increment_by_segment",
+                    "estimated_base_terminal_increment",
+                    "share_of_positive_driver_increment",
+                }
+            })
+        growth_tree = {"status": status, "drivers": normalized_drivers}
+        if status == "data_gap":
+            growth_tree["rationale"] = analysis.get("rationale")
+        growth_data = {
+            "forecast_years": result["forecast_years"],
+            "segments": reconstructed_segments,
+            "forecast_adjustments": reconstructed_adjustments,
+            "revenue_constraints": result.get("revenue_constraints", []),
+            "growth_driver_tree": growth_tree,
+        }
+        validated_growth_tree = validate_growth_driver_tree(
+            growth_data,
+            reconstructed_validated["source_index"],
+            parameter_index,
+            reconstructed_validated["claim_index"],
+        )
+        reconstructed_validated["growth_driver_tree"] = validated_growth_tree
+        expected_growth_analysis = calculate_growth_driver_analysis(reconstructed_validated, result)
+        require(expected_growth_analysis == analysis, "growth driver analysis recomputation mismatch")
     expected_confidence = calculate_confidence(reconstructed_data, reconstructed_validated, result, result.get("sensitivities", []))
     require(expected_confidence["components"] == confidence["components"], "confidence components recomputation mismatch")
     require(math.isclose(float(expected_confidence["score"]), float(confidence["score"]), rel_tol=1e-9, abs_tol=1e-9), "confidence score recomputation mismatch")
@@ -405,6 +450,29 @@ def render_markdown(result: dict[str, Any]) -> str:
             f"- 加权终值：{_num(weighted['terminal_revenue'])}；隐含CAGR：{_pct(weighted['expected_terminal_implied_cagr'])}。",
             f"- 校准理由：{_escape(weighted['probability_rationale'])}",
         ])
+
+    driver_analysis = result.get("growth_driver_analysis")
+    if driver_analysis is not None:
+        lines.extend(["", "## 未来收入主要驱动力", ""])
+        if driver_analysis["status"] == "data_gap":
+            lines.append(f"- 尚未形成可审计驱动树：{_escape(driver_analysis['rationale'])}")
+        elif driver_analysis["top_drivers"]:
+            for driver in driver_analysis["top_drivers"]:
+                lines.append(
+                    f"{driver['rank']}. **{_escape(driver['title'])}** — {_escape(driver['thesis'])} "
+                    f"（Base终年增量 {_num(driver['estimated_base_terminal_increment'])}；"
+                    f"占正向驱动 {_pct(driver['share_of_positive_driver_increment'])}；"
+                    f"证据 {_escape(driver['evidence_status'])}）"
+                )
+        else:
+            lines.append("- Base情景未识别出正向终年营收增量；详见下方驱动树与逆风项。")
+        if driver_analysis.get("headwinds"):
+            lines.extend(["", "### 主要收入逆风", ""])
+            for driver in driver_analysis["headwinds"]:
+                lines.append(
+                    f"- **{_escape(driver['title'])}** — {_escape(driver['thesis'])} "
+                    f"（Base终年影响 {_num(driver['estimated_base_terminal_increment'])}）"
+                )
 
     lines.extend(["", "## 历史营收", "", "| 年度 | 营收 | 来源ID |", "|---:|---:|---|"])
     for record in result["historical_revenue"]:
@@ -498,6 +566,44 @@ def render_markdown(result: dict[str, Any]) -> str:
         lines.append(f"| {_escape(item['name'])} | {_num(item['terminal_incremental_revenue'])} |")
     lines.append(f"| 公司级调整 | {_num(contribution['adjustments'])} |")
     lines.append(f"| 合计 | {_num(contribution['total'])} |")
+
+    if driver_analysis is not None:
+        lines.extend(["", "## 收入增长驱动树", ""])
+        if driver_analysis["status"] == "data_gap":
+            lines.append(f"- 数据缺口：{_escape(driver_analysis['rationale'])}")
+        else:
+            for driver in driver_analysis["drivers"]:
+                lines.extend([
+                    f"### {_escape(driver['title'])}",
+                    "",
+                    f"- 结论：{_escape(driver['thesis'])}",
+                    f"- 因果链：{_escape(' → '.join(driver['causal_chain']))}",
+                    f"- Base终年增量：{_num(driver['estimated_base_terminal_increment'])}；正向增量占比：{_pct(driver['share_of_positive_driver_increment'])}",
+                    f"- 归因分部：{_escape(', '.join(item['segment_name'] + '=' + _pct(item['weight']) for item in driver['segment_attribution']))}",
+                    f"- 模型参数：{_escape(', '.join(driver['parameter_ids']))}",
+                    f"- 持续性：{_escape(driver['persistence'])}；{_escape(driver['persistence_rationale'])}",
+                    f"- 领先指标：{_escape('；'.join(driver['leading_indicators']))}",
+                    f"- 可证伪条件：{_escape('；'.join(driver['falsifiers']))}",
+                    f"- 反证检索：{_escape(driver['counterevidence_status'])}；{_escape(driver['counterevidence_rationale'])}",
+                    f"- 证据状态：{_escape(driver['evidence_status'])}",
+                    "- 支撑证据：",
+                ])
+                for node in driver["evidence_nodes"]:
+                    lines.append(
+                        f"  - [{_escape(node['evidence_type'])}/{_escape(node['inference_distance'])}] "
+                        f"{_escape(node['conclusion'])}（Claim: {_escape(', '.join(node['claim_ids']))}；"
+                        f"来源: {_escape(', '.join(node['source_ids']))}）"
+                    )
+                lines.append("")
+            reconciliation = driver_analysis["reconciliation"]
+            lines.extend([
+                "### 驱动归因对账",
+                "",
+                f"- 驱动归因的分部增量：{_num(reconciliation['driver_attributed_segment_increment'])}",
+                f"- 分部增量合计：{_num(reconciliation['segment_increment_total'])}",
+                f"- 未归入经营驱动排名的公司级调整：{_num(reconciliation['unattributed_company_adjustments'])}",
+                f"- 与公司总增量差额：{_num(reconciliation['difference'])}",
+            ])
 
     lines.extend(["", "## 敏感性", ""])
     if result["sensitivities"]:

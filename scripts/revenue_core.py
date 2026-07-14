@@ -16,7 +16,6 @@ from urllib.parse import urlparse
 from model_registry import (
     MODEL_DRIVER_DIMENSIONS as REGISTERED_MODEL_DRIVER_DIMENSIONS,
     MODEL_RATIO_DRIVERS as REGISTERED_MODEL_RATIO_DRIVERS,
-    MODEL_REGISTRY,
     MODEL_SPECS as REGISTERED_MODEL_SPECS,
     ModelRegistryError,
     calculate_registered_model,
@@ -30,11 +29,11 @@ from revenue_constraints import (
 
 
 SCENARIOS = ("low", "base", "high")
-SKILL_VERSION = "3.3.0"
+SKILL_VERSION = "3.4.0"
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
-FORECAST_SCHEMA_VERSION = "3.2"
-SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", "3.1", FORECAST_SCHEMA_VERSION}
+FORECAST_SCHEMA_VERSION = "3.3"
+SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", "3.1", "3.2", FORECAST_SCHEMA_VERSION}
 PARAMETER_KINDS = {
     "reported_fact",
     "derived_fact",
@@ -131,6 +130,10 @@ MANAGEMENT_TARGET_MEASUREMENT_BASES = {
     "cumulative_periods",
     "ambiguous",
 }
+GROWTH_DRIVER_TREE_STATUSES = {"modeled", "data_gap"}
+GROWTH_DRIVER_PERSISTENCE = {"multi_year_structural", "cyclical", "temporary", "uncertain"}
+GROWTH_DRIVER_INFERENCE_DISTANCES = {"direct", "one_step", "analogical", "contrary"}
+GROWTH_DRIVER_COUNTEREVIDENCE_STATUSES = {"found", "searched_none_found", "data_gap"}
 
 
 class ForecastInputError(ValueError):
@@ -238,6 +241,7 @@ def validate_top_level(data: dict[str, Any]) -> tuple[list[int], date]:
         "segments",
         "reported_total_revenue_parameter_id",
         "research_coverage",
+        "growth_driver_tree",
         "management_communication_coverage",
         "management_targets",
         "evidence_claims",
@@ -440,7 +444,10 @@ def validate_evidence_claims(
     claims = data.get("evidence_claims")
     require(isinstance(claims, list) and claims, "evidence_claims must be a non-empty list")
     index: dict[str, dict[str, Any]] = {}
-    allowed_target_types = {"parameter", "historical_revenue", "recognition_policy", "scenario_probability", "management_target"}
+    allowed_target_types = {
+        "parameter", "historical_revenue", "recognition_policy", "scenario_probability",
+        "management_target", "growth_driver",
+    }
     allowed_support_types = {"exact_value", "rationale_support", "policy_support"}
     for position, claim in enumerate(claims):
         prefix = f"evidence_claims[{position}]"
@@ -1238,8 +1245,10 @@ def calculate_confidence(
         "scenario_consistency": True,
         "research_coverage": True,
     }
-    if data.get("schema_version") == FORECAST_SCHEMA_VERSION:
+    if data.get("schema_version") in {"3.1", "3.2", FORECAST_SCHEMA_VERSION}:
         quality_gates["management_target_coverage"] = True
+    if data.get("schema_version") == FORECAST_SCHEMA_VERSION:
+        quality_gates["growth_driver_tree"] = True
     limitations = [
         item
         for condition, item in (
@@ -1259,6 +1268,13 @@ def calculate_confidence(
         limitations.append(
             f"Management target coverage contains {target_coverage['counts']['targets_unmodeled']} unmodeled material/contextual target(s)"
         )
+    limitations.extend(validated.get("growth_driver_tree", {}).get("limitations", []))
+    growth_analysis = result.get("growth_driver_analysis")
+    if growth_analysis and not math.isclose(
+        float(growth_analysis.get("unattributed_company_adjustments", 0)), 0.0,
+        rel_tol=0, abs_tol=1e-9,
+    ):
+        limitations.append("Company-level forecast adjustments are disclosed separately from operating growth-driver ranking")
     return {
         "score": score,
         "rating": rating,
@@ -1284,6 +1300,7 @@ def run_forecast(data: dict[str, Any]) -> dict[str, Any]:
     }
     result["management_target_coverage"] = add_management_target_analysis(validated, result)
     add_scenario_analysis(data, validated, result)
+    result["growth_driver_analysis"] = calculate_growth_driver_analysis(validated, result)
     sensitivities = calculate_sensitivities(data, result)
     result["sensitivities"] = sensitivities
     result["theme_analysis"] = calculate_theme_analysis(data, validated, result)
@@ -1292,6 +1309,7 @@ def run_forecast(data: dict[str, Any]) -> dict[str, Any]:
     result["data_gaps"] = list(dict.fromkeys([
         *data.get("data_gaps", []),
         *validated["research_coverage"]["gap_messages"],
+        *validated["growth_driver_tree"]["gap_messages"],
         *validated["management_target_coverage"]["gap_messages"],
     ]))
     result["disconfirming_indicators"] = list(data.get("disconfirming_indicators", []))
@@ -1420,6 +1438,393 @@ def collect_parameter_roles(
         "foundation": foundation,
         "forecast": forecast,
         "used": foundation | forecast,
+    }
+
+
+def base_forecast_parameter_ids(
+    data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]
+) -> set[str]:
+    """Return the expanded parameter set that actually enters the base forecast path."""
+    parameter_ids: set[str] = set()
+    for segment in data.get("segments", []):
+        if not isinstance(segment, dict):
+            continue
+        base_scenario = segment.get("scenarios", {}).get("base", {})
+        if isinstance(base_scenario, dict):
+            driver_map = base_scenario.get("driver_parameter_ids", {})
+            if isinstance(driver_map, dict):
+                for ids in driver_map.values():
+                    parameter_ids.update(_listed_parameter_ids(ids))
+        recognition = segment.get("recognition", {})
+        if isinstance(recognition, dict):
+            for container in ("carry_in_parameter_ids", "progress_parameter_ids"):
+                scenario_map = recognition.get(container, {})
+                if isinstance(scenario_map, dict):
+                    parameter_ids.update(_listed_parameter_ids(scenario_map.get("base", [])))
+    for adjustment in data.get("forecast_adjustments", []):
+        if not isinstance(adjustment, dict):
+            continue
+        scenario_map = adjustment.get("scenario_parameter_ids", {})
+        if isinstance(scenario_map, dict):
+            parameter_ids.update(_listed_parameter_ids(scenario_map.get("base", [])))
+    parameter_ids.update(constraint_parameter_ids(data.get("revenue_constraints", [])))
+    return _expand_derived_inputs(parameter_ids, parameter_index)
+
+
+def base_segment_parameter_ids(
+    data: dict[str, Any], parameter_index: dict[str, dict[str, Any]]
+) -> dict[str, set[str]]:
+    """Map Base-path parameters to the segment revenue paths they can affect."""
+    segment_parameters: dict[str, set[str]] = {}
+    for segment in data.get("segments", []):
+        if not isinstance(segment, dict) or not isinstance(segment.get("name"), str):
+            continue
+        parameter_ids: set[str] = set()
+        base_scenario = segment.get("scenarios", {}).get("base", {})
+        if isinstance(base_scenario, dict):
+            driver_map = base_scenario.get("driver_parameter_ids", {})
+            if isinstance(driver_map, dict):
+                for ids in driver_map.values():
+                    parameter_ids.update(_listed_parameter_ids(ids))
+        recognition = segment.get("recognition", {})
+        if isinstance(recognition, dict):
+            for container in ("carry_in_parameter_ids", "progress_parameter_ids"):
+                scenario_map = recognition.get(container, {})
+                if isinstance(scenario_map, dict):
+                    parameter_ids.update(_listed_parameter_ids(scenario_map.get("base", [])))
+        segment_parameters[segment["name"]] = _expand_derived_inputs(parameter_ids, parameter_index)
+
+    for constraint in data.get("revenue_constraints", []):
+        if not isinstance(constraint, dict):
+            continue
+        affected_segments: set[str] = set()
+        if constraint.get("type") == "sum_cap":
+            affected_segments.update(constraint.get("segments", []))
+        elif constraint.get("type") == "linked_ratio":
+            affected_segments.add(constraint.get("target_segment"))
+        elif constraint.get("type") == "elimination":
+            affected_segments.update(constraint.get("segment_adjustment_parameter_ids", {}))
+        linked_parameters = _expand_derived_inputs(
+            constraint_parameter_ids([constraint]), parameter_index
+        )
+        for segment_name in affected_segments:
+            if segment_name in segment_parameters:
+                segment_parameters[segment_name].update(linked_parameters)
+    return segment_parameters
+
+
+def _string_list(value: Any, field: str, minimum: int = 1, maximum: int = 10) -> list[str]:
+    require(isinstance(value, list), f"{field} must be a list")
+    require(minimum <= len(value) <= maximum, f"{field} must contain {minimum}-{maximum} items")
+    require(all(isinstance(item, str) and item.strip() for item in value), f"{field} must contain non-empty strings")
+    normalized = [item.strip() for item in value]
+    require(len(normalized) == len(set(normalized)), f"{field} must not contain duplicates")
+    return normalized
+
+
+def _validate_growth_driver_attribution(
+    driver_id: str,
+    attribution: Any,
+    available_segments: set[str],
+    attribution_totals: dict[str, float],
+) -> tuple[set[str], list[dict[str, Any]]]:
+    require(isinstance(attribution, list) and attribution, f"{driver_id}.segment_attribution must be a non-empty list")
+    seen_segments: set[str] = set()
+    normalized: list[dict[str, Any]] = []
+    for position, item in enumerate(attribution):
+        require(isinstance(item, dict), f"{driver_id}.segment_attribution[{position}] must be an object")
+        segment_name = item.get("segment_name")
+        require(segment_name in available_segments, f"unknown growth driver segment: {segment_name}")
+        require(segment_name not in seen_segments, f"duplicate segment attribution in {driver_id}: {segment_name}")
+        seen_segments.add(segment_name)
+        weight = finite_number(item.get("weight"), f"{driver_id}.segment_attribution[{position}].weight")
+        require(0 < weight <= 1, f"growth driver attribution weight must be in (0, 1]: {driver_id}/{segment_name}")
+        attribution_totals[segment_name] += weight
+        normalized.append({"segment_name": segment_name, "weight": weight})
+    return seen_segments, normalized
+
+
+def _validate_growth_driver_parameters(
+    driver_id: str,
+    parameter_ids: Any,
+    parameter_index: dict[str, dict[str, Any]],
+    base_parameter_ids: set[str],
+    parameters_by_segment: dict[str, set[str]],
+    attributed_segments: set[str],
+) -> list[str]:
+    require(isinstance(parameter_ids, list) and parameter_ids, f"{driver_id}.parameter_ids must be a non-empty list")
+    require(len(parameter_ids) == len(set(parameter_ids)), f"{driver_id}.parameter_ids contains duplicates")
+    for parameter_id in parameter_ids:
+        require(parameter_id in parameter_index, f"unknown growth driver parameter_id: {parameter_id}")
+        require(parameter_id in base_parameter_ids, f"growth driver parameter_id is not used by the base forecast: {parameter_id}")
+        require(parameter_index[parameter_id].get("scenario") in (None, "all", "base"), f"growth driver parameter is not a base/shared assumption: {parameter_id}")
+        require(
+            any(parameter_id in parameters_by_segment[segment_name] for segment_name in attributed_segments),
+            f"growth driver parameter does not affect an attributed segment: {driver_id}/{parameter_id}",
+        )
+    return list(parameter_ids)
+
+
+def _validate_growth_driver_evidence(
+    driver_id: str,
+    evidence_nodes: Any,
+    counterevidence_status: str,
+    evidence_ids: set[str],
+    source_index: dict[str, dict[str, Any]],
+    claim_index: dict[str, dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[str], list[str], str]:
+    require(isinstance(evidence_nodes, list) and evidence_nodes, f"{driver_id}.evidence_nodes must be a non-empty list")
+    require(len(evidence_nodes) <= 10, f"{driver_id}.evidence_nodes cannot exceed 10 items")
+    normalized_nodes: list[dict[str, Any]] = []
+    for position, node in enumerate(evidence_nodes):
+        require(isinstance(node, dict), f"{driver_id}.evidence_nodes[{position}] must be an object")
+        evidence_id = node.get("evidence_id")
+        require(isinstance(evidence_id, str) and re.fullmatch(r"[A-Za-z0-9_.-]+", evidence_id), f"{driver_id}.evidence_id must be a stable identifier")
+        require(evidence_id not in evidence_ids, f"duplicate growth driver evidence_id: {evidence_id}")
+        evidence_ids.add(evidence_id)
+        evidence_type = node.get("evidence_type")
+        require(isinstance(evidence_type, str) and evidence_type.strip(), f"{evidence_id}.evidence_type is required")
+        inference_distance = node.get("inference_distance")
+        require(inference_distance in GROWTH_DRIVER_INFERENCE_DISTANCES, f"unsupported inference_distance for {evidence_id}: {inference_distance}")
+        conclusion = node.get("conclusion")
+        require(isinstance(conclusion, str) and conclusion.strip(), f"{evidence_id}.conclusion is required")
+        claims = validate_claim_ids(
+            node.get("claim_ids"), claim_index, "growth_driver", evidence_id,
+            f"{driver_id}.evidence_nodes[{position}]", "rationale_support",
+        )
+        node_source_ids = list(dict.fromkeys(claim["source_id"] for claim in claims))
+        require(set(node_source_ids) <= set(source_index), f"unknown source in growth driver evidence: {evidence_id}")
+        normalized_nodes.append({
+            "evidence_id": evidence_id,
+            "evidence_type": evidence_type.strip(),
+            "inference_distance": inference_distance,
+            "conclusion": conclusion.strip(),
+            "claim_ids": list(node["claim_ids"]),
+            "source_ids": node_source_ids,
+        })
+    supporting_nodes = [node for node in normalized_nodes if node["inference_distance"] != "contrary"]
+    require(supporting_nodes, f"{driver_id} requires at least one non-contrary evidence node")
+    if counterevidence_status == "found":
+        require(any(node["inference_distance"] == "contrary" for node in normalized_nodes), f"{driver_id} found counterevidence requires a contrary evidence node")
+    evidence_types = list(dict.fromkeys(node["evidence_type"] for node in supporting_nodes))
+    evidence_source_ids = list(dict.fromkeys(source_id for node in supporting_nodes for source_id in node["source_ids"]))
+    evidence_status = "triangulated" if len(evidence_types) >= 2 and len(evidence_source_ids) >= 2 else "limited"
+    return normalized_nodes, evidence_types, evidence_source_ids, evidence_status
+
+
+def _validate_growth_driver_record(
+    driver: Any,
+    position: int,
+    data: dict[str, Any],
+    parameter_index: dict[str, dict[str, Any]],
+    source_index: dict[str, dict[str, Any]],
+    claim_index: dict[str, dict[str, Any]],
+    context: dict[str, Any],
+) -> dict[str, Any]:
+    prefix = f"growth_driver_tree.drivers[{position}]"
+    require(isinstance(driver, dict), f"{prefix} must be an object")
+    driver_id = driver.get("driver_id")
+    require(isinstance(driver_id, str) and re.fullmatch(r"[A-Za-z0-9_.-]+", driver_id), f"{prefix}.driver_id must be a stable identifier")
+    require(driver_id not in context["driver_ids"], f"duplicate growth driver_id: {driver_id}")
+    context["driver_ids"].add(driver_id)
+    for field in ("title", "thesis", "persistence_rationale", "counterevidence_rationale"):
+        require(isinstance(driver.get(field), str) and driver[field].strip(), f"{driver_id}.{field} is required")
+    causal_chain = _string_list(driver.get("causal_chain"), f"{driver_id}.causal_chain", 2, 8)
+    leading_indicators = _string_list(driver.get("leading_indicators"), f"{driver_id}.leading_indicators", 1, 8)
+    falsifiers = _string_list(driver.get("falsifiers"), f"{driver_id}.falsifiers", 1, 8)
+    attributed_segments, normalized_attribution = _validate_growth_driver_attribution(
+        driver_id, driver.get("segment_attribution"), context["available_segments"], context["attribution_totals"]
+    )
+    parameter_ids = _validate_growth_driver_parameters(
+        driver_id, driver.get("parameter_ids"), parameter_index, context["base_parameter_ids"],
+        context["parameters_by_segment"], attributed_segments,
+    )
+    horizon = driver.get("horizon")
+    require(isinstance(horizon, dict), f"{driver_id}.horizon must be an object")
+    start_year, end_year = horizon.get("start_year"), horizon.get("end_year")
+    require(isinstance(start_year, int) and isinstance(end_year, int), f"{driver_id}.horizon years must be integers")
+    require(data["forecast_years"][0] <= start_year <= end_year <= data["forecast_years"][-1], f"{driver_id}.horizon must fall inside forecast_years")
+    persistence = driver.get("persistence")
+    require(persistence in GROWTH_DRIVER_PERSISTENCE, f"unsupported persistence for {driver_id}: {persistence}")
+    counterevidence_status = driver.get("counterevidence_status")
+    require(counterevidence_status in GROWTH_DRIVER_COUNTEREVIDENCE_STATUSES, f"unsupported counterevidence_status for {driver_id}: {counterevidence_status}")
+    normalized_nodes, evidence_types, evidence_source_ids, evidence_status = _validate_growth_driver_evidence(
+        driver_id, driver.get("evidence_nodes"), counterevidence_status, context["evidence_ids"],
+        source_index, claim_index,
+    )
+    if counterevidence_status == "data_gap":
+        context["gap_messages"].append(f"growth_driver:{driver_id}: counterevidence search is incomplete")
+    if evidence_status == "limited":
+        context["limitations"].append(f"Growth driver {driver_id} is not triangulated across two evidence types and sources")
+    return {
+        "driver_id": driver_id,
+        "title": driver["title"].strip(),
+        "thesis": driver["thesis"].strip(),
+        "causal_chain": causal_chain,
+        "parameter_ids": parameter_ids,
+        "segment_attribution": normalized_attribution,
+        "horizon": {"start_year": start_year, "end_year": end_year},
+        "persistence": persistence,
+        "persistence_rationale": driver["persistence_rationale"].strip(),
+        "evidence_nodes": normalized_nodes,
+        "evidence_types": evidence_types,
+        "evidence_source_ids": evidence_source_ids,
+        "evidence_status": evidence_status,
+        "leading_indicators": leading_indicators,
+        "falsifiers": falsifiers,
+        "counterevidence_status": counterevidence_status,
+        "counterevidence_rationale": driver["counterevidence_rationale"].strip(),
+    }
+
+
+def validate_growth_driver_tree(
+    data: dict[str, Any],
+    source_index: dict[str, dict[str, Any]],
+    parameter_index: dict[str, dict[str, Any]],
+    claim_index: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Validate a generic causal tree that explains the modeled base-case revenue path."""
+    tree = data.get("growth_driver_tree")
+    require(isinstance(tree, dict), "growth_driver_tree must be an object")
+    status = tree.get("status")
+    require(status in GROWTH_DRIVER_TREE_STATUSES, f"unsupported growth_driver_tree status: {status}")
+    drivers = tree.get("drivers")
+    require(isinstance(drivers, list), "growth_driver_tree.drivers must be a list")
+    if status == "data_gap":
+        require(not drivers, "growth_driver_tree data_gap cannot contain drivers")
+        rationale = tree.get("rationale")
+        require(isinstance(rationale, str) and rationale.strip(), "growth_driver_tree data_gap requires rationale")
+        return {
+            "status": status,
+            "rationale": rationale.strip(),
+            "drivers": [],
+            "gap_messages": [f"growth_driver_tree: {rationale.strip()}"],
+            "limitations": ["No auditable revenue growth-driver tree is available"],
+        }
+
+    require(1 <= len(drivers) <= 10, "growth_driver_tree modeled status requires 1-10 drivers")
+    segment_names = [segment.get("name") for segment in data.get("segments", []) if isinstance(segment, dict)]
+    require(all(isinstance(name, str) and name.strip() for name in segment_names), "growth_driver_tree requires valid segment names")
+    available_segments = set(segment_names)
+    base_parameter_ids = base_forecast_parameter_ids(data, parameter_index)
+    parameters_by_segment = base_segment_parameter_ids(data, parameter_index)
+    require(base_parameter_ids, "growth_driver_tree modeled status requires a base forecast path")
+    context: dict[str, Any] = {
+        "available_segments": available_segments,
+        "base_parameter_ids": base_parameter_ids,
+        "parameters_by_segment": parameters_by_segment,
+        "attribution_totals": {name: 0.0 for name in segment_names},
+        "driver_ids": set(),
+        "evidence_ids": set(),
+        "limitations": [],
+        "gap_messages": [],
+    }
+    normalized_drivers = [
+        _validate_growth_driver_record(
+            driver, position, data, parameter_index, source_index, claim_index, context
+        )
+        for position, driver in enumerate(drivers)
+    ]
+    for segment_name, total in context["attribution_totals"].items():
+        require(math.isclose(total, 1.0, rel_tol=0, abs_tol=1e-9), f"growth driver attribution weights must sum to 1 for segment {segment_name}; got {total}")
+    return {
+        "status": status,
+        "drivers": normalized_drivers,
+        "gap_messages": context["gap_messages"],
+        "limitations": context["limitations"],
+    }
+
+
+def calculate_growth_driver_analysis(validated: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+    """Rank causal revenue drivers by reconciled base-case terminal revenue increment."""
+    tree = validated["growth_driver_tree"]
+    base_contribution = result["consolidated_forecast"]["base"]["incremental_contribution"]
+    segment_increments = {
+        item["name"]: float(item["terminal_incremental_revenue"])
+        for item in base_contribution["segments"]
+    }
+    if tree["status"] == "data_gap":
+        return {
+            "status": "data_gap",
+            "rationale": tree["rationale"],
+            "top_drivers": [],
+            "headwinds": [],
+            "drivers": [],
+            "unattributed_company_adjustments": float(base_contribution["adjustments"]),
+            "reconciliation": {
+                "driver_attributed_segment_increment": 0.0,
+                "segment_increment_total": sum(segment_increments.values()),
+                "unattributed_company_adjustments": float(base_contribution["adjustments"]),
+                "company_increment_total": float(base_contribution["total"]),
+                "difference": float(base_contribution["adjustments"]) - float(base_contribution["total"]),
+            },
+        }
+
+    output_drivers: list[dict[str, Any]] = []
+    for driver in tree["drivers"]:
+        by_segment = [
+            {
+                "segment_name": item["segment_name"],
+                "weight": item["weight"],
+                "terminal_incremental_revenue": segment_increments[item["segment_name"]] * item["weight"],
+            }
+            for item in driver["segment_attribution"]
+        ]
+        impact = sum(item["terminal_incremental_revenue"] for item in by_segment)
+        output = copy.deepcopy(driver)
+        output["terminal_increment_by_segment"] = by_segment
+        output["estimated_base_terminal_increment"] = impact
+        output_drivers.append(output)
+
+    positive_total = sum(max(0.0, driver["estimated_base_terminal_increment"]) for driver in output_drivers)
+    for driver in output_drivers:
+        driver["share_of_positive_driver_increment"] = (
+            None if positive_total == 0
+            else max(0.0, driver["estimated_base_terminal_increment"]) / positive_total
+        )
+
+    def summary(driver: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "driver_id": driver["driver_id"],
+            "title": driver["title"],
+            "thesis": driver["thesis"],
+            "estimated_base_terminal_increment": driver["estimated_base_terminal_increment"],
+            "share_of_positive_driver_increment": driver["share_of_positive_driver_increment"],
+            "segment_names": [item["segment_name"] for item in driver["segment_attribution"]],
+            "causal_chain": list(driver["causal_chain"]),
+            "evidence_status": driver["evidence_status"],
+            "leading_indicators": list(driver["leading_indicators"]),
+            "falsifiers": list(driver["falsifiers"]),
+        }
+
+    positive = sorted(
+        (driver for driver in output_drivers if driver["estimated_base_terminal_increment"] > 0),
+        key=lambda driver: (-driver["estimated_base_terminal_increment"], driver["driver_id"]),
+    )
+    negative = sorted(
+        (driver for driver in output_drivers if driver["estimated_base_terminal_increment"] < 0),
+        key=lambda driver: (driver["estimated_base_terminal_increment"], driver["driver_id"]),
+    )
+    top_drivers = [dict(summary(driver), rank=rank) for rank, driver in enumerate(positive[:5], start=1)]
+    headwinds = [dict(summary(driver), rank=rank) for rank, driver in enumerate(negative[:5], start=1)]
+    attributed = sum(driver["estimated_base_terminal_increment"] for driver in output_drivers)
+    segment_total = sum(segment_increments.values())
+    require(math.isclose(attributed, segment_total, rel_tol=1e-9, abs_tol=1e-9), "growth driver attribution does not reconcile to segment increment")
+    adjustments = float(base_contribution["adjustments"])
+    company_total = float(base_contribution["total"])
+    return {
+        "status": "modeled",
+        "top_drivers": top_drivers,
+        "headwinds": headwinds,
+        "drivers": output_drivers,
+        "unattributed_company_adjustments": adjustments,
+        "reconciliation": {
+            "driver_attributed_segment_increment": attributed,
+            "segment_increment_total": segment_total,
+            "unattributed_company_adjustments": adjustments,
+            "company_increment_total": company_total,
+            "difference": attributed + adjustments - company_total,
+        },
     }
 
 
@@ -1753,6 +2158,9 @@ def validate_document(data: dict[str, Any]) -> dict[str, Any]:
     except RevenueConstraintError as exc:
         raise ForecastInputError(str(exc)) from exc
     research_coverage = validate_research_coverage(data, source_index, parameter_index)
+    growth_driver_tree = validate_growth_driver_tree(
+        data, source_index, parameter_index, claim_index
+    )
     management_target_coverage = validate_management_target_coverage(
         data, source_index, parameter_index, claim_index, as_of
     )
@@ -1764,5 +2172,6 @@ def validate_document(data: dict[str, Any]) -> dict[str, Any]:
         "claim_index": claim_index,
         "revenue_constraints": revenue_constraints,
         "research_coverage": research_coverage,
+        "growth_driver_tree": growth_driver_tree,
         "management_target_coverage": management_target_coverage,
     }

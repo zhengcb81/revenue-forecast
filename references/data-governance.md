@@ -33,6 +33,8 @@ Source rank does not directly raise forecast confidence. Confidence uses revenue
 
 ## Evidence claim contract
 
+Growth-driver evidence uses the same checked claim registry as numerical parameters; do not create a parallel citation system. Search-result snippets, unsourced summaries, and model-generated text are discovery leads, not evidence claims. Product reviews, channel stock-outs, weather, peer performance, and similar observations may support an indirect node only when their inference distance is disclosed and the causal bridge to the company's modeled revenue driver is explicit.
+
 Do not connect parameters directly to a URL and call that evidence. Register a claim with target identity, locator, short checked excerpt, excerpt hash, retrieved-content hash, verification status/person/date, and extracted value/unit/period where applicable. The claim source must also be registered on the target parameter.
 
 ## Parameter identities

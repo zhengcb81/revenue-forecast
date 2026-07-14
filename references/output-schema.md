@@ -8,6 +8,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - history: source-linked historical company revenue;
 - research coverage: all nine dimensions, status, revenue mechanism, used parameter IDs, sources, and exclusions or gaps;
 - management target coverage: six official-communication checks, complete target ledger, measurement basis and model periods, perimeter treatment, mapped scenarios, per-period modeled values and numerical attainment;
+- growth-driver analysis: up to five positive drivers ranked by reconciled Base terminal segment-revenue increment, negative headwinds, complete causal/evidence nodes, parameter mapping, persistence, leading indicators, falsifiers, and attribution reconciliation;
 - segments: model, formula, driver values, modeled activity, accounting `recognized_revenue`, constraint-adjusted `effective_revenue`, recognition metadata, carry-in, and unrecognized tail;
 - revenue constraints: frozen definitions plus one audit row per constraint/scenario/year with parameter IDs, affected segments, before value, signed adjustment, after value, and before/after totals;
 - consolidated forecast: low/base/high segment bridge, adjustment bridge, annual revenue, annual growth, terminal revenue, CAGR, and incremental contribution;
@@ -35,6 +36,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - presence of source and parameter traces.
 - nine-dimension completeness, counts, parameter/source identities, and propagation of research data gaps.
 - official-communication completeness, target-ledger identity, cumulative/annual/run-rate measurement arithmetic, mapped-scenario attainment, and propagation of ambiguous or otherwise unmodeled targets.
+- every growth-driver claim/source identity, Base-parameter mapping, segment attribution weight, evidence status, terminal increment, ranking, share, and reconciliation to segment contribution.
 
 It rejects fields for stock prices, valuation, profitability, cash generation, investment ratings, shareholder returns, and position sizing.
 
@@ -44,17 +46,18 @@ The standard renderer includes:
 
 1. information boundary and base revenue;
 2. low/base/high terminal revenue, CAGR, and increment;
-3. historical revenue;
-4. nine-dimension research coverage and model mapping;
-5. management communication and revenue-target coverage;
-6. annual scenario paths;
-7. segment models and recognition;
-8. base-case incremental contribution;
-9. sensitivities;
-10. confidence components;
-11. disconfirming indicators and data gaps;
-12. parameter-to-claim-to-source table;
-13. linked source registry.
+3. a concise list of the main future revenue drivers and revenue headwinds;
+4. historical revenue;
+5. nine-dimension research coverage and model mapping;
+6. management communication and revenue-target coverage;
+7. annual scenario paths;
+8. segment models and recognition;
+9. base-case incremental contribution and the full causal growth-driver tree;
+10. sensitivities;
+11. confidence components;
+12. disconfirming indicators and data gaps;
+13. parameter-to-claim-to-source table;
+14. linked source registry.
 
 Generate both outputs with:
 
