@@ -40,6 +40,7 @@ SCALABLE_DRIVER = {
     "delivery_pipeline": "unit_revenue",
     "milestone_royalty": "royalty_rate",
     "insurance_service": "revenue_per_coverage_unit",
+    "reserve_depletion": "depletion",
 }
 
 
@@ -94,6 +95,18 @@ def model_document(model: str) -> dict:
         else:
             target = SCALABLE_DRIVER[model]
             drivers[target] = [value * multiplier for value in drivers[target]]
+            if model == "reserve_depletion":
+                # Maintain stock-flow balance: closing = opening + additions - depletion
+                drivers["closing_reserves"] = [
+                    o + a - d for o, a, d in zip(drivers["opening_reserves"], drivers["additions"], drivers["depletion"])
+                ]
+                # Maintain continuity: opening[t] = closing[t-1]
+                for i in range(1, len(drivers["opening_reserves"])):
+                    drivers["opening_reserves"][i] = drivers["closing_reserves"][i - 1]
+                    # Recompute closing after adjusting opening
+                    drivers["closing_reserves"][i] = (
+                        drivers["opening_reserves"][i] + drivers["additions"][i] - drivers["depletion"][i]
+                    )
         driver_ids = {}
         for driver, values in drivers.items():
             driver_ids[driver] = []

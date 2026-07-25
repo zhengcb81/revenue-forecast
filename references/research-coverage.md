@@ -66,3 +66,17 @@ policy or market change
 ```
 
 Do not force all nine dimensions into the formula. A well-supported `immaterial` conclusion is preferable to an invented driver.
+
+## Custom dimensions
+
+The nine core dimensions are required. For resource-business forecasts (mineral reserves, drug pipeline, land bank, capacity plan), additional custom dimensions may be added to capture domain-specific research:
+
+| Custom dimension | Use when |
+|---|---|
+| `reserves` | 地质储量、资源分级、储量寿命 |
+| `processing` | 回收率、选冶能力、冶金复杂度 |
+| `regulatory_permits` | 采矿权、环保审批、土地使用权 |
+| `pipeline` | 药物管线阶段、临床试验进展 |
+| `land_bank` | 土地储备构成、开发权、规划条件 |
+
+Custom dimensions follow the same schema as core dimensions (status, conclusion, revenue_mechanism, parameter_ids, source_ids, rationale). They do not replace core dimensions. The engine outputs custom dimensions after the nine core ones.

@@ -52,7 +52,7 @@ The deterministic validator proves mapping, identity, hash, date, and extracted-
 }
 ```
 
-Periods must match `FYyyyy` exactly. Accepted dimensions are `revenue`, `quantity`, `ratio`, `revenue_per_unit`, `activity`, `revenue_per_activity`, `monetary_balance`, `area`, `revenue_per_area`, `backlog`, and `coverage_units`. Monetary dimensions also require company-matching `currency` and `scale`. `time_basis` is `annual` or `point_in_time`.
+Periods must match `FYyyyy` exactly. Accepted dimensions are `revenue`, `quantity`, `ratio`, `revenue_per_unit`, `activity`, `revenue_per_activity`, `monetary_balance`, `area`, `revenue_per_area`, `backlog`, `coverage_units`, and `reserve_volume`. Monetary dimensions also require company-matching `currency` and `scale`. `time_basis` is `annual` or `point_in_time`.
 
 For `derived_fact`, use `x0...xn` in a restricted arithmetic formula and list inputs in that order. The engine recomputes the formula and rejects a conflicting stored value.
 
@@ -187,7 +187,7 @@ Probabilities are optional. When supplied, require low/base/high values summing 
 
 ## 9. Sensitivities
 
-Each base-referenced assumption can appear once. Supported shocks:
+The input field is `sensitivity_tests` (or `sensitivities` as an alias). Each test requires a `name` field; if omitted, the engine auto-generates it from `parameter_id`. Each base-referenced assumption can appear once. Supported shocks:
 
 - `percent`, `percentage_point`, `basis_point`, or `absolute` with positive `shock_value`;
 - `range` or `discrete` with `down_value` and `up_value`.

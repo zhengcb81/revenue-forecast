@@ -327,7 +327,7 @@ def valid_document() -> dict:
 
 class DataContractTests(unittest.TestCase):
     def test_release_and_schema_versions_are_explicit(self) -> None:
-        self.assertEqual(SKILL_VERSION, "3.5.0")
+        self.assertEqual(SKILL_VERSION, "3.9.0")
         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
         self.assertEqual(FORECAST_SCHEMA_VERSION, "3.4")
 
@@ -449,7 +449,7 @@ class DataContractTests(unittest.TestCase):
     def test_research_coverage_requires_all_nine_dimensions(self) -> None:
         data = valid_document()
         data["research_coverage"].pop()
-        with self.assertRaisesRegex(ForecastInputError, "exactly nine"):
+        with self.assertRaisesRegex(ForecastInputError, "at least nine core dimensions"):
             validate_document(data)
 
     def test_research_modeled_driver_must_be_used(self) -> None:

@@ -2,6 +2,35 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## Unreleased
+
+## v3.9.0 — 2026-07-25
+
+- Added `reserve_depletion` model to `model_registry.py` with stock-flow bridge validation (opening + additions - depletion = closing) and year-to-year continuity enforcement. Suitable for mining (ore reserves), pharma (drug pipeline), real estate (land bank), and manufacturing (capacity plan).
+- Added `reserve_volume` parameter dimension to `revenue_core.py` for physical reserve quantities (tonnes, koz, MMboe, sqm).
+- Added `sensitivities` as an alias for `sensitivity_tests` in the input schema, with auto-generation of `name` from `parameter_id` when omitted.
+- Made research coverage validation flexible: nine core dimensions are still required, but additional custom dimensions (e.g., `reserves`, `processing`, `regulatory_permits`) are now accepted.
+- Added `references/resource-business-guidance.md` with domain guidance for reserve-to-revenue businesses.
+- Updated `references/model-library.md`, `references/input-schema.md`, `references/research-coverage.md`, and `SKILL.md` with new model documentation and routing.
+- All 135 tests pass with backward compatibility preserved.
+
+## v3.8.0 — 2026-07-22
+
+- Extracted the on-demand filing fetch (identify → resolve/ensure, market routing, canonical write, reuse-first) into a standalone **filing-fetch** skill. `scripts/company_wiki_source.py` now keeps only the revenue-specific `build_revenue_source_record` that converts a filing-fetch handle into a schema-3.4 source/capture record.
+- SKILL.md step 3 now instructs using the `filing-fetch` skill to obtain filings, then `build_revenue_source_record` to formalize them.
+- Fixed `run_forecasts.py` hardcoded absolute skill path to `Path(__file__).resolve().parents[1]`.
+- Preserved forecast formulas, schema 3.4, the read-only default, and explicit download authorization.
+
+## v3.7.0 — 2026-07-19
+
+- Added fail-closed `company_query` handling to the company-wiki host adapter: fuzzy names, brands, abbreviations, or tickers are identified first, and only one verified active security can construct the canonical source request.
+- Preserved the configurable company-wiki root, read-only resolve default, explicit ensure authorization, existing downloader routing, forecast formulas, and schema 3.4.
+
+## v3.6.0 — 2026-07-18
+
+- Added a host-side company-wiki source adapter that resolves existing indexed filings before any download, delegates explicit missing-source acquisition to company-wiki, verifies canonical whole-file hashes, and builds the existing schema-3.4 capture contract without changing forecast formulas or output schemas.
+- Added strict `config/company_wiki.json` root discovery so moving company-wiki requires a configuration edit rather than Python or caller changes; retained explicit root injection as a compatibility override.
+
 ## v3.5.0 — 2026-07-14
 
 - Added forecast schema 3.4 source-capture receipts that bind claims to opened-source snapshot hashes, capture traces, explicit untrusted-data treatment, and prompt-injection disposition.

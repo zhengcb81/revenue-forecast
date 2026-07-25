@@ -61,6 +61,7 @@ CASES = {
     "delivery_pipeline": ({"opening_orders": [100, 120], "new_orders": [50, 60], "cancellations": [5, 5], "deliveries": [25, 35], "ending_orders": [120, 140], "unit_revenue": [2, 2]}, [50, 70]),
     "milestone_royalty": ({"eligible_sales": [100, 120], "royalty_rate": [0.1, 0.1]}, [10, 12]),
     "insurance_service": ({"coverage_units": [100, 110], "revenue_per_coverage_unit": [2, 2]}, [200, 220]),
+    "reserve_depletion": ({"opening_reserves": [1000, 1020], "additions": [100, 110], "depletion": [80, 90], "closing_reserves": [1020, 1040], "recovery_rate": [0.9, 0.92], "realized_price": [5, 5.5]}, [360.0, 455.4]),
 }
 
 
@@ -98,6 +99,26 @@ class ModelTests(unittest.TestCase):
         parameters, ids = make_parameters("unit_sales", {"units": [10, 10], "unit_revenue": [5, 5], "timing_factor": [0.5, 1.0]})
         result = calculate_model_path("unit_sales", 0, ids, parameters, YEARS, "base")
         self.assertEqual(list(result["annual_revenue"].values()), [25, 50])
+
+    def test_rejects_reserve_stock_flow_imbalance(self) -> None:
+        drivers = {"opening_reserves": [1000, 1020], "additions": [100, 110], "depletion": [80, 90], "closing_reserves": [1000, 1040], "recovery_rate": [0.9, 0.92], "realized_price": [5, 5.5]}
+        parameters, ids = make_parameters("reserve_depletion", drivers)
+        with self.assertRaisesRegex(ForecastInputError, "stock-flow balance"):
+            calculate_model_path("reserve_depletion", 0, ids, parameters, YEARS, "base")
+
+    def test_rejects_reserve_discontinuity(self) -> None:
+        # Year 1: 1000 + 100 - 80 = 1020 (balanced)
+        # Year 2: opening 1030 != closing 1020 (discontinuity), but 1030 + 110 - 90 = 1050 (balanced)
+        drivers = {"opening_reserves": [1000, 1030], "additions": [100, 110], "depletion": [80, 90], "closing_reserves": [1020, 1050], "recovery_rate": [0.9, 0.92], "realized_price": [5, 5.5]}
+        parameters, ids = make_parameters("reserve_depletion", drivers)
+        with self.assertRaisesRegex(ForecastInputError, "continuity"):
+            calculate_model_path("reserve_depletion", 0, ids, parameters, YEARS, "base")
+
+    def test_reserve_depletion_zero_depletion_zero_revenue(self) -> None:
+        drivers = {"opening_reserves": [1000, 1000], "additions": [0, 0], "depletion": [0, 0], "closing_reserves": [1000, 1000], "recovery_rate": [0.9, 0.9], "realized_price": [5, 5]}
+        parameters, ids = make_parameters("reserve_depletion", drivers)
+        result = calculate_model_path("reserve_depletion", 0, ids, parameters, YEARS, "base")
+        self.assertEqual(list(result["annual_revenue"].values()), [0.0, 0.0])
 
 
 if __name__ == "__main__":

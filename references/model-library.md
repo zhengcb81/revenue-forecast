@@ -28,6 +28,7 @@ The runtime source of truth is the immutable `MODEL_REGISTRY` in `scripts/model_
 | `delivery_pipeline` | opening orders, new orders, cancellations, deliveries, ending orders, unit revenue | `timing_factor`, `other_revenue` | deliveries × unit revenue × timing + other |
 | `milestone_royalty` | `eligible_sales`, `royalty_rate` | milestone and service revenue | eligible sales × royalty rate + milestone + service |
 | `insurance_service` | `coverage_units`, `revenue_per_coverage_unit` | `timing_factor`, `other_revenue` | coverage units × revenue/coverage unit × timing + other |
+| `reserve_depletion` | `opening_reserves`, `additions`, `depletion`, `closing_reserves`, `recovery_rate`, `realized_price` | `other_revenue` | depletion × recovery rate × realized price + other |
 
 ## Selection notes
 
@@ -41,6 +42,7 @@ The runtime source of truth is the immutable `MODEL_REGISTRY` in `scripts/model_
 - Use `delivery_pipeline` when order units convert to delivered units; the engine enforces order continuity and base opening orders.
 - Use `insurance_service` only when coverage/service units reconcile to IFRS 17 disclosures; never substitute premiums collected.
 - Use `timing_factor` for year-in-service, commissioning, or explicit seasonal availability. Do not use it as an unsupported growth plug.
+- Use `reserve_depletion` when revenue derives from depleting a stock of physical or logical reserves (mineral reserves, drug pipeline, land bank, capacity plan) and stock-flow data (opening + additions − depletion = closing) is available. The engine enforces balance and year-to-year continuity. Use `resource` when saleable volume is pre-computed and no stock-flow bridge is needed.
 
 ## Double-counting gates
 

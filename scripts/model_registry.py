@@ -135,6 +135,34 @@ def _delivery_pipeline(base_revenue: float, drivers: Mapping[str, list[float]], 
     return result
 
 
+def _reserve_depletion(base_revenue: float, drivers: Mapping[str, list[float]], years: Sequence[int]) -> list[float]:
+    """Stock-flow reserve depletion model.
+
+    Validates:
+      - opening_reserves + additions - depletion = closing_reserves (per year)
+      - closing_reserves[t-1] == opening_reserves[t] (continuity)
+    Computes:
+      revenue = depletion * recovery_rate * realized_price + other_revenue
+    """
+    del base_revenue
+    result: list[float] = []
+    for index, year in enumerate(years):
+        opening = drivers["opening_reserves"][index]
+        additions = drivers["additions"][index]
+        depletion = drivers["depletion"][index]
+        closing = drivers["closing_reserves"][index]
+        expected_closing = opening + additions - depletion
+        if not math.isclose(closing, expected_closing, rel_tol=1e-9, abs_tol=1e-9):
+            raise ModelRegistryError(f"reserve stock-flow balance failed: FY{year}")
+        if index > 0 and not math.isclose(opening, drivers["closing_reserves"][index - 1], rel_tol=1e-9, abs_tol=1e-9):
+            raise ModelRegistryError(f"reserve continuity failed: FY{year}")
+        recovery_rate = drivers["recovery_rate"][index]
+        realized_price = drivers["realized_price"][index]
+        other_revenue = drivers.get("other_revenue", [0.0] * len(years))[index]
+        result.append(depletion * recovery_rate * realized_price + other_revenue)
+    return result
+
+
 def _spec(
     model_id: str,
     required: tuple[str, ...],
@@ -168,6 +196,7 @@ MODEL_REGISTRY = build_registry([
     _spec("services", ("billable_capacity", "utilization", "billing_rate"), ("timing_factor", "other_revenue"), {"billable_capacity": "activity", "utilization": "ratio", "billing_rate": "revenue_per_activity", "timing_factor": "ratio", "other_revenue": "revenue"}, "revenue = billable_capacity * utilization * billing_rate * timing_factor + other_revenue", _rowwise(lambda d: d["billable_capacity"] * d["utilization"] * d["billing_rate"] * d["timing_factor"] + d["other_revenue"]), defaults={"timing_factor": 1.0}, ratio_drivers=("utilization", "timing_factor")),
     _spec("project_backlog", ("opening_backlog", "bookings", "cancellations", "contract_changes", "closing_backlog"), (), {"opening_backlog": "backlog", "bookings": "backlog", "cancellations": "backlog", "contract_changes": "backlog", "closing_backlog": "backlog"}, "revenue = opening_backlog + bookings - cancellations + contract_changes - closing_backlog", _project_backlog),
     _spec("resource", ("saleable_volume", "realized_price"), ("other_revenue",), {"saleable_volume": "quantity", "realized_price": "revenue_per_unit", "other_revenue": "revenue"}, "revenue = saleable_volume * realized_price + other_revenue", _rowwise(lambda d: d["saleable_volume"] * d["realized_price"] + d["other_revenue"])),
+    _spec("reserve_depletion", ("opening_reserves", "additions", "depletion", "closing_reserves", "recovery_rate", "realized_price"), ("other_revenue",), {"opening_reserves": "reserve_volume", "additions": "reserve_volume", "depletion": "reserve_volume", "closing_reserves": "reserve_volume", "recovery_rate": "ratio", "realized_price": "revenue_per_unit", "other_revenue": "revenue"}, "revenue = depletion * recovery_rate * realized_price + other_revenue", _reserve_depletion, ratio_drivers=("recovery_rate",)),
     _spec("infrastructure", ("billable_volume", "tariff"), ("other_revenue",), {"billable_volume": "activity", "tariff": "revenue_per_activity", "other_revenue": "revenue"}, "revenue = billable_volume * tariff + other_revenue", _rowwise(lambda d: d["billable_volume"] * d["tariff"] + d["other_revenue"])),
     _spec("bank_revenue", ("average_earning_assets", "asset_yield", "average_interest_bearing_liabilities", "funding_cost", "fee_revenue"), ("other_revenue",), {"average_earning_assets": "monetary_balance", "asset_yield": "ratio", "average_interest_bearing_liabilities": "monetary_balance", "funding_cost": "ratio", "fee_revenue": "revenue", "other_revenue": "revenue"}, "revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue", _rowwise(lambda d: d["average_earning_assets"] * d["asset_yield"] - d["average_interest_bearing_liabilities"] * d["funding_cost"] + d["fee_revenue"] + d["other_revenue"]), ratio_drivers=("asset_yield", "funding_cost")),
     _spec("asset_management", ("average_aum", "management_fee_rate"), ("performance_fee_revenue", "other_revenue"), {"average_aum": "monetary_balance", "management_fee_rate": "ratio", "performance_fee_revenue": "revenue", "other_revenue": "revenue"}, "revenue = average_aum * management_fee_rate + performance_fee_revenue + other_revenue", _rowwise(lambda d: d["average_aum"] * d["management_fee_rate"] + d["performance_fee_revenue"] + d["other_revenue"]), ratio_drivers=("management_fee_rate",)),

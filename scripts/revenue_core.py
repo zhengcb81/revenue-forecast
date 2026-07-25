@@ -29,7 +29,7 @@ from revenue_constraints import (
 
 
 SCENARIOS = ("low", "base", "high")
-SKILL_VERSION = "3.5.0"
+SKILL_VERSION = "3.9.0"
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
 FORECAST_SCHEMA_VERSION = "3.4"
@@ -82,7 +82,7 @@ MODEL_DRIVER_DIMENSIONS = REGISTERED_MODEL_DRIVER_DIMENSIONS
 PARAMETER_DIMENSIONS = {
     "revenue", "quantity", "ratio", "revenue_per_unit", "activity",
     "revenue_per_activity", "monetary_balance", "area", "revenue_per_area",
-    "backlog", "coverage_units",
+    "backlog", "coverage_units", "reserve_volume",
 }
 MONETARY_DIMENSIONS = {"revenue", "revenue_per_unit", "revenue_per_activity", "monetary_balance", "revenue_per_area", "backlog"}
 TIME_BASES = {"annual", "point_in_time"}
@@ -1066,8 +1066,11 @@ def _requested_sensitivity_values(test: dict[str, Any], original: float, name: s
 
 
 def calculate_sensitivities(data: dict[str, Any], result: dict[str, Any]) -> list[dict[str, Any]]:
-    tests = data.get("sensitivity_tests", [])
+    tests = data.get("sensitivity_tests", data.get("sensitivities", []))
     require(isinstance(tests, list), "sensitivity_tests must be a list")
+    for _test in tests:
+        if isinstance(_test, dict) and "name" not in _test and "parameter_id" in _test:
+            _test["name"] = _test["parameter_id"]
     if not tests:
         return []
     base_refs = referenced_parameter_ids(data, "base")
@@ -1920,7 +1923,7 @@ def validate_research_coverage(
     """Validate the nine-dimension research gate without turning it into a score."""
     coverage = data.get("research_coverage")
     require(isinstance(coverage, list), "research_coverage must be a list")
-    require(len(coverage) == len(RESEARCH_DIMENSIONS), "research_coverage must contain exactly nine dimensions")
+    require(len(coverage) >= len(RESEARCH_DIMENSIONS), "research_coverage must contain at least nine core dimensions")
     roles = collect_parameter_roles(data, parameter_index)
     normalized: dict[str, dict[str, Any]] = {}
 
@@ -1928,7 +1931,7 @@ def validate_research_coverage(
         prefix = f"research_coverage[{position}]"
         require(isinstance(record, dict), f"{prefix} must be an object")
         dimension = record.get("dimension")
-        require(dimension in RESEARCH_DIMENSIONS, f"unsupported research dimension: {dimension}")
+        require(dimension in RESEARCH_DIMENSIONS or dimension not in normalized, f"duplicate or unsupported research dimension: {dimension}")
         require(dimension not in normalized, f"duplicate research dimension: {dimension}")
         status = record.get("status")
         require(status in RESEARCH_COVERAGE_STATUSES, f"unsupported research coverage status for {dimension}: {status}")
@@ -1973,8 +1976,11 @@ def validate_research_coverage(
             item["rationale"] = rationale.strip()
         normalized[dimension] = item
 
-    require(set(normalized) == set(RESEARCH_DIMENSIONS), "research_coverage must include every required dimension exactly once")
+    require(set(normalized) >= set(RESEARCH_DIMENSIONS), "research_coverage must include every core dimension")
     records = [normalized[dimension] for dimension in RESEARCH_DIMENSIONS]
+    for dimension in normalized:
+        if dimension not in RESEARCH_DIMENSIONS:
+            records.append(normalized[dimension])
     return {
         "records": records,
         "counts": {
