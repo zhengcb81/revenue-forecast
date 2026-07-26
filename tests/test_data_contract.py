@@ -9,7 +9,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, ForecastInputError, MONETARY_DIMENSIONS, SKILL_VERSION, canonical_sha256, text_sha256, validate_document  # noqa: E402
+from revenue_core import (  # noqa: E402
+    ENGINE_VERSION,
+    FORECAST_SCHEMA_VERSION,
+    MONETARY_DIMENSIONS,
+    SKILL_VERSION,
+    ForecastInputError,
+    canonical_sha256,
+    text_sha256,
+    validate_document,
+    validate_source_coverage,
+)
 
 
 RESEARCH_DIMENSIONS = (
@@ -330,6 +340,79 @@ class DataContractTests(unittest.TestCase):
         self.assertEqual(SKILL_VERSION, "3.10.0")
         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
         self.assertEqual(FORECAST_SCHEMA_VERSION, "3.4")
+
+    def test_source_coverage_reports_scenario_parameter_beyond_source_horizon(self) -> None:
+        gaps = validate_source_coverage(
+            {},
+            {
+                "growth_2027_base": {
+                    "period": "FY2027",
+                    "scenario": "base",
+                    "source_ids": ["guidance"],
+                }
+            },
+            {"guidance": {"covers_until": "FY2026"}},
+        )
+
+        self.assertEqual(
+            gaps,
+            [{
+                "parameter_id": "growth_2027_base",
+                "forecast_year": 2027,
+                "source_id": "guidance",
+                "covers_until": "FY2026",
+            }],
+        )
+
+    def test_source_coverage_accepts_equal_or_later_numeric_horizon(self) -> None:
+        gaps = validate_source_coverage(
+            {},
+            {
+                "growth_2027_low": {
+                    "period": "FY2027",
+                    "scenario": "low",
+                    "source_ids": ["equal", "later"],
+                }
+            },
+            {
+                "equal": {"covers_until": "2027"},
+                "later": {"covers_until": "FY2028"},
+            },
+        )
+
+        self.assertEqual(gaps, [])
+
+    def test_source_coverage_ignores_non_forecast_or_unusable_source_metadata(self) -> None:
+        gaps = validate_source_coverage(
+            {},
+            {
+                "historical": {
+                    "period": "FY2025",
+                    "source_ids": ["expired"],
+                },
+                "non_fiscal": {
+                    "period": "2027Q1",
+                    "scenario": "high",
+                    "source_ids": ["expired"],
+                },
+                "missing_source": {
+                    "period": "FY2028",
+                    "scenario": "high",
+                    "source_ids": ["missing"],
+                },
+                "invalid_horizon": {
+                    "period": "FY2028",
+                    "scenario": "high",
+                    "source_ids": ["invalid"],
+                },
+            },
+            {
+                "expired": {"covers_until": "FY2024"},
+                "invalid": {"covers_until": "not-a-year"},
+            },
+        )
+
+        self.assertEqual(gaps, [])
 
     def test_valid_document(self) -> None:
         validated = validate_document(valid_document())

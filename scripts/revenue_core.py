@@ -1220,6 +1220,63 @@ def parameter_revenue_weights(data: dict[str, Any], result: dict[str, Any]) -> d
     return dict(weights)
 
 
+def _parse_fiscal_year(value: str) -> int | None:
+    """Parse 'FYyyyy' or 'yyyy' to integer year, or return None."""
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    if value.startswith("FY") and len(value) == 6:
+        try:
+            return int(value[2:])
+        except ValueError:
+            return None
+    if value.isdigit() and len(value) == 4:
+        return int(value)
+    return None
+
+
+def validate_source_coverage(
+    data: dict[str, Any],
+    parameter_index: dict[str, dict[str, Any]],
+    source_index: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Audit whether each forecast-year parameter has source coverage.
+
+    Returns a list of coverage gaps: parameters whose forecast year exceeds
+    the coverage horizon of their referenced sources.
+    """
+    gaps: list[dict[str, Any]] = []
+    for parameter_id, parameter in parameter_index.items():
+        period_str = parameter.get("period", "")
+        year = None
+        if period_str.startswith("FY") and len(period_str) == 6:
+            try:
+                year = int(period_str[2:])
+            except ValueError:
+                pass
+        if year is None:
+            continue
+        scenario = parameter.get("scenario")
+        if scenario not in SCENARIOS:
+            continue
+        for source_id in parameter.get("source_ids", []):
+            source = source_index.get(source_id)
+            if source is None:
+                continue
+            covers_until = source.get("covers_until")
+            if covers_until is None:
+                continue
+            until_year = _parse_fiscal_year(covers_until)
+            if until_year is not None and year > until_year:
+                gaps.append({
+                    "parameter_id": parameter_id,
+                    "forecast_year": year,
+                    "source_id": source_id,
+                    "covers_until": covers_until,
+                })
+    return gaps
+
+
 def calculate_confidence(
     data: dict[str, Any],
     validated: dict[str, Any],
