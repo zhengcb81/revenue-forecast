@@ -1,11 +1,11 @@
-"""Build revenue schema-3.4 source/capture records from a filing-fetch handle.
+"""Build revenue schema-3.4 source records from a local acquisition handle.
 
-The on-demand filing fetch (identify -> resolve/ensure, market routing,
-canonical write) now lives in the standalone ``filing-fetch`` skill. This
-module keeps only the revenue-specific conversion: turning one capture-ready
-``SourceHandle`` (returned by filing-fetch) into a schema-3.4 source record
-with an immutable capture receipt. It verifies the local whole-file hash but
-does not claim that a passage supports any revenue parameter.
+The bundled ``filing_acquisition`` module owns identity, reuse-first lookup,
+explicit market-routed download, canonical write, and provenance. This module
+keeps only the revenue-specific conversion: turning one capture-ready handle
+into a schema-3.4 source record with an immutable capture receipt. It verifies
+the local whole-file hash but does not claim that a passage supports any
+revenue parameter.
 """
 
 from __future__ import annotations
@@ -90,11 +90,11 @@ def build_revenue_source_record(
 ) -> dict[str, Any]:
     """Build a strict revenue source/capture record from one verified handle.
 
-    ``handle`` is the capture-ready ``SourceHandle`` returned by the
-    ``filing-fetch`` skill (``resolve_filing``). ``source_type``, ``publisher``,
-    evidence locator, and prompt-injection status remain explicit caller
-    judgments. This function verifies the whole local file hash but does not
-    claim that a passage supports any revenue parameter.
+    ``handle`` is returned by bundled ``filing_acquisition.resolve_filing``.
+    ``source_type``, ``publisher``, evidence locator, and prompt-injection
+    status remain explicit caller judgments. This function verifies the whole
+    local file hash but does not claim that a passage supports any revenue
+    parameter.
     """
 
     if not isinstance(handle, dict):
@@ -138,7 +138,7 @@ def build_revenue_source_record(
     capture = {
         "capture_schema_version": "1.0",
         "capture_method": "local_document",
-        "tool_name": "company-wiki-source-catalog",
+        "tool_name": "revenue-forecast-filing-acquisition",
         "tool_call_id": f"{request_id}|{location_id}",
         "captured_date": captured.isoformat(),
         "snapshot_sha256": snapshot_sha256,

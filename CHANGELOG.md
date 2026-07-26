@@ -4,6 +4,14 @@ This project follows Semantic Versioning. The runtime release source of truth is
 
 ## Unreleased
 
+## v3.10.0 — 2026-07-26
+
+- Moved filing identity, reuse-first lookup, explicit download routing, exact-hash deduplication, canonical write, and immutable provenance into the revenue-forecast skill.
+- Removed the runtime dependency on the external filing-fetch skill and on the company-wiki Python package/CLI. Company-wiki remains only a configurable data root.
+- Added a versioned JSON configuration for the storage root, local security-master snapshots, skill-owned staging, and the CN StockInfoDLSimple plus HK/US dayu-agent CLI commands.
+- Added isolated-copy, movable-root, authorization, identity, three-market routing, tamper, exact-dedup, and immutable-sidecar tests.
+- Preserved forecast schema 3.4 and all deterministic revenue formulas.
+
 ## v3.9.0 — 2026-07-25
 
 - Added `reserve_depletion` model to `model_registry.py` with stock-flow bridge validation (opening + additions - depletion = closing) and year-to-year continuity enforcement. Suitable for mining (ore reserves), pharma (drug pipeline), real estate (land bank), and manufacturing (capacity plan).

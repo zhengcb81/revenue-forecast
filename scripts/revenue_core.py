@@ -29,7 +29,7 @@ from revenue_constraints import (
 
 
 SCENARIOS = ("low", "base", "high")
-SKILL_VERSION = "3.9.0"
+SKILL_VERSION = "3.10.0"
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
 FORECAST_SCHEMA_VERSION = "3.4"

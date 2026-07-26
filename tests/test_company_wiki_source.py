@@ -1,4 +1,4 @@
-"""Revenue source/capture record contracts (built from a filing-fetch handle)."""
+"""Revenue source/capture contracts built from a local acquisition handle."""
 
 from __future__ import annotations
 

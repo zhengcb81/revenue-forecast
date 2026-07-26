@@ -327,7 +327,7 @@ def valid_document() -> dict:
 
 class DataContractTests(unittest.TestCase):
     def test_release_and_schema_versions_are_explicit(self) -> None:
-        self.assertEqual(SKILL_VERSION, "3.9.0")
+        self.assertEqual(SKILL_VERSION, "3.10.0")
         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
         self.assertEqual(FORECAST_SCHEMA_VERSION, "3.4")
 

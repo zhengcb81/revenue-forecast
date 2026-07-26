@@ -13,8 +13,9 @@ from pathlib import Path
 
 SKILL_NAME = "revenue-forecast"
 ROOT_FILES = (".gitignore", "CHANGELOG.md", "SKILL.md")
-ROOT_DIRECTORIES = ("agents", "references", "scripts", "tests")
+ROOT_DIRECTORIES = ("agents", "config", "references", "scripts", "tests")
 IGNORED_PARTS = {"__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache"}
+PRESERVED_INSTALLATION_DIRECTORIES = {"output"}
 
 
 def installable_files(root: Path) -> list[Path]:
@@ -49,6 +50,10 @@ def _installed_manifest(root: Path) -> dict[str, str]:
         for path in root.rglob("*")
         if path.is_file()
         and not (set(path.relative_to(root).parts) & IGNORED_PARTS)
+        and not (
+            set(path.relative_to(root).parts)
+            & PRESERVED_INSTALLATION_DIRECTORIES
+        )
         and path.suffix not in {".pyc", ".pyo"}
     }
 
@@ -81,6 +86,12 @@ def sync_installation(canonical: Path, destination: Path) -> None:
             os.replace(target, backup)
         try:
             os.replace(staged, target)
+            if backup.exists():
+                for directory in PRESERVED_INSTALLATION_DIRECTORIES:
+                    preserved = backup / directory
+                    restored = target / directory
+                    if preserved.exists() and not restored.exists():
+                        os.replace(preserved, restored)
         except Exception:
             if backup.exists() and not target.exists():
                 os.replace(backup, target)
@@ -89,11 +100,65 @@ def sync_installation(canonical: Path, destination: Path) -> None:
             shutil.rmtree(backup)
 
 
+def import_installation(source: Path, canonical: Path) -> None:
+    """Copy the installable skill surface into a canonical source repository.
+
+    Repository-only files such as ``tools/`` remain untouched. Canonical files
+    absent from the source are not deleted; callers must audit the resulting
+    Git diff before committing.
+    """
+
+    source = source.resolve(strict=True)
+    canonical = canonical.resolve(strict=True)
+    if source == canonical:
+        raise ValueError("source installation and canonical root must differ")
+    with tempfile.TemporaryDirectory(prefix=f".{SKILL_NAME}-import-") as directory:
+        staged_root = Path(directory) / SKILL_NAME
+        staged_root.mkdir()
+        for path in installable_files(source):
+            relative = path.relative_to(source)
+            staged = staged_root / relative
+            staged.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, staged)
+        for staged in staged_root.rglob("*"):
+            if not staged.is_file():
+                continue
+            relative = staged.relative_to(staged_root)
+            output = canonical / relative
+            output.parent.mkdir(parents=True, exist_ok=True)
+            temporary = output.with_name(output.name + f".{os.getpid()}.importing")
+            try:
+                shutil.copy2(staged, temporary)
+                os.replace(temporary, output)
+            finally:
+                temporary.unlink(missing_ok=True)
+
+
+def unique_destinations(destinations: list[Path]) -> list[Path]:
+    """Deduplicate destinations that resolve to the same installed skill."""
+
+    result: list[Path] = []
+    seen: set[Path] = set()
+    for destination in destinations:
+        resolved = destination.resolve()
+        target = (resolved / SKILL_NAME).resolve(strict=False)
+        if target in seen:
+            continue
+        seen.add(target)
+        result.append(resolved)
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check or synchronize installed revenue-forecast skills")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--apply", action="store_true", help="apply an atomic whole-skill sync")
     mode.add_argument("--print-manifest", action="store_true", help="print the canonical SHA-256 manifest")
+    mode.add_argument(
+        "--import-from",
+        type=Path,
+        help="import an installed skill into the canonical repository",
+    )
     parser.add_argument("--canonical", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--destination", type=Path, action="append")
     args = parser.parse_args()
@@ -101,7 +166,12 @@ def main() -> int:
     if args.print_manifest:
         print(json.dumps(manifest(canonical), indent=2, sort_keys=True))
         return 0
-    destinations = args.destination or [Path.home() / ".agents" / "skills", Path.home() / ".claude" / "skills"]
+    if args.import_from is not None:
+        import_installation(args.import_from, canonical)
+    destinations = unique_destinations(
+        args.destination
+        or [Path.home() / ".agents" / "skills", Path.home() / ".claude" / "skills"]
+    )
     if args.apply:
         for destination in destinations:
             sync_installation(canonical, destination.resolve())
