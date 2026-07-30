@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+from datetime import date, timedelta
 import hashlib
 import json
 import os
@@ -143,7 +144,12 @@ class FilingAcquisitionTests(unittest.TestCase):
             "security_id": {"CN": "688001", "HK": "01234", "US": "ACME"}[market],
             "document_kind": "annual_report",
             "fiscal_year": 2025,
-            "as_of_date": "2026-07-26",
+            # Far enough in the future that the dayu subprocess adapter's
+            # real-clock ``retrieved_at`` always satisfies
+            # ``filing_date <= captured_date <= as_of_date``. Hard-coding a
+            # calendar date rots the moment the clock passes it (this test
+            # silently broke two days after the v3.10.0 audit for that reason).
+            "as_of_date": (date.today() + timedelta(days=7)).isoformat(),
         }
 
     @staticmethod

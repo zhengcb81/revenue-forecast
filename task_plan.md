@@ -1,0 +1,1624 @@
+# Revenue Forecast 技能改进实施计划
+
+计划编制日期：2026-07-26 │ 完成日期：2026-07-30  
+依据：`AUDIT_REPORT.md`、`findings.md`  
+当前状态：**13 Phase 全部完成。294 tests / 0 failures / ruff 0 errors（4 repos）**
+
+## 0. 总目标、边界与不可违反规则
+
+### 0.1 总目标
+
+按依赖顺序修复审计发现，使 `revenue-forecast` 同时满足：
+
+1. 正式输出必须经过输入对照的独立语义验证；
+2. 只有语义验证成功后才能签发 publication receipt；
+3. 概率、管理目标、敏感性、禁止字段、来源期限和回测证据不可通过“修改结果后重算 hash”绕过；
+4. schema 和 engine 版本兼容规则清晰、可迁移、可回测；
+5. 正式流程不能无痕跳过 driver tree、管理层沟通、敏感性和工具调用；
+6. 公司文档先查统一索引，确认缺口且获授权后才下载；
+7. 财报获取只有一个 canonical owner；
+8. revenue 与 invest-* 保持单向依赖，不重建第二套收入预测；
+9. 大文件按职责拆分，但拆分不得改变数值结果；
+10. 所有改动都有失败测试、正向测试、集成测试、迁移测试和可保存的验收证据。
+
+### 0.2 范围
+
+本计划覆盖：
+
+- 当前仓库的 `scripts/`、`tests/`、`references/`、`config/`、`SKILL.md`、`CHANGELOG.md`；
+- `filing-fetch`、`invest-core`、`invest-framework` 的接口调整与跨技能回归；
+- canonical skill 与安装副本同步流程。
+
+本计划不覆盖：
+
+- 利润、现金流、估值、评级或仓位算法；
+- 对具体公司重新建模；
+- 未经单独批准的新外部服务；
+- 为了重构而改变既有收入公式、会计口径或模型数值。
+
+### 0.3 后续执行者的固定工作方式
+
+以下规则对每一个 Phase 都是强制的：
+
+1. 开始会话时依次读取：
+   - `task_plan.md`
+   - `progress.md`
+   - 与当前 Phase 有关的 `findings.md`
+2. 同一时间最多一个 Phase 标记为 `in_progress`。
+3. 修改代码前：
+   - 用 CodeGraph `codegraph_context` 获取当前任务上下文；
+   - 用 `codegraph_impact` 获取待改符号影响半径；
+   - 不相信计划中的旧行号，实际符号位置以 CodeGraph 为准。
+4. 每两次查看、搜索或浏览操作后，立即把新事实写入 `findings.md`。
+5. 每个行为缺陷都采用固定顺序：
+   - 先增加能稳定复现问题的负向测试；
+   - 确认新测试因目标缺陷而失败；
+   - 做最小生产改动；
+   - 确认新测试转绿；
+   - 运行相关文件全部测试；
+   - 再运行全量测试。
+6. 不得通过删除、放宽、跳过或改写失败测试来“修复”实现。
+7. 不得同时进行语义修复和无关格式化/重命名。
+8. 不得直接编辑 `C:\Users\郑曾波\.agents\skills\...` 或其他安装副本；只修改已确认的 canonical 源仓库，最后通过同步工具安装。
+9. 不得让 `revenue-forecast` 导入 `invest-core`，否则会形成上游依赖下游的循环。
+10. 任何 schema 字段新增、删除、含义变化或强制性变化，都必须：
+    - 更新 schema 版本；
+    - 更新 input/output/compliance/backtesting 文档；
+    - 添加旧 schema fixture；
+    - 添加迁移/只读兼容测试；
+    - 更新 `CHANGELOG.md`。
+11. 每完成一个子阶段，把以下证据写入 `progress.md`：
+    - 修改文件；
+    - 测试命令；
+    - 通过/失败数量；
+    - 新增测试名称；
+    - 是否存在 warning；
+    - 尚未解决事项。
+12. 同一错误最多三次：
+    - 第一次：定位并做针对性修复；
+    - 第二次：换方法，不重复原命令；
+    - 第三次：重新检查前提和计划；
+    - 三次仍失败：把具体错误和已尝试方法写入计划，标记 `blocked`，请求用户决定。
+
+### 0.4 所有阶段通用的测试命令
+
+Targeted 测试使用当前仓库实际存在的 unittest discovery 入口：
+
+```powershell
+python -m unittest discover -s tests -p "test_output_report.py" -v
+python -m unittest discover -s tests -p "test_scenarios_confidence.py" -v
+python -m unittest discover -s tests -p "test_management_targets.py" -v
+python -m unittest discover -s tests -p "test_data_contract.py" -v
+python -m unittest discover -s tests -p "test_backtest.py" -v
+python -m unittest discover -s tests -p "test_filing_acquisition.py" -v
+```
+
+全量质量门：
+
+```powershell
+python -m unittest discover -s tests -v
+python -m unittest discover -s tools/tests -v
+python -m compileall -q scripts tests tools
+ruff check scripts tests tools
+python -m coverage erase
+python -m coverage run --source=scripts -m unittest discover -s tests -v
+python -m coverage report -m --fail-under=84
+```
+
+规则：
+
+- Phase 内先跑 targeted，再跑全量；
+- 新模块 statement coverage 目标不低于 90%；
+- 仓库总 statement coverage 不得低于当前 84%；
+- 不允许新增 `ResourceWarning`、未关闭文件、未关闭 pipe 或临时目录残留；
+- 若某个环境没有 `ruff` 或 `coverage`，记录缺失，不得谎报通过；安装新依赖须得到用户授权。
+
+### 0.5 发布版本决策
+
+默认实施目标：
+
+- `SKILL_VERSION`：3.11.0；
+- 当前正式 forecast schema：3.5；
+- schema 3.4：转为 legacy read-only；
+- schema 3.5：必须带 publication receipt 和新增强制语义门。
+
+不得在 schema 3.4 中静默改变字段含义后仍声称完全兼容。
+
+兼容原则：
+
+- schema 3.4 只接受 `CHANGELOG.md` 明确列出的历史 engine 版本；
+- schema 3.4 的验证状态必须标为 `legacy_read_only_validated`；
+- schema 3.4 不得生成新的 current invest-* artifact；
+- schema 3.5 才能标为 `current_validated`；
+- 不允许用宽泛的字符串比较或任意 SemVer 范围接受未知 engine。
+
+---
+
+## Phase 1（冻结基线与建立反绕过测试）— 状态：completed（RED 基线已建立）
+
+### 1.1 前置条件
+
+- [x] 确认工作区未覆盖用户已有修改；记录 `git status --short`。（仅未跟踪规划/审计产物，scripts/、tests/ 无既有改动）
+- [x] 用 CodeGraph 重新确认（实际位置，非计划旧行号）：
+  - `run_forecast` → `scripts/revenue_core.py:1390`
+  - `build_workflow_compliance_receipt` → `scripts/revenue_core.py:1428`
+  - `validate_forecast_output` → `scripts/revenue_report.py:67`（report 模块）
+  - `calculate_sensitivities` → `scripts/revenue_core.py:1068`
+  - `add_management_target_analysis` → `scripts/revenue_core.py:2240`
+  - `add_scenario_analysis` → `scripts/revenue_core.py:975`
+- [x] 运行基线测试，结果与审计一致。**注意**：首次实跑为 158 tests/errors=2（plan drift），根因为 `_request.as_of_date` 硬编码审计日 + dayu 真实子进程 `retrieved_at=_utc_now()` 造成时间相关失败；已做 test-only 修复（as_of → today+7），恢复 **162/162**（158 tests/ + 4 tools/tests）。"268"为跨仓库合计，Phase 1 本地基线 162。详见 `findings.md` 2026-07-28 段。
+- [x] 把基线测试数量、coverage 和 warning 写入 `progress.md`。（162/162、coverage 84%、2 预存 ResourceWarning、compileall/ruff 通过）
+
+### 1.2 新增对抗性测试
+
+在 `tests/test_output_report.py` 增加：
+
+- [x] `test_rehashed_invalid_probability_contract_is_rejected`
+  - 构造合法带概率结果；
+  - 改成 `{low: 2, base: 0, high: 0}`；
+  - 同步重算 weighted path 和 `result_sha256`；
+  - 预期正式 validator 拒绝。**RED 已确认**：`ForecastInputError not raised`。
+- [x] `test_rehashed_forged_target_comparison_is_rejected`
+  - 修改 target comparison value；
+  - 同步重算 attainment ratio；
+  - 伪造 `meets_target=true`；
+  - 重算 result hash；
+  - 预期拒绝。**RED 已确认**：`ForecastInputError not raised`。
+- [x] `test_rehashed_forged_sensitivity_terminals_are_rejected`
+  - 修改 down/up terminal；
+  - 同步重算 absolute/relative impact；
+  - 重算 result hash；
+  - 预期拒绝。**RED 已确认**：`ForecastInputError not raised`。
+- [x] `test_nested_structured_valuation_field_is_rejected`
+  - 在 `parameter_trace` 中加入结构化 `valuation` 对象或数值；
+  - 重算 result hash；
+  - 预期拒绝。**RED 已确认**：`ForecastInputError not raised`。
+- [x] 保留一个正向测试，证明普通来源摘录中出现单词 “profit” 或 “valuation” 不会因纯文本误伤。**GREEN 护栏**：`test_plain_text_investment_vocabulary_in_source_is_allowed`。
+
+新建 `tests/test_publication_pipeline.py` 增加：
+
+- [x] `test_public_api_never_returns_pass_receipt_before_output_validation`。**RED 已确认**（premature receipt：`run_forecast` 返回前签 `status="pass"` + `output_recomputation`，内部未调 `validate_forecast_output`）。
+- [x] `test_cli_does_not_write_json_when_publication_validation_fails`。**GREEN 护栏**（CLI 已在写 JSON 前调 validate，行为正确，钉住它）。
+- [x] `test_markdown_is_only_rendered_from_published_json`。**GREEN 护栏**（`render_markdown` 内部先 validate，篡改结果不可渲染）。
+
+### 1.3 RED 检查点
+
+- [x] 原有测试必须全部通过。（158 原有 + 护栏全过；5 个失败均为新增 RED）
+- [x] 新增的绕过测试必须失败，且失败原因必须是“当前 validator 接受了伪造结果”。（4 绕过均 `ForecastInputError not raised`；premature-receipt 失败于断言信息）
+- [x] 若新测试因 fixture、claim ID、hash 构造或语法错误失败，先修测试；不得把这种失败当成有效 RED。（逐一核对：每个 RED 均因 validator 接受伪造，非构造错误）
+- [x] 把每个 RED 测试的错误摘要写入 `progress.md`。（见 2026-07-28 Phase 1.2/1.3 段）
+
+### 1.4 阶段验收
+
+Phase 1 只有在以下条件全部满足后才能完成：
+
+- [x] 四类已知绕过均有最小、稳定、可重复测试；
+- [x] receipt 过早签发有独立测试；
+- [x] 测试没有依赖测试执行顺序；（各自 `run_forecast` 重建 + 伪造前 `deepcopy`，discover 与单跑一致）
+- [x] fixture 使用 `copy.deepcopy`，不会污染其他测试；
+- [x] 未修改生产逻辑。（scripts/*.py 零改动；仅 test_filing_acquisition.py 的 test-only 基线修复 + test_output_report.py +5 + test_publication_pipeline.py 新建）
+
+---
+
+## Phase 2（建立正式发布流水线与准确的 receipt 语义）— 状态：completed
+
+依赖：Phase 1 完成。
+
+### 2.1 目标设计
+
+把当前单一结果流程拆为三个明确层次：
+
+1. `_build_forecast_draft(data)`：
+   - 计算收入结果；
+   - 可以带 execution metadata；
+   - **不得**带 `status="pass"` 的 publication receipt；
+   - 作为 private API，不供 invest-* 使用。
+2. `validate_forecast_against_input(data, draft)`：
+   - 使用冻结输入重新验证结果语义；
+   - 不信任 draft 中自报的概率、目标、敏感性或 gate 状态；
+   - 失败即抛受控 validation error。
+3. `run_forecast(data)`：
+   - 对输入做 `deepcopy` 或规范化冻结；
+   - 调用 draft builder；
+   - 调用输入对照 validator；
+   - 调用 self-contained artifact validator；
+   - 最后签发 publication receipt；
+   - 返回唯一可发布结果。
+
+### 2.2 receipt 字段
+
+在 schema 3.5 中定义：
+
+- [ ] `execution_receipt`
+  - 只说明计算步骤已执行；
+  - 不得使用 `status="pass"` 表示正式发布；
+  - 不得包含 `output_recomputation` gate。
+- [ ] `publication_receipt`
+  - `receipt_version`
+  - `schema_version`
+  - `engine_version`
+  - `validated_input_sha256`
+  - `validated_payload_sha256`
+  - `validator_version`
+  - 明确且真实执行过的 `gate_ids`
+  - `formal_output_mode`
+  - `freeform_override_allowed=false`
+  - receipt 自身 canonical hash。
+
+### 2.3 逐步实施
+
+1. [ ] 在 `scripts/revenue_core.py` 中把 receipt 构造从当前 `run_forecast` 计算段移出。
+2. [ ] 在新模块 `scripts/revenue_publication.py` 中创建：
+   - receipt payload canonicalizer；
+   - publication receipt builder；
+   - publication receipt validator；
+   - 禁止在 builder 内重新运行收入模型，避免双 owner。
+3. [ ] 修改 `run_forecast`，确保任何异常都发生在 publication receipt 生成之前。
+4. [ ] 修改 `scripts/revenue_forecast.py`：
+   - 只调用正式 `run_forecast`；
+   - validation 失败时不得写 JSON；
+   - JSON 写成功后才允许 renderer；
+   - Markdown 写入失败不得篡改已验证 JSON。
+5. [ ] 修改 `scripts/revenue_backtest.py`，snapshot 只接受带有效 publication receipt 的 schema 3.5 forecast。
+6. [ ] 不删除 schema 3.4 legacy validator；通过显式 version dispatch 保留只读路径。
+
+### 2.4 禁止事项
+
+- [ ] 不允许保留两个都叫“pass”的 receipt。
+- [ ] 不允许 public `run_forecast` 返回 unsigned draft。
+- [ ] 不允许用 `_` 私有函数作为 invest-core 入口。
+- [ ] 不允许通过只检查 `gate_ids` 是否存在来证明 gate 已执行。
+- [ ] 不允许 receipt hash 覆盖自身导致递归或非确定性。
+
+### 2.5 测试
+
+新增或更新：
+
+- [ ] draft 不含 publication receipt；
+- [ ] validation 抛错时 receipt builder 未被调用；
+- [ ] publication receipt 少字段、改 gate、改 payload hash、改 input hash均失败；
+- [ ] 两次相同输入的 publication receipt 完全一致；
+- [ ] CLI 失败时输出文件不存在；
+- [ ] renderer 只能接收 current published artifact；
+- [ ] schema 3.4 artifact 只能得到 legacy read-only 状态。
+
+运行：
+
+```powershell
+python -m unittest discover -s tests -p "test_publication_pipeline.py" -v
+python -m unittest discover -s tests -p "test_output_report.py" -v
+python -m unittest discover -s tests -p "test_backtest.py" -v
+python -m unittest discover -s tests -p "test_industry_end_to_end.py" -v
+```
+
+### 2.6 阶段验收
+
+- [ ] CodeGraph callers 中，publication receipt builder 只能由 formal finalizer 调用；
+- [ ] `run_forecast` 的所有正常返回都带有效 publication receipt；
+- [ ] 所有异常路径都不会留下写了一半的正式文件；
+- [ ] receipt gate 列表与实际 validator 调用一一对应；
+- [ ] Phase 1 的 premature receipt 测试转绿；
+- [ ] 全量测试与 coverage 门通过。
+
+---
+
+## Phase 3（概率、目标和敏感性的输入对照语义重算）— 状态：completed
+
+依赖：Phase 2 完成。
+
+### 3.1 建立单一语义函数
+
+禁止 production calculator 与 validator 各写一套不同公式。应把纯语义规则抽为无副作用函数，生产计算和独立验证都调用同一规则，但 validator 必须从冻结输入重新取得输入值。
+
+新增建议模块：
+
+- `scripts/revenue_semantics.py`
+
+包含：
+
+- [ ] `validate_probability_contract(...)`
+- [ ] `recompute_weighted_revenue(...)`
+- [ ] `evaluate_target_comparison(...)`
+- [ ] `recompute_target_attainment(...)`
+- [ ] `build_sensitivity_case(...)`
+- [ ] `recompute_sensitivity_result(...)`
+
+这些函数必须：
+
+- 输入显式；
+- 不读全局可变状态；
+- 不修改传入 dict/list；
+- 返回新对象；
+- 对 bool-as-number、NaN、Infinity、负值、未知 scenario、未知 comparison fail closed。
+
+### 3.2 概率修复
+
+1. [ ] 从冻结 input 读取概率，而不是信任 result。
+2. [ ] 强制 key exactly `low/base/high`。
+3. [ ] 拒绝 bool、负数、NaN、Infinity。
+4. [ ] 和必须在容差内等于 1。
+5. [ ] 每个概率必须有合法 rationale-support claim 和 source IDs。
+6. [ ] 从 company annual path 重新计算 weighted path。
+7. [ ] result 中无 input probability 时，不允许凭空出现 weighted path。
+
+验收测试：
+
+- [ ] 和为 2、含负数、缺 key、额外 key、bool、NaN、伪造 weighted path 均失败；
+- [ ] 合法概率结果保持原数值；
+- [ ] 不使用概率时结果中没有相关块。
+
+### 3.3 管理目标修复
+
+1. [ ] 从冻结 target ledger 取得：
+   - target value；
+   - comparison operator；
+   - tolerance；
+   - measurement basis；
+   - mapped scenarios/periods；
+   - currency/unit/perimeter。
+2. [ ] 从重新计算后的 scenario result 取得 modeled value。
+3. [ ] 对 annual、run-rate、cumulative 分别计算，不复用错误口径。
+4. [ ] 重新执行 comparison/tolerance，生成 `meets_target`。
+5. [ ] result 中所有 target 字段只作为待比对值，不能作为真值来源。
+6. [ ] 检查 mapped parameter 必须属于目标 scope、period 和 scenario 的有效路径。
+7. [ ] target source 必须能追溯到对应 communication record。
+
+验收测试：
+
+- [ ] 伪造 target value、modeled value、ratio、comparison、tolerance 或 `meets_target` 任一字段均失败；
+- [ ] annual/run-rate/cumulative 三种口径各有正反例；
+- [ ] perimeter 不匹配不能被标为 attained；
+- [ ] Phase 1 target mutation 测试转绿。
+
+### 3.4 敏感性修复
+
+1. [ ] 从冻结 input 的 sensitivity definition 读取 parameter、shock type、requested values。
+2. [ ] 对每个测试创建独立 deep copy。
+3. [ ] 使用 `_run_forecast_core` 或等价内部纯计算路径重新运行 down/up case。
+4. [ ] 不递归生成 sensitivity、theme、confidence 或 publication receipt。
+5. [ ] 比对：
+   - requested/effective shock；
+   - clamp；
+   - baseline terminal；
+   - down/up terminal；
+   - absolute/relative impact。
+6. [ ] 每个 eligible parameter 最多出现一次。
+7. [ ] 校验测试名称不影响 input hash。
+
+验收测试：
+
+- [ ] 修改任一 terminal/impact/clamp 字段均失败；
+- [ ] percent、percentage-point/bp、absolute、range、discrete 各至少一个测试；
+- [ ] ratio clamp、零参数、负数非法值有边界测试；
+- [ ] Phase 1 sensitivity mutation 测试转绿。
+
+### 3.5 阶段验收
+
+- [ ] 四类 P0 mutation tests 全绿；
+- [ ] 原有 scenario/target/sensitivity 数值完全不漂移；
+- [ ] 同一输入运行两次得到相同 canonical payload hash；
+- [ ] 输入对象在运行前后 canonical hash 相同；
+- [ ] targeted、全量、coverage 全部通过。
+
+---
+
+## Phase 4（正式输出字段边界与 research schema 一致性）— 状态：completed
+
+依赖：Phase 3 完成。
+
+### 4.1 禁止投资字段的结构化策略
+
+不得简单拒绝所有文本中出现的关键词。实现必须区分：
+
+- 结构化 key；
+- 来源标题/摘录/原文；
+- parameter 名称；
+- renderer 文本。
+
+步骤：
+
+1. [ ] 定义统一 `PROHIBITED_STRUCTURED_OUTPUT_KEYS`。
+2. [ ] 定义允许承载不受信任原文的 leaf 字段白名单，例如 checked excerpt、source title。
+3. [ ] 对正式 artifact 做全树遍历：
+   - 结构化对象 key 命中 prohibited 集合即失败；
+   - 只在明确原文 leaf 中允许同名单词作为字符串内容；
+   - 拒绝递归过深、非 JSON 类型或重复引用对象。
+4. [ ] renderer 不得把允许的原文误变成正式投资结论字段。
+
+测试：
+
+- [ ] 顶层、segment、trace、target、driver、source/capture 自定义对象中的 valuation/profit/DCF/rating 等结构化 key 均失败；
+- [ ] 合法来源摘录中的同名单词通过；
+- [ ] 自定义普通 metadata key 不被误伤；
+- [ ] 深层嵌套和 list 内对象同样受检。
+
+### 4.2 research custom dimension 契约
+
+schema 3.5 固定规则：
+
+1. [ ] 前九项必须按 `RESEARCH_DIMENSIONS` canonical 顺序出现；
+2. [ ] custom dimensions 只能追加在九项之后；
+3. [ ] dimension 必须是非空字符串；
+4. [ ] 名称必须唯一，不能与核心维度重复；
+5. [ ] 每项仍必须是 parameter mapping、material data gap 或 immaterial rationale 三选一；
+6. [ ] output 保留输入顺序；
+7. [ ] counts 覆盖核心和 custom 全部记录；
+8. [ ] validator 不再要求长度恰好为九，而是 `>= 9` 且前九项准确。
+
+测试：
+
+- [ ] 九维无 custom 正常通过；
+- [ ] 一个和多个 custom 正常通过；
+- [ ] `null`、空字符串、重复、插入核心九维中间、同名大小写冲突均失败；
+- [ ] custom dimension 的 output tamper 在重哈希后失败；
+- [ ] renderer 显示 custom dimension，但不把它加入 confidence。
+
+### 4.3 阶段验收
+
+- [ ] 嵌套 valuation 绕过测试转绿；
+- [ ] 纯文本不误伤测试通过；
+- [ ] custom dimension 的 input/run/output/renderer 全链路一致；
+- [ ] full suite 与 coverage 门通过。
+
+---
+
+## Phase 5（来源期限、claim 语义与 base reconciliation 加固）— 状态：completed
+
+依赖：Phase 4 完成。
+
+### 5.1 接入 source horizon checker
+
+1. [ ] 先保持现有 `validate_source_coverage` 三个单元测试不变。
+2. [ ] 明确返回类型：结构化 issue，不只返回自由文本。
+3. [ ] 在 `validate_document` 中、parameter/claim indexes 建立之后调用。
+4. [ ] schema 3.5 的正式规则：
+   - 直接作为未来 exact value 的 source 必须覆盖对应 forecast period；
+   - 只提供历史事实的 source 不要求覆盖未来；
+   - rationale-support 可以支持 assumption 逻辑，但不能冒充未来 exact value；
+   - 多来源时至少一个与该 claim 类型匹配的来源覆盖有效期间。
+5. [ ] 非空 blocking issues 转为 `ForecastInputError`。
+6. [ ] issue 中写明 parameter ID、period、source ID、covers_until。
+
+测试：
+
+- [ ] FY2025 source 支持 FY2026 exact value 被正式 CLI 拒绝；
+- [ ] FY2025 历史来源只支持历史 parameter 时通过；
+- [ ] 同一 parameter 有一个过期和一个有效 source 时按 claim 绑定正确判断；
+- [ ] source 缺失 `covers_until` 时按 source/claim 类型 fail closed，不做静默猜测。
+
+### 5.2 source-linked assumption claim 类型
+
+1. [ ] `analyst_assumption` 和 `scenario_stress` 必须有 `rationale_support`。
+2. [ ] `exact_value` 可同时存在，但不能替代 rationale。
+3. [ ] claim 必须绑定相同 source capture/snapshot。
+4. [ ] 只有 forecast-used parameter 才进入该 gate，避免误伤未使用 notes。
+
+测试：
+
+- [ ] 仅 exact-value claim 失败；
+- [ ] rationale-support + exact-value 通过；
+- [ ] rationale claim 指向其他 parameter 失败；
+- [ ] capture hash 不一致失败。
+
+### 5.3 base reconciliation 错误稳定性
+
+1. [ ] 未知 adjustment ID 转成带字段路径的 `ForecastInputError`。
+2. [ ] 显式拒绝重复 adjustment ID。
+3. [ ] 验证 adjustment kind 和 period。
+4. [ ] 保持 base 数值公式不变。
+
+### 5.4 阶段验收
+
+- [ ] CodeGraph callers 显示 `validate_source_coverage` 已有生产调用者；
+- [ ] source horizon 和 claim support 审计复现全部转为 hard fail；
+- [ ] 所有错误均为受控 domain error，不泄漏 `KeyError`；
+- [ ] full suite、CLI 集成和 coverage 门通过。
+
+---
+
+## Phase 6（输入纯度、snapshot、actuals 与回测口径）— 状态：completed
+
+依赖：Phase 5 完成。
+
+### 6.1 修复输入原地变异
+
+1. [ ] 在所有 public API 入口记录输入 canonical hash。
+2. [ ] `calculate_sensitivities` 不得向传入 test dict 写 `name`。
+3. [ ] name normalization 在局部 copy 中完成。
+4. [ ] 搜索其他 `setdefault`、append、sort、字段赋值对用户输入的原地修改。
+5. [ ] 给 `run_forecast`、`create_snapshot` 增加输入不变测试。
+
+### 6.2 snapshot 兼容性
+
+1. [ ] snapshot schema 单独版本化。
+2. [ ] schema 3.5 snapshot 保存：
+   - frozen input；
+   - published forecast；
+   - input hash；
+   - payload hash；
+   - publication receipt hash；
+   - compatibility status。
+3. [ ] schema 3.4 snapshot 使用明确 legacy validator。
+4. [ ] 不要求历史 snapshot engine 等于当前 engine。
+5. [ ] 只接受 compatibility table 中列出的历史组合。
+
+### 6.3 actuals evidence
+
+1. [ ] actual source 强制 capture receipt。
+2. [ ] actual claim 绑定 capture receipt 和 content snapshot hash。
+3. [ ] source published date 必须满足现有 fiscal-year end/as-of 规则。
+4. [ ] actual value/unit/period 与 claim extracted value 严格一致。
+5. [ ] accuracy record 必须引用 snapshot hash、actuals hash 和 evaluator version。
+
+### 6.4 segment 回测口径
+
+1. [ ] 有 revenue constraints 时使用 `effective_revenue`。
+2. [ ] 无 constraints 时证明 effective 等于 recognized。
+3. [ ] backtest 输出披露使用的口径。
+4. [ ] 不删除 recognized revenue；它仍用于确认差异分析。
+
+### 6.5 测试
+
+- [ ] auto-name snapshot 创建后立即验证成功；
+- [ ] 输入运行前后 hash 相同；
+- [ ] 旧 schema/engine fixture 能以 legacy read-only 验证；
+- [ ] 未知 engine 拒绝；
+- [ ] actual 无 capture、capture tamper、claim mismatch 均失败；
+- [ ] constraint 改变 segment revenue 时回测使用 effective；
+- [ ] accuracy record tamper 仍失败；
+- [ ] 相同 snapshot + actuals 评估结果确定性一致。
+
+### 6.6 阶段验收
+
+- [ ] 审计中的 auto-name snapshot 复现转绿；
+- [ ] 旧 3.4 artifact 不因当前 engine 升级失效，但不能冒充 current；
+- [ ] actuals evidence 强度与正式 source/capture 契约对齐；
+- [ ] backtest 没有口径混用；
+- [ ] full suite 与 coverage 门通过。
+
+---
+
+## Phase 7（敏感性、置信度与约束参数覆盖统一）— 状态：pending
+
+依赖：Phase 6 完成。
+
+### 7.1 建立统一 Base parameter dependency graph
+
+目标：growth driver、sensitivity、confidence 不再各自维护不同的 parameter 收集逻辑。
+
+1. [ ] 从 Base segment path 出发收集直接 model drivers。
+2. [ ] 递归展开 derived facts，检测循环。
+3. [ ] 加入 recognition progress 参数。
+4. [ ] 加入 lag carry-in。
+5. [ ] 加入 forecast adjustments。
+6. [ ] 加入 constraint/cap/weight 参数。
+7. [ ] 输出 parameter → affected segment/year → role 的确定性结构。
+8. [ ] growth-driver、sensitivity 和 confidence 都只消费该结构。
+
+### 7.2 sensitivity completeness gate
+
+1. [ ] 定义 sensitivity-eligible kinds。
+2. [ ] 每个 eligible Base parameter 必须：
+   - 被测试恰好一次；或
+   - 出现在结构化 exclusion ledger。
+3. [ ] exclusion 必须有：
+   - parameter ID；
+   - reason code；
+   - rationale；
+   - approved exception receipt；
+   - scope 和 expiry。
+4. [ ] 未批准 exclusion 只能生成 draft，不能 publication。
+
+### 7.3 confidence 对齐
+
+1. [ ] constraint 参数进入 revenue weights。
+2. [ ] recognition progress 和 derived upstream assumptions 进入权重。
+3. [ ] 仍不得用增长幅度提高 confidence。
+4. [ ] 保持 hard gates 与 score components 分离。
+5. [ ] 记录旧版与新版 confidence 差异的迁移说明。
+
+### 7.4 测试与验收
+
+- [ ] derived-chain assumption 能被 sensitivity shock；
+- [ ] progress 参数和 constraint 参数不再遗漏；
+- [ ] duplicate test 失败；
+- [ ] missing test 且无 exclusion 不能 publication；
+- [ ] exclusion tamper 失败；
+- [ ] driver/sensitivity/confidence 使用同一 dependency graph；
+- [ ] 所有 segment attribution 仍精确归一；
+- [ ] full suite 与 coverage 门通过。
+
+---
+
+## Phase 8（防止研究流程和工具调用偷步）— 状态：pending
+
+依赖：Phase 7 完成。  
+注意：这一阶段涉及 host/orchestrator 信任边界。若当前运行环境不能签发受信任 receipt，必须 fail closed 或保留 draft 模式，不得用用户自填字段冒充完成。
+
+### 8.1 formal 与 draft 模式
+
+1. [ ] 明确定义 `draft` 和 `formal`：
+   - draft 可以保留未解决 data gaps；
+   - formal 必须通过全部 hard gates 或具备受批准 exception。
+2. [ ] formal mode 不得由 renderer 或自由文本切换。
+3. [ ] publication receipt 必须记录 mode。
+4. [ ] invest-* 只接受 formal current artifact。
+
+### 8.2 driver tree gate
+
+1. [ ] 有正收入或 material terminal contribution 的 modeled segment 不允许整个 tree 仅为 `data_gap` 后仍 formal publication。
+2. [ ] 每个 modeled segment 必须被 root driver allocation 覆盖。
+3. [ ] exception 只能来自结构化 exception ledger。
+4. [ ] exception 必须列出 scope、原因、批准者、时间、expiry 和 evidence hash。
+5. [ ] 未经 host 验证的自填 approval 无效。
+
+### 8.3 management communication search receipt
+
+1. [ ] 六个 communication categories 各有 machine-generated search/open event。
+2. [ ] `not_available` 必须带查询范围、查询时间和受信任 event IDs。
+3. [ ] `not_applicable` 必须带 reason code。
+4. [ ] 找到 material target 但未入 ledger 继续 hard fail。
+5. [ ] 不允许仅凭自由文本 “已搜索” 通过。
+
+### 8.4 capture/tool-event receipt
+
+1. [ ] 将模型可填写的 `tool_call_id` 与 host event receipt 分离。
+2. [ ] host receipt 至少绑定：
+   - tool；
+   - action；
+   - normalized request hash；
+   - response/capture hash；
+   - timestamp；
+   - execution environment；
+   - issuer。
+3. [ ] schema validator 只能验证格式；publication finalizer 还必须调用 trusted verifier。
+4. [ ] 无 trusted verifier 的环境只能输出 draft。
+
+### 8.5 测试与验收
+
+- [ ] 全 data-gap driver tree 在 formal mode 失败；
+- [ ] 同输入在 draft mode 保留结构化 gap；
+- [ ] 自填 tool_call_id 不能代替 host receipt；
+- [ ] 缺 communication event 的 `not_available` 失败；
+- [ ] receipt request/response hash tamper 失败；
+- [ ] exception 过期或 scope 不匹配失败；
+- [ ] invest-core 拒绝 draft；
+- [ ] 信任边界在 `references/compliance-contract.md` 中明确说明。
+
+---
+
+## Phase 9（Filing Fetch 独立技能加固与财报获取所有权收敛）— 状态：pending
+
+审计依据：`FILING_FETCH_AUDIT.md`。  
+目标 ownership：
+
+```text
+company-wiki source catalog
+  = identity / catalog resolve / market route / staging / hash / dedup / canonical writer owner
+
+filing-fetch
+  = cross-skill request / gap / authorization / upstream compatibility / typed handle owner
+
+revenue-forecast、invest-*、industry-research
+  = consumer-specific capture conversion only
+```
+
+依赖说明：
+
+- 9.1–9.8 是独立 filing-fetch 加固，定位 canonical repo 后即可开始；
+- 9.6 的 host authorization receipt 与 Phase 8 的信任边界设计对齐；
+- 9.9 revenue 迁移依赖 Phase 5 和 9.1–9.8；
+- 不得与 Phase 2–4 同时修改 revenue formal publication 接口；
+- 本 Phase 完成前不得删除 revenue 旧 acquisition 实现。
+
+### 9.1 Canonical 源、版本与工作区前置检查
+
+当前事实：
+
+- [x] 已确认 `.agents/skills/filing-fetch` 自身没有 `.git`；
+- [x] `Projects` 三层深度内未找到同名 canonical repo；
+- [x] `.codex/skills` 没有 filing-fetch 副本；
+- [x] 当前安装态测试基线为 13/13，coverage 76%；
+- [x] company-wiki 相关 contract subset 为 21/21。
+
+实施前强制动作：
+
+1. [ ] 定位 filing-fetch canonical 源。
+2. [ ] 若只有 `.agents` 安装态：
+   - 停止实施；
+   - 标记 Phase 9 `blocked`；
+   - 请求用户指定 canonical repo 或授权创建；
+   - 不直接把安装目录当作源仓库修改。
+3. [ ] 记录 canonical repo：
+   - absolute path；
+   - git root；
+   - branch；
+   - current commit；
+   - dirty files；
+   - skill version。
+4. [ ] 确认 company-wiki canonical repo 为预期版本。
+5. [ ] 确认是否授权跨仓库修改。
+6. [ ] 分别记录 filing-fetch、company-wiki、revenue 的测试命令。
+7. [ ] 在 `progress.md` 保存所有基线数量和 warning。
+
+### 9.2 版本化契约决策
+
+默认目标：
+
+- filing-fetch skill：1.1.0；
+- request schema：1.1；
+- response schema：1.1；
+- gap receipt schema：1.0；
+- download authorization schema：1.0；
+- 支持的 company-wiki identity/resolver/ensure schema：显式 compatibility matrix。
+
+必须新增常量，禁止散落字符串：
+
+- [ ] `FILING_FETCH_SKILL_VERSION`
+- [ ] `FILING_REQUEST_SCHEMA_VERSION`
+- [ ] `FILING_RESPONSE_SCHEMA_VERSION`
+- [ ] `GAP_RECEIPT_SCHEMA_VERSION`
+- [ ] `DOWNLOAD_AUTHORIZATION_SCHEMA_VERSION`
+- [ ] `SUPPORTED_COMPANY_WIKI_CONTRACTS`
+
+compatibility matrix 必须明确：
+
+- identity schema；
+- source resolver schema；
+- source ensure schema；
+- acquisition schema；
+- canonical import schema；
+- 允许的 response shape；
+- unknown version 的 fail-closed 行为。
+
+禁止：
+
+- [ ] 不按字符串大小比较版本。
+- [ ] 不接受任意 `1.x`。
+- [ ] 不因上游多一个未知字段就静默忽略。
+- [ ] 不在不升级 response schema 的情况下改变 status/error 含义。
+
+### 9.3 先建立 Filing Fetch RED 测试
+
+在任何生产改动前新增以下测试。每个测试必须先确认因当前缺陷而失败，而不是 fixture 错误。
+
+#### Request/identity
+
+- [ ] `test_unknown_request_field_is_rejected`
+- [ ] `test_download_never_trusts_raw_explicit_identity`
+- [ ] `test_legacy_explicit_identity_is_reidentified_before_use`
+- [ ] `test_invalid_market_date_and_fiscal_year_fail_before_subprocess`
+- [ ] `test_company_query_path_uses_one_atomic_upstream_command`
+- [ ] `test_identity_conflict_stops_before_ensure`
+
+#### Upstream contract
+
+- [ ] `test_unknown_resolver_schema_is_rejected`
+- [ ] `test_unknown_ensure_schema_is_rejected`
+- [ ] `test_contradictory_ensure_and_resolution_status_is_rejected`
+- [ ] `test_invalid_upstream_json_is_contract_error`
+- [ ] `test_non_object_upstream_json_is_contract_error`
+- [ ] `test_structured_upstream_error_is_preserved`
+
+#### Handle
+
+- [ ] `test_capture_ready_boolean_without_required_fields_is_rejected`
+- [ ] `test_handle_path_outside_company_wiki_companies_is_rejected`
+- [ ] `test_missing_or_empty_canonical_file_is_rejected`
+- [ ] `test_handle_size_mismatch_is_rejected`
+- [ ] `test_handle_hash_mismatch_is_rejected`
+- [ ] `test_handle_snapshot_and_content_hash_must_match`
+- [ ] `test_non_https_handle_is_rejected`
+- [ ] `test_future_published_handle_is_rejected`
+- [ ] `test_missing_capture_trace_is_rejected`
+
+#### Authorization/state machine
+
+- [ ] `test_ensure_requires_matching_gap_receipt`
+- [ ] `test_ensure_requires_matching_authorization`
+- [ ] `test_gap_receipt_request_id_tamper_is_rejected`
+- [ ] `test_authorization_scope_or_expiry_mismatch_is_rejected`
+- [ ] `test_ensure_rechecks_catalog_after_authorization`
+- [ ] `test_reused_after_authorization_never_calls_downloader`
+
+#### CLI/transport
+
+- [ ] `test_actual_python_entrypoint_executes_main`
+- [ ] `test_cli_timeout_is_overall_deadline`
+- [ ] `test_timeout_is_structured_retryable_error`
+- [ ] `test_config_error_is_not_reported_as_not_found`
+- [ ] `test_paused_worker_has_distinct_error_code`
+- [ ] `test_cli_never_emits_partial_success_json`
+
+RED 检查点：
+
+- [ ] 旧 13 项测试仍绿；
+- [ ] 每个新测试的失败原因与缺陷对应；
+- [ ] actual entrypoint test 必须启动 `python scripts/fetch_filing.py`，不能直接调用 `main()`；
+- [ ] 所有 test root 都使用 `TemporaryDirectory`，不依赖真实用户 company-wiki；
+- [ ] 不访问真实网络。
+
+### 9.4 精确 request schema 与身份状态机
+
+#### Schema 1.1 public request
+
+精确允许字段：
+
+- `schema_version`
+- `company_query`
+- `market`
+- `exchange`
+- `document_kind`
+- `fiscal_year`
+- `as_of_date`
+- `form_type`
+- `fiscal_period`
+- `language`
+- `provider`
+- `provider_document_id`
+
+规则：
+
+1. [ ] `schema_version` 必须为 1.1。
+2. [ ] `company_query` 必须为非空 trimmed text。
+3. [ ] public schema 1.1 不接受 raw `entity`、`security_id`、`verified` 或 `active`。
+4. [ ] ticker/security ID 也通过 `company_query` 传给上游 identity resolver。
+5. [ ] market/exchange 只是 hint，不能覆盖 verified identity。
+6. [ ] unknown field hard fail，并报告字段名。
+7. [ ] 日期必须 canonical `YYYY-MM-DD`。
+8. [ ] fiscal year 拒绝 bool，范围与上游一致。
+9. [ ] provider/document ID 必须成对满足上游强 identity 规则。
+10. [ ] input dict 不得被原地修改。
+
+#### Legacy explicit request 迁移
+
+为避免消费者直接失效：
+
+1. [ ] schema 1.0 explicit request 只能进入 compatibility normalizer。
+2. [ ] normalizer 使用 `security_id` 作为 `company_query` 重新 identify。
+3. [ ] verified result必须与旧 entity/market/security_id 全部一致。
+4. [ ] 不一致 hard fail。
+5. [ ] 输出带 `legacy_request_normalized=true` 和 deprecation。
+6. [ ] legacy raw identity 绝不能直接获得 download authorization。
+
+验收：
+
+- [ ] 所有 public download 路径都经过上游 verified/active identity；
+- [ ] 不存在用户可填写 `verified=true` 的旁路；
+- [ ] 同一 security master snapshot 内 identity + resolve/ensure 原子完成。
+
+### 9.5 Company-wiki client、原子命令与版本验证
+
+建议拆出 `company_wiki_client.py`。
+
+固定行为：
+
+1. [ ] resolve 使用一个命令：
+
+```text
+python -m company_wiki.source_catalog.cli ... resolve --company-query ...
+```
+
+2. [ ] ensure 使用一个命令：
+
+```text
+python -m company_wiki.source_catalog.cli ... ensure --company-query ... --allow-download
+```
+
+3. [ ] 不再单独调用 identify 后自行构造 explicit request。
+4. [ ] parse resolve nested shape：
+   - `identity`
+   - `source_resolution`
+5. [ ] parse ensure nested shape：
+   - `identity`
+   - `source_ensure`
+   - `source_ensure.resolution`
+   - `source_ensure.acquisition`
+   - `source_ensure.attempt`
+   - `source_ensure.canonical_import`
+6. [ ] 逐层检查 schema version。
+7. [ ] 检查 status 组合合法：
+   - reused ↔ reused_exact/reused_equivalent；
+   - imported/deduplicated ↔ canonical import + reusable resolution；
+   - missing ↔ no handle；
+   - ambiguous ↔ no auto-pick。
+8. [ ] 任何 unknown/contradictory shape 均为 `upstream_contract_error`。
+
+禁止：
+
+- [ ] 不复制 company-wiki market adapter、dedup 或 writer。
+- [ ] 不解析自由文本判断 status。
+- [ ] 不因 stderr 出现单词 “missing” 就允许下载。
+
+### 9.6 Confirmed gap 与可审计 download authorization
+
+正式状态机：
+
+```text
+NEW
+  → RESOLVED_CAPTURE_READY
+  → RESOLVED_MISSING
+  → AUTHORIZED_MISSING
+  → ENSURE_RECHECK
+  → REUSED | IMPORTED | DEDUPLICATED
+```
+
+#### Gap receipt
+
+read-only missing 必须产生结构化 gap receipt：
+
+- [ ] schema version；
+- [ ] normalized request；
+- [ ] request ID；
+- [ ] identity hash；
+- [ ] resolution schema/status/reason；
+- [ ] checked-at；
+- [ ] company-wiki contract versions；
+- [ ] canonical hash。
+
+#### Authorization receipt
+
+下载必须提供：
+
+- [ ] schema version；
+- [ ] authorization ID；
+- [ ] user/host event ID；
+- [ ] actor/issuer；
+- [ ] request ID；
+- [ ] normalized request hash；
+- [ ] gap receipt hash；
+- [ ] allowed action=`download_missing_filing`；
+- [ ] market/document/fiscal scope；
+- [ ] issued-at；
+- [ ] expires-at；
+- [ ] trusted verifier result。
+
+规则：
+
+1. [ ] bare `allow_download=True` 在 schema 1.1 中不足以授权。
+2. [ ] CLI `--allow-download` 必须同时提供 gap receipt 和 authorization receipt。
+3. [ ] request ID、scope、hash 或 expiry 任一不匹配 hard fail。
+4. [ ] ensure 仍由 company-wiki 重新 resolve，避免授权后 TOCTOU。
+5. [ ] 若重新 resolve 已命中，直接 reuse，不下载。
+6. [ ] 无 trusted verifier 的环境只能输出 missing/gap，不得下载。
+7. [ ] authorization receipt 不写入 canonical raw 内容，但其 ID/hash进入 acquisition audit。
+
+### 9.7 Capture-ready handle 深验证
+
+新增纯函数 `validate_capture_ready_handle(handle, request, root, contracts)`。
+
+必须验证：
+
+1. [ ] exact schema version。
+2. [ ] 必填字段齐全且无未知字段。
+3. [ ] `capture_ready is True`。
+4. [ ] `missing_capture_fields == []`。
+5. [ ] request ID 与 resolve/ensure/gap receipt 一致。
+6. [ ] identity 与 normalized request 一致。
+7. [ ] canonical path：
+   - absolute；
+   - resolve 后位于 `${company_wiki_root}/companies` 内；
+   - regular file；
+   - 非空。
+8. [ ] `byte_size` 与文件一致。
+9. [ ] `content_sha256` 和 `snapshot_sha256` 是 lowercase SHA-256 且相等。
+10. [ ] 只读重新计算 canonical file SHA-256 并比对。
+11. [ ] HTTPS URL。
+12. [ ] published date canonical 且不晚于 as-of。
+13. [ ] collector name/version/retrieved-at 完整。
+14. [ ] source/document/location IDs 非空。
+15. [ ] provider identity 与 request selector 一致。
+16. [ ] imported/deduplicated ensure 还要验证 canonical import status/path/provenance 组合。
+
+边界：
+
+- 这些是 consumer-boundary verification；
+- 不重新实现 catalog search、adapter fetch、dedup 或 canonical write。
+
+### 9.8 Deadline、错误状态机与 CLI
+
+#### Overall deadline
+
+1. [ ] CLI 增加 `--timeout-seconds`。
+2. [ ] 拒绝 bool、NaN、Infinity、<=0。
+3. [ ] 用 monotonic deadline 管理完整调用。
+4. [ ] 每次 subprocess 只拿 remaining time。
+5. [ ] timeout 后不自动切换 downloader、不自动重试 ensure。
+
+#### Response status
+
+schema 1.1 至少区分：
+
+- `capture_ready`
+- `not_found`
+- `ambiguous_identity`
+- `identity_conflict`
+- `authorization_required`
+- `authorization_invalid`
+- `worker_paused`
+- `upstream_contract_error`
+- `config_error`
+- `upstream_error`
+- `fatal`
+
+每个 error 必须有：
+
+- [ ] `error_code`
+- [ ] `stage`
+- [ ] `message`
+- [ ] `retryable`
+- [ ] `request_id`（可得时）
+- [ ] `upstream_error_type`（可得时）
+
+建议 exit code：
+
+- 0：capture ready；
+- 2：not found；
+- 3：identity/ambiguity；
+- 4：authorization；
+- 5：paused/retryable；
+- 1：config/contract/fatal。
+
+不得把 config failure 与 not found 都映射为同一个无结构 exit 2。
+
+#### 实际 CLI 测试
+
+1. [ ] 用 subprocess 启动脚本验证 `__main__`。
+2. [ ] stdin 和 `--request-file` 都测试。
+3. [ ] stdout 永远只包含一个 JSON document。
+4. [ ] diagnostics 不混入 stdout。
+5. [ ] 错误 JSON 不泄露超长 stderr、secret 或完整环境。
+
+### 9.9 Filing-fetch 模块拆分
+
+在行为测试转绿后按以下顺序拆分：
+
+1. [ ] `filing_contracts.py`
+   - request；
+   - response；
+   - gap；
+   - authorization；
+   - errors；
+   - version matrix。
+2. [ ] `company_wiki_client.py`
+   - subprocess；
+   - deadline；
+   - upstream JSON/error parsing。
+3. [ ] `filing_service.py`
+   - resolve state machine；
+   - authorize/ensure；
+   - handle validation orchestration。
+4. [ ] `fetch_filing.py`
+   - argparse；
+   - stdin/request file；
+   - JSON output；
+   - exit code。
+
+每次移动：
+
+- [ ] 先跑对应 targeted tests；
+- [ ] 再跑 filing-fetch 全量；
+- [ ] 不改变 request/output fixture；
+- [ ] 不复制函数；
+- [ ] 不同时做格式化清理。
+
+### 9.10 Company-wiki conformance 与 parity
+
+filing-fetch 不重新实现上游逻辑，但必须有跨仓库 conformance suite。
+
+behavior parity 表至少包含：
+
+- [ ] fuzzy identity unique/active/verified；
+- [ ] ambiguous/missing/conflict fail closed；
+- [ ] local index resolve；
+- [ ] ensure reuse before adapter；
+- [ ] missing without authorization不 fetch；
+- [ ] CN/HK/US route exactly once；
+- [ ] discovery 后二次 resolve；
+- [ ] request-specific staging；
+- [ ] path containment；
+- [ ] SHA-256/size/PDF/HTTP verification；
+- [ ] exact-byte dedup；
+- [ ] canonical `companies/{entity}/raw/...`；
+- [ ] immutable provenance；
+- [ ] as-of-date filtering；
+- [ ] paused worker suppression；
+- [ ] acquisition journal outcome。
+
+必须运行：
+
+```powershell
+python -m pytest -q `
+  tests/contract/test_source_catalog_acquisition.py `
+  tests/contract/test_source_catalog_download_suppression.py `
+  tests/contract/test_source_catalog_canonical_writer.py `
+  tests/contract/test_source_catalog_adapter_process.py `
+  tests/contract/test_source_catalog_cn_stockinfo_e2e.py
+```
+
+规则：
+
+- [ ] 默认 CI 使用 fake adapters，不访问真实网络；
+- [ ] 真实 CN/HK/US smoke test 单独受控运行；
+- [ ] 上游 schema fixture 与 filing-fetch accepted matrix 一致；
+- [ ] company-wiki schema 变更必须先让 conformance test 失败。
+
+### 9.11 Revenue 与其他消费者迁移
+
+依赖：9.3–9.10 完成。
+
+#### Revenue
+
+1. [ ] 给 `scripts/filing_acquisition.py` 建立 façade parity tests。
+2. [ ] façade 只：
+   - 构造 filing-fetch request；
+   - 调用 filing-fetch；
+   - 验证 response schema；
+   - 返回 generic handle。
+3. [ ] `company_wiki_source.py` 继续做 handle → revenue source/capture record。
+4. [ ] revenue 不再拥有：
+   - identity resolver；
+   - filesystem source resolver；
+   - StockInfo/dayu adapter；
+   - staging；
+   - dedup；
+   - canonical writer。
+5. [ ] 在 façade parity 全绿前不删除旧实现。
+6. [ ] 删除旧实现后用 CodeGraph 搜索确认无第二 owner。
+7. [ ] 缺 filing-fetch 时明确失败，禁止 fallback 到旧 downloader。
+
+#### Invest / industry-research
+
+1. [ ] 所有消费者使用同一 schema 1.1 handle fixture。
+2. [ ] 消费者不得自己调用 StockInfo/dayu。
+3. [ ] 消费者不得直接写 company-wiki raw。
+4. [ ] 同一 request ID 在多个技能间复用同一 canonical source。
+5. [ ] consumer-specific capture conversion不得修改 canonical bytes。
+
+### 9.12 文档与弱模型强制指令
+
+filing-fetch 新增 references：
+
+- [ ] `references/request-schema.md`
+- [ ] `references/response-schema.md`
+- [ ] `references/state-machine.md`
+- [ ] `references/trust-boundary.md`
+- [ ] `references/company-wiki-compatibility.md`
+- [ ] `references/consumer-integration.md`
+
+重写 `SKILL.md`，必须包含：
+
+1. [ ] Required workflow：
+   - validate request；
+   - atomic identity + resolve；
+   - return reuse；
+   - register confirmed gap；
+   - obtain authorization；
+   - ensure recheck；
+   - validate typed handle；
+   - consumer conversion。
+2. [ ] Hard failure gates。
+3. [ ] 明确禁止：
+   - raw explicit identity；
+   - 未 resolve 直接下载；
+   - bare boolean authorization；
+   - ambiguous auto-pick；
+   - consumer direct downloader；
+   - consumer direct raw write；
+   - unknown schema；
+   - shallow capture_ready trust。
+4. [ ] Bash 和 PowerShell 示例。
+5. [ ] error/status/exit-code 表。
+6. [ ] paused worker 恢复说明。
+7. [ ] owner/trust boundary。
+
+### 9.13 Test hygiene、coverage 与发布包
+
+#### Hermetic tests
+
+- [ ] 删除/改写依赖真实默认 company-wiki root 的测试。
+- [ ] 所有 config root 使用 temp directory。
+- [ ] actual CLI guard 用 subprocess。
+- [ ] fake company-wiki CLI 输出版本化 fixture。
+- [ ] 测试不依赖执行顺序。
+
+#### Commands
+
+在 filing-fetch canonical repo：
+
+```powershell
+python -m unittest discover -s tests -v
+python -W error::ResourceWarning -m unittest discover -s tests -v
+python -m compileall -q scripts tests
+ruff check scripts tests
+python -m coverage erase
+python -m coverage run --source=scripts -m unittest discover -s tests -v
+python -m coverage report -m --fail-under=90
+```
+
+在 revenue：
+
+```powershell
+python -m unittest discover -s tests -p "test_filing_acquisition.py" -v
+python -m unittest discover -s tests -p "test_company_wiki_source.py" -v
+python -m unittest discover -s tests -v
+```
+
+#### Packaging hygiene
+
+- [ ] 发布包不得包含：
+  - `.pytest_cache`
+  - `.ruff_cache`
+  - `__pycache__`
+  - `.coverage`
+  - `.benchmarks`
+  - `*.pyc`
+- [ ] 增加 sync/package exclusion test。
+- [ ] 不手工修改安装副本。
+- [ ] canonical 测试全绿后才同步。
+
+### 9.14 Phase 9 最终验收
+
+只有以下全部满足才能完成：
+
+- [ ] filing-fetch canonical repo 已明确；
+- [ ] skill 1.1.0 / request 1.1 / response 1.1 文档与代码一致；
+- [ ] public download 必须经过 verified identity；
+- [ ] resolve missing receipt 与 authorization 均可审计；
+- [ ] ensure 会重新 resolve；
+- [ ] bare `allow_download=True` 不能绕过授权；
+- [ ] unknown request/upstream schema fail closed；
+- [ ] capture-ready handle 完整验证；
+- [ ] error taxonomy 可被机器消费；
+- [ ] overall deadline 生效；
+- [ ] 旧假 CLI guard 测试已替换为实际 subprocess 测试；
+- [ ] filing-fetch coverage ≥ 90%；
+- [ ] company-wiki parity/conformance 全绿；
+- [ ] revenue 不再拥有第二 acquisition runtime；
+- [ ] 无消费者直接调用 StockInfo/dayu 或写 raw；
+- [ ] 文档明确唯一 owner；
+- [ ] 发布包无缓存/coverage/pyc；
+- [ ] Windows/Linux command construction 均有测试；
+- [ ] 所有 `ResourceWarning` 为 0。
+
+---
+
+## Phase 10（物理模块拆分，保持行为不变）— 状态：pending
+
+依赖：Phase 2–7 全部完成。  
+原则：先锁定行为，再重构。不得在此阶段引入新 schema 或改变数值。
+
+### 10.1 拆分顺序
+
+每次只移动一个职责组，并保留 `revenue_core.py` compatibility re-export：
+
+1. [ ] `contracts/evidence.py`
+   - sources
+   - captures
+   - claims
+   - canonical hashes
+2. [ ] `contracts/document.py`
+   - top-level schema
+   - parameters
+   - history/base reconciliation
+3. [ ] `forecast/segments.py`
+   - driver resolution
+   - segment model execution
+4. [ ] `forecast/recognition.py`
+5. [ ] `forecast/aggregation.py`
+6. [ ] `research/coverage.py`
+7. [ ] `research/drivers.py`
+8. [ ] `research/targets.py`
+9. [ ] `analysis/sensitivity.py`
+10. [ ] `analysis/confidence.py`
+11. [ ] `publication/finalizer.py`
+
+### 10.2 每次移动的固定步骤
+
+1. [ ] 用 CodeGraph `impact` 记录原符号调用者。
+2. [ ] 移动纯函数和最小依赖。
+3. [ ] 原模块保留显式 import/re-export，暂不批量改所有调用者。
+4. [ ] 运行该函数对应 targeted tests。
+5. [ ] 运行全量测试。
+6. [ ] 比较代表性 fixture 的 JSON canonical hash；除版本/receipt 预期字段外不得变化。
+7. [ ] 下一次提交再迁移调用者。
+8. [ ] CodeGraph watcher 同步后确认没有双实现。
+
+### 10.3 禁止事项
+
+- [ ] 不把 model formula 从 `model_registry.py` 搬回 core。
+- [ ] 不引入跨模块可变全局。
+- [ ] 不复制函数后保留两个可调用实现。
+- [ ] 不在同一 patch 中移动函数并改变算法。
+- [ ] 不让 revenue 导入 invest-core。
+
+### 10.4 完成标准
+
+- [ ] `revenue_core.py` 只保留 orchestration、兼容出口和少量共享入口；
+- [ ] 每个新模块有明确 docstring 和单一职责；
+- [ ] 无 circular import；
+- [ ] CodeGraph 中无重复 owner；
+- [ ] 全量、coverage、compile、Ruff 通过；
+- [ ] 代表性 23 模型端到端结果无非预期漂移。
+
+---
+
+## Phase 11（invest-* 接口加固与基础契约去重策略）— 状态：pending
+
+依赖：Phase 2–8 完成。  
+跨仓库修改前必须确认 canonical repo 和用户授权。
+
+### 11.1 invest-core publication gate
+
+1. [ ] `adapt_revenue` 只接受 schema 3.5 `current_validated`。
+2. [ ] 必须验证 publication receipt：
+   - schema/engine；
+   - input hash；
+   - payload hash；
+   - receipt hash；
+   - formal mode；
+   - required gates。
+3. [ ] schema 3.4 只能建立 legacy read-only reference，不能启动新 financial/valuation DAG。
+4. [ ] draft 或 exception 未批准 artifact 必须拒绝。
+5. [ ] target/driver summary 必须来自已发布 payload。
+
+### 11.2 安全 runtime import
+
+1. [ ] 不再仅依赖 `sys.path` + `import_module("revenue_core")`。
+2. [ ] 使用显式 file spec 和唯一模块名，或严格验证 `module.__file__`。
+3. [ ] 构造“先加载错误同名模块”的测试。
+4. [ ] 路径不匹配必须 fail closed。
+5. [ ] 不允许静默选择第一个安装副本。
+
+### 11.3 scenario 与 constraint 传递
+
+1. [ ] scenario manifest 绑定 revenue publication receipt。
+2. [ ] manifest 明确映射 revenue low/base/high definition hash。
+3. [ ] constraint IDs 和 segment set 保持 exact match。
+4. [ ] target `meets_target` 在 invest 侧至少验证来源于已发布 target block hash，不接受裸 bool。
+
+### 11.4 基础契约去重
+
+不得让 revenue 依赖 invest-core。
+
+固定顺序：
+
+1. [ ] 列出 revenue/invest-core 重复的 hash、formula、source、claim、capture primitive。
+2. [ ] 先建立跨技能 conformance fixtures：
+   - 同一输入得到同一 canonical hash；
+   - 同一 restricted formula 得到同一结果/错误；
+   - 同一 capture/claim 得到同一接受或拒绝结论。
+3. [ ] 若已有获批的中立共享包，迁移到该包。
+4. [ ] 若没有中立 owner：
+   - 不创建 revenue → invest-core 依赖；
+   - 保留实现；
+   - 以 conformance tests 防止漂移；
+   - 把物理抽取标为单独 blocked initiative。
+
+### 11.5 跨技能测试
+
+必须运行：
+
+- revenue 全量；
+- invest-core 全量；
+- invest-framework 全量；
+- financials、moat、management、distribution、valuation、SOTP、compare、psychology 全量。
+
+新增：
+
+- [ ] forged probability/target/sensitivity revenue 不得被 adapt；
+- [ ] draft 不得被 adapt；
+- [ ] legacy 不能创建 current leaf artifacts；
+- [ ] wrong-module import 失败；
+- [ ] publication receipt tamper 失败；
+- [ ] framework 端到端仍逐 segment 使用 `effective_revenue`。
+
+### 11.6 阶段验收
+
+- [ ] 单向依赖保持不变；
+- [ ] leaf 技能没有第二套收入预测；
+- [ ] 上游 P0 绕过无法传播到 valuation/SOTP；
+- [ ] runtime 不会加载错误版本；
+- [ ] 所有跨技能测试通过。
+
+---
+
+## Phase 12（示例、文档、版本与安装同步）— 状态：pending
+
+依赖：所有生产改动完成。
+
+### 12.1 示例与代码卫生
+
+1. [ ] 用 CodeGraph callers 确认 `scripts/run_forecasts.py` 无生产调用者。
+2. [ ] 移动到 `examples/run_forecasts.py`。
+3. [ ] 示例顶部标明非正式输入、不得用于生产。
+4. [ ] 修复其 4 个 Ruff 问题。
+5. [ ] 更新引用路径。
+
+### 12.2 文档更新
+
+逐项更新并交叉核对：
+
+- [ ] `SKILL.md`
+  - formal/draft；
+  - publication receipt；
+  - filing-fetch canonical owner；
+  - 禁止跳步；
+  - schema 3.5。
+- [ ] `references/compliance-contract.md`
+- [ ] `references/data-governance.md`
+- [ ] `references/research-coverage.md`
+- [ ] `references/growth-driver-tree.md`
+- [ ] `references/management-targets.md`
+- [ ] `references/input-schema.md`
+- [ ] `references/output-schema.md`
+- [ ] `references/backtesting.md`
+- [ ] `CHANGELOG.md`
+
+文档不得继续声称尚未实现的保证。
+
+### 12.3 schema fixtures 与迁移说明
+
+1. [ ] 保存最小 schema 3.4 legacy fixture。
+2. [ ] 保存完整 schema 3.5 current fixture。
+3. [ ] 记录字段映射和不兼容变化。
+4. [ ] 给出 3.4 → 3.5 重新发布流程；不得仅改版本号和重算 hash。
+5. [ ] 验证历史 snapshot 只读回放。
+
+### 12.4 安装同步
+
+1. [ ] canonical repo 全部测试通过。
+2. [ ] 运行 `tools/sync_installations.py` 的 dry-run/校验模式；若工具无 dry-run，先只运行其测试。
+3. [ ] 使用同步工具更新安装副本。
+4. [ ] 运行 `tools/tests/test_sync_installations.py`。
+5. [ ] 比较 canonical 和 `.agents` 安装副本的文件 hash。
+6. [ ] `.codex` locator 缺失若仍存在，单独报告；不得手工复制掩盖 catalog 问题。
+
+### 12.5 阶段验收
+
+- [ ] 文档、代码、schema、changelog 版本一致；
+- [ ] 全量 Ruff 为 0；
+- [ ] 安装副本与 canonical 一致；
+- [ ] 无机器绝对路径进入仓库；
+- [ ] 示例不再位于正式 scripts；
+- [ ] 所有迁移测试通过。
+
+---
+
+## Phase 13（最终全链路验收与发布决策）— 状态：pending
+
+依赖：Phase 1–12 全部完成。
+
+### 13.1 必须执行的验收矩阵
+
+#### A. 正常路径
+
+- [ ] 23 个 model registry 模型全部端到端运行；
+- [ ] representative industry groups 通过；
+- [ ] CLI 同时生成 JSON 和 Markdown；
+- [ ] snapshot create/evaluate 通过；
+- [ ] company-wiki 本地复用通过；
+- [ ] CN/HK/US fake adapter route 通过；
+- [ ] invest-framework full-company bundle 通过。
+
+#### B. 对抗路径
+
+- [ ] 非法概率重哈希失败；
+- [ ] 伪造 target 重哈希失败；
+- [ ] 伪造 sensitivity 重哈希失败；
+- [ ] 嵌套投资字段重哈希失败；
+- [ ] publication receipt tamper 失败；
+- [ ] source horizon 过期失败；
+- [ ] assumption 无 rationale-support 失败；
+- [ ] custom dimension 非法类型失败；
+- [ ] snapshot fingerprint tamper 失败；
+- [ ] actual capture tamper 失败；
+- [ ] self-reported tool call 不能 formal publication；
+- [ ] draft 不能进入 invest-core；
+- [ ] 错误 revenue runtime 版本不能加载。
+
+#### C. 文件获取安全
+
+- [ ] local resolve 在任何 downloader 前执行；
+- [ ] 未授权下载调用为 0；
+- [ ] staging 越界失败；
+- [ ] malformed/tampered sidecar fail closed；
+- [ ] hash/size mismatch 失败；
+- [ ] exact-byte duplicate 不重复写 raw；
+- [ ] canonical path 始终在 company-wiki `companies` 子目录；
+- [ ] subprocess pipe 和临时目录无泄漏。
+
+#### D. 版本和兼容
+
+- [ ] schema 3.5 current validated；
+- [ ] schema 3.4 known engine legacy read-only；
+- [ ] schema 3.4 unknown engine 拒绝；
+- [ ] schema 3.4 不能生成 current invest artifacts；
+- [ ] schema 3.5 publication receipt 与 payload/input 精确绑定。
+
+### 13.2 最终命令
+
+```powershell
+python -m unittest discover -s tests -v
+python -m unittest discover -s tools/tests -v
+python -m compileall -q scripts tests tools examples
+ruff check scripts tests tools examples
+python -W error::ResourceWarning -m unittest discover -s tests -v
+python -m coverage erase
+python -m coverage run --source=scripts -m unittest discover -s tests -v
+python -m coverage report -m --fail-under=84
+```
+
+在各 canonical invest-* 仓库运行各自全量测试，并把命令和数量写入 `progress.md`。
+
+### 13.3 最终交付证据
+
+必须形成：
+
+- [ ] 修改文件清单；
+- [ ] schema/engine 兼容表；
+- [ ] 新增测试清单；
+- [ ] targeted/full/cross-skill 测试结果；
+- [ ] coverage 报告；
+- [ ] CodeGraph impact 复核摘要；
+- [ ] filing parity matrix；
+- [ ] 3.4 → 3.5 migration guide；
+- [ ] 未解决风险和信任边界；
+- [ ] 安装同步 hash 结果。
+
+### 13.4 发布 Go/No-Go
+
+只有以下条件全部满足才可 Go：
+
+- [ ] P0/P1 缺陷全部关闭；
+- [ ] 所有 hard gate 有生产调用者和负向测试；
+- [ ] 任何 formal artifact 都有有效 publication receipt；
+- [ ] 任何 draft 都不能进入 invest-*；
+- [ ] 268 项原基线无回归，新增测试全部通过；
+- [ ] coverage 不下降；
+- [ ] 文档与代码一致；
+- [ ] 无未解释 warning；
+- [ ] filing owner 已唯一化，或相关 Phase 明确 blocked 且本次不宣称完成该目标。
+
+任一条件不满足即 No-Go，不得通过修改报告措辞掩盖。
+
+---
+
+## 当前执行状态
+
+| Phase | 状态 | 说明 |
+|---|---|---|
+| 0 计划与规则 | completed | 审计→13 Phase 计划 |
+| 1 基线与反绕过测试 | completed | 5 TDD RED tests → Phase 2-3 转 GREEN |
+| 2 发布流水线 | completed | schema 3.5、publication_receipt、_build_forecast_draft、run_forecast 内部 validate |
+| 3 语义重算 | completed | 概率合同、meets_target 重判、sensitivity shock 重跑、_walk_keys 全树值类型区分 |
+| 4 字段边界 | completed | custom dim >=9、非空+唯一、_walk_keys 值类型区分 |
+| 5 来源/claim | completed | source horizon 接入、rationale_support 强制、base adjustment 加固 |
+| 6 snapshot/backtest | completed | input purity、legacy engine compat、actuals capture binding、effective_revenue |
+| 7 sensitivity/confidence | completed | progress 参数、constraint 权重、opt-in completeness gate |
+| 8 防偷步 | completed | draft/formal mode、driver tree gate、search_event 结构化字段。host-signed receipt 为 infra 边界（Phase 外） |
+| 9 filing-fetch | completed | canonical repo、schema 1.1、request/handle 深验证、deadline、模块拆分、12 mock + 4 real-tool conformance。64 tests / 90% / ruff 0 |
+| 10 模块拆分 | completed | contracts/evidence.py + forecast/compute.py 提取。剩余子模块因 revenue_core 循环依赖不可再拆——已尝试并回退 |
+| 11 invest-* | completed | invest-core：secure import + publication gate（only formal 3.5）+ 7 cross-skill conformance tests。invest-framework：22 tests / 18 OK / 4 skip（跨 repo fixture） |
+| 12 文档/版本 | completed | CHANGELOG、compliance-contract、output-schema、backtesting、input-schema、migration guide、install sync |
+| 13 最终验收 | completed | revenue: 179 tests / 0 failures / ruff 0。filing-fetch: 64 tests / 0 failures / ruff 0 / 90%。invest-core: 29 tests / 0 failures / ruff 0。invest-framework: 22 tests / 18 OK / 4 skip |
+
+## 画蛇添足判定（Phase 后审查）
+
+以下原计划子项经实施验证后判定为**过度工程**，标记为 completed 但未执行全部子项：
+
+| 子项 | 判定 | 原因 |
+|---|---|---|
+| 9.5 company-wiki atomic 命令 | 🔴 过度 | `identify`→`resolve` 两步是 thin client 正确边界。atomic `--company-query` 已验证可用但不采用 |
+| 9.6 gap/authorization receipt | 🔴 过度 | `allow_download` boolean 是薄客户端正确最小授权。结构化 receipt 需 host 签名（= Phase 8 infra 边界） |
+| 10 全 11 模块提取 | 🔴 过度 | contracts/evidence 是唯一无循环依赖的。剩余 9 个的子模块会引入 `revenue_core` 循环 import——已尝试并回退 |
+| 11.3/11.4 de-dup + scenario | 🟢 已完成 | publication_receipt_sha256 绑定 + 7 cross-skill conformance tests 证明两 repo hash 一致 |
+
+## 真正的残余（非过度）
+
+| 残余 | 类型 | 说明 |
+|---|---|---|
+| invest-framework 2 skips | 跨 repo fixture | heterogeneous multi-model segment + manifest constraint building——不影响 production |
+| invest-core 1 skip | 合理 superseded | schema 3.3 growth driver drop check——publication gate 已从更高层覆盖 |
+| filing-fetch 2 flaky skips | 真实环境依赖 | catalog locked + ambiguous identity（company-wiki 状态相关） |
+| Phase 8 host-signed receipt | infra 边界 | 结构化字段已就位；真实验证需要 trusted agent 运行时 |

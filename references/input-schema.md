@@ -2,9 +2,39 @@
 
 ## 1. Identity
 
-Require `schema_version="3.4"`, company, `as_of_date`, currency, scale in `unit`, fiscal-year end, base year, consecutive forecast years, sources, evidence claims, parameters, history, segments, reported-total parameter ID, nine-dimension research coverage, a causal growth-driver tree, management-communication coverage, and a management-target ledger.
+Require `schema_version="3.5"`, company, `as_of_date`, currency, scale in
+`unit`, fiscal-year end, base year, consecutive forecast years, sources,
+evidence claims, parameters, history, segments, reported-total parameter ID,
+nine-dimension research coverage, a causal growth-driver tree,
+management-communication coverage, and a management-target ledger. Schema 3.4
+is accepted as legacy read-only.
 
-Use `pre_revenue=true` only when reported and segment base revenue are zero. A genuinely pre-revenue company may use an empty history.
+Use `pre_revenue=true` only when reported and segment base revenue are zero.
+A genuinely pre-revenue company may use an empty history.
+
+**Draft / formal.** `run_forecast(data, mode="formal")` (default) enforces all
+hard gates; `mode="draft"` records unresolved data gaps as structured
+limitations and sets `formal_output_mode="draft"` in the publication receipt.
+invest-\* consumers must reject draft artifacts.
+
+**Custom research dimensions.** Appended after the nine core dimensions are
+accepted by both the input and output validators. Each custom dimension must
+be a non-empty, unique string; null, empty, or duplicate names are rejected.
+
+**Management communication search receipts.** Each of the six categories must
+be checked. A `not_available` declaration carries an optional `search_event`
+with `query_scope`, `query_time`, and `event_ids`. A `not_applicable`
+declaration carries a `reason_code`. Without a host-signed search receipt the
+declaration is an honour-system assertion.
+
+**Sensitivity completeness.** An opt-in gate (`require_sensitivity_completeness`)
+enforces that every base-scenario assumption/stress parameter is either
+sensitivity-tested or carries a structured exclusion (`sensitivity_exclusions`)
+with `reason` and `rationale`.
+
+**Filing acquisition.** Use the standalone `filing-fetch` skill
+(`filing_fetch_client.resolve_filing`) to obtain a capture-ready handle. The
+bundled `filing_acquisition.py` is deprecated.
 
 ## 2. Evidence claims
 
@@ -29,9 +59,14 @@ Every claim requires:
 }
 ```
 
-`reported_fact` and `management_guidance` require an `exact_value` claim whose extracted value, unit, and period match the parameter. Source-linked assumptions require a linked rationale-support claim. Historical revenue, recognition policies, scenario probabilities, growth-driver evidence nodes, and actual revenue use their dedicated target types. A growth-driver evidence claim uses `target_type="growth_driver"`, targets the stable `evidence_id`, and uses `rationale_support`.
-
-The deterministic validator proves mapping, identity, hash, date, and extracted-value consistency. It cannot understand a live webpage; the research agent must open the page before creating the claim.
+`reported_fact` and `management_guidance` require an `exact_value` claim whose
+extracted value, unit, and period match the parameter. Source-linked assumptions
+(`analyst_assumption`, `scenario_stress`) **must** have at least one
+`rationale_support` claim — an `exact_value` alone is not sufficient. Source
+horizon is enforced: a source whose `covers_until` precedes a forecast year
+that references it is rejected at input validation. Historical revenue,
+recognition policies, scenario probabilities, growth-driver evidence nodes, and
+actual revenue use their dedicated target types.
 
 ## 3. Parameters
 

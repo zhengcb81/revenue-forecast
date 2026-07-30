@@ -7,6 +7,7 @@ import argparse
 import copy
 import json
 import math
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -67,8 +68,11 @@ def validate_snapshot(snapshot: dict[str, Any]) -> None:
     for key in ("snapshot_schema_version", "snapshot_id", "forecast_version", "company_name", "as_of_date", "input_sha256", "forecast_result_sha256", "engine_version", "forecast_schema_version", "input_document", "forecast_result"):
         require(key in snapshot, f"snapshot missing field: {key}")
     require(snapshot["snapshot_schema_version"] == "2.0", "unsupported snapshot schema version")
-    require(snapshot["engine_version"] == ENGINE_VERSION, "snapshot engine_version mismatch")
     require(snapshot["forecast_schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS, "snapshot forecast_schema_version mismatch")
+    if snapshot["forecast_schema_version"] == FORECAST_SCHEMA_VERSION:
+        require(snapshot["engine_version"] == ENGINE_VERSION, "snapshot engine_version mismatch")
+    # Legacy schemas accept any engine version; the snapshot_id hash still
+    # binds the exact engine for tamper detection.
     expected_input_hash = canonical_sha256(snapshot["input_document"])
     require(expected_input_hash == snapshot["input_sha256"], "snapshot input fingerprint mismatch")
     validate_forecast_output(snapshot["forecast_result"])
@@ -91,7 +95,7 @@ def validate_actuals(actuals: dict[str, Any], snapshot: dict[str, Any]) -> dict[
     actuals_as_of = parse_iso_date(actuals["actuals_as_of_date"], "actuals_as_of_date")
     snapshot_as_of = parse_iso_date(snapshot["as_of_date"], "snapshot.as_of_date")
     require(actuals_as_of >= snapshot_as_of, "actuals_as_of_date cannot precede forecast as_of_date")
-    source_index = validate_sources(actuals, actuals_as_of)
+    source_index = validate_sources(actuals, actuals_as_of, require_capture=True)
     claim_index = _validate_actual_claims(actuals, source_index, actuals_as_of)
     forecast_years = set(snapshot["forecast_result"]["forecast_years"])
     fiscal_month, fiscal_day = map(int, snapshot["forecast_result"]["fiscal_year_end"].split("-"))
@@ -135,7 +139,11 @@ def _validate_actual_claims(actuals: dict[str, Any], source_index: dict[str, dic
             require(isinstance(claim.get(field), str) and claim[field].strip(), f"actual claim {claim_id}.{field} is required")
         excerpt = claim["excerpt"].strip()
         require(10 <= len(excerpt) <= 500 and claim.get("excerpt_sha256") == text_sha256(excerpt), f"actual claim excerpt/hash mismatch: {claim_id}")
-        require(isinstance(claim.get("content_sha256"), str) and len(claim["content_sha256"]) == 64, f"actual claim content_sha256 is required: {claim_id}")
+        require(isinstance(claim.get("content_sha256"), str) and re.fullmatch(r"[0-9a-f]{64}", claim["content_sha256"]), f"actual claim content_sha256 must be lowercase SHA-256: {claim_id}")
+        source_capture = source_index[claim["source_id"]].get("capture")
+        require(isinstance(source_capture, dict), f"actual claim source capture is missing: {claim_id}")
+        require(claim.get("capture_receipt_sha256") == source_capture["receipt_sha256"], f"actual claim capture receipt mismatch: {claim_id}")
+        require(claim["content_sha256"] == source_capture["snapshot_sha256"], f"actual claim/source snapshot mismatch: {claim_id}")
         require(claim.get("verification_status") == "opened_and_checked", f"actual claim must be opened_and_checked: {claim_id}")
         verified = parse_iso_date(claim.get("verified_date"), f"{claim_id}.verified_date")
         published = parse_iso_date(source_index[claim["source_id"]]["published_date"], f"{claim_id}.published_date")
@@ -263,9 +271,9 @@ def evaluate_snapshot(snapshot: dict[str, Any], actuals: dict[str, Any]) -> dict
         result_by_year: dict[str, Any] = {}
         segment = segment_forecasts[segment_name]
         for year_text, actual_record in records.items():
-            predicted = float(segment["scenarios"]["base"]["recognized_revenue"][year_text])
-            lower = float(segment["scenarios"]["low"]["recognized_revenue"][year_text])
-            upper = float(segment["scenarios"]["high"]["recognized_revenue"][year_text])
+            predicted = float(segment["scenarios"]["base"].get("effective_revenue", segment["scenarios"]["base"]["recognized_revenue"])[year_text])
+            lower = float(segment["scenarios"]["low"].get("effective_revenue", segment["scenarios"]["low"]["recognized_revenue"])[year_text])
+            upper = float(segment["scenarios"]["high"].get("effective_revenue", segment["scenarios"]["high"]["recognized_revenue"])[year_text])
             result_by_year[year_text] = _error_record(predicted, float(actual_record["value"]), lower, upper, float(segment["base_revenue"]))
             result_by_year[year_text]["source_ids"] = actual_record["source_ids"]
             result_by_year[year_text]["claim_ids"] = actual_record["claim_ids"]

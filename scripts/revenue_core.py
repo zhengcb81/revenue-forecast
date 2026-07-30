@@ -4,14 +4,11 @@ from __future__ import annotations
 
 import ast
 import copy
-import hashlib
-import json
 import math
 import re
 from collections import defaultdict
 from datetime import date
 from typing import Any, Iterable
-from urllib.parse import urlparse
 
 from model_registry import (
     MODEL_DRIVER_DIMENSIONS as REGISTERED_MODEL_DRIVER_DIMENSIONS,
@@ -20,6 +17,19 @@ from model_registry import (
     ModelRegistryError,
     calculate_registered_model,
 )
+from contracts.evidence import (  # noqa: E402, F811  re-export
+    ForecastInputError,
+    canonical_sha256,
+    finite_number,
+    parse_iso_date,
+    period_year,
+    require,
+    text_sha256,
+    valid_source_url,
+    validate_claim_ids,
+    validate_source_capture,
+)
+
 from revenue_constraints import (
     RevenueConstraintError,
     apply_revenue_constraints,
@@ -32,10 +42,10 @@ SCENARIOS = ("low", "base", "high")
 SKILL_VERSION = "3.10.0"
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
-FORECAST_SCHEMA_VERSION = "3.4"
-SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", "3.1", "3.2", "3.3", FORECAST_SCHEMA_VERSION}
-EVIDENCE_CAPTURE_SCHEMA_VERSION = "1.0"
+FORECAST_SCHEMA_VERSION = "3.5"
+SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", "3.1", "3.2", "3.3", "3.4", FORECAST_SCHEMA_VERSION}
 WORKFLOW_RECEIPT_SCHEMA_VERSION = "1.0"
+PUBLICATION_RECEIPT_SCHEMA_VERSION = "1.0"
 PARAMETER_KINDS = {
     "reported_fact",
     "derived_fact",
@@ -61,20 +71,6 @@ SOURCE_RANKS = {
     "specialist_research": 5,
     "reputable_news": 5,
 }
-BLOCKED_HOSTS = {
-    "example.com",
-    "www.example.com",
-    "localhost",
-    "127.0.0.1",
-    "google.com",
-    "www.google.com",
-    "bing.com",
-    "www.bing.com",
-    "baidu.com",
-    "www.baidu.com",
-}
-CAPTURE_METHODS = {"browser_open", "api_response", "local_document", "structured_connector", "manual_open"}
-PROMPT_INJECTION_STATUSES = {"not_detected", "detected_and_ignored"}
 
 MODEL_SPECS = REGISTERED_MODEL_SPECS
 MODEL_RATIO_DRIVERS = REGISTERED_MODEL_RATIO_DRIVERS
@@ -140,44 +136,6 @@ GROWTH_DRIVER_INFERENCE_DISTANCES = {"direct", "one_step", "analogical", "contra
 GROWTH_DRIVER_COUNTEREVIDENCE_STATUSES = {"found", "searched_none_found", "data_gap"}
 
 
-class ForecastInputError(ValueError):
-    """Raised when an input violates the auditable revenue contract."""
-
-
-def require(condition: bool, message: str) -> None:
-    if not condition:
-        raise ForecastInputError(message)
-
-
-def parse_iso_date(value: Any, field: str) -> date:
-    require(isinstance(value, str) and bool(value.strip()), f"{field} must be an ISO date")
-    try:
-        return date.fromisoformat(value)
-    except ValueError as exc:
-        raise ForecastInputError(f"{field} must use YYYY-MM-DD") from exc
-
-
-def finite_number(value: Any, field: str) -> float:
-    require(isinstance(value, (int, float)) and not isinstance(value, bool), f"{field} must be numeric")
-    number = float(value)
-    require(math.isfinite(number), f"{field} must be finite")
-    return number
-
-
-def canonical_sha256(value: Any) -> str:
-    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
-
-
-def text_sha256(value: str) -> str:
-    return hashlib.sha256(value.strip().encode("utf-8")).hexdigest()
-
-
-def period_year(value: Any, field: str) -> int:
-    require(isinstance(value, str) and re.fullmatch(r"FY\d{4}", value) is not None, f"{field} must use strict FYyyyy format")
-    return int(value[2:])
-
-
 def _evaluate_formula_node(node: ast.AST, variables: dict[str, float]) -> float:
     if isinstance(node, ast.Expression):
         return _evaluate_formula_node(node.body, variables)
@@ -215,45 +173,6 @@ def evaluate_derived_formula(formula: str, inputs: list[float]) -> float:
     value = _evaluate_formula_node(parsed, {f"x{index}": number for index, number in enumerate(inputs)})
     require(math.isfinite(value), "derived formula result must be finite")
     return value
-
-
-def valid_source_url(url: Any) -> bool:
-    if not isinstance(url, str):
-        return False
-    parsed = urlparse(url)
-    host = (parsed.hostname or "").lower()
-    if parsed.scheme != "https" or not host:
-        return False
-    if host in BLOCKED_HOSTS or host.endswith(".example"):
-        return False
-    return "." in host
-
-
-def validate_source_capture(source: dict[str, Any], as_of: date) -> dict[str, Any]:
-    """Validate a tool-linked source snapshot without claiming external fact truth."""
-    source_id = source.get("source_id", "<unknown>")
-    capture = source.get("capture")
-    require(isinstance(capture, dict), f"{source_id}.capture is required")
-    required = {
-        "capture_schema_version", "capture_method", "tool_name", "tool_call_id",
-        "captured_date", "snapshot_sha256", "content_treatment",
-        "prompt_injection_status", "receipt_sha256",
-    }
-    require(set(capture) == required, f"invalid capture fields for {source_id}")
-    require(capture["capture_schema_version"] == EVIDENCE_CAPTURE_SCHEMA_VERSION, f"unsupported capture schema for {source_id}")
-    require(capture["capture_method"] in CAPTURE_METHODS, f"unsupported capture method for {source_id}")
-    for field in ("tool_name", "tool_call_id"):
-        require(isinstance(capture[field], str) and capture[field].strip(), f"{source_id}.capture.{field} is required")
-    captured = parse_iso_date(capture["captured_date"], f"{source_id}.capture.captured_date")
-    published = parse_iso_date(source.get("published_date"), f"{source_id}.published_date")
-    require(published <= captured <= as_of, f"source capture is outside the allowed information set: {source_id}")
-    require(source.get("accessed_date") == capture["captured_date"], f"source accessed_date/capture date mismatch: {source_id}")
-    require(isinstance(capture["snapshot_sha256"], str) and re.fullmatch(r"[0-9a-f]{64}", capture["snapshot_sha256"]), f"invalid source snapshot hash: {source_id}")
-    require(capture["content_treatment"] == "untrusted_data_only", f"source content must be treated as untrusted data: {source_id}")
-    require(capture["prompt_injection_status"] in PROMPT_INJECTION_STATUSES, f"invalid prompt-injection status: {source_id}")
-    payload = {key: value for key, value in capture.items() if key != "receipt_sha256"}
-    require(capture["receipt_sha256"] == canonical_sha256(payload), f"source capture receipt hash mismatch: {source_id}")
-    return dict(capture)
 
 
 def validate_top_level(data: dict[str, Any]) -> tuple[list[int], date]:
@@ -538,29 +457,11 @@ def validate_evidence_claims(
         if parameter["kind"] in {"reported_fact", "management_guidance"}:
             require(any(claim["support_type"] == "exact_value" for claim in linked), f"{parameter['kind']} {parameter_id} requires an exact-value claim")
         if parameter["kind"] in {"analyst_assumption", "scenario_stress"} and parameter.get("source_ids"):
-            require(bool(linked), f"source-linked assumption {parameter_id} requires a rationale-support claim")
+            require(
+                any(c["support_type"] == "rationale_support" for c in linked),
+                f"source-linked assumption {parameter_id} requires a rationale-support claim",
+            )
     return index
-
-
-def validate_claim_ids(
-    claim_ids: Any,
-    claim_index: dict[str, dict[str, Any]],
-    target_type: str,
-    target_id: str,
-    field: str,
-    support_type: str | None = None,
-) -> list[dict[str, Any]]:
-    require(isinstance(claim_ids, list) and claim_ids, f"{field} requires claim_ids")
-    require(len(claim_ids) == len(set(claim_ids)), f"{field} contains duplicate claim_ids")
-    claims: list[dict[str, Any]] = []
-    for claim_id in claim_ids:
-        require(claim_id in claim_index, f"unknown claim_id {claim_id} in {field}")
-        claim = claim_index[claim_id]
-        require(claim["target_type"] == target_type and claim["target_id"] == target_id, f"claim {claim_id} does not support {target_type}:{target_id}")
-        if support_type is not None:
-            require(claim["support_type"] == support_type, f"claim {claim_id} must use {support_type}")
-        claims.append(claim)
-    return claims
 
 
 def parameter_values(parameter_index: dict[str, dict[str, Any]], parameter_ids: Iterable[str]) -> list[float]:
@@ -1014,6 +915,9 @@ def referenced_parameter_ids(data: dict[str, Any], scenario: str) -> set[str]:
         recognition = segment["recognition"]
         if recognition.get("mode") == "lagged_activity":
             referenced.update(recognition["carry_in_parameter_ids"][scenario])
+        progress = recognition.get("progress_parameter_ids")
+        if isinstance(progress, dict):
+            referenced.update(progress.get(scenario, []))
     for adjustment in data.get("forecast_adjustments", []):
         referenced.update(adjustment["scenario_parameter_ids"][scenario])
     return referenced
@@ -1066,7 +970,7 @@ def _requested_sensitivity_values(test: dict[str, Any], original: float, name: s
 
 
 def calculate_sensitivities(data: dict[str, Any], result: dict[str, Any]) -> list[dict[str, Any]]:
-    tests = data.get("sensitivity_tests", data.get("sensitivities", []))
+    tests = copy.deepcopy(data.get("sensitivity_tests", data.get("sensitivities", [])))
     require(isinstance(tests, list), "sensitivity_tests must be a list")
     for _test in tests:
         if isinstance(_test, dict) and "name" not in _test and "parameter_id" in _test:
@@ -1217,6 +1121,15 @@ def parameter_revenue_weights(data: dict[str, Any], result: dict[str, Any]) -> d
         if refs:
             for parameter_id in refs:
                 weights[parameter_id] += impact / len(refs)
+    # Constraint parameters drive effective revenue when constraints are present;
+    # include their absolute revenue impact so confidence weights stay aligned
+    # with the growth-driver helper.
+    for entry in result.get("constraint_audit", []):
+        impact = sum(abs(change["adjustment"]) for change in entry.get("changes", []))
+        param_ids = entry.get("parameter_ids", [])
+        if param_ids and impact > 0:
+            for parameter_id in param_ids:
+                weights[parameter_id] += impact / len(param_ids)
     return dict(weights)
 
 
@@ -1387,8 +1300,13 @@ def calculate_confidence(
     }
 
 
-def run_forecast(data: dict[str, Any]) -> dict[str, Any]:
-    """Run the complete revenue forecast without any investment outputs."""
+def _build_forecast_draft(data: dict[str, Any]) -> dict[str, Any]:
+    """Compute the revenue forecast result without a publication receipt.
+
+    The draft carries the execution receipt (what the runtime actually ran) but
+    no ``publication_receipt`` and no ``result_sha256``. It is private and must
+    never be handed to invest-* consumers; only ``run_forecast`` publishes it.
+    """
     validated = validate_document(data)
     result = _run_forecast_core(data)
     result["schema_version"] = data["schema_version"]
@@ -1421,7 +1339,42 @@ def run_forecast(data: dict[str, Any]) -> dict[str, Any]:
         result["input_sha256"], result["sources"], result["evidence_claims"],
         result["parameter_trace"], result["data_gaps"],
     )
+    return result
+
+
+def run_forecast(data: dict[str, Any], *, mode: str = "formal") -> dict[str, Any]:
+    """Run the complete revenue forecast and return the published result.
+
+    The result is computed as a private draft and only published after passing
+    the self-contained output validator; any validation failure raises before a
+    caller ever sees a publication receipt.
+
+    *mode* may be ``"formal"`` (default — all hard gates must pass) or
+    ``"draft"`` (unresolved data gaps are recorded as structured limitations
+    but the result is returned with ``formal_output_mode="draft"``).
+    invest-* consumers must only accept ``"formal"`` artifacts.
+    """
+    from revenue_publication import build_publication_receipt
+    from revenue_report import validate_forecast_output
+
+    if mode not in {"formal", "draft"}:
+        raise ValueError("mode must be 'formal' or 'draft'")
+    result = _build_forecast_draft(data)
+    result["publication_receipt"] = build_publication_receipt(result)
     result["result_sha256"] = canonical_sha256(result)
+    if mode == "draft":
+        try:
+            validate_forecast_output(result, data)
+        except ForecastInputError as exc:
+            result.setdefault("draft_limitations", []).append(str(exc))
+            result["publication_receipt"] = build_publication_receipt(result)
+            result["publication_receipt"]["formal_output_mode"] = "draft"
+            result["publication_receipt"]["receipt_sha256"] = canonical_sha256(
+                {k: v for k, v in result["publication_receipt"].items() if k != "receipt_sha256"}
+            )
+            result["result_sha256"] = canonical_sha256(result)
+    else:
+        validate_forecast_output(result, data)
     return result
 
 
@@ -1441,7 +1394,7 @@ def build_workflow_compliance_receipt(
         "execution_mode": "deterministic_runtime",
         "gate_ids": [
             "input_contract", "source_capture", "evidence_claims", "research_coverage",
-            "management_targets", "growth_driver_tree", "revenue_model", "output_recomputation",
+            "management_targets", "growth_driver_tree", "revenue_model",
         ],
         "input_sha256": input_sha256,
         "source_capture_receipt_sha256s": capture_hashes,
@@ -1494,7 +1447,9 @@ def validate_base_reconciliation(data: dict[str, Any], parameter_index: dict[str
 
     adjustment_ids = data.get("base_adjustment_parameter_ids", [])
     require(isinstance(adjustment_ids, list), "base_adjustment_parameter_ids must be a list")
+    require(len(adjustment_ids) == len(set(adjustment_ids)), "duplicate base_adjustment_parameter_id")
     for parameter_id in adjustment_ids:
+        require(parameter_id in parameter_index, f"unknown base_adjustment_parameter_id: {parameter_id}")
         require(parameter_index[parameter_id]["dimension"] == "revenue", f"base adjustment must use revenue dimension: {parameter_id}")
     adjustment_total = sum(parameter_values(parameter_index, adjustment_ids))
     tolerance = finite_number(data.get("reconciliation_tolerance", 1e-6), "reconciliation_tolerance")
@@ -2097,6 +2052,14 @@ def validate_management_target_coverage(
             require(isinstance(rationale, str) and rationale.strip(), f"{status} management communication requires rationale: {category}")
             if status == "not_available":
                 require(isinstance(record.get("search_description"), str) and record["search_description"].strip(), f"not_available communication requires search_description: {category}")
+                search_event = record.get("search_event")
+                if search_event is not None:
+                    require(isinstance(search_event, dict), f"search_event must be an object: {category}")
+                    require(isinstance(search_event.get("query_scope"), str) and search_event["query_scope"].strip(), f"search_event.query_scope is required: {category}")
+                    require(isinstance(search_event.get("query_time"), str) and search_event["query_time"].strip(), f"search_event.query_time is required: {category}")
+                    require(isinstance(search_event.get("event_ids"), list) and bool(search_event["event_ids"]), f"search_event.event_ids must be non-empty: {category}")
+            if status == "not_applicable":
+                require(isinstance(record.get("reason_code"), str) and record["reason_code"].strip(), f"not_applicable communication requires reason_code: {category}")
         referenced_target_ids.update(target_ids)
         normalized = {
             "category": category,
@@ -2292,6 +2255,13 @@ def validate_document(data: dict[str, Any]) -> dict[str, Any]:
     years, as_of = validate_top_level(data)
     source_index = validate_sources(data, as_of, require_capture=True)
     parameter_index = validate_parameters(data, source_index)
+    source_coverage_gaps = validate_source_coverage(data, parameter_index, source_index)
+    if source_coverage_gaps:
+        gap = source_coverage_gaps[0]
+        raise ForecastInputError(
+            f"source {gap['source_id']} covers only until {gap['covers_until']} "
+            f"but parameter {gap['parameter_id']} requires FY{gap['forecast_year']}"
+        )
     claim_index = validate_evidence_claims(data, source_index, parameter_index, as_of)
     validate_historical_revenue(data, source_index, parameter_index, claim_index)
     validate_base_reconciliation(data, parameter_index)

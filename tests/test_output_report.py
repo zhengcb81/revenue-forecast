@@ -8,9 +8,31 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from revenue_core import ForecastInputError, canonical_sha256, run_forecast  # noqa: E402
+from revenue_core import (  # noqa: E402
+    ForecastInputError,
+    build_workflow_compliance_receipt,
+    calculate_cagr,
+    canonical_sha256,
+    run_forecast,
+)
 from revenue_report import render_markdown, validate_forecast_output  # noqa: E402
+from test_management_targets import add_target  # noqa: E402
 from test_recognition_bridge import forecast_document  # noqa: E402
+
+
+def _republish(result: dict) -> None:
+    """Recompute the publication receipt and result hash after mutating a result.
+
+    Adversarial tests mutate a published result and then recompute every hash
+    the validator re-checks, so the artifact stays internally self-consistent.
+    This isolates the semantic gap under test from plain hash tampering.
+    """
+    from revenue_publication import build_publication_receipt
+
+    result["publication_receipt"] = build_publication_receipt(result)
+    result["result_sha256"] = canonical_sha256(
+        {key: value for key, value in result.items() if key != "result_sha256"}
+    )
 
 
 class OutputReportTests(unittest.TestCase):
@@ -64,7 +86,7 @@ class OutputReportTests(unittest.TestCase):
     def test_parameter_trace_custom_key_is_not_prohibited(self) -> None:
         result = run_forecast(forecast_document())
         result["parameter_trace"][0]["profit"] = "source vocabulary only"
-        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
+        _republish(result)
         validate_forecast_output(result)
 
     def test_tampered_segment_recognition_is_rejected(self) -> None:
@@ -105,6 +127,111 @@ class OutputReportTests(unittest.TestCase):
         result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
         with self.assertRaisesRegex(ForecastInputError, "workflow compliance receipt mismatch"):
             validate_forecast_output(result)
+
+    # The four tests below are adversarial RED tests for Phase 1 of task_plan.md.
+    # They mutate a published result, recompute every derived field that the
+    # validator re-checks (so the artifact stays internally self-consistent),
+    # recompute result_sha256, and then expect validate_forecast_output to
+    # reject the forgery. They currently FAIL because validate_forecast_output
+    # trusts the forged field instead of re-deriving it from frozen input. The
+    # companion positive test pins the intended non-regression behavior.
+
+    def test_rehashed_invalid_probability_contract_is_rejected(self) -> None:
+        # Input validation rejects probabilities that do not sum to 1, but the
+        # output validator only re-checks the weighted arithmetic. A rehashed
+        # artifact with illegal probabilities (sum == 2 here) plus a
+        # self-consistent recomputed weighted path must be rejected; today it is
+        # accepted (RED).
+        data = forecast_document()
+        data["scenario_probabilities"] = {"low": 0.25, "base": 0.5, "high": 0.25}
+        data["probability_rationale"] = "valid calibration"
+        result = run_forecast(data)
+        forged = copy.deepcopy(result)
+        forged_probabilities = {"low": 2.0, "base": 0.0, "high": 0.0}
+        forged["scenario_probabilities"] = forged_probabilities
+        consolidated = forged["consolidated_forecast"]
+        years = list(map(str, forged["forecast_years"]))
+        weighted = forged["probability_weighted_forecast"]
+        for year in years:
+            weighted["annual_revenue"][year] = sum(
+                forged_probabilities[scenario] * consolidated[scenario]["annual_revenue"][year]
+                for scenario in ("low", "base", "high")
+            )
+        terminal = float(weighted["annual_revenue"][years[-1]])
+        weighted["terminal_revenue"] = terminal
+        weighted["expected_terminal_implied_cagr"] = calculate_cagr(float(forged["base_revenue"]), terminal, len(years))
+        weighted["incremental_revenue"] = terminal - float(forged["base_revenue"])
+        _republish(forged)
+        with self.assertRaisesRegex(ForecastInputError, "probabilities must sum to 1"):
+            validate_forecast_output(forged)
+
+    def test_rehashed_forged_target_comparison_is_rejected(self) -> None:
+        # The output validator recomputes modeled_value and attainment_ratio
+        # but only requires meets_target to be True; it never re-derives
+        # meets_target from the comparison operator and tolerance. A rehashed
+        # target that lifts comparison_value far above actual delivery (genuinely
+        # unmet) yet keeps meets_target=True must be rejected; today it is
+        # accepted (RED).
+        result = run_forecast(add_target(forecast_document()))
+        forged = copy.deepcopy(result)
+        target = forged["management_target_coverage"]["targets"][0]
+        comparison = target["scenario_comparison"]["high"]
+        modeled_value = float(comparison["modeled_value"])
+        forged_target_value = modeled_value * 10.0
+        target["comparison_value"] = forged_target_value
+        comparison["target_value"] = forged_target_value
+        comparison["attainment_ratio"] = modeled_value / forged_target_value
+        comparison["meets_target"] = True
+        _republish(forged)
+        with self.assertRaisesRegex(ForecastInputError, "management target"):
+            validate_forecast_output(forged)
+
+    def test_rehashed_forged_sensitivity_terminals_are_rejected(self) -> None:
+        # The output validator recomputes only the derived impact fields from
+        # the stored terminals; it never re-runs the shock against the model.
+        # Replacing the terminals with arbitrary values and recomputing those
+        # derived fields must be rejected; today it is accepted (RED).
+        data = forecast_document()
+        parameter_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]["revenue"][1]
+        data["sensitivity_tests"] = [{"name": "Core terminal revenue", "parameter_id": parameter_id, "shock_type": "percent", "shock_value": 0.1}]
+        result = run_forecast(data)
+        forged = copy.deepcopy(result)
+        sensitivity = forged["sensitivities"][0]
+        baseline = float(sensitivity["baseline_terminal_revenue"])
+        sensitivity["down_terminal_revenue"] = 1.0
+        sensitivity["up_terminal_revenue"] = baseline * 100.0
+        impact = max(abs(1.0 - baseline), abs(baseline * 100.0 - baseline))
+        sensitivity["max_absolute_terminal_impact"] = impact
+        sensitivity["max_relative_terminal_impact"] = impact / baseline
+        _republish(forged)
+        with self.assertRaisesRegex(ForecastInputError, "sensitivity"):
+            validate_forecast_output(forged, data)
+
+    def test_nested_structured_valuation_field_is_rejected(self) -> None:
+        # The prohibited-field scan (_walk_keys) only walks a fixed allowlist of
+        # top-level blocks; parameter_trace is not among them. Embedding
+        # structured investment fields (valuation/pe/dcf) inside a parameter
+        # trace node and rehashing must be rejected; today it is accepted (RED).
+        result = run_forecast(forecast_document())
+        forged = copy.deepcopy(result)
+        forged["parameter_trace"][0]["valuation"] = {"pe": 15.0, "dcf": {"fair_value": 100.0}}
+        _republish(forged)
+        with self.assertRaisesRegex(ForecastInputError, "prohibited"):
+            validate_forecast_output(forged)
+
+    def test_plain_text_investment_vocabulary_in_source_is_allowed(self) -> None:
+        # Positive guard rail: plain-text occurrences of investment vocabulary
+        # in source titles are legitimate evidence wording, not structured
+        # investment conclusions, and must never be false-positived. This pins
+        # the intended behavior so the Phase 4 field-boundary fix stays precise.
+        result = run_forecast(forecast_document())
+        result["sources"][0]["title"] = "Annual report references segment profit and an internal valuation study."
+        result["workflow_compliance_receipt"] = build_workflow_compliance_receipt(
+            result["input_sha256"], result["sources"], result["evidence_claims"],
+            result["parameter_trace"], result.get("data_gaps", []),
+        )
+        _republish(result)
+        validate_forecast_output(result)
 
 
 if __name__ == "__main__":

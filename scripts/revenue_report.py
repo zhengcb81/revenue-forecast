@@ -21,14 +21,17 @@ from revenue_core import (
     calculate_cagr,
     calculate_confidence,
     calculate_growth_driver_analysis,
+    calculate_sensitivities,
     build_workflow_compliance_receipt,
     canonical_sha256,
     parse_iso_date,
+    referenced_parameter_ids,
     require,
     validate_growth_driver_tree,
     validate_source_capture,
 )
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
+from revenue_publication import validate_publication_receipt
 
 
 PROHIBITED_OUTPUT_KEYS = {
@@ -57,19 +60,24 @@ def _walk_keys(value: Any, path: str = "root") -> None:
     if isinstance(value, dict):
         for key, child in value.items():
             normalized = str(key).strip().lower()
-            require(normalized not in PROHIBITED_OUTPUT_KEYS, f"prohibited non-revenue output key: {path}.{key}")
+            # A prohibited key with a structured value (dict / list / number)
+            # is a formal investment conclusion and must be rejected.  A
+            # prohibited key whose value is a plain string is legitimate
+            # evidence vocabulary (e.g. a source excerpt containing "profit").
+            if normalized in PROHIBITED_OUTPUT_KEYS and not isinstance(child, str):
+                raise ForecastInputError(f"prohibited non-revenue output key: {path}.{key}")
             _walk_keys(child, f"{path}.{key}")
     elif isinstance(value, list):
         for index, child in enumerate(value):
             _walk_keys(child, f"{path}[{index}]")
 
 
-def validate_forecast_output(result: dict[str, Any]) -> None:
+def validate_forecast_output(result: dict[str, Any], data: dict[str, Any] | None = None) -> None:
     for key in result:
         require(str(key).strip().lower() not in PROHIBITED_OUTPUT_KEYS, f"prohibited non-revenue output key: root.{key}")
-    for key in ("consolidated_forecast", "confidence", "theme_analysis", "probability_weighted_forecast", "growth_driver_analysis"):
-        if result.get(key) is not None:
-            _walk_keys(result[key], f"root.{key}")
+    for key, value in result.items():
+        if key not in ("result_sha256", "publication_receipt"):
+            _walk_keys(value, f"root.{key}")
     required = (
         "company_name",
         "as_of_date",
@@ -97,6 +105,11 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
     require(result["schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS, "forecast output schema_version mismatch")
     if result["schema_version"] == FORECAST_SCHEMA_VERSION:
         require(result["engine_version"] == ENGINE_VERSION, "forecast output engine_version mismatch")
+        require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
+        require("growth_driver_analysis" in result, "forecast output missing field: growth_driver_analysis")
+        require("workflow_compliance_receipt" in result, "forecast output missing field: workflow_compliance_receipt")
+    elif result["schema_version"] == "3.4":
+        require(result["engine_version"] == ENGINE_VERSION, "legacy forecast output engine_version mismatch")
         require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
         require("growth_driver_analysis" in result, "forecast output missing field: growth_driver_analysis")
         require("workflow_compliance_receipt" in result, "forecast output missing field: workflow_compliance_receipt")
@@ -215,6 +228,16 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
     weighted = result.get("probability_weighted_forecast")
     probabilities = result.get("scenario_probabilities")
     require((weighted is None) == (probabilities is None), "probability output is inconsistent")
+    if probabilities is not None:
+        require(isinstance(probabilities, dict), "scenario_probabilities must be an object")
+        require(set(probabilities.keys()) == set(SCENARIOS), "scenario_probabilities must contain exactly low/base/high")
+        for scenario in SCENARIOS:
+            prob_value = probabilities[scenario]
+            require(isinstance(prob_value, (int, float)) and not isinstance(prob_value, bool), f"scenario_probabilities.{scenario} must be a number")
+            require(math.isfinite(float(prob_value)), f"scenario_probabilities.{scenario} must be finite")
+            require(float(prob_value) >= 0, f"scenario_probabilities.{scenario} cannot be negative")
+        prob_sum = sum(float(probabilities[s]) for s in SCENARIOS)
+        require(math.isclose(prob_sum, 1.0, rel_tol=1e-9, abs_tol=1e-9), f"scenario_probabilities must sum to 1, got {prob_sum}")
     if weighted is not None:
         for year in years:
             expected = sum(float(probabilities[scenario]) * consolidated[scenario]["annual_revenue"][year] for scenario in SCENARIOS)
@@ -241,22 +264,28 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
     coverage = result["research_coverage"]
     require(isinstance(coverage, dict), "research_coverage output must be an object")
     dimensions = coverage.get("dimensions")
-    require(isinstance(dimensions, list) and len(dimensions) == len(RESEARCH_DIMENSIONS), "research_coverage output must contain nine dimensions")
-    require([record.get("dimension") for record in dimensions] == list(RESEARCH_DIMENSIONS), "research_coverage dimensions are missing or out of order")
+    require(isinstance(dimensions, list) and len(dimensions) >= len(RESEARCH_DIMENSIONS), "research_coverage output must contain at least nine dimensions")
+    observed_dims = [record.get("dimension") for record in dimensions]
+    require(observed_dims[:len(RESEARCH_DIMENSIONS)] == list(RESEARCH_DIMENSIONS), "research_coverage core dimensions are missing or out of order")
     parameter_ids = {parameter["parameter_id"] for parameter in result["parameter_trace"]}
     source_ids = {source["source_id"] for source in result["sources"]}
     recomputed_counts = {status: 0 for status in RESEARCH_COVERAGE_STATUSES}
+    seen_dims: set[str] = set()
     for record in dimensions:
+        dim_name = record.get("dimension")
+        require(isinstance(dim_name, str) and dim_name.strip(), "research_coverage dimension must be a non-empty string")
+        require(dim_name not in seen_dims, f"duplicate research dimension: {dim_name}")
+        seen_dims.add(dim_name)
         status = record.get("status")
         require(status in RESEARCH_COVERAGE_STATUSES, f"invalid research coverage status: {status}")
         recomputed_counts[status] += 1
-        require(isinstance(record.get("conclusion"), str) and record["conclusion"].strip(), f"research coverage conclusion is required for {record['dimension']}")
-        require(isinstance(record.get("revenue_mechanism"), str) and record["revenue_mechanism"].strip(), f"research coverage revenue mechanism is required for {record['dimension']}")
-        require(set(record.get("parameter_ids", [])) <= parameter_ids, f"research coverage contains unknown parameter for {record['dimension']}")
-        require(set(record.get("source_ids", [])) <= source_ids, f"research coverage contains unknown source for {record['dimension']}")
+        require(isinstance(record.get("conclusion"), str) and record["conclusion"].strip(), f"research coverage conclusion is required for {dim_name}")
+        require(isinstance(record.get("revenue_mechanism"), str) and record["revenue_mechanism"].strip(), f"research coverage revenue mechanism is required for {dim_name}")
+        require(set(record.get("parameter_ids", [])) <= parameter_ids, f"research coverage contains unknown parameter for {dim_name}")
+        require(set(record.get("source_ids", [])) <= source_ids, f"research coverage contains unknown source for {dim_name}")
         if status == "data_gap":
-            expected_gap = f"{record['dimension']}: {record['conclusion']}"
-            require(expected_gap in result.get("data_gaps", []), f"research data gap missing from output: {record['dimension']}")
+            expected_gap = f"{dim_name}: {record['conclusion']}"
+            require(expected_gap in result.get("data_gaps", []), f"research data gap missing from output: {dim_name}")
     require(coverage.get("counts") == recomputed_counts, "research_coverage counts mismatch")
     if result["schema_version"] in {"3.1", "3.2", "3.3", FORECAST_SCHEMA_VERSION}:
         target_coverage = result["management_target_coverage"]
@@ -313,7 +342,15 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
                     require(math.isclose(target_value, float(comparison["target_value"]), rel_tol=1e-9, abs_tol=1e-9), f"management target comparison value mismatch: {target_id}/{scenario}")
                     expected_ratio = None if target_value == 0 else modeled_value / target_value
                     require((expected_ratio is None and comparison["attainment_ratio"] is None) or math.isclose(expected_ratio, float(comparison["attainment_ratio"]), rel_tol=1e-9, abs_tol=1e-9), f"management target attainment mismatch: {target_id}/{scenario}")
-                    require(comparison.get("meets_target") is True, f"mapped management target is not met: {target_id}/{scenario}")
+                    comparison_op = target.get("comparison", "at_least")
+                    tolerance_val = float(target.get("comparison_tolerance", 0.01))
+                    if comparison_op == "at_least":
+                        expected_meets = expected_ratio is not None and expected_ratio >= 1.0 - tolerance_val
+                    elif comparison_op == "at_most":
+                        expected_meets = expected_ratio is not None and expected_ratio <= 1.0 + tolerance_val
+                    else:
+                        expected_meets = expected_ratio is not None and math.isclose(expected_ratio, 1.0, rel_tol=tolerance_val, abs_tol=max(1.0, abs(target_value)) * tolerance_val)
+                    require(comparison.get("meets_target") is expected_meets, f"management target meets_target recomputation mismatch: {target_id}/{scenario}")
             else:
                 require(not comparisons, f"unmodeled management target cannot contain scenario comparisons: {target_id}")
                 expected_gap_prefix = f"management_target:{target_id}:"
@@ -325,6 +362,47 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         expected_relative = None if baseline == 0 else impact / baseline
         observed_relative = sensitivity["max_relative_terminal_impact"]
         require((expected_relative is None and observed_relative is None) or math.isclose(float(expected_relative), float(observed_relative), rel_tol=1e-9, abs_tol=1e-9), f"sensitivity relative impact mismatch: {sensitivity['name']}")
+    # When input data is available, independently re-run each sensitivity shock
+    # and verify the stored terminals match the model output.  This prevents
+    # forged terminals from passing even after all hashes are recomputed.
+    if data is not None and result.get("sensitivities"):
+        expected_sensitivities = calculate_sensitivities(data, result)
+        expected_by_param = {item["parameter_id"]: item for item in expected_sensitivities}
+        for sensitivity in result["sensitivities"]:
+            expected = expected_by_param.get(sensitivity["parameter_id"])
+            if expected is None:
+                continue
+            require(
+                math.isclose(float(sensitivity["down_terminal_revenue"]), float(expected["down_terminal_revenue"]), rel_tol=1e-9, abs_tol=1e-9),
+                f"sensitivity down terminal recomputation mismatch: {sensitivity['name']}",
+            )
+            require(
+                math.isclose(float(sensitivity["up_terminal_revenue"]), float(expected["up_terminal_revenue"]), rel_tol=1e-9, abs_tol=1e-9),
+                f"sensitivity up terminal recomputation mismatch: {sensitivity['name']}",
+            )
+    # Sensitivity completeness gate (opt-in via data["require_sensitivity_completeness"]):
+    # every base-scenario assumption/stress parameter that drives revenue must be
+    # either sensitivity-tested or carry a structured exclusion.  Host approval
+    # of exclusions is a Phase 8 trust boundary; here we enforce completeness and
+    # the exclusion structure (reason + rationale).
+    if data is not None and data.get("require_sensitivity_completeness"):
+        param_kinds = {p["parameter_id"]: p["kind"] for p in result["parameter_trace"]}
+        eligible = {
+            pid for pid in referenced_parameter_ids(data, "base")
+            if param_kinds.get(pid) in {"analyst_assumption", "scenario_stress"}
+        }
+        tested = {s["parameter_id"] for s in result.get("sensitivities", [])}
+        excluded_ids: set[str] = set()
+        for exclusion in data.get("sensitivity_exclusions", []):
+            require(isinstance(exclusion, dict), "sensitivity_exclusions entry must be an object")
+            ex_param = exclusion.get("parameter_id")
+            require(isinstance(ex_param, str) and ex_param.strip(), "sensitivity_exclusion parameter_id is required")
+            require(ex_param not in excluded_ids, f"duplicate sensitivity exclusion: {ex_param}")
+            excluded_ids.add(ex_param)
+            require(isinstance(exclusion.get("reason"), str) and exclusion["reason"].strip(), f"sensitivity exclusion reason is required: {ex_param}")
+            require(isinstance(exclusion.get("rationale"), str) and exclusion["rationale"].strip(), f"sensitivity exclusion rationale is required: {ex_param}")
+        uncovered = eligible - tested - excluded_ids
+        require(not uncovered, f"sensitivity completeness required: untested parameter(s) without exclusion: {sorted(uncovered)}")
     confidence = result["confidence"]
     require(math.isclose(sum(float(value) for value in confidence["components"].values()), float(confidence["score"]), rel_tol=1e-9, abs_tol=1e-9), "confidence component total mismatch")
     expected_rating = "high" if confidence["score"] >= 80 else "medium" if confidence["score"] >= 55 else "low"
@@ -373,6 +451,25 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
         require(isinstance(analysis, dict), "growth_driver_analysis output must be an object")
         status = analysis.get("status")
         require(status in {"modeled", "data_gap"}, f"invalid growth_driver_analysis status: {status}")
+        # Formal-mode driver-tree gate: a modeled segment with positive terminal
+        # revenue cannot have a data-gap driver tree unless an explicit exception
+        # is registered.  (Phase 8 — host-approval of exceptions is a trust
+        # boundary; here we enforce structural completeness.)
+        pub_receipt = result.get("publication_receipt")
+        if pub_receipt is not None and pub_receipt.get("formal_output_mode") == "formal":
+            if status == "data_gap":
+                has_positive_revenue = any(
+                    float(list(segment["scenarios"]["base"].get(
+                        "effective_revenue", segment["scenarios"]["base"]["recognized_revenue"]
+                    ).values())[-1]) > 0
+                    for segment in result["segments"]
+                    if segment["scenarios"]["base"]["model"] not in {"direct_growth", "direct_revenue"}
+                )
+                if has_positive_revenue and not data.get("driver_tree_exclusion"):
+                    raise ForecastInputError(
+                        "formal publication requires a modeled growth-driver tree "
+                        "or a driver_tree_exclusion for every modeled segment with positive revenue"
+                    )
         normalized_drivers = []
         for driver in analysis.get("drivers", []):
             require(isinstance(driver, dict), "growth_driver_analysis driver must be an object")
@@ -425,6 +522,7 @@ def validate_forecast_output(result: dict[str, Any]) -> None:
             result["parameter_trace"], result.get("data_gaps", []),
         )
         require(result["workflow_compliance_receipt"] == expected_receipt, "workflow compliance receipt mismatch")
+        validate_publication_receipt(result)
     require(result["result_sha256"] == canonical_sha256(hash_payload), "forecast result hash mismatch")
 
 

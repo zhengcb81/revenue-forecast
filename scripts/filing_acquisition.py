@@ -1,5 +1,12 @@
 """Self-contained, reuse-first filing acquisition for revenue-forecast.
 
+.. deprecated:: 2026-07-29
+    Use the standalone ``filing-fetch`` skill (``filing_fetch_client.py``)
+    instead.  This module is retained **only** for legacy test fixtures; new
+    callers must route through ``filing_fetch_client.resolve_filing()``, which
+    delegates identity, reuse-first lookup, market routing, staging, dedup,
+    and canonical writing to company-wiki.
+
 The module intentionally depends only on the Python standard library and
 external downloader CLIs.  ``company_wiki_root`` is a configurable data root;
 no company-wiki Python package, CLI, source checkout, or PYTHONPATH is needed.

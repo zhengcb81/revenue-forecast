@@ -45,6 +45,19 @@ def actuals_document() -> dict:
             }
         },
     }
+    for source in data["sources"]:
+        capture = {
+            "capture_schema_version": "1.0",
+            "capture_method": "browser_open",
+            "tool_name": "test-browser",
+            "tool_call_id": f"fixture-{source['source_id']}",
+            "captured_date": source["accessed_date"],
+            "snapshot_sha256": "b" * 64,
+            "content_treatment": "untrusted_data_only",
+            "prompt_injection_status": "not_detected",
+        }
+        capture["receipt_sha256"] = canonical_sha256(capture)
+        source["capture"] = capture
     claims = []
     for claim_id, target_id, value, year in (
         ("claim_actual_company_2026", "company:2026", 160, 2026),
@@ -56,7 +69,8 @@ def actuals_document() -> dict:
         claims.append({
             "claim_id": claim_id, "source_id": "actual_filing", "target_type": "actual_revenue", "target_id": target_id,
             "support_type": "exact_value", "locator": "Revenue note", "excerpt": excerpt, "excerpt_sha256": text_sha256(excerpt),
-            "content_sha256": "b" * 64, "verification_status": "opened_and_checked", "verified_by": "test-research-agent",
+            "content_sha256": "b" * 64, "capture_receipt_sha256": data["sources"][0]["capture"]["receipt_sha256"],
+            "verification_status": "opened_and_checked", "verified_by": "test-research-agent",
             "verified_date": "2028-03-01", "extracted_value": value, "unit": "USD million", "period": f"FY{year}",
         })
     data["evidence_claims"] = claims

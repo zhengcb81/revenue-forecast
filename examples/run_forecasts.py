@@ -1,14 +1,18 @@
-"""Build and run revenue forecast for 腾讯 (HK) and 微软 (US)."""
+"""Non-formal example: build and run revenue forecasts for 腾讯 (HK) and 微软 (US).
+
+This script is NOT a production entry point. It demonstrates the input shape and
+is intentionally kept out of the formal scripts/ package. Do not use its inputs
+as a substitute for a properly researched forecast.
+"""
 import json
 import sys
 from pathlib import Path
-from datetime import date
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
-from revenue_core import run_forecast, FORECAST_SCHEMA_VERSION, canonical_sha256, text_sha256
-from revenue_report import validate_forecast_output, render_markdown
+from revenue_core import run_forecast, FORECAST_SCHEMA_VERSION, canonical_sha256, text_sha256  # noqa: E402
+from revenue_report import validate_forecast_output, render_markdown  # noqa: E402
 
 SCENARIOS = ("low", "base", "high")
 RESEARCH_DIMS = ("company_foundation", "growth_curve", "industry_market", "competition", "capacity", "technology", "policy", "customers", "demand")
@@ -319,7 +323,7 @@ def run_and_save(data, name, output_dir):
         print(f"  Base annual: {base['annual_revenue']}")
         print(f"  Low annual:  {low['annual_revenue']}")
         print(f"  High annual: {high['annual_revenue']}")
-        print(f"  Status: SUCCESS")
+        print("  Status: SUCCESS")
 
     except Exception as e:
         print(f"  ERROR: {type(e).__name__}: {e}")

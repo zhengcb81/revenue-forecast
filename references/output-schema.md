@@ -18,6 +18,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - confidence: score, rating, components, evidence coverage, concentration, and limitations;
 - traceability: complete parameter trace, evidence-claim registry, source registry, input hash, result hash, schema, and engine version;
 - workflow compliance: captured-source receipt hashes, checked-claim and assumption inventory, data-gap hash, prompt-injection flags, mandatory gate IDs, and formal-output authority;
+- publication receipt: signed after output validation; binds the validated payload to the input, schema, engine, and validator version; carries the `output_recomputation` gate (absent from the execution receipt) and a self-consistent `receipt_sha256`; `freeform_override_allowed` is always false;
 - data gaps and disconfirming indicators.
 
 ## Output validation
@@ -38,9 +39,10 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - nine-dimension completeness, counts, parameter/source identities, and propagation of research data gaps.
 - official-communication completeness, target-ledger identity, cumulative/annual/run-rate measurement arithmetic, mapped-scenario attainment, and propagation of ambiguous or otherwise unmodeled targets.
 - every growth-driver claim/source identity, Base-parameter mapping, segment attribution weight, evidence status, terminal increment, ranking, share, and reconciliation to segment contribution.
-- every current-schema source capture and claim-to-capture snapshot binding, plus exact recomputation of the workflow compliance receipt.
+- every current-schema source capture and claim-to-capture snapshot binding, plus exact recomputation of the workflow compliance receipt and the publication receipt (including its `validated_payload_sha256` and `receipt_sha256`);
+- the publication receipt's structural contract (`formal_output_mode`, `freeform_override_allowed`, gate identity) and `validated_payload_sha256` against the independently recomputed payload hash.
 
-It rejects fields for stock prices, valuation, profitability, cash generation, investment ratings, shareholder returns, and position sizing.
+It rejects fields for stock prices, valuation, profitability, cash generation, investment ratings, shareholder returns, and position sizing.  The prohibited-field scan walks the entire output tree; a prohibited key whose value is a plain string is allowed as legitimate evidence vocabulary.
 
 ## Markdown sections
 

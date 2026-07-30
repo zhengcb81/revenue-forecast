@@ -4,6 +4,44 @@ This project follows Semantic Versioning. The runtime release source of truth is
 
 ## Unreleased
 
+- Bumped forecast schema to 3.5; schema 3.4 is now legacy read-only.
+- Added a `publication_receipt` that certifies a forecast result has passed the
+  self-contained output validator. The receipt binds the validated payload to the
+  input, schema, engine and validator version; it is signed only after validation
+  succeeds and never permits freeform override.
+- Extracted `_build_forecast_draft` as the private computation layer; `run_forecast`
+  now drafts, publishes (signs publication receipt, computes result hash), runs the
+  output validator, and only returns if all gates pass. A failure in output
+  validation raises before a caller ever sees a receipt.
+- The execution receipt (`workflow_compliance_receipt`) no longer claims the
+  `output_recomputation` gate, which belongs to the publication validator.
+- Added `scripts/revenue_publication.py` with `build_publication_receipt` and
+  `validate_publication_receipt`; both are deterministic and never re-run the
+  revenue model.
+- Hardened the output validator against rehash attacks: it now independently
+  re-derives the scenario probability contract (sum to 1, non-negative, three
+  keys), recomputes management-target `meets_target` from the comparison
+  operator and tolerance, re-runs each sensitivity shock against the model, and
+  scans the full output tree for structured investment fields (prohibited keys
+  with non-string values) while still allowing investment vocabulary inside
+  source excerpts.
+- Relaxed the research-coverage output contract to accept custom dimensions
+  appended after the nine core dimensions, with non-empty-string and uniqueness
+  validation.
+- Wired `validate_source_coverage` into `validate_document` so a source whose
+  coverage horizon precedes a forecast year that references it is rejected.
+  Source-linked assumptions/stresses now require a `rationale_support` claim;
+  base-adjustment parameter IDs are checked for existence and uniqueness.
+- Hardened snapshots and actuals: snapshots accept legacy engine versions for
+  legacy schemas; actuals now require capture receipts and bind claim content
+  hashes to source snapshots; segment backtesting uses `effective_revenue`.
+- Unifying parameter coverage: recognition-progress parameters are now
+  sensitivity-eligible, constraint parameters feed confidence weights, and an
+  opt-in sensitivity-completeness gate enforces that every eligible base
+  parameter is either tested or carries a structured exclusion.
+- Moved the non-formal `run_forecasts.py` example to `examples/` so `scripts/`
+  contains only formal entry points; the whole tree is now ruff-clean.
+
 ## v3.10.0 — 2026-07-26
 
 - Moved filing identity, reuse-first lookup, explicit download routing, exact-hash deduplication, canonical write, and immutable provenance into the revenue-forecast skill.

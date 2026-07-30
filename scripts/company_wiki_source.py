@@ -1,11 +1,16 @@
-"""Build revenue schema-3.4 source records from a local acquisition handle.
+"""Build revenue source/capture records from a filing-fetch handle.
 
-The bundled ``filing_acquisition`` module owns identity, reuse-first lookup,
-explicit market-routed download, canonical write, and provenance. This module
-keeps only the revenue-specific conversion: turning one capture-ready handle
-into a schema-3.4 source record with an immutable capture receipt. It verifies
-the local whole-file hash but does not claim that a passage supports any
-revenue parameter.
+The standalone ``filing-fetch`` skill (via ``filing_fetch_client``) owns
+identity, reuse-first lookup, market-routed download, canonical write, and
+provenance — delegating to ``company-wiki``. This module keeps only the
+revenue-specific conversion: turning one capture-ready handle into a
+schema-3.5 source record with an immutable capture receipt. It verifies the
+local whole-file hash but does not claim that a passage supports any revenue
+parameter.
+
+The bundled ``filing_acquisition.py`` is **deprecated** — new callers must
+use ``filing_fetch_client.resolve_filing()`` or invoke the filing-fetch CLI
+directly.
 """
 
 from __future__ import annotations
@@ -90,7 +95,8 @@ def build_revenue_source_record(
 ) -> dict[str, Any]:
     """Build a strict revenue source/capture record from one verified handle.
 
-    ``handle`` is returned by bundled ``filing_acquisition.resolve_filing``.
+    ``handle`` is returned by ``filing_fetch_client.resolve_filing`` or the
+    filing-fetch CLI.
     ``source_type``, ``publisher``, evidence locator, and prompt-injection
     status remain explicit caller judgments. This function verifies the whole
     local file hash but does not claim that a passage supports any revenue
