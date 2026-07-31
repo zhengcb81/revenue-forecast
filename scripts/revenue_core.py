@@ -18,8 +18,11 @@ from model_registry import (
     calculate_registered_model,
 )
 from contracts.evidence import (  # noqa: E402, F811  re-export
+    Collector,
     ForecastInputError,
+    MultiValidationError,
     canonical_sha256,
+    collect_mode,
     finite_number,
     parse_iso_date,
     period_year,
@@ -2250,37 +2253,109 @@ def add_management_target_analysis(
     }
 
 
-def validate_document(data: dict[str, Any]) -> dict[str, Any]:
-    """Validate and return indexes used by the forecast engine."""
-    years, as_of = validate_top_level(data)
-    source_index = validate_sources(data, as_of, require_capture=True)
-    parameter_index = validate_parameters(data, source_index)
-    source_coverage_gaps = validate_source_coverage(data, parameter_index, source_index)
-    if source_coverage_gaps:
-        gap = source_coverage_gaps[0]
-        raise ForecastInputError(
-            f"source {gap['source_id']} covers only until {gap['covers_until']} "
-            f"but parameter {gap['parameter_id']} requires FY{gap['forecast_year']}"
-        )
-    claim_index = validate_evidence_claims(data, source_index, parameter_index, as_of)
-    validate_historical_revenue(data, source_index, parameter_index, claim_index)
-    validate_base_reconciliation(data, parameter_index)
+def _run_gate(collector: Collector, gate: str, fn: Any, *args: Any, **kwargs: Any) -> Any:
+    """Run one validation gate under collect-all; record a gate-level note on crash."""
+    collector.gate = gate
     try:
-        revenue_constraints = validate_revenue_constraints(
-            data.get("revenue_constraints", []),
-            [segment.get("name") for segment in data.get("segments", []) if isinstance(segment, dict)],
-            parameter_index,
-            years,
+        return fn(*args, **kwargs)
+    except Exception as exc:  # best-effort collect-all must not abort the whole pass
+        collector.add(f"gate could not complete: {type(exc).__name__}: {exc}")
+        return None
+
+
+def validate_document(data: dict[str, Any], *, collector: Collector | None = None) -> dict[str, Any]:
+    """Validate and return indexes used by the forecast engine.
+
+    With ``collector`` set, gates append violations instead of failing fast and a
+    :class:`~contracts.evidence.MultiValidationError` is raised at the end
+    carrying every collected violation. Collection is best-effort: a gate that
+    crashes on bad downstream data is recorded, and dependent later gates are
+    skipped. The default path (``collector=None``) is unchanged.
+    """
+    if collector is None:
+        years, as_of = validate_top_level(data)
+        source_index = validate_sources(data, as_of, require_capture=True)
+        parameter_index = validate_parameters(data, source_index)
+        source_coverage_gaps = validate_source_coverage(data, parameter_index, source_index)
+        if source_coverage_gaps:
+            gap = source_coverage_gaps[0]
+            raise ForecastInputError(
+                f"source {gap['source_id']} covers only until {gap['covers_until']} "
+                f"but parameter {gap['parameter_id']} requires FY{gap['forecast_year']}"
+            )
+        claim_index = validate_evidence_claims(data, source_index, parameter_index, as_of)
+        validate_historical_revenue(data, source_index, parameter_index, claim_index)
+        validate_base_reconciliation(data, parameter_index)
+        try:
+            revenue_constraints = validate_revenue_constraints(
+                data.get("revenue_constraints", []),
+                [segment.get("name") for segment in data.get("segments", []) if isinstance(segment, dict)],
+                parameter_index,
+                years,
+            )
+        except RevenueConstraintError as exc:
+            raise ForecastInputError(str(exc)) from exc
+        research_coverage = validate_research_coverage(data, source_index, parameter_index)
+        growth_driver_tree = validate_growth_driver_tree(
+            data, source_index, parameter_index, claim_index
         )
-    except RevenueConstraintError as exc:
-        raise ForecastInputError(str(exc)) from exc
-    research_coverage = validate_research_coverage(data, source_index, parameter_index)
-    growth_driver_tree = validate_growth_driver_tree(
-        data, source_index, parameter_index, claim_index
-    )
-    management_target_coverage = validate_management_target_coverage(
-        data, source_index, parameter_index, claim_index, as_of
-    )
+        management_target_coverage = validate_management_target_coverage(
+            data, source_index, parameter_index, claim_index, as_of
+        )
+        return {
+            "years": years,
+            "as_of_date": as_of,
+            "source_index": source_index,
+            "parameter_index": parameter_index,
+            "claim_index": claim_index,
+            "revenue_constraints": revenue_constraints,
+            "research_coverage": research_coverage,
+            "growth_driver_tree": growth_driver_tree,
+            "management_target_coverage": management_target_coverage,
+        }
+
+    with collect_mode(collector):
+        top = _run_gate(collector, "top_level", validate_top_level, data)
+        if top is None:
+            raise MultiValidationError(collector.errors)
+        years, as_of = top
+        source_index = _run_gate(collector, "sources", validate_sources, data, as_of, require_capture=True)
+        if source_index is None:
+            raise MultiValidationError(collector.errors)
+        parameter_index = _run_gate(collector, "parameters", validate_parameters, data, source_index)
+        if parameter_index is None:
+            raise MultiValidationError(collector.errors)
+        collector.gate = "source_coverage"
+        try:
+            for gap in validate_source_coverage(data, parameter_index, source_index):
+                collector.add(
+                    f"source {gap['source_id']} covers only until {gap['covers_until']} "
+                    f"but parameter {gap['parameter_id']} requires FY{gap['forecast_year']}"
+                )
+        except Exception as exc:  # best-effort collect-all must not abort the whole pass
+            collector.add(f"gate could not complete: {type(exc).__name__}: {exc}")
+        claim_index = _run_gate(collector, "evidence_claims", validate_evidence_claims, data, source_index, parameter_index, as_of)
+        if claim_index is None:
+            raise MultiValidationError(collector.errors)
+        _run_gate(collector, "historical_revenue", validate_historical_revenue, data, source_index, parameter_index, claim_index)
+        _run_gate(collector, "base_reconciliation", validate_base_reconciliation, data, parameter_index)
+        collector.gate = "revenue_constraints"
+        revenue_constraints: list[Any] = []
+        try:
+            revenue_constraints = validate_revenue_constraints(
+                data.get("revenue_constraints", []),
+                [segment.get("name") for segment in data.get("segments", []) if isinstance(segment, dict)],
+                parameter_index,
+                years,
+            )
+        except Exception as exc:  # best-effort collect-all must not abort the whole pass
+            collector.add(f"gate could not complete: {type(exc).__name__}: {exc}")
+        research_coverage = _run_gate(collector, "research_coverage", validate_research_coverage, data, source_index, parameter_index) or []
+        growth_driver_tree = _run_gate(collector, "growth_driver_tree", validate_growth_driver_tree, data, source_index, parameter_index, claim_index) or {}
+        management_target_coverage = _run_gate(collector, "management_targets", validate_management_target_coverage, data, source_index, parameter_index, claim_index, as_of) or {}
+
+    if collector.errors:
+        raise MultiValidationError(collector.errors)
     return {
         "years": years,
         "as_of_date": as_of,

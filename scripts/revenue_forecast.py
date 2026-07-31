@@ -8,7 +8,7 @@ import json
 import sys
 from pathlib import Path
 
-from revenue_core import ForecastInputError, run_forecast
+from revenue_core import Collector, ForecastInputError, run_forecast, validate_document
 from revenue_report import render_markdown, validate_forecast_output
 
 
@@ -18,9 +18,12 @@ def main() -> int:
     parser.add_argument("--output", type=Path, help="JSON output path; stdout when omitted")
     parser.add_argument("--markdown", type=Path, help="optional Markdown report path")
     parser.add_argument("--validate-only", action="store_true", help="validate input and output without writing")
+    parser.add_argument("--verbose", action="store_true", help="with --validate-only, report every input violation in one pass")
     args = parser.parse_args()
     try:
         data = json.loads(args.input.read_text(encoding="utf-8"))
+        if args.validate_only and args.verbose:
+            validate_document(data, collector=Collector())
         result = run_forecast(data)
         validate_forecast_output(result)
         if args.validate_only:

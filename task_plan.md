@@ -578,7 +578,7 @@ schema 3.5 固定规则：
 
 ---
 
-## Phase 7（敏感性、置信度与约束参数覆盖统一）— 状态：pending
+## Phase 7（敏感性、置信度与约束参数覆盖统一）— 状态：completed
 
 依赖：Phase 6 完成。
 
@@ -630,7 +630,7 @@ schema 3.5 固定规则：
 
 ---
 
-## Phase 8（防止研究流程和工具调用偷步）— 状态：pending
+## Phase 8（防止研究流程和工具调用偷步）— 状态：completed
 
 依赖：Phase 7 完成。  
 注意：这一阶段涉及 host/orchestrator 信任边界。若当前运行环境不能签发受信任 receipt，必须 fail closed 或保留 draft 模式，不得用用户自填字段冒充完成。
@@ -687,7 +687,7 @@ schema 3.5 固定规则：
 
 ---
 
-## Phase 9（Filing Fetch 独立技能加固与财报获取所有权收敛）— 状态：pending
+## Phase 9（Filing Fetch 独立技能加固与财报获取所有权收敛）— 状态：completed
 
 审计依据：`FILING_FETCH_AUDIT.md`。  
 目标 ownership：
@@ -1283,7 +1283,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 10（物理模块拆分，保持行为不变）— 状态：pending
+## Phase 10（物理模块拆分，保持行为不变）— 状态：completed
 
 依赖：Phase 2–7 全部完成。  
 原则：先锁定行为，再重构。不得在此阶段引入新 schema 或改变数值。
@@ -1343,7 +1343,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 11（invest-* 接口加固与基础契约去重策略）— 状态：pending
+## Phase 11（invest-* 接口加固与基础契约去重策略）— 状态：completed
 
 依赖：Phase 2–8 完成。  
 跨仓库修改前必须确认 canonical repo 和用户授权。
@@ -1423,7 +1423,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 12（示例、文档、版本与安装同步）— 状态：pending
+## Phase 12（示例、文档、版本与安装同步）— 状态：completed
 
 依赖：所有生产改动完成。
 
@@ -1485,7 +1485,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 13（最终全链路验收与发布决策）— 状态：pending
+## Phase 13（最终全链路验收与发布决策）— 状态：completed
 
 依赖：Phase 1–12 全部完成。
 
@@ -1622,3 +1622,74 @@ python -m coverage report -m --fail-under=84
 | invest-core 1 skip | 合理 superseded | schema 3.3 growth driver drop check——publication gate 已从更高层覆盖 |
 | filing-fetch 2 flaky skips | 真实环境依赖 | catalog locked + ambiguous identity（company-wiki 状态相关） |
 | Phase 8 host-signed receipt | infra 边界 | 结构化字段已就位；真实验证需要 trusted agent 运行时 |
+
+---
+
+## Phase 14（输入构建辅助工具链）— 状态：completed
+
+> 2026-07-31 实施完成，详见 `progress.md` 2026-07-31 段与计划文件 `effervescent-sauteeing-moonbeam.md`。4 个 Stage 全部 TDD RED→GREEN，216 tests / 0 failures。Stage 4 用 contextvars 替代「21 validator 加 collector 参数」（同等效果、默认路径逐字不变）。删除 Phase 10 遗留死代码 `forecast/compute.py` 后全量 coverage **87%**，`--fail-under=84` 门通过。
+
+**背景**：2026-07-30 恒运昌 (688785) 实战中，从零构建 schema 3.5 输入共经历 23 次 fail-fast 校验失败，最终第 25 次成功。分析发现三类根因：字段不匹配 65%、引用完整性 26%、哈希不自洽 9%。Phase 1-13 已加固了引擎本身的验证逻辑，但输入构建效率仍有显著提升空间。
+
+**原则**：不改引擎核心逻辑、不改 schema 契约、不改变 CLI 默认行为。纯新增辅助工具。
+
+### 14.1 哈希辅助工具（P0）— `scripts/fix_hashes.py`
+
+**问题**：schema 3.5 的四层哈希引用环（source.snapshot → claim.content → source.capture.receipt → claim.capture_receipt + excerpt_sha256）在每次编辑后都需要重新计算。恒运昌实战中手写了 5 个临时脚本。
+
+**方案**：
+- [ ] `fix_hashes.py input.json --output input.json`：一条命令计算并更新所有哈希
+- [ ] `--check` 模式：只检查不修改（适合 CI）
+- [ ] `--dry-run` 模式：显示修改内容但不写入
+- [ ] 计算逻辑：`receipt_sha256 = SHA256(canonical_json(capture - receipt))`，`excerpt_sha256 = SHA256(excerpt)`
+
+### 14.2 Lint 预检工具（P0）— `scripts/lint_input.py`
+
+**问题**：26% 的失败是跨引用完整性错误（claim↔parameter、claim↔source、growth_driver weights），这些在运行前完全可以通过静态分析发现。
+
+**方案**：
+- [ ] claim→parameter 引用完整性（claim_id 在所有引用处都可追溯到定义）
+- [ ] source 注册（parameter.source_ids ⊇ 所有其 claim 的 source_id）
+- [ ] target_id 一致性（claim.target_id == parameter.parameter_id）
+- [ ] growth_driver claim 类型（证据节点引用的 claim 必须是 target_type=growth_driver）
+- [ ] segment 权重和（每个 segment 在所有 driver 中权重之和 = 1.0）
+- [ ] recognition claim 格式（target_id = "recognition:segmentName"）
+- [ ] 哈希格式（所有 sha256 字段为 64 字符 hex）
+- [ ] 必填字段存在性
+
+### 14.3 Verbose 验证模式（P1）— CLI `--validate-only --verbose`
+
+**问题**：21 个验证函数各自在第一个违规处 `raise ValueError`，用户每次只能看到一个错误。23 次往返 × 3 类根因 → 如果一次报告所有违规，约 2-4 次即可完成。
+
+**方案**：
+- [ ] 新增 `ValidationErrorCollector` 类，收集所有违规后统一报告
+- [ ] 每个 `validate_*` 函数接受可选的 `collector` 参数
+- [ ] `MultiValidationError` 按 gate 分组输出
+- [ ] 默认无 `--verbose` 行为不变（向后兼容）
+
+### 14.4 输入模板生成器（P2）— `scripts/generate_input_template.py`
+
+**问题**：65% 的失败是字段名/字段值格式错误。如果有一个预填了正确字段名和结构的骨架，这些错误完全可避免。
+
+**方案**：
+- [ ] 输入公司基本信息（名称、基期年、预测年、币种、分部名、模型选择）
+- [ ] 输出完整的 schema 3.5 骨架 JSON
+- [ ] 所有字段名正确、所有哈希填入合法占位符（标记 `FIXME`）
+- [ ] 顶部带 `_comment` 标注每区域需要手动填写的内容
+- [ ] 骨架可直接通过 `--validate-only`（哈希类错误除外）
+
+### 14.5 影响预估
+
+| 指标 | 当前（无工具） | Phase 14 实现后 |
+|---|---|---|
+| 新公司输入构建时间 | ~2 小时 | ~15 分钟 |
+| 故障往返次数 | 20-25 次 | 2-4 次 |
+| 出错类型 | 字段65% + 引用26% + 哈希9% | 仅业务逻辑 |
+
+### 14.6 非目标
+
+- 不改引擎验证函数逻辑
+- 不改 schema 3.5 契约
+- 不改变 CLI 默认行为
+- 不做 IDE 实时验证
+- 不做 GUI

@@ -463,3 +463,70 @@
 | invest-core 1 skip | superseded by publication gate | 标记 skip |
 | filing-fetch 2 flaky skips | company-wiki 状态依赖 | 标记 skip |
 | Phase 8 host-signed receipt | trusted agent infra 边界 | 结构化字段已就位，真实验证需运行时配合 |
+
+---
+
+## 2026-07-30：恒运昌 (688785) 从零构建输入实战分析
+
+- 来源：恒运昌营收预测全流程（23 次 exit code 2，最终第 25 次成功）
+- 输入规模：6 sources、29 claims、27 parameters、2 segments、5 growth drivers、3 sensitivities
+- 最终结果：Base FY2028 97,663 万 (CAGR 22.6%)，置信度 Medium (60.6/100)
+
+### 发现 A：23 次失败的三类根因
+
+```
+Schema 字段不匹配  ████████████████  15次 (65%)
+跨引用完整性失败  ██████            6次 (26%)
+哈希自洽性失败    ██                2次 (9%)
+```
+
+**15 次字段问题**的核心是 schema 3.5 有大量反直觉命名约定，无一能从文档独立推测：
+
+| 约定 | 直觉写法（错误） | 正确写法 |
+|---|---|---|
+| Capture 版本字段 | `schema_version` | `capture_schema_version` |
+| Capture 日期字段 | `capture_date` | `captured_date` |
+| Prompt 注入状态 | `none_detected` | `not_detected` |
+| 历史数据 target_id | `history_2022` | `historical_revenue:2022` |
+| 收入确认 target_id | `recognition_policy` | `recognition:segmentName` |
+| 收入确认 support_type | `rationale_support` | `policy_support` |
+| 敏感性字段名 | `shock` | `shock_type` |
+| percentage_point 参数 | `down_value/up_value` | `shock_value`（正数） |
+| derived_fact | 仅 `x0/x1/formula` | 还需 `input_parameter_ids` |
+| not_available 沟通 | 仅 `rationale` | 还需 `conclusion/checked_date/search_description` |
+
+**6 次引用完整性失败**暴露了 claim↔parameter↔source 的严格双向约束——一个 claim 只能有一个 `target_type`+`target_id`，如果同一事实既要支撑参数又要支撑增长驱动证据，必须创建两个独立 claim。
+
+**2 次哈希失败**源于 schema 3.5 的四层哈希引用环（source.snapshot → claim.content → source.capture.receipt → claim.capture_receipt），手工维护在每次编辑后都不可行。
+
+### 发现 B：fail-fast 是最直接的效率瓶颈
+
+21 个独立验证函数每个都在第一个违规处 `raise ValueError`。23 次往返 ÷ 3 类错误 = 如果一次报告所有违规，理论上 2-4 次往返即可完成。
+
+### 发现 C：引擎内置的 21 个验证函数覆盖完整
+
+```
+validate_document()                      ← 入口
+├── validate_top_level()                 ← schema_version, 基本字段
+├── validate_sources()                   ← source结构+page_or_section
+├── validate_source_capture()            ← capture对象+receipt hash
+├── validate_evidence_claims()           ← claim结构+excerpt hash
+├── validate_claim_ids()                 ← 跨引用完整性 ← 最多次触发
+├── validate_parameters()                ← 参数类型/公式/场景
+├── validate_historical_revenue()        ← 历史数据+连续性
+├── validate_base_reconciliation()       ← 基期对账
+├── validate_research_coverage()         ← 九维研究覆盖
+├── validate_management_target_coverage() ← 管理层沟通
+├── validate_growth_driver_tree()        ← 增长驱动树（含4个子验证）
+├── validate_recognition_metadata()      ← 收入确认元数据
+├── validate_revenue_constraints()       ← 跨分部约束
+├── validate_scenario_probabilities()    ← 情景概率
+├── validate_source_coverage()           ← source引用完整性
+└── validate_historical_accuracy_records() ← 历史回测记录
+```
+
+这些函数的逻辑正确，不需要修改。改进方向应该是报错模式（fail-fast → collect-all）而非验证逻辑。
+
+### 发现 D：direct_growth 模型的置信度代价
+
+恒运昌两个 segment 都用了 `direct_growth`（缺乏公开出货量/产能数据），这直接导致 `revenue_weighted_explicit_models` = 0.0/20，总置信度被拉低至 60.6/100（Medium）。引擎正确地惩罚了缺乏运营因果解释的模型选择，这是设计意图而非缺陷。

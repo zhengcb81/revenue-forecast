@@ -336,3 +336,104 @@ Phase 1 验收（1.4）全部满足：
 | invest-core | 29 / 0 failures | — | 0 errors |
 | invest-framework | 22 / 0 failures（4 skip） | — | 0 errors |
 | **总计** | **294 / 0 failures** | — | **0 errors** |
+
+---
+
+## 2026-07-30：恒运昌 (688785) 营收预测全流程实战
+
+### 完成
+- [x] 9 维度研究覆盖（公司基础、增长曲线、行业市场、竞争、产能、技术、政策、客户、需求）
+- [x] 6 份来源注册（招股书、2025年报、IR记录、3份行业报告）
+- [x] 29 个 evidence claim 创建（含 14 exact_value + 10 rationale_support + 5 growth_driver）
+- [x] 27 个 parameter 定义（分3场景×3年×2分部 + 基期参数）
+- [x] 2 个 segment 建模（自研产品 direct_growth + 引进产品及服务 direct_growth）
+- [x] 5 个增长驱动根节点（国产替代45% / 客户多元25% / 产品升级15% / 产能释放10% / 应用拓展5%）
+- [x] 6 类管理层沟通覆盖（4 checked + 2 not_available）
+- [x] 3 个敏感性测试（percentage_point × 2 + range × 1）
+- [x] 生成 `research/hengyunchang_forecast.json` 和 `.md`
+
+### 核心结果
+| 指标 | 值 |
+|---|---|
+| 基期 FY2025 | 52,947.01 万元 |
+| Base FY2028 | 97,663.10 万元 (CAGR 22.6%) |
+| Low FY2028 | 66,561.13 万元 (CAGR 7.9%) |
+| High FY2028 | 126,378.41 万元 (CAGR 33.6%) |
+| 置信度 | Medium (60.6/100) |
+| 硬门 | 全部通过（base_reconciliation / recognition / scenario / research / management_target / growth_driver） |
+
+### 错误记录
+- 23 次 exit code 2（全部为输入校验失败，非引擎缺陷）
+- 每次 fail-fast 只报第一个违规，平均修复+重试约 3 分钟
+- 写了 5 个临时 Python 脚本辅助哈希计算和引用同步
+- 最终第 25 次运行成功
+
+### 新增发现（已写入 findings.md）
+- 23 次失败的三类根因（字段65% / 引用26% / 哈希9%）
+- schema 3.5 反直觉命名约定清单（11 项）
+- fail-fast 是输入构建效率瓶颈
+- direct_growth 模型的置信度代价机制验证
+
+### 新增建议（已写入 task_plan.md Phase 14）
+- P0：哈希辅助工具 `fix_hashes.py` + lint 预检工具 `lint_input.py`
+- P1：verbose 验证模式（一次报告全部违规）
+- P2：输入模板生成器 `generate_input_template.py`
+
+### 关键决策
+- 使用 direct_growth 模型（缺乏公开出货量/产能数据，合理选择）
+- 自研产品 base 增长路径：FY26 +20% → FY27 +30% → FY28 +25%
+- 公司 2026 年 1 月刚上市，未提供定量收入指引，management_targets 为空
+
+## 2026-07-31 — 文档 drift 消除（task_plan.md 标题状态）
+
+### 问题
+`task_plan.md` 正文中 **Phase 7–13 的标题仍标「状态：pending」**，但底部「当前执行状态」表和 2026-07-30 完成总结均标 completed。属文档未同步，非实际待办。
+
+### 验证（实际代码/仓库，非信任计划描述）
+按 planning-with-files「verify against actual code」规则逐项核实：
+
+| Phase | 验证证据 |
+|---|---|
+| 7 | `revenue_core.py:1100` `parameter_revenue_weights` 含 `progress_parameter_ids`（L1111）+ `constraint_audit`（L1127） |
+| 8 | `revenue_core.py:1303` `_build_forecast_draft` + formal/draft mode（L1360-1371）+ `search_event` 结构化字段 query_scope/query_time/event_ids（L2055-2060） |
+| 9 | `Projects/filing-fetch` repo：db19fcc v1.1.0 模块拆分、3d64a7c 90% coverage、39adaa7 Phase 9.10 conformance；`filing_contracts.py` 存在 |
+| 10 | `scripts/contracts/evidence.py` + `scripts/forecast/compute.py` 存在（其余子模块因循环 import 不拆，见「画蛇添足判定」） |
+| 11 | invest-core：`5edba53` Phase 11.3/11.4 publication receipt binding + `tests/test_cross_skill_conformance.py`；invest-framework：`d4a11a8` Phase 11 22 tests |
+| 12 | `examples/run_forecasts.py` 已移出 scripts/（L12.1） |
+| 13 | 实跑 `python -m unittest discover -s tests`：**Ran 179 tests — OK** |
+
+### 处置
+- Phase 7–13 七个标题 `状态：pending` → `状态：completed`（task_plan.md L581/633/690/1286/1346/1426/1488）。
+- **Phase 14 保持 `状态：pending`**——已核实 4 个子项（`fix_hashes.py`、`lint_input.py`、`generate_input_template.py`、CLI `--verbose`）均**未实现**，是当前唯一的实质待办。
+- 未改任何子项 checkbox：原计划 granular 子项的实际取舍（9.5/9.6/全 10 过度工程、7.2 延后）已由「画蛇添足判定」与「真正的残余」两节记录；phase-level 状态为权威信号，与 Phase 1–6 处理方式一致。
+
+### 未改动
+- 生产代码、测试代码零改动；仅 task_plan.md（7 处标题）+ progress.md（本段）。
+
+## 2026-07-31 — Phase 14 完成（输入构建辅助工具链）
+
+按 `effervescent-sauteeing-moonbeam.md` 计划实施 4 个 Stage，全部 TDD（RED→GREEN）。
+
+### 交付
+| Stage | 交付物 | 新增测试 |
+|---|---|---|
+| 1 `fix_hashes.py` (P0) | 重算 receipt/excerpt + 同步 claim 副本；`--check`/`--dry-run`/`--output` | 21 |
+| 2 `lint_input.py` (P0) | collect-all 静态预检：字段形状/引用完整性/哈希 staleness/聚合权重 | 14 |
+| 3 `generate_input_template.py` (P2) | schema 3.5 骨架 + FIXME 占位 | 9 |
+| 4 `--validate-only --verbose` (P1) | `require()` 经 contextvar collector 收集；`validate_document(collector=)`；`MultiValidationError`；默认路径不变 | 7 |
+
+- 复用 `contracts.evidence.canonical_sha256`/`text_sha256`（fix_hashes/lint 直接 import，与引擎字节级一致）。
+- **Stage 4 设计偏离（已记）**：计划原写「给 21 个 validator 加 collector 参数」；实施评估发现要改数百个 `require` 调用点且高回归风险，改用 `contextvars`（`collect_mode` 上下文管理器）穿透 collector，达成同等 collect-all 且默认路径逐字不变（216 测试含 179 基线全绿为证）。
+- 全量 **216 tests / 0 failures**（179 基线 + 37 新增）；ruff 0；compileall OK；`-W error::ResourceWarning` 0。
+
+### 文档与同步
+- CHANGELOG `## Unreleased` 加 Phase 14 条目；SKILL.md 工具清单加 input-construction helpers；新增 `references/input-construction.md`（11 命名约定 + 哈希环 + 工具速查）。
+- `tools/tests/test_sync_installations.py` 4/4 OK（工具正确性）。
+- **未执行 `.agents` 安装副本同步**（outward-facing，待用户授权）；**未提交**（用户未要求）。
+
+### 覆盖率发现（需用户裁定）
+- 全量 coverage **82%**，未达 task_plan 的 `--fail-under=84` 门。
+- **根因是预先存在的死代码** `scripts/forecast/compute.py`（292 stmt / 0%）：Phase 10 提取但从未接线（revenue_core 不 import 它，且自带 `evaluate_derived_formula:170`/`parameter_values:470`/`resolve_driver_series:478` 重复实现）。2026-07-30 progress 表记录 revenue 基线即 **82%**（84% 是 Phase 1 旧目标，Phase 10 后实际即 82%）。
+- Phase 14 新代码 coverage **91%**（fix_hashes 93% / lint 86% / generate 98% / evidence 96%），**未造成覆盖率下降**（82% = 82% 基线）。
+- 选项（待用户裁定）：(a) 删除死代码 `compute.py` → 覆盖率回 ~85%、门通过；(b) 把门降到 82 匹配实际；(c) 维持现状。按 CLAUDE.md「notice dead code, don't delete unilaterally」未自行删除。
+- **同日裁定（用户）**：删除死代码。已 `git rm scripts/forecast/`（`compute.py` + 空 `__init__.py`）。全量 coverage 回升至 **87%**，`--fail-under=84` 门通过；216 tests 仍全绿。

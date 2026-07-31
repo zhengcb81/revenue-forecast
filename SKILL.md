@@ -48,6 +48,7 @@ Use these deterministic tools:
 - **Filing acquisition**: use the standalone **`filing-fetch`** skill (`filing_fetch_client.py`) to obtain a capture-ready handle. The bundled `filing_acquisition.py` is **deprecated** — identity, reuse-first lookup, market routing, dedup, and canonical writing are delegated to `company-wiki` via `filing-fetch`.
 - `scripts/company_wiki_source.py`: convert one capture-ready handle into the revenue source/capture contract without entering the forecast calculation engine.
 - `config/company_wiki.json`: persistent data-root configuration. Edit `company_wiki_root` when storage moves. Supported tokens are `${USER_PROFILE}`, `${SKILL_ROOT}`, `${COMPANY_WIKI_ROOT}`, `${CONFIG_DIR}`, and `${PYTHON_EXECUTABLE}`.
+- **Input-construction helpers** (schema 3.5): `scripts/generate_input_template.py` emits a field-correct skeleton with FIXME placeholders; `scripts/lint_input.py` is a collect-all static pre-flight that reports every field/reference/hash/aggregate problem at once; `scripts/fix_hashes.py` recomputes and syncs all input-side hashes in place (`--check` for CI, `--dry-run` to preview). Recommended order: generate → fill values/excerpts → `lint_input.py` → `fix_hashes.py` → `revenue_forecast.py --validate-only` (add `--verbose` to surface every input violation in one pass). See [references/input-construction.md](references/input-construction.md).
 
 ## Required workflow
 

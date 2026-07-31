@@ -7,6 +7,8 @@ function depends on.  They import only the standard library so that nothing in
 
 from __future__ import annotations
 
+import contextlib
+import contextvars
 import hashlib
 import json
 import math
@@ -25,9 +27,64 @@ class ForecastInputError(ValueError):
     """Raised when an input violates the auditable revenue contract."""
 
 
+class MultiValidationError(ForecastInputError):
+    """Carries many violations collected in a single collect-all validation pass."""
+
+    def __init__(self, errors: list[tuple[str, str]]) -> None:
+        self.errors = list(errors)
+        grouped: dict[str, list[str]] = {}
+        for gate, message in self.errors:
+            grouped.setdefault(gate, []).append(message)
+        lines = [f"{len(self.errors)} validation problem(s) found:"]
+        for gate, messages in grouped.items():
+            lines.append(f"[{gate}]")
+            for message in messages:
+                lines.append(f"  - {message}")
+        super().__init__("\n".join(lines))
+
+
+class Collector:
+    """Accumulates validation violations tagged with the current gate label."""
+
+    __slots__ = ("errors", "gate")
+
+    def __init__(self) -> None:
+        self.errors: list[tuple[str, str]] = []
+        self.gate = "document"
+
+    def add(self, message: str) -> None:
+        self.errors.append((self.gate, message))
+
+
+_COLLECTOR: contextvars.ContextVar[Collector | None] = contextvars.ContextVar(
+    "forecast_input_collector", default=None
+)
+
+
+@contextlib.contextmanager
+def collect_mode(collector: Collector):
+    """Activate *collector* for the current context so ``require`` appends instead of raising."""
+    token = _COLLECTOR.set(collector)
+    try:
+        yield
+    finally:
+        _COLLECTOR.reset(token)
+
+
 def require(condition: bool, message: str) -> None:
-    """Raise ``ForecastInputError`` when *condition* is falsy."""
-    if not condition:
+    """Raise ``ForecastInputError`` when *condition* is falsy.
+
+    When a :class:`Collector` is active for the current context (set via
+    :func:`collect_mode`), a falsy *condition* appends to that collector instead
+    of raising, enabling a single collect-all pass. With no collector active the
+    behavior is unchanged (raise on the first violation).
+    """
+    if condition:
+        return
+    collector = _COLLECTOR.get()
+    if collector is not None:
+        collector.add(message)
+    else:
         raise ForecastInputError(message)
 
 

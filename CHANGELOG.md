@@ -4,6 +4,16 @@ This project follows Semantic Versioning. The runtime release source of truth is
 
 ## Unreleased
 
+- Added input-construction helper tools to cut schema 3.5 build round-trips:
+  `scripts/generate_input_template.py` emits a field-correct skeleton,
+  `scripts/lint_input.py` is a collect-all static pre-flight (field shape,
+  reference integrity, hash staleness, aggregate weights), and
+  `scripts/fix_hashes.py` recomputes and syncs every input-side hash. All reuse
+  the engine's `canonical_sha256` / `text_sha256` for byte-for-byte parity.
+- Added `--validate-only --verbose` to `revenue_forecast.py`: `validate_document`
+  gains an optional `Collector` (threaded through `require`) that reports every
+  input violation in one pass instead of failing fast. The default path is
+  unchanged; a `MultiValidationError` groups violations by gate.
 - Bumped forecast schema to 3.5; schema 3.4 is now legacy read-only.
 - Added a `publication_receipt` that certifies a forecast result has passed the
   self-contained output validator. The receipt binds the validated payload to the
