@@ -1280,3 +1280,37 @@ python -m unittest discover -s tests -v                            # 全量（�
 - `scanner.py`：dayu SEC 摄入补 `market="US"` + `security_id=ticker`（accession_number 判定）；metadata update 分支 `prefer_new` 扩展（URL 或身份任一缺失补全）——RED→GREEN（test_source_catalog_url_enrichment.py +2）。
 - 身份断言：Alphabet 文档 verify（market=US/security_id=GOOG，supersedes 链因 G2 未链接旧 GOOGL 断言——待 Phase 18）。
 - 待提交 company-wiki 仓库。
+
+## 2026-08-01 — Alphabet 会话全面复盘（Phase 19 编制）
+
+### 会话时间线（问题暴露点）
+
+1. **filing-fetch 获取**（G5/G6/G7 暴露）：`filing_fetch_client.py` 直接运行静默无输出（无 __main__）→ 客户端报 "exited 2: no stderr"（stdout 错误 JSON 被吞）→ ambiguous 无候选（手工查 security_master 才知 GOOGL/GOOG）→ GOOGL 下载成功但 CanonicalImportError（G1 家族）→ scanner 补全 + 断言 + local_document 备用路径（8+ 轮诊断）。
+2. **信息收集**（G9 暴露）：WebSearch 3 轮 + SEC companyfacts；Q2 YouTube 广告两来源冲突（11.1B vs 7.3B）仅登记。
+3. **输入构建**（G8 暴露）：generate_input_template 骨架 → build_input.py 迭代 **8 轮** validate（10 类结构错误：tree.status/horizon 对象/persistence_rationale/attribution (0,1]/evidence_nodes/历史 claim unit/货币 currency+scale/dimension ratio/time_basis annual/scale==unit/modeled_presentation/basis_claim_ids/sensitivity base-only）。
+4. **交付**：valid → forecast.json/md → 快照 v1（f7951af7 PASS）→ TRUST_BOUNDARY.md。
+
+### 新问题与处置映射（详见 findings G5-G10、task_plan Phase 19）
+
+| 问题 | 处置 |
+|---|---|
+| G5 客户端无 CLI 入口（SKILL.md 示例失效） | 19.1（TDD：__main__ + 参数） |
+| G6 错误诊断丢失（stdout JSON 未解析） | 19.1（失败分支解析 stdout error JSON） |
+| G7 ambiguous 无候选提示（15.7 复发） | 19.2（candidates + hint，filing-fetch） |
+| G8 输入构建枚举盲区（8 轮迭代） | 19.3（input-construction.md 枚举速查 + 源码一致性护栏） |
+| G9 搜索摘要数字不可靠（Q2 YouTube 冲突） | 19.5（检查单来源优先级 + data-governance 冲突示例） |
+| G10 SKILL.md 示例无回归保护 | 19.4（静态检查测试钉住全部示例命令） |
+
+### 已入 Phase 18（不重复）
+
+G1-G4（双类股身份归一 1A/2A/3A 已裁决、verify supersedes、scanner 补全、SEC sidecar market）。
+
+### 正反馈（试点有效项）
+
+- 17.2 检查单试点：7 项命中全部有处置路径（F6/F15 预判命中、§4/§5 启发式实证、快照/TRUST_BOUNDARY 纪律执行）——检查单机制有效。
+- Phase 14 工具链：build_input.py 可复用（对比手写 2000 行 JSON）；lint/verbose 一次报批减轮次；17.3/17.4 启发式在真实输入上实证有效（6 处命中全部人工裁定）。
+
+### 状态
+
+- Phase 18：pending（已裁决，待实现）
+- Phase 19：pending（仅规划，用户确认后启动）

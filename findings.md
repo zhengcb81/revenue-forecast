@@ -868,3 +868,39 @@ validate_document()                      ← 入口
 ### G4：SEC dayu sidecar 缺 market（16.1 系列残余）
 
 - SEC adapter 的 sidecar（canonical_writer 产出）写 security_id 不写 market；dayu_meta 无 market/security_id（15.4 身份传播只覆盖 provider_company_id 映射，SEC 无 provider_company_id）。→ 本次给文档 verify 断言（market=US/security_id=GOOG）补身份。
+
+## 2026-08-01 Alphabet 会话全面复盘（Phase 19 编制依据）
+
+> 复盘对象：`/revenue-forecast alphabet` 完整会话（17.2 检查单试点）。G1-G4（双类股身份）已入 Phase 18；本节 G5-G10 为**新暴露的工具链/流程问题**。
+
+### G5：filing_fetch_client.py 无 CLI 入口（SKILL.md 示例与实现不符）
+
+- **事实**：SKILL.md 示例 `python scripts/filing_fetch_client.py`（echo 管道）——模块**无 `__main__` 入口**（仅 `resolve_filing()` 函数），直接运行静默 exit 0 无输出；首次调用浪费 2 轮才发现需 in-process 调用。
+- **根因**：Phase 9.11 迁移后客户端只作为模块使用，SKILL.md 示例未同步（文档/实现漂移）。
+- **影响**：用户按 SKILL 调用必踩；G10 无一致性测试放大。
+
+### G6：客户端错误诊断丢失（stdout 错误 JSON 未解析）
+
+- **事实**：`resolve_filing` 失败分支（filing_fetch_client.py:75）只读 `completed.stderr`——而 filing-fetch 的错误 JSON（status/error_code/error/retryable）输出在 **stdout**（实测 stderr=0 bytes）→ 客户端报 "exited 2: no stderr"，关键诊断（request_error/identity_error）全丢。本次 ambiguous 定位多花 3 轮。
+- **修复方向**：returncode != 0 时优先解析 stdout 的 error JSON。
+
+### G7：ambiguous 消歧提示缺失（15.7 远期项复发）
+
+- **事实**：Alphabet 请求报 `ambiguous / multiple_verified_exact_identities` 但**无候选列表**（security_master 4 条 active：GOOGL/GOOG/2 优先股）；需手工查库才知用 ticker 消歧。15.7 已登记"错误信息引导"远期项，本次复发。
+- **修复方向**：identity_error 响应携带 candidates（ticker/canonical_name/market/exchange）+ 消歧提示。
+
+### G8：引擎字段枚举速查缺失（输入构建 8 轮迭代）
+
+- **事实**：build_input.py 经历 **8 轮** validate 修复（10 类结构错误）：tree.status、horizon 对象、persistence_rationale、attribution 权重 (0,1]、evidence_nodes 字段名、growth_driver target claims、历史 claim unit "USD million"、货币参数 currency/scale、dimension "ratio"（非 "growth_rate"）、time_basis "annual"（非 "fiscal_year"）、scale == 顶层 unit、modeled_presentation、recognition basis_claim_ids、sensitivity 仅 base 参数。
+- **根因**：`generate_input_template` 只给骨架不给枚举值；`input-construction.md` 无枚举速查；引擎枚举散落 revenue_core.py 常量。
+- **影响**：每次新公司构建都重复踩（恒运昌 23 轮、阿里 4 轮、Alphabet 8 轮——工具链已减轮次但枚举仍是盲区）。
+
+### G9：搜索摘要数字不可靠（Q2 YouTube 数据冲突）
+
+- **事实**：Q2 2026 YouTube 广告收入两来源冲突（investing.com 两篇：$11.1B +13% vs $7.3B -1%）；输入仅登记未深究（采用 FY 全年 10-K 数据，未受影响）。
+- **教训**：WebSearch 摘要数字不能直接作为 claim 内容；官方 release（abc.xyz investor）优先，新闻转述仅引导（A16"URL 未验证"同族）。
+
+### G10：SKILL.md 示例无一致性测试
+
+- **事实**：SKILL.md 的 CLI 示例命令（`python scripts/filing_fetch_client.py` 等）从未被测试钉住——G5 类"文档示例失效"无回归保护（9.13 actual CLI guard 的同类缺口，但针对 skill 文档示例）。
+- **修复方向**：静态检查测试——读 SKILL.md 的 `python scripts/*.py` 示例 → 断言脚本存在 + 有 `__main__` 入口（或标注模块用法）。

@@ -2264,3 +2264,98 @@ python -m unittest discover -s tests -v
 ### 18.8 状态
 
 - 本 Phase 当前：**pending（仅规划，未实现）**——等待用户确认 18.0 裁决点后启动。
+
+---
+
+## Phase 19（Alphabet 会话复盘整改：filing-fetch 客户端、消歧提示、输入构建枚举速查、文档一致性）— 状态：pending
+
+> 编制日期：2026-08-01（Alphabet 会话全面复盘，findings G5-G10）。用户指令"先不用实现，更新文档即可"——本 Phase **只规划**，实现启动前需用户确认。
+> 涉及仓库：revenue-forecast（19.1/19.3/19.4/19.5）、filing-fetch（19.2）。
+> 原则：0.3 规则全适用（TDD、CodeGraph、证据入 progress、单 Phase in_progress）。
+
+### 19.0 总目标与范围
+
+**总目标**：消除 Alphabet 会话暴露的 4 类工具链/流程缺陷——客户端不可直接调用且吞诊断（G5/G6）、ambiguous 无消歧提示（G7）、输入构建枚举盲区（G8）、SKILL.md 示例无回归保护（G10）；来源可靠性规则补入检查单（G9）。
+
+**不覆盖**：Phase 18 的身份归一实现（G1-G4，已裁决待实现）；引擎核心逻辑；schema 变更。
+
+### 19.1 filing_fetch_client：CLI 入口 + 错误诊断（TDD，revenue-forecast）
+
+**问题**：G5（无 `__main__`，SKILL.md 示例失效）+ G6（错误诊断只读 stderr，stdout 错误 JSON 被吞）。
+
+**方案**：
+- [ ] RED：`tests/test_filing_fetch_client.py` 新建——subprocess 启动 `python scripts/filing_fetch_client.py --request-file X`（fake filing-fetch 脚本目录）→ 断言输出 handle JSON（现 exit 0 无输出 → RED）；失败场景（fake 返回 exit 2 + stdout 错误 JSON）→ 断言 _ClientError 含 `status/error_code/error`（现 "no stderr" → RED）。
+- [ ] 实现（filing_fetch_client.py）：
+  - `main(argv)`：argparse（`--request-file`/`--allow-download`/`--timeout-seconds`）→ `resolve_filing` → stdout 输出 handle JSON（与 SKILL.md 示例一致）；
+  - `resolve_filing` 失败分支：returncode != 0 时**先解析 stdout 的 error JSON**（status/error_code/error/retryable），解析失败再回退 stderr；
+  - `if __name__ == "__main__"`。
+- [ ] GREEN + targeted + 全量（revenue 239+ tests）。
+
+**验收**：SKILL.md 示例命令直接可用；客户端错误信息完整（不再 "no stderr"）；测试钉住两行为。
+
+### 19.2 ambiguous 消歧提示（filing-fetch，G7）
+
+**问题**：identity_error 无候选列表与消歧提示（15.7 远期项复发）。
+
+**方案**：
+- [ ] RED：`tests/test_fetch_filing.py`——mock company-wiki identify 返回 ambiguous（多候选）→ 断言响应含 `candidates`（ticker/canonical_name/market/exchange）与消歧提示（现无 → RED）。
+- [ ] 实现：fetch_filing 的 identity_error 分支携带上游候选（company-wiki identify 的 ambiguous 结果已含候选数据）→ 响应 `candidates[]` + `hint`（"補充 market/exchange 或 ticker 消歧"）。
+- [ ] SKILL.md（filing-fetch）错误表补 ambiguous 行（含候选与消歧示例）。
+- [ ] GREEN + filing-fetch 全量（67+ tests）。
+
+**验收**：ambiguous 时用户可凭响应直接消歧（本次 Alphabet 场景：响应列出 GOOGL/GOOG/優先股 → 选 GOOG）。
+
+### 19.3 输入构建枚举速查（revenue-forecast，G8）
+
+**问题**：引擎枚举散落源码，模板/文档无速查 → 每次新公司构建重复踩（Alphabet 8 轮）。
+
+**方案**：
+- [ ] `references/input-construction.md` 新增"引擎枚举速查"节（与 revenue_core.py 常量一一对应）：
+  - `TIME_BASES = {annual, point_in_time}`（**无 fiscal_year**）；
+  - `PARAMETER_DIMENSIONS`（revenue/quantity/ratio/activity/...，**无 growth_rate**——增长率用 ratio）；
+  - 货币参数规则：revenue 类维度必须 `currency == 顶层 currency`、`scale == 顶层 unit`；
+  - 历史 claim `unit == "{currency} {unit}"`（"USD million"）；
+  - `GROWTH_DRIVER_PERSISTENCE`/`GROWTH_DRIVER_COUNTEREVIDENCE_STATUSES`/`GROWTH_DRIVER_INFERENCE_DISTANCES`；
+  - 驱动树：horizon 为对象（start_year/end_year int）、attribution 权重 (0,1] 且每段和=1、evidence 字段名 `evidence_nodes`、evidence claim 为 growth_driver target + rationale_support；
+  - recognition：`modeled_presentation` 必须与 presentation 一致、`basis_claim_ids` 必填（recognition_policy target）；
+  - sensitivity：参数必须被 **base 情景**引用（low/high 参数不可 shock）。
+- [ ] 一致性护栏（可选）：测试读取 input-construction.md 的枚举表与 revenue_core.py 常量比对（防文档漂移）。
+- [ ] `generate_input_template.py` 输出头部 `_comment` 引用枚举速查节（P2，可选）。
+
+**验收**：按速查构建的新输入 validate 轮次 ≤ 2；文档与源码枚举一致。
+
+### 19.4 SKILL.md 示例一致性测试（revenue-forecast，G10）
+
+**问题**：SKILL.md 的 CLI 示例命令无回归保护（G5 即因此漏网）。
+
+**方案**：
+- [ ] RED/护栏：`tests/test_skill_documentation.py`——解析 SKILL.md 中 `python scripts/*.py` 示例命令 → 断言：脚本存在；脚本含 `if __name__ == "__main__"` **或** 文档标注为模块用法（`resolve_filing`）；参数与 argparse 兼容（示例参数在脚本 --help 中）。
+- [ ] 实现：静态检查（AST/regex 读 SKILL.md + scripts 目录）。
+- [ ] 修复 SKILL.md 中当前失效示例（filing_fetch_client 用法改为模块示例，或 19.1 后保持 CLI 示例）。
+
+**验收**：SKILL.md 全部示例命令可运行或明确标注；测试全绿。
+
+### 19.5 检查单与来源可靠性规则（G9）
+
+- [ ] `docs/session-checklist.md` §4 增补"来源优先级与数字核验"：官方 release/10-K 优先于新闻转述；WebSearch 摘要数字仅作引导，作 claim 前必须打开官方或可靠原文；两来源数字冲突 → 登记并采用官方（data-governance §Conflict handling 可操作化）。
+- [ ] §2 增补："ambiguous → 用 ticker 消歧（19.2 后响应含候选）"。
+- [ ] `references/data-governance.md` 冲突处理节补"搜索摘要 vs 官方"优先级示例（Q2 YouTube 案例）。
+
+### 19.6 非目标
+
+- 不实现 Phase 18 身份归一（G1-G4，已裁决）。
+- 不改引擎校验逻辑（枚举速查只做文档化）。
+- 不改 dayu-agent / company-wiki 适配器。
+
+### 19.7 验收（实现后）
+
+- 19.1：SKILL.md 示例命令实测可用；客户端错误含完整诊断；测试全绿。
+- 19.2：ambiguous 响应含 candidates + hint；filing-fetch 全量回归。
+- 19.3：枚举速查就位且与源码一致；下一次会话构建轮次显著下降（目标 ≤2）。
+- 19.4：SKILL.md 示例全被钉住。
+- 19.5：检查单/数据治理文档更新。
+- 全量回归：revenue 239+ / filing-fetch 67+。
+
+### 19.8 状态
+
+- 本 Phase 当前：**pending（仅规划，未实现）**——等待用户确认启动。
