@@ -1216,3 +1216,67 @@ python -m unittest discover -s tests -v                            # 全量（�
 
 - **17.6 schema 3.6 评审（用户 AskUserQuestion 裁决）**：方案 A（weight∈[-1,1]）通过；实现登记为后续工作（规则 10 全流程），Phase 17 不实现。提案文档状态更新。
 - **合并**：用户指令"直接合并"——phase-14-input-build-tools 合并入 main 并推送。
+
+## 2026-08-01 — Alphabet 会话（17.2 检查单首次试点）
+
+### 会话概览
+
+`/revenue-forecast alphabet`（US，信息截止 2026-08-01）。FY2025 10-K 已下载至 canonical（`companies/Alphabet Inc/raw/.../2026-02-05_sec_0001652044-26-000018_Alphabet Inc. 10-K 2025-12-31.htm`，2,616,499 B，sha256 c2f63010…，CIK 1652044），但 filing-fetch 复用路径因**双类股身份归一缺失**死锁（G1-G4，已入 findings + Phase 18 规划，用户指令不立即实现）→ 本次改用 **local_document 备用路径**（文件已在 canonical，直接注册来源）。
+
+### 检查单命中项（17.2 试点验收记录）
+
+| § | 命中项 | 处置 |
+|---|---|---|
+| §2 下载预判 | US dayu 下载成功（预判 ✓），但**身份解析死锁**（新问题 G1，非预判内） | 诊断三层根因 → Phase 18 规划（用户裁决） |
+| §1 已知失败 | F6 锁竞争实战命中（4 次 CatalogOperationLockedError 指数退避 5/10/20/40s → 15.2 重试生效） | 等待窗口后重试成功 |
+| §1 已知失败 | F15 复发：Git Bash /tmp 与 Windows Python 路径不一致（alphabet_request.json） | 改用 Windows 路径 |
+| §4 conclusion 自检 | 待交付前执行（--check-conclusion-facts） | 进行中 |
+| §5 敏感性传导 | 待执行（--check-sensitivity-propagation） | 进行中 |
+| §6 快照纪律 | 交付时 v1 标签创建 | 进行中 |
+| §7 交付前 | TRUST_BOUNDARY.md 随交付 | 进行中 |
+
+### 新增发现（详见 findings G1-G4）
+
+- G1 双类股 ticker 未归一（_entity_matches 精确匹配 + 断言精确相等 + scanner 补全不可达三层死锁）
+- G2 verify_assertion supersedes 实现与 docstring 不符（不链接旧 verified → 多 verified 并存 fail-closed）
+- G3 scanner 已存在文档身份补全不可达（幂等重扫）
+- G4 SEC dayu sidecar 缺 market
+
+### 处置记录
+
+- 临时身份断言：文档 verify（market=US/security_id=GOOG；GOOGL 断言遗留为第二条 verified——G2 确认 supersedes 未链接，待 Phase 18）
+- scanner 已补：dayu SEC 摄入 market="US" + security_id=ticker（TDD，RED→GREEN，4+1 测试）——**本次已实现的部分补全**（18.3 的 prefer_new 扩展亦已落地）；company-wiki 侧待提交
+- 主流程改用 local_document 来源注册（不依赖 filing-fetch handle）
+
+### 状态
+
+- 档案获取：⏸ 10-K 文件就绪（canonical），handle 不可得（身份死锁）→ 备用路径进行中
+- 下一步：信息收集（历史收入/分部/Q2 2026/指引）→ 输入构建
+
+## 2026-08-01 — Alphabet 会话交付（17.2 检查单试点完成）
+
+### 交付物（Research\alphabet-forecast\）
+
+- `input.json`（101 参数 / 31 claims / 6 分部 / 5 驱动根 / 4 敏感性）→ **valid**；lint 0 findings；17.3/17.4 启发式命中 6 处全部登记（有源未摘录类）。
+- `forecast.json`（publication receipt 有效，input_sha256 2cd4e31e…）+ `forecast.md`。
+- 结果：**Base FY2030 $796.6B（CAGR 14.6%）**、Low $603.5B（8.4%）、High $1,017.9B（20.4%）；FY2026 base $477.0B（+18.4%）；置信度 31.9/100（low——6 段全 direct_growth fallback 诚实反映）。
+- `snapshot-2026-08-01-v1.json`（f7951af7…）validate PASS。
+- `TRUST_BOUNDARY.md`（5 节，含 G1 档案链路说明与 Q2 YouTube 数据冲突登记）。
+- 来源：FY2025 10-K（local_document，canonical 文件 sha256 c2f63010…）+ Q2 2026 release/call（WebFetch 捕获）+ SEC companyfacts（历史交叉）。
+
+### 检查单命中项汇总（17.2 试点验收）
+
+| § | 命中 | 处置 |
+|---|---|---|
+| §2 | US dayu 下载成功（预判 ✓）但身份解析死锁（G1） | Phase 18 规划（用户裁决）；local_document 备用路径 |
+| §1 | F6 锁竞争 4 次退避、F15 /tmp 路径 | 重试生效；Windows 路径 |
+| §4 | 17.3 命中 6 处（全为有源未摘录） | 人工核对 → data_gaps 登记 |
+| §5 | 17.4 0 命中（终期参数选择正确） | — |
+| §6 | 快照 v1 创建 + validate PASS | — |
+| §7 | TRUST_BOUNDARY.md 随交付 | — |
+
+### 本次实施的 company-wiki 修复（G1 部分，TDD）
+
+- `scanner.py`：dayu SEC 摄入补 `market="US"` + `security_id=ticker`（accession_number 判定）；metadata update 分支 `prefer_new` 扩展（URL 或身份任一缺失补全）——RED→GREEN（test_source_catalog_url_enrichment.py +2）。
+- 身份断言：Alphabet 文档 verify（market=US/security_id=GOOG，supersedes 链因 G2 未链接旧 GOOGL 断言——待 Phase 18）。
+- 待提交 company-wiki 仓库。

@@ -2200,3 +2200,67 @@ python -m unittest discover -s tests -v
 - **17.1.2 结案**：claim 绑定受 schema 枚举限制，以记录级 source_ids 绑定替代（A2 实质达成）——维持 TRUST_BOUNDARY §3 偏差记录，不追加动作。
 - **17.2 试点**：待下一次真实 forecast 会话执行（检查单命中记录表已备好）。
 - **合并**：phase-14-input-build-tools 合并入 main（用户指令）。
+
+---
+
+## Phase 18（发行人身份归一：双类股与多地上市公司泛化逻辑）— 状态：pending
+
+> 编制日期：2026-08-01（Alphabet 会话 17.2 试点触发；用户指令"加到改进清单，做好规划，不用立刻实现"）。
+> 依据：findings.md G1-G4、Alphabet 会话调试记录（resolver.py:331-459、542；assertion_service.py:277-316；scanner.py:983-1003、509-527）。
+> 原则：本 Phase **只规划不实现**（用户指令）；实现启动前需用户确认方案（18.0 的裁决点）。
+
+### 18.0 目标与核心设计问题（需用户裁决）
+
+**总目标**：让"同一发行人的多个 ticker / 多个上市市场"在 company-wiki 身份解析与复用路径中归一化——双类股（GOOGL/GOOG）、多地上市（CN/HK/US 同发行人，如紫金 601899/02899、阿里巴巴 9988/BABA）共享正确文档，同时保持 fail-closed 安全（真冲突仍阻断）。
+
+**设计裁决点**（实现前必须用户确认）：
+
+1. **归一粒度**：以 security_master 的 `canonical_name`（发行人）为身份锚点（GOOGL/GOOG → "Alphabet Inc."），还是维护显式 `issuer_id` 关联表？
+2. **多地上市共享语义**：同发行人不同市场（CN/HK）**共享**文档（按 market 过滤 document_kind 可满足请求）还是**隔离**（各市场独立文档池）？紫金案例（15.3）用 market hint 消歧成功——泛化时保留该行为还是改为发行人级共享？
+3. **断言 supersedes 语义**：verify 新断言是否强制链接并失效旧 verified（G2 修正），还是保留"多 verified 并存 + fail-closed"（更安全但无法更正）？
+
+### 18.1 实体匹配归一（G1-1，核心）
+
+- [ ] `resolver._entity_matches`：wanted 不在 values 时，用 security_master 把 wanted（ticker）解析为 canonical_name / issuer 别名集合，与文档 entities/metadata 的 canonical_name 比对（GOOGL → "Alphabet Inc." → 文档 company-name:Alphabet Inc 命中）。
+- [ ] 反向：文档 ticker（GOOG）与 request ticker（GOOGL）同 issuer → 匹配。
+- [ ] 多地上市：request entity + market 组合 → issuer 解析 → 文档按 issuer+market 过滤。
+- [ ] RED/GREEN：GOOGL/GOOG 互查命中同一 10-K；CN/HK 双上市互查按 market 正确路由；真冲突（不同 issuer 同名）仍 fail-closed。
+
+### 18.2 断言 supersedes 链修正（G2）
+
+- [ ] `verify_assertion`：新 verified 自动 supersede 同 (source, document, content) 的既有 verified（实现 docstring 承诺）；`get_verified_assertion_by_document` 沿链取最终 verified。
+- [ ] RED：GOOGL verified → verify GOOG → 查询返回 GOOG（现返回 None fail-closed → RED）。
+- [ ] 更正流程：reject/更正已有 verified 的 CLI 语义明确化（现 reject 拒绝 verified）。
+
+### 18.3 scanner 身份补全可达性（G3）
+
+- [ ] 已存在文档（hash 未变）重扫时，若 existing metadata 缺身份而 new（摄入补全后）有身份 → 更新（本次已临时扩展 prefer_new 的 URL+身份条件——18.3 需评估是否改为"字段级合并"而非全量 prefer_new）。
+- [ ] 评估：metadata 字段级合并（existing 缺失字段用 new 补，不覆盖既有值）vs 现状全量替换——影响面清单（16.10 流程）。
+
+### 18.4 SEC sidecar market 补全（G4）
+
+- [ ] canonical_writer / scanner：SEC 文档（provider=sec / accession_number）sidecar 与 dayu_meta 确定性补 `market="US"`（与 16.1 URL 构造同模式）；security_id 归一（GOOG vs GOOGL 由 18.1 issuer 逻辑承载，sidecar 记录 provider 原始值）。
+
+### 18.5 治理与文档
+
+- [ ] `docs/OPERATIONS.md`（company-wiki）：身份断言（identity-enrichment）使用协议——何时 verify、如何更正（supersedes 链）、多 verified 并存含义。
+- [ ] filing-fetch `references/trust-boundary.md` 或 identity 文档：双类股/多地上市请求写法（ticker 消歧 + market hint）。
+- [ ] 17.2 会话检查单 §2 增加：双类股/多地上市公司（US 双 ticker、CN/HK 同发行人）预判与请求写法。
+
+### 18.6 非目标
+
+- 不改 dayu-agent / SEC adapter（sidecar 由 company-wiki 摄入层补全）。
+- 不做发行人合并表/DB schema 变更（先评估 18.0 裁决点 1）。
+- 不改变真冲突 fail-closed 行为。
+
+### 18.7 验收（实现后）
+
+- GOOGL/GOOG 任意 ticker 请求命中同一 Alphabet 10-K（复用）；
+- CN/HK 双上市发行人按 market 正确路由且不误共享；
+- 断言更正（GOOGL→GOOG）经 supersedes 链生效；
+- 重扫补全已存在文档身份；
+- 全量回归（company-wiki 1543+ / filing-fetch 67+ / revenue 239+）零回归。
+
+### 18.8 状态
+
+- 本 Phase 当前：**pending（仅规划，未实现）**——等待用户确认 18.0 裁决点后启动。

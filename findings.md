@@ -842,3 +842,29 @@ validate_document()                      ← 入口
 - **17.1.2 实现偏差**：schema 3.5 claim target 枚举（parameter/historical_revenue/recognition_policy/scenario_probability/management_target/growth_driver）均需真实模型对象，回购事件无挂载点（挂参数违反 revenue_core.py:442 source 注册约束）→ 记录级 source_ids 绑定替代（A2 实质达成）。
 - **快照 hash 口径**：snapshot.input_sha256 = canonical(input+forecast_version)（revenue_backtest.py:36 设计），≠ receipt.validated_input_sha256（v1 时代亦然）；验证用 validate_snapshot + 确定性重跑。
 - **17.4 实证**：磁盘无 A11 会话初版（已重定向）；RED 实证用 A11 事实还原构造（3 项命中），当前 input 0 命中。
+
+## 2026-08-01 Alphabet 会话（17.2 检查单试点）发现 — 双类股/多地上市身份泛化（Phase 18 编制依据）
+
+### G1：双类股 ticker 未归一导致复用死锁（核心）
+
+- **事实**：Alphabet（NASDAQ GOOGL/GOOG 双类股）FY2025 10-K 下载成功（canonical `companies/Alphabet Inc/raw/...`，sha256 c2f63010…，CIK 1652044），但 filing-fetch reuse-first 持续 not_found。
+- **根因链**（三层）：
+  1. `resolver._entity_matches`（resolver.py:542）精确匹配 request.entity 与文档 entities/metadata ticker——request 用 GOOGL 时文档只有 ticker:GOOG/Alphabet Inc → 不匹配；
+  2. `_identity_matches` 对 metadata 缺 market/security_id 返回 missing_fail_closed（SEC dayu sidecar 只写 security_id=GOOGL 不写 market）→ 断言兜底（resolver.py:359-383）要求 `request.market and request.security_id` 且与断言 **精确相等**——GOOGL vs GOOG 不相等 → 兜底失败；
+  3. scanner 摄入补全（16.1 URL 模式）不覆盖身份；metadata 更新分支（scanner.py:983 prefer_new）只认 URL——已存在文档（hash 未变）永不重摄入，身份补全无法生效。
+- **用户裁决（2026-08-01）**："双类股应该可以共享文档，因为是一家公司，仅仅是上市ticker不同" → 泛化逻辑入改进清单（Phase 18 规划），**不立即实现**。
+- **影响**：GOOGL/GOOG 及任何多 ticker 发行人（如多地上市 CN/HK 同发行人）的复用路径受同样影响；本次以 local_document 备用路径继续（文件已在 canonical）。
+
+### G2：`verify_assertion` 的 supersedes 实现与 docstring 不符
+
+- `assertion_service.verify_assertion`（:277-316）docstring 称"supersedes previous verified if exists"，实现 `supersedes_assertion_id=assertion_id`（被 verify 的 candidate）——**不链接旧 verified**；同一 document 出现 2 条 verified 时 `get_verified_assertion_by_document` fail-closed（多命中无 supersedes 链 → None）→ 断言兜底整体失效（15.5 的"多命中 fail closed"与 verify 语义冲突）。
+- 影响：身份更正（如 GOOGL→GOOG）无法通过 supersedes 链表达；需 reject 或新机制。
+
+### G3：scanner 对已存在文档的身份补全不可达
+
+- scanner 对 hash 未变文件不重摄入（幂等），metadata 更新仅在"新路径摄入"或 prefer_new 触发；已摄入文档缺身份时无法通过重扫修复（本次靠 identity-enrichment 断言补）。
+- 16.10"契约变更影响面清单"应含此模式。
+
+### G4：SEC dayu sidecar 缺 market（16.1 系列残余）
+
+- SEC adapter 的 sidecar（canonical_writer 产出）写 security_id 不写 market；dayu_meta 无 market/security_id（15.4 身份传播只覆盖 provider_company_id 映射，SEC 无 provider_company_id）。→ 本次给文档 verify 断言（market=US/security_id=GOOG）补身份。
