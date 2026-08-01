@@ -530,3 +530,137 @@ validate_document()                      ← 入口
 ### 发现 D：direct_growth 模型的置信度代价
 
 恒运昌两个 segment 都用了 `direct_growth`（缺乏公开出货量/产能数据），这直接导致 `revenue_weighted_explicit_models` = 0.0/20，总置信度被拉低至 60.6/100（Medium）。引擎正确地惩罚了缺乏运营因果解释的模型选择，这是设计意图而非缺陷。
+
+---
+
+## 2026-07-31 紫金矿业档案获取会话发现
+
+> 触发：`/revenue-forecast 紫金矿业` 获取 FY2025 年报。会话日志见 `progress.md` 2026-07-31 段；修复计划见 `task_plan.md` Phase 15；实时分析文档 `C:\Users\郑曾波\Projects\Research\zijin_filing_problem_analysis.md`。
+> 四层根因：**管道语义断层（F3/F10）→ fail-closed 无逃生通道（F2/F4/F5）→ worker 锁协调（F6）→ 基础设施健康（F7）**。其中 F2/F4/F5 是"缺元数据"与"真冲突"被合并为同一枚举所致。
+
+### 发现 F1：双重上市身份歧义，错误信息无消歧引导
+
+- **内容**：`company_query="紫金矿业"` → `ambiguous / multiple_verified_exact_identities`。security_master 同时注册 CN 601899 与 HK 02899（`cn.json`/`hk.json`，均 active）。`SecurityIdentityResolver.identify()` 多命中返回 ambiguous 是**正确的安全行为**。
+- **影响**：错误信息没有提示"补充 market/exchange/ticker 可消歧"，脚本化调用直接死路。属体验缺陷，非逻辑缺陷。
+- **证据**：`C:\Users\郑曾波\Projects\company-wiki\.source_catalog\security_master\cn.json`（org_id 9900004143）、`hk.json`；`filing-fetch/scripts/fetch_filing.py:283-306`。
+
+### 发现 F2：缺身份元数据被计为 identity_mismatch（误报冲突的机制）
+
+- **内容**：`resolver._identity_matches()`（CW-3.5 严格模式）对 metadata 缺 market/security_id 返回 `missing_fail_closed`；断言兜底块里 `if not assertion_matched: identity_mismatch += 1; continue` —— **无断言 = 计一次 mismatch**。5 条 601899 annual_report 占位文档全部命中 → `IDENTITY_CONFLICT`。
+- **关键**：这是"元数据缺失"而非"身份冲突"，两种情形共用同一枚举与文案，误导排查方向（本次一度误查 security_master 与 assertions 表）。
+- **证据**：`resolver.py:325-355`（`if not assertion_matched` 在 `if market_match == "missing_fail_closed"` 内、`if assertion` 外——读缩进确认）、`resolver.py:449-478`（`_identity_matches`）、`resolver.py:428-434`（IDENTITY_CONFLICT 结果）。
+
+### 发现 F3：dayu portfolio 占位文档污染目录（管道语义断层，根因之首）
+
+- **内容**：2026-07-22 dayu 扫描后目录出现 11 条 601899 "文档"（FY2021-2025 年报、2025 半年报、Q1/Q3、2026Q1），全部 `files: []`、`primary_source_id: NULL`、无 fingerprint、无断言、`ingest_complete: false`、`staging_pdf_sha256: null`。机制：
+  1. dayu-agent `cn_pipeline_download_v1.0.0` 只写 **meta.json + manifest.json**（含 cninfo 精确 URL 与 source_id 1225023658），**从未下载 PDF 字节**；
+  2. company-wiki `scanner.py` 把 meta.json 按 role=`metadata` **摄入为正式文档**，无 preferred 文件 → `source_status="incomplete"`；
+  3. 身份信息在源头存在（portfolio 级 `601899/meta.json` 含 `market:"CN"`；每条占位含 `provider_company_id: "CNINFO:9900004143"` == security_master org_id），**摄入时未传播**。
+- **影响**：占位文档是 F2/F4 的触发器；**删除后下次 portfolio scan 会重新生成**（复发风险，见 F10）。
+- **证据**：`scanner.py:371-389`（`preferred is None` → `incomplete`；meta.json role 判定在 386-394）；dayu meta.json 实测：`ingest_complete:false`、`primary_document: "fil_cn_...pdf"`（不存在）、`files:[]`。
+
+### 发现 F4：identity_conflict 同时阻断复用与下载（fail-closed 无逃生通道）
+
+- **内容**：`acquisition.resolve_or_stage()` 中 `IDENTITY_CONFLICT` → `AcquisitionStatus.MISSING` + reason `identity_conflict_no_download` —— 不尝试适配器。CLI `ensure` 无 force/override 参数（cli.py:275-309）。
+- **影响**：标准流程（reuse → 下载）对元数据残缺的目录 100% 死锁；本次唯一出路是裸 SQL 改共享库（用户批准后执行）。
+- **证据**：`acquisition.py:313-326`。
+
+### 发现 F5：断言修复路径结构上不可用于无源文档（修复路也是断的）
+
+- **内容**：设计者预留的逃生通道是 `identity-enrichment`（preview→verify 断言绑定身份），但 `get_verified_assertion(store, source_id, content_sha256)` 按 **primary_source_id** 查询（service.py 查询结果 `source_id = primary_source_id`），占位文档该字段为 NULL → SQL `WHERE source_id = NULL` 永不命中。实测 0 条 assertions、无绕过路径。
+- **影响**：无受支持手段修复占位文档 → 只能删或改库。
+- **证据**：`assertion_service.py:75-108`（`_get_active_verified_assertions` / `get_verified_assertion`）、`service.py:216-218`。
+
+### 发现 F6：worker 锁抖动 + 锁错误被标为不可重试
+
+- **内容**：worker（pid 5568）`backfill_text_fingerprints` pending ~21979，分批次持有 `operation.lock`，批间窗口极短；本次 ≥4 次 `CatalogOperationLockedError`。更关键：`filing_contracts.py` `retryable = code in {"upstream_error", "worker_paused"}` —— 锁竞争被归类 `fatal / retryable:false`，调用方按契约**不应重试**。另有 TOCTOU：检测到锁释放与真正发请求之间 worker 重新拿锁。
+- **影响**：获取文件靠碰运气抢窗口（本次 bash 循环 6 次抢到 1 次）；worker 活跃期交互式获取基本不可用。
+- **证据**：`filing_contracts.py:46`、`fetch_filing.py:426-432`（fatal 输出）、`worker_state.json`（last_fingerprint_report pending 21979）。
+
+### 发现 F7：磁盘 99% 满，备份基础设施不可用
+
+- **内容**：`catalog.sqlite3` **20.2GB**（会话期间仍在增长）；`.source_catalog` 共 62GB（`.bak-bg5-*` 3 份 ≈ 28.6GB、cw-226 3.4GB、cw-225 1.2GB、cw-228 仅 73MB 可疑地小）；C 盘 476G 总量 **99% 满**（3.9→5.2GB 余量）；`cp` 备份在 4.1GB 处失败（No space left on device），留下 4.1GB 半成品文件。
+- **影响**：删除占位文档时**无新鲜备份兜底**（恢复点仅 07-26 的 cw-228）；worker 回填 22k 项随时可能写满磁盘 → 整库不可用。
+- **证据**：`du -sh .source_catalog` = 62G；`df -h /c` = 99%；备份失败 stderr。
+
+### 发现 F8：执行侧过程瑕疵（记录供后续改进）
+
+- 锁门控未真正执行：`test -f operation.lock && echo "LOCKED - abort" || ...` 只 echo，Python 删除在锁存在时照样跑完（结果正确、事务干净，但并发窗口改共享库是风险）；
+- Git Bash `/tmp` 与 Windows Python 路径解析不一致，handle 文件写丢一次；
+- 第一次撞锁后没有立即设计带退避的循环，多跑 2 次无谓失败；后续循环抢窗口成功属运气。
+
+### 发现 F9：控制台中文乱码（次要）
+
+- GBK console 与 UTF-8 数据流不匹配（`紫金矿业` 显示为 `�Ͻ��ҵ`）；`PYTHONUTF8=1` 可缓解。纯展示问题，不影响数据。
+
+### 发现 F10：修复是临时的，占位文档会复发
+
+- 删除 11 条占位后 fetch FY2025 立即成功（capture_ready，80MB，source active）—— 证明根因判断正确。但 dayu portfolio 磁盘上 meta.json 原件仍在，**下一次 scan 会重新摄入**，F2/F4 死锁复发。根治需 F3 的修复方向（scanner 不摄入 / 打 planned 状态 / 传播身份）或 dayu 管道真正完成下载。
+- **恢复点说明**：删除内容非永久丢失（meta.json 原件在 dayu portfolio 可重建）；catalog 恢复点 cw-228（07-26，73MB）。
+
+### 发现 F15：scan 同 group 多 primary 时 metadata 取排序第一个（F13 治理中发现）
+
+- **内容**：同一 group（relative path 前 3 段相同）存在多个 `original_primary` 文件时（如旧路径 `financial_reports/宁德时代：2024年年度报告.pdf` + 新路径 `financial_reports/annual/2025-03-14_cninfo_...pdf`），scanner 用 `next(...)` 取排序后第一个 candidate 的 group_metadata → 文档 metadata 可能被旧 sidecar（无 URL）覆盖刷新，新 sidecar 的完整 metadata 丢失。
+- **处置（本次）**：删除冗余旧文件（同 hash 假源）后重扫解决（宁德时代实例）。**scanner 的 group metadata 选择逻辑（取"最优"而非"第一个"）未修**——待单独决策（现无 regulatory 残留，影响面 = 知识库多 root 重复文档的 metadata 质量）。
+- **证据**：宁德时代 b4f1713d 两次 scan 后 metadata 仍无 source_url，删旧文件后刷新成功。
+
+### 发现 F14：dayu HK 下载路径环境性不可用（Phase 15.6.3 发现）
+
+- **内容**：HK 路由（dayu-hkex-cli）下载 FY2024 年报在三次不同参数下均超时：`--timeout-seconds 600`（腾讯）598s、`--timeout-seconds 600`（小米）598s、`--timeout-seconds 1800`（小米，配置注释明示 dayu 需 5-15 分钟 + Docling 转换、30 分钟充足）1580s 仍未完成。dayu workspace 30 分钟内**零新文件**；数个大内存 python 进程（2.6GB/2.5GB/1.4GB）疑似 Docling/RapidOCR 转换卡住。
+- **影响**：HK 下载在本环境不可用（非锁问题——锁重试已正常工作；非参数问题——1800s 也超时）。超时被 filing-fetch 子进程级杀掉，company-wiki journal 无记录。与 07-24 `dayu-hkex-cli immutable provenance sidecar conflict` 历史失败无关（彼为 HKEX 旧文档写入冲突，已过去）。
+- **处置**：如实记录；HK 项未达 15.6 验收。属 dayu-agent 侧环境/性能问题（15.8 非目标：不动 dayu 仓库），待单独决策（延长超时/诊断 Docling/换下载路径）。
+
+### 发现 F13：旧摄入 sidecar 缺 https URL 阻塞复用路径（Phase 15.6.3 发现）
+
+- **内容**：2026-07-21 前后批量摄入的一批公司 raw 文件（如宁德时代 300750、贵州茅台 600519），其 `.source.json` sidecar 为极简字段：有的**完全没有 `source_url`**（宁德时代 2024 年报，真实 2MB PDF），有的为 **http://static.cninfo.com.cn/...**（茅台 2023/2024，当时为 59 字节 placeholder stub——已 retire+删除）。`resolver._handle` 对缺 URL/http URL → `https_url=None` → `missing_capture_fields=["https_url"]` → filing-fetch 复用与下载路径均拒绝。
+- **影响**：这些公司即便已有真实文件也无法复用；`ensure` 也会在 reuse-first 处卡死（与 F4 占位死锁同性质，但对象是真实文件）。宁德时代 FY2024 下载尝试报 `source lacks capture provenance: https_url`。
+- **处置（本次）**：茅台 stub（59B 假文件）已 retire 文档 + 删文件；宁德时代等真实文件保留，仅记录。**批量数据修复（补 sidecar URL 或 resolver 容错）不在 Phase 15 范围**，待单独决策。
+- **证据**：`companies/宁德时代/raw/financial_reports/宁德时代：2024年年度报告.pdf.source.json`（无 source_url）；`https://static.cninfo.com.cn/` 已验证支持 HTTPS（200 + PDF）。
+
+### 发现 F12：filing-fetch stdin 管道用 GBK 解码破坏中文查询（Phase 15.3.7 发现）
+
+- **内容**：`echo '<含中文 JSON>' | python scripts/fetch_filing.py` 时 identify 返回 `missing / no_verified_identity_candidate`；同一查询经 `--request-file`（`read_text(encoding="utf-8")`）则完全正常。直接调 company-wiki identify CLI（argv 传参，Windows wide-char API）也正常。
+- **机制**：Windows 下 Python 对 pipe 型 stdin 默认用 locale 编码（中文系统 = GBK）解码 UTF-8 字节 → 中文查询 mojibake → identity 无候选。filing-fetch 只给**子进程**设了 `PYTHONUTF8=1`，自身 stdin 未 reconfigure。
+- **影响**：管道传中文查询在中文 Windows 上不可用；`--request-file` 是干净路径。属 F9（控制台编码）同族，**非 15.2/15.3 改动引入**（基线即如此）。修复（stdin reconfigure 或按 bytes 解码）不在 Phase 15 范围，记录待单独决策。
+- **验证**：`--request-file` + 中文「紫金矿业」FY2024 → identify resolved → resolve `missing / no_existing_source_satisfies_request`（15.3.7 通过，exit 2 not_found 语义正确，无 identity_conflict）。
+
+### 发现 F11：紫金 FY2025 年报最终获取成功（会话唯一正面结果）
+
+- 删除占位后 `fetch_filing.py --allow-download` 成功：`capture_ready`，80MB PDF 入 `companies/紫金矿业/raw/financial_reports/annual/2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf`；source `urn:company-wiki:source:sha256:01819e1c...`，status `active`；handle 已保存 `C:\Users\郑曾波\Projects\Research\zijin_handle.json`。
+- **FY2024 年报未获取**（撞锁后用户叫停）—— 恢复预报的第一个前置依赖。
+
+---
+
+## 2026-07-31 — Phase 15.1.1 磁盘清点与 bg5 备份背景核对
+
+### 磁盘现状（15.1 先决）
+
+- C: **99% 满，余量 5.0GB**（2026-07-31 22:42 实测；会话结束时 5.2GB，持续恶化）
+- D: 932G，余量 **92G**（91% 用）——「移到其他盘」选项的唯一可行目标
+- G: 476G，**100% 满**，余量 4.8G（不在 Phase 15 范围，但值得单独关注）
+
+### `.source_catalog` 下全部 `*.bak*` 清点（15.1.1）
+
+| 文件 | 大小 | mtime | 判断 |
+|---|---|---|---|
+| `catalog.sqlite3.bak-bg5-20260728T194409Z` | 9.4G | 07-28 10:12 | BG-5 apply 前更早一份备份（19:44Z） |
+| `catalog.sqlite3.bak-bg5-apply-`（无后缀） | 9.4G | 07-28 10:12 | **疑似半成品中间产物**（无时间戳命名） |
+| `catalog.sqlite3.bak-bg5-apply-20260728T194951Z` | 9.4G | 07-28 10:12 | receipt 记录的官方 pre-apply 备份 |
+| `catalog.sqlite3.bak-cw225-20260722-205901` (+shm/wal) | 1.2G | 07-22 20:59 | 旧备份（wal 0 字节=已干净 checkpoint，shm 32K 遗留） |
+| `catalog.sqlite3.bak-cw226-20260723-191312` (+shm/wal) | 3.3G | 07-23 19:13 | 旧备份（同上） |
+| `catalog.sqlite3.bak-cw228-20260726T102302` (+shm/wal) | 74M | 07-26 10:23 | findings F7 记录的恢复点 |
+| `backups/catalog-before-phase4r-1785095525.sqlite3` | 7.4G | 07-26 20:52 | 手工备份（phase4r 前），不在删除计划范围 |
+
+### bg5 生成背景（已核实，操作已结案）
+
+- BG-5 = company-wiki §10.6.9/§10.7.6 artifact reconciliation **apply 已成功**：2026-07-28，2685 new artifacts 插入 54.3s，0 conflict/detached/mismatch；全回归 99P/4skip/0F；ruff/compileall green。
+- receipt：`artifacts/gates/source-catalog-bg/bg5-apply-result-20260728T195200Z.json`，其中 `backup_path` 明确指向 `bak-bg5-apply-20260728T194951Z`（9.4G≈10GB）。
+- company-wiki `task_plan.md` **0 unchecked checkboxes**，BG-5 已结案；三份 bak-bg5 均属该已结案操作的产物，可弃（待用户确认，15.1.2）。
+- 后续仍有活跃工作：`wr-10-7-*` receipts（07-31 21:51）——company-wiki 自身 worker 可靠性门禁仍在推进，删除操作注意避开 worker 活跃窗口。
+
+### worker_state.json（15.1.7 初步检查）
+
+- `backfill_text_fingerprints`：eligible 21970 / **pending 21967**（会话结束时 21979，仅 -12）/ completed 3 / terminal 27 —— **未收敛**，进度极慢（约 12/小时级）。
+- worker `last_error: CatalogOperationLockedError: pid=15536` —— **锁竞争仍在持续**，坐实 15.2（可重试化）的紧迫性。
+- `last_scan_report`：files_seen 46781 / reused 46780 / **errors=1** / locations_active 46780（07-31 22:07 左右）。
+- `worker_control.json`：desired_state=enabled，但 `stop_requested_for` 有值（07-31 21:06 supervisor 切换痕迹，company-wiki 自身 WR-10-7 范畴，不在本 Phase）。

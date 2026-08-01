@@ -437,3 +437,324 @@ Phase 1 验收（1.4）全部满足：
 - Phase 14 新代码 coverage **91%**（fix_hashes 93% / lint 86% / generate 98% / evidence 96%），**未造成覆盖率下降**（82% = 82% 基线）。
 - 选项（待用户裁定）：(a) 删除死代码 `compute.py` → 覆盖率回 ~85%、门通过；(b) 把门降到 82 匹配实际；(c) 维持现状。按 CLAUDE.md「notice dead code, don't delete unilaterally」未自行删除。
 - **同日裁定（用户）**：删除死代码。已 `git rm scripts/forecast/`（`compute.py` + 空 `__init__.py`）。全量 coverage 回升至 **87%**，`--fail-under=84` 门通过；216 tests 仍全绿。
+
+## 2026-07-31 — 紫金矿业档案获取会话（复盘 + Phase 15 编制）
+
+### 目标
+`/revenue-forecast 紫金矿业` 的档案获取前置步骤。**会话中途被用户叫停**（"停止吧，很多问题，深入分析问题出在哪"），转为复盘；随后用户要求把分析与解决方案分解进本仓库 3 个计划文档（= 本段 + findings.md F1-F11 + task_plan.md Phase 15）。
+
+### 完成
+| 项 | 结果 |
+|---|---|
+| 紫金 FY2025 年报获取 | ✅ capture_ready：80MB PDF → `companies/紫金矿业/raw/financial_reports/annual/2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf`；source `urn:company-wiki:source:sha256:01819e1c...` active；handle 存 `C:\Users\郑曾波\Projects\Research\zijin_handle.json` |
+| 11 条 601899 占位记录 | ✅ 已删（事务；含 documents/locations/document_entities 11×3 行；无 assertions/artifacts/fingerprint 行）。用户经 AskUserQuestion 批准「删除占位记录」 |
+| 复盘文档 | ✅ `C:\Users\郑曾波\Projects\Research\zijin_filing_problem_analysis.md`（P1-P10 全清单 + 根因归类 + 修复优先级） |
+| 计划编制 | ✅ task_plan.md Phase 15（15.1-15.8）+ 执行状态表第 15 行；findings.md F1-F11；progress.md 本段 |
+
+### 错误记录（会话内全部，含处理）
+| 错误 | 尝试 | 处理/根因 |
+|---|---|---|
+| `ambiguous / multiple_verified_exact_identities` | 1 | 双上市身份（CN 601899 / HK 02899）→ 加 `market:CN` 提示 |
+| `identity_conflict / identity_mismatch_market_or_security_id` | 2+ | 排查 security_master/assertions/目录 → 根因：11 条缺身份占位文档 + 解析器 fail-closed（F2/F3/F4） |
+| `CatalogOperationLockedError: pid=5568`（≥4 次） | 2 | worker 指纹回填占锁 + 锁错误标不可重试（F6）→ bash 循环抢窗口成功 1 次 |
+| `cp` 备份 `No space left on device`（4.1GB 处失败） | 1 | 磁盘 99% 满（F7）→ 删半成品文件；删除操作无新鲜备份兜底（已记录风险） |
+| `FileNotFoundError: /tmp/zijin_handle.json` | 1 | Git Bash /tmp 与 Windows Python 路径不一致 → 换 `C:\Users\郑曾波\Projects\Research\` |
+| 锁检测 `LOCKED - abort` 后删除照跑 | 1 | 门控只 echo 未真正阻塞（F8 过程瑕疵）——结果正确但并发窗口改库是风险 |
+
+### 测试
+- 本会话**无代码改动**（company-wiki / filing-fetch / revenue-forecast 均未改），无测试运行。
+- 验证手段：catalog SQLite 直查（documents/sources/assertions/locations/document_entities 表）、`worker_state.json`/`operation.lock` 读取、`du`/`df` 磁盘测量、filing-fetch 真实调用 2 次（1 失败 1 成功）。
+
+### 关键决策
+1. 用户（AskUserQuestion）：**删除占位记录**（非打补丁元数据 / 非 HK 绕行 / 非停止）——已被 FY2025 获取成功验证为正确路径。
+2. 复盘根因定调：**四层叠加**（管道语义断层 / fail-closed 无逃生通道 / worker 锁协调 / 基础设施恶化），非单一 bug。
+3. Phase 15 计划边界：只修不预报；真冲突仍 fail-closed 不动；既有占位只列清单交用户决定，不自动删。
+
+### 未完成 / 下一步
+- ⏸ FY2024 年报未获取（恢复 `/revenue-forecast 紫金矿业` 的第一个前置依赖）
+- ⏸ 管理沟通门（业绩发布会/电话会/投资者演示/战略沟通/重大公告）未收集
+- ⏸ 磁盘余量 5.2GB 未处理（Phase 15.1 先决）
+- → Phase 15 执行顺序：15.1（磁盘）→ 15.2（重试语义）→ 15.3（解析器核心修复）→ 15.4（scanner 根治）→ 15.5（断言/retire）→ 15.6（回归门）
+
+## 2026-07-31 — Phase 15.1 磁盘与备份基础设施修复（in_progress）
+
+### 15.1.1/15.1.2/15.1.3 清点、删除、磁盘验证 ✅
+
+- 清点（详见 findings.md「Phase 15.1.1 磁盘清点与 bg5 备份背景核对」）：3 份 bak-bg5（各 9.4G）+ cw225/cw226/cw228 旧备份 + backups/phase4r 7.4G。
+- bg5 背景核实：BG-5 artifact reconciliation **apply 已成功并结案**（07-28，2685 artifacts，receipt 在 `artifacts/gates/source-catalog-bg/`）；3 份 bak-bg5 均属该操作产物。
+- **用户确认（AskUserQuestion）：删除 3 份**。按计划优先删半成品 `bak-bg5-apply-`，再删其余 2 份。共释放 **28.2GB**。
+- `df -h /c`：**99% → 94%，余量 5.0GB → 33GB** ✅（≥20GB 达标）。
+- 无测试运行（纯运维）；无代码改动。
+
+### 15.1.4 备份链路恢复 ✅（验证证据待回填）
+
+- 无正式备份工具（bg5 备份为手工 cp；`scripts/` 与 `src/company_wiki/source_catalog/` 均无 backup 实现）。
+- 决策：备份目标 **D: 盘**（92G 空闲；C: 33G 放 20G 备份会抵消 15.1.3 成果）。
+- `VACUUM INTO` 成功：`D:\company-wiki-backups\catalog.sqlite3.vacuum-20260731T215307Z`，**20,755,079,168 bytes，耗时 461.2s**（~45MB/s，D: 机械盘量级）。
+- sha256 ✅：`3eda6c4ce14fc6af824e353859214299f3d540147e39444de5611d91def913d9`（340.7s）。
+- integrity_check ✅：`[('ok',)]`（2627.8s ≈ 44 分钟）——备份经验证为一致可恢复的完整 SQLite 库。
+- **15.1.4 全部证据齐备，备份链路恢复确认**（此前 cp 在 4.1GB 处失败的问题不复存在）。
+
+### 15.1.5 保留策略写入 ✅
+
+- 修改文件：`C:\Users\郑曾波\Projects\company-wiki\docs\OPERATIONS.md`（新增「九、.source_catalog 备份与保留策略」+ 每周清单加备份核对项）。
+- 策略要点：保留最近 3 份；`VACUUM INTO`（禁 cp 活动库）；备份目标 D:；源盘 <15GB / 目标盘 <25GB 禁止备份；余量 <10% 时 worker 暂停写入（人工执行，自动化列 15.7 远期）；禁止备份放主库同目录。
+
+### 15.1.6 catalog 瘦身评估 ✅（部分）
+
+- `evidence_spans` **11,733,023 行**，均行 ~1181B → **约 13.9GB，占库体积 ~70%**（主体）。
+- VACUUM 前后对比：活动库 20GiB → 压缩后 19.33GiB（20,755,079,168B），**空闲页仅 ~0.7GiB（~3%），VACUUM 收益有限**。
+- 结论：库体积主体是 evidence_spans 数据本身，非空闲页；瘦身需数据治理（远期建议，不在本 Phase）。
+- ⏸ backfill 完成后最终体积待测（backfill 未完成，见 15.1.7）。
+
+### 15.1.7 worker_state 收敛检查 ✅（未收敛）
+
+- `backfill_text_fingerprints`：eligible 21950 / **pending 21947**（22:47 时 21967 → 23:20 时 21947，33 分钟仅 -20，~1.6 分钟/条）——**未收敛**。
+- worker `last_error` 已从 `CatalogOperationLockedError: pid=15536`（22:47）清为 **None**（23:20）——锁竞争仍在间歇发生。
+- 批间退避评估结论：属 15.7 远期项（仅记录，不实施）。
+
+### 尚未解决 / 待回填
+
+| 项 | 状态 |
+|---|---|
+| integrity_check + sha256 验证结果 | ⏸ 后台运行中，完成后回填 |
+| backfill_text_fingerprints 未收敛（21947 pending） | 记录；退避自动化属 15.7 远期 |
+| G: 盘 100% 满（余量 4.8G） | 范围外，单独关注 |
+| worker 暂停写入自动化 | 15.7 远期 |
+
+### 修改文件汇总（15.1）
+
+- `C:\Users\郑曾波\Projects\company-wiki\docs\OPERATIONS.md`（唯一改动，纯文档）
+
+## 2026-07-31 — Phase 15.2 filing-fetch 锁竞争可重试化（completed）
+
+### TDD 记录
+
+- **RED**（15.2.1/15.2.2，先于生产改动）：
+  - `test_catalog_lock_error_is_classified_retryable`：mock 上游 stderr JSON `{status:"failed", error_type:"CatalogOperationLockedError"}` → 断言 `code=="catalog_locked"` 且 `retryable is True`；对照组 `SomeOtherUpstreamError` → 仍 `fatal`/False（fail-closed 护栏）。RED 原因：`'fatal' != 'catalog_locked'`。
+  - `test_catalog_lock_retries_with_backoff_then_succeeds`：identify OK + 连续 2 次锁错误 + 第 3 次成功 → 断言 run.call_count==4、sleep 序列 `[call(5.0), call(10.0)]`、最终返回 handle。RED 原因：锁错误直接 fatal 传播，无重试。
+- **GREEN**：两测试转绿；58 原有测试零回归。
+
+### 生产改动
+
+- `scripts/filing_contracts.py`：`retryable` 集合加入 `"catalog_locked"`；`SKILL_VERSION` 1.1.0 → **1.2.0**（新特性发布，记录为决策）。
+- `scripts/fetch_filing.py`：
+  - `_run_company_wiki_json`：nonzero 时解析 stderr JSON，`error_type=="CatalogOperationLockedError"` → `code="catalog_locked"`（其余保持 `fatal` fail-closed）；
+  - 新增 `_run_company_wiki_json_retry`：指数退避（首 5s、×2），每次尝试用 deadline 剩余时间作 subprocess timeout，超限抛 `upstream_error`；每次重试打印 attempt 日志到 stderr；
+  - `resolve_filing` 的 identify 与 resolve/ensure 两处调用点改用重试助手（deadline 语义统一收口）。
+
+### 全量质量门（实测）
+
+- `python -m unittest discover -s tests`：**66 tests OK（skipped=2，预存真实环境 skip）**，耗时 15.3s
+- `-W error::ResourceWarning`：**0 warning**
+- `ruff check scripts tests`：**All checks passed**
+- `python -m compileall -q scripts tests`：OK
+- coverage：**TOTAL 92%**（fetch_filing.py 91%、filing_contracts.py 95%；基线 90% 未下降）
+
+### 文档（15.2.7）
+
+- `CHANGELOG.md`：v1.2.0 条目（锁重试 + fail-closed 说明）
+- `SKILL.md` 错误表：新增 `catalog_locked` 行（retryable=yes，含自动重试说明）
+
+### 尚未解决
+
+- 无（15.2 范畴内）。2 个预存 skip（catalog locked + ambiguous identity）为 company-wiki 真实环境状态依赖，非本次改动引入。
+
+## 2026-07-31 — Phase 15.3 company-wiki 解析器缺身份不再误判冲突（completed）
+
+### TDD 记录
+
+- **RED**（15.3.1/15.3.2，先于生产改动）：
+  - `test_resolver_missing_identity_metadata_is_not_identity_conflict`（tests/contract/test_source_catalog_resolver.py）：meta.json-only 占位目录（无 market/security_id、无断言、无 canonical 文件）+ 带身份请求 → 断言 MISSING（现为 IDENTITY_CONFLICT → RED：`IDENTITY_CONFLICT is not MISSING`）。
+  - `test_resolver_contradictory_market_is_still_identity_conflict`（对照组）：metadata 含矛盾 market（HK vs CN）→ 断言仍 IDENTITY_CONFLICT。**GREEN（护栏）**。
+  - 落点说明：计划写 tests/unit/，但 resolver 既有契约测试均在 tests/contract/（test_source_catalog_resolver.py），按仓库现状落此（一致性优先）。
+- **GREEN**：两测试转绿；5 个原有 resolver 测试零回归。
+- **全量回归发现既有契约冲突（重要）**：`TestIdentityMissingFailClosed.test_request_with_market_but_candidate_no_identity`（CW-3.5 严格模式：带 canonical 文件的缺身份文档 → 必须 IDENTITY_CONFLICT）在我第一版修复（对缺身份一律放行）下变 REUSED_EQUIVALENT → 失败。
+  - **修复收窄（与计划 15.3.3 措辞一致）**：缺身份 + 无断言 → 落入 year/form/handle 检查；**handle 为 None（占位）不计 mismatch → MISSING 允许下载**；**能构建 handle（可复用）但身份不可验证 → 仍计 mismatch（CW-3.5 strict 保持）**。真冲突（矛盾 market/security_id）路径不变。
+  - 顺带移除冗余 `assertion_matched` 局部变量（`market_match` 已承载"断言命中→match"语义），消除 F841 风险。
+  - 此收窄不违反 15.8 非目标（真冲突 fail-closed 不动），且保住既有 CW-3.5 契约。
+- **15.3.4 集成测试**：`test_placeholder_with_missing_identity_metadata_can_reach_adapter`（tests/contract/test_source_catalog_acquisition.py）：占位目录 + allow_download=True → resolve MISSING → coordinator STAGED、adapter.discover_calls==1、fetch_calls==1——证明下载路径真正打通（此前被 identity_conflict_no_download 阻断）。
+
+### 生产改动
+
+- `src/company_wiki/source_catalog/resolver.py`：
+  - `missing_fail_closed` + 无断言分支：不再立即 `identity_mismatch += 1; continue`；
+  - `_handle` 构建后：`market_match == "missing_fail_closed"`（可复用但身份不可验证）→ 计 mismatch 并 continue（strict 保留）；
+  - `ResolutionStatus` 枚举 docstring 与 `_identity_matches` docstring 更新（区分"缺身份元数据"与"真冲突"，15.3.8）。
+- acquisition.py：**零改动**（15.3.4 确认既有 MISSING→adapter 路径无回归）。
+
+### 全量质量门（实测）
+
+- `pytest tests/contract/test_source_catalog_resolver.py`：7/7（含 2 新增）
+- `pytest tests/contract/test_source_catalog_identity_resolver.py`：10/10（CW-3.5 strict 恢复通过）
+- `pytest tests/contract/test_source_catalog_acquisition.py`：5/5（含 1 新增）
+- `pytest tests/`：**1519 passed / 0 failed**（110.4s；基线 1518 + 1 新增）
+- `ruff check`（改动文件）：All checks passed；`compileall` OK
+
+### 15.3.7 真实环境回归（复用检查，只读）
+
+- `fetch_filing.py --request-file` + 紫金 FY2024（中文查询）：identify resolved → resolve **`missing / no_existing_source_satisfies_request`**（不再 identity_conflict）→ exit 2 not_found 语义 ✅。
+- **发现 F12（记录在 findings.md）**：filing-fetch stdin 管道 GBK 解码破坏中文查询；`--request-file` 为干净路径。非本次改动引入，修复不在 Phase 15 范围。
+- 决策：15.3.7 的 `--allow-download` 下载**推迟到 15.6.2**——若现在下载，15.6.1"预期 not_found"将失效（计划自洽性要求）。
+
+### 修改文件汇总（15.3）
+
+- `company-wiki/src/company_wiki/source_catalog/resolver.py`
+- `company-wiki/tests/contract/test_source_catalog_resolver.py`（+2）
+- `company-wiki/tests/contract/test_source_catalog_acquisition.py`（+1）
+
+## 2026-08-01 — Phase 15.4 scanner 占位文档治理（completed）
+
+### TDD 记录
+
+- **RED**（tests/contract/test_source_catalog_placeholder_governance.py 新建，3 测试）：
+  - `test_scan_does_not_create_placeholder_document_for_metadata_only_group`：仅 meta.json 组 → 扫描后 0 文档（现为 incomplete 占位 → RED）。
+  - `test_scan_does_not_create_placeholder_document_for_manifest_only_group`：**真实环境枚举发现的缺口**——仅 filing_manifest.json 组经 preferred 兜底链把自己选为 preferred 仍建占位 → RED 后修复。
+  - `test_scan_propagates_identity_from_provider_company_id`：dayu meta.json 的 `provider_company_id`（= security_master org_id）→ 摄入时传播 market/security_id → resolve 得 REUSED_EQUIVALENT（现为 IDENTITY_CONFLICT → RED）。
+  - 落点说明：计划写 tests/unit/，按仓库惯例落 tests/contract/（scan 行为级测试）。
+- **GREEN**：3 测试转绿。
+- **既有契约连带修改（计划内行为变更）**：
+  - `test_source_catalog_pipeline.py::test_dayu_metadata_only_bundle_is_indexed_as_incomplete` → 改名 `..._is_not_indexed`（断言 0 文档）；
+  - `test_shared_sidecar_blob_is_not_an_exact_document_duplicate` → 断言 sources/documents 均 0（元数据组不再摄入）；
+  - `test_source_catalog_resolver.py::test_resolver_contradictory_market_is_still_identity_conflict` fixture 加 primary 文件（对照组改用真文档，占位不再存在后无对象可冲突）。
+- **15.4.5 真实枚举发现并修复 manifest 缺口**：`_enumerate_root` 对真实 dayu portfolio（601899 等 9 公司）显示 9 个 fil_cn_* 仅 meta.json 组已被跳过，但 `filing_manifest.json` 组经兜底链仍产生 candidate → 追加修复（兜底排除 `*manifest.json`）。
+
+### 生产改动
+
+- `src/company_wiki/source_catalog/scanner.py`：
+  - `preferred is None`（仅元数据组）→ `continue`（不建文档；下次 scan 出现主文件后自然摄入）；
+  - preferred 兜底链排除 `*manifest.json`（与 role 判定一致）；
+  - 新增 `_load_security_master_identity(catalog_dir)`：org_id → (market, security_id) 映射（cn/hk/us 快照）；
+  - dayu 组 meta.json 无 market/security_id 时按 `provider_company_id` 后缀查映射并补写（不覆盖已有值）；
+  - `_enumerate_root` 增 `master_identity` 参数；`_scan_catalog_impl` 加载一次传入。
+
+### 真实环境验证（15.4.5，两层）
+
+- **第一层（精确枚举）**：`_enumerate_root` 真实 dayu portfolio → 601899 **零 candidate**、全域 **零 metadata-only 组**（修复前 601899 有 9 个占位组 + manifest 组）。
+- **第二层（dry-run 全量）**：`scan --dry-run` → `files_seen 46781 → 46717`（64 个占位文件不再产生 candidate）、**errors=0**。
+- 真实写库 scan 未执行（worker 锁抖动持续占锁；枚举+dry-run 已覆盖"不再产生占位"的实质，记录此偏差）。
+
+### 15.4.6 既有占位处置（用户批准：删除全部 67 条）
+
+- 清点：67 条无 primary_source 文档（24 meta + 25 filing_manifest + 18 带日期真实标题族），其中紫金族 11 条——**F10 预警复发坐实**（07-31 22:07 扫描重建了已删的 11 条）。
+- 关联行核查：67 document_entities / 67 locations / 0 fingerprint / 0 assertion / 0 artifact；66 个 source_id（content-addressed，不删）。
+- 删除：事务删除 documents+locations+document_entities（busy_timeout 120s 首试撞锁；改 **live 感知轮询**——初版轮询误判陈旧锁文件为占用，改用 `operation_lock_status` 后第 1 个空窗即成功）。
+- 结果：**remaining placeholders = 0，orphan fingerprint = 0**。
+- 备注：worker 锁抖动（F6）在操作中再次体现——删除前 10 分钟无空窗，live 感知后秒级窗口即成功。
+
+### 全量质量门
+
+- `pytest tests/`：**1522 passed / 0 failed**（1518 基线 + 1 acquisition + 3 governance；159s）。
+- ruff（改动文件）：All checks passed；compileall OK。
+
+### 修改文件汇总（15.4）
+
+- `company-wiki/src/company_wiki/source_catalog/scanner.py`
+- `company-wiki/tests/contract/test_source_catalog_placeholder_governance.py`（新建，3 测试）
+- `company-wiki/tests/contract/test_source_catalog_pipeline.py`（2 测试契约更新）
+- `company-wiki/tests/contract/test_source_catalog_resolver.py`（对照组 fixture 更新）
+
+## 2026-08-01 — Phase 15.5 断言按 document_id 绑定 + retire 命令（completed）
+
+### TDD 记录
+
+- **RED**（4 测试）：
+  - `test_verified_assertion_resolves_by_document_id`（test_assertion_service.py）：占位文档（primary_source_id NULL）断言 → `get_verified_assertion(store, None, ...)` 永不命中（F5 机制复现）；新函数 `get_verified_assertion_by_document` 不存在 → RED。
+  - `test_source_catalog_retire.py`（新建）3 测试：CLI `documents retire` 软删+审计；未知文档失败且零写入；resolver 不复用 retired 文档。RED 原因：CLI 无 `documents` 命令。
+- **GREEN**：4 测试转绿（fixture 修一次：断言表 FK 需 sources 行）。
+- 落点说明：断言测试沿用 test_assertion_service.py；retire 测试新建 test_source_catalog_retire.py（CLI 级）。
+
+### 生产改动
+
+- `src/company_wiki/source_catalog/assertion_service.py`：新增 `get_verified_assertion_by_document(store, document_id, content_sha256=None)`（active verified、supersedes 链过滤、多命中 fail closed）。
+- `src/company_wiki/source_catalog/resolver.py`：`_verified_assertion_identity` 兜底链——source_id 路径失败 → document_id 路径（占位文档 content_sha256 传 None，内容绑定不可验证时以断言自身 hash 为证据）。
+- `src/company_wiki/source_catalog/store.py`：`retire_document(store, *, document_id, reason, created_by)`（文档+locations 转 retired、写 `document_retire_audit` 审计表、未知文档 KeyError 零写入）；`document_retire_audit` 表进 _DDL 与 additive migration。
+- `src/company_wiki/source_catalog/service.py`：`query()` 默认排除 retired（显式 `source_status="retired"` 可查）——resolver 经此自动不复用 retired。
+- `src/company_wiki/source_catalog/cli.py`：`documents retire --document-id --reason [--created-by]` 子命令 + 派发。
+
+### 全量质量门
+
+- `pytest tests/`：待回填（后台运行中）
+- targeted：20/20（assertion 8 + retire 3 + resolver 7 + governance 3，含交集重计）
+- ruff（src 全量）：All checks passed；compileall OK
+
+### 文档（15.5.6）
+
+- `company-wiki/docs/OPERATIONS.md`：新增「十、文档治理：documents retire」——用法、审计表查询示例、retired 可见性语义、历史裸 SQL 清理废止说明。
+
+### 修改文件汇总（15.5）
+
+- `company-wiki/src/company_wiki/source_catalog/{assertion_service,resolver,store,service,cli}.py`
+- `company-wiki/tests/contract/test_assertion_service.py`（+1）
+- `company-wiki/tests/contract/test_source_catalog_retire.py`（新建，3 测试）
+- `company-wiki/docs/OPERATIONS.md`
+
+## 2026-08-01 — Phase 15.6 回归验证门：紫金 FY2024 全链路（CN ✅ / HK 环境性残余）
+
+### 15.6.1 reuse-first（只读）✅
+
+- 紫金 FY2024 `--request-file`（中文查询干净路径）：**`missing / no_existing_source_satisfies_request`，3.4s，无 identity_conflict**——15.3/15.4 修复在真实环境生效（占位删除后 not_found 语义正确）。
+
+### 15.6.2 下载 ✅（含 15.2 重试实战验证）
+
+- 首跑（worker 活跃）：**7 次指数退避重试（5→156s，每次日志化）全部撞锁**（pid 16308 连续占锁），600s 预算耗尽后**干净降级 `upstream_error / retryable:true`**——15.2 重试机制完整实战验证（锁错误不再 fatal/不可重试，超限优雅失败）。
+- worker 诊断：pid 16308 单 PDF normalize 占锁 ~40 分钟（worker 健康问题，company-wiki WR-* 领域）；`worker-pause` 被公司-wiki 门禁拒绝下载（"source acquisition is paused"——设计行为）；`worker-stop`（desired_state 保持 enabled）→ 下载 → `worker-resume` 序列成功。
+- 最终：**capture_ready，44.5s**（worker 重启启动窗）。handle 核对全部通过：https_url=cninfo 详情页、published_date 2025-03-21 ≤ 2026-07-31、**content_sha256 与磁盘文件独立重算一致**（004f733e...）、byte_size 32,100,114 一致。
+- 文件：`companies/紫金矿业/raw/financial_reports/annual/2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf`（source active）。
+
+### 15.6.3 worker 活跃期 3 家（2/3 成功，HK 环境性失败）
+
+| 公司 | 路径 | 结果 | 耗时 | 说明 |
+|---|---|---|---|---|
+| 紫金 FY2024 | CN 复用 | ✅ capture_ready | 3.8s | reuse-first 生效 |
+| 比亚迪 FY2024 | CN 复用 | ✅ capture_ready | 3.7s | 干净公司（sidecar 完整 https） |
+| 贵州茅台 FY2024 | CN 下载 | ✗→已处置 | — | **cninfo 多候选 fail-closed**（正确设计）+ 07-21 遗留 59B placeholder stub |
+| 宁德时代 FY2024 | CN 复用 | ✗ 记录 | — | 旧 sidecar 无 source_url（F13） |
+| 腾讯 FY2024 | HK 下载 | ✗ 超时 | 598s | dayu 无进展 |
+| 小米 FY2024 | HK 下载 | ✗ 超时 ×2 | 598s / 1580s | dayu 无进展（F14） |
+
+- **茅台 stub 处置**：2 条 catalog stub 文档（2023/2024，59B "%PDF-1.4 placeholder"）用 **15.5 `documents retire` 命令实战软删**（首次实战 ✅）+ 删除磁盘 4 个 stub 文件。茅台重新下载仍撞 cninfo 多候选（数据真实状态，fail-closed 正确）。
+- 换比亚迪成功（catalog 已有 07-25 摄入的完整文档）。
+
+### 15.6.4 结论与残余
+
+- **CN 全链路（复用+下载+重试+占位治理）验证通过**——Phase 15 核心目标（紫金 FY2024 获取）达成。
+- **HK 下载环境性残余**（F14）：dayu 下载器 26 分钟无完成迹象（3 次尝试不同参数），非本仓库代码问题（15.8 非目标不动 dayu）。15.6 验收"3/3"未完全满足，如实记录。
+- 服务恢复：worker 已 `worker-resume`（supervisor 20416 / worker 7916，desired_state=enabled，scanning）。
+- 历史数据残余（F13）：一批旧摄入 sidecar 缺 URL 阻塞复用（宁德时代等）——待单独决策，不在 Phase 15。
+
+## 2026-08-01 — F13 存量数据批量治理（用户批准，completed）
+
+### 触发
+
+用户质疑"revenue-forecast 不能对任何特定公司有前置条件"——承认表述错误（链路是通用的，紫金只是回归样本），并量化通用性缺口：**23,500/23,533 active 文档 metadata 无 source_url**，其中 regulatory 类 ~9,576 个会阻塞对应公司的复用/下载（宁德时代实例：真实文件存在但 handle 缺 https_url → 复用拒绝 + ensure reuse-first 死锁）。
+
+### TDD 修复链（三个真实缺陷，逐层暴露）
+
+1. **scanner 终态保护**：`test_scan_does_not_revive_retired_document`（RED）——scan 的 documents update 会把 retired 文档复活（source_status=? 无保护）→ 修复：retired 分支只更新 last_seen_at；locations 的 UPSERT 同样保护（CASE WHEN retired）。
+2. **writer 重获取激活**：`test_writer_reactivates_previously_retired_same_content_document`（RED，与生产同错）——document_id 由 content hash 派生 → 重下载同内容撞 retired 文档 → exact re-resolve 失败 → 修复：`_reactivate_if_retired` 前置到 import 与 dedup 两分支共用（用户显式下载 = 权威重获取动作；普通 scan 不复活）。
+3. **部分状态一致性**：`test_writer_reactivates_retired_document_via_dedup_when_location_is_active`（RED）——retired 文档 + active location 的部分状态（09:14 失败写入留下）→ dedup 命中但 metadata 旧 → 修复：scanner 对 retired 组的**新 location 也置 retired**（部分状态不可能产生）。
+4. **scan group metadata 多 primary**（无测试，生产数据修复）：同 group 两个 primary（旧路径无 URL + 新路径完整）→ scan 取排序第一个的 metadata → 删除冗余旧文件后刷新（宁德时代实例）。
+
+### 批量治理与验证
+
+- **9,576 个缺 URL 的 regulatory 文档全部 retire**（15.5 `retire_document` 语义，审计入表，零失败）。
+- 存量部分状态清理：retired 文档的 active location 归位（0 残留——writer 激活已处理）。
+- 冗余旧文件：宁德时代 2024 旧路径文件（同 hash 假源）删除。
+- **验证**：
+  - 宁德时代 FY2024：原卡死 → not_found → 下载（canonical import 失败暴露缺陷链）→ **capture_ready ✅（7.7s，https URL 齐全）**
+  - 紫金 FY2024：仍正常复用 ✅
+  - regulatory 类同 hash 多文档：**0 残留**
+- 全量：**1529 tests / 0 failed**（1526 + 3 新增）；ruff 0；compileall OK。
+
+### 修改文件汇总（F13 治理）
+
+- `company-wiki/src/company_wiki/source_catalog/scanner.py`（retired 终态保护 + 新 location 一致性）
+- `company-wiki/src/company_wiki/source_catalog/canonical_writer.py`（_reactivate_if_retired 前置）
+- `company-wiki/tests/contract/test_source_catalog_retire.py`（+location 一致性断言）
+- `company-wiki/tests/contract/test_source_catalog_canonical_writer.py`（+2 测试）
+
+### 语义定论
+
+- **retire = 暂时退场**（退出可见性），**显式重下载 = 重新进场**（writer 权威激活）；普通 scan 永不复活（终态保护）。
+- 获取链路对任意公司通用：新公司（下载）、干净存量（复用）、污染存量（治理后复用/下载）均已验证；唯一外部残余 = HK 下载（dayu 环境，F14）。

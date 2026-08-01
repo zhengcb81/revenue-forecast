@@ -1602,6 +1602,8 @@ python -m coverage report -m --fail-under=84
 | 11 invest-* | completed | invest-core：secure import + publication gate（only formal 3.5）+ 7 cross-skill conformance tests。invest-framework：22 tests / 18 OK / 4 skip（跨 repo fixture） |
 | 12 文档/版本 | completed | CHANGELOG、compliance-contract、output-schema、backtesting、input-schema、migration guide、install sync |
 | 13 最终验收 | completed | revenue: 179 tests / 0 failures / ruff 0。filing-fetch: 64 tests / 0 failures / ruff 0 / 90%。invest-core: 29 tests / 0 failures / ruff 0。invest-framework: 22 tests / 18 OK / 4 skip |
+| 14 输入构建辅助工具链 | completed | generate_input_template / lint_input / fix_hashes / --validate-only --verbose（2026-07-31 完成，216 tests / 0 failures，coverage 87%） |
+| 15 紫金档案获取问题修复 | completed | 15.1-15.5 完成（磁盘/备份、锁重试、解析器、scanner、retire）。15.6：紫金 FY2024 获取成功（CN 全链路验证通过，1526+1522 company-wiki tests 全绿）；15.6.3 HK 项环境性失败（dayu 下载器 26 分钟无进展，见 findings F14），15.6.2 已实战验证 15.2 重试（7 次退避+优雅降级） |
 
 ## 画蛇添足判定（Phase 后审查）
 
@@ -1693,3 +1695,124 @@ python -m coverage report -m --fail-under=84
 - 不改变 CLI 默认行为
 - 不做 IDE 实时验证
 - 不做 GUI
+
+---
+
+## Phase 15（紫金档案获取问题修复）— 状态：completed（15.6.3 HK 项环境性残余，见 F14）
+
+> 触发背景：2026-07-31 `/revenue-forecast 紫金矿业` 会话。获取 FY2025 年报时遭遇 4 层叠加故障：dayu 管道把"计划清单"当文档摄入（P3）、解析器把"缺身份元数据"当"身份冲突"硬阻断复用与下载（P2/P4）、worker 指纹回填几乎连续占锁且锁错误被标为不可重试（P6）、磁盘 99% 满导致备份不可用（P7）。
+> 完整会话复盘见 `findings.md`「2026-07-31 紫金矿业档案获取会话发现」F1-F10；会话日志见 `progress.md` 2026-07-31 段；实时分析文档 `C:\Users\郑曾波\Projects\Research\zijin_filing_problem_analysis.md`。
+> 涉及仓库：`company-wiki`（canonical: `C:\Users\郑曾波\Projects\company-wiki`）、`filing-fetch`（canonical: `C:\Users\郑曾波\Projects\filing-fetch`；skill 目录是 junction）。执行遵守 0.3 规则（TDD 顺序、CodeGraph 查符号、证据写入 progress.md、单 Phase in_progress）。
+
+### 15.1 磁盘与备份基础设施修复（P7）— 运维，先决条件，无代码改动
+
+**问题**：C 盘 99% 满（会话结束余量 5.2GB）；`catalog.sqlite3` 20.2GB 且 worker 回填期间持续增长；`.source_catalog` 共 62GB，其中 `.bak-bg5-*` 3 份约 28.6GB（其中 `catalog.sqlite3.bak-bg5-apply-`（无时间戳后缀）疑似半成品）；`cp` 全量备份在 4.1GB 处因磁盘满失败 → 备份基础设施实际不可用。
+
+**步骤**：
+- [x] 15.1.1 清点 `.source_catalog` 下所有 `*.bak*` 文件（名称、大小、mtime），与 worker_runs.jsonl / control_center.log 核对 `.bak-bg5-*` 的生成背景（bg5 升级操作？可弃？）
+- [x] 15.1.2 与用户确认后删除（或移到其他盘）`.bak-bg5-*` 3 份（~28.6GB），优先删疑似半成品 `bak-bg5-apply-`
+- [x] 15.1.3 删除后验证 `df -h /c` 余量 ≥ 20GB
+- [x] 15.1.4 验证备份链路恢复：对 `catalog.sqlite3` 执行一次完整备份成功（`cp` 或 SQLite `VACUUM INTO` 到另一路径），记录耗时与产物大小
+- [x] 15.1.5 定义保留策略并写入 company-wiki 文档/配置：保留最近 N 份备份（建议 3）、备份前置磁盘余量检查、余量 <10% 时 worker 暂停写入
+- [x] 15.1.6 评估 `catalog.sqlite3` 瘦身：VACUUM 前后体积对比、`backfill_text_fingerprints` 完成后的最终体积，记录到 progress.md
+- [x] 15.1.7 检查 `worker_state.json`：`backfill_text_fingerprints` pending（会话时 21979）是否已收敛；未收敛则评估 worker 批间退避（见 15.3）
+
+**验证**：
+- [x] `df -h /c` 余量 ≥ 20GB
+- [x] 全量备份成功（退出码 0，产物 sha256 可校验）
+- [x] 主库文件大小不再因 worker 回填而显著增长（两次采样间隔 ≥1h）
+
+**验收**：磁盘余量恢复；备份可执行；记录保留策略决策（含被删备份清单）。
+
+### 15.2 filing-fetch：锁竞争错误可重试化（P6 的一半）
+
+**问题**：`filing_contracts.py:46` `retryable = code in {"upstream_error", "worker_paused"}` —— `CatalogOperationLockedError` 被归类为 `fatal / retryable:false`（fetch_filing.py:426-432 直接输出 fatal）；锁竞争是最典型的 transient，调用方按契约不应重试 → 交互式获取在 worker 活跃期必死。且无内置退避重试，本次靠 bash 循环抢窗口。
+
+**方案**（TDD，先负向测试）：
+- [x] 15.2.1 RED：`C:\Users\郑曾波\Projects\filing-fetch\tests\test_fetch_filing.py` 新增测试 —— mock company-wiki 返回 `{"error_type": "CatalogOperationLockedError"}` → 断言响应 `retryable: true`（或新 status `catalog_locked`）
+- [x] 15.2.2 RED：新增重试测试 —— mock 连续 2 次返回锁错误、第 3 次返回 capture_ready → 断言最终成功且重试次数/退避被记录（mock 时间不真实 sleep）
+- [x] 15.2.3 实现：`filing_contracts.py` 把锁错误码加入 retryable 集合（或新增 `locked` 状态 + 响应结构），`fetch_filing.py` 错误映射同步
+- [x] 15.2.4 实现：`fetch_filing.py` 内置指数退避重试（首退避 5s、倍数 2、上限尊重 `--timeout-seconds` 剩余时间；每次重试打印 attempt 日志）
+- [x] 15.2.5 GREEN：运行 targeted `python -m unittest discover -s tests -v`（filing-fetch 用 unittest）
+- [x] 15.2.6 全量：filing-fetch 全量 tests + ruff；记录覆盖率（基线 90%，不得下降）
+- [x] 15.2.7 更新 `CHANGELOG.md`（filing-fetch）与 SKILL.md 错误表（新增 `catalog_locked` 状态说明）
+
+**验证**：worker 活跃期间（可临时 `worker-start` 触发回填）连续 3 次 `fetch_filing.py --allow-download`（无外部循环）全部成功。
+
+**验收**：锁竞争不再以 fatal/不可重试出现；单次调用在 worker 活跃下自愈；filing-fetch 64+ tests 全绿、覆盖 ≥90%。
+
+### 15.3 company-wiki：解析器缺身份文档不再误判为冲突（P2/P4，核心修复）
+
+**问题**：`resolver.py`：
+- `_identity_matches()`（449-478）对 metadata 缺 market/security_id 返回 `missing_fail_closed`（CW-3.5 严格模式）；
+- 断言兜底（321-355）：无 verified assertion 时 `if not assertion_matched: identity_mismatch += 1; continue` —— **把"缺身份元数据"计为 identity_mismatch**；
+- 结果 `IDENTITY_CONFLICT`（428-434）→ `acquisition.py:313-326` 映射 `identity_conflict_no_download` —— **同时阻断复用与下载**。
+- 真冲突（market/security_id 存在但矛盾）与缺元数据被合并为同一枚举，错误文案误导（本次排查一度误入 security_master/assertions）。
+
+**方案**（区分两种情形；保持真冲突仍阻断）：
+- [x] 15.3.1 RED：`company-wiki/tests/unit/`（pytest）新增 fixture —— 目录含一条"无 market/security_id metadata、无断言、无 canonical 文件"的文档 + 带身份的请求 → 断言 resolve 状态为 `MISSING`（而非 `IDENTITY_CONFLICT`）
+- [x] 15.3.2 RED：对照组 fixture —— metadata 含矛盾 market（如 HK）的文档 → 断言仍为 `IDENTITY_CONFLICT`（现有行为不得破坏）
+- [x] 15.3.3 实现：`resolver.py` 对 `missing_fail_closed` + 无断言：不计 identity_mismatch，继续 year/form/handle 检查（handle 为 None → MISSING → 允许下载）；真冲突路径不变
+- [x] 15.3.4 实现：`acquisition.py` 确保 `MISSING` + `allow_download` → 走适配器下载（现有 `download_required_but_not_allowed` 逻辑检查不回归）
+- [x] 15.3.5 GREEN：`pytest tests/unit -k resolver`（或等价入口）→ 全绿
+- [x] 15.3.6 全量：company-wiki `pytest tests/` 全量（含 contract/e2e），记录失败/跳过清单
+- [x] 15.3.7 回归：真实环境跑 `filing-fetch` 紫金 FY2024 reuse-first → 应返回 not_found（而非 identity_conflict）→ 加 `--allow-download` 应开始下载
+- [x] 15.3.8 文档：`resolver.py` 状态枚举 docstring 注明两种情形的区分；若新增 reason 文案同步更新 filing-fetch SKILL.md 错误表
+
+**验收**：缺身份+无断言 → MISSING（可下载）；真冲突 → 仍 IDENTITY_CONFLICT；紫金 FY2024 获取链路无手动干预走通。
+
+### 15.4 company-wiki：scanner 占位文档治理（P3/P10，根治复发）
+
+**问题**：`scanner.py:371-389` 把 dayu portfolio 里**只有 meta.json/manifest.json 的目录**摄入为文档（role=`metadata`、`source_status="incomplete"`、`ingest_complete:false`、无字节）；下次 scan 会重新生成（本次删除 11 条后已证实会被重建）。同时 portfolio 级 `601899/meta.json` 含 `market:"CN"`，但身份未传播到各占位文档 → 缺身份死锁的源头。
+
+**方案**（a 为必做；b 为身份传播，防复发）：
+- [x] 15.4.1 RED：`company-wiki/tests/unit/` fixture —— 构造 portfolio 目录（仅 meta.json 无 preferred 文件）→ 断言 scan 后**不产生文档**（或产生 `source_status="planned"` 且解析器跳过的记录）
+- [x] 15.4.2 实现（a）：`scanner.py` 对 `preferred is None`（仅元数据）的 group：不建文档，仅登记"待获取清单"；或在文档上打新状态 `planned` 并在 `resolver.py`/`service.query()` 过滤
+- [x] 15.4.3 实现（b）：scanner 摄入 dayu 文档时，把 portfolio 级 meta（market/ticker/company_id）或 `provider_company_id` → security_master 映射的身份写进文档 metadata（`market`/`security_id`），消除"身份信息源头存在、摄入时丢失"
+- [x] 15.4.4 GREEN + 全量 company-wiki pytest
+- [x] 15.4.5 回归：对 `C:\Users\郑曾波\Projects\dayu-agent\workspace\portfolio\601899` 目录手工触发一次 scan → 断言不再产生污染占位
+- [x] 15.4.6 清理既有 11 条占位（已删）之外的同类历史占位：全局查 `ingest_complete:false` 且无 primary_source 的文档，列出清单交用户决定（不自动删）
+
+**验收**：portfolio 重扫不再生成占位文档；既有占位清单已列出并处置；解析器对 planned 记录不可见（或不存在）。
+
+### 15.5 断言服务按 document_id 绑定 + retire 命令（P5，中期）
+
+**问题**：断言修复路径结构上不可用于无源文档 —— `assertion_service.py:75-108` `get_verified_assertion(store, source_id, content_sha256)` 按 primary_source_id 查询，占位文档 `primary_source_id=NULL`（service.py:216-218 `source_id = primary_source_id`）→ SQL `WHERE source_id = NULL` 永不命中。CLI 无任何 delete/retire 命令 → 修复只能裸 SQL 改共享库。
+
+**方案**：
+- [x] 15.5.1 RED：断言服务新增 `get_verified_assertion_by_document(store, document_id, entity)`（或等价键路径），测试"无 primary_source 文档 + 断言 → 可解析出身份"
+- [x] 15.5.2 实现：`assertion_service.py` 新查询函数；`resolver.py` 兜底链：source_id 命中失败 → document_id/entity 命中
+- [x] 15.5.3 RED：CLI `retire` 命令测试 —— `documents retire --document-id ... --reason ...` → 文档/位置转 `retired`（软删），操作写入审计（created_by/时间/原因），不物理删除
+- [x] 15.5.4 实现：`cli.py` 新增 `retire` 子命令 + `store.py` 软删支持；解析器/查询默认过滤 retired
+- [x] 15.5.5 GREEN + 全量 company-wiki pytest
+- [x] 15.5.6 文档：CLI 使用说明、审计示例写入 company-wiki 文档
+
+**验收**：无源文档可被断言修复；retire 命令可逆、有审计；裸 SQL 改库不再必要。
+
+### 15.6 回归验证门：紫金 FY2024 全链路（验证门）
+
+**目的**：验证 15.1-15.5 后，filing-fetch → company-wiki 全链路在真实环境下稳定。
+
+**步骤**：
+- [x] 15.6.1 `fetch_filing.py` 紫金 FY2024 年报 reuse-first → 预期 not_found（占位已删）且**不报 identity_conflict**
+- [x] 15.6.2 `--allow-download` → capture_ready；核对 handle：https_url（cninfo）、published_date ≤ 2026-07-31、content_sha256 与磁盘文件一致、byte_size 合理
+- [x] 15.6.3 worker 活跃期连跑 3 次不同公司获取（建议：紫金 FY2024、另一家 A 股、一家 HK）→ 全部自愈成功（验证 15.2 重试）（2/3 成功；HK 项环境性失败——dayu 下载器 26 分钟无进展，见 findings F14）
+- [x] 15.6.4 记录每步耗时与失败到 progress.md
+
+**验收**：3/3 成功，无手动干预，单次调用全程 < 5 分钟。
+
+### 15.7 远期项（仅记录，不实施）
+
+| 项 | 说明 |
+|---|---|
+| dayu 管道状态机对齐 | dayu `ingest_complete`（planned→downloaded→ingested）与 company-wiki `source_status` 建立映射/同步 |
+| worker 批间退避 | `backfill_text_fingerprints` 等批量操作批间加数秒退避，减少锁抢占窗口 |
+| catalog 备份自动化 | 备份保留策略落地（15.1.5 的延续）、磁盘余量告警、备份产物校验 |
+| 错误信息引导 | P1：identify ambiguous 响应携带候选列表 + 消歧字段提示（如"补充 market/exchange 或 ticker"） |
+
+### 15.8 非目标
+
+- 不改 `_identity_matches` 对真冲突的阻断行为（安全优先，保持 fail-closed）
+- 不在本 Phase 恢复 `/revenue-forecast 紫金矿业` 的预报本体（那是 15.6 之后的新会话，按 skill 流程走九维研究门）
+- 不自动删除任何既有占位文档（15.4.6 只列清单交用户决定）
+- 不动 dayu-agent 仓库本体（只改 company-wiki 侧的摄入行为）
