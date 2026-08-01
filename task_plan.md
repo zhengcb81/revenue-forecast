@@ -2359,3 +2359,41 @@ python -m unittest discover -s tests -v
 ### 19.8 状态
 
 - 本 Phase 当前：**pending（仅规划，未实现）**——等待用户确认启动。
+
+### 19.5 检查单与来源可靠性规则（G9 + A1/A2/A3/A6 增强）
+
+- [ ] `docs/session-checklist.md` §4 增补"来源优先级与数字核验"：官方 release/10-K 优先于新闻转述；WebSearch 摘要数字仅作引导，作 claim 前必须打开官方或可靠原文；两来源数字冲突 → 登记并采用官方（data-governance §Conflict handling 可操作化）。
+- [ ] §2 增补"身份解析预判"（A1）：知名多 ticker/多上市名单（GOOGL/GOOG、9988/BABA、601899/02899）+ ambiguous 标准操作（identify 候选 → 选主 ticker → market hint）；19.2 落地后响应含 candidates。
+- [ ] §1 增补"会话级 3 次/30 分钟规则"（A2）：同一主题 3 轮未解 → 停下报告现状 + 请用户裁决（含切换备用路径选项）——0.3 规则 12 的会话级应用。
+- [ ] §3 或新节增补"备用路径规则"（A3）：filing-fetch 3 轮未获 handle 且文件已在 canonical（sha256 可核验）→ 允许 local_document 注册 + TRUST_BOUNDARY 说明；文件未落 canonical → 必须修链路。
+- [ ] §4/§5 改为"构建中每轮跑启发式"（A6）：input 修改后即跑 `--check-conclusion-facts` / `--check-sensitivity-propagation`，交付前为最终确认。
+- [ ] `references/data-governance.md` 冲突处理节补"搜索摘要 vs 官方"优先级示例（Q2 YouTube 案例）。
+
+### 19.6 resolve 诊断可观测性（A4，filing-fetch/company-wiki）
+
+**问题**：候选被排除的原因无单一视图（本次 8 轮手工重放 resolver 循环）。
+
+**方案**：
+- [ ] RED：`tests/test_fetch_filing.py`——mock resolve 返回 not_found → `--debug` 输出含逐候选排除打点（现无 → RED）。
+- [ ] 实现：filing-fetch `--debug` 透传 company-wiki resolve 的候选级诊断（entity_matches/identity/year/form/location/capture_ready 各步），输出结构化 `debug_trace`；company-wiki resolve 侧增加候选排除原因记录（如已有内部信息则只做透传）。
+- [ ] SKILL.md（filing-fetch）错误排查节补 `--debug` 用法。
+- [ ] GREEN + filing-fetch 全量回归。
+
+**验收**：not_found/identity 失败时 `--debug` 一次给出排除原因链（本次 Alphabet 场景：直接看到 entity_matches(GOOGL)=False + 断言 security_id 不匹配）。
+
+### 19.7 构建脚本骨架文档化（A5）
+
+- [ ] `references/input-construction.md` 增"构建脚本骨架"节：参数命名规范（{seg}_{scenario}_{year}_g / {seg}_base_rev）、claim 生成循环模式（历史/基期/增长率 rationale/evidence claims）、来源注册模式（capture 四要素 + fix_hashes 收口）、validate 迭代流程（lint → fix_hashes → validate --verbose → 启发式）。
+- [ ] 用本会话 build_input.py 作为工作示例（节选，不含公司数据）。
+
+**验收**：新会话构建脚本可照骨架速成；build_input.py 模式不再每次重发明。
+
+### 19.8 非目标（补充）
+
+- 不实现"通用输入构建框架"（每公司数据形态不同，骨架文档化即足够——避免过度工程）。
+- 不改引擎校验逻辑；不动 dayu-agent / company-wiki 适配器。
+- Subscriptions subscription 模型深化（B1）登记为下次 Alphabet 迭代选项，不在本 Phase。
+
+### 19.9 状态
+
+- 本 Phase 当前：**pending（仅规划，未实现）**——等待用户确认启动。19.1-19.7 实现顺序建议：19.1（客户端 CLI/诊断，收益最直接）→ 19.4（示例一致性测试，防回归）→ 19.2/19.6（消歧+诊断）→ 19.3/19.7（枚举速查+骨架）→ 19.5（检查单增强，随各子项落地同步）。
