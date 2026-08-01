@@ -1153,3 +1153,20 @@ python -m unittest discover -s tests -v                            # 全量（�
 - revenue：239 tests / 0 failures / coverage 87% / ruff 0 / compileall OK / ResourceWarning 0。
 - 交付物：input.json 修正（grep 实证 0+0）、forecast 数值零变化、快照 v2 确定性、TRUST_BOUNDARY 5 节。
 - 独立审查者复核完成：APPROVE（修复项全部闭环）。
+
+## 2026-08-01 — Phase 17 收尾：安装同步 + 提交推送
+
+### 安装同步（用户授权，.agents + .claude）
+
+- 发现：`.claude\skills\revenue-forecast` 为 **JUNCTION → `.agents\skills\revenue-forecast`**（`.claude\skills` 全目录均为 junction）；sync 工具 `unique_destinations` resolve 去重后只同步 .agents——一处同步、两处生效。
+- 工具 `--apply` 失败：`os.replace(target, backup)` **PermissionError [WinError 5]**（整目录重命名被拒；手动 `mv` 同样失败——目录被占用/ACL，非工具缺陷）。
+- 处置（尝试 3，换方法）：**文件级同步**——复用 `sync_installations.installable_files`：备份 `.revenue-forecast-filesync-backup` → 覆盖复制 54 个 canonical 文件 → 删除 9 个多余文件（保留 `output/`）→ 工具级验证：`.agents` **MATCH (54 files)**、`.claude` **MATCH (54 files)**（junction 自动同步）。
+- `tools/tests/test_sync_installations.py`：4/4 OK。
+- 备注：整目录原子替换在 Windows 环境被占用时不可用——文件级同步为替代路径（非原子，备份保留为回滚点，确认后删除）。
+
+### 提交与推送（用户要求）
+
+- `0668e14` feat: Phase 17 agent-behavior gates（lint_input.py + test_lint_input.py）
+- `9b5e854` docs: Phase 17 completion records（CHANGELOG/references/docs/task_plan/progress/findings，10 文件）
+- 已推送 `phase-14-input-build-tools` → origin（新分支；GitHub 提示可开 PR）
+- `.coverage`（跟踪文件，coverage 产物）保留未提交——与 Phase 15/16 处理一致
