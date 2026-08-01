@@ -1170,3 +1170,49 @@ python -m unittest discover -s tests -v                            # 全量（�
 - `9b5e854` docs: Phase 17 completion records（CHANGELOG/references/docs/task_plan/progress/findings，10 文件）
 - 已推送 `phase-14-input-build-tools` → origin（新分支；GitHub 提示可开 PR）
 - `.coverage`（跟踪文件，coverage 产物）保留未提交——与 Phase 15/16 处理一致
+
+## 2026-08-01 — 17.9 B 闭环：5 处无摘录数字补 claim（completed）
+
+### 触发
+
+用户"一个一个处理"清单第 2 项——17.9 B 残余（修正后 5 处 conclusion-facts 命中）。
+
+### 修复（input.json，6 条新 claim + 2 处参数 source_ids 扩展 + 3 条 target claim exact_value 化）
+
+| claim_id | target | source | excerpt 关键数字（真实来源） |
+|---|---|---|---|
+| claim_ev_capacity_capex_ar | cig_growth_base_2027 | src_fy2026_ar | 資本開支 1,260.63 億元（126,063 百萬元，+47%）——AR 原文 126,063 |
+| claim_ev_apsara_capex_clouds | t_capex_380b_overshoot | src_apsara2025 | 三年 3,800 亿 + 五至六個超級雲平台（5-6）——演讲原文 "3800 亿"（千分位规范化后 3,800） |
+| claim_ev_maas_arr_targets_mb | t_maas_arr_30b | src_q4fy2026_call_mb | MaaS ARR 100億（RMB 10 billion）→300億（RMB 30 billion）——call 原文 |
+| claim_ev_capex_380b_mb | t_capex_380b_overshoot | src_q4fy2026_call_mb | RMB 380 billion（3,800億）——call 原文 |
+| claim_ev_88vip_members | accg_gmv_base_2027 | src_q4fy2026_release | 88VIP 62 million（6,200萬）——release 原文 |
+| claim_ev_instant_orders_27x | accg_instant_retail_growth_base_2027 | src_q4fy2026_call_mb | 訂單量 2.7x（orders 2.7x last year）——call 原文 |
+
+- 参数 source_ids 扩展：`accg_gmv_base_2027` + `src_q4fy2026_release`；`accg_instant_retail_growth_base_2027` + `src_q4fy2026_call_mb`（engine 要求 claim.source_id ∈ 参数 source_ids，revenue_core.py:442）。
+- 引擎要求 management_target 挂载 claim 必须 exact_value（revenue_core.py:2127 validate_claim_ids 第 6 参）→ 3 条改 exact_value + extracted_value（380000.0/30000.0，million RMB）。
+- excerpt 换算对照先例：claim_accg_gmv_base_2027（"線上GMV假設約人民幣8.6萬億"）。
+- 迭代 2 次（validate 失败 2 轮）：① rationale_support 被 management_target 校验拒绝 → 改 exact_value；② "3800"（无逗号）被四位年份规则排除 → excerpt 千分位规范化 "3,800"。
+
+### 验证（全部实测）
+
+- `lint_input.py`：0 findings；`--check-conclusion-facts`：**0 命中**（修正后 0 命中——17.9 B 原始预期达成）；`--check-sensitivity-propagation`：0。
+- `--validate-only --verbose`：**valid**。
+- 重跑 forecast：新旧（vs backup-pre-phase17）diff 30 处，**数值路径 0 变化**（consolidated/segments/confidence/sensitivity 逐字节相同）。
+- 快照 **v3**（2026-08-01-v3，facdc590…）validate PASS；v1/v2 保留（版本纪律）。
+- input_sha256 链：`00dd17c3` → `0e3095b9` → `dcfa3198`。
+
+### 修改文件
+
+- `Research\alibaba-forecast\input.json`（+6 claims、2 参数 source_ids、3 target claim_ids + support_type）
+- `Research\alibaba-forecast\forecast.json` / `forecast.md`（重跑）
+- `Research\alibaba-forecast\snapshot-2026-08-01-v3.json`（新建）
+- `Research\alibaba-forecast\TRUST_BOUNDARY.md`（版本 v3 + 17.9 B 闭环记录）
+
+### 遗留
+
+- 无（本项闭环）。17.8 backlog 中"无摘录数字"条目更新为已处置；FF305 来源仍为记录级绑定（schema 限制，不变）。
+
+## 2026-08-01 — 17.6 评审裁决 + 合并 main
+
+- **17.6 schema 3.6 评审（用户 AskUserQuestion 裁决）**：方案 A（weight∈[-1,1]）通过；实现登记为后续工作（规则 10 全流程），Phase 17 不实现。提案文档状态更新。
+- **合并**：用户指令"直接合并"——phase-14-input-build-tools 合并入 main 并推送。

@@ -2192,3 +2192,11 @@ python -m unittest discover -s tests -v
 | Phase | 状态 | 说明 |
 |---|---|---|
 | 17 阿里巴巴会话审查整改 | completed | 17.1 交付物修正（3 无源事实 + FF305 补核 + target ambiguous + 快照 v2 + TRUST_BOUNDARY）；17.3/17.4 lint 双启发式（TDD RED→GREEN，实证 6→5 处/0）；17.2/17.5/17.6/17.7/17.8 文档（checklist/版本纪律/3.6 提案/模板/backlog）；独立审查 APPROVE 后闭环。239 tests / 0 failures / coverage 87% / ruff 0 |
+
+## Phase 17 后记（2026-08-01，收尾处理）
+
+- **17.9 B 闭环**：5 处无摘录数字（capacity/customers/demand/earnings_call/strategy）补录 6 条 claim（excerpt 摘录自真实来源 + 换算对照）→ `--check-conclusion-facts` **0 命中**；数值零变化；快照 v3（facdc590…）validate PASS；v1/v2 保留。详见 progress.md 2026-08-01「17.9 B 闭环」段。
+- **17.6 评审（用户裁决）**：方案 A（weight∈[-1,1]）通过；实现登记为后续工作（新 Phase，规则 10 全流程），本 Phase 不实现。提案文档已更新评审结论。
+- **17.1.2 结案**：claim 绑定受 schema 枚举限制，以记录级 source_ids 绑定替代（A2 实质达成）——维持 TRUST_BOUNDARY §3 偏差记录，不追加动作。
+- **17.2 试点**：待下一次真实 forecast 会话执行（检查单命中记录表已备好）。
+- **合并**：phase-14-input-build-tools 合并入 main（用户指令）。
