@@ -16,6 +16,27 @@ eligible for current-validated status.
 python scripts/revenue_backtest.py create input.json --version 2026-07-12-v1 --output snapshot.json
 ```
 
+## Snapshot version discipline
+
+A snapshot is immutable: its `snapshot_id`, `input_sha256`, and
+`forecast_result_sha256` bind the exact input and result it froze. Any input
+field change — including conclusion wording, source registration, or target
+metadata — produces a different `input_sha256` and therefore requires a **new
+version label** (`2026-08-01-v2`, never reuse `-v1` for different content).
+
+- Never delete or overwrite an already-published snapshot file; `write_new_json`
+  refuses to overwrite an existing path (`FileExistsError`, pinned by
+  `test_backtest.py::test_write_new_json_refuses_overwrite`).
+- If a snapshot must be superseded, keep the old file, create a new version
+  label, and record the old `snapshot_id` and the reason in `progress.md`.
+- Validate a new snapshot with `validate_snapshot` (fingerprint + ID
+  consistency) and, for determinism, confirm a re-run of `create` on the same
+  input yields the same `snapshot_id`.
+- Note: `create` freezes `input + forecast_version` (the version label is part
+  of the frozen document), so `snapshot.input_sha256` is not byte-identical to
+  the receipt's `validated_input_sha256`; both are internally consistent and
+  deterministic.
+
 ## Actuals
 
 Require `actuals_schema_version="2.0"`, matching company/currency/unit, actuals

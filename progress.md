@@ -758,3 +758,398 @@ Phase 1 验收（1.4）全部满足：
 
 - **retire = 暂时退场**（退出可见性），**显式重下载 = 重新进场**（writer 权威激活）；普通 scan 永不复活（终态保护）。
 - 获取链路对任意公司通用：新公司（下载）、干净存量（复用）、污染存量（治理后复用/下载）均已验证；唯一外部残余 = HK 下载（dayu 环境，F14）。
+
+## 2026-08-01 — MongoDB 预测完成 + 全面复盘（Phase 16 编制）
+
+### MongoDB FY2027-28 预测交付
+
+- 输入：`Research/mongodb_input.json`（27 参数 / 42 claims / 2 段 / 5 驱动 / 3 敏感性 / 1 管理目标）
+- 输出：`Research/mongodb_forecast.json`（schema 3.5 + publication receipt）+ `mongodb_forecast.md`
+- 结果：base FY2027 $2,885.6M（+17.2%，落在指引 $2.86-2.9B 内，meets_target=true）｜FY2028 $3,308.3M（CAGR 15.9%）｜置信度 65.5/100 Medium
+- 档案：FY2026 10-K 经 filing-fetch 正式捕获（EDGAR URL，canonical companies/MongoDB, Inc/）
+
+### 复盘发现（详见 findings R1-R7，Phase 16 计划已入 task_plan.md）
+
+- **R1（最严重）**：F13 批量治理被 worker 旧代码整体复活——9,574 个 active regulatory 文档仍缺 URL（复用路径仍卡死 9,000+ 公司）
+- R2：CN 9,484 个为 company_raw root（旧极简 sidecar 无 URL）；磁盘 dayu meta 有 cninfo URL 但不在摄入路径
+- R3：retire 无对称 restore 命令（恢复靠裸 SQL）
+- R4：worker 长进程加载旧代码（3 次修复提交后未重启即漂移）
+- R5：F12 stdin 编码 + F15 group metadata 仍未修
+- R6：company-wiki source_catalog 大部分文件从未 git 跟踪
+- R7：恢复/注入操作无审计
+
+## 2026-08-01 — Phase 16.1 scanner URL 补全（completed）
+
+### TDD
+
+- **RED**（tests/contract/test_source_catalog_url_enrichment.py 新建，2 测试）：
+  - `test_dayu_sec_document_gets_edgar_url_from_accession`：dayu meta 含 accession_number（无 source_url）→ 断言 dayu_meta.source_url == 构造 EDGAR URL（现 None → RED）。
+  - `test_company_raw_sidecar_without_url_gets_dayu_meta_url`：company_raw sidecar 无 URL + dayu portfolio meta 有 source_url → 断言 acquisition.source_url 补全（fixture 修一次：两文件同 hash 被 dedup 合并 → 改不同字节）。
+- **GREEN**：2/2 转绿。
+
+### 实现（scanner.py）
+
+- `_construct_edgar_url(metadata)`：accession_number + company_id + primary_document → `https://www.sec.gov/Archives/edgar/data/{cik:0>10}/{acc_no_dashes}/{primary}`（已验证 200）。
+- `_load_dayu_portfolio_urls(config)`：遍历 dayu portfolio meta.json，建 company_name → source_url 索引（仅含 URL 的）。
+- dayu 组摄入：无 source_url/https_url 且含 SEC 字段 → 构造 EDGAR URL 写入（15.4 身份传播后）。
+- company_raw 组摄入：sidecar 无 URL → 按公司名从 portfolio 索引补 source_url。
+- `_enumerate_root` 增 `portfolio_urls` 参数；`_scan_catalog_impl` 构建一次传入。
+
+### 16.1.5 dropbox_stock 评估
+
+- 698 个 regulatory 文档（506 极简 metadata、192 无 metadata），无外部 URL 可构造；**resolver 只认 company_raw root（15.6）→ 不参与复用路径，缺 URL 不影响获取链路**——登记 data gap，不强行构造。
+
+### 质量门
+
+- `pytest tests/`：1532 passed / 1 failed（`test_m14_concurrent_init_produces_one_v1_schema` 并发 flaky——单跑 PASSED，与本次改动无关，记录）。
+- ruff（scanner.py）：All checks passed；compileall OK。
+
+### 修改文件
+
+- `company-wiki/src/company_wiki/source_catalog/scanner.py`
+- `company-wiki/tests/contract/test_source_catalog_url_enrichment.py`（新建）
+
+## 2026-08-01 — Phase 16.2 存量数据修复（completed，方案修正后）
+
+### 执行
+
+- 16.2.1 worker 重启：7916（旧代码）→ 6220（新 scanner 代码）。
+- 16.2.2 重扫 company_raw（33,064 files，errors=0）+ dayu_portfolio（3,591 files，errors=0）。
+- 16.2.3 量化：dayu_portfolio 缺 URL **386 → 3**（EDGAR 构造生效）；company_raw 9,043 → 8,970（dayu portfolio 仅覆盖 ~30 家公司，其余无 URL 来源）；dropbox_stock 603（无来源，登记）。
+- **方案修正（关键）**：company_raw 8,970 无 URL 来源——补 URL 不可行。改为 **resolver 修复（16.2 新增）**：capture_ready=False 的 handle 不再作为复用候选（RED：`test_resolver_does_not_reuse_capture_incomplete_document`）→ 缺 URL 文档 resolve MISSING → **下载路径继续，死锁通用解除**（无需补 9,000 个 URL）。
+- 连带 fixture 更新（正当契约变更）：_company_catalog/_dayu ambiguous/acquisition _catalog 补 sidecar URL；`test_resolver_reuses_existing_exact_copy_without_downloader` 断言 capture_ready False→True。
+- 16.2.4 占位：3,342 个 json primary 为 15.4 前历史残留——resolver 不匹配（无 active canonical company_raw location）→ 不参与复用；记录待后续清理。
+- 16.2.6 回归抽查（三路径全通过）：
+  - MongoDB FY2026（US dayu，URL 补全后复用）capture_ready ✓
+  - **宁德时代 FY2024（company_raw 缺 URL）——死锁解除，真实下载新文件 capture_ready ✓**
+  - 紫金 FY2024（CN canonical 复用）capture_ready ✓
+
+### 质量门
+
+- targeted 20/20；ruff（resolver/scanner）clean；compileall OK。
+
+### 修改文件
+
+- `company-wiki/src/company_wiki/source_catalog/resolver.py`（capture_ready 过滤）
+- `company-wiki/tests/contract/test_source_catalog_resolver.py`（+1 RED、fixture 更新）
+- `company-wiki/tests/contract/test_source_catalog_acquisition.py`（fixture）
+
+## 2026-08-01 — Phase 16.3 worker 版本管理（completed）
+
+- `worker.py` 新增 `_code_version(project_root)`（git rev-parse --short HEAD，fallback unknown）；启动 heartbeat("starting") 注入。
+- 修复过程：首次实现误用 `self.project_root`（SourceCatalogWorker 无此属性）→ worker 启动崩溃（unhandled_exception）+ 旧 launcher（16316）持锁用旧代码重试 4-6 次 → taskkill 旧 launcher + 清 worker_launcher.lock 后重启成功。
+- 验证：worker pid 21320，`runtime.code_version = 662a1d2 == git HEAD` ✓（匹配）。
+- 协议写入 `docs/OPERATIONS.md`「十一、worker 版本管理与治理操作协议」：代码变更后必须重启并比对 code_version；治理五步协议（stop→清 launcher→治理→start→重扫验证）；故障排查（launcher 持锁/残留进程）。
+
+## 2026-08-01 — Phase 16.4 F12 stdin 编码修复（completed）
+
+- **RED**：`test_cli_stdin_accepts_utf8_chinese_query`（真实跨进程管道，去除 PYTHONUTF8）——GBK 解码破坏中文查询 → identify missing。**教训**：首版测试误加 PYTHONUTF8=1 假 PASS（UTF-8 模式掩盖问题）；移除后真 RED。
+- **修复**：fetch_filing.py `main()` 对 `sys.stdin.reconfigure(encoding="utf-8")`（与 stdout 对称）——管道请求与 --request-file 行为一致。
+- 质量门：67 tests / 0 failures（+1 新）/ ruff 0 / compileall OK / coverage 92%。
+
+## 2026-08-01 — Phase 16.5 F15 group metadata 最优选择（completed）
+
+- **RED**：`test_same_content_two_paths_prefers_metadata_with_url`——同 content hash 两路径（旧 sidecar 无 URL 排序靠后 + 新 sidecar 有 URL）→ 断言最终 metadata 含 URL（现被无 URL 覆盖 → RED）。**首版假 PASS**（排序恰好有 URL 后处理）→ 改路径名构造真实顺序后真 RED。
+- **修复**：scanner `_scan_catalog_impl` update 分支——existing_document SELECT 增 metadata_json；现有 metadata 无 URL 且新 metadata 有 URL → 用新的（URL 优先），否则保持现有。
+- 质量门：28/28 targeted；ruff/compileall clean。
+
+## 2026-08-01 — Phase 16.6 documents restore（completed）
+
+- **RED**：`test_cli_restore_document_reactivates_with_audit` + `test_cli_restore_active_document_fails_without_changes`（restore 命令不存在 → RED）。
+- **实现**：store.`restore_document`（retired→active + locations active + `document_restore_audit` 审计行；非 retired 报错零写入）；`document_restore_audit` 表进 _DDL 与 additive migration；cli `documents restore` 子命令 + 派发。
+- 测试修一次（capsys 残留 retire 输出 → readouterr 清空）。
+- 质量门：6/6 retire+restore 测试；ruff/compileall clean。
+- 文档：OPERATIONS.md「十二、documents restore」+ 治理工具化（批量恢复一律 restore_document，禁裸 SQL）。
+
+## 2026-08-01 — Phase 16.7-16.10 实施记录
+
+### 16.7 git 补跟踪 ✅
+
+- 用户确认后一次性提交 89 个未跟踪文件（source_catalog 21 + contract tests 43 + docs 25）——"chore: track source_catalog package, contract tests, and docs"。
+
+### 16.8 验证门 ✅（含修正）
+
+- 16.8.1 company-wiki 全量：1543 passed / 0 failed（修复链：worker try/except → scheduler 门禁 AST 检查 → 注入修复；identity_resolver/download_suppression/no_identity fixture 迁移）; ruff 0; compileall OK。
+- 16.8.4 计数门（修正后）：dayu_portfolio no-URL = **3**（1 个 CN dayu 无信号 + 2 个 rejections 非 filing——登记 gap）；company_raw 8,970 缺 URL 由 **16.2 resolver 契约**吸收（capture_ready=False 不复用 → 走下载）；dropbox 603 不参与复用路径。
+- 16.8.3 回归抽查（16.2.6 已跑）：MongoDB（US 复用）/ 宁德时代（CN 下载路径解除死锁）/ 紫金（CN 复用）全部 capture_ready ✅。
+
+### 16.9 非目标（保持）
+
+- 不动 dayu-agent；不为 dropbox_stock 构造 URL；不改 schema/引擎。
+
+### 16.10 系统化收尾（用户批评"临时修补"后的永久机制）✅
+
+- **16.10.1 fixture 工厂**：`tests/helpers/source_factory.py`（canonical_source/company_raw_catalog——默认完整 capture sidecar，drop_url/market=None 显式缺失）；迁移 identity_resolver._no_identity_catalog 与 download_suppression._catalog；OPERATIONS.md「十二、测试 fixture 约定与契约变更影响面清单」（grep sidecar 写入点 + REUSED 断言 → 一次性迁移 → 一次全绿）。
+- **16.10.2 worker 依赖注入**：SourceCatalogWorker.__init__ 加 project_root 参数（CLI 传入）；catalog.config 回退仅测试路径；调度门禁（无 getattr(self.catalog)）保持满足。
+- 16.10.3 收尾（本段完成后）：全量回归 + 提交 + 安装同步。
+
+### 修改文件（16.7-16.10）
+
+- company-wiki：worker.py（注入）、cli.py（传参）、scanner.py（16.1/16.5）、resolver.py（16.2）、canonical_writer/assertion_service/store/service（16.1 前）、tests/helpers/source_factory.py（新）、tests/contract/*（fixture 迁移 + 新测试）、docs/OPERATIONS.md
+- filing-fetch：fetch_filing.py（16.4 stdin）、tests/test_fetch_filing.py（+1）
+
+## 2026-08-01 — Phase 16 全部完成（最终汇总）
+
+### 完成清单
+
+- 16.1 scanner URL 补全（EDGAR 构造 + portfolio 补全）— TDD
+- 16.2 数据修复 + resolver capture_ready 契约（死锁解除）— TDD；回归三路径（MongoDB/宁德时代/紫金）capture_ready
+- 16.3 worker code_version + 治理协议（防 F13 复活复发）
+- 16.4 F12 stdin UTF-8 修复（67 tests / 92%）
+- 16.5 F15 group metadata URL 优先（TDD）
+- 16.6 documents restore 命令 + 审计（TDD）
+- 16.7 git 补跟踪（89 文件）
+- 16.8 验证门：1543 passed（m14 并发初始化锁竞争为环境性 flaky——20 分钟前全量通过、磁盘 94% 负载下失败；automation 子系统独立，不越界修，记录）
+- 16.10 系统化收尾：fixture 工厂（source_factory.py）+ worker 依赖注入（project_root 由 CLI 传入）+ 契约变更影响面清单文档
+
+### 提交
+
+- company-wiki：Phase 16 全部改动（10 文件，含 source_factory.py 与 m14 测试文件补跟踪）
+- filing-fetch：a9bf70b（stdin UTF-8）；安装副本已同步 MATCH
+
+### 残余（登记）
+
+- m14 并发初始化锁竞争：环境性 flaky（磁盘负载），非 Phase 16 回归
+- dayu 3 个 no-URL（1 CN 无信号 + 2 rejections）：登记 gap
+- company_raw 8,970 无 URL 来源：由 capture_ready 契约吸收（走下载路径）
+- dropbox_stock 603：不参与复用路径（登记）
+
+## 2026-08-01 — 阿里巴巴收入预测会话 + 全面审查 + Phase 17 计划编制
+
+### 会话概览（`/revenue-forecast 阿里巴巴`，信息截止 2026-08-01）
+
+- 交付物（`Research\alibaba-forecast\`）：input.json（162 参数/197 claims/8 来源/6 分部/4 目标/5 驱动根）、forecast.json（formal receipt）、forecast.md、snapshot.json（后重建为 v2 计划，见待办）
+- 关键结果：Base FY2027-FY2031 CAGR 12.4%（低 7.5%/高 17.7%）；置信度 55.1/100 medium；驱动排名 AI+雲 43.4% / 即時零售 19.0% / 消費企穩 14.1% / 國際 12.6% / take rate 10.8%
+- 来源：FY2026 AR（HKEX，filing-fetch 授权下载）、FY2025 AR（本地+HKEX URL 字节验证 MATCH）、Q4 FY2026 业绩公告（SEC EDGAR 6-K）、Q4 电话会（MarketBeat+StockAnalysis）、2025 云栖大会演讲、IR 页、回购公告
+
+### 过程数据
+
+- 输入构建往返：lint 1 轮 → engine 3 轮（capture 方法名/currency-scale、theme name、theme counterfactual ids）→ `valid`（对比恒运昌 23 轮，Phase 14 工具链有效）
+- 会话中已修正：driver 归因权重（0.8→1.0）、敏感性重定向至终期参数（3 项 0 影响→非平凡）、theme 反事实参数、builder 尾部截断恢复
+- 已知环境性失败：FY2024 年报下载 1499s 超时（= findings F14 dayu HK 挂起同型，未预判——登记 A5）
+
+### 审查（REVIEW.md，18 项发现 A1-A17 已入 findings.md）
+
+- P0×3 类：无源事实×3（A1）、未打开来源（A2）、自报工具调用→formal（A3）；另有目标期间偏差（A4）、F14 未预判（A5）、快照版本（A6）
+- P1×6：分部合并（A7）、CIG 模型选择（A8）、GMV 构造循环（A9）、headwind 引擎缺口（A10）、敏感性传导盲区（A11）、标签式 over-time（A12）
+- P2×5：builder bug（A13）、findings 未维护（A14）、零 claim 来源（A15）、URL 事后验证（A16）、杂项（A17）
+
+### Phase 17 计划编制（本条目）
+
+- `task_plan.md` 追加 Phase 17（17.0-17.9：交付物 P0 修正/会话检查单/lint 双扩展/快照版本纪律/headwind schema 3.6 提案/信任边界模板/backlog/验收矩阵+Go-No-Go），状态 pending
+- `findings.md` 追加 A1-A17；`progress.md` 本条目
+- 未改任何生产代码（本条目为纯计划编制）
+
+### 待办（Phase 17 执行）
+
+- [ ] 17.1.1-17.1.3：input.json 三处无源事实修正 + t_ai_share_50pct 改 ambiguous（先备份当前 input/forecast/snapshot，记录 input_sha256 前后值）
+- [ ] 17.1.2：buyback 来源补核（HKEX 披露易）或降级结论
+- [ ] 17.1.4：snapshot v2（`2026-08-01-v2`），v1 删除记录留档
+- [ ] 17.1.5/17.7：TRUST_BOUNDARY.md + 模板
+- [ ] 17.2-17.5：会话检查单、lint `--check-conclusion-facts`/`--check-sensitivity-propagation`（TDD RED→GREEN，对修正前 input 命中 3+3、修正后 0）、backtesting 版本纪律
+- [ ] 17.6：headwind schema 3.6 提案（不实现）
+- [ ] 17.9：验收矩阵 + 画蛇添足判定 + 独立审查者复核
+
+### 测试命令与基线（Phase 17 相关）
+
+```powershell
+python -m unittest discover -s tests -p "test_lint_input.py" -v   # 17.3/17.4 扩展后
+python -m unittest discover -s tests -p "test_backtest.py" -v     # 17.5
+python -m unittest discover -s tests -v                            # 全量（基线 216 tests）
+```
+
+## 2026-08-01 — Phase 17.3 lint_input --check-conclusion-facts（completed）
+
+### TDD 记录
+
+- **RED**（tests/test_lint_input.py LintCliTests 新增 2 测试）：
+  - `test_conclusion_digit_without_claim_warns`：policy 记录 conclusion "增長7%" + parameter_ids 清空 → `--check-conclusion-facts` 应 exit 2 且输出 `[conclusion-facts]`。RED 原因：`unrecognized arguments: --check-conclusion-facts`（功能不存在）。
+  - `test_conclusion_digit_with_claim_passes`（正向护栏）：claim excerpt 含 "7%"（同步重算 excerpt_sha256）→ exit 0。RED 原因：flag 不存在 exit 2 ≠ 0。
+- **GREEN**：两测试转绿；14 原有测试零回归。
+
+### 生产改动（scripts/lint_input.py）
+
+- `_conclusion_digit_tokens(text)`：`\d[\d,.]*` token 提取，排除——ISO 日期（2026-05-13）、四位年份、FY 前缀、前邻 ASCII 字母（Qwen3.6/Model5）、日期表达后缀（6月底/7月初/6月18日）、表单号（SEC 6-K 的 "6-" + 字母）。
+- `_figure_values(text)`：token → float 数值集（去逗号）。
+- `_bound_claim_ids(record, ...)`：记录可追溯 claims = source_ids 直接引用 + target_type=parameter 且 target_id∈parameter_ids + 参数挂载 claim_ids + management_targets claim_ids。
+- `_check_conclusion_facts(...)`：结论 token 数值必须在绑定 claims excerpt 数值集中（**数值级匹配**，非子串——首版子串匹配误报 9 处，含 "15" 撞 "2025"、日期片段 "05/13"；改数值匹配后正确）。
+- `lint(data, check_conclusion_facts=False)` 新参数（默认关闭向后兼容）；CLI `--check-conclusion-facts`。
+- 输出格式 `[conclusion-facts] <section>.<dimension|category>: 結論含數字但無 claim 背書: <tokens>`。
+
+### 实证（修正前 input = backup-pre-phase17/input.json）
+
+命中 **6 处**（预期 3 处，偏差如实记录）：
+
+| 记录 | 命中 token | 判定 |
+|---|---|---|
+| industry_market | 15, 17 | ✅ **A1 真实无源**（"15-17萬億" 模型知识；"8.6" 有 claim_accg_gmv_base_2027 excerpt "8.6萬億" 背书正确排除） |
+| capacity | 1,260.63, 47, 3,800 | AR 数字但 claims 未摘录（数据缺口类，12 条绑定 claims 无对应值） |
+| customers | 6,200 | 同上（88VIP 会员数未摘录） |
+| demand | 2.7 | 同上 |
+| latest_earnings_call | 100, 300, 3,800 | 单位表述差异（结论"亿" vs excerpt "billion"） |
+| latest_strategy_communication | 3,800, 5, 6 | 同上 + "5-6個"未摘录 |
+
+- policy / announcements **不适用**：policy 结论无数字（de minimis 无数字事实）；announcements 结论数字全为日期表达（被启发式排除）——两处修正由 17.1.1 人工降级 + grep 实证兜底，**17.1.1 测试（grep de minimis=0、无具体日期）是政策层验收**。
+- 实证启示：A1 教训的延伸——无 claim 摘录数字不止 3 处；capacity 等 5 处为"来源已注册但数字未摘录"（A15 同型），登记为数据缺口，17.1 范围外不修。
+
+### 质量门
+
+- `python -m unittest discover -s tests -p "test_lint_input.py"`：16/16 OK。
+- `python -m unittest discover -s tests`：**232 tests / 0 failures**。
+- ruff（scripts/lint_input.py）：All checks passed；compileall OK。
+
+### 未解决
+
+- earnings_call/strategy 的单位换算（亿 vs billion）无法在启发式层归一——工具如实报告，作者人工判断。
+- capacity/customers/demand 的无摘录数字：登记数据缺口（17.8 backlog 关联），不在 17.1 范围。
+
+## 2026-08-01 — Phase 17.4 lint_input --check-sensitivity-propagation（completed）
+
+### TDD 记录
+
+- **RED**（tests/test_lint_input.py LintCliTests 新增 3 测试，均因 `unrecognized arguments: --check-sensitivity-propagation` 失败）：
+  - `test_sensitivity_absolute_level_param_pre_terminal_warns`：fixture 段改 usage_platform，sensitivity 指向 eligible_activity 参数（FY 首年 < 终期）→ exit 2 + `[sensitivity-propagation]`。
+  - `test_sensitivity_terminal_param_passes`（正向护栏）：终期年参数 → exit 0。
+  - `test_sensitivity_growth_rate_param_passes`（正向护栏）：direct_growth growth_rate（传播型）→ exit 0。
+- **GREEN**：3 测试转绿；16 原有测试零回归。
+
+### 生产改动（scripts/lint_input.py）
+
+- `_period_year(period)`：period 字符串首个四位年份。
+- `_collect_absolute_level_parameter_ids(data)`：绝对水平型参数集合 = usage_platform 的 `eligible_activity`/`monetization_rate` 驱动位 + forecast_adjustments 的 scenario_parameter_ids + recognition `progress_parameter_ids`；direct_growth growth_rate 等复合驱动**不**在内（传播型）。
+- `_check_sensitivity_propagation(...)`：sensitivity_tests 参数 ∈ 绝对水平型集合 且 `period_year < max(forecast_years)` → warning；默认关闭。
+- `lint(..., check_sensitivity_propagation=False)` + CLI `--check-sensitivity-propagation`。
+- 输出格式 `[sensitivity-propagation] sensitivity_tests.<pid>: 絕對水平型參數 <pid>（FY20XX）早於終期 <Y>：終期影響可能為 0，建議選用終期參數`。
+
+### 实证（3 → 0）
+
+- **会话初版形态**（A11 事实还原：3 项 shock 指向 FY2028 绝对水平型参数 accg_gmv_base_2028 / accg_take_rate_base_2028 / adj_eliminations_base_2028）：**命中 3 项**，exit 2 ✅（RED 实证）。
+- **当前 input.json / backup-pre-phase17**（A11 会话内已重定向至 FY2031 终期参数）：**0 命中**，exit 0 ✅。
+- 说明（如实）：磁盘上不存在"会话初版"文件（A11 修正发生在会话内），故 RED 实证以 A11 事实还原的构造形态完成，与 17.3 实证处理一致。
+
+### 质量门
+
+- `python -m unittest discover -s tests -p "test_lint_input.py"`：19/19 OK。
+- `python -m unittest discover -s tests`：**235 tests / 0 failures**。
+- ruff / compileall：All checks passed / OK。
+
+## 2026-08-01 — Phase 17.1 交付物 P0 修正（completed）
+
+### 17.1.1 三处无源事实（input.json）
+
+- **policy**：删除 de minimis 具体表述 → "國際業務受關稅與地緣政治不確定性影響（年報風險因素：國家貿易或投資政策、貿易或投資壁壘及地緣政治紛爭、跨境數據傳輸法律法規）"——措辞已对 `fy2026_ar_full.txt` 本地全文核验（地緣政治 5 命中/跨境數據傳輸 2/關稅 15）。
+- **industry_market**：删除 "（約人民幣15-17萬億）"；保留模型推算 GMV 基數 8.6萬億（有 claim_accg_gmv_base_2027 excerpt "線上GMV假設約人民幣8.6萬億" 背书）。
+- **announcements**：见 17.1.2（补核成功分支）。
+- **连带**：growth_driver_tree AIDC 驱动 leading_indicators "關稅政策（de minimis）" → "美國關稅政策變化"（grep 0 命中需要）。
+- 实证：`grep de minimis` = 0、`grep 15-17` = 0。
+
+### 17.1.2 buyback 来源补核（成功）
+
+- **核验**：SEC 6-K 附件 FF305 翌日披露报表（fast-edgar 归档，2026-07-07）确认：授权决议 **2025-09-25** ✓；6/22-7/6 逐日回购（6/22 952,488 股@13.12 → 7/6 4,108,720 股@12.25-12.05，总额 49,993,158.75 美元）；授权下累计 25,715,152 股（0.13%）；已发行 19,206,311,686。**原结论 "2026年6月22日-7月6日持續股份回購（2025年9月25日授權下）" 全部证实**。
+- **新来源** `src_buyback_hkex_ff305`：`sources/buyback_ff305_ex991_20260707.html`（14,962 B，sha256 002bb773…），capture_method `local_document`（首版误用 `web_download`——不在 CAPTURE_METHODS 枚举，validate 报 unsupported capture method，已修正）。
+- **announcements**：source_ids 加新来源；conclusion 恢复具体日期（FF305 核验）+ 6/18 转债保持标题级降级。
+- **实现偏差（已记入 TRUST_BOUNDARY §3）**：计划要求"新增来源 + claim 绑定"——schema 3.5 claim target 枚举（parameter/historical_revenue/recognition_policy/scenario_probability/management_target/growth_driver）均需绑定真实模型对象，回购事件无自然挂载点（挂参数违反 revenue_core.py:442 "claim source 必须注册在参数 source_ids"）；以记录级 source_ids 绑定 + 结论内容全在捕获正文替代，满足 A2 硬门实质。来源仍属"无 claim 摘录"（与 capacity 同类，17.8 backlog）。
+
+### 17.1.3 t_ai_share_50pct
+
+- `measurement_basis` → `ambiguous`；`measurement_periods` → `[]`；rationale/perimeter_notes 更新（跨越 FY2027/FY2028 边界 + 无官方口径）；`treatment` 保持 `unmodeled_data_gap`。
+- 实证：输出 `management_target_coverage.targets[0]`：`measurement_basis=ambiguous`、`scenario_comparison={}` ✓。
+
+### 17.1.4 快照 v2
+
+- `revenue_backtest.py create --version 2026-08-01-v2` → `snapshot-2026-08-01-v2.json`（snapshot_id 22ee1b7f…，input_sha256 1060fe47…）。
+- v1（snapshot.json，2026-08-01-v1）**保留未覆盖**。
+- 验证：`validate_snapshot` PASS；确定性重跑（同一 input create）指纹完全一致。说明：snapshot 内嵌 input 含 `forecast_version` 字段（revenue_backtest.py:36 既有设计），故 snapshot.input_sha256 ≠ receipt.validated_input_sha256（v1 时代亦然，非本次异常）。
+
+### 17.1.5 TRUST_BOUNDARY.md
+
+- 5 节齐全：保证范围 / 不保证范围 / P0 修正记录（含 17.1.2 偏差声明）/ 已知环境性失败（F14 型）/ 宿主验证状态（无 trusted verifier，formal 范围限定声明）。
+
+### 全链路验证（修正后）
+
+- `lint_input.py`：0 findings（exit 0）。
+- `--check-conclusion-facts`：修正前 6 处 → 修正后 **5 处**（A1 范围内 industry_market + announcements 清零；policy 无数字不适用；剩余 5 处为 17.1 范围外真实无摘录数字——capacity/customers/demand/earnings_call/strategy，登记 17.8）。
+- `--check-sensitivity-propagation`：0 命中（A11 会话内已终期化）。
+- `revenue_forecast.py --validate-only --verbose`：**valid**。
+- 重跑 forecast.json/forecast.md：新旧全量 diff 22 处 = 2 结论文本 + announcements 文本/source_ids + target measurement 字段 + leading indicator + sources 9 vs 8 + data_gaps 文本 + 全部 hash 字段；**consolidated_forecast / segments 数值零变化**。
+- input_sha256（receipt 口径）：`00dd17c3…bcde54` → `0e3095b9…d5b9d`（前后值已记录）。
+
+### 修改文件
+
+- `Research\alibaba-forecast\input.json`（3 处文本 + 1 新来源 + target 字段 + 1 leading indicator）
+- `Research\alibaba-forecast\forecast.json` / `forecast.md`（重跑）
+- `Research\alibaba-forecast\snapshot-2026-08-01-v2.json`（新建）
+- `Research\alibaba-forecast\TRUST_BOUNDARY.md`（新建）
+- `Research\alibaba-forecast\sources\buyback_ff305_ex991_20260707.html`（新建，来源捕获）
+- `backup-pre-phase17/`（修正前 input/forecast/snapshot 备份）
+
+## 2026-08-01 — Phase 17.2/17.5/17.6/17.7/17.8 文档与流程固化（completed）
+
+### 交付物
+
+| 子项 | 文件 | 内容 |
+|---|---|---|
+| 17.2 | `docs/session-checklist.md`（新建） | 7 节开工检查单：开工读取（0.3 规则1 + F14/m14/F6 预判）、下载路径预判（HK→dayu 挂起）、信息集冻结、conclusion 无源事实自检（含启发式盲区说明：纯日期/无数字事实不触发）、敏感性传导自检、快照版本纪律、交付前 TRUST_BOUNDARY + lint/fix_hashes/validate + 命中记录表 |
+| 17.5 | `references/backtesting.md`（+快照版本纪律节） | input 任何变化 → 新版本标签；已发布快照不可删除/覆盖（write_new_json "x" 模式钉住）；validate_snapshot + 确定性重跑；snapshot 冻结 input+forecast_version 的口径说明 |
+| 17.5 | 护栏测试 | **已存在**（test_backtest.py:103-105 write_new_json FileExistsError），未新增；文档引用之 |
+| 17.6 | `docs/proposals/headwind-driver-schema.md`（新建） | A（weight∈[-1,1]）/B（direction 字段）/C（现状+文档声明）三方案 + 验证器/输出/迁移/评审问题；**未实现** |
+| 17.7 | `docs/templates/trust-boundary.md`（新建） | 5 节模板（保证/不保证/修正记录/环境性失败/宿主验证）——与 17.1.5 交付物结构一致 |
+| 17.7 | `references/compliance-contract.md`（+交付叙事节） | formal 工件必须附信任边界声明；聊天总结/报告导言必须声明保证范围二分（结构可证明 vs 宿主信任）；无签名宿主下 formal 工件不完整即不可交付 |
+| 17.8 | `docs/proposals/segment-refinement-backlog.md`（新建） | A7 ACCG 拆 4 流（+5 参数×3 情景代价）、A8 CIG AI/傳統拆分（注明"更多參數≠更準確"反方）、A9 GMV derived_fact（CMR÷take_rate）；附 Phase 17 工具实证的 5 处无摘录数字 + FF305 来源登记 |
+| 17.5 | `CHANGELOG.md`（+Unreleased Phase 17 条目） | 两个 lint flag、backtesting 版本纪律、4 个 docs 文件、交付叙事节；明确"schema 3.6 仅为提案未实现" |
+
+### 质量门（17.9 B/C）
+
+- `python -m unittest discover -s tests`：**238 tests / 0 failures**（235 + 3 in-process 覆盖测试）。
+- **coverage 修正记录**：首轮 85%（lint_input 51%——新增 flag 分支在 CLI subprocess 测试中不可见 + in-process 测试未带 flag）→ 补 `LintHeuristicInProcessTests`（3 测试：conclusion-facts/sensitivity-propagation/management_communication 路径 + 默认关闭护栏）→ lint_input **84%**、TOTAL **87%**（恢复 Phase 14 基线，不下降）✓。
+- ruff 0 errors；compileall OK；tools/tests 4/4。
+
+### 未解决
+
+- 无（17.2-17.8 范畴内）。
+
+## 2026-08-01 — Phase 17.9 独立审查者复核与修复（completed）
+
+### 独立审查（code-reviewer agent，只读复核）
+
+**交付物 A1-A8 全部 PASS**：de minimis/15-17 grep 0 命中；FF305 来源 sha256 002bb773… 与 input capture 一致；t_ai_share_50pct ambiguous+[]；lint exit 0；validate valid；快照 v2 确定性重跑逐字节一致（0b3fe362…）+ v1 未覆盖；TRUST_BOUNDARY 5 节；forecast diff 26 处全部落在允许类别、consolidated_forecast/segments 逐字节相同、hash 自洽（canonical(input)=input_sha256、canonical(去 result_sha256)=result_sha256）。
+
+**B1 实现审查：1 Important + 4 Suggestion**，已处理：
+
+| 项 | 问题 | 处置 |
+|---|---|---|
+| Important | `_check_conclusion_facts` 的 `float(token)` 对 "1.2.3"/"2026.06.18" 型 token 抛 ValueError → lint 崩溃，违反 "never raises" | 新增 `_token_numeric_value`（None 守卫），`_figure_values` 复用；新增回归测试 `test_odd_number_token_does_not_crash` |
+| S1 | 单位换算误报（3,800億 vs RMB 380 billion） | docstring 记录"数值级严格相等、不做单位归一"（warn-only 设计内） |
+| S2 | absolute-level 收集仅覆盖 usage_platform/adjustments/progress，其余 rowwise 模型漏检 | docstring 记录范围限定（漏检方向安全） |
+| S3 | token 排除边界（YoY9.5%/5000萬 漏检、每週6天 误报） | docstring 记录取舍（漏检方向安全） |
+| S4 | lagged_activity carry-in 下 progress 告警可能误报 | docstring 记录（warn-only 接受） |
+
+**B2 弱测试**：`test_sensitivity_terminal_param_passes` 原为平凡通过（direct_revenue 模型），改为 usage_platform + 终期 pid，真正覆盖 year>=terminal_year 短路分支。
+
+**B3 测试编码鲁棒性**：`LintCliTests._run` 未显式 encoding——PYTHONIOENCODING=utf-8 环境下父进程按 gbk 解码子进程 utf-8 输出 → UnicodeDecodeError；修复为 `encoding="utf-8"` + 子进程 env `PYTHONIOENCODING=utf-8`。
+
+**补充**：TRUST_BOUNDARY.md §2 "8 个来源" → "9 个来源"（新增 FF305）。
+
+### 修复后质量门（实测）
+
+- `PYTHONIOENCODING=utf-8 python -m unittest discover -s tests -p "test_lint_input.py"`：**23/23 OK**。
+- `python -m unittest discover -s tests`：**239 tests / 0 failures**。
+- coverage：TOTAL **87%**（4225 stmt / 539 miss，fail-under=84 通过）；lint_input.py 84%。
+- ruff 0 errors；compileall OK。
+
+### 17.9 画蛇添足判定
+
+| 原计划子项 | 判定 | 原因 |
+|---|---|---|
+| 17.3/17.4 启发式（flag 默认关闭） | 🟢 保留 | 实证命中真实无背书数字（修正前 6 处）；默认关闭不改变现有行为；作者逐条人工裁定 |
+| 17.6 schema 3.6 提案 | 🟢 仅提案 | A10 能力缺口真实存在；评审通过前不实现（遵守规则 10） |
+| 17.1.2 "新增来源 + claim 绑定" | 🔴 部分过度 | schema 3.5 claim 枚举无回购事件挂载点；以记录级 source_ids 绑定 + 结论内容全在捕获正文替代（A2 硬门实质达成）；偏差记入 TRUST_BOUNDARY §3 |
+| 17.5 护栏测试新增 | 🟢 未新增（已存在） | write_new_json FileExistsError 测试已存在（test_backtest.py:103-105），仅文档化 |
+| 17.3 实证预期"命中 3 处" | 🔴 预期偏差 | 实际 6 处（policy 无数字不适用、announcements 纯日期排除；另发现 4 处真实无摘录数字）；如实记录，工具价值超出预期 |
+| 17.4 实证预期"修正前命中 3 项" | 🔴 预期偏差 | 磁盘无会话初版（A11 会话内已重定向）；以 A11 事实还原构造实证 3 项命中；当前 input 0 命中 |
+
+### 最终质量门汇总（Phase 17）
+
+- revenue：239 tests / 0 failures / coverage 87% / ruff 0 / compileall OK / ResourceWarning 0。
+- 交付物：input.json 修正（grep 实证 0+0）、forecast 数值零变化、快照 v2 确定性、TRUST_BOUNDARY 5 节。
+- 独立审查者复核完成：APPROVE（修复项全部闭环）。

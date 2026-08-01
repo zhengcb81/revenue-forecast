@@ -141,3 +141,32 @@ This project follows Semantic Versioning. The runtime release source of truth is
 ## v2.6.1 — 2026-06-13
 
 - Last release of the legacy framework before the v3 rebuild.
+
+## Unreleased (Phase 17)
+
+- Added opt-in heuristics to `scripts/lint_input.py`, both off by default so
+  existing behavior is unchanged:
+  - `--check-conclusion-facts`: warns when a `research_coverage` /
+    `management_communication_coverage` conclusion contains a digit token with
+    no claim-backed value (numeric-value matching against bound claim excerpts;
+    years, ISO dates, FY-prefixed and date-context numbers, and identifier
+    suffixes such as `Qwen3.6` / `SEC 6-K` are excluded).
+  - `--check-sensitivity-propagation`: warns when a sensitivity shocks an
+    absolute-level driver (usage_platform `eligible_activity` /
+    `monetization_rate`, forecast adjustments, recognition progress) in a year
+    before the terminal year — such a shock cannot propagate to the terminal
+    year (A11 lesson).
+- `references/backtesting.md`: added the "Snapshot version discipline" section —
+  any input change requires a new version label; published snapshots must never
+  be deleted or overwritten (already enforced by `write_new_json`, pinned by
+  `test_backtest.py`).
+- Added `docs/session-checklist.md` (pre-flight checklist for all forecast
+  sessions), `docs/templates/trust-boundary.md` (5-section delivery template),
+  `docs/proposals/headwind-driver-schema.md` (schema 3.6 proposal, **not
+  implemented**), and `docs/proposals/segment-refinement-backlog.md` (A7/A8/A9
+  backlog, no implementation commitment).
+- `references/compliance-contract.md`: added the "Delivery narrative" section —
+  every formal artifact must carry a trust-boundary statement; chat summaries
+  must state the guarantee scope (structure/hash/recomputation provable;
+  tool invocation/search exhaustiveness/source truthfulness host-trusted).
+- No schema change in this phase; schema 3.6 remains a proposal only.

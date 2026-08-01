@@ -69,3 +69,20 @@ response hash, timestamp, execution environment, and issuer. When no trusted
 verifier is available, the runtime accepts model-filled fields but notes the
 absence of host attestation. The structural contract ensures the fields are
 present and well-formed; only the host can certify they are truthful.
+
+## Delivery narrative
+
+Every formal artifact must be accompanied by an explicit trust-boundary
+statement (fill the template at `docs/templates/trust-boundary.md` into
+`TRUST_BOUNDARY.md` next to the artifact, per `docs/session-checklist.md` §7).
+Chat summaries and report preambles must state the guarantee scope:
+
+- **Provable by structure / hash / recomputation**: schema conformance,
+  publication receipt, deterministic reproduction, input-output binding.
+- **Dependent on host trust**: tool invocation actually occurred, search
+  exhaustiveness, source bytes truthful before hashing, conclusion wording.
+
+The runtime never certifies the second class. A `formal_output_mode="formal"`
+artifact without a trust-boundary statement is incomplete for delivery; if the
+host environment provides signed tool-event receipts, the statement records
+that upgrade instead of the absence of attestation.

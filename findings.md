@@ -664,3 +664,181 @@ validate_document()                      ← 入口
 - worker `last_error: CatalogOperationLockedError: pid=15536` —— **锁竞争仍在持续**，坐实 15.2（可重试化）的紧迫性。
 - `last_scan_report`：files_seen 46781 / reused 46780 / **errors=1** / locations_active 46780（07-31 22:07 左右）。
 - `worker_control.json`：desired_state=enabled，但 `stop_requested_for` 有值（07-31 21:06 supervisor 切换痕迹，company-wiki 自身 WR-10-7 范畴，不在本 Phase）。
+
+---
+
+## 2026-08-01 — MongoDB 预测研究数据（FY2025 10-K，截至 2025-01-31）
+
+### 从 FY2025 10-K 提取（mdb-20250131.htm，EDGAR 归档 0001441816-25-000057）
+
+- 总收入：FY2025 **$2,006.4M**（+19%）、FY2024 $1,683.0M（+31%）、FY2023 $1,284.0M
+- 客户：>54,500（2025-01-31）；**$100K+ ARR 客户 2,396**（FY2025）/ 2,052 / 1,651
+- Atlas 占收入 70%（FY2025）、66%、63%
+- Subscription 占 ~97%（$1,943M）；Direct Sales Customers 占 subscription 88%
+- 无定量收入指引（10-K 内）；license 点时间确认，subscription = term license + DBaaS（usage-basis）
+- 财年截至 1-31；FY2026 结束于 2026-01-31
+
+### 档案获取链路问题（MongoDB 触发，已修复）
+
+- **F13 治理粗糙面**：374 个 dayu 摄入的 SEC 文档（含 MongoDB 全部 20 个：FY2022-2025 10-K/季报/8-K）被批量 retire（metadata 无 source_url）——但 **accession_number + company_id + primary_document 可确定性构造 EDGAR URL**（`https://www.sec.gov/Archives/edgar/data/{cik:0>10}/{accession}/`，已验证 200）。已批量恢复 374 个（注入 URL + company_name + market/security_id，来自 portfolio 级 meta.json）。
+- **resolver 复用契约缺口**：dayu portfolio 文档路径在 `companies/` 外，filing-fetch handle 契约拒绝 → ensure reuse-first 死锁。已修：resolver 只对 company_raw root 的 location 构建复用 handle（1530 tests 全绿，提交 88c67f2）。
+- 待办：CN/HK dayu 文档的 URL 构造方式不同（cninfo/hkex），保持 retired 待单独决策。
+
+---
+
+## 2026-08-01 — MongoDB 会话后全面复盘（Phase 16 编制依据）
+
+### R1：F13 批量治理被 worker 旧代码整体复活（最严重）
+
+- **事实**：当前 10,185 个 active regulatory 文档中 **9,574 个仍缺 source_url**（CN 9,484 + 其他 90）；9,576 个治理对象几乎全部被复活为 active 但**未修复**——filing-fetch 复用路径对它们依旧卡死（宁德时代同类问题仍在 9,000+ 个公司存在）。
+- **机制链**：批量治理 retire（09:03）→ worker（pid 7916，09:07 启动，加载的是**旧 scanner 代码**——无 15.6 终态保护）scan → UPDATE source_status 复活 → active 但 metadata 仍旧 sidecar（无 URL）。
+- **次生**：374 个 US 恢复文档中 **373 个的 URL 注入被 scan 覆盖**（旧 sidecar 重写 metadata_json——scanner 的 update 分支用 group 的 sidecar metadata 覆盖注入值）；112 个 meta.json 占位被旧 scan 复活（primary 为 json）。
+- **根因**：a) 治理与 worker scan 无版本/时序协调；b) worker 长进程不热更新代码；c) scanner 无条件重写 metadata（外部注入值无持久化）。
+
+### R2：CN 9,484 个真实文件的 URL 可构造性未评估
+
+- 这些是 ≥500B 的真实 PDF（如宁德时代/联影医疗等），dayu meta 无 announcement_id 信号（字段名待查）——**需检查 CN meta.json 实际字段**，决定能否确定性构造 cninfo URL（如 announcementId + stockCode）。
+
+### R3：retire 缺少对称的反向命令
+
+- 374 个恢复靠直接 SQL（无审计、无工具化）；`documents restore` 不存在。恢复操作不可复现。
+
+### R4：worker 代码版本漂移（运维协议缺失）
+
+- worker 进程加载启动时磁盘代码；15.6 期间 3 次代码修复（终态保护/resolver/dedup）提交后 worker 未重启即继续用旧逻辑 → 行为漂移。**需要重启协议 + runtime 记录代码版本**。
+
+### R5：F12（stdin GBK）与 F15（group metadata 取第一个）仍未修
+
+- F12：管道中文查询破坏（--request-file 是干净路径）。
+- F15：同 group 多 primary 时 metadata 取排序第一个（宁德时代曾用删除旧文件绕过；scanner 逻辑未改）。
+
+### R6：company-wiki git 跟踪不完整
+
+- `src/company_wiki/source_catalog/` 仅 4 个文件被跟踪，其余（含全部 Phase 15 修复依赖的模块）从未提交——提交纪律与可追溯性缺口。
+
+### R7：恢复/注入操作无审计
+
+- 374 URL 恢复 + 769 company_name/market 注入直接 SQL——无审计表、无 created_by/reason。
+
+### 关键量化（2026-08-01 复盘时点）
+
+| 项 | 数量 |
+|---|---|
+| active regulatory 文档 | 10,185 |
+| 其中缺 source_url | **9,574**（CN 9,484） |
+| 有 URL（新 canonical） | 39 |
+| US 恢复后 URL 被 scan 覆盖 | 373 |
+| 占位复活（primary=json） | 112 |
+| retired（茅台 stub，正确保留） | 2 |
+
+## 2026-08-01 阿里巴巴会话发现（Phase 17 编制依据）
+
+> 会话：`/revenue-forecast 阿里巴巴`（信息截止 2026-08-01）。引擎产出全部硬门通过（1 次 valid、publication receipt 重算通过、输入构建 4 轮校验往返），全面审查后记录 A1-A17。完整审查见 `Research\alibaba-forecast\REVIEW.md`。已并入 Phase 17 计划。
+
+### A1：无源事实混入正式 conclusion（×3，P0）
+
+- **事实**：`research_coverage[policy].conclusion` 含"美國取消小額包裹關稅豁免（de minimis）"（本会话未在任何已打开来源核验）；`research_coverage[industry_market].conclusion` 含"（約人民幣15-17萬億）"（来自模型自身知识）；`management_communication_coverage[announcements].conclusion` 含具体回购日期/授权日（来自 WebSearch 摘要）。
+- **机制链**：引擎只校验 conclusion 的结构（parameter_ids/source_ids 存在），不校验文本内数字是否有 claim 背书 → 无源事实可进入正式工件。
+- **影响**：违反硬门"a fact or management guidance lacks a source"；若被 invest-* 下游引用会污染评估。→ 17.1.1 修正。
+
+### A2：来源"注册但未打开"（P0）
+
+- **事实**：`src_buyback_jul2026` 捕获 582,641 字节，但正文为 JS 渲染，文本提取仅 214 行、只含标题；结论引用的回购日期/金额/授权日均不在捕获内容中。
+- **影响**：违反硬门"a citation was not opened and checked"。→ 17.1.2 补核或降级。
+
+### A3：自报工具调用 → formal 发布（P0，信任边界）
+
+- **事实**：8 个来源 `tool_call_id` 均为模型自填字符串、`verified_by` 自报，无宿主签名事件日志；输出 `formal_output_mode=formal`。
+- **设计意图**：task_plan Phase 8.4"无 trusted verifier 的环境只能输出 draft"；13.4B"self-reported tool call 不能 formal publication"。引擎按 compliance-contract 字面合规（记录 host attestation 缺失），但保证强度与用户感知存在落差。
+- **影响**：正式标签的保证范围（结构/哈希/重算）≠ "工具确实被调用"。→ 17.1.5/17.7 信任边界声明。
+
+### A4：`t_ai_share_50pct` 测量期间映射偏差（P0）
+
+- **事实**："in about one year"（2026-05-13 起）≈ 2027-05，落在 **FY2028**；输入映射为 `run_rate_at_period_end: FY2027`。
+- **影响**：目标期间判定偏早一年（perimeter mismatch 未入情景，处理正确，影响限于数据缺口文案）。→ 17.1.3 改 ambiguous 或 FY2028。
+
+### A5：FY2024 下载超时 = 已知 F14 环境性失败，未预判（P0）
+
+- **事实**：FY2024 年报下载 1499s 超时；findings.md F14 已记录同型（dayu HK 三次超时 598s/598s/1580s、30 分钟零新文件、Docling 疑似卡死）。
+- **影响**：0.3 规则1（开工读 findings）未执行导致未预判；数据由 FY2025 AR 对比数覆盖（无损失），但失败原因未诊断未记录。→ 17.2 会话检查单。
+
+### A6：快照不可变语义弱化（P0）
+
+- **事实**：因敏感性参数重定向，删除并重建**同版本号** `2026-08-01-v1` 快照（内容不同）。
+- **影响**：早期消费者引用的 v1 指纹失效。→ 17.1.4 用 v2；17.5 固化版本纪律。
+
+### A7：accg_other 合并两条经济上不同的曲线（P1）
+
+- **事实**：直營、物流及其他（105,518，+2%）与中国批发（26,312，+8%）合并为单一 direct_growth。
+- **影响**：违反"每流一分部"；批发增速被直营拖低，驱动树归因混叠。→ 17.8 backlog。
+
+### A8：CIG direct_growth 可选改进（P1，双刃）
+
+- **事实**：Q4 外部 +40%、AI 产品收入 8,971 百万（占外部 30%）已披露，可支撑基期 AI/非 AI 两流拆分。
+- **反方**：AI 年度绝对值需从 Q4 外推（假设叠加假设）——"更多参数≠更準確"。→ 17.8 backlog（注明反方观点）。
+
+### A9：GMV 基数构造性循环（P1）
+
+- **事实**：GMV_base = 343,867 ÷ 4.0% = 8,596,675，基期精确对齐由**构造**保证而非独立证据。
+- **影响**：应注册为 `derived_fact`（公式 CMR÷take_rate）显式化循环性。→ 17.8 backlog。
+
+### A10：负向驱动无法进入正式 headwinds（P1，引擎能力缺口）
+
+- **事实**：归因权重限 `(0,1]`，负权重被拒；商家补贴 contra-revenue 转为 contrary 证据节点 + data_gaps 文字，输出 `headwinds: []`。
+- **影响**：设计意图"Preserve negative roots as revenue headwinds"未量化呈现。→ 17.6 schema 3.6 提案。
+
+### A11：敏感性传导语义盲区（P1，已修正）
+
+- **事实**：初版 3 项 shock 作用于 FY2028 绝对水平型驱动（usage_platform activity/monetization、adjustments），终期影响恒为 0（引擎重算正确，0 即正确结果）；已重定向至 FY2031 终期参数。
+- **教训**：敏感性参数选择需传导语义检查，引擎无提示。→ 17.4 lint 预检。
+
+### A12：CIG over_time progress=1.0 全周期（P1，轻微）
+
+- **事实**：progress 全年 1.0 使 over_time 与 modeled_as_recognized 等价（标签式，会计表述诚实，progress 参数已入依赖图）。
+- **影响**：无实质影响，记录。
+
+### A13：builder 脚本自身两个 bug（P2）
+
+- **事实**：sed 式字符串替换截断文件尾部（恢复后正常）；StockAnalysis 来源哈希初始为占位符（已修正）。
+- **教训**：build 流程需写入后立即 lint 的完整性校验。
+
+### A14：会话未维护 findings/progress（P2）
+
+- **事实**：0.3 规则4（每 2 次查看/搜索写 findings）未执行——本会话无 findings 记录。
+- **影响**：复盘依赖事后重构。→ 17.2 检查单固化。
+
+### A15：两个来源零 claim 绑定（P2）
+
+- **事实**：`src_ir_earnings`、`src_buyback_jul2026` 注册但无任何 claim 引用（"registered but unused"弱绑定；buyback 另有 A2）。
+
+### A16：FY2025 AR URL 事后字节验证 MATCH（P2）
+
+- **事实**：注册时未验证 URL；事后 curl 比对 HKEX 下载与本地文件 4,630,060 bytes / sha256 8ab12348… **一致**。
+- **教训**：注册流程应内置"URL→字节"核验步骤（下次直接复用 HKEX URL 时先 curl 比对再注册）。
+
+### A17：杂项小问题（P2）
+
+- GBK 控制台多次 UnicodeEncodeError（deliverable 无影响）；markdown 简繁混排（模板简体/摘录繁体）；CodeGraph 未用（skill 仓库未建索引，按规则应询问 init）；模板工具首调参数误用；主题 rationale 未随输出传播（input 正确、engine 输出形状不含 rationale）。
+
+## 2026-08-01 Phase 17 实施记录
+
+### P17-1：修正前交付物备份与指纹（17.0）
+
+- 备份：`Research\alibaba-forecast\backup-pre-phase17\{input,forecast,snapshot}.json`（修正前，字节一致）。
+- 修正前指纹：`validated_input_sha256 = 00dd17c3...bcde54`（forecast.json receipt）；snapshot.json 内 `input_sha256 = 1ecbc908...f9255`（口径与 receipt 不同，v2 重建时验证）。
+- input.json 修正点定位：L6848 policy conclusion（de minimis 表述）、L6790 industry_market conclusion（15-17萬億）、L6962 announcements conclusion（具体回购日期/授权日）、L6968-6998 `t_ai_share_50pct`（measurement_basis=run_rate_at_period_end/FY2027）、L7417 growth driver leading indicator 亦含「關稅政策（de minimis）」（17.1.1 grep 0 命中测试需一并处理）。
+
+### P17-2：执行顺序决策（17.3/17.4 先于 17.1）
+
+- 17.3/17.4 实证要求「修正前 input 命中 3 处/3 项」——先实现工具（对备份的修正前版本实证），再做 17.1 修正（对修正后版本实证 0 命中），最后 17.1.4 快照 v2。
+
+### P17-3：Phase 17 实施与独立审查发现
+
+- **17.3 实证偏差（vs 计划"命中 3 处"）**：`--check-conclusion-facts` 对修正前 input 命中 **6 处**——A1 的 industry_market（15/17）✓、announcements（纯日期表达被排除，靠 grep 测试兜底）、policy（无数字不适用）；另发现 capacity/customers/demand/earnings_call/strategy 5 处"来源已注册但数字未摘录"（A15 同型）。修正后 5 处（A1 范围内 2 处清零）。教训：conclusion 数字无 claim 摘录是系统性现象，不止 A1 的 3 处。
+- **单位表述差异误报**：结论"3,800億" vs 英文 excerpt "RMB 380 billion" 数值不等 → 告警（warn-only 设计内）；启发式不做单位归一（已记 docstring）。
+- **token 排除边界**：漏检方向（YoY9.5% 字母粘连、5000萬 4 位数字被当年份）；误报侧（每週6天）。
+- **崩溃回归（独立审查发现）**：`float("1.2.3")` ValueError → lint 崩溃，违反 "never raises"；已修复（_token_numeric_value None 守卫）+ 回归测试。
+- **测试编码**：subprocess 测试未显式 encoding 时，PYTHONIOENCODING=utf-8 环境下父进程 gbk 解码失败；已修复（encoding="utf-8" + env）。
+- **17.1.2 实现偏差**：schema 3.5 claim target 枚举（parameter/historical_revenue/recognition_policy/scenario_probability/management_target/growth_driver）均需真实模型对象，回购事件无挂载点（挂参数违反 revenue_core.py:442 source 注册约束）→ 记录级 source_ids 绑定替代（A2 实质达成）。
+- **快照 hash 口径**：snapshot.input_sha256 = canonical(input+forecast_version)（revenue_backtest.py:36 设计），≠ receipt.validated_input_sha256（v1 时代亦然）；验证用 validate_snapshot + 确定性重跑。
+- **17.4 实证**：磁盘无 A11 会话初版（已重定向）；RED 实证用 A11 事实还原构造（3 项命中），当前 input 0 命中。

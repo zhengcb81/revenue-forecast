@@ -1816,3 +1816,379 @@ python -m coverage report -m --fail-under=84
 - 不在本 Phase 恢复 `/revenue-forecast 紫金矿业` 的预报本体（那是 15.6 之后的新会话，按 skill 流程走九维研究门）
 - 不自动删除任何既有占位文档（15.4.6 只列清单交用户决定）
 - 不动 dayu-agent 仓库本体（只改 company-wiki 侧的摄入行为）
+
+---
+
+## Phase 16（F13 残留数据修复与治理工具化）— 状态：completed
+
+> 编制日期：2026-08-01（MongoDB 会话后全面复盘，findings R1-R7）。
+> **核心结论**：F13 批量治理（9,576 个 retire）被 worker 旧版 scanner 几乎整体复活——当前 **9,574 个 active regulatory 文档仍缺 source_url**（company_raw 9,043 / dropbox_stock 605 / dayu_portfolio 386），filing-fetch 复用路径对它们依旧卡死（宁德时代同类问题存在于 9,000+ 公司）。根因三层：scanner 摄入不补 URL、worker 长进程加载旧代码、治理与 worker scan 无版本/时序协调。另有 373 个 US 恢复文档的 URL 注入被 scan 覆盖、112 个占位被旧 scan 复活。
+> 涉及仓库：company-wiki（canonical）、filing-fetch。执行遵守 0.3 规则（TDD、CodeGraph、证据入 progress、单 Phase in_progress）。
+
+### 16.1 根因修复：scanner 摄入时 URL 补全（TDD）
+
+**机制**（复盘确认）：
+- `dayu_portfolio` 文档：磁盘 meta.json 有 `source_url` 时 scanner 完整摄入（1548 型正常）；US 文档磁盘 meta 无 URL（MDB 型）→ 需从 `accession_number` 确定性构造 EDGAR URL（已验证 `https://www.sec.gov/Archives/edgar/data/{cik:0>10}/{accession_no_dashes}/{primary_document}` 返回 200）。
+- `company_raw` 文档：metadata 来自 `companies/{entity}/raw/.../*.source.json` 极简 sidecar（仅 market/security_id/source_title，无 URL）→ 需从 dayu portfolio 磁盘 meta（`portfolio/{ticker}/filings/.../meta.json`，按 ticker/company_id/source_title 匹配）补 `source_url`。
+- `dropbox_stock` 605 个：另一知识库 root，URL 来源待评估（16.1.4）。
+
+**任务**：
+- [x] 16.1.1 RED：dayu_portfolio 摄入 SEC 文档（accession_number、无 source_url）→ scanner 补 EDGAR URL 到 dayu_meta（现缺 → RED）。
+- [x] 16.1.2 实现：scanner 在 dayu 组摄入时，若 metadata 无 source_url/https_url 且含 accession_number + company_id + primary_document → 构造 EDGAR URL 写入 metadata（与 15.4 身份传播同类模式）。
+- [x] 16.1.3 RED：company_raw 摄入时 sidecar 无 URL → 从 dayu portfolio meta（按 ticker/company_name 匹配）补 source_url（现缺 → RED）。
+- [x] 16.1.4 实现：scanner 在 company_raw 组摄入时，无 URL 则查 dayu portfolio 磁盘 meta 补全（一次构建 ticker→portfolio meta 索引）。
+- [x] 16.1.5 评估 dropbox_stock 605 个：检查其 sidecar/源文件是否有 URL 来源；无则登记 data gap（不强行构造）。
+- [x] 16.1.6 GREEN + targeted tests（scanner/pipeline/resolver 相关文件）+ ruff/compileall。
+
+### 16.2 一次性数据修复（存量 9,574 个）
+
+- [x] 16.2.1 重启 worker（worker-stop → worker-start，用最新代码；记录旧 pid 与新 pid）。
+- [x] 16.2.2 重扫 company_raw + dayu_portfolio root（新 scanner 补 URL 逻辑生效）→ 验证 dayu_meta/acquisition 获得 source_url。
+- [x] 16.2.3 重扫后量化：active regulatory 缺 URL 计数（目标：除 dropbox_stock 评估项外 ≈ 0）。
+- [x] 16.2.4 占位复活清理：112 个 primary=json 的占位文档——重扫 tombstone（location missing）后按 15.4 语义处置（retire 或确认消失）。
+- [x] 16.2.5 373 个 US dayu 文档：验证 16.1.1 补全生效（URL 恢复且不被 scan 覆盖）。
+- [x] 16.2.6 回归抽查：宁德时代（company_raw CN）、MongoDB（US dayu）、紫金 FY2024（CN canonical）复用路径 capture_ready。
+- [x] 16.2.7 记录证据到 progress.md（前后计数、耗时、残留）。
+
+### 16.3 治理防复发：worker 版本管理与协调（R4）
+
+- [x] 16.3.1 worker runtime 增加 `code_version` 字段（写入时记录 git commit/short sha 或文件 hash）。
+- [x] 16.3.2 新增脚本/文档：代码变更后必须 worker-stop/start 的检查（worker_runtime.code_version vs 当前 commit 比对）。
+- [x] 16.3.3 治理操作协议写入 OPERATIONS.md：治理前 worker-stop、治理后 worker-start + 立即重扫验证（防 R1 类撤销）。
+- [x] 16.3.4 验证：worker 重启后 runtime.code_version == 当前 commit；后续 scan 不再复活 retired/占位。
+
+### 16.4 F12：filing-fetch stdin 编码修复（TDD）
+
+- [x] 16.4.1 RED：`echo '<中文 JSON>' | fetch_filing.py` → identify 应成功（现 GBK 解码破坏 → RED）。
+- [x] 16.4.2 实现：`main()` 对 stdin 用 `sys.stdin.reconfigure(encoding="utf-8")` 或按 bytes 读再 utf-8 解码（与 stdout reconfigure 对称）。
+- [x] 16.4.3 GREEN + filing-fetch 全量（66+ tests）+ ruff + coverage ≥90%。
+
+### 16.5 F15：scanner group metadata 最优 primary（TDD）
+
+- [x] 16.5.1 RED：同 group 两个 primary（旧极简 sidecar + 新完整 sidecar）→ 摄入后 metadata 应取"更完整"（含 URL）而非排序第一个（现取第一个 → RED）。
+- [x] 16.5.2 实现：`primary_candidate` 选择逻辑——同 role 多候选时优先含 source_url/https_url 的 metadata（确定性规则：完整度评分）。
+- [x] 16.5.3 GREEN + 相关测试 + 全量。
+
+### 16.6 documents restore 命令（retire 对称 + 审计，TDD）
+
+- [x] 16.6.1 RED：`documents restore --document-id X --reason R` → 文档/位置转 active + 审计行（现不存在 → RED）。
+- [x] 16.6.2 实现：store.`restore_document`（与 retire_document 对称，写 `document_restore_audit` 或复用 audit 表加 action 列）+ cli `documents restore`。
+- [x] 16.6.3 治理工具化：批量恢复脚本改为调用 `restore_document`（带 created_by/reason），不再裸 SQL。
+- [x] 16.6.4 GREEN + 全量 + OPERATIONS.md 文档。
+
+### 16.7 company-wiki git 补跟踪（R6）
+
+- [x] 16.7.1 盘点 `src/company_wiki/source_catalog/` 未跟踪文件（~40 个）与 tests/contract 未跟踪文件。
+- [x] 16.7.2 与用户确认后一次性提交（"chore: track source_catalog package and contract tests"）；确认 .gitignore 无冲突。
+- [x] 16.7.3 后续提交纪律：改动即提交（Phase 15 教训：Phase 15 的 7 个源文件中有 6 个此前从未跟踪）。
+
+### 16.8 验证门与回归
+
+- [x] 16.8.1 company-wiki 全量 pytest + ruff + compileall。
+- [x] 16.8.2 filing-fetch 全量 + ruff + coverage。
+- [x] 16.8.3 复用抽查：CN（紫金/宁德时代/随机 2 家）、US（MongoDB/比亚迪）、HK（1548 型）全部 capture_ready。
+- [x] 16.8.4 计数门：active regulatory 缺 URL = 0（除 dropbox_stock 评估结论外）。
+- [x] 16.8.5 提交（company-wiki phase-16-f13-remediation 分支 + filing-fetch 分支）+ 安装同步 + progress/task_plan/findings 更新。
+
+### 16.9 非目标
+
+- 不重构 dayu-agent（15.8 保持）。
+- 不为 dropbox_stock 强行构造 URL（评估后登记 gap 或单独决策）。
+- 不改 schema/引擎（纯数据修复与治理工具）。
+
+---
+
+## Phase 16.10（系统化收尾：补丁升级为永久机制）— 状态：completed
+
+> 编制日期：2026-08-01。用户批评："每次出现问题（比如 sidecar 没有 URL）都是临时修补，为什么会出现、如何系统性永久修复"。本节把 Phase 16 实施中暴露的两个补丁升级为永久机制，并固化"契约变更影响面清单"流程。
+
+### 补丁 vs 系统修复裁定（复盘）
+
+| 项 | 处置 | 原因 |
+|---|---|---|
+| F13 复活 → code_version + 治理协议 + scanner 补全 + resolver 契约 | ✅ 系统性 | TDD + 文档 + 验证门 |
+| F15 URL 优先 / 16.6 restore | ✅ 系统性 | TDD |
+| 测试 fixture 逐个补 URL | ❌ 补丁 → 16.10.1 永久化 | 根因：无统一 fixture 工厂 + 契约变更无影响面清单 |
+| worker `try/except AttributeError` | ❌ 补丁 → 16.10.2 永久化 | 根因：worker 依赖 catalog 内部结构而非注入 |
+
+### 16.10.1 测试 fixture 工厂 + 契约变更影响面清单
+
+- [x] 16.10.1.1 `tests/contract/conftest.py` 新增 `canonical_source(tmp_path, name, *, sidecar_extra=None, drop_url=False)`：写入 primary 文件 + **默认完整 capture-ready sidecar（https URL）**；`drop_url=True` 显式构造"缺 URL"场景（16.2 契约测试专用）。
+- [x] 16.10.1.2 迁移受影响的既有测试 fixture（identity_resolver / download_suppression / resolver / acquisition / placeholder_governance / url_enrichment / retire / pipeline）改用工厂；"缺 URL"测试显式 `drop_url=True`。
+- [x] 16.10.1.3 新增静态检查脚本或文档流程：**resolver/摄入语义变更前**，先 grep `source.json` 写入点 + `capture_ready`/`REUSED` 断言清单，一次性迁移（写入 company-wiki CLAUDE.md 或 OPERATIONS.md）。
+- [x] 16.10.1.4 验证：全量测试绿；`drop_url` 场景仅存在于显式标记的契约测试。
+
+### 16.10.2 worker 依赖注入（project_root 显式传入）
+
+- [x] 16.10.2.1 `SourceCatalogWorker.__init__` 增加 `project_root: Path | None = None` 参数；`_code_version` 用注入值（无注入时回退 `catalog.config.project_root` 仅限非测试路径或直接要求注入）。
+- [x] 16.10.2.2 supervisor/launcher 启动 worker 时传入 project_root（worker_launcher_events 已有该字段）。
+- [x] 16.10.2.3 删除 16.3 的 `try/except AttributeError` 补丁；`_FakeCatalog` 无需 config 属性（门禁 AST 检查自然满足）。
+- [x] 16.10.2.4 验证：worker_bootstrap / worker / scheduler_policy 全绿；调度门禁（无 `getattr(self.catalog`）保持。
+
+### 16.10.3 收尾
+
+- [x] 16.10.3.1 全量回归（company-wiki + filing-fetch）+ ruff + compileall。
+- [x] 16.10.3.2 提交（company-wiki phase-16 分支、filing-fetch 分支）+ 安装同步 + progress/task_plan/findings 更新。
+- [x] 16.10.3.3 Phase 16.10 状态更新为 completed；Phase 16 全部子阶段闭环。
+
+---
+
+## Phase 17（阿里巴巴会话审查整改：代理行为门禁与输入构建工具扩展）— 状态：completed
+
+> 编制日期：2026-08-01。依据：`AUDIT_REPORT.md`、`REVIEW.md`（`Research\alibaba-forecast\REVIEW.md`）、findings.md「2026-08-01 阿里巴巴会话发现」A1-A17。
+> 触发背景：`/revenue-forecast 阿里巴巴` 会话（2026-08-01）产出全部硬门通过（1 次 `valid`、publication receipt 独立重算通过、输入构建 4 轮校验往返，对比恒运昌 23 轮），但全面审查发现 **3 处 P0 全部落在引擎检查半径之外**：无源事实混入正式 conclusion（×3）、来源"注册但未打开"（×1）、自报工具调用下签发 formal 输出（Phase 8.4 设计意图要求 draft 或宿主证明）。该会话精确复现 `AUDIT_REPORT.md` §3.2 信任边界，并暴露输入构建（conclusion 数字无 claim 背书）与敏感性（绝对水平型驱动不传导至终期）两个工具盲区。
+> 原则：沿用 0.3 全部规则（TDD 顺序、CodeGraph 查符号、每 2 次查看/搜索写 findings、同一错误最多 3 次、不直接编辑安装副本、schema 变更走规则 10 流程）。本 Phase 不修改引擎核心逻辑，不改变 schema 3.5 契约。
+
+### 17.0 总目标、边界与不可违反规则
+
+**总目标（按依赖顺序）**：
+
+1. 修正阿里巴巴交付物中的 3 处无源事实与 1 处未核验来源（P0，交付层面，17.1）；
+2. 用 TDD 把两类代理行为问题工具化：conclusion 无源事实启发式（17.3）、敏感性传导语义预检（17.4）；
+3. 固化三类流程文档：会话启动检查单（17.2）、快照版本规则（17.5）、信任边界声明（17.7）；
+4. 为"负向驱动 headwind"提出 schema 3.6 提案（17.6，仅提案不实现，走规则 10 完整变更流程）；
+5. 分部细化与 GMV derived_fact 登记为 backlog（17.8，不排期）。
+
+**范围**：`scripts/lint_input.py`、`tests/test_lint_input.py`、`references/backtesting.md`、`references/compliance-contract.md`、`docs/`（新目录：session-checklist.md、templates/trust-boundary.md、proposals/headwind-driver-schema.md）、`CHANGELOG.md`；以及 `Research\alibaba-forecast` 交付物（17.1）。
+
+**不覆盖**：
+
+- 引擎核心逻辑（`revenue_core.py` 公式、验证器、receipt 语义）；
+- schema 3.5 输入/输出契约字段；
+- 阿里巴巴交付物的收入数值（17.1 只允许文本字段修正，不允许改任何参数值）；
+- 未经单独批准的新外部服务。
+
+**不可违反规则**：
+
+- 17.3/17.4 的代码改动必须先 RED（负向测试确认因当前缺陷失败）→ 最小生产改动 → GREEN → targeted → 全量；
+- 不得通过删除/放宽/跳过失败测试来"修复"实现；
+- 17.6 是 schema 变更提案，**未评审通过前不得改代码**；
+- 17.1 的交付物修正必须记录每次改动的 `input_sha256` 前后值；
+- 任何对安装副本的同步只能在 canonical 测试全绿后通过 `tools/sync_installations.py` 进行。
+
+### 17.1 会话产物 P0 修正（交付层面；工作目录 `Research\alibaba-forecast`）
+
+**目标**：消除正式工件中的 3 处无源事实、1 处未打开来源、1 处目标期间偏差，重建快照，并附信任边界声明。
+
+#### 17.1.1 无源事实修正（A1）
+
+- [x] **policy 结论**：删除"美國取消小額包裹關稅豁免（de minimis）衝擊跨境電商"具体表述，改为 AR 风险章节（第 48 页已打开文本）可支持的定性表述："國際業務受關稅與地緣政治不確定性影響（年報風險因素：跨境數據傳輸法律法規、國家間競爭與地緣政治緊張）"；或另行打开可信来源（如美国海关 CBP 公告、路透/彭博报道）并注册 claim 后保留原表述。
+- [x] **industry_market 结论**：删除"（約人民幣15-17萬億）"数字区间；若保留数字，必须打开国家统计局/易观公开数据源并注册 claim。
+- [x] **announcements 结论**：降级为捕获内容可验证的范围："公告標題顯示2026年6月底至7月初持續股份回購及6月18日可轉換證券發行文件；具體日期/金額未在捕獲正文中核驗（正文為JS渲染）"。
+
+**测试（人工复核清单，写入 progress.md）**：
+
+- [x] `grep -n "de minimis" input.json` → 0 命中；
+- [x] `grep -n "15-17" input.json` → 0 命中；
+- [x] announcements 结论不再含具体日期/授权日。
+
+**验收**：`lint_input.py` 0 findings；`fix_hashes.py --check` 0 drift；`revenue_forecast.py --validate-only --verbose` 输出 `valid`；重跑后与旧 `forecast.json` diff 仅 17.1 涉及的文本字段变化、数值完全不变；`input_sha256` 前后值记录在 progress.md。
+
+#### 17.1.2 buyback 来源补核（A2）
+
+- [x] 打开 HKEX Next Day Disclosure Returns（`https://www1.hkexnews.hk/` 搜尋 9988 股份購回披露）或 eastmoney 公告列表，核验回购日期/金额/授权日；
+- [x] 核验成功：新增来源 + claim 绑定，恢复具体日期表述；
+- [x] 核验失败（30 分钟内无结果）：维持 17.1.1 的降级结论，并在 `TRUST_BOUNDARY.md` 登记"该类别结论为标题级可验证"。
+
+**验收**：来源要么有 claim 绑定（补核成功），要么结论不含未核验细节（降级成功）；不存在"注册来源但结论引用未打开内容"的中间态。
+
+#### 17.1.3 `t_ai_share_50pct` 测量期间修正（A4）
+
+- [x] `measurement_basis` → `ambiguous`（推荐，因"about one year"自 2026-05 起约一年落在 FY2028 年初，跨越 FY2027/FY2028 边界且无官方口径定义）；或 `run_rate_at_period_end: FY2028` + 测量理由；
+- [x] 同步更新 `measurement_rationale` 与 `perimeter_notes`；
+- [x] 若改 ambiguous：`measurement_periods` 置空、`treatment` 保持 `unmodeled_data_gap`、删除 mapped 字段（若有）。
+
+**测试**：validate 通过；`management_target_coverage` 输出中该目标 `measurement_basis=ambiguous` 且 `scenario_comparison={}`。
+
+**验收**：目标期间判定符合 management-targets.md"无法调和则 ambiguous 直至解决"。
+
+#### 17.1.4 快照重建（A6）
+
+- [x] 以版本标签 **`2026-08-01-v2`** 创建新快照（**不得**覆盖或删除 v1 文件；如旧 v1 已删除，在 progress.md 记录原 v1 的 `snapshot_id` 与删除原因）；
+- [x] 验证新快照 `snapshot_id`、`input_sha256`、`forecast_result_sha256` 与重跑产物一致。
+
+**验收**：磁盘上存在 v1 记录（或删除记录）+ v2 快照（`forecast_version=2026-08-01-v2`）；backtest `create` 拒绝已存在文件（引擎行为）且未发生覆盖。
+
+#### 17.1.5 信任边界声明（A3 的交付侧动作）
+
+- [x] 新建 `Research\alibaba-forecast\TRUST_BOUNDARY.md`，内容（模板见 17.7）：
+  - 本工件 formal 保证范围（结构/哈希/重算）；
+  - 不保证范围（工具调用确实发生、搜索穷尽、来源正文在哈希前未被伪造）；
+  - 3 处 P0 修正记录（17.1.1-17.1.3）；
+  - F14 类环境性失败说明（FY2024 下载超时=已知 dayu HK 环境问题）；
+  - 宿主验证缺失声明（`tool_call_id` 为模型自填，无 host-signed event receipt）。
+
+**验收**：`TRUST_BOUNDARY.md` 存在且 5 节齐全；下一会话/消费者可据此判断工件保证强度。
+
+### 17.2 会话启动检查单（流程文档）
+
+**目标**：把 0.3 规则 1、F14 类已知环境失败预判、conclusion 无源事实自检、敏感性传导自检固化为可执行清单，供所有 `/revenue-forecast` 会话开工前读取。
+
+- [x] 新建 `docs/session-checklist.md`，至少包含：
+  1. 开工读取：`task_plan.md` → `progress.md` → `findings.md`（已知环境性失败清单，如 F14 dayu HK 挂起、m14 锁竞争 flaky）；
+  2. 下载预判：目标市场 HK → 预判 dayu 可能 25+ 分钟无进展；CN → StockInfo 正常；US → dayu 正常；
+  3. 信息集冻结：as_of_date、来源 published_date ≤ as_of、`covers_until` 检查；
+  4. conclusion 自检：`research_coverage[].conclusion` 与 `management_communication_coverage[].conclusion` 中每个数字/日期必须可回溯到一条 claim，否则降级为定性表述；
+  5. 敏感性传导自检：shock 参数若为绝对水平型驱动（usage_platform 的 activity/monetization_rate、adjustments、progress）且年份 < 终期 → 改选终期参数或接受"仅影响当年"并在 rationale 注明；
+  6. 快照：input 任何变化 → 新版本标签，不覆盖旧文件；
+  7. 交付前：`TRUST_BOUNDARY.md` 或等价声明必须随正式工件一起交付。
+
+**验收**：清单文档评审通过；下一次会话（任意公司）试点，把"检查单命中项"（预判/自检发现的问题数）记录进 progress.md。
+
+### 17.3 lint_input 扩展：conclusion 无源事实启发式（TDD）
+
+**目标**：让"结论中的数字无 claim 背书"从代理义务变成工具可提示项（启发式告警，不阻断——引擎不应理解语义，工具只负责提醒）。
+
+- [x] RED：`tests/test_lint_input.py` 新增 `test_conclusion_digit_without_claim_warns`——构造含"增長7%"等数字的 `research_coverage[].conclusion` 且同记录无 claim 引用的 fixture → 断言 `lint_input.py --check-conclusion-facts` 退出码 2 并报告该记录；当前实现无此检查 → 确认 RED。
+- [x] RED：`test_conclusion_digit_with_claim_passes`——同记录 `source_ids` 对应参数带 claim 的 fixture → 0 findings（正向护栏）。
+- [x] 实现：`lint_input.py` 新增 `--check-conclusion-facts` flag：
+  - 扫描 `research_coverage[]`（含 custom dimension）与 `management_communication_coverage[].conclusion` 文本；
+  - 数字模式 `\d[\d,.]*`（排除年份/FY 前缀）命中且该记录 `parameter_ids` 无任何 claim 绑定 → warning；
+  - 输出格式：`[conclusion-facts] <dimension>/<category>: 結論含數字但無 claim 背書`；
+  - 默认关闭（不改变现有默认行为，向后兼容）。
+- [x] GREEN：两个新测试转绿；`lint_input.py` 全量既有测试不回归。
+- [x] 实证：对 `Research\alibaba-forecast\input.json`（17.1 修正前版本）复跑 `--check-conclusion-facts` → 应命中 3 处（policy/industry_market/announcements），输出写入 progress.md。
+
+**测试命令**：
+
+```powershell
+python -m unittest discover -s tests -p "test_lint_input.py" -v
+python -m unittest discover -s tests -v
+```
+
+**验收**：RED 失败原因确为"当前实现无该检查"（非 fixture 错误）；全量 216+ tests 通过；对本次 input 复跑命中 3 处；`--check-conclusion-facts` 默认关闭不改变默认退出码。
+
+### 17.4 lint_input 扩展：敏感性传导语义预检（TDD）
+
+**目标**：防止"shock 绝对水平型参数且年份<终期 → 终期影响恒为 0"的无信息量敏感性（A11 教训）。
+
+- [x] RED：`test_sensitivity_absolute_level_param_pre_terminal_warns`——`sensitivity_tests` 含 `accg_gmv_base_2028`（usage_platform eligible_activity，绝对水平型，年份 2028 < 终期 2031）→ 断言 `--check-sensitivity-propagation` 报告"終期影響可能為0，建議選用終期參數"；当前无此检查 → RED。
+- [x] RED：`test_sensitivity_terminal_param_passes`——shock 参数为终期年或传播型（direct_growth growth_rate）→ 0 findings（正向护栏）。
+- [x] 实现：`lint_input.py` 新增 `--check-sensitivity-propagation` flag：
+  - 判定绝对水平型驱动：参数在 usage_platform 的 `eligible_activity`/`monetization_rate`、adjustments、progress 驱动位；
+  - 判定传播型：direct_growth `growth_rate`、subscription 等复合驱动；
+  - `period_year(param) < max(forecast_years)` 且绝对水平型 → warning；
+  - 默认关闭，向后兼容。
+- [x] GREEN + 全量回归 + 对本次 input 复跑：修正后 input 不应再命中（3 项已改终期参数）；修正前版本应命中 3 项（记录到 progress.md 作为 RED 实证）。
+
+**测试命令**：同 17.3。
+
+**验收**：RED→GREEN 证据齐全；全量通过；对修正前/后 input 的命中差异（3→0）记录在案。
+
+### 17.5 快照版本规则固化（文档 + 验证测试）
+
+**目标**：把"input 变更必须新版本标签、不得删除/覆盖既有 snapshot"固化为文档与测试（A6 教训；引擎已拒绝覆盖已存在文件，需把该行为钉住并文档化）。
+
+- [x] `references/backtesting.md` 新增"快照版本纪律"小节：input 任何字段变化 → 新 version 标签；已发布快照文件不可删除/覆盖；删除既有快照必须记录原因与原 `snapshot_id`；
+- [x] GREEN 护栏测试（若不存在）：`test_create_refuses_existing_output`——对已存在输出文件路径 `create` → 断言失败且文件内容不变；
+- [x] `CHANGELOG.md` 记录该文档/测试变更。
+
+**测试命令**：`python -m unittest discover -s tests -p "test_backtest.py" -v`。
+
+**验收**：文档与测试齐备；全量通过。
+
+### 17.6 headwind driver schema 3.6 提案（仅文档，不实现）
+
+**目标**：为 A10（负向驱动无法进入正式 headwinds，引擎归因权重限 (0,1]）提出 schema 3.6 提案，经评审后再决定是否进入实现。
+
+- [x] 新建 `docs/proposals/headwind-driver-schema.md`，至少包含：
+  - 问题：`growth_driver_tree` 归因权重限 `(0,1]`，负向根（如商家补贴 contra-revenue）无法量化进入 `headwinds` 输出（当前输出为空）；
+  - 候选方案 A：允许 `weight ∈ [-1,1]`（segment 权重和仍为 1，负权重根显式为 headwind）；
+  - 候选方案 B：新增 driver 级 `direction: positive|negative` 字段 + 输出拆分；
+  - 候选方案 C：维持现状 + 强制"发现的反向证据必须 contrary node"（当前行为）并在 output-schema 文档声明 headwinds 语义；
+  - 每种方案的 schema 字段、验证器改动点、输出形状、迁移影响、fixture 需求；
+  - 评审问题清单（谁评审、何时评审、通过标准）。
+- [x] **不实现任何代码**；评审通过前不得触碰 `revenue_core.py`/`input-schema.md` 的 schema 定义。
+
+**验收**：提案文档完成并登记评审；`CHANGELOG.md` 无 schema 3.6 条目（未实现不声称）。
+
+### 17.7 信任边界声明模板与 compliance-contract 补充
+
+**目标**：把 Phase 8.4 的"无 trusted verifier → draft"意图落成可执行交付物模板（A3）。
+
+- [x] `references/compliance-contract.md` 补充"交付叙事"小节：formal 输出随附的说明（聊天总结/报告导言）必须声明保证范围——结构/哈希/重算可证明，工具调用/搜索穷尽/来源真实性依赖宿主信任；
+- [x] 新建 `docs/templates/trust-boundary.md`（5 节模板：保证范围/不保证范围/修正记录/已知环境性失败/宿主验证状态），供所有 forecast 会话交付时填充为 `TRUST_BOUNDARY.md`。
+
+**验收**：文档评审通过；`TRUST_BOUNDARY.md` 模板与 17.1.5 的交付物一致。
+
+### 17.8 分部细化与 derived_fact（backlog 登记，不排期）
+
+- [x] `docs/proposals/segment-refinement-backlog.md`（或并入 17.6 提案文件）登记：
+  - ACCG 拆 CMR/直營/即時/批發 4 流（A7）；
+  - CIG AI/傳統兩流基期拆分（A8，注明"更多參數≠更準確"的反方观点）；
+  - GMV 注册为 `derived_fact`（公式 `x0/x1`：CMR÷take_rate），显式化构造性循环（A9）。
+
+**验收**：登记完成，无实现承诺。
+
+### 17.9 最终验收矩阵与 Go/No-Go
+
+#### A. 交付物（17.1）
+
+- [x] `input.json`：3 处无源事实清零（grep 实证）；
+- [x] validate `valid`；数值 diff 为 0（仅文本字段变化）；
+- [x] `snapshot-2026-08-01-v2` 存在且指纹与重跑产物一致；
+- [x] `TRUST_BOUNDARY.md` 5 节齐全。
+
+#### B. 工具（17.3/17.4）
+
+- [x] 各 2 个新测试（RED 实证 + 正向护栏）转绿；
+- [x] 修正前 input 命中 3+3、修正后 input 0 命中（记录）；
+- [x] 全量测试通过、coverage 不下降、ruff 0、compileall 通过。
+
+#### C. 文档（17.2/17.5/17.6/17.7/17.8）
+
+- [x] session-checklist.md、backtesting.md 版本纪律、trust-boundary 模板、headwind 提案、backlog 全部就位并交叉引用；
+- [x] CHANGELOG.md 与实际变更一致（未实现不声称）。
+
+#### D. 审查机制
+
+- [x] 每子阶段完成即更新 `progress.md`（修改文件/测试命令/通过数/新增测试名/warning/未解决事项）；
+- [x] Phase 17 完成后执行"画蛇添足判定"（沿用既有制度）：17.3/17.4 的启发式是否值得保留、flag 默认关闭是否合理、17.6 是否应升级为实现；
+- [x] 交付物修正（17.1）由独立审查者复核一次（核对 grep 实证、diff、快照指纹）；
+- [x] 本 Phase 的 RED 证据（失败输出）全部保存到 progress.md。
+
+#### E. Go/No-Go
+
+满足以下全部才可 Go：
+
+- [x] P0 修正全部落地并有实证；
+- [x] 工具 RED→GREEN 证据齐全、全量测试无回归；
+- [x] 文档与代码一致；
+- [x] 无未解释 warning；
+- [x] 任何安装副本同步前 canonical 测试全绿。
+
+任一不满足即 No-Go，不得通过修改报告措辞掩盖。
+
+## 当前执行状态（追加）
+
+| Phase | 状态 | 说明 |
+|---|---|---|
+| 17 阿里巴巴会话审查整改 | pending | 17.1 交付物修正 / 17.2-17.5 工具与文档 / 17.6 schema 3.6 提案 / 17.7 信任边界 / 17.8 backlog / 17.9 验收矩阵 |
+
+
+---
+
+## 画蛇添足判定（Phase 17 后审查）
+
+| 原计划子项 | 判定 | 原因 |
+|---|---|---|
+| 17.3/17.4 启发式（flag 默认关闭） | 🟢 保留 | 实证命中真实无背书数字（修正前 6 处）；默认关闭不改变现有行为 |
+| 17.6 schema 3.6 提案 | 🟢 仅提案 | A10 能力缺口真实；评审通过前不实现（规则 10） |
+| 17.1.2 新增来源 + claim 绑定 | 🔴 部分过度 | schema 3.5 claim 枚举无回购事件挂载点；记录级 source_ids 绑定替代（A2 实质达成），偏差记入 TRUST_BOUNDARY §3 |
+| 17.5 护栏测试新增 | 🟢 未新增（已存在） | write_new_json FileExistsError 测试已存在，仅文档化 |
+| 17.3 实证预期"命中 3 处" | 🔴 预期偏差 | 实际 6 处（policy 无数字、announcements 纯日期不适用；另发现 4 处真实无摘录数字），如实记录 |
+| 17.4 实证预期"修正前命中 3 项" | 🔴 预期偏差 | 磁盘无会话初版（A11 会话内已重定向）；以 A11 事实还原构造实证 3 项命中；当前 input 0 命中 |
+
+## 真正的残余（Phase 17 后，非过度）
+
+| 残余 | 类型 | 说明 |
+|---|---|---|
+| 5 处无 claim 摘录数字（capacity/customers/demand/earnings_call/strategy） | 数据缺口 | `--check-conclusion-facts` 修正后仍命中；来源已注册但数字未摘录（A15 同型），登记 17.8 backlog，不在 17.1 范围 |
+| FF305 回购来源无 claim 摘录 | schema 限制 | 无回购事件类 claim 挂载点（TRUST_BOUNDARY §3） |
+| host-signed tool-event receipt | infra 边界 | Phase 8.4 延续；TRUST_BOUNDARY §5 声明 |
+
+## 当前执行状态（追加）
+
+| Phase | 状态 | 说明 |
+|---|---|---|
+| 17 阿里巴巴会话审查整改 | completed | 17.1 交付物修正（3 无源事实 + FF305 补核 + target ambiguous + 快照 v2 + TRUST_BOUNDARY）；17.3/17.4 lint 双启发式（TDD RED→GREEN，实证 6→5 处/0）；17.2/17.5/17.6/17.7/17.8 文档（checklist/版本纪律/3.6 提案/模板/backlog）；独立审查 APPROVE 后闭环。239 tests / 0 failures / coverage 87% / ruff 0 |
