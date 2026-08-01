@@ -2203,7 +2203,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 18（发行人身份归一：双类股与多地上市公司泛化逻辑）— 状态：pending
+## Phase 18（发行人身份归一：双类股与多地上市公司泛化逻辑）— 状态：pending（已裁决，待实现）
 
 > 编制日期：2026-08-01（Alphabet 会话 17.2 试点触发；用户指令"加到改进清单，做好规划，不用立刻实现"）。
 > 依据：findings.md G1-G4、Alphabet 会话调试记录（resolver.py:331-459、542；assertion_service.py:277-316；scanner.py:983-1003、509-527）。
@@ -2213,11 +2213,11 @@ python -m unittest discover -s tests -v
 
 **总目标**：让"同一发行人的多个 ticker / 多个上市市场"在 company-wiki 身份解析与复用路径中归一化——双类股（GOOGL/GOOG）、多地上市（CN/HK/US 同发行人，如紫金 601899/02899、阿里巴巴 9988/BABA）共享正确文档，同时保持 fail-closed 安全（真冲突仍阻断）。
 
-**设计裁决点**（实现前必须用户确认）：
+**设计裁决（2026-08-01 用户 AskUserQuestion 确认）**：
 
-1. **归一粒度**：以 security_master 的 `canonical_name`（发行人）为身份锚点（GOOGL/GOOG → "Alphabet Inc."），还是维护显式 `issuer_id` 关联表？
-2. **多地上市共享语义**：同发行人不同市场（CN/HK）**共享**文档（按 market 过滤 document_kind 可满足请求）还是**隔离**（各市场独立文档池）？紫金案例（15.3）用 market hint 消歧成功——泛化时保留该行为还是改为发行人级共享？
-3. **断言 supersedes 语义**：verify 新断言是否强制链接并失效旧 verified（G2 修正），还是保留"多 verified 并存 + fail-closed"（更安全但无法更正）？
+1. **归一粒度：方案 A —— 发行人名称锚定**。ticker 请求先解析到 security_master `canonical_name`（GOOGL/GOOG → "Alphabet Inc."），文档关联发行人即可命中；无新数据结构（18.1）。
+2. **多地上市共享语义：方案 A —— 身份共享 + 市场过滤**。身份层共享（同市场双 ticker 互命中），文档层 `market` 仍硬过滤（CN 请求只命中 CN 文档）；保留 15.3 fail-closed（market 冲突仍阻断）（18.1 扩展）。
+3. **断言 supersedes：方案 A —— 修正 verify 自动链接**。新 verified 自动 supersede 同 (source, document, content) 旧 verified，查询沿链取最终值；实现 verify_assertion docstring 承诺（18.2）。
 
 ### 18.1 实体匹配归一（G1-1，核心）
 
