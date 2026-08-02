@@ -8,7 +8,7 @@ The CLI emits validated JSON and can render a Markdown report from the same resu
 - history: source-linked historical company revenue;
 - research coverage: all nine dimensions, status, revenue mechanism, used parameter IDs, sources, and exclusions or gaps;
 - management target coverage: six official-communication checks, complete target ledger, measurement basis and model periods, perimeter treatment, mapped scenarios, per-period modeled values and numerical attainment;
-- growth-driver analysis: up to five positive drivers ranked by reconciled Base terminal segment-revenue increment, negative headwinds, complete causal/evidence nodes, parameter mapping, persistence, leading indicators, falsifiers, and attribution reconciliation;
+- growth-driver analysis: up to five positive drivers ranked by reconciled Base terminal segment-revenue increment, negative headwinds (each with driver ID, thesis, negative Base terminal increment, and ranked), complete causal/evidence nodes, parameter mapping, persistence, leading indicators, falsifiers, and attribution reconciliation; a negative headwind root's `estimated_base_terminal_increment` is negative and its `share_of_positive_driver_increment` is zero;
 - segments: model, formula, driver values, modeled activity, accounting `recognized_revenue`, constraint-adjusted `effective_revenue`, recognition metadata, carry-in, and unrecognized tail;
 - revenue constraints: frozen definitions plus one audit row per constraint/scenario/year with parameter IDs, affected segments, before value, signed adjustment, after value, and before/after totals;
 - consolidated forecast: low/base/high segment bridge, adjustment bridge, annual revenue, annual growth, terminal revenue, CAGR, and incremental contribution;

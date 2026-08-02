@@ -4,6 +4,15 @@ This project follows Semantic Versioning. The runtime release source of truth is
 
 ## Unreleased
 
+- Bumped forecast schema to 3.6. Growth-driver attribution weights now accept
+  `[-1, 1]` excluding zero: a negative root is a quantified revenue headwind and
+  is reported in `growth_driver_analysis.headwinds[]` (with a negative Base
+  terminal increment and zero positive-driver share) instead of being ranked
+  among positive drivers. Segment weight sums still reconcile to 1.0 and driver
+  increments still reconcile to the segment increment. Schema 3.5 becomes legacy
+  read-only; existing positive-weight inputs remain valid unchanged.
+  Implemented per `docs/proposals/headwind-driver-schema.md` (approved 方案 A,
+  rule-10 full change flow); see `references/schema-migration-3.5-to-3.6.md`.
 - Added input-construction helper tools to cut schema 3.5 build round-trips:
   `scripts/generate_input_template.py` emits a field-correct skeleton,
   `scripts/lint_input.py` is a collect-all static pre-flight (field shape,

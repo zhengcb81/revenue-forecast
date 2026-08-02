@@ -17,8 +17,10 @@ Do not produce stock-price, valuation, profitability, cash-generation, investmen
 
 `SKILL_VERSION` in `scripts/revenue_core.py` is the runtime source of truth;
 `ENGINE_VERSION` remains a compatibility alias. The **forecast schema** is
-now **3.5** — every formal result carries a `publication_receipt` signed after
-output validation. Schema 3.4 is supported as **legacy read-only**.
+now **3.6** — every formal result carries a `publication_receipt` signed after
+output validation, and growth-driver attribution may include negative
+(headwind) roots with weights in `[-1, 1]`. Schema 3.5 is supported as
+**legacy read-only**.
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 Revenue model metadata and pure calculators are registered in `scripts/model_registry.py`. Add or change a model there; do not add formula dispatch branches to `revenue_core.py`.

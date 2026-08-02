@@ -1,5 +1,9 @@
 # Schema 3.4 → 3.5 Migration Guide
 
+> Note: schema 3.5 has since been superseded by 3.6; this guide documents the
+> historical 3.4→3.5 transition. For the current schema, see
+> `schema-migration-3.5-to-3.6.md`.
+
 ## What changed
 
 | Aspect | 3.4 (legacy) | 3.5 (current) |

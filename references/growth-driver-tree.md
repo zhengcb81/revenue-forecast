@@ -75,7 +75,7 @@ driver terminal increment(d)
 = Σ [Base terminal segment increment(s) × attribution weight(d,s)]
 ```
 
-Across all roots, weights for each segment sum to one. This permits several causal mechanisms to share one segment without double counting. Positive roots are ranked by computed increment; negative roots are reported as headwinds. Company-level forecast adjustments remain separately visible because the existing company bridge may not assign a base adjustment to an individual operating root.
+Across all roots, weights for each segment sum to one. This permits several causal mechanisms to share one segment without double counting. Each attribution weight lies in `[-1, 1]` and must be non-zero. A negative weight denotes a quantified revenue headwind (for example contra-revenue subsidies); it enters the segment increment sum with its sign and is reported in the headwinds list rather than ranked as a positive driver. Positive roots are ranked by computed increment; negative roots are reported as headwinds. Company-level forecast adjustments remain separately visible because the existing company bridge may not assign a base adjustment to an individual operating root.
 
 ## Output shape
 

@@ -36,6 +36,26 @@ def _republish(result: dict) -> None:
 
 
 class OutputReportTests(unittest.TestCase):
+    def test_forged_headwind_is_rejected_after_recomputation(self) -> None:
+        result = run_forecast(forecast_document())
+        self.assertEqual(result["growth_driver_analysis"]["headwinds"], [])
+        result["growth_driver_analysis"]["headwinds"].append({
+            "driver_id": "forged_headwind",
+            "title": "Forged headwind",
+            "thesis": "Not backed by any driver tree root.",
+            "estimated_base_terminal_increment": -10.0,
+            "share_of_positive_driver_increment": 0.0,
+            "segment_names": ["Segment A"],
+            "causal_chain": ["x", "y"],
+            "evidence_status": "limited",
+            "leading_indicators": ["z"],
+            "falsifiers": ["w"],
+            "rank": 1,
+        })
+        _republish(result)
+        with self.assertRaisesRegex(ForecastInputError, "growth driver analysis recomputation mismatch"):
+            validate_forecast_output(result, forecast_document())
+
     def test_valid_output_and_markdown(self) -> None:
         result = run_forecast(forecast_document())
         validate_forecast_output(result)

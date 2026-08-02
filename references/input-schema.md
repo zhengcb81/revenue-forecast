@@ -2,7 +2,7 @@
 
 ## 1. Identity
 
-Require `schema_version="3.5"`, company, `as_of_date`, currency, scale in
+Require `schema_version="3.6"`, company, `as_of_date`, currency, scale in
 `unit`, fiscal-year end, base year, consecutive forecast years, sources,
 evidence claims, parameters, history, segments, reported-total parameter ID,
 nine-dimension research coverage, a causal growth-driver tree,
@@ -214,7 +214,7 @@ Each root requires a stable ID, concise title/thesis, two-to-eight-step causal c
 }
 ```
 
-Within each root, a segment may appear once. Across all roots, weights for every segment must sum to one. Every mapped parameter must actually enter the Base forecast and be Base/shared. See `growth-driver-tree.md` for research and inference rules.
+Within each root, a segment may appear once. Across all roots, weights for every segment must sum to one. Weights may be negative: a negative weight represents a quantified revenue headwind (for example contra-revenue merchant subsidies), and negative roots are reported separately as headwinds rather than as positive drivers. A weight of zero is rejected, and each weight must lie in `[-1, 1]`. Every mapped parameter must actually enter the Base forecast and be Base/shared. See `growth-driver-tree.md` for research and inference rules.
 
 ## 8. Scenario probabilities
 

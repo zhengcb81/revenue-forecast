@@ -8,8 +8,8 @@ forecast result, and binds both hashes to company, as-of date, forecast version,
 engine version, forecast schema, and snapshot ID. Any input or result mutation
 fails evaluation.
 
-Legacy snapshots (schema 3.4 with a supported engine) pass `validate_snapshot`
-as legacy read-only; only 3.5 snapshots carry a publication receipt and are
+Legacy snapshots (schema 3.4/3.5 with a supported engine) pass `validate_snapshot`
+as legacy read-only; only 3.6 snapshots carry a publication receipt and are
 eligible for current-validated status.
 
 ```powershell

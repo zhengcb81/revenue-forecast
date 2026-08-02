@@ -1679,3 +1679,89 @@ G1-G4（双类股身份归一 1A/2A/3A 已裁决、verify supersedes、scanner �
 - cw_228：**14/14 passed**（原 10P/4F）。
 - **company-wiki 全量：1621 passed / 0 failed / 0 errors（310.65s）**——此前 1 failed + 3035 errors。
 - ruff（2 文件）clean；compileall OK。
+
+## 2026-08-02 — Phase 20：17.6 headwind 实现（schema 3.6，completed）
+
+### TDD 记录
+
+- **RED**（tests/test_growth_driver_tree.py +3）：`test_negative_weight_root_is_reported_as_headwind`（负权重根 → headwinds 输出；当前因 `weight must be in (0, 1]` 拒绝 → RED）、`test_immutable_schema_35_output_still_validates`（3.5 artifact 只读验证；无 3.5 分支 → engine mismatch → RED）。`test_attribution_weight_below_minus_one_is_rejected` / `test_attribution_weight_of_zero_is_rejected` 为 GREEN 护栏（现即拒绝）。
+- **RED**（tests/test_output_report.py +1）：`test_forged_headwind_is_rejected_after_recomputation` — 向已发布结果注入伪造 headwind 后 `_republish` → 断言 validator 重算 `growth driver analysis recomputation mismatch` 拒绝（当前 headwinds 恒空、无该路径 → GREEN；随 3.6 成为防篡改护栏）。
+
+### 生产改动
+
+- `scripts/revenue_core.py`：
+  - `FORECAST_SCHEMA_VERSION` "3.5"→"3.6"；`SUPPORTED_FORECAST_SCHEMA_VERSIONS` 显式加 "3.5"（legacy）。
+  - `_validate_growth_driver_attribution`：权重范围 `(0,1]` → `[-1,1]` 排除 0（负权重 = 量化 headwind）。`calculate_growth_driver_analysis` 既有正负拆分逻辑（L1902-1911 headwinds）现可真正触发。
+- `scripts/revenue_report.py`：
+  - `validate_forecast_output` 新增 `elif schema_version == "3.5":` legacy 分支（镜像 3.4：engine==ENGINE_VERSION + 三字段存在）。
+  - `current_constraint_contract` 集合加 `("3.5", ENGINE_VERSION)`（3.5 artifact 若带 constraints 仍须按 constraint 契约验证）。
+
+### 关键设计点（规则 10 全流程）
+
+- **规则 10 清单**：schema 版本 ✅（3.6）；input/output/compliance/backtesting 文档 ✅；旧 schema fixture/只读兼容测试 ✅（test_immutable_schema_35_output_still_validates）；迁移指南 ✅（references/schema-migration-3.5-to-3.6.md）；CHANGELOG ✅（Unreleased 条目）。SKILL.md 版本节、lint/fix_hashes/generate_template docstring、input-construction 枚举速查同步 3.6。
+- **向后兼容**：现有正权重输入（(0,1]）是 [-1,1] 严格子集 → 零迁移；输出 validator 重算路径（`calculate_growth_driver_analysis`）对负权重自动一致 → 伪造 headwind 被重算拒绝。
+- **字段边界**：负根不出现在 `top_drivers[]`（仅正向排名）、`share_of_positive_driver_increment=0`；`headwinds[]` 含 driver_id/thesis/负增量/rank。
+
+### 质量门（实测）
+
+- `python -m unittest discover -s tests`：**253 tests / 0 failures**（252 + 1 新；含 4 个新 growth + 1 个 headwind 护栏）。
+- `python -m unittest discover -s tools/tests`：4/4 OK。
+- coverage：TOTAL **87%**（4285 stmt / 554 miss，fail-under=84 通过）。
+- ruff 0 errors；compileall OK。
+- ResourceWarning：仅 2 个预存 dayu pipe（filing_acquisition.py:1959，Phase 15 范畴），非本次引入。
+
+### 修改文件
+
+- `scripts/revenue_core.py`、`scripts/revenue_report.py`
+- `tests/test_growth_driver_tree.py`（+4）、`tests/test_output_report.py`（+1）、`tests/test_data_contract.py`（版本断言 3.6）
+- `references/input-schema.md`、`output-schema.md`、`growth-driver-tree.md`、`input-construction.md`、`compliance-contract.md`、`backtesting.md`、`schema-migration-3.5-to-3.6.md`（新建）、`schema-migration-3.4-to-3.5.md`（header 注记）
+- `SKILL.md`、`CHANGELOG.md`、`docs/proposals/headwind-driver-schema.md`（状态改已实现）
+- `scripts/lint_input.py`、`fix_hashes.py`、`generate_input_template.py`（docstring 3.6）
+
+### 未解决
+
+- 无（17.6 范畴内）。headwind 端点到端在真实 forecast 会话中验证（恒运昌/阿里巴巴反例驱动）留待后续会话。
+
+## 2026-08-02 — 余项清零：schema 3.6 headwind + 跨技能 skip 治理（completed）
+
+### 17.6 / Phase 20：headwind driver 实现（schema 3.6，规则 10 全流程）
+
+- **方案 A（weight ∈ [-1,1] 排除 0）落地**。`_validate_growth_driver_attribution` 权重范围 `(0,1]` → `[-1,1]` 排除 0；`calculate_growth_driver_analysis` 既有正负拆分逻辑（headwinds[]）现真正触发。
+- **规则 10 清单**：schema 3.6 + SUPPORTED 显式加 "3.5"；`revenue_report` 加 3.5 legacy 分支 + constraint-contract 集加 `("3.5", ENGINE_VERSION)`；migration guide（`schema-migration-3.5-to-3.6.md` 新建）；input/output/compliance/backtesting/growth-driver-tree/input-construction 文档同步；SKILL.md 版本节；CHANGELOG Unreleased 条目；lint/fix_hashes/generate_template docstring。
+- **测试**（TDD RED→GREEN）：`test_negative_weight_root_is_reported_as_headwind`、`test_attribution_weight_below_minus_one_is_rejected`、`test_attribution_weight_of_zero_is_rejected`、`test_immutable_schema_35_output_still_validates`、`test_forged_headwind_is_rejected_after_recomputation`。
+- 关键设计：负根不进 top_drivers、share_of_positive=0、重算路径自动一致（伪造 headwind 被拒）。
+- **质量门**：revenue **253 tests / 0 failures**（+1）、tools 4/4、coverage 87%（fail-under=84 过）、ruff 0、compileall OK。
+
+### invest-core：SUITE 路径 bug 修复（真实缺陷）+ fixture 修复 + skip 复核
+
+- **真实 bug**：`test_revenue_adapter.py` `SUITE=Path(...).parents[2]` 解析到 `Projects` 而非 invest-core 根 → 套件误加载 `Projects/tests_support` 影子 `revenue_fixtures.py`，真实 fixture 构建器从未被覆盖。
+- **真实 bug**：invest-core 自有 `tests_support/revenue_fixtures.py` 的 `_make_segment_with_effective` 把 `cap_*` 参数（调整 + 约束）重复 add → duplicate parameter_id；修复为 `constraint_cap_*` 独立 ID + 补 `rationale`。修好后经 `REVENUE_FORECAST_DIR` 验证 effective 测试真实走约束路径。
+- skip 复核：`test_schema_3_3_cannot_silently_drop_growth_driver_metadata` 合理 superseded 成立（ref 归一化按设计 heal 缺字段），保留 skip 并更新 rationale。
+- invest-core：**36 tests / OK（skipped=1，复核后保持）** / ruff 0。
+
+### invest-framework：2 skips 全部解除
+
+- **共享 fixture bug**：`Projects/tests_support/revenue_fixtures.py` `_build_legacy_fixture` 强制 schema 3.4 但未重建 publication_receipt → `adapt_revenue` receipt schema mismatch → legacy 测试 ERROR；修复为 `build_publication_receipt` 重建。
+- **heterogeneous fixture 补建**：`_make_heterogeneous_forecast()`（Equipment capacity_utilization / Subscription subscription / Services services 三段 + `equipment_subscription_shared_cap`(sum_cap) + `services_internal_elimination`(elimination)）。关键：主驱动按情景缩放、其余驱动常量，使各段同速增长，proportional cap 不破坏 low<=base<=high；同步 reported_total / 历史基期 / claims / research_coverage / growth_driver_tree。
+- un-skip 两测试 → invest-framework **22 tests / 0 failures / 0 skipped**（原 22/18/4 记录过期；9920a38 已 20/2）。ruff 0 / compileall OK。
+- 说明：本环境 invest-framework 基线因 `.agents` 安装副本（schema 3.5）与本地 canonical（3.6）漂移而失败；用 `REVENUE_FORECAST_DIR` 指向本地后全绿（= 文档化 install-sync 流程的前置状态）。
+
+### filing-fetch：skips 评估（均设计内，无需修复）
+
+- 93 hermetic tests / 0 failures；ruff 0。
+- 4 个 skip 为 `FILING_FETCH_E2E_DOWNLOAD=1` 显式 opt-in 真实下载门（需授权+网络，设计内）。
+- 1 个 `catalog locked` 为正确运行时守卫（3 次退避后仅当其他 worker 真持锁才 skip）。
+- task_plan 残余表"ambiguous identity flaky"：该测试现已 GREEN（`test_identify_ambiguous_is_structured_not_failed ... ok`）——非 flaky。
+
+### 17.2 检查单
+
+- 已两次试点（Alphabet 会话 7 项命中全处置 + Phase 19 深化）；检查单与命中记录表就绪，永久生效。
+
+### 文档更新
+
+- task_plan：执行状态表加 Phase 20 行；残余表更新（invest-framework/invest-core 已解决、filing-fetch 分类为设计内）；15.7 远期项表更新（错误信息引导已由 19.2 完成；登记 host-signed receipt / 18.3）。
+- progress.md 本段。
+
+### 未提交 / 未解决
+
+- 未提交（用户未要求）。`.agents` 安装副本同步（revenue 3.6 → installs）为 outward-facing 步骤，待用户授权。

@@ -1,6 +1,6 @@
 # Revenue workflow compliance contract
 
-Schema 3.5 makes the formal route machine-verifiable. It does not claim that code can prove an external statement is economically true. Schema 3.4 remains a supported legacy format.
+Schema 3.6 makes the formal route machine-verifiable. It does not claim that code can prove an external statement is economically true. Schema 3.5 and earlier remain supported legacy formats.
 
 ## Source capture
 

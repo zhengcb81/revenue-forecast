@@ -1,6 +1,6 @@
-# Input Construction (Schema 3.5)
+# Input Construction (Schema 3.6)
 
-Building a schema 3.5 input from scratch is the slowest part of forecasting — a
+Building a schema 3.6 input from scratch is the slowest part of forecasting — a
 real 2026-07-30 exercise took 23 fail-fast rounds before the input validated.
 Analysis of those failures: field-name/shape mistakes 65%, cross-reference
 integrity 26%, hash self-consistency 9%. This page lists the conventions that
@@ -63,7 +63,7 @@ Binding rules (kept backtick-sparse on the bullet lines above so the guard can p
 - No `fiscal_year` time basis exists, and no `growth_rate` parameter dimension exists — express a growth rate as a `ratio`.
 - Currency/scale: a parameter whose dimension is in `MONETARY_DIMENSIONS` must carry `currency` equal to the top-level `currency` and `scale` equal to the top-level `unit`.
 - A historical-revenue claim `unit` must be exactly `{currency} {unit}` (for example `USD million`, `RMB 100M`), not the bare unit.
-- Growth-driver tree: `horizon` is an object `{start_year, end_year}` (ints); each `segment_attribution` weight is in the half-open interval (0, 1] and reconciles to the segment's incremental revenue; evidence lives in `evidence_nodes`, and every evidence claim has `target_type` `growth_driver` with `support_type` `rationale_support`.
+- Growth-driver tree: `horizon` is an object `{start_year, end_year}` (ints); each `segment_attribution` weight lies in `[-1, 1]` excluding zero (negative = quantified headwind) and all weights for a segment reconcile to 1.0; evidence lives in `evidence_nodes`, and every evidence claim has `target_type` `growth_driver` with `support_type` `rationale_support`.
 - Recognition: a segment's `modeled_presentation` must equal its `presentation`, and `basis_claim_ids` must reference a `recognition_policy` claim (support_type `policy_support`).
 - Sensitivity: a test may shock a parameter only if that parameter is referenced by the **base** scenario — low/high-only parameters are rejected.
 
@@ -155,7 +155,7 @@ def add_claim(cid, source_id, target_type, target_id, support, locator, excerpt,
 4. **Growth rates** — `for seg × year × scenario`: `add_param(<seg>_<scenario>_<year>_g, "ratio", …)`. Base rates come from research; low/high are multipliers or independent paths.
 5. **Growth-driver evidence** — for each `evidence_nodes` entry: `add_claim(target_type="growth_driver", support="rationale_support")`.
 6. **Recognition** — per segment: `add_claim("recognition_policy", "policy_support")`, set `recognition.basis_claim_ids`, and keep `modeled_presentation == presentation`.
-7. **Assemble** the top-level document: `schema_version` 3.5, `currency`, `unit`, `fiscal_year_end`, `base_year`, `forecast_years`, `sources`, `parameters`, `evidence_claims`, `segments`, `reported_total_revenue_parameter_id`, `base_adjustment_parameter_ids`, `historical_revenue`, `research_coverage`, `management_communication_coverage`, `growth_driver_tree`, `management_targets`, `sensitivity_tests`, …
+7. **Assemble** the top-level document: `schema_version` 3.6, `currency`, `unit`, `fiscal_year_end`, `base_year`, `forecast_years`, `sources`, `parameters`, `evidence_claims`, `segments`, `reported_total_revenue_parameter_id`, `base_adjustment_parameter_ids`, `historical_revenue`, `research_coverage`, `management_communication_coverage`, `growth_driver_tree`, `management_targets`, `sensitivity_tests`, …
 
 ### Validate iteration (drive round-count down)
 

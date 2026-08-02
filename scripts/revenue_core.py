@@ -45,8 +45,8 @@ SCENARIOS = ("low", "base", "high")
 SKILL_VERSION = "3.10.0"
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
-FORECAST_SCHEMA_VERSION = "3.5"
-SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", "3.1", "3.2", "3.3", "3.4", FORECAST_SCHEMA_VERSION}
+FORECAST_SCHEMA_VERSION = "3.6"
+SUPPORTED_FORECAST_SCHEMA_VERSIONS = {"3.0", "3.1", "3.2", "3.3", "3.4", "3.5", FORECAST_SCHEMA_VERSION}
 WORKFLOW_RECEIPT_SCHEMA_VERSION = "1.0"
 PUBLICATION_RECEIPT_SCHEMA_VERSION = "1.0"
 PARAMETER_KINDS = {
@@ -1640,7 +1640,7 @@ def _validate_growth_driver_attribution(
         require(segment_name not in seen_segments, f"duplicate segment attribution in {driver_id}: {segment_name}")
         seen_segments.add(segment_name)
         weight = finite_number(item.get("weight"), f"{driver_id}.segment_attribution[{position}].weight")
-        require(0 < weight <= 1, f"growth driver attribution weight must be in (0, 1]: {driver_id}/{segment_name}")
+        require(-1 <= weight <= 1 and weight != 0, f"growth driver attribution weight must be in [-1, 1] excluding zero: {driver_id}/{segment_name}")
         attribution_totals[segment_name] += weight
         normalized.append({"segment_name": segment_name, "weight": weight})
     return seen_segments, normalized

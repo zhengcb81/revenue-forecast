@@ -1620,9 +1620,9 @@ python -m coverage report -m --fail-under=84
 
 | 残余 | 类型 | 说明 |
 |---|---|---|
-| invest-framework 2 skips | 跨 repo fixture | heterogeneous multi-model segment + manifest constraint building——不影响 production |
-| invest-core 1 skip | 合理 superseded | schema 3.3 growth driver drop check——publication gate 已从更高层覆盖 |
-| filing-fetch 2 flaky skips | 真实环境依赖 | catalog locked + ambiguous identity（company-wiki 状态相关） |
+| ~~invest-framework 2 skips~~ | 已解决 | 2026-08-02 补建 heterogeneous 多模型+约束 fixture + 修复共享 `_build_legacy_fixture` receipt bug → 22 tests / 0 skip |
+| ~~invest-core 1 skip~~ | 已复核 | 合理 superseded 成立；顺带修复 invest-core tests `SUITE=parents[2]` 路径 bug（误加载 Projects/tests_support 影子）+ `_make_segment_with_effective` 重复参数 bug |
+| filing-fetch skips | 设计内（4 项）| 4 项为 `FILING_FETCH_E2E_DOWNLOAD=1` 显式 opt-in 真实下载门；`catalog locked` 为正确运行时守卫（3 次退避后仅当其他 worker 真持锁才 skip）；ambiguous identity 测试已转 GREEN（非 flaky） |
 | Phase 8 host-signed receipt | infra 边界 | 结构化字段已就位；真实验证需要 trusted agent 运行时 |
 
 ---
@@ -1808,7 +1808,9 @@ python -m coverage report -m --fail-under=84
 | dayu 管道状态机对齐 | dayu `ingest_complete`（planned→downloaded→ingested）与 company-wiki `source_status` 建立映射/同步 |
 | worker 批间退避 | `backfill_text_fingerprints` 等批量操作批间加数秒退避，减少锁抢占窗口 |
 | catalog 备份自动化 | 备份保留策略落地（15.1.5 的延续）、磁盘余量告警、备份产物校验 |
-| 错误信息引导 | P1：identify ambiguous 响应携带候选列表 + 消歧字段提示（如"补充 market/exchange 或 ticker"） |
+| ~~错误信息引导~~ | ✅ 已于 Phase 19.2 实现：filing-fetch ambiguous 响应携带 `candidates[]` + `hint`（19bdd50），本表更新 |
+| host-signed tool-event receipt | Phase 8 信任边界：需要 trusted agent 运行时，非本仓库可独立落地（residual 表已登记） |
+| 18.3 scanner 字段级合并 | 用户 2026-08-02 裁定跳过（residual 表已登记） |
 
 ### 15.8 非目标
 
@@ -2166,6 +2168,7 @@ python -m unittest discover -s tests -v
 | 17 阿里巴巴会话审查整改 | pending | 17.1 交付物修正 / 17.2-17.5 工具与文档 / 17.6 schema 3.6 提案 / 17.7 信任边界 / 17.8 backlog / 17.9 验收矩阵 |
 | 18 发行人身份归一（双类股/多地上市） | completed（2026-08-02） | 18.1 issuer 锚定 / 18.2 supersedes 链 / 18.4 SEC sidecar / 18.5 治理文档 ✅（company-wiki d1d444a）；18.3 用户裁定跳过 |
 | 19 Alphabet 会话复盘整改 | completed（2026-08-02） | 19.1-19.7 全部 ✅（19.6 --debug 随 Phase 18 resolve 诊断一并落地） |
+| 20 17.6 headwind 实现（schema 3.6） | completed（2026-08-02） | 权重 [-1,1] 排除 0；负根进 headwinds[]；3.5 legacy 只读；规则 10 全流程；253 tests / 0 failures / 87% / ruff 0 |
 
 
 ---
@@ -2198,7 +2201,7 @@ python -m unittest discover -s tests -v
 ## Phase 17 后记（2026-08-01，收尾处理）
 
 - **17.9 B 闭环**：5 处无摘录数字（capacity/customers/demand/earnings_call/strategy）补录 6 条 claim（excerpt 摘录自真实来源 + 换算对照）→ `--check-conclusion-facts` **0 命中**；数值零变化；快照 v3（facdc590…）validate PASS；v1/v2 保留。详见 progress.md 2026-08-01「17.9 B 闭环」段。
-- **17.6 评审（用户裁决）**：方案 A（weight∈[-1,1]）通过；实现登记为后续工作（新 Phase，规则 10 全流程），本 Phase 不实现。提案文档已更新评审结论。
+- **17.6 评审（用户裁决）**：方案 A（weight∈[-1,1]）通过；**实现已于 2026-08-02 完成**（schema 3.6：权重放宽到 [-1,1] 排除 0、负根进 `headwinds[]`、3.5 转 legacy 只读、规则 10 全流程文档/迁移指南/fixture 测试；253 tests / 0 failures / coverage 87% / ruff 0）。详见 progress.md 2026-08-02「17.6 schema 3.6 headwind」段。
 - **17.1.2 结案**：claim 绑定受 schema 枚举限制，以记录级 source_ids 绑定替代（A2 实质达成）——维持 TRUST_BOUNDARY §3 偏差记录，不追加动作。
 - **17.2 试点**：待下一次真实 forecast 会话执行（检查单命中记录表已备好）。
 - **合并**：phase-14-input-build-tools 合并入 main（用户指令）。

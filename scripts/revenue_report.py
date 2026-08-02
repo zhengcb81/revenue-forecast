@@ -113,6 +113,11 @@ def validate_forecast_output(result: dict[str, Any], data: dict[str, Any] | None
         require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
         require("growth_driver_analysis" in result, "forecast output missing field: growth_driver_analysis")
         require("workflow_compliance_receipt" in result, "forecast output missing field: workflow_compliance_receipt")
+    elif result["schema_version"] == "3.5":
+        require(result["engine_version"] == ENGINE_VERSION, "legacy forecast output engine_version mismatch")
+        require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
+        require("growth_driver_analysis" in result, "forecast output missing field: growth_driver_analysis")
+        require("workflow_compliance_receipt" in result, "forecast output missing field: workflow_compliance_receipt")
     elif result["schema_version"] == "3.3":
         require(result["engine_version"] == "3.4.0", "legacy forecast output engine_version mismatch")
         require("management_target_coverage" in result, "forecast output missing field: management_target_coverage")
@@ -157,7 +162,7 @@ def validate_forecast_output(result: dict[str, Any], data: dict[str, Any] | None
 
     current_constraint_contract = (
         (result["schema_version"], result["engine_version"])
-        in {("3.2", "3.3.0"), ("3.3", "3.4.0"), (FORECAST_SCHEMA_VERSION, ENGINE_VERSION)}
+        in {("3.2", "3.3.0"), ("3.3", "3.4.0"), ("3.5", ENGINE_VERSION), (FORECAST_SCHEMA_VERSION, ENGINE_VERSION)}
     )
     if current_constraint_contract:
         require(isinstance(result.get("revenue_constraints"), list), "forecast output missing revenue_constraints")

@@ -8,7 +8,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from revenue_core import ForecastInputError, canonical_sha256, run_forecast  # noqa: E402
+from revenue_core import (  # noqa: E402
+    ENGINE_VERSION,
+    ForecastInputError,
+    canonical_sha256,
+    run_forecast,
+)
+from revenue_report import validate_forecast_output  # noqa: E402
 from test_data_contract import _claim  # noqa: E402
 from test_recognition_bridge import forecast_document  # noqa: E402
 
@@ -130,6 +136,71 @@ class GrowthDriverTreeTests(unittest.TestCase):
         result = run_forecast(data)
         first = next(item for item in result["growth_driver_analysis"]["drivers"] if item["driver_id"] == driver["driver_id"])
         self.assertEqual(first["evidence_status"], "triangulated")
+
+
+    def test_negative_weight_root_is_reported_as_headwind(self) -> None:
+        data = forecast_document()
+        original = data["growth_driver_tree"]["drivers"][0]
+        original["segment_attribution"][0]["weight"] = 0.8
+        second = copy.deepcopy(original)
+        second["driver_id"] = "second_generic_cause"
+        second["title"] = "Second generic causal mechanism"
+        second["segment_attribution"][0]["weight"] = 0.4
+        second["evidence_nodes"][0]["evidence_id"] = "second_generic_evidence"
+        second["evidence_nodes"][0]["claim_ids"] = ["claim_second_generic_evidence"]
+        added_claim = _claim(
+            "claim_second_generic_evidence", "filing", "growth_driver", "second_generic_evidence",
+            "rationale_support", "A second checked source claim supports this generic causal mechanism.",
+            data["as_of_date"],
+        )
+        added_claim["capture_receipt_sha256"] = data["sources"][0]["capture"]["receipt_sha256"]
+        data["evidence_claims"].append(added_claim)
+        headwind = copy.deepcopy(original)
+        headwind["driver_id"] = "subsidy_contra_revenue"
+        headwind["title"] = "Merchant subsidies weigh on take rate"
+        headwind["segment_attribution"][0]["weight"] = -0.2
+        headwind["evidence_nodes"][0]["evidence_id"] = "subsidy_evidence"
+        headwind["evidence_nodes"][0]["claim_ids"] = ["claim_subsidy_evidence"]
+        added_claim = _claim(
+            "claim_subsidy_evidence", "filing", "growth_driver", "subsidy_evidence",
+            "rationale_support",
+            "A checked source claim supports the modeled contra-revenue pressure.",
+            data["as_of_date"],
+        )
+        added_claim["capture_receipt_sha256"] = data["sources"][0]["capture"]["receipt_sha256"]
+        data["evidence_claims"].append(added_claim)
+        data["growth_driver_tree"]["drivers"] = [original, second, headwind] + data["growth_driver_tree"]["drivers"][1:]
+        result = run_forecast(data)
+        analysis = result["growth_driver_analysis"]
+        self.assertTrue(analysis["headwinds"])
+        self.assertEqual(analysis["headwinds"][0]["driver_id"], "subsidy_contra_revenue")
+        self.assertAlmostEqual(analysis["headwinds"][0]["estimated_base_terminal_increment"], -4.2)
+        self.assertAlmostEqual(analysis["reconciliation"]["difference"], 0.0)
+        top_ids = [driver["driver_id"] for driver in analysis["top_drivers"]]
+        self.assertNotIn("subsidy_contra_revenue", top_ids)
+
+    def test_attribution_weight_below_minus_one_is_rejected(self) -> None:
+        data = forecast_document()
+        data["growth_driver_tree"]["drivers"][0]["segment_attribution"][0]["weight"] = -1.5
+        with self.assertRaisesRegex(ForecastInputError, "weight must be in"):
+            run_forecast(data)
+
+    def test_attribution_weight_of_zero_is_rejected(self) -> None:
+        data = forecast_document()
+        data["growth_driver_tree"]["drivers"][0]["segment_attribution"][0]["weight"] = 0.0
+        with self.assertRaisesRegex(ForecastInputError, "weight must be in"):
+            run_forecast(data)
+
+    def test_immutable_schema_35_output_still_validates(self) -> None:
+        legacy = run_forecast(forecast_document())
+        legacy["schema_version"] = "3.5"
+        legacy["engine_version"] = ENGINE_VERSION
+        legacy["publication_receipt"]["schema_version"] = "3.5"
+        legacy["publication_receipt"]["receipt_sha256"] = canonical_sha256(
+            {k: v for k, v in legacy["publication_receipt"].items() if k != "receipt_sha256"}
+        )
+        legacy["result_sha256"] = canonical_sha256({k: v for k, v in legacy.items() if k != "result_sha256"})
+        validate_forecast_output(legacy)
 
 
 if __name__ == "__main__":
