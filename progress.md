@@ -1514,3 +1514,168 @@ G1-G4（双类股身份归一 1A/2A/3A 已裁决、verify supersedes、scanner �
 
 ### 未提交
 - 用户未要求提交。revenue-forecast 改动（生产 1 + 测试 3 + 文档 4 + progress/task_plan）+ filing-fetch 改动（生产 2 + 测试 1 + 文档 1）均在工作区。
+
+## 2026-08-02 — 提交 Phase 19 + 启动 Phase 18（worker 暂停）
+
+- 提交：revenue-forecast `phase-19-tooling-docs`（6cc822f feat + 161847f docs）；filing-fetch `phase-19-ambiguous-candidates`（19bdd50；filing-fetch 仓内既有 WIP——.gitignore/CHANGELOG/pyproject/e2e——未动）。
+- 用户裁决：暂停 company-wiki worker 完成整个 Phase 18。已执行 `worker-pause`（desired_state=paused、runtime stopped、worker_instance.lock 移除）。
+
+## 2026-08-02 — Phase 18.1 resolver issuer-name anchoring（completed）
+
+### TDD
+- RED（tests/contract/test_source_catalog_resolver.py +3 测试，fixture 写 temp `security_master/us.json` 含 GOOG/GOOGL → canonical_name "Alphabet Inc."）：
+  - `test_resolver_anchors_ticker_to_issuer_canonical_name`：GOOGL 请求 → Alphabet 文档（现 MISSING → RED）。
+  - `test_resolver_matches_sibling_ticker_and_alias_of_same_issuer`：GOOG / "Alphabet" 请求 → GOOGL 文档（现 MISSING → RED）。
+  - `test_resolver_unknown_ticker_does_not_anchor_to_unrelated_issuer`：MSFT → MISSING（GREEN 护栏，防过度匹配）。
+- 2 RED 均因缺陷失败（`_entity_matches` 纯精确匹配）；护栏通过。
+
+### 生产改动（`src/company_wiki/source_catalog/resolver.py`）
+- 新增 `_load_issuer_index`（`lru_cache(8)`）：读 `catalog_dir/security_master/{cn,hk,us}.json` → `(token_to_issuer, issuer_tokens)`。token = canonical_name/aliases/ticker/security_id；issuer = canonical_name.casefold()（同 issuer 多 class 共享，如 GOOGL/GOOG/GOOGM/GOOGN → "alphabet inc."，CIK 0001652044）；跨 issuer 共享 token 标 `_AMBIGUOUS_ISSUER`（不锚定，fail-closed）。
+- `SourceResolver._issuer_index()`：从 `self.catalog.config.catalog_dir` 加载。
+- `_entity_matches` 由 `@staticmethod` 转实例方法：直接匹配失败后走 issuer 锚定（wanted → issuer → issuer_tokens ∩ doc_values）。市场过滤仍由 `_identity_matches` 严格把关（18.0 裁决 #2）。
+
+### 质量门（实测）
+- targeted：resolver 12 + identity_resolver 10 + acquisition 5 = **27/27 OK**。
+- source_catalog contract 子集（resolver/identity/acquisition/canonical_writer/download_suppression/placeholder_governance/url_enrichment/retire/assertion/pipeline/adapter_process）：**75 passed / 0 failed**。
+- ruff（resolver.py + test）：All checks passed。
+- **环境性发现（非本改动引入）**：本 bash 环境 Windows multiprocessing spawn 损坏——平凡 `mp.Pool.map([1,2,3])` 挂起；cw_228 等 spawn 测试 WinError 6；全量 3035 errors 级联。平凡 spawn 不 import 任何 company-wiki 代码即挂起，故与 resolver 改动无关。全量回归需在用户终端执行（基线 1543 即用户环境得出）。
+
+### 修改文件
+- `src/company_wiki/source_catalog/resolver.py`（_load_issuer_index + _entity_matches 实例化 + 锚定）
+- `tests/contract/test_source_catalog_resolver.py`（+3 测试 + _alphabet_catalog fixture）
+
+### 未解决
+- 全量 suite 环境性限制（见上）；下一步 18.2。
+
+## 2026-08-02 — Phase 18.2 assertion supersedes 链（completed）
+
+### TDD
+- RED（tests/contract/test_assertion_service.py +1）：`test_second_verify_supersedes_prior_verified_and_resolves_to_latest`——GOOGL verified → verify GOOG（同 source/document/content）→ 断言 `v2.supersedes == v1.assertion_id` + 查询返回 GOOG（现 v2 自引用自身候选、两 verified 并存 → None → RED）。
+- 契约变更（计划内 18.2）：`test_conflict_verified_returns_none` → 改名 `test_second_verify_supersedes_prior_verified_same_evidence`（同证据二次 verify 解析为最新 Corp B）；新增 `test_conflict_on_different_evidence_returns_none` 对照（不同 content → 仍 None，fail-closed 保留）。
+
+### 生产改动（`src/company_wiki/source_catalog/assertion_service.py`）
+- `verify_assertion`：查同 (source_id, document_id, content_sha256) 的 active verified → 新 verified 的 `supersedes_assertion_id` 指向最新者；无 prior 时保持指向自身候选（保留"已提升候选不可再 reject"语义，`test_reject_only_candidate` 不破）。
+- 新增 `_resolve_active_verified`：单 active 直接返回；多 active 同 evidence key → 返回最新（created_at DESC）；不同 evidence key → None（fail-closed 保留）。
+- `get_verified_assertion` / `get_verified_assertion_by_document` 改用该 helper（同时治愈 18.2 前的历史损坏行：同 key 多 active 解析到最新——Alphabet 现存 GOOGL/GOOG 双 verified 即此形态）。
+
+### 质量门（实测）
+- assertion 9 + resolver 12 + identity_resolver 10 = **31/31**；source_catalog contract 子集 **77 passed / 0 failed**；ruff（assertion_service.py + test）clean。
+
+### 修改文件
+- `src/company_wiki/source_catalog/assertion_service.py`（verify 链 + _resolve_active_verified + 两 getter）
+- `tests/contract/test_assertion_service.py`（+1 RED、+1 改名、+1 对照）
+
+### 未解决
+- CLI verify 命令无独立非 spawn 测试（control 测试 spawn-based，环境限制）；下一步 18.4。
+
+## 2026-08-02 — Phase 18.4 SEC sidecar market 补全（completed）
+
+### 核验与缺口
+- dayu portfolio 摄入已有 SEC market=US 补全（scanner.py:558-565，Phase 17 pilot，`test_dayu_sec_document_gets_market_and_security_id` 覆盖）；**company_raw 路径缺**（仅 16.1 URL 补全）。
+
+### TDD
+- RED（tests/contract/test_source_catalog_url_enrichment.py +1）：`test_company_raw_sec_sidecar_gets_market_and_security_id`——company_raw SEC sidecar（accession_number/provider=sec 无 market）→ 摄入后 acquisition.market==US、security_id==GOOG（现 None → RED）。
+- GREEN：scanner.py company_raw 分支（16.1 URL 补全后）加 SEC 身份回填：`is_sec = accession_number or provider==sec or form_type 10-/20-/6-` → market="US"（缺失时）+ security_id=ticker（缺失时）。
+- 顺带清理：同文件既有 F401 未使用导入 6 处（Phase 16.1 遗留，L40/L160-164）——本项目 ruff 0 门槛。
+
+### 质量门（实测）
+- url_enrichment 6 + pipeline 14 + placeholder_governance 3 + canonical_writer 6 = **29 passed / 0 failed**；ruff clean；compileall OK。
+
+### 修改文件
+- `src/company_wiki/source_catalog/scanner.py`（company_raw SEC 回填）
+- `tests/contract/test_source_catalog_url_enrichment.py`（+1 测试、-6 既有 F401）
+
+### 未解决
+- 下一步 19.6（--debug）。
+
+## 2026-08-02 — Phase 19.6 --debug resolve 诊断（completed）
+
+### TDD（company-wiki 侧）
+- RED：`test_resolve_debug_trace_names_candidate_exclusion_reasons`（test_source_catalog_resolver.py）——非 reused 解析必须携带 debug_trace（现无 → RED）。
+- GREEN：`resolver.py`——`ResolutionResult.debug_trace` 字段（to_dict 非空才输出）；`resolve()` 循环逐候选记录排除原因（document_kind / identity_conflict / fiscal_year / form_type / fiscal_period / language / provider / provider_doc / date_unknown / published_after / canonical_location / handle / capture 各步 + `entity_gate_rejected: N` 计数 + matched）；`_result` 透传。
+
+### TDD（filing-fetch 侧）
+- RED +2：`test_resolve_not_found_carries_debug_trace_on_error`（resolve payload 带 debug_trace → FilingFetchError.debug_trace，现无 → RED）；`test_main_debug_flag_emits_debug_trace`（--debug 时错误响应含 debug_trace，现 argparse 不认 --debug → RED）。
+- GREEN：`filing_contracts.py` `FilingFetchError` + debug_trace；`fetch_filing.py` not_found raise 附 `resolution.get("debug_trace")`；`main()` + `--debug` flag + 条件输出；SKILL.md Command 节 + Notes 补 --debug。
+
+### 质量门（实测）
+- company-wiki 子集（resolver/identity/acquisition/suppression/assertion/url_enrichment）：**46 passed / 0 failed**；ruff clean。
+- filing-fetch：**117 tests / OK（skipped=5）**（115+2）；ruff clean；compileall OK。
+
+### 修改文件
+- company-wiki：`src/company_wiki/source_catalog/resolver.py`、`tests/contract/test_source_catalog_resolver.py`（+1）
+- filing-fetch：`scripts/filing_contracts.py`、`scripts/fetch_filing.py`、`SKILL.md`、`tests/test_fetch_filing.py`（+2）
+
+### 未解决
+- 下一步 18.5（治理文档）。
+
+## 2026-08-02 — Phase 18.5 治理文档（completed）
+
+- company-wiki `docs/OPERATIONS.md`：「十三、身份断言与发行人归一协议」——断言使用时机、更正流程（supersedes 链，reject 只接受 candidate）、发行人归一语义（双类股锚定 + market 硬过滤 + 跨 issuer token fail-closed）、resolve 诊断（debug_trace）。
+- filing-fetch `references/identity.md`（新建，references/ 目录首次创建）：双类股/多地上市请求写法（任一 ticker / market hint / candidates 消歧）、not_found --debug 排查（debug_trace 含义与示例）。
+- 19.5 检查单 §2 身份预判已在 Phase 19 轮完成（不重复）。
+
+### 修改文件
+- company-wiki：`docs/OPERATIONS.md`（+十三）
+- filing-fetch：`references/identity.md`（新建）
+
+### 未解决
+- Phase 18 代码与文档全部完成；下一步：重启 worker（16.3 协议）+ 提交。
+
+## 2026-08-02 — Phase 18 完成 + worker 重启（16.3 协议）
+
+### 提交
+- company-wiki：`d1d444a`（branch `phase-18-issuer-identity`，7 文件）——18.1/18.2/18.4/18.5 + 19.6 resolve 侧 + Phase 17 dayu SEC pilot（同域、此前未提交，一并纳入并注明）。无关 WIP（companies/* wiki、README、.env 等）未动。
+- filing-fetch：`fd95d30`（branch `phase-19-ambiguous-candidates`，5 文件）——19.6 透传 + `references/identity.md`。既有 WIP（.gitignore/CHANGELOG/pyproject/e2e）未动。
+
+### worker 重启（16.3 协议）
+- 发现：resume 报 `already_running`——worker 以陈旧代码 **bcb57d9** 运行（F13 型漂移，早于本会话存在；本会话 worker-pause 后 launcher 又拉起了旧代码 worker）。
+- 处置：`worker-stop`（stopped）→ `worker-resume`（spawned supervisor 4328 / worker 18252）→ **`code_version d1d444a == git HEAD`** ✓，`worker_status: normalizing`（backfill 从断点续），`last_error: None`。
+
+### 全量回归限制（如实记录）
+- 本 harness 环境 Windows multiprocessing spawn 损坏（平凡 `mp.Pool.map` 挂起 + cw_228 等 spawn 测试 WinError 6 + 全量 3035 errors 级联）→ company-wiki 全量（~1500 级）无法在本环境跑。已用 **source_catalog contract 子集（46+ passed）+ filing-fetch 全量（117）+ revenue 全量（248）** 覆盖。**建议在用户终端跑一次 company-wiki 全量确认**（spawn 正常的环境）。
+
+### 本轮 Phase 18/19 总账
+- Phase 18：18.1 / 18.2 / 18.4 / 18.5 completed（18.3 用户裁定跳过）。
+- Phase 19：19.1-19.7 **全部** completed（19.6 随 Phase 18 resolve 诊断一并落地）。
+- 指标：revenue-forecast 248 / 0 failures；filing-fetch 117 / OK（skipped=5）；company-wiki 子集 46+ / 0 failed。
+
+## 2026-08-02 — Phase 18.7 真实环境验收（Alphabet 场景端到端，只读）
+
+全部用 filing-fetch 对真实 catalog 只读调用（worker 运行中，15.2 锁重试生效）：
+
+| 场景 | 结果 |
+|---|---|
+| GOOGL (US, FY2025) | **capture_ready**——复用 Alphabet 10-K（content_sha256 c2f63010…，entity_ids: company-name:Alphabet Inc + ticker:GOOG）——**原始 G1 死锁解除** |
+| GOOG (US, FY2025) | capture_ready，同一 content_sha256——18.1 双向 |
+| GOOGL FY2024 + `--debug` | not_found + debug_trace：`entity_gate_rejected: 23525` + `Alphabet Inc. 10-K 2025-12-31: fiscal_year_mismatch`（19.6 验收达成：排除原因链一次给出） |
+| 601899 (CN, FY2024) | capture_ready——cninfo 2024 年报复用（market 路由 ✓） |
+| 02899 (HK, FY2024) + `--debug` | not_found——CN 文档经 `identity_conflict_market_or_security_id` 阻断（fail-closed ✓） |
+
+关键观察：HK 请求的 trace 显示 CN 文档在**实体层命中**（同 canonical_name 的身份层共享，18.1 设计行为）、随后在**身份层被 market 过滤**（`_identity_matches` 硬过滤）——18.0 裁决 #2 语义精确复现：身份层共享、文档层过滤。终端显示乱码仅为 console 编码，底层数据 UTF-8 正确。
+
+验收对照 18.7：GOOGL/GOOG 互查命中同一 10-K ✓；CN/HK 按 market 正确路由且不误共享 ✓；断言 supersedes（间接：resolve 不再被双 verified 卡死）✓；`--debug` 排除链 ✓；重扫补全（18.4，worker 下轮 scan 应用）。
+
+## 2026-08-02 — company-wiki 全量失败根因诊断与修复（WR-10.15 回归）
+
+### 根因（三层，全部与 Phase 18 代码无关）
+
+1. **确定性回归**：WR-10.15 commit `48999c9`（2026-08-02，并行会话）把 `backfill_text_fingerprints` 的解析器执行重构为 spawn 隔离子进程（`_run_parser_isolated` + `get_context("spawn")`，normalizer.py +722 行）——但未更新 cw_228 RED 测试（docstring 明示 "MUST FAIL before Phase 2 implementation"，48999c9 即 Phase 2）。测试用**局部闭包** monkeypatch `_normalize_source`（`selective_fail`/`empty_for_target`/`raise_for_bad`）→ 闭包无法 pickle 进 spawn 子进程（已直接证明 `AttributeError: Can't get local object`）→ 父进程 AttributeError、子进程 `EOFError: Ran out of input` → 3 测试失败。对照组 `_FailingParser`（模块级类实例，可 pickle）通过——印证。
+2. **t2_07**：`progress` 回调在解析中（heartbeat）把 `processed` 置 1 → 解析循环内 `should_stop()`（normalizer L541）取消在飞解析 → completed=0。测试设计与新语义冲突。
+3. **级联（3035 errors）**：失败 spawn 子进程 stderr 含中文路径，以 **GBK** 写出 → pytest capture 按 UTF-8 解码 → `UnicodeDecodeError`（`_pytest/capture.py`）→ 后续每测试 ERROR。
+
+### 此前的误判（已纠正）
+- "harness 环境 spawn 损坏"结论**错误**：spawn 正常（worker 子进程在跑；平凡 spawn 测试的"挂起"是 `python -c` + Pool 的函数 pickle 陷阱）。
+
+### 修复（commit `dd6ab15`，2 文件）
+- `tests/contract/test_cw_228_backfill.py`：
+  - 3 个闭包 → **模块级路径式 parser**（`_selective_fail_parser`/`_empty_for_target_parser`/`_raise_for_bad_parser`，行为自包含、按引用 pickle，镜像 `_FailingParser` 模式）；
+  - t2_07 `should_stop` 改 **DB 完成检测**（`text_fingerprint IS NOT NULL`）替代 heartbeat progress；
+  - empty 模拟 status `"parsed"` → `"unsupported"`（spawn 信封协议要求 completed/partial/unsupported/failed）；
+  - t2_05 错误码断言 `RuntimeError` → `ParserProcessError`（spawn 包装类型，子进程原类型保留在 message）。
+- `src/company_wiki/source_catalog/normalizer.py`（生产防御）：`_run_parser_isolated` 在 spawn 前 `os.environ.setdefault("PYTHONUTF8", "1")`——spawn 子进程 stderr 强制 UTF-8，防止未来失败子进程的 GBK 字节破坏 UTF-8 解码采集器。
+
+### 验证（实测）
+- cw_228：**14/14 passed**（原 10P/4F）。
+- **company-wiki 全量：1621 passed / 0 failed / 0 errors（310.65s）**——此前 1 failed + 3035 errors。
+- ruff（2 文件）clean；compileall OK。
