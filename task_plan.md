@@ -2164,6 +2164,8 @@ python -m unittest discover -s tests -v
 | Phase | 状态 | 说明 |
 |---|---|---|
 | 17 阿里巴巴会话审查整改 | pending | 17.1 交付物修正 / 17.2-17.5 工具与文档 / 17.6 schema 3.6 提案 / 17.7 信任边界 / 17.8 backlog / 17.9 验收矩阵 |
+| 18 发行人身份归一（双类股/多地上市） | pending（已裁决，待实现；company-wiki worker 占用 → 推迟） | 18.1 issuer 锚定 / 18.2 supersedes 链 / 18.4 SEC sidecar / 18.5 治理文档（全在 company-wiki）；18.3 用户裁定跳过 |
+| 19 Alphabet 会话复盘整改 | in_progress（19.1-19.5/19.7 completed 2026-08-02；19.6 推迟） | 19.1 客户端 CLI+诊断 / 19.2 ambiguous 消歧 / 19.3 枚举速查 / 19.4 示例一致性 / 19.5 检查单 / 19.7 构建骨架 ✅；19.6 --debug 推迟（需 company-wiki resolve） |
 
 
 ---
@@ -2267,7 +2269,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 19（Alphabet 会话复盘整改：filing-fetch 客户端、消歧提示、输入构建枚举速查、文档一致性）— 状态：pending
+## Phase 19（Alphabet 会话复盘整改：filing-fetch 客户端、消歧提示、输入构建枚举速查、文档一致性）— 状态：in_progress（19.1-19.5/19.7 completed 2026-08-02；19.6 推迟待 company-wiki 空闲）
 
 > 编制日期：2026-08-01（Alphabet 会话全面复盘，findings G5-G10）。用户指令"先不用实现，更新文档即可"——本 Phase **只规划**，实现启动前需用户确认。
 > 涉及仓库：revenue-forecast（19.1/19.3/19.4/19.5）、filing-fetch（19.2）。
@@ -2396,4 +2398,4 @@ python -m unittest discover -s tests -v
 
 ### 19.9 状态
 
-- 本 Phase 当前：**pending（仅规划，未实现）**——等待用户确认启动。19.1-19.7 实现顺序建议：19.1（客户端 CLI/诊断，收益最直接）→ 19.4（示例一致性测试，防回归）→ 19.2/19.6（消歧+诊断）→ 19.3/19.7（枚举速查+骨架）→ 19.5（检查单增强，随各子项落地同步）。
+- 本 Phase 当前：**in_progress**——19.1 / 19.2 / 19.3 / 19.4 / 19.5 / 19.7 已完成（2026-08-02，company-wiki 免打扰子集，详见 `progress.md`）；**19.6（--debug 候选排除诊断）推迟**（需改 company-wiki resolve 内部，待 worker 空闲）。Phase 18 全部 + 18.3 亦推迟（company-wiki / 用户裁定跳过）。

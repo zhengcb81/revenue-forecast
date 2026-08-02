@@ -6,6 +6,7 @@
 
 - [ ] 读取 `task_plan.md` → `progress.md` → `findings.md`（0.3 规则 1）。
 - [ ] 特别阅读 findings.md 的**已知环境性失败清单**：F14（dayu HK 下载器挂起：三次 598s/598s/1580s 超时、30 分钟零新文件、Docling 疑似卡死）、m14（并发初始化锁竞争 flaky）、F6（worker 锁抖动）。
+- [ ] **会话级 3 次 / 30 分钟规则（A2）**：同一主题 3 轮未解或卡住约 30 分钟 → 停下，报告现状 + 已尝试方法 + 备选（含切换备用路径），请用户裁决；不在同一失败上重复第 4 次（0.3 规则 12 的会话级应用）。
 
 ## 2. 下载路径预判
 
@@ -13,6 +14,8 @@
 - [ ] 目标市场 **CN** → StockInfo 正常；留意 cninfo 多候选 fail-closed（正确设计）。
 - [ ] 目标市场 **US** → dayu 正常（MongoDB 型已验证）。
 - [ ] 复用路径优先：先 resolve（reuse-first），确认 not_found 且获授权后才下载。
+- [ ] **身份解析预判（A1）**：知名多 ticker / 多地上市公司（GOOGL/GOOG、9988/BABA、601899/02899）→ 请求带 `market` 提示选主市场；若 identify 返回 ambiguous，filing-fetch 响应含 `candidates[]`（19.2）→ 选定主 ticker 或补 `market`/`exchange` 后重跑，不手工猜。
+- [ ] **备用路径规则（A3）**：filing-fetch 3 轮未获 handle 且目标文件**已在 canonical**（sha256 可核验）→ 允许 `local_document` 来源注册 + 在 `TRUST_BOUNDARY.md` 说明；文件未落 canonical → 必须修链路，不得用 local_document 掩盖获取失败。
 
 ## 3. 信息集冻结
 
@@ -23,7 +26,8 @@
 ## 4. conclusion 无源事实自检（A1 教训）
 
 - [ ] `research_coverage[].conclusion` 与 `management_communication_coverage[].conclusion` 中**每个数字/日期**必须可回溯到一条 claim 的 excerpt；否则降级为定性表述或补 claim。
-- [ ] 交付前跑 `python scripts/lint_input.py --check-conclusion-facts input.json`，逐条人工核对命中项（启发式只提醒，不阻断）：
+- [ ] **来源优先级与数字核验（G9）**：作 claim 的数字必须来自官方原文（release / 10-K / 业绩公告）或已打开核验的可靠原文；WebSearch / 新闻摘要的数字仅作引导，入 claim 前必须打开官方原文核对。两来源数字冲突 → 登记冲突 + 采用官方口径（详见 `references/data-governance.md` 冲突处理节）。
+- [ ] 构建中每轮（input 改动后）+ 交付前跑 `python scripts/lint_input.py --check-conclusion-facts input.json`，逐条人工核对命中项（启发式只提醒，不阻断）：
   - 命中项若是真实无源 → 降级或补源；
   - 命中项若是"有源但无 claim 摘录" → 补摘录 claim 或登记数据缺口。
 - [ ] 注意启发式盲区：纯日期表达（6月22日-7月6日）与无数字事实（如 de minimis）不触发——这些靠本项人工自检。
@@ -31,7 +35,7 @@
 ## 5. 敏感性传导自检（A11 教训）
 
 - [ ] 每个 sensitivity 的 shock 参数：若为**绝对水平型驱动**（usage_platform 的 eligible_activity / monetization_rate、adjustments、progress 参数）且年份 < 终期 → 终期影响恒为 0，无信息量；改选**终期参数**或接受"仅影响当年"并在 rationale 注明。
-- [ ] 交付前跑 `python scripts/lint_input.py --check-sensitivity-propagation input.json`，核对命中项。
+- [ ] 构建中每轮 + 交付前跑 `python scripts/lint_input.py --check-sensitivity-propagation input.json`，核对命中项。
 
 ## 6. 快照版本纪律（A6 教训）
 

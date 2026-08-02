@@ -1340,3 +1340,177 @@ G1-G4（双类股身份归一 1A/2A/3A 已裁决、verify supersedes、scanner �
 - task_plan.md：Phase 18（已裁决待实现）+ Phase 19（19.0-19.9 完整规划，含两轮反思全部落点）
 - findings.md：G1-G10 + A1-A6 + B1-B2
 - progress.md：本段 + 前序复盘段
+
+## 2026-08-02 — Phase 19 启动（company-wiki 免打扰子集；Phase 18 + 19.6 + 18.3 推迟）
+
+用户裁决：company-wiki worker 在跑，本轮不碰 company-wiki；跳过 18.3。本轮只做 Phase 19 中纯 revenue-forecast / filing-fetch 的 6 子项（19.1→19.4→19.2→19.3→19.7→19.5）。Phase 18 全部、19.6（--debug，跨 company-wiki resolve）、18.3 推迟到 company-wiki 空闲。详见 plan `splendid-sparking-steele.md`。
+
+## 2026-08-02 — Phase 19.1 filing_fetch_client CLI + stdout 错误诊断（completed）
+
+### TDD
+- RED（tests/test_filing_fetch_client.py 新建，4 测试，hermetic fake filing-fetch 脚本，不触真实 catalog）：
+  - `test_resolve_filing_raises_client_error_with_stdout_error_fields`：fake exit2 + stdout error JSON → `_ClientError.error_code/retryable/candidates`（现 _ClientError 无结构化属性 → AttributeError RED）。
+  - `test_client_cli_emits_handle_json_on_success`：`--request-file` → stdout handle JSON（现无 `__main__` → 空 stdout RED）。
+  - `test_client_cli_supports_stdin_request_and_allow_download_flag`：`echo|... --allow-download` → handle 且 argv 含 `--allow-download`（现无 `__main__` RED）。
+  - `test_client_cli_emits_structured_error_on_failure`：失败 → exit≠0 + stderr 结构化 error JSON + stdout 空（现无 `__main__` RED）。
+- 4/4 RED 均因缺陷失败（非构造错误）。
+
+### 生产改动（scripts/filing_fetch_client.py）
+- `_ClientError` 扩展：携带 `status/error_code/retryable/candidates`。
+- `resolve_filing` 失败分支：returncode≠0 时**先解析 stdout error JSON** → `_ClientError` 携带结构化字段；stdout 非 JSON 才回退 stderr（修 G6：stdout 错误 JSON 不再被吞）。`status≠capture_ready` 分支同样携带字段。
+- 新增 `main(argv)`：argparse（`--request-file`/`--allow-download`/`--timeout-seconds`/`--filing-fetch-root`）；请求来源 stdin 或 `--request-file`；成功→stdout handle JSON；`_ClientError`→stderr 结构化 error JSON + exit 2；config 错误 exit 1。
+- `if __name__ == "__main__": sys.exit(main())`（修 G5：SKILL.md 示例可运行）。
+- `main` 顶部 `sys.stdin/stdout/stderr.reconfigure(encoding="utf-8")`——Windows 平台默认 cp936 修复（handle/请求含非 ASCII 发行人名与 canonical 路径；镜像 Phase 16.4 filing-fetch stdin 修复；RED 期间由 fake argv 含中文 temp 路径暴露）。
+
+### 质量门（实测）
+- `python -m unittest discover -s tests -p test_filing_fetch_client.py`：4/4 OK。
+- `python -m unittest discover -s tests`：**243 tests / OK**（239 基线 + 4 新增）。
+- `ruff check scripts tests`：All checks passed。
+- `python -m compileall -q scripts tests`：OK。
+
+### 修改文件
+- `scripts/filing_fetch_client.py`（_ClientError 扩展 + 失败分支 + main/__main__ + UTF-8 reconfigure）
+- `tests/test_filing_fetch_client.py`（新建，4 测试）
+
+### 未解决
+- 无（19.1 范畴内）。SKILL.md 示例一致性护栏测试属 19.4（下一步）。
+
+## 2026-08-02 — Phase 19.4 SKILL.md 示例一致性测试（completed）
+
+### 护栏（tests/test_skill_documentation.py 新建，3 测试，纯静态、无 subprocess、不触 catalog）
+- `test_at_least_three_cli_examples_are_documented`：vacuous-guard（regex 不再命中时大声失败）。
+- `test_every_documented_cli_script_exists_and_is_runnable`：每个 `python scripts/X.py` 示例 → 脚本存在 + 含 `__main__`（**G5 护栏**：filing_fetch_client 19.1 已加 __main__，故起点 GREEN；防回归）。
+- `test_every_documented_cli_flag_is_accepted_by_its_script`：示例中每个 `--flag` 必须在脚本 `add_argument` 调用中声明（arg 漂移护栏）。
+- 解析：`re.sub(r"\\\s*\n\s*", " ", text)` 合并反斜杠续行 → 逐逻辑行匹配 `python scripts/(\w+\.py)(.*)`；flag 集合静态读 `add_argument\(\s*["'](-{1,2}[\w-]+)["']`。
+- 实现偏差：首版 `_ADDARG_RE` 只匹配单 `-`，对 `--output` 返回空集 → 6 subTest 失败（构造错误，非生产缺陷）；改为 `-{1,2}` 后全绿。
+
+### 覆盖的 SKILL.md 示例（5 处）
+- L95/98 `filing_fetch_client.py`（--allow-download）、L165 `revenue_forecast.py`（--output/--markdown）、L187/193 `revenue_backtest.py`（create --version/--output、evaluate --output）。全部脚本含 `__main__`、全部 flag 在 `add_argument` 中声明。
+
+### 质量门（实测）
+- `python -m unittest discover -s tests -p test_skill_documentation.py`：3/3 OK。
+- `python -m unittest discover -s tests`：**246 tests / OK**（243 + 3 新增）。
+- `ruff check scripts tests`：All checks passed；`compileall`：OK。
+
+### 修改文件
+- `tests/test_skill_documentation.py`（新建，3 测试）。
+
+### 未解决
+- 无（19.4 范畴内）。
+
+## 2026-08-02 — Phase 19.2 filing-fetch ambiguous 消歧提示（completed）
+
+### TDD（filing-fetch 仓）
+- RED（tests/test_fetch_filing.py +2 测试）：
+  - `test_ambiguous_identity_surfaces_candidates_on_exception`：identify 返回 ambiguous + 2 候选（GOOGL/GOOG）→ `resolve_filing` 抛 `FilingFetchError`，断言 `.candidates` 为 2 元素列表（现 FilingFetchError 无 `.candidates` → AttributeError RED）。
+  - `test_main_emits_candidates_and_hint_on_ambiguous_identity`：patch resolve_filing raise `FilingFetchError(code=identity_error, candidates=[...])` → main() exit 2 + stdout error JSON 含 `candidates` + 非空 `hint`（现 FilingFetchError 不接受 `candidates=` kwarg → TypeError → main 兜底 exit 1 → RED）。
+- 2/2 RED 均因缺陷失败（非构造错误）。
+
+### 生产改动
+- `scripts/filing_contracts.py`：`FilingFetchError.__init__` 加 `candidates: list | None = None` + `self.candidates`（向后兼容；其他 raise 点不受影响）。
+- `scripts/fetch_filing.py`：
+  - `_resolved_company_identity`：status≠resolved 时提取 `payload.get("candidates")`（list 才附），传入 `FilingFetchError(candidates=…)`。
+  - `main()` error_response：`exc.candidates` 非空时加 `candidates` + `hint`（"identity is ambiguous; disambiguate by adding market/exchange or by using a specific ticker in company_query"）。
+- `SKILL.md`（filing-fetch）：Error 形状注明 identity_error 含 candidates/hint；错误表 `identity_error` 行扩写；Notes 区分"身份消歧（ticker）"vs"文档消歧（fiscal_year/form_type）"。
+
+### 质量门（实测，hermetic，不触真实 catalog）
+- `python -m unittest discover -s tests`（filing-fetch）：**115 tests / OK（skipped=5）**（113 基线 + 2 新增）。
+- `ruff check scripts tests`：All checks passed；`compileall`：OK。
+
+### 修改文件
+- `scripts/filing_contracts.py`（FilingFetchError + candidates）
+- `scripts/fetch_filing.py`（_resolved_company_identity 提取 + main 响应）
+- `SKILL.md`（错误表 + Notes）
+- `tests/test_fetch_filing.py`（+2 测试、+contextlib/StringIO/main import）
+
+### 未解决
+- 无（19.2 范畴内）。Alphabet 场景的实际候选透传需 Phase 18（company-wiki resolver issuer 锚定）落地后才端到端生效——本轮 filing-fetch 已就绪接收并透传。
+
+## 2026-08-02 — Phase 19.3 输入构建枚举速查（completed）
+
+### 文档（references/input-construction.md 新增「Engine enum quick-reference」节）
+- 6 个集合常量（与 revenue_core.py 逐一对齐，**已在源码核实**）：`TIME_BASES` / `PARAMETER_DIMENSIONS` / `MONETARY_DIMENSIONS` / `GROWTH_DRIVER_PERSISTENCE` / `GROWTH_DRIVER_INFERENCE_DISTANCES` / `GROWTH_DRIVER_COUNTEREVIDENCE_STATUSES`。
+- 绑定规则（均 grep 核实落点）：无 fiscal_year/growth_rate（用 ratio）；货币类参数 currency==顶层 currency、scale==顶层 unit（:331-333）；历史 claim unit == `{currency} {unit}`（:264）；驱动树 horizon 对象+attribution (0,1] 复核增量收入（:1643/:808）+evidence_nodes→growth_driver+rationale_support（:1694）；recognition modeled_presentation==presentation（:630）+basis_claim_ids→recognition_policy/policy_support（:637）；sensitivity 仅 base 场景参数可 shock（:999）。
+
+### 一致性护栏（tests/test_input_construction_consistency.py 新建，2 测试，纯静态）
+- 解析「Engine enum quick-reference」节（regex 截到下一个 `## `），提取 `` - `UPPER_NAME`: `a`, `b` `` 形式枚举行 → 比对 `revenue_core` 常量（set 比集合、tuple 比排序）。bullet 名要求大写开头以排除 prose 行。
+- `test_quick_reference_documents_the_core_enums`：vacuous-guard（6 个必需枚举必须在）。
+- `test_documented_enums_match_revenue_core_constants`：subTest 逐枚举比对 doc vs source。
+
+### 质量门（实测）
+- `python -m unittest discover -s tests -p test_input_construction_consistency.py`：2/2 OK。
+- `python -m unittest discover -s tests`：**248 tests / OK**（246 + 2 新增）。
+- `ruff check scripts tests`：All checks passed。
+
+### 修改文件
+- `references/input-construction.md`（+「Engine enum quick-reference」节）
+- `tests/test_input_construction_consistency.py`（新建，2 测试）
+
+### 未解决
+- 无（19.3 范畴内）。
+
+## 2026-08-02 — Phase 19.7 构建脚本骨架文档（completed）
+
+### 文档（references/input-construction.md 新增「Build script skeleton」节）
+- 抽象自 Research/alphabet-forecast/build_input.py（不含公司数据）：
+  - Helpers（每公司定义一次）：`sha()`、`add_param()`（自动给 MONETARY 维度补 currency/scale）、`add_claim()`（自动填 excerpt_sha256/content_sha256/capture_receipt_sha256——衔接 hash ring）。
+  - 命名规范：`<seg>_base_rev` / `<seg>_<scenario>_<year>_g` / `claim_hist_<year>_<src>` / `claim_rec_<seg>`（policy_support）/ `claim_gd_<eid>`（growth_driver+rationale_support）。
+  - 构建循环顺序：sources → 历史 → 分部 base+reported total+rounding adj → 增长率 → driver evidence → recognition → 组装顶层文档。
+  - 验证迭代：lint → lint 启发式 flags → fix_hashes → validate --verbose（每轮跑，非仅交付前）。
+- 与 19.3 枚举速查 + hash ring 节交叉引用（货币规则、policy_support、growth_driver support、base-only sensitivity）。
+
+### 质量门
+- 纯文档；`test_input_construction_consistency.py` 仍 2/2 OK；全量 **248 tests / OK**（不变）。
+
+### 修改文件
+- `references/input-construction.md`（+「Build script skeleton」节）
+
+### 未解决
+- 无（19.7 范畴内）。
+
+## 2026-08-02 — Phase 19.5 检查单与来源可靠性规则（completed）
+
+### 文档（docs/session-checklist.md）
+- §1 增「会话级 3 次 / 30 分钟规则」（A2）：同主题 3 轮未解或卡 ~30 分钟 → 停下报告 + 请用户裁决（0.3 规则 12 会话级应用）。
+- §2 增「身份解析预判」（A1）：知名多 ticker / 多地上市（GOOGL/GOOG、9988/BABA、601899/02899）+ ambiguous SOP（filing-fetch 响应含 candidates[]，选主 ticker / 补 market）。
+- §2 增「备用路径规则」（A3）：filing-fetch 3 轮未获 handle 且文件已在 canonical（sha256 可核验）→ 允许 local_document + TRUST_BOUNDARY；未落 canonical → 必须修链路。
+- §4 增「来源优先级与数字核验」（G9）：官方原文 > 新闻转述；WebSearch 摘要仅作引导，作 claim 前打开官方原文；冲突→登记采用官方。
+- §4/§5 改为「构建中每轮 + 交付前跑」启发式（A6：原为仅交付前）。
+
+### 文档（references/data-governance.md）
+- Conflict handling 节增「Search summary vs official source（G9）」：Q2 YouTube 11.1B vs 7.3B 工作示例（两 web 摘要冲突→采用官方 earnings release/10-Q 或登记数据缺口，均不采用摘要值）。
+
+### 质量门
+- 纯文档；全量 **248 tests / OK**、ruff 0、compileall OK（不变）。
+
+### 修改文件
+- `docs/session-checklist.md`（§1 A2、§2 A1+A3、§4 G9、§4/§5 A6 措辞）
+- `references/data-governance.md`（Conflict handling +G9 示例）
+
+### 未解决
+- 无（19.5 范畴内）。本轮 Phase 19 全部完成（19.1-19.5/19.7）；19.6（--debug）推迟到 company-wiki 空闲（需改 resolve 内部）。
+
+## 2026-08-02 — Phase 19 本轮收尾汇总（company-wiki 免打扰子集）
+
+### 完成（6/7 子项）
+| 子项 | 仓库 | 交付 | 测试 |
+|---|---|---|---|
+| 19.1 | revenue-forecast | filing_fetch_client CLI + stdout 错误诊断 + UTF-8 | +4（243） |
+| 19.4 | revenue-forecast | SKILL.md 示例一致性护栏 | +3（246） |
+| 19.2 | filing-fetch | ambiguous candidates + hint（FilingFetchError + main 响应 + SKILL.md） | +2（115） |
+| 19.3 | revenue-forecast | 枚举速查 + 一致性护栏 | +2（248） |
+| 19.7 | revenue-forecast | 构建脚本骨架文档 | 纯文档 |
+| 19.5 | revenue-forecast | 检查单 §1/§2/§4/§5 + data-governance | 纯文档 |
+
+### 最终指标
+- revenue-forecast：**248 tests / 0 failures / ruff 0 / compileall OK**（基线 239 + 9 新增）。
+- filing-fetch：**115 tests / OK（skipped=5）/ ruff 0 / compileall OK**（基线 113 + 2 新增）。
+- company-wiki：**未触碰**（worker 在跑；本轮约束）。
+
+### 推迟（待 company-wiki 空闲）
+- Phase 18.1（issuer 锚定）/ 18.2（supersedes 链）/ 18.4（SEC sidecar，scanner 已试点需收口）/ 18.5（治理文档）——全在 company-wiki。
+- Phase 19.6（`--debug` 候选排除诊断）——跨 company-wiki resolve 内部。
+- 18.3（scanner 字段级合并）——用户已裁定本轮跳过。
+
+### 未提交
+- 用户未要求提交。revenue-forecast 改动（生产 1 + 测试 3 + 文档 4 + progress/task_plan）+ filing-fetch 改动（生产 2 + 测试 1 + 文档 1）均在工作区。

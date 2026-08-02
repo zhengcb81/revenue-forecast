@@ -66,6 +66,8 @@ Separately complete the official management-communication and target gate in [ma
 
 Normalize period, unit, currency, gross/net presentation, restatements, and fiscal calendars before comparing values. Parameters with the same definition, period, unit, and scenario but different values fail as unresolved conflicts. Resolve them by documenting different definitions or selecting the authoritative source before calculation.
 
+**Search summary vs official source (G9).** Aggregator and news figures are leads, not evidence. Open the official primary (earnings release, 10-K/10-Q, regulator filing) before a number becomes a claim; when a web-search summary disagrees with an official source, record the conflict in `data_gaps` and use the official figure. Worked example (Alphabet): two web summaries quoted Q2 YouTube advertising revenue as both ~$11.1B and ~$7.3B; neither was adopted — the number was taken from the official earnings release / 10-Q, or recorded as an unresolved data gap.
+
 ## Historical and base gates
 
 Require at least two ordered, consecutive historical company-revenue observations unless `pre_revenue=true`. Historical years cannot exceed the base year. A company with no history may be pre-revenue only when the reported and segment base are zero. The base-year observation must equal reported total; segment bases plus signed adjustments must also reconcile.
