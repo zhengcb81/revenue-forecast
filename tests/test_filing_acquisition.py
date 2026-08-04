@@ -288,9 +288,73 @@ class FilingAcquisitionTests(unittest.TestCase):
     def test_default_config_needs_only_the_data_root_not_company_source_config(
         self,
     ) -> None:
-        config = load_acquisition_config()
-        self.assertTrue(config.company_wiki_root.is_dir())
-        self.assertNotEqual(config.schema_version, "1.0")
+        # Phase 6 / CI: the default config's company_wiki_root points at
+        # ${USER_PROFILE}/Projects/company-wiki, which exists on the author's
+        # machine but not in CI.  Point DEFAULT_CONFIG at a temp-rooted config
+        # so the contract (only the data root must exist) holds everywhere.
+        from unittest.mock import patch
+
+        import filing_acquisition
+
+        with TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            data_root = parent / "company-wiki"
+            data_root.mkdir()
+            config_path = parent / "company_wiki.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "2.0",
+                        "company_wiki_root": str(data_root),
+                        "security_master_root": "${COMPANY_WIKI_ROOT}/.source_catalog/security_master",
+                        "staging_root": "${COMPANY_WIKI_ROOT}/.source_catalog/revenue-forecast-staging",
+                        "timeout_seconds": 1800,
+                        "adapters": {
+                            "cn": {
+                                "name": "stockinfo-cninfo",
+                                "version": "1.1.0",
+                                "interface": "json_command_v1",
+                                "project_root": "${COMPANY_WIKI_ROOT}/../StockInfoDLSimple/v2-clean-rewrite",
+                                "config_root": None,
+                                "command": [
+                                    "${PYTHON_EXECUTABLE}",
+                                    "-m",
+                                    "src.company_wiki_adapter_cli",
+                                ],
+                            },
+                            "hk": {
+                                "name": "dayu-hkex-cli",
+                                "version": "1.0.0",
+                                "interface": "dayu_cli_v1",
+                                "project_root": "${COMPANY_WIKI_ROOT}/../dayu-agent/dayu-agent",
+                                "config_root": "${COMPANY_WIKI_ROOT}/../dayu-agent/workspace/config",
+                                "command": [
+                                    "${COMPANY_WIKI_ROOT}/../dayu-agent/dayu-agent/.venv/Scripts/python.exe",
+                                    "-m",
+                                    "dayu.cli",
+                                ],
+                            },
+                            "us": {
+                                "name": "dayu-sec-cli",
+                                "version": "1.0.0",
+                                "interface": "dayu_cli_v1",
+                                "project_root": "${COMPANY_WIKI_ROOT}/../dayu-agent/dayu-agent",
+                                "config_root": "${COMPANY_WIKI_ROOT}/../dayu-agent/workspace/config",
+                                "command": [
+                                    "${COMPANY_WIKI_ROOT}/../dayu-agent/dayu-agent/.venv/Scripts/python.exe",
+                                    "-m",
+                                    "dayu.cli",
+                                ],
+                            },
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with patch.object(filing_acquisition, "DEFAULT_CONFIG", config_path):
+                config = load_acquisition_config()
+            self.assertTrue(config.company_wiki_root.is_dir())
+            self.assertNotEqual(config.schema_version, "1.0")
 
     def test_config_rejects_staging_outside_data_root(self) -> None:
         with TemporaryDirectory() as temporary:
