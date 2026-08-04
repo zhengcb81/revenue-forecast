@@ -16,6 +16,13 @@ ROOT_FILES = (".gitignore", "CHANGELOG.md", "SKILL.md")
 ROOT_DIRECTORIES = ("agents", "config", "references", "scripts", "tests")
 IGNORED_PARTS = {"__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache"}
 PRESERVED_INSTALLATION_DIRECTORIES = {"output"}
+# Phase 6 B3 (F-08): every supported install root is a default check target so
+# a drift in any one of them cannot be silently missed.
+DEFAULT_DESTINATIONS = (
+    Path.home() / ".agents" / "skills",
+    Path.home() / ".claude" / "skills",
+    Path.home() / ".codex" / "skills",
+)
 
 
 def installable_files(root: Path) -> list[Path]:
@@ -26,7 +33,8 @@ def installable_files(root: Path) -> list[Path]:
         if not base.is_dir():
             raise FileNotFoundError(f"missing installable directory: {base}")
         files.extend(
-            path for path in base.rglob("*")
+            path
+            for path in base.rglob("*")
             if path.is_file()
             and not (set(path.relative_to(root).parts) & IGNORED_PARTS)
             and path.suffix not in {".pyc", ".pyo"}
@@ -50,10 +58,7 @@ def _installed_manifest(root: Path) -> dict[str, str]:
         for path in root.rglob("*")
         if path.is_file()
         and not (set(path.relative_to(root).parts) & IGNORED_PARTS)
-        and not (
-            set(path.relative_to(root).parts)
-            & PRESERVED_INSTALLATION_DIRECTORIES
-        )
+        and not (set(path.relative_to(root).parts) & PRESERVED_INSTALLATION_DIRECTORIES)
         and path.suffix not in {".pyc", ".pyo"}
     }
 
@@ -71,7 +76,9 @@ def installation_diff(canonical: Path, destination: Path) -> list[str]:
 def sync_installation(canonical: Path, destination: Path) -> None:
     destination.mkdir(parents=True, exist_ok=True)
     target = destination / SKILL_NAME
-    with tempfile.TemporaryDirectory(prefix=f".{SKILL_NAME}-stage-", dir=destination) as directory:
+    with tempfile.TemporaryDirectory(
+        prefix=f".{SKILL_NAME}-stage-", dir=destination
+    ) as directory:
         staged = Path(directory) / SKILL_NAME
         staged.mkdir()
         for path in installable_files(canonical):
@@ -150,16 +157,26 @@ def unique_destinations(destinations: list[Path]) -> list[Path]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Check or synchronize installed revenue-forecast skills")
+    parser = argparse.ArgumentParser(
+        description="Check or synchronize installed revenue-forecast skills"
+    )
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--apply", action="store_true", help="apply an atomic whole-skill sync")
-    mode.add_argument("--print-manifest", action="store_true", help="print the canonical SHA-256 manifest")
+    mode.add_argument(
+        "--apply", action="store_true", help="apply an atomic whole-skill sync"
+    )
+    mode.add_argument(
+        "--print-manifest",
+        action="store_true",
+        help="print the canonical SHA-256 manifest",
+    )
     mode.add_argument(
         "--import-from",
         type=Path,
         help="import an installed skill into the canonical repository",
     )
-    parser.add_argument("--canonical", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument(
+        "--canonical", type=Path, default=Path(__file__).resolve().parents[1]
+    )
     parser.add_argument("--destination", type=Path, action="append")
     args = parser.parse_args()
     canonical = args.canonical.resolve()
@@ -168,10 +185,7 @@ def main() -> int:
         return 0
     if args.import_from is not None:
         import_installation(args.import_from, canonical)
-    destinations = unique_destinations(
-        args.destination
-        or [Path.home() / ".agents" / "skills", Path.home() / ".claude" / "skills"]
-    )
+    destinations = unique_destinations(args.destination or list(DEFAULT_DESTINATIONS))
     if args.apply:
         for destination in destinations:
             sync_installation(canonical, destination.resolve())

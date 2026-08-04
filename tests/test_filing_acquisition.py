@@ -70,9 +70,7 @@ class _FakeAdapter:
             ),
         )
 
-    def fetch(
-        self, candidate: DownloadCandidate, staging_dir: Path
-    ) -> DownloadReceipt:
+    def fetch(self, candidate: DownloadCandidate, staging_dir: Path) -> DownloadReceipt:
         self.fetch_calls += 1
         staging_dir.mkdir(parents=True, exist_ok=True)
         staged = staging_dir / f"{candidate.candidate_id.replace(':', '-')}.pdf"
@@ -153,7 +151,9 @@ class FilingAcquisitionTests(unittest.TestCase):
         }
 
     @staticmethod
-    def _existing(root: Path, request: dict, payload: bytes = b"%PDF-1.7\nexisting") -> Path:
+    def _existing(
+        root: Path, request: dict, payload: bytes = b"%PDF-1.7\nexisting"
+    ) -> Path:
         raw = (
             root
             / "companies"
@@ -263,7 +263,9 @@ class FilingAcquisitionTests(unittest.TestCase):
                 imported = set()
                 for node in ast.walk(tree):
                     if isinstance(node, ast.Import):
-                        imported.update(alias.name.split(".", 1)[0] for alias in node.names)
+                        imported.update(
+                            alias.name.split(".", 1)[0] for alias in node.names
+                        )
                     elif isinstance(node, ast.ImportFrom) and node.module:
                         imported.add(node.module.split(".", 1)[0])
                 self.assertTrue(forbidden_modules.isdisjoint(imported), imported)
@@ -279,10 +281,13 @@ class FilingAcquisitionTests(unittest.TestCase):
                 load_acquisition_config(first_config).company_wiki_root, first.resolve()
             )
             self.assertEqual(
-                load_acquisition_config(second_config).company_wiki_root, second.resolve()
+                load_acquisition_config(second_config).company_wiki_root,
+                second.resolve(),
             )
 
-    def test_default_config_needs_only_the_data_root_not_company_source_config(self) -> None:
+    def test_default_config_needs_only_the_data_root_not_company_source_config(
+        self,
+    ) -> None:
         config = load_acquisition_config()
         self.assertTrue(config.company_wiki_root.is_dir())
         self.assertNotEqual(config.schema_version, "1.0")
@@ -302,9 +307,7 @@ class FilingAcquisitionTests(unittest.TestCase):
             config_path, root = self._config(Path(temporary))
             request = self._request()
             raw = self._existing(root, request)
-            adapters = {
-                market: _FakeAdapter(market) for market in ("CN", "HK", "US")
-            }
+            adapters = {market: _FakeAdapter(market) for market in ("CN", "HK", "US")}
             manager = AcquisitionManager(
                 load_acquisition_config(config_path),
                 AdapterRegistry.from_mapping(adapters),
@@ -317,9 +320,7 @@ class FilingAcquisitionTests(unittest.TestCase):
     def test_missing_without_authorization_never_invokes_adapter(self) -> None:
         with TemporaryDirectory() as temporary:
             config_path, _root = self._config(Path(temporary))
-            adapters = {
-                market: _FakeAdapter(market) for market in ("CN", "HK", "US")
-            }
+            adapters = {market: _FakeAdapter(market) for market in ("CN", "HK", "US")}
             manager = AcquisitionManager(
                 load_acquisition_config(config_path),
                 AdapterRegistry.from_mapping(adapters),
@@ -336,9 +337,7 @@ class FilingAcquisitionTests(unittest.TestCase):
             request["entity"] = "Advanced Micro Devices, Inc."
             request["security_id"] = "AMD"
             raw = self._existing(root, request)
-            adapters = {
-                market: _FakeAdapter(market) for market in ("CN", "HK", "US")
-            }
+            adapters = {market: _FakeAdapter(market) for market in ("CN", "HK", "US")}
             manager = AcquisitionManager(
                 load_acquisition_config(config_path),
                 AdapterRegistry.from_mapping(adapters),
@@ -370,9 +369,7 @@ class FilingAcquisitionTests(unittest.TestCase):
                 ),
             ]
             self._security_snapshot(root, "US", records)
-            adapters = {
-                market: _FakeAdapter(market) for market in ("CN", "HK", "US")
-            }
+            adapters = {market: _FakeAdapter(market) for market in ("CN", "HK", "US")}
             manager = AcquisitionManager(
                 load_acquisition_config(config_path),
                 AdapterRegistry.from_mapping(adapters),
@@ -394,9 +391,7 @@ class FilingAcquisitionTests(unittest.TestCase):
         for market in ("CN", "HK", "US"):
             with self.subTest(market=market), TemporaryDirectory() as temporary:
                 config_path, _root = self._config(Path(temporary))
-                adapters = {
-                    value: _FakeAdapter(value) for value in ("CN", "HK", "US")
-                }
+                adapters = {value: _FakeAdapter(value) for value in ("CN", "HK", "US")}
                 manager = AcquisitionManager(
                     load_acquisition_config(config_path),
                     AdapterRegistry.from_mapping(adapters),
@@ -582,9 +577,7 @@ else:
     def test_second_identical_import_reuses_canonical_bytes(self) -> None:
         with TemporaryDirectory() as temporary:
             config_path, root = self._config(Path(temporary))
-            adapters = {
-                market: _FakeAdapter(market) for market in ("CN", "HK", "US")
-            }
+            adapters = {market: _FakeAdapter(market) for market in ("CN", "HK", "US")}
             config = load_acquisition_config(config_path)
             first = AcquisitionManager(
                 config, AdapterRegistry.from_mapping(adapters)
@@ -612,13 +605,7 @@ else:
         with TemporaryDirectory() as temporary:
             config_path, root = self._config(Path(temporary))
             request = self._request()
-            legacy = (
-                root
-                / "companies"
-                / request["entity"]
-                / "raw"
-                / "legacy-name.pdf"
-            )
+            legacy = root / "companies" / request["entity"] / "raw" / "legacy-name.pdf"
             legacy.parent.mkdir(parents=True)
             payload = b"%PDF-1.7\nlegacy exact bytes"
             legacy.write_bytes(payload)
@@ -710,9 +697,7 @@ else:
                 )
 
     def test_error_redaction_hides_common_secret_forms(self) -> None:
-        redacted = _redact(
-            "Authorization: Bearer-secret API_KEY=abc123 token=xyz987"
-        )
+        redacted = _redact("Authorization: Bearer-secret API_KEY=abc123 token=xyz987")
         self.assertNotIn("Bearer-secret", redacted)
         self.assertNotIn("abc123", redacted)
         self.assertNotIn("xyz987", redacted)
@@ -745,7 +730,6 @@ else:
             shutil.copytree(SKILL_ROOT / "scripts", copied / "scripts")
             config_path, root = self._config(parent, "isolated-wiki")
             request = self._request()
-            expected = self._existing(root, request)
             request_path = parent / "request.json"
             request_path.write_text(json.dumps(request), encoding="utf-8")
             environment = {
@@ -772,9 +756,56 @@ else:
                 check=False,
                 timeout=30,
             )
-            self.assertEqual(completed.returncode, 0, completed.stderr or completed.stdout)
+            # Phase 6 B1 (F-04): the deprecated acquisition CLI must hard-fail
+            # and must never produce a capture-ready handle; filing-fetch is the
+            # single canonical owner.
+            self.assertEqual(
+                completed.returncode, 3, completed.stderr or completed.stdout
+            )
             payload = json.loads(completed.stdout)
-            self.assertEqual(Path(payload["handle"]["canonical_path"]), expected.resolve())
+            self.assertEqual(payload["status"], "error")
+            self.assertIn("filing_fetch_client", payload["error"])
+            self.assertNotIn("handle", payload)
+
+    def test_deprecated_acquisition_cli_hard_fails_even_with_allow_download(
+        self,
+    ) -> None:
+        # Phase 6 B1 RED (F-04): even with --allow-download the deprecated CLI
+        # must hard-fail and never route a download through the old owner.
+        with TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            copied = parent / "revenue-forecast"
+            shutil.copytree(SKILL_ROOT / "scripts", copied / "scripts")
+            config_path, root = self._config(parent, "isolated-wiki")
+            request_path = parent / "request.json"
+            request_path.write_text(json.dumps(self._request()), encoding="utf-8")
+            environment = {
+                "PATH": os.environ.get("PATH", ""),
+                "PYTHONUTF8": "1",
+                "PYTHONPATH": str(copied / "scripts"),
+                "TEMP": os.environ.get("TEMP", temporary),
+                "TMP": os.environ.get("TMP", temporary),
+            }
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(copied / "scripts" / "filing_acquisition.py"),
+                    "--allow-download",
+                    "--config",
+                    str(config_path),
+                    "--request-file",
+                    str(request_path),
+                ],
+                cwd=copied,
+                env=environment,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
+                timeout=30,
+            )
+            self.assertEqual(completed.returncode, 3)
+            self.assertIn("deprecated", (completed.stdout + completed.stderr).lower())
 
 
 if __name__ == "__main__":

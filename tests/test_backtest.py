@@ -9,8 +9,20 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from revenue_backtest import create_snapshot, evaluate_snapshot, write_new_json  # noqa: E402
-from revenue_core import ForecastInputError, canonical_sha256, run_forecast, text_sha256  # noqa: E402
+from revenue_backtest import (
+    create_snapshot,
+    evaluate_snapshot,
+    validate_snapshot,
+    write_new_json,
+)  # noqa: E402
+from revenue_core import (
+    ENGINE_VERSION,
+    ForecastInputError,
+    build_host_receipt,
+    canonical_sha256,
+    run_forecast,
+    text_sha256,
+)  # noqa: E402
 from revenue_report import validate_forecast_output  # noqa: E402
 from test_recognition_bridge import forecast_document  # noqa: E402
 
@@ -35,13 +47,29 @@ def actuals_document() -> dict:
             }
         ],
         "actual_company_revenue": {
-            "2026": {"value": 160, "source_ids": ["actual_filing"], "claim_ids": ["claim_actual_company_2026"]},
-            "2027": {"value": 170, "source_ids": ["actual_filing"], "claim_ids": ["claim_actual_company_2027"]},
+            "2026": {
+                "value": 160,
+                "source_ids": ["actual_filing"],
+                "claim_ids": ["claim_actual_company_2026"],
+            },
+            "2027": {
+                "value": 170,
+                "source_ids": ["actual_filing"],
+                "claim_ids": ["claim_actual_company_2027"],
+            },
         },
         "actual_segment_revenue": {
             "Segment A": {
-                "2026": {"value": 106, "source_ids": ["actual_filing"], "claim_ids": ["claim_actual_segment_2026"]},
-                "2027": {"value": 112, "source_ids": ["actual_filing"], "claim_ids": ["claim_actual_segment_2027"]},
+                "2026": {
+                    "value": 106,
+                    "source_ids": ["actual_filing"],
+                    "claim_ids": ["claim_actual_segment_2026"],
+                },
+                "2027": {
+                    "value": 112,
+                    "source_ids": ["actual_filing"],
+                    "claim_ids": ["claim_actual_segment_2027"],
+                },
             }
         },
     }
@@ -56,6 +84,14 @@ def actuals_document() -> dict:
             "content_treatment": "untrusted_data_only",
             "prompt_injection_status": "not_detected",
         }
+        capture["host_receipt"] = build_host_receipt(
+            issuer="fixture-host",
+            environment="test",
+            tool_name=capture["tool_name"],
+            action="capture_open",
+            event_sha256=text_sha256(f"fixture-open-{source['source_id']}"),
+            timestamp=capture["captured_date"],
+        )
         capture["receipt_sha256"] = canonical_sha256(capture)
         source["capture"] = capture
     claims = []
@@ -66,13 +102,28 @@ def actuals_document() -> dict:
         ("claim_actual_segment_2027", "segment:Segment A:2027", 112, 2027),
     ):
         excerpt = f"Reported actual revenue for {target_id} is {value} USD million."
-        claims.append({
-            "claim_id": claim_id, "source_id": "actual_filing", "target_type": "actual_revenue", "target_id": target_id,
-            "support_type": "exact_value", "locator": "Revenue note", "excerpt": excerpt, "excerpt_sha256": text_sha256(excerpt),
-            "content_sha256": "b" * 64, "capture_receipt_sha256": data["sources"][0]["capture"]["receipt_sha256"],
-            "verification_status": "opened_and_checked", "verified_by": "test-research-agent",
-            "verified_date": "2028-03-01", "extracted_value": value, "unit": "USD million", "period": f"FY{year}",
-        })
+        claims.append(
+            {
+                "claim_id": claim_id,
+                "source_id": "actual_filing",
+                "target_type": "actual_revenue",
+                "target_id": target_id,
+                "support_type": "exact_value",
+                "locator": "Revenue note",
+                "excerpt": excerpt,
+                "excerpt_sha256": text_sha256(excerpt),
+                "content_sha256": "b" * 64,
+                "capture_receipt_sha256": data["sources"][0]["capture"][
+                    "receipt_sha256"
+                ],
+                "verification_status": "opened_and_checked",
+                "verified_by": "test-research-agent",
+                "verified_date": "2028-03-01",
+                "extracted_value": value,
+                "unit": "USD million",
+                "period": f"FY{year}",
+            }
+        )
     data["evidence_claims"] = claims
     return data
 
@@ -80,9 +131,19 @@ def actuals_document() -> dict:
 def set_company_actual(data: dict, year: int, value: float) -> None:
     record = data["actual_company_revenue"][str(year)]
     record["value"] = value
-    claim = next(item for item in data["evidence_claims"] if item["claim_id"] == record["claim_ids"][0])
+    claim = next(
+        item
+        for item in data["evidence_claims"]
+        if item["claim_id"] == record["claim_ids"][0]
+    )
     excerpt = f"Reported actual revenue for company:{year} is {value} USD million."
-    claim.update({"extracted_value": value, "excerpt": excerpt, "excerpt_sha256": text_sha256(excerpt)})
+    claim.update(
+        {
+            "extracted_value": value,
+            "excerpt": excerpt,
+            "excerpt_sha256": text_sha256(excerpt),
+        }
+    )
 
 
 class BacktestTests(unittest.TestCase):
@@ -107,7 +168,10 @@ class BacktestTests(unittest.TestCase):
     def test_snapshot_creation_runs_independent_output_validation(self) -> None:
         snapshot = create_snapshot(forecast_document(), "v1")
         validate_forecast_output(snapshot["forecast_result"])
-        self.assertEqual(snapshot["forecast_result_sha256"], canonical_sha256(snapshot["forecast_result"]))
+        self.assertEqual(
+            snapshot["forecast_result_sha256"],
+            canonical_sha256(snapshot["forecast_result"]),
+        )
 
     def test_backtest_metrics_are_recomputed(self) -> None:
         snapshot = create_snapshot(forecast_document(), "v1")
@@ -136,13 +200,18 @@ class BacktestTests(unittest.TestCase):
     def test_actual_year_must_be_in_horizon(self) -> None:
         snapshot = create_snapshot(forecast_document(), "v1")
         actuals = actuals_document()
-        actuals["actual_company_revenue"]["2029"] = {"value": 180, "source_ids": ["actual_filing"]}
+        actuals["actual_company_revenue"]["2029"] = {
+            "value": 180,
+            "source_ids": ["actual_filing"],
+        }
         with self.assertRaisesRegex(ForecastInputError, "outside forecast horizon"):
             evaluate_snapshot(snapshot, actuals)
 
     def test_snapshot_forecast_result_tampering_is_rejected(self) -> None:
         snapshot = create_snapshot(forecast_document(), "v1")
-        snapshot["forecast_result"]["consolidated_forecast"]["base"]["annual_revenue"]["2026"] = 9999
+        snapshot["forecast_result"]["consolidated_forecast"]["base"]["annual_revenue"][
+            "2026"
+        ] = 9999
         with self.assertRaisesRegex(ForecastInputError, "mismatch"):
             evaluate_snapshot(snapshot, actuals_document())
 
@@ -158,22 +227,33 @@ class BacktestTests(unittest.TestCase):
         self.assertGreater(report["company_year_results"]["2026"]["absolute_error"], 0)
 
     def test_accuracy_record_is_hash_linked(self) -> None:
-        report = evaluate_snapshot(create_snapshot(forecast_document(), "v1"), actuals_document())
-        self.assertEqual(report["accuracy_record"]["backtest_id"], report["backtest_id"])
+        report = evaluate_snapshot(
+            create_snapshot(forecast_document(), "v1"), actuals_document()
+        )
+        self.assertEqual(
+            report["accuracy_record"]["backtest_id"], report["backtest_id"]
+        )
         self.assertIn("record_sha256", report["accuracy_record"])
         self.assertIn("Segment A", report["segment_summaries"])
         self.assertIn("1", report["horizon_summaries"])
 
     def test_accuracy_record_flows_automatically_into_confidence(self) -> None:
-        evaluation = evaluate_snapshot(create_snapshot(forecast_document(), "v1"), actuals_document())
+        evaluation = evaluate_snapshot(
+            create_snapshot(forecast_document(), "v1"), actuals_document()
+        )
         data = forecast_document()
         data["historical_accuracy_records"] = [evaluation["accuracy_record"]]
         result = run_forecast(data)
-        self.assertAlmostEqual(result["confidence"]["historical_accuracy"]["wape"], evaluation["summary"]["wape"])
+        self.assertAlmostEqual(
+            result["confidence"]["historical_accuracy"]["wape"],
+            evaluation["summary"]["wape"],
+        )
         self.assertGreater(result["confidence"]["components"]["historical_accuracy"], 0)
 
     def test_tampered_accuracy_record_is_rejected(self) -> None:
-        evaluation = evaluate_snapshot(create_snapshot(forecast_document(), "v1"), actuals_document())
+        evaluation = evaluate_snapshot(
+            create_snapshot(forecast_document(), "v1"), actuals_document()
+        )
         data = forecast_document()
         record = copy.deepcopy(evaluation["accuracy_record"])
         record["wape"] = 0
@@ -193,6 +273,85 @@ class BacktestTests(unittest.TestCase):
         actuals["sources"][0]["published_date"] = "2027-11-01"
         with self.assertRaisesRegex(ForecastInputError, "predates fiscal year end"):
             evaluate_snapshot(create_snapshot(forecast_document(), "v1"), actuals)
+
+    def test_forged_sensitivity_snapshot_is_rejected_after_full_rehash(self) -> None:
+        # Phase 6 A1 RED (F-02 snapshot vector): forge sensitivity terminals,
+        # recompute every hash including the publication receipt's verification
+        # context and the snapshot id, and confirm validate_snapshot rejects the
+        # forgery through the strong (input-required) path.
+        from revenue_publication import (
+            VerificationContext,
+            build_publication_receipt,
+            expected_publication_gates,
+        )
+        from revenue_report import validate_published_forecast
+
+        data = forecast_document()
+        parameter_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"][
+            "revenue"
+        ][1]
+        data["sensitivity_tests"] = [
+            {
+                "name": "Core terminal revenue",
+                "parameter_id": parameter_id,
+                "shock_type": "percent",
+                "shock_value": 0.1,
+            }
+        ]
+        snapshot = create_snapshot(data, "v1")
+        forged = copy.deepcopy(snapshot)
+        result = forged["forecast_result"]
+        sensitivity = result["sensitivities"][0]
+        baseline = float(sensitivity["baseline_terminal_revenue"])
+        sensitivity["down_terminal_revenue"] = 1.0
+        sensitivity["up_terminal_revenue"] = baseline * 100.0
+        impact = max(abs(1.0 - baseline), abs(baseline * 100.0 - baseline))
+        sensitivity["max_absolute_terminal_impact"] = impact
+        sensitivity["max_relative_terminal_impact"] = impact / baseline
+        result["publication_receipt"] = build_publication_receipt(
+            result,
+            VerificationContext(
+                result["input_sha256"],
+                expected_publication_gates(result),
+                ENGINE_VERSION,
+            ),
+        )
+        result["result_sha256"] = canonical_sha256(
+            {key: value for key, value in result.items() if key != "result_sha256"}
+        )
+        forged["forecast_result_sha256"] = canonical_sha256(result)
+        identity = {
+            key: forged[key]
+            for key in (
+                "company_name",
+                "as_of_date",
+                "forecast_version",
+                "input_sha256",
+                "forecast_result_sha256",
+                "engine_version",
+                "forecast_schema_version",
+                "snapshot_schema_version",
+            )
+        }
+        forged["snapshot_id"] = canonical_sha256(identity)
+        with self.assertRaisesRegex(
+            ForecastInputError, "sensitivity down terminal recomputation mismatch"
+        ):
+            evaluate_snapshot(forged, actuals_document())
+        with self.assertRaisesRegex(
+            ForecastInputError, "sensitivity down terminal recomputation mismatch"
+        ):
+            validate_published_forecast(result, snapshot["input_document"])
+
+    def test_snapshot_legacy_unknown_engine_is_rejected(self) -> None:
+        # Phase 6 B2 RED (F-10): a snapshot with a legacy schema must not accept
+        # an arbitrary engine version; only CHANGELOG-documented pairs pass.
+        snapshot = create_snapshot(forecast_document(), "v1")
+        forged = copy.deepcopy(snapshot)
+        forged["forecast_schema_version"] = "3.4"
+        forged["engine_version"] = "9.9.9"
+        with self.assertRaisesRegex(ForecastInputError, "not a"):
+            validate_snapshot(forged)
 
 
 if __name__ == "__main__":

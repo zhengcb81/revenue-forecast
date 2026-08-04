@@ -13,6 +13,7 @@ agreement with the engine.
 CLI mirrors ``revenue_forecast.py``: positional input path, exit 0 when clean /
 exit 2 when any finding is reported.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -25,23 +26,54 @@ from typing import Any
 import fix_hashes
 
 TOP_LEVEL_REQUIRED = (
-    "schema_version", "company_name", "as_of_date", "currency", "unit",
-    "fiscal_year_end", "base_year", "forecast_years", "sources", "parameters",
-    "segments", "reported_total_revenue_parameter_id", "historical_revenue",
+    "schema_version",
+    "company_name",
+    "as_of_date",
+    "currency",
+    "unit",
+    "fiscal_year_end",
+    "base_year",
+    "forecast_years",
+    "sources",
+    "parameters",
+    "segments",
+    "reported_total_revenue_parameter_id",
+    "historical_revenue",
     "research_coverage",
 )
 CAPTURE_REQUIRED = (
-    "capture_schema_version", "capture_method", "tool_name", "tool_call_id",
-    "captured_date", "snapshot_sha256", "content_treatment",
-    "prompt_injection_status", "receipt_sha256",
+    "capture_schema_version",
+    "capture_method",
+    "tool_name",
+    "tool_call_id",
+    "captured_date",
+    "snapshot_sha256",
+    "content_treatment",
+    "prompt_injection_status",
+    "host_receipt",
+    "receipt_sha256",
 )
 CLAIM_REQUIRED = (
-    "claim_id", "source_id", "target_type", "target_id", "support_type",
-    "locator", "excerpt", "excerpt_sha256", "content_sha256",
-    "capture_receipt_sha256", "verification_status",
+    "claim_id",
+    "source_id",
+    "target_type",
+    "target_id",
+    "support_type",
+    "locator",
+    "excerpt",
+    "excerpt_sha256",
+    "content_sha256",
+    "capture_receipt_sha256",
+    "verification_status",
 )
 PARAMETER_REQUIRED = (
-    "parameter_id", "kind", "value", "unit", "period", "definition", "source_ids",
+    "parameter_id",
+    "kind",
+    "value",
+    "unit",
+    "period",
+    "definition",
+    "source_ids",
 )
 
 
@@ -65,15 +97,24 @@ def _check_capture_shape(data: dict[str, Any]) -> list[dict[str, str]]:
         sid = source.get("source_id", "<unknown>")
         capture = source.get("capture")
         if not isinstance(capture, dict):
-            findings.append(_finding("capture_shape", f"sources.{sid}.capture", f"source {sid} is missing a capture object"))
+            findings.append(
+                _finding(
+                    "capture_shape",
+                    f"sources.{sid}.capture",
+                    f"source {sid} is missing a capture object",
+                )
+            )
             continue
         if set(capture) != set(CAPTURE_REQUIRED):
-            findings.append(_finding(
-                "capture_shape", f"sources.{sid}.capture",
-                f"source {sid} capture must have exactly the required fields; "
-                f"missing={sorted(set(CAPTURE_REQUIRED) - set(capture))} "
-                f"unexpected={sorted(set(capture) - set(CAPTURE_REQUIRED))}",
-            ))
+            findings.append(
+                _finding(
+                    "capture_shape",
+                    f"sources.{sid}.capture",
+                    f"source {sid} capture must have exactly the required fields; "
+                    f"missing={sorted(set(CAPTURE_REQUIRED) - set(capture))} "
+                    f"unexpected={sorted(set(capture) - set(CAPTURE_REQUIRED))}",
+                )
+            )
     return findings
 
 
@@ -85,7 +126,13 @@ def _check_claim_shape(claims: list[Any]) -> list[dict[str, str]]:
         cid = claim.get("claim_id", "<unknown>")
         for key in CLAIM_REQUIRED:
             if key not in claim:
-                findings.append(_finding("claim_shape", f"evidence_claims.{cid}", f"claim {cid} is missing required field: {key}"))
+                findings.append(
+                    _finding(
+                        "claim_shape",
+                        f"evidence_claims.{cid}",
+                        f"claim {cid} is missing required field: {key}",
+                    )
+                )
     return findings
 
 
@@ -97,7 +144,13 @@ def _check_parameter_shape(parameters: list[Any]) -> list[dict[str, str]]:
         pid = parameter.get("parameter_id", "<unknown>")
         for key in PARAMETER_REQUIRED:
             if key not in parameter:
-                findings.append(_finding("parameter_shape", f"parameters.{pid}", f"parameter {pid} is missing required field: {key}"))
+                findings.append(
+                    _finding(
+                        "parameter_shape",
+                        f"parameters.{pid}",
+                        f"parameter {pid} is missing required field: {key}",
+                    )
+                )
     return findings
 
 
@@ -114,32 +167,75 @@ def _check_references(
         pid = parameter.get("parameter_id", "<unknown>")
         for sid in parameter.get("source_ids", []):
             if sid not in source_ids:
-                findings.append(_finding("reference", f"parameters.{pid}.source_ids", f"parameter {pid} references unknown source {sid}"))
+                findings.append(
+                    _finding(
+                        "reference",
+                        f"parameters.{pid}.source_ids",
+                        f"parameter {pid} references unknown source {sid}",
+                    )
+                )
         for cid in parameter.get("claim_ids", []):
             if cid not in claim_index:
-                findings.append(_finding("reference", f"parameters.{pid}.claim_ids", f"parameter {pid} references unknown claim {cid}"))
+                findings.append(
+                    _finding(
+                        "reference",
+                        f"parameters.{pid}.claim_ids",
+                        f"parameter {pid} references unknown claim {cid}",
+                    )
+                )
             else:
                 claim = claim_index[cid]
-                if claim.get("target_type") != "parameter" or claim.get("target_id") != pid:
-                    findings.append(_finding("reference", f"parameters.{pid}.claim_ids", f"claim {cid} does not support parameter {pid}"))
+                if (
+                    claim.get("target_type") != "parameter"
+                    or claim.get("target_id") != pid
+                ):
+                    findings.append(
+                        _finding(
+                            "reference",
+                            f"parameters.{pid}.claim_ids",
+                            f"claim {cid} does not support parameter {pid}",
+                        )
+                    )
     for record in data.get("historical_revenue", []):
         if not isinstance(record, dict):
             continue
         year = record.get("year")
         for cid in record.get("claim_ids", []):
             if cid not in claim_index:
-                findings.append(_finding("reference", f"historical_revenue.{year}.claim_ids", f"historical revenue {year} references unknown claim {cid}"))
+                findings.append(
+                    _finding(
+                        "reference",
+                        f"historical_revenue.{year}.claim_ids",
+                        f"historical revenue {year} references unknown claim {cid}",
+                    )
+                )
             elif claim_index[cid].get("target_id") != f"historical_revenue:{year}":
-                findings.append(_finding("reference", f"historical_revenue.{year}.claim_ids", f"claim {cid} does not support historical_revenue:{year}"))
+                findings.append(
+                    _finding(
+                        "reference",
+                        f"historical_revenue.{year}.claim_ids",
+                        f"claim {cid} does not support historical_revenue:{year}",
+                    )
+                )
     for pid in data.get("base_adjustment_parameter_ids", []):
         if pid not in parameter_index:
-            findings.append(_finding("reference", "base_adjustment_parameter_ids", f"unknown base adjustment parameter {pid}"))
+            findings.append(
+                _finding(
+                    "reference",
+                    "base_adjustment_parameter_ids",
+                    f"unknown base adjustment parameter {pid}",
+                )
+            )
     return findings
 
 
 def _check_hashes(data: dict[str, Any]) -> list[dict[str, str]]:
     return [
-        _finding("hash", entry["path"], f"{entry['kind']} hash drift: expected {entry['expected']}")
+        _finding(
+            "hash",
+            entry["path"],
+            f"{entry['kind']} hash drift: expected {entry['expected']}",
+        )
         for entry in fix_hashes.find_hash_drift(data)
     ]
 
@@ -167,9 +263,13 @@ def _conclusion_digit_tokens(text: str) -> list[str]:
         token = match.group(0)
         if re.fullmatch(r"\d{4}", token):
             continue  # bare four-digit year
-        if text[max(0, match.start() - 2):match.start()].upper() == "FY":
+        if text[max(0, match.start() - 2) : match.start()].upper() == "FY":
             continue  # FY-prefixed year
-        if match.start() > 0 and text[match.start() - 1].isascii() and text[match.start() - 1].isalpha():
+        if (
+            match.start() > 0
+            and text[match.start() - 1].isascii()
+            and text[match.start() - 1].isalpha()
+        ):
             continue  # identifier suffix (Qwen3.6, Model5)
         if match.end() < len(text) and text[match.end()] in "月日旬底初末中":
             continue  # date expression (6月底 / 7月初 / 6月18日)
@@ -252,10 +352,18 @@ def _check_conclusion_facts(
     records: list[tuple[dict[str, Any], str, str]] = []
     for record in data.get("research_coverage", []):
         if isinstance(record, dict):
-            records.append((record, "research_coverage", record.get("dimension", "<unknown>")))
+            records.append(
+                (record, "research_coverage", record.get("dimension", "<unknown>"))
+            )
     for record in data.get("management_communication_coverage", []):
         if isinstance(record, dict):
-            records.append((record, "management_communication_coverage", record.get("category", "<unknown>")))
+            records.append(
+                (
+                    record,
+                    "management_communication_coverage",
+                    record.get("category", "<unknown>"),
+                )
+            )
     for record, section, name in records:
         conclusion = record.get("conclusion")
         if not isinstance(conclusion, str):
@@ -266,7 +374,11 @@ def _check_conclusion_facts(
         bound = _bound_claim_ids(record, data, parameter_index, claim_index)
         backed_values: set[float] = set()
         for cid in bound:
-            excerpt = claim_index[cid].get("excerpt", "") if isinstance(claim_index[cid], dict) else ""
+            excerpt = (
+                claim_index[cid].get("excerpt", "")
+                if isinstance(claim_index[cid], dict)
+                else ""
+            )
             backed_values |= _figure_values(excerpt)
         uncovered = []
         for token in tokens:
@@ -274,10 +386,13 @@ def _check_conclusion_facts(
             if value is not None and value not in backed_values:
                 uncovered.append(token)
         if uncovered:
-            findings.append(_finding(
-                "conclusion-facts", f"{section}.{name}",
-                f"結論含數字但無 claim 背書: {', '.join(uncovered)}",
-            ))
+            findings.append(
+                _finding(
+                    "conclusion-facts",
+                    f"{section}.{name}",
+                    f"結論含數字但無 claim 背書: {', '.join(uncovered)}",
+                )
+            )
     return findings
 
 
@@ -308,7 +423,10 @@ def _collect_absolute_level_parameter_ids(data: dict[str, Any]) -> set[str]:
         if not isinstance(segment, dict):
             continue
         for scenario in segment.get("scenarios", {}).values():
-            if not isinstance(scenario, dict) or scenario.get("model") != "usage_platform":
+            if (
+                not isinstance(scenario, dict)
+                or scenario.get("model") != "usage_platform"
+            ):
                 continue
             drivers = scenario.get("driver_parameter_ids") or {}
             ids.update(drivers.get("eligible_activity") or [])
@@ -351,10 +469,13 @@ def _check_sensitivity_propagation(
         if year is None or year >= terminal_year:
             continue
         if pid in absolute_level_ids:
-            findings.append(_finding(
-                "sensitivity-propagation", f"sensitivity_tests.{pid}",
-                f"絕對水平型參數 {pid}（{parameter.get('period')}）早於終期 {terminal_year}：終期影響可能為 0，建議選用終期參數",
-            ))
+            findings.append(
+                _finding(
+                    "sensitivity-propagation",
+                    f"sensitivity_tests.{pid}",
+                    f"絕對水平型參數 {pid}（{parameter.get('period')}）早於終期 {terminal_year}：終期影響可能為 0，建議選用終期參數",
+                )
+            )
     return findings
 
 
@@ -375,14 +496,34 @@ def _check_aggregates(data: dict[str, Any]) -> list[dict[str, str]]:
                     weights[name] = weights.get(name, 0.0) + weight
         for name, total in weights.items():
             if abs(total - 1.0) > 1e-9:
-                findings.append(_finding("aggregate", f"growth_driver_tree.{name}", f"attribution weights for segment {name} sum to {total}, expected 1.0"))
+                findings.append(
+                    _finding(
+                        "aggregate",
+                        f"growth_driver_tree.{name}",
+                        f"attribution weights for segment {name} sum to {total}, expected 1.0",
+                    )
+                )
     coverage = data.get("research_coverage")
     if isinstance(coverage, list):
-        dims = [record.get("dimension") for record in coverage if isinstance(record, dict)]
+        dims = [
+            record.get("dimension") for record in coverage if isinstance(record, dict)
+        ]
         if len(dims) < 9:
-            findings.append(_finding("aggregate", "research_coverage", f"research_coverage has {len(dims)} dimensions, expected at least 9"))
+            findings.append(
+                _finding(
+                    "aggregate",
+                    "research_coverage",
+                    f"research_coverage has {len(dims)} dimensions, expected at least 9",
+                )
+            )
         if len(dims) != len(set(dims)):
-            findings.append(_finding("aggregate", "research_coverage", "research_coverage has duplicate dimension names"))
+            findings.append(
+                _finding(
+                    "aggregate",
+                    "research_coverage",
+                    "research_coverage has duplicate dimension names",
+                )
+            )
     return findings
 
 
@@ -407,9 +548,7 @@ def lint(
     }
     claims = data.get("evidence_claims", [])
     claim_index = {
-        claim.get("claim_id"): claim
-        for claim in claims
-        if isinstance(claim, dict)
+        claim.get("claim_id"): claim for claim in claims if isinstance(claim, dict)
     }
     parameters = data.get("parameters", [])
     parameter_index = {
@@ -436,11 +575,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("input", type=Path, help="schema 3.6 input JSON path")
     parser.add_argument(
-        "--check-conclusion-facts", action="store_true",
+        "--check-conclusion-facts",
+        action="store_true",
         help="warn when a coverage conclusion contains digits with no claim backing (heuristic, opt-in)",
     )
     parser.add_argument(
-        "--check-sensitivity-propagation", action="store_true",
+        "--check-sensitivity-propagation",
+        action="store_true",
         help="warn when a sensitivity shocks an absolute-level driver before the terminal year (heuristic, opt-in)",
     )
     args = parser.parse_args(argv)

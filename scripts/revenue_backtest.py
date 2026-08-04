@@ -27,15 +27,19 @@ from revenue_core import (
     text_sha256,
     validate_sources,
 )
-from revenue_report import validate_forecast_output
+from revenue_report import validate_published_forecast
+from schema_compatibility import require_validating_engine
 
 
 def create_snapshot(data: dict[str, Any], forecast_version: str) -> dict[str, Any]:
-    require(isinstance(forecast_version, str) and forecast_version.strip(), "forecast_version is required")
+    require(
+        isinstance(forecast_version, str) and forecast_version.strip(),
+        "forecast_version is required",
+    )
     frozen_input = copy.deepcopy(data)
     frozen_input["forecast_version"] = forecast_version
     result = run_forecast(frozen_input)
-    validate_forecast_output(result)
+    validate_published_forecast(result, frozen_input)
     input_hash = canonical_sha256(frozen_input)
     result_hash = canonical_sha256(result)
     identity = {
@@ -65,99 +69,287 @@ def write_new_json(path: Path, data: dict[str, Any]) -> None:
 
 
 def validate_snapshot(snapshot: dict[str, Any]) -> None:
-    for key in ("snapshot_schema_version", "snapshot_id", "forecast_version", "company_name", "as_of_date", "input_sha256", "forecast_result_sha256", "engine_version", "forecast_schema_version", "input_document", "forecast_result"):
+    for key in (
+        "snapshot_schema_version",
+        "snapshot_id",
+        "forecast_version",
+        "company_name",
+        "as_of_date",
+        "input_sha256",
+        "forecast_result_sha256",
+        "engine_version",
+        "forecast_schema_version",
+        "input_document",
+        "forecast_result",
+    ):
         require(key in snapshot, f"snapshot missing field: {key}")
-    require(snapshot["snapshot_schema_version"] == "2.0", "unsupported snapshot schema version")
-    require(snapshot["forecast_schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS, "snapshot forecast_schema_version mismatch")
-    if snapshot["forecast_schema_version"] == FORECAST_SCHEMA_VERSION:
-        require(snapshot["engine_version"] == ENGINE_VERSION, "snapshot engine_version mismatch")
-    # Legacy schemas accept any engine version; the snapshot_id hash still
-    # binds the exact engine for tamper detection.
+    require(
+        snapshot["snapshot_schema_version"] == "2.0",
+        "unsupported snapshot schema version",
+    )
+    require(
+        snapshot["forecast_schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS,
+        "snapshot forecast_schema_version mismatch",
+    )
+    require_validating_engine(
+        snapshot["forecast_schema_version"], snapshot["engine_version"], "snapshot"
+    )
     expected_input_hash = canonical_sha256(snapshot["input_document"])
-    require(expected_input_hash == snapshot["input_sha256"], "snapshot input fingerprint mismatch")
-    validate_forecast_output(snapshot["forecast_result"])
+    require(
+        expected_input_hash == snapshot["input_sha256"],
+        "snapshot input fingerprint mismatch",
+    )
+    validate_published_forecast(snapshot["forecast_result"], snapshot["input_document"])
     expected_result_hash = canonical_sha256(snapshot["forecast_result"])
-    require(expected_result_hash == snapshot["forecast_result_sha256"], "snapshot forecast result fingerprint mismatch")
-    require(snapshot["company_name"] == snapshot["input_document"]["company_name"] == snapshot["forecast_result"]["company_name"], "snapshot company identity mismatch")
-    require(snapshot["as_of_date"] == snapshot["input_document"]["as_of_date"] == snapshot["forecast_result"]["as_of_date"], "snapshot as_of_date identity mismatch")
-    require(snapshot["forecast_version"] == snapshot["input_document"]["forecast_version"] == snapshot["forecast_result"]["forecast_version"], "snapshot forecast_version identity mismatch")
-    require(snapshot["forecast_result"]["input_sha256"] == snapshot["input_sha256"], "forecast result input fingerprint mismatch")
-    identity = {key: snapshot[key] for key in ("company_name", "as_of_date", "forecast_version", "input_sha256", "forecast_result_sha256", "engine_version", "forecast_schema_version", "snapshot_schema_version")}
-    require(canonical_sha256(identity) == snapshot["snapshot_id"], "snapshot_id mismatch")
+    require(
+        expected_result_hash == snapshot["forecast_result_sha256"],
+        "snapshot forecast result fingerprint mismatch",
+    )
+    require(
+        snapshot["company_name"]
+        == snapshot["input_document"]["company_name"]
+        == snapshot["forecast_result"]["company_name"],
+        "snapshot company identity mismatch",
+    )
+    require(
+        snapshot["as_of_date"]
+        == snapshot["input_document"]["as_of_date"]
+        == snapshot["forecast_result"]["as_of_date"],
+        "snapshot as_of_date identity mismatch",
+    )
+    require(
+        snapshot["forecast_version"]
+        == snapshot["input_document"]["forecast_version"]
+        == snapshot["forecast_result"]["forecast_version"],
+        "snapshot forecast_version identity mismatch",
+    )
+    require(
+        snapshot["forecast_result"]["input_sha256"] == snapshot["input_sha256"],
+        "forecast result input fingerprint mismatch",
+    )
+    identity = {
+        key: snapshot[key]
+        for key in (
+            "company_name",
+            "as_of_date",
+            "forecast_version",
+            "input_sha256",
+            "forecast_result_sha256",
+            "engine_version",
+            "forecast_schema_version",
+            "snapshot_schema_version",
+        )
+    }
+    require(
+        canonical_sha256(identity) == snapshot["snapshot_id"], "snapshot_id mismatch"
+    )
 
 
-def validate_actuals(actuals: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    for key in ("actuals_schema_version", "company_name", "actuals_as_of_date", "currency", "unit", "sources", "evidence_claims", "actual_company_revenue"):
+def validate_actuals(
+    actuals: dict[str, Any], snapshot: dict[str, Any]
+) -> dict[str, dict[str, Any]]:
+    for key in (
+        "actuals_schema_version",
+        "company_name",
+        "actuals_as_of_date",
+        "currency",
+        "unit",
+        "sources",
+        "evidence_claims",
+        "actual_company_revenue",
+    ):
         require(key in actuals, f"actuals missing field: {key}")
-    require(actuals["actuals_schema_version"] == "2.0", "actuals_schema_version must be 2.0")
-    require(actuals["company_name"] == snapshot["company_name"], "actuals company_name does not match snapshot")
-    require(actuals["currency"] == snapshot["forecast_result"]["currency"] and actuals["unit"] == snapshot["forecast_result"]["unit"], "actuals currency/unit mismatch")
+    require(
+        actuals["actuals_schema_version"] == "2.0", "actuals_schema_version must be 2.0"
+    )
+    require(
+        actuals["company_name"] == snapshot["company_name"],
+        "actuals company_name does not match snapshot",
+    )
+    require(
+        actuals["currency"] == snapshot["forecast_result"]["currency"]
+        and actuals["unit"] == snapshot["forecast_result"]["unit"],
+        "actuals currency/unit mismatch",
+    )
     actuals_as_of = parse_iso_date(actuals["actuals_as_of_date"], "actuals_as_of_date")
     snapshot_as_of = parse_iso_date(snapshot["as_of_date"], "snapshot.as_of_date")
-    require(actuals_as_of >= snapshot_as_of, "actuals_as_of_date cannot precede forecast as_of_date")
+    require(
+        actuals_as_of >= snapshot_as_of,
+        "actuals_as_of_date cannot precede forecast as_of_date",
+    )
     source_index = validate_sources(actuals, actuals_as_of, require_capture=True)
     claim_index = _validate_actual_claims(actuals, source_index, actuals_as_of)
     forecast_years = set(snapshot["forecast_result"]["forecast_years"])
-    fiscal_month, fiscal_day = map(int, snapshot["forecast_result"]["fiscal_year_end"].split("-"))
+    fiscal_month, fiscal_day = map(
+        int, snapshot["forecast_result"]["fiscal_year_end"].split("-")
+    )
 
     company_actuals = actuals["actual_company_revenue"]
-    require(isinstance(company_actuals, dict) and company_actuals, "actual_company_revenue must be a non-empty object")
+    require(
+        isinstance(company_actuals, dict) and company_actuals,
+        "actual_company_revenue must be a non-empty object",
+    )
     for year_text, record in company_actuals.items():
-        require(year_text.isdigit() and int(year_text) in forecast_years, f"actual year is outside forecast horizon: {year_text}")
-        _validate_actual_record(record, source_index, claim_index, "actual_revenue", f"company:{year_text}", f"actual_company_revenue.{year_text}", actuals)
+        require(
+            year_text.isdigit() and int(year_text) in forecast_years,
+            f"actual year is outside forecast horizon: {year_text}",
+        )
+        _validate_actual_record(
+            record,
+            source_index,
+            claim_index,
+            "actual_revenue",
+            f"company:{year_text}",
+            f"actual_company_revenue.{year_text}",
+            actuals,
+        )
         for claim_id in record["claim_ids"]:
             source = source_index[claim_index[claim_id]["source_id"]]
-            require(parse_iso_date(source["published_date"], f"{source['source_id']}.published_date") >= date(int(year_text), fiscal_month, fiscal_day), f"actual source predates fiscal year end: {year_text}")
+            require(
+                parse_iso_date(
+                    source["published_date"], f"{source['source_id']}.published_date"
+                )
+                >= date(int(year_text), fiscal_month, fiscal_day),
+                f"actual source predates fiscal year end: {year_text}",
+            )
 
     segment_actuals = actuals.get("actual_segment_revenue", {})
-    require(isinstance(segment_actuals, dict), "actual_segment_revenue must be an object")
-    forecast_segments = {segment["name"] for segment in snapshot["forecast_result"]["segments"]}
+    require(
+        isinstance(segment_actuals, dict), "actual_segment_revenue must be an object"
+    )
+    forecast_segments = {
+        segment["name"] for segment in snapshot["forecast_result"]["segments"]
+    }
     for segment_name, records in segment_actuals.items():
-        require(segment_name in forecast_segments, f"unknown actual segment: {segment_name}")
-        require(isinstance(records, dict), f"actual segment records must be an object: {segment_name}")
+        require(
+            segment_name in forecast_segments, f"unknown actual segment: {segment_name}"
+        )
+        require(
+            isinstance(records, dict),
+            f"actual segment records must be an object: {segment_name}",
+        )
         for year_text, record in records.items():
-            require(year_text.isdigit() and int(year_text) in forecast_years, f"actual segment year is outside forecast horizon: {segment_name}/{year_text}")
-            _validate_actual_record(record, source_index, claim_index, "actual_revenue", f"segment:{segment_name}:{year_text}", f"actual_segment_revenue.{segment_name}.{year_text}", actuals)
+            require(
+                year_text.isdigit() and int(year_text) in forecast_years,
+                f"actual segment year is outside forecast horizon: {segment_name}/{year_text}",
+            )
+            _validate_actual_record(
+                record,
+                source_index,
+                claim_index,
+                "actual_revenue",
+                f"segment:{segment_name}:{year_text}",
+                f"actual_segment_revenue.{segment_name}.{year_text}",
+                actuals,
+            )
             for claim_id in record["claim_ids"]:
                 source = source_index[claim_index[claim_id]["source_id"]]
-                require(parse_iso_date(source["published_date"], f"{source['source_id']}.published_date") >= date(int(year_text), fiscal_month, fiscal_day), f"actual segment source predates fiscal year end: {segment_name}/{year_text}")
+                require(
+                    parse_iso_date(
+                        source["published_date"],
+                        f"{source['source_id']}.published_date",
+                    )
+                    >= date(int(year_text), fiscal_month, fiscal_day),
+                    f"actual segment source predates fiscal year end: {segment_name}/{year_text}",
+                )
     return source_index
 
 
-def _validate_actual_claims(actuals: dict[str, Any], source_index: dict[str, dict[str, Any]], as_of: date) -> dict[str, dict[str, Any]]:
+def _validate_actual_claims(
+    actuals: dict[str, Any], source_index: dict[str, dict[str, Any]], as_of: date
+) -> dict[str, dict[str, Any]]:
     claims = actuals["evidence_claims"]
-    require(isinstance(claims, list) and claims, "actual evidence_claims must be a non-empty list")
+    require(
+        isinstance(claims, list) and claims,
+        "actual evidence_claims must be a non-empty list",
+    )
     index: dict[str, dict[str, Any]] = {}
     for position, claim in enumerate(claims):
-        require(isinstance(claim, dict), f"actual evidence_claims[{position}] must be an object")
+        require(
+            isinstance(claim, dict),
+            f"actual evidence_claims[{position}] must be an object",
+        )
         claim_id = claim.get("claim_id")
-        require(isinstance(claim_id, str) and claim_id and claim_id not in index, "actual claim_id must be unique")
-        require(claim.get("source_id") in source_index, f"unknown actual claim source: {claim_id}")
-        require(claim.get("target_type") == "actual_revenue", f"actual claim target_type mismatch: {claim_id}")
-        require(claim.get("support_type") == "exact_value", f"actual claim must use exact_value: {claim_id}")
+        require(
+            isinstance(claim_id, str) and claim_id and claim_id not in index,
+            "actual claim_id must be unique",
+        )
+        require(
+            claim.get("source_id") in source_index,
+            f"unknown actual claim source: {claim_id}",
+        )
+        require(
+            claim.get("target_type") == "actual_revenue",
+            f"actual claim target_type mismatch: {claim_id}",
+        )
+        require(
+            claim.get("support_type") == "exact_value",
+            f"actual claim must use exact_value: {claim_id}",
+        )
         for field in ("target_id", "locator", "excerpt", "verified_by"):
-            require(isinstance(claim.get(field), str) and claim[field].strip(), f"actual claim {claim_id}.{field} is required")
+            require(
+                isinstance(claim.get(field), str) and claim[field].strip(),
+                f"actual claim {claim_id}.{field} is required",
+            )
         excerpt = claim["excerpt"].strip()
-        require(10 <= len(excerpt) <= 500 and claim.get("excerpt_sha256") == text_sha256(excerpt), f"actual claim excerpt/hash mismatch: {claim_id}")
-        require(isinstance(claim.get("content_sha256"), str) and re.fullmatch(r"[0-9a-f]{64}", claim["content_sha256"]), f"actual claim content_sha256 must be lowercase SHA-256: {claim_id}")
+        require(
+            10 <= len(excerpt) <= 500
+            and claim.get("excerpt_sha256") == text_sha256(excerpt),
+            f"actual claim excerpt/hash mismatch: {claim_id}",
+        )
+        require(
+            isinstance(claim.get("content_sha256"), str)
+            and re.fullmatch(r"[0-9a-f]{64}", claim["content_sha256"]),
+            f"actual claim content_sha256 must be lowercase SHA-256: {claim_id}",
+        )
         source_capture = source_index[claim["source_id"]].get("capture")
-        require(isinstance(source_capture, dict), f"actual claim source capture is missing: {claim_id}")
-        require(claim.get("capture_receipt_sha256") == source_capture["receipt_sha256"], f"actual claim capture receipt mismatch: {claim_id}")
-        require(claim["content_sha256"] == source_capture["snapshot_sha256"], f"actual claim/source snapshot mismatch: {claim_id}")
-        require(claim.get("verification_status") == "opened_and_checked", f"actual claim must be opened_and_checked: {claim_id}")
-        verified = parse_iso_date(claim.get("verified_date"), f"{claim_id}.verified_date")
-        published = parse_iso_date(source_index[claim["source_id"]]["published_date"], f"{claim_id}.published_date")
-        require(published <= verified <= as_of, f"actual claim verification date is invalid: {claim_id}")
+        require(
+            isinstance(source_capture, dict),
+            f"actual claim source capture is missing: {claim_id}",
+        )
+        require(
+            claim.get("capture_receipt_sha256") == source_capture["receipt_sha256"],
+            f"actual claim capture receipt mismatch: {claim_id}",
+        )
+        require(
+            claim["content_sha256"] == source_capture["snapshot_sha256"],
+            f"actual claim/source snapshot mismatch: {claim_id}",
+        )
+        require(
+            claim.get("verification_status") == "opened_and_checked",
+            f"actual claim must be opened_and_checked: {claim_id}",
+        )
+        verified = parse_iso_date(
+            claim.get("verified_date"), f"{claim_id}.verified_date"
+        )
+        published = parse_iso_date(
+            source_index[claim["source_id"]]["published_date"],
+            f"{claim_id}.published_date",
+        )
+        require(
+            published <= verified <= as_of,
+            f"actual claim verification date is invalid: {claim_id}",
+        )
         index[claim_id] = claim
     return index
 
 
-def _validate_actual_record(record: Any, source_index: dict[str, dict[str, Any]], claim_index: dict[str, dict[str, Any]], target_type: str, target_id: str, field: str, actuals: dict[str, Any]) -> None:
+def _validate_actual_record(
+    record: Any,
+    source_index: dict[str, dict[str, Any]],
+    claim_index: dict[str, dict[str, Any]],
+    target_type: str,
+    target_id: str,
+    field: str,
+    actuals: dict[str, Any],
+) -> None:
     require(isinstance(record, dict), f"{field} must be an object")
     value = finite_number(record.get("value"), f"{field}.value")
     require(value >= 0, f"{field}.value cannot be negative")
     source_ids = record.get("source_ids")
-    require(isinstance(source_ids, list) and source_ids, f"{field}.source_ids is required")
+    require(
+        isinstance(source_ids, list) and source_ids, f"{field}.source_ids is required"
+    )
     for source_id in source_ids:
         require(source_id in source_index, f"unknown actual source_id: {source_id}")
     claim_ids = record.get("claim_ids")
@@ -165,15 +357,34 @@ def _validate_actual_record(record: Any, source_index: dict[str, dict[str, Any]]
     for claim_id in claim_ids:
         require(claim_id in claim_index, f"unknown actual claim_id: {claim_id}")
         claim = claim_index[claim_id]
-        require(claim["target_type"] == target_type and claim["target_id"] == target_id, f"actual claim target mismatch: {claim_id}")
-        require(claim["source_id"] in source_ids, f"actual claim source is not registered on record: {claim_id}")
-        require(math.isclose(float(claim.get("extracted_value")), value, rel_tol=0, abs_tol=1e-9), f"actual claim value mismatch: {claim_id}")
+        require(
+            claim["target_type"] == target_type and claim["target_id"] == target_id,
+            f"actual claim target mismatch: {claim_id}",
+        )
+        require(
+            claim["source_id"] in source_ids,
+            f"actual claim source is not registered on record: {claim_id}",
+        )
+        require(
+            math.isclose(
+                float(claim.get("extracted_value")), value, rel_tol=0, abs_tol=1e-9
+            ),
+            f"actual claim value mismatch: {claim_id}",
+        )
         year = target_id.rsplit(":", 1)[-1]
-        require(claim.get("period") == f"FY{year}", f"actual claim period mismatch: {claim_id}")
-        require(claim.get("unit") == f"{actuals['currency']} {actuals['unit']}", f"actual claim unit mismatch: {claim_id}")
+        require(
+            claim.get("period") == f"FY{year}",
+            f"actual claim period mismatch: {claim_id}",
+        )
+        require(
+            claim.get("unit") == f"{actuals['currency']} {actuals['unit']}",
+            f"actual claim unit mismatch: {claim_id}",
+        )
 
 
-def _error_record(forecast: float, actual: float, lower: float, upper: float, scale_base: float) -> dict[str, Any]:
+def _error_record(
+    forecast: float, actual: float, lower: float, upper: float, scale_base: float
+) -> dict[str, Any]:
     absolute_error = abs(forecast - actual)
     signed_error = None if actual == 0 else (forecast - actual) / actual
     smape_denominator = abs(forecast) + abs(actual)
@@ -182,9 +393,15 @@ def _error_record(forecast: float, actual: float, lower: float, upper: float, sc
         "actual": actual,
         "absolute_error": absolute_error,
         "signed_error": signed_error,
-        "absolute_percentage_error": None if signed_error is None else abs(signed_error),
-        "smape": 0.0 if smape_denominator == 0 else 2 * absolute_error / smape_denominator,
-        "base_scaled_error": None if scale_base == 0 else absolute_error / abs(scale_base),
+        "absolute_percentage_error": None
+        if signed_error is None
+        else abs(signed_error),
+        "smape": 0.0
+        if smape_denominator == 0
+        else 2 * absolute_error / smape_denominator,
+        "base_scaled_error": None
+        if scale_base == 0
+        else absolute_error / abs(scale_base),
         "within_interval": lower <= actual <= upper,
         "low_case": lower,
         "high_case": upper,
@@ -194,18 +411,38 @@ def _error_record(forecast: float, actual: float, lower: float, upper: float, sc
 def _summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
     absolute_errors = [float(record["absolute_error"]) for record in records]
     actual_denominator = sum(abs(float(record["actual"])) for record in records)
-    signed = [float(record["signed_error"]) for record in records if record.get("signed_error") is not None]
-    scaled = [float(record["base_scaled_error"]) for record in records if record.get("base_scaled_error") is not None]
-    directions = [bool(record["direction_correct"]) for record in records if record.get("direction_correct") is not None]
+    signed = [
+        float(record["signed_error"])
+        for record in records
+        if record.get("signed_error") is not None
+    ]
+    scaled = [
+        float(record["base_scaled_error"])
+        for record in records
+        if record.get("base_scaled_error") is not None
+    ]
+    directions = [
+        bool(record["direction_correct"])
+        for record in records
+        if record.get("direction_correct") is not None
+    ]
     return {
         "observations": len(records),
         "mae": None if not records else sum(absolute_errors) / len(records),
-        "wape": None if actual_denominator == 0 else sum(absolute_errors) / actual_denominator,
+        "wape": None
+        if actual_denominator == 0
+        else sum(absolute_errors) / actual_denominator,
         "mean_signed_error": None if not signed else sum(signed) / len(signed),
-        "mean_smape": None if not records else sum(float(record["smape"]) for record in records) / len(records),
+        "mean_smape": None
+        if not records
+        else sum(float(record["smape"]) for record in records) / len(records),
         "mean_base_scaled_error": None if not scaled else sum(scaled) / len(scaled),
-        "direction_accuracy": None if not directions else sum(directions) / len(directions),
-        "interval_coverage": None if not records else sum(bool(record["within_interval"]) for record in records) / len(records),
+        "direction_accuracy": None
+        if not directions
+        else sum(directions) / len(directions),
+        "interval_coverage": None
+        if not records
+        else sum(bool(record["within_interval"]) for record in records) / len(records),
     }
 
 
@@ -223,7 +460,9 @@ def _accuracy_record(evaluation: dict[str, Any]) -> dict[str, Any]:
     return {**payload, "record_sha256": canonical_sha256(payload)}
 
 
-def evaluate_snapshot(snapshot: dict[str, Any], actuals: dict[str, Any]) -> dict[str, Any]:
+def evaluate_snapshot(
+    snapshot: dict[str, Any], actuals: dict[str, Any]
+) -> dict[str, Any]:
     validate_snapshot(snapshot)
     validate_actuals(actuals, snapshot)
     forecast = snapshot["forecast_result"]
@@ -243,10 +482,28 @@ def evaluate_snapshot(snapshot: dict[str, Any], actuals: dict[str, Any]) -> dict
         year_text = str(year)
         actual = float(company_actuals[year_text]["value"])
         predicted = float(base_path[year_text])
-        record = _error_record(predicted, actual, float(low_path[year_text]), float(high_path[year_text]), base_revenue)
+        record = _error_record(
+            predicted,
+            actual,
+            float(low_path[year_text]),
+            float(high_path[year_text]),
+            base_revenue,
+        )
         if year == previous_year + 1:
-            forecast_direction = 0 if math.isclose(predicted, previous_forecast) else 1 if predicted > previous_forecast else -1
-            actual_direction = 0 if math.isclose(actual, previous_actual) else 1 if actual > previous_actual else -1
+            forecast_direction = (
+                0
+                if math.isclose(predicted, previous_forecast)
+                else 1
+                if predicted > previous_forecast
+                else -1
+            )
+            actual_direction = (
+                0
+                if math.isclose(actual, previous_actual)
+                else 1
+                if actual > previous_actual
+                else -1
+            )
             record["direction_correct"] = forecast_direction == actual_direction
         else:
             record["direction_correct"] = None
@@ -271,28 +528,60 @@ def evaluate_snapshot(snapshot: dict[str, Any], actuals: dict[str, Any]) -> dict
         result_by_year: dict[str, Any] = {}
         segment = segment_forecasts[segment_name]
         for year_text, actual_record in records.items():
-            predicted = float(segment["scenarios"]["base"].get("effective_revenue", segment["scenarios"]["base"]["recognized_revenue"])[year_text])
-            lower = float(segment["scenarios"]["low"].get("effective_revenue", segment["scenarios"]["low"]["recognized_revenue"])[year_text])
-            upper = float(segment["scenarios"]["high"].get("effective_revenue", segment["scenarios"]["high"]["recognized_revenue"])[year_text])
-            result_by_year[year_text] = _error_record(predicted, float(actual_record["value"]), lower, upper, float(segment["base_revenue"]))
+            predicted = float(
+                segment["scenarios"]["base"].get(
+                    "effective_revenue",
+                    segment["scenarios"]["base"]["recognized_revenue"],
+                )[year_text]
+            )
+            lower = float(
+                segment["scenarios"]["low"].get(
+                    "effective_revenue",
+                    segment["scenarios"]["low"]["recognized_revenue"],
+                )[year_text]
+            )
+            upper = float(
+                segment["scenarios"]["high"].get(
+                    "effective_revenue",
+                    segment["scenarios"]["high"]["recognized_revenue"],
+                )[year_text]
+            )
+            result_by_year[year_text] = _error_record(
+                predicted,
+                float(actual_record["value"]),
+                lower,
+                upper,
+                float(segment["base_revenue"]),
+            )
             result_by_year[year_text]["source_ids"] = actual_record["source_ids"]
             result_by_year[year_text]["claim_ids"] = actual_record["claim_ids"]
         segment_results[segment_name] = result_by_year
 
     company_records = list(year_results.values())
     summary = _summarize_records(company_records)
-    summary.update({
-        "forecast_cagr_to_latest_actual_year": forecast_cagr,
-        "actual_cagr_to_latest_actual_year": actual_cagr,
-        "cagr_error": None if forecast_cagr is None or actual_cagr is None else forecast_cagr - actual_cagr,
-    })
-    segment_summaries = {name: _summarize_records(list(records.values())) for name, records in segment_results.items()}
+    summary.update(
+        {
+            "forecast_cagr_to_latest_actual_year": forecast_cagr,
+            "actual_cagr_to_latest_actual_year": actual_cagr,
+            "cagr_error": None
+            if forecast_cagr is None or actual_cagr is None
+            else forecast_cagr - actual_cagr,
+        }
+    )
+    segment_summaries = {
+        name: _summarize_records(list(records.values()))
+        for name, records in segment_results.items()
+    }
     horizon_summaries = {
-        str(horizon): _summarize_records([record for record in company_records if record["horizon_years"] == horizon])
+        str(horizon): _summarize_records(
+            [record for record in company_records if record["horizon_years"] == horizon]
+        )
         for horizon in sorted({record["horizon_years"] for record in company_records})
     }
     actuals_hash = canonical_sha256(actuals)
-    backtest_id = canonical_sha256({"snapshot_id": snapshot["snapshot_id"], "actuals_sha256": actuals_hash})
+    backtest_id = canonical_sha256(
+        {"snapshot_id": snapshot["snapshot_id"], "actuals_sha256": actuals_hash}
+    )
     evaluation = {
         "backtest_schema_version": "2.0",
         "backtest_id": backtest_id,
@@ -302,7 +591,12 @@ def evaluate_snapshot(snapshot: dict[str, Any], actuals: dict[str, Any]) -> dict
         "forecast_as_of_date": snapshot["as_of_date"],
         "actuals_as_of_date": actuals["actuals_as_of_date"],
         "actuals_sha256": actuals_hash,
-        "nonconsecutive_actual_years": bool(ordered_years and ordered_years[0] != base_year + 1) or any(right - left != 1 for left, right in zip(ordered_years, ordered_years[1:])),
+        "nonconsecutive_actual_years": bool(
+            ordered_years and ordered_years[0] != base_year + 1
+        )
+        or any(
+            right - left != 1 for left, right in zip(ordered_years, ordered_years[1:])
+        ),
         "company_year_results": year_results,
         "segment_year_results": segment_results,
         "segment_summaries": segment_summaries,
@@ -315,7 +609,9 @@ def evaluate_snapshot(snapshot: dict[str, Any], actuals: dict[str, Any]) -> dict
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Create immutable revenue forecasts or evaluate them against actual revenue")
+    parser = argparse.ArgumentParser(
+        description="Create immutable revenue forecasts or evaluate them against actual revenue"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
     create = subparsers.add_parser("create")
     create.add_argument("input", type=Path)

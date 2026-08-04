@@ -21,11 +21,15 @@ touches the catalog.
 from __future__ import annotations
 
 import re
+import sys
 import unittest
 from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SKILL_ROOT / "scripts"))
+
+from revenue_core import FORECAST_SCHEMA_VERSION  # noqa: E402
 
 # Match `python scripts/<name>.py <rest of line>` after backslash-continuation
 # lines have been joined into logical lines.
@@ -102,6 +106,33 @@ class SkillDocumentationExamplesTests(unittest.TestCase):
                         f"SKILL.md documents `{flag}` for {script} but the script "
                         "does not declare it",
                     )
+
+    def test_skill_documents_sign_after_validation_order(self) -> None:
+        # Phase 6 B4 (F-12) guard: SKILL.md claims the receipt is "signed after
+        # output validation". That ordering must match run_forecast's real
+        # source: the strong validator runs before build_publication_receipt.
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("signed after", skill)
+        core = (SKILL_ROOT / "scripts" / "revenue_core.py").read_text(encoding="utf-8")
+        validate_line = core.index("validate_published_forecast(result, data)")
+        sign_line = core.index("build_publication_receipt(result, context)")
+        self.assertLess(
+            validate_line,
+            sign_line,
+            "run_forecast must validate BEFORE signing (documented 'signed after')",
+        )
+
+    def test_skill_schema_claims_match_runtime(self) -> None:
+        # Phase 6 B4 (F-05) guard: SKILL.md's headline schema must equal the
+        # runtime FORECAST_SCHEMA_VERSION so a version bump cannot drift docs.
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        headline = re.search(r"is\s*\n?\s*now\s+\*\*([0-9.]+)\*\*", skill)
+        self.assertIsNotNone(headline, "SKILL.md must state the current schema")
+        self.assertEqual(
+            headline.group(1),
+            FORECAST_SCHEMA_VERSION,
+            "SKILL.md headline schema drifts from FORECAST_SCHEMA_VERSION",
+        )
 
 
 if __name__ == "__main__":

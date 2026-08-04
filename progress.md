@@ -1765,3 +1765,97 @@ G1-G4（双类股身份归一 1A/2A/3A 已裁决、verify supersedes、scanner �
 ### 未提交 / 未解决
 
 - 未提交（用户未要求）。`.agents` 安装副本同步（revenue 3.6 → installs）为 outward-facing 步骤，待用户授权。
+
+
+
+## 2026-08-03 — 设计目标达成审查（audit_review 合并）
+
+> 独立审查底稿，来源 `audit_review/progress.md`。
+
+### 2026-08-03
+
+- 已完整读取 `planning-with-files` 技能说明并建立独立审查底稿。
+- 已盘点根项目和同级项目；确认根项目 CodeGraph 已初始化。
+- 已记录审查开始时的工作树状态：仅 `.coverage` 存在既有修改。
+- 下一步：提取根计划的阶段、状态、未完成项、验收标准及跨项目引用。
+- 已提取 Phase 0–19 的结构性状态与历史审查标题；发现计划首页、阶段标题、追加状态表和阶段内状态存在明显漂移。
+- 已确定审查策略：以可执行验收和实际工件为准，把 `[x]`/`completed` 仅视为待验证声明。
+- 计划自动汇总的首次 PowerShell 命令发生 ParserError；已记录，下一次改用先收集数组再输出的写法。
+- 第二种 PowerShell 汇总虽成功执行，但因换行/编码表现未识别阶段标题；未将其 checklist 汇总视为有效证据，后续更换解析方式。
+- CodeGraph 状态核验通过：39 files / 1024 nodes / 1335 edges。
+- 改用 `rg` 流解析完成 Phase 清单统计：164 checked / 387 unchecked，确认状态回填严重不一致。
+- 已获取根项目 CodeGraph 文件树并识别核心实现/测试边界。
+- 已核验 filing-fetch 与 company-wiki 的 CodeGraph 均可用；准备进入跨仓库结构与契约核验。
+- 已获取两个相关仓库的结构树，完成审查边界收敛：filing-fetch 全部、company-wiki source-catalog 与被引用契约。
+- 已重新读取本次审查计划并提取根计划 Phase 0 的 10 项一级目标、版本基线和通用质量门，建立正式核验主轴。
+- 已用 CodeGraph 获取 publication 与 filing acquisition 上下文；锁定 receipt 调用顺序/独立重算和旧 acquisition 可达性为首批深查项。
+- 尝试调用图查询 publication 调用顺序，但 CodeGraph 未返回边；已记录为图解析局限并切换到聚焦上下文/源码验证。
+- 已取得 `run_forecast` 完整源码并发现 F-01：receipt 在 validator 前构造；下一步检查 validator 的自包含性与正式 consumer gate。
+- 已取得 validator 主体源码，确认大量独立语义重算已实现；同时发现两阶段签发模型仍未形成。
+- 已定位输入可选造成的强/弱验证分叉，并发现代码版本 3.10/schema 3.6 与 Phase 0 发布基线漂移；列为 F-02/F-03 待动态复现。
+- 已建立 publication/rehash 对抗测试索引，准备逐个检查是否覆盖 F-01/F-02。
+- 已确认所谓“public API receipt order”测试并不验证 publication receipt 的真实调用顺序，F-01 仍成立；发现一个 CodeGraph 测试方法片段错配，后续用具体文件与运行证据交叉处理。
+- 已字面核验 sensitivity 对抗用例与 `_republish` 辅助，下一步动态验证无输入路径是否接受伪造工件。
+- 首次动态 probe 因 PowerShell/native 参数引号处理触发 SyntaxError；已记录，改走 stdin 执行。
+- 动态 probe 成功：伪造 sensitivity 在无 input validator 下被接受、在带 input validator 下被拒绝。F-02 升级为 Critical。
+- 已发现 filing-fetch 核心符号与 handle 对抗测试，准备执行一次项目级 CodeGraph explore。
+- 已完成 filing-fetch 唯一一次 CodeGraph explore；核心 reuse-first、identity、deadline、contract、handle 深验证设计基本落地。
+- 已定位 company-wiki resolver 与 acquisition service 核心符号，准备进行项目级聚焦 explore。
+- 已完成 company-wiki 唯一一次聚焦 explore；单 writer、reuse-first、identity fail-closed、issuer 归一、journal 与 debug trace 主体设计均有实现证据。
+- 已确认 revenue 根仓库仍保留一套完整旧 filing owner；下一步核验其文档/CLI 可达性和废弃状态。
+- 已确认旧 owner 仍是可执行下载 CLI，形成 F-04；同时发现 SKILL/CHANGELOG/schema/version 多处漂移，形成 F-05。
+- 跨仓库 git/安装路径盘点首次命令发生 PowerShell ParserError；已记录并改为数组收集写法。
+- 已完成五仓库 git/工作树与四个安装目录盘点；记录 filing-fetch 未提交能力和普通目录同步风险。
+- 已运行 revenue 四组 targeted suites，共 41 tests 全绿；已将“测试通过但 F-02 未覆盖”纳入结论。
+- 第一轮全量：revenue 253 + tools 4 全绿；filing-fetch 105 中 6F/2E/4S。准备核对解释器与测试安装契约后给 F-06 定级。
+- 确认解释器差异：Miniconda Python 可 import company-wiki，bundled Python 不可；filing-fetch 未声明该依赖。已用计划规定的默认 `python` 重跑全量，运行中。
+- filing-fetch 默认 Python 全量完成：117/117 通过、5 skipped。F-06 定级 Medium（环境/依赖声明），非当前功能回归。
+- revenue 完整质量门完成：compileall/ruff 绿、253 tests 绿、coverage 87% 总门通过；发现 F-07 逐模块 coverage 未达目标。
+- company-wiki 全量 pytest 已收集 1630 项，运行中；filing-fetch coverage 运行中。
+- filing-fetch 完整质量门完成：compileall/ruff 绿、117 tests 绿（5 skip）、coverage 96%。company-wiki 运行至约 30%。
+- 字面审查 invest-core/framework，确认 F-02 会穿透正式 invest adapter 与 bundle；同时确认单向依赖/禁止收入重建的主体设计已实现。
+- company-wiki 全量运行约 37%，尚未出现失败。
+- invest-core 36 tests（1 skip）与 invest-framework 22 tests 全绿，compileall/ruff 均通过；company-wiki 约 38%。
+- revenue 安装同步默认检查完成：`.agents` 58 files MATCH；`.codex` 待显式检查。
+- 显式检查发现 revenue `.codex` 34-file DIFF；盘点 filing-fetch 两套安装也有缺文件/pycache/内容状态分叉。登记 F-08 High。
+- company-wiki 全量完成：1629 pass / 1 fail（worker supervisor 终止后事件日志 PermissionError），登记 F-09 待复现。
+- F-09 targeted 连跑 3 次全过，判为 suite-load 竞态/非确定性 teardown，维持 Medium。
+- 深查 workflow/backtest：发现 snapshot 持有 input 却调用弱 validator，F-02 影响扩展到回测；另登记 F-10 legacy engine compatibility matrix 缺失。
+- 对照 Phase 8 与实现/文档，确认 trusted host receipt、mandatory search events、fail-to-draft、sensitivity completeness 均未落地；登记 F-11 Critical 与 F-12 High。
+- company-wiki compileall 通过、ruff 失败 6 项，登记 F-13；进程观测未发现 pytest 临时 worker 残留。
+- 已取得 create_snapshot 源码，确认 snapshot identity/hash 不能弥补 validate_snapshot 未传 input 的语义缺口；准备动态复现。
+- 用户明确最终目标是完整细致的改进计划，而非立即实施；已将 Phase 5 交付标准扩展，继续保持业务代码只读。
+- 已按用户要求确认持续落盘机制：每两次查看/搜索补充 findings/progress/task_plan；company-wiki 全量 pytest 当前运行至约 35%。
+- Phase 1 完成，进入 Phase 2/4 的实现与全量质量门交叉核验。
+- invest-core CodeGraph 状态查询失败（未初始化）；等待是否允许初始化，其他核心仓库审查继续。
+- 用户指示继续。恢复会话：重读三份底稿，确认下一阶段为 snapshot 动态复现 + Phase 2/3/4 收尾 + Phase 5 改进计划。
+- bash 工具实为 git-bash（非 PowerShell）；首次 here-string 语法失败，改为将探针落盘为 `audit_review/probe_snapshot_forgery.py` 再执行，不再重复原命令。
+- snapshot 伪造动态复现成功：`validate_snapshot(forged)` ACCEPTED、带 input 强路径 REJECTED。F-02 扩展结论已写入 findings。
+- filing-fetch 待确认点关闭：request_id/status 门有实现+测试；授权审计链在 company-wiki DownloadReceipt/provenance/journal；登记 F-14（Low，无客户端 receipt）。
+- company-wiki 待确认点关闭：retire/restore 实现（store.py:334-414，审计行）+6/6 测试；scanner 在 canonical_writer.py:185 热路径被全部 import 测试间接覆盖，证据强度升级。
+- F-10 精确取证：output validator 3.4/3.5 绑当前 engine 过窄（CHANGELOG：3.4 由 v3.5.0 引入，真实配对 3.5.0–3.10.0），snapshot 任意 engine 过宽；3.3/3.4/3.5 无配对测试。
+- 用户授权 invest-core CodeGraph 初始化；invest-core（183 节点）与 invest-framework（149 节点）均已建索引。结构确认：invest 消费链无任何函数接受 input，F-02 穿透字面+结构双确认。
+- 用户选择交付物并入现有底稿。已完成：task_plan Phase 2/3/4 标记 completed 并补执行结果表；findings 回填 10 目标核验矩阵+审查结论+问题清单；task_plan 新增 Phase 6 改进计划（A/B/C/D 四阶段，含优先级/依赖/文件/RED/步骤/验收/回滚）。
+- 错误记录新增 3 条（bash 非 PowerShell、codegraph CLI 子命令、相对路径静默无输出）。
+- Phase 5 完成。全部审查阶段结束；业务代码未改动（只读审查）；新增文件仅 `audit_review/probe_snapshot_forgery.py`（诊断探针）。
+
+## 2026-08-04 — Phase 6 改进实施完成
+
+用户指示"根据计划一步一步实施改进"。全部 A/B/C/D 阶段已落地，业务代码从审查只读转为实施。
+
+- **A1（F-01/F-02/F-12）**：`run_forecast` 改两阶段签发（先 `validate_published_forecast` 后 `build_publication_receipt`）；receipt 只能由强验证 `VerificationContext` 签发；published result 嵌入 `input_document` 自包含；`validate_snapshot` 走强路径；`build_publication_receipt` 无 context 时 hard-fail。探针确认伪造 sensitivity/snapshot 全 REJECTED。
+- **A2（F-11）**：capture 强制 `host_receipt`（issuer/environment/tool/action/event_sha256/timestamp）；`not_available` 强制 machine-generated `search_event`；self-declared capture 无法出 formal。
+- **A3**：invest-core 新增跨仓库 conformance 测试，伪造 sensitivity 工件在 `adapt_revenue` 被拒。
+- **B1（F-04）**：`filing_acquisition.main` hard-fail（exit 3）指向 `filing_fetch_client`；库保留供 legacy 测试。
+- **B2（F-10）**：新增 `scripts/schema_compatibility.py` 单一 immutable registry；output/snapshot 共用；schema 3.4 接受 CHANGELOG 记载引擎（3.5.0–3.10.0），未知引擎 fail closed。
+- **B3（F-08）**：`sync_installations.py` 默认检查 `.agents`/`.claude`/`.codex`；filing-fetch 质量增强已提交（commit 01ba722）；新增 filing-fetch 同步工具；revenue 两安装根 MATCH。
+- **B4（F-12/F-05/F-03）**：SKILL/CHANGELOG/compliance-contract/input-schema 对齐 schema 3.6 与两阶段顺序；`test_skill_documentation` 新增顺序/版本守卫。
+- **C1（F-07）**：`tools/run_coverage_gates.py`（subprocess coverage + 分模块阈值）；`revenue_forecast.py` 0%→81%；total 85%。
+- **C2（F-06）**：filing-fetch pyproject 声明 pytest pythonpath；e2e 显式插入 company-wiki src；conformance 子进程 `errors="replace"`；112 passed。
+- **C3（F-09）**：`_launcher_events` 对 PermissionError 加 3s 重试；company-wiki 1629 passed（含原失败用例）。
+- **C4（F-13）**：company-wiki 6 项 ruff 清理；全绿。
+- **D1（F-14）**：filing-fetch handle 增加 `acquisition_mode`/`authorization_requested`；+2 测试。
+- **D2**：company-wiki 新增 `test_source_catalog_scanner_direct.py`（4 直接单测）。
+- **D3/D4**：根 task_plan 追加实施状态表（单一可信来源）；invest 两仓库 CodeGraph 索引已建。
+
+**最终测试基线**：revenue 280 / tools 4 / invest-core 37 / invest-framework 22 / filing-fetch 112（5 skip）/ company-wiki 1629 全绿；四仓库 ruff + compileall 通过；coverage 分模块门通过。

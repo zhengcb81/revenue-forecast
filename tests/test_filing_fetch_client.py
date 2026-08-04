@@ -33,7 +33,7 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 # A hermetic stand-in for filing-fetch's fetch_filing.py. It reads the request
 # from stdin and branches on ``company_query`` so tests can drive success vs.
 # structured-error without mutating the environment or touching any catalog.
-_FAKE_FETCH_FILING = '''\
+_FAKE_FETCH_FILING = """\
 import json
 import sys
 
@@ -68,7 +68,7 @@ handle = {
 }
 json.dump({"schema_version": "1.1", "status": "capture_ready", "handle": handle}, sys.stdout)
 sys.exit(0)
-'''
+"""
 
 
 @contextlib.contextmanager
@@ -76,7 +76,9 @@ def _fake_root() -> Path:
     with tempfile.TemporaryDirectory(prefix="fff_client_fake_") as directory:
         root = Path(directory)
         (root / "scripts").mkdir(parents=True, exist_ok=True)
-        (root / "scripts" / "fetch_filing.py").write_text(_FAKE_FETCH_FILING, encoding="utf-8")
+        (root / "scripts" / "fetch_filing.py").write_text(
+            _FAKE_FETCH_FILING, encoding="utf-8"
+        )
         yield root
 
 
@@ -100,13 +102,77 @@ class ResolveFilingErrorDiagnosticsTests(unittest.TestCase):
         # stdout are discarded.
         with _fake_root() as root:
             with self.assertRaises(_ClientError) as ctx:
-                resolve_filing(_request("AMBIGUOUS_FORCE_ERROR"), filing_fetch_root=root)
+                resolve_filing(
+                    _request("AMBIGUOUS_FORCE_ERROR"), filing_fetch_root=root
+                )
         error = ctx.exception
         self.assertEqual(error.error_code, "identity_error")
         self.assertIs(error.retryable, False)
         self.assertIsInstance(error.candidates, list)
         self.assertEqual(len(error.candidates), 2)
         self.assertEqual(error.candidates[0]["ticker"], "GOOGL")
+
+    def test_resolve_filing_missing_script_fails_closed(self) -> None:
+        # Phase 6 C1: an unavailable filing-fetch root must raise a clear
+        # _ClientError instead of crashing on a missing script path.
+        import tempfile as _tempfile
+
+        with _tempfile.TemporaryDirectory(prefix="fff_no_script_") as directory:
+            empty = Path(directory)
+            with self.assertRaises(_ClientError) as ctx:
+                resolve_filing(_request("AMD"), filing_fetch_root=empty)
+        self.assertIn("filing-fetch script not found", str(ctx.exception))
+
+    def test_resolve_filing_nonzero_exit_with_non_json_stdout_uses_stderr(self) -> None:
+        # Phase 6 C1: when filing-fetch exits non-zero and stdout is not a JSON
+        # error document, the client must fall back to stderr detail.
+        from unittest.mock import patch
+
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=2,
+            stdout="not-json",
+            stderr="boom: upstream failure",
+        )
+        with _fake_root() as root:
+            with patch("filing_fetch_client.subprocess.run", return_value=completed):
+                with self.assertRaises(_ClientError) as ctx:
+                    resolve_filing(_request("AMD"), filing_fetch_root=root)
+            self.assertIn("boom: upstream failure", str(ctx.exception))
+
+    def test_resolve_filing_invalid_stdout_json_is_rejected(self) -> None:
+        # Phase 6 C1: zero exit but non-JSON stdout must raise.
+        from unittest.mock import patch
+
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="<html>not json</html>",
+            stderr="",
+        )
+        with _fake_root() as root:
+            with patch("filing_fetch_client.subprocess.run", return_value=completed):
+                with self.assertRaises(_ClientError) as ctx:
+                    resolve_filing(_request("AMD"), filing_fetch_root=root)
+            self.assertIn("not valid JSON", str(ctx.exception))
+
+    def test_resolve_filing_non_capture_ready_status_is_rejected(self) -> None:
+        # Phase 6 C1: a capture_ready=False response must raise with status.
+        from unittest.mock import patch
+
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout=json.dumps(
+                {"schema_version": "1.0", "status": "not_found", "error": "no filing"}
+            ),
+            stderr="",
+        )
+        with _fake_root() as root:
+            with patch("filing_fetch_client.subprocess.run", return_value=completed):
+                with self.assertRaises(_ClientError) as ctx:
+                    resolve_filing(_request("AMD"), filing_fetch_root=root)
+            self.assertIn("status=not_found", str(ctx.exception))
 
 
 class FilingFetchClientCliTests(unittest.TestCase):
@@ -171,7 +237,9 @@ class FilingFetchClientCliTests(unittest.TestCase):
         # clean.
         with _fake_root() as root:
             request_path = root / "request.json"
-            request_path.write_text(json.dumps(_request("AMBIGUOUS_FORCE_ERROR")), encoding="utf-8")
+            request_path.write_text(
+                json.dumps(_request("AMBIGUOUS_FORCE_ERROR")), encoding="utf-8"
+            )
             completed = subprocess.run(
                 [
                     sys.executable,

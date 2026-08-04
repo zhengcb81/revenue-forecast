@@ -113,9 +113,7 @@ def _canonical_date(value: Any, name: str) -> str:
 def _canonical_utc(value: Any, name: str) -> str:
     text = _required_text(value, name)
     if not _UTC_RE.fullmatch(text):
-        raise FilingAcquisitionError(
-            f"{name} must be UTC YYYY-MM-DDTHH:MM:SSZ"
-        )
+        raise FilingAcquisitionError(f"{name} must be UTC YYYY-MM-DDTHH:MM:SSZ")
     try:
         datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError as exc:
@@ -202,9 +200,7 @@ def _expand_config_text(
     tokens = {
         "SKILL_ROOT": str(SKILL_ROOT),
         "USER_PROFILE": (
-            os.environ.get("USERPROFILE")
-            or os.environ.get("HOME")
-            or str(config_dir)
+            os.environ.get("USERPROFILE") or os.environ.get("HOME") or str(config_dir)
         ),
         "PYTHON_EXECUTABLE": str(Path(sys.executable).resolve()),
         "CONFIG_DIR": str(config_dir),
@@ -267,9 +263,7 @@ def _adapter_spec(
     interface = _required_text(value["interface"], "adapter.interface")
     required_interface = "json_command_v1" if market == "CN" else "dayu_cli_v1"
     if interface != required_interface:
-        raise FilingAcquisitionError(
-            f"{market} adapter must use {required_interface}"
-        )
+        raise FilingAcquisitionError(f"{market} adapter must use {required_interface}")
     version = _required_text(value["version"], "adapter.version")
     if not _SEMVER_RE.fullmatch(version):
         raise FilingAcquisitionError("adapter.version must use semantic versioning")
@@ -694,7 +688,9 @@ def _load_security_records(root: Path, market: str | None) -> list[dict[str, Any
             raise FilingAcquisitionError(
                 f"invalid security-master snapshot {path}: {exc}"
             ) from exc
-        if not isinstance(payload, dict) or not isinstance(payload.get("records"), list):
+        if not isinstance(payload, dict) or not isinstance(
+            payload.get("records"), list
+        ):
             raise FilingAcquisitionError(f"invalid security-master schema: {path}")
         if payload.get("market") != selected.upper():
             raise FilingAcquisitionError(f"security-master market mismatch: {path}")
@@ -703,9 +699,7 @@ def _load_security_records(root: Path, market: str | None) -> list[dict[str, Any
                 raise FilingAcquisitionError("security-master record must be an object")
             records.append(item)
     if not records:
-        raise FilingAcquisitionError(
-            f"no security-master snapshots found in {root}"
-        )
+        raise FilingAcquisitionError(f"no security-master snapshots found in {root}")
     return records
 
 
@@ -793,7 +787,9 @@ def _resolve_identity(
         if len(exact) > 1:
             raise FilingAcquisitionError("company identity is ambiguous")
         if not candidates or candidates[0][0] < 0.90:
-            raise FilingAcquisitionError("company identity is missing or low confidence")
+            raise FilingAcquisitionError(
+                "company identity is missing or low confidence"
+            )
         if len(candidates) > 1 and candidates[0][0] - candidates[1][0] < 0.03:
             raise FilingAcquisitionError("company identity is ambiguous")
         selected = candidates[0]
@@ -926,7 +922,8 @@ class FilesystemSourceResolver:
                 path
                 for path in companies.iterdir()
                 if path.is_dir()
-                and _normalize_identity(path.name) == _normalize_identity(request.entity)
+                and _normalize_identity(path.name)
+                == _normalize_identity(request.entity)
             ]
         sidecars: list[Path] = []
         for root in roots:
@@ -1002,7 +999,11 @@ class FilesystemSourceResolver:
         sidecar_market = metadata["market"]
         sidecar_security = metadata["security_id"]
         identity_conflict = False
-        if request.market and sidecar_market and str(sidecar_market).upper() != request.market:
+        if (
+            request.market
+            and sidecar_market
+            and str(sidecar_market).upper() != request.market
+        ):
             identity_conflict = True
         if (
             request.security_id
@@ -1026,7 +1027,10 @@ class FilesystemSourceResolver:
         for name, expected in filters:
             if expected is not None and metadata[name] != expected:
                 return None, False
-        if request.provider is not None and str(metadata["provider"] or "").lower() != request.provider:
+        if (
+            request.provider is not None
+            and str(metadata["provider"] or "").lower() != request.provider
+        ):
             return None, False
         filing_date = _canonical_date(metadata["filing_date"], "sidecar.filing_date")
         if date.fromisoformat(filing_date) > date.fromisoformat(request.as_of_date):
@@ -1048,16 +1052,20 @@ class FilesystemSourceResolver:
                 f"provenance SHA-256 does not match canonical bytes: {raw}"
             )
         size = metadata["byte_size"]
-        if isinstance(size, bool) or not isinstance(size, int) or size != raw.stat().st_size:
-            raise FilingAcquisitionError("provenance byte_size does not match canonical bytes")
-        retrieved_at = _canonical_utc(
-            metadata["retrieved_at"], "sidecar.retrieved_at"
-        )
-        captured_date = datetime.strptime(
-            retrieved_at, "%Y-%m-%dT%H:%M:%SZ"
-        ).date()
-        if not date.fromisoformat(filing_date) <= captured_date <= date.fromisoformat(
-            request.as_of_date
+        if (
+            isinstance(size, bool)
+            or not isinstance(size, int)
+            or size != raw.stat().st_size
+        ):
+            raise FilingAcquisitionError(
+                "provenance byte_size does not match canonical bytes"
+            )
+        retrieved_at = _canonical_utc(metadata["retrieved_at"], "sidecar.retrieved_at")
+        captured_date = datetime.strptime(retrieved_at, "%Y-%m-%dT%H:%M:%SZ").date()
+        if (
+            not date.fromisoformat(filing_date)
+            <= captured_date
+            <= date.fromisoformat(request.as_of_date)
         ):
             return None, False
         source_url = _required_text(metadata["source_url"], "sidecar.source_url")
@@ -1094,9 +1102,7 @@ class FilesystemSourceResolver:
                 "canonical_path": str(raw),
                 "content_sha256": digest,
                 "snapshot_sha256": digest,
-                "mime_type": _required_text(
-                    metadata["mime_type"], "sidecar.mime_type"
-                ),
+                "mime_type": _required_text(metadata["mime_type"], "sidecar.mime_type"),
                 "byte_size": size,
                 "retrieved_at": retrieved_at,
                 "collector_name": _required_text(
@@ -1249,9 +1255,7 @@ class JsonCommandAdapter:
                 ) from exc
         return tuple(candidates)
 
-    def fetch(
-        self, candidate: DownloadCandidate, staging_dir: Path
-    ) -> DownloadReceipt:
+    def fetch(self, candidate: DownloadCandidate, staging_dir: Path) -> DownloadReceipt:
         staging_dir.mkdir(parents=True, exist_ok=True)
         response = self._run(
             "fetch",
@@ -1352,7 +1356,9 @@ class DayuCliAdapter:
                 "Dayu download requires security_id and fiscal_year"
             )
         if not self.project_root.is_dir() or not self.config_root.is_dir():
-            raise FilingAcquisitionError("configured Dayu project/config root is missing")
+            raise FilingAcquisitionError(
+                "configured Dayu project/config root is missing"
+            )
         self.close()
         workspace_parent = Path(os.environ.get("TEMP") or os.environ.get("TMP") or ".")
         workspace_parent = (workspace_parent / "revenue-forecast-dayu").resolve(
@@ -1401,7 +1407,9 @@ class DayuCliAdapter:
             raise FilingAcquisitionError(f"Dayu CLI process failed: {exc}") from exc
         candidates: tuple[DownloadCandidate, ...] = ()
         started = time.monotonic()
-        while process.poll() is None and time.monotonic() - started < self.timeout_seconds:
+        while (
+            process.poll() is None and time.monotonic() - started < self.timeout_seconds
+        ):
             if (self._workspace / "portfolio").is_dir():
                 candidates = self._read_candidates(request)
                 if candidates:
@@ -1429,9 +1437,7 @@ class DayuCliAdapter:
             self.close()
         return candidates
 
-    def _read_candidates(
-        self, request: SourceRequest
-    ) -> tuple[DownloadCandidate, ...]:
+    def _read_candidates(self, request: SourceRequest) -> tuple[DownloadCandidate, ...]:
         if self._workspace is None:
             return ()
         candidates = []
@@ -1458,7 +1464,9 @@ class DayuCliAdapter:
         try:
             value = json.loads(meta_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            raise FilingAcquisitionError(f"invalid Dayu meta {meta_path}: {exc}") from exc
+            raise FilingAcquisitionError(
+                f"invalid Dayu meta {meta_path}: {exc}"
+            ) from exc
         if not isinstance(value, dict) or value.get("is_deleted") is True:
             return None
         fiscal_year = value.get("fiscal_year")
@@ -1576,9 +1584,7 @@ class DayuCliAdapter:
             ),
         )
 
-    def fetch(
-        self, candidate: DownloadCandidate, staging_dir: Path
-    ) -> DownloadReceipt:
+    def fetch(self, candidate: DownloadCandidate, staging_dir: Path) -> DownloadReceipt:
         asset = self._assets.get(candidate.candidate_id)
         if asset is None or self._workspace is None:
             raise FilingAcquisitionError("Dayu candidate workspace is unavailable")
@@ -1693,11 +1699,7 @@ class CanonicalSourceWriter:
                 continue
             raw = _sidecar_raw_path(sidecar, payload).resolve(strict=True)
             _inside(raw, self.config.company_wiki_root, name="canonical_path")
-            if (
-                raw.is_file()
-                and raw.stat().st_size > 0
-                and _sha256_file(raw) == digest
-            ):
+            if raw.is_file() and raw.stat().st_size > 0 and _sha256_file(raw) == digest:
                 return raw, sidecar
         company_dirs = [
             path
@@ -1837,8 +1839,7 @@ class CanonicalSourceWriter:
             existing_security = _sidecar_value(existing_payload, "security_id")
             if (
                 existing_sidecar is not None
-                and
-                _normalize_identity(str(existing_company or ""))
+                and _normalize_identity(str(existing_company or ""))
                 == _normalize_identity(request.entity)
                 and (
                     request.security_id is None
@@ -1862,9 +1863,7 @@ class CanonicalSourceWriter:
             alias = alias_root / f"{request.request_id.rsplit(':', 1)[-1]}.source.json"
             self._write_immutable(
                 alias,
-                self._payload(
-                    request, candidate, receipt, canonical_path=raw
-                ),
+                self._payload(request, candidate, receipt, canonical_path=raw),
             )
             staged.unlink()
             handle = resolver.resolve(request)
@@ -1964,11 +1963,13 @@ class AcquisitionManager:
                 "downloader returned multiple matching filings; request is ambiguous"
             )
         candidate = candidates[0]
-        if candidate.market != normalized.market or candidate.entity != normalized.entity:
+        if (
+            candidate.market != normalized.market
+            or candidate.entity != normalized.entity
+        ):
             raise FilingAcquisitionError("adapter candidate identity is inconsistent")
         request_staging = _inside(
-            self.config.staging_root
-            / normalized.request_id.rsplit(":", 1)[-1],
+            self.config.staging_root / normalized.request_id.rsplit(":", 1)[-1],
             self.config.staging_root,
             name="request staging",
         )
@@ -2000,66 +2001,41 @@ def resolve_filing(
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Deprecated CLI entry point (Phase 6 B1 / F-04).
+
+    The standalone download CLI is removed: ``filing-fetch`` is the single
+    canonical owner of filing acquisition.  Running this module as a script
+    hard-fails and points callers to ``filing_fetch_client.resolve_filing``
+    (or the standalone ``filing-fetch`` skill) so old CLI usage can never
+    bypass the identity/reuse-first/contract/journalled gates.
+    """
     parser = argparse.ArgumentParser(
         prog="revenue-filing-acquisition",
-        description="Reuse or explicitly download a filing into a configured data root.",
+        description=(
+            "Deprecated. Filing acquisition is owned by filing-fetch; "
+            "use `python scripts/filing_fetch_client.py --allow-download`."
+        ),
     )
     parser.add_argument("--allow-download", action="store_true")
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--request-file", type=Path, default=None)
-    args = parser.parse_args(argv)
-    try:
-        if hasattr(sys.stdout, "reconfigure"):
-            sys.stdout.reconfigure(encoding="utf-8", errors="strict")
-        if args.request_file is not None:
-            request = json.loads(args.request_file.read_text(encoding="utf-8"))
-        else:
-            request = json.loads(sys.stdin.read())
-        if not isinstance(request, dict):
-            raise FilingAcquisitionError("request must be a JSON object")
-        handle = resolve_filing(
-            request=request,
-            config_path=args.config,
-            allow_download=args.allow_download,
-        )
-        json.dump(
-            {
-                "schema_version": "1.0",
-                "status": "capture_ready",
-                "handle": handle,
-            },
-            sys.stdout,
-            ensure_ascii=False,
-            indent=2,
-        )
-        sys.stdout.write("\n")
-        return 0
-    except FilingAcquisitionError as exc:
-        json.dump(
-            {
-                "schema_version": "1.0",
-                "status": "error",
-                "error": _redact(str(exc)),
-            },
-            sys.stdout,
-            ensure_ascii=False,
-            indent=2,
-        )
-        sys.stdout.write("\n")
-        return 2
-    except Exception as exc:
-        json.dump(
-            {
-                "schema_version": "1.0",
-                "status": "fatal",
-                "error": _redact(str(exc)),
-            },
-            sys.stdout,
-            ensure_ascii=False,
-            indent=2,
-        )
-        sys.stdout.write("\n")
-        return 1
+    parser.parse_args(argv)
+    message = (
+        "filing_acquisition.py is deprecated and its CLI has been removed. "
+        "Use `python scripts/filing_fetch_client.py --allow-download` or the "
+        "standalone filing-fetch skill (revenue-forecast is no longer an "
+        "acquisition owner)."
+    )
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="strict")
+    json.dump(
+        {"schema_version": "1.0", "status": "error", "error": message},
+        sys.stdout,
+        ensure_ascii=False,
+        indent=2,
+    )
+    sys.stdout.write("\n")
+    return 3
 
 
 __all__ = [

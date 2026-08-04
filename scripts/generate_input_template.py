@@ -12,6 +12,7 @@ is: edit values/excerpts -> ``lint_input.py`` (pre-flight) -> ``fix_hashes.py``
 
 CLI mirrors ``revenue_forecast.py`` conventions.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -62,6 +63,16 @@ def build_template(
             "snapshot_sha256": PLACEHOLDER_HASH,
             "content_treatment": "untrusted_data_only",
             "prompt_injection_status": "not_detected",
+            "host_receipt": {
+                "host_receipt_schema_version": "1.0",
+                "issuer": "FIXME: host issuer",
+                "environment": "FIXME: host environment",
+                "tool_name": "FIXME: capture tool name",
+                "action": "capture_open",
+                "event_sha256": PLACEHOLDER_HASH,
+                "timestamp": as_of,
+                "receipt_sha256": PLACEHOLDER_HASH,
+            },
             "receipt_sha256": PLACEHOLDER_HASH,
         },
     }
@@ -69,48 +80,70 @@ def build_template(
     parameters: list[dict[str, Any]] = []
     claims: list[dict[str, Any]] = []
 
-    def add_parameter(parameter_id: str, kind: str, value: float, period: str,
-                      dimension: str = "revenue", scenario: str | None = None,
-                      rationale: str | None = None) -> str:
-        parameters.append({
-            "parameter_id": parameter_id,
-            "kind": kind,
-            "value": value,
-            "unit": monetary_unit if dimension == "revenue" else "ratio",
-            "period": period,
-            "definition": f"FIXME: define {parameter_id}",
-            "dimension": dimension,
-            "time_basis": "annual",
-            "source_ids": [source_id],
-            "scenario": scenario,
-            "rationale": rationale,
-            "claim_ids": [f"claim_{parameter_id}"],
-        })
-        claims.append({
-            "claim_id": f"claim_{parameter_id}",
-            "source_id": source_id,
-            "target_type": "parameter",
-            "target_id": parameter_id,
-            "support_type": "rationale_support",
-            "locator": "FIXME: locator within the source",
-            "excerpt": f"FIXME: checked excerpt supporting {parameter_id}.",
-            "excerpt_sha256": PLACEHOLDER_HASH,
-            "content_sha256": PLACEHOLDER_HASH,
-            "capture_receipt_sha256": PLACEHOLDER_HASH,
-            "verification_status": "opened_and_checked",
-            "verified_by": "FIXME: research agent",
-            "verified_date": as_of,
-        })
+    def add_parameter(
+        parameter_id: str,
+        kind: str,
+        value: float,
+        period: str,
+        dimension: str = "revenue",
+        scenario: str | None = None,
+        rationale: str | None = None,
+    ) -> str:
+        parameters.append(
+            {
+                "parameter_id": parameter_id,
+                "kind": kind,
+                "value": value,
+                "unit": monetary_unit if dimension == "revenue" else "ratio",
+                "period": period,
+                "definition": f"FIXME: define {parameter_id}",
+                "dimension": dimension,
+                "time_basis": "annual",
+                "source_ids": [source_id],
+                "scenario": scenario,
+                "rationale": rationale,
+                "claim_ids": [f"claim_{parameter_id}"],
+            }
+        )
+        claims.append(
+            {
+                "claim_id": f"claim_{parameter_id}",
+                "source_id": source_id,
+                "target_type": "parameter",
+                "target_id": parameter_id,
+                "support_type": "rationale_support",
+                "locator": "FIXME: locator within the source",
+                "excerpt": f"FIXME: checked excerpt supporting {parameter_id}.",
+                "excerpt_sha256": PLACEHOLDER_HASH,
+                "content_sha256": PLACEHOLDER_HASH,
+                "capture_receipt_sha256": PLACEHOLDER_HASH,
+                "verification_status": "opened_and_checked",
+                "verified_by": "FIXME: research agent",
+                "verified_date": as_of,
+            }
+        )
         return parameter_id
 
     reported_id = "reported_total"
-    add_parameter(reported_id, "reported_fact", 0.0, f"FY{base_year}", rationale="FIXME: reported total revenue")
+    add_parameter(
+        reported_id,
+        "reported_fact",
+        0.0,
+        f"FY{base_year}",
+        rationale="FIXME: reported total revenue",
+    )
 
     segment_base_ids: list[str] = []
     for segment in segment_names:
         slug = segment.lower().replace(" ", "_")
         base_pid = f"{slug}_base"
-        add_parameter(base_pid, "reported_fact", 0.0, f"FY{base_year}", rationale=f"FIXME: {segment} base revenue")
+        add_parameter(
+            base_pid,
+            "reported_fact",
+            0.0,
+            f"FY{base_year}",
+            rationale=f"FIXME: {segment} base revenue",
+        )
         segment_base_ids.append(base_pid)
 
     segments: list[dict[str, Any]] = []
@@ -120,8 +153,12 @@ def build_template(
         for scenario in ("low", "base", "high"):
             driver_ids = [
                 add_parameter(
-                    f"{slug}_{scenario}_{year}", "analyst_assumption", 0.1, f"FY{year}",
-                    dimension="ratio", scenario=scenario,
+                    f"{slug}_{scenario}_{year}",
+                    "analyst_assumption",
+                    0.1,
+                    f"FY{year}",
+                    dimension="ratio",
+                    scenario=scenario,
                     rationale=f"FIXME: {segment} {scenario} growth rate for FY{year}",
                 )
                 for year in forecast_years
@@ -131,37 +168,48 @@ def build_template(
                 "driver_parameter_ids": {"revenue": driver_ids},
                 "rationale": f"FIXME: {segment} {scenario} revenue path rationale",
             }
-        segments.append({
-            "name": segment,
-            "base_revenue_parameter_id": base_pid,
-            "recognition": {
-                "mode": "modeled_as_recognized",
-                "timing": "point_in_time",
-                "trigger": "FIXME: recognition trigger",
-                "presentation": "gross",
-            },
-            "scenarios": scenarios,
-        })
+        segments.append(
+            {
+                "name": segment,
+                "base_revenue_parameter_id": base_pid,
+                "recognition": {
+                    "mode": "modeled_as_recognized",
+                    "timing": "point_in_time",
+                    "trigger": "FIXME: recognition trigger",
+                    "presentation": "gross",
+                },
+                "scenarios": scenarios,
+            }
+        )
 
     historical: list[dict[str, Any]] = []
     for year in (base_year, base_year - 1):
         claim_id = f"claim_history_{year}"
-        claims.append({
-            "claim_id": claim_id,
-            "source_id": source_id,
-            "target_type": "historical_revenue",
-            "target_id": f"historical_revenue:{year}",
-            "support_type": "exact_value",
-            "locator": "FIXME: historical revenue locator",
-            "excerpt": f"FIXME: checked excerpt for FY{year} revenue.",
-            "excerpt_sha256": PLACEHOLDER_HASH,
-            "content_sha256": PLACEHOLDER_HASH,
-            "capture_receipt_sha256": PLACEHOLDER_HASH,
-            "verification_status": "opened_and_checked",
-            "verified_by": "FIXME: research agent",
-            "verified_date": as_of,
-        })
-        historical.append({"year": year, "value": 0.0, "source_ids": [source_id], "claim_ids": [claim_id]})
+        claims.append(
+            {
+                "claim_id": claim_id,
+                "source_id": source_id,
+                "target_type": "historical_revenue",
+                "target_id": f"historical_revenue:{year}",
+                "support_type": "exact_value",
+                "locator": "FIXME: historical revenue locator",
+                "excerpt": f"FIXME: checked excerpt for FY{year} revenue.",
+                "excerpt_sha256": PLACEHOLDER_HASH,
+                "content_sha256": PLACEHOLDER_HASH,
+                "capture_receipt_sha256": PLACEHOLDER_HASH,
+                "verification_status": "opened_and_checked",
+                "verified_by": "FIXME: research agent",
+                "verified_date": as_of,
+            }
+        )
+        historical.append(
+            {
+                "year": year,
+                "value": 0.0,
+                "source_ids": [source_id],
+                "claim_ids": [claim_id],
+            }
+        )
 
     research = [
         {
@@ -219,17 +267,35 @@ def build_template(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--name", required=True, help="company name")
-    parser.add_argument("--base-year", type=int, required=True, help="base fiscal year (e.g. 2025)")
-    parser.add_argument("--forecast-years", type=int, nargs="+", required=True, help="forecast years (e.g. 2026 2027)")
+    parser.add_argument(
+        "--base-year", type=int, required=True, help="base fiscal year (e.g. 2025)"
+    )
+    parser.add_argument(
+        "--forecast-years",
+        type=int,
+        nargs="+",
+        required=True,
+        help="forecast years (e.g. 2026 2027)",
+    )
     parser.add_argument("--currency", default="USD", help="currency code (default USD)")
-    parser.add_argument("--unit", default="million", help="monetary unit (default million)")
-    parser.add_argument("--segments", nargs="+", required=True, help="segment display names")
-    parser.add_argument("--output", type=Path, help="write skeleton here (default stdout)")
+    parser.add_argument(
+        "--unit", default="million", help="monetary unit (default million)"
+    )
+    parser.add_argument(
+        "--segments", nargs="+", required=True, help="segment display names"
+    )
+    parser.add_argument(
+        "--output", type=Path, help="write skeleton here (default stdout)"
+    )
     args = parser.parse_args(argv)
 
     data = build_template(
-        args.name, args.base_year, args.forecast_years,
-        args.currency, args.unit, args.segments,
+        args.name,
+        args.base_year,
+        args.forecast_years,
+        args.currency,
+        args.unit,
+        args.segments,
     )
     rendered = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
     if args.output:

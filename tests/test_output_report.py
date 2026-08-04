@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from revenue_core import (  # noqa: E402
+    ENGINE_VERSION,
     ForecastInputError,
     build_workflow_compliance_receipt,
     calculate_cagr,
@@ -24,12 +25,25 @@ def _republish(result: dict) -> None:
     """Recompute the publication receipt and result hash after mutating a result.
 
     Adversarial tests mutate a published result and then recompute every hash
-    the validator re-checks, so the artifact stays internally self-consistent.
-    This isolates the semantic gap under test from plain hash tampering.
+    the validator re-checks — including the verification context — so the
+    artifact stays internally self-consistent.  This isolates the semantic gap
+    under test from plain hash tampering: even a fully rehashed artifact with a
+    valid-looking verification context must be rejected by the strong validator.
     """
-    from revenue_publication import build_publication_receipt
+    from revenue_publication import (
+        VerificationContext,
+        build_publication_receipt,
+        expected_publication_gates,
+    )
 
-    result["publication_receipt"] = build_publication_receipt(result)
+    result["publication_receipt"] = build_publication_receipt(
+        result,
+        VerificationContext(
+            result["input_sha256"],
+            expected_publication_gates(result),
+            ENGINE_VERSION,
+        ),
+    )
     result["result_sha256"] = canonical_sha256(
         {key: value for key, value in result.items() if key != "result_sha256"}
     )
@@ -39,21 +53,25 @@ class OutputReportTests(unittest.TestCase):
     def test_forged_headwind_is_rejected_after_recomputation(self) -> None:
         result = run_forecast(forecast_document())
         self.assertEqual(result["growth_driver_analysis"]["headwinds"], [])
-        result["growth_driver_analysis"]["headwinds"].append({
-            "driver_id": "forged_headwind",
-            "title": "Forged headwind",
-            "thesis": "Not backed by any driver tree root.",
-            "estimated_base_terminal_increment": -10.0,
-            "share_of_positive_driver_increment": 0.0,
-            "segment_names": ["Segment A"],
-            "causal_chain": ["x", "y"],
-            "evidence_status": "limited",
-            "leading_indicators": ["z"],
-            "falsifiers": ["w"],
-            "rank": 1,
-        })
+        result["growth_driver_analysis"]["headwinds"].append(
+            {
+                "driver_id": "forged_headwind",
+                "title": "Forged headwind",
+                "thesis": "Not backed by any driver tree root.",
+                "estimated_base_terminal_increment": -10.0,
+                "share_of_positive_driver_increment": 0.0,
+                "segment_names": ["Segment A"],
+                "causal_chain": ["x", "y"],
+                "evidence_status": "limited",
+                "leading_indicators": ["z"],
+                "falsifiers": ["w"],
+                "rank": 1,
+            }
+        )
         _republish(result)
-        with self.assertRaisesRegex(ForecastInputError, "growth driver analysis recomputation mismatch"):
+        with self.assertRaisesRegex(
+            ForecastInputError, "growth driver analysis recomputation mismatch"
+        ):
             validate_forecast_output(result, forecast_document())
 
     def test_valid_output_and_markdown(self) -> None:
@@ -112,40 +130,59 @@ class OutputReportTests(unittest.TestCase):
     def test_tampered_segment_recognition_is_rejected(self) -> None:
         result = run_forecast(forecast_document())
         result["segments"][0]["scenarios"]["base"]["recognized_revenue"]["2026"] = 9999
-        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
+        result["result_sha256"] = canonical_sha256(
+            {key: value for key, value in result.items() if key != "result_sha256"}
+        )
         with self.assertRaisesRegex(ForecastInputError, "recognized revenue mismatch"):
             validate_forecast_output(result)
 
     def test_tampered_annual_growth_is_rejected(self) -> None:
         result = run_forecast(forecast_document())
         result["consolidated_forecast"]["base"]["annual_growth"]["2026"] = 123
-        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
+        result["result_sha256"] = canonical_sha256(
+            {key: value for key, value in result.items() if key != "result_sha256"}
+        )
         with self.assertRaisesRegex(ForecastInputError, "annual growth mismatch"):
             validate_forecast_output(result)
 
     def test_tampered_growth_driver_impact_is_rejected_even_after_rehash(self) -> None:
         result = run_forecast(forecast_document())
-        result["growth_driver_analysis"]["drivers"][0]["estimated_base_terminal_increment"] += 1
-        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
-        with self.assertRaisesRegex(ForecastInputError, "growth driver analysis recomputation mismatch"):
+        result["growth_driver_analysis"]["drivers"][0][
+            "estimated_base_terminal_increment"
+        ] += 1
+        result["result_sha256"] = canonical_sha256(
+            {key: value for key, value in result.items() if key != "result_sha256"}
+        )
+        with self.assertRaisesRegex(
+            ForecastInputError, "growth driver analysis recomputation mismatch"
+        ):
             validate_forecast_output(result)
 
     def test_missing_workflow_receipt_is_rejected(self) -> None:
         result = run_forecast(forecast_document())
         del result["workflow_compliance_receipt"]
-        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
+        result["result_sha256"] = canonical_sha256(
+            {key: value for key, value in result.items() if key != "result_sha256"}
+        )
         with self.assertRaisesRegex(ForecastInputError, "workflow_compliance_receipt"):
             validate_forecast_output(result)
 
     def test_tampered_workflow_receipt_is_rejected_even_after_rehash(self) -> None:
         result = run_forecast(forecast_document())
         result["workflow_compliance_receipt"]["freeform_formal_output_allowed"] = True
-        result["workflow_compliance_receipt"]["receipt_sha256"] = canonical_sha256({
-            key: value for key, value in result["workflow_compliance_receipt"].items()
-            if key != "receipt_sha256"
-        })
-        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
-        with self.assertRaisesRegex(ForecastInputError, "workflow compliance receipt mismatch"):
+        result["workflow_compliance_receipt"]["receipt_sha256"] = canonical_sha256(
+            {
+                key: value
+                for key, value in result["workflow_compliance_receipt"].items()
+                if key != "receipt_sha256"
+            }
+        )
+        result["result_sha256"] = canonical_sha256(
+            {key: value for key, value in result.items() if key != "result_sha256"}
+        )
+        with self.assertRaisesRegex(
+            ForecastInputError, "workflow compliance receipt mismatch"
+        ):
             validate_forecast_output(result)
 
     # The four tests below are adversarial RED tests for Phase 1 of task_plan.md.
@@ -174,12 +211,15 @@ class OutputReportTests(unittest.TestCase):
         weighted = forged["probability_weighted_forecast"]
         for year in years:
             weighted["annual_revenue"][year] = sum(
-                forged_probabilities[scenario] * consolidated[scenario]["annual_revenue"][year]
+                forged_probabilities[scenario]
+                * consolidated[scenario]["annual_revenue"][year]
                 for scenario in ("low", "base", "high")
             )
         terminal = float(weighted["annual_revenue"][years[-1]])
         weighted["terminal_revenue"] = terminal
-        weighted["expected_terminal_implied_cagr"] = calculate_cagr(float(forged["base_revenue"]), terminal, len(years))
+        weighted["expected_terminal_implied_cagr"] = calculate_cagr(
+            float(forged["base_revenue"]), terminal, len(years)
+        )
         weighted["incremental_revenue"] = terminal - float(forged["base_revenue"])
         _republish(forged)
         with self.assertRaisesRegex(ForecastInputError, "probabilities must sum to 1"):
@@ -212,8 +252,17 @@ class OutputReportTests(unittest.TestCase):
         # Replacing the terminals with arbitrary values and recomputing those
         # derived fields must be rejected; today it is accepted (RED).
         data = forecast_document()
-        parameter_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]["revenue"][1]
-        data["sensitivity_tests"] = [{"name": "Core terminal revenue", "parameter_id": parameter_id, "shock_type": "percent", "shock_value": 0.1}]
+        parameter_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"][
+            "revenue"
+        ][1]
+        data["sensitivity_tests"] = [
+            {
+                "name": "Core terminal revenue",
+                "parameter_id": parameter_id,
+                "shock_type": "percent",
+                "shock_value": 0.1,
+            }
+        ]
         result = run_forecast(data)
         forged = copy.deepcopy(result)
         sensitivity = forged["sensitivities"][0]
@@ -234,7 +283,10 @@ class OutputReportTests(unittest.TestCase):
         # trace node and rehashing must be rejected; today it is accepted (RED).
         result = run_forecast(forecast_document())
         forged = copy.deepcopy(result)
-        forged["parameter_trace"][0]["valuation"] = {"pe": 15.0, "dcf": {"fair_value": 100.0}}
+        forged["parameter_trace"][0]["valuation"] = {
+            "pe": 15.0,
+            "dcf": {"fair_value": 100.0},
+        }
         _republish(forged)
         with self.assertRaisesRegex(ForecastInputError, "prohibited"):
             validate_forecast_output(forged)
@@ -245,13 +297,68 @@ class OutputReportTests(unittest.TestCase):
         # investment conclusions, and must never be false-positived. This pins
         # the intended behavior so the Phase 4 field-boundary fix stays precise.
         result = run_forecast(forecast_document())
-        result["sources"][0]["title"] = "Annual report references segment profit and an internal valuation study."
+        result["sources"][0]["title"] = (
+            "Annual report references segment profit and an internal valuation study."
+        )
         result["workflow_compliance_receipt"] = build_workflow_compliance_receipt(
-            result["input_sha256"], result["sources"], result["evidence_claims"],
-            result["parameter_trace"], result.get("data_gaps", []),
+            result["input_sha256"],
+            result["sources"],
+            result["evidence_claims"],
+            result["parameter_trace"],
+            result.get("data_gaps", []),
         )
         _republish(result)
         validate_forecast_output(result)
+
+    def test_build_publication_receipt_requires_verification_context(self) -> None:
+        # Phase 6 A1 RED: the public builder must fail closed when no strong
+        # verification context is supplied.  A forged artifact can no longer
+        # self-issue a "pass" receipt by recomputing hashes alone.
+        from revenue_publication import build_publication_receipt
+
+        result = run_forecast(forecast_document())
+        with self.assertRaisesRegex(TypeError, "VerificationContext"):
+            build_publication_receipt(result)
+
+    def test_no_input_weak_path_rejects_forged_sensitivity(self) -> None:
+        # Phase 6 A1 RED (F-02): validate_forecast_output(forged) with NO explicit
+        # input must reject forged sensitivity terminals, because the published
+        # artifact now carries a self-contained input_document that the strong
+        # path re-runs.  This is the exact exploit the audit reproduced.
+        data = forecast_document()
+        parameter_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"][
+            "revenue"
+        ][1]
+        data["sensitivity_tests"] = [
+            {
+                "name": "Core terminal revenue",
+                "parameter_id": parameter_id,
+                "shock_type": "percent",
+                "shock_value": 0.1,
+            }
+        ]
+        result = run_forecast(data)
+        forged = copy.deepcopy(result)
+        sensitivity = forged["sensitivities"][0]
+        baseline = float(sensitivity["baseline_terminal_revenue"])
+        sensitivity["down_terminal_revenue"] = 1.0
+        sensitivity["up_terminal_revenue"] = baseline * 100.0
+        impact = max(abs(1.0 - baseline), abs(baseline * 100.0 - baseline))
+        sensitivity["max_absolute_terminal_impact"] = impact
+        sensitivity["max_relative_terminal_impact"] = impact / baseline
+        _republish(forged)
+        with self.assertRaisesRegex(
+            ForecastInputError, "sensitivity down terminal recomputation mismatch"
+        ):
+            validate_forecast_output(forged)
+
+    def test_strong_entry_requires_input(self) -> None:
+        # Phase 6 A1 RED: the formal-only entry must reject a None input.
+        from revenue_report import validate_published_forecast
+
+        result = run_forecast(forecast_document())
+        with self.assertRaisesRegex(TypeError, "original input"):
+            validate_published_forecast(result, None)
 
 
 if __name__ == "__main__":

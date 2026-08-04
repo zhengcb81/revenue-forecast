@@ -4,7 +4,7 @@ The standalone ``filing-fetch`` skill (via ``filing_fetch_client``) owns
 identity, reuse-first lookup, market-routed download, canonical write, and
 provenance — delegating to ``company-wiki``. This module keeps only the
 revenue-specific conversion: turning one capture-ready handle into a
-schema-3.5 source record with an immutable capture receipt. It verifies the
+schema-3.6 source record with an immutable capture receipt. It verifies the
 local whole-file hash but does not claim that a passage supports any revenue
 parameter.
 
@@ -111,7 +111,9 @@ def build_revenue_source_record(
     publisher = _required_text(publisher, "publisher")
     locator = _required_text(page_or_section, "page_or_section")
     if prompt_injection_status not in _PROMPT_INJECTION_STATUSES:
-        raise CompanyWikiSourceError("prompt_injection_status must be explicitly reviewed")
+        raise CompanyWikiSourceError(
+            "prompt_injection_status must be explicitly reviewed"
+        )
     if handle.get("capture_ready") is not True:
         raise CompanyWikiSourceError("company-wiki handle is not capture_ready")
     published = _iso_date(handle.get("published_date"), "published_date")
@@ -119,21 +121,27 @@ def build_revenue_source_record(
     try:
         captured = datetime.strptime(retrieved_at, "%Y-%m-%dT%H:%M:%SZ").date()
     except ValueError as exc:
-        raise CompanyWikiSourceError("retrieved_at must be UTC YYYY-MM-DDTHH:MM:SSZ") from exc
+        raise CompanyWikiSourceError(
+            "retrieved_at must be UTC YYYY-MM-DDTHH:MM:SSZ"
+        ) from exc
     if not published <= captured <= as_of:
         raise CompanyWikiSourceError(
             "source capture is outside published <= captured <= as_of"
         )
-    snapshot_sha256 = _required_text(
-        handle.get("snapshot_sha256"), "snapshot_sha256"
-    )
+    snapshot_sha256 = _required_text(handle.get("snapshot_sha256"), "snapshot_sha256")
     if not _SHA256_RE.fullmatch(snapshot_sha256):
         raise CompanyWikiSourceError("snapshot_sha256 must be lowercase SHA-256")
-    canonical_path = Path(_required_text(handle.get("canonical_path"), "canonical_path"))
+    canonical_path = Path(
+        _required_text(handle.get("canonical_path"), "canonical_path")
+    )
     if not canonical_path.is_file():
-        raise CompanyWikiSourceError("canonical_path does not identify a local source file")
+        raise CompanyWikiSourceError(
+            "canonical_path does not identify a local source file"
+        )
     if _file_sha256(canonical_path) != snapshot_sha256:
-        raise CompanyWikiSourceError("canonical source bytes do not match snapshot_sha256")
+        raise CompanyWikiSourceError(
+            "canonical source bytes do not match snapshot_sha256"
+        )
     url = _required_text(handle.get("https_url"), "https_url")
     if not url.startswith("https://"):
         raise CompanyWikiSourceError("https_url must use HTTPS")
@@ -151,6 +159,18 @@ def build_revenue_source_record(
         "content_treatment": "untrusted_data_only",
         "prompt_injection_status": prompt_injection_status,
     }
+    capture["host_receipt"] = {
+        "host_receipt_schema_version": "1.0",
+        "issuer": "filing-fetch-company-wiki",
+        "environment": "host-runtime",
+        "tool_name": capture["tool_name"],
+        "action": "canonical_capture",
+        "event_sha256": snapshot_sha256,
+        "timestamp": captured.isoformat(),
+    }
+    capture["host_receipt"]["receipt_sha256"] = _canonical_sha256(
+        capture["host_receipt"]
+    )
     capture["receipt_sha256"] = _canonical_sha256(capture)
     return {
         "source_id": _required_text(handle.get("source_id"), "source_id"),

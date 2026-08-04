@@ -60,6 +60,27 @@ This project follows Semantic Versioning. The runtime release source of truth is
   parameter is either tested or carries a structured exclusion.
 - Moved the non-formal `run_forecasts.py` example to `examples/` so `scripts/`
   contains only formal entry points; the whole tree is now ruff-clean.
+- Two-phase publication signing (Phase 6 A1): `run_forecast` now computes the
+  draft, runs the strong `validate_published_forecast(result, input)` entry, and
+  only then signs a `publication_receipt` bound to the returned verification
+  context. The public receipt builder fails closed without that context, and
+  published results embed a self-contained `input_document` so no-input
+  consumers re-run sensitivity shocks instead of trusting stored terminals.
+- Host-receipt attestation (Phase 6 A2): every source capture must carry a
+  machine-generated `host_receipt` (issuer, environment, tool, action,
+  event_sha256, timestamp) — a self-declared tool name/call ID is no longer an
+  attestation. `not_available` management communications require a
+  machine-generated `search_event`.
+- Removed the deprecated `filing_acquisition.py` CLI (Phase 6 B1): its `main`
+  now hard-fails and points to `filing_fetch_client.resolve_filing`; filing-fetch
+  is the single canonical acquisition owner.
+- Added an immutable `(schema_version, engine_version, mode)` compatibility
+  registry (`schema_compatibility.py`, Phase 6 B2): legacy schema-3.4 outputs
+  are accepted for their CHANGELOG-documented engines, and unknown engines fail
+  closed everywhere (output and snapshot validation).
+- Install sync (Phase 6 B3): `tools/sync_installations.py` now checks `.agents`,
+  `.claude` and `.codex` by default so a drift in any installed copy cannot be
+  silently missed.
 
 ## v3.10.0 — 2026-07-26
 

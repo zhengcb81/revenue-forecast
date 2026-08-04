@@ -42,7 +42,9 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 
 
 class PublicationPipelineTests(unittest.TestCase):
-    def test_public_api_never_returns_pass_receipt_before_output_validation(self) -> None:
+    def test_public_api_never_returns_pass_receipt_before_output_validation(
+        self,
+    ) -> None:
         # RED: run_forecast must not sign a receipt that certifies the
         # output_recomputation gate as passed, because validate_forecast_output
         # is never called inside run_forecast. Today the returned receipt carries
@@ -61,23 +63,32 @@ class PublicationPipelineTests(unittest.TestCase):
         # nine, so run_forecast admits this input but validate_forecast_output
         # rejects it. The CLI must exit non-zero and leave no output JSON behind.
         data = forecast_document()
-        data["research_coverage"].append({
-            "dimension": "",
-            "status": "immaterial",
-            "conclusion": "Not material to near-term revenue.",
-            "revenue_mechanism": "no revenue mechanism",
-            "parameter_ids": [],
-            "source_ids": [],
-            "rationale": "Out of scope for this revenue forecast.",
-        })
+        data["research_coverage"].append(
+            {
+                "dimension": "",
+                "status": "immaterial",
+                "conclusion": "Not material to near-term revenue.",
+                "revenue_mechanism": "no revenue mechanism",
+                "parameter_ids": [],
+                "source_ids": [],
+                "rationale": "Out of scope for this revenue forecast.",
+            }
+        )
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             input_path = root / "input.json"
             output_path = root / "forecast.json"
-            input_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+            input_path.write_text(
+                json.dumps(data, ensure_ascii=False), encoding="utf-8"
+            )
             completed = subprocess.run(
-                [sys.executable, str(SKILL_ROOT / "scripts" / "revenue_forecast.py"),
-                 str(input_path), "--output", str(output_path)],
+                [
+                    sys.executable,
+                    str(SKILL_ROOT / "scripts" / "revenue_forecast.py"),
+                    str(input_path),
+                    "--output",
+                    str(output_path),
+                ],
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -93,7 +104,9 @@ class PublicationPipelineTests(unittest.TestCase):
         # rendered into a human-facing report.
         result = run_forecast(forecast_document())
         result["consolidated_forecast"]["base"]["cagr"] = 0.99
-        result["result_sha256"] = canonical_sha256({key: value for key, value in result.items() if key != "result_sha256"})
+        result["result_sha256"] = canonical_sha256(
+            {key: value for key, value in result.items() if key != "result_sha256"}
+        )
         with self.assertRaisesRegex(ForecastInputError, "CAGR mismatch"):
             render_markdown(result)
 
@@ -103,7 +116,9 @@ class PublicationPipelineTests(unittest.TestCase):
         draft = _build_forecast_draft(forecast_document())
         self.assertNotIn("publication_receipt", draft)
         self.assertNotIn("result_sha256", draft)
-        self.assertNotIn("output_recomputation", draft["workflow_compliance_receipt"]["gate_ids"])
+        self.assertNotIn(
+            "output_recomputation", draft["workflow_compliance_receipt"]["gate_ids"]
+        )
 
     def test_run_forecast_result_carries_valid_publication_receipt(self) -> None:
         # Every normal run_forecast return is a published result: it carries a
@@ -127,7 +142,9 @@ class PublicationPipelineTests(unittest.TestCase):
         result["result_sha256"] = canonical_sha256(
             {key: value for key, value in result.items() if key != "result_sha256"}
         )
-        with self.assertRaisesRegex(ForecastInputError, "publication_receipt freeform_override_allowed"):
+        with self.assertRaisesRegex(
+            ForecastInputError, "publication_receipt freeform_override_allowed"
+        ):
             validate_forecast_output(result)
 
     def test_publication_receipt_is_deterministic(self) -> None:
@@ -143,15 +160,17 @@ class PublicationPipelineTests(unittest.TestCase):
         # result fails the output validator (custom research dimension, which the
         # input contract admits but the output contract rejects) must raise.
         data = forecast_document()
-        data["research_coverage"].append({
-            "dimension": "",
-            "status": "immaterial",
-            "conclusion": "Not material to near-term revenue.",
-            "revenue_mechanism": "no revenue mechanism",
-            "parameter_ids": [],
-            "source_ids": [],
-            "rationale": "Out of scope for this revenue forecast.",
-        })
+        data["research_coverage"].append(
+            {
+                "dimension": "",
+                "status": "immaterial",
+                "conclusion": "Not material to near-term revenue.",
+                "revenue_mechanism": "no revenue mechanism",
+                "parameter_ids": [],
+                "source_ids": [],
+                "rationale": "Out of scope for this revenue forecast.",
+            }
+        )
         with self.assertRaisesRegex(ForecastInputError, "non-empty string"):
             run_forecast(data)
 
@@ -159,15 +178,17 @@ class PublicationPipelineTests(unittest.TestCase):
         # A valid custom dimension (non-empty, unique, appended after the nine
         # core dimensions) must pass output validation.
         data = forecast_document()
-        data["research_coverage"].append({
-            "dimension": "esg_capital_allocation",
-            "status": "immaterial",
-            "conclusion": "Not material to near-term revenue.",
-            "revenue_mechanism": "no revenue mechanism",
-            "parameter_ids": [],
-            "source_ids": [],
-            "rationale": "Out of scope for this revenue forecast.",
-        })
+        data["research_coverage"].append(
+            {
+                "dimension": "esg_capital_allocation",
+                "status": "immaterial",
+                "conclusion": "Not material to near-term revenue.",
+                "revenue_mechanism": "no revenue mechanism",
+                "parameter_ids": [],
+                "source_ids": [],
+                "rationale": "Out of scope for this revenue forecast.",
+            }
+        )
         result = run_forecast(data)
         self.assertEqual(len(result["research_coverage"]["dimensions"]), 10)
         validate_forecast_output(result)
@@ -175,30 +196,34 @@ class PublicationPipelineTests(unittest.TestCase):
     def test_null_research_dimension_is_rejected(self) -> None:
         # A custom dimension whose name is not a string must be rejected.
         data = forecast_document()
-        data["research_coverage"].append({
-            "dimension": None,
-            "status": "immaterial",
-            "conclusion": "Not material.",
-            "revenue_mechanism": "none",
-            "parameter_ids": [],
-            "source_ids": [],
-            "rationale": "out of scope",
-        })
+        data["research_coverage"].append(
+            {
+                "dimension": None,
+                "status": "immaterial",
+                "conclusion": "Not material.",
+                "revenue_mechanism": "none",
+                "parameter_ids": [],
+                "source_ids": [],
+                "rationale": "out of scope",
+            }
+        )
         with self.assertRaisesRegex(ForecastInputError, "non-empty string"):
             run_forecast(data)
 
     def test_duplicate_core_research_dimension_is_rejected(self) -> None:
         # A custom dimension that reuses a core dimension name must be rejected.
         data = forecast_document()
-        data["research_coverage"].append({
-            "dimension": "growth_curve",
-            "status": "immaterial",
-            "conclusion": "Duplicate.",
-            "revenue_mechanism": "none",
-            "parameter_ids": [],
-            "source_ids": [],
-            "rationale": "duplicate",
-        })
+        data["research_coverage"].append(
+            {
+                "dimension": "growth_curve",
+                "status": "immaterial",
+                "conclusion": "Duplicate.",
+                "revenue_mechanism": "none",
+                "parameter_ids": [],
+                "source_ids": [],
+                "rationale": "duplicate",
+            }
+        )
         with self.assertRaisesRegex(ForecastInputError, "duplicate"):
             run_forecast(data)
 
@@ -226,15 +251,26 @@ class PublicationPipelineTests(unittest.TestCase):
         # index must raise a controlled ForecastInputError, not a KeyError.
         data = forecast_document()
         data["base_adjustment_parameter_ids"] = ["nonexistent_adjustment"]
-        with self.assertRaisesRegex(ForecastInputError, "unknown base_adjustment_parameter_id"):
+        with self.assertRaisesRegex(
+            ForecastInputError, "unknown base_adjustment_parameter_id"
+        ):
             run_forecast(data)
 
     def test_sensitivity_completeness_rejects_uncovered_parameter(self) -> None:
         # When completeness is required, an eligible base parameter that is
         # neither sensitivity-tested nor excluded must be rejected.
         data = forecast_document()
-        tested_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]["revenue"][1]
-        data["sensitivity_tests"] = [{"name": "Core terminal", "parameter_id": tested_id, "shock_type": "percent", "shock_value": 0.1}]
+        tested_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"][
+            "revenue"
+        ][1]
+        data["sensitivity_tests"] = [
+            {
+                "name": "Core terminal",
+                "parameter_id": tested_id,
+                "shock_type": "percent",
+                "shock_value": 0.1,
+            }
+        ]
         data["require_sensitivity_completeness"] = True
         with self.assertRaisesRegex(ForecastInputError, "completeness required"):
             run_forecast(data)
@@ -243,8 +279,17 @@ class PublicationPipelineTests(unittest.TestCase):
         # A structured exclusion (reason + rationale) satisfies the completeness
         # gate for parameters that are not sensitivity-tested.
         data = forecast_document()
-        tested_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]["revenue"][1]
-        data["sensitivity_tests"] = [{"name": "Core terminal", "parameter_id": tested_id, "shock_type": "percent", "shock_value": 0.1}]
+        tested_id = data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"][
+            "revenue"
+        ][1]
+        data["sensitivity_tests"] = [
+            {
+                "name": "Core terminal",
+                "parameter_id": tested_id,
+                "shock_type": "percent",
+                "shock_value": 0.1,
+            }
+        ]
         data["require_sensitivity_completeness"] = True
         all_base_ids = [
             pid
@@ -253,11 +298,69 @@ class PublicationPipelineTests(unittest.TestCase):
             for pid in ids
         ]
         data["sensitivity_exclusions"] = [
-            {"parameter_id": pid, "reason": "immaterial", "rationale": "Not a primary terminal driver."}
-            for pid in all_base_ids if pid != tested_id
+            {
+                "parameter_id": pid,
+                "reason": "immaterial",
+                "rationale": "Not a primary terminal driver.",
+            }
+            for pid in all_base_ids
+            if pid != tested_id
         ]
         result = run_forecast(data)
         validate_forecast_output(result)
+
+    def test_cli_success_path_writes_json_and_markdown(self) -> None:
+        # Phase 6 C1 (F-07): exercise the revenue_forecast CLI in-process so
+        # the formal entry point's statements are covered by the test suite
+        # (the subprocess-only pattern left revenue_forecast.py at ~0%).
+        from unittest.mock import patch
+
+        from revenue_forecast import main
+
+        data = forecast_document()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            input_path = root / "input.json"
+            output_path = root / "forecast.json"
+            markdown_path = root / "forecast.md"
+            input_path.write_text(
+                json.dumps(data, ensure_ascii=False), encoding="utf-8"
+            )
+            with patch(
+                "sys.argv",
+                [
+                    "revenue_forecast.py",
+                    str(input_path),
+                    "--output",
+                    str(output_path),
+                    "--markdown",
+                    str(markdown_path),
+                ],
+            ):
+                code = main()
+            self.assertEqual(code, 0)
+            self.assertTrue(output_path.exists())
+            self.assertTrue(markdown_path.exists())
+            payload = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["company_name"], "Test Co")
+
+    def test_cli_validate_only_prints_valid(self) -> None:
+        from unittest.mock import patch
+
+        from revenue_forecast import main
+
+        data = forecast_document()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            input_path = root / "input.json"
+            input_path.write_text(
+                json.dumps(data, ensure_ascii=False), encoding="utf-8"
+            )
+            with patch(
+                "sys.argv", ["revenue_forecast.py", str(input_path), "--validate-only"]
+            ):
+                code = main()
+            self.assertEqual(code, 0)
 
 
 if __name__ == "__main__":

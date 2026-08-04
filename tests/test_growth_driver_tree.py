@@ -11,8 +11,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from revenue_core import (  # noqa: E402
     ENGINE_VERSION,
     ForecastInputError,
+    build_host_receipt,
     canonical_sha256,
     run_forecast,
+    text_sha256,
 )
 from revenue_report import validate_forecast_output  # noqa: E402
 from test_data_contract import _claim  # noqa: E402
@@ -25,7 +27,9 @@ class GrowthDriverTreeTests(unittest.TestCase):
         analysis = result["growth_driver_analysis"]
         self.assertEqual(analysis["status"], "modeled")
         self.assertEqual(analysis["top_drivers"][0]["segment_names"], ["Segment A"])
-        self.assertAlmostEqual(analysis["top_drivers"][0]["estimated_base_terminal_increment"], 21.0)
+        self.assertAlmostEqual(
+            analysis["top_drivers"][0]["estimated_base_terminal_increment"], 21.0
+        )
         self.assertAlmostEqual(analysis["reconciliation"]["difference"], 0.0)
 
     def test_explicit_data_gap_is_reported_without_fabricating_drivers(self) -> None:
@@ -39,7 +43,9 @@ class GrowthDriverTreeTests(unittest.TestCase):
         analysis = result["growth_driver_analysis"]
         self.assertEqual(analysis["status"], "data_gap")
         self.assertEqual(analysis["top_drivers"], [])
-        self.assertTrue(any(item.startswith("growth_driver_tree:") for item in result["data_gaps"]))
+        self.assertTrue(
+            any(item.startswith("growth_driver_tree:") for item in result["data_gaps"])
+        )
         self.assertAlmostEqual(analysis["reconciliation"]["difference"], -31.5)
 
     def test_one_segment_can_be_split_across_multiple_causal_drivers(self) -> None:
@@ -53,11 +59,17 @@ class GrowthDriverTreeTests(unittest.TestCase):
         second["evidence_nodes"][0]["evidence_id"] = "second_generic_evidence"
         second["evidence_nodes"][0]["claim_ids"] = ["claim_second_generic_evidence"]
         added_claim = _claim(
-            "claim_second_generic_evidence", "filing", "growth_driver", "second_generic_evidence",
-            "rationale_support", "A second checked source claim supports this generic causal mechanism.",
+            "claim_second_generic_evidence",
+            "filing",
+            "growth_driver",
+            "second_generic_evidence",
+            "rationale_support",
+            "A second checked source claim supports this generic causal mechanism.",
             data["as_of_date"],
         )
-        added_claim["capture_receipt_sha256"] = data["sources"][0]["capture"]["receipt_sha256"]
+        added_claim["capture_receipt_sha256"] = data["sources"][0]["capture"][
+            "receipt_sha256"
+        ]
         data["evidence_claims"].append(added_claim)
         data["growth_driver_tree"]["drivers"].insert(1, second)
         result = run_forecast(data)
@@ -70,30 +82,44 @@ class GrowthDriverTreeTests(unittest.TestCase):
 
     def test_attribution_weights_must_reconcile_for_every_segment(self) -> None:
         data = forecast_document()
-        data["growth_driver_tree"]["drivers"][0]["segment_attribution"][0]["weight"] = 0.8
+        data["growth_driver_tree"]["drivers"][0]["segment_attribution"][0]["weight"] = (
+            0.8
+        )
         with self.assertRaisesRegex(ForecastInputError, "weights must sum to 1"):
             run_forecast(data)
 
     def test_driver_must_map_to_a_parameter_used_by_the_base_case(self) -> None:
         data = forecast_document()
-        high_ids = data["segments"][0]["scenarios"]["high"]["driver_parameter_ids"]["revenue"]
+        high_ids = data["segments"][0]["scenarios"]["high"]["driver_parameter_ids"][
+            "revenue"
+        ]
         data["growth_driver_tree"]["drivers"][0]["parameter_ids"] = high_ids
-        with self.assertRaisesRegex(ForecastInputError, "not used by the base forecast"):
+        with self.assertRaisesRegex(
+            ForecastInputError, "not used by the base forecast"
+        ):
             run_forecast(data)
 
     def test_driver_parameter_must_affect_its_attributed_segment(self) -> None:
         data = forecast_document()
-        segment_b_base_ids = data["segments"][1]["scenarios"]["base"]["driver_parameter_ids"]["revenue"]
+        segment_b_base_ids = data["segments"][1]["scenarios"]["base"][
+            "driver_parameter_ids"
+        ]["revenue"]
         data["growth_driver_tree"]["drivers"][0]["parameter_ids"] = segment_b_base_ids
-        with self.assertRaisesRegex(ForecastInputError, "does not affect an attributed segment"):
+        with self.assertRaisesRegex(
+            ForecastInputError, "does not affect an attributed segment"
+        ):
             run_forecast(data)
 
     def test_found_counterevidence_requires_a_contrary_evidence_node(self) -> None:
         data = forecast_document()
         driver = data["growth_driver_tree"]["drivers"][0]
         driver["counterevidence_status"] = "found"
-        driver["counterevidence_rationale"] = "Contrary evidence was found during the search."
-        with self.assertRaisesRegex(ForecastInputError, "requires a contrary evidence node"):
+        driver["counterevidence_rationale"] = (
+            "Contrary evidence was found during the search."
+        )
+        with self.assertRaisesRegex(
+            ForecastInputError, "requires a contrary evidence node"
+        ):
             run_forecast(data)
 
     def test_two_evidence_types_and_sources_are_marked_triangulated(self) -> None:
@@ -109,34 +135,54 @@ class GrowthDriverTreeTests(unittest.TestCase):
             "page_or_section": "Operating indicator",
         }
         capture = {
-            "capture_schema_version": "1.0", "capture_method": "browser_open",
-            "tool_name": "test-browser", "tool_call_id": "fixture-industry-source",
-            "captured_date": data["as_of_date"], "snapshot_sha256": "a" * 64,
-            "content_treatment": "untrusted_data_only", "prompt_injection_status": "not_detected",
+            "capture_schema_version": "1.0",
+            "capture_method": "browser_open",
+            "tool_name": "test-browser",
+            "tool_call_id": "fixture-industry-source",
+            "captured_date": data["as_of_date"],
+            "snapshot_sha256": "a" * 64,
+            "content_treatment": "untrusted_data_only",
+            "prompt_injection_status": "not_detected",
         }
+        capture["host_receipt"] = build_host_receipt(
+            issuer="fixture-host",
+            environment="test",
+            tool_name=capture["tool_name"],
+            action="capture_open",
+            event_sha256=text_sha256("fixture-open-industry-source"),
+            timestamp=capture["captured_date"],
+        )
         capture["receipt_sha256"] = canonical_sha256(capture)
         source["capture"] = capture
         data["sources"].append(source)
         driver = data["growth_driver_tree"]["drivers"][0]
-        driver["evidence_nodes"].append({
-            "evidence_id": "independent_demand_signal",
-            "evidence_type": "independent_demand_signal",
-            "inference_distance": "one_step",
-            "conclusion": "An independent checked indicator supports the direction of the modeled demand path.",
-            "claim_ids": ["claim_independent_demand_signal"],
-        })
+        driver["evidence_nodes"].append(
+            {
+                "evidence_id": "independent_demand_signal",
+                "evidence_type": "independent_demand_signal",
+                "inference_distance": "one_step",
+                "conclusion": "An independent checked indicator supports the direction of the modeled demand path.",
+                "claim_ids": ["claim_independent_demand_signal"],
+            }
+        )
         added_claim = _claim(
-            "claim_independent_demand_signal", "industry_source", "growth_driver",
-            "independent_demand_signal", "rationale_support",
+            "claim_independent_demand_signal",
+            "industry_source",
+            "growth_driver",
+            "independent_demand_signal",
+            "rationale_support",
             "Independent operating data supports the direction of the modeled demand path.",
             data["as_of_date"],
         )
         added_claim["capture_receipt_sha256"] = capture["receipt_sha256"]
         data["evidence_claims"].append(added_claim)
         result = run_forecast(data)
-        first = next(item for item in result["growth_driver_analysis"]["drivers"] if item["driver_id"] == driver["driver_id"])
+        first = next(
+            item
+            for item in result["growth_driver_analysis"]["drivers"]
+            if item["driver_id"] == driver["driver_id"]
+        )
         self.assertEqual(first["evidence_status"], "triangulated")
-
 
     def test_negative_weight_root_is_reported_as_headwind(self) -> None:
         data = forecast_document()
@@ -149,11 +195,17 @@ class GrowthDriverTreeTests(unittest.TestCase):
         second["evidence_nodes"][0]["evidence_id"] = "second_generic_evidence"
         second["evidence_nodes"][0]["claim_ids"] = ["claim_second_generic_evidence"]
         added_claim = _claim(
-            "claim_second_generic_evidence", "filing", "growth_driver", "second_generic_evidence",
-            "rationale_support", "A second checked source claim supports this generic causal mechanism.",
+            "claim_second_generic_evidence",
+            "filing",
+            "growth_driver",
+            "second_generic_evidence",
+            "rationale_support",
+            "A second checked source claim supports this generic causal mechanism.",
             data["as_of_date"],
         )
-        added_claim["capture_receipt_sha256"] = data["sources"][0]["capture"]["receipt_sha256"]
+        added_claim["capture_receipt_sha256"] = data["sources"][0]["capture"][
+            "receipt_sha256"
+        ]
         data["evidence_claims"].append(added_claim)
         headwind = copy.deepcopy(original)
         headwind["driver_id"] = "subsidy_contra_revenue"
@@ -162,32 +214,47 @@ class GrowthDriverTreeTests(unittest.TestCase):
         headwind["evidence_nodes"][0]["evidence_id"] = "subsidy_evidence"
         headwind["evidence_nodes"][0]["claim_ids"] = ["claim_subsidy_evidence"]
         added_claim = _claim(
-            "claim_subsidy_evidence", "filing", "growth_driver", "subsidy_evidence",
+            "claim_subsidy_evidence",
+            "filing",
+            "growth_driver",
+            "subsidy_evidence",
             "rationale_support",
             "A checked source claim supports the modeled contra-revenue pressure.",
             data["as_of_date"],
         )
-        added_claim["capture_receipt_sha256"] = data["sources"][0]["capture"]["receipt_sha256"]
+        added_claim["capture_receipt_sha256"] = data["sources"][0]["capture"][
+            "receipt_sha256"
+        ]
         data["evidence_claims"].append(added_claim)
-        data["growth_driver_tree"]["drivers"] = [original, second, headwind] + data["growth_driver_tree"]["drivers"][1:]
+        data["growth_driver_tree"]["drivers"] = [original, second, headwind] + data[
+            "growth_driver_tree"
+        ]["drivers"][1:]
         result = run_forecast(data)
         analysis = result["growth_driver_analysis"]
         self.assertTrue(analysis["headwinds"])
-        self.assertEqual(analysis["headwinds"][0]["driver_id"], "subsidy_contra_revenue")
-        self.assertAlmostEqual(analysis["headwinds"][0]["estimated_base_terminal_increment"], -4.2)
+        self.assertEqual(
+            analysis["headwinds"][0]["driver_id"], "subsidy_contra_revenue"
+        )
+        self.assertAlmostEqual(
+            analysis["headwinds"][0]["estimated_base_terminal_increment"], -4.2
+        )
         self.assertAlmostEqual(analysis["reconciliation"]["difference"], 0.0)
         top_ids = [driver["driver_id"] for driver in analysis["top_drivers"]]
         self.assertNotIn("subsidy_contra_revenue", top_ids)
 
     def test_attribution_weight_below_minus_one_is_rejected(self) -> None:
         data = forecast_document()
-        data["growth_driver_tree"]["drivers"][0]["segment_attribution"][0]["weight"] = -1.5
+        data["growth_driver_tree"]["drivers"][0]["segment_attribution"][0][
+            "weight"
+        ] = -1.5
         with self.assertRaisesRegex(ForecastInputError, "weight must be in"):
             run_forecast(data)
 
     def test_attribution_weight_of_zero_is_rejected(self) -> None:
         data = forecast_document()
-        data["growth_driver_tree"]["drivers"][0]["segment_attribution"][0]["weight"] = 0.0
+        data["growth_driver_tree"]["drivers"][0]["segment_attribution"][0]["weight"] = (
+            0.0
+        )
         with self.assertRaisesRegex(ForecastInputError, "weight must be in"):
             run_forecast(data)
 
@@ -197,9 +264,15 @@ class GrowthDriverTreeTests(unittest.TestCase):
         legacy["engine_version"] = ENGINE_VERSION
         legacy["publication_receipt"]["schema_version"] = "3.5"
         legacy["publication_receipt"]["receipt_sha256"] = canonical_sha256(
-            {k: v for k, v in legacy["publication_receipt"].items() if k != "receipt_sha256"}
+            {
+                k: v
+                for k, v in legacy["publication_receipt"].items()
+                if k != "receipt_sha256"
+            }
         )
-        legacy["result_sha256"] = canonical_sha256({k: v for k, v in legacy.items() if k != "result_sha256"})
+        legacy["result_sha256"] = canonical_sha256(
+            {k: v for k, v in legacy.items() if k != "result_sha256"}
+        )
         validate_forecast_output(legacy)
 
 

@@ -94,7 +94,10 @@ def require(condition: bool, message: str) -> None:
 
 
 def finite_number(value: Any, field: str) -> float:
-    require(isinstance(value, (int, float)) and not isinstance(value, bool), f"{field} must be numeric")
+    require(
+        isinstance(value, (int, float)) and not isinstance(value, bool),
+        f"{field} must be numeric",
+    )
     number = float(value)
     require(math.isfinite(number), f"{field} must be finite")
     return number
@@ -106,7 +109,9 @@ def finite_number(value: Any, field: str) -> float:
 
 
 def parse_iso_date(value: Any, field: str) -> date:
-    require(isinstance(value, str) and bool(value.strip()), f"{field} must be an ISO date")
+    require(
+        isinstance(value, str) and bool(value.strip()), f"{field} must be an ISO date"
+    )
     try:
         return date.fromisoformat(value)
     except ValueError as exc:
@@ -114,7 +119,10 @@ def parse_iso_date(value: Any, field: str) -> date:
 
 
 def period_year(value: Any, field: str) -> int:
-    require(isinstance(value, str) and re.fullmatch(r"FY\d{4}", value) is not None, f"{field} must use strict FYyyyy format")
+    require(
+        isinstance(value, str) and re.fullmatch(r"FY\d{4}", value) is not None,
+        f"{field} must use strict FYyyyy format",
+    )
     return int(value[2:])
 
 
@@ -124,7 +132,9 @@ def period_year(value: Any, field: str) -> int:
 
 
 def canonical_sha256(value: Any) -> str:
-    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    encoded = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
 
@@ -141,14 +151,22 @@ def validate_claim_ids(
     support_type: str | None = None,
 ) -> list[dict[str, Any]]:
     require(isinstance(claim_ids, list) and claim_ids, f"{field} requires claim_ids")
-    require(len(claim_ids) == len(set(claim_ids)), f"{field} contains duplicate claim_ids")
+    require(
+        len(claim_ids) == len(set(claim_ids)), f"{field} contains duplicate claim_ids"
+    )
     claims: list[dict[str, Any]] = []
     for claim_id in claim_ids:
         require(claim_id in claim_index, f"unknown claim_id {claim_id} in {field}")
         claim = claim_index[claim_id]
-        require(claim["target_type"] == target_type and claim["target_id"] == target_id, f"claim {claim_id} does not support {target_type}:{target_id}")
+        require(
+            claim["target_type"] == target_type and claim["target_id"] == target_id,
+            f"claim {claim_id} does not support {target_type}:{target_id}",
+        )
         if support_type is not None:
-            require(claim["support_type"] == support_type, f"claim {claim_id} must use {support_type}")
+            require(
+                claim["support_type"] == support_type,
+                f"claim {claim_id} must use {support_type}",
+            )
         claims.append(claim)
     return claims
 
@@ -172,9 +190,80 @@ BLOCKED_HOSTS: set[str] = {
     "www.baidu.com",
 }
 
-CAPTURE_METHODS: set[str] = {"browser_open", "api_response", "local_document", "structured_connector", "manual_open"}
+CAPTURE_METHODS: set[str] = {
+    "browser_open",
+    "api_response",
+    "local_document",
+    "structured_connector",
+    "manual_open",
+}
 
 PROMPT_INJECTION_STATUSES: set[str] = {"not_detected", "detected_and_ignored"}
+
+HOST_RECEIPT_SCHEMA_VERSION = "1.0"
+
+
+def build_host_receipt(
+    *,
+    issuer: str,
+    environment: str,
+    tool_name: str,
+    action: str,
+    event_sha256: str,
+    timestamp: str,
+) -> dict[str, Any]:
+    """Build a machine-generated host attestation binding a tool event.
+
+    Phase 6 A2: a self-declared ``tool_name``/``tool_call_id`` string is not an
+    attestation.  A host receipt records who (issuer) in what environment
+    executed which tool/action at what time, bound to a normalized event hash.
+    """
+    payload = {
+        "host_receipt_schema_version": HOST_RECEIPT_SCHEMA_VERSION,
+        "issuer": issuer,
+        "environment": environment,
+        "tool_name": tool_name,
+        "action": action,
+        "event_sha256": event_sha256,
+        "timestamp": timestamp,
+    }
+    payload["receipt_sha256"] = canonical_sha256(payload)
+    return payload
+
+
+def validate_host_receipt(receipt: Any) -> None:
+    """Validate a machine-generated host receipt.  Raises on any drift."""
+    require(isinstance(receipt, dict), "capture host_receipt must be an object")
+    required = {
+        "host_receipt_schema_version",
+        "issuer",
+        "environment",
+        "tool_name",
+        "action",
+        "event_sha256",
+        "timestamp",
+        "receipt_sha256",
+    }
+    require(set(receipt) == required, "invalid capture host_receipt fields")
+    require(
+        receipt["host_receipt_schema_version"] == HOST_RECEIPT_SCHEMA_VERSION,
+        "unsupported host receipt schema version",
+    )
+    for field in ("issuer", "environment", "tool_name", "action", "timestamp"):
+        require(
+            isinstance(receipt[field], str) and receipt[field].strip(),
+            f"capture host_receipt.{field} is required",
+        )
+    require(
+        isinstance(receipt["event_sha256"], str)
+        and re.fullmatch(r"[0-9a-f]{64}", receipt["event_sha256"]),
+        "invalid capture host_receipt event_sha256",
+    )
+    payload = {key: value for key, value in receipt.items() if key != "receipt_sha256"}
+    require(
+        receipt["receipt_sha256"] == canonical_sha256(payload),
+        "capture host_receipt receipt hash mismatch",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -200,22 +289,62 @@ def validate_source_capture(source: dict[str, Any], as_of: date) -> dict[str, An
     capture = source.get("capture")
     require(isinstance(capture, dict), f"{source_id}.capture is required")
     required = {
-        "capture_schema_version", "capture_method", "tool_name", "tool_call_id",
-        "captured_date", "snapshot_sha256", "content_treatment",
-        "prompt_injection_status", "receipt_sha256",
+        "capture_schema_version",
+        "capture_method",
+        "tool_name",
+        "tool_call_id",
+        "captured_date",
+        "snapshot_sha256",
+        "content_treatment",
+        "prompt_injection_status",
+        "host_receipt",
+        "receipt_sha256",
     }
     require(set(capture) == required, f"invalid capture fields for {source_id}")
-    require(capture["capture_schema_version"] == EVIDENCE_CAPTURE_SCHEMA_VERSION, f"unsupported capture schema for {source_id}")
-    require(capture["capture_method"] in CAPTURE_METHODS, f"unsupported capture method for {source_id}")
+    require(
+        capture["capture_schema_version"] == EVIDENCE_CAPTURE_SCHEMA_VERSION,
+        f"unsupported capture schema for {source_id}",
+    )
+    require(
+        capture["capture_method"] in CAPTURE_METHODS,
+        f"unsupported capture method for {source_id}",
+    )
     for field in ("tool_name", "tool_call_id"):
-        require(isinstance(capture[field], str) and capture[field].strip(), f"{source_id}.capture.{field} is required")
-    captured = parse_iso_date(capture["captured_date"], f"{source_id}.capture.captured_date")
-    published = parse_iso_date(source.get("published_date"), f"{source_id}.published_date")
-    require(published <= captured <= as_of, f"source capture is outside the allowed information set: {source_id}")
-    require(source.get("accessed_date") == capture["captured_date"], f"source accessed_date/capture date mismatch: {source_id}")
-    require(isinstance(capture["snapshot_sha256"], str) and re.fullmatch(r"[0-9a-f]{64}", capture["snapshot_sha256"]), f"invalid source snapshot hash: {source_id}")
-    require(capture["content_treatment"] == "untrusted_data_only", f"source content must be treated as untrusted data: {source_id}")
-    require(capture["prompt_injection_status"] in PROMPT_INJECTION_STATUSES, f"invalid prompt-injection status: {source_id}")
+        require(
+            isinstance(capture[field], str) and capture[field].strip(),
+            f"{source_id}.capture.{field} is required",
+        )
+    validate_host_receipt(capture.get("host_receipt"))
+    captured = parse_iso_date(
+        capture["captured_date"], f"{source_id}.capture.captured_date"
+    )
+    published = parse_iso_date(
+        source.get("published_date"), f"{source_id}.published_date"
+    )
+    require(
+        published <= captured <= as_of,
+        f"source capture is outside the allowed information set: {source_id}",
+    )
+    require(
+        source.get("accessed_date") == capture["captured_date"],
+        f"source accessed_date/capture date mismatch: {source_id}",
+    )
+    require(
+        isinstance(capture["snapshot_sha256"], str)
+        and re.fullmatch(r"[0-9a-f]{64}", capture["snapshot_sha256"]),
+        f"invalid source snapshot hash: {source_id}",
+    )
+    require(
+        capture["content_treatment"] == "untrusted_data_only",
+        f"source content must be treated as untrusted data: {source_id}",
+    )
+    require(
+        capture["prompt_injection_status"] in PROMPT_INJECTION_STATUSES,
+        f"invalid prompt-injection status: {source_id}",
+    )
     payload = {key: value for key, value in capture.items() if key != "receipt_sha256"}
-    require(capture["receipt_sha256"] == canonical_sha256(payload), f"source capture receipt hash mismatch: {source_id}")
+    require(
+        capture["receipt_sha256"] == canonical_sha256(payload),
+        f"source capture receipt hash mismatch: {source_id}",
+    )
     return dict(capture)
