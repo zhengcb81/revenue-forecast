@@ -1,5 +1,32 @@
 # 审查进度日志
 
+## 实施回执（WU-5.2 SourceBundle query）
+
+```json
+{
+  "work_unit": "WU-5.2",
+  "baseline_commits": {"revenue": "0269d51", "filing": "3b5b713", "wiki": "d33d422"},
+  "red_test_ids": ["ModuleNotFoundError: source_bundle (5 tests)"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/src/company_wiki/source_catalog/source_bundle.py (new)", "company-wiki/tests/contract/test_source_catalog_source_bundle.py (5 tests)"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_source_bundle.py -q"],
+  "repo_commands": ["ruff check source_bundle.py + tests (clean)"],
+  "cross_repo_commands": ["not_applicable + company-wiki only WU"],
+  "tests_collected_before": 1647,
+  "tests_collected_after": 1652,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {"isolation_broken": "RED (invalid_artifact_isolated test failed)"},
+  "semantics": "invalid artifact isolated — sibling roles and source stay reusable; bundle hash changes when any role state changes",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
 ## 实施回执（WU-5.1 ArtifactHandle validator）
 
 ```json
