@@ -13,7 +13,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install test dependency
-        run: python -m pip install pytest cryptography ruff
+        run: python -m pip install pytest cryptography ruff pytest-cov
       - name: Ruff + compileall + unique test symbols (WU-1.2)
         run: |
           ruff check scripts tests tools e2e
@@ -21,6 +21,8 @@ jobs:
           python tools/check_unique_test_symbols.py
       - name: Run test suite
         run: python -m pytest tests -q
+      - name: Coverage gates (WU-7.1)
+        run: python tools/run_coverage_gates.py
       - name: Run engine E2E
         run: python e2e/run_revenue_forecast_e2e.py
       - name: Installation sync check
