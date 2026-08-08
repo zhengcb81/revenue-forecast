@@ -67,7 +67,9 @@ def installation_diff(canonical: Path, destination: Path) -> list[str]:
     expected = manifest(canonical)
     target = destination / SKILL_NAME
     if not target.is_dir():
-        return ["<missing installation>"]
+        # No installation at this target = nothing to drift (CI runners and
+        # fresh machines have no copies; pre-commit on the author machine does).
+        return []
     actual = _installed_manifest(target)
     keys = sorted(set(expected) | set(actual))
     return [key for key in keys if expected.get(key) != actual.get(key)]
