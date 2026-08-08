@@ -1,5 +1,39 @@
 # 审查进度日志
 
+## 实施回执（WU-0.2 生产快照夹具生成器）
+
+```json
+{
+  "work_unit": "WU-0.2",
+  "baseline_commits": {"revenue": "6a08310", "filing": "43330550fb3ea77d36acd92e26861377564a7607", "wiki": "325086af1a5d966f1f01b389109dd26d1b6a63bc"},
+  "red_test_ids": ["test_requires_readonly_flag", "test_deterministic_output", "test_schema_and_root_policy_anonymized", "test_sample_row_cap_and_depath", "test_status_distributions_present", "test_catalog_readonly_and_no_side_files", "test_busy_timeout_set"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/scripts/snapshot_catalog.py", "company-wiki/tests/contract/test_snapshot_catalog.py", "revenue-forecast/audit_review/2026-08-08_adversarial_plan/progress.md"],
+  "focused_commands": ["python -m pytest tests/contract/test_snapshot_catalog.py -q"],
+  "repo_commands": ["python -m pytest tests/unit tests/contract -q (company-wiki full)", "ruff check scripts/snapshot_catalog.py tests/contract/test_snapshot_catalog.py"],
+  "cross_repo_commands": ["not_applicable + no cross-repo contract touched; producer-only WU"],
+  "tests_collected_before": 1608,
+  "tests_collected_after": 1616,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {
+    "emit_raw_path_in_root_policy": "RED (test_schema_and_root_policy_anonymized failed)",
+    "mode_rw": "green (query_only still blocks — dual defense)",
+    "mode_rw_plus_no_query_only": "RED (test_open_readonly_rejects_writes failed)"
+  },
+  "production_probe": {"snapshot_sha256_twice": "9d24f376b3a77e7d9417f7f4a7142bf2d59502c1c8738763377995e9f3a3543c (identical both runs)", "path_leak": "Users=0 Dropbox=0 dayu-agent=0 .source_catalog=0 C:/=0 C:\\=0; 'company-wiki' only inside urn:company-wiki:document:sha256:... logical IDs"},
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → repo full suite 1616 passed → pending independent review"
+}
+```
+
+- WU-0.2 补充说明：生产 catalog 快照抽样显示 documents 分布 active=13797/quarantined=1/retired=9501/upstream_rejected=189，locations active=24972/missing=6/quarantined=1/retired=21526；root policy 与配置一致（company_raw=10/dayu_portfolio=20/dropbox_stock=30）。快照确定性由生产库两次运行 sha256 相同证明；脱敏检查确认无绝对路径泄漏（`company-wiki` 仅出现在 document_id URN 命名空间，属逻辑标识符非路径，测试的 FORBIDDEN_SUBSTRINGS 已注明该例外）。
+- WU-0.1 已 accepted（reviewer agentId ab036f82c1b11e84d，3 minor findings，其一已修复并复验 5 passed + ruff 全绿）；commit `6a08310`；计划文档 commit `26e1614`。
+
 ## 实施回执（WU-0.1 基线清单与只读保护）
 
 ```json
