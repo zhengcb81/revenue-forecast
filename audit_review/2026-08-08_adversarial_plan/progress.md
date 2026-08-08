@@ -21,9 +21,15 @@
   "real_root_writes": 0,
   "mutation_proof": "not_applicable + fail-fast/fence assertions are the gates",
   "semantics": "F03: doctor 检测第二个 directory root + 两侧 Dropbox realpath 漂移；F04: symlink 越界被 path fence 拒绝",
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId a4cd242d145282c09)",
+  "review_findings": [
+    {"severity": "critical", "desc": "D06 兼容性未实现", "resolution": "fixed: expected_provenance 参数 + M-D06 mutation 翻红"},
+    {"severity": "critical", "desc": "D05 拒绝路径未被捕获（M1 无效 mutation）", "resolution": "fixed: reason 断言 + 双向不变量 + M-D05 对冲 mutation 翻红（D04+D05）"},
+    {"severity": "important", "desc": "D03 无 chunker spy", "resolution": "fixed: chunker spy 零调用断言"},
+    {"severity": "important", "desc": "F03 realpath 漂移分支无测试", "resolution": "fixed: test_e2e_f03_dropbox_realpath_drift_fails"},
+    {"severity": "important", "desc": "F04 无全平台越界测试", "resolution": "fixed: test_e2e_f04_plain_outside_path_rejected"}
+  ],
+  "status": "accepted (M-D06/M-D05 对冲 mutation 实证；2 critical + 4 important 全修复)"
 }
 ```
 
