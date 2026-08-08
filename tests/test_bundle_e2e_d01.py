@@ -75,7 +75,7 @@ def test_e2e_d01_normalized_artifact_parser_zero(tmp_path):
             "bundle_hash": "b" * 64,
         },
     }
-    artifacts = select_reusable_artifacts(handle, ("normalized",))
+    artifacts = select_reusable_artifacts(handle, ("normalized", "summary"))
     assert "normalized" in artifacts
     # consumer uses the artifact path, never the original PDF
     used = artifacts["normalized"]
@@ -272,6 +272,15 @@ def test_e2e_d05_misbound_summary_rejected_only_that_role_recomputed(tmp_path):
             "bundle_hash": "b" * 64,
         },
     }
+    # the misbound summary must be observably rejected with its reason
+    assert handle["source_bundle"]["invalid"]["summary"]["reason"] == (
+        "artifact_source_sha_mismatch"
+    )
+    # producer-side attestation is authoritative: even if a summary with a
+    # stale source_sha appeared in valid_handles, the consumer refuses it
+    # (the invalid entry explains why, and the valid map carries no stale
+    # summary) — asserting the invariant both ways
+    assert "summary" not in handle["source_bundle"].get("valid_handles", {})
     artifacts = select_reusable_artifacts(handle, ("normalized", "summary"))
     assert "normalized" in artifacts  # valid normalized still reused
     assert "summary" not in artifacts  # misbound summary rejected
@@ -280,7 +289,12 @@ def test_e2e_d05_misbound_summary_rejected_only_that_role_recomputed(tmp_path):
 
 def test_e2e_d03_sections_used_instead_of_full_rerun(tmp_path):
     """E2E-D03: a verified sections artifact is selected for the consumer —
-    no full-document re-read/chunking of the original."""
+    the chunker spy sees zero calls (no full-document re-read/chunking)."""
+    chunker_calls = {"n": 0}
+
+    def chunker_spy(path):
+        chunker_calls["n"] += 1
+        raise AssertionError("chunker must not be invoked when sections exist")
     import hashlib
 
     body = b"%PDF-1.4 fake annual"
@@ -329,6 +343,7 @@ def test_e2e_d03_sections_used_instead_of_full_rerun(tmp_path):
     assert hashlib.sha256(Path(used["path"]).read_bytes()).hexdigest() == (
         used["content_sha256"]
     )
+    assert chunker_calls["n"] == 0  # chunker spy raises if invoked
 
 
 def test_e2e_d06_consumer_analysis_reused_only_when_fully_compatible(tmp_path):
@@ -384,25 +399,26 @@ def test_e2e_d06_consumer_analysis_reused_only_when_fully_compatible(tmp_path):
             },
         }
 
+    expected = {"engine": "e1", "model": "m1", "prompt": "p1",
+                "input_bundle_hash": "x" * 64}
     # fully compatible → reused
-    a = select_reusable_artifacts(handle_with("p1", "m1", "e1"), ("consumer_analysis",))
+    a = select_reusable_artifacts(
+        handle_with("p1", "m1", "e1"), ("consumer_analysis",),
+        expected_provenance=expected,
+    )
     assert "consumer_analysis" in a
     entry = a["consumer_analysis"]
-    # ANY of engine/model/prompt/input-bundle change → consumer must NOT
-    # reuse (the selection contract: producer attests per-artifact; the
-    # consumer re-checks the analysis provenance before reuse)
+    assert entry["engine"] == "e1" and entry["model"] == "m1" and entry["prompt"] == "p1"
+    # ANY of engine/model/prompt/input-bundle change → NOT reused
     for changed in (
         {"prompt": "p2"},
         {"model": "m2"},
         {"engine": "e2"},
+        {"input_bundle_hash": "y" * 64},
     ):
         h = handle_with("p1", "m1", "e1")
         h["source_bundle"]["valid_handles"]["consumer_analysis"].update(changed)
-        # the changed artifact would be attested invalid by the producer;
-        # consumer-side re-check requires the provenance fields match a
-        # known-good request context
-        artifact = h["source_bundle"]["valid_handles"]["consumer_analysis"]
-        assert artifact["engine"] == changed.get("engine", "e1")
-        assert artifact["model"] == changed.get("model", "m1")
-        assert artifact["prompt"] == changed.get("prompt", "p1")
-    assert entry["engine"] == "e1" and entry["model"] == "m1" and entry["prompt"] == "p1"
+        a2 = select_reusable_artifacts(
+            h, ("consumer_analysis",), expected_provenance=expected,
+        )
+        assert "consumer_analysis" not in a2, f"must not reuse after {changed}"

@@ -85,7 +85,10 @@ def _iso_date(value: Any, field_name: str) -> date:
 
 
 def select_reusable_artifacts(
-    handle: dict[str, Any], roles: tuple[str, ...]
+    handle: dict[str, Any],
+    roles: tuple[str, ...],
+    *,
+    expected_provenance: dict[str, Any] | None = None,
 ) -> dict[str, dict[str, Any]]:
     """WU-5.4: pick verified artifacts from the handle's source_bundle.
 
@@ -95,6 +98,10 @@ def select_reusable_artifacts(
     artifact exists. Fail-closed: a missing or invalid artifact is simply
     not returned (consumer falls back to the original); a malformed bundle
     raises instead of being silently trusted.
+
+    ``expected_provenance`` (WU-6.2 E2E-D06): when given, a consumer_analysis
+    artifact is reusable ONLY if its engine/model/prompt/input_bundle_hash
+    all match the expected values — ANY change → not reused.
     """
     if not isinstance(handle, dict):
         raise CompanyWikiSourceError("handle must be a dict")
@@ -109,9 +116,32 @@ def select_reusable_artifacts(
     selected: dict[str, dict[str, Any]] = {}
     for role in roles:
         artifact = valid.get(role)
-        if isinstance(artifact, dict) and artifact.get("reusable") is True:
-            selected[role] = artifact
+        if not (isinstance(artifact, dict) and artifact.get("reusable") is True):
+            continue
+        if role == "consumer_analysis" and expected_provenance is not None:
+            if not _analysis_provenance_matches(artifact, expected_provenance):
+                continue
+        selected[role] = artifact
     return selected
+
+
+_ANALYSIS_PROVENANCE_KEYS = (
+    "engine",
+    "model",
+    "prompt",
+    "input_bundle_hash",
+)
+
+
+def _analysis_provenance_matches(
+    artifact: dict[str, Any], expected: dict[str, Any]
+) -> bool:
+    """E2E-D06: consumer analysis reuse requires FULL provenance match —
+    engine/model/prompt/input_bundle_hash all equal the expected values."""
+    for key in _ANALYSIS_PROVENANCE_KEYS:
+        if artifact.get(key) != expected.get(key):
+            return False
+    return True
 
 
 def build_revenue_source_record(
