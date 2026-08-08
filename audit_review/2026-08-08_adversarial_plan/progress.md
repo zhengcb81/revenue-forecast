@@ -1,5 +1,44 @@
 # 审查进度日志
 
+## 实施回执（WU-6.2 场景矩阵 — E2E-R08/F01 第二批）
+
+```json
+{
+  "work_unit": "WU-6.2 (second batch)",
+  "baseline_commits": {"revenue": "94bbfe1", "filing": "a7fd0d2", "wiki": "64e543f"},
+  "red_test_ids": ["E2E-R08 broker research fixture (classification check)", "E2E-F01 HTML-as-PDF (PDF magic gate)"],
+  "red_exit_code": 1,
+  "changed_files": ["wiki: tests/contract/test_source_catalog_dropbox_probe.py (E2E-R08)", "wiki: tests/contract/test_source_catalog_acquisition.py (E2E-F01)"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_dropbox_probe.py -q", "python -m pytest tests/contract/test_source_catalog_acquisition.py -q"],
+  "repo_commands": ["wiki contract (1018+ passed baseline)"],
+  "cross_repo_commands": ["not_applicable + company-wiki only"],
+  "tests_collected_before": 1655,
+  "tests_collected_after": 1657,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": "not_applicable + negative-scenario assertions are the gate",
+  "semantics": "E2E-R08 broker research 不满足 annual 请求；E2E-F01 HTML 冒充 PDF 被 magic gate 拒绝",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review (WU-6.2 场景覆盖盘点见下)"
+}
+```
+
+**WU-6.2 场景覆盖盘点**（37 场景）：
+- **E2E-L01~L07（7）**：全部由 WU-4.2 GapPlan 测试覆盖（coordinator GAP/fetch=0、up-to-date zero gap、not published、revision、provider offline、future excluded）
+- **E2E-R01/02（2）**：reusable_roots + fail_closed active 测试覆盖
+- **E2E-R04/05（2）**：determinism 测试覆盖（三根同 hash priority、同 period 不同 hash ambiguous）
+- **E2E-R06（1）**：fail_closed 8 测试覆盖（retired/quarantined/upstream_rejected/.rejections）
+- **E2E-R07（1）**：既有 stale-file 测试覆盖
+- **E2E-R08（1）**：本批新增（broker 负例）
+- **E2E-D01/02/04（3）**：首批新增（parser=0/LLM=0/stale role）
+- **E2E-F01（1）**：本批新增（HTML-as-PDF quarantine）
+- **E2E-DBX-01~10（10）**：探针 + config invariants + 用户决策的已知缺口模式
+- **E2E-D03/05/06（3）**、**E2E-F02~F06（5）**、**E2E-R03（1）**：待后续批次
+
 ## 实施回执（WU-6.2 场景矩阵 — E2E-D01/02/04 首批）
 
 ```json
