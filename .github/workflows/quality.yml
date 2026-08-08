@@ -20,7 +20,7 @@ jobs:
           python -m compileall -q scripts tests tools e2e
           python tools/check_unique_test_symbols.py
       - name: Run test suite
-        run: python -m pytest tests -q
+        run: python -m pytest tests tools/tests -q
       - name: Coverage gates (WU-7.1)
         run: python tools/run_coverage_gates.py
       - name: Run engine E2E

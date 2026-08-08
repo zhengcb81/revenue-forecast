@@ -3,7 +3,8 @@ import sys
 from pathlib import Path
 import tempfile
 
-sys.path.insert(0, r"C:\Users\郑曾波\Projects\revenue-forecast\tools")
+TOOLS = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(TOOLS))
 from verify_plan_claims import (
     _production_apply_conflict,
     _timed_gate_problems,
