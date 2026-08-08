@@ -218,3 +218,114 @@ def test_e2e_d04_stale_normalized_recomputes_only_that_role(tmp_path):
     assert "summary" in artifacts  # valid summary reused
     assert "normalized" not in artifacts  # stale normalized NOT reused
     # consumer recomputes only the stale role (normalized), not the whole chain
+
+
+def test_e2e_d05_misbound_summary_rejected_only_that_role_recomputed(tmp_path):
+    """E2E-D05: a summary artifact bound to the WRONG source (source_sha
+    mismatch) is rejected; the consumer recomputes only the summary — the
+    valid normalized artifact is still reused."""
+    import hashlib
+
+    body = b"%PDF-1.4 fake annual"
+    original = tmp_path / "annual.pdf"
+    original.write_bytes(body)
+    normalized_path = tmp_path / "normalized.md"
+    normalized_path.write_bytes(b"# normalized ok")
+    summary_path = tmp_path / "summary.md"
+    summary_path.write_bytes(b"# stale summary")
+    handle = {
+        "request_id": "req-1",
+        "document_id": "doc-1",
+        "source_id": "src-1",
+        "title": "ACME 2025 annual",
+        "published_date": "2026-04-15",
+        "https_url": "https://www.sec.gov/x/2025.pdf",
+        "canonical_path": str(original),
+        "snapshot_sha256": hashlib.sha256(body).hexdigest(),
+        "retrieved_at": "2026-08-08T12:00:00Z",
+        "provider": "sec",
+        "provider_document_id": "acc-2025",
+        "collector_name": "test",
+        "collector_version": "1.0.0",
+        "byte_size": len(body),
+        "mime_type": "application/pdf",
+        "capture_ready": True,
+        "canonical_location_id": "loc-1",
+        "source_bundle": {
+            "schema_version": "1.0",
+            "source": {"document_id": "doc-1", "source_sha256": "a" * 64},
+            "valid_handles": {
+                "normalized": {
+                    "artifact_role": "normalized",
+                    "path": str(normalized_path),
+                    "content_sha256": hashlib.sha256(b"# normalized ok").hexdigest(),
+                    "reusable": True,
+                }
+            },
+            "invalid": {
+                "summary": {
+                    "artifact_role": "summary",
+                    "reusable": False,
+                    "reason": "artifact_source_sha_mismatch",
+                }
+            },
+            "bundle_hash": "b" * 64,
+        },
+    }
+    artifacts = select_reusable_artifacts(handle, ("normalized", "summary"))
+    assert "normalized" in artifacts  # valid normalized still reused
+    assert "summary" not in artifacts  # misbound summary rejected
+    # consumer recomputes ONLY the summary role (normalized untouched)
+
+
+def test_e2e_d03_sections_used_instead_of_full_rerun(tmp_path):
+    """E2E-D03: a verified sections artifact is selected for the consumer —
+    no full-document re-read/chunking of the original."""
+    import hashlib
+
+    body = b"%PDF-1.4 fake annual"
+    original = tmp_path / "annual.pdf"
+    original.write_bytes(body)
+    sections_path = tmp_path / "sections.json"
+    sections_body = b'{"sections": [{"title": "Revenue", "ordinal": 1}]}'
+    sections_path.write_bytes(sections_body)
+    handle = {
+        "request_id": "req-1",
+        "document_id": "doc-1",
+        "source_id": "src-1",
+        "title": "ACME 2025 annual",
+        "published_date": "2026-04-15",
+        "https_url": "https://www.sec.gov/x/2025.pdf",
+        "canonical_path": str(original),
+        "snapshot_sha256": hashlib.sha256(body).hexdigest(),
+        "retrieved_at": "2026-08-08T12:00:00Z",
+        "provider": "sec",
+        "provider_document_id": "acc-2025",
+        "collector_name": "test",
+        "collector_version": "1.0.0",
+        "byte_size": len(body),
+        "mime_type": "application/pdf",
+        "capture_ready": True,
+        "canonical_location_id": "loc-1",
+        "source_bundle": {
+            "schema_version": "1.0",
+            "source": {"document_id": "doc-1"},
+            "valid_handles": {
+                "sections": {
+                    "artifact_role": "sections",
+                    "path": str(sections_path),
+                    "content_sha256": hashlib.sha256(sections_body).hexdigest(),
+                    "reusable": True,
+                }
+            },
+            "invalid": {},
+            "bundle_hash": "b" * 64,
+        },
+    }
+    artifacts = select_reusable_artifacts(handle, ("sections",))
+    assert "sections" in artifacts
+    used = artifacts["sections"]
+    assert used["path"] == str(sections_path)
+    assert hashlib.sha256(Path(used["path"]).read_bytes()).hexdigest() == (
+        used["content_sha256"]
+    )
