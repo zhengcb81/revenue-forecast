@@ -1,5 +1,32 @@
 # 审查进度日志
 
+## 实施回执（WU-3.1 fail-closed 状态和路径过滤）
+
+```json
+{
+  "work_unit": "WU-3.1",
+  "baseline_commits": {"revenue": "cbee0c2", "filing": "0d58b3e", "wiki": "74a7b74"},
+  "red_test_ids": ["test_quarantined_document_not_reused (was REUSED_EXACT before fix)", "test_upstream_rejected_document_not_reused (was REUSED_EXACT)", "test_rejections_path_not_reused (was REUSED_EXACT)", "test_query_hides_non_active_by_default (upstream_rejected leaked)", "test_resolver_defense_in_depth_rejects_leaked_document"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/src/company_wiki/source_catalog/service.py (query active-only default)", "company-wiki/src/company_wiki/source_catalog/resolver.py (source_status defense-in-depth + .rejections path filter)", "company-wiki/tests/contract/test_source_catalog_fail_closed.py (7 tests)", "company-wiki/tests/contract/test_source_catalog_url_enrichment.py (explicit active+incomplete query)", "company-wiki/tests/contract/test_source_catalog_dropbox_probe.py (real sha256 fixture)"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_fail_closed.py -v", "python -m pytest tests/contract/test_source_catalog_url_enrichment.py -q"],
+  "repo_commands": ["python -m pytest tests/contract -q (960 passed, 1 pre-existing flaky→fixed)"],
+  "cross_repo_commands": ["not_applicable + company-wiki only WU"],
+  "tests_collected_before": 1616,
+  "tests_collected_after": 1623,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "production_evidence": {"previously_leaked_candidates": "189 upstream_rejected + 1 quarantined documents; 635 dayu .rejections active locations", "post_fix": "all fail-closed; zero rejected candidates reach success receipt"},
+  "mutation_proof": {"query_allowlist_revert": "RED (test_query_hides_non_active_by_default failed)", "resolver_check_removal": "RED (test_resolver_defense_in_depth_rejects_leaked_document failed)"},
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused 22 green → contract suite green → pending independent review"
+}
+```
+
 ## 实施回执（WU-2A.0~2A.2 Dropbox 配置启用 — 用户决策后完成）
 
 ```json
