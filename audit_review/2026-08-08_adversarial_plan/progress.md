@@ -1,5 +1,32 @@
 # 审查进度日志
 
+## 实施回执（WU-4.2 metadata-only discovery 与 GapPlan）
+
+```json
+{
+  "work_unit": "WU-4.2",
+  "baseline_commits": {"revenue": "0eef82b", "filing": "3b5b713", "wiki": "478ca5e"},
+  "red_test_ids": ["ModuleNotFoundError: gap_plan (7 tests)", "coordinator latest_as_of → REUSED early-return (was not GAP)"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/src/company_wiki/source_catalog/gap_plan.py (new)", "company-wiki/src/company_wiki/source_catalog/acquisition.py (GAP status + coordinator branch)", "company-wiki/tests/contract/test_source_catalog_gap_plan.py (8 tests)"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_gap_plan.py -q"],
+  "repo_commands": ["python -m pytest tests/contract/test_source_catalog_acquisition.py tests/contract/test_source_catalog_adapter_process.py tests/contract/test_source_catalog_gap_plan.py -q (17 passed)"],
+  "cross_repo_commands": ["not_applicable + company-wiki only WU (filing-fetch consumption belongs to WU-4.3)"],
+  "tests_collected_before": 1631,
+  "tests_collected_after": 1639,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {"provider_error_ignored": "RED (unavailable test failed)", "missing_detection_removed": "RED (local_old_gap test failed)"},
+  "semantics": "latest_as_of no longer short-circuits on local reuse — provider metadata decides reuse vs gap; provider_unavailable keeps local and never claims up-to-date; future-dated candidates excluded from gap",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
 ## 实施回执（WU-4.1 versioned FilingRequest 和 LatestPolicy）
 
 ```json
