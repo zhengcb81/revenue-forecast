@@ -1,5 +1,35 @@
 # 审查进度日志
 
+## 实施回执（WU-4.3 授权绑定与最小下载 — receipt 引擎）
+
+```json
+{
+  "work_unit": "WU-4.3 (engine stage)",
+  "baseline_commits": {"revenue": "0eef82b", "filing": "3b5b713", "wiki": "c62dd61"},
+  "red_test_ids": ["ModuleNotFoundError: authorization (8 tests)"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/src/company_wiki/source_catalog/authorization.py (new)", "company-wiki/tests/contract/test_source_catalog_download_authorization.py (8 tests)"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_download_authorization.py -q"],
+  "repo_commands": ["ruff check authorization.py + tests (clean)"],
+  "cross_repo_commands": ["not_applicable + runtime wiring (filing-fetch CLI authorization + coordinator validation) deferred to WU-4.3 stage 2"],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {"accession_check_removed": "RED (unknown_accession test failed)", "expiry_removed": "RED (expired test failed)"},
+  "reviewer": "agent-skills:code-reviewer (agentId a123ec4677b42a5c5)",
+  "review_findings": [
+    {"severity": "major", "desc": "provider 绑定未在 validate 中强制执行", "resolution": "fixed: validate 拒绝 provider 不一致候选 + 测试 (1d00b81)"},
+    {"severity": "major", "desc": "无授权为 0 门禁悬空（authorization=None 时照常 fetch，兼容设计）", "resolution": "accepted as WU-6 E2E 项；由 plan 驱动下载器层强制"},
+    {"severity": "minor", "desc": "expires_at 无格式校验（字典序比较）", "resolution": "accepted as follow-up; 调用方约束 + WU-6 E2E"},
+    {"severity": "minor", "desc": "coordinator 层 plan-hash 自引用", "resolution": "accepted; 委托签发方绑定（已注释）"},
+    {"severity": "minor", "desc": "累计 caps 不在本层跟踪", "resolution": "accepted; 调用方传累计计数"},
+    {"severity": "minor", "desc": "并发去重/旧文件不变/fetch 计数门禁属 WU-6 级", "resolution": "accepted as WU-6 E2E 项"}
+  ],
+  "status": "accepted (engine + coordinator wiring mutation-proved; provider binding fixed post-review)"
+}
+```
+
 ## 实施回执（WU-4.2 metadata-only discovery 与 GapPlan）
 
 ```json
