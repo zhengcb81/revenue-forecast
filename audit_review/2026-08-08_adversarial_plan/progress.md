@@ -23,9 +23,12 @@
   "flaky_note": "run 2 flaky: test_terminating_supervisor_does_not_leave_an_orphan_worker; run 3 flaky: test_m14_concurrent_init_produces_one_v1_schema (different test each run — classic concurrency flake under full-suite load). Verified NOT introduced by WU-1.1: both files untouched by this WU; standalone runs green (orphan 3×, bootstrap file 24/24; m14 1×, migrations file 22/22); run 1 full-suite green. Matches A-F09 known teardown race; WU-7.2 nightly stress gate is the designated fix venue. No skip/xfail/ignore added.",
   "mutation_proof": {"duplicate_def_probe": "RED (gate exit 1, DUPLICATE reported)", "scope_fix": "per-class seen dict verified by test_same_name_in_different_classes_is_not_duplicate"},
   "duplicate_disposition": {"10_identical_removed": "second definition block deleted, first kept, content byte-identical", "1_differing": "test_logon_delay_is_worker_interruptible_and_double_click_controls_exist: second (weaker, missing Start-Process + Join-Path asserts) renamed to _alt and kept; first (stronger) restored as collected"},
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → gates green → repo runs: 1 green (1617), 2 flaky (unrelated concurrency), 3 flaky (different unrelated) → standalone/file-level all green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId aa16ab2f4b20af94f)",
+  "review_findings": [
+    {"severity": "major", "desc": "gate 测试文件未使用 import pytest (F401)", "resolution": "fixed: 删除该 import，ruff 三文件全绿 + 5 gate tests 通过，commit 已追加"},
+    {"severity": "minor", "desc": "ci.yml 无 ruff 步骤，F811 例外移除仅本地强制", "resolution": "accepted as follow-up: 属 WU-1.2/WU-7.1 CI 门范围，不在本 WU 扩展"}
+  ],
+  "status": "accepted (major finding fixed and re-verified; minor deferred to WU-1.2/WU-7.1)"
 }
 ```
 
