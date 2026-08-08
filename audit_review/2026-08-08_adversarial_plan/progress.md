@@ -21,9 +21,14 @@
   "real_root_writes": 0,
   "mutation_proof": {"reusable_check_removed": "RED (non-reusable-entry test failed)"},
   "semantics": "select_reusable_artifacts returns verified artifact path/hash per requested role; fail-closed on missing/invalid; malformed bundle raises",
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused green → pending independent review",
+  "reviewer": "agent-skills:code-reviewer (agentId a80bb696f5695c0bf)",
+  "review_findings": [
+    {"severity": "minor", "desc": "跨仓 RED 验收项（parser=0/chunker=0/LLM=0）无本仓断言", "resolution": "accepted as WU-6.2 E2E-D01~D06 范围；本 WU 只交付选择函数，回执已如实标注"},
+    {"severity": "minor", "desc": "forecast receipt 记录 artifact ids/hash/fallback 无消费者接线", "resolution": "accepted as WU-6 范围；选择原语已交付"},
+    {"severity": "minor", "desc": "合并卫生：代码并入 docs commit 0511010", "resolution": "recorded in commit-note 07658d1"},
+    {"severity": "suggestion", "desc": "select_reusable_artifacts 未复检 path/content_sha256 存在性", "resolution": "accepted; WU-5.1/5.2 validator 语义兜底"}
+  ],
+  "status": "accepted (6 tests; M1 reusable-check and M2 malformed-bundle both mutation-proved)",
   "commit_note": "WU-5.4 代码（company_wiki_source.py + 测试）因 git add 时序被并入 docs receipt commit 0511010（提交卫生瑕疵，代码内容正确且 307 tests 全绿；不重写历史）"
 }
 ```
