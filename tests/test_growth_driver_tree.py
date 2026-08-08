@@ -261,7 +261,7 @@ class GrowthDriverTreeTests(unittest.TestCase):
     def test_immutable_schema_35_output_still_validates(self) -> None:
         legacy = run_forecast(forecast_document())
         legacy["schema_version"] = "3.5"
-        legacy["engine_version"] = ENGINE_VERSION
+        legacy["engine_version"] = "3.10.0"
         legacy["publication_receipt"]["schema_version"] = "3.5"
         legacy["publication_receipt"]["receipt_sha256"] = canonical_sha256(
             {

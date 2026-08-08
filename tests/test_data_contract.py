@@ -460,9 +460,9 @@ def valid_document() -> dict:
 
 class DataContractTests(unittest.TestCase):
     def test_release_and_schema_versions_are_explicit(self) -> None:
-        self.assertEqual(SKILL_VERSION, "3.10.0")
+        self.assertEqual(SKILL_VERSION, "4.0.0")
         self.assertEqual(ENGINE_VERSION, SKILL_VERSION)
-        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.6")
+        self.assertEqual(FORECAST_SCHEMA_VERSION, "3.7")
 
     def test_source_coverage_reports_scenario_parameter_beyond_source_horizon(
         self,

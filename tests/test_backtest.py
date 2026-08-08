@@ -154,7 +154,7 @@ class BacktestTests(unittest.TestCase):
         self.assertEqual(left["snapshot_id"], right["snapshot_id"])
         tampered = copy.deepcopy(left)
         tampered["input_document"]["company_name"] = "Tampered"
-        with self.assertRaisesRegex(ForecastInputError, "fingerprint mismatch"):
+        with self.assertRaisesRegex(ForecastInputError, "input binding mismatch"):
             evaluate_snapshot(tampered, actuals_document())
 
     def test_snapshot_file_cannot_be_overwritten(self) -> None:
@@ -342,6 +342,73 @@ class BacktestTests(unittest.TestCase):
             ForecastInputError, "sensitivity down terminal recomputation mismatch"
         ):
             validate_published_forecast(result, snapshot["input_document"])
+
+    def test_snapshot_swapped_input_and_result_anchored_hash_is_rejected(self) -> None:
+        # R1.1 regression pin (N-01 D3): the snapshot validator already binds
+        # the input fingerprint; swapping both input and result while anchoring
+        # to the legitimate input hash must stay REJECTED even after the shared
+        # verify_input_binding refactor (R1.1).
+        from revenue_publication import (
+            VerificationContext,
+            build_publication_receipt,
+            expected_publication_gates,
+        )
+
+        data = forecast_document()
+        snapshot = create_snapshot(copy.deepcopy(data), "v1")
+        attacker_input = copy.deepcopy(data)
+        for parameter in attacker_input["parameters"]:
+            if isinstance(parameter.get("value"), (int, float)) and parameter.get(
+                "kind"
+            ) in {"analyst_assumption", "scenario_stress"}:
+                parameter["value"] = float(parameter["value"]) * 1.5
+        forged_result = run_forecast(attacker_input)
+        forged_result["input_sha256"] = snapshot["input_sha256"]
+        forged_result["workflow_compliance_receipt"]["input_sha256"] = snapshot[
+            "input_sha256"
+        ]
+        forged_result["workflow_compliance_receipt"]["receipt_sha256"] = (
+            canonical_sha256(
+                {
+                    key: value
+                    for key, value in forged_result[
+                        "workflow_compliance_receipt"
+                    ].items()
+                    if key != "receipt_sha256"
+                }
+            )
+        )
+        forged_result["publication_receipt"] = build_publication_receipt(
+            forged_result,
+            VerificationContext(
+                forged_result["input_sha256"],
+                expected_publication_gates(forged_result),
+                ENGINE_VERSION,
+            ),
+        )
+        forged_result["result_sha256"] = canonical_sha256(
+            {key: value for key, value in forged_result.items() if key != "result_sha256"}
+        )
+        forged = copy.deepcopy(snapshot)
+        forged["forecast_result"] = forged_result
+        forged["input_document"] = copy.deepcopy(attacker_input)
+        forged["forecast_result_sha256"] = canonical_sha256(forged_result)
+        identity = {
+            key: forged[key]
+            for key in (
+                "company_name",
+                "as_of_date",
+                "forecast_version",
+                "input_sha256",
+                "forecast_result_sha256",
+                "engine_version",
+                "forecast_schema_version",
+                "snapshot_schema_version",
+            )
+        }
+        forged["snapshot_id"] = canonical_sha256(identity)
+        with self.assertRaises(ForecastInputError):
+            validate_snapshot(forged)
 
     def test_snapshot_legacy_unknown_engine_is_rejected(self) -> None:
         # Phase 6 B2 RED (F-10): a snapshot with a legacy schema must not accept

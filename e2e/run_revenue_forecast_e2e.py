@@ -84,8 +84,8 @@ def main() -> int:
         print(f"ERROR: input not found: {input_path}", file=sys.stderr)
         return 2
     data = json.loads(input_path.read_text(encoding="utf-8"))
-    if data.get("schema_version") != "3.6":
-        print("ERROR: input is not schema 3.6", file=sys.stderr)
+    if data.get("schema_version") != "3.7":
+        print("ERROR: input is not schema 3.7", file=sys.stderr)
         return 2
     semantic_sha = canonical_sha256(data)
     golden_path = EXPECTED_DIR / f"expected-{semantic_sha[:12]}.json"

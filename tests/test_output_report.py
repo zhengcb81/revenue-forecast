@@ -122,9 +122,12 @@ class OutputReportTests(unittest.TestCase):
             validate_forecast_output(tampered)
 
     def test_parameter_trace_custom_key_is_not_prohibited(self) -> None:
-        result = run_forecast(forecast_document())
-        result["parameter_trace"][0]["profit"] = "source vocabulary only"
-        _republish(result)
+        # A custom key is legitimate when it comes from the input itself (the
+        # trace mirrors the validated parameters); only out-of-band injection
+        # is rejected (R6.2 consistency gate).
+        data = forecast_document()
+        data["parameters"][0]["profit"] = "source vocabulary only"
+        result = run_forecast(copy.deepcopy(data))
         validate_forecast_output(result)
 
     def test_tampered_segment_recognition_is_rejected(self) -> None:
@@ -288,7 +291,11 @@ class OutputReportTests(unittest.TestCase):
             "dcf": {"fair_value": 100.0},
         }
         _republish(forged)
-        with self.assertRaisesRegex(ForecastInputError, "prohibited"):
+        # Rejected either by the trace/input consistency gate (R6.2) or the
+        # prohibited-field scan — the injection must not survive either way.
+        with self.assertRaisesRegex(
+            ForecastInputError, "parameter_trace must match|prohibited"
+        ):
             validate_forecast_output(forged)
 
     def test_plain_text_investment_vocabulary_in_source_is_allowed(self) -> None:
@@ -359,6 +366,65 @@ class OutputReportTests(unittest.TestCase):
         result = run_forecast(forecast_document())
         with self.assertRaisesRegex(TypeError, "original input"):
             validate_published_forecast(result, None)
+
+    def test_swapped_embedded_input_is_rejected(self) -> None:
+        # R1.1 RED (N-01 D1): swapping the embedded input_document for a
+        # different valid input while keeping the original input_sha256 must
+        # be rejected — the embedded document must hash to the claimed anchor
+        # (binding invariant).  Previously ACCEPTED.
+        data = forecast_document()
+        data["sensitivity_tests"] = [
+            {
+                "name": "Core terminal revenue",
+                "parameter_id": data["segments"][0]["scenarios"]["base"][
+                    "driver_parameter_ids"
+                ]["revenue"][1],
+                "shock_type": "percent",
+                "shock_value": 0.1,
+            }
+        ]
+        legit = run_forecast(copy.deepcopy(data))
+        forged = copy.deepcopy(legit)
+        attacker_input = copy.deepcopy(data)
+        attacker_input["forecast_version"] = "attacker-version"
+        forged["input_document"] = attacker_input
+        _republish(forged)
+        with self.assertRaisesRegex(ForecastInputError, "input"):
+            validate_forecast_output(forged)
+
+    def test_inflated_numbers_anchored_to_legit_hash_are_rejected(self) -> None:
+        # R1.1 RED (N-01 D2): re-running the engine on inflated assumption /
+        # stress parameters and anchoring the forged result to a legitimate
+        # input hash must be rejected — the actual validated input document
+        # must hash to input_sha256 (binding invariant).  Previously ACCEPTED.
+        data = forecast_document()
+        legit = run_forecast(copy.deepcopy(data))
+        attacker_input = copy.deepcopy(data)
+        changed = 0
+        for parameter in attacker_input["parameters"]:
+            if isinstance(parameter.get("value"), (int, float)) and parameter.get(
+                "kind"
+            ) in {"analyst_assumption", "scenario_stress"}:
+                parameter["value"] = float(parameter["value"]) * 1.5
+                changed += 1
+        self.assertGreater(changed, 0)
+        forged = run_forecast(attacker_input)
+        self.assertNotEqual(
+            forged["consolidated_forecast"]["base"]["terminal_revenue"],
+            legit["consolidated_forecast"]["base"]["terminal_revenue"],
+        )
+        forged["input_sha256"] = legit["input_sha256"]
+        forged["workflow_compliance_receipt"]["input_sha256"] = legit["input_sha256"]
+        forged["workflow_compliance_receipt"]["receipt_sha256"] = canonical_sha256(
+            {
+                key: value
+                for key, value in forged["workflow_compliance_receipt"].items()
+                if key != "receipt_sha256"
+            }
+        )
+        _republish(forged)
+        with self.assertRaises(ForecastInputError):
+            validate_forecast_output(forged)
 
 
 if __name__ == "__main__":

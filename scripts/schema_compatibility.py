@@ -31,15 +31,17 @@ from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, require
 #   schema 3.3 — engine 3.4.0             (v3.4.0)
 #   schema 3.4 — engines 3.5.0..3.10.0    (introduced v3.5.0, current through v3.10.0)
 #   schema 3.5 — engine 3.10.0            (Unreleased, pre-3.6)
-#   schema 3.6 — current engine only      (Unreleased)
+#   schema 3.6 — engines 3.10.0/4.0.0     (v3.10.0, legacy read-only from v4.0.0)
+#   schema 3.7 — current engine only      (v4.0.0)
 # ---------------------------------------------------------------------------
 SCHEMA_EMIT_ENGINES: dict[str, frozenset[str]] = {
     "3.0": frozenset({"3.0.0"}),
     "3.1": frozenset({"3.1.0"}),
     "3.2": frozenset({"3.2.0", "3.2.1", "3.3.0"}),
     "3.3": frozenset({"3.4.0"}),
-    "3.4": frozenset({"3.5.0", "3.6.0", "3.7.0", "3.8.0", "3.9.0", "3.10.0"}),
-    "3.5": frozenset({"3.10.0"}),
+    "3.4": frozenset({"3.5.0", "3.6.0", "3.7.0", "3.8.0", "3.9.0", "3.10.0", "4.0.0"}),
+    "3.5": frozenset({"3.10.0", "4.0.0"}),
+    "3.6": frozenset({"3.10.0", "4.0.0"}),
     FORECAST_SCHEMA_VERSION: frozenset({ENGINE_VERSION}),
 }
 

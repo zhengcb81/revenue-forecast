@@ -114,19 +114,34 @@ def _receipt_sha256(receipt: dict[str, Any]) -> str:
     )
 
 
+ATTESTATION_STATUSES = {"host_signed", "unattested"}
+
+
 def build_publication_receipt(
-    result: dict[str, Any], verification_context: VerificationContext | None = None
+    result: dict[str, Any],
+    verification_context: VerificationContext | None = None,
+    *,
+    attestation_status: str = "unattested",
 ) -> dict[str, Any]:
     """Build a publication receipt from a strong-validation verification context.
 
     Without a ``VerificationContext`` the receipt cannot certify the strong
     gates, so the call fails closed (RED: the public API must never hand back a
     pass receipt before strong validation has run).
+
+    *attestation_status* records whether the host attestation was actually
+    signed (R2.1): ``"host_signed"`` requires an external attestation provider
+    to be configured; without one the runtime can only produce ``"unattested"``
+    publications, which invest-* consumers reject by default.
     """
     if not isinstance(verification_context, VerificationContext):
         raise TypeError(
             "build_publication_receipt requires a VerificationContext produced "
             "by validate_published_forecast; a receipt cannot be self-issued"
+        )
+    if attestation_status not in ATTESTATION_STATUSES:
+        raise ValueError(
+            f"attestation_status must be one of {sorted(ATTESTATION_STATUSES)}"
         )
     receipt = {
         "receipt_schema_version": PUBLICATION_RECEIPT_SCHEMA_VERSION,
@@ -139,6 +154,7 @@ def build_publication_receipt(
         "verification_context_sha256": verification_context.context_sha256(),
         "formal_output_mode": "formal",
         "freeform_override_allowed": False,
+        "attestation_status": attestation_status,
     }
     receipt["receipt_sha256"] = _receipt_sha256(receipt)
     return receipt
@@ -202,6 +218,11 @@ def validate_publication_receipt(result: dict[str, Any]) -> None:
     require(
         receipt.get("validator_version") == ENGINE_VERSION,
         "publication_receipt validator_version mismatch",
+    )
+    attestation = receipt.get("attestation_status")
+    require(
+        attestation in (None, "host_signed", "unattested"),
+        "publication_receipt attestation_status mismatch",
     )
     expected_gates = expected_publication_gates(result)
     require(

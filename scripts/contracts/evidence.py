@@ -7,13 +7,16 @@ function depends on.  They import only the standard library so that nothing in
 
 from __future__ import annotations
 
+import base64
 import contextlib
 import contextvars
 import hashlib
 import json
 import math
+import os
 import re
 from datetime import date
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
@@ -231,8 +234,84 @@ def build_host_receipt(
     return payload
 
 
+SIGNATURE_FIELDS = {"signature", "public_key_fingerprint"}
+
+
+def _trusted_signer_public_keys() -> dict[str, bytes]:
+    """Load the trusted Ed25519 signer key set (fail closed on absence/corruption).
+
+    Source: ``REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS`` env (JSON file path) or the
+    repo default ``config/trusted_signer_public_keys.json``.  A missing file
+    means *no* trusted signer — any signature is rejected.
+    """
+    env = os.environ.get("REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS")
+    path = (
+        Path(env).expanduser()
+        if env
+        else Path(__file__).resolve().parents[2] / "config" / "trusted_signer_public_keys.json"
+    )
+    try:
+        if not path.exists():
+            return {}
+        data = json.loads(path.read_text(encoding="utf-8"))
+        keys: dict[str, bytes] = {}
+        for item in data.get("public_keys", []):
+            public_bytes = base64.b64decode(item["public_key"])
+            keys[item.get("fingerprint", hashlib.sha256(public_bytes).hexdigest()[:32])] = (
+                public_bytes
+            )
+        return keys
+    except (OSError, ValueError, KeyError, TypeError):
+        return {}
+
+
+def _validate_host_signature(receipt: dict[str, Any]) -> None:
+    """Verify an Ed25519 signature over the unsigned host receipt payload."""
+    try:
+        from cryptography.exceptions import InvalidSignature
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+    except ImportError as exc:  # pragma: no cover - optional dependency
+        raise ForecastInputError(
+            "capture host_receipt signature verification unavailable"
+        ) from exc
+    signature = receipt.get("signature")
+    fingerprint = receipt.get("public_key_fingerprint")
+    require(
+        isinstance(signature, str) and re.fullmatch(r"[0-9a-f]{128}", signature),
+        "invalid capture host_receipt signature",
+    )
+    require(
+        isinstance(fingerprint, str) and re.fullmatch(r"[0-9a-f]{32}", fingerprint),
+        "invalid capture host_receipt public_key_fingerprint",
+    )
+    trusted = _trusted_signer_public_keys()
+    require(
+        fingerprint in trusted,
+        f"capture host_receipt signer {fingerprint[:12]} is not trusted",
+    )
+    payload = {
+        key: value
+        for key, value in receipt.items()
+        if key not in ("signature", "public_key_fingerprint")
+    }
+    message = canonical_sha256(payload).encode("ascii")
+    try:
+        public_key = Ed25519PublicKey.from_public_bytes(trusted[fingerprint])
+        public_key.verify(bytes.fromhex(signature), message)
+    except (InvalidSignature, ValueError) as exc:
+        raise ForecastInputError(
+            "capture host_receipt signature verification failed"
+        ) from exc
+
+
 def validate_host_receipt(receipt: Any) -> None:
-    """Validate a machine-generated host receipt.  Raises on any drift."""
+    """Validate a machine-generated host receipt.  Raises on any drift.
+
+    A receipt may carry an optional ``signature`` + ``public_key_fingerprint``
+    pair (R2.2): when present the signature must verify against a trusted
+    Ed25519 key; when absent the receipt is a plain self-reported attestation
+    (subject to the R2.1 capability gate at publication time).
+    """
     require(isinstance(receipt, dict), "capture host_receipt must be an object")
     required = {
         "host_receipt_schema_version",
@@ -244,7 +323,15 @@ def validate_host_receipt(receipt: Any) -> None:
         "timestamp",
         "receipt_sha256",
     }
-    require(set(receipt) == required, "invalid capture host_receipt fields")
+    require(
+        set(receipt) <= required | SIGNATURE_FIELDS,
+        "invalid capture host_receipt fields",
+    )
+    require(required <= set(receipt), "invalid capture host_receipt fields")
+    require(
+        set(SIGNATURE_FIELDS) & set(receipt) in (set(), SIGNATURE_FIELDS),
+        "capture host_receipt signature fields must come together",
+    )
     require(
         receipt["host_receipt_schema_version"] == HOST_RECEIPT_SCHEMA_VERSION,
         "unsupported host receipt schema version",
@@ -259,11 +346,17 @@ def validate_host_receipt(receipt: Any) -> None:
         and re.fullmatch(r"[0-9a-f]{64}", receipt["event_sha256"]),
         "invalid capture host_receipt event_sha256",
     )
-    payload = {key: value for key, value in receipt.items() if key != "receipt_sha256"}
+    payload = {
+        key: value
+        for key, value in receipt.items()
+        if key != "receipt_sha256" and key not in SIGNATURE_FIELDS
+    }
     require(
         receipt["receipt_sha256"] == canonical_sha256(payload),
         "capture host_receipt receipt hash mismatch",
     )
+    if SIGNATURE_FIELDS & set(receipt):
+        _validate_host_signature(receipt)
 
 
 # ---------------------------------------------------------------------------

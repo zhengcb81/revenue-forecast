@@ -37,6 +37,7 @@ from revenue_publication import (
     validate_publication_receipt,
 )
 from schema_compatibility import require_validating_engine
+from trust_anchor import verify_input_binding
 
 
 PROHIBITED_OUTPUT_KEYS = {
@@ -82,6 +83,17 @@ def _walk_keys(value: Any, path: str = "root") -> None:
 def _validate_forecast_output(
     result: dict[str, Any], data: dict[str, Any] | None
 ) -> None:
+    if isinstance(result.get("input_document"), dict):
+        # R1.1 (N-01): an embedded input document must hash to the claimed
+        # anchor — it can never be silently swapped for a different input.
+        verify_input_binding(result)
+    if data is not None:
+        # R6.2 (mutation patrol): parameter_trace order is semantic (consumers
+        # index it); it must match the validated input's parameters exactly.
+        require(
+            result.get("parameter_trace") == data.get("parameters"),
+            "parameter_trace must match the validated input parameters",
+        )
     for key in result:
         if key == "input_document":
             continue
@@ -119,6 +131,17 @@ def _validate_forecast_output(
         result["schema_version"] in SUPPORTED_FORECAST_SCHEMA_VERSIONS,
         "forecast output schema_version mismatch",
     )
+    # R6.2 (mutation patrol): the historical sequence is ordered and semantic —
+    # a shuffled year list must be rejected, matching the input-side contract.
+    history = result["historical_revenue"]
+    require(isinstance(history, list), "historical_revenue must be a list")
+    history_years = [
+        record.get("year") for record in history if isinstance(record, dict)
+    ]
+    require(
+        history_years == sorted(history_years),
+        "historical_revenue must be ordered by year",
+    )
     require_validating_engine(
         result["schema_version"], result["engine_version"], "output"
     )
@@ -135,6 +158,22 @@ def _validate_forecast_output(
             "workflow_compliance_receipt" in result,
             "forecast output missing field: workflow_compliance_receipt",
         )
+        # R6.2 (mutation patrol): every engine-produced key is part of the
+        # artifact contract — deleting any of them must be rejected.
+        for _engine_key in (
+            "data_gaps",
+            "disconfirming_indicators",
+            "forecast_version",
+            "historical_accuracy_records",
+            "probability_weighted_forecast",
+            "scenario_probabilities",
+            "sensitivities",
+            "theme_analysis",
+        ):
+            require(
+                _engine_key in result,
+                f"forecast output missing field: {_engine_key}",
+            )
     elif result["schema_version"] == "3.4":
         require(
             "management_target_coverage" in result,
@@ -1033,6 +1072,14 @@ def _validate_forecast_output(
         expected_confidence["components"] == confidence["components"],
         "confidence components recomputation mismatch",
     )
+    # R6.2 (mutation patrol): every derived confidence component is part of
+    # the contract — driver_evidence_coverage and other nested values must
+    # match the recomputation exactly.
+    for _component in ("driver_evidence_coverage", "sensitivity_concentration", "historical_accuracy"):
+        require(
+            expected_confidence.get(_component) == confidence.get(_component),
+            f"confidence {_component} recomputation mismatch",
+        )
     require(
         math.isclose(
             float(expected_confidence["score"]),
@@ -1133,6 +1180,9 @@ def validate_published_forecast(
         raise TypeError(
             "validate_published_forecast requires the original input document"
         )
+    # R1.1 (N-01): bind the validator to the input it actually re-runs — the
+    # anchor must be the hash of this exact document, not a self-reported one.
+    verify_input_binding(result, data)
     _validate_forecast_output(result, data)
     return VerificationContext(
         result["input_sha256"],
@@ -1149,6 +1199,12 @@ def validate_legacy_output(result: dict[str, Any]) -> None:
     completeness), so consumers must use ``validate_published_forecast`` for
     formal, invest-consumable artifacts.
     """
+    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+        # R1.1 (N-01): a current-schema artifact carries no input at all —
+        # there is nothing to bind, so it cannot be validated, only rejected.
+        raise ForecastInputError(
+            "current-schema artifact without a bound input cannot be validated"
+        )
     _validate_forecast_output(result, None)
 
 

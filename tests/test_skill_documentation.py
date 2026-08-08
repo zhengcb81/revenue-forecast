@@ -115,7 +115,7 @@ class SkillDocumentationExamplesTests(unittest.TestCase):
         self.assertIn("signed after", skill)
         core = (SKILL_ROOT / "scripts" / "revenue_core.py").read_text(encoding="utf-8")
         validate_line = core.index("validate_published_forecast(result, data)")
-        sign_line = core.index("build_publication_receipt(result, context)")
+        sign_line = core.index("build_publication_receipt(")
         self.assertLess(
             validate_line,
             sign_line,

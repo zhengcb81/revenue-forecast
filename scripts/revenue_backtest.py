@@ -29,6 +29,7 @@ from revenue_core import (
 )
 from revenue_report import validate_published_forecast
 from schema_compatibility import require_validating_engine
+from trust_anchor import verify_input_binding
 
 
 def create_snapshot(data: dict[str, Any], forecast_version: str) -> dict[str, Any]:
@@ -52,13 +53,24 @@ def create_snapshot(data: dict[str, Any], forecast_version: str) -> dict[str, An
         "forecast_schema_version": FORECAST_SCHEMA_VERSION,
         "snapshot_schema_version": "2.0",
     }
-    return {
+    snapshot = {
         **identity,
         "snapshot_id": canonical_sha256(identity),
         "forecast_version": forecast_version,
         "input_document": frozen_input,
         "forecast_result": result,
     }
+    # R1.2: snapshots are published artifacts too — register their anchor so a
+    # snapshot's input can be audited against the same external authority.
+    from publication_registry import RegistryError, register_snapshot
+
+    try:
+        register_snapshot(snapshot)
+    except RegistryError as exc:
+        raise ForecastInputError(
+            f"snapshot creation failed: registry unavailable: {exc}"
+        ) from exc
+    return snapshot
 
 
 def write_new_json(path: Path, data: dict[str, Any]) -> None:
@@ -94,11 +106,9 @@ def validate_snapshot(snapshot: dict[str, Any]) -> None:
     require_validating_engine(
         snapshot["forecast_schema_version"], snapshot["engine_version"], "snapshot"
     )
-    expected_input_hash = canonical_sha256(snapshot["input_document"])
-    require(
-        expected_input_hash == snapshot["input_sha256"],
-        "snapshot input fingerprint mismatch",
-    )
+    # R1.1: reuse the shared binding invariant instead of a local copy so the
+    # snapshot path can never drift from the output validator's rule.
+    verify_input_binding(snapshot)
     validate_published_forecast(snapshot["forecast_result"], snapshot["input_document"])
     expected_result_hash = canonical_sha256(snapshot["forecast_result"])
     require(
