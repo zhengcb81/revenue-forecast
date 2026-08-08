@@ -22,9 +22,13 @@
   "determinism_evidence": "100 random INSERT orders → identical result signature per request (FY2025 / FY2024 each 1 sig across 100 runs)",
   "semantics_evidence": "same hash 3 roots → REUSED_EQUIVALENT, canonical=company_raw (priority 10), 2+ equivalent locations preserved; same period diff hash → AMBIGUOUS, download_required=False",
   "mutation_proof": "not_applicable + determinism gate is the mutation (shuffle order); fixture model fixes verified via IntegrityError→pass",
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId a1dbfc17667b28172) — first pass rejected",
+  "review_findings": [
+    {"severity": "critical", "desc": "insert_order 参数从未使用，100 次随机构建实际相同，门禁空转；按插入顺序选 canonical 的 mutation 存活", "resolution": "fixed: insert_order 现在真正驱动 INSERT 序列；反转 priority 的 mutation 翻红；20 次随机顺序 canonical 恒为 company_raw"},
+    {"severity": "minor", "desc": "RED 清单仅覆盖 2/6 场景（强/弱身份混合、主件/附件、同 accession 修订版、mtime 逆序未覆盖）", "resolution": "accepted as follow-up; mtime 不参与判定路径（fixture 已注明），其余场景归 WU-4/WU-6 E2E 矩阵"},
+    {"severity": "minor", "desc": "固定插入顺序下测试无法区分 priority 与插入顺序语义", "resolution": "fixed: 门禁现在用随机顺序驱动，且新增 mutation 验证（反转 priority 翻红）"}
+  ],
+  "status": "accepted (critical gate-tautology fixed; mutation-proved priority semantics)"
 }
 ```
 
