@@ -25,17 +25,19 @@
   "real_root_writes": 0,
   "mutation_proof": {"verifier_M1_emoji_regex": "RED (冲突行归零证明扩展真实生效)", "coverage_unittest_to_pytest": "company_wiki_source 54%→passing"},
   "semantics": "coverage 门进三仓 CI（unittest discover 漏 pytest 测试——修复）；verifier 覆盖三仓 + docs/plans + findings.md + 时间门 + apply 冲突",
-  "reviewer": "pending (agent-skills:code-reviewer) — first pass rejected, all findings fixed, re-verification in progress",
+  "reviewer": "agent-skills:code-reviewer (agentId ab6594153a1aef558)",
   "review_findings": [
-    {"severity": "important", "desc": "coverage 未进三仓 CI", "resolution": "fixed: revenue coverage gates + filing/wiki 补门"},
+    {"severity": "important", "desc": "coverage 未进三仓 CI", "resolution": "fixed: revenue coverage gates (TOTAL 89%, 0 failures) + filing/wiki 补门"},
     {"severity": "important", "desc": "filing 缺 config doctor", "resolution": "fixed: 三 allowance 校验"},
     {"severity": "important", "desc": "filing clone 浮动 main", "resolution": "fixed: pinned a42bb40"},
-    {"severity": "important", "desc": "时间门未实现", "resolution": "fixed: ≥28 天证据"},
+    {"severity": "important", "desc": "时间门未实现", "resolution": "fixed: ≥28 天证据 + gate 测试"},
     {"severity": "important", "desc": "production-apply 检查未实现", "resolution": "fixed: 冲突检测 + 规则行豁免"},
     {"severity": "important", "desc": "findings.md 未扫描", "resolution": "fixed: plan-dir 三件套"},
-    {"severity": "important", "desc": "verifier 未接 filing/wiki CI", "resolution": "fixed: 三仓接线"}
+    {"severity": "important", "desc": "verifier 未接 filing/wiki CI", "resolution": "fixed: 三仓接线"},
+    {"severity": "critical", "desc": "checkbox 正则误判表格文字（### 标题支持回归）", "resolution": "fixed: 列表项锚定 + gate 测试进 CI"},
+    {"severity": "important", "desc": "gate 测试未进 CI + 硬编码路径", "resolution": "fixed: pytest tests tools/tests + 可移植路径"}
   ],
-  "status": "implemented → all fixes committed → re-verification in progress"
+  "status": "accepted (WU-7.1 verdict_a + WU-8.3 verdict_b 均 accepted；三仓 verifier 4/1/5 plans 全绿)"
 }
 ```
 
