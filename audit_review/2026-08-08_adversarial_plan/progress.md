@@ -28,9 +28,13 @@
   "per_file_ignores_kept": "wiki scripts/*.py E402/E741/F401 (legacy sys.path pattern, 104 isolated errors — pre-existing, not expanded); wiki 4 unit-test E402 files (pre-existing)",
   "revenue_ruff_delta": "185 errors → 0 (F401×149→~0, F811×25→0, E402×9→0, F841×1→0, F821×1→0)",
   "api_surface_verified": "revenue_core.__all__ 71 names all importable; FORECAST_SCHEMA_VERSION=3.7; external imports intact",
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → all gates green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId a782593d0ce270fb0)",
+  "review_findings": [
+    {"severity": "minor", "desc": "wiki 存量 per-file ignores 无 issue ID/到期日/owner 注释", "resolution": "accepted as follow-up; 非本 WU 新增，WU-7.1 补注"},
+    {"severity": "minor", "desc": "revenue_core 内联 noqa 无 issue 注释", "resolution": "accepted as follow-up; 行级豁免 + __all__ 背书，未违反门禁"},
+    {"severity": "minor", "desc": "revenue 根目录 NUL 残留文件（Windows 设备名）", "resolution": "noted; 非本 WU 引入，不擅自删除"}
+  ],
+  "status": "accepted (mutation-proved RED for unused-import and syntax-error; all gates green)"
 }
 ```
 
