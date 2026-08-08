@@ -23,7 +23,8 @@
   "semantics": "select_reusable_artifacts returns verified artifact path/hash per requested role; fail-closed on missing/invalid; malformed bundle raises",
   "reviewer": "pending (agent-skills:code-reviewer)",
   "review_findings": [],
-  "status": "implemented → focused green → pending independent review"
+  "status": "implemented → focused green → pending independent review",
+  "commit_note": "WU-5.4 代码（company_wiki_source.py + 测试）因 git add 时序被并入 docs receipt commit 0511010（提交卫生瑕疵，代码内容正确且 307 tests 全绿；不重写历史）"
 }
 ```
 
