@@ -9,7 +9,6 @@ removed legacy module.
 from __future__ import annotations
 
 import ast
-import sys
 import unittest
 from pathlib import Path
 

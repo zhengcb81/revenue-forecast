@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import math
-import re
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 import copy
 from datetime import date
@@ -19,13 +18,10 @@ from contracts.constants import (
     SCENARIOS,
 )
 from contracts.evidence import (
-    ForecastInputError,
-    canonical_sha256,
     finite_number,
     parse_iso_date,
     period_year,
     require,
-    text_sha256,
     validate_claim_ids,
 )
 from forecast.calc import collect_parameter_roles

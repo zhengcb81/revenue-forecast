@@ -9,7 +9,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from revenue_core import (  # noqa: E402
-    ENGINE_VERSION,
     ForecastInputError,
     build_host_receipt,
     canonical_sha256,

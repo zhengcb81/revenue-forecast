@@ -2,16 +2,11 @@
 
 from __future__ import annotations
 
-import math
-import re
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 from contracts.constants import RESEARCH_COVERAGE_STATUSES, RESEARCH_DIMENSIONS
 from contracts.evidence import (
-    ForecastInputError,
-    canonical_sha256,
     require,
-    text_sha256,
 )
 from forecast.calc import collect_parameter_roles
 

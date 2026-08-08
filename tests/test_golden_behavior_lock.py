@@ -11,7 +11,6 @@ To refresh the baseline after a *deliberate, versioned* change:
 
 from __future__ import annotations
 
-import copy
 import json
 import sys
 import unittest

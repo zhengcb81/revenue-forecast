@@ -103,7 +103,7 @@ class PublicationRegistryTests(unittest.TestCase):
         self.assertTrue(any("unregistered claim" in problem for problem in problems))
 
     def test_duplicate_identical_publication_is_not_a_conflict(self) -> None:
-        result = run_forecast(forecast_document())
+        run_forecast(forecast_document())
         run_forecast(forecast_document())
         self.assertEqual(audit(), [])
 

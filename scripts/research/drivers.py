@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import re
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 import copy
 
@@ -15,11 +15,8 @@ from contracts.constants import (
     GROWTH_DRIVER_TREE_STATUSES,
 )
 from contracts.evidence import (
-    ForecastInputError,
-    canonical_sha256,
     finite_number,
     require,
-    text_sha256,
     validate_claim_ids,
 )
 from forecast.calc import (

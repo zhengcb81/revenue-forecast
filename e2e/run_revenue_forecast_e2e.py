@@ -21,7 +21,6 @@ import argparse
 import hashlib
 import json
 import math
-import os
 import subprocess
 import sys
 from pathlib import Path

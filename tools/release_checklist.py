@@ -8,7 +8,6 @@ audit clean, installed copies in sync.  Any failure -> exit 1.
 
 from __future__ import annotations
 
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -17,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from revenue_core import FORECAST_SCHEMA_VERSION, SKILL_VERSION  # noqa: E402
+from revenue_core import SKILL_VERSION  # noqa: E402
 
 EXPECTED_RED = {"test_structure_targets.py"}  # R9 split pending
 

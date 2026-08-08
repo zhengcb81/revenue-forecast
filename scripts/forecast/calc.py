@@ -4,16 +4,13 @@ from __future__ import annotations
 
 import ast
 import math
-import re
 from collections import defaultdict
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Iterable
 
 from contracts.evidence import (
     ForecastInputError,
-    canonical_sha256,
     period_year,
     require,
-    text_sha256,
 )
 from model_registry import MODEL_DRIVER_DIMENSIONS
 from revenue_constraints import constraint_parameter_ids

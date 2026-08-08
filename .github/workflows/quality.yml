@@ -13,7 +13,12 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install test dependency
-        run: python -m pip install pytest cryptography
+        run: python -m pip install pytest cryptography ruff
+      - name: Ruff + compileall + unique test symbols (WU-1.2)
+        run: |
+          ruff check scripts tests tools e2e
+          python -m compileall -q scripts tests tools e2e
+          python tools/check_unique_test_symbols.py
       - name: Run test suite
         run: python -m pytest tests -q
       - name: Run engine E2E

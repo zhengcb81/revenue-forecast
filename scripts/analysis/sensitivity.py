@@ -3,19 +3,15 @@
 from __future__ import annotations
 
 import math
-import re
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 import copy
 
 from contracts.constants import SCENARIOS
 from contracts.evidence import (
-    ForecastInputError,
-    canonical_sha256,
     finite_number,
     period_year,
     require,
-    text_sha256,
 )
 from forecast.calc import parameter_driver_roles, referenced_parameter_ids
 from forecast.segments import _run_forecast_core

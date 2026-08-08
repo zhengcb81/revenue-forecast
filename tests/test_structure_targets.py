@@ -11,7 +11,6 @@ silence it; split the module instead.
 
 from __future__ import annotations
 
-import sys
 import unittest
 from pathlib import Path
 

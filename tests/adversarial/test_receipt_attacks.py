@@ -18,7 +18,6 @@ sys.path.insert(0, str(ROOT / "tests"))
 
 from revenue_core import ForecastInputError, canonical_sha256, run_forecast  # noqa: E402
 from revenue_publication import (  # noqa: E402
-    VerificationContext,
     build_publication_receipt,
     validate_publication_receipt,
 )

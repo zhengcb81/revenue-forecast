@@ -3,18 +3,13 @@
 from __future__ import annotations
 
 import math
-import re
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 from collections import defaultdict
 
 from contracts.constants import FORECAST_SCHEMA_VERSION
 from contracts.evidence import (
-    ForecastInputError,
-    canonical_sha256,
     parse_iso_date,
-    require,
-    text_sha256,
 )
 from contracts.document import validate_historical_accuracy_records
 

@@ -6,7 +6,7 @@ import math
 import re
 from collections import defaultdict
 from datetime import date
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 from contracts.constants import (
     FORECAST_SCHEMA_VERSION,
