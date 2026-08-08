@@ -18,3 +18,9 @@ jobs:
         run: python -m pytest tests -q
       - name: Run engine E2E
         run: python e2e/run_revenue_forecast_e2e.py
+      - name: Installation sync check
+        run: python tools/sync_installations.py
+      - name: Mutation patrol
+        run: python tools/mutation_patrol.py --samples 5
+      - name: Publication registry audit
+        run: python scripts/publication_registry.py audit

@@ -200,7 +200,7 @@ Phase 1 只有在以下条件全部满足后才能完成：
 
 ---
 
-## Phase 2（建立正式发布流水线与准确的 receipt 语义）— 状态：completed
+## Phase 2（建立正式发布流水线与准确的 receipt 语义）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，2 项未勾选）
 
 依赖：Phase 1 完成。
 
@@ -302,7 +302,7 @@ python -m unittest discover -s tests -p "test_industry_end_to_end.py" -v
 
 ---
 
-## Phase 3（概率、目标和敏感性的输入对照语义重算）— 状态：completed
+## Phase 3（概率、目标和敏感性的输入对照语义重算）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，3 项未勾选）
 
 依赖：Phase 2 完成。
 
@@ -402,7 +402,7 @@ python -m unittest discover -s tests -p "test_industry_end_to_end.py" -v
 
 ---
 
-## Phase 4（正式输出字段边界与 research schema 一致性）— 状态：completed
+## Phase 4（正式输出字段边界与 research schema 一致性）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，4 项未勾选）
 
 依赖：Phase 3 完成。
 
@@ -462,7 +462,7 @@ schema 3.5 固定规则：
 
 ---
 
-## Phase 5（来源期限、claim 语义与 base reconciliation 加固）— 状态：completed
+## Phase 5（来源期限、claim 语义与 base reconciliation 加固）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，5 项未勾选）
 
 依赖：Phase 4 完成。
 
@@ -516,7 +516,7 @@ schema 3.5 固定规则：
 
 ---
 
-## Phase 6（输入纯度、snapshot、actuals 与回测口径）— 状态：completed
+## Phase 6（输入纯度、snapshot、actuals 与回测口径）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，6 项未勾选）
 
 依赖：Phase 5 完成。
 
@@ -578,7 +578,7 @@ schema 3.5 固定规则：
 
 ---
 
-## Phase 7（敏感性、置信度与约束参数覆盖统一）— 状态：completed
+## Phase 7（敏感性、置信度与约束参数覆盖统一）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，7 项未勾选）
 
 依赖：Phase 6 完成。
 
@@ -630,7 +630,7 @@ schema 3.5 固定规则：
 
 ---
 
-## Phase 8（防止研究流程和工具调用偷步）— 状态：completed
+## Phase 8（防止研究流程和工具调用偷步）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，8 项未勾选）
 
 依赖：Phase 7 完成。  
 注意：这一阶段涉及 host/orchestrator 信任边界。若当前运行环境不能签发受信任 receipt，必须 fail closed 或保留 draft 模式，不得用用户自填字段冒充完成。
@@ -687,7 +687,7 @@ schema 3.5 固定规则：
 
 ---
 
-## Phase 9（Filing Fetch 独立技能加固与财报获取所有权收敛）— 状态：completed
+## Phase 9（Filing Fetch 独立技能加固与财报获取所有权收敛）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，9 项未勾选）
 
 审计依据：`FILING_FETCH_AUDIT.md`。  
 目标 ownership：
@@ -1283,7 +1283,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 10（物理模块拆分，保持行为不变）— 状态：completed
+## Phase 10（物理模块拆分，保持行为不变）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，10 项未勾选）
 
 依赖：Phase 2–7 全部完成。  
 原则：先锁定行为，再重构。不得在此阶段引入新 schema 或改变数值。
@@ -1343,7 +1343,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 11（invest-* 接口加固与基础契约去重策略）— 状态：completed
+## Phase 11（invest-* 接口加固与基础契约去重策略）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，11 项未勾选）
 
 依赖：Phase 2–8 完成。  
 跨仓库修改前必须确认 canonical repo 和用户授权。
@@ -1423,7 +1423,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 12（示例、文档、版本与安装同步）— 状态：completed
+## Phase 12（示例、文档、版本与安装同步）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，12 项未勾选）
 
 依赖：所有生产改动完成。
 
@@ -1485,7 +1485,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 13（最终全链路验收与发布决策）— 状态：completed
+## Phase 13（最终全链路验收与发布决策）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，13 项未勾选）
 
 依赖：Phase 1–12 全部完成。
 
@@ -1627,7 +1627,7 @@ python -m coverage report -m --fail-under=84
 
 ---
 
-## Phase 14（输入构建辅助工具链）— 状态：completed
+## Phase 14（输入构建辅助工具链）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，14 项未勾选）
 
 > 2026-07-31 实施完成，详见 `progress.md` 2026-07-31 段与计划文件 `effervescent-sauteeing-moonbeam.md`。4 个 Stage 全部 TDD RED→GREEN，216 tests / 0 failures。Stage 4 用 contextvars 替代「21 validator 加 collector 参数」（同等效果、默认路径逐字不变）。删除 Phase 10 遗留死代码 `forecast/compute.py` 后全量 coverage **87%**，`--fail-under=84` 门通过。
 
@@ -2208,7 +2208,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 18（发行人身份归一：双类股与多地上市公司泛化逻辑）— 状态：completed（2026-08-02；18.3 用户裁定跳过）
+## Phase 18（发行人身份归一：双类股与多地上市公司泛化逻辑）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，18 项未勾选）
 
 > 编制日期：2026-08-01（Alphabet 会话 17.2 试点触发；用户指令"加到改进清单，做好规划，不用立刻实现"）。
 > 依据：findings.md G1-G4、Alphabet 会话调试记录（resolver.py:331-459、542；assertion_service.py:277-316；scanner.py:983-1003、509-527）。
@@ -2272,7 +2272,7 @@ python -m unittest discover -s tests -v
 
 ---
 
-## Phase 19（Alphabet 会话复盘整改：filing-fetch 客户端、消歧提示、输入构建枚举速查、文档一致性）— 状态：completed（2026-08-02，19.6 随 Phase 18 一并落地）
+## Phase 19（Alphabet 会话复盘整改：filing-fetch 客户端、消歧提示、输入构建枚举速查、文档一致性）— 状态：completed_in_name_only → reopened（verify_plan_claims 机器核验，19 项未勾选）
 
 > 编制日期：2026-08-01（Alphabet 会话全面复盘，findings G5-G10）。用户指令"先不用实现，更新文档即可"——本 Phase **只规划**，实现启动前需用户确认。
 > 涉及仓库：revenue-forecast（19.1/19.3/19.4/19.5）、filing-fetch（19.2）。

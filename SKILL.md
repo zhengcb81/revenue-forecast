@@ -17,11 +17,24 @@ Do not produce stock-price, valuation, profitability, cash-generation, investmen
 
 `SKILL_VERSION` in `scripts/revenue_core.py` is the runtime source of truth;
 `ENGINE_VERSION` remains a compatibility alias. The **forecast schema** is
-now **3.6** — every formal result carries a `publication_receipt` signed after
+now **3.7** — every formal result carries a `publication_receipt` signed after
 output validation, and growth-driver attribution may include negative
-(headwind) roots with weights in `[-1, 1]`. Schema 3.5 is supported as
-**legacy read-only**.
+(headwind) roots with weights in `[-1, 1]`. Schema 3.6 is supported as
+**legacy read-only** (emit matrix `schema_compatibility.py`).
 See [CHANGELOG.md](CHANGELOG.md) for release history.
+
+**Attestation (4.0.0, R2):** every formal publication receipt carries
+`attestation_status` — `host_signed` only when `REVENUE_ATTESTATION_PROVIDER`
+names a runnable signer, otherwise `unattested` (invest-* consumers reject
+unattested by default; explicit downgrades are traced in the adapter).
+Source captures may carry Ed25519-signed `host_receipt`s verified against
+`config/trusted_signer_public_keys.json` (see `tools/host_signer/`).
+
+**Publication registry (4.0.0, R1.2):** every formal `run_forecast` and
+snapshot registers its input anchor in `artifacts/registry/publications.jsonl`
+(append-only, chained line hashes). `python scripts/publication_registry.py
+lookup --input-sha X` / `audit`; invest-* consumers require a registered
+anchor by default (`require_registered_input`).
 
 Revenue model metadata and pure calculators are registered in `scripts/model_registry.py`. Add or change a model there; do not add formula dispatch branches to `revenue_core.py`.
 
@@ -45,10 +58,10 @@ Use these deterministic tools:
 
 - `scripts/revenue_forecast.py`: validate input, calculate all segment scenarios, aggregate company revenue, run the strong output validator, sign the publication receipt, and optionally render Markdown.
 - `scripts/revenue_backtest.py`: create an immutable forecast snapshot or compare a snapshot with source-linked actual revenue.
-- **Filing acquisition**: use the standalone **`filing-fetch`** skill (`filing_fetch_client.py`) to obtain a capture-ready handle. The bundled `filing_acquisition.py` is **deprecated** — identity, reuse-first lookup, market routing, dedup, and canonical writing are delegated to `company-wiki` via `filing-fetch`.
+- **Filing acquisition**: use the standalone **`filing-fetch`** skill (`filing_fetch_client.py`) to obtain a capture-ready handle — identity, reuse-first lookup, market routing, dedup, and canonical writing are delegated to `company-wiki` via `filing-fetch`.
 - `scripts/company_wiki_source.py`: convert one capture-ready handle into the revenue source/capture contract without entering the forecast calculation engine.
 - `config/company_wiki.json`: persistent data-root configuration. Edit `company_wiki_root` when storage moves. Supported tokens are `${USER_PROFILE}`, `${SKILL_ROOT}`, `${COMPANY_WIKI_ROOT}`, `${CONFIG_DIR}`, and `${PYTHON_EXECUTABLE}`.
-- **Input-construction helpers** (schema 3.6): `scripts/generate_input_template.py` emits a field-correct skeleton with FIXME placeholders; `scripts/lint_input.py` is a collect-all static pre-flight that reports every field/reference/hash/aggregate problem at once; `scripts/fix_hashes.py` recomputes and syncs all input-side hashes in place (`--check` for CI, `--dry-run` to preview). Recommended order: generate → fill values/excerpts → `lint_input.py` → `fix_hashes.py` → `revenue_forecast.py --validate-only` (add `--verbose` to surface every input violation in one pass). See [references/input-construction.md](references/input-construction.md).
+- **Input-construction helpers** (schema 3.7): `scripts/generate_input_template.py` emits a field-correct skeleton with FIXME placeholders; `scripts/lint_input.py` is a collect-all static pre-flight that reports every field/reference/hash/aggregate problem at once; `scripts/fix_hashes.py` recomputes and syncs all input-side hashes in place (`--check` for CI, `--dry-run` to preview). Recommended order: generate → fill values/excerpts → `lint_input.py` → `fix_hashes.py` → `revenue_forecast.py --validate-only` (add `--verbose` to surface every input violation in one pass). See [references/input-construction.md](references/input-construction.md).
 
 ## Required workflow
 
@@ -102,11 +115,10 @@ The client returns a capture-ready `handle`.  Pass it to
 `build_revenue_source_record` from `scripts/company_wiki_source.py` to create
 the formal revenue source/capture record.
 
-The deprecated ``scripts/filing_acquisition.py`` has no production CLI (its
-`main` hard-fails and points to `filing_fetch_client`); it is retained only for
-legacy test fixtures.  Identity, reuse-first lookup, market routing, staging,
-dedup, and canonical writing are delegated to ``company-wiki`` via
-``filing-fetch``.
+Identity, reuse-first lookup, market routing, staging, dedup, and canonical
+writing are delegated to ``company-wiki`` via ``filing-fetch`` (R3: the
+bundled legacy acquisition module was removed — filing acquisition has a
+single owner).
 
 Use strict `FYyyyy` periods and machine-readable dimension, time basis, currency, and scale. Open every cited page before creating its claim. URL-format validation and claim structure do not independently understand a live webpage.
 
@@ -199,7 +211,7 @@ Track absolute error, MAE, signed error, APE, sMAPE, base-scaled error, WAPE, di
 
 ## Formal output gate
 
-Run `scripts/revenue_forecast.py` for every formal forecast. Accept JSON only after `validate_published_forecast` (the strong, input-required entry) passes and the schema-3.6 workflow receipt recomputes exactly. Accept Markdown only from `revenue_report.render_markdown` over that same JSON. Never replace a failed or missing artifact with prose, and never add a formal number, source, driver, or conclusion in free text.
+Run `scripts/revenue_forecast.py` for every formal forecast. Accept JSON only after `validate_published_forecast` (the strong, input-required entry) passes and the schema-3.7 workflow receipt recomputes exactly. Accept Markdown only from `revenue_report.render_markdown` over that same JSON. Never replace a failed or missing artifact with prose, and never add a formal number, source, driver, or conclusion in free text.
 
 Schema 3.0-3.3 artifacts are read-only legacy records. Validate them under their original contracts; do not present them as having schema-3.4 capture or workflow guarantees.
 

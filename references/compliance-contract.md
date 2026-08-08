@@ -57,9 +57,11 @@ and driver-tree data gaps for modeled segments with positive revenue are hard
 failures.
 
 **Management communication search receipts.** Each of the six official
-communication categories must be checked. A `not_available` declaration carries
-an optional `search_event` with `query_scope`, `query_time`, and `event_ids`.
-A `not_applicable` declaration carries a `reason_code`. Without a host-signed
+communication categories must be checked. A `not_available` declaration
+carries a REQUIRED machine-generated `search_event` with `query_scope`,
+`query_time`, and `event_ids` (enforced by the runtime since v3.10.0 — the
+document previously called it optional; code is authoritative). A
+`not_applicable` declaration carries a `reason_code`. Without a host-signed
 search receipt, the declaration is an honour-system assertion.
 
 **Tool-call / capture receipts.** Source `capture` objects carry

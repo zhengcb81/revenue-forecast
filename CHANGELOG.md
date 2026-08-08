@@ -2,7 +2,18 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
-## Unreleased
+## 4.0.0 (2026-08-08) — audit-driven hardening (R1-R7)
+
+- Input-anchor binding invariant (R1.1): `input_sha256` must equal the canonical hash of the actually-validated input (embedded or explicit); snapshot validation reuses the shared rule. Closes the N-01 attack family (embedded-input swap, anchored inflation, cross-repo forgery).
+- Publication registry (R1.2): append-only JSONL registry (`artifacts/registry/publications.jsonl`) with chained line hashes; formal `run_forecast` fails closed without it; `publication_registry.py lookup/audit` CLI; invest-core `require_registered_input` (default ON).
+- Cross-repo conformance chain (R1.3): three-hop forgery fixture — revenue → invest-core → invest-framework all reject.
+- Attestation capability gate (R2.1): `attestation_status ∈ {host_signed, unattested}` on the publication receipt; unattested artifacts rejected by invest-* by default (explicit downgrade traced).
+- Host signer (R2.2): `tools/host_signer/` Ed25519 reference signer; `validate_host_receipt` verifies signatures against a trusted-key whitelist.
+- Filing ownership convergence (R3): removed the legacy `filing_acquisition.py` download owner; pure data constructors moved to `tests/fixtures/legacy_filing_data.py`; AST-level single-owner guard.
+- Environment invariants (R4): company-wiki `config_doctor`, test-session production-config guard, filing-fetch live-skip gate, sync checks in pre-commit/CI, CLI `--version` manifest self-report, session checklist.
+- Executable acceptance (R5): `verify_plan_claims.py` (completed claims need machine evidence), structure-target tests (revenue_core ≤2500 lines — currently RED, R9).
+- Adversarial tooling (R6): `tests/adversarial/`, `mutation_patrol.py` (found and fixed 3 real validator gaps: output completeness, confidence nested components, historical ordering + parameter_trace consistency), `drift_patrol.py`.
+- Versioning discipline (R7): forecast schema 3.7, schema 3.6 legacy read-only, migration documents + input-contract guards.
 
 - Bumped forecast schema to 3.6. Growth-driver attribution weights now accept
   `[-1, 1]` excluding zero: a negative root is a quantified revenue headwind and
@@ -28,10 +39,6 @@ This project follows Semantic Versioning. The runtime release source of truth is
   self-contained output validator. The receipt binds the validated payload to the
   input, schema, engine and validator version; it is signed only after validation
   succeeds and never permits freeform override.
-- Extracted `_build_forecast_draft` as the private computation layer; `run_forecast`
-  now drafts, publishes (signs publication receipt, computes result hash), runs the
-  output validator, and only returns if all gates pass. A failure in output
-  validation raises before a caller ever sees a receipt.
 - The execution receipt (`workflow_compliance_receipt`) no longer claims the
   `output_recomputation` gate, which belongs to the publication validator.
 - Added `scripts/revenue_publication.py` with `build_publication_receipt` and
@@ -172,7 +179,7 @@ This project follows Semantic Versioning. The runtime release source of truth is
 
 - Last release of the legacy framework before the v3 rebuild.
 
-## Unreleased (Phase 17)
+## v3.0.0 — 2026-06-13（Phase 17 遗留条目归档：lint_input opt-in heuristics）
 
 - Added opt-in heuristics to `scripts/lint_input.py`, both off by default so
   existing behavior is unchanged:
