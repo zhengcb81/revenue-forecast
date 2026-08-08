@@ -33,8 +33,7 @@ sensitivity-tested or carries a structured exclusion (`sensitivity_exclusions`)
 with `reason` and `rationale`.
 
 **Filing acquisition.** Use the standalone `filing-fetch` skill
-(`filing_fetch_client.resolve_filing`) to obtain a capture-ready handle. The
-bundled `filing_acquisition.py` is deprecated.
+(`filing_fetch_client.resolve_filing`) to obtain a capture-ready handle.
 
 ## 2. Evidence claims
 

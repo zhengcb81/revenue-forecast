@@ -19,7 +19,7 @@
 | Probability contract | Only weighted arithmetic checked | Sum to 1, non-negative, three keys enforced |
 | Target `meets_target` | Required to be `True` (trusted) | Re-derived from comparison operator and tolerance |
 | Prohibited field scan | 5 explicit blocks | Full output tree with value-type distinction |
-| File acquisition | Bundled `filing_acquisition.py` | `filing_fetch_client.py` → standalone `filing-fetch` skill |
+| File acquisition | Bundled acquisition module (removed in R3) | `filing_fetch_client.py` → standalone `filing-fetch` skill |
 
 ## How to migrate
 
@@ -52,7 +52,7 @@ consumed by `invest-*` skills.
 
 - **invest-* skills** must only accept schema 3.5 artifacts with a valid
   `publication_receipt` in `formal` mode.
-- **Filing-fetch** replaces the bundled `filing_acquisition.py`; use
+- **Filing-fetch** replaces the bundled acquisition module (removed in R3); use
   `filing_fetch_client.resolve_filing()` to obtain a handle.
 
 ### 4. Snapshot compatibility
