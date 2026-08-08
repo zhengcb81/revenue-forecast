@@ -1,5 +1,35 @@
 # 审查进度日志
 
+## 实施回执（WU-3.2 SQL 下推和索引）
+
+```json
+{
+  "work_unit": "WU-3.2",
+  "baseline_commits": {"revenue": "cbee0c2", "filing": "0d58b3e", "wiki": "16873b5"},
+  "red_test_ids": ["test_query_filing_candidates_exists_and_filters_in_sql (AttributeError before)", "test_resolver_uses_sql_pushdown_not_all_table_query (boom probe)", "test_explain_query_plan_hits_dedicated_indexes", "test_100k_candidate_lookup_within_slo"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/src/company_wiki/source_catalog/service.py (query_filing_candidates + explain_filing_candidates_plan)", "company-wiki/src/company_wiki/source_catalog/resolver.py (pushdown call)", "company-wiki/src/company_wiki/source_catalog/store.py (4 covering indexes)", "company-wiki/tests/contract/test_source_catalog_sql_pushdown.py (4 tests)"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_sql_pushdown.py -q"],
+  "repo_commands": ["python -m pytest tests/contract -q (966 passed)"],
+  "cross_repo_commands": ["not_applicable + company-wiki only WU"],
+  "tests_collected_before": 1623,
+  "tests_collected_after": 1627,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "slo_evidence": "100k-doc fixture lookup: 4.56s seed + query within 2.0s SLO (warm)",
+  "semantic_guard": "resolver keeps entity/root filtering in Python: _entity_matches (issuer anchoring/alias/sibling ticker) and identity-conflict-before-root-check (Phase 15.3) preserved; 40 resolver-related tests green",
+  "mutation_proof": {"revert_to_all_table_query": "RED (test_resolver_uses_sql_pushdown_not_all_table_query failed)"},
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused 4 green → contract 966 green → pending independent review"
+}
+```
+
+- 过程教训：SQL 层先做了 entity 精确过滤，破坏了 resolver 的 issuer 锚定/别名/同 issuer 兄弟 ticker 语义（8 个既有测试红）——修正为 SQL 只下推 kind/status（无争议硬条件），entity/root/identity 保留 Python 层权威匹配。identity-conflict-before-root-check 语义（Phase 15.3 fail-closed）也因此保留。
+
 ## 实施回执（WU-3.1 fail-closed 状态和路径过滤）
 
 ```json
