@@ -1,5 +1,44 @@
 # 审查进度日志
 
+## 实施回执（WU-7.1 三仓 PR 门 + WU-8.3 planning verifier）
+
+```json
+{
+  "work_unit": "WU-7.1 + WU-8.3",
+  "baseline_commits": {"revenue": "7737f3e", "filing": "09f8a7d", "wiki": "a42bb40"},
+  "red_test_ids": ["coverage gates: company_wiki_source 54%, revenue_forecast 57% (<60%)", "core-section F-027: Phase 1-3 completed with unchecked [ ]"],
+  "red_exit_code": 1,
+  "changed_files": [
+    "revenue: tools/run_coverage_gates.py (pytest runner), tools/verify_plan_claims.py (timed gate/apply-conflict/findings/###-headings/archive-exempt), tools/tests/test_verify_plan_gates.py (4 tests), .github/workflows/quality.yml (coverage + verifier), tests/test_bundle_artifact_selection.py (coverage tests)",
+    "filing: .github/workflows/quality.yml (config doctor + verifier + pinned clone a42bb40), tools/verify_plan_claims.py",
+    "wiki: .github/workflows/ci.yml (verifier), tools/verify_plan_claims.py, docs/plans/core-section-extraction/* (F-027 resolution)"
+  ],
+  "focused_commands": ["python tools/verify_plan_claims.py --plan-dir . (三仓)", "python tools/run_coverage_gates.py (TOTAL 89%, 0 failures)"],
+  "repo_commands": ["revenue 313 tests", "filing 136 tests", "wiki 1024+ contract"],
+  "cross_repo_commands": ["verifier 三仓一致；core-section F-027 修复后 wiki 5 plans 全绿"],
+  "tests_collected_before": 313,
+  "tests_collected_after": 313,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {"verifier_M1_emoji_regex": "RED (冲突行归零证明扩展真实生效)", "coverage_unittest_to_pytest": "company_wiki_source 54%→passing"},
+  "semantics": "coverage 门进三仓 CI（unittest discover 漏 pytest 测试——修复）；verifier 覆盖三仓 + docs/plans + findings.md + 时间门 + apply 冲突",
+  "reviewer": "pending (agent-skills:code-reviewer) — first pass rejected, all findings fixed, re-verification in progress",
+  "review_findings": [
+    {"severity": "important", "desc": "coverage 未进三仓 CI", "resolution": "fixed: revenue coverage gates + filing/wiki 补门"},
+    {"severity": "important", "desc": "filing 缺 config doctor", "resolution": "fixed: 三 allowance 校验"},
+    {"severity": "important", "desc": "filing clone 浮动 main", "resolution": "fixed: pinned a42bb40"},
+    {"severity": "important", "desc": "时间门未实现", "resolution": "fixed: ≥28 天证据"},
+    {"severity": "important", "desc": "production-apply 检查未实现", "resolution": "fixed: 冲突检测 + 规则行豁免"},
+    {"severity": "important", "desc": "findings.md 未扫描", "resolution": "fixed: plan-dir 三件套"},
+    {"severity": "important", "desc": "verifier 未接 filing/wiki CI", "resolution": "fixed: 三仓接线"}
+  ],
+  "status": "implemented → all fixes committed → re-verification in progress"
+}
+```
+
 ## 实施回执（WU-6.2 场景矩阵 — E2E-F03/F04 第五批 + 最终盘点）
 
 ```json
