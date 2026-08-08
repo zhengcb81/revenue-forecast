@@ -1,5 +1,34 @@
 # 审查进度日志
 
+## 实施回执（WU-6.2 场景矩阵 — E2E-D03/D05/D06 第四批）
+
+```json
+{
+  "work_unit": "WU-6.2 (fourth batch)",
+  "baseline_commits": {"revenue": "223a886", "filing": "a7fd0d2", "wiki": "8f1094e"},
+  "red_test_ids": ["E2E-D03 sections fixture", "E2E-D05 misbound summary", "E2E-D06 provenance compat"],
+  "red_exit_code": 1,
+  "changed_files": ["revenue: tests/test_bundle_e2e_d01.py (E2E-D03/D05/D06)"],
+  "focused_commands": ["python -m pytest tests/test_bundle_e2e_d01.py -q"],
+  "repo_commands": ["python -m pytest tests -q (313 passed + 106 subtests)"],
+  "cross_repo_commands": ["E2E-D 系列 6 场景全部完成（D01/02/03/04/05/06）"],
+  "tests_collected_before": 310,
+  "tests_collected_after": 313,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": "not_applicable + spy-raise/fail-closed assertions are the gates",
+  "semantics": "D03 sections 复用不整篇重读；D05 错绑定 summary 拒绝只重算该 role；D06 consumer analysis 需 engine/model/prompt/input-bundle 全兼容才复用",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
+**WU-6.2 场景覆盖更新**：37 场景已覆盖 28 个。待后续：E2E-F03~F06×4、R03×1、DBX 正例（依赖 scanner 修复决策）×若干。
+
 ## 实施回执（WU-6.2 场景矩阵 — E2E-F02 第三批）
 
 ```json
