@@ -22,9 +22,15 @@
   "slo_evidence": "100k-doc fixture lookup: 4.56s seed + query within 2.0s SLO (warm)",
   "semantic_guard": "resolver keeps entity/root filtering in Python: _entity_matches (issuer anchoring/alias/sibling ticker) and identity-conflict-before-root-check (Phase 15.3) preserved; 40 resolver-related tests green",
   "mutation_proof": {"revert_to_all_table_query": "RED (test_resolver_uses_sql_pushdown_not_all_table_query failed)"},
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused 4 green → contract 966 green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId acbac88dcb58555c9)",
+  "review_findings": [
+    {"severity": "critical", "desc": "WU-3.2 提交不含 fail_closed 测试适配，HEAD 下测试红", "resolution": "fixed: 适配已随 4f8b95d 提交"},
+    {"severity": "major", "desc": "limit=100 截断旧年度请求（150 active 中 FY2019 被前 100 FY2025 遮蔽 → MISSING→不必要下载）", "resolution": "fixed: resolver 两层查询（fiscal_year 精确层 + 宽泛层）+ 回归测试 test_old_period_not_shadowed_by_cap（AMBIGUOUS, download_required=False）"},
+    {"severity": "major", "desc": "SLO 断言 2.0s vs 计划 500ms；实测 1128ms；N+1 查询；无 RSS 度量", "resolution": "fixed: entities/locations 批量 IN 查询（43ms warm, 0.3MB peak）；SLO 测试改 p95≤500ms + RSS≤100MB 并测 resolver 实际路径"},
+    {"severity": "minor", "desc": "EXPLAIN 断言仅查任意 idx_，不验证主查询命中目标索引", "resolution": "accepted as follow-up; 索引已建且 explain 覆盖主查询"},
+    {"severity": "minor", "desc": "签名与计划原文偏差（无 period/as_of 参数）", "resolution": "accepted; 与本 WU 验收清单一致（kind/status SQL 过滤 + root/entity 可选）"}
+  ],
+  "status": "accepted (reviewer findings fixed: commit gap, cap shadowing, SLO alignment; 5 pushdown tests + 40 resolver-related green)"
 }
 ```
 
