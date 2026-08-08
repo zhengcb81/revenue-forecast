@@ -21,9 +21,13 @@
   "real_root_writes": 0,
   "mutation_proof": {"append_to_write": "RED (no-rewrite test failed)"},
   "semantics": "SpyLog append-only JSONL + fsync; read_events deterministic; cross-process subprocess visibility",
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId af2ae826d29e95ed5)",
+  "review_findings": [
+    {"severity": "minor", "desc": "read_events 严格解码，崩溃残留半行会抛", "resolution": "accepted; hermetic 临时目录下不适用"},
+    {"severity": "minor", "desc": "Windows 文本模式 CRLF，splitlines 兼容", "resolution": "accepted; 跨平台一致"},
+    {"severity": "minor", "desc": "WU-6.1 其余项（三根临时目录/adapter spy/clock 等）未在本 commit", "resolution": "accepted as WU-6.2 范围；本 commit 交付 spy 原语"}
+  ],
+  "status": "accepted (4 tests; M1 append→write mutation-proved; fsync 为不可测耐久保证如实记录)"
 }
 ```
 
