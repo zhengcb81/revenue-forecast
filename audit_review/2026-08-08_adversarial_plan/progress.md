@@ -1,5 +1,42 @@
 # 审查进度日志
 
+## 实施回执（WU-1.2 清理并冻结静态质量范围）
+
+```json
+{
+  "work_unit": "WU-1.2",
+  "baseline_commits": {"revenue": "1bb810a", "filing": "43330550fb3ea77d36acd92e26861377564a7607", "wiki": "fdc196f+6f732cb"},
+  "red_test_ids": ["RED1: appended unused import → ruff check 2 errors", "RED2: appended syntax error → compileall error", "RED3: duplicate test → check_unique_test_symbols exit 1 (WU-1.1 mutation)"],
+  "red_exit_code": 1,
+  "changed_files": [
+    "revenue: scripts/revenue_core.py (25 dup constants removed, F821 Path import, E402 noqa re-export, __all__ 71 names, 13 private re-imports dropped), 9 split modules (F401 auto-fix), 6 test files, tools/check_unique_test_symbols.py, tools/mutation_patrol.py, tools/release_checklist.py, e2e/run_revenue_forecast_e2e.py, .github/workflows/quality.yml",
+    "filing: .github/workflows/quality.yml (ruff + compileall + import smoke)",
+    "wiki: tests/contract/test_source_catalog_reusable_roots.py (unused pytest), .github/workflows/ci.yml (ruff gate)"
+  ],
+  "focused_commands": ["ruff check scripts tests tools e2e --no-cache (revenue 185→0)", "python -m compileall -q scripts tests tools e2e"],
+  "repo_commands": ["python -m pytest tests -q (revenue 301)", "python e2e/run_revenue_forecast_e2e.py (PASS)", "filing pytest offline 115 passed (47.31s)", "wiki ruff check src tests/unit tests/contract scripts (pass)"],
+  "cross_repo_commands": ["not_applicable + per-repo static gates; cross-repo CI wiring belongs to WU-7.1"],
+  "tests_collected_before": 0,
+  "tests_collected_after": 0,
+  "collection_delta": "not_applicable + no test collection changes (WU-1.1 handled symbols; this WU is lint/CI only)",
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "per_file_ignores_added": 0,
+  "per_file_ignores_kept": "wiki scripts/*.py E402/E741/F401 (legacy sys.path pattern, 104 isolated errors — pre-existing, not expanded); wiki 4 unit-test E402 files (pre-existing)",
+  "revenue_ruff_delta": "185 errors → 0 (F401×149→~0, F811×25→0, E402×9→0, F841×1→0, F821×1→0)",
+  "api_surface_verified": "revenue_core.__all__ 71 names all importable; FORECAST_SCHEMA_VERSION=3.7; external imports intact",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → all gates green → pending independent review"
+}
+```
+
+- 过程记录：revenue_core.py 修改曾因 RED 恢复操作失误被 `git checkout` 回滚到 HEAD（WU-1.2 变更丢失），已用幂等脚本完整重建并复验（ruff 0、API 完整、301 tests、E2E PASS）。教训：RED mutation 后恢复必须用备份副本而非 git checkout（文件未提交时 checkout 会回到旧 HEAD）。
+- WU-1.2 提交：revenue `4706d66`（含安装同步 --apply，pre-commit 全绿）、filing `cdcbf58`、wiki `96d112d`。
+
 ## 实施回执（WU-1.1 消除 company-wiki 静默少收集）
 
 ```json
