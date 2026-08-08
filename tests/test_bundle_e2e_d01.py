@@ -80,8 +80,11 @@ def test_e2e_d01_normalized_artifact_parser_zero(tmp_path):
     # consumer uses the artifact path, never the original PDF
     used = artifacts["normalized"]
     assert used["path"] == str(normalized_path)
-    parser_calls["n"] == 0  # never reached (spy raises if called)
-    assert parser_calls["n"] == 0
+    # consumer verifies the artifact hash against the file bytes
+    assert hashlib.sha256(Path(used["path"]).read_bytes()).hexdigest() == (
+        used["content_sha256"]
+    )
+    assert parser_calls["n"] == 0  # spy raises if called
     # source record still anchors the original (lineage anchor)
     record = build_revenue_source_record(
         handle,
