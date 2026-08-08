@@ -1,5 +1,33 @@
 # 审查进度日志
 
+## 实施回执（WU-3.3 多候选确定性和冲突语义）
+
+```json
+{
+  "work_unit": "WU-3.3",
+  "baseline_commits": {"revenue": "e75d5eb", "filing": "0d58b3e", "wiki": "4f8b95d"},
+  "red_test_ids": ["test_same_hash_three_roots_picks_priority_primary_preserves_all (fixture IntegrityError before model fix)", "test_same_period_different_hash_is_ambiguous", "test_determinism_across_100_random_insert_orders (tmp-path sig false positive → root-relative tail)"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/tests/contract/test_source_catalog_determinism.py"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_determinism.py -v"],
+  "repo_commands": ["python -m pytest tests/contract/test_source_catalog_determinism.py tests/contract/test_source_catalog_sql_pushdown.py tests/contract/test_source_catalog_fail_closed.py -q (16 passed)"],
+  "cross_repo_commands": ["not_applicable + company-wiki only WU"],
+  "tests_collected_before": 1628,
+  "tests_collected_after": 1631,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "determinism_evidence": "100 random INSERT orders → identical result signature per request (FY2025 / FY2024 each 1 sig across 100 runs)",
+  "semantics_evidence": "same hash 3 roots → REUSED_EQUIVALENT, canonical=company_raw (priority 10), 2+ equivalent locations preserved; same period diff hash → AMBIGUOUS, download_required=False",
+  "mutation_proof": "not_applicable + determinism gate is the mutation (shuffle order); fixture model fixes verified via IntegrityError→pass",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
 ## 实施回执（WU-3.2 SQL 下推和索引）
 
 ```json
