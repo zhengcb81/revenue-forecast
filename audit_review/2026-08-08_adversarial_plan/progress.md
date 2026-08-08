@@ -1,5 +1,31 @@
 # 审查进度日志
 
+## 实施回执（WU-5.1 ArtifactHandle validator）
+
+```json
+{
+  "work_unit": "WU-5.1",
+  "baseline_commits": {"revenue": "0269d51", "filing": "3b5b713", "wiki": "1d00b81"},
+  "red_test_ids": ["ModuleNotFoundError: artifact_handle (8 tests)"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/src/company_wiki/source_catalog/artifact_handle.py (new)", "company-wiki/tests/contract/test_source_catalog_artifact_handle.py (8 tests)"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_artifact_handle.py -q"],
+  "repo_commands": ["ruff check artifact_handle.py + tests (clean)"],
+  "cross_repo_commands": ["not_applicable + company-wiki only WU"],
+  "tests_collected_before": 1639,
+  "tests_collected_after": 1647,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {"status_check_removed": "RED (pending test failed)", "hash_check_removed": "RED (hash test failed)"},
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
 ## 实施回执（WU-4.3 授权绑定与最小下载 — receipt 引擎）
 
 ```json
