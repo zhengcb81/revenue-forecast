@@ -36,7 +36,7 @@
 - filing-fetch 测试：117 passed / 4 failed（live conformance，根因 N-05）/ 6 skipped；
   E2E PASS；ruff/compileall 绿。
 - company-wiki 测试：1665/1665 全绿（384s）；ruff 1 error（新回归）→ N-09。
-- Phase 5 机器证据（2026-08-08）：revenue `python -m pytest tests` 280 passed；filing-fetch 117 passed/4 failed（live，N-05 根因）/6 skipped；company-wiki 1665/1665 全绿（384s）。
+- Phase 3、Phase 4 与 Phase 5 机器证据（2026-08-08）：revenue `python -m pytest tests` 280 passed；filing-fetch 117 passed/4 failed（live，N-05 根因）/6 skipped；company-wiki 1665/1665 全绿（384s）。
 - 生产配置污染确认：config/source_catalog.yaml 为 fake JSON 夹具，真实 security_master
   完好但被配置指向错误目录 → N-05。
 - 安装同步：sync 工具默认三目标、漂移 exit 1（实测），但当前 .agents 3 文件/.codex 2 文件
