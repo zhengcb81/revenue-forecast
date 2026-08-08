@@ -25,9 +25,13 @@
     "mode_rw_plus_no_query_only": "RED (test_open_readonly_rejects_writes failed)"
   },
   "production_probe": {"snapshot_sha256_twice": "9d24f376b3a77e7d9417f7f4a7142bf2d59502c1c8738763377995e9f3a3543c (identical both runs)", "path_leak": "Users=0 Dropbox=0 dayu-agent=0 .source_catalog=0 C:/=0 C:\\=0; 'company-wiki' only inside urn:company-wiki:document:sha256:... logical IDs"},
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused green → repo full suite 1616 passed → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId a0bae001048838606)",
+  "review_findings": [
+    {"severity": "minor", "desc": "_samples fetchall 全量后再截断", "resolution": "fixed: SQL LIMIT 下推，commit 6f732cb，复验 8 passed + ruff 全绿"},
+    {"severity": "minor", "desc": "busy_timeout 测试为源码文本检查", "resolution": "accepted as-is; 连接拒绝写已有行为级测试"},
+    {"severity": "minor", "desc": "no-flag 测试未断言精确 exit code 2", "resolution": "accepted as-is; 门禁足够"}
+  ],
+  "status": "accepted"
 }
 ```
 
