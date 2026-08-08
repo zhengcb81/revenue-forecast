@@ -1,5 +1,32 @@
 # 审查进度日志
 
+## 实施回执（WU-5.4 revenue consumer 零重复处理）
+
+```json
+{
+  "work_unit": "WU-5.4",
+  "baseline_commits": {"revenue": "07140d6", "filing": "57ff0bf", "wiki": "80fb475"},
+  "red_test_ids": ["ImportError: select_reusable_artifacts (5 tests)"],
+  "red_exit_code": 1,
+  "changed_files": ["revenue: scripts/company_wiki_source.py (select_reusable_artifacts), tests/test_bundle_artifact_selection.py (6 tests)"],
+  "focused_commands": ["python -m pytest tests/test_bundle_artifact_selection.py -q"],
+  "repo_commands": ["python -m pytest tests -q (307 passed + 106 subtests)"],
+  "cross_repo_commands": ["not_applicable + bundle shape inherited from WU-5.2/5.3"],
+  "tests_collected_before": 301,
+  "tests_collected_after": 307,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {"reusable_check_removed": "RED (non-reusable-entry test failed)"},
+  "semantics": "select_reusable_artifacts returns verified artifact path/hash per requested role; fail-closed on missing/invalid; malformed bundle raises",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
 ## 实施回执（WU-5.3 SourceBundle 契约扩展）
 
 ```json

@@ -84,6 +84,36 @@ def _iso_date(value: Any, field_name: str) -> date:
     return parsed
 
 
+def select_reusable_artifacts(
+    handle: dict[str, Any], roles: tuple[str, ...]
+) -> dict[str, dict[str, Any]]:
+    """WU-5.4: pick verified artifacts from the handle's source_bundle.
+
+    For each requested role, returns the VALID artifact
+    (path/content_sha256/generator) so the revenue consumer can skip
+    re-parsing / re-summarizing when a verified normalized/summary/sections
+    artifact exists. Fail-closed: a missing or invalid artifact is simply
+    not returned (consumer falls back to the original); a malformed bundle
+    raises instead of being silently trusted.
+    """
+    if not isinstance(handle, dict):
+        raise CompanyWikiSourceError("handle must be a dict")
+    bundle = handle.get("source_bundle")
+    if bundle is None:
+        return {}
+    if not isinstance(bundle, dict):
+        raise CompanyWikiSourceError("source_bundle must be an object")
+    valid = bundle.get("valid_handles")
+    if not isinstance(valid, dict):
+        raise CompanyWikiSourceError("source_bundle.valid_handles must be an object")
+    selected: dict[str, dict[str, Any]] = {}
+    for role in roles:
+        artifact = valid.get(role)
+        if isinstance(artifact, dict) and artifact.get("reusable") is True:
+            selected[role] = artifact
+    return selected
+
+
 def build_revenue_source_record(
     handle: dict[str, Any],
     *,
@@ -198,4 +228,5 @@ def build_revenue_source_record(
 __all__ = [
     "CompanyWikiSourceError",
     "build_revenue_source_record",
+    "select_reusable_artifacts",
 ]
