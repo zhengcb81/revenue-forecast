@@ -21,9 +21,14 @@
   "real_root_writes": 0,
   "mutation_proof": "not_applicable + spy-raises-if-invoked is the mutation (parser/LLM 被调用即红)",
   "semantics": "E2E-D01 有效 normalized → parser=0；E2E-D02 有效 summary → LLM=0；E2E-D04 stale normalized 只重算该 role",
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused green → pending independent review (WU-6.2 其余 34 场景分批继续)"
+  "reviewer": "agent-skills:code-reviewer (agentId ae1250c3fbb30bd79)",
+  "review_findings": [
+    {"severity": "suggestion", "desc": "E2E-D01 死代码行（无 assert 的表达式）", "resolution": "fixed: 删除 + 补 artifact hash 校验断言"},
+    {"severity": "suggestion", "desc": "D01 未验证 artifact hash 与文件字节", "resolution": "fixed: content_sha256 对文件字节校验"},
+    {"severity": "info", "desc": "D04 全链重跑防回归需 consumer 接线（WU-6.3）", "resolution": "accepted as WU-6.3 范围"},
+    {"severity": "info", "desc": "依赖 DAG 语义歧义（role-scoped vs cascade）", "resolution": "documented: role-scoped producer attestation（WU-5.4 只重算该 role）"}
+  ],
+  "status": "accepted (M1/M2/M3 mutation-proved: spy-raise gate real; 其余 34 场景分批继续)"
 }
 ```
 
