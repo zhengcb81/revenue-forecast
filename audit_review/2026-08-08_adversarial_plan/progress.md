@@ -1,5 +1,34 @@
 # 审查进度日志
 
+## 实施回执（WU-6.2 场景矩阵 — E2E-F02 第三批）
+
+```json
+{
+  "work_unit": "WU-6.2 (third batch)",
+  "baseline_commits": {"revenue": "94bbfe1", "filing": "a7fd0d2", "wiki": "0e6f739"},
+  "red_test_ids": ["E2E-F02 (coordinator-only STAGED twice — corrected to service layer)", "E2E-F02 (writer staging mismatch — fixed staging_root)"],
+  "red_exit_code": 1,
+  "changed_files": ["wiki: tests/contract/test_source_catalog_acquisition.py (E2E-F02)"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_acquisition.py -q"],
+  "repo_commands": ["wiki contract baseline (7 acquisition tests green)"],
+  "cross_repo_commands": ["not_applicable + company-wiki only"],
+  "tests_collected_before": 1657,
+  "tests_collected_after": 1658,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": "not_applicable + fetch-count assertion is the gate",
+  "semantics": "E2E-F02 顺序去重：同 accession 首次 ensure IMPORTED/fetch=1，二次 REUSED/fetch=0（单线程架构下顺序去重）",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
+**WU-6.2 场景覆盖更新**：37 场景中已覆盖 24 个（L01-L07×7、R01/02/04/05/06/07×6、R08、D01/02/04×3、F01、F02、DBX 探针×10 中已落实部分）。待后续批次：E2E-D03/05/06×3、F03~F06×4、R03×1。
+
 ## 实施回执（WU-6.2 场景矩阵 — E2E-R08/F01 第二批）
 
 ```json
