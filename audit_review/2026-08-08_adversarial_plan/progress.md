@@ -1,5 +1,34 @@
 # 审查进度日志
 
+## 实施回执（WU-1.1 消除 company-wiki 静默少收集）
+
+```json
+{
+  "work_unit": "WU-1.1",
+  "baseline_commits": {"revenue": "851154a", "filing": "43330550fb3ea77d36acd92e26861377564a7607", "wiki": "6f732cb"},
+  "red_test_ids": ["DUPLICATE gate probe: 11 F811 redefinitions reported by isolated Ruff before fix", "gate mutation probe: duplicate def → exit 1"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/tests/contract/test_source_catalog_worker.py", "company-wiki/pyproject.toml", "company-wiki/tools/check_unique_test_symbols.py", "company-wiki/tests/contract/test_check_unique_test_symbols.py", "company-wiki/.github/workflows/ci.yml", "revenue-forecast/audit_review/2026-08-08_adversarial_plan/progress.md"],
+  "focused_commands": ["python tools/check_unique_test_symbols.py", "python -m pytest tests/contract/test_source_catalog_worker.py -q", "python -m pytest tests/contract/test_check_unique_test_symbols.py -q", "ruff check tests/contract/test_source_catalog_worker.py --select F811 --isolated", "ruff check tests/contract/test_source_catalog_worker.py (configured)"],
+  "repo_commands": ["python -m pytest tests/unit tests/contract -q (run 1, run 2, run 3 — teardown stability)"],
+  "cross_repo_commands": ["not_applicable + company-wiki only WU"],
+  "tests_collected_before": 1608,
+  "tests_collected_after": 1617,
+  "collection_delta_explained": "baseline 1608 + WU-0.2 snapshot 8 + WU-1.1 renamed alt variant 1 = 1617; 10 identical duplicates removed with no collection loss (they were shadowed); worker file 35→36 collected",
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "flaky_note": "run 2 flaky: test_terminating_supervisor_does_not_leave_an_orphan_worker; run 3 flaky: test_m14_concurrent_init_produces_one_v1_schema (different test each run — classic concurrency flake under full-suite load). Verified NOT introduced by WU-1.1: both files untouched by this WU; standalone runs green (orphan 3×, bootstrap file 24/24; m14 1×, migrations file 22/22); run 1 full-suite green. Matches A-F09 known teardown race; WU-7.2 nightly stress gate is the designated fix venue. No skip/xfail/ignore added.",
+  "mutation_proof": {"duplicate_def_probe": "RED (gate exit 1, DUPLICATE reported)", "scope_fix": "per-class seen dict verified by test_same_name_in_different_classes_is_not_duplicate"},
+  "duplicate_disposition": {"10_identical_removed": "second definition block deleted, first kept, content byte-identical", "1_differing": "test_logon_delay_is_worker_interruptible_and_double_click_controls_exist: second (weaker, missing Start-Process + Join-Path asserts) renamed to _alt and kept; first (stronger) restored as collected"},
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → gates green → repo runs: 1 green (1617), 2 flaky (unrelated concurrency), 3 flaky (different unrelated) → standalone/file-level all green → pending independent review"
+}
+```
+
 ## 实施回执（WU-0.2 生产快照夹具生成器）
 
 ```json
