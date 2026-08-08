@@ -1,5 +1,33 @@
 # 审查进度日志
 
+## 实施回执（WU-4.1 versioned FilingRequest 和 LatestPolicy）
+
+```json
+{
+  "work_unit": "WU-4.1",
+  "baseline_commits": {"revenue": "e75d5eb", "filing": "0d58b3e", "wiki": "fbcfa3c"},
+  "red_test_ids": ["filing: 7 mode contract tests (schema 1.2 unknown field)", "wiki: 3 latest-mode tests (mode field absent before)"],
+  "red_exit_code": 1,
+  "changed_files": [
+    "filing: scripts/filing_contracts.py (schema 1.2 + mode validation), scripts/fetch_filing.py (--mode passthrough), tests/test_latest_mode.py (9 tests), e2e/expected/*.json (request_id golden refresh)",
+    "wiki: src/company_wiki/source_catalog/resolver.py (SourceRequest.mode + _pick_latest + cap 1000), src/company_wiki/source_catalog/cli.py (--mode), tests/contract/test_source_catalog_latest_mode.py (3 tests)"
+  ],
+  "focused_commands": ["filing: python -m pytest tests/test_latest_mode.py -q (9 passed)", "wiki: python -m pytest tests/contract/test_source_catalog_latest_mode.py -q (3 passed)"],
+  "repo_commands": ["filing: 126 passed + 27 subtests; isolated-wiki E2E 15 passed", "wiki: 37 resolver-related passed; contract 967 passed", "revenue: 301 passed + E2E PASS"],
+  "cross_repo_commands": ["test_e2e_hk_old_sidecar_reuse (filing CLI → real wiki resolver, HK old sidecar) — passed after cap fix"],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {"filing_latest_as_of_allows_fiscal_year": "RED (forbids test failed)", "wiki_pick_latest_disabled": "RED (2 latest tests failed)"},
+  "regression_found_and_fixed": "WU-3.2 cap-shadowing fix pushed fiscal_year into SQL json_extract, which missed title-derived years (old HK sidecar) → resolver now keeps fiscal_year in Python (authoritative, title-aware) with cap 1000; test_e2e_hk_old_sidecar_reuse red→green",
+  "golden_note": "request_id changed because mode enters request identity hash (intended schema evolution); snapshot_sha256/https_url/canonical_tail unchanged",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → all three repos green → pending independent review"
+}
+```
+
 ## 实施回执（WU-3.3 多候选确定性和冲突语义）
 
 ```json
