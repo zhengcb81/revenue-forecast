@@ -191,21 +191,24 @@ def audit(result_files: list[Path] | None = None, *, since: str | None = None) -
     if since is not None:
         entries = [entry for entry in entries if entry.get("registered_at", "") >= since]
     # Conflict = the same input anchored to different results *within one
-    # engine/schema generation* (the D2 forgery shape).  Cross-version result
-    # differences (same input re-run under a newer engine) are normal history.
-    by_generation: dict[tuple[str, str, str], set[str]] = {}
+    # engine/schema generation and artifact type* (the D2 forgery shape).
+    # Cross-version result differences (same input re-run under a newer
+    # engine) and forecast-vs-snapshot pairs (different artifact types
+    # referencing the same anchor) are normal history.
+    by_generation: dict[tuple[str, str, str, str], set[str]] = {}
     for entry in entries:
         generation = (
             entry["input_sha256"],
             entry.get("engine_version"),
             entry.get("schema_version"),
+            entry.get("artifact_type", "forecast"),
         )
         by_generation.setdefault(generation, set()).add(entry["result_sha256"])
-    for (anchor, engine, schema), result_hashes in by_generation.items():
+    for (anchor, engine, schema, artifact_type), result_hashes in by_generation.items():
         if len(result_hashes) > 1:
             problems.append(
-                f"conflict: input {anchor[:16]}... (engine {engine}, schema {schema}) "
-                f"registered {len(result_hashes)} distinct result hashes"
+                f"conflict: input {anchor[:16]}... (engine {engine}, schema {schema}, "
+                f"{artifact_type}) registered {len(result_hashes)} distinct result hashes"
             )
     for path in result_files or []:
         try:
