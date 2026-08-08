@@ -5,7 +5,7 @@ import tempfile
 
 TOOLS = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(TOOLS))
-from verify_plan_claims import (
+from verify_plan_claims import (  # noqa: E402
     _production_apply_conflict,
     _timed_gate_problems,
     _discover_plans,

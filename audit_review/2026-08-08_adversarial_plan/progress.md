@@ -1,5 +1,129 @@
 # 审查进度日志
 
+## 2026-08-09 — Dropbox/Data Lake 架构调查
+
+- 用户要求：只调查，不改代码；解释为何 Dropbox 完整启用不能仅改配置，以及当前实现是否因硬编码/紧耦合偏离通用 data-lake 构想。
+- 已完成：重读 planning-with-files、现行计划、F-034 修正和实施回执；确认三仓已推进到新 HEAD，旧审查基线已失效。
+- 已记录：revenue 当前有未提交 closure-ledger/CI/audit 工具工作，wiki 有日志/测试/archive 工作；全部视为他人/进行中变更并保持不动。
+- 当前：刷新用户已授权的三个 CodeGraph 索引，然后沿当前真实调用链取证。
+- 索引刷新尝试 1：`codegraph init -i` 仅确认三仓已初始化；CLI 明示应改用 `codegraph index`，已记录并切换命令。
+- 完成：按用户授权执行 `codegraph index`；当前索引为 revenue 86 files/1558 nodes/1472 edges，filing 16/421/405，wiki 369/8036/7667，均成功。
+- 初步结构结论：catalog 物理层已统一 sources/documents/locations/artifacts，但 filing semantic metadata 仍硬编码 `acquisition/dayu_meta`；SQL fiscal-year 下推和 resolver 读取都只认这两种 profile，故不是通用 indexed-root 模型。
+
+## 实施回执（WU-10.2 closure ledger — ACCEPTED）
+
+```json
+{
+  "work_unit": "WU-10.2",
+  "baseline_commits": {"revenue": "73a23c6", "filing": "2d9eb3b", "wiki": "9b7e856"},
+  "red_test_ids": ["test_schema_missing_required_field_fails", "test_schema_invalid_status_fails", "test_id_coverage_missing_finding_fails", "test_id_coverage_missing_risk_fails", "test_id_coverage_missing_historical_fails", "test_check_test_refs_missing_file_fails", "test_check_test_refs_skipped_requires_exemption", "test_honesty_rows_lists_unresolved"],
+  "red_exit_code": 1,
+  "changed_files": ["revenue: tools/verify_closure_ledger.py (new)", "revenue: tools/tests/test_verify_closure_ledger.py (new, 12 tests)", "revenue: audit_review/2026-08-08_adversarial_plan/closure_ledger.json (new, 99 rows)", "revenue: audit_review/2026-08-08_adversarial_plan/closure_ledger.md (new)", "revenue: .github/workflows/quality.yml (closure ledger gate)", "revenue: tools/tests/test_audit_baseline.py (GBK fix: subprocess encoding=utf-8)", "wiki: tests/contract/test_check_unique_test_symbols.py (GBK fix: subprocess encoding=utf-8)"],
+  "focused_commands": ["python tools/verify_closure_ledger.py --ledger ... --repo revenue/filing/wiki ×3"],
+  "repo_commands": ["python -m pytest tools/tests/test_verify_closure_ledger.py -q (12 passed)"],
+  "cross_repo_commands": ["ledger 引用的 pytest ref 在三仓真实 collect+run（44 唯一引用）"],
+  "tests_collected_before": 0,
+  "tests_collected_after": 12,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": "RED：模块不存在时 8 个测试收集失败（ModuleNotFoundError）",
+  "semantics": "账本全集 = F-001~F-034 + 历史矩阵 21 行 + R-001~R-014 + 30 场景 = 99 行；90 cleared / 4 not_a_defect / 5 partial（F-034、A-F06、C-Space、R-014、E2E-R03）——按计划不宣称全部消除；schema 校验 + id 覆盖 + 每 repo 引用真实 collect/run/无 skip 豁免；superseded 行均有当前证明（CodeGraph/guard/compat test）；发布 manifest（CI closure ledger gate）校验 revenue 侧引用",
+  "reviewer": "pending WU-10.1 reviewer verdict applied (aa2ec46bebdc35040)",
+  "review_findings": [
+    {"severity": "minor", "desc": "WU-10.1 reviewer 建议：test_audit_baseline/test_check_unique_test_symbols 的 subprocess 应传 encoding=utf-8（Windows GBK 环境性失败）", "resolution": "fixed: 两文件 subprocess.run 加 encoding=utf-8（5 passed 各自验证）"},
+    {"severity": "minor", "desc": "ledger 首跑发现 5 个引用文件不存在（凭名猜测）", "resolution": "fixed: 换真实文件（test_verify_plan_gates.py / tools/tests 目录 / wiki test_check_unique_test_symbols.py / revenue test_attestation.py）"},
+    {"severity": "minor", "desc": "DBX 10 行重复引用同一文件致验证器慢跑", "resolution": "fixed: check_test_refs 按 (nodeid, exemption) 去重（44 唯一引用）"}
+  ],
+  "status": "accepted (三仓 44 唯一引用全部真实 collect+run 通过，exit 0；88/99 cleared + 7 honest-open partial 如实标注；CI gate 接线 quality.yml)"
+}
+```
+
+## 实施回执（WU-10.1 独立全链验收 — ACCEPTED）
+
+```json
+{
+  "work_unit": "WU-10.1",
+  "reviewer": "agent-skills:code-reviewer (agentId aa2ec46bebdc35040，未参与实施)",
+  "verdict": "accepted",
+  "task1_replay": {"revenue": "343 passed/0 failed/0 skipped (+106 subtests)", "wiki": "1697 passed/0/0", "filing": "142 passed/0/7 skipped (全部有据：symlink 平台豁免、4 下载需显式 env、生产快照缺失、conformance 无样本)", "filing_golden": "run_companies_reuse_only_e2e.py STEP 10 golden identical, repo_head=2d9eb3b6", "mock_only": "非 mock-only：E2E-D01/D02/D03 驱动真实 select_reusable_artifacts（spy 被调即 raise + 字节级 hash 校验）；fail_closed 驱动真实 scan→SQLite→resolver 全链；bundle_compat 驱动真实 validate_handle 深校验"},
+  "task2_mutations": [
+    {"dimension": "B status", "file": "wiki resolver.py:453", "mutation": "移除 source_status 防御检查", "red": "test_resolver_defense_in_depth_rejects_leaked_document (REUSED_EXACT)", "restored": true, "green_after": "fail_closed 8 passed"},
+    {"dimension": "C hash", "file": "wiki artifact_handle.py:108", "mutation": "sha256 比较反转", "red": "test_valid_artifact_passes 等 7 个", "restored": true, "green_after": "artifact_handle 12 passed"},
+    {"dimension": "D latest", "file": "wiki resolver.py:844", "mutation": "_pick_latest max→min", "red": "test_latest_as_of_picks_most_recent + test_latest_as_of_respects_as_of_cutoff", "restored": true, "green_after": "latest_mode 3 passed"}
+  ],
+  "task3_diff_audit": {"threshold_lowering": "none（.coveragerc fail_under=84 零 diff；PER_MODULE_MINIMUM 是新增非降低）", "ignore_widening": "none（三仓 .gitignore 零 diff；wiki per-file-ignores 未新增）", "test_deletion": "none（基线后无 tests/*.py --diff-filter=D；历史删除经 merge-base 证实在基线前）", "real_root_writes": "none（canary 前后 catalog stat 一致：size=49278910464, mtime=1786227457；零写命令）"},
+  "task4_canary": {"companies": "AMD/Alphabet/Apple/MongoDB/NVIDIA 真实目录", "dayu": "1548/2020/300346/3696/3896 证券代码目录", "dropbox": "pdf/xlsx + .source.json lineage 成对", "lineage": "只读 catalog roots 表路径精确指向三根；locations company_raw=33092/dayu=3585/dropbox=9828", "zero_unnecessary_calls": "调用清单仅 ls×3 + 只读 SELECT×2 + shadow probe --read-only；无 parser/LLM/网络/scan"},
+  "task5_gap": {"result": "metadata-only 确认：本地 FY2024 + provider FY2025 → gap=[2025] 仅此；GAP 状态 discover=1 fetch=0 staging 零文件；allow_download=False → download_required_but_not_allowed 零写入；未授权/未知 accession 拒绝", "tests": ["test_local_old_gap_new_period", "test_coordinator_latest_as_of_returns_gap_without_fetch", "test_allow_download_false_with_no_existing_source_returns_missing_no_fetch", "test_coordinator_rejects_unauthorized_accession", "test_validate_rejects_unknown_accession"]},
+  "task6_parser_llm_zero": {"result": "parser=0 (E2E-D01) / LLM=0 (E2E-D02) / chunker=0 (E2E-D03)，spy 被调即 raise", "tests": ["test_e2e_d01_normalized_artifact_parser_zero", "test_e2e_d02_valid_summary_llm_zero", "test_e2e_d03_sections_used_instead_of_full_rerun"]},
+  "task7_reproducible": {"verifier": "revenue 4 / wiki 5 / filing 1 plans 全绿 exit 0", "config_hashes_match": true, "receipt_spotcheck": "WU-9.1/9.2 revenue 73a23c6==HEAD；WU-6.2-5th/WU-4.1/WU-7.1 基线经 merge-base 证认为祖先"},
+  "residual_risks": [
+    "Windows GBK 环境性：PYTHONIOENCODING=utf-8 前缀下 test_audit_baseline.py(1)/test_check_unique_test_symbols.py(2) 因 subprocess text=True 用 GBK 解码 UTF-8 输出失败——无前缀全绿，CI ubuntu 不受影响；建议测试内传 encoding='utf-8'",
+    "_pick_latest published_date 过滤与 resolver.py:534 第一层 as_of 过滤构成防御纵深（仅移除第二层不翻红）——设计冗余非测试弱点",
+    "F-034 Dropbox runtime 缺口维持（配置已启用，正例未验）",
+    "E2E-F04 symlink Windows 非管理员 skip（已知豁免）",
+    "filing 4 下载 E2E + conformance 需显式 env/生产样本，CI 排除（任务明示豁免）"
+  ],
+  "status": "accepted"
+}
+```
+
+## 实施回执（WU-9.3 latest/download rollout 代码门验证）
+
+```json
+{
+  "work_unit": "WU-9.3",
+  "baseline_commits": {"revenue": "73a23c6", "filing": "2d9eb3b", "wiki": "9b7e856"},
+  "red_test_ids": ["not_applicable: 本 WU 验证已有门的接线，无新 RED（门本身在 WU-4.2/4.3 已 RED→GREEN）"],
+  "red_exit_code": 0,
+  "changed_files": [],
+  "focused_commands": ["grep 验证三代码门 + 阅读 acquisition/authorization/collector 实现"],
+  "repo_commands": ["not_applicable（零改动）"],
+  "cross_repo_commands": ["not_applicable"],
+  "tests_collected_before": 0,
+  "tests_collected_after": 0,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": "not_applicable（rollout 门验证为代码接线证据，非新逻辑）",
+  "semantics": "门 1 metadata-only GapPlan：acquisition.py:48 GAP 状态 + _gap_plan_result 'Nothing is downloaded and nothing is written'（仅 allow_download=True 且授权有效才进入）；门 2 显式授权单文档下载：authorization.py validate_download_authorization 绑定 request_id+gap_plan_hash+provider+accessions+max_items/max_bytes+expires_at（authorization.py:89-115），acquisition.py:409-424 强制校验；门 3 多 gap batch：数量/大小上限在授权 receipt，域名门在 announcement_collector.py validate_official_announcement_url + _OfficialRedirectHandler 逐跳校验（HTTPS-only + official domains）。rollback：latest/download 仅经 request.allow_download + 授权启用，exact reuse（query_source_bundle/select_reusable_artifacts）独立路径不受影响。生产 flip 需观察完整 scan 周期（未满）——状态为 ARMED 而非 complete",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "armed (代码门全部验证；生产观察门未满；batch 域名上限为 SSE/SZSE collector 级，filing 下载路径域名由授权 accession 绑定约束——如实记录为 rollout 剩余门)"
+}
+```
+
+## 实施回执（WU-9.1/9.2 安全迁移与分根启用）
+
+```json
+{
+  "work_unit": "WU-9.1 + WU-9.2",
+  "baseline_commits": {"revenue": "73a23c6", "filing": "09f8a7d", "wiki": "73a23c6"},
+  "red_test_ids": ["not_applicable + read-only shadow probe is the gate (no RED) "],
+  "red_exit_code": 0,
+  "changed_files": ["wiki: scripts/shadow_resolver_probe.py (production read-only shadow)"],
+  "focused_commands": ["python scripts/shadow_resolver_probe.py --read-only --catalog .source_catalog/catalog.sqlite3"],
+  "repo_commands": ["wiki ruff (clean)"],
+  "cross_repo_commands": ["发布配置对原子验证（wiki directory reusable + filing Dropbox allowance）"],
+  "tests_collected_before": 0,
+  "tests_collected_after": 0,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": "not_applicable + shadow probe is read-only sampling (mode=ro, query_only)",
+  "semantics": "WU-9.1 shadow 探针在生产 catalog 只读采样（候选分布 + scan 状态）；WU-9.2 发布配置对原子（hash 384ef481/cfcb8dbe 与 Phase 2A 一致）",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → shadow probe verified on production → pending independent review"
+}
+```
+
 ## 实施回执（WU-7.1 三仓 PR 门 + WU-8.3 planning verifier）
 
 ```json
@@ -833,3 +957,20 @@
 - 追加核验：CodeGraph 证明当前 `ROOT_KINDS` 仅含 company_raw/directory/dayu_portfolio，生产配置中 Dropbox 是唯一 directory root；因此无需 runtime 改动即可通过 YAML 追加 `directory`、filing JSON 追加 Dropbox path 启用。
 - 追加计划：新增 WU-2A.0~2A.5、CONFIG-DBX-01~04、E2E-DBX-01~10、runtime forbidden-path diff、生产只读双层验收和精确回滚；若状态过滤负例暴露 F-024，先由独立 WU-3.1 修复通用 resolver，再部署 Dropbox 配置，不能在 Dropbox WU 偷改 runtime。
 - 追加治理：新增弱模型 12 步执行清单、F-001~F-034 closure ledger 和“已知问题可闭环但未知缺陷不能绝对保证”的保证边界。
+## 2026-08-09 Dropbox / Data Lake 架构调查（续）
+
+- 已完成：从当前代码复核 `RootSpec/CatalogConfig`、scanner 三类根枚举、Dropbox admission、分类、实体推断、document metadata 写入、resolver metadata 读取与 handle capture-ready 门。
+- 关键证据：配置只能开放 root-kind 与路径围栏，不能声明目录布局/sidecar/identity/classification adapter；Dropbox sidecar 虽参与扫描与 manifest，却没有进入 resolver 只认的 `acquisition/dayu_meta` 语义容器。
+- 初步判断：物理文件/哈希/location 目录层已具有多根数据湖特征；filing 语义摄取层仍是 company_raw 与 dayu 两套特例，通用 directory 只是弱语义兜底，不是可插拔数据源。
+- 下一步：核对 filing-fetch/revenue 消费端是否继续含 root 特例，读取当前生产配置与 catalog 的 Dropbox 状态/metadata 分布，并审阅现有 probe/E2E 能否证明真实用户路径。
+- 变更范围：仅更新审计 Markdown；没有改动产品代码、测试、配置或生产数据。
+- 下游复核：filing-fetch 的多根 canonical-path allowance 已是配置驱动；它不会自行解释目录，只会深校验 company-wiki 产生的 capture-ready handle。`source_bundle` 是可选增强，不能绕过 handle 门，因此不能修复 Dropbox ingest 语义丢失。
+- 当前配置实证：company-wiki 已把 `directory` 列入 reusable kinds，filing-fetch 已把 Dropbox 列入 allowed roots；配置步骤已执行而语义缺口仍在，原 config-only 假设被当前状态直接否证。
+- revenue 消费端：路径本身基本根无关，并已支持从 verified SourceBundle 复用 normalized/summary/sections/analysis；它要求上游先产出合格 handle/bundle，不承担任意根的语义提升。
+- 生产 catalog 只读实证：Dropbox 有 9,828 个原件 locations / 9,789 个文档；370 annual、56 quarterly、128/129 semi 均 retired，唯一 active semi 实际由 company_raw 提供主 metadata 与 active 原件。当前没有可证明的 Dropbox-only active filing。
+- 对抗样本：普通 Dropbox 券商报告因标题含“年报/半年报”被误分为 annual/semi filing，且 focus 外 `.source.json` 曾被当独立原件；现虽 retired，不代表分类架构已泛化。
+- 分层判断：company_raw 作为唯一 canonical 写入目标是合理所有权边界；问题集中在读取侧用 root kind/id/中文路径决定 layout、sidecar、entity 与语义 schema。
+- 更正新鲜度判断：Dropbox root 在 2026-08-08 已扫；`重点关注` 0 行是 82 个受支持文件被专用 admission policy 全部排除，而非漏扫。目录现有 161 文件、5 PDF、无 sidecar/MD；scan receipt 缺 per-prefix 排除原因可观测性。
+- 测试复核：Dropbox probe 的实际断言已证明 config-only 后仍 MISSING；但模块总说明仍声称 config-only 成功，broker 负例尾部还留有错误的“未来改为 REUSED_EXACT”注释。配置 invariant 只锁白名单/realpath，未验证业务闭环。
+- 动态验证：company-wiki 相关 21 passed；filing-fetch 8 passed/1 skipped；revenue bundle 17 passed。绿色包含“Dropbox config-only 后仍 MISSING”的 known-gap 断言，不能当成功验收。
+- 衍生物生产实证：Dropbox 关联文档有 normalized completed 1,782、summary 948、sections 7；但 official filing 的这些 artifacts 全属于 retired 文档，无法经 resolver/handle/bundle 到达下游。

@@ -51,7 +51,9 @@ def tree_hash(root: Path) -> str:
 class AuditBaselineTests(unittest.TestCase):
     def _run_tool(self, *args: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
         cmd = [sys.executable, str(TOOL), *args]
-        return subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, timeout=120)
+        return subprocess.run(
+            cmd, capture_output=True, text=True, encoding="utf-8", cwd=cwd, timeout=120
+        )
 
     def _make_catalog(self, root: Path) -> Path:
         """Create a small temp catalog with roots/scan_runs/documents rows."""

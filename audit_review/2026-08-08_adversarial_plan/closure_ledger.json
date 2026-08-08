@@ -1,0 +1,2660 @@
+{
+  "schema_version": "1.0",
+  "plan_dir": "audit_review/2026-08-08_adversarial_plan",
+  "generated_at": "2026-08-08",
+  "repos": {
+    "revenue": "C:/Users/郑曾波/Projects/revenue-forecast (HEAD 73a23c6)",
+    "filing": "C:/Users/郑曾波/Projects/filing-fetch (HEAD 2d9eb3b)",
+    "wiki": "C:/Users/郑曾波/Projects/company-wiki (HEAD 9b7e856)"
+  },
+  "scope": {
+    "findings": [
+      "F-001",
+      "F-002",
+      "F-003",
+      "F-004",
+      "F-005",
+      "F-006",
+      "F-007",
+      "F-008",
+      "F-009",
+      "F-010",
+      "F-011",
+      "F-012",
+      "F-013",
+      "F-014",
+      "F-015",
+      "F-016",
+      "F-017",
+      "F-018",
+      "F-019",
+      "F-020",
+      "F-021",
+      "F-022",
+      "F-023",
+      "F-024",
+      "F-025",
+      "F-026",
+      "F-027",
+      "F-028",
+      "F-029",
+      "F-030",
+      "F-031",
+      "F-032",
+      "F-033",
+      "F-034"
+    ],
+    "historical": [
+      "A-F01",
+      "A-F02 / N-01",
+      "A-F03 / N-08",
+      "A-F04 / N-03",
+      "A-F05/F12",
+      "A-F06",
+      "A-F07 / N-07",
+      "A-F08 / N-06",
+      "A-F09",
+      "A-F10",
+      "A-F11 / N-04/N-11",
+      "A-F13 / N-09",
+      "A-F14",
+      "N-02",
+      "N-05",
+      "N-10",
+      "P-Strategy-B",
+      "P-Dropbox",
+      "P-Latest",
+      "P-Derived",
+      "C-Space"
+    ],
+    "risks": [
+      "R-001",
+      "R-002",
+      "R-003",
+      "R-004",
+      "R-005",
+      "R-006",
+      "R-007",
+      "R-008",
+      "R-009",
+      "R-010",
+      "R-011",
+      "R-012",
+      "R-013",
+      "R-014"
+    ],
+    "scenarios": [
+      "E2E-R01",
+      "E2E-R02",
+      "E2E-R03",
+      "E2E-R04",
+      "E2E-R05",
+      "E2E-R06",
+      "E2E-R07",
+      "E2E-R08",
+      "E2E-D01",
+      "E2E-D02",
+      "E2E-D03",
+      "E2E-D04",
+      "E2E-D05",
+      "E2E-D06",
+      "E2E-F01",
+      "E2E-F02",
+      "E2E-F03",
+      "E2E-F04",
+      "E2E-F05",
+      "E2E-F06",
+      "E2E-DBX-01",
+      "E2E-DBX-02",
+      "E2E-DBX-03",
+      "E2E-DBX-04",
+      "E2E-DBX-05",
+      "E2E-DBX-06",
+      "E2E-DBX-07",
+      "E2E-DBX-08",
+      "E2E-DBX-09",
+      "E2E-DBX-10"
+    ]
+  },
+  "rows": [
+    {
+      "id": "F-001",
+      "category": "finding",
+      "final_status": "not_a_defect",
+      "fix_wu": [],
+      "red_test": [],
+      "regression_tests": [],
+      "production_evidence": [
+        "CodeGraph 索引 revenue 67 文件/filing 6/wiki 345 文件"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "",
+      "rationale": "工具事实：AST 索引存在，非缺陷；索引滞后 ~500ms 是工具文档化行为"
+    },
+    {
+      "id": "F-002",
+      "category": "finding",
+      "final_status": "not_a_defect",
+      "fix_wu": [
+        "WU-0.1"
+      ],
+      "red_test": [],
+      "regression_tests": [],
+      "production_evidence": [
+        "audit_review/2026-08-08_adversarial_plan 工作文件独立隔离，未覆盖历史证据"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "环境事实：历史资产分散不是缺陷；本轮以隔离目录 + 只读基线处理"
+    },
+    {
+      "id": "F-003",
+      "category": "finding",
+      "final_status": "not_a_defect",
+      "fix_wu": [
+        "WU-3.1",
+        "WU-4.2",
+        "WU-5.2"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_gap_plan.py"
+        }
+      ],
+      "production_evidence": [
+        "CodeGraph 职责接线：wiki=catalog 权威（service/resolver/scanner）、filing=编排薄层、revenue=消费端"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "架构事实：三仓角色经 WU-3/4/5 接线后明确，非缺陷；无重复实现被保留"
+    },
+    {
+      "id": "F-004",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-6.1",
+        "WU-6.2"
+      ],
+      "red_test": [
+        "WU-6.1 SpyLog append→write mutation RED",
+        "WU-6.2 E2E-D01~D06/F01/F02/R08 分批 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_acquisition.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "37 场景 registry（task_plan WU-6.2）；E2E 驱动真实函数链 + SpyLog 跨进程调用计数断言"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-6 receipts)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "名义测试被场景矩阵 + spy 计数断言替代；断言边界逐文件核验过，非按文件名计覆盖"
+    },
+    {
+      "id": "F-005",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-0.1",
+        "WU-1.1",
+        "WU-7.1",
+        "WU-8.3"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests"
+        }
+      ],
+      "production_evidence": [
+        "前次审查问题逐项映射到 A-F* 行，由各行状态与回执关闭"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "旧结论被本轮按闸门实施 + 回执证据取代；A-F02/F04/F11 等行分别关闭"
+    },
+    {
+      "id": "F-006",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-7.2"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests"
+        }
+      ],
+      "production_evidence": [
+        "N-01 input_sha/input_document 绑定测试随 301 绿；mutation patrol 常态化进 CI"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "0e11433",
+      "rationale": "N-01 输入锚点绑定已由 A-F02 行关闭（本轮复核通过）；治理项（coverage/CI/文档）由 WU-7/8 关闭"
+    },
+    {
+      "id": "F-007",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-8.3"
+      ],
+      "red_test": [
+        "WU-8.3 RED：wiki core-section/catalog-space 计划必须被 verifier 报错"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_verify_plan_gates.py"
+        },
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_verify_plan_gates.py"
+        }
+      ],
+      "production_evidence": [
+        "三仓 verifier 全绿（4/1/5 plans）；发现 IMPLEMENTATION_PLAN.md 镜像漂移已由 commit 0e11433 对齐"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-8.3 receipt)",
+      "commit_or_config_hash": "0e11433",
+      "rationale": "verifier 覆盖三仓 task_plan/progress/findings/docs/plans，标题 completed 与 checklist/DoD/时间门一致性机器校验"
+    },
+    {
+      "id": "F-008",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-6.2",
+        "WU-6.3",
+        "WU-9.1"
+      ],
+      "red_test": [
+        "E2E-F03 doctor 双配置漂移 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_e2e_isolated_wiki.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/test_config_doctor.py"
+        }
+      ],
+      "production_evidence": [
+        "synthetic harness 保留为 reuse-only smoke（按 F-017 处置）；E2E-F03 双配置一致性门；shadow_resolver_probe 生产只读采样"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "临时-wiki-only E2E 不再是唯一证明：场景矩阵 + 双配置门 + 生产只读探针覆盖三根"
+    },
+    {
+      "id": "F-009",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-2A.2",
+        "WU-3.1",
+        "WU-3.3"
+      ],
+      "red_test": [
+        "WU-3.1 fail-closed 7 测试 RED→GREEN（mutation-proved）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_reusable_roots.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_determinism.py"
+        }
+      ],
+      "production_evidence": [
+        "reusable_root_kinds 配置驱动复用落地（E2E-R02/R04/R05）；promotion/复制路径无生产调用者（CodeGraph）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "Strategy A 弃用成立：无 promote/copy 代码残留，Strategy B 配置驱动只读复用实现并测试"
+    },
+    {
+      "id": "F-010",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-3.1",
+        "WU-3.2",
+        "WU-3.3",
+        "WU-6.2"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_resolver.py"
+        }
+      ],
+      "production_evidence": [
+        "E2E-R01~R08 闭环 + WU-9.1 生产只读探针（候选分布/scan 状态采样）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "钩子→闭环：resolver 全链路测试 + 生产只读采样证明配置值进 resolver 过滤且不写库"
+    },
+    {
+      "id": "F-011",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-5.1",
+        "WU-5.2",
+        "WU-5.3",
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-5.1 12 测试 RED→GREEN（4 新门 mutation-proved）",
+        "WU-5.2 22 测试（M1 确定性 mutation-proved）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_artifact_handle.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_source_bundle.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_query_bundle.py"
+        },
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        }
+      ],
+      "production_evidence": [
+        "SourceBundle 契约（role/hash/status/provenance）经 revenue select_reusable_artifacts 消费"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-5 receipts)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "ArtifactHandle fail-closed 9 门 + SourceBundle 确定性 hash + consumer 零调用断言，跨仓契约成立"
+    },
+    {
+      "id": "F-012",
+      "category": "finding",
+      "final_status": "resolved_config_only",
+      "fix_wu": [
+        "WU-2A.0",
+        "WU-2A.1",
+        "WU-2A.2"
+      ],
+      "red_test": [
+        "WU-2A.0 探针 RED：directory 根 metadata 为 null，无法形成 capture-ready handle（F-034 修正）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        },
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_dropbox_config_invariants.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/test_config_doctor.py"
+        }
+      ],
+      "production_evidence": [
+        "两处配置原子启用：wiki reusable_root_kinds 含 directory（sha256 384ef481...）+ filing allowed_handle_roots 含 Dropbox（sha256 cfcb8dbe...）"
+      ],
+      "remaining_risk": "runtime 缺口（F-034）：scanner 不写 directory 根 acquisition 元数据，Dropbox 正例复用未验；future directory roots 自动放开（WU-2B 条件性）",
+      "reviewer": "user decision 2026-08-08 + WU-2A 回执",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8 / cfcb8dbeaa2b5ce40f44294beae4033c6fff486232da43a405054afa4db0f7aa",
+      "rationale": "双白名单缺失以 config-only 修复（用户决策）；runtime 缺口按 F-034 如实记录，不伪称复用可用"
+    },
+    {
+      "id": "F-013",
+      "category": "finding",
+      "final_status": "not_a_defect",
+      "fix_wu": [
+        "WU-0.2",
+        "WU-9.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_audit_baseline.py"
+        }
+      ],
+      "production_evidence": [
+        "WU-0.2 匿名快照夹具（确定性、schema/root-policy 匿名）；WU-9.1 shadow 只读采样生产 49 GB catalog 成功"
+      ],
+      "remaining_risk": "生产 catalog 性能/锁行为只在只读抽样覆盖（R-007）",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "环境事实：重型 catalog 是真实规模，非缺陷；只读快照 + 采样探针把生产证据带入验收"
+    },
+    {
+      "id": "F-014",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-2A.1",
+        "WU-2A.2"
+      ],
+      "red_test": [
+        "CONFIG-DBX 契约测试：kind=directory root 集合必须恰为 {dropbox_stock}"
+      ],
+      "regression_tests": [
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_dropbox_config_invariants.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/test_config_doctor.py"
+        }
+      ],
+      "production_evidence": [
+        "只读策略固化在配置 + 代码层（reusable_root_kinds + allowed_handle_roots + doctor 一致性门），无需 DB 列"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "roots 表无 read_only 列被配置契约测试 + config hash 绑定取代；快照/配置 hash 联合解释权限语义"
+    },
+    {
+      "id": "F-015",
+      "category": "finding",
+      "final_status": "partial",
+      "fix_wu": [
+        "WU-6.2",
+        "WU-9.1"
+      ],
+      "red_test": [
+        "E2E-F05：completed_with_errors + error_details 披露机制 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_background_reliability.py"
+        }
+      ],
+      "production_evidence": [
+        "shadow 探针确认生产 scan_runs 分布含 completed_with_errors；E2E-F05 目标无关错误降级但披露，目标根陈旧不宣称完整"
+      ],
+      "remaining_risk": "生产扫描错误持续存在；scan health SLA 连续 7 天观察期未满（R-014）",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "机制与披露已修；生产错误本身未清零，观察门未满 → partial，不宣称扫描健康达标"
+    },
+    {
+      "id": "F-016",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-6.2"
+      ],
+      "red_test": [
+        "E2E-D01~D06/F01/F02/R08 各批 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_acquisition.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        }
+      ],
+      "production_evidence": [
+        "37 场景 registry 建成；28 场景测试落地 + DBX 负例验收；E2E-F04 Windows skip 有豁免"
+      ],
+      "remaining_risk": "E2E-R03（Dropbox 正例）依赖 scanner 修复决策；E2E-F04 symlink 在 Windows 平台未实测",
+      "reviewer": "agent-skills:code-reviewer (per WU-6 receipts)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "组合场景矩阵逐行落地（R/D/F 三系 + 负例），F-016 列举的缺失项全部有了对应测试 ID"
+    },
+    {
+      "id": "F-017",
+      "category": "finding",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-6.3",
+        "WU-6.2"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_e2e_isolated_wiki.py"
+        }
+      ],
+      "production_evidence": [
+        "reuse-only smoke 保留并正名；download/latest/external-root 能力由 E2E-F01/F02 + E2E-R*/D* 矩阵各自命名",
+        "scenario registry 显式标注每场景范围"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "名称与范围对齐：每个 harness 的声明与代码实际一致，registry 防回归"
+    },
+    {
+      "id": "F-018",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-5.1",
+        "WU-5.2",
+        "WU-5.3",
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-5.4 M1 reusable-check、M2 malformed-bundle mutation RED"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        },
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_company_wiki_source.py"
+        }
+      ],
+      "production_evidence": [
+        "E2E-D01 parser=0 / D02 LLM=0 / D03 sections 复用 / D06 consumer 兼容性——revenue 消费端零调用 spy 断言"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-5.4 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "衍生物复用跨仓闭环：SourceBundle 契约 + select_reusable_artifacts 消费 + 调用计数断言"
+    },
+    {
+      "id": "F-019",
+      "category": "finding",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.1",
+        "WU-2A.2"
+      ],
+      "red_test": [
+        "E2E-F03：一侧配置缺项/拼写错误必须 doctor fail-fast RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/test_config_doctor.py"
+        },
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_dropbox_config_invariants.py"
+        }
+      ],
+      "production_evidence": [
+        "config doctor 跨仓校验 + WU-9.2 发布配置对原子验证（两 hash 一致）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8 / cfcb8dbeaa2b5ce40f44294beae4033c6fff486232da43a405054afa4db0f7aa",
+      "rationale": "双配置漂移由 doctor fail-fast + hash 固化 + 契约测试三重防回归"
+    },
+    {
+      "id": "F-020",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-4.1",
+        "WU-4.2",
+        "WU-4.3"
+      ],
+      "red_test": [
+        "WU-4.1 mutation：latest_as_of 禁止 fiscal_year、_pick_latest 均翻红",
+        "WU-4.2 GapPlan 8 测试 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_latest_mode.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_gap_plan.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_download_authorization.py"
+        }
+      ],
+      "production_evidence": [
+        "LatestPolicy + GapPlan（reuse/missing/newer_revision/not_published/provider_unavailable/future）metadata-only，授权才下载"
+      ],
+      "remaining_risk": "WU-9.3 rollout：production 观察门（完整 scan 周期）未满",
+      "reviewer": "agent-skills:code-reviewer (per WU-4 receipts)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "复用优先+补最新语义：exact 请求零 discovery 保留，latest 请求走 metadata 发现 + gap 授权下载"
+    },
+    {
+      "id": "F-021",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-3.2"
+      ],
+      "red_test": [
+        "WU-3.2 SQL pushdown 5 测试 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_sql_pushdown.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_resolver.py"
+        }
+      ],
+      "production_evidence": [
+        "100k 文档查找 1128ms→43ms（SQL 批量 IN）；候选上限 1000；trace 截断"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-3.2 receipt)",
+      "commit_or_config_hash": "4f8b95d",
+      "rationale": "全量物化消除：kind/status 下推 SQL + 索引，entity/identity 权威匹配保留 Python 层"
+    },
+    {
+      "id": "F-022",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-5.3"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_query_bundle.py"
+        },
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        }
+      ],
+      "production_evidence": [
+        "query_source_bundle 接线 sections/evidence 复用；E2E-D03 消费方 sections 选择"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (aa2ec46bebdc35040, WU-10.1 accepted)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "section API 生产调用者建立：consumer 经 SourceBundle 查询选择 sections artifact"
+    },
+    {
+      "id": "F-023",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-3.1",
+        "WU-4.1",
+        "WU-3.3"
+      ],
+      "red_test": [
+        "E2E-R05 ambiguous 不猜测 RED→GREEN",
+        "E2E-R06 rejected 永不复用 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_determinism.py"
+        }
+      ],
+      "production_evidence": [
+        "shadow 探针生产抽样：upstream_rejected 635 记录不再进入候选（query active-only）",
+        "多期共存由 _pick_latest 明确选择（published_date ≤ as_of）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "生产抽样揭示的拒绝目录/多期/多修订语义逐项由 fail-closed + latest policy + determinism 测试覆盖"
+    },
+    {
+      "id": "F-024",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-3.1"
+      ],
+      "red_test": [
+        "WU-3.1 mutation：query allowlist、resolver status 检查、.rejections 过滤均翻红"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_url_enrichment.py"
+        }
+      ],
+      "production_evidence": [
+        "query active-only 默认 + resolver source_status 防御 + .rejections 路径过滤；7 测试"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-3.1 receipt)",
+      "commit_or_config_hash": "4f8b95d",
+      "rationale": "quarantined/upstream_rejected 四类拒绝固化，fail-closed 语义 mutation-proved"
+    },
+    {
+      "id": "F-025",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-5.1"
+      ],
+      "red_test": [
+        "WU-5.1 4 新门 mutation：status/hash 检查删除即翻红"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_artifact_handle.py"
+        }
+      ],
+      "production_evidence": [
+        "validate_artifact 9 fail-closed 门（status/source_sha/as_of/schema_version/created_at/path-root）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-5.1 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "读取热路径 fail-closed 选择器取代裸路径暴露；拒绝有 reason code + fallback"
+    },
+    {
+      "id": "F-026",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-3.2"
+      ],
+      "red_test": [
+        "WU-3.2 5 pushdown 测试"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_sql_pushdown.py"
+        }
+      ],
+      "production_evidence": [
+        "五表全量物化消除：documents/artifacts/locations 批量 IN + 候选上限 1000；100k benchmark 43ms"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-3.2 receipt)",
+      "commit_or_config_hash": "4f8b95d",
+      "rationale": "limit=10M 全物化路径移除；性能 SLO 有 benchmark 证据"
+    },
+    {
+      "id": "F-027",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-8.3"
+      ],
+      "red_test": [
+        "WU-8.3 RED：core-section/catalog-space 当前冲突 fixture 必须被 verifier 报错"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_verify_plan_gates.py"
+        },
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_verify_plan_gates.py"
+        }
+      ],
+      "production_evidence": [
+        "三仓 verifier 全绿（revenue 4 / filing 1 / wiki 5 plans）；timed gate ≥28 天；production-apply 冲突检测；archived 豁免"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-8.3 receipt)",
+      "commit_or_config_hash": "0e11433",
+      "rationale": "标题/checklist/DoD/时间门冲突机器检测，覆盖 docs/plans/** 与 findings.md"
+    },
+    {
+      "id": "F-028",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-5.3",
+        "WU-5.4"
+      ],
+      "red_test": [
+        "E2E-D03 sections 复用、E2E-D06 consumer 兼容性 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        }
+      ],
+      "production_evidence": [
+        "consumer 跳过整篇重读的可观察调用数（SpyLog parser/LLM=0）+ 输出 lineage 断言"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-5.4 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "DoD 以消费方调用数 + lineage 为准，E2E-D03/D06 直接断言"
+    },
+    {
+      "id": "F-029",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-7.1"
+      ],
+      "red_test": [
+        "WU-7.1：coverage 门以 pytest 收集为准（unittest discover 漏收集 RED）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests"
+        }
+      ],
+      "production_evidence": [
+        "revenue CI：ruff/compileall/unique symbols/pytest/coverage 门（TOTAL 89%）/engine E2E/sync/mutation patrol/publication audit/planning verifier；filing/wiki 门同步启用"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-7.1 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "三仓 PR 门落地，F-029 所列缺失门全部进 CI"
+    },
+    {
+      "id": "F-030",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-1.1"
+      ],
+      "red_test": [
+        "WU-1.1 AST 门拒绝重复 test_* 定义"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_check_unique_test_symbols.py"
+        }
+      ],
+      "production_evidence": [
+        "pyproject F811 ignore 移除；check_unique_test_symbols.py 进 CI"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "重复定义制度性禁止，非风格偏好"
+    },
+    {
+      "id": "F-031",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-1.1"
+      ],
+      "red_test": [
+        "WU-1.1：11 组重定义逐一重命名/去重后 unique symbol gate 绿"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_worker.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_check_unique_test_symbols.py"
+        }
+      ],
+      "production_evidence": [
+        "isolated ruff F811 0 红；1608 全绿且收集清单与实现一致"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "被覆盖函数体全部恢复执行（WU-1.1 回执记录逐组核对）"
+    },
+    {
+      "id": "F-032",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-6.2",
+        "WU-9.1",
+        "WU-10.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract"
+        }
+      ],
+      "production_evidence": [
+        "三仓基线绿 + 场景矩阵 + shadow 生产采样；WU-10.1 独立重放关闭本行"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (aa2ec46bebdc35040, WU-10.1 accepted)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "断层由 WU-6/9/10 补齐：用户关心组合场景 + 生产只读证据齐备"
+    },
+    {
+      "id": "F-033",
+      "category": "finding",
+      "final_status": "superseded",
+      "fix_wu": [
+        "WU-1.2",
+        "WU-7.1"
+      ],
+      "red_test": [
+        "WU-1.2 mutation：unused-import 与 syntax-error 均翻红"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests"
+        }
+      ],
+      "production_evidence": [
+        "revenue 185 ruff 错误清零（25 重复常量删除 + __all__ 71 导出 + E402 标注）；三仓 ruff 门进 CI"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-1.2 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "静态质量范围冻结 + 门禁；lint scope 明确"
+    },
+    {
+      "id": "F-034",
+      "category": "finding",
+      "final_status": "partial",
+      "fix_wu": [
+        "WU-2A.0",
+        "WU-2A.2"
+      ],
+      "red_test": [
+        "WU-2A.0 探针（fixture + 生产 catalog 双重验证）：directory 根 metadata 恒 null，resolver 报 form_type_mismatch/identity_unverifiable_strict/capture_incomplete"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "scanner.py:1072-1077 只写 company_raw/dayu_portfolio 的 acquisition/dayu_meta；directory 根两者 null（生产验证）",
+        "生产 catalog：dropbox root 无 active 官方财报（annual 371/semi 128/quarterly 56 全 retired）"
+      ],
+      "remaining_risk": "Dropbox 正例复用依赖 scanner 最小 runtime 修复决策（超出 config-only 授权）；DBX 正例 E2E 未验",
+      "reviewer": "user decision 2026-08-08：先只做配置 + 记录缺口",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8 / cfcb8dbeaa2b5ce40f44294beae4033c6fff486232da43a405054afa4db0f7aa",
+      "rationale": "原 config-only 结论被探针证伪并如实修正：配置必要非充分；负例（身份/状态/capture 拒绝）已验收，正例按用户决策 defer"
+    },
+    {
+      "id": "A-F01",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-7.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_publication_registry.py"
+        }
+      ],
+      "production_evidence": [
+        "publication/anchor 模块 + structure/contract guards；CI 运行 publication_registry.py audit"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "receipt 顺序/锚点由现有 guard + CI audit + 全量绿守护"
+    },
+    {
+      "id": "A-F02 / N-01",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-7.2"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests"
+        }
+      ],
+      "production_evidence": [
+        "input_sha/input_document 绑定测试随全量绿；adversarial/mutation 资产在 CI（mutation patrol）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "0e11433",
+      "rationale": "可替换输入+重签向量被锚点绑定封死；旧 owner 路径已移除"
+    },
+    {
+      "id": "A-F03 / N-08",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-8.2",
+        "WU-8.3"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_verify_plan_gates.py"
+        }
+      ],
+      "production_evidence": [
+        "版本 4.0.0/schema 3.7 对齐（commit 0e11433）；计划镜像漂移被 verifier 拦截"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "0e11433",
+      "rationale": "engine/schema/文档漂移由版本契约 + 计划声明 verifier 双重防回归"
+    },
+    {
+      "id": "A-F04 / N-03",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-7.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_single_owner_guard.py"
+        }
+      ],
+      "production_evidence": [
+        "CodeGraph 无旧 filing_acquisition.py 生产调用者；single-owner guard 测试存在"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "旧 owner 双活消除并有防回归 guard"
+    },
+    {
+      "id": "A-F05/F12",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-8.2",
+        "WU-8.3"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_verify_plan_gates.py"
+        }
+      ],
+      "production_evidence": [
+        "文档/计划声明对齐 commit 0e11433；E2E 命名过度按 F-017 修复"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "0e11433",
+      "rationale": "文档与契约相反由声明 verifier 机器校验"
+    },
+    {
+      "id": "A-F06",
+      "category": "historical",
+      "final_status": "partial",
+      "fix_wu": [
+        "WU-6.2",
+        "WU-7.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_e2e_isolated_wiki.py"
+        }
+      ],
+      "production_evidence": [
+        "synthetic temp wiki harness 离线确定性（115 绿）；filing CI 有 sync 门"
+      ],
+      "remaining_risk": "filing CI 对相邻 company-wiki 仓库浮动代码的依赖未完全消除",
+      "reviewer": "independent",
+      "commit_or_config_hash": "2d9eb3b",
+      "rationale": "hermetic 性已实质改善；跨仓 CI 浮动 sibling 依赖保留为剩余风险（诚实记录）"
+    },
+    {
+      "id": "A-F07 / N-07",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-7.1"
+      ],
+      "red_test": [
+        "WU-7.1：unittest discover 漏收集 pytest 风格测试（company_wiki_source 54% 假象）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests"
+        }
+      ],
+      "production_evidence": [
+        "coverage run -m pytest tests：TOTAL 89% + 每模块门全绿，进 CI"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-7.1 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "coverage 门以真实 pytest 收集为准（WU-1.3 由 WU-7.1 承接）"
+    },
+    {
+      "id": "A-F08 / N-06",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-7.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_sync_installations.py"
+        }
+      ],
+      "production_evidence": [
+        "sync_installations.py + sync_installs_b3.py 进三仓 CI（缺安装目标不算 drift 已修正）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "439e382",
+      "rationale": "安装副本漂移由 sync 门持续防回归"
+    },
+    {
+      "id": "A-F09",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-1.1"
+      ],
+      "red_test": [
+        "WU-1.1 11 组重定义修复"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_worker.py"
+        }
+      ],
+      "production_evidence": [
+        "worker/teardown 测试真实执行（不再被后定义覆盖）；1608 绿"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "teardown 竞态测试恢复执行；stress 重复跑仍属可选（记录）"
+    },
+    {
+      "id": "A-F10",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-7.1",
+        "WU-4.1"
+      ],
+      "red_test": [
+        "WU-4.1 9 mode 测试 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_latest_mode.py"
+        },
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_filing_fetch_client.py"
+        }
+      ],
+      "production_evidence": [
+        "contract registry + schema 1.2 mode 契约；filing 115 绿 + 27 subtests"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "2d9eb3b",
+      "rationale": "兼容矩阵由契约测试 + mode 校验守护"
+    },
+    {
+      "id": "A-F11 / N-04/N-11",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-7.2"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_attestation.py"
+        },
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_attestation.py"
+        }
+      ],
+      "production_evidence": [
+        "signature/provider/context/registry 防护 + 环境门禁（commit 74fdb74 cryptography for attestation tests）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "74fdb74",
+      "rationale": "trusted workflow attestation 伪完成向量封死；signature 验证测试进 CI"
+    },
+    {
+      "id": "A-F13 / N-09",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-1.1",
+        "WU-1.2",
+        "WU-7.1"
+      ],
+      "red_test": [
+        "WU-1.1 F811 ignore 移除"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_worker.py"
+        }
+      ],
+      "production_evidence": [
+        "wiki ruff 门启用 + unique symbol 门；isolated F811 0"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "company Ruff/CI 门缺失消除"
+    },
+    {
+      "id": "A-F14",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-4.2",
+        "WU-4.3"
+      ],
+      "red_test": [
+        "WU-4.3 mutation：accession/expiry 检查删除即翻红"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_download_authorization.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_gap_plan.py"
+        }
+      ],
+      "production_evidence": [
+        "GapPlan + DownloadAuthorization receipt 随 resolve 结果返回（receipt_hash 绑定 request/gap/provider/accession/caps/expiry）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-4.3 receipt)",
+      "commit_or_config_hash": "1d00b81",
+      "rationale": "授权/gap receipt 返回 client 闭环建立"
+    },
+    {
+      "id": "N-02",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-1.2"
+      ],
+      "red_test": [
+        "WU-1.2 unused-import mutation RED"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests"
+        }
+      ],
+      "production_evidence": [
+        "模块拆分接线（CodeGraph contracts/research/forecast/analysis）+ 25 重复常量删除 + ruff 0"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-1.2 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "伪完成清理收尾：revenue_core 只 re-export，单源常量"
+    },
+    {
+      "id": "N-05",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-0.1",
+        "WU-2A.1",
+        "WU-7.1"
+      ],
+      "red_test": [
+        "WU-0.1 强制 --read-only 探针"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_audit_baseline.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/test_config_doctor.py"
+        }
+      ],
+      "production_evidence": [
+        "三根配置恢复 + doctor + config hash 固化（384ef481/cfcb8dbe）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "测试污染生产配置由只读基线 + doctor + hash 绑定防回归"
+    },
+    {
+      "id": "N-10",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-6.2",
+        "WU-6.3"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        }
+      ],
+      "production_evidence": [
+        "场景矩阵 37 项 + 分层命名 + spy 计数断言；download/latest/external/artifact consumer 全部有测试"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "E2E 范围窄与名称过度同时关闭"
+    },
+    {
+      "id": "P-Strategy-B",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.2",
+        "WU-3.1",
+        "WU-3.3"
+      ],
+      "red_test": [
+        "E2E-R02 仅 dayu 复用 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_reusable_roots.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_determinism.py"
+        }
+      ],
+      "production_evidence": [
+        "dayu 在 reusable kind + allowed root；E2E-R02 零复制/下载断言"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "dayu 只读跨根复用闭环成立"
+    },
+    {
+      "id": "P-Dropbox",
+      "category": "historical",
+      "final_status": "partial",
+      "fix_wu": [
+        "WU-2A.0",
+        "WU-2A.1",
+        "WU-2A.2"
+      ],
+      "red_test": [
+        "WU-2A.0 探针 RED（F-034）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        },
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_dropbox_config_invariants.py"
+        }
+      ],
+      "production_evidence": [
+        "两处配置已启用（hash 384ef481/cfcb8dbe）；负例（身份/状态/capture）拒绝通过"
+      ],
+      "remaining_risk": "scanner runtime 缺口未修：directory 根 metadata 不持久化 → 正例复用未验（用户决策 config-only + 记录缺口）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8 / cfcb8dbeaa2b5ce40f44294beae4033c6fff486232da43a405054afa4db0f7aa",
+      "rationale": "配置-only 已落地；正例 E2E 按用户决策 defer 到 scanner 修复决策（不能宣称 Dropbox 复用可用）"
+    },
+    {
+      "id": "P-Latest",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-4.1",
+        "WU-4.2",
+        "WU-4.3"
+      ],
+      "red_test": [
+        "WU-4.1 mutation：latest_as_of 禁止 fiscal_year、_pick_latest 删除均翻红"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_latest_mode.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_gap_plan.py"
+        }
+      ],
+      "production_evidence": [
+        "E2E-L* 语义由 WU-4.1/4.2/4.3 测试落地（LatestPolicy/GapPlan/授权下载）"
+      ],
+      "remaining_risk": "rollout 观察门未满（WU-9.3 armed）",
+      "reviewer": "agent-skills:code-reviewer (per WU-4 receipts)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "旧文件复用 + 最新缺口发现/授权补齐语义完整"
+    },
+    {
+      "id": "P-Derived",
+      "category": "historical",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-5.1",
+        "WU-5.2",
+        "WU-5.3",
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-5.4 M1/M2 mutation RED"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        },
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_company_wiki_source.py"
+        }
+      ],
+      "production_evidence": [
+        "E2E-D01~D06：normalized/summary/sections/analysis 复用 + 依赖 DAG 失效"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-5.4 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "MD/摘要/分析不从头读的消费方价值闭环（parser/LLM=0 断言）"
+    },
+    {
+      "id": "C-Space",
+      "category": "historical",
+      "final_status": "partial",
+      "fix_wu": [
+        "WU-8.3",
+        "WU-0.2"
+      ],
+      "red_test": [
+        "WU-8.3 timed gate：4 周观察期未满不得 completed"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_verify_plan_gates.py"
+        }
+      ],
+      "production_evidence": [
+        "catalog-space DoD 4 周门被 verifier 正确拒绝（时间不可能已满足）；生产快照工具就绪"
+      ],
+      "remaining_risk": "catalog 空间增长受控的 4 周观察期未满；49 GB 持续增长趋势未反转",
+      "reviewer": "independent",
+      "commit_or_config_hash": "0e11433",
+      "rationale": "按计划要求：时间门未满即标 partial，不宣称空间治理完成"
+    },
+    {
+      "id": "R-001",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-2A.1",
+        "WU-2A.2"
+      ],
+      "red_test": [
+        "CONFIG-DBX 契约测试"
+      ],
+      "regression_tests": [
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_dropbox_config_invariants.py"
+        }
+      ],
+      "production_evidence": [
+        "双白名单 + 契约不变量 + doctor；F-034 缺口如实记录"
+      ],
+      "remaining_risk": "Dropbox 正例复用未验（runtime 缺口）",
+      "reviewer": "independent",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "indexed≠reusable 的误判向量由双侧配置 + 负例 + 探针控制"
+    },
+    {
+      "id": "R-002",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-2A.1",
+        "WU-3.1"
+      ],
+      "red_test": [
+        "E2E-R08 broker research 负例 RED→GREEN",
+        "kind=directory root 集合锁契约测试"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        }
+      ],
+      "production_evidence": [
+        "当前唯一 directory root 为 dropbox_stock（生产配置核验）；admission/identity/capture 负例全过"
+      ],
+      "remaining_risk": "未来新增 directory root 需走 WU-2B root-id policy（未实施，条件性）",
+      "reviewer": "independent",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "kind 级授权连带风险被集合锁 + 负例控制；扩展路径受 2B 门约束"
+    },
+    {
+      "id": "R-003",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-3.1"
+      ],
+      "red_test": [
+        "WU-3.1 mutation：status 检查删除翻红"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        }
+      ],
+      "production_evidence": [
+        "query active-only 默认 + resolver 防御 + .rejections 过滤；生产 189/635 upstream_rejected 不再进入候选"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-3.1 receipt)",
+      "commit_or_config_hash": "4f8b95d",
+      "rationale": "provider 拒绝文件复用向量封死（fail-closed + mutation-proved）"
+    },
+    {
+      "id": "R-004",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-4.1",
+        "WU-4.2"
+      ],
+      "red_test": [
+        "WU-4.1 mutation：_pick_latest 删除翻红"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_latest_mode.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_gap_plan.py"
+        }
+      ],
+      "production_evidence": [
+        "exact 请求零 discovery 保留；latest 请求 metadata 发现 + gap 补齐；E2E-L* 语义落地"
+      ],
+      "remaining_risk": "rollout 观察门未满",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "旧报告误称最新的语义由 LatestPolicy/GapPlan 消除"
+    },
+    {
+      "id": "R-005",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-5.1"
+      ],
+      "red_test": [
+        "WU-5.1 source_sha/hash 门 mutation 翻红"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_artifact_handle.py"
+        },
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        }
+      ],
+      "production_evidence": [
+        "ArtifactHandle 9 fail-closed 门 + E2E-D04/D05 错误绑定只重算受影响节点"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-5.1 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "错误绑定/过期衍生物不被消费（fail-closed + 依赖 DAG 重算）"
+    },
+    {
+      "id": "R-006",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-5.4 M1/M2 mutation RED"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        }
+      ],
+      "production_evidence": [
+        "E2E-D01/D02/D03/D06：parser/LLM/chunker 零调用 SpyLog 断言"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-5.4 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "消费端不感知复用的风险由跨进程调用计数断言消除"
+    },
+    {
+      "id": "R-007",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-3.2",
+        "WU-9.1"
+      ],
+      "red_test": [
+        "WU-3.2 SQL pushdown RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_sql_pushdown.py"
+        }
+      ],
+      "production_evidence": [
+        "100k 文档 43ms + 候选上限；shadow 只读探针生产运行正常"
+      ],
+      "remaining_risk": "全库基准/SLO 连续 7 天观察未做（只读抽样覆盖）",
+      "reviewer": "agent-skills:code-reviewer (per WU-3.2 receipt)",
+      "commit_or_config_hash": "4f8b95d",
+      "rationale": "生产延迟/内存/锁风险由 pushdown + 上限 + 探针控制"
+    },
+    {
+      "id": "R-008",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-1.1"
+      ],
+      "red_test": [
+        "WU-1.1 AST 重复符号门"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_check_unique_test_symbols.py"
+        }
+      ],
+      "production_evidence": [
+        "unique symbol gate 三仓 CI；collection manifest 变化有理由（WU-1.1 回执）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "测试全绿但少收集的向量制度性禁止"
+    },
+    {
+      "id": "R-009",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-2A.2",
+        "WU-7.1"
+      ],
+      "red_test": [
+        "E2E-F03 双配置漂移 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/test_config_doctor.py"
+        },
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_dropbox_config_invariants.py"
+        }
+      ],
+      "production_evidence": [
+        "config hash 固化（384ef481/cfcb8dbe）+ doctor fail-fast + WU-9.2 原子对验证"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "双配置漂移向量封死"
+    },
+    {
+      "id": "R-010",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-6.3"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_e2e_isolated_wiki.py"
+        }
+      ],
+      "production_evidence": [
+        "37 场景 registry 命名分层（exact/latest/bundle/fail-closed）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "E2E 名称过度被 registry + 命名纪律防回归"
+    },
+    {
+      "id": "R-011",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-4.2",
+        "WU-4.3"
+      ],
+      "red_test": [
+        "WU-4.3 mutation：expiry/accession 检查删除翻红"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_gap_plan.py"
+        },
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_download_authorization.py"
+        }
+      ],
+      "production_evidence": [
+        "GAP 状态 metadata-only 无下载；无授权 reason=download_required_but_not_allowed；授权 receipt 绑定 provider/accession/caps/expiry"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-4.3 receipt)",
+      "commit_or_config_hash": "1d00b81",
+      "rationale": "latest 查询隐式下载向量由 metadata/fetch 分离 + receipt 门封死"
+    },
+    {
+      "id": "R-012",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-0.1",
+        "WU-6.2"
+      ],
+      "red_test": [
+        "WU-0.1 --read-only 强制探针"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_audit_baseline.py"
+        }
+      ],
+      "production_evidence": [
+        "全程 0 真实根写入（本轮回执 real_root_writes=0 各 WU）+ mode=ro 强制 + E2E 零写入断言"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "外部根写入/复制由只读策略 + 全回执计数防回归"
+    },
+    {
+      "id": "R-013",
+      "category": "risk",
+      "final_status": "controlled",
+      "fix_wu": [
+        "WU-8.3"
+      ],
+      "red_test": [
+        "WU-8.3 timed gate/conflict RED"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tools/tests/test_verify_plan_gates.py"
+        }
+      ],
+      "production_evidence": [
+        "state machine receipt 机制 + verifier 三仓全绿；完成声明必须 machine-evidence-backed"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-8.3 receipt)",
+      "commit_or_config_hash": "0e11433",
+      "rationale": "completed 先于 DoD 的向量被 receipt + 时间门拦截"
+    },
+    {
+      "id": "R-014",
+      "category": "risk",
+      "final_status": "partial",
+      "fix_wu": [
+        "WU-6.2",
+        "WU-9.1"
+      ],
+      "red_test": [
+        "E2E-F05 披露机制 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_background_reliability.py"
+        }
+      ],
+      "production_evidence": [
+        "completed_with_errors 披露 + 降级但披露语义 + shadow 探针确认生产分布"
+      ],
+      "remaining_risk": "生产扫描错误持续；scan health SLA 7 天观察期未满——保持监控，不宣称健康达标",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "错误被绿测试掩盖的向量消除（披露机制 + 生产探针）；错误本身清零需持续观察"
+    },
+    {
+      "id": "E2E-R01",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-3.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        }
+      ],
+      "production_evidence": [
+        "companies exact 复用零 fetch（WU-3.1 回执）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "4f8b95d",
+      "rationale": "场景落地（reusable_roots + active-only 测试覆盖）"
+    },
+    {
+      "id": "E2E-R02",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-3.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_reusable_roots.py"
+        }
+      ],
+      "production_evidence": [
+        "仅 dayu exact 复用零复制/下载"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "4f8b95d",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-R03",
+      "category": "scenario",
+      "final_status": "partial",
+      "fix_wu": [
+        "WU-2A.2"
+      ],
+      "red_test": [
+        "WU-2A.0 探针 RED（F-034）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "filing-fetch 复用 Dropbox 路径配置已开；runtime 缺口（F-034）阻断正例"
+      ],
+      "remaining_risk": "scanner 修复决策",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "cfcb8dbeaa2b5ce40f44294beae4033c6fff486232da43a405054afa4db0f7aa",
+      "rationale": "依赖 Dropbox runtime 修复（用户决策：先配置 + 记录缺口）"
+    },
+    {
+      "id": "E2E-R04",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-3.3"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_determinism.py"
+        }
+      ],
+      "production_evidence": [
+        "三根同 hash 主 location 确定性"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-R05",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-3.3"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_determinism.py"
+        }
+      ],
+      "production_evidence": [
+        "同期不同 hash ambiguous 不猜测"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地（priority 语义 mutation-proved）"
+    },
+    {
+      "id": "E2E-R06",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-3.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        }
+      ],
+      "production_evidence": [
+        "retired/quarantined/upstream_rejected 永不复用"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "4f8b95d",
+      "rationale": "场景落地（8 测试覆盖四类拒绝）"
+    },
+    {
+      "id": "E2E-R07",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-3.1"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_fail_closed.py"
+        }
+      ],
+      "production_evidence": [
+        "catalog 有记录文件丢失判 stale 不返回 handle"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "4f8b95d",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-R08",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-6.2"
+      ],
+      "red_test": [
+        "E2E-R08 broker 负例 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "弱 identity/broker PDF 不 admission 零 fetch"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地（本批新增）"
+    },
+    {
+      "id": "E2E-D01",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-6.2 首批 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py::test_e2e_d01_normalized_artifact_parser_zero"
+        }
+      ],
+      "production_evidence": [
+        "有效 normalized → parser=0（SpyLog 断言）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-6.2 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-D02",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-6.2 首批 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py::test_e2e_d02_valid_summary_llm_zero"
+        }
+      ],
+      "production_evidence": [
+        "有效 summary → 对应 LLM=0"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-6.2 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-D03",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-5.3",
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-6.2 第四批 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py::test_e2e_d03_sections_used_instead_of_full_rerun"
+        }
+      ],
+      "production_evidence": [
+        "有效 sections → 整篇 chunker=0 + 引用定位不变"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-6.2 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-D04",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-5.1",
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-6.2 第四批 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py::test_e2e_d04_stale_normalized_recomputes_only_that_role"
+        }
+      ],
+      "production_evidence": [
+        "normalized 旧 → 只重解析该 role，summary/section 按依赖 DAG 失效"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-6.2 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-D05",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-5.1",
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-6.2 第四批 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py::test_e2e_d05_misbound_summary_rejected_only_that_role_recomputed"
+        }
+      ],
+      "production_evidence": [
+        "summary 绑定错误 → 拒绝该 artifact 只重算，记录 reason"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-6.2 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-D06",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-5.4"
+      ],
+      "red_test": [
+        "WU-6.2 第四批 RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py::test_e2e_d06_consumer_analysis_reused_only_when_fully_compatible"
+        }
+      ],
+      "production_evidence": [
+        "consumer analysis 完全兼容才复用；engine/model/prompt/输入 hash 任一变化不复用"
+      ],
+      "remaining_risk": "",
+      "reviewer": "agent-skills:code-reviewer (per WU-6.2 receipt)",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地（M-D06/M-D05 对冲 mutation 实证）"
+    },
+    {
+      "id": "E2E-F01",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-6.2"
+      ],
+      "red_test": [
+        "E2E-F01 HTML-as-PDF magic gate RED→GREEN"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_acquisition.py"
+        }
+      ],
+      "production_evidence": [
+        "HTML 冒充 PDF → quarantine staging 不生成 capture-ready handle"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-F02",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-6.2"
+      ],
+      "red_test": [
+        "E2E-F02 顺序去重 RED→GREEN（两轮修正）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_acquisition.py"
+        }
+      ],
+      "production_evidence": [
+        "同 accession 首次 fetch=1 二次 REUSED/fetch=0 无半文件"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地（单线程顺序去重语义）"
+    },
+    {
+      "id": "E2E-F03",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-7.1"
+      ],
+      "red_test": [
+        "E2E-F03 doctor 测试 RED→GREEN（YAML fixture 语法修正）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/test_config_doctor.py"
+        }
+      ],
+      "production_evidence": [
+        "root policy 两侧 hash 不同 → doctor fail-fast resolver 不启动"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地"
+    },
+    {
+      "id": "E2E-F04",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-6.2"
+      ],
+      "red_test": [
+        "E2E-F04 symlink fence（Windows 无管理员权限 skip）"
+      ],
+      "regression_tests": [
+        {
+          "repo": "filing",
+          "nodeid": "tests/test_bundle_compat.py",
+          "skip_exemption": "E2E-F04 symlink 用例在 Windows 无管理员权限平台 skip（WU-6.2 第五批回执记录的已知豁免）；普通目录越界变体已实测"
+        }
+      ],
+      "production_evidence": [
+        "path fence 拒绝越界（plain-outside 变体 Windows 实测通过）"
+      ],
+      "remaining_risk": "symlink/junction 真实行为仅在支持平台验证",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "场景落地（平台性 skip 有豁免 + 替代变体）"
+    },
+    {
+      "id": "E2E-F05",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-6.2"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_background_reliability.py"
+        }
+      ],
+      "production_evidence": [
+        "completed_with_errors + error_details 披露；目标无关错误降级但披露；生产 shadow 证据"
+      ],
+      "remaining_risk": "生产扫描错误清零需持续观察（R-014）",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "机制存在并有生产只读证据"
+    },
+    {
+      "id": "E2E-F06",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-6.2"
+      ],
+      "red_test": [],
+      "regression_tests": [
+        {
+          "repo": "revenue",
+          "nodeid": "tests/test_bundle_e2e_d01.py"
+        }
+      ],
+      "production_evidence": [
+        "二次完全相同运行 result/receipt hash 稳定（revenue/filing E2E 双跑 golden）"
+      ],
+      "remaining_risk": "",
+      "reviewer": "independent",
+      "commit_or_config_hash": "73a23c6",
+      "rationale": "机制存在（双跑 golden 证据）"
+    },
+    {
+      "id": "E2E-DBX-01",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-01 负例：directory 根候选被身份/状态/capture 门拒绝"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收（用户决策：配置 + 负例）"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收（用户决策）；正例 defer"
+    },
+    {
+      "id": "E2E-DBX-02",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-02 负例"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收"
+    },
+    {
+      "id": "E2E-DBX-03",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-03 负例"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收"
+    },
+    {
+      "id": "E2E-DBX-04",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-04 负例"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收"
+    },
+    {
+      "id": "E2E-DBX-05",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-05 负例"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收"
+    },
+    {
+      "id": "E2E-DBX-06",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-06 负例"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收"
+    },
+    {
+      "id": "E2E-DBX-07",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-07 负例"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收"
+    },
+    {
+      "id": "E2E-DBX-08",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-08 负例"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收"
+    },
+    {
+      "id": "E2E-DBX-09",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-09 负例"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收"
+    },
+    {
+      "id": "E2E-DBX-10",
+      "category": "scenario",
+      "final_status": "resolved",
+      "fix_wu": [
+        "WU-2A.0"
+      ],
+      "red_test": [
+        "DBX-10 负例"
+      ],
+      "regression_tests": [
+        {
+          "repo": "wiki",
+          "nodeid": "tests/contract/test_source_catalog_dropbox_probe.py"
+        }
+      ],
+      "production_evidence": [
+        "负例验收"
+      ],
+      "remaining_risk": "正例依赖 scanner 修复（F-034）",
+      "reviewer": "user decision 2026-08-08",
+      "commit_or_config_hash": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8",
+      "rationale": "DBX 系列按负例验收"
+    }
+  ]
+}
