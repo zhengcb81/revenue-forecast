@@ -21,9 +21,11 @@
   "real_root_writes": 0,
   "production_evidence": {"previously_leaked_candidates": "189 upstream_rejected + 1 quarantined documents; 635 dayu .rejections active locations", "post_fix": "all fail-closed; zero rejected candidates reach success receipt"},
   "mutation_proof": {"query_allowlist_revert": "RED (test_query_hides_non_active_by_default failed)", "resolver_check_removal": "RED (test_resolver_defense_in_depth_rejects_leaked_document failed)"},
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused 22 green → contract suite green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId ae36506081b9aa80c)",
+  "review_findings": [
+    {"severity": "minor", "desc": "test_rejections_path_not_reused 由查询层拦截，未直接驱动 resolver .rejections 过滤（删过滤不翻红）", "resolution": "fixed: 新增 test_resolver_rejects_leaked_active_rejections_path（active+泄漏场景），删过滤现在翻红；8 passed + mutation proved"}
+  ],
+  "status": "accepted (mutation-proved: query allowlist, resolver status check, .rejections filter all flip red)"
 }
 ```
 
