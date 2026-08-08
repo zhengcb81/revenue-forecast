@@ -23,7 +23,10 @@ from pathlib import Path
 
 
 PHASE_HEADING = re.compile(
-    r"^##\s+Phase\s+(\d+)[^\n]*—\s*状态：completed\s*$", re.IGNORECASE
+    # WU-8.3: company-wiki subplans write "状态：completed ✅（...）"; accept the
+    # plain form and the emoji-suffixed form so F-027 conflicts are caught.
+    r"^##\s+Phase\s+(\d+)[^\n]*—\s*状态：completed(?:\s*[✅✔✓].*)?\s*$",
+    re.IGNORECASE,
 )
 CHECKBOX_UNCHECKED = re.compile(r"\[ \]")
 CHECKBOX_CHECKED = re.compile(r"\[x\]")
@@ -98,30 +101,61 @@ def verify(plan_text: str, progress_text: str) -> tuple[list[str], list[dict]]:
     return problems, report
 
 
+def _discover_plans(plan_dir: Path) -> list[tuple[Path, Path]]:
+    """WU-8.3: recursively find (task_plan.md, progress.md) pairs under a dir,
+    including docs/plans/** subplans."""
+    pairs: list[tuple[Path, Path]] = []
+    for plan in sorted(plan_dir.rglob("task_plan.md")):
+        progress = plan.parent / "progress.md"
+        if progress.is_file():
+            pairs.append((plan, progress))
+    return pairs
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Verify completed plan claims")
     parser.add_argument("--plan", type=Path, default=None, help="plan markdown path")
     parser.add_argument("--progress", type=Path, default=None, help="progress log path")
+    parser.add_argument("--plan-dir", type=Path, default=None,
+                        help="recursively verify all task_plan/progress pairs under a dir")
     parser.add_argument("--json", action="store_true", help="machine-readable report")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    plan_path = args.plan or root / "task_plan.md"
-    progress_path = args.progress or root / "progress.md"
-    if not plan_path.is_file() or not progress_path.is_file():
-        print(f"missing plan/progress file: {plan_path} {progress_path}")
-        return 2
-    problems, report = verify(
-        plan_path.read_text(encoding="utf-8"),
-        progress_path.read_text(encoding="utf-8"),
-    )
+    all_problems: list[str] = []
+    all_reports: list[dict] = []
+    if args.plan_dir is not None:
+        pairs = _discover_plans(args.plan_dir)
+        if not pairs:
+            print(f"no task_plan.md/progress.md pairs under {args.plan_dir}")
+            return 2
+        for plan_path, progress_path in pairs:
+            problems, report = verify(
+                plan_path.read_text(encoding="utf-8"),
+                progress_path.read_text(encoding="utf-8"),
+            )
+            for problem in problems:
+                all_problems.append(f"{plan_path}: {problem}")
+            all_reports.append({"plan": str(plan_path), "report": report})
+    else:
+        plan_path = args.plan or root / "task_plan.md"
+        progress_path = args.progress or root / "progress.md"
+        if not plan_path.is_file() or not progress_path.is_file():
+            print(f"missing plan/progress file: {plan_path} {progress_path}")
+            return 2
+        problems, report = verify(
+            plan_path.read_text(encoding="utf-8"),
+            progress_path.read_text(encoding="utf-8"),
+        )
+        all_problems = problems
+        all_reports = report
     if args.json:
-        print(json.dumps({"ok": not problems, "problems": problems, "phases": report}, indent=2, sort_keys=True))
-        return 1 if problems else 0
-    for problem in problems:
+        print(json.dumps({"ok": not all_problems, "problems": all_problems, "reports": all_reports}, indent=2, sort_keys=True))
+        return 1 if all_problems else 0
+    for problem in all_problems:
         print(f"PLAN-VERIFY: {problem}")
-    if not problems:
-        print(f"OK: all completed claims in {plan_path.name} are evidence-backed")
-    return 1 if problems else 0
+    if not all_problems:
+        print(f"OK: all completed claims are evidence-backed ({len(all_reports)} plan(s))")
+    return 1 if all_problems else 0
 
 
 if __name__ == "__main__":

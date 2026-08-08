@@ -42,6 +42,7 @@
 - company-wiki 全量 pytest 已收集 1630 项，运行中；filing-fetch coverage 运行中。
 - filing-fetch 完整质量门完成：compileall/ruff 绿、117 tests 绿（5 skip）、coverage 96%。company-wiki 运行至约 30%。
 - 字面审查 invest-core/framework，确认 F-02 会穿透正式 invest adapter 与 bundle；同时确认单向依赖/禁止收入重建的主体设计已实现。
+- Phase 3 与 Phase 4 机器证据（2026-08-03 审查运行）：revenue `python -m pytest tests` 253 passed 全绿；filing-fetch 117/117 passed（5 skipped）；company-wiki pytest 1630 收集、1629 passed 1 失败判竞态（F-09）；invest-core 36 passed（1 skip）；invest-framework 22 passed；compileall/ruff 门均通过。
 - company-wiki 全量运行约 37%，尚未出现失败。
 - invest-core 36 tests（1 skip）与 invest-framework 22 tests 全绿，compileall/ruff 均通过；company-wiki 约 38%。
 - revenue 安装同步默认检查完成：`.agents` 58 files MATCH；`.codex` 待显式检查。
