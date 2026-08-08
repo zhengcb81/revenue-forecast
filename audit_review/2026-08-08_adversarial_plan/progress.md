@@ -1,5 +1,32 @@
 # 审查进度日志
 
+## 实施回执（WU-6.1 可观测 spy 和 fixture builder）
+
+```json
+{
+  "work_unit": "WU-6.1",
+  "baseline_commits": {"revenue": "f76d2e9", "filing": "57ff0bf", "wiki": "5fbc2f2"},
+  "red_test_ids": ["ModuleNotFoundError: spy_log (4 tests)"],
+  "red_exit_code": 1,
+  "changed_files": ["filing: tests/e2e_support/spy_log.py (new), tests/e2e_support/test_spy_log.py (4 tests)"],
+  "focused_commands": ["python -m pytest tests/e2e_support/test_spy_log.py -q"],
+  "repo_commands": ["filing full offline: 135 passed + 27 subtests (41.54s)"],
+  "cross_repo_commands": ["not_applicable + shared test support; consumed by WU-6.2 E2E matrix"],
+  "tests_collected_before": 130,
+  "tests_collected_after": 135,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {"append_to_write": "RED (no-rewrite test failed)"},
+  "semantics": "SpyLog append-only JSONL + fsync; read_events deterministic; cross-process subprocess visibility",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
 ## 实施回执（WU-5.4 revenue consumer 零重复处理）
 
 ```json
