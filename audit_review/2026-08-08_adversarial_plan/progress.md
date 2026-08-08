@@ -22,9 +22,13 @@
   "mutation_proof": {"filing_latest_as_of_allows_fiscal_year": "RED (forbids test failed)", "wiki_pick_latest_disabled": "RED (2 latest tests failed)"},
   "regression_found_and_fixed": "WU-3.2 cap-shadowing fix pushed fiscal_year into SQL json_extract, which missed title-derived years (old HK sidecar) → resolver now keeps fiscal_year in Python (authoritative, title-aware) with cap 1000; test_e2e_hk_old_sidecar_reuse red→green",
   "golden_note": "request_id changed because mode enters request identity hash (intended schema evolution); snapshot_sha256/https_url/canonical_tail unchanged",
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → all three repos green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId a1bf6544e84caa211)",
+  "review_findings": [
+    {"severity": "minor", "desc": "future as_of / 跨市场 form 混淆无显式新测试（既有测试间接覆盖）", "resolution": "accepted as follow-up; WU-4.2/6.2 E2E 矩阵补显式用例"},
+    {"severity": "minor", "desc": "filing 校验 latest_as_of+fiscal_year 拒绝，wiki SourceRequest 仅校验 mode 取值（分层不变量不对称）", "resolution": "accepted; 严格契约由 filing 边界执行，resolver 保留 CLI 直接调用语义"},
+    {"severity": "minor", "desc": "legacy 1.1 无 deprecation warning 通道（结构性信号替代）", "resolution": "accepted; 1.2 无 mode 请求收到明确错误提示升级"}
+  ],
+  "status": "accepted (mutation-proved: latest_as_of forbids fiscal_year and _pick_latest both flip red)"
 }
 ```
 
