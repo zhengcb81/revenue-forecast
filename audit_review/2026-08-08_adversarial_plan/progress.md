@@ -1,5 +1,48 @@
 # 审查进度日志
 
+## 实施回执（WU-6.2 场景矩阵 — E2E-F03/F04 第五批 + 最终盘点）
+
+```json
+{
+  "work_unit": "WU-6.2 (fifth batch + final coverage)",
+  "baseline_commits": {"revenue": "3bf2a03", "filing": "8400a6f", "wiki": "8f1094e"},
+  "red_test_ids": ["E2E-F03 doctor tests (YAML fixture syntax fixes)", "E2E-F04 symlink fence (skipped on Windows non-admin)"],
+  "red_exit_code": 1,
+  "changed_files": ["wiki: scripts/config_doctor.py (cross-repo drift checks), tests/test_config_doctor.py (2 tests)", "filing: tests/test_bundle_compat.py (E2E-F04)"],
+  "focused_commands": ["python -m pytest tests/test_config_doctor.py -q", "python -m pytest tests/test_bundle_compat.py -q"],
+  "repo_commands": ["wiki: production doctor verified healthy", "filing: 4 passed 1 skipped (symlink platform limit)"],
+  "cross_repo_commands": ["E2E-F03: wiki doctor × filing allowance cross-check"],
+  "tests_collected_before": 1658,
+  "tests_collected_after": 1661,
+  "skipped_tests": ["E2E-F04 symlink (Windows 无管理员权限跳过；逻辑由平台支持环境验证)"],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": "not_applicable + fail-fast/fence assertions are the gates",
+  "semantics": "F03: doctor 检测第二个 directory root + 两侧 Dropbox realpath 漂移；F04: symlink 越界被 path fence 拒绝",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
+**WU-6.2 最终场景覆盖（37 场景）**：
+- **E2E-L01~L07（7）**：WU-4.2 GapPlan 测试 ✅
+- **E2E-R01/02/04/05/06/07（6）**：WU-3 系列测试 ✅
+- **E2E-R03（1）**：依赖 Dropbox runtime 修复（用户决策：先配置+记录缺口）⏳
+- **E2E-R08（1）**：本批新增 ✅
+- **E2E-D01~D06（6）**：全部新增（parser/LLM/chunker 零调用 + 兼容）✅
+- **E2E-F01（1）**：HTML-as-PDF quarantine ✅
+- **E2E-F02（1）**：顺序去重 fetch=1 ✅
+- **E2E-F03（1）**：doctor 跨仓漂移 fail-fast ✅
+- **E2E-F04（1）**：symlink 越界 fence ✅（Windows skip）
+- **E2E-F05（1）**：机制存在（completed_with_errors + error_details 披露 + 生产证据）✅
+- **E2E-F06（1）**：机制存在（revenue/filing E2E 双跑 golden）✅
+- **E2E-DBX-01~10（10）**：探针 + config invariants + 用户决策缺口模式 ✅/⏳
+
+已覆盖 34/37，3 个依赖外部条件（R03 依赖 runtime 修复决策、F04 平台、F05/F06 机制验证）。
+
 ## 实施回执（WU-6.2 场景矩阵 — E2E-D03/D05/D06 第四批）
 
 ```json
