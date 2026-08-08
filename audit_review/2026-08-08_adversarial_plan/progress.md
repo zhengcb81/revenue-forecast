@@ -1,5 +1,32 @@
 # 审查进度日志
 
+## 实施回执（WU-6.2 场景矩阵 — E2E-D01/02/04 首批）
+
+```json
+{
+  "work_unit": "WU-6.2 (first batch)",
+  "baseline_commits": {"revenue": "058d146", "filing": "a7fd0d2", "wiki": "5fbc2f2"},
+  "red_test_ids": ["E2E-D01 parser spy (fixture deep-check iterations)", "E2E-D02 llm spy", "E2E-D04 stale-normalized"],
+  "red_exit_code": 1,
+  "changed_files": ["revenue: tests/test_bundle_e2e_d01.py (3 tests)"],
+  "focused_commands": ["python -m pytest tests/test_bundle_e2e_d01.py -v"],
+  "repo_commands": ["python -m pytest tests -q (310 passed + 106 subtests)"],
+  "cross_repo_commands": ["E2E-D01/02/04 cross-repo artifact-reuse assertions (parser/LLM=0 spy)"],
+  "tests_collected_before": 307,
+  "tests_collected_after": 310,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": "not_applicable + spy-raises-if-invoked is the mutation (parser/LLM 被调用即红)",
+  "semantics": "E2E-D01 有效 normalized → parser=0；E2E-D02 有效 summary → LLM=0；E2E-D04 stale normalized 只重算该 role",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review (WU-6.2 其余 34 场景分批继续)"
+}
+```
+
 ## 实施回执（WU-6.1 可观测 spy 和 fixture builder）
 
 ```json
