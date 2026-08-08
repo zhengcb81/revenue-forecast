@@ -21,9 +21,15 @@
   "real_root_writes": 0,
   "mutation_proof": {"provider_error_ignored": "RED (unavailable test failed)", "missing_detection_removed": "RED (local_old_gap test failed)"},
   "semantics": "latest_as_of no longer short-circuits on local reuse — provider metadata decides reuse vs gap; provider_unavailable keeps local and never claims up-to-date; future-dated candidates excluded from gap",
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId a5117a568c07f0d4d) — first pass rejected, fixes committed 63484a4, re-verification in progress",
+  "review_findings": [
+    {"severity": "major", "desc": "gap_hash 非顺序无关（reuse 仅按 fiscal_year 排序）", "resolution": "fixed: 排序键 (fiscal_year, provider_document_id) + 回归测试"},
+    {"severity": "major", "desc": "SourceAcquisitionService.ensure 无 GAP 分支 → RuntimeError", "resolution": "fixed: SourceEnsureStatus.GAP 分支"},
+    {"severity": "major", "desc": "latest_as_of+allow_download=True 绕过 GapPlan 直接 fetch", "resolution": "fixed: latest_as_of 始终先返回 metadata-only plan，fetch=0 + 回归测试"},
+    {"severity": "minor", "desc": "冗余局部 import build_gap_plan", "resolution": "fixed: 模块级 import"},
+    {"severity": "minor", "desc": "测试冗余（两场景相同）+ 缺 provider_error 端到端", "resolution": "accepted as follow-up; 补了 hash 顺序与 allow_download 回归"}
+  ],
+  "status": "implemented → reviewer fixes committed → re-verification in progress"
 }
 ```
 
