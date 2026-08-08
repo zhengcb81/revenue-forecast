@@ -1,5 +1,35 @@
 # 审查进度日志
 
+## 实施回执（WU-5.3 SourceBundle 契约扩展）
+
+```json
+{
+  "work_unit": "WU-5.3",
+  "baseline_commits": {"revenue": "07140d6", "filing": "3b5b713", "wiki": "5fbc2f2"},
+  "red_test_ids": ["company-wiki: 3 query_source_bundle tests (method absent)", "filing: 3 bundle compat tests (fixture deep-check failures)"],
+  "red_exit_code": 1,
+  "changed_files": [
+    "wiki: store.py (artifacts +schema_version/source_sha256 additive migration), service.py (query() artifact columns + query_source_bundle), tests/contract/test_source_catalog_query_bundle.py (3 tests)",
+    "filing: tests/test_bundle_compat.py (3 tests)"
+  ],
+  "focused_commands": ["wiki: python -m pytest tests/contract/test_source_catalog_query_bundle.py -q", "filing: python -m pytest tests/test_bundle_compat.py -q"],
+  "repo_commands": ["filing full offline: 130 passed + 27 subtests (41.63s)"],
+  "cross_repo_commands": ["bundle compat both directions (handle with/without source_bundle validates)"],
+  "tests_collected_before": 1652,
+  "tests_collected_after": 1655,
+  "skipped_tests": [],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "mutation_proof": {"migration_disabled": "RED (migration test failed)"},
+  "semantics": "artifacts schema_version/source_sha256 now persisted so WU-5.1 gates apply to real rows; query_source_bundle returns source + verified artifacts in one call; filing-fetch accepts optional bundle both directions",
+  "reviewer": "pending (agent-skills:code-reviewer)",
+  "review_findings": [],
+  "status": "implemented → focused green → pending independent review"
+}
+```
+
 ## 实施回执（WU-5.2 SourceBundle query）
 
 ```json
