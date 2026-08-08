@@ -1,5 +1,75 @@
 # 审查进度日志
 
+## 实施回执（WU-2A.0~2A.2 Dropbox 配置启用 — 用户决策后完成）
+
+```json
+{
+  "work_unit": "WU-2A.0/2A.1/2A.2",
+  "baseline_commits": {"revenue": "6dc6cd6", "filing": "cdcbf58", "wiki": "96d112d"},
+  "user_decision": "2026-08-08: 先只做配置 + 记录缺口 (E2E 按负例验收)；runtime 缺口按 F-034 修正记录",
+  "red_test_ids": ["test_probe_missing_when_directory_kind_not_reusable (RED before config)", "test_config_dbx_01... (RED under mutation: directory removed from reusable)", "test_config_dbx_03... (RED under mutation: Dropbox allowance removed)"],
+  "red_exit_code": 1,
+  "changed_files": [
+    "wiki: config/source_catalog.yaml (reusable_root_kinds +directory), tests/contract/test_source_catalog_dropbox_probe.py, tests/contract/test_dropbox_config_invariants.py",
+    "filing: config/company_wiki.json (+Dropbox/Stock), tests/test_dropbox_config_invariants.py"
+  ],
+  "focused_commands": ["python -m pytest tests/contract/test_dropbox_config_invariants.py -q", "python -m pytest tests/test_dropbox_config_invariants.py -q", "python -m pytest tests/contract/test_source_catalog_dropbox_probe.py -v"],
+  "repo_commands": ["filing full offline: 118 passed + 27 subtests (46.03s)", "wiki related contracts: 13 passed"],
+  "cross_repo_commands": ["CONFIG-DBX-04: wiki YAML realpath == filing JSON allowance realpath (test in filing repo)"],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "runtime_diff": {"wiki_src_scripts": "empty", "filing_scripts_tools": "empty", "revenue_scripts": "empty"},
+  "config_hashes": {"source_catalog": "384ef4818fd4835cdecf34de1ba309afd6db3861b87d108bd84f5950d1ef6fa8", "company_wiki_json": "cfcb8dbeaa2b5ce40f44294beae4033c6fff486232da43a405054afa4db0f7aa"},
+  "mutation_proof": {"remove_directory_from_reusable": "RED (DBX-01 failed)", "remove_dropbox_allowance": "RED (DBX-03 failed)"},
+  "known_gap": "F-034 revised: directory-root sidecar metadata not persisted to acquisition/dayu_meta keys → resolver._source_metadata()={} → form_type/identity/https_url fail. Probe test asserts current MISSING behavior with flip-to-REUSED_EXACT block documented.",
+  "status": "configuration_enabled (user-decision mode); production_reuse_verified NOT claimed — runtime gap documented, E2E-DBX positive cases deferred until scanner fix decision"
+}
+```
+
+- WU-2A.0~2A.2 提交：wiki `(see log)`、filing `(see log)`。CONFIG-DBX-01~04 全绿；探针 2 项全绿（已知缺口断言）。
+- **剩余**：E2E-DBX-01~10（正例需 scanner 修复后按 REUSED_EXACT 验收；负例可先做）、WU-2A.4 生产 canary（前置 WU-3.1）、WU-2A.5 回滚门（可做）。
+
+## 实施回执（WU-2A.0 配置能力 RED 探针 — BLOCKED）
+
+```json
+{
+  "work_unit": "WU-2A.0",
+  "baseline_commits": {"revenue": "6dc6cd6", "filing": "cdcbf58", "wiki": "96d112d"},
+  "red_test_ids": ["test_probe_missing_when_directory_kind_not_reusable", "test_probe_reused_exact_when_directory_kind_reusable"],
+  "red_exit_code": 1,
+  "changed_files": ["company-wiki/tests/contract/test_source_catalog_dropbox_probe.py", "revenue-forecast/audit_review/2026-08-08_adversarial_plan/progress.md"],
+  "focused_commands": ["python -m pytest tests/contract/test_source_catalog_dropbox_probe.py -v"],
+  "repo_commands": ["not_applicable + probe-only WU; no config/runtime change"],
+  "cross_repo_commands": ["not_applicable + blocked before filing-fetch side"],
+  "network_calls": 0,
+  "parser_calls": 0,
+  "llm_calls": 0,
+  "real_root_writes": 0,
+  "status": "user decision 2026-08-08: 先只做配置 + 记录缺口 (E2E 按负例验收)。blocked 解除，进入配置-only 快车道；runtime 缺口按 F-034 修正记录，不伪称复用可用"
+}
+```
+
+### Blocker 根因（WU-2A.0 探针证据链）
+
+1. **scanner.py:1072-1077**：`document_metadata` 只对 `company_raw`/`dayu_portfolio` 根把 sidecar 元数据写入 `acquisition`/`dayu_meta` 嵌套键；`directory` 根两者均为 `null`。
+2. **resolver.py `_source_metadata()`（:275-283）**：只读 `metadata["acquisition"]`/`metadata["dayu_meta"]` → directory 根文档恒返回 `{}`。
+3. 空 metadata 连锁失败（真实 resolver 输出）：
+   - `form_type_mismatch`（form_type 缺失）
+   - `identity_unverifiable_strict`（market/security_id 缺失，弱身份 fail-closed）
+   - `capture_incomplete`（https_url 缺失 → capture_ready=False）
+4. **生产 catalog 佐证**：dropbox root 下无 active 官方财报（annual 371 全 retired、quarterly 56 retired、semi 128 retired；唯一 active semi-annual 的 metadata 实际 root_id=company_raw）。
+5. 替代路径不可行：改 Dropbox kind 为 dayu_portfolio 违反 §2.4（禁改 kind/path/priority）且 scanner dayu 分支要求 portfolio/meta.json 结构（Dropbox 是 重点关注/*.pdf.source.json，不匹配）；无其它受支持 kind 能表达。
+
+### F-034 修正
+
+原 F-034 声称"当前 schema 已能通过两处配置完成"。探针证伪：**两处配置是必要条件但非充分条件**——resolver 的身份/form/url 读取依赖 `_source_metadata()`，而 directory 根扫描不持久化 sidecar 元数据到该函数可读的键。要启用 Dropbox 复用，最小 runtime 修改是：scanner 对 directory 根（或至少 dropbox_stock 的 重点关注 子树）把 sidecar 元数据写入 `acquisition` 键（≈ 数行，属 WU-2A.0 明令禁止的 runtime 改动，须用户另行授权）。
+
+### 探针测试保留
+
+`test_source_catalog_dropbox_probe.py` 两个测试作为能力边界 RED 证据保留在仓库（当前红灯是正确状态——证明能力缺失）；不得标绿、不得 skip。
+
 ## 实施回执（WU-1.2 清理并冻结静态质量范围）
 
 ```json

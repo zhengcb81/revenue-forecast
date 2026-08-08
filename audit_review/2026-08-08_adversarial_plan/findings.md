@@ -266,13 +266,15 @@
 - revenue-forecast 对 `scripts tests tools e2e` 报 185 个错误，大量是模块拆分后遗留的 unused imports，另有 E2E/tool 小问题。功能测试虽绿，静态门不能宣称完成，CI 又没有 Ruff。
 - 结论：历史“真模块拆分”在结构上成立，但代码清理和持续门禁未完成。
 
-### F-034：Dropbox 可通过现有配置启用，无需修改 runtime 代码
+### F-034：Dropbox 可通过现有配置启用，无需修改 runtime 代码 —— 已被 WU-2A.0 探针证伪（2026-08-08 实施阶段修正）
 
-- 类型：当前 CodeGraph + 配置事实。
-- `ROOT_KINDS` 只允许 `company_raw/directory/dayu_portfolio`；当前生产 roots 中只有 `dropbox_stock` 使用 `directory`。resolver 根据 `reusable_root_kinds` 将对应 kind 的 roots 放入候选；filing-fetch 已支持配置化 `allowed_handle_roots`。
-- 所以精确的 config-only 方案是：company-wiki 的 `reusable_root_kinds` 追加 `directory`；filing-fetch 的 `allowed_handle_roots` 追加 `${USER_PROFILE}/Dropbox/Stock`。不需要改变 root kind、重扫 catalog 或修改 runtime。
-- 风险：授权粒度是 kind，未来新增第二个 directory root 会被连带放开。必须用配置契约测试锁定“directory roots 恰好等于 dropbox_stock”，并用跨仓 E2E/生产只读 canary 证明 official 正例成功、broker/rejected/越界负例失败。
-- 边界：本轮仅把方案写入计划，尚未实际修改配置；当前运行状态仍是 Dropbox 被排除。
+- 原结论：类型为当前 CodeGraph + 配置事实，声称两处配置即可启用 Dropbox。
+- **修正**：WU-2A.0 探针（`tests/contract/test_source_catalog_dropbox_probe.py`，真实 resolver 运行）证明两处配置是必要但非充分条件：
+  - `scanner.py:1072-1077` 的 `document_metadata` 只在 `company_raw`/`dayu_portfolio` 根把 sidecar 元数据写入 `acquisition`/`dayu_meta` 嵌套键；`directory` 根两者均为 `null`（fixture 与生产 catalog 双重验证）。
+  - `resolver.py:275-283` 的 `_source_metadata()` 只读 `metadata[“acquisition”]`/`metadata[“dayu_meta”]` → directory 根文档恒返回 `{}` → form_type/provider/market/security_id/source_url 全部缺失 → resolver 依次报 `form_type_mismatch`/`identity_unverifiable_strict`/`capture_incomplete`，无法形成 capture-ready handle。
+  - 生产 catalog：dropbox root 下无 active 官方财报（annual 371/semi 128/quarterly 56 全 retired），唯一 active semi-annual 的 metadata 实际属 company_raw。
+- **结论**：启用 Dropbox 复用需要最小 runtime 修改（scanner 对 dropbox 重点关注子树把 sidecar 元数据写入 `acquisition` 键，约数行），超出原 §2.4 “runtime 零改动” 授权范围；WU-2A.0 状态 = blocked，等待用户对最小 runtime 修改授权或调整需求。
+- 保留有效部分：`ROOT_KINDS` 仅含三个 kind、dropbox_stock 是唯一 directory root、resolver 按 `reusable_root_kinds` 过滤、filing-fetch 支持配置化 `allowed_handle_roots`——这些配置机制本身成立；风险（kind 级授权连带放开未来 directory roots）与 CONFIG-DBX 契约测试需求仍有效，但须在 runtime 缺口修复后重新探针。
 
 ## 分维度验收结论
 
