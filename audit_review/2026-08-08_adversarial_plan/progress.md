@@ -21,9 +21,15 @@
   "real_root_writes": 0,
   "mutation_proof": {"isolation_broken": "RED (invalid_artifact_isolated test failed)"},
   "semantics": "invalid artifact isolated — sibling roles and source stay reusable; bundle hash changes when any role state changes",
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId ae5c4f83fb0504d73)",
+  "review_findings": [
+    {"severity": "important", "desc": "同 role 多 artifact 未定义（dict 覆盖 + valid/invalid 矛盾）", "resolution": "fixed: 最新 valid 胜出，旧 valid 标 superseded；确定性按 created_at"},
+    {"severity": "important", "desc": "RED 场景覆盖不足（仅部分存在）", "resolution": "fixed: 5 个新场景测试（同 role/两 generator/旧 source 新 summary/summary-sections stale/hash 不符）"},
+    {"severity": "important", "desc": "bundle hash 未绑定 invalid 子 handle", "resolution": "fixed: digest 含 invalid role/reason"},
+    {"severity": "suggestion", "desc": "invalid 代表选择非规则化", "resolution": "fixed: earliest (created_at, artifact_id) + 输入顺序无关测试"},
+    {"severity": "suggestion", "desc": "模块 docstring 滞后", "resolution": "fixed"}
+  ],
+  "status": "accepted (all reviewer findings fixed; 22 tests + mutation-proved)"
 }
 ```
 
@@ -47,9 +53,16 @@
   "llm_calls": 0,
   "real_root_writes": 0,
   "mutation_proof": {"status_check_removed": "RED (pending test failed)", "hash_check_removed": "RED (hash test failed)"},
-  "reviewer": "pending (agent-skills:code-reviewer)",
-  "review_findings": [],
-  "status": "implemented → focused green → pending independent review"
+  "reviewer": "agent-skills:code-reviewer (agentId a84da0d878ee2175a + ae5c4f83fb0504d73)",
+  "review_findings": [
+    {"severity": "major", "desc": "source_sha 未校验", "resolution": "fixed: artifact_source_sha_mismatch + 测试 + mutation"},
+    {"severity": "major", "desc": "future as_of 未校验", "resolution": "fixed: artifact_source_as_of_future + 测试 + mutation"},
+    {"severity": "major", "desc": "schema_version 未校验", "resolution": "fixed: artifact_schema_unsupported + 测试 + mutation"},
+    {"severity": "minor", "desc": "reason code 内嵌动态值", "resolution": "fixed: 全部稳定常量"},
+    {"severity": "minor", "desc": "created_at 缺失 fail-open", "resolution": "fixed: artifact_created_at_malformed + 测试 + mutation"},
+    {"severity": "minor", "desc": "store artifacts 表缺 schema_version/source_sha256 列，gate 对 DB 数据不生效", "resolution": "accepted as WU-5.3/5.4 wiring 项；接线时补列"}
+  ],
+  "status": "accepted (12 tests; 4 new gates mutation-proved; store column wiring deferred to WU-5.3/5.4)"
 }
 ```
 
