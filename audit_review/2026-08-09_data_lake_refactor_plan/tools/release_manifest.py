@@ -11,7 +11,6 @@ import argparse
 import hashlib
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 PLAN_DIR = Path(__file__).resolve().parents[1]
