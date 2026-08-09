@@ -54,3 +54,16 @@
 - 最终机器自审通过：4个planning文件、74/74卡、七字段完整、15个唯一Phase门、72+12场景、27条finding映射、无开放占位项。
 - 三个产品仓最终status均无本轮改动；本次仅修改该planning目录的四个Markdown文件。
 - runbook完整性validator已明确归入WU-103的RED/mutation/Phase 1门。
+
+## 2026-08-09 — 实施启动：WU-101
+
+- 三仓 CI 全绿后启动实施（revenue eecf86a / filing 8714a66 / wiki d4a3553）。
+- WU-101 完成：baseline_gate.py（--capture/--check）+ 11 个 RED→GREEN 测试；
+  三种 mutation（伪造 HEAD/删 node/脏文件入 allowlist）全部被 gate 捕获。
+- 基线：revenue 343 / filing 138 / wiki 1689 node IDs；5 个配置文件 sha256；plan_hash 绑定。
+- 用户脏路径（llm_cost_log.csv、source_manifests/archive）永久列入禁止 allowlist。
+- 应约在 task_plan「弱模型协议」后新增「推送前 CI 预检」七项（2026-08-09 CI 教训制度化），
+  runbook 全局继承门加第 8 条。
+- 提交 2675210；独立 reviewer 后台复核中（重跑测试/check/mutation）。
+- WU-102 侦察完成：三根真实布局与 sidecar 形态已记录（company_raw/dayu/Dropbox），
+  现有 tests/helpers/source_factory.py 可复用模式；等待 WU-101 accepted 后正式实施。
