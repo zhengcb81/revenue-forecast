@@ -1,16 +1,16 @@
 {
   "wu_id": "WU-101",
   "plan_version": "2.1-full-refactor-execution-cards",
-  "plan_hash": "见 baselines/WU-101-baseline.json plan_hash（task_plan.md sha256）",
+  "plan_hash": "77ab30f04126a810（baselines/WU-101-baseline.json plan_hash，task_plan.md sha256，含推送前 CI 预检七项）",
   "owner": "revenue audit tooling（audit_review/2026-08-09_data_lake_refactor_plan）",
-  "reviewer": "pending（agent-skills:code-reviewer）",
-  "status": "implemented → mutation_proved → pending independent review",
+  "reviewer": "agent-skills:code-reviewer a8cc1e4098c337cf4 — verdict=rejected（P1 基线自反陈旧；P2×2；P3×2）→ 修复后重新验收",
+  "status": "implemented → mutation_proved → independently_reviewed（首轮 rejected）→ 修复 P1/P2/P3 进行中 → 待 re-review",
   "started_at": "2026-08-09T07:30:00Z",
-  "completed_at": "2026-08-09T08:05:00Z",
+  "completed_at": "2026-08-09T08:40:00Z",
   "baseline_commit": {"revenue": "eecf86a", "filing": "8714a66", "wiki": "d4a3553"},
-  "current_commit": {"revenue": "eecf86a", "filing": "8714a66", "wiki": "d4a3553"},
-  "dirty_paths_before": {"revenue": [], "filing": [], "wiki": ["M llm_cost_log.csv", "?? source_manifests/archive/"]},
-  "dirty_paths_after": {"revenue": ["audit_review 增量（本 WU）"], "filing": [], "wiki": ["M llm_cost_log.csv", "?? source_manifests/archive/"]},
+  "current_commit": {"revenue": "ed609cf（WU-101 提交后；recapture 跟进提交将锁定新 HEAD）", "filing": "8714a66", "wiki": "d4a3553"},
+  "dirty_paths_before": {"revenue": ["4 个 audit_review M + 2026-08-09_data_lake_refactor_plan ??（调查会话产物）"], "filing": [], "wiki": ["M llm_cost_log.csv（后已提交 92f04cf）", "?? source_manifests/archive/（后已提交）"]},
+  "dirty_paths_after": {"revenue": ["audit_review/2026-08-09_data_lake_refactor_plan 增量（本 WU）"], "filing": [], "wiki": []},
   "allowed_files": ["audit_review/2026-08-09_data_lake_refactor_plan/**"],
   "actual_changed_files": [
     "audit_review/2026-08-09_data_lake_refactor_plan/tools/baseline_gate.py (new)",
@@ -20,7 +20,7 @@
     "audit_review/2026-08-09_data_lake_refactor_plan/task_plan.md (推送前 CI 预检七项)",
     "audit_review/2026-08-09_data_lake_refactor_plan/implementation_runbook.md (全局继承门第 8 条)"
   ],
-  "forbidden_path_check": "产品 runtime/config/tests 零改动；三真实根零触碰；llm_cost_log.csv/source_manifests/archive 未列入任何 allowlist",
+  "forbidden_path_check": "产品 runtime/config/tests 零改动（reviewer 实证 git diff 2675210^ 2675210 -- scripts src tools = 0 行）；三真实根零触碰；llm_cost_log.csv/source_manifests/archive 未列入任何 allowlist",
   "red_test_ids": [
     "test_base01_head_mismatch_fails",
     "test_base01_head_match_passes",
@@ -36,10 +36,10 @@
   ],
   "red_command": "cd audit_review/2026-08-09_data_lake_refactor_plan && python -m pytest tools/tests/test_baseline_gate.py -q",
   "red_exit_code": 0,
-  "red_failure_excerpt": "首轮 3 个失败为测试/实现契约不一致（collection 结构扁平 vs 嵌套、config hash 测试自身 bug），修正测试后 11 passed；mutation 演示三种损坏状态均使 --check 失败",
+  "red_failure_excerpt": "首轮 ModuleNotFoundError（baseline_gate 未实现）→ 实现后 3 个失败：test_base03_node_removed_fails/test_base03_skip_added_fails（collection 契约扁平 vs 嵌套）、test_config_hash_mismatch_fails（测试自身 hash 相同 bug）——修正测试契约后 11 passed；reviewer 提示 0.4 要求 RED 命中目标行为，本 WU 的 RED 以行为级 mutation 演示补充（M-BASE-01/02/03）",
   "focused_commands": [
-    "python tools/baseline_gate.py --capture（三仓 HEAD/config/collection 采集）",
-    "python tools/baseline_gate.py --check（exit 0）"
+    "python tools/baseline_gate.py --capture --with-skip-counts（三仓 HEAD/config/collection/执行统计）",
+    "python tools/baseline_gate.py --check --with-skip-counts（exit 0；P1 修复后 recapture 锁定当前 HEAD）"
   ],
   "focused_exit_code": 0,
   "focused_collected": 11,
@@ -48,14 +48,14 @@
   "focused_skipped": 0,
   "repo_commands": ["not_applicable：Phase 1 无产品代码，无仓库级测试影响"],
   "cross_repo_commands": ["capture 只读采集三仓 git/config/collect-only，无跨仓行为"],
-  "collection_baseline": {"revenue": 343, "filing": 138, "wiki": 1689},
+  "collection_baseline": {"revenue": 343, "filing": 138, "wiki": 1689, "skip_counts": "recapture 后见 baselines/WU-101-baseline.json"},
   "mutation_proof": [
     {"mutation_id": "M-BASE-01", "description": "伪造 baseline 中 revenue HEAD 为 ffff...", "expected_failure_test": "check 报 BASE-01", "observed_failure": "BASELINE-GATE: revenue: HEAD ... != baseline ffff... (BASE-01)", "revert_proof": "重新 --capture 后 --check OK"},
-    {"mutation_id": "M-BASE-03", "description": "删除 baseline 中一个 revenue node ID", "expected_failure_test": "check 报 collection drift", "observed_failure": "BASELINE-GATE: revenue: 1 node(s) added without plan revision（方向：基线被删 vs 实际多出）", "revert_proof": "重新 --capture 后 --check OK"},
-    {"mutation_id": "M-BASE-02", "description": "把 llm_cost_log.csv 列入 implementation allowlist", "expected_failure_test": "verify_dirty_allowlist 拒绝", "observed_failure": "user-dirty path 'llm_cost_log.csv' is in the implementation allowlist (BASE-02)", "revert_proof": "单测恒定拒绝"}
+    {"mutation_id": "M-BASE-03", "description": "删除 baseline 中一个 revenue node ID", "expected_failure_test": "check 报 collection drift", "observed_failure": "BASELINE-GATE: revenue: 1 node(s) added without plan revision（方向：基线被删 vs 实际多出；reviewer P3 指出方向反述，已改消息为 'collected now but absent from baseline'）", "revert_proof": "重新 --capture 后 --check OK"},
+    {"mutation_id": "M-BASE-02", "description": "把 llm_cost_log.csv 列入 implementation allowlist", "expected_failure_test": "verify_dirty_allowlist 拒绝", "observed_failure": "user-dirty path 'llm_cost_log.csv' is in the implementation allowlist (BASE-02)；reviewer 复验子路径/反斜杠变体均拒绝、前缀相似路径放行", "revert_proof": "单测恒定拒绝"}
   ],
   "fixture_manifest_hash": "not_applicable（WU-101 无 fixture；WU-102 建立）",
-  "config_hash": "baselines/WU-101-baseline.json config_hashes（5 个配置文件 sha256）",
+  "config_hash": "baselines/WU-101-baseline.json config_hashes（4 个配置文件 sha256：revenue/filing company_wiki.json + wiki source_catalog.yaml/source_catalog_worker.yaml）",
   "catalog_schema_version": "not_applicable（只读采集，未查询 schema）",
   "network_calls": 0,
   "download_calls": 0,
@@ -67,7 +67,7 @@
   "real_root_probe_after": "未执行",
   "rollback_point": "revert 本 WU 提交即可（仅新增 audit 工具与计划文档，无产品行为）",
   "ci_preflight": {
-    "1_ignore_check": "git check-ignore 确认 baseline_gate.py/test 不在忽略列表（后续 WU 推送前执行完整清单）",
+    "1_ignore_check": "git check-ignore 确认 baseline_gate.py/test 不在忽略列表",
     "2_ci_env_dry_run": "not_run（本 WU 无 CI workflow 变更；工具为本地审计用途）",
     "3_new_step_preflight": "not_applicable",
     "4_platform": "not_applicable（无平台相关代码）",
@@ -75,7 +75,18 @@
     "6_untracked_check": "tools/、baselines/、receipts/ 均将入库",
     "7_preflight_recorded": "本字段"
   },
-  "reviewer_findings": [],
-  "open_risks": ["collection 基线为相对计数（filing 138 vs 历史 142 含 subtests 差异），以首次捕获为锚；后续删除测试/新增 skip 会被 gate 捕获"],
-  "admission_decision": "pending independent review"
+  "reviewer_findings": [
+    {"severity": "P1", "desc": "基线自反陈旧：baseline 固定 WU-101 提交前的 HEAD，提交后 --check 恒红", "resolution": "recapture 跟进提交锁定当前 HEAD + recapture 纪律入计划（每 WU 边界 recapture）"},
+    {"severity": "P2", "desc": "BASE-02 未在 --check 路径执行（空列表）", "resolution": "fixed: --allowed-files 参数接收真实 allowlist 文件并校验"},
+    {"severity": "P2", "desc": "BASE-03 skip 检测死代码（collect-only 不区分 skip）", "resolution": "fixed: --with-skip-counts 执行态统计 skipped/xfailed（-rs 解析 summary）"},
+    {"severity": "P3", "desc": "receipt 陈旧（current_commit/plan_hash/配置数 5→4/dirty_paths_before）", "resolution": "fixed: 本回执按真实结果重写"},
+    {"severity": "P3", "desc": "M2 消息方向反述 + RED excerpt 补录", "resolution": "fixed: added 消息改 'collected now but absent from baseline'；RED excerpt 补原始失败"}
+  ],
+  "open_risks": [
+    "collection 基线以首次捕获为锚（filing 138 vs 历史 142 含 subtests 差异），任何合法收集变化需 plan revision 并重新捕获",
+    "gate 未接入 CI（本地审计工具），执行力依赖人工调用；WU-1401 三仓分层 CI 时接入",
+    "config_hashes 覆盖 4 个产品配置文件，任一变更直接红门——变更流程：先更新计划/回执再 recapture",
+    "recapture 纪律：每 WU accepted 边界重新 --capture（P1 教训），已加入 runbook"
+  ],
+  "admission_decision": "pending re-review（修复后重新提交独立 reviewer 验收）"
 }

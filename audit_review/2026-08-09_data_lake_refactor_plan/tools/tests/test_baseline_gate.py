@@ -25,9 +25,9 @@ def _baseline(heads=None, node_ids=None, dirty=None, configs=None, plan_hash="ph
             "wiki": {"path": "C:/repos/wiki", "head": heads["wiki"], "branch": "master", "dirty": []},
         },
         "collection": node_ids or {
-            "revenue": {"node_ids": ["a::t1", "a::t2"], "skipped": []},
-            "filing": {"node_ids": [], "skipped": []},
-            "wiki": {"node_ids": [], "skipped": []},
+            "revenue": {"node_ids": ["a::t1", "a::t2"], "skipped": 0, "xfailed": 0},
+            "filing": {"node_ids": [], "skipped": 0, "xfailed": 0},
+            "wiki": {"node_ids": [], "skipped": 0, "xfailed": 0},
         },
         "user_dirty": dirty or ["llm_cost_log.csv", "source_manifests/archive"],
         "config_hashes": configs or {},
@@ -62,9 +62,9 @@ def test_base02_clean_allowlist_passes():
 def test_base03_node_removed_fails():
     b = _baseline()
     current = {
-        "revenue": {"node_ids": ["a::t1"], "skipped": []},
-        "filing": {"node_ids": [], "skipped": []},
-        "wiki": {"node_ids": [], "skipped": []},
+        "revenue": {"node_ids": ["a::t1"], "skipped": 0, "xfailed": 0},
+        "filing": {"node_ids": [], "skipped": 0, "xfailed": 0},
+        "wiki": {"node_ids": [], "skipped": 0, "xfailed": 0},
     }
     problems = verify_collection(b, current)
     assert any("a::t2" in p for p in problems)
@@ -73,9 +73,9 @@ def test_base03_node_removed_fails():
 def test_base03_skip_added_fails():
     b = _baseline()
     current = {
-        "revenue": {"node_ids": ["a::t1", "a::t2"], "skipped": ["a::t3"]},
-        "filing": {"node_ids": [], "skipped": []},
-        "wiki": {"node_ids": [], "skipped": []},
+        "revenue": {"node_ids": ["a::t1", "a::t2"], "skipped": 3, "xfailed": 0},
+        "filing": {"node_ids": [], "skipped": 0, "xfailed": 0},
+        "wiki": {"node_ids": [], "skipped": 0, "xfailed": 0},
     }
     assert verify_collection(b, current)
 

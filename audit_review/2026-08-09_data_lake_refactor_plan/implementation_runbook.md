@@ -915,3 +915,12 @@ CP0 必须用当前 HEAD/CodeGraph 生成精确 allowlist；下列是允许模�
 - 不存在开放占位项。
 - machine validator 可检测删卡、重复 ID、空字段、错误依赖、plan hash 漂移。
 - 文件边界、reviewer、证据目录和命令alias均已冻结；实施时只能通过plan revision扩展。
+
+## 基线 recapture 纪律（WU-101 P1 教训）
+
+- 每 WU accepted 边界必须重新执行 `baseline_gate.py --capture --with-skip-counts`，
+  锁定该边界的三仓 HEAD/collection/skip 计数；未 recapture 时下一个 WU 的 --check 必然红。
+- --check 使用 `--with-skip-counts`（执行态 skipped/xfailed 统计）；每 WU 的
+  --allowed-files 必须是该 WU receipt actual_changed_files 的同一文件。
+- collection 计数变化（新增/删除测试、插件差异）视为 plan revision 事件：
+  先更新计划/回执，再 recapture。
