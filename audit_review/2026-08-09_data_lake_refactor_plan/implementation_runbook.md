@@ -924,3 +924,12 @@ CP0 必须用当前 HEAD/CodeGraph 生成精确 allowlist；下列是允许模�
   --allowed-files 必须是该 WU receipt actual_changed_files 的同一文件。
 - collection 计数变化（新增/删除测试、插件差异）视为 plan revision 事件：
   先更新计划/回执，再 recapture。
+
+## green-check 验收时机（P1 二轮教训：结构性自反）
+
+- 基线 gate 的 green 验收**在边界工作区态执行**（所有 WU 文件已写入、未提交时）：
+  `--capture --with-skip-counts` 锁定当前 HEAD/collection → 同态 `--check --with-skip-counts` exit 0 → 然后才提交。
+- 提交本身会移动 HEAD，提交后 --check 报 BASE-01 是**预期行为**（下一步 WU 开始时 recapture 吸收），
+  不属于缺陷；reviewer 验收时用 `git show <recapture提交>` 核对 baseline 锁定值 == 该提交的 parent HEAD，
+  并在该父态（`git worktree add` 或 checkout）重跑 --check 验证 exit 0。
+- 禁止在提交后把 baseline 当作"当前态"使用；任何 WU 启动第一步 = recapture。
