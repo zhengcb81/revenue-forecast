@@ -276,6 +276,21 @@
 - **结论**：启用 Dropbox 复用需要最小 runtime 修改（scanner 对 dropbox 重点关注子树把 sidecar 元数据写入 `acquisition` 键，约数行），超出原 §2.4 “runtime 零改动” 授权范围；WU-2A.0 状态 = blocked，等待用户对最小 runtime 修改授权或调整需求。
 - 保留有效部分：`ROOT_KINDS` 仅含三个 kind、dropbox_stock 是唯一 directory root、resolver 按 `reusable_root_kinds` 过滤、filing-fetch 支持配置化 `allowed_handle_roots`——这些配置机制本身成立；风险（kind 级授权连带放开未来 directory roots）与 CONFIG-DBX 契约测试需求仍有效，但须在 runtime 缺口修复后重新探针。
 
+### F-035：昨日计划之后三仓已发生大规模实施，旧架构结论必须按当前 HEAD 复核
+
+- 当前 HEAD：revenue `73a23c69...`、filing `2d9eb3b6...`、wiki `9b7e8565...`；相对原审查基线已有 WU-0/1/6/7/8/9 等多批提交。
+- revenue 工作区另有正在进行的 closure-ledger/CI/audit 工具变更；wiki 有既存/进行中的日志、测试与 archive 变更。本调查不触碰这些内容。
+- CodeGraph 当前可用；revenue 统计已变化，filing/wiki 统计与旧值相同，需按用户既有授权刷新后再做结构判断。
+- 影响：F-034 已经证明“配置可以放开候选集合”不等于“目录文档携带 resolver 所需的统一 metadata/provenance”。本轮进一步调查这是不是单点漏写，还是 root-specific ingest 架构的系统性问题。
+
+### F-036（架构核心）：catalog 统一了文件/位置表，却没有统一 filing 语义元数据契约
+
+- 当前 catalog 在物理层确有 data-lake 雏形：sources/documents/locations/artifacts 分表、同 hash 跨 location 去重、root priority、active-only 默认查询、SourceBundle 都已存在。
+- 但 filing 的语义 metadata 仍以 `documents.metadata_json` 内的 root-specific 嵌套形态存在。当前 `query_filing_candidates` 的 fiscal-year SQL 明确只读 `$.acquisition.fiscal_year` 或 `$.dayu_meta.fiscal_year`；这把“原始文件来自哪里”泄漏进了通用查询层。
+- resolver `_source_metadata()` 同样只认识 acquisition/dayu_meta。即使第三种 root 成功被索引、文档类型也分类正确，只要 metadata 没装进这两个名字之一，provider/form/market/security/year/URL 就不可见。
+- 结论：当前抽象是“统一 catalog + 两种受支持 ingest profile”，不是“任何已索引 root 都通过统一 metadata contract 成为等价数据源”。Dropbox 失败不是单一白名单问题，而是 semantic-normalization 边界缺失。
+- 已实施的 WU-3.1/3.2/4/5 改善了状态过滤、SQL 性能、latest 和 artifact bundle，但没有消除上述 root-specific metadata schema；SourceBundle 位于更下游，无法修复 ingest 时丢失的身份/出处字段。
+
 ## 分维度验收结论
 
 | 维度 | 有效成果 | 关键缺口 | 判定 |
@@ -353,3 +368,230 @@
 | R-012 | 外部根被写入/复制，破坏用户资产 | 中 | 严重 | 历史 Strategy A 曾做 promotion 后回滚 | read-only policy + before/after tree hash + writer fence |
 | R-013 | plan completed 再次先于真实 DoD | 高 | 高 | 多份当前 plan 自相矛盾/时间门未满 | state machine + receipt + cross-doc verifier |
 | R-014 | worker/扫描错误长期被绿测试掩盖 | 高 | 中高 | 最近至少 10 次 scan completed_with_errors | scan health SLA + target-aware degrade + timed gate |
+### F-037（高）：`directory` 不是一个可插拔来源适配器，而是 scanner 内的弱语义兜底分支
+
+- 类型：当前代码事实。
+- `RootSpec` 只有 `root_id/path/kind/priority`，`kind` 又被封闭在 `company_raw/directory/dayu_portfolio` 三值枚举；配置 schema 没有 layout adapter、sidecar mapper、identity mapper、classification profile 或 admission-policy 引用，因而单靠配置无法描述一个新数据湖根目录“怎样从路径和伴随文件恢复 filing 语义”。
+- `scanner._enumerate_root()` 按 `root.kind` 写成三套来源特定流程：`company_raw` 假设 `<company>/raw` 与 `*.source.json`；`dayu_portfolio` 假设 `<ticker>/filings/<filing-id>`、`meta.json` 和 SEC/EDGAR 字段；`directory` 仅逐文件扫描。
+- Dropbox 的丰富处理不是由通用 `directory` 契约驱动，而是精确判断 `root_id == "dropbox_stock"` 且相对路径首段为中文硬编码 `重点关注`；对应 admission 正则、类别与侧车配对也写在产品代码里。该子树之外，`.source.json` 本身也会作为普通原件枚举，业务 metadata 为空。
+- 通用目录的公司识别还依赖 `company_raw` 中存在 `<公司>/raw`，再以相对路径包含公司名且恰好唯一来反推 entity；因此“已被索引的任意目录”并不能独立贡献新公司、ticker/market/security_id 或消除名称歧义。
+- `_classification()` 对 `directory` 的无匹配兜底是 `broker_research`，对 `dayu_portfolio` 的兜底才是 `regulatory_filing`；这证明根类型不仅描述物理布局，还隐式决定业务语义。`directory` 分支内部另有一个逻辑上不可达的 `if root.kind == "dayu_portfolio"`，是来源分支持续叠加留下的结构性异味。
+- 结论：当前架构没有形成“增加根目录 + 声明适配规则即可接入”的 source adapter SPI；新增不同布局/sidecar 约定的数据湖根，通常需要改 scanner/admission/classifier，而不仅是配置。
+
+### F-038（Critical）：Dropbox 侧车信息在扫描中被读取，却在 resolver 所依赖的规范语义层被丢弃
+
+- 类型：当前代码事实；这是 config-only 不能成功的直接根因。
+- 对 `dropbox_stock/重点关注`，scanner 会读取 `.source.json`，并用其做 admission、分类、标题/日期和 location manifest 构造；所以“索引看见了文件”和部分 capture provenance 并非完全缺失。
+- 但写入 `documents.metadata_json` 时，scanner 只把 `company_raw` metadata 放入 `acquisition`，只把 `dayu_portfolio` metadata 放入 `dayu_meta`；`directory` 的 sidecar metadata 不进入任何 resolver 认可的语义容器。文档合并也只比较 `dayu_meta` 或 `acquisition`，Dropbox location 不能给同内容文档补齐这些字段。
+- resolver 的 `_source_metadata()` 又只读取 `acquisition` 与 `dayu_meta`；`query_filing_candidates(..., fiscal_year=...)` 的 SQL 也只检查 `$.acquisition.fiscal_year` 和 `$.dayu_meta.fiscal_year`。这是“写入端与读取端共同封闭在两个来源 profile”形成的双重耦合。
+- 因而即便配置把 `directory` 加入 `reusable_root_kinds`、再把 Dropbox 加入 filing-fetch 的 `allowed_handle_roots`，也只打开了“根可复用”和“路径围栏”两道门；market/security_id、form_type、fiscal_period/year、provider/provider_document_id、source_url 等仍可能为空，强身份、表单、期间、capture-ready 验证继续 fail closed。
+- location manifest 中的 collector/retrieved_at/hash 不能弥补这一缺口：`SourceHandle` 的 HTTPS URL 与多数 filing identity 字段来自 `_source_metadata()`；verified assertion fallback 也只覆盖部分 market/security/fiscal-year，不能补 form/provider/URL/capture trace。
+- 结论：Dropbox 的问题不是配置字段拼错，也不是“少一个白名单”这么浅；是采集层已有的语义没有被规范化并贯穿到解析契约。当前 negative probe 正确地在“仅启用 directory”后仍返回 `MISSING`，它暴露的是运行时契约缺口。
+
+### F-039：下游的多根路径围栏已配置化，但它不是来源语义适配层
+
+- 类型：当前代码事实。
+- filing-fetch 的 `load_company_wiki_root()` 支持可选 `allowed_handle_roots`，`validate_handle()` 用这些根做 canonical path containment 与深校验；这部分能够通过配置接纳外部只读根，未把 Dropbox 字符串写死在核心调用链。
+- 但 filing-fetch 并不扫描或解释任意根：它调用 company-wiki 的 `resolve/ensure`，只消费上游已经形成且 `capture_ready=True` 的 handle。`source_bundle` 在 filing-fetch 验证中是可选的前向兼容字段，且不能放松原 handle 的身份、hash、路径和 capture-ready 深校验。
+- 因此 filing-fetch 的配置只能决定“上游给出的合格 handle 是否允许指向该路径”，无法把缺字段的 catalog document 变成合格 filing。把问题归咎为 filing-fetch 的单一白名单会混淆职责层次；主要阻塞点仍在 company-wiki ingest/normalization/resolver 契约。
+
+### F-040：当前生产配置已经把 Dropbox 两道白名单全部打开；仍不能复用是反证，不是待配置事项
+
+- 类型：2026-08-09 当前配置事实。
+- `company-wiki/config/source_catalog.yaml` 当前为 `reusable_root_kinds: [company_raw, dayu_portfolio, directory]`，且配置了 `dropbox_stock -> ${USER_PROFILE}/Dropbox/Stock`。
+- `filing-fetch/config/company_wiki.json` 当前 `allowed_handle_roots` 也已列出 companies、dayu portfolio、Dropbox Stock 三根。
+- 因而“只需改两份配置即可启用”的机械步骤已经执行。若 probe/生产 catalog 仍不能返回 capture-ready Dropbox filing，逻辑上足以否定原 config-only 假设；继续改同类白名单不会产生丢失的 filing 语义。
+- 风险：`reusable_root_kinds` 的授权粒度是 kind，不是 root_id。当前把 `directory` 打开意味着未来新增任何 `kind=directory` 根会自动取得复用资格；这与“只允许经过明确治理的数据湖根”的最小权限模型不一致。
+
+### F-041：revenue-forecast 消费端大体根无关，但它只能利用上游已验证的 handle/bundle
+
+- 类型：当前代码事实。
+- `filing_fetch_client.resolve_filing()` 只启动 filing-fetch 并要求响应状态为 `capture_ready`；它没有 companies/dayu/Dropbox 分支，也不承担 catalog discovery。
+- `build_revenue_source_record()` 对任意 canonical path 都会重算文件 SHA-256，并要求 capture-ready、HTTPS URL、published/retrieved/as-of 顺序、location/request identity；因此 Dropbox 若能产生同契约 handle，下游无需按根改代码。
+- `select_reusable_artifacts()` 已能从 `source_bundle.valid_handles` 按 role 复用 verified normalized/summary/sections/consumer_analysis，且 consumer_analysis 可按 engine/model/prompt/input_bundle_hash fail closed。这是“已处理资产复用”的正确方向，也说明下游合同可以是根无关的。
+- 但这些函数不负责把普通索引文件提升成 filing 或生成 bundle；它们依赖 company-wiki 正确规范化源文档并构造 bundle。因此当前泛化断点主要位于 ingest 与语义归一层，而不是 revenue 消费记录层。
+
+### F-042（Critical）：生产 catalog 证明 Dropbox 是“已索引但没有独立可复用财报”的数据孤岛
+
+- 类型：2026-08-09 对 49GB 生产 SQLite 的只读查询事实；没有触发扫描或写入。
+- catalog 的 roots 正确登记三根：company_raw(priority 10)、dayu_portfolio(20)、dropbox_stock/directory(30)。Dropbox 有 9,828 个 original-primary locations（9,200 active、1 quarantined、627 retired）与 9,789 个 distinct documents，说明物理索引确实存在。
+- Dropbox 关联文档中，官方财报分类为 annual 370、quarterly 56、semi-annual 129；annual/quarterly 全部 retired，semi-annual 128 retired，仅 1 active。
+- 唯一 active semi-annual 并不是 Dropbox 独立提供的合格文档：同一 document 同时有 active company_raw 原件与 sidecar，`documents.metadata_json.root_id=company_raw` 且有 `acquisition`；Dropbox 只是相同内容的第二个 location。
+- 以 Dropbox location 关联的官方财报中，103 个文档的主 metadata 来自 Dropbox（annual 47、quarterly 34、semi-annual 22），但它们全部 retired；其余多为与 company_raw 内容去重后的文档，也同样因 document status 不能进入 active resolver 候选。
+- 全部 Dropbox 关联文档的顶层 JSON 都有 `acquisition/dayu_meta` 键，但大部分只是 `null`：仅 3,400 个因跨根同内容或主来源选择取得 acquisition object，dayu_meta object 为 0；`admission` 仅 17 个文档有记录。这解释了为何只检查“键存在”会产生虚假信心。
+- 直接用户结论：今天的系统会把 Dropbox 中数百份看似财报的文件计入 catalog，却不能把任何 Dropbox-only 财报作为 active、强身份、capture-ready 的 filing 返回。`indexed` 在当前实现里不等于 `semantically admitted`，更不等于 `reusable`。
+
+### F-043（高）：普通 directory 的关键词分类会制造“看起来像财报”的假阳性，说明不能把索引即复用
+
+- 类型：当前代码 + 生产 catalog 样本事实。
+- 一个 Dropbox 路径为“华创证券-汽车行业深度研究报告：海外汽车年报总结……”的 PDF，被分类为 `annual_report`、manifest source_type=`regulatory_filing`，但 entity 是 `unresolved:dropbox_stock`、published_date 为空、metadata 的 acquisition/dayu_meta 均为空。它本质是券商行业报告，不是公司监管财报。
+- 一个“计算机行业2020半年报回顾……”PDF及其 `.source.json` 曾分别成为 `semi_annual_report` 文档；这同时暴露标题关键词先于语义身份、以及 focus 子树之外 sidecar 被当原件扫描的问题。
+- 当前样本已因 location/document retired 而不会被 active resolver 复用，说明后续状态清理起到了止损作用；但它不修复 classifier 和 ingest 泛化，重新出现/新扫描的普通目录内容仍依赖其它门 fail closed。
+- 对抗性结论：强身份、admission、capture-ready 门不是多余复杂度，而是阻止 data lake 噪音升级为正式 evidence 的必要边界；真正应泛化的是“如何规范化并证明语义”，不能把所有 indexed PDF 无条件当 filing。
+
+### F-044：硬编码并非同一性质；需要保留写入所有权，拆除读取来源特例
+
+- 类型：架构判断，依据当前调用点。
+- 合理且应保留的耦合：`canonical_writer` 明确只写唯一 `company_raw` root，下载的新文件规范化进入 `companies/{entity}/raw/...`；这是单一 canonical writer、外部根只读与可审计 provenance 的所有权边界，不妨碍从外部根读取复用。
+- 可配置且基本合理的耦合：filing-fetch `allowed_handle_roots` 路径围栏；它是安全授权，不解释业务语义。
+- 不合理的读取耦合：scanner 用 `root.kind/root_id/重点关注` 分派 layout、sidecar、entity、classification 与 admission；resolver 和 SQL只理解 `acquisition/dayu_meta`；config 又没有 adapter/normalizer 声明能力。这些把“来源在哪里”与“文档是什么”绑在一起。
+- 额外治理问题：CLI/focus cleanup 也把 `dropbox_stock/重点关注` 写成精确常量；这些专用清理工具本身可以接受特定 scope，但它们反向印证 Dropbox 尚未成为通用 source profile，而是一个嵌入主系统的专项例外。
+
+### F-045（高）：`重点关注` 不是漏扫，而是被专用 admission 全部挡在 catalog 之外
+
+- 类型：2026-08-09 文件系统、scan receipt 与生产 catalog 只读对照事实；修正初次仅看 0 行时的 freshness 假设。
+- `C:\Users\郑曾波\Dropbox\Stock\重点关注` 当前真实存在，共 161 个文件（5 PDF、0 `*.source.json`、0 MD，其余主要是快捷方式/表格等）；生产 catalog 对该 prefix 确实为 0 location/document。
+- 但 Dropbox root 最近扫描时间是 2026-08-08T22:54:12Z，晚于该目录内容；scan report 明确记录 `policy_excluded=82`。结合代码可知：focus 子树中每个受支持文件都先走 `evaluate_admission()`，不满足显式 kind/form/title 正则的文件直接计入 policy_excluded，根本不写 location。
+- 因此 0 行不是“worker 没看见”，而是系统把这 161 个文件视为需专项准入的例外区域。没有 sidecar 的普通关注名单/研究材料多数被 fail closed 是合理安全结果，但这和“任何 index 过的目录都成为通用 data lake”并不是同一种产品语义。
+- 仍有可观测性缺口：root 级 scan receipt 把三根汇总为 files_seen=46,499、policy_excluded=82，没有 per-root/per-prefix 的 admitted/rejected 原因分布；用户难以从“root 已扫描”判断某个目录为何 0 可用资产。
+
+### F-046：专用 admission 改善了安全性，却进一步证明数据湖接入未抽象化
+
+- 类型：当前代码事实。
+- scanner 用 `root_id == dropbox_stock` 且路径首段等于 `重点关注` 才开启 sidecar 配对与 admission；其它 directory 路径继续 legacy 行为。策略本身包含中文/英文财报、SEC form、broker institution/report、IR/call/prospectus/announcement 等正则。
+- 这套策略能阻止部分研报点评被标题中的“年报”误判，并对无充分证据内容 fail closed；这是必要的安全补丁。
+- 但策略选择、规则与路径均在代码中，配置无法给另一个 indexed root 选择同一 profile，也无法声明不同 profile。其复用单位不是“通用 adapter + policy 配置”，而是一个精确命名的本机目录特例。
+- 代码中的 `if root.kind == "dayu_portfolio"` 位于已经确定 `root.kind == "directory"` 的分支，永远不可达；这显示来源特例在单体 scanner 中累积，而非经明确接口组合。
+
+### F-047（高）：现有 Dropbox probe 已准确暴露 blocker，但测试文件内部存在互相矛盾的成功声明
+
+- 类型：当前测试代码事实。
+- `test_probe_reused_exact_when_directory_kind_reusable` 的正文明确记录 KNOWN GAP：directory 加入 reusable kinds 后仍应为 `MISSING`，trace 命中 form/identity/capture 缺口；并说明 scanner 修复后才应翻转为 `REUSED_EXACT`。这是 config-only 不成立的最直接可执行证据。
+- 但同一文件模块 docstring 仍声称“两份配置是唯一差异”“加 directory 后 REUSED_EXACT”“不需要 runtime edits”，与当前断言及已知根因相反。仅浏览测试标题/模块说明会得出错误结论。
+- 更严重的是 broker negative test 尾部保留了一段标注“POST-FIX EXPECTED”的注释，建议未来把 broker document 对 annual request 改为 `REUSED_EXACT`；若弱模型照注释执行，将直接破坏该测试本应证明的隔离边界。这是复制粘贴留下的危险指令污染。
+- 该 probe 还人为创建 `companies/ACME/raw`，让 `_infer_company` 成功；它没有覆盖“Dropbox 中有新公司但 company_raw 不存在”这个真实 data-lake 泛化反例。
+
+### F-048：现有 config invariant 测试只能证明配置一致，不能证明功能可用
+
+- 类型：当前测试代码事实。
+- company-wiki 的 CONFIG-DBX-01/02 只断言 directory 已开启、Dropbox path/kind/priority 固定、且当前没有第二个 directory root；filing-fetch 的 CONFIG-DBX-03/04 只断言 allowed roots 恰为三根且 realpath 对齐。
+- 这些测试能防配置漂移和 kind 级权限意外扩散，价值真实；但不会扫描 sidecar、不会运行 resolver、不会验证强身份/URL/form/fiscal period/capture-ready，也不会证明零下载。
+- config doctor 用“禁止第二个 directory root”补偿 kind 粒度过粗，这是一条脆弱的全局不变量：它让未来新增数据湖根必须先改治理测试/模型，而不是在配置里逐 root 授权。这再次说明当前配置模型不具备自然扩展性。
+
+### F-049：相关测试全绿，但绿色明确包含“Dropbox 合格财报仍 MISSING”这一已知缺口
+
+- 类型：2026-08-09 动态测试事实。
+- company-wiki 聚焦集合：Dropbox probe + config invariants + focus admission，共 21 passed；filing-fetch config/bundle compatibility 为 8 passed、1 skipped；revenue bundle artifact selection/E2E fixture 为 17 passed。
+- 这些绿色结果证明当前实现与当前测试一致，而不是用户目标已达成。尤其 probe 把 config-only 后 `MISSING` 固化为预期，所以 CI 绿色会持续容忍核心 Dropbox reuse 缺口，直到测试被正确翻转。
+- 正面覆盖：focus admission 有 announcement/commentary/broker 分类负例，sidecar pairing scope 也被锁定；SourceBundle 的下游选择和 forged bundle 不放松 handle 门已有测试。
+- 缺失覆盖：没有一个跨三项目入口的绿色 E2E 能用 Dropbox-only、完整 sidecar、无 company_raw 副本的 filing 返回 capture-ready/零下载；也没有“新增第四个任意 layout root 仅改配置即可接入”的 adapter conformance。
+
+### F-050：物理衍生物目录已经相当通用，但 Dropbox 财报因源文档不可解析而无法贯通消费
+
+- 类型：生产 catalog 只读事实 + 当前消费代码事实。
+- Dropbox 关联文档并非完全没有处理成果：artifacts 中有 normalized completed 1,782、summary completed 948、sections completed 7，另有 partial/unsupported。说明 artifact 表按 document/source hash 关联的方向具有 data-lake 特征。
+- 但 Dropbox 关联的 official filing artifacts 全挂在 retired 文档上：annual normalized completed 126/summary 97，quarterly 12/6，semi 20/10；没有一个 active Dropbox-only official filing 能通过 resolver 带出 bundle。
+- SourceBundle/consumer helper 的设计能够按 source SHA、artifact status/version/provenance 判定复用，而不是按 root 名称判定；其数据模型相对松耦合。
+- 实际断链顺序是：source document 先因 status/identity/form/URL 等不能形成 handle，随后再好的 normalized/summary 也没有机会被 consumer 发现；此外 F-051 证明 bundle/helper 还没有接入生产调用链。
+
+### F-051（Critical）：SourceBundle 与衍生物复用目前是“能力孤岛”，生产主链没有调用者
+
+- 类型：CodeGraph 当前调用图事实。
+- company-wiki 的 `query_source_bundle()` 调用者只有两个 contract tests；`build_source_bundle()` 的唯一产品调用者是这个无人使用的 query，其余调用者全部为 tests。
+- revenue-forecast 的 `select_reusable_artifacts()` 调用者共 14 个，全部位于 `test_bundle_artifact_selection.py` 与名为 E2E 的 fixture 测试；没有生产 forecast/orchestration 调用者。
+- filing-fetch 只允许 handle 携带可选 `source_bundle`，且明确 bundle 不得放松原 handle 深校验；company-wiki resolver 返回的 `SourceHandle.to_dict()` 本身不包含 bundle，也没有看到 CLI 在成功返回前调用 `query_source_bundle()` 注入它。
+- 因而当前真实链路是“catalog 中有 artifacts + 有独立 bundle builder + 有 consumer selector 测试”，不是“用户运行 revenue-forecast 时会自动复用现成 MD/摘要”。这些组件尚未组成端到端功能。
+- `test_bundle_e2e_d01.py` 的“E2E”命名容易夸大覆盖：它构造带 bundle 的内存 handle 并直接调用 selector，不能证明 company-wiki resolve → filing-fetch → revenue consumer 的跨进程主路径携带或使用 bundle。
+
+### F-052（Critical）：为补 URL 而做的跨根“按公司名拼接”会破坏文档级 provenance
+
+- 类型：当前代码事实与对抗性推断。
+- scanner 会遍历全部 dayu `meta.json`，构造 `company_name -> source_url` 的单值 map；随后任何 company_raw sidecar 只要缺 URL，就按 company 目录名补入该 URL。
+- 映射没有 document kind、form、fiscal year/period、provider document id、content hash 或 filing date 约束。同一公司有多期财报时，某一 dayu filing 的 URL 可能被赋给另一份 company_raw 文档。
+- `mapping.setdefault(company_name, url)` 又取遍历中遇到的第一个 URL；代码未按 period/filing date 排序或证明唯一。即使文件 hash 仍正确，handle 的 `https_url` provenance 可能指向不同文件，且该 URL 恰好是 capture-ready 必填门。
+- 这是为解决一个来源 profile 的缺字段而在 scanner 内直接读取另一个 root 的数据，属于横向紧耦合；它违背 data lake 中“每条规范化声明携带自己的 evidence/binding”的原则。
+- 该风险与 Dropbox 同源：系统没有通用、文档级 identity join/metadata assertion 归一层，于是用 root 和 company-name 特例补洞。
+
+### F-053（高）：实体识别把外部根从属化于 company_raw，无法成为真正通用湖区
+
+- 类型：当前代码事实。
+- `_company_names()` 只从 `kind=company_raw` 且含 `<child>/raw` 的目录生成公司词典；`_infer_company()` 只做相对路径子串匹配，并要求恰好一个命中。
+- 因此 dayu 以外的通用 directory 若包含 company_raw 尚不存在的新公司，会成为 `unresolved:<root_id>`；多个公司名互为子串/同路径出现时也会 unresolved。sidecar 明明可带 `company_name/ticker/security_id`，当前 directory entity 推断却不以这些字段作为主证据。
+- 测试 Dropbox probe 预先创建 `companies/ACME/raw` 正是为绕过这一限制；它没有证明外部 root 可独立贡献实体。
+- 这使 company-wiki/companies 不只是“主要 canonical 存放地”，还隐性成为外部目录可识别性的主数据前置条件；与用户设想的多通用根、松耦合 data lake 有实质差距。
+
+### F-054（高）：现有 URL enrichment 测试把未绑定的跨根补值固化为正确行为
+
+- 类型：当前测试事实。
+- `test_company_raw_sidecar_without_url_gets_dayu_meta_url` 明确让 company_raw PDF 与 dayu PDF 使用不同 bytes，然后只凭 company_name（fixture 的标题/日期碰巧相同）断言 URL 被复制成功。
+- 测试没有制造同公司多期 dayu meta，没有断言 provider_document_id/fiscal-year/content hash 一致，也没有检查复制 URL 指向的 bytes 与 company_raw 原件相同；所以它验证的是“能补值”，不是“补值有正确 provenance”。
+- 该测试会保护当前危险耦合，使简单重构或严格 identity join 可能先被判回归。需要把这类历史 gap workaround 与最终 data-lake contract 区分，而不能用绿测数量证明架构正确。
+
+### F-055（高）：Dropbox 财报还被“缺 source_url”批量退休；白名单配置不会也不应自动复活
+
+- 类型：生产 retire audit + 当前 scanner/resolver 事实。
+- `document_retire_audit` 有 19,000 行：9,499 个文档在 2026-08-01 以 `legacy sidecar lacks source_url; batch governance Phase 15.6 (F13)` 退休，2026-08-07 又由 reconcile-retire 为同一批写入第二条审计；另有 2 个 placeholder。
+- `metadata_json.root_id=dropbox_stock` 的 47 annual、34 quarterly、22 semi-annual（共 103 个）全部各有这两条审计，退休根因正是 legacy sidecar 缺 URL，而非 Dropbox 白名单关闭。
+- scanner 明确把 retirement 设为终态：文件仍在磁盘且重扫可见时，只更新 last_seen，不恢复 document/location active。resolver 又只查询 active。因此修改 reusable roots/allowed paths 不会越过 lifecycle gate。
+- 这是合理的 fail-closed 治理原则：没有可核验 URL/provenance 的文件不应自动作为正式 filing。但若要把它们纳入 data lake，需要逐文档补齐并验证身份/来源后走显式 restore/re-admission；绝不能用配置开关批量复活。
+- 对用户构想的含义：data lake 应允许“不合格、待治理、可检索但不可作为 evidence”的资产状态；“被 index”不能等价成“可直接消费”。当前系统有状态门，但缺少一条通用、可配置、可审计的 metadata remediation/normalization 路径。
+
+### F-056：dayu 的 config-only 成功不能外推到任意 indexed root
+
+- 类型：当前代码与测试对照事实。
+- `test_dayu_portfolio_reused_when_kind_is_config_driven` 确实证明：一个严格符合 `<ticker>/filings/<filing-id>/meta.json + primary_document` 约定、字段齐全的 dayu fixture，只需打开 reusable kind 就能 `REUSED_EXACT`。
+- 原因不是 resolver 真正理解任意 root，而是 scanner 的第三分支已经完整写死 dayu layout：path parts[1] 必须为 `filings`、识别 `.rejections`、读取 group `meta.json` 和 entity `meta.json`、挑 selected/primary/PDF/HTML、构造 EDGAR URL、补 SEC/HK/CN identity、识别 docling attachment。
+- 该分支写成 `else`，不是显式 `elif root.kind == dayu_portfolio`；由于 ROOT_KINDS 当前封闭才碰巧安全。未来若只把第四种 kind 加进枚举而未同步 scanner，它会被错误地当 dayu 解析。
+- 所以配置开关对 dayu 是“启用一套已经由代码实现的 adapter”，对 Dropbox 普通 directory 只是“允许一个没有 filing normalizer 的弱语义根”。二者表面都在 reusable list，实际能力不等价。
+
+### F-057：freshness/gap 算法本身基本根无关，问题仍在其输入集合
+
+- 类型：当前代码事实。
+- resolver 的 `latest_as_of` 在多个合格 handle 中按 published date/provider identity 选最新，没有 companies/dayu/Dropbox 分支；gap planner 也按 fiscal year、provider accession/amendment、as-of 对齐本地 handle 与远端候选。
+- 这层可以实现“旧文件继续复用，同时发现缺期或同期间更新版”，设计方向符合用户要求。
+- 但它的 local_handles 只来自已经 active、强身份、capture-ready、root-allowed 的 resolver 结果。Dropbox-only 文档在更早的 ingest/status/metadata 门被消失后，不会进入 gap planner，算法也无法知道 catalog 里其实有旧 PDF/摘要。
+- 因而不能通过改 latest 算法解决 Dropbox；应该把合格源规范化与状态治理打通后复用现有 freshness 层。
+
+### F-058：物理 catalog 是合格的数据湖基础，不应把结论简化为“系统全是硬编码”
+
+- 类型：当前 schema/查询实现事实。
+- catalog 已把 `roots`、按 SHA-256 唯一的 `sources`、逻辑 `documents`、多 `locations`、`entities`、`artifacts`、`evidence_spans` 分开；同内容文件能跨根共享 document/source，同时保留每个物理 location 和 manifest。
+- canonical location 只在 active original-primary 中选择，按 root priority/root_id/path 稳定排序；其它同 hash locations 标为 exact_copy，不需要复制到 company_raw 才能表达重复。这一层符合多根只读资产湖的核心要求。
+- source status、location status、retire/restore audit、artifact source hash/version gate、allowed path fence 等 fail-closed 机制也是正确的可信数据设计，而不是应移除的“耦合”。
+- 真正的问题位于物理层之上的语义摄取：统一表并没有统一 metadata contract/adapter SPI。当前可概括为“一个通用内容寻址目录 + 两个硬编码 filing ingest profiles + 一个弱语义 directory fallback”。
+
+### F-059：来源耦合高度集中在 scanner，而非均匀污染三仓；这使重构边界可定位
+
+- 类型：当前代码结构与 literal inventory 事实。
+- `_enumerate_root` 从 382 到 743 行，在一个约 360 行函数内同时实现 company_raw、directory/Dropbox、dayu 三种 layout；`_scan_catalog_impl` 又同时负责分类、entity、hash observation、document merge、状态与 location 写入。
+- 样本 literal inventory 显示 root.kind/root_id、company_raw/dayu/dropbox、acquisition/dayu_meta 的来源特例主要集中在 scanner/admission/focus cleanup/resolver，filing-fetch 和 revenue consumer 没有相同规模的 root 分支。
+- 好处是问题不是三仓无处不在：物理 catalog、handle fence、latest/gap、artifact validation 大多可保留。
+- 坏处是 scanner 同时承担 adapter、normalizer、classifier、entity resolver、provenance enrichment 和 persistence；任何“支持新数据湖根”的改动都容易在同一函数里再加条件，弱模型也容易只修写入端或读取端一半。
+
+### F-060：最终架构裁决——“物理数据湖已成形，语义数据湖未成立”
+
+- 类型：综合判断，依据 F-034~F-059 当前代码、测试、调用图与生产只读数据。
+- **config-only 最终裁决：当前不可能。** 两份配置已经启用 Dropbox；配置只表达 root/path/kind/priority/reusable 与 downstream path allowance，不能表达 sidecar/layout/identity/normalization/lifecycle remediation。失败发生在配置门之后。
+- **战术修复与战略目标必须分开。** 把 focus sidecar 写进 resolver 已识别的 `acquisition` 容器，可能以很小 runtime diff 让现有 ACME probe 变为 REUSED_EXACT；但它仍以 Dropbox 路径特例复用 company_raw schema，不能支持任意新 root、新 layout、新 entity，也不解决 retired 资产、URL provenance、bundle 主链缺失。
+- **用户关于紧耦合的直觉基本正确，但范围需校准。** 紧耦合不是整个三仓：它集中在 company-wiki 的 source ingest/semantic normalization。物理 catalog、内容寻址、跨根 location、handle 深校验、latest/gap、artifact validator 多数设计良好。
+- **当前真实架构定义：** company-wiki/companies 是 canonical write store；dayu 是一个已实现的外部 filing adapter；Dropbox 是 generic directory + 一个硬编码 focus admission 特例；其它 indexed directory 是低信任 document lake，而不是可直接复用 filing lake。
+- **data-lake 目标所缺的核心抽象：** root-id 级能力/权限；可选择的 source adapter/layout profile；统一 normalized filing metadata schema；字段级 evidence/binding/confidence；独立 entity resolver；admission 与 lifecycle remediation；adapter conformance；resolver 与 SourceBundle 的生产组装。
+
+```mermaid
+flowchart LR
+    A["配置 roots / reusable kinds"] --> B{"scanner 按 root.kind/root_id 分支"}
+    B --> C1["company_raw profile\nsidecar -> acquisition"]
+    B --> C2["dayu profile\nmeta/layout -> dayu_meta"]
+    B --> C3["directory / Dropbox\nfocus sidecar用于 admission/manifest\n语义未持久化"]
+    C1 --> D["统一物理 catalog\nsource/document/location/artifact"]
+    C2 --> D
+    C3 --> D
+    D --> E{"resolver 只读\nacquisition/dayu_meta\n且仅 active"}
+    E -->|"合格"| F["capture-ready handle"]
+    E -->|"Dropbox-only: 缺 identity/form/url\n或 retired"| X["MISSING / 不可复用"]
+    F --> G["filing-fetch 路径围栏与深校验"]
+    G --> H["revenue consumer"]
+    D -. "query_source_bundle 无生产调用者" .-> I["SourceBundle / processed artifacts"]
+    I -. "selector 仅测试调用" .-> H
+```
+
+#### 耦合分级
+
+| 类别 | 当前例子 | 裁决 |
+|---|---|---|
+| 必要安全/所有权边界 | company_raw 唯一 canonical writer；外部根只读；hash/identity/status/as-of/path fence | 保留 |
+| 已配置化但粒度不足 | reusable_root_kinds、allowed_handle_roots、root priority | 可用但不能代表 adapter；root-kind 授权过粗 |
+| 应抽象 | layout/sidecar pairing、metadata normalization、entity mapping、classification/admission profile | 当前是主要架构债 |
+| 严重实现缺口 | directory sidecar 语义丢弃；resolver/SQL 只认两容器；bundle 主链零产品调用者 | 直接阻断用户目标 |
+| 高风险 workaround | 按 company_name 从任意 dayu filing 补 company_raw URL | 需文档级 identity/evidence 约束 |
+| 专项技术债 | 精确 `dropbox_stock/重点关注` 常量、focus cleanup、不可达 dayu 条件、测试注释自相矛盾 | 证明特例累积，需治理 |

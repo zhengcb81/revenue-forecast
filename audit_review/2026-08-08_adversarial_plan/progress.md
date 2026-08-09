@@ -974,3 +974,17 @@
 - 测试复核：Dropbox probe 的实际断言已证明 config-only 后仍 MISSING；但模块总说明仍声称 config-only 成功，broker 负例尾部还留有错误的“未来改为 REUSED_EXACT”注释。配置 invariant 只锁白名单/realpath，未验证业务闭环。
 - 动态验证：company-wiki 相关 21 passed；filing-fetch 8 passed/1 skipped；revenue bundle 17 passed。绿色包含“Dropbox config-only 后仍 MISSING”的 known-gap 断言，不能当成功验收。
 - 衍生物生产实证：Dropbox 关联文档有 normalized completed 1,782、summary 948、sections 7；但 official filing 的这些 artifacts 全属于 retired 文档，无法经 resolver/handle/bundle 到达下游。
+- SourceBundle 实现复核：`query_source_bundle/build_source_bundle` 按 document/source SHA、artifact validation、allowed roots、generator/version 与 bundle hash 工作，未按来源 root 分支；下一检查点是确认它是否已接入实际 resolver/CLI，而不只是独立 query 与测试。
+- 调用图结论：`query_source_bundle` 仅被 2 个 contract test 调用；revenue `select_reusable_artifacts` 的 14 个调用者全部是测试。生产 resolver/CLI/client 未串联 bundle，已处理资产复用尚是能力孤岛。
+- 新的紧耦合证据：company_raw 缺 URL 时，scanner 按公司名从任意 dayu meta 取首个 URL 补齐，缺文档/期间/hash identity join，存在 URL 与原件错绑风险；通用 directory 的 entity 又必须先存在于 company_raw 目录词典。
+- 测试进一步确认：URL enrichment fixture 刻意使用不同 bytes，却只按 company name 复制 URL，未覆盖同公司多期/identity/hash 绑定；当前绿测在固化 workaround，而非证明 provenance 正确。
+- 调查问题：首次对生产 `document_retire_audit` 与 Dropbox official docs 做组合聚合时命令完成但无输出；未据此下结论，改为拆分小查询核对 audit 行数/原因/覆盖率。
+- retire audit 核实：9,499 个 legacy sidecar 因缺 source_url 被 Phase 15.6 批量退休并二次 reconciliation 记账；Dropbox 主 metadata 的 103 个 annual/quarterly/semi 财报全部在该批。retirement 为终态，配置不能复活。
+- dayu 对照：其 config-only 绿测依赖 scanner 中完整硬编码的 dayu layout/meta/identity adapter；scanner 用 `else` 承载该分支。这个成功不能外推为任意 directory/new kind 已泛化。
+- 正面边界：`latest_as_of` 与 gap planner 已按日期/期间/provider identity 工作且根无关；Dropbox 文档因前置语义/status 门未形成 local handle，所以该层没有可用输入。
+- 物理层结论：roots/sources/documents/locations/artifacts/evidence 已分层、按 hash 跨根去重、按 active+priority 选 canonical，是真正的数据湖基础；缺口集中在统一语义 adapter/normalizer 及主链组装。
+- 硬编码分布：来源特例主要集中于 company-wiki scanner/admission/focus cleanup/resolver；filing-fetch/revenue 下游较根无关。`_enumerate_root` 单函数约 360 行承载三套 layout，属于可明确定位的架构热点。
+- 调查问题：首次 PowerShell literal 计数命令因管道表达式语法错误；改为显式 `$rows` 聚合后成功，未影响任何文件。
+- 最终裁决：物理数据湖已成形，语义数据湖未成立；config-only 在当前代码/数据下不可能。小型 Dropbox 特例补丁可让单一 probe 转绿，但不能实现通用 indexed-root adapter，也不解决 retired/provenance/entity/SourceBundle 主链。
+- 最终验证：三仓 `git diff --check` 通过；本轮仅修改 revenue-forecast 审计目录下 task_plan/findings/progress 三个 Markdown。filing-fetch 工作树无变化；company-wiki 仅保留调查前已有的 `llm_cost_log.csv` 与 `source_manifests/archive/` 用户内容。
+- 调查状态：completed；未修改产品代码、测试、配置、生产 catalog 或三处真实资产目录。CodeGraph 仅按用户授权刷新索引。

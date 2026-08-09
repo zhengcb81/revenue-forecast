@@ -622,3 +622,32 @@ filing-fetch 输出必须能回答：
 | 2026-08-08 | 一次并行 git-status JS 参数写法触发 SyntaxError | 1 | 修正对象字段后立即成功；未产生副作用 |
 | 2026-08-08 | filing Ruff 首次指定不存在的 `src` 目录 | 1 | 按实际目录 `scripts tests tools e2e` 重跑并通过 |
 | 2026-08-08 | 更新 Dropbox 计划的一次多文件 patch 因 closure-ledger 上下文已变化而校验失败 | 1 | 未产生部分写入；改用按文件/按小段精确 patch，不重复原大 patch |
+| 2026-08-09 | 新调查的一次多文件 patch 因 findings 上下文随实施变化而校验失败 | 1 | 未产生部分写入；先分文件定位当前锚点，再以小 patch 更新 |
+| 2026-08-09 | 对已初始化仓库运行 `codegraph init -i` 只返回 Already initialized，未刷新索引 | 1 | 按 CLI 明示改用 `codegraph index`；不重复 init |
+
+## 9. 2026-08-09 Dropbox / Data Lake 架构调查 — 状态：completed
+
+> 本阶段仅调查当前实现与已实施 WU，不修改产品代码、配置、测试、索引数据或用户文件。允许刷新 CodeGraph 代码索引和更新本审查文档。
+
+### 9.1 调查问题
+
+- [x] 重建当前三仓基线和 CodeGraph，识别昨日计划与今日实现的 drift。
+- [x] 从 scan → catalog → admission/classification → metadata/provenance → resolver → filing-fetch handle fence → revenue consumer 逐跳追踪 Dropbox 与 dayu。
+- [x] 区分“被扫描/被索引/可查询/可复用/capture-ready/可被 consumer 使用”六种状态。
+- [x] 逐项识别按 root kind、root id、目录结构、sidecar、provider、market、文档类型和写入 owner 的硬编码。
+- [x] 核验配置-only 方案为何不足：是配置表达力、索引数据质量、resolver 安全门、handle 契约、消费者契约，还是多项叠加。
+- [x] 对照用户的 data-lake 构想，评价当前抽象是否泛化、哪些耦合是必要安全约束、哪些是设计债。
+
+### 9.2 证据门禁
+
+- [x] 每项结论指向当前 commit 的符号/配置/测试/只读运行证据。
+- [x] 不把“配置加载成功”当作“实际文件可复用”。
+- [x] 不把为了安全而必要的强身份/谱系门笼统归类为坏耦合。
+- [x] 不做任何产品变更；发现问题只形成调查结论。
+
+### 9.3 交付
+
+- [x] 架构分层图与失败链。
+- [x] 硬编码/耦合清单，按必要、可配置化、应抽象、严重设计债分级。
+- [x] 对 config-only 可行性的最终裁决及原因。
+- [x] data-lake 目标架构与当前差距，但本轮不形成实施 commit。
