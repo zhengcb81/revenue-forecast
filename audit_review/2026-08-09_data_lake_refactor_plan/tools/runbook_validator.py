@@ -36,6 +36,19 @@ def extract_wu_ids(text: str, prefix: str) -> set[str]:
     return set(re.findall(rf"^{re.escape(prefix)}(WU-\d+)", text, re.MULTILINE))
 
 
+def check_wu_id_duplicates(text: str, prefix: str, source_label: str) -> list[str]:
+    """A WU ID appearing more than once is a duplicate-card error (F1)."""
+    problems: list[str] = []
+    counts: dict[str, int] = {}
+    for match in re.finditer(rf"^{re.escape(prefix)}(WU-\d+)", text, re.MULTILINE):
+        wu_id = match.group(1)
+        counts[wu_id] = counts.get(wu_id, 0) + 1
+    for wu_id, count in sorted(counts.items()):
+        if count > 1:
+            problems.append(f"{source_label}: WU ID {wu_id} appears {count} times")
+    return problems
+
+
 def check_wu_sets_match(plan_text: str, runbook_text: str) -> list[str]:
     problems: list[str] = []
     plan_ids = extract_wu_ids(plan_text, "### ")
@@ -99,14 +112,11 @@ def check_plan_version_binding(plan_text: str, runbook_text: str) -> list[str]:
     return []
 
 
-def check_finding_mapping(findings_text: str, mapping: dict[str, str]) -> list[str]:
-    """Every F-0xx mentioned in findings must have a mapping row.
-
-    F-034..F-060 originate in the 2026-08-08 adversarial-plan findings; the
-    new findings.md references them selectively (D-017).  So the reverse
-    check ("mapping references a finding") looks at the task_plan coverage
-    table instead, which lists all 27 findings.
-    """
+def check_finding_mapping(
+    findings_text: str, plan_text: str, mapping: dict[str, str]
+) -> list[str]:
+    """Every F-0xx mentioned in findings AND every row of the task_plan
+    coverage table (F-034..F-060) must have a mapping entry (F2)."""
     problems: list[str] = []
     # strip range expressions like "F-001~F-060" so the bounds are not
     # mistaken for individual findings
@@ -116,6 +126,13 @@ def check_finding_mapping(findings_text: str, mapping: dict[str, str]) -> list[s
         full = f"F-0{finding}"
         if full not in mapping:
             problems.append(f"finding {full} has no owner mapping")
+    # coverage-table rows: | F-0xx | owner | ... |
+    table_ids = set(re.findall(r"^\|\s*(F-0\d{2})\s*\|", plan_text, re.MULTILINE))
+    for finding in sorted(table_ids):
+        if finding not in mapping:
+            problems.append(
+                f"coverage-table finding {finding} has no closure mapping row"
+            )
     return problems
 
 
@@ -158,6 +175,8 @@ def main() -> int:
 
     problems: list[str] = []
     problems.extend(check_wu_sets_match(plan, runbook))
+    problems.extend(check_wu_id_duplicates(plan, "### ", "task_plan"))
+    problems.extend(check_wu_id_duplicates(runbook, "### ", "runbook"))
     problems.extend(check_plan_version_binding(plan, runbook))
     problems.extend(check_no_placeholders(plan))
     problems.extend(check_no_placeholders(runbook))
@@ -174,7 +193,7 @@ def main() -> int:
         mapping = json.loads(mapping_path.read_text(encoding="utf-8"))
     else:
         problems.append(f"missing closure mapping: {mapping_path}")
-    problems.extend(check_finding_mapping(findings, mapping))
+    problems.extend(check_finding_mapping(findings, plan, mapping))
     problems.extend(check_forbidden_claims(plan))
 
     for problem in problems:

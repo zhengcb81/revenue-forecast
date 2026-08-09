@@ -8,6 +8,7 @@ from runbook_validator import (  # noqa: E402
     extract_wu_ids,
     check_card_fields,
     check_wu_sets_match,
+    check_wu_id_duplicates,
     check_no_placeholders,
     check_plan_version_binding,
     check_finding_mapping,
@@ -75,10 +76,27 @@ def test_plan_version_binding():
 
 def test_finding_mapping_coverage():
     findings = "F-034 x\nF-051 y\nF-060 z\n"
+    plan = "| F-034 | Phase 3 |\n| F-051 | Phase 10 |\n| F-060 | 总门 |\n"
     mapping = {"F-034": "Phase 3", "F-051": "Phase 10"}
-    problems = check_finding_mapping(findings, mapping)
+    problems = check_finding_mapping(findings, plan, mapping)
     assert any("F-060" in p for p in problems)
-    assert check_finding_mapping(findings, {"F-034": "P3", "F-051": "P10", "F-060": "P15"}) == []
+    mapping_full = {"F-034": "P3", "F-051": "P10", "F-060": "P15"}
+    assert check_finding_mapping(findings, plan, mapping_full) == []
+
+
+def test_mapping_missing_table_row_fails():
+    # F2: a coverage-table row without a mapping entry must fail
+    findings = "F-034 x\n"
+    plan = "| F-034 | Phase 3 |\n| F-035 | WU-101 |\n"
+    problems = check_finding_mapping(findings, plan, {"F-034": "Phase 3"})
+    assert any("F-035" in p for p in problems)
+
+
+def test_duplicate_wu_id_detected():
+    plan = "### WU-101 a\n### WU-101 b\n### WU-102\n"
+    problems = check_wu_id_duplicates(plan, "### ", "task_plan")
+    assert any("WU-101" in p and "2 times" in p for p in problems)
+    assert check_wu_id_duplicates("### WU-101\n### WU-102\n", "### ", "x") == []
 
 
 def test_forbidden_claim_gate():
