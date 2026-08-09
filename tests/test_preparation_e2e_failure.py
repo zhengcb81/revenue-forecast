@@ -5,7 +5,6 @@
 03: a tampered bundle hash / policy snapshot must be rejected at least one
     layer of the three-repo chain — never silently re-read from the raw PDF.
 """
-import json
 import sys
 from pathlib import Path
 
