@@ -237,15 +237,139 @@
 
 ## Phase 4 卡片
 
-待补齐 WU-400~404。
+### WU-400
+
+- Owner/Targets：company-wiki source_catalog/store.py、assertion_service.py、schema migration tests；仅 additive schema。
+- Inputs：Phase 2 schema、WU-301 policy、生产 schema 只读快照。
+- RED/Focused：旧/新 schema owner 漂移、缺 visibility/epoch、重复 writable truth source 必须失败。
+- Mutation：再建第二 assertion 表；让 verified+shadow 可见。
+- Audit：单一 DDL owner、migration SQL/hash、v1 row compatibility、index/query plan。
+- Rollback：fixture/temp DB 恢复；生产未 apply。未来 apply 后只回 reader/visibility，不 drop columns。
+- Accept：现表可表达 v2 全字段和 rollout visibility，初始化/upgrade DDL 不漂移。
+
+### WU-401
+
+- Owner/Targets：company-wiki source_catalog/models.py、normalizer.py、schema helpers/tests。
+- Inputs：WU-400、META golden。
+- RED/Focused：META-01~12、round-trip、property tests。
+- Mutation：canonical hash 包含绝对路径/扫描时间，或排除 security_id。
+- Audit：serialization vectors、hash vectors、unknown version/errors。
+- Rollback：v2 model 未接生产 writer；revert模块和 fixtures。
+- Accept：同语义跨 root hash 一致，影响复用的任一字段变化都会改 normalized hash。
+
+### WU-402
+
+- Owner/Targets：company-wiki CatalogStore transaction/persister 与并发 tests。
+- Inputs：WU-401、temp catalog fixture。
+- RED/Focused：TX-01~03 及每个写步骤 fault injection。
+- Mutation：在 document 写后故障但提交；移除幂等 unique key。
+- Audit：事务 trace、行数 before/after、并发结果、foreign_key_check。
+- Rollback：失败事务自动 rollback；revert writer flag，保留已审计历史。
+- Accept：零部分提交、零重复 active assertion、metadata change 形成可审计新 assertion。
+
+### WU-403
+
+- Owner/Targets：company-wiki scanner/normalizer URL enrichment 与 assertion tests。
+- Inputs：WU-402、同公司多期间不同 bytes fixture。
+- RED/Focused：N-06、多期间 URL/period/provider_document_id 强绑定测试。
+- Mutation：恢复 company_name→first URL map。
+- Audit：每个 backfill join key/evidence pointer、unresolved remediation queue。
+- Rollback：关闭新 backfill；不恢复错误广播，不覆盖旧审计记录。
+- Accept：没有强文档键就不补 URL，错误 legacy 测试被正确 RED 替代。
+
+### WU-404
+
+- Owner/Targets：company-wiki legacy bridge、resolver v1 filter、visibility/activation tests。
+- Inputs：WU-400~403、v1 golden。
+- RED/Focused：VIS-01~05、legacy/v2 parity。
+- Mutation：v1 读取 verified+shadow v2；请求中途切 epoch。
+- Audit：bridge_hits、visibility state transitions、per-request snapshot trace。
+- Rollback：关闭 bridge/v2 writer；v1 固定读 v1 schema，v2 rows保留不可见。
+- Accept：shadow row绝不影响 active response，激活/回退原子且不删 assertion。
 
 ## Phase 5 卡片
 
-待补齐 WU-500~503。
+### WU-500
+
+- Owner/Targets：company-wiki scanner entry/facade 与 characterization tests；只机械 seam。
+- Inputs：Phase 4、WU-104 golden。
+- RED/Focused：SEAM-01~05。
+- Mutation：在搬移提交顺手改变排序/错误码；默认启 v2 stub。
+- Audit：before/after trace、DB/file stat、latency、diff。
+- Rollback：关闭 facade或 revert单一机械提交，v1源码/行为恢复。
+- Accept：expected_good canonical等价，测试收集不变，p95劣化不超5%。
+
+### WU-501
+
+- Owner/Targets：company-wiki scanner orchestration、adapters base ports、persister ports及 tests。
+- Inputs：WU-500、WU-205 target graph。
+- RED/Focused：SPI-01~04。
+- Mutation：scanner按 root_id 分支；adapter拿 CatalogStore writer。
+- Audit：CodeGraph依赖、五步pipeline trace、side-effect ports。
+- Rollback：v2 shadow flag关闭，facade继续v1；不删v2代码以便诊断。
+- Accept：v2 pipeline可独立运行，orchestrator无来源语义分支。
+
+### WU-502
+
+- Owner/Targets：company-wiki tests/helpers adapter conformance kit；registry hook。
+- Inputs：WU-501、fake adapter、fixture pack。
+- RED/Focused：determinism、grouping、path、encoding、fault、read-only、no-network全套。
+- Mutation：交换primary/sidecar、允许symlink越界、返回重复candidate、写fixture。
+- Audit：每adapter capability/mandatory case receipt。
+- Rollback：未通过adapter不注册；revert测试框架不影响v1。
+- Accept：fake adapter和后续每个真实adapter同套测试，四个高风险mutation全被杀死。
+
+### WU-503
+
+- Owner/Targets：company-wiki admission.py/profile registry/tests。
+- Inputs：WU-502、financial_evidence_v1契约。
+- RED/Focused：ADM-01~10。
+- Mutation：按Dropbox root放宽、把retired当active、弱身份当强。
+- Audit：同candidate换root的结果diff、reason taxonomy。
+- Rollback：v2 admission未active；关闭profile，v1不变。
+- Accept：业务安全门来源无关，只由candidate事实和RootPolicy授权决定。
 
 ## Phase 6 卡片
 
-待补齐 WU-601~604。
+### WU-601
+
+- Owner/Targets：company-wiki adapters/company_raw、scanner v1 extraction boundary、adapter tests。
+- Inputs：Phase 5、company_raw v1 golden/fixtures。
+- RED/Focused：company_raw conformance + A/HK/US/期间/多location parity。
+- Mutation：目录名覆盖sidecar security冲突；把write权限写进adapter。
+- Audit：逐document v1/v2 candidate diff和CodeGraph。
+- Rollback：company_raw cohort回v1，v2 assertion保持shadow。
+- Accept：合法样本等价，冲突更严格fail closed，无writer依赖。
+
+### WU-602
+
+- Owner/Targets：company-wiki adapters/dayu、dayu metadata mapping/tests。
+- Inputs：WU-601、dayu golden/meta fixtures。
+- RED/Focused：dayu conformance、provider/document/URL/period强绑定。
+- Mutation：unknown root落入dayu；按company_name补URL。
+- Audit：group selection、identity evidence、rejection reason parity。
+- Rollback：dayu cohort回v1；不修改dayu文件。
+- Accept：dayu能力来自显式adapter，最终else和横向URL补洞消失。
+
+### WU-603
+
+- Owner/Targets：company-wiki scanner shadow comparator/receipts。
+- Inputs：WU-601/602、真实根只读sample、fixture全量。
+- RED/Focused：任何未登记diff、宽松比例、漏reason均失败。
+- Mutation：隐藏一个v2额外candidate或少一个candidate。
+- Audit：逐document/candidate/status/location/reason diff及known-bad owner。
+- Rollback：关闭v2_scan_shadow；无production persistence。
+- Accept：expected_good零未解释diff，安全收紧均有RED/reviewer。
+
+### WU-604
+
+- Owner/Targets：company-wiki flag/cohort、v2 persister、root rollout tests。
+- Inputs：WU-603 accepted、backup/visibility机制。
+- RED/Focused：company_raw/dayu各自三次运行、fault/concurrency/rollback。
+- Mutation：同时切两root；让candidate直接active可见。
+- Audit：per-root对账、assertion hash、latency、integrity和incident。
+- Rollback：单root ingest flag回v1；v2 rows保持shadow，不反向迁移。
+- Accept：两个root按顺序分别accepted，上一root未soak不得启动下一root。
 
 ## Phase 7 卡片
 
