@@ -1,5 +1,7 @@
 # Revenue Forecast / Filing Fetch / Company Wiki 对抗性审查与分阶段实施计划
 
+> **2026-08-09 状态覆盖：`completed_audit_only + superseded`。** 审查、Dropbox 架构调查和计划编制已完成；旧产品 Phase 0–10 不再执行，尤其旧“配置即可启用 Dropbox”的判断已被后续调查推翻。全部仍必要工作已转入 [FCAP r2](../2026-08-09_full_completion_assurance_plan/task_plan.md)。
+
 > 计划日期：2026-08-08  
 > 审查基线：revenue-forecast `14770c1a3b90c4916d80240b72d74a73eae90743`；filing-fetch `43330550fb3ea77d36acd92e26861377564a7607`；company-wiki `325086af1a5d966f1f01b389109dd26d1b6a63bc`  
 > 本轮边界：**只审查、只制定计划；未修改三个项目的产品代码、测试、配置或生产索引，未触发外部下载。**

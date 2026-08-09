@@ -1,5 +1,7 @@
 # 三项目对抗性审查 — 实施计划
 
+> **2026-08-09 状态覆盖：`completed_audit_only`。** Phase 1–5 的审查与路线图输出已经完成；产品实施不由本文件证明。后续已发生历史实施，剩余目标转入 [FCAP r2](../audit_review/2026-08-09_full_completion_assurance_plan/task_plan.md)。
+
 目标：以对抗性视角深入审查 revenue-forecast / filing-fetch / company-wiki 三个项目的
 设计、架构、代码质量、测试（尤其E2E）、文档，回答三个问题：
 1. 是否达成最初设计要求？
@@ -34,7 +36,7 @@
 > 豁免：最后一个 checkbox '用户裁定后开始实施' 是有意的待办前置（当时明确不实施）；本阶段为历史审查输出（2026-08-08），证据在 findings.md/roadmap.md。
 - [x] findings.md 完整发现（N-01~N-11 + 已验证修复 + 测试基线）
 - [x] roadmap.md 根因级改进路线图（R1-R9 + 动态发现能力矩阵 + 依赖图）
-- [ ] 用户裁定后开始实施（当前明确不实施）
+- [x] ~~用户裁定后开始实施（当前明确不实施）~~ — `cancelled/superseded`：后续实施已发生，仍未闭合的目标由 FCAP r2 接管。
 
 ## 关键结论（详见 findings.md / roadmap.md）
 - 设计要求达成度：业务引擎与结构门禁强；正式可信链存在新 Critical 缺口（N-01）。

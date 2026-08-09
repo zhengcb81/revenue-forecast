@@ -1,6 +1,6 @@
 # 多根 Filing Data Lake — 逐工作单实施卡
 
-> 状态：runbook_complete_ready_for_review  
+> 状态：`superseded_by_FCAP-r2`（2026-08-09）；下列旧 WU 卡只供历史需求/失败证据参考，不再执行或签发新 receipt。当前手册为 [implementation_runbook.md](../2026-08-09_full_completion_assurance_plan/implementation_runbook.md)。
 > 绑定计划：task_plan.md 2.1-full-refactor-execution-cards  
 > 权限边界：本轮仅编制计划；本文件不是立即实施授权。
 

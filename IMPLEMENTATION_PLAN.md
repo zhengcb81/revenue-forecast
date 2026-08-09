@@ -1,5 +1,7 @@
 # 三项目改进路线图实施计划（revenue-forecast / filing-fetch / company-wiki）
 
+> **2026-08-09 状态覆盖：`completed_historical_scope + superseded`。** R0–R9 的历史实施和提交保留为已完成证据；最新审查发现的 data-lake 泛化、Dropbox、SourceBundle/artifact 生产接线、latest 闭环、动态审核和代码质量缺口由 [FCAP r2](audit_review/2026-08-09_full_completion_assurance_plan/task_plan.md) 接管。本文件不再是活动进度镜像，也不得签发新的完成声明。
+
 依据：`review_audit/roadmap.md`（R1-R9，2026-08-08 批准后生效）。
 执行期间 roadmap.md 是唯一计划可信来源；本文件是执行进度镜像（阶段状态 + 验收证据）。
 
@@ -70,8 +72,7 @@
 - [x] `tests/test_structure_targets.py`：revenue_core ≤2500 行 + 无空壳包。
       **当前 2 项有意红**（revenue_core 3960 行；analysis/research 空壳）——显式标注
       "未达成"，R9 拆分后转绿；禁止静默提高上限（N-02）。
-- [ ] verify_plan_claims 进 CI：**推迟到 R8**（旧 task_plan.md 需先回填真实状态，
-      否则 CI 被历史伪完成卡死；工具本身已可用）。
+- [x] ~~verify_plan_claims 进 CI：推迟到 R8~~ — `superseded`：后续已有 verifier/CI 历史资产，但最新 current-triplet、FC receipt 与 95-scenario 总门由 FC-103/104/1101 重建；旧延期项不再独立 pending。
 **Status**: completed（CI 接入项移至 R8）
 
 ## 阶段 8：R6 常态化对抗测试

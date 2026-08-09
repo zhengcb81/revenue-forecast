@@ -1,8 +1,10 @@
 # 多根 Filing Data Lake 解耦与端到端闭环 — 实施计划
 
+> **2026-08-09 最新处置：`partially_completed_evidence + superseded_by_FCAP-r2`。** 本目录的 ADR、工具和部分 WU receipt 仅作为历史输入；最新代码/生产审查证明关键生产接线和证据仍未闭合。所有未验收 WU、旧 72/84 场景和旧 release 状态机停止推进，统一迁移到 [FCAP r2](../2026-08-09_full_completion_assurance_plan/task_plan.md)。禁止继续用旧 WU 编号签发新完成回执。
+
 > 计划日期：2026-08-09  
 > 计划版本：2.1-full-refactor-execution-cards  
-> 当前状态：plan_complete_ready_for_review_v3  
+> 历史状态：plan_complete_ready_for_review_v3（只表示旧计划编制完成，不表示产品完成）
 > 本轮授权：仅调查与写计划；禁止修改产品代码、产品配置、测试、生产 catalog 和三处真实资产目录。  
 > 逐工作单执行卡：同目录 implementation_runbook.md；任何 WU 无有效卡片不得启动。  
 > 适用仓库：`company-wiki`、`filing-fetch`、`revenue-forecast`。  

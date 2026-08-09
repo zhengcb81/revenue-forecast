@@ -1,5 +1,7 @@
 # 项目设计目标达成审查计划
 
+> **2026-08-09 状态覆盖：`completed_audit_only + superseded_execution_plan`。** 本文件的审查工作已经完成；其中提出的实施工作不再作为独立队列，全部按 [FCAP r2](2026-08-09_full_completion_assurance_plan/task_plan.md) 的 FC、95 场景和验收门执行。
+
 ## 审查目标
 
 以根目录 `task_plan.md` 及其引用的设计、契约和历史审查文档为基准，全面核验 `revenue-forecast` 与相关项目（至少包括 `filing-fetch`、`company-wiki`）是否达到设计目标。结论必须能回溯到计划条目、实现、测试或运行验证。

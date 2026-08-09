@@ -1,5 +1,7 @@
 # 多根 Filing Data Lake 改进计划 — 规划进度
 
+> **2026-08-09 状态：`superseded_by_FCAP-r2`。** 本日志停止接受新的旧 WU 进度；已有记录/receipt 保留为历史证据。所有仍需实施的条目见 [legacy_plan_disposition.md](../2026-08-09_full_completion_assurance_plan/legacy_plan_disposition.md) 和 FCAP r2 registry。
+
 ## 2026-08-09
 
 - 已完整读取 `planning-with-files/SKILL.md`。

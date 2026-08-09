@@ -1,7 +1,7 @@
 # 三项目根因级改进路线图（revenue-forecast / filing-fetch / company-wiki）
 
 编制日期：2026-08-08 │ 依据：`review_audit/findings.md`（N-01~N-11 + 历史 F-01~F-14 复核）
-状态：**待批准，未实施**。批准后按本文件执行；执行期间本文件是唯一计划可信来源。
+状态：**`superseded`（2026-08-09）**。R1–R9 后续已有历史实施，但该路线图不满足最新六目标的终局证据要求；当前唯一活动计划为 [FCAP r2](../audit_review/2026-08-09_full_completion_assurance_plan/task_plan.md)。下文保留为根因与历史设计证据，不再独立实施。
 
 ---
 

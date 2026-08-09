@@ -1,8 +1,10 @@
 # Revenue Forecast 技能改进实施计划
 
+> **2026-08-09 状态覆盖：`completed_historical_scope + superseded_open_items`。** 本文件保留已完成的 revenue-forecast 历史阶段与证据；首页旧“全部完成”只适用于当时范围，不再代表三仓六项目标。所有仍未勾选且涉及 filing identity、resolver、Dropbox、latest、SourceBundle、artifact、跨仓 E2E、动态审核或代码质量的条目，均已转入 [FCAP r2](audit_review/2026-08-09_full_completion_assurance_plan/task_plan.md)；不得继续从本文件单独实施。与三仓终局目标无关的研究体验 backlog 降为 P3，需重新立项后才能执行。
+
 计划编制日期：2026-07-26 │ 完成日期：2026-07-30  
 依据：`AUDIT_REPORT.md`、`findings.md`  
-当前状态：**13 Phase 全部完成。294 tests / 0 failures / ruff 0 errors（4 repos）**
+历史状态：**当时 13 Phase 范围完成；该测试数字是历史快照，不是当前六目标的完成证明。** 当前状态以 FCAP r2 和 `legacy_plan_disposition.md` 为准。
 
 ## 0. 总目标、边界与不可违反规则
 
