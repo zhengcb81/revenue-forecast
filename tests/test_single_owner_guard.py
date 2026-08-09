@@ -16,6 +16,10 @@ from pathlib import Path
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_CLIENT = "filing_fetch_client.py"
+# Orchestrators that invoke the canonical client as a subprocess but never
+# download themselves (WU-1000 source preparation).  No new entries without
+# review — a second *download owner* is exactly what this guard forbids.
+ORCHESTRATORS = {"source_preparation.py"}
 FORBIDDEN_SYMBOLS = {"resolve_filing", "AcquisitionManager", "AdapterRegistry"}
 DOC_SOURCES = (
     [SKILL_ROOT / "SKILL.md"]
@@ -30,7 +34,7 @@ def _python_files() -> list[Path]:
 class SingleOwnerGuardTests(unittest.TestCase):
     def test_only_canonical_client_may_use_subprocess_download_adapters(self) -> None:
         for path in _python_files():
-            if path.name == CANONICAL_CLIENT:
+            if path.name == CANONICAL_CLIENT or path.name in ORCHESTRATORS:
                 continue
             tree = ast.parse(path.read_text(encoding="utf-8"))
             for node in ast.walk(tree):
