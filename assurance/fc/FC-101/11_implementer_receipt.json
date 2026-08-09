@@ -1,0 +1,80 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-101",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "3ce9cc4d3ea91b15aad42eff1f55b72a44834dd7",
+    "filing": "c9799b722a97376f9717bcfacfa0685135dcbd15",
+    "wiki": "109a1a6a77d7f4b37f849207fbd9e5d8caf2bc07"
+  },
+  "result_triplet": {
+    "revenue": "67609128e2c09a0cbdd64cad38d40028f72fd2f5",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "plan_sha256": "158fc1e1e4231e3c2dc71822a58931fdca64eff79fc0d4e27b8276a397f4c78a",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/compatibility/contract_registry.json",
+    "revenue-forecast/compatibility/contract_registry.py",
+    "revenue-forecast/tests/test_contract_registry.py",
+    "company-wiki/docs/adr/ADR-010-fcap-contract-ownership.md",
+    "filing-fetch/references/contract-ownership.md"
+  ],
+  "changed_files": [
+    "revenue-forecast/compatibility/contract_registry.json",
+    "revenue-forecast/compatibility/contract_registry.py",
+    "revenue-forecast/tests/test_contract_registry.py",
+    "company-wiki/docs/adr/ADR-010-fcap-contract-ownership.md",
+    "filing-fetch/references/contract-ownership.md"
+  ],
+  "dependency_receipts": [],
+  "command_registry_sha256": "pending-fc-104",
+  "contract_registry_sha256": "e434acb112c98099b26aab28cce96ad63db13cca05d8c7740102405282bf0954",
+  "scenario_results": [],
+  "commands": [
+    {
+      "command": "python -m pytest tests/test_contract_registry.py -q",
+      "exit_code": 0,
+      "result": "9 passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -m pytest tests/ tools/tests/ -q",
+      "exit_code": 0,
+      "result": "371 passed, 1 pre-existing PORT-01 failure (test_audit_baseline, FC-1205)",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0
+  },
+  "codegraph": {
+    "production_callers_before": "not-applicable",
+    "production_callers_after": "not-applicable",
+    "note": "FC-101 is docs + governance registry; no production code wiring (that is FC-201..905)."
+  },
+  "mutation": {
+    "id": "FC-101-M",
+    "killed": true,
+    "details": "5 mutation oracles all kill the defect: second owner as list, owner-as-consumer, missing deletion deadline, short triplet hash, contract outside closed set."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Pure additions; revert = remove the five files + the three FC-101 commits."
+  },
+  "review": {
+    "reviewer": "",
+    "reviewer_receipt_sha256": "",
+    "decision": "pending",
+    "reviewed_at": "",
+    "note": "honest-implementer mode: implementer cannot self-accept. Awaits independent reviewer per independent_review_protocol.md."
+  },
+  "provisional_note": "Receipt follows runbook schema 2.0 but is not yet machine-validated; the receipt/closure validator lands in FC-103. command_registry_sha256 and triplet-manifest doc-hash sealing complete in FC-104. The pre-existing test_audit_baseline PORT-01 failure is logged in findings.md #31 and owned by FC-1205; it is not an FC-101 regression (git diff HEAD empty, reproduces in isolation)."
+}
