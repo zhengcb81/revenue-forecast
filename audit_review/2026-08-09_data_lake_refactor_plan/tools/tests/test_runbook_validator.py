@@ -92,6 +92,15 @@ def test_mapping_missing_table_row_fails():
     assert any("F-035" in p for p in problems)
 
 
+def test_mapping_real_table_format_regression():
+    """真实 task_plan 覆盖表格式：ID 与描述同格（复审 CRITICAL 回归）。"""
+    plan = "| F-035 HEAD 已漂移 | WU-101/103 | BASE-01/04 | ... |\n"
+    findings = "F-035 x\n"
+    problems = check_finding_mapping(findings, plan, {})
+    assert any("F-035" in p for p in problems)
+    assert check_finding_mapping(findings, plan, {"F-035": "WU-101"}) == []
+
+
 def test_duplicate_wu_id_detected():
     plan = "### WU-101 a\n### WU-101 b\n### WU-102\n"
     problems = check_wu_id_duplicates(plan, "### ", "task_plan")

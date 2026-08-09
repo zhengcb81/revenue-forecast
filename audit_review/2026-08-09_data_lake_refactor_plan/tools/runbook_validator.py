@@ -126,8 +126,9 @@ def check_finding_mapping(
         full = f"F-0{finding}"
         if full not in mapping:
             problems.append(f"finding {full} has no owner mapping")
-    # coverage-table rows: | F-0xx | owner | ... |
-    table_ids = set(re.findall(r"^\|\s*(F-0\d{2})\s*\|", plan_text, re.MULTILINE))
+    # coverage-table rows: | F-035 HEAD 已漂移 | WU-101/103 | ... |
+    # (ID and description share one cell — ID then any text then the pipe)
+    table_ids = set(re.findall(r"^\|\s*(F-0\d{2})(?:[^|]*)\|", plan_text, re.MULTILINE))
     for finding in sorted(table_ids):
         if finding not in mapping:
             problems.append(
