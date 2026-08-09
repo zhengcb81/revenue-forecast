@@ -1,0 +1,80 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-104",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "3ce9cc4d3ea91b15aad42eff1f55b72a44834dd7",
+    "filing": "c9799b722a97376f9717bcfacfa0685135dcbd15",
+    "wiki": "109a1a6a77d7f4b37f849207fbd9e5d8caf2bc07"
+  },
+  "result_triplet": {
+    "revenue": "db383e6d614897301964a157976dcd84f72a1fef",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "plan_sha256": "158fc1e1e4231e3c2dc71822a58931fdca64eff79fc0d4e27b8276a397f4c78a",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/compatibility/current.json",
+    "revenue-forecast/compatibility/command_registry.json",
+    "revenue-forecast/compatibility/compatibility_manifest.py",
+    "revenue-forecast/tests/test_compatibility_manifest.py"
+  ],
+  "changed_files": [
+    "revenue-forecast/compatibility/current.json",
+    "revenue-forecast/compatibility/command_registry.json",
+    "revenue-forecast/compatibility/compatibility_manifest.py",
+    "revenue-forecast/tests/test_compatibility_manifest.py"
+  ],
+  "dependency_receipts": [
+    "assurance/fc/FC-101/11_implementer_receipt.json (independent_review)",
+    "assurance/fc/FC-102/11_implementer_receipt.json (independent_review)",
+    "assurance/fc/FC-103/11_implementer_receipt.json (independent_review)"
+  ],
+  "command_registry_sha256": "bd4e507d040f4fd0da99f713021981aeae19aaa466840e57037816abed7724e1",
+  "commands": [
+    {
+      "command": "python -m pytest tests/test_compatibility_manifest.py -q",
+      "exit_code": 0,
+      "result": "19 passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -m pytest tests/ tools/tests/ -q",
+      "exit_code": 0,
+      "result": "423 passed / 1 pre-existing PORT-01 (FC-1205)",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0
+  },
+  "codegraph": {
+    "production_callers_before": "not-applicable",
+    "production_callers_after": "not-applicable",
+    "note": "FC-104 is governance infra; no production data path."
+  },
+  "mutation": {
+    "id": "FC-104-M",
+    "killed": true,
+    "details": "7 manifest tamper/regression + 6 command-registry structure mutations all kill; plus a real RED (owner_repo naming) fixed."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Pure additions; revert = remove files + commits."
+  },
+  "review": {
+    "reviewer": "",
+    "reviewer_receipt_sha256": "",
+    "decision": "pending",
+    "reviewed_at": "",
+    "note": "honest-implementer: command_registry now sealed with a real hash; re-validation of FC-101/102/103 receipts toward accepted is possible once an independent reviewer acts."
+  },
+  "provisional_note": "Phase 1 seal: with FC-104 the command registry hash is real, so earlier receipts' pending-fc-104 markers can be superseded during independent review."
+}
