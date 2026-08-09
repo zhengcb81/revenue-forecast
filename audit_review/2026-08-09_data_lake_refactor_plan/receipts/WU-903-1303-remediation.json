@@ -19,16 +19,46 @@
     "document_id": "urn:company-wiki:document:sha256:2e3366c84fc6a802cabc5271a5cb1dee1ef4efde116cf0a7e034db9066de4e7d",
     "title": "中国平安：2020年中期报告",
     "path": "C:/Users/郑曾波/Dropbox/Stock/金融/保险/中国平安/中国平安：2020年中期报告.PDF",
-    "only_dropbox_location": true,
+    "only_dropbox_location": false,
     "content_sha256": "2e3366c84fc6a802cabc5271a5cb1dee1ef4efde116cf0a7e034db9066de4e7d",
     "acquisition_metadata": {
-      "form_type": null, "fiscal_year": null, "source_url": null,
-      "provider": null, "market": "CN", "security_id": "中国平安"
-    }
+      "form_type": null,
+      "fiscal_year": null,
+      "source_url": null,
+      "provider": null,
+      "market": "CN",
+      "security_id": "中国平安"
+    },
+    "location_set": [
+      {
+        "root": "dropbox_stock",
+        "role": "original_primary",
+        "hash_matches": true
+      },
+      {
+        "root": "company_raw",
+        "role": "original_primary",
+        "hash_matches": true,
+        "path": "companies/中国平安/raw/research/中国平安：2020年中期报告.PDF"
+      },
+      {
+        "root": "company_raw",
+        "role": "metadata",
+        "hash_matches": true,
+        "path": "companies/中国平安/raw/research/中国平安：2020年中期报告.PDF.source.json"
+      }
+    ]
   },
   "remediation_receipt": {
     "document_id": "urn:company-wiki:document:sha256:2e3366c84fc6a802cabc5271a5cb1dee1ef4efde116cf0a7e034db9066de4e7d",
-    "missing_fields": ["form_type", "fiscal_year", "period_end", "source_url", "provider", "provider_document_id"],
+    "missing_fields": [
+      "form_type",
+      "fiscal_year",
+      "period_end",
+      "source_url",
+      "provider",
+      "provider_document_id"
+    ],
     "weak_identity": "security_id is a display name (中国平安), not a strong security id",
     "acceptable_evidence": [
       "sidecar .source.json with schema_version 1.0 + strong identity/period/kind/provenance",
@@ -38,7 +68,7 @@
     "action": "no auto-write; explicit WU-904 restore flow requires reviewer approval per document"
   },
   "verdict": "BLOCKED_NO_ELIGIBLE_PRODUCTION_SAMPLE",
-  "rationale": "The only active Dropbox official-filing candidate lacks provenance/period/strong identity (acquisition metadata all null; security_id is a Chinese display name). It cannot form a capture-ready handle without an approved remediation/restore window. Fixture E2E stays green; production Dropbox reuse is NOT claimed. Per plan: user-authorized remediation window is open; execution requires explicit per-document reviewer approval via WU-904 restore.",
+  "rationale": "The only active Dropbox official-filing candidate lacks provenance/period/strong identity (acquisition metadata all null; security_id is a Chinese display name). It cannot form a capture-ready handle without an approved remediation/restore window. Fixture E2E stays green; production Dropbox reuse is NOT claimed. Per plan: user-authorized remediation window is open; execution requires explicit per-document reviewer approval via WU-904 restore. 复审修正：candidate 在 company_raw 亦有同 hash active location——WU-1303 条件 1（company_raw/dayu 无同文）亦不满足，BLOCKED 判定加强而非放宽。",
   "real_roots_untouched": true,
   "catalog_untouched": true
 }

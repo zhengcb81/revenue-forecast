@@ -942,3 +942,11 @@ CP0 必须用当前 HEAD/CodeGraph 生成精确 allowlist；下列是允许模�
   verify_collection 为 set 语义无影响，capture 输出按排序写盘以消除 diff 噪音。
 - WU-102 fixture 全部 PDF 共享常量字节，manifest sha256 相同（fixture 自洽）；
   未来若以 sha256 跨根区分文件需注意碰撞。
+
+## 复审 P2-3：catalog 指纹稳定性（WU-1504 复审确认）
+
+- 生产 catalog.sqlite3 被后台 worker 持续修改（WAL 锁 + 字节 hash 抖动）——
+  receipt 的 catalog_probe_before/after **不得冻结原始字节 hash**。
+- 使用稳定指纹：真实根 fast probe + catalog 行数/schema 聚合 + config/policy hash
+  （WU-101 已用 config hash 模式）。
+- ambient-writer 条件在 receipt 的备注字段记录。
