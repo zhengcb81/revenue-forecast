@@ -93,7 +93,7 @@ def _fixture_wiki_root(tmp: Path) -> Path:
     master = tmp / ".source_catalog" / "security_master"
     master.mkdir(parents=True, exist_ok=True)
     for market in ("CN", "US", "HK"):
-        (master / f"{market}.json").write_text(json.dumps({
+        (master / f"{market.lower()}.json").write_text(json.dumps({
             "schema_version": "1.0", "market": market,
             "retrieved_at": "2026-01-01", "sources": ["fixture"],
             "record_count": 1,
