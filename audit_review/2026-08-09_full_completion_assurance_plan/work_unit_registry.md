@@ -23,7 +23,7 @@
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
 | FC-101 | independent_review | FC-002 | 三仓 | ownership RED、ADR hashes、N/N-1 兼容表、重复 owner=0（receipt: assurance/fc/FC-101/；honest-implementer，待独立 reviewer） |
-| FC-102 | pending | FC-101 | revenue | 95 scenario registry 一致性、重复/缺失/矛盾/假 E2E mutation |
+| FC-102 | independent_review | FC-101 | revenue | 95 scenario registry 一致性、重复/缺失/矛盾/假 E2E mutation（receipt: assurance/fc/FC-102/；硬覆盖门属 FC-1003） |
 | FC-103 | pending | FC-101 | revenue | receipt validator 负向全集；旧 25 receipts 不得误通过 |
 | FC-104 | pending | FC-101、102、103 | revenue | current triplet manifest；sibling 漂移 RED；完整组合 GREEN |
 

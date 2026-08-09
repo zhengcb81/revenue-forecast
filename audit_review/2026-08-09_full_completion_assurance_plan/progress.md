@@ -60,3 +60,10 @@
 - 未触碰任何产品代码/配置/数据库/CI；FC-101 为纯新增文件。
 - 剩余：FC-101 `accepted` 待独立 reviewer（honest-implementer）；ADR/registry hash 入 triplet manifest 待 FC-104。
 - 下一步：FC-102（scenario registry）— blockedBy FC-101，已解锁。
+
+### FC-102（scenario registry，revenue-only）
+
+- 新增 `compatibility/scenario_registry.json`（95 场景，按 tier 分解）、`compatibility/scenario_registry.py`（loader+validator）、`tests/test_scenario_registry.py`（95 ID 硬校验 + 5 一致性 + 6 mutation oracle）。
+- TDD 真实 RED：首轮 validator 误判 `freshness_window=None`（T0/T1 合法）为 missing → 修复 → 11 GREEN。
+- 范围：交付 registry + 完整性 validator；"每 ID 真实测试覆盖"硬门属 FC-1003（Phase 10）。
+- 下一步：FC-103（receipt/closure validator）— blockedBy FC-101，已解锁。

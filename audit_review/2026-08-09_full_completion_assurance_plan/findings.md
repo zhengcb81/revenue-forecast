@@ -251,3 +251,13 @@
 - 已确认非 FC-101 回归：FC-101 未修改 `tools/audit_baseline.py` 或其测试（`git diff HEAD` 为空），失败在隔离单测中同样复现；根因是子进程输出含中文用户名路径字节，被强制 utf-8 解码失败 —— 即计划已登记的 PORT-01「Windows 中文路径 subprocess UTF-8 失败」。
 - 按 `command_registry_plan.md` §3，该命令登记为"现状 finding"而非 required-green；修复 owner = FC-1205（统一错误 schema + UTF-8 stdio + Windows OEM/locale 边界）。
 - 影响：FC-101 的 repo-green 基线记为"除既有 PORT-01 失败外全绿"；不影响 FC-101 验收（FC-101 是纯新增、与 audit_baseline 无调用关系）。
+
+## 发现 32：FC-102 已实施 —— 95 场景机器可读 registry + 完整性 validator + 覆盖门基础
+
+- 交付物（revenue-only，纯新增）：
+  - `compatibility/scenario_registry.json`：95 个 mandatory scenario，每条按声明层级分解为独立 tier entry（T1/T2/T3/T4 不可互相替代），含 owner_fc、process_count、fixture/sample(pending:FC)、oracle、side_effect budget、timeout、freshness、evidence path。
+  - `compatibility/scenario_registry.py`：loader + validator（结构、闭合 95、tier 分解、跨进程 process_count>=3 防假 E2E、side-effect key 白名单）。
+  - `tests/test_scenario_registry.py`：硬编码 95 个预期 ID 强校验 registry↔matrix 一一对应 + 5 一致性 + 6 mutation oracle。
+- TDD 真实 RED：首轮 validator 把 T0/T1 合法的 `freshness_window=None` 误判为 missing → 修复为允许 None → GREEN。该 RED 命中目标行为（validator 过严），非环境问题。
+- 范围澄清：FC-102 交付 registry + 完整性 validator + 覆盖门基础。"每个 mandatory ID 都有真实跨进程测试覆盖"的硬门属 FC-1003（Phase 10），现在多数测试尚未存在，故硬门未启用；FC-102 的覆盖工具软报告、Phase 10 转硬。
+- 影响：场景语义单一源建立；后续 FC-505/803/904/1003 等按 registry 登记测试，coverage gate 可机器核验"无遗漏/重复/矛盾/假 E2E"。
