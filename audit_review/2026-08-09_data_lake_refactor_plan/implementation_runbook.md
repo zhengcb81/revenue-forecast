@@ -933,3 +933,12 @@ CP0 必须用当前 HEAD/CodeGraph 生成精确 allowlist；下列是允许模�
   不属于缺陷；reviewer 验收时用 `git show <recapture提交>` 核对 baseline 锁定值 == 该提交的 parent HEAD，
   并在该父态（`git worktree add` 或 checkout）重跑 --check 验证 exit 0。
 - 禁止在提交后把 baseline 当作"当前态"使用；任何 WU 启动第一步 = recapture。
+
+## reviewer 补充说明（WU-101/102 三审/一审，非阻塞）
+
+- worktree 重放若报 BASE-04（plan_hash），先核对 autocrlf CRLF 伪影（worktree checkout
+  的 task_plan.md 为 CRLF，主仓 LF 态 hash 与 baseline 一致）再追查。
+- baseline node_ids 顺序跨 capture 不稳定（wiki 对 set 参数化，PYTHONHASHSEED 随机化）；
+  verify_collection 为 set 语义无影响，capture 输出按排序写盘以消除 diff 噪音。
+- WU-102 fixture 全部 PDF 共享常量字节，manifest sha256 相同（fixture 自洽）；
+  未来若以 sha256 跨根区分文件需注意碰撞。
