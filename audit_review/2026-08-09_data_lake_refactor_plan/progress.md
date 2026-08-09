@@ -119,3 +119,31 @@
   provenance/period/强 identity，无 remediation 路径——编造即违规）；
   WU-904 restore 无合格候选触发；Phase 15 legacy 退役（WU-1500~1502）需
   legacy_hits=0 观察周期；WU-903/905/906 生产 apply 需真实变更窗口。
+
+## 2026-08-09 — 剩余可执行项推进（继续授权）
+
+- **WU-1305**（observability.py + 7 测试）：版本化 reason taxonomy（28 码、
+  1.0）、隐私安全 MetricsCollector（路径/公司名 redaction、未知 reason fail-
+  closed、legacy_bridge_hits/shadow_diffs/migration_remaining 一等计数、
+  latency p50/p95/p99 nearest-rank）。M-01（接受未知 reason）/M-02（不
+  redact）mutation killed。
+- **WU-1306**（test_capacity_concurrency.py + 5 测试）：增量扫描快路径证明
+  （无变更 files_hashed=0/files_reused=1；size/mtime 变化必重 hash，
+  TOCTOU 安全）；10 并发 resolver 无 deadlock/无 bundle 混用；并发只读
+  不写。M-01（强制全量 rehash）mutation killed。
+- **WU-1500 周期 1 启动**：resolver._source_metadata 加 observer 参数埋
+  legacy_bridge_hit 观察缝；SourceResolver(observer=) 接线；freeze gate
+  （test_leg04：legacy 容器读取模式只允许在 resolver.py 一处）；v1 reader
+  回滚演练（test_leg05：shadow 行对 v1 不可见）；scripts/legacy_observer.py
+  只读周期报告器。基线：46/46 active filings 走 legacy bridge、shadow
+  diffs=0（生产 pre-v2 schema）。**时间门：legacy_hits=0 两周期才放行
+  WU-1501；当前 observing 不宣称完成**。
+- **WU-1304**（processed_artifact_canary.py 只读）：生产 artifacts 7712 条
+  全部无 source_sha256/schema binding（0% 填充）→ 0 binding-valid 样本，
+  与 WU-1303/902 同根因；fixture 链 E2E-D01/D04/D05 保持 green。
+- **WU-1503**（文档一致性审计）：filing SKILL.md +21 行（indexed≠reusable、
+  exact vs latest、invalidation、canary 限制）；wiki README +7 行 production
+  truth boundaries；CLI help/manifest 一致。
+- wiki 全量回归暴露 writer freeze 误伤 legacy_observer（write_text）→ 加入
+  CONTROL_TOOL_ALLOWLIST（受控只读工具，与 recovery_baseline 同类）。
+- 三仓推送 + CI 轮询进行中。

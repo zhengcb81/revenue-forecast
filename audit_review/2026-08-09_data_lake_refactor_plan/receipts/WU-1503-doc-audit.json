@@ -1,0 +1,20 @@
+{
+  "wu_id": "WU-1503",
+  "date": "2026-08-09",
+  "title": "文档一致性审计",
+  "status": "accepted",
+  "checklist": {
+    "config-only_description": "PASS — filing SKILL.md: 添加 reusable_root_kinds 目录 = 每配置一行，无代码",
+    "indexed_vs_reusable": "PASS — revenue SKILL.md L127 + wiki README + filing SKILL.md 新增 Notes 均明确区分",
+    "external_root_readonly_canonical_write_download_auth": "PASS — wiki README L128（扫描绝不改写外部原件、download 授权）；filing SKILL.md（默认只读复用、--allow-download 才下载）",
+    "exact_latest_invalidation_canary_limits": "新增 — filing SKILL.md Notes：exact vs latest 区分、artifact invalidation 最小重算、真实 canary 限制（WU-1303/902/1304 未证明生产复用）；wiki README 追加 production truth boundaries 段",
+    "executable_docs_tests_consistency": "PASS — release_manifest.py 生成 manifest（三仓 HEAD 603d0af/ad62592/83bb23a），known_limitations 含 WU-1303 BLOCKED 等",
+    "cli_help_consistency": "PASS — filing-fetch --help 与 SKILL.md 一致（--allow-download 默认只读复用）；wiki CLI 子命令齐全"
+  },
+  "changes": {
+    "filing-fetch/SKILL.md": "+21 行 Notes（indexed≠reusable、exact vs latest、invalidation、canary 限制）",
+    "company-wiki/README.md": "+7 行 production truth boundaries"
+  },
+  "verdict": "文档与代码/真实状态一致；生产限制如实标注，不宣称未完成的复用能力",
+  "next": "WU-1504 已 ACCEPTED；WU-1505 closure ledger 已生成"
+}
