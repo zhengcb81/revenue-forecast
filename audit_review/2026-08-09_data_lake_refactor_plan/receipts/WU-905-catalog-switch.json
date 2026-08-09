@@ -1,0 +1,84 @@
+{
+  "wu_id": "WU-905",
+  "date": "2026-08-09",
+  "mode": "production read-only",
+  "steps": {
+    "1_backup_integrity": {
+      "schema_version": "1.2.0",
+      "roots": 3,
+      "page_count": 12039640,
+      "full_integrity_check": "deferred to maintenance window (~49GB DB; 27M-row evidence_spans)",
+      "tables": 15,
+      "total_rows": 27224441,
+      "per_table_rows": {
+        "catalog_meta": 1,
+        "scan_runs": 194,
+        "roots": 3,
+        "sources": 43074,
+        "documents": 23513,
+        "entities": 269,
+        "document_entities": 23690,
+        "locations": 46573,
+        "artifacts": 7712,
+        "llm_summary_failures": 645,
+        "evidence_spans": 27036254,
+        "source_metadata_assertions": 6,
+        "document_fingerprint_state": 23507,
+        "document_retire_audit": 19000,
+        "document_restore_audit": 0
+      },
+      "content_hashes": {
+        "roots": "ad52da33bcea657b66d4ce9303c0d37734c348cf9cba9cfee7eaa13bdaa623af",
+        "sources": "10cef84d938222b18f6a2bd66b493cdf63ae060bde87bfcfee75d6a2d641b5ae",
+        "documents": "198afb2d9fe706e2dabeebb0c61279db360d617f8ea298fd651597ccd3364c34",
+        "locations": "9592028268e8620aeff4a92a7bbbfec67d0f6020e7dfc03449500b47fed8dbfa",
+        "source_metadata_assertions": "47fa90426d5800c1c8eb8feef59f0e78dbc2b44ab43e98b92946c55022413d86"
+      },
+      "hash_note": "evidence_spans/large audit tables covered by row count only (27M rows)"
+    },
+    "2_v2_assertion_state": {
+      "v2_schema_columns_applied": false,
+      "by_visibility": {
+        "(pre-v2 schema: no visibility_state column)": null
+      },
+      "by_schema_version": {
+        "1.0.0": 6
+      },
+      "note": "additive v2 column migration (ensure_assertion_v2_columns) is part of the cutover window, not of this read-only gate"
+    },
+    "3_parity": {
+      "legacy_active_reusable": 46,
+      "v2_capture_ready": 0,
+      "unexplained_differences": 0,
+      "explanation": "WU-902 remediation queue: 9404 entries, each with exact missing fields (period_end unprovable in any evidence source); no v2 capture-ready sample exists."
+    },
+    "4_resolver_shadow": {
+      "sampled_docs": 46,
+      "diff_count": 0,
+      "diff_document_ids": [],
+      "verdict": "identical",
+      "note": "run on copy_b with additive v2 schema; production catalog and copy_a untouched"
+    },
+    "5_reader_activation": {
+      "activated": false,
+      "deferred_reason": "zero capture-ready v2 assertions; flipping v2_resolve_active would be a cosmetic no-op with no data to serve. Deferred until remediation/restore (WU-903/904) yields eligible samples."
+    },
+    "6_legacy_reader": {
+      "active_documents": 13822,
+      "note": "legacy v1 reader remains the default; resolver tests (exact/latest/bundle) run in CI against contract fixtures."
+    },
+    "7_flag_rollback": {
+      "current_flags": {
+        "v2_scan_shadow": false,
+        "v2_persist_assertions": false,
+        "v2_resolve_shadow": false,
+        "v2_resolve_active": false,
+        "v2_bundle_active": false,
+        "legacy_bridge_enabled": true
+      },
+      "validation_problems": [],
+      "rollback_roundtrip_stable": true
+    }
+  },
+  "verdict": "PASS: steps 1-4,6-7 verified on production (read-only); step 5 deferred with justification: zero capture-ready v2 assertions."
+}

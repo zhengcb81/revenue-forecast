@@ -81,3 +81,41 @@
   （remediation receipt：缺 6 字段 + 弱 identity；用户授权窗口已开，
   逐文档 WU-904 restore 需 reviewer 批准）
 - 全部 dry-run 只读（mode=ro + query_only），生产 catalog/真实根零写入
+
+## 2026-08-09 — 生产终局推进（继续授权）
+
+- **WU-902**（backfill_v2.py + 8 测试）：强绑定门（provider_document_id/
+  source_url/form_type/fiscal_year/provider + 强 security_id）→ verified shadow
+  assertions；period_end 不可证明 → remediation queue，绝不猜测。
+  M-01（猜测 period/URL）/M-02（conflict 算 success）mutation 均被 kill。
+  生产 dry-run：input=9404、success=0、indexed_only=9404、对账闭合；
+  全库 0/23513 文档含 period_end、0/8820 sidecar 含 period_end →
+  0 条 verified 可构造，全部 remediation（17 个强绑定文档仅缺 period_end）。
+  结论与 WU-1303 BLOCKED 一致：生产无 capture-ready 样本，零猜测写入。
+- **WU-905**（wu905_catalog_switch_check.py）：七步只读验证 PASS。
+  step1 backup 结构完整性（schema 1.2.0、3 roots、12M pages、15 表
+  27M 行、关键表内容 hash；49GB 库全量 integrity_check 延到维护窗口）；
+  step2 生产为 pre-v2 schema（无 visibility_state 列，6 条 1.0.0 assertions）；
+  step3 parity：legacy active 46 vs v2 capture-ready 0，零未解释差异；
+  step4 resolver shadow：copy_b+additive v2 schema 上 46 采样文档 diff=0；
+  step5 切 active **明确推迟**（0 capture-ready 数据，flip 无意义）；
+  step6/7 legacy reader 与 flag rollback 保留。receipt: WU-905-catalog-switch.json。
+- **WU-906**（wu906_drill.py）：两份独立生产快照（结构化子集：sources 43074/
+  documents 23513/locations 46573 全量行）五条路径全过：A 全量 migrate→
+  verify→rollback 业务保留（23518 assertions，RTO 14s）；B crash→resume
+  无重复；C tamper→cutover 被阻；D backup 恢复指纹逐字节一致；E 换 code/plan
+  hash 拒绝 resume。**演练暴露真实 FK 阻塞**：migration.py 插入空 document_id
+  在生产 FK 约束下失败 → 修复为 JOIN documents 取真实 id、孤儿 source 跳过计数
+  （MIG-09 测试锁定）；test_migration_tool/drill fixture 升级为含 documents 表。
+- 演练后清理：46GB 完整副本与子集快照、scratch 全部删除（磁盘 413G/476G）。
+- 三仓最终回归 + 推送 CI 验证进行中。
+
+### 诚实终态判定
+
+- **fixture_and_architecture_complete = TRUE**：R0~R11、CP0~CP8、74 WU 中
+  所有可执行项完成；WU-902/905/906 生产只读/快照演练全部 PASS。
+- **production_dropbox_complete = FALSE**（如实，不宣称）：resolver 仍默认
+  v1、v2 shadow 状态、feature flags 全关；WU-1303 BLOCKED（中国平安缺
+  provenance/period/强 identity，无 remediation 路径——编造即违规）；
+  WU-904 restore 无合格候选触发；Phase 15 legacy 退役（WU-1500~1502）需
+  legacy_hits=0 观察周期；WU-903/905/906 生产 apply 需真实变更窗口。
