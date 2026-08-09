@@ -1,0 +1,29 @@
+{
+  "wu_id": "WU-1500",
+  "date": "2026-08-09",
+  "title": "先禁用 legacy，保留源码观察（观察机制 + freeze gate + 周期 1 基线）",
+  "status": "cycle_1_started_observing",
+  "implementation": {
+    "observation_seam": "resolver._source_metadata 加可选 observer 参数；命中 legacy acquisition/dayu_meta 容器时记录 legacy_bridge_hit（WU-1305 collector）",
+    "resolver_wiring": "SourceResolver(observer=...) 传入 resolve() 路径；缺省 None 行为不变",
+    "freeze_gate": "test_leg04 静态扫描：legacy 容器读取模式（for key in (\"acquisition\",\"dayu_meta\")）只允许出现在 resolver.py 一处；新 caller 即违规",
+    "rollback_drill": "test_leg05 证明 v1 reader 可启动且 shadow visibility 行对其不可见（active_assertions reader=v1 过滤）",
+    "observer_tool": "scripts/legacy_observer.py — 只读（mode=ro+query_only 强制），输出 legacy_bridge_hits/shadow_diffs，周期簿记写 legacy_periods.json",
+    "tests": "company-wiki tests/contract/test_legacy_observation.py (6 tests)"
+  },
+  "mutation_proof": {
+    "M-01_drop_legacy_hit_recording": "KILLED — test_leg01 red",
+    "restore": "字节级还原，17 项相关测试全绿（含 resolver/rollback 现有套件）"
+  },
+  "cycle_1_baseline": {
+    "sampled_documents": 46,
+    "legacy_bridge_hits": 46,
+    "shadow_diffs": 0,
+    "status": "observing",
+    "interpretation": "生产仍为 pre-v2 schema，v1 是唯一 reader —— 46/46 全部经 legacy bridge 读取属预期。观察从当前状态开始；周期内 legacy_hits=0 才允许 WU-1501。"
+  },
+  "verdict": "观察机制、freeze gate、回滚演练证明、周期 1 基线全部就绪。完成标准（连续两周期 legacy_hits=0）是时间门：当前 46 hits 说明 legacy 仍被生产读取，退役时机未到，诚实保持 observing 而非宣称完成。",
+  "catalog_untouched": true,
+  "real_roots_untouched": true,
+  "next": "周期 1 继续观察；hit 数降至 0 且稳定两周期后 → WU-1501"
+}
