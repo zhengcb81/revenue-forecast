@@ -124,6 +124,8 @@ writing are delegated to ``company-wiki`` via ``filing-fetch`` (R3: the
 bundled legacy acquisition module was removed — filing acquisition has a
 single owner).
 
+A catalog document being *indexed* does not make it *reusable*: only active, capture-ready handles under a registered reusable root are reused; everything else fails closed.
+
 Use strict `FYyyyy` periods and machine-readable dimension, time basis, currency, and scale. Open every cited page before creating its claim. URL-format validation and claim structure do not independently understand a live webpage.
 
 ### 4. Split the company into revenue curves
