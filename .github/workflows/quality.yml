@@ -23,6 +23,8 @@ jobs:
           git clone --quiet https://github.com/zhengcb81/company-wiki.git "$SIBLING_DIR/company-wiki"
           git -C "$SIBLING_DIR/filing-fetch" checkout ad62592
           git -C "$SIBLING_DIR/company-wiki" checkout 77669ae
+          # filing-fetch 以子进程调 company-wiki CLI，需要其 src 在 PYTHONPATH
+          echo "PYTHONPATH=$SIBLING_DIR/company-wiki/src" >> "$GITHUB_ENV"
       - name: Ruff + compileall + unique test symbols (WU-1.2)
         run: |
           ruff check scripts tests tools e2e
