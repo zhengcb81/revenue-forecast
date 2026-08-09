@@ -1,0 +1,29 @@
+{
+  "wu_id": "WU-104",
+  "plan_version": "2.1-full-refactor-execution-cards",
+  "plan_hash": "见 baselines/WU-101-baseline.json",
+  "owner": "revenue cross-repo audit tooling（trace_pack）",
+  "reviewer": "pending",
+  "status": "implemented → mutation_proved → pending independent review",
+  "baseline_commit": {"revenue": "e5f9092", "filing": "8714a66", "wiki": "111f214"},
+  "allowed_files": ["audit_review/2026-08-09_data_lake_refactor_plan/**"],
+  "actual_changed_files": [
+    "tools/trace_pack.py (new)", "tools/tests/test_trace_pack.py (new, 5 tests)",
+    "baselines/WU-104-trace-golden.json (new)", "known_bad.json (new)",
+    "receipts/WU-104.json (new)"
+  ],
+  "red_test_ids": ["test_chr01_identical_runs_same_canonical_hash", "test_chr01_different_output_changes_hash", "test_chr02_trace_diff_detects_changes", "test_chr03_known_bad_requires_owner", "test_chr04_trace_targets_are_offline"],
+  "red_exit_code": 0,
+  "red_failure_excerpt": "首轮 1 个失败为测试断言形式（列表成员 vs 子串），修正后 5 passed",
+  "focused_commands": ["python tools/trace_pack.py --capture（5 目标 exit 0）", "python tools/trace_pack.py --check（OK）", "python tools/trace_pack.py --known-bad（OK）"],
+  "mutation_proof": [
+    {"mutation_id": "M-CHR-02", "description": "篡改 golden 中 filing-fetch-help exit 1", "expected_failure_test": "check 报 exit 差异", "observed_failure": "TRACE-GATE: filing-fetch-help: exit 0 != golden 1", "revert_proof": "还原后 check OK"}
+  ],
+  "known_bad": {"kb-001": "scanner directory 根不写 acquisition 元数据（F-034 根因）→ WU-501", "kb-002": "resolver 读来源特定 JSON（F-036）→ WU-801"},
+  "network_calls": 0, "download_calls": 0, "parser_calls": 0, "llm_calls": 0,
+  "external_write_calls": 0, "canonical_write_calls": 0,
+  "real_root_probe": "未触碰真实根（trace 目标全为离线 CLI；CHR-04）",
+  "scope_note": "本 WU 交付命令级 golden trace（现有可离线入口）；scanner/resolver 的完整行为 trace 依赖 catalog fixture，随 Phase 4~6 v2 shadow 推进",
+  "reviewer_findings": [],
+  "admission_decision": "pending"
+}
