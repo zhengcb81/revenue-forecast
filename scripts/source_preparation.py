@@ -32,6 +32,23 @@ def _read_request(request_file: str | None) -> dict:
     return json.load(sys.stdin)
 
 
+_SOURCE_TYPE_BY_KIND = {
+    "annual_report": "regulatory_filing",
+    "quarterly_report": "regulatory_filing",
+    "semi_annual_report": "regulatory_filing",
+    "regulatory_filing": "regulatory_filing",
+    "investor_presentation": "investor_presentation",
+    "earnings_transcript": "earnings_transcript",
+    "official_statistics": "official_statistics",
+    "company_release": "company_release",
+}
+
+
+def _revenue_source_type(handle: dict) -> str:
+    kind = str(handle.get("document_kind") or "")
+    return _SOURCE_TYPE_BY_KIND.get(kind, "regulatory_filing")
+
+
 def prepare_source(
     request: dict,
     *,
@@ -65,15 +82,16 @@ def prepare_source(
             f"{proc.stderr.strip()[-800:]}"
         )
     payload = json.loads(proc.stdout)
-    handle = payload.get("handle") or {}
+    # the client prints the handle dict directly (no wrapper)
+    handle = payload if isinstance(payload, dict) else {}
     # Reuse receipt: artifact selection happens in company_wiki_source
     record = company_wiki_source.build_revenue_source_record(
         handle,
         as_of_date=str(request.get("as_of_date", "")),
-        source_type=str(handle.get("mime_type") or "application/pdf"),
+        source_type=_revenue_source_type(handle),
         publisher=str(handle.get("provider") or "unknown"),
         page_or_section="1",
-        prompt_injection_status="none",
+        prompt_injection_status="not_detected",
     )
     record["reuse_receipt"] = {
         "parser_calls": 0,
