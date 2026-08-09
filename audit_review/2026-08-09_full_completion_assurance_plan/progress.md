@@ -67,3 +67,10 @@
 - TDD 真实 RED：首轮 validator 误判 `freshness_window=None`（T0/T1 合法）为 missing → 修复 → 11 GREEN。
 - 范围：交付 registry + 完整性 validator；"每 ID 真实测试覆盖"硬门属 FC-1003（Phase 10）。
 - 下一步：FC-103（receipt/closure validator）— blockedBy FC-101，已解锁。
+
+### FC-103（receipt/closure validator，revenue）
+
+- 新增 `tools/receipt_validator.py`（schema 2.0 校验 + can_accept 门）、`tools/tests/test_receipt_validator.py`（22 passed：1 正向 + 16 负向 + 3 can_accept + 旧 receipt 拒绝 + FC_IDS=71）。
+- 实战：FC-101 receipt 结构 OK、can_accept 正确拒绝（pending seal + 非 accepted）。
+- 全量 404 passed / 1 failed（既有 PORT-01，无新回归）。tools/ 不在 skill 安装面，无需同步。
+- 下一步：FC-104（compatibility manifest + command registry）— blockedBy FC-101/102/103，已解锁。

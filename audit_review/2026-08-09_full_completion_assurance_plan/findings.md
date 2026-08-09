@@ -261,3 +261,13 @@
 - TDD 真实 RED：首轮 validator 把 T0/T1 合法的 `freshness_window=None` 误判为 missing → 修复为允许 None → GREEN。该 RED 命中目标行为（validator 过严），非环境问题。
 - 范围澄清：FC-102 交付 registry + 完整性 validator + 覆盖门基础。"每个 mandatory ID 都有真实跨进程测试覆盖"的硬门属 FC-1003（Phase 10），现在多数测试尚未存在，故硬门未启用；FC-102 的覆盖工具软报告、Phase 10 转硬。
 - 影响：场景语义单一源建立；后续 FC-505/803/904/1003 等按 registry 登记测试，coverage gate 可机器核验"无遗漏/重复/矛盾/假 E2E"。
+
+## 发现 33：FC-103 已实施 —— receipt/closure validator（schema 2.0）+ can_accept 门
+
+- 交付物（revenue，纯新增）：
+  - `tools/receipt_validator.py`：schema 2.0 校验器，遵循 verify_closure_ledger 模式。两级判据：`validate_receipt`（结构：schema/fc_id∈71 闭集/triplet 40-hex/plan+policy+command hash/changed⊆allowed/命令 exit=0/无 skip 场景/implementer≠reviewer/非未来时间/mutation killed）；`can_accept`（更严：结构 OK + 真实封印无 pending-fc-104 + 独立 reviewer accepted + 非未来时间）。
+  - `tools/tests/test_receipt_validator.py`：1 正向 + 16 负向 mutation（短 base/result/plan/policy/command hash、占位 policy、fc_id 越界、changed 越界、命令 exit≠0、skip/xfail 场景、mutation 存活、伪 reviewer=implementer、未来时间、accepted 空 reviewer、缺 reviewer hash）+ 3 个 can_accept 门 + 旧不完整 receipt 拒绝 + FC_IDS=71。22 passed。
+- 实战验证：对真实 FC-101 receipt，`validate_receipt` 返回 OK（结构合法），`can_accept` 正确拒绝（pending-fc-104 封印 + decision 非 accepted）—— validator 按设计把 FC-101 锁在 independent_review，honest-implementer 模式被机器强制。
+- TDD 说明：validator 模块先写，自审发现 `_triplet_problems` 一处 walrus 笔误已修；负向 mutation suite 即 RED-oracle 证明（每个坏 receipt 被拒）。
+- 范围：closure ledger 的生成入口已就位；旧 25 份不完整 receipt 因缺 schema 2.0 字段被结构性拒绝（`test_legacy_incomplete_receipt_is_not_accepted`）。
+- 影响：所有后续 FC receipt 现在可被机器校验；accepted 状态只能由独立 reviewer 通过 can_accept 推进，封印待 FC-104。
