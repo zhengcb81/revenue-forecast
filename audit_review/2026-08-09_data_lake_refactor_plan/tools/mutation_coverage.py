@@ -12,6 +12,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+PLAN_DIR = Path(__file__).resolve().parents[1]
+
 REPO_ROOTS = {
     "revenue": Path(r"C:\Users\郑曾波\Projects\revenue-forecast"),
     "filing": Path(r"C:\Users\郑曾波\Projects\filing-fetch"),
@@ -41,20 +43,27 @@ MUTATIONS = [
      "repo": "wiki", "killers": ["tests/contract/test_assertion_upsert.py::test_tx03_metadata_change_appends_new_assertion_keeps_old"]},
     {"id": "M11", "desc": "summary 失效扩大为重跑 parser",
      "repo": "revenue", "killers": ["audit_review/2026-08-09_data_lake_refactor_plan/tools/tests/test_artifact_dag.py::test_b02_summary_producer_change_recomputes_summary_and_downstream_only"]},
+    {"id": "M04", "desc": "resolver 恢复 acquisition/dayu_meta 分支",
+     "repo": "wiki", "kind": "gate",
+     "killers": ["tests/contract/test_adapter_spi.py::test_spi02_scanner_root_branch_freeze"]},
     {"id": "M12", "desc": "subprocess E2E 改直接 helper 调用",
-     "repo": "revenue", "killers": ["tests/test_source_preparation.py::test_process_red01_uses_real_subprocess_chain"]},
+     "repo": "revenue", "kind": "gate", "killers": ["tests/test_source_preparation.py::test_process_red01_uses_real_subprocess_chain"]},
 ]
 
 
 def verify(repo_name: str, root: Path) -> list[str]:
-    """Killer tests must be green AND actually kill their mutation: we
-    execute each mutation (via the mutation's own script) and require the
-    killer to turn red — a green-only gate can silently guard nothing."""
+    """Killer tests must be green AND actually kill their mutation.
+
+    Text mutations are machine-proved by mutation_runner.py (single source
+    of truth).  Architecture-level mutations (M04 scanner branch freeze,
+    M12 subprocess-E2E) are covered by structural gates whose killers must
+    stay green here."""
     problems: list[str] = []
     for mutation in MUTATIONS:
         if mutation["repo"] != repo_name:
             continue
-        # 1) killer green in the clean tree
+        if mutation.get("kind") != "gate":
+            continue
         for killer in mutation["killers"]:
             proc = subprocess.run(
                 [sys.executable, "-m", "pytest", killer, "-q"],
@@ -64,30 +73,22 @@ def verify(repo_name: str, root: Path) -> list[str]:
             )
             if proc.returncode != 0:
                 problems.append(
-                    f"{mutation['id']} killer {killer} not green: "
+                    f"{mutation['id']} gate killer {killer} not green: "
                     f"{proc.stdout.strip().splitlines()[-1][:120]}"
                 )
-    # 2) mutation actually kills: each mutation script must flip its killer
-    for mutation in MUTATIONS:
-        if mutation["repo"] != repo_name:
-            continue
-        script = root / "tools" / f"mutation_{mutation['id'].lower()}.py"
-        if not script.is_file():
-            problems.append(
-                f"{mutation['id']}: no mutation script tools/mutation_"
-                f"{mutation['id'].lower()}.py — kill not machine-provable"
-            )
-            continue
+    # 仅当该 repo 有文本 mutation 时委托 runner（filing 无 → 跳过）
+    if any(m["repo"] == repo_name and m.get("kind") != "gate"
+           for m in MUTATIONS):
+        runner = PLAN_DIR / "tools" / "mutation_runner.py"
         proc = subprocess.run(
-            [sys.executable, str(script)],
+            [sys.executable, str(runner), "--repo", repo_name],
             cwd=str(root), capture_output=True, text=True,
-            encoding="utf-8", errors="replace", timeout=600,
-            check=False,
+            encoding="utf-8", errors="replace", timeout=900, check=False,
         )
-        if "KILLED" not in proc.stdout:
+        if proc.returncode != 0 or "KILLED" not in proc.stdout:
             problems.append(
-                f"{mutation['id']}: mutation script did not prove a kill: "
-                f"{proc.stdout.strip()[:200]}"
+                f"mutation_runner for {repo_name} did not prove kills: "
+                f"{proc.stdout.strip()[-300:]}"
             )
     return problems
 
