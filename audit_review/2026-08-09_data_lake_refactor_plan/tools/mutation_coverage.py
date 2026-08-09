@@ -20,7 +20,7 @@ REPO_ROOTS = {
 
 MUTATIONS = [
     {"id": "M01", "desc": "删除 content hash 校验",
-     "repo": "revenue", "killers": ["tests/test_bundle_e2e_d01.py"]},
+     "repo": "revenue", "killers": ["tests/test_company_wiki_source.py::RevenueSourceRecordTests::test_tampered_local_source_is_rejected"]},
     {"id": "M02", "desc": "把 retired 当 active",
      "repo": "wiki", "killers": ["tests/contract/test_source_catalog_fail_closed.py"]},
     {"id": "M03", "desc": "company_name 广播 URL",
@@ -47,10 +47,14 @@ MUTATIONS = [
 
 
 def verify(repo_name: str, root: Path) -> list[str]:
+    """Killer tests must be green AND actually kill their mutation: we
+    execute each mutation (via the mutation's own script) and require the
+    killer to turn red — a green-only gate can silently guard nothing."""
     problems: list[str] = []
     for mutation in MUTATIONS:
         if mutation["repo"] != repo_name:
             continue
+        # 1) killer green in the clean tree
         for killer in mutation["killers"]:
             proc = subprocess.run(
                 [sys.executable, "-m", "pytest", killer, "-q"],
@@ -63,6 +67,28 @@ def verify(repo_name: str, root: Path) -> list[str]:
                     f"{mutation['id']} killer {killer} not green: "
                     f"{proc.stdout.strip().splitlines()[-1][:120]}"
                 )
+    # 2) mutation actually kills: each mutation script must flip its killer
+    for mutation in MUTATIONS:
+        if mutation["repo"] != repo_name:
+            continue
+        script = root / "tools" / f"mutation_{mutation['id'].lower()}.py"
+        if not script.is_file():
+            problems.append(
+                f"{mutation['id']}: no mutation script tools/mutation_"
+                f"{mutation['id'].lower()}.py — kill not machine-provable"
+            )
+            continue
+        proc = subprocess.run(
+            [sys.executable, str(script)],
+            cwd=str(root), capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=600,
+            check=False,
+        )
+        if "KILLED" not in proc.stdout:
+            problems.append(
+                f"{mutation['id']}: mutation script did not prove a kill: "
+                f"{proc.stdout.strip()[:200]}"
+            )
     return problems
 
 
