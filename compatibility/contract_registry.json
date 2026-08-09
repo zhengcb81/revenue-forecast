@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0",
+  "frozen_at_triplet": {
+    "revenue": "3ce9cc4d3ea91b15aad42eff1f55b72a44834dd7",
+    "filing": "c9799b722a97376f9717bcfacfa0685135dcbd15",
+    "wiki": "109a1a6a77d7f4b37f849207fbd9e5d8caf2bc07"
+  },
+  "strategy_source_invariant": "company-wiki is the sole ownership and strategy source for the seven data-lake contracts. filing-fetch and revenue-forecast consume these contracts; they must never re-declare ownership, define a second root policy / allowlist source, or re-implement identity, latest, artifact, or admission logic. A second owner_repo entry for any contract is a forbidden second strategy source.",
+  "contracts": {
+    "RootPolicySnapshot": {
+      "owner_repo": "company-wiki",
+      "version": "2.0",
+      "introduced_by_fc": "FC-301",
+      "consumed_by_repos": [
+        "filing-fetch",
+        "revenue-forecast"
+      ],
+      "n_minus_1_supported": "1.x (root kind-based policy)",
+      "compat_window": "N (2.x RootPolicy) and N-1 (1.x kind-based) coexist from FC-301; scanner uses 2.x via adapter registry while 1.x remains read-only fallback.",
+      "deletion_deadline": "1.x kind-based policy and its loader/doctor are deleted only after FC-305 cutover and Phase 14 R9, contingent on two consecutive >=24h zero-hit observation windows.",
+      "deletion_deadline_fc_gate": "FC-705 + Phase 14 R9",
+      "canonical_doc_path": "company-wiki/docs/adr/ADR-010-fcap-contract-ownership.md",
+      "field_owner_note": "Fields defined in architecture_target.md section 3 (root_id, path_ref, adapter_id, admission_profile_id, read_only, reusable_for_filing, allowed_document_kinds, canonical_write_target, priority, cohort). Consumers verify the policy snapshot hash only."
+    },
+    "NormalizedFilingMetadata": {
+      "owner_repo": "company-wiki",
+      "version": "2.0",
+      "introduced_by_fc": "FC-402",
+      "consumed_by_repos": [
+        "filing-fetch",
+        "revenue-forecast"
+      ],
+      "n_minus_1_supported": "legacy acquisition/dayu_meta containers",
+      "compat_window": "Normalized metadata is produced by adapters (FC-302) and bound via no-guess backfill (FC-402); legacy containers remain read-only until the normalized-only resolver (FC-701) removes their production callers.",
+      "deletion_deadline": "Legacy acquisition/dayu_meta containers are deleted after FC-705 proves two consecutive >=24h windows with zero legacy-bridge hits.",
+      "deletion_deadline_fc_gate": "FC-701 + FC-705",
+      "canonical_doc_path": "company-wiki/docs/adr/ADR-010-fcap-contract-ownership.md",
+      "field_owner_note": "Fields defined in architecture_target.md section 4. Filename is evidence hint only; unprovable fields enter remediation, never capture-ready."
+    },
+    "ResolutionEnvelope": {
+      "owner_repo": "company-wiki",
+      "version": "1.0",
+      "introduced_by_fc": "FC-704",
+      "consumed_by_repos": [
+        "filing-fetch",
+        "revenue-forecast"
+      ],
+      "n_minus_1_supported": "not-applicable (new contract; pre-cutover consumers see explicit bundle_status=unavailable per FC-903)",
+      "compat_window": "First codified in FC-704. Older company-wiki returns without bundle; filing-fetch must surface bundle_status=unavailable rather than synthesize a green response (FC-903).",
+      "deletion_deadline": "No deletion; successor versions carry a new minor version and an N-1 window declared in a future FC before any breaking change.",
+      "deletion_deadline_fc_gate": "no-break contract; any breaking change requires a new FC",
+      "canonical_doc_path": "company-wiki/docs/adr/ADR-010-fcap-contract-ownership.md",
+      "field_owner_note": "Returns handle + bundle + policy/epoch + true outcome + exclusion/debug trace (FC-704)."
+    },
+    "AcquisitionTrace": {
+      "owner_repo": "company-wiki",
+      "version": "1.0",
+      "introduced_by_fc": "FC-704",
+      "consumed_by_repos": [
+        "filing-fetch",
+        "revenue-forecast"
+      ],
+      "n_minus_1_supported": "not-applicable (new contract; replaces inferred download_calls pseudo-evidence)",
+      "compat_window": "Codified in FC-704; distinguishes reused_existing, reused_after_discovery, downloaded_new, gap, ambiguous, rejected from the journal.",
+      "deletion_deadline": "No deletion; breaking change requires a new FC and N-1 window.",
+      "deletion_deadline_fc_gate": "no-break contract; any breaking change requires a new FC",
+      "canonical_doc_path": "company-wiki/docs/adr/ADR-010-fcap-contract-ownership.md",
+      "field_owner_note": "Outcome is reconstructed from the journal/event log, never inferred from handle presence (FC-704, FC-905)."
+    },
+    "SourceBundle": {
+      "owner_repo": "company-wiki",
+      "version": "1.0",
+      "introduced_by_fc": "FC-902",
+      "consumed_by_repos": [
+        "filing-fetch",
+        "revenue-forecast"
+      ],
+      "n_minus_1_supported": "not-applicable (bundle was test/CLI-only before FC-902)",
+      "compat_window": "Production-produced from FC-902; must be snapshot-consistent (same policy/epoch/document hash as the handle). Unknown artifact role fails closed.",
+      "deletion_deadline": "No deletion; breaking change requires a new FC and N-1 window.",
+      "deletion_deadline_fc_gate": "no-break contract; any breaking change requires a new FC",
+      "canonical_doc_path": "company-wiki/docs/adr/ADR-010-fcap-contract-ownership.md",
+      "field_owner_note": "filing-fetch forwards the bundle; revenue must invoke the selector against it (FC-904). Never test/CLI-only."
+    },
+    "ArtifactHandle": {
+      "owner_repo": "company-wiki",
+      "version": "2.0",
+      "introduced_by_fc": "FC-901",
+      "consumed_by_repos": [
+        "filing-fetch",
+        "revenue-forecast"
+      ],
+      "n_minus_1_supported": "1.0 (legacy unbound artifacts, source-bound=0)",
+      "compat_window": "Bound artifacts (2.0) coexist with legacy_unbound (1.0) from FC-901; only source/document/content/generator/schema-proven artifacts bind, the rest stay legacy_unbound and are preserved but not reused.",
+      "deletion_deadline": "legacy_unbound artifacts are never deleted; they are excluded from reuse. Their store rows remain until a separate, explicitly authorized cleanup FC.",
+      "deletion_deadline_fc_gate": "FC-901 dry-run ledger + future authorized cleanup FC",
+      "canonical_doc_path": "company-wiki/docs/adr/ADR-010-fcap-contract-ownership.md",
+      "field_owner_note": "Reuse requires all of source/content/bytes/schema/generator/upstream-bundle hash equality (architecture_target.md section 6)."
+    },
+    "ActivationSnapshot": {
+      "owner_repo": "company-wiki",
+      "version": "1.0",
+      "introduced_by_fc": "FC-201",
+      "consumed_by_repos": [
+        "filing-fetch",
+        "revenue-forecast"
+      ],
+      "n_minus_1_supported": "not-applicable (replaces hardcoded runtime flags / WU-script dicts)",
+      "compat_window": "The persistent, versioned runtime policy snapshot from FC-201; request start pins policy_hash + activation_epoch + cohort for the whole request.",
+      "deletion_deadline": "No deletion; the snapshot is the single activation authority. Hardcoded flags/dicts it replaces are deleted in FC-201.",
+      "deletion_deadline_fc_gate": "FC-201",
+      "canonical_doc_path": "company-wiki/docs/adr/ADR-010-fcap-contract-ownership.md",
+      "field_owner_note": "flag=false hides active rows even if present; shadow rows never affect active response (architecture_target.md section 5)."
+    }
+  }
+}
