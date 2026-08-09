@@ -271,3 +271,14 @@
 - TDD 说明：validator 模块先写，自审发现 `_triplet_problems` 一处 walrus 笔误已修；负向 mutation suite 即 RED-oracle 证明（每个坏 receipt 被拒）。
 - 范围：closure ledger 的生成入口已就位；旧 25 份不完整 receipt 因缺 schema 2.0 字段被结构性拒绝（`test_legacy_incomplete_receipt_is_not_accepted`）。
 - 影响：所有后续 FC receipt 现在可被机器校验；accepted 状态只能由独立 reviewer 通过 can_accept 推进，封印待 FC-104。
+
+## 发现 34：FC-104 已实施 —— current compatibility manifest + 冻结 command registry
+
+- 交付物（revenue，纯新增）：
+  - `compatibility/current.json`：manifest（remotes、frozen_baseline_triplet、current_triplet、contract versions、Python/platform matrix、三个 registry sha256）。
+  - `compatibility/command_registry.json`：10 条真实命令冻结（revenue.unit/full/e2e/sync/receipt、filing.unit/e2e/sync、wiki.unit/integration），含 argv/tier/timeout/write/network/collected 基线；wiki 命令诚实标 `pending-first-measurement`（尚未在 fcap 分支测量，不臆造）。
+  - `compatibility/compatibility_manifest.py`：loader + validator。两个硬门：① 三个 registry hash 篡改检测；② frozen_baseline 后代不变量（每仓 HEAD 必须是冻结基线或其后代，sibling reset 即红）。
+  - `tests/test_compatibility_manifest.py`：19 passed（manifest 5 一致性 + 7 篡改/回归 mutation + command registry 6 结构 mutation + pending 诚实性）。
+- TDD 真实 RED：command registry 用真实仓名（revenue-forecast/filing-fetch/company-wiki），validator 首版按 triplet 键（revenue/filing/wiki）校验 → 修复 validator 用 VALID_OWNER_REPOS → GREEN。
+- 设计说明：manifest 的 current_triplet 是信息性（as-of FC-104 authoring）；真正的门是 frozen_baseline 后代不变量 + hash 篡改检测，避免"manifest 钉住自身提交"的鸡生蛋问题。
+- 影响：Phase 1 契约/治理四 FC 全部到 independent_review。command_registry 冻结后，FC-101/102/103 的 receipt 中 `pending-fc-104` 封印可由后续 FC 的 re-validation 补齐（can_accept 才可能通过）。

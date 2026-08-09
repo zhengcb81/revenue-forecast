@@ -74,3 +74,11 @@
 - 实战：FC-101 receipt 结构 OK、can_accept 正确拒绝（pending seal + 非 accepted）。
 - 全量 404 passed / 1 failed（既有 PORT-01，无新回归）。tools/ 不在 skill 安装面，无需同步。
 - 下一步：FC-104（compatibility manifest + command registry）— blockedBy FC-101/102/103，已解锁。
+
+### FC-104（compatibility manifest + command registry，revenue）
+
+- 新增 `compatibility/current.json`（manifest）、`compatibility/command_registry.json`（10 冻结命令，wiki 项诚实 pending-first-measurement）、`compatibility/compatibility_manifest.py`（validator：hash 篡改检测 + frozen-baseline 后代门）、`tests/test_compatibility_manifest.py`（19 passed）。
+- TDD 真实 RED：owner_repo 命名不匹配（真实仓名 vs triplet 键）→ 修 validator → GREEN。
+- 全量 423 passed / 1 failed（既有 PORT-01，无新回归）。
+- **Phase 1 完成**：FC-101/102/103/104 全部 RED→GREEN → 提交 → receipt → independent_review。
+- 下一步：Phase 2（FC-201 持久化 RuntimePolicySnapshot）—— 首次触碰 company-wiki 产品代码；前置 FC-104 accepted（honest-implementer 下 receipt 已备，待独立 reviewer 补 accepted 后解锁）。

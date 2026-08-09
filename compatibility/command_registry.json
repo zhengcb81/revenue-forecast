@@ -1,0 +1,299 @@
+{
+  "schema_version": "1.0",
+  "commands": [
+    {
+      "id": "revenue.unit.tests",
+      "owner_repo": "revenue-forecast",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/",
+        "-q"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 600,
+      "tier": "T0",
+      "required_for": [
+        "FC-101..1205"
+      ],
+      "expected_min_collected": 347,
+      "forbidden_markers": [
+        "skip",
+        "xfail"
+      ],
+      "writes": [
+        "temp_only"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "2026-08-09",
+      "note": "pre-commit hook gate; observed 347 passed"
+    },
+    {
+      "id": "revenue.unit.full",
+      "owner_repo": "revenue-forecast",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/",
+        "tools/tests/",
+        "-q"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 600,
+      "tier": "T0",
+      "required_for": [
+        "FC-101..1205"
+      ],
+      "expected_min_collected": 404,
+      "forbidden_markers": [
+        "skip",
+        "xfail"
+      ],
+      "writes": [
+        "temp_only"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "2026-08-09",
+      "note": "404 passed / 1 pre-existing PORT-01 failure (test_audit_baseline, FC-1205 finding #31)"
+    },
+    {
+      "id": "revenue.e2e.engine",
+      "owner_repo": "revenue-forecast",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "e2e/run_revenue_forecast_e2e.py"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 900,
+      "tier": "T1",
+      "required_for": [
+        "FC-101..1205"
+      ],
+      "expected_min_collected": 0,
+      "forbidden_markers": [
+        "skip"
+      ],
+      "writes": [
+        "temp_only"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "2026-08-09",
+      "note": "deterministic double-run; observed E2E PASS"
+    },
+    {
+      "id": "revenue.quality.sync",
+      "owner_repo": "revenue-forecast",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "tools/sync_installations.py",
+        "--check"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 120,
+      "tier": "T0",
+      "required_for": [
+        "FC-1004",
+        "all skill-touching FCs"
+      ],
+      "expected_min_collected": 0,
+      "forbidden_markers": [],
+      "writes": [
+        "read_only_check"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "2026-08-09",
+      "note": "R4.2 install-sync gate; exit 1 on drift"
+    },
+    {
+      "id": "revenue.governance.receipt",
+      "owner_repo": "revenue-forecast",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "tools/receipt_validator.py",
+        "--receipt",
+        "{receipt}",
+        "--implementer",
+        "{implementer}"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 120,
+      "tier": "T0",
+      "required_for": [
+        "all FCs"
+      ],
+      "expected_min_collected": 0,
+      "forbidden_markers": [],
+      "writes": [
+        "read_only_check"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "2026-08-09",
+      "note": "FC-103 schema 2.0 gate; structural validation of implementer receipts"
+    },
+    {
+      "id": "filing.unit.full",
+      "owner_repo": "filing-fetch",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/",
+        "-q",
+        "--ignore=tests/test_real_tool_conformance.py",
+        "--ignore=tests/test_e2e_download.py"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 900,
+      "tier": "T0",
+      "required_for": [
+        "FC-701..805,903"
+      ],
+      "expected_min_collected": 141,
+      "forbidden_markers": [
+        "skip",
+        "xfail"
+      ],
+      "writes": [
+        "temp_only"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "2026-08-09",
+      "note": "pre-commit hook gate (hermetic subset; real-tool/real-download excluded by design, tracked separately)"
+    },
+    {
+      "id": "filing.e2e.reuse",
+      "owner_repo": "filing-fetch",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "e2e/run_companies_reuse_only_e2e.py"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 900,
+      "tier": "T1",
+      "required_for": [
+        "FC-701..805"
+      ],
+      "expected_min_collected": 0,
+      "forbidden_markers": [
+        "skip"
+      ],
+      "writes": [
+        "temp_only"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "2026-08-09",
+      "note": "companies-reuse-only E2E; observed E2E PASS"
+    },
+    {
+      "id": "filing.sync",
+      "owner_repo": "filing-fetch",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "tools/sync_installs_b3.py",
+        "--check"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 120,
+      "tier": "T0",
+      "required_for": [
+        "FC-1004"
+      ],
+      "expected_min_collected": 0,
+      "forbidden_markers": [],
+      "writes": [
+        "read_only_check"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "2026-08-09",
+      "note": "B3 install-sync gate"
+    },
+    {
+      "id": "wiki.unit.full",
+      "owner_repo": "company-wiki",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/",
+        "-q"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 900,
+      "tier": "T0",
+      "required_for": [
+        "FC-201..905"
+      ],
+      "expected_min_collected": 0,
+      "forbidden_markers": [
+        "skip",
+        "xfail"
+      ],
+      "writes": [
+        "temp_only"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "pending-first-measurement",
+      "note": "company-wiki has no pre-commit hook; full suite must be measured on the fcap branch before the first wiki-touching FC"
+    },
+    {
+      "id": "wiki.integration",
+      "owner_repo": "company-wiki",
+      "cwd_ref": "repo_root",
+      "argv": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/integration",
+        "-q"
+      ],
+      "environment_allowlist": [],
+      "forbidden_environment": [],
+      "timeout_seconds": 900,
+      "tier": "T1",
+      "required_for": [
+        "FC-201..905"
+      ],
+      "expected_min_collected": 0,
+      "forbidden_markers": [
+        "skip",
+        "xfail"
+      ],
+      "writes": [
+        "temp_only"
+      ],
+      "network": false,
+      "output_schema": "test-command-result-v1",
+      "observed": "pending-first-measurement",
+      "note": "registry plan family; measure before first wiki-touching FC"
+    }
+  ]
+}
