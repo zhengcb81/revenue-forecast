@@ -1,8 +1,8 @@
 # 多根 Filing Data Lake 解耦与端到端闭环 — 实施计划
 
 > 计划日期：2026-08-09  
-> 计划版本：2.0-full-refactor-safety  
-> 当前状态：plan_complete_ready_for_review_v2  
+> 计划版本：2.1-full-refactor-execution-cards  
+> 当前状态：plan_complete_ready_for_review_v3  
 > 本轮授权：仅调查与写计划；禁止修改产品代码、产品配置、测试、生产 catalog 和三处真实资产目录。  
 > 逐工作单执行卡：同目录 implementation_runbook.md；任何 WU 无有效卡片不得启动。  
 > 适用仓库：`company-wiki`、`filing-fetch`、`revenue-forecast`。  
@@ -267,8 +267,9 @@ RED/审计测试：
 2. 标明 superseded 结论，尤其是 Dropbox runtime diff=0/config-only 已完成。
 3. 建立 forbidden-claim gate：没有对应产品调用者和跨进程 E2E 时，不得在文档写“生产已接入”“完整复用”“只改配置即可”。
 4. 冻结 Phase 1 的 plan_version；任何后续计划改动必须增加版本并让未完成回执重新核验依赖。
+5. 实现 runbook 完整性 validator：task_plan/runbook WU 集合必须相同；卡片 ID 唯一；七字段非空；版本/hash/依赖一致；不存在开放占位项。
 
-退出标准：closure ledger 无 orphan finding、无无测试 owner 的高风险项。
+退出标准：closure ledger 无 orphan finding、无无测试 owner 的高风险项；runbook validator 的删卡、重复、空字段、版本漂移 mutation 全部被杀死。
 
 ### WU-104：v1 行为刻画与 golden trace pack
 
@@ -297,6 +298,7 @@ RED/审计测试：
 ### Phase 1 放行门
 
 - WU-101~104 均 accepted。
+- 74/74 实施卡通过 machine validator，任何卡片缺失均阻止 baseline_captured。
 - baseline 与 fixture 的复核者不是同一实现者。
 - 未修改生产配置、catalog 或三处真实资产。
 
@@ -1536,6 +1538,27 @@ reviewer 从零读取当前 HEAD、计划、回执和生产只读统计，不依
 28. Phase 15/WU-1500 前不得删除 legacy 源码或不可逆迁移历史。
 29. 一次只切一个 root 或一个 consumer；上一 cohort 未 accepted 不得扩大流量。
 30. stop-the-line 触发后只做诊断、回退和 RED；不得继续下一 WU“看是否自己恢复”。
+
+### 推送前 CI 预检（每 WU 推送前强制，2026-08-09 教训制度化）
+
+CI 与本地环境存在系统性差异（版本漂移、平台、无生产数据、干净 checkout、跨仓时序），
+推送到远端前必须在本地完成下列预检，全部通过后才允许 push；任何一项失败即先修再推：
+
+1. **忽略文件检查**：`git check-ignore` 扫描本 WU 新建/修改的计划、工具、测试与配置路径，
+   确认 CI 依赖的文件没有被 .gitignore 误忽略（filing task_plan.md 教训：本地有、CI clone 后无）。
+2. **CI 环境等价干跑**：以 `CI=true` 环境变量 + 与 CI workflow 相同的 PYTHONPATH/依赖组合，
+   运行本 WU 涉及的关键工具（config doctor、plan verifier、baseline gate 等）；
+   依赖新包时先核对 CI 安装命令与本地版本一致（ruff 0.15/0.16 默认规则集差异教训）。
+3. **新 CI step 首次上线预检**：新增/修改 workflow step 时，本地按该 step 的完整命令
+   （含 env、PYTHONPATH、cwd）从干净 checkout 干跑一次；确认模块可导入、文件存在、无生产数据时不红。
+4. **平台差异确认**：本 WU 涉及 symlink/路径/编码/文件锁的测试，本地 Windows skip 不等于通过；
+   在计划中标注该测试的 Linux CI 真实执行路径，并确认其在 Linux 语义下正确（E2E-F04 教训）。
+5. **跨仓时序**：本 WU 有跨仓依赖时先推 producer 仓并确认其 CI 绿，再推 consumer 仓；
+   consumer CI 的 clone/pin commit 必须已在远端存在（filing clone a42bb40 教训）。
+6. **未跟踪文件确认**：`git status --short` 检查本 WU 依赖的未跟踪文件是否需入库
+   （计划文件、fixture manifest、工具脚本），防止 CI 缺少本地独有文件。
+7. **预检记录**：上述 1~6 的检查命令与结果写入 WU receipt 的 `ci_preflight` 字段；
+   未记录视为未执行。
 
 ### 弱模型禁止动作
 

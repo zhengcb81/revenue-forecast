@@ -138,6 +138,13 @@
 
 **规划约束：** runbook 同时保存 current baseline aliases 与 target gates。被当前 CI 排除的测试必须在对应 WU/发布门显式运行；不能用“CI 绿色”宣称真实下载、跨根或跨仓闭环已验证。
 
+### D-023：逐 WU runbook 已达到结构完整
+
+- task_plan 与 runbook 均为 74 个 WU，集合完全一致，无重复、无缺卡、无额外卡。
+- 74 张卡的 Owner/Targets、Inputs、RED/Focused、Mutation、Audit、Rollback、Accept 七字段均非空。
+- runbook 状态已改为 complete-ready-for-review，并已补充统一文件边界、七类审查角色、九类证据目录和当前/目标命令 alias。
+- 完整性 validator 归入 WU-103；未来删卡、重复 ID、空字段、计划版本漂移都必须使 Phase 1 失败。
+
 ### D-014：计划自身第一次对抗检查结果
 
 - 当前 task_plan 已包含 64 个 WU 标题和 72 个表格场景。

@@ -49,3 +49,8 @@
 - 自动审计 74 个 WU 的局部字段，发现多数工作单依赖全局规则表达 rollback/test；决定增加逐 WU implementation runbook，避免模型只读局部时漏门。
 - 首次创建 runbook 的补丁因 Markdown 反引号与 JavaScript 模板字符串冲突而未执行；改用无反引号补丁，不重复失败形式。
 - 已读取三仓当前 CI/pytest 配置与现有 tools/e2e 入口；确认它们可做基线，但 filing 排除真实工具/下载、company 未覆盖完整 integration/acceptance、现有 E2E 不等于本次三仓 source-preparation E2E。
+- 已完成74张逐WU卡片；机器核对task_plan/runbook集合一致、无重复/缺卡，七字段全部非空。
+- 已冻结当前/目标测试命令alias、Phase文件边界、永久禁区、七类reviewer和九类证据目录。
+- 最终机器自审通过：4个planning文件、74/74卡、七字段完整、15个唯一Phase门、72+12场景、27条finding映射、无开放占位项。
+- 三个产品仓最终status均无本轮改动；本次仅修改该planning目录的四个Markdown文件。
+- runbook完整性validator已明确归入WU-103的RED/mutation/Phase 1门。
