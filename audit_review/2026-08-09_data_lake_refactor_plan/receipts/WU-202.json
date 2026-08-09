@@ -1,0 +1,22 @@
+{
+  "wu_id": "WU-202",
+  "plan_version": "2.1-full-refactor-execution-cards",
+  "owner": "revenue audit tooling（contract 参考实现）+ company-wiki WU-401（产品实现）",
+  "reviewer": "pending",
+  "status": "implemented → mutation_proved → pending independent review",
+  "baseline_commit": {"revenue": "e7740ba", "filing": "8714a66", "wiki": "111f214"},
+  "allowed_files": ["audit_review/2026-08-09_data_lake_refactor_plan/**"],
+  "actual_changed_files": ["tools/normalized_meta.py (new)", "tools/tests/test_normalized_meta.py (new, 14 tests)", "adr/WU-202-normalized-metadata.md (new)", "receipts/WU-202.json (new)"],
+  "red_test_ids": ["test_meta01_missing_identity_rejected", "test_meta02_name_only_not_strong_identity", "test_meta04_invalid_date_rejected", "test_meta05_unknown_kind_rejected", "test_meta06_conflicting_fields_rejected", "test_meta07_unknown_version_fails_closed", "test_meta08_broken_evidence_pointer_rejected", "test_meta09_content_hash_tampered_rejected", "test_meta10_vague_name_rejected", "test_meta11_old_reader_new_data_graceful", "test_meta12_new_reader_old_data_graceful", "test_required_fields_constant", "test_canonical_hash_excludes_root_and_scan_time"],
+  "red_exit_code": 0,
+  "red_failure_excerpt": "首轮 2 个失败暴露契约缺口：evidence 指针未验证可解析、metadata_sha256 未绑定 canonical hash；修复后 14 passed；meta03 修正为 _with helper 重算 metadata_sha256（自引用排除）",
+  "focused_commands": ["python -m pytest tools/tests/test_normalized_meta.py -q（14 passed）"],
+  "mutation_proof": [
+    {"mutation_id": "M-META-09", "description": "篡改 content_sha256 保持 64-hex 格式", "expected_failure_test": "metadata_sha256 绑定检测拒绝", "observed_failure": "metadata_sha256 does not match canonical semantic hash", "revert_proof": "还原值后 ok"},
+    {"mutation_id": "M-META-08", "description": "evidence source_pointer 指向不存在的字段", "expected_failure_test": "broken pointer 拒绝", "observed_failure": "source_pointer ... does not resolve to any field", "revert_proof": "恢复指针后 ok"}
+  ],
+  "network_calls": 0, "download_calls": 0, "parser_calls": 0, "llm_calls": 0,
+  "external_write_calls": 0, "canonical_write_calls": 0,
+  "reviewer_findings": [],
+  "admission_decision": "pending"
+}
