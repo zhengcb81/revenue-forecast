@@ -40,11 +40,8 @@ def prepare_source(
     python: tuple[str, ...] = (sys.executable,),
 ) -> dict:
     """Orchestrate the real chain and return the RevenueSourceRecord."""
-    command = (
-        *python,
-        str(FILING_FETCH_CLIENT),
-        "--request-file", "-",
-    )
+    # no --request-file: the client reads the request from stdin (C1 fix)
+    command = (*python, str(FILING_FETCH_CLIENT))
     if allow_download:
         command = (*command, "--allow-download")
     if timeout_seconds:

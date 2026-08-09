@@ -118,7 +118,11 @@ def run_e2e() -> int:
     for failure in failures:
         print(f"E2E-FAIL: {failure}")
     if not failures:
-        print("E2E PASS: source-preparation entry drives the real chain")
+        print("E2E PASS: entry spawns the real chain; error propagation is "
+              "structured JSON.  NOTE: the full hit-existing-filing path "
+              "(PROCESS-E2E-01 zero-call budget) requires the Phase-12 "
+              "fixture-catalog wiring across filing-fetch --company-wiki-root "
+              "— recorded as an open item, not claimed here.")
     return 1 if failures else 0
 
 

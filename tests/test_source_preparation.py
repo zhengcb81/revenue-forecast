@@ -92,3 +92,23 @@ def test_prepare_source_forwards_allow_download(monkeypatch):
     record = prepare_source(request, allow_download=True)
     assert "--allow-download" in captured["command"]
     assert record["reuse_receipt"]["download_calls"] == 0  # handle present
+
+
+def test_c1_request_reaches_client_not_file_error():
+    """C1 regression: the request must reach the client via stdin — the
+    client must never report 'cannot read request file'."""
+    import tempfile
+
+    request = {"schema_version": "1.2", "company_query": "NonexistentCorp",
+               "document_kind": "annual_report", "as_of_date": "2026-12-31"}
+    with tempfile.TemporaryDirectory() as td:
+        req_file = Path(td) / "req.json"
+        req_file.write_text(json.dumps(request), encoding="utf-8")
+        proc = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "source_preparation.py"),
+             "--request-file", str(req_file)],
+            capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+        # whatever the chain outcome, the C1 file-not-found error must
+        # never appear (the request was handed to the client via stdin)
+        assert "cannot read request file" not in proc.stderr
