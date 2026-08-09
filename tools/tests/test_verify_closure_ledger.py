@@ -4,7 +4,7 @@ from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(TOOLS))
-from verify_closure_ledger import (  # type: ignore[import-not-found]
+from verify_closure_ledger import (  # noqa: E402  # type: ignore[import-not-found]
     VALID_STATUSES,
     validate_schema,
     check_id_coverage,
