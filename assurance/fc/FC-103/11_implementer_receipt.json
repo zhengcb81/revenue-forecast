@@ -1,0 +1,74 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-103",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "3ce9cc4d3ea91b15aad42eff1f55b72a44834dd7",
+    "filing": "c9799b722a97376f9717bcfacfa0685135dcbd15",
+    "wiki": "109a1a6a77d7f4b37f849207fbd9e5d8caf2bc07"
+  },
+  "result_triplet": {
+    "revenue": "a49eab2e3e34e1ce67befd6e88d3098ed5dc70f7",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "plan_sha256": "158fc1e1e4231e3c2dc71822a58931fdca64eff79fc0d4e27b8276a397f4c78a",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tools/receipt_validator.py",
+    "revenue-forecast/tools/tests/test_receipt_validator.py"
+  ],
+  "changed_files": [
+    "revenue-forecast/tools/receipt_validator.py",
+    "revenue-forecast/tools/tests/test_receipt_validator.py"
+  ],
+  "dependency_receipts": [
+    "assurance/fc/FC-101/11_implementer_receipt.json (independent_review)"
+  ],
+  "command_registry_sha256": "pending-fc-104",
+  "commands": [
+    {
+      "command": "python -m pytest tools/tests/test_receipt_validator.py -q",
+      "exit_code": 0,
+      "result": "22 passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python tools/receipt_validator.py --receipt assurance/fc/FC-101/11_implementer_receipt.json --implementer claude",
+      "exit_code": 0,
+      "result": "OK: 1 receipt(s) valid",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0
+  },
+  "codegraph": {
+    "production_callers_before": "not-applicable",
+    "production_callers_after": "not-applicable",
+    "note": "FC-103 is a quality tool (tools/); not on a production data path."
+  },
+  "mutation": {
+    "id": "FC-103-M",
+    "killed": true,
+    "details": "16 negative mutations + 3 can_accept gate cases + legacy-incomplete rejection all behave; the validator also demonstrably rejects FC-101's can_accept."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Pure additions; revert = remove the two files + commits."
+  },
+  "review": {
+    "reviewer": "",
+    "reviewer_receipt_sha256": "",
+    "decision": "pending",
+    "reviewed_at": "",
+    "note": "honest-implementer: the validator's own can_accept will require an independent reviewer + FC-104 seal before this receipt can advance."
+  },
+  "provisional_note": "The validator is self-validating structurally (FC-101 receipt OK) but cannot self-accept; command_registry sealing completes in FC-104, after which this and prior receipts can be re-validated toward accepted."
+}
