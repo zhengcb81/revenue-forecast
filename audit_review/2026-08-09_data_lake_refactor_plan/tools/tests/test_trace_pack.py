@@ -34,6 +34,10 @@ def test_chr02_trace_diff_detects_changes():
     # candidate removed entirely
     diffs = trace_diff(golden, {})
     assert any("cmd-a" in d and "missing" in d for d in diffs)
+    # unexpected new candidate (CHR-02 addition direction)
+    diffs = trace_diff(golden, {"cmd-a": {"exit": 0, "stdout": "aaa", "stderr": "sss"},
+                                "cmd-new": {"exit": 0, "stdout": "x", "stderr": "y"}})
+    assert any("cmd-new" in d and "unexpected" in d for d in diffs)
 
 
 def test_chr03_known_bad_requires_owner():

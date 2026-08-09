@@ -92,7 +92,11 @@ def capture_golden() -> dict:
 
 def trace_diff(golden: dict, current: dict) -> list[str]:
     problems: list[str] = []
-    for name in sorted(golden):
+    # CHR-02 both directions: a removed candidate AND an unexpected new one
+    for name in sorted(set(golden) | set(current)):
+        if name not in golden:
+            problems.append(f"unexpected trace candidate: {name}")
+            continue
         if name not in current:
             problems.append(f"trace candidate missing: {name}")
             continue
