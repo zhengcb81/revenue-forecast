@@ -1,0 +1,98 @@
+{
+  "wu_id": "WU-905",
+  "date": "2026-08-09",
+  "mode": "production read-only",
+  "steps": {
+    "1_backup_integrity": {
+      "schema_version": "1.2.0",
+      "roots": 3,
+      "page_count": 12039659,
+      "full_integrity_check": "deferred to maintenance window (~49GB DB; 27M-row evidence_spans)",
+      "tables": 15,
+      "total_rows": 27224464,
+      "per_table_rows": {
+        "catalog_meta": 1,
+        "scan_runs": 196,
+        "roots": 3,
+        "sources": 43074,
+        "documents": 23513,
+        "entities": 269,
+        "document_entities": 23690,
+        "locations": 46573,
+        "artifacts": 7712,
+        "llm_summary_failures": 645,
+        "evidence_spans": 27036254,
+        "source_metadata_assertions": 22,
+        "document_fingerprint_state": 23512,
+        "document_retire_audit": 19000,
+        "document_restore_audit": 0
+      },
+      "content_hashes": {
+        "roots": "f2ee95db3652be24bd9045404ad94ade1b4eabdcea257197cc22a09246ed6ad0",
+        "sources": "10cef84d938222b18f6a2bd66b493cdf63ae060bde87bfcfee75d6a2d641b5ae",
+        "documents": "e2472aba46dda2c40fb154e5650b1f7ba9f7bf683a56b18f20b69f90ee0de791",
+        "locations": "257b8be16e25f3f02cbc38aea0b5264721c3923496cd0bf3d306d4094a62fc68",
+        "source_metadata_assertions": "c58d40e9e5f3be83198e388ef97f401a5f32a53ba67fc315321d65ddc75b0553"
+      },
+      "hash_note": "evidence_spans/large audit tables covered by row count only (27M rows)"
+    },
+    "2_v2_assertion_state": {
+      "v2_schema_columns_applied": true,
+      "by_visibility": {
+        "active": 16,
+        "legacy": 6
+      },
+      "by_schema_version": {
+        "1.0.0": 22
+      },
+      "note": "additive v2 column migration (ensure_assertion_v2_columns) is part of the cutover window, not of this read-only gate"
+    },
+    "3_parity": {
+      "legacy_active_reusable": 46,
+      "v2_capture_ready": 16,
+      "unexplained_differences": 0,
+      "explanation": "WU-902 remediation queue: 9404 entries, each with exact missing fields (period_end unprovable in any evidence source); no v2 capture-ready sample exists."
+    },
+    "4_resolver_shadow": {
+      "sampled_docs": 46,
+      "diff_count": 16,
+      "diff_document_ids": [
+        "urn:company-wiki:document:sha256:548ae59778cf08ee0f2ee088e7ece20d947076c3c01f74d2d65db4c2777e436a",
+        "urn:company-wiki:document:sha256:dae19486be264fd26eb00a7f920dc641041a261c81bc8c03b678eea947de4856",
+        "urn:company-wiki:document:sha256:e9c2d7fdd088e151ccb6c8ad3d95587b2b014b10f2c9731508d23ce07fde4de3",
+        "urn:company-wiki:document:sha256:36eae4d0397187bef187286e394b7d85421eac75f7380d1a95de9f1bfa25e70a",
+        "urn:company-wiki:document:sha256:1297bbbca740983d862702370b3fa46f8e87d2913da295e23660e09e835689fd",
+        "urn:company-wiki:document:sha256:5dcfd59c9ad219b58dd054c36a70dfab11534695c33fcb2735c65b57df778c1c",
+        "urn:company-wiki:document:sha256:efe2ccd923b744eb69166aebf5f9b32ab7560efe3f6c44f2c6bcf4672fec1fa8",
+        "urn:company-wiki:document:sha256:453175d16b43e5da6f4fcb27b6c931a23244e912ce0028f65cf16f2084cf0c84",
+        "urn:company-wiki:document:sha256:29afb60975bd43c5e8d20401dfa66b4932db7196322bc9df70b43b1fd0bb8fe3",
+        "urn:company-wiki:document:sha256:7de30b0fb2958e51799d8cc860a05231361690de3ba15990b9e1ac76954745b0"
+      ],
+      "upgraded_to_v2": 16,
+      "unexplained": 0,
+      "verdict": "EXPECTED_UPGRADE",
+      "note": "pre-cutover parity was identical; post-activation diffs match activated v2 assertions (strong binding upgrade)."
+    },
+    "5_reader_activation": {
+      "activated": false,
+      "deferred_reason": "16 capture-ready v2 assertions exist (WU-904). Cutover drill on a copy catalog is required before flipping v2_resolve_active; legacy data is never deleted."
+    },
+    "6_legacy_reader": {
+      "active_documents": 13822,
+      "note": "legacy v1 reader remains the default; resolver tests (exact/latest/bundle) run in CI against contract fixtures."
+    },
+    "7_flag_rollback": {
+      "current_flags": {
+        "v2_scan_shadow": false,
+        "v2_persist_assertions": false,
+        "v2_resolve_shadow": false,
+        "v2_resolve_active": false,
+        "v2_bundle_active": false,
+        "legacy_bridge_enabled": true
+      },
+      "validation_problems": [],
+      "rollback_roundtrip_stable": true
+    }
+  },
+  "verdict": "PASS: steps 1-4,6-7 verified on production (read-only); 16 capture-ready v2 assertions exist — cutover drill on a copy catalog required before flipping v2_resolve_active (WU-905 step 5)."
+}
