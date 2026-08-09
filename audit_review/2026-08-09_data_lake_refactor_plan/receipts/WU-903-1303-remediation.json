@@ -1,0 +1,44 @@
+{
+  "wu_id": "WU-903 + WU-1303",
+  "date": "2026-08-09",
+  "mode": "production read-only dry-run (mode=ro, query_only=ON)",
+  "dropbox_active_filing_buckets": {
+    "broker_research/active": 6547,
+    "other/active": 2179,
+    "investor_relations/active": 483,
+    "annual_report/retired": 371,
+    "semi_annual_report/retired": 128,
+    "prospectus/retired": 72,
+    "quarterly_report/retired": 56,
+    "investor_call_transcript/active": 7,
+    "broker_research/quarantined": 1,
+    "semi_annual_report/active": 1
+  },
+  "active_official_filing_candidates": 1,
+  "candidate_details": {
+    "document_id": "urn:company-wiki:document:sha256:2e3366c84fc6a802cabc5271a5cb1dee1ef4efde116cf0a7e034db9066de4e7d",
+    "title": "中国平安：2020年中期报告",
+    "path": "C:/Users/郑曾波/Dropbox/Stock/金融/保险/中国平安/中国平安：2020年中期报告.PDF",
+    "only_dropbox_location": true,
+    "content_sha256": "2e3366c84fc6a802cabc5271a5cb1dee1ef4efde116cf0a7e034db9066de4e7d",
+    "acquisition_metadata": {
+      "form_type": null, "fiscal_year": null, "source_url": null,
+      "provider": null, "market": "CN", "security_id": "中国平安"
+    }
+  },
+  "remediation_receipt": {
+    "document_id": "urn:company-wiki:document:sha256:2e3366c84fc6a802cabc5271a5cb1dee1ef4efde116cf0a7e034db9066de4e7d",
+    "missing_fields": ["form_type", "fiscal_year", "period_end", "source_url", "provider", "provider_document_id"],
+    "weak_identity": "security_id is a display name (中国平安), not a strong security id",
+    "acceptable_evidence": [
+      "sidecar .source.json with schema_version 1.0 + strong identity/period/kind/provenance",
+      "verified v2 assertion via WU-904 explicit restore with reviewer approval",
+      "provider metadata with provider_document_id + source_url"
+    ],
+    "action": "no auto-write; explicit WU-904 restore flow requires reviewer approval per document"
+  },
+  "verdict": "BLOCKED_NO_ELIGIBLE_PRODUCTION_SAMPLE",
+  "rationale": "The only active Dropbox official-filing candidate lacks provenance/period/strong identity (acquisition metadata all null; security_id is a Chinese display name). It cannot form a capture-ready handle without an approved remediation/restore window. Fixture E2E stays green; production Dropbox reuse is NOT claimed. Per plan: user-authorized remediation window is open; execution requires explicit per-document reviewer approval via WU-904 restore.",
+  "real_roots_untouched": true,
+  "catalog_untouched": true
+}

@@ -67,3 +67,17 @@
 - 提交 2675210；独立 reviewer 后台复核中（重跑测试/check/mutation）。
 - WU-102 侦察完成：三根真实布局与 sidecar 形态已记录（company_raw/dayu/Dropbox），
   现有 tests/helpers/source_factory.py 可复用模式；等待 WU-101 accepted 后正式实施。
+
+## 2026-08-09 — 终局（用户全权授权后）
+
+- PROCESS-E2E-01 完整落地（9ea7e3d）：fixture wiki root 全链真实子进程，
+  RevenueSourceRecord 产出，reuse_receipt parser/llm/download 全 0；
+  02/03（producer 预算/篡改拒绝）契约锁定（adb5059/b1da37c）
+- C1 stdin 交接修复（--request-file - 字面文件 bug）；参数链三层透传
+- WU-903 生产只读 dry-run：Dropbox 分桶完成（broker_research 6547 active、
+  官方财报全 retired 除 1 个 active semi_annual）
+- WU-1303：唯一 active 候选（中国平安 2020 中期报告）缺 provenance/
+  period/强 identity → BLOCKED_NO_ELIGIBLE_PRODUCTION_SAMPLE 如实记录
+  （remediation receipt：缺 6 字段 + 弱 identity；用户授权窗口已开，
+  逐文档 WU-904 restore 需 reviewer 批准）
+- 全部 dry-run 只读（mode=ro + query_only），生产 catalog/真实根零写入
