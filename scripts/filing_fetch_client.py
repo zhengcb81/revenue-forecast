@@ -76,6 +76,7 @@ def resolve_filing(
     allow_download: bool = False,
     timeout_seconds: float = 900.0,
     filing_fetch_root: Path | None = None,
+    company_wiki_config: Path | None = None,
 ) -> dict[str, Any]:
     """Resolve (or, when authorized, ensure) a filing via filing-fetch.
 
@@ -93,6 +94,8 @@ def resolve_filing(
     cmd = [sys.executable, str(script)]
     if allow_download:
         cmd.append("--allow-download")
+    if company_wiki_config is not None:
+        cmd.extend(["--config", str(company_wiki_config)])
     cmd.extend(["--timeout-seconds", str(timeout_seconds)])
     environment = dict(os.environ)
     environment["PYTHONUTF8"] = "1"
@@ -202,6 +205,12 @@ def main(argv: list[str] | None = None) -> int:
         "--filing-fetch-root",
         help="Override the filing-fetch skill root (advanced; defaults to the sibling repo).",
     )
+    parser.add_argument(
+        "--company-wiki-config",
+        type=Path,
+        default=None,
+        help="Override the company-wiki config passed to filing-fetch (E2E fixtures).",
+    )
     args = parser.parse_args(argv)
 
     if args.request_file:
@@ -225,6 +234,7 @@ def main(argv: list[str] | None = None) -> int:
             allow_download=args.allow_download,
             timeout_seconds=args.timeout_seconds,
             filing_fetch_root=root,
+            company_wiki_config=args.company_wiki_config,
         )
     except _ClientError as exc:
         _emit_error(

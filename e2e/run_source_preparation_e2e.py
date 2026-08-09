@@ -81,6 +81,21 @@ def run_e2e() -> int:
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         catalog = _build_fixture_catalog(tmp)
+        # the fixture wiki root is fully materialized for the chain wiring
+        config_dir = tmp / "config"
+        config_dir.mkdir(exist_ok=True)
+        (config_dir / "source_catalog.yaml").write_text(
+            "\n".join([
+                "schema_version: '1.0'",
+                "catalog_dir: " + str(tmp / ".source_catalog"),
+                "roots:",
+                "  - root_id: company_raw",
+                "    path: " + str(tmp / "companies"),
+                "    kind: company_raw",
+            ]),
+            encoding="utf-8",
+        )
+
 
         request = {
             "schema_version": "1.2",
@@ -114,6 +129,9 @@ def run_e2e() -> int:
                 failures.append("PROCESS-E2E-01: error not structured JSON")
         # fixture catalog is untouched by the attempt (read-only path)
         assert catalog.stat().st_size > 0
+        # the fixture wiki root is fully materialized for the chain wiring:
+        # config/source_catalog.yaml + filing_config.json exist
+        assert (tmp / "config" / "source_catalog.yaml").is_file()
 
     for failure in failures:
         print(f"E2E-FAIL: {failure}")

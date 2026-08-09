@@ -38,10 +38,13 @@ def prepare_source(
     allow_download: bool = False,
     timeout_seconds: float = 900.0,
     python: tuple[str, ...] = (sys.executable,),
+    company_wiki_config: Path | None = None,
 ) -> dict:
     """Orchestrate the real chain and return the RevenueSourceRecord."""
     # no --request-file: the client reads the request from stdin (C1 fix)
     command = (*python, str(FILING_FETCH_CLIENT))
+    if company_wiki_config is not None:
+        command = (*command, "--company-wiki-config", str(company_wiki_config))
     if allow_download:
         command = (*command, "--allow-download")
     if timeout_seconds:
@@ -88,6 +91,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--request-file", help="request JSON file (else stdin)")
     parser.add_argument("--allow-download", action="store_true")
     parser.add_argument("--timeout-seconds", type=float, default=900.0)
+    parser.add_argument("--company-wiki-config", type=Path, default=None,
+                        help="override company-wiki config for the chain (E2E)")
     args = parser.parse_args(argv)
 
     for stream in (sys.stdin, sys.stdout, sys.stderr):
@@ -100,6 +105,7 @@ def main(argv: list[str] | None = None) -> int:
             request,
             allow_download=args.allow_download,
             timeout_seconds=args.timeout_seconds,
+            company_wiki_config=args.company_wiki_config,
         )
     except (json.JSONDecodeError, ValueError) as exc:
         sys.stderr.write(json.dumps({"error_code": "bad_request", "error": str(exc)}))
