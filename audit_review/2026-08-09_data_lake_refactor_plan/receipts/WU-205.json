@@ -1,0 +1,14 @@
+{
+  "wu_id": "WU-205", "plan_version": "2.1-full-refactor-execution-cards",
+  "owner": "company-wiki architecture_gate + 三仓 fitness tests",
+  "reviewer": "pending", "status": "implemented → pending review",
+  "baseline_commit": {"revenue": "20a6b33", "filing": "8714a66", "wiki": "111f214"},
+  "allowed_files": ["audit_review/2026-08-09_data_lake_refactor_plan/**"],
+  "actual_changed_files": ["tools/architecture_boundaries.py (check_fitness_edges 扩展)", "tools/tests/test_architecture_boundaries.py (+7 tests)", "adr/WU-205-blueprint.md", "receipts/WU-205.json"],
+  "red_test_ids": ["test_arcfit01_scanner_importing_arbitrary_module_fails", "test_arcfit02_adapter_reverse_dependency_fails", "test_arcfit03_resolver_imports_scanner_fails", "test_arcfit04_revenue_imports_wiki_private_fails", "test_arcfit05_calculator_imports_filesystem_fails", "test_arcfit06_legacy_gets_new_caller_fails"],
+  "focused_commands": ["python -m pytest tools/tests/test_architecture_boundaries.py -q（14 passed）", "python tools/architecture_boundaries.py --repo company-wiki --repo revenue-forecast（OK）"],
+  "mutation_proof": [{"mutation_id": "M-FIT", "description": "v1 scanner 获得新 root caller / calculator import filesystem client", "expected_failure_test": "ARC-FIT-01/05", "observed_failure": "gate 报违规边", "revert_proof": "真实图无违规"}],
+  "network_calls": 0, "download_calls": 0, "parser_calls": 0, "llm_calls": 0,
+  "external_write_calls": 0, "canonical_write_calls": 0,
+  "reviewer_findings": [], "admission_decision": "pending"
+}

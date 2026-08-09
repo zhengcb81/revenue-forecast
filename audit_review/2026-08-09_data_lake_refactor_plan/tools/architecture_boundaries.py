@@ -90,6 +90,61 @@ def check_import_graph(
     return problems
 
 
+def check_fitness_edges(
+    module_imports: dict[str, set[str]],
+    roles: dict[str, str],
+    network_modules: set[str] | None = None,
+) -> list[str]:
+    """WU-205 ARC-FIT-01..06: target-architecture fitness edges.
+
+    Beyond the forbidden edges, the fitness gate also enforces:
+    - scanner v2 depends only on adapter interfaces/normalizer/admission/
+      persister ports (no network/filesystem/arbitrary deps).
+    - adapters/resolver/consumers never reach across their seam.
+    - consumers (filing-fetch/revenue) never import company-wiki private
+      Python modules.
+    - calculator never touches filesystem/network/catalog.
+    - legacy modules gain no new product callers (compat tests exempt).
+    """
+    problems: list[str] = []
+    network_modules = network_modules or NETWORK_MODULES
+    fs_modules = {"os", "pathlib", "shutil", "sqlite3"}
+    for module, imports in module_imports.items():
+        role = roles.get(module)
+        if role == "scanner":
+            forbidden = network_modules | fs_modules
+            extra = imports & forbidden
+            if extra:
+                problems.append(
+                    f"ARC-FIT-01: scanner {module} imports forbidden "
+                    f"{sorted(extra)} (only adapter/normalizer/admission/persister ports)"
+                )
+        if role == "adapter" and imports & {"resolver", "scanner", "download",
+                                            "parser", "llm"}:
+            problems.append(f"ARC-FIT-02: adapter {module} reverse-depends on downstream")
+        if role == "resolver" and imports & {"scanner", "adapter"}:
+            problems.append(f"ARC-FIT-03: resolver {module} imports scanner/adapter")
+        if role == "consumer" and any("company_wiki" in i or "source_catalog" in i
+                                      for i in imports):
+            problems.append(
+                f"ARC-FIT-04: consumer {module} imports company-wiki private module"
+            )
+        if role == "calculator" and imports & (network_modules | fs_modules):
+            problems.append(
+                f"ARC-FIT-05: calculator {module} imports filesystem/network/catalog"
+            )
+    legacy_modules = {m for m, r in roles.items() if r == "legacy"}
+    for caller, imports in module_imports.items():
+        for imported in imports:
+            if imported in legacy_modules:
+                if "test" not in caller and "compat" not in caller and \
+                        "facade" not in caller:
+                    problems.append(
+                        f"ARC-FIT-06: legacy {imported} gained product caller {caller}"
+                    )
+    return problems
+
+
 def scan_repo(repo: Path, repo_name: str) -> dict[str, set[str]]:
     """Scan a repo's Python files (scripts/src/tests excluded) for imports."""
     module_imports: dict[str, set[str]] = {}

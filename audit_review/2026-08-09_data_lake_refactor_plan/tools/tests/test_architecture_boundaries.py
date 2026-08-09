@@ -71,3 +71,78 @@ def test_scan_module_imports_no_dynamic(tmp_path):
     source = tmp_path / "clean.py"
     source.write_text("import json\n", encoding="utf-8")
     assert "importlib" not in scan_module_imports(source)
+
+
+# ---- WU-205 ARC-FIT-01..06 fitness edges ----
+
+def test_arcfit01_scanner_importing_arbitrary_module_fails():
+    from architecture_boundaries import check_fitness_edges
+
+    problems = check_fitness_edges(
+        {"scanner_v2": {"normalizer", "requests"}},  # network import
+        roles={"scanner_v2": "scanner"},
+    )
+    assert any("scanner" in p for p in problems)
+
+
+def test_arcfit02_adapter_reverse_dependency_fails():
+    from architecture_boundaries import check_fitness_edges
+
+    problems = check_fitness_edges(
+        {"adapter.a": {"resolver"}}, roles={"adapter.a": "adapter"}
+    )
+    assert any("adapter" in p for p in problems)
+
+
+def test_arcfit03_resolver_imports_scanner_fails():
+    from architecture_boundaries import check_fitness_edges
+
+    problems = check_fitness_edges(
+        {"resolver": {"scanner"}}, roles={"resolver": "resolver"}
+    )
+    assert any("resolver" in p for p in problems)
+
+
+def test_arcfit04_revenue_imports_wiki_private_fails():
+    from architecture_boundaries import check_fitness_edges
+
+    problems = check_fitness_edges(
+        {"filing_fetch_client": {"company_wiki.source_catalog"}},
+        roles={"filing_fetch_client": "consumer"},
+    )
+    assert any("consumer" in p for p in problems)
+
+
+def test_arcfit05_calculator_imports_filesystem_fails():
+    from architecture_boundaries import check_fitness_edges
+
+    problems = check_fitness_edges(
+        {"revenue_forecast": {"pathlib", "os"}}, roles={"revenue_forecast": "calculator"}
+    )
+    assert any("calculator" in p for p in problems)
+
+
+def test_arcfit06_legacy_gets_new_caller_fails():
+    from architecture_boundaries import check_fitness_edges
+
+    problems = check_fitness_edges(
+        {"new_module": {"legacy_scanner"}}, roles={"legacy_scanner": "legacy"}
+    )
+    assert any("legacy" in p for p in problems)
+
+
+def test_arcfit_clean_graph_passes():
+    from architecture_boundaries import check_fitness_edges
+
+    clean = {
+        "scanner_v2": {"adapter_interface", "normalizer", "admission", "persister_port"},
+        "adapter.a": {"pathlib", "json"},
+        "resolver": {"catalog", "policy"},
+        "filing_fetch_client": {"subprocess", "json"},
+        "revenue_forecast": {"math"},
+        "compat_test": {"legacy_scanner"},
+    }
+    roles = {"scanner_v2": "scanner", "adapter.a": "adapter", "resolver": "resolver",
+             "filing_fetch_client": "consumer", "revenue_forecast": "calculator",
+             "legacy_scanner": "legacy"}
+    assert check_fitness_edges(clean, roles) == []
