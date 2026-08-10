@@ -228,3 +228,8 @@
 - **7 tests**：v2 reader 消费 active normalized assertion（observer 零 legacy hit）、bridge-off 无 assertion fail closed、bridge on 时 v2 assertion 仍优先、retired 查询级排除、AST gate 冻结 legacy owner 集（adversarial probe 拒绝）。2 mutations killed（remediation 排除移除、v2 不消费 assertion）。
 - **config_doctor 契约同步**：dropbox_stock 路径独立校验（CONFIG-DBX-04）、filing-fetch 走私 allowed_handle_roots 违规（CONFIG-DBX-03）、旧测试重写；drift_patrol 全绿。
 - 全量 2153 passed / 2 PORT-01。当前 triplet：revenue d662c82、filing 6274be2、wiki f4e941a。FC-701 审查（reviewer-fc701-independent）运行中。
+
+## 2026-08-11 — FC-701 accepted（normalized-only resolver；Phase 7 启动）
+
+- **reviewer-fc701-independent accepted**（7/7 步：triplets、密封哈希、diff=4 文件、focused 7/7、全量 2153/2 PORT-01、config_doctor 8/8、drift_patrol 全绿、M1+M2 精确击杀、validator exit 0）。findings 全 low/info（no-remote-branch、PORT-01×2、exit-code 环境差异、plan seal 仅状态头差异、环境 skip）。
+- 当前 triplet：revenue d662c82、filing 6274be2、wiki 04d9a33。下一 FC：FC-702（严格 identity 和 period）。
