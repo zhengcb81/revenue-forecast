@@ -290,7 +290,7 @@ Phase 0 baseline
 - 不再存在“配置有 Dropbox 但 resolver MISSING”绿测；原 known-gap 测试必须改为正确 RED/GREEN。
 - 至少 2 个新鲜 Dropbox-only T2 样本通过；否则不能称 production Dropbox complete。
 
-## Phase 6（companies/dayu adapter 等价迁移与多根泛化）— 状态：completed（FC-601~603 accepted 2026-08-10；FC-604 待执行）
+## Phase 6（companies/dayu adapter 等价迁移与多根泛化）— 状态：completed（FC-601~604 accepted 2026-08-11）
 
 ### FC-601：CompanyRawAdapter 等价
 
@@ -318,7 +318,7 @@ Phase 0 baseline
 - 三根都有唯一样本和真实 T2 证据；future root 配置-only 仍通过。
 - company/dayu v1 scanner 可以进入退役观察，但此时尚不删除。
 
-## Phase 7（Normalized Resolver、严格身份与 ResolutionEnvelope）— 状态：pending
+## Phase 7（Normalized Resolver、严格身份与 ResolutionEnvelope）— 状态：in_progress（FC-701 执行中）
 
 ### FC-701：normalized-only resolver
 
