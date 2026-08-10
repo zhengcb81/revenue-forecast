@@ -157,3 +157,11 @@
 - **blocked 判定复放**：FC-503 replay 证明真实 root eligible=0（7167 candidates 全部 unprovable）→ canary_decision = needs_user_samples → 按计划停在 blocked 并向用户申请 >=2 个真实 canary 文件/sidecar（与 companies/dayu 无相同 hash、注册 hashed sample ID 不泄露绝对路径）。
 - reviewer-fc504-independent **accepted**（机制）+ block_confirmed（1 个 low 发现：full-suite exit code 记录 0 vs 真实 1，与既有 receipts 惯例一致）。
 - 当前 triplet：revenue 待提交、filing 6274be2、wiki 651d2f6。下一动作：向用户申请 canary 样本；FC-505 依赖 FC-504。
+
+## 2026-08-10 — FC-601 accepted（CompanyRawAdapter 等价；EX-01 CN/HK/US exact reuse）
+
+- **FC-601**：trace_parity.py（candidate_trace 五段投影：sources/documents/locations/handles/bundles；compare_traces 用 FC-303 migration-ledger 语义；run_trace_parity 组合 _scan_root_v1 vs scan_root_strategy(v2_scan_shadow)）。冻结 CN/HK/US corpus 首轮即零 diff（精确等价）。
+- 7 tests（trace parity、deterministic、golden 投影值、EX-01 CN/HK/US fixture exact reuse、canonical writer 目标不变）；4 mutations 全部 killed（handles/bundles/mime/group_key 破坏 → golden 测试死）。
+- EX-01 真实样本 replay（tools/ex01_reuse_replay.py，只读）：CN 601899 紫金矿业 FY2025 cninfo、HK 03690 美团 FY2024 hkexnews（form_type FY）、US AAPL FY2025 sec — 3/3 REUSED_EXACT，download_required=false，capture_ready=true；live catalog 行数不变（23513/43074/46573）。
+- reviewer-fc601-independent **accepted**（1 个 low 发现：test helper 的 known_bad key 命名空间不一致——dormant/fail-closed，冻结 corpus 零 diff；列入 FC-1203 test-only helper 清理范围）。
+- 当前 triplet：revenue 待提交、filing 6274be2、wiki 49c1e2c。下一 FC：FC-602（DayuAdapter 等价与 dayu-only 样本）。

@@ -71,7 +71,7 @@
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
-| FC-601 | pending | FC-305、405 | company-wiki | CompanyRaw v1/v2 parity、EX-01、canonical writer 不变 |
+| FC-601 | accepted | FC-305、405 | company-wiki | CompanyRaw v1/v2 parity、EX-01、canonical writer 不变（receipt: company-wiki/assurance/fc/FC-601/；reviewer-fc601-independent accepted 2026-08-10；7 tests + 4 mutations killed + EX-01 真实 CN/HK/US 3/3 REUSED_EXACT） |
 | FC-602 | pending | FC-601 | company-wiki | >=2 dayu-only、EX-02、HK/US identity、capture failure 原因关闭 |
 | FC-603 | pending | FC-602 | company-wiki | EX-04~07、AR-09；扫描顺序 mutation 不影响结果 |
 | FC-604 | pending | FC-603、FC-505 | 三仓 | companies/dayu/Dropbox 同请求矩阵；root-specific 业务分支=0 |
