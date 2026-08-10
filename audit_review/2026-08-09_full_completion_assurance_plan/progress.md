@@ -142,3 +142,11 @@
 - **FC-502**：tests/contract/test_sidecar_production_scan_fc502.py（4 tests）钉住生产链路：registry dispatch（scan_root_via_adapter）→ SidecarFilingAdapter → admission（evaluate_candidate）→ normalized capture_ready；DBX-03 adapter 绝不借用 acquisition/dayu_meta 遗留容器；DBX-04 普通研究文档可索引但绝不成为 filing；DBX-07 重扫不改写 Dropbox 字节/mtime。
 - 独立 reviewer（reviewer-fc502-independent，clean worktree @ e03e4a3）：focused 4 passed；full suite 2108 passed / 2 pre-existing PORT-01（FC-1205 scope）；1 mutation（_normalized_from_sidecar 借用遗留容器）killed；DBX-01/03/04/07 独立复放；CodeGraph 确认 adapter_dispatch 生产接线；**accepted**。
 - 当前 triplet：revenue 6aadfde、filing 6274be2、wiki 2555633。下一 FC：FC-503（真实只读候选分桶）。
+
+## 2026-08-10 — FC-503 accepted（Dropbox 历史候选治理；真实 root 只读盘点）
+
+- **FC-503**：dropbox_governance.py `inventory_dropbox`（生产 adapter dispatch → FC-402 四桶分类 → 缺失字段 → 按实际字节检测重复 location set；other-root ids 由调用方传入，不硬编码 root id（FC-304 gate 干净）；中国平安弱身份 guard fail closed（GovernanceError）；catalog 全程 mode=ro）。
+- 7 tests（完整 sidecar→eligible、中国平安弱身份 unprovable、文件名 hint 绝不升级、guard 拦截未审 promotion、缺失字段、实际字节重复集不删除、只读+确定性）；6 mutations 全部 killed（文件名猜 security_id、丢缺失字段、关重复检测、丢 fingerprint、pingan 分类旁路、guard 移除）。
+- 真实 root replay（tools/dropbox_governance_replay.py，两轮全量零写）：7167 candidates（4000 original_primary / 3167 indexed_only）、eligible=0 unprovable=7167、重复 location sets=2890（实际字节）、pingan 32/32 unprovable、fingerprint_sha256 86980b49... 两轮一致、catalog 23513/43074/46573 不变、writes=0；catalog 不变量：中国平安 retired=49、active 弱身份=27 全部 capture-incomplete（无 fiscal_year）。
+- reviewer 发现 1 个 medium（receipt base_triplet.wiki 哈希不存在——伪造哈希，真实为 2555633856...），已修正 receipt 并重新验证（exit 0）。reviewer-fc503-independent **accepted**。
+- 当前 triplet：revenue 2a076da、filing 6274be2、wiki 5554a87。下一 FC：FC-504（真实 Dropbox-only canary 样本，必要时用户授权）。
