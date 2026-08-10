@@ -1,0 +1,134 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-102",
+  "implementer_receipt_sha256": "25506d140e1d439a11b6fea20da1c8e9a6791bf68aeabf2b63027b17d372a817",
+  "reviewer_identity": "reviewer-fc102-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "296e17b0216015767a674c56ed261327979be5f7",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "result_triplet": {
+    "revenue": "296e17b0216015767a674c56ed261327979be5f7",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "replayed_command_ids": [
+    "python -m pytest tests/test_scenario_registry.py -q",
+    "revenue.unit.full"
+  ],
+  "replayed_results": [
+    {
+      "command": "python -m pytest tests/test_scenario_registry.py -q",
+      "cwd": "C:/Users/郑曾波/Projects/.fcap-review/fc-102",
+      "collected": 11,
+      "passed": 11,
+      "failed": 0,
+      "exit_code": 0,
+      "duration_s": 0.14,
+      "matches_receipt": true
+    },
+    {
+      "command": "python -m pytest tests/ tools/tests/ -q",
+      "cwd": "C:/Users/郑曾波/Projects/.fcap-review/fc-102 (HEAD 296e17b)",
+      "collected": 424,
+      "passed": 412,
+      "failed": 12,
+      "exit_code": 1,
+      "duration_s": 28.64,
+      "note": "12 failures = 3 pre-existing/environmental (contract-doc-on-disk, prep-e2e, audit-baseline PORT-01) + 9 FC-104 manifest tests failing in this revenue-only worktree (NotADirectoryError on missing sibling REPO_DIRS). None caused by FC-102."
+    },
+    {
+      "command": "python -m pytest tests/ tools/tests/ -q @ FC-102 parent 8ac467c",
+      "cwd": "temp worktree (removed after use)",
+      "collected": 372,
+      "passed": 369,
+      "failed": 3,
+      "exit_code": 1,
+      "note": "Same 3 pre-existing failures as result commit; proves FC-102 adds zero new failures."
+    },
+    {
+      "command": "python -m pytest tests/ tools/tests/ -q @ FC-102 result 8549ddf",
+      "cwd": "temp worktree (removed after use)",
+      "collected": 383,
+      "passed": 380,
+      "failed": 3,
+      "exit_code": 1,
+      "note": "Identical 3-failure set as parent; +11 passing scenario-registry tests from FC-102."
+    }
+  ],
+  "scenario_results": [
+    {
+      "id": "FC-102-scenario-parity",
+      "passed": true,
+      "details": "registry ids (95) == scenario_matrix.md literal ids (95), one-to-one, zero exclusive on either side; category counts sum to 95; 95/127 tier entries carry freshness_window=None and validate clean."
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "FC-102-M-review",
+      "killed": true,
+      "mutation": "duplicate scenario id: renamed EX-02 -> EX-01 in compatibility/scenario_registry.json",
+      "observed": "2 failed (test_registry_is_structurally_valid detects 'duplicate scenario id EX-01'; test_registry_ids_match_matrix_one_to_one fails), 9 passed, exit 1",
+      "restored": "git checkout -- compatibility/scenario_registry.json; git status clean; re-run 11 passed exit 0"
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true,
+    "details": "FC-102 code and tests perform no downloads, external writes, catalog mutations, LLM calls, or parser calls; no open()/write()/subprocess in scenario_registry.py or test_scenario_registry.py; receipts side_effect_counts all 0 verified consistent."
+  },
+  "codegraph_reachability": {
+    "passed": true,
+    "details": "codegraph_callers(validate)=none in production; scenario_registry imported only by tests/test_scenario_registry.py; compatibility_manifest.py references SCENARIO_REGISTRY_PATH only for the FC-104 sha256 tamper check (not FC-102 scope). Governance registry, no production wiring."
+  },
+  "rollback": {
+    "required": false,
+    "passed": true,
+    "details": "Pure additions (3 new files, +3678 lines product+tests); revert = remove the 3 files and the FC-102 commit; no existing behavior touched."
+  },
+  "unresolved_findings": [
+    {
+      "severity": "informational",
+      "finding": "No origin/fcap remote branch exists in this environment; base/result triplet commits verified from LOCAL git object store only (git cat-file -e). Remote verification deferred until push/closure.",
+      "evidence": "git worktree list shows detached HEAD; no remote branch named fcap."
+    },
+    {
+      "severity": "informational",
+      "finding": "Receipt base_triplet.revenue is 3ce9cc4d (frozen FCAP baseline), not FC-101 result 67609128 as the review brief anticipated. Verified: 3ce9cc4d matches current.json frozen_baseline_triplet and the FC-101/FC-103 receipts' base convention. Result triplet revenue 8549ddf exists and is an ancestor of HEAD 296e17b (merge-base --is-ancestor passed). Filing/wiki hashes are cross-repo commits not present in revenue's object store (normal).",
+      "evidence": "current.json; git cat-file -e on all 6 receipt triplet hashes; git merge-base --is-ancestor 8549ddf 296e17b"
+    },
+    {
+      "severity": "informational",
+      "finding": "task_plan.md raw sha256sum at HEAD is 6a21d1c4 (CRLF line endings, core.autocrlf=true) but the LF-normalized git blob hashes to the sealed 158fc1e1 exactly; git blob unchanged since freeze commit 2d64186. Sealing hash verified on canonical form.",
+      "evidence": "sha256sum raw vs LF-normalized; git log --oneline --follow task_plan.md; hashes at 2d64186..296e17b all 158fc1e1"
+    },
+    {
+      "severity": "informational",
+      "finding": "FC-102 commit 8549ddf touches 3 governance docs beyond the 3 allowed product files: audit_review/.../findings.md (#32), progress.md, work_unit_registry.md (status flip to independent_review). Same pattern as the FC-103 commit (a49eab2). Documentation of the work, not product code; receipt changed_files lists only product files.",
+      "evidence": "git show 8549ddf --name-only; git show a49eab2 --name-only"
+    },
+    {
+      "severity": "informational",
+      "finding": "The historical RED (validator over-rejected None freshness_window) is not independently replayable from the object store (no pre-fix blob in 8549ddf's chain). Fix state verified in result: validator explicitly permits None for freshness_window and 95 entries with None validate clean; commit message documents RED -> fix -> 11 GREEN.",
+      "evidence": "scenario_registry.py lines 135-137; validate(registry)==[]"
+    },
+    {
+      "severity": "informational",
+      "finding": "Hard coverage gate ('every mandatory ID covered by a real test') is deferred to FC-1003 (Phase 10) per findings #32 and receipt covers_scenario_ids; tests for most scenarios do not exist yet. Deferral is explicitly declared, not hidden; belongs to FC-1003 verification.",
+      "evidence": "assurance/fc/FC-102/11_implementer_receipt.json covers_scenario_ids; findings.md #32"
+    },
+    {
+      "severity": "informational",
+      "finding": "At HEAD, 9 additional failures in tests/test_compatibility_manifest.py (FC-104 suite) fail with NotADirectoryError: WinError 267 because compatibility_manifest.py REPO_DIRS point at sibling repos (../filing-fetch, ../company-wiki) absent in this revenue-only worktree. Environmental to the isolated review worktree; ownership belongs to FC-104 review, not FC-102. Parent-vs-result comparison proves FC-102 introduces zero new failures.",
+      "evidence": "pytest -q tests/ tools/tests/ at HEAD vs 8ac467c vs 8549ddf"
+    },
+    {
+      "severity": "informational",
+      "finding": "Receipt command_registry_sha256 is placeholder 'pending-fc-104'; anticipated. Frozen registry hash bd4e507d... verified on disk; supersession to the real hash happens at closure merge after this review.",
+      "evidence": "tools/receipt_validator.py exit 0; sha256sum compatibility/command_registry.json"
+    }
+  ],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-10"
+}

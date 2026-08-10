@@ -1,0 +1,54 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-103",
+  "implementer_receipt_sha256": "30a2b1d47cb9d7b14064380fcd4a797e29a764b0bbd9568b3f47f8e87459c824",
+  "reviewer_identity": "reviewer-fc103-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "296e17b0216015767a674c56ed261327979be5f7",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "result_triplet": {
+    "revenue": "296e17b0216015767a674c56ed261327979be5f7",
+    "filing": "d5e87237bd976b61c0d41127a8090b66031d4a72",
+    "wiki": "453f9584be64b3a78606aca42c498c93a19fe95e"
+  },
+  "replayed_command_ids": [
+    "python -m pytest tools/tests/test_receipt_validator.py -q (22 passed, exit 0)",
+    "python -m pytest tests/ tools/tests/ -q (424 collected: 412 passed, 12 failed, 106 subtests passed, exit 1; all failures environmental/pre-existing, none FC-103)",
+    "python tools/receipt_validator.py --receipt assurance/fc/FC-101/11_implementer_receipt.json --implementer fcap-r2-implementer (OK, exit 0)",
+    "python tools/receipt_validator.py --receipt assurance/fc/FC-101/11_implementer_receipt.json --implementer claude (verbatim receipt command; OK, exit 0)",
+    "python tools/receipt_validator.py --receipt assurance/fc/FC-101/11_implementer_receipt.json --implementer fcap-r2-implementer --reviewer reviewer-fc103-independent --accept (rejected, exit 1: pending-fc-104 seal + decision not accepted)",
+    "python tools/receipt_validator.py --receipt assurance/fc/FC-103/11_implementer_receipt.json --implementer fcap-r2-implementer --reviewer reviewer-fc103-independent --accept (rejected, exit 1: pending-fc-104 seal + decision not accepted)"
+  ],
+  "scenario_results": [],
+  "mutation_results": [
+    {
+      "id": "FC-103-M-review",
+      "killed": true,
+      "details": "6 negative validator mutations rejected with exit 1, each with the correct problem: (1) schema_version 1.9; (2) plan_sha256 truncated to 10 chars; (3) review.decision=accepted with empty reviewer; (4) reviewer identity == implementer (self-accept); (5) reviewed_at 2099-01-01 (future); (6) command exit_code=1. can_accept gate additionally refuses unreviewed/pending-seal receipts for both FC-101 and FC-103."
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true
+  },
+  "codegraph_reachability": {
+    "passed": true
+  },
+  "rollback": {
+    "required": false,
+    "passed": true
+  },
+  "unresolved_findings": [
+    "informational: no origin/fcap remote branch exists (origin has only main and phase-14-input-build-tools); base/result triplet verified from local objects only (result a49eab2 confirmed ancestor of HEAD 296e17b via merge-base). Re-verify against upstream when the fcap branch is created.",
+    "informational: implementer receipt base_triplet.revenue is 3ce9cc4, the documented FCAP r2 plan baseline (task_plan.md header and compatibility/current.json frozen_baseline_triplet); a review-scope reference to 8549ddf (FC-102 result commit) also exists and is an ancestor of a49eab2. Receipt base matches plan documentation; no impact on verification.",
+    "informational: raw sha256sum of task_plan.md on disk is 6a21d1c4... because core.autocrlf=true checks the file out as CRLF; the canonical LF blob at HEAD hashes to 158fc1e1... == the sealed plan_sha256. No content drift; Windows hash recomputation must normalize line endings (PORT-01 family).",
+    "informational: full-suite run in this review worktree: 424 collected, 412 passed, 12 failed, 106 subtests passed, exit 1. 11 of the 12 failures are review-worktree-environmental: 9 tests/test_compatibility_manifest.py failures (compatibility_manifest.py REPO_DIRS resolves to parents[2]/revenue-forecast, filing-fetch, company-wiki, which do not exist in the .fcap-review/fc-103 worktree), 1 test_contract_registry doc-exists (sibling company-wiki ADR absent), 1 test_preparation_e2e_success (sibling filing-fetch absent). The remaining failure, test_audit_baseline, is the known PRE-EXISTING PORT-01 Windows encoding issue (UTF-8 decode of GBK byte 0xd4; findings #31, owned by FC-1205). None are attributable to FC-103, whose own 22 tests all pass.",
+    "informational: compatibility/current.json current_triplet.revenue is bceae33 while HEAD is 296e17b; the manifest was authored at FC-104 before the FC-104 receipt doc commit and its note declares current_triplet informational. FC-104-owned; not an FC-103 defect.",
+    "informational: FC-103 feature commit a49eab2 additionally updated findings.md / progress.md / work_unit_registry.md (plan-tracking bookkeeping, same convention as FC-102 commit 8549ddf); the receipt's changed_files lists the two product deliverables. Consistent with repo convention.",
+    "informational: this validator enforces hash/triplet format-level checks and the can_accept real-seal gate (pending-fc-104 hard refusal); value-level staleness verification (well-formed but wrong triplet against live HEAD) is performed by the independent reviewer here and by FC-104 manifest validation / FC-1501 closure gate. Scope split is consistent with the plan."
+  ],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-10"
+}

@@ -22,10 +22,10 @@
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
-| FC-101 | independent_review | FC-002 | 三仓 | ownership RED、ADR hashes、N/N-1 兼容表、重复 owner=0（receipt: assurance/fc/FC-101/；honest-implementer，待独立 reviewer） |
-| FC-102 | independent_review | FC-101 | revenue | 95 scenario registry 一致性、重复/缺失/矛盾/假 E2E mutation（receipt: assurance/fc/FC-102/；硬覆盖门属 FC-1003） |
-| FC-103 | independent_review | FC-101 | revenue | receipt validator 负向全集；旧 25 receipts 不得误通过（receipt: assurance/fc/FC-103/；已实测拒绝 FC-101 的 can_accept） |
-| FC-104 | independent_review | FC-101、102、103 | revenue | current triplet manifest；sibling 漂移 RED；完整组合 GREEN（receipt: assurance/fc/FC-104/） |
+| FC-101 | accepted | FC-002 | 三仓 | ownership RED、ADR hashes、N/N-1 兼容表、重复 owner=0（receipt: assurance/fc/FC-101/；reviewer-fc101-independent accepted 2026-08-10） |
+| FC-102 | accepted | FC-101 | revenue | 95 scenario registry 一致性、重复/缺失/矛盾/假 E2E mutation（receipt: assurance/fc/FC-102/；reviewer-fc102-independent accepted 2026-08-10；硬覆盖门属 FC-1003） |
+| FC-103 | accepted | FC-101 | revenue | receipt validator 负向全集；旧 25 receipts 不得误通过（receipt: assurance/fc/FC-103/；reviewer-fc103-independent accepted 2026-08-10；6 负向 mutation 实测拒绝） |
+| FC-104 | accepted | FC-101、102、103 | revenue | current triplet manifest；sibling 漂移 RED；完整组合 GREEN（receipt: assurance/fc/FC-104/；reviewer-fc104-independent accepted 2026-08-10） |
 
 ## 4. Phase 2：运行时控制平面
 
