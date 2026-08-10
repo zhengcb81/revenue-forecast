@@ -165,3 +165,11 @@
 - EX-01 真实样本 replay（tools/ex01_reuse_replay.py，只读）：CN 601899 紫金矿业 FY2025 cninfo、HK 03690 美团 FY2024 hkexnews（form_type FY）、US AAPL FY2025 sec — 3/3 REUSED_EXACT，download_required=false，capture_ready=true；live catalog 行数不变（23513/43074/46573）。
 - reviewer-fc601-independent **accepted**（1 个 low 发现：test helper 的 known_bad key 命名空间不一致——dormant/fail-closed，冻结 corpus 零 diff；列入 FC-1203 test-only helper 清理范围）。
 - 当前 triplet：revenue 待提交、filing 6274be2、wiki 49c1e2c。下一 FC：FC-602（DayuAdapter 等价与 dayu-only 样本）。
+
+## 2026-08-10 — FC-602 accepted（DayuAdapter 等价；EX-02 dayu-only 样本）
+
+- **FC-602**：DayuAdapter 重写为 v1 group 语义（group meta.json + preferred-primary 选择 + 每文件 role）；enrichment（enrich_dayu_metadata/construct_edgar_url）从 scanner 移入 adapter（单一来源，scanner 别名导入，v1 行为不变——AST 级纯移动）；metadata-only group（无主文件的 byte-less placeholder——capture-incomplete 真实原因）永不成为候选。
+- 10 tests（enrichment golden、EDGAR URL、metadata-only 跳过、frozen corpus v1/v2 trace parity、EX-02 fixture exact reuse、incomplete 不复用）；5 mutations killed；trace_parity known_bad key 对齐 section:path（同时解决 FC-601 low 发现）。
+- EX-02 真实 dayu-only replay（只读）：1548 FY2021（sha 72b3ed25...）+ FY2023（sha bf1d8a17...）— 其他根无同 hash、catalog 有 active dayu original_primary、meta 完整；live catalog 行数不变。
+- reviewer-fc602-independent **accepted**（3 low 发现：changed_files 多列 1 个文件、两个描述性计数不可复现、v2 adapter 缺 master_identity backfill——后者列入 R4 cutover 前处理）。
+- 当前 triplet：revenue 待提交、filing 6274be2、wiki 4d1a173。下一 FC：FC-603（跨根去重与 deterministic location）。
