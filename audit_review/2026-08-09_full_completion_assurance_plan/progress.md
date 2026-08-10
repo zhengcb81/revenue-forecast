@@ -136,3 +136,9 @@
 - **filing 侧**：删除独立 allowed_handle_roots allowlist（architecture_target §7 禁止项）；validate_handle 消费 RootPolicySnapshot + expected hash（PROJECT_ROOT 展开、reusable roots containment、hash mismatch fail closed）；config schema 拒绝 allowed_handle_roots。
 - 首轮 reviewer changes_required（F1 high）：config-schema 测试用不存在的 /tmp/x root，M3 未杀死、测试从未 RED。修复：测试改用真实临时 wiki root + match=exactly schema_version；M3 被两个测试同时杀死、RED-at-base 证明。r2 复审（reviewer-fc501-r2）：3 mutations + RED-base 全部 killed；**accepted**。
 - 当前 triplet：revenue 待提交、filing 6274be2、wiki 7bcd3b2。下一 FC：FC-502（SidecarAdapter 生产扫描）。
+
+## 2026-08-10 — FC-502 accepted（SidecarAdapter 生产扫描契约）
+
+- **FC-502**：tests/contract/test_sidecar_production_scan_fc502.py（4 tests）钉住生产链路：registry dispatch（scan_root_via_adapter）→ SidecarFilingAdapter → admission（evaluate_candidate）→ normalized capture_ready；DBX-03 adapter 绝不借用 acquisition/dayu_meta 遗留容器；DBX-04 普通研究文档可索引但绝不成为 filing；DBX-07 重扫不改写 Dropbox 字节/mtime。
+- 独立 reviewer（reviewer-fc502-independent，clean worktree @ e03e4a3）：focused 4 passed；full suite 2108 passed / 2 pre-existing PORT-01（FC-1205 scope）；1 mutation（_normalized_from_sidecar 借用遗留容器）killed；DBX-01/03/04/07 独立复放；CodeGraph 确认 adapter_dispatch 生产接线；**accepted**。
+- 当前 triplet：revenue 6aadfde、filing 6274be2、wiki 2555633。下一 FC：FC-503（真实只读候选分桶）。
