@@ -150,3 +150,10 @@
 - 真实 root replay（tools/dropbox_governance_replay.py，两轮全量零写）：7167 candidates（4000 original_primary / 3167 indexed_only）、eligible=0 unprovable=7167、重复 location sets=2890（实际字节）、pingan 32/32 unprovable、fingerprint_sha256 86980b49... 两轮一致、catalog 23513/43074/46573 不变、writes=0；catalog 不变量：中国平安 retired=49、active 弱身份=27 全部 capture-incomplete（无 fiscal_year）。
 - reviewer 发现 1 个 medium（receipt base_triplet.wiki 哈希不存在——伪造哈希，真实为 2555633856...），已修正 receipt 并重新验证（exit 0）。reviewer-fc503-independent **accepted**。
 - 当前 triplet：revenue 2a076da、filing 6274be2、wiki 5554a87。下一 FC：FC-504（真实 Dropbox-only canary 样本，必要时用户授权）。
+
+## 2026-08-10 — FC-504 mechanism accepted；样本 blocked（等待用户 canary）
+
+- **FC-504 机制**：canary_registry.py（hashed sample ID = sha256(root_id|relative_path)、绝对路径拒绝、sample_id 防伪、exclusivity 只读校验（mode=ro）、canary_decision 在 eligible<2 时返回 needs_user_samples 绝不伪造样本）。8 tests + 4 mutations killed（路径安全、公式、exclusivity、decision）。
+- **blocked 判定复放**：FC-503 replay 证明真实 root eligible=0（7167 candidates 全部 unprovable）→ canary_decision = needs_user_samples → 按计划停在 blocked 并向用户申请 >=2 个真实 canary 文件/sidecar（与 companies/dayu 无相同 hash、注册 hashed sample ID 不泄露绝对路径）。
+- reviewer-fc504-independent **accepted**（机制）+ block_confirmed（1 个 low 发现：full-suite exit code 记录 0 vs 真实 1，与既有 receipts 惯例一致）。
+- 当前 triplet：revenue 待提交、filing 6274be2、wiki 651d2f6。下一动作：向用户申请 canary 样本；FC-505 依赖 FC-504。
