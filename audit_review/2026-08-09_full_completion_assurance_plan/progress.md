@@ -129,3 +129,10 @@
 - **FC-405 accepted**：副本灾难演练（中断+resume、disk-full 原子性、rollback+rerun 收敛、幂等、restore-point hashes）；**MIG-07 原子性生产修复**：assertions+journal 单事务提交（此前 journal 失败会留下已提交 assertions）。
 - Phase 4 exit gate：副本迁移可中断恢复且幂等、输入全分桶、零猜测 mutation 被杀死；production apply 仍需单独授权（Phase 14）。
 - 当前 triplet：revenue 待提交、filing d5e8723、wiki 1ff47fb。下一 Phase：FC-501（Dropbox RootPolicy/sidecar contract）。
+
+## 2026-08-10 — FC-501 accepted（跨仓 Dropbox 契约；F1 changes_required → 修复 → r2 复审通过）
+
+- **wiki 侧**：sidecar adapter 增 DBX-03 content-hash 检查（声明 hash vs 文件字节 → content_hash_mismatch，role 级 fail closed）；DBX-04 broker_research 不满足 filing；DBX-05 path/symlink 规则；DBX-06 retired 不复活；Dropbox root 2.x policy contract（read_only/reusable/allowed kinds/symlink reject/priority/cohort）。
+- **filing 侧**：删除独立 allowed_handle_roots allowlist（architecture_target §7 禁止项）；validate_handle 消费 RootPolicySnapshot + expected hash（PROJECT_ROOT 展开、reusable roots containment、hash mismatch fail closed）；config schema 拒绝 allowed_handle_roots。
+- 首轮 reviewer changes_required（F1 high）：config-schema 测试用不存在的 /tmp/x root，M3 未杀死、测试从未 RED。修复：测试改用真实临时 wiki root + match=exactly schema_version；M3 被两个测试同时杀死、RED-at-base 证明。r2 复审（reviewer-fc501-r2）：3 mutations + RED-base 全部 killed；**accepted**。
+- 当前 triplet：revenue 待提交、filing 6274be2、wiki 7bcd3b2。下一 FC：FC-502（SidecarAdapter 生产扫描）。
