@@ -41,7 +41,7 @@
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
-| FC-301 | pending | FC-205 | company-wiki | RootPolicy 2.x schema、1.x doctor、未知/可写外部 root fail closed |
+| FC-301 | accepted | FC-205 | company-wiki | RootPolicy 2.x schema、1.x doctor、未知/可写外部 root fail closed（receipt: company-wiki/assurance/fc/FC-301/；reviewer-fc301-independent accepted 2026-08-10；11 tests + 5 mutations killed） |
 | FC-302 | pending | FC-301 | company-wiki | 三 adapter production caller>=1；scanner root-specific branch 新增=0 |
 | FC-303 | pending | FC-302 | company-wiki | v1/v2 frozen corpus shadow parity、差异 ledger、EX-08 mutation |
 | FC-304 | pending | FC-303 | company-wiki | future_lake 配置-only T1；产品 Python diff=0 |
