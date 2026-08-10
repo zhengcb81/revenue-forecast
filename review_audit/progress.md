@@ -345,3 +345,10 @@ R1.1/R1.2/R1.3/R2/R3/R4/R5/R6/R7/R8/R9 全部 completed（roadmap 完整执行�
 - **WU-1500 观察周期 2**：legacy_bridge_hits=46（>0，legacy 仍在生产读取），观察门未通过，WU-1501 不可启动。
 - **验证**：wiki 全量 2142 passed / 2 pre-existing PORT-01（FC-1205 scope）；revenue pre-commit 381 passed + E2E + install-sync 97 MATCH；parity 回归绿。
 - 当前 triplet：revenue 4a2c65f、filing 6274be2、wiki 47a0311。
+
+## 2026-08-10 — FC-505 accepted（Phase 5 完成；本阶段收尾）
+
+- **reviewer-fc505-independent accepted**（8 low/info findings 无阻塞：F1 no-remote-branch、F2 ruff F401、F3 exit-code 记录差异、F4 wiki base anchor 早于 FC-504 closure、F5 星环 http-URL、F6 生产扫描计数增长、F7 程序预期陈旧、F8 审查期间并发 doc-only 提交）。2 mutations killed；replay 两遍 exit 0；wiki 全量 2142 passed / 2 PORT-01。
+- **Phase 5 完成**（FC-501~505）；Phase 1-6 task_plan 状态头全部 completed。
+- **维护**：current.json triplet 刷新（4a31fca）、scenario_registry 7 处 canary 引用 + 密封哈希（4a0f5d2）、WU-1500 period 2（86180dd）。
+- 当前 triplet：revenue c1bfd75、filing 6274be2、wiki 47a0311。下一 FC：FC-604（前置全部 accepted）。
