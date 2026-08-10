@@ -61,7 +61,7 @@
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
-| FC-501 | pending | FC-205、301、405 | company-wiki/filing | DBX-02~06；只读 RootPolicy、sidecar、containment；第二 allowlist=0 |
+| FC-501 | accepted | FC-205、301、405 | company-wiki/filing | DBX-02~06；只读 RootPolicy、sidecar、containment；第二 allowlist=0（receipt: company-wiki/assurance/fc/FC-501/；reviewer-fc501-r2 accepted 2026-08-10（F1 changes_required → 修复后复审通过）；wiki 5 tests + filing 6 tests；3 mutations + RED-base killed） |
 | FC-502 | pending | FC-501 | company-wiki | registry→adapter→admission→assertion production trace；Dropbox 写=0 |
 | FC-503 | pending | FC-502 | company-wiki | 真实只读候选分桶；中国平安等不可证明样本保持 fail closed |
 | FC-504 | pending | FC-503；必要时用户样本授权 | company-wiki | >=2 Dropbox-only 新鲜样本；其他根同 hash=0；绝对路径不泄露 |
