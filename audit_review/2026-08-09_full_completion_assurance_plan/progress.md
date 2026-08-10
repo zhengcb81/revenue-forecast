@@ -181,3 +181,17 @@
 - 3 mutations killed（priority 删除、resolver 路径排序移除×2层、revision 规则反转）；reviewer-fc603-independent **accepted**（1 low：full-suite exit_code 依赖 codepage——计数与失败身份完全一致）。
 - **Phase 6 完成**（FC-601/602/603 accepted）。FC-604 因前置 FC-505 blocked 而 blocked；Phase 7-15 全链（FC-701~1505）均依赖该链。
 - 当前 triplet：revenue 待提交、filing 6274be2、wiki f58a9df。等待用户提供 >=2 个 Dropbox canary 文件/sidecar 解除 FC-504/505/604 阻塞。
+
+## 2026-08-10 — 用户决策：canary 排他性要求修订
+
+- 用户提供 4 个 canary 文件（紫金矿业 2024/2025 年报、星环科技 2024/2025 年报），但 content hash 全部已存在于 company_raw/dayu_portfolio（字节相同）。
+- **用户指令（2026-08-10）**："Dropbox-only的意义在哪里？我只需要这几个不同目录都能够作为文档源，但排他性并不是我关心的，做索引的时候可以记录同样的文件存在于几个不同目录，它们应该具有相同的地位可以被使用"。
+- 修订：FC-504"样本必须在 companies/dayu 无相同 hash"条款按用户决策放宽——相同内容跨根存在由索引记录为重复 location（FC-603 EX-04 语义：单 document、多 locations、同等可用、canonical 按 policy priority）；canary 要求改为"真实年报 + 完整 sidecar（字段由已验证 catalog 记录补齐）"。
+- sidecar 字段来源：catalog 已验证 acquisition/dayu_meta 记录（正式来源），content_sha256 取 Dropbox 实际字节。
+
+## 2026-08-10 — FC-504 accepted（4 真实 canary 样本注册完成，Phase 5 解阻）
+
+- 用户提供 4 个真实年报（紫金矿业 601899 FY2024/2025、星环科技 688031 FY2024/2025）放入 Dropbox 根；实施者按用户决策（排他性放宽）写入完整 sidecar（字段来自 catalog 已验证记录/dayu_meta，content_sha256 取实际字节——4 次受授权的外部根写入）。
+- 注册 hashed sample ID（sha256(root_id|relative_path)，相对路径，无绝对路径泄露）；真实 root 盘点 eligible=4（原 0）、canary_decision=selectable；跨根重复按 EX-04 记录（duplicate sets 2890→2894）。
+- reviewer-fc504-r2 **accepted**（2 low：F1 no-remote-branch；F2 星环字段源自 dayu_meta（FY2025 ingest_complete=False）——符合用户决策，建议后续措辞用"catalog dayu_meta 记录"）。
+- **FC-505 解阻**；FC-604 解阻。当前 triplet：revenue 待提交、filing 6274be2、wiki 47f2e4c。下一 FC：FC-505（三仓全链 E2E）。

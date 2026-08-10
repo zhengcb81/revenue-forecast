@@ -64,8 +64,8 @@
 | FC-501 | accepted | FC-205、301、405 | company-wiki/filing | DBX-02~06；只读 RootPolicy、sidecar、containment；第二 allowlist=0（receipt: company-wiki/assurance/fc/FC-501/；reviewer-fc501-r2 accepted 2026-08-10（F1 changes_required → 修复后复审通过）；wiki 5 tests + filing 6 tests；3 mutations + RED-base killed） |
 | FC-502 | accepted | FC-501 | company-wiki | registry→adapter→admission→assertion production trace；Dropbox 写=0（receipt: company-wiki/assurance/fc/FC-502/；reviewer-fc502-independent accepted 2026-08-10；4 tests + 1 mutation killed + DBX-01/03/04/07 独立复放） |
 | FC-503 | accepted | FC-502 | company-wiki | 真实只读候选分桶；中国平安等不可证明样本保持 fail closed（receipt: company-wiki/assurance/fc/FC-503/；reviewer-fc503-independent accepted 2026-08-10；7 tests + 6 mutations killed + 真实 root 两轮零写 replay） |
-| FC-504 | blocked | FC-503；必要时用户样本授权 | company-wiki | 机制 accepted（reviewer-fc504-independent 2026-08-10；8 tests + 4 mutations killed + blocked 判定复放）；样本 blocked：真实 root eligible=0（FC-503 replay），等待用户提供 >=2 真实 canary 文件/sidecar |
-| FC-505 | pending | FC-504 | 三仓 | EX-03、DBX-01~08、IDX 适用项、external write=0、rollback trace |
+| FC-504 | accepted | FC-503；用户样本授权（2026-08-10 用户决策：排他性条款放宽） | company-wiki | 机制 r1 accepted + 样本 r2 accepted（reviewer-fc504-independent 2026-08-10 + reviewer-fc504-r2 2026-08-10；4 真实 canary 注册：紫金矿业 601899 FY2024/25 + 星环科技 688031 FY2024/25；eligible=4；跨根重复按 EX-04 记录） |
+| FC-505 | pending | FC-504 | 三仓 | EX-03、DBX-01~08、IDX 适用项、external write=0、rollback trace（canary 样本已就绪） |
 
 ## 8. Phase 6：companies/dayu 等价与多根泛化
 
@@ -74,7 +74,7 @@
 | FC-601 | accepted | FC-305、405 | company-wiki | CompanyRaw v1/v2 parity、EX-01、canonical writer 不变（receipt: company-wiki/assurance/fc/FC-601/；reviewer-fc601-independent accepted 2026-08-10；7 tests + 4 mutations killed + EX-01 真实 CN/HK/US 3/3 REUSED_EXACT） |
 | FC-602 | accepted | FC-601 | company-wiki | >=2 dayu-only、EX-02、HK/US identity、capture failure 原因关闭（receipt: company-wiki/assurance/fc/FC-602/；reviewer-fc602-independent accepted 2026-08-10；10 tests + 5 mutations killed + EX-02 真实 dayu-only 2/2 + capture-incomplete 原因关闭） |
 | FC-603 | accepted | FC-602 | company-wiki | EX-04~07、AR-09；扫描顺序 mutation 不影响结果（receipt: company-wiki/assurance/fc/FC-603/；reviewer-fc603-independent accepted 2026-08-10；6 tests + 3 mutations killed + canonical 四层防御确认） |
-| FC-604 | blocked | FC-603、FC-505 | 三仓 | 前置 FC-505 blocked（等待 canary 样本）；同请求矩阵三根契约待样本提供后执行 |
+| FC-604 | pending | FC-603、FC-505 | 三仓 | companies/dayu/Dropbox 同请求矩阵；root-specific 业务分支=0 |
 
 ## 9. Phase 7：统一 resolver
 
