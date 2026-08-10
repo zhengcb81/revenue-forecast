@@ -54,7 +54,7 @@
 | FC-401 | accepted | FC-305 | company-wiki | MIG-01/02/03/07；副本 dry-run/resume/idempotency/资源上界（receipt: company-wiki/assurance/fc/FC-401/；reviewer-fc401-independent accepted 2026-08-10；7 tests + 3 mutations killed） |
 | FC-402 | accepted | FC-401 | company-wiki | SAFE-01~04、MIG-05；零猜测、四分桶守恒（receipt: company-wiki/assurance/fc/FC-402/；reviewer-fc402-independent accepted 2026-08-10；9 tests + 4 mutations killed） |
 | FC-403 | accepted | FC-402 | company-wiki | proposal/approval/activation 分权；伪 receipt/policy hash mutation（receipt: company-wiki/assurance/fc/FC-403/；reviewer-fc403-independent accepted 2026-08-10；7 tests + 3 mutations killed） |
-| FC-404 | pending | FC-403 | company-wiki | root/market/kind coverage ledger；输入=全部分桶之和 |
+| FC-404 | accepted | FC-403 | company-wiki | root/market/kind coverage ledger；输入=全部分桶之和（receipt: company-wiki/assurance/fc/FC-404/；reviewer-fc404-independent accepted 2026-08-10；7 tests + 2 mutations killed + 只读字节级验证） |
 | FC-405 | pending | FC-404 | company-wiki | MIG-02/04/06/07/08；灾难恢复和 catalog integrity |
 
 ## 7. Phase 5：Dropbox 闭环
