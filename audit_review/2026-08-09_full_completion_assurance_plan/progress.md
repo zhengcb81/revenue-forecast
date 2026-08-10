@@ -99,3 +99,9 @@
 - **FC-205 accepted**：architecture_gate 增三不变量（生产 resolver/CLI 消费 snapshot、flags/runtime_policy/gate 外零硬编码 flag dict、legacy bridge loop 仅 resolver）；T4 最小 cohort rollback 改变真实 resolver 响应。adversarial evil-module 双 gate RED、2 wiring mutations killed、leg04 freeze gate 兼容。4 tests。reviewer-fc205-independent accepted。
 - Phase 2 exit gate：CTRL-01~05 全绿、真实 rollback 可重复、无"数据 active/flag inactive/响应变化"不一致（WU-905 关闭）、未新增 active assertion/Dropbox cohort/artifact cohort。
 - 当前 triplet：revenue b80db06、filing d5e8723、wiki be48c87。下一 Phase：FC-301（RootPolicy 2.x 配置迁移）。
+
+## 2026-08-10 — Phase 3 前半（FC-301/302 accepted）
+
+- **FC-301 accepted**：policy_2x.py（RootPolicySnapshot 2.0 loader/doctor/export）—— per-root 显式 adapter/profile/read_only/reusable/allowed kinds/cohort/write target；fail closed：外部 root 可写、未知 adapter/profile、宽化路由、重复 root；1.x->2.x doctor 只读报告；1.x loader 仍是生产路径（FC-305 cutover）。RootSpec 增 cohort + canonical_write_target（默认 None 保持 1.x）。11 tests；5 mutations killed。reviewer-fc301-independent accepted。
+- **FC-302 accepted**：adapter_dispatch.py（adapter_for 按 adapter_id 解析注册 adapter，fail closed；scan_root_via_adapter 转 _Candidate）；scanner facade v2 shadow 分支经 adapter 派发（不可解析路由才 FacadeError），v1 路径零改动。SidecarFilingAdapter/CompanyRawAdapter/DayuAdapter 均获 production caller。9 tests；3 mutations killed（missing-id gate、registry check、scanner 无条件 raise）。reviewer-fc302-independent accepted。
+- 当前 triplet：revenue 12942b3、filing d5e8723、wiki 0613026。下一 FC：FC-303（v2 scanner shadow parity）。
