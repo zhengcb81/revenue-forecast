@@ -82,3 +82,12 @@
 - 全量 423 passed / 1 failed（既有 PORT-01，无新回归）。
 - **Phase 1 完成**：FC-101/102/103/104 全部 RED→GREEN → 提交 → receipt → independent_review。
 - 下一步：Phase 2（FC-201 持久化 RuntimePolicySnapshot）—— 首次触碰 company-wiki 产品代码；前置 FC-104 accepted（honest-implementer 下 receipt 已备，待独立 reviewer 补 accepted 后解锁）。
+
+## 2026-08-10 — Phase 1 closure + Phase 2 FC-201/202（accepted）
+
+- FC-101~104 独立 review 完成：4 个 reviewer subagent（干净 worktree 296e17b、独立身份 reviewer-fc1XX-independent）全部 accepted；closure can_accept gate 通过；registry 状态 → accepted；提交 4c8677a + current triplet 更新 4f2a4c1。
+- wiki command registry 实测封印：wiki.unit.full 1977 collected / 1975 passed（2 个预存 PORT-01 test_check_unique_test_symbols 编码失败，FC-1205）；wiki.integration 10 passed；registry hash bd4e507d → 215b8077；提交 e7c8114。
+- **FC-201 完成（RED→GREEN→accepted）**：company-wiki 新增 `runtime_policy.py`（ActivationSnapshot 1.0：flags + current_epoch + active_cohorts + policy_hash + snapshot_sha256；fail-closed load；CAS write）+ CLI `runtime-policy show/apply` + wu905 step7 去硬编码。16 tests；3 mutations killed。wiki caac327→111891b→e9c84ad（closure）。reviewer-fc201-independent accepted。
+- **FC-202 完成（RED→GREEN→accepted）**：resolver 强制 ActivationSnapshot —— `resolver_visibility` 派生 reader/epoch/cohort/bridge；`_v2_assertion_metadata` SQL 过滤 decision+visibility+epoch+cohort（v1 只见 legacy、v2 需 epoch+cohort 精确匹配，缺省 fail closed）；`_source_metadata` legacy bridge 按 snapshot 门控；assertion_service 同步过滤（无旁路）；CLI resolve 起点固定 snapshot。15 tests；SQL 级 6 mutations killed（guard 级存活属纵深防御，已记录）。wiki 10f79354→d5830bf→1c504e3（closure）。reviewer-fc202-independent accepted。
+- 两 FC 的 receipt 中 stale 计数均在 closure 时按 reviewer replay 修正并注明（低严重度 finding，不影响 verdict）。
+- 当前 triplet：revenue 2dea9c9、filing d5e8723、wiki 1c504e3。下一 FC：FC-203（preview/apply/rollback 事务 + CTRL-03/04）。
