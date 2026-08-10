@@ -1,0 +1,114 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-505",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "068f91631bf6349916df0a5bf977f66469a27a8b",
+    "filing": "6274be2187b450d14492defd03579d6209d1b1cc",
+    "wiki": "f58a9dfb6fb45b2e32837c1678011ba7b42ad662"
+  },
+  "result_triplet": {
+    "revenue": "f794653554274d02cf1192b69edc54cc160463d8",
+    "filing": "6274be2187b450d14492defd03579d6209d1b1cc",
+    "wiki": "47a03117ada0d5b3fe33ba9ab62a6718a3efeaeb"
+  },
+  "plan_sha256": "158fc1e1e4231e3c2dc71822a58931fdca64eff79fc0d4e27b8276a397f4c78a",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tests/test_dropbox_full_chain_fc505.py",
+    "revenue-forecast/tools/ex05_chain_replay.py",
+    "company-wiki/src/company_wiki/source_catalog/scanner.py",
+    "company-wiki/tests/contract/test_source_catalog_dropbox_probe.py",
+    "company-wiki/tests/contract/test_cross_root_dedup_fc603.py"
+  ],
+  "changed_files": [
+    "revenue-forecast/tests/test_dropbox_full_chain_fc505.py",
+    "revenue-forecast/tools/ex05_chain_replay.py",
+    "company-wiki/src/company_wiki/source_catalog/scanner.py",
+    "company-wiki/tests/contract/test_source_catalog_dropbox_probe.py",
+    "company-wiki/tests/contract/test_cross_root_dedup_fc603.py"
+  ],
+  "dependency_receipts": [
+    "company-wiki/assurance/fc/FC-504/12_reviewer_receipt_r2.json (accepted 2026-08-10)"
+  ],
+  "command_registry_sha256": "215b8077169126b2c4a5eca9d8d6237f291757c2559f6ae6e0ae8ff1c806b089",
+  "scenario_results": [
+    {
+      "id": "EX-03",
+      "status": "passed",
+      "note": "full three-repo chain: company-wiki resolve (REUSED_EXACT) -> filing-fetch policy-snapshot containment (hash-bound) -> revenue strict source record -> artifact selection; every stage pure on the exact hit"
+    },
+    {
+      "id": "DBX-01",
+      "status": "passed",
+      "note": "real Dropbox canaries resolve REUSED_EXACT with zero download (2/4 passed: 紫金矿业 FY2024/FY2025; 星环科技 FY2024/FY2025 fail-closed capture_incomplete — their canonical dayu copies carry http not https URLs, a documented data-quality note, never fabricated)"
+    },
+    {
+      "id": "DBX-08",
+      "status": "passed",
+      "note": "cohort activation + rollback: the same request reverts to the pre-cohort response; files kept (assertion visibility flips, no deletion)"
+    },
+    {
+      "id": "FC-505-exit-gate",
+      "status": "passed",
+      "note": "known-gap closed: the v1 scanner now pairs non-focus sibling sidecars and the persist wrapper carries directory-root metadata into acquisition — the old resolver-MISSING green test (test_probe_reused_exact_when_directory_kind_reusable) flipped to REUSED_EXACT per its own pre-committed docstring; canary present -> REUSED_EXACT, no sidecar -> fail closed"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python -m pytest tests/test_dropbox_full_chain_fc505.py -q",
+      "exit_code": 0,
+      "result": "4 passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python tools/ex05_chain_replay.py",
+      "exit_code": 0,
+      "result": "FC-505 chain passed (2 REUSED_EXACT, 2 fail-closed): 紫金矿业 FY2024/2025; 星环科技 capture_incomplete (dayu http URL note); dropbox fingerprint unchanged; downloads=0 catalog_writes=0 provider_calls=0 parser_calls=0 llm_calls=0",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "2142 passed / 2 pre-existing PORT-01 failures (test_check_unique_test_symbols, FC-1205); zero new failures",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_cross_root_dedup_fc603.py tests/contract/test_source_catalog_dropbox_probe.py tests/contract/test_shadow_parity_runner.py -q",
+      "exit_code": 0,
+      "result": "regression green after scanner change (probe flip + fixture consistency)",
+      "cwd": "company-wiki"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0
+  },
+  "codegraph": {
+    "production_callers_before": 0,
+    "production_callers_after": 0,
+    "note": "scanner.py v1 directory branch now pairs non-focus sibling sidecars; persist wrapper carries directory metadata in acquisition — both mutations (reverting either) fail all 4 FC-505 chain tests"
+  },
+  "mutation": {
+    "id": "FC-505-M",
+    "killed": true,
+    "details": "2 mutations killed: M1 non-focus sidecar pairing reverted (4/4 chain tests fail), M2 directory metadata persist reverted (4/4 chain tests fail)"
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "scanner behavior change (sidecar pairing + persist); revert = revert the two wiki commits"
+  },
+  "review": {
+    "reviewer": "",
+    "reviewer_receipt_sha256": "",
+    "decision": "pending",
+    "reviewed_at": "",
+    "note": "honest-implementer: awaits independent reviewer per independent_review_protocol.md"
+  },
+  "provisional_note": "result_triplet sealed at revenue f794653 + wiki 47a0311."
+}
