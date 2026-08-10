@@ -73,8 +73,8 @@
 |---|---|---|---|---|
 | FC-601 | accepted | FC-305、405 | company-wiki | CompanyRaw v1/v2 parity、EX-01、canonical writer 不变（receipt: company-wiki/assurance/fc/FC-601/；reviewer-fc601-independent accepted 2026-08-10；7 tests + 4 mutations killed + EX-01 真实 CN/HK/US 3/3 REUSED_EXACT） |
 | FC-602 | accepted | FC-601 | company-wiki | >=2 dayu-only、EX-02、HK/US identity、capture failure 原因关闭（receipt: company-wiki/assurance/fc/FC-602/；reviewer-fc602-independent accepted 2026-08-10；10 tests + 5 mutations killed + EX-02 真实 dayu-only 2/2 + capture-incomplete 原因关闭） |
-| FC-603 | pending | FC-602 | company-wiki | EX-04~07、AR-09；扫描顺序 mutation 不影响结果 |
-| FC-604 | pending | FC-603、FC-505 | 三仓 | companies/dayu/Dropbox 同请求矩阵；root-specific 业务分支=0 |
+| FC-603 | accepted | FC-602 | company-wiki | EX-04~07、AR-09；扫描顺序 mutation 不影响结果（receipt: company-wiki/assurance/fc/FC-603/；reviewer-fc603-independent accepted 2026-08-10；6 tests + 3 mutations killed + canonical 四层防御确认） |
+| FC-604 | blocked | FC-603、FC-505 | 三仓 | 前置 FC-505 blocked（等待 canary 样本）；同请求矩阵三根契约待样本提供后执行 |
 
 ## 9. Phase 7：统一 resolver
 

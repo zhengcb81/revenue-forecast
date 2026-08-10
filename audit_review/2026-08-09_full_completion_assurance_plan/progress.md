@@ -173,3 +173,11 @@
 - EX-02 真实 dayu-only replay（只读）：1548 FY2021（sha 72b3ed25...）+ FY2023（sha bf1d8a17...）— 其他根无同 hash、catalog 有 active dayu original_primary、meta 完整；live catalog 行数不变。
 - reviewer-fc602-independent **accepted**（3 low 发现：changed_files 多列 1 个文件、两个描述性计数不可复现、v2 adapter 缺 master_identity backfill——后者列入 R4 cutover 前处理）。
 - 当前 triplet：revenue 待提交、filing 6274be2、wiki 4d1a173。下一 FC：FC-603（跨根去重与 deterministic location）。
+
+## 2026-08-10 — FC-603 accepted（跨根去重与 deterministic location；Phase 6 完成）
+
+- **FC-603**（test-only）：EX-04 相同 bytes 三根 → 单 document 多 locations，canonical 按 policy priority + 稳定 tie-break；priority 压过字母序 pin（dayu p10 vs companies p30）；EX-05 同公司/年份不同 pdoc → exact select 不模糊合并；EX-06 amended+original 稳定 revision rule（build_gap_plan）；EX-07 双 catalog 正反扫描顺序 → canonical/duplicate_group 一致；AR-09 跨根重复共享 artifact。
+- canonical 确定性由四层独立机制保证（resolver 路径 SQL ORDER BY + query_documents SQL ORDER BY + _annotate_locations 内存排序 + ranked_locations CTE）——单层 mutation 被其他层掩盖（文档化的纵深防御）；组合 2 层 mutation（resolver 查询 + 内存排序）必杀。
+- 3 mutations killed（priority 删除、resolver 路径排序移除×2层、revision 规则反转）；reviewer-fc603-independent **accepted**（1 low：full-suite exit_code 依赖 codepage——计数与失败身份完全一致）。
+- **Phase 6 完成**（FC-601/602/603 accepted）。FC-604 因前置 FC-505 blocked 而 blocked；Phase 7-15 全链（FC-701~1505）均依赖该链。
+- 当前 triplet：revenue 待提交、filing 6274be2、wiki f58a9df。等待用户提供 >=2 个 Dropbox canary 文件/sidecar 解除 FC-504/505/604 阻塞。
