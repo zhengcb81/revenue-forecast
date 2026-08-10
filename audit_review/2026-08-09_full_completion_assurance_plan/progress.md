@@ -105,3 +105,9 @@
 - **FC-301 accepted**：policy_2x.py（RootPolicySnapshot 2.0 loader/doctor/export）—— per-root 显式 adapter/profile/read_only/reusable/allowed kinds/cohort/write target；fail closed：外部 root 可写、未知 adapter/profile、宽化路由、重复 root；1.x->2.x doctor 只读报告；1.x loader 仍是生产路径（FC-305 cutover）。RootSpec 增 cohort + canonical_write_target（默认 None 保持 1.x）。11 tests；5 mutations killed。reviewer-fc301-independent accepted。
 - **FC-302 accepted**：adapter_dispatch.py（adapter_for 按 adapter_id 解析注册 adapter，fail closed；scan_root_via_adapter 转 _Candidate）；scanner facade v2 shadow 分支经 adapter 派发（不可解析路由才 FacadeError），v1 路径零改动。SidecarFilingAdapter/CompanyRawAdapter/DayuAdapter 均获 production caller。9 tests；3 mutations killed（missing-id gate、registry check、scanner 无条件 raise）。reviewer-fc302-independent accepted。
 - 当前 triplet：revenue 12942b3、filing d5e8723、wiki 0613026。下一 FC：FC-303（v2 scanner shadow parity）。
+
+## 2026-08-10 — FC-303 accepted（changes_required → 修复 → r2 复审通过）
+
+- **FC-303**：shadow_parity.py（v1/v2 frozen corpus 对比：候选数、roles、content hash declared-vs-disk（SPI-03）、identity、exclusion reason；migration-rules ledger 拒绝 phantom rule）。
+- 首轮 reviewer 判 changes_required（F1, medium）：EX-08 命名测试无法区分 v1/v2 输出，narrow fallback mutation 存活。修复：adapter_for 调用 spy + adapter 运行时错误 fail-closed（ScannerFacadeError，绝不回落 v1）。r2 复审（reviewer-fc303-r2）：4 mutations 全部 killed（blunt fallback、narrow fallback、hash check、phantom rule），full suite 2053 passed / 2 pre-existing PORT-01；**accepted**。
+- 当前 triplet：revenue 8821d90、filing d5e8723、wiki ed3da07。下一 FC：FC-304（future root 配置-only 证明）。
