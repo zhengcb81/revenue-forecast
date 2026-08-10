@@ -352,3 +352,9 @@ R1.1/R1.2/R1.3/R2/R3/R4/R5/R6/R7/R8/R9 全部 completed（roadmap 完整执行�
 - **Phase 5 完成**（FC-501~505）；Phase 1-6 task_plan 状态头全部 completed。
 - **维护**：current.json triplet 刷新（4a31fca）、scenario_registry 7 处 canary 引用 + 密封哈希（4a0f5d2）、WU-1500 period 2（86180dd）。
 - 当前 triplet：revenue c1bfd75、filing 6274be2、wiki 47a0311。下一 FC：FC-604（前置全部 accepted）。
+
+## 2026-08-10 — FC-604 实施完成（三根一致性；审查中）
+
+- **生产修复**：resolver `_provider_identity` 回退 `source_provider`——dayu provider=None 缺口。
+- **4 contract tests**：CN/US 跨 companies/dayu/Dropbox 输出 contract 一致（仅 canonical_path 不同）；AST gate 无 root-specific 业务分支。1 mutation killed；wiki 全量 2146 passed / 2 PORT-01。
+- 当前 triplet：revenue 7e10ea6、filing 6274be2、wiki 5a18935。Phase 6 全部 FC 实施完成（FC-601~604），审查收尾中。

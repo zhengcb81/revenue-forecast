@@ -210,3 +210,9 @@
 - 2 mutations killed（撤销任一 scanner 修复 → 4/4 链测试失败）；replay 跑两遍均 exit 0；wiki 全量 2142 passed / 2 pre-existing PORT-01。
 - **Phase 5 完成**（FC-501~505 全部 accepted）：真实 Dropbox canary 2/2 通过 exit gate、resolver-MISSING 缺口关闭。
 - 当前 triplet：revenue 7e79ba5、filing 6274be2、wiki 47a0311。下一 FC：FC-604（三根一致性 canary，前置已全部 accepted）。
+
+## 2026-08-10 — FC-604 实施完成（三根一致性 canary；审查中）
+
+- **生产修复（resolver.py）**：`_provider_identity` 现在回退 `source_provider`——关闭 dayu provider=None 差异（companies/directory 返回映射 provider，dayu 返回 None）。
+- **4 tests**：CN/US 跨三根 contract 一致（13 字段全部相同，仅 canonical_path 不同）、AST gate（resolver 无 root_id/root_kind 业务分支）、Dropbox canary REUSED_EXACT exit gate 回归。1 mutation killed（provider 回退移除→2/4 fail）；wiki 全量 2146 passed / 2 PORT-01。
+- 当前 triplet：revenue 7e10ea6、filing 6274be2、wiki 5a18935。FC-604 独立审查（reviewer-fc604-independent）运行中。
