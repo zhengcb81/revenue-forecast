@@ -119,3 +119,13 @@
 - **FC-305 accepted**：cutover_decision（snapshot v2_scan_shadow 按 cohort 启用）、gate_production_dry_shadow（连续两轮零 diff 才允许生产 dry shadow）、root_fingerprint v1/v2 跨 cutover 不变、v1 只读 fallback 保留。
 - Phase 3 exit gate：新 root 配置-only 成功、三 adapter 有生产调用者、scanner root-specific 写入归零（v2 路径经 adapter_dispatch，无 root-specific metadata container）、v1/v2 shadow 差异全部可解释（migration ledger）、无真实根写入。
 - 当前 triplet：revenue 待提交、filing d5e8723、wiki 36cd215。下一 Phase：FC-401（可恢复 migration engine）。
+
+## 2026-08-10 — Phase 4 完成（FC-401~405 全部 accepted）
+
+- **FC-401 accepted**：migration engine cancel/copy-validation/rollback journal；MIG-04 rollback（shadow 翻转、记录保留、rollback journal）。
+- **FC-402 accepted**：classify_bucket 四桶（eligible/needs_review/unprovable/retired_or_conflict）；文件名仅 evidence hint；中国平安式样本 fail closed。
+- **FC-403 accepted**：remediation proposal/approval 分权（source bytes hash + field evidence + policy hash 绑定；approval 只产 shadow；placeholder/short/stale policy hash fail closed）。
+- **FC-404 accepted**：migration_ledger 质量台账（root/market/kind coverage + missing fields + duplicate location sets + retired 排除）；ledger_is_closed 预 apply 门（分桶和=输入）；只读字节级验证。
+- **FC-405 accepted**：副本灾难演练（中断+resume、disk-full 原子性、rollback+rerun 收敛、幂等、restore-point hashes）；**MIG-07 原子性生产修复**：assertions+journal 单事务提交（此前 journal 失败会留下已提交 assertions）。
+- Phase 4 exit gate：副本迁移可中断恢复且幂等、输入全分桶、零猜测 mutation 被杀死；production apply 仍需单独授权（Phase 14）。
+- 当前 triplet：revenue 待提交、filing d5e8723、wiki 1ff47fb。下一 Phase：FC-501（Dropbox RootPolicy/sidecar contract）。
