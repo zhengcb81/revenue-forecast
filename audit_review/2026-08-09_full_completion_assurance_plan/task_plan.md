@@ -94,7 +94,7 @@ Phase 0 baseline
 - [x] 仍必要的旧待办已映射到 r2 FC；不再需要的项目已 cancelled/superseded；条件性工作已降为 P2/P3。
 - [x] 旧计划不再产生新 receipt 或恢复为独立执行入口。
 
-## Phase 1（契约冻结与验收治理重建）— 状态：pending
+## Phase 1（契约冻结与验收治理重建）— 状态：completed（FC-101~104 accepted 2026-08-10）
 
 ### FC-101：目标 ADR 与 owner contract
 
@@ -132,7 +132,7 @@ Phase 0 baseline
 - FC-101~104 全部 accepted；旧 release manifest 明确标记 superseded，不删除历史。
 - receipt validator mutation 100% killed；后续所有 FC 强制使用新 schema。
 
-## Phase 2（真实运行时控制平面、epoch 与回滚）— 状态：pending
+## Phase 2（真实运行时控制平面、epoch 与回滚）— 状态：completed（FC-201~205 accepted 2026-08-10）
 
 ### FC-201：持久化 RuntimePolicySnapshot
 
@@ -175,7 +175,7 @@ Phase 0 baseline
 - CTRL-01~05 全绿；真实 rollback 可重复；没有“数据 active、flag inactive、响应已变化”的不一致。
 - 未通过前禁止新增 active assertion、Dropbox cohort 或 artifact cohort。
 
-## Phase 3（RootPolicy 2.x、Adapter Registry 与 Scanner 统一）— 状态：pending
+## Phase 3（RootPolicy 2.x、Adapter Registry 与 Scanner 统一）— 状态：completed（FC-301~305 accepted 2026-08-10）
 
 ### FC-301：RootPolicy 2.x 配置迁移
 
@@ -216,7 +216,7 @@ Phase 0 baseline
 - 新 root 配置-only 成功；三 adapter 都有生产调用者；scanner root-specific metadata 写入归零。
 - v1/v2 shadow 差异全部解释；无真实根写入。
 
-## Phase 4（Catalog schema、历史 assertion 与 provenance 迁移）— 状态：pending
+## Phase 4（Catalog schema、历史 assertion 与 provenance 迁移）— 状态：completed（FC-401~405 accepted 2026-08-10）
 
 ### FC-401：可恢复 migration engine
 
@@ -253,7 +253,7 @@ Phase 0 baseline
 - 副本迁移可中断恢复且幂等；所有输入进入明确分桶；零猜测 mutation 被杀死。
 - production apply 仍需单独授权，不能因 Phase 4 代码绿色自动执行。
 
-## Phase 5（Dropbox 功能级接入）— 状态：pending
+## Phase 5（Dropbox 功能级接入）— 状态：completed（FC-501~505 accepted 2026-08-10；4 真实 canary、resolver-MISSING 缺口关闭、exit gate 通过）
 
 ### FC-501：Dropbox RootPolicy 与 sidecar contract
 
@@ -290,7 +290,7 @@ Phase 0 baseline
 - 不再存在“配置有 Dropbox 但 resolver MISSING”绿测；原 known-gap 测试必须改为正确 RED/GREEN。
 - 至少 2 个新鲜 Dropbox-only T2 样本通过；否则不能称 production Dropbox complete。
 
-## Phase 6（companies/dayu adapter 等价迁移与多根泛化）— 状态：pending
+## Phase 6（companies/dayu adapter 等价迁移与多根泛化）— 状态：completed（FC-601~603 accepted 2026-08-10；FC-604 待执行）
 
 ### FC-601：CompanyRawAdapter 等价
 
