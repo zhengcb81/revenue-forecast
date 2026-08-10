@@ -32,7 +32,7 @@
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
 | FC-201 | accepted | FC-104 | company-wiki | CTRL-01/02/05；CAS、未知 flag、并发 snapshot、读取失败关闭（receipt: company-wiki/assurance/fc/FC-201/；reviewer-fc201-independent accepted 2026-08-10；16 tests + 3 mutations） |
-| FC-202 | pending | FC-201 | company-wiki | resolver flag/epoch/cohort SQL 条件；删除任一条件 mutation 必死 |
+| FC-202 | accepted | FC-201 | company-wiki | resolver flag/epoch/cohort SQL 条件；删除任一条件 mutation 必死（receipt: company-wiki/assurance/fc/FC-202/；reviewer-fc202-independent accepted 2026-08-10；15 tests + 6 mutations killed） |
 | FC-203 | pending | FC-202 | company-wiki | CTRL-03/04；preview/apply/rollback、重复/中断/陈旧 hash |
 | FC-204 | pending | FC-203；用户写授权 | company-wiki | 16 active assertion 副本演练、T4 最小 cohort、响应级 rollback |
 | FC-205 | pending | FC-204 | company-wiki | production caller reachability、CTRL 全集、双控制面 forbidden=0 |
