@@ -149,3 +149,11 @@
 - wiki 全量回归暴露 writer freeze 误伤 legacy_observer（write_text）→ 加入
   CONTROL_TOOL_ALLOWLIST（受控只读工具，与 recovery_baseline 同类）。
 - 三仓推送 + CI 轮询进行中。
+
+## 2026-08-10 — WU-1500 legacy 观察周期 2（company-wiki）
+
+- **运行**：`legacy_observer.py --period 2 --read-only`（period 1 已于 2026-08-09 记录，hits=30）。
+- **结果**：`sampled_documents=54`，`legacy_bridge_hits=46`（>0），`shadow_diffs=0`，reasons 全部为 `legacy_bridge_hit`。
+- **回滚演练**：`tests/contract/test_rollback_drills.py` + `test_legacy_observation.py` **12 passed**（仍绿，v1 reader 回滚路径无回归）。
+- **观察门未通过**：legacy_bridge_hits=46 > 0，且高于 period 1 的 30——legacy 仍在生产被读取。原因：resolver `_source_metadata` 的 legacy bridge（无 runtime_policy snapshot 时默认 `legacy_bridge_allowed=True`）在真实解析请求（FC-504/505 canary 解析、EX-01/EX-02 样本）中命中 acquisition/dayu_meta 容器；FC-505 后 directory 根元数据也写入 acquisition 容器（采样面扩大，sampled_documents 46→54）。**WU-1501 不可启动**，继续观察；需连续两个周期 hits=0 才通过观察门。
+- 下一周期：period 3（>=24h 后，或按调度）。
