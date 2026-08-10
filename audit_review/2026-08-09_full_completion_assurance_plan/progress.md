@@ -221,3 +221,10 @@
 
 - **reviewer-fc604-independent accepted**（7/7 步：triplets、密封哈希、diff=resolver.py+测试、focused 4/4、全量 2146 passed / 2 PORT-01、M1 killed 2/4、validator exit 0）。findings 全部 low/info（含 manifest current_triplet stale 提示）。
 - **Phase 6 完成**（FC-601~604 accepted）。当前 triplet：revenue 待刷新、filing 6274be2、wiki 4d9a5fc。下一 FC：FC-701（normalized-only resolver）。
+
+## 2026-08-11 — FC-701 实施完成（normalized-only resolver；审查中）
+
+- **生产改动（resolver.py）**：`_remediation_pending` 排除——source 有 pending remediation proposal 时 trace `remediation_pending` 并拒绝复用（证据被争议直到 reviewer 批准更正）。
+- **7 tests**：v2 reader 消费 active normalized assertion（observer 零 legacy hit）、bridge-off 无 assertion fail closed、bridge on 时 v2 assertion 仍优先、retired 查询级排除、AST gate 冻结 legacy owner 集（adversarial probe 拒绝）。2 mutations killed（remediation 排除移除、v2 不消费 assertion）。
+- **config_doctor 契约同步**：dropbox_stock 路径独立校验（CONFIG-DBX-04）、filing-fetch 走私 allowed_handle_roots 违规（CONFIG-DBX-03）、旧测试重写；drift_patrol 全绿。
+- 全量 2153 passed / 2 PORT-01。当前 triplet：revenue d662c82、filing 6274be2、wiki f4e941a。FC-701 审查（reviewer-fc701-independent）运行中。
