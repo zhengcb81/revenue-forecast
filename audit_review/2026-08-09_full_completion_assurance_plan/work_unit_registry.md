@@ -35,7 +35,7 @@
 | FC-202 | accepted | FC-201 | company-wiki | resolver flag/epoch/cohort SQL 条件；删除任一条件 mutation 必死（receipt: company-wiki/assurance/fc/FC-202/；reviewer-fc202-independent accepted 2026-08-10；15 tests + 6 mutations killed） |
 | FC-203 | accepted | FC-202 | company-wiki | CTRL-03/04；preview/apply/rollback、重复/中断/陈旧 hash（receipt: company-wiki/assurance/fc/FC-203/；reviewer-fc203-independent accepted 2026-08-10；11 tests + 3 mutations + fault injection） |
 | FC-204 | accepted | FC-203；用户写授权 | company-wiki | 16 active assertion 副本演练、T4 最小 cohort、响应级 rollback（receipt: company-wiki/assurance/fc/FC-204/；reviewer-fc204-independent accepted 2026-08-10；生产状态只读复核通过） |
-| FC-205 | pending | FC-204 | company-wiki | production caller reachability、CTRL 全集、双控制面 forbidden=0 |
+| FC-205 | accepted | FC-204 | company-wiki | production caller reachability、CTRL 全集、双控制面 forbidden=0（receipt: company-wiki/assurance/fc/FC-205/；reviewer-fc205-independent accepted 2026-08-10；4 gate tests + adversarial + 2 wiring mutations killed） |
 
 ## 5. Phase 3：RootPolicy 与扫描解耦
 
