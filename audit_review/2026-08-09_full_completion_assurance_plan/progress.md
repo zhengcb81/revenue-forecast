@@ -195,3 +195,11 @@
 - 注册 hashed sample ID（sha256(root_id|relative_path)，相对路径，无绝对路径泄露）；真实 root 盘点 eligible=4（原 0）、canary_decision=selectable；跨根重复按 EX-04 记录（duplicate sets 2890→2894）。
 - reviewer-fc504-r2 **accepted**（2 low：F1 no-remote-branch；F2 星环字段源自 dayu_meta（FY2025 ingest_complete=False）——符合用户决策，建议后续措辞用"catalog dayu_meta 记录"）。
 - **FC-505 解阻**；FC-604 解阻。当前 triplet：revenue 待提交、filing 6274be2、wiki 47f2e4c。下一 FC：FC-505（三仓全链 E2E）。
+
+## 2026-08-10 — FC-505 实施完成（三仓全链 E2E；审查进行中）
+
+- **生产修复（wiki scanner.py，2 处）**：v1 目录分支为 non-focus 目录配对兄弟 .source.json 元数据；persist wrapper 将 directory 根元数据写入 acquisition 容器——**"配置有 Dropbox 但 resolver MISSING"已知缺口关闭**（Phase 5 exit gate 的 RED/GREEN 修正；probe 测试按其自身 docstring 预留翻转至 REUSED_EXACT）。两个 mutation（撤销任一修复）均杀全部 4 个链测试；parity 回归绿。
+- **revenue 链测试（4 tests）**：三仓全链（company-wiki resolve → filing-fetch 政策快照 containment → revenue source record → artifact selection）exact hit 零副作用；DBX-08 cohort rollback 同请求还原（文件保留）；canary 在 → REUSED_EXACT、无 sidecar → fail closed。
+- **真实 replay（tools/ex05_chain_replay.py，只读）**：紫金矿业 FY2024/2025 REUSED_EXACT（exit gate ≥2 通过）；星环科技 FY2024/2025 fail-closed capture_incomplete（canonical dayu 副本为 http URL——数据质量问题，非伪造）；Dropbox root fingerprint 不变；downloads/catalog_writes/provider/parser/LLM 全 0。
+- wiki 全量 2142 passed / 2 pre-existing PORT-01；revenue pre-commit 381 passed + E2E 绿 + install-sync 97 files MATCH。
+- 当前 triplet：revenue 4a2c65f、filing 6274be2、wiki 47a0311。FC-505 独立审查（reviewer-fc505-independent）运行中。
