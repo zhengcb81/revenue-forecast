@@ -91,3 +91,11 @@
 - **FC-202 完成（RED→GREEN→accepted）**：resolver 强制 ActivationSnapshot —— `resolver_visibility` 派生 reader/epoch/cohort/bridge；`_v2_assertion_metadata` SQL 过滤 decision+visibility+epoch+cohort（v1 只见 legacy、v2 需 epoch+cohort 精确匹配，缺省 fail closed）；`_source_metadata` legacy bridge 按 snapshot 门控；assertion_service 同步过滤（无旁路）；CLI resolve 起点固定 snapshot。15 tests；SQL 级 6 mutations killed（guard 级存活属纵深防御，已记录）。wiki 10f79354→d5830bf→1c504e3（closure）。reviewer-fc202-independent accepted。
 - 两 FC 的 receipt 中 stale 计数均在 closure 时按 reviewer replay 修正并注明（低严重度 finding，不影响 verdict）。
 - 当前 triplet：revenue 2dea9c9、filing d5e8723、wiki 1c504e3。下一 FC：FC-203（preview/apply/rollback 事务 + CTRL-03/04）。
+
+## 2026-08-10 — Phase 2 完成（FC-201~205 全部 accepted）
+
+- **FC-203 accepted**：activation.py（apply/rollback 单事务 + activation_journal 不可变回执 + preview/apply/rollback CLI）；CTRL-03 原子性（未知 id/晚批失败全回滚，fault injection 零半激活）、CTRL-04 同请求 before→after→restored trace、重复/错误 cohort/陈旧 policy hash fail closed。11 tests + 3 mutations + sqlite authorizer fault injection。reviewer-fc203-independent accepted。
+- **FC-204 accepted（生产写入，用户 change-window 授权 2026-08-10）**：map_existing_activation 将 16 条 remediation active assertions 映射到 canary cohort/epoch（receipt d4e2a160...）；baseline（schema 1.2.0、FK 0、authoritative hashes）；副本演练（16 行真实数据 map+rollback 通过）；runtime_policy.json 注册 canary cohort + flag off + bridge on（用户决策：注册 cohort 暂不翻 flag——实测 v2_resolve_active=true 会使 13,806 legacy-only 文档不可解析，违反 flag 前置 shadow diff=0）。WU-905 矛盾关闭：回执+DB+resolver+flag 全一致。4 tests。reviewer-fc204-independent accepted（生产状态只读复核 5a-5g 全过）。
+- **FC-205 accepted**：architecture_gate 增三不变量（生产 resolver/CLI 消费 snapshot、flags/runtime_policy/gate 外零硬编码 flag dict、legacy bridge loop 仅 resolver）；T4 最小 cohort rollback 改变真实 resolver 响应。adversarial evil-module 双 gate RED、2 wiring mutations killed、leg04 freeze gate 兼容。4 tests。reviewer-fc205-independent accepted。
+- Phase 2 exit gate：CTRL-01~05 全绿、真实 rollback 可重复、无"数据 active/flag inactive/响应变化"不一致（WU-905 关闭）、未新增 active assertion/Dropbox cohort/artifact cohort。
+- 当前 triplet：revenue b80db06、filing d5e8723、wiki be48c87。下一 Phase：FC-301（RootPolicy 2.x 配置迁移）。
