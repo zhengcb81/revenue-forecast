@@ -51,7 +51,7 @@
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
-| FC-401 | pending | FC-305 | company-wiki | MIG-01/02/03/07；副本 dry-run/resume/idempotency/资源上界 |
+| FC-401 | accepted | FC-305 | company-wiki | MIG-01/02/03/07；副本 dry-run/resume/idempotency/资源上界（receipt: company-wiki/assurance/fc/FC-401/；reviewer-fc401-independent accepted 2026-08-10；7 tests + 3 mutations killed） |
 | FC-402 | pending | FC-401 | company-wiki | SAFE-01~04、MIG-05；零猜测、四分桶守恒 |
 | FC-403 | pending | FC-402 | company-wiki | proposal/approval/activation 分权；伪 receipt/policy hash mutation |
 | FC-404 | pending | FC-403 | company-wiki | root/market/kind coverage ledger；输入=全部分桶之和 |
