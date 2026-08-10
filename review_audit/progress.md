@@ -336,3 +336,12 @@
 
 ### 全部 12 项任务完成
 R1.1/R1.2/R1.3/R2/R3/R4/R5/R6/R7/R8/R9 全部 completed（roadmap 完整执行）。
+
+## 2026-08-10 — FCAP r2 Phase 5/6 推进（FC-502~603 + FC-505 实施）
+
+- **已 accepted（7 个 FC）**：FC-502（SidecarAdapter 生产扫描）、FC-503（Dropbox 历史候选治理，真实 root 只读盘点 eligible=0）、FC-504（canary 机制 r1 + 4 真实样本 r2；用户决策放宽排他性条款）、FC-601（CompanyRawAdapter 等价 + EX-01 CN/HK/US）、FC-602（DayuAdapter 等价 + EX-02 dayu-only）、FC-603（跨根去重 + deterministic location，canonical 四层防御确认）。
+- **FC-505 实施完成（审查中）**：关闭"配置有 Dropbox 但 resolver MISSING"已知缺口（v1 non-focus sidecar 配对 + directory 根元数据持久化；probe 测试按 docstring 预留翻转）；三仓全链测试 4 绿（零副作用、DBX-08 rollback、exit gate）；真实 replay 紫金矿业 2/2 REUSED_EXACT、星环 fail-closed（dayu http URL 数据质量问题）；2 mutations killed。
+- **错误与修复**：receipt 伪造哈希（FC-503 base triplet）→ 用真实 git rev-parse 修正；Windows mtime pyc 陈旧导致 mutation 误判 → pyc 清理 + -B 复放；canonical 单层 mutation 被其余防御层掩盖 → 组合 2 层 mutation；v1 scanner 不配对 non-focus sidecar 导致 canary 不可解析 → 生产修复。
+- **WU-1500 观察周期 2**：legacy_bridge_hits=46（>0，legacy 仍在生产读取），观察门未通过，WU-1501 不可启动。
+- **验证**：wiki 全量 2142 passed / 2 pre-existing PORT-01（FC-1205 scope）；revenue pre-commit 381 passed + E2E + install-sync 97 MATCH；parity 回归绿。
+- 当前 triplet：revenue 4a2c65f、filing 6274be2、wiki 47a0311。
