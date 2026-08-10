@@ -216,3 +216,8 @@
 - **生产修复（resolver.py）**：`_provider_identity` 现在回退 `source_provider`——关闭 dayu provider=None 差异（companies/directory 返回映射 provider，dayu 返回 None）。
 - **4 tests**：CN/US 跨三根 contract 一致（13 字段全部相同，仅 canonical_path 不同）、AST gate（resolver 无 root_id/root_kind 业务分支）、Dropbox canary REUSED_EXACT exit gate 回归。1 mutation killed（provider 回退移除→2/4 fail）；wiki 全量 2146 passed / 2 PORT-01。
 - 当前 triplet：revenue 7e10ea6、filing 6274be2、wiki 5a18935。FC-604 独立审查（reviewer-fc604-independent）运行中。
+
+## 2026-08-11 — FC-604 accepted（三根一致性 canary；Phase 6 完成）
+
+- **reviewer-fc604-independent accepted**（7/7 步：triplets、密封哈希、diff=resolver.py+测试、focused 4/4、全量 2146 passed / 2 PORT-01、M1 killed 2/4、validator exit 0）。findings 全部 low/info（含 manifest current_triplet stale 提示）。
+- **Phase 6 完成**（FC-601~604 accepted）。当前 triplet：revenue 待刷新、filing 6274be2、wiki 4d9a5fc。下一 FC：FC-701（normalized-only resolver）。

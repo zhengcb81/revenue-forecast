@@ -67,14 +67,14 @@
 | FC-504 | accepted | FC-503；用户样本授权（2026-08-10 用户决策：排他性条款放宽） | company-wiki | 机制 r1 accepted + 样本 r2 accepted（reviewer-fc504-independent 2026-08-10 + reviewer-fc504-r2 2026-08-10；4 真实 canary 注册：紫金矿业 601899 FY2024/25 + 星环科技 688031 FY2024/25；eligible=4；跨根重复按 EX-04 记录） |
 | FC-505 | accepted | FC-504 | 三仓 | EX-03、DBX-01~08、IDX 适用项、external write=0、rollback trace（receipt: revenue-forecast/assurance/fc/FC-505/；reviewer-fc505-independent accepted 2026-08-10；4 chain tests + 2 mutations killed + 真实 replay 2/2 REUSED_EXACT + resolver-MISSING 缺口关闭） |
 
-## 8. Phase 6：companies/dayu 等价与多根泛化
+## 8. Phase 6：companies/dayu 等价与多根泛化 — 状态：completed（2026-08-11）
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
 | FC-601 | accepted | FC-305、405 | company-wiki | CompanyRaw v1/v2 parity、EX-01、canonical writer 不变（receipt: company-wiki/assurance/fc/FC-601/；reviewer-fc601-independent accepted 2026-08-10；7 tests + 4 mutations killed + EX-01 真实 CN/HK/US 3/3 REUSED_EXACT） |
 | FC-602 | accepted | FC-601 | company-wiki | >=2 dayu-only、EX-02、HK/US identity、capture failure 原因关闭（receipt: company-wiki/assurance/fc/FC-602/；reviewer-fc602-independent accepted 2026-08-10；10 tests + 5 mutations killed + EX-02 真实 dayu-only 2/2 + capture-incomplete 原因关闭） |
 | FC-603 | accepted | FC-602 | company-wiki | EX-04~07、AR-09；扫描顺序 mutation 不影响结果（receipt: company-wiki/assurance/fc/FC-603/；reviewer-fc603-independent accepted 2026-08-10；6 tests + 3 mutations killed + canonical 四层防御确认） |
-| FC-604 | pending | FC-603、FC-505 | 三仓 | companies/dayu/Dropbox 同请求矩阵；root-specific 业务分支=0（前置已全部 accepted，可执行） |
+| FC-604 | accepted | FC-603、FC-505 | 三仓 | companies/dayu/Dropbox 同请求矩阵；root-specific 业务分支=0（receipt: company-wiki/assurance/fc/FC-604/；reviewer-fc604-independent accepted 2026-08-11；4 tests + 1 mutation killed + provider 归一化修复） |
 
 ## 9. Phase 7：统一 resolver
 
