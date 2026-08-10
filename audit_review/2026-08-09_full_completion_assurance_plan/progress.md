@@ -111,3 +111,11 @@
 - **FC-303**：shadow_parity.py（v1/v2 frozen corpus 对比：候选数、roles、content hash declared-vs-disk（SPI-03）、identity、exclusion reason；migration-rules ledger 拒绝 phantom rule）。
 - 首轮 reviewer 判 changes_required（F1, medium）：EX-08 命名测试无法区分 v1/v2 输出，narrow fallback mutation 存活。修复：adapter_for 调用 spy + adapter 运行时错误 fail-closed（ScannerFacadeError，绝不回落 v1）。r2 复审（reviewer-fc303-r2）：4 mutations 全部 killed（blunt fallback、narrow fallback、hash check、phantom rule），full suite 2053 passed / 2 pre-existing PORT-01；**accepted**。
 - 当前 triplet：revenue 8821d90、filing d5e8723、wiki ed3da07。下一 FC：FC-304（future root 配置-only 证明）。
+
+## 2026-08-10 — Phase 3 完成（FC-301~305 全部 accepted）
+
+- **FC-303 accepted**（changes_required F1 → 修复 → r2 复审通过）：shadow_parity.py v1/v2 frozen corpus 对比 + migration-rules ledger；EX-08 加强（adapter_for spy + adapter 错误 fail-closed 不回落 v1）。
+- **FC-304 accepted**：future root 配置-only 证明（2.x loader → v2 scan → snapshot export 零产品代码改动）；no_root_specific_hardcode gate。
+- **FC-305 accepted**：cutover_decision（snapshot v2_scan_shadow 按 cohort 启用）、gate_production_dry_shadow（连续两轮零 diff 才允许生产 dry shadow）、root_fingerprint v1/v2 跨 cutover 不变、v1 只读 fallback 保留。
+- Phase 3 exit gate：新 root 配置-only 成功、三 adapter 有生产调用者、scanner root-specific 写入归零（v2 路径经 adapter_dispatch，无 root-specific metadata container）、v1/v2 shadow 差异全部可解释（migration ledger）、无真实根写入。
+- 当前 triplet：revenue 待提交、filing d5e8723、wiki 36cd215。下一 Phase：FC-401（可恢复 migration engine）。
