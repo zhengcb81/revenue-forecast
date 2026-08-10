@@ -203,3 +203,10 @@
 - **真实 replay（tools/ex05_chain_replay.py，只读）**：紫金矿业 FY2024/2025 REUSED_EXACT（exit gate ≥2 通过）；星环科技 FY2024/2025 fail-closed capture_incomplete（canonical dayu 副本为 http URL——数据质量问题，非伪造）；Dropbox root fingerprint 不变；downloads/catalog_writes/provider/parser/LLM 全 0。
 - wiki 全量 2142 passed / 2 pre-existing PORT-01；revenue pre-commit 381 passed + E2E 绿 + install-sync 97 files MATCH。
 - 当前 triplet：revenue 4a2c65f、filing 6274be2、wiki 47a0311。FC-505 独立审查（reviewer-fc505-independent）运行中。
+
+## 2026-08-10 — FC-505 accepted（三仓全链 E2E；Phase 5 完成）
+
+- **reviewer-fc505-independent accepted**（8 low/info findings，无阻塞：F1 no-remote-branch、F2 revenue 新测试文件 ruff F401 未用 import、F3 full-suite exit_code 记录差异、F4 wiki base anchor 早于 FC-504 closure（FC-505 自身 diff 精确）、F5 星环 http-URL 数据质量、F6 catalog 计数因每小时生产扫描增长（replay 前后一致，只读可证）、F7 程序预期陈旧、F8 审查期间 revenue fcap 上并发 doc-only 提交（allowlist 未动））。
+- 2 mutations killed（撤销任一 scanner 修复 → 4/4 链测试失败）；replay 跑两遍均 exit 0；wiki 全量 2142 passed / 2 pre-existing PORT-01。
+- **Phase 5 完成**（FC-501~505 全部 accepted）：真实 Dropbox canary 2/2 通过 exit gate、resolver-MISSING 缺口关闭。
+- 当前 triplet：revenue 7e79ba5、filing 6274be2、wiki 47a0311。下一 FC：FC-604（三根一致性 canary，前置已全部 accepted）。
