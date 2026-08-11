@@ -90,7 +90,7 @@
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
-| FC-801 | pending | FC-704 | company-wiki | CloseGap contract；DL-02/03/07/09、LT-10；事务 journal |
+| FC-801 | accepted | FC-704 | company-wiki | CloseGap contract；DL-02/03/07/09、LT-10；事务 journal（receipt: company-wiki/assurance/fc/FC-801/；reviewer-fc801-independent accepted 2026-08-11；7+2 tests + M1/M4 killed（policy 绑定、commit 绕过经 LT-10 guard）+ 固定步骤事务 + authorization policy_hash 绑定 + CLI close-gap） |
 | FC-802 | pending | FC-801 | filing-fetch | allow_download 两分支；GAP 不误映射 not_found；不复制策略 |
 | FC-803 | pending | FC-802 | filing-fetch | DL-01~10、LT-01~10；只补 gap、第二次 fetch/write=0 |
 | FC-804 | pending | FC-803 | company-wiki/filing | DL-08/09、OPS-02；single-flight、崩溃恢复、幂等 |

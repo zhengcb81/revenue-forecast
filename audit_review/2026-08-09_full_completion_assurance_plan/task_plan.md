@@ -354,7 +354,7 @@ Phase 0 baseline
 - normalized resolver 在三根 exact 场景全绿；legacy bridge 可观测、可关、可回滚。
 - 仍命中 bridge 时不得进入最终 cleanup。
 
-## Phase 8（latest/gap/授权下载完整闭环）— 状态：pending
+## Phase 8（latest/gap/授权下载完整闭环）— 状态：in_progress（FC-801 completed、accepted；FC-802 执行中）
 
 ### FC-801：CloseGap transaction contract
 

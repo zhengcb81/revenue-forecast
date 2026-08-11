@@ -270,3 +270,11 @@
 - **r1 CHANGES_REQUIRED → r2 ACCEPTED**：F1（门不可达）修复 + F2（receipt base hash 修正 f610c1a752…）。M1 单窗口门 kill leg10b+leg10g；M2 bridge-off 门移除 kill leg07/09；M3 可写 store kill leg11。
 - 观察继续：周期 3 hits=6>0，close gate 诚实关闭；两个>=24h 零 hit 窗口达成前 bridge 不关（WU-1500 时间门继续）。
 - 当前 triplet：revenue 76d1602、filing 85731b2、wiki 7e8c35f。**Phase 7 exit gate 达成**（normalized resolver 三根 exact 全绿 FC-604、bridge 可观测/可关/可回滚 FC-705）。下一 Phase 8：FC-801（latest/gap/CloseGap）。
+
+## 2026-08-11 — FC-801 accepted（CloseGap transaction contract；Phase 8 启动）
+
+- **CloseGapTransaction**（close_gap.py）：固定步骤事务 — policy 绑定（DL-03）→ gap 重验（DL-03，metadata only）→ authorize+fetch staging（DL-02）→ validate（DL-07）→ canonical commit（DL-09 幂等）→ re-resolve（FC-704 envelope）。journal 记录每步状态；partial failure 绝不报 completed（LT-10 guard：re-resolve 必须 REUSED）。
+- **DownloadAuthorization 增加 policy_hash 绑定**（receipt hash 纳入；CG-08）——旧授权跨策略不可复用。
+- **Mutations**：M1 policy 检查移除 → CG-01 死；M2 gap 重验移除 → CG-02 死；M3 staging 清理移除 → CG-04 死；M4 commit 绕过 → CG-07 死（LT-10 guard 独立证明承重）。
+- **reviewer-fc801-independent accepted 一轮过**：步骤顺序核验、M1/M4 独立重放击杀、20 focused + 50 cluster green、validator OK。findings 全 informational（request_id 相等性未运行时强制、CLI --mode 惰性等）。
+- 当前 triplet：revenue d362a49、filing 85731b2、wiki d09243f。下一 FC：FC-802（filing-fetch latest 编排：GAP 不再误映射 not_found）。
