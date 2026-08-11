@@ -102,7 +102,7 @@
 |---|---|---|---|---|
 | FC-901 | accepted | FC-405、704 | company-wiki | 7712 artifacts dry-run 分桶、MIG-01/03/05、零删除（receipt: company-wiki/assurance/fc/FC-901/；reviewer-fc901-independent accepted 2026-08-11；11 tests + M1/M2 killed + 全量套件 2209 passed 零新失败；can_accept gate exit 0） |
 | FC-902 | accepted | FC-901 | company-wiki | SourceBundle production caller>=1、snapshot 一致、unknown role fail closed（receipt: company-wiki/assurance/fc/FC-902/；reviewer-fc902-independent accepted 2026-08-11；7 tests + M1/M2/M3 killed + 全量套件零新失败（1 pre-existing worker-bootstrap timing flake 证明在 base 复现）+ can_accept gate exit 0） |
-| FC-903 | pending | FC-902 | filing-fetch | N/N-1 bundle contract；unavailable 显式；转发不改决策 |
+| FC-903 | accepted | FC-902 | filing-fetch | N/N-1 bundle contract；unavailable 显式；转发不改决策（receipt: filing-fetch/assurance/fc/FC-903/；reviewer-fc903-independent accepted 2026-08-11；9 tests + M1/M2/M3 killed + 全量 276 passed 零失败 + pre-commit hermetic/E2E/install-sync 全绿 + can_accept gate exit 0） |
 | FC-904 | pending | FC-903 | revenue | selector production caller；AR-01~09；最小 DAG 重算 |
 | FC-905 | pending | FC-904 | 三仓 | journal 权威计数、prompt-injection receipt、hash/version mutation |
 | FC-906 | pending | FC-905；必要时生产迁移授权 | 三仓 | 每类真实 bound artifact>=1；T2 artifact_read>0、producer=0 |

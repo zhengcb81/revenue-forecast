@@ -356,3 +356,20 @@
 - **result triplet**：revenue ca213c9 / filing 81d9cd9 / wiki **fd4f50b**（feat 364bc59 + docs fd4f50b）。
 - **registry FC-902 → accepted**；Phase 9 进度 2/6。
 - **下一步 FC-903**（filing-fetch）：N/N-1 envelope/bundle contract——旧 company-wiki 无 bundle 时显式 `bundle_status=unavailable`，不伪造空绿色；不修改 artifact validity 决策。
+
+## 2026-08-11 — FC-903 implementation progress（filing-fetch N/N-1 bundle 契约）
+
+- **RED 证实**：`filing-fetch/tests/test_fc903_bundle_contract.py`（9 tests）——N-1 envelope 缺 bundle_status 当前被拒（upstream_error）、available 无校验、validate 返回 None。
+- **GREEN**：① scripts/filing_contracts.py `validate_resolution_envelope` 返回 envelope dict；bundle_status 缺失 → 归一化为显式 "unavailable"（复制，不改输入 dict）；available → 要求 sha256 bundle_hash + bundle dict 且 bundle_hash 匹配 + schema_version="1.0"（fail closed）；② scripts/fetch_filing.py handle 构建使用归一化返回。
+- **Mutations**：M1（N-1 归一化禁用）→ test_01 死；M2（available 校验禁用）→ test_04 死；M3（返回 None）→ test_03 死。均已还原。
+- **回归**：test_fc802_gap_orchestration/test_bundle_compat/test_bundle_fidelity/test_latest_mode 127 passed + 27 subtests；ruff/compile 干净。
+- **下一步**：全量 filing 套件（跑批中）→ commit → receipt → 独立 reviewer。
+
+## 2026-08-11 — FC-903 ACCEPTED（filing-fetch N/N-1 bundle 契约）
+
+- **独立 reviewer accepted**：reviewer-fc903-independent 从干净 worktree 2e47089 重放——focused 9 passed、sibling 127 passed/27 subtests、全量 276 passed/11 skipped（3 T3 无 env）/54 subtests 零失败、M1/M2/M3 三杀（N-1 归一化禁用→test_01 死；available 校验禁用→test_04 死；return None→test_03 死）、RED replay（base 无 return envelope）、字节级还原（blob b3bccaf == HEAD）。
+- **2 条非阻塞观察**（recorded in REVIEWER_REPORT.md）：① diff 预算 213 行 vs contract 写的 ≤200（措辞出入）；② receipt codegraph note 写 2 个调用者，实际 1 个调用点（fetch_filing.py:791，close-gap binding 只读 policy_hash 不调 validate）。已密封证据不篡改，registry 记录更正。
+- **can_accept gate exit 0**（reviewer_receipt_sha256 bcfb14e3…、reviewed_at 2026-08-11T09:40:00Z）。
+- **result triplet**：revenue 1c5f127 / filing **959d04c**（feat 2e47089 + docs 959d04c）/ wiki fd4f50b。
+- **registry FC-903 → accepted**；Phase 9 进度 3/6。
+- **下一步 FC-904**（revenue）：source_preparation.py 必须调用 selector；按 DAG 只重算缺失角色；删除 `payload.get(selected_artifacts)` 无来源路径；记录 artifact_read 和 producer events；AR-01~09 从用户入口跨三进程运行。
