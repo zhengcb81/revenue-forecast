@@ -82,8 +82,25 @@ def prepare_source(
             f"{proc.stderr.strip()[-800:]}"
         )
     payload = json.loads(proc.stdout)
-    # the client prints the handle dict directly (no wrapper)
+    # the client prints the handle dict directly (no wrapper); FC-704: the
+    # handle carries the deep-validated resolution envelope (journal-derived
+    # outcome + download event evidence) when company-wiki supplied one.
     handle = payload if isinstance(payload, dict) else {}
+    # FC-704: download evidence comes from the resolution envelope, never
+    # inferred from whether a handle was returned (scenario_matrix §2).
+    # No envelope => fail closed: a receipt claiming zero downloads without
+    # event evidence is exactly the fake the plan forbids.
+    envelope = handle.get("resolution_envelope")
+    if not isinstance(envelope, dict):
+        raise RuntimeError(
+            "company-wiki resolution envelope missing — download evidence "
+            "cannot be derived; fail closed instead of fabricating counts"
+        )
+    download_events = envelope.get("download_events")
+    if isinstance(download_events, bool) or download_events not in (0, 1):
+        raise RuntimeError(
+            f"invalid download_events in resolution envelope: {download_events!r}"
+        )
     # Reuse receipt: artifact selection happens in company_wiki_source
     record = company_wiki_source.build_revenue_source_record(
         handle,
@@ -96,7 +113,11 @@ def prepare_source(
     record["reuse_receipt"] = {
         "parser_calls": 0,
         "llm_calls": 0,
-        "download_calls": 0 if handle else 1,
+        "download_calls": download_events,
+        "outcome": envelope.get("outcome"),
+        "policy_hash": envelope.get("policy_hash"),
+        "activation_epoch": envelope.get("activation_epoch"),
+        "bundle_status": envelope.get("bundle_status"),
         "selected_artifacts": payload.get("selected_artifacts", []),
     }
     return record
