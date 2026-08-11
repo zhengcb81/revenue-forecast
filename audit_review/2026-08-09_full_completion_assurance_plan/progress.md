@@ -373,3 +373,20 @@
 - **result triplet**：revenue 1c5f127 / filing **959d04c**（feat 2e47089 + docs 959d04c）/ wiki fd4f50b。
 - **registry FC-903 → accepted**；Phase 9 进度 3/6。
 - **下一步 FC-904**（revenue）：source_preparation.py 必须调用 selector；按 DAG 只重算缺失角色；删除 `payload.get(selected_artifacts)` 无来源路径；记录 artifact_read 和 producer events；AR-01~09 从用户入口跨三进程运行。
+
+## 2026-08-11 — FC-904 implementation progress（revenue source_preparation 消费 selector）
+
+- **RED 证实**：`tests/test_fc904_artifact_selection.py`（11 tests）→ ImportError: select_artifact_roles（正确 RED）。
+- **GREEN**：① scripts/company_wiki_source.py：`_bundle_from_handle`（bundle 现在在 resolution_envelope 上，FC-902 迁移）、`select_artifact_roles(handle, roles, expected_provenance) -> (artifact_read, producer_events)`——artifact_read = valid_handles 中 reusable 且 **DAG 祖先链全部 reusable** 的角色（AR-03：normalized 失效 → 其派生全部不读）；producer_events = 非复用角色的 **DAG closure**（role + 传递依赖，ROLE_DEPENDENCIES 从 company_wiki.source_catalog.artifact_dag **导入**，单一事实来源，无重复副本）；select_reusable_artifacts 数据源改为 envelope bundle；② scripts/source_preparation.py：删除无来源 `payload.get("selected_artifacts", [])`，receipt 记录 artifact_read/producer_events。
+- **修复的 2 个实现问题**：① _dag_ancestors 遍历方向反转（current in parents 表示 current 是子角色）→ 改为 ROLE_DEPENDENCIES[role] 直接父列表传递遍历；② 测试 fixture 不完整（AR-06 markdown 缺 normalized 祖先）。
+- **Mutations**：M1（DAG 祖先门禁用）→ test_ar03 死；M2（bundle 来源移除）→ test_ar01 死；M3（盲目全量重算）→ test_ar02 死。均已还原，11 passed。
+- **回归**：test_source_preparation.py 9 passed；ruff/compile 干净。
+- **下一步**：全量 revenue 套件（跑批中）→ commit → receipt → 独立 reviewer。
+
+## 2026-08-11 — FC-904 全量套件修复：WU-5.4 时代测试迁移到 FC-902 契约
+
+- **18 个现有测试因 FC-902 契约迁移失败**：test_bundle_artifact_selection / test_bundle_e2e_d01 / test_preparation_e2e_failure / test_source_consumption 全部通过 `handle["source_bundle"]`（pre-FC-902 死字段）构造 fixture。
+- **修复**：4 个测试文件的 fixture 迁移到 envelope 契约（bundle 在 `resolution_envelope.bundle`）——test_bundle_artifact_selection 改 helper + 2 个畸形 case；test_bundle_e2e_d01 脚本化转换 6 个构造点 + 3 个访问点（注意 8/12 空格缩进变体，str.count 子串陷阱）；test_preparation_e2e_failure 重写（新增 _envelope helper）；test_source_consumption 改 helper + 畸形 case。
+- **全量 396 passed + 106 subtests 零失败**；ruff 干净。
+- **教训**：跨 FC 契约迁移（bundle 从 handle 移到 envelope）会留下死字段上的旧测试——新 FC 必须 grep 旧字段的所有消费者（含测试 fixture），不能只改生产代码。
+- **下一步**：commit → receipt → 独立 reviewer。

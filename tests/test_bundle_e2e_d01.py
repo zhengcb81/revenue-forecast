@@ -60,7 +60,13 @@ def test_e2e_d01_normalized_artifact_parser_zero(tmp_path):
         "mime_type": "application/pdf",
         "capture_ready": True,
         "canonical_location_id": "loc-1",
-        "source_bundle": {
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0",
+            "outcome": "reused_existing",
+            "download_events": 0,
+            "bundle_status": "available",
+            "bundle_hash": "b" * 64,
+            "bundle": {
             "schema_version": "1.0",
             "source": {"document_id": "doc-1"},
             "valid_handles": {
@@ -73,6 +79,7 @@ def test_e2e_d01_normalized_artifact_parser_zero(tmp_path):
             },
             "invalid": {},
             "bundle_hash": "b" * 64,
+        },
         },
     }
     artifacts = select_reusable_artifacts(handle, ("normalized", "summary"))
@@ -132,7 +139,13 @@ def test_e2e_d02_valid_summary_llm_zero(tmp_path):
         "mime_type": "application/pdf",
         "capture_ready": True,
         "canonical_location_id": "loc-1",
-        "source_bundle": {
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0",
+            "outcome": "reused_existing",
+            "download_events": 0,
+            "bundle_status": "available",
+            "bundle_hash": "b" * 64,
+            "bundle": {
             "schema_version": "1.0",
             "source": {"document_id": "doc-1"},
             "valid_handles": {
@@ -145,6 +158,7 @@ def test_e2e_d02_valid_summary_llm_zero(tmp_path):
             },
             "invalid": {},
             "bundle_hash": "b" * 64,
+        },
         },
     }
     artifacts = select_reusable_artifacts(handle, ("summary",))
@@ -185,7 +199,13 @@ def test_e2e_d04_stale_normalized_recomputes_only_that_role(tmp_path):
         "mime_type": "application/pdf",
         "capture_ready": True,
         "canonical_location_id": "loc-1",
-        "source_bundle": {
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0",
+            "outcome": "reused_existing",
+            "download_events": 0,
+            "bundle_status": "available",
+            "bundle_hash": "b" * 64,
+            "bundle": {
             "schema_version": "1.0",
             "source": {"document_id": "doc-1", "source_sha256": "a" * 64},
             "valid_handles": {
@@ -212,6 +232,7 @@ def test_e2e_d04_stale_normalized_recomputes_only_that_role(tmp_path):
                 }
             },
             "bundle_hash": "b" * 64,
+        },
         },
     }
     artifacts = select_reusable_artifacts(handle, ("normalized", "summary"))
@@ -251,7 +272,13 @@ def test_e2e_d05_misbound_summary_rejected_only_that_role_recomputed(tmp_path):
         "mime_type": "application/pdf",
         "capture_ready": True,
         "canonical_location_id": "loc-1",
-        "source_bundle": {
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0",
+            "outcome": "reused_existing",
+            "download_events": 0,
+            "bundle_status": "available",
+            "bundle_hash": "b" * 64,
+            "bundle": {
             "schema_version": "1.0",
             "source": {"document_id": "doc-1", "source_sha256": "a" * 64},
             "valid_handles": {
@@ -271,16 +298,17 @@ def test_e2e_d05_misbound_summary_rejected_only_that_role_recomputed(tmp_path):
             },
             "bundle_hash": "b" * 64,
         },
+        },
     }
     # the misbound summary must be observably rejected with its reason
-    assert handle["source_bundle"]["invalid"]["summary"]["reason"] == (
+    assert handle["resolution_envelope"]["bundle"]["invalid"]["summary"]["reason"] == (
         "artifact_source_sha_mismatch"
     )
     # producer-side attestation is authoritative: even if a summary with a
     # stale source_sha appeared in valid_handles, the consumer refuses it
     # (the invalid entry explains why, and the valid map carries no stale
     # summary) — asserting the invariant both ways
-    assert "summary" not in handle["source_bundle"].get("valid_handles", {})
+    assert "summary" not in handle["resolution_envelope"]["bundle"].get("valid_handles", {})
     artifacts = select_reusable_artifacts(handle, ("normalized", "summary"))
     assert "normalized" in artifacts  # valid normalized still reused
     assert "summary" not in artifacts  # misbound summary rejected
@@ -321,7 +349,13 @@ def test_e2e_d03_sections_used_instead_of_full_rerun(tmp_path):
         "mime_type": "application/pdf",
         "capture_ready": True,
         "canonical_location_id": "loc-1",
-        "source_bundle": {
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0",
+            "outcome": "reused_existing",
+            "download_events": 0,
+            "bundle_status": "available",
+            "bundle_hash": "b" * 64,
+            "bundle": {
             "schema_version": "1.0",
             "source": {"document_id": "doc-1"},
             "valid_handles": {
@@ -334,6 +368,7 @@ def test_e2e_d03_sections_used_instead_of_full_rerun(tmp_path):
             },
             "invalid": {},
             "bundle_hash": "b" * 64,
+        },
         },
     }
     artifacts = select_reusable_artifacts(handle, ("sections",))
@@ -377,7 +412,13 @@ def test_e2e_d06_consumer_analysis_reused_only_when_fully_compatible(tmp_path):
             "mime_type": "application/pdf",
             "capture_ready": True,
             "canonical_location_id": "loc-1",
-            "source_bundle": {
+            "resolution_envelope": {
+                "envelope_schema_version": "1.0",
+                "outcome": "reused_existing",
+                "download_events": 0,
+                "bundle_status": "available",
+                "bundle_hash": "b" * 64,
+                "bundle": {
                 "schema_version": "1.0",
                 "source": {"document_id": "doc-1"},
                 "valid_handles": {
@@ -396,6 +437,7 @@ def test_e2e_d06_consumer_analysis_reused_only_when_fully_compatible(tmp_path):
                 },
                 "invalid": {},
                 "bundle_hash": "b" * 64,
+            },
             },
         }
 
@@ -417,7 +459,7 @@ def test_e2e_d06_consumer_analysis_reused_only_when_fully_compatible(tmp_path):
         {"input_bundle_hash": "y" * 64},
     ):
         h = handle_with("p1", "m1", "e1")
-        h["source_bundle"]["valid_handles"]["consumer_analysis"].update(changed)
+        h["resolution_envelope"]["bundle"]["valid_handles"]["consumer_analysis"].update(changed)
         a2 = select_reusable_artifacts(
             h, ("consumer_analysis",), expected_provenance=expected,
         )

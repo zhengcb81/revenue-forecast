@@ -30,15 +30,24 @@ from company_wiki_source import (  # noqa: E402
 
 
 def _bundle_handle(valid_handles: dict | None = None, invalid: dict | None = None):
+    """FC-902 contract: the SourceBundle rides the resolution envelope."""
+    bundle = {
+        "schema_version": "1.0",
+        "source": {"document_id": "doc-1"},
+        "valid_handles": valid_handles or {},
+        "invalid": invalid or {},
+        "bundle_hash": "b" * 64,
+    }
     return {
         "request_id": "req-1",
         "capture_ready": True,
-        "source_bundle": {
-            "schema_version": "1.0",
-            "source": {"document_id": "doc-1"},
-            "valid_handles": valid_handles or {},
-            "invalid": invalid or {},
-            "bundle_hash": "b" * 64,
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0",
+            "outcome": "reused_existing",
+            "download_events": 0,
+            "bundle_status": "available",
+            "bundle_hash": bundle["bundle_hash"],
+            "bundle": bundle,
         },
     }
 
@@ -109,18 +118,29 @@ def test_non_reusable_entry_in_valid_handles_rejected(tmp_path):
 
 
 def test_malformed_bundle_fails_closed(tmp_path):
-    handle = {"request_id": "req-1", "capture_ready": True,
-              "source_bundle": "not-a-dict"}
+    handle = {
+        "request_id": "req-1", "capture_ready": True,
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0", "outcome": "reused_existing",
+            "download_events": 0, "bundle_status": "available",
+            "bundle_hash": "b" * 64, "bundle": "not-a-dict",
+        },
+    }
     with pytest.raises(CompanyWikiSourceError):
         select_reusable_artifacts(handle, ("normalized",))
 
 
 def test_malformed_valid_handles_fails_closed(tmp_path):
-    """source_bundle.valid_handles non-dict → raises (fail-closed)."""
+    """bundle.valid_handles non-dict → raises (fail-closed)."""
     handle = {
         "request_id": "req-1",
         "capture_ready": True,
-        "source_bundle": {"schema_version": "1.0", "valid_handles": "nope"},
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0", "outcome": "reused_existing",
+            "download_events": 0, "bundle_status": "available",
+            "bundle_hash": "b" * 64,
+            "bundle": {"schema_version": "1.0", "valid_handles": "nope"},
+        },
     }
     with pytest.raises(CompanyWikiSourceError):
         select_reusable_artifacts(handle, ("normalized",))
@@ -131,9 +151,14 @@ def test_non_dict_artifact_entry_skipped(tmp_path):
     handle = {
         "request_id": "req-1",
         "capture_ready": True,
-        "source_bundle": {
-            "schema_version": "1.0",
-            "valid_handles": {"normalized": "not-a-dict"},
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0", "outcome": "reused_existing",
+            "download_events": 0, "bundle_status": "available",
+            "bundle_hash": "b" * 64,
+            "bundle": {
+                "schema_version": "1.0",
+                "valid_handles": {"normalized": "not-a-dict"},
+            },
         },
     }
     artifacts = select_reusable_artifacts(handle, ("normalized",))

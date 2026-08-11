@@ -84,13 +84,121 @@ def _iso_date(value: Any, field_name: str) -> date:
     return parsed
 
 
+def _bundle_from_handle(handle: dict[str, Any]) -> dict[str, Any] | None:
+    """FC-902/FC-904: the SourceBundle rides the resolution envelope (the
+    FC-704-era handle-level ``source_bundle`` field is gone).  None when the
+    envelope has no bundle (bundle_status=unavailable or N-1 upstream)."""
+    if not isinstance(handle, dict):
+        raise CompanyWikiSourceError("handle must be a dict")
+    envelope = handle.get("resolution_envelope")
+    if not isinstance(envelope, dict):
+        return None
+    return envelope.get("bundle")
+
+
+def _artifact_reusable(bundle: dict[str, Any], role: str) -> bool:
+    valid = bundle.get("valid_handles")
+    if not isinstance(valid, dict):
+        raise CompanyWikiSourceError(
+            "bundle.valid_handles must be an object (fail closed)")
+    artifact = valid.get(role)
+    return isinstance(artifact, dict) and artifact.get("reusable") is True
+
+
+def _dag_closure(role: str) -> list[str]:
+    """Transitive dependents of ``role`` (including itself) over the frozen
+    ROLE_DEPENDENCIES, IMPORTED from company-wiki's artifact_dag — the single
+    source of truth; no second copy can drift."""
+    from company_wiki.source_catalog.artifact_dag import ROLE_DEPENDENCIES
+
+    result: list[str] = []
+    frontier = [role]
+    while frontier:
+        current = frontier.pop()
+        if current in result:
+            continue
+        result.append(current)
+        for candidate, parents in ROLE_DEPENDENCIES.items():
+            if current in parents:
+                frontier.append(candidate)
+    return result
+
+
+def _dag_ancestors(role: str) -> list[str]:
+    """Transitive inputs of ``role`` (roles it derives from) over the same
+    imported ROLE_DEPENDENCIES: ROLE_DEPENDENCIES[role] IS the direct parent
+    list, walked transitively.  A role is read ONLY when every ancestor is
+    also reusable (AR-03: a changed normalized invalidates its dependents)."""
+    from company_wiki.source_catalog.artifact_dag import ROLE_DEPENDENCIES
+
+    result: list[str] = []
+    seen: set[str] = set()
+    frontier = list(ROLE_DEPENDENCIES.get(role, ()))
+    while frontier:
+        current = frontier.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        result.append(current)
+        frontier.extend(ROLE_DEPENDENCIES.get(current, ()))
+    return result
+
+
+def select_artifact_roles(
+    handle: dict[str, Any],
+    roles: tuple[str, ...] = ("normalized", "markdown", "summary",
+                              "sections", "consumer_analysis"),
+    *,
+    expected_provenance: dict[str, Any] | None = None,
+) -> tuple[list[str], list[str]]:
+    """FC-904: DAG-minimal artifact selection from the envelope bundle.
+
+    Returns ``(artifact_read, producer_events)``:
+
+    - ``artifact_read`` — roles whose verified artifact is in the envelope
+      bundle's ``valid_handles`` (provenance-matched for consumer_analysis);
+      these are read, their producers do NOT run (parser/LLM=0).
+    - ``producer_events`` — roles that must be (re)produced = the DAG closure
+      (role + transitive dependents over ROLE_DEPENDENCIES) of the
+      non-reusable roles — never a blind full recompute (AR-02/AR-03).
+
+    ``bundle=None`` (bundle_status=unavailable) → artifact_read=[], every
+    role needs production — honest, never faked.  A malformed bundle raises
+    (fail closed), never silently trusted.
+    """
+    bundle = _bundle_from_handle(handle)
+    if bundle is None:
+        return [], sorted({r for role in roles for r in _dag_closure(role)})
+    if not isinstance(bundle, dict):
+        raise CompanyWikiSourceError("bundle must be an object (fail closed)")
+    reusable: set[str] = set()
+    for role in roles:
+        if not _artifact_reusable(bundle, role):
+            continue
+        if role == "consumer_analysis" and expected_provenance is not None:
+            artifact = bundle["valid_handles"][role]
+            if not _analysis_provenance_matches(artifact, expected_provenance):
+                continue
+        reusable.add(role)
+    # DAG gate (AR-03): a role is READ only when its whole ancestor chain is
+    # reusable — a dependent derived from an invalidated input is not trusted.
+    artifact_read = sorted(
+        role for role in roles
+        if role in reusable
+        and all(ancestor in reusable for ancestor in _dag_ancestors(role))
+    )
+    missing = [role for role in roles if role not in artifact_read]
+    producer_events = sorted({r for role in missing for r in _dag_closure(role)})
+    return artifact_read, producer_events
+
+
 def select_reusable_artifacts(
     handle: dict[str, Any],
     roles: tuple[str, ...],
     *,
     expected_provenance: dict[str, Any] | None = None,
 ) -> dict[str, dict[str, Any]]:
-    """WU-5.4: pick verified artifacts from the handle's source_bundle.
+    """WU-5.4: pick verified artifacts from the envelope bundle.
 
     For each requested role, returns the VALID artifact
     (path/content_sha256/generator) so the revenue consumer can skip
@@ -103,25 +211,20 @@ def select_reusable_artifacts(
     artifact is reusable ONLY if its engine/model/prompt/input_bundle_hash
     all match the expected values — ANY change → not reused.
     """
-    if not isinstance(handle, dict):
-        raise CompanyWikiSourceError("handle must be a dict")
-    bundle = handle.get("source_bundle")
+    bundle = _bundle_from_handle(handle)
     if bundle is None:
         return {}
     if not isinstance(bundle, dict):
-        raise CompanyWikiSourceError("source_bundle must be an object")
-    valid = bundle.get("valid_handles")
-    if not isinstance(valid, dict):
-        raise CompanyWikiSourceError("source_bundle.valid_handles must be an object")
+        raise CompanyWikiSourceError("bundle must be an object")
     selected: dict[str, dict[str, Any]] = {}
     for role in roles:
-        artifact = valid.get(role)
-        if not (isinstance(artifact, dict) and artifact.get("reusable") is True):
+        if not _artifact_reusable(bundle, role):
             continue
         if role == "consumer_analysis" and expected_provenance is not None:
-            if not _analysis_provenance_matches(artifact, expected_provenance):
+            if not _analysis_provenance_matches(
+                    bundle["valid_handles"][role], expected_provenance):
                 continue
-        selected[role] = artifact
+        selected[role] = bundle["valid_handles"][role]
     return selected
 
 
@@ -258,5 +361,6 @@ def build_revenue_source_record(
 __all__ = [
     "CompanyWikiSourceError",
     "build_revenue_source_record",
+    "select_artifact_roles",
     "select_reusable_artifacts",
 ]

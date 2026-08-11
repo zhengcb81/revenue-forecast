@@ -101,7 +101,13 @@ def prepare_source(
         raise RuntimeError(
             f"invalid download_events in resolution envelope: {download_events!r}"
         )
-    # Reuse receipt: artifact selection happens in company_wiki_source
+    # FC-904: artifact selection is DAG-minimal and SOURCED from the envelope
+    # bundle (FC-902) via the selector — the unsourced
+    # payload.get("selected_artifacts") path is removed.  artifact_read =
+    # roles with a verified artifact (producers do not run); producer_events =
+    # the DAG closure of the non-reusable roles (never a blind full recompute).
+    artifact_read, producer_events = (
+        company_wiki_source.select_artifact_roles(handle))
     record = company_wiki_source.build_revenue_source_record(
         handle,
         as_of_date=str(request.get("as_of_date", "")),
@@ -118,7 +124,8 @@ def prepare_source(
         "policy_hash": envelope.get("policy_hash"),
         "activation_epoch": envelope.get("activation_epoch"),
         "bundle_status": envelope.get("bundle_status"),
-        "selected_artifacts": payload.get("selected_artifacts", []),
+        "artifact_read": artifact_read,
+        "producer_events": producer_events,
     }
     return record
 

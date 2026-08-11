@@ -10,6 +10,7 @@ from company_wiki_source import select_reusable_artifacts  # noqa: E402
 
 
 def _handle(roles: dict) -> dict:
+    """FC-902 contract: the SourceBundle rides the resolution envelope."""
     valid = {}
     for role, meta in roles.items():
         if meta.get("reusable", True):
@@ -23,7 +24,16 @@ def _handle(roles: dict) -> dict:
                 "prompt": meta.get("prompt"),
                 "input_bundle_hash": meta.get("input_bundle_hash"),
             }
-    return {"source_bundle": {"valid_handles": valid}}
+    bundle = {"schema_version": "1.0", "valid_handles": valid,
+              "invalid": {}, "bundle_hash": "b" * 64}
+    return {
+        "request_id": "req-1",
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0", "outcome": "reused_existing",
+            "download_events": 0, "bundle_status": "available",
+            "bundle_hash": bundle["bundle_hash"], "bundle": bundle,
+        },
+    }
 
 
 ALL_ROLES = ("normalized", "markdown", "summary", "sections", "consumer_analysis")
@@ -51,8 +61,16 @@ def test_missing_bundle_returns_empty():
 def test_malformed_bundle_fails_closed():
     import pytest
 
+    handle = {
+        "request_id": "req-1",
+        "resolution_envelope": {
+            "envelope_schema_version": "1.0", "outcome": "reused_existing",
+            "download_events": 0, "bundle_status": "available",
+            "bundle_hash": "b" * 64, "bundle": "not-a-dict",
+        },
+    }
     with pytest.raises(Exception):
-        select_reusable_artifacts({"source_bundle": "not-a-dict"}, ALL_ROLES)
+        select_reusable_artifacts(handle, ALL_ROLES)
 
 
 def test_consumer_analysis_provenance_gate():
