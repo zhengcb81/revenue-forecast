@@ -72,7 +72,14 @@ def _fixture_wiki_root(tmp: Path) -> Path:
         "form_type": "annual_report", "fiscal_year": 2025,
         "source_url": "https://example-filing.com/acme/2025",
         "provider": "example-filing", "market": "US",
-        "security_id": "SEC-US"}})
+        "security_id": "SEC-US"},
+        # FC-905: the chain blocks unreviewed sources — the fixture document
+        # carries a review receipt so the E2E chain passes the policy gate
+        "prompt_injection_review": {
+            "schema_version": "1.0", "status": "not_detected",
+            "reviewer": "fixture-reviewer",
+            "reviewed_at": "2026-01-01T00:00:00Z",
+            "evidence_sha256": "e" * 64}})
     con.execute("INSERT INTO documents VALUES ('d1', 's1', 'Acme 2025', "
                 "'active', 'file', 'annual_report', '2026-04-15', 10, ?, "
                 "'2026-01-01', '2026-01-01')", (doc_meta,))

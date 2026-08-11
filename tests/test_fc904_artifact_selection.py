@@ -226,6 +226,8 @@ def test_prepare_source_receipt_sourced_from_bundle(monkeypatch, tmp_path):
         "download_events": 0, "policy_hash": "a" * 64,
         "activation_epoch": "epoch-1", "bundle_status": "available",
         "bundle_hash": bundle["bundle_hash"], "bundle": bundle,
+        "prompt_injection_status": "not_detected",
+        "parser_calls": 0, "llm_calls": 0,
     }
     payload = {"request_id": "r1", "resolution_envelope": envelope}
 
@@ -258,6 +260,8 @@ def test_prepare_source_unavailable_envelope_all_produced(monkeypatch):
         "envelope_schema_version": "1.0", "outcome": "reused_existing",
         "download_events": 0, "policy_hash": "a" * 64,
         "activation_epoch": "epoch-1", "bundle_status": "unavailable",
+        "prompt_injection_status": "not_detected",
+        "parser_calls": 0, "llm_calls": 0,
     }
     payload = {"request_id": "r1", "resolution_envelope": envelope}
 

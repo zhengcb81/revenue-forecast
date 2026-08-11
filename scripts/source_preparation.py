@@ -108,22 +108,39 @@ def prepare_source(
     # the DAG closure of the non-reusable roles (never a blind full recompute).
     artifact_read, producer_events = (
         company_wiki_source.select_artifact_roles(handle))
+    # FC-905-b: capture/safety evidence comes from the envelope — never
+    # hardcoded.  An unreviewed source is blocked per policy; absent parser/
+    # llm counts fail closed (never fabricated as 0).
+    prompt_injection_status = envelope.get("prompt_injection_status")
+    if prompt_injection_status is None:
+        prompt_injection_status = "not_reviewed"  # defensive N-1 default
+    if prompt_injection_status == "not_reviewed":
+        raise RuntimeError(
+            "prompt injection not reviewed — source preparation blocked "
+            "per policy (prompt_injection_status=not_reviewed)")
+    parser_calls = envelope.get("parser_calls")
+    llm_calls = envelope.get("llm_calls")
+    if parser_calls is None or llm_calls is None:
+        raise RuntimeError(
+            "parser/llm counts absent from the resolution envelope — fail "
+            "closed instead of fabricating 0")
     record = company_wiki_source.build_revenue_source_record(
         handle,
         as_of_date=str(request.get("as_of_date", "")),
         source_type=_revenue_source_type(handle),
         publisher=str(handle.get("provider") or "unknown"),
         page_or_section="1",
-        prompt_injection_status="not_detected",
+        prompt_injection_status=prompt_injection_status,
     )
     record["reuse_receipt"] = {
-        "parser_calls": 0,
-        "llm_calls": 0,
+        "parser_calls": parser_calls,
+        "llm_calls": llm_calls,
         "download_calls": download_events,
         "outcome": envelope.get("outcome"),
         "policy_hash": envelope.get("policy_hash"),
         "activation_epoch": envelope.get("activation_epoch"),
         "bundle_status": envelope.get("bundle_status"),
+        "prompt_injection_status": prompt_injection_status,
         "artifact_read": artifact_read,
         "producer_events": producer_events,
     }
