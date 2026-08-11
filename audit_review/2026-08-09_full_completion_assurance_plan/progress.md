@@ -399,3 +399,12 @@
 - **result triplet**：revenue **c8ccfe9**（feat 0cef23d + docs c8ccfe9）/ filing 959d04c / wiki fd4f50b。
 - **registry FC-904 → accepted**；Phase 9 进度 4/6。
 - **下一步 FC-905**（三仓）：journal 权威计数、prompt_injection_status 必须来自 scanner/reviewer receipt（未执行时明确未审核并阻断）、parser/LLM/download 计数来自 trace/journal 不能由输出推断、篡改 input/source/artifact hash/model/prompt/schema 均触发最小失效。
+
+## 2026-08-11 — FC-905 定向 + 分拆建议（FC-905-a / FC-905-b）
+
+- **现状**：① company-wiki 无任何 prompt-injection 检测/记录基础设施（grep 全空）；② revenue source_preparation.py 硬编码 `prompt_injection_status="not_detected"` + `parser_calls: 0, llm_calls: 0`；③ company-wiki 无 producer event journal（normalizer/llm_summarizer/section_extractor 写 artifacts 表但无事件记录）。
+- **FC-905 范围**（三仓，本轮最大）：envelope 增加 prompt_injection_status（来自 scanner/reviewer receipt，not_reviewed → 阻断）+ parser_calls/llm_calls（来自 producer trace/journal）+ revenue 消费侧去硬编码 + 篡改最小失效 mutation 套件。
+- **分拆建议（runbook §10：过大 FC 拆 a/b，经 reviewer 批准）**：
+  - **FC-905-a（company-wiki）**：documents 元数据 review receipt（prompt_injection_review: status/reviewer/reviewed_at/evidence hash）+ producer event journal（normalizer/llm_summarizer/section_extractor 写 producer_events 表）+ envelope 增加 prompt_injection_status/parser_calls/llm_calls 字段（读 review receipt + producer journal，零写）。
+  - **FC-905-b（revenue + filing-fetch）**：source_preparation 从 envelope 消费（去硬编码）；not_reviewed → 显式状态 + RuntimeError 阻断；parser/llm 计数入 reuse_receipt（来自 envelope）；篡改 input/source/artifact hash/model/prompt/schema 的最小失效测试（部分已有：AR-03/05/06、bundle fail-closed）。
+- **下一步决策**：等用户/独立 reviewer 批准分拆后实施 FC-905-a。
