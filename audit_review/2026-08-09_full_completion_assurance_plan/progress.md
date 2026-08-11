@@ -390,3 +390,12 @@
 - **全量 396 passed + 106 subtests 零失败**；ruff 干净。
 - **教训**：跨 FC 契约迁移（bundle 从 handle 移到 envelope）会留下死字段上的旧测试——新 FC 必须 grep 旧字段的所有消费者（含测试 fixture），不能只改生产代码。
 - **下一步**：commit → receipt → 独立 reviewer。
+
+## 2026-08-11 — FC-904 ACCEPTED（revenue source_preparation 消费 DAG selector）
+
+- **独立 reviewer accepted**：reviewer-fc904-independent 从干净 worktree 0cef23d 重放——focused 11 passed、M1/M2/M3 三杀（DAG 祖先门禁用→ar03 死；bundle 来源移除→ar01 死；盲目全量→ar02 死）、RED replay（base 无 select_artifact_roles）。
+- **2 个 low-severity 非阻塞 finding**：F1——receipt 数字为主树运行（396 passed）；reviewer worktree 环境有 12 个 sibling-repo 布局失败（base 相同集合 373→384，零新失败；receipt 应注明环境敏感）；F2——commit 含 audit_review/fc_904_change_contract.md（契约字节相同副本，allowlist 之外，无先例）。均记录于 REVIEWER_REPORT.md，不阻断。
+- **can_accept gate exit 0**（reviewer_receipt_sha256 8b2c061d…、reviewed_at 2026-08-11T14:05:00Z）。
+- **result triplet**：revenue **c8ccfe9**（feat 0cef23d + docs c8ccfe9）/ filing 959d04c / wiki fd4f50b。
+- **registry FC-904 → accepted**；Phase 9 进度 4/6。
+- **下一步 FC-905**（三仓）：journal 权威计数、prompt_injection_status 必须来自 scanner/reviewer receipt（未执行时明确未审核并阻断）、parser/LLM/download 计数来自 trace/journal 不能由输出推断、篡改 input/source/artifact hash/model/prompt/schema 均触发最小失效。
