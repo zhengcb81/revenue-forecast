@@ -408,3 +408,22 @@
   - **FC-905-a（company-wiki）**：documents 元数据 review receipt（prompt_injection_review: status/reviewer/reviewed_at/evidence hash）+ producer event journal（normalizer/llm_summarizer/section_extractor 写 producer_events 表）+ envelope 增加 prompt_injection_status/parser_calls/llm_calls 字段（读 review receipt + producer journal，零写）。
   - **FC-905-b（revenue + filing-fetch）**：source_preparation 从 envelope 消费（去硬编码）；not_reviewed → 显式状态 + RuntimeError 阻断；parser/llm 计数入 reuse_receipt（来自 envelope）；篡改 input/source/artifact hash/model/prompt/schema 的最小失效测试（部分已有：AR-03/05/06、bundle fail-closed）。
 - **下一步决策**：等用户/独立 reviewer 批准分拆后实施 FC-905-a。
+
+## 2026-08-11 — FC-905-a implementation progress（可信 capture 回执：producer 侧基础设施）
+
+- **用户批准 a/b 分拆**（2026-08-11），本会话实施 FC-905-a（company-wiki）。
+- **RED 证实**：`company-wiki/tests/contract/test_fc905_receipt_envelope.py`（9 tests）——prompt_injection 模块缺失（ImportError）、producer_events 表/触发器缺失、envelope 字段缺失。
+- **GREEN**：① store.py `_DDL` +producer_events 表 + `trg_artifact_producer_event` 触发器（AFTER INSERT ON artifacts，role→type 映射 normalized/sections→parser、summary/consumer_analysis→llm、其他→other；producer 代码零改动，journal 不可绕过）；② 新 `prompt_injection.py`：record_prompt_injection_review（写 documents.metadata_json["prompt_injection_review"]，fail-closed 校验 status enum/reviewer 非空/evidence sha256/schema）+ read_prompt_injection_review（畸形 receipt → None=not_reviewed，不信任）；③ 新 `producer_events.py`：count_producer_events（SELECT COUNT over journal）；④ resolver.py ResolutionEnvelope +prompt_injection_status（默认 not_reviewed）+parser_calls/llm_calls（默认 None）；build_resolution_envelope(..., store=None)——store 提供时读 review + counts（零写），无 store → not_reviewed/None（证据缺席永不伪造 0）；⑤ cli resolve/ensure + close_gap._finalize 传 store。
+- **Mutations 4 杀**：M1（review 读取移除）→ pi01 死；M2（journal 计数移除）→ pi05 死；M3（触发器 DDL 移除——首次变异只改名无效，触发器仍存在！）→ pi07 死；M4（缺席 review 伪造 not_detected）→ pi03 死。均已还原。
+- **回归**：FC-704 envelope + FC-902 bundle + query_bundle + source_bundle 30 passed；ruff/compile 干净。
+- **教训**：变异触发器类 DDL 必须整体删除（改名是无效变异——同名异名触发器同样生效）。
+- **下一步**：全量套件（跑批中）→ commit → receipt → 独立 reviewer → 然后 FC-905-b（revenue/filing 消费侧）。
+
+## 2026-08-11 — FC-905-a ACCEPTED（可信 capture 回执：producer 侧）
+
+- **独立 reviewer accepted**：reviewer-fc905a-independent 从干净 worktree d76e461 重放——focused 9 passed、siblings 30、focus_cleanup 7（FK 修复证明）、全量两次 2225 passed/2 failed（仅 pre-existing PORT-01 对，worker_bootstrap flake 两次都过了）、M1~M4 四杀（review 读取移除→pi01 死；journal 计数移除→pi05 死；触发器 DDL 整体移除→pi07 死；缺席伪造 not_detected→pi03 死）、RED replay（base 无两新模块）。
+- **2 条非阻塞覆盖观察**：role→type 映射测试只覆盖 normalized/summary；malformed-receipt reader 路径代码守卫但无直接测试。
+- **can_accept gate exit 0**（reviewer_receipt_sha256 6d75db46…、reviewed_at 2026-08-11T19:15:24Z）。
+- **result triplet**：revenue b9994dc / filing 959d04c / wiki **fbb4828**（feat d76e461 + docs fbb4828）。
+- **registry FC-905 → in_progress（-a accepted；-b pending）**。
+- **下一步 FC-905-b**（revenue + filing）：source_preparation 去硬编码——prompt_injection_status 从 envelope 消费（not_reviewed → RuntimeError 阻断）、parser_calls/llm_calls 从 envelope 入 reuse_receipt、filing-fetch validate 新增字段校验、篡改 mutation 套件。
