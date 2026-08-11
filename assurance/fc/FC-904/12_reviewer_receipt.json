@@ -1,0 +1,116 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-904",
+  "implementer_receipt_sha256": "46f96653035fe5c1d11fa8e21e8f79c513b458a2a9f134a851c5fd24b864ce2d",
+  "reviewer_identity": "reviewer-fc904-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "07578a3c513e6ea318cebced16e52d2963ea967a",
+    "filing": "959d04cdbe2115c8e01fa39a2d5dfe748cc4fedd",
+    "wiki": "fd4f50b7566bf26997062404594bc78209246a1f"
+  },
+  "result_triplet": {
+    "revenue": "0cef23d53b774219c573fd15c85d4a143bb51951",
+    "filing": "959d04cdbe2115c8e01fa39a2d5dfe748cc4fedd",
+    "wiki": "fd4f50b7566bf26997062404594bc78209246a1f"
+  },
+  "replayed_command_ids": [
+    "revenue.unit.tests",
+    "fc-904.focused.11",
+    "fc-904.focused.36",
+    "fc-904.ruff",
+    "fc-904.red-replay"
+  ],
+  "scenario_results": [
+    {
+      "id": "AR-01",
+      "status": "passed",
+      "note": "test_ar01_valid_roles_read: all five roles reusable -> artifact_read = all 5, producer_events = [] (parser/LLM=0). Replayed: passed."
+    },
+    {
+      "id": "AR-02",
+      "status": "passed",
+      "note": "test_ar02_only_summary_missing: producer_events = DAG closure of summary (summary+consumer_analysis); normalized/markdown/sections read unchanged. Replayed: passed."
+    },
+    {
+      "id": "AR-03",
+      "status": "passed",
+      "note": "test_ar03_normalized_missing_dag_invalidation: normalized non-reusable -> DAG gate blocks all dependents from read; producer_events = all roles (DAG invalidation, no blind recompute of valid siblings). Replayed: passed. Mutation M1 kills this test."
+    },
+    {
+      "id": "AR-04",
+      "status": "passed",
+      "note": "test_ar04_nothing_reusable: artifact_read=[], producer_events=all roles. Replayed: passed."
+    },
+    {
+      "id": "AR-05",
+      "status": "passed",
+      "note": "test_ar05_tampered_not_read_fail_closed: tampered artifact never read, its DAG dependents produced. Replayed: passed."
+    },
+    {
+      "id": "AR-06",
+      "status": "passed",
+      "note": "test_ar06_consumer_analysis_provenance_mismatch: engine/model/prompt/input_bundle_hash mismatch -> consumer_analysis not read; markdown/normalized continue to be read. Replayed: passed."
+    },
+    {
+      "id": "AR-08",
+      "status": "passed",
+      "note": "test_ar08_legacy_unbound_not_reused: legacy_unbound invalid entry not trusted. Replayed: passed."
+    },
+    {
+      "id": "RECEIPT-SOURCED",
+      "status": "passed",
+      "note": "test_prepare_source_receipt_sourced_from_bundle + test_prepare_source_unavailable_envelope_all_produced + test_no_bundle_all_produced + test_malformed_bundle_raises: reuse_receipt.artifact_read/producer_events derive from envelope bundle; unsourced 'selected_artifacts' key gone (only a comment remains); bundle_status=unavailable -> artifact_read=[], all produced (honest); malformed bundle raises CompanyWikiSourceError (fail closed). Replayed: all passed."
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "FC-904-M1",
+      "killed": true,
+      "note": "DAG-ancestor gate 'and all(ancestor in reusable for ancestor in _dag_ancestors(role))' -> 'and True': test_ar03_normalized_missing_dag_invalidation FAILED (1 failed in 0.50s). Restored; 11 passed re-verified."
+    },
+    {
+      "id": "FC-904-M2",
+      "killed": true,
+      "note": "_bundle_from_handle 'return envelope.get(\"bundle\")' -> 'return None': test_ar01_valid_roles_read FAILED. Restored; 11 passed re-verified."
+    },
+    {
+      "id": "FC-904-M3",
+      "killed": true,
+      "note": "'missing = [role for role in roles if role not in artifact_read]' -> 'missing = list(roles)' (blind full recompute): test_ar02_only_summary_missing FAILED. Restored; 11 passed re-verified."
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true,
+    "note": "Selection is in-memory over the envelope bundle only. The only file I/O in company_wiki_source.py is a pre-existing read (line 64, outside the diff). Zero new file reads/writes, no catalog/root writes, downloads=0, llm=0, parser=0 in receipt paths."
+  },
+  "codegraph_reachability": {
+    "passed": true,
+    "note": "CodeGraph index (124 files, 2201 nodes) contains select_artifact_roles at scripts/company_wiki_source.py:147 with the correct signature and its import edge from tests/test_fc904_artifact_selection.py. The index emits NO caller edges repo-wide (even pre-existing build_revenue_source_record and _analysis_provenance_matches report zero callers), so the prepare_source -> select_artifact_roles production edge was verified by direct source read (scripts/source_preparation.py:110) plus the passing prepare_source tests; exactly 1 production caller, matching the implementer's claim."
+  },
+  "rollback": {
+    "required": false,
+    "passed": true,
+    "note": "Additive receipt fields + new selector + test fixture migration, all in one commit 0cef23d; revert = revert the commit."
+  },
+  "unresolved_findings": [
+    {
+      "id": "FC-904-F1",
+      "severity": "low",
+      "subject": "Implementer receipt numeric overclaims",
+      "evidence": "Receipt claims '38 passed' for the 5-file focused suite; clean-checkout replay collects exactly 36 test functions (11+6+4+6+9, identical at base 07578a3) and all 36 pass. Receipt claims '396 passed, 106 subtests, zero failures' for the full suite; clean-checkout replay yields 396 collected / 384 passed / 106 subtests / 12 failed. All 12 failures are sibling-repo layout artifacts (worktree at .fcap-review/fc-904 lacks ../filing-fetch, ../company-wiki, and the filing_contracts package: git merge-base cwd NotADirectoryError in 9 manifest tests, missing ADR-010 in company-wiki for contract registry, ModuleNotFoundError filing_contracts in dropbox test, fetch_filing.py not found in preparation e2e success). Proven environmental: the identical 12-test failure set reproduces at BASE 07578a3c in the same worktree layout (12 failed, 373 passed); HEAD adds exactly the 11 new FC-904 tests to the passing set. No test is skipped, xfailed, or hidden.",
+      "impacted_scenarios": "None (all AR/RECEIPT scenarios pass; zero new failures vs base)",
+      "recovery": "Correct the two counts in 11_implementer_receipt.json (36 not 38; full suite = 384 passed + 12 env-layout failures identical at base in the review checkout) or document the environment dependency of the zero-failure claim."
+    },
+    {
+      "id": "FC-904-F2",
+      "severity": "low",
+      "subject": "Commit contains a duplicate change contract outside the allowlist",
+      "evidence": "git diff 07578a3c..HEAD includes audit_review/2026-08-09_full_completion_assurance_plan/fc_904_change_contract.md (added, 82 lines), byte-identical to assurance/fc/FC-904/03_change_contract.md (diff == IDENTICAL). Not in the receipt's allowed_files/changed_files (8 files) and has no precedent in repo history (no other fc_*_change_contract.md under audit_review). progress.md is also in the commit, but that follows the established convention (every prior FC commit updates it).",
+      "impacted_scenarios": "None (documentation only, no runtime effect)",
+      "recovery": "Remove the mirror in a follow-up docs commit, or extend the FC allowlist to include it."
+    }
+  ],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-11T14:05:00Z"
+}

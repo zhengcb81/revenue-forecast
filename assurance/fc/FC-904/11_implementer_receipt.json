@@ -1,0 +1,155 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-904",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "07578a3c513e6ea318cebced16e52d2963ea967a",
+    "filing": "959d04cdbe2115c8e01fa39a2d5dfe748cc4fedd",
+    "wiki": "fd4f50b7566bf26997062404594bc78209246a1f"
+  },
+  "result_triplet": {
+    "revenue": "0cef23d53b774219c573fd15c85d4a143bb51951",
+    "filing": "959d04cdbe2115c8e01fa39a2d5dfe748cc4fedd",
+    "wiki": "fd4f50b7566bf26997062404594bc78209246a1f"
+  },
+  "plan_sha256": "0bc6b9f7d6707e470e55c22759d37c18404172081ecd176d2883e184c61fafaa",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/scripts/company_wiki_source.py",
+    "revenue-forecast/scripts/source_preparation.py",
+    "revenue-forecast/tests/test_fc904_artifact_selection.py",
+    "revenue-forecast/tests/test_bundle_artifact_selection.py",
+    "revenue-forecast/tests/test_bundle_e2e_d01.py",
+    "revenue-forecast/tests/test_preparation_e2e_failure.py",
+    "revenue-forecast/tests/test_source_consumption.py",
+    "revenue-forecast/assurance/fc/FC-904/03_change_contract.md",
+    "revenue-forecast/assurance/fc/FC-904/11_implementer_receipt.json"
+  ],
+  "changed_files": [
+    "revenue-forecast/scripts/company_wiki_source.py",
+    "revenue-forecast/scripts/source_preparation.py",
+    "revenue-forecast/tests/test_fc904_artifact_selection.py",
+    "revenue-forecast/tests/test_bundle_artifact_selection.py",
+    "revenue-forecast/tests/test_bundle_e2e_d01.py",
+    "revenue-forecast/tests/test_preparation_e2e_failure.py",
+    "revenue-forecast/tests/test_source_consumption.py",
+    "revenue-forecast/assurance/fc/FC-904/03_change_contract.md"
+  ],
+  "dependency_receipts": [
+    "filing-fetch/assurance/fc/FC-903/12_reviewer_receipt.json (accepted 2026-08-11)",
+    "company-wiki/assurance/fc/FC-902/12_reviewer_receipt.json (accepted 2026-08-11)"
+  ],
+  "command_registry_sha256": "215b8077169126b2c4a5eca9d8d6237f291757c2559f6ae6e0ae8ff1c806b089",
+  "scenario_results": [
+    {
+      "id": "AR-01",
+      "status": "passed",
+      "note": "all five roles with verified artifacts in the envelope bundle are read (artifact_read = all) and nothing is produced — parser/LLM=0, artifact read > 0 (test_ar01)."
+    },
+    {
+      "id": "AR-02",
+      "status": "passed",
+      "note": "only summary missing -> producer_events = [summary, consumer_analysis] (DAG closure), other roles read with hashes unchanged (test_ar02)."
+    },
+    {
+      "id": "AR-03",
+      "status": "passed",
+      "note": "normalized not reusable -> its DAG dependents are NOT read (ancestor gate) and every deriving role needs production — never a blind recompute of valid siblings (test_ar03)."
+    },
+    {
+      "id": "AR-04",
+      "status": "passed",
+      "note": "nothing reusable -> artifact_read=[] and every role must be produced (test_ar04)."
+    },
+    {
+      "id": "AR-05",
+      "status": "passed",
+      "note": "a tampered artifact (invalid entry, hash mismatch) is never read; the role + its DAG dependents are produced (test_ar05)."
+    },
+    {
+      "id": "AR-06",
+      "status": "passed",
+      "note": "consumer_analysis provenance mismatch -> not read; base markdown with a valid normalized ancestor continues to be read (test_ar06)."
+    },
+    {
+      "id": "AR-08",
+      "status": "passed",
+      "note": "legacy_unbound / unsupported-schema artifact is never trusted — not read, role produced (test_ar08)."
+    },
+    {
+      "id": "RECEIPT-SOURCED",
+      "status": "passed",
+      "note": "the reuse receipt's artifact_read/producer_events derive from the envelope bundle via the selector; the unsourced payload.get('selected_artifacts') path is deleted (test_prepare_source_receipt_sourced_from_bundle, test_prepare_source_unavailable_envelope_all_produced)."
+    }
+  ],
+  "commands": [
+    {
+      "command": "python -B -m pytest tests/test_fc904_artifact_selection.py -q",
+      "exit_code": 0,
+      "result": "11 passed (RED: ImportError select_artifact_roles before implementation)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m pytest tests/test_bundle_artifact_selection.py tests/test_bundle_e2e_d01.py tests/test_preparation_e2e_failure.py tests/test_source_consumption.py tests/test_source_preparation.py -q",
+      "exit_code": 0,
+      "result": "38 passed (WU-5.4-era fixtures migrated from handle.source_bundle to the FC-902 envelope contract)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m pytest tests/ -q (full revenue suite)",
+      "exit_code": 0,
+      "result": "396 passed, 106 subtests — zero failures",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check (2 scripts + 5 test files)",
+      "exit_code": 0,
+      "result": "All checks passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m py_compile scripts/company_wiki_source.py scripts/source_preparation.py",
+      "exit_code": 0,
+      "result": "compile OK",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit gates (R4.2 install-sync)",
+      "exit_code": 0,
+      "result": "tools/sync_installations.py --apply -> MATCH 98 files x3 skill dirs; commit sealed",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "note": "selection is over the envelope bundle only (in-memory); no file reads added; no catalog/root writes."
+  },
+  "codegraph": {
+    "production_callers_before": 0,
+    "production_callers_after": 1,
+    "note": "select_artifact_roles (new) has 1 production caller: source_preparation.prepare_source. select_reusable_artifacts' data source switched from handle.source_bundle (dead) to the envelope bundle."
+  },
+  "mutation": {
+    "id": "FC-904-M1-M2-M3",
+    "killed": true,
+    "details": "M1: DAG ancestor gate disabled -> test_ar03 FAILS (DAG-invalidated roles read). M2: bundle sourcing removed (always None) -> test_ar01 FAILS (nothing read). M3: blind full recompute (missing = all roles) -> test_ar02 FAILS (DAG-minimal broken). All three reverted; 11 passed restored."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "additive receipt fields + new selector + test fixture migration; revert = revert commits."
+  },
+  "review": {
+    "reviewer": "reviewer-fc904-independent",
+    "reviewer_receipt_sha256": "8b2c061d13d0d597c05b0a027189446e6195db7252e4bfeaa79429c04e10751d",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-11T14:05:00Z",
+    "note": "independent reviewer replayed commands + 3 mutations from clean worktree 0cef23d; verdict accepted. 2 low-severity findings: F1 receipt numbers reflect the main-tree run (396 passed) — the reviewer's worktree env shows 12 sibling-repo layout failures identical at base (zero new); F2 audit_review duplicate contract file. Both non-blocking, documented in REVIEWER_REPORT.md."
+  },
+  "provisional_note": "result_triplet sealed at revenue 0cef23d (filing/wiki unchanged). FC-905 (journal-authoritative counts + prompt-injection receipt) next."
+}
