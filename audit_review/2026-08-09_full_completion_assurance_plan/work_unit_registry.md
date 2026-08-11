@@ -81,7 +81,7 @@
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
 | FC-701 | accepted | FC-604 | company-wiki | normalized-only production trace；legacy metadata caller=0（receipt: company-wiki/assurance/fc/FC-701/；reviewer-fc701-independent accepted 2026-08-11；7 tests + 2 mutations killed + legacy owner gate + config_doctor 契约） |
-| FC-702 | pending | FC-701 | company-wiki | SAFE-01~07；别名/市场/前导零；弱匹配 mutation 必死 |
+| FC-702 | accepted | FC-701 | company-wiki | SAFE-01~07；别名/市场/前导零；弱匹配 mutation 必死（receipt: company-wiki/assurance/fc/FC-702/；reviewer-fc702-independent accepted 2026-08-11；7 tests + 1 mutation killed + CW-2.27H soft-match 移除） |
 | FC-703 | pending | FC-702 | company-wiki | SQL pushdown、EX-07、OPS-03、p50/p95/内存预算 |
 | FC-704 | pending | FC-703 | company-wiki | outcome/journal 对账；伪 download_calls mutation 必死 |
 | FC-705 | pending | FC-704 | company-wiki | legacy observer 真实 seam、两个>=24h zero-hit 窗口、可回滚 |

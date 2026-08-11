@@ -240,3 +240,8 @@
 - **7 tests**：SAFE-01（同名异 ticker/market hard conflict）、SAFE-02（无 soft-match；自身身份仍匹配）、SAFE-04（非 HTTPS fail closed）、SAFE-07（retired 排除）、前导零。1 mutation killed（soft-match 恢复）。
 - revenue FC-505 链测试 as_of 滚动至 2026-08-11（capture 窗口）。wiki 全量 2160 passed / 2 PORT-01；revenue 381 passed。
 - 当前 triplet：revenue 607a132、filing 6274be2、wiki b437810。FC-702 审查（reviewer-fc702-independent）运行中。
+
+## 2026-08-11 — FC-702 accepted（严格 identity；Phase 7 推进）
+
+- **reviewer-fc702-independent accepted**（7/7 步：triplets、密封哈希、diff=2 wiki 文件+1 revenue 文件、focused 7/7、全量 2160/2 PORT-01、FC-505 4/4、M1 精确击杀、validator exit 0）。findings 全 low/info（含 safe07 测试 mask nuance——FC-701 的 retired 测试已端到端覆盖）。
+- 当前 triplet：revenue 607a132、filing 6274be2、wiki 4854380。下一 FC：FC-703（SQL pushdown 与性能）。
