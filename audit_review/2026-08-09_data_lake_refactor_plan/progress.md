@@ -157,3 +157,13 @@
 - **回滚演练**：`tests/contract/test_rollback_drills.py` + `test_legacy_observation.py` **12 passed**（仍绿，v1 reader 回滚路径无回归）。
 - **观察门未通过**：legacy_bridge_hits=46 > 0，且高于 period 1 的 30——legacy 仍在生产被读取。原因：resolver `_source_metadata` 的 legacy bridge（无 runtime_policy snapshot 时默认 `legacy_bridge_allowed=True`）在真实解析请求（FC-504/505 canary 解析、EX-01/EX-02 样本）中命中 acquisition/dayu_meta 容器；FC-505 后 directory 根元数据也写入 acquisition 容器（采样面扩大，sampled_documents 46→54）。**WU-1501 不可启动**，继续观察；需连续两个周期 hits=0 才通过观察门。
 - 下一周期：period 3（>=24h 后，或按调度）。
+
+## 2026-08-11 — WU-1500 legacy 观察周期 4（company-wiki；FC-705 观察延续）
+
+- **周期 4（canary-matrix 真实 seam）**：legacy_bridge_hits=6（>0），close_gate 诚实关闭
+  （需两个连续 >=24h 零命中窗口；周期 2 有 46、周期 3 有 6）。
+- FC-705 完成：observer 经 SourceResolver 真实 seam、completed-window 关闭门、
+  cutover drill 现场 4/4 REUSED_EXACT 且零 bridge hit（v2 + bridge off）。
+- 观察继续：下次 `python scripts/legacy_observer.py --catalog .source_catalog/catalog.sqlite3
+  --config config/source_catalog.yaml --period 5 --period-file .source_catalog/legacy_periods.json
+  --read-only --canary-matrix`（>=24h 后）。
