@@ -394,45 +394,56 @@ Phase 0 baseline
 
 > 2026-08-11 进展：FC-901（artifact 绑定迁移 dry-run 分桶）、FC-902（bundle 进 resolver 生产响应）、FC-903（filing N/N-1 bundle 契约）、FC-904（revenue DAG selector 消费）、FC-905（可信 capture 回执，拆 a/b：a 生产侧 journal+review receipt，b 消费侧去硬编码+阻断）全部 accepted（receipts 见 work_unit_registry；can_accept gate exit 0）。
 
-### FC-901：artifact 绑定迁移
+### FC-901：artifact 绑定迁移 — 状态：accepted（2026-08-11，reviewer-fc901-independent）
 
 - Owner：company-wiki。
 - 对 7712 legacy artifacts 做 dry-run 分桶：bindable、hash mismatch、missing bytes、unknown generator、legacy_unbound。
 - 只在 source/document/content/generator/schema 全可证明时绑定；否则保留不可复用。
 - 生产 apply 需 change-window 授权；零删除。
+- 验收：11 tests + M1/M2 killed；`source_catalog/artifact_backfill.py` 5 桶复用 validate_artifact 为唯一绑定门；dry-run 纯 SELECT；apply 写 shadow artifact_bindings（created_by='fc-901'，UNIQUE+INSERT OR IGNORE）。**生产 apply 待 FC-906 窗口执行（已获授权，须副本演练 + fingerprint + 零删除）。**
 
-### FC-902：bundle 进入 resolver 生产响应
+### FC-902：bundle 进入 resolver 生产响应 — 状态：accepted（2026-08-11，reviewer-fc902-independent）
 
 - `query_source_bundle` 不再是测试/CLI 孤岛；ResolutionEnvelope 生成 snapshot-consistent SourceBundle。
 - bundle 查询与 handle 使用同一 policy/epoch/document hash。
 - CodeGraph production caller>=1；未知 artifact role fail closed。
+- 验收：7 tests + M1/M2/M3 killed；GENERATOR_REGISTRY 单一事实来源 + 未知角色门（artifact_role_unknown）；`expected_content_sha256` 漂移 → None（fail closed）；bundle_for_resolution 3 个生产调用者（cli resolve/ensure + close-gap）。
 
-### FC-903：filing-fetch 透明转发和兼容
+### FC-903：filing-fetch 透明转发和兼容 — 状态：accepted（2026-08-11，reviewer-fc903-independent）
 
 - N/N-1 envelope/bundle contract；旧 company-wiki 无 bundle 时显式 `bundle_status=unavailable`，不是伪造空绿色。
 - 不修改 artifact validity 决策。
+- 验收：9 tests + M1/M2/M3 killed；validate_resolution_envelope 返回（归一化）envelope；available 需 sha256 bundle_hash + 匹配 bundle dict（fail closed）。
 
-### FC-904：revenue 真实消费 selector
+### FC-904：revenue 真实消费 selector — 状态：accepted（2026-08-11，reviewer-fc904-independent）
 
 - `source_preparation.py` 必须调用 selector；按 DAG 只重算缺失角色。
 - 删除 `payload.get(selected_artifacts)` 无来源路径；记录 artifact_read 和 producer events。
 - AR-01~09 从用户入口跨三进程运行。
+- 验收：11 tests + M1/M2/M3 killed；select_artifact_roles（DAG 祖先门 + closure，ROLE_DEPENDENCIES 从 company_wiki 导入）；reuse_receipt 记录 artifact_read/producer_events；WU-5.4 时代测试 fixture 迁移到 envelope 契约。2 low-severity 非阻塞 finding（F1 主树/工作树环境数字差异；F2 重复契约文件）。
 
-### FC-905：可信 capture/安全回执
+### FC-905：可信 capture/安全回执 — 状态：accepted（2026-08-11；FC-905-a reviewer-fc905a-independent + FC-905-b reviewer-fc905b-independent，a/b 分拆经用户批准）
 
 - `prompt_injection_status` 必须来自 scanner/reviewer receipt；未执行时为明确未审核状态并按政策阻断。
 - parser/LLM/download 计数来自 trace/journal，不能由输出推断。
 - Mutation：篡改 input/source/artifact hash、模型、prompt、schema 均触发最小失效。
+- 验收（-a 生产侧）：9 tests + M1~M4 killed；producer_events journal（触发器 trg_artifact_producer_event 记每次 artifact INSERT，**无 FK**）+ review receipt（documents.metadata_json["prompt_injection_review"]，prompt_injection.py）；envelope +prompt_injection_status（默认 not_reviewed）+parser_calls/llm_calls（默认 None）。
+- 验收（-b 消费侧）：revenue 6 + filing 7 tests + M1~M4 killed；source_preparation 消费 envelope（not_reviewed → RuntimeError 阻断；counts None → fail closed 永不 0；硬编码 not_detected/0 已删除）；filing validate 新字段校验 + N-1 归一化（副本上改）。
 
-### FC-906：生产 artifact canary
+### FC-906：生产 artifact canary — 状态：pending（下一步；生产 apply 已获用户授权）
 
 - normalized、markdown、sections、summary、consumer_analysis 各至少一个真实 bound 样本；角色不适用必须有合同说明。
 - T2 证明 artifact_read>0 且对应 producer=0；旧 unbound 样本不复用。
+- **含 FC-901 的 artifact_bindings 生产 apply 窗口**：副本演练 + before/after fingerprint + 幂等重跑 + 回滚，零删除；FC-901 dry-run 工具已就绪（assurance/fc/FC-901/）。
+- 真实样本需带 prompt-injection review receipt（FC-905 政策门：not_reviewed 阻断）。
 
 ### Phase 9 exit gate
 
-- production source-bound artifact 不再为 0；真实用户链能复用处理结果。
-- 所有 AR 场景绿色；伪零调用和硬编码 prompt status 删除。
+- [ ] production source-bound artifact 不再为 0 —— **待 FC-906 apply 后达成**（FC-901 dry-run 分桶已证明可绑定集；apply 已获授权）。
+- [ ] 真实用户链能复用处理结果 —— FC-902~905 已接线（envelope bundle → selector → receipt），但真实 bound 样本复用证明属 FC-906 T2。
+- [ ] 所有 AR 场景绿色 —— FC-904 覆盖 AR-01~06/08；AR-07（T2 真实样本）待 FC-906。
+- [x] 伪零调用和硬编码 prompt status 删除 —— FC-905-b 完成（hardcoded not_detected/0 已删，not_reviewed 阻断；证据：revenue-forecast/assurance/fc/FC-904/ + company-wiki/assurance/fc/FC-905/ receipts）。
+
 
 ## Phase 10（三仓跨进程 E2E 与真实场景矩阵）— 状态：pending
 
