@@ -155,7 +155,7 @@ def test_fc505_chain_exact_hit_zero_side_effects(tmp_path):
     # revenue: the strict source record consumed by artifact selection
     record = build_revenue_source_record(
         handle,
-        as_of_date="2026-08-10",
+        as_of_date="2026-08-11",
         source_type="regulatory_filing",
         publisher="cninfo",
         page_or_section="annual_report",
@@ -286,11 +286,11 @@ def test_fc505_source_record_feeds_artifact_selection(tmp_path):
     handle["request_id"] = "urn:company-wiki:source-request:fc505-artifact"
     record = build_revenue_source_record(
         handle,
-        as_of_date="2026-08-10",
+        as_of_date="2026-08-11",
         source_type="regulatory_filing",
         publisher="cninfo",
         page_or_section="annual_report",
         prompt_injection_status="not_detected",
     )
-    index = validate_sources({"sources": [record]}, date(2026, 8, 10))
+    index = validate_sources({"sources": [record]}, date(2026, 8, 11))
     assert record["source_id"] in index  # the chain's record is selected
