@@ -233,3 +233,10 @@
 
 - **reviewer-fc701-independent accepted**（7/7 步：triplets、密封哈希、diff=4 文件、focused 7/7、全量 2153/2 PORT-01、config_doctor 8/8、drift_patrol 全绿、M1+M2 精确击杀、validator exit 0）。findings 全 low/info（no-remote-branch、PORT-01×2、exit-code 环境差异、plan seal 仅状态头差异、环境 skip）。
 - 当前 triplet：revenue d662c82、filing 6274be2、wiki 04d9a33。下一 FC：FC-702（严格 identity 和 period）。
+
+## 2026-08-11 — FC-702 实施完成（严格 identity；审查中）
+
+- **生产改动（resolver.py）**：CW-2.27H soft-match 移除——normalize 后 security_id 不同即 hard conflict（中国平安式公司名 security_id 不再匹配数字 ticker，fail closed）；前导零 normalize（03896==3896）与 issuer 锚定保留。
+- **7 tests**：SAFE-01（同名异 ticker/market hard conflict）、SAFE-02（无 soft-match；自身身份仍匹配）、SAFE-04（非 HTTPS fail closed）、SAFE-07（retired 排除）、前导零。1 mutation killed（soft-match 恢复）。
+- revenue FC-505 链测试 as_of 滚动至 2026-08-11（capture 窗口）。wiki 全量 2160 passed / 2 PORT-01；revenue 381 passed。
+- 当前 triplet：revenue 607a132、filing 6274be2、wiki b437810。FC-702 审查（reviewer-fc702-independent）运行中。
