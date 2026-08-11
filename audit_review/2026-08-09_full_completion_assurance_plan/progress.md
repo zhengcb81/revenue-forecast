@@ -310,3 +310,31 @@
 - **reviewer-fc805-independent accepted 一轮过**：现场复现 CN T3（61s）、M1（hint 移除）3.4s 击杀、skip-not-pass 门验证。
 - **Phase 8 exit gate 达成**：latest 入口一次调用返回 capture-ready handle、第二次零下载（T3 实测）。
 - 当前 triplet：revenue 170ab3e、filing 81d9cd9、wiki c28be16。下一 Phase 9：FC-901（artifacts dry-run 分桶；MIG-01/03/05）。
+
+## 2026-08-11 — FC-901 STARTED（artifact 绑定迁移 dry-run 分桶；Phase 9 启动）
+
+- **用户授权（本批 apply）**：用户决定 "现在就授权本批 apply"——FC-901 dry-run 验证后可直接执行真实 artifact 绑定（49GB catalog，仍须副本演练 + before/after fingerprint + 幂等重跑 + 回滚，零删除）。
+- **执行姿态**：全生命周期自治（RED→实现→全量套件→mutation→schema-2.0 receipt→干净 worktree 独立 reviewer），遇 blocked/异常停下。
+- **base triplet**：revenue 3617335bb63c8c5c2483edf71a56c06e035cb95c / filing 81d9cd98c6c6a680c859b20917fd9d47db707564 / wiki 9907a3b8869b8c33c520ddb25195bbc57034c8d8。
+- **前置**：FC-405 ✓、FC-704 ✓ accepted；无 execution lock；wiki dirty 仅 llm_cost_log.csv（已登记）。
+- **地基**：backfill_v2.py（WU-902 断言回填，5 桶闭环）是 FC-901 的工件版镜像；artifact_handle.validate_artifact 的 reason code → FC-901 分桶：reusable=True→bindable；artifact_hash_mismatch/hash_malformed/source_sha_mismatch→hash_mismatch；artifact_file_missing→missing_bytes；artifact_generator_unregistered→unknown_generator；其余（status/schema/source_binding/created_at/path）→legacy_unbound（MIG-05，绝不猜测）。
+- **apply 语义（change contract 决定）**：新 `artifact_bindings` 表（shadow，零删除 insert，可逆），bindable artifact 写 source 绑定；dry-run 零写。FC-902 resolver 随后消费。
+- **MIG 场景**：MIG-01（dry-run 零写 + 完整 proposal + 容量估算）、MIG-03（重跑幂等 + 零重复绑定）、MIG-05（不可证明→legacy_unbound）。
+
+## 2026-08-11 — FC-901 implementation progress（RED→GREEN→mutations killed）
+
+- **RED 证实**：`tests/contract/test_source_catalog_artifact_backfill.py`（11 tests）→ `ModuleNotFoundError: artifact_backfill`（模块缺失，正确 RED）。
+- **GREEN**：新 `src/company_wiki/source_catalog/artifact_backfill.py` — `run_artifact_backfill(catalog, *, registry, allowed_roots, now, mode)` + `ArtifactBackfillResult`（input/5 桶/rows/proposals/capacity/closed/result_hash）。复用 `validate_artifact` 为唯一绑定门，reason code → 桶：reusable→bindable；hash_mismatch/hash_malformed→hash_mismatch；file_missing→missing_bytes；generator_unregistered→unknown_generator；其余（含 source_sha lineage 失败）→legacy_unbound（MIG-05）。dry-run 纯 SELECT 零写；apply `CREATE TABLE IF NOT EXISTS artifact_bindings` + `INSERT OR IGNORE`（UNIQUE artifact_id 幂等），created_by='fc-901'，visibility='shadow'；artifacts 表永不 UPDATE/DELETE。
+- **修复的 2 个问题**：① SELECT 缺 as_of_date 列（IndexError）→ source dict as_of_date=""（validate_artifact 仅非空时检查，非绑定可证明性问题）；② 测试 fixture 中同 (doc_id, role, generator, version) 撞 UNIQUE → 不同 role。
+- **Mutations**：M2（移除 apply 守卫 → dry-run 也写）→ test_ab01 死（bindings 1≠0）；M1（hash_mismatch 映射移除 → 落 legacy_unbound）→ test_ab07 死（hash_mismatch 0≠1）。均已还原，11 passed。
+- **ruff/compileall**：干净（移除未用 uuid import）。
+- **变更文件**：3 个新文件（artifact_backfill.py / test / assurance/fc/FC-901/03_change_contract.md）；llm_cost_log.csv 不提交。
+- **下一步**：全量套件（重启中）→ commit → schema-2.0 implementer receipt → 干净 worktree 独立 reviewer。
+
+## 2026-08-11 — FC-901 ACCEPTED（artifact 绑定迁移 dry-run 分桶；Phase 9 启动）
+
+- **独立 reviewer accepted 一轮过**：reviewer-fc901-independent 从干净 worktree 07422f9 重放——focused 11 passed (2.44s)、全量 2209 passed/1 skipped/2 failed（两者均为 pre-existing PORT-01 test_check_unique_test_symbols Windows-GBK 对，零新失败）、M1+M2 双 kill（hash_mismatch 映射移除→test_ab07 死；apply 守卫移除→test_ab01 死，dry-run catalog sha256 字节级不变）、RED replay 真 (base ModuleNotFoundError)、apply 幂等 skipped_already_bound=1、rollback shadow DELETE 验证。
+- **can_accept gate exit 0**：11_implementer_receipt.json review 块密封（reviewer_receipt_sha256 5f63a089…、decision=accepted、reviewed_at 2026-08-11T07:34:38Z）。
+- **result triplet**：revenue 3617335 / filing 81d9cd9 / wiki **16bf9b2**（feat 07422f9 + docs 16bf9b2）。
+- **work_unit_registry FC-901 → accepted**；公司 wiki 工作树中的 `llm_cost_log.csv` 保持未提交。
+- **下一步 FC-902**（company-wiki）：SourceBundle 进入 resolver 生产响应——`query_source_bundle` 不再是测试/CLI 孤岛；ResolutionEnvelope 生成 snapshot-consistent SourceBundle；bundle 查询与 handle 同一 policy/epoch/document hash；CodeGraph production caller>=1；未知 artifact role fail closed。

@@ -100,7 +100,7 @@
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
-| FC-901 | pending | FC-405、704 | company-wiki | 7712 artifacts dry-run 分桶、MIG-01/03/05、零删除 |
+| FC-901 | accepted | FC-405、704 | company-wiki | 7712 artifacts dry-run 分桶、MIG-01/03/05、零删除（receipt: company-wiki/assurance/fc/FC-901/；reviewer-fc901-independent accepted 2026-08-11；11 tests + M1/M2 killed + 全量套件 2209 passed 零新失败；can_accept gate exit 0） |
 | FC-902 | pending | FC-901 | company-wiki | SourceBundle production caller>=1、snapshot 一致、unknown role fail closed |
 | FC-903 | pending | FC-902 | filing-fetch | N/N-1 bundle contract；unavailable 显式；转发不改决策 |
 | FC-904 | pending | FC-903 | revenue | selector production caller；AR-01~09；最小 DAG 重算 |
