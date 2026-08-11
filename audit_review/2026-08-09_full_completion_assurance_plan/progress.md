@@ -261,3 +261,12 @@
 - **零写保持**：resolve 命令只读 journal（ENV-08 + reviewer 对已有 journal 的 byte/mtime 一致性验证）。
 - **reviewer-fc704-independent accepted 一轮过**：M1（伪回执恢复）ENV-09 死、M2（journal 对账移除）ENV-03/04/04b 死、零写验证通过、真实链 E2E 端到端（outcome reused_existing + 诚实 null）。findings 全 informational。
 - 当前 triplet：revenue 1a78889、filing 85731b2、wiki f610c1a。下一 FC：FC-705（legacy bridge 观察与关闭条件）。
+
+## 2026-08-11 — FC-705 accepted（legacy bridge 观察与关闭条件；**Phase 7 全部完成**）
+
+- **关闭门**：`legacy_close_gate.close_gate_allowed` — 仅统计已完成窗口（ended_at 已设）；最后两个连续、各>=24h、各 hits=0 才允许关闭；open 窗口永不计入。r1 reviewer 抓出 off-by-one（原实现把 open 窗口算进最后两个 → 门永远不可达），r2 修复 + leg10g 簿记流模拟测试。
+- **真实 seam 观察**：observer 升级为经 SourceResolver + pinned RuntimePolicySnapshot 解析 canary matrix（CN 601899 FY24/25、HK 03690 FY24、US AAPL FY25），mode=ro + query_only 连接（CatalogStore init 会 WAL/DDL/migrate 写入——用 _ReadOnlyCatalog facade 规避，M3 mutation 证明）。period ledger 写真实时间戳 + close-gate verdict。
+- **现场证据**：current-state（生产 flags）4/4 reused_exact 但 legacy_bridge_hits=6（v1 reader + bridge on，诚实计数，门关）；drill（v2 active + bridge off）4/4 reused_exact 且 **legacy_bridge_hits=0** — cutover 就绪。
+- **r1 CHANGES_REQUIRED → r2 ACCEPTED**：F1（门不可达）修复 + F2（receipt base hash 修正 f610c1a752…）。M1 单窗口门 kill leg10b+leg10g；M2 bridge-off 门移除 kill leg07/09；M3 可写 store kill leg11。
+- 观察继续：周期 3 hits=6>0，close gate 诚实关闭；两个>=24h 零 hit 窗口达成前 bridge 不关（WU-1500 时间门继续）。
+- 当前 triplet：revenue 76d1602、filing 85731b2、wiki 7e8c35f。**Phase 7 exit gate 达成**（normalized resolver 三根 exact 全绿 FC-604、bridge 可观测/可关/可回滚 FC-705）。下一 Phase 8：FC-801（latest/gap/CloseGap）。

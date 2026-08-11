@@ -84,7 +84,7 @@
 | FC-702 | accepted | FC-701 | company-wiki | SAFE-01~07；别名/市场/前导零；弱匹配 mutation 必死（receipt: company-wiki/assurance/fc/FC-702/；reviewer-fc702-independent accepted 2026-08-11；7 tests + 1 mutation killed + CW-2.27H soft-match 移除） |
 | FC-703 | accepted | FC-702 | company-wiki | SQL pushdown、EX-07、OPS-03、p50/p95/内存预算（receipt: company-wiki/assurance/fc/FC-703/；reviewer-fc703-independent r1 REJECTED（WHERE-pin 投影可满足）→ r2 receipt-level REJECTED → r3 ACCEPTED 2026-08-11；5 tests + M1/M3 killed（WHERE 区域断言）+ fail-closed replay + 23521 docs 延迟基线） |
 | FC-704 | accepted | FC-703 | company-wiki | outcome/journal 对账；伪 download_calls mutation 必死（receipt: company-wiki/assurance/fc/FC-704/；reviewer-fc704-independent accepted 2026-08-11；9+3+4 tests + M1/M2 killed（伪回执恢复、journal 对账移除）+ 零写验证 + 真实链 E2E 端到端） |
-| FC-705 | pending | FC-704 | company-wiki | legacy observer 真实 seam、两个>=24h zero-hit 窗口、可回滚 |
+| FC-705 | accepted | FC-704 | company-wiki | legacy observer 真实 seam、两个>=24h zero-hit 窗口、可回滚（receipt: company-wiki/assurance/fc/FC-705/；reviewer-fc705-independent r1 CHANGES_REQUIRED（F1 关闭门不可达 + F2 base hash）→ r2 ACCEPTED 2026-08-11；16 tests + M1/M2/M3 killed + completed-window gate（leg10g 簿记流）+ 真实 seam canary 观察 + 现场 drill 4/4 reused_exact 零 bridge hit） |
 
 ## 10. Phase 8：latest 与下载
 
