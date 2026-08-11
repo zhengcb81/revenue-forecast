@@ -285,3 +285,11 @@
 - **三轮审查（教训记录）**：r1 REJECTED — F1：ensure 子解析器缺 --mode（每个 latest_as_of 调用在 parse 期失败）+ main() 把 gap 包装成 capture_ready handle。修复：wiki cli.py ensure 加 --mode（ca4c0b1）+ filing main() gap 直通（7409ad8），**现场端到端验证**（真实 catalog：latest_as_of 紫金矿业 → status=gap）。r2 REJECTED — F-r2-1：我的 F1 回归测试是死代码（追加在 unittest.main() 之后从未收集 + 逻辑错误）。修复：移入测试类 + 有效 request-file（01cd018），mutation 精确击杀。r3 ACCEPTED。
 - 教训：mock 测试会掩盖 CLI 边界断裂——本轮 reviewer 用真实 CLI 复现了 mock 全绿的假象；回归测试必须可收集且 mutation 可击杀。
 - 当前 triplet：revenue aa12d9e、filing 354b171、wiki 656adac。下一 FC：FC-803（DL-01~10、LT-01~10：只补 gap、第二次 fetch/write=0）。
+
+## 2026-08-11 — FC-803 accepted（最小下载 + 第二次零下载；T1 spy 链）
+
+- **真实跨进程 spies**：tests/e2e_support/spy_adapter.py（json_command_v1 子进程适配器，每次调用写 SPY_ADAPTER_LOG；脚本化候选 + provider_unavailable 故障注入）。IsolatedWiki 指向 spy，filing-fetch CLI → company-wiki CLI → adapter 全真实子进程。
+- **场景**：LT-09/DL-04（第二次相同请求 fetch=0、write=0）；LT-02（复用旧期、只下载缺失新期）；LT-01（本地最新 → gap 带 reuse handle、fetch=0）；LT-05（provider 不可用 → 可重试 gap、本地 reuse 保留）；LT-07（future 文件绝不进 gap）。
+- **T1 测试发现 3 个真实缺陷（REAL-FIX）**：① close-gap step-3 未绑定 missing candidate——无 fiscal_year 的 exact 请求会复用旧期文档而从不补 gap（按 candidate 的 fiscal_year/pdoc/form_type/provider 构建 staging request）；② close-gap 子解析器缺 --allow-acquisition-while-paused/--worker-config（parse 期断裂）；③ staging 清理用错 request id（DL-07 leftovers，被全量 wiki suite 抓出 cg04 回归）。
+- **reviewer-fc803-independent accepted 一轮过**：5 T1 重跑绿、M1（actionable gate）kill lt01/05/07、M2b（candidate 绑定）kill lt09、三处 REAL-FIX 代码核验。零 findings。
+- 当前 triplet：revenue 84c9e7e、filing 065976e、wiki f99e0fa。下一 FC：FC-804（single-flight、崩溃恢复、幂等；DL-08/09、OPS-02）。
