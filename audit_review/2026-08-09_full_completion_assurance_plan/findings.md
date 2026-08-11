@@ -320,3 +320,20 @@
 - ② os.environ 泄漏：一个测试设置 SPY_ADAPTER_FAULT 后未清理，污染后续测试——setUp 中显式 pop。
 - ③ IsolatedWiki 的 seed_market 只写文件不建索引——必须显式 `wiki.scan()` 才能被 catalog 解析。
 - ④ 手工写 receipt 哈希反复出错（FC-503/702/705 F2/801/804/805 共 6 次）——永远 `git rev-parse`，禁止从记忆重建。
+
+## 发现 41：FC-901~905 会话教训汇总（Phase 9 前五个工作单元）
+
+- ① **跨 FC 契约迁移会留下死字段上的旧测试 fixture**：FC-902 把 SourceBundle 从 handle.source_bundle 移到 resolution_envelope.bundle，18 个 WU-5.4 时代测试仍用旧字段（全量套件 18 红）。新 FC 必须 grep 旧字段的**所有消费者（含测试 fixture）**，不只改生产代码。
+- ② **变异触发器类 DDL 必须整体删除**：FC-905-a M3 首次变异只改触发器名（trg_artifact_producer_event → trg_disabled_*），触发器仍然存在并生效——变异无效。整体删除 DDL 块才是有效变异。
+- ③ **SQLite journal/触发器绝不能阻挡生产写入**：producer_events 表最初带 document_id FK，导致 focus_cleanup 删除孤儿文档时 IntegrityError（4 个测试红）。追加式历史 journal 无 FK——trace 绝不能破坏它记录的工作流。
+- ④ **DAG 祖先遍历方向**：FC-904 `_dag_ancestors` 初版把"current in parents"（current 是子角色）当成祖先——方向反了。正确：`ROLE_DEPENDENCIES[role]` 直接给出父列表，传递遍历。REUSED_EXACT vs REUSED_EQUIVALENT 断言要用 `in (...)`（seed 公司常解析为 equivalent）。
+- ⑤ **envelope 新字段的 N-1 归一化**：FC-903/905-b 的 validate_resolution_envelope 对缺失字段归一化为显式诚实默认值（bundle_status→unavailable、prompt_injection_status→not_reviewed、counts→None），在副本上改（输入 dict 不动）——"绝不伪造"是跨 FC 的贯串不变量，M4 类变异（伪造 not_detected）必须被击杀。
+- ⑥ **str.count 子串陷阱**：批量改测试 fixture 时，8 空格模式是 12 空格行的子串——先替换更具体的（12 空格），再替换 8 空格，并用断言核对数量。
+- ⑦ **安装同步是提交门禁**：revenue 提交前 `tools/sync_installations.py --apply`（MATCH 99 files）、filing 提交前 `tools/sync_installs_b3.py`（MATCH 27 files）——漏跑则 pre-commit R4.2 阻断。
+- ⑧ **reviewer 环境差异**：FC-904 reviewer 在 worktree 布局下 12 个 sibling-layout 测试失败（base 相同集合=零新失败）；FC-905-b reviewer 用目录 junction 解决。receipt 数字注明主树环境；环境失败以"base 相同"为准。
+
+## 发现 42：FC-905-a/b 关键设计决策
+
+- **producer_events 触发器方案**：AFTER INSERT ON artifacts 触发器自动 journal（role→type：normalized/sections→parser、summary/consumer_analysis→llm），零 producer 代码改动、不可绕过——比显式 helper 调用更健壮（不会忘）。
+- **prompt_injection review receipt**：documents.metadata_json["prompt_injection_review"]（status/reviewer/reviewed_at/evidence_sha256），写者 fail-closed 校验；envelope 读取，缺席→显式 not_reviewed。
+- **消费侧政策**：revenue source_preparation 遇 not_reviewed → RuntimeError 阻断（未审核永不备料）；parser/llm 计数缺席 → fail closed（永不伪造 0）——E2E fixture 文档需带 review receipt 才能过政策门。

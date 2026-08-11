@@ -427,3 +427,13 @@
 - **result triplet**：revenue b9994dc / filing 959d04c / wiki **fbb4828**（feat d76e461 + docs fbb4828）。
 - **registry FC-905 → in_progress（-a accepted；-b pending）**。
 - **下一步 FC-905-b**（revenue + filing）：source_preparation 去硬编码——prompt_injection_status 从 envelope 消费（not_reviewed → RuntimeError 阻断）、parser_calls/llm_calls 从 envelope 入 reuse_receipt、filing-fetch validate 新增字段校验、篡改 mutation 套件。
+
+## 2026-08-11 — FC-905-b ACCEPTED → **FC-905 COMPLETE（Phase 9: 5/6）**
+
+- **独立 reviewer accepted**：reviewer-fc905b-independent 从干净 worktrees b5c4dfd/6b61771 重放——revenue focused 6 + full 402 passed/106 subtests 零失败；filing focused 7 + full 283 passed/11 skipped/54 subtests 零失败；M1~M4 四杀（not_reviewed 阻断移除→b1 死；计数伪造 0→b5 死；filing 状态校验移除→fb5 死；filing N-1 归一化移除→fb1 死）；RED replay（base 硬编码 not_detected/parser_calls:0 存在，HEAD 归零）。
+- **2 条非阻塞环境观察**：① 已安装 skill 副本（.agents/.claude/.codex）滞后 11 文件（pre-existing，部署 --apply 属 release-owner 动作）；② revenue quality sync --check flag 未实现（pre-existing 工具/registry 不匹配）。
+- **can_accept gate exit 0**（reviewer_receipt_sha256 0fef0c6b…、reviewed_at 2026-08-11T19:38:15Z）。
+- **result triplet**：revenue b5c4dfd / filing 6b61771 / wiki **0c9adac**（-b docs）。
+- **registry FC-905 → accepted**（a+b 双 receipt）；Phase 9 进度 **5/6**。
+- **下一步 FC-906**（三仓，apply 已授权）：normalized/markdown/sections/summary/consumer_analysis 各至少一个真实 bound 样本；T2 证明 artifact_read>0 且对应 producer=0；旧 unbound 样本不复用。
+- **会话收尾（用户指示）**：休息 + 更新 planning-with-files 文档（task_plan.md Phase 9 状态、findings.md 教训、progress.md 会话摘要）。

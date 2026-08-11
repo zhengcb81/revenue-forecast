@@ -390,7 +390,9 @@ Phase 0 baseline
 - latest 用户入口一次调用即可返回最新 capture-ready handle；第二次零下载。
 - CN/HK/US T3 均有新鲜证据或明确用户批准的适用市场范围。
 
-## Phase 9（SourceBundle 与处理产物真实复用）— 状态：pending
+## Phase 9（SourceBundle 与处理产物真实复用）— 状态：in_progress（FC-901~905 accepted 2026-08-11；FC-906 pending）
+
+> 2026-08-11 进展：FC-901（artifact 绑定迁移 dry-run 分桶）、FC-902（bundle 进 resolver 生产响应）、FC-903（filing N/N-1 bundle 契约）、FC-904（revenue DAG selector 消费）、FC-905（可信 capture 回执，拆 a/b：a 生产侧 journal+review receipt，b 消费侧去硬编码+阻断）全部 accepted（receipts 见 work_unit_registry；can_accept gate exit 0）。
 
 ### FC-901：artifact 绑定迁移
 
