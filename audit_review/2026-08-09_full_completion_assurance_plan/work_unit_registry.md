@@ -94,7 +94,7 @@
 | FC-802 | accepted | FC-801 | filing-fetch | allow_download 两分支；GAP 不误映射 not_found；不复制策略（receipt: company-wiki/assurance/fc/FC-802/；reviewer-fc802-independent r1 REJECTED（F1：ensure 缺 --mode + main() 包装 gap）→ r2 REJECTED（F-r2-1 死代码回归测试）→ r3 ACCEPTED 2026-08-11；7 tests + M1/M2 killed + 现场端到端 gap 结构化验证） |
 | FC-803 | accepted | FC-802 | filing-fetch | DL-01~10、LT-01~10；只补 gap、第二次 fetch/write=0（receipt: company-wiki/assurance/fc/FC-803/；reviewer-fc803-independent accepted 2026-08-11；5 T1 跨进程 spy 测试 + M1/M2b killed + 3 个真实缺陷修复（close-gap 按 missing candidate 绑定、CLI 缺参、staging 清理 id）） |
 | FC-804 | accepted | FC-803 | company-wiki/filing | DL-08/09、OPS-02；single-flight、崩溃恢复、幂等（receipt: company-wiki/assurance/fc/FC-804/；reviewer-fc804-independent accepted 2026-08-11；5 tests + M1/M2 killed（锁移除 2-fetch、重试禁用）+ 锁内重查 journal 证据 + 锁界实测） |
-| FC-805 | pending | FC-804；真实下载授权 | filing-fetch | CN/HK/US T3、bytes/provider hash、首次/二次计数 |
+| FC-805 | accepted | FC-804；真实下载授权 | filing-fetch | CN/HK/US T3、bytes/provider hash、首次/二次计数（receipt: company-wiki/assurance/fc/FC-805/；reviewer-fc805-independent accepted 2026-08-11；真实 cninfo/dayu 三市场下载 3/3 + M1 击杀（hint 移除 3.4s 现场失败）+ skip-not-pass 门 + discovery 年份推导修复） |
 
 ## 11. Phase 9：工件复用
 

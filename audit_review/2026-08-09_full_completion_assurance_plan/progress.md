@@ -301,3 +301,12 @@
 - **DL-09**：重跑幂等（writer content-hash 去重）测试钉住。
 - **reviewer-fc804-independent accepted 一轮过**：M1（锁移除）以精确 2-fetch 签名击杀 CG-C1；M2（重试禁用）击杀 CG-C2；journal 记录输家 reused_before_download/gap_closed_by_concurrent；锁界在真实竞争下实测（0.3s timeout → ~0.6s CatalogOperationLockedError，不挂起）。findings 全 non-blocking。
 - 当前 triplet：revenue f7eef71、filing 065976e、wiki cb04bf3。下一 FC：FC-805（CN/HK/US T3 真实下载——需真实下载授权；未授权时 blocked）。
+
+## 2026-08-11 — FC-805 accepted（真实 provider T3；**Phase 8 全部完成**）
+
+- **真实 T3**（用户授权后）：CN 紫金矿业（cninfo）、HK 腾讯控股（hkexnews）、US Apple Inc（sec）三市场真实下载进 ISOLATED 临时 wiki——provider metadata hash（gap_plan.gap_hash）+ 下载 bytes hash（snapshot_sha256 逐字节验证）+ 首次/二次计数（journal 恰一次 downloaded_new，第二次 gap closed 零下载）。全绿 ~3.5 分钟。
+- **发现并修复真实缺陷**：CN adapter 的 discover 强制要求 fiscal_year——无年份的 latest_as_of 发现对真实 provider 一直失败（静默 provider_unavailable）。修复：gap-plan 发现请求从 as_of 推导最新已完成期（annual reports，12 月年结日历）。
+- **环境授权门**：FC805_REAL_DOWNLOAD=1 未设置 → 测试 skip（blocked，不计 pass），符合 scenario_matrix T3 规则。
+- **reviewer-fc805-independent accepted 一轮过**：现场复现 CN T3（61s）、M1（hint 移除）3.4s 击杀、skip-not-pass 门验证。
+- **Phase 8 exit gate 达成**：latest 入口一次调用返回 capture-ready handle、第二次零下载（T3 实测）。
+- 当前 triplet：revenue 170ab3e、filing 81d9cd9、wiki c28be16。下一 Phase 9：FC-901（artifacts dry-run 分桶；MIG-01/03/05）。
