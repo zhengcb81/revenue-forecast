@@ -252,3 +252,12 @@
 - **三轮审查**：r1（reviewer-fc703-independent）REJECTED——spy test 的子串断言被 SELECT 投影满足，去掉 kind WHERE 子句后 5 tests 全绿（M1 存活），receipt 的 mutation 声明不可复现。r2 修复：断言定位 WHERE 区域（WHERE 与 ORDER BY 之间）regex 匹配 `document_kind\s*=\s*\?`、`source_status\s*IN\s*\(`、fiscal_year json_extract；replay 工具 fail-closed（缺 catalog 时 exit 2 且不建库）。r2 reviewer（reviewer-fc703-r2-independent）确认代码修复有效（M1/M3 均被 WHERE 区域断言击杀、fail-closed 工作），但 receipt 不过 schema 门：commands[4].exit_code=2 违反 schema 2.0。r3：exit_code 修正为 0（语义写入 result 文本）+ M1 措辞修正（spy test 失败，其余 4 个经 resolver Python 侧门存活）→ validator OK，reviewer-fc703-r3-independent ACCEPTED。
 - 教训记录：substring 断言可以满足于投影列——测试必须断言谓词出现在 SQL 的 WHERE 区域；receipt 的每条 command exit_code 必须过 schema 门。
 - 当前 triplet：revenue 0cf30c1、filing 6274be2、wiki c11efd6。下一 FC：FC-704（outcome/journal 对账）。
+
+## 2026-08-11 — FC-704 accepted（ResolutionEnvelope + AcquisitionTrace；Phase 7 推进）
+
+- **跨三仓**（wiki 6bf213d / filing 85731b2 / revenue 1a78889）：envelope 携带 handle、policy_hash/activation_epoch（无快照则 null，不伪造）、journal 对账 outcome（reused_existing/reused_after_discovery/downloaded_new/gap/ambiguous/rejected/missing/failed，LATEST 条目生效）、download_events（仅 journal outcome ∈ {downloaded_new, deduplicated_after_download} 为 1）、显式 bundle_status=unavailable（不伪造空绿色）。
+- **伪回执修复**：revenue reuse_receipt 不再用 "0 if handle else 1" 倒推——download_calls = envelope.download_events；envelope 缺失 fail closed（RuntimeError，绝不静默 0）；receipt 记录 outcome/policy_hash/activation_epoch/bundle_status（证据在回执内，不重推导）。scenario_matrix §2 满足。
+- **filing-fetch**：validate_resolution_envelope 深度校验（schema/outcome taxonomy/download_events∈{0,1}/policy/epoch/bundle_status 枚举），非法即 upstream_error；N/N-1：旧 company-wiki 无 envelope 时正常 resolve，revenue 侧 fail closed。
+- **零写保持**：resolve 命令只读 journal（ENV-08 + reviewer 对已有 journal 的 byte/mtime 一致性验证）。
+- **reviewer-fc704-independent accepted 一轮过**：M1（伪回执恢复）ENV-09 死、M2（journal 对账移除）ENV-03/04/04b 死、零写验证通过、真实链 E2E 端到端（outcome reused_existing + 诚实 null）。findings 全 informational。
+- 当前 triplet：revenue 1a78889、filing 85731b2、wiki f610c1a。下一 FC：FC-705（legacy bridge 观察与关闭条件）。
