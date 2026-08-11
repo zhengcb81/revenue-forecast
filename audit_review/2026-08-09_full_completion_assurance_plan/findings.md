@@ -282,3 +282,41 @@
 - TDD 真实 RED：command registry 用真实仓名（revenue-forecast/filing-fetch/company-wiki），validator 首版按 triplet 键（revenue/filing/wiki）校验 → 修复 validator 用 VALID_OWNER_REPOS → GREEN。
 - 设计说明：manifest 的 current_triplet 是信息性（as-of FC-104 authoring）；真正的门是 frozen_baseline 后代不变量 + hash 篡改检测，避免"manifest 钉住自身提交"的鸡生蛋问题。
 - 影响：Phase 1 契约/治理四 FC 全部到 independent_review。command_registry 冻结后，FC-101/102/103 的 receipt 中 `pending-fc-104` 封印可由后续 FC 的 re-validation 补齐（can_accept 才可能通过）。
+
+## 发现 35：FC-704 —— 由 handle 推断 download_calls 的伪回执已修复（scenario_matrix §2 落地）
+
+- 原 `scripts/source_preparation.py` 用 `"download_calls": 0 if handle else 1` 从 handle 存在性倒推下载计数——scenario_matrix §2 明令禁止（计数必须来自事件/journal）。
+- 修复：ResolutionEnvelope（resolve/ensure CLI 输出携带 journal 对账 outcome + download_events + policy_hash/activation_epoch + bundle_status=unavailable）；filing-fetch 深度校验并原样转发；revenue receipt 从 envelope 证据推导，envelope 缺失 fail closed（RuntimeError，绝不静默 0）。
+- 教训：receipt 的每个计数必须能指回事件来源；"看起来合理"的推断在审计链上就是伪证据。
+
+## 发现 36：FC-705 —— legacy bridge 关闭门（completed-window 语义）
+
+- 初版 close_gate_allowed 把"最后两个周期"含 open 周期（永无 ended_at）→ 门永远不可达（reviewer F1 off-by-one）。修复：只统计已完结窗口；leg10g 簿记流模拟测试钉住。
+- 现场证据：current-state 周期 3/4 hits=6（诚实计数，门关）；cutover drill（v2 + bridge off）canary 4/4 REUSED_EXACT 且 zero bridge hit——cutover 就绪。
+- 教训：时间门逻辑必须用真实簿记流（新周期关闭旧周期）模拟测试，不能只测纯函数理想输入。
+
+## 发现 37：FC-802 F1 —— mock 测试掩盖真实 CLI 边界断裂（三类缺陷之一）
+
+- reviewer 用真实 CLI 复现：ensure 子解析器缺 `--mode`（每个 latest_as_of 调用 parse 期失败）+ main() 把结构化 gap 包装成 capture_ready handle——我的 mock 测试全绿。
+- 修复：ensure 加 --mode + main() gap 直通；现场端到端验证（真实 catalog：latest_as_of 紫金矿业 → status=gap）。
+- 教训：跨进程集成断言必须至少一次跑真实 CLI 边界；mock 的 CompletedProcess 会掩盖 parse/arg 契约断裂。
+
+## 发现 38：FC-803 —— T1 跨进程 spy 链抓出 3 个 mock 测不到的真实缺陷
+
+- ① close-gap step-3 未绑定 missing candidate：无 fiscal_year 的 exact 请求复用旧期文档而从不补 gap（LT-09 二次零下载契约在真实 flow 下失败）；② close-gap 子解析器缺 --allow-acquisition-while-paused/--worker-config（parse 期断裂）；③ staging 清理用错 request id（DL-07 leftovers，全量 wiki suite 抓出 FC-801 cg04 回归）。
+- 方法论：IsolatedWiki + tests/e2e_support/spy_adapter.py（真实 json_command_v1 子进程，SPY_ADAPTER_LOG/FIXTURE/FAULT env）——全真实子进程链，provider 调用计数来自 spy log。
+- 教训：T1 层（真实跨进程 + spy provider）是 CLI/编排层契约的合格测试层；T0 mock 无法覆盖。
+
+## 发现 39：FC-805 —— CN adapter 强制 fiscal_year，year-less latest discovery 一直静默失败
+
+- 真实 cninfo adapter 的 discover 强制 fiscal_year；无年份的 latest_as_of 发现对真实 provider 一直失败（静默 provider_unavailable）——此前现场 latest 运行从未真正完成 CN 发现。
+- 修复：gap-plan 发现请求从 as_of 推导最新已完成期（annual reports，12 月年结日历：as_of.year - 1）。
+- 验证：真实 T3 三市场下载全绿（CN 紫金矿业 71s、HK 腾讯、US Apple），bytes hash 逐字节验证 + 二次零下载；M1（hint 移除）3.4s 现场击杀。
+- 教训：真实 provider 契约与计划语义之间的隐性缺口只有 T3 真实调用能暴露——provider 的"required"字段是发现层契约的一部分。
+
+## 发现 40：测试纪律教训汇总（FC-802~805）
+
+- ① 回归测试不能是死代码：FC-802 r2 的 F1 回归测试追加在 `unittest.main()` 之后从未收集——测试必须可收集且 mutation 可击杀。
+- ② os.environ 泄漏：一个测试设置 SPY_ADAPTER_FAULT 后未清理，污染后续测试——setUp 中显式 pop。
+- ③ IsolatedWiki 的 seed_market 只写文件不建索引——必须显式 `wiki.scan()` 才能被 catalog 解析。
+- ④ 手工写 receipt 哈希反复出错（FC-503/702/705 F2/801/804/805 共 6 次）——永远 `git rev-parse`，禁止从记忆重建。
