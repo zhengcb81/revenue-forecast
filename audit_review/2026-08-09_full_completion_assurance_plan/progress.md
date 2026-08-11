@@ -338,3 +338,21 @@
 - **result triplet**：revenue 3617335 / filing 81d9cd9 / wiki **16bf9b2**（feat 07422f9 + docs 16bf9b2）。
 - **work_unit_registry FC-901 → accepted**；公司 wiki 工作树中的 `llm_cost_log.csv` 保持未提交。
 - **下一步 FC-902**（company-wiki）：SourceBundle 进入 resolver 生产响应——`query_source_bundle` 不再是测试/CLI 孤岛；ResolutionEnvelope 生成 snapshot-consistent SourceBundle；bundle 查询与 handle 同一 policy/epoch/document hash；CodeGraph production caller>=1；未知 artifact role fail closed。
+
+## 2026-08-11 — FC-902 implementation progress（SourceBundle 进 resolver 生产响应）
+
+- **RED 证实**：`tests/contract/test_fc902_bundle_in_resolver.py`（7 tests）→ ImportError: GENERATOR_REGISTRY（正确 RED）。
+- **GREEN**：① source_bundle.py：GENERATOR_REGISTRY（normalizer/llm_summary/section_extractor 1.0.0，版本取 models.py）+ KNOWN_ARTIFACT_ROLES（=ROLE_DEPENDENCIES keys）+ build_source_bundle 未知角色门（invalid handle, reason artifact_role_unknown，fail closed）；② resolver.py：ResolutionEnvelope +bundle_status=available|unavailable +bundle_hash +bundle；build_resolution_envelope(..., bundle=None)，malformed bundle（无 bundle_hash）raise；③ service.py：query_source_bundle +expected_content_sha256（与 catalog sources.content_sha256 不符 → None，fail closed）+ bundle_for_resolution()（生产 helper，status.value∈{reused_exact,reused_equivalent} + matches 非空；默认 GENERATOR_REGISTRY + config roots + UTC now）；④ cli.py resolve/ensure + close_gap._finalize 接线。
+- **修复**：种子 fixture 解析为 REUSED_EQUIVALENT 而非 REUSED_EXACT → 断言改 in(...)（与 FC-704 一致）。
+- **Mutations**：M1（角色门移除）→ test_b04 死（random_role 变 valid handle）；M2（漂移检查移除）→ test_b03 死（hash 漂移仍出 bundle）；M3（envelope bundle 接线移除）→ test_b01 死（永远 unavailable）。均已还原，7+35+回归 全绿。
+- **回归**：source_bundle/resolution_envelope_fc704/query_bundle/artifact_handle 35 passed；ruff/compileall 干净。
+- **下一步**：全量套件（跑批中）→ commit → schema-2.0 receipt → 干净 worktree 独立 reviewer。
+
+## 2026-08-11 — FC-902 ACCEPTED（SourceBundle 进 resolver 生产响应）
+
+- **独立 reviewer accepted**：reviewer-fc902-independent 从干净 worktree 364bc59 重放——focused 7 passed、sibling contracts 35 passed（test_env06/08 绿）、M1/M2/M3 三杀（角色门移除→b04 死；漂移检查移除→b03 死；envelope 接线移除→b01 死）、RED replay（base 无 GENERATOR_REGISTRY）。
+- **全量套件注意**：reviewer 运行 2215 passed/1 skipped/3 failed——除 2 个 pre-existing PORT-01 外，多 1 个 `test_source_catalog_worker_bootstrap::test_terminating_supervisor_does_not_leave_an_orphan_worker`（10s 子进程启动 deadline 超时）。reviewer 证明 pre-existing：HEAD 隔离复现 1/9（10.94s）、base 提交 scratch worktree 复现 1/8（11.02s），import 图（control.py）不含 FC-902 触及模块——Windows 随机时序 flake，非新失败，非 blocking。
+- **can_accept gate exit 0**（reviewer_receipt_sha256 c15a862b…、reviewed_at 2026-08-11T08:15:20Z）。
+- **result triplet**：revenue ca213c9 / filing 81d9cd9 / wiki **fd4f50b**（feat 364bc59 + docs fd4f50b）。
+- **registry FC-902 → accepted**；Phase 9 进度 2/6。
+- **下一步 FC-903**（filing-fetch）：N/N-1 envelope/bundle contract——旧 company-wiki 无 bundle 时显式 `bundle_status=unavailable`，不伪造空绿色；不修改 artifact validity 决策。
