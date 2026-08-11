@@ -278,3 +278,10 @@
 - **Mutations**：M1 policy 检查移除 → CG-01 死；M2 gap 重验移除 → CG-02 死；M3 staging 清理移除 → CG-04 死；M4 commit 绕过 → CG-07 死（LT-10 guard 独立证明承重）。
 - **reviewer-fc801-independent accepted 一轮过**：步骤顺序核验、M1/M4 独立重放击杀、20 focused + 50 cluster green、validator OK。findings 全 informational（request_id 相等性未运行时强制、CLI --mode 惰性等）。
 - 当前 triplet：revenue d362a49、filing 85731b2、wiki d09243f。下一 FC：FC-802（filing-fetch latest 编排：GAP 不再误映射 not_found）。
+
+## 2026-08-11 — FC-802 accepted（filing-fetch latest/gap 编排；三轮审查）
+
+- **结构化 gap**：latest_as_of 总走 ensure 路径（metadata only）；GAP 返回 {status:gap, gap_plan, resolution} 而非 not_found；allow_download=True + authorization 块 → 组装 CloseGapBinding（plan gap_hash + envelope policy_hash + caller authorization）→ close-gap CLI → 最终 handle。请求 schema 1.2 增加 authorization 块。
+- **三轮审查（教训记录）**：r1 REJECTED — F1：ensure 子解析器缺 --mode（每个 latest_as_of 调用在 parse 期失败）+ main() 把 gap 包装成 capture_ready handle。修复：wiki cli.py ensure 加 --mode（ca4c0b1）+ filing main() gap 直通（7409ad8），**现场端到端验证**（真实 catalog：latest_as_of 紫金矿业 → status=gap）。r2 REJECTED — F-r2-1：我的 F1 回归测试是死代码（追加在 unittest.main() 之后从未收集 + 逻辑错误）。修复：移入测试类 + 有效 request-file（01cd018），mutation 精确击杀。r3 ACCEPTED。
+- 教训：mock 测试会掩盖 CLI 边界断裂——本轮 reviewer 用真实 CLI 复现了 mock 全绿的假象；回归测试必须可收集且 mutation 可击杀。
+- 当前 triplet：revenue aa12d9e、filing 354b171、wiki 656adac。下一 FC：FC-803（DL-01~10、LT-01~10：只补 gap、第二次 fetch/write=0）。
