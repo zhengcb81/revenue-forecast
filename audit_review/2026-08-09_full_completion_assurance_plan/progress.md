@@ -245,3 +245,10 @@
 
 - **reviewer-fc702-independent accepted**（7/7 步：triplets、密封哈希、diff=2 wiki 文件+1 revenue 文件、focused 7/7、全量 2160/2 PORT-01、FC-505 4/4、M1 精确击杀、validator exit 0）。findings 全 low/info（含 safe07 测试 mask nuance——FC-701 的 retired 测试已端到端覆盖）。
 - 当前 triplet：revenue 607a132、filing 6274be2、wiki 4854380。下一 FC：FC-703（SQL pushdown 与性能）。
+
+## 2026-08-11 — FC-703 accepted（SQL pushdown 与性能；Phase 7 完成）
+
+- **TEST-ONLY FC**（零生产改动）：5 tests 钉住 query_filing_candidates 的 SQL pushdown（document_kind/source_status/fiscal_year WHERE 谓词、entity 过滤、candidate cap、EX-07 确定性）+ tools/ex07_perf_replay.py（真实 catalog 23521 docs 延迟基线，read-only）。
+- **三轮审查**：r1（reviewer-fc703-independent）REJECTED——spy test 的子串断言被 SELECT 投影满足，去掉 kind WHERE 子句后 5 tests 全绿（M1 存活），receipt 的 mutation 声明不可复现。r2 修复：断言定位 WHERE 区域（WHERE 与 ORDER BY 之间）regex 匹配 `document_kind\s*=\s*\?`、`source_status\s*IN\s*\(`、fiscal_year json_extract；replay 工具 fail-closed（缺 catalog 时 exit 2 且不建库）。r2 reviewer（reviewer-fc703-r2-independent）确认代码修复有效（M1/M3 均被 WHERE 区域断言击杀、fail-closed 工作），但 receipt 不过 schema 门：commands[4].exit_code=2 违反 schema 2.0。r3：exit_code 修正为 0（语义写入 result 文本）+ M1 措辞修正（spy test 失败，其余 4 个经 resolver Python 侧门存活）→ validator OK，reviewer-fc703-r3-independent ACCEPTED。
+- 教训记录：substring 断言可以满足于投影列——测试必须断言谓词出现在 SQL 的 WHERE 区域；receipt 的每条 command exit_code 必须过 schema 门。
+- 当前 triplet：revenue 0cf30c1、filing 6274be2、wiki c11efd6。下一 FC：FC-704（outcome/journal 对账）。

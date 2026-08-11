@@ -318,7 +318,7 @@ Phase 0 baseline
 - 三根都有唯一样本和真实 T2 证据；future root 配置-only 仍通过。
 - company/dayu v1 scanner 可以进入退役观察，但此时尚不删除。
 
-## Phase 7（Normalized Resolver、严格身份与 ResolutionEnvelope）— 状态：in_progress（FC-701 执行中）
+## Phase 7（Normalized Resolver、严格身份与 ResolutionEnvelope）— 状态：in_progress（FC-701/702/703 completed、accepted；FC-704 执行中）
 
 ### FC-701：normalized-only resolver
 
