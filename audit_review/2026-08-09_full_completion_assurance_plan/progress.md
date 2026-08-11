@@ -293,3 +293,11 @@
 - **T1 测试发现 3 个真实缺陷（REAL-FIX）**：① close-gap step-3 未绑定 missing candidate——无 fiscal_year 的 exact 请求会复用旧期文档而从不补 gap（按 candidate 的 fiscal_year/pdoc/form_type/provider 构建 staging request）；② close-gap 子解析器缺 --allow-acquisition-while-paused/--worker-config（parse 期断裂）；③ staging 清理用错 request id（DL-07 leftovers，被全量 wiki suite 抓出 cg04 回归）。
 - **reviewer-fc803-independent accepted 一轮过**：5 T1 重跑绿、M1（actionable gate）kill lt01/05/07、M2b（candidate 绑定）kill lt09、三处 REAL-FIX 代码核验。零 findings。
 - 当前 triplet：revenue 84c9e7e、filing 065976e、wiki f99e0fa。下一 FC：FC-804（single-flight、崩溃恢复、幂等；DL-08/09、OPS-02）。
+
+## 2026-08-11 — FC-804 accepted（single-flight、有界重试、幂等恢复）
+
+- **DL-08 single-flight**：close-gap fetch+commit 阶段按事务跨进程串行化（close_gap_locks/<txn>.lock，复用 acquisition-mutex 模式）；锁内重查 gap——输家以 reused（fetch=0）完成，同一 binding 最多 1 次 provider fetch + 1 次 canonical commit。锁等待有界（coordinator timeout + grace）。
+- **OPS-02 有界重试**：retryable staging 失败（AdapterProcessError.retryable）最多重试 3 次（backoff 1s/2s）；非 retryable 立即失败 + staging 清理。
+- **DL-09**：重跑幂等（writer content-hash 去重）测试钉住。
+- **reviewer-fc804-independent accepted 一轮过**：M1（锁移除）以精确 2-fetch 签名击杀 CG-C1；M2（重试禁用）击杀 CG-C2；journal 记录输家 reused_before_download/gap_closed_by_concurrent；锁界在真实竞争下实测（0.3s timeout → ~0.6s CatalogOperationLockedError，不挂起）。findings 全 non-blocking。
+- 当前 triplet：revenue f7eef71、filing 065976e、wiki cb04bf3。下一 FC：FC-805（CN/HK/US T3 真实下载——需真实下载授权；未授权时 blocked）。
