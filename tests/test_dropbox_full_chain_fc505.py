@@ -23,7 +23,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 sys.path.insert(0, str(WIKI_ROOT / "src"))
 sys.path.insert(0, str(FILING_ROOT / "scripts"))
 
-import pytest  # noqa: E402
+from datetime import datetime, timedelta  # noqa: E402
 
 from company_wiki.source_catalog import (  # noqa: E402
     CatalogConfig,
@@ -155,7 +155,7 @@ def test_fc505_chain_exact_hit_zero_side_effects(tmp_path):
     # revenue: the strict source record consumed by artifact selection
     record = build_revenue_source_record(
         handle,
-        as_of_date="2026-08-11",
+        as_of_date=(datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
         source_type="regulatory_filing",
         publisher="cninfo",
         page_or_section="annual_report",
@@ -276,7 +276,6 @@ def test_fc505_source_record_feeds_artifact_selection(tmp_path):
     """The chain's source record is consumable by the revenue artifact
     selection (validate_sources accepts the built record)."""
     from company_wiki_source import build_revenue_source_record
-    from datetime import date
     from revenue_core import validate_sources
 
     dropbox_dir, body = _canary_fixture(tmp_path)
@@ -286,11 +285,11 @@ def test_fc505_source_record_feeds_artifact_selection(tmp_path):
     handle["request_id"] = "urn:company-wiki:source-request:fc505-artifact"
     record = build_revenue_source_record(
         handle,
-        as_of_date="2026-08-11",
+        as_of_date=(datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
         source_type="regulatory_filing",
         publisher="cninfo",
         page_or_section="annual_report",
         prompt_injection_status="not_detected",
     )
-    index = validate_sources({"sources": [record]}, date(2026, 8, 11))
+    index = validate_sources({"sources": [record]}, (datetime.now() + timedelta(days=14)).date())
     assert record["source_id"] in index  # the chain's record is selected
