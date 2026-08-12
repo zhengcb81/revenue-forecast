@@ -62,6 +62,208 @@ PROHIBITED_OUTPUT_KEYS = {
 }
 
 
+def _recompute_consolidated_paths(
+    consolidated: Any, years: Any, segment_index: Any, base: Any,
+    effective_path: Any,
+) -> None:
+    """Recompute consolidated annual/CAGR/bridge paths per scenario (FC-1204-b)."""
+    for scenario in SCENARIOS:
+        forecast = consolidated[scenario]
+        annual = forecast["annual_revenue"]
+        require(list(annual) == years, f"annual revenue years mismatch in {scenario}")
+        values = [float(annual[year]) for year in years]
+        require(
+            math.isclose(
+                float(forecast["terminal_revenue"]),
+                values[-1],
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            ),
+            f"terminal revenue mismatch in {scenario}",
+        )
+        expected_cagr = calculate_cagr(base, values[-1], len(years))
+        require(
+            (expected_cagr is None and forecast["cagr"] is None)
+            or math.isclose(
+                float(forecast["cagr"]),
+                float(expected_cagr),
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            ),
+            f"CAGR mismatch in {scenario}",
+        )
+        for year in years:
+            previous = (
+                base
+                if year == years[0]
+                else float(annual[years[years.index(year) - 1]])
+            )
+            expected_growth = (
+                None if previous == 0 else float(annual[year]) / previous - 1
+            )
+            observed_growth = forecast["annual_growth"][year]
+            require(
+                (expected_growth is None and observed_growth is None)
+                or math.isclose(
+                    float(observed_growth),
+                    float(expected_growth),
+                    rel_tol=1e-9,
+                    abs_tol=1e-9,
+                ),
+                f"annual growth mismatch in {scenario}/{year}",
+            )
+            segment_sum = sum(
+                float(segment["annual_revenue"][year])
+                for segment in forecast["segment_bridge"]
+            )
+            adjustment_sum = sum(
+                float(adjustment["annual_adjustment"][year])
+                for adjustment in forecast["adjustment_bridge"]
+            )
+            require(
+                math.isclose(
+                    segment_sum + adjustment_sum,
+                    float(annual[year]),
+                    rel_tol=1e-9,
+                    abs_tol=1e-9,
+                ),
+                f"company bridge mismatch in {scenario}/{year}",
+            )
+            for bridge in forecast["segment_bridge"]:
+                require(
+                    math.isclose(
+                        float(bridge["annual_revenue"][year]),
+                        float(
+                            effective_path(segment_index[bridge["name"]], scenario)[
+                                year
+                            ]
+                        ),
+                        rel_tol=1e-9,
+                        abs_tol=1e-9,
+                    ),
+                    f"segment bridge cross-check mismatch in {scenario}/{bridge['name']}/{year}",
+                )
+        contribution = forecast["incremental_contribution"]
+        require(
+            math.isclose(
+                float(contribution["total"]),
+                float(forecast["incremental_revenue"]),
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            ),
+            f"incremental contribution mismatch in {scenario}",
+        )
+
+
+def _validate_confidence_block(confidence: Any) -> None:
+    """Recompute confidence score/rating/gates (FC-1204-b)."""
+    require(
+        math.isclose(
+            sum(float(value) for value in confidence["components"].values()),
+            float(confidence["score"]),
+            rel_tol=1e-9,
+            abs_tol=1e-9,
+        ),
+        "confidence component total mismatch",
+    )
+    expected_rating = (
+        "high"
+        if confidence["score"] >= 80
+        else "medium"
+        if confidence["score"] >= 55
+        else "low"
+    )
+    require(confidence["rating"] == expected_rating, "confidence rating mismatch")
+    require(
+        all(confidence.get("quality_gates", {}).values()),
+        "confidence quality gate failed",
+    )
+
+
+def _validate_theme_analysis(
+    theme: Any, segment_index: Any, parameter_index: Any, base: Any,
+    effective_path: Any,
+) -> None:
+    """Recompute theme terminal/counterfactual/increment/elasticity (FC-1204-b)."""
+    if theme is not None:
+        for scenario in SCENARIOS:
+            values = theme["scenarios"][scenario]
+            expected_theme_terminal = sum(
+                float(list(effective_path(segment_index[name], scenario).values())[-1])
+                for name in theme["segment_names"]
+            )
+            require(
+                math.isclose(
+                    expected_theme_terminal,
+                    float(values["theme_terminal_revenue"]),
+                    rel_tol=1e-9,
+                    abs_tol=1e-9,
+                ),
+                f"theme terminal mismatch: {scenario}",
+            )
+            counterfactual_parameter = parameter_index[
+                values["counterfactual_parameter_id"]
+            ]
+            require(
+                math.isclose(
+                    float(counterfactual_parameter["value"]),
+                    float(values["counterfactual_terminal_revenue"]),
+                    rel_tol=1e-9,
+                    abs_tol=1e-9,
+                ),
+                f"theme counterfactual mismatch: {scenario}",
+            )
+            expected_increment = float(values["theme_terminal_revenue"]) - float(
+                values["counterfactual_terminal_revenue"]
+            )
+            require(
+                math.isclose(
+                    expected_increment,
+                    float(values["theme_incremental_revenue"]),
+                    rel_tol=1e-9,
+                    abs_tol=1e-9,
+                ),
+                f"theme increment mismatch: {scenario}",
+            )
+            expected_elasticity = None if base == 0 else expected_increment / base
+            require(
+                (
+                    expected_elasticity is None
+                    and values["theme_elasticity_to_company_base"] is None
+                )
+                or math.isclose(
+                    float(expected_elasticity),
+                    float(values["theme_elasticity_to_company_base"]),
+                    rel_tol=1e-9,
+                    abs_tol=1e-9,
+                ),
+                f"theme elasticity mismatch: {scenario}",
+            )
+
+
+def _validate_receipt_blocks(result: Any, hash_payload: Any) -> None:
+    """Recompute workflow/publication receipt + result hash (FC-1204-b)."""
+    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
+        expected_receipt = build_workflow_compliance_receipt(
+            result["input_sha256"],
+            result["sources"],
+            result["evidence_claims"],
+            result["parameter_trace"],
+            result.get("data_gaps", []),
+        )
+        require(
+            result["workflow_compliance_receipt"] == expected_receipt,
+            "workflow compliance receipt mismatch",
+        )
+        if "publication_receipt" in result:
+            validate_publication_receipt(result)
+    if "result_sha256" in result:
+        require(
+            result["result_sha256"] == canonical_sha256(hash_payload),
+            "forecast result hash mismatch",
+        )
+
+
 def _walk_keys(value: Any, path: str = "root") -> None:
     if isinstance(value, dict):
         for key, child in value.items():
@@ -339,92 +541,7 @@ def _validate_forecast_output(
         set(consolidated) == set(SCENARIOS),
         "consolidated_forecast must contain low/base/high",
     )
-    for scenario in SCENARIOS:
-        forecast = consolidated[scenario]
-        annual = forecast["annual_revenue"]
-        require(list(annual) == years, f"annual revenue years mismatch in {scenario}")
-        values = [float(annual[year]) for year in years]
-        require(
-            math.isclose(
-                float(forecast["terminal_revenue"]),
-                values[-1],
-                rel_tol=1e-9,
-                abs_tol=1e-9,
-            ),
-            f"terminal revenue mismatch in {scenario}",
-        )
-        expected_cagr = calculate_cagr(base, values[-1], len(years))
-        require(
-            (expected_cagr is None and forecast["cagr"] is None)
-            or math.isclose(
-                float(forecast["cagr"]),
-                float(expected_cagr),
-                rel_tol=1e-9,
-                abs_tol=1e-9,
-            ),
-            f"CAGR mismatch in {scenario}",
-        )
-        for year in years:
-            previous = (
-                base
-                if year == years[0]
-                else float(annual[years[years.index(year) - 1]])
-            )
-            expected_growth = (
-                None if previous == 0 else float(annual[year]) / previous - 1
-            )
-            observed_growth = forecast["annual_growth"][year]
-            require(
-                (expected_growth is None and observed_growth is None)
-                or math.isclose(
-                    float(observed_growth),
-                    float(expected_growth),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"annual growth mismatch in {scenario}/{year}",
-            )
-            segment_sum = sum(
-                float(segment["annual_revenue"][year])
-                for segment in forecast["segment_bridge"]
-            )
-            adjustment_sum = sum(
-                float(adjustment["annual_adjustment"][year])
-                for adjustment in forecast["adjustment_bridge"]
-            )
-            require(
-                math.isclose(
-                    segment_sum + adjustment_sum,
-                    float(annual[year]),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"company bridge mismatch in {scenario}/{year}",
-            )
-            for bridge in forecast["segment_bridge"]:
-                require(
-                    math.isclose(
-                        float(bridge["annual_revenue"][year]),
-                        float(
-                            effective_path(segment_index[bridge["name"]], scenario)[
-                                year
-                            ]
-                        ),
-                        rel_tol=1e-9,
-                        abs_tol=1e-9,
-                    ),
-                    f"segment bridge cross-check mismatch in {scenario}/{bridge['name']}/{year}",
-                )
-        contribution = forecast["incremental_contribution"]
-        require(
-            math.isclose(
-                float(contribution["total"]),
-                float(forecast["incremental_revenue"]),
-                rel_tol=1e-9,
-                abs_tol=1e-9,
-            ),
-            f"incremental contribution mismatch in {scenario}",
-        )
+    _recompute_consolidated_paths(consolidated, years, segment_index, base, effective_path)
     for year in years:
         require(
             consolidated["low"]["annual_revenue"][year]
@@ -903,27 +1020,7 @@ def _validate_forecast_output(
             f"sensitivity completeness required: untested parameter(s) without exclusion: {sorted(uncovered)}",
         )
     confidence = result["confidence"]
-    require(
-        math.isclose(
-            sum(float(value) for value in confidence["components"].values()),
-            float(confidence["score"]),
-            rel_tol=1e-9,
-            abs_tol=1e-9,
-        ),
-        "confidence component total mismatch",
-    )
-    expected_rating = (
-        "high"
-        if confidence["score"] >= 80
-        else "medium"
-        if confidence["score"] >= 55
-        else "low"
-    )
-    require(confidence["rating"] == expected_rating, "confidence rating mismatch")
-    require(
-        all(confidence.get("quality_gates", {}).values()),
-        "confidence quality gate failed",
-    )
+    _validate_confidence_block(confidence)
     reconstructed_segments = []
     for segment in result["segments"]:
         reconstructed_segments.append(
@@ -1091,78 +1188,8 @@ def _validate_forecast_output(
     )
     theme = result.get("theme_analysis")
     if theme is not None:
-        for scenario in SCENARIOS:
-            values = theme["scenarios"][scenario]
-            expected_theme_terminal = sum(
-                float(list(effective_path(segment_index[name], scenario).values())[-1])
-                for name in theme["segment_names"]
-            )
-            require(
-                math.isclose(
-                    expected_theme_terminal,
-                    float(values["theme_terminal_revenue"]),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"theme terminal mismatch: {scenario}",
-            )
-            counterfactual_parameter = parameter_index[
-                values["counterfactual_parameter_id"]
-            ]
-            require(
-                math.isclose(
-                    float(counterfactual_parameter["value"]),
-                    float(values["counterfactual_terminal_revenue"]),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"theme counterfactual mismatch: {scenario}",
-            )
-            expected_increment = float(values["theme_terminal_revenue"]) - float(
-                values["counterfactual_terminal_revenue"]
-            )
-            require(
-                math.isclose(
-                    expected_increment,
-                    float(values["theme_incremental_revenue"]),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"theme increment mismatch: {scenario}",
-            )
-            expected_elasticity = None if base == 0 else expected_increment / base
-            require(
-                (
-                    expected_elasticity is None
-                    and values["theme_elasticity_to_company_base"] is None
-                )
-                or math.isclose(
-                    float(expected_elasticity),
-                    float(values["theme_elasticity_to_company_base"]),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"theme elasticity mismatch: {scenario}",
-            )
-    if result["schema_version"] == FORECAST_SCHEMA_VERSION:
-        expected_receipt = build_workflow_compliance_receipt(
-            result["input_sha256"],
-            result["sources"],
-            result["evidence_claims"],
-            result["parameter_trace"],
-            result.get("data_gaps", []),
-        )
-        require(
-            result["workflow_compliance_receipt"] == expected_receipt,
-            "workflow compliance receipt mismatch",
-        )
-        if "publication_receipt" in result:
-            validate_publication_receipt(result)
-    if "result_sha256" in result:
-        require(
-            result["result_sha256"] == canonical_sha256(hash_payload),
-            "forecast result hash mismatch",
-        )
+        _validate_theme_analysis(theme, segment_index, parameter_index, base, effective_path)
+    _validate_receipt_blocks(result, hash_payload)
 
 
 def validate_published_forecast(

@@ -36,7 +36,7 @@ FROZEN_MAX = {
     "revenue_core.py": 6,
     "revenue_forecast.py": 18,
     "revenue_publication.py": 10,
-    "revenue_report.py": 174,
+    "revenue_report.py": 150,  # FC-1204-b: 174 -> 150 via block extraction
     "schema_compatibility.py": 6,
     "source_preparation.py": 17,
     "trust_anchor.py": 8

@@ -16,4 +16,11 @@
 - **交付（wiki `f58b52e` + comment 提交）**：删除 validate_normalized_filing、entity_resolver.py、reuse_latest_policy.py、atomic_rollback + wu905 脚本 + 4 个测试文件；新门测试 test_fc1203_dead_helpers_absent.py（5 复活 mutation 全杀）；extractive summarizer 注册 GENERATOR_REGISTRY + schema_version 列/metadata 双写 + ISO created_at（M-unregister 击杀）——生产 summarize CLI 产物从必然 rejected 变为可绑定。变更合同 03_change_contract_fc1203.md。
 - **验证**：6 新测试 GREEN；邻域 53 passed（policy_and_flags/fc1201 gate/fc502/dbx_fixture/restore_flow/admission_profile/focus_admission）；ruff 干净；全量套件运行中。
 - **下一步**：全量 verdict → receipt → 独立 reviewer → can_accept → registry accepted → FC-1204。
+## 2026-08-13 — FC-1204 实施中（a/b/c 三子链；基线实测见 findings 60/61）
+
+- **a（coverage）**：filing 新增 test_fc1204_coverage_gap.py（21 测试）——TOTAL 88→91%（≥90 gate 达成），filing_contracts 91→97%；quality.yml 加 --cov-fail-under=90 required 步骤。wiki 新增 tier1_gaps 测试（13 tests：admission 99/policy 100/scheduler 100/visibility 100/restore 补 2 分支）+ test_fc1204_coverage_ratchet.py（Tier1 critical ≥95 required；Tier2 冻结 + FC-1205 目标；FROZEN 其余；FC1204_COVERAGE_GATE=1 环境门——coverage.json 会话末写盘，in-suite 诚实 skip，CI 分两步）。
+- **b（complexity）**：三仓 ratchet 测试冻结实测 per-file max-CC + 新文件 ≤10。**revenue `_validate_forecast_output` CC 174→150**：四块提取（_recompute_consolidated_paths/_validate_confidence_block/_validate_theme_analysis/_validate_receipt_blocks，AST 自由变量分析定参数集，helper 全 ≤15），test_output_report 23 passed 锁行为；ratchet 冻结值 174→150。
+- **c（type）**：mypy 配置（revenue mypy.ini namespace+follow_imports=skip；wiki pyproject override yaml）。revenue 契约集 45→**0 errors**（require() 宽为 Any truthiness gate + narrows；document.py 4 处 assert/过滤窄化）；wiki 11 契约模块 0 errors；filing 0 errors。三仓 CI 加 mypy required 步骤。
+- **提交**：revenue `17e6354`（mypy+ratchet；sync --apply 后 pre-commit 全绿）。filing/wiki 待提交；wiki coverage 全量验证运行中。
+- **不可达守卫发现**：fetch_filing.py:657「explicit download requires market and security_id」被 _resolved_company_identity 上游强约束——纵深防御不可达分支，按「绝不伪造」不写人为测试，保留 + 记录。
 
