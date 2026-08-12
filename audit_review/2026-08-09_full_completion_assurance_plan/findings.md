@@ -517,4 +517,14 @@
 - **工具**：mypy 1.19.0 ✓、coverage 7.12 + pytest-cov ✓（pyright 无——type check 用 mypy）；revenue `tools/run_coverage_gates.py` 已有 --branch 解析 + fail_under 门。
 - **复杂度基线（AST McCabe 实测，三仓产品代码）**：230 个函数 CC≥10、283 个 ≥8。顶端：revenue `_validate_forecast_output` CC174/1083 行、wiki `cli.main` 140/766、`_scan_root_v1` 140/377、`resolver.resolve` 103/288、`_scan_catalog_impl` 102/450、`worker.run_cycle` 99/411、revenue `validate_management_target_coverage` 88/443、`validate_artifact` 59/64、filing `validate_resolution_envelope/validate_handle/validate_request` 各 39。
 - **FC-1204 scope 指向**：① branch coverage 测量（reviewer 结束后跑，防 CPU 竞争）；② complexity ratchet = 冻结实测 max-CC + 顶 5-10 个「行为被既有场景锁定的纯函数段」拆分（_validate_forecast_output 的语义重算段、resolver.resolve 的 pipeline 段），生产热路径与发布波次交互处不动；③ mypy public contracts 基线（先测错误量再定 strict 面）。阈值按 code_quality_plan §3「实测后冻结，计划不虚构」执行。
+## 发现 61：FC-1204 基线实测完成 — branch coverage / mypy 三仓数值
+
+- 日期：2026-08-12。FC-1203 accepted 后实测（与 findings 60 的复杂度基线合并为 FC-1204 全部起点）。
+- **filing branch coverage（hermetic suite）**：TOTAL 88%（fetch_filing.py 87%、filing_contracts.py 91%）。pyproject 已有 `fail_under=90` 配置但 CI 无 coverage 步骤——现基线不达已配置门槛。缺行集中：fetch_filing 配置错误路径（53/78/87/178）、ensure 响应路径（483-499/501-524）、deadline（290）、CLI 尾部（943/945/1018）；filing_contracts 14 处边界（146/159/167/232/235/242/257/265/278/301/381/387-388/392/412）。
+- **wiki branch coverage（全量套件）**：TOTAL 81%（11492 stmts/4096 branches）。关键契约链数值：source_bundle 100、producer_events 100、url_binding 100、service 95、resolver 86、runtime_policy 84、policy 93、visibility_bridge 93、scheduler_policy 93、restore 93、prompt_injection 73、normalizer 55、security_identity 77、startup 61、worker 79、store 83。
+- **mypy 基线**：wiki 契约模块 9 文件 = 1 error（policy_2x 缺 types-PyYAML stub）；filing_contracts = 0 error；revenue contracts/schema_compatibility/filing_fetch_client/trust_anchor = **35 errors**（evidence.py union-attr/index/arg-type 为主）。
+- **FC-1204 Interpretation A（a/b/c 子链，FC-906 先例）**：
+  - **a（coverage）**：filing 补测试到 ≥90（既有 gate）+ contracts ≥95 + CI 接线；wiki critical 集（FC-201~906 契约链）= source_bundle/admission/flags/policy/normalized_meta/runtime_policy/activation/close_gap/artifact_handle/acquisition_journal/canary_registry/producer_events/prompt_injection/url_binding/visibility_bridge/service/resolver/scheduler_policy/restore——全部拉到 ≥95（resolver 59 stmts/37 br 缺口最大），新 coverage ratchet 门测试冻结其余模块的实测值（normalizer/security_identity/startup/worker/store/scanner 等诚实冻结，注明 R2-R9 资产/legacy 模块）。
+  - **b（complexity）**：每仓新增 complexity ratchet 测试（AST McCabe，冻结实测 max）；拆分顶 2 个纯函数段（revenue `_validate_forecast_output` CC174 + wiki `resolver.resolve` CC103 → pipeline 段）；其余顶端冻结 + 记录下降目标。
+  - **c（type）**：mypy 配置（yaml stub 用 ignore_missing_imports）+ 修 revenue 35 errors + 三仓 CI mypy 步骤（契约模块集，零容忍）。
 

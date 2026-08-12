@@ -74,7 +74,9 @@ def collect_mode(collector: Collector):
         _COLLECTOR.reset(token)
 
 
-def require(condition: bool, message: str) -> None:
+def require(condition: Any, message: str) -> None:
+    # Truthiness gate (bool in intent); data-validation callers pass
+    # isinstance()/fullmatch() results, so the parameter is Any.
     """Raise ``ForecastInputError`` when *condition* is falsy.
 
     When a :class:`Collector` is active for the current context (set via
@@ -284,6 +286,8 @@ def _validate_host_signature(receipt: dict[str, Any]) -> None:
         isinstance(fingerprint, str) and re.fullmatch(r"[0-9a-f]{32}", fingerprint),
         "invalid capture host_receipt public_key_fingerprint",
     )
+    assert isinstance(signature, str)  # narrow; require() above enforced
+    assert isinstance(fingerprint, str)  # narrow; require() above enforced
     trusted = _trusted_signer_public_keys()
     require(
         fingerprint in trusted,
@@ -381,6 +385,7 @@ def validate_source_capture(source: dict[str, Any], as_of: date) -> dict[str, An
     source_id = source.get("source_id", "<unknown>")
     capture = source.get("capture")
     require(isinstance(capture, dict), f"{source_id}.capture is required")
+    assert isinstance(capture, dict)  # narrow for mypy; require() already enforced
     required = {
         "capture_schema_version",
         "capture_method",

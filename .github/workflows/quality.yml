@@ -13,7 +13,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install test dependency
-        run: python -m pip install pytest cryptography "ruff==0.15.18" pytest-cov pyyaml requests
+        run: python -m pip install pytest cryptography "ruff==0.15.18" pytest-cov pyyaml requests mypy
       - name: Validate compatibility manifest (FC-1101)
         run: |
           python -c "import json,sys; d=json.load(open('compatibility/current.json',encoding='utf-8')); assert d['schema_version']=='1.0'; assert len(d['current_triplet'])==3; print('manifest OK', d['current_triplet']['revenue'][:12])"
@@ -22,6 +22,8 @@ jobs:
           SIBLING_DIR="$(dirname "$GITHUB_WORKSPACE")"
           python tools/ci_checkout_siblings.py --manifest compatibility/current.json --sibling-root "$SIBLING_DIR" --skip revenue
           echo "PYTHONPATH=$SIBLING_DIR/company-wiki/src" >> "$GITHUB_ENV"
+      - name: Strict type check on public contracts (FC-1204-c)
+        run: python -m mypy scripts/contracts/ scripts/schema_compatibility.py scripts/filing_fetch_client.py scripts/trust_anchor.py
       - name: Ruff + compileall + unique test symbols (WU-1.2)
         run: |
           ruff check scripts tests tools e2e

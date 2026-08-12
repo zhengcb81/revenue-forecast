@@ -181,10 +181,11 @@ def validate_historical_revenue(
         )
         require(
             any(
-                math.isclose(
-                    float(claim.get("extracted_value")), value, rel_tol=0, abs_tol=1e-9
-                )
+                math.isclose(float(extracted), value, rel_tol=0, abs_tol=1e-9)
                 for claim in claims
+                if isinstance(
+                    (extracted := claim.get("extracted_value")), (int, float, str)
+                )
             ),
             f"historical revenue claim value mismatch: {year}",
         )
@@ -459,6 +460,7 @@ def validate_evidence_claims(
         "growth_driver",
     }
     allowed_support_types = {"exact_value", "rationale_support", "policy_support"}
+    assert isinstance(claims, list)  # narrow; require() above enforced
     for position, claim in enumerate(claims):
         prefix = f"evidence_claims[{position}]"
         require(isinstance(claim, dict), f"{prefix} must be an object")
@@ -514,6 +516,7 @@ def validate_evidence_claims(
                 isinstance(source_capture, dict),
                 f"claim source capture is missing: {claim_id}",
             )
+            assert isinstance(source_capture, dict)  # narrow; require() enforced
             require(
                 claim.get("capture_receipt_sha256") == source_capture["receipt_sha256"],
                 f"claim capture receipt mismatch: {claim_id}",
@@ -934,7 +937,6 @@ def validate_document(
             parameter_index,
         )
         collector.gate = "revenue_constraints"
-        revenue_constraints: list[Any] = []
         try:
             revenue_constraints = validate_revenue_constraints(
                 data.get("revenue_constraints", []),
