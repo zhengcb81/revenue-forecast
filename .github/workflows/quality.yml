@@ -14,16 +14,13 @@ jobs:
           python-version: "3.12"
       - name: Install test dependency
         run: python -m pip install pytest cryptography "ruff==0.15.18" pytest-cov pyyaml requests
-      - name: Fetch sibling repos (cross-repo E2E, pinned compat commits)
+      - name: Validate compatibility manifest (FC-1101)
         run: |
-          # filing_fetch_client 默认从 _SKILL_ROOT.parent/filing-fetch 定位
-          # sibling；因此 clone 到 GITHUB_WORKSPACE 的上级目录
+          python -c "import json,sys; d=json.load(open('compatibility/current.json',encoding='utf-8')); assert d['schema_version']=='1.0'; assert len(d['current_triplet'])==3; print('manifest OK', d['current_triplet']['revenue'][:12])"
+      - name: Fetch sibling repos (FC-1101: manifest-driven current triplet)
+        run: |
           SIBLING_DIR="$(dirname "$GITHUB_WORKSPACE")"
-          git clone --quiet https://github.com/zhengcb81/filing-fetch.git "$SIBLING_DIR/filing-fetch"
-          git clone --quiet https://github.com/zhengcb81/company-wiki.git "$SIBLING_DIR/company-wiki"
-          git -C "$SIBLING_DIR/filing-fetch" checkout ad62592
-          git -C "$SIBLING_DIR/company-wiki" checkout 77669ae
-          # filing-fetch 以子进程调 company-wiki CLI，需要其 src 在 PYTHONPATH
+          python tools/ci_checkout_siblings.py --manifest compatibility/current.json --sibling-root "$SIBLING_DIR" --skip revenue
           echo "PYTHONPATH=$SIBLING_DIR/company-wiki/src" >> "$GITHUB_ENV"
       - name: Ruff + compileall + unique test symbols (WU-1.2)
         run: |
