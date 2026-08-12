@@ -54,6 +54,23 @@ class TestCoverageReport(unittest.TestCase):
         self.assertIn("UJ-01", markers)
         self.assertIn("EX-02", markers)
 
+    def test_broken_marked_file_fails_the_gate(self):
+        """F2 regression: a SCENARIO marker in a file that does not parse must
+        FAIL the gate (SystemExit), never prop it with un-runnable coverage."""
+        import tempfile
+
+        from unittest import mock
+
+        with tempfile.TemporaryDirectory() as td:
+            tests = Path(td) / "tests"
+            tests.mkdir()
+            broken = '"""SCENARIO: EX-01"""\n' + "def test_x():\n    pass\n" + "01bad\n"
+            (tests / "test_broken.py").write_text(broken, encoding="utf-8")
+            with mock.patch.object(sc, "SIBLINGS", (Path(td),)):
+                with self.assertRaises(SystemExit) as ctx:
+                    sc.collect_test_markers()
+                self.assertIn("does not parse", str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

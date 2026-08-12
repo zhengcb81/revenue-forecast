@@ -47,7 +47,13 @@ def _split_id(raw: str) -> set[str]:
 
 
 def collect_test_markers() -> set[str]:
-    """SCENARIO markers from all test files under the three repos."""
+    """SCENARIO markers from all test files under the three repos.
+
+    FC-1003 F2: a marked file MUST parse — a marker in a non-compiling file
+    would prop the gate with un-runnable coverage.  Parse failures raise.
+    """
+    import ast
+
     found: set[str] = set()
     for root in SIBLINGS:
         dirs = [(root / "tests"), (root / "tools" / "tests")]
@@ -57,8 +63,13 @@ def collect_test_markers() -> set[str]:
             for path in d.rglob("test_*.py"):
                 try:
                     text = path.read_text(encoding="utf-8")
+                    ast.parse(text)
                 except (OSError, UnicodeDecodeError):
                     continue
+                except SyntaxError as exc:
+                    raise SystemExit(
+                        f"F2: marked test file does not parse: {path} — {exc}"
+                    ) from exc
                 for m in MARKER_RE.finditer(text):
                     found |= _split_id(m.group(1))
     return found
