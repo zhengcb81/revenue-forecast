@@ -40,17 +40,26 @@ class TestCriticalMutationGate(unittest.TestCase):
         self.assertGreaterEqual(len(ev["epoch_condition"]), 1)
 
     def test_gate_fails_without_file_evidence(self):
-        """The gate must be honest: delete the evidence file -> latest_reresolve
-        (which has no receipt evidence) becomes a gap."""
+        """The gate must be honest: with NO receipt evidence (empty sibling
+        set) and an empty evidence file, the latest_reresolve class becomes a
+        gap — the gate never passes on nothing."""
         import tempfile
         from unittest import mock
 
         with tempfile.TemporaryDirectory() as td:
             fake = Path(td) / "critical_mutation_evidence.md"
             fake.write_text("# empty\n", encoding="utf-8")
-            with mock.patch.object(cmg, "EVIDENCE_FILE", fake):
+            empty_siblings = (Path(td) / "noreceipts",)
+            with mock.patch.object(cmg, "EVIDENCE_FILE", fake), \
+                    mock.patch.object(cmg, "SIBLINGS", empty_siblings):
                 report = cmg.gate_report()
                 self.assertIn("latest_reresolve", report["gaps"])
+                # and with the evidence file present, the same empty-sibling
+                # setup must NOT gap (file evidence is sufficient)
+            with mock.patch.object(cmg, "EVIDENCE_FILE", cmg.EVIDENCE_FILE), \
+                    mock.patch.object(cmg, "SIBLINGS", empty_siblings):
+                report2 = cmg.gate_report()
+                self.assertNotIn("latest_reresolve", report2["gaps"])
 
 
 if __name__ == "__main__":

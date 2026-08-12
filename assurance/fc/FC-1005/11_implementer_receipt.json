@@ -1,0 +1,110 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1005",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "summary": "Critical mutation kill gate: 8 Phase-10 classes (root special-case / epoch / hash / download auth / latest re-resolve / artifact invalidation / zero-call / path containment) each with >=1 KILLED-mutation evidence (receipts + FC-1005 evidence file). M-latest verified live: removing close_gap re-resolve kills cg05+cg07 (the one class lacking receipt evidence). Chaos: FC-405 drills + FC-804 recovery recorded. Gate 8/8 OK; revenue full suite 434 passed / 0 failed.",
+  "base_triplet": {
+    "revenue": "3fbdf9ece4ed510d5b1df9ee7fffefe7587badb2",
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "6d104d4b92973a170aa094e3be318918791bd276",
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "plan_sha256": "eda591f4698314fd7b39b765acfde23d06481f1004c16bcf480b6eee6660b2a7",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/compatibility/critical_mutation_gate.py",
+    "revenue-forecast/tests/test_critical_mutation_gate.py",
+    "revenue-forecast/assurance/fc/FC-1005/critical_mutation_evidence.md",
+    "revenue-forecast/assurance/fc/FC-1005/11_implementer_receipt.json",
+    "revenue-forecast/assurance/fc/FC-1005/12_reviewer_receipt.json"
+  ],
+  "changed_files": [
+    "revenue-forecast/compatibility/critical_mutation_gate.py",
+    "revenue-forecast/tests/test_critical_mutation_gate.py",
+    "revenue-forecast/assurance/fc/FC-1005/critical_mutation_evidence.md"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/fc/FC-1001..1004 (accepted) — Phase 10 chain",
+    "company-wiki/assurance/fc/FC-405/ + FC-804/ (accepted) — chaos drills + recovery",
+    "company-wiki/assurance/fc/FC-801/ (accepted) — close_gap incl. re-resolve step"
+  ],
+  "command_registry_sha256": "69c57dce9f401044a92298cd76c2c12cf8ced526466f7f3e95d938c9edd549bc",
+  "scenario_results": [
+    {
+      "id": "mutation-kill-rate",
+      "status": "passed",
+      "note": "8/8 critical classes have killed-mutation evidence; gate exit 0."
+    },
+    {
+      "id": "M-latest",
+      "status": "passed",
+      "note": "close_gap re-resolve removed -> cg05+cg07 die (latest re-resolve has teeth); reverted -> 7 passed."
+    },
+    {
+      "id": "chaos",
+      "status": "passed",
+      "note": "FC-405 disaster drills + FC-804 crash recovery recorded as chaos evidence."
+    }
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B compatibility/critical_mutation_gate.py",
+      "exit_code": 0,
+      "result": "8/8 OK (root 7, epoch 5, hash 13, auth 2, rereresolve 1, invalidation 7, zerocall 10, containment 6)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/test_critical_mutation_gate.py -q",
+      "exit_code": 0,
+      "result": "5 passed (evidence-file deletion -> gate fails)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "434 passed, 106 subtests, 0 failed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit (auto): suite + E2E + R4.2",
+      "exit_code": 0,
+      "result": "434 passed; E2E PASS; MATCH 106 files",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "catalog_mutations": 0,
+    "note": "M-latest mutation was on the production close_gap.py but reverted (byte-identical restore); no persistent production change."
+  },
+  "codegraph": {
+    "production_callers_before": "unchanged",
+    "production_callers_after": "unchanged",
+    "note": "Gate + evidence are test/compat files; close_gap.py reverted."
+  },
+  "mutation": {
+    "id": "FC-1005-M-latest",
+    "killed": true,
+    "details": "M-latest: close_gap._finalize re-resolve removed (resolution=None) -> test_close_gap_fc801 cg05 (idempotent rerun) + cg07 (downloaded_new envelope) FAIL; reverted -> 7 passed. Closes the one critical class (latest_reresolve) with no prior receipt evidence."
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "git revert 6d104d4; M-latest mutation itself already reverted in the worktree."
+  },
+  "review": {
+    "reviewer": "reviewer-fc1005-independent",
+    "reviewer_receipt_sha256": "7e5686fc633c8af07c0cec7dc2eb55d4a55ed37aed80d5cb7429452d3e1f717d",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-11T16:00:00Z",
+    "note": "independent reviewer replayed diff + gate + self-tests + M-latest live (cg05/cg07 die on re-resolve removal) from clean worktree 6d104d4; full suite 434/0; verdict accepted; 1 low non-blocking finding (hash normalization CRLF/LF, closure validator note)"
+  },
+  "provisional_note": "Feat sealed at revenue 6d104d4 (filing/wiki unchanged). 8/8 critical mutation classes covered; Phase 10 pending final review. Independent review pending."
+}
