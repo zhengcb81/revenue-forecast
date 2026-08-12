@@ -9,4 +9,11 @@
 - **receipt**：schema 2.0 `assurance/fc/FC-1202/11_implementer_receipt.json`（结构验证 exit 0），提交 `20180f9`；registry FC-1202 → in_progress。
 - **reviewer-fc1202-independent**：后台干净 worktree 重放中（F-6 规则；RED-at-base 第二 worktree）。
 - **下一步**：reviewer verdict → can_accept → closure；FC-1203 预检已并行启动。
+## 2026-08-12 — FC-1203 实施完成（company-wiki；全量套件运行中）
+
+- **FC-1202 先行 ACCEPTED**（reviewer-fc1202-independent 零阻塞；can_accept exit 0；closure 提交 revenue `5ef1079`；FCAP 60/71）。
+- **preflight（findings 59 + 修订）**：三仓 AST/CodeGraph 盘点。删除集两度收敛——`evaluate_candidate` 保留（Phase 14 R3/R5 未接线政策，sealed FC-502 契约测试承重；`evaluate_admission` 是 focus-only 不构成替代）；`restore.py` 保留（生产 remediation 工具 wu904_remediation_restore.py 真实调用 restore_asset gates，FC-403 链条）；`validate_flag_state` 保留（runtime_policy 生产调用）。
+- **交付（wiki `f58b52e` + comment 提交）**：删除 validate_normalized_filing、entity_resolver.py、reuse_latest_policy.py、atomic_rollback + wu905 脚本 + 4 个测试文件；新门测试 test_fc1203_dead_helpers_absent.py（5 复活 mutation 全杀）；extractive summarizer 注册 GENERATOR_REGISTRY + schema_version 列/metadata 双写 + ISO created_at（M-unregister 击杀）——生产 summarize CLI 产物从必然 rejected 变为可绑定。变更合同 03_change_contract_fc1203.md。
+- **验证**：6 新测试 GREEN；邻域 53 passed（policy_and_flags/fc1201 gate/fc502/dbx_fixture/restore_flow/admission_profile/focus_admission）；ruff 干净；全量套件运行中。
+- **下一步**：全量 verdict → receipt → 独立 reviewer → can_accept → registry accepted → FC-1204。
 
