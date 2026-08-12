@@ -3,10 +3,11 @@
 SCENARIO: CTRL-05 (sibling drift fails red)
 
 The CI workflows must consume the compatibility manifest's ``current_triplet``
-— never hardcoded 40-hex sibling pins (revenue ad62592/77669ae and filing
-a42bb40 were the pre-FC-1101 pins) and never floating main.  The gate scans
-the workflow YAMLs for hardcoded pins and asserts the manifest-driven
-checkout tool is wired in.  M1 (reverting to a hardcoded pin) kills the gate.
+— never hardcoded sibling pins (revenue ad62592/77669ae and filing a42bb40
+were the pre-FC-1101 pins, full or abbreviated) and never floating main.
+The gate scans the workflow YAMLs for hardcoded pins (7+ hex — abbreviated
+pins included) and asserts the manifest-driven checkout tool is wired in.
+M1 (reverting to a hardcoded pin) kills the gate.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ import unittest
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SHA1 = re.compile(r"[0-9a-f]{7,40}")  # full or abbreviated pins
+SHA1 = re.compile(r"\b[0-9a-f]{7,40}\b")  # full or abbreviated pins
 
 
 def _workflow_files() -> list[tuple[str, Path]]:
@@ -44,6 +45,14 @@ class TestCiManifestGate(unittest.TestCase):
                 f"{repo} workflow hardcodes sibling commits: {hits[:3]} — "
                 "FC-1101 requires manifest-driven checkout",
             )
+
+    def test_pin_scan_catches_abbreviated_pins(self):
+        """F2 negative control: the scan must flag an abbreviated pin — a
+        vacuous regex (e.g. corrupted \\b escapes) would pass this and never
+        fail red."""
+        self.assertTrue(SHA1.search("git checkout ad62592"), "7-hex pin not caught")
+        self.assertTrue(SHA1.search("git checkout " + "a" * 40), "40-hex pin not caught")
+        self.assertFalse(SHA1.search("python tools/ci_checkout_siblings.py"))
 
     def test_manifest_driven_checkout_wired(self):
         for repo, path in _workflow_files():
