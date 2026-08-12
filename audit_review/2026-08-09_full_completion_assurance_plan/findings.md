@@ -489,3 +489,25 @@
   - **A5 filing**：SKILL.md Notes 重写为 policy-snapshot 语义（单一策略源 = company-wiki `source_catalog.yaml`；filing config 只定位 wiki 根；加 root = 只改 wiki 一行）。
   - **A6 wiki**：`config_doctor.py` 删兄弟查找 → `--filing-fetch-config` 显式参数（缺省跳过跨仓检查）；更新 2 测试。wiki CI 不传参（跨仓检查单一归属 filing CI doctor）。
 - 性质：多仓 + 触 CI workflow，但全部改动为「显式化」——revenue 默认定位从 sibling 变 config 文件（config 值与旧 sibling 路径同值，本地行为不变）；零生产数据/写路径/containment 行为变化。
+
+## 发现 59：FC-1203 preflight — 死代码盘点 + scope 决策（Interpretation A）
+
+- 日期：2026-08-12。FC-1202 实施完成（reviewer 重放中）。三仓 AST/CodeGraph 全量盘点（index gap 用 grep 交叉验证）。
+- **关键裁决：extractive summarizer（findings 45 的 FC-1203 候选）→ 注册 + 补 v2 元数据**。事实链：`summarize_catalog` 有生产调用者（service.py:155 → CLI summarize + run pipeline），但其产物**永不可绑定**——三重独立失败：INSERT 无 schema_version 列值（DDL 加列无 DEFAULT）、generator `source_catalog_extractive_summary` 未注册（GENERATOR_REGISTRY 仅 3 个）、created_at 用 `datetime('now')` 非 ISO-Z。与 FC-906-a 对 llm_summarizer 的修复同构 → 按同模式修（注册 + 列 stamp + ISO created_at + 测试），使既有生产 CLI 产出可复用 artifact。**不删**（有生产入口 + run pipeline 使用）。
+- **Prime 删除候选（生产无调用者、已被生产入口替代）**：
+  - `evaluate_candidate`（admission.py:244，测试-only，未导出；生产入口 = `evaluate_admission`，scanner 消费）
+  - `validate_normalized_filing`（normalized_meta.py:57，零调用者）
+  - `entity_resolver.py` 整模块（零生产 import）
+  - `restore.py` 整模块（与 store.restore_document + CLI restore 平行实现，被替代）
+  - `flags.py validate_flag_state/atomic_rollback`（唯一非测试调用者 = 一次性 wu905 脚本，不入 CI；已被 runtime_policy.py CAS 机制替代，FC-202/203）
+  - `reuse_latest_policy.py` 整模块（零生产 import；close_gap 用自己的 policy binding——实施时验证后删）
+- **明确不删（记录理由，防止误删）**：
+  - `policy_2x.py` 全部 3 函数无生产 import——但是 Phase 14 R2/R3 cutover 资产（v2 scanner dry shadow 需要），保留待发布波次
+  - `canary_registry.py`（FC-504，R3-R5 cohort 资产）、`dropbox_governance.py`（FC-503 ops 工具 + replay）
+  - `backfill_v2.py run_backfill`、`portfolio_promoter.py`——architecture_gate 已标 "v1 legacy (R9)" + FC-1201 frozen allowlist，R9 backlog 不动
+  - `_replay` 工具 ×4（assurance receipt 证据工具）、`drift_patrol.py`（FC-701 receipt 引用证据）、54 个一次性 stage/cleanup 脚本（ops 历史）
+  - revenue `generate_input_template.py` 28 个 FIXME = 模板占位符（非债务）
+- **超大函数清单（Q3 前 15）**：SourceCatalog 类 1186 行、revenue_report._validate_forecast_output 1083、cli.main 766、SourceCatalogWorker 741、FocusScopeCleanupService 642、WorkerController 563、SourceResolver 533、cli._parser 503、CatalogStore 920、_scan_catalog_impl 450……**拆分决策：不拆生产热路径**（resolver/service/worker 拆分在发布波次前是高危重构）；拆分归 FC-1204 复杂度 ratchet（其 exit gate 才要求 complexity<=10），FC-1203 只做删除 + API 收敛（"关键 dead helper=0" 是 Phase 12 gate 项）。
+- **API 收敛核实（已在 HEAD 成立，FC-1203 记录不修改）**：service.py 不 import resolver（status.value 字符串，FC-902 合同成立）；resolver→service 单向；filing 零 wiki import（薄客户端成立）；revenue 无 import-time 环（revenue_core↔report/publication 是 lazy-import 断开的调用环，拆分归 FC-1204）。
+- **FC-1203 Interpretation A 交付**：① 删除上列 6 组死 helper + 其测试；② 新门测试 `dead helper=0`（AST/导入断言已删符号不存在——mutation 目标 = 复活死代码必须击杀）；③ extractive summarizer 注册 + v2 元数据 + 测试 + 合同文档；④ 行为零变化（删除对象均无生产调用者）；⑤ R9/R2-R5 资产删除禁入（列合同）。
+- 注：wiki CodeGraph 索引有 gap（close_gap/artifact_backfill/canary_registry/dropbox_governance/prompt_injection/trace_parity 未收录、bundle_for_resolution 报 not found、SidecarFilingAdapter 零 caller 误报）——FC-1203/1502 用 grep 交叉验证，不把空结果当事实。

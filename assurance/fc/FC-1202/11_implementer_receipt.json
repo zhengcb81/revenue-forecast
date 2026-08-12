@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "fc_id": "FC-1202",
-  "status": "independent_review",
+  "status": "accepted",
   "mode": "honest-implementer",
   "base_triplet": {
     "revenue": "84d4967d31ef92ec45a570aafeed94d4a9897e87",
@@ -74,7 +74,7 @@
     {
       "command": "revenue: python -B -m pytest tests/test_filing_fetch_client.py tests/test_source_preparation.py tests/test_fc1002_three_process_e2e.py -q",
       "exit_code": 0,
-      "result": "30 passed (RED first: ImportError load_filing_fetch_root + forwarding assertion failed; GREEN after loader+passthrough; FC-1002 chain re-verified with explicit --filing-fetch-root)",
+      "result": "31 passed (reviewer replay measured 31 for the trio; implementer recorded 30 — F1 miscount corrected). RED first: ImportError load_filing_fetch_root + forwarding assertion failed; GREEN after loader+passthrough; FC-1002 chain re-verified with explicit --filing-fetch-root.",
       "cwd": "revenue-forecast"
     },
     {
@@ -198,11 +198,11 @@
     "note": "Revert = revert commits b34097d (revenue) / b7ef9cc (filing) / a6937f3 (wiki). No data written, no schema/config loader behavior beyond location explicitness, no catalog mutation."
   },
   "review": {
-    "reviewer": "PENDING-INDEPENDENT-REVIEWER",
-    "reviewer_receipt_sha256": "PENDING",
-    "decision": "pending",
-    "reviewed_at": "PENDING",
-    "note": "Independent reviewer must replay from clean worktrees of b34097d / b7ef9cc / a6937f3 (F-6 rule: base reproduction in a second worktree, never git checkout in the main checkout)."
+    "reviewer": "reviewer-fc1202-independent",
+    "reviewer_receipt_sha256": "50e7f22256e94ae97666c8cbee70177236886e21974a14d272366f9cd4b96592",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-12T21:19:04Z",
+    "note": "Independent reviewer replayed from clean worktrees (b34097d/b7ef9cc/a6937f3): diff per-commit verified; RED-at-base proven in separate base worktrees for 7/8 new tests; M1/M2b/M3/M4/M5 all killed and reverted; full suites reproduced exactly (revenue 513p/1f PORT-01, filing 289p/6s, wiki 2241p/2f/1s PORT-01 pair — all pre-existing, zero new failures); doctor live smoke exit 0 / smuggled-allowlist exit 1. 5 non-blocking findings: F1 miscounts (9 config tests, trio 31 — corrected in this receipt), F2 wiki counts (1 updated + 2 new tests), F3 base-order-bug masks the sibling lookup at base (dropbox-present variant proves base FAILS / result PASSES), F4 fresh-worktree missing .source_catalog env artifact, F5 USERPROFILE fallback convention."
   },
   "provisional_note": "Interpretation A (implementer scope decision under user full-authorization directive 2026-08-12, findings 58): explicit-location + single-policy-source changes only. Runtime dayu containment change explicitly OUT of scope (Phase 14 R4 backlog — wiki resolver only builds reuse handles for company_raw locations until the R4 dayu cohort). Revenue CI doctor step intentionally single-homed in filing CI (all three repos checked out there). Pre-existing observations recorded: revenue ruff F401 in test_compatibility_manifest.py (HEAD db383e6), PORT-01 audit_baseline + test_check_unique_test_symbols pairs (FC-1205 scope)."
 }

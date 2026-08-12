@@ -518,7 +518,7 @@ Phase 0 baseline
 - [x] 故障注入能阻断 release —— **FC-1105（6 类注入全红 + runner 健壮性）**。
 - [x] 动态审核是硬门 —— **FC-1101 CI gate + FC-1102 非零退出 + FC-1104 release gate 均已机器化**。
 
-## Phase 12（硬编码、重复策略、死代码与复杂度治理）— 状态：in_progress（FC-1201 ACCEPTED @wiki b3b45aa，FCAP 59/71；FC-1202~1205 pending）
+## Phase 12（硬编码、重复策略、死代码与复杂度治理）— 状态：in_progress（FC-1201+FC-1202 ACCEPTED 2026-08-12，FCAP 60/71；FC-1203~1205 pending）
 
 ### FC-1201：root/source hardcode 清零 — 状态：accepted（2026-08-12，reviewer-fc1201-independent）
 
@@ -528,11 +528,9 @@ Phase 0 baseline
 - **交付（Interpretation A：门棘轮 + 安全清理，v1 延后 R9）**：FC-304 `no_root_specific_hardcode` 门转 **frozen ratchet**（allowlist 精确 pin，新增文件→测试红）；注释清理 resolver.py/observability.py/entity_resolver.py → 三文件移出 allowlist（零行为）；5 新 contract 测试。全量 wiki 2241 passed/0 failed；M1+M2 双杀；can_accept exit 0。feat `0c6c2c9` + receipt `8817521` + closure `b3b45aa`（company-wiki）。
 - **DEFERRED（FC-1201 follow-up / R9 prep）**：canonical_writer.py:126（写根选择 `kind=="company_raw"`）+ cli.py:1251（portfolio 根查找）重构——生产 1.x loader `config.py:75-84` 严格拒 `canonical_write_target`（加 yaml label→CatalogConfigError），重构需改 loader+yaml+可能级联 fixture → 超出 safe cleanup。v1 scanner 7 root 分支 = R9 backlog（cutover 未完成）。详见 findings 56。
 
-### FC-1202：单一安全策略源
+### FC-1202：单一安全策略源 — 状态：accepted（2026-08-12，reviewer-fc1202-independent）
 
-- filing-fetch 删除独立 allowlist 决策；验证 company-wiki policy snapshot/path containment。
-- 删除 revenue/filing 的 `Path.parent / sibling` 隐式生产定位，改用 manifest/显式配置/安装入口。
-- config doctor 检查三仓 contract compatibility，不复制 root 列表。
+- **交付（Interpretation A，findings 58）**：revenue `b34097d`（config/filing_fetch.json 严格 loader + --filing-fetch-root 透传）；filing `b7ef9cc`（相对 root fail-closed + tools/config_doctor.py 三仓契约 doctor + CI stale 块替换 + SKILL.md 重写）；wiki `a6937f3`（doctor --filing-fetch-config 显式参数 + 兄弟查找删除 + dropbox early-return 顺序 bug 修复）。6 mutation 全杀；三仓全量零新失败；can_accept exit 0。reviewer 5 非阻塞 finding（计数修正已回写 receipt）。运行时 dayu containment = R4 backlog（明确出范围）。
 
 ### FC-1203：模块边界和 API 收敛
 
