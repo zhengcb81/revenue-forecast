@@ -1,0 +1,41 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1002",
+  "implementer_receipt_sha256": "cbec6bbb9a0feef0d6dd114d33ca770e372c200c84b23b0cabaf210634f5e64e",
+  "reviewer_identity": "reviewer-fc1002-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "e966ae8b05132fe974b0e7acfc8f37844ff3162f",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "result_triplet": {
+    "revenue": "21540325d7ba07f6d9f581e984282a774cc1ffff",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "replayed_command_ids": [
+    "ruff-fc1002-files",
+    "fc1002-three-process-e2e",
+    "fc1001-isolated-lake-regression",
+    "fc1002-mutation-M1-exact-hit",
+    "fc1002-post-revert-green",
+    "full-suite-regression"
+  ],
+  "scenario_results": [
+    {"id": "EX-01", "status": "passed", "note": "companies-only exact hit via real chain: 3 passed (replayed)"},
+    {"id": "AR-02", "status": "passed", "note": "missing artifact -> producer_events DAG closure (replayed)"},
+    {"id": "SAFE-04", "status": "passed", "note": "M1 replay: receipt removal kills exact-hit test via FC-905-b not_reviewed block; reverted, 3 passed"},
+    {"id": "FC-102-gate", "status": "passed", "note": "psutil process trace: source_preparation/filing_fetch_client/fetch_filing/wiki CLI all observed as distinct OS processes (>=3)"}
+  ],
+  "mutation_results": [
+    {"id": "FC-1002-M1", "killed": true, "note": "removed fixture prompt_injection_review block -> test_three_process_chain_exact_hit_zero_side_effects FAILS (chain exit 3, prompt_injection_status=not_reviewed policy block); reverted -> 3 passed"}
+  ],
+  "side_effect_reconciliation": {"passed": true, "note": "all tmp_path; production fingerprints unchanged (company-wiki companies 33121 files, filing-fetch clean, revenue main dirty set identical); llm_cost_log.csv rows attributed to concurrent production worker PID 8452, not tests (focused+full re-runs added 0 rows)"},
+  "codegraph_reachability": {"passed": true, "note": "FC-1002 diff touches tests only; no production code references e2e_support/IsolatedLake (grep scripts/ empty); fixture consumers = test_fc1001 + test_fc1002"},
+  "rollback": {"required": false, "passed": true},
+  "unresolved_findings": [],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-12T02:57:25Z",
+  "reviewer_receipt_sha256": "f8ed3d8f478d309b8264b3bd8ed57f04521fcf6c2c7102fa0eaf259ff187a10e"
+}
