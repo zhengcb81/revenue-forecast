@@ -51,20 +51,26 @@ class TestCiManifestGate(unittest.TestCase):
             self.assertIn("ci_checkout_siblings.py", text,
                           f"{repo} workflow must call the manifest-driven checkout")
 
-    def test_manifest_triplet_matches_heads(self):
-        """The manifest's current_triplet must equal the three repos' HEADs
-        (drift fails red — the CI sibling checkout would pin stale code)."""
+    def test_manifest_triplet_commits_exist(self):
+        """The manifest's current_triplet commits must EXIST in the three
+        repos (anti-forgery: CI pins real commits, never fabricated hashes).
+
+        NOTE: triplet == HEAD is NOT required — the manifest is the CI
+        authority and is refreshed on release, not on every commit (a
+        ==HEAD assertion would force a commit->manifest->commit loop)."""
         manifest = json.loads(
             (PROJECT_ROOT / "compatibility" / "current.json").read_text(
                 encoding="utf-8"))
         for repo, name in (("revenue", "revenue-forecast"),
                            ("filing", "filing-fetch"),
                            ("wiki", "company-wiki")):
-            head = subprocess.run(
-                ["git", "-C", str(PROJECT_ROOT.parent / name), "rev-parse", "HEAD"],
-                capture_output=True, text=True).stdout.strip()
-            self.assertEqual(manifest["current_triplet"][repo], head,
-                             f"manifest {repo} triplet drifted from HEAD")
+            commit = manifest["current_triplet"][repo]
+            proc = subprocess.run(
+                ["git", "-C", str(PROJECT_ROOT.parent / name), "cat-file", "-e",
+                 commit],
+                capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0,
+                             f"manifest {repo} triplet {commit[:12]} does not exist")
 
     def test_checkout_tool_requires_manifest(self):
         proc = subprocess.run(
