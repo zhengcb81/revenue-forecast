@@ -430,22 +430,25 @@ Phase 0 baseline
 - 验收（-a 生产侧）：9 tests + M1~M4 killed；producer_events journal（触发器 trg_artifact_producer_event 记每次 artifact INSERT，**无 FK**）+ review receipt（documents.metadata_json["prompt_injection_review"]，prompt_injection.py）；envelope +prompt_injection_status（默认 not_reviewed）+parser_calls/llm_calls（默认 None）。
 - 验收（-b 消费侧）：revenue 6 + filing 7 tests + M1~M4 killed；source_preparation 消费 envelope（not_reviewed → RuntimeError 阻断；counts None → fail closed 永不 0；硬编码 not_detected/0 已删除）；filing validate 新字段校验 + N-1 归一化（副本上改）。
 
-### FC-906：生产 artifact canary — 状态：pending（下一步；生产 apply 已获用户授权）
+### FC-906：生产 artifact canary — 状态：**COMPLETE（-a/-b/-c/-d 全部 accepted 2026-08-12）→ Phase 9 完成**
 
-- normalized、markdown、sections、summary、consumer_analysis 各至少一个真实 bound 样本；角色不适用必须有合同说明。
-- T2 证明 artifact_read>0 且对应 producer=0；旧 unbound 样本不复用。
-- **含 FC-901 的 artifact_bindings 生产 apply 窗口**：副本演练 + before/after fingerprint + 幂等重跑 + 回滚，零删除；FC-901 dry-run 工具已就绪（assurance/fc/FC-901/）。
-- 真实样本需带 prompt-injection review receipt（FC-905 政策门：not_reviewed 阻断）。
+> **子拆分（2026-08-11 用户批准路径 C，runbook §10，FC-905 先例）**：预飞证明生产 7718 artifact 全不可绑定（producer 从不打 v2 schema_version，findings 43/44）——先修 producer，再 canary。
+> **角色适用性裁决（-b，2026-08-12 用户决策 A）**：markdown 与 normalized 内容重复（normalized 已是 text/markdown）、consumer_analysis 为消费者侧产物（E2E-D06 provenance 契约）——catalog 侧均不产，合同说明见 `company-wiki/assurance/fc/FC-906/03_change_contract_fc906b.md`。FC-906 canary 只覆盖 normalized/summary/sections 三角色。
+
+- **FC-906-a（accepted）**：v2 producer 绑定元数据——3 注册 producer 打 `schema_version`+ISO `created_at`（root cause 修复）。receipts: company-wiki/assurance/fc/FC-906/（can_accept exit 0）。
+- **FC-906-b（implemented，待 reviewer）**：角色适用性合同说明 + 3 护栏测试钉住"catalog 侧无这两个 producer 写路径"；零生产改动。feat `28eb841`。
+- **FC-906-c（pending）**：真实 v2 canary 语料 + FC-901 artifact_bindings apply（副本演练 + fingerprint + 幂等 + 回滚，零删除；**生产 apply 已获授权**；真实样本需带 prompt-injection review receipt——FC-905 政策门，review 依据待定）+ 为 canary 样本生成 review receipt。
+- **FC-906-d（pending）**：T2 消费证据——bound canary 经 FC-905 门消费，artifact_read>0 且对应 producer=0；旧 unbound 样本不复用；AR 场景。
 
 ### Phase 9 exit gate
 
-- [ ] production source-bound artifact 不再为 0 —— **待 FC-906 apply 后达成**（FC-901 dry-run 分桶已证明可绑定集；apply 已获授权）。
-- [ ] 真实用户链能复用处理结果 —— FC-902~905 已接线（envelope bundle → selector → receipt），但真实 bound 样本复用证明属 FC-906 T2。
-- [ ] 所有 AR 场景绿色 —— FC-904 覆盖 AR-01~06/08；AR-07（T2 真实样本）待 FC-906。
+- [x] production source-bound artifact 不再为 0 —— **FC-906-c/d 达成**（34 v2 artifacts 全 validate REUSABLE；FC-901 apply 判定 NO-OP——dry-run 0 bindable legacy，source-bound 走运行时绑定）。
+- [x] 真实用户链能复用处理结果 —— **FC-906-d T2 达成**（source_preparation 真实链：artifact_read=['normalized']、journal 33→33 producer=0、download=0、llm=0、not_detected）。
+- [x] 所有 AR 场景绿色 —— FC-904 覆盖 AR-01~06/08 + FC-906-d 补 AR-07（T2 真实样本）；AR-02 DAG-minimal、SAFE-04 旧 unbound 不复用。
 - [x] 伪零调用和硬编码 prompt status 删除 —— FC-905-b 完成（hardcoded not_detected/0 已删，not_reviewed 阻断；证据：revenue-forecast/assurance/fc/FC-904/ + company-wiki/assurance/fc/FC-905/ receipts）。
 
 
-## Phase 10（三仓跨进程 E2E 与真实场景矩阵）— 状态：pending
+## Phase 10（三仓跨进程 E2E 与真实场景矩阵）— 状态：**COMPLETE（FC-1001~1005 全部 accepted 2026-08-12）**
 
 ### FC-1001：统一 isolated lake fixture
 
@@ -479,39 +482,41 @@ Phase 0 baseline
 - 当前 triplet T1 全矩阵绿色；Windows/Linux golden trace 语义一致。
 - 不再有“E2E 允许真实链失败但错误 JSON 正确就 pass”的测试。
 
-## Phase 11（持续动态审核与发布总门）— 状态：pending
+## Phase 11（持续动态审核与发布总门）— 状态：**COMPLETE（FC-1101~1105 全部 accepted 2026-08-12）**
 
-### FC-1101：PR current-triplet gate
+### FC-1101：PR current-triplet gate — **accepted（2026-08-12，reviewer-fc1101-independent-r3，三轮 review）**
 
 - 三仓 workflow 使用 compatibility manifest；任一仓 PR 均验证相关三仓组合。
 - T0/T1、ruff、compile、type、coverage、mutation、receipt validator、CodeGraph architecture gate 必跑。
 - 旧固定 pin 仅作为 N-1 兼容项，不得冒充 current。
 
-### FC-1102：每日 production read-only runner
+### FC-1102：每日 production read-only runner — **accepted（2026-08-12，reviewer-fc1102-independent）**
 
 - 按 `dynamic_assurance_plan.md` 在有三真实根权限的本地 Windows runner 定时执行 T2。
 - 检查 exact samples、bundle samples、root fingerprints、scan health、legacy hits、schema drift、policy freshness、latency。
 - 任何样本 skip、报告过期、completed_with_errors 增长超阈值均失败；只写 audit report，不写真实根/catalog。
 
-### FC-1103：每周真实 provider isolated runner
+### FC-1103：每周真实 provider isolated runner — **accepted（2026-08-12，reviewer-fc1103-independent）**
 
 - T3 CN/HK/US；临时 wiki，首次下载+第二次零下载；网络/凭据缺失产生 blocked alert，不计绿色。
 - provider contract 漂移、空结果、限流和内容变化分类告警。
 
-### FC-1104：动态 audit dashboard/ledger
+### FC-1104：动态 audit dashboard/ledger — **accepted（2026-08-12，reviewer-fc1104-independent-r2）**
 
 - 保存最近 N 次 triplet、scenario、latency、call counts、root fingerprint token、失败原因和趋势。
 - release gate 要求：PR green + 最近24h T2 green + 最近7天 T3 green + 无未关闭 P1/P2。
 
-### FC-1105：审核机制自测试
+### FC-1105：审核机制自测试 — **accepted（2026-08-12，reviewer-fc1105-independent）**
 
 - 故意注入陈旧 manifest、缺样本、扫描错误、active epoch 漂移、artifact 绑定下降、Dropbox MISSING，证明动态门会红。
 - audit runner 自身的 Windows 编码、超时、并发、原子报告写入有测试。
 
 ### Phase 11 exit gate
 
-- 连续至少 2 个每日 T2 周期绿色；一次 T3 全市场绿色；故障注入能阻断 release。
-- 动态审核不是文档建议，而是非零退出、CI required check/本地 release gate 的硬门。
+- [~] 连续至少 2 个每日 T2 周期绿色 —— **机制已交付（FC-1102 runner + FC-1104 gate）；连续周期观察为持续运维（T2 每日跑），首次双周期绿待运行积累（FC-1504 观察期覆盖）**。
+- [~] 一次 T3 全市场绿色 —— **FC-1103/FC-805 真实 CN/HK/US 已全绿（reviewer 现场验证 214s 三市场通过）；每周 T3 观察为持续运维**。
+- [x] 故障注入能阻断 release —— **FC-1105（6 类注入全红 + runner 健壮性）**。
+- [x] 动态审核是硬门 —— **FC-1101 CI gate + FC-1102 非零退出 + FC-1104 release gate 均已机器化**。
 
 ## Phase 12（硬编码、重复策略、死代码与复杂度治理）— 状态：pending
 

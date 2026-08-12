@@ -437,3 +437,103 @@
 - **registry FC-905 → accepted**（a+b 双 receipt）；Phase 9 进度 **5/6**。
 - **下一步 FC-906**（三仓，apply 已授权）：normalized/markdown/sections/summary/consumer_analysis 各至少一个真实 bound 样本；T2 证明 artifact_read>0 且对应 producer=0；旧 unbound 样本不复用。
 - **会话收尾（用户指示）**：休息 + 更新 planning-with-files 文档（task_plan.md Phase 9 状态、findings.md 教训、progress.md 会话摘要）。
+
+## 2026-08-11 — FC-906 预飞：BLOCKED 重定位 + 路径 C 决策 + FC-906 拆分（`/planning-with-files`）
+
+- **触发**：用户 `/planning-with-files 有哪些未完成的项目，从头开始一个一个实施`。盘点：71 FC 中 41 accepted，剩 FC-906 + Phase 10-15（25 FC + 10 发布波次）；FC-906 是关键路径。
+- **预飞（只读，首次跑 FC-901 生产 dry-run）**：input 7718 → **bindable 0 → legacy_unbound 7718**；失败 `artifact_schema_unsupported` 7579 + `artifact_status_not_completed` 139。根因：producer（normalizer/llm_summarizer/summarizer/section_extractor）写 artifact 从不打 v2 `schema_version`（artifacts 表列 100% NULL，metadata_json 也 100% 无）；`validate_artifact`（artifact_handle.py:90-92）要求 =="1.0"。血缘齐全（23520/23521 docs 有 primary_source_id；43282 sources 全有 content_sha256）；`source_sha256` 在 artifact 上可选（line 98-99 仅 present 时校验）。
+- **用户三连决策**：① 授权生成 prompt_injection_review 回执（依据待定）；② 先产出 markdown/consumer_analysis；③ **路径 C：新建 v2 canary 语料**（遗留 7718 诚实 legacy_unbound）。
+- **FC-906 拆分为子链**（runbook §10，FC-905 -a/b 先例）：FC-906-a（v2 producer 绑定元数据，company-wiki）→ FC-906-b（markdown+consumer_analysis producer，需 spec）→ FC-906-c（真实 canary 语料+FC-901 apply+review 回执，生产写已授权方向）→ FC-906-d（三仓 T2 消费证据）。
+- **落盘**：findings.md（发现 43/44）；`fc_906_preflight_blocker.md`（dry-run 全数字 + 决策）；`company-wiki/assurance/fc/FC-906-a/00_wu_card.md`（下一 FC 精确范围，待 RED 起执行）；memory `fcap-session-progress.md` 更新。
+- **下一步**：FC-906-a RED→GREEN（4 producer 加 `schema_version` 到 artifact metadata_json；3 mutation；全量 wiki 套件零新失败；独立 reviewer）。FC-906-a 执行前须重验 triplet + CodeGraph impact 确认 producer 点 + 定 summarizer.py 是否死代码。
+- **未决**：review-receipt 依据（LLM/策略/人工）——FC-906-c 前明确。
+
+## 2026-08-11 — FC-906-a 实施中（v2 producer 绑定元数据，company-wiki）—— RED→GREEN→mutation→全量 均绿
+
+- **预检**：4 producer 写点确认；extractive summarizer 出范围（generator 未注册 + 0 生产 artifact）；发现隐藏 created_at 格式缺陷（见 findings 45）。FC-906-a 只覆盖 3 个注册 producer。
+- **RED**：`tests/contract/test_fc906a_producer_binding_metadata.py`（3 测试）——normalized/sections/llm_summary 产出后 `validate_artifact` 因 schema_version 缺失返回 reusable=False。RED 失败原因命中缺陷（非 fixture 错误）。
+- **GREEN**：3 producer 各加 `from .artifact_handle import ARTIFACT_HANDLE_SCHEMA_VERSION` + metadata 加 `"schema_version": ARTIFACT_HANDLE_SCHEMA_VERSION` + `datetime('now')`→`strftime('%Y-%m-%dT%H:%M:%SZ','now')`。共 3 文件 +9/-4 行。3 测试转绿。
+- **Mutation 3 杀**：M1 normalizer/M2 section_extractor/M3 llm_summarizer 各删 schema_version stamp → 其对应测试死（reusable=False）。均已还原。
+- **全量 wiki 套件**：`python -B -m pytest tests/ -q` → 2228 passed/1 skipped/2 failed（572s）。2 failed = pre-existing PORT-01 `test_check_unique_test_symbols` Windows-GBK 对（base 即有，零新失败）。collected 2231（较 FC-901 的 2212 +19，含本 FC 3 新测试 + FC-902~905 新增）。
+- **ruff/compile**：干净。
+- **下一步**：implementer receipt → 独立 reviewer（干净 worktree 复跑）→ can_accept gate → registry FC-906 推进 → FC-906-b（markdown+consumer_analysis producer，需 spec）。
+
+## 2026-08-11/12 — FC-906-a implementer receipt 密封 + 独立 reviewer（429 中断→恢复）
+
+- **feat 提交**：company-wiki `5fbf349`（3 producer + 新测试 217 行，+226/-4）。分支 fcap（非默认分支）。`llm_cost_log.csv`（用户 dirty）与 WU 卡片未进 feat 提交。
+- **implementer receipt**：`assurance/fc/FC-906-a/11_implementer_receipt.json` 密封（schema 2.0，result triplet wiki=5fbf349，plan/registry hashes、commands、mutation、rollback、out_of_scope_notes）。**注意：receipt 用 git rev-parse 取哈希，未手写（pitfall #1 遵守）。**
+- **独立 reviewer agent 启动**：干净 worktree `.fcap-review/fc-906-a` @5fbf349。跑了 47 工具调用/17min 后遇 **429 rate-limit（5h 窗口，reset 2026-08-12 09:14:55）** 中断。
+- **中断时 reviewer 已完成的证据**（worktree 落盘痕迹）：focused 3 passed（/tmp/focused.txt）、ruff clean（/tmp/ruff.txt）、全量套件已跑（`.pytest_cache/v/cache/lastfailed` 仅剩 2 个 test_check_unique_test_symbols = PORT-01 pre-existing 复现，零新失败）；mutation 重放与 receipt 未完成。
+- **恢复**：SendMessage 续跑 agent（从 transcript resume，后台），要求完成 mutation 3 杀 + diff 复核 + receipt JSON。
+- **错误日志**：| 429 usage-limit（5h） | agent 中断 | 从 transcript resume 续跑；worktree 落盘痕迹确认已完成的验证，不重跑已完成步骤 |
+
+## 2026-08-12 — FC-906-a ACCEPTED（v2 producer 绑定元数据）
+
+- **独立 reviewer accepted**：reviewer-fc906a-independent 从干净 worktree `5fbf349` 重放——diff 恰好 4 文件（3 producer 各 +import/+schema_version 键/created_at ISO 化 + 新测试 217 行）、focused 3 passed、M1~M3 三杀（每个 producer 删 stamp → 其测试死，映射清晰）、contract suite 1490 passed/1 skipped/2 failed（仅 pre-existing PORT-01 对，base 复现一致）。429 中断后从 transcript resume 完成。
+- **F-6 事件（严重，已披露）**：reviewer 在主 checkout 跑 base 复现时 `git checkout` 重置了用户 dirty 文件 `llm_cost_log.csv`（LLM 成本日志，`scripts/llm_client.py` 追加写）的未提交改动——现与 HEAD 一致，无 stash，delta 丢失。不影响 verdict；已记 findings 46，用户可从 Windows 文件历史/VS Code local history 恢复。
+- **receipts 对齐先例**：fc_id 用 "FC-906"（FC_IDS 硬编码无 -a 后缀；FC-905-a/b 同法），receipts 在 `assurance/fc/FC-906/`（00_wu_card_a.md + 11_implementer_receipt.json + 12_reviewer_receipt.json）；implementer review 块密封（reviewer_receipt_sha256=e0f83644…，重算自 reviewer canonical JSON）。
+- **can_accept gate exit 0**（--implementer honest-implementer --reviewer reviewer-fc906a-independent）。
+- **提交**：company-wiki `5fbf349`（feat）+ `f6df002`（docs）；review worktree 已清理；仓库最终状态 clean（llm_cost_log.csv 已无 dirty 改动——被 F-6 重置）。
+- **registry FC-906 → in_progress（-a accepted；-b/c/d pending）**。
+- **下一步 FC-906-b**（company-wiki）：markdown + consumer_analysis producer——2 个新角色 producer，需 spec（DAG：markdown←normalized、consumer_analysis←summary；store 触发器已预期 consumer_analysis→llm）。
+
+## 2026-08-12 — FC-906-b 实施（角色适用性合同，用户决策 A；reviewer 后台重放中）
+
+- **预检发现 spec 缺口**（fc_906b_spec_gap.md）：markdown/consumer_analysis 在 company-wiki 侧无 producer spec。决定性证据：① consumer_analysis 的 E2E-D06 契约（engine/model/prompt/input_bundle_hash + 消费者 expected_provenance）证明是**消费者侧产物**；② markdown 与 normalized 内容重复（normalized 已是 text/markdown）。用户决策 A：**合同说明不产**（task_plan"角色不适用必须有合同说明"合法路径）。
+- **交付**：`03_change_contract_fc906b.md`（两角色裁决 + 依据 + 不变量）+ 3 护栏测试（producer 只写三角色、合同文档合法、角色矩阵守恒）。**零生产代码改动**。
+- **RED→GREEN**：合同缺失 → 文档测试死（RED 证据）→ 恢复 → 3 passed。
+- **Mutation M1/M2**：M1（往 section_extractor INSERT 注入 markdown role）→ 护栏死 ✓；M2（删 consumer_analysis 裁决标题）→ 文档测试死 ✓。**M2 首杀失败教训**：初版只查角色名出现，删表格行后标题仍含角色名→测试没死；加强为断言裁决标题。**findings 47**。
+- **回归**：contract suite 1493 passed/1 skipped/2 failed（仅 pre-existing PORT-01 对，零新失败）；ruff clean。
+- **提交**：company-wiki `28eb841`（feat，3 文件）；receipt `11_implementer_receipt_b.json`（fc_id=FC-906，密封待 review）。
+- **独立 reviewer**（后台）：干净 worktree `28eb841` 重放 diff/M1/M2/contract suite；**明确指令：base 复现必须用第二 worktree，禁止主 checkout git checkout（F-6 教训）**。
+- **下一步**：reviewer verdict → can_accept → FC-906-c（真实 canary 语料 + FC-901 apply + review receipt；review 依据待定）。
+
+## 2026-08-12 — FC-906-c 生产 canary apply（授权）：预飞发现 → 前置修复 → 副本演练 → 生产 apply
+
+- **预飞发现**（findings 48）：9506/23521 (40%) 文档零 active location 永远占 normalize 队列头并静默失败（primary-None 无诊断）——canary 无法进行。
+- **前置修复**（0ee0d09）：队列 SQL 排除无 active original_primary location 文档 + primary-None 防御记录 `no_active_primary_location`。RED→GREEN，M1（移除 EXISTS→死）/M2（移除诊断→死），contract suite 1497 passed/1 skipped/0 failed（PYTHONIOENCODING=utf-8 下 PORT-01 消失；无该变量时 2 pre-existing 复现）。
+- **副本演练**（46GB 副本 + WAL）：normalize 15 真实文档（真实 parser）→ 全 v2；sections 18/18 + summary 5/5（fake LLM）+ normalized 27/30 REUSABLE；幂等 = 队列推进新文档、0 重复。
+- **生产 apply（授权）**：**重启 ambient worker**（旧代码污染风险）→ normalize 15 → sections 11（CN 招股书适用）→ 真实 LLM summary 3/5（MiniMax-M3，2 文档级失败为真实 LLM 行为，成本+5 行入 llm_cost_log.csv）→ **29 v2 artifacts 全 REUSABLE + 29 producer_events（1:1）+ 15 策略 review receipts**（确定性扫描真实读内容）。
+- **FC-901 apply 判定 NO-OP**：dry-run 0 bindable；source-bound 走运行时绑定。零删除；rollback 预案 `10_rollback_fc906c.md`。
+- **git**：company-wiki `0ee0d09`（fix）+ `808c473`（docs）+ `cfba0c4`（cost chore）；工作树 clean。
+- **reviewer 后台重放中**（reviewer-fc906c-independent，干净 worktree 0ee0d09；生产只读）。
+- **下一步**：reviewer verdict → can_accept → **FC-906-d**（三仓 T2 消费证据：精确文档请求 resolve → revenue 侧 artifact_read>0 + producer=0；含北方华创/腾讯等 canary 文档的消费链）。
+
+## 2026-08-12 — FC-906-d T2 消费证据（implemented，reviewer 后台重放中）
+
+- **前置修复（2 个 FC-902 生产缺口）**：① `a61dd35`——producer 写 schema_version **列**（bundle 读列，FC-906-a 只写 metadata_json → 生产 bundle 全 unsupported）+ 生产回填 33 行；② `6a76000`——bundle_for_resolution 默认 allowed_roots += derived_dir（artifacts 在 derived/，默认只含源根 → 全 path_outside_allowed_root）。各 1 新契约测试（column + derived_root 断言，M1/M2 击杀），contract suite 1498 passed/1 skipped/0 failed ×2。
+- **T2 真实消费（revenue 入口）**：`source_preparation`(北方华创 2025) → **reused_existing、artifact_read=['normalized']、journal 33→33（producer=0）、download=0、llm=0、prompt_injection_status=not_detected**（策略 receipt 生效）。旧 unbound 不复用：星环 2024（legacy）→ valid_handles 空。
+- **worker 第 3 次重启**（加载列写入代码）；生产回填 33 行（normalized 18/sections 11/summary 4——worker 又产出 4 行，回填兜底）。
+- **git**：company-wiki `a61dd35` + `6a76000` + `3e0d40e`（trace+receipt）；revenue/filing 零改动。
+- **落盘**：`t2_consumption_trace_fc906d.md`（完整 trace 表）+ `11_implementer_receipt_d.json`；findings 50。
+- **reviewer 后台重放中**（reviewer-fc906d-independent）。
+- **下一步**：reviewer verdict → can_accept → **FC-906 全部 accepted → Phase 9 COMPLETE** → Phase 10（FC-1001 三根 E2E fixture 等）。
+
+## 2026-08-12 — **FC-906-d ACCEPTED → FC-906 COMPLETE → Phase 9 DONE（里程碑）**
+
+- **独立 reviewer accepted**（reviewer-fc906d-independent）：干净 worktree 6a76000 + base 0ee0d09（F-6 规则）；diff 恰 2 fixes；focused 4 passed；RED-at-base（None vs '1.0' 真缺陷）；M1（列 stamp 移除）/M2（derived root 移除）双杀；contract suite 1498 passed/1 skipped/0 failed；T2 证据只读复核（34/34 列 stamp、legacy 4797/4797 未动）。
+- **F1 low**：implementer receipt 的 result_triplet.wiki 手写错 hash（64-hex 无效）——erratum 修复（pitfall #1 再现：永远 git rev-parse！）；F2 low（command_registry_sha256 模板字段不可复现，pre-existing）；F3/F4 info（worker 漂移）。
+- **can_accept exit 0**；receipts 4 组全 sealed（FC-906/ 目录）；worktrees 清理。
+- **git**：company-wiki `fafaac5`（docs）；revenue/filing 零改动（本 FC）；llm_cost_log.csv dirty = ambient worker 真实记账（未提交防竞态）。
+- **Phase 9 exit gate 全勾选**（task_plan 更新）：source-bound>0、真实复用 T2、AR 全绿、伪零删除。
+- **registry FC-906 → accepted；Phase 9 COMPLETE。**
+- **下一步 Phase 10**：FC-1001（统一 isolated lake fixture，三根真实布局 + corruption variants）→ FC-1002（三进程 E2E runner）→ FC-1003（95 场景矩阵全覆盖）→ FC-1004（平台/安装形态）→ FC-1005（mutation/chaos）。
+
+## 2026-08-12 — Phase 10 COMPLETE（FC-1001..1005 全部 accepted，FCAP 48/71）
+
+- **FC-1001**（reviewer-fc1001-independent）：IsolatedLake 三根 fixture + corruption×5 + manifest hash；FC-505 日期漂移 pre-existing 修复（test-only）。feat e54d9e3。
+- **FC-1002**（reviewer-fc1002-independent）：真实三进程 E2E 链（psutil 5 进程）；fixture 补 security_master/config/review receipts/companies 移 wiki_root。feat 2154032。
+- **FC-1003**（reviewer-fc1003-independent-r3，三轮）：95 场景覆盖门（required gaps=0）；UJ-01/02/04/07；三仓 SCENARIO 标注；r1 F1（wiki marker SyntaxError→f6eb584）、r2 F2（ast.parse 未密封→0b000ea）。feat 26bdfb2。
+- **FC-1004**（reviewer-fc1004-independent）：PORT-02 空格路径 + 安装同步自包含 + UTF-8 链。feat e733287。
+- **FC-1005**（reviewer-fc1005-independent）：critical mutation 门（8 类 kill=100%，M-latest 现场击杀）。feat 6d104d4。
+- 全量 revenue 434→456 passed 零失败；关键发现：filing-fetch dayu containment 缺口（FC-1202 前置）、scan errors 212 vs 155 恶化。
+
+## 2026-08-12 — Phase 11 COMPLETE（FC-1101..1105 全部 accepted，FCAP 58/71）
+
+- **FC-1101**（reviewer-fc1101-independent-r3，三轮）：CI manifest 驱动 checkout 替代硬编码 pin（ad62592/77669ae/a42bb40）；commits-exist 防伪门；pin 扫描 7+hex + 负向控制；r1 F1（manifest 滞后→96afe88）、r2 F2（0x08 正则→6ae5feb 字节级 5c 62 验证）。feat 1b41d62 + 592fae6（filing）。
+- **FC-1102**（reviewer-fc1102-independent）：每日 T2 只读 runner（triplet/samples/scan health/legacy/latency/fingerprint/trend；隔离报告；非零退出）；生产冒烟发现 scan errors 212（vs 基线 155 真实恶化）；P3 F1-F3（policy freshness 由 FC-1105 关闭）。feat ec1d71d。
+- **FC-1103**（reviewer-fc1103-independent）：每周 T3 runner（无 --force=BLOCKED exit 2；reviewer 现场真实 CN/HK/US 214s 全绿）。feat f6c500c。
+- **FC-1104**（reviewer-fc1104-independent-r2）：audit dashboard + release gate（24h T2 + 7d T3）；r1 F1（receipt 治理门：commands 含 exit 1→移 scenario 文本）。feat 154a454。
+- **FC-1105**（reviewer-fc1105-independent）：故障注入矩阵（陈旧 manifest/缺样本/policy 漂移/Dropbox sidecar/健壮性 6 类全红）+ IsolatedLake runtime_policy；关闭 FC-1102 F1。feat a04e413。
+- 全量 revenue 456 passed 零失败；Phase 11 exit gate 勾选（故障注入阻断、硬门机器化；T2/T3 连续周期属持续运维/FC-1504 观察）。
+- **下一步 Phase 12**：FC-1201 hardcode 清零 → 1202 单一策略源（含 filing-fetch dayu containment 缺口）→ 1203 dead code → 1204 ratchet → 1205 PORT-01~03（含 sync 子进程 GBK 根因）。

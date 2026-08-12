@@ -337,3 +337,114 @@
 - **producer_events 触发器方案**：AFTER INSERT ON artifacts 触发器自动 journal（role→type：normalized/sections→parser、summary/consumer_analysis→llm），零 producer 代码改动、不可绕过——比显式 helper 调用更健壮（不会忘）。
 - **prompt_injection review receipt**：documents.metadata_json["prompt_injection_review"]（status/reviewer/reviewed_at/evidence_sha256），写者 fail-closed 校验；envelope 读取，缺席→显式 not_reviewed。
 - **消费侧政策**：revenue source_preparation 遇 not_reviewed → RuntimeError 阻断（未审核永不备料）；parser/llm 计数缺席 → fail closed（永不伪造 0）——E2E fixture 文档需带 review receipt 才能过政策门。
+
+## 发现 43：FC-906 预飞——生产 artifact 全量不可绑定（FC-901 生产 dry-run 首跑，7718→0 bindable）
+
+- **背景**：FC-901 receipt 只在 fixture 上验证（"production catalog untouched"），生产 dry-run 从未跑过。FC-906 预飞首次对生产 catalog（46GB，`.source_catalog/catalog.sqlite3`）只读跑 `run_artifact_backfill(mode='dry-run')`。
+- **结果（决定性）**：input 7718 → **bindable 0 → legacy_unbound 7718**。失败原因：`artifact_schema_unsupported` 7579 + `artifact_status_not_completed` 139（partial 124 + unsupported 15）。
+- **根因**：生产 producer（normalizer/summarizer/section_extractor）写 artifact 时**从不打 v2 `schema_version`**。artifacts 表确有 `schema_version`/`source_sha256` 列但 100% NULL；`metadata_json` 也 100% 无这两字段。FC-901/902 绑定门 `validate_artifact` 要求 `schema_version == ARTIFACT_HANDLE_SCHEMA_VERSION`（"1.0"），缺席即 `artifact_schema_unsupported`。
+- **血缘不缺**：23520/23521 文档有 `primary_source_id`；43082/43082 sources 有 `content_sha256`。即"源可证明"成立，缺的是 artifact 自证的 v2 元数据。
+- **validate_artifact 精确契约**（顺序短路）：status=completed → schema_version=="1.0" → source_id==primary_source_id → **source_sha256 在 artifact 上可选**（仅在 present 时校验 mismatch，line 98-99）→ 文件存在+sha256 匹配 → generator 注册 → created_at 非未来 → path ∈ allowed_roots。**最小修复 = 给 artifact 打 schema_version；source_sha256 非必需。**
+- **教训**：`scripts/processed_artifact_canary.py`（WU-1304）早写的悲观判断（"binding never populated… reuse chain cannot be proven on production"）被证真——但它检查 column，FC-901 实际读 metadata_json+documents/sources JOIN；两条路同结论（0 bindable），机制不同。**plan/工具/canary 描述可能滞后或用不同路径，FC 预飞必须实跑取数，不能信描述。**"FC-901 accepted"只代表 fixture 绿，不代表生产可绑定——accepted ≠ 生产可用。
+- 配套完整记录：`audit_review/2026-08-09_full_completion_assurance_plan/fc_906_preflight_blocker.md`（dry-run 全数字 + reframed 决策）。
+
+## 发现 44：FC-906 真阻塞定位 + 用户三连决策 + 路径 C 子 FC 链
+
+- **真阻塞 = 语料库全量不可绑定**，upstream 于绑定→回执→消费全链。原预飞 Q1/Q2 决策前提被推翻：不是"3 角色有样本、缺 2 个"——**5 角色全不可绑定**；role 分布 normalized 4797 / summary 2910 / sections 11 / **markdown 0 / consumer_analysis 0**（后两者无任何 artifact，且 store 触发器 `trg_artifact_producer_event` 已预期 consumer_analysis→llm 类型）。
+- **用户决策（2026-08-11）**：① 授权生成 `prompt_injection_review` 回执（review 依据 LLM/策略/人工待定）；② 先产出 markdown/consumer_analysis；③ **路径 C：新建 v2 canary 语料**（推荐）——一小批真实文档端到端跑通 v2-aware producer 覆盖全 5 角色，遗留 7718 诚实保留 legacy_unbound（不追溯认证）。
+- **FC-906 拆分为子 FC 链**（runbook §10 授权的 -a/b 拆分，FC-905 有先例）：
+  - **FC-906-a（本会话起点，company-wiki）**：v2 producer 绑定元数据——normalizer/summarizer/section_extractor 打 `schema_version`（+ 可选 source_sha256）；RED+impl+mutation。根因修复。
+  - **FC-906-b（company-wiki）**：markdown + consumer_analysis producer——2 个新角色 producer，需 spec（DAG：markdown←normalized、consumer_analysis←summary）。
+  - **FC-906-c（company-wiki，生产写已授权方向）**：真实 v2 canary 语料 + FC-901 apply + review 回执——小批真实文档全 5 角色 + 回执（依据待定）+ apply 证明 bindings>0。
+  - **FC-906-d（三仓）**：T2 消费证据——bound canary 经 FC-905 门消费，证明 artifact_read>0、producer=0；AR 场景。
+- **待定决策**：review-receipt 依据（LLM 扫描 / 策略判定 / 人工）——FC-906-c 前必须明确。
+- **教训**：FC-906 作为"生产证据"FC，其价值正是暴露这种"代码绿但生产不可用"的缺口；预飞只读取数是 FC-906 的合格第一步，不能跳过直接 apply。
+
+## 发现 45：FC-906-a——created_at 格式是与 schema_version 并列的隐藏 v2 阻塞；extractive summarizer 出范围
+
+- **隐藏缺陷 created_at**：3 个注册 producer（normalizer/llm_summarizer/section_extractor）都用 `datetime('now')` 写 artifact.created_at（SQLite 空格格式 "YYYY-MM-DD HH:MM:SS"，生产 0/7718 ISO）。`validate_artifact` 的 `_UTC_RE` 要求 `YYYY-MM-DDTHH:MM:SSZ` → 修完 schema_version 后下一个失败是 `artifact_created_at_malformed`。FC-901 dry-run 全部在 schema_version（line 90）先短路，created_at 门（line 114）从未被触达——典型的"前面一个门掩盖后面所有门"。
+- **修复**：`datetime('now')` → `strftime('%Y-%m-%dT%H:%M:%SZ','now')`（SQLite 内建，产出 ISO-8601 UTC）。与 schema_version 同属"producer 写 v2 合规元数据"一个行为单元——不可分（只修一个仍不可绑定）。
+- **extractive summarizer 出范围**：`source_catalog_extractive_summary`（summarizer.py）**不在 GENERATOR_REGISTRY**（FC-902 只注册 3 个），生产 0 artifact（2910 summary 全是 llm_summary 2675 + 235 空 generator_name）。即便打 schema_version 也 `artifact_generator_unregistered`。是否注册它属 FC-902 合同决定，记 FC-1203 候选。
+- **FC-906-a 实测（2026-08-11）**：RED 3 测试全失败（schema_version None）；GREEN 3 producer 各加 schema_version + ISO created_at（共 +9/-4 行，3 文件）；mutation 3 杀（每个 producer 删 stamp → 其测试死）；全量 wiki 套件 2228 passed/1 skipped/2 failed（仅 pre-existing PORT-01 对，零新失败）。
+- **教训**：当一组门顺序短路时，第一个门的失败会掩盖所有后续门的缺陷——修完第一个必须立即检查第二个是否也坏，不能假设"修一个就够"。`validate_artifact` 的 9 个顺序门里，schema_version（#2）和 created_at（#7）都被生产违反。
+
+## 发现 46：FC-906-a ACCEPTED + F-6 事件（reviewer 重置用户 dirty 文件）—— reviewer base 复现必须用独立 worktree
+
+- **FC-906-a 完成**（company-wiki `5fbf349` feat + `f6df002` docs）：3 注册 producer 打 v2 schema_version + ISO created_at；RED 3 测试 → GREEN → M1~M3 三杀 → 全量 2228 passed 零新失败；独立 reviewer（干净 worktree，429 中断后 resume）accepted；can_accept gate exit 0（fc_id 用 "FC-906"，receipts 在 `assurance/fc/FC-906/`——与 FC-905-a/b 先例一致）。
+- **F-6 事件（reviewer-process incident，严重）**：reviewer 在主 checkout 跑 base 复现时执行 `git checkout 0c9adac9 -- src tests` + `git checkout 5fbf349 -- .` 恢复，**把用户既有 dirty 文件 `llm_cost_log.csv`（LLM 成本日志，`scripts/llm_client.py` 追加写，tracked）的工作树未提交改动重置了**（现与 HEAD 一致，无 stash，未提交 delta 丢失；git 里提交的版本完好）。不影响 FC-906-a verdict（全部 review 证据在干净 worktree 产生；主 checkout src/tests 与 HEAD 字节一致）。
+- **教训（过程）**：reviewer 的 base 复现**绝不能在主 checkout 跑 git checkout 切文件**——base/result 对比必须在两个独立 worktree（如 `.fcap-review/fc-XXX/base` vs `.fcap-review/fc-XXX/result`）。这是 FC-905/FC-906 系列第一个触碰用户 dirty path 的 reviewer 事件；已被 reviewer 诚实披露（F-6），但损失不可逆。
+- **恢复建议**：用户可从 Windows 文件历史/VS Code local history 恢复 `llm_cost_log.csv` 的未提交行（约 08-09 后几天成本账）；若无备份，成本统计会缺这几天的行——不能伪造补上。
+
+## 发现 47：FC-906-b——markdown/consumer_analysis 角色适用性裁决（catalog 侧不产）+ 文档校验测试弱检查教训
+
+- **裁决（用户决策 A，2026-08-12）**：① `markdown`——与 `normalized` 内容重复（normalizer INSERT mime_type=`"text/markdown"`，normalizer.py:1619；normalized artifact 即 markdown 全文），company-wiki 无 spec/无 producer/无消费方测试，GENERATOR_REGISTRY 无对应 generator → **catalog 侧不产**，建议从 ROLE_DEPENDENCIES/roles 元组移除（FC-1203，冻结契约不动）。② `consumer_analysis`——E2E-D06 provenance 契约（engine/model/prompt/input_bundle_hash 匹配才复用，消费者提供 expected_provenance；content 是分析 JSON）证明它是**消费者侧产物**（revenue/invest-* 分析链生产并回写），catalog 只存取/复用 → **catalog 侧不产**。合同：`company-wiki/assurance/fc/FC-906/03_change_contract_fc906b.md`。
+- **护栏测试**（tests/contract/test_fc906b_role_producer_contract.py，3 tests）：① producer 只写三角色 + GENERATOR_REGISTRY 无 banned 角色 generator（M1：往 section_extractor INSERT 注入 `"markdown",` → 测试死）；② 合同文档存在且每个非 catalog 角色必须有**裁决标题**（M2：删裁决 → 测试死）；③ 角色矩阵守恒（producer 角色 + 非 catalog 角色 = 冻结 DAG 角色集）。
+- **弱检查教训（M2 首杀失败）**：初版文档校验只查"角色名出现在文档"——M2 删表格行后 §2 标题仍含角色名，测试没死。**文档类测试必须断言"裁决本身"（标题/语义结构），不能断言"词汇出现"**——否则变异不击杀，护栏形同虚设。
+- **教训（FC-906 系列）**："角色不适用"是 task_plan 明示的合法路径（"角色不适用必须有合同说明"），但它必须是**裁决+证据+护栏**三件套，不是静默缺失——否则未来读者分不清"故意不产"和"忘了产"。
+
+## 发现 48：FC-906-c 演练发现 normalize 队列缺陷——9506/23521 (40%) 文档无 active location 永远占队列头
+
+- **现象**：副本演练 normalize(limit=3) 全部 failed=3 且 `last_failed_document_id=None`（静默失败，无任何诊断）。调试三轮后定位：priority 队列前 3（广联达/万润股份/山石网科年报）**没有任何 active locations** → `primary is None`（normalizer.py:1455-1457）→ failed++ 且**不记录任何诊断**（last_failed 三个字段都不设）→ 队列 SQL 的 NOT EXISTS completed 条件让它们**永远 eligible** → 每次 normalize 都先撞它们，真实文档被饿死。
+- **生产规模**：23521 文档中 **9506 个零 active locations**（40%；有 locations 行但被 deactivate——remediation/quarantine 遗留）。这是生产现状，非演练环境问题。
+- **修复（FC-906-c 前置）**：① 队列 SQL 加 `EXISTS (SELECT 1 FROM locations lp ... WHERE role='original_primary' AND location_status='active')` 排除（force 与非 force 均生效）；② primary-None 分支防御记录 `no_active_primary_location` 到 last_failure_code/last_failed_document_id/failure_reasons（漏网也可见）。
+- **测试**：`test_fc906c_normalize_queue_no_location.py`（2 tests）——队列优先处理有-location 文档（M1：移除 EXISTS → 死）；primary-None 记录诊断（M2：移除防御记录 → 死，`last_failed_document_id=None` 断言抓出）。
+- **调试教训**：① 调试脚本用**截断 document_id** 导致误判（"CatalogStore 过滤"假象）——document_id 是 97 字符 urn，必须用完整值；② **git checkout -- 会清掉未提交的修复**——mutation 还原必须用反向 Edit，禁止 checkout（FC-906-a F-6 事件同源教训的又一次体现）；③ normalize 队列 SQL 的 ORDER BY 是 `processing_priority_sql`（priority 排序），复现队列时排序不对会看错队首；④ 测试 fixture 的 INSERT 必须匹配表 DDL 的 NOT NULL/FK（documents.metadata_priority、locations.metadata_json/manifest_json、sources FK）——三轮 fixture 修复。
+
+## 发现 49：FC-906-c——生产 canary apply 完成（29 v2 bound artifacts + 15 review receipts）+ FC-901 apply NO-OP 判定
+
+- **生产 apply（2026-08-12，授权）**：normalize 15 真实文档（北方华创/腾讯 2024-25、微软 10-K、Apple 10-K、星环 filings、紫金矿业等）→ sections 11（CN 招股说明书语料——sections 适用；HK/EN 文档合法不适用 skip）→ 真实 LLM summary 3（MiniMax-M3，5 次调用，2 个文档级失败 `LLM response is not valid JSON` = 真实 LLM 行为）→ **29 v2 artifacts 全部 validate_artifact REUSABLE**（14/15+11/11+3/3，1 partial 合理）+ **29 producer_events**（触发器 journal 1:1）+ **15 策略 review receipts**（确定性扫描真实读内容，evidence_sha256=文本 hash，15/15 not_detected）。
+- **FC-901 apply 判定 NO-OP**：生产 dry-run 7718→0 bindable（legacy 缺 v2 元数据）→ artifact_bindings 表 apply 无对象；"source-bound artifact > 0" 由 **v2 运行时绑定**达成（validate_artifact REUSABLE，无需 artifact_bindings 表）。Phase 9 exit gate 达成路径明确。
+- **前置修复**：9506/23521 无-location 文档饿死 normalize 队列（findings 48）→ 修复 + 全量副本演练（46GB 副本 + WAL）→ 生产 apply 前**重启 ambient worker**（旧进程加载 pre-fix 代码会写出 legacy 风格 artifact 污染 canary）——worker 无状态，重启安全，新 worker 产出 v2 ✓。
+- **真实副作用记账**：LLM 5 次调用成本写入 llm_cost_log.csv（+5 行，chore 提交）——**F-6 丢失的 08-09~11 行未补**（不伪造），新增行是真实的。
+- **关键教训**：① 演练/生产必须用**同一代码**（worker 常驻进程用启动时代码——重启是 apply 的必要协调步骤）；② sections 适用性验证（CN 招股书 11/11 vs HK/EN 0）证明"角色适用性"是语料相关的事实，不是全局判定；③ `PYTHONIOENCODING=utf-8` 会让 PORT-01 的 2 个 pre-existing 失败消失（环境规避，非修复——FC-1205 仍待关闭）；④ resolve 北方华创 → ambiguous（多期报告身份歧义 fail-closed 正确）——T2 消费需精确文档请求（FC-906-d）。
+
+## 发现 50：FC-906-d——T2 真实消费达成 + FC-902"测试绿/生产空"双缺口（列 vs metadata、derived root）
+
+- **T2 达成（2026-08-12）**：revenue `source_preparation`（真实三仓链）消费北方华创 2025 → `reused_existing`、**artifact_read=['normalized']**（bound artifact 真实读取）、journal **33→33**（本次消费 producer=0）、download=0、llm=0、prompt_injection_status=not_detected（策略 receipt 生效）。旧 unbound 不复用：星环 2024（legacy）→ valid_handles 空（artifact_schema_unsupported fail closed）。
+- **缺口 1（列 vs metadata）**：FC-906-a 把 schema_version 写进 **metadata_json**，但 FC-902 的 bundle 消费方（query_source_bundle）读 **artifacts 列**——列 100% NULL → 生产 bundle 全 `artifact_schema_unsupported`。修复：3 producer INSERT 写列（normalizer 顺带写 source_sha256）+ 生产回填 33 行。**教训：契约字段的"单一事实来源"必须被所有消费方一致读取——FC-901 backfill 读 metadata、FC-902 bundle 读列，两条路径在 FC-906-a 只修了一条。**
+- **缺口 2（derived root）**：bundle_for_resolution 默认 allowed_roots = config.roots（源根），artifacts 在 derived/ → 全 `artifact_path_outside_allowed_root`。测试显式传 allowed_roots 绿、生产走默认空。修复：默认 += derived_dir。**教训：测试显式传参与生产默认路径必须等价验证（"测试绿/生产空"是 FC 验收盲区）。**
+- **worker 三重启**：FC-906-a/c/d 每次代码变更后 ambient worker 都用旧代码产出（metadata 有/列无）——每次修复后重启 worker 加载新代码；生产回填兜底既有行。**worker 是"代码版本滞后"的持续风险——FC-1101（PR 门）应含 worker 代码版本校验候选。**
+- **fake resolution 测试模式**：bundle_for_resolution 单测用 SimpleNamespace(matches=[SimpleNamespace(document_id, content_sha256)], status=...)——注意 match 是**属性访问**（不是 dict 下标），两轮 fixture 修复。
+- **T2 的 producer_events 语义**：selector 的 producer_events = **缺失角色的 DAG closure**（非 artifact_read 的补集闭包）——北方华创 2025 显示 4 角色（消费者需要但无 artifact），这是正确语义（文档本身无 sections/summary artifact）。artifact_read 才是"producer=0"的证明（配合 journal 不变）。
+
+## 发现 51：FC-1001——统一三根 isolated-lake fixture + FC-505 日期漂移修复（pre-existing 时间敏感测试）
+
+- **FC-1001（Phase 10 基石）**：`tests/e2e_support/isolated_lake.py`——一个 temp 目录同时布局三根（companies/紫金矿业 2025 + portfolio/601899 2024 + Dropbox/中国平安 2020 中期），sidecars、identity、v2 preset artifacts（**schema_version 列 + metadata 双写**——FC-906-d 契约）、producer_events journal、5 个 corruption 变体（hash_mismatch/truncated_source/sidecar_missing/location_inactive/column_drop 各在不同层 fail closed）、确定性 manifest_hash（无绝对路径，Windows/Linux 可重现）。9 tests；M-loc/M-hash（破坏 corrupt 实现）双杀。
+- **corruption 的 fail-closed 层级**（设计要点）：hash_mismatch→validator 层；column_drop/truncated_source→**bundle 层**（query_source_bundle 读列/源 hash——FC-906-d 生产路径）；sidecar_missing→**resolve 层**（company_raw 容忍无 sidecar，Dropbox 依赖 sidecar 身份——scan 不拒但 resolve 不命中）；location_inactive→resolver 层。
+- **FC-505 日期漂移（pre-existing）**：fixture 的 as_of 固定 "2026-08-11" 而 resolver 的 retrieved_at=动态 today → `published <= captured <= as_of` 从 08-12 起永远失败（revenue 全量 2 failed）。**时间敏感 fixture 的固定日期是持续回归源**（Phase 1 同类：as_of 硬编码审计日）——test-only 修复为动态 today+7。
+- **mutation 方法论**：对单断言测试，"删除断言"不是有效 mutation（删了即无检查）——**mutation 目标是 corrupt() 实现本身**（UPDATE 不 quarantine / 不 tamper → 测试抓出）。
+- **教训**：pre-commit 门禁（sync_installations --apply + 全量 + E2E）在提交时自动跑并全绿——commit 信息需含全部改动（含 FC-505 修复）。
+
+## 发现 52：FC-1002——真实三进程 E2E 链达成 + R4.2 提交门禁再教训 + fixture 生产形态补全
+
+- **三进程链**：revenue source_preparation（进程1）→ subprocess filing_fetch_client（进程2）→ subprocess wiki CLI（进程3）——真实 OS 进程，process_count>=3 满足 FC-102 registry 门。3 contracts：exact 命中零副作用（artifact_read>0、journal 不变、download/llm=0、not_detected）、三进程 trace（生产代码 subprocess 链 inspect + 输出透传）、缺失 artifact → producer_events DAG closure。M1（移除 fixture review receipts）→ FC-905-b 门阻断链 → 测试死 ✓。
+- **fixture 生产形态补全（IsolatedLake 扩展）**：① review receipts（FC-905-b 门：消费阻断 not_reviewed——链测试暴露 FC-1001 缺 receipt）；② security_master/cn.json（filing-fetch identify 依赖——schema 校验严格：顶层精确字段集 schema_version/market/record_count/records/retrieved_at/sources + record 必填 ticker/canonical_name/exchange/security_id/active/source_name/source_url/source_record_id——三轮修 schema）；③ config/source_catalog.yaml 在 wiki root 下（filing-fetch 校验存在）；④ **companies 必须在 wiki_root/companies**（filing-fetch legacy containment 校验 canonical_path ⊆ wiki_root/companies——production 形态）。
+- **R4.2 提交门禁再教训**：**改测试文件后提交前必须 sync_installations --apply**（首次 FC-1002 提交被 R4.2 DIFF 拦截——3 文件滞后；同步后 MATCH 102 files 才过）。这是 memory 教训⑦的严格执行版。
+- **教训**：跨仓链测试的 fixture 必须**生产形态完整**（config/security_master/根布局/审核回执）——每个下游 hop 的校验都是真实契约，缺一个就 fail closed（这不是缺陷，是设计；fixture 必须补全而非绕过）。
+
+## 发现 53：FC-1003——95 场景机器覆盖门（required gaps=0）+ 真实缺口：filing-fetch legacy containment 拒 dayu 根
+
+- **覆盖门**（compatibility/scenario_coverage.py）：SCENARIO docstring 标注（组合 ID 拆分、tools/tests 扫描）+ receipts scenario_results 并集；owner_fc 未来 Phase（FC-110x/120x/130x/150x/FC-1004）显式 deferred；required gaps=0（87 covered + 14 deferred）。7 自测（M2：deferred 前缀清空 → 门失败）。
+- **盘点方法**：grep 测试名只找到 14/95（测试不按 ID 命名）；**receipts 的 scenario_results 是权威覆盖证据**（58/95）；标注补齐到 87。教训：**覆盖证据必须机器可扫（标注/receipts），不能靠测试名推断**。
+- **UJ 场景**：UJ-01/02/04/07 真实测试（IsolatedLake 链）；UJ-03/05 归 FC-805 T3 下载测试标注；UJ-06/08 归 fc904 selector 测试标注。
+- **真实缺口（filing-fetch）**：legacy containment `validate_handle` 只认 `wiki_root/companies`——**dayu 根文档经 filing-fetch 从没被打通**（canonical_path 在 portfolio/ 被拒）——UJ-02 暴露。生产 dayu-only 经 filing-fetch 从未验证（FC-602 是 wiki 侧测试）。**修复方向**：filing-fetch 需 policy-snapshot roots（FC-1202 单一策略源）——记入 FC-1202 前置。
+- **fixture 生产形态**（IsolatedLake 再扩展）：dayu 文档需 company-name entity（ticker 不够——resolver 按 canonical name 匹配）、reusable_root_kinds 需全三根（默认只 company_raw）。每层校验都是真实契约。
+- **教训**：覆盖门自身要测（deferred 前缀是门的"豁免开关"——清空它门必须红）；手写 hash 又错一次（pitfall #1 第四次，receipt 已修）。
+
+## 发现 54：Phase 10 完成——E2E 基石 + 覆盖门 + 平台 + critical mutation（FC-1001..1005）
+
+- **FC-1001**：IsolatedLake 三根 fixture（corruption×5/manifest hash 无真实路径）——Phase 10 基石；corruption 的 fail-closed 层级是设计要点（hash→validator、column/source→bundle、sidecar→resolve、location→resolver）。
+- **FC-1002**：真实三进程 E2E 链（psutil 确认 5 OS 进程超 process_count>=3 门）；跨仓 fixture 必须生产形态完整（config/security_master/review receipts/companies 在 wiki_root 下——每个下游 hop 的校验都是真实契约）。
+- **FC-1003**：95 场景机器覆盖门（SCENARIO 标注 + receipts 并集；required gaps=0）。**三轮 review**：F1（单行 docstring 外插标注→SyntaxError）、F2（ast.parse 加固未密封）。**教训：覆盖证据必须机器可扫；"标记但不可运行"的文件会撑绿门——门必须 compile 验证标记文件**。
+- **FC-1004**：PORT-02 空格路径一致性 + 安装同步自包含 + UTF-8 链。
+- **FC-1005**：critical mutation 门（8 类 kill=100%）；M-latest 现场击杀（close_gap re-resolve 移除→cg05/cg07 死）。
+- **教训**：**receipt 的 commands 不能含预期非零退出命令**（FC-703 r2 教训在 FC-1104 重现）；mutation 还原用反向 Edit 而非 git checkout（清未提交修改）；手写 hash 是反复犯的 pitfall #1。
+
+## 发现 55：Phase 11 完成——动态审核体系机器化（FC-1101..1105）
+
+- **FC-1101**：CI sibling checkout manifest 驱动（替代硬编码 pin）。**三轮 review**：F1 manifest triplet 滞后于 result HEAD（提交→manifest→提交循环）→ 门重设计为 commits-exist（防伪，非 ==HEAD）；F2 正则 `` 被 heredoc 转义污染成字面 0x08 退格 → 扫描空转——**字节级验证（od -c 看 5c 62）** + 负向控制测试。
+- **FC-1102**：每日 T2 只读 runner（mode=ro+query_only）——生产冒烟发现 **scan completed_with_errors 212 vs FC-001 基线 155（真实恶化 +57）**；P3 findings F1-F3（policy freshness/报告新鲜度/fingerprint 趋势）——F1 由 FC-1105 关闭。
+- **FC-1103**：每周 T3 runner——无 --force=BLOCKED exit 2（告警非绿）；reviewer 现场真实 CN/HK/US 下载 214s 全绿。
+- **FC-1104**：audit dashboard + release gate（24h T2 + 7d T3）——**r1 因 receipt 治理门（commands 含 exit 1）changes_required**。
+- **FC-1105**：故障注入矩阵（6 类注入全红）+ runner 健壮性（UTF-8/原子/并发）。
+- **教训**：① receipt 的 commands 全 0 是硬门（预期非零写 scenario 文本）；② manifest/CI 门要防"空转正则"（负向控制测试）；③ 动态审核的价值实证：T2 runner 首跑即发现 scan health 真实恶化；④ 系统化 review 流程（r1/r2/r3 闭环）在每个 FC 都抓到了真实缺陷——没有一次 review 是纯走过场。
