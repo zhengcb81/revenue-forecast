@@ -448,3 +448,24 @@
 - **FC-1104**：audit dashboard + release gate（24h T2 + 7d T3）——**r1 因 receipt 治理门（commands 含 exit 1）changes_required**。
 - **FC-1105**：故障注入矩阵（6 类注入全红）+ runner 健壮性（UTF-8/原子/并发）。
 - **教训**：① receipt 的 commands 全 0 是硬门（预期非零写 scenario 文本）；② manifest/CI 门要防"空转正则"（负向控制测试）；③ 动态审核的价值实证：T2 runner 首跑即发现 scan health 真实恶化；④ 系统化 review 流程（r1/r2/r3 闭环）在每个 FC 都抓到了真实缺陷——没有一次 review 是纯走过场。
+
+## 发现 56：FC-1201——root-hardcode 门转 frozen ratchet + canonical_writer/cli 重构被 loader 阻塞（DEFERRED）
+
+- 日期：2026-08-12。Phase 12 启动。用户 `/planning-with-files 从头一个一个实施` 触发。
+- **范围决策（用户 Interpretation A）**：FC-1201 exit gate「forbidden hardcode=0」与 cutover 冲突——残留 root-specific 分支几乎全在 v1 scanner（7 处），而 v1 仍是生产回退（R8/R9 未完成：`legacy_bridge_hits=6`，门关；v2 flags OFF per FC-204）。code_quality_plan §3 step7 明确「关桥后才删 legacy 代码」。→ 门棘轮 + 安全清理，v1 延后 R9。
+- **真实 hardcode 地貌（preflight）**：FC-304 `no_root_specific_hardcode` 门是 **substring 匹配**（4 token：`dropbox_stock`/`company_raw`/`dayu_portfolio`/`Dropbox`），所以注释/docstring/SQL/错误信息都触发——allowlist 显式白名单了 11 个「backlog」文件。root-specific **行为分支**仅 3 文件：scanner.py（v1，7 处，R9）、canonical_writer.py:126（写根选择）、cli.py:1251（portfolio 根查找）。resolver.py 已清（FC-701 用 `config.reusable_root_kinds`）。service.py:237/normalizer.py:1487 的 `acquisition/dayu_meta` 读属另一门（legacy container gate），非 root-token 范围。
+- **关键阻塞（DEFERRED 根因）**：生产 **1.x loader `config.py:75-84` 的 `allowed_root_fields` 严格拒未知字段**——不含 `canonical_write_target` 且 `unknown = set(item) - allowed_root_fields` → CatalogConfigError。生产 `source_catalog.yaml` 三根都未设 `canonical_write_target`（测试 fixture 都设 `"companies"`，但生产 yaml 从未补 → FC-301 生产迁移未收尾）。故 canonical_writer 重构（按 `canonical_write_target` 选写根）需同时改 loader（生产加载路径）+ yaml + 可能级联破坏未设 target 的 fixture → 超出「安全清理」。cli.py:1251 按身份引用 dayu_portfolio 根（同 admission.py FOCUS_ROOT_ID），literal 内禀不可 config-only 化。
+- **交付（company-wiki feat `0c6c2c9` + receipt `8817521` + closure `b3b45aa`）**：门转 **frozen ratchet**（`_ROOT_HARDCODE_ALLOWED_FILES` 精确 pin，`test_fc1201_allowlist_ratchet_frozen`；新增文件→测试红→强制 review）；注释清理 resolver.py:679/observability.py:76/entity_resolver.py:1 → 三文件移出 allowlist（real shrink，零行为）；5 新 contract 测试。零 v1 scanner / loader / 写路径 / yaml 改动。
+- **验证**：17 focused + 272 contract 子集 + 全量 wiki 2241 passed/1 skipped/0 failed（PYTHONIOENCODING=utf-8 下 PORT-01 对也过）。M1（allowlist 涨）+M2（token 删）双杀。reviewer-fc1201-independent 干净 worktree ACCEPTED（RED-at-base 第二 worktree，3 非阻塞 finding）。can_accept exit 0。
+- **教训**：① receipt `reviewed_at` 必须 UTC `Z`（非 `+08:00` offset）；② `receipt_validator --accept` 只传 implementer receipt（reviewer 经 sha256 引用，不作第二 `--receipt`——reviewer receipt schema 不同，传两个会按 implementer schema 校验报一堆错）；③ mutation commands exit_code 必须 0（pitfall #5 再现，inner pytest exit N 写 result 文本「KILL CONFIRMED」）；④ substring gate 使注释清理「load-bearing」——离开 allowlist 必须先清注释；⑤ 「安全清理」FC 的边界要诚实：loader/config 改动不算 safe，宁可 DEFERRED + frozen backlog 也不强推。
+
+## 发现 57：FC-1202 预检——单一安全策略源的具体触点（含 filing-fetch dayu CI containment 缺口）
+
+- 日期：2026-08-12。FC-1202 前置 FC-1201 ✓ accepted。Owner 三仓。
+- **filing-fetch `Path.parent/sibling` 隐式定位**：`scripts/filing_contracts.py:360-390` 已是 FC-501 policy-snapshot 单一 containment 源（好）；但 `scripts/filing_filing.py:138 root = selected.parent / root` 是隐式父目录定位（FC-1202 目标）。`references/contract-ownership.md:23-24` 文档已声明「no independent allowed_handle_roots」。
+- **filing-fetch dayu containment 缺口（FC-1003 发现 53）**：`.github/workflows/quality.yml:63-65` 仍残留 `allowed_handle_roots` 检查 + **硬编码 dayu 路径** `'${USER_PROFILE}/Projects/dayu-agent/workspace/portfolio'`——FC-501 删了运行时 allowlist，但 CI workflow 残留第二策略源 + 硬编码 root。这是「legacy containment 拒 dayu 根」的 CI 侧缺口。
+- **filing-fetch `SKILL.md:141-143`**：仍写「directory is listed in filing-fetch's allowed_handle_roots」+ dayu_portfolio reuse——**stale 文档**引用已删的 allowlist。
+- **revenue `Path.parent/sibling`**：`scripts/filing_fetch_client.py:56,206`「two repos live as sibling directories」+ 「defaults to the sibling repo」——隐式兄弟定位（FC-1202 目标：manifest/安装入口）。`tools/ci_checkout_siblings.py`（FC-1101）已是 manifest 驱动的正解（CI 侧），但运行时 client 仍用兄弟假设。
+- **config doctor**：需三仓 contract compatibility 检查（不复制 root 列表）。
+- **FC-1202 性质**：多仓 + 触 CI workflow + 兄弟仓定位（基础设施敏感）。需独立 preflight + scope 决策（同 FC-1201 模式），不宜在同一长会话末尾仓促实施。
+- **影响**：FC-1202 实施前须重验 triplet + 确认 dayu CI containment 缺口的精确修法（删 quality.yml 残留 vs 改 containment 逻辑）+ 兄弟定位的 manifest 化不破坏运行时。
