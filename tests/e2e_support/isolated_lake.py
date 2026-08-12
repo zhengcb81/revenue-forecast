@@ -96,7 +96,8 @@ class IsolatedLake:
         self.tmp = tmp_path
         self.seed = seed
         self.lake = tmp_path / "lake"
-        self.companies = self.lake / "companies"
+        self.wiki_root = self.lake / "project"
+        self.companies = self.wiki_root / "companies"
         self.portfolio = self.lake / "portfolio"
         self.dropbox = self.lake / "Dropbox" / "Stock"
         self.entries: list[LakeEntry] = []
@@ -192,7 +193,9 @@ class IsolatedLake:
         self._add_companies()
         self._add_dayu()
         self._add_dropbox()
+        self._write_wiki_config()
         catalog = self._catalog()
+        self._write_security_master(catalog)
         catalog.scan()
         self._preset_v2_artifacts(catalog)
         manifest = IsolatedLakeManifest(
@@ -201,6 +204,52 @@ class IsolatedLake:
             derived_root=catalog.config.derived_dir,
         )
         return manifest
+
+    def _write_security_master(self, catalog: "object") -> None:
+        """Identity registry snapshot (filing-fetch identify depends on it):
+        cn.json with the lake's issuers."""
+        sm = catalog.config.catalog_dir / "security_master"
+        sm.mkdir(parents=True, exist_ok=True)
+        (sm / "cn.json").write_text(json.dumps({
+            "schema_version": "1.0",
+            "market": "CN", "record_count": 2,
+            "retrieved_at": "2026-08-12T00:00:00Z",
+            "sources": ["cninfo"],
+            "records": [
+                {"active": True, "aliases": ["ZIJIN"],
+                 "canonical_name": "紫金矿业", "exchange": "SSE",
+                 "ticker": "601899",
+                 "identifiers": {"cninfo_category": "A股"},
+                 "market": "CN", "schema_version": "1.0",
+                 "security_id": "601899", "source_name": "cninfo",
+                 "source_record_id": "1225023658",
+                 "source_url": "https://provider.example/601899"},
+                {"active": True, "aliases": ["PINGAN"],
+                 "canonical_name": "中国平安", "exchange": "SSE",
+                 "ticker": "601318",
+                 "identifiers": {"cninfo_category": "A股"},
+                 "market": "CN", "schema_version": "1.0",
+                 "security_id": "601318", "source_name": "cninfo",
+                 "source_record_id": "1223023656",
+                 "source_url": "https://provider.example/601318"},
+            ],
+        }, ensure_ascii=False), encoding="utf-8")
+
+    def _write_wiki_config(self) -> None:
+        """Production-shaped config/source_catalog.yaml under the lake project
+        (filing-fetch validates its existence; the CLI reads roots from it)."""
+        cfg_dir = self.lake / "project" / "config"
+        cfg_dir.mkdir(parents=True, exist_ok=True)
+        (cfg_dir / "source_catalog.yaml").write_text(
+            "schema_version: \"1.0\"\n"
+            "catalog_dir: \"${PROJECT_ROOT}/.source_catalog\"\n"
+            "reusable_root_kinds: [company_raw, dayu_portfolio, directory]\n"
+            "roots:\n"
+            f"  - root_id: company_raw\n    kind: company_raw\n    path: \"{self.companies.as_posix()}\"\n    priority: 10\n"
+            f"  - root_id: dayu_portfolio\n    kind: dayu_portfolio\n    path: \"{self.portfolio.as_posix()}\"\n    priority: 20\n"
+            f"  - root_id: dropbox_stock\n    kind: directory\n    path: \"{(self.lake / 'Dropbox' / 'Stock').as_posix()}\"\n    priority: 30\n",
+            encoding="utf-8",
+        )
 
     def _preset_v2_artifacts(self, catalog: "object") -> None:
         """INSERT v2 artifact rows (schema_version column + metadata) +
@@ -256,6 +305,25 @@ class IsolatedLake:
                     VALUES(?,?,?,?,?,?,datetime('now'))""",
                     (f"pe-{art_id}-fc1001", doc["document_id"], "normalized",
                      "source_catalog_normalizer", "1.0.0", "parser"),
+                )
+                # FC-905-b policy gate: consumption blocks on not_reviewed —
+                # the lake's documents carry a deterministic-policy review
+                # receipt (same contract as the FC-906-c production canary).
+                mrow = con.execute(
+                    "SELECT metadata_json FROM documents WHERE document_id=?",
+                    (doc["document_id"],),
+                ).fetchone()
+                metadata = json.loads(mrow["metadata_json"] or "{}") or {}
+                metadata["prompt_injection_review"] = {
+                    "schema_version": "1.0",
+                    "status": "not_detected",
+                    "reviewer": "policy-reviewer-fc1001",
+                    "reviewed_at": "2026-08-12T00:00:00Z",
+                    "evidence_sha256": content_sha,
+                }
+                con.execute(
+                    "UPDATE documents SET metadata_json=? WHERE document_id=?",
+                    (json.dumps(metadata, ensure_ascii=False), doc["document_id"]),
                 )
         con.commit()
         con.close()
