@@ -537,3 +537,15 @@
 - **FC-1105**（reviewer-fc1105-independent）：故障注入矩阵（陈旧 manifest/缺样本/policy 漂移/Dropbox sidecar/健壮性 6 类全红）+ IsolatedLake runtime_policy；关闭 FC-1102 F1。feat a04e413。
 - 全量 revenue 456 passed 零失败；Phase 11 exit gate 勾选（故障注入阻断、硬门机器化；T2/T3 连续周期属持续运维/FC-1504 观察）。
 - **下一步 Phase 12**：FC-1201 hardcode 清零 → 1202 单一策略源（含 filing-fetch dayu containment 缺口）→ 1203 dead code → 1204 ratchet → 1205 PORT-01~03（含 sync 子进程 GBK 根因）。
+
+## 2026-08-12 — FC-1201 实施中（root-hardcode 门棘轮 + 安全清理；reviewer 后台重放中）
+
+- **触发**：用户 `/planning-with-files 有哪些未完成的项目，从头开始一个一个实施`。盘点：FCAP 58/71 accepted（Phase 1-11 完成）；剩 Phase 12（5 FC）+ Phase 13（4 FC）+ Phase 14（10 发布波次）+ Phase 15（5 FC）= 14 FC + 10 波次。下一关键路径 = FC-1201。
+- **baseline 对账（preflight）**：revenue 有未提交改动——2 个 test follow-up（FC-1001 fixture path from FC-1002、FC-905-b SCENARIO marker from FC-1003）+ weekly_t3_runner.py stat-cache 幻影（update-index --refresh 清除）+ 规划文档（Phase 11 更新）+ 2 未跟踪遗留审计文档。两笔对账提交：`cb58cc6`（test follow-ups，pre-commit 全量 456 passed）+ `44cd28a`（规划文档+归档）。revenue clean。
+- **当前 triplet**：revenue `44cd28a`、filing `592fae6`、wiki `f6eb584`（FC-1201 前）。
+- **FC-1201 范围决策（用户 Interpretation A）**：门禁棘轮 + 安全清理，v1 scanner 延后 R9。preflight 发现 v1 scanner（7 root 分支）仍是生产回退（cutover 未完成）→ 符合 code_quality_plan §3 step7「关桥后才删 legacy」。
+- **preflight-refined 范围**：canonical_writer（L126 写根选择）+ cli（L1251 portfolio 根查找）重构 **DEFERRED**——生产 1.x loader `config.py:75-84` 的 `allowed_root_fields` 严格拒 `canonical_write_target`（加 yaml label → CatalogConfigError），重构需改 loader（生产加载路径）+ yaml + 可能级联破坏未设 target 的测试 fixture；超出「安全清理」→ 留 frozen allowlist，记为 FC-1201 follow-up / R9 prep。service.py:237 / normalizer.py:1487 的 acquisition/dayu_meta 读属另一门（legacy container gate），非 root-token 范围。
+- **交付（company-wiki feat `0c6c2c9` + receipt `8817521`）**：FC-304 `no_root_specific_hardcode` 门转 **frozen ratchet**（allowlist 精确 pin，新增文件→测试红）；注释清理 resolver.py:679/observability.py:76/entity_resolver.py:1 → 三文件移出 allowlist（real shrink，零行为）；5 新 contract 测试。零 v1 scanner / loader / 写路径 / yaml 改动。
+- **验证**：FC-1201 5 tests + architecture_gate 7 + EX-08 5 = 17 passed；gate/root/policy contract 子集 272 passed/1 skipped；全量 wiki 套件 **2241 passed/1 skipped/0 failed**（449s，PYTHONIOENCODING=utf-8 下 PORT-01 对也过）。M1（allowlist 涨）+ M2（token 删）双杀。ruff/compile 干净。
+- **receipt validator 教训再现（pitfall #5）**：mutation commands 首次写 exit_code=1 被 schema 2.0 拒（所有 exit_code 必须 0）；改为 exit_code=0 + result 文本记「KILL CONFIRMED — inner pytest exit N」→ validator OK。
+- **下一步**：reviewer-fc1201-independent 后台重放（干净 worktree 8817521；F-6 规则：base 复现用第二 worktree）→ verdict → can_accept → registry FC-1201 accepted → FC-1202（单一策略源，含 filing-fetch dayu containment 缺口）。

@@ -518,7 +518,7 @@ Phase 0 baseline
 - [x] 故障注入能阻断 release —— **FC-1105（6 类注入全红 + runner 健壮性）**。
 - [x] 动态审核是硬门 —— **FC-1101 CI gate + FC-1102 非零退出 + FC-1104 release gate 均已机器化**。
 
-## Phase 12（硬编码、重复策略、死代码与复杂度治理）— 状态：pending
+## Phase 12（硬编码、重复策略、死代码与复杂度治理）— 状态：in_progress（FC-1201 implementer receipt sealed @wiki 8817521；reviewer-fc1201-independent 后台重放中；FC-1202~1205 pending）
 
 ### FC-1201：root/source hardcode 清零
 
