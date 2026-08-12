@@ -1,4 +1,5 @@
 """FC-905-b RED/acceptance tests: source_preparation consumes trusted
+SCENARIO: SAFE-04 SAFE-05
 capture/safety evidence from the envelope.
 
 The hardcoded `prompt_injection_status="not_detected"` and

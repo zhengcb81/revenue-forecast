@@ -61,7 +61,7 @@ def test_three_roots_resolve_consistently(tmp_path: Path):
         project_root=tmp_path / "lake" / "project",
         catalog_dir=m.catalog_path.parent,
         roots=(
-            RootSpec("company_raw", tmp_path / "lake" / "companies", "company_raw",
+            RootSpec("company_raw", tmp_path / "lake" / "project" / "companies", "company_raw",
                      priority=10, adapter_id="company_raw_v1", read_only=False,
                      reusable_for_filing=True, canonical_write_target="companies"),
             RootSpec("dayu_portfolio", tmp_path / "lake" / "portfolio", "dayu_portfolio",
@@ -227,7 +227,7 @@ def test_corruption_variants_fail_closed(tmp_path: Path, variant: str):
         catalog = SourceCatalog(CatalogConfig(
             project_root=tmp_path / "lake" / "project",
             catalog_dir=m.catalog_path.parent,
-            roots=(RootSpec("company_raw", tmp_path / "lake" / "companies", "company_raw",
+            roots=(RootSpec("company_raw", tmp_path / "lake" / "project" / "companies", "company_raw",
                             priority=10, adapter_id="company_raw_v1", read_only=False,
                             reusable_for_filing=True, canonical_write_target="companies"),),
         ))
