@@ -25,7 +25,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from filing_fetch_client import _ClientError, resolve_filing  # noqa: E402
+from filing_fetch_client import (  # noqa: E402
+    _ClientError,
+    load_filing_fetch_root,
+    resolve_filing,
+)
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
@@ -173,6 +177,125 @@ class ResolveFilingErrorDiagnosticsTests(unittest.TestCase):
                 with self.assertRaises(_ClientError) as ctx:
                     resolve_filing(_request("AMD"), filing_fetch_root=root)
             self.assertIn("status=not_found", str(ctx.exception))
+
+
+class FilingFetchRootConfigTests(unittest.TestCase):
+    """FC-1202: the filing-fetch root must come from an explicit config file
+    (``config/filing_fetch.json``) — no implicit sibling-directory lookup.
+    ``filing_fetch_root=`` parameter / ``--filing-fetch-root`` stays the
+    explicit override and never consults the config."""
+
+    def _write_config(self, directory: Path, payload: object) -> Path:
+        path = directory / "filing_fetch.json"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        return path
+
+    def test_shipped_default_config_has_exact_schema(self) -> None:
+        # The shipped default config must stay exactly {schema_version,
+        # filing_fetch_root} — an extra key (e.g. an independent allowlist)
+        # is a contract violation, mirroring filing-fetch's own config rule.
+        path = SKILL_ROOT / "config" / "filing_fetch.json"
+        self.assertTrue(path.is_file(), f"missing shipped config: {path}")
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(set(payload), {"schema_version", "filing_fetch_root"})
+        self.assertEqual(payload["schema_version"], "1.0")
+        root = payload["filing_fetch_root"]
+        self.assertTrue(isinstance(root, str) and root.strip() == root and root)
+
+    def test_explicit_config_resolves_root(self) -> None:
+        with _fake_root() as root:
+            with tempfile.TemporaryDirectory(prefix="fff_cfg_") as directory:
+                config = self._write_config(
+                    Path(directory),
+                    {"schema_version": "1.0", "filing_fetch_root": str(root)},
+                )
+                self.assertEqual(load_filing_fetch_root(config_path=config), root)
+
+    def test_config_missing_file_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="fff_cfg_") as directory:
+            with self.assertRaises(_ClientError) as ctx:
+                load_filing_fetch_root(config_path=Path(directory) / "nope.json")
+        self.assertEqual(ctx.exception.error_code, "config_error")
+
+    def test_config_unknown_field_is_rejected(self) -> None:
+        # An extra key (allowed_handle_roots smuggling back) must fail closed.
+        with _fake_root() as root:
+            with tempfile.TemporaryDirectory(prefix="fff_cfg_") as directory:
+                config = self._write_config(
+                    Path(directory),
+                    {
+                        "schema_version": "1.0",
+                        "filing_fetch_root": str(root),
+                        "allowed_handle_roots": ["/Dropbox/Stock"],
+                    },
+                )
+                with self.assertRaises(_ClientError) as ctx:
+                    load_filing_fetch_root(config_path=config)
+        self.assertEqual(ctx.exception.error_code, "config_error")
+
+    def test_config_relative_root_is_rejected(self) -> None:
+        # FC-1202: relative roots resolved against the config's parent are
+        # implicit location — only absolute (token-expanded) roots are valid.
+        with tempfile.TemporaryDirectory(prefix="fff_cfg_") as directory:
+            config = self._write_config(
+                Path(directory),
+                {"schema_version": "1.0", "filing_fetch_root": "filing-fetch"},
+            )
+            with self.assertRaises(_ClientError) as ctx:
+                load_filing_fetch_root(config_path=config)
+        self.assertEqual(ctx.exception.error_code, "config_error")
+
+    def test_config_bad_schema_version_is_rejected(self) -> None:
+        with _fake_root() as root:
+            with tempfile.TemporaryDirectory(prefix="fff_cfg_") as directory:
+                config = self._write_config(
+                    Path(directory),
+                    {"schema_version": "2.0", "filing_fetch_root": str(root)},
+                )
+                with self.assertRaises(_ClientError) as ctx:
+                    load_filing_fetch_root(config_path=config)
+        self.assertEqual(ctx.exception.error_code, "config_error")
+
+    def test_config_root_without_fetch_filing_script_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="fff_cfg_") as directory:
+            base = Path(directory)
+            empty = base / "not-filing"
+            empty.mkdir()
+            config = self._write_config(
+                base, {"schema_version": "1.0", "filing_fetch_root": str(empty)}
+            )
+            with self.assertRaises(_ClientError) as ctx:
+                load_filing_fetch_root(config_path=config)
+        self.assertEqual(ctx.exception.error_code, "config_error")
+
+    def test_config_user_profile_token_is_expanded(self) -> None:
+        from unittest.mock import patch
+
+        with _fake_root() as root:
+            with tempfile.TemporaryDirectory(prefix="fff_cfg_") as directory:
+                config = self._write_config(
+                    Path(directory),
+                    {"schema_version": "1.0", "filing_fetch_root": "${USER_PROFILE}"},
+                )
+                with patch.dict("os.environ", {"USERPROFILE": str(root)}):
+                    resolved = load_filing_fetch_root(config_path=config)
+        self.assertEqual(resolved, root)
+
+    def test_explicit_param_bypasses_config(self) -> None:
+        # A broken config must never matter when the caller passes an
+        # explicit filing_fetch_root (E2E fixtures rely on this).
+        from unittest.mock import patch
+
+        def _boom(*_args, **_kwargs):
+            raise _ClientError("config unusable", error_code="config_error")
+
+        with _fake_root() as root:
+            with patch(
+                "filing_fetch_client.load_filing_fetch_root", side_effect=_boom
+            ):
+                handle = resolve_filing(_request("AMD"), filing_fetch_root=root)
+        self.assertIsInstance(handle, dict)
+        self.assertEqual(handle["_request_company_query"], "AMD")
 
 
 class FilingFetchClientCliTests(unittest.TestCase):

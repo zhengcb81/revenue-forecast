@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -52,12 +53,123 @@ class _ClientError(RuntimeError):
         self.candidates = candidates
 
 
-# The location of the standalone filing-fetch canonical repo.
-# When the two repos live as sibling directories inside the same parent this
-# relative lookup works; a caller may override via the *filing_fetch_root*
-# keyword argument.
+# The location of the standalone filing-fetch canonical repo comes from an
+# explicit config file (FC-1202: no implicit sibling-directory lookup).
+# ``config/filing_fetch.json`` may use ${SKILL_ROOT}/${USER_PROFILE} tokens
+# and must resolve to an absolute directory containing scripts/fetch_filing.py.
+# A caller may override via the *filing_fetch_root* keyword argument.
 _SKILL_ROOT = Path(__file__).resolve().parents[1]
-_DEFAULT_FILING_FETCH_ROOT = _SKILL_ROOT.parent / "filing-fetch"
+FILING_FETCH_CONFIG_SCHEMA_VERSION = "1.0"
+_DEFAULT_FILING_FETCH_CONFIG = _SKILL_ROOT / "config" / "filing_fetch.json"
+
+
+def load_filing_fetch_root(*, config_path: Path | None = None) -> Path:
+    """Load and validate the explicit filing-fetch root configuration.
+
+    Fail closed: a missing config, an extra field (e.g. a smuggled-back
+    allowlist), a relative root, or a root without ``scripts/fetch_filing.py``
+    raises ``_ClientError(error_code="config_error")``.
+    """
+    if config_path is not None and not isinstance(config_path, Path):
+        raise TypeError("config_path must be pathlib.Path or None")
+    selected = config_path or _DEFAULT_FILING_FETCH_CONFIG
+    try:
+        selected = selected.expanduser().resolve(strict=True)
+    except OSError as exc:
+        raise _ClientError(
+            f"filing-fetch config does not exist: {selected}",
+            error_code="config_error",
+            retryable=False,
+        ) from exc
+    if not selected.is_file():
+        raise _ClientError(
+            "filing-fetch config must be a file",
+            error_code="config_error",
+            retryable=False,
+        )
+    try:
+        payload = json.loads(selected.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise _ClientError(
+            f"invalid filing-fetch config: {exc}",
+            error_code="config_error",
+            retryable=False,
+        ) from exc
+    if not isinstance(payload, dict):
+        raise _ClientError(
+            "filing-fetch config must be an object",
+            error_code="config_error",
+            retryable=False,
+        )
+    if set(payload) != {"schema_version", "filing_fetch_root"}:
+        raise _ClientError(
+            "filing-fetch config must contain exactly schema_version/"
+            "filing_fetch_root (FC-1202: no independent allowlist, no "
+            "implicit location)",
+            error_code="config_error",
+            retryable=False,
+        )
+    if payload["schema_version"] != FILING_FETCH_CONFIG_SCHEMA_VERSION:
+        raise _ClientError(
+            f"filing-fetch config schema_version must be "
+            f"{FILING_FETCH_CONFIG_SCHEMA_VERSION}",
+            error_code="config_error",
+            retryable=False,
+        )
+    configured = payload["filing_fetch_root"]
+    if (
+        not isinstance(configured, str)
+        or not configured.strip()
+        or configured != configured.strip()
+    ):
+        raise _ClientError(
+            "filing-fetch config filing_fetch_root must be non-empty trimmed text",
+            error_code="config_error",
+            retryable=False,
+        )
+    tokens = {
+        "SKILL_ROOT": str(_SKILL_ROOT),
+        "USER_PROFILE": os.environ.get("USERPROFILE") or str(Path.home()),
+    }
+    expanded = re.sub(
+        r"\$\{(SKILL_ROOT|USER_PROFILE)\}", lambda m: tokens[m.group(1)], configured
+    )
+    if "${" in expanded:
+        raise _ClientError(
+            f"unsupported token in filing_fetch_root: {configured}",
+            error_code="config_error",
+            retryable=False,
+        )
+    root = Path(expanded).expanduser()
+    if not root.is_absolute():
+        raise _ClientError(
+            "filing-fetch config filing_fetch_root must be absolute after "
+            "token expansion",
+            error_code="config_error",
+            retryable=False,
+        )
+    try:
+        resolved = root.resolve(strict=True)
+    except OSError as exc:
+        raise _ClientError(
+            f"configured filing_fetch_root does not exist: {root}",
+            error_code="config_error",
+            retryable=False,
+        ) from exc
+    if not resolved.is_dir():
+        raise _ClientError(
+            "configured filing_fetch_root must be a directory",
+            error_code="config_error",
+            retryable=False,
+        )
+    if not (resolved / "scripts" / "fetch_filing.py").is_file():
+        raise _ClientError(
+            f"configured filing_fetch_root lacks scripts/fetch_filing.py: "
+            f"{resolved}",
+            error_code="config_error",
+            retryable=False,
+        )
+    return resolved
 
 
 def _try_loads(text: str) -> Any:
@@ -84,7 +196,7 @@ def resolve_filing(
     ``_ClientError`` carrying the upstream status / error_code / retryable /
     candidates when filing-fetch fails.
     """
-    root = filing_fetch_root or _DEFAULT_FILING_FETCH_ROOT
+    root = filing_fetch_root or load_filing_fetch_root()
     script = root / "scripts" / "fetch_filing.py"
     if not script.is_file():
         raise _ClientError(
@@ -203,7 +315,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--filing-fetch-root",
-        help="Override the filing-fetch skill root (advanced; defaults to the sibling repo).",
+        help="Override the filing-fetch skill root (advanced; defaults to "
+        "config/filing_fetch.json).",
     )
     parser.add_argument(
         "--company-wiki-config",

@@ -118,6 +118,44 @@ def test_prepare_source_forwards_allow_download(monkeypatch):
     assert record["reuse_receipt"]["download_calls"] == 0
 
 
+def test_prepare_source_forwards_filing_fetch_root(monkeypatch):
+    """FC-1202: the orchestrator must forward an explicit filing-fetch root
+    to the client subprocess (no reliance on the client's default config)."""
+    captured = {}
+    _run_fake(monkeypatch, captured, envelope=_envelope())
+    request = {"company_query": "Acme", "document_kind": "annual_report",
+               "as_of_date": "2026-12-31"}
+    record = prepare_source(request, filing_fetch_root=Path("X"))
+    command = captured["command"]
+    assert "--filing-fetch-root" in command
+    assert command[command.index("--filing-fetch-root") + 1] == str(Path("X"))
+    assert record["reuse_receipt"]["download_calls"] == 0
+
+
+def test_cli_forwards_filing_fetch_root(monkeypatch, tmp_path):
+    """FC-1202: the CLI must forward --filing-fetch-root to prepare_source —
+    removing the forwarding silently drops explicit roots (mutation target)."""
+    import source_preparation
+
+    captured = {}
+
+    def fake_prepare(request, **kwargs):
+        captured.update(kwargs)
+        return {"request_id": "r1"}
+
+    monkeypatch.setattr(source_preparation, "prepare_source", fake_prepare)
+    request_path = tmp_path / "req.json"
+    request_path.write_text(
+        json.dumps({"company_query": "Acme", "document_kind": "annual_report",
+                    "as_of_date": "2026-12-31"}), encoding="utf-8")
+    root = tmp_path / "ff"
+    exit_code = source_preparation.main(
+        ["--request-file", str(request_path), "--filing-fetch-root", str(root)]
+    )
+    assert exit_code == 0
+    assert captured.get("filing_fetch_root") == root
+
+
 # --- FC-704: download evidence comes from the envelope, not the handle ---------
 
 

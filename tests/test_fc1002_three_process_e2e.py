@@ -57,10 +57,13 @@ def _run_chain(tmp_path: Path) -> dict:
 
     env = dict(os.environ)
     env["PYTHONIOENCODING"] = "utf-8"
+    # FC-1202: the chain gets an EXPLICIT filing-fetch root (fixture wiring —
+    # the repo-layout lookup here is test fixture, not production policy).
     # process trace: layer 0 = this test; layer 1 = source_preparation
     proc = subprocess.run(
         [sys.executable, "-B", str(PROJECT_ROOT / "scripts" / "source_preparation.py"),
-         "--company-wiki-config", str(wiki_cfg)],
+         "--company-wiki-config", str(wiki_cfg),
+         "--filing-fetch-root", str(FILING_ROOT)],
         input=json.dumps(REQUEST, ensure_ascii=False),
         text=True, encoding="utf-8", capture_output=True,
         cwd=str(PROJECT_ROOT), env=env, timeout=180, check=False,

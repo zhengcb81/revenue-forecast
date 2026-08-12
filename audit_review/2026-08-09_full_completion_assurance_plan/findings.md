@@ -469,3 +469,23 @@
 - **config doctor**：需三仓 contract compatibility 检查（不复制 root 列表）。
 - **FC-1202 性质**：多仓 + 触 CI workflow + 兄弟仓定位（基础设施敏感）。需独立 preflight + scope 决策（同 FC-1201 模式），不宜在同一长会话末尾仓促实施。
 - **影响**：FC-1202 实施前须重验 triplet + 确认 dayu CI containment 缺口的精确修法（删 quality.yml 残留 vs 改 containment 逻辑）+ 兄弟定位的 manifest 化不破坏运行时。
+
+## 发现 58：FC-1202 preflight — 触点核实 + scope 决策（Interpretation A）
+
+- 日期：2026-08-12。前置 FC-1201 ✓ accepted。Owner 三仓。triplet：revenue `84d4967` / filing `592fae6` / wiki `b3b45aa`。用户指令「继续直到项目全部完成，全部授权」——按 FC-1201 模式由 implementer 完成 preflight + scope 自决并记录。
+- **运行时 containment 已正确（核实，不进 FC-1202）**：`filing_contracts.py:350-419` `validate_handle` 已是 policy-snapshot 单一 containment 源（FC-501：RootPolicySnapshot + expected_policy_hash，`allowed_roots` 仅 N/N-1 弃用回退）。findings 53 的「legacy containment 拒 dayu 根」= wiki resolver 只对 company_raw 建 handle + R4 dayu cohort 未发布之组合；**运行时修复属 Phase 14 R4，明确出范围**。
+- **真实触点（preflight 实测）**：
+  1. filing CI `quality.yml:57-72` config doctor 块**已失效**：FC-501 后 config 精确 schema 无 `allowed_handle_roots` → `cfg.get(...) or []` 恒空 → `missing=required` 该步骤必红；且硬编码 3 个 root 路径 = 复制 root 列表（FC-1202 禁止项）。
+  2. revenue `filing_fetch_client.py:60` `_DEFAULT_FILING_FETCH_ROOT = _SKILL_ROOT.parent / "filing-fetch"` ——生产运行时兄弟仓假设（source_preparation 子进程不带 `--filing-fetch-root`）。
+  3. filing `fetch_filing.py:137-138` 相对 `company_wiki_root` 静默按 config 文件父目录解析（隐式定位；`test_editing_config_moves_root_without_code_changes` 用相对 "wiki-one" 依赖该分支）。
+  4. wiki `scripts/config_doctor.py:103-105` `root.parent / "filing-fetch"` 兄弟仓假设（CONFIG-DBX-03 检查侧；`test_e2e_f03_filing_allowance_smuggled_fails` 依赖）。
+  5. filing `SKILL.md:139-144` stale：引用已删的 `allowed_handle_roots` + "两个 config 各加一行"。
+- **CI 关键影响（新增发现）**：FC-1002 三进程链测试在 revenue CI（Ubuntu）跑，`source_preparation.py` CLI 不带 `--filing-fetch-root` → 依赖 client 兄弟默认。A1 改 config 后 CI 上 `${USER_PROFILE}/Projects/filing-fetch` 不存在（sibling 在 workspace 旁）→ 链测试必红。**修复**：`prepare_source` + CLI 增 `--filing-fetch-root` 透传，FC-1002 测试显式传入（测试侧 FILING_ROOT 计算是 fixture 布线，非生产策略）。
+- **决策（Interpretation A，显式化 + 单一策略源，零生产行为变化）**：
+  - **A1 revenue**：新增 `config/filing_fetch.json`（schema 1.0 精确字段 `{schema_version, filing_fetch_root}`，token `{SKILL_ROOT,USER_PROFILE}`，必须绝对路径 + 目录存在 + 含 `scripts/fetch_filing.py`；缺/多字段、相对、无 fetch_filing.py → config_error）。`resolve_filing(filing_fetch_root=None)` → 读 config；显式参数/CLI 优先（E2E 不动）。sync_installations 已验证 `config/` 在 ROOT_DIRECTORIES，自动入安装面。
+  - **A2 revenue**：`prepare_source` + `source_preparation.py` CLI 增 `--filing-fetch-root` 透传；FC-1002 链测试显式传 `FILING_ROOT`。
+  - **A3 filing**：相对 `company_wiki_root` → config_error（显式绝对/token 展开 only）；更新 1 测试 + 新增负向测试。
+  - **A4 filing**：新 `tools/config_doctor.py` 三仓契约检查（filing config 精确 schema + wiki `source_catalog.yaml` 结构（schema_version/reusable_root_kinds/roots 形状，零 root 路径硬编码）+ revenue `config/filing_fetch.json` 若存在（缺 revenue clone 时跳过））；quality.yml stale 块替换为 `python tools/config_doctor.py --revenue-root "$HOME/Projects/revenue-forecast"`。tools/ 不在安装面（无需 sync）。CI 上 USERPROFILE 未设 → doctor 用 `Path.home()` 回退（与 fetch_filing.py 一致）；ci_checkout_siblings 已把 wiki 放 `$HOME/Projects/company-wiki`，与 `${USER_PROFILE}` 展开同值。
+  - **A5 filing**：SKILL.md Notes 重写为 policy-snapshot 语义（单一策略源 = company-wiki `source_catalog.yaml`；filing config 只定位 wiki 根；加 root = 只改 wiki 一行）。
+  - **A6 wiki**：`config_doctor.py` 删兄弟查找 → `--filing-fetch-config` 显式参数（缺省跳过跨仓检查）；更新 2 测试。wiki CI 不传参（跨仓检查单一归属 filing CI doctor）。
+- 性质：多仓 + 触 CI workflow，但全部改动为「显式化」——revenue 默认定位从 sibling 变 config 文件（config 值与旧 sibling 路径同值，本地行为不变）；零生产数据/写路径/containment 行为变化。
