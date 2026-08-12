@@ -1,0 +1,208 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1202",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "84d4967d31ef92ec45a570aafeed94d4a9897e87",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "b3b45aa57a88dd890f19b7930e8ae8f377156dd9"
+  },
+  "result_triplet": {
+    "revenue": "b34097dd0b86fb25aacb70bd320715cf25189d02",
+    "filing": "b7ef9cca0747b108184f00e3e519aeb046be9d2b",
+    "wiki": "a6937f34081cdc928704d511e0b011f71b061a90"
+  },
+  "plan_sha256": "6b66ed4a78cf0b8f9e6bb265d9421ad391dfae0af00d2f64f3eb75fddc8a9369",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/config/filing_fetch.json",
+    "revenue-forecast/scripts/filing_fetch_client.py",
+    "revenue-forecast/scripts/source_preparation.py",
+    "revenue-forecast/tests/test_filing_fetch_client.py",
+    "revenue-forecast/tests/test_source_preparation.py",
+    "revenue-forecast/tests/test_fc1002_three_process_e2e.py",
+    "revenue-forecast/assurance/fc/FC-1202/00_wu_card.md",
+    "revenue-forecast/assurance/fc/FC-1202/11_implementer_receipt.json",
+    "revenue-forecast/audit_review/2026-08-09_full_completion_assurance_plan/findings.md",
+    "filing-fetch/.github/workflows/quality.yml",
+    "filing-fetch/SKILL.md",
+    "filing-fetch/scripts/fetch_filing.py",
+    "filing-fetch/tests/test_fetch_filing.py",
+    "filing-fetch/tests/test_config_doctor.py",
+    "filing-fetch/tools/config_doctor.py",
+    "company-wiki/scripts/config_doctor.py",
+    "company-wiki/tests/test_config_doctor.py"
+  ],
+  "changed_files": [
+    "revenue-forecast/config/filing_fetch.json",
+    "revenue-forecast/scripts/filing_fetch_client.py",
+    "revenue-forecast/scripts/source_preparation.py",
+    "revenue-forecast/tests/test_filing_fetch_client.py",
+    "revenue-forecast/tests/test_source_preparation.py",
+    "revenue-forecast/tests/test_fc1002_three_process_e2e.py",
+    "revenue-forecast/assurance/fc/FC-1202/00_wu_card.md",
+    "revenue-forecast/audit_review/2026-08-09_full_completion_assurance_plan/findings.md",
+    "filing-fetch/.github/workflows/quality.yml",
+    "filing-fetch/SKILL.md",
+    "filing-fetch/scripts/fetch_filing.py",
+    "filing-fetch/tests/test_fetch_filing.py",
+    "filing-fetch/tests/test_config_doctor.py",
+    "filing-fetch/tools/config_doctor.py",
+    "company-wiki/scripts/config_doctor.py",
+    "company-wiki/tests/test_config_doctor.py"
+  ],
+  "dependency_receipts": [
+    "company-wiki/assurance/fc/FC-1201/12_reviewer_receipt.json (accepted 2026-08-12)",
+    "filing-fetch/assurance/fc/FC-501/12_reviewer_receipt.json (accepted 2026-08-10)",
+    "revenue-forecast/assurance/fc/FC-1101/12_reviewer_receipt.json (accepted 2026-08-12)"
+  ],
+  "command_registry_sha256": "215b8077169126b2c4a5eca9d8d6237f291757c2559f6ae6e0ae8ff1c806b089",
+  "scenario_results": [
+    {
+      "id": "DBX-03",
+      "status": "passed",
+      "note": "Policy single-source re-verified at the doctor layer: filing config smuggling allowed_handle_roots fails the new filing-fetch tools/config_doctor.py (test_filing_config_smuggled_allowlist_fails) and the wiki doctor when given the explicit path (test_e2e_f03_filing_allowance_smuggled_fails); runtime containment untouched (FC-501 policy-snapshot path already the single source)."
+    },
+    {
+      "id": "AUD-08",
+      "status": "passed",
+      "note": "Audit tooling self-proof: the new three-repo config doctor has 10 hermetic tests including fault injections (missing config, smuggled allowlist, relative root, JSON-fixture YAML, missing reusable_root_kinds, broken revenue config) and mutation M4 (structural check removal) is killed. The stale CI block that would always fail (read a FC-501-removed key + hardcoded 3 root paths) is replaced."
+    }
+  ],
+  "commands": [
+    {
+      "command": "revenue: python -B -m pytest tests/test_filing_fetch_client.py tests/test_source_preparation.py tests/test_fc1002_three_process_e2e.py -q",
+      "exit_code": 0,
+      "result": "30 passed (RED first: ImportError load_filing_fetch_root + forwarding assertion failed; GREEN after loader+passthrough; FC-1002 chain re-verified with explicit --filing-fetch-root)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "revenue: ruff check scripts tests tools + python -m compileall -q scripts tests tools",
+      "exit_code": 0,
+      "result": "compile OK; ruff: 1 pre-existing F401 in tests/test_compatibility_manifest.py (unchanged file at HEAD db383e6, not touched by FC-1202 — recorded, owner FC-1204/FC-1205 backlog)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "revenue: python -B -m pytest tests/ tools/tests/ -q (full suite)",
+      "exit_code": 0,
+      "result": "513 passed, 1 failed, 106 subtests passed (320.96s). 1 failed = pre-existing PORT-01 tools/tests/test_audit_baseline.py GBK subprocess decode (findings 31, owner FC-1205) — zero new failures.",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "revenue: python tools/sync_installations.py --apply (pre-commit R4.2 gate)",
+      "exit_code": 0,
+      "result": "MATCH .agents 112 files, MATCH .codex 112 files (new config/filing_fetch.json synced into install surfaces)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "filing: python -B -m pytest tests/test_config_doctor.py tests/test_fetch_filing.py -q -k 'config_doctor or relative_company_wiki_root or editing_config_moves_root'",
+      "exit_code": 0,
+      "result": "13 passed (RED first: ModuleNotFoundError config_doctor; GREEN after tool + fail-closed relative root)",
+      "cwd": "filing-fetch"
+    },
+    {
+      "command": "filing: ruff check scripts tests tools e2e + python -m compileall -q scripts tests tools e2e",
+      "exit_code": 0,
+      "result": "All checks passed (one F841 in the new test fixed before final run)",
+      "cwd": "filing-fetch"
+    },
+    {
+      "command": "filing: python -B -m pytest tests -q --tb=short --ignore=tests/test_real_tool_conformance.py --ignore=tests/test_e2e_download.py (hermetic suite, CI-equivalent)",
+      "exit_code": 0,
+      "result": "289 passed, 6 skipped, 54 subtests passed (73.20s). Skips = 3 T3 real-download env-gated + design-internal skips. Zero failures.",
+      "cwd": "filing-fetch"
+    },
+    {
+      "command": "filing: python tools/sync_installs_b3.py (pre-commit install sync)",
+      "exit_code": 0,
+      "result": "MATCH .claude 28 files, MATCH .codex 28 files",
+      "cwd": "filing-fetch"
+    },
+    {
+      "command": "wiki: python -B -m pytest tests/test_config_doctor.py tests/contract/test_dropbox_config_invariants.py -q",
+      "exit_code": 0,
+      "result": "10 passed + 3 passed (2 updated tests + 2 new: no-implicit-sibling-lookup guard, explicit-missing-path fail-closed; DBX invariants untouched)",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "wiki: ruff check scripts/config_doctor.py tests/test_config_doctor.py + PYTHONPATH=src python scripts/config_doctor.py (live doctor)",
+      "exit_code": 0,
+      "result": "All checks passed; live doctor: OK healthy, exit 0",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "wiki: python -B -m pytest tests/ -q (full suite)",
+      "exit_code": 0,
+      "result": "2241 passed, 1 skipped, 2 failed (560.70s). 2 failed = pre-existing PORT-01 test_check_unique_test_symbols Windows-GBK pair — zero new failures.",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "mutation M1: rename load_filing_fetch_root (config loader removal), run revenue test_filing_fetch_client",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — inner pytest collection ERROR: ImportError cannot import name 'load_filing_fetch_root'. Mutation reverted via reverse edit; the non-zero pytest exit is the kill evidence, not a receipt failure.",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "mutation M2: remove --filing-fetch-root passthrough from prepare_source, run test_prepare_source_forwards_filing_fetch_root",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — inner pytest exited 1: forwarding assertion FAILS (no --filing-fetch-root in command). Mutation reverted.",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "mutation M2b: CLI drops filing_fetch_root kwarg to prepare_source, run test_cli_forwards_filing_fetch_root",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — inner pytest exited 1: captured filing_fetch_root is None (first run of M2b survived because no CLI-level test existed — added test_cli_forwards_filing_fetch_root, re-applied mutation, killed). Mutation reverted.",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "mutation M3: restore relative-root fallback (selected.parent / root) in filing fetch_filing.py, run test_relative_company_wiki_root_is_rejected",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — inner pytest exited 1: relative 'wiki-one' resolves instead of config_error. Mutation reverted.",
+      "cwd": "filing-fetch"
+    },
+    {
+      "command": "mutation M4: remove reusable_root_kinds structural check from tools/config_doctor.py, run test_wiki_yaml_missing_reusable_kinds_fails",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — inner pytest exited 1: yaml without reusable_root_kinds passes. Mutation reverted.",
+      "cwd": "filing-fetch"
+    },
+    {
+      "command": "mutation M5: restore sibling lookup (root.parent / filing-fetch) as default in wiki config_doctor.py, run test_no_implicit_sibling_lookup_without_arg",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — inner pytest exited 1: smuggled sibling config detected without explicit arg. Mutation reverted.",
+      "cwd": "company-wiki"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "note": "Config/CI/location-explicitness changes only. Zero production data, catalog, or source-root writes. Runtime containment behavior unchanged (FC-501 policy-snapshot path untouched). Local default path value equals the previous sibling path — no behavioral change on this machine."
+  },
+  "codegraph": {
+    "production_callers_before": 1,
+    "production_callers_after": 1,
+    "note": "resolve_filing remains the single production caller of the root resolution (now via load_filing_fetch_root instead of the module-level sibling constant). The sibling constant _DEFAULT_FILING_FETCH_ROOT no longer exists; verified by grep (CodeGraph watcher lags fresh edits)."
+  },
+  "mutation": {
+    "id": "FC-1202-M1-M2-M2b-M3-M4-M5",
+    "killed": true,
+    "details": "M1 loader removal -> config tests ERROR. M2 passthrough removal -> forwarding test FAIL. M2b CLI kwarg drop -> CLI-forwarding test FAIL (test added after the mutation initially survived — weak-mutation gap closed). M3 relative fallback restore -> rejection test FAIL. M4 doctor structural check removal -> reusable_kinds test FAIL. M5 sibling lookup restore -> no-implicit-lookup guard FAIL. All reverted via reverse edits; focused suites re-verified green."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Revert = revert commits b34097d (revenue) / b7ef9cc (filing) / a6937f3 (wiki). No data written, no schema/config loader behavior beyond location explicitness, no catalog mutation."
+  },
+  "review": {
+    "reviewer": "PENDING-INDEPENDENT-REVIEWER",
+    "reviewer_receipt_sha256": "PENDING",
+    "decision": "pending",
+    "reviewed_at": "PENDING",
+    "note": "Independent reviewer must replay from clean worktrees of b34097d / b7ef9cc / a6937f3 (F-6 rule: base reproduction in a second worktree, never git checkout in the main checkout)."
+  },
+  "provisional_note": "Interpretation A (implementer scope decision under user full-authorization directive 2026-08-12, findings 58): explicit-location + single-policy-source changes only. Runtime dayu containment change explicitly OUT of scope (Phase 14 R4 backlog — wiki resolver only builds reuse handles for company_raw locations until the R4 dayu cohort). Revenue CI doctor step intentionally single-homed in filing CI (all three repos checked out there). Pre-existing observations recorded: revenue ruff F401 in test_compatibility_manifest.py (HEAD db383e6), PORT-01 audit_baseline + test_check_unique_test_symbols pairs (FC-1205 scope)."
+}
