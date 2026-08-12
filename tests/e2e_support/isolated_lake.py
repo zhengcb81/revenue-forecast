@@ -197,6 +197,7 @@ class IsolatedLake:
         self._write_wiki_config()
         catalog = self._catalog()
         self._write_security_master(catalog)
+        self._write_runtime_policy(catalog)
         catalog.scan()
         self._preset_v2_artifacts(catalog)
         manifest = IsolatedLakeManifest(
@@ -251,6 +252,25 @@ class IsolatedLake:
             f"  - root_id: dropbox_stock\n    kind: directory\n    path: \"{(self.lake / 'Dropbox' / 'Stock').as_posix()}\"\n    priority: 30\n",
             encoding="utf-8",
         )
+
+    def _write_runtime_policy(self, catalog: "object") -> None:
+        """Production-shaped runtime policy snapshot (FC-1105: the T2 runner
+        checks policy freshness).  snapshot_sha256 must be self-consistent."""
+        import hashlib as _h
+
+        policy = {
+            "schema_version": "1.0",
+            "current_epoch": "epoch-canary-2026-08-10",
+            "active_cohorts": ["canary-2026-08-10"],
+            "flags": {"legacy_bridge_enabled": True, "v2_resolve_active": False,
+                      "v2_scan_shadow": False},
+            "updated_at": "2026-08-10T00:00:00Z",
+        }
+        canon = json.dumps({k: v for k, v in policy.items()},
+                           sort_keys=True, ensure_ascii=False)
+        policy["snapshot_sha256"] = _h.sha256(canon.encode()).hexdigest()
+        (catalog.config.catalog_dir / "runtime_policy.json").write_text(
+            json.dumps(policy, ensure_ascii=False), encoding="utf-8")
 
     def _preset_v2_artifacts(self, catalog: "object") -> None:
         """INSERT v2 artifact rows (schema_version column + metadata) +

@@ -76,6 +76,27 @@ def run_checks(
     if missing:
         problems.append(f"manifest triplet commits missing: {missing}")
 
+    # --- policy freshness (FC-1105: closes FC-1102 F1) ---
+    # runtime policy snapshot must be present and self-consistent; a missing
+    # or hash-broken snapshot is a drift signal (fail closed).
+    policy = catalog.parent / "runtime_policy.json"
+    if not policy.is_file():
+        problems.append("runtime policy snapshot missing (policy freshness)")
+    else:
+        try:
+            pol = json.loads(policy.read_text(encoding="utf-8"))
+            declared = pol.get("snapshot_sha256", "")
+            import hashlib
+            payload = {k: v for k, v in pol.items() if k != "snapshot_sha256"}
+            canon = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+            actual = hashlib.sha256(canon.encode()).hexdigest()
+            checks["policy_freshness"] = {"declared": declared[:12],
+                                          "matches": declared == actual}
+            if declared != actual:
+                problems.append("runtime policy snapshot hash mismatch (drift)")
+        except (OSError, json.JSONDecodeError) as exc:
+            problems.append(f"runtime policy snapshot unreadable: {exc}")
+
     # --- catalog read-only checks ---
     con = sqlite3.connect(f"file:{catalog}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
