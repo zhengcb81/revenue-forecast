@@ -131,7 +131,7 @@
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
-| FC-1201 | **in_progress（implementer receipt sealed @wiki 8817521；reviewer-fc1201-independent 后台重放中）** | FC-701、1005 | company-wiki | root-hardcode frozen ratchet（FC-304 门 allowlist 精确 pin，新增文件→测试红）+ 注释清理（resolver/observability/entity_resolver 移出 allowlist，零行为）；5 新 contract 测试；EX-08 保持绿；全量 wiki 2241 passed/0 failed；M1（allowlist 涨）+M2（token 删）双杀。v1 scanner 7 分支 = R9 backlog；canonical_writer/cli DEFERRED（生产 1.x loader 拒 canonical_write_target，需 follow-up）。feat `0c6c2c9` + receipt `8817521` |
+| FC-1201 | **accepted（2026-08-12，reviewer-fc1201-independent；can_accept exit 0）→ Phase 12 启动，FCAP 59/71** | FC-701、1005 | company-wiki | root-hardcode frozen ratchet（FC-304 门 allowlist 精确 pin，新增文件→测试红）+ 注释清理（resolver/observability/entity_resolver 移出 allowlist，零行为）；5 新 contract 测试；EX-08 保持绿；全量 wiki 2241 passed/0 failed；M1（allowlist 涨）+M2（token 删）双杀。reviewer 干净 worktree 重放（RED-at-base 第二 worktree F-6 规则）。v1 scanner 7 分支 = R9 backlog；canonical_writer/cli DEFERRED（loader-blocked follow-up）。feat `0c6c2c9` + receipt `8817521` + closure `b3b45aa` |
 | FC-1202 | pending | FC-1201 | 三仓 | 单一 RootPolicy；重复 allowlist=0；隐式 sibling path=0 |
 | FC-1203 | pending | FC-1202 | 三仓 | dead production symbols、依赖环、test-only helper；行为场景无回归 |
 | FC-1204 | pending | FC-1203 | 三仓 | coverage/type/complexity ratchet；阈值下降 mutation/CI 必败 |

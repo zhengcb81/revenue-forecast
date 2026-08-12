@@ -548,4 +548,11 @@
 - **交付（company-wiki feat `0c6c2c9` + receipt `8817521`）**：FC-304 `no_root_specific_hardcode` 门转 **frozen ratchet**（allowlist 精确 pin，新增文件→测试红）；注释清理 resolver.py:679/observability.py:76/entity_resolver.py:1 → 三文件移出 allowlist（real shrink，零行为）；5 新 contract 测试。零 v1 scanner / loader / 写路径 / yaml 改动。
 - **验证**：FC-1201 5 tests + architecture_gate 7 + EX-08 5 = 17 passed；gate/root/policy contract 子集 272 passed/1 skipped；全量 wiki 套件 **2241 passed/1 skipped/0 failed**（449s，PYTHONIOENCODING=utf-8 下 PORT-01 对也过）。M1（allowlist 涨）+ M2（token 删）双杀。ruff/compile 干净。
 - **receipt validator 教训再现（pitfall #5）**：mutation commands 首次写 exit_code=1 被 schema 2.0 拒（所有 exit_code 必须 0）；改为 exit_code=0 + result 文本记「KILL CONFIRMED — inner pytest exit N」→ validator OK。
-- **下一步**：reviewer-fc1201-independent 后台重放（干净 worktree 8817521；F-6 规则：base 复现用第二 worktree）→ verdict → can_accept → registry FC-1201 accepted → FC-1202（单一策略源，含 filing-fetch dayu containment 缺口）。
+## 2026-08-12 — FC-1201 ACCEPTED（root-hardcode 门棘轮；Phase 12 启动，FCAP 59/71）
+
+- **reviewer-fc1201-independent ACCEPTED**：干净 worktree `8817521` 重放——diff 恰 7 文件（4 src 注释/门 + 1 新测试 + 2 assurance 文档；review HEAD 仅加 receipt JSON）、focused 5/5 + gate/EX-08 17/17、**RED-at-base 第二 worktree 证明**（F-6 规则：3/5 测试在 base 红因正确）、M1（allowlist 涨）+M2（token 删）双杀并还原、全量 wiki 2241 passed/1 skipped/0 failed（433s）、门完整性（3 清理文件移出 allowlist 且 token-free；8 文件 backlog 仍承重）、ruff 干净。3 非阻塞 finding（F1 deferral info、F2 substring-match info、F3 test-isolation low）。
+- **can_accept gate exit 0**（implementer review 块密封：reviewer_receipt_sha256 309f926b…、decision=accepted、reviewed_at 2026-08-12T12:55:00Z）。
+- **closure 提交**：company-wiki `b3b45aa`（reviewer receipt + REPORT + sealed implementer receipt）。当前 triplet：revenue `44cd28a`、filing `592fae6`、wiki `b3b45aa`。
+- **receipt 教训**：`reviewed_at` 必须用 UTC `Z` 后缀（非 `+08:00` offset）；`--accept` 只传 implementer receipt（reviewer receipt 经 sha256 引用，不作为第二 `--receipt`）。
+- **registry FC-1201 → accepted**；Phase 12 in_progress（FC-1202~1205 pending）。
+- **下一步 FC-1202**（三仓）：单一安全策略源——filing-fetch 删独立 allowlist 决策、验证 company-wiki policy snapshot/path containment；删 revenue/filing `Path.parent/sibling` 隐式定位；config doctor 三仓 contract compatibility。**含 filing-fetch dayu containment 缺口**（FC-1003 发现：filing legacy containment 拒 dayu 根）。前置 FC-1201 ✓。
