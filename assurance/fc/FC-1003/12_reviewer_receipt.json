@@ -1,0 +1,72 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1003",
+  "reviewer": "reviewer-fc1003-independent-r3",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "12210c2b1fbc641e4dee5836aee7238ae478fe49",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "result_triplet": {
+    "revenue": "0b000eaa65deaa4fc5d710c5f0247c522a2246e5",
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "replayed_command_ids": [
+    "diff_26bdfb2_0b000ea_stat",
+    "blob_ast_parse_grep",
+    "pytest_test_scenario_coverage",
+    "gate_scenario_coverage_py",
+    "pytest_full_tests",
+    "mutation_f2_inverse_edit",
+    "mutation_m2_deferred_empty",
+    "triplet_sanity",
+    "skip_hack_scan",
+    "f1_wiki_file_parse",
+    "dependency_receipts",
+    "codegraph_callers"
+  ],
+  "scenario_results": [
+    {
+      "id": "coverage-gate",
+      "status": "passed",
+      "note": "mandatory 95 | covered 87 | required gaps 0 | deferred 14, exit 0"
+    },
+    {
+      "id": "UJ-01/UJ-02/UJ-04/UJ-07",
+      "status": "passed",
+      "note": "markers collected from real fixture tests; gate green"
+    }
+  ],
+  "mutation_results": [
+    {
+      "id": "F2-inverse",
+      "killed": true,
+      "note": "removed ast.parse guard -> test_broken_marked_file_fails_the_gate FAILS (SystemExit not raised); reverted, worktree clean"
+    },
+    {
+      "id": "FC-1003-M2",
+      "killed": true,
+      "note": "replayed implementer M2: _DEFERRED_FC=() -> test_no_required_gaps FAILS with real gap list (AUD-01..06, AUD-08, PORT-02); reverted, worktree clean"
+    }
+  ],
+  "side_effect_reconciliation": {
+    "passed": true,
+    "note": "no downloads, no external writes, no catalog mutations; temp lakes only"
+  },
+  "codegraph_reachability": {
+    "passed": true,
+    "note": "collect_test_markers/coverage_report have no production callers; production_callers unchanged"
+  },
+  "rollback": {
+    "required": true,
+    "passed": true,
+    "note": "F2 delta is a 2-file commit; revert restores 26bdfb2 exactly"
+  },
+  "unresolved_findings": [],
+  "decision": "accepted",
+  "reviewed_at": "2026-08-11T21:10:00Z",
+  "reviewer_receipt_sha256": "60a9fc6022cc9c5389758d6cbe532bfde1aca0a314cd01f0b0f9b3481763d1f5",
+  "hash_note": "recomputed by implementer over sealed file (UTC reviewed_at; reviewer-claimed fbc35ed3 did not match under any canonical form)"
+}

@@ -1,0 +1,154 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1003",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "summary": "95-scenario machine coverage gate + UJ user journeys. coverage gate (compatibility/scenario_coverage.py): union of SCENARIO docstring markers (composite split, tools/tests scanned) + receipt scenario_results; future-phase owners deferred explicitly; exit 1 on required gaps. Result: required gaps 0 (87 covered + 14 deferred AUD/DBX-07/PORT). UJ-01/02/04/07 real tests on the isolated lake; fixture gains dayu company-name entity + reusable_root_kinds (production shape). SCENARIO markers added across all three repos (markers only). Discovered REAL gap: filing-fetch legacy containment (wiki_root/companies only) rejects dayu-root handles — dayu-only through filing-fetch never wired (FC-1202 scope), recorded in findings. F1 blocker (shadow_parity marker outside one-line docstring -> SyntaxError) fixed in f6eb584; gate hardened to compile-verify marked files (F2).",
+  "base_triplet": {
+    "revenue": "12210c2b1fbc641e4dee5836aee7238ae478fe49",
+    "filing": "6b617714f253400e6cba93c9aa7fc0fbe3ed46bc",
+    "wiki": "fafaac509f33220e8a1db30a6079df7d461b4baa"
+  },
+  "result_triplet": {
+    "revenue": "0b000eaa65deaa4fc5d710c5f0247c522a2246e5",
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "plan_sha256": "eda591f4698314fd7b39b765acfde23d06481f1004c16bcf480b6eee6660b2a7",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/compatibility/scenario_coverage.py",
+    "revenue-forecast/tests/test_scenario_coverage.py",
+    "revenue-forecast/tests/test_fc1003_uj.py",
+    "revenue-forecast/tests/e2e_support/isolated_lake.py",
+    "revenue-forecast/tests/test_fc904_artifact_selection.py",
+    "revenue-forecast/tools/tests/test_receipt_validator.py",
+    "filing-fetch/tests/test_fc802_gap_orchestration.py",
+    "filing-fetch/tests/test_fc803_minimal_download.py",
+    "filing-fetch/tests/test_fc805_real_download_t3.py",
+    "filing-fetch/tests/test_latest_mode.py",
+    "company-wiki/tests/contract/test_fc905_receipt_envelope.py",
+    "company-wiki/tests/contract/test_shadow_parity.py",
+    "company-wiki/tests/contract/test_source_catalog_latest_mode.py",
+    "company-wiki/tests/contract/test_close_gap_fc801.py",
+    "company-wiki/tests/contract/test_dayu_adapter_fc602.py"
+  ],
+  "changed_files": [
+    "revenue-forecast/compatibility/scenario_coverage.py",
+    "revenue-forecast/tests/test_scenario_coverage.py",
+    "revenue-forecast/tests/test_fc1003_uj.py",
+    "revenue-forecast/tests/e2e_support/isolated_lake.py",
+    "revenue-forecast/tests/test_fc904_artifact_selection.py",
+    "revenue-forecast/tools/tests/test_receipt_validator.py",
+    "filing-fetch/tests/test_fc802_gap_orchestration.py",
+    "filing-fetch/tests/test_fc803_minimal_download.py",
+    "filing-fetch/tests/test_fc805_real_download_t3.py",
+    "filing-fetch/tests/test_latest_mode.py",
+    "company-wiki/tests/contract/test_fc905_receipt_envelope.py",
+    "company-wiki/tests/contract/test_shadow_parity.py",
+    "company-wiki/tests/contract/test_source_catalog_latest_mode.py",
+    "company-wiki/tests/contract/test_close_gap_fc801.py",
+    "company-wiki/tests/contract/test_dayu_adapter_fc602.py"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/fc/FC-1001/ + FC-1002/ (accepted) — lake fixture + chain",
+    "revenue-forecast/assurance/fc/FC-102/ (accepted) — scenario registry + process gate",
+    "Phase 1-9 receipts (all accepted)"
+  ],
+  "command_registry_sha256": "69c57dce9f401044a92298cd76c2c12cf8ced526466f7f3e95d938c9edd549bc",
+  "scenario_results": [
+    {
+      "id": "UJ-01",
+      "status": "passed",
+      "note": "companies journey via real chain: zero side effects, artifact_read>0."
+    },
+    {
+      "id": "UJ-02",
+      "status": "passed",
+      "note": "dayu-only resolves at the wiki layer (filing-fetch legacy containment gap recorded, FC-1202)."
+    },
+    {
+      "id": "UJ-04",
+      "status": "passed",
+      "note": "all missing + no download -> structured gap, non-zero exit, no silent green."
+    },
+    {
+      "id": "UJ-07",
+      "status": "passed",
+      "note": "ambiguous identity request fails closed with disposable reason."
+    },
+    {
+      "id": "coverage-gate",
+      "status": "passed",
+      "note": "95 mandatory: 87 covered + 14 deferred, required gaps = 0; gate exit 0."
+    }
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B compatibility/scenario_coverage.py",
+      "exit_code": 0,
+      "result": "mandatory 95 | covered 87 | required gaps 0 | deferred 14",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/test_scenario_coverage.py -q",
+      "exit_code": 0,
+      "result": "7 passed (M2: emptying deferred prefixes -> gate fails)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/test_fc1003_uj.py tests/test_fc1001_isolated_lake.py tests/test_fc1002_three_process_e2e.py -q",
+      "exit_code": 0,
+      "result": "16 passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "425 passed, 106 subtests, 0 failed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "filing-fetch pre-commit (hermetic + E2E + R4.2)",
+      "exit_code": 0,
+      "result": "277 passed / 6 skipped; E2E PASS; MATCH 27 files",
+      "cwd": "filing-fetch"
+    },
+    {
+      "command": "company-wiki pre-commit",
+      "exit_code": 0,
+      "result": "markers-only commit; wiki suite green",
+      "cwd": "company-wiki"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "catalog_mutations": 0,
+    "note": "Temp lakes only; markers are docstring-only."
+  },
+  "codegraph": {
+    "production_callers_before": "unchanged",
+    "production_callers_after": "unchanged",
+    "note": "Test infra + markers only."
+  },
+  "mutation": {
+    "id": "FC-1003-M2",
+    "killed": true,
+    "details": "M2: emptied _DEFERRED_FC -> deferred scenarios become required -> test_no_required_gaps FAILS (gate honest). Reverted; 7 passed."
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "git revert the three marker/gate commits; markers are docstring-only."
+  },
+  "review": {
+    "reviewer": "reviewer-fc1003-independent-r3",
+    "reviewer_receipt_sha256": "60a9fc6022cc9c5389758d6cbe532bfde1aca0a314cd01f0b0f9b3481763d1f5",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-11T21:10:00Z",
+    "note": "r1 changes_required (F1 wiki marker SyntaxError -> f6eb584), r2 changes_required (F2 unsealed -> 0b000ea + regression test), r3 ACCEPTED (F2 sealed, F2-inverse mutation killed, M2 replayed, full 426/0). unresolved_findings=[]"
+  },
+  "provisional_note": "Feat sealed at revenue 26bdfb2 / filing 7745eb1 / wiki 155e759. Coverage gate required gaps 0. Independent review pending."
+}
