@@ -3,16 +3,22 @@
 > 创建 2026-08-12。Owner: 三仓（主体 company-wiki）。前置：FC-1202 accepted（registry 依赖）。无 execution lock。
 > Scope 决策：Interpretation A（findings 59）——只做「删除 + API 收敛 + 注册裁决」，生产热路径函数拆分归 FC-1204 复杂度 ratchet；R9/R2-R5 资产禁删。
 
-## 1. 删除清单（全部经 AST+grep 验证零生产调用者）
+## 1. 删除清单（全部经 AST+grep 验证；实施时二次核实后修订）
 
-| 符号 | 位置 | 被替代者 | 测试处置 |
+| 符号 | 位置 | 验证结论 | 测试处置 |
 |---|---|---|---|
-| `evaluate_candidate` | admission.py:244 | `evaluate_admission`（scanner 消费的生产入口） | 从 3 个测试删除用法 |
-| `validate_normalized_filing` | normalized_meta.py:57 | 零调用者（canonical_hash 仍生产使用，保留） | 删对应测试 |
-| `entity_resolver.py` 整模块 | entity_resolver.py | 零生产 import | 删模块 + 测试 |
-| `restore.py` 整模块 | restore.py | `store.restore_document` + CLI restore（生产路径） | 删模块 + 测试（先验证 store 路径测试齐全） |
-| `validate_flag_state` / `atomic_rollback` | flags.py:41/59 | runtime_policy.py CAS（FC-202/203） | 删函数 + test_policy_and_flags/test_rollback_drills 中旧机制用例；wu905 一次性脚本同步清理调用 |
-| `reuse_latest_policy.py` 整模块 | reuse_latest_policy.py | close_gap 自带 policy binding（实施时验证） | 删模块 + 测试 |
+| `evaluate_candidate` | admission.py:244 | 零生产调用者（src/ grep 空）；`evaluate_admission` 是 Dropbox focus-only 专用入口**不构成替代**；ADM 不在 95 强制场景。unwired 政策——R2/R3 如需 root-agnostic admission 按真实需求重新 spec | 删函数 + 删 test_admission_profile.py |
+| `validate_normalized_filing` | normalized_meta.py:57 | 零调用者零测试（canonical_hash 保留） | 删函数 |
+| `entity_resolver.py` 整模块 | entity_resolver.py | 零生产 import（唯一测试 import 是 test_entity_resolver.py；security_identity 的 grep 命中是 "identity_resolver" 子串误报） | 删模块 + test_entity_resolver.py；更新 test_fc1201_cleaned_files_are_token_free（该测试读文件内容） |
+| `restore.py` 整模块 | restore.py | 生产 = store.restore_document（"Phase 16.6" 注释确认采用方向）；REST-01..06 不在 95 强制场景 | 删模块 + test_restore_flow.py |
+| `atomic_rollback`（仅此函数） | flags.py:59 | 唯一非测试调用者 = wu905 一次性脚本（不入 CI、无 receipt 引用）；被 activation.py 事务替代（FC-203）。**`validate_flag_state` 保留**——runtime_policy.py:24 生产调用（flags 快照校验） | 删函数 + test_policy_and_flags 中 2 个 atomic 用例 + 删 test_rollback_drills.py + 删 scripts/wu905_catalog_switch_check.py |
+| `reuse_latest_policy.py` 整模块 | reuse_latest_policy.py | 零生产 import；close_gap.py 自带 gap_hash policy binding（L217/323）+ 自有测试（test_close_gap_fc801/804） | 删模块 + test_latest_gap_closure.py + test_coop_scenario.py |
+
+### 1b. 保留但记 backlog（本卡合同，不删）
+
+- policy_2x / canary_registry / dropbox_governance / backfill_v2 / portfolio_promoter / v1 scanner（R2-R5 / R9 资产）
+- policy.py `policy_authorizes_root`/`validate_policy_hash`（tests-only；export_policy 生产在用）→ FC-1204 候选
+- flags.py `validate_flag_state`（生产：runtime_policy）
 
 ## 2. extractive summarizer 裁决：注册 + v2 元数据（不删）
 

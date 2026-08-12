@@ -511,3 +511,10 @@
 - **API 收敛核实（已在 HEAD 成立，FC-1203 记录不修改）**：service.py 不 import resolver（status.value 字符串，FC-902 合同成立）；resolver→service 单向；filing 零 wiki import（薄客户端成立）；revenue 无 import-time 环（revenue_core↔report/publication 是 lazy-import 断开的调用环，拆分归 FC-1204）。
 - **FC-1203 Interpretation A 交付**：① 删除上列 6 组死 helper + 其测试；② 新门测试 `dead helper=0`（AST/导入断言已删符号不存在——mutation 目标 = 复活死代码必须击杀）；③ extractive summarizer 注册 + v2 元数据 + 测试 + 合同文档；④ 行为零变化（删除对象均无生产调用者）；⑤ R9/R2-R5 资产删除禁入（列合同）。
 - 注：wiki CodeGraph 索引有 gap（close_gap/artifact_backfill/canary_registry/dropbox_governance/prompt_injection/trace_parity 未收录、bundle_for_resolution 报 not found、SidecarFilingAdapter 零 caller 误报）——FC-1203/1502 用 grep 交叉验证，不把空结果当事实。
+## 发现 60：FC-1204 preflight 起点 — 复杂度基线实测 + 工具可用性
+
+- 日期：2026-08-12。FC-1203 reviewer 重放中（CPU 竞争期只做轻量测量）。
+- **工具**：mypy 1.19.0 ✓、coverage 7.12 + pytest-cov ✓（pyright 无——type check 用 mypy）；revenue `tools/run_coverage_gates.py` 已有 --branch 解析 + fail_under 门。
+- **复杂度基线（AST McCabe 实测，三仓产品代码）**：230 个函数 CC≥10、283 个 ≥8。顶端：revenue `_validate_forecast_output` CC174/1083 行、wiki `cli.main` 140/766、`_scan_root_v1` 140/377、`resolver.resolve` 103/288、`_scan_catalog_impl` 102/450、`worker.run_cycle` 99/411、revenue `validate_management_target_coverage` 88/443、`validate_artifact` 59/64、filing `validate_resolution_envelope/validate_handle/validate_request` 各 39。
+- **FC-1204 scope 指向**：① branch coverage 测量（reviewer 结束后跑，防 CPU 竞争）；② complexity ratchet = 冻结实测 max-CC + 顶 5-10 个「行为被既有场景锁定的纯函数段」拆分（_validate_forecast_output 的语义重算段、resolver.resolve 的 pipeline 段），生产热路径与发布波次交互处不动；③ mypy public contracts 基线（先测错误量再定 strict 面）。阈值按 code_quality_plan §3「实测后冻结，计划不虚构」执行。
+
