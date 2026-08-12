@@ -180,6 +180,7 @@ class IsolatedLake:
         catalog = SourceCatalog(CatalogConfig(
             project_root=project,
             catalog_dir=project / ".source_catalog",
+            reusable_root_kinds=("company_raw", "dayu_portfolio", "directory"),
             roots=(
                 RootSpecFactory.company(self.companies),
                 RootSpecFactory.dayu(self.portfolio),
@@ -324,6 +325,14 @@ class IsolatedLake:
                 con.execute(
                     "UPDATE documents SET metadata_json=? WHERE document_id=?",
                     (json.dumps(metadata, ensure_ascii=False), doc["document_id"]),
+                )
+                # dayu docs carry the company-name entity too (production dayu
+                # metadata infers it from source_title) — the resolver matches
+                # by canonical name via the security-master issuer index
+                con.execute(
+                    "INSERT OR IGNORE INTO document_entities(document_id, entity_id, confidence, method)"
+                    " VALUES(?,?,?,?)",
+                    (doc["document_id"], f"company-name:{e.security}", 1.0, "sidecar"),
                 )
         con.commit()
         con.close()

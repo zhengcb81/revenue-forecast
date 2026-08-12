@@ -1,4 +1,5 @@
 """FC-904 RED/acceptance tests: source_preparation consumes the artifact
+SCENARIO: AR-01 AR-02 AR-03 UJ-06 UJ-08
 selector (DAG-minimal) from the envelope bundle.
 
 The unsourced ``payload.get("selected_artifacts", [])`` path is removed: the

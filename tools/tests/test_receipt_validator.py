@@ -1,4 +1,5 @@
 """FC-103: receipt/closure validator RED/green + negative mutation suite.
+SCENARIO: AUD-07
 
 Covers every rejection the runbook (section 5 + independent review protocol)
 mandates: short hashes, placeholder policy hash, pending review, stale
