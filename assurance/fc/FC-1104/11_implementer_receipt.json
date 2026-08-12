@@ -1,0 +1,96 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1104",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "summary": "Audit dashboard/ledger + release gate (tools/audit_dashboard.py): aggregates T2/T3 run reports under assurance/runs/ into a ledger (recent N runs with triplet/latency/problems/status/timestamps) written atomically; release gate = latest T2 <= 24h and ok + latest T3 <= 7d and passed; exit 1 with reasons otherwise. 5 contracts; M1 (freshness removed) kills the stale-T2 test. Real smoke: T2-only runs -> gate FAIL 'no T3 report' (correct). Revenue full suite 451 passed / 0 failed.",
+  "base_triplet": {
+    "revenue": "fed22700d65754fbdb4a61968eff323b533fe3f5",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "154a454c597a3ae16526ef5f6328230fd11d5797",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "plan_sha256": "eda591f4698314fd7b39b765acfde23d06481f1004c16bcf480b6eee6660b2a7",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tools/audit_dashboard.py",
+    "revenue-forecast/tests/test_fc1104_dashboard.py",
+    "revenue-forecast/assurance/fc/FC-1104/11_implementer_receipt.json",
+    "revenue-forecast/assurance/fc/FC-1104/12_reviewer_receipt.json"
+  ],
+  "changed_files": [
+    "revenue-forecast/tools/audit_dashboard.py",
+    "revenue-forecast/tests/test_fc1104_dashboard.py"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/fc/FC-1102/ + FC-1103/ (accepted) — T2/T3 runners producing the reports"
+  ],
+  "command_registry_sha256": "69c57dce9f401044a92298cd76c2c12cf8ced526466f7f3e95d938c9edd549bc",
+  "scenario_results": [
+    {
+      "id": "AUD-07",
+      "status": "passed",
+      "note": "audit mechanisms gate the release: stale/failed T2 or stale T3 makes the gate fail with explicit reasons. (negative smoke: T2-only runs -> gate FAIL 'no T3 report' exit 1, expected-nonzero semantics in result text per FC-703 r2)"
+    }
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_fc1104_dashboard.py -q",
+      "exit_code": 0,
+      "result": "5 passed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "451 passed, 106 subtests, 0 failed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check tools/audit_dashboard.py tests/test_fc1104_dashboard.py",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit (auto): suite + E2E + R4.2",
+      "exit_code": 0,
+      "result": "451 passed; E2E PASS; MATCH 110 files",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "catalog_mutations": 0,
+    "note": "Dashboard reads run reports only; atomic ledger write."
+  },
+  "codegraph": {
+    "production_callers_before": "unchanged",
+    "production_callers_after": "unchanged",
+    "note": "New tool."
+  },
+  "mutation": {
+    "id": "FC-1104-M1",
+    "killed": true,
+    "details": "M1: T2 freshness check removed -> test_stale_t2_fails_gate FAILS. Reverted; 5 passed."
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "git revert 154a454; standalone tool."
+  },
+  "review": {
+    "reviewer": "reviewer-fc1104-independent-r2",
+    "reviewer_receipt_sha256": "d315e544071fe7a3b61a6e921fb7e938ad43f63c8898871c34702e2501f03bee",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-12T08:31:00Z",
+    "note": "r2 ACCEPTED: F1 fixed (commands all exit 0; negative smoke expected-nonzero in scenario note); F2 (P3 pre-existing registry argv drift) informational, recorded. Gate ok:true; focused 5 passed; smokes replayed; unresolved_findings=[]."
+  },
+  "provisional_note": "Feat sealed at revenue 154a454 (filing/wiki unchanged). 5 dashboard contracts; full suite 451/0. Independent review pending."
+}
