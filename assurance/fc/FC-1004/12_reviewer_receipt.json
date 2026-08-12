@@ -1,0 +1,39 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1004",
+  "reviewer_identity": "reviewer-fc1004-independent",
+  "clean_checkout": true,
+  "base_triplet": {
+    "revenue": "10d107d421694c4332ea0a2a520a89dd1793a6ef",
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "e733287a9c07ff415658770a824653f1cd7e76f0",
+    "filing": "7745eb19409a9a4b0a6be6fb2499220fa06ef0dc",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "replayed_command_ids": ["ruff-check", "fc1004-focused", "fc1004-full-suite", "mutation-M1-kill", "mutation-M1-revert"],
+  "commands_replayed": [
+    {"command": "PYTHONIOENCODING=utf-8 PYTHONPATH=scripts:tests:../company-wiki/src:../filing-fetch/scripts python -B -m ruff check tests/test_fc1004_platform.py", "exit_code": 0, "result": "All checks passed!"},
+    {"command": "PYTHONIOENCODING=utf-8 PYTHONPATH=scripts:tests:../company-wiki/src:../filing-fetch/scripts python -B -m pytest tests/test_fc1004_platform.py -q", "exit_code": 0, "result": "3 passed"},
+    {"command": "PYTHONIOENCODING=utf-8 PYTHONPATH=scripts:tests:../company-wiki/src:../filing-fetch/scripts python -B -m pytest tests/ -q", "exit_code": 0, "result": "429 passed, 106 subtests passed, 0 failed"},
+    {"command": "M1 mutation: dropped encoding=\"utf-8\" from chain subprocess call", "exit_code": 1, "result": "test_utf8_stdin_stdout_chain FAILED — child got GBK bytes, utf-8 decode error"},
+    {"command": "revert M1", "exit_code": 0, "result": "3 passed; worktree byte-identical to e733287"}
+  ],
+  "scenario_results": [
+    {"id": "PORT-02", "status": "passed", "note": "spaced lake dirs built/resolved identically to plain baseline; probe verified literal spaces in path parts"},
+    {"id": "PORT-03", "status": "passed", "note": "UTF-8 stdin/stdout chain round-trip byte-exact; M1 kill replayed"},
+    {"id": "install-sync", "status": "passed", "note": "self-contained: --destination replaces defaults; two %TEMP% destinations -> identical 117-file trees"}
+  ],
+  "mutation_results": [
+    {"id": "M1", "killed": true, "details": "dropped encoding=\"utf-8\" -> test_utf8_stdin_stdout_chain FAILED (GBK decode error); revert -> 3 passed"}
+  ],
+  "side_effect_reconciliation": {"passed": true, "note": "no production writes; worktree clean at e733287; no stray sync stage dirs"},
+  "codegraph_reachability": {"passed": true, "note": "test-only FC; diff = 1 test file"},
+  "rollback": {"required": true, "passed": true, "note": "test-only commit; revert restores 10d107d4 tree"},
+  "findings": [],
+  "verdict": "accepted",
+  "reviewed_at": "2026-08-12T04:00:59Z",
+  "reviewer_receipt_sha256": "bb7069d8d6d6ef7fdd41c8d3a98cab237793959f82bf0d7283205d7a78c625dc"
+}
