@@ -19,7 +19,7 @@ import unittest
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SHA1 = re.compile(r"\b[0-9a-f]{40}\b")
+SHA1 = re.compile(r"[0-9a-f]{7,40}")  # full or abbreviated pins
 
 
 def _workflow_files() -> list[tuple[str, Path]]:
