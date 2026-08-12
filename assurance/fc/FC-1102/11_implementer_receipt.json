@@ -1,0 +1,119 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1102",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "summary": "Daily T2 read-only runner (tools/daily_t2_runner.py): production catalog opened mode=ro + query_only; checks triplet (manifest commits exist), canary samples (bound artifacts / producer_events), scan health (completed_with_errors/interrupted), legacy hits ledger, resolver latency (p50/p95 budgets), roots fingerprint (companies/dayu/dropbox file counts), trend deltas vs previous report. Isolated report under assurance/runs/{run_id}/; non-zero exit on any problem — no skip, no silent green. Smoke on production: 0.011s latency, scan errors 212 (vs FC-001's 155 — real regression now tracked). 4 contracts; M1 (samples check removed) kills the degraded test. Revenue full suite 443 passed / 0 failed.",
+  "base_triplet": {
+    "revenue": "c551dfee5b26bed2fdf49e4c7fa49b20e695798c",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "result_triplet": {
+    "revenue": "ec1d71dcd6aec753dbce42f68be2c7ec382893fa",
+    "filing": "592fae6108722299673981db4d329ad8906248bb",
+    "wiki": "f6eb58410e85b20aed738418cbaef6833803a4b6"
+  },
+  "plan_sha256": "eda591f4698314fd7b39b765acfde23d06481f1004c16bcf480b6eee6660b2a7",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tools/daily_t2_runner.py",
+    "revenue-forecast/tests/test_fc1102_t2_runner.py",
+    "revenue-forecast/assurance/fc/FC-1102/11_implementer_receipt.json",
+    "revenue-forecast/assurance/fc/FC-1102/12_reviewer_receipt.json"
+  ],
+  "changed_files": [
+    "revenue-forecast/tools/daily_t2_runner.py",
+    "revenue-forecast/tests/test_fc1102_t2_runner.py"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/fc/FC-1101/ (accepted) — manifest + CI gate",
+    "company-wiki/assurance/fc/FC-906/ (accepted) — canary samples in production",
+    "revenue-forecast/assurance/fc/FC-1001..1005 (accepted)"
+  ],
+  "command_registry_sha256": "69c57dce9f401044a92298cd76c2c12cf8ced526466f7f3e95d938c9edd549bc",
+  "scenario_results": [
+    {
+      "id": "AUD-03",
+      "status": "passed",
+      "note": "degraded samples fail non-zero (M1 removal kills the guard); no skip."
+    },
+    {
+      "id": "AUD-05",
+      "status": "passed",
+      "note": "scan health tracked with trend deltas; production smoke 212 errors (regression vs 155 baseline visible)."
+    },
+    {
+      "id": "AUD-04",
+      "status": "passed",
+      "note": "roots fingerprint recorded; drift-trend comparison is a P3 finding (F3) to close before Phase 11 exit."
+    },
+    {
+      "id": "safety-readonly",
+      "status": "passed",
+      "note": "catalog mode=ro + query_only; zero write statements; report isolated."
+    }
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B tools/daily_t2_runner.py --catalog ../company-wiki/.source_catalog/catalog.sqlite3 --report-root /tmp/t2runs",
+      "exit_code": 0,
+      "result": "smoke: bound artifacts present, latency 0.011s, scan errors 212, roots counts recorded",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests/test_fc1102_t2_runner.py -q",
+      "exit_code": 0,
+      "result": "4 passed (healthy pass / degraded fail / isolated report / trend mechanism)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=... python -B -m pytest tests/ -q",
+      "exit_code": 0,
+      "result": "443 passed, 106 subtests, 0 failed",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check tools/daily_t2_runner.py tests/test_fc1102_t2_runner.py",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit (auto): suite + E2E + R4.2",
+      "exit_code": 0,
+      "result": "443 passed; E2E PASS; MATCH 108 files",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "catalog_mutations": 0,
+    "note": "Runner is read-only by design (mode=ro + PRAGMA query_only); smoke wrote only the /tmp report."
+  },
+  "codegraph": {
+    "production_callers_before": "unchanged",
+    "production_callers_after": "unchanged",
+    "note": "New tool; scheduled deployment is a release-owner action."
+  },
+  "mutation": {
+    "id": "FC-1102-M1",
+    "killed": true,
+    "details": "M1: samples check removed -> test_degraded_samples_fail_nonzero FAILS. Reverted; 4 passed."
+  },
+  "rollback": {
+    "required": true,
+    "proved": true,
+    "note": "git revert ec1d71d; runner is a standalone tool."
+  },
+  "review": {
+    "reviewer": "reviewer-fc1102-independent",
+    "reviewer_receipt_sha256": "aab23d43e5c63e2479fe6d66c7d05989d67b5094db98ab53772e487410ce3e72",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-12T06:50:39Z",
+    "note": "reviewer replayed diff + read-only audit + M1 + production run (mtime invariant) from clean worktree ec1d71d; verdict accepted; P3 findings F1 (schema drift/policy freshness docstring vs code), F2 (freshness window/atomic publish), F3 (fingerprint trend), F4 (receipt IDs — fixed here). F1-F3 recorded for Phase 11 exit gate."
+  },
+  "provisional_note": "Feat sealed at revenue ec1d71d (filing/wiki unchanged). 4 runner contracts; full suite 443/0. Independent review pending."
+}
