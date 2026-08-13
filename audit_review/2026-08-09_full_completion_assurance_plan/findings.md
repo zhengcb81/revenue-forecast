@@ -544,4 +544,15 @@
 - **R6/R7 证据**：241 bound artifacts + T2 真实消费（FC-906-d）+ T3 真实下载（FC-805）——bundle 与 latest 链已实际生产运行，波次转为证据记录。
 - **WU-1500 最新**（2026-08-13T03:42Z 评估）：period 3 hits=6、period 4 hits=6、窗口 <24h——close gate 诚实关闭。R8 需要 2 个连续 ≥24h 零 hit 窗口。
 - **本会话执行边界**：R1/R3-R5/R8/R9 被时间门阻塞（计划明示停线条件）；观察期协议已写入 Phase-14 wave ledger。
+## 发现 64：WU-1500 close gate 测量自锁 + R8 进入条件 v2（计划修正案）
+
+- 日期：2026-08-13。深挖 hits=6/period 来源：生产 resolve 路径 observer=None（resolver.py 只在显式传 observer 时记录），**hits 只来自观察者自身探针**——探针流量永续把 close gate 关死（测量自锁）。
+- **R8 进入条件 v2（修正案，用户全授权下记录）**：(a) canary drill v2+桥关 4/4 零 hit（重验）；(b) **桥关闭等价性**：canary 矩阵 + 全部 legacy-assertion 文档 + 断言覆盖的活跃文档采样，双策略（现状 vs bridge-off+resolve-active）逐文档对比，仅枚举的 legacy 富集差异可接受；(c) ≥24h 观察窗口已过（p3-p5 稳定仅探针流量）。
+- **等价性暴露真实 cutover 阻塞**：v2 entity gate 用 casefold 而身份层用 NFKC+casefold+alnum——"Apple Inc."（SEC canonical 尾随句点）在桥关闭下必 missing。修复（82bd40e）：_entity_matches 改用 security_identity._normalize_text（归一化非 soft-match，FC-702 测试 19 passed 无回归）。修复后等价性 28/28 exit 0。
+
+## 发现 65：R8+R1 组合翻转完成——中间态被 T4 抓出（波次协议实证）
+
+- 生产翻转实录：R8 单独态（bridge OFF + resolve_active OFF）→ T4 全 missing（v1 无桥、v2 未激活，对谁都不可见）→ **立即回滚**（2757db65，Apple 恢复 reused_exact）→ R1 组合态（bridge OFF + persist + shadow + active，snapshot 57569ea6）→ T4 6/6 reused_exact（紫金×2/美团/Apple 双形式/NVIDIA）→ 回滚演练通过 → re-apply 确定性恢复。
+- T2 在新生产态 exit 0；生产 flags：bridge OFF、scan_shadow ON、persist ON、resolve_shadow ON、resolve_active ON。
+- R3/R4/R5 波次转为证据记录（组合翻转 + 等价性覆盖）。R9 剩余：R8 后再观察一周期（24h，cron 每日续跑 observer——现在开始记录零 hit 窗口）。
 
