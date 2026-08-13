@@ -1,0 +1,146 @@
+{
+  "schema_version": "2.0",
+  "unit": "CA-101",
+  "reviewer": "reviewer-ca101-independent",
+  "verdict": "accepted",
+  "reviewed_at_utc": "2026-08-13T23:39:58.808Z",
+  "mode": "independent-reviewer",
+  "summary": "CA-101 (strict work-unit state machine + DAG) independently re-verified end-to-end: closed 15-state enum (CA registry 12 ∪ runbook 3), one-directional LEGAL_TRANSITIONS with documented rework loops only, dependency gate excluding pending/blocked/superseded, reviewer gate (accepted requires reviewer distinct from implementer), per-unit single-writer locks wired in cmd_state_update, DAG cycle_check, and read-only state-render. All 11 tests pass (incl. 15x15 property tests); ruff check/format and mypy clean; CLI refusal demonstrations reproduce on the real machine (pending->accepted rc=2, free-text status rc=3) with zero writes (git status identical before/after); receipt triplets sha-verified (test_receipt_shas.py 1 passed); RED.md matches old-code inspection (ce3d6be9 cmd_state_update had no transition validation).",
+  "base_triplet": {
+    "revenue": "ce3d6be957afc15bde477fcc71918ab1fee53394"
+  },
+  "result_triplet": {
+    "revenue": "bd24dd30d5131e2750992a4582ac5225331a4691"
+  },
+  "result_note": "result_triplet.revenue = full sha of HEAD bd24dd3 (the CA-101 commit), obtained via git rev-parse. filing/wiki shas were not independently re-verified by this reviewer (only the revenue repo commit is in scope); implementer receipt carries claim-time triplet ce3d6be9, consistent with its 'code/receipt commits land after this receipt' note.",
+  "commands": [
+    {
+      "command": "git -C revenue-forecast log --oneline -2",
+      "exit_code": 0,
+      "result": "HEAD = bd24dd3 feat(CA-101): strict work-unit state machine — one-directional transitions, dependency/reviewer gates, per-unit locks, DAG cycle check, read-only render; parent ce3d6be feat(CA-004): closure ..."
+    },
+    {
+      "command": "git -C revenue-forecast diff ce3d6be9..HEAD --stat / --name-only",
+      "exit_code": 0,
+      "result": "7 files changed (587 insertions, 36 deletions), ALL within assurance/unified_completion/** (uc/strict_state.py, uc/dag.py, uc/cli.py, tests/test_strict_state.py, receipts/CA-101/{00_wu_card.md,11_implementer_receipt.json,red/RED.md}); no out-of-scope paths"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/test_strict_state.py -q",
+      "exit_code": 0,
+      "result": "11 passed in 0.11s (incl. 15x15 property test test_every_illegal_pair_rejected and test_random_illegal_graphs_rejected_by_validator)"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "python -B -m ruff format --check assurance/unified_completion/",
+      "exit_code": 0,
+      "result": "27 files already formatted"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 12 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli state-update --unit CA-999 --status accepted --reviewer rev-test",
+      "exit_code": 2,
+      "result": "STATE-GATE: illegal transition: pending -> accepted"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli state-render",
+      "exit_code": 0,
+      "result": "read-only Markdown view listing only CA-001..CA-004 accepted; CA-999 absent (zero writes)"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli state-update --unit CA-997 --status 'accepted on 2026-08-14'",
+      "exit_code": 3,
+      "result": "invalid status (free-text state rejected before any write)"
+    },
+    {
+      "command": "git -C revenue-forecast status --short (before and after CLI refusal tests)",
+      "exit_code": 0,
+      "result": "identical output before/after — zero writes from all CLI refusal demonstrations"
+    },
+    {
+      "command": "git -C revenue-forecast show ce3d6be9:assurance/unified_completion/uc/cli.py | Select-String 'cmd_state_update' -Context 0,25",
+      "exit_code": 0,
+      "result": "old handler validates status against 12-state enum only; transform overwrites status unconditionally — no transition table, no reviewer gate (RED-A/RED-B confirmed)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/test_receipt_shas.py -q",
+      "exit_code": 0,
+      "result": "1 passed in 2.57s (receipt triplet shas all real)"
+    },
+    {
+      "command": "git -C revenue-forecast rev-parse bd24dd3 ce3d6be9",
+      "exit_code": 0,
+      "result": "bd24dd30d5131e2750992a4582ac5225331a4691 / ce3d6be957afc15bde477fcc71918ab1fee53394"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "pass",
+      "detail": "strict_state.STATES = exactly 15 states: CA registry 12 (pending/preflight_locked/red_proved/implemented/focused_green/triplet_green/real_tier_green/independent_review/accepted/blocked/superseded/already_satisfied) ∪ runbook 3 (drift_classified/owner_repo_green/rollback_green)."
+    },
+    {
+      "id": "F-2",
+      "severity": "pass",
+      "detail": "LEGAL_TRANSITIONS: no pending->accepted edge; accepted has empty out-edge set (terminal); the only bidirectional pairs are documented rework loops (blocked<->preflight_locked, blocked<->implemented, independent_review->implemented) enforced by test_transitions_are_one_directional."
+    },
+    {
+      "id": "F-3",
+      "severity": "pass",
+      "detail": "DEP_GATED_STATES = STATES - {pending, blocked, superseded}; dependency gate verified by tests (blocks advance with unsatisfied dep, exempts blocked/superseded, passes with satisfied dep)."
+    },
+    {
+      "id": "F-4",
+      "severity": "pass",
+      "detail": "Reviewer gate: accepted requires reviewer identity AND reviewer != recorded implementer (validate_transition lines 125-130; test_reviewer_gate_accepted_requires_distinct_reviewer)."
+    },
+    {
+      "id": "F-5",
+      "severity": "pass",
+      "detail": "Property tests: test_every_illegal_pair_rejected covers all 15x15 state pairs (legal pairs accepted, illegal pairs rejected); test_random_illegal_graphs_rejected_by_validator repeats illegal-jump rejection with satisfied deps and a reviewer present. All 11 tests pass."
+    },
+    {
+      "id": "F-6",
+      "severity": "pass",
+      "detail": "Static checks: ruff check 0 issues, ruff format clean (27 files), mypy clean (12 source files)."
+    },
+    {
+      "id": "F-7",
+      "severity": "pass",
+      "detail": "CLI refusal on real machine: state-update CA-999 -> accepted rc=2 (STATE-GATE: illegal transition: pending -> accepted); free-text status rc=3; state-render shows only CA-001..CA-004. git status --short identical before/after all CLI tests = zero writes. cmd_state_update writes only after validate_transition returns [] and holds per-unit lock (uc.lock resource unit-<id>, TTL 600, released in finally) with 5-attempt CAS retry."
+    },
+    {
+      "id": "F-8",
+      "severity": "pass",
+      "detail": "state-render is strictly read-only (read_state + stdout print, no writes); docstring and output header mark it as a non-authoritative view."
+    },
+    {
+      "id": "F-9",
+      "severity": "pass",
+      "detail": "dag.cycle_check implemented (DFS with three-color marking, returns cycle paths; tests cover self-loop, two-node cycle, empty, dangling dep). RED-C claim confirmed."
+    },
+    {
+      "id": "F-10",
+      "severity": "pass",
+      "detail": "RED evidence authentic: RED.md documents RED-A..RED-D; old ce3d6be9 cmd_state_update inspected — validates status enum membership only (rc=3 for out-of-enum) and transforms state unconditionally, i.e. pending->accepted direct jump was machine-legal (RED-A/RED-B confirmed)."
+    },
+    {
+      "id": "F-11",
+      "severity": "pass",
+      "detail": "test_receipt_shas.py 1 passed — receipt triplet shas (incl. implementer receipt) are real; base triplet revenue ce3d6be957afc15bde477fcc71918ab1fee53394 matches git rev-parse."
+    },
+    {
+      "id": "F-12",
+      "severity": "info",
+      "detail": "Scope check: all 7 changed files under assurance/unified_completion/**; no catalog/roots/product-code writes. Pre-existing dirty/untracked paths (audit_review/*, assurance/runs/) existed before this review and were untouched. Implementer receipt's result_triplet.revenue is claim-time ce3d6be9 (pre-commit), noted in its result_note; reviewer uses actual HEAD bd24dd3. CA-001~004 grandfathered accepted units (history preserved) are outside CA-101 scope."
+    }
+  ],
+  "side_effect_note": "Review was read-only: no clone, no catalog/roots access, no writes to the implementer repo (git status identical before/after every mutating-looking command). The only artifact this reviewer created is this receipt file at %TEMP%\\ca101-reviewer-receipt.json. CLI refusal tests exercised the real machine state.json but validation precedes any transform, so no state mutation occurred."
+}
