@@ -94,15 +94,23 @@ def _sha256_bytes(data: bytes) -> str:
 
 
 def _remote_head(remote_url: str, branch: str) -> str:
-    """Returns the remote ref sha, or raises InfraError when unreachable."""
-    proc = subprocess.run(
-        ["git", "ls-remote", remote_url, f"refs/heads/{branch}"],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=120,
-    )
+    """Returns the remote ref sha, or raises InfraError when unreachable.
+
+    Timeout is deliberately short: an unreachable remote must classify as
+    ``unverifiable`` quickly, never stall the equality gate."""
+    try:
+        proc = subprocess.run(
+            ["git", "ls-remote", remote_url, f"refs/heads/{branch}"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=20,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise InfraError(
+            f"ls-remote {remote_url} timed out after 20s", "remote-unreachable"
+        ) from exc
     if proc.returncode != 0:
         raise InfraError(
             f"ls-remote {remote_url} failed: {proc.stderr.strip()[-200:]}",
@@ -222,7 +230,9 @@ def _catalog_facts(catalog_path: Path) -> dict[str, Any]:
     except OSError as exc:
         facts["page1_sha256"] = f"unreadable: {exc}"
     try:
-        conn = sqlite3.connect(f"file:{catalog_path.as_posix()}?mode=ro", uri=True, timeout=5)
+        conn = sqlite3.connect(
+            f"file:{catalog_path.as_posix()}?mode=ro", uri=True, timeout=5
+        )
         try:
             schema_rows = conn.execute(
                 "SELECT type, name, sql FROM sqlite_master ORDER BY rowid"
