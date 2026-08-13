@@ -33,4 +33,15 @@
   - M1（wiki reconfigure 移除→2 死）+ M2（audit_baseline reconfigure 移除→1 死）击杀 + 还原。
 - 全量双仓运行中（revenue + wiki 无 PYTHONIOENCODING）。redaction 核对：observability/worker 无绝对路径硬编码。
 - 下一步：全量 verdict → receipt → reviewer → can_accept → **Phase 12 COMPLETE（62→63/71）** → Phase 13。
+## 2026-08-13 — Phase 13 COMPLETE（4/4 accepted，FCAP 67/71）+ Phase 14 波次启动
+
+- **Phase 13 closure**：reviewer-fc130x-independent r1 全 accepted；FC-1303 F2/F3（latest 探针真测 latest_as_of + resolver 子进程 RSS）在 6fac1ca 修复 + 生产重验（p95 0.56s，breaches=[]）；can_accept 4/4 exit 0；registry + Phase 13 COMPLETE header 提交。
+- **Phase 14 波次**（wave ledger bc067a3 + findings 63）：
+  - R0 ✓（governance 门 live）
+  - **R2 ✓ APPLIED**：v2_scan_shadow=true 生产 CAS（snapshot 93ddf67e）；回滚演练 apply→rollback→re-apply 确定性恢复；观察期开始
+  - R6/R7 ✓ 生产证据（241 bound artifacts + T2 消费 + T3 下载）
+  - **R1 BLOCKED**：policy validator 拒 bridge 冲突——真实排序 R8 先于 R1（findings 63）
+  - R3-R5/R8/R9 BLOCKED：≥24h 观察窗口（WU-1500 period 3/4 hits=6；2026-08-13T03:42Z 评估）
+- **继续机制**：durable cron 每天 09:13 自动续跑（observer + T2 + 解锁波次 + Phase 15）；7 天过期需续期。
+- 三仓测试基线：revenue 470 passed 零失败 + E2E golden fedcd224acf28dee；wiki 2232 passed 零失败（无 PYTHONIOENCODING）。
 
