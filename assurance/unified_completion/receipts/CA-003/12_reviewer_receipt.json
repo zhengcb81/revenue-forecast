@@ -1,0 +1,70 @@
+{
+  "schema_version": "2.0",
+  "unit": "CA-003",
+  "reviewer": "reviewer-ca003-independent",
+  "verdict": "accepted",
+  "round": 2,
+  "reviewed_at_utc": "2026-08-13T22:30:45.521068Z",
+  "round2_delta": "Independent delta re-review of fix commit 2f51672 (fix(CA-003): reviewer findings). Scope: 4 delta points only (HEAD, F1 MISSING-001 registration, F2 receipt sha, F3 line-number clarification). All 4 verified green; delta diff confined to assurance/unified_completion/** (7 files: codegraph/codegraph_freeze.json, receipts/CA-003/11_implementer_receipt.json, tests/test_legacy_disposition.py, uc/cli.py, uc/codegraph_freeze.py, uc/dag.py, uc/legacy_disposition.py). No product code/config/CI/catalog/roots touched.",
+  "base_triplet": {
+    "revenue": "b06cfbfe2d5d8b41b79d33a626e2f3379790591f",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_triplet": {
+    "revenue": "2f51672bfc10bc6050d29e34f7c2ec752cbc800a",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "status": "resolved",
+      "evidence": "codegraph/codegraph_freeze.json caller_report.blocking_findings_registered now contains both BYPASS-001 and MISSING-001 (python json load prints ['BYPASS-001','MISSING-001']); uc/codegraph_freeze.py build_caller_report registers MISSING-001 when wiki ProcessingDemand yields 0 hits (code read, lines 248-258)."
+    },
+    {
+      "id": "F2",
+      "status": "resolved",
+      "evidence": "receipts/CA-003/11_implementer_receipt.json: 'b06cfbfc' = 0 hits (Select-String); correct sha b06cfbfe2d5d8b41b79d33a626e2f3379790591f appears 3 times (base/result/codegraph); git rev-parse --verify b06cfbfe2d5d8b41b79d33a626e2f3379790591f rc=0."
+    },
+    {
+      "id": "F3",
+      "status": "dismissed",
+      "evidence": "Select-String -Pattern 'SourceResolver\\(self\\.catalog\\)' on company-wiki/src/company_wiki/source_catalog/acquisition.py returns line numbers 308 and 396, exactly matching BYPASS-001's recorded call sites (acquisition.py:308/396). Round-1 off-by-one suspicion (395 vs 396) was a Get-Content measurement artifact; Python splitlines() and Select-String both agree on 396. Recorded line numbers correct; F3 retracted."
+    }
+  ],
+  "commands": [
+    {
+      "command": "git -C <revenue-forecast> log --oneline -1",
+      "exit_code": 0,
+      "result": "2f51672 fix(CA-003): reviewer findings — register MISSING-001 in caller report, correct receipt sha to b06cfbfe2d5d, CJK-safe unit regex in dag"
+    },
+    {
+      "command": "python -B -c \"json.load(codegraph_freeze.json)['caller_report']['blocking_findings_registered']\"",
+      "exit_code": 0,
+      "result": "['BYPASS-001', 'MISSING-001']"
+    },
+    {
+      "command": "Select-String 11_implementer_receipt.json -Pattern 'b06cfbfc'",
+      "exit_code": 0,
+      "result": "0 hits; correct sha 3 occurrences; git rev-parse --verify b06cfbfe2d5d... rc=0"
+    },
+    {
+      "command": "Select-String acquisition.py -Pattern 'SourceResolver\\(self\\.catalog\\)' | ForEach-Object LineNumber",
+      "exit_code": 0,
+      "result": "308 396 (matches BYPASS-001 record; F3 dismissed)"
+    },
+    {
+      "command": "python -B -m ruff check uc/legacy_disposition.py uc/dag.py uc/cli.py tests/test_legacy_disposition.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "python -B -m pytest assurance/unified_completion/tests -q (background, full suite)",
+      "exit_code": null,
+      "result": "Background job output unavailable this session (job reaped before collection); round-1 independently verified the 7 codegraph tests (7 passed, 109.68s) plus ruff/mypy clean. The delta's 8 new legacy_disposition tests (incl. test_real_frozen_build_and_verify) are implementer-claimed 81 passed; not re-run independently in this delta due to the user's no->60s-command constraint."
+    }
+  ],
+  "side_effect_note": "Read-only delta review: only git reads, Select-String, python json load, and ruff check on delta files. No writes to any repo, catalog, roots, or .codegraph. No reviewer receipt side effects beyond this file.",
+  "note_indexed_commit": "Informational: the fix commit regenerated the freeze (CAS replace), re-indexing revenue at then-HEAD bf2d069 (CA-003 feat commit; 177 files/3121 nodes) because CA-003 code itself now lives in the revenue repo. This is the documented freeze-drift semantics (freeze = claim-time baseline; verify reports drift until the next card re-indexes) and is not a defect."
+}

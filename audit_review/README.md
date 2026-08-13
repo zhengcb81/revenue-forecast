@@ -10,7 +10,7 @@ authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
 current_phase: A0_bootstrap_and_rebaseline
-current_next: CA-003
+current_next: CA-004
 active_owner: unassigned
 lease: none
 blocked_reason: none
