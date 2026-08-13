@@ -28,6 +28,7 @@ import sqlite3
 import subprocess
 import sys
 import time
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -39,8 +40,12 @@ DEFAULT_REPORT_ROOT = PROJECT_ROOT / "assurance" / "runs"
 # frozen budgets (sec) — p95 resolver latency
 LATENCY_P95_BUDGET = 5.0
 LATENCY_P50_BUDGET = 2.0
-# scan-health delta budget (completed_with_errors growth per day)
-SCAN_ERROR_DELTA_BUDGET = 50
+# FC-1302: increment-based scan-health budgets — a REPEATING unchanged error
+# (e.g. an empty user file in Dropbox) must not compound severity each scan;
+# only NEW errors and interrupted growth fail the check (findings 62: the
+# 155->242 growth is one recurring empty user Excel, new_errors=0 every run).
+NEW_ERRORS_24H_BUDGET = 0
+INTERRUPTED_DELTA_BUDGET = 5
 
 
 def _head(repo: Path) -> str:
@@ -112,14 +117,51 @@ def run_checks(
     if n_bound < 3 or n_events < 3:
         problems.append(f"canary samples degraded: bound={n_bound} events={n_events}")
 
-    # scan health
+    # scan health (FC-1302): total counts stay informational; the FAILURE
+    # signals are increments — new errors in the last 24h and interrupted
+    # growth.  A run whose every error_detail is unchanged is a RECURRING
+    # known error (severity must not compound).
+    since = (datetime.now(UTC) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")
     errors = con.execute(
         "SELECT COUNT(*) FROM scan_runs WHERE status='completed_with_errors'"
     ).fetchone()[0]
     interrupted = con.execute(
         "SELECT COUNT(*) FROM scan_runs WHERE status='interrupted'"
     ).fetchone()[0]
-    checks["scan_health"] = {"completed_with_errors": errors, "interrupted": interrupted}
+    new_errors = 0
+    recurring = 0
+    try:
+        rows = con.execute(
+            "SELECT report_json FROM scan_runs WHERE status='completed_with_errors' "
+            "AND started_at >= ?", (since,)
+        ).fetchall()
+    except sqlite3.OperationalError:
+        rows = []
+    for (rep,) in rows:
+        try:
+            d = json.loads(rep or "{}")
+        except json.JSONDecodeError:
+            continue
+        try:
+            new_errors += int(d.get("new_errors") or 0)
+        except (TypeError, ValueError):
+            pass
+        errs = d.get("error_details")
+        if isinstance(errs, list) and errs and all(
+            isinstance(e, dict) and e.get("unchanged") for e in errs
+        ):
+            recurring += 1
+    checks["scan_health"] = {
+        "completed_with_errors": errors,
+        "interrupted": interrupted,
+        "new_errors_24h": new_errors,
+        "recurring_unchanged_runs_24h": recurring,
+    }
+    if new_errors > NEW_ERRORS_24H_BUDGET:
+        problems.append(
+            f"scan health: {new_errors} NEW errors in the last 24h "
+            f"(budget {NEW_ERRORS_24H_BUDGET})"
+        )
 
     # legacy hits (WU-1500 observer ledger)
     try:
@@ -163,10 +205,10 @@ def run_checks(
                 continue
             pv = prev.get("checks", {}).get(k)
             if pv and isinstance(v, dict) and isinstance(pv, dict):
-                for field in ("completed_with_errors",):
+                for field, budget in (("interrupted", INTERRUPTED_DELTA_BUDGET),):
                     if field in v and field in pv:
                         delta = v[field] - pv[field]
-                        if delta > SCAN_ERROR_DELTA_BUDGET:
+                        if delta > budget:
                             problems.append(
                                 f"scan health regression: {field} +{delta} vs previous")
 
