@@ -257,6 +257,38 @@ def cmd_state_update(args: argparse.Namespace) -> int:
     return 0
 
 
+def closure_state_transform(
+    current: dict,
+    *,
+    unit: str,
+    next_unit: str,
+    phase: str,
+    reviewer: str,
+    new_manifest_hash: str,
+    new_readme_hash: str,
+    now_iso: str,
+) -> dict:
+    """Pure transform applied to machine state when the closure validator
+    advances ``current_next``.  Mirrors the manifest hashes and the control
+    page hash into the state so no stale mirror field survives closure."""
+    next_state = dict(current)
+    next_state["current_next"] = next_unit
+    next_state["current_phase"] = phase
+    next_state["active_owner"] = None
+    next_state["lease"] = None
+    next_state["last_control_update"] = now_iso[:10]
+    next_state["machine_manifest_sha256"] = new_manifest_hash
+    next_state["control_page_sha256"] = new_readme_hash
+    unit_info = dict(next_state["units"][unit])
+    unit_info["closure"] = {
+        "by": reviewer,
+        "at_utc": now_iso,
+        "next": next_unit,
+    }
+    next_state["units"][unit] = unit_info
+    return next_state
+
+
 def cmd_closure_advance(args: argparse.Namespace) -> int:
     _require_no_drift(getattr(args, "mtime", "strict") == "strict")
     state = read_state(STATE_PATH)
@@ -340,24 +372,19 @@ def cmd_closure_advance(args: argparse.Namespace) -> int:
         )
 
         # 3. CAS-update the machine state (authoritative).
-        def transform(current: dict) -> dict:
-            next_state = dict(current)
-            next_state["current_next"] = args.next
-            next_state["current_phase"] = args.phase
-            next_state["active_owner"] = None
-            next_state["lease"] = None
-            next_state["last_control_update"] = now.strftime("%Y-%m-%d")
-            next_state["machine_manifest_sha256"] = new_manifest_hash
-            unit_info = dict(next_state["units"][current_unit])
-            unit_info["closure"] = {
-                "by": args.reviewer,
-                "at_utc": now.isoformat(),
-                "next": args.next,
-            }
-            next_state["units"][current_unit] = unit_info
-            return next_state
-
-        _expected, new_state_hash = update_state(STATE_PATH, transform)
+        _expected, new_state_hash = update_state(
+            STATE_PATH,
+            lambda current: closure_state_transform(
+                current,
+                unit=current_unit,
+                next_unit=args.next,
+                phase=args.phase,
+                reviewer=args.reviewer,
+                new_manifest_hash=new_manifest_hash,
+                new_readme_hash=new_readme_hash,
+                now_iso=now.isoformat(),
+            ),
+        )
 
         # 4. Closure receipt (exclusive publish).
         closure_receipt = {

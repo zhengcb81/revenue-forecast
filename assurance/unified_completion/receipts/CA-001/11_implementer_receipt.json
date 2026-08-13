@@ -133,7 +133,11 @@
     "note": "CodeGraph re-indexing is CA-003's exclusive window; not performed here."
   },
   "review": {
-    "status": "pending",
-    "note": "independent reviewer must clean-clone at fcap HEAD, re-run manifest-verify + 50 tests + ruff/mypy, replay the closure sequence in the throwaway clone, and give accepted/changes_required/blocked/rejected."
+    "status": "accepted",
+    "reviewer": "reviewer-ca001-independent",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-13T20:38:33Z",
+    "note": "Independent subagent clean-checkout review (clone at 224edaf): manifest-verify OK, 50 passed, lock race 10/10, ruff/mypy clean, diff confined to assurance/unified_completion/**, closure replay green. Findings F1(info)/F2(low: autocrlf clone procedure - documented in assurance/unified_completion/README.md)/F3(low: wording only)/F4(low: stale state.control_page_sha256 mirror - fixed via closure_state_transform + regression test before real closure). Post-review delta commits (4d629b9 --mtime mode, plus F4 fix and area README) are additive and covered by the full suite (53 tests).",
+    "reviewer_receipt": "assurance/unified_completion/receipts/CA-001/12_reviewer_receipt.json"
   }
 }
