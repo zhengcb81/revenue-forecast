@@ -33,6 +33,8 @@ from uc.casfile import (
     sha256_bytes,
     sha256_file,
 )
+from uc.codegraph_freeze import freeze as cg_freeze
+from uc.codegraph_freeze import verify as cg_verify
 from uc.control import patch_section0, plan_advance_fields
 from uc.dag import load_dag, next_units
 from uc.envfreeze import collect as env_collect
@@ -434,6 +436,45 @@ def cmd_closure_advance(args: argparse.Namespace) -> int:
 
 ENV_FREEZE_PATH = CONTROL_ROOT / "environment" / "env_freeze.json"
 ENV_DIRTY_IGNORE = ["assurance/unified_completion/environment/"]
+CG_FREEZE_PATH = CONTROL_ROOT / "codegraph" / "codegraph_freeze.json"
+
+
+def cmd_codegraph_freeze(_args: argparse.Namespace) -> int:
+    try:
+        payload_hash = cg_freeze(REPO_ROOT, CG_FREEZE_PATH)
+    except FileExistsError:
+        print(
+            f"codegraph freeze already exists: {CG_FREEZE_PATH}\n"
+            "remove it or CAS-replace via the library with force_sha256",
+            file=sys.stderr,
+        )
+        return 2
+    print(
+        json.dumps(
+            {"freeze": str(CG_FREEZE_PATH), "sha256": payload_hash},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def cmd_codegraph_verify(_args: argparse.Namespace) -> int:
+    if not CG_FREEZE_PATH.is_file():
+        print(
+            "codegraph freeze does not exist yet — run codegraph-freeze first",
+            file=sys.stderr,
+        )
+        return 1
+    problems = cg_verify(REPO_ROOT, CG_FREEZE_PATH)
+    if problems:
+        for problem in problems:
+            print(f"CG-DRIFT: {problem}")
+        return 1
+    print(
+        "OK: codegraph index matches the freeze exactly (commits + statistics + sentinels)"
+    )
+    return 0
 
 
 def cmd_env_freeze(args: argparse.Namespace) -> int:
@@ -573,6 +614,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("env-verify")
     p.set_defaults(func=cmd_env_verify)
+
+    p = sub.add_parser("codegraph-freeze")
+    p.set_defaults(func=cmd_codegraph_freeze)
+
+    p = sub.add_parser("codegraph-verify")
+    p.set_defaults(func=cmd_codegraph_verify)
     return parser
 
 

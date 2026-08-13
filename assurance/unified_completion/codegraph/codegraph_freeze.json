@@ -1,0 +1,827 @@
+{
+  "caller_report": {
+    "blocking_findings_registered": [
+      {
+        "id": "BYPASS-001",
+        "severity": "blocking",
+        "summary": "SourceResolver default-constructs runtime_policy=None at acquisition.py:308/396, canonical_writer.py:157/205, close_gap.py:403 — resolve may run v2 while ensure/close-gap re-resolve falls back to v1. Fix belongs to phase C/D work units; registered here per CA-003."
+      }
+    ],
+    "runtime_policy_bypass_findings": [
+      {
+        "file": "src/company_wiki/source_catalog/acquisition.py",
+        "lines": [
+          308,
+          396
+        ],
+        "pattern": "SourceResolver(self.catalog).resolve(...) without runtime_policy",
+        "repo": "wiki"
+      },
+      {
+        "file": "src/company_wiki/source_catalog/canonical_writer.py",
+        "lines": [
+          157,
+          205
+        ],
+        "pattern": "SourceResolver(self.catalog).resolve(...) without runtime_policy",
+        "repo": "wiki"
+      },
+      {
+        "file": "src/company_wiki/source_catalog/close_gap.py",
+        "lines": [
+          403
+        ],
+        "pattern": "SourceResolver(self.catalog).resolve(...) without runtime_policy",
+        "repo": "wiki"
+      }
+    ],
+    "targets": {
+      "filing": {
+        "_handle_from_resolution": [
+          {
+            "file": "scripts/fetch_filing.py",
+            "kind": "function",
+            "line": 757,
+            "name": "_handle_from_resolution"
+          }
+        ],
+        "validate_handle": [
+          {
+            "file": "scripts/filing_contracts.py",
+            "kind": "function",
+            "line": 350,
+            "name": "validate_handle"
+          },
+          {
+            "file": "tests/test_policy_containment_fc501.py",
+            "kind": "function",
+            "line": 107,
+            "name": "test_validate_handle_accepts_matching_policy_hash"
+          },
+          {
+            "file": "tests/test_fetch_filing.py",
+            "kind": "method",
+            "line": 2383,
+            "name": "test_validate_handle_rejects_outside_configured_allowance"
+          },
+          {
+            "file": "tests/test_policy_containment_fc501.py",
+            "kind": "function",
+            "line": 94,
+            "name": "test_validate_handle_requires_policy_hash"
+          },
+          {
+            "file": "tests/test_fetch_filing.py",
+            "kind": "method",
+            "line": 2357,
+            "name": "test_validate_handle_accepts_configured_allowed_root"
+          },
+          {
+            "file": "scripts/fetch_filing.py",
+            "kind": "import",
+            "line": 30,
+            "name": "filing_contracts"
+          },
+          {
+            "file": "tests/test_bundle_compat.py",
+            "kind": "import",
+            "line": 23,
+            "name": "filing_contracts"
+          },
+          {
+            "file": "tests/test_policy_containment_fc501.py",
+            "kind": "import",
+            "line": 18,
+            "name": "filing_contracts"
+          },
+          {
+            "file": "tests/test_fc1204_coverage_gap.py",
+            "kind": "import",
+            "line": 20,
+            "name": "filing_contracts"
+          }
+        ]
+      },
+      "revenue": {
+        "closure_gate": [
+          {
+            "file": "tools/tests/test_closure_gate.py",
+            "kind": "import",
+            "line": 20,
+            "name": "closure_gate"
+          },
+          {
+            "file": "tools/closure_gate.py",
+            "kind": "file",
+            "line": 1,
+            "name": "closure_gate.py"
+          },
+          {
+            "file": "tools/tests/test_closure_gate.py",
+            "kind": "file",
+            "line": 1,
+            "name": "test_closure_gate.py"
+          },
+          {
+            "file": "tools/closure_ledger.py",
+            "kind": "variable",
+            "line": 21,
+            "name": "GATE"
+          }
+        ],
+        "daily_t2_runner": [
+          {
+            "file": "tools/daily_t2_runner.py",
+            "kind": "file",
+            "line": 1,
+            "name": "daily_t2_runner.py"
+          },
+          {
+            "file": "tests/test_fc1102_t2_runner.py",
+            "kind": "variable",
+            "line": 25,
+            "name": "RUNNER"
+          },
+          {
+            "file": "tests/test_fc1105_fault_injection.py",
+            "kind": "variable",
+            "line": 33,
+            "name": "T2"
+          },
+          {
+            "file": "tests/test_fc1302_scan_health.py",
+            "kind": "variable",
+            "line": 20,
+            "name": "TOOL"
+          }
+        ],
+        "prepare_source": [
+          {
+            "file": "scripts/source_preparation.py",
+            "kind": "function",
+            "line": 52,
+            "name": "prepare_source"
+          },
+          {
+            "file": "tests/test_source_preparation.py",
+            "kind": "function",
+            "line": 111,
+            "name": "test_prepare_source_forwards_allow_download"
+          },
+          {
+            "file": "tests/test_source_preparation.py",
+            "kind": "function",
+            "line": 121,
+            "name": "test_prepare_source_forwards_filing_fetch_root"
+          },
+          {
+            "file": "tests/test_source_preparation.py",
+            "kind": "function",
+            "line": 55,
+            "name": "test_prepare_source_raises_on_client_failure"
+          },
+          {
+            "file": "tests/test_fc904_artifact_selection.py",
+            "kind": "function",
+            "line": 254,
+            "name": "test_prepare_source_unavailable_envelope_all_produced"
+          },
+          {
+            "file": "tests/test_fc904_artifact_selection.py",
+            "kind": "function",
+            "line": 214,
+            "name": "test_prepare_source_receipt_sourced_from_bundle"
+          },
+          {
+            "file": "assurance/unified_completion/uc/codegraph_freeze.py",
+            "kind": "variable",
+            "line": 38,
+            "name": "CALLER_TARGETS"
+          },
+          {
+            "file": "tests/test_source_preparation.py",
+            "kind": "import",
+            "line": 11,
+            "name": "source_preparation"
+          }
+        ],
+        "publication_registry": [
+          {
+            "file": "tests/test_publication_registry.py",
+            "kind": "import",
+            "line": 16,
+            "name": "publication_registry"
+          },
+          {
+            "file": "scripts/publication_registry.py",
+            "kind": "file",
+            "line": 1,
+            "name": "publication_registry.py"
+          },
+          {
+            "file": "tests/test_publication_registry.py",
+            "kind": "file",
+            "line": 1,
+            "name": "test_publication_registry.py"
+          },
+          {
+            "file": "scripts/publication_registry.py",
+            "kind": "variable",
+            "line": 30,
+            "name": "ENV_REGISTRY"
+          },
+          {
+            "file": "tests/conftest.py",
+            "kind": "function",
+            "line": 12,
+            "name": "_isolate_publication_registry"
+          }
+        ]
+      },
+      "wiki": {
+        "CatalogStore": [
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "class",
+            "line": 920,
+            "name": "CatalogStore"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 992,
+            "name": "_initialize"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 931,
+            "name": "_connect"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 921,
+            "name": "__init__"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 940,
+            "name": "transaction"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1176,
+            "name": "status"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1210,
+            "name": "scan_health"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1258,
+            "name": "artifact_health"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1013,
+            "name": "_apply_additive_migrations"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1124,
+            "name": "_seed_fingerprint_state"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 969,
+            "name": "coalesced_transactions"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1156,
+            "name": "fetchone"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1165,
+            "name": "fetchall"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1393,
+            "name": "fingerprint_status"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1298,
+            "name": "select_fingerprint_batch"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1280,
+            "name": "fingerprint_state_counts"
+          },
+          {
+            "file": "scripts/wu904_remediation_restore.py",
+            "kind": "import",
+            "line": 32,
+            "name": "company_wiki.source_catalog.store"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "function",
+            "line": 449,
+            "name": "retire_document"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "function",
+            "line": 492,
+            "name": "restore_document"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "method",
+            "line": 1328,
+            "name": "record_fingerprint_outcome"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/store.py",
+            "kind": "variable",
+            "line": 1431,
+            "name": "__all__"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/reconcile_retire_state.py",
+            "kind": "method",
+            "line": 57,
+            "name": "store"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/service.py",
+            "kind": "method",
+            "line": 46,
+            "name": "store"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/activation.py",
+            "kind": "function",
+            "line": 338,
+            "name": "journal_rows"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/migration_ledger.py",
+            "kind": "function",
+            "line": 33,
+            "name": "build_quality_ledger"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/scanner.py",
+            "kind": "function",
+            "line": 781,
+            "name": "_interrupt_scan_run"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/activation.py",
+            "kind": "function",
+            "line": 74,
+            "name": "preview_activation"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/activation.py",
+            "kind": "function",
+            "line": 45,
+            "name": "_validate_assertions"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/scanner.py",
+            "kind": "function",
+            "line": 769,
+            "name": "_begin_scan_run"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/summarizer.py",
+            "kind": "function",
+            "line": 135,
+            "name": "summarize_catalog"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/remediation.py",
+            "kind": "function",
+            "line": 116,
+            "name": "approve_proposal"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/activation.py",
+            "kind": "function",
+            "line": 176,
+            "name": "rollback_activation"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/assertion_service.py",
+            "kind": "function",
+            "line": 449,
+            "name": "reject_assertion"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/assertion_service.py",
+            "kind": "function",
+            "line": 348,
+            "name": "verify_assertion"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/llm_summarizer.py",
+            "kind": "function",
+            "line": 77,
+            "name": "_record_document_failure"
+          },
+          {
+            "file": "tests/unit/test_source_catalog_scanner_direct.py",
+            "kind": "import",
+            "line": 17,
+            "name": "company_wiki.source_catalog.store"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/assertion_service.py",
+            "kind": "function",
+            "line": 103,
+            "name": "_get_active_verified_assertions"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/activation.py",
+            "kind": "function",
+            "line": 95,
+            "name": "apply_activation"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/assertion_service.py",
+            "kind": "function",
+            "line": 152,
+            "name": "get_verified_assertion"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/activation.py",
+            "kind": "function",
+            "line": 256,
+            "name": "map_existing_activation"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/assertion_service.py",
+            "kind": "function",
+            "line": 177,
+            "name": "get_verified_assertion_by_document"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/remediation.py",
+            "kind": "function",
+            "line": 46,
+            "name": "create_proposal"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/scanner.py",
+            "kind": "function",
+            "line": 1289,
+            "name": "scan_catalog"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/assertion_service.py",
+            "kind": "function",
+            "line": 525,
+            "name": "upsert_verified_assertion"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/llm_summarizer.py",
+            "kind": "function",
+            "line": 274,
+            "name": "summarize_catalog_with_llm"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/section_extractor.py",
+            "kind": "function",
+            "line": 160,
+            "name": "extract_sections_catalog"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/scanner.py",
+            "kind": "function",
+            "line": 790,
+            "name": "_scan_catalog_impl"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/normalizer.py",
+            "kind": "function",
+            "line": 1392,
+            "name": "normalize_catalog"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/normalizer.py",
+            "kind": "function",
+            "line": 1681,
+            "name": "backfill_text_fingerprints"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/assertion_service.py",
+            "kind": "function",
+            "line": 216,
+            "name": "preview_assertion"
+          }
+        ],
+        "ProcessingDemand": [],
+        "RootPolicy": [
+          {
+            "file": "tests/contract/test_dropbox_root_policy_fc501.py",
+            "kind": "function",
+            "line": 179,
+            "name": "test_dropbox_root_policy_contract"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/admission.py",
+            "kind": "function",
+            "line": 244,
+            "name": "evaluate_candidate"
+          }
+        ],
+        "SourceResolver": [
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "class",
+            "line": 629,
+            "name": "SourceResolver"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "method",
+            "line": 667,
+            "name": "resolve"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "method",
+            "line": 657,
+            "name": "_remediation_pending"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "method",
+            "line": 957,
+            "name": "_identity_matches"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "method",
+            "line": 632,
+            "name": "__init__"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "method",
+            "line": 1003,
+            "name": "_entity_matches"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "method",
+            "line": 997,
+            "name": "_issuer_index"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "method",
+            "line": 1133,
+            "name": "_pick_latest"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "method",
+            "line": 1154,
+            "name": "_result"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/resolver.py",
+            "kind": "method",
+            "line": 1048,
+            "name": "_handle"
+          },
+          {
+            "file": "docs/plans/portfolio-reuse-fix/spike_diag.py",
+            "kind": "import",
+            "line": 9,
+            "name": "company_wiki.source_catalog.resolver"
+          },
+          {
+            "file": "scripts/bridge_off_equivalence.py",
+            "kind": "import",
+            "line": 38,
+            "name": "company_wiki.source_catalog.resolver"
+          },
+          {
+            "file": "docs/plans/portfolio-reuse-fix/promote_prototype.py",
+            "kind": "import",
+            "line": 34,
+            "name": "company_wiki.source_catalog.resolver"
+          },
+          {
+            "file": "docs/plans/portfolio-reuse-fix/spike_promote.py",
+            "kind": "import",
+            "line": 24,
+            "name": "company_wiki.source_catalog.resolver"
+          },
+          {
+            "file": "scripts/bridge_off_equivalence.py",
+            "kind": "function",
+            "line": 57,
+            "name": "_resolve"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/cli.py",
+            "kind": "import",
+            "line": 33,
+            "name": ".resolver"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/acquisition.py",
+            "kind": "import",
+            "line": 16,
+            "name": ".resolver"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/canonical_writer.py",
+            "kind": "import",
+            "line": 19,
+            "name": ".resolver"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/close_gap.py",
+            "kind": "import",
+            "line": 43,
+            "name": ".resolver"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/__init__.py",
+            "kind": "import",
+            "line": 17,
+            "name": ".resolver"
+          },
+          {
+            "file": "docs/plans/portfolio-reuse-fix/spike_diag.py",
+            "kind": "variable",
+            "line": 46,
+            "name": "res"
+          },
+          {
+            "file": "tests/contract/test_r8_entity_gate_normalization.py",
+            "kind": "import",
+            "line": 14,
+            "name": "company_wiki.source_catalog.resolver"
+          },
+          {
+            "file": "tests/contract/test_portfolio_promoter.py",
+            "kind": "import",
+            "line": 22,
+            "name": "company_wiki.source_catalog.resolver"
+          },
+          {
+            "file": "tools/ex07_perf_replay.py",
+            "kind": "import",
+            "line": 18,
+            "name": "company_wiki.source_catalog"
+          },
+          {
+            "file": "tools/ex01_reuse_replay.py",
+            "kind": "import",
+            "line": 16,
+            "name": "company_wiki.source_catalog"
+          },
+          {
+            "file": "tests/contract/test_location_switch.py",
+            "kind": "variable",
+            "line": 13,
+            "name": "_pick_latest"
+          }
+        ],
+        "_scan_root_v1": [
+          {
+            "file": "src/company_wiki/source_catalog/scanner.py",
+            "kind": "function",
+            "line": 272,
+            "name": "_scan_root_v1"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/shadow_parity.py",
+            "kind": "import",
+            "line": 26,
+            "name": ".scanner"
+          },
+          {
+            "file": "src/company_wiki/source_catalog/trace_parity.py",
+            "kind": "import",
+            "line": 20,
+            "name": ".scanner"
+          },
+          {
+            "file": "tests/contract/test_scanner_facade.py",
+            "kind": "import",
+            "line": 13,
+            "name": "company_wiki.source_catalog.scanner"
+          },
+          {
+            "file": "tests/contract/test_r9_v1_removal_gate.py",
+            "kind": "variable",
+            "line": 39,
+            "name": "DELETED_ATTRIBUTES"
+          },
+          {
+            "file": "tests/contract/test_company_raw_adapter.py",
+            "kind": "import",
+            "line": 9,
+            "name": "company_wiki.source_catalog.scanner"
+          }
+        ],
+        "artifact_bindings": [
+          {
+            "file": "src/company_wiki/source_catalog/artifact_backfill.py",
+            "kind": "variable",
+            "line": 53,
+            "name": "_BINDINGS_DDL"
+          }
+        ]
+      }
+    }
+  },
+  "codegraph_version": "0.7.10",
+  "frozen_at_utc": "2026-08-13T22:05:27.726555+00:00",
+  "repos": {
+    "filing": {
+      "backend": "native",
+      "codegraph_version": "0.7.10",
+      "db_size_bytes": 2162688,
+      "edge_count": 1624,
+      "file_count": 28,
+      "indexed_commit": "83c638e76e40890262746cdf02b6df495dcb4031",
+      "node_count": 658,
+      "path": "C:\\Users\\郑曾波\\Projects\\filing-fetch"
+    },
+    "revenue": {
+      "backend": "native",
+      "codegraph_version": "0.7.10",
+      "db_size_bytes": 7892992,
+      "edge_count": 6739,
+      "file_count": 175,
+      "indexed_commit": "b06cfbfe2d5d8b41b79d33a626e2f3379790591f",
+      "node_count": 3071,
+      "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast"
+    },
+    "wiki": {
+      "backend": "native",
+      "codegraph_version": "0.7.10",
+      "db_size_bytes": 24088576,
+      "edge_count": 23628,
+      "file_count": 490,
+      "indexed_commit": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875",
+      "node_count": 9865,
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki"
+    }
+  },
+  "schema_version": 1,
+  "sentinels": {
+    "absent": {
+      "filing": [
+        "__definitely_absent_zzz"
+      ],
+      "revenue": [
+        "accuracy_tracker"
+      ],
+      "wiki": [
+        "reuse_latest_policy"
+      ]
+    },
+    "present": {
+      "filing": [
+        "validate_handle"
+      ],
+      "revenue": [
+        "prepare_source",
+        "publication_registry"
+      ],
+      "wiki": [
+        "SourceResolver",
+        "CatalogStore"
+      ]
+    }
+  }
+}

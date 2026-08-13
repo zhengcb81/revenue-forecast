@@ -1,0 +1,124 @@
+{
+  "schema_version": "2.0",
+  "unit": "CA-003",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "schema_note": "CA-102 will version the canonical receipt schema; this mirrors the historical 2.0 shape.",
+  "summary": "CA-003 (CodeGraph freshness + production reachability manifest): implemented uc/codegraph_freeze.py + CLI codegraph-freeze/codegraph-verify. Exclusive-window re-index of all three repos (codegraph 0.7.10, index -f), binding each index to the exact git HEAD at index time (revenue b06cfbfe=CA-002 closure HEAD, filing 83c638e7, wiki ef125ed6) with file/node/edge counts and db size. Verification is exact equality (commit + statistics) plus kind-filtered sentinel queries: deleted symbols (accuracy_tracker, reuse_latest_policy) must yield zero function/class/method/module hits, core symbols (prepare_source, publication_registry, validate_handle, SourceResolver, CatalogStore) must resolve. Caller report generated for all 9 required targets (CatalogStore, _scan_root_v1, RootPolicy, artifact_bindings, ProcessingDemand, filing validate_handle/_handle_from_resolution, source preparation, publication registry, dynamic runners): ProcessingDemand = 0 hits, registered as missing (matches audit); runtime_policy bypass call sites (acquisition.py:308/396, canonical_writer.py:157/205, close_gap.py:403) registered as blocking finding BYPASS-001 (fix belongs to phase C/D). RED-A proved the old index has no commit binding (status JSON has no commit field; project_metadata empty); RED-B proved the three-process full-chain test verifies via inspect.getsource string assertions, not real traces. Real freeze sha 552bafd3…, verify OK. 73 tests total (7 new codegraph tests using the real CLI against scratch repos). Product code/config/CI/catalog/roots: zero writes; .codegraph rebuild is the card's authorized scope.",
+  "base_triplet": {
+    "revenue": "b06cfbfc3eb986485cbea051edfa7d0e414cfb0",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_triplet": {
+    "revenue": "b06cfbfc3eb986485cbea051edfa7d0e414cfb0",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_note": "result_triplet = claim-time triplets; the CA-003 code/receipt commits land after this receipt (indexed_commit then advances, which codegraph-verify correctly reports as drift until the next card's re-index).",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "allowed_files": [
+    "revenue-forecast/assurance/unified_completion/**",
+    "three repos' .codegraph/** (exclusive re-index, the card's authorized scope)"
+  ],
+  "changed_files": [
+    "revenue-forecast/assurance/unified_completion/uc/codegraph_freeze.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_codegraph_freeze.py",
+    "revenue-forecast/assurance/unified_completion/codegraph/codegraph_freeze.json",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-003/*",
+    "three repos' .codegraph/codegraph.db* (re-indexed)"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/unified_completion/receipts/CA-002/ (accepted, closure receipt present)"
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "73 passed (7 codegraph tests use the real CLI against scratch repos, ~2.5 min)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 10 source files",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli codegraph-freeze",
+      "exit_code": 0,
+      "result": "real three-repo exclusive re-index; freeze sha 552bafd37a09… (after CAS re-freeze post code-finalization)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli codegraph-verify",
+      "exit_code": 0,
+      "result": "OK: codegraph index matches the freeze exactly (commits + statistics + sentinels)",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "red_evidence": [
+    {
+      "id": "RED-A",
+      "description": "codegraph status -j has NO commit field; .codegraph/codegraph.db project_metadata table empty -> the index cannot be bound to any commit (stale index presentable as current). See receipts/CA-003/red/RED.md.",
+      "status": "red_proved"
+    },
+    {
+      "id": "RED-B",
+      "description": "test_fc1002_three_process_e2e.py::test_chain_is_three_real_processes proves 'three real OS processes' via inspect.getsource + string assertions ('subprocess.run' in src), not real production traces. See receipts/CA-003/red/RED.md.",
+      "status": "red_proved"
+    }
+  ],
+  "caller_report_summary": {
+    "revenue": {"prepare_source": 8, "publication_registry": 5, "daily_t2_runner": 4, "closure_gate": 4},
+    "filing": {"validate_handle": 9, "_handle_from_resolution": 1},
+    "wiki": {"CatalogStore": 50, "_scan_root_v1": 6, "RootPolicy": 2, "artifact_bindings": 1, "ProcessingDemand": 0, "SourceResolver": 26},
+    "blocking_findings_registered": [
+      "BYPASS-001: SourceResolver default-constructs runtime_policy=None at acquisition.py:308/396, canonical_writer.py:157/205, close_gap.py:403 (v2 resolve then v1 fallback re-resolve) — fix belongs to phase C/D",
+      "MISSING-001: ProcessingDemand yields 0 index hits — required demand-queue does not exist in product code (matches audit)"
+    ]
+  },
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "catalog_mutations": 0,
+    "product_code_changes": 0,
+    "note": "codegraph index -f rebuilt the three .codegraph/codegraph.db files (authorized card scope). A stale 0-byte codegraph.db.lock (2026-05-20) in company-wiki/.codegraph blocked the first freeze; no index process was running; the CLI's unlock did not recognize the name; the stale lock was removed manually and the freeze re-ran. No product code/config/catalog/roots touched."
+  },
+  "mutation": {
+    "id": "CA-003-M-cg",
+    "killed": true,
+    "details": "Scratch-repo mutations with the real CLI: commit advance -> indexed_commit drift; extra module + re-index -> statistic drift; deleted symbol re-introduced -> sentinel absent flag; core symbol removed -> sentinel present flag; stale .codegraph lock -> IndexLockError (exclusive window); freeze exclusive publish + CAS force replace."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Additive assurance code; .codegraph rebuilds are reproducible (index is derivable from the working tree). Rollback = revert commit + re-index."
+  },
+  "codegraph": {
+    "indexed_commit": {
+      "revenue": "b06cfbfc3eb986485cbea051edfa7d0e414cfb0",
+      "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+      "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+    },
+    "codegraph_version": "0.7.10",
+    "stats": {
+      "revenue": {"files": 175, "nodes": 3071, "edges": 6719},
+      "filing": {"files": 28, "nodes": 658, "edges": 1624},
+      "wiki": {"files": 490, "nodes": 9865, "edges": 23628}
+    }
+  },
+  "review": {
+    "status": "pending",
+    "note": "independent reviewer must verify: freeze content (commits == CA-002 closure HEAD), codegraph-verify semantics on the committed freeze, 7 codegraph tests, sentinel kind-filter fix (DEFAULT_SENTINELS literal false-positive), bypass/missing registrations, and give accepted/changes_required/blocked/rejected."
+  }
+}
