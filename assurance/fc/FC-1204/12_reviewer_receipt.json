@@ -1,0 +1,97 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1204",
+  "review_round": "r3",
+  "reviewer": "reviewer-fc1204-independent",
+  "implementer": "honest-implementer",
+  "decision": "accepted",
+  "status": "accepted",
+  "base_triplet": {
+    "revenue": "9315ddf3621e76bd18d1fa9318a03c4bb069e57f",
+    "filing": "b7ef9cca0747b108184f00e3e519aeb046be9d2b",
+    "wiki": "22689703b5020f2f4937afc7e065362953201288"
+  },
+  "result_triplet": {
+    "revenue": "91cbc137916b1ab7571e199555fddfa4115d914b",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "925b3e8027f9c22c475656efae98142b976244e6"
+  },
+  "reviewed_at": "2026-08-13T01:46:22Z",
+  "replay_note": "r3 scoped replay (ruff + receipt touch-ups, per the r2 disposition). Fresh worktree .fcap-review/fc-1204/r3/revenue-forecast @ 91cbc13; filing/wiki re-verified in the r2 worktrees at their unchanged fcap tips (83c638e / 925b3e8). F-6 rule honored throughout: zero `git checkout <rev> -- <paths>`; transient junctions r3/{filing-fetch,company-wiki} -> r2 worktrees created for the sibling-relative tests and removed afterwards; all worktrees status-clean. All triplet hashes rev-parsed (never hand-written). Main checkouts untouched. r1/r2 evidence (mypy 0/0/0, split verbatim, mutations M1/M2/M3, coverage numbers, tier1 deltas, full suite 515/1, E2E golden fedcd224acf28dee) carries because scripts/ is byte-identical between 387e6ac and 91cbc13.",
+  "commands": [
+    {
+      "command": "revenue: python -m ruff check scripts tests tools e2e (exact CI command, ruff 0.15.18)",
+      "exit_code": 0,
+      "result": "All checks passed! — F7 FIXED. First fully-green revenue ruff: 3 E402 datetime imports moved to the top import block (e40a52c) and the pre-existing F401 (unused FROZEN_BASELINE import, test_compatibility_manifest.py) removed.",
+      "cwd": "r3/revenue-forecast worktree"
+    },
+    {
+      "command": "filing: python -m ruff check scripts tests tools e2e; wiki: python -m ruff check src tests/unit tests/contract scripts (exact CI commands)",
+      "exit_code": 0,
+      "result": "Both 'All checks passed!' — three-repo ruff fully green.",
+      "cwd": "r2/filing-fetch + r2/company-wiki worktrees"
+    },
+    {
+      "command": "r3-changed test files: pytest test_fc1002_three_process_e2e.py test_fc1003_uj.py test_fc1004_platform.py test_compatibility_manifest.py",
+      "exit_code": 0,
+      "result": "29 passed (with sibling junctions for the layout-dependent tests; an initial 11-failure run was the known isolated-worktree sibling-layout artifact, eliminated by junctions).",
+      "cwd": "r3/revenue-forecast worktree"
+    },
+    {
+      "command": "git diff 387e6ac 91cbc13 -- scripts/ (production-code identity check)",
+      "exit_code": 0,
+      "result": "Empty — scripts/ byte-identical to r2, so the r2 full suite (515 passed / 1 failed, pre-existing audit_baseline) and E2E golden (fedcd224acf28dee at 387e6ac) evidence carries unchanged for r3.",
+      "cwd": "revenue-forecast (main checkout, read-only)"
+    },
+    {
+      "command": "python tools/receipt_validator.py --receipt assurance/fc/FC-1204/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: 1 receipt(s) valid (structural).",
+      "cwd": "revenue-forecast (main checkout)"
+    },
+    {
+      "command": "Receipt F8/F9/F10 content audit (grep + json dump of the committed receipt)",
+      "exit_code": 0,
+      "result": "Only 1 of the claimed corrections landed: result_triplet.revenue -> e40a52c (correct per the exclude-receipt-commit convention). Still stale: result_triplet.filing = 93aa5ad (actual 83c638e), result_triplet.wiki = f03142c (actual 925b3e8), mypy note 'baseline 45 errors' (actual 35), filing 'TOTAL 91.03%' (actual 91.04%), M3 text '33>10' (actual 34>10). Recorded as non-blocking info findings; the reviewer receipt below records the true tips.",
+      "cwd": "r3/revenue-forecast worktree"
+    },
+    {
+      "command": "Post-review hygiene: git status --porcelain in r3/revenue-forecast, r2/*, base-*, main checkouts",
+      "exit_code": 0,
+      "result": "All worktrees clean; r3 junctions removed; main checkouts untouched by this review.",
+      "cwd": "all"
+    }
+  ],
+  "mutation_results": [],
+  "unresolved_findings": [
+    {
+      "id": "FC-1204-R1",
+      "severity": "info",
+      "file": "revenue-forecast/assurance/fc/FC-1204/11_implementer_receipt.json (line 130)",
+      "issue": "The revenue mypy command note still reads 'baseline 45 errors'; the measured baseline is 35 (findings 61 and independent base measurement). The r3 message claimed this corrected (F8) — it is not.",
+      "disposition": "Non-blocking. Fold into the acceptance commit (FC-1203 F1 precedent)."
+    },
+    {
+      "id": "FC-1204-R2",
+      "severity": "info",
+      "file": "revenue-forecast/assurance/fc/FC-1204/11_implementer_receipt.json (result_triplet)",
+      "issue": "result_triplet.filing = 93aa5ad (stale; the F1 fix commit is 83c638e) and result_triplet.wiki = f03142c (stale; the F1 fix commit is 925b3e8). Only the revenue entry was updated (to e40a52c, correct per the repo convention of excluding the receipt-seal commit). The r3 message said 'result_triplet = 当前 tips (revenue 91cbc13, filing 83c638e, wiki 925b3e8)' — none of the three committed values matches that statement exactly.",
+      "disposition": "Non-blocking. The reviewer receipt records the true tips (rev-parsed: 91cbc13/83c638e/925b3e8). Fold the receipt update into the acceptance commit."
+    },
+    {
+      "id": "FC-1204-R3",
+      "severity": "info",
+      "file": "revenue-forecast/assurance/fc/FC-1204/11_implementer_receipt.json",
+      "issue": "The filing coverage command note still reads 'TOTAL 91.03%' (re-measured 91.04% after the assert line) and the corrected M3 record still reads '33>10' (actual post-assert value is 34>10). The r3 message claimed these corrected (F10) — they are not.",
+      "disposition": "Non-blocking; cosmetic. Fold into the acceptance commit."
+    },
+    {
+      "id": "FC-1204-R4",
+      "severity": "info",
+      "file": "r3 review request message",
+      "issue": "The r3 request stated 'receipt 修正：F8/F9/F10' as done; the committed receipt contains only the revenue result_triplet change. Overstated claim, fully documented above — no effect on the code deliverables.",
+      "disposition": "Non-blocking; recorded for the acceptance record."
+    }
+  ],
+  "summary": "r3 ACCEPTED. The only blocking finding is cleared: ruff now passes on all three repos with the exact CI commands (revenue's first fully-green ruff — the 3 E402 datetime imports moved to the top import block and the pre-existing F401 removed in e40a52c; filing and wiki already clean). The r3-changed test files all pass (29 passed; the initial 11-failure run was the isolated-worktree sibling-layout artifact, resolved with transient junctions, F-6 compliant). Production code is byte-identical to r2 (git diff 387e6ac 91cbc13 -- scripts/ empty), so the r1/r2 evidence carries unchanged: mypy 0/0/0 on exact CI commands, the split fully verbatim (multiset diff vs base empty), corrected M2/M3 mutations replay-killed, focused tests 25/23/15, filing coverage 312/6 @ 91.04% gate green, wiki 2230/2/3 with tier1 deltas 93->100 and the env-gated coverage ratchet green, full revenue suite 515/1 (pre-existing audit_baseline), E2E golden fedcd224acf28dee identical. Receipt structurally valid. Four info findings remain (receipt doc inaccuracies F8/F9/F10 not actually corrected despite the r3 claim; overclaimed r3 message) — non-blocking, to be folded into the acceptance commit. Result triplet (rev-parsed): revenue 91cbc13, filing 83c638e, wiki 925b3e8 over base 9315ddf/b7ef9cc/2268970."
+}

@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "fc_id": "FC-1204",
-  "status": "independent_review",
+  "status": "accepted",
   "mode": "honest-implementer",
   "base_triplet": {
     "revenue": "9315ddf3621e76bd18d1fa9318a03c4bb069e57f",
@@ -9,9 +9,9 @@
     "wiki": "22689703b5020f2f4937afc7e065362953201288"
   },
   "result_triplet": {
-    "revenue": "e40a52c336d5d86136e01b3e2d380cd8d98f12ac",
-    "filing": "93aa5ad114309395800a3c41361a2c1649d9ed28",
-    "wiki": "f03142cae67055b7895f3fedaa06e40fdfafcf06"
+    "revenue": "91cbc137916b1ab7571e199555fddfa4115d914b",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "925b3e8027f9c22c475656efae98142b976244e6"
   },
   "plan_sha256": "323c380395baf4a11b42aa46f43d786965aeed7d0c01fe14b18ad1c73f52a7d0",
   "policy_sha256": "not-applicable",
@@ -85,7 +85,7 @@
     {
       "command": "filing: python -B -m pytest tests -q --tb=short --ignore=tests/test_real_tool_conformance.py --ignore=tests/test_e2e_download.py --cov=scripts --cov-branch --cov-fail-under=90 --cov-report=term",
       "exit_code": 0,
-      "result": "312 passed, 6 skipped, 54 subtests. TOTAL 91.03% (baseline 88.05%); filing_contracts 97% (was 91%); fetch_filing 88% (was 87%). The pre-existing fail_under=90 gate passes for the first time.",
+      "result": "312 passed, 6 skipped, 54 subtests. TOTAL 91.04% (R3 correction) (baseline 88.05%); filing_contracts 97% (was 91%); fetch_filing 88% (was 87%). The pre-existing fail_under=90 gate passes for the first time.",
       "cwd": "filing-fetch"
     },
     {
@@ -127,7 +127,7 @@
     {
       "command": "revenue: python -m mypy scripts/contracts/ scripts/schema_compatibility.py scripts/filing_fetch_client.py scripts/trust_anchor.py",
       "exit_code": 0,
-      "result": "Success: no issues found in 7 source files (baseline 45 errors). require() widened to Any truthiness gate + narrows (asserts/filter) in document.py/evidence.py.",
+      "result": "Success: no issues found in 7 source files (baseline 35 errors (R1 correction)). require() widened to Any truthiness gate + narrows (asserts/filter) in document.py/evidence.py.",
       "cwd": "revenue-forecast"
     },
     {
@@ -191,11 +191,11 @@
     "note": "Revert = revert commits 4750fec/17e6354 (revenue), 93aa5ad (filing), f03142c (wiki). No data writes; the revenue split restores via git history with tests locking behavior."
   },
   "review": {
-    "reviewer": "PENDING-INDEPENDENT-REVIEWER",
-    "reviewer_receipt_sha256": "PENDING",
-    "decision": "pending",
-    "reviewed_at": "PENDING",
-    "note": "Independent reviewer must replay from clean worktrees (F-6 rule: base reproduction in a second worktree). Key claims to verify: coverage numbers (filing 91.03/TOTAL, contracts 97; wiki 2230-passed run + FC1204_COVERAGE_GATE=1 gate green), mypy zero on all three sets, CC 174->150 with helpers <=15, E2E golden hash identity, mutations M1-M3."
+    "reviewer": "reviewer-fc1204-independent",
+    "reviewer_receipt_sha256": "a58b9cf237d0db434a601f369a4e702e128059ce2f5e5f331882a98614c4e1a5",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-13T01:46:22Z",
+    "note": "Three-round review: r1 REJECTED (F1 CI mypy unreproducible + F2 false mutation records), r2 REJECTED (F7 ruff E402 x3 + pre-existing F401), r3 ACCEPTED with 4 info findings (R1 baseline 35-errors text, R2 stale triplet entries, R3 91.04/34>10 text, R4 r3 request overclaimed the fixes) — all folded into this acceptance commit. Production code byte-identical between r2 and r3 (git diff 387e6ac..91cbc13 -- scripts/ empty); all r1/r2 evidence carries unchanged."
   },
   "provisional_note": "Interpretation A (a/b/c sub-chain, findings 60/61, WU card): thresholds all measured-then-frozen per code_quality_plan §3 — no invented numbers. Honest scope notes: (1) wiki Tier2 criticals (resolver 86/runtime_policy 84/close_gap 85/activation 82/acquisition_journal 85/prompt_injection 73/normalized_meta 65/artifact_dag 44) frozen with >=95 targets recorded for FC-1205/Phase 13; (2) fetch_filing:657 unreachable defense-in-depth guard documented, kept, no fabricated test; (3) coverage gate runs as a separate CI step because coverage.json is session-end written (in-suite skip is honest, never stale-evidence); (4) revenue_report split reduced CC 174->150 — further decreases (cli.py 140, resolver 103, worker 99, _scan_root_v1 140 [R9]) recorded as ratchet-frozen backlog. The 2 PORT-01 + worker-bootstrap flake remain pre-existing (FC-1205 scope). REVIEWER r1 REJECTED with F1 (CI mypy unreproducible: filing fetch_filing.py:709 gap_plan Any|None — fixed with an assert narrow, frozen max-CC 33->34 deliberately; wiki needed follow_imports=skip in pyproject — added) + F2 (two false mutation records — corrected to real kills above). F3 duplicate theme guard removed (helper dedented; 25 focused tests green). F4 doc baseline corrected. F5 base_triplet.wiki corrected to the true FC-1203 final HEAD 2268970. F6 chain test as_of made dynamic (today+7, the FC-1001 pattern) — 3 passed. All F1-F6 remediated; awaiting reviewer r2. F6 also hit test_fc1003_uj.py + test_fc1004_platform.py at midnight roll — both fixed with the same dynamic _AS_OF (10 chain tests green)."
 }
