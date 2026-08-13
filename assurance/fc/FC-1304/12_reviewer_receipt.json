@@ -1,0 +1,64 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1304",
+  "review_round": "r1",
+  "reviewer": "reviewer-fc1304-independent",
+  "implementer": "honest-implementer",
+  "decision": "accepted",
+  "status": "accepted",
+  "base_triplet": {
+    "revenue": "4a4c1089b00716696b8c382b9265ba9478b9ec05",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b93994ae27201563c6789d1f8242bf53295eda68"
+  },
+  "result_triplet": {
+    "revenue": "a9f1ff1821c64dde55601d7fd4606a4e91d0c0df",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b93994ae27201563c6789d1f8242bf53295eda68"
+  },
+  "reviewed_at": "2026-08-13T03:15:36Z",
+  "replay_note": "Verification-only FC (docs/WU card). Clean worktrees under .fcap-review/fc-130x/; all drills re-run at the wiki result tip (304966d) and the capacity snapshot re-measured against the production catalog. No production code was changed by this FC — the machinery under test was built and mutation-killed in the sealed FC-804/FC-405 receipts; this round verifies the drills still pass at the current triplet and records the capacity snapshot. F-6 rule honored; nothing to revert.",
+  "commands": [
+    {
+      "command": "Drills: python -B -m pytest tests/contract/test_capacity_concurrency.py tests/contract/test_disaster_drill_fc405.py -q",
+      "exit_code": 0,
+      "result": "11 passed in 1.36s — CAP-01..05 unchanged-not-rehashed / mtime-rehash / 10-concurrent-resolve no-deadlock / concurrent-reads-never-write + MIG-07 disaster drills, matching the receipt's 11 passed.",
+      "cwd": "fc-130x/wiki-result worktree"
+    },
+    {
+      "command": "Drills: python -B -m pytest tests/contract/test_close_gap_concurrency_fc804.py tests/contract/test_source_catalog_operation_lock.py -q",
+      "exit_code": 0,
+      "result": "14 passed in 8.84s — single-flight + bounded operation lock, matching the receipt's 14 passed. Combined with the first pair: 25 passed total.",
+      "cwd": "fc-130x/wiki-result worktree"
+    },
+    {
+      "command": "Capacity snapshot: stat the production catalog",
+      "exit_code": 0,
+      "result": "catalog.sqlite3 = 49,623,977,984 bytes (~46.2 GiB) on 2026-08-13 — consistent with the receipt's `du -sh` 47G (du reports block usage); the .pre-remediation-2026-08-09 sibling (45.9 GiB) confirms the earlier remediation.",
+      "cwd": "production company-wiki/.source_catalog (read-only)"
+    },
+    {
+      "command": "Diff audit: confirm FC-1304 adds no production code",
+      "exit_code": 0,
+      "result": "revenue 4a4c108..a9f1ff1 contains only the FC-1302/1303 tool+test files plus docs (WU card, receipts, helper); wiki 304966d contains only the FC-1301 registry+test. FC-1304's own delta is the WU card and its receipt.",
+      "cwd": "fc-130x worktrees"
+    },
+    {
+      "command": "python tools/receipt_validator.py --receipt assurance/fc/FC-1304/11_implementer_receipt.json (after result_triplet fix)",
+      "exit_code": 0,
+      "result": "OK: 1 receipt(s) valid. result_triplet corrected by reviewer to revenue a9f1ff1 (finding F1).",
+      "cwd": "revenue-forecast (main checkout)"
+    }
+  ],
+  "mutation_results": [],
+  "unresolved_findings": [
+    {
+      "id": "FC-1304-F1",
+      "severity": "info",
+      "file": "revenue-forecast/assurance/fc/FC-1304/11_implementer_receipt.json",
+      "issue": "result_triplet was generated pre-commit and equaled the base triplet; corrected by reviewer to a9f1ff1.",
+      "disposition": "Fixed by reviewer in this round."
+    }
+  ],
+  "summary": "r1 ACCEPTED. Verification-only FC: all four drill suites re-run at the current wiki tip and passed — 11 (capacity concurrency + FC-405 disaster drills) + 14 (FC-804 close-gap concurrency + operation lock) = 25 passed, matching the receipt. Capacity snapshot re-measured: production catalog.sqlite3 ≈ 46.2 GiB (du-style 47G), unchanged by any review run (mode=ro). No new code in this FC's delta (docs only), so no mutation surface — the underlying machinery's mutations were killed in the sealed FC-804/FC-405 receipts. Only finding: stale result_triplet, fixed by reviewer. Result triplet (rev-parsed fcap tips): revenue a9f1ff1, filing 83c638e, wiki b93994a over base 4a4c108/83c638e/b93994a."
+}
