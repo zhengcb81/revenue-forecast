@@ -527,4 +527,13 @@
   - **a（coverage）**：filing 补测试到 ≥90（既有 gate）+ contracts ≥95 + CI 接线；wiki critical 集（FC-201~906 契约链）= source_bundle/admission/flags/policy/normalized_meta/runtime_policy/activation/close_gap/artifact_handle/acquisition_journal/canary_registry/producer_events/prompt_injection/url_binding/visibility_bridge/service/resolver/scheduler_policy/restore——全部拉到 ≥95（resolver 59 stmts/37 br 缺口最大），新 coverage ratchet 门测试冻结其余模块的实测值（normalizer/security_identity/startup/worker/store/scanner 等诚实冻结，注明 R2-R9 资产/legacy 模块）。
   - **b（complexity）**：每仓新增 complexity ratchet 测试（AST McCabe，冻结实测 max）；拆分顶 2 个纯函数段（revenue `_validate_forecast_output` CC174 + wiki `resolver.resolve` CC103 → pipeline 段）；其余顶端冻结 + 记录下降目标。
   - **c（type）**：mypy 配置（yaml stub 用 ignore_missing_imports）+ 修 revenue 35 errors + 三仓 CI mypy 步骤（契约模块集，零容忍）。
+## 发现 62：Phase 13 preflight — scan error 增长根因 + SLO/容错起点
+
+- 日期：2026-08-13。Phase 12 COMPLETE（FCAP 63/71）后生产只读 T2 preflight。
+- **生产 T2 快照**：scan completed_with_errors=**242**（FC-001 基线 155 → FC-1102 212 → 现在 242，持续增长）；interrupted=16；bound_artifacts=241（worker 持续产 v2 ✓）；resolve 5.5ms；roots：companies 33122/dayu 3706/dropbox 10342 文件。
+- **根因（决定性）**：report_json 显示每 ~20 分钟一个 `SourceManifestError: source file is empty`，`relative_path=医药健康/医疗器械选股20250622/data/Product_Revenue_Forecast_Model.xlsx`、`root_id=dropbox_stock`、`unchanged: true`、`new_errors: 0`——**用户自己在 Dropbox 根的一个 0 字节 Excel**。155→242 的 87 个增长全部来自这一个重复错误（每次 worker scan 诚实记录，`known_quarantined: 1`）。
+- **FC-1302 正确修法**：健康阈值按**增量**定义（new_errors>0 增长、interrupted 增长、连续失败、陈旧 root），不按累计 error-run 数——报告已有 new_errors/unchanged 字段，指标语义从「计数」升级为「增量 + 比例 + 复发」。用户文件不动（外部根，非本仓数据）；空文件按现有 quarantine 语义处理即可，不需要新行为。
+- **FC-1301 起点**：reason/outcome taxonomy 已由 FC-702/704/905 建立（ResolutionEnvelope outcome 枚举、validate_artifact reason codes、filing error_code）——FC-1301 = 版本化注册 + 补缺（resolver exclusion reasons 是否全枚举）+ trace 脱敏核对。
+- **FC-1303 起点**：FC-703 ex07_perf_replay.py 已有 23521 docs 延迟基线；T2 latency budget 已冻（resolve 5.5ms 远低于预算）。需补：p50/p95/p99 多查询类型（exact/latest/bundle）+ 峰值内存 + 锁等待。
+- **FC-1304 起点**：DL-08 single-flight、DL-09 幂等、OPS-02 有界重试已由 FC-804 完成；MIG-07 原子性 FC-405 完成。剩余：并发 scan/resolve 实测 + 磁盘不足恢复演练（MIG 类）。
 

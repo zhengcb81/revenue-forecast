@@ -554,7 +554,7 @@ Phase 0 baseline
 - forbidden hardcode=0、重复 root policy=0、关键 dead helper=0、Windows 编码错误=0。
 - 代码质量门是 required check，不能只记录报告。
 
-## Phase 13（可观测性、健康度、性能与容量）— 状态：pending
+## Phase 13（可观测性、健康度、性能与容量）— 状态：**COMPLETE（FC-1301~1304 全部 accepted 2026-08-13，FCAP 67/71）**
 
 ### FC-1301：统一 reason/outcome taxonomy
 

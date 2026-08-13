@@ -141,10 +141,10 @@
 
 | FC | 状态 | 前置 | Owner | 主测试/证据 |
 |---|---|---|---|---|
-| FC-1301 | pending | FC-704、905 | 三仓 | 版本化 reason taxonomy；trace 完整且路径/内容脱敏 |
-| FC-1302 | pending | FC-1301 | company-wiki | OPS-01、AUD-05；scan health 阈值和非零退出 |
-| FC-1303 | pending | FC-703、1302 | company-wiki | 49GB catalog SLO；p50/p95/p99、内存、锁等待、回归预算 |
-| FC-1304 | pending | FC-1303 | company-wiki/filing | OPS-02/03、DL-08/09、MIG-07；容量/并发/恢复 |
+| FC-1301 | accepted（2026-08-13，reviewer-fc130x-independent r1；reason taxonomy 1.1 + audit gate） | FC-1301(链) | 三仓 | 版本化 reason taxonomy；trace 完整且路径/内容脱敏 |
+| FC-1302 | accepted（2026-08-13，reviewer-fc130x-independent r1；increment scan-health） | FC-1301(链) | 三仓 | OPS-01、AUD-05；scan health 阈值和非零退出 |
+| FC-1303 | accepted（2026-08-13，reviewer-fc130x-independent r1；SLO probe + frozen budgets） | FC-1301(链) | 三仓 | 49GB catalog SLO；p50/p95/p99、内存、锁等待、回归预算 |
+| FC-1304 | accepted（2026-08-13，reviewer-fc130x-independent r1；capacity verification） | FC-1301(链) | 三仓 | OPS-02/03、DL-08/09、MIG-07；容量/并发/恢复 |
 
 ## 16. Phase 15：总关闭
 
