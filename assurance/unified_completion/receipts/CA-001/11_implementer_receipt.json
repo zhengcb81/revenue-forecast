@@ -1,0 +1,139 @@
+{
+  "schema_version": "2.0",
+  "unit": "CA-001",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "schema_note": "CA-102 will version the canonical receipt schema; this mirrors the historical 2.0 shape.",
+  "summary": "CA-001 (plan input lock + concurrency CAS) bootstrap: implemented the unified completion control tooling under assurance/unified_completion — plan manifest validator (44 frozen inputs re-verifiable offline, parsed from the frozen spec tables, no hardcoded hashes), single-writer TTL lock protocol with generation-guarded break/release, strict CAS file updates with post-write re-read verification, minimal v1 machine state, CA/ZR dependency DAG (25 CA + 92 ZR parsed from the frozen registries), README section-0 CAS patch + closure-advance CLI. RED-A proved the old tooling silently last-write-wins (two concurrent closure_ledger writers, zero conflict signal); RED-B proved plan-content drift is undetectable by the old tools (verified byte-flip, verdict unchanged). 50 tests including 10-round cross-process concurrent mutation with no lost updates and single-winner lock races. Product code, config, CI, catalog, roots, old plans: zero changes.",
+  "base_triplet": {
+    "revenue": "c3a0519303d78dfe283bea6247da53163b926dc8",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_triplet": {
+    "revenue": "1bee2f4a56ecad8a52c2fbe30c379bdb2d091b27",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_note": "result_triplet.revenue = commit 'feat(CA-001): unified completion bootstrap' containing the full implementation; two follow-up fixes (uc/cli.py closure manifest-source-hash update, tests/test_control.py state-independent assertion) land together with this receipt in the next commit.",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "allowed_files": [
+    "revenue-forecast/assurance/unified_completion/**"
+  ],
+  "changed_files": [
+    "revenue-forecast/assurance/unified_completion/uc/__init__.py",
+    "revenue-forecast/assurance/unified_completion/uc/casfile.py",
+    "revenue-forecast/assurance/unified_completion/uc/lock.py",
+    "revenue-forecast/assurance/unified_completion/uc/manifest.py",
+    "revenue-forecast/assurance/unified_completion/uc/state.py",
+    "revenue-forecast/assurance/unified_completion/uc/control.py",
+    "revenue-forecast/assurance/unified_completion/uc/dag.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/*.py",
+    "revenue-forecast/assurance/unified_completion/manifests/plan_inputs.json",
+    "revenue-forecast/assurance/unified_completion/state.json",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-001/*"
+  ],
+  "forbidden_verified": "no product code, config, CI, catalog, roots, or old-plan files touched; git diff limited to assurance/unified_completion/**.",
+  "dependency_receipts": [],
+  "scenario_results": [],
+  "scenario_note": "CA-001 is a governance-tooling card with no 197-scenario mapping; test tiers used: T0 contract/property tests + cross-process concurrency mutation.",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "50 passed (5 consecutive clean runs, 0 failures; lock-race test additionally 30 consecutive clean runs)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff format --check assurance/unified_completion/",
+      "exit_code": 0,
+      "result": "17 files already formatted",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 8 source files",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli manifest-build",
+      "exit_code": 0,
+      "result": "manifest built: 44 frozen entries (README §13 ∪ input snapshot 30 ∪ content 14, annex resolved via README path map)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli manifest-verify",
+      "exit_code": 0,
+      "result": "OK: all frozen inputs re-verified offline",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli state-bootstrap --triplet-file assurance/unified_completion/receipts/CA-001/base_triplet.json",
+      "exit_code": 0,
+      "result": "state.json created (schema v1, current_next=CA-001, machine_state_authority=true)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit hook (repo gate): full test suite + engine E2E + sync_installations",
+      "exit_code": 0,
+      "result": "hook passed on commit 1bee2f4 (the hook's own T3 download tests run against temp bases — repo-gate behavior, not CA-001 implementation side effects)",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "red_evidence": [
+    {
+      "id": "RED-A",
+      "description": "two concurrent closure_ledger.py processes writing one target: both completed, zero conflict signal, no lock artifacts; single-run exit code 1 (gate honestly FAIL). Evidence files + hashes in receipts/CA-001/red/RED.md.",
+      "status": "red_proved"
+    },
+    {
+      "id": "RED-B",
+      "description": "verified byte-flip (102→101, 2 occurrences) in scratch copy of frozen task_plan.md: old tool verify_plan_claims verdict unchanged (rc 0 before and after). New uc.manifest.verify detects any byte change as hash drift (test-covered).",
+      "status": "red_proved"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "catalog_mutations": 0,
+    "product_code_changes": 0,
+    "note": "CA-001 implementation commands performed zero downloads/LLM/external writes. The repo's pre-commit gate ran its own suite (including T3 real-download tests against temp bases) — pre-existing gate behavior, documented for transparency."
+  },
+  "mutation": {
+    "id": "CA-001-M-concurrent",
+    "killed": true,
+    "details": "10-round cross-process mutation: 3 writers/round CAS-append to one journal with distinct owners -> all 30 updates present, none lost/duplicated (guarded_update lock+CAS+post-write-re-read). 10-round lock competition: exactly 1 winner per round, lock never leaks. Fault: os.replace crash leaves target intact (test_atomic_replace_fault_leaves_target_intact). Generation-guard: retrying rename/unlink verified against content hash so a stale breaker can never move a peer's fresh lock (defect found by 30x stress and fixed; os-level tracing evidence in session findings)."
+  },
+  "defects_found_and_fixed": [
+    "expired-lock break race: retry rename could move a peer's newly published lock (double-win) -> generation-guarded break/unlink by content hash",
+    "Windows WinError 32 sharing violations (open handles without FILE_SHARE_DELETE) -> bounded retries on rename/unlink/replace",
+    "spec source hashes computed over newline-translated text -> now hashed as raw bytes",
+    "path separator normalization (as_posix) for cross-table dedup (44 entries)",
+    "PLAN_MANIFEST §4 hash column position + ZR 4-digit ids (1001..1105) + dep range expansion",
+    "closure-advance must update the README spec-source hash in the manifest as well as control_page_sha256"
+  ],
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Additive-only change under assurance/unified_completion/**; rollback = revert commits (no data migration). Machine state/README §0 not yet mutated (closure is the next step after independent review)."
+  },
+  "codegraph": {
+    "production_callers_before": "0 (tooling did not exist)",
+    "production_callers_after": "CLI entrypoints uc.cli manifest-build/verify, lock-acquire/status/release, state-bootstrap/show/update, closure-advance, next — assurance control tooling only; no product callers added or changed",
+    "note": "CodeGraph re-indexing is CA-003's exclusive window; not performed here."
+  },
+  "review": {
+    "status": "pending",
+    "note": "independent reviewer must clean-clone at fcap HEAD, re-run manifest-verify + 50 tests + ruff/mypy, replay the closure sequence in the throwaway clone, and give accepted/changes_required/blocked/rejected."
+  }
+}

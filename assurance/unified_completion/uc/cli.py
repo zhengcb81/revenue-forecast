@@ -312,9 +312,21 @@ def cmd_closure_advance(args: argparse.Namespace) -> int:
             expected_readme_hash,
         )
 
-        # 2. CAS-update the manifest's control-page hash so verify() stays green.
+        # 2. CAS-update the manifest's control-page hash AND the README spec
+        #    source hash so verify() stays green after the §0 patch.
         new_readme_hash = sha256_bytes(new_readme.encode("utf-8"))
         manifest_payload["control_page_sha256"] = new_readme_hash
+        readme_source_updated = False
+        for source in manifest_payload.get("sources", []):
+            if source.get("rel_path") == README_PATH.as_posix():
+                source["sha256"] = new_readme_hash
+                readme_source_updated = True
+        if not readme_source_updated:
+            raise CASConflict(
+                MANIFEST_PATH,
+                "<readme-source-entry>",
+                "missing README spec-source entry in manifest",
+            )
         new_manifest_data = json.dumps(
             manifest_payload, ensure_ascii=False, indent=2, sort_keys=True
         ).encode("utf-8")

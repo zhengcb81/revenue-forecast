@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from conftest import REPO_ROOT
-from uc.control import patch_section0, plan_advance_fields, plan_release_fields
+from uc.control import patch_section0, plan_release_fields
 
 YAML_BLOCK = """```yaml
 plan_id: X
@@ -53,25 +53,29 @@ def test_patch_rejects_missing_field_in_block():
 
 def test_real_readme_section0_patch_is_minimal():
     """The closure patch path works on the real README and changes only the
-    three mirrored fields."""
+    requested fields.  Sentinel values keep the assertion independent of the
+    page's current state."""
     readme = (REPO_ROOT / "audit_review" / "README.md").read_text(encoding="utf-8")
     before = readme.splitlines()
     out = patch_section0(
         readme,
-        plan_advance_fields(
-            current_next="CA-002",
-            current_phase="A0_bootstrap_and_rebaseline",
-            now_iso="2026-08-13T21:00:00+00:00",
-        ),
+        {
+            "implementation_status": "paused-test-sentinel",
+            "current_next": "CA-999-TEST",
+            "current_phase": "PHASE-TEST-SENTINEL",
+        },
     )
     after = out.splitlines()
     assert len(before) == len(after)
     changed = [(b, a) for b, a in zip(before, after) if b != a]
-    assert len(changed) == 2
     assert {line.strip().split(":")[0] for _, line in changed} == {
         "implementation_status",
+        "current_phase",
         "current_next",
     }
+    assert any("paused-test-sentinel" in line for _, line in changed)
+    assert any("CA-999-TEST" in line for _, line in changed)
+    assert any("PHASE-TEST-SENTINEL" in line for _, line in changed)
 
 
 def test_release_fields_clear_owner_and_lease():
