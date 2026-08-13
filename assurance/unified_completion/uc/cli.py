@@ -35,6 +35,9 @@ from uc.casfile import (
 )
 from uc.control import patch_section0, plan_advance_fields
 from uc.dag import load_dag, next_units
+from uc.envfreeze import collect as env_collect
+from uc.envfreeze import freeze as env_freeze
+from uc.envfreeze import verify as env_verify
 from uc.lock import (
     LockConflict,
     LockMissingError,
@@ -429,6 +432,51 @@ def cmd_closure_advance(args: argparse.Namespace) -> int:
     return 0
 
 
+ENV_FREEZE_PATH = CONTROL_ROOT / "environment" / "env_freeze.json"
+ENV_DIRTY_IGNORE = ["assurance/unified_completion/environment/"]
+
+
+def cmd_env_freeze(args: argparse.Namespace) -> int:
+    _require_no_drift(getattr(args, "mtime", "strict") == "strict")
+    try:
+        payload_hash = env_freeze(
+            REPO_ROOT, ENV_FREEZE_PATH, dirty_ignore=ENV_DIRTY_IGNORE
+        )
+    except FileExistsError:
+        print(
+            f"environment freeze already exists: {ENV_FREEZE_PATH}\n"
+            "pass --force <current-sha256> to CAS-replace (drift review required)",
+            file=sys.stderr,
+        )
+        return 2
+    print(
+        json.dumps(
+            {"freeze": str(ENV_FREEZE_PATH), "sha256": payload_hash},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def cmd_env_verify(_args: argparse.Namespace) -> int:
+    if not ENV_FREEZE_PATH.is_file():
+        print(
+            "environment freeze does not exist yet — run env-freeze first",
+            file=sys.stderr,
+        )
+        return 1
+    frozen = json.loads(ENV_FREEZE_PATH.read_text(encoding="utf-8"))
+    live = env_collect(REPO_ROOT, dirty_ignore=list(frozen.get("dirty_ignore", [])))
+    problems = env_verify(frozen, live)
+    if problems:
+        for problem in problems:
+            print(f"ENV-DRIFT: {problem}")
+        return 1
+    print("OK: live environment matches the freeze exactly")
+    return 0
+
+
 def cmd_next(_args: argparse.Namespace) -> int:
     state = read_state(STATE_PATH)
     if state is None:
@@ -513,6 +561,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("next")
     p.set_defaults(func=cmd_next)
+
+    p = sub.add_parser("env-freeze")
+    p.add_argument(
+        "--mtime",
+        choices=("strict", "off"),
+        default="strict",
+        help="mtime off = clean-checkout replay mode",
+    )
+    p.set_defaults(func=cmd_env_freeze)
+
+    p = sub.add_parser("env-verify")
+    p.set_defaults(func=cmd_env_verify)
     return parser
 
 
