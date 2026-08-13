@@ -1,0 +1,95 @@
+{
+  "schema_version": "2.0",
+  "unit": "CA-002",
+  "reviewer": "reviewer-ca002-independent",
+  "verdict": "accepted",
+  "round": 2,
+  "round_note": "Delta re-review of the changes_required fixes: 850c2a6 (ls-remote 20s timeout + TimeoutExpired -> unverifiable) and 5abef51 (reviewer F1 porcelain status parse fix + F2 ruff format fix + environment re-frozen, freeze sha 3ce3b50b). Verdict resolves round-1 blocking findings F1 and F2; informational findings F3 (pre-existing mypy tests/ errors) and F4 (clone-roundtrip methodology) remain recorded as non-blocking context.",
+  "reviewed_at_utc": "2026-08-13T21:38:00Z",
+  "reviewed_object": {
+    "revenue_head": "5abef51a03d7d6f31ba3e4b78a94df3926eb5bfa",
+    "prior_head": "850c2a6849fc0b6dbc60e524678a453f3a51362d",
+    "branch": "fcap",
+    "freeze_payload_sha256": "3ce3b50ba9e6804a211c5ab2ec66fa9bb39ec1e87d1d76713c17c3b73ad868b8",
+    "freeze_collected_at_utc": "2026-08-13T21:33:16.687953+00:00",
+    "review_vehicle": "fresh independent clone C:\\Users\\郑曾波\\AppData\\Local\\Temp\\ca002-r2-review-5cf19013 (core.autocrlf=false, audit_review byte-copied 145 files mtime-preserved) + read-only checks on implementer repo"
+  },
+  "commands": [
+    {
+      "command": "git -C <implementer> log --oneline -6",
+      "exit_code": 0,
+      "result": "HEAD=5abef51 fix(CA-002) reviewer F1/F2 + re-frozen env (sha 3ce3b50b); prior 850c2a6 fix(CA-002) ls-remote 20s timeout -> unverifiable; then cb05f3d/3ee7bb3"
+    },
+    {
+      "command": "git -C <clone> diff cb05f3d..5abef51 -- uc/envfreeze.py",
+      "exit_code": 0,
+      "result": "F1: _run_git returns RAW stdout (comment: porcelain ' M path' leading space must survive); head/branch/upstream/remote_url stripped at call sites. F2: sqlite3.connect line wrapped (ruff format). 850c2a6: _remote_head timeout 120->20s, TimeoutExpired -> InfraError('remote-unreachable')"
+    },
+    {
+      "command": "python -B -m pytest tests/test_envfreeze.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "13 passed (incl. new test_porcelain_leading_space_status_preserved asserting status==' M' and path=='f.txt')"
+    },
+    {
+      "command": "ruff format --check assurance/unified_completion/",
+      "exit_code": 0,
+      "result": "20 files already formatted (F2 resolved)"
+    },
+    {
+      "command": "ruff check assurance/unified_completion/uc assurance/unified_completion/tests",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc",
+      "exit_code": 0,
+      "result": "Success: no issues found in 9 source files"
+    },
+    {
+      "command": "python -B -m pytest assurance/unified_completion/tests -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "66 passed in 38.27s (was 65; +1 regression test)"
+    },
+    {
+      "command": "read environment/env_freeze.json + sha256 verify",
+      "exit_code": 0,
+      "result": "revenue.dirty first entry {'status':' M','path':'assurance/unified_completion/tests/test_envfreeze.py'} - full path, correct X/Y; no 'ssurance/' anywhere; sha256=3ce3b50b... matches commit message; catalog available size=49624027136 schema_objects=54; skills 21; dirty counts revenue=9/wiki=4/filing=0; push_state unverifiable x3; freeze head=850c2a6 (baseline at capture time, committed HEAD 5abef51 advanced - expected semantics)"
+    }
+  ],
+  "findings": [
+    {
+      "id": "R2-1",
+      "severity": "resolved",
+      "category": "fix-verified",
+      "title": "F1 porcelain strip-bug fixed and regression-tested",
+      "detail": "_run_git returns proc.stdout raw; single-value outputs (head/branch/upstream/remote_url) stripped at call sites; porcelain dirty lines parsed with leading space preserved so status ' M' and full path 'assurance/...' are recorded. New test test_porcelain_leading_space_status_preserved asserts status==' M' and path=='f.txt'; 13/13 envfreeze tests pass. Re-frozen env_freeze.json has NO 'ssurance' paths; revenue.dirty first entry is {'status':' M','path':'assurance/unified_completion/tests/test_envfreeze.py'}.",
+      "evidence": "diff cb05f3d..5abef51; pytest 13 passed; freeze artifact read"
+    },
+    {
+      "id": "R2-2",
+      "severity": "resolved",
+      "category": "fix-verified",
+      "title": "F2 ruff format failure fixed",
+      "detail": "envfreeze.py line 225 wrapped; ruff format --check rc=0 (20 files already formatted) on the fresh clone; ruff check rc=0.",
+      "evidence": "ruff format --check rc=0; ruff check rc=0"
+    },
+    {
+      "id": "R2-3",
+      "severity": "positive",
+      "category": "verified",
+      "title": "Full suite + static checks green; freeze artifact self-consistent",
+      "detail": "66 passed (full suite); mypy uc/ 9 files Success; freeze sha256=3ce3b50ba9e6... matches commit message; collected_at 21:33:16Z corresponds to freeze during fix work (HEAD 850c2a6); catalog/toolchain/skills fields intact. ls-remote timeout change (850c2a6) classifies unreachable remotes as unverifiable within 20s - code-reviewed and covered by suite.",
+      "evidence": "pytest 66 passed; sha256 check; field spot checks"
+    },
+    {
+      "id": "R2-4",
+      "severity": "informational",
+      "category": "context",
+      "title": "Carried-over non-blocking notes",
+      "detail": "Round-1 informational F3 (mypy on full tests/ dir fails on pre-existing CA-001-era conftest import / lambda errors - not CA-002 scope) and F4 (clone CLI roundtrip requires freeze file untracked; clone push_state 'pushed' vs freeze 'unverifiable' both legitimate) remain recorded, non-blocking. Clone-live-vs-committed-freeze HEAD drift (freeze records 850c2a6, committed HEAD 5abef51) is expected baseline semantics, not a defect. No ls-remote state fluctuation was observed during either round.",
+      "evidence": "round-1 receipt + round-2 evidence"
+    }
+  ],
+  "side_effect_note": "No writes to the implementer repository; no writes to any real catalog/roots. Round-2 review used a fresh independent clone (C:\\Users\\郑曾波\\AppData\\Local\\Temp\\ca002-r2-review-5cf19013, HEAD=5abef51) plus read-only checks; the only implementer-repo side effects were cache-entry updates inside pre-existing gitignored .mypy_cache/.pytest_cache (regenerable; no source files touched). The round-2 clone was left with the byte-copied audit_review evidence only.",
+  "verdict_justification": "Both round-1 blocking findings (F1 porcelain parse, F2 ruff format) are fixed, regression-tested, and the re-frozen artifact is clean; all acceptance criteria of the delta re-review pass (commits present, 13 envfreeze tests, 66 full suite, ruff format/check rc=0, mypy rc=0, freeze artifact free of ssurance corruption)."
+}
