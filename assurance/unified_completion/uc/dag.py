@@ -15,7 +15,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-UNIT_RE = re.compile(r"\b(?:CA|ZR)-\d{3,4}\b")
+# Negative lookahead instead of \b: CJK characters count as \w in Python
+# regexes, so "ZR-1009被CA-304统一替代" must still match both ids.
+UNIT_RE = re.compile(r"(?:CA|ZR)-\d{3,4}(?![\dA-Za-z])")
 RANGE_RE = re.compile(r"^(?P<kind>CA|ZR)-(?P<start>\d{3,4})~(?P<end>\d{3,4})$")
 HEADING_RE = re.compile(r"^#{2,4}\s+(CA-\d{3})\b")
 DEP_LINE_RE = re.compile(r"^\s*[-*]\s*依赖[:：]\s*(.+)$")

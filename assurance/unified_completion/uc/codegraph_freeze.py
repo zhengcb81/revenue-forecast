@@ -230,24 +230,36 @@ def _query_hits(repo: Path, symbol: str) -> list[dict[str, Any]]:
 
 
 def build_caller_report(root: Path) -> dict[str, Any]:
-    """Query hits per target plus the registered bypass findings."""
+    """Query hits per target plus the registered blocking findings."""
     targets: dict[str, Any] = {}
     for repo_name, symbols in CALLER_TARGETS.items():
         repo = DEFAULT_REPOS[repo_name](root)
         targets[repo_name] = {symbol: _query_hits(repo, symbol) for symbol in symbols}
+    findings = [
+        {
+            "id": "BYPASS-001",
+            "severity": "blocking",
+            "summary": "SourceResolver default-constructs runtime_policy=None at "
+            "acquisition.py:308/396, canonical_writer.py:157/205, close_gap.py:403 — "
+            "resolve may run v2 while ensure/close-gap re-resolve falls back to v1. "
+            "Fix belongs to phase C/D work units; registered here per CA-003.",
+        }
+    ]
+    if not targets.get("wiki", {}).get("ProcessingDemand"):
+        findings.append(
+            {
+                "id": "MISSING-001",
+                "severity": "blocking",
+                "summary": "ProcessingDemand yields 0 index hits in company-wiki — the "
+                "required demand queue does not exist in product code (matches audit "
+                "P05/P08). Fix belongs to phase E work units (ZR-507/508/706); "
+                "registered here per CA-003.",
+            }
+        )
     return {
         "targets": targets,
         "runtime_policy_bypass_findings": RUNTIME_POLICY_BYPASSES,
-        "blocking_findings_registered": [
-            {
-                "id": "BYPASS-001",
-                "severity": "blocking",
-                "summary": "SourceResolver default-constructs runtime_policy=None at "
-                "acquisition.py:308/396, canonical_writer.py:157/205, close_gap.py:403 — "
-                "resolve may run v2 while ensure/close-gap re-resolve falls back to v1. "
-                "Fix belongs to phase C/D work units; registered here per CA-003.",
-            }
-        ],
+        "blocking_findings_registered": findings,
     }
 
 

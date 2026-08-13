@@ -1,4 +1,4 @@
-{
+﻿{
   "schema_version": "2.0",
   "unit": "CA-003",
   "status": "independent_review",
@@ -6,12 +6,12 @@
   "schema_note": "CA-102 will version the canonical receipt schema; this mirrors the historical 2.0 shape.",
   "summary": "CA-003 (CodeGraph freshness + production reachability manifest): implemented uc/codegraph_freeze.py + CLI codegraph-freeze/codegraph-verify. Exclusive-window re-index of all three repos (codegraph 0.7.10, index -f), binding each index to the exact git HEAD at index time (revenue b06cfbfe=CA-002 closure HEAD, filing 83c638e7, wiki ef125ed6) with file/node/edge counts and db size. Verification is exact equality (commit + statistics) plus kind-filtered sentinel queries: deleted symbols (accuracy_tracker, reuse_latest_policy) must yield zero function/class/method/module hits, core symbols (prepare_source, publication_registry, validate_handle, SourceResolver, CatalogStore) must resolve. Caller report generated for all 9 required targets (CatalogStore, _scan_root_v1, RootPolicy, artifact_bindings, ProcessingDemand, filing validate_handle/_handle_from_resolution, source preparation, publication registry, dynamic runners): ProcessingDemand = 0 hits, registered as missing (matches audit); runtime_policy bypass call sites (acquisition.py:308/396, canonical_writer.py:157/205, close_gap.py:403) registered as blocking finding BYPASS-001 (fix belongs to phase C/D). RED-A proved the old index has no commit binding (status JSON has no commit field; project_metadata empty); RED-B proved the three-process full-chain test verifies via inspect.getsource string assertions, not real traces. Real freeze sha 552bafd3…, verify OK. 73 tests total (7 new codegraph tests using the real CLI against scratch repos). Product code/config/CI/catalog/roots: zero writes; .codegraph rebuild is the card's authorized scope.",
   "base_triplet": {
-    "revenue": "b06cfbfc3eb986485cbea051edfa7d0e414cfb0",
+    "revenue": "b06cfbfe2d5d8b41b79d33a626e2f3379790591f",
     "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
     "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
   },
   "result_triplet": {
-    "revenue": "b06cfbfc3eb986485cbea051edfa7d0e414cfb0",
+    "revenue": "b06cfbfe2d5d8b41b79d33a626e2f3379790591f",
     "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
     "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
   },
@@ -106,7 +106,7 @@
   },
   "codegraph": {
     "indexed_commit": {
-      "revenue": "b06cfbfc3eb986485cbea051edfa7d0e414cfb0",
+      "revenue": "b06cfbfe2d5d8b41b79d33a626e2f3379790591f",
       "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
       "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
     },

@@ -48,6 +48,8 @@ from uc.lock import (
     release,
     status,
 )
+from uc.legacy_disposition import build as legacy_build
+from uc.legacy_disposition import verify as legacy_verify
 from uc.manifest import build as manifest_build
 from uc.manifest import verify as manifest_verify
 from uc.manifest import README_PATH
@@ -437,6 +439,45 @@ def cmd_closure_advance(args: argparse.Namespace) -> int:
 ENV_FREEZE_PATH = CONTROL_ROOT / "environment" / "env_freeze.json"
 ENV_DIRTY_IGNORE = ["assurance/unified_completion/environment/"]
 CG_FREEZE_PATH = CONTROL_ROOT / "codegraph" / "codegraph_freeze.json"
+LEGACY_DISPOSITION_PATH = CONTROL_ROOT / "legacy" / "legacy_disposition.json"
+
+
+def cmd_legacy_build(_args: argparse.Namespace) -> int:
+    try:
+        payload_hash = legacy_build(REPO_ROOT, LEGACY_DISPOSITION_PATH)
+    except FileExistsError:
+        print(
+            f"legacy disposition already exists: {LEGACY_DISPOSITION_PATH}\n"
+            "remove it or CAS-replace via the library with force_sha256",
+            file=sys.stderr,
+        )
+        return 2
+    print(
+        json.dumps(
+            {"disposition": str(LEGACY_DISPOSITION_PATH), "sha256": payload_hash},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def cmd_legacy_verify(_args: argparse.Namespace) -> int:
+    if not LEGACY_DISPOSITION_PATH.is_file():
+        print(
+            "legacy disposition does not exist yet — run legacy-build first",
+            file=sys.stderr,
+        )
+        return 1
+    problems = legacy_verify(REPO_ROOT, LEGACY_DISPOSITION_PATH)
+    if problems:
+        for problem in problems:
+            print(f"LEGACY-DRIFT: {problem}")
+        return 1
+    print(
+        "OK: legacy disposition matches the frozen tables exactly (71 FC + 10 waves, valid)"
+    )
+    return 0
 
 
 def cmd_codegraph_freeze(_args: argparse.Namespace) -> int:
@@ -620,6 +661,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("codegraph-verify")
     p.set_defaults(func=cmd_codegraph_verify)
+
+    p = sub.add_parser("legacy-build")
+    p.set_defaults(func=cmd_legacy_build)
+
+    p = sub.add_parser("legacy-verify")
+    p.set_defaults(func=cmd_legacy_verify)
     return parser
 
 
