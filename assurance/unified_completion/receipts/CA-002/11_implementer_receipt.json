@@ -1,0 +1,111 @@
+{
+  "schema_version": "2.0",
+  "unit": "CA-002",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "schema_note": "CA-102 will version the canonical receipt schema; this mirrors the historical 2.0 shape.",
+  "summary": "CA-002 (current triplet, upstream, dirty and environment freeze): implemented uc/envfreeze.py + CLI env-freeze/env-verify. Collects three-repo 40-char HEADs/branch/upstream/remote_url/remote_ref_sha/push_state/dirty allowlist, toolchain (python/git/node/sqlite3), OS, 21 installed skills (SKILL.md sha256), three-repo config fingerprints, runtime_policy.json fingerprint, and a read-only 49.6GB catalog fingerprint (size/mtime/page1/schema hashes via mode=ro, same mode as the product's readonly canary). The gate is EXACT equality (any field drift -> rc 1), never ancestry: moving HEAD forward or backward both drift. push_state is three-state (pushed/local_only/unverifiable) via verifiable ls-remote; git dubious-ownership is classified infra_error, never a fake upstream/ancestry failure. Freeze artifact published exclusively (CAS replace with force). Real freeze produced environment/env_freeze.json (sha256 60919481...) and immediate env-verify=OK. RED-A proved the old closure_gate never checks the exact current triplet (compatibility/current.json pins stale for all three repos, gate green); RED-B proved no upstream registration, no dirty ledger, no env-freeze tooling existed. 65 tests total (12 new envfreeze tests). Product code/config/CI/catalog/roots: zero writes.",
+  "base_triplet": {
+    "revenue": "0815522a3573faef50ab006290e6c57fe0de7489",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_triplet": {
+    "revenue": "3ee7bb3c96eab921bec43b0b366f5a00e657c6c2",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "allowed_files": [
+    "revenue-forecast/assurance/unified_completion/**"
+  ],
+  "changed_files": [
+    "revenue-forecast/assurance/unified_completion/uc/envfreeze.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_envfreeze.py",
+    "revenue-forecast/assurance/unified_completion/environment/env_freeze.json",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-002/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-002/red/RED.md"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/unified_completion/receipts/CA-001/ (accepted, closure receipt present)"
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "65 passed (12 envfreeze tests included); concurrency suite additionally 10 consecutive clean runs",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 9 source files",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli env-freeze",
+      "exit_code": 0,
+      "result": "real freeze at environment/env_freeze.json, sha256 6091948104e3f62577ef6f806f08f22e30404c4308d2091b2a5175411aea3170",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli env-verify",
+      "exit_code": 0,
+      "result": "OK: live environment matches the freeze exactly",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit hook (repo gate): full test suite + engine E2E + sync_installations",
+      "exit_code": 0,
+      "result": "passed on commit 3ee7bb3",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "red_evidence": [
+    {
+      "id": "RED-A",
+      "description": "compatibility/current.json current_triplet pins stale for all three repos (1b41d62f/592fae6/f6eb584 vs actual 0815522a/83c638e/ef125ed); closure_gate.py never reads current_triplet (ancestry-only, lines 99-107) and reports no triplet problem. See receipts/CA-002/red/RED.md.",
+      "status": "red_proved"
+    },
+    {
+      "id": "RED-B",
+      "description": "All three fcap branches have no upstream; no machine ledger registers dirty files (7/0/4); no environment-freeze tooling existed in tools/. See receipts/CA-002/red/RED.md.",
+      "status": "red_proved"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "catalog_mutations": 0,
+    "product_code_changes": 0,
+    "note": "Catalog accessed read-only via mode=ro (same as product readonly canary); ls-remote attempts were network reads only (classified unverifiable when unreachable). The repo pre-commit gate ran its own suite as part of commits."
+  },
+  "mutation": {
+    "id": "CA-002-M-env",
+    "killed": true,
+    "details": "Per-field drift mutations all detected by the equality gate: head forward (child commit), head backward (reset), dirty added, branch changed, upstream set, toolchain/skills/config/catalog tampered. push_state classification tested for pushed/local_only/unverifiable via injected remote lookups; dubious-ownership git failure classified as infra_error; freeze exclusive-publish + CAS force-replace tested; catalog fingerprint verified zero-write (size/mtime stable)."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Additive-only change under assurance/unified_completion/**; rollback = revert commit. No data migration."
+  },
+  "codegraph": {
+    "production_callers_before": "0",
+    "production_callers_after": "CLI uc.cli env-freeze/env-verify only; no product callers changed",
+    "note": "CodeGraph re-indexing is CA-003's exclusive window; not performed here."
+  },
+  "review": {
+    "status": "pending",
+    "note": "independent reviewer must clean-clone (core.autocrlf=false, audit_review copied per README procedure), re-run env-freeze/env-verify in the clone with --mtime off where needed, re-run 65 tests + ruff/mypy, verify RED claims, and give accepted/changes_required/blocked/rejected."
+  }
+}
