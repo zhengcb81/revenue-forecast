@@ -94,6 +94,19 @@ def test_dirty_allowlist_drift(trio):
     assert any("repos" in p for p in problems)
 
 
+def test_porcelain_leading_space_status_preserved(trio):
+    """Reviewer F1 regression: `git status --porcelain` lines for tracked
+    modifications start with a space (' M path'); the parser must preserve
+    the status column and the full path."""
+    (trio / "f.txt").write_text("modified", encoding="utf-8")
+    live = _collect(trio)
+    entries = live["repos"]["revenue"]["dirty"]
+    modified = [e for e in entries if e["path"].endswith("f.txt")]
+    assert modified, f"expected dirty entry for f.txt in {entries}"
+    assert modified[0]["status"] == " M"
+    assert modified[0]["path"] == "f.txt"
+
+
 def test_dirty_ignore_excludes_own_artifact_dir(trio):
     """The freeze artifact's own directory must be excludable from the dirty
     allowlist; the ignore list itself is frozen data."""

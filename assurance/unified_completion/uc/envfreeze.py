@@ -60,7 +60,9 @@ def _run_git(repo: Path, args: list[str]) -> tuple[int, str, str]:
         raise InfraError(
             f"git unsafe-directory on {repo}: {stderr}", "git-unsafe-directory"
         )
-    return proc.returncode, proc.stdout.strip(), stderr
+    # stdout is returned RAW: `git status --porcelain` lines carry a leading
+    # space for tracked-modified files (" M path") that must survive parsing.
+    return proc.returncode, proc.stdout, stderr
 
 
 def _version(command: list[str]) -> str:
@@ -129,18 +131,20 @@ def _repo_facts(
     remote_lookup: Callable[[str, str], str] | None = None,
 ) -> dict[str, Any]:
     facts: dict[str, Any] = {}
-    rc, head, _ = _run_git(repo, ["rev-parse", "HEAD"])
+    rc, head_raw, _ = _run_git(repo, ["rev-parse", "HEAD"])
     if rc != 0:
         raise InfraError(f"rev-parse HEAD failed on {repo}", "git-rev-parse")
+    head = head_raw.strip()
     facts["head"] = head
-    _rc, branch, _ = _run_git(repo, ["rev-parse", "--abbrev-ref", "HEAD"])
+    _rc, branch_raw, _ = _run_git(repo, ["rev-parse", "--abbrev-ref", "HEAD"])
+    branch = branch_raw.strip()
     facts["branch"] = branch
-    rc, upstream, _ = _run_git(
+    rc, upstream_raw, _ = _run_git(
         repo, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"]
     )
-    facts["upstream"] = upstream if rc == 0 else None
-    rc, remote_url, _ = _run_git(repo, ["remote", "get-url", "origin"])
-    facts["remote_url"] = remote_url if rc == 0 else None
+    facts["upstream"] = upstream_raw.strip() if rc == 0 else None
+    rc, remote_url_raw, _ = _run_git(repo, ["remote", "get-url", "origin"])
+    facts["remote_url"] = remote_url_raw.strip() if rc == 0 else None
 
     push_state: str
     remote_sha: str | None = None
