@@ -126,3 +126,31 @@ def next_units(state: dict, dag: dict[str, list[str]]) -> list[str]:
         if all(dep in accepted for dep in unit_deps):
             unlocked.append(unit)
     return unlocked
+
+
+def cycle_check(dag: dict[str, list[str]]) -> list[str]:
+    """Detect dependency cycles.  Returns the cycle paths (empty = acyclic)."""
+    graph: dict[str, list[str]] = {unit: list(deps) for unit, deps in dag.items()}
+    state: dict[str, int] = {}
+
+    def visit(node: str, stack: list[str]) -> list[str]:
+        state[node] = 1
+        for nxt in graph.get(node, []):
+            if state.get(nxt) == 1 and nxt in stack:
+                return stack[stack.index(nxt) :] + [nxt]
+            if state.get(nxt, 0) == 0:
+                found = visit(nxt, stack + [nxt])
+                if found:
+                    return found
+        state[node] = 2
+        return []
+
+    for node in graph:
+        state.setdefault(node, 0)
+    cycles: list[str] = []
+    for node in graph:
+        if state[node] == 0:
+            cycle = visit(node, [node])
+            if cycle:
+                cycles.append(" -> ".join(cycle))
+    return cycles

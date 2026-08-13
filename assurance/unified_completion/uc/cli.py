@@ -215,45 +215,65 @@ def cmd_state_show(_args: argparse.Namespace) -> int:
 
 def cmd_state_update(args: argparse.Namespace) -> int:
     _require_no_drift(getattr(args, "mtime", "strict") == "strict")
-    if args.status not in {
-        "pending",
-        "preflight_locked",
-        "red_proved",
-        "implemented",
-        "focused_green",
-        "triplet_green",
-        "real_tier_green",
-        "independent_review",
-        "accepted",
-        "blocked",
-        "superseded",
-        "already_satisfied",
-    }:
+    from uc.strict_state import STATES, validate_transition
+
+    if args.status not in STATES:
         print(f"invalid status: {args.status}", file=sys.stderr)
         return 3
-
-    def transform(state: dict) -> dict:
-        units = dict(state.get("units", {}))
-        info = dict(units.get(args.unit, {}))
-        info["status"] = args.status
-        info["updated_at_utc"] = datetime.now(timezone.utc).isoformat()
-        if args.reviewer:
-            info["reviewer"] = args.reviewer
-        units[args.unit] = info
-        state["units"] = units
-        state["active_owner"] = None
-        state["lease"] = None
-        state["current_next"] = args.unit
-        return state
-
+    unit_deps = load_dag(REPO_ROOT).get(args.unit, [])
+    owner = args.owner or f"state-update:{args.unit}"
     try:
-        _expected, new_hash = update_state(STATE_PATH, transform)
-    except FileNotFoundError:
-        print(
-            "machine state does not exist yet — run state-bootstrap first",
-            file=sys.stderr,
-        )
-        return 1
+        unit_lock = acquire(LOCK_DIR, f"unit-{args.unit}", owner, ttl=600)
+    except LockConflict as exc:
+        print(f"UNIT-LOCK-CONFLICT: {exc}", file=sys.stderr)
+        return 2
+    try:
+        for _attempt in range(5):
+            state = read_state(STATE_PATH)
+            if state is None:
+                print("machine state does not exist yet", file=sys.stderr)
+                return 1
+            problems = validate_transition(
+                args.unit,
+                state,
+                args.status,
+                deps=unit_deps,
+                reviewer=args.reviewer,
+                implementer=args.implementer,
+            )
+            if problems:
+                for problem in problems:
+                    print(f"STATE-GATE: {problem}", file=sys.stderr)
+                return 2
+
+            def transform(current: dict) -> dict:
+                units = dict(current.get("units", {}))
+                info = dict(units.get(args.unit, {}))
+                info["status"] = args.status
+                info["updated_at_utc"] = datetime.now(timezone.utc).isoformat()
+                if args.reviewer:
+                    info["reviewer"] = args.reviewer
+                if args.implementer:
+                    info["implementer"] = args.implementer
+                if args.status == "accepted":
+                    info["accepted_at_utc"] = datetime.now(timezone.utc).isoformat()
+                units[args.unit] = info
+                current["units"] = units
+                current["active_owner"] = None
+                current["lease"] = None
+                current["current_next"] = args.unit
+                return current
+
+            try:
+                _expected, new_hash = update_state(STATE_PATH, transform)
+                break
+            except CASConflict:
+                continue  # re-read and re-validate
+        else:
+            print("STATE-CAS: too many conflicts", file=sys.stderr)
+            return 2
+    finally:
+        release(LOCK_DIR, f"unit-{args.unit}", owner, unit_lock.nonce)
     print(
         json.dumps(
             {"unit": args.unit, "status": args.status, "state_sha256": new_hash},
@@ -261,6 +281,32 @@ def cmd_state_update(args: argparse.Namespace) -> int:
             indent=2,
         )
     )
+    return 0
+
+
+def cmd_state_render(_args: argparse.Namespace) -> int:
+    """Read-only Markdown view of the machine registry (CA-101: the rendered
+    view is never a source of truth)."""
+    state = read_state(STATE_PATH)
+    if state is None:
+        print("machine state does not exist yet")
+        return 1
+    lines = [
+        "# Machine state view (read-only render)",
+        "",
+        f"- current_phase: {state.get('current_phase')}",
+        f"- current_next: {state.get('current_next')}",
+        "",
+        "| unit | status | reviewer | implementer | closure |",
+        "|---|---|---|---|---|",
+    ]
+    for unit_id, info in sorted(state.get("units", {}).items()):
+        lines.append(
+            f"| {unit_id} | {info.get('status', 'pending')} | "
+            f"{info.get('reviewer', '')} | {info.get('implementer', '')} | "
+            f"{'by ' + str(info['closure'].get('by')) if info.get('closure') else ''} |"
+        )
+    print("\n".join(lines))
     return 0
 
 
@@ -620,6 +666,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--unit", required=True)
     p.add_argument("--status", required=True)
     p.add_argument("--reviewer", default=None)
+    p.add_argument("--implementer", default=None)
+    p.add_argument("--owner", default=None, help="lock owner identity")
     p.add_argument(
         "--mtime",
         choices=("strict", "off"),
@@ -627,6 +675,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="mtime off = clean-checkout replay mode",
     )
     p.set_defaults(func=cmd_state_update)
+
+    p = sub.add_parser("state-render")
+    p.set_defaults(func=cmd_state_render)
 
     p = sub.add_parser("closure-advance")
     p.add_argument("--next", required=True)
