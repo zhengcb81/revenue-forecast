@@ -8,154 +8,165 @@
                      {
                          "rc":  "0",
                          "step":  "0",
-                         "command":  "git log --oneline -3 (implementer repo)",
-                         "result":  "HEAD=224edaf test(CA-001): implementer receipt + closure manifest-source fix; 1bee2f4 feat(CA-001) bootstrap"
+                         "command":  "git log --oneline -4 (implementer repo)",
+                         "result":  "HEAD=4d629b9 feat(CA-001): clean-checkout verify mode (--mtime off); 224edaf test(CA-001); 1bee2f4 feat(CA-001) bootstrap"
                      },
                      {
                          "rc":  "0",
                          "step":  "1",
-                         "command":  "git clone -\u003e %TEMP%\\ca001-review-ywvlcgdb",
-                         "result":  "clean clone, HEAD 224edaf..., branch fcap, status clean"
-                     },
-                     {
-                         "rc":  "1",
-                         "step":  "2a",
-                         "command":  "manifest-verify (fresh clone, pre-copy)",
-                         "result":  "drift: 3 spec sources + 30 frozen inputs missing (untracked frozen inputs); 17 tracked 2026-08-09 files hash/size/mtime drift (CRLF checkout artifact)"
+                         "command":  "git -c core.autocrlf=false clone -\u003e %TEMP%\\ca001-review2-jv3amonk",
+                         "result":  "clean clone HEAD 4d629b9..., branch fcap; tracked files checkout as LF (verified 0 CRLF pairs; sha 49c2f6fa... matches manifest)"
                      },
                      {
                          "rc":  "0",
-                         "step":  "2b",
-                         "command":  "copy frozen inputs (read-only) + verify 44 entries/3 sources",
-                         "result":  "ALL_MATCH (hash+size+mtime); committed LF blob sha == manifest value (49c2f6fa...), drift was line-ending artifact not content drift"
-                     },
-                     {
-                         "rc":  "0",
-                         "step":  "2c",
-                         "command":  "manifest-verify (after copy)",
-                         "result":  "OK: all frozen inputs re-verified offline"
+                         "step":  "2",
+                         "command":  "Remove-Item clone\\audit_review + Copy-Item -Recurse -Force impl\\audit_review -\u003e clone root",
+                         "result":  "145 files copied; no nesting (audit_review/audit_review=False); full-dir hash comparison: 145/145 identical, mtimes preserved (Copy-Item keeps LastWriteTime)"
                      },
                      {
                          "rc":  "0",
                          "step":  "3",
-                         "command":  "pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
-                         "result":  "50 passed in 8.42s"
+                         "command":  "manifest-verify --mtime off",
+                         "result":  "OK: frozen inputs re-verified (hash+size; mtime skipped — clean-checkout mode)"
                      },
                      {
                          "rc":  "0",
                          "step":  "3b",
+                         "command":  "manifest-verify strict (control)",
+                         "result":  "OK: all frozen inputs re-verified offline (mtimes preserved by copy, so strict also green; no hash/size drift)"
+                     },
+                     {
+                         "rc":  "0",
+                         "step":  "4",
+                         "command":  "pytest assurance/unified_completion/tests/ -q -W error",
+                         "result":  "51 passed in 7.96s (incl. new test_verify_mtime_off_skips_mtime_but_keeps_hash)"
+                     },
+                     {
+                         "rc":  "0",
+                         "step":  "4b",
                          "command":  "test_lock.py::test_expired_break_race_exactly_one_winner x10",
                          "result":  "RACE_TEST_PASSED=10/10"
                      },
                      {
                          "rc":  "0",
-                         "step":  "4",
-                         "command":  "ruff check assurance/unified_completion/",
+                         "step":  "5",
+                         "command":  "ruff check",
                          "result":  "All checks passed!"
                      },
                      {
                          "rc":  "0",
-                         "step":  "4b",
+                         "step":  "5b",
                          "command":  "mypy assurance/unified_completion/uc/",
                          "result":  "Success: no issues found in 8 source files"
                      },
                      {
                          "rc":  "0",
-                         "step":  "5",
-                         "command":  "git show 1bee2f4 --stat / git diff c3a0519..HEAD --stat",
-                         "result":  "all 29 changed files under assurance/unified_completion/ only; no product/config/CI/catalog/roots/old-plan changes"
+                         "step":  "6",
+                         "command":  "git diff c3a0519..HEAD --stat / --name-only",
+                         "result":  "29 files, all within assurance/unified_completion/**, none outside; --mtime off wired via cli.py (manifest-verify/lock-acquire/state-update/closure-advance) + manifest.py check_mtime param + 1 new test; hash+size still enforced when mtime skipped"
                      },
                      {
                          "rc":  "0",
-                         "step":  "6a",
+                         "step":  "7a",
                          "command":  "RED evidence hash check",
-                         "result":  "p1_out/p2_out=7ffcef26...d253f, ledger.json=0e63fb4a...bccb60 match RED.md; p1/p2_err empty"
+                         "result":  "clone (autocrlf=false, LF) p1_out=c8c57eef... vs RED.md record 7ffcef26...; proven identical after LF-\u003eCRLF conversion (sha matches exactly, size 2332-\u003e2464) =\u003e RED.md hashes were computed on the CRLF worktree bytes; evidence genuine, difference is line-ending artifact only; these red files are NOT manifest frozen inputs"
                      },
                      {
                          "rc":  "0 / 0",
-                         "step":  "6b",
+                         "step":  "7b",
                          "command":  "RED-B replay: verify_plan_claims.py before/after 102-\u003e101",
                          "result":  "both rc=0; content really changed (sha 4466c405... -\u003e 7a5056a5...) =\u003e old tool cannot detect drift"
                      },
                      {
                          "rc":  "1",
-                         "step":  "6c",
-                         "command":  "new-tool control: 1-byte flip of task_plan.md then manifest-verify",
-                         "result":  "DRIFT: hash drift task_plan.md (4466c405... -\u003e a323dd00...) =\u003e new tool detects; restored sha 4466c405..., verify OK rc=0"
-                     },
-                     {
-                         "rc":  "0",
-                         "step":  "7a",
-                         "command":  "state-update --unit CA-001 --status accepted --reviewer reviewer-ca001-dryrun",
-                         "result":  "state_sha256 c555e9be..."
-                     },
-                     {
-                         "rc":  "0",
-                         "step":  "7b",
-                         "command":  "closure-advance --next CA-002 --phase A0_bootstrap_and_rebaseline --owner reviewer-ca001-dryrun --reviewer reviewer-ca001-dryrun",
-                         "result":  "closed CA-001, next CA-002, state_sha256 362aedb7..."
-                     },
-                     {
-                         "rc":  "0",
                          "step":  "7c",
-                         "command":  "manifest-verify after closure",
-                         "result":  "OK: all frozen inputs re-verified offline"
+                         "command":  "new-tool control: 1-byte flip of task_plan.md then manifest-verify --mtime off",
+                         "result":  "DRIFT: hash drift task_plan.md (4466c405... -\u003e a323dd00...) =\u003e hash still enforced in mtime-off mode; restored sha 4466c405..., verify OK rc=0"
                      },
                      {
                          "rc":  "0",
-                         "step":  "7d",
+                         "step":  "8a",
+                         "command":  "state-update --unit CA-001 --status accepted --reviewer reviewer-ca001-dryrun --mtime off",
+                         "result":  "state_sha256 ac7bb505..."
+                     },
+                     {
+                         "rc":  "0",
+                         "step":  "8b",
+                         "command":  "closure-advance --next CA-002 --phase A0_bootstrap_and_rebaseline --owner reviewer-ca001-dryrun --reviewer reviewer-ca001-dryrun --mtime off",
+                         "result":  "closed CA-001, next CA-002, state_sha256 e6852097..."
+                     },
+                     {
+                         "rc":  "0 / 0",
+                         "step":  "8c",
+                         "command":  "manifest-verify --mtime off + strict after closure",
+                         "result":  "both OK (no drift after closure)"
+                     },
+                     {
+                         "rc":  "0",
+                         "step":  "8d",
                          "command":  "state-show",
                          "result":  "current_next=CA-002, units.CA-001.status=accepted, closure present"
                      },
                      {
                          "rc":  "0",
-                         "step":  "7e",
-                         "command":  "README section-0 diff (frozen vs after-closure)",
+                         "step":  "8e",
+                         "command":  "README section-0 diff (implementer frozen vs clone after closure)",
                          "result":  "only 2 expected yaml lines changed (implementation_status: in_progress, current_next: CA-002)"
                      },
                      {
                          "rc":  "0",
-                         "step":  "7f",
+                         "step":  "8f",
                          "command":  "uc.cli next",
                          "result":  "unlocked includes CA-002 (+ZR-001/801/1001/1101/1102)"
                      },
                      {
                          "rc":  "0",
-                         "step":  "7g",
+                         "step":  "8g",
                          "command":  "13_closure_receipt.json",
-                         "result":  "exists; state_sha256 362aedb7... matches state.json"
+                         "result":  "exists; state_sha256 e6852097... matches state.json sha256"
                      }
                  ],
     "schema_version":  "2.0",
     "unit":  "CA-001",
-    "clone_path":  "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\ca001-review-ywvlcgdb",
-    "side_effect_note":  "Reviewer never modified the implementer repo C:\\Users\\郑曾波\\Projects\\revenue-forecast (read-only git log/show/ls-files/status + read-only file reads; no writes/commits/resets). No access to any real catalog/roots (Dropbox/dayu/companies). All mutations confined to the throwaway clone (closure replay wrote clone README/manifest/state/receipt + locks) and %TEMP% scratch dirs. Frozen inputs copied (read-only source) into the clone and hash-verified.",
+    "clone_path":  "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\ca001-review2-jv3amonk",
+    "side_effect_note":  "Reviewer never modified the implementer repo C:\\Users\\郑曾波\\Projects\\revenue-forecast (read-only git log/show/ls-files/status + read-only file reads; no writes/commits/resets). No access to any real catalog/roots (Dropbox/dayu/companies). All mutations confined to the throwaway clone ca001-review2-jv3amonk (closure replay wrote clone README/manifest/state/receipt + locks; 1-byte drift control restored from backup) and %TEMP% scratch dirs. Frozen inputs copied (read-only source) into the clone and hash-verified 145/145.",
     "clone_branch":  "fcap",
-    "clone_head_sha":  "224edaf7748f5b2a89f7419c6e66ed9bd7754749",
+    "clone_head_sha":  "4d629b95204dd36c25b9a4e151766a4e9212df50",
     "findings":  [
                      {
-                         "detail":  "Frozen plan inputs (audit_review/README.md, three_repo/zijin plan dirs, skill_run_audit, assurance/runs) are untracked historical evidence, not part of the CA-001 commit scope; a clean clone lacks them and manifest-verify initially fails. Per protocol amendment, inputs were copied read-only from the implementer repo into the throwaway clone and hash-verified (44/44 + 3/3 sources). Expected handling, not a defect.",
-                         "id":  "F1",
+                         "detail":  "Line-ending reproducibility gap (per amendment 2): the implementer repo\u0027s tracked files are stored LF but a default Windows checkout (core.autocrlf=true) converts them to CRLF, changing sha256 vs the frozen LF manifest hashes. Handled by cloning with git -c core.autocrlf=false; verified 0 CRLF pairs and manifest-matching hashes in the clean checkout. This is the documented reason for the --mtime off clean-checkout mode and the reviewer\u0027s clone procedure.",
+                         "id":  "R1",
                          "severity":  "info"
                      },
                      {
-                         "detail":  "On a fresh Windows clone with core.autocrlf=true, the 17 tracked 2026-08-09 files check out as CRLF and their sha256 differs from the manifest (LF-based) hashes -\u003e hash/size/mtime drift. Verified committed LF blob sha256 == manifest value exactly (49c2f6fa...), i.e. line-ending artifact, not content drift. Syncing LF frozen bytes into the clone restored OK. Suggest documenting the clone-input-copy procedure in the runbook.",
-                         "id":  "F2",
-                         "severity":  "low"
+                         "detail":  "Frozen inputs not fully committed / worktree dirty (per amendment 2): audit_review/README.md, 2026-08-13_three_repo_completion_rebaseline_plan/, 2026-08-13_zijin_data_lake_remediation_plan/, 2026-08-12_zijin_skill_run_audit/, assurance/runs/ are untracked, and tracked old-FCAP files (findings/progress/task_plan/work_unit_registry.md) were modified in the worktree by the planning program without being committed. A clean git clone therefore cannot reproduce the frozen input bytes. Handled by deleting clone\u0027s audit_review and copying the whole directory from the implementer worktree (145 files, hash-identical, mtimes preserved). This is a successor clue for CA-002/CA-004 (commit the frozen inputs or formalize the copy step), NOT a CA-001 failure.",
+                         "id":  "R2",
+                         "severity":  "info"
                      },
                      {
-                         "detail":  "New-tool drift control: mutating task_plan.md was reported as \u0027hash drift\u0027 (content-file entry) rather than \u0027spec source drift\u0027 (that class applies to README.md / PLAN_MANIFEST.md / input_snapshot.md only). Tool still detected the 1-byte change with rc=1 and exact path; classification wording differs from review protocol step 6. Not a functional gap (spec-source-drift class separately covered by test_offline_verify_detects_spec_source_drift).",
-                         "id":  "F3",
+                         "detail":  "mtime is not reproducible by any git checkout: --mtime off clean-checkout mode (commit 4d629b9) skips mtime equality while still enforcing hash+size. Verified: manifest-verify --mtime off prints the dedicated message and rc=0; strict mode stayed green in this clone only because the copy preserved mtimes. Real control-plane default remains strict; off is only for clean-checkout replay, by design — not judged changes_required.",
+                         "id":  "R3",
+                         "severity":  "info"
+                     },
+                     {
+                         "detail":  "RED evidence files (receipts/CA-001/red/p1_out.txt etc.) are committed LF but RED.md records sha256 of the CRLF worktree bytes (7ffcef26... = sha of LF-\u003eCRLF converted bytes; size 2332-\u003e2464). Evidence is genuine; the recorded hash corresponds to the implementer\u0027s CRLF working copy. These files are not manifest frozen inputs, so manifest-verify is unaffected. Suggest recording hashes over the committed LF bytes in future receipts.",
+                         "id":  "R4",
                          "severity":  "low"
                      },
                      {
                          "detail":  "After closure-advance, state.json keeps bootstrap-era control_page_sha256 (a04c65e9...) while the manifest control_page_sha256/source hash was correctly advanced (65f8e5aa...); state.machine_manifest_sha256 updated (2e491bda...). State mirror field stale but authoritative manifest pointer correct. Recommend syncing state.control_page_sha256 on closure in a later version.",
-                         "id":  "F4",
+                         "id":  "R5",
+                         "severity":  "low"
+                     },
+                     {
+                         "detail":  "New-tool drift control: mutating task_plan.md was reported as \u0027hash drift\u0027 (content-file entry) rather than \u0027spec source drift\u0027 (that class applies to README.md / PLAN_MANIFEST.md / input_snapshot.md only). Tool still detected the 1-byte change with rc=1 and exact path even in --mtime off mode; classification wording differs from review protocol step 6 literal text. Not a functional gap.",
+                         "id":  "R6",
                          "severity":  "low"
                      }
                  ],
+    "amendment":  "second amendment applied (line-endings / untracked frozen inputs / --mtime off clean-checkout mode)",
     "verdict":  "accepted",
-    "reviewed_at_utc":  "2026-08-13T20:38:33Z",
+    "reviewed_at_utc":  "2026-08-13T20:44:20Z",
     "reviewer":  "reviewer-ca001-independent",
     "result_triplet":  {
                            "wiki":  "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875",
@@ -163,7 +174,8 @@
                            "revenue":  "1bee2f4a56ecad8a52c2fbe30c379bdb2d091b27"
                        },
     "closure_replay":  {
-                           "state_update_sha256":  "c555e9be12934a44e79e8200d9834a98cb8a5b2cd8330253c860ea5d8ec1ff62",
+                           "manifest_after_closure":  "OK (both --mtime off and strict)",
+                           "state_update_sha256":  "ac7bb505f0073804ec92a5f3ca9743f41e60b90d0ae5055a1eb10665830e1e65",
                            "next_unlocked":  [
                                                  "CA-002",
                                                  "ZR-001",
@@ -172,8 +184,9 @@
                                                  "ZR-1101",
                                                  "ZR-1102"
                                              ],
-                           "manifest_after_closure":  "OK: all frozen inputs re-verified offline",
-                           "closure_receipt_sha256":  "c0c8c60bf51f1c7eed509aaf467e4e578cdb7b289594529b29602f172bc8e5e9",
-                           "closure_advance_state_sha256":  "362aedb7d4b10ce374a435c27bf28504b0fa8ca38a5d028d314d709d73fc0f11"
-                       }
+                           "closure_receipt_sha256":  "c1b608ea38aa8a05303b719a6076ea2c99cf45912709afaded387cfb812aabef",
+                           "mode":  "manifest-verify/state-update/closure-advance all run with --mtime off (clean-checkout replay mode; hash+size still enforced)",
+                           "closure_advance_state_sha256":  "e6852097aca0efe9452e210fc8b01bacab3cbce3ec627dabf865b62c6eeb4dae"
+                       },
+    "clone_method":  "git -c core.autocrlf=false clone; then Remove-Item clone\\audit_review and Copy-Item -Recurse -Force from implementer worktree (frozen inputs are untracked/dirty; copy preserves LastWriteTime); committed implementation (assurance/unified_completion/**) comes from git"
 }
