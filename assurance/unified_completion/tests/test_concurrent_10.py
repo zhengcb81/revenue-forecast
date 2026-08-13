@@ -104,8 +104,11 @@ def test_ten_rounds_lock_exactly_one_winner(tmp_path):
         winners = 0
         conflicts = 0
         for args, proc in _spawn_round(env, argv):
-            stdout, _stderr = proc.communicate(timeout=120)
-            assert proc.returncode in (0, 3), f"{args}: rc={proc.returncode}"
+            stdout, stderr = proc.communicate(timeout=120)
+            assert proc.returncode in (0, 3), (
+                f"{args}: rc={proc.returncode}\nstdout={stdout[-400:]}\n"
+                f"stderr={stderr[-800:]}"
+            )
             if proc.returncode == 0:
                 winners += 1
                 assert "WIN" in stdout

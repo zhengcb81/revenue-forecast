@@ -120,7 +120,7 @@ def _load(path: Path) -> LockRecord | None:
         return None  # corrupt record = unreadable; treated as absent, never trusted
 
 
-def _break_if_unchanged(path: Path, expected_hash: str, attempts: int = 200) -> bool:
+def _break_if_unchanged(path: Path, expected_hash: str, attempts: int = 400) -> bool:
     """Move ``path`` aside ONLY while its content still hashes to
     ``expected_hash``.
 
@@ -128,7 +128,10 @@ def _break_if_unchanged(path: Path, expected_hash: str, attempts: int = 200) -> 
     peer published at the same path after we read the old record.  Returns
     True when this caller moved the file, False when the file vanished or its
     content changed (somebody else broke/replaced it first).
-    """
+
+    The sharing-violation retry budget is generous (up to ~4s) because
+    Windows can hold open handles noticeably long under heavy load; a lock
+    operation may wait, it may not fail spuriously."""
     for attempt in range(attempts):
         try:
             if sha256_file(path) != expected_hash:
@@ -141,7 +144,7 @@ def _break_if_unchanged(path: Path, expected_hash: str, attempts: int = 200) -> 
         except PermissionError:
             if attempt == attempts - 1:
                 raise
-            time.sleep(0.005)
+            time.sleep(0.01)
     raise AssertionError("unreachable")
 
 
@@ -207,7 +210,7 @@ def acquire(
     raise LockConflict(resource, "<race-undecided>", now.isoformat())
 
 
-def _unlink_if_unchanged(path: Path, expected_hash: str, attempts: int = 200) -> bool:
+def _unlink_if_unchanged(path: Path, expected_hash: str, attempts: int = 400) -> bool:
     """Unlink ``path`` only while its content still hashes to
     ``expected_hash``.  Returns False when the file vanished or its content
     changed (a peer broke/replaced the lock generation)."""
@@ -222,7 +225,7 @@ def _unlink_if_unchanged(path: Path, expected_hash: str, attempts: int = 200) ->
         except PermissionError:
             if attempt == attempts - 1:
                 raise
-            time.sleep(0.005)
+            time.sleep(0.01)
     raise AssertionError("unreachable")
 
 

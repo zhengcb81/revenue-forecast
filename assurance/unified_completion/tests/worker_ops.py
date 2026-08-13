@@ -9,10 +9,19 @@ import argparse
 import json
 import sys
 import time
+import traceback
 from pathlib import Path
 
 from uc.casfile import CASConflict, guarded_update
 from uc.lock import LockConflict, acquire, release
+
+
+def _report_unexpected(exc: BaseException) -> int:
+    """Fail loudly: unexpected worker exceptions print a full traceback so the
+    orchestrator can self-diagnose instead of seeing an opaque rc=1."""
+    print(f"UNEXPECTED: {type(exc).__name__}: {exc}", file=sys.stderr)
+    traceback.print_exc()
+    return 1
 
 
 def mode_cas_append(args: argparse.Namespace) -> int:
@@ -46,8 +55,13 @@ def mode_lock_try(args: argparse.Namespace) -> int:
     except LockConflict:
         print(f"CONFLICT {args.owner}")
         return 3
+    except Exception as exc:
+        return _report_unexpected(exc)
     time.sleep(0.1)
-    release(locks, args.resource, args.owner, record.nonce)
+    try:
+        release(locks, args.resource, args.owner, record.nonce)
+    except Exception as exc:
+        return _report_unexpected(exc)
     print(f"WIN {args.owner}")
     return 0
 

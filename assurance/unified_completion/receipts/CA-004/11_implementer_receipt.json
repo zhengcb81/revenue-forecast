@@ -1,4 +1,4 @@
-{
+﻿{
   "schema_version": "2.0",
   "unit": "CA-004",
   "status": "independent_review",
@@ -6,12 +6,12 @@
   "schema_note": "CA-102 will version the canonical receipt schema; this mirrors the historical 2.0 shape.",
   "summary": "CA-004 (old 71 FC / R0-R9 / FC-150x machine disposition table): implemented uc/legacy_disposition.py + CLI legacy-build/legacy-verify. Parses the three frozen legacy tables (legacy_fc_status_registry.md, legacy_transition_matrix.md, completion_audit.md — all frozen plan inputs) into a machine registry: 71 FC entries (I=31 implemented_not_independently_verified, C=26 contradicted_by_current_behavior, S=9 stale_evidence, P=5 pending), 10 rollout waves R0-R9 (series-shorthand successors resolved against defined CA/ZR units), 5 closure items (FC-1501..1505). Validation enforces: exact row counts, unique ids, exact class counts, every entry has >=1 successor, every successor defined in the CA/ZR registries, merged graph (FC->successor + CA/ZR deps) acyclic, source-file hashes match the frozen manifest. Real artifact sha 22b88123…, verify OK. RED-A proved the old closure_gate counts 66/71 via 'accepted' substring matching over free-text statuses; RED-B proved FC-1301 self-dependency ('FC-1301(链)'), Phase14 waves outside the 71-row state machine, and the old registry's current 47-row drift. Parser defects found and fixed en route: 4-digit FC ids (FC-1001..1505), CJK word-boundary failures in unit-id extraction ('ZR-1009被CA-304…'), full-width range shorthand with gaps ('CA-001～109'). 81 tests total (8 legacy tests incl. real frozen-table build/verify + source-drift mutation). Product code/config/CI/catalog/roots/old-plan directories: zero writes.",
   "base_triplet": {
-    "revenue": "f4320231d3b3a2404b86c6e98f5d097982cf4110",
+    "revenue": "f432023f0de431cf775530fb3032afa5125726dd",
     "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
     "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
   },
   "result_triplet": {
-    "revenue": "f4320231d3b3a2404b86c6e98f5d097982cf4110",
+    "revenue": "f432023f0de431cf775530fb3032afa5125726dd",
     "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
     "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
   },
