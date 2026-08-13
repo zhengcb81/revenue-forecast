@@ -133,6 +133,21 @@ def test_offline_verify_detects_mtime_drift(tmp_path):
     assert any("mtime drift" in p and "z1.md" in p for p in problems)
 
 
+def test_verify_mtime_off_skips_mtime_but_keeps_hash(tmp_path):
+    repo = make_fixture_repo(tmp_path)
+    manifest = tmp_path / "m.json"
+    build(repo, manifest)
+    victim = (
+        repo / "audit_review" / "2026-08-13_zijin_data_lake_remediation_plan" / "z1.md"
+    )
+    stat = victim.stat()
+    os.utime(victim, (stat.st_atime, stat.st_mtime + 120))
+    assert verify(repo, manifest, check_mtime=False) == []  # mtime-only drift passes
+    _write(victim, "tampered\n")
+    problems = verify(repo, manifest, check_mtime=False)
+    assert any("hash drift" in p for p in problems)  # hash still enforced
+
+
 def test_offline_verify_detects_size_drift(tmp_path):
     repo = make_fixture_repo(tmp_path)
     manifest = tmp_path / "m.json"

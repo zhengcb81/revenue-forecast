@@ -342,9 +342,19 @@ def _file_mtime_str(path: Path) -> str:
     return datetime.fromtimestamp(path.stat().st_mtime).strftime(MTIME_FMT)
 
 
-def verify(repo_root: Path, manifest_path: Path) -> list[str]:
+def verify(
+    repo_root: Path,
+    manifest_path: Path,
+    check_mtime: bool = True,
+) -> list[str]:
     """Re-verify every frozen input offline.  Returns drift descriptions
-    (empty list = no drift).  Raises ManifestError on structural problems."""
+    (empty list = no drift).  Raises ManifestError on structural problems.
+
+    ``check_mtime=False`` skips mtime equality (hash + size still checked):
+    git checkouts cannot reproduce working-tree mtimes, so clean-checkout
+    re-verification runs in this mode; the strict mode remains the
+    original-tree tamper-evidence gate.
+    """
     payload: dict[str, Any] = json.loads(manifest_path.read_text(encoding="utf-8"))
     if payload.get("schema_version") != 1:
         raise ManifestError(
@@ -388,7 +398,7 @@ def verify(repo_root: Path, manifest_path: Path) -> list[str]:
             except OSError:
                 problems.append(f"frozen input unreadable: {entry['rel_path']}")
         mtime = entry.get("mtime")
-        if mtime:
+        if mtime and check_mtime:
             try:
                 if _file_mtime_str(path) != mtime:
                     problems.append(

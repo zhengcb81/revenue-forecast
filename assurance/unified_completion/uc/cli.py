@@ -56,14 +56,14 @@ LOCK_DIR = CONTROL_ROOT / "locks"
 RECEIPTS_DIR = CONTROL_ROOT / "receipts"
 
 
-def _require_no_drift() -> None:
+def _require_no_drift(check_mtime: bool = True) -> None:
     if not MANIFEST_PATH.is_file():
         print(
             "DRIFT: machine manifest not built yet — run manifest-build first",
             file=sys.stderr,
         )
         sys.exit(1)
-    problems = manifest_verify(REPO_ROOT, MANIFEST_PATH)
+    problems = manifest_verify(REPO_ROOT, MANIFEST_PATH, check_mtime=check_mtime)
     if problems:
         for problem in problems:
             print(f"DRIFT: {problem}", file=sys.stderr)
@@ -87,18 +87,23 @@ def cmd_manifest_build(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_manifest_verify(_args: argparse.Namespace) -> int:
-    problems = manifest_verify(REPO_ROOT, MANIFEST_PATH)
+def cmd_manifest_verify(args: argparse.Namespace) -> int:
+    check_mtime = getattr(args, "mtime", "strict") == "strict"
+    problems = manifest_verify(REPO_ROOT, MANIFEST_PATH, check_mtime=check_mtime)
     if problems:
         for problem in problems:
             print(f"DRIFT: {problem}")
         return 1
-    print("OK: all frozen inputs re-verified offline")
+    print(
+        "OK: all frozen inputs re-verified offline"
+        if check_mtime
+        else "OK: frozen inputs re-verified (hash+size; mtime skipped — clean-checkout mode)"
+    )
     return 0
 
 
 def cmd_lock_acquire(args: argparse.Namespace) -> int:
-    _require_no_drift()
+    _require_no_drift(getattr(args, "mtime", "strict") == "strict")
     try:
         record = acquire(LOCK_DIR, args.resource, args.owner, args.ttl)
     except LockConflict as exc:
@@ -202,7 +207,7 @@ def cmd_state_show(_args: argparse.Namespace) -> int:
 
 
 def cmd_state_update(args: argparse.Namespace) -> int:
-    _require_no_drift()
+    _require_no_drift(getattr(args, "mtime", "strict") == "strict")
     if args.status not in {
         "pending",
         "preflight_locked",
@@ -253,7 +258,7 @@ def cmd_state_update(args: argparse.Namespace) -> int:
 
 
 def cmd_closure_advance(args: argparse.Namespace) -> int:
-    _require_no_drift()
+    _require_no_drift(getattr(args, "mtime", "strict") == "strict")
     state = read_state(STATE_PATH)
     if state is None:
         print("machine state does not exist yet", file=sys.stderr)
@@ -417,12 +422,24 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_manifest_build)
 
     p = sub.add_parser("manifest-verify")
+    p.add_argument(
+        "--mtime",
+        choices=("strict", "off"),
+        default="strict",
+        help="mtime off = clean-checkout mode (hash+size only)",
+    )
     p.set_defaults(func=cmd_manifest_verify)
 
     p = sub.add_parser("lock-acquire")
     p.add_argument("--resource", required=True)
     p.add_argument("--owner", required=True)
     p.add_argument("--ttl", type=int, default=3600)
+    p.add_argument(
+        "--mtime",
+        choices=("strict", "off"),
+        default="strict",
+        help="mtime off = clean-checkout replay mode",
+    )
     p.set_defaults(func=cmd_lock_acquire)
 
     p = sub.add_parser("lock-status")
@@ -446,6 +463,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--unit", required=True)
     p.add_argument("--status", required=True)
     p.add_argument("--reviewer", default=None)
+    p.add_argument(
+        "--mtime",
+        choices=("strict", "off"),
+        default="strict",
+        help="mtime off = clean-checkout replay mode",
+    )
     p.set_defaults(func=cmd_state_update)
 
     p = sub.add_parser("closure-advance")
@@ -453,6 +476,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--phase", required=True)
     p.add_argument("--owner", required=True)
     p.add_argument("--reviewer", required=True)
+    p.add_argument(
+        "--mtime",
+        choices=("strict", "off"),
+        default="strict",
+        help="mtime off = clean-checkout replay mode",
+    )
     p.set_defaults(func=cmd_closure_advance)
 
     p = sub.add_parser("next")
