@@ -536,4 +536,12 @@
 - **FC-1301 起点**：reason/outcome taxonomy 已由 FC-702/704/905 建立（ResolutionEnvelope outcome 枚举、validate_artifact reason codes、filing error_code）——FC-1301 = 版本化注册 + 补缺（resolver exclusion reasons 是否全枚举）+ trace 脱敏核对。
 - **FC-1303 起点**：FC-703 ex07_perf_replay.py 已有 23521 docs 延迟基线；T2 latency budget 已冻（resolve 5.5ms 远低于预算）。需补：p50/p95/p99 多查询类型（exact/latest/bundle）+ 峰值内存 + 锁等待。
 - **FC-1304 起点**：DL-08 single-flight、DL-09 幂等、OPS-02 有界重试已由 FC-804 完成；MIG-07 原子性 FC-405 完成。剩余：并发 scan/resolve 实测 + 磁盘不足恢复演练（MIG 类）。
+## 发现 63：Phase 14 波次执行 — R2 applied + 政策验证器揭示真实排序（R1 依赖 R8 前序）
+
+- 日期：2026-08-13。Phase 13 COMPLETE（FCAP 67/71）后进入发布波次。
+- **R1 被政策验证器拒绝（按设计的诚实阻塞）**：`runtime-policy apply` 的 CAS 门报 `v2_resolve_active requires v2_resolve_shadow enabled; legacy_bridge_enabled conflicts with v2_resolve_active; updated_at must be non-empty text`。即 bridge 关闭必须先于 resolve-active 翻转——与 FC-204 的决策记录一致（全局翻转使 13,806 legacy-only 文档不可解析）。bridge 关闭被 WU-1500 时间门门控（hits=6）→ **R1 依赖 R8 前序**，波次表原排序（R1 早于 R8）由运行时验证器修正为真实排序。
+- **R2 已应用**：v2_scan_shadow=true 生产 CAS apply（snapshot 93ddf67e），回滚演练（apply→rollback c7bd17f1→re-apply 93ddf67e，确定性恢复 sha 一致），观察期开始（两周期 diff 全解释 → R3）。
+- **R6/R7 证据**：241 bound artifacts + T2 真实消费（FC-906-d）+ T3 真实下载（FC-805）——bundle 与 latest 链已实际生产运行，波次转为证据记录。
+- **WU-1500 最新**（2026-08-13T03:42Z 评估）：period 3 hits=6、period 4 hits=6、窗口 <24h——close gate 诚实关闭。R8 需要 2 个连续 ≥24h 零 hit 窗口。
+- **本会话执行边界**：R1/R3-R5/R8/R9 被时间门阻塞（计划明示停线条件）；观察期协议已写入 Phase-14 wave ledger。
 
