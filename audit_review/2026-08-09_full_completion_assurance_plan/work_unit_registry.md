@@ -114,7 +114,7 @@
 | FC-1001 | **accepted（2026-08-12，reviewer-fc1001-independent）** | FC-505、604、805、906 | revenue | 三根 fixture、corruption/lock/move variants、manifest hash、外写=0（feat e54d9e3：IsolatedLake 三根布局 + sidecars + v2 artifacts（列+metadata）+ 5 corruption 变体 + 确定性 manifest hash 无真实路径；9 tests + M-loc/M-hash 击杀；revenue 全量 411 passed 零失败；另修 FC-505 pre-existing 日期漂移 test-only；can_accept exit 0） |
 | FC-1002 | **accepted（2026-08-12，reviewer-fc1002-independent）** | FC-1001 | revenue | revenue→filing→wiki 三进程 trace；边界 spy；process_count>=3（feat 2154032：真实三进程链测试 3 个（exact 零副作用/trace/DAG closure；psutil 确认 5 OS 进程超门限）；fixture 扩展：review receipts、security_master、wiki config、companies 移 wiki_root；M1 击杀；revenue 全量 414 passed 零失败；can_accept exit 0） |
 | FC-1003 | **accepted（2026-08-12，reviewer-fc1003-independent-r3；三轮 review 闭环）** | FC-1002 | 三仓 | 95 scenario registry 全覆盖；无重复/遗漏/skip/伪绿色（机器覆盖门 scenario_coverage.py：SCENARIO 标注+receipts 并集、未来 Phase 显式 deferred、**required gaps=0**（87 covered+14 deferred）、ast.parse 编译验证标记文件；UJ-01/02/04/07 真实旅程测试；三仓 SCENARIO 标注；r1 F1（wiki marker SyntaxError）→r2 F2（guard 未密封）→r3 accepted；发现 filing-fetch legacy containment 拒 dayu 根（FC-1202 范围）；can_accept exit 0） |
-| FC-1004 | pending | FC-1003 | 三仓 | PORT-01~03、安装态、Windows 中文/空格、Linux golden trace |
+| FC-1004 | accepted（2026-08-12，reviewer-fc1004-independent；registry 补记——Phase 10 closure 时遗漏） | FC-1003 | 三仓 | PORT-01~03、安装态、Windows 中文/空格、Linux golden trace |
 | FC-1005 | **accepted（2026-08-12，reviewer-fc1005-independent）→ Phase 10 COMPLETE** | FC-1004 | 三仓 | critical mutation kill=100%；chaos/fault injection 全绿（机器门 critical_mutation_gate.py：8 类 × ≥1 击杀证据（receipts + 证据文件）；M-latest 现场击杀（close_gap re-resolve 移除 → cg05/cg07 死，reviewer 重放确认）；chaos 证据（FC-405/804）；gate 8/8 OK；revenue 434 passed 零失败；can_accept exit 0；1 low 非阻塞（hash 归一化）） |
 
 ## 13. Phase 11：动态审核
@@ -124,7 +124,7 @@
 | FC-1101 | **accepted（2026-08-12，reviewer-fc1101-independent-r3；三轮 review）** | FC-1005 | 三仓/revenue | current-triplet required gate；T0/T1/quality/architecture 全集（manifest 驱动 CI sibling checkout 替代硬编码 pin；commits-exist 防伪门；pin 扫描 7+hex + 负向控制；r1 F1 manifest 滞后/r2 F2 0x08 正则——r3 accepted；can_accept exit 0） |
 | FC-1102 | **accepted（2026-08-12，reviewer-fc1102-independent）** | FC-1101 | revenue + Windows runner | 每日 T2、AUD-01~05/08、只读 fingerprint、隔离 audit output（tools/daily_t2_runner.py：mode=ro+query_only；triplet/samples/scan health/legacy hits/latency/roots fingerprint/trend deltas；隔离报告；非零退出；生产冒烟 0.011s、scan errors 212（vs 基线 155 真实恶化已入跟踪）；4 tests + M1 击杀；revenue 443 passed 零失败；P3 findings F1-F3 记 Phase 11 exit gate 前置；can_accept exit 0） |
 | FC-1103 | **accepted（2026-08-12，reviewer-fc1103-independent）** | FC-1101、805 | filing/revenue | 每周 T3、AUD-06、CN/HK/US、首次/二次零下载（weekly_t3_runner.py：无 --force=BLOCKED exit 2（告警非绿）；--force 跑真实 FC-805 套件（reviewer 亲跑 CN/HK/US 214s 全绿）；隔离报告；guard-bypass mutation 击杀；revenue 446 passed 零失败；can_accept exit 0） |
-| FC-1104 | pending | FC-1102、1103 | revenue | dashboard/ledger、freshness/SLO/triplet gate、历史不可覆盖 |
+| FC-1104 | accepted（2026-08-12，reviewer-fc1104-independent-r2；registry 补记——Phase 11 closure 时遗漏） | FC-1102、1103 | revenue | dashboard/ledger、freshness/SLO/triplet gate、历史不可覆盖 |
 | FC-1105 | **accepted（2026-08-12，reviewer-fc1105-independent）→ Phase 11 COMPLETE** | FC-1104 | revenue | AUD-01~08 故障注入；每类漏报均让 release 非零退出（fault-injection 矩阵：陈旧 manifest/缺样本/policy 漂移（关闭 FC-1102 F1）/Dropbox sidecar/健壮性；IsolatedLake +runtime_policy；5 fault tests + 2 mutations；revenue 456 passed 零失败；can_accept exit 0） |
 
 ## 14. Phase 12：代码质量
