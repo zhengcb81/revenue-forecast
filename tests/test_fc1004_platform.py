@@ -27,6 +27,10 @@ sys.path.insert(0, str(FILING_ROOT / "scripts"))
 
 from e2e_support.isolated_lake import IsolatedLake  # noqa: E402
 
+import datetime as _dt
+# FC-1204 F6 fix: hard-coded as_of rolls stale overnight; today+7 absorbs clock skew.
+_AS_OF = (_dt.date.today() + _dt.timedelta(days=7)).isoformat()
+
 
 def test_port02_spaces_in_lake_path_consistent(tmp_path: Path):
     """A lake under a path containing SPACES must build, manifest, and
@@ -65,7 +69,7 @@ def test_port02_spaces_in_lake_path_consistent(tmp_path: Path):
             ),
         ))
         req = SourceRequest(entity="紫金矿业", document_kind="annual_report",
-                            as_of_date="2026-08-12", market="CN", fiscal_year=2025)
+                            as_of_date=_AS_OF, market="CN", fiscal_year=2025)
         return SourceResolver(catalog, runtime_policy=None).resolve(req)
 
     r_spaced = _resolve(m_spaced)
@@ -116,7 +120,7 @@ def test_utf8_stdin_stdout_chain(tmp_path: Path):
     env["PYTHONIOENCODING"] = "utf-8"
     req = {"schema_version": "1.1", "company_query": "紫金矿业", "market": "CN",
            "document_kind": "annual_report", "fiscal_year": 2025,
-           "as_of_date": "2026-08-12"}
+           "as_of_date": _AS_OF}
     proc = subprocess.run(
         [sys.executable, "-B", str(PROJECT_ROOT / "scripts" / "source_preparation.py"),
          "--company-wiki-config", str(wiki_cfg)],

@@ -29,6 +29,10 @@ sys.path.insert(0, str(FILING_ROOT / "scripts"))
 
 from e2e_support.isolated_lake import IsolatedLake  # noqa: E402
 
+import datetime as _dt
+# FC-1204 F6 fix: hard-coded as_of rolls stale overnight; today+7 absorbs clock skew.
+_AS_OF = (_dt.date.today() + _dt.timedelta(days=7)).isoformat()
+
 
 def _run_chain(tmp_path: Path, request: dict, *, m=None) -> tuple[int, str]:
     if m is None:
@@ -56,7 +60,7 @@ def test_uj01_companies_only_journey_zero_side_effects(tmp_path: Path):
     rc, out, err, m = _run_chain(tmp_path, {
         "schema_version": "1.1", "company_query": "紫金矿业", "market": "CN",
         "document_kind": "annual_report", "fiscal_year": 2025,
-        "as_of_date": "2026-08-12"})
+        "as_of_date": _AS_OF})
     assert rc == 0, f"chain failed: {err[-500:]}"
     rr = json.loads(out).get("reuse_receipt") or {}
     assert rr.get("download_calls") == 0 and rr.get("llm_calls") == 0
@@ -100,7 +104,7 @@ def test_uj02_dayu_only_raw_no_download(tmp_path: Path):
     # the dayu identity is the TICKER (meta.json ticker=601899); the resolver
     # matches via the security-master token index
     req = SourceRequest(entity="601899", document_kind="annual_report",
-                        as_of_date="2026-08-12", market="CN", fiscal_year=2024)
+                        as_of_date=_AS_OF, market="CN", fiscal_year=2024)
     res = SourceResolver(catalog, runtime_policy=None).resolve(req)
     assert res.status is not None and res.status.value in ("reused_exact", "reused_equivalent")
     # the dayu handle carries zero download events and points at the dayu root
@@ -120,7 +124,7 @@ def test_uj04_all_missing_structured_gap(tmp_path: Path):
     rc, out, err, m = _run_chain(tmp_path, {
         "schema_version": "1.1", "company_query": "紫金矿业", "market": "CN",
         "document_kind": "annual_report", "fiscal_year": 2026,
-        "as_of_date": "2026-08-12"})
+        "as_of_date": _AS_OF})
     # source_preparation exits non-zero on not-found (exit 1); the error is
     # structured (status=gap/not_found), never a silent green
     assert rc != 0
@@ -137,7 +141,7 @@ def test_uj07_identity_conflict_fails_closed(tmp_path: Path):
     # fail-closed, never a silent green
     rc, out, err, _ = _run_chain(tmp_path, {
         "schema_version": "1.1", "company_query": "紫金矿业", "market": "CN",
-        "document_kind": "annual_report", "as_of_date": "2026-08-12"}, m=m)
+        "document_kind": "annual_report", "as_of_date": _AS_OF}, m=m)
     # no fiscal_year -> exact mode still requires one; ambiguous/error is
     # fail-closed, never a silent green
     assert rc != 0, "ambiguous identity request must fail closed"

@@ -185,60 +185,59 @@ def _validate_theme_analysis(
     effective_path: Any,
 ) -> None:
     """Recompute theme terminal/counterfactual/increment/elasticity (FC-1204-b)."""
-    if theme is not None:
-        for scenario in SCENARIOS:
-            values = theme["scenarios"][scenario]
-            expected_theme_terminal = sum(
-                float(list(effective_path(segment_index[name], scenario).values())[-1])
-                for name in theme["segment_names"]
+    for scenario in SCENARIOS:
+        values = theme["scenarios"][scenario]
+        expected_theme_terminal = sum(
+            float(list(effective_path(segment_index[name], scenario).values())[-1])
+            for name in theme["segment_names"]
+        )
+        require(
+            math.isclose(
+                expected_theme_terminal,
+                float(values["theme_terminal_revenue"]),
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            ),
+            f"theme terminal mismatch: {scenario}",
+        )
+        counterfactual_parameter = parameter_index[
+            values["counterfactual_parameter_id"]
+        ]
+        require(
+            math.isclose(
+                float(counterfactual_parameter["value"]),
+                float(values["counterfactual_terminal_revenue"]),
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            ),
+            f"theme counterfactual mismatch: {scenario}",
+        )
+        expected_increment = float(values["theme_terminal_revenue"]) - float(
+            values["counterfactual_terminal_revenue"]
+        )
+        require(
+            math.isclose(
+                expected_increment,
+                float(values["theme_incremental_revenue"]),
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            ),
+            f"theme increment mismatch: {scenario}",
+        )
+        expected_elasticity = None if base == 0 else expected_increment / base
+        require(
+            (
+                expected_elasticity is None
+                and values["theme_elasticity_to_company_base"] is None
             )
-            require(
-                math.isclose(
-                    expected_theme_terminal,
-                    float(values["theme_terminal_revenue"]),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"theme terminal mismatch: {scenario}",
-            )
-            counterfactual_parameter = parameter_index[
-                values["counterfactual_parameter_id"]
-            ]
-            require(
-                math.isclose(
-                    float(counterfactual_parameter["value"]),
-                    float(values["counterfactual_terminal_revenue"]),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"theme counterfactual mismatch: {scenario}",
-            )
-            expected_increment = float(values["theme_terminal_revenue"]) - float(
-                values["counterfactual_terminal_revenue"]
-            )
-            require(
-                math.isclose(
-                    expected_increment,
-                    float(values["theme_incremental_revenue"]),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"theme increment mismatch: {scenario}",
-            )
-            expected_elasticity = None if base == 0 else expected_increment / base
-            require(
-                (
-                    expected_elasticity is None
-                    and values["theme_elasticity_to_company_base"] is None
-                )
-                or math.isclose(
-                    float(expected_elasticity),
-                    float(values["theme_elasticity_to_company_base"]),
-                    rel_tol=1e-9,
-                    abs_tol=1e-9,
-                ),
-                f"theme elasticity mismatch: {scenario}",
-            )
+            or math.isclose(
+                float(expected_elasticity),
+                float(values["theme_elasticity_to_company_base"]),
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            ),
+            f"theme elasticity mismatch: {scenario}",
+        )
 
 
 def _validate_receipt_blocks(result: Any, hash_payload: Any) -> None:

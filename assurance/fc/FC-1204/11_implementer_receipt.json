@@ -6,7 +6,7 @@
   "base_triplet": {
     "revenue": "9315ddf3621e76bd18d1fa9318a03c4bb069e57f",
     "filing": "b7ef9cca0747b108184f00e3e519aeb046be9d2b",
-    "wiki": "460d2730719acb6e4fdf59886c568c847d10d028"
+    "wiki": "22689703b5020f2f4937afc7e065362953201288"
   },
   "result_triplet": {
     "revenue": "4750fecd446e48b85f5ea28b56a63d51a0351c17",
@@ -34,7 +34,11 @@
     "company-wiki/tests/contract/test_fc1204_complexity_ratchet.py",
     "company-wiki/pyproject.toml",
     "company-wiki/requirements.txt",
-    "company-wiki/.github/workflows/ci.yml"
+    "company-wiki/.github/workflows/ci.yml",
+    "filing-fetch/scripts/fetch_filing.py",
+    "revenue-forecast/tests/test_fc1002_three_process_e2e.py",
+    "revenue-forecast/tests/test_fc1003_uj.py",
+    "revenue-forecast/tests/test_fc1004_platform.py"
   ],
   "changed_files": [
     "revenue-forecast/mypy.ini",
@@ -54,7 +58,11 @@
     "company-wiki/tests/contract/test_fc1204_complexity_ratchet.py",
     "company-wiki/pyproject.toml",
     "company-wiki/requirements.txt",
-    "company-wiki/.github/workflows/ci.yml"
+    "company-wiki/.github/workflows/ci.yml",
+    "filing-fetch/scripts/fetch_filing.py",
+    "revenue-forecast/tests/test_fc1002_three_process_e2e.py",
+    "revenue-forecast/tests/test_fc1003_uj.py",
+    "revenue-forecast/tests/test_fc1004_platform.py"
   ],
   "dependency_receipts": [
     "company-wiki/assurance/fc/FC-1203/12_reviewer_receipt.json (accepted 2026-08-12)"
@@ -147,16 +155,16 @@
       "cwd": "revenue-forecast"
     },
     {
-      "command": "mutation M2: lower the Tier1 floor for restore.py from 95 to 90, run coverage gate with env flag",
+      "command": "mutation M2 (corrected): remove the FC1204_COVERAGE_GATE env check from the wiki coverage ratchet, run in-suite with a STALE coverage.json",
       "exit_code": 0,
-      "result": "KILL CONFIRMED — inner pytest exited 1: gate refuses the weakened contract... (recorded as design check: weakening a required floor requires editing the gate test itself, which is the deliberate-review path). Table restored.",
+      "result": "KILL CONFIRMED — inner pytest exited 1: the gate reads the stale measurement and fails on 'admission.py 94.0% < 95%' (reviewer-fc1204-independent verified the same kill independently). The env gate exists precisely so a stale file is never used as evidence. Reverted via reverse edit; gate re-green.",
       "cwd": "company-wiki"
     },
     {
-      "command": "mutation M3: raise filing FROZEN_MAX.fetch_filing from 33 to 90, run filing ratchet",
+      "command": "mutation M3 (corrected, both repos): remove a file from the frozen max-CC table (filing fetch_filing.py 33; wiki cli.py 140)",
       "exit_code": 0,
-      "result": "KILL CONFIRMED — inner pytest exited 1 (frozen value raised without deliberate review fails the ratchet test). Reverted.",
-      "cwd": "filing-fetch"
+      "result": "KILL CONFIRMED each — inner pytest exited 1: the removed entry falls to the new-files rule (max <= 10) and fails (33>10 / 140>10). The original M3 record in the rejected receipt (raising the frozen value) was FALSE — raising a floor cannot fail the test; the honest mutation is entry REMOVAL. Reverted via reverse edits; both ratchets re-green.",
+      "cwd": "filing-fetch/company-wiki"
     }
   ],
   "side_effect_counts": {
@@ -173,9 +181,9 @@
     "note": "No new production symbols; four pure helper functions extracted from _validate_forecast_output (revenue). Ratchet/type/coverage gates are test-level. Verified by direct measurement (AST) rather than CodeGraph (index lags + known gaps, findings 59)."
   },
   "mutation": {
-    "id": "FC-1204-M1-M2-M3",
+    "id": "FC-1204-M1-M2-M3-corrected",
     "killed": true,
-    "details": "M1 re-merge of extracted block -> complexity ratchet dies (174>150). M2 Tier1 floor weakening -> coverage gate refuses (the gate test is the deliberate-review path). M3 filing frozen-max raise -> ratchet dies. All reverted; gates re-verified green."
+    "details": "M1 re-merge of the extracted theme block -> revenue complexity ratchet dies (156 > 150). M2 env-gate removal -> coverage gate dies on stale evidence (94.0 < 95). M3 FROZEN-entry removal -> new-files rule dies (33>10 filing, 140>10 wiki). The two false records from the rejected receipt (floor-lowering/raising) are corrected — those edits are the deliberate-review path, not mutations. All reverted; gates re-verified green."
   },
   "rollback": {
     "required": false,
@@ -189,5 +197,5 @@
     "reviewed_at": "PENDING",
     "note": "Independent reviewer must replay from clean worktrees (F-6 rule: base reproduction in a second worktree). Key claims to verify: coverage numbers (filing 91.03/TOTAL, contracts 97; wiki 2230-passed run + FC1204_COVERAGE_GATE=1 gate green), mypy zero on all three sets, CC 174->150 with helpers <=15, E2E golden hash identity, mutations M1-M3."
   },
-  "provisional_note": "Interpretation A (a/b/c sub-chain, findings 60/61, WU card): thresholds all measured-then-frozen per code_quality_plan §3 — no invented numbers. Honest scope notes: (1) wiki Tier2 criticals (resolver 86/runtime_policy 84/close_gap 85/activation 82/acquisition_journal 85/prompt_injection 73/normalized_meta 65/artifact_dag 44) frozen with >=95 targets recorded for FC-1205/Phase 13; (2) fetch_filing:657 unreachable defense-in-depth guard documented, kept, no fabricated test; (3) coverage gate runs as a separate CI step because coverage.json is session-end written (in-suite skip is honest, never stale-evidence); (4) revenue_report split reduced CC 174->150 — further decreases (cli.py 140, resolver 103, worker 99, _scan_root_v1 140 [R9]) recorded as ratchet-frozen backlog. The 2 PORT-01 + worker-bootstrap flake remain pre-existing (FC-1205 scope)."
+  "provisional_note": "Interpretation A (a/b/c sub-chain, findings 60/61, WU card): thresholds all measured-then-frozen per code_quality_plan §3 — no invented numbers. Honest scope notes: (1) wiki Tier2 criticals (resolver 86/runtime_policy 84/close_gap 85/activation 82/acquisition_journal 85/prompt_injection 73/normalized_meta 65/artifact_dag 44) frozen with >=95 targets recorded for FC-1205/Phase 13; (2) fetch_filing:657 unreachable defense-in-depth guard documented, kept, no fabricated test; (3) coverage gate runs as a separate CI step because coverage.json is session-end written (in-suite skip is honest, never stale-evidence); (4) revenue_report split reduced CC 174->150 — further decreases (cli.py 140, resolver 103, worker 99, _scan_root_v1 140 [R9]) recorded as ratchet-frozen backlog. The 2 PORT-01 + worker-bootstrap flake remain pre-existing (FC-1205 scope). REVIEWER r1 REJECTED with F1 (CI mypy unreproducible: filing fetch_filing.py:709 gap_plan Any|None — fixed with an assert narrow, frozen max-CC 33->34 deliberately; wiki needed follow_imports=skip in pyproject — added) + F2 (two false mutation records — corrected to real kills above). F3 duplicate theme guard removed (helper dedented; 25 focused tests green). F4 doc baseline corrected. F5 base_triplet.wiki corrected to the true FC-1203 final HEAD 2268970. F6 chain test as_of made dynamic (today+7, the FC-1001 pattern) — 3 passed. All F1-F6 remediated; awaiting reviewer r2. F6 also hit test_fc1003_uj.py + test_fc1004_platform.py at midnight roll — both fixed with the same dynamic _AS_OF (10 chain tests green)."
 }

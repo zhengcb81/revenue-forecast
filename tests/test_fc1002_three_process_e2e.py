@@ -31,13 +31,18 @@ import sqlite3  # noqa: E402
 
 from e2e_support.isolated_lake import IsolatedLake  # noqa: E402
 
+import datetime as _dt
+
+# FC-1204 F6 fix: a hard-coded as_of_date rolls stale (retrieved_at is the
+# real wall clock and must be <= as_of); today+7 absorbs clock skew — the
+# same pattern as the FC-1001 FC-505 date-drift fix.
 REQUEST = {
     "schema_version": "1.1",
     "company_query": "紫金矿业",
     "market": "CN",
     "document_kind": "annual_report",
     "fiscal_year": 2025,
-    "as_of_date": "2026-08-12",
+    "as_of_date": (_dt.date.today() + _dt.timedelta(days=7)).isoformat(),
 }
 
 
