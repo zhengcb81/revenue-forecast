@@ -23,4 +23,14 @@
 - **c（type）**：mypy 配置（revenue mypy.ini namespace+follow_imports=skip；wiki pyproject override yaml）。revenue 契约集 45→**0 errors**（require() 宽为 Any truthiness gate + narrows；document.py 4 处 assert/过滤窄化）；wiki 11 契约模块 0 errors；filing 0 errors。三仓 CI 加 mypy required 步骤。
 - **提交**：revenue `17e6354`（mypy+ratchet；sync --apply 后 pre-commit 全绿）。filing/wiki 待提交；wiki coverage 全量验证运行中。
 - **不可达守卫发现**：fetch_filing.py:657「explicit download requires market and security_id」被 _resolved_company_identity 上游强约束——纵深防御不可达分支，按「绝不伪造」不写人为测试，保留 + 记录。
+## 2026-08-13 — FC-1204 ACCEPTED（r3 三轮 review）+ FC-1205 实施中
+
+- **FC-1204 closure**（revenue 65c2b87）：r1 REJECTED（F1 CI mypy 不可复现 + F2 假 mutation 记录）→ r2 REJECTED（F7 ruff E402 + pre-existing F401）→ r3 ACCEPTED（4 info 折叠）。can_accept exit 0。registry + Phase 12 header 更新。**FCAP 62/71**。
+- **r1/r2 修复提交**：wiki 925b3e8（follow_imports=skip）、filing 83c638e（gap_plan assert 窄化 + ratchet 33→34）、revenue e40a52c/91cbc13（E402 归顶 + F401 移除——revenue ruff 历史首次全 0；日期翻转修复扩展到 fc1003_uj/fc1004_platform）。
+- **FC-1205 PORT-01 修复**（双站点，child 侧 reconfigure UTF-8 + subprocess encoding）：
+  - wiki tools/check_unique_test_symbols.py：stdout/stderr reconfigure——2 个 pre-existing 失败消失（5/5 passed，无 PYTHONIOENCODING）。
+  - revenue tools/audit_baseline.py：subprocess encoding="utf-8" errors="replace" + 工具 stdio reconfigure——PORT-01 失败消失（5/5 passed）。**revenue 全量首次有望 0 failed**。
+  - M1（wiki reconfigure 移除→2 死）+ M2（audit_baseline reconfigure 移除→1 死）击杀 + 还原。
+- 全量双仓运行中（revenue + wiki 无 PYTHONIOENCODING）。redaction 核对：observability/worker 无绝对路径硬编码。
+- 下一步：全量 verdict → receipt → reviewer → can_accept → **Phase 12 COMPLETE（62→63/71）** → Phase 13。
 

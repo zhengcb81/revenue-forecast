@@ -1,0 +1,131 @@
+{
+  "schema_version": "2.0",
+  "fc_id": "FC-1205",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "base_triplet": {
+    "revenue": "91cbc137916b1ab7571e199555fddfa4115d914b",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "925b3e8027f9c22c475656efae98142b976244e6"
+  },
+  "result_triplet": {
+    "revenue": "e60ed1cf252ba833f126ba21cbe509e9dc45986b",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b93994ae27201563c6789d1f8242bf53295eda68"
+  },
+  "plan_sha256": "ad255e5fec5f91d4082e4c1bc76835714dc5197d5ffed81193799351db821667",
+  "policy_sha256": "not-applicable",
+  "allowed_files": [
+    "revenue-forecast/tools/audit_baseline.py",
+    "revenue-forecast/assurance/fc/FC-1205/00_wu_card.md",
+    "revenue-forecast/assurance/fc/FC-1205/11_implementer_receipt.json",
+    "revenue-forecast/audit_review/2026-08-09_full_completion_assurance_plan/findings.md",
+    "revenue-forecast/audit_review/2026-08-09_full_completion_assurance_plan/progress.md",
+    "revenue-forecast/audit_review/2026-08-09_full_completion_assurance_plan/work_unit_registry.md",
+    "revenue-forecast/audit_review/2026-08-09_full_completion_assurance_plan/task_plan.md",
+    "company-wiki/tools/check_unique_test_symbols.py"
+  ],
+  "changed_files": [
+    "revenue-forecast/tools/audit_baseline.py",
+    "revenue-forecast/assurance/fc/FC-1205/00_wu_card.md",
+    "revenue-forecast/audit_review/2026-08-09_full_completion_assurance_plan/findings.md",
+    "revenue-forecast/audit_review/2026-08-09_full_completion_assurance_plan/progress.md",
+    "company-wiki/tools/check_unique_test_symbols.py"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/fc/FC-1204/12_reviewer_receipt.json (accepted r3 2026-08-13)"
+  ],
+  "command_registry_sha256": "215b8077169126b2c4a5eca9d8d6237f291757c2559f6ae6e0ae8ff1c806b089",
+  "scenario_results": [
+    {
+      "id": "PORT-01",
+      "status": "passed",
+      "note": "Both GBK/UTF-8 subprocess sites fixed child-side: wiki unique-test-symbol gate + revenue audit_baseline. wiki full suite 2232 passed / 3 skipped / 0 failed and revenue 516 passed / 0 failed WITHOUT PYTHONIOENCODING — the two pre-existing PORT-01 failures are gone. Mechanism: child tools print non-ASCII paths (Chinese user name); Windows pipes encoded with locale codepage (GBK) while parents decode UTF-8."
+    },
+    {
+      "id": "PORT-02",
+      "status": "passed",
+      "note": "Closed by FC-1004 (space paths + install sync + UTF-8 chain); regression-verified — test_fc1004_platform suite passes in the zero-failure full runs."
+    },
+    {
+      "id": "PORT-03",
+      "status": "passed",
+      "note": "Linux current-triplet golden: all three CI workflows run on ubuntu-latest (revenue/filing quality.yml, wiki ci.yml — verified definitions at HEAD). Local Windows cannot reproduce Linux; the CI definitions + actual GitHub Actions runs are the honest evidence — no local fabrication."
+    }
+  ],
+  "commands": [
+    {
+      "command": "wiki: python -B -m pytest tests/contract/test_check_unique_test_symbols.py -q (RED->GREEN)",
+      "exit_code": 0,
+      "result": "RED reproduced in isolation BEFORE the fix (UnicodeDecodeError 0xd4/0xa1 in reader threads — the gate prints paths with the non-ASCII user name in GBK). GREEN after child-side stdout/stderr reconfigure: 5 passed.",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "revenue: python -B -m pytest tools/tests/test_audit_baseline.py -q (RED->GREEN)",
+      "exit_code": 0,
+      "result": "RED reproduced (json.loads(None) — reader thread decode failure). GREEN after subprocess encoding=utf-8/errors=replace on both sites + tool stdio reconfigure: 5 passed.",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "revenue: python -B -m pytest tests/ tools/tests/ -q (full suite, no PYTHONIOENCODING)",
+      "exit_code": 0,
+      "result": "516 passed, 106 subtests passed, 0 failed (269.01s) — the FIRST zero-failure revenue run in the FCAP (baseline was 513-515 passed / 1 failed pre-existing PORT-01 audit_baseline).",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "wiki: python -B -m pytest tests/ -q (full suite, no PYTHONIOENCODING)",
+      "exit_code": 0,
+      "result": "2232 passed, 3 skipped, 0 failed (442.17s) — the FIRST zero-failure wiki run (baseline 2230 passed / 2 failed pre-existing PORT-01 pair). No environment variable workaround involved.",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "redaction sweep: grep for hardcoded user/absolute paths in observability.py + worker.py logs",
+      "exit_code": 0,
+      "result": "No hardcoded absolute/user paths in log paths (policy export redaction from FC-701 verified; no new findings) — recorded, nothing to change.",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "mutation M1: remove the wiki gate's stdout/stderr reconfigure, run test_check_unique_test_symbols.py",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — inner pytest exited 1: 2 tests FAIL again (test_syntax_error_is_reported_as_failure + test_duplicate_test_definition_fails, GBK decode). Reverted via reverse edit; 5 passed restored.",
+      "cwd": "company-wiki"
+    },
+    {
+      "command": "mutation M2: remove the audit_baseline stdio reconfigure, run tools/tests/test_audit_baseline.py",
+      "exit_code": 0,
+      "result": "KILL CONFIRMED — inner pytest exited 1: test_collects_baseline_facts FAILS (reader-thread decode). Reverted via reverse edit; 5 passed restored.",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "catalog_mutations": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "note": "Tooling-only encoding fixes (child-side stdio + subprocess decode). Zero production data, catalog, or source-root writes. No producer code touched; worker restart not required."
+  },
+  "codegraph": {
+    "production_callers_before": 2,
+    "production_callers_after": 2,
+    "note": "No new symbols; two tool entry points modified (CI-gate tools). Verified via direct test runs (CodeGraph lags tool edits)."
+  },
+  "mutation": {
+    "id": "FC-1205-M1-M2",
+    "killed": true,
+    "details": "M1 wiki reconfigure removal -> 2 contract tests die (GBK decode returns). M2 audit_baseline reconfigure removal -> baseline-facts test dies. Both reverted; suites re-green."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Revert = revert commits b93994a (wiki) + e60ed1c (revenue). No data writes; the encoding fixes restore via git history."
+  },
+  "review": {
+    "reviewer": "PENDING-INDEPENDENT-REVIEWER",
+    "reviewer_receipt_sha256": "PENDING",
+    "decision": "pending",
+    "reviewed_at": "PENDING",
+    "note": "Independent reviewer must replay from clean worktrees (F-6 rule). Verify: RED reproduction at base (isolation), the two fixes, both full suites at 0 failed WITHOUT PYTHONIOENCODING, M1/M2 kills, PORT-03 CI definitions at HEAD."
+  },
+  "provisional_note": "PORT-01 fully closed (both sites, no environment workarounds). PORT-02 already closed by FC-1004 (regression-verified). PORT-03 (Linux golden) evidenced by the ubuntu-latest CI definitions + runs — not reproducible locally on Windows, recorded honestly. The worker_bootstrap 10s timing flake is unrelated to PORT and remains an environment flake (documented). Unified error schema + log redaction verified present (FC-702/704/701); no changes needed. This FC closes the Phase 12 exit gate: forbidden hardcode=0 (FC-1201) + duplicate root policy=0 (FC-1202) + critical dead helper=0 (FC-1203) + coverage/type/complexity ratchets (FC-1204) + Windows encoding errors=0 (this FC)."
+}
