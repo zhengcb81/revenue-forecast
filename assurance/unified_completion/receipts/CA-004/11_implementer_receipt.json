@@ -1,0 +1,109 @@
+{
+  "schema_version": "2.0",
+  "unit": "CA-004",
+  "status": "independent_review",
+  "mode": "honest-implementer",
+  "schema_note": "CA-102 will version the canonical receipt schema; this mirrors the historical 2.0 shape.",
+  "summary": "CA-004 (old 71 FC / R0-R9 / FC-150x machine disposition table): implemented uc/legacy_disposition.py + CLI legacy-build/legacy-verify. Parses the three frozen legacy tables (legacy_fc_status_registry.md, legacy_transition_matrix.md, completion_audit.md — all frozen plan inputs) into a machine registry: 71 FC entries (I=31 implemented_not_independently_verified, C=26 contradicted_by_current_behavior, S=9 stale_evidence, P=5 pending), 10 rollout waves R0-R9 (series-shorthand successors resolved against defined CA/ZR units), 5 closure items (FC-1501..1505). Validation enforces: exact row counts, unique ids, exact class counts, every entry has >=1 successor, every successor defined in the CA/ZR registries, merged graph (FC->successor + CA/ZR deps) acyclic, source-file hashes match the frozen manifest. Real artifact sha 22b88123…, verify OK. RED-A proved the old closure_gate counts 66/71 via 'accepted' substring matching over free-text statuses; RED-B proved FC-1301 self-dependency ('FC-1301(链)'), Phase14 waves outside the 71-row state machine, and the old registry's current 47-row drift. Parser defects found and fixed en route: 4-digit FC ids (FC-1001..1505), CJK word-boundary failures in unit-id extraction ('ZR-1009被CA-304…'), full-width range shorthand with gaps ('CA-001～109'). 81 tests total (8 legacy tests incl. real frozen-table build/verify + source-drift mutation). Product code/config/CI/catalog/roots/old-plan directories: zero writes.",
+  "base_triplet": {
+    "revenue": "f4320231d3b3a2404b86c6e98f5d097982cf4110",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_triplet": {
+    "revenue": "f4320231d3b3a2404b86c6e98f5d097982cf4110",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "result_note": "claim-time triplet; CA-004 code/receipt commits land after this receipt (artifact stays valid — legacy sources are frozen plan inputs, unaffected by assurance commits).",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "allowed_files": [
+    "revenue-forecast/assurance/unified_completion/**"
+  ],
+  "changed_files": [
+    "revenue-forecast/assurance/unified_completion/uc/legacy_disposition.py",
+    "revenue-forecast/assurance/unified_completion/uc/dag.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_legacy_disposition.py",
+    "revenue-forecast/assurance/unified_completion/legacy/legacy_disposition.json",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-004/*"
+  ],
+  "dependency_receipts": [
+    "revenue-forecast/assurance/unified_completion/receipts/CA-002/ (accepted — env freeze provides triplet context)",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-003/ (accepted — codegraph binds indexed commits)"
+  ],
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "81 passed (8 legacy_disposition tests included)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 11 source files",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli legacy-build",
+      "exit_code": 0,
+      "result": "artifact at legacy/legacy_disposition.json, sha256 22b881238f3916e4fee209647348d84638a2cda0c21530878cbce5c9f27c421e",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli legacy-verify",
+      "exit_code": 0,
+      "result": "OK: legacy disposition matches the frozen tables exactly (71 FC + 10 waves, valid)",
+      "cwd": "revenue-forecast"
+    },
+    {
+      "command": "pre-commit hook (repo gate): full test suite + engine E2E + sync_installations",
+      "exit_code": 0,
+      "result": "passed on commits 2f51672 and f432023",
+      "cwd": "revenue-forecast"
+    }
+  ],
+  "red_evidence": [
+    {
+      "id": "RED-A",
+      "description": "tools/closure_gate.py --json reports accepted_fcs=66/71 via 'accepted' substring matching; free-text statuses (4 of 47 rows, e.g. '**accepted（-a/-b/-c/-d 全部 accepted 2026-08-12）→ Phase 9 COMPLETE**') count as accepted. See receipts/CA-004/red/RED.md.",
+      "status": "red_proved"
+    },
+    {
+      "id": "RED-B",
+      "description": "old registry FC-1301 dependency column = 'FC-1301(链)' (self-dependency); Phase14 R0-R9 not counted in the 71-row state machine; old registry currently holds 47 FC rows (drift vs frozen 71-row projection). See receipts/CA-004/red/RED.md.",
+      "status": "red_proved"
+    }
+  ],
+  "side_effect_counts": {
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "catalog_mutations": 0,
+    "product_code_changes": 0,
+    "old_plan_writes": 0,
+    "note": "legacy sources read-only; old plan directories untouched; terminal notice remains CA-306's exclusive job."
+  },
+  "mutation": {
+    "id": "CA-004-M-legacy",
+    "killed": true,
+    "details": "unknown successor, missing successor, count mismatch, duplicate ids, graph cycle (ZR-1<->ZR-2), and source-file tamper all detected (8 tests). Parser robustness: 4-digit FC ids, CJK-adjacent unit ids, full-width ～ ranges with gaps."
+  },
+  "rollback": {
+    "required": false,
+    "proved": true,
+    "note": "Additive assurance artifact; rollback = delete legacy/ dir + revert commit. No migration."
+  },
+  "review": {
+    "status": "pending",
+    "note": "independent reviewer must verify: artifact contents (71/10/5, counts I=31/C=26/S=9/P=5), legacy-verify OK, 8 legacy tests, RED claims, successor-definition coverage, and give accepted/changes_required/blocked/rejected."
+  }
+}
