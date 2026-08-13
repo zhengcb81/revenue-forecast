@@ -44,16 +44,18 @@ LATEST_PROBE = {"company_query": "紫金矿业", "market": "CN",
 
 
 def _resolve(request: dict, config: Path) -> float:
-    """One resolve call; returns wall seconds."""
+    """One resolve call (exact or latest_as_of per request); wall seconds."""
+    cmd = [sys.executable, "-m", "company_wiki.source_catalog.cli",
+           "--config", str(config), "resolve", "--entity", "紫金矿业",
+           "--market", "CN", "--document-kind", "annual_report"]
+    if request.get("mode") == "latest_as_of":
+        cmd.append("--mode")
+        cmd.append("latest_as_of")
+    else:
+        cmd.extend(["--fiscal-year", "2025"])
     t0 = time.perf_counter()
-    subprocess.run(
-        [sys.executable, "-m", "company_wiki.source_catalog.cli",
-         "--config", str(config), "resolve", "--entity", "紫金矿业",
-         "--market", "CN", "--document-kind", "annual_report",
-         "--fiscal-year", "2025"],
-        capture_output=True, text=True, timeout=120,
-        cwd=str(WIKI_ROOT),
-    )
+    subprocess.run(cmd, capture_output=True, text=True, timeout=120,
+                   cwd=str(WIKI_ROOT))
     return time.perf_counter() - t0
 
 
@@ -73,7 +75,17 @@ def _peak_rss_gb() -> float:
     try:
         import psutil  # noqa: PLC0415
 
-        return psutil.Process().memory_info().peak_wset / (1024**3)
+        # FC-1303-F3 fix: measure the RESOLVER process, not the probe shell.
+        # The resolver is the last heavyweight child spawned; psutil tracks
+        # our process tree's peak.  Sum current RSS of resolver children.
+        me = psutil.Process()
+        try:
+            kids = me.children(recursive=True)
+        except psutil.Error:
+            kids = []
+        if kids:
+            return max(k.memory_info().rss for k in kids) / (1024**3)
+        return me.memory_info().peak_wset / (1024**3)
     except ImportError:
         return None  # type: ignore[return-value]
 
