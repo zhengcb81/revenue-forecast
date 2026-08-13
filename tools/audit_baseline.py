@@ -43,6 +43,11 @@ def _git(cwd: Path, *args: str) -> str | None:
             ["git", "-C", str(cwd), *args],
             capture_output=True,
             text=True,
+            # FC-1205 (PORT-01): text=True defaults to the locale codepage
+            # (GBK) on Chinese Windows while git emits UTF-8 — explicit
+            # decode with replacement, never a hard UnicodeDecodeError.
+            encoding="utf-8",
+            errors="replace",
             timeout=30,
         )
     except (OSError, subprocess.TimeoutExpired):
@@ -65,7 +70,14 @@ def collect_repos(repos: list[Path]) -> dict:
 def collect_environment() -> dict:
     def version_of(cmd: list[str]) -> str | None:
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=30,
+            )
         except (OSError, subprocess.TimeoutExpired):
             return None
         return proc.stdout.strip().splitlines()[0] if proc.returncode == 0 else None
@@ -137,6 +149,16 @@ def collect_roots(probe_roots: list[Path]) -> dict:
 
 
 def main() -> int:
+    # FC-1205 (PORT-01): the baseline JSON carries non-ASCII paths (Chinese
+    # user name); force UTF-8 on the child side so any reader — pytest or a
+    # consumer — decodes the stream deterministically (fetch_filing pattern).
+    # FC-1205 (PORT-01): the baseline JSON carries non-ASCII paths (Chinese
+    # user name); force UTF-8 on the child side so any reader — pytest or a
+    # consumer — decodes the stream deterministically (fetch_filing pattern).
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="strict")
+
     parser = argparse.ArgumentParser(description="Read-only audit baseline capture")
     parser.add_argument("--read-only", action="store_true",
                         help="mandatory: confirms read-only operation")
