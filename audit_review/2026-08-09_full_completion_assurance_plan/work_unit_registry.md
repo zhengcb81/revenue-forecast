@@ -135,7 +135,7 @@
 | FC-1202 | accepted（2026-08-12，reviewer-fc1202-independent；Interpretation A 见 findings 58） | FC-1201 | 三仓 | 单一 RootPolicy；重复 allowlist=0；隐式 sibling path=0 |
 | FC-1203 | accepted（2026-08-12，reviewer-fc1203-independent；Interpretation A 修订版见 findings 59 + 03_change_contract） | FC-1202 | 三仓 | dead production symbols、依赖环、test-only helper；行为场景无回归 |
 | FC-1204 | accepted（2026-08-13，reviewer-fc1204-independent r3 三轮 review；a/b/c 子链见 findings 60/61 + WU 卡） | FC-1203 | 三仓 | coverage/type/complexity ratchet；阈值下降 mutation/CI 必败 |
-| FC-1205 | pending | FC-1204 | 三仓 | 统一错误 schema、PORT-01~03、日志脱敏、编码失败关闭 |
+| FC-1205 | accepted（2026-08-13，reviewer-fc1205-independent r1） | FC-1204 | 三仓 | 统一错误 schema、PORT-01~03、日志脱敏、编码失败关闭 |
 
 ## 15. Phase 13：运行质量
 

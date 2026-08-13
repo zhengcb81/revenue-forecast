@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "fc_id": "FC-1205",
-  "status": "independent_review",
+  "status": "accepted",
   "mode": "honest-implementer",
   "base_triplet": {
     "revenue": "91cbc137916b1ab7571e199555fddfa4115d914b",
@@ -121,11 +121,11 @@
     "note": "Revert = revert commits b93994a (wiki) + e60ed1c (revenue). No data writes; the encoding fixes restore via git history."
   },
   "review": {
-    "reviewer": "PENDING-INDEPENDENT-REVIEWER",
-    "reviewer_receipt_sha256": "PENDING",
-    "decision": "pending",
-    "reviewed_at": "PENDING",
-    "note": "Independent reviewer must replay from clean worktrees (F-6 rule). Verify: RED reproduction at base (isolation), the two fixes, both full suites at 0 failed WITHOUT PYTHONIOENCODING, M1/M2 kills, PORT-03 CI definitions at HEAD."
+    "reviewer": "reviewer-fc1205-independent",
+    "reviewer_receipt_sha256": "342b2c26a8a8f121b9dc0308064e902b22001004535801586dc2f9ef5202a050",
+    "decision": "accepted",
+    "reviewed_at": "2026-08-13T02:34:38Z",
+    "note": "r1 ACCEPTED, zero blocking. All claims independently reproduced without PYTHONIOENCODING: RED at base (wiki 2 failed GBK 0xd4/0xa1 + revenue 1 failed), GREEN 5/5 both, full suites revenue 516/0 + wiki 2232/3skips/0 — the first zero-failure runs in the FCAP; M1/M2 kills + reverts; PORT-03 ubuntu-latest confirmed in all 3 CI workflows; diff audit = 2 tool files + docs only. 2 non-blocking: F1 duplicated comment block (cosmetic), F2 sync_installations.py is a third GBK-pipe site emitting pre-existing reader-thread WARNINGS (test passes, stdout unconsumed) — recorded as Phase 13/FC-1502 follow-up candidate."
   },
   "provisional_note": "PORT-01 fully closed (both sites, no environment workarounds). PORT-02 already closed by FC-1004 (regression-verified). PORT-03 (Linux golden) evidenced by the ubuntu-latest CI definitions + runs — not reproducible locally on Windows, recorded honestly. The worker_bootstrap 10s timing flake is unrelated to PORT and remains an environment flake (documented). Unified error schema + log redaction verified present (FC-702/704/701); no changes needed. This FC closes the Phase 12 exit gate: forbidden hardcode=0 (FC-1201) + duplicate root policy=0 (FC-1202) + critical dead helper=0 (FC-1203) + coverage/type/complexity ratchets (FC-1204) + Windows encoding errors=0 (this FC)."
 }
