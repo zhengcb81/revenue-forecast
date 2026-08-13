@@ -19,6 +19,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import datetime as _dt
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests"))
@@ -31,11 +33,11 @@ import sqlite3  # noqa: E402
 
 from e2e_support.isolated_lake import IsolatedLake  # noqa: E402
 
-import datetime as _dt
 
 # FC-1204 F6 fix: a hard-coded as_of_date rolls stale (retrieved_at is the
 # real wall clock and must be <= as_of); today+7 absorbs clock skew — the
 # same pattern as the FC-1001 FC-505 date-drift fix.
+# FC-1204 F6: hard-coded as_of rolls stale overnight; today+7 absorbs clock skew.
 REQUEST = {
     "schema_version": "1.1",
     "company_query": "紫金矿业",

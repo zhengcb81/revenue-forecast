@@ -23,7 +23,6 @@ COMPAT_DIR = Path(__file__).resolve().parents[1] / "compatibility"
 sys.path.insert(0, str(COMPAT_DIR))
 
 from compatibility_manifest import (  # noqa: E402
-    FROZEN_BASELINE,
     load_command_registry,
     load_manifest,
     validate_command_registry,

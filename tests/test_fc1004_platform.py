@@ -17,6 +17,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import datetime as _dt
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 sys.path.insert(0, str(PROJECT_ROOT / "tests"))
@@ -27,8 +29,6 @@ sys.path.insert(0, str(FILING_ROOT / "scripts"))
 
 from e2e_support.isolated_lake import IsolatedLake  # noqa: E402
 
-import datetime as _dt
-# FC-1204 F6 fix: hard-coded as_of rolls stale overnight; today+7 absorbs clock skew.
 _AS_OF = (_dt.date.today() + _dt.timedelta(days=7)).isoformat()
 
 
