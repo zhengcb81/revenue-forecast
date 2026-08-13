@@ -53,6 +53,7 @@ from uc.legacy_disposition import verify as legacy_verify
 from uc.manifest import build as manifest_build
 from uc.manifest import verify as manifest_verify
 from uc.manifest import README_PATH
+from uc.receipt import sign, validate as receipt_validate
 from uc.state import bootstrap_state, read_state, update_state
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -285,8 +286,8 @@ def cmd_state_update(args: argparse.Namespace) -> int:
 
 
 def cmd_state_render(_args: argparse.Namespace) -> int:
-    """Read-only Markdown view of the machine registry (CA-101: the rendered
-    view is never a source of truth)."""
+    """Read-only Markdown view of the machine registry (the rendered view is
+    never a source of truth)."""
     state = read_state(STATE_PATH)
     if state is None:
         print("machine state does not exist yet")
@@ -307,6 +308,48 @@ def cmd_state_render(_args: argparse.Namespace) -> int:
             f"{'by ' + str(info['closure'].get('by')) if info.get('closure') else ''} |"
         )
     print("\n".join(lines))
+    return 0
+
+
+def cmd_receipt_validate(args: argparse.Namespace) -> int:
+    repo_roots = {
+        "revenue": REPO_ROOT,
+        "filing": REPO_ROOT.parent / "filing-fetch",
+        "wiki": REPO_ROOT.parent / "company-wiki",
+    }
+    problems = receipt_validate(Path(args.receipt), repo_roots)
+    if problems:
+        for problem in problems:
+            print(f"RECEIPT-PROBLEM: {problem}")
+        return 1
+    print(f"OK: receipt {args.receipt} is canonical and well-formed")
+    return 0
+
+
+def cmd_receipt_sign(args: argparse.Namespace) -> int:
+    """Add/refresh the canonical_hash of a receipt in place (CAS write)."""
+    import json as _json
+
+    from uc.casfile import cas_update, sha256_file
+
+    path = Path(args.receipt)
+    try:
+        payload = _json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, _json.JSONDecodeError) as exc:
+        print(f"unreadable receipt: {exc}", file=sys.stderr)
+        return 1
+    sealed = sign(payload)
+    data = _json.dumps(sealed, ensure_ascii=False, indent=2, sort_keys=True).encode(
+        "utf-8"
+    )
+    try:
+        cas_update(path, data, sha256_file(path))
+    except FileNotFoundError:
+        print(f"receipt not found: {path}", file=sys.stderr)
+        return 1
+    print(
+        json.dumps({"receipt": str(path), "canonical_hash": sealed["canonical_hash"]})
+    )
     return 0
 
 
@@ -678,6 +721,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("state-render")
     p.set_defaults(func=cmd_state_render)
+
+    p = sub.add_parser("receipt-validate")
+    p.add_argument("--receipt", required=True)
+    p.set_defaults(func=cmd_receipt_validate)
+
+    p = sub.add_parser("receipt-sign")
+    p.add_argument("--receipt", required=True)
+    p.set_defaults(func=cmd_receipt_sign)
 
     p = sub.add_parser("closure-advance")
     p.add_argument("--next", required=True)

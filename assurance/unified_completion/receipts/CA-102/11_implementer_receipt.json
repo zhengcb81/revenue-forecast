@@ -1,0 +1,93 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "6028af7dd034020a4bca02c8ba936619e88f2861",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "5b5107714403abb451eea35094f1fd922c1465aadebafd0439d2ca02c1d7f470",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "104 passed"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 13 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/CA-102/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed"
+    }
+  ],
+  "created_at_utc": "2026-08-14T02:05:00Z",
+  "implementer": "ca102-implementer",
+  "kind": "implementer",
+  "mutation": {
+    "details": "tamper byte -> canonical_hash mismatch; unsigned -> red; empty commands -> red; missing kind fields -> red; policy placeholder -> red; fabricated triplet sha -> red; reviewer verdict 'maybe' -> red.",
+    "id": "CA-102-M-receipt",
+    "killed": true
+  },
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "red_evidence": [
+    {
+      "description": "all prior receipts lack canonical_hash; scratch tamper undetectable by any existing tool. See receipts/CA-102/red/RED.md.",
+      "id": "RED-A",
+      "status": "red_proved"
+    },
+    {
+      "description": "scenario_results=[] receipts had no machine gate; new schema requires commands non-empty and scenario_note for empty scenarios. See receipts/CA-102/red/RED.md.",
+      "id": "RED-B",
+      "status": "red_proved"
+    },
+    {
+      "description": "assurance/fc/FC-1001 receipt carries policy_sha256='not-applicable'; new validator rejects placeholder strings. See receipts/CA-102/red/RED.md.",
+      "id": "RED-C",
+      "status": "red_proved"
+    },
+    {
+      "description": "fabricated-sha history (b06cfbfc/f4320231d3b3) is now machine-blocked at the receipt layer via git-object verification. See receipts/CA-102/red/RED.md.",
+      "id": "RED-D",
+      "status": "red_proved"
+    }
+  ],
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "6028af7dd034020a4bca02c8ba936619e88f2861",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "review": {
+    "status": "pending"
+  },
+  "rollback": {
+    "note": "Additive assurance code; rollback = revert commit.",
+    "proved": true,
+    "required": false
+  },
+  "scenario_note": "Governance tooling card; no 197-scenario mapping. T0 contract/mutation tests only.",
+  "scenario_results": [],
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "summary": "CA-102 (content-addressed receipt schema): implemented uc/receipt.py + CLI receipt-validate/receipt-sign. Receipts are typed (implementer/reviewer/closure) with kind-specific required fields; sealed by a canonical hash (sorted-key serialization excluding canonical_hash, SHA-256) so any byte tampering is detectable; N/N-1 policy (unknown fields tolerated, unknown schema versions rejected); triplet values must be real git objects in the matching repository; policy_sha256 must be a real 64-hex hash (placeholder strings like 'not-applicable' rejected). RED evidence: existing receipts are unsigned (tamper undetectable), old FC-1001 receipt abuses policy_sha256='not-applicable', fabricated-sha history is machine-blocked. 104 tests total (11 new receipt tests: roundtrip, tamper, unsigned, N/N-1, kind fields, empty commands, policy placeholder, fabricated triplet, reviewer verdict enum, closure kind). Product code/config/CI/catalog/roots: zero writes.",
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/uc/receipt.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_receipt.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-102/*"
+  ],
+  "unit": "CA-102"
+}
