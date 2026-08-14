@@ -30,7 +30,7 @@
     "revenue": "c6b2e6a9e3ff22cf9f460b6a27852a9200131909",
     "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
   },
-  "canonical_hash": "01a53ff621e5f063eaa891fe10a484eaed1e18a3d82cdbd9bd2b710d4762e57a",
+  "canonical_hash": "7398a6673467fb2f5225058678685ccaae20755724373b7c838dc4bc8cb5ac78",
   "commands": [
     {
       "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli mutation-run",
@@ -49,8 +49,8 @@
     },
     {
       "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli revision-select --unit ZR-101",
-      "exit_code": 0,
-      "result": "唯一 implementer/reviewer 配对选择正常（reviewer≠implementer）"
+      "exit_code": 1,
+      "result": "no reviewer receipt references the latest revision (ZR103-REV-001: reviewed_object_sha256 semantics mismatch)"
     },
     {
       "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
@@ -65,6 +65,13 @@
       "id": "ZR103-ENV-001",
       "severity": "info",
       "title": "env-verify 报 catalog/repos 两节 drift 属预期（非本卡门）"
+    },
+    {
+      "detail": "CA-103 revision.py 选择逻辑 vs CA-102 receipt 字段语义冲突；ZR-101/102 等历史 reviewer receipts 均按被审物文件 sha 填写。需统一 reviewed_object_sha256 语义并回填历史 receipts；由最终独立终验卡裁决回填范围。",
+      "id": "ZR103-REV-001",
+      "severity": "P2",
+      "successor": "CA-301",
+      "title": "revision-select 配对契约与 reviewer 字段语义不一致：历史 reviewer receipts 的 reviewed_object_sha256 存被审物文件 hash，而 revision.select 期望 implementer receipt canonical hash，导致永远无配对"
     }
   ],
   "implementer": "zr103-implementer",
