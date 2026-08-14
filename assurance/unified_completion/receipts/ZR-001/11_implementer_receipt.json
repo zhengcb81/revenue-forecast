@@ -1,0 +1,140 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "dc41ef335b0c71fc22610201b235a33528d3e950",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "7d9795422b552a1381b51be5d011421f4e00e408652fc16440e87a78c0c364f5",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B assurance/unified_completion/replays/zr001_revenue.py",
+      "exit_code": 0,
+      "result": "R1-R4 evidence written (r1/r2/r3/r4_*.json); product_code_hashes bound"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B assurance/unified_completion/replays/zr001_filing.py",
+      "exit_code": 0,
+      "result": "F1 rejected (companies default), F2 raw lock -> fatal/retryable=false; evidence written"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B assurance/unified_completion/replays/zr001_wiki.py",
+      "exit_code": 0,
+      "result": "W1: nonexistent DB -> 237,568B WAL catalog; OS-readonly -> attempt to write a readonly database"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B assurance/unified_completion/replays/zr001_catalog_sql.py",
+      "exit_code": 0,
+      "result": "read-only real catalog queries; catalog size+mtime fingerprint unchanged_by_this_script=true"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B assurance/unified_completion/replays/zr001_build_ledger.py --verify",
+      "exit_code": 0,
+      "result": "verify=ok ledger_sha256=1665606238415eac82e1caf151f5f516c5756df547d9011cabfb3d553cd0cf4d"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "162 passed (first run under parallel-suite load: 160 passed + 1 pre-existing load flake test_concurrent_10; isolated + 3x rerun green)"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed! 49 files already formatted"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 20 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli mutation-run",
+      "exit_code": 0,
+      "result": "total=30 killed=30 alive=[] (kill=100%)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests -q",
+      "exit_code": 0,
+      "result": "470 passed, 106 subtests passed (revenue owner repo)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest -q (filing-fetch)",
+      "exit_code": 0,
+      "result": "318 passed, 11 skipped, 54 subtests passed"
+    },
+    {
+      "command": "uv run python -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "673 passed"
+    },
+    {
+      "command": "uv run python -m pytest tests/contract -q --tb=no (company-wiki)",
+      "exit_code": 1,
+      "result": "1479 passed, 18 skipped, 7 failed — all 7 pre-existing at frozen wiki HEAD ef125ed (no wiki source modified by this unit; deterministic in isolation; names in notes)"
+    },
+    {
+      "command": "python e2e/run_revenue_forecast_e2e.py",
+      "exit_code": 0,
+      "result": "E2E PASS input=0e1cc8d4c73d result=fedcd224acf2 repo_head=dc41ef33"
+    },
+    {
+      "command": "python tools/sync_installations.py",
+      "exit_code": 0,
+      "result": "MATCH .agents/skills 113 files; MATCH .codex/skills 113 files"
+    }
+  ],
+  "created_at_utc": "2026-08-14T03:10:00+00:00",
+  "findings": [
+    {
+      "detail": "test_source_catalog_extraction_quality (unsupported normalization reasons)、test_source_catalog_parser_liveness (corrupt xls terminal vs retryable)、test_source_catalog_pdf_page_aware (corrupt pdf fail-closed)、test_source_catalog_pipeline (export every artifact)、test_source_catalog_security_identity x2 (HK refresh 期望 refreshed 实际 stale_cache)、test_source_catalog_worker_bootstrap (heartbeat_timeout vs session_start_timeout)。本单元未修改任何 wiki 源码（worktree 仅环境侧 dirty），失败在隔离重跑可复现，属测试期望与代码漂移，不是 ZR-001 回归。",
+      "id": "ZR001-ENV-001",
+      "severity": "info",
+      "successor": "ZR-104（三仓质量 ratchet 基线）",
+      "title": "company-wiki contract 套件在冻结 HEAD ef125ed 上有 7 个确定性既有失败"
+    },
+    {
+      "detail": "为运行 triplet 套件按 wiki 自身 CI 流程安装测试依赖；不改产品代码、不动 catalog。",
+      "id": "ZR001-ENV-002",
+      "severity": "info",
+      "title": "wiki 开发 venv 由本单元补齐测试依赖（uv sync --extra test + uv pip install -r requirements-test.txt）"
+    }
+  ],
+  "implementer": "zr001-implementer",
+  "kind": "implementer",
+  "notes": [
+    "全部反例重放发生在 2026-08-14T02:19Z 前后（ledger.frozen_at_utc 固定为该窗口起点，保证 ledger 重建字节确定性）。",
+    "真实 catalog 全部查询为 mode=ro + PRAGMA query_only=ON，各 evidence 记录查询前后 size+mtime 指纹，builder 校验 unchanged_by_this_script=true。",
+    "ledger 15 项全部 still-failing；治理部分按 README §7 引用 CA-001~004 receipt，不重复实现。",
+    "R1 注：08-12 审计的 3.6/3.7 版本漂移已部分收敛（generator 现输出 schema_version 3.7），但 --help 文本仍称 3.6 且生成物仍被 linter/engine 拒绝（58 违规 + TypeError 崩溃）。"
+  ],
+  "objective": "冻结 current triplet，重放紫金 exact reuse、旧 artifact、Dropbox、draft renderer 生产反例，产出 drift_ledger.json（每项 still-failing/already-satisfied/superseded/blocked，禁止仅看旧 receipt）。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "7afcb965d190e27083c774ba3ff8e0a1b37b7653",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "schema_version": 1,
+  "scope": "assurance/unified_completion/replays/**（重放脚本+evidence）、receipts/ZR-001/**、tests/test_zr001_drift_ledger.py。产品代码/配置/CI/真实 catalog/旧计划零修改。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/replays/zr001_revenue.py",
+    "revenue-forecast/assurance/unified_completion/replays/zr001_filing.py",
+    "revenue-forecast/assurance/unified_completion/replays/zr001_wiki.py",
+    "revenue-forecast/assurance/unified_completion/replays/zr001_catalog_sql.py",
+    "revenue-forecast/assurance/unified_completion/replays/zr001_build_ledger.py",
+    "revenue-forecast/assurance/unified_completion/replays/evidence/*.json (13 files)",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-001/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-001/drift_ledger.json",
+    "revenue-forecast/assurance/unified_completion/tests/test_zr001_drift_ledger.py",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-001"
+}
