@@ -54,6 +54,7 @@ from uc.manifest import build as manifest_build
 from uc.manifest import verify as manifest_verify
 from uc.manifest import README_PATH
 from uc.receipt import sign, validate as receipt_validate
+from uc.revision import select as revision_select
 from uc.state import bootstrap_state, read_state, update_state
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -324,6 +325,20 @@ def cmd_receipt_validate(args: argparse.Namespace) -> int:
         return 1
     print(f"OK: receipt {args.receipt} is canonical and well-formed")
     return 0
+
+
+def cmd_revision_select(args: argparse.Namespace) -> int:
+    """Machine-select the unique valid implementer-revision/reviewer pair."""
+    unit_dir = RECEIPTS_DIR / args.unit
+    selection, problems = revision_select(unit_dir)
+    print(
+        json.dumps(
+            {"unit": args.unit, "selection": selection, "problems": problems},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 1 if problems else 0
 
 
 def cmd_receipt_sign(args: argparse.Namespace) -> int:
@@ -729,6 +744,10 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("receipt-sign")
     p.add_argument("--receipt", required=True)
     p.set_defaults(func=cmd_receipt_sign)
+
+    p = sub.add_parser("revision-select")
+    p.add_argument("--unit", required=True)
+    p.set_defaults(func=cmd_revision_select)
 
     p = sub.add_parser("closure-advance")
     p.add_argument("--next", required=True)
