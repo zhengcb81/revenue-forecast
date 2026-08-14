@@ -1,0 +1,323 @@
+{
+  "catalog_fingerprint": {
+    "mtime_ns_after": 1786673790392693300,
+    "mtime_ns_before": 1786673790392693300,
+    "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3",
+    "size_after": 49624047616,
+    "size_before": 49624047616,
+    "unchanged_by_this_script": true
+  },
+  "evidence_binding": {
+    "d1_sidecar_false_positives.json": "3a01f08c56f89d2f30fc7109b670c2d37ec22fd6049983b8dba1d4b7fc0fbdcf",
+    "d2_dayu_only_filings.json": "63b046503111171d8ec9ffd7d719b5ea70aee1fcf823f023eecd5e7caf4e60e6",
+    "d3_dropbox_summary_review_gap.json": "377c64b2a44cf9cc93d3e90396d488e0015b55b94324a3fdb7971cda1db95795",
+    "f1_external_root_default_rejected.json": "1a8522ee2994a75eec0b97b0ae35ec01df09789433dbfbee7c5505f76c64838f",
+    "f2_lock_error_misclassified.json": "7bf6cfb34ed88f17a989e86a49b73f83b6bbfb347106932a8c0fc9d38a2d40da",
+    "r1_generator_schema_drift.json": "d329aa4851c65c116b56558dc1ebcc7580a477139559322e92be4c0aecdbd1ce",
+    "r2_validate_only_writes_registry.json": "03bade908366726fc8c00af5d268a243213fc49af23406063c0e0cbf1bba5ea8",
+    "r3_draft_renderer_gate_mismatch.json": "93ef33ae26dfff21dd2bd38d7d574a1f6f809e92da115189c04a85d11f8614ff",
+    "r4_publication_non_transactional.json": "73ba0e6d2ac60fcfeb1c25c778c9ff567d60a1241003052e51292b58f9683d8b",
+    "w1_catalog_read_path_writes.json": "bebc1baf5a6b52b4336a5c5a60d8343bab003f44a9c142012ac356eb677791c5",
+    "w2_artifact_lineage.json": "f2b47d4f109f0d73c264ff766731b16de83f5e0813e07b34022871a5aa3c7ae8",
+    "w5_zijin_prompt_review.json": "57f29db1b700c774f6f226cf298469cd1a6ad42c7d89ff4a971f793b901cceb5",
+    "zr001_catalog_snapshot.json": "8b6061ddea2308c1e5749ea8084c8bb5d5f3bea05dcd846031719ff7bac95deb"
+  },
+  "families": [
+    "draft_renderer",
+    "dropbox",
+    "old_artifact",
+    "revenue_generator",
+    "revenue_publication",
+    "revenue_validate_only",
+    "zijin_exact_reuse"
+  ],
+  "frozen_at_utc": "2026-08-14T02:19:00+00:00",
+  "governance_reuse": "README §7：ZR-001 的治理部分（计划锁、triplet 冻结、历史处置）由 CA-001~004 实现并已 accepted；本 ledger 只承载产品 drift 重放。",
+  "items": [
+    {
+      "classification": "still-failing",
+      "evidence": "r1_generator_schema_drift.json",
+      "family": "revenue_generator",
+      "id": "ZR001-R1",
+      "observed": "generator rc=0 且 schema_version='3.7'，linter rc=2，engine --validate-only rc=2，58 条违规（缺 management_targets、not_checked 状态、gate 以 TypeError: 'NoneType' object is not iterable 崩溃）。注：08-12 审计的 3.6/3.7 版本漂移已部分收敛（骨架现在输出 3.7），但 generator/lint 的 --help 仍自称 schema 3.6，且生成物仍不可用。",
+      "source_findings": [
+        "rebaseline 发现 023",
+        "08-12 发现 075"
+      ],
+      "successors": [
+        "ZR-701",
+        "ZR-702",
+        "ZR-104"
+      ],
+      "title": "官方 generator 骨架仍被 linter/engine 拒绝"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "r2_validate_only_writes_registry.json",
+      "family": "revenue_validate_only",
+      "id": "ZR001-R2",
+      "observed": "CLI rc=0 输出 'valid'，但 registry 从无到有，大小 676 bytes、1 行。",
+      "source_findings": [
+        "rebaseline 发现 023",
+        "current_state_audit §4.3"
+      ],
+      "successors": [
+        "ZR-704",
+        "ZR-705",
+        "CA-302"
+      ],
+      "title": "--validate-only 对有效输入返回 0 却创建 publication registry"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "r3_draft_renderer_gate_mismatch.json",
+      "family": "draft_renderer",
+      "id": "ZR001-R3",
+      "observed": "run_forecast(mode='draft') 的 receipt gate_ids=[]，render_markdown 报 'ForecastInputError: publication_receipt gate_ids mismatch'。",
+      "source_findings": [
+        "rebaseline 发现 023",
+        "current_state_audit §4.4"
+      ],
+      "successors": [
+        "ZR-704",
+        "ZR-705"
+      ],
+      "title": "合法 draft 被公共 renderer 拒绝（draft gate_ids=[] vs formal gate 集合）"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "r4_publication_non_transactional.json",
+      "family": "revenue_publication",
+      "id": "ZR001-R4",
+      "observed": "注入输出写入失败时 rc=2、输出未写、registry 仍留 1 行；同一输入两次成功运行得 2 行（重复注册）。",
+      "source_findings": [
+        "rebaseline 发现 023",
+        "current_state_audit §4.5"
+      ],
+      "successors": [
+        "ZR-710"
+      ],
+      "title": "formal publication 先注册后写文件：失败留孤儿行，重复运行追加重复行"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "w1_catalog_read_path_writes.json",
+      "family": "zijin_exact_reuse",
+      "id": "ZR001-W1",
+      "observed": "构造不存在路径的 CatalogStore 创建 237568 bytes、journal_mode=wal、18 张表的库；OS 只读文件上再次构造报 OperationalError: 'attempt to write a readonly database'。",
+      "source_findings": [
+        "08-12 发现 036/038",
+        "current_state_audit §2.1"
+      ],
+      "successors": [
+        "ZR-201",
+        "ZR-202",
+        "ZR-203",
+        "ZR-206"
+      ],
+      "title": "读路径 CatalogStore 构造即写：不存在 DB 被创建、OS 只读 DB 上 resolve 失败"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "w2_artifact_lineage.json",
+      "family": "old_artifact",
+      "id": "ZR001-W2",
+      "observed": "normalized 共 4977、带绑定 180；summary 共 2963、带绑定 4（真实 catalog 只读统计）。",
+      "source_findings": [
+        "current_state_audit §2.6",
+        "08-12 发现 033/044"
+      ],
+      "successors": [
+        "ZR-304",
+        "ZR-305",
+        "CA-302"
+      ],
+      "title": "artifact lineage：completed normalized/summary 的 schema+source SHA 绑定覆盖率极低"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "w1_catalog_read_path_writes.json",
+      "family": "old_artifact",
+      "id": "ZR001-W3",
+      "observed": "代码级：service.query_source_bundle/artifact 查询全部 FROM artifacts （service.py:410/495），artifact_bindings 只有 artifact_backfill.py 写入，无生产读取路径。",
+      "source_findings": [
+        "current_state_audit §2.7"
+      ],
+      "successors": [
+        "ZR-305"
+      ],
+      "title": "shadow binding 无消费者：生产 bundle 读 artifacts，backfill 写 artifact_bindings"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "w1_catalog_read_path_writes.json",
+      "family": "old_artifact",
+      "id": "ZR001-W4",
+      "observed": "代码级：trg_artifact_producer_event（store.py:339-356）在 artifacts INSERT 后按 artifact_role 归类 event_type=parser/llm/other，不记录真实调用边界。",
+      "source_findings": [
+        "rebaseline 发现 021",
+        "current_state_audit §2.8"
+      ],
+      "successors": [
+        "ZR-304"
+      ],
+      "title": "producer telemetry 是 INSERT 触发器代理：按 artifact_role 推断 parser/LLM，无法表达 attempt/failure/retry/cache"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "w5_zijin_prompt_review.json",
+      "family": "zijin_exact_reuse",
+      "id": "ZR001-W5",
+      "observed": "真实 catalog：紫金标题文档共 13、带 prompt_injection_review 的 1。08-12 第三轮生产路径因此报 not_reviewed 而 fail-closed（发现 070）。",
+      "source_findings": [
+        "08-12 发现 070/073",
+        "rebaseline P06"
+      ],
+      "successors": [
+        "ZR-302",
+        "ZR-303",
+        "ZR-507"
+      ],
+      "title": "紫金 FY2024/FY2025 年报无 prompt-injection review：复用成功但消费被 revenue 安全门拒绝"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "f1_external_root_default_rejected.json",
+      "family": "dropbox",
+      "id": "ZR001-F1",
+      "observed": "hermetic 生产函数重放：Dropbox 型 canonical handle 被拒 (\"code=upstream_error; handle canonical_path is outside the policy snapshot's reusable roots\")；调用点 fetch_filing.py:789 未传 policy_snapshot。",
+      "source_findings": [
+        "current_state_audit §3.1",
+        "rebaseline P06"
+      ],
+      "successors": [
+        "ZR-401",
+        "ZR-404",
+        "ZR-405",
+        "ZR-409",
+        "ZR-806"
+      ],
+      "title": "外部 root handle 被默认拒绝：生产 validate_handle 调用未传 policy snapshot，退回 companies containment"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "f2_lock_error_misclassified.json",
+      "family": "zijin_exact_reuse",
+      "id": "ZR001-F2",
+      "observed": "hermetic 分类重放：OperationalError('database is locked') → code=fatal、retryable=False；结构化 CatalogOperationLockedError 对照组正确映射 catalog_locked（retryable）。",
+      "source_findings": [
+        "08-12 发现 037/039",
+        "current_state_audit §3.6"
+      ],
+      "successors": [
+        "ZR-204",
+        "ZR-205"
+      ],
+      "title": "raw 'database is locked' 被标 fatal：retry 环只认结构化 catalog_locked"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "d1_sidecar_false_positives.json",
+      "family": "dropbox",
+      "id": "ZR001-D1",
+      "observed": "真实 catalog：标题以 '.pdf.source' 结尾的文档共 2924、其中被归为 filing kind 的 28、published_date 为空的 28。",
+      "source_findings": [
+        "rebaseline 发现 018",
+        "08-12 发现 035"
+      ],
+      "successors": [
+        "ZR-501",
+        "ZR-502",
+        "ZR-509"
+      ],
+      "title": "sidecar 污染：.pdf.source JSON 被当作独立财报文档"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "d2_dayu_only_filings.json",
+      "family": "dropbox",
+      "id": "ZR001-D2",
+      "observed": "真实 catalog：dayu_portfolio 独有 active filing 文档 718，分布 {'annual_report': 55, 'quarterly_report': 6, 'regulatory_filing': 646, 'semi_annual_report': 11}。与 ZR001-F1 合成：这些文件今天无法从 filing/revenue 复用。",
+      "source_findings": [
+        "rebaseline 发现 018",
+        "current_state_audit §2/3"
+      ],
+      "successors": [
+        "ZR-401",
+        "ZR-402",
+        "ZR-403",
+        "ZR-405",
+        "ZR-409",
+        "ZR-806"
+      ],
+      "title": "dayu-only active filing 因 companies 默认 containment 在消费边界被拒"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "d3_dropbox_summary_review_gap.json",
+      "family": "dropbox",
+      "id": "ZR001-D3",
+      "observed": "真实 catalog：dropbox_stock active 文档 9187、带 completed summary 的 809、其中带 prompt_injection_review 的 1；generator 分布 {'source_catalog_llm_summary': 657, 'unknown': 152}。",
+      "source_findings": [
+        "rebaseline 发现 022",
+        "rebaseline P06/P07"
+      ],
+      "successors": [
+        "ZR-301",
+        "ZR-302",
+        "ZR-507",
+        "CA-302"
+      ],
+      "title": "Dropbox 已完成 LLM summary 的 prompt review 覆盖缺口（P0 隐私）"
+    },
+    {
+      "classification": "still-failing",
+      "evidence": "f1_external_root_default_rejected.json",
+      "family": "dropbox",
+      "id": "ZR001-D4",
+      "observed": "由 ZR001-W1 + ZR001-F1 + ZR001-D2 合成：物理排他的 Dropbox-only/dayu-only 文件从 revenue 入口不可复用。旧 FC-505 回执声称的 REUSED_EXACT 走的是 companies 副本路径（08-12 发现 052 已复证），该旧证据只作历史证据，不得再作为 Dropbox-only 通过依据。",
+      "source_findings": [
+        "rebaseline 发现 012/018",
+        "completion_audit FC-501~505",
+        "08-12 发现 052"
+      ],
+      "successors": [
+        "ZR-401",
+        "ZR-402",
+        "ZR-403",
+        "ZR-404",
+        "ZR-405",
+        "ZR-409",
+        "ZR-806"
+      ],
+      "title": "Dropbox-only 功能层全链不可达（旧 FC-505 canary 证据 superseded）"
+    }
+  ],
+  "ledger_sha256": "1665606238415eac82e1caf151f5f516c5756df547d9011cabfb3d553cd0cf4d",
+  "plan_id": "TRI-REPO-COMPLETION-2026-08-13-R1",
+  "replay_binding": {
+    "zr001_catalog_sql.py": "4a5830c87442fde275a6a959d6a32848e34a17cbdd40d11d5c7c9f84a610b106",
+    "zr001_filing.py": "bce18a46672efbe410b344ec63231e584ef742ad88ab5a954f28cdcebf29c780",
+    "zr001_revenue.py": "ffebdcdf3f73e783567989ee8d87d2b56a650474d284e378b157835024ba3ef2",
+    "zr001_wiki.py": "ed31730d7609fa16dcdc7364dd62006063af2d106bebbc13d2270b23dc4b4e49"
+  },
+  "replay_discipline": "每项均为 2026-08-14 在冻结 triplet 上的新重放；旧 receipt 仅作来源发现引用。",
+  "schema_version": 1,
+  "summary": {
+    "already-satisfied": 0,
+    "blocked": 0,
+    "still-failing": 15,
+    "superseded": 0
+  },
+  "triplet": {
+    "branches": {
+      "filing": "fcap",
+      "revenue": "fcap",
+      "wiki": "fcap"
+    },
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "dc41ef335b0c71fc22610201b235a33528d3e950",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "unit": "ZR-001"
+}
