@@ -1,0 +1,79 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "399ad732c6c69ba3031989b0faa21ba30f93bd40",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "c0426915d7540949c6550b6b33756b36b73c9c34b8323b5af5ba6420b00fc65d",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "145 passed"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 19 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli mutation-run",
+      "exit_code": 0,
+      "result": "total=30 killed=30 alive=[] (kill=100%)"
+    }
+  ],
+  "created_at_utc": "2026-08-14T05:35:00Z",
+  "implementer": "ca108-implementer",
+  "kind": "implementer",
+  "mutation": {
+    "details": "the suite itself is the deliverable: 30/30 critical mutations killed, verified by test_all_mutations_killed and CLI mutation-run.",
+    "id": "CA-108-M-suite",
+    "killed": true
+  },
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "red_evidence": [
+    {
+      "description": "verifiers had no systematic mutation guarantee (positive/negative tests only). See receipts/CA-108/red/RED.md.",
+      "id": "RED",
+      "status": "red_proved"
+    }
+  ],
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "399ad732c6c69ba3031989b0faa21ba30f93bd40",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "review": {
+    "status": "pending"
+  },
+  "revision": "r1",
+  "rollback": {
+    "note": "Additive assurance code; rollback = revert commit.",
+    "proved": true,
+    "required": false
+  },
+  "scenario_note": "Governance tooling card; no 197-scenario mapping.",
+  "scenario_results": [],
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "summary": "CA-108 (Closure mutation/negative suite): implemented uc/mutations.py + CLI mutation-run. 30 critical mutations across the six verifiers (receipt.validate x8: tamper/unsigned/bad-version/empty-commands/missing-touched/policy-placeholder/fake-triplet/bad-verdict; revision pairing x7: stale-review/self-review/P1-no-successor/fork/unknown-supersedes/duplicate/missing-reviewer; strict_state x7: pending->accepted/dep-gate/reviewer-self/reviewer-missing/bad-current/accepted-terminal/unknown-target; ledger x3: overreport/underreport/unclaimed; scenario registry x3: source-drift/set-drift/count-drift; closure x2: missing-reviewer/byte-level-verdict-tamper). Each mutation builds a valid fixture, applies the defect in place, and must turn its verifier red; the runner reports total/killed/alive. Measured kill = 30/30 = 100%. Acceptance rule: any new closure branch must add a matching mutation. Full suite: 145 passed. Product code/config/CI/catalog/roots: zero writes.",
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/uc/mutations.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_mutations.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-108/*"
+  ],
+  "unit": "CA-108"
+}
