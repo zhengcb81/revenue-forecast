@@ -1,0 +1,85 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "7716b876f503e980932d8873cdaec393ced3274b",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "f042bb853801a97a6abbf9ba254cfd9f087f618de27bf6a8c1f393c895a24591",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/test_zr003_corpus.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "10 passed"
+    },
+    {
+      "command": "ZIJIN_GOLDEN_DROPBOX_STOCK_ROOT=<Dropbox Stock> PYTHONPATH=assurance/unified_completion python -B -m uc.cli corpus-verify --corpus assurance/unified_completion/corpus/golden_corpus.json",
+      "exit_code": 0,
+      "result": "OK: corpus verified (12 samples intact, no leakage)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "172 passed"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed! 51 files already formatted"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 21 source files"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests -q",
+      "exit_code": 0,
+      "result": "470 passed, 106 subtests passed"
+    }
+  ],
+  "created_at_utc": "2026-08-14T04:10:00+00:00",
+  "findings": [
+    {
+      "detail": "年报×2 与 08-12 封存 hash 一致（01819e1c…/004f733e…）；七份研报本轮重新计算（Dropbox 金属及加工/有色金属/紫金矿业/）；strategy HTML b2d215df…；input/result 409949d1…/36dea238… 与 RUN_MANIFEST 一致。",
+      "id": "ZR003-ENV-001",
+      "severity": "info",
+      "title": "样本缺失=>blocked 条件未触发：12/12 样本在机且 hash 全部复核一致"
+    }
+  ],
+  "implementer": "zr003-implementer",
+  "kind": "implementer",
+  "notes": [
+    "脱敏：注册表只存 anchor+相对路径+hash+元数据；Dropbox 根经环境变量 ZIJIN_GOLDEN_DROPBOX_STOCK_ROOT 提供，绝对用户路径与样本字节均未进入仓库。",
+    "无内容泄漏守卫：corpus 目录仅小 JSON；receipts/ZR-003 无样本字节；verify 的 leak_scan_dirs 可检测样本字节被植入扫描目录。",
+    "多实体负例：20240304 长江报告注册为双实体（紫金+陕西煤业），供 ZR-503/510 错归测试；wrong strategy HTML 注册为空实体负例供 ZR-509/502。",
+    "triplet 证据：sibling 仓无任何改动（filing 干净、wiki 仅既有环境 dirty）；本卡只读样本文件。"
+  ],
+  "objective": "将紫金年报、七份研报、错误 strategy HTML 和预测 input/result 注册为脱敏 golden corpus；source/content hashes、预期实体/角色/期间、只读权限、无内容泄漏；样本缺失=>blocked。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "443f99f31735e77b97d700fa24757e7e0300c210",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "schema_version": 1,
+  "scope": "assurance/unified_completion/corpus/golden_corpus.json、uc/corpus.py、uc/cli.py（corpus-verify）、tests/test_zr003_corpus.py、receipts/ZR-003/**。样本文件一律只读；无产品代码/配置/CI/真实 catalog 写入。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "sample_file_writes": 0
+  },
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/corpus/golden_corpus.json",
+    "revenue-forecast/assurance/unified_completion/uc/corpus.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_zr003_corpus.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-003/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-003"
+}
