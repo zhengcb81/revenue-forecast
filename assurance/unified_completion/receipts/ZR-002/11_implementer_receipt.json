@@ -1,0 +1,88 @@
+{
+  "already_satisfied_evidence": {
+    "command_schema_and_attestation": {
+      "artifact": "uc/commands.py + command-run/replay CLI + tests/test_commands.py",
+      "ca_unit": "CA-104",
+      "fresh_check": "receipt-validate receipts/CA-104/11_implementer_receipt.json -> OK",
+      "property": "命令不能被实施者缩减：冻结 spec、不可变结果（output hashes）、secret-free、replay-diff 门"
+    },
+    "plan_write_lock_and_shared_resource_lock": {
+      "artifact": "uc/lock.py + uc/casfile.py（单 writer/CAS/代际守卫）+ uc/strict_state.py（per-unit 锁）",
+      "ca_units": "CA-001 + CA-101",
+      "fresh_check": "mutation-run -> total=30 killed=30 alive=[]；assurance 全量 172 passed（含 lock/CAS/strict_state/concurrent 测试）",
+      "property": "并发写入 mutation 被拒"
+    },
+    "receipt_schema": {
+      "artifact": "uc/receipt.py（canonical hash、N/N-1、triplet git-object 校验）",
+      "ca_unit": "CA-102",
+      "fresh_check": "receipt-validate receipts/CA-102/11_implementer_receipt.json -> OK；本 receipt 自身即为 schema v1 实例"
+    },
+    "scenario_registry_hash": {
+      "artifact": "scenarios/scenario_registry.json",
+      "ca_unit": "CA-105",
+      "fresh_check": "receipt-validate receipts/CA-105/11_implementer_receipt.json -> OK",
+      "sha256": "a350a3c979a090f4bbadfe97f2c70edf5cf4a35bde41a6be4e09d1cda7e2534a"
+    }
+  },
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "7716b876f503e980932d8873cdaec393ced3274b",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "fe4bb97b8a1de06fb8f6c8a2aad440f487cc437314acfcf489523b7d6c49e13e",
+  "commands": [
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli mutation-run",
+      "exit_code": 0,
+      "result": "total=30 killed=30 alive=[] (kill=100%)"
+    },
+    {
+      "command": "receipt-validate receipts/CA-102, CA-104, CA-105 implementer receipts",
+      "exit_code": 0,
+      "result": "all three OK (canonical and well-formed)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "172 passed (covers lock/CAS/strict_state/commands/receipt/scenarios at current triplet)"
+    }
+  ],
+  "created_at_utc": "2026-08-14T04:55:00+00:00",
+  "findings": [
+    {
+      "detail": "receipt-validate 对二者报 schema_version '2.0' not supported（N/N-1 拒绝旧版本属预期行为）；对 CA-001/101 的证据引用改为当前门：mutation-run 30/30 + assurance 172 passed（含其锁与状态机测试），不引用旧格式 receipt。",
+      "id": "ZR002-LEG-001",
+      "severity": "info",
+      "title": "CA-001/CA-101 历史 receipt 为 schema 2.0 旧格式（先于 CA-102 的 v1 schema 存在）"
+    }
+  ],
+  "implementer": "zr002-implementer",
+  "kind": "implementer",
+  "notes": [
+    "本卡无产品/assurance 代码改动（共享证据关闭）；diff 仅 receipts/ZR-002/** 与 state.json。",
+    "ZR-103（closure/receipt/command validator）按 §7 同一实现归属亦由 CA-101~109 覆盖，届时同法关闭。"
+  ],
+  "objective": "冻结 command/scenario/receipt schema、计划写锁和 shared-resource lock（README §7：由 CA-101~109 同一实现验收，ZR 用同一 receipt 关闭，不写第二套代码）。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "c1635cd6ab44aeec7eed8352c6dcfc0539c1eb3d",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-002/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-002/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-002"
+}
