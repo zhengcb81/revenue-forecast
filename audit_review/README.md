@@ -10,7 +10,7 @@ authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
 current_phase: B_evidence_closure_2_0
-current_next: CA-105
+current_next: CA-106
 active_owner: unassigned
 lease: none
 blocked_reason: none
