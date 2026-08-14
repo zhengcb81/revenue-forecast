@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "unit": "ZR-105",
+  "frozen_at": "2026-08-14T00:00:00+00:00",
+  "triplet": {
+    "revenue": "19cb45aed2807374abf3de783b709f403bf51a27",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "workflow_files": {
+    "revenue": {
+      "rel_path": ".github/workflows/quality.yml",
+      "sha256": "f114943a801484ec2711e13b22db6ec52563c1e66d75fd80ee07b530e359a7d0"
+    },
+    "filing": {
+      "rel_path": ".github/workflows/quality.yml",
+      "sha256": "cf67a44d38cfb30bb5979510de6fcc881327e445279729ed6486c0cb5b02174a"
+    },
+    "wiki": {
+      "rel_path": ".github/workflows/ci.yml",
+      "sha256": "8a4cff64dd3003f47f3884c626bf4ba550e4508e09a8cea004a8c2e4927c1594"
+    }
+  },
+  "required_checks": {
+    "exact_triplet_binding": {
+      "description": "每个 gating workflow 必须以机器可验证的方式绑定三仓精确 HEAD（manifest 三元组与冻结 triplet 相等；禁止无 pin 的浮动 clone），不再验证陈旧/浮动组合。",
+      "machine_rules": [
+        "revenue: workflow 必须引用 manifest 驱动的 sibling checkout；manifest 的 current_triplet 必须与冻结 triplet 完全相等",
+        "filing: 不得出现无 pinned-sha 的 git clone（浮动组合）；sibling checkout 必须来自带 sha 的 manifest",
+        "wiki: 必须 checkout 两个 sibling 的精确 HEAD（manifest 或显式 sha）"
+      ],
+      "successor": "CA-201"
+    },
+    "affected_repo_fanout": {
+      "description": "任一仓变更触发受影响三仓验证（跨仓 fan-out 由 CA-201 调度/attestation 实现；本契约只定义 required checks）。",
+      "machine_rules": [
+        "每个 workflow 必须存在跨仓触发或 fan-out 映射（repository_dispatch/workflow_run 指向 sibling 或等价 manifest 驱动映射）；仅 push/pull_request 自身仓为 gap"
+      ],
+      "successor": "CA-201"
+    },
+    "collected_skip_delta_controlled": {
+      "description": "collected 测试数与 skip 数相对冻结基线必须受控：无静默收集数下降、无新增无条件 skip、无 || true 吞错。",
+      "machine_rules": [
+        "workflow 必须记录 collected/skipped 并与冻结基线比较（delta 有界且显式）",
+        "禁止无条件 || true 吞掉必选测试步骤的退出码"
+      ],
+      "successor": "CA-201"
+    }
+  },
+  "successors": {
+    "exact_triplet_binding": "CA-201",
+    "affected_repo_fanout": "CA-201",
+    "collected_skip_delta_controlled": "CA-201"
+  }
+}

@@ -840,6 +840,17 @@ def cmd_quality_verify(_args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_ci_gap(_args: argparse.Namespace) -> int:
+    """Evaluate the ZR-105 current-triplet required checks against the real
+    three workflows; exit 1 while any gap exists (honest current state —
+    the fan-out implementation is CA-201's job)."""
+    from uc.ci_contract import assess
+
+    report = assess()
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 1 if report.get("gaps") else 0
+
+
 def cmd_next(_args: argparse.Namespace) -> int:
     state = read_state(STATE_PATH)
     if state is None:
@@ -1011,6 +1022,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("quality-verify")
     p.set_defaults(func=cmd_quality_verify)
+
+    p = sub.add_parser("ci-gap")
+    p.set_defaults(func=cmd_ci_gap)
     return parser
 
 
