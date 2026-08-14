@@ -4,7 +4,7 @@
     "revenue": "313638b25c9dd109af442b666765f4340de2fb8b",
     "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
   },
-  "canonical_hash": "c3d1201741fab9313fe535db264a9623a077da394a63079265ab03b285da8c31",
+  "canonical_hash": "e5c6fabe169f927fed8d352539ddf1bc915ba742c3d317a015eaacc8ebb8d532",
   "commands": [
     {
       "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/test_zr104_quality.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
@@ -56,6 +56,12 @@
       "id": "ZR104-IMPL-002",
       "severity": "info",
       "title": "generator 函数（collect_mode）返回类型由 mypy 推断，strict-annotation 测试豁免并注明"
+    },
+    {
+      "detail": "assurance 控制面与产品同仓（revenue），receipt/state/closure 提交会移动 revenue HEAD 使 raw-HEAD 绑定每次失效；改为绑定产品子树后，保证 verify 只对产品代码变更要求 re-freeze。raw triplet 仍记录（信息性）。修正后 quality-verify 在当前 HEAD 复跑 OK。",
+      "id": "ZR104-IMPL-003",
+      "severity": "info",
+      "title": "设计修正：基线绑定从 raw HEAD 改为各仓 product tree（HEAD:scripts / HEAD:src/company_wiki/source_catalog）"
     }
   ],
   "implementation": {
