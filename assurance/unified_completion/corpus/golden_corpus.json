@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "unit": "ZR-003",
+  "plan_id": "TRI-REPO-COMPLETION-2026-08-13-R1",
+  "frozen_at_utc": "2026-08-14T03:30:00+00:00",
+  "triplet": {
+    "revenue": "7716b876f503e980932d8873cdaec393ced3274b",
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "desensitization": "注册表只存 anchor+相对路径+hash+元数据；样本字节与绝对用户路径一律不进入仓库。",
+  "anchors": {
+    "companies": {
+      "kind": "repo_relative",
+      "path": "../company-wiki/companies",
+      "note": "company-wiki companies canonical root（sibling 相对路径，无用户名）"
+    },
+    "dropbox_stock": {
+      "kind": "env",
+      "var": "ZIJIN_GOLDEN_DROPBOX_STOCK_ROOT",
+      "note": "Dropbox Stock 根；验证时经环境变量提供，不写入仓库"
+    },
+    "audit_sources": {
+      "kind": "repo_relative",
+      "path": "audit_review/2026-08-12_zijin_skill_run_audit/sources"
+    },
+    "audit_outputs": {
+      "kind": "repo_relative",
+      "path": "audit_review/2026-08-12_zijin_skill_run_audit/outputs"
+    }
+  },
+  "samples": [
+    {
+      "sample_id": "zijin_annual_2025",
+      "anchor": "companies",
+      "rel_path": "紫金矿业/raw/financial_reports/annual/2026-03-20_cninfo_1225023658_紫金矿业集团股份有限公司2025年年度报告.pdf",
+      "role": "audited_filing",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": "FY2025",
+      "published_date": "2026-03-20",
+      "sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+      "byte_size": 79925886,
+      "notes": "canonical companies 年报；08-12 封存 hash 一致；ZR001-W5/ZR-405 exact-reuse 主样本"
+    },
+    {
+      "sample_id": "zijin_annual_2024",
+      "anchor": "companies",
+      "rel_path": "紫金矿业/raw/financial_reports/annual/2025-03-21_cninfo_1222870413_紫金矿业集团股份有限公司2024年年报报告.pdf",
+      "role": "audited_filing",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": "FY2024",
+      "published_date": "2025-03-21",
+      "sha256": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89",
+      "byte_size": 32100114,
+      "notes": "canonical companies 年报；08-12 封存 hash 一致"
+    },
+    {
+      "sample_id": "zijin_broker_20240304_changjiang",
+      "anchor": "dropbox_stock",
+      "rel_path": "金属及加工/有色金属/紫金矿业/20240304-长江证券-煤炭与消费用燃料行业黑金不怕火炼1：紫金矿业VS陕西煤业，矿企两大模式之辩.pdf",
+      "role": "broker_research",
+      "entities": ["紫金矿业集团股份有限公司", "陕西煤业股份有限公司"],
+      "period": null,
+      "published_date": null,
+      "sha256": "273d450887eff7c079b28f394c4831092fa3abbb81db86f2544cab425c2719d7",
+      "byte_size": 2082645,
+      "notes": "多实体比较报告：紫金 vs 陕西煤业，不得串实体（ZR-503/510 错归负例）"
+    },
+    {
+      "sample_id": "zijin_broker_20241201_tianfeng",
+      "anchor": "dropbox_stock",
+      "rel_path": "金属及加工/有色金属/紫金矿业/20241201-天风证券-紫金矿业-601899-跨越周期，创新驱动铸就全球综合性矿业巨头.pdf",
+      "role": "broker_research",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": null,
+      "published_date": null,
+      "sha256": "84ba8db72674d76212baca677666fb706dc13daf01150367ef2665e67671a4cd",
+      "byte_size": 2542921,
+      "notes": "七份研报之一；catalog published_date=null（ZR-504/505 需重建）"
+    },
+    {
+      "sample_id": "zijin_broker_20250116_guosheng",
+      "anchor": "dropbox_stock",
+      "rel_path": "金属及加工/有色金属/紫金矿业/20250116-国盛证券-紫金矿业-601899-具备阿尔法的有色核心资产，稳步迈向世界一流.pdf",
+      "role": "broker_research",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": null,
+      "published_date": null,
+      "sha256": "506cffc515fdac05a1088ae8f3c10c83f6f8afd6565330fbe52e23378ac28580",
+      "byte_size": 2482940,
+      "notes": "七份研报之一"
+    },
+    {
+      "sample_id": "zijin_broker_20250323_minsheng",
+      "anchor": "dropbox_stock",
+      "rel_path": "金属及加工/有色金属/紫金矿业/20250323-民生证券-紫金矿业-601899-2024年年报深度点评：笃守宏猷，再攀万重峰.pdf",
+      "role": "broker_research",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": null,
+      "published_date": null,
+      "sha256": "7f636437425941ed0d277a8c7fed62ea5b969f5c7ece4d93b6f636d8961fdb74",
+      "byte_size": 1883678,
+      "notes": "七份研报之一（FY2024 年报点评）"
+    },
+    {
+      "sample_id": "zijin_broker_20260322_tpy",
+      "anchor": "dropbox_stock",
+      "rel_path": "金属及加工/有色金属/紫金矿业/20260322-太平洋证券-紫金矿业-601899-紫气凌云攀绝顶，关山跃马启新篇.pdf",
+      "role": "broker_research",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": null,
+      "published_date": null,
+      "sha256": "f535cb6c96c0e3e21e55f21d5db8f452a1dc9d810f713e7ef78c0d32f4116e30",
+      "byte_size": 861622,
+      "notes": "七份研报之一"
+    },
+    {
+      "sample_id": "zijin_broker_20260324_glms",
+      "anchor": "dropbox_stock",
+      "rel_path": "金属及加工/有色金属/紫金矿业/20260324-国联民生证券-紫金矿业-601899-2025年年报深度点评：扣非业绩超预期，擘画三年发展蓝图.pdf",
+      "role": "broker_research",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": null,
+      "published_date": null,
+      "sha256": "1711c7002d8c3dd5ce7be4b0cf32331d286f1bead2e62f66f81dda0db5d7005e",
+      "byte_size": 1925631,
+      "notes": "七份研报之一（FY2025 年报点评）"
+    },
+    {
+      "sample_id": "zijin_broker_20260426_tpy",
+      "anchor": "dropbox_stock",
+      "rel_path": "金属及加工/有色金属/紫金矿业/20260426-太平洋证券-紫金矿业-601899-金铜持续成长，锂业开始放量.pdf",
+      "role": "broker_research",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": null,
+      "published_date": null,
+      "sha256": "5dfe67743a3ee8f2fc522b4f3ba50a70710e318602178b25b8b43cc0b4c2f805",
+      "byte_size": 680781,
+      "notes": "七份研报之一"
+    },
+    {
+      "sample_id": "zijin_wrong_strategy_html",
+      "anchor": "audit_sources",
+      "rel_path": "2026_strategy.html",
+      "role": "company_release",
+      "entities": [],
+      "period": null,
+      "published_date": null,
+      "sha256": "b2d215df1c6f2049a6d07c4cfe340b7a247efcaa94ba916695fc10173a25b420",
+      "byte_size": 40122,
+      "notes": "source-identity 负例：URL/标题似 strategy 页但实际为无关学校工程页面；预期实体为空（ZR-509/502 拒收验证对象）"
+    },
+    {
+      "sample_id": "zijin_forecast_input_v1",
+      "anchor": "audit_outputs",
+      "rel_path": "input_v1.json",
+      "role": "revenue_forecast_input",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": "FY2025 base; FY2026-FY2030 forecast",
+      "published_date": null,
+      "sha256": "409949d1a62666db49b46cb65b44bf8482839f831b88bab0c93716bb8ff0cae4",
+      "byte_size": 103204,
+      "notes": "08-12 隔离 draft 的正式 schema 3.7 输入（canonical hash 5a6a8b3a… 见 RUN_MANIFEST）"
+    },
+    {
+      "sample_id": "zijin_forecast_result_draft",
+      "anchor": "audit_outputs",
+      "rel_path": "draft_result.json",
+      "role": "revenue_forecast_result_draft",
+      "entities": ["紫金矿业集团股份有限公司"],
+      "period": "FY2025-FY2030 (draft)",
+      "published_date": null,
+      "sha256": "36dea23832d01896318da4605037db3e835b849d1d6bfb7b99587cd19285c014",
+      "byte_size": 251157,
+      "notes": "08-12 隔离 draft 结果（canonical hash a8e64f78… 见 RUN_MANIFEST）；draft renderer 反例 ZR001-R3 的输入对"
+    }
+  ]
+}

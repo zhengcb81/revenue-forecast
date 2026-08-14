@@ -335,6 +335,22 @@ def cmd_receipt_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_corpus_verify(args: argparse.Namespace) -> int:
+    from uc.corpus import verify_golden_corpus
+
+    leak_dirs = list(args.leak_scan_dir or [])
+    problems = verify_golden_corpus(
+        Path(args.corpus),
+        leak_scan_dirs=[Path(d) for d in leak_dirs],
+    )
+    if problems:
+        for problem in problems:
+            print(f"CORPUS-PROBLEM: {problem}")
+        return 1
+    print(f"OK: corpus {args.corpus} verified (samples intact, no leakage)")
+    return 0
+
+
 def cmd_revision_select(args: argparse.Namespace) -> int:
     """Machine-select the unique valid implementer-revision/reviewer pair."""
     unit_dir = RECEIPTS_DIR / args.unit
@@ -860,6 +876,17 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("receipt-sign")
     p.add_argument("--receipt", required=True)
     p.set_defaults(func=cmd_receipt_sign)
+
+    p = sub.add_parser("corpus-verify")
+    p.add_argument("--corpus", required=True, type=Path)
+    p.add_argument(
+        "--leak-scan-dir",
+        action="append",
+        default=None,
+        type=Path,
+        help="extra directories scanned for leaked sample bytes (repeatable)",
+    )
+    p.set_defaults(func=cmd_corpus_verify)
 
     p = sub.add_parser("revision-select")
     p.add_argument("--unit", required=True)
