@@ -40,6 +40,8 @@ from uc.commands import run as command_run
 from uc.closure import closure_report as three_repo_closure_report
 from uc.legacy_gate import report as legacy_gate_report
 from uc.mutations import run_suite as mutation_run_suite
+from uc.quality import freeze as quality_freeze
+from uc.quality import verify as quality_verify
 from uc.control import patch_section0, plan_advance_fields
 from uc.dag import load_dag, next_units
 from uc.envfreeze import collect as env_collect
@@ -71,6 +73,7 @@ MANIFEST_PATH = CONTROL_ROOT / "manifests" / "plan_inputs.json"
 STATE_PATH = CONTROL_ROOT / "state.json"
 LOCK_DIR = CONTROL_ROOT / "locks"
 RECEIPTS_DIR = CONTROL_ROOT / "receipts"
+QUALITY_PATH = CONTROL_ROOT / "quality" / "quality_baseline.json"
 
 
 def _require_no_drift(check_mtime: bool = True) -> None:
@@ -795,6 +798,48 @@ def cmd_env_verify(_args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_quality_freeze(args: argparse.Namespace) -> int:
+    """Freeze the three-repo quality baseline (ZR-104, phase C)."""
+    try:
+        payload_hash = quality_freeze(REPO_ROOT, QUALITY_PATH, force=args.force)
+    except FileExistsError:
+        print(
+            f"quality baseline already exists: {QUALITY_PATH}\n"
+            "pass --force to CAS-replace (drift review required)",
+            file=sys.stderr,
+        )
+        return 2
+    print(
+        json.dumps(
+            {"baseline": str(QUALITY_PATH), "sha256": payload_hash},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def cmd_quality_verify(_args: argparse.Namespace) -> int:
+    """Recompute the baseline and enforce the five-dimension ratchet."""
+    if not QUALITY_PATH.is_file():
+        print(
+            "quality baseline does not exist yet — run quality-freeze first",
+            file=sys.stderr,
+        )
+        return 1
+    frozen = json.loads(QUALITY_PATH.read_text(encoding="utf-8"))
+    problems = quality_verify(REPO_ROOT, frozen)
+    if problems:
+        for problem in problems:
+            print(f"QUALITY-VIOLATION: {problem}")
+        return 1
+    print(
+        "OK: quality baseline matches-or-improves the recomputed three-repo "
+        "state (types / coverage / complexity / hardcoding / dead callers)"
+    )
+    return 0
+
+
 def cmd_next(_args: argparse.Namespace) -> int:
     state = read_state(STATE_PATH)
     if state is None:
@@ -955,6 +1000,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("legacy-verify")
     p.set_defaults(func=cmd_legacy_verify)
+
+    p = sub.add_parser("quality-freeze")
+    p.add_argument(
+        "--force",
+        action="store_true",
+        help="CAS-replace an existing baseline (drift review required)",
+    )
+    p.set_defaults(func=cmd_quality_freeze)
+
+    p = sub.add_parser("quality-verify")
+    p.set_defaults(func=cmd_quality_verify)
     return parser
 
 

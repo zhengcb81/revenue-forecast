@@ -1,0 +1,328 @@
+{
+  "dead_callers": {
+    "artifact_relpath": "codegraph/codegraph_freeze.json",
+    "input_hash": "1093c1090d2ed034c32a16ef7c3ee6c803c58a1d3564f98d72274ad6227dbf2c",
+    "notes": {
+      "wiki.ProcessingDemand": "registered as CA-003 MISSING-001 (required symbol absent from product code)"
+    },
+    "repos": {
+      "filing": {
+        "kind": "none-registered",
+        "targets": []
+      },
+      "revenue": {
+        "kind": "none-registered",
+        "targets": []
+      },
+      "wiki": {
+        "kind": "frozen",
+        "targets": [
+          "ProcessingDemand"
+        ]
+      }
+    }
+  },
+  "frozen_at": "2026-08-14T00:00:00+00:00",
+  "repos": {
+    "filing": {
+      "complexity": {
+        "kind": "enforced-on-new/changed-only",
+        "max_complexity": 10,
+        "note": "no whole-repo complexity gate exists in this repo; uc.quality.check_critical_complexity() enforces complexity <= 10 on new/changed critical functions (no whole-repo number is invented)"
+      },
+      "coverage": {
+        "kind": "config-frozen-floor",
+        "per_module_floors": {},
+        "sources": {
+          "pyproject.toml": "[tool.coverage.report] fail_under"
+        },
+        "total_floor": 90.0
+      },
+      "hardcoding": {
+        "allowlist": [],
+        "frozen_tokens": [],
+        "note": "no root/company hardcode allowlist gate exists in filing-fetch (FC-501 policy containment is enforced via snapshot consumption, not a token allowlist)",
+        "source_hash": "a683096011db3975a1e401e33b0047d1f2677a11efe85ef12806f016ae039795"
+      },
+      "types": {
+        "strict_mypy_targets": [
+          "scripts/fetch_filing.py",
+          "scripts/filing_contracts.py"
+        ]
+      }
+    },
+    "revenue": {
+      "complexity": {
+        "kind": "enforced-on-new/changed-only",
+        "max_complexity": 10,
+        "note": "no whole-repo complexity gate exists in this repo; uc.quality.check_critical_complexity() enforces complexity <= 10 on new/changed critical functions (no whole-repo number is invented)"
+      },
+      "coverage": {
+        "kind": "config-frozen-floor",
+        "per_module_floors": {
+          "scripts/company_wiki_source.py": 60,
+          "scripts/filing_fetch_client.py": 40,
+          "scripts/model_registry.py": 80,
+          "scripts/revenue_backtest.py": 70,
+          "scripts/revenue_core.py": 70,
+          "scripts/revenue_forecast.py": 60,
+          "scripts/revenue_publication.py": 70,
+          "scripts/revenue_report.py": 70
+        },
+        "sources": {
+          ".coveragerc": "[report] fail_under",
+          "tools/run_coverage_gates.py": "PER_MODULE_MINIMUM"
+        },
+        "total_floor": 84.0
+      },
+      "hardcoding": {
+        "allowlist": [],
+        "frozen_tokens": [],
+        "note": "no root/company hardcode allowlist exists in revenue; the existing architecture gate (FC-1101) forbids hardcoded sibling commit pins in CI workflows — frozen here",
+        "scan": {
+          "hits": [],
+          "name": "fc1101_workflow_sha_pins",
+          "pattern": "\\b[0-9a-f]{7,40}\\b",
+          "targets": [
+            "revenue-forecast/.github/workflows/quality.yml",
+            "filing-fetch/.github/workflows/quality.yml"
+          ]
+        },
+        "source_hash": "a683096011db3975a1e401e33b0047d1f2677a11efe85ef12806f016ae039795"
+      },
+      "types": {
+        "strict_mypy_targets": [
+          "scripts/contracts/__init__.py",
+          "scripts/contracts/constants.py",
+          "scripts/contracts/document.py",
+          "scripts/contracts/evidence.py",
+          "scripts/filing_fetch_client.py",
+          "scripts/schema_compatibility.py",
+          "scripts/trust_anchor.py"
+        ]
+      }
+    },
+    "wiki": {
+      "complexity": {
+        "frozen_max": {
+          "acquisition.py": 26,
+          "acquisition_config.py": 13,
+          "acquisition_journal.py": 9,
+          "acquisition_service.py": 15,
+          "activation.py": 25,
+          "adapter_dispatch.py": 4,
+          "adapter_process.py": 21,
+          "adapters/common.py": 5,
+          "adapters/company_raw.py": 31,
+          "adapters/conformance.py": 8,
+          "adapters/dayu.py": 58,
+          "adapters/interface.py": 5,
+          "adapters/parity.py": 13,
+          "adapters/registry.py": 1,
+          "adapters/sidecar.py": 16,
+          "admission.py": 33,
+          "architecture_gate.py": 13,
+          "archive_retired_evidence.py": 7,
+          "artifact_backfill.py": 37,
+          "artifact_dag.py": 8,
+          "artifact_handle.py": 59,
+          "assertion_service.py": 18,
+          "authorization.py": 16,
+          "backfill_v2.py": 25,
+          "canary_registry.py": 17,
+          "canonical_writer.py": 21,
+          "catalog_size_report.py": 5,
+          "cli.py": 140,
+          "close_gap.py": 18,
+          "code_identity.py": 3,
+          "config.py": 46,
+          "control.py": 34,
+          "dayu_cli_adapter.py": 46,
+          "dropbox_governance.py": 15,
+          "duplicate_cleanup.py": 34,
+          "evidence_query.py": 15,
+          "extraction_quality.py": 24,
+          "flags.py": 8,
+          "focus_cleanup.py": 42,
+          "gap_plan.py": 20,
+          "identity_cli.py": 6,
+          "legacy_close_gate.py": 16,
+          "llm_failure_policy.py": 4,
+          "llm_summarizer.py": 35,
+          "lock.py": 15,
+          "migration.py": 23,
+          "migration_ledger.py": 21,
+          "models.py": 18,
+          "normalized_meta.py": 5,
+          "normalizer.py": 47,
+          "observability.py": 6,
+          "policy.py": 5,
+          "policy_2x.py": 43,
+          "portfolio_promoter.py": 36,
+          "producer_events.py": 1,
+          "prompt_injection.py": 15,
+          "prune_retired_evidence.py": 12,
+          "reconcile_retire_state.py": 12,
+          "reconciliation.py": 17,
+          "remediation.py": 24,
+          "resolver.py": 103,
+          "restore.py": 13,
+          "runtime_policy.py": 30,
+          "scanner.py": 140,
+          "scheduler_policy.py": 8,
+          "section_extractor.py": 22,
+          "section_query.py": 12,
+          "security_identity.py": 23,
+          "service.py": 45,
+          "shadow_parity.py": 12,
+          "source_bundle.py": 26,
+          "startup.py": 13,
+          "store.py": 30,
+          "summarizer.py": 23,
+          "trace_parity.py": 19,
+          "url_binding.py": 6,
+          "visibility_bridge.py": 7,
+          "worker.py": 99
+        },
+        "kind": "per-file-frozen-max",
+        "new_file_max": 10,
+        "source": "tests/contract/test_fc1204_complexity_ratchet.py"
+      },
+      "coverage": {
+        "floors": {
+          "__init__.py": 100,
+          "acquisition.py": 78,
+          "acquisition_config.py": 73,
+          "acquisition_journal.py": 85,
+          "acquisition_service.py": 82,
+          "activation.py": 82,
+          "adapter_dispatch.py": 89,
+          "adapter_process.py": 70,
+          "adapters/common.py": 86,
+          "adapters/company_raw.py": 86,
+          "adapters/conformance.py": 100,
+          "adapters/dayu.py": 83,
+          "adapters/interface.py": 100,
+          "adapters/parity.py": 100,
+          "adapters/registry.py": 100,
+          "adapters/sidecar.py": 95,
+          "admission.py": 95,
+          "architecture_gate.py": 75,
+          "archive_retired_evidence.py": 95,
+          "artifact_backfill.py": 79,
+          "artifact_dag.py": 44,
+          "artifact_handle.py": 95,
+          "assertion_service.py": 86,
+          "authorization.py": 89,
+          "backfill_v2.py": 85,
+          "canary_registry.py": 95,
+          "canonical_writer.py": 72,
+          "catalog_size_report.py": 92,
+          "cli.py": 70,
+          "close_gap.py": 85,
+          "code_identity.py": 100,
+          "config.py": 83,
+          "control.py": 81,
+          "dayu_cli_adapter.py": 71,
+          "dropbox_governance.py": 95,
+          "duplicate_cleanup.py": 74,
+          "evidence_query.py": 87,
+          "extraction_quality.py": 77,
+          "flags.py": 95,
+          "focus_cleanup.py": 86,
+          "gap_plan.py": 95,
+          "identity_cli.py": 82,
+          "legacy_close_gate.py": 85,
+          "llm_failure_policy.py": 100,
+          "llm_summarizer.py": 82,
+          "lock.py": 73,
+          "migration.py": 95,
+          "migration_ledger.py": 86,
+          "models.py": 85,
+          "normalized_meta.py": 65,
+          "normalizer.py": 55,
+          "observability.py": 91,
+          "policy.py": 95,
+          "policy_2x.py": 80,
+          "portfolio_promoter.py": 87,
+          "producer_events.py": 95,
+          "prompt_injection.py": 73,
+          "prune_retired_evidence.py": 87,
+          "reconcile_retire_state.py": 92,
+          "reconciliation.py": 91,
+          "remediation.py": 79,
+          "resolver.py": 86,
+          "restore.py": 95,
+          "runtime_policy.py": 84,
+          "scanner.py": 91,
+          "scheduler_policy.py": 95,
+          "section_extractor.py": 87,
+          "section_query.py": 87,
+          "security_identity.py": 77,
+          "service.py": 95,
+          "shadow_parity.py": 87,
+          "source_bundle.py": 95,
+          "startup.py": 61,
+          "store.py": 83,
+          "summarizer.py": 87,
+          "trace_parity.py": 82,
+          "url_binding.py": 95,
+          "visibility_bridge.py": 95,
+          "worker.py": 79
+        },
+        "kind": "per-module-branch-ratchet",
+        "source": "tests/contract/test_fc1204_coverage_ratchet.py"
+      },
+      "hardcoding": {
+        "allowlist": [
+          "adapter_dispatch.py",
+          "admission.py",
+          "architecture_gate.py",
+          "backfill_v2.py",
+          "canonical_writer.py",
+          "cli.py",
+          "company_raw.py",
+          "config.py",
+          "dayu.py",
+          "focus_cleanup.py",
+          "models.py",
+          "policy_2x.py",
+          "portfolio_promoter.py",
+          "registry.py",
+          "scanner.py",
+          "sidecar.py"
+        ],
+        "frozen_tokens": [
+          "Dropbox",
+          "company_raw",
+          "dayu_portfolio",
+          "dropbox_stock"
+        ],
+        "source": "src/company_wiki/source_catalog/architecture_gate.py (FC-1201 frozen allowlist)",
+        "source_hash": "0ea65648eff90a4b4b00c27599c92e67f974415ef6a0820f155f0a034f77c8ea"
+      },
+      "types": {
+        "strict_mypy_targets": [
+          "src/company_wiki/source_catalog/activation.py",
+          "src/company_wiki/source_catalog/artifact_handle.py",
+          "src/company_wiki/source_catalog/canary_registry.py",
+          "src/company_wiki/source_catalog/close_gap.py",
+          "src/company_wiki/source_catalog/flags.py",
+          "src/company_wiki/source_catalog/normalized_meta.py",
+          "src/company_wiki/source_catalog/policy.py",
+          "src/company_wiki/source_catalog/policy_2x.py",
+          "src/company_wiki/source_catalog/restore.py",
+          "src/company_wiki/source_catalog/runtime_policy.py",
+          "src/company_wiki/source_catalog/source_bundle.py"
+        ]
+      }
+    }
+  },
+  "schema_version": 1,
+  "triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "313638b25c9dd109af442b666765f4340de2fb8b",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "unit": "ZR-104"
+}
