@@ -57,6 +57,9 @@ from uc.manifest import verify as manifest_verify
 from uc.manifest import README_PATH
 from uc.receipt import sign, validate as receipt_validate
 from uc.revision import select as revision_select
+from uc.scenarios import build as scenarios_build
+from uc.scenarios import closure_report as scenarios_closure_report
+from uc.scenarios import verify as scenarios_verify
 from uc.state import bootstrap_state, read_state, update_state
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -341,6 +344,46 @@ def cmd_revision_select(args: argparse.Namespace) -> int:
         )
     )
     return 1 if problems else 0
+
+
+SCENARIO_REGISTRY_PATH = CONTROL_ROOT / "scenarios" / "scenario_registry.json"
+
+
+def cmd_scenario_build(_args: argparse.Namespace) -> int:
+    try:
+        payload_hash = scenarios_build(REPO_ROOT, SCENARIO_REGISTRY_PATH)
+    except FileExistsError:
+        print(
+            f"scenario registry already exists: {SCENARIO_REGISTRY_PATH}\n"
+            "remove it or CAS-replace via the library with force_sha256",
+            file=sys.stderr,
+        )
+        return 2
+    print(
+        json.dumps(
+            {"registry": str(SCENARIO_REGISTRY_PATH), "sha256": payload_hash},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def cmd_scenario_verify(_args: argparse.Namespace) -> int:
+    if not SCENARIO_REGISTRY_PATH.is_file():
+        print(
+            "scenario registry does not exist yet — run scenario-build first",
+            file=sys.stderr,
+        )
+        return 1
+    problems = scenarios_verify(REPO_ROOT, SCENARIO_REGISTRY_PATH)
+    if problems:
+        for problem in problems:
+            print(f"SCENARIO-DRIFT: {problem}")
+        return 1
+    payload = json.loads(SCENARIO_REGISTRY_PATH.read_text(encoding="utf-8"))
+    print(json.dumps(scenarios_closure_report(payload), ensure_ascii=False, indent=2))
+    return 0
 
 
 def cmd_command_run(args: argparse.Namespace) -> int:
@@ -779,6 +822,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--spec-json", required=True)
     p.add_argument("--result-json", required=True)
     p.set_defaults(func=cmd_command_replay)
+
+    p = sub.add_parser("scenario-build")
+    p.set_defaults(func=cmd_scenario_build)
+
+    p = sub.add_parser("scenario-verify")
+    p.set_defaults(func=cmd_scenario_verify)
 
     p = sub.add_parser("closure-advance")
     p.add_argument("--next", required=True)
