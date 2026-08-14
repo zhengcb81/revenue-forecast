@@ -1,0 +1,112 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "fdc34866269444004972ef6f2aaa344fd94b3dc3",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "canonical_hash": "56b91916c2927dc1c9f0c2bbcbc2e9a52e923e343c438c49b8c1a253d4790bef",
+  "commands": [
+    {
+      "command": "python -B assurance/unified_completion/t1/zr102_t1_runner.py --work-dir <tmp> (scenarios 1-5)",
+      "exit_code": 0,
+      "result": "all PASS in ~30s: S1 dl=0/llm=0/parser=0 reused_existing 3 distinct pids; S2 download_calls=1 exactly-one-fetch file landed temp companies; S3 rerun dl=0 fetch count stays 1; S4 not_found spy=0; S5 negative identity fail-closed spy=0"
+    },
+    {
+      "command": "python -B assurance/unified_completion/t1/zr102_t1_runner.py --scenario 6 --work-dir <tmp>",
+      "exit_code": 2,
+      "result": "guard refuses: names every escaping real path (company-wiki, filing-fetch, Dropbox/Stock, dayu-agent, StockInfoDLSimple)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/test_zr102_t1_runner.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "9 passed in ~34s"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "181 passed"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests -q (revenue owner repo)",
+      "exit_code": 0,
+      "result": "470 passed, 106 subtests passed"
+    },
+    {
+      "command": "ruff check + ruff format --check (t1/ + test file)",
+      "exit_code": 0,
+      "result": "All checks passed / already formatted"
+    }
+  ],
+  "created_at_utc": "2026-08-14T07:00:00+00:00",
+  "findings": [
+    {
+      "detail": "probe_unauthorized_download.py 证明：mode=exact 且请求无 authorization 时，--allow-download 仍触发 provider fetch 并落盘；授权只在 latest_as_of→close-gap 路径强制。",
+      "id": "ZR102-F1",
+      "severity": "P1",
+      "successor": "ZR-205",
+      "title": "exact 模式 + --allow-download 未经任何 authorization receipt 即下载"
+    },
+    {
+      "detail": "ensure 与 close-gap 各自 revalidation + single-flight re-check + staged discover；非缺陷但影响 provider 调用预算。",
+      "id": "ZR102-F2",
+      "severity": "P3",
+      "successor": "ZR-205",
+      "title": "一次授权下载产生 5 次 provider 调用（4 metadata discover + 1 fetch）"
+    },
+    {
+      "detail": "S3 rerun 由 runner 充当 reviewer 写入 review 后才通过；生产需显式 review 工作流。",
+      "id": "ZR102-F3",
+      "severity": "P3",
+      "successor": "ZR-302",
+      "title": "下载文档 prompt_injection_status=not_reviewed（设计如此，revenue 层阻塞到 review 存在）"
+    },
+    {
+      "detail": "真实 worker 扫描会改变 catalog mtime；本次 10s 窗口通过。",
+      "id": "ZR102-F4",
+      "severity": "P3",
+      "successor": "ZR-206",
+      "title": "no-external-modification 指纹对真实 .source_catalog 可能受后台 worker 干扰"
+    }
+  ],
+  "implementation": {
+    "design": "临时 wiki 包拷贝（PYTHONPATH 强制）+ 临时三 roots + 临时 catalog/security_master/runtime_policy；临时 filing-fetch 拷贝；provider spy（CN json_command_v1 日志+确定性回执；dayu spy 拒绝）；LLM 边界 COMPANY_WIKI_REAL_LLM=0 + 信封 llm_calls 计数；sitecustomize hop 日志记录每进程 PID/argv hash；validate_hermetic 拒绝任何越出 work-dir 的路径。",
+    "files": [
+      "assurance/unified_completion/t1/zr102_t1_runner.py",
+      "assurance/unified_completion/t1/probe_unauthorized_download.py",
+      "assurance/unified_completion/tests/test_zr102_t1_runner.py"
+    ]
+  },
+  "implementer": "zr102-implementer",
+  "kind": "implementer",
+  "notes": [
+    "triplet：revenue/filing/wiki 产品零改动；本卡仅 assurance 工具（revenue）。",
+    "spy 边界：provider=temp spy 可执行（调用日志+确定性回执）；LLM=REAL_LLM=0 + 信封计数。",
+    "三进程边界：hop 日志记录三个互异 PID（revenue 主进程、filing 子进程、wiki CLI 子进程）。"
+  ],
+  "objective": "建 hermetic 三进程 T1 runner：revenue→filing→wiki 三真实 subprocess；provider/LLM 仅边界 spy；禁止真实 sibling/root。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "a9d46524dfbe18973213f6da0a4b13e10f358843",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "schema_version": 1,
+  "scope": "revenue assurance/unified_completion/t1/**（runner+spies+probe）、tests/test_zr102_t1_runner.py、receipts/ZR-102/**、state.json。三仓产品代码/配置/真实 roots/真实 provider/LLM/网络零改动零调用。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "network_calls": 0,
+    "product_code_changes": 0,
+    "real_llm_calls": 0,
+    "real_provider_calls": 0,
+    "real_root_writes": 0
+  },
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/t1/zr102_t1_runner.py",
+    "revenue-forecast/assurance/unified_completion/t1/probe_unauthorized_download.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_zr102_t1_runner.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-102/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-102"
+}
