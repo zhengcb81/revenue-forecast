@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "d33f7662af98e3f7649f35f926ee33e134761b2e",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "93fa9b68991db7ea1085d1a97df6712d6b3870a5e7c881e56ef79c6e25e39704",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "138 passed"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 17 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/CA-106/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed"
+    }
+  ],
+  "created_at_utc": "2026-08-14T04:15:00Z",
+  "implementer": "ca106-implementer",
+  "kind": "implementer",
+  "mutation": {
+    "details": "fingerprint diff detects added files/bytes; reconciliation rejects both under- and over-reporting; unknown event kinds rejected; privacy test proves full paths absent from serialized output.",
+    "id": "CA-106-M-ledger",
+    "killed": true
+  },
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "red_evidence": [
+    {
+      "description": "side_effect_counts are declared values without measurement source (old FC receipts L82/85/124, current CA receipts). See receipts/CA-106/red/RED.md.",
+      "id": "RED-A",
+      "status": "red_proved"
+    },
+    {
+      "description": "no root before/after fingerprint mechanism existed. See receipts/CA-106/red/RED.md.",
+      "id": "RED-B",
+      "status": "red_proved"
+    },
+    {
+      "description": "no path-privacy convention existed (absolute paths in receipts). See receipts/CA-106/red/RED.md.",
+      "id": "RED-C",
+      "status": "red_proved"
+    }
+  ],
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "d33f7662af98e3f7649f35f926ee33e134761b2e",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "review": {
+    "status": "pending"
+  },
+  "revision": "r1",
+  "rollback": {
+    "note": "Additive assurance code; rollback = revert commit.",
+    "proved": true,
+    "required": false
+  },
+  "scenario_note": "Governance tooling card; no 197-scenario mapping. T0 contract/mutation tests only.",
+  "scenario_results": [],
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "note": "counts above are corroborated by the assurance repo's git log for this card (no subprocess beyond pytest/ruff/mypy); ledger-based attestation is exercised by test_ledger.py roundtrips.",
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "summary": "CA-106 (independent oracle + side-effect ledger): implemented uc/ledger.py (module landed with the CA-105 closure commit; this card completes RED archive, preflight, receipt, review). JSONL side-effect ledger with 13 event kinds; OS-level root fingerprints (file count/bytes/mtime bounds/per-file tokens); before/after diff oracle; declared-vs-measured count reconciliation (both over- and under-reporting go red); privacy tokens (full paths never stored — path_sha256 + basename only). RED evidence: side_effect_counts in old FC receipts and current CA receipts are declared values with no measurement source; no root fingerprint mechanism existed; absolute paths leak in receipts. 8 tests (fingerprint diff, unchanged detection, privacy, roundtrip, unknown-kind rejection, reconciliation over/under-report, count_by_kind). Full suite: 138 passed. Product code/config/CI/catalog/roots: zero writes; fingerprints are read-only.",
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/uc/ledger.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_ledger.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-106/*"
+  ],
+  "unit": "CA-106"
+}
