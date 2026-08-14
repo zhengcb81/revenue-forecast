@@ -38,6 +38,7 @@ from uc.codegraph_freeze import verify as cg_verify
 from uc.commands import CommandSpec, replay_diff as command_replay_diff
 from uc.commands import run as command_run
 from uc.closure import closure_report as three_repo_closure_report
+from uc.legacy_gate import report as legacy_gate_report
 from uc.mutations import run_suite as mutation_run_suite
 from uc.control import patch_section0, plan_advance_fields
 from uc.dag import load_dag, next_units
@@ -410,16 +411,30 @@ def cmd_mutation_run(_args: argparse.Namespace) -> int:
 
     with tempfile.TemporaryDirectory(prefix="uc-mutations-") as tmp:
         report = mutation_run_suite(Path(tmp))
-    print(json.dumps(
-        {
-            "total": report["total"],
-            "killed": report["killed"],
-            "alive": report["alive"],
-        },
-        ensure_ascii=False,
-        indent=2,
-    ))
+    print(
+        json.dumps(
+            {
+                "total": report["total"],
+                "killed": report["killed"],
+                "alive": report["alive"],
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0 if report["alive"] == [] else 1
+
+
+def cmd_legacy_gate(_args: argparse.Namespace) -> int:
+    """Report legacy gate isolation status across the three repos."""
+    repo_roots = {
+        "revenue": REPO_ROOT,
+        "filing": REPO_ROOT.parent / "filing-fetch",
+        "wiki": REPO_ROOT.parent / "company-wiki",
+    }
+    result = legacy_gate_report(repo_roots)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 1 if result["verdict"] != "isolated" else 0
 
 
 def cmd_command_run(args: argparse.Namespace) -> int:
@@ -870,6 +885,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("mutation-run")
     p.set_defaults(func=cmd_mutation_run)
+
+    p = sub.add_parser("legacy-gate")
+    p.set_defaults(func=cmd_legacy_gate)
 
     p = sub.add_parser("closure-advance")
     p.add_argument("--next", required=True)
