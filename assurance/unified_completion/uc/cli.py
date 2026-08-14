@@ -35,6 +35,8 @@ from uc.casfile import (
 )
 from uc.codegraph_freeze import freeze as cg_freeze
 from uc.codegraph_freeze import verify as cg_verify
+from uc.commands import CommandSpec, replay_diff as command_replay_diff
+from uc.commands import run as command_run
 from uc.control import patch_section0, plan_advance_fields
 from uc.dag import load_dag, next_units
 from uc.envfreeze import collect as env_collect
@@ -339,6 +341,26 @@ def cmd_revision_select(args: argparse.Namespace) -> int:
         )
     )
     return 1 if problems else 0
+
+
+def cmd_command_run(args: argparse.Namespace) -> int:
+    """Execute a registered CommandSpec and emit its immutable result artifact."""
+    spec_payload = json.loads(Path(args.spec_json).read_text(encoding="utf-8-sig"))
+    spec = CommandSpec.from_dict(spec_payload)
+    result = command_run(spec, REPO_ROOT)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_command_replay(args: argparse.Namespace) -> int:
+    """Re-run a spec and diff output hashes against a recorded result."""
+    spec_payload = json.loads(Path(args.spec_json).read_text(encoding="utf-8-sig"))
+    recorded = json.loads(Path(args.result_json).read_text(encoding="utf-8-sig"))
+    spec = CommandSpec.from_dict(spec_payload)
+    diff = command_replay_diff(spec, recorded, REPO_ROOT)
+    print(json.dumps(diff, ensure_ascii=False, indent=2))
+    changed = diff["stdout_changed"] or diff["stderr_changed"] or diff["exit_changed"]
+    return 1 if changed else 0
 
 
 def cmd_receipt_sign(args: argparse.Namespace) -> int:
@@ -748,6 +770,15 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("revision-select")
     p.add_argument("--unit", required=True)
     p.set_defaults(func=cmd_revision_select)
+
+    p = sub.add_parser("command-run")
+    p.add_argument("--spec-json", required=True)
+    p.set_defaults(func=cmd_command_run)
+
+    p = sub.add_parser("command-replay")
+    p.add_argument("--spec-json", required=True)
+    p.add_argument("--result-json", required=True)
+    p.set_defaults(func=cmd_command_replay)
 
     p = sub.add_parser("closure-advance")
     p.add_argument("--next", required=True)
