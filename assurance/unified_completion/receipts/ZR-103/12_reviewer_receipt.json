@@ -1,0 +1,84 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "eb7305f10b3fc1bfd1cec7a44940b944c6e824cc",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "canonical_hash": "48961aca7c2fe4e2b0ef070e85a230ba1b9689f42ee45110c31bfc7473020064",
+  "commands": [
+    {
+      "command": "git rev-parse HEAD (repo revenue-forecast, branch fcap)",
+      "exit_code": 0,
+      "result": "eb7305f10b3fc1bfd1cec7a44940b944c6e824cc (matches required delta HEAD)"
+    },
+    {
+      "command": "git show --stat eb7305f10b3fc1bfd1cec7a44940b944c6e824cc",
+      "exit_code": 0,
+      "result": "1 file, 10 insertions(+), 3 deletions(-): receipts/ZR-103/11_implementer_receipt.json ONLY — no code touched"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-103/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed; canonical_hash=7398a6673467fb2f5225058678685ccaae20755724373b7c838dc4bc8cb5ac78; stored == computed (re-seal consistent)"
+    },
+    {
+      "command": "recompute canonical_hash of re-sealed receipt via uc.receipt.canonical_hash",
+      "exit_code": 0,
+      "result": "7398a6673467fb2f5225058678685ccaae20755724373b7c838dc4bc8cb5ac78 == stored canonical_hash"
+    },
+    {
+      "command": "inspect re-sealed receipt commands[3] + findings ZR103-REV-001",
+      "exit_code": 0,
+      "result": "commands[3] (revision-select --unit ZR-101) exit_code=1, result='no reviewer receipt references the latest revision (ZR103-REV-001: reviewed_object_sha256 semantics mismatch)' — truthful, matches fresh run; finding ZR103-REV-001 severity=P2 successor=CA-301"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m uc.cli mutation-run",
+      "exit_code": 0,
+      "result": "total=30 killed=30 alive=[] (kill=100%)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m uc.cli closure-report",
+      "exit_code": 0,
+      "result": "old_plan_verdict=incomplete; complete reason set (26 FCs contradicted, 5 pending FC-1501..1505, 197/197 scenarios unsatisfied, R9 frozen 4/4 RED, legacy sets outside schema, 15 units incomplete incl. ZR-103)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m uc.cli revision-select --unit ZR-101",
+      "exit_code": 1,
+      "result": "problems=[\"no reviewer receipt references the latest revision\"] — matches receipt commands[3] attestation (truthful)"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -c \"import sys; sys.path.insert(0,'assurance/unified_completion'); from uc.strict_state import validate_transition; print(validate_transition('CA-999', {'units':{}}, 'accepted', deps=[], reviewer='same', implementer='same'))\"",
+      "exit_code": 0,
+      "result": "['illegal transition: pending -> accepted', 'reviewer must differ from implementer'] — same-reviewer rejection confirmed"
+    },
+    {
+      "command": "negative test (temp copy only, repo untouched): tamper canonical_hash in a %TEMP% copy of ZR-103 receipt, then receipt-validate",
+      "exit_code": 1,
+      "result": "RECEIPT-PROBLEM: canonical_hash mismatch (content tampered) — CA-102 tamper rejection works"
+    },
+    {
+      "command": "negative test (temp copy only, repo untouched): remove exit_code from commands[0] in a %TEMP% copy, then receipt-validate",
+      "exit_code": 1,
+      "result": "RECEIPT-PROBLEM: commands[0] lacks exit_code — CA-104 missing-command rejection works"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "181 passed"
+    }
+  ],
+  "created_at_utc": "2026-08-14T06:54:46.033908Z",
+  "findings": [],
+  "kind": "reviewer",
+  "note": "ZR-103 delta review (accepted after ZR103-REV-001 fix)",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "eb7305f10b3fc1bfd1cec7a44940b944c6e824cc",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "reviewed_object_sha256": "d23175654cdca646c3e6d117532c938defe9ff180193fbb62bcb959ff9aadf20",
+  "reviewer": "reviewer-zr103-independent",
+  "schema_version": 1,
+  "unit": "ZR-103",
+  "verdict": "accepted"
+}
