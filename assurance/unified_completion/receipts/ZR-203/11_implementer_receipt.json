@@ -1,0 +1,97 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "122ef57a85d3c0f0c5cb3c0a41416538c0c5fa00",
+    "wiki": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
+  },
+  "canonical_hash": "36e409eb49f17da75a8981957ea537f1db9493c801c8aab5f5835f8bd8d16ffa",
+  "commands": [
+    {
+      "command": "uv run python -m pytest tests/contract/test_zr203_reader_rewire.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "8 passed（golden 等价×4、OS 只读 service 读成功、AST caller gate、CLI resolve 用 reader、写路径仍用 store）"
+    },
+    {
+      "command": "uv run python -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "716 passed"
+    },
+    {
+      "command": "uv run python -m pytest tests/contract -q --tb=no (company-wiki)",
+      "exit_code": 1,
+      "result": "1487 passed, 18 skipped, 7 failed——恰好为冻结 HEAD 已知 7 项既有失败（extraction_quality/parser_liveness/pdf_page_aware/pipeline export/security_identity×2/worker_bootstrap heartbeat），零新增回归"
+    },
+    {
+      "command": "uv run ruff check + ruff format --check (全部 10 个改动文件)",
+      "exit_code": 0,
+      "result": "All checks passed / already formatted"
+    }
+  ],
+  "created_at_utc": "2026-08-14T13:00:00+00:00",
+  "findings": [
+    {
+      "detail": "写流程此前依赖 resolver 的 store 构造隐式创建空 catalog；重接后改为 AcquisitionCoordinator/CloseGapTransaction/CLI ensure+close-gap 显式初始化 store（语义零变化，仅时序显式）。reader 的只读连接跨线程共享（并发 single-flight 测试触发），check_same_thread=False 对 mode=ro+query_only 安全（无事务状态）。",
+      "id": "ZR203-IMPL-001",
+      "severity": "info",
+      "title": "scope 微调：writer initializer 显式化落在 acquisition.py/close_gap.py（写流程入口），reader 增加 check_same_thread=False"
+    },
+    {
+      "detail": "这些测试断言 SQL pushdown/bulk 计数，捕获点在 store 连接上；读路径迁移后捕获点同步迁移，断言本体未放宽。",
+      "id": "ZR203-IMPL-002",
+      "severity": "info",
+      "title": "3 个既有测试的 SQL 捕获接缝从 store 迁至 reader（resolver_sql_perf/semantic_duplicates/pipeline bulk-query）"
+    },
+    {
+      "detail": "duplicate_cleanup.py 不在本卡允许文件集；后续需专属 reader 接线卡。",
+      "id": "ZR203-IMPL-003",
+      "severity": "info",
+      "successor": "ZR-206",
+      "title": "duplicates/duplicate-preview CLI 仍经 DuplicateCleanupService 间接用 store（只读用途）——超范围遗留"
+    }
+  ],
+  "implementation": {
+    "design": "SourceCatalog.reader 惰性属性；service 只读方法（status/query/query_filing_candidates/explain_filing_candidates_plan/query_source_bundle/bundle_for_resolution/semantic_duplicate_groups）全部 self.reader.fetch*；CLI resolve 命令 envelope 用 get_catalog().reader；resolver 读路径（_remediation_pending/_source_metadata/_verified_assertion_identity）用 self.catalog.reader；写入口（ensure/close-gap CLI + AcquisitionCoordinator/CloseGapTransaction 构造）显式初始化 store（writer initializer 迁至写流程，读流程不再隐式创建 DB）。reader 连接 check_same_thread=False（mode=ro+query_only 无事务状态，跨线程只读安全）。",
+    "wiki_commit": "0521e7cf727fe990ea891f20d4d324f228856d1d"
+  },
+  "implementer": "zr203-implementer",
+  "kind": "implementer",
+  "notes": [
+    "ZR001-W1 反例 red→green：OS 只读 DB 上 service 读入口成功（旧行为构造 CatalogStore 崩溃）；resolve 路径不再需要写权限。",
+    "golden 等价：同一 catalog 上 reader.status()==store.status() 等逐项字节相等。",
+    "mypy：三文件不在 wiki CI 固定 11 模块名单，跳过并注明。"
+  ],
+  "objective": "将所有只读生产入口从 CatalogStore 重接 Reader：CodeGraph production caller gate；Writer initializer 对只读入口 caller=0；旧结果 golden 等价。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "122ef57a85d3c0f0c5cb3c0a41416538c0c5fa00",
+    "wiki": "0521e7cf727fe990ea891f20d4d324f228856d1d"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki service.py/cli.py/resolver.py 只读路径重接 + acquisition.py/close_gap.py writer-initializer 显式化（写流程入口）+ reader.py（check_same_thread=False 只读连接跨线程安全）+ 新测试 test_zr203_reader_rewire.py + 3 个既有测试的捕获接缝更新（store→reader）。revenue 侧 receipts/ZR-203/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 10,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/service.py",
+    "company-wiki/src/company_wiki/source_catalog/cli.py",
+    "company-wiki/src/company_wiki/source_catalog/resolver.py",
+    "company-wiki/src/company_wiki/source_catalog/acquisition.py",
+    "company-wiki/src/company_wiki/source_catalog/close_gap.py",
+    "company-wiki/src/company_wiki/source_catalog/reader.py",
+    "company-wiki/tests/contract/test_zr203_reader_rewire.py",
+    "company-wiki/tests/contract/test_resolver_sql_perf_fc703.py",
+    "company-wiki/tests/contract/test_source_catalog_semantic_duplicates.py",
+    "company-wiki/tests/contract/test_source_catalog_pipeline.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-203/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-203"
+}

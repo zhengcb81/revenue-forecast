@@ -134,6 +134,9 @@ class TestFaultInjection(unittest.TestCase):
                                 as_of_date="2026-08-12", market="CN", fiscal_year=2020)
             res = SourceResolver(catalog, runtime_policy=None).resolve(req)
             self.assertFalse(res.matches, "sidecar-missing doc must not resolve")
+            # ZR-203: the cached reader connection must be released before
+            # the temp directory is deleted (Windows sharing semantics).
+            catalog.close()
 
     def test_runner_robustness_utf8_and_atomic(self):
         """Runner robustness: UTF-8 reports + atomic dashboard ledger (no

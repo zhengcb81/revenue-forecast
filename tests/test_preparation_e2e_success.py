@@ -57,6 +57,17 @@ def _fixture_wiki_root(tmp: Path) -> Path:
     con.execute("INSERT INTO entities VALUES ('ent-acme', 'Acme', 'company')")
     con.execute("INSERT INTO document_entities VALUES ('d1', 'ent-acme', 1.0, "
                 "'fixture')")
+    # ZR-203: the read-only resolve path reads these tables directly (no
+    # store initialization on the read path) — the fixture must carry the
+    # full read schema instead of relying on implicit DDL.
+    con.execute("CREATE TABLE catalog_meta (key TEXT PRIMARY KEY, "
+                "value TEXT NOT NULL)")
+    con.execute("INSERT INTO catalog_meta VALUES ('schema_version', '1.2.0')")
+    con.execute("CREATE TABLE remediation_proposals (proposal_id TEXT PRIMARY KEY, "
+                "source_id TEXT, status TEXT, proposed_by TEXT, created_at TEXT)")
+    con.execute("CREATE TABLE producer_events (event_id TEXT PRIMARY KEY, "
+                "document_id TEXT, artifact_role TEXT, producer_name TEXT, "
+                "producer_version TEXT, event_type TEXT, created_at TEXT)")
     con.execute("CREATE TABLE source_metadata_assertions (assertion_id TEXT "
                 "PRIMARY KEY, source_id TEXT, document_id TEXT, "
                 "content_sha256 TEXT, evidence_basis TEXT, evidence_json "
