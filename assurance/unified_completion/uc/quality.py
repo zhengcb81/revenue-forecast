@@ -15,8 +15,12 @@ Design rules (ZR-104, phase C):
   repos and the toolchain at freeze time AND at verify time.  No value in
   the baseline is hand-written except structural metadata (schema, unit,
   the fixed frozen-at constant, file paths, the max-complexity constant).
-- The baseline is bound to an exact triplet (git HEADs); verify requires
-  exact equality (re-freeze after deliberate review when the triplet moves).
+- The baseline is bound to each repo's PRODUCT subtree (``HEAD:scripts`` for
+  revenue/filing, ``HEAD:src/company_wiki/source_catalog`` for wiki); verify
+  requires exact equality (re-freeze after deliberate product-code review).
+  The raw triplet (git HEADs) is recorded informationally only, so
+  assurance-control-plane commits inside revenue do not invalidate the
+  baseline.
 - Ratchet semantics: the frozen baseline must *match-or-improve* the
   recomputed state — the frozen value must be at least as strict as the
   value recomputed today.  A baseline that was weakened (coverage floor
@@ -111,6 +115,34 @@ def git_head(repo: Path) -> str:
     if proc.returncode != 0:
         raise ValueError(
             f"git rev-parse HEAD failed on {repo}: {proc.stderr.strip()[-200:]}"
+        )
+    return proc.stdout.strip()
+
+
+# The baseline binds each repo's PRODUCT subtree (the code the quality
+# dimensions measure), not the raw HEAD: the assurance control plane lives
+# inside the revenue repository, so its receipt/state/closure commits must
+# not invalidate the quality baseline.
+PRODUCT_TREE_PATHS = {
+    "revenue": "scripts",
+    "filing": "scripts",
+    "wiki": "src/company_wiki/source_catalog",
+}
+
+
+def product_tree_sha(repo: Path, product_path: str) -> str:
+    proc = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", f"HEAD:{product_path}"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=60,
+    )
+    if proc.returncode != 0:
+        raise ValueError(
+            f"git rev-parse HEAD:{product_path} failed on {repo}: "
+            f"{proc.stderr.strip()[-200:]}"
         )
     return proc.stdout.strip()
 
@@ -397,9 +429,12 @@ def compute_baseline(root: Path) -> dict[str, Any]:
     is the SINGLE computation shared by freeze and verify — the baseline
     JSON must never carry a number that this function cannot reproduce."""
     triplet: dict[str, str] = {}
+    product_trees: dict[str, str] = {}
     repos: dict[str, Any] = {}
     for repo_name in REPO_ORDER:
-        triplet[repo_name] = git_head(DEFAULT_REPOS[repo_name](root))
+        repo = DEFAULT_REPOS[repo_name](root)
+        triplet[repo_name] = git_head(repo)
+        product_trees[repo_name] = product_tree_sha(repo, PRODUCT_TREE_PATHS[repo_name])
         repos[repo_name] = {
             "types": {"strict_mypy_targets": strict_targets(repo_name, root)},
             "coverage": _coverage_for(repo_name, root),
@@ -412,6 +447,7 @@ def compute_baseline(root: Path) -> dict[str, Any]:
         "unit": UNIT,
         "frozen_at": FROZEN_AT_UTC,
         "triplet": triplet,
+        "product_trees": product_trees,
         "repos": repos,
         "dead_callers": _dead_callers(control_root),
     }
@@ -638,13 +674,14 @@ def verify(root: Path, frozen: dict[str, Any]) -> list[str]:
         problems.append(f"schema: unit {frozen.get('unit')!r} != {UNIT!r}")
     current = compute_baseline(root)
     for repo_name in REPO_ORDER:
-        frozen_sha = frozen.get("triplet", {}).get(repo_name)
-        current_sha = current["triplet"][repo_name]
+        frozen_sha = frozen.get("product_trees", {}).get(repo_name)
+        current_sha = current["product_trees"][repo_name]
         if frozen_sha != current_sha:
             problems.append(
-                f"triplet/{repo_name}: frozen {frozen_sha} != current HEAD "
-                f"{current_sha} (baseline is bound to a triplet; re-freeze "
-                "after deliberate review)"
+                f"product_trees/{repo_name}: frozen {frozen_sha} != current "
+                f"{current_sha} (baseline is bound to the product subtree "
+                f"{PRODUCT_TREE_PATHS[repo_name]}; re-freeze after deliberate "
+                "product-code review)"
             )
     for repo_name in REPO_ORDER:
         fr = frozen.get("repos", {}).get(repo_name, {})

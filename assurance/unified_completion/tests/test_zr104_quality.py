@@ -30,19 +30,22 @@ from pathlib import Path
 
 from uc.quality import (
     MAX_CRITICAL_COMPLEXITY,
+    PRODUCT_TREE_PATHS,
     check_critical_complexity,
     compute_baseline,
     freeze,
+    git_head,
+    product_tree_sha,
     verify,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 QUALITY_PATH = Path(__file__).resolve().parents[1] / "quality" / "quality_baseline.json"
 
-FROZEN_TRIPLET = {
-    "revenue": "313638b25c9dd109af442b666765f4340de2fb8b",
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc",
+REPOS = {
+    "revenue": REPO_ROOT,
+    "filing": REPO_ROOT.parent / "filing-fetch",
+    "wiki": REPO_ROOT.parent / "company-wiki",
 }
 
 
@@ -108,7 +111,11 @@ def test_two_freezes_are_identical(tmp_path):
     payload = json.loads(first.read_text(encoding="utf-8"))
     assert payload["schema_version"] == 1
     assert payload["unit"] == "ZR-104"
-    assert payload["triplet"] == FROZEN_TRIPLET
+    assert payload["triplet"] == {name: git_head(repo) for name, repo in REPOS.items()}
+    assert payload["product_trees"] == {
+        name: product_tree_sha(repo, PRODUCT_TREE_PATHS[name])
+        for name, repo in REPOS.items()
+    }
     committed = _load_baseline()
     assert payload == committed, (
         "recomputed baseline drifted from the committed baseline"
