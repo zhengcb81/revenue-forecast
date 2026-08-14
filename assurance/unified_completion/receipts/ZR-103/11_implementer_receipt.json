@@ -1,0 +1,99 @@
+{
+  "already_satisfied_evidence": {
+    "missing_commands_rejected": {
+      "ca_unit": "CA-104",
+      "evidence": "command attestation：必需命令清单 + 不可变结果（output hashes）+ secret-free"
+    },
+    "same_reviewer_rejected": {
+      "ca_unit": "CA-101",
+      "evidence": "strict_state reviewer 门（accepted 需 reviewer≠implementer）"
+    },
+    "skip_rejected": {
+      "ca_units": "CA-105 + CA-107",
+      "evidence": "scenario registry 197 场景分层统计 + closure-report 诚实 incomplete verdict"
+    },
+    "tamper_hash_rejected": {
+      "ca_units": "CA-102 + CA-108",
+      "evidence": "receipt canonical hash + 30 mutation（含 hash 篡改类）全部杀死"
+    },
+    "triplet_drift_rejected": {
+      "ca_units": "CA-102 + CA-002",
+      "evidence": "receipt-validate 对 triplet 值做 git-object 存在性校验；envfreeze 冻结截面"
+    },
+    "unauthorized_side_effect_rejected": {
+      "ca_units": "CA-106 + CA-104",
+      "evidence": "side-effect ledger declared-vs-measured 对账 + command env allowlist"
+    }
+  },
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "c6b2e6a9e3ff22cf9f460b6a27852a9200131909",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "canonical_hash": "01a53ff621e5f063eaa891fe10a484eaed1e18a3d82cdbd9bd2b710d4762e57a",
+  "commands": [
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli mutation-run",
+      "exit_code": 0,
+      "result": "total=30 killed=30 alive=[] (kill=100%)"
+    },
+    {
+      "command": "receipt-validate (ZR-101, ZR-102 implementer receipts + 本 receipt)",
+      "exit_code": 0,
+      "result": "all OK canonical and well-formed（triplet git-object 校验通过）"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli closure-report",
+      "exit_code": 0,
+      "result": "old_plan_verdict=incomplete with complete reason set（诚实不伪绿）"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli revision-select --unit ZR-101",
+      "exit_code": 0,
+      "result": "唯一 implementer/reviewer 配对选择正常（reviewer≠implementer）"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "181 passed（含 lock/strict_state/receipt/commands/ledger/mutations 全部 validator 测试）"
+    }
+  ],
+  "created_at_utc": "2026-08-14T07:30:00+00:00",
+  "findings": [
+    {
+      "detail": "catalog：真实 46GB catalog 由后台 worker 持续写入，CA-002 冻结截面必然过期；repos：revenue/wiki HEAD 已在后续单元合法前进。triplet 漂移拒绝由 receipt-validate 的 git-object 校验承担，不由过期 env 截面承担。",
+      "id": "ZR103-ENV-001",
+      "severity": "info",
+      "title": "env-verify 报 catalog/repos 两节 drift 属预期（非本卡门）"
+    }
+  ],
+  "implementer": "zr103-implementer",
+  "kind": "implementer",
+  "notes": [
+    "本卡无任何代码改动（共享证据关闭）；diff 仅 receipts/ZR-103/** 与 state.json。",
+    "ZR-103 与 ZR-002 同族：引用 CA 链同一实现，不写第二套 validator。"
+  ],
+  "objective": "closure/receipt/command validator：篡改 hash、同一 reviewer、缺命令、skip、triplet 漂移、越权 side effect 全拒绝。README §7：由 CA-101~109 唯一实现，ZR 用同一 receipt 关闭。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "c6b2e6a9e3ff22cf9f460b6a27852a9200131909",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-103/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-103/11_implementer_receipt.json",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-103"
+}
