@@ -4,7 +4,7 @@
     "revenue": "122ef57a85d3c0f0c5cb3c0a41416538c0c5fa00",
     "wiki": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
   },
-  "canonical_hash": "36e409eb49f17da75a8981957ea537f1db9493c801c8aab5f5835f8bd8d16ffa",
+  "canonical_hash": "d0ec960a54ca1339e1ffb8dce62a85854430fa7c7ddb478d1063de136ca7af5a",
   "commands": [
     {
       "command": "uv run python -m pytest tests/contract/test_zr203_reader_rewire.py -q --tb=short (company-wiki)",
@@ -51,7 +51,7 @@
   ],
   "implementation": {
     "design": "SourceCatalog.reader 惰性属性；service 只读方法（status/query/query_filing_candidates/explain_filing_candidates_plan/query_source_bundle/bundle_for_resolution/semantic_duplicate_groups）全部 self.reader.fetch*；CLI resolve 命令 envelope 用 get_catalog().reader；resolver 读路径（_remediation_pending/_source_metadata/_verified_assertion_identity）用 self.catalog.reader；写入口（ensure/close-gap CLI + AcquisitionCoordinator/CloseGapTransaction 构造）显式初始化 store（writer initializer 迁至写流程，读流程不再隐式创建 DB）。reader 连接 check_same_thread=False（mode=ro+query_only 无事务状态，跨线程只读安全）。",
-    "wiki_commit": "0521e7cf727fe990ea891f20d4d324f228856d1d"
+    "wiki_commit": "0521e7cf727fe990ea891f20d4d324f228856d1d (+354f5566 close())"
   },
   "implementer": "zr203-implementer",
   "kind": "implementer",
@@ -65,7 +65,7 @@
   "result_triplet": {
     "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
     "revenue": "122ef57a85d3c0f0c5cb3c0a41416538c0c5fa00",
-    "wiki": "0521e7cf727fe990ea891f20d4d324f228856d1d"
+    "wiki": "354f5566c18f2f6bd87017dc9790866ae628a78e"
   },
   "schema_version": 1,
   "scope": "company-wiki service.py/cli.py/resolver.py 只读路径重接 + acquisition.py/close_gap.py writer-initializer 显式化（写流程入口）+ reader.py（check_same_thread=False 只读连接跨线程安全）+ 新测试 test_zr203_reader_rewire.py + 3 个既有测试的捕获接缝更新（store→reader）。revenue 侧 receipts/ZR-203/** 与 state.json。",
@@ -91,7 +91,9 @@
     "company-wiki/tests/contract/test_source_catalog_semantic_duplicates.py",
     "company-wiki/tests/contract/test_source_catalog_pipeline.py",
     "revenue-forecast/assurance/unified_completion/receipts/ZR-203/**",
-    "revenue-forecast/assurance/unified_completion/state.json"
+    "revenue-forecast/assurance/unified_completion/state.json",
+    "revenue-forecast/tests/test_preparation_e2e_success.py",
+    "revenue-forecast/tests/test_fc1105_fault_injection.py"
   ],
   "unit": "ZR-203"
 }
