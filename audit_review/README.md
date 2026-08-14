@@ -9,8 +9,8 @@ plan_id: TRI-REPO-COMPLETION-2026-08-13-R1
 authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
-current_phase: A0_bootstrap_and_rebaseline
-current_next: ZR-002
+current_phase: C_read_only_and_contracts
+current_next: ZR-101
 active_owner: unassigned
 lease: none
 blocked_reason: none
