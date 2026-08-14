@@ -7,7 +7,7 @@ complexity (wiki FC-1204 per-file frozen max; revenue/filing enforced on
 new/changed critical functions only), root hardcoding (wiki FC-1201 frozen
 allowlist; revenue FC-1101 workflow-pin scan), and dead production callers
 (CA-003 CodeGraph caller report) — into one machine-verifiable baseline
-bound to the current triplet.
+bound to each repo's product subtree.
 
 Design rules (ZR-104, phase C):
 
@@ -18,9 +18,10 @@ Design rules (ZR-104, phase C):
 - The baseline is bound to each repo's PRODUCT subtree (``HEAD:scripts`` for
   revenue/filing, ``HEAD:src/company_wiki/source_catalog`` for wiki); verify
   requires exact equality (re-freeze after deliberate product-code review).
-  The raw triplet (git HEADs) is recorded informationally only, so
-  assurance-control-plane commits inside revenue do not invalidate the
-  baseline.
+  The raw git HEADs are NOT recorded in the baseline at all: the assurance
+  control plane lives inside the revenue repository, so its receipt/state/
+  closure commits must never invalidate the quality baseline (the frozen
+  HEADs of each unit are already recorded in its receipts).
 - Ratchet semantics: the frozen baseline must *match-or-improve* the
   recomputed state — the frozen value must be at least as strict as the
   value recomputed today.  A baseline that was weakened (coverage floor
@@ -428,12 +429,10 @@ def compute_baseline(root: Path) -> dict[str, Any]:
     """Recompute the full baseline from the repos and the toolchain.  This
     is the SINGLE computation shared by freeze and verify — the baseline
     JSON must never carry a number that this function cannot reproduce."""
-    triplet: dict[str, str] = {}
     product_trees: dict[str, str] = {}
     repos: dict[str, Any] = {}
     for repo_name in REPO_ORDER:
         repo = DEFAULT_REPOS[repo_name](root)
-        triplet[repo_name] = git_head(repo)
         product_trees[repo_name] = product_tree_sha(repo, PRODUCT_TREE_PATHS[repo_name])
         repos[repo_name] = {
             "types": {"strict_mypy_targets": strict_targets(repo_name, root)},
@@ -446,7 +445,6 @@ def compute_baseline(root: Path) -> dict[str, Any]:
         "schema_version": SCHEMA_VERSION,
         "unit": UNIT,
         "frozen_at": FROZEN_AT_UTC,
-        "triplet": triplet,
         "product_trees": product_trees,
         "repos": repos,
         "dead_callers": _dead_callers(control_root),
@@ -660,9 +658,9 @@ def verify(root: Path, frozen: dict[str, Any]) -> list[str]:
     """Recompute the baseline and compare it against the frozen payload.
 
     PASS (empty list) only when the frozen baseline is bound to the current
-    triplet AND every ratchet dimension matches-or-improves the recomputed
-    state.  Returns named violations; any entry means exit-code 1 for the
-    ``quality-verify`` CLI gate.
+    product subtrees AND every ratchet dimension matches-or-improves the
+    recomputed state.  Returns named violations; any entry means exit-code 1
+    for the ``quality-verify`` CLI gate.
     """
     problems: list[str] = []
     if frozen.get("schema_version") != SCHEMA_VERSION:

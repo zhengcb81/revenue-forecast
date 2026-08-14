@@ -34,7 +34,6 @@ from uc.quality import (
     check_critical_complexity,
     compute_baseline,
     freeze,
-    git_head,
     product_tree_sha,
     verify,
 )
@@ -111,7 +110,6 @@ def test_two_freezes_are_identical(tmp_path):
     payload = json.loads(first.read_text(encoding="utf-8"))
     assert payload["schema_version"] == 1
     assert payload["unit"] == "ZR-104"
-    assert payload["triplet"] == {name: git_head(repo) for name, repo in REPOS.items()}
     assert payload["product_trees"] == {
         name: product_tree_sha(repo, PRODUCT_TREE_PATHS[name])
         for name, repo in REPOS.items()
