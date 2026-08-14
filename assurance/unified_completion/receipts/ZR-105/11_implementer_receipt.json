@@ -1,0 +1,110 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "19cb45aed2807374abf3de783b709f403bf51a27",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "canonical_hash": "08ea7d3a6d095d9bd7db10da829e360d608c2ef957a680f85362209b4303129b",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/test_zr105_ci_contract.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "9 passed"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli ci-gap",
+      "exit_code": 1,
+      "result": "honest gap report: 9/9 checks gap（revenue manifest triplet 陈旧 1b41d62f…≠19cb45ae…；filing 浮动 git clone 无 pin；wiki 无 sibling checkout；三仓均无 fan-out 标记；三仓均无 collected/skip delta 控制；wiki ci.yml:50/80 两处 || true）——全部 successor=CA-201"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "198 passed"
+    },
+    {
+      "command": "ruff check + ruff format --check (assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "All checks passed / 58 files already formatted"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 23 source files"
+    }
+  ],
+  "created_at_utc": "2026-08-14T10:00:00+00:00",
+  "findings": [
+    {
+      "detail": "quality.yml:20-24 用 manifest 驱动 checkout，但 manifest 自标注 informational 且已过期；要求 CA-201 将 manifest 更新机制改为机器强制。",
+      "id": "ZR105-GAP-001",
+      "severity": "P1",
+      "successor": "CA-201",
+      "title": "revenue compatibility/current.json 的 current_triplet 陈旧（1b41d62f…/592fae61…/f6eb5841… ≠ 冻结 19cb45ae…/83c638e7…/b6617553…），CI 按陈旧组合验证 sibling"
+    },
+    {
+      "detail": "必须改为 manifest+sha 驱动 checkout（CA-201 fan-out 契约）。",
+      "id": "ZR105-GAP-002",
+      "severity": "P1",
+      "successor": "CA-201",
+      "title": "filing quality.yml:19 浮动 clone（git clone 无 pinned sha）→ 验证浮动组合"
+    },
+    {
+      "detail": "仅 push/pull_request 自身仓；CA-201 实现调度/attestation。",
+      "id": "ZR105-GAP-003",
+      "severity": "P1",
+      "successor": "CA-201",
+      "title": "三仓均无受影响仓 fan-out 触发/映射"
+    },
+    {
+      "detail": "CA-201 需加入 collected/skip 基线与 delta 门；|| true 必须移除或改为受控。",
+      "id": "ZR105-GAP-004",
+      "severity": "P1",
+      "successor": "CA-201",
+      "title": "三仓均无 collected/skip delta 控制；wiki ci.yml:50/80 两处无条件 || true 吞错（CI-001 关联）"
+    }
+  ],
+  "implementation": {
+    "design": "契约冻结三要素的机器谓词 + workflow 文件 raw-byte sha256；ci-gap 评估器只读扫描三仓 workflow：exact_triplet_binding（revenue=manifest 三元组与冻结 triplet 相等；filing=无浮动 clone 且有 pinned sha；wiki=有 sibling checkout 证据）、affected_repo_fanout（repository_dispatch/workflow_run 标记）、collected_skip_delta_controlled（collect/baseline 记录 + 无无条件 || true）。现状诚实评估：9/9 gap，successor=CA-201。",
+    "files": [
+      "assurance/unified_completion/ci/current_triplet_contract.json",
+      "assurance/unified_completion/uc/ci_contract.py",
+      "assurance/unified_completion/uc/cli.py",
+      "assurance/unified_completion/tests/test_zr105_ci_contract.py"
+    ]
+  },
+  "implementer": "zr105-implementer",
+  "kind": "implementer",
+  "notes": [
+    "按 §7 本卡不改任何 workflow；gap 即 C 阶段诚实出口状态，由 CA-201（阶段 H）实现关闭。",
+    "评估器确定性：只依赖 workflow 字节与冻结契约（evaluated_at 仅信息）。",
+    "workflow raw-byte sha256 绑定（CRLF 安全）；三仓 workflow 文件在冻结 triplet 上未变。"
+  ],
+  "objective": "current-triplet required gate 契约：任一仓变更触发受影响三仓；collected/skip delta 受控；三仓 HEAD 精确绑定。§7：fan-out 调度/attestation 归 CA-201；本卡只冻结 required checks 并诚实评估现状。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "ca824e9005c67e808547d28f01799f16746711aa",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "schema_version": 1,
+  "scope": "revenue assurance/unified_completion/ci/current_triplet_contract.json、uc/ci_contract.py、uc/cli.py（ci-gap）、tests/test_zr105_ci_contract.py、receipts/ZR-105/**、state.json。三仓 .github/workflows 文件零修改（CA-201 专属）。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "workflow_file_edits": 0
+  },
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/ci/current_triplet_contract.json",
+    "revenue-forecast/assurance/unified_completion/uc/ci_contract.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_zr105_ci_contract.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-105/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-105"
+}
