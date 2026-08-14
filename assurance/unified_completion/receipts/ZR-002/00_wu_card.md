@@ -19,7 +19,7 @@
   | ZR-002 要素 | CA 实现 | 证据 |
   |---|---|---|
   | command schema/attestation（命令不能被实施者缩减） | CA-104 | `uc/commands.py` 冻结 spec + 不可变结果（output hashes、secret-free、replay-diff）+ `command-run/replay` CLI + tests/test_commands.py |
-  | scenario registry 有 hash | CA-105 | `scenarios/scenario_registry.json`（sha256 a350a3c9…）197 场景机器注册表 |
+  | scenario registry 有 hash | CA-105 | `scenarios/scenario_registry.json`（sha256 `a350a3c979a090f14174759fdfca976e75fc648594cb0a22e5fa0621ac3cc9fe`，与 CA-105 receipt 记录一致）197 场景机器注册表 |
   | receipt schema 冻结 | CA-102 | `uc/receipt.py` content-addressed（canonical hash、N/N-1、triplet git-object 校验） |
   | 计划写锁 + shared-resource lock（并发写入 mutation 被拒） | CA-001 + CA-101 | `uc/lock.py`+`uc/casfile.py` 单 writer/CAS/代际守卫；`uc/strict_state.py` per-unit 锁；mutation-run 30/30 全杀 |
 - **Acceptance criteria**：本卡 receipt 引用上述 CA 验收并复跑 mutation-run + receipt-validate 门；独立 reviewer 确认映射无遗漏、CA 门未降。
