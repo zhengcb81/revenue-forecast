@@ -1,0 +1,104 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "313638b25c9dd109af442b666765f4340de2fb8b",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "canonical_hash": "c3d1201741fab9313fe535db264a9623a077da394a63079265ab03b285da8c31",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/test_zr104_quality.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "8 passed"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli quality-verify",
+      "exit_code": 0,
+      "result": "OK: quality baseline matches-or-improves the recomputed three-repo state"
+    },
+    {
+      "command": "quality-freeze（已存在基线）",
+      "exit_code": 2,
+      "result": "refuses when baseline exists（无 --force 不覆盖）"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "189 passed"
+    },
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest tests -q (revenue owner repo)",
+      "exit_code": 0,
+      "result": "470 passed, 106 subtests passed"
+    },
+    {
+      "command": "ruff check + ruff format --check (quality/ + uc/quality.py + uc/cli.py + test file)",
+      "exit_code": 0,
+      "result": "All checks passed / already formatted"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 22 source files"
+    }
+  ],
+  "created_at_utc": "2026-08-14T09:00:00+00:00",
+  "findings": [
+    {
+      "detail": "hardcoding 维度两仓为显式空 allowlist（FC-501 由 policy snapshot 消费保证而非 token allowlist）；复杂度两仓记 enforced-on-new/changed-only（CC≤10）。",
+      "id": "ZR104-IMPL-001",
+      "severity": "info",
+      "successor": "ZR-201",
+      "title": "revenue/filing 无 root 硬编码门与全仓复杂度门——诚实记空/仅新改函数，不虚构数字"
+    },
+    {
+      "detail": "仅该生成器豁免；其余 public contracts 全注解。",
+      "id": "ZR104-IMPL-002",
+      "severity": "info",
+      "title": "generator 函数（collect_mode）返回类型由 mypy 推断，strict-annotation 测试豁免并注明"
+    }
+  ],
+  "implementation": {
+    "design": "compute_baseline() 单一计算源（freeze/verify 共用）；五维全部机器复算：types=各仓 mypy strict 目标集（revenue scripts/contracts 等、filing fetch_filing/filing_contracts、wiki CI 11 模块）；coverage=revenue .coveragerc+run_coverage_gates.py（total 84 + 8 模块下限）、filing pyproject fail_under 90、wiki FC-1204 模块分支表；complexity=wiki 78 文件冻结 max + 三仓新改关键函数 CC≤10（AST McCabe，零第三方依赖）；hardcoding=wiki FC-1201 4 tokens + 16 文件 allowlist（revenue/filing 无此门，诚实记空）；dead_callers=CA-003 codegraph freeze（input_hash 1093c109…，wiki.ProcessingDemand=MISSING-001）。ratchet 规则：strict 目标只增、coverage 只升、复杂度只降、allowlist 只缩、dead caller 只减。",
+    "files": [
+      "assurance/unified_completion/quality/quality_baseline.json",
+      "assurance/unified_completion/uc/quality.py",
+      "assurance/unified_completion/uc/cli.py",
+      "assurance/unified_completion/tests/test_zr104_quality.py"
+    ]
+  },
+  "implementer": "zr104-implementer",
+  "kind": "implementer",
+  "notes": [
+    "基线五维值全部来自工具真实输出与既有冻结配置，禁止手写（freeze/verify 共用 compute_baseline）。",
+    "triplet：wiki/filing 零改动；本卡只新增 assurance 注册表与门。"
+  ],
+  "objective": "冻结三仓类型、覆盖率、复杂度、硬编码、死生产 caller 基线和 ratchet；无阈值下降；新增/改关键函数 complexity≤10；public contracts strict type。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "b6afeb3d9315a588f595e332e48fb5881419b518",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "schema_version": 1,
+  "scope": "revenue assurance/unified_completion/quality/**、uc/quality.py、uc/cli.py（quality-freeze/verify）、tests/test_zr104_quality.py、receipts/ZR-104/**、state.json。三仓产品零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "threshold_lowerings": 0
+  },
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/quality/quality_baseline.json",
+    "revenue-forecast/assurance/unified_completion/uc/quality.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_zr104_quality.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-104/00_wu_card.md",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-104"
+}
