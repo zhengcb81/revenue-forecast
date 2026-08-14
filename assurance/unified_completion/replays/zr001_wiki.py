@@ -90,6 +90,12 @@ def utc_now() -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--wiki-python", type=Path, default=None)
+    parser.add_argument(
+        "--evidence-dir",
+        type=Path,
+        default=EVIDENCE_DIR,
+        help="write evidence here (default: the sealed evidence dir)",
+    )
     args = parser.parse_args()
     venv_python = WIKI_ROOT / ".venv" / "Scripts" / "python.exe"
     candidates = []
@@ -127,8 +133,8 @@ def main() -> int:
                 ).hexdigest(),
             }
             payload["observed_at_utc"] = utc_now()
-            EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
-            path = EVIDENCE_DIR / "w1_catalog_read_path_writes.json"
+            args.evidence_dir.mkdir(parents=True, exist_ok=True)
+            path = args.evidence_dir / "w1_catalog_read_path_writes.json"
             path.write_text(
                 json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
                 + "\n",

@@ -17,6 +17,7 @@ Emits evidence files into ``replays/evidence/``.
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import subprocess
@@ -42,9 +43,9 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def write_evidence(name: str, payload: dict) -> Path:
-    EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
-    path = EVIDENCE_DIR / name
+def write_evidence(name: str, payload: dict, evidence_dir: Path) -> Path:
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    path = evidence_dir / name
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -181,6 +182,14 @@ def product_code_hashes() -> dict:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--evidence-dir",
+        type=Path,
+        default=EVIDENCE_DIR,
+        help="write evidence here (default: the sealed evidence dir)",
+    )
+    args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix="zr001_filing_") as tmp:
         root = Path(tmp)
         outputs = {
@@ -198,7 +207,7 @@ def main() -> int:
     for name, payload in outputs.items():
         payload["product_code_hashes"] = product_code_hashes()
         payload["filing_head"] = filing_head
-        write_evidence(name, payload)
+        write_evidence(name, payload, args.evidence_dir)
     for name in sorted(outputs):
         print(name)
     return 0
