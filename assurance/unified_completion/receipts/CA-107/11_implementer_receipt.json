@@ -1,0 +1,90 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "2dad5bb31e4e1e3d7e160153148afb29608a2eae",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "100eaa3cdd46555fbfdb7442c1d1a8329a147da3ff7a0cd9fb020634b32f4933",
+  "commands": [
+    {
+      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+      "exit_code": 0,
+      "result": "145 passed"
+    },
+    {
+      "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "MYPYPATH=assurance/unified_completion python -B -m mypy assurance/unified_completion/uc/",
+      "exit_code": 0,
+      "result": "Success: no issues found in 18 source files"
+    },
+    {
+      "command": "PYTHONPATH=assurance/unified_completion python -B -m uc.cli closure-report",
+      "exit_code": 0,
+      "result": "old_plan_verdict=incomplete with complete reason set (real three-repo scan)"
+    }
+  ],
+  "created_at_utc": "2026-08-14T05:00:00Z",
+  "implementer": "ca107-implementer",
+  "kind": "implementer",
+  "mutation": {
+    "details": "tampered reviewer verdict -> incomplete with canonical_hash mismatch; missing reviewer receipt -> incomplete with exact reason; legacy receipt set -> legacy without false problems; fixture/real scans agree.",
+    "id": "CA-107-M-closure",
+    "killed": true
+  },
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "red_evidence": [
+    {
+      "description": "old closure_gate only reported 'five items remaining' without per-cause precision (CA-002/003 RED already proved ancestry-only triplet checks). See receipts/CA-107/red/RED.md.",
+      "id": "RED-A",
+      "status": "red_proved"
+    },
+    {
+      "description": "filing/wiki assurance/fc receipts were never machine-scanned. See receipts/CA-107/red/RED.md.",
+      "id": "RED-B",
+      "status": "red_proved"
+    },
+    {
+      "description": "no mutation-guaranteed detection for missing receipts/reviewers/tampering existed (detection now in the report; the mutation suite is CA-108). See receipts/CA-107/red/RED.md.",
+      "id": "RED-C",
+      "status": "red_proved"
+    }
+  ],
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "2dad5bb31e4e1e3d7e160153148afb29608a2eae",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "review": {
+    "status": "pending"
+  },
+  "revision": "r1",
+  "rollback": {
+    "note": "Additive assurance code; rollback = revert commit.",
+    "proved": true,
+    "required": false
+  },
+  "scenario_note": "Governance tooling card; no 197-scenario mapping. The report itself feeds the scenario unsatisfied count.",
+  "scenario_results": [],
+  "schema_version": 1,
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0
+  },
+  "summary": "CA-107 (three-repo Closure 2.0): implemented uc/closure.py + CLI closure-report. Scans all receipt directories across the three repos, classifies each unit (machine_valid / legacy / incomplete with precise problems via receipt.validate + revision pairing), and aggregates an honest closure report: old_plan_verdict=incomplete with a COMPLETE reason set (26 contradicted FCs, 5 pending closure items, 197 unsatisfied scenarios, R9 frozen, legacy receipt sets, machine-evidence gaps) — never a bare 'five items remaining'. Real run: units include 5 legacy FC dirs and the CA-102~106 units whose reviewer receipts predate schema-v1 adoption (kind field absent) — reported incomplete with exact reasons, documenting the transitional state (migration is CA-109/CA-304 scope). Fixed en route: reviewed_object_sha256 width contract (64-hex canonical hash, not 40-hex git object) and Windows path-separator handling in unit naming. 6 new tests. Full suite: 145 passed. Product code/config/CI/catalog/roots: zero writes.",
+  "touched_files": [
+    "revenue-forecast/assurance/unified_completion/uc/closure.py",
+    "revenue-forecast/assurance/unified_completion/uc/receipt.py",
+    "revenue-forecast/assurance/unified_completion/uc/cli.py",
+    "revenue-forecast/assurance/unified_completion/tests/test_closure.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-107/*"
+  ],
+  "unit": "CA-107"
+}

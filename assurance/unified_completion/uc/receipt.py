@@ -155,7 +155,10 @@ def validate(
             problems.append(f"verdict {verdict!r} not in {REVIEWER_VERDICTS}")
         reviewed = receipt.get("reviewed_object_sha256")
         if reviewed is not None and not (
-            isinstance(reviewed, str) and _is_hex(reviewed, 40)
+            isinstance(reviewed, str) and _is_hex(reviewed, 64)
         ):
-            problems.append("reviewed_object_sha256 is not a 40-hex sha")
+            problems.append(
+                "reviewed_object_sha256 is not a 64-hex sha "
+                "(it references the reviewed receipt's canonical hash)"
+            )
     return problems

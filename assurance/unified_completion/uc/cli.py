@@ -37,6 +37,7 @@ from uc.codegraph_freeze import freeze as cg_freeze
 from uc.codegraph_freeze import verify as cg_verify
 from uc.commands import CommandSpec, replay_diff as command_replay_diff
 from uc.commands import run as command_run
+from uc.closure import closure_report as three_repo_closure_report
 from uc.control import patch_section0, plan_advance_fields
 from uc.dag import load_dag, next_units
 from uc.envfreeze import collect as env_collect
@@ -384,6 +385,22 @@ def cmd_scenario_verify(_args: argparse.Namespace) -> int:
     payload = json.loads(SCENARIO_REGISTRY_PATH.read_text(encoding="utf-8"))
     print(json.dumps(scenarios_closure_report(payload), ensure_ascii=False, indent=2))
     return 0
+
+
+def cmd_closure_report(_args: argparse.Namespace) -> int:
+    """Honest three-repo closure report (CA-107)."""
+    repo_roots = {
+        "revenue": REPO_ROOT,
+        "filing": REPO_ROOT.parent / "filing-fetch",
+        "wiki": REPO_ROOT.parent / "company-wiki",
+    }
+    report = three_repo_closure_report(
+        repo_roots,
+        CONTROL_ROOT / "legacy" / "legacy_disposition.json",
+        SCENARIO_REGISTRY_PATH,
+    )
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 1 if report["old_plan_verdict"] != "incomplete" else 0
 
 
 def cmd_command_run(args: argparse.Namespace) -> int:
@@ -828,6 +845,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("scenario-verify")
     p.set_defaults(func=cmd_scenario_verify)
+
+    p = sub.add_parser("closure-report")
+    p.set_defaults(func=cmd_closure_report)
 
     p = sub.add_parser("closure-advance")
     p.add_argument("--next", required=True)
