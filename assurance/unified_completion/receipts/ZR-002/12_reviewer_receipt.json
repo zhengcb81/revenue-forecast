@@ -1,0 +1,61 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "cb2366b70c70ae019f7f84893ef24a52f002e2b7",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "canonical_hash": "9ae3e6d765890d706c30894cbb5bf1f963ee9220731712a39b26bdbb1df4e6c5",
+  "commands": [
+    {
+      "command": "git rev-parse HEAD",
+      "exit_code": 0,
+      "result": "cb2366b70c70ae019f7f84893ef24a52f002e2b7 (delta fix commit; touches only receipts/ZR-002/00_wu_card.md + 11_implementer_receipt.json, 2 files, no code)"
+    },
+    {
+      "command": "git show --stat HEAD",
+      "exit_code": 0,
+      "result": "cb2366b: 2 files changed, 9 insertions(+), 4 deletions(-) — only the two ZR-002 receipt files"
+    },
+    {
+      "command": "Get-FileHash assurance/unified_completion/scenarios/scenario_registry.json -Algorithm SHA256",
+      "exit_code": 0,
+      "result": "A350A3C979A090F14174759FDFCA976E75FC648594CB0A22E5FA0621AC3CC9FE — matches corrected value a350a3c9...cc9fe in card/receipt and CA-105 receipt; ZR002-REV-001 resolved"
+    },
+    {
+      "command": "python -B -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-002/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: canonical and well-formed"
+    },
+    {
+      "command": "python -B -c canonical-hash recompute of ZR-002 implementer receipt",
+      "exit_code": 0,
+      "result": "stored d38271f7b7b304f360b0a978b79db53576222af05408d8bac30820b44d5d6c04 == recomputed (match True)"
+    },
+    {
+      "command": "Get-FileHash assurance/unified_completion/receipts/ZR-002/11_implementer_receipt.json -Algorithm SHA256",
+      "exit_code": 0,
+      "result": "BB10F099F7AFB493C034459B48DAA85DDDA72F6F19C4BEB4CA73B682AB9D2001 (= reviewed_object_sha256)"
+    }
+  ],
+  "created_at_utc": "2026-08-14T04:17:45+00:00",
+  "findings": [
+    {
+      "detail": "00_wu_card.md and 11_implementer_receipt.json now quote sha256 a350a3c979a090f14174759fdfca976e75fc648594cb0a22e5fa0621ac3cc9fe; fresh Get-FileHash of scenarios/scenario_registry.json equals it (and the hash recorded in the CA-105 receipt). Receipt re-sealed: canonical_hash d38271f7b7b304f360b0a978b79db53576222af05408d8bac30820b44d5d6c04 recomputes exactly. All original ZR-002 gates remain green (mutation-run 30/30, receipt-validate CA-102/104/105 + ZR-002 OK, 172 passed, state ZR-002=independent_review, current_next=ZR-002).",
+      "id": "ZR002-REV-001-RESOLVED",
+      "severity": "info",
+      "title": "Scenario registry sha256 correction verified"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-002 delta review (accepted after ZR002-REV-001 fix)",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "cb2366b70c70ae019f7f84893ef24a52f002e2b7",
+    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  },
+  "reviewed_object_sha256": "bb10f099f7afb493c034459b48daa85ddda72f6f19c4beb4ca73b682ab9d2001",
+  "reviewer": "reviewer-zr002-independent",
+  "schema_version": 1,
+  "unit": "ZR-002",
+  "verdict": "accepted"
+}
