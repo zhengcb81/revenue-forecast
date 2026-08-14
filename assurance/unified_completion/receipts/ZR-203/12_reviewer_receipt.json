@@ -1,0 +1,44 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "26d70c5c9c3c83c3f351f6e1e2d42e0582e6dc7c",
+    "wiki": "354f5566c18f2f6bd87017dc9790866ae628a78e"
+  },
+  "canonical_hash": "3665e4d06ef6e78f110e6319e7c2e83f26027921f0200a2ef65be3184fc82d2d",
+  "commands": [
+    "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD -> 354f5566c18f2f6bd87017dc9790866ae628a78e (exit 0)",
+    "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 0521e7c -> only service/cli/resolver/acquisition/close_gap/reader + 4 test files (exit 0)",
+    "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 354f556 -> only service.py (+8) (exit 0)",
+    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD -> 26d70c5c9c3c83c3f351f6e1e2d42e0582e6dc7c (exit 0)",
+    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast show --stat 26d70c5 -> only receipts/ZR-203/11_implementer_receipt.json (exit 0)",
+    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast show --stat cd58886 -> only receipts/ZR-203/00_wu_card.md + 11_implementer_receipt.json + state.json + 2 revenue fixture tests (exit 0)",
+    "grep service.py self.reader.fetchall/fetchone -> 13 hits in status/query/query_filing_candidates/explain_filing_candidates_plan/query_source_bundle/bundle_for_resolution/semantic_duplicate_groups; self.store.fetch -> 0 hits (exit 0)",
+    "grep cli.py store=get_catalog().reader -> present (resolve); write commands pass .store; _ = get_catalog().store writer-init present (exit 0)",
+    "grep resolver.py self.catalog.reader -> present (3 hits); catalog.store/self.store -> 0 hits (exit 0)",
+    "grep acquisition.py/close_gap.py writer-init -> _ = self.catalog.store / _ = getattr(self.catalog, \"store\", None) present; close_gap store=self.catalog.store at write path (exit 0)",
+    "grep reader.py -> check_same_thread=False (mode=ro + query_only); ReadOnlyCatalogReader.close(); service.py SourceCatalog.close() releases cached reader (exit 0)",
+    "cd company-wiki; $env:PYTHONIOENCODING='utf-8'; uv run python -m pytest tests/contract/test_zr203_reader_rewire.py -q --tb=short -> 8 passed in 1.12s (exit 0)",
+    "cd company-wiki; uv run python -m pytest tests/contract/test_close_gap_fc801.py tests/contract/test_close_gap_concurrency_fc804.py tests/contract/test_resolver_sql_perf_fc703.py tests/contract/test_source_catalog_semantic_duplicates.py \"tests/contract/test_source_catalog_pipeline.py::test_large_index_export_uses_bounded_bulk_queries\" -q --tb=line -> 24 passed in 19.65s (exit 0)",
+    "cd company-wiki; uv run python -m pytest tests/unit -q --tb=short -> 716 passed in 40.86s (exit 0)",
+    "cd revenue-forecast; $env:PYTHONPATH='assurance/unified_completion'; python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-203/11_implementer_receipt.json -> OK: canonical and well-formed; canonical_hash d0ec960a54ca1339e1ffb8dce62a85854430fa7c7ddb478d1063de136ca7af5a; result_triplet.wiki=354f5566c18f2f6bd87017dc9790866ae628a78e (exit 0)",
+    "cd revenue-forecast; python -m uc.cli state-show -> units.ZR-203.status=independent_review, current_next=ZR-203, current_phase=C_read_only_and_contracts (exit 0)",
+    "Get-FileHash -Algorithm SHA256 company-wiki/src/company_wiki/source_catalog/service.py (working tree clean at HEAD) -> 549d2fd69186586f09eed837dadb961404f2b798584885fb8319c883ec68313b (exit 0)"
+  ],
+  "created_at_utc": "2026-08-14T11:34:41Z",
+  "findings": [
+    "Full 7-minute contract suite (1487 + 7 known failures) was not re-run by the reviewer; trusted per the sealed implementer receipt. Reviewer independently ran the ZR-203 target test (8 passed), the targeted regression batch (24 passed), and the full unit suite (716 passed).",
+    "No write-path breakage observed: write flows (ensure/close-gap CLI, AcquisitionCoordinator, CloseGapTransaction) explicitly initialize the writer store; all read entrypoints route through catalog.reader (ReadOnlyCatalogReader, mode=ro, query_only=ON, check_same_thread=False)."
+  ],
+  "kind": "reviewer",
+  "note": "ZR-203 independent review",
+  "result_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "26d70c5c9c3c83c3f351f6e1e2d42e0582e6dc7c",
+    "wiki": "354f5566c18f2f6bd87017dc9790866ae628a78e"
+  },
+  "reviewed_object_sha256": "549d2fd69186586f09eed837dadb961404f2b798584885fb8319c883ec68313b",
+  "reviewer": "reviewer-zr203-independent",
+  "schema_version": 1,
+  "unit": "ZR-203",
+  "verdict": "accepted"
+}
