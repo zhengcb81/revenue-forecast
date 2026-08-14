@@ -4,12 +4,12 @@
     "revenue": "2dad5bb31e4e1e3d7e160153148afb29608a2eae",
     "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
   },
-  "canonical_hash": "100eaa3cdd46555fbfdb7442c1d1a8329a147da3ff7a0cd9fb020634b32f4933",
+  "canonical_hash": "e9656b8c8195f4d5eb6627901634c6473b0b044de190bb5e75e04583853fa91f",
   "commands": [
     {
       "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/ -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
       "exit_code": 0,
-      "result": "145 passed"
+      "result": "144 passed"
     },
     {
       "command": "python -B -m ruff check assurance/unified_completion/ && ruff format --check",
@@ -78,7 +78,7 @@
     "parser_calls": 0,
     "product_code_changes": 0
   },
-  "summary": "CA-107 (three-repo Closure 2.0): implemented uc/closure.py + CLI closure-report. Scans all receipt directories across the three repos, classifies each unit (machine_valid / legacy / incomplete with precise problems via receipt.validate + revision pairing), and aggregates an honest closure report: old_plan_verdict=incomplete with a COMPLETE reason set (26 contradicted FCs, 5 pending closure items, 197 unsatisfied scenarios, R9 frozen, legacy receipt sets, machine-evidence gaps) — never a bare 'five items remaining'. Real run: units include 5 legacy FC dirs and the CA-102~106 units whose reviewer receipts predate schema-v1 adoption (kind field absent) — reported incomplete with exact reasons, documenting the transitional state (migration is CA-109/CA-304 scope). Fixed en route: reviewed_object_sha256 width contract (64-hex canonical hash, not 40-hex git object) and Windows path-separator handling in unit naming. 6 new tests. Full suite: 145 passed. Product code/config/CI/catalog/roots: zero writes.",
+  "summary": "CA-107 (three-repo Closure 2.0): implemented uc/closure.py + CLI closure-report. Scans all receipt directories across the three repos, classifies each unit (machine_valid / legacy / incomplete with precise problems via receipt.validate + revision pairing), and aggregates an honest closure report: old_plan_verdict=incomplete with a COMPLETE reason set (26 contradicted FCs, 5 pending closure items, 197 unsatisfied scenarios, R9 frozen, legacy receipt sets, machine-evidence gaps) — never a bare 'five items remaining'. Real run: units include 5 legacy FC dirs and the CA-102~106 units whose reviewer receipts predate schema-v1 adoption (kind field absent) — reported incomplete with exact reasons, documenting the transitional state (migration is CA-109/CA-304 scope). Fixed en route: reviewed_object_sha256 width contract (64-hex canonical hash, not 40-hex git object) and Windows path-separator handling in unit naming. 6 new tests. Full suite: 144 passed. Product code/config/CI/catalog/roots: zero writes.",
   "touched_files": [
     "revenue-forecast/assurance/unified_completion/uc/closure.py",
     "revenue-forecast/assurance/unified_completion/uc/receipt.py",
