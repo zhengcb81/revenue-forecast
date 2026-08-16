@@ -4,7 +4,7 @@
     "revenue": "217b30305b9b5c598424ac87eebf9d829f32d1c6",
     "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
   },
-  "canonical_hash": "446f66baf509d72674c50e9f3c4c6d083047fdb3dee7f87171e4201a635ac96f",
+  "canonical_hash": "9a4b1775553c5ffdfe9f56aab3fd756e2c2e8e7741376382efcd524e53ad9700",
   "commands": [
     {
       "command": "python -m pytest tests/test_fetch_filing.py -q --tb=short (filing-fetch)",
@@ -46,10 +46,10 @@
       "title": "既有 e2e 断言更新为 ZR-204 canonical 发射形态"
     },
     {
-      "detail": "ZR102-F2 的 filing 侧根因关闭：raw SQLite 'database is locked' 现在经 _classify_wiki_error 的 N-1 OperationalError 文本路径（或 canonical catalog_busy 直通）映射 retryable，不再 fatal。",
+      "detail": "ZR102-F2 的 filing 侧根因关闭：raw SQLite 'database is locked' 在 wiki 侧由 ZR-204 classify_error_type 映射为 canonical catalog_busy(retryable)，filing 侧 _classify_wiki_error 直通 catalog_busy 并自动重试——端到端 raw lock 形态不再 fatal（test_catalog_busy_retries_with_backoff_then_succeeds 覆盖）。注意：OperationalError 文本→catalog_busy 的映射在 wiki 侧（filing 的 N-1 路径仅含 CatalogOperationLockedError 类名与 RuntimeError+paused 文本，OperationalError 文本在 filing 归类 fatal——由 canonical 直通兜底，无行为缺口）。",
       "id": "ZR205-IMPL-002",
       "severity": "info",
-      "title": "ZR102-F2 根因关闭：raw lock 形态 retryable"
+      "title": "ZR102-F2 根因关闭：raw lock 形态端到端 retryable"
     },
     {
       "detail": "ZR102-F1（exact 模式 + --allow-download 无 authorization 即下载）不在本卡范围（本卡为 retry/透明转发）：移交 ZR-407（authorization-bound GapPlan/CloseGap，阶段 D）。",
