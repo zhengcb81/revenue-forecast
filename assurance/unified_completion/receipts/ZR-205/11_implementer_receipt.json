@@ -1,0 +1,105 @@
+{
+  "base_triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "217b30305b9b5c598424ac87eebf9d829f32d1c6",
+    "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
+  },
+  "canonical_hash": "446f66baf509d72674c50e9f3c4c6d083047fdb3dee7f87171e4201a635ac96f",
+  "commands": [
+    {
+      "command": "python -m pytest tests/test_fetch_filing.py -q --tb=short (filing-fetch)",
+      "exit_code": 0,
+      "result": "111 passed / 1 skipped（新增分类矩阵 8 形态、catalog_busy/db_timeout retry、jitter 边界、cap、deadline 耗尽 stage/attempts、成功/失败信封对账、worker_paused 不自动重试）"
+    },
+    {
+      "command": "python -m pytest tests/ -q --tb=short --ignore=tests/test_e2e_download.py --ignore=tests/test_real_tool_conformance.py (filing-fetch)",
+      "exit_code": 0,
+      "result": "328 passed / 6 skipped（隔离 wiki E2E 含 identity_unavailable 断言改为 canonical fatal 发射）"
+    },
+    {
+      "command": "python -m pytest tests -q --cov=scripts --cov-branch --cov-fail-under=90 (filing-fetch, CI 等价)",
+      "exit_code": 0,
+      "result": "TOTAL 91.45% >= 90（fetch_filing.py 89% / filing_contracts.py 97%）"
+    },
+    {
+      "command": "python -m pytest tests/test_complexity_ratchet.py -q (filing-fetch)",
+      "exit_code": 0,
+      "result": "fetch_filing.py max 34 <= 34 frozen；新函数 _classify_wiki_error/_normalize_stats/_record_download_events <= 10"
+    },
+    {
+      "command": "python -m mypy scripts/fetch_filing.py scripts/filing_contracts.py (filing-fetch)",
+      "exit_code": 0,
+      "result": "Success: no issues found in 2 source files"
+    },
+    {
+      "command": "pre-commit hook（hermetic suite + companies-reuse-only E2E + skill sync）",
+      "exit_code": 0,
+      "result": "328 passed；E2E golden identical；sync MATCH ×3 install roots"
+    }
+  ],
+  "created_at_utc": "2026-08-16T21:25:00+00:00",
+  "findings": [
+    {
+      "detail": "ZR-204 已把 wiki CLI 错误发射改为 canonical 码（error_type 不再是异常类名）。filing 的 N-1 类名形态映射（CatalogOperationLockedError/RuntimeError+paused）仅对旧 wiki 保留；e2e identity_unavailable 断言随之从 'SecurityMasterUnavailableError' 更新为 canonical fatal + 原因文本保留。",
+      "id": "ZR205-IMPL-001",
+      "severity": "info",
+      "title": "既有 e2e 断言更新为 ZR-204 canonical 发射形态"
+    },
+    {
+      "detail": "ZR102-F2 的 filing 侧根因关闭：raw SQLite 'database is locked' 现在经 _classify_wiki_error 的 N-1 OperationalError 文本路径（或 canonical catalog_busy 直通）映射 retryable，不再 fatal。",
+      "id": "ZR205-IMPL-002",
+      "severity": "info",
+      "title": "ZR102-F2 根因关闭：raw lock 形态 retryable"
+    },
+    {
+      "detail": "ZR102-F1（exact 模式 + --allow-download 无 authorization 即下载）不在本卡范围（本卡为 retry/透明转发）：移交 ZR-407（authorization-bound GapPlan/CloseGap，阶段 D）。",
+      "id": "ZR205-IMPL-003",
+      "severity": "info",
+      "successor": "ZR-407",
+      "title": "ZR102-F1 移交 ZR-407"
+    }
+  ],
+  "implementation": {
+    "design": "_classify_wiki_error(stderr)：canonical 码直通（catalog_locked/catalog_busy/db_timeout/worker_paused/fatal）+ N-1 类名形态（CatalogOperationLockedError→catalog_locked；RuntimeError+paused→worker_paused）+ 非 JSON/未知→fatal（fail closed）。FilingFetchError.retryable 增加 catalog_busy/db_timeout；新增可选 stage/attempts。retry 集合={catalog_locked,catalog_busy,db_timeout}；worker_paused/fatal 不自动重试。退避=5s×2^n，±20% uniform jitter，cap 60s，wait=min(jittered, remaining)（无 sleep 超 deadline）；每 attempt 打印序号。stats（calls/downloads）贯穿 _run_company_wiki_json → retry → resolve_filing → main；成功信封带 calls/downloads，失败信封带 stage/attempts/calls/downloads。",
+    "files": [
+      "filing-fetch/scripts/fetch_filing.py",
+      "filing-fetch/scripts/filing_contracts.py",
+      "filing-fetch/tests/test_fetch_filing.py",
+      "filing-fetch/tests/test_e2e_isolated_wiki.py"
+    ]
+  },
+  "implementer": "zr205-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 ZR-204 closure 提交 217b303（本卡 revenue 侧仅 assurance receipt/state，产品零改动）；result_triplet.filing 为本卡实现提交 0e5d209。",
+    "复杂度：为把 resolve_filing 压回 frozen 34，提取 _normalize_stats/_record_download_events 辅助函数（均为 ≤4）。"
+  ],
+  "objective": "deadline-aware retry 和阶段错误透明转发：消费 ZR-204 统一错误码；指数退避+jitter+上限+deadline；最终成功/失败均保留零下载和调用次数；无 sleep 超 deadline。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "217b30305b9b5c598424ac87eebf9d829f32d1c6",
+    "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
+  },
+  "schema_version": 1,
+  "scope": "filing-fetch scripts/fetch_filing.py（分类+retry+stats+信封）、scripts/filing_contracts.py（retryable 集合 + stage/attempts）、tests/test_fetch_filing.py（新增 15 个测试 + 既有 3 个测试改 jitter 钉死）、tests/test_e2e_isolated_wiki.py（identity_unavailable 断言 canonical 化）；revenue 侧 receipts/ZR-205/** 与 state.json。wiki 零改动（ZR-204 已发射 canonical 码）。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "filing-fetch/scripts/fetch_filing.py",
+    "filing-fetch/scripts/filing_contracts.py",
+    "filing-fetch/tests/test_fetch_filing.py",
+    "filing-fetch/tests/test_e2e_isolated_wiki.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-205/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-205"
+}
