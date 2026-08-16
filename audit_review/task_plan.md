@@ -1,6 +1,8 @@
-# 项目设计目标达成审查计划
+# 项目设计目标达成审查计划（历史归档）
 
-> **2026-08-09 状态覆盖：`completed_audit_only + superseded_execution_plan`。** 本文件的审查工作已经完成；其中提出的实施工作不再作为独立队列，全部按 [FCAP r2](2026-08-09_full_completion_assurance_plan/task_plan.md) 的 FC、95 场景和验收门执行。
+> **2026-08-13 最终入口覆盖：本文件只保留早期审计历史，不再指向FCAP执行。** 新任务唯一入口是 [audit_review/README.md](README.md)，当前唯一可领取工作为其 `current_next`；不要从本文Phase、旧FC或旧链接开工。
+
+> 2026-08-09 的 `completed_audit_only + superseded_execution_plan` 文字属于历史状态；其“按FCAP r2执行”的指令已经失效，由根README完全取代。
 
 ## 审查目标
 

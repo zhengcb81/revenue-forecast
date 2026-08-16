@@ -1,6 +1,6 @@
-# 审查进度日志
+# 审查进度日志（历史归档）
 
-> **2026-08-09 状态：`completed_audit_only / execution_superseded`。** 本审查日志已关闭；旧实施建议已转入 `2026-08-09_full_completion_assurance_plan`，不再从本目录推进产品待办。
+> **2026-08-13 最终入口覆盖：** 本日志已关闭，且不再把FCAP作为执行入口。新任务只从 [audit_review/README.md](README.md) 的 `current_next` 继续；本文仅保留历史过程。
 
 ## 2026-08-03
 
@@ -69,3 +69,15 @@
 - 用户选择交付物并入现有底稿。已完成：task_plan Phase 2/3/4 标记 completed 并补执行结果表；findings 回填 10 目标核验矩阵+审查结论+问题清单；task_plan 新增 Phase 6 改进计划（A/B/C/D 四阶段，含优先级/依赖/文件/RED/步骤/验收/回滚）。
 - 错误记录新增 3 条（bash 非 PowerShell、codegraph CLI 子命令、相对路径静默无输出）。
 - Phase 5 完成。全部审查阶段结束；业务代码未改动（只读审查）；新增文件仅 `audit_review/probe_snapshot_forgery.py`（诊断探针）。
+
+## 2026-08-16 恢复会话（ZR-204 收尾 → ZR-205 进行中）
+
+- ZR-204（锁/错误 taxonomy）独立复核 accepted：分类矩阵 7 项抽查全对、双 CLI 发射点接入 structured_error、15 个 taxonomy 单测绿、受影响 contract 批量 3 个失败均为已知既有（security_identity×2 + extraction_quality），无 ZR-204 回归。reviewer receipt 已签并入库（canonical 5d62798e…）。
+- 机器状态：ZR-204 accepted → closure-advance → ZR-205；revenue commit 217b303 落库（pre-commit 全套 ~7min 通过）。
+- ZR-205（filing deadline-aware retry）preflight + 实现完成：
+  - filing-fetch _classify_wiki_error 消费 ZR-204 canonical 码（catalog_locked/catalog_busy/db_timeout/worker_paused/fatal），N-1 类名形态保留，非 JSON/未知 fail closed fatal；ZR102-F2 filing 侧根因关闭（raw lock → catalog_busy retryable）。
+  - retry：{catalog_locked, catalog_busy, db_timeout}，±20% jitter、cap 60s、wait=min(jittered, remaining) 无 sleep 超 deadline；worker_paused/fatal 不自动重试。
+  - 信封：成功带 calls/downloads，失败带 stage/attempts/calls/downloads（READ-09/READ-10）。
+  - 验证：filing 全套 328 passed / 6 skipped；branch coverage 91.45%≥90；complexity 34≤34；mypy 干净；companies-reuse E2E golden identical；commit 0e5d209（skill sync 后）。
+  - implementer receipt 已签（canonical 446f66ba…）；state → independent_review；独立复核进行中（subagent）。
+  - ZR102-F1（exact 无授权下载）移交 ZR-407（阶段 D authorization-bound GapPlan），ZR205-IMPL-003 登记。

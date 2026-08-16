@@ -1,4 +1,6 @@
-# 审查发现
+# 审查发现（历史归档）
+
+> **2026-08-13：本文件不再是当前实施依据。** 新任务只从 [audit_review/README.md](README.md) 读取唯一计划、`current_next`、阶段顺序和文档路由；本文仅保留早期审计证据。
 
 ## 2026-08-03：初始范围
 
@@ -466,3 +468,12 @@
 ## 范围工具限制
 
 - `invest-core` 未初始化 CodeGraph，结构性审查暂不能按项目 AGENTS.md 的首选路径进行。需用户授权初始化，或在最终报告中把该部分证据强度降级并仅做字面/运行核验。
+
+## ZR-204/ZR-205（2026-08-16 恢复会话）
+
+- ZR-204 accepted（锁/错误 taxonomy）：独立复核 7 项检查全过；分类矩阵正确、双 CLI 发射点 canonical、15 单测绿；受影响 contract 批量 3 失败均为已知既有（security_identity×2 HK-refresh stale_cache + extraction_quality unsupported），无回归。**error_type 从异常类名改为 canonical 码是跨消费方契约变更**（ZR204-IMPL-001），filing 侧 N-1 类名映射仅为旧 wiki 保留。
+- ZR-205 implemented → independent_review：
+  - **ZR102-F2 filing 侧根因关闭**（ZR205-IMPL-002）：raw SQLite lock 文本现在映射 retryable catalog_busy（canonical 直通或 N-1 OperationalError 文本路径），不再 fatal。
+  - **ZR102-F1 移交 ZR-407**（ZR205-IMPL-003，原 successor=ZR-205 修正）：exact 模式 + --allow-download 无 authorization 即下载，属 authorization-bound GapPlan/CloseGap 范围（阶段 D），不在本 retry 卡。
+  - 信封契约扩展（READ-09/READ-10）：成功 envelope 新增 calls/downloads；失败 envelope 新增 stage/attempts/calls/downloads——对账字段为 additive，revenue client 按 key 读取不受影响。
+  - 验证：filing 328 passed/6 skipped、branch coverage 91.45%（≥90）、complexity 34≤34、mypy 干净、companies-reuse E2E golden identical、pre-commit 全绿（470 passed revenue 侧）。filing commit 0e5d209；revenue receipt commit 40d0c04。
