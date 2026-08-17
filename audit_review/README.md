@@ -9,12 +9,12 @@ plan_id: TRI-REPO-COMPLETION-2026-08-13-R1
 authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
-current_phase: C_read_only_and_contracts
-current_next: ZR-206
+current_phase: D_lifecycle_roots_freshness
+current_next: ZR-301
 active_owner: unassigned
 lease: none
 blocked_reason: none
-last_control_update: 2026-08-16
+last_control_update: 2026-08-17
 ```
 
 这些字段是唯一的人类可读执行游标。实施开始前，第一张且唯一可领取的卡是 **CA-001**。任何其它文件中的 `pending / accepted / complete / next` 都只是历史状态、冻结规范或审计证据，不具有领取权。
