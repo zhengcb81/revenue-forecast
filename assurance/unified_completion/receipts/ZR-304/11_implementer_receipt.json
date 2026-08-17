@@ -1,0 +1,93 @@
+{
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "32ad84c20438368657d4e4dfce46a8b0d70e69ef",
+    "wiki": "77ce0f35284b0ef43ea8529a7e98b65d074a37db"
+  },
+  "canonical_hash": "de9944ebf2aeb089aaa750be7fb93f499af81a6427a0fc7b21cd693c0ec2bfbc",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_zr304_read_model.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "9 passed（失败 attempt 无 artifact 有记录、calls_this_request 历史分离、绑定优先/legacy 回退、source SHA mandatory fail-closed、未知 role fail-closed、顺序读取、校验）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "775 passed（766 → +9，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q (company-wiki)",
+      "exit_code": 0,
+      "result": "2 passed（producer_journal.py max 4 / artifact_read_model.py max 8，均 ≤10 新文件）"
+    },
+    {
+      "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/artifact_read_model.py src/company_wiki/source_catalog/producer_journal.py",
+      "exit_code": 0,
+      "result": "Success: no issues found in 2 source files"
+    }
+  ],
+  "created_at_utc": "2026-08-17T21:45:00+00:00",
+  "findings": [
+    {
+      "detail": "producer_events 表/触发器是冻结的（artifact INSERT 触发，只记成功产物）；失败 attempt 需要 outcome/request_id 列，为避免改冻结表，新增独立追加表 producer_attempts（CREATE TABLE IF NOT EXISTS），与既有 journal 互补、皆 append-only。",
+      "id": "ZR304-IMPL-001",
+      "severity": "info",
+      "title": "独立 producer_attempts 表：不改冻结 producer_events 触发器"
+    },
+    {
+      "detail": "读语义归一：artifact_bindings 行存在时以其 source_id/content_sha256/bundle_hash/visibility_state 为准（binding='bound'）；无 binding 行时回退 artifacts 列 + metadata_json（binding='legacy'）；两条路径都要求 source SHA（fail closed）；未知 artifact_role 在 read model 层直接拒绝（ArtifactHandle 只验 generator/hash/path，不验 role）。",
+      "id": "ZR304-IMPL-002",
+      "severity": "info",
+      "title": "唯一读语义：bindings 优先/legacy 回退/source SHA mandatory/未知 role fail-closed"
+    },
+    {
+      "detail": "schema_version/source_sha256 不在 artifacts 列中，存在 producer metadata_json（与 artifact_backfill 同一约定）；_artifact_row 合并 metadata 后交 ArtifactHandle 校验。",
+      "id": "ZR304-IMPL-003",
+      "severity": "info",
+      "title": "metadata 合并约定与 backfill 一致"
+    }
+  ],
+  "implementation": {
+    "design": "新增 producer_journal.py：PRODUCER_ATTEMPTS_DDL（独立表）+ record_attempt（outcome∈{succeeded,failed}，request_id 可空，失败无 artifact 也有记录，校验 fail-closed）+ attempts_for + calls_this_request（按 request_id 过滤，历史 NULL 永不混入）。新增 artifact_read_model.py：ARTIFACT_READ_MODEL_SCHEMA 1.0 + KNOWN_ARTIFACT_ROLES + read_artifact/read_artifacts（bindings 优先/legacy 回退/源 SHA mandatory/未知 role fail-closed/ArtifactHandle 校验可复用）；_text/_merged_fields/_artifact_dict/_source_sha 辅助函数保证复杂度≤10。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/producer_journal.py",
+      "company-wiki/src/company_wiki/source_catalog/artifact_read_model.py",
+      "company-wiki/tests/unit/test_zr304_read_model.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-304/**"
+    ]
+  },
+  "implementer": "zr304-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 32ad84c（ZR-303 closure commit）；result_triplet.wiki 为本卡实现提交 24ae595。",
+    "shadow-only：read model 仅经 reader 读取；attempt 写入经 sqlite3.Connection（调用方持有事务），与 FC-905 receipt 写路径同约定。未接生产入口（后续卡接线）。"
+  ],
+  "objective": "producer attempt/result、artifact-created journal、ArtifactHandle、唯一 reusable view/validator 与生产 bundle 绑定真源：source SHA mandatory；失败无artifact也有attempt；区分历史与calls_this_request；artifact_bindings/metadata/columns 归一为一条生产读取语义；未知 role/version fail closed。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "32ad84c20438368657d4e4dfce46a8b0d70e69ef",
+    "wiki": "24ae59514eb871fca75e486d67e251d5ed8abaae"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 producer_journal.py + artifact_read_model.py + tests/unit/test_zr304_read_model.py（9 测试）；revenue 侧 receipts/ZR-304/** 与 state.json。既有产品零改动（producer_events 表/触发器未动）；无真实 catalog 访问、无下载。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/producer_journal.py",
+    "company-wiki/src/company_wiki/source_catalog/artifact_read_model.py",
+    "company-wiki/tests/unit/test_zr304_read_model.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-304/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-304"
+}
