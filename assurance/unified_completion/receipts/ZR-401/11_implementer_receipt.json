@@ -1,0 +1,91 @@
+{
+  "base_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "b8ebce507c675ea8a9083386219a179ea7c20d31",
+    "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+  },
+  "canonical_hash": "be5f1cbe1369128ef5d176043482011ea2964ad6cae69a4aeb0a6cb3371218b7",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_policy_3x.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "12 passed（schema 3.0 加载、N/N-1 拒绝 1.x/2.x、privacy_class 必填、外部 root 必须 private_user、company_raw 必须 public、外部 write target 拒绝、未知字段拒绝、reusable 外部必须 read_only、snapshot 脱敏确定性、hash 对 privacy 敏感）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（775 → +12，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py tests/contract/test_fc1201_root_hardcode_gate.py tests/contract/test_root_policy_2x.py tests/contract/test_dropbox_root_policy_fc501.py tests/contract/test_future_root_config_only.py -q (company-wiki)",
+      "exit_code": 0,
+      "result": "43 passed（policy_3x.py max 8 ≤10；FC-1201 allowlist 基线含 policy_3x.py；2.x/dropbox/future-root 无回归）"
+    },
+    {
+      "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/policy_3x.py",
+      "exit_code": 0,
+      "result": "Success: no issues found in 1 source file"
+    }
+  ],
+  "created_at_utc": "2026-08-18T11:20:00+00:00",
+  "findings": [
+    {
+      "detail": "architecture_gate._ROOT_HARDCODE_ALLOWED_FILES 与 FC-1201 frozen baseline 需同步新增 policy_3x.py（策略模块拥有 root token，与 policy_2x 相同）——已同步更新，测试钉死 ratchet。",
+      "id": "ZR401-IMPL-001",
+      "severity": "info",
+      "title": "FC-1201 allowlist 同步（policy_3x.py 加入策略模块组）"
+    },
+    {
+      "detail": "3.0 loader 复用 2.x 共享表面校验（未知字段/重复 root/外部 write target/未知 adapter-profile/widen route），通过新增可选 yaml_schema_version 参数（默认 '1.0' 保持 2.x 行为不变）叠加 3.0 privacy/schema 门——minimal diff。",
+      "id": "ZR401-IMPL-002",
+      "severity": "info",
+      "title": "3.0 复用 2.x 共享表面 + 叠加 3.0 强约束"
+    }
+  ],
+  "implementation": {
+    "design": "新增 policy_3x.py：ROOT_POLICY_3X_SCHEMA_VERSION='3.0'/ROOT_POLICY_3X_SCHEMA='root-policy-3.0'；load_root_policy_3x 先验 YAML schema_version=='3.0'（N/N-1：1.x/2.x 显式拒绝带迁移提示，绝不静默升级），再经 load_root_policy_2x(yaml_schema_version='3.0') 跑共享表面校验，最后叠加 privacy 门（privacy_class 必填无默认；kind!=company_raw 必须 private_user；company_raw 必须 public）——无隐式权限扩大。export_root_policy_3x：版本化 + privacy-redacted（路径 ${PROJECT_ROOT}/ token 化）+ sha256（ZR-404 envelope 绑定 hash）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/policy_3x.py",
+      "company-wiki/src/company_wiki/source_catalog/policy_2x.py",
+      "company-wiki/src/company_wiki/source_catalog/architecture_gate.py",
+      "company-wiki/tests/unit/test_policy_3x.py",
+      "company-wiki/tests/contract/test_fc1201_root_hardcode_gate.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-401/**"
+    ]
+  },
+  "implementer": "zr401-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 b8ebce5（ZR-307 closure commit）；result_triplet.wiki 为本卡实现提交 251615e。",
+    "生产 config 加载未切换（config.py 仍走 1.x loader）——本卡提供 3.0 loader/export 与测试证据；生产切换由后续卡（ZR-403/404 或阶段 D 出口）按 rollback 纪律执行，避免单卡风险。"
+  ],
+  "objective": "RootPolicy 3.0 schema/strict loader/snapshot hash：无隐式默认扩大权限；Dropbox privacy_class=private_user；外部 root write target 配置加载即失败；N/N-1 明确。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "b8ebce507c675ea8a9083386219a179ea7c20d31",
+    "wiki": "251615ea9eb524b3c1d8594b3d6b004423a8ccfd"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 policy_3x.py + 增量 policy_2x.py（yaml_schema_version 参数）+ architecture_gate.py/FC-1201 allowlist + tests/unit/test_policy_3x.py（12 测试）+ tests/contract/test_fc1201_root_hardcode_gate.py；revenue 侧 receipts/ZR-401/** 与 state.json。生产 config 加载未切换。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 3,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/policy_3x.py",
+    "company-wiki/src/company_wiki/source_catalog/policy_2x.py",
+    "company-wiki/src/company_wiki/source_catalog/architecture_gate.py",
+    "company-wiki/tests/unit/test_policy_3x.py",
+    "company-wiki/tests/contract/test_fc1201_root_hardcode_gate.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-401/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-401"
+}
