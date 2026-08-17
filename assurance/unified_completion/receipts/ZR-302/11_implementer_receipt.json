@@ -1,0 +1,93 @@
+{
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "b457f86979bd6de53d7fe0ea92e2bbb6d702b47c",
+    "wiki": "09deecb598773b8d1fea89d5b7049e42c3e514f5"
+  },
+  "canonical_hash": "4bdbb02fc04c9c443344ec58281b6989b01caf0d2452aa054b83540194a4f1ca",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_prompt_injection_guard.py tests/unit/test_source_lifecycle.py tests/contract/test_fc905_receipt_envelope.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "34 passed（16 新 guard 测试 + 9 lifecycle + 9 fc905 无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "756 passed（740 → +16，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q (company-wiki)",
+      "exit_code": 0,
+      "result": "2 passed（prompt_injection.py max 9 ≤ frozen 15；prompt_injection_guard.py max 9 ≤ 10 新文件）"
+    },
+    {
+      "command": "全量 suite（tests，--ignore=integration）+ coverage（FC1204_COVERAGE_GATE=1）",
+      "exit_code": 1,
+      "result": "2308 passed / 7 failed（均为已知既有：pipeline export、security_identity×2、worker_bootstrap heartbeat、extraction_quality、parser_liveness、pdf_page_aware）/ 18 skipped。coverage gate 报 service.py 94.4<95 与 evidence_query.py 49.1<87——均为运行配置产物（本次排除 integration + 7 个既有失败含 extraction_quality 覆盖 evidence_query 分支），非 ZR-302 回归；ZR-302 触及模块实测：prompt_injection.py 78.5%≥73 frozen、prompt_injection_guard.py 89.9%、source_lifecycle.py 94.1%"
+    }
+  ],
+  "created_at_utc": "2026-08-17T20:35:00+00:00",
+  "findings": [
+    {
+      "detail": "not_reviewed 是信封对缺失 receipt 的呈报，不是可存储 status（PROMPT_INJECTION_REVIEW_STATUSES={not_detected, detected_and_ignored}）。guard 的 evaluate_review 对 absent/malformed/未绑定 receipt 一律返回 not_reviewed + 显式 cache_state——绝不伪绿；legacy 无绑定 receipt 永远不能 hit（无法证明新鲜）。",
+      "id": "ZR302-IMPL-001",
+      "severity": "info",
+      "title": "not_reviewed 不伪绿：五态缓存判定矩阵 + legacy 无绑定永不 hit"
+    },
+    {
+      "detail": "扫描器 ruleset 版本化并绑定 RULESET_HASH（patterns 的 canonical JSON SHA-256）；未知 ruleset hash fail closed。policy_hash 变更 → ignored（绝不用旧规则集伪绿）；source_sha256 变更 → tampered；TTL 过期 → expired。",
+      "id": "ZR302-IMPL-002",
+      "severity": "info",
+      "title": "source/policy hash 绑定 + 版本化 ruleset"
+    },
+    {
+      "detail": "coverage gate 的 service.py/evidence_query.py 两项失败是本次运行配置（排除 integration + 7 个既有失败）导致，非本卡回归；本卡触及模块均高于冻结线。",
+      "id": "ZR302-IMPL-003",
+      "severity": "info",
+      "title": "coverage gate 运行配置说明"
+    }
+  ],
+  "implementation": {
+    "design": "新增 prompt_injection_guard.py：PROMPT_INJECTION_GUARD_SCHEMA 1.0；scan_text（表驱动 5 模式 ruleset + RULESET_HASH 绑定，未知 hash fail closed，确定性）；evaluate_review（store.fetchone 只读）→ ReviewEvaluation{status, cache_state, reason}：hit（绑定匹配+未过期）/ignored（policy_hash 变）/expired（TTL）/tampered（source_sha256 变或 malformed 或 legacy 未绑定）/absent；非 hit 一律 not_reviewed。prompt_injection.py 增量：record 增加可选 source_sha256/policy_hash（提供时 64-hex 强校验，写入 receipt dict；不提供保持 FC-905 行为）；校验拆为 _require_sha256/_validate_review_inputs 保持复杂度≤9。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/prompt_injection_guard.py",
+      "company-wiki/src/company_wiki/source_catalog/prompt_injection.py",
+      "company-wiki/tests/unit/test_prompt_injection_guard.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-302/**"
+    ]
+  },
+  "implementer": "zr302-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 b457f86（ZR-301 closure commit）；result_triplet.wiki 为本卡实现提交 4714a1e。",
+    "shadow-only：evaluate_review 只经 store.fetchone 读取（无写路径）；receipt 生成仍走既有 record_prompt_injection_review 写入路径。未接生产入口（ZR-303 统一决策图接线）。"
+  ],
+  "objective": "prompt-injection scanner/reviewer receipt 的生成、缓存与失效：source/policy hash 绑定；not_reviewed 不伪绿；命中/忽略/过期/篡改场景。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "b457f86979bd6de53d7fe0ea92e2bbb6d702b47c",
+    "wiki": "4714a1ee6a9ac6cd6f7994df61969629e45309bc"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 prompt_injection_guard.py + 增量扩展 prompt_injection.py（可选绑定字段）+ tests/unit/test_prompt_injection_guard.py（16 测试）；revenue 侧 receipts/ZR-302/** 与 state.json。其他产品零改动；无真实 catalog 访问、无下载。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/prompt_injection_guard.py",
+    "company-wiki/src/company_wiki/source_catalog/prompt_injection.py",
+    "company-wiki/tests/unit/test_prompt_injection_guard.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-302/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-302"
+}
