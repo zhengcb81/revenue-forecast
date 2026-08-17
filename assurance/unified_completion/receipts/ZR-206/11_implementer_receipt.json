@@ -1,0 +1,101 @@
+{
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "679fc33b4427aa960740713078ecbb778e1ea853",
+    "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
+  },
+  "canonical_hash": "01324f161bc1e145a5516a0b93c03ee33f2e70d43026c19fa61a5ae9d8398e95",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr206_live_writer.py tests/contract/test_zr206_slo_49gb.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "8 passed（live-writer 长事务有界完成/不抢 BEGIN IMMEDIATE、reader 无写事务能力、锁竞争 fail-closed、50 并发无 deadlock/下载/串线、1M spans 大表 covering-index、SLO 门、内存门、零写指纹 twin）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "731 passed（无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr206_*.py + test_zr203_reader_rewire.py + test_resolver_perf_slo.py + test_capacity_concurrency.py + test_fc1204_complexity_ratchet.py -q (company-wiki)",
+      "exit_code": 0,
+      "result": "24 passed（受影响 contract 批量全绿）"
+    },
+    {
+      "command": "python assurance/unified_completion/t2/zr206_t2_probe.py --evidence-dir assurance/unified_completion/t2/evidence（真实 49.62GB catalog，worker 暂停窗口内只读）",
+      "exit_code": 0,
+      "result": "ok=true：catalog_zero_write_ok=true（DB/WAL/SHM 字节级一致）、SLO 门全过（status/health p95≈6.3s≤12000ms、query p95 1.2ms、entities_like 0.4ms、location_counts≤33ms、document 级≤0.3ms）、EXPLAIN 三热点均走 COVERING INDEX、peak_python_mb=0.03≤256；唯一漂移 catalog.sqlite3-shm mtime（SQLite WAL 读协议 read-marker 触碰，字节不变，分类 shm_mtime_only_protocol_touch=true）"
+    },
+    {
+      "command": "worker-pause → probe → worker-resume（T2 隔离窗口）",
+      "exit_code": 0,
+      "result": "pause runtime_state=stopped；probe 后 resume（supervisor/worker 恢复 enabled）——worker 状态还原"
+    }
+  ],
+  "created_at_utc": "2026-08-16T23:30:00+00:00",
+  "findings": [
+    {
+      "detail": "50 并发用共享 reader 连接会触发 sqlite3.InterfaceError（'bad parameter or other API misuse'）——生产模型是每 CLI 请求独立子进程/独立连接，故测试按每请求独立 reader 连接写（与生产一致）；共享连接跨线程并发不在生产使用面内。",
+      "id": "ZR206-IMPL-001",
+      "severity": "info",
+      "title": "并发测试按生产模型（每请求独立连接）而非共享连接"
+    },
+    {
+      "detail": "WAL 模式只读连接会触碰 -shm 协调文件的 mtime（read-marker bookkeeping），即使 mode=ro + query_only——字节不变。零写判据改为 DB/WAL/SHM 字节一致性（sha256+size）为硬门；shm mtime 单独分类记录（shm_mtime_only_protocol_touch），不算 reader 写入。",
+      "id": "ZR206-IMPL-002",
+      "severity": "info",
+      "title": "T2 零写判据：字节一致为硬门，shm mtime 为 WAL 协议预期触碰"
+    },
+    {
+      "detail": "live worker（enabled，1580 fingerprints pending）会写 worker 日志/控制文件——T2 指纹窗口采用 worker-pause → 只读探测 → worker-resume 隔离；worker-owned 文件漂移只记录不判失败（非 reader 证据）。",
+      "id": "ZR206-IMPL-003",
+      "severity": "info",
+      "title": "T2 指纹窗口隔离：暂停 worker 取干净指纹，完成后恢复"
+    }
+  ],
+  "implementation": {
+    "design": "hermetic T1 测试（tests/contract/test_zr206_live_writer.py + test_zr206_slo_49gb.py）：live writer 长事务并发（READ-06：reader 有界完成、不抢 BEGIN IMMEDIATE、writer 提交完整）、reader 无 BEGIN IMMEDIATE 能力、锁竞争有界（READ-10）、50 并发 resolve 无 deadlock/下载/串线（task_plan 出口）、1M evidence_spans 合成大表 SLO（READ-11：冻结门×合成规模）、EXPLAIN covering-index 断言（无 Python 全表扫描）、tracemalloc 峰值<256MB、零写指纹 twin（WAL/SHM 已存在前置条件）。T2 运行器（assurance/unified_completion/t2/zr206_t2_probe.py）：真实 49.62GB catalog 只读探测 13 个 typed 方法 p50/p95/p99 + 流式 SHA-256 指纹 before/after（锁/acquire 文件排除；worker-owned 前缀分类；DB/WAL/SHM 字节硬门）+ EXPLAIN + 内存，证据 JSON 落盘。",
+    "files": [
+      "company-wiki/tests/contract/test_zr206_live_writer.py",
+      "company-wiki/tests/contract/test_zr206_slo_49gb.py",
+      "revenue-forecast/assurance/unified_completion/t2/zr206_t2_probe.py",
+      "revenue-forecast/assurance/unified_completion/t2/evidence/zr206_t2_probe.json",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-206/**"
+    ]
+  },
+  "implementer": "zr206-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 679fc33（docs/closure commit 后）；result_triplet.wiki 为本卡测试提交 3ea0039。",
+    "ZR-206 是阶段 C 出口卡：READ-01~12 全绿的收尾验收。READ-01~05/07~09/12 由 ZR-201~205 既有测试覆盖；本卡补齐 READ-06（live writer）、READ-10（deadline 失败）、READ-11（49GB SLO）、READ-12 变异门复用 ZR-203 caller gate。",
+    "T2 探测需要真实 catalog（49.6GB）+ 暂停 worker 的隔离窗口；CI 无此环境，证据由本机运行产生并落盘。"
+  ],
+  "objective": "live writer + 49GB级只读 SLO/压力验收：READ 场景全绿；p50/p95/p99、锁等待/内存阈值冻结；生产 T2 零写指纹。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "679fc33b4427aa960740713078ecbb778e1ea853",
+    "wiki": "3ea00396e8aa75b32859e87021204e2824bf4455"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 2 个 contract 测试文件（8 hermetic gates）；revenue 侧 T2 运行器 + 证据 JSON + receipts/ZR-206/** 与 state.json。产品代码零改动（reader/锁/schema 均未动）；真实 catalog 只读访问（worker 暂停窗口）；无下载。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 1
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr206_live_writer.py",
+    "company-wiki/tests/contract/test_zr206_slo_49gb.py",
+    "revenue-forecast/assurance/unified_completion/t2/zr206_t2_probe.py",
+    "revenue-forecast/assurance/unified_completion/t2/evidence/zr206_t2_probe.json",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-206/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-206"
+}
