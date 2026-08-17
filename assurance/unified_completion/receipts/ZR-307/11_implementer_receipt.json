@@ -1,0 +1,83 @@
+{
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "015268f9388e53fc085e53dd7feb09b233fc0018",
+    "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+  },
+  "canonical_hash": "3fbd978c8247bd626eab6e25b9b51be38525b656661d7200c51dbf8458a0cb11",
+  "commands": [
+    {
+      "command": "python -m pytest tests/test_fetch_filing.py -q --tb=short (filing-fetch)",
+      "exit_code": 0,
+      "result": "116 passed, 1 skipped, 39 subtests passed (5 new ZR-307 tests + 111 existing)"
+    },
+    {
+      "command": "python -m mypy scripts/fetch_filing.py scripts/filing_contracts.py",
+      "exit_code": 0,
+      "result": "Success: no issues found in 2 source files"
+    },
+    {
+      "command": "python -m pytest tests/test_complexity_ratchet.py -q",
+      "exit_code": 0,
+      "result": "2 passed (fetch_filing.py ≤ 34, filing_contracts.py ≤ 39)"
+    }
+  ],
+  "created_at_utc": "2026-08-18T10:15:00+00:00",
+  "findings": [
+    {
+      "detail": "ZR-102-F1（exact 模式 + --allow-download 无 authorization 即下载）不是本卡范围——本卡为阶段证据可见性，ZR-102-F1 属 ZR-407（authorization-bound GapPlan/CloseGap，阶段 D）。已在 ZR-205 receipt 中标注移交。",
+      "id": "ZR307-IMPL-001",
+      "severity": "info",
+      "successor": "ZR-407",
+      "title": "ZR102-F1 已移交 ZR-407"
+    },
+    {
+      "detail": "resolution_trace 在 main() 中无条件输出到错误信封（非 --debug 限定），与 debug_trace 兼容：两者共存，ZR-307 面向机器可消费，debug_trace 面向人工诊断。",
+      "id": "ZR307-IMPL-002",
+      "severity": "info",
+      "title": "resolution_trace 无条件输出（机器可消费），debug_trace 保持兼容"
+    }
+  ],
+  "implementation": {
+    "design": "新增 _resolution_trace(resolution) 辅助函数：从 wiki 响应提取 request_id/status/reason 紧凑摘要。_handle_from_resolution：所有 FilingFetchError raise 点（handle-missing/capture-not-ready/validate_handle/validate_resolution_envelope 失败）均携带 resolution_trace——下游失败不吞上游证据。resolve_filing not_found 路径：resolution_trace 始终附带（兼容 debug_trace）。main() 错误信封：resolution_trace 无条件输出（非 --debug 限定），downloads=0 在所有失败路径上保留。",
+    "files": [
+      "filing-fetch/scripts/filing_contracts.py",
+      "filing-fetch/scripts/fetch_filing.py",
+      "filing-fetch/tests/test_fetch_filing.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-307/**"
+    ]
+  },
+  "implementer": "zr307-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 015268f（ZR-306 closure commit）；result_triplet.wiki 取 a608980（ZR-306 wiki commit）；result_triplet.filing 待本次提交填充。",
+    "complexity: _resolve_filing 复杂度 34（冻结上限 34 保持不变）；_resolution_trace 为新辅助函数（简洁，≤ 5）。"
+  ],
+  "objective": "分阶段 envelope/receipt 即使下游失败也可见：safety blocked 仍显示 exact reuse/download=0；错误不得吞 handle/bundle/trace。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "015268f9388e53fc085e53dd7feb09b233fc0018",
+    "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+  },
+  "schema_version": 1,
+  "scope": "filing-fetch scripts/fetch_filing.py（_resolution_trace、_handle_from_resolution resolution_trace attachment、resolve_filing not_found trace、main() envelope）+ scripts/filing_contracts.py（FilingFetchError 新增 resolution_trace 字段）+ tests/test_fetch_filing.py（5 新测试）；revenue 侧 receipts/ZR-307/** 与 state.json。wiki 零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "filing-fetch/scripts/filing_contracts.py",
+    "filing-fetch/scripts/fetch_filing.py",
+    "filing-fetch/tests/test_fetch_filing.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-307/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-307"
+}
