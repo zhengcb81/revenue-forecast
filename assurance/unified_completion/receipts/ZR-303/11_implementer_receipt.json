@@ -1,0 +1,91 @@
+{
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "59338c19440fa64e26f39d7dad76adaa9182b340",
+    "wiki": "cbdb05453190fe0906cc352d25a19b70c3bdac54"
+  },
+  "canonical_hash": "9ba93b059656e8e98e72ec6112e60f443fcd7c5ca3501232fed12b3419eb7a43",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_readiness_graph.py tests/unit/test_prompt_injection_guard.py tests/unit/test_source_lifecycle.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "35 passed（9 graph + 17 guard + 9 lifecycle）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "766 passed（756 → +9 graph +1，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q (company-wiki)",
+      "exit_code": 0,
+      "result": "2 passed（readiness_graph.py max 9 ≤ 10 新文件；既有模块冻结线未破）"
+    },
+    {
+      "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/readiness_graph.py",
+      "exit_code": 0,
+      "result": "Success: no issues found in 1 source file"
+    }
+  ],
+  "created_at_utc": "2026-08-17T21:15:00+00:00",
+  "findings": [
+    {
+      "detail": "guard 的 receipt store 以 document_id 为键，graph 以 source_id 入参——_safety_verdict 先经 reader 解析 primary_source_id→document_id；无绑定 document 的 source 的 safety 判 absent（unknown→blocker，绝不伪绿）。",
+      "id": "ZR303-IMPL-001",
+      "severity": "info",
+      "title": "safety 阶段经 source→document 解析后交给 guard 判定"
+    },
+    {
+      "detail": "safety 五态映射表 _SAFETY_MAP 完备（hit→satisfied；ignored/expired/tampered/absent→blocker+next action）；非 safety 七阶段 next_action 表 _STAGE_NEXT_ACTIONS 完备——决策图无死路（bare source 全 blocker 都有 action 测试覆盖）。",
+      "id": "ZR303-IMPL-002",
+      "severity": "info",
+      "title": "决策图无死路：blocker→next_action 完备性"
+    },
+    {
+      "detail": "graph 为纯函数（同输入同输出，确定性测试覆盖）；shadow 只读（仅 reader.fetchone/fetchall）；未接生产入口（ZR-303 之后卡接线）。",
+      "id": "ZR303-IMPL-003",
+      "severity": "info",
+      "title": "确定性 + shadow-only + 未接线生产"
+    }
+  ],
+  "implementation": {
+    "design": "新增 readiness_graph.py：READINESS_GRAPH_SCHEMA 1.0；evaluate_readiness(reader, source_id, *, policy_hash, source_sha256, now, ttl_seconds, requirements) 合成 ZR-301 evaluate_source_readiness（八阶段）与 ZR-302 evaluate_review（safety 缓存判定）：safety 阶段 verdict 由 guard 决定（hit→satisfied；ignored/expired/tampered/absent→blocker+next action），其余七阶段沿用 ZR-301（unknown 不满足）；ReadinessDecision{ready, blockers[(stage,reason,next_action)], safety_cache_state, stages}；ready=全部 required 阶段 satisfied；blocker→next_action 映射表完备（无死路）；表驱动保证复杂度≤9。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/readiness_graph.py",
+      "company-wiki/tests/unit/test_readiness_graph.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-303/**"
+    ]
+  },
+  "implementer": "zr303-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 59338c1（ZR-302 closure commit）；result_triplet.wiki 为本卡实现提交 77ce0f3。",
+    "shadow-only：graph 仅经 reader 读取（含 source→document 解析查询）；无写路径、未接生产入口。"
+  ],
+  "objective": "统一 safety、identity、artifact、semantic readiness 计算：一个 machine decision graph；每个 blocker 有 next action；状态不互相矛盾。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "59338c19440fa64e26f39d7dad76adaa9182b340",
+    "wiki": "77ce0f35284b0ef43ea8529a7e98b65d074a37db"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 readiness_graph.py（统一决策图）+ tests/unit/test_readiness_graph.py（9 测试）；revenue 侧 receipts/ZR-303/** 与 state.json。其他产品零改动（ZR-301/302 模块未改）；无真实 catalog 访问、无下载。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 1,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/readiness_graph.py",
+    "company-wiki/tests/unit/test_readiness_graph.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-303/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-303"
+}
