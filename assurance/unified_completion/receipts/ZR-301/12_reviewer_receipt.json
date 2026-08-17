@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "unit": "ZR-301",
+  "kind": "reviewer",
+  "reviewer": "reviewer-zr301-independent",
+  "verdict": "accepted",
+  "note": "ZR-301 independent review",
+  "created_at_utc": "2026-08-17T19:28:59Z",
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "3d0d0971a2b7f207bdfac37dc34f7f92ea2d7b8d",
+    "wiki": "3ea00396e8aa75b32859e87021204e2824bf4455"
+  },
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "3d0d0971a2b7f207bdfac37dc34f7f92ea2d7b8d",
+    "wiki": "09deecb598773b8d1fea89d5b7049e42c3e514f5"
+  },
+  "reviewed_object_sha256": "4e290bbac6cd530f6f8be0a9919d1318a571067aa2ed1ccf3dfa530511856e6c",
+  "commands": [
+    {
+      "command": "git -C company-wiki rev-parse HEAD / 09deecb / 09deecb^",
+      "exit_code": 0,
+      "result": "HEAD=09deecb598773b8d1fea89d5b7049e42c3e514f5; parent=3ea00396e8aa75b32859e87021204e2824bf4455 (match)"
+    },
+    {
+      "command": "git -C filing-fetch rev-parse HEAD / 0e5d209",
+      "exit_code": 0,
+      "result": "HEAD=0e5d209bc352c6087fab51d09d55aa33aea81f85 (match)"
+    },
+    {
+      "command": "git -C revenue-forecast rev-parse HEAD / 3d0d097; git branch --show-current",
+      "exit_code": 0,
+      "result": "HEAD=3d0d0971a2b7f207bdfac37dc34f7f92ea2d7b8d (match); branch fcap"
+    },
+    {
+      "command": "git -C company-wiki show --stat 09deecb",
+      "exit_code": 0,
+      "result": "exactly 2 files added: src/company_wiki/source_catalog/source_lifecycle.py (+287) and tests/unit/test_source_lifecycle.py (+361); parent 3ea0039"
+    },
+    {
+      "command": "git -C company-wiki show --name-status 09deecb",
+      "exit_code": 0,
+      "result": "A source_lifecycle.py; A test_source_lifecycle.py; no other files"
+    },
+    {
+      "command": ".venv\\\\Scripts\\\\python.exe -m pytest tests/unit/test_source_lifecycle.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "9 passed in 1.70s"
+    },
+    {
+      "command": ".venv\\\\Scripts\\\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "740 passed in 37.32s (no regression; receipt claim 740 confirmed)"
+    },
+    {
+      "command": ".venv\\\\Scripts\\\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q (company-wiki)",
+      "exit_code": 0,
+      "result": "2 passed (new-file ratchet includes source_lifecycle.py)"
+    },
+    {
+      "command": "AST McCabe per-function (same counting as ratchet: 1 + if/for/while/and/or/except/comprehension/assert/with, BoolOp n-1)",
+      "exit_code": 0,
+      "result": "per-function: identity 2, resolution 2, freshness 2, acquisition 4, safety_receipt 8, safety_reviewed 5, artifact 2, semantic 2, consumer 5, evaluate_source_readiness 8; MAX=8 <= 10 (claim max 8 confirmed)"
+    },
+    {
+      "command": ".venv\\\\Scripts\\\\python.exe -m pytest tests/contract/test_source_catalog_ensure_paused_guard.py -q (company-wiki)",
+      "exit_code": 0,
+      "result": "3 passed (2 ratchet + 3 guard = 5; receipt claim 5 confirmed)"
+    },
+    {
+      "command": "python -m mypy src/company_wiki/source_catalog/source_lifecycle.py (mypy 1.19.0 via conda python; wiki venv has no mypy installed)",
+      "exit_code": 0,
+      "result": "Success: no issues found in 1 source file"
+    },
+    {
+      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-301/11_implementer_receipt.json (unified_completion)",
+      "exit_code": 0,
+      "result": "OK: canonical and well-formed; canonical_hash 767d5f3c84e3f5a13200c10ac52ae3c1110a533170bf981d9b1cee31e3b3b214 (independently recomputed -> MATCH)"
+    },
+    {
+      "command": "python -m uc.cli state-show (unified_completion)",
+      "exit_code": 0,
+      "result": "units.ZR-301.status=independent_review; current_next=ZR-301; current_phase=D_lifecycle_roots_freshness; plan_id TRI-REPO-COMPLETION-2026-08-13-R1"
+    },
+    {
+      "command": "grep execute|commit|DDL|UPDATE|INSERT|DELETE|CREATE|ALTER|DROP in source_lifecycle.py",
+      "exit_code": 0,
+      "result": "no matches (shadow read-only confirmed)"
+    },
+    {
+      "command": "grep source_lifecycle in src/company_wiki (cli.py/service.py etc.)",
+      "exit_code": 0,
+      "result": "no matches (no production entrypoint wiring)"
+    },
+    {
+      "command": "grep CrossRepoStage/stage_sequence in observability.py",
+      "exit_code": 0,
+      "result": "exactly 8 canonical stages in canonical order: identity,resolution,freshness,acquisition,safety,artifact,semantic,consumer; stage_sequence()=tuple(CrossRepoStage)"
+    },
+    {
+      "command": "grep PROMPT_INJECTION_REVIEW_* in prompt_injection.py",
+      "exit_code": 0,
+      "result": "KEY=prompt_injection_review; SCHEMA_VERSION=1.0; STATUSES=frozenset({not_detected, detected_and_ignored}) only"
+    },
+    {
+      "command": "grep reader.py public API",
+      "exit_code": 0,
+      "result": "zero-write: query_only PRAGMA; only fetchone/fetchall/query read methods; no public execute/commit/DDL"
+    },
+    {
+      "command": "python -c sha256(source_lifecycle.py at HEAD)",
+      "exit_code": 0,
+      "result": "4e290bbac6cd530f6f8be0a9919d1318a571067aa2ed1ccf3dfa530511856e6c (reviewed_object_sha256)"
+    },
+    {
+      "command": "python -c sha256(receipts/ZR-301/00_wu_card.md); scan for plan_sha256 target",
+      "exit_code": 0,
+      "result": "WU card = bdd085ee...; plan_sha256 861e28f9... resolves to audit_review/2026-08-13_three_repo_completion_rebaseline_plan/completion_assurance_registry.md (accurate; receipt-validate checks field presence only)"
+    },
+    {
+      "command": "git status --porcelain in all three repos + revenue diff/--cached diff",
+      "exit_code": 0,
+      "result": "wiki: clean except pre-existing local dirt (.claude/settings.local.json deleted, llm_cost_log.csv modified 2026-08-12, both predate ZR-301); filing: clean; revenue: staged receipts/ZR-301/** + state.json (matches touched_files), unstaged plan_inputs.json control_page_sha256 refresh dated 20:14:13 (before implementer receipt seal 20:25:11) - machine bookkeeping, not product code, not in touched_files"
+    }
+  ],
+  "findings": [
+    {
+      "id": "ZR301-REV-001",
+      "severity": "pass",
+      "title": "schema constants",
+      "detail": "LIFECYCLE_SCHEMA_VERSION=1.0 and LIFECYCLE_SCHEMA=source-lifecycle-1.0 verified in source and by test_schema_versioned_and_fail_closed."
+    },
+    {
+      "id": "ZR301-REV-002",
+      "severity": "pass",
+      "title": "ConsumerRequirements",
+      "detail": "unknown stage raises ValueError (fail closed); empty required_stages trivially ready - verified in code and tests."
+    },
+    {
+      "id": "ZR301-REV-003",
+      "severity": "pass",
+      "title": "eight-stage composition in canonical order",
+      "detail": "evaluate_source_readiness iterates observability.stage_sequence() (identity..consumer in canonical order); all 8 names present in _STAGE_EVALUATORS; per-stage StageVerdict carries verdict in {satisfied, unsatisfied, unknown} + blocker + next_action + evidence; ready = every required stage satisfied; unknown never counts as satisfied."
+    },
+    {
+      "id": "ZR301-REV-004",
+      "severity": "pass",
+      "title": "fail-closed safety semantics",
+      "detail": "no receipt -> unknown (bare source s2 verified, never green); stored statuses restricted to not_detected/detected_and_ignored (PROMPT_INJECTION_REVIEW_STATUSES); not_reviewed claim and malformed receipt (bad schema/status) -> unknown; valid receipt -> satisfied; receipt read from documents.metadata_json under PROMPT_INJECTION_REVIEW_KEY."
+    },
+    {
+      "id": "ZR301-REV-005",
+      "severity": "pass",
+      "title": "shadow only",
+      "detail": "module uses only reader.fetchone/fetchall; grep for execute/commit/DDL/UPDATE/INSERT/DELETE absent; ReadOnlyCatalogReader is PRAGMA query_only; test_evaluator_is_read_only asserts CREATE/DELETE fail closed; no production entrypoint imports source_lifecycle anywhere under src/company_wiki."
+    },
+    {
+      "id": "ZR301-REV-006",
+      "severity": "pass",
+      "title": "consumer requirements decide ready",
+      "detail": "partial requirements drive ready (acquisition-only unsatisfied on s2), empty trivially ready; verified by tests."
+    },
+    {
+      "id": "ZR301-REV-007",
+      "severity": "pass",
+      "title": "complexity",
+      "detail": "max cyclomatic complexity = 8 (evaluate_source_readiness, _safety_receipt), <= 10; ratchet contract 2 passed."
+    },
+    {
+      "id": "ZR301-REV-008",
+      "severity": "pass",
+      "title": "mypy",
+      "detail": "clean (mypy 1.19.0). Note: wiki venv has no mypy installed; ran via conda python with the repo pyproject [tool.mypy] config."
+    },
+    {
+      "id": "ZR301-REV-009",
+      "severity": "pass",
+      "title": "receipt integrity + machine state",
+      "detail": "implementer receipt canonical (hash independently recomputed = 767d5f3c...); plan_sha256 accurate; triplets are real git objects; state: ZR-301 independent_review, current_next ZR-301, phase D_lifecycle_roots_freshness."
+    },
+    {
+      "id": "ZR301-REV-010",
+      "severity": "pass",
+      "title": "no overclaims",
+      "detail": "side_effect_counts product_code_changes=1, real_catalog_access=0, catalog_mutations=0, downloads=0, llm_calls=0, parser_calls=0, ci_changes=0, external_root_writes=0 - all consistent with re-run evidence; touched_files/scope accurate; findings ZR301-IMPL-001/002 accurately describe the code."
+    },
+    {
+      "id": "ZR301-REV-011",
+      "severity": "info",
+      "title": "plan_inputs.json manifest drift (non-blocking)",
+      "detail": "revenue working tree has an unstaged 2-line refresh of plan_inputs.json (control_page_sha256 ee1cab0 -> 0b360e1) dated 2026-08-17 20:14:13, before the implementer receipt seal (20:25:11); consistent with phase-D entry bookkeeping, not product code, not listed in touched_files."
+    },
+    {
+      "id": "ZR301-REV-012",
+      "severity": "info",
+      "title": "wiki pre-existing local dirt (non-blocking)",
+      "detail": "wiki working tree contains pre-existing local changes (.claude/settings.local.json deleted; llm_cost_log.csv modified since 2026-08-12) unrelated to ZR-301; commit 09deecb itself touches exactly the 2 claimed files."
+    }
+  ],
+  "canonical_hash": "f8e67ce8b6060f9262c04e875a30ce8fb6004466beeca54519333c0215fef59c"
+}
