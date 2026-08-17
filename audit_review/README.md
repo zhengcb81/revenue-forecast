@@ -10,7 +10,7 @@ authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
 current_phase: D_lifecycle_roots_freshness
-current_next: ZR-303
+current_next: ZR-304
 active_owner: unassigned
 lease: none
 blocked_reason: none
