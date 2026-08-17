@@ -4,7 +4,7 @@
     "revenue": "b457f86979bd6de53d7fe0ea92e2bbb6d702b47c",
     "wiki": "09deecb598773b8d1fea89d5b7049e42c3e514f5"
   },
-  "canonical_hash": "4bdbb02fc04c9c443344ec58281b6989b01caf0d2452aa054b83540194a4f1ca",
+  "canonical_hash": "7095a012051ce87b96a264295ce38904d49a1f9762d0c1df24eb7564e7191208",
   "commands": [
     {
       "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_prompt_injection_guard.py tests/unit/test_source_lifecycle.py tests/contract/test_fc905_receipt_envelope.py -q --tb=short (company-wiki)",
@@ -49,7 +49,7 @@
     }
   ],
   "implementation": {
-    "design": "新增 prompt_injection_guard.py：PROMPT_INJECTION_GUARD_SCHEMA 1.0；scan_text（表驱动 5 模式 ruleset + RULESET_HASH 绑定，未知 hash fail closed，确定性）；evaluate_review（store.fetchone 只读）→ ReviewEvaluation{status, cache_state, reason}：hit（绑定匹配+未过期）/ignored（policy_hash 变）/expired（TTL）/tampered（source_sha256 变或 malformed 或 legacy 未绑定）/absent；非 hit 一律 not_reviewed。prompt_injection.py 增量：record 增加可选 source_sha256/policy_hash（提供时 64-hex 强校验，写入 receipt dict；不提供保持 FC-905 行为）；校验拆为 _require_sha256/_validate_review_inputs 保持复杂度≤9。",
+    "design": "新增 prompt_injection_guard.py：PROMPT_INJECTION_GUARD_SCHEMA 1.0；scan_text（表驱动 5 模式 ruleset + RULESET_HASH 绑定，未知 hash fail closed，确定性）；evaluate_review（store.fetchone 只读）→ ReviewEvaluation{status, cache_state, reason}：hit（绑定匹配+未过期）/ignored（policy_hash 变）/expired（TTL）/tampered（source_sha256 变或 legacy 未绑定）/absent（无 receipt；malformed receipt 亦归 absent——fail closed，见 ZR302-REV-002）；非 hit 一律 not_reviewed。prompt_injection.py 增量：record 增加可选 source_sha256/policy_hash（提供时 64-hex 强校验，写入 receipt dict；不提供保持 FC-905 行为）；校验拆为 _require_sha256/_validate_review_inputs 保持复杂度≤9。",
     "files": [
       "company-wiki/src/company_wiki/source_catalog/prompt_injection_guard.py",
       "company-wiki/src/company_wiki/source_catalog/prompt_injection.py",
@@ -60,18 +60,19 @@
   "implementer": "zr302-implementer",
   "kind": "implementer",
   "notes": [
-    "result_triplet.revenue 取 b457f86（ZR-301 closure commit）；result_triplet.wiki 为本卡实现提交 4714a1e。",
-    "shadow-only：evaluate_review 只经 store.fetchone 读取（无写路径）；receipt 生成仍走既有 record_prompt_injection_review 写入路径。未接生产入口（ZR-303 统一决策图接线）。"
+    "result_triplet.revenue 取 b457f86（ZR-301 closure commit）；result_triplet.wiki 为本卡实现提交 4714a1e + 复核修正提交 cbdb054。",
+    "shadow-only：evaluate_review 只经 store.fetchone 读取（无写路径）；receipt 生成仍走既有 record_prompt_injection_review 写入路径。未接生产入口（ZR-303 统一决策图接线）。",
+    "独立复核 changes_required → 三项全部修正：REV-001（_require_sha256 注解 str|None，mypy 干净）、REV-002（设计措辞改为 malformed→absent，卡片矩阵同步）、REV-003（新增 TTL 边界等式测试 now-reviewed_at==ttl 仍 hit）。修正提交 cbdb054，35 测试绿。"
   ],
   "objective": "prompt-injection scanner/reviewer receipt 的生成、缓存与失效：source/policy hash 绑定；not_reviewed 不伪绿；命中/忽略/过期/篡改场景。",
   "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
   "result_triplet": {
     "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
     "revenue": "b457f86979bd6de53d7fe0ea92e2bbb6d702b47c",
-    "wiki": "4714a1ee6a9ac6cd6f7994df61969629e45309bc"
+    "wiki": "cbdb05453190fe0906cc352d25a19b70c3bdac54"
   },
   "schema_version": 1,
-  "scope": "company-wiki 新增 prompt_injection_guard.py + 增量扩展 prompt_injection.py（可选绑定字段）+ tests/unit/test_prompt_injection_guard.py（16 测试）；revenue 侧 receipts/ZR-302/** 与 state.json。其他产品零改动；无真实 catalog 访问、无下载。",
+  "scope": "company-wiki 新增 prompt_injection_guard.py + 增量扩展 prompt_injection.py（可选绑定字段）+ tests/unit/test_prompt_injection_guard.py（17 测试，含 TTL 边界）+ 复核修正提交 cbdb054（mypy 注解/TTL 边界测试）；revenue 侧 receipts/ZR-302/** 与 state.json。其他产品零改动；无真实 catalog 访问、无下载。",
   "side_effect_counts": {
     "catalog_mutations": 0,
     "ci_changes": 0,

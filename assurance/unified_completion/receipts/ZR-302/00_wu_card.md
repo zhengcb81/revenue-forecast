@@ -44,5 +44,5 @@
 | ignored | ✓ | ✓ | ✗ | — | not_reviewed（规则集变更） |
 | expired | ✓ | ✓ | ✓ | ✗ | not_reviewed |
 | tampered | ✓ | ✗ | — | — | not_reviewed（源字节变更） |
-| malformed | 无效 | — | — | — | not_reviewed |
+| malformed | 无效 | — | — | — | not_reviewed（cache_state=absent，fail closed） |
 | absent | ✗ | — | — | — | not_reviewed |
