@@ -81,3 +81,11 @@
   - 验证：filing 全套 328 passed / 6 skipped；branch coverage 91.45%≥90；complexity 34≤34；mypy 干净；companies-reuse E2E golden identical；commit 0e5d209（skill sync 后）。
   - implementer receipt 已签（canonical 446f66ba…）；state → independent_review；独立复核进行中（subagent）。
   - ZR102-F1（exact 无授权下载）移交 ZR-407（阶段 D authorization-bound GapPlan），ZR205-IMPL-003 登记。
+
+## 2026-08-17~18（阶段 D：ZR-306/307/401 closure）
+
+- ZR-306 closure：SourceBundle role DAG 最小失效 property tests（wiki a608980，6 tests，产品零改动）；复核 accepted。
+- ZR-307 closure：filing 分阶段 envelope + resolution trace（filing df66796，338 tests）；复核 accepted。
+- ZR-401 closure（RootPolicy 3.0 严格加载器）：wiki 251615e（12 tests，787 unit，McCabe max 8，mypy clean）；独立复核 accepted（5 条非阻断 findings，REV-003 生产 config 未切 3.0 已记显式决策延期至 ZR-402/403 或阶段 D 出口）；closure→ZR-402。
+- 机器状态：current_phase=D_lifecycle_roots_freshness，current_next=ZR-402；accepted 36/117（A0 8 + B 9 + C 11 + D 8）。
+- 停止点（用户指示：收尾并更新全部 planning docs 后停止）：ZR-402（adapter registry）未领取；三仓 HEAD：revenue fd017c9 / wiki 251615e / filing df66796（均未 push）。

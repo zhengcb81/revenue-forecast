@@ -477,3 +477,11 @@
   - **ZR102-F1 移交 ZR-407**（ZR205-IMPL-003，原 successor=ZR-205 修正）：exact 模式 + --allow-download 无 authorization 即下载，属 authorization-bound GapPlan/CloseGap 范围（阶段 D），不在本 retry 卡。
   - 信封契约扩展（READ-09/READ-10）：成功 envelope 新增 calls/downloads；失败 envelope 新增 stage/attempts/calls/downloads——对账字段为 additive，revenue client 按 key 读取不受影响。
   - 验证：filing 328 passed/6 skipped、branch coverage 91.45%（≥90）、complexity 34≤34、mypy 干净、companies-reuse E2E golden identical、pre-commit 全绿（470 passed revenue 侧）。filing commit 0e5d209；revenue receipt commit 40d0c04。
+
+## ZR-306/ZR-307/ZR-401（2026-08-17~18 阶段 D closure）
+
+- ZR-306 accepted：role DAG 最小失效 property tests（wiki a608980）：document_hash 全失效、producer-key 变更=传递下游闭包、缺失子树只重算依赖、幂等+手工闭包对照、DAG 无环、PRODUCER_KEYS 覆盖 prompt/model/config hash。
+- ZR-307 accepted：filing 分阶段 envelope + resolution trace（filing df66796）：_resolution_trace/_handle_from_resolution trace、main() 错误信封（FilingFetchError + resolution_trace）、5 新测试；338 tests 绿。
+- ZR-401 accepted（RootPolicy 3.0，wiki 251615e）：3.0 strict loader（schema 门拒绝 1.x/2.x 并给迁移提示、external→private_user / company_raw→public、external 写目标/未知字段/非只读复用 fail closed、导出版本化+隐私脱敏+确定性 sha256）；12 tests + 787 unit 绿；McCabe max 8。
+- 复核 5 findings（全非阻断）：REV-001 privacy_class 隐式默认（company_raw 缺省走 2.x public 默认，无权限扩大）；REV-002 contract 计数过报（43 vs 实际 28+1 skipped）；REV-003 生产 config 未切 3.0（显式决策：延期至 ZR-402/403 或阶段 D 出口，回滚纪律保持）；REV-004 环境（mypy 用 base python）；REV-005 plan_sha256 漂移（卡片冻结后更新）。
+- 阶段 D：8/16 closure（ZR-301~307 + ZR-401）；current_next=ZR-402（adapter registry）。
