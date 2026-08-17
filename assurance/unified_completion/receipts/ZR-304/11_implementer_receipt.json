@@ -4,7 +4,7 @@
     "revenue": "32ad84c20438368657d4e4dfce46a8b0d70e69ef",
     "wiki": "77ce0f35284b0ef43ea8529a7e98b65d074a37db"
   },
-  "canonical_hash": "de9944ebf2aeb089aaa750be7fb93f499af81a6427a0fc7b21cd693c0ec2bfbc",
+  "canonical_hash": "d65797c65a4fa9448e7aa2ac8d7b1ae0349299fb97938f1e10f3fe2434636e46",
   "commands": [
     {
       "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_zr304_read_model.py -q --tb=short (company-wiki)",
@@ -60,15 +60,16 @@
   "implementer": "zr304-implementer",
   "kind": "implementer",
   "notes": [
-    "result_triplet.revenue 取 32ad84c（ZR-303 closure commit）；result_triplet.wiki 为本卡实现提交 24ae595。",
-    "shadow-only：read model 仅经 reader 读取；attempt 写入经 sqlite3.Connection（调用方持有事务），与 FC-905 receipt 写路径同约定。未接生产入口（后续卡接线）。"
+    "result_triplet.revenue 取 32ad84c（ZR-303 closure commit）；result_triplet.wiki 为本卡实现提交 24ae595 + 复核修正提交 838fc46。",
+    "shadow-only：read model 仅经 reader 读取；attempt 写入经 sqlite3.Connection（调用方持有事务），与 FC-905 receipt 写路径同约定。未接生产入口（后续卡接线）。",
+    "独立复核 accepted（5 条非阻塞 finding）；REV-001（KNOWN_ARTIFACT_ROLES 与冻结 source_bundle 不一致）已修正：直接 import source_bundle.KNOWN_ARTIFACT_ROLES（单一真源，去掉本地重复声明），提交 838fc46，9 测试绿 + mypy 干净 + 复杂度 8。"
   ],
   "objective": "producer attempt/result、artifact-created journal、ArtifactHandle、唯一 reusable view/validator 与生产 bundle 绑定真源：source SHA mandatory；失败无artifact也有attempt；区分历史与calls_this_request；artifact_bindings/metadata/columns 归一为一条生产读取语义；未知 role/version fail closed。",
   "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
   "result_triplet": {
     "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
     "revenue": "32ad84c20438368657d4e4dfce46a8b0d70e69ef",
-    "wiki": "24ae59514eb871fca75e486d67e251d5ed8abaae"
+    "wiki": "838fc464563bfc9071d89a806e02c4bdf62fd662"
   },
   "schema_version": 1,
   "scope": "company-wiki 新增 producer_journal.py + artifact_read_model.py + tests/unit/test_zr304_read_model.py（9 测试）；revenue 侧 receipts/ZR-304/** 与 state.json。既有产品零改动（producer_events 表/触发器未动）；无真实 catalog 访问、无下载。",

@@ -1,0 +1,78 @@
+{
+  "base_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "a87f3daccc18d55f13914e7cf05387edba9c1914",
+    "wiki": "838fc464563bfc9071d89a806e02c4bdf62fd662"
+  },
+  "canonical_hash": "3698351cd18653e80c924db956b4e4077e59ec132cd1641f454a2ab6a8be1f9e",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr305_legacy_migration.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "5 passed（五桶全覆盖恰一桶、dry-run 两次字节一致、apply 后真实 build_source_bundle 消费绑定 artifact 为 valid handle、apply 幂等零重复绑定、不删 artifacts、shadow 绑定可逆删除恢复）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_source_catalog_artifact_backfill.py tests/contract/test_zr305_legacy_migration.py tests/contract/test_fc1204_complexity_ratchet.py -q (company-wiki)",
+      "exit_code": 0,
+      "result": "18 passed（FC-901 既有 11 测试 + 本卡 5 测试 + ratchet 2，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "775 passed（无回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-17T22:20:00+00:00",
+  "findings": [
+    {
+      "detail": "FC-901 artifact_backfill 已实现五桶（bindable/hash_mismatch/missing_bytes/unknown_generator/legacy_unbound）+ dry-run/apply + 幂等/可逆（ab01~ab11）；ZR-304 已建唯一 read model 与 artifact_bindings。本卡为纯验收：新增端到端 contract 测试把 registry 要求的证据钉死，产品代码零改动。",
+      "id": "ZR305-IMPL-001",
+      "severity": "info",
+      "title": "纯验收卡：产品机制已由 FC-901/ZR-304 实现，本卡钉死端到端证据"
+    },
+    {
+      "detail": "apply 后真实 build_source_bundle 消费绑定 artifact 为 valid handle（binding 非死行）；bundle hash 绑定 handle——生产唯一 view 的消费闭环已验证。",
+      "id": "ZR305-IMPL-002",
+      "severity": "info",
+      "title": "apply → 生产 SourceBundle 命中闭环"
+    }
+  ],
+  "implementation": {
+    "design": "新增 tests/contract/test_zr305_legacy_migration.py：五桶 dry-run 全覆盖（恰一桶 + bucket 守恒闭包）、两次 dry-run as_dict 字节一致（确定性）、apply 后 build_source_bundle 消费（valid_handles 含绑定 artifact，metadata_json 合并 schema_version/source_sha256 同生产约定）、apply 幂等（重复 apply 零重复绑定）、不删 artifacts、shadow 绑定删除可逆。产品代码零改动。",
+    "files": [
+      "company-wiki/tests/contract/test_zr305_legacy_migration.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-305/**"
+    ]
+  },
+  "implementer": "zr305-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 a87f3da（ZR-304 implementer receipt commit）；result_triplet.wiki 为本卡验收测试提交 080d20c。",
+    "无产品改动、无真实 catalog 访问、无下载。"
+  ],
+  "objective": "在生产 bundle 已消费唯一 view 后，执行 legacy artifact 五桶 dry-run/migration：bindable/hash mismatch/missing bytes/unknown generator/legacy_unbound；apply 后真实 SourceBundle 命中；不猜、不删、幂等、可恢复。",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "result_triplet": {
+    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+    "revenue": "a87f3daccc18d55f13914e7cf05387edba9c1914",
+    "wiki": "080d20cefb4442199567a2c98911a83f6c583e40"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 tests/contract/test_zr305_legacy_migration.py（5 端到端测试）；revenue 侧 receipts/ZR-305/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr305_legacy_migration.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-305/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-305"
+}
