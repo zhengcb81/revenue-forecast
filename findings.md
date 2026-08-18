@@ -1,5 +1,14 @@
 # Revenue Forecast 技能审查发现
 
+## 2026-08-18 — ZR-408 收尾发现（company-wiki，未 closure）
+
+- 已复跑的 FC-801/FC-804 与 canonical-writer 合同表明，现有实现已经对受控 staging 做 hash/size/identity 验证，canonical writer 的路径落在 `companies/`，提交后 re-resolve，且同 binding 的重复执行为 zero-fetch reuse。不能把“已有测试”本身当作 ZR-408 closure；本轮逐项以 fetch/import/path/resolution/journal oracle 复核。
+- 原 FC-804 的 single-flight 用例仅使用同进程线程，`lock timeout` 也实际是顺序重跑，未直接覆盖文件锁的跨进程语义。这是证据缺口，不是已证实的产品故障。
+- 已在 `test_close_gap_concurrency_fc804.py::test_cg_c1b_cross_process_single_flight_one_fetch` 补充 Windows `spawn` 双进程合同：每个 child 重建自己的 catalog/coordinator/writer；共享 temp root/binding；adapter append-only fetch log 必须只有一条，同时两份结果的 `fetch_events` 为 `[0, 1]`，catalog documents=1。该测试首次与合集均通过。
+- `ruff check --no-cache` 通过。`ruff format --check` 请求格式化整份历史 FC-804 文件（非本轮新增段落也包含既有格式差异），没有做无关全文件格式化；因此不将 format-check 记为通过。
+- 默认 pytest cache / ruff cache 在 company-wiki 工作树内没有写权限；测试使用 revenue-forecast 受控 `--basetemp`，Ruff 使用 `--no-cache`。这只是环境警告，不是产品失败。
+- 两次更宽的 `tests/unit` 运行都在工具约 30 秒回传边界截断，未给出退出码；不可列为成功。尝试停止遗留 Python PID 20528/25964 时被 Windows 拒绝，25964 随后已退出，20528 仍不可控。不要在没有进程所有权的情况下删除其可能使用的 temp root。
+
 ## 2026-07-26 改进实施计划编制依据
 
 - 用户要求把审计结论转换为足够细粒度的实施计划，使较弱模型也能按固定顺序执行而不跳步。

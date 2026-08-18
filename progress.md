@@ -1,5 +1,14 @@
 # Revenue Forecast 技能审查进度
 
+## 2026-08-18 — ZR-408 收尾 / 用户要求停止
+
+- 状态：ZR-407 已 accepted 且 closure→ZR-408；收尾时已释放 ZR-408 lease（`active_owner=null`、`lease=null`），尚未提交 implementer receipt、独立 review 或 closure，机器游标仍为 `current_next=ZR-408`。
+- 新增：`company-wiki/tests/contract/test_close_gap_concurrency_fc804.py` 的跨进程 single-flight 合同；测试 helper 仅将已存在的 temp company raw mkdir 改为 `exist_ok=True`，以供两个 spawn child 重建 catalog。
+- 验证：`PYTHONPATH=src python -X utf8 -m pytest tests/contract/test_close_gap_fc801.py tests/contract/test_close_gap_concurrency_fc804.py tests/contract/test_source_catalog_canonical_writer.py -q --tb=short --basetemp <revenue>/.tmp-zr408-wiki-full` → **20 passed, 1 pytest-cache permission warning**。新增单测单跑同样通过；`python -X utf8 -m ruff check --no-cache tests/contract/test_close_gap_concurrency_fc804.py` → **All checks passed**。
+- 未计入验证：两次 `tests/unit` 因工具 30 秒回传截断均无 exit code，不能写作 passed；`ruff format --check` 指出整个历史 FC-804 文件会被格式化，未为本任务进行全文件机械改写。
+- 环境/清理：默认 company-wiki `.pytest_cache`/`.ruff_cache` 无写权限。显式 basetemp 均在 revenue-forecast。停止 PID 20528、25964 的请求被 Windows `Access denied`；25964 后续自行退出，20528 仍存在，故不删除 `.tmp-zr408-unit*`，避免影响非本会话可控的进程。
+- 停止点：用户要求收尾后停止。后续恢复顺序为：确认 PID 20528 已退出并仅删除精确的 `.tmp-zr408-*` 目录 → 读取 `assurance/unified_completion/receipts/ZR-408/00_wu_card.md` 与 state → 补 implementer receipt/receipt validation → 由独立 reviewer 在 clean checkout 重放跨进程与 focused suites → reviewer/closure 才可将 ZR-408 accepted 并推进 ZR-409。
+
 ## 2026-07-26
 
 - 完成：读取核心技能契约，建立六阶段审查计划。

@@ -1,0 +1,167 @@
+{
+  "base_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "5e5902d762a0b2e6b89453465f9e26b9981d5361",
+    "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
+  },
+  "canonical_hash": "dabc67e899d9e4d416c541e43e65cdf727268058f12b0a24cdb32f01bf5146cb",
+  "commands": [
+    {
+      "command": "python -m pytest tests/test_fc802_gap_orchestration.py -q --tb=short (filing-fetch, pre-fix RED)",
+      "exit_code": 1,
+      "result": "1 failed / 122 passed / 1 skipped: revision-only authorized plan returned after 3 subprocess calls instead of invoking close-gap (expected 5)."
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest tests/contract/test_close_gap_fc801.py -q --tb=short --basetemp <revenue>/.tmp-zr407-wiki (company-wiki, pre-fix RED)",
+      "exit_code": 1,
+      "result": "1 failed / 7 passed: newer_revision-only GapPlan was finalized as reused with fetch_events=0 instead of staging its exact candidate."
+    },
+    {
+      "command": "python -m pytest tests/test_complexity_ratchet.py tests/test_fc802_gap_orchestration.py -q --tb=short (filing-fetch)",
+      "exit_code": 0,
+      "result": "125 passed, 1 skipped, 39 subtests; revision-only authorized and unauthorised GAP paths plus complexity ratchet green."
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest tests/contract/test_close_gap_fc801.py tests/contract/test_close_gap_concurrency_fc804.py -q --tb=short --basetemp <revenue>/.tmp-zr407-wiki (company-wiki)",
+      "exit_code": 0,
+      "result": "13 passed; existing stale-policy/hash, expiry, idempotence, retry, and single-flight contracts remain green."
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest tests/unit -q --tb=short --basetemp <revenue>/.tmp-zr407-wiki (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed."
+    },
+    {
+      "command": "python -m pytest tests -q --tb=short --basetemp <revenue>/.tmp-zr407-filing with TEMP/TMP set to that directory (filing-fetch)",
+      "exit_code": 1,
+      "result": "356 passed, 12 skipped, 2 failed. The ZR-407-caused complexity failure (fetch_filing max 36 > 34) was subsequently fixed and the exact ratchet test is green. Remaining failure: test_real_tool_conformance::test_ensure_entity_without_download_reports_missing -> attempt to write a readonly database; no product change was made for this unrelated read-only production-entrypoint failure."
+    },
+    {
+      "command": "python -m ruff check --no-cache scripts/fetch_filing.py tests/test_fc802_gap_orchestration.py (filing-fetch)",
+      "exit_code": 0,
+      "result": "All checks passed."
+    },
+    {
+      "command": "python -m ruff check --no-cache src/company_wiki/source_catalog/close_gap.py tests/contract/test_close_gap_fc801.py (company-wiki)",
+      "exit_code": 0,
+      "result": "All checks passed."
+    },
+    {
+      "command": "PYTHONUTF8=1 python -X utf8 -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-407/11_implementer_receipt.json with process-only GIT_CONFIG_COUNT=3 safe.directory values for revenue-forecast, filing-fetch, and company-wiki",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed. The first UTF-8-only attempt exposed Git dubious-ownership errors; no global Git configuration was written."
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest tests/contract/test_zr407_ensure_readonly.py -q --tb=short --basetemp <revenue>/.tmp-zr407-wiki (company-wiki, RED then GREEN)",
+      "exit_code": 0,
+      "result": "RED: writer-forbidden property produced the prior fatal error. GREEN: 1 passed; OS-read-only DB returned structured missing with attempt=null and no acquisition journal."
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest tests/contract/test_fc1204_complexity_ratchet.py plus ZR-407/paused/close-gap focused contracts (company-wiki)",
+      "exit_code": 0,
+      "result": "2 complexity-ratchet tests and 17 affected contracts passed after extracting _run_ensure_command; main complexity measured 130, below frozen maximum 140."
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest tests/unit -q --tb=short --basetemp <revenue>/.tmp-zr407-wiki (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed."
+    },
+    {
+      "command": "python -m pytest tests -q --tb=short --basetemp <revenue>/.tmp-zr407-filing with TEMP/TMP set to that directory (filing-fetch, final rerun)",
+      "exit_code": 0,
+      "result": "358 passed, 12 skipped, 78 subtests passed. Two Windows encoding/pytest-cache warnings remained; no test failure."
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest tests/contract -q --tb=short --basetemp <revenue>/.tmp-zr407-wiki (company-wiki)",
+      "exit_code": 1,
+      "result": "1604 passed, 8 skipped, 19 failed. One was this card's cli.py complexity ratchet and was fixed immediately; the remaining 18 are pre-existing sandbox permission, CIM/process supervision, worker bootstrap, parser-liveness, pipeline, or unavailable DLL conditions outside the card scope."
+    },
+    {
+      "command": "PYTHONPATH=src python -m pytest tests/test_e2e_isolated_wiki.py -q --tb=short --basetemp <revenue>/.tmp-zr407-filing with TEMP/TMP set to that directory (filing-fetch, T1)",
+      "exit_code": 0,
+      "result": "15 passed. Isolated temporary roots/catalog with real filing-fetch and company-wiki subprocesses covered CN/US/HK reuse, missing, identity failure, lock contention, and paused-worker paths."
+    }
+  ],
+  "created_at_utc": "2026-08-18T22:30:00Z",
+  "findings": [
+    {
+      "detail": "The production filing-fetch GAP branch only consulted missing, while CloseGapTransaction used the same incomplete condition before and inside its single-flight lock. A local older filing therefore hid an actionable same-period amendment.",
+      "id": "ZR407-IMPL-001",
+      "severity": "high",
+      "title": "newer_revision was not an actionable close-gap target"
+    },
+    {
+      "detail": "The repair does not create an authorization model. It continues to bind request, gap hash, policy hash, provider, exact allowed accession list, caps and TTL, with acquisition-side candidate validation before byte fetch.",
+      "id": "ZR407-IMPL-002",
+      "severity": "info",
+      "title": "existing exact authorization contract retained"
+    },
+    {
+      "detail": "Resolved under the user's explicit scope authorization. Exact no-download ensure now resolves through the reader and returns attempt=null without a writer initializer or journal append. The real-tool conformance test and the final filing-fetch owner suite are green; latest-as-of and download-capable write flows retain their existing behavior.",
+      "id": "ZR407-IMPL-003",
+      "severity": "info",
+      "title": "owner-suite read-only conformance repair completed"
+    },
+    {
+      "detail": "Resolved in the execution environment: Python UTF-8 mode preserves the Chinese path, and process-only Git safe.directory configuration for all three repositories avoids the sandbox account's dubious-ownership guard. receipt-validate is now green; no global Git configuration was changed.",
+      "id": "ZR407-IMPL-004",
+      "severity": "info",
+      "title": "receipt validation restored with process-only environment configuration"
+    },
+    {
+      "detail": "The full 1,631-item company-wiki contract run exposed 18 remaining failures after the ZR-407 complexity gate was repaired. They are sandbox permission, Windows CIM/process-supervision, worker-bootstrap, parser-liveness, pipeline, or unavailable DLL conditions outside this card's source/test allowlist. They are retained as environmental owner-suite debt, not hidden or reclassified as green.",
+      "id": "ZR407-IMPL-005",
+      "severity": "medium",
+      "successor": "post-ZR-407 owner environment remediation",
+      "title": "full company-wiki contract has unrelated environment failures"
+    }
+  ],
+  "implementation": {
+    "design": "company-wiki adds a single ordered actionable set, missing followed by newer_revision, and uses it for both pre-lock and in-lock revalidation plus exact staging request construction. filing-fetch delegates its GAP actionability decision to a pure helper so revision-only plans take the same authorization-bound close-gap route without exceeding the frozen resolve_filing complexity limit. Under explicit user authorization, exact no-download ensure is dispatched through SourceResolver/reader with attempt=null rather than writer initialization/journal append; latest-as-of and download-capable ensure remain write flows.",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/close_gap.py",
+      "company-wiki/src/company_wiki/source_catalog/cli.py",
+      "company-wiki/tests/contract/test_close_gap_fc801.py",
+      "company-wiki/tests/contract/test_zr407_ensure_readonly.py",
+      "filing-fetch/scripts/fetch_filing.py",
+      "filing-fetch/tests/test_fc802_gap_orchestration.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-407/**"
+    ]
+  },
+  "implementer": "zr407-implementer",
+  "kind": "implementer",
+  "notes": [
+    "The source card hash before this receipt was 72EAD6167BE728A0EEB20872CBEB97F1BD42AB5FC5DE3024689709E6D75A9744.",
+    "Product source hashes after implementation: filing-fetch/scripts/fetch_filing.py=743238E6D0E4EB77D58C89049CA113E862F16E9C692840D50FFD512829243B05; company-wiki/src/company_wiki/source_catalog/close_gap.py=117C8166A6C26F3462574B787E0DB79C419E00C8B18287F25738948032F475C3.",
+    "Default pytest cache and standard Windows temporary directories are not writable in this session. Tests used an explicit revenue-forecast controlled basetemp where required; no cache/production root was written."
+  ],
+  "objective": "authorization-bound GapPlan/CloseGap supports missing and newer_revision; without authorization discover/fetch=0; authorization remains bound to current policy, plan hash, exact candidate, TTL and limits.",
+  "plan_sha256": "72EAD6167BE728A0EEB20872CBEB97F1BD42AB5FC5DE3024689709E6D75A9744",
+  "result_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "5e5902d762a0b2e6b89453465f9e26b9981d5361",
+    "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
+  },
+  "schema_version": 1,
+  "scope": "missing/newer_revision actionability plus user-authorized exact/no-download ensure reader repair; no authorization-schema, staging/canonical-writer, provider, production-root, CI, or frozen-plan change.",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/close_gap.py",
+    "company-wiki/src/company_wiki/source_catalog/cli.py",
+    "company-wiki/tests/contract/test_close_gap_fc801.py",
+    "company-wiki/tests/contract/test_zr407_ensure_readonly.py",
+    "filing-fetch/scripts/fetch_filing.py",
+    "filing-fetch/tests/test_fc802_gap_orchestration.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-407/**"
+  ],
+  "unit": "ZR-407"
+}

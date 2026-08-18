@@ -1,5 +1,16 @@
 # Revenue Forecast 技能改进实施计划
 
+## 2026-08-18 — 当前停止点：ZR-408（company-wiki close-gap）
+
+本根计划仍是 revenue-forecast 历史范围的归档/审查底稿；跨仓当前执行游标以
+`audit_review/README.md` 与 `assurance/unified_completion/state.json` 为唯一真源。
+
+- ZR-407 已被独立复核接受并 closure→ZR-408；ZR-408 当前未领取，且**未**进入 independent_review/accepted。
+- 本轮只补强 ZR-408 的跨进程证据：`company-wiki/tests/contract/test_close_gap_concurrency_fc804.py` 增加 Windows `spawn` 双进程 oracle。两个独立 catalog/transaction 共享 temp root 与 binding，断言 adapter fetch log 恰一条、`fetch_events=[0,1]`、documents=1。
+- 受控验证完成：FC-801、FC-804（含新增跨进程用例）和 canonical-writer 合计 **20 passed**；`ruff check --no-cache` 针对改动测试通过。该证据覆盖 staging 校验失败不提交、`companies/` canonical 路径、re-resolve/idempotence、线程与进程 single-flight、retry/失败 journal。
+- 本次未改变 product source、授权模型、生产/外部 catalog、provider、配置或冻结计划。ZR-408 的独立 reviewer、receipt、closure 仍待后续会话处理。
+- 用户要求在此收尾停止。两个更宽单元测试命令在 30 秒工具回传边界中没有退出码；其中一个后续自行退出，另一个 Python 进程（PID 20528，23:05 启动）停止时遭 Windows `Access denied`。两者不计入通过证据；相关临时目录保留，待具备该进程权限的会话核实/清理。
+
 > **2026-08-09 状态覆盖：`completed_historical_scope + superseded_open_items`。** 本文件保留已完成的 revenue-forecast 历史阶段与证据；首页旧“全部完成”只适用于当时范围，不再代表三仓六项目标。所有仍未勾选且涉及 filing identity、resolver、Dropbox、latest、SourceBundle、artifact、跨仓 E2E、动态审核或代码质量的条目，均已转入 [FCAP r2](audit_review/2026-08-09_full_completion_assurance_plan/task_plan.md)；不得继续从本文件单独实施。与三仓终局目标无关的研究体验 backlog 降为 P3，需重新立项后才能执行。
 
 计划编制日期：2026-07-26 │ 完成日期：2026-07-30  
