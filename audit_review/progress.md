@@ -100,3 +100,10 @@
 - 机器状态：current_phase=D_lifecycle_roots_freshness，current_next=ZR-407；accepted 41/117（A0 8 + B 9 + C 11 + D 13）。
 - 停止点（用户指示：收官并更新全部 planning docs 后停止）：ZR-407 未领取；恢复清单：ZR-407（authorization-bound GapPlan/CloseGap，含 ZR405-REV-002）→ ZR-408（下载执行/single-flight）→ ZR-409（future_lake 生产切换，阶段 D 出口）→ E。
 - 三仓 HEAD（本地 fcap，未 push）：revenue c9a3add（ZR-406 closure 提交进行中）、wiki 45ae721、filing 3087f28。
+
+## 2026-08-18 晚（ZR-407/408 closure 补提交 → ZR-409）
+
+- ZR-407 三仓产物补提交：wiki bdffc54（actionable union + ensure 只读路径）、filing 5a1c18f（_gap_plan_has_actionable_candidate）、revenue 6145dad（closure）；复核 accepted → closure→ZR-408。
+- ZR-408 closure：验收钉死卡（产品零改动），跨进程 spawn 双进程 single-flight oracle 补强；22 contract + 787 unit 绿；复核 accepted（3 info）→ closure→ZR-409。
+- 机器状态：current_phase=D_lifecycle_roots_freshness，current_next=ZR-409；accepted 42/117（D 14/16）。
+- 三仓 HEAD：revenue（closure 提交进行中）、wiki 71aa798、filing 5a1c18f（均未 push）。
