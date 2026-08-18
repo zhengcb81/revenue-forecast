@@ -1,0 +1,124 @@
+{
+  "base_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "63fb5a43e81b8e40f91824a19c6c2b23a68f32a3",
+    "wiki": "f45f7edb76e42a3f54489f7999182ce59e4cb678"
+  },
+  "canonical_hash": "f6a4c3f27365aba886e3d58b7c61306829e078731c736edfbe9de07b6e2f3096",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr405_policy_export_cli.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "5 passed（hash==export_policy_2x 且 payload 去 policy_hash 键重算一致、roots 契约字段、path_ref verbatim 绝对、确定性、只读零 DB）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_root_policy_2x.py test_policy_and_flags.py test_activation_transaction.py test_fc1201_root_hardcode_gate.py tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "831 passed（44 contract + 787 unit；export 可复用性归一化无回归；FC-1201 allowlist 不漂移）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr405_policy_roots.py -q --tb=short (filing-fetch)",
+      "exit_code": 0,
+      "result": "13 passed, 1 skipped（Dropbox-only/dayu-only/future_lake 成功、companies 不在 policy 拒绝、allowed_roots 不能 widen、.. 逃逸拒绝、symlink 逃逸拒绝[Windows 无权限 skip]、policy hash 漂移 fail closed、envelope.policy_hash 交叉校验 2 例、N-1 无 policy_export 桥、resolve_filing e2e 内嵌 policy 通过+拒绝）"
+    },
+    {
+      "command": "python -m pytest tests/ -q --tb=line (filing-fetch)",
+      "exit_code": 0,
+      "result": "356 passed, 12 skipped, 78 subtests passed（1 个 live-environment flake：test_ensure_entity_without_download_reports_missing 因后台 worker 占用真实 catalog 报 catalog_busy——stash 到 base df66796 同样失败，非本卡回归；单独重跑可绿）"
+    },
+    {
+      "command": "python -m pytest tests/test_e2e_isolated_wiki.py -q --tb=line (filing-fetch, 真实 wiki 代码临时实例)",
+      "exit_code": 0,
+      "result": "15 passed（真实公司-wiki CLI 端到端：response-embedded policy_export + containment 在真实扫描实例上全绿）"
+    },
+    {
+      "command": "python tools/sync_installs_b3.py + pre-commit（filing）",
+      "exit_code": 0,
+      "result": "MATCH 31 files ×3；pre-commit 351 passed + 7 skipped + 78 subtests + companies-reuse E2E PASS（CN/US/HK capture_ready，golden identical）；wiki 侧 ruff check/format clean"
+    },
+    {
+      "command": "git diff df66796 3087f28 --stat (filing); git diff f45f7ed e56eb5f --stat (wiki)",
+      "exit_code": 0,
+      "result": "filing: fetch_filing.py/filing_contracts.py/test_zr405_policy_roots.py（+694/-119，含 ruff format 重排）；wiki: cli.py/policy.py/policy_2x.py/test_zr405_policy_export_cli.py（+284/-37）"
+    }
+  ],
+  "created_at_utc": "2026-08-18T21:40:00+00:00",
+  "findings": [
+    {
+      "detail": "设计定案：policy 由 wiki resolve/ensure 响应内嵌 `policy_export` 携带（零新增 subprocess 调用）。初版方案（filing 每请求额外调用 policy-export 子命令）导致 89 个既有 subprocess mock 测试失败（mock 列表缺一项）；改为响应内嵌后既有测试零改动通过，e2e 真实 wiki 15/15 绿。legacy companies 默认保留为 N/N-1 桥（响应无 policy_export 的旧 wiki），当前 triplet 响应恒携带故生产不可达（显式决策记录）。",
+      "id": "ZR405-IMPL-001",
+      "severity": "info",
+      "title": "响应内嵌 policy_export 设计定案（避免 subprocess mock 爆炸 + 零额外调用）"
+    },
+    {
+      "detail": "policy hash 契约修正：validate_handle 原对整个 policy_snapshot dict（含 policy_hash 键）重算 hash，与 wiki export 的 canonical hash（不含 policy_hash 键）永远不一致。修正为对 policy DOCUMENT 计算（排除 policy_hash 键，与 uc receipts canonical_hash 纪律一致），新增 _policy_document_hash helper（同时把 validate_handle 复杂度 40→39 恢复 ratchet）。wiki 侧 export payload 为 export_policy_2x verbatim（path_ref 绝对路径——字节级 hash 契约禁止 token 重塑；本地 subprocess 通道可信，脱敏由 envelope 承担）。",
+      "id": "ZR405-IMPL-002",
+      "severity": "info",
+      "title": "policy hash 契约修正：hash 对 policy document 计算（排除 policy_hash 键）"
+    },
+    {
+      "detail": "export 可复用性归一化：policy.py 与 policy_2x.py 的 export 现按 resolver 有效语义输出 reusable_for_filing（per-root flag 未设时按 kind ∈ reusable_root_kinds）——否则最小 1.x 配置（如 e2e 隔离 wiki）export 全 None，filing containment 会拒绝所有 handle。归一化后与 resolver 行为一致（e2e 15/15 证明）。",
+      "id": "ZR405-IMPL-003",
+      "severity": "info",
+      "title": "export 可复用性归一化（resolver-consistent effective reusable）"
+    },
+    {
+      "detail": "live-environment flake（非回归，stash 基线对照证实）：test_real_tool_conformance.py::test_ensure_entity_without_download_reports_missing 在后台 worker 占用真实 catalog 时报 catalog_busy（database is locked）。base df66796 同样失败；worker 空闲时单独重跑可绿。本卡未触碰 ensure/missing 路径。",
+      "id": "ZR405-IMPL-004",
+      "severity": "info",
+      "title": "环境 flake 对照：catalog_busy 于 base 同样存在（非本卡回归）"
+    }
+  ],
+  "implementation": {
+    "design": "wiki 侧：cli.py 新增只读 policy-export 子命令 + _policy_export_payload(config)（export_policy_2x verbatim + policy_hash，resolve/ensure 响应内嵌同 payload）；policy.py/policy_2x.py export 归一化 reusable_for_filing（kind 级缺省）；新测试 test_zr405_policy_export_cli.py（5 tests）。filing 侧：filing_contracts.py validate_handle 的 policy hash 改为对 policy document 计算（_policy_document_hash，排除 policy_hash 键）；fetch_filing.py _handle_from_resolution 从响应 policy_export 取 policy_snapshot+expected_policy_hash 传 validate_handle，envelope.policy_hash 与导出 hash 交叉校验（漂移 fail closed）；新测试 test_zr405_policy_roots.py（13 tests + 1 skip：Dropbox-only/dayu-only/future_lake 成功、companies 不在 policy 拒绝、allowed_roots 不能 widen、.. /symlink 逃逸拒绝、hash 漂移 fail closed、envelope 交叉校验、N-1 桥、resolve_filing e2e 内嵌 policy 通过/拒绝）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/cli.py",
+      "company-wiki/src/company_wiki/source_catalog/policy.py",
+      "company-wiki/src/company_wiki/source_catalog/policy_2x.py",
+      "company-wiki/tests/contract/test_zr405_policy_export_cli.py",
+      "filing-fetch/scripts/fetch_filing.py",
+      "filing-fetch/scripts/filing_contracts.py",
+      "filing-fetch/tests/test_zr405_policy_roots.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-405/**"
+    ]
+  },
+  "implementer": "zr405-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 63fb5a4（ZR-404 closure commit）；result_triplet.wiki 为本卡最终实现提交 e56eb5f（含 f7b590a policy-export 初版 + e56eb5f 归一化/verbatim payload）；result_triplet.filing 为本卡实现提交 3087f28。",
+    "reviewed_object_sha256：filing tests/test_zr405_policy_roots.py = 59615a4b…；wiki tests/contract/test_zr405_policy_export_cli.py = f7065a45…（双仓产物）。",
+    "卡片 hash 于最终编辑后冻结：plan_sha256=d9fce0d6…。",
+    "red_evidence：本卡为静态缺口分析（G1~G5 载于卡片，经代码阅读 + e2e 基线对照证实；无独立探针文件）。"
+  ],
+  "objective": "透明验证任意 policy-allowed root，不再默认 companies allowlist；Dropbox-only/dayu-only 成功；filing 不能扩大 policy；path containment/symlink 负例。",
+  "plan_sha256": "d9fce0d6feff86cfd895e3a2fef9f614d2ca5b414c64543e4f8f8d87fc7f2a6d",
+  "result_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "63fb5a43e81b8e40f91824a19c6c2b23a68f32a3",
+    "wiki": "e56eb5f53cdebb342486be2546a9602037ac68e0"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki cli.py + policy.py + policy_2x.py（policy-export 端点 + 响应内嵌 + 可复用性归一化）+ 新测试（5）；filing-fetch fetch_filing.py + filing_contracts.py（响应内嵌 policy 消费 + hash 契约修正 + envelope 交叉校验）+ 新测试（13+1 skip）；revenue 侧 receipts/ZR-405/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 5,
+    "real_catalog_access": 1
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/cli.py",
+    "company-wiki/src/company_wiki/source_catalog/policy.py",
+    "company-wiki/src/company_wiki/source_catalog/policy_2x.py",
+    "company-wiki/tests/contract/test_zr405_policy_export_cli.py",
+    "filing-fetch/scripts/fetch_filing.py",
+    "filing-fetch/scripts/filing_contracts.py",
+    "filing-fetch/tests/test_zr405_policy_roots.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-405/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-405"
+}
