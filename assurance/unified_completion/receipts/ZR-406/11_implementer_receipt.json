@@ -1,0 +1,100 @@
+{
+  "base_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "e8478f90ce0ac34b325012ef56e57c5119d7533c",
+    "wiki": "e56eb5f53cdebb342486be2546a9602037ac68e0"
+  },
+  "canonical_hash": "2c84f2be01ebdc2d2b79e45eba191dc3951809e3e09cabec51d403539321a448",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "13 passed（正交矩阵 5 组 local 状态 × 6 provider 状态、gap_hash 确定性/区分度、未知日期 eligible 保守、future 不进 gap 且不否定 not_published、混合 eligible+future、非自然年单桶、修订去重单 newer_revision、最新修订 reuse）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py test_source_catalog_gap_plan.py test_fc1204_complexity_ratchet.py test_zr405_policy_export_cli.py tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "817 passed（13 新 + 11 既有 gap_plan + 5 zr405 + 2 ratchet + 787 unit；无回归）"
+    },
+    {
+      "command": "python -m ruff check src/company_wiki/source_catalog/gap_plan.py cli.py tests/contract/test_zr406_gap_plan_orthogonality.py; python -m ruff format --check 同组 (base python)",
+      "exit_code": 0,
+      "result": "All checks passed；3 files already formatted"
+    },
+    {
+      "command": "git diff e56eb5f b41bfc2 --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "3 文件：gap_plan.py（+capture_ready 防御过滤 _usable_handles + helper）、cli.py（ratchet 重构：export/policy-export 合并进 _run_export_command，主函数分支净零）、test_zr406_gap_plan_orthogonality.py（+366）"
+    }
+  ],
+  "created_at_utc": "2026-08-18T22:00:00+00:00",
+  "findings": [
+    {
+      "detail": "正交矩阵全部钉死：local 状态（无/matched-exact/matched-equivalent/多 handle-ambiguous/capture-incomplete-unusable）× provider 状态（current/newer_period/newer_revision/not_published/unknown-error/future）数据驱动断言（reuse/missing/newer_revision/not_published/future 五元组 + gap_hash 确定性/区分度）。",
+      "id": "ZR406-IMPL-001",
+      "severity": "info",
+      "title": "正交矩阵 5×6 全格钉死"
+    },
+    {
+      "detail": "防御性硬化（产品改动，+1 处）：build_gap_plan 入口过滤 capture-incomplete local handle（_usable_handles，含 provider_error 早退分支）——unusable handle 永不进入 reuse、永不翻转 not_published；过滤后 provider 同周期列表为真 missing（诚实）。resolver 上游已 gate capture_ready，本过滤为纯函数防御纵深。",
+      "id": "ZR406-IMPL-002",
+      "severity": "info",
+      "title": "capture_ready 防御过滤（所有结局分支一致）"
+    },
+    {
+      "detail": "测试自 bug 修正记录：ambiguous 矩阵 current 格需 provider accession 匹配最新 local（否则诚实报 newer_revision——该行为本身已钉死）；修订去重 fixture 的 accession 词序需时序化（acc-0001<0002<0003），否则 max 按词典序选错。",
+      "id": "ZR406-IMPL-003",
+      "severity": "info",
+      "title": "矩阵 fixture 修正（accession 词序/current 格语义）"
+    },
+    {
+      "detail": "cli.py 复杂度 ratchet：ZR-405 新增 policy-export elif 使 main 141>140；重构为 _run_export_command helper（export/policy-export 合并进一个 in-tuple 分支），main 分支净零回到 140。gap_plan 21>20 同理用 _usable_handles helper 归还。",
+      "id": "ZR406-IMPL-004",
+      "severity": "info",
+      "title": "复杂度 ratchet 维护（helper 提取，两处）"
+    }
+  ],
+  "implementation": {
+    "design": "新增 tests/contract/test_zr406_gap_plan_orthogonality.py（13 tests）：C1 正交矩阵（_NO_LOCAL/_LOCAL_EXACT/_LOCAL_EQUIV/_LOCAL_AMBIGUOUS/_LOCAL_UNUSABLE × _CURRENT/_NEWER_PERIOD/_NEWER_REV/_NOT_PUBLISHED/_FUTURE/error，_sig 五元组断言 + gap_hash 确定性/区分度）；C2 as_of 防泄漏（future 排除不否定 not_published、未知 filing_date eligible 保守、混合 eligible+future 只缺 eligible）；C3 非自然年/修订去重（同 fiscal_year 多 period_end 单桶无幻影 gap、amended+original 单 newer_revision 取最新、local 持最新修订 reuse 零下载）。产品改动：gap_plan.build_gap_plan 入口 _usable_handles 过滤（capture_ready 防御纵深，全分支一致）；cli.py 复杂度维护重构（_run_export_command）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/gap_plan.py",
+      "company-wiki/src/company_wiki/source_catalog/cli.py",
+      "company-wiki/tests/contract/test_zr406_gap_plan_orthogonality.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-406/**"
+    ]
+  },
+  "implementer": "zr406-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 e8478f9（ZR-405 closure commit）；result_triplet.wiki 为本卡实现提交 b41bfc2。",
+    "reviewed_object（新测试文件）sha256=b55688ff37520183fddb794db6ac5ece78b347444618bbb9de586d98b6e39a5a。",
+    "卡片 hash 于最终编辑后冻结：plan_sha256=2a2dd737…。"
+  ],
+  "objective": "正交 local-match 与 provider freshness/coverage planner；exact/equivalent/missing/ambiguous/unusable × current/newer_period/newer_revision/not_published/unknown/future；as_of 防泄漏；非自然年/修订去重。",
+  "plan_sha256": "2a2dd7372d3aad529d5ea44a0486413cfed18e00237378f33b54a60c03198f13",
+  "result_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "e8478f90ce0ac34b325012ef56e57c5119d7533c",
+    "wiki": "b41bfc280fe90762a4bc3a6689e5c1e698425bec"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki gap_plan.py（capture_ready 防御过滤）+ cli.py（ratchet 维护）+ 新测试 tests/contract/test_zr406_gap_plan_orthogonality.py（13 tests）；revenue 侧 receipts/ZR-406/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/gap_plan.py",
+    "company-wiki/src/company_wiki/source_catalog/cli.py",
+    "company-wiki/tests/contract/test_zr406_gap_plan_orthogonality.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-406/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-406"
+}
