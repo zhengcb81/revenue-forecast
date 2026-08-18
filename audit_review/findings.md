@@ -485,3 +485,12 @@
 - ZR-401 accepted（RootPolicy 3.0，wiki 251615e）：3.0 strict loader（schema 门拒绝 1.x/2.x 并给迁移提示、external→private_user / company_raw→public、external 写目标/未知字段/非只读复用 fail closed、导出版本化+隐私脱敏+确定性 sha256）；12 tests + 787 unit 绿；McCabe max 8。
 - 复核 5 findings（全非阻断）：REV-001 privacy_class 隐式默认（company_raw 缺省走 2.x public 默认，无权限扩大）；REV-002 contract 计数过报（43 vs 实际 28+1 skipped）；REV-003 生产 config 未切 3.0（显式决策：延期至 ZR-402/403 或阶段 D 出口，回滚纪律保持）；REV-004 环境（mypy 用 base python）；REV-005 plan_sha256 漂移（卡片冻结后更新）。
 - 阶段 D：8/16 closure（ZR-301~307 + ZR-401）；current_next=ZR-402（adapter registry）。
+
+## ZR-402~406（2026-08-18 阶段 D 收官）
+
+- **ZR-402**（adapter 路由契约，wiki 57cd72e）：RED 探针三幸存突变体——S2 kind 路由（canonical 配对只测同配）、S3 conformance determinism 无负例、S4 路由五模块零 kind 分支无机械门（FC-1201 是 token-mention ratchet 且 adapter_dispatch/admission 在 allowlist 内=盲区）；S1 诚实负例（facade 失败封闭已被 seam02+ex08×2 钉死）。M1~M9 击杀表含进程内突变体重放 kill 证明。
+- **ZR-403**（dedupe/resolver 泛化，wiki 87ee0ac）：health 先于 priority 结构成立但无 killer → retired/.rejections 高优先级竞争测试钉死；locations 表无 is_canonical 列（canonical 纯读时派生）；future_lake 入四上下文矩阵。
+- **ZR-404**（envelope 加性，wiki f45f7ed）：schema 保持 "1.0"，新字段纯加性，filing validate_resolution_envelope 对未知键宽容（跨仓透传测试）；policy_snapshot 严格形状与 filing 校验器逐字同规则；路径脱敏 ${PROJECT_ROOT}/${USER_PROFILE}；mypy 基线 2 条既有错误继承（移交后续质量卡）。
+- **ZR-405**（跨仓 policy containment，wiki e56eb5f + filing 3087f28）：最大设计教训——初版 subprocess 方案致 89 个既有 mock 测试失败，改为 wiki resolve/ensure 响应内嵌 `policy_export`（零额外调用）后零改动通过；policy hash 契约修正为对 policy DOCUMENT 计算（排除 policy_hash 键，与 uc canonical 纪律一致）；token 化 path_ref 破坏字节级 hash 契约 → export payload verbatim；1.x 最小配置 reusable_for_filing=None 致 export 全 None → 两 exporter 归一化 resolver-consistent effective reusable。
+- **ZR-406**（gap-plan 矩阵，wiki 45ae721）：首轮 changes_required 暴露 claim 不实（"13 tests"实为 12、"5×6 全格"实为 24/30）→ 真·数据驱动 itertools.product 30 格参数化 + cells-distinct 完备性守卫 → delta accepted。语义澄清：newer_revision 列在无可用 local 时为 genuine missing；capture_ready 防御过滤须覆盖全部早退分支（首版漏 provider_error 分支被测试抓出）。
+- **教训**：claim 计数一律实跑后写（第二次 count overclaim）；跨仓契约设计先查既有 mock/测试面；字节级 hash 契约禁止 payload 重塑；防御过滤覆盖全部早退分支；复杂度 ratchet 维护用 helper 提取。

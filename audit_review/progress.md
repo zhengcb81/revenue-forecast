@@ -89,3 +89,14 @@
 - ZR-401 closure（RootPolicy 3.0 严格加载器）：wiki 251615e（12 tests，787 unit，McCabe max 8，mypy clean）；独立复核 accepted（5 条非阻断 findings，REV-003 生产 config 未切 3.0 已记显式决策延期至 ZR-402/403 或阶段 D 出口）；closure→ZR-402。
 - 机器状态：current_phase=D_lifecycle_roots_freshness，current_next=ZR-402；accepted 36/117（A0 8 + B 9 + C 11 + D 8）。
 - 停止点（用户指示：收尾并更新全部 planning docs 后停止）：ZR-402（adapter registry）未领取；三仓 HEAD：revenue fd017c9 / wiki 251615e / filing df66796（均未 push）。
+
+## 2026-08-18 阶段 D 收官（ZR-402~406 closure → 用户指示：收官 + 更新全部 planning docs 后停止）
+
+- ZR-402 closure：adapter registry 路由契约（wiki 57cd72e，36 tests：kind/ID 无关路由 + 零 kind 分支机械门 + M1~M9 mutation 击杀表；产品零改动）；复核 accepted（3 info）。
+- ZR-403 closure：dedupe/resolver 泛化（wiki 87ee0ac，7 tests：四上下文含 future_lake、health→priority、读不写 canonical、10-shuffle 稳定；产品零改动）；复核 accepted（1 info）。
+- ZR-404 closure：envelope 加性扩展（wiki f45f7ed，11 tests：policy/epoch/cohort/source-hash 一致 + 排除 trace + canonical rationale 脱敏 + 冲突 fail closed；schema 保持 1.0，filing 零改动）；复核 accepted（3 info）。
+- ZR-405 closure：跨仓 policy-root containment（wiki e56eb5f：policy-export 端点 + resolve/ensure 响应内嵌 + export 可复用性归一化；filing 3087f28：响应内嵌消费 + hash 对 policy document 计算 + envelope 交叉校验；18 tests）；复核 accepted（1 minor REV-002 close-gap 响应内嵌 policy_export → 后续 ZR-407 + 3 info）。
+- ZR-406 closure：正交 gap-plan 矩阵（wiki 45ae721，39 collected = 30 格参数化矩阵 + 9 聚焦；capture_ready 防御过滤）；首轮 changes_required（REV-001 计数 12≠13、REV-002 矩阵 24/30）→ 真·数据驱动 30 格修正 → delta accepted（2 minor 转录）。
+- 机器状态：current_phase=D_lifecycle_roots_freshness，current_next=ZR-407；accepted 41/117（A0 8 + B 9 + C 11 + D 13）。
+- 停止点（用户指示：收官并更新全部 planning docs 后停止）：ZR-407 未领取；恢复清单：ZR-407（authorization-bound GapPlan/CloseGap，含 ZR405-REV-002）→ ZR-408（下载执行/single-flight）→ ZR-409（future_lake 生产切换，阶段 D 出口）→ E。
+- 三仓 HEAD（本地 fcap，未 push）：revenue c9a3add（ZR-406 closure 提交进行中）、wiki 45ae721、filing 3087f28。
