@@ -4,7 +4,7 @@
     "revenue": "e8478f90ce0ac34b325012ef56e57c5119d7533c",
     "wiki": "e56eb5f53cdebb342486be2546a9602037ac68e0"
   },
-  "canonical_hash": "dcf55bcc0b72d31b7be305dfd8963879db8791e4e275442b380118c3f7e68d44",
+  "canonical_hash": "6685edb2a6697c606bceca5b58fa86f04fca01cb55450459f24b3b06f33748fd",
   "commands": [
     {
       "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py -q --tb=short (company-wiki)",
@@ -12,19 +12,19 @@
       "result": "39 passed（30 格参数化矩阵：5 local 状态 × 6 provider 状态全组合 + 9 聚焦测试：cells 完备性/hash 确定性+区分度/error 分支 unusable/C2 未知日期+future+mixed/C3 非自然年+修订去重+最新修订 reuse）"
     },
     {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py test_source_catalog_gap_plan.py test_fc1204_complexity_ratchet.py test_zr405_policy_export_cli.py tests/unit -q --tb=short (company-wiki)",
+      "command": ".venv\\\\Scripts\\\\python.exe -m pytest tests/contract/test_zr406_gap_plan_orthogonality.py tests/contract/test_source_catalog_gap_plan.py tests/contract/test_fc1204_complexity_ratchet.py tests/contract/test_zr405_policy_export_cli.py tests/unit -q --tb=short (company-wiki)",
       "exit_code": 0,
       "result": "839 passed（39 新 + 11 既有 gap_plan + 2 ratchet + 787 unit；无回归）"
     },
     {
-      "command": "python -m ruff check src/company_wiki/source_catalog/gap_plan.py cli.py tests/contract/test_zr406_gap_plan_orthogonality.py; python -m ruff format --check 同组 (base python)",
+      "command": "python -m ruff check src/company_wiki/source_catalog/gap_plan.py src/company_wiki/source_catalog/cli.py tests/contract/test_zr406_gap_plan_orthogonality.py; python -m ruff format --check 同组 (base python)",
       "exit_code": 0,
       "result": "All checks passed；3 files already formatted"
     },
     {
-      "command": "git diff e56eb5f b41bfc2 --stat (company-wiki)",
+      "command": "git diff e56eb5f 45ae721 --stat (company-wiki)",
       "exit_code": 0,
-      "result": "3 文件：gap_plan.py（+capture_ready 防御过滤 _usable_handles + helper）、cli.py（ratchet 重构：export/policy-export 合并进 _run_export_command，主函数分支净零）、test_zr406_gap_plan_orthogonality.py（+366）"
+      "result": "4 文件：gap_plan.py（capture_ready 防御过滤 _usable_handles）、cli.py（ratchet 重构 _run_export_command）、test_zr406_gap_plan_orthogonality.py（30 格矩阵 + 9 聚焦，39 collected）"
     }
   ],
   "created_at_utc": "2026-08-18T22:00:00+00:00",
@@ -61,7 +61,7 @@
     }
   ],
   "implementation": {
-    "design": "新增 tests/contract/test_zr406_gap_plan_orthogonality.py（13 tests）：C1 正交矩阵（_NO_LOCAL/_LOCAL_EXACT/_LOCAL_EQUIV/_LOCAL_AMBIGUOUS/_LOCAL_UNUSABLE × _CURRENT/_NEWER_PERIOD/_NEWER_REV/_NOT_PUBLISHED/_FUTURE/error，_sig 五元组断言 + gap_hash 确定性/区分度）；C2 as_of 防泄漏（future 排除不否定 not_published、未知 filing_date eligible 保守、混合 eligible+future 只缺 eligible）；C3 非自然年/修订去重（同 fiscal_year 多 period_end 单桶无幻影 gap、amended+original 单 newer_revision 取最新、local 持最新修订 reuse 零下载）。产品改动：gap_plan.build_gap_plan 入口 _usable_handles 过滤（capture_ready 防御纵深，全分支一致）；cli.py 复杂度维护重构（_run_export_command）。",
+    "design": "新增 tests/contract/test_zr406_gap_plan_orthogonality.py（39 collected = 30 格参数化矩阵 + 9 聚焦测试）：C1 数据驱动 5×6 全矩阵（itertools.product，_matrix_cell 每格 fixture+期望签名，含 cells-distinct 完备性守卫、全 30 格 gap_hash 确定性+区分度、error 分支 unusable）；C2 as_of 防泄漏（future 排除不否定 not_published、未知 filing_date eligible 保守、混合 eligible+future）；C3 非自然年/修订去重（同 fiscal_year 多 period_end 单桶、amended+original 单 newer_revision、最新修订 reuse）。产品改动：gap_plan.build_gap_plan 入口 _usable_handles 过滤（capture_ready 防御纵深，含 provider_error 分支）；cli.py 复杂度维护（_run_export_command）。",
     "files": [
       "company-wiki/src/company_wiki/source_catalog/gap_plan.py",
       "company-wiki/src/company_wiki/source_catalog/cli.py",
@@ -72,7 +72,7 @@
   "implementer": "zr406-implementer",
   "kind": "implementer",
   "notes": [
-    "result_triplet.revenue 取 e8478f9（ZR-405 closure commit）；result_triplet.wiki 为本卡实现提交 b41bfc2。",
+    "result_triplet.revenue 取 e8478f9（ZR-405 closure commit）；result_triplet.wiki 为本卡实现提交 45ae721（含 b41bfc2 初版 + 45ae721 REV-001/002 修正）。",
     "reviewed_object（新测试文件，45ae721 HEAD）sha256=448b1e8fdb96e68390d1ba08efdcee343d884c713485c4af1b7d801fb929f19f。",
     "卡片 hash 于最终编辑后冻结：plan_sha256=2a2dd737…。"
   ],
@@ -84,7 +84,7 @@
     "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
   },
   "schema_version": 1,
-  "scope": "company-wiki gap_plan.py（capture_ready 防御过滤）+ cli.py（ratchet 维护）+ 新测试 tests/contract/test_zr406_gap_plan_orthogonality.py（13 tests）；revenue 侧 receipts/ZR-406/** 与 state.json。",
+  "scope": "company-wiki gap_plan.py（capture_ready 防御过滤）+ cli.py（ratchet 维护）+ 新测试 tests/contract/test_zr406_gap_plan_orthogonality.py（39 collected）；revenue 侧 receipts/ZR-406/** 与 state.json。",
   "side_effect_counts": {
     "catalog_mutations": 0,
     "ci_changes": 0,
