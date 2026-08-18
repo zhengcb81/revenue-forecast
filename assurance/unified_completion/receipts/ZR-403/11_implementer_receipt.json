@@ -1,0 +1,100 @@
+{
+  "base_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "7d1119965d3c07aa27748561d95f1dff47cf1867",
+    "wiki": "57cd72e07800d5a0f3d1628475d6665e8a9a6302"
+  },
+  "canonical_hash": "bfa35f2e8920d28b22b1e2ad536b12522d56ad5ebb9255b4733dd245ee9f3591",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr403_dedupe_resolver_generalization.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "7 passed（C1 四上下文同算法含 future_lake 胜出变体、C2 health→priority 两个 killer、C3 schema 无 canonical 列 + resolve/查询字节不变、C4 10 次随机 shuffle 稳定；ruff fix+format 后复跑同绿）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_cross_root_dedup_fc603.py test_three_root_consistency_fc604.py test_source_catalog_determinism.py test_source_catalog_reusable_roots.py test_source_catalog_fail_closed.py test_source_catalog_latest_mode.py test_source_catalog_query_bundle.py test_source_catalog_sql_pushdown.py test_zr403_dedupe_resolver_generalization.py -q --tb=short (company-wiki, tests/contract)",
+      "exit_code": 0,
+      "result": "42 passed（7 新 + 35 既有 dedupe/resolver/可复用根/失败封闭/determinism 无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（无回归）"
+    },
+    {
+      "command": "python -m ruff check tests/contract/test_zr403_dedupe_resolver_generalization.py; python -m ruff format --check 同文件; python -m mypy --config-file pyproject.toml 同文件 (base python)",
+      "exit_code": 0,
+      "result": "All checks passed；format 一次修正后干净；mypy Success: no issues found"
+    },
+    {
+      "command": "python receipts/ZR-403/red/zr403_red_probe.py (wiki venv, 只读探针)",
+      "exit_code": 0,
+      "result": "red_confirmed=true：G1 future_lake 缺席 FC-603 去重矩阵、G2 health→priority killer 缺失（rejections 测试仅单位置拒绝）、G3 locations 表无 is_canonical 列且无测试钉死、G4 配置顺序仅 forward/reversed 两排列（100-random 只洗 INSERT 顺序）"
+    },
+    {
+      "command": "git diff 57cd72e 87ee0ac --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "仅 tests/contract/test_zr403_dedupe_resolver_generalization.py（+399），产品代码零改动"
+    }
+  ],
+  "created_at_utc": "2026-08-18T20:50:00+00:00",
+  "findings": [
+    {
+      "detail": "FC-303/503 机制已实现（content-addressed 跨根去重 + _annotate_locations 读时派生 canonical + resolver eligible 链）。本卡为纯验收：四证据钉死，产品零改动。",
+      "id": "ZR403-IMPL-001",
+      "severity": "info",
+      "title": "纯验收卡：跨根去重/canonical 派生/resolver eligible 机制已实现，本卡钉死四证据"
+    },
+    {
+      "detail": "RED 探针确认四个真缺口全部由本卡击杀：G1 future_lake 进入四上下文去重矩阵（同字节四根=恰一 document，priority 最低根胜出，含 future_lake p5 胜出变体）；G2 health→priority（retired 高优先级位置→canonical 移向健康副本且 resolver 仍 REUSED_EXACT；.rejections 最高优先级位置在 active-leak 场景下永远不成为 canonical）；G3 schema 无 is_canonical 列 + resolve+查询循环前后 DB 文件 sha256 不变；G4 10 次随机配置顺序 shuffle（独立 catalog 扫描）→ canonical/duplicate 组/document_id 集合全一致。",
+      "id": "ZR403-IMPL-002",
+      "severity": "info",
+      "title": "四缺口全部击杀（future_lake 矩阵/health→priority/读不写 canonical/shuffle property）"
+    },
+    {
+      "detail": "既有钉死不重复造（诚实引用）：policy 门=test_source_catalog_reusable_roots；priority>字母序=fc603_ex04_priority_beats_alphabetical；exact 选择/amended 规则/artifact 共享=FC-603 其余；100 次 INSERT 顺序确定=test_source_catalog_determinism。",
+      "id": "ZR403-IMPL-003",
+      "severity": "info",
+      "title": "既有覆盖引用清单（FC-603/604 + reusable_roots + determinism）"
+    }
+  ],
+  "implementation": {
+    "design": "新增 tests/contract/test_zr403_dedupe_resolver_generalization.py（7 tests）：C1 同字节置入 company_raw/dayu/dropbox/future_lake 四根（sidecar/meta 完整身份）→ 恰一 document、四 active original_primary location、canonical=priority 最低（含 future_lake p5 胜出变体，证明算法对根种类无特判）；C2 retired 高优先级位置→canonical 移向健康副本 + .rejections 高优先级位置在 active-leak 场景不成为 canonical（health 先于 priority 的 killer）；C3 PRAGMA 断言 locations 表无 is_canonical 列（canonical 纯读时派生）+ wal_checkpoint(TRUNCATE) 后 resolve+service 注释读循环前后主库文件 sha256 不变；C4 10 次确定性种子随机 shuffle 四根配置（各自独立 catalog 扫描）→ canonical signature（canonical_location_id/路径/duplicate_group_id/count/document_id 集合）全一致。产品代码零改动。",
+    "files": [
+      "company-wiki/tests/contract/test_zr403_dedupe_resolver_generalization.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-403/**"
+    ]
+  },
+  "implementer": "zr403-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 7d11199（ZR-402 closure commit）；result_triplet.wiki 为本卡验收测试提交 87ee0ac。",
+    "red_evidence sha256=8273efbbc2711f68f1cc25147b1b79d54a36600576a4d9df7c0dc42c996e4bbf；reviewed_object（新测试文件）sha256=7648c2b154ad8de1591b74bd96239e3dd42a7ca63a5fc1401519580c018bb4f3。",
+    "卡片 hash 于最终编辑后计算并冻结（吸取 ZR401-REV-005 教训）：plan_sha256=45643d55…，此后不再改动 00_wu_card.md。"
+  ],
+  "objective": "泛化 document/location dedupe 与 resolver，并分离全局 canonical 与本次 eligible location；companies/dayu/Dropbox/future_lake 同算法；policy→health→priority→稳定 tie-break；读取不写 canonical；扫描/配置顺序随机化稳定。",
+  "plan_sha256": "45643d556d24ca07e501207fa15e73be6641c44d85c24f9c07a356a8cd14385b",
+  "result_triplet": {
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "7d1119965d3c07aa27748561d95f1dff47cf1867",
+    "wiki": "87ee0ac2c64b2c48ac6c5ff58829650a275cdf9d"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 新增 tests/contract/test_zr403_dedupe_resolver_generalization.py（7 tests）；revenue 侧 receipts/ZR-403/**（含 red/ 探针与证据 JSON）与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr403_dedupe_resolver_generalization.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-403/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-403"
+}

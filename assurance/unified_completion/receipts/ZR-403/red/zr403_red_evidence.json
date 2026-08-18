@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "unit": "ZR-403",
+  "kind": "red_evidence",
+  "note": "verification gaps over the CURRENT suite at wiki 57cd72e; the dedupe/resolver mechanism itself is implemented (FC-603/604 + determinism pins exist for 3 roots)",
+  "checks": {
+    "G1_future_lake_absent_from_dedupe_matrix": {
+      "survivor": true,
+      "evidence": "test_cross_root_dedup_fc603.py (the dedupe/canonical matrix) contains no future_lake root — the registry criterion names FOUR contexts (companies/dayu/Dropbox/future_lake); future_lake exists only in dispatch/config/parity tests",
+      "fc603_mentions_future_lake": false
+    },
+    "G2_health_beats_priority_killer_missing": {
+      "survivor": true,
+      "evidence": "no test drives an unhealthy higher-priority location against a healthy lower-priority copy of the same content across roots (the health-before-priority ordering of _annotate_locations is unpinned); hits=[] are single-root refusal tests",
+      "candidate_hits": [],
+      "real_cross_root_killers": []
+    },
+    "G3_read_never_writes_canonical_unpinned": {
+      "survivor": true,
+      "evidence": "locations schema has no is_canonical column (derived-on-read = True) and no test pins this schema truth (pin_exists=False) — a regression that persisted canonical would trip nothing",
+      "locations_columns": [
+        "absolute_path",
+        "document_id",
+        "error",
+        "last_seen_run",
+        "location_id",
+        "location_status",
+        "manifest_json",
+        "metadata_json",
+        "observed_mtime_ns",
+        "observed_size",
+        "relative_path",
+        "role",
+        "root_id",
+        "source_id"
+      ]
+    },
+    "G4_config_order_randomization_property_missing": {
+      "survivor": true,
+      "evidence": "config-order randomization is pinned with exactly two permutations (forward + reversed in FC-603); the 100-random test shuffles INSERT order only; no property shuffles the CONFIG root order N times",
+      "shuffle_hits": [
+        [
+          "contract/test_source_catalog_determinism.py",
+          false
+        ]
+      ],
+      "config_order_shuffle_exists": false
+    }
+  },
+  "red_confirmed": true,
+  "files_read_only": true
+}
