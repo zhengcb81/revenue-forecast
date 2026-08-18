@@ -1,0 +1,91 @@
+{
+  "base_triplet": {
+    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+    "revenue": "6145dadfaa601476775b180be37cdfcfe4555e05",
+    "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
+  },
+  "canonical_hash": "81210bf202e5bec4a9f6532b41faad46002c399c1774d343f814c465a10ad513",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/unit -q --tb=short --basetemp <revenue>/.tmp-zr408-unit-verify (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（上次 30 秒回传截断无 exit code 的两轮未计入；本次完整退出码复跑绿）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_close_gap_fc801.py tests/contract/test_close_gap_concurrency_fc804.py tests/contract/test_source_catalog_canonical_writer.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short --basetemp <revenue>/.tmp-zr408-contract-verify (company-wiki)",
+      "exit_code": 0,
+      "result": "22 passed（FC-801 8 + FC-804 6 含跨进程 single-flight + canonical_writer 6 + ratchet 2）"
+    },
+    {
+      "command": "python -m ruff check --no-cache tests/contract/test_close_gap_concurrency_fc804.py tests/contract/test_close_gap_fc801.py src/company_wiki/source_catalog/close_gap.py src/company_wiki/source_catalog/cli.py (base python)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git diff 45ae721 71aa798 --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "仅 tests/contract/test_close_gap_concurrency_fc804.py（+67/-1）：Windows spawn 双进程 single-flight 用例（_CrossProcessSpyAdapter + fetch log oracle）+ helper mkdir exist_ok；产品代码零改动"
+    }
+  ],
+  "created_at_utc": "2026-08-18T23:40:00+00:00",
+  "findings": [
+    {
+      "detail": "验收钉死卡：复跑 FC-801/FC-804/canonical-writer 后未定位需修改产品 source 的 RED——staging 校验失败不提交、companies/ canonical 路径、re-resolve/idempotence、线程 single-flight、retry/失败 journal 均已由既有 oracle 覆盖。唯一证据缺口：历史 FC-804 single-flight 仅同进程线程共享同一 transaction，未覆盖跨 CLI 进程的文件锁语义。",
+      "id": "ZR408-IMPL-001",
+      "severity": "info",
+      "title": "无产品 RED；证据缺口=跨进程 single-flight oracle"
+    },
+    {
+      "detail": "新增跨进程 oracle：test_cg_c1b_cross_process_single_flight_one_fetch——Windows spawn 双 child，各自重建 catalog/coordinator/writer，共享 temp root 与 binding；adapter append-only fetch log 必须恰一条、两结果 fetch_events=[0,1]、documents=1。首跑与合集均通过——现有 _acquisition_mutex 文件锁实现被进程级验证。",
+      "id": "ZR408-IMPL-002",
+      "severity": "info",
+      "title": "跨进程 single-flight 进程级验证（spawn 双进程）"
+    },
+    {
+      "detail": "环境说明：默认 pytest cache/ruff cache 在 company-wiki 工作树无写权限（测试用 revenue 受控 basetemp、ruff 用 --no-cache）；ruff format --check 会重排整份历史 FC-804 文件，未做无关全文件格式化（不记为通过）；前轮遗留 PID 20528/25964 已自行退出，.tmp-zr408-unit* 已清理。",
+      "id": "ZR408-IMPL-003",
+      "severity": "info",
+      "title": "环境与清理说明"
+    }
+  ],
+  "implementation": {
+    "design": "验收钉死卡，产品零改动。证据：FC-801+FC-804+canonical_writer+ratchet 22 passed；新增 Windows spawn 双进程 single-flight 用例（_CrossProcessSpyAdapter 以 append-only fetch log 为进程级 oracle；断言恰一条 fetch、fetch_events=[0,1]、documents=1）；unit 787 passed；ruff clean。C1 staging/canonical containment、C2 re-resolve/idempotence、C3 single-flight（线程+进程）、C4 recovery 均由 oracle 逐项覆盖（staging 校验失败不提交+清理、canonical 仅 companies/、重跑 zero fetch、并发单次 fetch/commit、journal failed 重跑安全）。",
+    "files": [
+      "company-wiki/tests/contract/test_close_gap_concurrency_fc804.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-408/**"
+    ]
+  },
+  "implementer": "zr408-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 6145dad（ZR-407 closure commit）；result_triplet.wiki 为本卡实现提交 71aa798（跨进程 oracle）。",
+    "reviewed_object（fc804 测试文件，71aa798 HEAD）sha256=708ce8951ccc31ba181e4f1902ea902d9474be813a8acece1b1bcc180b08160c。",
+    "卡片 hash 于最终编辑后冻结：plan_sha256=09e39b9e…（卡片自 2026-08-18 起未再改动）。",
+    "ZR-407 三仓产物已于本会话补提交（wiki bdffc54 + filing 5a1c18f + revenue 6145dad）；ZR-407 的 implementer/reviewer receipt 反映复核时工作树状态，未改动。"
+  ],
+  "objective": "staging→validate→canonical commit、re-resolve、single-flight/recovery；下载只写 companies；两并发最多一次 fetch/commit；中断恢复；第二次零下载。",
+  "plan_sha256": "09e39b9e88ad535aad6c4b2eca261c6d59e01b876c54dddbdffa1f09273b83a3",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "6145dadfaa601476775b180be37cdfcfe4555e05",
+    "wiki": "71aa798eb4887197c24be0755d8e56e973b74006"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 验收钉死：test_close_gap_concurrency_fc804.py 新增跨进程 single-flight oracle（产品零改动）；revenue 侧 receipts/ZR-408/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_close_gap_concurrency_fc804.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-408/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-408"
+}
