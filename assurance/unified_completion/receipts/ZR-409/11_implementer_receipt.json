@@ -1,0 +1,106 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "de4430b574300453899224f64bbac51220f27e9d",
+    "wiki": "71aa798eb4887197c24be0755d8e56e973b74006"
+  },
+  "canonical_hash": "5e0cb1a5192c5a525af64e5aaf458ef68070ff2f773eeddf256edb053da89533",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr409_fourth_root_real_journeys.py -q --tb=short --basetemp <revenue>/.tmp-zr409-verify (company-wiki)",
+      "exit_code": 0,
+      "result": "10 passed（C1 生产配置四根：future_lake 加载/policy-export 四根 reusable/fixture 存在；C2 旅程：companies 紫金 601899/2025 exact、dayu-only 金斯瑞 HK1548/2021 exact（companies 无同 hash 前提钉死）、Dropbox 星环 2024 fail-closed capture_incomplete（http URL）、紫金跨根共享 canonical=companies、全根浅指纹+样本文件零写；C3 EX-08 生产形状扫描+导出）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr409_fourth_root_real_journeys.py test_future_root_config_only.py test_zr405_policy_export_cli.py test_fc1204_complexity_ratchet.py test_cross_root_dedup_fc603.py -q --tb=short --basetemp <revenue>/.tmp-zr409-batch (company-wiki)",
+      "exit_code": 0,
+      "result": "28 passed（10 新 + 18 既有 future-root/EX-08/policy-export/ratchet/cross-root 无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/unit -q --tb=short --basetemp <revenue>/.tmp-zr409-unit (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed"
+    },
+    {
+      "command": "python -m ruff check --no-cache tests/contract/test_zr409_fourth_root_real_journeys.py; python -m ruff format 同文件 (base python)",
+      "exit_code": 0,
+      "result": "All checks passed（4 unused-import 修复 + 1 format 后干净）"
+    },
+    {
+      "command": "git diff 71aa798 eb3aa79 --stat -- src/ (company-wiki)",
+      "exit_code": 0,
+      "result": "空（产品 core diff=0）；全量 diff = config/source_catalog.yaml（+future_lake 根）+ future_lake/README.md（fixture）+ test_zr409_fourth_root_real_journeys.py（+10 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-19T19:20:00+00:00",
+  "findings": [
+    {
+      "detail": "第四根 future_lake 仅配置接入：生产 config 新增 root（kind directory + adapter_id sidecar_filing_v1 + read_only + reusable + p40），path 指向仓库内 future_lake/ fixture 目录（README 占位）；loader 接受、policy-export 四根 reusable、scan 零错误。产品 src diff=0（git diff -- src/ 空）。",
+      "id": "ZR409-IMPL-001",
+      "severity": "info",
+      "title": "future_lake 仅配置接入（EX-08 生产版），产品 core diff=0"
+    },
+    {
+      "detail": "三真实 root 旅程（只读）：(a) companies 紫金矿业 601899 FY2025（pdoc 1225023658）→ REUSED_EXACT、canonical∈companies；(b) dayu-only 金斯瑞生物科技 HK 1548 FY2021（pdoc 10225111，内容 72b3ed25… companies 无同 hash——前提独立测试钉死）→ REUSED_EXACT、canonical∈portfolio、无复制；(c) Dropbox 星环科技 688031 FY2024（pdoc 1223325316）→ **fail-closed**：其 source_url 为 http 非 https → capture_incomplete → MISSING + download_required=True（真实数据现状：Dropbox 根独有 annual 全 http 或与 companies 共享）。全部旅程：download=0、真实根浅指纹+样本文件指纹不变（catalog-DIR 零写不断言——后台 worker 并发写，ZR-206 教训）。",
+      "id": "ZR409-IMPL-002",
+      "severity": "info",
+      "title": "三真实 root 只读旅程（含 Dropbox fail-closed 诚实样本）"
+    },
+    {
+      "detail": "ZR401-REV-003（生产 config 3.0 loader 切换）显式再延期：切换 config.py 加载器属产品代码变更，违反本卡 core-diff=0 约束；移交阶段 I/CA-303 记录（与 ZR-401 closure 时决策一致）。",
+      "id": "ZR409-IMPL-003",
+      "severity": "info",
+      "title": "3.0 loader 生产切换再延期（移交 CA-303/阶段 I）"
+    },
+    {
+      "detail": "场景映射（receipt 内钉死）：EX-01~07→FC-603/604+ZR-402/403；EX-08→test_future_root_config_only+ZR-403 矩阵+本卡 C1/C3；LT-01~10→ZR-406 矩阵+FC-603 EX-06；DL-01~03/07~10→FC-801/804+ZR-407/408；DL-04~06（T3 真实下载）→ZR-802/806；IDX-01~08→FC-901 族+ZR-305；UJ-01/02/04/06/07→resolver/contract 族；UJ-03/05/08（T3）→ZR-802/806。映射套件本卡复跑全绿。",
+      "id": "ZR409-IMPL-004",
+      "severity": "info",
+      "title": "EX/LT/DL/IDX/UJ 场景→测试映射钉死"
+    }
+  ],
+  "implementation": {
+    "design": "生产 config/source_catalog.yaml 新增第四根 future_lake（directory+sidecar_filing_v1、read_only、reusable、p40，path=${PROJECT_ROOT}/future_lake）；新建 future_lake/README.md adapter fixture。新增 tests/contract/test_zr409_fourth_root_real_journeys.py（10 tests）：C1 四根配置形状/policy-export 四根 reusable/fixture 存在；C2 三真实 root 只读旅程（companies exact、dayu-only exact 且 dayu-only 前提钉死、Dropbox fail-closed capture_incomplete、紫金跨根共享 canonical=companies、四根浅指纹+样本文件零写）；C3 EX-08 生产形状 temp 项目扫描+导出（future_lake 可复用、README 不成为 filing）。产品 src 零改动。",
+    "files": [
+      "company-wiki/config/source_catalog.yaml",
+      "company-wiki/future_lake/README.md",
+      "company-wiki/tests/contract/test_zr409_fourth_root_real_journeys.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-409/**"
+    ]
+  },
+  "implementer": "zr409-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 de4430b（ZR-408 closure commit）；result_triplet.wiki 为本卡实现提交 eb3aa79。",
+    "reviewed_object（新测试文件）sha256=29372a04daf2986f686e008a1fa0f6571638e9f3c1c4c046dec74f7b2fa2f44c。",
+    "卡片 hash 于最终编辑后冻结：plan_sha256=20f14f60…。",
+    "零写证据口径：真实根浅指纹（top-level 列表）+ 样本文件 (size,mtime,sha256)；catalog-DIR 指纹不用于断言（后台 worker 并发写——ZR-206 fingerprint_identical=false 教训）。"
+  ],
+  "objective": "配置新增 future_lake + 三真实 root 用户旅程；只改配置/adapter fixture；产品 core diff=0；EX/LT/DL/IDX/UJ 场景全部绿色。",
+  "plan_sha256": "20f14f60233b8a026d8604dc8a6f1222a52587399ae83cd09e17ea3c786271e5",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "de4430b574300453899224f64bbac51220f27e9d",
+    "wiki": "eb3aa792eaf1a4711baa717f0b8a79f17c9a98cd"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki 生产配置 + future_lake fixture + 真实根只读旅程测试（10 tests）；产品 src 零改动；revenue 侧 receipts/ZR-409/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 3
+  },
+  "touched_files": [
+    "company-wiki/config/source_catalog.yaml",
+    "company-wiki/future_lake/README.md",
+    "company-wiki/tests/contract/test_zr409_fourth_root_real_journeys.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-409/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-409"
+}
