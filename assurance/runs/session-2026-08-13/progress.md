@@ -385,3 +385,16 @@
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki bd337c4）；implementer receipt canonical f1eace9a（plan_sha256 Get-FileHash 注入）。
   - codegraph_freeze 期望缺失更新（ProcessingDemand 移至 present）随 closure 提交。
   - 独立复核 reviewer-zr507-independent 运行中。
+
+- **ZR-507 closure**：独立复核 reviewer-zr507-independent **accepted**（14/14 + 115/115 复跑 + 8/8 对抗断言；1 minor：REV-001 回归计数 115 vs 129 过期、1 info：REV-002 dedupe 仅非终态）；reviewer receipt canonical 34a3e8d3；codegraph_freeze 更新（ProcessingDemand 注释 + present sentinel）→ MISSING-001 清除（codegraph-verify 无 MISSING-001，CG-DRIFT 为索引过期既有基线）；state accepted + closure-advance -> **ZR-508**。
+- **机器状态**：current_next=ZR-508，accepted **50/117**（A0 8 + B 9 + C 11 + D 16 + E 7：ZR-501~507）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki bd337c4、filing 5a1c18f。
+
+- **ZR-508（scheduler 公平性）实施完成**：
+  - RED 探针：裸 DemandQueue 持续高优先级流下 low 永不 claim（饿死坐实）。
+  - 新 src/company_wiki/source_catalog/scheduler.py：DemandScheduler——effective_priority = priority + aging_bonus（wait 线性到上限）+ deadline_urgency；schedule_once 选 effective 最高者并 claim(demand_id=选中)；deadline 注册表与 kind budget 均 scheduler 侧（ProcessingDemand 契约零改动）。
+  - processing_demand.py claim 加性扩展 demand_id 参数（默认 None 保持严格 priority 序，ZR-507 14 测试全绿验证）。
+  - 测试 11 个（C1 aging 防饿死 3、C2 deadline 3、C3 budget 2、C4 确定性 3）全绿；回归 140 + unit 787 + ruff 全过。
+  - 教训：scheduler 按 effective 选择但裸 queue.claim 按原始 priority 出队不匹配——claim(demand_id) 加性扩展解决；测试时间尺度（high 也 aging）修正为慢推进时钟。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki 8e2bf3f）；implementer receipt canonical cb34ed85（plan_sha256 Get-FileHash 注入）。
+  - 独立复核 reviewer-zr508-independent 运行中。

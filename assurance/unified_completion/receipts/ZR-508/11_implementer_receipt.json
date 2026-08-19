@@ -1,0 +1,110 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "397e6de42882eec3d76c47a70ae1e87852e8bf2f",
+    "wiki": "bd337c488bc8f0fcac8212451aab8fb0a7c68a74"
+  },
+  "canonical_hash": "cb34ed85d5f617d8f3683aa5b3a64978bc720cf20229c6f306b41150d0416b7a",
+  "commands": [
+    {
+      "command": "RED 探针（wiki bd337c4）：裸 DemandQueue 在持续高优先级流下 claim 序列",
+      "exit_code": 0,
+      "result": "claimed = [high1..high10]，low ever claimed: False——低优先级饿死坐实（无 aging）；scheduler 不存在（grep 0）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr508_scheduler.py tests/contract/test_zr507_processing_demand.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "25 passed（ZR-508 11 + ZR-507 14——ZR-507 契约保持验证）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "140 passed（全回归批含 ZR-507 14 + ZR-506 14 + ZR-505 11 + ZR-504 10 + ZR-503 13 + ZR-502 11 + ZR-501 10 + taxonomy + evidence span + ratchet 全绿）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --timeout=300 (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（质量门 unit 787）"
+    },
+    {
+      "command": "ruff check src/company_wiki/source_catalog/scheduler.py src/company_wiki/source_catalog/processing_demand.py tests/contract/test_zr508_scheduler.py (base python)",
+      "exit_code": 0,
+      "result": "All checks passed（F401 DemandStateError 未用修复后）"
+    },
+    {
+      "command": "git diff bd337c4 8e2bf3f --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "3 文件 +333/-12：scheduler.py（新 DemandScheduler）、processing_demand.py（claim demand_id 加性参数）、test_zr508（新 11 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-19T20:32:15+00:00",
+  "findings": [
+    {
+      "detail": "饿死 RED 探针：裸 DemandQueue 持续高优先级流下 low 永不 claim。DemandScheduler 用 effective_priority = priority + aging_bonus(wait)（线性到 aging_max_bonus）+ deadline_urgency——等待 ≥ aging_window 的低优先级必然被调度（测试 120 轮持续高流证明）；原始 priority 保持不可变（ZR-507 C3）。",
+      "id": "ZR508-IMPL-001",
+      "severity": "info",
+      "title": "aging 防饿死（RED 探针 → 120 轮证明）"
+    },
+    {
+      "detail": "claim 选择不匹配问题：scheduler 按 effective 选出 demand 后裸 queue.claim 返回原始 priority 最高者——需要 DemandQueue.claim 支持指定 demand_id（加性参数，默认 None 保持原行为，ZR-507 14 测试全绿验证契约保持）；scheduler 侧维护 deadline 注册表（ProcessingDemand 契约零改动）。",
+      "id": "ZR508-IMPL-002",
+      "severity": "info",
+      "title": "claim(demand_id) 加性扩展 + scheduler 侧 deadline 注册表"
+    },
+    {
+      "detail": "deadline 语义：逼近（< urgency_window）→ urgency_bonus 紧急加成；已过 deadline → 仍可调度 + deadline_expired 标记（诚实不丢弃）；budget：kind 级累计消费 ≥ limit 暂停出队，reset_budget 恢复。",
+      "id": "ZR508-IMPL-003",
+      "severity": "info",
+      "title": "deadline 紧急 + 过期标记 + kind budget 限流"
+    },
+    {
+      "detail": "确定性：同操作序列两次运行决策序列一致（C4）；clock 注入驱动 aging/deadline/budget 全时序；schedule_once 返回 None 当无就绪；返回的 demand 必带租约（running + lease_until）。",
+      "id": "ZR508-IMPL-004",
+      "severity": "info",
+      "title": "确定性 + 租约保证"
+    }
+  ],
+  "implementation": {
+    "design": "新 src/company_wiki/source_catalog/scheduler.py：DemandScheduler（包装 DemandQueue）——schedule_once(owner, now)：就绪过滤（pending/failed + retry_at ≤ now + kind budget 可用）→ effective_priority = priority + aging_bonus（wait 线性到 aging_max_bonus）+ deadline_urgency（逼近 urgency_bonus / 过期 deadline_expired 标记）→ max 选中 → queue.claim(demand_id=选中)（加性扩展，默认路径不变）→ ScheduleDecision(demand/effective_priority/deadline_expired)。deadline 注册表与 budget 均 scheduler 侧（ProcessingDemand 契约零改动）。测试 11 个：C1 aging（120 轮防饿死/同等待高优先/原始 priority 不可变）、C2 deadline（紧急加成/过期标记/无 deadline 无标记）、C3 budget（耗尽暂停/重置恢复）、C4 确定性（同序列同决策/空闲 None/租约保证）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/scheduler.py",
+      "company-wiki/src/company_wiki/source_catalog/processing_demand.py",
+      "company-wiki/tests/contract/test_zr508_scheduler.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-508/**"
+    ]
+  },
+  "implementer": "zr508-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 397e6de（ZR-507 closure commit，本次未动 revenue）；result_triplet.wiki 为本卡实现提交 8e2bf3f。",
+    "卡片 hash 冻结：plan_sha256=90cdb8aa（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr508-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。"
+  ],
+  "objective": "scheduler 公平性：aging（防饿死）/deadline（紧急+过期标记）/cost budget（kind 限流+重置）三层调度决策；ProcessingDemand 契约保持（priority 不可变，claim(demand_id) 加性扩展）；clock 注入确定性。",
+  "plan_sha256": "90cdb8aaf1a3369cf286fc4238f5c4d79b5360a476c8d8e8fecfa4e8c7ac95f4",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "397e6de42882eec3d76c47a70ae1e87852e8bf2f",
+    "wiki": "8e2bf3fbc3ea1009df82e3546dfffecfd9a50101"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki scheduler.py（新 DemandScheduler）+ processing_demand.py（claim demand_id 加性扩展）+ 新测试 test_zr508_scheduler.py（11 tests）；revenue 侧 receipts/ZR-508/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/scheduler.py",
+    "company-wiki/src/company_wiki/source_catalog/processing_demand.py",
+    "company-wiki/tests/contract/test_zr508_scheduler.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-508/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-508"
+}
