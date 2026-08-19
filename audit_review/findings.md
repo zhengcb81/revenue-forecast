@@ -509,3 +509,11 @@
 - **场景映射方法论**：EX/LT/DL/IDX/UJ 44 场景→测试映射表钉死入 receipt；T3 项（DL-04~06/UJ-03/05/08）移交 ZR-802/806。
 - **教训**：真实根旅程样本以 catalog 实际元数据为准（form_type='FY'、实体名金斯瑞、URL scheme 决定 capture_ready）——外部知识臆断导致连环失败；区分"产品缺陷"与"数据现状"（http URL 是数据现状，fail-closed 是正确行为）。
 - ZR401-REV-003（3.0 loader 生产切换）显式再延期 → CA-303/阶段 I（产品代码变更违反本卡 core-diff=0）。
+
+## ZR-502（2026-08-19）：sidecar 角色分离闭环 + 首页身份验证
+- 判定信号：归一化子串包含（否决 token 交集/4-gram 滑窗；CJK 无空格 + 通用片段假阳性教训）。
+- published_date 链路：sidecar published_at->filing_date 映射；缺 date fail-closed AMBIGUOUS。
+- 词汇注册闭环：QualityFlag + REASONS/STAGES_BY_REASON（fc1301 gate 抓出 3 个未注册码）。
+- _frontmatter 双形态（sqlite3.Row JSON 字符串列 vs dict）：isinstance 分支 + json.loads。
+- identity flag 仅进 frontmatter，artifact metadata 不混入。
+- 既有基线失败登记：corrupt pdf/xls（fitz）、dropbox_config_invariants（future_lake 漂移）、security_identity（stale_cache）、worker_bootstrap（时序）、integration（fitz）、pipeline 'parser_failed' 未注册（stash 对照证非本卡）。

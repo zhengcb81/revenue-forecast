@@ -114,3 +114,9 @@
 - 机器状态：current_phase=E_broker_web_processing，current_next=ZR-501；accepted 43/117（A0 8 + B 9 + C 11 + D 16）。
 - **阶段 D 出口达成**：16/16 全闭。
 - 三仓 HEAD：revenue（closure 提交进行中）、wiki 726d63d、filing 5a1c18f（均未 push）。
+
+## 2026-08-19（ZR-501 closure + ZR-502 实施完成，待独立复核）
+- ZR-501 closure：wiki 8c5f24f 复核 accepted（REV-001 page_count IPC envelope 修复，delta accepted）；revenue 465033c；state accepted 44/117。
+- ZR-502 实施完成：wiki 19c3b73（homepage_identity.py 纯函数 + normalizer first_page_text/frontmatter 接线 + sidecar filing_date 映射 + 词汇注册 + 11 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical 74b0027a；独立复核运行中。
+
+- ZR-502 closure：reviewer-zr502-independent accepted（3 info）；state accepted 45/117；closure-advance -> ZR-503（E_broker_web_processing）；README cursor 已镜像 ZR-503。
