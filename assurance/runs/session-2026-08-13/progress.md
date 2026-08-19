@@ -398,3 +398,11 @@
   - 教训：scheduler 按 effective 选择但裸 queue.claim 按原始 priority 出队不匹配——claim(demand_id) 加性扩展解决；测试时间尺度（high 也 aging）修正为慢推进时钟。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki 8e2bf3f）；implementer receipt canonical cb34ed85（plan_sha256 Get-FileHash 注入）。
   - 独立复核 reviewer-zr508-independent 运行中。
+
+- **ZR-509（官方 HTML capture 身份门）实施完成**：
+  - RED：grep html_capture 0；announcement_collector 仅 PDF；golden wrong strategy HTML 空实体负例已注册。
+  - 新 src/company_wiki/source_catalog/html_capture.py：parse_html_identity（_extract_title/_extract_entities/_extract_period helper——title/h1 去标签、后缀锚定实体短语 first-seen 去重、CN/ISO/裸年份 period 含月日合法性）+ validate_html_capture（五 verdict：ok/missing_title/no_entity/entity_mismatch/invalid_period；空实体 fail-closed；declared containment 匹配）。
+  - 测试 12 个（C1 解析 4、C2 门 5、C3 空实体 1、C4 结构化 2）全绿；回归 151 + unit 787 + ruff 全过。
+  - 复杂度 ratchet 两轮拆分（parse 15→3 helpers、validate 12→_period_verdict）。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki ea9c49b）；implementer receipt canonical 21d5335f（plan_sha256 Get-FileHash 注入）。
+  - 独立复核 reviewer-zr509-independent 运行中。

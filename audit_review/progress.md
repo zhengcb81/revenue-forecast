@@ -142,3 +142,5 @@
 - ZR-507 closure：reviewer-zr507-independent accepted（1 minor + 1 info）；codegraph_freeze MISSING-001 清除；state accepted 50/117；closure-advance -> ZR-508（E_broker_web_processing）。
 
 - ZR-508 实施完成：wiki 8e2bf3f（scheduler.py 公平性 aging/deadline/budget + claim(demand_id) 加性扩展 + 11 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical cb34ed85；独立复核运行中。
+
+- ZR-509 实施完成：wiki ea9c49b（html_capture.py 身份门 + 12 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical 21d5335f；独立复核运行中。

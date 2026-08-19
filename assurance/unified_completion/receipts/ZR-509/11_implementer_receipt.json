@@ -1,0 +1,108 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1e3f70560cae81d94ba2015efeb99521955fd2e4",
+    "wiki": "8e2bf3fbc3ea1009df82e3546dfffecfd9a50101"
+  },
+  "canonical_hash": "21d5335f8e0607b991ff67569199cccb9ded9e59d48dd33b9292da517fe87453",
+  "commands": [
+    {
+      "command": "RED 探针：grep html_capture src/company_wiki (wiki 8e2bf3f)",
+      "exit_code": 0,
+      "result": "0 命中——无 HTML 身份门；announcement_collector 仅 PDF（URL 策略/下载/receipt）；golden corpus wrong strategy HTML 空实体负例已注册（b2d215df…）——G1~G3 坐实"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr509_html_capture.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "12 passed（C1 身份解析 4 + C2 身份门 5 + C3 空实体 fail-closed 1 + C4 结构化确定性 2）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr508_scheduler.py tests/contract/test_zr507_processing_demand.py tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "151 passed（全回归批含 ZR-508 11 + ZR-507 14 + ZR-506 14 + ZR-505 11 + ZR-504 10 + ZR-503 13 + ZR-502 11 + ZR-501 10 + taxonomy + evidence span + ratchet 全绿；ratchet 首轮抓 html_capture 12>10 拆 _period_verdict 后过）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --timeout=300 (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（质量门 unit 787）"
+    },
+    {
+      "command": "ruff check src/company_wiki/source_catalog/html_capture.py tests/contract/test_zr509_html_capture.py (base python)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git diff 8e2bf3f ea9c49b --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "2 文件 +292：html_capture.py（新纯函数）、test_zr509（新 12 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-19T20:39:08+00:00",
+  "findings": [
+    {
+      "detail": "身份门设计：parse_html_identity 提取 title（<title>/<h1> 首个非空，去标签）、entities（ZR-503 同款后缀锚定短语，first-seen 去重）、period（CN 日期/ISO 日期/裸年份，月份日合法校验）；validate_html_capture 五 verdict（ok/missing_title/no_entity/entity_mismatch/invalid_period），declared 提供时 entity containment 匹配（简称/全称）。",
+      "id": "ZR509-IMPL-001",
+      "severity": "info",
+      "title": "HTML 身份解析与五 verdict 门"
+    },
+    {
+      "detail": "空实体 fail-closed（C3）：wrong strategy HTML 形状（title 有但正文无公司名短语）→ entities=[] → no_entity——与 golden corpus 空实体负例（b2d215df…）语义一致；无 declared 时任何实体通过（宽进），有 declared 时必须匹配（严检）。",
+      "id": "ZR509-IMPL-002",
+      "severity": "info",
+      "title": "空实体负例 fail-closed（golden 语义一致）"
+    },
+    {
+      "detail": "复杂度 ratchet 第二轮：validate_html_capture 12>10 → 拆 _period_verdict helper 后 7；parse_html_identity 拆 _extract_title/_extract_entities/_extract_period 三 helper（首轮 15）。",
+      "id": "ZR509-IMPL-003",
+      "severity": "info",
+      "title": "复杂度 ratchet 两轮拆分（4 helper）"
+    },
+    {
+      "detail": "结构化确定性（C4）：identity 与 verdict 输出 JSON 可序列化（共享保存/索引契约基础）；同输入同输出（两跑相等断言）；零实体名硬编码（复用模式提取）。",
+      "id": "ZR509-IMPL-004",
+      "severity": "info",
+      "title": "JSON 结构化输出与确定性"
+    }
+  ],
+  "implementation": {
+    "design": "新 src/company_wiki/source_catalog/html_capture.py：parse_html_identity（_extract_title/_extract_entities/_extract_period 三 helper）→ {schema_version, title, entities, period}；validate_html_capture（_entity_matches + _period_verdict helper）→ 五 verdict。纯函数 hermetic（regex only，零硬编码）；不下载不写盘（捕获前校验门）。测试 12 个：C1（title/实体/period 提取 + h1 回退 + 裸年份 + 空输入）、C2（ok/missing_title/no_entity/entity_mismatch/无 declared 宽进）、C3（wrong strategy 形状 fail-closed）、C4（JSON 序列化 + 确定性）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/html_capture.py",
+      "company-wiki/tests/contract/test_zr509_html_capture.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-509/**"
+    ]
+  },
+  "implementer": "zr509-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 1e3f705（ZR-508 closure commit，本次未动 revenue）；result_triplet.wiki 为本卡实现提交 ea9c49b。",
+    "卡片 hash 冻结：plan_sha256=d06426fd（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr509-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。"
+  ],
+  "objective": "官方 HTML capture 身份门：parse_html_identity（title/entities/period 提取）+ validate_html_capture（ok/missing_title/no_entity/entity_mismatch/invalid_period）；空实体页面 fail-closed（wrong strategy 负例语义）；JSON 结构化确定性输出。",
+  "plan_sha256": "d06426fd525fcb262b8a9985dd7c394bffbb9fffd8db2f4f3fa32e67546e6838",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1e3f70560cae81d94ba2015efeb99521955fd2e4",
+    "wiki": "ea9c49b6a7e0cafed6e923d0df5cc580b8492e96"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki html_capture.py（新纯函数身份门）+ 新测试 test_zr509_html_capture.py（12 tests）；revenue 侧 receipts/ZR-509/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 1,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/html_capture.py",
+    "company-wiki/tests/contract/test_zr509_html_capture.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-509/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-509"
+}
