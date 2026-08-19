@@ -38,6 +38,19 @@ def preparation_demands() -> DemandQueue:
     return _preparation_demands
 
 
+def _demand_key(record: dict) -> str:
+    """Stable demand key for one prepared source (keeps prepare_source
+    within the frozen complexity ratchet)."""
+    return str(record.get("source_id") or record.get("source_sha256") or "")
+
+
+def _submit_preparation_demand(record: dict) -> None:
+    """ZR-701: enqueue one deduped processing demand per prepared source."""
+    source_key = _demand_key(record)
+    if source_key:
+        _preparation_demands.enqueue(key=source_key, kind="source_preparation", now=0.0)
+
+
 def _read_request(request_file: str | None) -> dict:
     if request_file:
         return json.loads(Path(request_file).read_text(encoding="utf-8"))
@@ -163,9 +176,7 @@ def prepare_source(
     }
     # ZR-701: submit one processing demand per prepared source; a repeated
     # preparation of the same source dedupes to the existing demand.
-    source_key = str(record.get("source_id") or record.get("source_sha256") or "")
-    if source_key:
-        _preparation_demands.enqueue(key=source_key, kind="source_preparation", now=0.0)
+    _submit_preparation_demand(record)
     return record
 
 
