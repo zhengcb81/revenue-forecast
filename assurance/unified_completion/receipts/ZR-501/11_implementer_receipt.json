@@ -4,12 +4,12 @@
     "revenue": "7f7acd394fa485e7001771c05b269ca13787c954",
     "wiki": "726d63dabb990930f3c1d7218161814a489d9b8c"
   },
-  "canonical_hash": "29b526a414b131e6bcea5f8adef50e79081ee90ba1f657144d50c587d52e4533",
+  "canonical_hash": "69c78b130803afdc2800ebcfc96ad1fd69c56c4d8216952b1887d5aacdfe8b16",
   "commands": [
     {
       "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py -q --tb=short --basetemp <revenue>/.tmp-zr501-verify (company-wiki)",
       "exit_code": 0,
-      "result": "9 passed（C1 filename 仅 proposal：无 sidecar 零虚构 metadata/文件名日期不作 published/sidecar 事实胜文件名；C2 契约落库：publisher/authors/security_ids 透传、缺键诚实、page_count 3/None 进 frontmatter；C3 准入闭环：全字段 broker 仍 non_filing_kind、filing 请求 MISSING）"
+      "result": "10 passed（9 原有 + REV-001 端到端：page_count 过隔离解析器 IPC envelope round-trip 3/None）"
     },
     {
       "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py test_sidecar_adapter.py test_source_catalog_classification.py test_dropbox_root_policy_fc501.py test_source_catalog_pdf_page_aware.py test_fc1204_complexity_ratchet.py -q --tb=short --basetemp <revenue>/.tmp-zr501-reg (company-wiki)",
@@ -30,6 +30,11 @@
       "command": "git diff 726d63d 919d0b9 --stat (company-wiki)",
       "exit_code": 0,
       "result": "3 文件：sidecar.py（_normalized_from_sidecar +publisher/authors/security_ids 加性透传）、normalizer.py（_Normalized.page_count + _pdf_markdown 传入 + _frontmatter 加 page_count 键）、test_zr501_broker_metadata_contract.py（+9 tests）"
+    },
+    {
+      "command": ".venv\\\\Scripts\\\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py test_pdf_page_aware_parser.py test_canonical_ingest_service.py test_evidence_span_contract.py tests/unit -q --tb=short --basetemp <revenue>/.tmp-zr501-reg (company-wiki, REV-001 后)",
+      "exit_code": 0,
+      "result": "874 passed（10 新 + envelope 相关 contract + 787 unit；严格 schema 加 page_count 键无回归）"
     }
   ],
   "created_at_utc": "2026-08-19T20:05:00+00:00",
@@ -57,6 +62,12 @@
       "id": "ZR501-IMPL-004",
       "severity": "info",
       "title": "corrupt PDF 分类环境差异（基线对照证非回归）"
+    },
+    {
+      "detail": "REV-001（blocking）修复：page_count 曾只在 _frontmatter 直构时存在，隔离解析器 IPC envelope（_normalized_to_payload/_normalized_from_payload 严格字段集）不携带 → 生产 normalize（恒走 _run_parser_isolated）frontmatter 恒 null。修复：envelope 两侧加 page_count 键 + 严格校验（正 int 或 null）+ 端到端 round-trip 测试。874 passed 无回归。",
+      "id": "ZR501-IMPL-005",
+      "severity": "info",
+      "title": "REV-001 修复：page_count 过 IPC envelope"
     }
   ],
   "implementation": {
@@ -72,7 +83,7 @@
   "kind": "implementer",
   "notes": [
     "result_triplet.revenue 取 7f7acd3（ZR-409 closure docs commit）；result_triplet.wiki 为本卡实现提交 919d0b9。",
-    "reviewed_object（新测试文件）sha256=b92163857668a0ec4f956b03d7ea6139e0f72f309e48bea5b298a2199f31f3e7。",
+    "reviewed_object（新测试文件，8c5f24f HEAD）sha256=4f2bd5199a719190bb6678fb94b84f14ea398285a1e4cd40b81bc2706808acf5。",
     "卡片 hash 于最终编辑后冻结：plan_sha256=2abbdb37…。"
   ],
   "objective": "broker_research 文档/准入/metadata contract：publisher/authors/date/entities/security IDs/page count；filename 仅 proposal。",
@@ -80,7 +91,7 @@
   "result_triplet": {
     "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
     "revenue": "7f7acd394fa485e7001771c05b269ca13787c954",
-    "wiki": "919d0b9211091d02f5db99f2592e033d738279ba"
+    "wiki": "8c5f24fde877c3f5f425280d8c83c66eb6b551dc"
   },
   "schema_version": 1,
   "scope": "company-wiki sidecar.py + normalizer.py（metadata contract 加性落库）+ 新测试 test_zr501_broker_metadata_contract.py（9 tests）；revenue 侧 receipts/ZR-501/** 与 state.json。",
