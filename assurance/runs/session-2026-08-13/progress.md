@@ -373,3 +373,15 @@
   - 测试 14 个（C1 section 4、C2 chunk 3、C3 fact 4、C4 wiring 2、C5 零硬编码 1）全绿；回归 115 + unit 787 + ruff 全过（F401/E741 修复）。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki cbc6d8c）；implementer receipt canonical 2d00aeb4（plan_sha256 Get-FileHash 注入）。
   - 独立复核 reviewer-zr506-independent 运行中。
+
+- **ZR-506 closure**：独立复核 reviewer-zr506-independent **accepted**（14/14 + 101/101 复跑 + 29 对抗断言；2 条 info：REV-001 回归计数 101 vs 115 说明、REV-002 源码直检确认）；reviewer receipt canonical e61e01b4；state accepted + closure-advance -> **ZR-507**（phase E_broker_web_processing）；README cursor 自动镜像。
+- **机器状态**：current_next=ZR-507，accepted **49/117**（A0 8 + B 9 + C 11 + D 16 + E 6：ZR-501~506）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki cbc6d8c、filing 5a1c18f。
+
+- **ZR-507（ProcessingDemand API）实施完成**：
+  - RED：wiki grep ProcessingDemand 0 命中（codegraph_freeze 已注册 expected missing，CA-003）。
+  - 新 src/company_wiki/source_catalog/processing_demand.py：ProcessingDemand frozen dataclass + DemandQueue（纯内存零 IO，clock 注入）——enqueue key 去重、claim priority desc+created asc 租约、heartbeat 续租、complete/fail（指数退避 + 上限 terminal_failed）、expire 超时回收、priority 不可变（consumer 防插队）、snapshot 确定性。
+  - 测试 14 个（C1 API 4、C2 生命周期 5、C3 priority 隔离 3、C4 确定性 2）全绿；回归 129 + unit 787 + ruff 全过（F401/F841 修复）；复杂度 ratchet 过（新文件）。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki bd337c4）；implementer receipt canonical f1eace9a（plan_sha256 Get-FileHash 注入）。
+  - codegraph_freeze 期望缺失更新（ProcessingDemand 移至 present）随 closure 提交。
+  - 独立复核 reviewer-zr507-independent 运行中。

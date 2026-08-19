@@ -51,7 +51,7 @@ CALLER_TARGETS = {
         "_scan_root_v1",  # v1 scanner
         "RootPolicy",  # root policy flags
         "artifact_bindings",  # shadow binding table
-        "ProcessingDemand",  # required but expected missing (registered)
+        "ProcessingDemand",  # implemented by ZR-507 (was expected missing)
         "SourceResolver",  # resolver with runtime_policy default
     ],
 }
@@ -73,7 +73,7 @@ DEFAULT_SENTINELS = {
     "present": {
         "revenue": ["prepare_source", "publication_registry"],
         "filing": ["validate_handle"],
-        "wiki": ["SourceResolver", "CatalogStore"],
+        "wiki": ["SourceResolver", "CatalogStore", "ProcessingDemand"],
     },
 }
 

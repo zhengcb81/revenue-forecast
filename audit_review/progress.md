@@ -134,3 +134,7 @@
 - ZR-505 closure：reviewer-zr505-independent accepted（1 info + 1 minor 计数）；state accepted 48/117；closure-advance -> ZR-506（E_broker_web_processing）。
 
 - ZR-506 实施完成：wiki cbc6d8c（section_chunk_fact.py 纯函数 + normalizer document_structure 接线 + 14 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical 2d00aeb4；独立复核运行中。
+
+- ZR-506 closure：reviewer-zr506-independent accepted（2 info）；state accepted 49/117；closure-advance -> ZR-507（E_broker_web_processing）。
+
+- ZR-507 实施完成：wiki bd337c4（processing_demand.py ProcessingDemand API + 14 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical f1eace9a；独立复核运行中。
