@@ -144,3 +144,9 @@
 - ZR-508 实施完成：wiki 8e2bf3f（scheduler.py 公平性 aging/deadline/budget + claim(demand_id) 加性扩展 + 11 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical cb34ed85；独立复核运行中。
 
 - ZR-509 实施完成：wiki ea9c49b（html_capture.py 身份门 + 12 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical 21d5335f；独立复核运行中。
+
+- ZR-509 closure：reviewer-zr509-independent accepted（3 info）；state accepted 52/117；closure-advance -> ZR-510（E_broker_web_processing，阶段 E 收尾）。
+
+- ZR-510 实施完成：wiki 524a535（attribution.py chunk 归属错归=0 + normalizer chunk_attribution 接线 + 9 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical a01d1c85；独立复核运行中；阶段 E 收尾。
+
+- ZR-510 closure：reviewer-zr510-independent accepted（1 info + 2 minor 修复于 wiki 26a6b22）；state accepted 53/117；closure-advance -> ZR-701（phase F_revenue_mining）；**阶段 E 出口达成（ZR-501~510 10/10）**。

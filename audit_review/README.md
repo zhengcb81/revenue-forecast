@@ -9,8 +9,8 @@ plan_id: TRI-REPO-COMPLETION-2026-08-13-R1
 authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
-current_phase: E_broker_web_processing
-current_next: ZR-510
+current_phase: F_revenue_mining
+current_next: ZR-701
 active_owner: unassigned
 lease: none
 blocked_reason: none
