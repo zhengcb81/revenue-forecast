@@ -107,3 +107,10 @@
 - ZR-408 closure：验收钉死卡（产品零改动），跨进程 spawn 双进程 single-flight oracle 补强；22 contract + 787 unit 绿；复核 accepted（3 info）→ closure→ZR-409。
 - 机器状态：current_phase=D_lifecycle_roots_freshness，current_next=ZR-409；accepted 42/117（D 14/16）。
 - 三仓 HEAD：revenue（closure 提交进行中）、wiki 71aa798、filing 5a1c18f（均未 push）。
+
+## 2026-08-19（阶段 D 出口达成 → 阶段 E 启动）
+
+- ZR-409 closure（阶段 D 出口卡）：生产 config 新增第四根 future_lake（directory+sidecar_filing_v1，仅配置接入，产品 core diff=0，wiki eb3aa79）；三真实 root 只读旅程（companies 紫金 601899/2025 exact、dayu-only 金斯瑞 HK1548/2021 exact 且 companies 无同 hash 前提钉死、Dropbox 星环 688031/2024 fail-closed capture_incomplete——生产数据现状）+ 紫金跨根共享 canonical=companies；EX-08 生产形状扫描/导出；EX/LT/DL/IDX/UJ 场景→测试映射钉死复跑全绿（28 contract + 787 unit）。复核 accepted（5 info，REV-001/002 tidy，wiki 726d63d）→ closure→ZR-501，phase=E_broker_web_processing。
+- 机器状态：current_phase=E_broker_web_processing，current_next=ZR-501；accepted 43/117（A0 8 + B 9 + C 11 + D 16）。
+- **阶段 D 出口达成**：16/16 全闭。
+- 三仓 HEAD：revenue（closure 提交进行中）、wiki 726d63d、filing 5a1c18f（均未 push）。

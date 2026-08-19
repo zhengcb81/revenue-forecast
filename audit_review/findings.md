@@ -500,3 +500,12 @@
 - **ZR-407**（authorization-bound GapPlan/CloseGap，filing+wiki 双仓）：RED 为 filing 与 wiki 两侧都只认 `missing` 为 actionable，newer_revision-only 授权计划零 close-gap/fetch。修复：wiki `_actionable_candidates` = missing ∪ newer_revision（外锁/内锁重验统一 + staging 选候选统一）；filing `_gap_plan_has_actionable_candidate` 同语义。owner 修复（用户授权）：exact/no-download `ensure` 走 reader 返回 attempt=null，不触 writer initializer/journal（real-tool conformance 只读路径修复，`_run_ensure_command` 抽取保持 ratchet）。复核 accepted（reviewer-zr407-independent）→ closure→ZR-408。三仓产物本会话补提交（wiki bdffc54、filing 5a1c18f、revenue 6145dad）。
 - **ZR-408**（CloseGap staging→validate→canonical commit/recovery 验收）：无产品 RED——既有 FC-801/FC-804/canonical-writer oracle 已覆盖 C1~C4；唯一证据缺口是 single-flight 仅同进程线程覆盖。补强：Windows spawn 双进程 oracle（共享 append-only fetch log 恰一条、fetch_events=[0,1]、documents=1）——现有 `_acquisition_mutex` 文件锁被进程级验证。22 contract + 787 unit 绿；复核 accepted（3 info）→ closure→ZR-409。
 - **教训**：① receipt 的 result_triplet 手写 sha 再次出错（71aa798d31… 非真实对象）——必须 git rev-parse 注入（第 8 次伪 sha 类事件）；② pre-commit skill-sync 检查要求 sync 在 filing 仓库 CWD 运行（在 revenue CWD 跑 `tools/sync_installs_b3.py` 会路径失败并被拦截）；③ 并发跑三个重 pytest 进程会让既有线程级 single-flight 测试 flake（SQLite InterfaceError）——单跑绿，非本卡回归。
+
+## ZR-409（2026-08-19 阶段 D 出口）
+
+- **future_lake 仅配置接入**：生产 config 第四根（directory+sidecar_filing_v1、read_only、reusable、p40，${PROJECT_ROOT}/future_lake）+ 仓库内 fixture——EX-08 生产版；产品 src diff=0（git diff -- src/ 空）。
+- **三真实 root 只读旅程**：companies 紫金 601899/2025 exact；dayu-only 金斯瑞 HK1548/2021（内容 72b3ed25… companies 零 location，前提测试钉死，满足 exec plan T2 样本规则）；Dropbox 星环 688031/2024 **fail-closed**（http URL → capture_incomplete → MISSING，生产数据现状：Dropbox 独有 annual 无 capture-ready——378 内容中 53 独有，2 http+51 无 URL）；紫金跨根共享 canonical=companies（p10<p30）。
+- **零写证据口径**：根浅指纹（top-level）+ 样本文件 (size,mtime,sha256)；catalog-DIR 零写不断言（后台 worker 并发写，ZR-206 教训）；full rglob 指纹在真实根上超时（首次实现即超时，改用浅指纹）。
+- **场景映射方法论**：EX/LT/DL/IDX/UJ 44 场景→测试映射表钉死入 receipt；T3 项（DL-04~06/UJ-03/05/08）移交 ZR-802/806。
+- **教训**：真实根旅程样本以 catalog 实际元数据为准（form_type='FY'、实体名金斯瑞、URL scheme 决定 capture_ready）——外部知识臆断导致连环失败；区分"产品缺陷"与"数据现状"（http URL 是数据现状，fail-closed 是正确行为）。
+- ZR401-REV-003（3.0 loader 生产切换）显式再延期 → CA-303/阶段 I（产品代码变更违反本卡 core-diff=0）。
