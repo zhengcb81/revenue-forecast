@@ -1,0 +1,110 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "682adf46f17a3bfc8deb1457f4ee8f3f9e0eaf92",
+    "wiki": "7c4490496e2ead975f39519fcf8a9392cd00511b"
+  },
+  "canonical_hash": "2d00aeb4d59594f00ed387f2a23e5421d2c0cdd9d9cad9faad0069b6f1c37450",
+  "commands": [
+    {
+      "command": "RED 探针（wiki 7c44904）：合成 2 页文档（'一、经营概况'/'二、成本分析'章节 + '营业收入：3036亿元'事实）走 adapt_pdf_pages + _render_page_aware_markdown",
+      "exit_code": 0,
+      "result": "body 只有 ## Page N + locator 注释 + 段落文本；has section markers=False（正文）、chunk=False、fact=False——G1/G2/G3 坐实"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr506_section_chunk_fact.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "14 passed（C1 section 检测 4 + C2 chunk 3 + C3 fact 4 + C4 wiring 2 + C5 零硬编码 1）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "115 passed（含 ZR-505 11 + ZR-504 10 + ZR-503 13 + ZR-502 11 + ZR-501 10 + taxonomy + evidence span + ratchet 全绿，无回归）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --timeout=300 (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed（质量门 unit 787）"
+    },
+    {
+      "command": "ruff check src/company_wiki/source_catalog/section_chunk_fact.py src/company_wiki/source_catalog/normalizer.py tests/contract/test_zr506_section_chunk_fact.py (base python)",
+      "exit_code": 0,
+      "result": "All checks passed（F401 unicodedata 未用 + E741 变量名 l 两处修复后）"
+    },
+    {
+      "command": "git diff 7c44904 cbc6d8c --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "3 文件 +375：section_chunk_fact.py（新纯函数）、normalizer.py（document_structure 接线）、test_zr506（新 14 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-19T20:16:24+00:00",
+  "findings": [
+    {
+      "detail": "fact 模式设计：冒号必需（'指标名：'）+ metric ≥2 字——避免'单位成本下降至每吨2.1万元'中'每吨2.1万元'误提取（无冒号不匹配）；负数（-2.1）/百分比（12.5%）/无单位（42）均正确；int/float 类型保真（100→int、10.50→10.5 float）。",
+      "id": "ZR506-IMPL-001",
+      "severity": "info",
+      "title": "fact 模式：冒号必需 + 类型保真（防误报）"
+    },
+    {
+      "detail": "section 检测：内容行过滤（## Page N / <!-- locator --> / # 行剔除）保证 line_offset 为内容行号；行首锚定 + 标题行 ≤40 字防'所述一、二点'误报；CJK 序号/第X章/数字标题三模式。",
+      "id": "ZR506-IMPL-002",
+      "severity": "info",
+      "title": "section 检测：内容行过滤与误报防护"
+    },
+    {
+      "detail": "chunk_spans 边界：section 越界（offset > line_count）clamp 到行数、空尾 chunk 丢弃（[0,3] 而非 [[0,7],[7,7]]）；无 section 时单隐式 chunk。",
+      "id": "ZR506-IMPL-003",
+      "severity": "info",
+      "title": "chunk 边界 clamp 与空尾丢弃"
+    },
+    {
+      "detail": "零硬编码（C5）：产品模块无实体名/指标名（紫金/陕西/营业收入/单位成本 grep 无命中）；document_structure 与 ZR-501~505 字段共存（C4）。",
+      "id": "ZR506-IMPL-004",
+      "severity": "info",
+      "title": "零硬编码与字段共存验证"
+    }
+  ],
+  "implementation": {
+    "design": "新 src/company_wiki/source_catalog/section_chunk_fact.py：detect_sections（内容行过滤 + CJK 序号/第X章/数字标题三模式，行首锚定 + ≤40 字防误报）→ [{index, title, line_offset}]；chunk_spans（section 间行区间，clamp + 空尾丢弃，无 section 单隐式 chunk）；extract_facts（'指标名：数字+单位' 冒号必需，负数/百分比/无单位，int/float 保真）→ [{metric, value, unit}]。normalizer._frontmatter：normalized.body → document_structure 键（sections + chunk_count + facts，空结果诚实不伪造）。测试 14 个：C1 section（CJK 序号/章节/数字标题/句中误报/纯文本）、C2 chunk（区间/隐式/越界 clamp）、C3 fact（单位/负数/百分比/无单位/顺序/类型）、C4 wiring（document_structure + 字段共存）、C5 零硬编码。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/section_chunk_fact.py",
+      "company-wiki/src/company_wiki/source_catalog/normalizer.py",
+      "company-wiki/tests/contract/test_zr506_section_chunk_fact.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-506/**"
+    ]
+  },
+  "implementer": "zr506-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 682adf4（ZR-505 closure commit，本次未动 revenue）；result_triplet.wiki 为本卡实现提交 cbc6d8c。",
+    "卡片 hash 冻结：plan_sha256=1470fc6d（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr506-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。"
+  ],
+  "objective": "section/chunk/tag/fact assertion：detect_sections（章节标题识别，零硬编码）+ chunk_spans（section 行区间分组）+ extract_facts（指标名：数字+单位结构化提取）→ frontmatter document_structure 键；为 ZR-510 完整 attribution 提供结构层。",
+  "plan_sha256": "1470fc6d1409d689e38acb6491c019078e66564c946e385af291ac82a152ec0a",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "682adf46f17a3bfc8deb1457f4ee8f3f9e0eaf92",
+    "wiki": "cbc6d8c25b98b005856601620b43eb1877a53a35"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki section_chunk_fact.py（新纯函数）+ normalizer.py（document_structure 接线）+ 新测试 test_zr506_section_chunk_fact.py（14 tests）；revenue 侧 receipts/ZR-506/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/section_chunk_fact.py",
+    "company-wiki/src/company_wiki/source_catalog/normalizer.py",
+    "company-wiki/tests/contract/test_zr506_section_chunk_fact.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-506/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-506"
+}

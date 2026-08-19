@@ -361,3 +361,15 @@
   - **产品 src 零改动**（git diff 2781df9..7c44904 仅测试文件）；回归 101 + unit 787 + ruff 全过。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki 7c44904）；implementer receipt canonical b31691c6（plan_sha256 Get-FileHash 注入）。
   - 独立复核 reviewer-zr505-independent 运行中。
+
+- **ZR-505 closure**：独立复核 reviewer-zr505-independent **accepted**（11/11 + 90/90 复跑 + 对抗断言 6 组含边界标量 ''/0/-1/0.0；1 info + 1 minor：REV-002 回归计数 101 vs 90 文档差异非缺陷）；reviewer receipt canonical 59fb2545；state accepted + closure-advance -> **ZR-506**（phase E_broker_web_processing）；README cursor 自动镜像。
+- **机器状态**：current_next=ZR-506，accepted **48/117**（A0 8 + B 9 + C 11 + D 16 + E 5：ZR-501~505）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 7c44904、filing 5a1c18f。
+
+- **ZR-506（section/chunk/tag/fact assertion）实施完成**：
+  - RED 探针：body 只有 ## Page N + locator 注释 + 段落文本，无 section/chunk/fact 信号（G1~G3 坐实）。
+  - 新 src/company_wiki/source_catalog/section_chunk_fact.py：detect_sections（内容行过滤 + CJK 序号/第X章/数字标题三模式，行首锚定 + ≤40 字防'所述一、二点'误报）、chunk_spans（section 间行区间，越界 clamp + 空尾丢弃，无 section 单隐式 chunk）、extract_facts（'指标名：数字+单位' 冒号必需 + metric≥2 字防'每吨2.1万元'误提取；负数/百分比/无单位；int/float 保真）。
+  - normalizer 接线：frontmatter document_structure 键（sections + chunk_count + facts，空结果诚实不伪造）；与 ZR-501~505 字段共存。
+  - 测试 14 个（C1 section 4、C2 chunk 3、C3 fact 4、C4 wiring 2、C5 零硬编码 1）全绿；回归 115 + unit 787 + ruff 全过（F401/E741 修复）。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki cbc6d8c）；implementer receipt canonical 2d00aeb4（plan_sha256 Get-FileHash 注入）。
+  - 独立复核 reviewer-zr506-independent 运行中。
