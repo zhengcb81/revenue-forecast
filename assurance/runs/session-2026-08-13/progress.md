@@ -350,3 +350,14 @@
   - **产品 src 零改动**（git diff e8e2926..2781df9 仅测试文件）；回归 90 + unit 787 + ruff 全过。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki 2781df9）；implementer receipt canonical 3ce9e3b3（plan_sha256 手填风险再次出现，Get-FileHash 注入修正）。
   - 独立复核 reviewer-zr504-independent 运行中。
+
+- **ZR-504 closure**：独立复核 reviewer-zr504-independent **accepted**（10/10 + 80/80 复跑 + 16/16 对抗断言；2 条 info：REV-001 回归批计数 80 vs 90 说明、REV-002 工作树杂物）；reviewer receipt canonical 5fb9f9f5；state accepted + closure-advance -> **ZR-505**（phase E_broker_web_processing）；README cursor 自动镜像。
+- **机器状态**：current_next=ZR-505，accepted **47/117**（A0 8 + B 9 + C 11 + D 16 + E 4：ZR-501~504）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 2781df9、filing 5a1c18f。
+
+- **ZR-505（typed table artifact 保真）实施完成**：
+  - RED 探针：2×2 表（str/int/bool/null）cell locator 全序保真、raw_value 类型不变形、value 文本化正确、非矩形拒绝——机制内建已保真，RED 为'无测试钉死'型。
+  - 新 	ests/contract/test_zr505_table_fidelity.py（11 tests）：C1 cell locator 流（page/table/row/column row-major + 与段落共存）、C2 结构化值保真（str/int/float/bool/null 不变形 + 全覆盖）、C3 渲染顺序（Table cell [r,c] row-major 段落后）、C4 四路校验拒绝（非矩形/rows 不匹配/非标量/字段集不精确）、C5 多表/跨页（table_index 页内重置 [0,1,0]）+ golden 锚定。
+  - **产品 src 零改动**（git diff 2781df9..7c44904 仅测试文件）；回归 101 + unit 787 + ruff 全过。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki 7c44904）；implementer receipt canonical b31691c6（plan_sha256 Get-FileHash 注入）。
+  - 独立复核 reviewer-zr505-independent 运行中。

@@ -126,3 +126,7 @@
 - ZR-503 closure：reviewer-zr503-independent accepted（3 info）；state accepted 46/117；closure-advance -> ZR-504（E_broker_web_processing）。
 
 - ZR-504 实施完成：wiki 2781df9（test-only 页码保真 golden 10 tests，产品 src 零改动）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical 3ce9e3b3；独立复核运行中。
+
+- ZR-504 closure：reviewer-zr504-independent accepted（2 info）；state accepted 47/117；closure-advance -> ZR-505（E_broker_web_processing）。
+
+- ZR-505 实施完成：wiki 7c44904（test-only typed table 保真 golden 11 tests，产品 src 零改动）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical b31691c6；独立复核运行中。
