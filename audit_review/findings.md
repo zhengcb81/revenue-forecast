@@ -517,3 +517,9 @@
 - _frontmatter 双形态（sqlite3.Row JSON 字符串列 vs dict）：isinstance 分支 + json.loads。
 - identity flag 仅进 frontmatter，artifact metadata 不混入。
 - 既有基线失败登记：corrupt pdf/xls（fitz）、dropbox_config_invariants（future_lake 漂移）、security_identity（stale_cache）、worker_bootstrap（时序）、integration（fitz）、pipeline 'parser_failed' 未注册（stash 对照证非本卡）。
+## ZR-701（2026-08-19）：F1 入口（revenue）
+- validate-only 零写是真实产品缺口（run_forecast formal 自动注册）→ draft mode 修复（强验证 + 零注册）。
+- prepare_forecast 纯函数（formal/draft 显式模式）。
+- publication_registry validation_status 加性键（draft/validated + 旧条目兼容 + 原子绑定）。
+- ProcessingDemand 跨仓同契约（revenue 独立实现 + prepare_source enqueue dedupe）。
+- 复杂度 ratchet（FC-1204-b）与 skill-sync（R4.2）是 scripts 改动的双前置门。

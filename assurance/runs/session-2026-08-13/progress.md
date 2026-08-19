@@ -423,3 +423,16 @@
 - **阶段 E 出口达成**：ZR-501~510 **10/10 全闭**（broker metadata contract、sidecar 角色分离+首页身份、多实体 attribution guard、页码保真、typed table、section/chunk/fact、ProcessingDemand、scheduler 公平性、HTML capture 身份门、chunk attribution 错归=0）。
 - **机器状态**：current_next=ZR-701，accepted **53/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 0）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+- **ZR-701（F1 入口，revenue）实施完成**：
+  - RED 探针：无 prepare_forecast 命名契约、validate-only 无零写测试、无 draft artifact、source_preparation 无 ProcessingDemand；**探针抓出真实缺口**：run_forecast(formal) 自动注册发布（revenue_core.py:180）→ validate-only 也有写副作用。
+  - 实现：① revenue_forecast.py prepare_forecast(data, mode=formal|draft) 纯函数 + main validate-only 走 draft（强验证 + build_draft_receipt + 零注册）；② publication_registry register_publication 加 validation_status 加性键（draft/validated，旧条目兼容）；③ scripts/processing_demand.py 新（wiki ZR-507 同契约纯内存队列）；④ source_preparation prepare_source 成功 enqueue（key=source_id，dedupe）。
+  - 测试 7 个（C1 确定性、C2 validate-only 零写子进程、C3 draft/validated 区分+兼容、C4 demand 契约+enqueue、C5 原子绑定）全绿；**revenue 全量 477 passed + 106 subtests（exit 0）** + ruff 全过；mypy 基线 1 错误继承（既有 audit tuple 类型）。
+  - 教训：pre-commit R4.2 skill-sync 在 scripts 改动后拦截 commit——需 	ools/sync_installations.py --apply 同步安装副本后再提交（ZR701-IMPL-005）。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 1dbae63）；implementer receipt canonical fe73c583（base_triplet sha 手拼修正一次）。
+  - 独立复核 reviewer-zr701-independent 运行中。
+
+- **ZR-701 closure**：独立复核 reviewer-zr701-independent 首轮 **changes_required**（1 blocking：REV-001 source_preparation.py 复杂度 21>冻结 17 破坏 FC-1204-b ratchet——revenue 1dbae63 引入，父提交 dd504e7 干净对照组证实）→ 修复 ff7429e（_demand_key/_submit_preparation_demand helper 提取，prepare_source 回 17==冻结）→ **delta accepted**（ratchet+unit 9/9 + ruff clean + AST 复核 17==17；REV-001 resolved；REV-002 minor：ZR-104 基线未重冻结（既有红，非本卡新破）+ REV-003/004 info）；reviewer receipt canonical bdd9a2bc；state accepted + closure-advance -> **ZR-702**（phase F_revenue_mining）。
+- **机器状态**：current_next=ZR-702，accepted **54/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 1：ZR-701）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **停止点（用户指示：本阶段完成后更新全部 planning docs 后停止）**：ZR-702 未领取；恢复第一步 = ZR-702（F1 后续：generator→linter→engine 闭环钉死/输入 schema 单一真源）。

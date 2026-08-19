@@ -156,3 +156,10 @@
 - 封闭词汇扩展：新 quality_flag / evidence reason 必须注册 QualityFlag 枚举 + observability REASONS/STAGES_BY_REASON（fc1301 taxonomy gate 自动捕获未注册码——本卡 3 个 reason 码被 gate 当场抓出）；homepage_identity_contradiction 仅进 frontmatter（review 信号），artifact metadata flags 保持 parser 原始集（两通道不混淆）。
 - _frontmatter document 双形态：normalize_catalog 传 sqlite3.Row（metadata_json 为 JSON 字符串列，需 json.loads + 下标访问），测试 fixture 传 dict——.get/.下标 混用即 AttributeError/KeyError（本卡 3 次修复迭代：.get on Row -> 下标 on dict-missing-key -> isinstance 分支 + json.loads）。
 - 既有基线失败登记：corrupt pdf/xls（fitz 分类）、dropbox_config_invariants×2（ZR-409 future_lake 使 directory-kind 集合含 future_lake，测试期望 {dropbox_stock} 漂移）、security_identity×2（stale_cache 环境态）、worker_bootstrap×1（时序）、integration×3（fitz）、pipeline/extraction_quality（meeting.html 子进程 parser 失败走 _failed -> 'parser_failed' 未注册 QualityFlag——既有缺陷，stash 基线对照证非本卡引入）。
+## 发现 26：ZR-701（F1 入口，2026-08-19）
+- validate-only 零写是真实产品缺口：run_forecast(mode="formal") 自动 register_publication（revenue_core.py:180）——validate-only 也触发注册写盘（c2 测试抓出）。修复：prepare_forecast(mode="draft") 强验证 + build_draft_receipt + 零注册；draft receipt 与 validate_forecast_output 不兼容（后者要求 formal_output_mode=formal）→ 仅 formal 跑输出校验。
+- 复杂度 ratchet 教训：prepare_source 的 or 链 BoolOp + if 块 +4 复杂度（17→21）破坏 FC-1204-b 冻结 gate——helper 提取（_demand_key cc4 + _submit_preparation_demand cc2）回 17；reviewer 用干净父提交对照组证实父绿子红归属本卡。scripts 产品改动必须跑 tools/tests/test_complexity_ratchet.py。
+- skill-sync 前置：scripts 产品代码改动后 pre-commit R4.2 拦截 commit——tools/sync_installations.py --apply 必须先跑。
+- draft/validated 显式 artifact：publication_registry validation_status 加性键（旧条目无键可读）；formal 条目 receipt_sha256+result_sha256 绑定（原子发布）。
+- ProcessingDemand 跨仓同契约：revenue scripts/processing_demand.py 独立实现（wiki ZR-507 语义），零跨仓 import；prepare_source 成功 enqueue（key=source_id dedupe）。
+- mypy 基线：publication_registry.py:215 audit() tuple 类型错误为既有（非本卡引入）。

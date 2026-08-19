@@ -152,3 +152,5 @@
 - ZR-510 closure：reviewer-zr510-independent accepted（1 info + 2 minor 修复于 wiki 26a6b22）；state accepted 53/117；closure-advance -> ZR-701（phase F_revenue_mining）；**阶段 E 出口达成（ZR-501~510 10/10）**。
 
 - ZR-701 实施完成：revenue 1dbae63（prepare_forecast 纯函数 + validate-only 零写 + draft/validated artifact + ProcessingDemand 提交 + 7 tests）；全量 477+106 绿；state triplet_green；implementer receipt canonical fe73c583；独立复核运行中。
+
+- ZR-701 closure：reviewer-zr701-independent 首轮 changes_required（REV-001 复杂度 ratchet 21>17）→ ff7429e 修复 → delta accepted（1 minor + 2 info 非阻断）；state accepted 54/117；closure-advance -> ZR-702（F_revenue_mining）。

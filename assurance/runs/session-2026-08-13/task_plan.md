@@ -108,3 +108,7 @@
 - **阶段 E 地图**：◐ 0/10（ZR-501~510 + ZR-304~306 迁移部分：七份研报语义产物、多实体错归、表格保真、ProcessingDemand）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-409 closure 提交进行中）、wiki 726d63d、filing 5a1c18f。
 - 恢复第一步：ZR-501（阶段 E 首卡）。
+## 停止点（2026-08-19 晚：用户指示本阶段完成后更新全部 planning docs 后停止）
+- 本阶段完成：阶段 E 全闭（ZR-501~510 10/10）+ ZR-701（F1 入口）closure；accepted 54/117。
+- 恢复第一步：ZR-702（F1 后续：generator→linter→engine 闭环钉死/输入 schema 单一真源）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-701 closure 提交进行中）、wiki 26a6b22、filing 5a1c18f。

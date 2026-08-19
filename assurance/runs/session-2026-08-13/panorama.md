@@ -100,3 +100,12 @@
 - 机器游标：**E_broker_web_processing** / ZR-501（未领取）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-409 closure 提交进行中）、wiki 726d63d、filing 5a1c18f。
 - 恢复第一步：ZR-501（阶段 E 首卡：七份研报语义产物/多实体错归/表格保真/ProcessingDemand）。
+## 2026-08-19 阶段 F 启动快照（ZR-701 closure → ZR-702）
+
+- **accepted 54/117**：A0 8 + B 9 + C 11 + D 16 + E 10（阶段 E 全闭）+ F 1（ZR-701）。
+- **阶段 E ✅ 10/10 完成（出口达成）**：ZR-501~510（broker metadata contract → sidecar 角色分离+首页身份 → 多实体 attribution guard → 页码保真 → typed table → section/chunk/fact → ProcessingDemand → scheduler 公平性 → HTML capture 身份门 → chunk attribution 错归=0）。
+- ZR-701 closure：F1 入口（prepare_forecast 纯函数 + validate-only 零写 + draft/validated artifact + ProcessingDemand 提交）；首轮 changes_required（复杂度 ratchet 21>17）→ ff7429e 修复 → delta accepted。
+- 机器游标：**F_revenue_mining** / ZR-702（未领取）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-701 closure 提交进行中）、wiki 26a6b22、filing 5a1c18f。
+- 阶段 F 地图：◐ 1/13（ZR-701 已闭；F1：ZR-702~706/710；F2：ZR-601~611 先 ZR-610 会计 ADR；合流 ZR-609/709）。
+- 恢复第一步：ZR-702（F1 后续）。
