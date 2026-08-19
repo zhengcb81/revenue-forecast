@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "dd504e7f625994fdc5782a91a693ec868127f384",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "bdd9a2bcf55dacee4760f7744cf51786c1c060e6544f273d55c4c88d23fd0884",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -3 && git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff dd504e7 1dbae63 --stat && git status --short",
+      "exit_code": 0,
+      "result": "HEAD=1dbae63 (feat(ZR-701) commit). diff dd504e7..1dbae63 = exactly 6 files, +518/-3: scripts/processing_demand.py (+236 new), scripts/publication_registry.py (+11/-2), scripts/revenue_forecast.py (+22/-1), scripts/source_preparation.py (+17), tests/test_zr701_f1_draft_formal.py (+218 new), assurance/runs/session-2026-08-13/progress.md (+17). Only unrelated dirt present."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr701_f1_draft_formal.py -q --tb=short",
+      "exit_code": 0,
+      "result": "7 passed in 0.66s (C1..C5 unit tests)."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_publication_registry.py tests/test_publication_pipeline.py tests/test_output_report.py -q --tb=short",
+      "exit_code": 0,
+      "result": "47 passed in 3.98s — no regressions in registry/pipeline/report paths."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr701-reviewer-probe.py (adversarial spot-checks a-e)",
+      "exit_code": 0,
+      "result": "35/35 PASS: prepare_forecast deterministic; draft mode zero registry write; formal single validated entry with result_sha256 + receipt_sha256 binding; draft/legacy registry compat; full ProcessingDemand wiki-ZR-507 contract (dedupe/lease/heartbeat/backoff/terminal/expire/frozen); prepare_source deduped enqueue."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache (5 ZR-701 files)",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q",
+      "exit_code": 0,
+      "result": "477 passed, 106 subtests passed in 5:59 — full tests/ suite green as claimed."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest -q (entire repo) + clean-worktree control at parent dd504e7",
+      "exit_code": 1,
+      "result": "813 passed, 8 failed: zr102 e2e x3 + zr104 baseline x4 PRE-EXISTING at parent (control worktree identical); complexity ratchet broken by this diff at 1dbae63 (source_preparation max 21 > 17)."
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2 && C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py tests/test_zr701_f1_draft_formal.py -q --tb=short && ruff check && AST McCabe re-measure",
+      "exit_code": 0,
+      "result": "HEAD=ff7429e (fix(ZR-701 REV-001)). 9 passed (ratchet incl. test_frozen_files_do_not_worsen + 7 unit). Ruff clean. source_preparation.py max=17 == frozen (prepare_source 17, _demand_key 4, _submit_preparation_demand 2). Fix diff = only scripts/source_preparation.py +14/-3."
+    }
+  ],
+  "created_at_utc": "2026-08-19T22:15:39+00:00",
+  "findings": [
+    {
+      "detail": "tools/tests/test_complexity_ratchet.py::test_frozen_files_do_not_worsen broken at 1dbae63 (source_preparation.py max 21 > frozen 17, BoolOp + if block in prepare_source). RESOLVED in ff7429e: helpers _demand_key (cc=4) + _submit_preparation_demand (cc=2) extracted; prepare_source back to cc=17 == frozen; ratchet + unit 9/9 green, ruff clean, behavior preserved.",
+      "id": "ZR701-REV-001",
+      "severity": "resolved",
+      "title": "Complexity-ratchet regression: scripts/source_preparation.py max 21 > frozen 17 (FC-1204-b)"
+    },
+    {
+      "detail": "ZR-701 modified scripts/ without re-freezing assurance/unified_completion/quality/quality_baseline.json (product_trees/revenue: frozen 6bcba49a != current 17717c7c). Caveat: zr104 was ALREADY red at parent dd504e7 (filing/wiki drift pre-existed); ZR-701 only adds revenue to the stale-baseline set. Re-freeze should be coordinated repo-wide after deliberate review.",
+      "id": "ZR701-REV-002",
+      "severity": "minor",
+      "title": "ZR-104 quality baseline not re-frozen after product-scripts change"
+    },
+    {
+      "detail": "zr102 e2e x3 + zr104 baseline x4 verified pre-existing at parent dd504e7 via clean control worktree (environment/state-dependent: T1 runner fingerprint gate on pre-existing dirty state; baseline stale since 2026-08-12 freeze). Not attributable to ZR-701.",
+      "id": "ZR701-REV-003",
+      "severity": "info",
+      "title": "zr102 e2e + zr104 baseline failures are pre-existing"
+    },
+    {
+      "detail": "pytest tests/ -> 477 passed + 106 subtests (exit 0) exactly matching the commit claim. C1-C5 verified by replay.",
+      "id": "ZR701-REV-004",
+      "severity": "info",
+      "title": "Commit-message 'full suite 477+106 green' verified accurate for the tests/ unit suite"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-701 independent review; REV-001 blocking fixed in wiki revenue ff7429e, delta accepted",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ff7429e5956c6ebea4b78142c834e5b085551c91",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_object_sha256": "a7895faa196d64527eec354b8d5a143fc6ea0d04ce3434e1349c983c17225bbf",
+  "reviewer": "reviewer-zr701-independent",
+  "schema_version": 1,
+  "unit": "ZR-701",
+  "verdict": "accepted"
+}

@@ -1,0 +1,121 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "dd504e7f625994fdc5782a91a693ec868127f384",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "fe73c583c9bf12f5dd0cb90251f0aa5e9fd552f68abc74ef059e58a0030eddea",
+  "commands": [
+    {
+      "command": "RED 探针：revenue_forecast.py main 内联 run_forecast（无 prepare_forecast 命名）；validate-only 无零写测试；publication_registry 无 draft kind；source_preparation 无 ProcessingDemand",
+      "exit_code": 0,
+      "result": "G1~G4 坐实；另探针暴露真实缺口：--validate-only 走 run_forecast(formal) 自动注册 publication（revenue_core.py:180）——validate-only 有写副作用（c2 测试抓出）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr701_f1_draft_formal.py -q --tb=short (revenue-forecast)",
+      "exit_code": 0,
+      "result": "7 passed（C1 prepare_forecast 确定性纯函数 + C2 validate-only 零写 + C3 draft/validated registry + C4 demand 契约与 prepare_source enqueue + C5 原子发布绑定）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=300 (revenue-forecast)",
+      "exit_code": 0,
+      "result": "477 passed + 106 subtests（基线 470 + 本卡 7；exit 0 无回归）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/revenue_forecast.py scripts/publication_registry.py scripts/source_preparation.py scripts/processing_demand.py tests/test_zr701_f1_draft_formal.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m mypy scripts/revenue_forecast.py scripts/publication_registry.py scripts/source_preparation.py scripts/processing_demand.py --ignore-missing-imports",
+      "exit_code": 1,
+      "result": "1 错误：publication_registry.py:215 setdefault tuple 类型——既有 audit() 代码（非本卡引入，基线继承）"
+    },
+    {
+      "command": "git diff dd504e7 1dbae63 --stat (revenue-forecast)",
+      "exit_code": 0,
+      "result": "6 文件 +518/-3：revenue_forecast.py（prepare_forecast formal/draft）、publication_registry.py（validation_status 加性键）、source_preparation.py（demand enqueue）、processing_demand.py（新，同 wiki 契约）、test_zr701（新 7 tests）、progress.md"
+    }
+  ],
+  "created_at_utc": "2026-08-19T21:33:00+00:00",
+  "findings": [
+    {
+      "detail": "validate-only 零写是真实产品缺口：run_forecast(mode='formal') 在 revenue_core.py:180 自动 register_publication——--validate-only 也触发注册写盘。修复：prepare_forecast(mode='draft') 走强验证（validate_published_forecast 无条件执行）+ build_draft_receipt + 不注册 = 零写验证；main 的 validate-only 分支用 draft mode。c2 测试钉死（registry 文件不存在）。",
+      "id": "ZR701-IMPL-001",
+      "severity": "info",
+      "title": "validate-only 零写修复（draft mode 不注册）"
+    },
+    {
+      "detail": "draft receipt 与 validate_forecast_output 不兼容（后者要求 formal_output_mode=formal + gate_ids）——prepare_forecast 仅 formal 模式跑 validate_forecast_output（draft 已在 run_forecast 内强验证）。",
+      "id": "ZR701-IMPL-002",
+      "severity": "info",
+      "title": "draft 结果跳过 formal-only 输出校验"
+    },
+    {
+      "detail": "publication_registry validation_status 加性键：draft（未验证，receipt 可为 None）vs validated（强验证，receipt_sha256 + result_sha256 绑定）；旧条目无键仍可读（c3 兼容测试）；audit 冲突分组含 artifact_type 不受影响。",
+      "id": "ZR701-IMPL-003",
+      "severity": "info",
+      "title": "draft/validated 显式 artifact（加性兼容）"
+    },
+    {
+      "detail": "source_preparation 提交 ProcessingDemand：revenue 侧独立实现 processing_demand.py（与 wiki ZR-507 同契约——enqueue key 去重/claim 租约/heartbeat/complete/fail 退避/expire/priority 不可变，纯内存 + clock 注入）；prepare_source 成功路径 enqueue（key=source_id，kind=source_preparation），重复准备 dedupe。",
+      "id": "ZR701-IMPL-004",
+      "severity": "info",
+      "title": "ProcessingDemand 同契约实现 + prepare_source 提交"
+    },
+    {
+      "detail": "pre-commit R4.2 skill-sync 检查在 scripts 改动后拦截 commit（.agents/.codex skills 副本过期）——需 tools/sync_installations.py --apply 同步后再提交（教训：scripts/ 产品代码改动必须先 sync）。",
+      "id": "ZR701-IMPL-005",
+      "severity": "info",
+      "title": "skill-sync 前置（scripts 改动提交前 --apply）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue F1 入口四部件：① scripts/revenue_forecast.py prepare_forecast(data, mode='formal'|'draft') 纯函数（run_forecast + formal 时 validate_forecast_output；draft 零写验证）+ main 的 validate-only 走 draft；② scripts/publication_registry.py register_publication 加 validation_status 加性键（draft/validated）；③ scripts/processing_demand.py 新（wiki ZR-507 同契约纯内存队列）；④ scripts/source_preparation.py prepare_source 成功 enqueue（key=source_id，dedupe）+ preparation_demands() 测试可见。测试 7 个：C1 确定性纯函数、C2 validate-only 零写（子进程 + 独立 registry env）、C3 draft/validated 区分 + 旧条目兼容、C4 demand 契约 + prepare_source enqueue（patch 子进程/envelope）、C5 原子发布绑定（receipt_sha256 + result_sha256）。",
+    "files": [
+      "revenue-forecast/scripts/revenue_forecast.py",
+      "revenue-forecast/scripts/publication_registry.py",
+      "revenue-forecast/scripts/source_preparation.py",
+      "revenue-forecast/scripts/processing_demand.py",
+      "revenue-forecast/tests/test_zr701_f1_draft_formal.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-701/**"
+    ]
+  },
+  "implementer": "zr701-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 1dbae63；wiki 26a6b22（ZR-510 修复后）；filing 5a1c18f。",
+    "卡片 hash 冻结：plan_sha256=6e48f1db（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr701-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。",
+    "mypy 基线 1 错误（publication_registry.py:215 既有 audit tuple 类型）继承非本卡引入。"
+  ],
+  "objective": "F1 入口：纯 prepare_forecast（formal/draft）+ validate-only 零写（draft 不注册）+ draft/validated 显式发布 artifact + source_preparation 提交 ProcessingDemand（wiki ZR-507 同契约）+ 原子发布绑定。",
+  "plan_sha256": "6e48f1db8699d8e4a103430dd87cda058c8dc50f5e9e4266030fb2b40a40fefc",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1dbae639201ef542825647c13f5464a06b5494f9",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast F1 入口（scripts/ 4 文件 + 测试）；revenue 侧 receipts/ZR-701/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 4,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/revenue_forecast.py",
+    "revenue-forecast/scripts/publication_registry.py",
+    "revenue-forecast/scripts/source_preparation.py",
+    "revenue-forecast/scripts/processing_demand.py",
+    "revenue-forecast/tests/test_zr701_f1_draft_formal.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-701/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-701"
+}

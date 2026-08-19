@@ -150,3 +150,5 @@
 - ZR-510 实施完成：wiki 524a535（attribution.py chunk 归属错归=0 + normalizer chunk_attribution 接线 + 9 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical a01d1c85；独立复核运行中；阶段 E 收尾。
 
 - ZR-510 closure：reviewer-zr510-independent accepted（1 info + 2 minor 修复于 wiki 26a6b22）；state accepted 53/117；closure-advance -> ZR-701（phase F_revenue_mining）；**阶段 E 出口达成（ZR-501~510 10/10）**。
+
+- ZR-701 实施完成：revenue 1dbae63（prepare_forecast 纯函数 + validate-only 零写 + draft/validated artifact + ProcessingDemand 提交 + 7 tests）；全量 477+106 绿；state triplet_green；implementer receipt canonical fe73c583；独立复核运行中。
