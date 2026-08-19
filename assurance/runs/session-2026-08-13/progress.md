@@ -329,3 +329,13 @@
 - **ZR-502 closure**：独立复核 reviewer-zr502-independent **accepted**（11/11 + 27/27 复跑 + 14/14 对抗断言 + hermeticity/C1 多层源码验证；3 条 info：REV-001 回归批计数 27 vs 38 说明、REV-002 无关工作树杂物、REV-003 C1 全层验证）；reviewer receipt canonical 2b189bd3；state accepted + closure-advance -> **ZR-503**（phase E_broker_web_processing）；README cursor 自动镜像。
 - **机器状态**：current_next=ZR-503，accepted **45/117**（A0 8 + B 9 + C 11 + D 16 + E 2：ZR-501/502）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）465033c + 变更、wiki 19c3b73、filing 5a1c18f。
+
+- **ZR-503（多实体 attribution 不串实体）实施完成**：
+  - 新 src/company_wiki/source_catalog/entity_detection.py：detect_entities 纯函数（hermetic 无 LLM、零实体名硬编码含注释）——贪婪主体+长后缀优先正则提取公司名短语（'…股份有限公司/…集团' 后缀锚定）→ _split_related/_classify → single/multi_entity/unverifiable + evidence（company_phrases/others/reason）；简称+全称同实体不误报多实体；1 短语非声明实体归 single（矛盾归 ZR-502 管）。
+  - normalizer 接线：_frontmatter 全文（normalized.body）+ acquisition/dayu_meta canonical_entity_id/security_ids → frontmatter detected_entities 键 + multi_entity 时 quality_flag multi_entity_attribution_needed（fail-closed review 信号，拒绝静默单实体污染）；ZR-501/502 字段共存。
+  - 词汇注册：QualityFlag.MULTI_ENTITY_ATTRIBUTION_NEEDED + observability no_company_name_phrases（REASONS + STAGES_BY_REASON semantic）。
+  - 测试 13 个（C1 纯函数 7、C2 wiring 4、C3 零硬编码/golden 锚定 2）全绿；回归 81（ZR-502/501/taxonomy/backfill/evidence_span/ratchet）+ unit 787 + ruff 全过。
+  - RED 探针（wiki 19c3b73）：双实体文本 normalize 无 detected_entities/无 flag（G1 坐实）→ GREEN（wiki e8e2926）：verdict=multi_entity + phrases=[紫金全称, 陕西全称] + flag。
+  - 复杂度 ratchet 两轮拆分（18→12→9：_classify/_split_related 提取，推导式 and/or 计入 McCabe）；ZR-501 stub 同步 body（frontmatter 输入面扩大）。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki e8e2926）；implementer receipt canonical c39c67e5（手拼 revenue sha 错一次，rev-parse 注入修正）。
+  - 独立复核 reviewer-zr503-independent 运行中。
