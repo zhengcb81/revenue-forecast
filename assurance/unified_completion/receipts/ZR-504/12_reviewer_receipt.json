@@ -1,0 +1,62 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "5ae9e9fb51e6015e6e52a90b9003ab1559e22e1a",
+    "wiki": "e8e2926a47d4c310ec66533249794e4b2baacb76"
+  },
+  "canonical_hash": "5fb9f9f5640301a2dea09f915c4a76c8179b13880c4d706822cb3d75c0428f26",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3 && git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff e8e2926 2781df9 --stat && git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --short",
+      "exit_code": 0,
+      "result": "HEAD = 2781df9 (test(ZR-504): page-number fidelity golden ...). diff e8e2926..2781df9 --stat shows ONLY tests/contract/test_zr504_page_fidelity.py | 291 insertions — zero product changes. Uncommitted dirt matches expected unrelated files: D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json. No uncommitted ZR-504 tracked changes."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr504_page_fidelity.py -q --tb=short",
+      "exit_code": 0,
+      "result": "10 passed in 0.31s (collected 10 items; Python 3.14.2, pytest 9.1.1)."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
+      "exit_code": 0,
+      "result": "80 passed in 1.48s (zr503 13, zr502 11, zr501 10, fc1301 3, evidence_span_contract 41, fc1204 2). The card's 90 equals 80 regression + the 10 ZR-504 tests; zero failures."
+    },
+    {
+      "command": "throwaway %TEMP%\\zr504_adversarial.py (sys.path -> src)",
+      "exit_code": 0,
+      "result": "16/16 adversarial checks passed: page_count==4; span pages [1,1,2,3,4]; page1 offsets (0,1),(3,4); page2 failed+empty_output; page3 failed+parser_error page 3; page4 offsets (6,7) not corrupted; normalized_text '甲\\n\\n乙\\n\\n丁' in page order; non-contiguous [1,3] raises PageAwarePDFAdapterError ('page_number must be contiguous from 1; expected 2'); render locators in page order 25<152<242<313; page-1 spans feed first-page text '甲\\n乙'; frontmatter page_count==4==parser page_count; golden_corpus.json read-only, 7 broker_research samples, Changjiang sha256 == 273d450887eff7c079b28f394c4831092fa3abbb81db86f2544cab425c2719d7, published_date is None."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache tests/contract/test_zr504_page_fidelity.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    }
+  ],
+  "created_at_utc": "2026-08-19T20:02:52+00:00",
+  "findings": [
+    {
+      "detail": "The six listed regression files collect and pass 80 tests (zr503 13, zr502 11, zr501 10, fc1301 3, evidence_span_contract 41, fc1204 2). The stated expectation of 90 equals 80 regression + the 10 ZR-504 unit tests. All 80 passed with zero failures, so this is a count note, not a defect.",
+      "id": "ZR504-REV-001",
+      "severity": "info",
+      "title": "Regression suite collects 80 tests, not 90"
+    },
+    {
+      "detail": "git status --short shows only D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json — exactly the unrelated dirt the unit card anticipated. diff e8e2926..2781df9 touches only tests/contract/test_zr504_page_fidelity.py, so the zero-product-change claim holds.",
+      "id": "ZR504-REV-002",
+      "severity": "info",
+      "title": "Working-tree dirt is unrelated pre-existing files"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-504 independent review",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "5ae9e9fb51e6015e6e52a90b9003ab1559e22e1a",
+    "wiki": "2781df937d65ef492f988bfb1af53ae263690ff5"
+  },
+  "reviewed_object_sha256": "c2d020dd73a20f89c05819caca8f5a35a9b03277126e56366ef812737e7862d3",
+  "reviewer": "reviewer-zr504-independent",
+  "schema_version": 1,
+  "unit": "ZR-504",
+  "verdict": "accepted"
+}

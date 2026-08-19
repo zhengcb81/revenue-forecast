@@ -339,3 +339,14 @@
   - 复杂度 ratchet 两轮拆分（18→12→9：_classify/_split_related 提取，推导式 and/or 计入 McCabe）；ZR-501 stub 同步 body（frontmatter 输入面扩大）。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki e8e2926）；implementer receipt canonical c39c67e5（手拼 revenue sha 错一次，rev-parse 注入修正）。
   - 独立复核 reviewer-zr503-independent 运行中。
+
+- **ZR-503 closure**：独立复核 reviewer-zr503-independent **accepted**（13/13 + 81/81 复跑 + 10/10 对抗断言 + 全 src 零硬编码 grep + golden 锚定只读验证；3 条 info：REV-001 evidence 字段 per-verdict union、REV-002 全仓 grep 干净、REV-003 前导噪声 fail-closed）；reviewer receipt canonical e7ac4ce8；state accepted + closure-advance -> **ZR-504**（phase E_broker_web_processing）；README cursor 自动镜像。
+- **机器状态**：current_next=ZR-504，accepted **46/117**（A0 8 + B 9 + C 11 + D 16 + E 3：ZR-501/502/503）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki e8e2926、filing 5a1c18f。
+
+- **ZR-504（页码保真 golden）实施完成**：
+  - RED 探针三连：3 页文本 locator 流完全保真（页序 1..3/页内 paragraph_index 从 0/char 全局连续含页间 \\n\\n +2 偏移）、error 页 failed span 页码保留且后续页不破坏、非连续页序 PageAwarePDFAdapterError 拒绝——机制内建已保真，RED 为'无测试钉死'型。
+  - 新 	ests/contract/test_zr504_page_fidelity.py（10 tests，合成 pages fixture 直喂 adapt_pdf_pages，无真 PDF）：C1 多页 locator golden（页序/段落/char/拼接）、C2 阅读顺序（body locator 顺序=物理页序 + 页1 span 喂 first-page）、C3 page_count 交叉（parser==max locator page==frontmatter，ZR-501 回连）、C4 错误/空页保真（failed/empty span 保页码、非连续拒绝）、C5 golden 锚定（七份研报 ≥7 + 长江 sha256 冻结 + published_date=null 现状登记）。
+  - **产品 src 零改动**（git diff e8e2926..2781df9 仅测试文件）；回归 90 + unit 787 + ruff 全过。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki 2781df9）；implementer receipt canonical 3ce9e3b3（plan_sha256 手填风险再次出现，Get-FileHash 注入修正）。
+  - 独立复核 reviewer-zr504-independent 运行中。

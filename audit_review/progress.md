@@ -122,3 +122,7 @@
 - ZR-502 closure：reviewer-zr502-independent accepted（3 info）；state accepted 45/117；closure-advance -> ZR-503（E_broker_web_processing）；README cursor 已镜像 ZR-503。
 
 - ZR-503 实施完成：wiki e8e2926（entity_detection.py 纯函数 + normalizer 全文接线 detected_entities + multi_entity_attribution_needed flag + 零硬编码/golden 锚定 13 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical c39c67e5；独立复核运行中。
+
+- ZR-503 closure：reviewer-zr503-independent accepted（3 info）；state accepted 46/117；closure-advance -> ZR-504（E_broker_web_processing）。
+
+- ZR-504 实施完成：wiki 2781df9（test-only 页码保真 golden 10 tests，产品 src 零改动）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical 3ce9e3b3；独立复核运行中。
