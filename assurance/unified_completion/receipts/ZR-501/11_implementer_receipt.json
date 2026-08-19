@@ -1,0 +1,105 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "7f7acd394fa485e7001771c05b269ca13787c954",
+    "wiki": "726d63dabb990930f3c1d7218161814a489d9b8c"
+  },
+  "canonical_hash": "29b526a414b131e6bcea5f8adef50e79081ee90ba1f657144d50c587d52e4533",
+  "commands": [
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py -q --tb=short --basetemp <revenue>/.tmp-zr501-verify (company-wiki)",
+      "exit_code": 0,
+      "result": "9 passed（C1 filename 仅 proposal：无 sidecar 零虚构 metadata/文件名日期不作 published/sidecar 事实胜文件名；C2 契约落库：publisher/authors/security_ids 透传、缺键诚实、page_count 3/None 进 frontmatter；C3 准入闭环：全字段 broker 仍 non_filing_kind、filing 请求 MISSING）"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py test_sidecar_adapter.py test_source_catalog_classification.py test_dropbox_root_policy_fc501.py test_source_catalog_pdf_page_aware.py test_fc1204_complexity_ratchet.py -q --tb=short --basetemp <revenue>/.tmp-zr501-reg (company-wiki)",
+      "exit_code": 0,
+      "result": "57 passed + 1 已知既有环境失败（test_corrupt_pdf_remains_fail_closed——git stash 基线对照同样失败，fitz 版本分类差异，非本卡回归）+ 3 skipped"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/unit -q --tb=short --basetemp <revenue>/.tmp-zr501-unit (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed"
+    },
+    {
+      "command": "python -m ruff check --no-cache tests/contract/test_zr501_broker_metadata_contract.py src/company_wiki/source_catalog/adapters/sidecar.py src/company_wiki/source_catalog/normalizer.py (base python)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git diff 726d63d 919d0b9 --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "3 文件：sidecar.py（_normalized_from_sidecar +publisher/authors/security_ids 加性透传）、normalizer.py（_Normalized.page_count + _pdf_markdown 传入 + _frontmatter 加 page_count 键）、test_zr501_broker_metadata_contract.py（+9 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-19T20:05:00+00:00",
+  "findings": [
+    {
+      "detail": "filename 仅 proposal 契约：无 sidecar 的 broker_research（真实 Dropbox 文件名模式如 20190311-阿里研究院-…）→ sidecar adapter 以 missing_sidecar remediation 呈现、normalized={} 零虚构（published_at/publisher 均无）；有 sidecar 时 sidecar 事实胜文件名（'2025年报.pdf' + broker sidecar → broker_research）。",
+      "id": "ZR501-IMPL-001",
+      "severity": "info",
+      "title": "filename 仅 proposal 钉死（零虚构 + sidecar 权威）"
+    },
+    {
+      "detail": "metadata contract 落库（加性）：sidecar publisher/authors/security_ids 透传进 normalized（→documents.metadata_json）；pdf_page_aware 的 page_count 进 normalized artifact frontmatter（3 页→3；未知→None 不伪造）。两处均不影响既有键。",
+      "id": "ZR501-IMPL-002",
+      "severity": "info",
+      "title": "publisher/authors/security_ids/page_count 契约落库"
+    },
+    {
+      "detail": "准入闭环：metadata 全字段（publisher/authors/security_ids/page_count 全有）的 broker_research 在 evaluate_candidate 仍 non_filing_kind 拒绝；annual_report filing 请求对 broker 文档 MISSING（端到端）。",
+      "id": "ZR501-IMPL-003",
+      "severity": "info",
+      "title": "全字段 broker 永不满足 filing（准入闭环）"
+    },
+    {
+      "detail": "既有环境失败登记（非本卡回归）：test_source_catalog_pdf_page_aware.py::test_corrupt_pdf_remains_fail_closed_and_source_immutable 期望 unsupported=1 实得 failed=1——git stash 基线对照（无本卡改动）同样失败，fitz 版本对 corrupt PDF 的 unsupported/failed 分类差异。",
+      "id": "ZR501-IMPL-004",
+      "severity": "info",
+      "title": "corrupt PDF 分类环境差异（基线对照证非回归）"
+    }
+  ],
+  "implementation": {
+    "design": "sidecar.py `_normalized_from_sidecar` 加性透传 publisher/authors/security_ids（缺键保持缺）；normalizer.py `_Normalized` 加 page_count 可选字段 + `_pdf_markdown` 传入 parser 的 result.page_count + `_frontmatter` 加 page_count 键（None 诚实）。新增 tests/contract/test_zr501_broker_metadata_contract.py（9 tests）：C1 filename 仅 proposal（无 sidecar 零虚构/文件名日期不作 published/sidecar 事实胜文件名/DBX-04 扩展）；C2 契约落库（三键透传/缺键诚实/page_count 3 与 None）；C3 准入闭环（evaluate_candidate non_filing_kind + filing 请求 MISSING 端到端）。",
+    "files": [
+      "company-wiki/src/company_wiki/source_catalog/adapters/sidecar.py",
+      "company-wiki/src/company_wiki/source_catalog/normalizer.py",
+      "company-wiki/tests/contract/test_zr501_broker_metadata_contract.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-501/**"
+    ]
+  },
+  "implementer": "zr501-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 取 7f7acd3（ZR-409 closure docs commit）；result_triplet.wiki 为本卡实现提交 919d0b9。",
+    "reviewed_object（新测试文件）sha256=b92163857668a0ec4f956b03d7ea6139e0f72f309e48bea5b298a2199f31f3e7。",
+    "卡片 hash 于最终编辑后冻结：plan_sha256=2abbdb37…。"
+  ],
+  "objective": "broker_research 文档/准入/metadata contract：publisher/authors/date/entities/security IDs/page count；filename 仅 proposal。",
+  "plan_sha256": "2abbdb37be03cacdf98d91e4e683192ad38e223d5f6ddd82be3619f094dcb6ec",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "7f7acd394fa485e7001771c05b269ca13787c954",
+    "wiki": "919d0b9211091d02f5db99f2592e033d738279ba"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki sidecar.py + normalizer.py（metadata contract 加性落库）+ 新测试 test_zr501_broker_metadata_contract.py（9 tests）；revenue 侧 receipts/ZR-501/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/src/company_wiki/source_catalog/adapters/sidecar.py",
+    "company-wiki/src/company_wiki/source_catalog/normalizer.py",
+    "company-wiki/tests/contract/test_zr501_broker_metadata_contract.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-501/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-501"
+}
