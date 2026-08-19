@@ -130,8 +130,16 @@ def register_publication(
     artifact_type: str = "forecast",
     artifact_id: str | None = None,
     note: str = "run_forecast formal",
+    validation_status: str = "validated",
 ) -> None:
-    """Register a published artifact's anchor.  Raises RegistryError on failure."""
+    """Register a published artifact's anchor.  Raises RegistryError on failure.
+
+    ZR-701: *validation_status* distinguishes explicit Draft artifacts
+    (``"draft"`` — computed but not strong-validated; the entry carries no
+    validated receipt anchor) from Formal artifacts (``"validated"`` —
+    strong-validated publication).  The key is additive: pre-ZR-701 lines
+    simply lack it and stay readable.
+    """
     receipt = result.get("publication_receipt")
     _append(
         {
@@ -146,6 +154,7 @@ def register_publication(
             "artifact_type": artifact_type,
             "artifact_id": artifact_id,
             "note": note,
+            "validation_status": validation_status,
         }
     )
 

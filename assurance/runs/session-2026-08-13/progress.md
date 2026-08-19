@@ -406,3 +406,20 @@
   - 复杂度 ratchet 两轮拆分（parse 15→3 helpers、validate 12→_period_verdict）。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki ea9c49b）；implementer receipt canonical 21d5335f（plan_sha256 Get-FileHash 注入）。
   - 独立复核 reviewer-zr509-independent 运行中。
+
+- **ZR-509 closure**：独立复核 reviewer-zr509-independent **accepted**（12/12 + 140/140 复跑 + 31 断言对抗；3 条 info：REV-001 回归计数 140 vs 151、REV-002 invalid_period 防御性可达性、REV-003 CN 日期优先）；reviewer receipt canonical 18e226be；state accepted + closure-advance -> **ZR-510**（phase E_broker_web_processing，阶段 E 收尾卡）；README cursor 自动镜像。
+- **机器状态**：current_next=ZR-510，accepted **52/117**（A0 8 + B 9 + C 11 + D 16 + E 9：ZR-501~509）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki ea9c49b、filing 5a1c18f。
+
+- **ZR-510（阶段 E 收尾：多实体 chunk attribution）实施完成**：
+  - RED：无 chunk 级实体归属（仅 ZR-503 flag + ZR-506 chunk 区间）。
+  - 新 src/company_wiki/source_catalog/attribution.py：attribute_document——内容行过滤（ZR-506 同源语义，物理行错位教训：首版 splitlines 空行错位导致归属错乱，c2 抓出修复）+ 每 chunk 实体短语提取（ZR-503 模式）+ containment 匹配 declared → entity/mixed/unattributed（诚实不猜）。
+  - normalizer 接线：仅 multi_entity 文档 frontmatter chunk_attribution 键（候选 = declared + 页面 company_phrases）；single 文档无键。
+  - 测试 9 个（C1 归属 3、C2 错归=0 2、C3 wiring 2、C4 确定性/零硬编码 2）全绿；回归 161 + unit 787 + ruff 全过。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki 524a535）；implementer receipt canonical a01d1c85（plan_sha256 Get-FileHash 注入）。
+  - 独立复核 reviewer-zr510-independent 运行中；本卡闭后阶段 E（ZR-501~510）全闭。
+
+- **ZR-510 closure（阶段 E 出口）**：独立复核 reviewer-zr510-independent **accepted**（9/9 + 152/152 复跑 + 22 对抗断言；1 info REV-001 计数 152 vs 161 + 2 minor REV-002 内容行过滤分歧 / REV-003 候选子串污染——均修复于 wiki 26a6b22 + locator 对齐测试钉死）；reviewer receipt canonical 149e595b；state accepted + closure-advance -> **ZR-701**，phase=**F_revenue_mining**（DAG 权威：ZR-610 未解锁，解锁 F 卡含 ZR-701）；README cursor 自动镜像。
+- **阶段 E 出口达成**：ZR-501~510 **10/10 全闭**（broker metadata contract、sidecar 角色分离+首页身份、多实体 attribution guard、页码保真、typed table、section/chunk/fact、ProcessingDemand、scheduler 公平性、HTML capture 身份门、chunk attribution 错归=0）。
+- **机器状态**：current_next=ZR-701，accepted **53/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 0）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

@@ -18,6 +18,23 @@ from revenue_core import (
 from revenue_report import render_markdown, validate_forecast_output
 
 
+def prepare_forecast(data: dict, *, mode: str = "formal") -> dict:
+    """ZR-701: pure forecast preparation — compute and validate the result
+    with zero IO side effects.  Same input always yields the same result
+    (deterministic engine); the caller owns all filesystem effects.
+
+    *mode*: ``"formal"`` registers the publication (write side effect owned
+    by the caller's engine), ``"draft"`` validates strongly but builds only
+    a draft receipt and writes nothing — the zero-write validate-only path.
+    """
+    result = run_forecast(data, mode=mode)
+    if mode == "formal":
+        # strong formal output validation (draft results were already
+        # strongly validated inside run_forecast before the draft receipt)
+        validate_forecast_output(result)
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Calculate a source-traceable revenue-only forecast")
     parser.add_argument(
@@ -70,8 +87,9 @@ def main() -> int:
         data = json.loads(args.input.read_text(encoding="utf-8"))
         if args.validate_only and args.verbose:
             validate_document(data, collector=Collector())
-        result = run_forecast(data)
-        validate_forecast_output(result)
+        # ZR-701: validate-only runs the engine in draft mode — strong
+        # validation, no publication registration, zero writes.
+        result = prepare_forecast(data, mode="draft" if args.validate_only else "formal")
         if args.validate_only:
             print("valid")
             return 0

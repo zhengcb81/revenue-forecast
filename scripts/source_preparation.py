@@ -24,6 +24,18 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 FILING_FETCH_CLIENT = PROJECT_ROOT / "scripts" / "filing_fetch_client.py"
 
 import company_wiki_source  # noqa: E402
+from processing_demand import DemandQueue  # noqa: E402
+
+# ZR-701: source preparation submits one demand per prepared source (key =
+# the source record's sha-256 identity) so schedulers/consumers can claim,
+# heartbeat and complete the work under the shared ProcessingDemand
+# contract.  In-memory queue (persistence is a later phase).
+_preparation_demands = DemandQueue()
+
+
+def preparation_demands() -> DemandQueue:
+    """The process-level demand queue (test-visible)."""
+    return _preparation_demands
 
 
 def _read_request(request_file: str | None) -> dict:
@@ -149,6 +161,11 @@ def prepare_source(
         "artifact_read": artifact_read,
         "producer_events": producer_events,
     }
+    # ZR-701: submit one processing demand per prepared source; a repeated
+    # preparation of the same source dedupes to the existing demand.
+    source_key = str(record.get("source_id") or record.get("source_sha256") or "")
+    if source_key:
+        _preparation_demands.enqueue(key=source_key, kind="source_preparation", now=0.0)
     return record
 
 
