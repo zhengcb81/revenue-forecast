@@ -177,6 +177,16 @@ def test_c2_unsupported_ownership_basis_rejected():
         validate_parameter_basis("p1", basis)
 
 
+@pytest.mark.parametrize("bad", [[], {}, 7, None, 1.5])
+def test_c2_unhashable_ownership_basis_rejected(bad):
+    # REV-001 regression: unhashable ownership_basis must raise
+    # ForecastInputError (never TypeError)
+    basis = dict(VALID_BASIS)
+    basis["ownership_basis"] = bad
+    with pytest.raises(ForecastInputError, match="unsupported ownership_basis"):
+        validate_parameter_basis("p1", basis)
+
+
 def test_c2_empty_reporting_standard_rejected():
     basis = dict(VALID_BASIS)
     basis["reporting_standard"] = "   "

@@ -295,7 +295,8 @@ def validate_parameter_basis(parameter_id: str, basis: Any) -> None:
             f"{parameter_id}.basis.{basis_field} is required",
         )
     require(
-        basis["ownership_basis"] in ASSET_FACT_OWNERSHIP_BASES,
+        isinstance(basis["ownership_basis"], str)
+        and basis["ownership_basis"] in ASSET_FACT_OWNERSHIP_BASES,
         f"unsupported ownership_basis for {parameter_id}: {basis['ownership_basis']}",
     )
     require(
