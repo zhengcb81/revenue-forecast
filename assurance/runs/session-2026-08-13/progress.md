@@ -436,3 +436,12 @@
 - **机器状态**：current_next=ZR-702，accepted **54/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 1：ZR-701）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - **停止点（用户指示：本阶段完成后更新全部 planning docs 后停止）**：ZR-702 未领取；恢复第一步 = ZR-702（F1 后续：generator→linter→engine 闭环钉死/输入 schema 单一真源）。
+## 2026-08-20 晚（恢复会话：ZR-702 实施完成，待独立复核）
+- **ZR-702（F1 schema 单一真源 + generator 闭环）实施完成**：
+  - RED：lint_input.py:28-77 硬编码 4 组字段元组（linter/validator/generator 三处各维护，漂移无 gate）；无 generator→engine 端到端测试。
+  - 新 `scripts/schema_fields.py`：TOP_LEVEL(14)/CAPTURE(10)/CLAIM(11)/PARAMETER(7) 四元组唯一真源（字节级搬迁零语义变化）；lint_input.py import 真源删本地副本（-50 行）。
+  - 测试 8 个：C1 真源同对象 + 源码无本地重定义；C2 模板含全部必填键 + 逐键删除 validator 拒绝 + capture 形状一致；C3 全链 lint→validate→draft 一次通过零写；C4 未填充模板 FIXME + lint 报 findings（fail-loud）。
+  - **revenue 全量 485 passed + 106 subtests（exit 0）** + ruff + ratchet（2 passed）全过；mypy 7 错误均为 lint_input 既有类型欠账（基线继承）。
+  - skill-sync MATCH 117/117（schema_fields.py 入 installable 集，115→117）。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue e9e837f）；implementer receipt canonical efe5b0f3。
+  - 独立复核 reviewer-zr702-independent 运行中。

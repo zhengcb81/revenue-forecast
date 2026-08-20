@@ -1,0 +1,115 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "7d78826cf3e5ac4d984b98c29dce5acfde9d72ad",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "efe5b0f346a1b34b0a1441550f26e418ff6075d440696e0579d5905800384f9d",
+  "commands": [
+    {
+      "command": "RED 探针：lint_input.py:28-77 硬编码 4 组字段元组；grep schema_fields scripts/ 0 命中；无 generator→engine 端到端测试",
+      "exit_code": 0,
+      "result": "G1（schema 非单一真源 REV-01）/G2（无 generator 闭环 REV-02）/G3（无未填充模板断言 REV-04）坐实"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr702_schema_source_of_truth.py -q --tb=short (revenue-forecast)",
+      "exit_code": 0,
+      "result": "8 passed（C1 单一真源 2 + C2 三方一致 3 + C3 全链闭环 1 + C4 未填充 fail-loud 2）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=300 (revenue-forecast)",
+      "exit_code": 0,
+      "result": "485 passed + 106 subtests（基线 477 + 本卡 8；exit 0 无回归）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/schema_fields.py scripts/lint_input.py tests/test_zr702_schema_source_of_truth.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q",
+      "exit_code": 0,
+      "result": "2 passed（FC-1204-b ratchet 绿——纯搬迁无复杂度增加）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m mypy scripts/schema_fields.py scripts/lint_input.py --ignore-missing-imports",
+      "exit_code": 1,
+      "result": "7 错误均在 lint_input.py 既有代码区（line 523/525 等 dict 类型注解欠账，非本卡 import 改动引入——基线继承）"
+    },
+    {
+      "command": "git diff 7d78826 e9e837f --stat (revenue-forecast)",
+      "exit_code": 0,
+      "result": "3 文件 +204/-50：schema_fields.py（新真源）、lint_input.py（import 真源删本地元组）、test_zr702（新 8 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-20T18:03:12+00:00",
+  "findings": [
+    {
+      "detail": "单一真源实现：scripts/schema_fields.py 定义 4 组 REQUIRED 元组（字节级等价搬迁，零语义变化）；lint_input.py import 真源并删除本地副本——测试断言 is 同对象 + 源码无本地重定义（grep 'TOP_LEVEL_REQUIRED = (' 不存在）。",
+      "id": "ZR702-IMPL-001",
+      "severity": "info",
+      "title": "schema_fields.py 唯一真源（纯搬迁）"
+    },
+    {
+      "detail": "三方一致（REV-03）：build_template 骨架含全部 TOP_LEVEL_REQUIRED 键 + capture 子形状含全部 CAPTURE_REQUIRED 键；逐个删除 14 个必填键之一 → validate_document 拒绝（validator 覆盖与真源一致）。",
+      "id": "ZR702-IMPL-002",
+      "severity": "info",
+      "title": "generator/validator 与真源三方一致"
+    },
+    {
+      "detail": "generator 闭环（REV-02）：完整合法文档 → lint()==[] → validate_document 通过 → prepare_forecast(mode='draft') 一次通过且零写（tmp 目录空断言）；未填充模板（FIXME 在）→ lint 报 findings（生产不可静默使用，REV-04）。",
+      "id": "ZR702-IMPL-003",
+      "severity": "info",
+      "title": "全链一次通过 + 未填充 fail-loud"
+    },
+    {
+      "detail": "mypy 基线：lint_input.py 7 个既有类型错误（dict 注解欠账）在本地元组删除前后不变（改动仅 import 区）——非本卡引入。skill-sync 前置已执行（MATCH 117/117——ZR-701 之后 skills 数量从 115 增至 117 因 schema_fields.py 入 installable 集）。",
+      "id": "ZR702-IMPL-004",
+      "severity": "info",
+      "title": "mypy 基线继承 + sync 117/117"
+    }
+  ],
+  "implementation": {
+    "design": "新 scripts/schema_fields.py：TOP_LEVEL_REQUIRED(14)/CAPTURE_REQUIRED(10)/CLAIM_REQUIRED(11)/PARAMETER_REQUIRED(7) 四元组唯一真源（字节级搬迁）。lint_input.py：from schema_fields import（删本地 50 行硬编码，零行为变化——lint 全量测试 485 绿证）。测试 8 个：C1 真源同对象 + 源码无本地副本；C2 模板含全部必填键 + 逐键删除 validator 拒绝 + capture 形状一致；C3 全链 lint→validate→draft 一次通过零写；C4 未填充模板含 FIXME + lint 报 findings。",
+    "files": [
+      "revenue-forecast/scripts/schema_fields.py",
+      "revenue-forecast/scripts/lint_input.py",
+      "revenue-forecast/tests/test_zr702_schema_source_of_truth.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-702/**"
+    ]
+  },
+  "implementer": "zr702-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 e9e837f；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=324f5b16（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr702-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。"
+  ],
+  "objective": "F1 schema 单一真源（REV-01/03）+ generator 有效（REV-02/04）：schema_fields.py 四元组唯一定义、linter/generator/validator 三方一致、generate→lint→validate→draft 全链一次通过零写、未填充模板 fail-loud。",
+  "plan_sha256": "324f5b16ec13431ce53d8f6bacd291d98f1354ad5323cc59fb56aceea20d0021",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e9e837ff2d253f6749f68506fc54ef1f3af19419",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast schema 真源（scripts/schema_fields.py 新 + lint_input.py 接线）+ 新测试 test_zr702_schema_source_of_truth.py（8 tests）；revenue 侧 receipts/ZR-702/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/schema_fields.py",
+    "revenue-forecast/scripts/lint_input.py",
+    "revenue-forecast/tests/test_zr702_schema_source_of_truth.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-702/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-702"
+}

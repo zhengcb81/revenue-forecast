@@ -1,0 +1,61 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "7d78826cf3e5ac4d984b98c29dce5acfde9d72ad",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "7925cea3dd45b7790dabd8af952e314813e8b3b0aa380e81b6fb582a381670f7",
+  "commands": [
+    {
+      "command": "git log --oneline -3 && git diff 5ea9439 e9e837f --stat && git status --short",
+      "exit_code": 0,
+      "result": "HEAD=e9e837f (feat(ZR-702)). Implementation commit (git diff 5ea9439 e9e837f = git show --stat) = exactly 3 files +204/-50 (scripts/schema_fields.py +72, tests/test_zr702_schema_source_of_truth.py +127, scripts/lint_input.py net -50). Range 7d78826..e9e837f spans the intermediate docs-only commit 5ea9439 (+41 in 6 tracking files) hence 9 files +245/-50. Status: unrelated dirt as expected."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr702_schema_source_of_truth.py -q --tb=short",
+      "exit_code": 0,
+      "result": "8 passed in 0.16s"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_lint_input.py tests/test_generate_input_template.py -q --tb=short",
+      "exit_code": 0,
+      "result": "32 passed in 1.30s (regression green)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr702_adversarial.py (throwaway; sys.path -> scripts + tests)",
+      "exit_code": 0,
+      "result": "14/14 checks PASSED: identity of all 4 tuples (same object); no local literal definitions in lint_input.py; byte-equivalence of all 4 tuples vs parent 7d78826 (ast comparison, counts 14/10/11/7); build_template covers TOP_LEVEL_REQUIRED + CAPTURE_REQUIRED; deleting each of the 14 top-level keys -> ForecastInputError every time; full chain lint()==[] -> validate -> prepare_forecast(mode=draft) formal_output_mode=draft with empty scratch dir; raw template FIXME + lint() 15 findings."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache scripts/schema_fields.py scripts/lint_input.py tests/test_zr702_schema_source_of_truth.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q",
+      "exit_code": 0,
+      "result": "2 passed in 0.38s"
+    }
+  ],
+  "created_at_utc": "2026-08-20T18:06:17+00:00",
+  "findings": [
+    {
+      "detail": "The brief states 'Diff 7d78826..e9e837f = exactly 3 files, +204/-50'. Verified: e9e837f's direct parent is 5ea9439 (docs-only commit touching 6 assurance/audit_review tracking files, +41 lines), so the two-commit range 7d78826..e9e837f is 9 files +245/-50. The implementation commit itself (git diff 5ea9439 e9e837f, git show --stat e9e837f) is exactly the claimed 3 files +204/-50. No code impact.",
+      "id": "ZR702-REV-001",
+      "severity": "info",
+      "title": "Diff-range label in the work-unit brief is one commit short; implementation delta numbers are exact"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-702 independent review",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e9e837ff2d253f6749f68506fc54ef1f3af19419",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_object_sha256": "ee9930995dcd758f4eb0a2d3f07b95ce989fa6cd2ab771b3f5eac5f47c634c3e",
+  "reviewer": "reviewer-zr702-independent",
+  "schema_version": 1,
+  "unit": "ZR-702",
+  "verdict": "accepted"
+}
