@@ -464,3 +464,14 @@
   - revenue 全量 494 passed + 106 subtests（exit 0）+ ruff + ratchet 全过。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 57e33f9）；implementer receipt canonical adb7958f。
   - 独立复核 reviewer-zr704-independent 运行中。
+- **ZR-704 closure**：独立复核 reviewer-zr704-independent **accepted**（4/4 对抗断言成功（valid→exit0 零残留；missing-field→exit2 零残留；malformed→exit2 零残留；pre-seeded registry hash 不变 + entry 数不变）；3 info：REV-001 C2 断言宽松、REV-002 残留检查后缀范围、REV-003 工作树既有 planning 文档修改）；reviewer receipt canonical c9509cdc；state accepted + closure-advance -> **ZR-505**（phase F_revenue_mining）。
+- **机器状态**：current_next=ZR-505，accepted **57/117**（F 阶段 4/13：ZR-701~704）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **停止点（用户指令停止）**：ZR-505 未领取；恢复第一步 = ZR-505（REV-06~08 draft/formal 互换攻击失败）。
+- **ZR-705（F1 REV-06~08 draft/formal 分离与互换攻击门）实施完成**：
+  - RED 探针发现**两个真实产品缺口**：① render_markdown 对 draft 结果抛 gate_ids mismatch（REV-06 "draft 可 render" 不满足）；② formal receipt 降级（formal_output_mode→draft）+ 重算 receipt_sha256 被 validate_publication_receipt 接受（REV-08a "互换攻击失败" 不满足）。
+  - 修复：revenue_report.render_markdown 对 draft receipt 跳过 formal-only 强验证（draft 已在 run_forecast 内强验证）；revenue_publication.validate_publication_receipt 加 draft 模式一致性门（draft 必须空 gate_ids——拒绝降级攻击）。
+  - 新 test_zr705_draft_formal_swap.py（8 tests）：C1 draft render 不发布（render 可用 + registry 不创建）；C2 formal 强门（gate_ids 非空 + attestation + 不能自签 TypeError）；C3 互换攻击（draft→formal 拒 + formal→draft 降级拒）；C4 重 hash 攻击（payload 变异拒 + 重算 receipt 不修复）。
+  - revenue 全量 502 passed + 106 subtests（exit 0）+ ruff + ratchet 全过。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue bbee038）；implementer receipt canonical fafc80c6。
+  - 独立复核 reviewer-zr705-independent 运行中。
