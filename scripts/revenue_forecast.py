@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -16,6 +17,22 @@ from revenue_core import (
     validate_document,
 )
 from revenue_report import render_markdown, validate_forecast_output
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    """REV-09 (ZR-710): atomically write a text file — write to a same-dir
+    temporary file, fsync, then os.replace.  A process interruption at any
+    point leaves either the previous file or no file, never a half-written
+    artifact (no orphans)."""
+    temporary = path.with_name(path.name + f".{os.getpid()}.tmp")
+    try:
+        with open(temporary, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def prepare_forecast(data: dict, *, mode: str = "formal") -> dict:
@@ -95,11 +112,11 @@ def main() -> int:
             return 0
         rendered = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         if args.output:
-            args.output.write_text(rendered, encoding="utf-8")
+            _atomic_write_text(args.output, rendered)
         else:
             print(rendered, end="")
         if args.markdown:
-            args.markdown.write_text(render_markdown(result), encoding="utf-8")
+            _atomic_write_text(args.markdown, render_markdown(result))
     except (OSError, json.JSONDecodeError, ForecastInputError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
