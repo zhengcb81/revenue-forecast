@@ -455,3 +455,12 @@
   - 教训：新测试文件加入 installable 集后 skills sync --apply 可能不自动复制（manifest MATCH 但文件缺失）——需手动确认并复制或重跑 sync。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 89ffc80）；implementer receipt canonical 7cdeac48。
   - 独立复核 reviewer-zr703-independent 运行中。
+- **ZR-703 closure**：独立复核 reviewer-zr703-independent **accepted**（5/5 + 47/47 回归 + 5 对抗断言 + 全根目录 zr102/zr104 基线对照组；3 info：REV-001 diff 数叙述、REV-002 回归文件名、REV-003 全量计数）；reviewer receipt canonical 57234236；state accepted + closure-advance -> **ZR-704**（phase F_revenue_mining）。
+- **机器状态**：current_next=ZR-704，accepted **56/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 3：ZR-701~703）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **ZR-704（F1 REV-05 validate-only 纯只读门）实施完成**：
+  - RED：validate-only failure 路径零残留无测试；registry hash 不变无钉死；malformed JSON 零残留无测试。
+  - 新 `tests/test_zr704_validate_only_gate.py`（4 tests，产品零改动）：C1 success 零残留（exit 0 + tmp 空 + registry 不存在）；C2 failure 零残留（ForecastInputError exit 2 + tmp 空 + registry 不存在）；C3 malformed JSON 零残留（畸形输入 exit 2 + tmp 空）；C4 pre-existing registry 不变（seed 1 entry + validate-only + hash 二进制一致 + entry 数不变）。
+  - revenue 全量 494 passed + 106 subtests（exit 0）+ ruff + ratchet 全过。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 57e33f9）；implementer receipt canonical adb7958f。
+  - 独立复核 reviewer-zr704-independent 运行中。

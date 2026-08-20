@@ -158,3 +158,7 @@
 - ZR-702 实施完成：revenue e9e837f（schema_fields.py 真源 + lint_input 接线 + 8 tests）；全量 485+106 绿；state triplet_green；implementer receipt canonical efe5b0f3；独立复核运行中。
 
 - ZR-702 closure：reviewer-zr702-independent accepted（1 info）；state accepted 55/117；closure-advance -> ZR-703。
+
+- ZR-703 closure：reviewer-zr703-independent accepted（3 info）；state accepted 56/117；closure-advance -> ZR-704。
+
+- ZR-704 实施完成：revenue 57e33f9（REV-05 validate-only 纯只读门 4 tests，产品零改动）；全量 494+106 绿；state triplet_green；implementer receipt canonical adb7958f；独立复核运行中。

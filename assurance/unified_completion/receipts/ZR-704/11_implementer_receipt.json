@@ -1,0 +1,88 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "50a2f5207b4db08a635d6fc4d5c35cce6bbdd75e",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "adb7958fa9424dd2db8487bc011f0770fedceaea378d30083137ed9ec73f953c",
+  "commands": [
+    {
+      "command": "RED 探针：validate-only failure 路径零残留无测试；registry hash 不变无钉死；malformed JSON 零残留无测试",
+      "exit_code": 0,
+      "result": "G1（failure 零残留无测试）/G2（registry hash 不变无钉死）/G3（malformed JSON 零残留无测试）坐实"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr704_validate_only_gate.py -q --tb=short",
+      "exit_code": 0,
+      "result": "4 passed（C1 success 零残留 + C2 failure 零残留 + C3 malformed JSON 零残留 + C4 pre-existing registry 不变）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=300",
+      "exit_code": 0,
+      "result": "494 passed + 106 subtests（exit 0 无回归）"
+    },
+    {
+      "command": "ruff check tests/test_zr704_validate_only_gate.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "git diff 50a2f52 57e33f9 --stat",
+      "exit_code": 0,
+      "result": "1 文件 +133：tests/test_zr704_validate_only_gate.py（新 4 tests）——产品 src 零改动"
+    }
+  ],
+  "created_at_utc": "2026-08-20T19:44:13+00:00",
+  "findings": [
+    {
+      "detail": "REV-05 门测试钉死：success 路径（exit 0）+ failure 路径（ForecastInputError, exit 2）+ malformed JSON（exit 2）三路均无文件创建、registry hash 不变；pre-existing registry 文件在 validate-only 前后 hash 二进制一致。产品代码零改动——validate-only draft mode 已在 ZR-501 实现，本卡纯钉死。",
+      "id": "ZR704-IMPL-001",
+      "severity": "info",
+      "title": "REV-05 validate-only 三路零残留 + registry hash 不变（test-only）"
+    }
+  ],
+  "implementation": {
+    "design": "测试钉死卡（产品零改动）：新 tests/test_zr704_validate_only_gate.py（4 tests）——C1 success 零残留（validate-only 合法输入后 tmp 空 + registry 不存在）；C2 failure 零残留（ForecastInputError 后 exit 2 + 零残留）；C3 malformed JSON 零残留（畸形输入后 exit 2 + 零残留）；C4 pre-existing registry 不变（seed registry + validate-only + hash 二进制一致 + entry 数不变）。",
+    "files": [
+      "revenue-forecast/tests/test_zr704_validate_only_gate.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-704/**"
+    ]
+  },
+  "implementer": "zr704-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为 50a2f52（ZR-703 closure docs commit）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=eabdfa13（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr704-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。"
+  ],
+  "objective": "F1 REV-05 validate-only 纯只读门：success/failure/malformed JSON 三路零残留 + registry hash 不变 + pre-existing registry 不修改（test-only 钉死）。",
+  "plan_sha256": "eabdfa1371b9bc8b746d6ddad22477e0caca1485e86d86a4012ae4e068d9a044",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "57e33f930ca23e5a890f5d3c66471999b78a609d",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast 测试钉死卡（产品 src 零改动）：新 test_zr704_validate_only_gate.py（4 tests）；revenue 侧 receipts/ZR-704/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr704_validate_only_gate.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-704/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-704"
+}
