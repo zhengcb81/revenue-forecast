@@ -79,6 +79,28 @@ PARAMETER_DIMENSIONS = {
 }
 
 
+# ZR-602: asset fact basis contract — ownership/standard/measurement-date
+# vocabulary for mining asset facts (resource/reserve/grade/capacity/permit).
+# ``basis`` is an additive optional parameter key: when present it must carry
+# every required field (fail-closed, no half-baked basis), and asset-fact
+# family drivers are unit-consistent (normalized equality, no kt-vs-t drift).
+ASSET_FACT_OWNERSHIP_BASES = {
+    "one_hundred_percent",
+    "equity_share",
+    "consolidated",
+}
+
+ASSET_FACT_BASIS_REQUIRED = (
+    "ownership_basis",
+    "reporting_standard",
+    "measurement_date",
+)
+
+# Generic mining asset-fact model families (model ids are generic mining
+# vocabulary, not company/mine names — zero product hardcoding).
+ASSET_FACT_MODELS = frozenset({"resource", "reserve_depletion"})
+
+
 MONETARY_DIMENSIONS = {
     "revenue",
     "revenue_per_unit",

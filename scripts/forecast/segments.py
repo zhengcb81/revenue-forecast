@@ -9,6 +9,7 @@ import copy
 
 from contracts.constants import (
     ADJUSTMENT_CATEGORIES,
+    ASSET_FACT_MODELS,
     PRESENTATIONS,
     RECOGNITION_MODES,
     RECOGNITION_TIMING,
@@ -27,8 +28,33 @@ from forecast.calc import (
     parameter_values,
     resolve_driver_series,
 )
-from model_registry import MODEL_SPECS, ModelRegistryError, calculate_registered_model
+from model_registry import MODEL_DRIVER_DIMENSIONS, MODEL_SPECS, ModelRegistryError, calculate_registered_model
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
+
+
+def _check_asset_fact_unit_consistency(
+    model: str,
+    driver_ids: dict[str, Any],
+    parameter_index: dict[str, dict[str, Any]],
+) -> None:
+    """ZR-602: reject unit drift across asset-fact family drivers that share a
+    dimension (e.g. kt vs t across reserve drivers or periods). Normalization
+    is case/whitespace only; conversion tables are ZR-610 ADR scope."""
+    if model not in ASSET_FACT_MODELS:
+        return
+    unit_by_dimension: dict[str, set[str]] = {}
+    for driver, ids in driver_ids.items():
+        dimension = MODEL_DRIVER_DIMENSIONS[model][driver]
+        units = unit_by_dimension.setdefault(dimension, set())
+        for parameter_id in ids:
+            unit = parameter_index[parameter_id].get("unit", "")
+            units.add(str(unit).strip().lower())
+    for dimension, units in sorted(unit_by_dimension.items()):
+        if len(units) > 1:
+            raise ForecastInputError(
+                f"asset fact unit mismatch for {model}/{dimension}: "
+                f"{', '.join(sorted(units))}"
+            )
 
 
 def calculate_model_path(
@@ -52,6 +78,13 @@ def calculate_model_path(
     require(not missing, f"missing drivers for {model}: {', '.join(missing)}")
     extra = sorted(set(driver_ids) - allowed)
     require(not extra, f"unsupported drivers for {model}: {', '.join(extra)}")
+
+    # ZR-602: asset fact family unit consistency — drivers sharing a dimension
+    # must carry the same normalized unit (no kt-vs-t drift across drivers or
+    # periods). Normalization is case/whitespace only; conversion tables are
+    # out of scope (ZR-610 accounting ADR).
+    _check_asset_fact_unit_consistency(model, driver_ids, parameter_index)
+
     if model == "retail_franchise":
         pair = {"franchise_system_sales", "recognized_fee_rate"}
         require(

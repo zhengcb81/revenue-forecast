@@ -9,6 +9,8 @@ from datetime import date
 from typing import Any
 
 from contracts.constants import (
+    ASSET_FACT_BASIS_REQUIRED,
+    ASSET_FACT_OWNERSHIP_BASES,
     FORECAST_SCHEMA_VERSION,
     MONETARY_DIMENSIONS,
     PARAMETER_DIMENSIONS,
@@ -276,6 +278,34 @@ def validate_sources(
     return index
 
 
+def validate_parameter_basis(parameter_id: str, basis: Any) -> None:
+    """ZR-602: validate an additive asset-fact ``basis`` key.
+
+    When a parameter carries ``basis`` it must be a complete, valid basis:
+    ownership_basis from the enum, non-empty reporting_standard, and an ISO
+    measurement_date. Half-baked or invalid basis fails closed; a missing
+    basis (None) is valid (additive contract, legacy parameters unaffected).
+    """
+    if basis is None:
+        return
+    require(isinstance(basis, dict), f"{parameter_id}.basis must be an object")
+    for basis_field in ASSET_FACT_BASIS_REQUIRED:
+        require(
+            basis_field in basis,
+            f"{parameter_id}.basis.{basis_field} is required",
+        )
+    require(
+        basis["ownership_basis"] in ASSET_FACT_OWNERSHIP_BASES,
+        f"unsupported ownership_basis for {parameter_id}: {basis['ownership_basis']}",
+    )
+    require(
+        isinstance(basis["reporting_standard"], str)
+        and basis["reporting_standard"].strip(),
+        f"{parameter_id}.basis.reporting_standard is required",
+    )
+    parse_iso_date(basis["measurement_date"], f"{parameter_id}.basis.measurement_date")
+
+
 def validate_parameters(
     data: dict[str, Any], source_index: dict[str, dict[str, Any]]
 ) -> dict[str, dict[str, Any]]:
@@ -348,6 +378,11 @@ def validate_parameters(
                 source_id in source_index,
                 f"unknown source_id {source_id} referenced by {parameter_id}",
             )
+
+        # ZR-602: asset fact basis — additive key; when present it must be a
+        # complete, valid basis (ownership basis / reporting standard /
+        # measurement date). Half-baked or invalid basis fails closed.
+        validate_parameter_basis(parameter_id, parameter.get("basis"))
 
         if kind in {"reported_fact", "management_guidance"}:
             require(
