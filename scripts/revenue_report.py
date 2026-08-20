@@ -1268,7 +1268,12 @@ def _escape(value: Any) -> str:
 
 
 def render_markdown(result: dict[str, Any]) -> str:
-    validate_forecast_output(result)
+    # REV-06 (ZR-705): a draft result may be rendered without publishing.
+    # Draft receipts skip the formal-only strong validation (which requires
+    # the formal gate set) — the draft was already strongly validated inside
+    # run_forecast before the draft receipt was built.
+    if result.get("publication_receipt", {}).get("formal_output_mode") != "draft":
+        validate_forecast_output(result)
     years = list(map(str, result["forecast_years"]))
     lines: list[str] = [
         f"# {_escape(result['company_name'])}营收预测",

@@ -242,6 +242,15 @@ def validate_publication_receipt(result: dict[str, Any]) -> None:
         receipt.get("formal_output_mode") in {"formal", "draft"},
         "publication_receipt formal_output_mode mismatch",
     )
+    # REV-08a (ZR-705): mode/state consistency — a draft-marked receipt must
+    # carry the empty gate set; a downgraded formal receipt (formal_output_mode
+    # flipped to "draft" while gate_ids stay non-empty, receipt rehashed) would
+    # otherwise pass the checks above.  Reject the inconsistency.
+    if receipt.get("formal_output_mode") == "draft":
+        require(
+            not receipt.get("gate_ids"),
+            "publication_receipt draft mode must have empty gate_ids",
+        )
     require(
         receipt.get("freeform_override_allowed") is False,
         "publication_receipt freeform_override_allowed must be false",
