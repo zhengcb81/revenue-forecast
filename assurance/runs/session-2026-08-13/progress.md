@@ -475,3 +475,12 @@
   - revenue 全量 502 passed + 106 subtests（exit 0）+ ruff + ratchet 全过。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue bbee038）；implementer receipt canonical fafc80c6。
   - 独立复核 reviewer-zr705-independent 运行中。
+- **ZR-705 closure**：独立复核 reviewer-zr705-independent **accepted**（8/8 + 58/58 回归 + 6/6 对抗断言 + 全量 502+106 复跑；3 info：REV-001 draft 被 formal-only validator 拒（既有非回归）、REV-002 互换测试隔离性、REV-003 全知攻击者边界（设计外））；reviewer receipt canonical fa129a2f；state accepted + closure-advance -> **ZR-706**（phase F_revenue_mining）。
+- **机器状态**：current_next=ZR-706，accepted **58/117**（F 阶段 5/13：ZR-701~705）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **ZR-706（F1 FC-904 artifact selector 契约补全）实施完成**：
+  - RED：read/produced 互斥、自定义 roles 子集、consumer_analysis provenance 匹配即 read 三处无测试。
+  - 新 test_zr706_selector_contract.py（10 tests，产品零改动）：C1 互斥（5 bundle 形状下 read ∩ produced == ∅）；C2 自定义 roles 子集（子集扫描限制 + 子集内 DAG closure + 不盲算子集外起始角色）；C3 provenance 匹配即 read / mismatch 即 produced（engine/model/prompt/input_bundle_hash 四键）。
+  - revenue 全量 509 passed + 106 subtests（排除 fc1103——T3 runner 子进程环境性挂起，记录为既有环境基线，与 ZR-706 无关）；ruff + ratchet 全过。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 8466b37）；implementer receipt canonical de8892ab。
+  - 独立复核 reviewer-zr706-independent 运行中。

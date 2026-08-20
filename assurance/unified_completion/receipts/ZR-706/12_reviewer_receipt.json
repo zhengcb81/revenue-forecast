@@ -1,0 +1,70 @@
+{
+  "at_utc": "2026-08-20T21:16:42+00:00",
+  "canonical_hash": "4f849dffc1de2415b1aafe5f0ff71ee812417ed396c283359674f17056ca6229",
+  "commands": [
+    {
+      "command": "git log --oneline -3; git diff 33cd6d6 8466b37 --stat; git status --short",
+      "exit_code": 0,
+      "result": "HEAD=8466b37; diff exactly 1 file +191 (test_zr706_selector_contract.py); zero product changes."
+    },
+    {
+      "command": "pytest tests/test_zr706_selector_contract.py -q",
+      "exit_code": 0,
+      "result": "10 passed in 0.63s"
+    },
+    {
+      "command": "pytest 3-file regression (fc904/fc905b/zr701)",
+      "exit_code": 0,
+      "result": "24 passed in 1.27s"
+    },
+    {
+      "command": "adversarial spot-checks (throwaway %TEMP% script)",
+      "exit_code": 0,
+      "result": "18/18 PASS: C1 mutual exclusion across 5 shapes; C2 subset roles; C3 provenance match/mismatch."
+    },
+    {
+      "command": "ruff check --no-cache",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "complexity ratchet",
+      "exit_code": 0,
+      "result": "2 passed in 0.47s"
+    }
+  ],
+  "created_at_utc": "2026-08-20T21:16:42+00:00",
+  "findings": [
+    {
+      "detail": "assurance/audit process docs + untracked tmp dirs; none under src/, none part of commit 8466b37.",
+      "id": "ZR706-REV-001",
+      "severity": "info",
+      "title": "Working tree contains pre-existing non-product modifications"
+    },
+    {
+      "detail": "Test-only diff touches no runner/subprocess code; targeted regression + new tests pass.",
+      "id": "ZR706-REV-002",
+      "severity": "info",
+      "title": "Full-suite 509+106 claim not replayed; fc1103 hang is unrelated"
+    },
+    {
+      "detail": "All-or-nothing comparison of engine/model/prompt/input_bundle_hash; C3 verified both sides.",
+      "id": "ZR706-REV-003",
+      "severity": "info",
+      "title": "consumer_analysis provenance gate requires full 4-key equality"
+    }
+  ],
+  "kind": "reviewer",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "8466b37faee4e42188928c2329e0545e44122c89",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_commit": "8466b37faee4e42188928c2329e0545e44122c89",
+  "reviewed_object_sha256": "2cf69d77e3dbe38140fcf7ed43c021c59989c3fc69d0e2c8910b4b21c635b1d5",
+  "reviewer": "reviewer-zr706-independent",
+  "schema_version": 1,
+  "summary": "Independent replay of ZR-706 at 8466b37 confirms C1-C3: 1-file +191 test-only diff; 10/10 tests; 24/24 regression; 18/18 adversarial (mutual exclusion 5 shapes, subset DAG closure, provenance match/mismatch); ruff + ratchet green. Only info findings. Verdict: accepted.",
+  "unit": "ZR-706",
+  "verdict": "accepted"
+}

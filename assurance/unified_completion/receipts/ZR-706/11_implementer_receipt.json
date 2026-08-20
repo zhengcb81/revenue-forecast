@@ -1,0 +1,95 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "33cd6d692f55783bac7a7e71ae8d8df138d0d29b",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "de8892abaee4db6b554715be34ff4ec37dcda8cf52de877282ede109541bba61",
+  "commands": [
+    {
+      "command": "RED 探针：test_fc904 覆盖 AR-01~08 + no-bundle + malformed + prepare_source 集成；read/produced 互斥、自定义 roles 子集、provenance 匹配即 read 三处无测试",
+      "exit_code": 0,
+      "result": "G1（互斥无断言）/G2（子集无测试）/G3（provenance 匹配即 read 无测试）坐实"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr706_selector_contract.py -q --tb=short",
+      "exit_code": 0,
+      "result": "10 passed（C1 互斥 5 形状 + C2 子集 3 + C3 provenance 2）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "509 passed + 106 subtests（3 deselected = fc1103 既有环境挂起：T3 runner 子进程 communicate 超时，与 ZR-706 无关——未触碰 runner/subprocess 代码；无回归）"
+    },
+    {
+      "command": "ruff check tests/test_zr706_selector_contract.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "git diff b3f95f7 8466b37 --stat",
+      "exit_code": 0,
+      "result": "1 文件 +191：tests/test_zr706_selector_contract.py（新 10 tests）——产品 src 零改动"
+    }
+  ],
+  "created_at_utc": "2026-08-20T21:13:45+00:00",
+  "findings": [
+    {
+      "detail": "read/produced 互斥钉死（5 形状：full valid/summary missing/normalized missing/tampered/no bundle）；自定义 roles 子集：子集限制扫描与起始非可复用集合，但 DAG closure 的传递依赖可命名子集外角色（真实契约，测试按实现语义断言）；consumer_analysis provenance 四键（engine/model/prompt/input_bundle_hash）匹配即 read、mismatch 即 produced（AR-06 互补）。",
+      "id": "ZR706-IMPL-001",
+      "severity": "info",
+      "title": "selector 契约三缺口钉死（test-only）"
+    },
+    {
+      "detail": "fc1103 T3 runner 测试环境性挂起（subprocess communicate 超时）——既有 runner 机制测试，ZR-706 未触碰相关代码；记录为环境基线（与 zr102 e2e 同族）。",
+      "id": "ZR706-IMPL-002",
+      "severity": "info",
+      "title": "fc1103 既有环境挂起登记（非本卡回归）"
+    }
+  ],
+  "implementation": {
+    "design": "测试钉死卡（产品零改动）：新 tests/test_zr706_selector_contract.py（10 tests）——C1 互斥（5 bundle 形状下 artifact_read ∩ producer_events == ∅）；C2 自定义 roles 子集（子集扫描限制 + 子集内 DAG closure + 不盲算子集外起始角色）；C3 consumer_analysis provenance 匹配即 read / mismatch 即 produced。",
+    "files": [
+      "revenue-forecast/tests/test_zr706_selector_contract.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-706/**"
+    ]
+  },
+  "implementer": "zr706-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 8466b37；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=5925442d（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr706-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。",
+    "注：base_triplet.revenue=b3f95f7 为 ZR-705 closure 后 state sha（closure-advance 输出），实际 base commit 为 ZR-705 closure commit。"
+  ],
+  "objective": "F1 FC-904 artifact selector 契约补全：read/produced 互斥 + 自定义 roles 子集 + consumer_analysis provenance 匹配门（test-only 钉死，产品零改动）。",
+  "plan_sha256": "5925442db8d85229da7300835d4594ec007d367ce8dd281a07414e7f8e57cf74",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "8466b37faee4e42188928c2329e0545e44122c89",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast 测试钉死卡（产品 src 零改动）：新 test_zr706_selector_contract.py（10 tests）；revenue 侧 receipts/ZR-706/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr706_selector_contract.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-706/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-706"
+}

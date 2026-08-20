@@ -166,3 +166,7 @@
 - ZR-704 closure：reviewer-zr704-independent accepted（3 info）；state accepted 57/117；closure-advance -> ZR-505。
 
 - ZR-705 实施完成：revenue bbee038（REV-06~08 draft/formal 分离 + 互换/重 hash 攻击门，2 个真实缺口修复 + 8 tests）；全量 502+106 绿；state triplet_green；implementer receipt canonical fafc80c6；独立复核运行中。
+
+- ZR-705 closure：reviewer-zr705-independent accepted（3 info）；state accepted 58/117；closure-advance -> ZR-706。
+
+- ZR-706 实施完成：revenue 8466b37（FC-904 selector 契约补全 10 tests，产品零改动）；全量 509+106 绿（fc1103 环境挂起登记）；state triplet_green；implementer receipt canonical de8892ab；独立复核运行中。
