@@ -495,3 +495,19 @@
   - 测试经验：registry 故障注入须进程内 main()（monkeypatch 不跨进程）；_read_entries 需父进程 setenv 与子进程一致。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 3f81318）；implementer receipt canonical d4fd4220。
   - 独立复核 reviewer-zr710-independent 运行中；本卡闭后 F1（ZR-701~706 + ZR-710）全闭。
+- **ZR-710 closure**：独立复核 reviewer-zr710-independent **accepted**（6/6 + 53/53 回归 + 5/5 对抗断言（原子写/故障注入×3/幂等）；3 info：REV-001 diff 范围跨 ZR-706 commits、REV-002 全量未复跑 fc1103 已知、REV-003 输出行尾改 LF（增强跨平台一致性））；reviewer receipt canonical db972108；state accepted + closure-advance -> **ZR-601**（phase F_revenue_mining）。
+- **F1 出口达成**：ZR-701~706 + ZR-710 **7/7 全闭**（prepare_forecast/draft-formal/validate-only 门/schema 真源/文档清理/selector 契约/publication 事务）。
+- **机器状态**：current_next=ZR-601，accepted **60/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 7：ZR-701~706/710）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-601（F2 通用矿业层 asset facts——README 阶段表：F2 先 ZR-610 会计 ADR，但 DAG 解锁 ZR-601 为 F2 入口）。
+- **ZR-601（F2 首卡 asset facts）实施完成**：
+  - RED 探针：非负强制/缺省 fail-closed/公式手算已正确（机制无缺口）——test-only 钉死。
+  - 新 test_zr601_asset_facts.py（10 tests）：C1 stock-flow（2 期平衡/连续性/非负 5 字段/回收率 0~1）；C2 缺省矩阵（resource 2 + reserve 6 驱动逐个删除拒绝）；C3 公式/注册表（resource 手算 51/57、reserve depletion×recovery×price、spec required/formula 词汇）。
+  - revenue 全量 525 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；无回归）+ ruff + ratchet 全过。
+  - 测试陷阱：YEARS 2 期（3 期驱动第三期不计算）；连续性破坏需同时保持 balance；recovery_rate 是 ratio（0~1 消息）。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 1d32047）；implementer receipt canonical ccbc5616。
+  - 独立复核 reviewer-zr601-independent 运行中。
+- **ZR-601 closure**：独立复核 reviewer-zr601-independent **accepted**（26/26 对抗断言 + 全量复跑；1 minor：REV-001 docstring 说 3-period 实为 2-period（cosmetic）；1 info：REV-002 回归范围 diff）；reviewer receipt canonical d5cf7a5a；state accepted + closure-advance -> **ZR-602**（phase F_revenue_mining，F2 第二卡）。
+- **机器状态**：current_next=ZR-602，accepted **61/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 8：ZR-701~706/710 + ZR-601）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-602（F2 resource/reserve/basis 层——以 DAG 解锁为准）。

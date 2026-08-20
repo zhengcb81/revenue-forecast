@@ -174,3 +174,9 @@
 - ZR-706 closure：reviewer-zr706-independent accepted（3 info）；state accepted 59/117；closure-advance -> ZR-710。
 
 - ZR-710 实施完成：revenue 3f81318（REV-09 原子写 + 事务故障注入 + 幂等，6 tests）；全量 515+106 绿；state triplet_green；implementer receipt canonical d4fd4220；独立复核运行中。
+
+- ZR-710 closure：reviewer-zr710-independent accepted（3 info）；state accepted 60/117；closure-advance -> ZR-601；**F1 出口达成（ZR-701~706+710 7/7）**。
+
+- ZR-601 实施完成：revenue 1d32047（F2 asset facts 契约 10 tests，产品零改动）；全量 525+106 绿；state triplet_green；implementer receipt canonical ccbc5616；独立复核运行中。
+
+- ZR-601 closure：reviewer-zr601-independent accepted（26/26 对抗断言；1 minor docstring 3-period 标签 + 1 info 范围 diff）；state accepted 61/117；closure-advance -> ZR-602。

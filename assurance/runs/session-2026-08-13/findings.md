@@ -163,3 +163,8 @@
 - draft/validated 显式 artifact：publication_registry validation_status 加性键（旧条目无键可读）；formal 条目 receipt_sha256+result_sha256 绑定（原子发布）。
 - ProcessingDemand 跨仓同契约：revenue scripts/processing_demand.py 独立实现（wiki ZR-507 语义），零跨仓 import；prepare_source 成功 enqueue（key=source_id dedupe）。
 - mypy 基线：publication_registry.py:215 audit() tuple 类型错误为既有（非本卡引入）。
+
+## 发现 27：ZR-601（F2 首卡 asset facts，2026-08-20）
+- 机制探针正确（非负强制/缺省 fail-closed/公式手算已实现）→ test-only 卡：10 tests 钉死 stock-flow 平衡/连续性/非负、缺省矩阵 fail-closed、MODEL_SPECS 公式与 required/formula 词汇。
+- 测试陷阱（后续 F2 卡参考）：① YEARS 2 期时 3 期驱动样本不会被计算——不平衡探针需 2 期自身触发；② 连续性破坏样本必须同时保持 balance（opening[1]=closing[0] 同步改），否则探针误报为平衡错误而非连续性错误；③ recovery_rate 是 ratio_driver——负值报 "cannot be negative" 而 >1 报 "must be between 0 and 1"，断言消息需按 driver 类型区分；④ MODEL_SPECS 是 mappingproxy——测试用下标访问，勿用 .get()。
+- reviewer 1 minor：docstring 说 "3-period" 实为 2-period（cosmetic，未改产品）；closure 后 F2 计数 8/13。
