@@ -445,3 +445,13 @@
   - skill-sync MATCH 117/117（schema_fields.py 入 installable 集，115→117）。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue e9e837f）；implementer receipt canonical efe5b0f3。
   - 独立复核 reviewer-zr702-independent 运行中。
+- **ZR-702 closure**：独立复核 reviewer-zr702-independent **accepted**（8/8 + 32/32 回归 + 14/14 对抗断言含父提交字节等价 ast 对照；1 info：REV-001 diff 范围跨中间 docs commit 说明——实现 commit 本身精确 3 文件 +204/-50）；reviewer receipt canonical 7925cea3；state accepted + closure-advance -> **ZR-703**（phase F_revenue_mining）。
+- **机器状态**：current_next=ZR-703，accepted **55/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 2：ZR-701/702）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **ZR-703（F1 schema 文档漂移清理 + 迁移 allowlist 一致性）实施完成**：
+  - RED：5 处"schema 3.6"硬编码（generate_input_template 3 + fix_hashes 2 + lint_input 2 + schema_fields 1 = 其实 6 处 docstring/CLI help）与 FORECAST_SCHEMA_VERSION=3.7 不一致。
+  - 清理 6 处硬编码（注释改为引用常量/删版本号）+ 新 test_zr703 5 tests（C1 源码 grep 无硬编码、C2 迁移 allowlist 一致性 SUPPORTED ⊆ SCHEMA_EMIT_ENGINES + FORECAST ∈ SUPPORTED、C3 schema_version 钉死 build_template + prepare_forecast(draft)）。
+  - revenue 全量 490 passed + 106 subtests（exit 0）+ ruff + ratchet 全过。
+  - 教训：新测试文件加入 installable 集后 skills sync --apply 可能不自动复制（manifest MATCH 但文件缺失）——需手动确认并复制或重跑 sync。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 89ffc80）；implementer receipt canonical 7cdeac48。
+  - 独立复核 reviewer-zr703-independent 运行中。
