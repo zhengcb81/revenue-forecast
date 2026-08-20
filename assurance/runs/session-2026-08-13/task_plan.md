@@ -112,3 +112,8 @@
 - 本阶段完成：阶段 E 全闭（ZR-501~510 10/10）+ ZR-701（F1 入口）closure；accepted 54/117。
 - 恢复第一步：ZR-702（F1 后续：generator→linter→engine 闭环钉死/输入 schema 单一真源）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-701 closure 提交进行中）、wiki 26a6b22、filing 5a1c18f。
+## 停止点（2026-08-20 晚：用户指令停止）
+- 当前游标：F_revenue_mining / ZR-704。
+- accepted 56/117（F 阶段 3/13：ZR-701~703）。
+- 恢复第一步：ZR-704（F1 后续：draft/formal 互换/故障注入/幂等）。
+- 三仓 HEAD：revenue 49a8793、wiki 26a6b22、filing 5a1c18f。
