@@ -1,6 +1,6 @@
-"""Recompute and sync schema 3.6 input-side hashes.
+"""Recompute and sync schema input-side hashes.
 
-The schema 3.6 input embeds a small hash ring. Only two layers are *computable*
+The schema input embeds a small hash ring. Only two layers are *computable*
 from the input itself; the other two are opaque external fingerprints that must
 be *copied* from the source capture, never recomputed:
 
@@ -154,7 +154,7 @@ def apply_hash_fixes(data: dict[str, Any]) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("input", type=Path, help="schema 3.6 input JSON path")
+    parser.add_argument("input", type=Path, help="input JSON path (see contracts.constants.FORECAST_SCHEMA_VERSION)")
     parser.add_argument("--output", type=Path, help="write fixed JSON here instead of in place")
     parser.add_argument("--check", action="store_true", help="report drift only, write nothing (exit 2 on drift)")
     parser.add_argument("--dry-run", action="store_true", help="print planned fixes, write nothing")

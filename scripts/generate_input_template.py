@@ -1,4 +1,7 @@
-"""Emit a schema 3.6 input skeleton pre-filled with correct field names.
+"""Emit a schema input skeleton pre-filled with correct field names.
+
+The emitted ``schema_version`` is taken from
+``contracts.constants.FORECAST_SCHEMA_VERSION`` (single source of truth).
 
 The 688785 exercise showed ~65% of input-build failures are field-name / shape
 mistakes the author could never infer from docs alone. This generator emits a
@@ -38,7 +41,7 @@ def build_template(
     unit: str,
     segment_names: list[str],
 ) -> dict[str, Any]:
-    """Build a schema 3.6 skeleton with FIXME placeholders and consistent references."""
+    """Build a schema skeleton with FIXME placeholders and consistent references."""
     base_year = int(base_year)
     forecast_years = sorted({int(year) for year in forecast_years})
     as_of = f"{base_year}-06-30"
@@ -235,7 +238,7 @@ def build_template(
 
     return {
         "_comment": (
-            "Schema 3.6 skeleton. Replace every FIXME value, then run: "
+            f"Schema {FORECAST_SCHEMA_VERSION} skeleton. Replace every FIXME value, then run: "
             "lint_input.py <file>  ->  fix_hashes.py <file>  ->  "
             "revenue_forecast.py <file> --validate-only."
         ),

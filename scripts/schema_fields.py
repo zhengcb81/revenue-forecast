@@ -1,4 +1,4 @@
-"""ZR-702: single source of truth for the schema 3.6 input field
+"""ZR-702: single source of truth for the schema input field
 contracts (REV-01/03).
 
 The four REQUIRED tuples below are the ONLY definition of the statically

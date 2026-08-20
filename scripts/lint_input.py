@@ -1,4 +1,4 @@
-"""Collect-all static pre-flight linter for schema 3.6 inputs.
+"""Collect-all static pre-flight linter for schema inputs.
 
 Unlike the engine's own validators (which fail fast on the first violation),
 this linter accumulates **every** structural / reference / hash / aggregate
@@ -528,7 +528,7 @@ def lint(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("input", type=Path, help="schema 3.6 input JSON path")
+    parser.add_argument("input", type=Path, help="input JSON path (see contracts.constants.FORECAST_SCHEMA_VERSION)")
     parser.add_argument(
         "--check-conclusion-facts",
         action="store_true",
