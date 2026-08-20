@@ -10,7 +10,7 @@ authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
 current_phase: F_revenue_mining
-current_next: ZR-710
+current_next: ZR-601
 active_owner: unassigned
 lease: none
 blocked_reason: none

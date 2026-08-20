@@ -484,3 +484,14 @@
   - revenue 全量 509 passed + 106 subtests（排除 fc1103——T3 runner 子进程环境性挂起，记录为既有环境基线，与 ZR-706 无关）；ruff + ratchet 全过。
   - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 8466b37）；implementer receipt canonical de8892ab。
   - 独立复核 reviewer-zr706-independent 运行中。
+- **ZR-706 closure**：独立复核 reviewer-zr706-independent **accepted**（10/10 + 24/24 回归 + 18/18 对抗断言；3 info：REV-001 工作树既有文档修改、REV-002 全量未复跑 fc1103 无关、REV-003 provenance 四键全等）；reviewer receipt canonical 4f849dff；state accepted + closure-advance -> **ZR-710**（phase F_revenue_mining）。
+- **机器状态**：current_next=ZR-710，accepted **59/117**（F 阶段 6/13：ZR-701~706）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **ZR-710（F1 REV-09 publication 事务 + 原子写）实施完成**：
+  - RED：--output/--markdown 直接 write_text（非原子——中断留半文件）；registry 事务/故障注入/幂等无钉死。
+  - 修复：revenue_forecast.py 新增 `_atomic_write_text`（同目录 tmp + write + flush + os.fsync + os.replace + finally tmp unlink）应用于 output/markdown。
+  - 新 test_zr710_publication_txn.py（6 tests）：C1 原子写完整/替换既有；C2 故障注入（os.replace 失败无目标+tmp 清理、write 失败无目标、registry append 失败进程内 main 注入 → exit 2 + output 未写）；C3 恢复幂等（同输入两次发布 output 字节一致 + registry 恰 2 条同 anchor）。
+  - revenue 全量 515 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；无回归）+ ruff + ratchet 全过。
+  - 测试经验：registry 故障注入须进程内 main()（monkeypatch 不跨进程）；_read_entries 需父进程 setenv 与子进程一致。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 3f81318）；implementer receipt canonical d4fd4220。
+  - 独立复核 reviewer-zr710-independent 运行中；本卡闭后 F1（ZR-701~706 + ZR-710）全闭。

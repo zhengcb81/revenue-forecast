@@ -170,3 +170,7 @@
 - ZR-705 closure：reviewer-zr705-independent accepted（3 info）；state accepted 58/117；closure-advance -> ZR-706。
 
 - ZR-706 实施完成：revenue 8466b37（FC-904 selector 契约补全 10 tests，产品零改动）；全量 509+106 绿（fc1103 环境挂起登记）；state triplet_green；implementer receipt canonical de8892ab；独立复核运行中。
+
+- ZR-706 closure：reviewer-zr706-independent accepted（3 info）；state accepted 59/117；closure-advance -> ZR-710。
+
+- ZR-710 实施完成：revenue 3f81318（REV-09 原子写 + 事务故障注入 + 幂等，6 tests）；全量 515+106 绿；state triplet_green；implementer receipt canonical d4fd4220；独立复核运行中。
