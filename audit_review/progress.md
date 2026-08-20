@@ -180,3 +180,7 @@
 - ZR-601 实施完成：revenue 1d32047（F2 asset facts 契约 10 tests，产品零改动）；全量 525+106 绿；state triplet_green；implementer receipt canonical ccbc5616；独立复核运行中。
 
 - ZR-601 closure：reviewer-zr601-independent accepted（26/26 对抗断言；1 minor docstring 3-period 标签 + 1 info 范围 diff）；state accepted 61/117；closure-advance -> ZR-602。
+
+- ZR-602 实施完成：revenue cb82620（asset facts basis 契约：resource≠reserve 隔离钉死 + 加性 basis 键 fail-closed + 族内单位一致性门，15 tests）；全量 540+106 绿；state triplet_green；implementer receipt canonical 44b70d75；独立复核运行中。
+
+- ZR-602 closure：reviewer-zr602-independent accepted（22/22 对抗断言；1 minor REV-001 unhashable ownership_basis → delta 修复 c9b0cfc + delta accepted；REV-001→info，REV-002~004 info）；state accepted 62/117；closure-advance -> ZR-603；**停止点：用户指示本卡跑完后更新全部 planning docs 后停止**。

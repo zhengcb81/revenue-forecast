@@ -109,3 +109,13 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-701 closure 提交进行中）、wiki 26a6b22、filing 5a1c18f。
 - 阶段 F 地图：◐ 1/13（ZR-701 已闭；F1：ZR-702~706/710；F2：ZR-601~611 先 ZR-610 会计 ADR；合流 ZR-609/709）。
 - 恢复第一步：ZR-702（F1 后续）。
+
+## 2026-08-21 阶段 F 快照（F1 全闭 → F2：ZR-601/602 closure，用户指示停止）
+
+- **accepted 62/117（约 53%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 9（ZR-701~706/710 + ZR-601/602）。
+- **F1 ✅ 7/7 完成（出口达成）**：ZR-701~706 + ZR-710（prepare_forecast/draft-formal/validate-only 门/schema 真源/文档清理/selector 契约/publication 事务）。
+- **F2 双分支推进**：ZR-601（asset facts 数学契约，test-only 10 tests）closure；ZR-602（asset facts basis 契约：resource≠reserve 隔离 + ownership/标准/measurement date 加性 basis + 族内单位一致性门）closure——首轮 reviewer accepted（22/22 对抗断言），1 minor REV-001（unhashable ownership_basis 抛 TypeError）→ delta c9b0cfc 修复 + delta accepted；REV-001→info，REV-002~004 info。
+- 机器游标：**F_revenue_mining** / **ZR-603**（未领取）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-602 closure commit 待提交；实现 cb82620 + delta c9b0cfc）、wiki 26a6b22、filing 5a1c18f。
+- 阶段 F 地图：◐ 9/13（F1 7/7 闭 + F2 ZR-601/602；F2 剩余 ZR-603~608/611/707/711~713 + ZR-610 ADR）。
+- **停止点（用户指示：本卡跑完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-603（F2 ownership/consolidation timeline，DAG 解锁；README 阶段表提 ZR-610 会计 ADR 但 DAG 权威）。

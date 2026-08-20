@@ -511,3 +511,15 @@
 - **机器状态**：current_next=ZR-602，accepted **61/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 8：ZR-701~706/710 + ZR-601）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-602（F2 resource/reserve/basis 层——以 DAG 解锁为准）。
+- **ZR-602（F2 第二卡 asset facts basis 契约）实施完成**：
+  - RED 探针：P1 resource≠reserve 语义隔离机制已存在（unsupported drivers 拒绝跨模型注入）→ 钉死；P2 basis 元数据（ownership/标准/measurement date）全仓零词汇 → **真实缺口**；P3 unit 无一致性门 → 真实缺口（基础版）。
+  - 修复：constants.py 加 ASSET_FACT_OWNERSHIP_BASES（one_hundred_percent/equity_share/consolidated）+ ASSET_FACT_BASIS_REQUIRED + ASSET_FACT_MODELS；document.py 新 validate_parameter_basis（加性键，携带即强制完整，None 早退）；segments.py 新 _check_asset_fact_unit_consistency（按维度分组归一化比较，kt-vs-t 漂移拒绝；换算表归 ZR-610 ADR）。
+  - 新 test_zr602_asset_facts_basis.py（15 tests）：C1 语义隔离 4（注入拒绝×2/词汇不相交/常量零硬编码）；C2 basis 8（文档级通过/逐缺字段拒绝/非法枚举/空标准/坏日期/加性兼容/文档层拒绝）；C3 单位一致性 2（漂移拒绝/归一化等价）+ 文档级 1。
+  - revenue 全量 540 passed + 106 subtests（+15 新，无回归；3 deselected = fc1103 既有环境挂起）+ ruff + ratchet 全过。
+  - 教训：ratchet 两次触发——document.py 内联 basis 块 33>32、segments.py 内联 unit 门 17>15，均以 helper 提取解决（ZR602-IMPL-003）。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue cb82620）；implementer receipt canonical 44b70d75。
+  - 独立复核 reviewer-zr602-independent 运行中。
+- **ZR-602 closure**：独立复核 reviewer-zr602-independent **accepted**（22/22 对抗断言 + 全量 540+106 复跑；1 minor REV-001 unhashable ownership_basis 抛 TypeError 而非 ForecastInputError → delta 修复 c9b0cfc（isinstance str guard + 5 回归 tests，20 passed）→ delta accepted；REV-001→info resolved，REV-002/003/004 info）；reviewer receipt canonical 7c972a4e；state accepted + closure-advance -> **ZR-603**（phase F_revenue_mining，F2 第三卡）。
+- **机器状态**：current_next=ZR-603，accepted **62/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 9：ZR-701~706/710 + ZR-601/602）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **停止点（用户指示：本卡跑完后更新全部 planning docs 后停止）**：ZR-603 未领取；恢复第一步 = ZR-603（F2 ownership/consolidation timeline——DAG 解锁 ZR-603，README 阶段表提 ZR-610 会计 ADR 但以 DAG 为准）。

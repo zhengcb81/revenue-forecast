@@ -168,3 +168,11 @@
 - 机制探针正确（非负强制/缺省 fail-closed/公式手算已实现）→ test-only 卡：10 tests 钉死 stock-flow 平衡/连续性/非负、缺省矩阵 fail-closed、MODEL_SPECS 公式与 required/formula 词汇。
 - 测试陷阱（后续 F2 卡参考）：① YEARS 2 期时 3 期驱动样本不会被计算——不平衡探针需 2 期自身触发；② 连续性破坏样本必须同时保持 balance（opening[1]=closing[0] 同步改），否则探针误报为平衡错误而非连续性错误；③ recovery_rate 是 ratio_driver——负值报 "cannot be negative" 而 >1 报 "must be between 0 and 1"，断言消息需按 driver 类型区分；④ MODEL_SPECS 是 mappingproxy——测试用下标访问，勿用 .get()。
 - reviewer 1 minor：docstring 说 "3-period" 实为 2-period（cosmetic，未改产品）；closure 后 F2 计数 8/13。
+
+## 发现 28：ZR-602（F2 第二卡 asset facts basis 契约，2026-08-21）
+- 探针三缺口：P1 resource≠reserve 语义隔离机制已存在（segments.py `unsupported drivers` 拒绝跨模型驱动注入）→ test-only 钉死；P2 basis 元数据全仓零词汇（ownership_basis/reporting_standard/measurement_date）→ **真实产品缺口**；P3 unit 无一致性门 → 真实缺口（基础版）。
+- **basis 设计为加性声明契约**：参数携带 `basis` 键时必须完整合法（ownership_basis ∈ {one_hundred_percent, equity_share, consolidated}、reporting_standard 非空、measurement_date ISO），半成品 fail-closed；缺省（无 basis）兼容既有——golden/industry e2e 全链路零破坏（全量 540+106 绿实证）。全量必填接入点留给 ZR-605/610。
+- **单位一致性按维度分组**：MODEL_DRIVER_DIMENSIONS 同维度驱动 unit 归一化（strip+lower）后必须一致——kt-vs-t 跨驱动/跨期漂移拒绝；换算表不实现（ZR-610 ADR 范围）。resource/reserve 共享 realized_price/other_revenue 是合法跨族通用驱动；族特异词汇（saleable_volume vs opening_reserves/additions/depletion/closing_reserves/recovery_rate）不相交。
+- **ratchet 两次触发教训**：加性校验仍会推高主函数 McCabe——document.py 内联 basis 块 33>32 → 提取 validate_parameter_basis（None 早退 + .get() 接线）；segments.py 内联 unit 门 17>15 → 提取 _check_asset_fact_unit_consistency。新校验一律 helper 提取。
+- 零产品硬编码：ASSET_FACT_MODELS/枚举均为通用矿业词汇（zijin 不在集合）。
+- **REV-001 修复（delta c9b0cfc）**：`basis["ownership_basis"] in 枚举` 对 unhashable 值（list/dict）抛 TypeError 而非 ForecastInputError——require 条件加 isinstance(str) guard 后统一 ForecastInputError，+5 参数化回归测试（20 passed）。教训：成员测试前先类型守卫，契约异常类型必须统一。

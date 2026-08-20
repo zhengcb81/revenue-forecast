@@ -523,3 +523,8 @@
 - publication_registry validation_status 加性键（draft/validated + 旧条目兼容 + 原子绑定）。
 - ProcessingDemand 跨仓同契约（revenue 独立实现 + prepare_source enqueue dedupe）。
 - 复杂度 ratchet（FC-1204-b）与 skill-sync（R4.2）是 scripts 改动的双前置门。
+## ZR-602（2026-08-21）：asset facts basis 契约（revenue）
+- 探针三缺口：resource≠reserve 语义隔离机制已存在（unsupported drivers 拒绝）→ 钉死；basis 元数据全仓零词汇 → 真实缺口；unit 无一致性门 → 真实缺口（基础版）。
+- basis 设计为加性声明契约（携带即强制完整、缺省兼容既有——golden/industry e2e 零破坏实证）；单位一致性按维度分组（归一化等价，kt-vs-t 漂移拒绝；换算表归 ZR-610 ADR）。
+- ratchet 两次触发（document.py 33>32、segments.py 17>15）均以 helper 提取解决——加性校验也会推高主函数 McCabe，新校验一律 helper。
+- REV-001 修复（delta c9b0cfc）：`basis["ownership_basis"] in 枚举` 对 unhashable 值抛 TypeError 而非 ForecastInputError → isinstance(str) guard 统一异常类型，+5 回归 tests（20 passed）。教训：成员测试前先类型守卫。

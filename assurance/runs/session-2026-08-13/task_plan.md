@@ -117,3 +117,11 @@
 - accepted 56/117（F 阶段 3/13：ZR-701~703）。
 - 恢复第一步：ZR-704（F1 后续：draft/formal 互换/故障注入/幂等）。
 - 三仓 HEAD：revenue 49a8793、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-21：F1 全闭 → F2 ZR-601/602 closure，用户指示更新全部 planning docs 后停止）
+- **accepted 62/117（约 53%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 9（ZR-701~706/710 + ZR-601/602）。
+- **F1 出口**：ZR-701~706 + ZR-710 7/7 全闭（prepare_forecast/draft-formal/validate-only 门/schema 真源/文档清理/selector 契约/publication 事务）。
+- **ZR-601 closure**（F2 首卡 asset facts 数学契约）：revenue 1d32047（10 tests 产品零改动）；reviewer-zr601-independent accepted（26/26 对抗断言；1 minor docstring 3-period 标签 + 1 info 范围 diff）；reviewer receipt canonical d5cf7a5a；closure→ZR-602。
+- **ZR-602 closure**（F2 第二卡 asset facts basis 契约）：revenue cb82620 + delta c9b0cfc（4 文件 +333/-1 + REV-001 修复，20 tests）——G1 resource≠reserve 语义隔离钉死（机制已存在）；G2 basis 加性契约（ownership_basis ∈ {one_hundred_percent, equity_share, consolidated} + reporting_standard + measurement_date ISO，携带即强制完整，半成品 fail-closed）；G3 族内单位一致性门（按维度分组归一化，kt-vs-t 漂移拒绝；换算表归 ZR-610 ADR）。全量 540+106 绿；ruff/ratchet 全过；首轮 reviewer accepted（22/22 对抗断言）→ REV-001（unhashable ownership_basis 抛 TypeError）delta 修复 → delta accepted（REV-001→info）；reviewer receipt canonical 7c972a4e；closure→ZR-603。
+- **停止点（用户指示：本卡跑完后更新全部 planning docs 后停止）**：ZR-603 未领取；恢复第一步 = ZR-603（F2 ownership/consolidation timeline——DAG 解锁 ZR-603，README 阶段表提 ZR-610 会计 ADR 但以 DAG 为准）→ ZR-604~608/611/707/711~713 + ZR-610 会计 ADR。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-602 closure commit 待提交；实现 cb82620 + delta c9b0cfc）、wiki 26a6b22、filing 5a1c18f。

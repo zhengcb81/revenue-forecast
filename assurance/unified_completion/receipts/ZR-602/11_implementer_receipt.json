@@ -1,0 +1,107 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "2ba0368536982cdd2e440ac379dc461c5fce984f",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "44b70d751481a5fb738a0b58473e2f1acb4e197d504b81041bf3a3ccf0c443be",
+  "commands": [
+    {
+      "command": "RED 探针：跨模型驱动注入（resource 注 reserve 驱动 / reserve_depletion 注 resource 驱动）→ ForecastInputError 'unsupported drivers'（机制已存在，segments.py:53-54）；scripts 全仓 grep ownership|consolidat|reporting_standard|measurement_date|basis → 零命中（basis 元数据完全缺失）；unit 无一致性/归一逻辑",
+      "exit_code": 0,
+      "result": "G1 机制正确待钉死；G2 basis 契约真实缺口；G3 单位一致性真实缺口（基础版，换算表归 ZR-610）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr602_asset_facts_basis.py -q --tb=short",
+      "exit_code": 0,
+      "result": "15 passed（C1 语义隔离 4 + C2 basis 契约 8 + C3 单位一致性 2 + 文档级 1）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "540 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+15 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/contracts/constants.py scripts/contracts/document.py scripts/forecast/segments.py tests/test_zr602_asset_facts_basis.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（document.py validate_parameters 拆 validate_parameter_basis 回 32；segments.py 拆 _check_asset_fact_unit_consistency 回 15）"
+    },
+    {
+      "command": "git diff 2ba0368 cb82620 --stat",
+      "exit_code": 0,
+      "result": "4 文件 +333/-1：constants.py（ASSET_FACT_* 词汇）、document.py（validate_parameter_basis + 接线）、segments.py（unit 一致性门）、test_zr602_asset_facts_basis.py（新 15 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-21T09:30:00+00:00",
+  "findings": [
+    {
+      "detail": "basis 契约设计为加性键：参数携带 basis 时必须完整合法（ownership_basis ∈ {one_hundred_percent, equity_share, consolidated}、reporting_standard 非空、measurement_date ISO），半成品 fail-closed；缺省（无 basis）兼容既有（golden/industry e2e 全链路零破坏——全量 540+106 绿证明）。强制全量必填的接入点留给 ZR-605/610（MineYearOperation 输入合同/会计 ADR）。",
+      "id": "ZR602-IMPL-001",
+      "severity": "info",
+      "title": "basis 为加性声明契约（携带即强制完整，缺省兼容）"
+    },
+    {
+      "detail": "单位一致性门按维度分组比较（MODEL_DRIVER_DIMENSIONS）：同维度驱动 unit 归一后（strip+lower）必须一致——kt vs t 跨驱动/跨期漂移拒绝；换算表不实现（ZR-610 ADR 范围）。resource/reserve 共享 realized_price/other_revenue 是合法跨族通用驱动，族特异词汇（saleable_volume vs opening_reserves/additions/depletion/closing_reserves/recovery_rate）不相交。",
+      "id": "ZR602-IMPL-002",
+      "severity": "info",
+      "title": "单位一致性按维度分组；共享通用驱动合法"
+    },
+    {
+      "detail": "复杂度 ratchet 两次触发：document.py 内联 basis 校验块 33>32 → 提取 validate_parameter_basis（None 早退 + .get() 接线）回 32；segments.py 内联 unit 门 17>15 → 提取 _check_asset_fact_unit_consistency 回 15。教训：加性校验仍会推高主函数 McCabe，新校验一律 helper 提取。",
+      "id": "ZR602-IMPL-003",
+      "severity": "info",
+      "title": "ratchet 两次触发均以 helper 提取解决"
+    }
+  ],
+  "implementation": {
+    "design": "探针驱动修复卡：G1（resource≠reserve 语义隔离）机制已存在（unsupported drivers）→ test 钉死 + 族特异词汇不相交断言；G2（basis 契约）→ constants.py 注册 ASSET_FACT_OWNERSHIP_BASES/ASSET_FACT_BASIS_REQUIRED/ASSET_FACT_MODELS + document.py validate_parameter_basis（加性键，携带则强制完整，None 早退）；G3（单位一致性）→ segments.py _check_asset_fact_unit_consistency（按维度分组，归一化 strip+lower，漂移拒绝）。零产品硬编码：模型名/枚举均为通用矿业词汇（zijin 不在集合）。",
+    "files": [
+      "revenue-forecast/scripts/contracts/constants.py",
+      "revenue-forecast/scripts/contracts/document.py",
+      "revenue-forecast/scripts/forecast/segments.py",
+      "revenue-forecast/tests/test_zr602_asset_facts_basis.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-602/**"
+    ]
+  },
+  "implementer": "zr602-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 cb82620；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=19e0e73f（00_wu_card.md，Get-FileHash 注入）。",
+    "独立 reviewer 待派出（reviewer-zr602-independent），12_reviewer_receipt 由 reviewer 产出后复制入库。",
+    "注：base_triplet.revenue=2ba0368 为 ZR-601 closure commit（F2 首卡闭后）。"
+  ],
+  "objective": "F2 第二卡 asset facts basis 契约：resource≠reserve 语义隔离钉死（机制已存在）+ basis 元数据加性契约（ownership/标准/measurement date 携带即强制，半成品 fail-closed）+ asset fact 族单位一致性门（归一化等价，换算表归 ZR-610 ADR）。",
+  "plan_sha256": "19e0e73f7acd66874c367b0a371b61bf414703855f296fab20ba85f8a13e039c",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "cb82620b649c542a3388c800e2b697a4067b1c22",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/contracts/constants.py（加性 ASSET_FACT_* 词汇）、scripts/contracts/document.py（validate_parameter_basis）、scripts/forecast/segments.py（unit 一致性门）、tests/test_zr602_asset_facts_basis.py（新 15 tests）；revenue 侧 receipts/ZR-602/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 4,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/contracts/constants.py",
+    "revenue-forecast/scripts/contracts/document.py",
+    "revenue-forecast/scripts/forecast/segments.py",
+    "revenue-forecast/tests/test_zr602_asset_facts_basis.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-602/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-602"
+}
