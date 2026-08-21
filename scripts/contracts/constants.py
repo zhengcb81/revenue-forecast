@@ -101,6 +101,25 @@ ASSET_FACT_BASIS_REQUIRED = (
 ASSET_FACT_MODELS = frozenset({"resource", "reserve_depletion"})
 
 
+# ZR-604: dual-assertion conflict resolution — when parameters with the
+# same semantic key (definition/period/unit/scenario) carry different
+# values, ALL must carry resolution_status and at most one is accepted;
+# otherwise the original hard-fail (unresolved conflict) applies.
+# Assertion_status identifies which assertion is primary vs secondary;
+# resolution_status tracks the review outcome.
+ASSERTION_STATUSES = {
+    "primary",
+    "secondary",
+}
+
+RESOLUTION_STATUSES = {
+    "accepted",
+    "rejected",
+    "pending_review",
+    "under_review",
+}
+
+
 MONETARY_DIMENSIONS = {
     "revenue",
     "revenue_per_unit",

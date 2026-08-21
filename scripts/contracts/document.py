@@ -11,10 +11,12 @@ from typing import Any
 from contracts.constants import (
     ASSET_FACT_BASIS_REQUIRED,
     ASSET_FACT_OWNERSHIP_BASES,
+    ASSERTION_STATUSES,
     FORECAST_SCHEMA_VERSION,
     MONETARY_DIMENSIONS,
     PARAMETER_DIMENSIONS,
     PARAMETER_KINDS,
+    RESOLUTION_STATUSES,
     SCENARIOS,
     SOURCE_RANKS,
     TIME_BASES,
@@ -311,6 +313,52 @@ def validate_parameter_basis(parameter_id: str, basis: Any) -> None:
     parse_iso_date(basis["measurement_date"], f"{parameter_id}.basis.measurement_date")
 
 
+def _validate_parameter_status_fields(
+    parameter_id: str, parameter: dict[str, Any]
+) -> None:
+    """ZR-604: validate additive assertion_status / resolution_status keys.
+
+    ``None`` (key absent) passes — both keys are additive.
+    """
+    assertion = parameter.get("assertion_status")
+    if assertion is not None:
+        require(
+            assertion in ASSERTION_STATUSES,
+            f"unsupported assertion_status for {parameter_id}: {assertion}",
+        )
+    resolution = parameter.get("resolution_status")
+    if resolution is not None:
+        require(
+            resolution in RESOLUTION_STATUSES,
+            f"unsupported resolution_status for {parameter_id}: {resolution}",
+        )
+
+
+def _validate_conflict_resolution(
+    group: list[dict[str, Any]], key: tuple[str, str, str, str]
+) -> None:
+    """ZR-604: dual-assertion conflict resolution.
+
+    When parameters with the same semantic key carry different values,
+    ALL must carry ``resolution_status`` and at most one is ``accepted``
+    — otherwise the original hard-fail applies (no silent overwrite).
+    """
+    all_resolved = all("resolution_status" in item for item in group)
+    if not all_resolved:
+        ids = ", ".join(item["parameter_id"] for item in group)
+        raise ForecastInputError(
+            f"unresolved conflicting parameters for {key}: {ids}"
+        )
+    accepted = [
+        item for item in group if item["resolution_status"] == "accepted"
+    ]
+    if len(accepted) > 1:
+        ids = ", ".join(item["parameter_id"] for item in accepted)
+        raise ForecastInputError(
+            f"multiple accepted assertions for {key}: {ids}"
+        )
+
+
 def validate_parameters(
     data: dict[str, Any], source_index: dict[str, dict[str, Any]]
 ) -> dict[str, dict[str, Any]]:
@@ -388,6 +436,10 @@ def validate_parameters(
         # complete, valid basis (ownership basis / reporting standard /
         # measurement date). Half-baked or invalid basis fails closed.
         validate_parameter_basis(parameter_id, parameter.get("basis"))
+
+        # ZR-604: additive assertion_status / resolution_status — validated
+        # when present; absent keys unaffected (legacy compatible).
+        _validate_parameter_status_fields(parameter_id, parameter)
 
         if kind in {"reported_fact", "management_guidance"}:
             require(
@@ -473,10 +525,7 @@ def validate_parameters(
             continue
         values = {item["value"] for item in group}
         if len(values) > 1:
-            ids = ", ".join(item["parameter_id"] for item in group)
-            raise ForecastInputError(
-                f"unresolved conflicting parameters for {key}: {ids}"
-            )
+            _validate_conflict_resolution(group, key)
     return index
 
 
