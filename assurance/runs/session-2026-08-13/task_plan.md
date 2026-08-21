@@ -176,3 +176,14 @@
 - **ZR-607 实施完成**（F2 internal flow 会计桥）：revenue 073fd4d（+318 行 2 文件，29 tests）——可追踪 InternalFlow（八字段）+ internal_revenue + eliminate_internal_revenue gross/net 桥（net=external 内部消除不重复计，period/scenario 过滤）。全量 674+106 绿；implementer receipt canonical 05c102fb；独立复核 reviewer-zr607-independent 运行中。
 - 下一卡（closure 后）：ZR-608（F2 asset→segment→group reconciliation——DAG 依赖 ZR-607；"容差内才标 modeled；不闭合则回退到分部并列 gap；禁止产量×价格伪收入"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue 073fd4d（ZR-607 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-608 实施完成）
+- **ZR-608 实施完成**（F2 asset→segment→group reconciliation）：revenue 3081967（+107 行 reconciliation.py + 11 tests）——reconcile_layer 容差门（reconciled_modeled vs gap）、fallback_segment_listing（分部并列 + 显式 gap）、gap_report 防伪收入（NaN/inf 拒绝、缺资产=gap）。全量 685+106 绿；implementer receipt canonical d5497096；独立复核 reviewer-zr608-independent 运行中。注：ZR-607 closure 文件被合入本 commit（流程偏差）。
+- 下一卡（closure 后）：ZR-611（F2 通用多矿合成 E2E——DAG 依赖 ZR-605~608,ZR-610；"控股、权益法、多金属、内供、跨币种、爬坡、gap、residual"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 3081967（ZR-608 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-608 closure → ZR-611）
+- **accepted 69/117（约 59%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 16（ZR-701~706/710 + ZR-601~608 + ZR-610）。
+- **ZR-608 closure**（F2 asset→segment→group reconciliation）：reviewer accepted（46/46 对抗断言，零 blocking）；closure→ZR-611。
+- 下一卡：**ZR-611**（F2 通用多矿合成 E2E——DAG 已解锁；"控股、权益法、多金属、内供、跨币种、爬坡、gap、residual；生产代码公司/矿名 hardcode=0"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-608 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

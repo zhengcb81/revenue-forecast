@@ -208,3 +208,7 @@
 - ZR-607 实施完成（2026-08-22）：revenue 073fd4d（internal flow 会计桥：可追踪 InternalFlow + gross/net elimination 桥，29 tests）；全量 674+106 绿；state triplet_green；implementer receipt canonical 05c102fb；独立复核运行中。
 
 - ZR-607 closure：reviewer-zr607-independent accepted（9/9 对抗断言组；零 blocking/minor，1 info）；state accepted 68/117；closure-advance -> ZR-608。
+
+- ZR-608 实施完成（2026-08-22）：revenue 3081967（asset→segment→group reconciliation：容差门 + 诚实 fallback + 防伪收入，11 tests；注：ZR-607 closure 文件被合入本 commit——流程偏差记录）；全量 685+106 绿；state triplet_green；implementer receipt canonical d5497096；独立复核运行中。
+
+- ZR-608 closure：reviewer-zr608-independent accepted（46/46 对抗断言；零 blocking，5 info/minor）；state accepted 69/117；closure-advance -> ZR-611。

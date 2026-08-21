@@ -590,3 +590,15 @@
 - **机器状态**：current_next=ZR-608，accepted **68/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 15：ZR-701~706/710 + ZR-601~607 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-607 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-608（F2 asset→segment→group reconciliation——DAG 已解锁；"容差内才标 modeled；不闭合则回退到分部并列 gap；禁止产量×价格伪收入"）。
+- **流程偏差记录**：ZR-607 closure commit 未独立落地——pwsh-39 后台 closure 提交被后续 ZR-608 提交（3081967）合并，ZR-607 closure 文件（receipts/ZR-607/**、state.json、README、planning docs）随 3081967 一并入库。机器状态与 receipt 链条正确（ZR-607 accepted + closure→ZR-608 已在 state.json；ZR-607 12 receipt canonical 146f26fe），仅 git 历史粒度不干净。教训：closure commit 落地确认后再 stage 新卡文件。
+- **ZR-608（F2 asset→segment→group reconciliation）实施完成**：
+  - RED 探针：grep reconcil|fallback|modeled|gap scripts → gap 仅模板/文档词汇（generate_input_template status=data_gap）、无层级对账机制——真实产品缺口。
+  - 修复：新 scripts/reconciliation.py——reconcile_layer（容差门：|diff| ≤ max(1.0,|ref|)×tol → reconciled_modeled，否则 gap 不伪造差值）+ fallback_segment_listing（分部并列 + 未闭合差值显式 gap 绝不进 segment_total + closed 标记）+ gap_report（资产贡献 NaN/inf 拒绝 finite_number 防伪收入；缺资产=gap 非 0 收入）。
+  - 新 test_zr608_reconciliation.py（11 tests）：C1 容差门 4 + C2 诚实 fallback 3 + C3 防伪收入 4。
+  - revenue 全量 685 passed + 106 subtests（+11 新，无回归）+ ruff + ratchet 全过；skill-sync MATCH 135 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 3081967，含 ZR-607 closure 混合）；implementer receipt canonical d5497096。
+  - 独立复核 reviewer-zr608-independent 运行中。
+- **ZR-608 closure**：独立复核 reviewer-zr608-independent **accepted**（46/46 对抗断言 + 全量 685+106 复跑；零 blocking，5 info/minor：REV-001 C1~C3 验证/REV-002 无硬编码收入数据/REV-003 流程偏差确认/REV-004 质量门绿/REV-005 minor fallback closed 标志硬编码默认 1e-6 容差——与卡片签名一致）；reviewer receipt canonical 1c9018b3；state accepted + closure-advance -> **ZR-611**（phase F_revenue_mining，F2 第九卡）。
+- **机器状态**：current_next=ZR-611，accepted **69/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 16：ZR-701~706/710 + ZR-601~608 + ZR-610）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-608 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-611（F2 通用多矿合成 E2E——DAG 已解锁；"控股、权益法、多金属、内供、跨币种、爬坡、gap、residual；生产代码公司/矿名 hardcode=0"）。

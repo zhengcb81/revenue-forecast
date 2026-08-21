@@ -219,3 +219,9 @@
 - InternalFlow 八字段全可追踪（flow_id/source/destination/product/volume/transfer_price/period/scenario）——内部交易每一笔都有来源/去向/标的物，elimination 可审计。
 - gross/net 桥设计：gross = external + Σ内部转移值（as sold 口径）；net = external（内部销售从集团收入消除——不重复计）。period/scenario 过滤使 elimination 可按期间/情景追溯。
 - 组合语义：与 ZR-606 commercial terms 组合（内部流量价 → 消除后净额精确）；与 ZR-603 权益语义对齐（equity/consolidation 口径下内部销售均须消除）。
+
+## 发现 35：ZR-608（F2 asset→segment→group reconciliation，2026-08-22）
+- 容差门语义：|diff| ≤ max(1.0,|ref|)×tol → reconciled_modeled——小基数（近零参考）不因绝对差而误判 gap（max(1.0) 下界）。
+- 诚实 fallback：未闭合差值显式 gap 绝不进 segment_total——"不闭合则回退到分部并列 gap"的机械化；closed 标记布尔化。
+- 防伪收入：资产贡献全部 finite_number（NaN/inf 拒绝）——"禁止产量×价格伪收入"的机械化：伪造/缺失贡献 = gap 非收入。
+- **流程偏差教训**：closure commit 与下一卡实现 commit 必须串行——pwsh-39 后台 closure 提交未确认落地即 stage 新卡文件，导致 ZR-607 closure 文件被合入 3081967（git 历史粒度不干净，机器状态正确）。
