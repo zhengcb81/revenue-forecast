@@ -213,3 +213,9 @@
 - 纯函数敏感性重算：calculate_net_revenue(saleable_volume, terms) 幂等确定性——price/FX 变动重算可复现（Δnet = Δprice×volume×(1−royalty)×FX）。
 - **ZR606-REV-001 修复（delta 47fe715）**：saleable_volume 未走 finite_number（NaN/inf 静默传播）→ 路由 finite_number + 6 回归测试。**流程教训**：delta 复审首轮判 changes_required 是因为 pre-commit 钩子运行时 reviewer 看到 staged-not-committed——提交与复核之间需确认 commit 落地（git rev-parse HEAD 验证）再发复审。
 - **REV-002 教训**：implementer receipt 的 result_triplet 在 delta 后需重封（uc 工具不强制跨 receipt triplet 相等，但链条一致性要求重签）。
+
+## 发现 34：ZR-607（F2 internal flow 会计桥，2026-08-22）
+- 探针词汇陷阱（ZR-603 教训第三次验证）：`elimination`/`intersegment_elimination` grep 命中但都是**通用参数化调整机制**（revenue_constraints 的 segment_adjustment_parameter_ids 指向参数）——与矿业内部流程（内部转冶炼/贸易）语义不同。
+- InternalFlow 八字段全可追踪（flow_id/source/destination/product/volume/transfer_price/period/scenario）——内部交易每一笔都有来源/去向/标的物，elimination 可审计。
+- gross/net 桥设计：gross = external + Σ内部转移值（as sold 口径）；net = external（内部销售从集团收入消除——不重复计）。period/scenario 过滤使 elimination 可按期间/情景追溯。
+- 组合语义：与 ZR-606 commercial terms 组合（内部流量价 → 消除后净额精确）；与 ZR-603 权益语义对齐（equity/consolidation 口径下内部销售均须消除）。

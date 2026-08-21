@@ -544,3 +544,5 @@
 ## ZR-606（2026-08-22）：商业量价层（revenue）
 - CommercialTerm provenance（value/source/assumption/period）；finite_number 加固（ZR-605 REV-001 落地）；byproduct 独立加项不重复计价；纯函数敏感性重算。
 - ZR-606 closure：delta 47fe715（REV-001 saleable_volume finite_number）；delta 复审 staged-not-committed 教训；implementer receipt 重封；state accepted 67/117；closure-advance -> ZR-607。
+## ZR-607（2026-08-22）：internal flow 会计桥（revenue）
+- InternalFlow 八字段可追踪 + gross/net elimination 桥（net=external 内部消除不重复计）；period/scenario 过滤；与 ZR-606 商业量价组合。

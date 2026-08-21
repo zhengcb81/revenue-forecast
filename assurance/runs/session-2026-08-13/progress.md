@@ -579,3 +579,14 @@
 - **机器状态**：current_next=ZR-607，accepted **67/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 14：ZR-701~706/710 + ZR-601~606 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-606 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-607（F2 ownership/consolidation/internal flow 会计桥——DAG 已解锁；"equity vs consolidation、内部转冶炼/贸易、gross/net、elimination 可追踪"）。
+- **ZR-607（F2 internal flow 会计桥）实施完成**：
+  - RED 探针：grep elimination|intersegment|internal sale|gross|net|smelt → revenue_constraints 的 elimination 是**通用参数化调整**（segment_adjustment_parameter_ids 指向参数）、constants.intersegment_elimination 是调整类别、segments.py:465 处理调整类别——均非矿业内部流程桥；零实现。
+  - 修复：新 scripts/internal_flow.py——InternalFlow frozen dataclass（flow_id/source/destination/product/volume/transfer_price/period/scenario 八字段，文本非空 + finite_number >0 + gap-on-missing）+ internal_revenue（volume×transfer_price）+ eliminate_internal_revenue（gross/net 桥：gross=external+Σ内部转移值 as sold、net=external 内部消除不重复计、period/scenario 过滤）。
+  - 新 test_zr607_internal_flow.py（29 tests）：C1 可追踪 10 + C2 elimination 4 + C3 组合 2 + 冻结 dataclass。
+  - revenue 全量 674 passed + 106 subtests（+29 新，无回归）+ ruff + ratchet 全过；skill-sync MATCH 133 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 073fd4d）；implementer receipt canonical 05c102fb。
+  - 独立复核 reviewer-zr607-independent 运行中。
+- **ZR-607 closure**：独立复核 reviewer-zr607-independent **accepted**（9/9 对抗断言组 + 全量 674+106 复跑；零 blocking/minor，仅 1 info REV-001 全量 thread warning 环境噪音）；reviewer receipt canonical 146f26fe；state accepted + closure-advance -> **ZR-608**（phase F_revenue_mining，F2 第八卡）。
+- **机器状态**：current_next=ZR-608，accepted **68/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 15：ZR-701~706/710 + ZR-601~607 + ZR-610）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-607 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-608（F2 asset→segment→group reconciliation——DAG 已解锁；"容差内才标 modeled；不闭合则回退到分部并列 gap；禁止产量×价格伪收入"）。

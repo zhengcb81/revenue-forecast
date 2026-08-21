@@ -171,3 +171,8 @@
 - **ZR-606 closure**（F2 商业量价层）：delta 47fe715（REV-001 saleable_volume finite_number）；delta 复审 staged-not-committed 教训（pre-commit 钩子运行时）；implementer receipt 重封 b07a951b；reviewer accepted，closure→ZR-607。
 - 下一卡：**ZR-607**（F2 ownership/consolidation/internal flow 会计桥——DAG 已解锁；"equity vs consolidation、内部转冶炼/贸易、gross/net、elimination 可追踪"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-606 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-607 实施完成）
+- **ZR-607 实施完成**（F2 internal flow 会计桥）：revenue 073fd4d（+318 行 2 文件，29 tests）——可追踪 InternalFlow（八字段）+ internal_revenue + eliminate_internal_revenue gross/net 桥（net=external 内部消除不重复计，period/scenario 过滤）。全量 674+106 绿；implementer receipt canonical 05c102fb；独立复核 reviewer-zr607-independent 运行中。
+- 下一卡（closure 后）：ZR-608（F2 asset→segment→group reconciliation——DAG 依赖 ZR-607；"容差内才标 modeled；不闭合则回退到分部并列 gap；禁止产量×价格伪收入"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 073fd4d（ZR-607 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

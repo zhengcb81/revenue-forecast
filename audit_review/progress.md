@@ -204,3 +204,7 @@
 - ZR-606 实施完成（2026-08-22）：revenue cf3ada7（商业量价层：price/payability/TC-RC/premium/byproduct/FX/royalty 带 provenance，finite_number 数值加固（ZR-605 REV-001 落地），不重复计价，敏感性重算，24 tests）；全量 639+106 绿；state triplet_green；implementer receipt canonical 64f99205；独立复核运行中。
 
 - ZR-606 closure：reviewer accepted（首轮 accepted → REV-001 minor delta 修复 47fe715 → delta 复审 staged-not-committed → commit 落地后 accepted）；REV-001→info，REV-002 minor implementer receipt 重封 + 2 info；state accepted 67/117；closure-advance -> ZR-607。
+
+- ZR-607 实施完成（2026-08-22）：revenue 073fd4d（internal flow 会计桥：可追踪 InternalFlow + gross/net elimination 桥，29 tests）；全量 674+106 绿；state triplet_green；implementer receipt canonical 05c102fb；独立复核运行中。
+
+- ZR-607 closure：reviewer-zr607-independent accepted（9/9 对抗断言组；零 blocking/minor，1 info）；state accepted 68/117；closure-advance -> ZR-608。
