@@ -200,3 +200,7 @@
 - ZR-605 实施完成（2026-08-22）：revenue b02f17b（MineYearOperation 输入合同：七字段必填 gap-on-missing + derive_saleable_volume + resource 模型驱动映射，30 tests）；全量 615+106 绿；state triplet_green；implementer receipt canonical 3f780700；独立复核运行中。
 
 - ZR-605 closure：reviewer-zr605-independent accepted（7/7 对抗断言组；1 minor REV-001 inf 值未拒——登记 ZR-606 后续 + 1 info）；state accepted 66/117；closure-advance -> ZR-606。
+
+- ZR-606 实施完成（2026-08-22）：revenue cf3ada7（商业量价层：price/payability/TC-RC/premium/byproduct/FX/royalty 带 provenance，finite_number 数值加固（ZR-605 REV-001 落地），不重复计价，敏感性重算，24 tests）；全量 639+106 绿；state triplet_green；implementer receipt canonical 64f99205；独立复核运行中。
+
+- ZR-606 closure：reviewer accepted（首轮 accepted → REV-001 minor delta 修复 47fe715 → delta 复审 staged-not-committed → commit 落地后 accepted）；REV-001→info，REV-002 minor implementer receipt 重封 + 2 info；state accepted 67/117；closure-advance -> ZR-607。

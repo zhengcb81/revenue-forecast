@@ -1,0 +1,102 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "f72234d8e720c6c4ccfc63b057cf66d681f8a7bb",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "b07a951beefddeb70eff4dcf3343b00da28ef5c64ad700456e8c49e0b57476d6",
+  "commands": [
+    {
+      "command": "RED 探针：grep TC-RC|payab|premium|byproduct|royalty|FX scripts → payable 已在 ZR-605；licensing_commercial/milestone_royalty 与矿业无关；foreign_exchange 仅是调整类别",
+      "exit_code": 0,
+      "result": "G1 真实产品缺口：商业量价层零实现"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr606_commercial_terms.py -q --tb=short",
+      "exit_code": 0,
+      "result": "24 passed（C1 provenance 10 + C2 不重复计价 3 + C3 敏感性重算 4）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "639 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+24 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/commercial_terms.py tests/test_zr606_commercial_terms.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（新文件各函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 131 files"
+    },
+    {
+      "command": "git diff f72234d cf3ada7 --stat",
+      "exit_code": 0,
+      "result": "2 文件 +312：commercial_terms.py（新 ~130 行）、test_zr606_commercial_terms.py（新 24 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T05:15:00+00:00",
+  "findings": [
+    {
+      "detail": "CommercialTerm 带完整 provenance（value/source/assumption/period）——value 用 finite_number（ZR-605 REV-001 inf 教训修复：inf/-inf/NaN 全拒）；source/assumption/period 非空 str。price 必填，其余可选（None 合法）。净收入 = (gross−TC−RC+premium+byproduct−royalty×gross)×FX——byproduct_credit 是独立加项（副产品收入不进入主商品 volume×price 路径——不重复计价）。纯函数可敏感性重算（幂等+确定性）。",
+      "id": "ZR606-IMPL-001",
+      "severity": "info",
+      "title": "provenance + 不重复计价 + 敏感性重算"
+    },
+    {
+      "detail": "ZR-605 REV-001 教训直接落地：commercial terms 的 value 全部走 finite_number（inf/-inf/NaN 拒绝）——前卡 minor 在本卡即修复，未等后续集中处理。",
+      "id": "ZR606-IMPL-002",
+      "severity": "info",
+      "title": "REV-001 inf 加固立即落地"
+    }
+  ],
+  "implementation": {
+    "design": "新 scripts/commercial_terms.py：CommercialTerm（value/source/assumption/period frozen dataclass）+ CommercialTerms（price 必填 + payability/tc/rc/premium/byproduct_credit/fx_rate/royalty_rate 可选）+ validate_commercial_terms（finite_number 数值 + 非空文本）+ calculate_net_revenue（纯函数：(gross−TC−RC+premium+byproduct−royalty×gross)×FX，返回 gross/deductions/additions/net）。零产品硬编码。",
+    "files": [
+      "revenue-forecast/scripts/commercial_terms.py",
+      "revenue-forecast/tests/test_zr606_commercial_terms.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-606/**"
+    ]
+  },
+  "implementer": "zr606-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 cf3ada7；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=5cf7a0c8（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr606-independent）。",
+    "注：base_triplet.revenue=f72234d 为 ZR-605 closure commit。"
+  ],
+  "objective": "F2 商业量价层：price/payability/TC-RC/premium/byproduct/FX/royalty 带完整 provenance（value/source/assumption/period），不重复计价（byproduct 独立加项），纯函数净收入可敏感性重算。",
+  "plan_sha256": "5cf7a0c81091b88a1e901823f498ce35506abb73ff4a0144a000ebae03d4250e",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "47fe715367efdab7af84c99cb4a46f3d931db89a",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/commercial_terms.py（新）、tests/test_zr606_commercial_terms.py（新 24 tests）；revenue 侧 receipts/ZR-606/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/commercial_terms.py",
+    "revenue-forecast/tests/test_zr606_commercial_terms.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-606/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-606"
+}

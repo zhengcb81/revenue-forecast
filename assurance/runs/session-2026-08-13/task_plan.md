@@ -160,3 +160,14 @@
 - **ZR-605 closure**（F2 MineYearOperation 输入合同）：reviewer accepted（7/7 对抗断言组，1 minor inf 值未拒——登记 ZR-606 后续）；closure→ZR-606。
 - 下一卡：**ZR-606**（F2 商业量价层——DAG 已解锁；"price/payability/TC-RC/premium/byproduct/FX/royalty；每个变量有来源/假设/期限；多商品与副产品不重复计价；敏感性可重算"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-605 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-606 实施完成）
+- **ZR-606 实施完成**（F2 商业量价层）：revenue cf3ada7（+312 行 2 文件，24 tests）——price/payability/TC-RC/premium/byproduct/FX/royalty 带完整 provenance（value/source/assumption/period，finite_number 加固）、不重复计价（byproduct 独立加项）、纯函数净收入可敏感性重算。全量 639+106 绿；implementer receipt canonical 64f99205；独立复核 reviewer-zr606-independent 运行中。
+- 下一卡（closure 后）：ZR-607（F2 ownership/consolidation/internal flow 会计桥——DAG 依赖 ZR-603,ZR-606；"equity vs consolidation、内部转冶炼/贸易、gross/net、elimination 可追踪"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue cf3ada7（ZR-606 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-606 closure → ZR-607）
+- **accepted 67/117（约 57%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 14（ZR-701~706/710 + ZR-601~606 + ZR-610）。
+- **ZR-606 closure**（F2 商业量价层）：delta 47fe715（REV-001 saleable_volume finite_number）；delta 复审 staged-not-committed 教训（pre-commit 钩子运行时）；implementer receipt 重封 b07a951b；reviewer accepted，closure→ZR-607。
+- 下一卡：**ZR-607**（F2 ownership/consolidation/internal flow 会计桥——DAG 已解锁；"equity vs consolidation、内部转冶炼/贸易、gross/net、elimination 可追踪"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-606 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

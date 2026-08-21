@@ -541,3 +541,6 @@
 - ADR 文档冻结 8 条会计决策（逐矿贡献=模型估计/resource≠reserve/basis/ownership timeline/单位一致性/冲突解决/地区层级/边界）；独立会计 reviewer accepted（8/8 会计合理性，2 info）。
 ## ZR-605（2026-08-22）：MineYearOperation 输入合同（revenue）
 - 七字段必填 gap-on-missing（不默认 0）；derive_saleable_volume=volume×grade×recovery×payable；to_resource_model_drivers 映射 resource 模型。
+## ZR-606（2026-08-22）：商业量价层（revenue）
+- CommercialTerm provenance（value/source/assumption/period）；finite_number 加固（ZR-605 REV-001 落地）；byproduct 独立加项不重复计价；纯函数敏感性重算。
+- ZR-606 closure：delta 47fe715（REV-001 saleable_volume finite_number）；delta 复审 staged-not-committed 教训；implementer receipt 重封；state accepted 67/117；closure-advance -> ZR-607。

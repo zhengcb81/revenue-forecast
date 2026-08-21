@@ -205,3 +205,11 @@
 - to_resource_model_drivers 映射可直接喂 calculate_model_path(model="resource")——MineYearOperation → 模型消费闭环。
 - NEW_FILE_MAX=10 门：validate_mine_year_operation 内联 18 复杂度 → 提取 _positive_numeric/_ratio helpers 回 ≤10——新文件也要警惕 ratchet。
 - **REV-001 minor（inf 值未拒）**：`volume=inf`/`realized_price=inf` 通过校验（inf>0）；NaN 已被拒。登记 ZR-606 后续：数值校验复用 contracts.evidence.finite_number / math.isfinite。
+
+## 发现 33：ZR-606（F2 商业量价层，2026-08-22）
+- 商业条款 provenance 结构：每个变量 = {value, source, assumption, period}——来源/假设/期限可追溯（"每个变量有来源/假设/期限"的机械化）。
+- **ZR-605 REV-001 教训立即落地**：commercial terms 的 value 全部走 finite_number（inf/-inf/NaN 拒绝）——前卡 minor 在本卡即修复，未等集中处理。教训闭环：reviewer minor → 下一卡直接加固。
+- 不重复计价设计：byproduct_credit 是**独立加项**（固定值，不乘 volume）——副产品收入不进入主商品 volume×price 路径，多商品路径天然无重复。
+- 纯函数敏感性重算：calculate_net_revenue(saleable_volume, terms) 幂等确定性——price/FX 变动重算可复现（Δnet = Δprice×volume×(1−royalty)×FX）。
+- **ZR606-REV-001 修复（delta 47fe715）**：saleable_volume 未走 finite_number（NaN/inf 静默传播）→ 路由 finite_number + 6 回归测试。**流程教训**：delta 复审首轮判 changes_required 是因为 pre-commit 钩子运行时 reviewer 看到 staged-not-committed——提交与复核之间需确认 commit 落地（git rev-parse HEAD 验证）再发复审。
+- **REV-002 教训**：implementer receipt 的 result_triplet 在 delta 后需重封（uc 工具不强制跨 receipt triplet 相等，但链条一致性要求重签）。

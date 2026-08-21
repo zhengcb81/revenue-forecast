@@ -1,0 +1,98 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "f72234d8e720c6c4ccfc63b057cf66d681f8a7bb",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "a3ed96508a03cb12658a920e09caea0f582435e97bc594fe465b2b4b383fc7a9",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD && git log --oneline -3 && git log --format=\"%H %P\" -1 HEAD",
+      "exit_code": 0,
+      "result": "HEAD = 47fe715367efdab7af84c99cb4a46f3d931db89a; commit 47fe715 'fix(ZR-606): ZR606-REV-001 — saleable_volume routed through finite_number (NaN/inf rejected, never silent NaN net); +6 parametrized regression tests (30 tests green)' with parent cf3ada7813baeff5b930d7b3bfa9994556304ae1; touches exactly scripts/commercial_terms.py (7-6) + tests/test_zr606_commercial_terms.py (+10)"
+    },
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast status --porcelain scripts/commercial_terms.py tests/test_zr606_commercial_terms.py && git show HEAD:scripts/commercial_terms.py | Select-String 'finite_number\\(saleable_volume' && git show HEAD:tests/test_zr606_commercial_terms.py | Select-String 'test_c2_non_finite_saleable_volume_rejected'",
+      "exit_code": 0,
+      "result": "Working tree clean for both files (no unstaged/staged drift vs HEAD); committed tree contains 'volume = finite_number(saleable_volume, \"saleable_volume\")' and 'def test_c2_non_finite_saleable_volume_rejected(bad_volume)'"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -c \"import hashlib,subprocess; c=subprocess.run(['git','-C',r'C:\\Users\\郑曾波\\Projects\\revenue-forecast','show','HEAD:tests/test_zr606_commercial_terms.py'],capture_output=True).stdout; print(hashlib.sha256(c).hexdigest())\"",
+      "exit_code": 0,
+      "result": "COMMITTED test-file blob SHA-256 = 87fb31f520a61d92d8e3ca090d7f83a8a3165f86196f2c618122fd61785ba2a4, identical to the working-tree file hash — reviewed_object_sha256 binds exactly the committed object"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr606_commercial_terms.py -q --tb=short",
+      "exit_code": 0,
+      "result": "30 passed (24 original + 6 new parametrized non-finite-volume regression cases) in 0.14s on committed state"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/commercial_terms.py tests/test_zr606_commercial_terms.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "Ran 2 tests ... OK (exit 0); scripts/commercial_terms.py covered by NEW_FILE_MAX=10"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr606-reviewer\\probe_zr606.py",
+      "exit_code": 0,
+      "result": "TOTAL FAILURES 0 — extra-vol-nan / extra-vol-inf / extra-vol-'5' PASS (rejected via finite_number 'must be finite'/'must be numeric'); all unit-card probes 6a-6h PASS; hand-check net=3504.6, byproduct additions=2.05, price delta 698.4, fx-removed 486.75, frozen AttributeError all confirmed"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr605_mine_year_operation.py tests/test_zr604_conflict_resolution.py tests/test_golden_behavior_lock.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "42 passed — no regression in ZR-605/ZR-604/golden-lock subsets"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "645 passed, 3 deselected (fc1103), 106 subtests passed in 118.33s, exit 0 (2 pre-existing pytest capture-thread UnicodeDecodeError warnings from an unrelated subprocess-based test)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-606/11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "OK: canonical and well-formed (structure + canonical hash + git-object triplet legs all valid; note: its result_triplet.revenue still binds cf3ada7 — see finding ZR606-REV-002)"
+    }
+  ],
+  "created_at_utc": "2026-08-21T21:13:22.754835+00:00",
+  "findings": [
+    {
+      "detail": "The ZR606-REV-001 fix is now commit 47fe715367efdab7af84c99cb4a46f3d931db89a (HEAD, parent cf3ada7). Committed tree verified to contain volume=finite_number(saleable_volume) and the new parametrized regression test; working tree clean; committed test blob SHA-256 == reviewed_object_sha256. All quality gates green on the committed state: 30 tests passed, ruff clean, ratchet OK, adversarial probe 0 failures (NaN/inf/-inf/'abc'/True/None volume rejected), regression 42 passed, full suite 645 passed + 106 subtests, exit 0. Acceptance criteria C1 (provenance + finite values), C2 (no double counting, byproduct independent), C3 (pure-function sensitivity recompute) all met.",
+      "id": "ZR606-REV-001",
+      "severity": "info",
+      "title": "REV-001 fix committed and fully verified — blocking resolved"
+    },
+    {
+      "detail": "The implementer receipt was not re-sealed after the delta commit: result_triplet.revenue is still cf3ada7813baeff5b930d7b3bfa9994556304ae1 and canonical_hash is unchanged (64f99205f38b5799e0f62cf1238048055696e78313c543f54c06a67af29f390f). receipt-validate still passes (cf3ada7 is a real git object) and uc.closure validates each receipt independently without enforcing cross-receipt triplet equality, so nothing in the current tooling would catch the mismatch. Recommend re-sealing 11_implementer_receipt.json with result_triplet.revenue = 47fe715367efdab7af84c99cb4a46f3d931db89a before closure so implementer/reviewer/closure receipts form a coherent triplet chain.",
+      "id": "ZR606-REV-002",
+      "severity": "minor",
+      "title": "Implementer receipt 11_implementer_receipt.json still binds result_triplet.revenue = cf3ada7 (stale)"
+    },
+    {
+      "detail": "assurance/unified_completion/state.json carries a ZR-606 entry (status triplet_green) in the working tree; expected to be committed by the closure step, mirroring the ZR-605 pattern (f72234d included state+README cursor mirroring).",
+      "id": "ZR606-REV-003",
+      "severity": "info",
+      "title": "state.json ZR-606 cursor entry is uncommitted"
+    },
+    {
+      "detail": "Full suite runs emit a PytestUnhandledThreadExceptionWarning (UnicodeDecodeError 'utf-8' in a subprocess reader thread) originating from an existing subprocess-based test; scripts/commercial_terms.py and its tests spawn no subprocess. Exit code 0; unrelated to ZR-606.",
+      "id": "ZR606-REV-004",
+      "severity": "info",
+      "title": "Full suite emits pre-existing pytest capture warning"
+    }
+  ],
+  "kind": "reviewer",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "47fe715367efdab7af84c99cb4a46f3d931db89a",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_object_sha256": "87fb31f520a61d92d8e3ca090d7f83a8a3165f86196f2c618122fd61785ba2a4",
+  "reviewer": "reviewer-zr606-independent",
+  "schema_version": 1,
+  "unit": "ZR-606",
+  "verdict": "accepted"
+}

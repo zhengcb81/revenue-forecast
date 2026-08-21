@@ -568,3 +568,14 @@
 - **机器状态**：current_next=ZR-606，accepted **66/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 13：ZR-701~706/710 + ZR-601~605 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-605 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-606（F2 商业量价层——DAG 已解锁；"price/payability/TC-RC/premium/byproduct/FX/royalty；每个变量有来源/假设/期限；多商品与副产品不重复计价；敏感性可重算"）。
+- **ZR-606（F2 商业量价层）实施完成**：
+  - RED 探针：grep TC-RC|payab|premium|byproduct|royalty|FX → payable 已在 ZR-605、licensing_commercial/milestone_royalty 与矿业无关、foreign_exchange 仅是调整类别——商业量价层零实现。
+  - 修复：新 scripts/commercial_terms.py——CommercialTerm（value/source/assumption/period 完整 provenance，value 走 finite_number——ZR-605 REV-001 inf 教训立即落地）+ CommercialTerms（price 必填 + payability/tc/rc/premium/byproduct_credit/fx_rate/royalty_rate 可选 None）+ validate_commercial_terms + calculate_net_revenue（纯函数：(gross−TC−RC+premium+byproduct−royalty×gross)×FX，返回 gross/deductions/additions/net；byproduct_credit 独立加项不重复计价）。
+  - 新 test_zr606_commercial_terms.py（24 tests）：C1 provenance 10 + C2 不重复计价 3 + C3 敏感性重算 4。
+  - revenue 全量 639 passed + 106 subtests（+24 新，无回归）+ ruff + ratchet 全过；skill-sync MATCH 131 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue cf3ada7）；implementer receipt canonical 64f99205。
+  - 独立复核 reviewer-zr606-independent 运行中。
+- **ZR-606 closure**：独立复核 reviewer-zr606-independent 首轮 **accepted**（9 组对抗断言 + 全量 639+106 复跑；1 minor ZR606-REV-001 saleable_volume 未走 finite_number）→ delta 修复 47fe715（finite_number 路由 + 6 回归测试 30 passed）→ delta 复审首轮 **changes_required**（staged-not-committed——pre-commit 钩子运行中导致）→ commit 落地后复审 **accepted**；REV-001→info resolved，REV-002 minor（implementer receipt 重封到 47fe715，canonical b07a951b）→ 已重封，REV-003/004 info；reviewer receipt canonical a3ed9650；state accepted + closure-advance -> **ZR-607**（phase F_revenue_mining，F2 第七卡）。
+- **机器状态**：current_next=ZR-607，accepted **67/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 14：ZR-701~706/710 + ZR-601~606 + ZR-610）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-606 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-607（F2 ownership/consolidation/internal flow 会计桥——DAG 已解锁；"equity vs consolidation、内部转冶炼/贸易、gross/net、elimination 可追踪"）。

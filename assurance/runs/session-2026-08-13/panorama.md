@@ -167,3 +167,19 @@
 - 机器游标：**F_revenue_mining** / **ZR-606**（未领取；商业量价层）。
 - 阶段 F 地图：◐ 13/13 进度过半（F1 7/7 闭 + F2 ZR-601~605+610 闭；剩余 ZR-606~608/611/707/711~713）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-605 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-22 ZR-606 实施快照
+
+- **accepted 66/117 + ZR-606 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 13（ZR-701~706/710 + ZR-601~605 + ZR-610）+ ZR-606 待复核/closure。
+- **ZR-606 实施**：revenue cf3ada7（商业量价层：price/payability/TC-RC/premium/byproduct/FX/royalty 带 provenance，finite_number 数值加固，不重复计价，敏感性重算，24 tests）；全量 639+106 绿；state triplet_green；implementer receipt canonical 64f99205；独立复核运行中。
+- 机器游标：**F_revenue_mining** / ZR-606（复核中）。
+- 阶段 F 地图：◐ 13/13 + ZR-606 待闭（F1 7/7 闭 + F2 ZR-601~605+610 闭 + ZR-606 实施中；剩余 ZR-607/608/611/707/711~713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue cf3ada7（ZR-606 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-22 ZR-606 closure 快照
+
+- **accepted 67/117（约 57%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 14（ZR-701~706/710 + ZR-601~606 + ZR-610）。
+- **ZR-606 closure**：reviewer accepted（首轮 → REV-001 minor delta 47fe715 → delta 复审 staged-not-committed → 落地后 accepted）；implementer receipt 重封 b07a951b；closure→ZR-607。
+- 机器游标：**F_revenue_mining** / **ZR-607**（未领取；ownership/consolidation/internal flow 会计桥）。
+- 阶段 F 地图：◐ 14/13 进度过半（F1 7/7 闭 + F2 ZR-601~606+610 闭；剩余 ZR-607/608/611/707/711~713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-606 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
