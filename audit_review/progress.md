@@ -196,3 +196,7 @@
 - ZR-610 实施完成（2026-08-22）：无产品代码改动——ADR 文档 adr_mining_accounting.md 覆盖 8 条会计决策（逐矿贡献=模型估计/resource≠reserve/basis 元数据/ownership timeline/单位一致性/冲突解决/地区层级/ADR 边界）；state triplet_green；implementer receipt canonical 5140ceed；独立会计 reviewer 运行中。
 
 - ZR-610 closure：独立会计 reviewer accepted（8 条决策全部通过会计合理性审查，2 info 非阻断）；state accepted 65/117；closure-advance -> ZR-605。
+
+- ZR-605 实施完成（2026-08-22）：revenue b02f17b（MineYearOperation 输入合同：七字段必填 gap-on-missing + derive_saleable_volume + resource 模型驱动映射，30 tests）；全量 615+106 绿；state triplet_green；implementer receipt canonical 3f780700；独立复核运行中。
+
+- ZR-605 closure：reviewer-zr605-independent accepted（7/7 对抗断言组；1 minor REV-001 inf 值未拒——登记 ZR-606 后续 + 1 info）；state accepted 66/117；closure-advance -> ZR-606。

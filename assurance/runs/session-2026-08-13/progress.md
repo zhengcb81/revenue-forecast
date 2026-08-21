@@ -557,3 +557,14 @@
 - **机器状态**：current_next=ZR-605，accepted **65/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 12：ZR-701~706/710 + ZR-601~604 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-610 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-605（F2 MineYearOperation 输入合同——DAG 已解锁；"volume/grade/recovery/payable/product/period/scenario；必须遵守已批准矿业 ADR；缺字段有 gap，不默认为 0"）。
+- **ZR-605（F2 MineYearOperation 输入合同）实施完成**：
+  - RED 探针：grep MineYear|mine_year|volume.*grade.*recovery|payable → 零命中——真实产品缺口。
+  - 修复：新 scripts/mine_year_operation.py——MineYearOperation frozen dataclass（volume/grade/recovery/payable/product/period/scenario 七字段）+ validate_mine_year_operation（任一缺失 → gap ForecastInputError 不默认 0；数值/枚举校验，_positive_numeric/_ratio helpers 提取保 NEW_FILE_MAX）+ derive_saleable_volume（volume×grade×recovery×payable，与 ADR §2 一致）+ to_resource_model_drivers（映射 resource 模型驱动可直接消费）。
+  - 新 test_zr605_mine_year_operation.py（30 tests）：C1 七字段必填/非法值 17 + C2 派生公式 2 + C3 可消费性 4 + 冻结 dataclass。
+  - revenue 全量 615 passed + 106 subtests（+30 新，无回归）+ ruff + ratchet 全过（validate 复杂度 18→helpers 拆分回 ≤10）；skill-sync MATCH 129 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue b02f17b）；implementer receipt canonical 3f780700。
+  - 独立复核 reviewer-zr605-independent 运行中。
+- **ZR-605 closure**：独立复核 reviewer-zr605-independent **accepted**（7/7 对抗断言组 + 全量 615+106 复跑；1 minor REV-001 volume/realized_price=inf 通过校验（inf>0）——登记 ZR-606 后续用 finite_number 加固；1 info REV-002 全量 2 warnings 环境噪音）；reviewer receipt canonical c5abdf0d；state accepted + closure-advance -> **ZR-606**（phase F_revenue_mining，F2 第六卡）。
+- **机器状态**：current_next=ZR-606，accepted **66/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 13：ZR-701~706/710 + ZR-601~605 + ZR-610）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-605 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-606（F2 商业量价层——DAG 已解锁；"price/payability/TC-RC/premium/byproduct/FX/royalty；每个变量有来源/假设/期限；多商品与副产品不重复计价；敏感性可重算"）。

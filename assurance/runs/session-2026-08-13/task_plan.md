@@ -144,8 +144,19 @@
 - 下一卡：**ZR-605**（F2 MineYearOperation 输入合同——DAG 已解锁；"volume/grade/recovery/payable/product/period/scenario；必须遵守已批准矿业 ADR；缺字段有 gap，不默认为 0"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-610 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
+## 最新状态（2026-08-22 ZR-605 实施完成）
+- **ZR-605 实施完成**（F2 MineYearOperation 输入合同）：revenue b02f17b（+289 行 2 文件，30 tests）——七字段必填 gap-on-missing（volume/grade/recovery/payable/product/period/scenario，不默认 0）、derive_saleable_volume = volume×grade×recovery×payable、to_resource_model_drivers 映射 resource 模型。全量 615+106 绿；implementer receipt canonical 3f780700；独立复核 reviewer-zr605-independent 运行中。
+- 下一卡（closure 后）：ZR-606（F2 商业量价层——DAG 依赖 ZR-605；"price/payability/TC-RC/premium/byproduct/FX/royalty"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue b02f17b（ZR-605 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
 ## 最新状态（2026-08-22 ZR-604 closure → ZR-610）
 - **accepted 64/117（约 55%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 11（ZR-701~706/710 + ZR-601~604）。
 - **ZR-604 closure**（F2 第四卡冲突保存与人工 review）：reviewer accepted（17/17 对抗断言，1 minor null resolution_status 语义——登记后续）；closure→ZR-610。
 - 下一卡：**ZR-610**（F2 会计 ADR 冻结——DAG 已解锁；"无产品代码；独立会计review accepted；明确逐矿贡献是模型估计、不是披露事实"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-604 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-605 closure → ZR-606）
+- **accepted 66/117（约 56%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 13（ZR-701~706/710 + ZR-601~605 + ZR-610）。
+- **ZR-605 closure**（F2 MineYearOperation 输入合同）：reviewer accepted（7/7 对抗断言组，1 minor inf 值未拒——登记 ZR-606 后续）；closure→ZR-606。
+- 下一卡：**ZR-606**（F2 商业量价层——DAG 已解锁；"price/payability/TC-RC/premium/byproduct/FX/royalty；每个变量有来源/假设/期限；多商品与副产品不重复计价；敏感性可重算"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-605 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

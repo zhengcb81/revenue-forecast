@@ -1,0 +1,96 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1bbc081cd3fe0ff055cac868ecaffc6663739673",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "3f780700ec22ab2de83627b60e1df2666beeb8777afd1277473474e119057e68",
+  "commands": [
+    {
+      "command": "RED 探针：grep MineYear|mine_year|volume.*grade.*recovery|payable scripts → 零命中",
+      "exit_code": 0,
+      "result": "G1 真实产品缺口：MineYearOperation 概念不存在"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr605_mine_year_operation.py -q --tb=short",
+      "exit_code": 0,
+      "result": "30 passed（C1 七字段必填/非法值 17 + C2 派生公式 2 + C3 可消费性 4 + 冻结 dataclass）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "615 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+30 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/mine_year_operation.py tests/test_zr605_mine_year_operation.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（validate_mine_year_operation 复杂度 18→拆分 _positive_numeric/_ratio helpers 回 ≤10——NEW_FILE_MAX 门）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 129 files"
+    },
+    {
+      "command": "git diff 1bbc081 b02f17b --stat",
+      "exit_code": 0,
+      "result": "2 文件 +289：mine_year_operation.py（新 ~120 行）、test_zr605_mine_year_operation.py（新 30 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T04:30:00+00:00",
+  "findings": [
+    {
+      "detail": "MineYearOperation 七字段必填合同：volume/grade/recovery/payable/product/period/scenario 任一缺失 → gap（ForecastInputError，不默认 0——ADR §1 诚实 gap 原则）。数值校验提取 _positive_numeric/_ratio helpers（NEW_FILE_MAX 10 门）。derive_saleable_volume = volume×grade×recovery×payable 与 ADR §2 一致；to_resource_model_drivers 映射到 resource 模型可直接消费。",
+      "id": "ZR605-IMPL-001",
+      "severity": "info",
+      "title": "七字段必填 + 派生公式 + 可消费性"
+    }
+  ],
+  "implementation": {
+    "design": "新 scripts/mine_year_operation.py：MineYearOperation frozen dataclass + validate_mine_year_operation（七字段必填 gap-on-missing + 数值/枚举校验，helpers 提取保 NEW_FILE_MAX）+ derive_saleable_volume（volume×grade×recovery×payable）+ to_resource_model_drivers（映射 resource 模型驱动）。零产品硬编码（product 是自由文本）。",
+    "files": [
+      "revenue-forecast/scripts/mine_year_operation.py",
+      "revenue-forecast/tests/test_zr605_mine_year_operation.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-605/**"
+    ]
+  },
+  "implementer": "zr605-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 b02f17b；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=68ad399b（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr605-independent）。",
+    "注：base_triplet.revenue=1bbc081 为 ZR-610 closure commit。"
+  ],
+  "objective": "F2 MineYearOperation 输入合同：七字段（volume/grade/recovery/payable/product/period/scenario）必填 gap-on-missing（不默认 0），derive_saleable_volume 派生公式与 ADR §2 一致，映射 resource 模型驱动可消费。",
+  "plan_sha256": "68ad399bb894007f1991b4e3eed043559190c579d4f54607a3acc17146a0e50a",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "b02f17ba154dbde9e0d98be910e4e1a45579ccf6",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/mine_year_operation.py（新）、tests/test_zr605_mine_year_operation.py（新 30 tests）；revenue 侧 receipts/ZR-605/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/mine_year_operation.py",
+    "revenue-forecast/tests/test_zr605_mine_year_operation.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-605/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-605"
+}

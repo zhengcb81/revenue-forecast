@@ -537,3 +537,7 @@
 - semantic_groups 硬失败→双 assertion+resolution status 加性扩展；冲突参数均带 resolution_status + ≤1 accepted → 允许共存，否则原行为硬失败。
 - 零 McCabe 增量模式第三次复用成功（helper 提取+纯调用+None 早退）。
 - ZR-604 closure：reviewer accepted（17/17，1 minor null resolution_status 语义——登记后续）；state accepted 64/117；closure-advance -> ZR-610。
+## ZR-610（2026-08-22）：会计 ADR 冻结（revenue，无产品代码）
+- ADR 文档冻结 8 条会计决策（逐矿贡献=模型估计/resource≠reserve/basis/ownership timeline/单位一致性/冲突解决/地区层级/边界）；独立会计 reviewer accepted（8/8 会计合理性，2 info）。
+## ZR-605（2026-08-22）：MineYearOperation 输入合同（revenue）
+- 七字段必填 gap-on-missing（不默认 0）；derive_saleable_volume=volume×grade×recovery×payable；to_resource_model_drivers 映射 resource 模型。

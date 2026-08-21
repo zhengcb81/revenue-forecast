@@ -193,3 +193,15 @@
 - 双 assertion 语义：assertion_status（primary/secondary）标识事实来源角色；resolution_status（accepted/rejected/pending_review/under_review）跟踪 review 结果——同一事实的两个来源均被保留，不静默覆盖。
 - **与 ZR-602/603 同步教训**：ZR-604 的 additive 键（assertion_status/resolution_status）与 ZR-602 的 basis 键、ZR-603 的 ownership/geography 键采用完全相同的模式——constants 词汇 + validate_parameters 内 helper 调用 + None 早退 + 无变动则零回归。F2 前四卡的 document.py 集成模式已稳定。
 - **REV-001 minor（null resolution_status 语义）**：`"resolution_status": null` 在 `_validate_conflict_resolution` 中视为"已解决"（key 存在即 counted），但 `_validate_parameter_status_fields` 视 None 为缺省（通过）。建议后续改为 `item.get("resolution_status") is not None` 或显式拒绝 null 值——登记为 F2 后续（ZR-605 消费方或 ZR-610 ADR）。
+
+## 发现 31：ZR-610（F2 会计 ADR 冻结，2026-08-22）
+- ADR 文档（adr_mining_accounting.md）冻结 8 条会计决策：逐矿贡献=模型估计（IFRS 8 一致性——分部而非逐矿披露）、resource≠reserve（JORC/NI 43-101/PRC）、basis 三字段（IFRS 10/IAS 28/100%运营口径）、ownership timeline（IFRS 3 收购日语义 + 链式权益一次连乘）、单位一致性（JORC 实务）、双 assertion（best practice vs 静默覆盖）、地区层级、ADR 边界（冻结 vs 移交 ZR-605~608）。
+- 独立会计 reviewer 验证了每个 ADR 引用与实际代码一致（calculate_model_path/apply_ownership_share/geography_index 等）——文档与实现逐字对齐。
+- 2 info findings：REV-001 equity_share 是运营/管理口径非 IFRS 收入行（IAS 28）——建议澄清句；REV-002 pro-rata 日加权是 IFRS 3 收购日确认的模型近似——建议注释。均登记后续。
+
+## 发现 32：ZR-605（F2 MineYearOperation 输入合同，2026-08-22）
+- 七字段必填合同（volume/grade/recovery/payable/product/period/scenario）：任一缺失 → gap（不默认 0）——ADR §1 诚实 gap 原则的具体化。
+- derive_saleable_volume = volume×grade×recovery×payable——把上游产量驱动分解为 resource 模型的 saleable_volume 单一驱动（单位继承 volume×grade 语义，如 kt×g/t=kg 金属量）。
+- to_resource_model_drivers 映射可直接喂 calculate_model_path(model="resource")——MineYearOperation → 模型消费闭环。
+- NEW_FILE_MAX=10 门：validate_mine_year_operation 内联 18 复杂度 → 提取 _positive_numeric/_ratio helpers 回 ≤10——新文件也要警惕 ratchet。
+- **REV-001 minor（inf 值未拒）**：`volume=inf`/`realized_price=inf` 通过校验（inf>0）；NaN 已被拒。登记 ZR-606 后续：数值校验复用 contracts.evidence.finite_number / math.isfinite。
