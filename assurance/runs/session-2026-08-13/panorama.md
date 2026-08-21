@@ -207,3 +207,19 @@
 - 机器游标：**F_revenue_mining** / **ZR-611**（未领取；通用多矿合成 E2E）。
 - 阶段 F 地图：◐ 16/13 进度过半（F1 7/7 闭 + F2 ZR-601~608+610 闭；剩余 ZR-611/707/711~713）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-608 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-22 ZR-611 实施快照
+
+- **accepted 69/117 + ZR-611 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 16（ZR-701~706/710 + ZR-601~608 + ZR-610）+ ZR-611 待复核/closure。
+- **ZR-611 实施**：revenue 288ac88（通用多矿合成 E2E：八类场景全链确定性可重算，test-only 11 tests 零产品改动；ZR-608 closure 文件合入本 commit——流程偏差第二次）；全量 696+106 绿；state triplet_green；implementer receipt canonical 9667ac1c；独立复核运行中。
+- 机器游标：**F_revenue_mining** / ZR-611（复核中）。
+- 阶段 F 地图：◐ 16/13 + ZR-611 待闭（F1 7/7 闭 + F2 ZR-601~608+610 闭 + ZR-611 实施中；剩余 ZR-707/711~713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 288ac88（ZR-611 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-22 ZR-611 closure 快照
+
+- **accepted 70/117（约 60%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 17（ZR-701~706/710 + ZR-601~608 + ZR-610/611）。
+- **ZR-611 closure**：reviewer accepted（独立数学重算 + 八类非空洞 + 确定性位级一致；1 minor + 5 info）；closure→ZR-609。
+- 机器游标：**F_revenue_mining** / **ZR-609**（未领取；F2 合流：紫金 pilot + 第二家公司泛化）。
+- 阶段 F 地图：◐ 17/13 进度过半（F1 7/7 闭 + F2 ZR-601~608+610/611 闭；剩余 ZR-609 合流 + ZR-707/711~713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-611 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

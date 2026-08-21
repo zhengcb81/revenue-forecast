@@ -212,3 +212,7 @@
 - ZR-608 实施完成（2026-08-22）：revenue 3081967（asset→segment→group reconciliation：容差门 + 诚实 fallback + 防伪收入，11 tests；注：ZR-607 closure 文件被合入本 commit——流程偏差记录）；全量 685+106 绿；state triplet_green；implementer receipt canonical d5497096；独立复核运行中。
 
 - ZR-608 closure：reviewer-zr608-independent accepted（46/46 对抗断言；零 blocking，5 info/minor）；state accepted 69/117；closure-advance -> ZR-611。
+
+- ZR-611 实施完成（2026-08-22）：revenue 288ac88（通用多矿合成 E2E：八类场景全链确定性可重算，test-only 11 tests 零产品改动；注：ZR-608 closure 文件被合入本 commit——流程偏差第二次）；全量 696+106 绿；state triplet_green；implementer receipt canonical 9667ac1c；独立复核运行中。
+
+- ZR-611 closure：reviewer-zr611-independent accepted（独立数学重算 + 八类非空洞 + 确定性位级一致；1 minor + 5 info）；state accepted 70/117；closure-advance -> ZR-609。

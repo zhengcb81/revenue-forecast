@@ -225,3 +225,9 @@
 - 诚实 fallback：未闭合差值显式 gap 绝不进 segment_total——"不闭合则回退到分部并列 gap"的机械化；closed 标记布尔化。
 - 防伪收入：资产贡献全部 finite_number（NaN/inf 拒绝）——"禁止产量×价格伪收入"的机械化：伪造/缺失贡献 = gap 非收入。
 - **流程偏差教训**：closure commit 与下一卡实现 commit 必须串行——pwsh-39 后台 closure 提交未确认落地即 stage 新卡文件，导致 ZR-607 closure 文件被合入 3081967（git 历史粒度不干净，机器状态正确）。
+
+## 发现 36：ZR-611（F2 通用多矿合成 E2E，2026-08-22）
+- 八类场景全链 E2E 设计：合成多矿公司（2 矿 + 控股链 0.6×0.7 + 多金属 + 内部流）走完整契约链（MineYearOperation→commercial terms→ownership→elimination→reconciliation）——每类场景确定性可重算 + 手算对照（Mine A 15387.84→×0.42=6462.8928；Mine B 73445×7.2）。
+- 全链手算一致性：跨层数值精确匹配（427.5×5.0−0.3)×7.2=15387.84——ZR-605/606/607/608 契约层组合无漂移。
+- 零硬编码验证模式：生产代码 grep 公司/矿名（Kamoa/Porgera 仅 docstring 防线语义标签，reviewer 认可）——合成场景只存在于测试。
+- **流程偏差第二次**：ZR-608 closure 文件被合入 288ac88（与 ZR-607 同型）——后台 closure 提交落地确认（git log）纪律两次失效，需改为前台串行确认。

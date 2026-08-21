@@ -602,3 +602,14 @@
 - **机器状态**：current_next=ZR-611，accepted **69/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 16：ZR-701~706/710 + ZR-601~608 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-608 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-611（F2 通用多矿合成 E2E——DAG 已解锁；"控股、权益法、多金属、内供、跨币种、爬坡、gap、residual；生产代码公司/矿名 hardcode=0"）。
+- **流程偏差记录（第二次）**：ZR-608 closure commit（pwsh-44）未独立落地，closure 文件随 ZR-611 提交（288ac88）并入——与 ZR-607 closure 同型（pwsh-39）。机器状态与 receipt 链条正确（ZR-608 accepted + closure→ZR-611 已在 state.json）。教训重申：后台 closure 提交需 git log 确认落地后再 stage 新卡文件。
+- **ZR-611（F2 通用多矿合成 E2E）实施完成**：
+  - RED：无单一产品缺口——各模块单测已绿但组合旅程（八类场景跨层串联）不存在。
+  - 修复：test-only E2E——新 test_zr611_synthetic_e2e.py（11 tests）合成多矿公司（2 矿+控股链 0.6×0.7=0.42+多金属+内部流）走全链（MineYearOperation→commercial terms→ownership→elimination→reconciliation）：控股/权益法/多金属/内供/跨币种/爬坡/gap/residual 八类每类确定性可重算 + 全链手算（Mine A 15387.84→×0.42=6462.8928；Mine B 73445×7.2）+ 生产代码零硬编码验证。
+  - revenue 全量 696 passed + 106 subtests（+11 新，无回归）+ ruff + ratchet 全过；skill-sync MATCH 136 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 288ac88，含 ZR-608 closure 混合）；implementer receipt canonical 9667ac1c。
+  - 独立复核 reviewer-zr611-independent 运行中。
+- **ZR-611 closure**：独立复核 reviewer-zr611-independent **accepted**（独立数学重算匹配 1e-9 + 八类场景非空洞验证 + 确定性双跑位级一致 + 零硬编码确认；1 minor REV-005 全量 deselected 计数 3 vs 2 环境噪音 + 5 info）；reviewer receipt canonical 2229bd25；state accepted + closure-advance -> **ZR-609**（phase F_revenue_mining，F2 合流卡）。
+- **机器状态**：current_next=ZR-609，accepted **70/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 17：ZR-701~706/710 + ZR-601~608 + ZR-610/611）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-611 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-609（F2 合流：紫金 pilot + 第二家不同结构矿企泛化——DAG 已解锁；"紫金主要资产覆盖、逐矿可回答范围清楚；第二家公司无需产品硬编码"）。

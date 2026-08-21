@@ -1,0 +1,101 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "30819677646e4d6cc3620a4b46d2bd017b81eb60",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "9667ac1cd925fb94cc9432e5912d0cb70ade0e8ee6e725997e7347897cdc1da6",
+  "commands": [
+    {
+      "command": "RED 探针：各模块单测已绿但组合旅程不存在——控股链+权益法+多金属+内供+跨币种+爬坡+gap+residual 八类场景未跨层串联",
+      "exit_code": 0,
+      "result": "RED = 组合旅程缺失；无单一产品缺口"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr611_synthetic_e2e.py -q --tb=short",
+      "exit_code": 0,
+      "result": "11 passed（C1 八类场景 8 + C2 零硬编码 1 + C3 全链手算 2）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "696 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+11 新测试，无回归）"
+    },
+    {
+      "command": "ruff check tests/test_zr611_synthetic_e2e.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 136 files"
+    },
+    {
+      "command": "git diff 3081967 288ac88 --stat",
+      "exit_code": 0,
+      "result": "1 文件 +270：test_zr611_synthetic_e2e.py（新 11 tests；生产代码零改动——test-only 卡）+ ZR-608 closure 文件（流程偏差：ZR-608 closure commit 未独立落地，被合入本 commit）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T07:10:00+00:00",
+  "findings": [
+    {
+      "detail": "八类场景全链 E2E：控股（effective_group_share 0.42 确定性）、权益法（one_hundred_percent 恰一次/equity_share 拒绝）、多金属（byproduct 独立加项 5.0 不乘 volume）、内供（eliminate 450 消除不重复计）、跨币种（FX 7.2 折算手算一致）、爬坡（volume×1.5 确定性增长）、gap（缺字段/NaN 拒绝不默认 0）、residual（不闭合 gap 回退不伪造）。全链手算：Mine A 427.5×5.0→2137.2×7.2=15387.84→×0.42=6462.8928；Mine B 1224×60+5→73445×7.2。",
+      "id": "ZR611-IMPL-001",
+      "severity": "info",
+      "title": "八类场景全链 E2E（test-only，确定性可重算）"
+    },
+    {
+      "detail": "生产代码零公司/矿名硬编码验证：5 个 F2 契约模块 grep zijin/bisha/barrick/ivanhoe 零命中（Kamoa/Porgera 仅 docstring 语义标签——reviewer 已认可为防线说明）。合成场景只存在于测试。",
+      "id": "ZR611-IMPL-002",
+      "severity": "info",
+      "title": "零硬编码验证（生产代码）"
+    }
+  ],
+  "implementation": {
+    "design": "test-only E2E 卡：合成多矿公司（2 矿+控股链+多金属+内部流）走全链（MineYearOperation→commercial terms→ownership→elimination→reconciliation），八类场景每类确定性可重算 + 手算对照；生产代码零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr611_synthetic_e2e.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-611/**"
+    ]
+  },
+  "implementer": "zr611-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 288ac88；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=92286804（00_wu_card.md，hashlib 注入）。",
+    "流程偏差记录（第二次）：ZR-608 closure commit（pwsh-44）未独立落地，closure 文件随本 commit 288ac88 并入——与 ZR-607 closure 同型（pwsh-39）。机器状态与 receipt 链条正确（ZR-608 accepted + closure→ZR-611 已在 state.json）。教训：后台 closure 提交需确认落地（git log 验证）再 stage 新卡文件。",
+    "独立 reviewer 待派出（reviewer-zr611-independent）。",
+    "注：base_triplet.revenue=3081967 为 ZR-608 实现 commit（ZR-608 closure 无独立 commit）。"
+  ],
+  "objective": "F2 通用多矿合成 E2E：八类场景（控股/权益法/多金属/内供/跨币种/爬坡/gap/residual）全链确定性可重算，生产代码零公司/矿名硬编码。",
+  "plan_sha256": "9228680413c49afaf89c79a1dc6a5efe779913c97236c15bd97b078c681b075c",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "288ac881ad3ced4d77c3aa98eae59957ca38b61a",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr611_synthetic_e2e.py（新 11 tests，test-only 零产品改动）；revenue 侧 receipts/ZR-611/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr611_synthetic_e2e.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-611/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-611"
+}
