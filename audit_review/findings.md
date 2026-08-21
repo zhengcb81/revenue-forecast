@@ -528,3 +528,8 @@
 - basis 设计为加性声明契约（携带即强制完整、缺省兼容既有——golden/industry e2e 零破坏实证）；单位一致性按维度分组（归一化等价，kt-vs-t 漂移拒绝；换算表归 ZR-610 ADR）。
 - ratchet 两次触发（document.py 33>32、segments.py 17>15）均以 helper 提取解决——加性校验也会推高主函数 McCabe，新校验一律 helper。
 - REV-001 修复（delta c9b0cfc）：`basis["ownership_basis"] in 枚举` 对 unhashable 值抛 TypeError 而非 ForecastInputError → isinstance(str) guard 统一异常类型，+5 回归 tests（20 passed）。教训：成员测试前先类型守卫。
+## ZR-603（2026-08-22）：ownership/consolidation timeline + geography hierarchy（revenue）
+- ownership timeline 契约（effective-dated fractions, fail-closed 回溯, pro-rata 日加权）+ apply-once 权益门（Kamoa/Porgera 双重折算防线）+ geography 层级索引。
+- 词汇陷阱：`consolidated_forecast`/`segment_attribution`/`equity_share` 均为无关同名。
+- REV-001~004 delta 修复（03d716e）：isinstance guard（第二次重犯"in 运算符对 unhashable 抛 TypeError"）、missing period key、None revenue、非 dict 地理容器。
+- REV-005 minor（container 形状硬化，超出验收范围）→ 登记 ZR-607 会计桥后续。

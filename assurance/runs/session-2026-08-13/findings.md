@@ -176,3 +176,12 @@
 - **ratchet 两次触发教训**：加性校验仍会推高主函数 McCabe——document.py 内联 basis 块 33>32 → 提取 validate_parameter_basis（None 早退 + .get() 接线）；segments.py 内联 unit 门 17>15 → 提取 _check_asset_fact_unit_consistency。新校验一律 helper 提取。
 - 零产品硬编码：ASSET_FACT_MODELS/枚举均为通用矿业词汇（zijin 不在集合）。
 - **REV-001 修复（delta c9b0cfc）**：`basis["ownership_basis"] in 枚举` 对 unhashable 值（list/dict）抛 TypeError 而非 ForecastInputError——require 条件加 isinstance(str) guard 后统一 ForecastInputError，+5 参数化回归测试（20 passed）。教训：成员测试前先类型守卫，契约异常类型必须统一。
+
+## 发现 29：ZR-603（F2 第三卡 ownership timeline 与地区层级，2026-08-22）
+- 探针词汇陷阱：`consolidated_forecast`（场景合并）、`segment_attribution`（驱动归因）、`equity_share`（ZR-602 枚举值）都是**无关同名**——grep 命中≠机制存在，需逐个看语义再判定缺口。
+- ownership timeline 契约设计：lookup 取最新 effective_date ≤ on_date；早于首条目 fail-closed（不隐式回溯——收购前不能假装有权益）；period 内变更默认拒绝（不静默平均），显式 allow_pro_rata 才日加权——诚实缺省 + 显式升级模式。
+- apply-once 权益门与 ZR-602 basis 枚举**逐字对齐**：one_hundred_percent 恰一次乘有效份额；equity_share 拒绝（already applied——Kamoa/Porgera 双重折算防线）；consolidated 拒绝（合并口径不在此层折算）。三值各一条无歧义规则，ZR-607 会计桥再扩展。
+- document.py 集成零 McCabe 模式第二次复用：validate_segments 循环内纯调用 + helper None 早退——加性键校验不推高主函数复杂度（ZR-602 先例）。
+- geography_index 拒绝静默省略：无 geography 的资产进索引 = fail-closed（宁可拒绝不可漏计资产）。
+- **REV-001~004 delta 修复（03d716e）**：首轮 reviewer 抓出 4 个输入类型泄漏——REV-001 basis 缺 isinstance(str) guard（与 ZR-602 REV-001 同类：成员测试前先类型守卫，教训已重犯）、REV-002 missing period KeyError、REV-003 None revenue float(None) TypeError、REV-004 非 dict 地理容器 AttributeError——全部修复 + 7 回归测试。**REV-005 minor**（container 形状硬化：apply_ownership_share 对 annual_revenue=None/str/list 仍抛 TypeError）登记为 ZR-607 会计桥后续。
+- **教训（第二次重犯）**：`in` 运算符对 unhashable 值直接抛 TypeError，必须在 require 条件内先 isinstance(str) guard。ZR-602 和 ZR-603 两次独立卡的 REV-001 都是同一类 bug——说明这是系统性风险：凡是 `value in {set}` 的模式都要前缀类型守卫。

@@ -125,3 +125,9 @@
 - **ZR-602 closure**（F2 第二卡 asset facts basis 契约）：revenue cb82620 + delta c9b0cfc（4 文件 +333/-1 + REV-001 修复，20 tests）——G1 resource≠reserve 语义隔离钉死（机制已存在）；G2 basis 加性契约（ownership_basis ∈ {one_hundred_percent, equity_share, consolidated} + reporting_standard + measurement_date ISO，携带即强制完整，半成品 fail-closed）；G3 族内单位一致性门（按维度分组归一化，kt-vs-t 漂移拒绝；换算表归 ZR-610 ADR）。全量 540+106 绿；ruff/ratchet 全过；首轮 reviewer accepted（22/22 对抗断言）→ REV-001（unhashable ownership_basis 抛 TypeError）delta 修复 → delta accepted（REV-001→info）；reviewer receipt canonical 7c972a4e；closure→ZR-603。
 - **停止点（用户指示：本卡跑完后更新全部 planning docs 后停止）**：ZR-603 未领取；恢复第一步 = ZR-603（F2 ownership/consolidation timeline——DAG 解锁 ZR-603，README 阶段表提 ZR-610 会计 ADR 但以 DAG 为准）→ ZR-604~608/611/707/711~713 + ZR-610 会计 ADR。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-602 closure commit 待提交；实现 cb82620 + delta c9b0cfc）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 恢复：ZR-603 closure → ZR-604）
+- **accepted 63/117（约 54%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 10（ZR-701~706/710 + ZR-601~603）。
+- **ZR-603 closure**（F2 第三卡 ownership/consolidation timeline + geography hierarchy）：revenue b52568b + delta 03d716e（+500 行 3 文件，29 tests）——effective-dated fractions（fail-closed 回溯/收购语义/pro-rata 日加权）、chain product 一次连乘（0.6×0.7=0.42）、apply-once 权益门（equity_share=already applied/consolidated=not discounted）、additive segment geography/ownership keys + searchable country index。首轮 changes_required（REV-001 isinstance guard + REV-002~004 类型泄漏）→ delta 修复 + delta accepted（REV-005 minor 登记 ZR-607 后续）；reviewer receipt canonical 18462dd9；closure→ZR-604。
+- 下一卡：ZR-604（F2 从表格抽取/冲突保存/人工 review——DAG 已解锁 ZR-604）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-603 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

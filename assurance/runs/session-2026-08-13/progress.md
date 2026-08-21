@@ -523,3 +523,17 @@
 - **机器状态**：current_next=ZR-603，accepted **62/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 9：ZR-701~706/710 + ZR-601/602）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - **停止点（用户指示：本卡跑完后更新全部 planning docs 后停止）**：ZR-603 未领取；恢复第一步 = ZR-603（F2 ownership/consolidation timeline——DAG 解锁 ZR-603，README 阶段表提 ZR-610 会计 ADR 但以 DAG 为准）。
+
+## 2026-08-22（恢复会话：用户指示"继续"）
+- **ZR-603（F2 第三卡 ownership/consolidation timeline 与地区层级）实施完成**：
+  - RED 探针：P1/P2/P3 词汇全缺（consolidated_forecast=场景合并、segment_attribution=驱动归因、equity_share=ZR-602 枚举值均为无关同名；equity/stake/country/region 零计算命中）→ G1 timeline / G2 二次乘权益防护 / G3 地区层级均为真实产品缺口。
+  - 修复：新 scripts/asset_ownership.py 契约层——validate_ownership_timeline（ISO 唯一 + fraction ∈ (0,1]）、ownership_fraction_on（最新 effective_date ≤ on_date，早于首条 fail-closed 不隐式回溯）、fraction_for_period（period 内变更默认拒绝，显式 allow_pro_rata 日加权——不静默平均）、effective_group_share（链式一次连乘 0.6×0.7=0.42）、apply_ownership_share（与 ZR-602 basis 枚举逐字对齐：one_hundred_percent 恰一次乘；equity_share 拒绝 already applied——Kamoa/Porgera 防线；consolidated 拒绝 not equity-discounted）、validate_geography + geography_index（country→region|None→资产名可检索，无 geography 资产不可静默省略）+ segment 级加性包装（None 早退）。
+  - document.py 集成：validate_segments 循环两行纯调用（零 McCabe，document.py max 保持 32）；golden/industry e2e 零破坏（加性键、输出路径未动）。
+  - 新 test_zr603_ownership_timeline.py（22 tests）：C1 timeline 9（含收购生效日前后 0.45/0.60、pro-rata (181×0.45+184×0.60)/365 手算）；C2 不二次乘权益 6；C3 geography/索引/文档级 3 组。
+  - revenue 全量 567 passed + 106 subtests（+22 新，无回归；3 deselected = fc1103 既有环境挂起）+ ruff + ratchet 全过；skill-sync MATCH 126 files。
+  - state walk：red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue b52568b）；implementer receipt canonical 36a7e343。
+  - 独立复核 reviewer-zr603-independent 运行中。
+- **ZR-603 closure**：独立复核 reviewer-zr603-independent 首轮 **changes_required**（1 blocking：REV-001 basis 缺 isinstance(str) guard——与 ZR-602 REV-001 同类 bug；3 minor：REV-002 missing period→KeyError/REV-003 None revenue→TypeError/REV-004 非 dict geography 资产→AttributeError）→ delta 修复 03d716e（isinstance guard + period_key in annual_revenue + revenue numeric guard + Iterable/Mapping guard，+7 回归测试 29 passed）→ delta accepted；REV-001~004→info resolved，REV-005 minor（container 形状硬化超出卡片验收范围，登记为 ZR-607 后续）；reviewer receipt canonical 18462dd9；state accepted + closure-advance -> **ZR-604**（phase F_revenue_mining，F2 第四卡）。
+- **机器状态**：current_next=ZR-604，accepted **63/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 10：ZR-701~706/710 + ZR-601~603）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-604（F2 从表格抽取/冲突保存/人工 review——以 DAG 解锁为准）。

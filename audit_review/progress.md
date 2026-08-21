@@ -184,3 +184,7 @@
 - ZR-602 实施完成：revenue cb82620（asset facts basis 契约：resource≠reserve 隔离钉死 + 加性 basis 键 fail-closed + 族内单位一致性门，15 tests）；全量 540+106 绿；state triplet_green；implementer receipt canonical 44b70d75；独立复核运行中。
 
 - ZR-602 closure：reviewer-zr602-independent accepted（22/22 对抗断言；1 minor REV-001 unhashable ownership_basis → delta 修复 c9b0cfc + delta accepted；REV-001→info，REV-002~004 info）；state accepted 62/117；closure-advance -> ZR-603；**停止点：用户指示本卡跑完后更新全部 planning docs 后停止**。
+
+- ZR-603 实施完成（2026-08-22 恢复）：revenue b52568b（ownership/consolidation timeline + geography 层级：effective-dated fraction 契约、链式一次连乘、apply-once 权益门、可检索地理索引，22 tests，+500 行 3 文件）；全量 567+106 绿；state triplet_green；implementer receipt canonical 36a7e343；独立复核运行中。
+
+- ZR-603 closure：reviewer-zr603-independent changes_required（1 blocking REV-001 isinstance guard + 3 minor）→ delta 修复 03d716e + delta accepted；REV-001~004→info，REV-005 minor（container 形状硬化超出验收范围，登记 ZR-607 后续）；state accepted 63/117；closure-advance -> ZR-604。
