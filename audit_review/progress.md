@@ -216,3 +216,7 @@
 - ZR-611 实施完成（2026-08-22）：revenue 288ac88（通用多矿合成 E2E：八类场景全链确定性可重算，test-only 11 tests 零产品改动；注：ZR-608 closure 文件被合入本 commit——流程偏差第二次）；全量 696+106 绿；state triplet_green；implementer receipt canonical 9667ac1c；独立复核运行中。
 
 - ZR-611 closure：reviewer-zr611-independent accepted（独立数学重算 + 八类非空洞 + 确定性位级一致；1 minor + 5 info）；state accepted 70/117；closure-advance -> ZR-609。
+
+- ZR-609 实施完成（2026-08-22）：revenue e541d55（紫金 pilot + 第二家泛化：三主要资产逐矿可回答 + 纯金矿商泛化零硬编码，test-only 9 tests 零产品改动；父 404a2bb = ZR-611 closure 独立落地——修正无第三次流程偏差）；全量 705+106 绿；state triplet_green；implementer receipt canonical ee6dd908（初版 f314d7d9 修正）；独立复核运行中。
+
+- ZR-609 closure：reviewer-zr609-independent accepted（手算独立重算 + 25 项非空洞 + 零硬编码 tokenize 扫描；2 minor：REV-001 流程偏差记录有误已修正、REV-002 receipt 重封 ee6dd908 + 3 info）；state accepted 71/117；closure-advance -> ZR-711；**停止点：用户指示本阶段工作做完后更新全部 planning docs 后停止**。

@@ -223,3 +223,20 @@
 - 机器游标：**F_revenue_mining** / **ZR-609**（未领取；F2 合流：紫金 pilot + 第二家公司泛化）。
 - 阶段 F 地图：◐ 17/13 进度过半（F1 7/7 闭 + F2 ZR-601~608+610/611 闭；剩余 ZR-609 合流 + ZR-707/711~713）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-611 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-22 ZR-609 实施快照
+
+- **accepted 70/117 + ZR-609 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 17（ZR-701~706/710 + ZR-601~608 + ZR-610/611）+ ZR-609 待复核/closure。
+- **ZR-609 实施**：revenue e541d55（紫金 pilot + 第二家泛化：三主要资产逐矿可回答 + 纯金矿商泛化零硬编码，test-only 9 tests 零产品改动；父 404a2bb = ZR-611 closure 独立落地——修正无第三次流程偏差）；全量 705+106 绿；state triplet_green；implementer receipt canonical ee6dd908（初版修正）；独立复核运行中。
+- 机器游标：**F_revenue_mining** / ZR-609（复核中）。
+- 阶段 F 地图：◐ 17/13 + ZR-609 待闭（F1 7/7 闭 + F2 ZR-601~608+610/611 闭 + ZR-609 实施中；剩余 ZR-707/711~713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue e541d55（ZR-609 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-22 ZR-609 closure 快照（停止点）
+
+- **accepted 71/117（约 61%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 18（ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
+- **ZR-609 closure**：reviewer accepted（手算独立重算 + 25 项非空洞 + 零硬编码 tokenize 扫描；2 minor REV-001/002 已修正 + 3 info）；closure→ZR-711。
+- 机器游标：**F_revenue_mining** / **ZR-711**（未领取；confidence 反博弈/rolling-origin backtest）。
+- 阶段 F 地图：◐ 18/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611 闭；剩余 ZR-707/711~713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-609 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-711（F2 confidence 反博弈，DAG 已解锁）→ ZR-712/713 → ZR-707（schema 3.8 opt-in）。

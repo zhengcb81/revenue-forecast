@@ -198,3 +198,14 @@
 - **ZR-611 closure**（F2 通用多矿合成 E2E）：reviewer accepted（独立数学重算匹配 + 八类非空洞 + 确定性位级一致）；closure→ZR-609。
 - 下一卡：**ZR-609**（F2 合流：紫金 pilot + 第二家不同结构矿企泛化——DAG 已解锁；"紫金主要资产覆盖、逐矿可回答范围清楚；第二家公司无需产品硬编码"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-611 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-609 实施完成）
+- **ZR-609 实施完成**（F2 合流：紫金 pilot + 第二家泛化）：revenue e541d55（test-only 9 tests 零产品改动）——紫金三主要资产（卡莫阿-卡库拉权益链 0.396/巨龙全资/紫金山金+银副产品）逐矿可回答走 F2 全链 + 第二家纯金矿商泛化零硬编码。全量 705+106 绿；implementer receipt canonical ee6dd908（初版 f314d7d9 修正：base_triplet 404a2bb）；独立复核 reviewer-zr609-independent 运行中。
+- 下一卡（closure 后）：ZR-707（F2 schema 3.8 opt-in）→ ZR-711~713（confidence 反博弈/rolling-origin backtest）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue e541d55（ZR-609 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-609 closure → 停止点）
+- **accepted 71/117（约 61%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 18（ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
+- **ZR-609 closure**（F2 合流：紫金 pilot + 第二家泛化）：reviewer accepted（手算独立重算 + 25 项非空洞 + 零硬编码 tokenize 扫描；REV-001/002 已修正：ZR-611 closure 实际独立落地 404a2bb、receipt 重封 ee6dd908）；closure→ZR-711。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-711（F2 confidence 反博弈——DAG 已解锁）未领取；恢复第一步 = ZR-711 → ZR-712/713（rolling-origin backtest）→ ZR-707（schema 3.8 opt-in）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-609 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

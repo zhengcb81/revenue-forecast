@@ -613,3 +613,13 @@
 - **机器状态**：current_next=ZR-609，accepted **70/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 17：ZR-701~706/710 + ZR-601~608 + ZR-610/611）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-611 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-609（F2 合流：紫金 pilot + 第二家不同结构矿企泛化——DAG 已解锁；"紫金主要资产覆盖、逐矿可回答范围清楚；第二家公司无需产品硬编码"）。
+- **ZR-609（F2 合流：紫金 pilot + 第二家泛化）实施完成**：
+  - RED：company-wiki 紫金矿业有真实年报 PDF（2024/2025），F2 契约链已就绪但无真实结构演示——RED = 演示旅程缺失（非产品缺口）。
+  - 修复：test-only 演示——新 test_zr609_zijin_pilot.py（9 tests）：紫金三主要资产（卡莫阿-卡库拉 DRC 铜权益链 0.6×0.66=0.396/巨龙铜业全资/紫金山金锭+银副产品 credit 350）走 F2 全链逐矿可回答 + 内部流 elimination + 对账手算（saleable 1045.674/87.78/5559.84）+ 第二家纯金矿商（单矿无链单币种）泛化零代码改动 + 零硬编码验证。
+  - revenue 全量 705 passed + 106 subtests（+9 新，无回归）+ ruff + ratchet 全过；skill-sync MATCH 137 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue e541d55，父 404a2bb = ZR-611 closure 独立落地——**修正：无第三次流程偏差**，reviewer REV-001 证实 ZR-611 closure 独立 commit 存在）；implementer receipt canonical ee6dd908（初版 f314d7d9 修正：base_triplet 288ac88→404a2bb + diff 范围）。
+  - 独立复核 reviewer-zr609-independent 运行中。
+- **ZR-609 closure**：独立复核 reviewer-zr609-independent **accepted**（手算独立重算匹配 + 25 项非空洞检查 + 零硬编码 tokenize 扫描确认；2 minor：REV-001 流程偏差记录有误（ZR-611 closure 实际独立落地 404a2bb——已修正全部 planning docs）、REV-002 receipt diff 范围修正（已重封 ee6dd908）+ 3 info）；reviewer receipt canonical 64fc8fe7；state accepted + closure-advance -> **ZR-711**（phase F_revenue_mining，F2 第十卡）。
+- **机器状态**：current_next=ZR-711，accepted **71/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 18：ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-609 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-711（F2 confidence 反博弈）未领取；恢复第一步 = ZR-711（confidence 反博弈/rolling-origin backtest，DAG 已解锁）。
