@@ -34,6 +34,10 @@ from contracts.evidence import (
     validate_source_capture,
     valid_source_url,
 )
+from asset_ownership import (
+    validate_segment_geography,
+    validate_segment_ownership,
+)
 from forecast.calc import (
     _parse_fiscal_year,
     evaluate_derived_formula,
@@ -825,6 +829,11 @@ def validate_base_reconciliation(
             base_parameter["value"] >= 0, f"base revenue cannot be negative for {name}"
         )
         segment_total += float(base_parameter["value"])
+
+        # ZR-603: additive ownership timeline / geography keys on segments —
+        # validated when present; absent keys unaffected (legacy compatible).
+        validate_segment_ownership(name, segment.get("ownership"))
+        validate_segment_geography(name, segment.get("geography"))
 
     adjustment_ids = data.get("base_adjustment_parameter_ids", [])
     require(
