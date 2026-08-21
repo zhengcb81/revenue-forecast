@@ -176,7 +176,7 @@ def apply_ownership_share(
         equity-discounted at this layer.
     """
     require(
-        basis in ASSET_FACT_OWNERSHIP_BASES,
+        isinstance(basis, str) and basis in ASSET_FACT_OWNERSHIP_BASES,
         f"unsupported ownership basis: {basis}",
     )
     if basis == "equity_share":
@@ -190,8 +190,17 @@ def apply_ownership_share(
         )
     attributed: dict[str, float] = {}
     for period_key, (start_date, end_date) in period_dates.items():
+        require(
+            period_key in annual_revenue,
+            f"annual_revenue is missing period {period_key}",
+        )
+        value = annual_revenue[period_key]
+        require(
+            isinstance(value, (int, float)) and not isinstance(value, bool),
+            f"annual_revenue[{period_key}] must be numeric",
+        )
         share = effective_group_share(chain, end_date)
-        attributed[period_key] = float(annual_revenue[period_key]) * share
+        attributed[period_key] = float(value) * share
     return attributed
 
 
@@ -219,13 +228,21 @@ def validate_geography(geography: Any) -> None:
 
 
 def geography_index(
-    assets: Iterable[Mapping[str, Any]],
+    assets: Any,
 ) -> dict[str, dict[str | None, list[str]]]:
     """Build the searchable country -> (region|None) -> [asset names]
     hierarchy index. Assets without geography fail closed (not silently
     omitted)."""
+    require(
+        isinstance(assets, Iterable) and not isinstance(assets, (str, bytes)),
+        "geography_index requires an iterable of asset objects",
+    )
     index: dict[str, dict[str | None, list[str]]] = {}
     for asset in assets:
+        require(
+            isinstance(asset, Mapping),
+            "indexed assets must be objects (name/geography)",
+        )
         name = asset.get("name")
         require(
             isinstance(name, str) and name.strip(),

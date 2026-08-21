@@ -166,6 +166,36 @@ def test_c2_unsupported_basis_rejected():
     }
 
 
+@pytest.mark.parametrize("bad", [["one_hundred_percent"], {"a": 1}, 7, None, 1.5])
+def test_c2_unhashable_basis_rejected_as_input_error(bad):
+    # REV-001 regression: unhashable basis values must raise
+    # ForecastInputError (never TypeError) — same class of guard as ZR-602.
+    with pytest.raises(ForecastInputError, match="unsupported ownership basis"):
+        apply_ownership_share(
+            {"FY2026": 100.0}, bad, CHAIN,
+            {"FY2026": ("2026-01-01", "2026-12-31")},
+        )
+
+
+def test_c2_missing_period_key_rejected():
+    # REV-002 regression: missing period key -> ForecastInputError, not KeyError
+    with pytest.raises(ForecastInputError, match="missing period FY2027"):
+        apply_ownership_share(
+            {"FY2026": 100.0}, "one_hundred_percent", CHAIN,
+            {"FY2026": ("2026-01-01", "2026-12-31"),
+             "FY2027": ("2027-01-01", "2027-12-31")},
+        )
+
+
+def test_c2_non_numeric_revenue_rejected():
+    # REV-003 regression: None revenue value -> ForecastInputError, not TypeError
+    with pytest.raises(ForecastInputError, match="must be numeric"):
+        apply_ownership_share(
+            {"FY2026": None}, "one_hundred_percent", CHAIN,
+            {"FY2026": ("2026-01-01", "2026-12-31")},
+        )
+
+
 # ---------------------------------------------------------------------------
 # C3 — geography hierarchy
 # ---------------------------------------------------------------------------
@@ -194,6 +224,12 @@ def test_c3_geography_index_searchable():
     # assets without geography are not silently omitted
     with pytest.raises(ForecastInputError, match="no geography"):
         geography_index([{"name": "mine_x"}])
+    # REV-004 regression: malformed containers fail closed as
+    # ForecastInputError (never AttributeError/TypeError)
+    with pytest.raises(ForecastInputError, match="must be objects"):
+        geography_index(["mine_a"])
+    with pytest.raises(ForecastInputError, match="iterable"):
+        geography_index(7)
 
 
 def test_c3_document_level_segment_keys_additive():
