@@ -548,3 +548,12 @@
 - **机器状态**：current_next=ZR-610，accepted **64/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 11：ZR-701~706/710 + ZR-601~604）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-604 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-610（F2 会计 ADR 冻结——"无产品代码；独立会计review accepted；明确逐矿贡献是模型估计、不是披露事实"）。
+- **ZR-610（F2 会计 ADR 冻结）实施完成**：
+  - 无产品代码改动——产出为 ADR 文档 `adr_mining_accounting.md`（assurance/unified_completion/receipts/ZR-610/）。
+  - ADR 覆盖 8 条会计决策：①逐矿贡献=模型估计（非披露事实）②resource≠reserve 语义隔离 ③basis 元数据三字段（ownership_basis/reporting_standard/measurement_date）④ownership timeline 时点语义+链式权益一次连乘（Kamoa/Porgera 防线）⑤单位一致性门（同维度驱动同单位）⑥双 assertion+resolution status 冲突解决（不静默覆盖）⑦地区层级声明与检索 ⑧ADR 边界（冻结 vs 移交 ZR-605~608）。
+  - state walk 全通过（无代码改动，triplet 不变）；implementer receipt canonical 5140ceed。
+  - 独立会计 reviewer reviewer-zr610-accounting-independent 运行中。
+- **ZR-610 closure**：独立会计 reviewer reviewer-zr610-accounting-independent **accepted**（8 条决策全部通过会计合理性审查：①逐矿贡献=模型估计 vs IFRS 8 ②resource≠reserve vs JORC/NI 43-101/PRC ③basis 三字段 vs IFRS 10/IAS 28 ④ownership timeline vs IFRS 3 ⑤单位一致性 vs JORC 实务 ⑥双 assertion best practice ⑦地区层级标准实务 ⑧ADR 边界清晰；2 info REV-001 equity_share 澄清 / REV-002 pro-rata 模型近似说明——均非阻断）；reviewer receipt canonical b7c8f11a；state accepted + closure-advance -> **ZR-605**（phase F_revenue_mining，DAG 解锁 ZR-605——MineYearOperation 输入合同）。
+- **机器状态**：current_next=ZR-605，accepted **65/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 12：ZR-701~706/710 + ZR-601~604 + ZR-610）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-610 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-605（F2 MineYearOperation 输入合同——DAG 已解锁；"volume/grade/recovery/payable/product/period/scenario；必须遵守已批准矿业 ADR；缺字段有 gap，不默认为 0"）。

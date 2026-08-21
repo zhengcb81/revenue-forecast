@@ -143,3 +143,11 @@
 - 机器游标：**F_revenue_mining** / **ZR-610**（未领取；会计 ADR 冻结——"无产品代码"卡）。
 - 阶段 F 地图：◐ 11/13（F1 7/7 闭 + F2 ZR-601~604 闭；剩余 ZR-605~608/611/707/711~713 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-604 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-22 ZR-610 closure 快照
+
+- **accepted 65/117（约 56%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 12（ZR-701~706/710 + ZR-601~604 + ZR-610）。
+- **ZR-610 closure**：独立会计 reviewer accepted（8 条决策全部通过会计合理性审查，2 info 非阻断）；closure→ZR-605。
+- 机器游标：**F_revenue_mining** / **ZR-605**（未领取；MineYearOperation 输入合同——DAG 已解锁 ZR-605）。
+- 阶段 F 地图：◐ 12/13（F1 7/7 闭 + F2 ZR-601~604+610 闭；剩余 ZR-605~608/611/707/711~713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-610 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

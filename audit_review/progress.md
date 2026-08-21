@@ -192,3 +192,7 @@
 - ZR-604 实施完成：revenue 2636e55（冲突保存与人工 review：双 assertion + resolution status，11 tests，+238 行 3 文件）；全量 585+106 绿；state triplet_green；implementer receipt canonical 58159699；独立复核运行中。
 
 - ZR-604 closure：reviewer-zr604-independent accepted（17/17 对抗断言；1 minor REV-001 null resolution_status 语义不一致——非阻断）；state accepted 64/117；closure-advance -> ZR-610。
+
+- ZR-610 实施完成（2026-08-22）：无产品代码改动——ADR 文档 adr_mining_accounting.md 覆盖 8 条会计决策（逐矿贡献=模型估计/resource≠reserve/basis 元数据/ownership timeline/单位一致性/冲突解决/地区层级/ADR 边界）；state triplet_green；implementer receipt canonical 5140ceed；独立会计 reviewer 运行中。
+
+- ZR-610 closure：独立会计 reviewer accepted（8 条决策全部通过会计合理性审查，2 info 非阻断）；state accepted 65/117；closure-advance -> ZR-605。

@@ -138,6 +138,12 @@
 - 下一卡（closure 后）：ZR-605（F2 MineYearOperation 输入合同——DAG 依赖 ZR-604,ZR-610；ZR-610 未解锁，以 DAG 为准）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue 2636e55（ZR-604 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
+## 最新状态（2026-08-22 ZR-610 closure → ZR-605）
+- **accepted 65/117（约 56%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 12（ZR-701~706/710 + ZR-601~604 + ZR-610）。
+- **ZR-610 closure**（F2 会计 ADR 冻结）：独立会计 reviewer accepted（8 条决策全部通过会计合理性审查，2 info 非阻断）；closure→ZR-605。
+- 下一卡：**ZR-605**（F2 MineYearOperation 输入合同——DAG 已解锁；"volume/grade/recovery/payable/product/period/scenario；必须遵守已批准矿业 ADR；缺字段有 gap，不默认为 0"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-610 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
 ## 最新状态（2026-08-22 ZR-604 closure → ZR-610）
 - **accepted 64/117（约 55%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 11（ZR-701~706/710 + ZR-601~604）。
 - **ZR-604 closure**（F2 第四卡冲突保存与人工 review）：reviewer accepted（17/17 对抗断言，1 minor null resolution_status 语义——登记后续）；closure→ZR-610。
