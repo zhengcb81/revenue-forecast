@@ -111,12 +111,7 @@ def calculate_net_revenue(
     Returns {gross, deductions, additions, net} in the same currency as
     price (FX applied when fx_rate present).
     """
-    require(
-        isinstance(saleable_volume, (int, float))
-        and not isinstance(saleable_volume, bool),
-        f"saleable_volume must be numeric, got {saleable_volume!r}",
-    )
-    volume = float(saleable_volume)
+    volume = finite_number(saleable_volume, "saleable_volume")
     price = terms.price.value
     gross = volume * price
 

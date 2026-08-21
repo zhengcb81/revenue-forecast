@@ -122,6 +122,16 @@ def test_c2_minimal_terms_no_double_counting():
     assert result["net"] == pytest.approx(500.0)
 
 
+@pytest.mark.parametrize("bad_volume", [
+    float("inf"), float("-inf"), float("nan"), "abc", True, None,
+])
+def test_c2_non_finite_saleable_volume_rejected(bad_volume):
+    # ZR606-REV-001 regression: volume must be finite (never NaN/inf)
+    terms = validate_commercial_terms(BASE_TERMS)
+    with pytest.raises(ForecastInputError, match="finite|numeric"):
+        calculate_net_revenue(bad_volume, terms)
+
+
 def test_c2_byproduct_is_independent_addition():
     # byproduct credit adds once — never multiplied by volume
     terms = validate_commercial_terms(BASE_TERMS)
