@@ -537,3 +537,14 @@
 - **机器状态**：current_next=ZR-604，accepted **63/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 10：ZR-701~706/710 + ZR-601~603）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-604（F2 从表格抽取/冲突保存/人工 review——以 DAG 解锁为准）。
+- **ZR-604（F2 第四卡冲突保存与人工 review）实施完成**：
+  - RED 探针：semantic_groups 硬失败（document.py:471-479）无双 assertion/resolution status 机制——冲突参数无法共存，真实产品缺口。
+  - 修复：constants.py 加 ASSERTION_STATUSES（primary/secondary）+ RESOLUTION_STATUSES（accepted/rejected/pending_review/under_review）；document.py 提取 _validate_conflict_resolution helper（冲突解决逻辑：all resolution_status + ≤1 accepted → 通过，否则原行为硬失败）+ _validate_parameter_status_fields helper（词汇校验 addive None 早退）；semantic_groups 循环改造为调用 helper——validate_parameters max 保持 32（零 McCabe 增量模式第三次复用）。
+  - 新 test_zr604_conflict_resolution.py（11 tests）：C1 冲突解决 6（backward compat 硬失败/双 accepted 拒绝/单 accepted 通过/均 pending_review 通过/部分 resolution 硬失败/同值无冲突）；C2 词汇 5（valid assertion+resolution/非法 assertion/非法 resolution/词汇精确/缺键不破坏）。
+  - revenue 全量 585 passed + 106 subtests（+11 新，无回归）+ ruff + ratchet 全过；skill-sync MATCH 127 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 2636e55）；implementer receipt canonical 58159699。
+  - 独立复核 reviewer-zr604-independent 运行中。
+- **ZR-604 closure**：独立复核 reviewer-zr604-independent **accepted**（17/17 对抗断言 + 全量 585+106 复跑；1 minor REV-001 null resolution_status 语义——key 存在即视为 resolved，与字段校验器 None 早退不一致——非阻断，登记后续）；reviewer receipt canonical 449395f7；state accepted + closure-advance -> **ZR-610**（phase F_revenue_mining，DAG 解锁 ZR-610——会计 ADR 冻结，"无产品代码"卡）。
+- **机器状态**：current_next=ZR-610，accepted **64/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 11：ZR-701~706/710 + ZR-601~604）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-604 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-610（F2 会计 ADR 冻结——"无产品代码；独立会计review accepted；明确逐矿贡献是模型估计、不是披露事实"）。

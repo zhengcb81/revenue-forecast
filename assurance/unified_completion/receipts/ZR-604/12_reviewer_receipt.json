@@ -1,0 +1,91 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "d86afa5d321ccf2dd3d8c10efb9b81424875abe2",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "449395f75ffdca4767cc3a696e2311be3b6da323814dc6e474a7a00b33c4bced",
+  "commands": [
+    {
+      "command": "git log --oneline -2",
+      "exit_code": 0,
+      "result": "HEAD = 2636e55f45f33000dda11224143f96d8830a31d6 (parent d86afa5d321ccf2dd3d8c10efb9b81424875abe2) — matches expected HEAD"
+    },
+    {
+      "command": "git diff d86afa5 2636e55 --stat",
+      "exit_code": 0,
+      "result": "3 files changed, 238 insertions(+), 4 deletions(-): scripts/contracts/constants.py (+19), scripts/contracts/document.py (+57/-4), tests/test_zr604_conflict_resolution.py (+166, new)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr604_conflict_resolution.py -q --tb=short",
+      "exit_code": 0,
+      "result": "11 passed in 0.19s"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr603_ownership_timeline.py tests/test_zr602_asset_facts_basis.py tests/test_golden_behavior_lock.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "50 passed in 0.47s"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/contracts/constants.py scripts/contracts/document.py tests/test_zr604_conflict_resolution.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py -q",
+      "exit_code": 0,
+      "result": "2 tests OK (frozen files not worsened; new files <= 10). Independent ast re-measure: document.py max 31 <= 32, constants.py max 0 <= 10, validate_parameters 31 <= 32"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr604-reviewer\\probe_zr604.py",
+      "exit_code": 0,
+      "result": "17/17 probes passed: a unresolved backward-compat FAIL w/ 'unresolved conflicting'; b multiple accepted FAIL w/ 'multiple accepted'; c accepted+rejected PASS; d all pending_review PASS; e partial resolution FAIL w/ 'unresolved conflicting'; f same-value PASS (with and without status); g assertion_status=tertiary FAIL w/ 'unsupported assertion_status'; h resolution_status=ignored FAIL w/ 'unsupported resolution_status'; i legacy plain doc PASS; + 7 extra adversarial (3-param 2-accepted FAIL, 3-param 1-accepted PASS, single param valid statuses PASS, different keys PASS, under_review+accepted PASS, empty-string status FAIL, vocabulary exact)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+      "exit_code": 0,
+      "result": "585 passed, 3 deselected (fc1103), 106 subtests passed in 176.39s — matches card expectation (574 baseline + 11 new ZR-604)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-604/11_implementer_receipt.json (cwd assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed. base_triplet.revenue=d86afa5 (real git object), result_triplet.revenue=2636e55 == HEAD; filing/wiki triplets match card"
+    },
+    {
+      "command": "git diff d86afa5 2636e55 | Select-String word-boundary company/mine names",
+      "exit_code": 0,
+      "result": "No matches for zijin/kamoa/porgera/bisha/barrick/ivanhoe/copper/gold/zinc/mine/company/entity etc. in diff — no hardcoded company/mine names (only generic 'ore' substring inside FORECAST/ForecastInputError false positives)"
+    },
+    {
+      "command": "edge probe: conflicting params with \"resolution_status\": null",
+      "exit_code": 0,
+      "result": "null+null and null+accepted conflicting pairs both PASS validate_document — key presence (even null) counts as resolved; inconsistency vs _validate_parameter_status_fields (None treated as absent). Documented as REV-001 minor"
+    }
+  ],
+  "created_at_utc": "2026-08-21T20:06:09.253Z",
+  "findings": [
+    {
+      "detail": "_validate_conflict_resolution uses key presence (\"resolution_status\" in item) for all_resolved, while _validate_parameter_status_fields treats None as absent/no-op. Repro: two conflicting parameters both with \"resolution_status\": null pass validate_document (as does null + accepted). Per C1 spirit, an unreviewed conflict should hard-fail; per the card's letter ('if ALL carry resolution_status'), key presence is satisfied. Non-blocking: all 11 shipped tests, all 17 adversarial probes, and the full suite are green. Recommendation (e.g. ZR-follow-up): treat None as absent in the conflict check (item.get(\"resolution_status\") is not None) or reject null status values.",
+      "id": "REV-001",
+      "severity": "minor",
+      "title": "resolution_status key present with null value counts as 'resolved' in conflict check"
+    },
+    {
+      "detail": "Card states constants.py +20 / document.py +38; actual diff is constants.py +19 / document.py +57. Total +238/-4 across 3 files matches the card exactly; changed-file inventory and described behavior (two helpers + call in parameter loop + semantic_groups refactor) match the actual implementation. No impact on acceptance.",
+      "id": "REV-002",
+      "severity": "info",
+      "title": "Unit-card per-file line counts differ slightly from actual diff"
+    }
+  ],
+  "kind": "reviewer",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "2636e55f45f33000dda11224143f96d8830a31d6",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_object_sha256": "5ceb39f434494bcd36e517953a19d86fee34bd6c0d1c4d23c5a9d3a3b1ea2c38",
+  "reviewer": "reviewer-zr604-independent",
+  "schema_version": 1,
+  "unit": "ZR-604",
+  "verdict": "accepted"
+}

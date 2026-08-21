@@ -185,3 +185,11 @@
 - geography_index 拒绝静默省略：无 geography 的资产进索引 = fail-closed（宁可拒绝不可漏计资产）。
 - **REV-001~004 delta 修复（03d716e）**：首轮 reviewer 抓出 4 个输入类型泄漏——REV-001 basis 缺 isinstance(str) guard（与 ZR-602 REV-001 同类：成员测试前先类型守卫，教训已重犯）、REV-002 missing period KeyError、REV-003 None revenue float(None) TypeError、REV-004 非 dict 地理容器 AttributeError——全部修复 + 7 回归测试。**REV-005 minor**（container 形状硬化：apply_ownership_share 对 annual_revenue=None/str/list 仍抛 TypeError）登记为 ZR-607 会计桥后续。
 - **教训（第二次重犯）**：`in` 运算符对 unhashable 值直接抛 TypeError，必须在 require 条件内先 isinstance(str) guard。ZR-602 和 ZR-603 两次独立卡的 REV-001 都是同一类 bug——说明这是系统性风险：凡是 `value in {set}` 的模式都要前缀类型守卫。
+
+## 发现 30：ZR-604（F2 第四卡冲突保存与人工 review，2026-08-22）
+- 冲突机制现状：semantic_groups（document.py:471-479）检测同语义键不同值 → 硬失败，无 assertion_status/resolution_status——真实产品缺口：Bisha kt/t 等多来源冲突无法表达"两个来源都可信但值不同，需人工 review"。
+- 设计：冲突解决逻辑提取为 `_validate_conflict_resolution` helper——all resolution_status + ≤1 accepted → 允许共存（冲突已解决）；否则保持原行为硬失败（backward compatible）。`_validate_parameter_status_fields` 校验 assertion/resolution 枚举值——additive None 早退。semantic_groups 循环改造为调用 helper（validate_parameters max 保持 32）。
+- 零 McCabe 增量模式第三次复用成功：helper 提取+纯调用+None 早退——additive 键校验不推高主函数复杂度。
+- 双 assertion 语义：assertion_status（primary/secondary）标识事实来源角色；resolution_status（accepted/rejected/pending_review/under_review）跟踪 review 结果——同一事实的两个来源均被保留，不静默覆盖。
+- **与 ZR-602/603 同步教训**：ZR-604 的 additive 键（assertion_status/resolution_status）与 ZR-602 的 basis 键、ZR-603 的 ownership/geography 键采用完全相同的模式——constants 词汇 + validate_parameters 内 helper 调用 + None 早退 + 无变动则零回归。F2 前四卡的 document.py 集成模式已稳定。
+- **REV-001 minor（null resolution_status 语义）**：`"resolution_status": null` 在 `_validate_conflict_resolution` 中视为"已解决"（key 存在即 counted），但 `_validate_parameter_status_fields` 视 None 为缺省（通过）。建议后续改为 `item.get("resolution_status") is not None` 或显式拒绝 null 值——登记为 F2 后续（ZR-605 消费方或 ZR-610 ADR）。

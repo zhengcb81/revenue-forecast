@@ -188,3 +188,7 @@
 - ZR-603 实施完成（2026-08-22 恢复）：revenue b52568b（ownership/consolidation timeline + geography 层级：effective-dated fraction 契约、链式一次连乘、apply-once 权益门、可检索地理索引，22 tests，+500 行 3 文件）；全量 567+106 绿；state triplet_green；implementer receipt canonical 36a7e343；独立复核运行中。
 
 - ZR-603 closure：reviewer-zr603-independent changes_required（1 blocking REV-001 isinstance guard + 3 minor）→ delta 修复 03d716e + delta accepted；REV-001~004→info，REV-005 minor（container 形状硬化超出验收范围，登记 ZR-607 后续）；state accepted 63/117；closure-advance -> ZR-604。
+
+- ZR-604 实施完成：revenue 2636e55（冲突保存与人工 review：双 assertion + resolution status，11 tests，+238 行 3 文件）；全量 585+106 绿；state triplet_green；implementer receipt canonical 58159699；独立复核运行中。
+
+- ZR-604 closure：reviewer-zr604-independent accepted（17/17 对抗断言；1 minor REV-001 null resolution_status 语义不一致——非阻断）；state accepted 64/117；closure-advance -> ZR-610。

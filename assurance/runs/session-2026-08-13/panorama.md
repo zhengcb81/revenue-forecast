@@ -127,3 +127,19 @@
 - 机器游标：**F_revenue_mining** / **ZR-604**（未领取）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-603 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 阶段 F 地图：◐ 10/13（F1 7/7 闭 + F2 ZR-601~603；F2 剩余 ZR-604~608/611/707/711~713 + ZR-610 ADR）。
+
+## 2026-08-22 ZR-604 实施快照
+
+- **accepted 63/117 + ZR-604 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 10（ZR-701~706/710 + ZR-601~603）+ ZR-604 待复核/closure。
+- **ZR-604 实施**：revenue 2636e55（冲突保存与人工 review：双 assertion + resolution status，11 tests，+238 行 3 文件）；全量 585+106 绿；state triplet_green；implementer receipt canonical 58159699；独立复核 reviewer-zr604-independent 运行中。
+- 机器游标：**F_revenue_mining** / ZR-604（复核中）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 2636e55（ZR-604 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 阶段 F 地图：◐ 10/13 + ZR-604 待闭（F1 7/7 闭 + F2 ZR-601~603 闭 + ZR-604 实施中；F2 剩余 ZR-605~608/611/707/711~713 + ZR-610 ADR）。
+
+## 2026-08-22 ZR-604 closure 快照
+
+- **accepted 64/117（约 55%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 11（ZR-701~706/710 + ZR-601~604）。
+- **ZR-604 closure**：reviewer accepted（17/17 对抗断言，1 minor REV-001 null resolution_status 语义——登记后续）；closure→ZR-610。
+- 机器游标：**F_revenue_mining** / **ZR-610**（未领取；会计 ADR 冻结——"无产品代码"卡）。
+- 阶段 F 地图：◐ 11/13（F1 7/7 闭 + F2 ZR-601~604 闭；剩余 ZR-605~608/611/707/711~713 + ZR-610）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-604 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

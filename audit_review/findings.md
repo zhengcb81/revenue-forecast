@@ -533,3 +533,7 @@
 - 词汇陷阱：`consolidated_forecast`/`segment_attribution`/`equity_share` 均为无关同名。
 - REV-001~004 delta 修复（03d716e）：isinstance guard（第二次重犯"in 运算符对 unhashable 抛 TypeError"）、missing period key、None revenue、非 dict 地理容器。
 - REV-005 minor（container 形状硬化，超出验收范围）→ 登记 ZR-607 会计桥后续。
+## ZR-604（2026-08-22）：冲突保存与人工 review（revenue）
+- semantic_groups 硬失败→双 assertion+resolution status 加性扩展；冲突参数均带 resolution_status + ≤1 accepted → 允许共存，否则原行为硬失败。
+- 零 McCabe 增量模式第三次复用成功（helper 提取+纯调用+None 早退）。
+- ZR-604 closure：reviewer accepted（17/17，1 minor null resolution_status 语义——登记后续）；state accepted 64/117；closure-advance -> ZR-610。

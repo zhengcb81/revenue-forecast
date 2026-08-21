@@ -131,3 +131,15 @@
 - **ZR-603 closure**（F2 第三卡 ownership/consolidation timeline + geography hierarchy）：revenue b52568b + delta 03d716e（+500 行 3 文件，29 tests）——effective-dated fractions（fail-closed 回溯/收购语义/pro-rata 日加权）、chain product 一次连乘（0.6×0.7=0.42）、apply-once 权益门（equity_share=already applied/consolidated=not discounted）、additive segment geography/ownership keys + searchable country index。首轮 changes_required（REV-001 isinstance guard + REV-002~004 类型泄漏）→ delta 修复 + delta accepted（REV-005 minor 登记 ZR-607 后续）；reviewer receipt canonical 18462dd9；closure→ZR-604。
 - 下一卡：ZR-604（F2 从表格抽取/冲突保存/人工 review——DAG 已解锁 ZR-604）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-603 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-604 实施完成）
+- **accepted 63/117 + ZR-604 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 10（ZR-701~706/710 + ZR-601~603）+ ZR-604 待复核/closure。
+- **ZR-604 实施**（F2 第四卡冲突保存与人工 review）：revenue 2636e55（+238 行 3 文件，11 tests）——semantic_groups 硬失败→双 assertion（primary/secondary）+ resolution status（accepted/rejected/pending_review/under_review）加性扩展；冲突参数均带 resolution_status + ≤1 accepted → 允许共存，否则原行为硬失败（backward compatible）。全量 585+106 绿；implementer receipt canonical 58159699；独立复核 reviewer-zr604-independent 运行中。
+- 下一卡（closure 后）：ZR-605（F2 MineYearOperation 输入合同——DAG 依赖 ZR-604,ZR-610；ZR-610 未解锁，以 DAG 为准）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 2636e55（ZR-604 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-22 ZR-604 closure → ZR-610）
+- **accepted 64/117（约 55%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 11（ZR-701~706/710 + ZR-601~604）。
+- **ZR-604 closure**（F2 第四卡冲突保存与人工 review）：reviewer accepted（17/17 对抗断言，1 minor null resolution_status 语义——登记后续）；closure→ZR-610。
+- 下一卡：**ZR-610**（F2 会计 ADR 冻结——DAG 已解锁；"无产品代码；独立会计review accepted；明确逐矿贡献是模型估计、不是披露事实"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-604 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
