@@ -230,3 +230,5 @@
 - ZR-707 closure：reviewer-zr707-independent accepted（11/11 对抗断言；4 info）；state accepted 73/117；closure-advance -> ZR-708。
 
 - ZR-708 实施完成（2026-08-23）：revenue a9405f8（already_satisfied 重验：snapshot 不可变/accuracy→confidence 消费链/四层 hash，test-only 7 tests 零产品改动）；全量 740+106 绿；state triplet_green；implementer receipt canonical a9f5b356；独立复核运行中。
+
+- ZR-708 closure：reviewer-zr708-independent accepted（对抗探针全过；4 info）；state accepted 74/117；closure-advance -> ZR-712。

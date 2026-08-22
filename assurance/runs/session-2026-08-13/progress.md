@@ -655,3 +655,7 @@
   - revenue 全量 740 passed + 106 subtests（+7 新，无回归）+ ruff + ratchet 全过；skill-sync MATCH 142 files。
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue a9405f8）；implementer receipt canonical a9f5b356。
   - 独立复核 reviewer-zr708-independent 运行中。
+- **ZR-708 closure**：独立复核 reviewer-zr708-independent **accepted**（对抗探针 a~e 全过：snapshot 确定性/不可覆盖/tamper 拒绝/accuracy→confidence 消费链（wape 一致+组件>0）/未来 actual 拒绝/四层 hash 链接/零硬编码；4 info：REV-001 探针 artifact 已纠正/REV-002 全量 2 warnings 环境噪音/REV-003 state.json cursor 待提交/REV-004 already_satisfied 确认）；reviewer receipt canonical 091532f0；state accepted + closure-advance -> **ZR-712**（phase F_revenue_mining，F2 第十三卡）。
+- **机器状态**：current_next=ZR-712，accepted **74/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 21：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-708 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-712（F2 confidence 反博弈——DAG 已解锁；"duplicate/split/plug/zero-impact/one-observation/wrong-record mutations 全杀；rating caps 可重算"）。

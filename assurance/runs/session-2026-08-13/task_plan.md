@@ -236,3 +236,9 @@
 - **ZR-708 实施完成**（F2 重验不可变 snapshot/backtest）：revenue a9405f8（test-only 7 tests 零产品改动）——already_satisfied 重验：snapshot 确定性/不可变/tamper 拒绝、accuracy_record → run_forecast → confidence.historical_accuracy 消费链、四层 hash 链接、未来 actual 拒绝。全量 740+106 绿；implementer receipt canonical a9f5b356；独立复核 reviewer-zr708-independent 运行中。
 - 下一卡（closure 后）：ZR-712（F2 confidence 反博弈——DAG 依赖 ZR-708；"duplicate/split/plug/zero-impact/one-observation/wrong-record mutations 全杀"）→ ZR-713（紫金 rolling-origin）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue a9405f8（ZR-708 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-708 closure → ZR-712）
+- **accepted 74/117（约 63%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 21（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708）。
+- **ZR-708 closure**（F2 already_satisfied 重验）：reviewer accepted（4 info）；closure→ZR-712。
+- 下一卡：**ZR-712**（F2 confidence 反博弈——DAG 已解锁；"duplicate/split/plug/zero-impact/one-observation/wrong-record mutations 全杀；rating caps 可重算"）→ ZR-713（紫金 rolling-origin）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-708 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

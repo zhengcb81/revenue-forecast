@@ -282,3 +282,11 @@
 - 机器游标：**F_revenue_mining** / ZR-708（复核中）。
 - 阶段 F 地图：◐ 20/13 + ZR-708 待闭（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707 闭 + ZR-708 实施中；剩余 ZR-712/713）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue a9405f8（ZR-708 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-23 ZR-708 closure 快照
+
+- **accepted 74/117（约 63%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 21（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708）。
+- **ZR-708 closure**：reviewer accepted（对抗探针全过，4 info）；closure→ZR-712。
+- 机器游标：**F_revenue_mining** / **ZR-712**（未领取；confidence 反博弈）。
+- 阶段 F 地图：◐ 21/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707/708 闭；剩余 ZR-712/713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-708 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
