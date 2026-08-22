@@ -1,0 +1,96 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ac135a30a9a057ccb9bacf8d168e84595742c956",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：schtasks 396 任务零命中；grep weekly_t3/weekly schedule → 零命中；无 weekly ledger/freshness 机制；T3 全 skip 无 blocked 记录",
+      "exit_code": 0,
+      "result": "G1 无周调度 / G2 无 ≤7d freshness 门 / G3 无 blocked 告警/release 消费——真实缺口"
+    },
+    {
+      "command": "python -m pytest tests/test_zr903_weekly_t3.py -q --tb=short",
+      "exit_code": 0,
+      "result": "10 passed（C1 台账 2 / C2 freshness ≤7d 4 / C3 blocked 告警+阻断 2 / C4 门+子命令 2）"
+    },
+    {
+      "command": "ruff check tools/weekly_t3_schedule.py tests/test_zr903_weekly_t3.py",
+      "exit_code": 0,
+      "result": "All checks passed（清理 5 个未使用 import 后）"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（新文件函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 154 files"
+    },
+    {
+      "command": "git commit（pre-commit 全套：837+106 全量 + sync MATCH）",
+      "exit_code": 0,
+      "result": "90c829e feat(ZR-903) — 2 files +333"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "837 passed + 106 subtests（825 基线 + 2 ZR-902 delta + 10 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T23:55:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 周调度机制：run-weekly 调 filing-fetch T3 套件（opt-in env）→ weekly_manifest.json（run_id/started_at/triplet/ok）——fake suite stub 验证写入与 not-ok 记录。C2 freshness ≤7d：fresh/stale/missing 三态（时间注入）；旧绿不沿用（AUD2-02）。C3 CA-203 RED 反制：全 skip 套件（凭据/网络缺失）→ BLOCKED 告警（weekly_alert.jsonl）+ release gate 红——永不记 pass；not-ok/stale/missing 同样阻断。C4 release 门复用 ZR-902 纯函数（max_age=7d）+ 位置子命令形态。复用 daily_t2_schedule 台账机制（freshness_status/write_ledger/append_alert/release_gate/_head），零重复实现。",
+      "id": "ZR903-IMPL-001",
+      "severity": "info",
+      "title": "每周/发布前 T3 实际调度机制（台账/freshness ≤7d/blocked 告警/release 门）"
+    }
+  ],
+  "implementation": {
+    "design": "新 tools/weekly_t3_schedule.py（assurance 工具，复用 ZR-902 daily_t2_schedule 台账函数）：run-weekly（调 filing-fetch T3 opt-in 套件 + _suite_outcome 三态 ok/not-ok/blocked——全 skip → blocked 永不 pass）+ register/query/unregister（schtasks weekly）+ verify；新 tests/test_zr903_weekly_t3.py（10 tests，hermetic fake suite stub）。产品零改动（scripts/、filing-fetch src 未触碰）。",
+    "files": [
+      "revenue-forecast/tools/weekly_t3_schedule.py",
+      "revenue-forecast/tests/test_zr903_weekly_t3.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-903/**"
+    ]
+  },
+  "implementer": "zr903-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 90c829e（parent ac135a3 = ZR-902 closure）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=6460a1a0（00_wu_card.md，hashlib 注入）。",
+    "真实 T3 执行/周调度注册为部署动作（run-weekly 需 opt-in env + 真实网络；register 需提权）；机制+语义被测试钉死；自然时间证据（连续 2 次 Weekly）由 CA-206 soak 收集。",
+    "独立 reviewer 待派出（reviewer-zr903-independent）。"
+  ],
+  "objective": "阶段 H 第二卡：实际调度每周/发布前 T3——<=7d freshness；blocked（凭据/网络缺失）也阻断 release 并发告警；provider/canonical 调用精确对账（T3 套件内部）。",
+  "plan_sha256": "6460a1a0f3c675091581421dbe5ed1cf956ab8a907bf28427110b5b328a757fb",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "90c829ecac30c390e1d4f9f49bfbe6bff116867f",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tools/weekly_t3_schedule.py（新，assurance 工具）+ tests/test_zr903_weekly_t3.py（新 10 tests）；receipts/ZR-903/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tools/weekly_t3_schedule.py",
+    "revenue-forecast/tests/test_zr903_weekly_t3.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-903/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-903",
+  "canonical_hash": "b5756895dac01fd1cd1c53eba2c939cac23a8febbcb5765cfd86967822ff9759"
+}

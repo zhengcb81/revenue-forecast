@@ -309,3 +309,9 @@
 - **ZR-902 closure**（实际调度每日 Windows T2）：revenue 6d3fced + delta 2d4d807——tools/daily_t2_schedule.py（run-daily 包装 FC-1102 runner + 台账 daily_manifest.json + freshness 三态 + daily_alert.jsonl + release_gate 纯函数 + schtasks register/query/verify）；12 tests → reviewer 首轮 accepted（24/24 探针）→ REV-001/002 minor delta 修复（corrupt-ledger failsafe + 子命令记法）→ delta accepted（REV-001/002 FIXED）；reviewer receipt canonical 5afe138a；closure→ZR-903（每周/发布前 T3 调度）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-903（每周/发布前 T3——依赖 ZR-805；CA-203 验收：报告≤7d、blocked 阻断 release 并发告警、provider/canonical 精确对账）未领取；恢复第一步 = ZR-903 → ZR-904（SLI/dashboard）/ZR-901（PR 门）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-902 closure commit 待提交，实现 6d3fced + delta 2d4d807）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-903 closure → 阶段 H 推进中）
+- **accepted 85/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 2：ZR-902/903；计数真源 state.json）。current_phase=**H_dynamic_audit**，current_next=**ZR-904**。
+- **ZR-903 closure**（每周/发布前 T3 调度）：revenue 90c829e——tools/weekly_t3_schedule.py（复用 ZR-902 台账：run-weekly 调 filing-fetch T3 opt-in 套件 + weekly_manifest.json ≤7d 三态 + weekly_alert.jsonl + 全 skip → BLOCKED 永不 pass（CA-203 RED 反制）+ release 门 + schtasks weekly）；10 tests → reviewer 首轮 accepted（29/29 探针，3 info）；reviewer receipt canonical ead4da69；closure→ZR-904（SLI/dashboard/release gate）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-904（SLI/dashboard——依赖 ZR-902/903；CA-205：pending→校验→原子 publish、同一 schema、告警 ack/重试、过期结果不可续命；AUD2-06 business SLI 阻断）未领取；恢复第一步 = ZR-904 → ZR-905（审核自测试）/ZR-901（PR 门）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-903 closure commit 待提交，实现 90c829e）、wiki 26a6b22、filing 5a1c18f。

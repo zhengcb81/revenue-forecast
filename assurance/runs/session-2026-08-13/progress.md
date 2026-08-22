@@ -719,3 +719,15 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-902 closure commit 待提交，实现 6d3fced + delta 2d4d807）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-903（每周/发布前 T3 调度——依赖 ZR-805 已闭；CA-203："报告≤7d；blocked 也阻断 release 并发告警；provider/canonical 调用精确对账"；T3 套件 filing-fetch tests/test_e2e_download.py opt-in 已存在，本卡做周调度机制与 ZR-902 同型）→ ZR-904（SLI/dashboard）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-902 全流程已闭（reviewer accepted → delta accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-903（每周/发布前 T3）→ ZR-904/901（阶段 H）。
+- **ZR-903（阶段 H 第二卡：每周/发布前 T3 调度）实施完成**：
+  - RED 探针：schtasks 396 任务零命中（G1 无周调度）；grep weekly_t3/weekly schedule → 零命中（G2 无 ≤7d freshness 门）；T3 套件全 skip（凭据/网络缺失）无 blocked 记录（G3，CA-203 RED）。
+  - 修复：新 tools/weekly_t3_schedule.py（复用 ZR-902 台账机制）——run-weekly 调 filing-fetch T3 opt-in 套件（FILING_FETCH_E2E_DOWNLOAD=1）+ _suite_outcome 三态（ok/not-ok/blocked：全 skip → BLOCKED 永不 pass，CA-203 RED 反制）+ weekly_manifest.json（≤7d freshness fresh/stale/missing）+ weekly_alert.jsonl + release 门复用纯函数；register/query/unregister（schtasks weekly）/verify。
+  - 新 test_zr903_weekly_t3.py（10 tests）：C1 台账 2 + C2 freshness ≤7d 4 + C3 blocked 告警/阻断 2 + C4 门/子命令 2。
+  - revenue 全量 **837 passed + 106 subtests**（825+2 delta+10 新，零回归）+ ruff + ratchet + sync MATCH 154 + pre-commit 绿；commit 90c829e。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 90c829e）；implementer receipt canonical b5756895。
+  - 独立复核 reviewer-zr903-independent 运行中。
+- **ZR-903 closure**：独立复核 reviewer-zr903-independent 首轮 **accepted**（29/29 探针全绿：7d 整 fresh/7d+1h stale 边界、全 skip → blocked 告警+ledger ok=False+gate 红永不 pass、exit-1 → not-ok 告警 rc 传播、run_weekly e2e 台账字段正确（40-hex triplet 匹配 receipt）、gate 全状态、hermetic 零生产写零 schtasks 变更、全量 837+106 复跑 160.41s exit 0；3 info：REV-001 全 skip rc=0 但 ledger/alert/gate 承载 truth 永不 pass、REV-002 边界严格 >（≤7d 语义）、REV-003 hermetic 确认）；reviewer receipt canonical ead4da69；state accepted + closure-advance -> **ZR-904**（phase H_dynamic_audit，SLI/dashboard/release gate）。
+- **机器状态**：current_next=ZR-904，accepted **85/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 2：ZR-902/903；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-903 closure commit 待提交，实现 90c829e）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-904（SLI/dashboard/release gate——依赖 ZR-902/ZR-903 已闭；CA-205："pending 临时文件→完整校验→原子 publish；dashboard/release 同一 schema；告警送达有 ack/重试；过期结果不可续命"；AUD2-06 business SLI 阻断发布）→ ZR-905（审核机制自测试）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-903 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-904（SLI/dashboard/release gate）→ ZR-905/901（阶段 H）。
