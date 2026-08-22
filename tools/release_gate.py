@@ -49,8 +49,9 @@ def validate_report(report: dict) -> tuple[bool, str]:
         if field not in report:
             return False, f"missing field: {field}"
     triplet = report["triplet"]
-    if not (isinstance(triplet, dict) and len(triplet) == 3):
-        return False, "triplet must map revenue/filing/wiki"
+    if not (isinstance(triplet, dict)
+            and set(triplet) == {"revenue", "filing", "wiki"}):
+        return False, "triplet must map exactly revenue/filing/wiki"
     declared = report["report_sha256"]
     payload = {k: v for k, v in report.items() if k != "report_sha256"}
     if canonical_hash(payload) != declared:
@@ -95,7 +96,11 @@ def publish_all_pending(reports_dir: Path, publish_dir: Path) -> dict:
 
 
 def compute_sli(ledger: dict | None, catalog: dict | None = None) -> dict:
-    """Business SLI set; catalog counters injectable (hermetic tests)."""
+    """Business SLI set; catalog counters injectable (hermetic tests).
+
+    Catalog-level regressions derive ok=False (REV-001): consumer_ready
+    below 0.9, render_ok False, or zero reuse with catalog data present.
+    """
     sli: dict[str, dict] = {}
     base = {"ok": bool(ledger and ledger.get("ok")), "source": "daily/weekly"}
     for key in SLI_KEYS:
@@ -106,6 +111,12 @@ def compute_sli(ledger: dict | None, catalog: dict | None = None) -> dict:
         sli["artifact"]["value"] = catalog.get("bound_artifacts", 0)
         sli["consumer_ready"]["value"] = catalog.get("consumer_ready_rate", 1.0)
         sli["render"]["value"] = catalog.get("render_ok", True)
+        if sli["consumer_ready"]["value"] < 0.9:
+            sli["consumer_ready"]["ok"] = False
+        if sli["render"]["value"] is False:
+            sli["render"]["ok"] = False
+        if sli["reuse"]["value"] == 0:
+            sli["reuse"]["ok"] = False
     return sli
 
 
@@ -115,6 +126,9 @@ def release_decision(sli: dict, report: dict | None,
                      max_age_hours: int = 24) -> tuple[bool, list[str]]:
     reasons: list[str] = []
     now_dt = datetime.fromisoformat(now).astimezone(UTC) if now else datetime.now(UTC)
+    if not sli:
+        reasons.append("no SLI data")
+        return False, reasons
     if report is None:
         reasons.append("no published report")
         return False, reasons

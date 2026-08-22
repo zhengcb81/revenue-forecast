@@ -91,6 +91,18 @@ def test_c1_tampered_hash_rejected(tmp_path):
     assert "hash chain broken" in result["failed"][0]["reason"]
 
 
+def test_c1_wrong_triplet_keys_rejected(tmp_path):
+    # REV-002 regression: triplet must name exactly revenue/filing/wiki.
+    report = _report(run_id="run-keys")
+    report["triplet"] = {"revenue": "a" * 40, "filing": "b" * 40, "extra": "c" * 40}
+    report["report_sha256"] = rg.canonical_hash(
+        {k: v for k, v in report.items() if k != "report_sha256"})
+    _write_pending(tmp_path, report)
+    result = rg.publish_all_pending(tmp_path, tmp_path / "out")
+    assert result["published"] == []
+    assert "triplet" in result["failed"][0]["reason"]
+
+
 # ---------------------------------------------------------------------------
 # C2 — SLI set + business blocking (AUD2-06)
 # ---------------------------------------------------------------------------
@@ -124,6 +136,26 @@ def test_c2_no_report_blocks(tmp_path):
                                          now=NOW.isoformat())
     assert ready is False
     assert "no published report" in reasons
+
+
+def test_c2_catalog_regression_derives_not_ok():
+    # REV-001 regression: catalog counters must derive ok=False themselves
+    # (AUD2-06 holds even without injected ok flags).
+    ledger = {"latest_run_id": "r", "ok": True}
+    sli = rg.compute_sli(ledger, catalog={
+        "consumer_ready_rate": 0.3, "render_ok": False, "reuse_count": 0,
+    })
+    assert sli["consumer_ready"]["ok"] is False
+    assert sli["render"]["ok"] is False
+    assert sli["reuse"]["ok"] is False
+    assert sli["artifact"]["ok"] is True  # not degraded
+
+
+def test_c2_empty_sli_blocks():
+    # REV-003 regression: empty SLI dict is a blocked decision, not ready.
+    ready, reasons = rg.release_decision({}, _report(), None, now=NOW.isoformat())
+    assert ready is False
+    assert "no SLI data" in reasons
 
 
 # ---------------------------------------------------------------------------
