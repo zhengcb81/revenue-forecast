@@ -303,3 +303,9 @@
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-902（实际调度每日 Windows T2——依赖 ZR-806；"schedule/runner/权限/原子报告/<=24h freshness/release 消费全证明；不仅是脚本存在"）未领取；恢复第一步 = ZR-902 → ZR-903（每周/发布前 T3）/ZR-901（PR 门）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-806 closure commit 待提交，实现 b716a81）、wiki 26a6b22、filing 5a1c18f。
 - **防双写漂移（README §14 规则，2026-08-22 起）**：`accepted N/117` 计数唯一真源 = `assurance/unified_completion/state.json`（closure-advance 自动维护）；本文件与 panorama.md 不再手工维护计数，需要时引用 state.json。逐卡进度唯一记录在 progress.md，本文件仅保留"最新状态"摘要。
+
+## 最新状态（2026-08-23 ZR-902 closure → 阶段 H 推进中）
+- **accepted 84/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 1：ZR-902；计数真源 state.json——README §14 规则，脚本读取生成）。current_phase=**H_dynamic_audit**，current_next=**ZR-903**。
+- **ZR-902 closure**（实际调度每日 Windows T2）：revenue 6d3fced + delta 2d4d807——tools/daily_t2_schedule.py（run-daily 包装 FC-1102 runner + 台账 daily_manifest.json + freshness 三态 + daily_alert.jsonl + release_gate 纯函数 + schtasks register/query/verify）；12 tests → reviewer 首轮 accepted（24/24 探针）→ REV-001/002 minor delta 修复（corrupt-ledger failsafe + 子命令记法）→ delta accepted（REV-001/002 FIXED）；reviewer receipt canonical 5afe138a；closure→ZR-903（每周/发布前 T3 调度）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-903（每周/发布前 T3——依赖 ZR-805；CA-203 验收：报告≤7d、blocked 阻断 release 并发告警、provider/canonical 精确对账）未领取；恢复第一步 = ZR-903 → ZR-904（SLI/dashboard）/ZR-901（PR 门）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-902 closure commit 待提交，实现 6d3fced + delta 2d4d807）、wiki 26a6b22、filing 5a1c18f。

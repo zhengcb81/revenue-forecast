@@ -1,0 +1,96 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "68cd5708c5faf4f713472b124b1b3c93886205bc",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：schtasks /query /fo csv 实测 396 任务零命中本项目条目；assurance/runs 最近 report.json 2026-08-13（9 天前 stale）；grep daily_manifest/freshness/release gate → 零命中",
+      "exit_code": 0,
+      "result": "G1 无实际 schedule / G2 无 freshness 门 / G3 无 release 消费门——真实缺口"
+    },
+    {
+      "command": "python -m pytest tests/test_zr902_daily_schedule.py -q --tb=short",
+      "exit_code": 0,
+      "result": "12 passed（C1 台账 2 / C2 freshness 三态 4 / C3 告警+阻断 4 / C4 release 门 2）"
+    },
+    {
+      "command": "ruff check tools/daily_t2_schedule.py tests/test_zr902_daily_schedule.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（新文件函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 153 files"
+    },
+    {
+      "command": "git commit（pre-commit 全套：825+106 全量 + E2E PASS + sync MATCH）",
+      "exit_code": 0,
+      "result": "6d3fced feat(ZR-902) — 2 files +381"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "825 passed + 106 subtests（813 基线 + 12 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T22:35:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 台账机制：run_daily 调 FC-1102 runner 后写 assurance/runs/daily_manifest.json（latest_run_id/started_at/triplet/ok/report_path）——测试验证写读与 not-ok 仍记录。C2 freshness 三态：≤24h 且 ok → fresh；>24h（旧绿不沿用，AUD2-02）或 ok=false → stale；无台账 → missing（AUD2-01：脚本存在不算运行）。C3 告警+阻断：stale/missing/not-ok → daily_alert.jsonl 追加 + release_gate 返回 blocked（AUD2-03 半报告不原子发布）。C4 release 消费门：fresh+ok → ready，否则红——纯函数可注入时间。schtasks 封装：--register/--query/--unregister（部署动作，测试不触发真实注册）+ --verify 综合 oracle。",
+      "id": "ZR902-IMPL-001",
+      "severity": "info",
+      "title": "每日 Windows T2 实际调度机制（台账/freshness/告警/release 门）"
+    }
+  ],
+  "implementation": {
+    "design": "新 tools/daily_t2_schedule.py（assurance 工具，非产品路径）：--run-daily 包装 FC-1102 runner（台账+三态判定+告警）；--register/--query/--unregister 封装 schtasks；release_gate 纯函数（可注入 now/max_age）；--verify 综合 oracle（AUD2-01/02/03）。新 tests/test_zr902_daily_schedule.py（12 tests，hermetic 临时目录）。产品零改动（scripts/ 未触碰）。",
+    "files": [
+      "revenue-forecast/tools/daily_t2_schedule.py",
+      "revenue-forecast/tests/test_zr902_daily_schedule.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-902/**"
+    ]
+  },
+  "implementer": "zr902-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 6d3fced（parent 68cd570 = docs 防漂移架构提交）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=72c46cf4（00_wu_card.md，hashlib 注入）。",
+    "真实 Windows Task Scheduler 注册为部署动作（--register 需提权），本卡交付机制+查询/verify 逻辑被测试钉死；自然时间证据（连续 7 次 Daily）由 CA-206 soak 收集。",
+    "独立 reviewer 待派出（reviewer-zr902-independent）。"
+  ],
+  "objective": "阶段 H 首卡：实际调度每日 Windows T2——schedule/runner/权限/原子报告/<=24h freshness/release 消费全证明（不仅是脚本存在）；缺 run 告警并阻断 release。",
+  "plan_sha256": "72c46cf426f359843f6442d504118f4d12d7d568b96319d784e5a1c3b34998a9",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "6d3fcedcfd79723566f54c73a96de9215376cad1",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tools/daily_t2_schedule.py（新，assurance 工具）+ tests/test_zr902_daily_schedule.py（新 12 tests）；receipts/ZR-902/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tools/daily_t2_schedule.py",
+    "revenue-forecast/tests/test_zr902_daily_schedule.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-902/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-902",
+  "canonical_hash": "e0410c3a561263d3aedc423dfe641d993e42306d7ae8270cbd6b4afe4cb961c5"
+}

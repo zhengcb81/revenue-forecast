@@ -707,3 +707,15 @@
 - 下一卡：ZR-902（阶段 H 首卡：实际调度每日 Windows T2——依赖 ZR-806；"schedule/runner/权限/原子报告/<=24h freshness/release 消费全证明；不仅是脚本存在"）→ ZR-903（每周/发布前 T3）。
 - **CRLF 教训（closure-advance CAS 冲突根因）**：README 为 CRLF 行尾时，closure-advance 的 read_text().encode()（LF 版本 hash）与 manifest 登记的原始字节 hash（CRLF 版本）冲突 → CAS-CONFLICT；修复 = README 转 LF + manifest-build CAS 重建后成功。记 findings 43。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-806 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-902（阶段 H：实际调度每日 Windows T2）→ ZR-903/901（阶段 H）。
+- **ZR-902（阶段 H 首卡：实际调度每日 Windows T2）实施完成**：
+  - RED 探针：schtasks /query 实测 396 个 Windows 任务零本项目条目（G1 无实际调度，AUD2-01）；assurance/runs 最近 report.json 2026-08-13（9 天前，G2 无 freshness 门——旧绿沿用无人拦，AUD2-02）；无 release 消费 daily run 状态的机制（G3，AUD2-03）。grep daily_manifest/freshness → 零命中。
+  - 修复：新 tools/daily_t2_schedule.py（assurance 工具，非产品路径）——run-daily 包装 FC-1102 runner（写台账 assurance/runs/daily_manifest.json：latest_run_id/started_at/triplet/ok/report_path + freshness 三态 fresh/stale/missing + daily_alert.jsonl 告警 journal）；register/query/unregister（schtasks 封装，部署动作）；verify 综合 oracle（AUD2-01/02/03）；release_gate 纯函数（fresh+ok → ready，否则 blocked——旧绿永不通过）。
+  - 新 test_zr902_daily_schedule.py（12 tests）：C1 台账 2 + C2 freshness 三态 4 + C3 告警/阻断 4 + C4 release 门 2。
+  - revenue 全量 **825 passed + 106 subtests**（813+12 新，零回归）+ ruff + ratchet + sync MATCH 153 + pre-commit 绿；commit 6d3fced。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 6d3fced）；implementer receipt canonical e0410c3a。
+  - 独立复核 reviewer-zr902-independent 运行中。
+- **ZR-902 closure**：独立复核 reviewer-zr902-independent 首轮 **accepted**（24/24 探针全绿：freshness 边界 24h 整 fresh/24h+1s stale、旧绿 48h → BLOCKED、not-ok/missing → blocked、run_daily 端到端 fake runner stub（真实 runner/catalog 未触碰）台账正确 + 非零退出 → ok=False + 告警、verify AND-oracle、schtasks 只读零 create/delete、git diff 零产品改动、全量 825+106 复跑 exit 0；4 findings：REV-001 minor 损坏台账 started_at 抛 ValueError + REV-002 minor 卡片记法 --flags vs 位置子命令 + 2 info）→ delta 修复 2d4d807（freshness_status 捕获 (ValueError, TypeError) → stale/blocked 永不抛异常；docstring 子命令记法更正；+2 回归测试 14 passed）→ delta 复审 **accepted**（REV-001/002 FIXED 实证；REV-003/004 info 保留；REV-005 info：11 receipt 按 ZR-805 先例停原提交、delta 记 13_delta_review_receipt.json pin 2d4d807）；reviewer receipt canonical 5afe138a；state accepted + closure-advance -> **ZR-903**（phase H_dynamic_audit，每周/发布前 T3 调度）。
+- **机器状态**：current_next=ZR-903，accepted **84/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 1：ZR-902；计数真源 state.json，README §14 规则）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-902 closure commit 待提交，实现 6d3fced + delta 2d4d807）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-903（每周/发布前 T3 调度——依赖 ZR-805 已闭；CA-203："报告≤7d；blocked 也阻断 release 并发告警；provider/canonical 调用精确对账"；T3 套件 filing-fetch tests/test_e2e_download.py opt-in 已存在，本卡做周调度机制与 ZR-902 同型）→ ZR-904（SLI/dashboard）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-902 全流程已闭（reviewer accepted → delta accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-903（每周/发布前 T3）→ ZR-904/901（阶段 H）。
