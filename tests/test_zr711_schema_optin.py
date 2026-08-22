@@ -137,6 +137,26 @@ def test_c2_validate_operating_units_standalone():
         validate_operating_units({"operating_units": [bad]})
 
 
+def test_c2_38_enforces_capture_consistency_like_37():
+    # REV-001 regression: 3.8 must enforce capture-integrity checks (same
+    # as 3.7) — a corrupted claim must be rejected regardless of schema version.
+    # Build a valid 3.7 doc with a known-good claim, then corrupt the claim.
+    data = finalize_contract(valid_document())
+    # Corrupt the first evidence claim's capture_receipt_sha256
+    claim = data["evidence_claims"][0]
+    claim["capture_receipt_sha256"] = "a" * 64
+    # 3.7: should be rejected
+    data37 = dict(data)
+    data37["schema_version"] = "3.7"
+    with pytest.raises(ForecastInputError, match="capture receipt mismatch"):
+        validate_document(data37)
+    # 3.8: must also be rejected (additive = same gates + new additions)
+    data38 = dict(data)
+    data38["schema_version"] = "3.8"
+    with pytest.raises(ForecastInputError, match="capture receipt mismatch"):
+        validate_document(data38)
+
+
 def test_c2_38_with_empty_operating_units():
     data = finalize_contract(valid_document())
     data["schema_version"] = "3.8"

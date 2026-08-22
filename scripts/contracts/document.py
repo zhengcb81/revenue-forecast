@@ -603,7 +603,7 @@ def validate_evidence_claims(
             f"claim {claim_id} must be opened_and_checked",
         )
         source_capture = source_index[source_id].get("capture")
-        if data["schema_version"] == FORECAST_SCHEMA_VERSION:
+        if data["schema_version"] in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION):
             require(
                 isinstance(source_capture, dict),
                 f"claim source capture is missing: {claim_id}",
