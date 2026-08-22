@@ -307,3 +307,18 @@
 - 阶段 F 地图：◐ 22/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707/708+712 闭；剩余 ZR-713 → ZR-709 合流：紫金五年预测用户旅程终验）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-712 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-713 → ZR-709（F2 合流）→ 阶段 G（ZR-801~806）。
+
+## 2026-08-23 ZR-713 实施快照
+- **accepted 75/117 + ZR-713 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 22（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712）+ ZR-713 待复核/closure。
+- **ZR-713 实施**：revenue cb34700（rolling-origin 引擎：严格 as-of 无 future actual、company/segment/mine-volume 三层、四层 immutable hash、cap 不伪造 metrics，10 tests）；全量 768+106 绿；state triplet_green；implementer receipt canonical 57c1d269；独立复核运行中。
+- 机器游标：**F_revenue_mining** / ZR-713（复核中）。
+- 阶段 F 地图：◐ 22/13 + ZR-713 待闭（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707/708+712 闭；剩余 ZR-713 → ZR-709 合流）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue cb34700（ZR-713 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-23 ZR-713 closure 快照（最终停止点）
+- **accepted 76/117（约 65%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 23（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712 + ZR-713）。
+- **ZR-713 closure**：reviewer 首轮 changes_required（REV-001 blocking 三层非独立评估 + REV-002 minor hash 未绑 level/as_of）→ delta 3479718（segment 独立 wape、mine-volume ZR-605 契约 fail-closed、record 绑定 {level,as_of}、snapshot_id=快照身份；15 tests，全量 773+106，pre-commit 776+106 + E2E PASS）→ delta accepted（21/21 探针）；closure→ZR-709。
+- 机器游标：**F_revenue_mining** / **ZR-709**（未领取；F2 合流：紫金五年预测用户旅程终验）。
+- 阶段 F 地图：◐ 23/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707/708+712+713 闭——F2 常规链全闭；仅剩 ZR-709 合流终验）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-713 closure commit 待提交，实现 cb34700 + delta 3479718）、wiki 26a6b22、filing 5a1c18f。
+- **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-709（F2 合流）→ 阶段 G（ZR-801~806）。

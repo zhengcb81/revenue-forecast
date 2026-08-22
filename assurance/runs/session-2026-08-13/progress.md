@@ -671,3 +671,15 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-712 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-713（F2 紫金 rolling-origin 历史回测——DAG 已解锁；"严格 as-of 无 future actual；company/segment/mine-volume 分层；四层 immutable hashes"）→ ZR-709（F2 合流：紫金五年预测用户旅程终验）。
 - **docs 一致性修复（用户要求：全面检查名称/内容冲突）**：audit_review/findings.md 补 ZR-608/ZR-611/ZR-708 缺失条目（此前 audit 侧无对应）；closure 计数统一至 75/117；task_plan/panorama 剩余卡描述补 ZR-709 合流卡（此前零提及）；README 游标已镜像 current_next=ZR-713。
+- **ZR-713（F2 紫金 rolling-origin 历史回测）实施完成**：
+  - RED 探针：revenue_backtest 已有单窗口 snapshot/actuals 基础设施（as-of 校验）；grep rolling scripts → 零命中——rolling-origin 多窗口引擎/严格 as-of 泄漏检测/三层分层/cap 触发零实现。
+  - 修复：新 scripts/rolling_backtest.py——_validate_windows（窗口校验/排序）+ _as_of_filtered（严格 as-of 截断，泄漏 fail-closed "future actual leak"）+ _evaluate_window（复用 evaluate_snapshot）+ run_rolling_backtest（company/segment/mine-volume 三层循环；mine-volume 无 operating_units 跳过；窗口数 < min_windows=2 → capped=True + rating hint，不伪造 metrics）。
+  - 新 test_zr713_rolling_backtest.py（10 tests）：C1 严格 as-of 3 + C2 三层 3 + C3 四层 hash + cap 4。
+  - revenue 全量 768 passed + 106 subtests（+10 新，无回归）+ ruff + ratchet 全过（run_rolling_backtest 14→拆 _validate_windows helper）；skill-sync MATCH 146 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue cb34700）；implementer receipt canonical 57c1d269。
+  - 独立复核 reviewer-zr713-independent 运行中。
+- **ZR-713 closure**：独立复核 reviewer-zr713-independent 首轮 **changes_required**（23/23 对抗探针全过，但 REV-001 blocking：三层 byte-identical——level 仅是标签，mine-volume 未用 ZR-605 契约、segment 层发 company wape；REV-002 minor：level/as_of 未绑定 hash 链、snapshot_id 持 backtest_id 非快照身份；REV-003 info 保留）→ delta 修复 3479718（segment 层 _segment_window 用 segment_year_results 合并 wape；mine-volume 层 _mine_volume_window 走 ZR-605 validate_mine_year_operation/derive_saleable_volume，缺口 fail-closed、wape=None；snapshot_id=快照自身身份、record_sha256 绑定 {level, as_of}；+5 回归测试 15 passed，全量 773+106 绿，pre-commit 全量 776+106 + E2E PASS）→ delta 复审 **accepted**（21/21 探针全过，REV-001/002 resolved）；reviewer receipt canonical 8125837d；implementer receipt 重封 f71fdf5f（result=3479718）；state accepted + closure-advance -> **ZR-709**（phase F_revenue_mining，F2 合流卡——F2 常规链至此全闭，仅剩 ZR-709 合流终验）。
+- **机器状态**：current_next=ZR-709，accepted **76/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 23：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712 + ZR-713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-713 closure commit 待提交，实现 cb34700 + delta 3479718）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-709（F2 合流：紫金五年预测用户旅程终验——依赖 ZR-705~708/ZR-710~713/ZR-609/ZR-611；"自动复用财报/研报，补齐依据可解释；mine/product 贡献与分部勾稽或诚实 gap；draft 可渲染、结果可重放"）→ 阶段 G（ZR-801~806）。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：ZR-713 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-709（F2 合流）→ 阶段 G（ZR-801~806）。

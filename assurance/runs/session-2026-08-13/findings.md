@@ -263,3 +263,10 @@
 - policy 数据化设计：confidence 计算策略从硬编码字面量（20/25/10/15/15/15 + 80/55）变为数据对象 {version, weights, rating_caps}——未知版本 fail-closed；默认值与 legacy 逐字一致（存量零回归）。
 - 六类博弈检测语义：duplicate（同 backtest_id 重复=灌观测数）、split（同 year+source+value 拆分=稀释/放大）、plug（无 record_sha256=凭空插入）、zero-impact（wape=0 不提升分数但诚实披露）、one-observation（单观测封顶 8/15 不显著提升）、wrong-record（hash 缺失/篡改 fail-closed）。拒绝类必须中止、披露类诚实标注——反博弈的"全杀"分层。
 - ratchet 两次触发（12/16）均 helper 提取解决——NEW_FILE_MAX=10 是每次新文件卡的常规门（ZR-605/712 两次验证）。
+
+## 发现 42：ZR-713（F2 紫金 rolling-origin 历史回测，2026-08-23）
+- **严格 as-of 语义**：每窗口仅用 published_date ≤ as_of 的 actuals——未来 actual 泄漏 fail-closed（"future actual leak"）；published == as_of 含入（inclusive）；_as_of_filtered 对任何 future 源（即使未被引用）都 fail-closed → 过滤视图恒为全文或错误（REV-003 info：与卡片 fail-closed 措辞一致，跨窗口泄漏仍保证杜绝）。
+- **三层独立评估（REV-001 blocking 修复）**：company 层 = evaluate_snapshot 全量 company wape；segment 层 = segment_year_results 合并 wape（segment 数据驱动，≠ company wape）；mine-volume 层 = ZR-605 契约（validate_mine_year_operation 七字段缺口 fail-closed "gap, not default 0" + derive_saleable_volume = volume×grade×recovery×payable 分解），无 revenue 预测对照 → wape=None。三层 evaluation_sha256/record_sha256/wape 两两不同——"每层输出独立 wape/metrics"落地。
+- **四层 hash 链绑定（REV-002 minor 修复）**：snapshot_id = 快照自身身份（跨层一致）；record_sha256 = canonical_sha256({level, as_of, record})——重贴层标签或改 as_of 必破链。
+- **cap 语义**：窗口数 < min_windows=2 → capped=True + rating hint（不伪造 metrics）；单窗口 capped、双窗口 not capped 由测试钉死。
+- **流程教训**：① reviewer 的 blocking 判定依据完整卡片 C2 而非 reviewer-facing 摘要——docstring 声称必须可验证（"Three levels are backtested independently" 首轮被实证击穿）；② implementer receipt 在 delta 后必须重封（result_triplet 指向 delta commit，uc 工具不强制但链一致性要求）——ZR-606 教训第二次验证；③ pre-commit 钩子全量 776 测试 ~6 分钟，git commit 需给足超时（180s 不够，600s 稳妥）。

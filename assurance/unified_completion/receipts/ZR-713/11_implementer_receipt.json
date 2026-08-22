@@ -1,0 +1,121 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ef7756510b7e50023c2c586e1831541d55d87062",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：revenue_backtest 已有单窗口 snapshot/actuals 基础设施（as-of 校验）；grep rolling scripts → 零命中——rolling-origin 多窗口引擎/严格 as-of 泄漏检测/三层分层/cap 触发零实现",
+      "exit_code": 0,
+      "result": "G1+G2+G3 真实产品缺口"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr713_rolling_backtest.py -q --tb=short",
+      "exit_code": 0,
+      "result": "10 passed（C1 严格 as-of 3 + C2 三层 3 + C3 四层 hash + cap 4）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "768 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+10 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/rolling_backtest.py tests/test_zr713_rolling_backtest.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（run_rolling_backtest 14→拆 _validate_windows helper 回 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 146 files"
+    },
+    {
+      "command": "git diff ef77565 cb34700 --stat",
+      "exit_code": 0,
+      "result": "2 文件 +285：rolling_backtest.py（新 ~150 行）、test_zr713_rolling_backtest.py（新 10 tests）"
+    },
+    {
+      "command": "git diff cb34700 3479718 --stat",
+      "exit_code": 0,
+      "result": "2 文件 +186：rolling_backtest.py（三层独立 evaluation 视图 + record 绑定 {level,as_of}）、test_zr713_rolling_backtest.py（+5 回归测试：REV-001/002）"
+    },
+    {
+      "command": "pytest tests/test_zr713_rolling_backtest.py -q --tb=short",
+      "exit_code": 0,
+      "result": "15 passed"
+    },
+    {
+      "command": "pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "773 passed + 106 subtests（+5 新，无回归）；pre-commit 全量 776 passed + E2E PASS + sync MATCH 146"
+    },
+    {
+      "command": "ruff check scripts/rolling_backtest.py tests/test_zr713_rolling_backtest.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（各 helper ≤10）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T08:50:00+00:00",
+  "findings": [
+    {
+      "detail": "rolling-origin 引擎：逐窗口 as-of 截断（_as_of_filtered 仅保留 published_date ≤ as_of 的 sources，泄漏 fail-closed）；三层独立评估（company=company wape；segment=segment 汇总 wape/segment_year_results；mine-volume=ZR-605 契约逐矿 saleable_volume 分解，缺口 fail-closed）——每层 evaluation_sha256/record_sha256/wape 互不相同；四层 hash 链（snapshot_id=快照身份/actuals_sha256/evaluation_sha256/record_sha256 绑定 {level,as_of}）；窗口数 < min_windows → capped=True + rating hint（不伪造 metrics）。",
+      "id": "ZR713-IMPL-001",
+      "severity": "info",
+      "title": "rolling-origin 引擎（严格 as-of + 三层 + 四层 hash + cap）"
+    }
+  ],
+  "implementation": {
+    "design": "新 scripts/rolling_backtest.py：_validate_windows（窗口校验/排序）+ _as_of_filtered（严格 as-of 截断 + 泄漏拒绝）+ _evaluate_window（复用 evaluate_snapshot + 四层 hash）+ run_rolling_backtest（三层循环 + cap 判定）。零产品硬编码。",
+    "files": [
+      "revenue-forecast/scripts/rolling_backtest.py",
+      "revenue-forecast/tests/test_zr713_rolling_backtest.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-713/**"
+    ]
+  },
+  "implementer": "zr713-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 3479718（含 REV-001/002 delta；parent cb34700）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=d344ae97（00_wu_card.md，hashlib 注入）。",
+    "delta：REV-001（blocking）三层独立评估——segment 层 segment wape（actual_segment_revenue）、mine-volume 层 ZR-605 契约（validate_mine_year_operation/derive_saleable_volume，缺口 fail-closed）；REV-002（minor）snapshot_id=快照自身身份 + record_sha256 绑定 {level, as_of}。+5 回归测试（15 tests），全量 776+106 绿。",
+    "注：base_triplet.revenue=ef77565 为 ZR-712 closure commit。"
+  ],
+  "objective": "F2 紫金 rolling-origin 历史回测：严格 as-of 无 future actual、company/segment/mine-volume 三层分层、四层 immutable hashes、无法形成则触发 cap（不伪造 metrics）。",
+  "plan_sha256": "d344ae97dc8bf2dbbb8460383f687d9f0be0b1a9bb8a99cd55a64dacbd5310db",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "3479718d99d8fc367748d4f73ef66c741ee3bdb2",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/rolling_backtest.py（新）、tests/test_zr713_rolling_backtest.py（新 10 tests）；revenue 侧 receipts/ZR-713/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/rolling_backtest.py",
+    "revenue-forecast/tests/test_zr713_rolling_backtest.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-713/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-713",
+  "canonical_hash": "f71fdf5f6e97513b6f49c20b5ae97f891e2e0d23a19aa57526f62ebe02fc0e84"
+}

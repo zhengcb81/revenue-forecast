@@ -254,3 +254,14 @@
 - **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-713（F2 紫金 rolling-origin——DAG 已解锁）未领取；恢复第一步 = ZR-713 → ZR-709（F2 合流：紫金五年预测用户旅程终验——依赖 ZR-705~708/ZR-710~713/ZR-609/ZR-611）→ 阶段 G（ZR-801~806）。
 - **docs 一致性修复（本次）**：audit_review/findings.md 补 ZR-608/ZR-611/ZR-708 缺失条目 + 各卡 closure 计数统一（71→75/117）；剩余卡描述补 ZR-709 合流卡（此前零提及）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-712 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-713 实施完成）
+- **ZR-713 实施完成**（F2 紫金 rolling-origin 历史回测）：revenue cb34700（+285 行 2 文件，10 tests）——严格 as-of 无 future actual（泄漏 fail-closed）、company/segment/mine-volume 三层、四层 immutable hash 链、窗口不足 → capped（不伪造 metrics）。全量 768+106 绿；implementer receipt canonical 57c1d269；独立复核 reviewer-zr713-independent 运行中。
+- 下一卡（closure 后）：ZR-709（F2 合流：紫金五年预测用户旅程终验——依赖 ZR-705~708/ZR-710~713/ZR-609/ZR-611）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue cb34700（ZR-713 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-713 closure → 停止点）
+- **accepted 76/117（约 65%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 23（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712 + ZR-713）。
+- **ZR-713 closure**（F2 rolling-origin 历史回测）：reviewer 首轮 **changes_required**（REV-001 blocking：三层 byte-identical 非独立评估——segment 层发 company wape、mine-volume 未用 ZR-605 契约；REV-002 minor：level/as_of 未绑 hash 链、snapshot_id 非快照身份）→ delta 修复 3479718（segment 独立 wape、mine-volume 走 ZR-605 契约 fail-closed、record_sha256 绑定 {level,as_of}、snapshot_id=快照身份；+5 回归 15 tests，全量 773+106，pre-commit 776+106 + E2E PASS）→ delta 复审 **accepted**（21/21 探针全过）；reviewer receipt canonical 8125837d；closure→ZR-709（F2 合流卡——F2 常规链全闭）。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-709（F2 合流：紫金五年预测用户旅程终验——依赖 ZR-705~708/ZR-710~713/ZR-609/ZR-611）未领取；恢复第一步 = ZR-709 → 阶段 G（ZR-801~806）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-713 closure commit 待提交，实现 cb34700 + delta 3479718）、wiki 26a6b22、filing 5a1c18f。

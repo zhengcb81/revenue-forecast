@@ -236,3 +236,7 @@
 - ZR-712 实施完成（2026-08-23）：revenue 2373c42（版本化 ConfidencePolicy + 反博弈：policy 数据化/六类 mutations 检测/rating caps 重算，15 tests）；全量 755+106 绿；state triplet_green；implementer receipt canonical fcc237aa；独立复核运行中。
 
 - ZR-712 closure：reviewer-zr712-independent accepted（首轮 accepted → REV-001/002/004 minor delta 修复 1c04684 → delta accepted，REV-003 info 保留）；state accepted 75/117；closure-advance -> ZR-713；**docs 一致性修复：补 ZR-608/ZR-611/ZR-708 缺失 findings 条目 + ZR-709 合流卡提及**。
+
+- ZR-713 实施完成（2026-08-23）：revenue cb34700（rolling-origin 引擎：严格 as-of 泄漏 fail-closed、company/segment/mine-volume 三层、四层 immutable hash、cap 不伪造 metrics，10 tests）；全量 768+106 绿；state triplet_green；implementer receipt canonical 57c1d269；独立复核运行中。
+
+- ZR-713 closure：reviewer-zr713-independent 首轮 changes_required（REV-001 blocking 三层 byte-identical 非独立评估——segment 层发 company wape、mine-volume 未用 ZR-605 契约；REV-002 minor level/as_of 未绑 hash 链）→ delta 3479718 修复（segment 独立 wape、mine-volume 走 ZR-605 契约 fail-closed、record_sha256 绑定 {level,as_of}、snapshot_id=快照身份；15 tests，全量 773+106，pre-commit 776+106 + E2E PASS）→ delta accepted（21/21 探针）；implementer receipt 重封 f71fdf5f、reviewer receipt canonical 8125837d；state accepted 76/117；closure-advance -> ZR-709（F2 合流卡——F2 常规链全闭，仅剩 ZR-709 合流终验）。

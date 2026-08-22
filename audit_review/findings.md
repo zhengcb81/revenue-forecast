@@ -561,3 +561,6 @@
 - snapshot 不可变/accuracy→confidence 消费链/四层 hash/未来 actual 拒绝——已有能力当前 triplet 全绿，test-only 重验钉死。ZR-708 closure：reviewer accepted（4 info）；state accepted 74/117；closure-advance -> ZR-712。
 ## ZR-712（2026-08-23）：版本化 ConfidencePolicy + 反博弈（revenue）
 - policy 数据化（version/weights/rating_caps，未知版本 fail-closed，默认与 legacy 一致）；六类博弈检测（duplicate/split/plug/zero-impact/one-observation/wrong-record）；recompute_rating caps 驱动（80/55 一致）。ZR-712 closure：reviewer accepted（首轮 accepted → REV-001/002/004 minor delta 修复 1c04684 → delta accepted）；state accepted 75/117；closure-advance -> ZR-713。
+
+## ZR-713（2026-08-23）：紫金 rolling-origin 历史回测（revenue）
+- 严格 as-of 无 future actual（每窗口仅用 published ≤ as_of 的 actuals，泄漏 fail-closed）；company/segment/mine-volume 三层独立评估（segment 层用 actual_segment_revenue 合并 wape；mine-volume 层走 ZR-605 契约 validate_mine_year_operation/derive_saleable_volume，缺口 fail-closed，无预测对照 wape=None）；四层 immutable hash 链（snapshot_id=快照身份、record_sha256 绑定 {level, as_of}——重贴标签/改期破链）；窗口不足 → capped + rating hint 不伪造 metrics。ZR-713 closure：reviewer 首轮 changes_required（REV-001 blocking 三层 byte-identical 非独立评估 + REV-002 minor hash 绑定）→ delta 3479718 修复 → delta accepted（21/21 探针）；state accepted 76/117；closure-advance -> ZR-709（F2 合流卡，F2 常规链全闭）。
