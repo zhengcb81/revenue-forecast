@@ -289,3 +289,15 @@
 
 ### F-G4 嵌套 checkout 位置性失败为常态
 - 干净 worktree 内跑依赖 sibling 仓的链测试必因相对父路径解析失败——复核口径固定为「worktree 定位失败→主仓同 HEAD 复跑→位置性 info」。
+
+## 发现 42b：docs 漂移——closure commit 声称镜像但未落盘（2026-08-22 检查）
+- 9784c18（close ZR-804+ZR-805）commit message 声称 "cursor mirrored to G_real_e2e/ZR-806, all planning docs updated"，但 `git show 9784c18 -- audit_review/README.md` 为空（README 游标停在 ZR-804）、session progress.md/panorama.md 未更新（尾部仍为 ZR-713 停止点）。
+- 与 ZR-609 REV-001 教训同源（"closure 记录须以 git log 实证为准"）：commit message 是声明，git 内容是事实——bookkeeping 声明与落盘必须核对，message 不得描述未提交的变更。
+- 修复：README 游标 → ZR-806；progress.md/panorama.md 补记 ZR-709~805 阶段链小结；本次修复本身随 ZR-806 实施提交。
+
+## 发现 43：ZR-806（阶段 G 收官：真实 T2 三 root 样本，2026-08-22）
+- **样本唯一/新鲜语义（AUD2-05 落地）**：固定 5 样本清单（companies 紫金 FY2025/FY2024、dayu 1548 FY2021、Dropbox 星环 FY2024/东吴研报）——实测 content_sha256 跨 root 唯一（紫金 FY2025 01819e1c/FY2024 004f733e/星环 eb965857 与 sidecar 声明一致）、filing_date ≤ today；缺失样本 → 套件 fail "blocked, never swap samples"（reviewer 用 temp 副本注入缺失路径实证：3 failed/7 passed，真实样本未动）。
+- **三 root 只读旅程基准**：companies 紫金 FY2025/FY2024 + dayu 1548（dayu-only，companies 无同 hash）→ REUSED_EXACT download=0；Dropbox 星环 → MISSING fail-closed（http URL 不伪造 handle，capture_incomplete trace）；旅程前后浅指纹 + catalog 行数（documents=23530/sources=43112/locations=46606）不变——生产 catalog/source roots 零写钉死。
+- **artifact/mine/forecast 消费绑定**：Zijin .source.json 契约（fiscal_year/company_name/security_id/pdoc/content_sha256==实测/byte_size==实测/fiscal_period=FY）→ F2 链 FY 语义可消费；星环 sidecar 以 content_sha256 绑定（schema 较窄——reviewer REV-001 info：卡片全字段枚举仅适用 Zijin sidecars）；broker PDF 无 sidecar 诚实保持 raw。
+- **CRLF 行尾 vs CAS hash 冲突（closure 机械门新坑）**：README 为 CRLF 时，closure-advance 的 `read_text().encode()`（universal newlines 转 LF 后 hash 9e1bb1c0）与 manifest 登记的原始字节 hash（CRLF 版本 c6a00a6d）不一致 → CAS-CONFLICT；修复 = README 转 LF + `manifest-build --force` 重建。教训：uc 工具 hash 口径不统一（manifest_verify 用原始字节、closure-advance 用 read_text+encode），控制页文件必须保持 LF 行尾。
+- **reviewer 回合卡顿处理**：subagent 探针创建后 3+ 分钟无进程活动 → interrupt + send_message 催收尾（可跳过全量复跑——pre-commit 已独立跑过）；reviewer 依此快速完成（全量仍复跑 167.84s 绿）。

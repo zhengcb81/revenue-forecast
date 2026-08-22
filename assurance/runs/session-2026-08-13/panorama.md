@@ -322,3 +322,30 @@
 - 阶段 F 地图：◐ 23/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707/708+712+713 闭——F2 常规链全闭；仅剩 ZR-709 合流终验）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-713 closure commit 待提交，实现 cb34700 + delta 3479718）、wiki 26a6b22、filing 5a1c18f。
 - **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-709（F2 合流）→ 阶段 G（ZR-801~806）。
+
+## 2026-08-23 ZR-709 closure 快照（F 阶段全闭 → 进入 G）
+- **accepted 77/117（约 66%）**：F **24/24 全闭**（新增 ZR-709）；current_phase=G_real_e2e，current_next=ZR-802（ZR-801 machine registry 已由 CA-105 唯一实现吸收）。
+- **ZR-709 closure**（F2 合流：紫金五年预测用户旅程终验 fixture）：revenue ac68807（test-only 9 tests，产品零改动）——source_preparation 真实子进程链复用 + 五年 FY2026-2030 契约代数推导（权益链 0.396）+ reconcile 10/10 + 诚实 gap + draft/formal 可渲染可重放；复核 accepted（12/12 探针，4 info）；reviewer receipt canonical 40206902。
+- 阶段 F 出口达成：generator/validate/draft/formal 发布闭环 ✅、矿山会计桥或诚实 gap ✅、可信回测/置信度 ✅。
+
+## 2026-08-23 阶段 G 连续推进快照（ZR-802~805 → 收尾停止）
+- **accepted 81/117（约 69%）**：G 4/6（ZR-802/803/804/805）；current_next=**ZR-806**（收官卡）。
+- **ZR-802 closure**（组合旅程 across roots）：revenue 1b55f6f（7 tests）——五状态 existing/missing/stale/conflict/partial + 二次幂等 + 八阶段投影；复核 accepted（11 探针）；canonical 051e4f64。
+- **ZR-803 closure**（chaos 六类故障×幂等恢复）：revenue b14ac3c（6 tests）——锁/中断/磁盘/篡改/乱序/时钟；复核 accepted（13 探针）；canonical 7e305256。
+- **ZR-804 closure**（平台与安装形态）：revenue be8405c（5 tests）——大小写变体/缺省配置 fail-closed/sync-first 身份/无 Windows-only 构造；回填 receipt 联合复核 accepted（A-V1~V5）；canonical 46850f67；**流程偏差：曾跳过 receipt 直接开 ZR-805，ZRR805-REV-002 抓出闭环**。
+- **ZR-805 closure**（T3 下载授权语义）：revenue 3fc5f3e + delta 295f138（3 tests）——filing-fetch opt-in 唯一 owner、journal 零下载独立 oracle（非空洞注入证明）、单一下载器；首轮 accepted → REV-001/002 delta → accepted；delta receipt b3efb845。
+- 全量基线：782 → 800 → **803 passed + 106 subtests**；sync MATCH 151。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 295f138、wiki 26a6b22、filing 5a1c18f。
+- **最终停止点（用户指示：收尾并更新全部 planning docs 后停止）**：恢复第一步 = ZR-806（真实 T2 三 root/broker/artifact/mine/forecast 样本收官）→ 阶段 H（ZR-901/CA-201 起）。
+
+## 2026-08-23 ZR-806 实施快照
+- **accepted 81/117 + ZR-806 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 4（ZR-802~805）+ ZR-806 待复核/closure。
+- **ZR-806 实施**：revenue b716a81（真实 T2 三 root 样本套件：固定 5 样本唯一/新鲜（AUD2-05 缺失即 blocked）+ 三 root resolve 只读旅程（REUSED_EXACT ×3 + MISSING ×1 fail-closed）+ 零写指纹 + sidecar 契约绑定，10 tests）；全量 813+106 绿；state triplet_green；implementer receipt canonical 2dd046b5；独立复核运行中。
+- 机器游标：**G_real_e2e** / ZR-806（复核中）。
+
+## 2026-08-23 ZR-806 closure 快照（阶段 G 全闭 → 阶段 H 入口）
+- **accepted 82/117（约 70%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + **G 5/6 全闭**（ZR-802~806；ZR-801 由 CA-105 吸收）。current_phase=**H_dynamic_audit**，current_next=**ZR-902**。
+- **ZR-806 closure**：reviewer-zr806-independent accepted（15 commands；独立复算样本 hash/声明匹配、AUD2-05 temp 变体缺失样本套件 fail（3 failed/7 passed）、resolve 复跑 + 指纹/catalog 行数不变、sidecar 逐字段、git diff 零产品改动、回归 30 + ruff + ratchet + 全量 813+106 复跑；2 info）；reviewer receipt canonical 5a9ddad4；closure→ZR-902。
+- **CRLF 教训**：README CRLF → closure-advance CAS-CONFLICT（read_text().encode() LF hash vs manifest 原始字节 CRLF hash）→ README 转 LF + manifest CAS 重建（findings 43）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-806 closure commit 待提交，实现 b716a81）、wiki 26a6b22、filing 5a1c18f。
+- **最终停止点（用户指示：收尾并更新全部 planning docs 后停止）**：恢复第一步 = ZR-902（阶段 H：实际调度每日 Windows T2）→ ZR-903/901（阶段 H）。

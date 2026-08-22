@@ -290,3 +290,15 @@
 - 新发现入 findings F-G1~F-G4（oracle 空洞注入式证明 / 簿记跳步对策 / manifest 覆盖 tests 推论 / 嵌套 checkout 位置性常态）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-806 未领取；恢复第一步 = ZR-806（真实 T2 三 root/broker/artifact/mine/forecast 样本收官）→ 阶段 H（ZR-901/CA-201 起）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue 295f138、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-806 实施完成）
+- **ZR-806 实施完成**（阶段 G 收官：真实 T2 三 root 样本）：revenue b716a81（+253 行 1 文件，10 tests）——固定 5 样本清单（companies 紫金 FY2025/FY2024、dayu 1548 FY2021、Dropbox 星环 FY2024/东吴研报）唯一/新鲜（AUD2-05 缺失即 blocked）+ 三 root resolve 只读旅程（REUSED_EXACT ×3 + MISSING ×1 fail-closed）+ 零写指纹（浅指纹 + catalog 行数）+ Zijin/星环 sidecar 契约绑定。全量 813+106 绿；implementer receipt canonical 2dd046b5；独立复核 reviewer-zr806-independent 运行中。
+- 下一卡（closure 后）：ZR-902（阶段 H 首卡：实际调度每日 Windows T2）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue b716a81（ZR-806 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-806 closure → 阶段 H 入口）
+- **accepted 82/117（约 70%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + **G 5/6 全闭**（ZR-802~806；ZR-801 由 CA-105 吸收）。current_phase=**H_dynamic_audit**，current_next=**ZR-902**。
+- **ZR-806 closure**（真实 T2 样本收官）：reviewer-zr806-independent **accepted**（15 commands 全绿；独立复算 5 样本 hash 唯一/声明匹配、AUD2-05 temp 变体缺失样本套件 fail "blocked, never swap samples"（3 failed/7 passed）、resolve 四旅程复跑 + 指纹/catalog 行数不变、sidecar 逐字段匹配、git diff 零产品改动、回归 30 + ruff + ratchet + 全量 813+106 复跑 167.84s、receipt-validate OK；2 info：REV-001 星环 sidecar schema 较窄（Zijin 全字段枚举仅适用 Zijin）、REV-002 AUD2-05 用 temp 副本）；reviewer receipt canonical 5a9ddad4；closure→ZR-902（阶段 H 首卡）。
+- **CRLF 教训**：README CRLF 行尾导致 closure-advance CAS-CONFLICT（read_text().encode() LF hash vs manifest 原始字节 CRLF hash）→ README 转 LF + manifest CAS 重建解决（findings 43）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-902（实际调度每日 Windows T2——依赖 ZR-806；"schedule/runner/权限/原子报告/<=24h freshness/release 消费全证明；不仅是脚本存在"）未领取；恢复第一步 = ZR-902 → ZR-903（每周/发布前 T3）/ZR-901（PR 门）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-806 closure commit 待提交，实现 b716a81）、wiki 26a6b22、filing 5a1c18f。

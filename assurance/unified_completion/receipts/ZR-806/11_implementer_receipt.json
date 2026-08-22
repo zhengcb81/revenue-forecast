@@ -1,0 +1,96 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "9784c1800f3a1bdf159995d938ee3dddbb5ff185",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep real_t2/t2_sample/unique sample/AUD2-05 → 零命中；dropbox/dayu 引用均为 T1 合成（FC-505 tmp_path）；resolve 现状实证：紫金 FY2025/FY2024 REUSED_EXACT、dayu 1548 FY2021 REUSED_EXACT、Dropbox 688031/研报 MISSING fail-closed",
+      "exit_code": 0,
+      "result": "G1~G3 真实缺口：无三 root 综合样本套件、无样本唯一/新鲜断言、无 artifact/mine/forecast 消费绑定"
+    },
+    {
+      "command": "python -m pytest tests/test_zr806_real_t2_samples.py -q --tb=short",
+      "exit_code": 0,
+      "result": "10 passed（C1 样本唯一/新鲜 3 + C2 三 root 只读旅程 4 + C3 artifact/mine/forecast 消费 3）"
+    },
+    {
+      "command": "ruff check tests/test_zr806_real_t2_samples.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（新文件函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 152 files"
+    },
+    {
+      "command": "git commit（pre-commit 全套：813+106 全量 + E2E PASS + sync MATCH）",
+      "exit_code": 0,
+      "result": "b716a81 test(ZR-806) — 1 file +253"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "813 passed + 106 subtests（803 基线 + 10 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-22T21:05:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 样本唯一/新鲜：固定清单 5 样本（companies 紫金 FY2025/FY2024、dayu 1548 FY2021、Dropbox 星环 FY2024、Dropbox 东吴研报）——实测 content_sha256 跨 root 唯一、filing_date ≤ today、声明 hash 与文件一致（紫金 FY2025 01819e1c/FY2024 004f733e、星环 eb965857）；缺失样本 → 测试 fail（AUD2-05 blocked 语义，不自动换样本）。C2 三 root 只读旅程：紫金 FY2025/FY2024 REUSED_EXACT（download=0）、dayu 1548 REUSED_EXACT（dayu-only）、Dropbox 星环 MISSING fail-closed（http URL 不伪造 handle）；旅程前后三 root 浅指纹 + catalog documents/sources/locations 行数不变。C3 artifact/mine/forecast 消费：紫金 FY2025/FY2024 .source.json 契约（fiscal_year/company_name/security_id/provider_document_id/content_sha256 与实测一致/byte_size/fiscal_period=FY）可被 F2 链消费；星环 sidecar 绑定；broker PDF 无 sidecar 诚实保持 raw 样本。",
+      "id": "ZR806-IMPL-001",
+      "severity": "info",
+      "title": "真实 T2 三 root 样本：唯一/新鲜 + 只读旅程 + 消费绑定 + 零写指纹"
+    }
+  ],
+  "implementation": {
+    "design": "新 tests/test_zr806_real_t2_samples.py（T2 真实根只读，ZR-409 同型硬编码路径）：SAMPLES 固定清单 + _sha256_file/_shallow_fingerprint/_catalog_row_counts 零写 oracle；resolve 断言直接走生产 catalog.sqlite3 只读；.source.json 契约绑定。零产品改动、零下载、零 LLM。",
+    "files": [
+      "revenue-forecast/tests/test_zr806_real_t2_samples.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-806/**"
+    ]
+  },
+  "implementer": "zr806-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 b716a81（parent 9784c18 = ZR-804+805 closure）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=fdb913c5（00_wu_card.md，hashlib 注入）。",
+    "docs 漂移修复（本轮）：9784c18 声称镜像但 README 未落盘 → README 游标已修至 ZR-806 + manifest 重建（CAS --force）+ progress/panorama 补记（findings 42b）。",
+    "独立 reviewer 待派出（reviewer-zr806-independent）。"
+  ],
+  "objective": "阶段 G 收官：真实 T2 三 root（companies/dayu/Dropbox）+ broker/artifact/mine/forecast 样本——样本唯一/新鲜（AUD2-05 缺失即 blocked）、生产 catalog/source roots 零写、用户旅程全绿。",
+  "plan_sha256": "fdb913c57ab255c14c6a13a23985bb480f2cc4278f12667bcccac92ef8b9f3eb",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "b716a81fd31d28671686e41f64452f8b92ed30ad",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr806_real_t2_samples.py（新 10 tests）；真实根只读（company-wiki catalog + dayu portfolio + Dropbox Stock）；revenue 侧 receipts/ZR-806/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 3
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr806_real_t2_samples.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-806/**",
+    "revenue-forecast/assurance/unified_completion/state.json",
+    "revenue-forecast/audit_review/README.md",
+    "revenue-forecast/assurance/unified_completion/manifests/plan_inputs.json"
+  ],
+  "unit": "ZR-806",
+  "canonical_hash": "2dd046b57c0419714cfc4e09e48ff8c5e74c56a5e9279fad3fde8c8e107b4c0f"
+}

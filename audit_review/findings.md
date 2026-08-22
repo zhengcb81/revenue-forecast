@@ -566,3 +566,10 @@
 - 严格 as-of 无 future actual（每窗口仅用 published ≤ as_of 的 actuals，泄漏 fail-closed）；company/segment/mine-volume 三层独立评估（segment 层用 actual_segment_revenue 合并 wape；mine-volume 层走 ZR-605 契约 validate_mine_year_operation/derive_saleable_volume，缺口 fail-closed，无预测对照 wape=None）；四层 immutable hash 链（snapshot_id=快照身份、record_sha256 绑定 {level, as_of}——重贴标签/改期破链）；窗口不足 → capped + rating hint 不伪造 metrics。ZR-713 closure：reviewer 首轮 changes_required（REV-001 blocking 三层 byte-identical 非独立评估 + REV-002 minor hash 绑定）→ delta 3479718 修复 → delta accepted（21/21 探针）；state accepted 76/117；closure-advance -> ZR-709（F2 合流卡，F2 常规链全闭）。
 
 - 阶段 G 会话补充发现（2026-08-23，详见 session findings F-G1~F-G4）：journal 计数型 oracle 需注入式非空洞性证明（ZRR805-REV-001 教训）；连续推进时卡片五态（card/receipt/review/closure/游标）任一缺失即不得领取下一卡（ZRR805-REV-002 教训）；--version manifest 含 tests/** 故安装副本身份比对必须 sync-first；嵌套 checkout 的 sibling 解析失败按位置性 info 分类（主仓同 HEAD 复跑为准）。
+
+## ZR-806（2026-08-22）：真实 T2 三 root/broker/artifact/mine/forecast 样本（revenue，test-only）
+- 固定 5 样本清单（companies 紫金 FY2025 cninfo:1225023658/FY2024 cninfo:1222870413、dayu 1548 HK FY2021 hkexnews:10225111、Dropbox 星环 688031 FY2024 cninfo:1223325316/东吴研报 PDF）——content_sha256 跨 root 唯一、filing_date ≤ today、声明 hash 匹配实测；缺失样本 → 套件 fail（AUD2-05：blocked 不自动换样本）。
+- 三 root 只读旅程：紫金 FY2025/FY2024 + dayu 1548 → REUSED_EXACT（download=0）；Dropbox 星环 → MISSING fail-closed（http URL 不伪造 handle）；旅程前后浅指纹 + catalog documents/sources/locations 行数不变（生产零写）。
+- Zijin .source.json 契约（fiscal_year/company_name/security_id/pdoc/content_sha256==实测/byte_size==实测/fiscal_period=FY）→ F2 链 FY 语义可消费；星环 sidecar content_sha256 绑定（schema 较窄，info）；broker PDF 无 sidecar 诚实 raw。
+- ZR-806 closure：reviewer-zr806-independent accepted（15 commands；AUD2-05 temp 变体 3 failed/7 passed；回归 30 + 全量 813+106 复跑；2 info）；state accepted 82/117；closure-advance -> ZR-902（阶段 H 首卡：实际调度每日 Windows T2）。
+- **CRLF 教训**：README CRLF 行尾 → closure-advance CAS-CONFLICT（read_text().encode() 的 LF hash vs manifest 原始字节 CRLF hash 口径不一）→ README 转 LF + manifest-build CAS 重建解决；控制页文件须保持 LF。
