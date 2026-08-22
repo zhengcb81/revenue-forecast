@@ -139,7 +139,7 @@ def test_unauthorized_missing_source_zero_downloads_in_journal(tmp_path):
     assert "not_found" in payload["error"]
     # independent oracle: the journal recorded zero downloads
     assert (
-        _journal_downloaded_new(project / ".source_catalog" / "catalog.sqlite3")
+        _journal_downloaded_new(project / ".source_catalog")
         == before
     )
 
