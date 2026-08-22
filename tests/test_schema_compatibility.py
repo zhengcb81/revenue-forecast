@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION  # noqa: E402
+from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION  # noqa: E402
 from schema_compatibility import (  # noqa: E402
     require_validating_engine,
     supported_schema_versions,
@@ -43,6 +43,7 @@ class SchemaCompatibilityRegistryTests(unittest.TestCase):
             "3.4",
             "3.5",
             FORECAST_SCHEMA_VERSION,
+            OPT_IN_SCHEMA_VERSION,
         ):
             self.assertFalse(
                 validating_engine_allowed(schema, "9.9.9", "formal"),
@@ -54,7 +55,7 @@ class SchemaCompatibilityRegistryTests(unittest.TestCase):
 
     def test_unknown_schema_fails_closed(self) -> None:
         self.assertFalse(validating_engine_allowed("2.0", ENGINE_VERSION, "output"))
-        self.assertFalse(validating_engine_allowed("3.8", ENGINE_VERSION, "snapshot"))
+        self.assertFalse(validating_engine_allowed("3.9", ENGINE_VERSION, "snapshot"))
 
     def test_non_string_engine_fails_closed(self) -> None:
         self.assertFalse(validating_engine_allowed("3.4", 3.10, "output"))
@@ -63,7 +64,7 @@ class SchemaCompatibilityRegistryTests(unittest.TestCase):
     def test_registry_matches_supported_schema_set(self) -> None:
         self.assertEqual(
             supported_schema_versions(),
-            {"3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", FORECAST_SCHEMA_VERSION},
+            {"3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION},
         )
 
     def test_require_validating_engine_raises_on_unknown(self) -> None:

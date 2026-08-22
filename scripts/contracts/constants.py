@@ -16,6 +16,12 @@ SKILL_VERSION = "4.0.0"
 FORECAST_SCHEMA_VERSION = "3.7"
 
 
+# ZR-711: additive opt-in schema — 3.8 = 3.7 + operating_units (mine-year
+# operations per ZR-605) for the mining layer. Opt-in only: 3.7 stays the
+# canonical version and its validation behavior is unchanged.
+OPT_IN_SCHEMA_VERSION = "3.8"
+
+
 SUPPORTED_FORECAST_SCHEMA_VERSIONS = {
     "3.0",
     "3.1",
@@ -25,6 +31,7 @@ SUPPORTED_FORECAST_SCHEMA_VERSIONS = {
     "3.5",
     "3.6",
     FORECAST_SCHEMA_VERSION,
+    OPT_IN_SCHEMA_VERSION,
 }
 
 

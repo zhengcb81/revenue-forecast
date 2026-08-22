@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, require
+from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION, require
 
 # ---------------------------------------------------------------------------
 # Emit matrix (schema_version -> set of engine versions that emitted it)
@@ -43,6 +43,7 @@ SCHEMA_EMIT_ENGINES: dict[str, frozenset[str]] = {
     "3.5": frozenset({"3.10.0", "4.0.0"}),
     "3.6": frozenset({"3.10.0", "4.0.0"}),
     FORECAST_SCHEMA_VERSION: frozenset({ENGINE_VERSION}),
+    OPT_IN_SCHEMA_VERSION: frozenset({ENGINE_VERSION}),
 }
 
 

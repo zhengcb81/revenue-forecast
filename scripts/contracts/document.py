@@ -14,6 +14,7 @@ from contracts.constants import (
     ASSERTION_STATUSES,
     FORECAST_SCHEMA_VERSION,
     MONETARY_DIMENSIONS,
+    OPT_IN_SCHEMA_VERSION,
     PARAMETER_DIMENSIONS,
     PARAMETER_KINDS,
     RESOLUTION_STATUSES,
@@ -40,6 +41,7 @@ from asset_ownership import (
     validate_segment_geography,
     validate_segment_ownership,
 )
+from mine_year_operation import validate_mine_year_operation
 from forecast.calc import (
     _parse_fiscal_year,
     evaluate_derived_formula,
@@ -76,8 +78,9 @@ def validate_top_level(data: dict[str, Any]) -> tuple[list[int], date]:
         require(key in data, f"missing required field: {key}")
 
     require(
-        data["schema_version"] == FORECAST_SCHEMA_VERSION,
-        f"schema_version must be {FORECAST_SCHEMA_VERSION}",
+        data["schema_version"] in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION),
+        f"schema_version must be {FORECAST_SCHEMA_VERSION} or "
+        f"{OPT_IN_SCHEMA_VERSION} (opt-in)",
     )
 
     require(
@@ -914,6 +917,20 @@ def validate_base_reconciliation(
     )
 
 
+def validate_operating_units(data: dict[str, Any]) -> list[dict[str, Any]]:
+    """ZR-711: additive ``operating_units`` key (schema 3.8 opt-in).
+
+    Each entry must be a complete mine-year operation (ZR-605 seven-field
+    contract — fail-closed on gaps, never defaults). An absent key passes
+    (additive; 3.7 documents are unaffected).
+    """
+    units = data.get("operating_units")
+    if units is None:
+        return []
+    require(isinstance(units, list), "operating_units must be a list")
+    return [vars(validate_mine_year_operation(unit)) for unit in units]
+
+
 def validate_document(
     data: dict[str, Any], *, collector: Collector | None = None
 ) -> dict[str, Any]:
@@ -943,6 +960,7 @@ def validate_document(
         )
         validate_historical_revenue(data, source_index, parameter_index, claim_index)
         validate_base_reconciliation(data, parameter_index)
+        validate_operating_units(data)
         try:
             revenue_constraints = validate_revenue_constraints(
                 data.get("revenue_constraints", []),
@@ -1022,6 +1040,9 @@ def validate_document(
             source_index,
             parameter_index,
             claim_index,
+        )
+        _run_gate(
+            collector, "operating_units", validate_operating_units, data
         )
         _run_gate(
             collector,
