@@ -290,3 +290,20 @@
 - 机器游标：**F_revenue_mining** / **ZR-712**（未领取；confidence 反博弈）。
 - 阶段 F 地图：◐ 21/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707/708 闭；剩余 ZR-712/713）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-708 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-23 ZR-712 实施快照
+
+- **accepted 74/117 + ZR-712 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 21（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708）+ ZR-712 待复核/closure。
+- **ZR-712 实施**：revenue 2373c42（版本化 ConfidencePolicy + 反博弈：policy 数据化 + 六类 mutations 检测 + rating caps 重算，15 tests）；全量 755+106 绿；state triplet_green；implementer receipt canonical fcc237aa；独立复核运行中。
+- 机器游标：**F_revenue_mining** / ZR-712（复核中）。
+- 阶段 F 地图：◐ 21/13 + ZR-712 待闭（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707/708 闭 + ZR-712 实施中；剩余 ZR-713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 2373c42（ZR-712 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-23 ZR-712 closure 快照（最终停止点）
+
+- **accepted 75/117（约 64%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 22（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712）。
+- **ZR-712 closure**：reviewer accepted（首轮 36 探针 → REV-001/002/004 minor delta 修复 1c04684 → delta 45 探针全过 accepted）；closure→ZR-713。
+- 机器游标：**F_revenue_mining** / **ZR-713**（未领取；紫金 rolling-origin 历史回测）。
+- 阶段 F 地图：◐ 22/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707/708+712 闭；剩余 ZR-713 → ZR-709 合流：紫金五年预测用户旅程终验）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-712 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-713 → ZR-709（F2 合流）→ 阶段 G（ZR-801~806）。

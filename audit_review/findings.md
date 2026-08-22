@@ -546,10 +546,18 @@
 - ZR-606 closure：delta 47fe715（REV-001 saleable_volume finite_number）；delta 复审 staged-not-committed 教训；implementer receipt 重封；state accepted 67/117；closure-advance -> ZR-607。
 ## ZR-607（2026-08-22）：internal flow 会计桥（revenue）
 - InternalFlow 八字段可追踪 + gross/net elimination 桥（net=external 内部消除不重复计）；period/scenario 过滤；与 ZR-606 商业量价组合。
+## ZR-608（2026-08-22）：asset→segment→group reconciliation（revenue）
+- reconcile_layer 容差门（|diff| ≤ max(1.0,|ref|)×tol → reconciled_modeled，否则 gap 不伪造差值）；fallback_segment_listing（分部并列 + 显式 gap）；gap_report 防伪收入（NaN/inf 拒绝、缺资产=gap）。ZR-608 closure：reviewer accepted（46/46）；state accepted 69/117；closure-advance -> ZR-611。
+## ZR-611（2026-08-22）：通用多矿合成 E2E（revenue）
+- 八类场景（控股/权益法/多金属/内供/跨币种/爬坡/gap/residual）全链确定性可重算 + 手算对照；生产代码零硬编码验证。ZR-611 closure：reviewer accepted（独立数学重算 + 八类非空洞）；state accepted 70/117；closure-advance -> ZR-609。
 ## ZR-609（2026-08-22）：紫金 pilot + 第二家泛化（revenue）
 - 紫金三主要资产（卡莫阿-卡库拉权益链 0.396/巨龙全资/紫金山金+银副产品）逐矿可回答走 F2 全链 + 第二家纯金矿商泛化零硬编码；test-only。
 - ZR-609 closure：reviewer accepted；REV-001 修正（ZR-611 closure 实际独立落地 404a2bb——流程偏差记录有误已更正）；REV-002 receipt 重封 ee6dd908；state accepted 71/117；closure-advance -> ZR-711。
 ## ZR-711（2026-08-23）：additive schema 3.8 opt-in（revenue）
 - 3.8 opt-in（OPT_IN_SCHEMA_VERSION + EMIT + 版本门 {3.7,3.8} + operating_units 复用 ZR-605 契约 + converter 加 gap 不猜值）；REV-001 capture-integrity 门修复（版本门扩展须扫描全部 ==3.7 分支）；closure→ZR-707。
 ## ZR-707（2026-08-23）：mixed recognition/gross-net + multi-commodity（revenue）
-- validate_mixed_recognition（混合 mode 合法）+ validate_commodity_matrix（multi-commodity 分段）+ validate_presentation_consistency（gross/net 声明）；词汇复用 constants 真源。
+- validate_mixed_recognition（混合 mode 合法）+ validate_commodity_matrix（multi-commodity 分段）+ validate_presentation_consistency（gross/net 声明）；词汇复用 constants 真源。ZR-707 closure：reviewer accepted（11/11）；state accepted 73/117；closure-advance -> ZR-708。
+## ZR-708（2026-08-23）：already_satisfied 重验（revenue，零产品改动）
+- snapshot 不可变/accuracy→confidence 消费链/四层 hash/未来 actual 拒绝——已有能力当前 triplet 全绿，test-only 重验钉死。ZR-708 closure：reviewer accepted（4 info）；state accepted 74/117；closure-advance -> ZR-712。
+## ZR-712（2026-08-23）：版本化 ConfidencePolicy + 反博弈（revenue）
+- policy 数据化（version/weights/rating_caps，未知版本 fail-closed，默认与 legacy 一致）；六类博弈检测（duplicate/split/plug/zero-impact/one-observation/wrong-record）；recompute_rating caps 驱动（80/55 一致）。ZR-712 closure：reviewer accepted（首轮 accepted → REV-001/002/004 minor delta 修复 1c04684 → delta accepted）；state accepted 75/117；closure-advance -> ZR-713。

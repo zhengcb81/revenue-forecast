@@ -659,3 +659,15 @@
 - **机器状态**：current_next=ZR-712，accepted **74/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 21：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-708 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-712（F2 confidence 反博弈——DAG 已解锁；"duplicate/split/plug/zero-impact/one-observation/wrong-record mutations 全杀；rating caps 可重算"）。
+- **ZR-712（F2 版本化 ConfidencePolicy 与反博弈）实施完成**：
+  - RED 探针：confidence.py 权重/rating 阈值硬编码（20/25/10/15/15/15 + 80/55）；grep mutation/duplicate/split/plug/zero-impact/one-observation/wrong-record confidence.py → 零命中；test_scenarios_confidence 仅覆盖 3 例——policy 版本化与反博弈缺失。
+  - 修复：新 scripts/confidence_policy.py——validate_confidence_policy（policy={version, weights, rating_caps} 数据对象，未知版本 fail-closed，默认值与 legacy 一致）+ detect_gaming_mutations（六类博弈：duplicate 同 backtest_id/split 同 year+source+value/plug 无 record_sha256/zero-impact wape=0 诚实披露/one-observation 单观测封顶 8/15/wrong-record hash 缺失拒绝；4 个检查 helpers + disclosures）+ recompute_rating（caps 驱动 high/medium/low）。
+  - 新 test_zr712_confidence_policy.py（15 tests）：C1 版本化 policy 5 + C2 六类博弈 7 + C3 rating 重算 3。
+  - revenue 全量 755 passed + 106 subtests（+15 新，无回归）+ ruff + ratchet 全过（validate_confidence_policy 12→拆 helpers、detect_gaming_mutations 16→拆 4 helpers）；skill-sync MATCH 144 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 2373c42，含 ZR-708 closure docs 条目合入）；implementer receipt canonical fcc237aa。
+  - 独立复核 reviewer-zr712-independent 运行中。
+- **ZR-712 closure**：独立复核 reviewer-zr712-independent 首轮 **accepted**（36 对抗探针全过；2 minor：REV-001 非数值 value 抛 raw ValueError、REV-002 NaN score 静默返回 low + 2 info：REV-003 空 weights 接受、REV-004 未校验 caps 缺 medium 抛 KeyError）→ delta 修复 1c04684（_observation_key require 数值 gate、recompute_rating math.isfinite + caps high/medium 校验，+3 回归测试 18 passed，全量 758+106 绿）→ delta 复审 **accepted**（45 探针全过，REV-001/002/004 resolved，REV-003 info 保留）；reviewer receipt canonical 6d1c07a3；state accepted + closure-advance -> **ZR-713**（phase F_revenue_mining，F2 第十四卡）。
+- **机器状态**：current_next=ZR-713，accepted **75/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 22：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-712 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-713（F2 紫金 rolling-origin 历史回测——DAG 已解锁；"严格 as-of 无 future actual；company/segment/mine-volume 分层；四层 immutable hashes"）→ ZR-709（F2 合流：紫金五年预测用户旅程终验）。
+- **docs 一致性修复（用户要求：全面检查名称/内容冲突）**：audit_review/findings.md 补 ZR-608/ZR-611/ZR-708 缺失条目（此前 audit 侧无对应）；closure 计数统一至 75/117；task_plan/panorama 剩余卡描述补 ZR-709 合流卡（此前零提及）；README 游标已镜像 current_next=ZR-713。

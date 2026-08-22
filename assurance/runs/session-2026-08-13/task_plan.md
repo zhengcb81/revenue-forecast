@@ -242,3 +242,15 @@
 - **ZR-708 closure**（F2 already_satisfied 重验）：reviewer accepted（4 info）；closure→ZR-712。
 - 下一卡：**ZR-712**（F2 confidence 反博弈——DAG 已解锁；"duplicate/split/plug/zero-impact/one-observation/wrong-record mutations 全杀；rating caps 可重算"）→ ZR-713（紫金 rolling-origin）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-708 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-712 实施完成）
+- **ZR-712 实施完成**（F2 版本化 ConfidencePolicy + 反博弈）：revenue 2373c42（+380 行 6 文件，15 tests）——policy 数据化（version/weights/rating_caps，未知版本 fail-closed）、六类博弈 mutations 检测（duplicate/split/plug/zero-impact/one-observation/wrong-record）、recompute_rating caps 驱动。全量 755+106 绿；implementer receipt canonical fcc237aa；独立复核 reviewer-zr712-independent 运行中。
+- 下一卡（closure 后）：ZR-713（F2 紫金 rolling-origin 历史回测——DAG 依赖 ZR-708,ZR-712；"严格 as-of 无 future actual；company/segment/mine-volume 分层；四层 immutable hashes"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 2373c42（ZR-712 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-712 closure → 停止点，含 docs 一致性修复）
+- **accepted 75/117（约 64%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 22（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712）。
+- **ZR-712 closure**（F2 版本化 ConfidencePolicy + 反博弈）：reviewer 首轮 accepted（36 探针全过）→ REV-001/002/004 minor（raw ValueError/NaN rating/KeyError caps）delta 修复 1c04684 + delta accepted（45 探针全过，REV-001/002/004 resolved，REV-003 info 保留）；reviewer receipt canonical 6d1c07a3；closure→ZR-713。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-713（F2 紫金 rolling-origin——DAG 已解锁）未领取；恢复第一步 = ZR-713 → ZR-709（F2 合流：紫金五年预测用户旅程终验——依赖 ZR-705~708/ZR-710~713/ZR-609/ZR-611）→ 阶段 G（ZR-801~806）。
+- **docs 一致性修复（本次）**：audit_review/findings.md 补 ZR-608/ZR-611/ZR-708 缺失条目 + 各卡 closure 计数统一（71→75/117）；剩余卡描述补 ZR-709 合流卡（此前零提及）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-712 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

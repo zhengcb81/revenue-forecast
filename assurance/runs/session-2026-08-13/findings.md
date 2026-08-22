@@ -206,6 +206,11 @@
 - NEW_FILE_MAX=10 门：validate_mine_year_operation 内联 18 复杂度 → 提取 _positive_numeric/_ratio helpers 回 ≤10——新文件也要警惕 ratchet。
 - **REV-001 minor（inf 值未拒）**：`volume=inf`/`realized_price=inf` 通过校验（inf>0）；NaN 已被拒。登记 ZR-606 后续：数值校验复用 contracts.evidence.finite_number / math.isfinite。
 
+## 发现 26b：ZR-702~706/710（F1 全链，2026-08-19~21，docs 一致性补充）
+- 早期 F1 卡（ZR-702~706/710）实施详情在 progress.md 有完整记录，findings.md 未逐一登记——本条目为 docs 一致性补充（卡片名称与 progress 对齐）：
+  - ZR-702 schema 单一真源（schema_fields.py 四 REQUIRED 元组，lint/template/validator 一致性）；ZR-703 文档/argparse 漂移清理（"schema 3.6" 6 处移除）；ZR-704 validate-only 零写门（prepare_forecast 纯函数 + draft 模式）；ZR-705 draft/formal 分轨（REV-06/08a 真实缺口修复：draft 可渲染 + formal→draft 降级重算 hash 拒绝）；ZR-706 FC-904 selector 契约补全（test-only）；ZR-710 publication 事务 + 原子写（_atomic_write_text tmp+fsync+os.replace，registry 故障注入，幂等）。
+  - F1 出口：ZR-701~706 + ZR-710 7/7 全闭（2026-08-21）。
+
 ## 发现 33：ZR-606（F2 商业量价层，2026-08-22）
 - 商业条款 provenance 结构：每个变量 = {value, source, assumption, period}——来源/假设/期限可追溯（"每个变量有来源/假设/期限"的机械化）。
 - **ZR-605 REV-001 教训立即落地**：commercial terms 的 value 全部走 finite_number（inf/-inf/NaN 拒绝）——前卡 minor 在本卡即修复，未等集中处理。教训闭环：reviewer minor → 下一卡直接加固。
@@ -253,3 +258,8 @@
 - **already_satisfied 判定模式**：卡片语义"已有能力若当前 triplet 全绿则 already_satisfied"——探针先跑既有 test_backtest 17 tests 全绿 + accuracy→confidence 消费链已通，判定无需产品修复；本卡以 test-only 重验钉死关键契约作为证据存档。
 - 重验钉死：snapshot 确定性/不可变/tamper-evidence、accuracy_record → run_forecast → confidence.historical_accuracy（wape 一致 + 组件贡献>0）、四层 hash 链接（record_sha256 64-hex + backtest_id）、未来 actual 拒绝。
 - 消费链验证方式：evaluate_snapshot 产出 accuracy_record → 注入 historical_accuracy_records → run_forecast 自动消费（confidence 组件）——backtest 与 confidence 的实际接线由测试钉死。
+
+## 发现 41：ZR-712（F2 版本化 ConfidencePolicy 与反博弈，2026-08-23）
+- policy 数据化设计：confidence 计算策略从硬编码字面量（20/25/10/15/15/15 + 80/55）变为数据对象 {version, weights, rating_caps}——未知版本 fail-closed；默认值与 legacy 逐字一致（存量零回归）。
+- 六类博弈检测语义：duplicate（同 backtest_id 重复=灌观测数）、split（同 year+source+value 拆分=稀释/放大）、plug（无 record_sha256=凭空插入）、zero-impact（wape=0 不提升分数但诚实披露）、one-observation（单观测封顶 8/15 不显著提升）、wrong-record（hash 缺失/篡改 fail-closed）。拒绝类必须中止、披露类诚实标注——反博弈的"全杀"分层。
+- ratchet 两次触发（12/16）均 helper 提取解决——NEW_FILE_MAX=10 是每次新文件卡的常规门（ZR-605/712 两次验证）。

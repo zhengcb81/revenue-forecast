@@ -232,3 +232,7 @@
 - ZR-708 实施完成（2026-08-23）：revenue a9405f8（already_satisfied 重验：snapshot 不可变/accuracy→confidence 消费链/四层 hash，test-only 7 tests 零产品改动）；全量 740+106 绿；state triplet_green；implementer receipt canonical a9f5b356；独立复核运行中。
 
 - ZR-708 closure：reviewer-zr708-independent accepted（对抗探针全过；4 info）；state accepted 74/117；closure-advance -> ZR-712。
+
+- ZR-712 实施完成（2026-08-23）：revenue 2373c42（版本化 ConfidencePolicy + 反博弈：policy 数据化/六类 mutations 检测/rating caps 重算，15 tests）；全量 755+106 绿；state triplet_green；implementer receipt canonical fcc237aa；独立复核运行中。
+
+- ZR-712 closure：reviewer-zr712-independent accepted（首轮 accepted → REV-001/002/004 minor delta 修复 1c04684 → delta accepted，REV-003 info 保留）；state accepted 75/117；closure-advance -> ZR-713；**docs 一致性修复：补 ZR-608/ZR-611/ZR-708 缺失 findings 条目 + ZR-709 合流卡提及**。
