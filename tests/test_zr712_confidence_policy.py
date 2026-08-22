@@ -140,6 +140,14 @@ def test_c2_clean_records_no_rejections():
     assert result["disclosures"] == []
 
 
+def test_c2_non_numeric_record_value_fails_closed():
+    # ZR712-REV-001 regression: malformed value must raise ForecastInputError
+    # (never raw ValueError)
+    records = [_record("bt-1", value="abc")]
+    with pytest.raises(ForecastInputError, match="value must be numeric"):
+        detect_gaming_mutations(records)
+
+
 # ---------------------------------------------------------------------------
 # C3 — rating caps recompute
 # ---------------------------------------------------------------------------
@@ -160,8 +168,20 @@ def test_c3_custom_caps():
 
 
 def test_c3_non_numeric_score_rejected():
-    with pytest.raises(ForecastInputError, match="score must be numeric"):
+    with pytest.raises(ForecastInputError, match="score must be"):
         recompute_rating("high")
+
+
+def test_c3_nan_score_rejected():
+    # ZR712-REV-002 regression: NaN must fail closed (never silent "low")
+    with pytest.raises(ForecastInputError, match="finite"):
+        recompute_rating(float("nan"))
+
+
+def test_c3_unvalidated_caps_missing_medium_rejected():
+    # ZR712-REV-004: missing medium cap must fail closed (never KeyError)
+    with pytest.raises(ForecastInputError, match="high and medium"):
+        recompute_rating(70.0, {"high": 80.0})
 
 
 if __name__ == "__main__":

@@ -25,6 +25,7 @@ Anti-gaming covers six accuracy-record mutation classes:
 
 from __future__ import annotations
 
+import math
 from typing import Any, Mapping, Sequence
 
 from contracts.evidence import require
@@ -88,10 +89,17 @@ def validate_confidence_policy(policy: Any) -> dict[str, Any]:
 
 
 def _observation_key(record: Mapping[str, Any]) -> tuple[str, str, float | None]:
+    value = record.get("value")
+    if value is None:
+        return str(record.get("year", "")), str(record.get("source_id", "")), None
+    require(
+        isinstance(value, (int, float)) and not isinstance(value, bool),
+        f"accuracy record value must be numeric, got {value!r}",
+    )
     return (
         str(record.get("year", "")),
         str(record.get("source_id", "")),
-        float(record["value"]) if "value" in record else None,
+        float(value),
     )
 
 
@@ -187,8 +195,14 @@ def recompute_rating(score: float, caps: Mapping[str, float] | None = None) -> s
     """Derive the rating from policy caps (high/medium/low)."""
     policy_caps = caps if caps is not None else DEFAULT_RATING_CAPS
     require(
-        isinstance(score, (int, float)) and not isinstance(score, bool),
-        f"score must be numeric, got {score!r}",
+        isinstance(score, (int, float))
+        and not isinstance(score, bool)
+        and math.isfinite(float(score)),
+        f"score must be a finite number, got {score!r}",
+    )
+    require(
+        "high" in policy_caps and "medium" in policy_caps,
+        "rating caps require high and medium",
     )
     if score >= float(policy_caps["high"]):
         return "high"
