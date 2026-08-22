@@ -248,3 +248,8 @@
 - multi-commodity 矩阵：同一矿多个 commodity segments（铜+金副产品）各算各的，总贡献=和——不重复计价（与 ZR-606 byproduct 独立加项对齐）。
 - presentation 一致性：trading/other 用正确 gross/net 声明，不靠单一错误 presentation 近似——"贸易/其他不靠单一错误 presentation 近似"的机械化。
 - 词汇复用：RECOGNITION_MODES/PRESENTATIONS 已在 constants（ZR-701 schema 真源），本卡只加验证逻辑不重复定义。
+
+## 发现 40：ZR-708（F2 重验不可变 snapshot/backtest，2026-08-23）
+- **already_satisfied 判定模式**：卡片语义"已有能力若当前 triplet 全绿则 already_satisfied"——探针先跑既有 test_backtest 17 tests 全绿 + accuracy→confidence 消费链已通，判定无需产品修复；本卡以 test-only 重验钉死关键契约作为证据存档。
+- 重验钉死：snapshot 确定性/不可变/tamper-evidence、accuracy_record → run_forecast → confidence.historical_accuracy（wape 一致 + 组件贡献>0）、四层 hash 链接（record_sha256 64-hex + backtest_id）、未来 actual 拒绝。
+- 消费链验证方式：evaluate_snapshot 产出 accuracy_record → 注入 historical_accuracy_records → run_forecast 自动消费（confidence 组件）——backtest 与 confidence 的实际接线由测试钉死。

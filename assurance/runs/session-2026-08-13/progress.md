@@ -649,3 +649,9 @@
 - **机器状态**：current_next=ZR-708，accepted **73/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 20：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-707 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-708（F2 重验不可变 snapshot/backtest 基础接线——DAG 已解锁；"已有能力若当前 triplet 全绿则 already_satisfied；否则修复；accuracy record 实际可被 forecast 消费"）。
+- **ZR-708（F2 重验不可变 snapshot/backtest 基础接线）实施完成**：
+  - RED 探针：tests/test_backtest.py 17 tests 全绿（snapshot 确定性/不可覆盖/tamper 拒绝/actuals 校验/metrics 重算/accuracy hash-linked/accuracy→confidence 消费/伪造灵敏度拒绝/swap hash 拒绝/legacy engine 拒绝）；accuracy record → historical_accuracy_records → run_forecast → confidence.historical_accuracy 消费链已通——**already_satisfied**（当前 triplet 全绿，无需产品修复）。
+  - 修复：test-only 重验——新 test_zr708_backtest_reverify.py（7 tests）：C1 already_satisfied 3（snapshot 确定性/校验/tamper 拒绝）；C2 accuracy 消费链 2（→confidence wape 一致 + 组件>0/tampered record 拒绝）；C3 不可变接线 2（未来 actual 拒绝/四层 hash 链接）。
+  - revenue 全量 740 passed + 106 subtests（+7 新，无回归）+ ruff + ratchet 全过；skill-sync MATCH 142 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue a9405f8）；implementer receipt canonical a9f5b356。
+  - 独立复核 reviewer-zr708-independent 运行中。
