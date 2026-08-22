@@ -536,34 +536,34 @@
 ## ZR-604（2026-08-22）：冲突保存与人工 review（revenue）
 - semantic_groups 硬失败→双 assertion+resolution status 加性扩展；冲突参数均带 resolution_status + ≤1 accepted → 允许共存，否则原行为硬失败。
 - 零 McCabe 增量模式第三次复用成功（helper 提取+纯调用+None 早退）。
-- ZR-604 closure：reviewer accepted（17/17，1 minor null resolution_status 语义——登记后续）；state accepted 64/117；closure-advance -> ZR-610。
+- ZR-604 closure：reviewer accepted（17/17，1 minor null resolution_status 语义——登记后续）；state accepted 65/117；closure-advance -> ZR-610。
 ## ZR-610（2026-08-22）：会计 ADR 冻结（revenue，无产品代码）
 - ADR 文档冻结 8 条会计决策（逐矿贡献=模型估计/resource≠reserve/basis/ownership timeline/单位一致性/冲突解决/地区层级/边界）；独立会计 reviewer accepted（8/8 会计合理性，2 info）。
 ## ZR-605（2026-08-22）：MineYearOperation 输入合同（revenue）
 - 七字段必填 gap-on-missing（不默认 0）；derive_saleable_volume=volume×grade×recovery×payable；to_resource_model_drivers 映射 resource 模型。
 ## ZR-606（2026-08-22）：商业量价层（revenue）
 - CommercialTerm provenance（value/source/assumption/period）；finite_number 加固（ZR-605 REV-001 落地）；byproduct 独立加项不重复计价；纯函数敏感性重算。
-- ZR-606 closure：delta 47fe715（REV-001 saleable_volume finite_number）；delta 复审 staged-not-committed 教训；implementer receipt 重封；state accepted 67/117；closure-advance -> ZR-607。
+- ZR-606 closure：delta 47fe715（REV-001 saleable_volume finite_number）；delta 复审 staged-not-committed 教训；implementer receipt 重封；state accepted 68/117；closure-advance -> ZR-607。
 ## ZR-607（2026-08-22）：internal flow 会计桥（revenue）
 - InternalFlow 八字段可追踪 + gross/net elimination 桥（net=external 内部消除不重复计）；period/scenario 过滤；与 ZR-606 商业量价组合。
 ## ZR-608（2026-08-22）：asset→segment→group reconciliation（revenue）
-- reconcile_layer 容差门（|diff| ≤ max(1.0,|ref|)×tol → reconciled_modeled，否则 gap 不伪造差值）；fallback_segment_listing（分部并列 + 显式 gap）；gap_report 防伪收入（NaN/inf 拒绝、缺资产=gap）。ZR-608 closure：reviewer accepted（46/46）；state accepted 69/117；closure-advance -> ZR-611。
+- reconcile_layer 容差门（|diff| ≤ max(1.0,|ref|)×tol → reconciled_modeled，否则 gap 不伪造差值）；fallback_segment_listing（分部并列 + 显式 gap）；gap_report 防伪收入（NaN/inf 拒绝、缺资产=gap）。ZR-608 closure：reviewer accepted（46/46）；state accepted 70/117；closure-advance -> ZR-611。
 ## ZR-611（2026-08-22）：通用多矿合成 E2E（revenue）
-- 八类场景（控股/权益法/多金属/内供/跨币种/爬坡/gap/residual）全链确定性可重算 + 手算对照；生产代码零硬编码验证。ZR-611 closure：reviewer accepted（独立数学重算 + 八类非空洞）；state accepted 70/117；closure-advance -> ZR-609。
+- 八类场景（控股/权益法/多金属/内供/跨币种/爬坡/gap/residual）全链确定性可重算 + 手算对照；生产代码零硬编码验证。ZR-611 closure：reviewer accepted（独立数学重算 + 八类非空洞）；state accepted 71/117；closure-advance -> ZR-609。
 ## ZR-609（2026-08-22）：紫金 pilot + 第二家泛化（revenue）
 - 紫金三主要资产（卡莫阿-卡库拉权益链 0.396/巨龙全资/紫金山金+银副产品）逐矿可回答走 F2 全链 + 第二家纯金矿商泛化零硬编码；test-only。
-- ZR-609 closure：reviewer accepted；REV-001 修正（ZR-611 closure 实际独立落地 404a2bb——流程偏差记录有误已更正）；REV-002 receipt 重封 ee6dd908；state accepted 71/117；closure-advance -> ZR-711。
+- ZR-609 closure：reviewer accepted；REV-001 修正（ZR-611 closure 实际独立落地 404a2bb——流程偏差记录有误已更正）；REV-002 receipt 重封 ee6dd908；state accepted 72/117；closure-advance -> ZR-711。
 ## ZR-711（2026-08-23）：additive schema 3.8 opt-in（revenue）
 - 3.8 opt-in（OPT_IN_SCHEMA_VERSION + EMIT + 版本门 {3.7,3.8} + operating_units 复用 ZR-605 契约 + converter 加 gap 不猜值）；REV-001 capture-integrity 门修复（版本门扩展须扫描全部 ==3.7 分支）；closure→ZR-707。
 ## ZR-707（2026-08-23）：mixed recognition/gross-net + multi-commodity（revenue）
-- validate_mixed_recognition（混合 mode 合法）+ validate_commodity_matrix（multi-commodity 分段）+ validate_presentation_consistency（gross/net 声明）；词汇复用 constants 真源。ZR-707 closure：reviewer accepted（11/11）；state accepted 73/117；closure-advance -> ZR-708。
+- validate_mixed_recognition（混合 mode 合法）+ validate_commodity_matrix（multi-commodity 分段）+ validate_presentation_consistency（gross/net 声明）；词汇复用 constants 真源。ZR-707 closure：reviewer accepted（11/11）；state accepted 74/117；closure-advance -> ZR-708。
 ## ZR-708（2026-08-23）：already_satisfied 重验（revenue，零产品改动）
-- snapshot 不可变/accuracy→confidence 消费链/四层 hash/未来 actual 拒绝——已有能力当前 triplet 全绿，test-only 重验钉死。ZR-708 closure：reviewer accepted（4 info）；state accepted 74/117；closure-advance -> ZR-712。
+- snapshot 不可变/accuracy→confidence 消费链/四层 hash/未来 actual 拒绝——已有能力当前 triplet 全绿，test-only 重验钉死。ZR-708 closure：reviewer accepted（4 info）；state accepted 75/117；closure-advance -> ZR-712。
 ## ZR-712（2026-08-23）：版本化 ConfidencePolicy + 反博弈（revenue）
-- policy 数据化（version/weights/rating_caps，未知版本 fail-closed，默认与 legacy 一致）；六类博弈检测（duplicate/split/plug/zero-impact/one-observation/wrong-record）；recompute_rating caps 驱动（80/55 一致）。ZR-712 closure：reviewer accepted（首轮 accepted → REV-001/002/004 minor delta 修复 1c04684 → delta accepted）；state accepted 75/117；closure-advance -> ZR-713。
+- policy 数据化（version/weights/rating_caps，未知版本 fail-closed，默认与 legacy 一致）；六类博弈检测（duplicate/split/plug/zero-impact/one-observation/wrong-record）；recompute_rating caps 驱动（80/55 一致）。ZR-712 closure：reviewer accepted（首轮 accepted → REV-001/002/004 minor delta 修复 1c04684 → delta accepted）；state accepted 76/117；closure-advance -> ZR-713。
 
 ## ZR-713（2026-08-23）：紫金 rolling-origin 历史回测（revenue）
-- 严格 as-of 无 future actual（每窗口仅用 published ≤ as_of 的 actuals，泄漏 fail-closed）；company/segment/mine-volume 三层独立评估（segment 层用 actual_segment_revenue 合并 wape；mine-volume 层走 ZR-605 契约 validate_mine_year_operation/derive_saleable_volume，缺口 fail-closed，无预测对照 wape=None）；四层 immutable hash 链（snapshot_id=快照身份、record_sha256 绑定 {level, as_of}——重贴标签/改期破链）；窗口不足 → capped + rating hint 不伪造 metrics。ZR-713 closure：reviewer 首轮 changes_required（REV-001 blocking 三层 byte-identical 非独立评估 + REV-002 minor hash 绑定）→ delta 3479718 修复 → delta accepted（21/21 探针）；state accepted 76/117；closure-advance -> ZR-709（F2 合流卡，F2 常规链全闭）。
+- 严格 as-of 无 future actual（每窗口仅用 published ≤ as_of 的 actuals，泄漏 fail-closed）；company/segment/mine-volume 三层独立评估（segment 层用 actual_segment_revenue 合并 wape；mine-volume 层走 ZR-605 契约 validate_mine_year_operation/derive_saleable_volume，缺口 fail-closed，无预测对照 wape=None）；四层 immutable hash 链（snapshot_id=快照身份、record_sha256 绑定 {level, as_of}——重贴标签/改期破链）；窗口不足 → capped + rating hint 不伪造 metrics。ZR-713 closure：reviewer 首轮 changes_required（REV-001 blocking 三层 byte-identical 非独立评估 + REV-002 minor hash 绑定）→ delta 3479718 修复 → delta accepted（21/21 探针）；state accepted 77/117；closure-advance -> ZR-709（F2 合流卡，F2 常规链全闭）。
 
 - 阶段 G 会话补充发现（2026-08-23，详见 session findings F-G1~F-G4）：journal 计数型 oracle 需注入式非空洞性证明（ZRR805-REV-001 教训）；连续推进时卡片五态（card/receipt/review/closure/游标）任一缺失即不得领取下一卡（ZRR805-REV-002 教训）；--version manifest 含 tests/** 故安装副本身份比对必须 sync-first；嵌套 checkout 的 sibling 解析失败按位置性 info 分类（主仓同 HEAD 复跑为准）。
 
@@ -571,23 +571,23 @@
 - 固定 5 样本清单（companies 紫金 FY2025 cninfo:1225023658/FY2024 cninfo:1222870413、dayu 1548 HK FY2021 hkexnews:10225111、Dropbox 星环 688031 FY2024 cninfo:1223325316/东吴研报 PDF）——content_sha256 跨 root 唯一、filing_date ≤ today、声明 hash 匹配实测；缺失样本 → 套件 fail（AUD2-05：blocked 不自动换样本）。
 - 三 root 只读旅程：紫金 FY2025/FY2024 + dayu 1548 → REUSED_EXACT（download=0）；Dropbox 星环 → MISSING fail-closed（http URL 不伪造 handle）；旅程前后浅指纹 + catalog documents/sources/locations 行数不变（生产零写）。
 - Zijin .source.json 契约（fiscal_year/company_name/security_id/pdoc/content_sha256==实测/byte_size==实测/fiscal_period=FY）→ F2 链 FY 语义可消费；星环 sidecar content_sha256 绑定（schema 较窄，info）；broker PDF 无 sidecar 诚实 raw。
-- ZR-806 closure：reviewer-zr806-independent accepted（15 commands；AUD2-05 temp 变体 3 failed/7 passed；回归 30 + 全量 813+106 复跑；2 info）；state accepted 82/117；closure-advance -> ZR-902（阶段 H 首卡：实际调度每日 Windows T2）。
+- ZR-806 closure：reviewer-zr806-independent accepted（15 commands；AUD2-05 temp 变体 3 failed/7 passed；回归 30 + 全量 813+106 复跑；2 info）；state accepted 83/117；closure-advance -> ZR-902（阶段 H 首卡：实际调度每日 Windows T2）。
 - **CRLF 教训**：README CRLF 行尾 → closure-advance CAS-CONFLICT（read_text().encode() 的 LF hash vs manifest 原始字节 CRLF hash 口径不一）→ README 转 LF + manifest-build CAS 重建解决；控制页文件须保持 LF。
 
 ## ZR-702~706/710（2026-08-19~21）：F1 全链（revenue）——docs 一致性补齐条目
 - F1 入口链 7/7 全闭（2026-08-21）：ZR-702 schema 单一真源（schema_fields.py 冻结 REQUIRED 元组，lint/template/validator 一致）；ZR-703 文档/argparse 漂移清理（"schema 3.6" 6 处移除）；ZR-704 validate-only 零写门（prepare_forecast 纯函数 + draft 模式）；ZR-705 draft/formal 分轨（REV-06/08a 真实缺口修复：draft 可渲染 + formal→draft 降级重算 hash 拒绝）；ZR-706 FC-904 selector 契约补全（test-only）；ZR-710 publication 事务 + 原子写（_atomic_write_text tmp+fsync+os.replace、registry 故障注入、幂等）。F1 出口：ZR-701~706 + ZR-710 7/7 全闭（2026-08-21）。
 
 ## ZR-709（2026-08-23）：F2 合流——紫金五年预测用户旅程终验 fixture（revenue，test-only）
-- J1 真实 source_preparation 子进程链复用财报/研报（reuse_receipt 全链可解释：outcome=reused_existing/bundle_status/download/parser/llm=0/producer_events DAG 角色；缺失 kind fail-closed exit 3 + ProcessingDemand 补齐路径）；J2 五年 FY2026-2030 输入由 F2 契约函数代数推导（MineYearOperation→commercial terms→权益链 0.396→realized_price 恒等闭合），reconcile_layer 10/10 reconciled_modeled、未建模白银 +120 = 诚实 gap 不冒充收入、schema 3.8 零漂移；J3 draft 渲染零注册、formal 位级重放 + snapshot 回放。复核 accepted（12/12 对抗探针，4 info）；**F 阶段 24/24 全闭**；state accepted 77/117；closure-advance -> ZR-802（G 首卡；ZR-801 machine registry 由 CA-105 唯一实现吸收）。
+- J1 真实 source_preparation 子进程链复用财报/研报（reuse_receipt 全链可解释：outcome=reused_existing/bundle_status/download/parser/llm=0/producer_events DAG 角色；缺失 kind fail-closed exit 3 + ProcessingDemand 补齐路径）；J2 五年 FY2026-2030 输入由 F2 契约函数代数推导（MineYearOperation→commercial terms→权益链 0.396→realized_price 恒等闭合），reconcile_layer 10/10 reconciled_modeled、未建模白银 +120 = 诚实 gap 不冒充收入、schema 3.8 零漂移；J3 draft 渲染零注册、formal 位级重放 + snapshot 回放。复核 accepted（12/12 对抗探针，4 info）；**F 阶段 24/24 全闭**；state accepted 78/117；closure-advance -> ZR-802（G 首卡；ZR-801 machine registry 由 CA-105 唯一实现吸收）。
 
 ## ZR-802（2026-08-23）：组合旅程 existing/partial/missing/stale/conflict across roots（revenue，test-only）
-- 五状态×跨根组合旅程（三进程真实链）：existing FY2024 exact 复用 download/parser/llm=0；partial 只含已有角色 artifact_read + 缺失角色 DAG 闭包（不盲跑全量）；missing 结构化 not_found 零伪造；stale 不以旧充新（fiscal_year_mismatch）；conflict 跨根双候选 ambiguous fail-closed 不择一；C2 第二次调用幂等（同 source 身份、零下载）；C3 八阶段 receipt 投影真实键。复核 accepted（11 探针，1 minor+3 info）；state accepted 78/117；closure-advance -> ZR-803。
+- 五状态×跨根组合旅程（三进程真实链）：existing FY2024 exact 复用 download/parser/llm=0；partial 只含已有角色 artifact_read + 缺失角色 DAG 闭包（不盲跑全量）；missing 结构化 not_found 零伪造；stale 不以旧充新（fiscal_year_mismatch）；conflict 跨根双候选 ambiguous fail-closed 不择一；C2 第二次调用幂等（同 source 身份、零下载）；C3 八阶段 receipt 投影真实键。复核 accepted（11 探针，1 minor+3 info）；state accepted 79/117；closure-advance -> ZR-803。
 
 ## ZR-803（2026-08-23）：chaos/property/mutation 六类故障×幂等恢复（revenue，test-only）
-- 锁（WAL 写事务不阻只读旅程、释放后同身份复用）、中断（崩溃前注册零孤儿、重跑精确一次）、磁盘（不可写结构化 exit-2 无半写/父目录、有效路径恢复）、篡改（单字节 hash 拒绝、原工件仍有效）、顺序（evaluate-before-create 拒绝、正常评估可跑）、时钟（未来 captured_date 信息集外）；每类故障后幂等恢复断言。复核 accepted（13 探针，2 minor+2 info）；state accepted 79/117；closure-advance -> ZR-804。
+- 锁（WAL 写事务不阻只读旅程、释放后同身份复用）、中断（崩溃前注册零孤儿、重跑精确一次）、磁盘（不可写结构化 exit-2 无半写/父目录、有效路径恢复）、篡改（单字节 hash 拒绝、原工件仍有效）、顺序（evaluate-before-create 拒绝、正常评估可跑）、时钟（未来 captured_date 信息集外）；每类故障后幂等恢复断言。复核 accepted（13 探针，2 minor+2 info）；state accepted 80/117；closure-advance -> ZR-804。
 
 ## ZR-804（2026-08-23）：平台与安装形态缺口（revenue，test-only）
-- Windows 大小写变体同 source_id（golden 身份一致）、缺省配置 fail-closed 无静默 sibling fallback、安装副本 sync-first 身份逐字一致（R4.2 manifest 含 tests/，未同步新文件 legitimately 不同）、活跃脚本无 Windows-only 构造（CREATE_NO_WINDOW 允许为跨平台守卫）。回填 receipt 后联合复核 accepted（A-V1~V5）；**流程偏差登记：本卡曾跳过 receipt/复核直接开 ZR-805，由 ZRR805-REV-002 抓出后闭环（F-G2）**；state accepted 80/117；closure-advance -> ZR-805（与 ZR-805 联合 closure 9784c18）。
+- Windows 大小写变体同 source_id（golden 身份一致）、缺省配置 fail-closed 无静默 sibling fallback、安装副本 sync-first 身份逐字一致（R4.2 manifest 含 tests/，未同步新文件 legitimately 不同）、活跃脚本无 Windows-only 构造（CREATE_NO_WINDOW 允许为跨平台守卫）。回填 receipt 后联合复核 accepted（A-V1~V5）；**流程偏差登记：本卡曾跳过 receipt/复核直接开 ZR-805，由 ZRR805-REV-002 抓出后闭环（F-G2）**；state accepted 82/117；closure-advance -> ZR-805（与 ZR-805 联合 closure 9784c18）。
 
 ## ZR-805（2026-08-23）：T3 下载授权语义（filing + assurance，test-only）
-- T3 真实执行唯一 owner=filing-fetch opt-in 门（FILING_FETCH_E2E_DOWNLOAD=1，CN/US/HK + 损坏拒绝 + 二次零下载标记结构钉死）；未授权 missing 请求 journal 零 downloaded_new（acquisition_attempts.jsonl 独立 oracle，AUD2-04；篡改注入证明非空洞）；revenue 入口显式 --allow-download 默认 False 无第二下载器。首轮 accepted（fc646953；REV-001 oracle 接线传文件致断言空洞即修 + REV-002 簿记漂移即 F-G2 流程偏差）→ delta 295f138 → delta accepted（B-V1~V4）；state accepted 81/117；closure-advance -> ZR-806（与 ZR-804 联合 closure 9784c18）。
+- T3 真实执行唯一 owner=filing-fetch opt-in 门（FILING_FETCH_E2E_DOWNLOAD=1，CN/US/HK + 损坏拒绝 + 二次零下载标记结构钉死）；未授权 missing 请求 journal 零 downloaded_new（acquisition_attempts.jsonl 独立 oracle，AUD2-04；篡改注入证明非空洞）；revenue 入口显式 --allow-download 默认 False 无第二下载器。首轮 accepted（fc646953；REV-001 oracle 接线传文件致断言空洞即修 + REV-002 簿记漂移即 F-G2 流程偏差）→ delta 295f138 → delta accepted（B-V1~V4）；state accepted 82/117；closure-advance -> ZR-806（与 ZR-804 联合 closure 9784c18）。

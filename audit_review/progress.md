@@ -139,119 +139,119 @@
 
 - ZR-507 实施完成：wiki bd337c4（processing_demand.py ProcessingDemand API + 14 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical f1eace9a；独立复核运行中。
 
-- ZR-507 closure：reviewer-zr507-independent accepted（1 minor + 1 info）；codegraph_freeze MISSING-001 清除；state accepted 50/117；closure-advance -> ZR-508（E_broker_web_processing）。
+- ZR-507 closure：reviewer-zr507-independent accepted（1 minor + 1 info）；codegraph_freeze MISSING-001 清除；state accepted 51/117；closure-advance -> ZR-508（E_broker_web_processing）。
 
 - ZR-508 实施完成：wiki 8e2bf3f（scheduler.py 公平性 aging/deadline/budget + claim(demand_id) 加性扩展 + 11 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical cb34ed85；独立复核运行中。
 
 - ZR-509 实施完成：wiki ea9c49b（html_capture.py 身份门 + 12 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical 21d5335f；独立复核运行中。
 
-- ZR-509 closure：reviewer-zr509-independent accepted（3 info）；state accepted 52/117；closure-advance -> ZR-510（E_broker_web_processing，阶段 E 收尾）。
+- ZR-509 closure：reviewer-zr509-independent accepted（3 info）；state accepted 53/117；closure-advance -> ZR-510（E_broker_web_processing，阶段 E 收尾）。
 
 - ZR-510 实施完成：wiki 524a535（attribution.py chunk 归属错归=0 + normalizer chunk_attribution 接线 + 9 tests）；unit 787 + 回归全绿；state triplet_green；implementer receipt canonical a01d1c85；独立复核运行中；阶段 E 收尾。
 
-- ZR-510 closure：reviewer-zr510-independent accepted（1 info + 2 minor 修复于 wiki 26a6b22）；state accepted 53/117；closure-advance -> ZR-701（phase F_revenue_mining）；**阶段 E 出口达成（ZR-501~510 10/10）**。
+- ZR-510 closure：reviewer-zr510-independent accepted（1 info + 2 minor 修复于 wiki 26a6b22）；state accepted 54/117；closure-advance -> ZR-701（phase F_revenue_mining）；**阶段 E 出口达成（ZR-501~510 10/10）**。
 
 - ZR-701 实施完成：revenue 1dbae63（prepare_forecast 纯函数 + validate-only 零写 + draft/validated artifact + ProcessingDemand 提交 + 7 tests）；全量 477+106 绿；state triplet_green；implementer receipt canonical fe73c583；独立复核运行中。
 
-- ZR-701 closure：reviewer-zr701-independent 首轮 changes_required（REV-001 复杂度 ratchet 21>17）→ ff7429e 修复 → delta accepted（1 minor + 2 info 非阻断）；state accepted 54/117；closure-advance -> ZR-702（F_revenue_mining）。
+- ZR-701 closure：reviewer-zr701-independent 首轮 changes_required（REV-001 复杂度 ratchet 21>17）→ ff7429e 修复 → delta accepted（1 minor + 2 info 非阻断）；state accepted 55/117；closure-advance -> ZR-702（F_revenue_mining）。
 
 - ZR-702 实施完成：revenue e9e837f（schema_fields.py 真源 + lint_input 接线 + 8 tests）；全量 485+106 绿；state triplet_green；implementer receipt canonical efe5b0f3；独立复核运行中。
 
-- ZR-702 closure：reviewer-zr702-independent accepted（1 info）；state accepted 55/117；closure-advance -> ZR-703。
+- ZR-702 closure：reviewer-zr702-independent accepted（1 info）；state accepted 56/117；closure-advance -> ZR-703。
 
-- ZR-703 closure：reviewer-zr703-independent accepted（3 info）；state accepted 56/117；closure-advance -> ZR-704。
+- ZR-703 closure：reviewer-zr703-independent accepted（3 info）；state accepted 57/117；closure-advance -> ZR-704。
 
 - ZR-704 实施完成：revenue 57e33f9（REV-05 validate-only 纯只读门 4 tests，产品零改动）；全量 494+106 绿；state triplet_green；implementer receipt canonical adb7958f；独立复核运行中。
 
-- ZR-704 closure：reviewer-zr704-independent accepted（3 info）；state accepted 57/117；closure-advance -> ZR-505。
+- ZR-704 closure：reviewer-zr704-independent accepted（3 info）；state accepted 58/117；closure-advance -> ZR-705。
 
 - ZR-705 实施完成：revenue bbee038（REV-06~08 draft/formal 分离 + 互换/重 hash 攻击门，2 个真实缺口修复 + 8 tests）；全量 502+106 绿；state triplet_green；implementer receipt canonical fafc80c6；独立复核运行中。
 
-- ZR-705 closure：reviewer-zr705-independent accepted（3 info）；state accepted 58/117；closure-advance -> ZR-706。
+- ZR-705 closure：reviewer-zr705-independent accepted（3 info）；state accepted 59/117；closure-advance -> ZR-706。
 
 - ZR-706 实施完成：revenue 8466b37（FC-904 selector 契约补全 10 tests，产品零改动）；全量 509+106 绿（fc1103 环境挂起登记）；state triplet_green；implementer receipt canonical de8892ab；独立复核运行中。
 
-- ZR-706 closure：reviewer-zr706-independent accepted（3 info）；state accepted 59/117；closure-advance -> ZR-710。
+- ZR-706 closure：reviewer-zr706-independent accepted（3 info）；state accepted 60/117；closure-advance -> ZR-710。
 
 - ZR-710 实施完成：revenue 3f81318（REV-09 原子写 + 事务故障注入 + 幂等，6 tests）；全量 515+106 绿；state triplet_green；implementer receipt canonical d4fd4220；独立复核运行中。
 
-- ZR-710 closure：reviewer-zr710-independent accepted（3 info）；state accepted 60/117；closure-advance -> ZR-601；**F1 出口达成（ZR-701~706+710 7/7）**。
+- ZR-710 closure：reviewer-zr710-independent accepted（3 info）；state accepted 61/117；closure-advance -> ZR-601；**F1 出口达成（ZR-701~706+710 7/7）**。
 
 - ZR-601 实施完成：revenue 1d32047（F2 asset facts 契约 10 tests，产品零改动）；全量 525+106 绿；state triplet_green；implementer receipt canonical ccbc5616；独立复核运行中。
 
-- ZR-601 closure：reviewer-zr601-independent accepted（26/26 对抗断言；1 minor docstring 3-period 标签 + 1 info 范围 diff）；state accepted 61/117；closure-advance -> ZR-602。
+- ZR-601 closure：reviewer-zr601-independent accepted（26/26 对抗断言；1 minor docstring 3-period 标签 + 1 info 范围 diff）；state accepted 62/117；closure-advance -> ZR-602。
 
 - ZR-602 实施完成：revenue cb82620（asset facts basis 契约：resource≠reserve 隔离钉死 + 加性 basis 键 fail-closed + 族内单位一致性门，15 tests）；全量 540+106 绿；state triplet_green；implementer receipt canonical 44b70d75；独立复核运行中。
 
-- ZR-602 closure：reviewer-zr602-independent accepted（22/22 对抗断言；1 minor REV-001 unhashable ownership_basis → delta 修复 c9b0cfc + delta accepted；REV-001→info，REV-002~004 info）；state accepted 62/117；closure-advance -> ZR-603；**停止点：用户指示本卡跑完后更新全部 planning docs 后停止**。
+- ZR-602 closure：reviewer-zr602-independent accepted（22/22 对抗断言；1 minor REV-001 unhashable ownership_basis → delta 修复 c9b0cfc + delta accepted；REV-001→info，REV-002~004 info）；state accepted 63/117；closure-advance -> ZR-603；**停止点：用户指示本卡跑完后更新全部 planning docs 后停止**。
 
 - ZR-603 实施完成（2026-08-22 恢复）：revenue b52568b（ownership/consolidation timeline + geography 层级：effective-dated fraction 契约、链式一次连乘、apply-once 权益门、可检索地理索引，22 tests，+500 行 3 文件）；全量 567+106 绿；state triplet_green；implementer receipt canonical 36a7e343；独立复核运行中。
 
-- ZR-603 closure：reviewer-zr603-independent changes_required（1 blocking REV-001 isinstance guard + 3 minor）→ delta 修复 03d716e + delta accepted；REV-001~004→info，REV-005 minor（container 形状硬化超出验收范围，登记 ZR-607 后续）；state accepted 63/117；closure-advance -> ZR-604。
+- ZR-603 closure：reviewer-zr603-independent changes_required（1 blocking REV-001 isinstance guard + 3 minor）→ delta 修复 03d716e + delta accepted；REV-001~004→info，REV-005 minor（container 形状硬化超出验收范围，登记 ZR-607 后续）；state accepted 64/117；closure-advance -> ZR-604。
 
 - ZR-604 实施完成：revenue 2636e55（冲突保存与人工 review：双 assertion + resolution status，11 tests，+238 行 3 文件）；全量 585+106 绿；state triplet_green；implementer receipt canonical 58159699；独立复核运行中。
 
-- ZR-604 closure：reviewer-zr604-independent accepted（17/17 对抗断言；1 minor REV-001 null resolution_status 语义不一致——非阻断）；state accepted 64/117；closure-advance -> ZR-610。
+- ZR-604 closure：reviewer-zr604-independent accepted（17/17 对抗断言；1 minor REV-001 null resolution_status 语义不一致——非阻断）；state accepted 65/117；closure-advance -> ZR-610。
 
 - ZR-610 实施完成（2026-08-22）：无产品代码改动——ADR 文档 adr_mining_accounting.md 覆盖 8 条会计决策（逐矿贡献=模型估计/resource≠reserve/basis 元数据/ownership timeline/单位一致性/冲突解决/地区层级/ADR 边界）；state triplet_green；implementer receipt canonical 5140ceed；独立会计 reviewer 运行中。
 
-- ZR-610 closure：独立会计 reviewer accepted（8 条决策全部通过会计合理性审查，2 info 非阻断）；state accepted 65/117；closure-advance -> ZR-605。
+- ZR-610 closure：独立会计 reviewer accepted（8 条决策全部通过会计合理性审查，2 info 非阻断）；state accepted 66/117；closure-advance -> ZR-605。
 
 - ZR-605 实施完成（2026-08-22）：revenue b02f17b（MineYearOperation 输入合同：七字段必填 gap-on-missing + derive_saleable_volume + resource 模型驱动映射，30 tests）；全量 615+106 绿；state triplet_green；implementer receipt canonical 3f780700；独立复核运行中。
 
-- ZR-605 closure：reviewer-zr605-independent accepted（7/7 对抗断言组；1 minor REV-001 inf 值未拒——登记 ZR-606 后续 + 1 info）；state accepted 66/117；closure-advance -> ZR-606。
+- ZR-605 closure：reviewer-zr605-independent accepted（7/7 对抗断言组；1 minor REV-001 inf 值未拒——登记 ZR-606 后续 + 1 info）；state accepted 67/117；closure-advance -> ZR-606。
 
 - ZR-606 实施完成（2026-08-22）：revenue cf3ada7（商业量价层：price/payability/TC-RC/premium/byproduct/FX/royalty 带 provenance，finite_number 数值加固（ZR-605 REV-001 落地），不重复计价，敏感性重算，24 tests）；全量 639+106 绿；state triplet_green；implementer receipt canonical 64f99205；独立复核运行中。
 
-- ZR-606 closure：reviewer accepted（首轮 accepted → REV-001 minor delta 修复 47fe715 → delta 复审 staged-not-committed → commit 落地后 accepted）；REV-001→info，REV-002 minor implementer receipt 重封 + 2 info；state accepted 67/117；closure-advance -> ZR-607。
+- ZR-606 closure：reviewer accepted（首轮 accepted → REV-001 minor delta 修复 47fe715 → delta 复审 staged-not-committed → commit 落地后 accepted）；REV-001→info，REV-002 minor implementer receipt 重封 + 2 info；state accepted 68/117；closure-advance -> ZR-607。
 
 - ZR-607 实施完成（2026-08-22）：revenue 073fd4d（internal flow 会计桥：可追踪 InternalFlow + gross/net elimination 桥，29 tests）；全量 674+106 绿；state triplet_green；implementer receipt canonical 05c102fb；独立复核运行中。
 
-- ZR-607 closure：reviewer-zr607-independent accepted（9/9 对抗断言组；零 blocking/minor，1 info）；state accepted 68/117；closure-advance -> ZR-608。
+- ZR-607 closure：reviewer-zr607-independent accepted（9/9 对抗断言组；零 blocking/minor，1 info）；state accepted 69/117；closure-advance -> ZR-608。
 
 - ZR-608 实施完成（2026-08-22）：revenue 3081967（asset→segment→group reconciliation：容差门 + 诚实 fallback + 防伪收入，11 tests；注：ZR-607 closure 文件被合入本 commit——流程偏差记录）；全量 685+106 绿；state triplet_green；implementer receipt canonical d5497096；独立复核运行中。
 
-- ZR-608 closure：reviewer-zr608-independent accepted（46/46 对抗断言；零 blocking，5 info/minor）；state accepted 69/117；closure-advance -> ZR-611。
+- ZR-608 closure：reviewer-zr608-independent accepted（46/46 对抗断言；零 blocking，5 info/minor）；state accepted 70/117；closure-advance -> ZR-611。
 
 - ZR-611 实施完成（2026-08-22）：revenue 288ac88（通用多矿合成 E2E：八类场景全链确定性可重算，test-only 11 tests 零产品改动；注：ZR-608 closure 文件被合入本 commit——流程偏差第二次）；全量 696+106 绿；state triplet_green；implementer receipt canonical 9667ac1c；独立复核运行中。
 
-- ZR-611 closure：reviewer-zr611-independent accepted（独立数学重算 + 八类非空洞 + 确定性位级一致；1 minor + 5 info）；state accepted 70/117；closure-advance -> ZR-609。
+- ZR-611 closure：reviewer-zr611-independent accepted（独立数学重算 + 八类非空洞 + 确定性位级一致；1 minor + 5 info）；state accepted 71/117；closure-advance -> ZR-609。
 
 - ZR-609 实施完成（2026-08-22）：revenue e541d55（紫金 pilot + 第二家泛化：三主要资产逐矿可回答 + 纯金矿商泛化零硬编码，test-only 9 tests 零产品改动；父 404a2bb = ZR-611 closure 独立落地——修正无第三次流程偏差）；全量 705+106 绿；state triplet_green；implementer receipt canonical ee6dd908（初版 f314d7d9 修正）；独立复核运行中。
 
-- ZR-609 closure：reviewer-zr609-independent accepted（手算独立重算 + 25 项非空洞 + 零硬编码 tokenize 扫描；2 minor：REV-001 流程偏差记录有误已修正、REV-002 receipt 重封 ee6dd908 + 3 info）；state accepted 71/117；closure-advance -> ZR-711；**停止点：用户指示本阶段工作做完后更新全部 planning docs 后停止**。
+- ZR-609 closure：reviewer-zr609-independent accepted（手算独立重算 + 25 项非空洞 + 零硬编码 tokenize 扫描；2 minor：REV-001 流程偏差记录有误已修正、REV-002 receipt 重封 ee6dd908 + 3 info）；state accepted 72/117；closure-advance -> ZR-711；**停止点：用户指示本阶段工作做完后更新全部 planning docs 后停止**。
 
 - ZR-711 实施完成（2026-08-23）：revenue b0d7291 + delta e75debb（additive schema 3.8 opt-in：3.8 词汇+EMIT、版本门 {3.7,3.8}、validate_operating_units 复用 validate_mine_year_operation、schema_optin converter 三函数、15 tests，REV-001 capture-integrity gate 修复）；全量 720+106 绿；implementer receipt canonical f273d1ee（初版修正中）；独立复核 reviewer-zr711-independent delta 复审运行中。
 
-- ZR-711 closure：reviewer changes_required（REV-001 blocking：capture-integrity 门只认 3.7）→ delta e75debb 修复 + delta accepted；REV-001→resolved，REV-002 minor 计数修正 + REV-003/004 info；state accepted 72/117；closure-advance -> ZR-707。
+- ZR-711 closure：reviewer changes_required（REV-001 blocking：capture-integrity 门只认 3.7）→ delta e75debb 修复 + delta accepted；REV-001→resolved，REV-002 minor 计数修正 + REV-003/004 info；state accepted 73/117；closure-advance -> ZR-707。
 
 - ZR-707 实施完成（2026-08-23）：revenue fdb560e（mixed recognition/gross-net + multi-commodity product matrix：validate_mixed_recognition/validate_commodity_matrix/validate_presentation_consistency，13 tests）；全量 733+106 绿；state triplet_green；implementer receipt canonical 91aefa2c；独立复核运行中。
 
-- ZR-707 closure：reviewer-zr707-independent accepted（11/11 对抗断言；4 info）；state accepted 73/117；closure-advance -> ZR-708。
+- ZR-707 closure：reviewer-zr707-independent accepted（11/11 对抗断言；4 info）；state accepted 74/117；closure-advance -> ZR-708。
 
 - ZR-708 实施完成（2026-08-23）：revenue a9405f8（already_satisfied 重验：snapshot 不可变/accuracy→confidence 消费链/四层 hash，test-only 7 tests 零产品改动）；全量 740+106 绿；state triplet_green；implementer receipt canonical a9f5b356；独立复核运行中。
 
-- ZR-708 closure：reviewer-zr708-independent accepted（对抗探针全过；4 info）；state accepted 74/117；closure-advance -> ZR-712。
+- ZR-708 closure：reviewer-zr708-independent accepted（对抗探针全过；4 info）；state accepted 75/117；closure-advance -> ZR-712。
 
 - ZR-712 实施完成（2026-08-23）：revenue 2373c42（版本化 ConfidencePolicy + 反博弈：policy 数据化/六类 mutations 检测/rating caps 重算，15 tests）；全量 755+106 绿；state triplet_green；implementer receipt canonical fcc237aa；独立复核运行中。
 
-- ZR-712 closure：reviewer-zr712-independent accepted（首轮 accepted → REV-001/002/004 minor delta 修复 1c04684 → delta accepted，REV-003 info 保留）；state accepted 75/117；closure-advance -> ZR-713；**docs 一致性修复：补 ZR-608/ZR-611/ZR-708 缺失 findings 条目 + ZR-709 合流卡提及**。
+- ZR-712 closure：reviewer-zr712-independent accepted（首轮 accepted → REV-001/002/004 minor delta 修复 1c04684 → delta accepted，REV-003 info 保留）；state accepted 76/117；closure-advance -> ZR-713；**docs 一致性修复：补 ZR-608/ZR-611/ZR-708 缺失 findings 条目 + ZR-709 合流卡提及**。
 
 - ZR-713 实施完成（2026-08-23）：revenue cb34700（rolling-origin 引擎：严格 as-of 泄漏 fail-closed、company/segment/mine-volume 三层、四层 immutable hash、cap 不伪造 metrics，10 tests）；全量 768+106 绿；state triplet_green；implementer receipt canonical 57c1d269；独立复核运行中。
 
-- ZR-713 closure：reviewer-zr713-independent 首轮 changes_required（REV-001 blocking 三层 byte-identical 非独立评估——segment 层发 company wape、mine-volume 未用 ZR-605 契约；REV-002 minor level/as_of 未绑 hash 链）→ delta 3479718 修复（segment 独立 wape、mine-volume 走 ZR-605 契约 fail-closed、record_sha256 绑定 {level,as_of}、snapshot_id=快照身份；15 tests，全量 773+106，pre-commit 776+106 + E2E PASS）→ delta accepted（21/21 探针）；implementer receipt 重封 f71fdf5f、reviewer receipt canonical 8125837d；state accepted 76/117；closure-advance -> ZR-709（F2 合流卡——F2 常规链全闭，仅剩 ZR-709 合流终验）。
+- ZR-713 closure：reviewer-zr713-independent 首轮 changes_required（REV-001 blocking 三层 byte-identical 非独立评估——segment 层发 company wape、mine-volume 未用 ZR-605 契约；REV-002 minor level/as_of 未绑 hash 链）→ delta 3479718 修复（segment 独立 wape、mine-volume 走 ZR-605 契约 fail-closed、record_sha256 绑定 {level,as_of}、snapshot_id=快照身份；15 tests，全量 773+106，pre-commit 776+106 + E2E PASS）→ delta accepted（21/21 探针）；implementer receipt 重封 f71fdf5f、reviewer receipt canonical 8125837d；state accepted 77/117；closure-advance -> ZR-709（F2 合流卡——F2 常规链全闭，仅剩 ZR-709 合流终验）。
 
 - ZR-709 实施完成（2026-08-23）：revenue ac68807（F2 合流终验 fixture，test-only +919 行 1 文件 9 tests 产品零改动）——J1 真实 source_preparation 子进程链复用年报+研究沟通（reuse_receipt 可解释、缺失 kind fail-closed + ProcessingDemand 补齐）；J2 五年 FY2026-2030 输入由契约函数代数推导、mine 贡献×segment reconcile 10/10 闭合、白银 +120=诚实 gap、3.8 operating_units 嵌入零漂移；J3 draft 渲染零注册、formal 位级重放 + snapshot 回放。全量 782+106 零回归；ruff 0；sync MATCH 147；implementer receipt canonical 134a2b13。
 
-- ZR-709 closure：reviewer-zr709-independent accepted（干净 checkout ac68807：产品 diff=0、全量复放 782+106、12/12 对抗探针含手算位精确与伪造价格→gap、无空断言、硬编码零新增、hash 全对；4 info 无阻断）；reviewer receipt canonical 40206902；closure receipt state_sha 73e10e70/control 102b02f4；**state accepted 77/117（F 24/24 全闭）**；phase->G_real_e2e；closure-advance -> **ZR-802**（README §6 阶段 G 首卡，ZR-801 已由 CA-105 吸收）。
+- ZR-709 closure：reviewer-zr709-independent accepted（干净 checkout ac68807：产品 diff=0、全量复放 782+106、12/12 对抗探针含手算位精确与伪造价格→gap、无空断言、硬编码零新增、hash 全对；4 info 无阻断）；reviewer receipt canonical 40206902；closure receipt state_sha 73e10e70/control 102b02f4；**state accepted 78/117（F 24/24 全闭）**；phase->G_real_e2e；closure-advance -> **ZR-802**（README §6 阶段 G 首卡，ZR-801 已由 CA-105 吸收）。
 
 - ZR-802 实施完成（2026-08-23）：revenue 1b55f6f（阶段 G 首卡组合旅程，test-only +353 行 1 文件 7 tests 产品零改动）——五状态×跨根：existing exact 复用（dl=0/llm=0/outcome=reused_existing）、missing 结构化 not_found 且 lake 计数不变式（零写入零伪造）、future-dated stale 拒绝不污染既有复用、跨根双候选 ambiguous fail-closed 不择一、partial 角色读子集+DAG 最小生产闭包；C2 二次调用幂等同身份零下载；C3 八阶段证据投影按真实键钉死。全量 789+106 零回归；ruff 0；sync MATCH 148；implementer receipt canonical 6a1c6869。
 
-- ZR-802 closure：reviewer-zr802-independent accepted（11 探针 V1-V7：diff=test-only、全量复放 789+106、8/8 独立反伪造探针、硬编码零命中、hash 全对；1 minor REV-001 parser>=1 vs 精确预算属上游信封内部计数登记后续、3 info）；reviewer receipt canonical 051e4f64；**state accepted 78/117**；closure-advance -> **ZR-803**。
+- ZR-802 closure：reviewer-zr802-independent accepted（11 探针 V1-V7：diff=test-only、全量复放 789+106、8/8 独立反伪造探针、硬编码零命中、hash 全对；1 minor REV-001 parser>=1 vs 精确预算属上游信封内部计数登记后续、3 info）；reviewer receipt canonical 051e4f64；**state accepted 79/117**；closure-advance -> **ZR-803**。
 
 - ZR-803 实施完成（2026-08-23）：revenue b14ac3c（六类故障×幂等恢复旅程矩阵，test-only +315 行 6 tests 产品零改动）——锁=持 WAL 写事务下只读旅程照常+释放后同身份零下载；中断=注册前崩溃零孤儿重跑精确一次；磁盘=结构化 exit2 无半写无父目录残留后合法路径成功；篡改=单字节翻转拒绝原工件仍有效；顺序=eval-before-create 结构化拒后正常评估；时钟=未来 captured_date 信息集外拒绝。全量 795+106 零回归；ruff 0；sync MATCH 149；implementer receipt canonical 9b38be64。
 
-- ZR-803 closure：reviewer-zr803-independent accepted（13 探针 V1-V7：中断 exactly-once 含崩溃载荷同 hash 复放、双位置篡改、单源投毒时钟、伪造 snapshot 结构化拒绝、WAL 确定性佐证 store.py:225、主仓同 HEAD 795+106 全绿；2 minor stderr decode/docstring 措辞 + 2 info 嵌套 checkout 位置性）；reviewer receipt canonical 7e305256；**state accepted 79/117**；closure-advance -> **ZR-804**。
+- ZR-803 closure：reviewer-zr803-independent accepted（13 探针 V1-V7：中断 exactly-once 含崩溃载荷同 hash 复放、双位置篡改、单源投毒时钟、伪造 snapshot 结构化拒绝、WAL 确定性佐证 store.py:225、主仓同 HEAD 795+106 全绿；2 minor stderr decode/docstring 措辞 + 2 info 嵌套 checkout 位置性）；reviewer receipt canonical 7e305256；**state accepted 80/117**；closure-advance -> **ZR-804**。
 
 - ZR-804 实施完成（2026-08-23）：revenue be8405c（平台与安装形态缺口，test-only +229 行 5 tests 产品零改动）——大小写变体目录同 source_id 旅程（win32）、缺省配置结构化拒绝零静默 sibling、安装副本 sync-first 后 --version 身份逐字一致（manifest 覆盖 tests/**，未同步新文件合法差异=R4.2 可见性）、活跃脚本无 Windows-only 构造（CREATE_NO_WINDOW=creationflags 防弹窗守卫放行）。全量 800+106；ruff 0；sync MATCH 150；implementer receipt canonical e775101d。
 
@@ -261,8 +261,8 @@
 
 - ZR-805 实施完成（2026-08-23）：revenue 3fc5f3e + delta 295f138（T3 下载授权语义，test-only +166 行 3 tests 产品零改动）——T3 真实执行唯一 owner=filing-fetch opt-in 套件（FILING_FETCH_E2E_DOWNLOAD=1 门+CN/US/HK+损坏拒绝+二次零下载标记结构钉死）；未授权 missing 请求 journal 零 downloaded_new（acquisition_attempts.jsonl 独立 oracle 防 AUD2-04 伪造）；入口显式 --allow-download 默认 False 且无第二下载器。全量 803+106；ruff 0；sync MATCH 151；implementer receipt 重封 canonical 419a5af5。
 
-- ZR-805 closure：reviewer-zr805-independent 首轮 accepted（fc646953；1 minor REV-001 journal oracle 接线传文件致断言空洞 + 1 minor REV-002 簿记漂移即上条偏差 + 2 info）→ delta 295f138 修复接线（目录口径，篡改探针证明修复后非空洞：假 downloaded_new 行 0→1 计数）→ reviewer-zr805-delta-independent delta accepted（B-V1~V4；cd6f938 按标准口径重封）；**state accepted 81/117**；closure-advance -> **ZR-806**（阶段 G 收官卡：真实 T2 三 root/broker/artifact/mine/forecast 样本）。
+- ZR-805 closure：reviewer-zr805-independent 首轮 accepted（fc646953；1 minor REV-001 journal oracle 接线传文件致断言空洞 + 1 minor REV-002 簿记漂移即上条偏差 + 2 info）→ delta 295f138 修复接线（目录口径，篡改探针证明修复后非空洞：假 downloaded_new 行 0→1 计数）→ reviewer-zr805-delta-independent delta accepted（B-V1~V4；cd6f938 按标准口径重封）；**state accepted 82/117**；closure-advance -> **ZR-806**（阶段 G 收官卡：真实 T2 三 root/broker/artifact/mine/forecast 样本）。
 
 - ZR-806 实施完成（2026-08-22）：revenue b716a81（真实 T2 三 root 样本套件，test-only +253 行 10 tests 产品零改动）——固定 5 样本（companies 紫金 FY2025/FY2024、dayu 1548 FY2021、Dropbox 星环 FY2024/东吴研报）content_sha256 唯一 + filing_date ≤ today + 声明 hash 匹配（AUD2-05 缺失即 blocked）；三 root resolve 只读旅程 REUSED_EXACT ×3 + MISSING ×1 fail-closed；浅指纹 + catalog 行数零写；Zijin/星环 sidecar 契约绑定 + broker PDF 诚实 raw。全量 813+106；ruff 0；ratchet OK；sync MATCH 152；implementer receipt canonical 2dd046b5。
 
-- ZR-806 closure：reviewer-zr806-independent accepted（15 commands 全绿：独立复算样本 hash/声明、AUD2-05 temp 变体缺失样本套件 fail（3 failed/7 passed）真实样本未动、resolve 复跑 + 指纹/catalog 行数不变、sidecar 逐字段、git diff 零产品改动、回归 30 + ruff + ratchet + 全量 813+106 复跑 167.84s、receipt-validate OK；2 info：星环 sidecar schema 较窄 / AUD2-05 用 temp 副本）；reviewer receipt canonical 5a9ddad4；**state accepted 82/117**；closure-advance -> **ZR-902**（阶段 H 首卡：实际调度每日 Windows T2）；**CRLF 教训：README CRLF → closure-advance CAS-CONFLICT（read_text().encode() LF hash vs manifest 原始字节 CRLF hash）→ README 转 LF + manifest CAS 重建**。
+- ZR-806 closure：reviewer-zr806-independent accepted（15 commands 全绿：独立复算样本 hash/声明、AUD2-05 temp 变体缺失样本套件 fail（3 failed/7 passed）真实样本未动、resolve 复跑 + 指纹/catalog 行数不变、sidecar 逐字段、git diff 零产品改动、回归 30 + ruff + ratchet + 全量 813+106 复跑 167.84s、receipt-validate OK；2 info：星环 sidecar schema 较窄 / AUD2-05 用 temp 副本）；reviewer receipt canonical 5a9ddad4；**state accepted 83/117**；closure-advance -> **ZR-902**（阶段 H 首卡：实际调度每日 Windows T2）；**CRLF 教训：README CRLF → closure-advance CAS-CONFLICT（read_text().encode() LF hash vs manifest 原始字节 CRLF hash）→ README 转 LF + manifest CAS 重建**。

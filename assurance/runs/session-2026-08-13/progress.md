@@ -554,7 +554,7 @@
   - state walk 全通过（无代码改动，triplet 不变）；implementer receipt canonical 5140ceed。
   - 独立会计 reviewer reviewer-zr610-accounting-independent 运行中。
 - **ZR-610 closure**：独立会计 reviewer reviewer-zr610-accounting-independent **accepted**（8 条决策全部通过会计合理性审查：①逐矿贡献=模型估计 vs IFRS 8 ②resource≠reserve vs JORC/NI 43-101/PRC ③basis 三字段 vs IFRS 10/IAS 28 ④ownership timeline vs IFRS 3 ⑤单位一致性 vs JORC 实务 ⑥双 assertion best practice ⑦地区层级标准实务 ⑧ADR 边界清晰；2 info REV-001 equity_share 澄清 / REV-002 pro-rata 模型近似说明——均非阻断）；reviewer receipt canonical b7c8f11a；state accepted + closure-advance -> **ZR-605**（phase F_revenue_mining，DAG 解锁 ZR-605——MineYearOperation 输入合同）。
-- **机器状态**：current_next=ZR-605，accepted **65/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 12：ZR-701~706/710 + ZR-601~604 + ZR-610）。
+- **机器状态**：current_next=ZR-605，accepted **66/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 12：ZR-701~706/710 + ZR-601~604 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-610 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-605（F2 MineYearOperation 输入合同——DAG 已解锁；"volume/grade/recovery/payable/product/period/scenario；必须遵守已批准矿业 ADR；缺字段有 gap，不默认为 0"）。
 - **ZR-605（F2 MineYearOperation 输入合同）实施完成**：
@@ -565,7 +565,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue b02f17b）；implementer receipt canonical 3f780700。
   - 独立复核 reviewer-zr605-independent 运行中。
 - **ZR-605 closure**：独立复核 reviewer-zr605-independent **accepted**（7/7 对抗断言组 + 全量 615+106 复跑；1 minor REV-001 volume/realized_price=inf 通过校验（inf>0）——登记 ZR-606 后续用 finite_number 加固；1 info REV-002 全量 2 warnings 环境噪音）；reviewer receipt canonical c5abdf0d；state accepted + closure-advance -> **ZR-606**（phase F_revenue_mining，F2 第六卡）。
-- **机器状态**：current_next=ZR-606，accepted **66/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 13：ZR-701~706/710 + ZR-601~605 + ZR-610）。
+- **机器状态**：current_next=ZR-606，accepted **67/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 13：ZR-701~706/710 + ZR-601~605 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-605 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-606（F2 商业量价层——DAG 已解锁；"price/payability/TC-RC/premium/byproduct/FX/royalty；每个变量有来源/假设/期限；多商品与副产品不重复计价；敏感性可重算"）。
 - **ZR-606（F2 商业量价层）实施完成**：
@@ -576,7 +576,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue cf3ada7）；implementer receipt canonical 64f99205。
   - 独立复核 reviewer-zr606-independent 运行中。
 - **ZR-606 closure**：独立复核 reviewer-zr606-independent 首轮 **accepted**（9 组对抗断言 + 全量 639+106 复跑；1 minor ZR606-REV-001 saleable_volume 未走 finite_number）→ delta 修复 47fe715（finite_number 路由 + 6 回归测试 30 passed）→ delta 复审首轮 **changes_required**（staged-not-committed——pre-commit 钩子运行中导致）→ commit 落地后复审 **accepted**；REV-001→info resolved，REV-002 minor（implementer receipt 重封到 47fe715，canonical b07a951b）→ 已重封，REV-003/004 info；reviewer receipt canonical a3ed9650；state accepted + closure-advance -> **ZR-607**（phase F_revenue_mining，F2 第七卡）。
-- **机器状态**：current_next=ZR-607，accepted **67/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 14：ZR-701~706/710 + ZR-601~606 + ZR-610）。
+- **机器状态**：current_next=ZR-607，accepted **68/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 14：ZR-701~706/710 + ZR-601~606 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-606 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-607（F2 ownership/consolidation/internal flow 会计桥——DAG 已解锁；"equity vs consolidation、内部转冶炼/贸易、gross/net、elimination 可追踪"）。
 - **ZR-607（F2 internal flow 会计桥）实施完成**：
@@ -587,7 +587,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 073fd4d）；implementer receipt canonical 05c102fb。
   - 独立复核 reviewer-zr607-independent 运行中。
 - **ZR-607 closure**：独立复核 reviewer-zr607-independent **accepted**（9/9 对抗断言组 + 全量 674+106 复跑；零 blocking/minor，仅 1 info REV-001 全量 thread warning 环境噪音）；reviewer receipt canonical 146f26fe；state accepted + closure-advance -> **ZR-608**（phase F_revenue_mining，F2 第八卡）。
-- **机器状态**：current_next=ZR-608，accepted **68/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 15：ZR-701~706/710 + ZR-601~607 + ZR-610）。
+- **机器状态**：current_next=ZR-608，accepted **69/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 15：ZR-701~706/710 + ZR-601~607 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-607 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-608（F2 asset→segment→group reconciliation——DAG 已解锁；"容差内才标 modeled；不闭合则回退到分部并列 gap；禁止产量×价格伪收入"）。
 - **流程偏差记录**：ZR-607 closure commit 未独立落地——pwsh-39 后台 closure 提交被后续 ZR-608 提交（3081967）合并，ZR-607 closure 文件（receipts/ZR-607/**、state.json、README、planning docs）随 3081967 一并入库。机器状态与 receipt 链条正确（ZR-607 accepted + closure→ZR-608 已在 state.json；ZR-607 12 receipt canonical 146f26fe），仅 git 历史粒度不干净。教训：closure commit 落地确认后再 stage 新卡文件。
@@ -599,7 +599,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 3081967，含 ZR-607 closure 混合）；implementer receipt canonical d5497096。
   - 独立复核 reviewer-zr608-independent 运行中。
 - **ZR-608 closure**：独立复核 reviewer-zr608-independent **accepted**（46/46 对抗断言 + 全量 685+106 复跑；零 blocking，5 info/minor：REV-001 C1~C3 验证/REV-002 无硬编码收入数据/REV-003 流程偏差确认/REV-004 质量门绿/REV-005 minor fallback closed 标志硬编码默认 1e-6 容差——与卡片签名一致）；reviewer receipt canonical 1c9018b3；state accepted + closure-advance -> **ZR-611**（phase F_revenue_mining，F2 第九卡）。
-- **机器状态**：current_next=ZR-611，accepted **69/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 16：ZR-701~706/710 + ZR-601~608 + ZR-610）。
+- **机器状态**：current_next=ZR-611，accepted **70/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 16：ZR-701~706/710 + ZR-601~608 + ZR-610）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-608 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-611（F2 通用多矿合成 E2E——DAG 已解锁；"控股、权益法、多金属、内供、跨币种、爬坡、gap、residual；生产代码公司/矿名 hardcode=0"）。
 - **流程偏差记录（第二次）**：ZR-608 closure commit（pwsh-44）未独立落地，closure 文件随 ZR-611 提交（288ac88）并入——与 ZR-607 closure 同型（pwsh-39）。机器状态与 receipt 链条正确（ZR-608 accepted + closure→ZR-611 已在 state.json）。教训重申：后台 closure 提交需 git log 确认落地后再 stage 新卡文件。
@@ -610,7 +610,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 288ac88，含 ZR-608 closure 混合）；implementer receipt canonical 9667ac1c。
   - 独立复核 reviewer-zr611-independent 运行中。
 - **ZR-611 closure**：独立复核 reviewer-zr611-independent **accepted**（独立数学重算匹配 1e-9 + 八类场景非空洞验证 + 确定性双跑位级一致 + 零硬编码确认；1 minor REV-005 全量 deselected 计数 3 vs 2 环境噪音 + 5 info）；reviewer receipt canonical 2229bd25；state accepted + closure-advance -> **ZR-609**（phase F_revenue_mining，F2 合流卡）。
-- **机器状态**：current_next=ZR-609，accepted **70/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 17：ZR-701~706/710 + ZR-601~608 + ZR-610/611）。
+- **机器状态**：current_next=ZR-609，accepted **71/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 17：ZR-701~706/710 + ZR-601~608 + ZR-610/611）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-611 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-609（F2 合流：紫金 pilot + 第二家不同结构矿企泛化——DAG 已解锁；"紫金主要资产覆盖、逐矿可回答范围清楚；第二家公司无需产品硬编码"）。
 - **ZR-609（F2 合流：紫金 pilot + 第二家泛化）实施完成**：
@@ -620,7 +620,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue e541d55，父 404a2bb = ZR-611 closure 独立落地——**修正：无第三次流程偏差**，reviewer REV-001 证实 ZR-611 closure 独立 commit 存在）；implementer receipt canonical ee6dd908（初版 f314d7d9 修正：base_triplet 288ac88→404a2bb + diff 范围）。
   - 独立复核 reviewer-zr609-independent 运行中。
 - **ZR-609 closure**：独立复核 reviewer-zr609-independent **accepted**（手算独立重算匹配 + 25 项非空洞检查 + 零硬编码 tokenize 扫描确认；2 minor：REV-001 流程偏差记录有误（ZR-611 closure 实际独立落地 404a2bb——已修正全部 planning docs）、REV-002 receipt diff 范围修正（已重封 ee6dd908）+ 3 info）；reviewer receipt canonical 64fc8fe7；state accepted + closure-advance -> **ZR-711**（phase F_revenue_mining，F2 第十卡）。
-- **机器状态**：current_next=ZR-711，accepted **71/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 18：ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
+- **机器状态**：current_next=ZR-711，accepted **72/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 18：ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-609 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-711（F2 additive schema 3.8 opt-in——**注意之前错标为"confidence 反博弈"，实为 ZR-712**）未领取；恢复第一步 = ZR-711。
 
@@ -633,7 +633,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue b0d7291）；implementer receipt canonical f273d1ee。
   - 独立复核 reviewer-zr711-independent 运行中。
 - **ZR-711 closure**：独立复核 reviewer-zr711-independent 首轮 **changes_required**（REV-001 blocking：document.py:606 capture-integrity 门只认 3.7——3.8 文档绕过 claim/source snapshot 检查，违反"3.8 = 3.7 + additive"契约）→ delta 修复 e75debb（capture-integrity 门 `in {3.7,3.8}` + 1 回归测试，15 tests 全量 720+106 绿）→ delta 复审 **accepted**（REV-001 resolved；REV-002 minor 计数修正；REV-003/004 info）；reviewer receipt canonical 91f802d5；state accepted + closure-advance -> **ZR-707**（phase F_revenue_mining，F2 第十一卡）。
-- **机器状态**：current_next=ZR-707，accepted **72/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 19：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711）。
+- **机器状态**：current_next=ZR-707，accepted **73/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 19：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-711 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-707（F2 mixed recognition/gross-net——DAG 已解锁）未领取；恢复第一步 = ZR-707 → ZR-712/713（confidence 反博弈/rolling-origin backtest）。
 
@@ -646,7 +646,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue fdb560e）；implementer receipt canonical 91aefa2c。
   - 独立复核 reviewer-zr707-independent 运行中。
 - **ZR-707 closure**：独立复核 reviewer-zr707-independent **accepted**（11/11 对抗断言 + 全量 733+106 复跑；4 info：REV-001~004 全量 thread warning 环境噪音/三仓 triplet 跨仓对象/3 文件回归 25 passed/词汇精确）；reviewer receipt canonical b18d941e；state accepted + closure-advance -> **ZR-708**（phase F_revenue_mining，F2 第十二卡）。
-- **机器状态**：current_next=ZR-708，accepted **73/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 20：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707）。
+- **机器状态**：current_next=ZR-708，accepted **74/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 20：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-707 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-708（F2 重验不可变 snapshot/backtest 基础接线——DAG 已解锁；"已有能力若当前 triplet 全绿则 already_satisfied；否则修复；accuracy record 实际可被 forecast 消费"）。
 - **ZR-708（F2 重验不可变 snapshot/backtest 基础接线）实施完成**：
@@ -656,7 +656,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue a9405f8）；implementer receipt canonical a9f5b356。
   - 独立复核 reviewer-zr708-independent 运行中。
 - **ZR-708 closure**：独立复核 reviewer-zr708-independent **accepted**（对抗探针 a~e 全过：snapshot 确定性/不可覆盖/tamper 拒绝/accuracy→confidence 消费链（wape 一致+组件>0）/未来 actual 拒绝/四层 hash 链接/零硬编码；4 info：REV-001 探针 artifact 已纠正/REV-002 全量 2 warnings 环境噪音/REV-003 state.json cursor 待提交/REV-004 already_satisfied 确认）；reviewer receipt canonical 091532f0；state accepted + closure-advance -> **ZR-712**（phase F_revenue_mining，F2 第十三卡）。
-- **机器状态**：current_next=ZR-712，accepted **74/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 21：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708）。
+- **机器状态**：current_next=ZR-712，accepted **75/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 21：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-708 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-712（F2 confidence 反博弈——DAG 已解锁；"duplicate/split/plug/zero-impact/one-observation/wrong-record mutations 全杀；rating caps 可重算"）。
 - **ZR-712（F2 版本化 ConfidencePolicy 与反博弈）实施完成**：
@@ -667,7 +667,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 2373c42，含 ZR-708 closure docs 条目合入）；implementer receipt canonical fcc237aa。
   - 独立复核 reviewer-zr712-independent 运行中。
 - **ZR-712 closure**：独立复核 reviewer-zr712-independent 首轮 **accepted**（36 对抗探针全过；2 minor：REV-001 非数值 value 抛 raw ValueError、REV-002 NaN score 静默返回 low + 2 info：REV-003 空 weights 接受、REV-004 未校验 caps 缺 medium 抛 KeyError）→ delta 修复 1c04684（_observation_key require 数值 gate、recompute_rating math.isfinite + caps high/medium 校验，+3 回归测试 18 passed，全量 758+106 绿）→ delta 复审 **accepted**（45 探针全过，REV-001/002/004 resolved，REV-003 info 保留）；reviewer receipt canonical 6d1c07a3；state accepted + closure-advance -> **ZR-713**（phase F_revenue_mining，F2 第十四卡）。
-- **机器状态**：current_next=ZR-713，accepted **75/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 22：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712）。
+- **机器状态**：current_next=ZR-713，accepted **76/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 22：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-712 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-713（F2 紫金 rolling-origin 历史回测——DAG 已解锁；"严格 as-of 无 future actual；company/segment/mine-volume 分层；四层 immutable hashes"）→ ZR-709（F2 合流：紫金五年预测用户旅程终验）。
 - **docs 一致性修复（用户要求：全面检查名称/内容冲突）**：audit_review/findings.md 补 ZR-608/ZR-611/ZR-708 缺失条目（此前 audit 侧无对应）；closure 计数统一至 75/117；task_plan/panorama 剩余卡描述补 ZR-709 合流卡（此前零提及）；README 游标已镜像 current_next=ZR-713。
@@ -679,7 +679,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue cb34700）；implementer receipt canonical 57c1d269。
   - 独立复核 reviewer-zr713-independent 运行中。
 - **ZR-713 closure**：独立复核 reviewer-zr713-independent 首轮 **changes_required**（23/23 对抗探针全过，但 REV-001 blocking：三层 byte-identical——level 仅是标签，mine-volume 未用 ZR-605 契约、segment 层发 company wape；REV-002 minor：level/as_of 未绑定 hash 链、snapshot_id 持 backtest_id 非快照身份；REV-003 info 保留）→ delta 修复 3479718（segment 层 _segment_window 用 segment_year_results 合并 wape；mine-volume 层 _mine_volume_window 走 ZR-605 validate_mine_year_operation/derive_saleable_volume，缺口 fail-closed、wape=None；snapshot_id=快照自身身份、record_sha256 绑定 {level, as_of}；+5 回归测试 15 passed，全量 773+106 绿，pre-commit 全量 776+106 + E2E PASS）→ delta 复审 **accepted**（21/21 探针全过，REV-001/002 resolved）；reviewer receipt canonical 8125837d；implementer receipt 重封 f71fdf5f（result=3479718）；state accepted + closure-advance -> **ZR-709**（phase F_revenue_mining，F2 合流卡——F2 常规链至此全闭，仅剩 ZR-709 合流终验）。
-- **机器状态**：current_next=ZR-709，accepted **76/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 23：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712 + ZR-713）。
+- **机器状态**：current_next=ZR-709，accepted **77/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 23：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712 + ZR-713）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-713 closure commit 待提交，实现 cb34700 + delta 3479718）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-709（F2 合流：紫金五年预测用户旅程终验——依赖 ZR-705~708/ZR-710~713/ZR-609/ZR-611；"自动复用财报/研报，补齐依据可解释；mine/product 贡献与分部勾稽或诚实 gap；draft 可渲染、结果可重放"）→ 阶段 G（ZR-801~806）。
 - **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：ZR-713 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-709（F2 合流）→ 阶段 G（ZR-801~806）。
@@ -690,7 +690,7 @@
   - **ZR-804 closure**（平台与安装形态）：revenue be8405c（5 tests）——大小写变体同 source_id、缺省配置 fail-closed、安装副本 sync-first 身份逐字一致、无 Windows-only 构造；回填 receipt 后联合复核 accepted（A-V1~V5）；**流程偏差登记：本卡曾跳过 receipt/复核直接开 ZR-805，由 ZRR805-REV-002 抓出后闭环**。
   - **ZR-805 closure**（T3 下载授权语义）：revenue 3fc5f3e + delta 295f138（3 tests）——T3 唯一 owner=filing-fetch opt-in 门、未授权请求 journal 零下载（JSONL 独立 oracle）、单一下载器；首轮 accepted → REV-001 oracle 接线空洞即修 + REV-002 簿记 → delta accepted（B-V1~V4 非空洞性注入证明）。
   - 全量基线演进：782 → 800 → **803 passed + 106 subtests**（每卡零回归）；sync MATCH 151。
-  - **机器状态**：current_next=ZR-806，accepted **81/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 4：ZR-802~805；ZR-801 由 CA-105 吸收）。
+  - **机器状态**：current_next=ZR-806，accepted **82/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 4：ZR-802~805；ZR-801 由 CA-105 吸收）。
   - **docs 漂移修复（2026-08-22 检查发现）**：9784c18（close ZR-804+805）commit message 声称 "cursor mirrored to G_real_e2e/ZR-806" 但未改 audit_review/README.md（游标停在 ZR-804）、漏更新 session progress.md/panorama.md——本次检查已修复（README→ZR-806、progress/panorama 补记），记 findings 42b。
   - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-806 未领取；恢复第一步 = ZR-806（真实 T2 三 root/broker/artifact/mine/forecast 样本收官）→ 阶段 H（ZR-901/CA-201 起）。
 - **ZR-806（阶段 G 收官：真实 T2 三 root 样本）实施完成**：
@@ -700,7 +700,7 @@
   - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue b716a81）；implementer receipt canonical 2dd046b5。
   - 独立复核 reviewer-zr806-independent 运行中。
 - **ZR-806 closure**：独立复核 reviewer-zr806-independent **accepted**（15 commands 全绿：独立复算 5 样本 hash 唯一 + 声明匹配；AUD2-05 temp 变体缺失样本套件 fail "blocked, never swap samples"（3 failed/7 passed）真实样本未动；resolve 四旅程复跑 + 指纹/catalog 行数（documents=23530/sources=43112/locations=46606）不变；sidecar 契约逐字段匹配；git diff 实证零产品改动；回归 30 passed + ruff + ratchet + 全量 813+106 复跑 167.84s；receipt-validate OK；2 info：REV-001 星环 sidecar schema 较窄（content_sha256 绑定满足卡片，字节数/期间/公司名省略——卡片全字段枚举仅适用于 Zijin sidecars）、REV-002 AUD2-05 用 temp 副本验证）；reviewer receipt canonical 5a9ddad4；state accepted + closure-advance -> **ZR-902**（phase H_dynamic_audit，阶段 H 首卡：实际调度每日 Windows T2）。
-- **机器状态**：current_next=ZR-902，accepted **82/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5：ZR-802~806；ZR-801 由 CA-105 吸收）。
+- **机器状态**：current_next=ZR-902，accepted **83/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5：ZR-802~806；ZR-801 由 CA-105 吸收）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-806 closure commit 待提交，实现 b716a81）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-902（阶段 H 首卡：实际调度每日 Windows T2——依赖 ZR-806；"schedule/runner/权限/原子报告/<=24h freshness/release 消费全证明；不仅是脚本存在"）→ ZR-903（每周/发布前 T3）。
 - **CRLF 教训（closure-advance CAS 冲突根因）**：README 为 CRLF 行尾时，closure-advance 的 read_text().encode()（LF 版本 hash）与 manifest 登记的原始字节 hash（CRLF 版本）冲突 → CAS-CONFLICT；修复 = README 转 LF + manifest-build CAS 重建后成功。记 findings 43。

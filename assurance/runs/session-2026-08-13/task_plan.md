@@ -133,13 +133,13 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-603 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-22 ZR-604 实施完成）
-- **accepted 63/117 + ZR-604 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 10（ZR-701~706/710 + ZR-601~603）+ ZR-604 待复核/closure。
+- **accepted 64/117 + ZR-604 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 10（ZR-701~706/710 + ZR-601~603）+ ZR-604 待复核/closure。
 - **ZR-604 实施**（F2 第四卡冲突保存与人工 review）：revenue 2636e55（+238 行 3 文件，11 tests）——semantic_groups 硬失败→双 assertion（primary/secondary）+ resolution status（accepted/rejected/pending_review/under_review）加性扩展；冲突参数均带 resolution_status + ≤1 accepted → 允许共存，否则原行为硬失败（backward compatible）。全量 585+106 绿；implementer receipt canonical 58159699；独立复核 reviewer-zr604-independent 运行中。
 - 下一卡（closure 后）：ZR-605（F2 MineYearOperation 输入合同——DAG 依赖 ZR-604,ZR-610；ZR-610 未解锁，以 DAG 为准）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue 2636e55（ZR-604 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-22 ZR-610 closure → ZR-605）
-- **accepted 65/117（约 56%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 12（ZR-701~706/710 + ZR-601~604 + ZR-610）。
+- **accepted 66/117（约 56%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 12（ZR-701~706/710 + ZR-601~604 + ZR-610）。
 - **ZR-610 closure**（F2 会计 ADR 冻结）：独立会计 reviewer accepted（8 条决策全部通过会计合理性审查，2 info 非阻断）；closure→ZR-605。
 - 下一卡：**ZR-605**（F2 MineYearOperation 输入合同——DAG 已解锁；"volume/grade/recovery/payable/product/period/scenario；必须遵守已批准矿业 ADR；缺字段有 gap，不默认为 0"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-610 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
@@ -156,7 +156,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-604 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-22 ZR-605 closure → ZR-606）
-- **accepted 66/117（约 56%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 13（ZR-701~706/710 + ZR-601~605 + ZR-610）。
+- **accepted 67/117（约 56%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 13（ZR-701~706/710 + ZR-601~605 + ZR-610）。
 - **ZR-605 closure**（F2 MineYearOperation 输入合同）：reviewer accepted（7/7 对抗断言组，1 minor inf 值未拒——登记 ZR-606 后续）；closure→ZR-606。
 - 下一卡：**ZR-606**（F2 商业量价层——DAG 已解锁；"price/payability/TC-RC/premium/byproduct/FX/royalty；每个变量有来源/假设/期限；多商品与副产品不重复计价；敏感性可重算"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-605 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
@@ -167,7 +167,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue cf3ada7（ZR-606 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-22 ZR-606 closure → ZR-607）
-- **accepted 67/117（约 57%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 14（ZR-701~706/710 + ZR-601~606 + ZR-610）。
+- **accepted 68/117（约 57%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 14（ZR-701~706/710 + ZR-601~606 + ZR-610）。
 - **ZR-606 closure**（F2 商业量价层）：delta 47fe715（REV-001 saleable_volume finite_number）；delta 复审 staged-not-committed 教训（pre-commit 钩子运行时）；implementer receipt 重封 b07a951b；reviewer accepted，closure→ZR-607。
 - 下一卡：**ZR-607**（F2 ownership/consolidation/internal flow 会计桥——DAG 已解锁；"equity vs consolidation、内部转冶炼/贸易、gross/net、elimination 可追踪"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-606 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
@@ -183,7 +183,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue 3081967（ZR-608 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-22 ZR-608 closure → ZR-611）
-- **accepted 69/117（约 59%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 16（ZR-701~706/710 + ZR-601~608 + ZR-610）。
+- **accepted 70/117（约 59%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 16（ZR-701~706/710 + ZR-601~608 + ZR-610）。
 - **ZR-608 closure**（F2 asset→segment→group reconciliation）：reviewer accepted（46/46 对抗断言，零 blocking）；closure→ZR-611。
 - 下一卡：**ZR-611**（F2 通用多矿合成 E2E——DAG 已解锁；"控股、权益法、多金属、内供、跨币种、爬坡、gap、residual；生产代码公司/矿名 hardcode=0"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-608 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
@@ -194,7 +194,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue 288ac88（ZR-611 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-22 ZR-611 closure → ZR-609）
-- **accepted 70/117（约 60%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 17（ZR-701~706/710 + ZR-601~608 + ZR-610/611）。
+- **accepted 71/117（约 60%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 17（ZR-701~706/710 + ZR-601~608 + ZR-610/611）。
 - **ZR-611 closure**（F2 通用多矿合成 E2E）：reviewer accepted（独立数学重算匹配 + 八类非空洞 + 确定性位级一致）；closure→ZR-609。
 - 下一卡：**ZR-609**（F2 合流：紫金 pilot + 第二家不同结构矿企泛化——DAG 已解锁；"紫金主要资产覆盖、逐矿可回答范围清楚；第二家公司无需产品硬编码"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-611 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
@@ -205,7 +205,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue e541d55（ZR-609 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-22 ZR-609 closure → 停止点）
-- **accepted 71/117（约 61%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 18（ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
+- **accepted 72/117（约 61%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 18（ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
 - **ZR-609 closure**（F2 合流：紫金 pilot + 第二家泛化）：reviewer accepted（手算独立重算 + 25 项非空洞 + 零硬编码 tokenize 扫描；REV-001/002 已修正：ZR-611 closure 实际独立落地 404a2bb、receipt 重封 ee6dd908）；closure→ZR-711。
 - **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-711（F2 additive schema 3.8 opt-in——DAG 已解锁）未领取；恢复第一步 = ZR-711 → ZR-707（mixed recognition/gross-net）→ ZR-712/713（confidence 反博弈/rolling-origin backtest）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-609 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
@@ -216,7 +216,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue e75debb（ZR-711 delta commit）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-23 ZR-711 closure → 最终停止点）
-- **accepted 72/117（约 62%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 19（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711）。
+- **accepted 73/117（约 62%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 19（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711）。
 - **ZR-711 closure**（F2 additive schema 3.8 opt-in）：reviewer changes_required（REV-001 capture-integrity 门）→ delta e75debb 修复 + delta accepted；closure→ZR-707。
 - **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-707（F2 mixed recognition/gross-net——DAG 已解锁）未领取；恢复第一步 = ZR-707 → ZR-712/713（confidence 反博弈/rolling-origin backtest）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-711 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
@@ -227,7 +227,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue fdb560e（ZR-707 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-23 ZR-707 closure → ZR-708）
-- **accepted 73/117（约 62%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 20（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707）。
+- **accepted 74/117（约 62%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 20（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707）。
 - **ZR-707 closure**（F2 mixed recognition/gross-net + multi-commodity）：reviewer accepted（11/11 对抗断言，4 info）；closure→ZR-708。
 - 下一卡：**ZR-708**（F2 重验不可变 snapshot/backtest 基础接线——DAG 已解锁；"已有能力若当前 triplet 全绿则 already_satisfied；否则修复；accuracy record 实际可被 forecast 消费"）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-707 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
@@ -238,7 +238,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue a9405f8（ZR-708 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-23 ZR-708 closure → ZR-712）
-- **accepted 74/117（约 63%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 21（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708）。
+- **accepted 75/117（约 63%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 21（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708）。
 - **ZR-708 closure**（F2 already_satisfied 重验）：reviewer accepted（4 info）；closure→ZR-712。
 - 下一卡：**ZR-712**（F2 confidence 反博弈——DAG 已解锁；"duplicate/split/plug/zero-impact/one-observation/wrong-record mutations 全杀；rating caps 可重算"）→ ZR-713（紫金 rolling-origin）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-708 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
@@ -249,7 +249,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue 2373c42（ZR-712 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-23 ZR-712 closure → 停止点，含 docs 一致性修复）
-- **accepted 75/117（约 64%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 22（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712）。
+- **accepted 76/117（约 64%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 22（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712）。
 - **ZR-712 closure**（F2 版本化 ConfidencePolicy + 反博弈）：reviewer 首轮 accepted（36 探针全过）→ REV-001/002/004 minor（raw ValueError/NaN rating/KeyError caps）delta 修复 1c04684 + delta accepted（45 探针全过，REV-001/002/004 resolved，REV-003 info 保留）；reviewer receipt canonical 6d1c07a3；closure→ZR-713。
 - **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-713（F2 紫金 rolling-origin——DAG 已解锁）未领取；恢复第一步 = ZR-713 → ZR-709（F2 合流：紫金五年预测用户旅程终验——依赖 ZR-705~708/ZR-710~713/ZR-609/ZR-611）→ 阶段 G（ZR-801~806）。
 - **docs 一致性修复（本次）**：audit_review/findings.md 补 ZR-608/ZR-611/ZR-708 缺失条目 + 各卡 closure 计数统一（71→75/117）；剩余卡描述补 ZR-709 合流卡（此前零提及）。
@@ -261,13 +261,13 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue cb34700（ZR-713 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-23 ZR-713 closure → 停止点）
-- **accepted 76/117（约 65%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 23（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712 + ZR-713）。
+- **accepted 77/117（约 65%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 23（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707/708 + ZR-712 + ZR-713）。
 - **ZR-713 closure**（F2 rolling-origin 历史回测）：reviewer 首轮 **changes_required**（REV-001 blocking：三层 byte-identical 非独立评估——segment 层发 company wape、mine-volume 未用 ZR-605 契约；REV-002 minor：level/as_of 未绑 hash 链、snapshot_id 非快照身份）→ delta 修复 3479718（segment 独立 wape、mine-volume 走 ZR-605 契约 fail-closed、record_sha256 绑定 {level,as_of}、snapshot_id=快照身份；+5 回归 15 tests，全量 773+106，pre-commit 776+106 + E2E PASS）→ delta 复审 **accepted**（21/21 探针全过）；reviewer receipt canonical 8125837d；closure→ZR-709（F2 合流卡——F2 常规链全闭）。
 - **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-709（F2 合流：紫金五年预测用户旅程终验——依赖 ZR-705~708/ZR-710~713/ZR-609/ZR-611）未领取；恢复第一步 = ZR-709 → 阶段 G（ZR-801~806）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-713 closure commit 待提交，实现 cb34700 + delta 3479718）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-23 ZR-709 closure → F 阶段全闭 → 进入阶段 G）
-- **accepted 77/117（约 66%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + **F 24/24 全闭**（新增 ZR-709）。current_phase=**G_real_e2e**，current_next=**ZR-802**（README §6 阶段 G 首卡；ZR-801 machine registry 已由 CA-105 唯一实现吸收，§7 重叠归属）。
+- **accepted 78/117（约 66%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + **F 24/24 全闭**（新增 ZR-709）。current_phase=**G_real_e2e**，current_next=**ZR-802**（README §6 阶段 G 首卡；ZR-801 machine registry 已由 CA-105 唯一实现吸收，§7 重叠归属）。
 - **ZR-709 closure**（F2 合流：紫金五年预测用户旅程终验 fixture）：revenue ac68807（test-only +919 行 1 文件，9 tests，产品零改动）——J1 真实 source_preparation 子进程链复用年报+研究沟通（reuse_receipt 全链可解释：outcome=reused_existing/bundle_status/download/parser/llm=0/producer_events DAG 角色；缺失 kind fail-closed exit 3 + ProcessingDemand 补齐路径）；J2 五年 FY2026-2030 输入由 F2 契约函数代数推导（MineYearOperation→commercial terms→权益链 0.396→realized_price 恒等闭合），mine 贡献×segment 引擎值 reconcile_layer 10/10 reconciled_modeled、公司层三段勾稽闭合、未建模白银 +120=gap/fallback gap=120 不冒充收入、internal flow net==total 不重复计、schema 3.8 operating_units 45 条嵌入 formal 直跑且与 3.7 rel=1e-12 零漂移 + converter 往返 canonical 相等；J3 draft 渲染零注册（gate_ids=[]）、formal 位级重放 + snapshot 回放 PASS。质量门：journey 9/9、全量 782+106 零回归（基线 773）、ruff 0、sync MATCH 147、pre-commit 全套绿。
 - **独立复核 accepted**（reviewer-zr709-independent，干净 checkout ac68807）：V1 产品 diff=0、V2 全量复放 782+106、V3 12/12 对抗探针（Kamoa FY2028 手算位精确、+1% 伪造价格 → reconcile 翻 gap、容差语义、draft 零写）、V4 无空断言、V5 3.8 零漂移复验、V6 生产树硬编码零新增、V7 卡片/receipt hash 全对。4 info（嵌套 checkout 位置性失败非回归、state base_triplet 常量约定、J1 断言强度备注、既有 ADR docstring 提及）。reviewer receipt canonical 40206902…；closure receipt state_sha 73e10e70…/control 102b02f4…。
 - 流程记录：pre-commit 安装同步门首拦（安装副本缺新文件）→ `sync_installations.py --apply` MATCH 147 后重提成功；复核 worktree `.review-zr709-clean` 用后即删。
@@ -275,13 +275,13 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue ac68807（实现；closure 提交进行中）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-23 ZR-802 closure → 阶段 G 推进中）
-- **accepted 78/117**：G 1/6（ZR-802）。current_next=**ZR-803**。
+- **accepted 79/117**：G 1/6（ZR-802）。current_next=**ZR-803**。
 - **ZR-802 closure**（组合旅程 across roots）：revenue 1b55f6f（test-only +353，7 tests，产品零改动）——五状态（existing 精确预算复用 / missing 计数不变式零伪造 / future-dated stale 拒绝 / 跨根双候选 ambiguous fail-closed / partial 读子集+DAG 最小生产闭包）+ C2 二次幂等 + C3 八阶段真实键投影。全量 789+106；ruff 0；sync MATCH 148。复核 accepted（11 探针；1 minor parser≥1 属上游信封内部计数登记后续、3 info）；reviewer receipt canonical 051e4f64。
 - 流程调整（用户指示）：复核子代理在实现提交后立即派出后台跑，等待间隙主线做下一卡预研，不空转。
 - 下一卡：ZR-803（chaos/property/mutation：锁、中断、磁盘、篡改、顺序、时钟——critical mutation 100% kill）。
 
 ## 最新状态（2026-08-23 阶段 G 连续推进 ZR-802~805 → 用户指示收尾停止）
-- **accepted 81/117**：G 4/6（ZR-802/803/804/805）。current_phase=G_real_e2e，current_next=**ZR-806**（收官卡）。
+- **accepted 82/117**：G 4/6（ZR-802/803/804/805）。current_phase=G_real_e2e，current_next=**ZR-806**（收官卡）。
 - **ZR-802 closure**（组合旅程 across roots）：revenue 1b55f6f（7 tests）——五状态 existing/missing/stale/conflict/partial + C2 二次幂等 + C3 八阶段真实键投影。复核 accepted（11 探针；1 minor parser≥1 上游内部计数）。canonical 051e4f64。
 - **ZR-803 closure**（六类故障×幂等恢复）：revenue b14ac3c（6 tests）——锁 WAL 写事务不阻只读旅程+释放同身份复用、中断注册零孤儿精确一次、磁盘结构化 exit2 无半写、篡改单字节拒绝原工件仍有效、乱序结构化拒绝后正常评估、时钟未来日期信息集外。复核 accepted（13 探针；2 minor+2 info）。canonical 7e305256。
 - **ZR-804 closure**（平台与安装形态）：revenue be8405c（5 tests）——大小写变体同 source_id、缺省配置 fail-closed 无静默 sibling、安装副本 sync-first 身份逐字一致、活跃脚本无 Windows-only 构造。回填 receipt 后联合复核 accepted（A-V1~V5；CREATE_NO_WINDOW=守卫放行；drift 独立门在 fc1004:82）。reviewer canonical 46850f67（非标准序列化已按 CA-102 重封）。**流程偏差登记**：本卡曾跳过 receipt/复核直接开 ZR-805，由 ZRR805-REV-002 抓出后闭环（见 findings F-G2）。
@@ -297,7 +297,7 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue b716a81（ZR-806 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-23 ZR-806 closure → 阶段 H 入口）
-- **accepted 82/117（约 70%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + **G 5/6 全闭**（ZR-802~806；ZR-801 由 CA-105 吸收）。current_phase=**H_dynamic_audit**，current_next=**ZR-902**。
+- **accepted 83/117（约 70%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + **G 5/6 全闭**（ZR-802~806；ZR-801 由 CA-105 吸收）。current_phase=**H_dynamic_audit**，current_next=**ZR-902**。
 - **ZR-806 closure**（真实 T2 样本收官）：reviewer-zr806-independent **accepted**（15 commands 全绿；独立复算 5 样本 hash 唯一/声明匹配、AUD2-05 temp 变体缺失样本套件 fail "blocked, never swap samples"（3 failed/7 passed）、resolve 四旅程复跑 + 指纹/catalog 行数不变、sidecar 逐字段匹配、git diff 零产品改动、回归 30 + ruff + ratchet + 全量 813+106 复跑 167.84s、receipt-validate OK；2 info：REV-001 星环 sidecar schema 较窄（Zijin 全字段枚举仅适用 Zijin）、REV-002 AUD2-05 用 temp 副本）；reviewer receipt canonical 5a9ddad4；closure→ZR-902（阶段 H 首卡）。
 - **CRLF 教训**：README CRLF 行尾导致 closure-advance CAS-CONFLICT（read_text().encode() LF hash vs manifest 原始字节 CRLF hash）→ README 转 LF + manifest CAS 重建解决（findings 43）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-902（实际调度每日 Windows T2——依赖 ZR-806；"schedule/runner/权限/原子报告/<=24h freshness/release 消费全证明；不仅是脚本存在"）未领取；恢复第一步 = ZR-902 → ZR-903（每周/发布前 T3）/ZR-901（PR 门）。
