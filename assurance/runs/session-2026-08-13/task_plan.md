@@ -279,3 +279,14 @@
 - **ZR-802 closure**（组合旅程 across roots）：revenue 1b55f6f（test-only +353，7 tests，产品零改动）——五状态（existing 精确预算复用 / missing 计数不变式零伪造 / future-dated stale 拒绝 / 跨根双候选 ambiguous fail-closed / partial 读子集+DAG 最小生产闭包）+ C2 二次幂等 + C3 八阶段真实键投影。全量 789+106；ruff 0；sync MATCH 148。复核 accepted（11 探针；1 minor parser≥1 属上游信封内部计数登记后续、3 info）；reviewer receipt canonical 051e4f64。
 - 流程调整（用户指示）：复核子代理在实现提交后立即派出后台跑，等待间隙主线做下一卡预研，不空转。
 - 下一卡：ZR-803（chaos/property/mutation：锁、中断、磁盘、篡改、顺序、时钟——critical mutation 100% kill）。
+
+## 最新状态（2026-08-23 阶段 G 连续推进 ZR-802~805 → 用户指示收尾停止）
+- **accepted 81/117**：G 4/6（ZR-802/803/804/805）。current_phase=G_real_e2e，current_next=**ZR-806**（收官卡）。
+- **ZR-802 closure**（组合旅程 across roots）：revenue 1b55f6f（7 tests）——五状态 existing/missing/stale/conflict/partial + C2 二次幂等 + C3 八阶段真实键投影。复核 accepted（11 探针；1 minor parser≥1 上游内部计数）。canonical 051e4f64。
+- **ZR-803 closure**（六类故障×幂等恢复）：revenue b14ac3c（6 tests）——锁 WAL 写事务不阻只读旅程+释放同身份复用、中断注册零孤儿精确一次、磁盘结构化 exit2 无半写、篡改单字节拒绝原工件仍有效、乱序结构化拒绝后正常评估、时钟未来日期信息集外。复核 accepted（13 探针；2 minor+2 info）。canonical 7e305256。
+- **ZR-804 closure**（平台与安装形态）：revenue be8405c（5 tests）——大小写变体同 source_id、缺省配置 fail-closed 无静默 sibling、安装副本 sync-first 身份逐字一致、活跃脚本无 Windows-only 构造。回填 receipt 后联合复核 accepted（A-V1~V5；CREATE_NO_WINDOW=守卫放行；drift 独立门在 fc1004:82）。reviewer canonical 46850f67（非标准序列化已按 CA-102 重封）。**流程偏差登记**：本卡曾跳过 receipt/复核直接开 ZR-805，由 ZRR805-REV-002 抓出后闭环（见 findings F-G2）。
+- **ZR-805 closure**（T3 下载授权语义）：revenue 3fc5f3e + delta 295f138（3 tests）——T3 执行唯一 owner=filing-fetch opt-in 门（结构钉死）、未授权请求 journal 零 downloaded_new（JSONL 独立 oracle）、入口显式 --allow-download 单一下载器。首轮 accepted（fc646953；REV-001 oracle 接线空洞即修 + REV-002 簿记）→ delta 复核 accepted（B-V1~V4 非空洞性注入证明）。delta receipt b3efb845。
+- 全量基线演进：782 → 800 → **803 passed + 106 subtests**（每卡零回归）；sync MATCH 151。
+- 新发现入 findings F-G1~F-G4（oracle 空洞注入式证明 / 簿记跳步对策 / manifest 覆盖 tests 推论 / 嵌套 checkout 位置性常态）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-806 未领取；恢复第一步 = ZR-806（真实 T2 三 root/broker/artifact/mine/forecast 样本收官）→ 阶段 H（ZR-901/CA-201 起）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 295f138、wiki 26a6b22、filing 5a1c18f。

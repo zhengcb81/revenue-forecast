@@ -252,3 +252,13 @@
 - ZR-803 实施完成（2026-08-23）：revenue b14ac3c（六类故障×幂等恢复旅程矩阵，test-only +315 行 6 tests 产品零改动）——锁=持 WAL 写事务下只读旅程照常+释放后同身份零下载；中断=注册前崩溃零孤儿重跑精确一次；磁盘=结构化 exit2 无半写无父目录残留后合法路径成功；篡改=单字节翻转拒绝原工件仍有效；顺序=eval-before-create 结构化拒后正常评估；时钟=未来 captured_date 信息集外拒绝。全量 795+106 零回归；ruff 0；sync MATCH 149；implementer receipt canonical 9b38be64。
 
 - ZR-803 closure：reviewer-zr803-independent accepted（13 探针 V1-V7：中断 exactly-once 含崩溃载荷同 hash 复放、双位置篡改、单源投毒时钟、伪造 snapshot 结构化拒绝、WAL 确定性佐证 store.py:225、主仓同 HEAD 795+106 全绿；2 minor stderr decode/docstring 措辞 + 2 info 嵌套 checkout 位置性）；reviewer receipt canonical 7e305256；**state accepted 79/117**；closure-advance -> **ZR-804**。
+
+- ZR-804 实施完成（2026-08-23）：revenue be8405c（平台与安装形态缺口，test-only +229 行 5 tests 产品零改动）——大小写变体目录同 source_id 旅程（win32）、缺省配置结构化拒绝零静默 sibling、安装副本 sync-first 后 --version 身份逐字一致（manifest 覆盖 tests/**，未同步新文件合法差异=R4.2 可见性）、活跃脚本无 Windows-only 构造（CREATE_NO_WINDOW=creationflags 防弹窗守卫放行）。全量 800+106；ruff 0；sync MATCH 150；implementer receipt canonical e775101d。
+
+- 流程偏差（如实登记）：ZR-804 实现提交后未即时 receipt/复核即开 ZR-805，被 ZRR805-REV-002 簿记漂移发现——已回填 ZR-804 卡与 implementer receipt，并与 ZR-805 delta 同轮联合复核闭环。
+
+- ZR-804 closure：reviewer-zr804-independent accepted（A-V1~V5：diff 隔离、五断言逐一推理、drift 独立门在 fc1004:82 确认、CREATE_NO_WINDOW 守卫性质核实 filing_fetch_client.py:214/227、硬编码零命中、hash 全对；1 info 位置性 + 1 minor backfill 出处披露）；reviewer receipt canonical 46850f67（初版非标准序列化已按 CA-102 口径重封）；closure->ZR-805。
+
+- ZR-805 实施完成（2026-08-23）：revenue 3fc5f3e + delta 295f138（T3 下载授权语义，test-only +166 行 3 tests 产品零改动）——T3 真实执行唯一 owner=filing-fetch opt-in 套件（FILING_FETCH_E2E_DOWNLOAD=1 门+CN/US/HK+损坏拒绝+二次零下载标记结构钉死）；未授权 missing 请求 journal 零 downloaded_new（acquisition_attempts.jsonl 独立 oracle 防 AUD2-04 伪造）；入口显式 --allow-download 默认 False 且无第二下载器。全量 803+106；ruff 0；sync MATCH 151；implementer receipt 重封 canonical 419a5af5。
+
+- ZR-805 closure：reviewer-zr805-independent 首轮 accepted（fc646953；1 minor REV-001 journal oracle 接线传文件致断言空洞 + 1 minor REV-002 簿记漂移即上条偏差 + 2 info）→ delta 295f138 修复接线（目录口径，篡改探针证明修复后非空洞：假 downloaded_new 行 0→1 计数）→ reviewer-zr805-delta-independent delta accepted（B-V1~V4；cd6f938 按标准口径重封）；**state accepted 81/117**；closure-advance -> **ZR-806**（阶段 G 收官卡：真实 T2 三 root/broker/artifact/mine/forecast 样本）。

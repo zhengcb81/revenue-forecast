@@ -1,0 +1,60 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "3fc5f3e627f5cf5dcc712d0614e3abcf3b62b08e",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "created_at_utc": "2026-08-22T20:21:59+00:00",
+  "findings": [
+    {
+      "id": "ZRR805-DREV-001",
+      "severity": "info",
+      "title": "Positional sibling failures from nested clean checkout (unchanged class)",
+      "detail": "From .review-zr804-805-clean, test_t3_suite_is_opt_in_and_covers_three_markets and test_unauthorized_missing_source_zero_downloads_in_journal fail for the same positional reason documented in prior ZRR805-REV-003 (PROJECT_ROOT.parent/'filing-fetch' does not exist under the nested checkout; real sibling is Projects/filing-fetch); 1 passed. Single-file rerun from MAIN repo dir: 3 passed in 1.81s. Purely positional; matches prior accepted review behavior exactly - no regression introduced by the delta."
+    },
+    {
+      "id": "ZRR805-DREV-002",
+      "severity": "info",
+      "title": "REV-001 fix verified materially non-vacuous; delta scope exact",
+      "detail": "git diff 3fc5f3e 295f138 touches exactly one file with 1 insertion/1 deletion: line 142 drops '/catalog.sqlite3'. Both call sites of _journal_downloaded_new (lines 92 'before' seed read and line 142 post-run assert) now pass the DIRECTORY project/'.source_catalog'. Independent tamper probe outside both repos: IsolatedLake built from the worktree, fake {'outcome':'downloaded_new'} appended to .source_catalog/acquisition_attempts.jsonl, oracle imported from the worktree tests module -> directory wiring counts 1 (before=0, after=1) while the old file-path argument shape returns constant 0 on identical evidence - proving the pre-fix assertion was vacuous and the fixed wiring genuinely reads acquisition_attempts.jsonl. Prior accepted 12_reviewer_receipt.json canonical fc646953... recomputes exactly (delta anchor intact)."
+    }
+  ],
+  "kind": "reviewer",
+  "objective": "Delta re-review of already-accepted ZR-805 (prior reviewer receipt canonical fc6469538e2980b3e7c7d957cf9c01c2250877245f74481b30de15f647a6861d): verify ONLY the one-line REV-001 follow-up in commit 295f138 - exact diff scope, directory argument at both oracle call sites, suite green, and a non-vacuousness tamper probe proving the fixed assertion actually reads the acquisition journal; no re-litigation of the original acceptance.",
+  "probes": [
+    {
+      "id": "B-V1",
+      "command": "git diff 3fc5f3e 295f138 --stat (+ full patch)",
+      "exit_code": 0,
+      "result": "tests/test_zr805_t3_authorization.py | 2 +- : 1 file changed, 1 insertion(+), 1 deletion(-); sole hunk replaces _journal_downloaded_new(project / '.source_catalog' / 'catalog.sqlite3') with _journal_downloaded_new(project / '.source_catalog'); prior accepted receipt canonical_hash fc6469538e2980b3e7c7d957cf9c01c2250877245f74481b30de15f647a6861d recomputes - anchor intact"
+    },
+    {
+      "id": "B-V2",
+      "command": "static call-site inspection + python -m pytest tests/test_zr805_t3_authorization.py -q (clean checkout, then MAIN dir)",
+      "exit_code": 0,
+      "result": "both call sites (line 92 seed-read, line 142 post-run assert) pass the catalog DIRECTORY; clean checkout 2 failed/1 passed positionally (ZRR805-DREV-001); MAIN dir: 3 passed in 1.81s"
+    },
+    {
+      "id": "B-V3",
+      "command": "%TEMP%/zr805_delta_probe/probe.py OUTSIDE both repos (IsolatedLake from worktree seed=zr805 -> append fake downloaded_new JSONL line -> import _journal_downloaded_new from worktree tests module -> call with DIRECTORY; control call with old FILE-path shape)",
+      "exit_code": 0,
+      "result": "journal exists True; before=0; DIRECTORY wiring after=1 (counts the appended downloaded_new); old FILE-path wiring after=0 on identical evidence - PROBE PASS: the fixed wiring reads acquisition_attempts.jsonl, fix is materially non-vacuous"
+    },
+    {
+      "id": "B-V4",
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103' (MAIN repo dir)",
+      "exit_code": 0,
+      "result": "803 passed, 3 deselected, 106 subtests passed in 122.31s - matches expectation (800 baseline + 3 ZR-805), zero regressions"
+    }
+  ],
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "295f13844e7674da94e60434f1528b0cb6655b35",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewer": "reviewer-zr805-delta-independent",
+  "schema_version": 1,
+  "unit": "ZR-805",
+  "verdict": "accepted",
+  "canonical_hash": "b3efb8452565ca9531484307e2698a6ce9bc7b09e4f2760fc2b281b995d8a038"
+}

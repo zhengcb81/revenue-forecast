@@ -1,0 +1,85 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "23ffa6a",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep zr804/case/sibling/installed → 零命中；缺省参数链 rc=3 fail-closed；大小写变体 reused_existing；副本 --version 与 canonical 同 hash（同步态）",
+      "exit_code": 0,
+      "result": "四类平台缺口零实现"
+    },
+    {
+      "command": "python -m pytest tests/test_zr804_platform_shape.py -q --tb=short",
+      "exit_code": 0,
+      "result": "5 passed（大小写 1 win-only / sibling 1 / installed 2 参数化 / portable 1）"
+    },
+    {
+      "command": "ruff check tests/test_zr804_platform_shape.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 150 files"
+    },
+    {
+      "command": "git commit (pre-commit 全套)",
+      "exit_code": 0,
+      "result": "be8405c test(ZR-804) — 1 file +229"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "800 passed + 106 subtests（795 基线 + 5 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T12:55:00+00:00",
+  "findings": [
+    {
+      "detail": "①大小写变体目录访问同物理 lake → 与规范路径旅程 source_id 一致（win32 skipif 标注语义归属）；②缺省配置结构化拒绝且 stdout 空——绝不静默 sibling 回退；③installed 测试采用 sync-first 语义：--version manifest 覆盖 tests/**，未同步新文件合法地使身份不同（R4.2 可见性设计），先 sync 再比对逐字相等；④portable 禁止清单 os.system/startupinfo/SetConsoleCtrlHandler/shell=True，CREATE_NO_WINDOW 认定为跨平台防弹窗守卫放行。初版两处 RED 迭代修正（manifest 未同步差异误判为缺陷→改为 sync-first；CREATE_NO_WINDOW 误列禁止→查实守卫用途后放行）。",
+      "id": "ZR804-IMPL-001",
+      "severity": "info",
+      "title": "平台四缺口闭合（大小写/sibling/installed/portable）"
+    }
+  ],
+  "implementation": {
+    "design": "新 tests/test_zr804_platform_shape.py：IsolatedLake 大小写变体 + 无配置子进程 + 安装副本 --version 对比（sync-first helper）+ 活跃脚本静态扫描。",
+    "files": [
+      "revenue-forecast/tests/test_zr804_platform_shape.py"
+    ]
+  },
+  "implementer": "zr804-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue=be8405c；wiki 26a6b22、filing 5a1c18f 未动。",
+    "流程偏差（如实）：本卡实现提交后未即时 receipt/复核 即开 ZR-805，导致 ZRR805-REV-002 簿记漂移发现本卡悬空——现回填 receipt 并与本轮收尾一并复核闭环。"
+  ],
+  "objective": "平台与安装形态缺口：大小写一致性、无静默 sibling、安装副本可执行同身份、跨平台静态面。",
+  "plan_sha256": "0ef03260cca80f75171fced10e89a03c793cdbe3c01e9e270a6fe299bf5f62e7",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "be8405c",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr804_platform_shape.py（新 5 tests）；receipts/ZR-804/**。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr804_platform_shape.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-804/**"
+  ],
+  "unit": "ZR-804",
+  "canonical_hash": "e775101df33ec1e89814d0d420cab13376101de5c3e056acdfd71662ea29e6f4"
+}

@@ -1,0 +1,87 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "23ffa6a",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep zr805 → 零命中；journal oracle 形态确认（acquisition_attempts.jsonl 非 SQLite 表）",
+      "exit_code": 0,
+      "result": "授权语义桥接层零实现"
+    },
+    {
+      "command": "python -m pytest tests/test_zr805_t3_authorization.py -q",
+      "exit_code": 0,
+      "result": "3 passed（gate/journal/flag）"
+    },
+    {
+      "command": "ruff check tests/test_zr805_t3_authorization.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 151 files"
+    },
+    {
+      "command": "git commit (pre-commit 全套)",
+      "exit_code": 0,
+      "result": "3fc5f3e test(ZR-805) — 1 file +166"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "803 passed + 106 subtests（800 基线 + 3 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T13:30:00+00:00",
+  "findings": [
+    {
+      "detail": "分层实现：T3 真实执行唯一 owner=filing-fetch opt-in 套件（结构断言钉住门变量/skipUnless/CN-US-HK-损坏四场景/二次零下载标记文本）；revenue 侧补授权语义——未授权 missing 请求→结构化 not_found+stdout 空+acquisition journal JSONL 零 downloaded_new（独立 oracle 防 AUD2-04 伪造）；入口显式 --allow-download=False 默认且 spawn 目标唯一点名 filing_fetch_client。真实三市场 T3 实跑需用户网络授权=卡面设计内 blocked/opt-in，不伪造通过。",
+      "id": "ZR805-IMPL-001",
+      "severity": "info",
+      "title": "T3 授权门+journal 对账+单一下载器"
+    }
+  ],
+  "implementation": {
+    "design": "新 tests/test_zr805_t3_authorization.py：跨仓结构断言（只读 filing-fetch 测试源）+ IsolatedLake hermetic journal 对账 + 入口静态面。",
+    "files": [
+      "revenue-forecast/tests/test_zr805_t3_authorization.py"
+    ]
+  },
+  "implementer": "zr805-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue=3fc5f3e；wiki 26a6b22、filing 5a1c18f 未动。",
+    "初版误把 journal 当 SQLite 表，探针修正为 JSONL；sqlite3 import 随之移除。",
+    "delta REV-001（ZRR805-REV-001 minor 接受后续即修）：journal oracle 调用点改传 catalog 目录（原传 sqlite 文件致断言恒 0 空洞）；delta commit 295f138，3 tests 复跑绿，sync MATCH 151。"
+  ],
+  "objective": "CN/HK/US T3 首次下载+二次零下载的严格授权语义与桥接。",
+  "plan_sha256": "30a0e79fb6ae9743cce587b56a43e358a05ec0e3febabdab5baff5a92d24b349",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "3fc5f3e",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr805_t3_authorization.py（新 3 tests）；receipts/ZR-805/**、locks、state.json、README 镜像、planning docs。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr805_t3_authorization.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-805/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-805",
+  "canonical_hash": "419a5af50e0d963f4f06e30595f7fc740ea9824761de424c9cea75e1dd4a1cf6"
+}

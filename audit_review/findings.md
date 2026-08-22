@@ -564,3 +564,5 @@
 
 ## ZR-713（2026-08-23）：紫金 rolling-origin 历史回测（revenue）
 - 严格 as-of 无 future actual（每窗口仅用 published ≤ as_of 的 actuals，泄漏 fail-closed）；company/segment/mine-volume 三层独立评估（segment 层用 actual_segment_revenue 合并 wape；mine-volume 层走 ZR-605 契约 validate_mine_year_operation/derive_saleable_volume，缺口 fail-closed，无预测对照 wape=None）；四层 immutable hash 链（snapshot_id=快照身份、record_sha256 绑定 {level, as_of}——重贴标签/改期破链）；窗口不足 → capped + rating hint 不伪造 metrics。ZR-713 closure：reviewer 首轮 changes_required（REV-001 blocking 三层 byte-identical 非独立评估 + REV-002 minor hash 绑定）→ delta 3479718 修复 → delta accepted（21/21 探针）；state accepted 76/117；closure-advance -> ZR-709（F2 合流卡，F2 常规链全闭）。
+
+- 阶段 G 会话补充发现（2026-08-23，详见 session findings F-G1~F-G4）：journal 计数型 oracle 需注入式非空洞性证明（ZRR805-REV-001 教训）；连续推进时卡片五态（card/receipt/review/closure/游标）任一缺失即不得领取下一卡（ZRR805-REV-002 教训）；--version manifest 含 tests/** 故安装副本身份比对必须 sync-first；嵌套 checkout 的 sibling 解析失败按位置性 info 分类（主仓同 HEAD 复跑为准）。

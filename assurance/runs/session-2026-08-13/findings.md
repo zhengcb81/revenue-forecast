@@ -270,3 +270,22 @@
 - **四层 hash 链绑定（REV-002 minor 修复）**：snapshot_id = 快照自身身份（跨层一致）；record_sha256 = canonical_sha256({level, as_of, record})——重贴层标签或改 as_of 必破链。
 - **cap 语义**：窗口数 < min_windows=2 → capped=True + rating hint（不伪造 metrics）；单窗口 capped、双窗口 not capped 由测试钉死。
 - **流程教训**：① reviewer 的 blocking 判定依据完整卡片 C2 而非 reviewer-facing 摘要——docstring 声称必须可验证（"Three levels are backtested independently" 首轮被实证击穿）；② implementer receipt 在 delta 后必须重封（result_triplet 指向 delta commit，uc 工具不强制但链一致性要求）——ZR-606 教训第二次验证；③ pre-commit 钩子全量 776 测试 ~6 分钟，git commit 需给足超时（180s 不够，600s 稳妥）。
+
+## 2026-08-23 阶段 G 推进会话发现（ZR-802~805）
+
+### F-G1 journal oracle 接线空洞（REV-001 型，已修复）
+- 现象：oracle 函数签名收目录，调用点误传 `catalog.sqlite3` 文件 → 断言恒 0 空洞，测试绿但未验证任何东西。
+- 根因：签名语义（目录 vs 文件）无类型区分；篡改探针（向 JSONL 注入假 downloaded_new 行看计数是否变化）是识别此类空洞的有效手段，已纳入本轮复核探针集。
+- 影响：后续凡「计数型独立 oracle」断言，实现时必须附一次注入式非空洞性证明。
+
+### F-G2 卡片间簿记跳步（流程偏差，已闭环）
+- 现象：ZR-804 实现提交后未走 receipt/复核/closure 直接开 ZR-805 → state 游标与实际工作脱节，被 ZR-805 复核的 REV-002 抓出。
+- 根因：连续推进多卡时把「实现完成」误当「单元完成」；领取下一卡前未核对上一卡五态（card/receipt/review/closure/游标）。
+- 对策：恢复实施后每卡 closure 提交是硬边界；开新卡前先 `state.json current_next` 与锁目录双核对。
+
+### F-G3 --version manifest 覆盖 tests/** 的推论
+- R4.2 manifest 含全部 installable 文件（含 tests/），因此任何新增测试文件在 sync 前必然使 canonical≠副本身份。
+- 推论：涉及安装副本身份比对的测试必须 sync-first；这同时让「忘记同步」在测试层可见而非静默。
+
+### F-G4 嵌套 checkout 位置性失败为常态
+- 干净 worktree 内跑依赖 sibling 仓的链测试必因相对父路径解析失败——复核口径固定为「worktree 定位失败→主仓同 HEAD 复跑→位置性 info」。

@@ -1,0 +1,66 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "23ffa6ae0edd8834e2d1a5df4db89187ddb34d19",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "created_at_utc": "2026-08-22T20:21:59+00:00",
+  "findings": [
+    {
+      "id": "ZRR804-REV-001",
+      "severity": "info",
+      "title": "Nested clean-checkout positional failure of the case-swapped test",
+      "detail": "From .review-zr804-805-clean (nested INSIDE revenue-forecast), test_case_swapped_project_dir_runs_identical_journey fails because PROJECT_ROOT.parent/'filing-fetch' resolves to revenue-forecast/filing-fetch which does not exist (real sibling is Projects/filing-fetch); the chain returns structured upstream fatal 'filing-fetch script not found'. Per protocol the full file was rerun read-only from the MAIN repo dir: 5 passed in 14.82s. Purely positional."
+    },
+    {
+      "id": "ZRR804-REV-002",
+      "severity": "minor",
+      "title": "Backfilled receipt/review provenance (bookkeeping slip, disclosed)",
+      "detail": "Commit be8405c landed without an immediate implementer receipt or independent review; work proceeded to ZR-805 until prior reviewer finding ZRR805-REV-002 surfaced the dangling unit. Receipt 11_implementer_receipt.json was backfilled (created_at_utc 2026-08-23T12:55:00+00:00, slip disclosed in its notes) and this full acceptance review was executed fresh against be8405cd rather than inheriting any stale evidence. Process deviation only: every technical gate re-verified green today; state/cursor reconciliation is being processed together with this review."
+    }
+  ],
+  "kind": "reviewer",
+  "objective": "Full independent acceptance of ZR-804 (platform & install shape gaps: Windows case-insensitive lake access, fail-closed missing-config, synced installed-copy identity, portable active-script surface): verify test-only commit be8405cd fresh despite the backfilled receipt - diff isolation, suite execution from both clean checkout and MAIN dir, per-test reasoning including sync-first semantics vs the surviving fc1004 drift gate and the CREATE_NO_WINDOW guard classification, hardcoding scan, and receipt/triplet integrity.",
+  "probes": [
+    {
+      "id": "A-V1",
+      "command": "git diff 23ffa6a be8405c --stat",
+      "exit_code": 0,
+      "result": "tests/test_zr804_platform_shape.py | 229 ++++++++ ; 1 file changed, 229 insertions(+) - only the test file, zero production changes"
+    },
+    {
+      "id": "A-V2",
+      "command": "python -m pytest tests/test_zr804_platform_shape.py -q (clean checkout, then MAIN dir)",
+      "exit_code": 0,
+      "result": "clean checkout: 4 passed, 1 failed (case-swapped journey needs ../filing-fetch sibling; nested parent resolves revenue-forecast/filing-fetch - see ZRR804-REV-001); MAIN dir rerun: 5 passed in 14.82s including the two sync-first installed-copy cases"
+    },
+    {
+      "id": "A-V3",
+      "command": "per-test reasoning + grep tests/test_fc1004_platform.py + inspect scripts/filing_fetch_client.py subprocess construction",
+      "exit_code": 0,
+      "result": "(1) case-swapped: swapcase('project') variant resolves to the SAME physical dir (assert variant.exists()), journey rc=0 outcome=reused_existing download_calls=0, and source_id asserted EQUAL to the canonical-case rerun - golden-trace identity invariant under casing. (2) missing-config: rc!=0, stdout.strip()=='' (no fabricated record), stderr last line JSON error_code in {upstream,bad_request} - fails closed, never silent sibling fallback. (3) installed copies: sync-first then --version stdout EQUALITY vs canonical (starts 'revenue-forecast ', contains manifest_sha256=); sync-inside-test cannot mask real drift because fc1004's independent gate still exists - confirmed test_install_sync_gate_detects_drift at tests/test_fc1004_platform.py:82; and R4.2 manifest covering tests/ makes an unsynced NEW file legitimately identity-changing, so sync-first equality is the correct executability semantics. (4) portable: forbids os.system/startupinfo/SetConsoleCtrlHandler/shell=True across the 6 ACTIVE_SCRIPTS; CREATE_NO_WINDOW sanity-checked at scripts/filing_fetch_client.py:214 - creationflags = subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0, passed as creationflags (:228) with shell=False (:227): a popup-suppression guard, zero on POSIX, NOT Windows lock-in."
+    },
+    {
+      "id": "A-V4",
+      "command": "grep -rniE 'zr804|zr-804' scripts/",
+      "exit_code": 1,
+      "result": "zero hits (grep exit 1 = no matches) - no hardcoding"
+    },
+    {
+      "id": "A-V5",
+      "command": "sha256(00_wu_card.md); recompute backfilled 11_implementer_receipt.json canonical_hash; git rev-parse full SHAs + sibling HEADs",
+      "exit_code": 0,
+      "result": "wu_card sha256 0ef03260cca80f75171fced10e89a03c793cdbe3c01e9e270a6fe299bf5f62e7 == plan_sha256 TRUE; backfilled receipt canonical_hash recomputes exactly (compact separators, ensure_ascii=False): e775101df33ec1e89814d0d420cab13376101de5c3e056acdfd71662ea29e6f4 MATCH; triplets: base revenue 23ffa6ae0edd8834e2d1a5df4db89187ddb34d19, result revenue be8405cd8f60b9dda9446dec2cd45116f60a9e94, wiki 26a6b22f80ae964892d3f3f44fab364e65276583 == company-wiki HEAD, filing 5a1c18f5171db0e4b9113138ea360db361e1e435 == filing-fetch HEAD"
+    }
+  ],
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "be8405cd8f60b9dda9446dec2cd45116f60a9e94",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewer": "reviewer-zr804-independent",
+  "schema_version": 1,
+  "unit": "ZR-804",
+  "verdict": "accepted",
+  "canonical_hash": "46850f67eb596fd702f959e923f2db83d4121eb20d4766be9ff6c38f6d2a15d7"
+}
