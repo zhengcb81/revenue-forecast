@@ -731,3 +731,15 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-903 closure commit 待提交，实现 90c829e）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-904（SLI/dashboard/release gate——依赖 ZR-902/ZR-903 已闭；CA-205："pending 临时文件→完整校验→原子 publish；dashboard/release 同一 schema；告警送达有 ack/重试；过期结果不可续命"；AUD2-06 business SLI 阻断发布）→ ZR-905（审核机制自测试）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-903 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-904（SLI/dashboard/release gate）→ ZR-905/901（阶段 H）。
+- **ZR-904（阶段 H 第三卡：SLI/dashboard/release gate）实施完成**：
+  - RED 探针：grep release_gate/sli/dashboard/ack → 零命中；assurance/runs 报告无自身 hash/原子发布；alert journal append-only 无 ack/重试；无 future timestamp/旧绿复制拒绝。
+  - 修复：新 tools/release_gate.py（assurance 工具）——publish_all_pending/publish_report（pending → 完整校验：triplet 精确三键 + report_sha256 自 hash 链 → fsync+replace 原子 publish → 删 pending，中断重跑幂等）；compute_sli（十项业务指标：reuse/download_avoidance/artifact/consumer_ready/broker_fidelity/misattribution/mine_conflict/forecast/backtest/render，catalog 可注入 + 回归推导 ok=False）；release_decision（fresh + 完整 + SLI 全绿 → ready；future timestamp/改名旧绿 hash 链断裂/>24h stale/空 SLI → blocked）；append_alert/pending_alerts/mark_acked（ack/重试 + sink 失败显式异常）。
+  - 新 test_zr904_release_gate.py（11 tests）：C1 原子发布 3 + C2 SLI 阻断 3 + C3 ack/重试 2 + C4 过期拒绝 3。
+  - revenue 全量 **848 passed + 106 subtests**（837+11 新，零回归）+ ruff + ratchet + sync MATCH 155 + pre-commit 绿；commit 6ca9ec5。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 6ca9ec5）；implementer receipt canonical bf846bbd。
+  - 独立复核 reviewer-zr904-independent 运行中。
+- **ZR-904 closure**：独立复核 reviewer-zr904-independent 首轮 **accepted**（探针全绿：原子发布/中断重跑幂等/SLI 全状态/告警 ack/sink 大声失败；3 minor：REV-001 catalog 计数不推导 ok=False、REV-002 triplet 仅查基数不查键名、REV-003 空 SLI ready + 2 info）→ delta 修复 a192a82（compute_sli 回归推导：consumer_ready<0.9/render_ok False/零 reuse → ok=False；triplet 精确 {revenue,filing,wiki}；空 SLI → blocked；+3 回归测试 14 passed，全量 851+106 绿）→ delta 复审 **changes_required**（REV-001/002/003 全 FIXED 实证；唯一 blocking REV-D1：receipt/state 未跟踪 delta——11 仍 pin 6ca9ec5、state.json 未提交）→ 簿记修复（13_delta_review_receipt.json pin a192a82 + 12 更新为 delta 版 canonical 0acd4e28 + 13_delta 由 reviewer 签名 canonical d549a66f）→ 复审最终 **accepted**（REV-D1 resolved）；state accepted + closure-advance -> **ZR-905**（phase H_dynamic_audit，审核机制自测试）。
+- **机器状态**：current_next=ZR-905，accepted **86/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 3：ZR-902/903/904；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-904 closure commit 待提交，实现 6ca9ec5 + delta a192a82）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-905（审核机制自测试——依赖 ZR-904 已闭；八类 AUD2 失败模式全注入：schedule 未运行/报告过期/wrapper 吞非零/伪造零计数/缺样本/指标恶化/registry hash 变化/reviewer=implementer 全让 release 红）→ ZR-901（PR 门）/ZR-906（最终 ratchet）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-904 全流程已闭（reviewer accepted → delta accepted → 12/13_delta 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-905（审核机制自测试）→ ZR-901/906（阶段 H）。

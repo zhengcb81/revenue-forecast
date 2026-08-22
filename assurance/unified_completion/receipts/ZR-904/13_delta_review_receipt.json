@@ -1,0 +1,81 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "6ca9ec550d47ebfb51b384ce653a28e16df53b42",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "d549a66fec5d47340e2929c6a3077dfba181265eedcc8da0eebddb98320ee02a",
+  "commands": [
+    {
+      "command": "git rev-parse HEAD; git diff 6ca9ec5 a192a82 --stat; git diff 6ca9ec5 a192a82 -- scripts/",
+      "exit_code": 0,
+      "result": "HEAD=a192a82, delta exactly 2 files (+49/-3), scripts/ empty (zero production change)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr904_release_gate.py -q --tb=short",
+      "exit_code": 0,
+      "result": "14 passed (11 + 3 regression tests)"
+    },
+    {
+      "command": "probe_zr904_delta.py (26 checks)",
+      "exit_code": 0,
+      "result": "ALL PASS: REV-001 derivation (consumer_ready<0.9/render_ok False/zero reuse -> SLI red, healthy catalog -> ready); REV-002 triplet exact keys rejected/accepted; REV-003 empty SLI blocked; original probe suite re-run no regressions"
+    },
+    {
+      "command": "ruff + ratchet + subsets + full suite",
+      "exit_code": 0,
+      "result": "ruff clean; ratchet 2 OK; ZR-902/903 24 passed; full suite 851 passed + 106 subtests exit 0"
+    }
+  ],
+  "created_at_utc": "2026-08-23T00:45:00+00:00",
+  "findings": [
+    {
+      "detail": "FIXED in a192a82: consumer_ready_rate<0.9 / render_ok False / zero reuse derive ok=False; AUD2-06 holds on derivation path.",
+      "id": "REV-001",
+      "severity": "minor",
+      "title": "Catalog counters never derive ok=False"
+    },
+    {
+      "detail": "FIXED in a192a82: set(triplet)=={revenue,filing,wiki} enforced.",
+      "id": "REV-002",
+      "severity": "minor",
+      "title": "Triplet cardinality-only check"
+    },
+    {
+      "detail": "FIXED in a192a82: empty/None sli -> blocked 'no SLI data'.",
+      "id": "REV-003",
+      "severity": "minor",
+      "title": "Empty SLI dict ready"
+    },
+    {
+      "detail": "RESOLVED: this delta review receipt pins result_triplet.revenue=a192a82 == HEAD; 12_reviewer_receipt.json updated to the delta review version; state.json committed at closure.",
+      "id": "REV-D1",
+      "severity": "blocking",
+      "title": "Receipt/state did not track the delta"
+    },
+    {
+      "detail": "Carried, info severity (loud, not silent).",
+      "id": "REV-004",
+      "severity": "info",
+      "title": "Unparseable started_at raises ValueError"
+    },
+    {
+      "detail": "Carried, info severity (append sink loud-failure already verified).",
+      "id": "REV-005",
+      "severity": "info",
+      "title": "mark_acked non-file returns 0 silently"
+    }
+  ],
+  "kind": "reviewer",
+  "objective": "Delta re-review of ZR-904 (prior accepted at 6ca9ec5): verify REV-001/002/003 fixes in a192a82 and remediate completion bookkeeping (REV-D1).",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "a192a82b5ec7bdf7e36c5eea85d3c52c33cacc87",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_object_sha256": "d8bcd846996df00f3a7f2d3b5d1aa39e57c4a48ca4fd0ccfc0f4666376d19a8e",
+  "reviewer": "reviewer-zr904-independent",
+  "schema_version": 1,
+  "unit": "ZR-904",
+  "verdict": "accepted"
+}

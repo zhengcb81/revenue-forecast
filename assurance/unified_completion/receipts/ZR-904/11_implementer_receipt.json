@@ -1,0 +1,95 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "b7851867eb8e9d435f1c1b2d97f67156434731fe",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep release_gate/sli/dashboard/ack → 零命中；assurance/runs 报告无自身 hash/原子发布；daily/weekly_alert.jsonl append-only 无 ack/重试；无 future timestamp/旧绿复制拒绝",
+      "exit_code": 0,
+      "result": "G1 无 SLI/原子发布 / G2 无完整性 / G3 无告警 ack/重试 / G4 无过期不可续命——真实缺口"
+    },
+    {
+      "command": "python -m pytest tests/test_zr904_release_gate.py -q --tb=short",
+      "exit_code": 0,
+      "result": "11 passed（C1 原子发布 3 / C2 SLI 阻断 3 / C3 ack/重试 2 / C4 过期拒绝 3）"
+    },
+    {
+      "command": "ruff check tools/release_gate.py tests/test_zr904_release_gate.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（新文件函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 155 files"
+    },
+    {
+      "command": "git commit（pre-commit 全套：848+106 全量 + sync MATCH）",
+      "exit_code": 0,
+      "result": "6ca9ec5 feat(ZR-904) — 2 files +404"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "848 passed + 106 subtests（837 基线 + 11 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T00:20:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 原子发布：pending 报告完整校验（triplet 3 字段 + run_id/started_at/ok + report_sha256 自 hash 链）→ fsync+replace 原子 publish → 删除 pending（中断重跑幂等）；半报告（缺字段/伪造 hash/不完整 triplet）永不发布且 release 红。C2 SLI 十项指标（reuse/download_avoidance/artifact/consumer_ready/broker_fidelity/misattribution/mine_conflict/forecast/backtest/render）从 ledger+catalog 计算（catalog 可注入）——任一业务 SLI 回归 → release 红（AUD2-06，即使 unit 绿）。C3 告警 ack/重试：pending_alerts 未 ack 列表 + mark_acked + sink 失败（NotADirectoryError）显式异常非静默。C4 过期不可续命：future timestamp 拒绝、ledger hash 不匹配（改名旧绿）拒绝、>24h stale 拒绝。",
+      "id": "ZR904-IMPL-001",
+      "severity": "info",
+      "title": "SLI dashboard + release gate（原子发布/完整性/ack 重试/过期拒绝）"
+    }
+  ],
+  "implementation": {
+    "design": "新 tools/release_gate.py（assurance 工具）：publish_all_pending/publish_report（校验+原子发布）、validate_report（自 hash 链）、compute_sli（十项业务指标，catalog 可注入）、release_decision（fresh+完整+SLI 全绿 → ready）、append_alert/pending_alerts/mark_acked（ack/重试）；CLI publish/ack/status。新 tests/test_zr904_release_gate.py（11 tests，全 hermetic tmp_path）。产品零改动。",
+    "files": [
+      "revenue-forecast/tools/release_gate.py",
+      "revenue-forecast/tests/test_zr904_release_gate.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-904/**"
+    ]
+  },
+  "implementer": "zr904-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 6ca9ec5（parent b785186 = ZR-903 closure）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=9b2b25dd（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr904-independent）。"
+  ],
+  "objective": "阶段 H 第三卡：SLI/dashboard/release gate——pending→校验→原子 publish；dashboard/release 同一 schema；告警送达有 ack/重试；过期结果不可续命；业务 SLI 回归阻断发布（AUD2-06）。",
+  "plan_sha256": "9b2b25dd776ca7bcd131fbf9f6ea2233bbd8052d34fdc77a28df33673fc1581e",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "6ca9ec550d47ebfb51b384ce653a28e16df53b42",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tools/release_gate.py（新，assurance 工具）+ tests/test_zr904_release_gate.py（新 11 tests）；receipts/ZR-904/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tools/release_gate.py",
+    "revenue-forecast/tests/test_zr904_release_gate.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-904/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-904",
+  "canonical_hash": "bf846bbd51cec1160ba0b8230f37faec5b601dc14ce6d4e4efd4ba20b64b192f"
+}
