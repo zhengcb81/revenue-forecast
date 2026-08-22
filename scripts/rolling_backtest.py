@@ -4,18 +4,22 @@ Strict as-of discipline: every window evaluates its snapshot using ONLY
 information published on or before the window's ``as_of`` date — future
 actuals never leak into earlier windows (any leaked record fails closed).
 
-Three levels are backtested independently:
+Three levels are backtested independently — each level emits its own
+evaluation view, hash chain and metrics (never a relabeled copy):
 
-  company     — actual_company_revenue
-  segment     — actual_segment_revenue
-  mine-volume — operating-unit (ZR-605 MineYearOperation) volume lines
+  company     — actual_company_revenue    → company wape from evaluate_snapshot
+  segment     — actual_segment_revenue    → segment-level wape over all segments
+  mine-volume — operating units (ZR-605 MineYearOperation contract:
+                validate_mine_year_operation / derive_saleable_volume) →
+                per-mine saleable-volume decomposition, fail-closed on gaps
 
 Each window emits a four-layer immutable hash chain:
 
-  snapshot_id       — the frozen forecast snapshot identity
+  snapshot_id       — the frozen forecast snapshot identity (snapshot_id)
   actuals_sha256    — canonical hash of the as-of-filtered actuals
-  evaluation_sha256 — canonical hash of the evaluation outcome
-  record_sha256     — canonical hash of the accuracy record
+  evaluation_sha256 — canonical hash of the level's evaluation view
+  record_sha256     — canonical hash of the accuracy record bound to
+                      {level, as_of} — relabeling a window breaks the hash
 
 When fewer than ``min_windows`` windows can form, the backtest is capped:
 ``capped=True`` with a rating-cap hint — metrics are never fabricated.
@@ -31,6 +35,7 @@ from contracts.evidence import (
     parse_iso_date,
     require,
 )
+from mine_year_operation import derive_saleable_volume, validate_mine_year_operation
 from revenue_backtest import evaluate_snapshot, validate_snapshot
 
 MIN_WINDOWS = 2
@@ -66,6 +71,109 @@ def _as_of_filtered(actuals: Mapping[str, Any], as_of: str) -> dict[str, Any]:
     return filtered
 
 
+def _segment_summary(evaluation: Mapping[str, Any]) -> dict[str, Any]:
+    records = [
+        record
+        for segment_records in evaluation["segment_year_results"].values()
+        for record in segment_records.values()
+    ]
+    errors = [abs(float(record["absolute_error"])) for record in records]
+    denominator = sum(abs(float(record["actual"])) for record in records)
+    return {
+        "observations": len(records),
+        "wape": None if denominator == 0 else sum(errors) / denominator,
+        "mae": None if not records else sum(errors) / len(records),
+    }
+
+
+def _mine_volume_evaluation(actuals: Mapping[str, Any]) -> dict[str, Any]:
+    units = actuals.get("operating_units", [])
+    require(
+        isinstance(units, list) and bool(units),
+        "mine-volume level requires non-empty operating_units",
+    )
+    evaluations = []
+    for index, unit in enumerate(units):
+        op = validate_mine_year_operation(unit)
+        evaluations.append({
+            "mine_index": index,
+            "period": op.period,
+            "scenario": op.scenario,
+            "product": op.product,
+            "saleable_volume": derive_saleable_volume(op),
+        })
+    total = sum(item["saleable_volume"] for item in evaluations)
+    return {"mine_volume_evaluations": evaluations, "total_saleable_volume": total}
+
+
+def _bound_record_sha256(level: str, as_of: str, record: Any) -> str:
+    payload = {"level": level, "as_of": as_of, "record": record}
+    return canonical_sha256(payload)
+
+
+def _company_window(
+    evaluation: Mapping[str, Any],
+    filtered: Mapping[str, Any],
+    as_of: str,
+) -> dict[str, Any]:
+    record = evaluation["accuracy_record"]
+    return {
+        "level": "company",
+        "as_of": as_of,
+        "snapshot_id": evaluation["snapshot_id"],
+        "actuals_sha256": canonical_sha256(filtered),
+        "evaluation_sha256": evaluation["evaluation_sha256"],
+        "record_sha256": _bound_record_sha256("company", as_of, record),
+        "wape": evaluation["summary"]["wape"],
+        "observations": record["observations"],
+        "backtest_id": evaluation["backtest_id"],
+    }
+
+
+def _segment_window(
+    evaluation: Mapping[str, Any],
+    filtered: Mapping[str, Any],
+    as_of: str,
+) -> dict[str, Any]:
+    summary = _segment_summary(evaluation)
+    view = {
+        "segment_year_results": evaluation["segment_year_results"],
+        "segment_summaries": evaluation["segment_summaries"],
+        "segment_wape": summary["wape"],
+    }
+    return {
+        "level": "segment",
+        "as_of": as_of,
+        "snapshot_id": evaluation["snapshot_id"],
+        "actuals_sha256": canonical_sha256(filtered),
+        "evaluation_sha256": canonical_sha256(view),
+        "record_sha256": _bound_record_sha256("segment", as_of, view),
+        "wape": summary["wape"],
+        "observations": summary["observations"],
+        "backtest_id": evaluation["backtest_id"],
+    }
+
+
+def _mine_volume_window(
+    snapshot: Mapping[str, Any],
+    filtered: Mapping[str, Any],
+    as_of: str,
+) -> dict[str, Any]:
+    view = _mine_volume_evaluation(filtered)
+    record = {"mine_volume_evaluations": view["mine_volume_evaluations"]}
+    return {
+        "level": "mine-volume",
+        "as_of": as_of,
+        "snapshot_id": snapshot["snapshot_id"],
+        "actuals_sha256": canonical_sha256(filtered),
+        "evaluation_sha256": canonical_sha256(view),
+        "record_sha256": _bound_record_sha256("mine-volume", as_of, record),
+        "wape": None,
+        "observations": len(view["mine_volume_evaluations"]),
+        "total_saleable_volume": view["total_saleable_volume"],
+    }
+
+
 def _evaluate_window(
     snapshot: Mapping[str, Any],
     actuals: Mapping[str, Any],
@@ -74,19 +182,12 @@ def _evaluate_window(
 ) -> dict[str, Any]:
     validate_snapshot(snapshot)
     filtered = _as_of_filtered(actuals, as_of)
+    if level == "mine-volume":
+        return _mine_volume_window(snapshot, filtered, as_of)
     evaluation = evaluate_snapshot(snapshot, filtered)
-    record = evaluation["accuracy_record"]
-    window = {
-        "level": level,
-        "as_of": as_of,
-        "snapshot_id": evaluation["backtest_id"],
-        "actuals_sha256": canonical_sha256(filtered),
-        "evaluation_sha256": canonical_sha256(evaluation),
-        "record_sha256": record["record_sha256"],
-        "wape": evaluation["summary"]["wape"],
-        "observations": record.get("observations", 0),
-    }
-    return window
+    if level == "segment":
+        return _segment_window(evaluation, filtered, as_of)
+    return _company_window(evaluation, filtered, as_of)
 
 
 def _validate_windows(windows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
