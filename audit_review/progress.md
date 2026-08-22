@@ -240,3 +240,7 @@
 - ZR-713 实施完成（2026-08-23）：revenue cb34700（rolling-origin 引擎：严格 as-of 泄漏 fail-closed、company/segment/mine-volume 三层、四层 immutable hash、cap 不伪造 metrics，10 tests）；全量 768+106 绿；state triplet_green；implementer receipt canonical 57c1d269；独立复核运行中。
 
 - ZR-713 closure：reviewer-zr713-independent 首轮 changes_required（REV-001 blocking 三层 byte-identical 非独立评估——segment 层发 company wape、mine-volume 未用 ZR-605 契约；REV-002 minor level/as_of 未绑 hash 链）→ delta 3479718 修复（segment 独立 wape、mine-volume 走 ZR-605 契约 fail-closed、record_sha256 绑定 {level,as_of}、snapshot_id=快照身份；15 tests，全量 773+106，pre-commit 776+106 + E2E PASS）→ delta accepted（21/21 探针）；implementer receipt 重封 f71fdf5f、reviewer receipt canonical 8125837d；state accepted 76/117；closure-advance -> ZR-709（F2 合流卡——F2 常规链全闭，仅剩 ZR-709 合流终验）。
+
+- ZR-709 实施完成（2026-08-23）：revenue ac68807（F2 合流终验 fixture，test-only +919 行 1 文件 9 tests 产品零改动）——J1 真实 source_preparation 子进程链复用年报+研究沟通（reuse_receipt 可解释、缺失 kind fail-closed + ProcessingDemand 补齐）；J2 五年 FY2026-2030 输入由契约函数代数推导、mine 贡献×segment reconcile 10/10 闭合、白银 +120=诚实 gap、3.8 operating_units 嵌入零漂移；J3 draft 渲染零注册、formal 位级重放 + snapshot 回放。全量 782+106 零回归；ruff 0；sync MATCH 147；implementer receipt canonical 134a2b13。
+
+- ZR-709 closure：reviewer-zr709-independent accepted（干净 checkout ac68807：产品 diff=0、全量复放 782+106、12/12 对抗探针含手算位精确与伪造价格→gap、无空断言、硬编码零新增、hash 全对；4 info 无阻断）；reviewer receipt canonical 40206902；closure receipt state_sha 73e10e70/control 102b02f4；**state accepted 77/117（F 24/24 全闭）**；phase->G_real_e2e；closure-advance -> **ZR-802**（README §6 阶段 G 首卡，ZR-801 已由 CA-105 吸收）。

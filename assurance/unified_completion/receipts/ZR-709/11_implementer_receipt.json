@@ -1,0 +1,106 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "86c8516cd68829575b951911173b71cbed3b2c71",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep zr709/ZR-709/zijin_journey tests/ scripts/ → 零命中；依赖卡测试（zr609+zr705）17 passed——旅程终验零实现，各卡仅孤立验收",
+      "exit_code": 1,
+      "result": "G1+G2+G3 真实缺口确认（无跨卡用户旅程）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr709_zijin_journey.py -q --tb=short",
+      "exit_code": 0,
+      "result": "9 passed（J1 复用+缺口 2 / J2 勾稽+权益链+gap+3.8 零漂移 4 / J3 draft 渲染+formal 重放+snapshot 回放 3）"
+    },
+    {
+      "command": "ruff check tests/test_zr709_zijin_journey.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "python tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents 147 files / MATCH .codex 147 files"
+    },
+    {
+      "command": "git commit (pre-commit 全套：782+106 测试套件 + 安装同步门)",
+      "exit_code": 0,
+      "result": "ac68807 test(ZR-709) — 1 file changed, +919"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "782 passed + 106 subtests（773 基线 + 9 新增，零回归）；2 warnings 为 fc1004 平台线程预存项"
+    }
+  ],
+  "created_at_utc": "2026-08-22T14:35:00+00:00",
+  "findings": [
+    {
+      "detail": "J1 真实 source_preparation 子进程链对 fixture wiki root 双文档（annual_report/company_release）复用成功：reuse_receipt 完整可解释（outcome=reused_existing、bundle_status=available、download/parser/llm 全 0、producer_events 含 markdown/normalized/sections/summary DAG 角色）；policy_hash 如实透传 None（fixture 根未发布 policy 文档，生产根由 RootPolicy 导出内嵌）——不编造。缺失 document_kind fail closed（CLI exit 3, error_code=upstream），补齐路径=显式 ProcessingDemand（租约/心跳/完成语义在本地 hermetic 队列验证，不触碰进程级共享队列保持顺序无关）。",
+      "id": "ZR709-IMPL-001",
+      "severity": "info",
+      "title": "自动复用可解释 + 缺口显式 demand 化"
+    },
+    {
+      "detail": "J2 五年（FY2026-2030）输入完全由 F2 契约函数推导：validate_mine_year_operation 七字段 → derive_saleable_volume → validate_commercial_terms（price×scenario、royalty、gold byproduct flat credit）→ 权益链 0.6×0.66=0.396 加权 → segment realized_price=(Σshare·net−other)/Σshare·saleable 代数恒等闭合 → resource 模型引擎值与 mine 贡献合计 reconcile_layer 全 10 组（2 段×5 年）reconciled_modeled；公司层三段合计与 consolidated 勾稽闭合；未建模白银业务 +120 → gap_report status=gap、fallback_segment_listing gap=120/closed=False（诚实 gap，绝不产量×价格冒充）；internal flow 消除 net==total 不重复计。",
+      "id": "ZR709-IMPL-002",
+      "severity": "info",
+      "title": "五年矿业勾稽或诚实 gap（代数精确闭合）"
+    },
+    {
+      "detail": "J2 schema 3.8 opt-in：45 条 operating_units（3 场景×5 年×3 矿）嵌入后 validate_document 通过、prepare_forecast formal 直接运行（result schema_version=3.8）、15 组 segment×scenario×year 收入与 3.7 基线 rel=1e-12 零漂移、convert_3_8_to_3_7 往返 canonical_sha256 与原文档相等。J3：draft 渲染 Markdown 含公司名且 >500 字符、publication registry 零写入（formal_output_mode=draft/gate_ids=[]）；formal 两次 result_sha256 位级一致、registry validated 条目同 hash；create_snapshot/validate_snapshot 回放 PASS 且 snapshot_id 确定性一致。",
+      "id": "ZR709-IMPL-003",
+      "severity": "info",
+      "title": "3.8 零漂移 + draft 可渲染 + 结果可重放"
+    },
+    {
+      "detail": "实施中发现并修复两处测试自身缺陷：(a) fixture catalog_meta 表 CREATE 先于 INSERT 顺序笔误；(b) 初版向进程级共享 DemandQueue 写入造成与 ZR-701 C4 的顺序依赖（反序共跑失败）——按『测试必须顺序无关』规则改为本地队列演示生命周期，全局队列接线由既有测试钉住。产品代码零改动。",
+      "id": "ZR709-IMPL-004",
+      "severity": "info",
+      "title": "测试卫生：fixture 建表顺序 + 共享队列顺序依赖消除"
+    }
+  ],
+  "implementation": {
+    "design": "新 tests/test_zr709_zijin_journey.py：_zijin_document()（五年三段输入由契约函数代数推导）+ _journey_wiki_root()（双文档 fixture catalog）+ 九个旅程测试（J1×2/J2×4/J3×3）。全部走真实 production entrypoints（subprocess 链、prepare_forecast、render_markdown、create_snapshot、schema_optin converter），hermetic T1（temp roots，零 catalog/root 写，零网络）。",
+    "files": [
+      "revenue-forecast/tests/test_zr709_zijin_journey.py"
+    ]
+  },
+  "implementer": "zr709-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue=ac68807（本卡实现提交）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256 见下（00_wu_card.md sha256）。",
+    "预期 test-only 成立：产品代码 diff=0；安装副本已同步 MATCH 147。",
+    "注：base_triplet.revenue=86c8516 为 ZR-713 closure commit。"
+  ],
+  "objective": "F2 合流终验：紫金五年预测用户旅程——自动复用财报/研报补齐依据可解释；mine/product 贡献与分部勾稽或诚实 gap；draft 可渲染、结果可重放。",
+  "plan_sha256": "caf5b2e5ac6bda25f75287848b9f9308d474110da0740bcc624e4333b9489aa9",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ac68807",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr709_zijin_journey.py（新 9 tests）；receipts/ZR-709/**、locks、state.json、README 镜像、planning docs。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr709_zijin_journey.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-709/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-709",
+  "canonical_hash": "134a2b130a72cbcdf8737728e87666371de70a5fed5d9ac5d60c29209edbf673"
+}
