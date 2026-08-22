@@ -293,7 +293,7 @@
 ## 发现 42b：docs 漂移——closure commit 声称镜像但未落盘（2026-08-22 检查）
 - 9784c18（close ZR-804+ZR-805）commit message 声称 "cursor mirrored to G_real_e2e/ZR-806, all planning docs updated"，但 `git show 9784c18 -- audit_review/README.md` 为空（README 游标停在 ZR-804）、session progress.md/panorama.md 未更新（尾部仍为 ZR-713 停止点）。
 - 与 ZR-609 REV-001 教训同源（"closure 记录须以 git log 实证为准"）：commit message 是声明，git 内容是事实——bookkeeping 声明与落盘必须核对，message 不得描述未提交的变更。
-- 修复：README 游标 → ZR-806；progress.md/panorama.md 补记 ZR-709~805 阶段链小结；本次修复本身随 ZR-806 实施提交。
+- 修复：README 游标 → ZR-806（后续 closure-advance 自动镜像至 ZR-902）；progress.md/panorama.md 补记 ZR-709~805 阶段链小结；本次修复本身随 ZR-806 closure 提交（0cda487，实施 commit b716a81 仅含测试文件）。
 
 ## 发现 43：ZR-806（阶段 G 收官：真实 T2 三 root 样本，2026-08-22）
 - **样本唯一/新鲜语义（AUD2-05 落地）**：固定 5 样本清单（companies 紫金 FY2025/FY2024、dayu 1548 FY2021、Dropbox 星环 FY2024/东吴研报）——实测 content_sha256 跨 root 唯一（紫金 FY2025 01819e1c/FY2024 004f733e/星环 eb965857 与 sidecar 声明一致）、filing_date ≤ today；缺失样本 → 套件 fail "blocked, never swap samples"（reviewer 用 temp 副本注入缺失路径实证：3 failed/7 passed，真实样本未动）。

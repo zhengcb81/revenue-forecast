@@ -573,3 +573,21 @@
 - Zijin .source.json 契约（fiscal_year/company_name/security_id/pdoc/content_sha256==实测/byte_size==实测/fiscal_period=FY）→ F2 链 FY 语义可消费；星环 sidecar content_sha256 绑定（schema 较窄，info）；broker PDF 无 sidecar 诚实 raw。
 - ZR-806 closure：reviewer-zr806-independent accepted（15 commands；AUD2-05 temp 变体 3 failed/7 passed；回归 30 + 全量 813+106 复跑；2 info）；state accepted 82/117；closure-advance -> ZR-902（阶段 H 首卡：实际调度每日 Windows T2）。
 - **CRLF 教训**：README CRLF 行尾 → closure-advance CAS-CONFLICT（read_text().encode() 的 LF hash vs manifest 原始字节 CRLF hash 口径不一）→ README 转 LF + manifest-build CAS 重建解决；控制页文件须保持 LF。
+
+## ZR-702~706/710（2026-08-19~21）：F1 全链（revenue）——docs 一致性补齐条目
+- F1 入口链 7/7 全闭（2026-08-21）：ZR-702 schema 单一真源（schema_fields.py 冻结 REQUIRED 元组，lint/template/validator 一致）；ZR-703 文档/argparse 漂移清理（"schema 3.6" 6 处移除）；ZR-704 validate-only 零写门（prepare_forecast 纯函数 + draft 模式）；ZR-705 draft/formal 分轨（REV-06/08a 真实缺口修复：draft 可渲染 + formal→draft 降级重算 hash 拒绝）；ZR-706 FC-904 selector 契约补全（test-only）；ZR-710 publication 事务 + 原子写（_atomic_write_text tmp+fsync+os.replace、registry 故障注入、幂等）。F1 出口：ZR-701~706 + ZR-710 7/7 全闭（2026-08-21）。
+
+## ZR-709（2026-08-23）：F2 合流——紫金五年预测用户旅程终验 fixture（revenue，test-only）
+- J1 真实 source_preparation 子进程链复用财报/研报（reuse_receipt 全链可解释：outcome=reused_existing/bundle_status/download/parser/llm=0/producer_events DAG 角色；缺失 kind fail-closed exit 3 + ProcessingDemand 补齐路径）；J2 五年 FY2026-2030 输入由 F2 契约函数代数推导（MineYearOperation→commercial terms→权益链 0.396→realized_price 恒等闭合），reconcile_layer 10/10 reconciled_modeled、未建模白银 +120 = 诚实 gap 不冒充收入、schema 3.8 零漂移；J3 draft 渲染零注册、formal 位级重放 + snapshot 回放。复核 accepted（12/12 对抗探针，4 info）；**F 阶段 24/24 全闭**；state accepted 77/117；closure-advance -> ZR-802（G 首卡；ZR-801 machine registry 由 CA-105 唯一实现吸收）。
+
+## ZR-802（2026-08-23）：组合旅程 existing/partial/missing/stale/conflict across roots（revenue，test-only）
+- 五状态×跨根组合旅程（三进程真实链）：existing FY2024 exact 复用 download/parser/llm=0；partial 只含已有角色 artifact_read + 缺失角色 DAG 闭包（不盲跑全量）；missing 结构化 not_found 零伪造；stale 不以旧充新（fiscal_year_mismatch）；conflict 跨根双候选 ambiguous fail-closed 不择一；C2 第二次调用幂等（同 source 身份、零下载）；C3 八阶段 receipt 投影真实键。复核 accepted（11 探针，1 minor+3 info）；state accepted 78/117；closure-advance -> ZR-803。
+
+## ZR-803（2026-08-23）：chaos/property/mutation 六类故障×幂等恢复（revenue，test-only）
+- 锁（WAL 写事务不阻只读旅程、释放后同身份复用）、中断（崩溃前注册零孤儿、重跑精确一次）、磁盘（不可写结构化 exit-2 无半写/父目录、有效路径恢复）、篡改（单字节 hash 拒绝、原工件仍有效）、顺序（evaluate-before-create 拒绝、正常评估可跑）、时钟（未来 captured_date 信息集外）；每类故障后幂等恢复断言。复核 accepted（13 探针，2 minor+2 info）；state accepted 79/117；closure-advance -> ZR-804。
+
+## ZR-804（2026-08-23）：平台与安装形态缺口（revenue，test-only）
+- Windows 大小写变体同 source_id（golden 身份一致）、缺省配置 fail-closed 无静默 sibling fallback、安装副本 sync-first 身份逐字一致（R4.2 manifest 含 tests/，未同步新文件 legitimately 不同）、活跃脚本无 Windows-only 构造（CREATE_NO_WINDOW 允许为跨平台守卫）。回填 receipt 后联合复核 accepted（A-V1~V5）；**流程偏差登记：本卡曾跳过 receipt/复核直接开 ZR-805，由 ZRR805-REV-002 抓出后闭环（F-G2）**；state accepted 80/117；closure-advance -> ZR-805（与 ZR-805 联合 closure 9784c18）。
+
+## ZR-805（2026-08-23）：T3 下载授权语义（filing + assurance，test-only）
+- T3 真实执行唯一 owner=filing-fetch opt-in 门（FILING_FETCH_E2E_DOWNLOAD=1，CN/US/HK + 损坏拒绝 + 二次零下载标记结构钉死）；未授权 missing 请求 journal 零 downloaded_new（acquisition_attempts.jsonl 独立 oracle，AUD2-04；篡改注入证明非空洞）；revenue 入口显式 --allow-download 默认 False 无第二下载器。首轮 accepted（fc646953；REV-001 oracle 接线传文件致断言空洞即修 + REV-002 簿记漂移即 F-G2 流程偏差）→ delta 295f138 → delta accepted（B-V1~V4）；state accepted 81/117；closure-advance -> ZR-806（与 ZR-804 联合 closure 9784c18）。
