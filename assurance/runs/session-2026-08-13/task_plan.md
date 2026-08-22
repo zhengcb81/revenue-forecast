@@ -190,7 +190,7 @@
 
 ## 最新状态（2026-08-22 ZR-611 实施完成）
 - **ZR-611 实施完成**（F2 通用多矿合成 E2E）：revenue 288ac88（test-only 11 tests 零产品改动）——合成多矿公司八类场景（控股/权益法/多金属/内供/跨币种/爬坡/gap/residual）全链确定性可重算 + 手算对照；生产代码零硬编码验证。全量 696+106 绿；implementer receipt canonical 9667ac1c；独立复核 reviewer-zr611-independent 运行中。注：ZR-608 closure 文件被合入本 commit（流程偏差第二次）。
-- 下一卡（closure 后）：ZR-707（F2 schema 3.8 opt-in——DAG 已解锁）→ ZR-711~713（confidence 反博弈/rolling-origin backtest）。
+- 下一卡（closure 后）：ZR-711（F2 additive schema 3.8 opt-in——DAG 已解锁）→ ZR-707（mixed recognition/gross-net）→ ZR-712/713（confidence 反博弈/rolling-origin backtest）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue 288ac88（ZR-611 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-22 ZR-611 closure → ZR-609）
@@ -201,11 +201,22 @@
 
 ## 最新状态（2026-08-22 ZR-609 实施完成）
 - **ZR-609 实施完成**（F2 合流：紫金 pilot + 第二家泛化）：revenue e541d55（test-only 9 tests 零产品改动）——紫金三主要资产（卡莫阿-卡库拉权益链 0.396/巨龙全资/紫金山金+银副产品）逐矿可回答走 F2 全链 + 第二家纯金矿商泛化零硬编码。全量 705+106 绿；implementer receipt canonical ee6dd908（初版 f314d7d9 修正：base_triplet 404a2bb）；独立复核 reviewer-zr609-independent 运行中。
-- 下一卡（closure 后）：ZR-707（F2 schema 3.8 opt-in）→ ZR-711~713（confidence 反博弈/rolling-origin backtest）。
+- 下一卡（closure 后）：ZR-711（F2 additive schema 3.8 opt-in）→ ZR-707（mixed recognition/gross-net）→ ZR-712/713（confidence 反博弈/rolling-origin backtest）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue e541d55（ZR-609 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 
 ## 最新状态（2026-08-22 ZR-609 closure → 停止点）
 - **accepted 71/117（约 61%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 18（ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
 - **ZR-609 closure**（F2 合流：紫金 pilot + 第二家泛化）：reviewer accepted（手算独立重算 + 25 项非空洞 + 零硬编码 tokenize 扫描；REV-001/002 已修正：ZR-611 closure 实际独立落地 404a2bb、receipt 重封 ee6dd908）；closure→ZR-711。
-- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-711（F2 confidence 反博弈——DAG 已解锁）未领取；恢复第一步 = ZR-711 → ZR-712/713（rolling-origin backtest）→ ZR-707（schema 3.8 opt-in）。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-711（F2 additive schema 3.8 opt-in——DAG 已解锁）未领取；恢复第一步 = ZR-711 → ZR-707（mixed recognition/gross-net）→ ZR-712/713（confidence 反博弈/rolling-origin backtest）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-609 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-711 实施 + delta 完成）
+- **ZR-711 实施完成**（F2 additive schema 3.8 opt-in）：revenue b0d7291 + delta e75debb（7 文件 +283/-6 + REV-001 修复，15 tests）——3.8 词汇+EMIT、版本门 {3.7,3.8}、validate_operating_units 复用 validate_mine_year_operation、schema_optin converter 三函数（3.7→3.8 加空 gap / 3.8→3.7 strip / round-trip）、capture-integrity gate 修复。全量 720+106 绿；implementer receipt canonical f273d1ee（初版修正中）；reviewer accepted。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-711 closure 待完成；恢复第一步 = ZR-711 closure → ZR-707 → ZR-712/713。
+- 三仓 HEAD（本地 fcap，未 push）：revenue e75debb（ZR-711 delta commit）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-711 closure → 最终停止点）
+- **accepted 72/117（约 62%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 19（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711）。
+- **ZR-711 closure**（F2 additive schema 3.8 opt-in）：reviewer changes_required（REV-001 capture-integrity 门）→ delta e75debb 修复 + delta accepted；closure→ZR-707。
+- **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-707（F2 mixed recognition/gross-net——DAG 已解锁）未领取；恢复第一步 = ZR-707 → ZR-712/713（confidence 反博弈/rolling-origin backtest）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-711 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

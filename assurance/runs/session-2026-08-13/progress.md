@@ -622,4 +622,17 @@
 - **ZR-609 closure**：独立复核 reviewer-zr609-independent **accepted**（手算独立重算匹配 + 25 项非空洞检查 + 零硬编码 tokenize 扫描确认；2 minor：REV-001 流程偏差记录有误（ZR-611 closure 实际独立落地 404a2bb——已修正全部 planning docs）、REV-002 receipt diff 范围修正（已重封 ee6dd908）+ 3 info）；reviewer receipt canonical 64fc8fe7；state accepted + closure-advance -> **ZR-711**（phase F_revenue_mining，F2 第十卡）。
 - **机器状态**：current_next=ZR-711，accepted **71/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 18：ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-609 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
-- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-711（F2 confidence 反博弈）未领取；恢复第一步 = ZR-711（confidence 反博弈/rolling-origin backtest，DAG 已解锁）。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-711（F2 additive schema 3.8 opt-in——**注意之前错标为"confidence 反博弈"，实为 ZR-712**）未领取；恢复第一步 = ZR-711。
+
+## 2026-08-23（恢复会话：用户指示"继续"）
+- **ZR-711（F2 additive schema 3.8 opt-in）实施完成**：
+  - RED 探针：document.py:78-81 严格 schema_version=="3.7"；SUPPORTED/EMIT 无 3.8；operating_units 词汇零命中——3.8 opt-in 与 converter 零实现。
+  - 修复（7 文件 +283/-6）：constants.py OPT_IN_SCHEMA_VERSION="3.8" + SUPPORTED 包含；schema_compatibility.py EMIT["3.8"]={ENGINE_VERSION}；revenue_core.py re-export+__all__；document.py 版本门 {3.7,3.8}（in operator 零分支）+ validate_operating_units helper（复用 validate_mine_year_operation 七字段契约——fail-closed gap）；schema_optin.py converter 三函数（3.7→3.8 加 operating_units=[] 坦诚 gap 不猜值 / 3.8→3.7 剥 additive keys / round-trip 相等）；test_schema_compatibility 2 条更新（OPT_IN_SCHEMA_VERSION 加入 formal+unknown 测试）。
+  - 新 test_zr711_schema_optin.py（14 tests）：C1 3.7 零回归 4（FORECAST_SCHEMA_VERSION=3.7/3.8∈SUPPORTED+EMIT/3.7 文档 validate 不变/3.6 被拒）；C2 3.8 opt-in 7（3.8 文档通过/operating_units 有效+gap closed/must be list/standalone helper/空列表通过）；C3 converter 3（3.7→3.8/3.8→3.7 strip/round-trip）。
+  - revenue 全量 719 passed + 106 subtests（+14 新，零回归；3 deselected = fc1103）+ ruff + ratchet 全过；skill-sync MATCH 139 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue b0d7291）；implementer receipt canonical f273d1ee。
+  - 独立复核 reviewer-zr711-independent 运行中。
+- **ZR-711 closure**：独立复核 reviewer-zr711-independent 首轮 **changes_required**（REV-001 blocking：document.py:606 capture-integrity 门只认 3.7——3.8 文档绕过 claim/source snapshot 检查，违反"3.8 = 3.7 + additive"契约）→ delta 修复 e75debb（capture-integrity 门 `in {3.7,3.8}` + 1 回归测试，15 tests 全量 720+106 绿）→ delta 复审 **accepted**（REV-001 resolved；REV-002 minor 计数修正；REV-003/004 info）；reviewer receipt canonical 91f802d5；state accepted + closure-advance -> **ZR-707**（phase F_revenue_mining，F2 第十一卡）。
+- **机器状态**：current_next=ZR-707，accepted **72/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 19：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-711 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-707（F2 mixed recognition/gross-net——DAG 已解锁）未领取；恢复第一步 = ZR-707 → ZR-712/713（confidence 反博弈/rolling-origin backtest）。

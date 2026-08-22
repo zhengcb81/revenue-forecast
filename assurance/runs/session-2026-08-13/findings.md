@@ -236,3 +236,9 @@
 - 紫金三资产结构演示：卡莫阿-卡库拉（DRC 铜，权益链 0.6×0.66=0.396 真实形状）、巨龙铜业（西藏全资）、紫金山（金锭+银副产品 credit 350）——逐矿贡献可回答 + 内部流 elimination + 对账手算一致（saleable 1045.674/87.78/5559.84）。
 - 泛化验证模式：第二家**不同结构**矿企（纯金矿商：单矿/无链/单币种）走同一契约链零代码改动——契约层通用性的实证（ZR-611 合成 E2E 的互补：合成验证八类场景，真实结构验证泛化）。
 - **流程偏差澄清（reviewer REV-001）**：ZR-611 closure 实际独立落地为 404a2bb（e541d55 直接父）——初版记录"第三次流程偏差"有误，实际偏差仅前两次（ZR-607→3081967、ZR-608→288ac88）。教训：流程偏差记录须以 git log 实证为准，不得凭后台 job 时序推断。
+
+## 发现 38：ZR-711（F2 additive schema 3.8 opt-in，2026-08-23）
+- 3.8 opt-in 设计：FORECAST_SCHEMA_VERSION 保持 "3.7"（零回归）；OPT_IN_SCHEMA_VERSION="3.8" 加入 SUPPORTED+EMIT；版本门从严格 ==3.7 改为 {3.7,3.8}（in operator 零分支增量）。validate_operating_units 复用 validate_mine_year_operation（ZR-605 七字段契约——fail-closed gap）。
+- converter 设计：3.7→3.8 加 operating_units=[]（坦诚 gap 不猜值）；3.8→3.7 剥 additive keys；round-trip 语义相等（canonical equality）。不预测矿数据——converter 只做版本升降和字段初始化。
+- **REV-001 blocking（首轮 delta 修复）**：document.py:606 capture-integrity 门只认 3.7（`== FORECAST_SCHEMA_VERSION`），3.8 文档绕过 claim/source snapshot 检查——违反"3.8 = 3.7 + additive"契约。修复：`in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION)` + 回归测试。教训：版本门扩展时必须扫描所有 `schema_version == FORECAST_SCHEMA_VERSION` 确保一致性（不只是顶层 validate_top_level）。
+- REV-004 follow-up（info）：confidence.py/revenue_report.py 仍分支 `== 3.7`——3.8 结果走 legacy formatting path。登记为 3.8 后续消费方接入点。

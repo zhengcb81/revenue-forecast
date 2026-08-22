@@ -220,3 +220,7 @@
 - ZR-609 实施完成（2026-08-22）：revenue e541d55（紫金 pilot + 第二家泛化：三主要资产逐矿可回答 + 纯金矿商泛化零硬编码，test-only 9 tests 零产品改动；父 404a2bb = ZR-611 closure 独立落地——修正无第三次流程偏差）；全量 705+106 绿；state triplet_green；implementer receipt canonical ee6dd908（初版 f314d7d9 修正）；独立复核运行中。
 
 - ZR-609 closure：reviewer-zr609-independent accepted（手算独立重算 + 25 项非空洞 + 零硬编码 tokenize 扫描；2 minor：REV-001 流程偏差记录有误已修正、REV-002 receipt 重封 ee6dd908 + 3 info）；state accepted 71/117；closure-advance -> ZR-711；**停止点：用户指示本阶段工作做完后更新全部 planning docs 后停止**。
+
+- ZR-711 实施完成（2026-08-23）：revenue b0d7291 + delta e75debb（additive schema 3.8 opt-in：3.8 词汇+EMIT、版本门 {3.7,3.8}、validate_operating_units 复用 validate_mine_year_operation、schema_optin converter 三函数、15 tests，REV-001 capture-integrity gate 修复）；全量 720+106 绿；implementer receipt canonical f273d1ee（初版修正中）；独立复核 reviewer-zr711-independent delta 复审运行中。
+
+- ZR-711 closure：reviewer changes_required（REV-001 blocking：capture-integrity 门只认 3.7）→ delta e75debb 修复 + delta accepted；REV-001→resolved，REV-002 minor 计数修正 + REV-003/004 info；state accepted 72/117；closure-advance -> ZR-707。

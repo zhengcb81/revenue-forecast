@@ -236,7 +236,25 @@
 
 - **accepted 71/117（约 61%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 18（ZR-701~706/710 + ZR-601~609 + ZR-610/611）。
 - **ZR-609 closure**：reviewer accepted（手算独立重算 + 25 项非空洞 + 零硬编码 tokenize 扫描；2 minor REV-001/002 已修正 + 3 info）；closure→ZR-711。
-- 机器游标：**F_revenue_mining** / **ZR-711**（未领取；confidence 反博弈/rolling-origin backtest）。
+- 机器游标：**F_revenue_mining** / **ZR-711**（未领取；additive schema 3.8 opt-in + 3.7 兼容/converter）。
 - 阶段 F 地图：◐ 18/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611 闭；剩余 ZR-707/711~713）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-609 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
-- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-711（F2 confidence 反博弈，DAG 已解锁）→ ZR-712/713 → ZR-707（schema 3.8 opt-in）。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-711（F2 additive schema 3.8 opt-in，DAG 已解锁）→ ZR-707（mixed recognition/gross-net）→ ZR-712/713（confidence 反博弈/rolling-origin backtest）。
+
+## 2026-08-23 ZR-711 实施 + delta 修复快照（停止点）
+
+- **accepted 71/117 + ZR-711 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 18（ZR-701~706/710 + ZR-601~609 + ZR-610/611）+ ZR-711 待 closure。
+- **ZR-711 实施**：revenue b0d7291 + delta e75debb（additive schema 3.8 opt-in：3.8 词汇+EMIT、版本门 {3.7,3.8}、validate_operating_units 复用 validate_mine_year_operation、schema_optin converter 三函数、15 tests；REV-001 capture-integrity gate 修复——document.py:606 `==3.7`→`in {3.7,3.8}`）；全量 720+106 绿；implementer receipt canonical f273d1ee（初版修正中）；reviewer accepted（delta 复审通过）。
+- 机器游标：**F_revenue_mining** / ZR-711（closure 待完成）。
+- 阶段 F 地图：◐ 18/13 + ZR-711 待闭（F1 7/7 闭 + F2 ZR-601~609+610/611 闭 + ZR-711 delta 通过；剩余 ZR-707/712/713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue e75debb（ZR-711 delta commit）、wiki 26a6b22、filing 5a1c18f。
+- **停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-711 closure → ZR-707（mixed recognition/gross-net）→ ZR-712/713（confidence 反博弈/rolling-origin backtest）。
+
+## 2026-08-23 ZR-711 closure 快照（最终停止点）
+
+- **accepted 72/117（约 62%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 19（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711）。
+- **ZR-711 closure**：reviewer changes_required（REV-001 blocking：capture-integrity 门只认 3.7）→ delta e75debb 修复 + delta accepted（REV-001→resolved）；closure→ZR-707。
+- 机器游标：**F_revenue_mining** / **ZR-707**（未领取；mixed recognition/gross-net）。
+- 阶段 F 地图：◐ 19/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611+711 闭；剩余 ZR-707/712/713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-711 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-707 → ZR-712/713。
