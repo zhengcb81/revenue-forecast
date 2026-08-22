@@ -3,16 +3,16 @@
 Wraps the existing FC-1102 ``tools/daily_t2_runner.py`` into a fully
 scheduled daily assurance loop:
 
-  --run-daily   run the T2 runner, write the run ledger
-                (``assurance/runs/daily_manifest.json``), judge freshness
-                (<= 24h and ok -> fresh; older -> stale; absent -> missing)
-                and append an alert journal entry when not fresh.
-  --register    register a Windows Task Scheduler daily task (deployment
-                action; requires elevation) that invokes ``--run-daily``.
-  --query       read-only status of the scheduled task (exists / last run).
-  --unregister  remove the scheduled task (deployment action).
-  --verify      combined status: schedule (registered/missing) + last run
-                (fresh/stale/missing) — the AUD2-01/02/03 oracle.
+  run-daily    run the T2 runner, write the run ledger
+               (``assurance/runs/daily_manifest.json``), judge freshness
+               (<= 24h and ok -> fresh; older -> stale; absent -> missing)
+               and append an alert journal entry when not fresh.
+  register     register a Windows Task Scheduler daily task (deployment
+               action; requires elevation) that invokes ``run-daily``.
+  query        read-only status of the scheduled task (exists / last run).
+  unregister   remove the scheduled task (deployment action).
+  verify       combined status: schedule (registered/missing) + last run
+               (fresh/stale/missing) — the AUD2-01/02/03 oracle.
 
 The release gate (``release_gate``) is a pure function over the ledger:
 fresh + ok -> ready; stale / missing / not-ok -> blocked.  Scripts existing
@@ -73,7 +73,10 @@ def freshness_status(ledger: dict | None, *, now: str | None = None,
     """fresh / stale / missing — an old green report is never fresh."""
     if ledger is None:
         return "missing", "no daily run ledger (schedule never ran)"
-    started = _iso_to_utc(str(ledger.get("started_at", "")))
+    try:
+        started = _iso_to_utc(str(ledger.get("started_at", "")))
+    except (ValueError, TypeError):
+        return "stale", "ledger started_at unparseable (corrupt ledger)"
     now_dt = _iso_to_utc(now) if now else datetime.now(UTC)
     if not ledger.get("ok"):
         return "stale", "latest daily run reported not-ok"

@@ -103,6 +103,20 @@ def test_c2_missing_without_ledger():
     assert status == "missing", detail
 
 
+def test_c2_corrupt_ledger_fails_closed():
+    # REV-001 regression: unparseable started_at must never raise — it is a
+    # stale/blocked signal (fail closed), not a crash.
+    corrupt = {"latest_run_id": "r", "started_at": "not-a-date",
+               "triplet": {}, "ok": True, "report_path": "x"}
+    status, detail = freshness_status(corrupt, now=NOW.isoformat())
+    assert status == "stale", detail
+    assert "unparseable" in detail
+    missing_ts = {"latest_run_id": "r", "triplet": {}, "ok": True,
+                  "report_path": "x"}
+    status2, _d2 = freshness_status(missing_ts, now=NOW.isoformat())
+    assert status2 == "stale"
+
+
 # ---------------------------------------------------------------------------
 # C3 — alert journal + release blocked on missing/not-fresh (AUD2-01/03)
 # ---------------------------------------------------------------------------
@@ -167,3 +181,17 @@ def test_c4_verify_prints_all_three_statuses(tmp_path, capsys):
     assert "schedule=" in out  # registered or missing — read-only, no assumption
     assert "last_run=fresh" in out
     assert "release_gate=" in out
+
+
+def test_c4_subcommands_are_positional(tmp_path):
+    # REV-002 regression: capabilities are positional subcommands
+    # (run-daily/register/query/unregister/verify), not --flags.
+    import subprocess
+
+    script = ROOT / "tools" / "daily_t2_schedule.py"
+    proc = subprocess.run(
+        [sys.executable, "-B", str(script), "--help"],
+        capture_output=True, text=True, encoding="utf-8", timeout=60,
+    )
+    for name in ("run-daily", "register", "unregister", "query", "verify"):
+        assert name in proc.stdout, f"missing subcommand {name}"
