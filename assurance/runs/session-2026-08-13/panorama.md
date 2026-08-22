@@ -349,3 +349,4 @@
 - **CRLF 教训**：README CRLF → closure-advance CAS-CONFLICT（read_text().encode() LF hash vs manifest 原始字节 CRLF hash）→ README 转 LF + manifest CAS 重建（findings 43）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-806 closure commit 待提交，实现 b716a81）、wiki 26a6b22、filing 5a1c18f。
 - **最终停止点（用户指示：收尾并更新全部 planning docs 后停止）**：恢复第一步 = ZR-902（阶段 H：实际调度每日 Windows T2）→ ZR-903/901（阶段 H）。
+- **防双写漂移（README §14 规则，2026-08-22 起）**：`accepted N/117` 计数唯一真源 = `assurance/unified_completion/state.json`；本快照段不再手工维护计数（需要时引用 state.json），逐卡详情以 progress.md 为准。

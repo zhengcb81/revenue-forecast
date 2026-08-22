@@ -1,6 +1,8 @@
 # 审查进度日志（历史归档）
 
 > **2026-08-13 最终入口覆盖：** 本日志已关闭，且不再把FCAP作为执行入口。新任务只从 [audit_review/README.md](README.md) 的 `current_next` 继续；本文仅保留历史过程。
+>
+> **2026-08-22 追加归档确认：** 本文不再追加实施进度。逐卡进度唯一记录于 `assurance/runs/session-*/progress.md`；`accepted N/117` 计数唯一真源为 `assurance/unified_completion/state.json`（详见 README §14 防双写漂移规则）。此前 ZR-5xx~8xx 的一次性补记条目保留为历史，此后新条目一律写入子目录 session 文档。
 
 ## 2026-08-03
 

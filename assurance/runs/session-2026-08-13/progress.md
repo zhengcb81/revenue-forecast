@@ -1,5 +1,7 @@
 # 进度日志（Session 工作记忆）
 
+> **逐卡进度唯一真源（README §14 防双写漂移规则，2026-08-22 起）：** 本文件是实施进度逐卡记录的唯一位；`accepted N/117` 计数唯一真源为 `assurance/unified_completion/state.json`（closure-advance 自动维护），文档需要计数时引用 state.json 而非手工维护。其他文档（audit_review/ 主目录 progress/findings、session task_plan/panorama）只引用本文件与 state.json，不复制逐卡详情。
+
 ## 2026-08-13 20:31
 - 完成：读取 README、current_state_audit、PLAN_MANIFEST、input_snapshot、project_goal_and_pain_points、CA registry、authoritative_execution_plan、runbook、weak_model_checklist。
 - 完成：向用户汇报现状与痛点（P01–P11、A–J 顺序、六成功条件），确认 5 项决策（连续推进/规划文件位置/子代理复核/资源授权/本地提交）。

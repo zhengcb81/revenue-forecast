@@ -247,6 +247,12 @@ T2不能被100个T0替代；无权限、网络、凭据或样本只能记blocked
 | `2026-08-09_data_lake_refactor_plan/` | superseded历史计划 | ADR和历史设计背景 | 领取旧WU或release |
 | `2026-08-08_adversarial_plan/` | superseded审计/历史计划 | 早期痛点与证据 | 领取旧Phase |
 | 根 `task_plan.md/findings.md/progress.md` | 2026-08早期审计归档 | 历史上下文 | 按其FCAP链接执行 |
+| 本目录 `progress.md` / `findings.md` | 历史归档（头部声明已关闭） | 早期审计上下文与一次性补记 | 继续追加实施进度/计数 |
+
+**进度记录单一真源（防双写漂移，2026-08-22 起强制执行）：**
+- 实施进度逐卡记录只写入 `assurance/runs/session-*/progress.md`（追加式，每卡 closure 后一段）；其余文档一律引用它，不复制详情。
+- `accepted N/117` 计数唯一真源是 `assurance/unified_completion/state.json`（closure-advance 自动维护）；文档需要时写"见 state.json"或由脚本读取生成，**禁止手工维护计数**（2026-08-22 曾因手工 +1 漏计一张卡导致 5 份文档 104 处系统性漂移，已全部按 state.json 权威时间线更正）。
+- 本目录（audit_review/）的 `progress.md`/`findings.md` 不再追加实施进度；仅本 README 的 `current_phase/current_next` 由 closure-advance 自动镜像（CAS 保护，不漂移）。
 
 旧计划历史文件不移动、不删除、不重写。只有最终CA-306可由旧计划单一owner添加terminal notice：`closed_superseded_incomplete`，指向最终closure ledger；此前一律保持只读。
 

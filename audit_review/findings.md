@@ -1,6 +1,8 @@
 # 审查发现（历史归档）
 
 > **2026-08-13：本文件不再是当前实施依据。** 新任务只从 [audit_review/README.md](README.md) 读取唯一计划、`current_next`、阶段顺序和文档路由；本文仅保留早期审计证据。
+>
+> **2026-08-22 追加归档确认：** 本文不再追加实施进度。逐卡进度与计数唯一记录于 `assurance/runs/session-*/progress.md` 与 `assurance/unified_completion/state.json`（README §14 防双写漂移规则）；本文件仅保留审计发现（根因/教训类），不复制逐卡进度。
 
 ## 2026-08-03：初始范围
 
