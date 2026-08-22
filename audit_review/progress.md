@@ -248,3 +248,7 @@
 - ZR-802 实施完成（2026-08-23）：revenue 1b55f6f（阶段 G 首卡组合旅程，test-only +353 行 1 文件 7 tests 产品零改动）——五状态×跨根：existing exact 复用（dl=0/llm=0/outcome=reused_existing）、missing 结构化 not_found 且 lake 计数不变式（零写入零伪造）、future-dated stale 拒绝不污染既有复用、跨根双候选 ambiguous fail-closed 不择一、partial 角色读子集+DAG 最小生产闭包；C2 二次调用幂等同身份零下载；C3 八阶段证据投影按真实键钉死。全量 789+106 零回归；ruff 0；sync MATCH 148；implementer receipt canonical 6a1c6869。
 
 - ZR-802 closure：reviewer-zr802-independent accepted（11 探针 V1-V7：diff=test-only、全量复放 789+106、8/8 独立反伪造探针、硬编码零命中、hash 全对；1 minor REV-001 parser>=1 vs 精确预算属上游信封内部计数登记后续、3 info）；reviewer receipt canonical 051e4f64；**state accepted 78/117**；closure-advance -> **ZR-803**。
+
+- ZR-803 实施完成（2026-08-23）：revenue b14ac3c（六类故障×幂等恢复旅程矩阵，test-only +315 行 6 tests 产品零改动）——锁=持 WAL 写事务下只读旅程照常+释放后同身份零下载；中断=注册前崩溃零孤儿重跑精确一次；磁盘=结构化 exit2 无半写无父目录残留后合法路径成功；篡改=单字节翻转拒绝原工件仍有效；顺序=eval-before-create 结构化拒后正常评估；时钟=未来 captured_date 信息集外拒绝。全量 795+106 零回归；ruff 0；sync MATCH 149；implementer receipt canonical 9b38be64。
+
+- ZR-803 closure：reviewer-zr803-independent accepted（13 探针 V1-V7：中断 exactly-once 含崩溃载荷同 hash 复放、双位置篡改、单源投毒时钟、伪造 snapshot 结构化拒绝、WAL 确定性佐证 store.py:225、主仓同 HEAD 795+106 全绿；2 minor stderr decode/docstring 措辞 + 2 info 嵌套 checkout 位置性）；reviewer receipt canonical 7e305256；**state accepted 79/117**；closure-advance -> **ZR-804**。

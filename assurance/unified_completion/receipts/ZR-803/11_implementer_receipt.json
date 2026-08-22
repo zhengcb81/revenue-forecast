@@ -1,0 +1,86 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "f0c102b",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：六类故障真实形态——WAL BEGIN EXCLUSIVE 下链 rc=0(READ-06 正面)、未来 captured_date→information set 拒绝、eval-before-create 结构化拒、registry 半行→RegistryError invalid JSON、磁盘坏路径 exit2 无半写、单字节篡改→hash mismatch",
+      "exit_code": 0,
+      "result": "旅程级故障恢复矩阵零实现"
+    },
+    {
+      "command": "python -m pytest tests/test_zr803_chaos_recovery.py -q",
+      "exit_code": 0,
+      "result": "6 passed（锁/中断/磁盘/篡改/顺序/时钟 各一+恢复断言）"
+    },
+    {
+      "command": "ruff check tests/test_zr803_chaos_recovery.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 149 files"
+    },
+    {
+      "command": "git commit (pre-commit 全套)",
+      "exit_code": 0,
+      "result": "b14ac3c test(ZR-803) — 1 file +315"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "795 passed + 106 subtests（789 基线 + 6 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T11:20:00+00:00",
+  "findings": [
+    {
+      "detail": "六类故障各配幂等恢复断言：锁=持锁写事务下只读旅程照常完成且释放后同身份零下载复用；中断=注册前崩溃零孤儿、重跑精确注册一次；磁盘=结构化 exit2 且不建父目录不留 .tmp、合法路径随后成功；篡改=翻转一字节被强验证器拒绝且原工件仍通过；顺序=eval-before-create 结构化拒绝后真实 snapshot 正常评估；时钟=未来 captured_date 在信息集之外被拒且干净输入不受影响。critical mutation 100% kill 门继续由 CA-108 套件持有（本卡钉旅程级恢复）。",
+      "id": "ZR803-IMPL-001",
+      "severity": "info",
+      "title": "六类故障×幂等恢复矩阵"
+    }
+  ],
+  "implementation": {
+    "design": "新 tests/test_zr803_chaos_recovery.py：IsolatedLake 三进程链做锁注入（BEGIN EXCLUSIVE 持有者）；monkeypatch register_publication 抛 KeyboardInterrupt 模拟进程死亡；CLI subprocess 做磁盘/输出注入；纯函数级做篡改/乱序/时钟注入。oracle 全部来自子进程 stderr/退出码与独立重放。",
+    "files": [
+      "revenue-forecast/tests/test_zr803_chaos_recovery.py"
+    ]
+  },
+  "implementer": "zr803-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue=b14ac3c；wiki 26a6b22、filing 5a1c18f 未动。",
+    "初版两处构造错误（subprocess 缺 text=True、actuals 用简化 dict）在 RED 迭代修正；产品代码零改动。"
+  ],
+  "objective": "chaos/property/mutation 六类故障下的幂等恢复旅程矩阵。",
+  "plan_sha256": "973020fc247558d6a3f36c93eaa23212ef335d12d313284ab6fb2daa4f9834ec",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "b14ac3c",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr803_chaos_recovery.py（新 6 tests）；receipts/ZR-803/**、locks、state.json、README 镜像、planning docs。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr803_chaos_recovery.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-803/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-803",
+  "canonical_hash": "9b38be64e1522472a449074a9e31f201b25f9636890d795e52f95fba1cb79962"
+}
