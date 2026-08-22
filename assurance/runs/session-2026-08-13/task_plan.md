@@ -273,3 +273,9 @@
 - 流程记录：pre-commit 安装同步门首拦（安装副本缺新文件）→ `sync_installations.py --apply` MATCH 147 后重提成功；复核 worktree `.review-zr709-clean` 用后即删。
 - **下一卡：ZR-802**（组合旅程：existing/partial/missing/stale/conflict across roots——从 revenue 入口、三进程、第二次调用、阶段 receipt 与调用预算准确）。F 阶段出口达成：generator/validate/draft/formal 发布闭环 ✅、矿山会计桥或诚实 gap ✅、可信回测/置信度 ✅。
 - 三仓 HEAD（本地 fcap，未 push）：revenue ac68807（实现；closure 提交进行中）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-802 closure → 阶段 G 推进中）
+- **accepted 78/117**：G 1/6（ZR-802）。current_next=**ZR-803**。
+- **ZR-802 closure**（组合旅程 across roots）：revenue 1b55f6f（test-only +353，7 tests，产品零改动）——五状态（existing 精确预算复用 / missing 计数不变式零伪造 / future-dated stale 拒绝 / 跨根双候选 ambiguous fail-closed / partial 读子集+DAG 最小生产闭包）+ C2 二次幂等 + C3 八阶段真实键投影。全量 789+106；ruff 0；sync MATCH 148。复核 accepted（11 探针；1 minor parser≥1 属上游信封内部计数登记后续、3 info）；reviewer receipt canonical 051e4f64。
+- 流程调整（用户指示）：复核子代理在实现提交后立即派出后台跑，等待间隙主线做下一卡预研，不空转。
+- 下一卡：ZR-803（chaos/property/mutation：锁、中断、磁盘、篡改、顺序、时钟——critical mutation 100% kill）。

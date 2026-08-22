@@ -1,0 +1,114 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "7a6dccee210ec26eeb32f4522bdba38af0bde69c",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "created_at_utc": "2026-08-22T17:07:49+00:00",
+  "findings": [
+    {
+      "detail": "test_c1_existing_exact_reuse_with_exact_budgets asserts download_calls==0 and llm_calls==0 exactly (matching C3 非≤), but parser_calls only >=1. Reviewer live observation on the same fixture: envelope reports parser_calls==2 for the 4 non-seeded roles (company-wiki DAG batches producers), so the exact expected count is an upstream wiki-DAG internal, not derivable in this repo — the producer counters originate from the company-wiki resolution envelope (different repo/triplet). The WU card C1 text itself (existing: parser=0) is internally inconsistent with the reused FC-1001 fixture, which intentionally presets only the normalized role, making a strictly zero-parser reuse journey impossible. Deviation is disclosed in implementer receipt IMPL-001 (parser≥1 缺失角色生产). Inflation risk is bounded by the partial test pinning artifact_read⊆seeded and producer_events⊇missing roles. Accepted as minor, non-blocking.",
+      "id": "ZRR802-REV-001",
+      "severity": "minor",
+      "title": "C1-existing parser budget asserted as >=1, not an exact count"
+    },
+    {
+      "detail": "Implemented test_c2_second_call_reuses_same_identity_zero_downloads repeats only the FY2025 existing journey. Semantic equivalence: because the FC-1001 fixture seeds only the normalized role, EVERY first call (including the existing one) already transitions the lake partial->complete via DAG-minimal production, so the asserted second call runs against the same post-production state a partial-repeat would see. Identity stability (source_id + content_sha256) and zero downloads on both calls are nonetheless fully verified. Literal card wording unmet; effective coverage equivalent.",
+      "id": "ZRR802-REV-002",
+      "severity": "info",
+      "title": "C2 card names existing AND partial repeat calls; test repeats the existing-state journey only"
+    },
+    {
+      "detail": "Card C3 lists bundle_status among the eight-stage observable projections; the C3 test asserts {download_calls,parser_calls,llm_calls,artifact_read,producer_events,outcome} <= set(receipt) but omits bundle_status. Reviewer live run shows bundle_status='available' present in real receipts (production code always writes it from the envelope), so the field exists but its presence is not pinned by a test assertion.",
+      "id": "ZRR802-REV-003",
+      "severity": "info",
+      "title": "bundle_status not included in the asserted receipt key set"
+    },
+    {
+      "detail": "The new tests resolve FILING_ROOT/WIKI_SRC as PROJECT_ROOT.parent/filing-fetch and PROJECT_ROOT.parent/company-wiki/src — the same convention as pre-existing test_fc1002_three_process_e2e.py, test_fc1003_uj.py, test_fc1004_platform.py, test_dropbox_full_chain_fc505.py, test_fc1001_isolated_lake.py. A clean checkout nested INSIDE revenue-forecast therefore fails all 7 tests with 'filing-fetch script not found' (parent resolves to revenue-forecast, not Projects). Reviewer reproduced 7 passed / 789+106 full-suite pass only after rebuilding a faithful sibling layout (byte-identical copy sha256 a499e595...cf2 + junctioned filing-fetch/company-wiki siblings) outside both repos. Not a defect of this card; recorded so future clean-checkout reviewers provision the sibling layout (or junctions) before judging V2.",
+      "id": "ZRR802-REV-004",
+      "severity": "info",
+      "title": "Sibling-repo layout required for reproduction; nested clean checkout fails environmentally (7/7)"
+    }
+  ],
+  "kind": "reviewer",
+  "objective": "Independent acceptance review of ZR-802 (phase G first card): combined journeys existing/partial/missing/stale/conflict across roots via the real three-process chain from the revenue entry, second-call idempotence, per-stage receipts and exact call budgets. Verified test-only +353-line commit 1b55f6f against acceptance criteria C1/C2/C3 with re-run suites, independently reimplemented anti-fabrication probes, hardcoding scan, and receipt integrity checks.",
+  "probes": [
+    {
+      "command": "git diff 7a6dcce 1b55f6f --stat",
+      "exit_code": 0,
+      "id": "V1",
+      "result": "ONLY tests/test_zr802_combined_journeys.py | 353 ++++ (1 file changed, 353 insertions(+)). Zero product/config/catalog/CI changes — matches card claim."
+    },
+    {
+      "command": "python -m pytest tests/test_zr802_combined_journeys.py -q --tb=short",
+      "exit_code": 0,
+      "id": "V2a",
+      "result": "7 passed in 19.21s — in a faithful sibling layout (byte-identical scratch copy sha256 a499e595...cf2 + junctioned filing-fetch/company-wiki siblings outside both repos). Nested clean checkout fails 7/7 environmentally (ZRR802-REV-004)."
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+      "exit_code": 0,
+      "id": "V2b",
+      "result": "789 passed, 3 deselected, 106 subtests passed, 0 failed in 201.98s — exact match to implementer claim. (13 initial scratch failures were caused by the reviewer's partial wiki junction exposing only src/; those modules pass 54/54 read-only in the main checkout, and the full suite passes after completing the junction.)"
+    },
+    {
+      "command": "Code audit of test_c1_existing_exact_reuse_with_exact_budgets + live envelope observation",
+      "exit_code": 0,
+      "id": "V3a",
+      "result": "download_calls==0 and llm_calls==0 asserted exactly; parser_calls>=1 accepted with minor finding ZRR802-REV-001: live observation shows envelope parser_calls==2 (wiki DAG batches 4 missing roles into 2 producer invocations) — exact count is an upstream company-wiki internal; counters come from the resolution envelope, not this repo; card C1 text (parser=0) inconsistent with the normalized-only fixture preset."
+    },
+    {
+      "command": "Independent probe script (outside both repos): rebuild lake, add second distinct-bytes FY2025 dayu candidate, rescan, rerun chain",
+      "exit_code": 0,
+      "id": "V3b",
+      "result": "B0 second candidate catalogued (+1 doc); B1 rc=3 error_code=upstream containing ambiguous AND multiple_existing_sources_match_semantic_request; B2 stdout_len=0 — no record emitted, conflict fails closed honestly."
+    },
+    {
+      "command": "Independent probe: add future-dated FY2026 annual (filing_date 2027-02-20 > as_of) to same lake, request FY2026 then FY2025",
+      "exit_code": 0,
+      "id": "V3c",
+      "result": "C1 FY2026 refused with not_found; C2 document count unchanged at serve time; C3 FY2025 on the SAME lake returns rc=0 outcome=reused_existing download=0 — future doc catalogued but never poisons existing reuse."
+    },
+    {
+      "command": "Independent probe: request FY2023 twice on fresh lake; compare document counts before/between/after",
+      "exit_code": 0,
+      "id": "V3d",
+      "result": "D1 both calls structured not_found with no_existing_source_satisfies_request; D2 documents 4->4->4 invariant — missing journey writes nothing, no fabricated handles."
+    },
+    {
+      "command": "Code audit of test_c2_second_call_reuses_same_identity_zero_downloads",
+      "exit_code": 0,
+      "id": "V4",
+      "result": "Confirmed: asserts first[source_id]==second[source_id] AND first.get(content_sha256)==second.get(content_sha256); download_calls==0 AND outcome==reused_existing asserted for BOTH records (test lines 302-310)."
+    },
+    {
+      "command": "Code audit of test_c3_stage_receipt_projection_complete_on_every_record",
+      "exit_code": 0,
+      "id": "V5",
+      "result": "All eight stages have evidence: identity/resolution -> company_wiki_trace(provider/provider_document_id/source_id) + structured failure reason on the not-found path; freshness -> published_date<=as_of; acquisition -> canonical_path/canonical_location_id; safety -> capture.prompt_injection_status==not_detected; artifact -> reuse_receipt.artifact_read/producer_events+counters; semantic -> title; consumer -> top-level source_id. No stage without evidence; bundle_status present in receipts but not asserted (ZRR802-REV-003)."
+    },
+    {
+      "command": "Marker scan zr802|fil_cn_zr802c|1226077777 over production trees scripts/ config/ compatibility/ tools/ e2e/ (source files, bytecode excluded)",
+      "exit_code": 0,
+      "id": "V6",
+      "result": "88 source files scanned, ZERO hits; all three markers confirmed present only in tests/test_zr802_combined_journeys.py. Test-only markers did not leak into product."
+    },
+    {
+      "command": "sha256(00_wu_card.md); recompute implementer canonical_hash (json.dumps sans canonical_hash, sort_keys=True, ensure_ascii=False, separators=(',',':')); git rev-parse full shas",
+      "exit_code": 0,
+      "id": "V7",
+      "result": "wu_card sha256 2231460bb440752b9fb3d6295ee67e0c222a6fe4e30e3a39128b578811864c48 == plan_sha256 field; implementer canonical_hash 6a1c68695585b411e2e613681bf3f1dd33abc6563b1d1d0fffc5f8dcfdcfaec3 recomputes EXACTLY; result_triplet.revenue 1b55f6f == git rev-parse --short=7 HEAD (full 1b55f6f97d495ffa9e86f3aababaa2f024ef7a70); base full sha 7a6dccee210ec26eeb32f4522bdba38af0bde69c. Review worktree clean at 1b55f6f throughout."
+    }
+  ],
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1b55f6f97d495ffa9e86f3aababaa2f024ef7a70",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewer": "reviewer-zr802-independent",
+  "schema_version": 1,
+  "unit": "ZR-802",
+  "verdict": "accepted",
+  "canonical_hash": "051e4f64b18ba68ef12561478534c7a2c32f43df82497f3e015f7c04bdfccd5d"
+}

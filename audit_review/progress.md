@@ -244,3 +244,7 @@
 - ZR-709 实施完成（2026-08-23）：revenue ac68807（F2 合流终验 fixture，test-only +919 行 1 文件 9 tests 产品零改动）——J1 真实 source_preparation 子进程链复用年报+研究沟通（reuse_receipt 可解释、缺失 kind fail-closed + ProcessingDemand 补齐）；J2 五年 FY2026-2030 输入由契约函数代数推导、mine 贡献×segment reconcile 10/10 闭合、白银 +120=诚实 gap、3.8 operating_units 嵌入零漂移；J3 draft 渲染零注册、formal 位级重放 + snapshot 回放。全量 782+106 零回归；ruff 0；sync MATCH 147；implementer receipt canonical 134a2b13。
 
 - ZR-709 closure：reviewer-zr709-independent accepted（干净 checkout ac68807：产品 diff=0、全量复放 782+106、12/12 对抗探针含手算位精确与伪造价格→gap、无空断言、硬编码零新增、hash 全对；4 info 无阻断）；reviewer receipt canonical 40206902；closure receipt state_sha 73e10e70/control 102b02f4；**state accepted 77/117（F 24/24 全闭）**；phase->G_real_e2e；closure-advance -> **ZR-802**（README §6 阶段 G 首卡，ZR-801 已由 CA-105 吸收）。
+
+- ZR-802 实施完成（2026-08-23）：revenue 1b55f6f（阶段 G 首卡组合旅程，test-only +353 行 1 文件 7 tests 产品零改动）——五状态×跨根：existing exact 复用（dl=0/llm=0/outcome=reused_existing）、missing 结构化 not_found 且 lake 计数不变式（零写入零伪造）、future-dated stale 拒绝不污染既有复用、跨根双候选 ambiguous fail-closed 不择一、partial 角色读子集+DAG 最小生产闭包；C2 二次调用幂等同身份零下载；C3 八阶段证据投影按真实键钉死。全量 789+106 零回归；ruff 0；sync MATCH 148；implementer receipt canonical 6a1c6869。
+
+- ZR-802 closure：reviewer-zr802-independent accepted（11 探针 V1-V7：diff=test-only、全量复放 789+106、8/8 独立反伪造探针、硬编码零命中、hash 全对；1 minor REV-001 parser>=1 vs 精确预算属上游信封内部计数登记后续、3 info）；reviewer receipt canonical 051e4f64；**state accepted 78/117**；closure-advance -> **ZR-803**。

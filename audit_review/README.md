@@ -10,7 +10,7 @@ authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
 current_phase: G_real_e2e
-current_next: ZR-802
+current_next: ZR-803
 active_owner: unassigned
 lease: none
 blocked_reason: none

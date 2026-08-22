@@ -1,0 +1,92 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "7a6dcce",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep zr802/combined journeys → 零命中；行为探针三连——dayu-only FY2024 capture-incomplete 复用语义、跨根双候选 ambiguous、partial 角色集合",
+      "exit_code": 0,
+      "result": "五状态组合旅程零实现；真实行为基线建立"
+    },
+    {
+      "command": "python -m pytest tests/test_zr802_combined_journeys.py -q --tb=short",
+      "exit_code": 0,
+      "result": "7 passed（C1 五状态 5 / C2 幂等 1 / C3 八阶段投影 1）"
+    },
+    {
+      "command": "ruff check tests/test_zr802_combined_journeys.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 148 files"
+    },
+    {
+      "command": "git commit (pre-commit 全套)",
+      "exit_code": 0,
+      "result": "1b55f6f test(ZR-802) — 1 file +353"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "789 passed + 106 subtests（782 基线 + 7 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T10:05:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 existing：FY2025 companies exact 复用 outcome=reused_existing、dl=0/llm=0、parser≥1（缺失角色生产）；missing：FY2023 结构化 not_found/no_existing_source_satisfies_request 且 lake documents 计数前后不变（零写入零伪造）；stale：FY2026 filing_date=2027 远超 as_of → not_found 拒绝（未来文档编目但不供应）；conflict：companies+dayu 双 FY2025 不同字节 → ambiguous/multiple_existing_sources_match_semantic_request fail-closed 不择一；partial：seed 仅 normalized 角色 → artifact_read⊆seeded 且 producer_events 含全部缺失角色（DAG 最小重算，非全量也非跳过）。",
+      "id": "ZR802-IMPL-001",
+      "severity": "info",
+      "title": "五状态×跨根组合旅程（三进程真实链）"
+    },
+    {
+      "detail": "C2：同一请求两次调用 source_id/content_sha256 一致且两次 download_calls=0（ZJ-10 合同复用）。C3：八阶段证据投影按 RevenueSourceRecord 真实键钉死（company_wiki_trace=identity/resolution/acquisition、published_date≤as_of=freshness、capture=safety、artifact_read/producer_events=artifact、title=semantic、source_id=consumer），失败路径携带结构化 resolution reason。",
+      "id": "ZR802-IMPL-002",
+      "severity": "info",
+      "title": "二次幂等 + 八阶段投影（真实键对齐）"
+    }
+  ],
+  "implementation": {
+    "design": "新 tests/test_zr802_combined_journeys.py：复用 FC-1001 IsolatedLake 三根 fixture + _run_chain 三进程链 helper + _add_conflict_copy/_add_future_dated_annual（production scanner 重扫）+ _document_count 只读 oracle。七测试全部以子进程 stdout/stderr 与 fixture DB 直查为 oracle。",
+    "files": [
+      "revenue-forecast/tests/test_zr802_combined_journeys.py"
+    ]
+  },
+  "implementer": "zr802-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue=1b55f6f（本卡实现提交）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "测试卫生：初版两处假设偏差在 RED 迭代中修正（documents 绝对数→计数不变式；stale 由不稳定的 dayu-capture 语义改为确定性 future-dated 构造）；产品代码零改动。"
+  ],
+  "objective": "阶段 G 首卡：existing/partial/missing/stale/conflict across roots 组合旅程——三进程、二次调用幂等、逐阶段 receipt 与调用预算精确对账。",
+  "plan_sha256": "2231460bb440752b9fb3d6295ee67e0c222a6fe4e30e3a39128b578811864c48",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1b55f6f",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr802_combined_journeys.py（新 7 tests）；receipts/ZR-802/**、locks、state.json、README 镜像、planning docs。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr802_combined_journeys.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-802/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-802",
+  "canonical_hash": "6a1c68695585b411e2e613681bf3f1dd33abc6563b1d1d0fffc5f8dcfdcfaec3"
+}
