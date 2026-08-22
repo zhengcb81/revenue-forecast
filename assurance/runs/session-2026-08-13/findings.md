@@ -242,3 +242,9 @@
 - converter 设计：3.7→3.8 加 operating_units=[]（坦诚 gap 不猜值）；3.8→3.7 剥 additive keys；round-trip 语义相等（canonical equality）。不预测矿数据——converter 只做版本升降和字段初始化。
 - **REV-001 blocking（首轮 delta 修复）**：document.py:606 capture-integrity 门只认 3.7（`== FORECAST_SCHEMA_VERSION`），3.8 文档绕过 claim/source snapshot 检查——违反"3.8 = 3.7 + additive"契约。修复：`in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION)` + 回归测试。教训：版本门扩展时必须扫描所有 `schema_version == FORECAST_SCHEMA_VERSION` 确保一致性（不只是顶层 validate_top_level）。
 - REV-004 follow-up（info）：confidence.py/revenue_report.py 仍分支 `== 3.7`——3.8 结果走 legacy formatting path。登记为 3.8 后续消费方接入点。
+
+## 发现 39：ZR-707（F2 mixed recognition/gross-net + multi-commodity，2026-08-23）
+- mixed recognition 语义：同公司不同分部可混用 recognition mode（modeled_as_recognized/lagged_activity）——每分部独立校验，无跨分部冲突；"混合模式合法"由契约而非全局 flag 表达。
+- multi-commodity 矩阵：同一矿多个 commodity segments（铜+金副产品）各算各的，总贡献=和——不重复计价（与 ZR-606 byproduct 独立加项对齐）。
+- presentation 一致性：trading/other 用正确 gross/net 声明，不靠单一错误 presentation 近似——"贸易/其他不靠单一错误 presentation 近似"的机械化。
+- 词汇复用：RECOGNITION_MODES/PRESENTATIONS 已在 constants（ZR-701 schema 真源），本卡只加验证逻辑不重复定义。

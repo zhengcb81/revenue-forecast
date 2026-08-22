@@ -258,3 +258,19 @@
 - 阶段 F 地图：◐ 19/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611+711 闭；剩余 ZR-707/712/713）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-711 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：恢复第一步 = ZR-707 → ZR-712/713。
+
+## 2026-08-23 ZR-707 实施快照
+
+- **accepted 72/117 + ZR-707 实施完成**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 19（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711）+ ZR-707 待复核/closure。
+- **ZR-707 实施**：revenue fdb560e（mixed recognition/gross-net + multi-commodity product matrix，13 tests）；全量 733+106 绿；state triplet_green；implementer receipt canonical 91aefa2c；独立复核运行中。
+- 机器游标：**F_revenue_mining** / ZR-707（复核中）。
+- 阶段 F 地图：◐ 19/13 + ZR-707 待闭（F1 7/7 闭 + F2 ZR-601~609+610/611+711 闭 + ZR-707 实施中；剩余 ZR-712/713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue fdb560e（ZR-707 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 2026-08-23 ZR-707 closure 快照
+
+- **accepted 73/117（约 62%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 20（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707）。
+- **ZR-707 closure**：reviewer accepted（11/11 对抗断言，4 info）；closure→ZR-708。
+- 机器游标：**F_revenue_mining** / **ZR-708**（未领取；重验不可变 snapshot/backtest 基础接线）。
+- 阶段 F 地图：◐ 20/13 进度过半（F1 7/7 闭 + F2 ZR-601~609+610/611+711+707 闭；剩余 ZR-708/712/713）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-707 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

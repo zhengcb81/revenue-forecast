@@ -636,3 +636,16 @@
 - **机器状态**：current_next=ZR-707，accepted **72/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 19：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-711 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
 - **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-707（F2 mixed recognition/gross-net——DAG 已解锁）未领取；恢复第一步 = ZR-707 → ZR-712/713（confidence 反博弈/rolling-origin backtest）。
+
+## 2026-08-23（用户指示"继续"）
+- **ZR-707（F2 mixed recognition/gross-net + multi-commodity）实施完成**：
+  - RED 探针：RECOGNITION_MODES/PRESENTATIONS 已有词汇；segment_bridge 已存在；multi-commodity product matrix 零实现；mixed-mode 组合无显式验证测试。
+  - 修复：新 scripts/mixed_recognition.py——validate_mixed_recognition（每分部独立 recognition mode，混合合法）、validate_commodity_matrix（multi-commodity 分段验证 + 重复名拒绝）、validate_presentation_consistency（gross/net 声明验证，trading/other 用正确 presentation）。
+  - 新 test_zr707_mixed_recognition.py（13 tests）：C1 mixed recognition 5 + C2 multi-commodity 3 + C3 presentation 5。
+  - revenue 全量 733 passed + 106 subtests（+13 新，无回归）+ ruff + ratchet 全过；skill-sync MATCH 141 files。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue fdb560e）；implementer receipt canonical 91aefa2c。
+  - 独立复核 reviewer-zr707-independent 运行中。
+- **ZR-707 closure**：独立复核 reviewer-zr707-independent **accepted**（11/11 对抗断言 + 全量 733+106 复跑；4 info：REV-001~004 全量 thread warning 环境噪音/三仓 triplet 跨仓对象/3 文件回归 25 passed/词汇精确）；reviewer receipt canonical b18d941e；state accepted + closure-advance -> **ZR-708**（phase F_revenue_mining，F2 第十二卡）。
+- **机器状态**：current_next=ZR-708，accepted **73/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 20：ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-707 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-708（F2 重验不可变 snapshot/backtest 基础接线——DAG 已解锁；"已有能力若当前 triplet 全绿则 already_satisfied；否则修复；accuracy record 实际可被 forecast 消费"）。

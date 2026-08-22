@@ -549,3 +549,7 @@
 ## ZR-609（2026-08-22）：紫金 pilot + 第二家泛化（revenue）
 - 紫金三主要资产（卡莫阿-卡库拉权益链 0.396/巨龙全资/紫金山金+银副产品）逐矿可回答走 F2 全链 + 第二家纯金矿商泛化零硬编码；test-only。
 - ZR-609 closure：reviewer accepted；REV-001 修正（ZR-611 closure 实际独立落地 404a2bb——流程偏差记录有误已更正）；REV-002 receipt 重封 ee6dd908；state accepted 71/117；closure-advance -> ZR-711。
+## ZR-711（2026-08-23）：additive schema 3.8 opt-in（revenue）
+- 3.8 opt-in（OPT_IN_SCHEMA_VERSION + EMIT + 版本门 {3.7,3.8} + operating_units 复用 ZR-605 契约 + converter 加 gap 不猜值）；REV-001 capture-integrity 门修复（版本门扩展须扫描全部 ==3.7 分支）；closure→ZR-707。
+## ZR-707（2026-08-23）：mixed recognition/gross-net + multi-commodity（revenue）
+- validate_mixed_recognition（混合 mode 合法）+ validate_commodity_matrix（multi-commodity 分段）+ validate_presentation_consistency（gross/net 声明）；词汇复用 constants 真源。

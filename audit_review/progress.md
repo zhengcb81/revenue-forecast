@@ -224,3 +224,7 @@
 - ZR-711 实施完成（2026-08-23）：revenue b0d7291 + delta e75debb（additive schema 3.8 opt-in：3.8 词汇+EMIT、版本门 {3.7,3.8}、validate_operating_units 复用 validate_mine_year_operation、schema_optin converter 三函数、15 tests，REV-001 capture-integrity gate 修复）；全量 720+106 绿；implementer receipt canonical f273d1ee（初版修正中）；独立复核 reviewer-zr711-independent delta 复审运行中。
 
 - ZR-711 closure：reviewer changes_required（REV-001 blocking：capture-integrity 门只认 3.7）→ delta e75debb 修复 + delta accepted；REV-001→resolved，REV-002 minor 计数修正 + REV-003/004 info；state accepted 72/117；closure-advance -> ZR-707。
+
+- ZR-707 实施完成（2026-08-23）：revenue fdb560e（mixed recognition/gross-net + multi-commodity product matrix：validate_mixed_recognition/validate_commodity_matrix/validate_presentation_consistency，13 tests）；全量 733+106 绿；state triplet_green；implementer receipt canonical 91aefa2c；独立复核运行中。
+
+- ZR-707 closure：reviewer-zr707-independent accepted（11/11 对抗断言；4 info）；state accepted 73/117；closure-advance -> ZR-708。

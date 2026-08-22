@@ -220,3 +220,14 @@
 - **ZR-711 closure**（F2 additive schema 3.8 opt-in）：reviewer changes_required（REV-001 capture-integrity 门）→ delta e75debb 修复 + delta accepted；closure→ZR-707。
 - **最终停止点（用户指示：本阶段工作做完后更新全部 planning docs 后停止）**：下一卡 ZR-707（F2 mixed recognition/gross-net——DAG 已解锁）未领取；恢复第一步 = ZR-707 → ZR-712/713（confidence 反博弈/rolling-origin backtest）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-711 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-707 实施完成）
+- **ZR-707 实施完成**（F2 mixed recognition/gross-net + multi-commodity）：revenue fdb560e（+244 行 2 文件，13 tests）——validate_mixed_recognition（混合 recognition 合法）、validate_commodity_matrix（multi-commodity 分段）、validate_presentation_consistency（gross/net 声明）。全量 733+106 绿；implementer receipt canonical 91aefa2c；独立复核 reviewer-zr707-independent 运行中。
+- 下一卡（closure 后）：ZR-712（F2 confidence 反博弈——DAG 依赖 ZR-708；"duplicate/split/plug/zero-impact/one-observation/wrong-record mutations 全杀"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue fdb560e（ZR-707 实现 commit；closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-707 closure → ZR-708）
+- **accepted 73/117（约 62%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 20（ZR-701~706/710 + ZR-601~609 + ZR-610/611 + ZR-711 + ZR-707）。
+- **ZR-707 closure**（F2 mixed recognition/gross-net + multi-commodity）：reviewer accepted（11/11 对抗断言，4 info）；closure→ZR-708。
+- 下一卡：**ZR-708**（F2 重验不可变 snapshot/backtest 基础接线——DAG 已解锁；"已有能力若当前 triplet 全绿则 already_satisfied；否则修复；accuracy record 实际可被 forecast 消费"）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-707 closure commit 待提交）、wiki 26a6b22、filing 5a1c18f。

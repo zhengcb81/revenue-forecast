@@ -1,0 +1,96 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "2f5b8da17319e46cff24db38150f09e16d5e0fdf",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "canonical_hash": "91aefa2ca46da5b3f83d40c715d047fb7780bcdb358f9f135611c4494cb2305c",
+  "commands": [
+    {
+      "command": "RED 探针：RECOGNITION_MODES/PRESENTATIONS 已有词汇；segment_bridge 已存在；multi-commodity product matrix 零实现；mixed-mode 组合无显式验证测试",
+      "exit_code": 0,
+      "result": "G1/G3 部分已有机制（需测试钉死）；G2 multi-commodity 需产品实现"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr707_mixed_recognition.py -q --tb=short",
+      "exit_code": 0,
+      "result": "13 passed（C1 mixed recognition 5 + C2 multi-commodity 3 + C3 presentation 5）"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "733 passed + 106 subtests（3 deselected = fc1103 既有环境挂起；+13 新测试，无回归）"
+    },
+    {
+      "command": "ruff check scripts/mixed_recognition.py tests/test_zr707_mixed_recognition.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（新文件各函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH 141 files"
+    },
+    {
+      "command": "git diff 2f5b8da fdb560e --stat",
+      "exit_code": 0,
+      "result": "2 文件 +244：mixed_recognition.py（新 ~120 行）、test_zr707_mixed_recognition.py（新 13 tests）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T07:00:00+00:00",
+  "findings": [
+    {
+      "detail": "mixed recognition 组合验证：每个分部独立校验自己的 recognition mode（modeled_as_recognized/lagged_activity），混合模式合法——无需跨分部冲突检测。multi-commodity product matrix：同一矿可有多个 commodity segments（铜+金副产品），每个独立计算，不重复计价。presentation consistency：每个分部声明 gross/net，trading/other 用正确 presentation。",
+      "id": "ZR707-IMPL-001",
+      "severity": "info",
+      "title": "mixed recognition + multi-commodity + presentation 验证"
+    }
+  ],
+  "implementation": {
+    "design": "新 scripts/mixed_recognition.py：validate_mixed_recognition（混合 recognition 合法性）、validate_commodity_matrix（multi-commodity 分段验证）、validate_presentation_consistency（gross/net 声明验证）。零产品硬编码。",
+    "files": [
+      "revenue-forecast/scripts/mixed_recognition.py",
+      "revenue-forecast/tests/test_zr707_mixed_recognition.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-707/**"
+    ]
+  },
+  "implementer": "zr707-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 fdb560e；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=a61be808（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr707-independent）。",
+    "注：base_triplet.revenue=2f5b8da 为 ZR-711 closure commit。"
+  ],
+  "objective": "F2 扩展模型组合与 schema 表达：mixed recognition/gross-net、multi-commodity product matrix、segment bridge 正确性、trading/other presentation 一致性。",
+  "plan_sha256": "a61be8080ca3228f9c0a887e4d7c41a55509054d950f88f7b1aee514c739bd31",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "fdb560ed81d5ced74b4707c33e08038b2ad7b9c1",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：scripts/mixed_recognition.py（新）、tests/test_zr707_mixed_recognition.py（新 13 tests）；revenue 侧 receipts/ZR-707/** 与 state.json。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 2,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/scripts/mixed_recognition.py",
+    "revenue-forecast/tests/test_zr707_mixed_recognition.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-707/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-707"
+}
