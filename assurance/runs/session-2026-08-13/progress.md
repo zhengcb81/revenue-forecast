@@ -754,3 +754,15 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-905 closure commit 待提交，实现 f41fb81 + delta e04b7a4）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-906（最终 ratchet——依赖 ZR-104 已闭；"root 特判 0、关键 legacy caller 0、critical coverage 阈值、Windows 错误 0；required check"）→ ZR-907（contract/doc/sample drift patrol，依赖 ZR-906）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-905 全流程已闭（reviewer accepted → delta accepted → 12/13_delta 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-906（最终 ratchet）→ ZR-907/901（阶段 H/I）。
+- **ZR-906（阶段 H 第五卡：最终六类 ratchet）实施完成**：
+  - RED 探针：grep final_ratchet → 零命中；run_coverage_gates 实测超时（全量 pytest 含 fc1103 挂起）；scripts/ Kamoa/Porgera 仅 docstring/注释防线标签；无 mypy 零增长门。
+  - 修复：新 tools/final_ratchet.py（六类 gate 聚合：hardcode 代码级特判扫描（docstring/注释防线标签白名单）/ legacy caller / complexity（test_complexity_ratchet）/ type（mypy 冻结基线）/ coverage（run_coverage_gates）/ encoding（BOM+不可解码）+ --scanners-only CI 快速模式 + --print-json）；修 tools/run_coverage_gates.py（-k 'not fc1103' + timeout 900——不再挂起）。
+  - 新 test_zr906_final_ratchet.py（9 tests）：C1 非空洞（注入硬编码/legacy/BOM → 红；注释/docstring 标签 → 绿）+ C2 聚合器 + C3 真实代码零增长。
+  - revenue 全量 **871 passed + 106 subtests**（862+9 新，零回归）+ ruff + ratchet + sync MATCH 157 + pre-commit 绿；commit 7865c72。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 7865c72）；implementer receipt canonical 8e439c0b。
+  - 独立复核 reviewer-zr906-independent 运行中。
+- **ZR-906 closure**：独立复核 reviewer-zr906-independent 首轮 **changes_required**（13/13 探针 + 全量 871+106 + hermetic 快照零改动；REV-001 blocking：type gate 永久红——基线 2 是 wiki resolver.py（ZR-404）误用于 revenue scripts/，真实 mypy 69 错误未测量，违 ZR-104 纪律；REV-002 minor 三引号代码级字符串逃逸 + REV-003 minor encoding 仅 py+BOM + REV-004 info 空格）→ delta 修复 65c9ad6（MYPY_BASELINE 冻结实测 69（零增长门）+ docstring 状态机处理行尾三引号闭合（曾误标 docstring 文本为代码）+ encoding 扩展 .json/.yaml/.md + 不可解码检测 + 空格；+3 回归测试 12 passed，全量 874+106 绿）→ delta 复审 **accepted**（REV-001 全六门 ok 实证 exit 0（coverage 89% 不再挂起）+ REV-002/003/004 FIXED；DREV-001 info 单行 docstring 状态残余（84 处、无真实漏检、follow-up 建议）+ DREV-002 minor 11 receipt 未刷新 delta + DREV-003/004 info）；reviewer receipt canonical 7af2979c；state accepted + closure-advance -> **ZR-907**（phase H_dynamic_audit，contract/doc/sample drift patrol）。
+- **机器状态**：current_next=ZR-907，accepted **88/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 5：ZR-902~906；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-906 closure commit 待提交，实现 7865c72 + delta 65c9ad6）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-907（contract/doc/sample/skill-package drift patrol——依赖 ZR-701/ZR-906；"schema 版本/字段/引用文件/installed skill hash 不一致即 CI 失败"）→ ZR-901（PR 门）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-906 全流程已闭（reviewer accepted → delta accepted → 12/13_delta 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-907（drift patrol）→ ZR-901/CA-201（阶段 H 出口）。

@@ -327,3 +327,9 @@
 - **ZR-905 closure**（审核机制自测试）：revenue f41fb81 + delta e04b7a4——八类 AUD2 失败注入全红（schedule 未运行/报告过期/半报告/伪造零计数/缺样本/指标恶化/manifest 漂移/reviewer=implementer）+ 恢复幂等；reviewer 首轮 changes_required（REV-001 AUD2-07 空洞——verify 错误 cwd 48-on-both）→ delta 修复（repo_root 判别：undrifted=0/drifted=1）+ artifact SLI 推导 → delta accepted（判别实证非空洞）；reviewer receipt canonical f2cff9dd；closure→ZR-906（最终 ratchet：hardcode/dead path/complexity/type/coverage/encoding）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-906（最终 ratchet——依赖 ZR-104；"root 特判 0、关键 legacy caller 0、critical coverage 阈值、Windows 错误 0；required check"）未领取；恢复第一步 = ZR-906 → ZR-907（drift patrol）/ZR-901（PR 门）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-905 closure commit 待提交，实现 f41fb81 + delta e04b7a4）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-906 closure → 阶段 H 推进中）
+- **accepted 88/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 5：ZR-902~906；计数真源 state.json）。current_phase=**H_dynamic_audit**，current_next=**ZR-907**。
+- **ZR-906 closure**（最终六类 ratchet）：revenue 7865c72 + delta 65c9ad6——tools/final_ratchet.py（hardcode 代码级扫描/legacy/complexity/mypy 冻结 69/coverage/encoding 六门聚合 + scanners-only CI 模式）；run_coverage_gates 修 fc1103 挂起；reviewer 首轮 changes_required（REV-001 type 基线误用 2 → 实测 69）→ delta 修复（基线 69 + docstring 状态机 + encoding 扩展）→ delta accepted（全六门 exit 0 实证）；reviewer receipt canonical 7af2979c；closure→ZR-907（contract/doc drift patrol）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-907（drift patrol——依赖 ZR-701/906；schema 版本/字段/引用文件/installed skill hash 不一致即 CI 失败）未领取；恢复第一步 = ZR-907 → ZR-901（PR 门）/CA-201。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-906 closure commit 待提交，实现 7865c72 + delta 65c9ad6）、wiki 26a6b22、filing 5a1c18f。
