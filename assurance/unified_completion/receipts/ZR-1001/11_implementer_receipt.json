@@ -1,0 +1,98 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "69cb49e0c78f595a70d0e8684c77c0e5443be1e8",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep release_readiness/release_authorization → 零命中；无 release 就绪聚合（fingerprint/integrity/预算/备份/回滚/授权）",
+      "exit_code": 0,
+      "result": "G1~G3 真实缺口"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1001_release_readiness.py -q --tb=short",
+      "exit_code": 0,
+      "result": "8 passed（C1 fingerprint 1 / C2 integrity 1 / C3 容量 1 / C4 备份+回滚 2 / C5 授权 3）"
+    },
+    {
+      "command": "ruff check tools/release_readiness.py tests/test_zr1001_release_readiness.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 159 files"
+    },
+    {
+      "command": "git commit（pre-commit 全套：889+106 全量 + sync MATCH）",
+      "exit_code": 0,
+      "result": "c473e97 feat(ZR-1001) — 3 files +287"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "889 passed + 106 subtests（881 基线 + 8 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T03:10:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 三仓 HEAD fingerprint（40-hex 一致可查）。C2 catalog 快速完整性门：只读打开 + documents/sources/locations 关键表探针（PRAGMA integrity_check/quick_check 在生产库需数分钟——本卡采用秒级探针，深度校验移交真实切换卡）。C3 容量预算：assurance/runs ≤2048MB。C4 备份可读（assurance/backup 建立 + README 占位）+ 回滚 dry-run（rollback_manifest.json 记录三仓 HEAD 回滚点，不执行）。C5 用户授权：release_authorization.json 缺失 → release blocked；issue-auth 后 → ready（窗口可开）。",
+      "id": "ZR1001-IMPL-001",
+      "severity": "info",
+      "title": "release 预备六门（fingerprint/integrity/容量/备份/回滚/授权）"
+    }
+  ],
+  "implementation": {
+    "design": "新 tools/release_readiness.py：head_fingerprints/catalog_integrity（快速探针）/capacity_ok/backup_readable/write_rollback_point（dry-run 不执行）/authorization + issue_authorization；CLI check/issue-auth。新 tests/test_zr1001_release_readiness.py（8 tests）；assurance/backup/ 建立（占位 README）。产品零改动。",
+    "files": [
+      "revenue-forecast/tools/release_readiness.py",
+      "revenue-forecast/tests/test_zr1001_release_readiness.py",
+      "revenue-forecast/assurance/backup/README.md",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1001/**"
+    ]
+  },
+  "implementer": "zr1001-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 3ed2661（含 REV-001/002 delta；parent c473e97 = 首版实现）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=bedb0fa2（00_wu_card.md，hashlib 注入）。",
+    "真实回滚不执行（dry-run 预飞）；授权由 release owner 首次签发（issue-auth）。",
+    "DELTA-BLOCK-001 修复：delta 后 receipt 的 result_triplet 更新为实际 reviewed HEAD（release-readiness 指纹一致性核心要求）。"
+  ],
+  "objective": "阶段 I 首卡：release 预备——生产副本完整性/fingerprint、容量与耗时预算、备份可读性、回滚命令预飞、用户授权；未满足不进入发布窗口。",
+  "plan_sha256": "bedb0fa2fe786ae31e318d50e52590844d6ae5527bdbe26d7087734e0ef1fbbb",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "3ed266149364d4abf73275962f153dc7e3d2f752",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tools/release_readiness.py（新）+ tests/test_zr1001_release_readiness.py（新 8 tests）+ assurance/backup/README.md；receipts/ZR-1001/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 3
+  },
+  "touched_files": [
+    "revenue-forecast/tools/release_readiness.py",
+    "revenue-forecast/tests/test_zr1001_release_readiness.py",
+    "revenue-forecast/assurance/backup/README.md",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1001/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1001",
+  "canonical_hash": "c99ffb7a6e38bafc645d48779ee662484f7c8173c8b9e87aefded52fe7acdb45"
+}

@@ -779,3 +779,15 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-907 closure commit 待提交，实现 2d2ab75）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-1001（阶段 I 首卡：渐进发布——"Reader 先切 → lifecycle/RootPolicy shadow → companies/dayu/Dropbox/fourth-root 小 cohort → legacy artifact 小批迁移 → broker processing cohort → mine model shadow → revenue 新链 cohort → 观察 → 删除"；R9 门条件见执行计划 §11）→ ZR-1002 等。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-907 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-1001（阶段 I 渐进发布）→ ZR-1002~1009/CA-304（legacy 删除）。
+- **ZR-1001（阶段 I 首卡：release 预备）实施完成**：
+  - RED 探针：grep release_readiness/release_authorization → 零命中；无 release 就绪聚合（fingerprint/integrity/预算/备份/回滚/授权）。
+  - 修复：新 tools/release_readiness.py——head_fingerprints（三仓 40-hex）/ catalog_integrity（只读打开 + documents/sources/locations 关键表探针——PRAGMA integrity_check/quick_check 在生产库需数分钟，本卡采用秒级快速门，深度校验移交真实切换卡）/ capacity_ok（assurance/runs ≤2048MB）/ backup_readable（assurance/backup 建立 + README 占位）/ write_rollback_point（rollback_manifest.json 记录三仓 HEAD 回滚点，dry-run 不执行——源码仅 git rev-parse 无 checkout）/ authorization（release_authorization.json 缺失 → release blocked；issue-auth 后 ready）+ issue_authorization。
+  - 新 test_zr1001_release_readiness.py（8 tests）。
+  - revenue 全量 **889 passed + 106 subtests**（881+8 新，零回归）+ ruff + ratchet + sync MATCH 159 + pre-commit 绿；commit c473e97。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue c473e97）；implementer receipt canonical 92652dcb。
+  - 独立复核 reviewer-zr1001-independent 运行中。
+- **ZR-1001 closure**：独立复核 reviewer-zr1001-independent 首轮 **accepted**（探针全过：fingerprint 三仓交叉核对、integrity 0.028s 只读（写被拒）、容量独立复算、回滚 dry-run 仅 rev-parse、授权门+CLI；2 minor：REV-001 docstring 说 integrity_check 实际 key-table probes、REV-002 BUDGET_SUITE_SECONDS 死代码 + 2 info）→ delta 修复 3ed2661（docstring 对齐快速门 + 删死代码）→ delta 复审 **changes_required**（REV-001/002 代码已解决；唯一 blocking DELTA-BLOCK-001：11 receipt 未更新 result_triplet——release-readiness 指纹一致性核心要求）→ 簿记修复（11 重签 canonical c99ffb7a pin 3ed2661 + 13_delta 写 + 12 更新 39b70986 + 13_delta 补签 5b7a8a09）→ 复审最终 **accepted**（DELTA-BLOCK-001 resolved，closure-ready）；state accepted + closure-advance -> **ZR-1002**（phase I_gradual_release，Reader 先上线——company-wiki 真实产品切换）。
+- **机器状态**：current_next=ZR-1002，accepted **90/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 1：ZR-1001；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1001 closure commit 待提交，实现 c473e97 + delta 3ed2661）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-1002（阶段 I：Reader 先上线，writer 保持原行为——company-wiki 产品切换；"read shadow/golden/SLO；rollback 路由；无 schema/data 迁移"）→ ZR-1003（lifecycle shadow assertions）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-1001 全流程已闭（reviewer accepted → delta accepted → 11/12/13_delta 入库（含重签）→ state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-1002（Reader 先上线）→ ZR-1003~1009/CA-304。

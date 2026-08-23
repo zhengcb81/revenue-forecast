@@ -339,3 +339,9 @@
 - **ZR-907 closure**（drift patrol）：revenue 2d2ab75——tools/drift_patrol.py 扩展（schema '3.6' 字面门 + manifest-verify 聚合 → 七类检查）；reviewer accepted（18/19 探针；2 info）；**发现真实漂移 ZR907-FIND-001**：company-wiki config_doctor 断言 {dropbox_stock} 但 ZR-409 加 future_lake → config 已知红登记后续；reviewer receipt canonical 8f6759e2；closure→ZR-1001（阶段 I：渐进发布与 legacy 删除）。**阶段 H（动态审核）全闭**。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-1001（阶段 I 首卡：Reader 先切 → shadow/cohort/rollback 全绿 → legacy 删除由 CA-304 唯一拥有）未领取；恢复第一步 = ZR-1001 → ZR-1002~1009。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-907 closure commit 待提交，实现 2d2ab75）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-1001 closure → 阶段 I 推进中）
+- **accepted 90/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 1：ZR-1001；计数真源 state.json）。current_phase=**I_gradual_release**，current_next=**ZR-1002**。
+- **ZR-1001 closure**（release 预备）：revenue c473e97 + delta 3ed2661——tools/release_readiness.py（三仓 fingerprint/catalog 快速完整性门/容量预算/备份可读/回滚 dry-run/用户授权六门）；reviewer 首轮 accepted → REV-001/002 minor delta → 复审 changes_required（DELTA-BLOCK-001：11 receipt 未 pin delta）→ 簿记修复（11 重签 pin 3ed2661）→ 最终 accepted；reviewer receipt canonical 39b70986；closure→ZR-1002（Reader 先上线——company-wiki 真实产品切换）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-1002（Reader 先上线，writer 保持原行为；read shadow/golden/SLO；rollback 路由；无 schema/data 迁移）未领取；恢复第一步 = ZR-1002 → ZR-1003（lifecycle shadow）~ZR-1009/CA-304。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1001 closure commit 待提交，实现 c473e97 + delta 3ed2661）、wiki 26a6b22、filing 5a1c18f。
