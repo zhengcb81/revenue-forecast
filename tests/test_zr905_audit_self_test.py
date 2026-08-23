@@ -86,6 +86,16 @@ def test_aud2_01_no_run_blocks():
     assert "blocked" in reason
 
 
+def test_aud2_01_schedule_not_registered():
+    # REV-003: the scheduled-task side is also part of AUD2-01 — a task that
+    # is not registered is a missing schedule (read-only schtasks query).
+    proc = subprocess.run(
+        ["schtasks", "/query", "/tn", "revenue_daily_t2", "/fo", "csv", "/v"],
+        capture_output=True, text=True, encoding="utf-8", timeout=60,
+    )
+    assert proc.returncode != 0, "expected task not registered (deployment action)"
+
+
 # ---------------------------------------------------------------------------
 # AUD2-02 — stale report -> blocked (old green never reused)
 # ---------------------------------------------------------------------------
@@ -137,10 +147,11 @@ def test_aud2_03_swallowed_nonzero_turns_red(tmp_path):
 
 def test_aud2_04_forged_zero_counts_sli_red():
     sli = rg.compute_sli({"latest_run_id": "r", "ok": True}, catalog={
-        "downloads": 5, "reuse_count": 0, "consumer_ready_rate": 0.95,
-        "render_ok": True,
+        "downloads": 5, "reuse_count": 0, "bound_artifacts": 0,
+        "consumer_ready_rate": 0.95, "render_ok": True,
     })
     assert sli["reuse"]["ok"] is False  # zero reuse = forged avoidance
+    assert sli["artifact"]["ok"] is False  # zero bound artifacts = degraded
     assert sli["download_avoidance"]["value"] == 5
 
 
@@ -193,18 +204,19 @@ def test_aud2_07_manifest_drift_detected(tmp_path):
     manifest["control_page_sha256"] = "0" * 64  # drift
     drifted = tmp_path / "plan_inputs.json"
     drifted.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
-    proc = subprocess.run(
-        [sys.executable, "-c",
-         "import sys; sys.path.insert(0, '.'); "
-         "from pathlib import Path; from uc.manifest import verify; "
-         "import json; m=json.load(open(r'%s', encoding='utf-8')); "
-         "print(len(verify(Path('.'), Path(r'%s'), check_mtime=False)))" % (
-             drifted, drifted)],
-        capture_output=True, text=True, encoding="utf-8", timeout=60,
-        cwd=str(ROOT / "assurance" / "unified_completion"),
-    )
-    problems = int(proc.stdout.strip().splitlines()[-1])
-    assert problems >= 1, "manifest drift must be detected"
+    from uc.manifest import verify
+
+    baseline = len(verify(ROOT, drifted, check_mtime=False))
+    # REV-001 fix: repo_root must be the repo root so the undrifted baseline
+    # is 0 (paths inside plan_inputs.json resolve relative to repo root).
+    undrifted = json.loads(
+        (ROOT / "assurance" / "unified_completion" / "manifests" / "plan_inputs.json")
+        .read_text(encoding="utf-8"))
+    copy = tmp_path / "plan_inputs_clean.json"
+    copy.write_text(json.dumps(undrifted, ensure_ascii=False), encoding="utf-8")
+    clean = len(verify(ROOT, copy, check_mtime=False))
+    assert clean == 0, f"undrifted manifest must verify clean, got {clean} problems"
+    assert baseline > clean, "manifest drift must raise the problem count"
 
 
 # ---------------------------------------------------------------------------

@@ -117,6 +117,8 @@ def compute_sli(ledger: dict | None, catalog: dict | None = None) -> dict:
             sli["render"]["ok"] = False
         if sli["reuse"]["value"] == 0:
             sli["reuse"]["ok"] = False
+        if sli["artifact"]["value"] == 0:
+            sli["artifact"]["ok"] = False
     return sli
 
 

@@ -144,11 +144,12 @@ def test_c2_catalog_regression_derives_not_ok():
     ledger = {"latest_run_id": "r", "ok": True}
     sli = rg.compute_sli(ledger, catalog={
         "consumer_ready_rate": 0.3, "render_ok": False, "reuse_count": 0,
+        "bound_artifacts": 42,
     })
     assert sli["consumer_ready"]["ok"] is False
     assert sli["render"]["ok"] is False
     assert sli["reuse"]["ok"] is False
-    assert sli["artifact"]["ok"] is True  # not degraded
+    assert sli["artifact"]["ok"] is True  # not degraded (bound_artifacts > 0)
 
 
 def test_c2_empty_sli_blocks():
