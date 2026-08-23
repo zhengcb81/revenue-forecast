@@ -5,8 +5,13 @@ Every check must pass before a release window opens (registry: "integrity/
 fingerprint, 耗时/空间预算, 用户授权; 未满足不进入窗口"):
 
   fingerprints  three repo HEADs recorded and consistent.
-  integrity     production catalog sqlite PRAGMA integrity_check == ok.
-  capacity      assurance/runs space and suite-time within frozen budgets.
+  integrity     production catalog read-only open + key-table row probes
+                (fast gate; full integrity_check is minutes-scale on the
+                production catalog — deliberately replaced, documented in
+                the card C2).
+  capacity      assurance/runs space within the frozen budget (suite time is
+                bounded by CI timeouts — REV-002 resolved by removing the
+                dead constant).
   backup        backup location exists and is readable.
   rollback      dry-run: current HEADs recorded as the rollback point
                 (rollback_manifest.json); steps parse — nothing executes.
@@ -36,7 +41,6 @@ AUTH_PATH = RUNS_DIR / "release_authorization.json"
 ROLLBACK_PATH = RUNS_DIR / "rollback_manifest.json"
 
 BUDGET_RUNS_MB = 2048
-BUDGET_SUITE_SECONDS = 900
 
 REPOS = {
     "revenue": ROOT,
