@@ -22,14 +22,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
-MYPY_BASELINE = 2  # pre-existing mypy errors (frozen; zero-growth gate)
+# Measured on 2026-08-23: mypy scripts --no-error-summary --ignore-missing-imports
+# reports 69 errors (independent reviewer replication).  Frozen zero-growth
+# baseline — the gate blocks NEW type errors; debt reduction is a later card.
+MYPY_BASELINE = 69
 
 HARDCODE_TERMS = ("Kamoa", "Zijin", "紫金", "Porgera", "601899", "688031")
 LEGACY_TERMS = ("legacy_bridge", "LegacyEngine", "legacy_engine")
 
 
 def _code_lines(path: Path) -> list[str]:
-    """Return non-comment, non-docstring code lines of a python file."""
+    """Return non-comment, non-docstring code lines of a python file.
+
+    Line-based docstring state machine: a line that starts with the triple
+    quote (after indentation) opens or closes a docstring block; a line that
+    ENDS with the triple quote closes a block opened on an earlier line
+    (e.g. ``...inheritance).\"\"\"``).  Triple-quoted strings inside
+    assignments/expressions do not start with the quote and stay code.
+    """
     try:
         text = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
@@ -39,10 +49,14 @@ def _code_lines(path: Path) -> list[str]:
     code: list[str] = []
     for line in lines:
         stripped = line.strip()
-        if stripped.startswith(('"""', "'''")) or stripped.endswith(('"""', "'''")):
+        if stripped.startswith(('"""', "'''")):
             in_docstring = not in_docstring
             continue
-        if in_docstring or stripped.startswith("#"):
+        if in_docstring:
+            if stripped.endswith(('"""', "'''")):
+                in_docstring = False
+            continue
+        if stripped.startswith("#"):
             continue
         code.append(line)
     return code
@@ -68,14 +82,22 @@ def scan_legacy(scripts_dir: Path) -> list[str]:
 
 def scan_encoding(root: Path) -> list[str]:
     problems = []
-    for pattern in ("*.py",):
-        for path in sorted((root / "scripts").glob(pattern)) + sorted(
-                (root / "tools").glob(pattern)):
+    for directory in (root / "scripts", root / "tools"):
+        for path in sorted(directory.rglob("*")):
+            if not path.is_file():
+                continue
+            if path.suffix not in (".py", ".json", ".yaml", ".yml", ".md"):
+                continue
             raw = path.read_bytes()
             if raw.startswith(b"\xef\xbb\xbf"):
                 problems.append(f"{path.name}: UTF-8 BOM")
             elif raw.startswith(b"\xff\xfe") or raw.startswith(b"\xfe\xff"):
                 problems.append(f"{path.name}: UTF-16 BOM")
+            elif path.suffix in (".py", ".json"):
+                try:
+                    raw.decode("utf-8")
+                except UnicodeDecodeError as exc:
+                    problems.append(f"{path.name}: undecodable ({exc})")
     return problems
 
 
@@ -150,7 +172,7 @@ def main() -> int:
     else:
         for name, gate in result.items():
             detail = gate.get("detail") or ("" if gate["ok"] else f" {gate['hits']}")
-            print(f"{name}: {'OK' if gate['ok'] else 'RED'}{detail}")
+            print(f"{name}: {'OK' if gate['ok'] else 'RED'} {detail}".rstrip())
     return 0 if all(g["ok"] for g in result.values()) else 1
 
 

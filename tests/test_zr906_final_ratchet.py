@@ -120,3 +120,32 @@ def test_c3_real_code_zero_legacy_callers():
 
 def test_c3_real_code_no_bom():
     assert fr.scan_encoding(ROOT) == [], "BOM-encoded python files must be zero"
+
+
+# ---------------------------------------------------------------------------
+# Delta regressions (REV-001/002/003)
+# ---------------------------------------------------------------------------
+
+
+def test_d1_type_baseline_frozen_from_measurement():
+    # REV-001: baseline must be the measured count (69), not a wiki-derived 2.
+    assert fr.MYPY_BASELINE == 69, (
+        "type-gate baseline must be the measured mypy error count")
+
+
+def test_d2_triple_quoted_assignment_is_code(tmp_path):
+    # REV-002: a triple-quoted STRING in an assignment is code, not docstring.
+    probe = _make_probe_dir(tmp_path)
+    (probe / "mod_e.py").write_text(
+        'NAME = """Zijin Mining"""\n', encoding="utf-8")
+    hits = fr.scan_hardcode(probe)
+    assert any("Zijin" in hit for hit in hits)
+
+
+def test_d3_non_py_bom_detected(tmp_path):
+    # REV-003: BOM detection covers .json/.yaml/.md too, plus undecodable bytes.
+    scripts_dir = tmp_path / "scripts"
+    scripts_dir.mkdir()
+    (scripts_dir / "data.json").write_bytes(b"\xef\xbb\xbf" + b'{"a": 1}')
+    problems = fr.scan_encoding(tmp_path)
+    assert any("data.json" in p and "BOM" in p for p in problems)
