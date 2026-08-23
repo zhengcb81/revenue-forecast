@@ -802,3 +802,14 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1002 closure commit 待提交）、wiki 6af6cc5（ZR-1002 实现）、filing 5a1c18f。
 - 下一卡：ZR-1003（lifecycle/safety/RootPolicy shadow assertions——"两动态周期 diff 全解释；active response 不变；rollback 仅关 flag"）→ ZR-1004（小 cohort）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-1002 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-1003（lifecycle shadow assertions）→ ZR-1004~1009/CA-304。
+- **ZR-1003（阶段 I 第三卡：lifecycle/safety/RootPolicy shadow assertions）实施完成**（company-wiki 仓）：
+  - RED 探针：grep zr1003 → 零命中；既有测试未覆盖 lifecycle/safety fail-closed/policy 拒绝/两周期确定性/flag-only 回滚语义。
+  - 修复：company-wiki 新 tests/contract/test_zr1003_shadow_assertions.py（7 tests）——C1 lifecycle（shadow→apply→active→rollback→shadow 可见性）；C2 safety（未评审文档 fail-closed 无 review receipt + record_prompt_injection_review（sqlite3.Connection 语义）后 receipt 完整）；C3 RootPolicy（错误 policy_hash → ActivationError 拒绝，current_policy_hash 解耦）；C4 两动态周期（两次 apply→读→rollback 输出 canonical hash 一致，含 assertion_id 级确定性）；C5 active 响应不变（rollback+re-apply 新 epoch 前后全等）；C6 rollback 仅关 flag（visibility=shadow + epoch 保留 + 数据完整 + journal rollback 记录）。
+  - company-wiki 回归 20 passed（ZR-1002 5 + activation 15）+ ruff clean；revenue 全量 **889 passed + 106 subtests** 零回归；commit 9a00df6（wiki 仓）。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki 9a00df6）；implementer receipt canonical 6a119154。
+  - 独立复核 reviewer-zr1003-independent 运行中。
+- **ZR-1003 closure**：独立复核 reviewer-zr1003-independent **accepted**（13/13 对抗探针全过：错误 policy stale hash 拒绝 + active 空、两周期 canonical hash 相同且 assertion_id 相同（id 级确定性）、回滚后 shadow+epoch 保留+数据完整+journal rollback、未评审 fail-closed + review receipt 完整；20 回归 + revenue 889+106 复跑 157.54s；3 info：REV-001 全绿、REV-002 id 级确定性、REV-003 零产品改动门）；reviewer receipt canonical 2bf1d0b5；state accepted + closure-advance -> **ZR-1004**（phase I_gradual_release，companies→dayu→Dropbox 小 cohort）。
+- **机器状态**：current_next=ZR-1004，accepted **92/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 3：ZR-1001~1003；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1003 closure commit 待提交）、wiki 9a00df6（ZR-1003 实现）、filing 5a1c18f。
+- 下一卡：ZR-1004（companies→dayu→Dropbox→future root 小 cohort——"每 root T2/UJ；external write=0；同 request rollback 恢复"）→ ZR-1005（legacy artifact 分桶）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-1003 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-1004（小 cohort）→ ZR-1005~1009/CA-304。

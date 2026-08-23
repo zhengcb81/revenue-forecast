@@ -351,3 +351,9 @@
 - **ZR-1002 closure**（Reader 先上线，company-wiki）：wiki 6af6cc5——tests/contract/test_zr1002_reader_first.py（golden 零漂移/writer 保持/SLO/rollback 路由/无迁移 5 tests）；reviewer accepted（5 对抗探针全过，3 info）；reviewer receipt canonical a65f06a4；closure→ZR-1003（lifecycle/safety/RootPolicy shadow assertions）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-1003（lifecycle shadow assertions——"两动态周期 diff 全解释；active response 不变；rollback 仅关 flag"）未领取；恢复第一步 = ZR-1003 → ZR-1004（小 cohort）~ZR-1009/CA-304。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1002 closure commit 待提交）、wiki 6af6cc5（ZR-1002 实现）、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-1003 closure → 阶段 I 推进中）
+- **accepted 92/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 3：ZR-1001~1003；计数真源 state.json）。current_phase=**I_gradual_release**，current_next=**ZR-1004**。
+- **ZR-1003 closure**（lifecycle/safety/RootPolicy shadow assertions，company-wiki）：wiki 9a00df6——7 tests（lifecycle/safety fail-closed/policy 拒绝/两周期确定性/active 不变/flag-only 回滚）；reviewer accepted（13/13 探针，3 info）；reviewer receipt canonical 2bf1d0b5；closure→ZR-1004（companies→dayu→Dropbox 小 cohort）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-1004（小 cohort——每 root T2/UJ；external write=0；同 request rollback 恢复）未领取；恢复第一步 = ZR-1004 → ZR-1005（legacy artifact 分桶）~ZR-1009/CA-304。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1003 closure commit 待提交）、wiki 9a00df6（ZR-1003 实现）、filing 5a1c18f。
