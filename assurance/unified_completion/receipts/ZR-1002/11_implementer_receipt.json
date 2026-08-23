@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "fce3619035674117af36ca3620e982b8299eb9f4",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep zr1002 → 零命中；company-wiki 既有测试为单点（FC-202 snapshot/FC-203 事务/reader 查询/observability），无 golden+SLO+rollback 旅程综合套件",
+      "exit_code": 0,
+      "result": "G1~G2 真实缺口"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_zr1002_reader_first.py -q --tb=short（company-wiki CWD）",
+      "exit_code": 0,
+      "result": "5 passed（C1 golden / C2 writer / C3 SLO / C4 rollback / C5 无迁移）"
+    },
+    {
+      "command": "company-wiki 回归：activation 15 + resolver/zr203 23 + catalog_reader 23",
+      "exit_code": 0,
+      "result": "61 passed（零回归）"
+    },
+    {
+      "command": "ruff check tests/contract/test_zr1002_reader_first.py（company-wiki CWD）",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit（company-wiki）",
+      "exit_code": 0,
+      "result": "6af6cc5 test(ZR-1002) — 1 file +244"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'（revenue CWD）",
+      "exit_code": 0,
+      "result": "889 passed + 106 subtests（零回归，wiki 改动不影响 revenue）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T03:50:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 golden：apply_activation 后 ReadOnlyCatalogReader 读取 active 断言 == 激活前 store 查询 golden（entity/security_id/fiscal_year/provider 逐字段，shadow→active 零漂移）。C2 writer：激活后 upsert_verified_assertion 仍可写 + activation_journal apply 记录完整。C3 SLO：reader fetchall < 5s 预算。C4 rollback：visibility 回 shadow（active 不可见）、行未删、二次回滚 ActivationError。C5 无迁移：catalog_meta schema 版本与断言行数激活→回滚前后不变。临时库 hermetic，生产 catalog 零触碰。",
+      "id": "ZR1002-IMPL-001",
+      "severity": "info",
+      "title": "Reader-first 综合验收（golden/SLO/writer/rollback/无迁移）"
+    }
+  ],
+  "implementation": {
+    "design": "company-wiki 新 tests/contract/test_zr1002_reader_first.py（5 tests）：_seed（upsert_verified_assertion 按既有测试正确签名）+ _golden（激活前 store 查询）+ _reader_rows（ReadOnlyCatalogReader.fetchall active 可见性）→ 激活旅程（apply → golden 对比 → writer 保持 → SLO → rollback → 无迁移）。产品零改动（wiki src/ 与 revenue scripts/ 未触碰）。",
+    "files": [
+      "company-wiki/tests/contract/test_zr1002_reader_first.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1002/**"
+    ]
+  },
+  "implementer": "zr1002-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.wiki 为本卡实现提交 6af6cc5（company-wiki，parent 26a6b22）；revenue fce3619（ZR-1001 closure）、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=6e7d56e4（00_wu_card.md，hashlib 注入）。",
+    "真实生产激活为部署动作（release window 内由 release owner 执行）。",
+    "独立 reviewer 待派出（reviewer-zr1002-independent）。"
+  ],
+  "objective": "阶段 I 第二卡：Reader 先上线——read shadow/golden/SLO；rollback 路由；writer 保持原行为；无 schema/data 迁移。",
+  "plan_sha256": "6e7d56e41f5cf70f768271f0fa5aafb7570479719946f40e559816c27972456d",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "fce3619035674117af36ca3620e982b8299eb9f4",
+    "wiki": "6af6cc5b430733fde403e16be432930f1770e662"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki：tests/contract/test_zr1002_reader_first.py（新 5 tests）；revenue：receipts/ZR-1002/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr1002_reader_first.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1002/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1002",
+  "canonical_hash": "819a7195aa5c87d76aa75dd4823d13492c0b36bee56d692c49c77e4320f05cee"
+}

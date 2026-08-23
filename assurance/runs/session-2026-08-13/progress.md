@@ -791,3 +791,14 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1001 closure commit 待提交，实现 c473e97 + delta 3ed2661）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-1002（阶段 I：Reader 先上线，writer 保持原行为——company-wiki 产品切换；"read shadow/golden/SLO；rollback 路由；无 schema/data 迁移"）→ ZR-1003（lifecycle shadow assertions）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-1001 全流程已闭（reviewer accepted → delta accepted → 11/12/13_delta 入库（含重签）→ state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-1002（Reader 先上线）→ ZR-1003~1009/CA-304。
+- **ZR-1002（阶段 I 第二卡：Reader 先上线）实施完成**（company-wiki 仓）：
+  - RED 探针：grep zr1002 → 零命中；既有测试为单点（FC-202 snapshot 语义/FC-203 事务/reader 只读查询/observability 延迟计算），无 golden+SLO+rollback 旅程综合套件。
+  - 修复：company-wiki 新 tests/contract/test_zr1002_reader_first.py（5 tests）——C1 golden（apply_activation 后 ReadOnlyCatalogReader 读取 active 断言 == 激活前 store 查询 golden，shadow→active 零漂移）；C2 writer 保持（激活后 upsert 仍可写 + activation_journal 完整）；C3 SLO（reader fetchall < 5s 预算）；C4 rollback 路由（visibility 回 shadow、行未删、二次回滚 ActivationError 拒绝）；C5 无 schema/data 迁移（schema 版本 + 行数激活→回滚不变）。
+  - company-wiki 回归 61 passed（activation 15 + resolver/zr203 23 + catalog_reader 23）+ ruff clean；revenue 全量 **889 passed + 106 subtests** 零回归；commit 6af6cc5（wiki 仓）。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（wiki 6af6cc5）；implementer receipt canonical 819a7195。
+  - 独立复核 reviewer-zr1002-independent 运行中。
+- **ZR-1002 closure**：独立复核 reviewer-zr1002-independent **accepted**（5 独立对抗探针全过：golden 全行相等零漂移 + reader 只读实证（写被拒）、writer 保持 + 新断言 shadow 不可见、SLO 10 次 warm 0.0ms、rollback 旅程 + 二次回滚拒绝 + applies_receipt_id 链、无迁移（schema 1.2.0/行数/表集不变）；38+4 回归全绿 + revenue 889+106 复跑；3 info：REV-001 探针自身 bug（UNIQUE 约束）、REV-002 既有 thread warnings、REV-003 receipt 回归分组口径差异——无 gate 缺口）；reviewer receipt canonical a65f06a4；state accepted + closure-advance -> **ZR-1003**（phase I_gradual_release，lifecycle/safety/RootPolicy shadow assertions）。
+- **机器状态**：current_next=ZR-1003，accepted **91/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 2：ZR-1001/1002；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1002 closure commit 待提交）、wiki 6af6cc5（ZR-1002 实现）、filing 5a1c18f。
+- 下一卡：ZR-1003（lifecycle/safety/RootPolicy shadow assertions——"两动态周期 diff 全解释；active response 不变；rollback 仅关 flag"）→ ZR-1004（小 cohort）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-1002 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-1003（lifecycle shadow assertions）→ ZR-1004~1009/CA-304。

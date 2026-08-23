@@ -1,0 +1,127 @@
+{
+  "unit": "ZR-1002",
+  "reviewer": "reviewer-zr1002-independent",
+  "kind": "reviewer",
+  "schema_version": 1,
+  "verdict": "accepted",
+  "reviewed_object_sha256": "2fe6a577dfe4e0c28ad7148c27ed785d03535ff3715eb1400b2e30ce7d696752",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -2",
+      "exit_code": 0,
+      "result": "HEAD=6af6cc5 (ZR-1002 test commit, 1 file +244), parent=26a6b22 (ZR-510 fix)"
+    },
+    {
+      "command": "git -C company-wiki diff --stat 26a6b22 6af6cc5",
+      "exit_code": 0,
+      "result": "1 file changed: tests/contract/test_zr1002_reader_first.py | 244 insertions(+)"
+    },
+    {
+      "command": "git -C company-wiki diff 26a6b22 6af6cc5 -- src/",
+      "exit_code": 0,
+      "result": "empty (0 lines) — zero product changes in wiki src/"
+    },
+    {
+      "command": "git -C revenue-forecast diff fce3619035674117af36ca3620e982b8299eb9f4 -- scripts/",
+      "exit_code": 0,
+      "result": "empty (0 lines) — revenue scripts/ untouched by this card"
+    },
+    {
+      "command": "Get-FileHash tests/contract/test_zr1002_reader_first.py -Algorithm SHA256",
+      "exit_code": 0,
+      "result": "2fe6a577dfe4e0c28ad7148c27ed785d03535ff3715eb1400b2e30ce7d696752"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_zr1002_reader_first.py -q --tb=short (company-wiki CWD)",
+      "exit_code": 0,
+      "result": "5 passed in 0.83s (C1 golden / C2 writer / C3 SLO / C4 rollback / C5 no migration)"
+    },
+    {
+      "command": "python probe_a_golden.py (reviewer probe, %TEMP%\\zr1002-reviewer\\)",
+      "exit_code": 0,
+      "result": "PASS: 0 active rows pre-activation; reader read-only (write -> OperationalError); post-activation reader row == pre-activation store golden (entity/security_id/fiscal_year/provider) with full-row equality (no byte drift)"
+    },
+    {
+      "command": "python probe_b_writer.py (reviewer probe)",
+      "exit_code": 0,
+      "result": "PASS: upsert_verified_assertion works after activation (2nd assertion present, decision=verified); new row visibility_state=shadow, invisible to active reader; activation_journal kind='apply' count == 1"
+    },
+    {
+      "command": "python probe_c_slo.py (reviewer probe)",
+      "exit_code": 0,
+      "result": "PASS: cold open ~0.001s; 10 warm fetchall iterations max=0.0000s mean=0.0000s << 5.0s SLO budget"
+    },
+    {
+      "command": "python probe_d_rollback.py (reviewer probe)",
+      "exit_code": 0,
+      "result": "PASS: apply -> 1 active row; rollback_activation -> 0 active rows, row NOT deleted (visibility_state=shadow, activation_epoch preserved, golden columns intact); double rollback raises ActivationError; rollback journal applies_receipt_id linkage intact"
+    },
+    {
+      "command": "python probe_e_no_migration.py (reviewer probe)",
+      "exit_code": 0,
+      "result": "PASS: schema_version 1.2.0, assertion row count (1), PRAGMA table_info, catalog_meta rows, sqlite_master table set all unchanged across activate->rollback; journal = 1 apply + 1 rollback"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_activation_transaction.py tests/contract/test_resolver_activation_snapshot.py tests/contract/test_zr203_reader_rewire.py -q --timeout=180 (company-wiki CWD)",
+      "exit_code": 0,
+      "result": "38 passed in 2.67s (15 + 15 + 8) — zero regressions"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_readonly_canary.py tests/contract/test_zr407_ensure_readonly.py -q --timeout=180 (company-wiki CWD)",
+      "exit_code": 0,
+      "result": "4 passed in 1.01s — reader suites green"
+    },
+    {
+      "command": "python -m ruff check tests/contract/test_zr1002_reader_first.py (company-wiki CWD)",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k \"not fc1103\" (revenue CWD)",
+      "exit_code": 0,
+      "result": "889 passed, 3 deselected, 106 subtests passed in 155.35s (2 pre-existing non-failing thread warnings in test_fc1004_platform)"
+    },
+    {
+      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-1002/11_implementer_receipt.json (CWD assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt is canonical and well-formed"
+    },
+    {
+      "command": "receipt content cross-check vs git (base_triplet.revenue/wiki, result_triplet.revenue/wiki)",
+      "exit_code": 0,
+      "result": "base.revenue=fce3619 == revenue HEAD; base.wiki=26a6b22 == commit parent; result.wiki=6af6cc5 == company-wiki HEAD; result.revenue=fce3619 == revenue HEAD"
+    }
+  ],
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "fce3619035674117af36ca3620e982b8299eb9f4",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "fce3619035674117af36ca3620e982b8299eb9f4",
+    "wiki": "6af6cc5b430733fde403e16be432930f1770e662"
+  },
+  "findings": [
+    {
+      "id": "REV-001",
+      "severity": "info",
+      "title": "Reviewer probe B initially failed due to probe bug, not implementation",
+      "detail": "probe_b_writer.py first run raised sqlite3.IntegrityError 'UNIQUE constraint failed: sources.content_sha256' because the probe re-inserted a duplicate sources row while seeding the second assertion. Fixed by reusing the existing source/document rows; re-run PASS. No bearing on the implementation."
+    },
+    {
+      "id": "REV-002",
+      "severity": "info",
+      "title": "Revenue full suite emits 2 pre-existing thread warnings",
+      "detail": "pytest reported PytestUnhandledThreadExceptionWarning twice in tests/test_fc1004_platform.py::test_install_sync_gate_detects_drift (UnicodeDecodeError in a subprocess reader thread). Non-failing, unrelated to ZR-1002; result remains 889 passed + 106 subtests."
+    },
+    {
+      "id": "REV-003",
+      "severity": "info",
+      "title": "Implementer receipt regression grouping differs from unit-card command list",
+      "detail": "Receipt claims 'activation 15 + resolver/zr203 23 + catalog_reader 23' (61 total). Reviewer reproduced the unit-card-named suites (38 passed: activation_transaction 15 + resolver_activation_snapshot 15 + zr203_reader_rewire 8) plus reader canary suites (4 passed). All green; no gate gap."
+    }
+  ],
+  "created_at_utc": "2026-08-23T03:01:00Z",
+  "canonical_hash": "a65f06a40a07ddb2ce12f3f0a4eb04e28f5c4332215d24f4dd9c8c2ee98309d1"
+}
