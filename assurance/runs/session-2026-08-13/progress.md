@@ -766,3 +766,16 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-906 closure commit 待提交，实现 7865c72 + delta 65c9ad6）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-907（contract/doc/sample/skill-package drift patrol——依赖 ZR-701/ZR-906；"schema 版本/字段/引用文件/installed skill hash 不一致即 CI 失败"）→ ZR-901（PR 门）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-906 全流程已闭（reviewer accepted → delta accepted → 12/13_delta 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-907（drift patrol）→ ZR-901/CA-201（阶段 H 出口）。
+- **ZR-907（阶段 H 收官：contract/doc/sample/skill-package drift patrol）实施完成**：
+  - RED 探针：既有 tools/drift_patrol.py（R6.4）patrol() 仅五类（version/installation/config/docs/dependencies）——无 schema 字面一致性门（'3.6' 无持续扫描）、无 manifest 引用 hash 聚合。
+  - 修复：扩展 tools/drift_patrol.py——patrol() 加 schema（'3.6' 字面扫描，排除 constants.py/schema_compatibility.py 枚举真源；3.1/3.2 历史兼容分支合法不误报）+ manifest（uc manifest-verify 子进程聚合）两 check → 七类。
+  - 新 test_zr907_drift_patrol.py（7 tests）：C1 schema 非空洞 2 + C2 manifest 2 + C3 patrol 聚合 3。
+  - revenue 全量 **881 passed + 106 subtests**（874+7 新，零回归）+ ruff + ratchet + sync MATCH 158 + pre-commit 绿；commit 2d2ab75。
+  - **真实漂移发现（ZR907-FIND-001）**：company-wiki config_doctor.py 断言 kind=directory roots == {dropbox_stock}，但 ZR-409 已加 future_lake（同为 directory）→ config check 已知红，登记跨仓产品修复移交后续卡。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue 2d2ab75）；implementer receipt canonical 8921532d。
+  - 独立复核 reviewer-zr907-independent 运行中。
+- **ZR-907 closure**：独立复核 reviewer-zr907-independent **accepted**（18/19 探针（1 个探针自身过严）+ 全量 881+106 复跑 147.65s + patrol 只读（mtime 快照零写）+ 7 check 顺序/绿项/已知红 config（future_lake 消息实证）全对；2 info：REV-001 3.1/3.2 兼容分支合法（门按 C1 只扫 3.6）、REV-002 config 已知红确认登记）；reviewer receipt canonical 8f6759e2；state accepted + closure-advance -> **ZR-1001**（phase I_gradual_release，阶段 I 首卡：渐进发布与 legacy 删除）。
+- **机器状态**：current_next=ZR-1001，accepted **89/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6：ZR-902~907；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-907 closure commit 待提交，实现 2d2ab75）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-1001（阶段 I 首卡：渐进发布——"Reader 先切 → lifecycle/RootPolicy shadow → companies/dayu/Dropbox/fourth-root 小 cohort → legacy artifact 小批迁移 → broker processing cohort → mine model shadow → revenue 新链 cohort → 观察 → 删除"；R9 门条件见执行计划 §11）→ ZR-1002 等。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-907 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-1001（阶段 I 渐进发布）→ ZR-1002~1009/CA-304（legacy 删除）。

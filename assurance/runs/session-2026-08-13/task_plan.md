@@ -333,3 +333,9 @@
 - **ZR-906 closure**（最终六类 ratchet）：revenue 7865c72 + delta 65c9ad6——tools/final_ratchet.py（hardcode 代码级扫描/legacy/complexity/mypy 冻结 69/coverage/encoding 六门聚合 + scanners-only CI 模式）；run_coverage_gates 修 fc1103 挂起；reviewer 首轮 changes_required（REV-001 type 基线误用 2 → 实测 69）→ delta 修复（基线 69 + docstring 状态机 + encoding 扩展）→ delta accepted（全六门 exit 0 实证）；reviewer receipt canonical 7af2979c；closure→ZR-907（contract/doc drift patrol）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-907（drift patrol——依赖 ZR-701/906；schema 版本/字段/引用文件/installed skill hash 不一致即 CI 失败）未领取；恢复第一步 = ZR-907 → ZR-901（PR 门）/CA-201。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-906 closure commit 待提交，实现 7865c72 + delta 65c9ad6）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-907 closure → 阶段 H 全闭 → 阶段 I 入口）
+- **accepted 89/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + **H 6/6 全闭**：ZR-902~907；计数真源 state.json）。current_phase=**I_gradual_release**，current_next=**ZR-1001**。
+- **ZR-907 closure**（drift patrol）：revenue 2d2ab75——tools/drift_patrol.py 扩展（schema '3.6' 字面门 + manifest-verify 聚合 → 七类检查）；reviewer accepted（18/19 探针；2 info）；**发现真实漂移 ZR907-FIND-001**：company-wiki config_doctor 断言 {dropbox_stock} 但 ZR-409 加 future_lake → config 已知红登记后续；reviewer receipt canonical 8f6759e2；closure→ZR-1001（阶段 I：渐进发布与 legacy 删除）。**阶段 H（动态审核）全闭**。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-1001（阶段 I 首卡：Reader 先切 → shadow/cohort/rollback 全绿 → legacy 删除由 CA-304 唯一拥有）未领取；恢复第一步 = ZR-1001 → ZR-1002~1009。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-907 closure commit 待提交，实现 2d2ab75）、wiki 26a6b22、filing 5a1c18f。

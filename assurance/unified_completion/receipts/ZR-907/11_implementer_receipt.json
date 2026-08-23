@@ -1,0 +1,96 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "5b065db83cf7a51c2c29f0e692e9a1461c67b8e0",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：既有 tools/drift_patrol.py（R6.4）patrol() 五类（version/installation/config/docs/dependencies）无 schema 字面/manifest 聚合；'3.6' 无持续门",
+      "exit_code": 0,
+      "result": "G1 无 schema 字面门 / G2 无 manifest 聚合——真实缺口"
+    },
+    {
+      "command": "python -m pytest tests/test_zr907_drift_patrol.py -q --tb=short",
+      "exit_code": 0,
+      "result": "7 passed（C1 schema 非空洞 2 / C2 manifest 2 / C3 patrol 聚合 3）"
+    },
+    {
+      "command": "ruff check tools/drift_patrol.py tests/test_zr907_drift_patrol.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 158 files（F-G3：tests/ 新文件 sync-first）"
+    },
+    {
+      "command": "git commit（pre-commit 全套：881+106 全量 + sync MATCH）",
+      "exit_code": 0,
+      "result": "2d2ab75 feat(ZR-907) — 2 files +158"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "881 passed + 106 subtests（874 基线 + 7 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T02:40:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 schema 字面门：'3.6' 在 constants.py/schema_compatibility.py 枚举之外出现即红（ZR-703 清理保持）；合法历史兼容分支（3.1/3.2 等）不误报；注入 '3.6' 检出。C2 manifest 门：uc manifest-verify 聚合（引用文件 hash 不一致即红）；注入漂移检出。C3 patrol 七类聚合（version/installation/config/docs/dependencies/schema/manifest）。**发现真实漂移（ZR907-FIND-001）**：company-wiki config_doctor.py 断言 kind=directory roots == {dropbox_stock}，但 ZR-409 已加 future_lake（同为 directory）→ config check 已知红，登记后续修复（跨仓产品改动不在本卡范围）。",
+      "id": "ZR907-IMPL-001",
+      "severity": "info",
+      "title": "drift patrol 扩展（schema 字面 + manifest 聚合）+ config_doctor 真实漂移发现"
+    }
+  ],
+  "implementation": {
+    "design": "扩展 tools/drift_patrol.py（R6.4 既有）：patrol() 加 schema（'3.6' 字面扫描，排除 constants/schema_compatibility 枚举真源文件）+ manifest（uc manifest-verify 子进程）两 check → 七类；新 tests/test_zr907_drift_patrol.py（7 tests：注入检出非空洞 + 真实树 schema/manifest/installation 绿 + config 已知红钉死）。revenue 产品代码零改动。",
+    "files": [
+      "revenue-forecast/tools/drift_patrol.py",
+      "revenue-forecast/tests/test_zr907_drift_patrol.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-907/**"
+    ]
+  },
+  "implementer": "zr907-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 2d2ab75（parent 5b065db = ZR-906 closure）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=53b86de5（00_wu_card.md，hashlib 注入）。",
+    "ZR907-FIND-001（config_doctor vs future_lake 漂移）登记：company-wiki 产品修复移交后续卡（阶段 I/J 或独立）。",
+    "独立 reviewer 待派出（reviewer-zr907-independent）。"
+  ],
+  "objective": "阶段 H 收官：contract/doc/sample/skill-package drift patrol——schema 版本/字段/引用文件/installed skill hash 不一致即 CI 失败。",
+  "plan_sha256": "53b86de5697bf57f25ab4474d44e2c11e32858e570ae34252b17eb9c4336ae6e",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "2d2ab7525948cc43da604d7f58aebee8fac3a98c",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tools/drift_patrol.py（扩展 2 check）+ tests/test_zr907_drift_patrol.py（新 7 tests）；receipts/ZR-907/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tools/drift_patrol.py",
+    "revenue-forecast/tests/test_zr907_drift_patrol.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-907/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-907",
+  "canonical_hash": "8921532d109aa832bd1681f4319573ffae2a1c7542af5df05db584fc0190f11c"
+}
