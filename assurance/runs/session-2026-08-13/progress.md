@@ -743,3 +743,14 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-904 closure commit 待提交，实现 6ca9ec5 + delta a192a82）、wiki 26a6b22、filing 5a1c18f。
 - 下一卡：ZR-905（审核机制自测试——依赖 ZR-904 已闭；八类 AUD2 失败模式全注入：schedule 未运行/报告过期/wrapper 吞非零/伪造零计数/缺样本/指标恶化/registry hash 变化/reviewer=implementer 全让 release 红）→ ZR-901（PR 门）/ZR-906（最终 ratchet）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-904 全流程已闭（reviewer accepted → delta accepted → 12/13_delta 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-905（审核机制自测试）→ ZR-901/906（阶段 H）。
+- **ZR-905（阶段 H 第四卡：审核机制自测试）实施完成**：
+  - RED 探针：grep audit_self_test/AUD2 → 零命中；无八类失败注入套件（审核机制本身未经受检）。
+  - 修复：新 tests/test_zr905_audit_self_test.py（10 tests，组合 ZR-902/903/904 机制 + uc）——AUD2-01 无 ledger → missing/blocked；AUD2-02 48h 旧报告 → stale blocked；AUD2-03 半报告永不发布 + 全 skip → blocked；AUD2-04 伪造计数 → SLI 红；AUD2-05 固定样本缺失 → fail + artifact 0 → SLI 红；AUD2-06 consumer_ready 0.4 → 红（即使 unit 绿）+ 恢复幂等；AUD2-07 manifest 漂移 → uc verify 检测；AUD2-08 reviewer==implementer → strict_state 拒绝。
+  - revenue 全量 **861 passed + 106 subtests**（851+10 新，零回归）+ ruff + ratchet + sync MATCH 156 + pre-commit 绿；commit f41fb81。
+  - state walk：drift_classified -> red_proved -> implemented -> focused_green -> owner_repo_green -> triplet_green（revenue f41fb81）；implementer receipt canonical 9694d5fa。
+  - 独立复核 reviewer-zr905-independent 运行中。
+- **ZR-905 closure**：独立复核 reviewer-zr905-independent 首轮 **changes_required**（25/25 探针大部分绿 + hermetic 快照零改动；REV-001 blocking：AUD2-07 测试空洞——verify 在错误 cwd 下对 drifted/undrifted 都返回 48 problems，断言恒真（漂移检查删除也会过）；REV-002 minor artifact SLI 不推导 + REV-003 minor schedule 未注册未断言 + REV-004 info）→ delta 修复 e04b7a4（verify repo_root=ROOT：undrifted=0 + drifted 提升计数——不再空洞；compute_sli artifact bound_artifacts=0 → ok=False（+2 行 sanctioned 工具改动）；AUD2-01 补 schtasks 只读断言；+1 回归测试 11 passed，全量 862+106 绿）→ delta 复审 **accepted**（REV-001 判别探针：undrifted=0/drifted=1 实证非空洞；REV-002/003 FIXED；REV-D1 minor 11 receipt 未刷新 delta、REV-D3 info schedule 测试环境耦合——部署时 revisit）；reviewer receipt canonical f2cff9dd；state accepted + closure-advance -> **ZR-906**（phase H_dynamic_audit，最终 ratchet：hardcode/dead path/complexity/type/coverage/encoding 跨三仓收口）。
+- **机器状态**：current_next=ZR-906，accepted **87/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 4：ZR-902~905；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-905 closure commit 待提交，实现 f41fb81 + delta e04b7a4）、wiki 26a6b22、filing 5a1c18f。
+- 下一卡：ZR-906（最终 ratchet——依赖 ZR-104 已闭；"root 特判 0、关键 legacy caller 0、critical coverage 阈值、Windows 错误 0；required check"）→ ZR-907（contract/doc/sample drift patrol，依赖 ZR-906）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-905 全流程已闭（reviewer accepted → delta accepted → 12/13_delta 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-906（最终 ratchet）→ ZR-907/901（阶段 H/I）。

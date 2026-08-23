@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "unit": "ZR-905",
+  "kind": "reviewer",
+  "reviewer": "reviewer-zr905-independent",
+  "verdict": "accepted",
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "f41fb811c997d106ac710a6478996ac619de9bfb",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e04b7a4eb90d7580f735cdb0bc3496aeb5aa0aaf",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "git rev-parse HEAD; git diff f41fb81 e04b7a4 --stat",
+      "exit_code": 0,
+      "result": "HEAD=e04b7a4, delta 3 files (test_zr905 +40/-15, test_zr904 +3/-1, tools/release_gate.py +2 sanctioned REV-002 fix)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr905_audit_self_test.py -q --tb=short",
+      "exit_code": 0,
+      "result": "11 passed"
+    },
+    {
+      "command": "discrimination probe: verify(ROOT, undrifted copy) vs drifted",
+      "exit_code": 0,
+      "result": "REV-001 FIXED: undrifted=0 problems, drifted=1 (control page drift), baseline>clean — no longer vacuous"
+    },
+    {
+      "command": "artifact SLI probe + schtasks query probe",
+      "exit_code": 0,
+      "result": "REV-002 FIXED: artifact.ok=False on bound_artifacts=0, True on 42; REV-003: schtasks /query exit=1 task absent, read-only"
+    },
+    {
+      "command": "ruff + ratchet + subsets + full suite",
+      "exit_code": 0,
+      "result": "ruff clean; ratchet 2 OK; 25 targeted + 24 subsets passed; full suite 862 passed + 106 subtests"
+    },
+    {
+      "command": "uc.cli receipt-validate",
+      "exit_code": 0,
+      "result": "OK canonical and well-formed"
+    }
+  ],
+  "created_at_utc": "2026-08-23T01:20:00+00:00",
+  "findings": [
+    {
+      "id": "REV-001",
+      "severity": "blocking",
+      "title": "AUD2-07 manifest-drift test vacuous",
+      "detail": "FIXED in e04b7a4: verify with repo_root=repo root; undrifted baseline must be 0, drift raises count (was 48-on-both under wrong cwd)."
+    },
+    {
+      "id": "REV-002",
+      "severity": "minor",
+      "title": "AUD2-04 artifact SLI not derived",
+      "detail": "FIXED in e04b7a4: artifact.ok=False on zero bound_artifacts (+2-line sanctioned tools/release_gate.py change, covered by tests)."
+    },
+    {
+      "id": "REV-003",
+      "severity": "minor",
+      "title": "AUD2-01 schedule-not-registered not asserted",
+      "detail": "FIXED in e04b7a4: read-only schtasks query asserts daily task absent (deployment action never performed)."
+    },
+    {
+      "id": "REV-D1",
+      "severity": "minor",
+      "title": "11 implementer receipt not refreshed for delta",
+      "detail": "RESOLVED at closure: delta provenance carried by this receipt; 12 updated to the delta review version."
+    },
+    {
+      "id": "REV-D3",
+      "severity": "info",
+      "title": "AUD2-01 schedule test environment-coupled",
+      "detail": "Carried: will turn red if/when ZR-902 register deployment is performed on this machine; revisit at deployment time."
+    }
+  ],
+  "objective": "Delta re-review of ZR-905 (prior accepted at f41fb81): verify REV-001/002/003 fixes in e04b7a4 — non-vacuous manifest-drift discrimination, artifact SLI derivation, schedule-not-registered assertion.",
+  "reviewed_object_sha256": "c647c378daa80b102e4db05d53e7e02176a5e78b60081be75d755e4c91a20c95"
+}

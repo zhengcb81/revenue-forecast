@@ -1,0 +1,93 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "b832a44f6233bbca08a20a1326eb736c07024557",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "commands": [
+    {
+      "command": "RED 探针：grep audit_self_test/AUD2 → 零命中；无八类失败注入套件",
+      "exit_code": 0,
+      "result": "G1 真实缺口：审核机制本身未经受检"
+    },
+    {
+      "command": "python -m pytest tests/test_zr905_audit_self_test.py -q --tb=short",
+      "exit_code": 0,
+      "result": "10 passed（AUD2-01~08 八类 + 恢复幂等）"
+    },
+    {
+      "command": "ruff check tests/test_zr905_audit_self_test.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed（新文件函数 ≤10）"
+    },
+    {
+      "command": "tools/sync_installations.py --apply",
+      "exit_code": 0,
+      "result": "MATCH .agents/.codex 156 files"
+    },
+    {
+      "command": "git commit（pre-commit 全套：861+106 全量 + sync MATCH）",
+      "exit_code": 0,
+      "result": "f41fb81 test(ZR-905) — 1 file +234"
+    },
+    {
+      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "861 passed + 106 subtests（851 基线 + 10 新增，零回归）"
+    }
+  ],
+  "created_at_utc": "2026-08-23T01:05:00+00:00",
+  "findings": [
+    {
+      "detail": "八类 AUD2 失败注入：AUD2-01 无 ledger → missing + release blocked（脚本存在不算动态运行）；AUD2-02 48h 旧报告 → stale blocked（旧绿不沿用）；AUD2-03 半报告（缺 ok 字段）永不发布 + 全 skip 套件 → blocked 永不 pass；AUD2-04 伪造计数（downloads=5/reuse=0）→ SLI reuse 红；AUD2-05 固定样本清单（ZR-806）缺失 → fail（不自动换样本）+ artifact 0 → SLI 红；AUD2-06 consumer_ready 0.4 → 红（即使 unit 绿）+ 恢复幂等（恢复指标 → 绿）；AUD2-07 manifest 漂移（control_page_sha256 注入 0*64）→ uc manifest verify 检测 ≥1 问题；AUD2-08 reviewer==implementer → strict_state 拒绝 accepted（'reviewer must differ'），不同 reviewer 通过。C2 恢复幂等：修复失败条件 → release 转绿。",
+      "id": "ZR905-IMPL-001",
+      "severity": "info",
+      "title": "审核机制自测试（八类 AUD2 全红 + 恢复幂等）"
+    }
+  ],
+  "implementation": {
+    "design": "新 tests/test_zr905_audit_self_test.py（test-only）：组合 ZR-902/903/904 机制（freshness_status/release_gate/_suite_outcome/compute_sli/release_decision/publish_all_pending）+ uc（manifest.verify 子进程对临时漂移副本、strict_state.validate_transition 同 reviewer 拒绝）；AUD2-07 不触碰真实 manifest，AUD2-08 不执行真实 state-update。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr905_audit_self_test.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-905/**"
+    ]
+  },
+  "implementer": "zr905-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue 为本卡实现提交 f41fb81（parent b832a44 = ZR-904 closure）；wiki 26a6b22、filing 5a1c18f（未动）。",
+    "卡片 hash 冻结：plan_sha256=95547e3f（00_wu_card.md，hashlib 注入）。",
+    "独立 reviewer 待派出（reviewer-zr905-independent）。"
+  ],
+  "objective": "阶段 H 第四卡：审核机制自测试——陈旧、错 triplet、缺样本、半报告、指纹变化、指标恶化、schedule 未运行、reviewer=implementer 均让 release 红；恢复幂等。",
+  "plan_sha256": "95547e3fad2712fb1acd6b4e07541e153ae2dd36aece516407abf45a098ad359",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "f41fb811c997d106ac710a6478996ac619de9bfb",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast：tests/test_zr905_audit_self_test.py（新 10 tests）；receipts/ZR-905/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr905_audit_self_test.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-905/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-905",
+  "canonical_hash": "9694d5fad3b4d6dd83ee65833fd9038b6d0a8a8069d346ae77129900a5b110a3"
+}

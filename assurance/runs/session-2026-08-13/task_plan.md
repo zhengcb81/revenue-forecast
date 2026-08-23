@@ -321,3 +321,9 @@
 - **ZR-904 closure**（SLI/dashboard/release gate）：revenue 6ca9ec5 + delta a192a82——tools/release_gate.py（原子发布：pending→校验（自 hash 链）→fsync+replace；十项业务 SLI 含 catalog 回归推导；release_decision：future timestamp/改名旧绿/过期/空 SLI 全拒绝；告警 ack/重试）；11 tests → reviewer 首轮 accepted → REV-001/002/003 minor delta 修复 → delta 复审 changes_required（仅 REV-D1 簿记：receipt 未 pin delta）→ 簿记修复（13_delta pin a192a82）→ 最终 accepted；reviewer receipt canonical 0acd4e28；closure→ZR-905（审核机制自测试）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-905（审核机制自测试——依赖 ZR-904；八类 AUD2 失败模式全让 release 红）未领取；恢复第一步 = ZR-905 → ZR-901（PR 门）/ZR-906（最终 ratchet）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-904 closure commit 待提交，实现 6ca9ec5 + delta a192a82）、wiki 26a6b22、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-905 closure → 阶段 H 推进中）
+- **accepted 87/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 4：ZR-902~905；计数真源 state.json）。current_phase=**H_dynamic_audit**，current_next=**ZR-906**。
+- **ZR-905 closure**（审核机制自测试）：revenue f41fb81 + delta e04b7a4——八类 AUD2 失败注入全红（schedule 未运行/报告过期/半报告/伪造零计数/缺样本/指标恶化/manifest 漂移/reviewer=implementer）+ 恢复幂等；reviewer 首轮 changes_required（REV-001 AUD2-07 空洞——verify 错误 cwd 48-on-both）→ delta 修复（repo_root 判别：undrifted=0/drifted=1）+ artifact SLI 推导 → delta accepted（判别实证非空洞）；reviewer receipt canonical f2cff9dd；closure→ZR-906（最终 ratchet：hardcode/dead path/complexity/type/coverage/encoding）。
+- **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：下一卡 ZR-906（最终 ratchet——依赖 ZR-104；"root 特判 0、关键 legacy caller 0、critical coverage 阈值、Windows 错误 0；required check"）未领取；恢复第一步 = ZR-906 → ZR-907（drift patrol）/ZR-901（PR 门）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-905 closure commit 待提交，实现 f41fb81 + delta e04b7a4）、wiki 26a6b22、filing 5a1c18f。
