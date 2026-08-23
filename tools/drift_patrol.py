@@ -102,6 +102,42 @@ def check_dependency_drift() -> list[str]:
     return []
 
 
+# --- ZR-907: schema version literal + manifest reference-hash gates ---------
+
+# "3.6" was purged from docs/help by ZR-703; the only legal remaining
+# occurrences are the SUPPORTED/EMIT enums in constants.py and
+# schema_compatibility.py (schema source of truth).
+KNOWN_LEGACY_SCHEMAS = ("3.6",)
+SCHEMA_SOURCE_FILES = {"constants.py", "schema_compatibility.py"}
+
+
+def check_schema_drift() -> list[str]:
+    """Stale 'schema 3.6' doc/help literals outside the schema source files
+    are drift (ZR-703 cleaned them once; this gate keeps them gone)."""
+    problems: list[str] = []
+    for path in sorted((ROOT / "scripts").rglob("*.py")):
+        if path.name in SCHEMA_SOURCE_FILES:
+            continue
+        for number, line in enumerate(
+                path.read_text(encoding="utf-8").splitlines(), 1):
+            if re.search(r'["\']3\.6["\']', line):
+                problems.append(
+                    f"{path.relative_to(ROOT)}:{number}: stale schema "
+                    f"literal '3.6'")
+    return problems
+
+
+def check_manifest_drift() -> list[str]:
+    """Referenced-file hashes must match the machine manifest (uc)."""
+    uc_root = ROOT / "assurance" / "unified_completion"
+    completed = _run(
+        [sys.executable, "-m", "uc.cli", "manifest-verify"], uc_root
+    )
+    if completed.returncode != 0:
+        return ["machine manifest drift:" + (completed.stderr or completed.stdout)[-300:]]
+    return []
+
+
 def patrol() -> list[dict]:
     checks = {
         "version": check_version_drift,
@@ -109,6 +145,8 @@ def patrol() -> list[dict]:
         "config": check_config_drift,
         "docs": check_doc_drift,
         "dependencies": check_dependency_drift,
+        "schema": check_schema_drift,      # ZR-907
+        "manifest": check_manifest_drift,  # ZR-907
     }
     results = []
     for name, fn in checks.items():
