@@ -399,3 +399,9 @@
 - **CA-202 closure**（Daily T2 实际 scheduler，revenue）：revenue fa4eff3——tests/test_ca202_daily_t2_runner.py（C1 真实 runner 报告+精确 triplet+samples；C2 零写 oracle；C3 三 root unique 样本；C4 只读连接+SLO；C5 缺 run 告警/阻断；10 tests）；reviewer accepted（1 minor+2 info）；reviewer receipt canonical 1eaf9bc6；closure→CA-203（Weekly/发布前 T3）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-202 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
 - 下一卡：CA-203（Weekly T3）→ CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。
+
+## 最新状态（2026-08-23 CA-203 closure → 阶段 H CA 部分推进中 2/5）
+- **accepted 100/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 8：ZR-902~907 + CA-202/203；I 9；计数真源 state.json）。current_phase=**H_dynamic_audit**，current_next=**CA-204**。
+- **CA-203 closure**（Weekly/发布前 T3，revenue）：revenue b05b194——tests/test_ca203_weekly_t3.py（C1 套件门+blocked 语义；C2 single-flight 首次下载/二次零写；C3 amendment as-of 切割；C4 provider drift；C5 provider/canonical 对账；8 tests）；reviewer accepted（4 info）；reviewer receipt canonical e49639e7；closure→CA-204（Monthly 泛化审核）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-203 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-204（Monthly broker/mine/forecast 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。

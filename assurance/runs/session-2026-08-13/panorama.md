@@ -401,3 +401,10 @@
 - 全量基线：937 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-202 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-203（Weekly/发布前 T3）→ CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。
+
+## 2026-08-23 CA-203 closure 快照（阶段 H CA 部分 2/5）
+- **CA-203 closure**（Weekly/发布前 T3，revenue）：revenue b05b194——套件门 + blocked 永不 pass；spy wiki 真实跨进程：首次授权下载 fetch=1 → 二次零 fetch 零写（single-flight）、amendment 只下载缺的新期间、provider drift 本地保留、provider/canonical 精确对账；8 tests；reviewer accepted（4 info）；reviewer receipt canonical e49639e7；closure→CA-204。
+- **accepted 100/117（约 85%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 8 + I 9（计数真源 state.json）。
+- 全量基线：945 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-203 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。

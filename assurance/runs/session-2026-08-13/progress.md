@@ -890,3 +890,14 @@
 - **机器状态**：current_next=CA-203，accepted **99/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 7：ZR-902~907 + CA-202；I 9：ZR-1001~1009；计数真源 state.json）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-202 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
 - 下一卡：CA-203（Weekly T3）→ CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。
+
+- **CA-203（阶段 H CA 部分第二卡：Weekly/发布前 T3，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca203* → 零命中；无 T3 全语义组合验收（ZR-903 schedule 层 + ZR-805 授权门各自独立）。
+  - 实施：revenue 新 tests/test_ca203_weekly_t3.py（8 tests）——C1 套件门（opt-in/三市场/损坏拒绝/二次零下载标记）+ _suite_outcome blocked 语义（all-skipped→blocked 永不 pass）；C2 首次授权下载 fetch=1 bytes>0 → 二次同请求 gap+fetch 仍 1+bytes 不变（single-flight，spy wiki 真实跨进程）；C3 amendment（as-of 2025-06-30 下载 acc-2024 → as-of 2026-07-31 只下载新 acc-2025，fetch+1）；C4 provider drift（SPY_ADAPTER_FAULT 本地保留零新 fetch）；C5 provider/canonical 精确对账（fetch==downloaded_new==bytes，二次后均不变）。产品零改动、真实 T3/调度零触发；commit b05b194（+325 行，1 文件）。
+  - 质量门：相邻回归（ZR-903/805/fc1103）16 passed；revenue 全量 **945 passed + 106 subtests**（937+8 新，零回归）；ruff clean（E741 手动修）。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical b3add2c8。
+  - 独立复核 reviewer-ca203-independent **accepted**（8 passed 50.66s；标记逐条确认；spy adapter 零网络验证（本地假 PDF+假域名）；canonical b3add2c8 一致；delta 仅 revenue；4 info：REV-001 部分跳过判 ok 设计取舍、REV-002 registry 预期未提交、REV-003 wiki 历史脏文件、REV-004 bytes 含 seed）；reviewer receipt canonical e49639e7。
+  - state accepted + closure-advance -> **CA-204**（phase H_dynamic_audit，Monthly broker/mine/forecast 泛化审核——轮换真实 broker 样本、紫金 shadow、第二矿企、非矿企；复验表格/错归、逐矿 bridge、draft/formal、backtest/confidence）。
+- **机器状态**：current_next=CA-204，accepted **100/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 8：ZR-902~907 + CA-202/203；I 9：ZR-1001~1009；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-203 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。

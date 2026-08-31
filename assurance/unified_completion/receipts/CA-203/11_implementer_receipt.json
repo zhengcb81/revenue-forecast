@@ -1,0 +1,90 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e3312898eda7d985add4129c39e4ac5df46f562e",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca203* + ZR-903/805 coverage review",
+      "exit_code": 0,
+      "result": "G1~G2 缺口确认（无 ca203 套件；无 T3 全语义组合验收）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca203_weekly_t3.py -q --timeout=600",
+      "exit_code": 0,
+      "result": "8 passed in 49.96s (C1 suite gate + blocked semantics; C2 first download + zero re-download single-flight; C3 amendment as-of cut; C4 provider drift local preserved; C5 provider/canonical reconciliation)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr903_weekly_t3.py tests/test_zr805_t3_authorization.py tests/test_fc1103_t3_runner.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "16 passed in 218.26s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_ca203_weekly_t3.py",
+      "exit_code": 0,
+      "result": "All checks passed (E741 l->line manual fix)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "b05b194 test(CA-203) — 1 file +325"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "945 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T15:05:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: T3 suite opt-in only + three markets + corruption rejection + second-run-zero-download markers present; _suite_outcome: all-skipped -> blocked (never pass), exit!=0 -> not-ok, passed -> ok. C2 (spy wiki, real cross-process json_command_v1): first authorized close-gap capture_ready + fetch=1 + bytes>0; second identical request status=gap + missing=[] + fetch still 1 + bytes unchanged (single-flight reuse). C3 amendment: as-of 2025-06-30 fetches acc-2024 once; as-of 2026-07-31 with acc-2025 visible downloads ONLY the new accession (fetch +1). C4 provider drift: SPY_ADAPTER_FAULT=provider_unavailable preserves local reuse with zero new fetches. C5 reconciliation: fetch actions == downloaded_new journal outcomes == bytes accounting; second request leaves all three unchanged.",
+      "id": "CA203-IMPL-001",
+      "severity": "info",
+      "title": "Weekly/发布前 T3 纪律验收（首次下载/二次零下载/amendment/single-flight/provider drift/对账）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca203_weekly_t3.py（8 tests）：C1 套件门 + blocked 纯语义；C2-C5 IsolatedWiki + spy adapter 真实跨进程场景（LT-09/LT-02/LT-05 + provider/canonical 对账）。产品零改动、真实 opt-in T3 与 Task Scheduler 零触发。",
+    "files": [
+      "revenue-forecast/tests/test_ca203_weekly_t3.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-203/**"
+    ]
+  },
+  "implementer": "ca203-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = b05b194（revenue HEAD = CA-203 实现 commit，parent e331289）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实 provider 网络下载（opt-in T3 套件执行）与 Windows 调度注册为部署动作，不在本卡。"
+  ],
+  "objective": "阶段 H CA 部分第二卡：Weekly/发布前 T3（真实 CN/HK/US provider 首次授权下载、二次零下载、amendment、single-flight 和 provider drift；blocked 永不 pass；provider/canonical 精确对账）",
+  "plan_sha256": "6f827d6477bf99226f903175a8551940fb9614e5aaf1f186e94c84c6759f2a53",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "b05b1947606e729f02e5006009615535cb02dec2",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca203_weekly_t3.py (new 8 tests)；assurance/unified_completion/receipts/CA-203/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 0,
+    "registry_writes": 0,
+    "task_scheduler_changes": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca203_weekly_t3.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-203/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-203",
+  "canonical_hash": "b3add2c86b854b27dfb0dfde7082fa6325ff6b7bcd99ab174d890f1bfcb8ad9c"
+}
