@@ -1,0 +1,84 @@
+{
+ "unit": "CA-301",
+ "reviewer": "reviewer-ca301-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "ad2dd25dbb5e9c13fe14d63ff5cae6b8f849c4e5c1c08252d50ab96bab631b7a",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca301_clean_checkout.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "9 passed in 1.19s (C1 triplet; C2 env; C3 receipts; C4 replay; C5 freshness)"
+  },
+  {
+   "command": "independent full-tree receipt canonical scan (188 committed + CA-301 own)",
+   "exit_code": 0,
+   "result": "189/189 canonical SHA-256 recompute MATCH; 0 short hashes in any triplet; HEAD~1 had exactly 10 mismatches — all fixed by this commit, fixed values verified valid git objects with matching 7-char prefixes"
+  },
+  {
+   "command": "python -m pytest tests/test_envfreeze.py (assurance/unified_completion cwd)",
+   "exit_code": 0,
+   "result": "13 passed in 32.48s"
+  },
+  {
+   "command": "state.json independent check",
+   "exit_code": 0,
+   "result": "current_next=CA-301, accepted=103 (>=100), all 103 accepted units have implementer/reviewer"
+  },
+  {
+   "command": "git status --porcelain -- scripts tools + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "scripts/ tools/ clean; HEAD=633bea25 parent=d7c92762 matches; commit only tests + 10 receipts (+276/-20)"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check + wu_card sha256",
+   "exit_code": 0,
+   "result": "canonical ad2dd25d matches; base.revenue=d7c9276 (=HEAD~1) result.revenue=633bea2 (=HEAD) delta correct; 00_wu_card sha256=526550c9==plan_sha256"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "d7c927624f8c90f208e75cf5cef59c671a2124cb",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "633bea2523eb211e8608b3819877178f473fe5a6",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA301-REV-001",
+   "severity": "minor",
+   "title": "实施报告数字精度（10 vs 11）",
+   "detail": "HEAD~1 实际 10 个 mismatch/10 个修复文件（叙述 11/11）；当前 189/189 MATCH（叙述 188）。核心声明成立，叙述精度偏差不影响结论。"
+  },
+  {
+   "id": "CA301-REV-002",
+   "severity": "info",
+   "title": "ZR-805/12 为语义修正（指向 delta 295f138）+ 4 个 12 号纯错签修正",
+   "detail": "方向均正确；修复值经 cat-file -e 验证为有效对象且 7 字符前缀与旧值一致。"
+  },
+  {
+   "id": "CA301-REV-003",
+   "severity": "info",
+   "title": "receipts/CA-301/ 未跟踪 + state.json 工作树修改符合 closure 流程",
+   "detail": "reviewer 验收后转 accepted 的既有流程将提交归档。"
+  },
+  {
+   "id": "CA301-REV-004",
+   "severity": "info",
+   "title": "8 个 CA-* receipt 带 UTF-8 BOM",
+   "detail": "utf-8-sig 解码后 189/189 一致，无影响（可选清理）。"
+  },
+  {
+   "id": "CA301-REV-005",
+   "severity": "info",
+   "title": "C1 未断言 checkout 落在 candidate triplet（633bea2）",
+   "detail": "真实 clean-checkout 复放为卡外部署动作（实施者已声明），设计边界非缺陷。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T16:58:01+00:00",
+ "canonical_hash": "dbd6c3d5c0e7e5fc3da76b80894ffbf5b431df1d26d54480ec8637a50558f7b1"
+}

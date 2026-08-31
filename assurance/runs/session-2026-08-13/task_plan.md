@@ -423,3 +423,9 @@
 - **CA-206 closure**（不可豁免自然时间 soak，revenue）：revenue 350eb84——tests/test_ca206_soak_window.py（C1 daily 7 天链；C2 weekly distinct+fresh；C3 monthly ≤35d；C4 drill ack；C5 确定性+未满 PENDING；13 tests）；reviewer accepted（2 info）；reviewer receipt canonical 213302eb；closure→CA-301。**阶段 H 全闭（5/5 CA 部分）**。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-206 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-301（clean checkout 独立复放）→ CA-302/303 → CA-304（R9 删除）→ CA-305/306。
+
+## 最新状态（2026-08-23 CA-301 closure → 阶段 J 推进中 1/6）
+- **accepted 104/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 1：CA-301；计数真源 state.json）。current_phase=**J_final_verification**，current_next=**CA-302**。
+- **CA-301 closure**（clean checkout 独立复放，revenue）：revenue 633bea2——tests/test_ca301_clean_checkout.py（C1 triplet 可重建；C2 env verify；C3 全量 receipt 重算 189/189 MATCH + 修复 10 个历史短 hash；C4 重放一致；C5 新鲜证据门；9 tests）；reviewer accepted（1 minor+4 info；独立扫描 189/189）；reviewer receipt canonical dbd6c3d5；closure→CA-302（三类真实用户旅程终验）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-301 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-302/CA-303（并行）→ CA-304（R9 删除）→ CA-305/306。

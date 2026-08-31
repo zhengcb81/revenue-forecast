@@ -934,3 +934,14 @@
 - **机器状态**：current_next=CA-301，accepted **103/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11：ZR-902~907 + CA-202~206；I 9：ZR-1001~1009；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-206 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-301（clean checkout 独立复放）→ CA-302/303 → CA-304（R9 删除）→ CA-305（ledger）→ CA-306（旧计划关闭）。
+
+- **CA-301（阶段 J 首卡：clean checkout 独立复放，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca301* → 零命中；无复放组合验收；**真实扫描发现 11 个历史 receipt canonical mismatch（ZR-709/802/803/804/805 的 result/base_triplet.revenue 为 7 字符短 hash）**。
+  - 实施：revenue 新 tests/test_ca301_clean_checkout.py（9 tests）——C1 manifest triplet commits 有效对象 + ci_checkout_siblings 无浮动 main；C2 envfreeze.collect/verify（离线 lookup + 精确相等/漂移）；C3 **全部 receipts canonical 重算（188→189/189 MATCH）** + state sha256 确定性；C4 状态重放复现 candidate closure（current_next + accepted≥100 + implementer/reviewer）；C5 新鲜证据门（CA-206 soak 语义）。**修复 10 个历史短 hash receipt（补全 40-hex + 重签，ZR-709/802/803/804/805 的 11+12）**；commit 633bea2（11 files +276/-20）。
+  - 质量门：相邻回归 envfreeze 13 passed；revenue 全量 **982 passed + 106 subtests**（973+9 新，零回归）；ruff clean。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical ad2dd25d。
+  - 独立复核 reviewer-ca301-independent **accepted**（9 passed 1.19s；独立全树扫描 189/189 MATCH + 0 短 hash + 修复值 cat-file -e 有效且前缀一致；canonical ad2dd25d 一致；delta 仅 revenue；1 minor REV-001 数字精度 10 vs 11 + 4 info）；reviewer receipt canonical dbd6c3d5。
+  - state accepted + closure-advance -> **CA-302**（phase J_final_verification，三类真实用户旅程终验——从 revenue 入口重放紫金复杂 canary、第二异构矿企、非矿企；覆盖所有 roots、existing/partial/missing/stale/amended、worker、下载、第二次复用）。
+- **机器状态**：current_next=CA-302，accepted **104/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 1：CA-301；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-301 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-302（三类旅程终验）/CA-303（架构硬编码终审，并行）→ CA-304（R9 删除）→ CA-305/306。
