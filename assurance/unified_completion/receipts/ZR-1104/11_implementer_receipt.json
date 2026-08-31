@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "ca252e1e9e646e4e86ff3e251c8babd4886f4367",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr1104* + soak/drill assets review",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 zr1104 套件；CA-206 soak + CA-304 drill 分项存在）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1104_observation_drill.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "9 passed in 0.71s (C1 observation completeness; C2 legacy-hit gate; C3 cohort rollback round trip; C4 no-manual-waiver; C5 drill journal ack)"
+    },
+    {
+      "command": "python -m pytest tests/test_ca206_soak_window.py tests/test_ca304_r9_removal.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "24 passed in 19.82s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_zr1104_observation_drill.py --fix && ruff check",
+      "exit_code": 0,
+      "result": "All checks passed (2 auto-fixed, 0 remaining)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "1a8de5b test(ZR-1104) — 1 file +258"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1057 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T20:25:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: full observation (7 daily + 2 weekly + 1 monthly + 1 acked drill) -> complete with per-window counts; short observation stays PENDING. C2: legacy_bridge_hits=2 blocks closure (FC-705), two consecutive zero-hit windows allow. C3: activation->rollback->re-activate via CatalogStore preserves epoch/cohort (row2[1:]==row1[1:]), rollback flips visibility, receipts differ per activation. C4: open/copied-report (duplicate run id) daily windows never complete; stale weekly (latest >7d) counts 0 — no manual waiver possible. C5: alert drill counts only when acked; full observation with acked drill completes with alert_drill count 1.",
+      "id": "ZR1104-IMPL-001",
+      "severity": "info",
+      "title": "观察期与真实 rollback drill 验收（7/2/1/1 完整性/legacy 门/rollback 往返/无人工豁免/drill journal）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr1104_observation_drill.py（9 tests）：C1 观察完整性（CA-206 soak 语义）；C2 FC-705 legacy 门；C3 CatalogStore activation 往返；C4 无人工豁免（open/复制/stale fail-closed）；C5 drill journal ack。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr1104_observation_drill.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1104/**"
+    ]
+  },
+  "implementer": "zr1104-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 1a8de5b（revenue HEAD = ZR-1104 实现 commit，parent ca252e1）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实自然时间累积（7/2/1/1 实际跑满）为部署/观察动作（CA-206 之后由调度累积），本卡验收门语义。"
+  ],
+  "objective": "Phase 11 第四卡：观察期与真实 rollback drill（连续 7 Daily/2 Weekly/1 Monthly/1 alert 自检；legacy hit=0；一次 cohort rollback/re-activate；自然时间门不得人工豁免）",
+  "plan_sha256": "9721e9b8f566882f78d0efd7841eb6139f06813266b65098bdd4957e76fce152",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "1a8de5baad1b6903484cedcd1bd22114cb98a61f",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_zr1104_observation_drill.py (new 9 tests)；assurance/unified_completion/receipts/ZR-1104/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr1104_observation_drill.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1104/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1104",
+  "canonical_hash": "69b071218ffb1cf88a0f50e2a96cec23da52df15caaf315bcb416200237195b4"
+}

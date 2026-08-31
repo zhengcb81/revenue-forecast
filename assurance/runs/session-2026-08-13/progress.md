@@ -1034,3 +1034,14 @@
 - **机器状态**：current_next=ZR-1104，accepted **112/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 3：ZR-1101~1103；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1103 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1104（观察期/rollback drill）→ ZR-1105 → ZR-801 处置 → 全部闭环。
+
+- **ZR-1104（Phase 11 第四卡：观察期与真实 rollback drill，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*zr1104* → 零命中；CA-206 soak + CA-304 drill 分项存在无组合。
+  - 实施：revenue 新 tests/test_zr1104_observation_drill.py（9 tests）——C1 观察完整性（7 daily + 2 weekly + 1 monthly + 1 acked drill → complete；不足 PENDING）；C2 legacy-hit 门（FC-705：hits≠0 阻断、两连续零 hit 允许）；C3 cohort rollback→re-activate 往返（epoch/cohort/policy 保留、flag-only 翻转、receipt 各异）；C4 无人工豁免（open/复制报告/stale weekly fail-closed）；C5 drill journal（仅 acked 计入）。产品零改动；commit 1a8de5b（+258 行，1 文件）。
+  - 质量门：相邻回归（CA-206/CA-304）24 passed；revenue 全量 **1057 passed + 106 subtests**（1048+9 新，零回归）；ruff clean（2 auto-fix）。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical 69b07121。
+  - 独立复核 reviewer-zr1104-independent **accepted**（9 passed 0.59s；legacy 门/activation 往返/soak 纯函数探针全过；canonical 69b07121 一致；1 minor REV-001 closure commit 须含 receipts/state/locks（本 closure 满足）+ 2 info）；reviewer receipt canonical 6cffa810。
+  - state accepted + closure-advance -> **ZR-1105**（phase J_final_verification，生成最终需求—证据 closure ledger 与旧计划状态投影——六目标逐项 machine pass；旧计划只读映射；validator exit 0 后整体 complete）。
+- **机器状态**：current_next=ZR-1105，accepted **113/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 4：ZR-1101~1104；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1104 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1105（closure ledger）→ ZR-801 处置 → 全部闭环。
