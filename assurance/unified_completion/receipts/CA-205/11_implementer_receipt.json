@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "20c63ec0d2ac4d307c7b1d66bdca7f1e67fb47ca",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca205* + ZR-904 coverage review + REQUIRED_REPORT_FIELDS",
+      "exit_code": 0,
+      "result": "G1~G2 缺口确认（无 ca205 套件；无 dashboard 同 schema/故障矩阵/恢复幂等/完整字段组合）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca205_atomic_report.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "7 passed in 0.63s (C1 atomic publish + complete fields + same-schema; C2 failure matrix all red; C3 recovery idempotent; C4 alert ack/retry + loud sink; C5 no stale-green)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr904_release_gate.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "14 passed in 0.51s (相邻契约回归 OK; combined 21 passed)"
+    },
+    {
+      "command": "ruff check tests/test_ca205_atomic_report.py --fix && ruff check",
+      "exit_code": 0,
+      "result": "All checks passed (1 auto-fixed, 0 remaining)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "009fda4 test(CA-205) — 1 file +279"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "960 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T16:20:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: valid pending with sample+command+hash publishes atomically (fsync+replace, no residue); dashboard collect_reports (T2 run-dir layout 20260831T000000Z/report.json) consumes the same published report — run_id/kind/ok/triplet extracted, validate_report passes on the published payload; freshness gate reads the same t2 (fresh t2 -> no 'no T2 report' reason). C2 failure matrix: corrupt JSON, tampered hash (0*64), wrong triplet keys, missing required field all fail publish; future timestamp, stale age, ledger hash mismatch, SLI regression, empty SLI, no report all block release. C3: failed pending stays in place; fixed rerun publishes cleanly (single target, no residue); third run is a no-op (published=[], failed=[]). C4: alerts pending until acked; ack marks exactly the run; unwritable sink raises OSError (loud). C5: future timestamps rejected; renamed old green (valid hash, stale age) blocked by age.",
+      "id": "CA205-IMPL-001",
+      "severity": "info",
+      "title": "原子报告/freshness/告警/release 消费验收（同 schema/故障矩阵/恢复幂等/无 stale-green）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca205_atomic_report.py（7 tests）：C1 原子 publish 完整字段 + dashboard/release 同 schema；C2 故障矩阵全红（发布层 4 类 + 决策层 6 类）；C3 恢复幂等（失败保留→修复→干净 publish→no-op）；C4 alert ack/retry + sink 响亮失败；C5 无 stale-green 复活。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_ca205_atomic_report.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-205/**"
+    ]
+  },
+  "implementer": "ca205-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 009fda4（revenue HEAD = CA-205 实现 commit，parent 20c63ec）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实调度注册与自然时间累积为 CA-206/部署动作，不在本卡。"
+  ],
+  "objective": "阶段 H CA 部分第四卡：原子报告、freshness、告警与 release 消费（pending→完整校验→原子 publish；dashboard/release 同 schema；告警 ack/重试；过期结果不可续命）",
+  "plan_sha256": "9a11d37f530d36759c44443ebc4c70a186d89dd9a87d5770fc1f5db721b401f9",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "009fda46501a5613e553611a45574b8c2eb3f835",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca205_atomic_report.py (new 7 tests)；assurance/unified_completion/receipts/CA-205/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca205_atomic_report.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-205/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-205",
+  "canonical_hash": "f7c14cc6341e60d3abcf14a6b63dd677c01bbf526a2177be57f22cd7f507bfdf"
+}

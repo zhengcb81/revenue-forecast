@@ -912,3 +912,14 @@
 - **机器状态**：current_next=CA-205，accepted **101/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 9：ZR-902~907 + CA-202/203/204；I 9；计数真源 state.json）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-204 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-205（原子报告/freshness/告警）→ CA-206（soak）→ 阶段 J（CA-301~306）。
+
+- **CA-205（阶段 H CA 部分第四卡：原子报告/freshness/告警与 release 消费，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca205* → 零命中；ZR-904 有机制无组合验收；REQUIRED_REPORT_FIELDS 不含 sample/command。
+  - 实施：revenue 新 tests/test_ca205_atomic_report.py（7 tests）——C1 原子 publish 完整字段（sample/command/hash）+ dashboard（audit_dashboard collect_reports T2 run-dir）与 release_gate 同 schema 消费 + freshness gate 同源；C2 故障矩阵全红（发布层 corrupt/tamper/triplet/missing + 决策层 future/stale/ledger hash/SLI regression/empty SLI/no report 共 10 类）；C3 恢复幂等（失败保留→修复→干净 publish→第三次 no-op）；C4 alert ack/retry + sink 响亮失败（OSError）；C5 无 stale-green 复活。产品零改动；commit 009fda4（+279 行，1 文件）。
+  - 质量门：相邻回归（ZR-904）14 passed（合计 21）；revenue 全量 **960 passed + 106 subtests**（953+7 新，零回归）；ruff clean（1 auto-fix）。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical f7c14cc6。
+  - 独立复核 reviewer-ca205-independent **accepted**（7 passed 0.60s；源码级确认 publish fsync+os.replace / REQUIRED_REPORT_FIELDS / run-dir 布局 / T2≤24h T3≤7d；canonical f7c14cc6 一致；delta 仅 revenue；2 info：REV-001 REQUIRED_FIELDS 死常量、REV-002 state.json 已声明未提交）；reviewer receipt canonical e3185462。
+  - state accepted + closure-advance -> **CA-206**（phase H_dynamic_audit，不可豁免自然时间 soak——累积连续 7 Daily、2 Weekly、1 Monthly、1 alert drill；窗口由可信时间+run IDs 计算；未满只可 pending）。
+- **机器状态**：current_next=CA-206，accepted **102/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 10：ZR-902~907 + CA-202~205；I 9；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-205 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-206（soak，依赖 CA-205/ZR-904/ZR-905 已满足）→ 阶段 J（CA-301~306）。

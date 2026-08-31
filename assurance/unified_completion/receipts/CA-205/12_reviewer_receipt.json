@@ -1,0 +1,61 @@
+{
+ "unit": "CA-205",
+ "reviewer": "reviewer-ca205-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "f7c14cc6341e60d3abcf14a6b63dd677c01bbf526a2177be57f22cd7f507bfdf",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca205_atomic_report.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "7 passed in 0.60s (C1 same-schema; C2 failure matrix; C3 recovery idempotent; C4 alert ack/loud sink; C5 no stale-green)"
+  },
+  {
+   "command": "python -m pytest tests/test_zr904_release_gate.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "14 passed in 0.42s (combined 21 passed)"
+  },
+  {
+   "command": "source-level probes (release_gate publish fsync+os.replace, REQUIRED_REPORT_FIELDS, audit_dashboard run-dir layout + T2<=24h/T3<=7d)",
+   "exit_code": 0,
+   "result": "publish_report uses fsync + os.replace (release_gate.py:71-76); REQUIRED_REPORT_FIELDS matches test; collect_reports consumes runs/<ts>/report.json layout; dashboard fields match published report; validate_report passes; freshness gate same source"
+  },
+  {
+   "command": "git status --porcelain -- scripts tools + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "scripts/ tools/ clean; HEAD=009fda46 parent=20c63ec matches; commit only tests/test_ca205_atomic_report.py +279"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical f7c14cc6 matches; base_triplet (filing 5a1c18f/revenue 20c63ec/wiki 35a1103) and result_triplet (revenue 009fda46) all real commits; delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "20c63ec0d2ac4d307c7b1d66bdca7f1e67fb47ca",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "009fda46501a5613e553611a45574b8c2eb3f835",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA205-REV-001",
+   "severity": "info",
+   "title": "测试文件 REQUIRED_FIELDS 死常量未引用",
+   "detail": "第 45 行 REQUIRED_FIELDS 常量未被断言引用；无功能影响（C1 的字段验证经 validate_report 与 dashboard 断言覆盖）。"
+  },
+  {
+   "id": "CA205-REV-002",
+   "severity": "info",
+   "title": "state.json 工作树有已声明未提交改动",
+   "detail": "CA-205 条目 triplet_green（updated_at 2026-08-31T16:12:46），已在 receipt.touched_files 声明，非产品改动，closure 提交将归档。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T16:22:20+00:00",
+ "canonical_hash": "e3185462bb85d2a423ecc7eed1bcc3b04e6177d63e2fc0814c05c42195ea30c8"
+}

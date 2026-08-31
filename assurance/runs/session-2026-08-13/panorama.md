@@ -415,3 +415,10 @@
 - 全量基线：953 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-204 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-205（原子报告/freshness/告警）→ CA-206（soak）→ 阶段 J（CA-301~306）。
+
+## 2026-08-23 CA-205 closure 快照（阶段 H CA 部分 4/5）
+- **CA-205 closure**（原子报告/freshness/告警/release 消费，revenue）：revenue 009fda4——pending→完整校验→原子 publish（fsync+replace）完整字段；dashboard 与 release_gate 同 schema 消费；故障矩阵 10 类全红；恢复幂等；alert ack/retry + 响亮 sink 失败；无 stale-green 复活；7 tests；reviewer accepted（2 info）；reviewer receipt canonical e3185462；closure→CA-206。
+- **accepted 102/117（约 87%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 10 + I 9（计数真源 state.json）。
+- 全量基线：960 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-205 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-206（soak）→ 阶段 J（CA-301~306）。
