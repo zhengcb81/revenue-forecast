@@ -879,3 +879,14 @@
 - **机器状态**：current_next=CA-202，accepted **98/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 9：ZR-1001~1009；计数真源 state.json）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1009 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
 - 下一卡：CA-202（Daily T2 实际 scheduler，阶段 H CA 部分；依赖 ZR-806/CA-107 已满足）→ CA-203/204 → CA-205/206 → 阶段 J（CA-301~306）。
+
+- **CA-202（阶段 H CA 部分首卡：Daily T2 实际 scheduler，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca202* → 零命中；ZR-902 纯逻辑无真实 runner 组合验收。
+  - 实施：revenue 新 tests/test_ca202_daily_t2_runner.py（10 tests）——C1 真实 runner 报告（run_checks on production catalog mode=ro：{run_id/checks/triplet/ok}，triplet==三仓真实 HEAD，samples bound≥3+events≥3）；C2 零写 oracle（catalog 行数 + 三 root 浅指纹不变）；C3 三 root unique 样本（紫金 FY2025 + 金斯瑞 1548 FY2021 REUSED_EXACT、Dropbox 星环 MISSING fail-closed）；C4 只读连接（写尝试抛 OperationalError）+ 采样延迟 < p95 SLO 5s；C5 缺 run 告警/阻断（missing/stale/not-ok）+ fresh 放行。产品代码零改动、Task Scheduler 零触碰；commit fa4eff3（+257 行，1 文件）。
+  - 质量门：相邻回归（ZR-902/806/1004）31 passed；revenue 全量 **937 passed + 106 subtests**（927+10 新，零回归）；ruff clean（1 auto-fix + 1 手动）。
+  - state walk：red_proved → implemented → focused_green → owner_repo_green → triplet_green；implementer receipt canonical db33bf91。
+  - 独立复核 reviewer-ca202-independent **accepted**（10 passed 59.29s；独立探针：行数/指纹不变、triplet 逐一比对、写抛错、SLO 0.0051s；canonical db33bf91 一致；delta 仅 revenue fa4eff3；1 minor REV-001 C4 恒真 or True 死代码 + 2 info）；reviewer receipt canonical 1eaf9bc6。
+  - state accepted + closure-advance -> **CA-203**（phase H_dynamic_audit，Weekly/发布前 T3——真实 CN/HK/US provider 首次授权下载/二次零下载/amendment/single-flight/provider drift）。
+- **机器状态**：current_next=CA-203，accepted **99/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 7：ZR-902~907 + CA-202；I 9：ZR-1001~1009；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-202 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
+- 下一卡：CA-203（Weekly T3）→ CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。

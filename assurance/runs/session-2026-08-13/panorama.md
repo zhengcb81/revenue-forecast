@@ -394,3 +394,10 @@
 - 全量基线：927 passed + 106 subtests（零回归）；产品代码零改动、零真实删除。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1009 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-202（Daily T2 实际 scheduler）→ CA-203/204 → CA-205/206 → 阶段 J（CA-301~306）。
+
+## 2026-08-23 CA-202 closure 快照（阶段 H CA 部分推进中）
+- **CA-202 closure**（Daily T2 实际 scheduler，revenue）：revenue fa4eff3——真实 runner 报告（production catalog mode=ro + 精确 triplet + samples）；零写 oracle（行数+三 root 指纹不变）；三 root unique 样本（紫金/金斯瑞 REUSED_EXACT、Dropbox 星环 MISSING）；只读连接+SLO；缺 run 告警/阻断；10 tests；reviewer accepted（1 minor+2 info）；reviewer receipt canonical 1eaf9bc6；closure→CA-203。
+- **accepted 99/117（约 85%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 7 + I 9（计数真源 state.json）。
+- 全量基线：937 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-202 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-203（Weekly/发布前 T3）→ CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。

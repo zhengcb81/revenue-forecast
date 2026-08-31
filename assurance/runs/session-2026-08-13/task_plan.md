@@ -393,3 +393,9 @@
 - **ZR-1009 closure**（legacy 路由/代码删除门，revenue）：revenue 7eb8392——tests/test_zr1009_legacy_removal.py（C1 caller 诚实报告 quality.yml:47→closure_ledger + scratch 隔离；C2 两轮 freeze→verify zero-hit + 重现 fail-closed；C3 disposition 71 FC/N-1 批准目标/CA-304 可达；C4 删除后索引漂移检测 + 新 freeze 全绿；9 tests）；reviewer accepted（2 info）；reviewer receipt canonical 48a0a689；closure→CA-202。**阶段 I 全闭（9/9）**。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1009 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
 - 下一卡：CA-202（Daily T2 实际 scheduler）→ CA-203/204 → CA-205/206 → 阶段 J（CA-301~306）。
+
+## 最新状态（2026-08-23 CA-202 closure → 阶段 H CA 部分推进中）
+- **accepted 99/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 7：ZR-902~907 + CA-202；I 9：ZR-1001~1009；计数真源 state.json）。current_phase=**H_dynamic_audit**，current_next=**CA-203**。
+- **CA-202 closure**（Daily T2 实际 scheduler，revenue）：revenue fa4eff3——tests/test_ca202_daily_t2_runner.py（C1 真实 runner 报告+精确 triplet+samples；C2 零写 oracle；C3 三 root unique 样本；C4 只读连接+SLO；C5 缺 run 告警/阻断；10 tests）；reviewer accepted（1 minor+2 info）；reviewer receipt canonical 1eaf9bc6；closure→CA-203（Weekly/发布前 T3）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-202 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
+- 下一卡：CA-203（Weekly T3）→ CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。

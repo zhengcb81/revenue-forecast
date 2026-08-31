@@ -1,0 +1,67 @@
+{
+ "unit": "CA-202",
+ "reviewer": "reviewer-ca202-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "db33bf91c81ee086d190fd4273e2088f10eb52c887e487bad7f1f68737feaf8e",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca202_daily_t2_runner.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "10 passed in 59.29s (C1 report+triplet+samples; C2 zero-write; C3 three-root samples; C4 lock/SLO; C5 alert/block)"
+  },
+  {
+   "command": "python -m pytest tests/test_zr902_daily_schedule.py tests/test_zr806_real_t2_samples.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "24 passed in 2.03s (相邻契约抽查 OK)"
+  },
+  {
+   "command": "independent read-only probes (row counts, root fingerprints, triplet vs git rev-parse, read-only write attempt, latency)",
+   "exit_code": 0,
+   "result": "documents=23530/sources=43112/locations=46606 unchanged; three-root fingerprints unchanged (companies c2e55234/dayu a97b3934/dropbox 93a2670d); triplet matches three real HEADs; CREATE TABLE raises OperationalError 'attempt to write a readonly database'; resolve_sample_sec=0.0051s << p95 SLO 5.0s"
+  },
+  {
+   "command": "git status --porcelain -- scripts tools + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "HEAD=fa4eff36 parent=568ebac0 matches; scripts/ tools/ clean; commit only tests/test_ca202_daily_t2_runner.py +257"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical db33bf91 matches; base_triplet (filing 5a1c18f/revenue 568ebac0/wiki 35a1103) and result_triplet (revenue fa4eff36) all real commits; delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "568ebac08284cb42ee86f177188dc8f09e81e2ad",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "fa4eff367dc3d212dad2c90b7b6f7badd63c86d0",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA202-REV-001",
+   "severity": "minor",
+   "title": "C4 测试中恒真死代码",
+   "detail": "test_c4_latency_within_frozen_budget 含 `assert latency < LATENCY_P50_BUDGET or True` 恒真；p95 才是硬门槛（已断言 5.0s），建议后续移除该行但无碍验收。"
+  },
+  {
+   "id": "CA202-REV-002",
+   "severity": "info",
+   "title": "仓库根有历史遗留未跟踪 .tmp-* 文件",
+   "detail": "先前卡的探针产物（zr407/zr409/zr501/zr1009 等），非本卡产生，建议统一清理。"
+  },
+  {
+   "id": "CA202-REV-003",
+   "severity": "info",
+   "title": "state.json 仅新增 CA-202 条目",
+   "detail": "status=triplet_green 待 review，符合 receipt touched_files 声明。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T14:46:23+00:00",
+ "canonical_hash": "1eaf9bc69f40f0d5626aed00ee50394bfe5d6b52de1498a5ba1632f160febf7f"
+}
