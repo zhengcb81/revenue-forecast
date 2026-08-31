@@ -527,3 +527,8 @@
 - 全量基线：1085 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue e67d1fe、wiki 35a1103、filing 5a1c18f。
 - **三仓库完成度审计（三仓一致）**：revenue 全量绿；wiki/filing 本段零改动；CA-306 terminal notice 已由旧计划侧归档。
+
+## 2026-08-31 终局收尾快照
+- **三仓已全部 push**：revenue main=d0c4be7、wiki master=35a1103、filing main=5a1c18f（fcap→默认分支 fast-forward）。
+- **planning docs 终局镜像**：README §0 completed（CAS 重建 manifest）；6 旧计划 TERMINAL_NOTICE.json（closed_superseded_incomplete）；session docs 四件套更新。
+- 机器终态：accepted 117/117，current_next=CA-201（终局游标），phase=J_final_verification。

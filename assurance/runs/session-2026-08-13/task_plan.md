@@ -507,3 +507,8 @@
 - **CA-201 closure**（吸收卡：current-triplet PR fan-out，CA-201 拥有调度/attestation，ZR-105/ZR-901 提供 required checks）：revenue e67d1fe——tests/test_ca201_pr_fanout_ownership.py（C1~C7，7 tests）；reviewer accepted（1 minor + 5 info）；reviewer receipt canonical 8382aba4；terminal 13（无后继）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue e67d1fe、wiki 35a1103、filing 5a1c18f。
 - **项目闭环**：全部 117 单元 accepted；全量基线 1085 passed + 106 subtests；产品代码零改动（本段 22 张卡全部为验证/吸收卡）。
+
+## 终局收尾（2026-08-31：push + docs）
+- 三仓 push 完成（revenue d0c4be7→main、wiki 35a1103→master、filing 5a1c18f→main）。
+- README §0 终局镜像 completed + manifest CAS-replace + state 镜像；6 旧计划 TERMINAL_NOTICE.json 补齐。
+- 项目状态：**117/117 全部闭环，三仓已 push**。

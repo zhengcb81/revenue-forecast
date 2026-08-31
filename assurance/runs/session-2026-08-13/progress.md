@@ -1088,3 +1088,12 @@
   - **终局**：unlocked=[]（117/117 全 accepted，DAG 无后继）→ 手动生成 terminal 13 closure receipt（next=CA-201, terminal=true）；lock-release；manifest-verify OK。
 - **机器状态**：**accepted 117/117 全部闭环**；current_next=CA-201（终局游标），current_phase=J_final_verification；计数真源 state.json。
 - 三仓 HEAD（本地 fcap，未 push）：revenue e67d1fe（CA-201 实现）、wiki 35a1103、filing 5a1c18f。
+
+## 终局收尾（2026-08-31：三仓全部 push + planning docs 终局镜像）
+- **三仓 push 完成**（本地 fcap → 远端默认分支，fast-forward，behind=0）：
+  - revenue: `3ce9cc4..d0c4be7 fcap -> origin/main`
+  - wiki: `109a1a6..35a1103 fcap -> origin/master`
+  - filing: `c9799b7..5a1c18f fcap -> origin/main`
+- **README §0 终局镜像**：plan_status=completed、implementation_status=completed（closure-advance 终局无后继，手动 CAS 镜像）；manifest CAS-replaced（--force f982880a…→6ecd5acf…）+ manifest-verify OK；state.json 同步镜像（machine_manifest_sha256/control_page_sha256/plan_status/implementation_status/CA-201 terminal closure）。
+- **6 个旧计划目录补写 TERMINAL_NOTICE.json**（CA-306 契约：closed_superseded_incomplete + superseded_by=state.json；此前 CA-306 receipt 声称已写但文件缺失，本次补齐）：2026-08-08_adversarial_plan、2026-08-09_data_lake_refactor_plan、2026-08-09_full_completion_assurance_plan、2026-08-12_zijin_skill_run_audit、2026-08-13_three_repo_completion_rebaseline_plan、2026-08-13_zijin_data_lake_remediation_plan。
+- **终局汇总**：accepted 117/117；全量 1085 passed + 106 subtests；三仓 HEAD 均已 push。

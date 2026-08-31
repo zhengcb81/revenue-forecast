@@ -301,3 +301,7 @@
 - **artifact/mine/forecast 消费绑定**：Zijin .source.json 契约（fiscal_year/company_name/security_id/pdoc/content_sha256==实测/byte_size==实测/fiscal_period=FY）→ F2 链 FY 语义可消费；星环 sidecar 以 content_sha256 绑定（schema 较窄——reviewer REV-001 info：卡片全字段枚举仅适用 Zijin sidecars）；broker PDF 无 sidecar 诚实保持 raw。
 - **CRLF 行尾 vs CAS hash 冲突（closure 机械门新坑）**：README 为 CRLF 时，closure-advance 的 `read_text().encode()`（universal newlines 转 LF 后 hash 9e1bb1c0）与 manifest 登记的原始字节 hash（CRLF 版本 c6a00a6d）不一致 → CAS-CONFLICT；修复 = README 转 LF + `manifest-build --force` 重建。教训：uc 工具 hash 口径不统一（manifest_verify 用原始字节、closure-advance 用 read_text+encode），控制页文件必须保持 LF 行尾。
 - **reviewer 回合卡顿处理**：subagent 探针创建后 3+ 分钟无进程活动 → interrupt + send_message 催收尾（可跳过全量复跑——pre-commit 已独立跑过）；reviewer 依此快速完成（全量仍复跑 167.84s 绿）。
+
+## 终局发现（2026-08-31）
+- **发现 A：CA-306 terminal notice 实际缺失。** CA-306 的 11 receipt note 声称"TERMINAL_NOTICE 已写入 6 个旧计划目录"，但全仓 glob（*TERMINAL*/*NOTICE*/*terminal*）零命中——notice 从未落盘。本次按 CA-306 契约（status=closed_superseded_incomplete、superseded_by=assurance/unified_completion/state.json、written_by=old-plan-owner）补齐 6 个目录的 TERMINAL_NOTICE.json。教训：receipt 声称与磁盘事实须以磁盘为准（与 ZR-805 receipt 命名类同的历史类缺陷）。
+- **发现 B：终局无 closure-advance 路径。** DAG 117 单元全 accepted 后 unlocked=[]，closure-advance --next 无合法值（终局单元）。处理：手动 CAS 镜像 README §0（plan_status/implementation_status=completed）+ manifest-build --force CAS-replace + state 镜像（machine_manifest_sha256/control_page_sha256/plan_status/implementation_status + CA-201 terminal closure 记录）。后续若有同构计划，终局流程应内置 terminal-close 命令或在 README §12 记录该路径。
