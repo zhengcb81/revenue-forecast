@@ -978,3 +978,14 @@
 - **机器状态**：current_next=CA-305，accepted **107/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 4：CA-301~304；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-304 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-305（六问题 ledger）→ CA-306（旧计划关闭）。
+
+- **CA-305（阶段 J 第五卡：六问题 machine closure ledger，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca305* → 零命中；六问题定义明确；证据单元全 accepted。
+  - 实施：revenue 新 tests/test_ca305_six_problems.py（7 tests）——C1 冻结源 §6 恰 6 条成功问题枚举；C2 每问映射到 state accepted 证据单元（25 个）+ 11/12 receipts 在位；C3 每问场景测试文件（当前套件内）；C4 每单元 result_triplet 40-hex + state sha256 确定性；C5 reviewer 存在（state.reviewer + closure.by + 12 accepted 或 13_delta accepted 如 ZR-904）；C6 每问独立 pass 非聚合（每问证据集全 accepted，总体计数仅信息性）。产品零改动；commit 1f39a7b（+215 行，1 文件）。
+  - 质量门：revenue 全量 **1019 passed + 106 subtests**（1012+7 新，零回归）；ruff clean（F841 手动修）。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical bb126435。
+  - 独立复核 reviewer-ca305-independent **accepted**（7 passed 0.26s；§6 逐条匹配；25 证据单元全 accepted；ZR-904 delta 语义成立；canonical bb126435 一致；delta 仅 revenue；4 info：REV-001 state.json 未提交、REV-002 C4 sha256 长度断言较弱、REV-003 未跟踪杂物、REV-004 未复跑全量）；reviewer receipt canonical f15deb91。
+  - state accepted + closure-advance -> **CA-306**（phase J_final_verification，旧计划 terminal closure 与唯一入口切换——旧计划单一 owner 添加只读 terminal notice `closed_superseded_incomplete` 指向 closure ledger；保留所有历史 receipt/hash；关闭 R9/FC150x 旧领取入口；71 FC、R0~R9、FC150x 全部有最终 successor 结果；旧历史不改写；根 audit_review/README.md 始终唯一领取入口）。
+- **机器状态**：current_next=CA-306，accepted **108/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 5：CA-301~305；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-305 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-306（旧计划 terminal closure，终局卡）→ 全部 117 卡闭环。

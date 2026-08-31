@@ -10,7 +10,7 @@ authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
 current_phase: J_final_verification
-current_next: CA-305
+current_next: CA-306
 active_owner: unassigned
 lease: none
 blocked_reason: none

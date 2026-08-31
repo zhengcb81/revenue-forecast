@@ -447,3 +447,9 @@
 - **CA-304 closure**（R9 分批删除与 rollback drill，revenue）：revenue 60bb910——tests/test_ca304_r9_removal.py（C1 FC-705 close-gate 六类 fail-closed；C2 legacy oracle；C3 分批门+rollback 往返；C4 零残留；C5 三周期 drill；11 tests）；reviewer accepted（1 minor+3 info）；reviewer receipt canonical 06c3c085；closure→CA-305（六问题 machine closure ledger）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-304 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-305（六问题 ledger）→ CA-306（旧计划关闭，终局）。
+
+## 最新状态（2026-08-23 CA-305 closure → 阶段 J 5/6）
+- **accepted 108/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 5：CA-301~305；计数真源 state.json）。current_phase=**J_final_verification**，current_next=**CA-306**。
+- **CA-305 closure**（六问题 machine closure ledger，revenue）：revenue 1f39a7b——tests/test_ca305_six_problems.py（C1 六问题枚举；C2 证据映射；C3 场景；C4 triplet 绑定；C5 reviewer 存在；C6 每问独立 pass；7 tests）；reviewer accepted（4 info）；reviewer receipt canonical f15deb91；closure→CA-306（旧计划 terminal closure，终局）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-305 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-306（旧计划 terminal closure）→ 全部闭环。

@@ -457,3 +457,10 @@
 - 全量基线：1012 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-304 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-305（六问题 machine closure ledger）→ CA-306（旧计划 terminal closure）。
+
+## 2026-08-23 CA-305 closure 快照（阶段 J 5/6）
+- **CA-305 closure**（六问题 machine closure ledger，revenue）：revenue 1f39a7b——六问题逐项映射（需求→证据→场景→triplet→reviewer），25 证据单元全 accepted + receipts 在位 + delta 语义；每问独立 pass 非聚合；7 tests；reviewer accepted（4 info）；reviewer receipt canonical f15deb91；closure→CA-306。
+- **accepted 108/117（约 92%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 5（计数真源 state.json）。current_phase=J_final_verification。
+- 全量基线：1019 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-305 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-306（旧计划 terminal closure，终局）→ 全部闭环。
