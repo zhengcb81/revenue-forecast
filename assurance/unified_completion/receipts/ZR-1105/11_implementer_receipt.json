@@ -1,0 +1,85 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "a78852bfb35eddf68dfb4fe3cbbcac4af983f3ff",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr1105* + ledger/disposition/gate review",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 zr1105 套件；113 accepted 仅自身 preflight；吸收卡 CA-201/ZR-901/ZR-801 不在 state）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1105_closure_ledger.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "6 passed in 0.27s (C1 six-goal machine pass; C2 requirement->evidence coverage; C3 old-plan read-only projection incl absorbed cards; C4 validator exit-0; C5 ledger completeness)"
+    },
+    {
+      "command": "ruff check tests/test_zr1105_closure_ledger.py --fix && ruff check",
+      "exit_code": 0,
+      "result": "All checks passed (1 auto-fixed, 0 remaining)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "e2c6e7a test(ZR-1105) — 1 file +189"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1063 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T20:40:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: every goal's evidence units (CA-301~304, ZR-1008/1009, ZR-501/705/709/713, ZR-902~907, CA-202~206, ZR-806/1001/1004, ZR-906/907/CA-303/304) all accepted in state. C2: every accepted unit (>=110) has 11/12/13-or-14 receipts + reviewer + closure.by. C3: 71 FC rows + 5 closure items project to accepted CA successors or absorbed cards (CA-201/ZR-901/ZR-801 per README §7); old-plan dirs never rewritten (stable snapshots). C4: legacy_disposition.verify fresh (problems==[]); legacy_gate.report honest (schema 1, verdict isolated/callers_found). C5: ledger generation yields exactly one entry per accepted unit with implementer/reviewer/closure_by/next; per-goal answers complete (no aggregate substitute).",
+      "id": "ZR1105-IMPL-001",
+      "severity": "info",
+      "title": "最终需求—证据 closure ledger 验收（六目标 machine pass/需求→证据/旧计划只读投影/validator exit-0/完整性）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr1105_closure_ledger.py（6 tests）：C1 六目标 machine pass（CA-305 映射）；C2 需求→证据覆盖（receipts+reviewer）；C3 旧计划只读投影（含吸收卡 CA-201/ZR-901/ZR-801）；C4 validator exit-0（disposition verify + legacy gate）；C5 ledger 完整性。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr1105_closure_ledger.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1105/**"
+    ]
+  },
+  "implementer": "zr1105-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = e2c6e7a（revenue HEAD = ZR-1105 实现 commit，parent a78852b）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "旧计划 terminal notice 写入为 CA-306/owner 部署动作；本卡验收 ledger 生成语义。"
+  ],
+  "objective": "Phase 11 收官卡：最终需求—证据 closure ledger（六目标逐项 machine pass；旧计划只读映射；validator exit 0 后整体 complete）",
+  "plan_sha256": "7c5e89ccf60f22d67f76dda83fbb20d648ad4499364bcbc4cd0451ddd5caae09",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e2c6e7a59c2e43af37c55f7b7059052965f9ff1c",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_zr1105_closure_ledger.py (new 6 tests)；assurance/unified_completion/receipts/ZR-1105/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "old_plan_writes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr1105_closure_ledger.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1105/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1105",
+  "canonical_hash": "9bb742467951a5c7e0e794f03d0db0ef4727b52730e3871793fff7293b8c9f01"
+}

@@ -1,0 +1,69 @@
+{
+ "unit": "ZR-1105",
+ "reviewer": "reviewer-zr1105-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "9bb742467951a5c7e0e794f03d0db0ef4727b52730e3871793fff7293b8c9f01",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_zr1105_closure_ledger.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "6 passed in 0.24s (C1 six goals; C2 coverage; C3 old plan; C4 validator; C5 ledger)"
+  },
+  {
+   "command": "independent probes: state counts + absorbed cards, legacy_disposition verify, GOAL_EVIDENCE spot checks, legacy-verify CLI",
+   "exit_code": 0,
+   "result": "114 units / 113 accepted (only ZR-1105 triplet_green under review); CA-201/ZR-901/ZR-801 not in units with README §7 absorption recorded; 71 FC + 5 items + 10 waves verified fresh (problems==[]); legacy-verify CLI exit 0; legacy-gate honest callers_found; GOAL_EVIDENCE spot checks all accepted"
+  },
+  {
+   "command": "git status --porcelain -- scripts + show HEAD~1..HEAD + receipt checks",
+   "exit_code": 0,
+   "result": "scripts/ clean; HEAD=e2c6e7a parent=a78852b matches; commit only tests +189; canonical 9bb74246 == recomputed; plan_sha256 == wu_card sha256; triplet delta correct (base=parent, result=HEAD, wiki/filing unchanged)"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "a78852bfb35eddf68dfb4fe3cbbcac4af983f3ff",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "e2c6e7a59c2e43af37c55f7b7059052965f9ff1c",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "ZR1105-REV-001",
+   "severity": "info",
+   "title": "全量未复跑（按指示信任）",
+   "detail": "算术自洽 1057+6=1063。"
+  },
+  {
+   "id": "ZR1105-REV-002",
+   "severity": "info",
+   "title": "工作区未提交变更（卡片生命周期内）",
+   "detail": "state.json/receipts/locks 待 closure 提交，非产品改动。"
+  },
+  {
+   "id": "ZR1105-REV-003",
+   "severity": "info",
+   "title": "legacy-gate exit 1 属诚实检测语义",
+   "detail": "callers_found 时 exit 1 是 gate 检测语义，非 validator 失败。"
+  },
+  {
+   "id": "ZR1105-REV-004",
+   "severity": "info",
+   "title": "legacy_disposition.json 预存 GBK mojibake",
+   "detail": "非本卡引入，Python 解析正常。"
+  },
+  {
+   "id": "ZR1105-REV-005",
+   "severity": "info",
+   "title": "C2 下界 ≥110 宽松于声明 113",
+   "detail": "实际 113 满足，非缺陷。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T20:41:00+00:00",
+ "canonical_hash": "875f1f8fa212f3de34e4a852a2d02f193a2a2e462d2386b3d4e7c080d5e496af"
+}

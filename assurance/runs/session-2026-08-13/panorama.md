@@ -499,3 +499,10 @@
 - 全量基线：1057 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1104 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1105（closure ledger）→ ZR-801 处置 → 全部闭环。
+
+## 2026-08-23 ZR-1105 closure 快照（Phase 11 全闭 5/5 → ZR-801 最后处置）
+- **ZR-1105 closure**（最终 closure ledger，revenue）：revenue e2c6e7a——六目标 machine pass/需求→证据覆盖/旧计划只读投影（含吸收卡）/validator exit-0/ledger 完整性；6 tests；reviewer accepted（5 info）；reviewer receipt canonical 875f1f8f；closure→ZR-801。**Phase 11 全闭（5/5）**。
+- **accepted 114/117（约 97%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 5（计数真源 state.json）。current_phase=J_final_verification。
+- 全量基线：1063 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1105 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-801（吸收卡处置）→ 全部 117 闭环。

@@ -483,3 +483,9 @@
 - **ZR-1104 closure**（观察期+rollback drill，revenue）：revenue 1a8de5b——tests/test_zr1104_observation_drill.py（C1 观察完整性 7/2/1/1；C2 legacy 门；C3 rollback 往返；C4 无豁免；C5 drill journal；9 tests）；reviewer accepted（1 minor+2 info）；reviewer receipt canonical 6cffa810；closure→ZR-1105（closure ledger）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1104 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1105 → ZR-801 处置 → 全部闭环。
+
+## 最新状态（2026-08-23 ZR-1105 closure → Phase 11 全闭 5/5 → ZR-801 最后处置）
+- **accepted 114/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 5：ZR-1101~1105；计数真源 state.json）。current_phase=**J_final_verification**，current_next=**ZR-801**。
+- **ZR-1105 closure**（最终 closure ledger，revenue）：revenue e2c6e7a——tests/test_zr1105_closure_ledger.py（C1 六目标；C2 覆盖；C3 旧计划只读投影；C4 validator；C5 ledger 完整；6 tests）；reviewer accepted（5 info）；reviewer receipt canonical 875f1f8f；closure→ZR-801。**Phase 11 全闭（5/5）**。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1105 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-801（吸收卡：scenario registry 由 CA-105 唯一实现）→ 全部闭环。

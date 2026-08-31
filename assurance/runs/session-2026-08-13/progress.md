@@ -1045,3 +1045,14 @@
 - **机器状态**：current_next=ZR-1105，accepted **113/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 4：ZR-1101~1104；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1104 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1105（closure ledger）→ ZR-801 处置 → 全部闭环。
+
+- **ZR-1105（Phase 11 收官卡：最终需求—证据 closure ledger，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*zr1105* → 零命中；发现吸收卡（CA-201/ZR-901/ZR-801 不在 state，README §7）。
+  - 实施：revenue 新 tests/test_zr1105_closure_ledger.py（6 tests）——C1 六目标 machine pass（CA-305 GOAL_EVIDENCE 映射，每问证据单元全 accepted）；C2 需求→证据覆盖（≥110 accepted 全有 11/12/13-or-14 receipts + reviewer + closure.by）；C3 旧计划只读投影（71 FC + 5 closure items → accepted CA 或吸收卡；旧目录不改写）；C4 validator exit-0（disposition verify fresh + legacy gate 诚实）；C5 ledger 完整性（每 accepted 一条，非聚合）。产品零改动；commit e2c6e7a（+189 行，1 文件）。
+  - 质量门：revenue 全量 **1063 passed + 106 subtests**（1057+6 新，零回归）；ruff clean（1 auto-fix）。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical 9bb74246。
+  - 独立复核 reviewer-zr1105-independent **accepted**（6 passed 0.24s；113 accepted 独立核实 + 吸收卡确认；disposition verify 独立 exit 0；canonical 9bb74246 一致；5 info）；reviewer receipt canonical 875f1f8f。
+  - state accepted + closure-advance -> **ZR-801**（最后一个吸收卡：scenario machine registry 由 CA-105 唯一实现，ZR-801 只定义业务场景）。
+- **机器状态**：current_next=ZR-801，accepted **114/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 5：ZR-1101~1105；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1105 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-801（吸收卡处置——scenario registry 验收）→ 全部 117 闭环。
