@@ -1,0 +1,84 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "f53a3f95627714ea61fbae3c17462a0fc28f1e14",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr801* + registry inventory",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 zr801 套件；registry 197 unique 在位；README §7 吸收记录）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr801_scenario_registry.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "7 passed in 0.33s (C1 registry complete 197 unique + tier valid; C2 uc tooling one authority; C3 business families present; C4 no duplicate registry; C5 absorption documented)"
+    },
+    {
+      "command": "ruff check tests/test_zr801_scenario_registry.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "928663a test(ZR-801) — 1 file +127"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1070 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T20:55:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: single machine registry (CA-105 owned) with 197 unique scenarios (old95+new102), tier families T0-T4 valid, ids unique. C2: uc.cli scenario-build/scenario-verify consume this exact registry (one authority, one algorithm; verified via CLI help from UC_ROOT). C3: business surfaces present as ID families AR-/BR-/MINE-/READ-/REV-/AUD- (ZR-801 business scenario needs covered). C4: no second scenario registry anywhere in assurance/tools/scripts (absorbed card did not build a copy). C5: README §7 records the absorption (scenario machine registry by CA-105/106, ZR-801 absorbed).",
+      "id": "ZR801-IMPL-001",
+      "severity": "info",
+      "title": "吸收卡验收：scenario machine registry 由 CA-105 唯一实现（197 unique/一权威/业务面/无重复/文档）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr801_scenario_registry.py（7 tests）：C1 registry 完整；C2 uc 工具唯一权威；C3 业务家族；C4 无第二 registry；C5 吸收文档。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr801_scenario_registry.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-801/**"
+    ]
+  },
+  "implementer": "zr801-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 928663a（revenue HEAD = ZR-801 实现 commit，parent f53a3f9）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "本卡为 DAG 最后单元——closure 后 117/117 全部闭环。"
+  ],
+  "objective": "吸收卡终局验收：scenario machine registry 由 CA-105/106 唯一实现（ZR-801 只定义业务场景，不新建 registry/coverage 算法）",
+  "plan_sha256": "b0ddef76c9a506ee43d90cb015b89483253be6042360f1bcd387d30396335f37",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "928663a61d7fa75c463554ddb8277e43bcc97278",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_zr801_scenario_registry.py (new 7 tests)；assurance/unified_completion/receipts/ZR-801/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr801_scenario_registry.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-801/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-801",
+  "canonical_hash": "139e224a25b4535f48cc3df5693e8d70115dda38d2825b782d780efda2124b6b"
+}

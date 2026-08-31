@@ -1056,3 +1056,14 @@
 - **机器状态**：current_next=ZR-801，accepted **114/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 5：ZR-1101~1105；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1105 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-801（吸收卡处置——scenario registry 验收）→ 全部 117 闭环。
+
+- **ZR-801（吸收卡终局验收：scenario machine registry，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*zr801* → 零命中；registry 197 unique 在位（CA-105 建立）。
+  - 实施：revenue 新 tests/test_zr801_scenario_registry.py（7 tests）——C1 单 registry 197 unique（old95+new102）+ tier T0~T4 复合合法 + id 唯一；C2 uc.cli scenario-build/verify 唯一权威；C3 业务面家族（AR/BR/MINE/READ/REV/AUD）在位；C4 无第二 registry（assurance/tools/scripts）；C5 README §7 吸收文档。产品零改动；commit 928663a（+127 行，1 文件）。
+  - 质量门：revenue 全量 **1070 passed + 106 subtests**（1063+7 新，零回归）；ruff clean。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical 139e224a。
+  - 独立复核 reviewer-zr801-independent **accepted**（7 passed 0.34s；registry 全量独立统计 197 合法；canonical 139e224a 一致；4 info）；reviewer receipt canonical 71ae5918。
+  - state accepted + closure-advance -> **ZR-901**（最后一个吸收卡：current-triplet PR fan-out 由 CA-201 拥有，ZR-105/ZR-901 提供 required checks）。
+- **机器状态**：current_next=ZR-901，accepted **115/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 5 + ZR-801；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-801 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-901（吸收卡：PR 门由 CA-201 拥有）→ 全部 117 闭环。

@@ -506,3 +506,10 @@
 - 全量基线：1063 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1105 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-801（吸收卡处置）→ 全部 117 闭环。
+
+## 2026-08-23 ZR-801 closure 快照（最后吸收卡 ZR-901）
+- **ZR-801 closure**（吸收卡：scenario machine registry，revenue）：revenue 928663a——registry 197 unique/唯一权威/业务家族/无重复/吸收文档；7 tests；reviewer accepted（4 info）；reviewer receipt canonical 71ae5918；closure→ZR-901。
+- **accepted 115/117（约 98%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 5 + ZR-801（计数真源 state.json）。current_phase=J_final_verification。
+- 全量基线：1070 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-801 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-901（PR 门，CA-201 吸收）→ 全部 117 闭环。

@@ -489,3 +489,9 @@
 - **ZR-1105 closure**（最终 closure ledger，revenue）：revenue e2c6e7a——tests/test_zr1105_closure_ledger.py（C1 六目标；C2 覆盖；C3 旧计划只读投影；C4 validator；C5 ledger 完整；6 tests）；reviewer accepted（5 info）；reviewer receipt canonical 875f1f8f；closure→ZR-801。**Phase 11 全闭（5/5）**。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1105 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-801（吸收卡：scenario registry 由 CA-105 唯一实现）→ 全部闭环。
+
+## 最新状态（2026-08-23 ZR-801 closure → 最后吸收卡 ZR-901）
+- **accepted 115/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 5 + ZR-801；计数真源 state.json）。current_phase=**J_final_verification**，current_next=**ZR-901**。
+- **ZR-801 closure**（吸收卡：scenario machine registry，revenue）：revenue 928663a——tests/test_zr801_scenario_registry.py（C1 registry 197 unique；C2 唯一权威；C3 业务家族；C4 无重复；C5 吸收文档；7 tests）；reviewer accepted（4 info）；reviewer receipt canonical 71ae5918；closure→ZR-901（PR 门，CA-201 拥有）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-801 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-901（吸收卡）→ 全部闭环。
