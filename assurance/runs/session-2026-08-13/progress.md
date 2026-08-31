@@ -1023,3 +1023,14 @@
 - **机器状态**：current_next=ZR-1103，accepted **111/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 2：ZR-1101/1102；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1102 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1103（真实旅程复验）→ ZR-1104/1105 → ZR-801 处置 → 全部闭环。
+
+- **ZR-1103（Phase 11 第三卡：真实用户旅程复验，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*zr1103* → 零命中；旅程分项存在无复验组合。
+  - 实施：revenue 新 tests/test_zr1103_journey_reverify.py（6 tests）——C1 三 root 复验（production resolver 只读：紫金 FY2025 + 金斯瑞 1548 FY2021 REUSED_EXACT；Dropbox 星环 MISSING fail-closed）；C2 已处理复用（spy wiki 二次同请求 zero fetch/zero write single-flight）；C3 CN/HK/US 市场面（filing-fetch T3 三市场 + opt-in）；C4 broker ≥7 + mine 链 engine draft 路径；C5 Windows 中文路径（紫金 CJK 身份进 trace）。产品零改动；commit 02d1d97（+186 行，1 文件）。
+  - 质量门：相邻回归（CA-302/CA-203）16 passed；revenue 全量 **1048 passed + 106 subtests**（1042+6 新，零回归）；ruff clean。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical 75c119f7。
+  - 独立复核 reviewer-zr1103-independent **accepted**（6 passed 11.80s；production resolver mode=ro+query_only 探针；catalog 零变异；spy 真实计数；T3 三市场；canonical 75c119f7 一致；6 info）；reviewer receipt canonical 0d0fffd0。
+  - state accepted + closure-advance -> **ZR-1104**（phase J_final_verification，观察期与真实 rollback drill——连续 7 次 Daily T2、2 次 Weekly T3、1 次 Monthly 紫金 shadow、1 次告警自检；legacy hit=0；一次 cohort rollback/re-activate；自然时间门不得人工豁免）。
+- **机器状态**：current_next=ZR-1104，accepted **112/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 3：ZR-1101~1103；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1103 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1104（观察期/rollback drill）→ ZR-1105 → ZR-801 处置 → 全部闭环。

@@ -471,3 +471,9 @@
 - **ZR-1102 closure**（对抗式三仓审查，revenue）：revenue 2914c54——tests/test_zr1102_adversarial_audit.py（C1 reachability 零孤儿；C2 硬编码复扫零；C3 孤岛检测；C4 mutation 防护；C5 无旁路；9 tests）；reviewer accepted（1 minor+2 info）；reviewer receipt canonical 31518f98；closure→ZR-1103（真实旅程复验）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1102 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1103 → ZR-1104/1105 → ZR-801 处置 → 全部闭环。
+
+## 最新状态（2026-08-23 ZR-1103 closure → Phase 11 3/5）
+- **accepted 112/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 3：ZR-1101~1103；计数真源 state.json）。current_phase=**J_final_verification**，current_next=**ZR-1104**。
+- **ZR-1103 closure**（真实旅程复验，revenue）：revenue 02d1d97——tests/test_zr1103_journey_reverify.py（C1 三 root；C2 已处理复用；C3 CN/HK/US；C4 broker/mine；C5 Windows 中文路径；6 tests）；reviewer accepted（6 info）；reviewer receipt canonical 0d0fffd0；closure→ZR-1104（观察期/rollback drill）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1103 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1104 → ZR-1105 → ZR-801 处置 → 全部闭环。
