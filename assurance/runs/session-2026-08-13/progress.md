@@ -824,3 +824,14 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue 06d259c（ZR-1004 实现）、wiki 9a00df6、filing 5a1c18f。
 - 下一卡：ZR-1005（legacy artifact 分桶与最小 canary backfill——"先 dry-run；不可证明不绑定；幂等/resume；零删除；artifact reuse T2"）→ ZR-1006（broker cohort）~1009。
 - **停止点（用户指示：更新全部 planning docs 后停止）**：ZR-1004 全流程已闭（reviewer accepted → 12/13 入库 → state accepted → closure-advance → lock-release → closure commit 即本提交）；阶段 I 已闭 4/9（ZR-1001~1004）；恢复第一步 = ZR-1005（legacy artifact 分桶）→ ZR-1006~1009/CA-304。
+
+- **ZR-1005（阶段 I 第五卡：legacy artifact 分桶与最小 canary backfill，company-wiki）全流程闭**：
+  - RED 探针：grep artifact_backfill/bucket/dry-run → 测试零命中；FC-901 有 dry-run/apply 实现（ArtifactBackfillResult 含 closed/result_hash）但无验收套件；artifact_handle 门（schema_version=="1.0"、created_at ISO 8601 UTC、source_sha256 匹配、path 在 allowed_roots、generator 在 registry）无契约锁定。
+  - 实施：company-wiki 新 tests/contract/test_zr1005_artifact_backfill.py（4 测试函数：C1 真实 catalog dry-run（closed=True + result_hash 跨 run 稳定 + documents=23530/sources=43112/locations=46606 行数零变化，单次 4.83s）；C2 temp catalog apply（INSERT OR IGNORE shadow bindings、artifacts 表零删除）；C3 幂等（二次 apply skipped_already_bound>0 + created=[] + dry-run hash 字节一致）；C4 only-bindable（bound_ids == bindable_ids；source_sha256 不匹配 → legacy_unbound 不绑定））。产品代码零改动；commit abeaca8f（+180 行，1 文件）。
+  - 质量门：company-wiki 回归（C1-C4 + ZR-1002/ZR-1003 相邻契约）全绿；revenue 全量 **896 passed + 106 subtests** 零回归；ruff clean。
+  - state walk：red_proved → implemented → focused_green → owner_repo_green → triplet_green；implementer receipt canonical 07dda8b8。
+  - 独立复核 reviewer-zr1005-independent **accepted**（4 passed 2.78s；独立只读探针 input=7962/closed=True/行数零变化；canonical 07dda8b8 一致；triplet delta 仅 wiki abeaca8f；4 findings：REV-001 minor 声称 5 tests 实际 4 个测试函数（数量声明不准确，无功能影响）+ REV-002/003/004 info（catalog artifacts 增 250 条、git status 非产品文件、created_at 系统性时间戳现象））；reviewer receipt canonical 51879f67。
+  - state accepted + closure-advance -> **ZR-1006**（phase I_gradual_release，broker processing demand 最小 cohort——七份紫金先 1→3→7；质量门/成本/SLO；失败不污染旧 artifact）。
+- **机器状态**：current_next=ZR-1006，accepted **94/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 5：ZR-1001~1005；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1005 closure docs commit 待提交）、wiki abeaca8f（ZR-1005 实现）、filing 5a1c18f。
+- 下一卡：ZR-1006（broker processing demand 最小 cohort）→ ZR-1007（mine shadow）~1009/CA-304。

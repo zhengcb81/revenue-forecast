@@ -363,3 +363,9 @@
 - **ZR-1004 closure**（四 root 小 cohort，revenue 侧）：revenue 06d259c——tests/test_zr1004_small_cohort.py（companies 紫金 exact + dayu 1548 exact + Dropbox StarLake fail-closed MISSING + future_lake 配置 + external write=0 四 root 浅指纹/catalog 行数 + 同 request 幂等/失败恢复一致 7 tests）；reviewer accepted（探针全过，2 info）；reviewer receipt canonical 22ef3dc4；closure→ZR-1005（legacy artifact 分桶与最小 canary backfill）。
 - **停止点（用户指示：更新全部 planning docs 后停止）**：下一卡 ZR-1005（legacy artifact 分桶——"先 dry-run；不可证明不绑定；幂等/resume；零删除；artifact reuse T2"）未领取；恢复第一步 = ZR-1005 → ZR-1006~1009/CA-304。
 - 三仓 HEAD（本地 fcap，未 push）：revenue 06d259c（ZR-1004 实现）、wiki 9a00df6、filing 5a1c18f。
+
+## 最新状态（2026-08-23 ZR-1005 closure → 阶段 I 已闭 5/9）
+- **accepted 94/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 5：ZR-1001~1005；计数真源 state.json）。current_phase=**I_gradual_release**，current_next=**ZR-1006**。
+- **ZR-1005 closure**（legacy artifact 分桶与最小 canary backfill，company-wiki）：wiki abeaca8f——tests/contract/test_zr1005_artifact_backfill.py（C1 真实 catalog dry-run closed+stable hash+行数零变化；C2-C4 temp apply/幂等/only-bindable；4 测试函数）；reviewer accepted（4 passed；REV-001 minor 数量声明 + 3 info）；reviewer receipt canonical 51879f67；closure→ZR-1006（broker processing demand 最小 cohort——七份紫金先 1→3→7；质量门/成本/SLO；失败不污染旧 artifact）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1005 closure docs commit 待提交）、wiki abeaca8f（ZR-1005 实现）、filing 5a1c18f。
+- 下一卡：ZR-1006（broker cohort）→ ZR-1007（mine shadow）~ZR-1009/CA-304。

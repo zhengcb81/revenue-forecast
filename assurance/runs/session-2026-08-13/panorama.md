@@ -359,3 +359,10 @@
 - **ZR-1004 closure**（四 root 小 cohort，revenue）：revenue 06d259c——companies exact/dayu exact/Dropbox fail-closed/future_lake 配置 + external write=0 + 同 request 幂等/失败恢复一致；reviewer accepted；closure→ZR-1005。**阶段 I 已闭 4/9**。
 - 三仓 HEAD（本地 fcap，未 push）：revenue 06d259c（ZR-1004 实现）、wiki 9a00df6、filing 5a1c18f。
 - **最终停止点（用户指示：更新全部 planning docs 后停止）**：恢复第一步 = ZR-1005（legacy artifact 分桶）→ ZR-1006~1009/CA-304。
+
+## 2026-08-23 ZR-1005 closure 快照（阶段 I 已闭 5/9）
+- **ZR-1005 closure**（legacy artifact 分桶与最小 canary backfill，company-wiki）：wiki abeaca8f——C1 真实 catalog dry-run（closed=True、result_hash 稳定、documents/sources/locations 行数零变化）；C2-C4 temp catalog apply（INSERT OR IGNORE shadow bindings 零删除）/幂等（re-apply skipped>0 created=[]）/only-bindable（bound_ids==bindable_ids）；4 测试函数；reviewer accepted（4 passed；canonical 07dda8b8 一致；delta 仅 wiki；REV-001 minor + 3 info）；reviewer receipt canonical 51879f67；closure→ZR-1006。**阶段 I 已闭 5/9**。
+- **accepted 94/117（约 80%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 5（ZR-1001~1005；计数真源 state.json）。
+- 全量基线：896 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1005 closure docs commit 待提交）、wiki abeaca8f、filing 5a1c18f。
+- 下一卡：ZR-1006（broker processing demand 最小 cohort——七份紫金先 1→3→7；质量门/成本/SLO；失败不污染旧 artifact）→ ZR-1007~1009/CA-304。

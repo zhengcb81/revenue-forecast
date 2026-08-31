@@ -1,0 +1,93 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "6d18ec2159c74d155691f050707a0bee581ccc5d",
+    "wiki": "9a00df609c16e99d153dbfbd3c41b4d5097f7c48"
+  },
+  "commands": [
+    {
+      "command": "RED: grep artifact_backfill/bucket/dry-run → 零命中；FC-901 已有 dry-run/apply 机制但无 ZR-1005 验收套件",
+      "exit_code": 0,
+      "result": "G1~G2 缺口"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_zr1005_artifact_backfill.py -k 'not c1_dry_run_real' -q",
+      "exit_code": 0,
+      "result": "C2-C4 passed (3 tests: apply/idempotent/only-bindable)"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_zr1005_artifact_backfill.py::test_c1_dry_run_real_catalog --timeout=900 -q",
+      "exit_code": 0,
+      "result": "C1 passed (4.83s: real catalog closed=True + result_hash stable + row counts unchanged)"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_zr1002_reader_first.py tests/contract/test_zr1003_shadow_assertions.py -q",
+      "exit_code": 0,
+      "result": "12 passed (回归 OK)"
+    },
+    {
+      "command": "ruff check tests/contract/test_zr1005_artifact_backfill.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit",
+      "exit_code": 0,
+      "result": "abeaca8 test(ZR-1005) — 1 file +180"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "896 passed + 106 subtests (零回归)"
+    }
+  ],
+  "created_at_utc": "2026-08-23T13:10:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 real catalog dry-run:7712 artifacts classified, closed=True, result_hash stable across re-runs (deterministic ordering), production catalog row counts unchanged (documents=23530, sources=43112, locations=46606). C2 apply on temp catalog: shadow artifact_bindings created via INSERT OR IGNORE for bindable artifacts; legacy artifacts table zero-delete (row count unchanged); created_bindings matches bindable count. C3 idempotency: second apply skips already-bound (skipped_already_bound>0, created=[]), dry-run result_hash byte-identical across cycles. C4 provability: only bindable artifacts get bindings (bound_ids == bindable_ids); seed artifacts with schema_version 1.0 + real file path + valid metadata classified as bindable; source_sha256 mismatch artifacts classified as legacy_unbound (no binding created). Temp catalog seed: schema_version=1.0 required (schema_version=2.0 causes artifact_schema_unsupported failure in validate_artifact); created_at must be ISO 8601 UTC format with T separator.",
+      "id": "ZR1005-IMPL-001",
+      "severity": "info",
+      "title": "legacy artifact 分桶 dry-run/apply 验收（FC-901 机制）"
+    }
+  ],
+  "implementation": {
+    "design": "company-wiki tests/contract/test_zr1005_artifact_backfill.py（5 tests）：C1 real catalog dry-run（closed + stable hash + row counts unchanged）；C2-C4 temp catalog with real artifact file seed（schema_version=1.0 + ISO 8601 created_at + source_sha256 bindable gate + allowed_roots path validation + generator registry）验证 apply/idempotent/only-bindable。产品零改动。",
+    "files": [
+      "company-wiki/tests/contract/test_zr1005_artifact_backfill.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1005/**"
+    ]
+  },
+  "implementer": "zr1005-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.wiki = abeaca8f（company-wiki HEAD = ZR-1005 实现 commit，parent 9a00df6）；revenue = 6d18ec2（ZR-1004 closure 后 docs commit，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实 production apply 为部署动作（shadow bindings INSERT OR IGNORE + T2 reuse）。"
+  ],
+  "objective": "阶段 I 第五卡：legacy artifact 分桶与最小 canary backfill（FC-901 dry-run/apply 验收）",
+  "plan_sha256": "a42569aaefa37c623e8297b32e54d5ad3f0caeab3d2860aa51cb250c302ced39",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "6d18ec2159c74d155691f050707a0bee581ccc5d",
+    "wiki": "abeaca8f03f644efab963c31ef7056b793b62630"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki: tests/contract/test_zr1005_artifact_backfill.py (new 5 tests)；revenue-forecast: assurance/unified_completion/receipts/ZR-1005/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 5
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr1005_artifact_backfill.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1005/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1005",
+  "canonical_hash": "07dda8b84a7c087360fb459382478e1ebe501e902a2348d0c77a4992b03fd9f8"
+}

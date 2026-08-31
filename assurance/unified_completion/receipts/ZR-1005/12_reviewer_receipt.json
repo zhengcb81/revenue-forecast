@@ -1,0 +1,73 @@
+{
+ "unit": "ZR-1005",
+ "reviewer": "reviewer-zr1005-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "07dda8b84a7c087360fb459382478e1ebe501e902a2348d0c77a4992b03fd9f8",
+ "commands": [
+  {
+   "command": "python -m pytest tests/contract/test_zr1005_artifact_backfill.py -q",
+   "exit_code": 0,
+   "result": "4 passed in 2.78s (C1 real-catalog dry-run x2 + C2/C3/C4 temp apply; collected 4 items)"
+  },
+  {
+   "command": "independent read-only probe (real catalog dry-run)",
+   "exit_code": 0,
+   "result": "input=7962, closed=True, bindable=0, legacy_unbound=7898; documents=23530/sources=43112/locations=46606 unchanged (zero write); single dry-run 0.52s"
+  },
+  {
+   "command": "pytest adjacent contract subset (test_zr1002/test_zr1003 one case each)",
+   "exit_code": 0,
+   "result": "2 passed in 0.76s (environment usable)"
+  },
+  {
+   "command": "git -C company-wiki log --oneline -1 + git status --porcelain -- src tests",
+   "exit_code": 0,
+   "result": "HEAD=abeaca8f parent=9a00df6 matches declaration; src/ tests/ zero changes (product code untouched)"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical 07dda8b84a7c087360fb459382478e1ebe501e902a2348d0c77a4992b03fd9f8 matches; base_triplet (filing 5a1c18f/revenue 6d18ec2/wiki 9a00df6) and result_triplet (wiki abeaca8f) all real commits; delta only wiki"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "6d18ec2159c74d155691f050707a0bee581ccc5d",
+  "wiki": "9a00df609c16e99d153dbfbd3c41b4d5097f7c48"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "6d18ec2159c74d155691f050707a0bee581ccc5d",
+  "wiki": "abeaca8f03f644efab963c31ef7056b793b62630"
+ },
+ "findings": [
+  {
+   "id": "ZR1005-REV-001",
+   "severity": "minor",
+   "title": "声称 5 tests，实际 4 个测试函数",
+   "detail": "模块/commit message 写 \"5 tests\"，但 pytest collected 4 items（C1 dry-run + C2 apply + C3 idempotent + C4 only-bindable），C1-C4 全覆盖全通过，仅数量声明不准确，无功能影响。"
+  },
+  {
+   "id": "ZR1005-REV-002",
+   "severity": "info",
+   "title": "C1 声称 7712 artifacts，复放为 7962（当前 catalog 总数）",
+   "detail": "catalog 自实施后新增约 250 条 artifacts；行数快照 documents/sources/locations 与声明完全一致，C1 仅断言 input>0 不受影响。"
+  },
+  {
+   "id": "ZR1005-REV-003",
+   "severity": "info",
+   "title": "git status 非完全干净但均为非产品文件",
+   "detail": "llm_cost_log.csv(M, mtime 2026-08-12 早于本卡 commit)、.claude(D)、coverage/docs 未跟踪文件均不在 src/ tests/ 下，产品代码零改动成立。"
+  },
+  {
+   "id": "ZR1005-REV-004",
+   "severity": "info",
+   "title": "receipt created_at 早于其引用 commit 日期（系统性时间戳现象）",
+   "detail": "ZR-1004(accepted) 同模式；canonical 一致且 triplet 全部真实 commit，非本卡缺陷。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T12:19:39+00:00",
+ "canonical_hash": "51879f679bc5e09a2933a07fe5b55016ae4141bf44e38277b4aeecd43d459aa9"
+}
