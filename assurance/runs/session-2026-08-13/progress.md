@@ -967,3 +967,14 @@
 - **机器状态**：current_next=CA-304，accepted **106/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 3：CA-301~303；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-303 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-304（R9 删除，唯一拥有 legacy 删除）→ CA-305（六问题 ledger）→ CA-306（旧计划关闭）。
+
+- **CA-304（阶段 J 第四卡：R9 分批删除与真实 rollback drill，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca304* → 零命中；无删除门组合验收；scripts/ 零 legacy callers。
+  - 实施：revenue 新 tests/test_ca304_r9_removal.py（11 tests）——C1 close-gate（FC-705）六类 fail-closed（两连续 completed ≥24h 零 hit 才允许；open/missing/short/hit/nonconsecutive/empty 全拒）；C2 daily T2 legacy-hits oracle 同源；C3 final_ratchet 分批门零 legacy + CatalogStore activation→rollback→re-activation epoch/cohort 相同（receipt id 各异）；C4 零残留（legacy/encoding + flags migration-only 排除）；C5 三周期 drill 仅翻转 active flag。产品零改动、零真实删除（CA-304 部署动作）；commit 60bb910（+297 行，1 文件）。
+  - 质量门：相邻回归（company-wiki ZR-305/ZR-1003）12 passed；revenue 全量 **1012 passed + 106 subtests**（1001+11 新，零回归）；ruff clean（12 auto-fix）。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical d147f94d。
+  - 独立复核 reviewer-ca304-independent **accepted**（11 passed 17.40s；close_gate 源码语义逐条一致；scan_legacy/scan_encoding 独立复现零；CatalogStore 往返 probe；canonical d147f94d 一致；delta 仅 revenue；1 minor REV-001 C2 断言偏浅（证据链闭合）+ 3 info）；reviewer receipt canonical 06c3c085。
+  - state accepted + closure-advance -> **CA-305**（phase J_final_verification，六问题 machine closure ledger——对 project_goal_and_pain_points.md 六个成功问题生成需求→证据→场景→triplet→reviewer 映射；不允许总体百分比替代单项；每问 pass 且所有子项 pass；known limitation 只能是非目标外延或诚实 data gap）。
+- **机器状态**：current_next=CA-305，accepted **107/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 4：CA-301~304；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-304 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-305（六问题 ledger）→ CA-306（旧计划关闭）。

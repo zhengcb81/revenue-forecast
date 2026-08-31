@@ -450,3 +450,10 @@
 - 全量基线：1001 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-303 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-304（R9 分批删除与真实 rollback drill）→ CA-305/306。
+
+## 2026-08-23 CA-304 closure 快照（阶段 J 4/6）
+- **CA-304 closure**（R9 分批删除与 rollback drill，revenue）：revenue 60bb910——FC-705 close-gate（两连续 ≥24h 零 hit 窗口才允许删除，六类 fail-closed）；legacy-hit oracle 同源；分批门 + activation rollback 往返；零残留扫描；三周期 drill；11 tests；reviewer accepted（1 minor+3 info）；reviewer receipt canonical 06c3c085；closure→CA-305。
+- **accepted 107/117（约 91%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 4（计数真源 state.json）。current_phase=J_final_verification。
+- 全量基线：1012 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-304 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-305（六问题 machine closure ledger）→ CA-306（旧计划 terminal closure）。

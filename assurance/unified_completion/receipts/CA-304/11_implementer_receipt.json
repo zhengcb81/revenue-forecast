@@ -1,0 +1,90 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "849c1866674dd5232847416d1ed503aac75d2913",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca304* + legacy_close_gate/final_ratchet/activation review",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 ca304 套件；scripts/ 零 legacy callers；FC-705 门在位）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca304_r9_removal.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "11 passed in 16.30s (C1 close-gate 6 fail-closed classes; C2 legacy-hit oracle; C3 staged batch gate + rollback round trip; C4 no residue; C5 three-cycle drill)"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_zr305_legacy_migration.py tests/contract/test_zr1003_shadow_assertions.py (company-wiki cwd)",
+      "exit_code": 0,
+      "result": "12 passed in 2.43s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_ca304_r9_removal.py --fix && ruff check",
+      "exit_code": 0,
+      "result": "All checks passed (12 auto-fixed, 0 remaining)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "60bb910 test(CA-304) — 1 file +297"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1012 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T18:30:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: close_gate_allowed allows only when the last two COMPLETED periods are consecutive, each >=24h, each legacy_bridge_hits==0; open window (no ended_at), missing, short (<24h), hits>0, nonconsecutive, empty ledger all fail closed with explicit reasons. C2: daily T2 runner's legacy_hits check surfaces the observer ledger the close gate consumes (run with hits keeps removal blocked). C3: final_ratchet.scan_legacy on current scripts -> zero (staged batch gate); activation->rollback->re-activation via CatalogStore preserves epoch/cohort (row2[1:]==row1[1:]) while rollback flips visibility; receipts differ per activation. C4: scripts zero legacy callers + zero encoding problems; legacy_bridge_enabled is the migration-only exclusion (flags.EXCLUDES == ('v2_resolve_active',)). C5: three activation->rollback cycles flip only the active flag; epoch/cohort/hash persist (e3/canary/hx after 3 cycles).",
+      "id": "CA304-IMPL-001",
+      "severity": "info",
+      "title": "R9 分批删除与 rollback drill 纪律验收（FC-705 门/legacy-hit oracle/分批门/rollback 往返/零残留）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca304_r9_removal.py（11 tests）：C1 close-gate 六类 fail-closed；C2 daily T2 legacy oracle 同源；C3 final_ratchet 分批门 + CatalogStore activation rollback 往返；C4 零残留（legacy/encoding/flags）；C5 三周期 drill（仅 active flag 翻转）。产品零改动、零真实删除。",
+    "files": [
+      "revenue-forecast/tests/test_ca304_r9_removal.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-304/**"
+    ]
+  },
+  "implementer": "ca304-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 60bb910（revenue HEAD = CA-304 实现 commit，parent 849c186）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实分批删除为 CA-304 部署动作（需两动态周期零 hit 自然证据），本卡验收门机制。"
+  ],
+  "objective": "阶段 J 第四卡：R9 分批删除与真实 rollback drill（R9_GATE 四 RED 转绿；分批移除 legacy；每批全矩阵+cohort rollback；两动态周期零 hit 才可删；符号/flags/callers 不存在；新链 journeys 绿）",
+  "plan_sha256": "9857ec1abd6f05697f27e5f8a82c43c264b37258c436d3c54be240b0e9e5729a",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "60bb910212a7e107afe187cb0649465e910ef786",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca304_r9_removal.py (new 11 tests)；assurance/unified_completion/receipts/CA-304/** 与 state.json。产品代码零改动、零真实删除。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_code_removals": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 4
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca304_r9_removal.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-304/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-304",
+  "canonical_hash": "d147f94d298fb8fb6e9bedf17e83966438aefed8165bdfb33ff8389da99c7030"
+}
