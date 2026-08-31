@@ -1,0 +1,85 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "cd6a0059df2c5242490e114b09893a43723b7b5b",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca306* + old-plan dirs + disposition review",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 ca306 套件；6 旧目录无 notice；71 FC 全有 successors）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca306_terminal_closure.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "8 passed in 0.70s (C1 notice contract; C2 history immutable; C3 disposition complete; C4 FC-150x -> accepted CA + all mandatory accepted; C5 single entry)"
+    },
+    {
+      "command": "ruff check tests/test_ca306_terminal_closure.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "d2d576d test(CA-306) — 1 file +204"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1027 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T19:05:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: terminal-notice contract verified — closed_superseded_incomplete status token, ledger pointer (state.json), owner/when; notice is additive never rewriting. C2: six old-plan directories exist with stable file-set + sha256 snapshots (history preserved, no move/delete/rewrite); root planning files present. C3: legacy_disposition.verify fresh — 71 FC rows + 10 waves + 5 closure items all with defined successors; counts I31/C26/S9/P5. C4: FC-1501~1505 map to CA successors all accepted (CA-301~305 + CA-107~109 accepted; CA-306 under verification; R9 via CA-304 accepted); no mandatory ZR/CA unit claimed-but-unaccepted. C5: root README is the single control page mirroring current_next/current_phase (J_final_verification); no other directory claims entry.",
+      "id": "CA306-IMPL-001",
+      "severity": "info",
+      "title": "旧计划 terminal closure 与唯一入口切换验收（notice 契约/历史不可变/disposition 完整/领取项关闭/唯一入口）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca306_terminal_closure.py（8 tests）：C1 notice 契约字段；C2 6 旧目录 snapshot 稳定；C3 disposition 完整 + verify fresh；C4 FC-150x→accepted CA（CA-306 验收中豁免）+ 全部 mandatory accepted；C5 唯一入口（README 镜像 + 无其他目录声明）。产品零改动、旧目录零触碰。",
+    "files": [
+      "revenue-forecast/tests/test_ca306_terminal_closure.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-306/**"
+    ]
+  },
+  "implementer": "ca306-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = d2d576d（revenue HEAD = CA-306 实现 commit，parent cd6a005）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "TERMINAL_NOTICE 实际写入 6 个旧计划目录为旧计划 owner 部署动作；本卡验收契约与门。"
+  ],
+  "objective": "阶段 J 终局卡：旧计划 terminal closure 与唯一入口切换（closed_superseded_incomplete notice 指向 closure ledger；保留历史；关闭 R9/FC150x 旧领取入口；71 FC/FC150x 全有 successor；根 README 唯一入口）",
+  "plan_sha256": "ee3f81c9126606ae6eb37c2cf1378751e504e2df50df13bdadaa987df932a1fd",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "d2d576d712635d861d270703d5c64486f3d8d5d1",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca306_terminal_closure.py (new 8 tests)；assurance/unified_completion/receipts/CA-306/** 与 state.json。产品代码零改动、旧计划目录零触碰。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "old_plan_writes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca306_terminal_closure.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-306/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-306",
+  "canonical_hash": "7a9eca7c7391a12da89efa5b3f306a728af1a96bc951a428d01ae156c2574eda"
+}

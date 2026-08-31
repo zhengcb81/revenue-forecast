@@ -453,3 +453,9 @@
 - **CA-305 closure**（六问题 machine closure ledger，revenue）：revenue 1f39a7b——tests/test_ca305_six_problems.py（C1 六问题枚举；C2 证据映射；C3 场景；C4 triplet 绑定；C5 reviewer 存在；C6 每问独立 pass；7 tests）；reviewer accepted（4 info）；reviewer receipt canonical f15deb91；closure→CA-306（旧计划 terminal closure，终局）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-305 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-306（旧计划 terminal closure）→ 全部闭环。
+
+## 最新状态（2026-08-23 CA-306 closure → 阶段 J 全闭 6/6 → ZR-1101）
+- **accepted 109/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6：CA-301~306；计数真源 state.json）。current_phase=**J_final_verification**，current_next=**ZR-1101**。
+- **CA-306 closure**（旧计划 terminal closure，revenue）：revenue d2d576d——tests/test_ca306_terminal_closure.py（C1 notice 契约；C2 历史不可变；C3 disposition 完整；C4 领取项关闭；C5 唯一入口；8 tests）；reviewer accepted（4 info）；reviewer receipt canonical 8ba3226b；closure→ZR-1101（机器 closure gate）。**阶段 J 全闭（6/6）**。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-306 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1101（closure gate）→ ZR-801 处置 → 全部闭环。

@@ -464,3 +464,10 @@
 - 全量基线：1019 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-305 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-306（旧计划 terminal closure，终局）→ 全部闭环。
+
+## 2026-08-23 CA-306 closure 快照（阶段 J 全闭 6/6）
+- **CA-306 closure**（旧计划 terminal closure，revenue）：revenue d2d576d——notice 契约/历史不可变/disposition 完整/领取项关闭/唯一入口；8 tests；reviewer accepted（4 info）；reviewer receipt canonical 8ba3226b；closure→ZR-1101。**阶段 J 全闭（6/6）**。
+- **accepted 109/117（约 93%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6（计数真源 state.json）。current_phase=J_final_verification。
+- 全量基线：1027 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-306 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1101（机器 closure gate）→ ZR-801 处置 → 全部闭环。

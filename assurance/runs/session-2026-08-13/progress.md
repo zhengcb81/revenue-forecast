@@ -989,3 +989,14 @@
 - **机器状态**：current_next=CA-306，accepted **108/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 5：CA-301~305；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-305 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-306（旧计划 terminal closure，终局卡）→ 全部 117 卡闭环。
+
+- **CA-306（阶段 J 终局卡：旧计划 terminal closure 与唯一入口切换，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca306* → 零命中；6 个旧计划目录均无 TERMINAL_NOTICE；71 FC 全有 successors。
+  - 实施：revenue 新 tests/test_ca306_terminal_closure.py（8 tests）——C1 notice 契约（closed_superseded_incomplete + ledger 指针 + owner/when，加法不改写）；C2 6 旧目录 snapshot 稳定（历史不可变）；C3 disposition 完整（71 FC/10 waves/5 closure items 全 successors + ld.verify fresh）；C4 FC-150x→accepted CA（R9 via CA-304；CA-306 验收中豁免）+ 全部 mandatory accepted；C5 根 README 唯一控制面（current_next/phase 镜像）+ 无其他目录声明入口。产品零改动、旧目录零触碰；commit d2d576d（+204 行，1 文件）。
+  - 质量门：revenue 全量 **1027 passed + 106 subtests**（1019+8 新，零回归）；ruff clean。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical 7a9eca7c。
+  - 独立复核 reviewer-ca306-independent **accepted**（8 passed 0.29s；notice 契约/历史 snapshot/disposition 71/领取项/唯一入口全验证；canonical 7a9eca7c 一致；delta 仅 revenue；4 info：REV-001 notice 为契约模板无部署物、REV-002 3 旧目录无 git 基线、REV-003 工作区部署侧未提交、REV-004 .coverage 残留）；reviewer receipt canonical 8ba3226b。
+  - state accepted + closure-advance -> **ZR-1101**（phase J_final_verification，机器 closure gate——无 pending/blocked/known-gap 被误关；所有 receipt/paths/hashes/freshness 有效）。
+- **机器状态**：current_next=ZR-1101，accepted **109/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6：CA-301~306；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-306 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1101（机器 closure gate）→ ZR-801 处置 → 全部闭环。
