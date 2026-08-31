@@ -1,0 +1,62 @@
+{
+ "unit": "ZR-1102",
+ "reviewer": "reviewer-zr1102-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "89bfc07b98b5258f39ba6eaa5f33b129a065122b252623ed5fbd6efcdc3ecefe",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_zr1102_adversarial_audit.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "9 passed in 4.06s (C1 reachability; C2 hardcode; C3 islands; C4 fake counters; C5 bypass)"
+  },
+  {
+   "command": "independent probes: module references, final_ratchet scan, collect-only, mutation patrol, workflows",
+   "exit_code": 0,
+   "result": "asset_ownership/mixed_recognition/schema_optin all referenced (zero orphans); hardcode/legacy/encoding all []; 106 test files with real tests; patrol(seed=42,samples=3) yields 6 mutation results (accepted=0); quality.yml free of || true; no module-level skip without opt-in"
+  },
+  {
+   "command": "git status --porcelain -- scripts + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "scripts/ clean; HEAD=2914c54 parent=730d399 matches; commit only tests/test_zr1102_adversarial_audit.py +178"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "canonical 89bfc07b matches; base.revenue=730d399 (=HEAD^) result.revenue=2914c54 (=HEAD); delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "730d399b1a27df73ceea84d5004c24b2b4d34d25",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "2914c5465429621a68002d26f0f687391eb4ca74",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "ZR1102-REV-001",
+   "severity": "minor",
+   "title": "C4 伪计数测试为自引用断言",
+   "detail": "测试内联过滤逻辑而非直接驱动真实扫描器；但已独立确认 final_ratchet.code_lines() 有 docstring 状态机，且 C2 在真实扫描器上通过，底层声明成立。"
+  },
+  {
+   "id": "ZR1102-REV-002",
+   "severity": "info",
+   "title": "C5 仅匹配单一 skip 形式",
+   "detail": "当前仓内无任何模块级 skip，无现存活口。"
+  },
+  {
+   "id": "ZR1102-REV-003",
+   "severity": "info",
+   "title": "C1 孤儿判定为启发式",
+   "detail": "抽查三个库模块均真实被引用，当前无漏报。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T19:52:59+00:00",
+ "canonical_hash": "31518f98c8e53278d88028ed8bf2a83994c85f046aff8fe234cfce1fc0247030"
+}
