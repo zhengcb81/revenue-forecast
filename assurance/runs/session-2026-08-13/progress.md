@@ -956,3 +956,14 @@
 - **机器状态**：current_next=CA-303，accepted **105/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 2：CA-301/302；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-302 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-303（架构终审）→ CA-304（R9 删除）→ CA-305/306。
+
+- **CA-303（阶段 J 第三卡：架构/硬编码/代码质量终审，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca303* → 零命中；六门分项存在无终审组合；scanners 三门全绿 + mypy 69==基线。
+  - 实施：revenue 新 tests/test_ca303_arch_quality.py（11 tests）——C1 final_ratchet scanners 零硬编码（Kamoa/Zijin/紫金/601899/688031 code-level）/零 legacy callers/零 BOM；C2 .github/workflows 无 `|| true`；C3 complexity ratchet 绿 + coverage-gate 面；C4 mypy 69==冻结基线（gate_type 独立线程防 pytest-timeout 冲突，独立 6s 实测）；C5 uc manifest-verify 离线 OK + state sha256 确定性；C6 codegraph caller targets 三仓 + blocking findings 注册（BYPASS-001/MISSING-001 非空壳）。产品零改动、CI 零改动；commit a22c0c9（+193 行，1 文件）。
+  - 质量门：revenue 全量 **1001 passed + 106 subtests**（990+11 新，零回归）；ruff clean。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical 6b9dc202。
+  - 独立复核 reviewer-ca303-independent **accepted**（11 passed 2.25s；scanners 独立重跑三门全绿；quality.yml || true 双工具确认零；canonical 6b9dc202 一致；delta 仅 revenue；3 info：REV-001 耗时差异、REV-002 codegraph 历史快照、REV-003 notes 注释指向）；reviewer receipt canonical bd7dddbd。
+  - state accepted + closure-advance -> **CA-304**（phase J_final_verification，R9 分批删除与真实 rollback drill——把 R9_GATE=1 四 RED 转绿并分批移除 _scan_root_v1/legacy bridge/flags/无生产读者 backfill/promoter；每批全矩阵和 cohort rollback；禁止只删测试/改 skip；两个动态周期 legacy hit 非 0 禁止删除；符号/flags/callers 均不存在；新链 journeys 绿；真实 rollback/re-activate 一致）。
+- **机器状态**：current_next=CA-304，accepted **106/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 3：CA-301~303；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-303 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-304（R9 删除，唯一拥有 legacy 删除）→ CA-305（六问题 ledger）→ CA-306（旧计划关闭）。

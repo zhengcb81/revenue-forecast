@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "e75f194ff4bcc086cb1fa483e60cba39ae5b2f54",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca303* + final_ratchet scanners + quality.yml || true scan",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 ca303 套件；scanners 三门全绿；CI 无 || true；mypy 69==基线）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca303_arch_quality.py -q --timeout=700",
+      "exit_code": 0,
+      "result": "11 passed in 3.46s (C1 zero hardcode/legacy/encoding; C2 CI no silent-pass; C3 complexity+coverage surface; C4 mypy baseline 69; C5 manifest/state drift; C6 codegraph caller surface)"
+    },
+    {
+      "command": "independent mypy timing probe",
+      "exit_code": 0,
+      "result": "mypy scripts 6s, errors=69 == MYPY_BASELINE (frozen, zero-growth)"
+    },
+    {
+      "command": "ruff check tests/test_ca303_arch_quality.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "a22c0c9 test(CA-303) — 1 file +193"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1001 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T17:25:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: final_ratchet scanners — zero code-level company hardcode (Kamoa/Zijin/紫金/601899/688031), zero legacy-engine callers, zero BOM/undecodable under scripts/. C2: all .github/workflows yml/yaml free of '|| true' (required CI loud on failure). C3: test_complexity_ratchet green (0.62s); run_coverage_gates importable (full run is CI-level). C4: mypy scripts errors=69 == frozen baseline (independent 6s probe). C5: uc manifest-verify offline OK; state.json sha256 deterministic with current_next/current_phase set. C6: codegraph freeze caller_report.targets covers revenue/filing/wiki; blocking_findings_registered non-empty with severity=blocking (honest inventory, never silent).",
+      "id": "CA303-IMPL-001",
+      "severity": "info",
+      "title": "架构/硬编码/代码质量终审验收（零硬编码/零 legacy/CI 无 silent-pass/complexity/mypy 基线/manifest-state 漂移/caller 表面）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca303_arch_quality.py（11 tests）：C1 final_ratchet scanners 三门；C2 CI || true 扫描；C3 complexity 绿 + coverage 面；C4 mypy 冻结基线（gate_type 独立线程防 pytest-timeout 冲突）；C5 manifest-verify + state 确定性；C6 codegraph caller 表面 + blocking findings。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_ca303_arch_quality.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-303/**"
+    ]
+  },
+  "implementer": "ca303-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = a22c0c9（revenue HEAD = CA-303 实现 commit，parent e75f194）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "mypy/coverage 全量 CI 跑为 CI 门；本卡验证门表面与冻结基线。"
+  ],
+  "objective": "阶段 J 第三卡：架构、硬编码与代码质量终审（CodeGraph caller/impact、dead dual paths、hardcode、模块边界、strict types、复杂度趋势、docs/schema/skill drift；required CI 无 || true）",
+  "plan_sha256": "b60b328445388ca9ba012146a04882161f8aaa4e9c04889a7ea64b5fcae23055",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "a22c0c97cec0ff13eada35b7cbfe151a8059e65a",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca303_arch_quality.py (new 11 tests)；assurance/unified_completion/receipts/CA-303/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca303_arch_quality.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-303/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-303",
+  "canonical_hash": "6b9dc202df2ad12c29b69c7012db145e3ec896c2051ddaecd3037bbbe3419f60"
+}

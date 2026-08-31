@@ -1,0 +1,62 @@
+{
+ "unit": "CA-303",
+ "reviewer": "reviewer-ca303-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "6b9dc202df2ad12c29b69c7012db145e3ec896c2051ddaecd3037bbbe3419f60",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca303_arch_quality.py -q --timeout=700",
+   "exit_code": 0,
+   "result": "11 passed in 2.25s (C1 scanners; C2 CI no silent-pass; C3 complexity; C4 mypy baseline; C5 drift; C6 caller surface)"
+  },
+  {
+   "command": "independent probes: final_ratchet scanners-only; workflows || true grep; codegraph_freeze targets",
+   "exit_code": 0,
+   "result": "hardcode/legacy/encoding all ok with zero hits (Kamoa/Zijin/紫金/601899/688031); quality.yml free of '|| true' (double tool confirm); codegraph targets cover filing:2/revenue:4/wiki:6; blocking findings [BYPASS-001, MISSING-001] severity=blocking with substance"
+  },
+  {
+   "command": "git status --porcelain -- scripts .github + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "scripts/ .github/ clean; HEAD=a22c0c97 parent=e75f194f matches; commit only tests/test_ca303_arch_quality.py +193"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical 6b9dc202 matches; base.revenue=e75f194f (=HEAD~1) result.revenue=a22c0c97 (=HEAD); delta only revenue; side_effect_counts all 0"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "e75f194ff4bcc086cb1fa483e60cba39ae5b2f54",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "a22c0c97cec0ff13eada35b7cbfe151a8059e65a",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA303-REV-001",
+   "severity": "info",
+   "title": "复放耗时差异",
+   "detail": "实施者声称 3.46s，独立复放 2.25s——环境波动，断言面一致。"
+  },
+  {
+   "id": "CA303-REV-002",
+   "severity": "info",
+   "title": "codegraph_freeze 为历史快照",
+   "detail": "indexed_commit 早于当前 HEAD——快照语义符合 C6（未要求等于 HEAD），非缺陷。"
+  },
+  {
+   "id": "CA303-REV-003",
+   "severity": "info",
+   "title": "receipt notes 注释指向瑕疵",
+   "detail": "notes 称 plan_sha256 见 00_wu_card.md 但卡内无该字段——注释指向瑕疵，不影响验收。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T18:13:33+00:00",
+ "canonical_hash": "bd7dddbd0f1b6e126bc31b257041426e6bc3f5f383b2c239ee047932efa35c5b"
+}

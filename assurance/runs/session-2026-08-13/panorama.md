@@ -443,3 +443,10 @@
 - 全量基线：990 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-302 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-303（架构终审）→ CA-304（R9 删除）→ CA-305/306。
+
+## 2026-08-23 CA-303 closure 快照（阶段 J 3/6）
+- **CA-303 closure**（架构/硬编码/质量终审，revenue）：revenue a22c0c9——零硬编码/零 legacy/零编码问题；CI 无 || true；complexity 绿 + mypy 69 基线；manifest/state 零漂移；codegraph caller 表面 + blocking findings 注册；11 tests；reviewer accepted（3 info）；reviewer receipt canonical bd7dddbd；closure→CA-304。
+- **accepted 106/117（约 91%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 3（计数真源 state.json）。current_phase=J_final_verification。
+- 全量基线：1001 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-303 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-304（R9 分批删除与真实 rollback drill）→ CA-305/306。
