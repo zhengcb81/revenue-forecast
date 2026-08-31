@@ -1078,3 +1078,13 @@
 - **机器状态**：current_next=CA-201，accepted **116/117**（CA-201 为 DAG 第 117 单元、state 中无条目待闭；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue ca111ec（ZR-901 实现）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-201（吸收卡，DAG 最后一个单元）→ 全部 117 闭环。
+
+- **CA-201（DAG 第 117 单元/最后一个吸收卡：current-triplet PR fan-out）全流程闭 → 117/117 全部闭环**：
+  - RED 探针：tests 零 ca201 命中；tools/ 无 fanout/fan* 工具（零重复实现）；ci_contract.py successor 均=CA-201；README §7 行 132 吸收行在位；DAG deps [CA-107,ZR-105,ZR-901] 全 accepted。
+  - 实施：revenue 新 tests/test_ca201_pr_fanout_ownership.py（7 tests）——C1 DAG 依赖全 accepted；C2 README §7 吸收行；C3 契约三要素 successor=CA-201；C4 ci-gap 诚实映射；C5 revenue PR 面落实证据；C6 零重复实现；C7 state 条目+依赖闭环。产品/workflow/契约/评估器/清单零改动；commit e67d1fe（+203 行，1 文件）。
+  - 质量门：revenue 全量 **1085 passed + 106 subtests**（1078+7 新，零回归）；ruff clean。
+  - state walk：red_proved → … → independent_review → accepted；implementer receipt canonical 747228fb。
+  - 独立复核 reviewer-ca201-independent **accepted**（7 passed 0.35s；契约/README/state/ci-gap/quality.yml/零重复全独立重扫；canonical 重算 MATCH；1 minor + 5 info：closure 提交须带 state.json 与 receipts，state 条目 implementer="zz" vs receipt 身份——已按模式处理）；reviewer receipt canonical 8382aba4。
+  - **终局**：unlocked=[]（117/117 全 accepted，DAG 无后继）→ 手动生成 terminal 13 closure receipt（next=CA-201, terminal=true）；lock-release；manifest-verify OK。
+- **机器状态**：**accepted 117/117 全部闭环**；current_next=CA-201（终局游标），current_phase=J_final_verification；计数真源 state.json。
+- 三仓 HEAD（本地 fcap，未 push）：revenue e67d1fe（CA-201 实现）、wiki 35a1103、filing 5a1c18f。

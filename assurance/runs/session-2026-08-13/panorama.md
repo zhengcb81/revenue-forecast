@@ -520,3 +520,10 @@
 - 全量基线：1078 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue ca111ec、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-201（吸收卡，DAG 最后单元）→ 全部 117 闭环。
+
+## 2026-08-23 终局快照（117/117 全部闭环）
+- **CA-201 closure**（吸收卡：current-triplet PR fan-out，DAG 第 117 单元）：revenue e67d1fe——DAG 依赖闭环/吸收行/契约 successor/诚实 gap/PR 面证据/零重复/state 条目；7 tests；reviewer accepted（1 minor + 5 info）；terminal 13（无后继）。
+- **accepted 117/117（100%）**：DAG 全部单元闭环（计数真源 state.json）。current_phase=J_final_verification，current_next=CA-201（终局游标）。
+- 全量基线：1085 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue e67d1fe、wiki 35a1103、filing 5a1c18f。
+- **三仓库完成度审计（三仓一致）**：revenue 全量绿；wiki/filing 本段零改动；CA-306 terminal notice 已由旧计划侧归档。

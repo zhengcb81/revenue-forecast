@@ -501,3 +501,9 @@
 - **ZR-901 closure**（吸收卡：current-triplet PR 门，revenue）：revenue ca111ec——tests/test_zr901_pr_fanout.py（C1~C7，8 tests）；reviewer accepted（4 info）；reviewer receipt canonical 6d35d571；closure→CA-201。
 - 三仓 HEAD（本地 fcap，未 push）：revenue ca111ec、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-201（吸收卡，DAG 最后单元）→ 全部 117 闭环。
+
+## 终局（2026-08-23 CA-201 closure → 117/117 全部闭环）
+- **accepted 117/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 5 + ZR-801 + ZR-901 + CA-201；计数真源 state.json）。current_phase=**J_final_verification**，current_next=CA-201（终局游标，DAG 无后继）。
+- **CA-201 closure**（吸收卡：current-triplet PR fan-out，CA-201 拥有调度/attestation，ZR-105/ZR-901 提供 required checks）：revenue e67d1fe——tests/test_ca201_pr_fanout_ownership.py（C1~C7，7 tests）；reviewer accepted（1 minor + 5 info）；reviewer receipt canonical 8382aba4；terminal 13（无后继）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue e67d1fe、wiki 35a1103、filing 5a1c18f。
+- **项目闭环**：全部 117 单元 accepted；全量基线 1085 passed + 106 subtests；产品代码零改动（本段 22 张卡全部为验证/吸收卡）。
