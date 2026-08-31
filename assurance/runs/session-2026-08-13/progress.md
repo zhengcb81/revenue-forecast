@@ -846,3 +846,14 @@
 - **机器状态**：current_next=ZR-1007，accepted **95/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 6：ZR-1001~1006；计数真源 state.json）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1006 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
 - 下一卡：ZR-1007（mine facts/model shadow，revenue 卡）→ ZR-1008（cutover）→ ZR-1009（legacy 删除）。
+
+- **ZR-1007（阶段 I 第七卡：mine facts/model shadow 与旧分部模型对比，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*zr1007* → 零命中；无 shadow vs legacy 并存对比测试；机制在位（to_resource_model_drivers/reconcile_layer/rolling_backtest/publication_registry）。
+  - 实施：revenue 新 tests/test_zr1007_mine_shadow.py（12 tests）——C1 shadow 路径（MineYearOperation→to_resource_model_drivers→resource model）== saleable×price（427.5×5.0=2137.5）+ legacy direct_growth 并存；C2 差异归因（volume +200→delta 427.5、price 5→6→427.5、recovery 0.9→0.8→-237.5、legacy 只响应自己 driver）；C3 reconcile_layer 闭合（reconciled_modeled）+ gap_report 诚实 gap（+50 报 difference 50）；C4 run_rolling_backtest mine-volume 分解（427.5+855.0=1282.5）+ future leak fail-closed；C5 publication registry 零写（_append 打桩即炸）+ run_forecast 零调用（spy）。产品代码零改动；commit 887fd12（+269 行，1 文件）。
+  - 质量门：相邻回归（ZR-609/713/605）54 passed；revenue 全量 **908 passed + 106 subtests**（896+12 新，零回归）；ruff clean（2 auto-fix）。
+  - state walk：red_proved → implemented → focused_green → owner_repo_green → triplet_green；implementer receipt canonical ccbde9d8。
+  - 独立复核 reviewer-zr1007-independent **accepted**（12 passed 0.31s；手算公式全对；canonical ccbde9d8 一致；delta 仅 revenue 887fd12；2 minor：REV-001 receipt 叙述 recovery delta -213.75 应为 -237.5（测试断言本身正确）、REV-002 receipt 全量计数 896 应为 908（差 12=本卡新增，零回归不受影响）+ 1 info REV-003 复放耗时更优）；reviewer receipt canonical 3775053f。
+  - state accepted + closure-advance -> **ZR-1008**（phase I_gradual_release，source/revenue 新链 cohort cutover——用户旅程、draft/formal、SLO、side effects、rollback；观察期）。
+- **机器状态**：current_next=ZR-1008，accepted **96/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 7：ZR-1001~1007；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1007 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
+- 下一卡：ZR-1008（新链 cohort cutover，revenue+三仓）→ ZR-1009（legacy 删除，CA-304 唯一拥有）。

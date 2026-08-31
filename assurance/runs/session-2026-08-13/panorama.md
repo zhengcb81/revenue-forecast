@@ -373,3 +373,10 @@
 - 全量基线：896 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1006 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1007（mine facts/model shadow 与旧分部模型对比，revenue 卡）→ ZR-1008（cutover）→ ZR-1009（legacy 删除）。
+
+## 2026-08-23 ZR-1007 closure 快照（阶段 I 已闭 7/9）
+- **ZR-1007 closure**（mine facts/model shadow vs legacy 分部模型，revenue）：revenue 887fd12——shadow 路径（MineYearOperation→resource model）手算等价 saleable×price、legacy 并存；逐 driver 差异归因；reconcile_layer 闭合/诚实 gap；mine-volume rolling backtest + as-of fail-closed；零 registry 写 + run_forecast 零调用；12 tests；reviewer accepted（2 minor+1 info）；reviewer receipt canonical 3775053f；closure→ZR-1008。**阶段 I 已闭 7/9**。
+- **accepted 96/117（约 82%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 7（ZR-1001~1007；计数真源 state.json）。
+- 全量基线：908 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1007 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1008（source/revenue 新链 cohort cutover，revenue+三仓）→ ZR-1009（legacy 删除，CA-304 唯一拥有）。
