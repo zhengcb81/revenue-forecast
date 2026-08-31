@@ -813,3 +813,14 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1003 closure commit 待提交）、wiki 9a00df6（ZR-1003 实现）、filing 5a1c18f。
 - 下一卡：ZR-1004（companies→dayu→Dropbox→future root 小 cohort——"每 root T2/UJ；external write=0；同 request rollback 恢复"）→ ZR-1005（legacy artifact 分桶）。
 - **停止点（用户指示：收尾并更新全部 planning docs 后停止）**：ZR-1003 全流程已闭（reviewer accepted → 12 入库 → state accepted → closure-advance → lock-release → closure commit 待提交）；恢复第一步 = ZR-1004（小 cohort）→ ZR-1005~1009/CA-304。
+- **ZR-1004（阶段 I 第四卡：四 root 小 cohort）实施完成**：
+  - RED 探针：grep zr1004 → 零命中；ZR-806 三 root 无 future_lake / 无 per-root 分组 / 无同 request rollback 恢复。
+  - 修复：revenue 新 tests/test_zr1004_small_cohort.py（7 tests）——C1 四 root cohort（companies 紫金 FY2025/FY2024 REUSED_EXACT、dayu 1548 HK FY2021 REUSED_EXACT、Dropbox 星环 fail-closed MISSING、future_lake 根配置在位）；C2 external write=0（四 root 浅指纹 + catalog documents/sources/locations 行数不变）；C3 同 request rollback 恢复（同 request 重复 resolve → 同状态 + 同 trace 幂等；失败 request 重试 → 同结构 MISSING，无伪造 handle）。
+  - revenue 全量 **896 passed + 106 subtests**（889+7 新，零回归）+ ruff + ratchet + sync MATCH 160 + pre-commit 绿；commit 06d259c。
+  - state walk：... → triplet_green；implementer receipt canonical cb504d00。
+  - 独立复核 reviewer-zr1004-independent **accepted**（探针全过：四 root 真实 resolve 确认 + 零写快照 + 同 request 幂等复现 + production write=0；2 info：REV-001 环境性指纹变化（Dropbox/OneDrive 同步守护竞争，隔离复现零差异）、REV-002 C3 断言观察）；reviewer receipt canonical 22ef3dc4。
+  - state accepted + closure-advance -> **ZR-1005**（phase I_gradual_release，legacy artifact 分桶与最小 canary backfill）。
+- **机器状态**：current_next=ZR-1005，accepted **93/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 4：ZR-1001~1004；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 06d259c（ZR-1004 实现）、wiki 9a00df6、filing 5a1c18f。
+- 下一卡：ZR-1005（legacy artifact 分桶与最小 canary backfill——"先 dry-run；不可证明不绑定；幂等/resume；零删除；artifact reuse T2"）→ ZR-1006（broker cohort）~1009。
+- **停止点（用户指示：更新全部 planning docs 后停止）**：ZR-1004 全流程已闭（reviewer accepted → 12/13 入库 → state accepted → closure-advance → lock-release → closure commit 即本提交）；阶段 I 已闭 4/9（ZR-1001~1004）；恢复第一步 = ZR-1005（legacy artifact 分桶）→ ZR-1006~1009/CA-304。

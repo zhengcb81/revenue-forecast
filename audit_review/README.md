@@ -10,11 +10,11 @@ authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
 current_phase: I_gradual_release
-current_next: ZR-1004
+current_next: ZR-1005
 active_owner: unassigned
 lease: none
 blocked_reason: none
-last_control_update: 2026-08-23
+last_control_update: 2026-08-31
 ```
 
 这些字段是唯一的人类可读执行游标。实施开始前，第一张且唯一可领取的卡是 **CA-001**。任何其它文件中的 `pending / accepted / complete / next` 都只是历史状态、冻结规范或审计证据，不具有领取权。
