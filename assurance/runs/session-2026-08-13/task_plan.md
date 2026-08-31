@@ -387,3 +387,9 @@
 - **ZR-1008 closure**（source/revenue 新链 cohort cutover，revenue）：revenue 36103cf——tests/test_zr1008_new_chain_cutover.py（C1 旅程 draft+formal+replay；C2 draft/formal 分离；C3 SLO；C4 side effects 精确计数；C5 rollback/观察期零漂移；10 tests）；reviewer accepted（1 minor+4 info；独立链探针 16/16）；reviewer receipt canonical e72847b8；closure→ZR-1009（legacy 路由/代码删除——≥2 动态周期 zero-hit、CodeGraph caller=0、N-1 结束批准；删除后全矩阵/回滚绿；CA-304 唯一拥有）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1008 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
 - 下一卡：ZR-1009（legacy 删除，三仓）→ 阶段 J（CA-301~306）。
+
+## 最新状态（2026-08-23 ZR-1009 closure → 阶段 I 全闭 9/9 → 阶段 H CA 部分）
+- **accepted 98/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 9：ZR-1001~1009；计数真源 state.json）。current_phase=**H_dynamic_audit**，current_next=**CA-202**（DAG 权威：ZR-1009 无后继；阶段 H CA 部分 CA-202/203/204 解锁，依赖 ZR-806/805/510/609/709/CA-107 均已闭）。
+- **ZR-1009 closure**（legacy 路由/代码删除门，revenue）：revenue 7eb8392——tests/test_zr1009_legacy_removal.py（C1 caller 诚实报告 quality.yml:47→closure_ledger + scratch 隔离；C2 两轮 freeze→verify zero-hit + 重现 fail-closed；C3 disposition 71 FC/N-1 批准目标/CA-304 可达；C4 删除后索引漂移检测 + 新 freeze 全绿；9 tests）；reviewer accepted（2 info）；reviewer receipt canonical 48a0a689；closure→CA-202。**阶段 I 全闭（9/9）**。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1009 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
+- 下一卡：CA-202（Daily T2 实际 scheduler）→ CA-203/204 → CA-205/206 → 阶段 J（CA-301~306）。

@@ -868,3 +868,14 @@
 - **机器状态**：current_next=ZR-1009，accepted **97/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 8：ZR-1001~1008；计数真源 state.json）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1008 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
 - 下一卡：ZR-1009（legacy 路由/代码删除，三仓，CA-304 唯一拥有）→ 阶段 J（CA-301~306）。
+
+- **ZR-1009（阶段 I 收官卡：legacy 路由/代码删除门，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*zr1009* → 零命中；无删除门组合验收；真实三仓 legacy-gate 扫描 callers_found（quality.yml:47 → verify_closure_ledger/closure_ledger，successor CA-201）——诚实未批准态。
+  - 实施：revenue 新 tests/test_zr1009_legacy_removal.py（9 tests）——C1 真实三仓 caller 扫描诚实报告 + scratch 隔离（isolated=True）；C2 scratch 三仓两轮 codegraph freeze→verify 均 []（absent sentinel zero-hit）+ 删除符号重现 fail-closed；C3 legacy_disposition 验证（71 FC、I31/C26/S9/P5、successor 全定义、无环）+ 5 个 pending closure items（FC-150x）为 N-1 批准目标 + CA-304 可达；C4 删除 legacy 工具后旧 freeze verify != []（索引统计漂移被检测）+ 新 freeze verify == []（矩阵可重放）+ 门 isolated。产品代码零改动、零真实删除（CA-304 唯一拥有）；commit 7eb8392（+238 行，1 文件）。
+  - 质量门：相邻回归（ZR-1001/1004/1007/1008）37 passed + assurance 工具 13 passed；revenue 全量 **927 passed + 106 subtests**（918+9 新，零回归）；ruff clean。
+  - state walk：red_proved → implemented → focused_green → owner_repo_green → triplet_green；implementer receipt canonical 12ebc05c。
+  - 独立复核 reviewer-zr1009-independent **accepted**（9 passed 102s；独立三仓扫描逐字复现 callers_found；canonical 12ebc05c 一致；delta 仅 revenue 7eb8392；2 info：RVW-001 wiki 工作区无关噪音、RVW-002 探针路径书写）；reviewer receipt canonical 48a0a689。
+  - state accepted + closure-advance -> **CA-202**（phase H_dynamic_audit——DAG 权威：ZR-1009 无后继，阶段 H CA 部分 CA-202/203/204 已解锁；阶段 I 9/9 全闭）。
+- **机器状态**：current_next=CA-202，accepted **98/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 9：ZR-1001~1009；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1009 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
+- 下一卡：CA-202（Daily T2 实际 scheduler，阶段 H CA 部分；依赖 ZR-806/CA-107 已满足）→ CA-203/204 → CA-205/206 → 阶段 J（CA-301~306）。

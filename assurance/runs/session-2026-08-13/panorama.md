@@ -387,3 +387,10 @@
 - 全量基线：918 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1008 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1009（legacy 路由/代码删除，三仓，CA-304 唯一拥有）→ 阶段 J（CA-301~306）。
+
+## 2026-08-23 ZR-1009 closure 快照（阶段 I 全闭 9/9 → 阶段 H CA 部分）
+- **ZR-1009 closure**（legacy 路由/代码删除门，revenue）：revenue 7eb8392——caller 诚实报告（quality.yml:47→closure_ledger，CA-201 successor）+ scratch 隔离；两轮 freeze→verify zero-hit + 重现 fail-closed；disposition 71 FC/N-1 批准目标（FC-150x）/CA-304 可达；删除后索引漂移检测 + 新 freeze 全绿；9 tests；reviewer accepted（2 info）；reviewer receipt canonical 48a0a689；closure→CA-202（DAG 权威）。**阶段 I 全闭（9/9）**。
+- **accepted 98/117（约 84%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 9（ZR-1001~1009；计数真源 state.json）。
+- 全量基线：927 passed + 106 subtests（零回归）；产品代码零改动、零真实删除。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1009 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-202（Daily T2 实际 scheduler）→ CA-203/204 → CA-205/206 → 阶段 J（CA-301~306）。
