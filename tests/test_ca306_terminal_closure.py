@@ -159,16 +159,22 @@ def test_c4_pending_closure_items_map_to_accepted_successors():
 
 def test_c4_all_mandatory_zr_units_accepted():
     """The machine state shows all mandatory ZR units accepted — nothing
-    pending that the old plan still claims."""
+    pending that the old plan still claims (the single card currently
+    under verification is the only non-accepted unit allowed)."""
     state = json.loads((UC_ROOT / "state.json").read_text(encoding="utf-8"))
     units = state["units"]
     pending = [u for u, v in units.items()
                if v.get("status") not in ("accepted",)]
     # only units never claimed may be absent; claimed-but-unaccepted = 0
-    # (CA-306 is the card currently under verification)
-    claimed_unaccepted = [u for u in pending
-                          if u.startswith(("ZR-", "CA-")) and u != "CA-306"]
-    assert claimed_unaccepted == []
+    # except the single card currently under verification
+    claimed_unaccepted = [u for u in pending if u.startswith(("ZR-", "CA-"))]
+    assert len(claimed_unaccepted) <= 1, claimed_unaccepted
+    if claimed_unaccepted:
+        # the in-flight card must be in an early verification state
+        status = units[claimed_unaccepted[0]].get("status")
+        assert status in ("preflight_locked", "red_proved", "implemented",
+                          "focused_green", "owner_repo_green",
+                          "triplet_green", "independent_review"), status
 
 
 # ---------------------------------------------------------------------------
