@@ -1,0 +1,89 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "71a821b12049c7aa821ee6ce30b3a68b0e7260f2",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca204* + golden corpus inventory + scripts/ hardcode scan",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 ca204 套件；corpus 12 samples broker 7 含 changjiang；scripts/ 紫金矿业/601899 ZERO）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca204_monthly_generalization.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "8 passed in 0.68s (C1 fixed+rotating registry + missing BLOCKED; C2 Zijin shadow journey; C3 second mining company chain; C4 non-mining engine path; C5 anchors + zero-hardcode scan; C6 snapshot replay + confidence assets)"
+    },
+    {
+      "command": "python -m pytest tests/test_zr609_zijin_pilot.py tests/test_zr709_zijin_journey.py tests/test_zr713_rolling_backtest.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "33 passed in 8.87s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/test_ca204_monthly_generalization.py --fix && ruff check",
+      "exit_code": 0,
+      "result": "All checks passed (1 auto-fixed, 0 remaining)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "f6ab43b test(CA-204) — 1 file +216"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "953 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T15:20:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: golden corpus 12 samples (broker_research 7 incl zijin_broker_20240304_changjiang multi-entity, audited_filing 2, company_release 1, revenue_forecast_input/result_draft 1 each) all frozen sha256; missing registry sample -> BLOCKED never pass. C2: Zijin shadow journey draft zero-write + formal bit-identical replay + copper 2026 mine contribution reconciles (reconciled_modeled). C3: pure gold producer (single 100% level, single currency) closes operation->terms->ownership->reconcile chain. C4: trading_and_other direct_growth non-mining segment has 5-year positive path in production engine; direct_growth hand-check 100->110/121. C5: Changjiang multi-entity anchor frozen incl Zijin entity; broker corpus >=7; git grep 紫金矿业/601899 in scripts/ -> ZERO. C6: snapshot round-trip same snapshot_id; confidence_policy assets (detect_gaming_mutations/recompute_rating/validate) importable.",
+      "id": "CA204-IMPL-001",
+      "severity": "info",
+      "title": "Monthly 泛化审核验收（registry 固定+轮换/紫金 shadow/第二矿企/非矿企/表格错归/零硬编码/backtest-confidence）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca204_monthly_generalization.py（8 tests）：C1 冻结+轮换样本 registry + 缺失 BLOCKED；C2 紫金 shadow journey（draft/formal/replay/reconcile）；C3 第二矿企链闭合；C4 非矿模型引擎路径；C5 golden anchors + scripts/ 零硬编码扫描；C6 snapshot replay + confidence 资产。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_ca204_monthly_generalization.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-204/**"
+    ]
+  },
+  "implementer": "ca204-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = f6ab43b（revenue HEAD = CA-204 实现 commit，parent 71a821b）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实 Monthly 调度与自然时间累积为部署/CA-206 动作，不在本卡。"
+  ],
+  "objective": "阶段 H CA 部分第三卡：Monthly broker/mine/forecast 泛化审核（轮换真实 broker 样本、紫金 shadow、第二矿企、非矿企；复验表格/错归、逐矿 bridge、draft/formal、backtest/confidence；样本缺失 blocked；产品特例扫描为 0）",
+  "plan_sha256": "d09b3c6b99a3aaaeb06cb61feaf1ff53761c6c08d25798836b9c6d548be0dfb1",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "f6ab43bb15af2b729c0eaad501358734d53f43aa",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca204_monthly_generalization.py (new 8 tests)；assurance/unified_completion/receipts/CA-204/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca204_monthly_generalization.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-204/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-204",
+  "canonical_hash": "7bf984dcaaf7528405310b4ef3b4fb6065ae1bd96715c499d0ebf9fb3285d516"
+}

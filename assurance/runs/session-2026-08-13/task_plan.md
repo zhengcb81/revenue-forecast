@@ -405,3 +405,9 @@
 - **CA-203 closure**（Weekly/发布前 T3，revenue）：revenue b05b194——tests/test_ca203_weekly_t3.py（C1 套件门+blocked 语义；C2 single-flight 首次下载/二次零写；C3 amendment as-of 切割；C4 provider drift；C5 provider/canonical 对账；8 tests）；reviewer accepted（4 info）；reviewer receipt canonical e49639e7；closure→CA-204（Monthly 泛化审核）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-203 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-204（Monthly broker/mine/forecast 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。
+
+## 最新状态（2026-08-23 CA-204 closure → 阶段 H CA 部分 3/5）
+- **accepted 101/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 9：ZR-902~907 + CA-202/203/204；I 9；计数真源 state.json）。current_phase=**H_dynamic_audit**，current_next=**CA-205**。
+- **CA-204 closure**（Monthly 泛化审核，revenue）：revenue f6ab43b——tests/test_ca204_monthly_generalization.py（C1 固定+轮换 registry+缺失 BLOCKED；C2 紫金 shadow journey；C3 第二矿企链闭合；C4 非矿引擎路径；C5 anchors+零硬编码；C6 backtest/confidence；8 tests）；reviewer accepted（1 minor+3 info；独立手算 bridge 完全相等）；reviewer receipt canonical 39e186a4；closure→CA-205（原子报告/freshness/告警/release 消费）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-204 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-205（原子报告）→ CA-206（soak）→ 阶段 J（CA-301~306）。

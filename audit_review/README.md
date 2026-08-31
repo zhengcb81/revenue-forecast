@@ -10,7 +10,7 @@ authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
 current_phase: H_dynamic_audit
-current_next: CA-204
+current_next: CA-205
 active_owner: unassigned
 lease: none
 blocked_reason: none

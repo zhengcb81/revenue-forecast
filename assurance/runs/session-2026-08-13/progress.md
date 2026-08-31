@@ -901,3 +901,14 @@
 - **机器状态**：current_next=CA-204，accepted **100/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 8：ZR-902~907 + CA-202/203；I 9：ZR-1001~1009；计数真源 state.json）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-203 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。
+
+- **CA-204（阶段 H CA 部分第三卡：Monthly broker/mine/forecast 泛化审核，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca204* → 零命中；无 Monthly 泛化一体验收；corpus 12 samples；scripts/ 零硬编码。
+  - 实施：revenue 新 tests/test_ca204_monthly_generalization.py（8 tests）——C1 固定+轮换样本 registry（corpus 12：broker 7 含 changjiang 多实体 + audited 2 + anchors 全冻结 sha256；缺失 BLOCKED 永不 pass）；C2 紫金 shadow journey（draft 零写 + formal bit-identical replay + copper 2026 reconcile）；C3 第二矿企（纯金生产商单层 100% 链单货币）F2 链闭合；C4 非矿模型（direct_growth/unit_sales）引擎路径；C5 changjiang anchor + broker≥7 + scripts/ 零硬编码（git grep 紫金矿业/601899 ZERO）；C6 snapshot 往返同 id + confidence_policy 资产。产品零改动；commit f6ab43b（+216 行，1 文件）。
+  - 质量门：相邻回归（ZR-609/709/713）33 passed；revenue 全量 **953 passed + 106 subtests**（945+8 新，零回归）；ruff clean（1 auto-fix）。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical 7bf984dc。
+  - 独立复核 reviewer-ca204-independent **accepted**（8 passed 0.90s；独立手算 engine copper 2026 == 逐矿汇总 9,961,428.45 完全相等；git grep 独立重跑 ZERO；canonical 7bf984dc 一致；delta 仅 revenue；1 minor REV-001 reconcile 自反恒真（底层真实）+ 3 info）；reviewer receipt canonical 39e186a4。
+  - state accepted + closure-advance -> **CA-205**（phase H_dynamic_audit，原子报告/freshness/告警与 release 消费——pending 临时文件→完整校验→原子 publish；dashboard/release 同 schema；告警送达 ack/重试；过期结果不可续命）。
+- **机器状态**：current_next=CA-205，accepted **101/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 9：ZR-902~907 + CA-202/203/204；I 9；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-204 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-205（原子报告/freshness/告警）→ CA-206（soak）→ 阶段 J（CA-301~306）。

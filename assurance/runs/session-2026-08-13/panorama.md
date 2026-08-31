@@ -408,3 +408,10 @@
 - 全量基线：945 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-203 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-204（Monthly 泛化）→ CA-205/206 → 阶段 J（CA-301~306）。
+
+## 2026-08-23 CA-204 closure 快照（阶段 H CA 部分 3/5）
+- **CA-204 closure**（Monthly 泛化审核，revenue）：revenue f6ab43b——固定+轮换样本 registry（12 样本全冻结 sha256，缺失 BLOCKED）；紫金 shadow journey（draft/formal/replay/reconcile）；第二矿企链闭合；非矿模型引擎路径；表格/错归 anchors + scripts/ 零硬编码；snapshot replay + confidence 资产；8 tests；reviewer accepted（1 minor+3 info；独立手算 bridge 完全相等）；reviewer receipt canonical 39e186a4；closure→CA-205。
+- **accepted 101/117（约 86%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 9 + I 9（计数真源 state.json）。
+- 全量基线：953 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-204 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-205（原子报告/freshness/告警）→ CA-206（soak）→ 阶段 J（CA-301~306）。
