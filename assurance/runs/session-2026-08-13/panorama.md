@@ -513,3 +513,10 @@
 - 全量基线：1070 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-801 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-901（PR 门，CA-201 吸收）→ 全部 117 闭环。
+
+## 2026-08-23 ZR-901 closure 快照（最后吸收卡 CA-201）
+- **ZR-901 closure**（吸收卡：current-triplet PR 门 required checks，revenue）：revenue ca111ec——manifest 驱动/无浮动 clone/无 || true/triplet 可解析/契约三要素/ci-gap 诚实/吸收文档；8 tests；reviewer accepted（4 info）；closure→CA-201。
+- **accepted 116/117（约 99%）**：CA-201 为 DAG 第 117 单元（state 中无条目待闭；计数真源 state.json）。current_phase=J_final_verification。
+- 全量基线：1078 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue ca111ec、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-201（吸收卡，DAG 最后单元）→ 全部 117 闭环。

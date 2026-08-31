@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "unit": "ZR-901",
+  "kind": "implementer",
+  "implementer": "zr901-implementer",
+  "objective": "吸收卡终局验收：current-triplet PR 门 required checks 落实证据（CA-201 拥有调度/attestation，ZR-105 契约+评估器，ZR-901 钉住 revenue PR 面证据；零 workflow/产品改动）",
+  "plan_sha256": "861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7",
+  "base_triplet": {
+    "revenue": "ff6f075749b64b7990d20c73c188ed3fc0074c7a",
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "result_triplet": {
+    "revenue": "ca111ecbf88156181b25136871424583ac133043",
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr901* + workflow/tool/manifest/contract inventory",
+      "exit_code": 0,
+      "result": "RED 确认：tests 无 zr901 套件；quality.yml 47 行含 manifest 校验+ci_checkout_siblings 步骤、无 || true、无裸 git clone；ci_checkout_siblings.py 仅 manifest current_triplet 驱动；ZR-105 契约三要素在位"
+    },
+    {
+      "command": "python -m pytest tests/test_zr901_pr_fanout.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "8 passed (C1 manifest 驱动 sibling checkout 引用；C2 无浮动 clone/无 || true；C3 sibling 工具仅 manifest 驱动；C4 triplet 良构可解析；C5 契约三要素+字节绑定；C6 ci-gap 诚实报告；C7 README §7 吸收)"
+    },
+    {
+      "command": "ruff check tests/test_zr901_pr_fanout.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "ca111ec test(ZR-901)"
+    },
+    {
+      "command": "revenue full suite (-k not fc1103)",
+      "exit_code": 0,
+      "result": "1078 passed + 106 subtests (零回归；1070+8 新；-k not fc1103)"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr901_pr_fanout.py（8 tests）：C1~C2 quality.yml 字节证据（manifest 驱动 checkout、无浮动 clone、无 || true）；C3~C4 ci_checkout_siblings.py仅 manifest 驱动 + current.json triplet 良构且 revenue 腿 cat-file 可解析；C5 ZR-105 契约三要素 required_checks + successors=CA-201 + workflow 字节 sha256 绑定；C6 uc ci-gap 评估器确定性 JSON、gap 全部映射 successor=CA-201（诚实不 fake green）；C7 README §7 吸收行（CA-201 | ZR-105、ZR-901）。产品/workflow 零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr901_pr_fanout.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-901/**"
+    ]
+  },
+  "findings": [
+    {
+      "id": "ZR901-IMPL-001",
+      "severity": "info",
+      "title": "吸收卡验收：current-triplet PR 门由 CA-201 拥有，ZR-105 契约冻结，ZR-901 钉住 revenue PR 面 required-checks 落实证据（零 workflow 改动）",
+      "detail": "C1: quality.yml 引用 compatibility/current.json + ci_checkout_siblings 步骤；C2: quality.yml 无裸 git clone、无无条件 || true；C3: ci_checkout_siblings.py 只读 manifest current_triplet（无硬编码 40-hex pin），--help 可运行；C4: current.json schema 1.0，frozen_baseline/current 六腿 40-hex，revenue 腿 cat-file 解析通过；C5: ZR-105 契约三要素 required_checks 在位、successor 均 CA-201、revenue workflow 字节 sha256 与契约绑定一致；C6: uc.cli ci-gap 输出确定性 JSON，revenue 三检查均在，未满足项全部映射 successor=CA-201（诚实 gap，不 fake green）；C7: README §7 吸收行在位。产品/workflow 零改动。"
+    }
+  ],
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr901_pr_fanout.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-901/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "scope": "revenue-forecast: tests/test_zr901_pr_fanout.py（新 8 tests）；assurance/unified_completion/receipts/ZR-901/** 与 state.json。产品代码与 .github/workflows 零改动。",
+  "notes": [
+    "result_triplet.revenue = ca111ecbf88156181b25136871424583ac133043（revenue HEAD = ZR-901 实现 commit，parent ff6f075749b64b7990d20c73c188ed3fc0074c7a）；wiki 35a1103ac05ab5e9a703242cbf1136f96b745197（本卡零改动）；filing 5a1c18f5171db0e4b9113138ea360db361e1e435（未动）。",
+    "卡片 hash: plan_sha256 指向 completion_assurance_registry.md（861e28f9…）。",
+    "本卡为 DAG 最后一个单元——closure 后 117/117 全部闭环。"
+  ],
+  "created_at_utc": "2026-08-31T21:12:20.199991+00:00",
+  "canonical_hash": "180be3afed7570a63af5f931b02d5735809424e70f50811776b03c3dd124ee2f"
+}

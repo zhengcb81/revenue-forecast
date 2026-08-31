@@ -1067,3 +1067,14 @@
 - **机器状态**：current_next=ZR-901，accepted **115/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 5 + ZR-801；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-801 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-901（吸收卡：PR 门由 CA-201 拥有）→ 全部 117 闭环。
+
+- **ZR-901（最后一个吸收卡：current-triplet PR 门 required checks，revenue）全流程闭**：
+  - RED 探针：tests 零 zr901 命中；quality.yml 47 行含 manifest 校验+ci_checkout_siblings 步骤、无 || true、无裸 clone；ci_checkout_siblings.py 仅 manifest 驱动；ZR-105 契约三要素在位。
+  - 实施：revenue 新 tests/test_zr901_pr_fanout.py（8 tests）——C1 quality.yml manifest 驱动 sibling checkout 引用；C2 无浮动 clone/无 || true；C3 sibling 工具仅 manifest 驱动；C4 triplet 良构可解析；C5 契约三要素+字节绑定；C6 ci-gap 诚实报告；C7 README §7 吸收行。产品/workflow 零改动；commit ca111ec（+228 行，1 文件）。
+  - 质量门：revenue 全量 **1078 passed + 106 subtests**（1070+8 新，零回归）；ruff clean。
+  - state walk：red_proved → … → independent_review → accepted；implementer receipt canonical 180be3af。
+  - 独立复核 reviewer-zr901-independent **accepted**（8 passed 0.45s；独立字节扫描 32/32；canonical 重算 MATCH；ci-gap 9 gap 全部映射 successor=CA-201 诚实；4 info）；reviewer receipt canonical 6d35d571。
+  - state accepted + closure-advance -> **CA-201**（DAG 最后吸收卡：current-triplet PR fan-out 由 CA-201 拥有调度/attestation，ZR-105/ZR-901 提供 required checks，均 accepted；本卡验证 PR 面落实证据，gap 归 CA-201）。
+- **机器状态**：current_next=CA-201，accepted **116/117**（CA-201 为 DAG 第 117 单元、state 中无条目待闭；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue ca111ec（ZR-901 实现）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-201（吸收卡，DAG 最后一个单元）→ 全部 117 闭环。
