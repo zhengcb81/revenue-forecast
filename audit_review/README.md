@@ -10,7 +10,7 @@ authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
 current_phase: I_gradual_release
-current_next: ZR-1008
+current_next: ZR-1009
 active_owner: unassigned
 lease: none
 blocked_reason: none

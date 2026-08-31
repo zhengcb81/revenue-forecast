@@ -857,3 +857,14 @@
 - **机器状态**：current_next=ZR-1008，accepted **96/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 7：ZR-1001~1007；计数真源 state.json）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1007 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
 - 下一卡：ZR-1008（新链 cohort cutover，revenue+三仓）→ ZR-1009（legacy 删除，CA-304 唯一拥有）。
+
+- **ZR-1008（阶段 I 第八卡：source/revenue 新链 cohort cutover，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*zr1008* → 零命中；ZR-701/705/709 分项存在但无 cutover 组合验收（旅程+SLO+side effects 精确计数+rollback/观察期）。
+  - 实施：revenue 新 tests/test_zr1008_new_chain_cutover.py（10 tests）——C1 完整用户旅程（draft 渲染零写 markdown>500 → formal 恰好 1 条 input/result_sha256 绑定 → replay bit 一致 + snapshot 往返同 id）；C2 draft/formal 分离（draft gate_ids=[]、flip 拒绝、formal gate_ids+attestation、降级拒绝、无 context 自签 TypeError）；C3 冻结 SLO 60s；C4 side effects 精确计数（draft 零副作用、formal 恰好 +1 validated）；C5 rollback/观察期（_clear_read_only 后删条目恢复 cutover 前、重放零漂移、干净再注册、3 周期 bit 一致可审计）。产品代码零改动；commit 36103cf（+225 行，1 文件）。
+  - 质量门：相邻回归（ZR-701/705/709）24 passed；revenue 全量 **918 passed + 106 subtests**（908+10 新，零回归）；ruff clean（1 auto-fix）。
+  - state walk：red_proved → implemented → focused_green → owner_repo_green → triplet_green；implementer receipt canonical 44c9ca3d。
+  - 独立复核 reviewer-zr1008-independent **accepted**（10 passed 1.14s；独立严格链探针 16/16 PASS：draft 零写/formal 1 条 validated/链完整/rollback 读回空/观察期零漂移 4a72dae5/再注册链重启；canonical 44c9ca3d 一致；delta 仅 revenue 36103cfa；1 minor REV-005 attestation 条件性断言（本环境 unattested 符合 R2.1）+ 4 info）；reviewer receipt canonical e72847b8。
+  - state accepted + closure-advance -> **ZR-1009**（phase I_gradual_release，legacy 路由/代码删除——≥2 动态周期 zero-hit、CodeGraph caller=0、N-1 结束批准；删除后全矩阵/回滚绿；CA-304 唯一拥有）。
+- **机器状态**：current_next=ZR-1009，accepted **97/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 8：ZR-1001~1008；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1008 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
+- 下一卡：ZR-1009（legacy 路由/代码删除，三仓，CA-304 唯一拥有）→ 阶段 J（CA-301~306）。

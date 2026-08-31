@@ -1,0 +1,79 @@
+{
+ "unit": "ZR-1008",
+ "reviewer": "reviewer-zr1008-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "44c9ca3d28fce980fe6d9a23b6162426a85751704a1f3ccf9927f74e088d6065",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_zr1008_new_chain_cutover.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "10 passed in 1.14s (C1 journey; C2 separation; C3 SLO; C4 side effects; C5 rollback/observation)"
+  },
+  {
+   "command": "python -m pytest tests/test_zr701_f1_draft_formal.py tests/test_zr705_draft_formal_swap.py tests/test_zr709_zijin_journey.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "24 passed in 7.28s (相邻契约回归 OK)"
+  },
+  {
+   "command": "independent spotcheck (strict reader: line_sha256 recompute + prev_line_sha256 chain)",
+   "exit_code": 0,
+   "result": "16/16 PASS — draft zero write; formal exactly 1 entry validated with bound result/input_sha256; chain complete (2nd entry prev == 1st line_sha256); rollback reads back empty (pre-cutover); observation replay same result_sha256 (4a72dae5) zero drift; clean re-registration restarts chain"
+  },
+  {
+   "command": "git status --porcelain -- scripts tests + show --stat",
+   "exit_code": 0,
+   "result": "HEAD=36103cfa parent=d4f4dc28 matches; scripts/ tests/ clean; commit 1 file +225"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical 44c9ca3d matches; base_triplet (filing 5a1c18f/revenue d4f4dc28/wiki 35a1103) and result_triplet (revenue 36103cfa) all real commits; delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "d4f4dc288fe6a0c8aa870dd6e849058fbb0887e3",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "36103cfa74074ef06a760aad1fabf7c7475bcb8c",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "ZR1008-REV-005",
+   "severity": "minor",
+   "title": "attestation_status 为条件性断言而非强断言 host_signed",
+   "detail": "test_c2 断言 attestation_status ∈ {host_signed, unattested}；本环境实测产出 unattested（无外部 attestation provider，符合产品 R2.1 设计，invest-* 消费者默认拒绝 unattested）——非缺陷；若卡目标要求真实宿主签名需在配置 provider 的环境补强。"
+  },
+  {
+   "id": "ZR1008-REV-001",
+   "severity": "info",
+   "title": "断言与产品代码逐一对应",
+   "detail": "C1-C5 断言全部真实且对应 prepare_forecast/render_markdown/build_publication_receipt/validate_publication_receipt/publication_registry（_set_read_only/_clear_read_only/line hash 链）。"
+  },
+  {
+   "id": "ZR1008-REV-002",
+   "severity": "info",
+   "title": "复放/探针结果一致",
+   "detail": "10 passed in 1.14s（声称 1.22s）；相邻 24 passed in 7.28s（声称 7.42s）。"
+  },
+  {
+   "id": "ZR1008-REV-003",
+   "severity": "info",
+   "title": "git 干净 + commit 范围",
+   "detail": "scripts/ tests/ 零改动；commit 仅 1 file +225。"
+  },
+  {
+   "id": "ZR1008-REV-004",
+   "severity": "info",
+   "title": "canonical_hash/triplet 自洽",
+   "detail": "11 canonical 44c9ca3d 与 payload 重算一致；triplet delta 仅 revenue。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T13:38:05+00:00",
+ "canonical_hash": "e72847b8103b4f066fda29af6fc9d9ffac49f58e90dfe91190af041066269d9a"
+}

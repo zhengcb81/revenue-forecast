@@ -381,3 +381,9 @@
 - **ZR-1007 closure**（mine facts/model shadow vs legacy 分部模型，revenue）：revenue 887fd12——tests/test_zr1007_mine_shadow.py（C1 shadow 路径手算等价+legacy 并存；C2 差异归因；C3 reconcile/诚实 gap；C4 mine-volume backtest+as-of；C5 零 registry 写+run_forecast 零调用；12 tests）；reviewer accepted（2 minor+1 info）；reviewer receipt canonical 3775053f；closure→ZR-1008（source/revenue 新链 cohort cutover——用户旅程、draft/formal、SLO、side effects、rollback；观察期）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1007 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
 - 下一卡：ZR-1008（cutover，revenue+三仓）→ ZR-1009（legacy 删除，CA-304 唯一拥有）。
+
+## 最新状态（2026-08-23 ZR-1008 closure → 阶段 I 已闭 8/9）
+- **accepted 97/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 8：ZR-1001~1008；计数真源 state.json）。current_phase=**I_gradual_release**，current_next=**ZR-1009**。
+- **ZR-1008 closure**（source/revenue 新链 cohort cutover，revenue）：revenue 36103cf——tests/test_zr1008_new_chain_cutover.py（C1 旅程 draft+formal+replay；C2 draft/formal 分离；C3 SLO；C4 side effects 精确计数；C5 rollback/观察期零漂移；10 tests）；reviewer accepted（1 minor+4 info；独立链探针 16/16）；reviewer receipt canonical e72847b8；closure→ZR-1009（legacy 路由/代码删除——≥2 动态周期 zero-hit、CodeGraph caller=0、N-1 结束批准；删除后全矩阵/回滚绿；CA-304 唯一拥有）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1008 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
+- 下一卡：ZR-1009（legacy 删除，三仓）→ 阶段 J（CA-301~306）。

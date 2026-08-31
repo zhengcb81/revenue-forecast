@@ -380,3 +380,10 @@
 - 全量基线：908 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1007 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1008（source/revenue 新链 cohort cutover，revenue+三仓）→ ZR-1009（legacy 删除，CA-304 唯一拥有）。
+
+## 2026-08-23 ZR-1008 closure 快照（阶段 I 已闭 8/9）
+- **ZR-1008 closure**（source/revenue 新链 cohort cutover，revenue）：revenue 36103cf——完整用户旅程（draft 渲染零写→formal 恰好 1 条→replay bit 一致）、draft/formal 分离（flip/降级/自签全拒）、SLO 60s、side effects 精确计数、rollback 恢复 + 观察期零漂移 + 3 周期可审计；10 tests；reviewer accepted（1 minor+4 info；严格链探针 16/16 PASS）；reviewer receipt canonical e72847b8；closure→ZR-1009。**阶段 I 已闭 8/9**。
+- **accepted 97/117（约 83%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 8（ZR-1001~1008；计数真源 state.json）。
+- 全量基线：918 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1008 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1009（legacy 路由/代码删除，三仓，CA-304 唯一拥有）→ 阶段 J（CA-301~306）。
