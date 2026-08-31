@@ -459,3 +459,9 @@
 - **CA-306 closure**（旧计划 terminal closure，revenue）：revenue d2d576d——tests/test_ca306_terminal_closure.py（C1 notice 契约；C2 历史不可变；C3 disposition 完整；C4 领取项关闭；C5 唯一入口；8 tests）；reviewer accepted（4 info）；reviewer receipt canonical 8ba3226b；closure→ZR-1101（机器 closure gate）。**阶段 J 全闭（6/6）**。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-306 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1101（closure gate）→ ZR-801 处置 → 全部闭环。
+
+## 最新状态（2026-08-23 ZR-1101 closure → Phase 11 推进中 1/5）
+- **accepted 110/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 1：ZR-1101；计数真源 state.json）。current_phase=**J_final_verification**，current_next=**ZR-1102**。
+- **ZR-1101 closure**（机器 closure gate，revenue）：revenue cdda9ef + bba1fe0（CA-306 gate 演进）——tests/test_zr1101_closure_gate.py（C1 全链路+无误关；C2 canonical+40-hex；C3 覆盖+工具面；C4 时间戳；C5 对象存在；6 tests）；reviewer accepted（7 info）；reviewer receipt canonical 154d06b9；closure→ZR-1102（对抗式审查）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1101 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1102（独立 reviewer 对抗式审查）→ ZR-1103~1105/吸收 → ZR-801 处置 → 全部闭环。

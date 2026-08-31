@@ -1000,3 +1000,15 @@
 - **机器状态**：current_next=ZR-1101，accepted **109/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6：CA-301~306；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-306 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：ZR-1101（机器 closure gate）→ ZR-801 处置 → 全部闭环。
+
+- **ZR-1101（Phase 11 首卡：机器 closure gate，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*zr1101* → 零命中；无机器 closure gate 组合验收；**发现历史命名差异**（ZR-805 用 14_closure 命名、ZR-601 早期 12 无 base_triplet）。
+  - 实施：revenue 新 tests/test_zr1101_closure_gate.py（6 tests）——C1 每个 accepted 单元全链路（11+12+13/14 receipts + state reviewer/closure.by/next）+ 无 known-gap/blocked 误关；C2 200+ receipts canonical + result_triplet 40-hex（历史兼容）；C3 machine state closure 覆盖 + verify_closure_ledger 工具面；C4 closure.at_utc ≤ state.updated_at_utc；C5 result_triplet 三仓 git 对象有效。产品零改动；commit cdda9ef（+188 行，1 文件）。
+  - **CA-306 测试演进修正**（+11/-5）：all-mandatory-accepted 门允许单个在验证卡（任意早期状态）而非硬编码 CA-306——随 Phase 11 卡领取保持健壮；commit bba1fe0。
+  - 质量门：revenue 全量 **1033 passed + 106 subtests**（重跑确认零回归）；ruff clean。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical 59994dc0（含 CA-306 演进后 reseal）。
+  - 独立复核 reviewer-zr1101-independent **accepted**（6 passed 13.95s；109 accepted 无误关；16/16 receipts canonical 抽查；三仓对象有效；canonical 59994dc0 一致；7 info）；reviewer receipt canonical 154d06b9。
+  - state accepted + closure-advance -> **ZR-1102**（phase J_final_verification，独立 reviewer 对抗式三仓代码/架构/旁路审查——不复用实施者结论；生产 reachability、硬编码、测试孤岛、伪计数全部复核）。
+- **机器状态**：current_next=ZR-1102，accepted **110/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 6 + Phase11 1：ZR-1101；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1101 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1102（对抗式审查）→ ZR-1103~1105 或吸收 → ZR-801 处置 → 全部闭环。

@@ -1,0 +1,84 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "8dd4582bc143079d9a6ef6c2a25f87b2c2195f36",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr1101* + closure tooling + accepted-unit inventory",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 zr1101 套件；109 accepted 仅自身 preflight；发现 14 closure 命名与早期 12 无 base_triplet 历史差异）"
+    },
+    {
+      "command": "python -m pytest tests/test_zr1101_closure_gate.py -q --timeout=300",
+      "exit_code": 0,
+      "result": "6 passed in 15.75s (C1 full chain + no wrong closure; C2 receipts canonical + 40-hex triplets with early-card tolerance; C3 state closure coverage + tool surface; C4 timestamps consistent; C5 triplet objects exist)"
+    },
+    {
+      "command": "ruff check tests/test_zr1101_closure_gate.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "cdda9ef test(ZR-1101) — 1 file +188"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "1033 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T19:25:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: all 109 accepted units have full closure chain (11+12+13 or 14 closure receipts, state reviewer + closure.by + closure.next); no accepted unit carries known_gap/blocked_reason. C2: 200+ 11/12 receipts canonical (hash recomputes); result_triplet always 40-hex; early cards' base_triplet absence tolerated (ZR-601 etc.); early 14_closure naming accepted (ZR-805). C3: every accepted unit has closure.by in machine state; verify_closure_ledger importable. C4: closure.at_utc <= state.updated_at_utc for all accepted units (no future-dated). C5: every result_triplet commit is a valid git object across revenue/filing/wiki (cat-file -e).",
+      "id": "ZR1101-IMPL-001",
+      "severity": "info",
+      "title": "机器 closure gate 验收（全链路/无误关/canonical/triplet/时间戳/对象存在）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_zr1101_closure_gate.py（6 tests）：C1 全链路 + 无误关；C2 receipts canonical + triplet（历史兼容）；C3 closure 覆盖 + 工具面；C4 时间戳一致；C5 triplet 对象存在。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_zr1101_closure_gate.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1101/**"
+    ]
+  },
+  "implementer": "zr1101-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = bba1fe0（revenue HEAD = ZR-1101 实现 commit（CA-306 gate 演进后 HEAD），parent 8dd4582）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "旧 closure_ledger.json（旧计划目录）不改写（CA-306 约束）；机器门基于 state.json。"
+  ],
+  "objective": "Phase 11 首卡：机器 closure gate（无 pending/blocked/known-gap 被误关；所有 receipt/paths/hashes/freshness 有效）",
+  "plan_sha256": "31e1e45c3343204951608081f0f272fc623e0150d676f5130ed6828e286c7eae",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "bba1fe09328455fd2e707ce9b63822cec8ac6fdd",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_zr1101_closure_gate.py (new 6 tests)；assurance/unified_completion/receipts/ZR-1101/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_zr1101_closure_gate.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1101/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1101",
+  "canonical_hash": "59994dc0164aa78e9adf208551ad61ae2e00b7e98b0a33f4233d93b8fdc38280"
+}
