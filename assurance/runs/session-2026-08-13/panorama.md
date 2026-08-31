@@ -350,3 +350,12 @@
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-806 closure commit 待提交，实现 b716a81）、wiki 26a6b22、filing 5a1c18f。
 - **最终停止点（用户指示：收尾并更新全部 planning docs 后停止）**：恢复第一步 = ZR-902（阶段 H：实际调度每日 Windows T2）→ ZR-903/901（阶段 H）。
 - **防双写漂移（README §14 规则，2026-08-22 起）**：`accepted N/117` 计数唯一真源 = `assurance/unified_completion/state.json`；本快照段不再手工维护计数（需要时引用 state.json），逐卡详情以 progress.md 为准。
+
+## 2026-08-23 阶段 H~I closure 快照（ZR-907 → ZR-1004）
+- **ZR-907 closure**（drift patrol，阶段 H 收官）：revenue 2d2ab75——tools/drift_patrol.py 扩展（schema '3.6' 字面门 + manifest-verify 聚合，七类检查）；reviewer accepted；**发现真实漂移 ZR907-FIND-001**（company-wiki config_doctor vs future_lake）；closure→ZR-1001。**阶段 H 全闭**。
+- **ZR-1001 closure**（release 预备，阶段 I 首卡）：revenue c473e97 + delta 3ed2661——tools/release_readiness.py（fingerprint/integrity/容量/备份/回滚 dry-run/授权六门）；reviewer accepted（REV-001/002 delta + DELTA-BLOCK-001 receipt 重签）；closure→ZR-1002。
+- **ZR-1002 closure**（Reader 先上线，company-wiki）：wiki 6af6cc5——golden 零漂移/writer 保持/SLO/rollback/无迁移；reviewer accepted；closure→ZR-1003。
+- **ZR-1003 closure**（lifecycle/safety/RootPolicy shadow assertions，company-wiki）：wiki 9a00df6——lifecycle/safety fail-closed/policy 拒绝/两周期确定性/active 不变/flag-only 回滚；reviewer accepted；closure→ZR-1004。
+- **ZR-1004 closure**（四 root 小 cohort，revenue）：revenue 06d259c——companies exact/dayu exact/Dropbox fail-closed/future_lake 配置 + external write=0 + 同 request 幂等/失败恢复一致；reviewer accepted；closure→ZR-1005。**阶段 I 已闭 4/9**。
+- 三仓 HEAD（本地 fcap，未 push）：revenue 06d259c（ZR-1004 实现）、wiki 9a00df6、filing 5a1c18f。
+- **最终停止点（用户指示：更新全部 planning docs 后停止）**：恢复第一步 = ZR-1005（legacy artifact 分桶）→ ZR-1006~1009/CA-304。
