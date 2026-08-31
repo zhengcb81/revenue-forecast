@@ -1,0 +1,72 @@
+{
+ "unit": "CA-302",
+ "reviewer": "reviewer-ca302-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "b421f0a69bff13aa1ece1678dd8ac75c69676c9eb508b20f93df0a7814a7b700",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca302_three_journeys.py -q --timeout=300",
+   "exit_code": 0,
+   "result": "8 passed in 1.79s (C1 canary + fail-closed; C2 second miner; C3 non-mining; C4 receipt chain; C5 side-effects; C6 no bypass)"
+  },
+  {
+   "command": "test_c1_missing_document_fails_closed solo re-run",
+   "exit_code": 0,
+   "result": "PASSED in 0.67s no skip — real production resolver (SourceResolver mode=exact, 'Strict read-only ... never downloads'), StarLake 688031 annual 2024 cninfo 1223325316 -> ResolutionStatus.MISSING, fail-closed holds"
+  },
+  {
+   "command": "pytest adjacent subset -k 'replay or receipt or monthly'",
+   "exit_code": 0,
+   "result": "11 passed, 15 deselected in 5.11s, zero failures"
+  },
+  {
+   "command": "independent git grep 紫金矿业/601899 in scripts/",
+   "exit_code": 0,
+   "result": "ZERO hits; all three journeys validate under the same receipt schema"
+  },
+  {
+   "command": "git status --porcelain -- scripts + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "scripts/ clean; HEAD=bf58841 parent=437a98c matches; commit only tests/test_ca302_three_journeys.py +238"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical b421f0a6 matches; base_triplet (filing 5a1c18f/revenue 437a98c/wiki 35a1103) and result_triplet (revenue bf58841) all real commits; delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "437a98c978f1db4139bb42461cf544ffcd2dcb13",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "bf58841b2d6dffc628d44634445b7948ff19ab86",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA302-REV-001",
+   "severity": "minor",
+   "title": "C4 恒真断言 or True",
+   "detail": "第 173 行 `assert not isolated_registry.exists() or True` 恒真；后续 len(entries)==1 断言实质覆盖 draft 零注册语义，建议后续清理。"
+  },
+  {
+   "id": "CA302-REV-002",
+   "severity": "info",
+   "title": "partial/stale/amended 与 worker/下载未直接覆盖",
+   "detail": "implementer 已在 receipt notes 诚实声明为部署动作（需网络/授权），side_effect_counts 如实记录 real_catalog_access=2，非隐藏缺口。"
+  },
+  {
+   "id": "CA302-REV-003",
+   "severity": "minor",
+   "title": "C2/C3 引擎路径复用紫金文档",
+   "detail": "第二矿企 F2 链为模块级闭合、非矿企为段级路径+direct_growth 手算；独立公司文档级旅程未单独构建——声明与实际一致、无虚报。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T17:11:43+00:00",
+ "canonical_hash": "5bf75a6b01ff1cabd6b22db552de3b783806f4c3ae13187b4df6bb8e66f56ee0"
+}

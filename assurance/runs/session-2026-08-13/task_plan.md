@@ -429,3 +429,9 @@
 - **CA-301 closure**（clean checkout 独立复放，revenue）：revenue 633bea2——tests/test_ca301_clean_checkout.py（C1 triplet 可重建；C2 env verify；C3 全量 receipt 重算 189/189 MATCH + 修复 10 个历史短 hash；C4 重放一致；C5 新鲜证据门；9 tests）；reviewer accepted（1 minor+4 info；独立扫描 189/189）；reviewer receipt canonical dbd6c3d5；closure→CA-302（三类真实用户旅程终验）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-301 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-302/CA-303（并行）→ CA-304（R9 删除）→ CA-305/306。
+
+## 最新状态（2026-08-23 CA-302 closure → 阶段 J 2/6）
+- **accepted 105/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 2：CA-301/302；计数真源 state.json）。current_phase=**J_final_verification**，current_next=**CA-303**。
+- **CA-302 closure**（三类真实用户旅程终验，revenue）：revenue bf58841——tests/test_ca302_three_journeys.py（C1 紫金 canary+missing fail-closed；C2 第二矿企链闭合；C3 非矿旅程；C4 receipt 链完整；C5 side-effect=0；C6 无旁路/无特例；8 tests）；reviewer accepted（2 minor+1 info；C1 独立复放无 skip）；reviewer receipt canonical 5bf75a6b；closure→CA-303（架构/硬编码/质量终审）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-302 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-303 → CA-304（R9 删除）→ CA-305/306。

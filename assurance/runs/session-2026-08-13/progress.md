@@ -945,3 +945,14 @@
 - **机器状态**：current_next=CA-302，accepted **104/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 1：CA-301；计数真源 state.json）。current_phase=J_final_verification。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-301 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-302（三类旅程终验）/CA-303（架构硬编码终审，并行）→ CA-304（R9 删除）→ CA-305/306。
+
+- **CA-302（阶段 J 第二卡：三类真实用户旅程终验，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca302* → 零命中；三类旅程分项存在无终验组合。
+  - 实施：revenue 新 tests/test_ca302_three_journeys.py（8 tests）——C1 紫金 canary 旅程（draft 零写→formal→bit-identical replay + copper 2026 reconcile + 诚实 gap + Dropbox 星环 MISSING fail-closed 经 production resolver）；C2 第二矿企（纯金生产商单层 100% 链单货币）F2 链闭合；C3 非矿旅程（trading 段 5 年正值 + direct_growth 100→110/121）；C4 receipt 链完整（formal gate_ids+attestation 验证 + draft 零注册）；C5 side-effect budget=0（恰好 2 条 formal + 零 stray）；C6 无旁路/无特例（scripts/ 零硬编码 + 同 schema）。产品零改动；commit bf58841（+238 行，1 文件）。
+  - 质量门：相邻回归（ZR-709/609/CA-204）26 passed；revenue 全量 **990 passed + 106 subtests**（982+8 新，零回归）；ruff clean（E741 手动修）。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical b421f0a6。
+  - 独立复核 reviewer-ca302-independent **accepted**（8 passed 1.79s；C1 fail-closed 单独复放无 skip 真实走 production resolver；git grep 独立重跑 ZERO；canonical b421f0a6 一致；delta 仅 revenue；2 minor REV-001 恒真 or True、REV-003 C2/C3 复用紫金文档 + 1 info REV-002 部署动作声明）；reviewer receipt canonical 5bf75a6b。
+  - state accepted + closure-advance -> **CA-303**（phase J_final_verification，架构/硬编码/代码质量终审——CodeGraph production caller/impact、dead dual paths、root/company/path hardcode、模块边界、strict types、复杂度趋势、docs/schema/skill drift；required CI 无 `|| true`）。
+- **机器状态**：current_next=CA-303，accepted **105/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 2：CA-301/302；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-302 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-303（架构终审）→ CA-304（R9 删除）→ CA-305/306。

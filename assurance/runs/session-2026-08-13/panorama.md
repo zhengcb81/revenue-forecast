@@ -436,3 +436,10 @@
 - 全量基线：982 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-301 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-302/CA-303 → CA-304（R9 删除）→ CA-305/306。
+
+## 2026-08-23 CA-302 closure 快照（阶段 J 2/6）
+- **CA-302 closure**（三类真实用户旅程终验，revenue）：revenue bf58841——紫金 canary（draft/formal/replay/reconcile/gap/MISSING fail-closed）、第二矿企链闭合、非矿旅程、receipt 链完整、side-effect=0、无旁路/零硬编码；8 tests；reviewer accepted（2 minor+1 info）；reviewer receipt canonical 5bf75a6b；closure→CA-303。
+- **accepted 105/117（约 90%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9 + J 2（计数真源 state.json）。current_phase=J_final_verification。
+- 全量基线：990 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-302 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-303（架构终审）→ CA-304（R9 删除）→ CA-305/306。
