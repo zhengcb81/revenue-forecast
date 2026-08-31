@@ -1,0 +1,84 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "5eabed6820c954214e5d757818f24a29223fb746",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*ca206* + tools/uc grep soak/window/自然时间",
+      "exit_code": 0,
+      "result": "G1~G2 缺口确认（无 ca206 套件；无 soak 窗口累积逻辑，仅单次 freshness）"
+    },
+    {
+      "command": "python -m pytest tests/test_ca206_soak_window.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "13 passed in 0.14s (C1 daily chain 7 consecutive; C2 weekly distinct + fresh; C3 monthly <=35d; C4 alert drill ack; C5 deterministic + pending-only)"
+    },
+    {
+      "command": "ruff check tests/test_ca206_soak_window.py --fix && ruff check",
+      "exit_code": 0,
+      "result": "All checks passed (2 auto-fixed, 0 remaining)"
+    },
+    {
+      "command": "git commit (revenue)",
+      "exit_code": 0,
+      "result": "350eb84 test(CA-206) — 1 file +325"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "973 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T16:35:00+00:00",
+  "findings": [
+    {
+      "detail": "C1: 7 consecutive daily runs (trusted run ids 2026-08-13..08-19) -> complete; missing day (>25h gap) breaks chain; stale 48h-gap run does not count; duplicate run id and copied report (same id+hash another day) never count twice; not-ok run breaks chain (count=3 before it). C2: 2 weekly >=7d apart with latest <=7d fresh -> complete; same-week runs count once; latest stale (>7d) window counts 0; all-skipped (not-ok) week does not count. C3: monthly within 35d -> complete; stale -> pending. C4: acked alert completes drill; unacked never counts. C5: identical input -> identical window state; incomplete aggregate -> status=pending (never approved/waived); full aggregate -> complete.",
+      "id": "CA206-IMPL-001",
+      "severity": "info",
+      "title": "不可豁免自然时间 soak 窗口计算器验收（7/2/1/1 累积 + 断链/去重/新鲜 + 未满 PENDING）"
+    }
+  ],
+  "implementation": {
+    "design": "revenue tests/test_ca206_soak_window.py（13 tests）：纯函数窗口计算器（SoakRun 数据类 + daily/weekly/monthly/drill_window + soak_status）——注入时间戳的确定性累积语义；C1 连续 7 天链（缺失/陈旧/重复/复制/not-ok 断链）；C2 distinct 周 + 最新新鲜；C3 monthly ≤35d；C4 drill ack；C5 确定性 + 未满 PENDING。产品零改动。",
+    "files": [
+      "revenue-forecast/tests/test_ca206_soak_window.py",
+      "revenue-forecast/assurance/unified_completion/receipts/CA-206/**"
+    ]
+  },
+  "implementer": "ca206-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.revenue = 350eb84（revenue HEAD = CA-206 实现 commit，parent 5eabed6）；wiki 35a1103（ZR-1006 实现，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实 7 Daily/2 Weekly/1 Monthly/1 alert drill 的自然时间累积为观察/部署动作（CA-206 之后由调度累积），本卡只验收窗口计算器语义。"
+  ],
+  "objective": "阶段 H CA 部分收官卡：不可豁免自然时间 soak（累积连续 7 Daily、2 Weekly、1 Monthly、1 alert drill；窗口由可信时间和 run IDs 计算；缺失/陈旧/重复不计；未满只可 pending）",
+  "plan_sha256": "94c4edef625a8bcccaa478b04cd58f7b81874386cb04093348d15f87c0434cf6",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "350eb84d579d59fd302b0f776b81a45b50a1d73a",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "revenue-forecast: tests/test_ca206_soak_window.py (new 13 tests)；assurance/unified_completion/receipts/CA-206/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "registry_writes": 0,
+    "real_catalog_access": 0
+  },
+  "touched_files": [
+    "revenue-forecast/tests/test_ca206_soak_window.py",
+    "revenue-forecast/assurance/unified_completion/receipts/CA-206/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "CA-206",
+  "canonical_hash": "9fcdf10b9f5f5ca7673e9e365825f971e4da1436437d7fafa59c26a37457d662"
+}

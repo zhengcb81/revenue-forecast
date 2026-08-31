@@ -9,8 +9,8 @@ plan_id: TRI-REPO-COMPLETION-2026-08-13-R1
 authority: audit_review/README.md
 plan_status: ready_for_implementation
 implementation_status: in_progress
-current_phase: H_dynamic_audit
-current_next: CA-206
+current_phase: J_final_verification
+current_next: CA-301
 active_owner: unassigned
 lease: none
 blocked_reason: none

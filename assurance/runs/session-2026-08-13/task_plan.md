@@ -417,3 +417,9 @@
 - **CA-205 closure**（原子报告/freshness/告警/release 消费，revenue）：revenue 009fda4——tests/test_ca205_atomic_report.py（C1 原子 publish 完整字段 + dashboard/release 同 schema；C2 故障矩阵 10 类全红；C3 恢复幂等；C4 alert ack/retry；C5 无 stale-green；7 tests）；reviewer accepted（2 info）；reviewer receipt canonical e3185462；closure→CA-206（不可豁免自然时间 soak）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-205 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-206（soak：7 Daily/2 Weekly/1 Monthly/1 alert drill）→ 阶段 J（CA-301~306）。
+
+## 最新状态（2026-08-23 CA-206 closure → 阶段 H 全闭 → 阶段 J 入口）
+- **accepted 103/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11：ZR-902~907 + CA-202~206；I 9；计数真源 state.json）。current_phase=**J_final_verification**，current_next=**CA-301**。
+- **CA-206 closure**（不可豁免自然时间 soak，revenue）：revenue 350eb84——tests/test_ca206_soak_window.py（C1 daily 7 天链；C2 weekly distinct+fresh；C3 monthly ≤35d；C4 drill ack；C5 确定性+未满 PENDING；13 tests）；reviewer accepted（2 info）；reviewer receipt canonical 213302eb；closure→CA-301。**阶段 H 全闭（5/5 CA 部分）**。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-206 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-301（clean checkout 独立复放）→ CA-302/303 → CA-304（R9 删除）→ CA-305/306。

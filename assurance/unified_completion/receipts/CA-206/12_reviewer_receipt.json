@@ -1,0 +1,56 @@
+{
+ "unit": "CA-206",
+ "reviewer": "reviewer-ca206-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "9fcdf10b9f5f5ca7673e9e365825f971e4da1436437d7fafa59c26a37457d662",
+ "commands": [
+  {
+   "command": "python -m pytest tests/test_ca206_soak_window.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "13 passed in 0.20s (C1 daily chain; C2 weekly distinct+fresh; C3 monthly <=35d; C4 drill ack; C5 deterministic+pending-only)"
+  },
+  {
+   "command": "independent hand-checks vs shadow implementation",
+   "exit_code": 0,
+   "result": "7-day chain 08-13..08-19 -> complete count=7; broken-chain 6d+08-20 (48h gap) -> pending count=1; weekly 08-09/08-16 (7d) -> count=2 complete; same-week 08-16/08-17 -> count=1; stale latest -> 0; full soak -> complete; deterministic"
+  },
+  {
+   "command": "git status --porcelain -- scripts tools + show HEAD~1..HEAD",
+   "exit_code": 0,
+   "result": "scripts/ tools/ clean; HEAD=350eb84d parent=5eabed68 matches; commit only tests/test_ca206_soak_window.py +325"
+  },
+  {
+   "command": "receipt-validate 11_implementer_receipt.json + triplet cross-check",
+   "exit_code": 0,
+   "result": "canonical 9fcdf10b matches; base_triplet (filing 5a1c18f/revenue 5eabed68/wiki 35a1103) and result_triplet (revenue 350eb84d) all real commits; delta only revenue"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "5eabed6820c954214e5d757818f24a29223fb746",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "350eb84d579d59fd302b0f776b81a45b50a1d73a",
+  "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+ },
+ "findings": [
+  {
+   "id": "CA206-REV-001",
+   "severity": "info",
+   "title": "daily 断链阈值 >25h vs 卡文本 >24h 的 1h 漂移",
+   "detail": "测试陈旧案例用 48h gap，全部断言成立；24h<gap<=25h 边界未覆盖。合理工程容忍，供调度知悉。"
+  },
+  {
+   "id": "CA206-REV-002",
+   "severity": "info",
+   "title": "weekly distinct 为贪心累积",
+   "detail": ">=7d 才计 distinct，满足卡语义；极端交错序列可能非最大匹配，非缺陷。"
+  }
+ ],
+ "created_at_utc": "2026-08-31T16:36:12+00:00",
+ "canonical_hash": "213302ebf920cdd6f671c2517218014427828b5dd010c587eea1e244fec0a6cf"
+}

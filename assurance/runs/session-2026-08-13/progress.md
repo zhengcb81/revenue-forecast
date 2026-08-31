@@ -923,3 +923,14 @@
 - **机器状态**：current_next=CA-206，accepted **102/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 10：ZR-902~907 + CA-202~205；I 9；计数真源 state.json）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-205 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-206（soak，依赖 CA-205/ZR-904/ZR-905 已满足）→ 阶段 J（CA-301~306）。
+
+- **CA-206（阶段 H CA 部分收官卡：不可豁免自然时间 soak，revenue）全流程闭**：
+  - RED 探针：glob tests/**/*ca206* → 零命中；tools/uc 无 soak 窗口累积逻辑（仅单次 freshness）。
+  - 实施：revenue 新 tests/test_ca206_soak_window.py（13 tests）——纯函数窗口计算器（SoakRun + daily/weekly/monthly/drill_window + soak_status）：C1 daily 连续 7 天链（缺失日/>25h 陈旧/重复 run_id/复制报告/not-ok 均断链不计）；C2 weekly distinct 周 ≥7d + 最新 ≤7d 新鲜（同周计 1、stale 计 0、not-ok 不计）；C3 monthly ≤35d（超龄 pending）；C4 alert drill 仅 acked 计；C5 确定性 + 未满 PENDING（永不 approved/waived）。产品零改动；commit 350eb84（+325 行，1 文件）。
+  - 质量门：revenue 全量 **973 passed + 106 subtests**（960+13 新，零回归）；ruff clean（2 auto-fix）。
+  - state walk：red_proved → … → triplet_green；implementer receipt canonical 9fcdf10b。
+  - 独立复核 reviewer-ca206-independent **accepted**（13 passed 0.20s；手算 vs 影子实现交叉一致；canonical 9fcdf10b 一致；delta 仅 revenue；2 info：REV-001 >25h vs >24h 边界漂移、REV-002 weekly 贪心 distinct）；reviewer receipt canonical 213302eb。
+  - state accepted + closure-advance -> **CA-301**（phase J_final_verification，clean checkout 独立复放——独立 reviewer 三干净 checkout 精确 triplet 重建；T0/T1 全跑、receipt/hash 重算、结果与 candidate closure 一致）。**阶段 H 全闭（ZR-902~907 + CA-201~206）**。
+- **机器状态**：current_next=CA-301，accepted **103/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11：ZR-902~907 + CA-202~206；I 9：ZR-1001~1009；计数真源 state.json）。current_phase=J_final_verification。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-206 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-301（clean checkout 独立复放）→ CA-302/303 → CA-304（R9 删除）→ CA-305（ledger）→ CA-306（旧计划关闭）。

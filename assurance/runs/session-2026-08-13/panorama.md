@@ -422,3 +422,10 @@
 - 全量基线：960 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（CA-205 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
 - 下一卡：CA-206（soak）→ 阶段 J（CA-301~306）。
+
+## 2026-08-23 CA-206 closure 快照（阶段 H 全闭 → 阶段 J 入口）
+- **CA-206 closure**（不可豁免自然时间 soak，revenue）：revenue 350eb84——纯函数窗口计算器（7 Daily 连续链/2 Weekly distinct+新鲜/1 Monthly ≤35d/1 alert drill ack；缺失/陈旧/重复/复制/not-ok 不计；未满 PENDING 永不豁免）；13 tests；reviewer accepted（2 info）；reviewer receipt canonical 213302eb；closure→CA-301。**阶段 H 全闭（ZR-902~907 + CA-202~206）**。
+- **accepted 103/117（约 88%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 11 + I 9（计数真源 state.json）。current_phase=J_final_verification。
+- 全量基线：973 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（CA-206 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：CA-301（clean checkout 独立复放）→ CA-302/303 → CA-304（R9 删除）→ CA-305/306。
