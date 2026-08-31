@@ -369,3 +369,9 @@
 - **ZR-1005 closure**（legacy artifact 分桶与最小 canary backfill，company-wiki）：wiki abeaca8f——tests/contract/test_zr1005_artifact_backfill.py（C1 真实 catalog dry-run closed+stable hash+行数零变化；C2-C4 temp apply/幂等/only-bindable；4 测试函数）；reviewer accepted（4 passed；REV-001 minor 数量声明 + 3 info）；reviewer receipt canonical 51879f67；closure→ZR-1006（broker processing demand 最小 cohort——七份紫金先 1→3→7；质量门/成本/SLO；失败不污染旧 artifact）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1005 closure docs commit 待提交）、wiki abeaca8f（ZR-1005 实现）、filing 5a1c18f。
 - 下一卡：ZR-1006（broker cohort）→ ZR-1007（mine shadow）~ZR-1009/CA-304。
+
+## 最新状态（2026-08-23 ZR-1006 closure → 阶段 I 已闭 6/9）
+- **accepted 95/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 6：ZR-1001~1006；计数真源 state.json）。current_phase=**I_gradual_release**，current_next=**ZR-1007**。
+- **ZR-1006 closure**（broker processing demand 最小 cohort，company-wiki）：wiki 35a1103——tests/contract/test_zr1006_broker_cohort.py（C1 生产只读快照 7 样本 active+0 artifact；C2 ramp 1→3→7 严格前缀+completed 终态；C3 质量门 only-bindable；C4 成本/SLO 预算/deadline/aging；C5 失败隔离不污染旧 artifact；9 tests）；reviewer accepted（3 info）；reviewer receipt canonical 772b3215；closure→ZR-1007（mine facts/model shadow 与旧分部模型对比——差异归因、reconciliation、backtest；不自动替换生产预测）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1006 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
+- 下一卡：ZR-1007（mine shadow，revenue 卡）→ ZR-1008（cutover）→ ZR-1009（legacy 删除）。

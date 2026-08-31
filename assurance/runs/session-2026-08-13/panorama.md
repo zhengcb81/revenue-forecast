@@ -366,3 +366,10 @@
 - 全量基线：896 passed + 106 subtests（零回归）；产品代码零改动。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1005 closure docs commit 待提交）、wiki abeaca8f、filing 5a1c18f。
 - 下一卡：ZR-1006（broker processing demand 最小 cohort——七份紫金先 1→3→7；质量门/成本/SLO；失败不污染旧 artifact）→ ZR-1007~1009/CA-304。
+
+## 2026-08-23 ZR-1006 closure 快照（阶段 I 已闭 6/9）
+- **ZR-1006 closure**（broker processing demand 最小 cohort，company-wiki）：wiki 35a1103——C1 生产只读快照（七份紫金 broker 全 active+0 artifact）；C2 DemandQueue+DemandScheduler ramp 1→3→7 严格前缀 + completed 终态；C3 质量门 only-bindable；C4 成本预算/deadline urgency/aging 防饿死；C5 失败隔离（terminal_failed 不污染旧 artifact；重试自写）；9 tests；reviewer accepted（3 info）；reviewer receipt canonical 772b3215；closure→ZR-1007。**阶段 I 已闭 6/9**。
+- **accepted 95/117（约 81%）**：A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 6（ZR-1001~1006；计数真源 state.json）。
+- 全量基线：896 passed + 106 subtests（零回归）；产品代码零改动。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1006 closure docs commit 待提交）、wiki 35a1103、filing 5a1c18f。
+- 下一卡：ZR-1007（mine facts/model shadow 与旧分部模型对比，revenue 卡）→ ZR-1008（cutover）→ ZR-1009（legacy 删除）。

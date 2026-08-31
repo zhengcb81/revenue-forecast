@@ -1,0 +1,88 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "80352bbabcc684af01a294b4a3dee3f3d7d89fc2",
+    "wiki": "abeaca8f03f644efab963c31ef7056b793b62630"
+  },
+  "commands": [
+    {
+      "command": "RED: glob tests/**/*zr1006* + grep broker/cohort in test_zr507/508 + production catalog probe",
+      "exit_code": 0,
+      "result": "G1~G3 缺口确认（无 zr1006 套件；七份紫金 broker 生产全 active + 0 artifact）"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_zr1006_broker_cohort.py -q --timeout=120",
+      "exit_code": 0,
+      "result": "9 passed in 0.90s (C1 production snapshot + C2 ramp 1->3->7 + C3 quality gate + C4 cost/SLO + C5 failure isolation)"
+    },
+    {
+      "command": "python -m pytest tests/contract/test_zr1005_artifact_backfill.py tests/contract/test_zr507_processing_demand.py tests/contract/test_zr508_scheduler.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "29 passed in 2.25s (相邻契约回归 OK)"
+    },
+    {
+      "command": "ruff check tests/contract/test_zr1006_broker_cohort.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "git commit (company-wiki)",
+      "exit_code": 0,
+      "result": "35a1103 test(ZR-1006) — 1 file +370"
+    },
+    {
+      "command": "revenue full suite",
+      "exit_code": 0,
+      "result": "896 passed + 106 subtests (零回归, -k not fc1103)"
+    }
+  ],
+  "created_at_utc": "2026-08-31T12:45:00+00:00",
+  "findings": [
+    {
+      "detail": "C1 production read-only: golden corpus 7 Zijin broker samples all broker_research+active+0 artifacts (honest pending state). C2 ramp 1->3->7: DemandQueue+DemandScheduler waves produce strict cohort prefixes; completed is terminal (same demand never re-claimable). C3 quality gate: only bindable artifacts (real file + schema 1.0 + matching source_sha256) writable; unprovable -> zero rows. C4 cost/SLO: llm budget pause + reset restores new demands; deadline urgency lifts effective priority; aging prevents starvation. C5 failure isolation: terminal_failed leaves catalog rows/hashes untouched; retried demand writes only its own artifact.",
+      "id": "ZR1006-IMPL-001",
+      "severity": "info",
+      "title": "broker processing demand 最小 cohort 验收（ZR-507/508 机制 + 七份紫金生产快照）"
+    }
+  ],
+  "implementation": {
+    "design": "company-wiki tests/contract/test_zr1006_broker_cohort.py（9 tests）：C1 真实 catalog 只读快照（七份紫金 broker active+0 artifact）；C2 DemandQueue+DemandScheduler 1→3→7 波次 + completed 终态；C3 质量门 only-bindable；C4 成本预算/deadline/aging SLO；C5 失败隔离 + 重试自写。产品零改动。",
+    "files": [
+      "company-wiki/tests/contract/test_zr1006_broker_cohort.py",
+      "revenue-forecast/assurance/unified_completion/receipts/ZR-1006/**"
+    ]
+  },
+  "implementer": "zr1006-implementer",
+  "kind": "implementer",
+  "notes": [
+    "result_triplet.wiki = 35a1103（company-wiki HEAD = ZR-1006 实现 commit，parent abeaca8f）；revenue = 80352bb（ZR-1005 closure 后 bookkeeping，本卡零改动）；filing 5a1c18f（未动）。",
+    "卡片 hash: plan_sha256 见 00_wu_card.md。",
+    "真实 production broker 处理（七份研报 LLM 摘要）为部署动作，不在本卡。"
+  ],
+  "objective": "阶段 I 第六卡：broker processing demand 最小 cohort（七份紫金先 1→3→7；质量门/成本/SLO；失败不污染旧 artifact）",
+  "plan_sha256": "496b41b6fbcedd2436888ec260f29ad9bfc0e235b2cb289d41f207926286f30c",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "80352bbabcc684af01a294b4a3dee3f3d7d89fc2",
+    "wiki": "35a1103ac05ab5e9a703242cbf1136f96b745197"
+  },
+  "schema_version": 1,
+  "scope": "company-wiki: tests/contract/test_zr1006_broker_cohort.py (new 9 tests)；revenue-forecast: assurance/unified_completion/receipts/ZR-1006/** 与 state.json。产品代码零改动。",
+  "side_effect_counts": {
+    "catalog_mutations": 0,
+    "ci_changes": 0,
+    "downloads": 0,
+    "external_root_writes": 0,
+    "llm_calls": 0,
+    "parser_calls": 0,
+    "product_code_changes": 0,
+    "real_catalog_access": 9
+  },
+  "touched_files": [
+    "company-wiki/tests/contract/test_zr1006_broker_cohort.py",
+    "revenue-forecast/assurance/unified_completion/receipts/ZR-1006/**",
+    "revenue-forecast/assurance/unified_completion/state.json"
+  ],
+  "unit": "ZR-1006",
+  "canonical_hash": "82490ab9b0c90de2e45210c3e266cf319875b628397dd379808a2996a36ac934"
+}

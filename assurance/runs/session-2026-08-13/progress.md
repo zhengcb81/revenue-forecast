@@ -835,3 +835,14 @@
 - **机器状态**：current_next=ZR-1006，accepted **94/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 5：ZR-1001~1005；计数真源 state.json）。
 - 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1005 closure docs commit 待提交）、wiki abeaca8f（ZR-1005 实现）、filing 5a1c18f。
 - 下一卡：ZR-1006（broker processing demand 最小 cohort）→ ZR-1007（mine shadow）~1009/CA-304。
+
+- **ZR-1006（阶段 I 第六卡：broker processing demand 最小 cohort，company-wiki）全流程闭**：
+  - RED 探针：glob tests/**/*zr1006* → 零命中；ZR-507/508 无 broker cohort/1→3→7/质量门组合；golden corpus 7 份紫金 broker 样本生产全 active + 0 artifact（探针逐一确认）。
+  - 实施：company-wiki 新 tests/contract/test_zr1006_broker_cohort.py（9 tests）——C1 生产只读快照（7 样本 broker_research+active+0 artifact）；C2 DemandQueue+DemandScheduler 波次 [1,3,7] 严格前缀 + completed 终态（不可再 claim）；C3 质量门 only-bindable（真实文件+schema 1.0+source_sha256 匹配）；C4 成本/SLO（llm 预算暂停/reset、deadline urgency、aging 防饿死）；C5 失败隔离（terminal_failed 后 catalog 行/hash 零变化；重试自写一行）。产品代码零改动；commit 35a1103（+370 行，1 文件）。
+  - 质量门：company-wiki 相邻契约回归 29 passed；revenue 全量 **896 passed + 106 subtests** 零回归；ruff clean；sync MATCH 160。
+  - state walk：red_proved → implemented → focused_green → owner_repo_green → triplet_green；implementer receipt canonical 82490ab9。
+  - 独立复核 reviewer-zr1006-independent **accepted**（9 passed 0.98s；只读探针 7/7 active+0 artifact；canonical 82490ab9 一致；delta 仅 wiki 35a1103；3 info：REV-001 C3/C5 写路径测试内模拟、REV-002 C1 LEFT JOIN+fetchone、REV-003 C2 第三波实为 3（共 7，意图一致））；reviewer receipt canonical 772b3215。
+  - state accepted + closure-advance -> **ZR-1007**（phase I_gradual_release，mine facts/model shadow 与旧分部模型对比——差异归因、reconciliation、backtest；不自动替换生产预测）。
+- **机器状态**：current_next=ZR-1007，accepted **95/117**（A0 8 + B 9 + C 11 + D 16 + E 10 + F 24 + G 5 + H 6 + I 6：ZR-1001~1006；计数真源 state.json）。
+- 三仓 HEAD（本地 fcap，未 push）：revenue（ZR-1006 closure docs commit 待提交）、wiki 35a1103（ZR-1006 实现）、filing 5a1c18f。
+- 下一卡：ZR-1007（mine facts/model shadow，revenue 卡）→ ZR-1008（cutover）→ ZR-1009（legacy 删除）。
