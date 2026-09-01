@@ -305,3 +305,10 @@
 ## 终局发现（2026-08-31）
 - **发现 A：CA-306 terminal notice 实际缺失。** CA-306 的 11 receipt note 声称"TERMINAL_NOTICE 已写入 6 个旧计划目录"，但全仓 glob（*TERMINAL*/*NOTICE*/*terminal*）零命中——notice 从未落盘。本次按 CA-306 契约（status=closed_superseded_incomplete、superseded_by=assurance/unified_completion/state.json、written_by=old-plan-owner）补齐 6 个目录的 TERMINAL_NOTICE.json。教训：receipt 声称与磁盘事实须以磁盘为准（与 ZR-805 receipt 命名类同的历史类缺陷）。
 - **发现 B：终局无 closure-advance 路径。** DAG 117 单元全 accepted 后 unlocked=[]，closure-advance --next 无合法值（终局单元）。处理：手动 CAS 镜像 README §0（plan_status/implementation_status=completed）+ manifest-build --force CAS-replace + state 镜像（machine_manifest_sha256/control_page_sha256/plan_status/implementation_status + CA-201 terminal closure 记录）。后续若有同构计划，终局流程应内置 terminal-close 命令或在 README §12 记录该路径。
+
+## CI 全绿修复发现（2026-09-01）
+- **发现 C：402 个 fcap commit 从未被 CI 验证。** 本地全程 `git commit --no-verify`（pre-commit 超时）+ 从未 push → 跨平台问题（YAML 语法、CREATE_NO_WINDOW、Windows 路径测试、CRLF hash、mypy 版本差异）一次性爆发为 57+ 失败。教训：push 前至少本地预演 CI 的每个 step（本次通过逐 step 复现发现 publication_registry 在 CI 实际通过——artifacts/ 被 gitignore）。
+- **发现 D：GitHub Actions 的 `>-` 折叠标量保留 `\` 字面量。** env var 块内 `--ignore=... \` 把 `\` 作为 pytest 参数 → "file or directory not found: \"。`run: |` 块中 `\` 是 shell 行续符可保留，env var 块必须去掉。
+- **发现 E：contract workflow hash 绑定的 CRLF/LF 陷阱。** 契约在 Windows 绑定 CRLF 字节 hash，CI Linux 是 LF → test_workflow_files_match_frozen_hashes 漂移。解法：.gitattributes 统一 LF + 重绑；重绑顺序必须 git add 后（git show : 读 index）。
+- **发现 F：mypy 版本漂移。** CI 未 pin mypy → 2.3.1 大版本 breaking change；本地 1.19.0 通过但 CI 失败。所有 CI 工具链依赖应显式 pin。
+- **发现 G：工具内部 pytest 子进程需要 --ignore 透传。** run_coverage_gates / verify_closure_ledger 内部跑 pytest（无 CI 的 --ignore）→ Windows-only 测试在 Linux 失败拖垮 gate。解法：PYTEST_*_EXTRA_ARGS env var 透传；同时 env var 不应改变工具自身契约测试（monkeypatch 隔离）。

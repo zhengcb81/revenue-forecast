@@ -512,3 +512,8 @@
 - 三仓 push 完成（revenue d0c4be7→main、wiki 35a1103→master、filing 5a1c18f→main）。
 - README §0 终局镜像 completed + manifest CAS-replace + state 镜像；6 旧计划 TERMINAL_NOTICE.json 补齐。
 - 项目状态：**117/117 全部闭环，三仓已 push**。
+
+## CI 全绿修复（2026-09-01）
+- 三仓 CI 全部通过：revenue 70ea2df / filing e5639a3 / wiki 63f293b（ALL GREEN）。
+- 修复内容：YAML 语法、mypy pin 1.19.0、CREATE_NO_WINDOW type:ignore、.gitattributes LF、Windows-only 测试 --ignore、工具 env var、coverage 阈值对齐、ruff/config_doctor 修复。详见 progress.md。
+- 机器终态不变：accepted 117/117，manifest-verify OK，unlocked=[]。

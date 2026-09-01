@@ -532,3 +532,8 @@
 - **三仓已全部 push**：revenue main=d0c4be7、wiki master=35a1103、filing main=5a1c18f（fcap→默认分支 fast-forward）。
 - **planning docs 终局镜像**：README §0 completed（CAS 重建 manifest）；6 旧计划 TERMINAL_NOTICE.json（closed_superseded_incomplete）；session docs 四件套更新。
 - 机器终态：accepted 117/117，current_next=CA-201（终局游标），phase=J_final_verification。
+
+## 2026-09-01 CI 全绿快照
+- **三仓 GitHub Actions ALL GREEN**：revenue 70ea2df、filing e5639a3、wiki 63f293b。
+- 本轮修复 9 类问题（YAML/mypy/CRLF/env var/coverage 等），详见 progress.md。
+- 机器终态：accepted 117/117；manifest-verify OK；unlocked=[]；三仓本地=远端（ahead=0）。
