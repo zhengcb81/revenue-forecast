@@ -160,8 +160,9 @@ def _run_summary(ref: str, repo_dir: str, python: tuple[str, ...]) -> tuple[int,
     """Run the referenced tests; return (exit_code, counted markers)."""
     env = dict(os.environ)
     env["PYTHONIOENCODING"] = "utf-8"
+    extra_args = os.environ.get("PYTEST_LEDGER_EXTRA_ARGS", "").strip().split()
     proc = subprocess.run(
-        (*python, "-m", "pytest", ref, "-q", "-rsX"),
+        (*python, "-m", "pytest", ref, "-q", "-rsX", *extra_args),
         cwd=repo_dir,
         env=env,
         capture_output=True,
