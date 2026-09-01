@@ -13,7 +13,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install test dependency
-        run: python -m pip install pytest cryptography "ruff==0.15.18" pytest-cov pyyaml requests mypy
+        run: python -m pip install pytest cryptography "ruff==0.15.18" pytest-cov pyyaml requests "mypy==1.19.0"
       - name: Validate compatibility manifest (FC-1101)
         run: |
           python -c "import json,sys; d=json.load(open('compatibility/current.json',encoding='utf-8')); assert d['schema_version']=='1.0'; assert len(d['current_triplet'])==3; print('manifest OK', d['current_triplet']['revenue'][:12])"
