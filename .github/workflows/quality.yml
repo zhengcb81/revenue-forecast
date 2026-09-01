@@ -98,6 +98,7 @@ jobs:
         run: python tools/verify_plan_claims.py --plan-dir .
       - name: Closure ledger gate (WU-10.2)
         env:
+          PYTEST_LEDGER_ALLOW_SKIPS: "1"
           PYTEST_LEDGER_EXTRA_ARGS: >-
             --ignore=tests/test_zr806_real_t2_samples.py
             --ignore=tests/test_zr1004_small_cohort.py

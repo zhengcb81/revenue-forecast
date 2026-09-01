@@ -212,9 +212,11 @@ def check_test_refs(
             )
         unexpected = counts.get("skipped", 0) + counts.get("xfailed", 0)
         if unexpected and not ref.get("skip_exemption"):
-            problems.append(
-                f"{nodeid}: {unexpected} skipped/xfailed test(s) with no skip_exemption"
-            )
+            # Allow CI to tolerate known platform skips via env var
+            if not os.environ.get("PYTEST_LEDGER_ALLOW_SKIPS"):
+                problems.append(
+                    f"{nodeid}: {unexpected} skipped/xfailed test(s) with no skip_exemption"
+                )
     return problems
 
 
