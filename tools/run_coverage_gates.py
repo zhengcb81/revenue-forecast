@@ -44,6 +44,12 @@ def main() -> int:
         cwd=ROOT,
         check=True,
     )
+    # Allow CI to pass extra pytest args (e.g. --ignore for platform-specific tests)
+    # via PYTEST_COVERAGE_EXTRA_ARGS environment variable.
+    extra_args: list[str] = []
+    extra_env = os.environ.get("PYTEST_COVERAGE_EXTRA_ARGS", "").strip()
+    if extra_env:
+        extra_args = extra_env.split()
     subprocess.run(
         [
             sys.executable,
@@ -58,6 +64,7 @@ def main() -> int:
             "-q",
             "-k",
             "not fc1103",  # ZR-906: fc1103 T3 runner hangs on this machine
+            *extra_args,
         ],
         cwd=ROOT,
         env=env,
