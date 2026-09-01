@@ -156,8 +156,8 @@ def _collect_ok(ref: str, repo_dir: str, python: tuple[str, ...]) -> bool:
     return found_module and any(test_name in line for line in lines)
 
 
-def _run_summary(ref: str, repo_dir: str, python: tuple[str, ...]) -> tuple[int, dict[str, int]]:
-    """Run the referenced tests; return (exit_code, counted markers)."""
+def _run_summary(ref: str, repo_dir: str, python: tuple[str, ...]) -> tuple[int, dict[str, int], str]:
+    """Run the referenced tests; return (exit_code, counted markers, failure detail)."""
     env = dict(os.environ)
     env["PYTHONIOENCODING"] = "utf-8"
     extra_args = os.environ.get("PYTEST_LEDGER_EXTRA_ARGS", "").strip().split()
@@ -176,7 +176,15 @@ def _run_summary(ref: str, repo_dir: str, python: tuple[str, ...]) -> tuple[int,
     for line in proc.stdout.splitlines():
         for match in _SUMMARY_LINE.finditer(line):
             counts[match.group(2)] = counts.get(match.group(2), 0) + int(match.group(1))
-    return proc.returncode, counts
+    # Include failed-test names in the detail for CI diagnosis
+    combined = (proc.stdout + "\n" + proc.stderr).splitlines()
+    failed_names = [
+        line.strip().split("::")[-1]
+        for line in combined
+        if "FAILED" in line and line.strip().startswith("FAILED")
+    ][:5]
+    detail = f"failed: {failed_names}" if failed_names else ""
+    return proc.returncode, counts, detail
 
 
 def check_test_refs(
@@ -205,15 +213,16 @@ def check_test_refs(
         if not _collect_ok(nodeid, repo_dir, python):
             problems.append(f"pytest cannot collect {nodeid} in {repo_dir}")
             continue
-        code, counts = _run_summary(nodeid, repo_dir, python)
+        code, counts, detail = _run_summary(nodeid, repo_dir, python)
         if code != 0 or counts.get("failed") or counts.get("error"):
             problems.append(
-                f"{nodeid}: run failed (exit {code}, {counts})"
+                f"{nodeid}: run failed (exit {code}, {counts}) {detail}"
             )
         unexpected = counts.get("skipped", 0) + counts.get("xfailed", 0)
         if unexpected and not ref.get("skip_exemption"):
             # Allow CI to tolerate known platform skips via env var
-            if not os.environ.get("PYTEST_LEDGER_ALLOW_SKIPS"):
+            # (explicit "1" only, so the tool's own tests are unaffected)
+            if os.environ.get("PYTEST_LEDGER_ALLOW_SKIPS") != "1":
                 problems.append(
                     f"{nodeid}: {unexpected} skipped/xfailed test(s) with no skip_exemption"
                 )
