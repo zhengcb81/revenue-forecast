@@ -17,7 +17,7 @@ jobs:
       - name: Validate compatibility manifest (FC-1101)
         run: |
           python -c "import json,sys; d=json.load(open('compatibility/current.json',encoding='utf-8')); assert d['schema_version']=='1.0'; assert len(d['current_triplet'])==3; print('manifest OK', d['current_triplet']['revenue'][:12])"
-      - name: Fetch sibling repos (FC-1101: manifest-driven current triplet)
+      - name: "Fetch sibling repos (FC-1101: manifest-driven current triplet)"
         run: |
           SIBLING_DIR="$(dirname "$GITHUB_WORKSPACE")"
           python tools/ci_checkout_siblings.py --manifest compatibility/current.json --sibling-root "$SIBLING_DIR" --skip revenue

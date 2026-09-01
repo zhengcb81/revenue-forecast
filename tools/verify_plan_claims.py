@@ -225,13 +225,32 @@ def verify(plan_text: str, progress_text: str) -> tuple[list[str], list[dict]]:
     return problems, report
 
 
+def _is_terminal_closed(directory: Path) -> bool:
+    """CA-306: a dir carrying a TERMINAL_NOTICE.json with status
+    ``closed_superseded_incomplete`` is a historical archive — its evidence
+    responsibility moved to the machine closure ledger
+    (assurance/unified_completion/state.json), so the WU-8.3 evidence gate no
+    longer applies to it."""
+    notice = directory / "TERMINAL_NOTICE.json"
+    if not notice.is_file():
+        return False
+    try:
+        return json.loads(notice.read_text(encoding="utf-8")).get(
+            "status"
+        ) == "closed_superseded_incomplete"
+    except (json.JSONDecodeError, OSError):
+        return False
+
+
 def _discover_plans(plan_dir: Path) -> list[tuple[Path, Path, Path | None]]:
     """WU-8.3: recursively find (task_plan.md, progress.md, findings.md) triples
     under a dir, including docs/plans/** subplans. findings.md is included so
     its claims can be cross-checked (a missing findings.md for an active plan
-    is reported)."""
+    is reported). Dirs closed by a CA-306 terminal notice are skipped."""
     pairs: list[tuple[Path, Path, Path | None]] = []
     for plan in sorted(plan_dir.rglob("task_plan.md")):
+        if _is_terminal_closed(plan.parent):
+            continue
         progress = plan.parent / "progress.md"
         if progress.is_file():
             findings = plan.parent / "findings.md"
