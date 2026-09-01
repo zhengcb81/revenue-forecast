@@ -211,7 +211,7 @@ def resolve_filing(
     cmd.extend(["--timeout-seconds", str(timeout_seconds)])
     environment = dict(os.environ)
     environment["PYTHONUTF8"] = "1"
-    creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+    creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0  # type: ignore[attr-defined]
     try:
         completed = subprocess.run(
             cmd,
