@@ -137,7 +137,10 @@ def test_check_test_refs_passing_file_ok(tmp_path):
     assert problems == []
 
 
-def test_check_test_refs_skipped_requires_exemption(tmp_path):
+def test_check_test_refs_skipped_requires_exemption(tmp_path, monkeypatch):
+    # The skip-exemption contract must hold regardless of CI env vars
+    # (PYTEST_LEDGER_ALLOW_SKIPS is a CI tolerance knob for the gate itself).
+    monkeypatch.delenv("PYTEST_LEDGER_ALLOW_SKIPS", raising=False)
     (tmp_path / "test_skip.py").write_text(
         "import pytest\n\n"
         "@pytest.mark.skip(reason='platform gate')\n"
