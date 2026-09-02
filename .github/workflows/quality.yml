@@ -131,3 +131,40 @@ jobs:
             --ignore=tests/test_ca302_three_journeys.py
             --ignore=tests/test_fc1001_isolated_lake.py
         run: python tools/verify_closure_ledger.py --ledger audit_review/2026-08-08_adversarial_plan/closure_ledger.json --repo revenue --repo-dir .
+
+  # GP-006: sibling-repo E2E tests on windows-latest.
+  # Tests that need sibling repos (company-wiki, filing-fetch) but run on
+  # temp data.  REAL_DATA tests (zr806/zr1004/fc1001/fc1003/fc1004/fc1105/
+  # preparation_e2e/zr709/zr907/ca202) require a self-hosted runner with
+  # production catalog access and are not included here.
+  real-roots:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pyyaml requests
+      - name: Fetch sibling repos (FC-1101)
+        shell: bash
+        run: |
+          SIBLING_DIR="$(dirname "$GITHUB_WORKSPACE")"
+          python tools/ci_checkout_siblings.py --manifest compatibility/current.json --sibling-root "$SIBLING_DIR" --skip revenue
+          echo "PYTHONPATH=$SIBLING_DIR/company-wiki/src" >> "$GITHUB_ENV"
+      - name: Sibling-dependent E2E tests
+        run: |
+          python -m pytest -q --tb=short `
+            tests/test_zr803_chaos_recovery.py `
+            tests/test_zr1103_journey_reverify.py `
+            tests/test_ca203_weekly_t3.py `
+            tests/test_zr1101_closure_gate.py `
+            tests/test_fc1101_ci_manifest.py `
+            tests/test_zr1105_closure_ledger.py `
+            tests/test_compatibility_manifest.py `
+            tests/test_fc1002_three_process_e2e.py `
+            tests/test_ca302_three_journeys.py
