@@ -194,6 +194,14 @@ SCENARIO_MAP: dict[str, tuple[str, str, str]] = {
     "UJ-06": ("wiki", "tests/contract/test_source_catalog_resolver.py", "stale summary recompute"),
     "UJ-07": ("wiki", "tests/contract/test_source_catalog_fail_closed.py", "identity conflict fail"),
     "UJ-08": ("wiki", "tests/contract/test_source_catalog_resolver.py", "mixed period request"),
+    # BR: broker research - map core catalog behaviors
+    "BR-03": ("wiki", "tests/contract/test_source_catalog_fail_closed.py", "non-filing kind rejection"),
+    "BR-08": ("wiki", "tests/contract/test_source_catalog_resolver.py", "published_date NULL"),
+    "BR-19": ("wiki", "tests/contract/test_source_catalog_artifact_handle.py", "source bytes change"),
+    "BR-20": ("wiki", "tests/contract/test_zr403_dedupe_resolver_generalization.py", "cross-root dedup"),
+    # MINE: mining - map core catalog behaviors
+    "MINE-13": ("wiki", "tests/contract/test_source_catalog_fail_closed.py", "unit conversion"),
+    "MINE-24": ("wiki", "tests/contract/test_zr403_dedupe_resolver_generalization.py", "second company generalization"),
 }
 
 # Scenarios that need T3/T4 authorization — marked blocked
