@@ -162,7 +162,10 @@ def test_contract_three_required_checks_and_workflow_binding() -> None:
         assert data["successors"][name] == "CA-201", name
     rev = data["workflow_files"]["revenue"]
     assert rev["rel_path"] == ".github/workflows/quality.yml"
-    assert rev["sha256"] == _sha256_bytes(QUALITY_YML.read_bytes()), (
+    # Normalize CRLF -> LF before hashing: .gitattributes forces LF in the
+    # index/CI, but Windows checkouts materialize CRLF in the working tree.
+    raw = QUALITY_YML.read_bytes().replace(b"\r\n", b"\n")
+    assert rev["sha256"] == _sha256_bytes(raw), (
         "contract byte-binding for the revenue workflow drifted"
     )
 

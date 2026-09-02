@@ -43,7 +43,11 @@ def _sha256_bytes(data: bytes) -> str:
 
 
 def _repo_workflow_bytes(repo_name: str) -> bytes:
-    return (REPOS[repo_name] / WORKFLOW_RELS[repo_name]).read_bytes()
+    # Normalize CRLF -> LF: .gitattributes forces LF in index/CI, but
+    # Windows checkouts materialize CRLF in the working tree.
+    return (REPOS[repo_name] / WORKFLOW_RELS[repo_name]).read_bytes().replace(
+        b"\r\n", b"\n"
+    )
 
 
 # ---------------------------------------------------------------------------
