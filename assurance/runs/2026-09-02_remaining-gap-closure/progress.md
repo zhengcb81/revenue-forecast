@@ -21,11 +21,11 @@
 | GP-003 | worker privacy 过滤 | ✅ 完成（wiki c3a99c8） | 全量 2641p/0f；gp003 5p；独立复核 PASS（F401 修复复核） |
 | GP-004 | receipt 重签发 | ✅ 完成（revenue 04556d5） | 87→0 incomplete；41 uc tests passed；closure-report machine_valid:112 |
 | GP-005 | scenario 证据回填 | 未开始 | — |
-| GP-006 | 真实 roots E2E 进 CI | 未开始 | — |
-| GP-007 | privacy_class 3.0 config | 未开始 | — |
-| GP-008 | legacy 观测起点注册 | 未开始 | — |
-| GP-009 | 动态审核调度注册 | 未开始 | — |
-| GP-010 | 研报 cutover 授权申请 | 未开始 | — |
+| GP-006 | 真实 roots E2E 进 CI | ✅ 完成（revenue 43fab74） | windows-latest job + 9 sibling tests |
+| GP-007 | privacy_class 3.0 config | ✅ 完成（wiki c636516） | 4 roots privacy_class added; config_doctor OK |
+| GP-008 | legacy 观测起点注册 | 📋 部署指南就绪 | gp008_009_deployment_guide.md; 需管理员权限运行 schtasks register |
+| GP-009 | 动态审核调度注册 | 📋 部署指南就绪 | gp008_009_deployment_guide.md; daily_t2 + weekly_t3 register |
+| GP-010 | 研报 cutover 授权申请 | ✅ 申请文档完成 | gp010_cohort_cutover_request.md; 待 KD-08 批准 |
 
 ## 变更记录
 

@@ -131,6 +131,10 @@ GP-001（回归）→ GP-002（scanner）→ GP-003（worker）→ GP-004（rece
 - ✅ **GP-002 完成**（wiki 9809127）：v2 scanner 生产切入（D-1 closed）
 - ✅ **GP-003 完成**（wiki c3a99c8）：LLM exit receipt+privacy gate（D-2 closed）
 - ✅ **GP-004 完成**（revenue 04556d5）：receipt 重签发 87→0 incomplete（C-1 closed）
-- 进行中：GP-005（scenario 证据回填）
+- ✅ **GP-006 完成**（revenue 43fab74）：real-roots CI job + 9 sibling tests（D-3 closed）
+- ✅ **GP-007 完成**（wiki c636516）：privacy_class 配置升级（B-4 closed）
+- 📋 **GP-008/009 部署指南就绪**：schtasks register 命令文档化，需管理员权限执行
+- ✅ **GP-010 申请文档完成**：cohort cutover 授权申请，待 KD-08 批准
+- 进行中：GP-005（scenario 证据回填，197 scenarios）
 - 机器状态：accepted 117/117，current_next=CA-201（终局游标）
 - 三仓 CI：wiki 9809127 success / revenue 5e6f603 success（GP-004 在 assurance/，不影响 CI 测试路径）
