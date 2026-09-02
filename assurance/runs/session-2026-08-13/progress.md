@@ -1111,3 +1111,9 @@
   8. `PYTEST_LEDGER_ALLOW_SKIPS` env var 影响工具自身测试 → 测试内 monkeypatch 清除；仅当显式 == "1" 时生效。
   9. wiki ruff（E402/E702/F401）→ 修复/文件级 noqa；`config_doctor.py` future_lake 白名单 + `test_config_doctor.py` 断言更新；filing 缺 pytest-cov → 安装。
 - **终态**：revenue `70ea2df`、filing `e5639a3`、wiki `63f293b` 三仓 CI **ALL GREEN**；manifest-verify OK；unlocked=[]（117/117）。
+
+## 缺口关闭计划创建（2026-09-02）
+- 全面审查完成（6 独立 agent、300+ 测试命令、生产 catalog 实证、真实 CLI 探针）：发现 12 项缺口。
+- 已修复：P05 空 source_sha（代码，afe5eb1）、P03 policy hash 漂移（生产 CAS）、sqlite3.Row 访问。
+- 新计划：`assurance/runs/2026-09-02_remaining-gap-closure/`（task_plan.md 完整实施步骤/findings.md 证据台账/progress.md 进度追踪）。
+- 剩余 10 个 GP 按 4 阶段依赖顺序实施：回归→生产接线→契约回溯→部署动作监督。
