@@ -30,3 +30,9 @@
 ## 变更记录
 
 - 2026-09-02：计划创建；A-1/A-2/A-3 已修复并 push（wiki afe5eb1）。
+
+- **2026-09-02 GP-001 中期**：A 类修复三仓回归。
+  - revenue：945 passed（除 pre-existing manifest 陈旧 1 项：contract filing hash 绑 current_triplet 592fae61，本地 HEAD 已推进——正确提示需 GP-007 刷新 manifest）；ZR-901 8 passed（CRLF 规范化修复后）。
+  - filing：352 passed + 78 subtests（全 hermetic）。
+  - wiki：修复 summarizer.py + section_extractor.py 空 source_sha（SELECT join sources + INSERT 绑定）+ fc906a 测试契约改读 SQL 列；fc906a 4 passed + 相关套件 93 passed。全量重跑中。
+  - 修复 commit：revenue 8943f33（CRLF 测试规范化）；wiki 0eddb35（summarizer/section_extractor/fc906a）。
