@@ -1,38 +1,6 @@
 {
-  "schema_version": 1,
-  "unit": "ZR-105",
   "frozen_at": "2026-08-14T00:00:00+00:00",
-  "triplet": {
-    "revenue": "19cb45aed2807374abf3de783b709f403bf51a27",
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
-  },
-  "workflow_files": {
-    "revenue": {
-      "rel_path": ".github/workflows/quality.yml",
-      "sha256": "fb6e69fcfe2a03bc84d120d630ced7a2942802e872ea22ec86c5c1ff9b92458b",
-      "last_rebind_note": "2026-08-31: quoted name value containing 'FC-1101: ' (YAML scanner fix, CI startup failure)"
-    },
-    "filing": {
-      "rel_path": ".github/workflows/quality.yml",
-      "sha256": "83d84e1ddf2aac39e4bc8617c8a0b444810c2c3483b39ecf6625925269ed725d",
-      "last_rebind_note": "2026-08-31: quoted name values containing 'FC-1101: '/'FC-1202: ' (YAML scanner fix, CI startup failure)"
-    },
-    "wiki": {
-      "rel_path": ".github/workflows/ci.yml",
-      "sha256": "8a4cff64dd3003f47f3884c626bf4ba550e4508e09a8cea004a8c2e4927c1594"
-    }
-  },
   "required_checks": {
-    "exact_triplet_binding": {
-      "description": "每个 gating workflow 必须以机器可验证的方式绑定三仓精确 HEAD（manifest 三元组与冻结 triplet 相等；禁止无 pin 的浮动 clone），不再验证陈旧/浮动组合。",
-      "machine_rules": [
-        "revenue: workflow 必须引用 manifest 驱动的 sibling checkout；manifest 的 current_triplet 必须与冻结 triplet 完全相等",
-        "filing: 不得出现无 pinned-sha 的 git clone（浮动组合）；sibling checkout 必须来自带 sha 的 manifest",
-        "wiki: 必须 checkout 两个 sibling 的精确 HEAD（manifest 或显式 sha）"
-      ],
-      "successor": "CA-201"
-    },
     "affected_repo_fanout": {
       "description": "任一仓变更触发受影响三仓验证（跨仓 fan-out 由 CA-201 调度/attestation 实现；本契约只定义 required checks）。",
       "machine_rules": [
@@ -47,11 +15,43 @@
         "禁止无条件 || true 吞掉必选测试步骤的退出码"
       ],
       "successor": "CA-201"
+    },
+    "exact_triplet_binding": {
+      "description": "每个 gating workflow 必须以机器可验证的方式绑定三仓精确 HEAD（manifest 三元组与冻结 triplet 相等；禁止无 pin 的浮动 clone），不再验证陈旧/浮动组合。",
+      "machine_rules": [
+        "revenue: workflow 必须引用 manifest 驱动的 sibling checkout；manifest 的 current_triplet 必须与冻结 triplet 完全相等",
+        "filing: 不得出现无 pinned-sha 的 git clone（浮动组合）；sibling checkout 必须来自带 sha 的 manifest",
+        "wiki: 必须 checkout 两个 sibling 的精确 HEAD（manifest 或显式 sha）"
+      ],
+      "successor": "CA-201"
     }
   },
+  "schema_version": 1,
   "successors": {
-    "exact_triplet_binding": "CA-201",
     "affected_repo_fanout": "CA-201",
-    "collected_skip_delta_controlled": "CA-201"
+    "collected_skip_delta_controlled": "CA-201",
+    "exact_triplet_binding": "CA-201"
+  },
+  "triplet": {
+    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+    "revenue": "19cb45aed2807374abf3de783b709f403bf51a27",
+    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  },
+  "unit": "ZR-105",
+  "workflow_files": {
+    "filing": {
+      "last_rebind_note": "2026-08-31: quoted name values containing 'FC-1101: '/'FC-1202: ' (YAML scanner fix, CI startup failure)",
+      "rel_path": ".github/workflows/quality.yml",
+      "sha256": "83d84e1ddf2aac39e4bc8617c8a0b444810c2c3483b39ecf6625925269ed725d"
+    },
+    "revenue": {
+      "last_rebind_note": "2026-08-31: quoted name value containing 'FC-1101: ' (YAML scanner fix, CI startup failure)",
+      "rel_path": ".github/workflows/quality.yml",
+      "sha256": "3196594e729a8730cd2612ad58041131ccd17633e266a36b904133c182390114"
+    },
+    "wiki": {
+      "rel_path": ".github/workflows/ci.yml",
+      "sha256": "8a4cff64dd3003f47f3884c626bf4ba550e4508e09a8cea004a8c2e4927c1594"
+    }
   }
 }
