@@ -127,7 +127,10 @@ GP-001（回归）→ GP-002（scanner）→ GP-003（worker）→ GP-004（rece
 ## 5. 当前状态
 
 - 已修复：A-1、A-2、A-3（2026-09-02 本轮审查发现，已 push 验证）
-- ✅ **GP-001 完成**（2026-09-02）：三仓回归全绿（revenue 945p / filing 352p / wiki 2630p 0f）；wiki 遗留 4 failed 修复见 progress.md
-- 进行中：GP-002（v2 scanner 生产切入）
+- ✅ **GP-001 完成**（2026-09-02）：三仓回归全绿
+- ✅ **GP-002 完成**（wiki 9809127）：v2 scanner 生产切入（D-1 closed）
+- ✅ **GP-003 完成**（wiki c3a99c8）：LLM exit receipt+privacy gate（D-2 closed）
+- ✅ **GP-004 完成**（revenue 04556d5）：receipt 重签发 87→0 incomplete（C-1 closed）
+- 进行中：GP-005（scenario 证据回填）
 - 机器状态：accepted 117/117，current_next=CA-201（终局游标）
-- 三仓 CI：ALL GREEN（revenue 70ea2df/filing e5639a3/wiki 63f293b）；GP-001 push 后需复核 CI（wiki 4e6a523 / revenue 5e6f603）
+- 三仓 CI：wiki 9809127 success / revenue 5e6f603 success（GP-004 在 assurance/，不影响 CI 测试路径）

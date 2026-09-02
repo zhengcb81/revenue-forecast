@@ -19,7 +19,7 @@
 | GP-001 | A 类三仓回归验证 | ✅ 完成（wiki 4e6a523） | 三仓全绿：wiki 2630p/0f、revenue 945p、filing 352p |
 | GP-002 | v2 scanner 生产切入 | ✅ 完成（wiki 9809127） | 全量 2638p/0f；gp002 7p；独立复核 PASS（F401+O1 修复复核通过） |
 | GP-003 | worker privacy 过滤 | ✅ 完成（wiki c3a99c8） | 全量 2641p/0f；gp003 5p；独立复核 PASS（F401 修复复核） |
-| GP-004 | receipt 重签发 | 未开始 | — |
+| GP-004 | receipt 重签发 | ✅ 完成（revenue 04556d5） | 87→0 incomplete；41 uc tests passed；closure-report machine_valid:112 |
 | GP-005 | scenario 证据回填 | 未开始 | — |
 | GP-006 | 真实 roots E2E 进 CI | 未开始 | — |
 | GP-007 | privacy_class 3.0 config | 未开始 | — |
@@ -65,3 +65,17 @@
   - 全量回归：2641 passed / 0 failed（1 项 zr409 dayu 真实根指纹差异为环境态——dayu 目录被外部进程并发修改，单测重跑 10 passed 确认非代码回归；zr409 本在 CI ignore 列表）。
   - **GP-003 完成**（commit c3a99c8，已 push master）：独立复核 PASS——RED 真实性（stash 门后 4 failed）、GREEN（6 文件 86p + 全仓 2559p，6 failed 归因既有环境问题）、fail-closed 语义（json_extract NULL 探针实证、空 public 短路 0 LLM 调用）、privacy 优先（gp3_05）；唯一 FAIL=ruff F401（KEY 导入未用）→ 已修：KEY 插值进 SQL JSON 路径 + status 占位符动态化（模块常量，不增复杂度）+ 设计决策注释固化（privacy `!=private_user` 有意保留 legacy 可摘要；TTL/policy_hash 由 readiness evaluate_review 'hit' 逐文档覆盖——docstring 声明）。
   - GP-003 正式 close。生产后果（预期 fail-closed）：122 个 dayu 候选全挡，直至 receipt 产生；GP-007 config 3.0 后 external 根标 private_user → LLM 摘要停摆至策略决定。
+
+- **2026-09-02 GP-004 完成**（C-1 receipt 重签发）：
+  - 审计基线：117 单元中 87 mismatch（reviewed_object_sha256≠11 canonical_hash）+ 5 json error（CA-001..004/101 grandfathered）+ 8 CA-102..109 旧格式（无 schema_version/kind）= 92 问题。
+  - 修复（commit 04556d5，已 push main）：
+    1. **87 单元重签**：reviewed_object_sha256 := 11 canonical_hash + seal（canonical_hash 重算）
+    2. **CA-102..109 升级**：12 旧格式 → 当前 reviewer schema（schema_version=1, kind=reviewer, reviewed=11 canonical, created_at_utc 从 reviewed_at_utc, commands 保留原值）；原文件 → archive/ 备份
+    3. **结构补全**：ZR-703/704 created_at_utc = at_utc；ZR-709/802-805 commands := probes（同 command/exit_code/result 形状）+ resign
+    4. **13_delta 级联**（ZR-902/904/905/906）：reviewed 更新为当前 12 canonical + resign（schema 字符串 '1' 规范化为 int 1）
+    5. **delta 决策整合**（ZR-1001/904）：13_delta accepted 最终决策并入 12（verdict→accepted, findings←13_delta）；13_delta 归档 archive/
+    6. **archive/ 隔离**：87 个 legacy 备份 + 6 个 delta 文件 + ZR-001 drift_ledger.json 移入各单元 archive/ 子目录（glob 非递归不被 classify_unit/receipt_validate 扫描）
+    7. **工具路径更新**：replays/zr001_build_ledger.py + tests/test_zr001_drift_ledger.py 的 LEDGER_PATH → archive/
+  - closure-report 验证：**machine_valid:112, incomplete:0**（原 87）；receipt/validation/revision/closure 测试 41 passed。
+  - 剩余 incomplete 原因（非 C-1）：197 scenarios unsatisfied（GP-005）+ 26 legacy FCs contradicted + 5 legacy closure pending + R9 frozen（均 GP-008/B-1 范围）。
+  - GP-004 正式 close。
