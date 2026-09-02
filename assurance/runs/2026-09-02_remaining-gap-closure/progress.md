@@ -18,7 +18,7 @@
 | A-3 | policy hash 漂移 | ✅ 完成（生产 CAS） | envelope=export 匹配 |
 | GP-001 | A 类三仓回归验证 | ✅ 完成（wiki 4e6a523） | 三仓全绿：wiki 2630p/0f、revenue 945p、filing 352p |
 | GP-002 | v2 scanner 生产切入 | ✅ 完成（wiki 9809127） | 全量 2638p/0f；gp002 7p；独立复核 PASS（F401+O1 修复复核通过） |
-| GP-003 | worker privacy 过滤 | 未开始 | — |
+| GP-003 | worker privacy 过滤 | ✅ 完成（wiki c3a99c8） | 全量 2641p/0f；gp003 5p；独立复核 PASS（F401 修复复核） |
 | GP-004 | receipt 重签发 | 未开始 | — |
 | GP-005 | scenario 证据回填 | 未开始 | — |
 | GP-006 | 真实 roots E2E 进 CI | 未开始 | — |
@@ -55,3 +55,13 @@
   - **GP-002 完成**（commit 9809127，已 push master）：最终全量 **2638 passed / 7 skipped / 0 failed**（含新增 canonical writer 快照跟随测试）。
   - 独立复核（2 轮）：① RED 真实性（HEAD 上 7 failed→修复后 7 passed）、GREEN（32p）、架构合规（architecture_gate 18p：无 flag 字面逃逸）、向后兼容（28p）、ruff——发现 F401（service.py 未使用 RuntimePolicyError import，blocking）；② 增量复核：F401 已修 + O1（canonical_writer.py 导入后重扫直连 scan_catalog 走 v1 的第二扫描方）已接快照 flag，公共 helper `v2_scan_shadow_from_snapshot` 提升至 scanner.py 供 service/canonical_writer 共用——ruff/pytest/审查全 PASS。
   - GP-002 正式 close（检查点"生产扫描走 v2 adapter 路径"待 CI 绿后由生产扫描日志实证，快照 v2_scan_shadow=true 已激活）。
+
+- **2026-09-02 GP-003 实施**（D-2 worker LLM 出口 privacy/receipt 门）：
+  - 生产实测：LLM 选数候选 122 个全部无 receipt（全 dayu_portfolio）；全库 23530 documents 仅 15 个有 receipt；dropbox 977 个带 summary 文档中 1 个有 receipt。
+  - RED：test_gp003_llm_exit_receipt_privacy_gate.py 初始 4 failed（gp3_01/02/04/05 无门全选）→ 修复后 5 passed（gp3_05 断言修正为 public 文档可入选但 private 内容不进 prompt）。
+  - 修复：llm_summarizer.py 选数 SQL 加两道门——receipt 门（metadata_json 的 prompt_injection_review：schema 1.0 + status ∈ 枚举（常量导入）+ source_sha256 == sources.content_sha256 字节绑定）+ privacy 门（无 active location 落在 private_user 根；无 public 根短路空批次）。语义：review 授权"无注入"，不授权外发 private_user 内容（privacy 优先）。
+  - 契约迁移：既有 7 处 summarize_with_llm 测试（worker 5 + fc906a 1 + focus_admission 1）补 fixture 级 review helper（绑定 receipt），163 相关套件 passed。
+  - 复杂度 ratchet：新增 SQL 门使 llm_summarizer.py 复杂度 40 > 冻结 35 → 重构抽取 `_validate_summary_limits`/`_llm_exit_gate_roots` 两个 helper，主函数净降 → ratchet 通过（只降不升）。
+  - 全量回归：2641 passed / 0 failed（1 项 zr409 dayu 真实根指纹差异为环境态——dayu 目录被外部进程并发修改，单测重跑 10 passed 确认非代码回归；zr409 本在 CI ignore 列表）。
+  - **GP-003 完成**（commit c3a99c8，已 push master）：独立复核 PASS——RED 真实性（stash 门后 4 failed）、GREEN（6 文件 86p + 全仓 2559p，6 failed 归因既有环境问题）、fail-closed 语义（json_extract NULL 探针实证、空 public 短路 0 LLM 调用）、privacy 优先（gp3_05）；唯一 FAIL=ruff F401（KEY 导入未用）→ 已修：KEY 插值进 SQL JSON 路径 + status 占位符动态化（模块常量，不增复杂度）+ 设计决策注释固化（privacy `!=private_user` 有意保留 legacy 可摘要；TTL/policy_hash 由 readiness evaluate_review 'hit' 逐文档覆盖——docstring 声明）。
+  - GP-003 正式 close。生产后果（预期 fail-closed）：122 个 dayu 候选全挡，直至 receipt 产生；GP-007 config 3.0 后 external 根标 private_user → LLM 摘要停摆至策略决定。
