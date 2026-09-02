@@ -1,129 +1,129 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "404a2bbbd05cbca6d51851a3b912b069b7c79307",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "404a2bbbd05cbca6d51851a3b912b069b7c79307",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "canonical_hash": "883720dc2d9dccd64cd5da2f933636e5a7353e50d7aa2132cbfce9a3471a68cd",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
+   "exit_code": 0,
+   "result": "HEAD=e541d55 (test ZR-609), parent=404a2bb (close ZR-611). NOTE: unit-card process note claims parent is 288ac88 and that the ZR-611 closure commit did not land separately — FALSE: 404a2bb is a separate closure commit and the direct parent of e541d55; 288ac88 is 404a2bb's parent (ZR-611 implementation). Machine state unaffected (base_triplet.revenue=288ac88 is still the ZR-611 implementation commit)."
   },
-  "canonical_hash": "64fc8fe7900b47fcc54fe06a374611cb36120c2e9e4ea56ceab99ee5138a96ae",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
-      "exit_code": 0,
-      "result": "HEAD=e541d55 (test ZR-609), parent=404a2bb (close ZR-611). NOTE: unit-card process note claims parent is 288ac88 and that the ZR-611 closure commit did not land separately — FALSE: 404a2bb is a separate closure commit and the direct parent of e541d55; 288ac88 is 404a2bb's parent (ZR-611 implementation). Machine state unaffected (base_triplet.revenue=288ac88 is still the ZR-611 implementation commit)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr609_zijin_pilot.py -q --tb=short",
-      "exit_code": 0,
-      "result": "9 passed in 0.15s (9 tests: kamoa chain, julong no-chain, zijinshan byproduct, per-mine scope, second company pure gold, gap honest, zero hardcoding, three-asset hand, second single-mine). Matches card step 2 (9 passed)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr611_synthetic_e2e.py tests/test_zr608_reconciliation.py tests/test_zr607_internal_flow.py tests/test_golden_behavior_lock.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "52 passed in 0.46s — all regression subsets green (ZR-611 E2E, ZR-608 reconciliation, ZR-607 internal flow, golden behavior lock)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check tests/test_zr609_zijin_pilot.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "2 passed in 0.47s — ratchet green."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr609-reviewer\\probe_hand_math.py (independent raw-arithmetic recomputation, no test-module import)",
-      "exit_code": 0,
-      "result": "HAND-MATH: ALL ASSERTIONS OK. kamoa_chain_share=0.396; kamoa_saleable=1045.674; kamoa_gross=10247605.2; kamoa_deductions=358756.272; kamoa_net=71199712.2816; kamoa_contrib=28195086.0635136; julong_saleable=87.78; julong_net=6231729.94; zijinshan_saleable=5559.84; zijinshan_net=3447450.8; three_asset_total=37874266.803513594 == sum_of_contributions; second_saleable=1448.72; second_net=898206.4 == 1448.72*620. All C3 hand values confirmed by raw arithmetic."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr609-reviewer\\probe_nonvacuous.py (instrumented: production modules imported from scripts/, test data literals re-declared)",
-      "exit_code": 0,
-      "result": "PROBE NON-VACUOUS: 25 checks passed. Key: effective_group_share is real multiplication (3-level chain -> 0.198); apply_ownership_share multiplies net*0.396 (attr strictly between 0 and net); byproduct_credit independent of primary price path (changing price leaves additions=350; removing credit zeroes additions, gross unchanged); eliminate_internal_revenue internal_total=50*9000=450000, net==external, gross>net; reconcile_layer closes for (net,net) and discriminates to gap for mismatch; missing grade raises 'grade is required'; gap_report: 1000 vs 1500 -> gap, equal -> reconciled_modeled; derive_saleable_volume scales linearly under perturbation (0.86->0.43 halves output)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr609-reviewer\\probe_hardcoding.py + probe_hardcoding2.py (tokenize-accurate code-token scan of the 5 production modules)",
-      "exit_code": 0,
-      "result": "HARDCODING: OK. Strict names zijin/julong/zhao/bisha/barrick: ZERO occurrences anywhere in asset_ownership.py, mine_year_operation.py, commercial_terms.py, internal_flow.py, reconciliation.py. kamoa/porgera appear ONLY inside string/comment tokens (docstring semantic-guard labels in asset_ownership.py lines 18/174); zero code-token hits. Production code carries zero company/mine hardcoding."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
-      "exit_code": 0,
-      "result": "705 passed, 3 deselected, 106 subtests passed in 148.66s (2 warnings: pre-existing fc1004 thread-decode env noise, unrelated). Matches implementer claim exactly; +9 new tests, no regressions."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-609/11_implementer_receipt.json (CWD assurance\\unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt receipts/ZR-609/11_implementer_receipt.json is canonical and well-formed. Triplet git-object checks pass (revenue/filing/wiki repos)."
-    },
-    {
-      "command": "git cat-file -t 288ac881ad3ced4d77c3aa98eae59957ca38b61a; git cat-file -t e541d556d03605691ab94c81a2dc61cee8c83785; git -C ...\\filing-fetch cat-file -t 5a1c18f5...; git -C ...\\company-wiki cat-file -t 26a6b22f...",
-      "exit_code": 0,
-      "result": "base_triplet.revenue=288ac88 = real commit (ZR-611 implementation, parent of 404a2bb); result_triplet.revenue=e541d55 = real commit == HEAD; filing 5a1c18f = real commit in filing-fetch repo; wiki 26a6b22 = real commit in company-wiki repo (sibling repos, consistent with all prior accepted units)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -X utf8 -c \"...recompute canonical_hash over dict-minus-canonical_hash (sort_keys, ensure_ascii=False)...\"",
-      "exit_code": 0,
-      "result": "stored f314d7d9f5cc14b07bd101ccc53b820934ce74388318d20afc914678c82b737a == recomputed f314d7d9f5cc14b07bd101ccc53b820934ce74388318d20afc914678c82b737a — MATCH."
-    },
-    {
-      "command": "sha256 of assurance/unified_completion/receipts/ZR-609/00_wu_card.md",
-      "exit_code": 0,
-      "result": "1f6523b0701fa048f8434f42a5609340a4d07140a9b547e60c5a7786f1112f97 == receipt plan_sha256 claim. Card acceptance criteria (C1/C2/C3) match the unit card."
-    },
-    {
-      "command": "state.json inspection (ZR-611 / ZR-609 entries, current cursor)",
-      "exit_code": 0,
-      "result": "ZR-611 status=accepted, closure={by reviewer-zr611-independent, next=ZR-609}; ZR-609 status=triplet_green (uncommitted working-tree entry, expected pre-acceptance); current_next=ZR-609; current_phase=F_revenue_mining. Machine state as claimed by card."
-    },
-    {
-      "command": "git diff 288ac88 e541d55 --stat (cross-check of implementer receipt command #7)",
-      "exit_code": 0,
-      "result": "Actual diff = 14 files, +635/-7: 13 closure files from 404a2bb (ZR-611 receipts/red/state/planning) + tests/test_zr609_zijin_pilot.py (+301). Implementer receipt command #7 records '1 文件 +301' — NOT reproducible; the real diff includes the ZR-611 closure commit 404a2bb which DID land separately. e541d55 itself touches only the test file (git diff 404a2bb e541d55 = 1 file, +301)."
-    }
-  ],
-  "created_at_utc": "2026-08-21T22:35:22.127Z",
-  "findings": [
-    {
-      "detail": "The unit card and implementer receipt (note + command #7 result) claim the ZR-611 closure commit 'did not land separately; its closure files were merged into commit e541d55' and that the parent of e541d55 is 288ac88. Verified via git log: 288ac88 (ZR-611 implementation) -> 404a2bb ('close ZR-611: accepted + closure->ZR-609', 13 files: ZR-611 receipts/red/state.json/planning docs) -> e541d55 (ZR-609 test, 1 file +301). This is actually the FIRST occurrence where the closure landed separately (ZR-607/608/611 merged theirs). The substantive machine-state claims are nevertheless correct: state.json has ZR-611 accepted with closure.next=ZR-609, base_triplet.revenue=288ac88 is the ZR-611 implementation commit, and e541d55 == HEAD. No impact on the ZR-609 deliverable.",
-      "id": "REV-001",
-      "severity": "minor",
-      "title": "Process-note factual inaccuracy: the ZR-611 closure commit DID land separately (404a2bb) and is the direct parent of e541d55"
-    },
-    {
-      "detail": "Receipt commands[6] records 'git diff 288ac88 e541d55 --stat' -> '1 文件 +301'. The actual output of that exact command is 14 files, +635 insertions (13 ZR-611 closure files from 404a2bb + the ZR-609 test file). The recorded result does not match what the command produces in this repo. receipt-validate still passes (canonical seal, real triplet objects) and the misstatement does not affect the ZR-609 deliverable or the triplet chain, but the receipt's command log should be treated as partly inaccurate. Recommend correcting the note/result when the closure commit lands.",
-      "id": "REV-002",
-      "severity": "minor",
-      "title": "Implementer receipt command #7 result is not reproducible"
-    },
-    {
-      "detail": "The committed state at HEAD (via 404a2bb) contains the ZR-611 closure; the working tree additionally carries an uncommitted entry adding ZR-609 status=triplet_green, updated_at_utc=2026-08-21T22:29:22Z (same pattern as prior units' pre-acceptance evolution). Expected: the ZR-609 closure commit (which records acceptance + reviewer, and finalizes state) is still to land after this review. I did not modify any tracked file.",
-      "id": "REV-003",
-      "severity": "info",
-      "title": "state.json has an uncommitted working-tree modification (ZR-609 -> triplet_green)"
-    },
-    {
-      "detail": "test_per_mine_answerable_scope validates the kamoa->smelter flow and asserts eliminate_internal_revenue(total,[flow])['net'] == total (internal never double counted). The flow's transfer value (50x9000=450,000) never enters any per-mine contribution, so the assertion holds by the elimination API's design rather than by wiring the internal sale through the contribution path. The accounting-bridge semantics themselves (internal_revenue=volume x transfer_price, gross/external/net bridge, period/scenario filters) are covered in depth by ZR-607's own 29 tests. Adequate for a test-only demo card; noted for completeness.",
-      "id": "REV-004",
-      "severity": "info",
-      "title": "Internal-flow elimination in the pilot is demonstrated compositionally, not end-to-end wired"
-    },
-    {
-      "detail": "tests/test_zr609_zijin_pilot.py contains 9 tests (card step 2 itself says '9 passed'; commit message says '9 tests') — the '8' in the reviewer procedure is a typo. Also, test_zijin_three_asset_hand_computation's final assertion (total == kamoa_net()*0.396 + julong_net() + zijinshan_net()) is structurally identical to the sum of its parts by construction; it is a consistency identity, not an independent check. My independent raw-arithmetic probe (probe_hand_math.py) confirms the actual values stand on their own: three-asset total = 37874266.8035136 == sum of contributions.",
-      "id": "REV-005",
-      "severity": "info",
-      "title": "Card step 6b says '8 tests' but the file contains 9; C3 three-asset assertion is a consistency identity"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "e541d556d03605691ab94c81a2dc61cee8c83785",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr609_zijin_pilot.py -q --tb=short",
+   "exit_code": 0,
+   "result": "9 passed in 0.15s (9 tests: kamoa chain, julong no-chain, zijinshan byproduct, per-mine scope, second company pure gold, gap honest, zero hardcoding, three-asset hand, second single-mine). Matches card step 2 (9 passed)."
   },
-  "reviewed_object_sha256": "845d005559b8a4821432cda96fe6beb6d4d40b33e3603c7e20054bc7751b5c81",
-  "reviewer": "reviewer-zr609-independent",
-  "schema_version": 1,
-  "unit": "ZR-609",
-  "verdict": "accepted"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr611_synthetic_e2e.py tests/test_zr608_reconciliation.py tests/test_zr607_internal_flow.py tests/test_golden_behavior_lock.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "52 passed in 0.46s — all regression subsets green (ZR-611 E2E, ZR-608 reconciliation, ZR-607 internal flow, golden behavior lock)."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check tests/test_zr609_zijin_pilot.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "2 passed in 0.47s — ratchet green."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr609-reviewer\\probe_hand_math.py (independent raw-arithmetic recomputation, no test-module import)",
+   "exit_code": 0,
+   "result": "HAND-MATH: ALL ASSERTIONS OK. kamoa_chain_share=0.396; kamoa_saleable=1045.674; kamoa_gross=10247605.2; kamoa_deductions=358756.272; kamoa_net=71199712.2816; kamoa_contrib=28195086.0635136; julong_saleable=87.78; julong_net=6231729.94; zijinshan_saleable=5559.84; zijinshan_net=3447450.8; three_asset_total=37874266.803513594 == sum_of_contributions; second_saleable=1448.72; second_net=898206.4 == 1448.72*620. All C3 hand values confirmed by raw arithmetic."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr609-reviewer\\probe_nonvacuous.py (instrumented: production modules imported from scripts/, test data literals re-declared)",
+   "exit_code": 0,
+   "result": "PROBE NON-VACUOUS: 25 checks passed. Key: effective_group_share is real multiplication (3-level chain -> 0.198); apply_ownership_share multiplies net*0.396 (attr strictly between 0 and net); byproduct_credit independent of primary price path (changing price leaves additions=350; removing credit zeroes additions, gross unchanged); eliminate_internal_revenue internal_total=50*9000=450000, net==external, gross>net; reconcile_layer closes for (net,net) and discriminates to gap for mismatch; missing grade raises 'grade is required'; gap_report: 1000 vs 1500 -> gap, equal -> reconciled_modeled; derive_saleable_volume scales linearly under perturbation (0.86->0.43 halves output)."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr609-reviewer\\probe_hardcoding.py + probe_hardcoding2.py (tokenize-accurate code-token scan of the 5 production modules)",
+   "exit_code": 0,
+   "result": "HARDCODING: OK. Strict names zijin/julong/zhao/bisha/barrick: ZERO occurrences anywhere in asset_ownership.py, mine_year_operation.py, commercial_terms.py, internal_flow.py, reconciliation.py. kamoa/porgera appear ONLY inside string/comment tokens (docstring semantic-guard labels in asset_ownership.py lines 18/174); zero code-token hits. Production code carries zero company/mine hardcoding."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "705 passed, 3 deselected, 106 subtests passed in 148.66s (2 warnings: pre-existing fc1004 thread-decode env noise, unrelated). Matches implementer claim exactly; +9 new tests, no regressions."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-609/11_implementer_receipt.json (CWD assurance\\unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt receipts/ZR-609/11_implementer_receipt.json is canonical and well-formed. Triplet git-object checks pass (revenue/filing/wiki repos)."
+  },
+  {
+   "command": "git cat-file -t 288ac881ad3ced4d77c3aa98eae59957ca38b61a; git cat-file -t e541d556d03605691ab94c81a2dc61cee8c83785; git -C ...\\filing-fetch cat-file -t 5a1c18f5...; git -C ...\\company-wiki cat-file -t 26a6b22f...",
+   "exit_code": 0,
+   "result": "base_triplet.revenue=288ac88 = real commit (ZR-611 implementation, parent of 404a2bb); result_triplet.revenue=e541d55 = real commit == HEAD; filing 5a1c18f = real commit in filing-fetch repo; wiki 26a6b22 = real commit in company-wiki repo (sibling repos, consistent with all prior accepted units)."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -X utf8 -c \"...recompute canonical_hash over dict-minus-canonical_hash (sort_keys, ensure_ascii=False)...\"",
+   "exit_code": 0,
+   "result": "stored f314d7d9f5cc14b07bd101ccc53b820934ce74388318d20afc914678c82b737a == recomputed f314d7d9f5cc14b07bd101ccc53b820934ce74388318d20afc914678c82b737a — MATCH."
+  },
+  {
+   "command": "sha256 of assurance/unified_completion/receipts/ZR-609/00_wu_card.md",
+   "exit_code": 0,
+   "result": "1f6523b0701fa048f8434f42a5609340a4d07140a9b547e60c5a7786f1112f97 == receipt plan_sha256 claim. Card acceptance criteria (C1/C2/C3) match the unit card."
+  },
+  {
+   "command": "state.json inspection (ZR-611 / ZR-609 entries, current cursor)",
+   "exit_code": 0,
+   "result": "ZR-611 status=accepted, closure={by reviewer-zr611-independent, next=ZR-609}; ZR-609 status=triplet_green (uncommitted working-tree entry, expected pre-acceptance); current_next=ZR-609; current_phase=F_revenue_mining. Machine state as claimed by card."
+  },
+  {
+   "command": "git diff 288ac88 e541d55 --stat (cross-check of implementer receipt command #7)",
+   "exit_code": 0,
+   "result": "Actual diff = 14 files, +635/-7: 13 closure files from 404a2bb (ZR-611 receipts/red/state/planning) + tests/test_zr609_zijin_pilot.py (+301). Implementer receipt command #7 records '1 文件 +301' — NOT reproducible; the real diff includes the ZR-611 closure commit 404a2bb which DID land separately. e541d55 itself touches only the test file (git diff 404a2bb e541d55 = 1 file, +301)."
+  }
+ ],
+ "created_at_utc": "2026-08-21T22:35:22.127Z",
+ "findings": [
+  {
+   "detail": "The unit card and implementer receipt (note + command #7 result) claim the ZR-611 closure commit 'did not land separately; its closure files were merged into commit e541d55' and that the parent of e541d55 is 288ac88. Verified via git log: 288ac88 (ZR-611 implementation) -> 404a2bb ('close ZR-611: accepted + closure->ZR-609', 13 files: ZR-611 receipts/red/state.json/planning docs) -> e541d55 (ZR-609 test, 1 file +301). This is actually the FIRST occurrence where the closure landed separately (ZR-607/608/611 merged theirs). The substantive machine-state claims are nevertheless correct: state.json has ZR-611 accepted with closure.next=ZR-609, base_triplet.revenue=288ac88 is the ZR-611 implementation commit, and e541d55 == HEAD. No impact on the ZR-609 deliverable.",
+   "id": "REV-001",
+   "severity": "minor",
+   "title": "Process-note factual inaccuracy: the ZR-611 closure commit DID land separately (404a2bb) and is the direct parent of e541d55"
+  },
+  {
+   "detail": "Receipt commands[6] records 'git diff 288ac88 e541d55 --stat' -> '1 文件 +301'. The actual output of that exact command is 14 files, +635 insertions (13 ZR-611 closure files from 404a2bb + the ZR-609 test file). The recorded result does not match what the command produces in this repo. receipt-validate still passes (canonical seal, real triplet objects) and the misstatement does not affect the ZR-609 deliverable or the triplet chain, but the receipt's command log should be treated as partly inaccurate. Recommend correcting the note/result when the closure commit lands.",
+   "id": "REV-002",
+   "severity": "minor",
+   "title": "Implementer receipt command #7 result is not reproducible"
+  },
+  {
+   "detail": "The committed state at HEAD (via 404a2bb) contains the ZR-611 closure; the working tree additionally carries an uncommitted entry adding ZR-609 status=triplet_green, updated_at_utc=2026-08-21T22:29:22Z (same pattern as prior units' pre-acceptance evolution). Expected: the ZR-609 closure commit (which records acceptance + reviewer, and finalizes state) is still to land after this review. I did not modify any tracked file.",
+   "id": "REV-003",
+   "severity": "info",
+   "title": "state.json has an uncommitted working-tree modification (ZR-609 -> triplet_green)"
+  },
+  {
+   "detail": "test_per_mine_answerable_scope validates the kamoa->smelter flow and asserts eliminate_internal_revenue(total,[flow])['net'] == total (internal never double counted). The flow's transfer value (50x9000=450,000) never enters any per-mine contribution, so the assertion holds by the elimination API's design rather than by wiring the internal sale through the contribution path. The accounting-bridge semantics themselves (internal_revenue=volume x transfer_price, gross/external/net bridge, period/scenario filters) are covered in depth by ZR-607's own 29 tests. Adequate for a test-only demo card; noted for completeness.",
+   "id": "REV-004",
+   "severity": "info",
+   "title": "Internal-flow elimination in the pilot is demonstrated compositionally, not end-to-end wired"
+  },
+  {
+   "detail": "tests/test_zr609_zijin_pilot.py contains 9 tests (card step 2 itself says '9 passed'; commit message says '9 tests') — the '8' in the reviewer procedure is a typo. Also, test_zijin_three_asset_hand_computation's final assertion (total == kamoa_net()*0.396 + julong_net() + zijinshan_net()) is structurally identical to the sum of its parts by construction; it is a consistency identity, not an independent check. My independent raw-arithmetic probe (probe_hand_math.py) confirms the actual values stand on their own: three-asset total = 37874266.8035136 == sum of contributions.",
+   "id": "REV-005",
+   "severity": "info",
+   "title": "Card step 6b says '8 tests' but the file contains 9; C3 three-asset assertion is a consistency identity"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "e541d556d03605691ab94c81a2dc61cee8c83785",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "ee6dd908d4ac667107a9843f36e4f17bfffb4469dc58c3170b406d057e3c5000",
+ "reviewer": "reviewer-zr609-independent",
+ "schema_version": 1,
+ "unit": "ZR-609",
+ "verdict": "accepted"
 }

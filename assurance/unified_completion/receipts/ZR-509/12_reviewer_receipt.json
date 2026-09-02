@@ -1,68 +1,68 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "b7f4efa1febc26d788d8f2b00205600d493a291d",
-    "wiki": "8e2bf3fbc3ea1009df82e3546dfffecfd9a50101"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "b7f4efa1febc26d788d8f2b00205600d493a291d",
+  "wiki": "8e2bf3fbc3ea1009df82e3546dfffecfd9a50101"
+ },
+ "canonical_hash": "71fc2532c0d59880dcb1e864d7c1afad3183cbf8a32748d8397b771fef6ac247",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3 && git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff 8e2bf3f ea9c49b --stat && git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --short",
+   "exit_code": 0,
+   "result": "HEAD = ea9c49b 'feat(ZR-509): official HTML capture identity gate ... 12 tests'; diff 8e2bf3f..ea9c49b = exactly 2 files, +292 (html_capture.py +143, test_zr509_html_capture.py +149); status --short shows only the allowed unrelated dirt."
   },
-  "canonical_hash": "18e226be452a290629b61218b3b646805db84bb402b04d4796785a3e7b3b6cd3",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3 && git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff 8e2bf3f ea9c49b --stat && git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --short",
-      "exit_code": 0,
-      "result": "HEAD = ea9c49b 'feat(ZR-509): official HTML capture identity gate ... 12 tests'; diff 8e2bf3f..ea9c49b = exactly 2 files, +292 (html_capture.py +143, test_zr509_html_capture.py +149); status --short shows only the allowed unrelated dirt."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr509_html_capture.py -q --tb=short",
-      "exit_code": 0,
-      "result": "12 passed in 0.34s (Python 3.14.2, pytest 9.1.1); test file contains exactly 12 tests (C1 x4, C2 x5, C3 x1, C4 x2)."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr508_scheduler.py tests/contract/test_zr507_processing_demand.py tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
-      "exit_code": 0,
-      "result": "140 passed in 1.67s, exit 0 (collected 140 from the 11 listed files). Work unit stated 'expect 151 passed'; actual collection 140, all green, no regressions."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/html_capture.py tests/contract/test_zr509_html_capture.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe %TEMP%\\zr509_adversarial_review.py (throwaway script, sys.path -> src; 31 assertions)",
-      "exit_code": 0,
-      "result": "ALL ADVERSARIAL SPOT-CHECKS PASSED: (a) announcement HTML title exact, entity list contains 紫金 phrase, period 2026-04-30, validate(declared=紫金矿业集团股份有限公司)=ok; (b) entity-less page -> entities==[] -> validate=no_entity (fail-closed); (c) no title/h1 -> missing_title; 陕西煤业 page vs declared 紫金 -> entity_mismatch; no declared -> ok; (d) ISO 2025-03-01 -> period 2025-03-01; bare year -> 2026; (e) outputs json.dumps-able across 5 shapes, parse twice equal, validate twice equal; (f) zero hardcoded names in implementation. Extra probes: whitespace-collapse + nested-tag stripping, first-seen dedup, short declared name containment, uppercase TITLE, invalid ISO month -> period None (range-checked), None input."
-    }
-  ],
-  "created_at_utc": "2026-08-19T20:41:10+00:00",
-  "findings": [
-    {
-      "detail": "Executed exactly the 11-file regression command specified in the work unit. pytest collected 140 items (11+14+14+11+10+13+11+10+3+41+2) and all 140 passed with exit 0. The 'expect 151 passed' figure in the acceptance sheet is a miscount or includes files outside the given command; no failure and no regression were observed. Not a defect in the implementation.",
-      "id": "ZR509-REV-001",
-      "severity": "info",
-      "title": "Regression run collected 140 tests, not the 151 stated in the work unit"
-    },
-    {
-      "detail": "validate_html_capture implements the required period-shape check re.fullmatch(r'\\d{4}(-\\d{2}-\\d{2})?', ...) -> invalid_period, but parse_html_identity only ever emits None, 'YYYY' or 'YYYY-MM-DD' (invalid months/days are range-rejected and yield no period, e.g. '2025-13-01' -> None). invalid_period can therefore only fire if a caller mutates the identity dict. This is a defensive check as specified in C2; matches the acceptance criteria and is not a defect.",
-      "id": "ZR509-REV-002",
-      "severity": "info",
-      "title": "invalid_period verdict is unreachable from parse_html_identity output alone"
-    },
-    {
-      "detail": "_extract_period searches the CN 'YYYY年M月D日' pattern before the ISO 'YYYY-MM-DD' pattern regardless of text position, so a page containing both returns the CN-formatted date. The acceptance criterion does not define cross-format precedence; the implementation docstring says 'first CN/ISO date'. Behavior is deterministic and consistent; not a violation of C1.",
-      "id": "ZR509-REV-003",
-      "severity": "info",
-      "title": "CN date takes precedence over ISO date when both appear on a page"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-509 independent review",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "b7f4efa1febc26d788d8f2b00205600d493a291d",
-    "wiki": "ea9c49b6a7e0cafed6e923d0df5cc580b8492e96"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr509_html_capture.py -q --tb=short",
+   "exit_code": 0,
+   "result": "12 passed in 0.34s (Python 3.14.2, pytest 9.1.1); test file contains exactly 12 tests (C1 x4, C2 x5, C3 x1, C4 x2)."
   },
-  "reviewed_object_sha256": "8283b14e43706a08ff988d7a7ea15db22973ce15f03026e9aed7a83c44abfa62",
-  "reviewer": "reviewer-zr509-independent",
-  "schema_version": 1,
-  "unit": "ZR-509",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr508_scheduler.py tests/contract/test_zr507_processing_demand.py tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
+   "exit_code": 0,
+   "result": "140 passed in 1.67s, exit 0 (collected 140 from the 11 listed files). Work unit stated 'expect 151 passed'; actual collection 140, all green, no regressions."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/html_capture.py tests/contract/test_zr509_html_capture.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe %TEMP%\\zr509_adversarial_review.py (throwaway script, sys.path -> src; 31 assertions)",
+   "exit_code": 0,
+   "result": "ALL ADVERSARIAL SPOT-CHECKS PASSED: (a) announcement HTML title exact, entity list contains 紫金 phrase, period 2026-04-30, validate(declared=紫金矿业集团股份有限公司)=ok; (b) entity-less page -> entities==[] -> validate=no_entity (fail-closed); (c) no title/h1 -> missing_title; 陕西煤业 page vs declared 紫金 -> entity_mismatch; no declared -> ok; (d) ISO 2025-03-01 -> period 2025-03-01; bare year -> 2026; (e) outputs json.dumps-able across 5 shapes, parse twice equal, validate twice equal; (f) zero hardcoded names in implementation. Extra probes: whitespace-collapse + nested-tag stripping, first-seen dedup, short declared name containment, uppercase TITLE, invalid ISO month -> period None (range-checked), None input."
+  }
+ ],
+ "created_at_utc": "2026-08-19T20:41:10+00:00",
+ "findings": [
+  {
+   "detail": "Executed exactly the 11-file regression command specified in the work unit. pytest collected 140 items (11+14+14+11+10+13+11+10+3+41+2) and all 140 passed with exit 0. The 'expect 151 passed' figure in the acceptance sheet is a miscount or includes files outside the given command; no failure and no regression were observed. Not a defect in the implementation.",
+   "id": "ZR509-REV-001",
+   "severity": "info",
+   "title": "Regression run collected 140 tests, not the 151 stated in the work unit"
+  },
+  {
+   "detail": "validate_html_capture implements the required period-shape check re.fullmatch(r'\\d{4}(-\\d{2}-\\d{2})?', ...) -> invalid_period, but parse_html_identity only ever emits None, 'YYYY' or 'YYYY-MM-DD' (invalid months/days are range-rejected and yield no period, e.g. '2025-13-01' -> None). invalid_period can therefore only fire if a caller mutates the identity dict. This is a defensive check as specified in C2; matches the acceptance criteria and is not a defect.",
+   "id": "ZR509-REV-002",
+   "severity": "info",
+   "title": "invalid_period verdict is unreachable from parse_html_identity output alone"
+  },
+  {
+   "detail": "_extract_period searches the CN 'YYYY年M月D日' pattern before the ISO 'YYYY-MM-DD' pattern regardless of text position, so a page containing both returns the CN-formatted date. The acceptance criterion does not define cross-format precedence; the implementation docstring says 'first CN/ISO date'. Behavior is deterministic and consistent; not a violation of C1.",
+   "id": "ZR509-REV-003",
+   "severity": "info",
+   "title": "CN date takes precedence over ISO date when both appear on a page"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-509 independent review",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "b7f4efa1febc26d788d8f2b00205600d493a291d",
+  "wiki": "ea9c49b6a7e0cafed6e923d0df5cc580b8492e96"
+ },
+ "reviewed_object_sha256": "21d5335f8e0607b991ff67569199cccb9ded9e59d48dd33b9292da517fe87453",
+ "reviewer": "reviewer-zr509-independent",
+ "schema_version": 1,
+ "unit": "ZR-509",
+ "verdict": "accepted"
 }

@@ -1,118 +1,118 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "75d866fbb7685caba1979dbc31d00cc1ba8fa614",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "75d866fbb7685caba1979dbc31d00cc1ba8fa614",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "canonical_hash": "e578cb4d47e15d963ca5bf08649f72d930c8dbcf7853cdd45b1a0d5aa29831c1",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
+   "exit_code": 0,
+   "result": "HEAD = a9405f8 (ZR-708 already_satisfied reverification), parent = 75d866f (ZR-707 closure); matches card"
   },
-  "canonical_hash": "091532f05f506ebd009e3659af13877fd4ca4d88330248a8d3f4c8f2a2c87523",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
-      "exit_code": 0,
-      "result": "HEAD = a9405f8 (ZR-708 already_satisfied reverification), parent = 75d866f (ZR-707 closure); matches card"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff 75d866f a9405f8 --stat",
-      "exit_code": 0,
-      "result": "1 file changed, 123 insertions: tests/test_zr708_backtest_reverify.py only; zero production changes (already_satisfied)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr708_backtest_reverify.py -q --tb=short",
-      "exit_code": 0,
-      "result": "7 passed in 0.58s (C1 x3, C2 x2, C3 x2)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_backtest.py tests/test_zr707_mixed_recognition.py tests/test_golden_behavior_lock.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "31 passed in 1.46s"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check tests/test_zr708_backtest_reverify.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
-      "exit_code": 0,
-      "result": "Ran 2 tests in 0.292s OK (exit code 0)"
-    },
-    {
-      "command": "probe_a: snapshot determinism (create twice identical), immutability (write_new_json overwrite refused FileExistsError), tamper-evidence (forecast_result 2026->9999 'mismatch'; input_document/input_sha256/snapshot_id tamper rejected)",
-      "exit_code": 0,
-      "result": "6/6 PASS"
-    },
-    {
-      "command": "probe_b: evaluate_snapshot accuracy_record -> run_forecast -> confidence.historical_accuracy (wape == summary.wape, observations match, component > 0, score uplift); tampered wape / record_sha256 / backtest_id rejected",
-      "exit_code": 0,
-      "result": "4/4 PASS (tampered wape rejected with 'hash mismatch')"
-    },
-    {
-      "command": "probe_c: future-dated actuals — company 2029 and segment 2028 -> 'outside forecast horizon' via evaluate_snapshot; unknown segment rejected",
-      "exit_code": 0,
-      "result": "3/3 PASS"
-    },
-    {
-      "command": "probe_d: four-layer hash linkage — record_sha256 is [0-9a-f]{64} and recomputes from payload; backtest_id == sha256({snapshot_id, actuals_sha256}); snapshot_id recomputes from identity block; evaluation_sha256 recomputes and is embedded in record; validate_snapshot roundtrip clean",
-      "exit_code": 0,
-      "result": "4/4 PASS (initial recompute mismatch was a probe artifact — accuracy_record is attached after evaluation_sha256 is computed; corrected recompute passes)"
-    },
-    {
-      "command": "zero hardcoding grep: 紫金|Zijin|Copper|copper|molybdenum|CMOC|洛阳|Tongling|Yunnan|Jiangxi|Mining|mining + [^\\x00-\\x7F] on tests/test_zr708_backtest_reverify.py",
-      "exit_code": 0,
-      "result": "no company/mine names, no Chinese characters; only 4 non-ASCII chars are docstring '->' arrows (U+2192); fixture ids are generic ('Test Co', 'actual_filing' come from shared fixtures)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
-      "exit_code": 0,
-      "result": "740 passed, 3 deselected, 2 warnings, 106 subtests passed in 143.76s — matches implementer claim exactly"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-708/11_implementer_receipt.json (CWD assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt receipts/ZR-708/11_implementer_receipt.json is canonical and well-formed"
-    },
-    {
-      "command": "git cat-file triplet members: 75d866fbb7685caba1979dbc31d00cc1ba8fa614 (revenue base) = commit; a9405f89445d7130a6e24db8fe4caf7e6aeaa5f9 (revenue result) = commit == HEAD; 5a1c18f5171db0e4b9113138ea360db361e1e435 (filing) = commit in company-wiki; 26a6b22f80ae964892d3f3f44fab364e65276583 (wiki) = commit in company-wiki",
-      "exit_code": 0,
-      "result": "all triplet members resolve as real git objects; result_triplet.revenue == HEAD"
-    }
-  ],
-  "created_at_utc": "2026-08-22T10:52:11Z",
-  "findings": [
-    {
-      "detail": "Independent probe initially reported 'evaluation_sha256 recompute mismatch'. Root cause: evaluate_snapshot computes evaluation_sha256 BEFORE attaching accuracy_record, so the recompute must exclude both keys. Corrected recompute passes; the real cross-layer linkage (accuracy_record.evaluation_sha256 == evaluation.evaluation_sha256) holds.",
-      "id": "REV-001",
-      "severity": "info",
-      "title": "Probe artifact in initial evaluation_sha256 recompute, not an implementation defect"
-    },
-    {
-      "detail": "Full suite: 740 passed, 3 deselected, 106 subtests passed, exit 0. Warnings include a PytestUnhandledThreadExceptionWarning about a subprocess UnicodeDecodeError in another test (pre-existing, unrelated to the ZR-708 file which spawns no subprocess). Not a failure.",
-      "id": "REV-002",
-      "severity": "info",
-      "title": "Full suite emits 2 warnings but exits 0"
-    },
-    {
-      "detail": "assurance/unified_completion/state.json has an uncommitted ZR-708 entry (implementer zr708-implementer, status triplet_green, updated 2026-08-22T10:47:49Z) — the implementer's own cursor update, present before this review started and not part of commit a9405f8. Reviewer wrote only under %TEMP%\\zr708-reviewer and modified no tracked files.",
-      "id": "REV-003",
-      "severity": "info",
-      "title": "Working-tree state.json cursor update predates review; commit itself is clean"
-    },
-    {
-      "detail": "Commit a9405f8 adds exactly one file (tests/test_zr708_backtest_reverify.py, 123 lines, 7 tests). Every acceptance criterion reverified independently: C1 determinism/immutability/tamper-evidence, C2 accuracy_record consumption into confidence.historical_accuracy (wape matches, component > 0, tampered records rejected), C3 future-dated actuals rejected and four-layer hash linkage (record_sha256 64-hex, backtest_id linkage) all pass. Quality gates: full suite green, ruff clean, ratchet green.",
-      "id": "REV-004",
-      "severity": "info",
-      "title": "already_satisfied card confirmed: zero production changes, contracts hold on current triplet"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "a9405f89445d7130a6e24db8fe4caf7e6aeaa5f9",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff 75d866f a9405f8 --stat",
+   "exit_code": 0,
+   "result": "1 file changed, 123 insertions: tests/test_zr708_backtest_reverify.py only; zero production changes (already_satisfied)"
   },
-  "reviewed_object_sha256": "4580bb7273044fc5e0d966f2033dc1ac11ecb6dba1e2888297e855e351da35b8",
-  "reviewer": "reviewer-zr708-independent",
-  "schema_version": 1,
-  "unit": "ZR-708",
-  "verdict": "accepted"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr708_backtest_reverify.py -q --tb=short",
+   "exit_code": 0,
+   "result": "7 passed in 0.58s (C1 x3, C2 x2, C3 x2)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_backtest.py tests/test_zr707_mixed_recognition.py tests/test_golden_behavior_lock.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "31 passed in 1.46s"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check tests/test_zr708_backtest_reverify.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+   "exit_code": 0,
+   "result": "Ran 2 tests in 0.292s OK (exit code 0)"
+  },
+  {
+   "command": "probe_a: snapshot determinism (create twice identical), immutability (write_new_json overwrite refused FileExistsError), tamper-evidence (forecast_result 2026->9999 'mismatch'; input_document/input_sha256/snapshot_id tamper rejected)",
+   "exit_code": 0,
+   "result": "6/6 PASS"
+  },
+  {
+   "command": "probe_b: evaluate_snapshot accuracy_record -> run_forecast -> confidence.historical_accuracy (wape == summary.wape, observations match, component > 0, score uplift); tampered wape / record_sha256 / backtest_id rejected",
+   "exit_code": 0,
+   "result": "4/4 PASS (tampered wape rejected with 'hash mismatch')"
+  },
+  {
+   "command": "probe_c: future-dated actuals — company 2029 and segment 2028 -> 'outside forecast horizon' via evaluate_snapshot; unknown segment rejected",
+   "exit_code": 0,
+   "result": "3/3 PASS"
+  },
+  {
+   "command": "probe_d: four-layer hash linkage — record_sha256 is [0-9a-f]{64} and recomputes from payload; backtest_id == sha256({snapshot_id, actuals_sha256}); snapshot_id recomputes from identity block; evaluation_sha256 recomputes and is embedded in record; validate_snapshot roundtrip clean",
+   "exit_code": 0,
+   "result": "4/4 PASS (initial recompute mismatch was a probe artifact — accuracy_record is attached after evaluation_sha256 is computed; corrected recompute passes)"
+  },
+  {
+   "command": "zero hardcoding grep: 紫金|Zijin|Copper|copper|molybdenum|CMOC|洛阳|Tongling|Yunnan|Jiangxi|Mining|mining + [^\\x00-\\x7F] on tests/test_zr708_backtest_reverify.py",
+   "exit_code": 0,
+   "result": "no company/mine names, no Chinese characters; only 4 non-ASCII chars are docstring '->' arrows (U+2192); fixture ids are generic ('Test Co', 'actual_filing' come from shared fixtures)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+   "exit_code": 0,
+   "result": "740 passed, 3 deselected, 2 warnings, 106 subtests passed in 143.76s — matches implementer claim exactly"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-708/11_implementer_receipt.json (CWD assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt receipts/ZR-708/11_implementer_receipt.json is canonical and well-formed"
+  },
+  {
+   "command": "git cat-file triplet members: 75d866fbb7685caba1979dbc31d00cc1ba8fa614 (revenue base) = commit; a9405f89445d7130a6e24db8fe4caf7e6aeaa5f9 (revenue result) = commit == HEAD; 5a1c18f5171db0e4b9113138ea360db361e1e435 (filing) = commit in company-wiki; 26a6b22f80ae964892d3f3f44fab364e65276583 (wiki) = commit in company-wiki",
+   "exit_code": 0,
+   "result": "all triplet members resolve as real git objects; result_triplet.revenue == HEAD"
+  }
+ ],
+ "created_at_utc": "2026-08-22T10:52:11Z",
+ "findings": [
+  {
+   "detail": "Independent probe initially reported 'evaluation_sha256 recompute mismatch'. Root cause: evaluate_snapshot computes evaluation_sha256 BEFORE attaching accuracy_record, so the recompute must exclude both keys. Corrected recompute passes; the real cross-layer linkage (accuracy_record.evaluation_sha256 == evaluation.evaluation_sha256) holds.",
+   "id": "REV-001",
+   "severity": "info",
+   "title": "Probe artifact in initial evaluation_sha256 recompute, not an implementation defect"
+  },
+  {
+   "detail": "Full suite: 740 passed, 3 deselected, 106 subtests passed, exit 0. Warnings include a PytestUnhandledThreadExceptionWarning about a subprocess UnicodeDecodeError in another test (pre-existing, unrelated to the ZR-708 file which spawns no subprocess). Not a failure.",
+   "id": "REV-002",
+   "severity": "info",
+   "title": "Full suite emits 2 warnings but exits 0"
+  },
+  {
+   "detail": "assurance/unified_completion/state.json has an uncommitted ZR-708 entry (implementer zr708-implementer, status triplet_green, updated 2026-08-22T10:47:49Z) — the implementer's own cursor update, present before this review started and not part of commit a9405f8. Reviewer wrote only under %TEMP%\\zr708-reviewer and modified no tracked files.",
+   "id": "REV-003",
+   "severity": "info",
+   "title": "Working-tree state.json cursor update predates review; commit itself is clean"
+  },
+  {
+   "detail": "Commit a9405f8 adds exactly one file (tests/test_zr708_backtest_reverify.py, 123 lines, 7 tests). Every acceptance criterion reverified independently: C1 determinism/immutability/tamper-evidence, C2 accuracy_record consumption into confidence.historical_accuracy (wape matches, component > 0, tampered records rejected), C3 future-dated actuals rejected and four-layer hash linkage (record_sha256 64-hex, backtest_id linkage) all pass. Quality gates: full suite green, ruff clean, ratchet green.",
+   "id": "REV-004",
+   "severity": "info",
+   "title": "already_satisfied card confirmed: zero production changes, contracts hold on current triplet"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "a9405f89445d7130a6e24db8fe4caf7e6aeaa5f9",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "a9f5b35608efb7fae68896cbe588ba197db565a2649a4cd0a68be5e16e72c059",
+ "reviewer": "reviewer-zr708-independent",
+ "schema_version": 1,
+ "unit": "ZR-708",
+ "verdict": "accepted"
 }

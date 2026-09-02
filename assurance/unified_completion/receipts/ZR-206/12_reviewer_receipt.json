@@ -1,119 +1,119 @@
 {
-  "schema_version": 1,
-  "unit": "ZR-206",
-  "kind": "reviewer",
-  "reviewer": "reviewer-zr206-independent",
-  "verdict": "accepted",
-  "note": "ZR-206 independent review",
-  "created_at_utc": "2026-08-17T19:10:07+00:00",
-  "base_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "679fc33b4427aa960740713078ecbb778e1ea853",
-    "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
+ "schema_version": 1,
+ "unit": "ZR-206",
+ "kind": "reviewer",
+ "reviewer": "reviewer-zr206-independent",
+ "verdict": "accepted",
+ "note": "ZR-206 independent review",
+ "created_at_utc": "2026-08-17T19:10:07+00:00",
+ "base_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "679fc33b4427aa960740713078ecbb778e1ea853",
+  "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
+ },
+ "result_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "679fc33b4427aa960740713078ecbb778e1ea853",
+  "wiki": "3ea00396e8aa75b32859e87021204e2824bf4455"
+ },
+ "reviewed_object_sha256": "01324f161bc1e145a5516a0b93c03ee33f2e70d43026c19fa61a5ae9d8398e95",
+ "commands": [
+  {
+   "command": "git -C company-wiki rev-parse HEAD; git -C company-wiki rev-parse 3ea0039^; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
+   "exit_code": 0,
+   "result": "wiki HEAD=3ea00396e8aa75b32859e87021204e2824bf4455; 3ea0039^=ad5402693ca9624c9d20690638df3af8b7db0d5d; filing HEAD=0e5d209bc352c6087fab51d09d55aa33aea81f85; revenue HEAD=679fc33b4427aa960740713078ecbb778e1ea853 — all match claimed result/base triplet"
   },
-  "result_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "679fc33b4427aa960740713078ecbb778e1ea853",
-    "wiki": "3ea00396e8aa75b32859e87021204e2824bf4455"
+  {
+   "command": "git -C company-wiki show --stat 3ea0039; git -C company-wiki status --porcelain",
+   "exit_code": 0,
+   "result": "commit 3ea0039 touches exactly tests/contract/test_zr206_live_writer.py (196) + tests/contract/test_zr206_slo_49gb.py (245), 441 insertions, 0 deletions; dirty files only llm_cost_log.csv + .claude/settings.local.json (known env files, untouched)"
   },
-  "reviewed_object_sha256": "bc647e5f7ce3a67a29e82bd55548d9f9c0358a818dc6e13f714eb360b3ff463a",
-  "commands": [
-    {
-      "command": "git -C company-wiki rev-parse HEAD; git -C company-wiki rev-parse 3ea0039^; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
-      "exit_code": 0,
-      "result": "wiki HEAD=3ea00396e8aa75b32859e87021204e2824bf4455; 3ea0039^=ad5402693ca9624c9d20690638df3af8b7db0d5d; filing HEAD=0e5d209bc352c6087fab51d09d55aa33aea81f85; revenue HEAD=679fc33b4427aa960740713078ecbb778e1ea853 — all match claimed result/base triplet"
-    },
-    {
-      "command": "git -C company-wiki show --stat 3ea0039; git -C company-wiki status --porcelain",
-      "exit_code": 0,
-      "result": "commit 3ea0039 touches exactly tests/contract/test_zr206_live_writer.py (196) + tests/contract/test_zr206_slo_49gb.py (245), 441 insertions, 0 deletions; dirty files only llm_cost_log.csv + .claude/settings.local.json (known env files, untouched)"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr206_live_writer.py tests/contract/test_zr206_slo_49gb.py -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "8 passed in 81.39s — hermetic live-writer (long-txn bounded, no BEGIN IMMEDIATE steal, reader no write txn, contention fail-closed, 50-concurrent no deadlock/mixing) + 49GB-SLO (covering-index EXPLAIN, typed queries within scaled frozen doors, memory <256MB, zero-write fingerprint twin) all green"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr203_reader_rewire.py -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "8 passed in 1.48s — READ-12 mutation gate test_read_entrypoints_never_construct_catalog_store green (reader entrypoints never construct CatalogStore)"
-    },
-    {
-      "command": "python -m uc.cli state-show (assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "units.ZR-206.status=independent_review; current_next=ZR-206; current_phase=C_read_only_and_contracts; ZR-206 updated_at 2026-08-17T19:07:42Z"
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-206/11_implementer_receipt.json (assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt canonical and well-formed; independent recompute of canonical_hash = 01324f161bc1e145a5516a0b93c03ee33f2e70d43026c19fa61a5ae9d8398e95 matches claimed value"
-    },
-    {
-      "command": "python -c \"hashlib.sha256(open(r'C:\\Users\\郑曾波\\Projects\\company-wiki\\tests\\contract\\test_zr206_slo_49gb.py','rb').read()).hexdigest()\"",
-      "exit_code": 0,
-      "result": "bc647e5f7ce3a67a29e82bd55548d9f9c0358a818dc6e13f714eb360b3ff463a (reviewed_object_sha256 of test_zr206_slo_49gb.py at HEAD)"
-    },
-    {
-      "command": "grep REAL_P95_GATES_MS / MEMORY_GATE_MB / SYNTHETIC_SPANS in tests/contract/test_zr206_slo_49gb.py vs card '冻结 SLO 数字' table",
-      "exit_code": 0,
-      "result": "exact match: status/health 12000ms; scan_health/query/entities_like/document/source_sha/artifacts_for/resolve_handle 50ms; location_counts 250ms; MEMORY_GATE_MB=256; SYNTHETIC_SPANS=1_000_000 (1M-span catalog)"
-    },
-    {
-      "command": "grep 'CatalogStore|store|scan|migration|read_bytes|download|INSERT|UPDATE|DELETE' in assurance/unified_completion/t2/zr206_t2_probe.py",
-      "exit_code": 0,
-      "result": "probe imports ONLY ReadOnlyCatalogReader; matches are a docstring ('touches no store/scan/migration') and the scan_health gate name; streaming SHA-256 in 1MiB chunks (_file_sha256), no read_bytes on the DB; drift classification: DB/WAL/SHM sha256+size byte identity is the hard zero-write gate (catalog_ok), worker-owned prefixes recorded-not-failing, shm mtime-only touch classified as protocol behavior (shm_mtime_only_protocol_touch)"
-    },
-    {
-      "command": "read assurance/unified_completion/t2/evidence/zr206_t2_probe.json",
-      "exit_code": 0,
-      "result": "ok=true; catalog_zero_write_ok=true; catalog_byte_drift={}; catalog_added_removed=[]; gate_breaches={}; shm_mtime_only_protocol_touch=true; peak_python_mb=0.03<=256; index_assertions_ok=true; fingerprint_identical=false exactly consistent with fingerprint_diff={changed:{catalog.sqlite3-shm:[mtime]}}; db_size_bytes=49,624,113,152 (~49.62GB); evidence_spans=27,178,657 matches card; all p95 within gates (status 5755.1, health 6148.0 <=12000; others <=15.0ms)"
-    },
-    {
-      "command": "git -C revenue-forecast status --porcelain; git -C revenue-forecast diff --cached --stat; git -C revenue-forecast diff --cached -- assurance/unified_completion/state.json",
-      "exit_code": 0,
-      "result": "revenue-side staged changes exactly = receipts/ZR-206/00_wu_card.md + 11_implementer_receipt.json, t2/zr206_t2_probe.py, t2/evidence/zr206_t2_probe.json, state.json (adds ZR-206 unit status=independent_review + updated_at bump only, no triplet tampering) — matches implementer touched_files claim"
-    },
-    {
-      "command": "read .source_catalog/worker_state.json + .source_catalog listing (read-only)",
-      "exit_code": 0,
-      "result": "worker_state.json shows last_cycle_status=completed and pending fingerprints 1580 (matches implementer note); evidence worker_owned_drift={} and other_drift={} are internally consistent with a paused worker during the probe window; worker restored (state file present, cycle completed)"
-    }
-  ],
-  "findings": [
-    "PASS: HEAD verification — wiki HEAD=3ea0039 with parent=ad5402693 (base triplet), filing HEAD=0e5d209, revenue HEAD=679fc33; result triplet exactly as claimed.",
-    "PASS: Commit scope — 3ea0039 touches exactly the 2 contract test files (441 insertions); no product code (reader/lock/schema untouched); dirty wiki files limited to known env files llm_cost_log.csv/.claude/settings.local.json.",
-    "PASS: Hermetic ZR-206 suite re-run by reviewer — 8 passed (81.39s), exit 0; matches implementer claim of 8 passed.",
-    "PASS: Frozen SLO gates — test constants REAL_P95_GATES_MS/MEMORY_GATE_MB/SYNTHETIC_SPANS match the card's 冻结 SLO 数字 table exactly (status/health 12000, scan_health/query/entities_like/document/source_sha/artifacts_for/resolve_handle 50, location_counts 250; memory 256MB; 1M spans).",
-    "PASS: T2 probe isolation — opens ReadOnlyCatalogReader only; no CatalogStore/store/scan/migration/write-SQL usage; streaming SHA-256 fingerprint (no read_bytes on the 49GB DB); hard zero-write gate is DB/WAL/SHM byte identity (sha256+size); worker-owned prefixes recorded-not-failing; shm mtime-only touch classified as protocol behavior.",
-    "PASS: T2 evidence JSON — ok=true, catalog_zero_write_ok=true, catalog_byte_drift={}, gate_breaches={}, shm_mtime_only_protocol_touch=true, peak_python_mb=0.03<=256, index_assertions_ok=true; internally consistent (fingerprint_identical=false iff shm mtime-only; db size/spans match card; all p95 under gates).",
-    "PASS: Machine state — units.ZR-206.status=independent_review, current_next=ZR-206.",
-    "PASS: Receipt validation — uc.cli receipt-validate OK canonical; independent recomputation of the canonical_hash (sorted keys, ensure_ascii=False, UTF-8) equals 01324f161bc1e145a5516a0b93c03ee33f2e70d43026c19fa61a5ae9d8398e95.",
-    "PASS: READ-12 mutation gate — test_zr203_reader_rewire.py (incl. test_read_entrypoints_never_construct_catalog_store) re-run green, 8 passed.",
-    "PASS: Implementer receipt overclaims — side_effect_counts (product_code_changes=0, real_catalog_access=1, catalog_mutations=0, downloads=0) verified consistent with git scope + evidence; touched_files matches staged changes; findings ZR206-IMPL-001/002/003 are honest and match code/evidence.",
-    {
-      "id": "ZR206-REV-001",
-      "severity": "info",
-      "title": "Non-blocking: implementer receipt rounds status/health p95 as ~6.3s",
-      "detail": "Receipt command result says 'status/health p95≈6.3s'; evidence shows status p95=5755.1ms and health p95=6148.0ms (~5.8s/~6.1s). Loose rounding only — both far below the 12000ms frozen gate; no impact on verdict."
-    },
-    {
-      "id": "ZR206-REV-002",
-      "severity": "info",
-      "title": "Non-blocking: implementer receipt created_at_utc predates T2 evidence run",
-      "detail": "Receipt created_at_utc=2026-08-16T23:30+00:00 while the T2 probe evidence run_at_utc=2026-08-17T19:01:19Z and commit 3ea0039 is 2026-08-17T19:07Z. Timestamp inconsistency in the receipt (likely pre-filled); canonical hash validates regardless and ordering probe->commit->state-update is coherent."
-    },
-    {
-      "id": "ZR206-REV-003",
-      "severity": "info",
-      "title": "Non-blocking: state.json base_triplet differs from per-unit frozen triplet",
-      "detail": "Machine-state base_triplet (filing 83c638e, revenue c3a0519, wiki ef125ed) predates the per-unit frozen triplet (0e5d209/679fc33/ad54026); the staged state.json diff for ZR-206 changes only the ZR-206 unit entry + updated_at. The implementer receipt base_triplet matches the frozen context exactly. Pre-existing machine-state convention, not a ZR-206 defect."
-    },
-    {
-      "id": "ZR206-REV-004",
-      "severity": "info",
-      "title": "Observation: probe 'ok' excludes non-catalog non-worker-owned drift",
-      "detail": "ok = catalog_ok and not gate_breaches and index_ok and memory_ok; other_drift (files neither catalog evidence nor worker-owned) is recorded but does not fail the probe. In the produced evidence other_drift={} so no impact; classification follows the defined hard gate (DB/WAL/SHM byte identity)."
-    }
-  ],
-  "canonical_hash": "791e6fbbdd8870854a23a5d66d01f1852053d141d49b3c8ba9691036a0d814f2"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr206_live_writer.py tests/contract/test_zr206_slo_49gb.py -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "8 passed in 81.39s — hermetic live-writer (long-txn bounded, no BEGIN IMMEDIATE steal, reader no write txn, contention fail-closed, 50-concurrent no deadlock/mixing) + 49GB-SLO (covering-index EXPLAIN, typed queries within scaled frozen doors, memory <256MB, zero-write fingerprint twin) all green"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr203_reader_rewire.py -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "8 passed in 1.48s — READ-12 mutation gate test_read_entrypoints_never_construct_catalog_store green (reader entrypoints never construct CatalogStore)"
+  },
+  {
+   "command": "python -m uc.cli state-show (assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "units.ZR-206.status=independent_review; current_next=ZR-206; current_phase=C_read_only_and_contracts; ZR-206 updated_at 2026-08-17T19:07:42Z"
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-206/11_implementer_receipt.json (assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt canonical and well-formed; independent recompute of canonical_hash = 01324f161bc1e145a5516a0b93c03ee33f2e70d43026c19fa61a5ae9d8398e95 matches claimed value"
+  },
+  {
+   "command": "python -c \"hashlib.sha256(open(r'C:\\Users\\郑曾波\\Projects\\company-wiki\\tests\\contract\\test_zr206_slo_49gb.py','rb').read()).hexdigest()\"",
+   "exit_code": 0,
+   "result": "bc647e5f7ce3a67a29e82bd55548d9f9c0358a818dc6e13f714eb360b3ff463a (reviewed_object_sha256 of test_zr206_slo_49gb.py at HEAD)"
+  },
+  {
+   "command": "grep REAL_P95_GATES_MS / MEMORY_GATE_MB / SYNTHETIC_SPANS in tests/contract/test_zr206_slo_49gb.py vs card '冻结 SLO 数字' table",
+   "exit_code": 0,
+   "result": "exact match: status/health 12000ms; scan_health/query/entities_like/document/source_sha/artifacts_for/resolve_handle 50ms; location_counts 250ms; MEMORY_GATE_MB=256; SYNTHETIC_SPANS=1_000_000 (1M-span catalog)"
+  },
+  {
+   "command": "grep 'CatalogStore|store|scan|migration|read_bytes|download|INSERT|UPDATE|DELETE' in assurance/unified_completion/t2/zr206_t2_probe.py",
+   "exit_code": 0,
+   "result": "probe imports ONLY ReadOnlyCatalogReader; matches are a docstring ('touches no store/scan/migration') and the scan_health gate name; streaming SHA-256 in 1MiB chunks (_file_sha256), no read_bytes on the DB; drift classification: DB/WAL/SHM sha256+size byte identity is the hard zero-write gate (catalog_ok), worker-owned prefixes recorded-not-failing, shm mtime-only touch classified as protocol behavior (shm_mtime_only_protocol_touch)"
+  },
+  {
+   "command": "read assurance/unified_completion/t2/evidence/zr206_t2_probe.json",
+   "exit_code": 0,
+   "result": "ok=true; catalog_zero_write_ok=true; catalog_byte_drift={}; catalog_added_removed=[]; gate_breaches={}; shm_mtime_only_protocol_touch=true; peak_python_mb=0.03<=256; index_assertions_ok=true; fingerprint_identical=false exactly consistent with fingerprint_diff={changed:{catalog.sqlite3-shm:[mtime]}}; db_size_bytes=49,624,113,152 (~49.62GB); evidence_spans=27,178,657 matches card; all p95 within gates (status 5755.1, health 6148.0 <=12000; others <=15.0ms)"
+  },
+  {
+   "command": "git -C revenue-forecast status --porcelain; git -C revenue-forecast diff --cached --stat; git -C revenue-forecast diff --cached -- assurance/unified_completion/state.json",
+   "exit_code": 0,
+   "result": "revenue-side staged changes exactly = receipts/ZR-206/00_wu_card.md + 11_implementer_receipt.json, t2/zr206_t2_probe.py, t2/evidence/zr206_t2_probe.json, state.json (adds ZR-206 unit status=independent_review + updated_at bump only, no triplet tampering) — matches implementer touched_files claim"
+  },
+  {
+   "command": "read .source_catalog/worker_state.json + .source_catalog listing (read-only)",
+   "exit_code": 0,
+   "result": "worker_state.json shows last_cycle_status=completed and pending fingerprints 1580 (matches implementer note); evidence worker_owned_drift={} and other_drift={} are internally consistent with a paused worker during the probe window; worker restored (state file present, cycle completed)"
+  }
+ ],
+ "findings": [
+  "PASS: HEAD verification — wiki HEAD=3ea0039 with parent=ad5402693 (base triplet), filing HEAD=0e5d209, revenue HEAD=679fc33; result triplet exactly as claimed.",
+  "PASS: Commit scope — 3ea0039 touches exactly the 2 contract test files (441 insertions); no product code (reader/lock/schema untouched); dirty wiki files limited to known env files llm_cost_log.csv/.claude/settings.local.json.",
+  "PASS: Hermetic ZR-206 suite re-run by reviewer — 8 passed (81.39s), exit 0; matches implementer claim of 8 passed.",
+  "PASS: Frozen SLO gates — test constants REAL_P95_GATES_MS/MEMORY_GATE_MB/SYNTHETIC_SPANS match the card's 冻结 SLO 数字 table exactly (status/health 12000, scan_health/query/entities_like/document/source_sha/artifacts_for/resolve_handle 50, location_counts 250; memory 256MB; 1M spans).",
+  "PASS: T2 probe isolation — opens ReadOnlyCatalogReader only; no CatalogStore/store/scan/migration/write-SQL usage; streaming SHA-256 fingerprint (no read_bytes on the 49GB DB); hard zero-write gate is DB/WAL/SHM byte identity (sha256+size); worker-owned prefixes recorded-not-failing; shm mtime-only touch classified as protocol behavior.",
+  "PASS: T2 evidence JSON — ok=true, catalog_zero_write_ok=true, catalog_byte_drift={}, gate_breaches={}, shm_mtime_only_protocol_touch=true, peak_python_mb=0.03<=256, index_assertions_ok=true; internally consistent (fingerprint_identical=false iff shm mtime-only; db size/spans match card; all p95 under gates).",
+  "PASS: Machine state — units.ZR-206.status=independent_review, current_next=ZR-206.",
+  "PASS: Receipt validation — uc.cli receipt-validate OK canonical; independent recomputation of the canonical_hash (sorted keys, ensure_ascii=False, UTF-8) equals 01324f161bc1e145a5516a0b93c03ee33f2e70d43026c19fa61a5ae9d8398e95.",
+  "PASS: READ-12 mutation gate — test_zr203_reader_rewire.py (incl. test_read_entrypoints_never_construct_catalog_store) re-run green, 8 passed.",
+  "PASS: Implementer receipt overclaims — side_effect_counts (product_code_changes=0, real_catalog_access=1, catalog_mutations=0, downloads=0) verified consistent with git scope + evidence; touched_files matches staged changes; findings ZR206-IMPL-001/002/003 are honest and match code/evidence.",
+  {
+   "id": "ZR206-REV-001",
+   "severity": "info",
+   "title": "Non-blocking: implementer receipt rounds status/health p95 as ~6.3s",
+   "detail": "Receipt command result says 'status/health p95≈6.3s'; evidence shows status p95=5755.1ms and health p95=6148.0ms (~5.8s/~6.1s). Loose rounding only — both far below the 12000ms frozen gate; no impact on verdict."
+  },
+  {
+   "id": "ZR206-REV-002",
+   "severity": "info",
+   "title": "Non-blocking: implementer receipt created_at_utc predates T2 evidence run",
+   "detail": "Receipt created_at_utc=2026-08-16T23:30+00:00 while the T2 probe evidence run_at_utc=2026-08-17T19:01:19Z and commit 3ea0039 is 2026-08-17T19:07Z. Timestamp inconsistency in the receipt (likely pre-filled); canonical hash validates regardless and ordering probe->commit->state-update is coherent."
+  },
+  {
+   "id": "ZR206-REV-003",
+   "severity": "info",
+   "title": "Non-blocking: state.json base_triplet differs from per-unit frozen triplet",
+   "detail": "Machine-state base_triplet (filing 83c638e, revenue c3a0519, wiki ef125ed) predates the per-unit frozen triplet (0e5d209/679fc33/ad54026); the staged state.json diff for ZR-206 changes only the ZR-206 unit entry + updated_at. The implementer receipt base_triplet matches the frozen context exactly. Pre-existing machine-state convention, not a ZR-206 defect."
+  },
+  {
+   "id": "ZR206-REV-004",
+   "severity": "info",
+   "title": "Observation: probe 'ok' excludes non-catalog non-worker-owned drift",
+   "detail": "ok = catalog_ok and not gate_breaches and index_ok and memory_ok; other_drift (files neither catalog evidence nor worker-owned) is recorded but does not fail the probe. In the produced evidence other_drift={} so no impact; classification follows the defined hard gate (DB/WAL/SHM byte identity)."
+  }
+ ],
+ "canonical_hash": "75206dce111424feb3ebe2838753c88331239508e1dafcd40caa19af847ac5d1"
 }

@@ -1,87 +1,87 @@
 {
-  "unit": "ZR-713",
-  "reviewer": "reviewer-zr713-independent",
-  "kind": "reviewer",
-  "schema_version": 1,
-  "verdict": "accepted",
-  "reviewed_object_sha256": "399a644e9232038b00f696e4d47c08978a059ecbe080f1aa1858be84fda35d3b",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -3; diff-tree cb34700 3479718",
-      "exit_code": 0,
-      "result": "HEAD=3479718 (REV-001/002 delta), parent=cb34700; delta commit modifies exactly scripts/rolling_backtest.py + tests/test_zr713_rolling_backtest.py (+186/-26)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr713_rolling_backtest.py -q --tb=short",
-      "exit_code": 0,
-      "result": "15 passed in 1.32s (10 original + 5 REV-001/002 regression tests)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr712_confidence_policy.py tests/test_backtest.py tests/test_golden_behavior_lock.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "36 passed (36 + 15 = 51, consistent with implementer '51 passed' regression claim)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/rolling_backtest.py tests/test_zr713_rolling_backtest.py",
-      "exit_code": 0,
-      "result": "All checks passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
-      "exit_code": 0,
-      "result": "Ran 2 tests, OK — NEW_FILE_MAX=10; each new helper <=10"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr713-reviewer\\probe_zr713_delta.py (21 adversarial checks)",
-      "exit_code": 0,
-      "result": "21/21 PASS: (a) with operating_units — evaluation_sha256 pairwise distinct across company/segment/mine-volume, record_sha256 pairwise distinct, company wape 0.05000000000000017 != segment wape 0.05963302752293591, mine-volume wape is None, total_saleable_volume 427.5 == 1000*0.5*0.9*0.95, observations=1; (b) operating unit missing recovery or grade -> ForecastInputError 'MineYearOperation.recovery/grade is required (gap, not default 0)' fail-closed; (c) record_sha256 differs across levels (same as_of) and across as_of (same level); (d) snapshot_id 64-hex, identical across levels, == snapshot.snapshot_id; (e) leak still fails closed, empty windows rejected, single window capped=True+hint, two windows capped=False, deterministic across runs"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
-      "exit_code": 0,
-      "result": "773 passed, 3 deselected, 106 subtests passed in 113.26s — matches implementer claim; all 15 zr713 tests collected"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-713/11_implementer_receipt.json (CWD assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed; canonical_hash f71fdf5f... matches; base/result triplets 40-hex, revenue checked as git objects"
-    },
-    {
-      "command": "git cat-file -e ef77565^{commit}; git cat-file -e 3479718^{commit}; git rev-parse HEAD",
-      "exit_code": 0,
-      "result": "base_triplet.revenue=ef77565 real commit object; result_triplet.revenue=3479718 real commit object == HEAD"
-    }
-  ],
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "ef7756510b7e50023c2c586e1831541d55d87062",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "unit": "ZR-713",
+ "reviewer": "reviewer-zr713-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "f71fdf5f6e97513b6f49c20b5ae97f891e2e0d23a19aa57526f62ebe02fc0e84",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -3; diff-tree cb34700 3479718",
+   "exit_code": 0,
+   "result": "HEAD=3479718 (REV-001/002 delta), parent=cb34700; delta commit modifies exactly scripts/rolling_backtest.py + tests/test_zr713_rolling_backtest.py (+186/-26)"
   },
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "3479718d99d8fc367748d4f73ef66c741ee3bdb2",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr713_rolling_backtest.py -q --tb=short",
+   "exit_code": 0,
+   "result": "15 passed in 1.32s (10 original + 5 REV-001/002 regression tests)"
   },
-  "findings": [
-    {
-      "id": "REV-001",
-      "severity": "blocking",
-      "title": "C2 three levels are not independently backtested — level is a label only; mine-volume is not driven by operating-unit (ZR-605) data",
-      "detail": "RESOLVED in delta 3479718. _evaluate_window now dispatches per level: company -> evaluation['summary']['wape']; segment -> _segment_window building a segment view (segment_year_results + segment_summaries + merged segment wape via _segment_summary over actual_segment_revenue records, wape=13/218=0.059633...); mine-volume -> _mine_volume_window validating every operating unit through ZR-605 validate_mine_year_operation (fail-closed on missing fields, 'required (gap, not default 0)') and decomposing saleable_volume = volume*grade*recovery*payable via derive_saleable_volume (total 427.5 for the fixture unit), wape=None (no revenue projection to compare). Verified: evaluation_sha256 pairwise distinct across the three levels (company cfa172454f..., segment e1bb9dd8f1..., mine-volume 6a309bf224...), record_sha256 pairwise distinct, company wape != segment wape, mine-volume wape None. New regression tests test_c2_levels_emit_distinct_evaluations, test_c2_segment_level_uses_segment_metrics, test_c2_mine_volume_contract_fails_closed_on_gap, test_c2_mine_volume_saleable_volume_decomposition all pass."
-    },
-    {
-      "id": "REV-002",
-      "severity": "minor",
-      "title": "Level and as_of are not bound into the four-layer hash chain; window 'snapshot_id' holds the backtest_id, not the snapshot identity",
-      "detail": "RESOLVED in delta 3479718. window['snapshot_id'] is now evaluation['snapshot_id'] / snapshot['snapshot_id'] — the snapshot's own identity (verified identical across levels and == snapshot.snapshot_id, 64-hex). record_sha256 is now _bound_record_sha256(level, as_of, record) = canonical_sha256({level, as_of, record}): relabeling a window or re-dating it breaks the hash. Verified record_sha256 differs across levels for the same as_of (company a766bcb500... vs segment b6d87e8f07...) and across as_of for the same level (2028 a766bcb500... vs 2029 dc019da40a...). New regression test test_c3_record_hash_binds_level_and_as_of passes."
-    },
-    {
-      "id": "REV-003",
-      "severity": "info",
-      "title": "As-of filtering fails closed on ANY future-published source, even unreferenced ones; filtered view therefore always equals the full document",
-      "detail": "Unchanged by design and consistent with the card's fail-closed wording. Verified again in delta: feeding actuals with a source published after the window as_of raises 'future actual leak'; the two-window rolling behavior and cap logic (single window capped=True + hint, two windows capped=False) remain green."
-    }
-  ],
-  "created_at_utc": "2026-08-22T12:34:25.835622Z",
-  "canonical_hash": "8125837de8262de129580fc69d195a9412dd51a55b923394e8826e9e838f8566"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr712_confidence_policy.py tests/test_backtest.py tests/test_golden_behavior_lock.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "36 passed (36 + 15 = 51, consistent with implementer '51 passed' regression claim)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check scripts/rolling_backtest.py tests/test_zr713_rolling_backtest.py",
+   "exit_code": 0,
+   "result": "All checks passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+   "exit_code": 0,
+   "result": "Ran 2 tests, OK — NEW_FILE_MAX=10; each new helper <=10"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr713-reviewer\\probe_zr713_delta.py (21 adversarial checks)",
+   "exit_code": 0,
+   "result": "21/21 PASS: (a) with operating_units — evaluation_sha256 pairwise distinct across company/segment/mine-volume, record_sha256 pairwise distinct, company wape 0.05000000000000017 != segment wape 0.05963302752293591, mine-volume wape is None, total_saleable_volume 427.5 == 1000*0.5*0.9*0.95, observations=1; (b) operating unit missing recovery or grade -> ForecastInputError 'MineYearOperation.recovery/grade is required (gap, not default 0)' fail-closed; (c) record_sha256 differs across levels (same as_of) and across as_of (same level); (d) snapshot_id 64-hex, identical across levels, == snapshot.snapshot_id; (e) leak still fails closed, empty windows rejected, single window capped=True+hint, two windows capped=False, deterministic across runs"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "773 passed, 3 deselected, 106 subtests passed in 113.26s — matches implementer claim; all 15 zr713 tests collected"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-713/11_implementer_receipt.json (CWD assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed; canonical_hash f71fdf5f... matches; base/result triplets 40-hex, revenue checked as git objects"
+  },
+  {
+   "command": "git cat-file -e ef77565^{commit}; git cat-file -e 3479718^{commit}; git rev-parse HEAD",
+   "exit_code": 0,
+   "result": "base_triplet.revenue=ef77565 real commit object; result_triplet.revenue=3479718 real commit object == HEAD"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "ef7756510b7e50023c2c586e1831541d55d87062",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "3479718d99d8fc367748d4f73ef66c741ee3bdb2",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "findings": [
+  {
+   "id": "REV-001",
+   "severity": "blocking",
+   "title": "C2 three levels are not independently backtested — level is a label only; mine-volume is not driven by operating-unit (ZR-605) data",
+   "detail": "RESOLVED in delta 3479718. _evaluate_window now dispatches per level: company -> evaluation['summary']['wape']; segment -> _segment_window building a segment view (segment_year_results + segment_summaries + merged segment wape via _segment_summary over actual_segment_revenue records, wape=13/218=0.059633...); mine-volume -> _mine_volume_window validating every operating unit through ZR-605 validate_mine_year_operation (fail-closed on missing fields, 'required (gap, not default 0)') and decomposing saleable_volume = volume*grade*recovery*payable via derive_saleable_volume (total 427.5 for the fixture unit), wape=None (no revenue projection to compare). Verified: evaluation_sha256 pairwise distinct across the three levels (company cfa172454f..., segment e1bb9dd8f1..., mine-volume 6a309bf224...), record_sha256 pairwise distinct, company wape != segment wape, mine-volume wape None. New regression tests test_c2_levels_emit_distinct_evaluations, test_c2_segment_level_uses_segment_metrics, test_c2_mine_volume_contract_fails_closed_on_gap, test_c2_mine_volume_saleable_volume_decomposition all pass."
+  },
+  {
+   "id": "REV-002",
+   "severity": "minor",
+   "title": "Level and as_of are not bound into the four-layer hash chain; window 'snapshot_id' holds the backtest_id, not the snapshot identity",
+   "detail": "RESOLVED in delta 3479718. window['snapshot_id'] is now evaluation['snapshot_id'] / snapshot['snapshot_id'] — the snapshot's own identity (verified identical across levels and == snapshot.snapshot_id, 64-hex). record_sha256 is now _bound_record_sha256(level, as_of, record) = canonical_sha256({level, as_of, record}): relabeling a window or re-dating it breaks the hash. Verified record_sha256 differs across levels for the same as_of (company a766bcb500... vs segment b6d87e8f07...) and across as_of for the same level (2028 a766bcb500... vs 2029 dc019da40a...). New regression test test_c3_record_hash_binds_level_and_as_of passes."
+  },
+  {
+   "id": "REV-003",
+   "severity": "info",
+   "title": "As-of filtering fails closed on ANY future-published source, even unreferenced ones; filtered view therefore always equals the full document",
+   "detail": "Unchanged by design and consistent with the card's fail-closed wording. Verified again in delta: feeding actuals with a source published after the window as_of raises 'future actual leak'; the two-window rolling behavior and cap logic (single window capped=True + hint, two windows capped=False) remain green."
+  }
+ ],
+ "created_at_utc": "2026-08-22T12:34:25.835622Z",
+ "canonical_hash": "5f460bd32d07a7ae937b0d530b88913bc0b7b7cd389230df025a7372064de537"
 }

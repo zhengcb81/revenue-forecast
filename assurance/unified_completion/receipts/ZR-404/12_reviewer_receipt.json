@@ -1,103 +1,103 @@
 {
-  "schema_version": 1,
-  "kind": "reviewer",
-  "unit": "ZR-404",
-  "reviewer": "reviewer-zr404-independent",
-  "note": "ZR-404 independent review",
-  "base_triplet": {
-    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
-    "revenue": "ce8152a1e93381060b63f8eea77ebfbbd79276a3",
-    "wiki": "87ee0ac2c64b2c48ac6c5ff58829650a275cdf9d"
+ "schema_version": 1,
+ "kind": "reviewer",
+ "unit": "ZR-404",
+ "reviewer": "reviewer-zr404-independent",
+ "note": "ZR-404 independent review",
+ "base_triplet": {
+  "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+  "revenue": "ce8152a1e93381060b63f8eea77ebfbbd79276a3",
+  "wiki": "87ee0ac2c64b2c48ac6c5ff58829650a275cdf9d"
+ },
+ "result_triplet": {
+  "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+  "revenue": "ce8152a1e93381060b63f8eea77ebfbbd79276a3",
+  "wiki": "f45f7edb76e42a3f54489f7999182ce59e4cb678"
+ },
+ "reviewed_object_sha256": "fe23197e72202b4a89578f1e54e77a17b44556e5fae9857997593427ee7b3233",
+ "commands": [
+  {
+   "command": "git -C company-wiki rev-parse HEAD / HEAD^; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
+   "exit_code": 0,
+   "result": "wiki HEAD=f45f7edb76e42a3f54489f7999182ce59e4cb678 parent=87ee0ac2c64b2c48ac6c5ff58829650a275cdf9d; filing HEAD=df667966928b6c7d72c19685be01f45268eaba5e; revenue HEAD=ce8152a1e93381060b63f8eea77ebfbbd79276a3 (== receipt base). All triplets match claims."
   },
-  "result_triplet": {
-    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
-    "revenue": "ce8152a1e93381060b63f8eea77ebfbbd79276a3",
-    "wiki": "f45f7edb76e42a3f54489f7999182ce59e4cb678"
+  {
+   "command": "git -C filing-fetch status --porcelain",
+   "exit_code": 0,
+   "result": "empty output — filing-fetch working tree fully clean, HEAD unchanged (zero diff confirmed)."
   },
-  "reviewed_object_sha256": "2e51f686ccee233d8245839ec5f69be9441ef527d453b1a86ac2badc3e0c7e69",
-  "commands": [
-    {
-      "command": "git -C company-wiki rev-parse HEAD / HEAD^; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
-      "exit_code": 0,
-      "result": "wiki HEAD=f45f7edb76e42a3f54489f7999182ce59e4cb678 parent=87ee0ac2c64b2c48ac6c5ff58829650a275cdf9d; filing HEAD=df667966928b6c7d72c19685be01f45268eaba5e; revenue HEAD=ce8152a1e93381060b63f8eea77ebfbbd79276a3 (== receipt base). All triplets match claims."
-    },
-    {
-      "command": "git -C filing-fetch status --porcelain",
-      "exit_code": 0,
-      "result": "empty output — filing-fetch working tree fully clean, HEAD unchanged (zero diff confirmed)."
-    },
-    {
-      "command": "git -C company-wiki show --stat f45f7ed; git diff 87ee0ac f45f7ed --stat; git -C filing-fetch diff df66796 HEAD --stat",
-      "exit_code": 0,
-      "result": "exactly 4 files: cli.py +2, close_gap.py +1, resolver.py 86 changed, test_zr404_envelope_trace_rationale.py +378; totals 465 insertions, 2 deletions — matches claim. filing diff empty."
-    },
-    {
-      "command": "company-wiki .venv python -m pytest tests/contract/test_zr404_envelope_trace_rationale.py -q --tb=short",
-      "exit_code": 0,
-      "result": "11 passed in 4.07s — no skips; cross-repo filing test (test_zr404_filing_validator_accepts_enriched_envelope) RAN (filing checkout present) and passed."
-    },
-    {
-      "command": "company-wiki .venv python -m pytest tests/contract/{12-file regression batch} -q --tb=short",
-      "exit_code": 0,
-      "result": "114 passed in 19.73s (11 new + 103 existing envelope/policy/activation/close-gap/ratchet/FC-1201) — matches claim."
-    },
-    {
-      "command": "company-wiki .venv python -m pytest tests/unit -q --tb=short",
-      "exit_code": 0,
-      "result": "787 passed in 52.71s — matches claim."
-    },
-    {
-      "command": "filing-fetch base python (C:\\Miniconda\\python.exe 3.13.9, no venv present) python -m pytest tests/test_fc903_bundle_contract.py tests/test_fc905b_envelope_fields.py tests/test_fc1204_coverage_gap.py tests/test_fc802_gap_orchestration.py -q --tb=short",
-      "exit_code": 0,
-      "result": "159 passed, 1 skipped, 39 subtests passed. The single skip is test_fetch_filing.py:1438 'production security-master snapshots not present' — environment-dependent, unrelated to envelope contract. Zero filing changes do not regress the consumer contract."
-    },
-    {
-      "command": "read resolver.py at HEAD + green test runs (fail-closed truth)",
-      "exit_code": 0,
-      "result": "verified: policy_snapshot non-dict -> ValueError; policy_hash ''/non-hex/uppercase-64 -> ValueError; None allowed (honest default); current_epoch non-text -> ValueError; active_cohorts non-list-or-tuple-of-str -> ValueError. Shape rule re.fullmatch(r'[0-9a-f]{64}') is byte-identical to filing_contracts.py:277."
-    },
-    {
-      "command": "read resolver.py + filing_contracts.py + cross-repo test (additive N/N-1 truth)",
-      "exit_code": 0,
-      "result": "RESOLUTION_ENVELOPE_SCHEMA_VERSION='1.0' both repos (resolver.py:328, filing_contracts.py:225); old to_dict keys unchanged (test asserts all 10 old keys); cross-repo test loads filing_contracts.py via importlib from C:\\Users\\郑曾波\\Projects\\filing-fetch\\scripts and asserts passthrough of the 4 new fields + schema '1.0' + no absolute path + ${PROJECT_ROOT} present."
-    },
-    {
-      "command": "read resolver.py _redact_path + green tests (path redaction)",
-      "exit_code": 0,
-      "result": "test asserts canonical_location_rationale.canonical_path contains ${PROJECT_ROOT} and envelope JSON never contains absolute project path; _redact_path replaces project_root.resolve() with ${PROJECT_ROOT} (OSError fallback to raw string) and USERPROFILE with ${USER_PROFILE} when env set."
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt 11_implementer_receipt.json (from assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed. plan_sha256 f1876885415cc21d57da7a4d1d8041609d4f38da429e1e4f424e7d18114c0d95 == my sha256 of current 00_wu_card.md bytes; red evidence sha256 b1f915610c8d564f60b12505d51fa0cee6ca8f1892fe772ddf6137d5fcb60f59 == my hash; reviewed_object sha256 2e51f686... == my byte-exact sha256 of the test file blob at HEAD (git cat-file via cmd redirection); python -m uc.cli state-show: units.ZR-404.status=independent_review, current_next=ZR-404, current_phase=D_lifecycle_roots_freshness — as claimed."
-    },
-    {
-      "command": "RED gap verification: git archive 87ee0ac -> temp, grep resolver.py; mypy at HEAD and at base 87ee0ac; ruff check/format",
-      "exit_code": 0,
-      "result": "G1-G4 absent at base 87ee0ac (no candidate_exclusion_trace/canonical_location_rationale/envelope cohorts/source_sha256 fields, no shape validation, no _redact_path) — RED honest. mypy exit 1 with exactly 2 errors at HEAD (309: list(tuple[str,...]) vs Iterable[dict]; 844: arg3 Any|None vs str) AND the SAME 2 errors at base 87ee0ac (lines 308/762) — pre-existing, NOT introduced. ruff check: All checks passed; ruff format --check: 4 files already formatted."
-    }
-  ],
-  "findings": [
-    {
-      "id": "ZR404-REV-001",
-      "severity": "info",
-      "title": "receipt mypy finding site description slightly imprecise; line numbers off by one",
-      "detail": "ZR404-IMPL-003 describes mypy error 1 as at the 'envelope matches 构造处', but the actual site is ResolutionResult.to_dict (HEAD line 309: payload['debug_trace'] = list(self.debug_trace)); and it reports HEAD error 2 at line 845 while mypy reports 844. Substance verified true: the same 2 errors exist at base 87ee0ac (lines 308/762, confirmed by mypy on a git-archive temp copy) and both sit in code the ZR-404 diff did not touch — zero new mypy errors."
-    },
-    {
-      "id": "ZR404-REV-002",
-      "severity": "info",
-      "title": "RED evidence and card triplet freeze cite base wiki 57cd72e; receipt base_triplet is 87ee0ac",
-      "detail": "red/zr404_red_evidence.json and 00_wu_card.md record the RED base as wiki 57cd72e (ZR-402 era) while the receipt's binding base_triplet is 87ee0ac (the true parent of f45f7ed). I independently confirmed all G1-G4 gaps are absent at 87ee0ac too, so the RED analysis is honest and complete; recommend future cards hash the exact parent commit."
-    },
-    {
-      "id": "ZR404-REV-003",
-      "severity": "info",
-      "title": "company-wiki working tree has pre-existing local dirtiness unrelated to the commit",
-      "detail": "git status --porcelain shows .claude/settings.local.json (deleted), llm_cost_log.csv (modified), untracked .coverage and coverage.json. None of the 4 reviewed files are dirty (git diff HEAD --stat on src/company_wiki/source_catalog/ and the new test is empty); this is local tooling state, not part of the reviewed commit."
-    }
-  ],
-  "verdict": "accepted",
-  "created_at_utc": "2026-08-18T19:03:30Z",
-  "canonical_hash": "afef1eb2dcf388af0292aba71c2967a239effa6a324c832f94eb65bdd2f20204"
+  {
+   "command": "git -C company-wiki show --stat f45f7ed; git diff 87ee0ac f45f7ed --stat; git -C filing-fetch diff df66796 HEAD --stat",
+   "exit_code": 0,
+   "result": "exactly 4 files: cli.py +2, close_gap.py +1, resolver.py 86 changed, test_zr404_envelope_trace_rationale.py +378; totals 465 insertions, 2 deletions — matches claim. filing diff empty."
+  },
+  {
+   "command": "company-wiki .venv python -m pytest tests/contract/test_zr404_envelope_trace_rationale.py -q --tb=short",
+   "exit_code": 0,
+   "result": "11 passed in 4.07s — no skips; cross-repo filing test (test_zr404_filing_validator_accepts_enriched_envelope) RAN (filing checkout present) and passed."
+  },
+  {
+   "command": "company-wiki .venv python -m pytest tests/contract/{12-file regression batch} -q --tb=short",
+   "exit_code": 0,
+   "result": "114 passed in 19.73s (11 new + 103 existing envelope/policy/activation/close-gap/ratchet/FC-1201) — matches claim."
+  },
+  {
+   "command": "company-wiki .venv python -m pytest tests/unit -q --tb=short",
+   "exit_code": 0,
+   "result": "787 passed in 52.71s — matches claim."
+  },
+  {
+   "command": "filing-fetch base python (C:\\Miniconda\\python.exe 3.13.9, no venv present) python -m pytest tests/test_fc903_bundle_contract.py tests/test_fc905b_envelope_fields.py tests/test_fc1204_coverage_gap.py tests/test_fc802_gap_orchestration.py -q --tb=short",
+   "exit_code": 0,
+   "result": "159 passed, 1 skipped, 39 subtests passed. The single skip is test_fetch_filing.py:1438 'production security-master snapshots not present' — environment-dependent, unrelated to envelope contract. Zero filing changes do not regress the consumer contract."
+  },
+  {
+   "command": "read resolver.py at HEAD + green test runs (fail-closed truth)",
+   "exit_code": 0,
+   "result": "verified: policy_snapshot non-dict -> ValueError; policy_hash ''/non-hex/uppercase-64 -> ValueError; None allowed (honest default); current_epoch non-text -> ValueError; active_cohorts non-list-or-tuple-of-str -> ValueError. Shape rule re.fullmatch(r'[0-9a-f]{64}') is byte-identical to filing_contracts.py:277."
+  },
+  {
+   "command": "read resolver.py + filing_contracts.py + cross-repo test (additive N/N-1 truth)",
+   "exit_code": 0,
+   "result": "RESOLUTION_ENVELOPE_SCHEMA_VERSION='1.0' both repos (resolver.py:328, filing_contracts.py:225); old to_dict keys unchanged (test asserts all 10 old keys); cross-repo test loads filing_contracts.py via importlib from C:\\Users\\郑曾波\\Projects\\filing-fetch\\scripts and asserts passthrough of the 4 new fields + schema '1.0' + no absolute path + ${PROJECT_ROOT} present."
+  },
+  {
+   "command": "read resolver.py _redact_path + green tests (path redaction)",
+   "exit_code": 0,
+   "result": "test asserts canonical_location_rationale.canonical_path contains ${PROJECT_ROOT} and envelope JSON never contains absolute project path; _redact_path replaces project_root.resolve() with ${PROJECT_ROOT} (OSError fallback to raw string) and USERPROFILE with ${USER_PROFILE} when env set."
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt 11_implementer_receipt.json (from assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed. plan_sha256 f1876885415cc21d57da7a4d1d8041609d4f38da429e1e4f424e7d18114c0d95 == my sha256 of current 00_wu_card.md bytes; red evidence sha256 b1f915610c8d564f60b12505d51fa0cee6ca8f1892fe772ddf6137d5fcb60f59 == my hash; reviewed_object sha256 2e51f686... == my byte-exact sha256 of the test file blob at HEAD (git cat-file via cmd redirection); python -m uc.cli state-show: units.ZR-404.status=independent_review, current_next=ZR-404, current_phase=D_lifecycle_roots_freshness — as claimed."
+  },
+  {
+   "command": "RED gap verification: git archive 87ee0ac -> temp, grep resolver.py; mypy at HEAD and at base 87ee0ac; ruff check/format",
+   "exit_code": 0,
+   "result": "G1-G4 absent at base 87ee0ac (no candidate_exclusion_trace/canonical_location_rationale/envelope cohorts/source_sha256 fields, no shape validation, no _redact_path) — RED honest. mypy exit 1 with exactly 2 errors at HEAD (309: list(tuple[str,...]) vs Iterable[dict]; 844: arg3 Any|None vs str) AND the SAME 2 errors at base 87ee0ac (lines 308/762) — pre-existing, NOT introduced. ruff check: All checks passed; ruff format --check: 4 files already formatted."
+  }
+ ],
+ "findings": [
+  {
+   "id": "ZR404-REV-001",
+   "severity": "info",
+   "title": "receipt mypy finding site description slightly imprecise; line numbers off by one",
+   "detail": "ZR404-IMPL-003 describes mypy error 1 as at the 'envelope matches 构造处', but the actual site is ResolutionResult.to_dict (HEAD line 309: payload['debug_trace'] = list(self.debug_trace)); and it reports HEAD error 2 at line 845 while mypy reports 844. Substance verified true: the same 2 errors exist at base 87ee0ac (lines 308/762, confirmed by mypy on a git-archive temp copy) and both sit in code the ZR-404 diff did not touch — zero new mypy errors."
+  },
+  {
+   "id": "ZR404-REV-002",
+   "severity": "info",
+   "title": "RED evidence and card triplet freeze cite base wiki 57cd72e; receipt base_triplet is 87ee0ac",
+   "detail": "red/zr404_red_evidence.json and 00_wu_card.md record the RED base as wiki 57cd72e (ZR-402 era) while the receipt's binding base_triplet is 87ee0ac (the true parent of f45f7ed). I independently confirmed all G1-G4 gaps are absent at 87ee0ac too, so the RED analysis is honest and complete; recommend future cards hash the exact parent commit."
+  },
+  {
+   "id": "ZR404-REV-003",
+   "severity": "info",
+   "title": "company-wiki working tree has pre-existing local dirtiness unrelated to the commit",
+   "detail": "git status --porcelain shows .claude/settings.local.json (deleted), llm_cost_log.csv (modified), untracked .coverage and coverage.json. None of the 4 reviewed files are dirty (git diff HEAD --stat on src/company_wiki/source_catalog/ and the new test is empty); this is local tooling state, not part of the reviewed commit."
+  }
+ ],
+ "verdict": "accepted",
+ "created_at_utc": "2026-08-18T19:03:30Z",
+ "canonical_hash": "87b52c0ff6785ec5d0bf080b1b8ff144bcd8ce65b19281fb651c4c84ee256409"
 }

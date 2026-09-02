@@ -1,110 +1,110 @@
 {
-  "base_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "32ad84c20438368657d4e4dfce46a8b0d70e69ef",
-    "wiki": "77ce0f35284b0ef43ea8529a7e98b65d074a37db"
+ "base_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "32ad84c20438368657d4e4dfce46a8b0d70e69ef",
+  "wiki": "77ce0f35284b0ef43ea8529a7e98b65d074a37db"
+ },
+ "canonical_hash": "5883bdb7d3d7addb7e0b2bb1905962bf46abbab1c06d2ebb9b1b6c3d4cec48c3",
+ "commands": [
+  {
+   "command": "git -C company-wiki rev-parse HEAD; git rev-parse HEAD^; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
+   "exit_code": 0,
+   "result": "wiki HEAD=24ae59514eb871fca75e486d67e251d5ed8abaae, parent=77ce0f35284b0ef43ea8529a7e98b65d074a37db; filing HEAD=0e5d209bc352c6087fab51d09d55aa33aea81f85; revenue HEAD=32ad84c20438368657d4e4dfce46a8b0d70e69ef — all match the frozen/claimed triplets"
   },
-  "canonical_hash": "0c01130fb189591efbc6f8eeac21a85d70ba78d4917f46f46397914e937cd85e",
-  "commands": [
-    {
-      "command": "git -C company-wiki rev-parse HEAD; git rev-parse HEAD^; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
-      "exit_code": 0,
-      "result": "wiki HEAD=24ae59514eb871fca75e486d67e251d5ed8abaae, parent=77ce0f35284b0ef43ea8529a7e98b65d074a37db; filing HEAD=0e5d209bc352c6087fab51d09d55aa33aea81f85; revenue HEAD=32ad84c20438368657d4e4dfce46a8b0d70e69ef — all match the frozen/claimed triplets"
-    },
-    {
-      "command": "git -C company-wiki show --stat 24ae595",
-      "exit_code": 0,
-      "result": "exactly 3 files: src/company_wiki/source_catalog/producer_journal.py (NEW, 176), src/company_wiki/source_catalog/artifact_read_model.py (NEW, 271), tests/unit/test_zr304_read_model.py (NEW, 297); 744 insertions, 0 deletions; parent 77ce0f3"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_zr304_read_model.py -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "9 passed in 1.04s — matches claimed 9 hermetic tests"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "775 passed in 55.24s — confirms implementer claim 766->+9, no unit regression (did not run full wiki suite per instructions)"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "2 passed; new-file ratchet <=10 enforced; direct McCabe measurement with the ratchet's own AST counting: producer_journal.py max 4, artifact_read_model.py max 8 — matches implementer claim exactly"
-    },
-    {
-      "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/artifact_read_model.py src/company_wiki/source_catalog/producer_journal.py (company-wiki)",
-      "exit_code": 0,
-      "result": "Success: no issues found in 2 source files"
-    },
-    {
-      "command": "grep execute|commit|UPDATE|INSERT|DELETE src/company_wiki/source_catalog/artifact_read_model.py",
-      "exit_code": 0,
-      "result": "no matches — shadow-only confirmed: read model uses only reader.fetchone/fetchall (record_attempt INSERT lives in producer_journal.py writer path as designed)"
-    },
-    {
-      "command": "grep trg_artifact_producer_event src/company_wiki/src",
-      "exit_code": 0,
-      "result": "trigger present at store.py:339 (CREATE TRIGGER IF NOT EXISTS); commit 24ae595 does not touch store.py or producer_events.py — frozen producer_events table/trigger untouched at HEAD"
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-304/11_implementer_receipt.json (revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed; canonical_hash de9944ebf2aeb089aaa750be7fb93f499af81a6427a0fc7b21cd693c0ec2bfbc independently recomputed over dict-minus-canonical_hash (sorted keys, ensure_ascii=False, UTF-8) — MATCH"
-    },
-    {
-      "command": "python -m uc.cli state-show (revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "units.ZR-304.status=independent_review; current_next=ZR-304; current_phase=D_lifecycle_roots_freshness; ZR-303 closure->ZR-304 present"
-    },
-    {
-      "command": "Get-FileHash src/company_wiki/source_catalog/artifact_read_model.py (working tree clean for this file at HEAD)",
-      "exit_code": 0,
-      "result": "SHA-256 = f7da68b2c701b49883446ca5284f5d8626df8102850956f0177cac700fa03222 (reviewed_object_sha256)"
-    },
-    {
-      "command": "Get-FileHash receipts/ZR-304/00_wu_card.md + plan_sha256 comparison",
-      "exit_code": 0,
-      "result": "card file sha256=3982173eb96c828cdc0c8bb297e53d77add3c48d40c95de2a7c80e1c8a2230c9; frozen plan_sha256=861e28f9... is a PLAN-LEVEL constant shared by all 32 implementer receipts (CA-001..ZR-304), not a per-unit-card hash — no drift; control_page/plan_inputs hashes match state fields"
-    }
-  ],
-  "created_at_utc": "2026-08-17T20:45:39Z",
-  "findings": [
-    {
-      "detail": "Read model KNOWN_ARTIFACT_ROLES = {normalized, summary, sections, consumer_analysis, transcript} diverges from the frozen production role set source_bundle.KNOWN_ARTIFACT_ROLES = frozenset(ROLE_DEPENDENCIES) = {normalized, markdown, summary, sections, consumer_analysis} (artifact_dag.py:10). The module docstring claims it 'mirrors source_bundle's KNOWN_ARTIFACT_ROLES' — inaccurate: it drops 'markdown' (a valid frozen DAG role) and invents 'transcript' (no producer anywhere in company-wiki src at HEAD). Practical impact today is low: all currently produced roles (normalized, summary, sections) are covered; 'markdown' would fail closed (over-strict) and 'transcript' over-accepted (though still gated downstream by ArtifactHandle generator/hash/path checks). Recommendation: import the frozen set (source_bundle.KNOWN_ARTIFACT_ROLES or ROLE_DEPENDENCIES keys) instead of re-declaring, to keep the 'one read semantics' bound to the production bundle's truth.",
-      "id": "ZR304-REV-001",
-      "severity": "minor"
-    },
-    {
-      "detail": "Acceptance-criteria bullet 'producer_events.py 增量: count_producer_events(store, document_id, request_id=None) 增加 request_id 过滤' was NOT implemented — producer_events.py is unchanged at HEAD (count_producer_events has no request_id parameter). The request-scoped distinction is delivered via producer_journal.calls_this_request(store, document_id, request_id), matching the plan card Annex 2 design ('calls_this_request 只读 producer_attempts 且按 request_id 过滤'). Note the frozen producer_events table has NO request_id column, so filtering count_producer_events by request_id would require altering the frozen table — the implementer's approach is the coherent interpretation. Not an overclaim: the receipt's touched_files/product_code_changes=2 exclude producer_events.py.",
-      "id": "ZR304-REV-002",
-      "severity": "info"
-    },
-    {
-      "detail": "ArtifactHandle reusability gate ('not reusable -> ValueError' at artifact_read_model.py:214-215) is implemented but not directly exercised by the 9 hermetic tests — no test drives an unregistered generator/version, hash mismatch, or path failure through read_artifact. Covered fail-closed paths: unknown role, missing content_sha256, binding priority, legacy fallback. Coverage gap only; code path verified by reading (handle.reusable False -> ValueError with handle.reason).",
-      "id": "ZR304-REV-003",
-      "severity": "info"
-    },
-    {
-      "detail": "The 'no content_sha256 -> ValueError' fail-closed path is unreachable against the production DDL (artifacts.content_sha256 NOT NULL in store.py:198; artifact_bindings.content_sha256 NOT NULL), so it only guards hand-built/legacy rows — consistent with the plan's defensive intent. metadata_json merge for schema_version/source_sha256 matches the artifact_backfill convention (ZR304-IMPL-003 accurate); section_extractor additionally writes schema_version as a column but its metadata_json still carries schema_version, so the read model's merge works for sections artifacts too. Read model SELECT columns all exist in the real store.py DDL.",
-      "id": "ZR304-REV-004",
-      "severity": "info"
-    },
-    {
-      "detail": "Revenue working tree: receipts/ZR-304/00_wu_card.md + 11_implementer_receipt.json and state.json staged (match receipt touched_files); manifests/plan_inputs.json modified but not claimed by the receipt (its sha matches state machine_manifest_sha256, so state is self-consistent); untracked locks/. Revenue HEAD unchanged at 32ad84c as claimed. No side_effect_counts overclaim: product_code_changes=2 matches the 2 new source files; catalog_mutations=0, downloads=0, real_catalog_access=0 consistent with a shadow-only unit.",
-      "id": "ZR304-REV-005",
-      "severity": "info"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-304 independent review",
-  "result_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "32ad84c20438368657d4e4dfce46a8b0d70e69ef",
-    "wiki": "24ae59514eb871fca75e486d67e251d5ed8abaae"
+  {
+   "command": "git -C company-wiki show --stat 24ae595",
+   "exit_code": 0,
+   "result": "exactly 3 files: src/company_wiki/source_catalog/producer_journal.py (NEW, 176), src/company_wiki/source_catalog/artifact_read_model.py (NEW, 271), tests/unit/test_zr304_read_model.py (NEW, 297); 744 insertions, 0 deletions; parent 77ce0f3"
   },
-  "reviewed_object_sha256": "f7da68b2c701b49883446ca5284f5d8626df8102850956f0177cac700fa03222",
-  "reviewer": "reviewer-zr304-independent",
-  "schema_version": 1,
-  "unit": "ZR-304",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_zr304_read_model.py -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "9 passed in 1.04s — matches claimed 9 hermetic tests"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "775 passed in 55.24s — confirms implementer claim 766->+9, no unit regression (did not run full wiki suite per instructions)"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "2 passed; new-file ratchet <=10 enforced; direct McCabe measurement with the ratchet's own AST counting: producer_journal.py max 4, artifact_read_model.py max 8 — matches implementer claim exactly"
+  },
+  {
+   "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/artifact_read_model.py src/company_wiki/source_catalog/producer_journal.py (company-wiki)",
+   "exit_code": 0,
+   "result": "Success: no issues found in 2 source files"
+  },
+  {
+   "command": "grep execute|commit|UPDATE|INSERT|DELETE src/company_wiki/source_catalog/artifact_read_model.py",
+   "exit_code": 0,
+   "result": "no matches — shadow-only confirmed: read model uses only reader.fetchone/fetchall (record_attempt INSERT lives in producer_journal.py writer path as designed)"
+  },
+  {
+   "command": "grep trg_artifact_producer_event src/company_wiki/src",
+   "exit_code": 0,
+   "result": "trigger present at store.py:339 (CREATE TRIGGER IF NOT EXISTS); commit 24ae595 does not touch store.py or producer_events.py — frozen producer_events table/trigger untouched at HEAD"
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-304/11_implementer_receipt.json (revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed; canonical_hash de9944ebf2aeb089aaa750be7fb93f499af81a6427a0fc7b21cd693c0ec2bfbc independently recomputed over dict-minus-canonical_hash (sorted keys, ensure_ascii=False, UTF-8) — MATCH"
+  },
+  {
+   "command": "python -m uc.cli state-show (revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "units.ZR-304.status=independent_review; current_next=ZR-304; current_phase=D_lifecycle_roots_freshness; ZR-303 closure->ZR-304 present"
+  },
+  {
+   "command": "Get-FileHash src/company_wiki/source_catalog/artifact_read_model.py (working tree clean for this file at HEAD)",
+   "exit_code": 0,
+   "result": "SHA-256 = f7da68b2c701b49883446ca5284f5d8626df8102850956f0177cac700fa03222 (reviewed_object_sha256)"
+  },
+  {
+   "command": "Get-FileHash receipts/ZR-304/00_wu_card.md + plan_sha256 comparison",
+   "exit_code": 0,
+   "result": "card file sha256=3982173eb96c828cdc0c8bb297e53d77add3c48d40c95de2a7c80e1c8a2230c9; frozen plan_sha256=861e28f9... is a PLAN-LEVEL constant shared by all 32 implementer receipts (CA-001..ZR-304), not a per-unit-card hash — no drift; control_page/plan_inputs hashes match state fields"
+  }
+ ],
+ "created_at_utc": "2026-08-17T20:45:39Z",
+ "findings": [
+  {
+   "detail": "Read model KNOWN_ARTIFACT_ROLES = {normalized, summary, sections, consumer_analysis, transcript} diverges from the frozen production role set source_bundle.KNOWN_ARTIFACT_ROLES = frozenset(ROLE_DEPENDENCIES) = {normalized, markdown, summary, sections, consumer_analysis} (artifact_dag.py:10). The module docstring claims it 'mirrors source_bundle's KNOWN_ARTIFACT_ROLES' — inaccurate: it drops 'markdown' (a valid frozen DAG role) and invents 'transcript' (no producer anywhere in company-wiki src at HEAD). Practical impact today is low: all currently produced roles (normalized, summary, sections) are covered; 'markdown' would fail closed (over-strict) and 'transcript' over-accepted (though still gated downstream by ArtifactHandle generator/hash/path checks). Recommendation: import the frozen set (source_bundle.KNOWN_ARTIFACT_ROLES or ROLE_DEPENDENCIES keys) instead of re-declaring, to keep the 'one read semantics' bound to the production bundle's truth.",
+   "id": "ZR304-REV-001",
+   "severity": "minor"
+  },
+  {
+   "detail": "Acceptance-criteria bullet 'producer_events.py 增量: count_producer_events(store, document_id, request_id=None) 增加 request_id 过滤' was NOT implemented — producer_events.py is unchanged at HEAD (count_producer_events has no request_id parameter). The request-scoped distinction is delivered via producer_journal.calls_this_request(store, document_id, request_id), matching the plan card Annex 2 design ('calls_this_request 只读 producer_attempts 且按 request_id 过滤'). Note the frozen producer_events table has NO request_id column, so filtering count_producer_events by request_id would require altering the frozen table — the implementer's approach is the coherent interpretation. Not an overclaim: the receipt's touched_files/product_code_changes=2 exclude producer_events.py.",
+   "id": "ZR304-REV-002",
+   "severity": "info"
+  },
+  {
+   "detail": "ArtifactHandle reusability gate ('not reusable -> ValueError' at artifact_read_model.py:214-215) is implemented but not directly exercised by the 9 hermetic tests — no test drives an unregistered generator/version, hash mismatch, or path failure through read_artifact. Covered fail-closed paths: unknown role, missing content_sha256, binding priority, legacy fallback. Coverage gap only; code path verified by reading (handle.reusable False -> ValueError with handle.reason).",
+   "id": "ZR304-REV-003",
+   "severity": "info"
+  },
+  {
+   "detail": "The 'no content_sha256 -> ValueError' fail-closed path is unreachable against the production DDL (artifacts.content_sha256 NOT NULL in store.py:198; artifact_bindings.content_sha256 NOT NULL), so it only guards hand-built/legacy rows — consistent with the plan's defensive intent. metadata_json merge for schema_version/source_sha256 matches the artifact_backfill convention (ZR304-IMPL-003 accurate); section_extractor additionally writes schema_version as a column but its metadata_json still carries schema_version, so the read model's merge works for sections artifacts too. Read model SELECT columns all exist in the real store.py DDL.",
+   "id": "ZR304-REV-004",
+   "severity": "info"
+  },
+  {
+   "detail": "Revenue working tree: receipts/ZR-304/00_wu_card.md + 11_implementer_receipt.json and state.json staged (match receipt touched_files); manifests/plan_inputs.json modified but not claimed by the receipt (its sha matches state machine_manifest_sha256, so state is self-consistent); untracked locks/. Revenue HEAD unchanged at 32ad84c as claimed. No side_effect_counts overclaim: product_code_changes=2 matches the 2 new source files; catalog_mutations=0, downloads=0, real_catalog_access=0 consistent with a shadow-only unit.",
+   "id": "ZR304-REV-005",
+   "severity": "info"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-304 independent review",
+ "result_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "32ad84c20438368657d4e4dfce46a8b0d70e69ef",
+  "wiki": "24ae59514eb871fca75e486d67e251d5ed8abaae"
+ },
+ "reviewed_object_sha256": "d65797c65a4fa9448e7aa2ac8d7b1ae0349299fb97938f1e10f3fe2434636e46",
+ "reviewer": "reviewer-zr304-independent",
+ "schema_version": 1,
+ "unit": "ZR-304",
+ "verdict": "accepted"
 }

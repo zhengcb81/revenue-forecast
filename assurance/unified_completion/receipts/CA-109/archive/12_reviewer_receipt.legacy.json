@@ -1,0 +1,24 @@
+{
+  "unit": "CA-109",
+  "reviewer": "reviewer-ca109-independent-fast",
+  "verdict": "accepted",
+  "reviewed_at_utc": "2026-08-14T01:54:08Z",
+  "base_triplet": {
+    "revenue": "d7e10f265cb5f984f430008f6399ff12abf0b300"
+  },
+  "result_triplet": {
+    "revenue": "c5d6fbcff05160c7dc000c5729f0cb0c6f55dd0d"
+  },
+  "commands": [
+    "$env:PYTHONPATH='C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion'; python -B -m uc.cli legacy-gate 2>&1 | Select-String 'verdict|LEGACY-CALLER|quality.yml' | Select-Object -First 5",
+    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -1",
+    "python -B -m uc.cli receipt-validate --receipt C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\receipts\\CA-109\\11_implementer_receipt.json",
+    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse c5d6fbc^"
+  ],
+  "findings": [
+    "legacy-gate: verdict=callers_found, LEGACY-CALLER-001 detected in .github\\workflows\\quality.yml, successor=CA-201, rc=1 (expected for callers_found)",
+    "HEAD of revenue-forecast = c5d6fbc feat(CA-109): legacy gate isolation - caller scan with registered findings (CI rewiring deferred to CA-201)",
+    "receipt-validate: OK, receipt is canonical and well-formed, rc=0"
+  ],
+  "note": "ultra-fast review"
+}

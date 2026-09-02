@@ -1,70 +1,70 @@
 {
-  "at_utc": "2026-08-20T21:40:38+00:00",
-  "canonical_hash": "db972108a83315ccc14ddd475562674230c14ffa0de517ffc4979bdb447bf189",
-  "commands": [
-    {
-      "command": "git log --oneline -3; git show 3f81318 --stat; git status --short",
-      "exit_code": 0,
-      "result": "HEAD=3f81318; ZR-710 commit = exactly 2 files +175/-2 (revenue_forecast.py +21, test_zr710 +156); no drift on reviewed files."
-    },
-    {
-      "command": "pytest tests/test_zr710_publication_txn.py -q",
-      "exit_code": 0,
-      "result": "6 passed in 0.63s"
-    },
-    {
-      "command": "pytest 4-file regression (zr704/zr705/publication/output)",
-      "exit_code": 0,
-      "result": "53 passed in 2.75s"
-    },
-    {
-      "command": "adversarial probe a-e (throwaway %TEMP%)",
-      "exit_code": 0,
-      "result": "ALL PASS: a atomic write no orphans; b os.replace failure no target; c write failure no target; d in-process registry failure rc==2 no output/registry file; e same input twice byte-identical outputs + 2 registry entries."
-    },
-    {
-      "command": "ruff check (2 files)",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "complexity ratchet",
-      "exit_code": 0,
-      "result": "2 passed in 0.40s"
-    }
-  ],
-  "created_at_utc": "2026-08-20T21:40:38+00:00",
-  "findings": [
-    {
-      "detail": "git diff 33cd6d6 3f81318 = 12 files (+620/-9) because ZR-706 commits sit between; git show 3f81318 = exactly the claimed 2 files +175/-2. Instruction imprecision, not a defect.",
-      "id": "ZR710-REV-001",
-      "severity": "info",
-      "title": "Replay instruction diff range spans ZR-706 commits"
-    },
-    {
-      "detail": "Replay scoped to ZR-710 file + regression set per checklist; known pre-existing items out of scope.",
-      "id": "ZR710-REV-002",
-      "severity": "info",
-      "title": "Full-suite claim (515+106) not replayed; fc1103 env hang known"
-    },
-    {
-      "detail": "_atomic_write_text opens tmp with newline=\"\\n\", replacing Path.write_text CRLF translation; strengthens cross-run byte-identity (C3). All 53 regression tests pass.",
-      "id": "ZR710-REV-003",
-      "severity": "info",
-      "title": "Output line-ending behavior changed to LF (newline=\"\\n\")"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "3f8131847513563730148f2ae53ab61bafdf1d88",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "at_utc": "2026-08-20T21:40:38+00:00",
+ "canonical_hash": "1ec2cd3af2ba556a65b13d6a77518e69d24a6ef1bd0f958d261e95ddccee5254",
+ "commands": [
+  {
+   "command": "git log --oneline -3; git show 3f81318 --stat; git status --short",
+   "exit_code": 0,
+   "result": "HEAD=3f81318; ZR-710 commit = exactly 2 files +175/-2 (revenue_forecast.py +21, test_zr710 +156); no drift on reviewed files."
   },
-  "reviewed_commit": "3f8131847513563730148f2ae53ab61bafdf1d88",
-  "reviewed_object_sha256": "9cc1f80a483f2d2141b29286e62781c21b50aa58821802ac5c8f95e632bcaa8e",
-  "reviewer": "reviewer-zr710-independent",
-  "schema_version": 1,
-  "summary": "Independent replay of ZR-710 at 3f81318 confirms C1-C3: 2-file +175/-2 exact; 6/6 unit; 53/53 regression; 5/5 adversarial probes (atomic write, fault injection x3, idempotency); ruff + ratchet green. Only info findings. Verdict: accepted.",
-  "unit": "ZR-710",
-  "verdict": "accepted"
+  {
+   "command": "pytest tests/test_zr710_publication_txn.py -q",
+   "exit_code": 0,
+   "result": "6 passed in 0.63s"
+  },
+  {
+   "command": "pytest 4-file regression (zr704/zr705/publication/output)",
+   "exit_code": 0,
+   "result": "53 passed in 2.75s"
+  },
+  {
+   "command": "adversarial probe a-e (throwaway %TEMP%)",
+   "exit_code": 0,
+   "result": "ALL PASS: a atomic write no orphans; b os.replace failure no target; c write failure no target; d in-process registry failure rc==2 no output/registry file; e same input twice byte-identical outputs + 2 registry entries."
+  },
+  {
+   "command": "ruff check (2 files)",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "complexity ratchet",
+   "exit_code": 0,
+   "result": "2 passed in 0.40s"
+  }
+ ],
+ "created_at_utc": "2026-08-20T21:40:38+00:00",
+ "findings": [
+  {
+   "detail": "git diff 33cd6d6 3f81318 = 12 files (+620/-9) because ZR-706 commits sit between; git show 3f81318 = exactly the claimed 2 files +175/-2. Instruction imprecision, not a defect.",
+   "id": "ZR710-REV-001",
+   "severity": "info",
+   "title": "Replay instruction diff range spans ZR-706 commits"
+  },
+  {
+   "detail": "Replay scoped to ZR-710 file + regression set per checklist; known pre-existing items out of scope.",
+   "id": "ZR710-REV-002",
+   "severity": "info",
+   "title": "Full-suite claim (515+106) not replayed; fc1103 env hang known"
+  },
+  {
+   "detail": "_atomic_write_text opens tmp with newline=\"\\n\", replacing Path.write_text CRLF translation; strengthens cross-run byte-identity (C3). All 53 regression tests pass.",
+   "id": "ZR710-REV-003",
+   "severity": "info",
+   "title": "Output line-ending behavior changed to LF (newline=\"\\n\")"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "3f8131847513563730148f2ae53ab61bafdf1d88",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_commit": "3f8131847513563730148f2ae53ab61bafdf1d88",
+ "reviewed_object_sha256": "d4fd4220f0d89ed60192fc082c7583796526abae1e397020d3098bafdc45fb22",
+ "reviewer": "reviewer-zr710-independent",
+ "schema_version": 1,
+ "summary": "Independent replay of ZR-710 at 3f81318 confirms C1-C3: 2-file +175/-2 exact; 6/6 unit; 53/53 regression; 5/5 adversarial probes (atomic write, fault injection x3, idempotency); ruff + ratchet green. Only info findings. Verdict: accepted.",
+ "unit": "ZR-710",
+ "verdict": "accepted"
 }

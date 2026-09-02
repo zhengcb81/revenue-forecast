@@ -1,84 +1,84 @@
 {
-  "base_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "b457f86979bd6de53d7fe0ea92e2bbb6d702b47c",
-    "wiki": "4714a1ee6a9ac6cd6f7994df61969629e45309bc"
+ "base_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "b457f86979bd6de53d7fe0ea92e2bbb6d702b47c",
+  "wiki": "4714a1ee6a9ac6cd6f7994df61969629e45309bc"
+ },
+ "canonical_hash": "a736131006b443521cabc507035aa7fde6517957b78c1fa6c94a9d4e8c9db130",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD",
+   "exit_code": 0,
+   "result": "cbdb05453190fe0906cc352d25a19b70c3bdac54 (== expected fix commit)"
   },
-  "canonical_hash": "96c63fa1a290be92761a8b7927c9c3f3fa5502362df92498e8d4fc8b10dcca49",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD",
-      "exit_code": 0,
-      "result": "cbdb05453190fe0906cc352d25a19b70c3bdac54 (== expected fix commit)"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat cbdb054 && git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse cbdb054^",
-      "exit_code": 0,
-      "result": "commit touches exactly src/company_wiki/source_catalog/prompt_injection.py (+2/-2) and tests/unit/test_prompt_injection_guard.py (+14); parent = 4714a1ee6a9ac6cd6f7994df61969629e45309bc; diff adds str|None annotation + None guard in _require_sha256 and test_evaluate_ttl_boundary_equality_is_still_hit"
-    },
-    {
-      "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/prompt_injection.py src/company_wiki/source_catalog/prompt_injection_guard.py (cwd=company-wiki)",
-      "exit_code": 0,
-      "result": "Success: no issues found in 2 source files"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_prompt_injection_guard.py tests/unit/test_source_lifecycle.py tests/contract/test_fc905_receipt_envelope.py -q --tb=short (cwd=company-wiki)",
-      "exit_code": 0,
-      "result": "35 passed in 2.26s (guard 17 + lifecycle 9 + fc905 9)"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q (cwd=company-wiki)",
-      "exit_code": 0,
-      "result": "2 passed in 0.57s (prompt_injection.py complexity <= frozen 15)"
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-302/11_implementer_receipt.json (cwd=revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt receipts/ZR-302/11_implementer_receipt.json is canonical and well-formed; stored canonical_hash 7095a012051ce87b96a264295ce38904d49a1f9762d0c1df24eb7564e7191208 recomputed identically"
-    },
-    {
-      "command": "python -m uc.cli state-show (cwd=revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "ZR-302 status = independent_review, updated_at_utc 2026-08-17T20:00:02.420065+00:00; current_next = ZR-302; implementation_status = in_progress"
-    }
-  ],
-  "created_at_utc": "2026-08-17T20:09:33.028089+00:00",
-  "findings": [
-    {
-      "detail": "_require_sha256 in src/company_wiki/source_catalog/prompt_injection.py now declares value: str | None; None handled fail-closed (optional+None -> return; otherwise None or non-64-hex -> PromptInjectionReviewError). Call sites source_sha256/policy_hash pass str|None with optional=True. mypy (conda python) on prompt_injection.py + prompt_injection_guard.py: Success, no issues in 2 source files. Working tree clean for both files.",
-      "id": "ZR302-REREV-001",
-      "severity": "info",
-      "title": "REV-001 verified fixed (mypy str|None)"
-    },
-    {
-      "detail": "Implementer receipt 11_implementer_receipt.json design now states 'absent（无 receipt；malformed receipt 亦归 absent——fail closed，见 ZR302-REV-002）'; notes list all three REV fixes (REV-001 mypy annotation, REV-002 wording, REV-003 TTL boundary test). Code read_prompt_injection_review returns None (envelope -> not_reviewed, never faked green) for malformed/unknown-schema/unknown-status receipts. result_triplet.wiki = cbdb05453190fe0906cc352d25a19b70c3bdac54.",
-      "id": "ZR302-REREV-002",
-      "severity": "info",
-      "title": "REV-002 verified fixed (receipt design wording malformed->absent)"
-    },
-    {
-      "detail": "test_evaluate_ttl_boundary_equality_is_still_hit added in cbdb054 (tests/unit/test_prompt_injection_guard.py line 221): reviewed_at 2026-08-01T00:00:00Z, now 2026-08-02T00:00:00Z, ttl_seconds=86400 -> now - reviewed_at == ttl exactly; asserts cache_state == 'hit' and status == 'not_detected' (strict > expiry).",
-      "id": "ZR302-REREV-003",
-      "severity": "info",
-      "title": "REV-003 verified fixed (TTL-boundary equality test)"
-    },
-    {
-      "detail": "HEAD == cbdb05453190fe0906cc352d25a19b70c3bdac54 with parent 4714a1ee6a9ac6cd6f7994df61969629e45309bc; fix commit touches only the two expected files. 35 passed (guard/lifecycle/fc905) and complexity ratchet 2 passed. Machine state intact: ZR-302 independent_review, current_next ZR-302.",
-      "id": "ZR302-REREV-004",
-      "severity": "info",
-      "title": "Commit hygiene + suites green"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-302 independent review re-check (REV-001/002/003)",
-  "result_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "b457f86979bd6de53d7fe0ea92e2bbb6d702b47c",
-    "wiki": "cbdb05453190fe0906cc352d25a19b70c3bdac54"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat cbdb054 && git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse cbdb054^",
+   "exit_code": 0,
+   "result": "commit touches exactly src/company_wiki/source_catalog/prompt_injection.py (+2/-2) and tests/unit/test_prompt_injection_guard.py (+14); parent = 4714a1ee6a9ac6cd6f7994df61969629e45309bc; diff adds str|None annotation + None guard in _require_sha256 and test_evaluate_ttl_boundary_equality_is_still_hit"
   },
-  "reviewed_object_sha256": "3c5711048c57f4ec98828ad7c95ba53b899f0d730ddfbcac188f586eaf54ea0d",
-  "reviewer": "reviewer-zr302-independent",
-  "schema_version": 1,
-  "unit": "ZR-302",
-  "verdict": "accepted"
+  {
+   "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/prompt_injection.py src/company_wiki/source_catalog/prompt_injection_guard.py (cwd=company-wiki)",
+   "exit_code": 0,
+   "result": "Success: no issues found in 2 source files"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_prompt_injection_guard.py tests/unit/test_source_lifecycle.py tests/contract/test_fc905_receipt_envelope.py -q --tb=short (cwd=company-wiki)",
+   "exit_code": 0,
+   "result": "35 passed in 2.26s (guard 17 + lifecycle 9 + fc905 9)"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q (cwd=company-wiki)",
+   "exit_code": 0,
+   "result": "2 passed in 0.57s (prompt_injection.py complexity <= frozen 15)"
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-302/11_implementer_receipt.json (cwd=revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt receipts/ZR-302/11_implementer_receipt.json is canonical and well-formed; stored canonical_hash 7095a012051ce87b96a264295ce38904d49a1f9762d0c1df24eb7564e7191208 recomputed identically"
+  },
+  {
+   "command": "python -m uc.cli state-show (cwd=revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "ZR-302 status = independent_review, updated_at_utc 2026-08-17T20:00:02.420065+00:00; current_next = ZR-302; implementation_status = in_progress"
+  }
+ ],
+ "created_at_utc": "2026-08-17T20:09:33.028089+00:00",
+ "findings": [
+  {
+   "detail": "_require_sha256 in src/company_wiki/source_catalog/prompt_injection.py now declares value: str | None; None handled fail-closed (optional+None -> return; otherwise None or non-64-hex -> PromptInjectionReviewError). Call sites source_sha256/policy_hash pass str|None with optional=True. mypy (conda python) on prompt_injection.py + prompt_injection_guard.py: Success, no issues in 2 source files. Working tree clean for both files.",
+   "id": "ZR302-REREV-001",
+   "severity": "info",
+   "title": "REV-001 verified fixed (mypy str|None)"
+  },
+  {
+   "detail": "Implementer receipt 11_implementer_receipt.json design now states 'absent（无 receipt；malformed receipt 亦归 absent——fail closed，见 ZR302-REV-002）'; notes list all three REV fixes (REV-001 mypy annotation, REV-002 wording, REV-003 TTL boundary test). Code read_prompt_injection_review returns None (envelope -> not_reviewed, never faked green) for malformed/unknown-schema/unknown-status receipts. result_triplet.wiki = cbdb05453190fe0906cc352d25a19b70c3bdac54.",
+   "id": "ZR302-REREV-002",
+   "severity": "info",
+   "title": "REV-002 verified fixed (receipt design wording malformed->absent)"
+  },
+  {
+   "detail": "test_evaluate_ttl_boundary_equality_is_still_hit added in cbdb054 (tests/unit/test_prompt_injection_guard.py line 221): reviewed_at 2026-08-01T00:00:00Z, now 2026-08-02T00:00:00Z, ttl_seconds=86400 -> now - reviewed_at == ttl exactly; asserts cache_state == 'hit' and status == 'not_detected' (strict > expiry).",
+   "id": "ZR302-REREV-003",
+   "severity": "info",
+   "title": "REV-003 verified fixed (TTL-boundary equality test)"
+  },
+  {
+   "detail": "HEAD == cbdb05453190fe0906cc352d25a19b70c3bdac54 with parent 4714a1ee6a9ac6cd6f7994df61969629e45309bc; fix commit touches only the two expected files. 35 passed (guard/lifecycle/fc905) and complexity ratchet 2 passed. Machine state intact: ZR-302 independent_review, current_next ZR-302.",
+   "id": "ZR302-REREV-004",
+   "severity": "info",
+   "title": "Commit hygiene + suites green"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-302 independent review re-check (REV-001/002/003)",
+ "result_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "b457f86979bd6de53d7fe0ea92e2bbb6d702b47c",
+  "wiki": "cbdb05453190fe0906cc352d25a19b70c3bdac54"
+ },
+ "reviewed_object_sha256": "7095a012051ce87b96a264295ce38904d49a1f9762d0c1df24eb7564e7191208",
+ "reviewer": "reviewer-zr302-independent",
+ "schema_version": 1,
+ "unit": "ZR-302",
+ "verdict": "accepted"
 }

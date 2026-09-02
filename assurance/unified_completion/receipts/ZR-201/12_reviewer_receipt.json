@@ -1,67 +1,67 @@
 {
-  "base_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "81ece1d10326e66b4d328edb3e4199ae9238efa4",
-    "wiki": "a46db08aac6fcff8e2cda3e89e30894759e9cb03"
+ "base_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "81ece1d10326e66b4d328edb3e4199ae9238efa4",
+  "wiki": "a46db08aac6fcff8e2cda3e89e30894759e9cb03"
+ },
+ "canonical_hash": "b8ba19dd972b1c222d48158cc911d0d7476d4f6f7446cd9c667c156fd4b0a9ef",
+ "commands": [
+  {
+   "command": "git -C company-wiki rev-parse HEAD; git status --short; git show --stat a46db08aac6fcff8e2cda3e89e30894759e9cb03",
+   "exit_code": 0
   },
-  "canonical_hash": "ebd777e3f77e7e77197465e2c08ec7520b616bd7b48ca7c793285f1b6edda052",
-  "commands": [
-    {
-      "command": "git -C company-wiki rev-parse HEAD; git status --short; git show --stat a46db08aac6fcff8e2cda3e89e30894759e9cb03",
-      "exit_code": 0
-    },
-    {
-      "command": "git -C revenue-forecast rev-parse HEAD; git status --short; git log --oneline -8",
-      "exit_code": 0
-    },
-    {
-      "command": "git -C revenue-forecast show --stat 81ece1d10326e66b4d328edb3e4199ae9238efa4; git diff --name-only 81ece1d^ 81ece1d",
-      "exit_code": 0
-    },
-    {
-      "command": "git -C company-wiki diff --name-only a46db08^ a46db08; git show --format=%H %P --no-patch a46db08",
-      "exit_code": 0
-    },
-    {
-      "command": "git -C revenue-forecast diff 81ece1d^ 81ece1d -- assurance/unified_completion/state.json",
-      "exit_code": 0
-    },
-    {
-      "command": "uv run python -m pytest tests/unit/test_catalog_reader.py -q --tb=short (cwd company-wiki, PYTHONIOENCODING=utf-8)",
-      "exit_code": 0,
-      "result": "10 passed in 0.52s"
-    },
-    {
-      "command": "uv run python -m pytest tests/unit -q --tb=short (cwd company-wiki, PYTHONIOENCODING=utf-8)",
-      "exit_code": 0,
-      "result": "703 passed in 37.51s"
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-201/11_implementer_receipt.json (cwd revenue-forecast, PYTHONPATH=assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: canonical and well-formed"
-    },
-    {
-      "command": "python -c \"json read state.json units.ZR-201, current_next, current_phase\" (cwd revenue-forecast)",
-      "exit_code": 0
-    },
-    {
-      "command": "Get-FileHash -Algorithm SHA256 -LiteralPath company-wiki/src/company_wiki/source_catalog/reader.py",
-      "exit_code": 0
-    }
-  ],
-  "created_at_utc": "2026-08-14T09:01:16.844384Z",
-  "findings": [],
-  "kind": "reviewer",
-  "note": "ZR-201 independent review",
-  "result_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "81ece1d10326e66b4d328edb3e4199ae9238efa4",
-    "wiki": "a46db08aac6fcff8e2cda3e89e30894759e9cb03"
+  {
+   "command": "git -C revenue-forecast rev-parse HEAD; git status --short; git log --oneline -8",
+   "exit_code": 0
   },
-  "reviewed_object_sha256": "ad57bdbb87edb0273cfbcf5491d3fd1c17ab57645c8adbe089affed858aaf560",
-  "reviewer": "reviewer-zr201-independent",
-  "schema_version": 1,
-  "unit": "ZR-201",
-  "verdict": "accepted"
+  {
+   "command": "git -C revenue-forecast show --stat 81ece1d10326e66b4d328edb3e4199ae9238efa4; git diff --name-only 81ece1d^ 81ece1d",
+   "exit_code": 0
+  },
+  {
+   "command": "git -C company-wiki diff --name-only a46db08^ a46db08; git show --format=%H %P --no-patch a46db08",
+   "exit_code": 0
+  },
+  {
+   "command": "git -C revenue-forecast diff 81ece1d^ 81ece1d -- assurance/unified_completion/state.json",
+   "exit_code": 0
+  },
+  {
+   "command": "uv run python -m pytest tests/unit/test_catalog_reader.py -q --tb=short (cwd company-wiki, PYTHONIOENCODING=utf-8)",
+   "exit_code": 0,
+   "result": "10 passed in 0.52s"
+  },
+  {
+   "command": "uv run python -m pytest tests/unit -q --tb=short (cwd company-wiki, PYTHONIOENCODING=utf-8)",
+   "exit_code": 0,
+   "result": "703 passed in 37.51s"
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-201/11_implementer_receipt.json (cwd revenue-forecast, PYTHONPATH=assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: canonical and well-formed"
+  },
+  {
+   "command": "python -c \"json read state.json units.ZR-201, current_next, current_phase\" (cwd revenue-forecast)",
+   "exit_code": 0
+  },
+  {
+   "command": "Get-FileHash -Algorithm SHA256 -LiteralPath company-wiki/src/company_wiki/source_catalog/reader.py",
+   "exit_code": 0
+  }
+ ],
+ "created_at_utc": "2026-08-14T09:01:16.844384Z",
+ "findings": [],
+ "kind": "reviewer",
+ "note": "ZR-201 independent review",
+ "result_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "81ece1d10326e66b4d328edb3e4199ae9238efa4",
+  "wiki": "a46db08aac6fcff8e2cda3e89e30894759e9cb03"
+ },
+ "reviewed_object_sha256": "8c665133e51a72ea4d697c2467109df06dfcaa6ae74f614b4de4050c06b9ec1a",
+ "reviewer": "reviewer-zr201-independent",
+ "schema_version": 1,
+ "unit": "ZR-201",
+ "verdict": "accepted"
 }

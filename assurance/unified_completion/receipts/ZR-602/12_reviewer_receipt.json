@@ -1,128 +1,128 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "2ba0368536982cdd2e440ac379dc461c5fce984f",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "2ba0368536982cdd2e440ac379dc461c5fce984f",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "canonical_hash": "28ca744fa6f938e425fbba9037a23c16a0f59598f4ad47c486f2666935ad457a",
+ "commands": [
+  {
+   "command": "git log --oneline -2",
+   "exit_code": 0,
+   "result": "HEAD=cb82620 (ZR-602 impl) on parent 2ba0368 (ZR-601 closure); git diff 2ba0368 cb82620 --stat = 4 files +333/-1 matching the card"
   },
-  "canonical_hash": "7c972a4e78d88b83d07959747d14c3bbb62d98eb452447d604cfe8e548040a5b",
-  "commands": [
-    {
-      "command": "git log --oneline -2",
-      "exit_code": 0,
-      "result": "HEAD=cb82620 (ZR-602 impl) on parent 2ba0368 (ZR-601 closure); git diff 2ba0368 cb82620 --stat = 4 files +333/-1 matching the card"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr602_asset_facts_basis.py -q --tb=short",
-      "exit_code": 0,
-      "result": "15 passed (pre-delta baseline)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr601_asset_facts.py tests/test_golden_behavior_lock.py tests/test_industry_end_to_end.py tests/test_models.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "31 passed, 63 subtests passed (golden behavior-lock hashes unchanged)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/contracts/constants.py scripts/contracts/document.py scripts/forecast/segments.py tests/test_zr602_asset_facts_basis.py",
-      "exit_code": 0,
-      "result": "All checks passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
-      "exit_code": 0,
-      "result": "Ran 2 tests, OK; frozen limits confirmed in source: contracts/document.py max 32, forecast/segments.py max 15"
-    },
-    {
-      "command": "reviewer adversarial probes (22 checks: semantic isolation injection, basis completeness/fail-closed/additive, unit consistency drift/cross-period/normalization/family-scope/precedence)",
-      "exit_code": 0,
-      "result": "22/22 passed"
-    },
-    {
-      "command": "reviewer edge probes (basis type robustness: ownership_basis as list/dict/int, reporting_standard/measurement_date as list, basis as list/int)",
-      "exit_code": 0,
-      "result": "Pre-delta: 2/7 raised TypeError on unhashable ownership_basis (REV-001). Post-delta: 7/7 fail closed as ForecastInputError — TypeError eliminated"
-    },
-    {
-      "command": "git diff 2ba0368 cb82620 | grep -i 'zijin|kamoa|porgera|tongling|luanshya|kipushi|collahuasi|ivanhoe|mmg|cmoc|fqml|laizhou|shanghai|guangdong'",
-      "exit_code": 0,
-      "result": "No company/mine names in the diff; only hit is the test's own negative assertion; ASSET_FACT_MODELS == frozenset({'resource','reserve_depletion'}) — zero product hardcoding confirmed"
-    },
-    {
-      "command": "git cat-file -t 2ba0368536982cdd2e440ac379dc461c5fce984f; git cat-file -t cb82620b649c542a3388c800e2b697a4067b1c22; git rev-parse HEAD",
-      "exit_code": 0,
-      "result": "base_triplet.revenue=2ba0368 is a real git commit object; result_triplet.revenue=cb82620 is a real git commit object and equals git HEAD. filing/wiki triplet hashes (5a1c18f, 26a6b22) are not objects in this repo (cross-repo triplet)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-602/11_implementer_receipt.json (CWD assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt receipts/ZR-602/11_implementer_receipt.json is canonical and well-formed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
-      "exit_code": 0,
-      "result": "540 passed, 3 deselected, 106 subtests passed (pre-delta baseline; fc1103 deselection = pre-existing environment baseline)"
-    },
-    {
-      "command": "REV-001 delta: git status --short && git diff --cached -- scripts/contracts/document.py tests/test_zr602_asset_facts_basis.py",
-      "exit_code": 0,
-      "result": "Delta is STAGED, NOT committed (no new commit on top of cb82620 despite the change note). document.py: require() condition now guards isinstance(basis['ownership_basis'], str) and short-circuits before the membership test; test file adds test_c2_unhashable_ownership_basis_rejected parametrized over [[], {}, 7, None, 1.5]"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr602_asset_facts_basis.py -q --tb=short  [post-delta]",
-      "exit_code": 0,
-      "result": "20 passed (15 + 5 new parametrized cases)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/contracts/document.py tests/test_zr602_asset_facts_basis.py  [post-delta]",
-      "exit_code": 0,
-      "result": "All checks passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py  [post-delta]",
-      "exit_code": 0,
-      "result": "Ran 2 tests, OK (document.py still <=32 after the isinstance guard)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr601_asset_facts.py tests/test_golden_behavior_lock.py tests/test_industry_end_to_end.py tests/test_models.py -q --timeout=120  [post-delta]",
-      "exit_code": 0,
-      "result": "31 passed, 63 subtests passed (regression subsets still green after the delta)"
-    }
-  ],
-  "created_at_utc": "2026-08-20T22:54:46.398213+00:00",
-  "findings": [
-    {
-      "detail": "Delta fix verified: scripts/contracts/document.py validate_parameter_basis now guards isinstance(basis['ownership_basis'], str) inside the require condition, short-circuiting before the set-membership test. Independent edge probes confirm ownership_basis as list/dict/int/None/float now raise ForecastInputError 'unsupported ownership_basis' (previously TypeError). Regression test test_c2_unhashable_ownership_basis_rejected (5 parametrized cases: [[], {}, 7, None, 1.5]) passes. C2 fail-closed contract now holds uniformly.",
-      "id": "REV-001",
-      "severity": "info",
-      "title": "RESOLVED: unhashable ownership_basis now raises ForecastInputError"
-    },
-    {
-      "detail": "validate_parameter_basis enforces presence/validity of the three required fields but does not reject unknown extra keys. This matches the documented additive-contract intent; no action required.",
-      "id": "REV-002",
-      "severity": "info",
-      "title": "Basis accepts extra unknown keys (documented additive contract)"
-    },
-    {
-      "detail": "base_triplet.revenue=2ba0368... and result_triplet.revenue=cb82620... are real git commit objects in this repo and result equals HEAD; filing (5a1c18f) and wiki (26a6b22) hashes are not objects in the revenue repo (they live in other repos, out of the reviewer's repo scope). receipt-validate confirms the implementer receipt is canonical and well-formed.",
-      "id": "REV-003",
-      "severity": "info",
-      "title": "Filing/wiki triplet hashes verified as cross-repo (revenue side confirmed)"
-    },
-    {
-      "detail": "At review time the delta (document.py isinstance guard + 5-case regression test) exists only in the git index/working tree — git log shows no new commit on top of cb82620, and git status shows both files as staged ('M ' in index). The code delta itself passes every gate (20 tests, ruff, ratchet, regression subsets), so the verdict is unaffected; the orchestrator/implementer must commit the staged delta and refresh the result_triplet/receipt once committed so the reviewed object hash (7bd58874...) is anchored to a commit.",
-      "id": "REV-004",
-      "severity": "info",
-      "title": "REV-001 delta is staged, not committed"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "cb82620b649c542a3388c800e2b697a4067b1c22",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr602_asset_facts_basis.py -q --tb=short",
+   "exit_code": 0,
+   "result": "15 passed (pre-delta baseline)"
   },
-  "reviewed_object_sha256": "7bd5887440dc7acb13163d8c35eab99be59ba2e6b5b21be5f502ccc5e66c2be1",
-  "reviewer": "reviewer-zr602-independent",
-  "schema_version": 1,
-  "unit": "ZR-602",
-  "verdict": "accepted"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr601_asset_facts.py tests/test_golden_behavior_lock.py tests/test_industry_end_to_end.py tests/test_models.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "31 passed, 63 subtests passed (golden behavior-lock hashes unchanged)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check scripts/contracts/constants.py scripts/contracts/document.py scripts/forecast/segments.py tests/test_zr602_asset_facts_basis.py",
+   "exit_code": 0,
+   "result": "All checks passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+   "exit_code": 0,
+   "result": "Ran 2 tests, OK; frozen limits confirmed in source: contracts/document.py max 32, forecast/segments.py max 15"
+  },
+  {
+   "command": "reviewer adversarial probes (22 checks: semantic isolation injection, basis completeness/fail-closed/additive, unit consistency drift/cross-period/normalization/family-scope/precedence)",
+   "exit_code": 0,
+   "result": "22/22 passed"
+  },
+  {
+   "command": "reviewer edge probes (basis type robustness: ownership_basis as list/dict/int, reporting_standard/measurement_date as list, basis as list/int)",
+   "exit_code": 0,
+   "result": "Pre-delta: 2/7 raised TypeError on unhashable ownership_basis (REV-001). Post-delta: 7/7 fail closed as ForecastInputError — TypeError eliminated"
+  },
+  {
+   "command": "git diff 2ba0368 cb82620 | grep -i 'zijin|kamoa|porgera|tongling|luanshya|kipushi|collahuasi|ivanhoe|mmg|cmoc|fqml|laizhou|shanghai|guangdong'",
+   "exit_code": 0,
+   "result": "No company/mine names in the diff; only hit is the test's own negative assertion; ASSET_FACT_MODELS == frozenset({'resource','reserve_depletion'}) — zero product hardcoding confirmed"
+  },
+  {
+   "command": "git cat-file -t 2ba0368536982cdd2e440ac379dc461c5fce984f; git cat-file -t cb82620b649c542a3388c800e2b697a4067b1c22; git rev-parse HEAD",
+   "exit_code": 0,
+   "result": "base_triplet.revenue=2ba0368 is a real git commit object; result_triplet.revenue=cb82620 is a real git commit object and equals git HEAD. filing/wiki triplet hashes (5a1c18f, 26a6b22) are not objects in this repo (cross-repo triplet)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-602/11_implementer_receipt.json (CWD assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt receipts/ZR-602/11_implementer_receipt.json is canonical and well-formed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+   "exit_code": 0,
+   "result": "540 passed, 3 deselected, 106 subtests passed (pre-delta baseline; fc1103 deselection = pre-existing environment baseline)"
+  },
+  {
+   "command": "REV-001 delta: git status --short && git diff --cached -- scripts/contracts/document.py tests/test_zr602_asset_facts_basis.py",
+   "exit_code": 0,
+   "result": "Delta is STAGED, NOT committed (no new commit on top of cb82620 despite the change note). document.py: require() condition now guards isinstance(basis['ownership_basis'], str) and short-circuits before the membership test; test file adds test_c2_unhashable_ownership_basis_rejected parametrized over [[], {}, 7, None, 1.5]"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr602_asset_facts_basis.py -q --tb=short  [post-delta]",
+   "exit_code": 0,
+   "result": "20 passed (15 + 5 new parametrized cases)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check scripts/contracts/document.py tests/test_zr602_asset_facts_basis.py  [post-delta]",
+   "exit_code": 0,
+   "result": "All checks passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py  [post-delta]",
+   "exit_code": 0,
+   "result": "Ran 2 tests, OK (document.py still <=32 after the isinstance guard)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr601_asset_facts.py tests/test_golden_behavior_lock.py tests/test_industry_end_to_end.py tests/test_models.py -q --timeout=120  [post-delta]",
+   "exit_code": 0,
+   "result": "31 passed, 63 subtests passed (regression subsets still green after the delta)"
+  }
+ ],
+ "created_at_utc": "2026-08-20T22:54:46.398213+00:00",
+ "findings": [
+  {
+   "detail": "Delta fix verified: scripts/contracts/document.py validate_parameter_basis now guards isinstance(basis['ownership_basis'], str) inside the require condition, short-circuiting before the set-membership test. Independent edge probes confirm ownership_basis as list/dict/int/None/float now raise ForecastInputError 'unsupported ownership_basis' (previously TypeError). Regression test test_c2_unhashable_ownership_basis_rejected (5 parametrized cases: [[], {}, 7, None, 1.5]) passes. C2 fail-closed contract now holds uniformly.",
+   "id": "REV-001",
+   "severity": "info",
+   "title": "RESOLVED: unhashable ownership_basis now raises ForecastInputError"
+  },
+  {
+   "detail": "validate_parameter_basis enforces presence/validity of the three required fields but does not reject unknown extra keys. This matches the documented additive-contract intent; no action required.",
+   "id": "REV-002",
+   "severity": "info",
+   "title": "Basis accepts extra unknown keys (documented additive contract)"
+  },
+  {
+   "detail": "base_triplet.revenue=2ba0368... and result_triplet.revenue=cb82620... are real git commit objects in this repo and result equals HEAD; filing (5a1c18f) and wiki (26a6b22) hashes are not objects in the revenue repo (they live in other repos, out of the reviewer's repo scope). receipt-validate confirms the implementer receipt is canonical and well-formed.",
+   "id": "REV-003",
+   "severity": "info",
+   "title": "Filing/wiki triplet hashes verified as cross-repo (revenue side confirmed)"
+  },
+  {
+   "detail": "At review time the delta (document.py isinstance guard + 5-case regression test) exists only in the git index/working tree — git log shows no new commit on top of cb82620, and git status shows both files as staged ('M ' in index). The code delta itself passes every gate (20 tests, ruff, ratchet, regression subsets), so the verdict is unaffected; the orchestrator/implementer must commit the staged delta and refresh the result_triplet/receipt once committed so the reviewed object hash (7bd58874...) is anchored to a commit.",
+   "id": "REV-004",
+   "severity": "info",
+   "title": "REV-001 delta is staged, not committed"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "cb82620b649c542a3388c800e2b697a4067b1c22",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "44b70d751481a5fb738a0b58473e2f1acb4e197d504b81041bf3a3ccf0c443be",
+ "reviewer": "reviewer-zr602-independent",
+ "schema_version": 1,
+ "unit": "ZR-602",
+ "verdict": "accepted"
 }

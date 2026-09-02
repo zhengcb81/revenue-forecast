@@ -1,73 +1,73 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "7f7acd394fa485e7001771c05b269ca13787c954",
-    "wiki": "919d0b9211091d02f5db99f2592e033d738279ba"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "7f7acd394fa485e7001771c05b269ca13787c954",
+  "wiki": "919d0b9211091d02f5db99f2592e033d738279ba"
+ },
+ "canonical_hash": "9629594d49c61a94f54e01b585a73b66aec627c67adc9d97a4cbd882902bee2c",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff 919d0b9 8c5f24f --stat",
+   "exit_code": 0,
+   "result": "exactly 2 files: src/company_wiki/source_catalog/normalizer.py (+12) and tests/contract/test_zr501_broker_metadata_contract.py (+39); +51/-0. No other files touched by the REV-001 fix."
   },
-  "canonical_hash": "67f07aae88b6b0a19ae91050f324ba92f472351867bdfa388c8cedad3ebc5d9f",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff 919d0b9 8c5f24f --stat",
-      "exit_code": 0,
-      "result": "exactly 2 files: src/company_wiki/source_catalog/normalizer.py (+12) and tests/contract/test_zr501_broker_metadata_contract.py (+39); +51/-0. No other files touched by the REV-001 fix."
-    },
-    {
-      "command": "read normalizer.py @ 8c5f24f lines 144-240 + strict-schema probe (pop page_count from a valid payload; feed True/0/-1/'3')",
-      "exit_code": 0,
-      "result": "FIX CONFIRMED: _normalized_to_payload emits 'page_count': normalized.page_count (line 156); expected_fields in _normalized_from_payload includes 'page_count' (line 173); page_count validated as positive-int-or-null with bool/0/negative/str all rejected (lines 192-198); _Normalized constructed with page_count (line 235). STRICT-NESS VERIFIED: a payload with the page_count key popped (OLD envelope) raises ParserResultProtocolError('parser result payload schema is invalid') - the schema was deliberately TIGHTENED, not made lenient. Probe: page_count=True/0/-1/'3' all REJECTED; page_count=None round-trips as None."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr501-delta1",
-      "exit_code": 0,
-      "result": "10 passed in 0.45s (module now collects 10, +1 over the 9 at 919d0b9)."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py -k envelope -v --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr501-delta1-env",
-      "exit_code": 0,
-      "result": "1 passed / 9 deselected: test_c2_page_count_survives_isolated_parser_envelope RUNS and PASSES (real _Normalized(page_count=3) -> to_payload -> from_payload -> page_count==3; None -> None)."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_pdf_page_aware_parser.py tests/contract/test_canonical_ingest_service.py tests/contract/test_evidence_span_contract.py tests/unit -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr501-delta2",
-      "exit_code": 0,
-      "result": "874 passed in 41.70s - exactly the claimed 874. No test builds a normalized payload dict without the new page_count key in a way that now breaks; the tightened strict schema causes no regression."
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-501/11_implementer_receipt.json; python -X utf8 -c 'recompute canonical_hash; check result_triplet.wiki; check state.json'",
-      "exit_code": 0,
-      "result": "implementer receipt: 'OK: receipt receipts/ZR-501/11_implementer_receipt.json is canonical and well-formed'; canonical_hash recompute (sort_keys, DEFAULT separators, ensure_ascii=False, canonical_hash excluded) = 69c78b130803afdc2800ebcfc96ad1fd69c56c4d8216952b1887d5aacdfe8b16 == stored; result_triplet.wiki = 8c5f24fde877c3f5f425280d8c83c66eb6b551dc == claimed; reviewed-object sha256 (my own hash of the test file at HEAD 8c5f24f) = 4f2bd5199a719190bb6678fb94b84f14ea398285a1e4cd40b81bc2706808acf5 == claimed; state: units.ZR-501.status=independent_review, current_next=ZR-501, current_phase=E_broker_web_processing."
-    }
-  ],
-  "created_at_utc": "2026-08-19T19:03:58.6747665+00:00",
-  "findings": [
-    {
-      "detail": "Delta-verified at 8c5f24f: _normalized_to_payload now serializes 'page_count' and _normalized_from_payload's strict expected_fields set includes it, validating positive-int-or-null (bool/0/negative/str rejected). A payload with the key popped (the OLD envelope) now raises ParserResultProtocolError('parser result payload schema is invalid') - the schema was tightened, not loosened. Round-trip through the real _Normalized dataclass: page_count 3 -> 3, None -> None (no fabrication). New test test_c2_page_count_survives_isolated_parser_envelope runs and passes (-k envelope: 1 passed); module collects 10 (was 9). No other file touched by the fix (git diff 919d0b9..8c5f24f --stat = exactly normalizer.py + test file).",
-      "id": "ZR501-REV-001",
-      "severity": "info",
-      "title": "REV-001 FIXED: page_count survives the isolated-parser IPC envelope end-to-end (verified)"
-    },
-    {
-      "detail": "The implementer did NOT touch commands[1]: it still records exit_code 0 for the regression batch whose own result text states '57 passed + 1 known failure + 3 skipped' (the known pre-existing test_corrupt_pdf_remains_fail_closed failure, ZR501-IMPL-004). A pytest run containing a failure exits 1, so exit_code 0 is a record-keeping inaccuracy. ASSESSMENT: documentation-accuracy minor, NOT a product defect - the result text is accurate, the failure is baseline-verified pre-existing (fitz version classification, absent at base 726d63d too), and nothing in the REV-001 fix touches that batch. Non-blocking; the delta verification suite (874 passed) does not include that known failure and passed cleanly.",
-      "id": "ZR501-REV-002",
-      "severity": "minor",
-      "title": "Implementer receipt commands[1].exit_code=0 remains inconsistent with a failing pytest run (not addressed)"
-    },
-    {
-      "detail": "commands[0] claims 10 passed - reproduced (10 passed). commands[4] claims 874 passed - reproduced exactly (874 passed in 41.70s). canonical_hash, result_triplet.wiki (8c5f24f) and the reviewed-object sha256 (4f2bd519... = my own hash of the test file at HEAD) all check out. Prior info findings ZR501-REV-003 (untracked dirt phrasing) and ZR501-REV-004 ('absent keys stay absent' wording) are unchanged and remain non-blocking documentation nuances.",
-      "id": "ZR501-REV-003",
-      "severity": "info",
-      "title": "No new overclaims in the re-sealed receipt"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-501 delta review",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "7f7acd394fa485e7001771c05b269ca13787c954",
-    "wiki": "8c5f24fde877c3f5f425280d8c83c66eb6b551dc"
+  {
+   "command": "read normalizer.py @ 8c5f24f lines 144-240 + strict-schema probe (pop page_count from a valid payload; feed True/0/-1/'3')",
+   "exit_code": 0,
+   "result": "FIX CONFIRMED: _normalized_to_payload emits 'page_count': normalized.page_count (line 156); expected_fields in _normalized_from_payload includes 'page_count' (line 173); page_count validated as positive-int-or-null with bool/0/negative/str all rejected (lines 192-198); _Normalized constructed with page_count (line 235). STRICT-NESS VERIFIED: a payload with the page_count key popped (OLD envelope) raises ParserResultProtocolError('parser result payload schema is invalid') - the schema was deliberately TIGHTENED, not made lenient. Probe: page_count=True/0/-1/'3' all REJECTED; page_count=None round-trips as None."
   },
-  "reviewed_object_sha256": "4f2bd5199a719190bb6678fb94b84f14ea398285a1e4cd40b81bc2706808acf5",
-  "reviewer": "reviewer-zr501-independent",
-  "schema_version": 1,
-  "unit": "ZR-501",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr501-delta1",
+   "exit_code": 0,
+   "result": "10 passed in 0.45s (module now collects 10, +1 over the 9 at 919d0b9)."
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py -k envelope -v --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr501-delta1-env",
+   "exit_code": 0,
+   "result": "1 passed / 9 deselected: test_c2_page_count_survives_isolated_parser_envelope RUNS and PASSES (real _Normalized(page_count=3) -> to_payload -> from_payload -> page_count==3; None -> None)."
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_pdf_page_aware_parser.py tests/contract/test_canonical_ingest_service.py tests/contract/test_evidence_span_contract.py tests/unit -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr501-delta2",
+   "exit_code": 0,
+   "result": "874 passed in 41.70s - exactly the claimed 874. No test builds a normalized payload dict without the new page_count key in a way that now breaks; the tightened strict schema causes no regression."
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-501/11_implementer_receipt.json; python -X utf8 -c 'recompute canonical_hash; check result_triplet.wiki; check state.json'",
+   "exit_code": 0,
+   "result": "implementer receipt: 'OK: receipt receipts/ZR-501/11_implementer_receipt.json is canonical and well-formed'; canonical_hash recompute (sort_keys, DEFAULT separators, ensure_ascii=False, canonical_hash excluded) = 69c78b130803afdc2800ebcfc96ad1fd69c56c4d8216952b1887d5aacdfe8b16 == stored; result_triplet.wiki = 8c5f24fde877c3f5f425280d8c83c66eb6b551dc == claimed; reviewed-object sha256 (my own hash of the test file at HEAD 8c5f24f) = 4f2bd5199a719190bb6678fb94b84f14ea398285a1e4cd40b81bc2706808acf5 == claimed; state: units.ZR-501.status=independent_review, current_next=ZR-501, current_phase=E_broker_web_processing."
+  }
+ ],
+ "created_at_utc": "2026-08-19T19:03:58.6747665+00:00",
+ "findings": [
+  {
+   "detail": "Delta-verified at 8c5f24f: _normalized_to_payload now serializes 'page_count' and _normalized_from_payload's strict expected_fields set includes it, validating positive-int-or-null (bool/0/negative/str rejected). A payload with the key popped (the OLD envelope) now raises ParserResultProtocolError('parser result payload schema is invalid') - the schema was tightened, not loosened. Round-trip through the real _Normalized dataclass: page_count 3 -> 3, None -> None (no fabrication). New test test_c2_page_count_survives_isolated_parser_envelope runs and passes (-k envelope: 1 passed); module collects 10 (was 9). No other file touched by the fix (git diff 919d0b9..8c5f24f --stat = exactly normalizer.py + test file).",
+   "id": "ZR501-REV-001",
+   "severity": "info",
+   "title": "REV-001 FIXED: page_count survives the isolated-parser IPC envelope end-to-end (verified)"
+  },
+  {
+   "detail": "The implementer did NOT touch commands[1]: it still records exit_code 0 for the regression batch whose own result text states '57 passed + 1 known failure + 3 skipped' (the known pre-existing test_corrupt_pdf_remains_fail_closed failure, ZR501-IMPL-004). A pytest run containing a failure exits 1, so exit_code 0 is a record-keeping inaccuracy. ASSESSMENT: documentation-accuracy minor, NOT a product defect - the result text is accurate, the failure is baseline-verified pre-existing (fitz version classification, absent at base 726d63d too), and nothing in the REV-001 fix touches that batch. Non-blocking; the delta verification suite (874 passed) does not include that known failure and passed cleanly.",
+   "id": "ZR501-REV-002",
+   "severity": "minor",
+   "title": "Implementer receipt commands[1].exit_code=0 remains inconsistent with a failing pytest run (not addressed)"
+  },
+  {
+   "detail": "commands[0] claims 10 passed - reproduced (10 passed). commands[4] claims 874 passed - reproduced exactly (874 passed in 41.70s). canonical_hash, result_triplet.wiki (8c5f24f) and the reviewed-object sha256 (4f2bd519... = my own hash of the test file at HEAD) all check out. Prior info findings ZR501-REV-003 (untracked dirt phrasing) and ZR501-REV-004 ('absent keys stay absent' wording) are unchanged and remain non-blocking documentation nuances.",
+   "id": "ZR501-REV-003",
+   "severity": "info",
+   "title": "No new overclaims in the re-sealed receipt"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-501 delta review",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "7f7acd394fa485e7001771c05b269ca13787c954",
+  "wiki": "8c5f24fde877c3f5f425280d8c83c66eb6b551dc"
+ },
+ "reviewed_object_sha256": "69c78b130803afdc2800ebcfc96ad1fd69c56c4d8216952b1887d5aacdfe8b16",
+ "reviewer": "reviewer-zr501-independent",
+ "schema_version": 1,
+ "unit": "ZR-501",
+ "verdict": "accepted"
 }

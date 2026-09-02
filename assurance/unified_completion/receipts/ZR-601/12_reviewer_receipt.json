@@ -1,64 +1,64 @@
 {
-  "at_utc": "2026-08-20T22:11:43+00:00",
-  "canonical_hash": "d5cf7a5addd1f26f25bc815d6a40181450fea26249dc931a4875c27a4ad0e922",
-  "commands": [
-    {
-      "command": "git rev-parse HEAD; git diff 2cc2f81 1d32047 --stat; git status --short",
-      "exit_code": 0,
-      "result": "HEAD=1d32047; parent diff = exactly 1 file +172 (test_zr601_asset_facts.py); zero src changes across range."
-    },
-    {
-      "command": "pytest tests/test_zr601_asset_facts.py -q",
-      "exit_code": 0,
-      "result": "10 passed in 0.14s"
-    },
-    {
-      "command": "pytest test_models + test_golden_behavior_lock",
-      "exit_code": 0,
-      "result": "10 passed + 23 subtests passed"
-    },
-    {
-      "command": "adversarial spot-checks a-f",
-      "exit_code": 0,
-      "result": "26/26 PASS: balance/continuity/formula, rejections (imbalance/discontinuity/negative/recovery_range/missing drivers), resource [51.0,57.0], registry vocabulary."
-    },
-    {
-      "command": "ruff check --no-cache",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "complexity ratchet",
-      "exit_code": 0,
-      "result": "2 passed in 0.38s"
-    }
-  ],
-  "created_at_utc": "2026-08-20T22:11:43+00:00",
-  "findings": [
-    {
-      "detail": "Range includes intermediate ZR-710 closure commit; actual parent diff = exactly the 1 test file. 'product src unchanged' holds across the range.",
-      "id": "ZR601-REV-001",
-      "severity": "info",
-      "title": "Range diff 3f81318..1d32047 spans two commits; the ZR-601 commit itself is exactly 1 file (+172)"
-    },
-    {
-      "detail": "Module docstring labels C1 as 3-period but fixtures use 2-period (YEARS=[2026,2027]). Cosmetic mismatch; behaviors match acceptance criteria exactly.",
-      "id": "ZR601-REV-002",
-      "severity": "minor",
-      "title": "Docstring says '3-period' while fixtures are 2-period"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "1d32047ac2dc3db735aa49885f0f80c1848074dd",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "at_utc": "2026-08-20T22:11:43+00:00",
+ "canonical_hash": "7b537cfe847e87d050c726ab7fdce6cda0c8f8dae26fe46032e7bca13c72fe1f",
+ "commands": [
+  {
+   "command": "git rev-parse HEAD; git diff 2cc2f81 1d32047 --stat; git status --short",
+   "exit_code": 0,
+   "result": "HEAD=1d32047; parent diff = exactly 1 file +172 (test_zr601_asset_facts.py); zero src changes across range."
   },
-  "reviewed_commit": "1d32047ac2dc3db735aa49885f0f80c1848074dd",
-  "reviewed_object_sha256": "0a9933a806848cf832be58617152d68e34d7c22dc47ac8612a72645f9308b1ff",
-  "reviewer": "reviewer-zr601-independent",
-  "schema_version": 1,
-  "summary": "Independent replay of ZR-601 at 1d32047 confirms C1-C3: 1-file +172 test-only; 10/10 tests; regression 10+23 subtests; 26/26 adversarial; ruff + ratchet green. Minor docstring label + info range note. Verdict: accepted.",
-  "unit": "ZR-601",
-  "verdict": "accepted"
+  {
+   "command": "pytest tests/test_zr601_asset_facts.py -q",
+   "exit_code": 0,
+   "result": "10 passed in 0.14s"
+  },
+  {
+   "command": "pytest test_models + test_golden_behavior_lock",
+   "exit_code": 0,
+   "result": "10 passed + 23 subtests passed"
+  },
+  {
+   "command": "adversarial spot-checks a-f",
+   "exit_code": 0,
+   "result": "26/26 PASS: balance/continuity/formula, rejections (imbalance/discontinuity/negative/recovery_range/missing drivers), resource [51.0,57.0], registry vocabulary."
+  },
+  {
+   "command": "ruff check --no-cache",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "complexity ratchet",
+   "exit_code": 0,
+   "result": "2 passed in 0.38s"
+  }
+ ],
+ "created_at_utc": "2026-08-20T22:11:43+00:00",
+ "findings": [
+  {
+   "detail": "Range includes intermediate ZR-710 closure commit; actual parent diff = exactly the 1 test file. 'product src unchanged' holds across the range.",
+   "id": "ZR601-REV-001",
+   "severity": "info",
+   "title": "Range diff 3f81318..1d32047 spans two commits; the ZR-601 commit itself is exactly 1 file (+172)"
+  },
+  {
+   "detail": "Module docstring labels C1 as 3-period but fixtures use 2-period (YEARS=[2026,2027]). Cosmetic mismatch; behaviors match acceptance criteria exactly.",
+   "id": "ZR601-REV-002",
+   "severity": "minor",
+   "title": "Docstring says '3-period' while fixtures are 2-period"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "1d32047ac2dc3db735aa49885f0f80c1848074dd",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_commit": "1d32047ac2dc3db735aa49885f0f80c1848074dd",
+ "reviewed_object_sha256": "ccbc5616dbefaaa0bcf10f29dfc1572d7da3e14ae9432d76b693df43429d7d50",
+ "reviewer": "reviewer-zr601-independent",
+ "schema_version": 1,
+ "summary": "Independent replay of ZR-601 at 1d32047 confirms C1-C3: 1-file +172 test-only; 10/10 tests; regression 10+23 subtests; 26/26 adversarial; ruff + ratchet green. Minor docstring label + info range note. Verdict: accepted.",
+ "unit": "ZR-601",
+ "verdict": "accepted"
 }

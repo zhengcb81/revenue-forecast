@@ -1,126 +1,194 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "f0c102b70aae07dade74a9160d2ba3c05d975999",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "f0c102b70aae07dade74a9160d2ba3c05d975999",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "created_at_utc": "2026-08-22T18:40:24+00:00",
+ "findings": [
+  {
+   "id": "ZRR803-REV-001",
+   "severity": "info",
+   "title": "Nested-worktree position breaks chain resolution; canonical position fully green",
+   "detail": "In .review-zr803-clean the lock test fails because PROJECT_ROOT.parent/filing-fetch resolves inside revenue-forecast (no such sibling there); re-run from MAIN repo per protocol: 6/6 passed. Classified positional per review instructions, not a regression. Worktree git status stayed clean throughout."
   },
-  "created_at_utc": "2026-08-22T18:40:24+00:00",
-  "findings": [
-    {
-      "id": "ZRR803-REV-001",
-      "severity": "info",
-      "title": "Nested-worktree position breaks chain resolution; canonical position fully green",
-      "detail": "In .review-zr803-clean the lock test fails because PROJECT_ROOT.parent/filing-fetch resolves inside revenue-forecast (no such sibling there); re-run from MAIN repo per protocol: 6/6 passed. Classified positional per review instructions, not a regression. Worktree git status stayed clean throughout."
-    },
-    {
-      "id": "ZRR803-REV-002",
-      "severity": "minor",
-      "title": "Assert-message path crashes on str.stderr.decode (text=True)",
-      "detail": "tests/test_zr803_chaos_recovery.py:119 evaluates proc.stderr.decode('utf-8','replace') although run() uses text=True, so a real lock-journey failure surfaces as AttributeError instead of the actual stderr (observed live during worktree run). Diagnostic-only defect: the assert itself still fails, so no false-pass is possible."
-    },
-    {
-      "id": "ZRR803-REV-003",
-      "severity": "minor",
-      "title": "Module docstring overclaims duplicate-create coverage in ordering test",
-      "detail": "Docstring (lines 19-20) claims 'duplicate create are refused' but the ordering test body only pins evaluate-before-create refusal plus recovery. Duplicate-create refusal is pinned by the existing owner tests/test_backtest.py:164-166 (second write_new_json raises FileExistsError) — cross-reference verified, card AC 'per fault class idempotent recovery' remains covered."
-    },
-    {
-      "id": "ZRR803-REV-004",
-      "severity": "info",
-      "title": "31 environmental failures in nested clean worktree, zero at canonical position",
-      "detail": "Full suite from worktree: 764 passed / 31 failed (chain tests needing ../filing-fetch|../company-wiki, cross-repo manifest/coverage/scenario scans, NotADirectoryError on sibling cwd). Same HEAD from MAIN repo: 795 passed + 106 subtests / 0 failed, matching the implementer receipt exactly. Layout sensitivity predates this commit (test-only change)."
-    }
-  ],
-  "kind": "reviewer",
-  "objective": "Independent acceptance verification of ZR-803 chaos/property/mutation six-fault idempotent-recovery journey matrix (test-only commit b14ac3c): re-ran diff scope, focused+full suites, four recovery-semantics probe families outside both repos, lock/WAL determinism reasoning, vacuous-assertion scan, hardcoding scan, and integrity hashes.",
-  "probes": [
-    {
-      "id": "V1",
-      "command": "git rev-parse HEAD && git status --short && git diff f0c102b b14ac3c --stat (.review-zr803-clean)",
-      "exit_code": 0,
-      "result": "HEAD=b14ac3ca17c68eb207002e954bef465961d92f7b; working tree clean; diff touches only tests/test_zr803_chaos_recovery.py (+315)"
-    },
-    {
-      "id": "V2a",
-      "command": "python -m pytest tests/test_zr803_chaos_recovery.py -q --tb=short (worktree)",
-      "exit_code": 1,
-      "result": "5 passed, 1 failed (lock test) — failure caused by nested-checkout position (../filing-fetch resolves into revenue-forecast); assert-message AttributeError masks stderr (see ZRR803-REV-002)"
-    },
-    {
-      "id": "V2a-canonical",
-      "command": "python -m pytest tests/test_zr803_chaos_recovery.py -q --tb=short (MAIN repo, read-only)",
-      "exit_code": 0,
-      "result": "6 passed in 4.44s"
-    },
-    {
-      "id": "V2b",
-      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103' (MAIN repo)",
-      "exit_code": 0,
-      "result": "795 passed, 106 subtests passed, 3 deselected, 0 failed — matches implementer claim"
-    },
-    {
-      "id": "V2c",
-      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103' --tb=no (worktree) + spot-check tb=line",
-      "exit_code": 1,
-      "result": "764 passed / 31 failed; failures classified environmental (missing nested siblings, cross-repo scans); same set green at canonical position"
-    },
-    {
-      "id": "V3-interrupt",
-      "command": "throwaway probe_v3.py outside repos, sys.path into worktree: crash-stub register_publication->KeyboardInterrupt on prepare_forecast(mode=formal)",
-      "exit_code": 0,
-      "result": "raises KeyboardInterrupt; 0 registry entries for that input_sha256 (file absent); restore+rerun registers exactly 1 validated entry; entry.result_sha256 == rerun result_sha256 == crashed-payload result_sha256"
-    },
-    {
-      "id": "V3-tamper",
-      "command": "probe: flip result_sha256 at positions 0 and len//2 independently; original validate twice",
-      "exit_code": 0,
-      "result": "both forgeries ForecastInputError 'hash mismatch'; untouched artifact validates twice consecutively"
-    },
-    {
-      "id": "V3-clock",
-      "command": "probe: future captured_date on all sources; genuine 2-source doc clean vs single-source-poisoned (each side)",
-      "exit_code": 0,
-      "result": "all-source poison rejected 'information set'; clean 2-source doc validates; poisoning ONLY sources[0] or ONLY sources[1] each rejected 'information set'"
-    },
-    {
-      "id": "V3-ordering",
-      "command": "probe: evaluate_snapshot with {'snapshot_id':...} / {} / partial-fields fabricated snapshots",
-      "exit_code": 0,
-      "result": "all three shapes raise contracts.evidence.ForecastInputError, never KeyError/TypeError; real snapshot then evaluates successfully"
-    },
-    {
-      "id": "V4",
-      "command": "code inspection: assertions inside held-BEGIN-EXCLUSIVE try block; company-wiki catalog pragma",
-      "exit_code": 0,
-      "result": "journey completed and download_calls==0 asserted DURING hold (before finally release) and again after release with identical source_id; determinism grounded in WAL: company_wiki/store.py:225 sets PRAGMA journal_mode=WAL on catalog connections (source_catalog evidence_query.py documents WAL reader semantics), and BEGIN EXCLUSIVE in WAL blocks writers only, so reader progress is not a race"
-    },
-    {
-      "id": "V5",
-      "command": "vacuous-assertion scan of all 6 tests + duplicate-create cross-reference",
-      "exit_code": 0,
-      "result": "no vacuous pass found: lock pins outcome=reused_existing + zero downloads during hold AND after; interrupt proves stub reached register_publication then exactly-once validated; disk pins exit2 + error: prefix + absent parent dir + no *.tmp + valid-path recovery; tamper/clock use match= patterns (probe-hardened); ordering refusal+recovery. Docstring-vs-body gap on duplicate create covered by tests/test_backtest.py:164-166 FileExistsError pin (ZRR803-REV-003)"
-    },
-    {
-      "id": "V6",
-      "command": "grep -rin zr803 scripts/ --include=*.py (worktree)",
-      "exit_code": 0,
-      "result": "0 hits in product sources; only untracked __pycache__ .pyc noise from local test runs"
-    },
-    {
-      "id": "V7",
-      "command": "sha256(00_wu_card.md); recompute implementer canonical_hash; git rev-parse f0c102b/b14ac3c",
-      "exit_code": 0,
-      "result": "wu_card=973020fc247558d6a3f36c93eaa23212ef335d12d313284ab6fb2daa4f9834ec == plan_sha256; implementer canonical_hash recomputes to claimed 9b38be64e1522472a449074a9e31f201b25f9636890d795e52f95fba1cb79962; result_triplet.revenue b14ac3c == HEAD short sha"
-    }
-  ],
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "b14ac3ca17c68eb207002e954bef465961d92f7b",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "id": "ZRR803-REV-002",
+   "severity": "minor",
+   "title": "Assert-message path crashes on str.stderr.decode (text=True)",
+   "detail": "tests/test_zr803_chaos_recovery.py:119 evaluates proc.stderr.decode('utf-8','replace') although run() uses text=True, so a real lock-journey failure surfaces as AttributeError instead of the actual stderr (observed live during worktree run). Diagnostic-only defect: the assert itself still fails, so no false-pass is possible."
   },
-  "reviewer": "reviewer-zr803-independent",
-  "schema_version": 1,
-  "unit": "ZR-803",
-  "verdict": "accepted",
-  "canonical_hash": "21cad07b5860de543930cda8c81e52e81c82e2f11830af14d7f285e2a558276e"
+  {
+   "id": "ZRR803-REV-003",
+   "severity": "minor",
+   "title": "Module docstring overclaims duplicate-create coverage in ordering test",
+   "detail": "Docstring (lines 19-20) claims 'duplicate create are refused' but the ordering test body only pins evaluate-before-create refusal plus recovery. Duplicate-create refusal is pinned by the existing owner tests/test_backtest.py:164-166 (second write_new_json raises FileExistsError) — cross-reference verified, card AC 'per fault class idempotent recovery' remains covered."
+  },
+  {
+   "id": "ZRR803-REV-004",
+   "severity": "info",
+   "title": "31 environmental failures in nested clean worktree, zero at canonical position",
+   "detail": "Full suite from worktree: 764 passed / 31 failed (chain tests needing ../filing-fetch|../company-wiki, cross-repo manifest/coverage/scenario scans, NotADirectoryError on sibling cwd). Same HEAD from MAIN repo: 795 passed + 106 subtests / 0 failed, matching the implementer receipt exactly. Layout sensitivity predates this commit (test-only change)."
+  }
+ ],
+ "kind": "reviewer",
+ "objective": "Independent acceptance verification of ZR-803 chaos/property/mutation six-fault idempotent-recovery journey matrix (test-only commit b14ac3c): re-ran diff scope, focused+full suites, four recovery-semantics probe families outside both repos, lock/WAL determinism reasoning, vacuous-assertion scan, hardcoding scan, and integrity hashes.",
+ "probes": [
+  {
+   "id": "V1",
+   "command": "git rev-parse HEAD && git status --short && git diff f0c102b b14ac3c --stat (.review-zr803-clean)",
+   "exit_code": 0,
+   "result": "HEAD=b14ac3ca17c68eb207002e954bef465961d92f7b; working tree clean; diff touches only tests/test_zr803_chaos_recovery.py (+315)"
+  },
+  {
+   "id": "V2a",
+   "command": "python -m pytest tests/test_zr803_chaos_recovery.py -q --tb=short (worktree)",
+   "exit_code": 1,
+   "result": "5 passed, 1 failed (lock test) — failure caused by nested-checkout position (../filing-fetch resolves into revenue-forecast); assert-message AttributeError masks stderr (see ZRR803-REV-002)"
+  },
+  {
+   "id": "V2a-canonical",
+   "command": "python -m pytest tests/test_zr803_chaos_recovery.py -q --tb=short (MAIN repo, read-only)",
+   "exit_code": 0,
+   "result": "6 passed in 4.44s"
+  },
+  {
+   "id": "V2b",
+   "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103' (MAIN repo)",
+   "exit_code": 0,
+   "result": "795 passed, 106 subtests passed, 3 deselected, 0 failed — matches implementer claim"
+  },
+  {
+   "id": "V2c",
+   "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103' --tb=no (worktree) + spot-check tb=line",
+   "exit_code": 1,
+   "result": "764 passed / 31 failed; failures classified environmental (missing nested siblings, cross-repo scans); same set green at canonical position"
+  },
+  {
+   "id": "V3-interrupt",
+   "command": "throwaway probe_v3.py outside repos, sys.path into worktree: crash-stub register_publication->KeyboardInterrupt on prepare_forecast(mode=formal)",
+   "exit_code": 0,
+   "result": "raises KeyboardInterrupt; 0 registry entries for that input_sha256 (file absent); restore+rerun registers exactly 1 validated entry; entry.result_sha256 == rerun result_sha256 == crashed-payload result_sha256"
+  },
+  {
+   "id": "V3-tamper",
+   "command": "probe: flip result_sha256 at positions 0 and len//2 independently; original validate twice",
+   "exit_code": 0,
+   "result": "both forgeries ForecastInputError 'hash mismatch'; untouched artifact validates twice consecutively"
+  },
+  {
+   "id": "V3-clock",
+   "command": "probe: future captured_date on all sources; genuine 2-source doc clean vs single-source-poisoned (each side)",
+   "exit_code": 0,
+   "result": "all-source poison rejected 'information set'; clean 2-source doc validates; poisoning ONLY sources[0] or ONLY sources[1] each rejected 'information set'"
+  },
+  {
+   "id": "V3-ordering",
+   "command": "probe: evaluate_snapshot with {'snapshot_id':...} / {} / partial-fields fabricated snapshots",
+   "exit_code": 0,
+   "result": "all three shapes raise contracts.evidence.ForecastInputError, never KeyError/TypeError; real snapshot then evaluates successfully"
+  },
+  {
+   "id": "V4",
+   "command": "code inspection: assertions inside held-BEGIN-EXCLUSIVE try block; company-wiki catalog pragma",
+   "exit_code": 0,
+   "result": "journey completed and download_calls==0 asserted DURING hold (before finally release) and again after release with identical source_id; determinism grounded in WAL: company_wiki/store.py:225 sets PRAGMA journal_mode=WAL on catalog connections (source_catalog evidence_query.py documents WAL reader semantics), and BEGIN EXCLUSIVE in WAL blocks writers only, so reader progress is not a race"
+  },
+  {
+   "id": "V5",
+   "command": "vacuous-assertion scan of all 6 tests + duplicate-create cross-reference",
+   "exit_code": 0,
+   "result": "no vacuous pass found: lock pins outcome=reused_existing + zero downloads during hold AND after; interrupt proves stub reached register_publication then exactly-once validated; disk pins exit2 + error: prefix + absent parent dir + no *.tmp + valid-path recovery; tamper/clock use match= patterns (probe-hardened); ordering refusal+recovery. Docstring-vs-body gap on duplicate create covered by tests/test_backtest.py:164-166 FileExistsError pin (ZRR803-REV-003)"
+  },
+  {
+   "id": "V6",
+   "command": "grep -rin zr803 scripts/ --include=*.py (worktree)",
+   "exit_code": 0,
+   "result": "0 hits in product sources; only untracked __pycache__ .pyc noise from local test runs"
+  },
+  {
+   "id": "V7",
+   "command": "sha256(00_wu_card.md); recompute implementer canonical_hash; git rev-parse f0c102b/b14ac3c",
+   "exit_code": 0,
+   "result": "wu_card=973020fc247558d6a3f36c93eaa23212ef335d12d313284ab6fb2daa4f9834ec == plan_sha256; implementer canonical_hash recomputes to claimed 9b38be64e1522472a449074a9e31f201b25f9636890d795e52f95fba1cb79962; result_triplet.revenue b14ac3c == HEAD short sha"
+  }
+ ],
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "b14ac3ca17c68eb207002e954bef465961d92f7b",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewer": "reviewer-zr803-independent",
+ "schema_version": 1,
+ "unit": "ZR-803",
+ "verdict": "accepted",
+ "canonical_hash": "bacac390218dfac5b2a481e553329b20bfe8b40ba276fc0e4b1ef9039a6bb9cf",
+ "reviewed_object_sha256": "be284368198b9fb45cded010300b7be4d16c6323b6048367d1b55b03c0b65b8d",
+ "commands": [
+  {
+   "command": "git rev-parse HEAD && git status --short && git diff f0c102b b14ac3c --stat (.review-zr803-clean)",
+   "exit_code": 0,
+   "result": "HEAD=b14ac3ca17c68eb207002e954bef465961d92f7b; working tree clean; diff touches only tests/test_zr803_chaos_recovery.py (+315)"
+  },
+  {
+   "command": "python -m pytest tests/test_zr803_chaos_recovery.py -q --tb=short (worktree)",
+   "exit_code": 1,
+   "result": "5 passed, 1 failed (lock test) — failure caused by nested-checkout position (../filing-fetch resolves into revenue-forecast); assert-message AttributeError masks stderr (see ZRR803-REV-002)"
+  },
+  {
+   "command": "python -m pytest tests/test_zr803_chaos_recovery.py -q --tb=short (MAIN repo, read-only)",
+   "exit_code": 0,
+   "result": "6 passed in 4.44s"
+  },
+  {
+   "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103' (MAIN repo)",
+   "exit_code": 0,
+   "result": "795 passed, 106 subtests passed, 3 deselected, 0 failed — matches implementer claim"
+  },
+  {
+   "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103' --tb=no (worktree) + spot-check tb=line",
+   "exit_code": 1,
+   "result": "764 passed / 31 failed; failures classified environmental (missing nested siblings, cross-repo scans); same set green at canonical position"
+  },
+  {
+   "command": "throwaway probe_v3.py outside repos, sys.path into worktree: crash-stub register_publication->KeyboardInterrupt on prepare_forecast(mode=formal)",
+   "exit_code": 0,
+   "result": "raises KeyboardInterrupt; 0 registry entries for that input_sha256 (file absent); restore+rerun registers exactly 1 validated entry; entry.result_sha256 == rerun result_sha256 == crashed-payload result_sha256"
+  },
+  {
+   "command": "probe: flip result_sha256 at positions 0 and len//2 independently; original validate twice",
+   "exit_code": 0,
+   "result": "both forgeries ForecastInputError 'hash mismatch'; untouched artifact validates twice consecutively"
+  },
+  {
+   "command": "probe: future captured_date on all sources; genuine 2-source doc clean vs single-source-poisoned (each side)",
+   "exit_code": 0,
+   "result": "all-source poison rejected 'information set'; clean 2-source doc validates; poisoning ONLY sources[0] or ONLY sources[1] each rejected 'information set'"
+  },
+  {
+   "command": "probe: evaluate_snapshot with {'snapshot_id':...} / {} / partial-fields fabricated snapshots",
+   "exit_code": 0,
+   "result": "all three shapes raise contracts.evidence.ForecastInputError, never KeyError/TypeError; real snapshot then evaluates successfully"
+  },
+  {
+   "command": "code inspection: assertions inside held-BEGIN-EXCLUSIVE try block; company-wiki catalog pragma",
+   "exit_code": 0,
+   "result": "journey completed and download_calls==0 asserted DURING hold (before finally release) and again after release with identical source_id; determinism grounded in WAL: company_wiki/store.py:225 sets PRAGMA journal_mode=WAL on catalog connections (source_catalog evidence_query.py documents WAL reader semantics), and BEGIN EXCLUSIVE in WAL blocks writers only, so reader progress is not a race"
+  },
+  {
+   "command": "vacuous-assertion scan of all 6 tests + duplicate-create cross-reference",
+   "exit_code": 0,
+   "result": "no vacuous pass found: lock pins outcome=reused_existing + zero downloads during hold AND after; interrupt proves stub reached register_publication then exactly-once validated; disk pins exit2 + error: prefix + absent parent dir + no *.tmp + valid-path recovery; tamper/clock use match= patterns (probe-hardened); ordering refusal+recovery. Docstring-vs-body gap on duplicate create covered by tests/test_backtest.py:164-166 FileExistsError pin (ZRR803-REV-003)"
+  },
+  {
+   "command": "grep -rin zr803 scripts/ --include=*.py (worktree)",
+   "exit_code": 0,
+   "result": "0 hits in product sources; only untracked __pycache__ .pyc noise from local test runs"
+  },
+  {
+   "command": "sha256(00_wu_card.md); recompute implementer canonical_hash; git rev-parse f0c102b/b14ac3c",
+   "exit_code": 0,
+   "result": "wu_card=973020fc247558d6a3f36c93eaa23212ef335d12d313284ab6fb2daa4f9834ec == plan_sha256; implementer canonical_hash recomputes to claimed 9b38be64e1522472a449074a9e31f201b25f9636890d795e52f95fba1cb79962; result_triplet.revenue b14ac3c == HEAD short sha"
+  }
+ ]
 }

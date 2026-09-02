@@ -1,75 +1,75 @@
 {
-  "at_utc": "2026-08-20T20:32:44+00:00",
-  "canonical_hash": "fa129a2f8359332a6cbc9efaa8e1bcbaa628029b3c31527e76c71d96da7fe305",
-  "commands": [
-    {
-      "command": "git log --oneline -3; git diff 328f807 bbee038 --stat; git status --short",
-      "exit_code": 0,
-      "result": "HEAD=bbee038. diff exactly 3 files +179/-1 (revenue_publication.py +9, revenue_report.py +7/-1, test_zr705 +164). Reviewed files untouched."
-    },
-    {
-      "command": "pytest tests/test_zr705_draft_formal_swap.py -q",
-      "exit_code": 0,
-      "result": "8 passed in 0.26s"
-    },
-    {
-      "command": "pytest 5-file regression (publication_pipeline/output_report/publication_registry/zr701/zr704)",
-      "exit_code": 0,
-      "result": "58 passed in 3.26s"
-    },
-    {
-      "command": "adversarial probe (throwaway registry)",
-      "exit_code": 0,
-      "result": "6/6 PASS: C1 draft renders no registry; C2 formal gates+attestation; C3 no-context TypeError; C4a draft->formal 'gate_ids mismatch'; C4b formal->draft downgrade rehashed rejected by new gate only; C5 payload mutation + rehash still rejected."
-    },
-    {
-      "command": "ruff check (3 files)",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "complexity ratchet",
-      "exit_code": 0,
-      "result": "2 passed in 0.41s"
-    },
-    {
-      "command": "full suite pytest tests -q",
-      "exit_code": 0,
-      "result": "502 passed, 106 subtests passed (matches commit claim)"
-    }
-  ],
-  "created_at_utc": "2026-08-20T20:32:44+00:00",
-  "findings": [
-    {
-      "detail": "gate_ids==expected check requires draft's empty gate_ids to equal non-empty expected gates; pre-existing formal-only validator behavior, not introduced by ZR-705; run_forecast never validates draft receipts. Not a regression.",
-      "id": "ZR705-REV-001",
-      "severity": "info",
-      "title": "validate_publication_receipt rejects legit draft receipts (pre-existing)"
-    },
-    {
-      "detail": "Draft receipt fails pre-existing gate_ids==expected regardless of formal_output_mode. Observable criterion holds; new REV-08a gate properly isolated by test_c3_formal_downgraded_to_draft_rejected. Minor test-design note.",
-      "id": "ZR705-REV-002",
-      "severity": "info",
-      "title": "test_c3_draft_flipped_to_formal_rejected does not isolate the mode flip"
-    },
-    {
-      "detail": "Deterministic hashes allow a fully-informed attacker to recompute gate_ids/context/receipt and forge formal receipts; documented in VerificationContext docstring and out of scope for REV-08a/b. Privilege-downgrade has no escalation.",
-      "id": "ZR705-REV-003",
-      "severity": "info",
-      "title": "Fully-informed attacker boundary is acknowledged design limitation"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "bbee038e7e7c643f99d8de13f1d6333724d60739",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "at_utc": "2026-08-20T20:32:44+00:00",
+ "canonical_hash": "5cb1d9e6b72f0dd781b333a7aab4940a4b3371830082a4e7e4d570ba669c95c4",
+ "commands": [
+  {
+   "command": "git log --oneline -3; git diff 328f807 bbee038 --stat; git status --short",
+   "exit_code": 0,
+   "result": "HEAD=bbee038. diff exactly 3 files +179/-1 (revenue_publication.py +9, revenue_report.py +7/-1, test_zr705 +164). Reviewed files untouched."
   },
-  "reviewed_commit": "bbee038e7e7c643f99d8de13f1d6333724d60739",
-  "reviewed_object_sha256": "3599f07a26075743672f9e13e9bb6211dba731876811d5000256210e9adbe013",
-  "reviewer": "reviewer-zr705-independent",
-  "schema_version": 1,
-  "summary": "Independent replay of ZR-705 at bbee038 confirms: 3-file diff +179/-1 exact; 8/8 unit; 58/58 regression; 6/6 adversarial (C1 draft render no registry, C2 formal strong gate, C3 no self-issue, C4a/b swap rejected incl. new downgrade gate, C5 rehash not repaired); ruff + ratchet green; full suite 502+106 reproduced. Only info findings. Verdict: accepted.",
-  "unit": "ZR-705",
-  "verdict": "accepted"
+  {
+   "command": "pytest tests/test_zr705_draft_formal_swap.py -q",
+   "exit_code": 0,
+   "result": "8 passed in 0.26s"
+  },
+  {
+   "command": "pytest 5-file regression (publication_pipeline/output_report/publication_registry/zr701/zr704)",
+   "exit_code": 0,
+   "result": "58 passed in 3.26s"
+  },
+  {
+   "command": "adversarial probe (throwaway registry)",
+   "exit_code": 0,
+   "result": "6/6 PASS: C1 draft renders no registry; C2 formal gates+attestation; C3 no-context TypeError; C4a draft->formal 'gate_ids mismatch'; C4b formal->draft downgrade rehashed rejected by new gate only; C5 payload mutation + rehash still rejected."
+  },
+  {
+   "command": "ruff check (3 files)",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "complexity ratchet",
+   "exit_code": 0,
+   "result": "2 passed in 0.41s"
+  },
+  {
+   "command": "full suite pytest tests -q",
+   "exit_code": 0,
+   "result": "502 passed, 106 subtests passed (matches commit claim)"
+  }
+ ],
+ "created_at_utc": "2026-08-20T20:32:44+00:00",
+ "findings": [
+  {
+   "detail": "gate_ids==expected check requires draft's empty gate_ids to equal non-empty expected gates; pre-existing formal-only validator behavior, not introduced by ZR-705; run_forecast never validates draft receipts. Not a regression.",
+   "id": "ZR705-REV-001",
+   "severity": "info",
+   "title": "validate_publication_receipt rejects legit draft receipts (pre-existing)"
+  },
+  {
+   "detail": "Draft receipt fails pre-existing gate_ids==expected regardless of formal_output_mode. Observable criterion holds; new REV-08a gate properly isolated by test_c3_formal_downgraded_to_draft_rejected. Minor test-design note.",
+   "id": "ZR705-REV-002",
+   "severity": "info",
+   "title": "test_c3_draft_flipped_to_formal_rejected does not isolate the mode flip"
+  },
+  {
+   "detail": "Deterministic hashes allow a fully-informed attacker to recompute gate_ids/context/receipt and forge formal receipts; documented in VerificationContext docstring and out of scope for REV-08a/b. Privilege-downgrade has no escalation.",
+   "id": "ZR705-REV-003",
+   "severity": "info",
+   "title": "Fully-informed attacker boundary is acknowledged design limitation"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "bbee038e7e7c643f99d8de13f1d6333724d60739",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_commit": "bbee038e7e7c643f99d8de13f1d6333724d60739",
+ "reviewed_object_sha256": "fafc80c680c5878892407550c7abdc3bd3fd40520859d0376058d949d1a6f303",
+ "reviewer": "reviewer-zr705-independent",
+ "schema_version": 1,
+ "summary": "Independent replay of ZR-705 at bbee038 confirms: 3-file diff +179/-1 exact; 8/8 unit; 58/58 regression; 6/6 adversarial (C1 draft render no registry, C2 formal strong gate, C3 no self-issue, C4a/b swap rejected incl. new downgrade gate, C5 rehash not repaired); ruff + ratchet green; full suite 502+106 reproduced. Only info findings. Verdict: accepted.",
+ "unit": "ZR-705",
+ "verdict": "accepted"
 }

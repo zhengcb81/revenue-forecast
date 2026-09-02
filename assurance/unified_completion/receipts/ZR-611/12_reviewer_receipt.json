@@ -1,120 +1,120 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "30819677646e4d6cc3620a4b46d2bd017b81eb60",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "30819677646e4d6cc3620a4b46d2bd017b81eb60",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "canonical_hash": "5095726d7f99c4140e11275d8dc54583c154a943fb362080e7d3c80ad9fbaa59",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
+   "exit_code": 0,
+   "result": "HEAD=288ac88 (ZR-611 test commit), parent=3081967 (ZR-608 impl commit) — matches unit card"
   },
-  "canonical_hash": "2229bd25b90c622dc7121c174428a491e202d362dbcd6634b549c286026eef78",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
-      "exit_code": 0,
-      "result": "HEAD=288ac88 (ZR-611 test commit), parent=3081967 (ZR-608 impl commit) — matches unit card"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr611_synthetic_e2e.py -q --tb=short",
-      "exit_code": 0,
-      "result": "11 passed in 0.17s"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr608_reconciliation.py tests/test_zr607_internal_flow.py tests/test_zr606_commercial_terms.py tests/test_golden_behavior_lock.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "71 passed in 0.58s"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check tests/test_zr611_synthetic_e2e.py",
-      "exit_code": 0,
-      "result": "All checks passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q (Start-Process, true exit code captured)",
-      "exit_code": 0,
-      "result": "2 passed in 0.47s (earlier exit-1 artifact was PowerShell native-stderr wrapper, not pytest)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
-      "exit_code": 0,
-      "result": "696 passed, 3 deselected, 2 warnings, 106 subtests passed in 127.63s"
-    },
-    {
-      "command": "python probe_math.py (independent full-chain recomputation under %TEMP%\\zr611-reviewer\\)",
-      "exit_code": 0,
-      "result": "all checks PASSED: saleable A=427.5, net A=15387.84 (rel tol), group A=6462.8928, saleable B=1224.0, gross B=73440, additions B=5.0 (independent of volume), net B=73445*7.2=528804.0, internal=450.0, eliminated net==external, reconcile_layer reconciled_modeled diff=0.0, gap_report gap diff=-50.0, fallback listing closed=False gap=50.0 segment_total=300.0"
-    },
-    {
-      "command": "python probe_classes.py (eight scenario classes non-vacuous)",
-      "exit_code": 0,
-      "result": "all 8 class probes PASSED: equity_share rejected (double-multiply guard), consolidated rejected, missing grade raises ForecastInputError 'grade is required', NaN volume and NaN realized_price rejected, byproduct stays 5.0 under 10x volume (never x volume), internal 450 eliminated net=10000 gross=10450, unclosed->gap excluded from segment_total, FX chain (gross-tc-rc)*7.2, ramp-up saleable x1.5 exact, holding 0.6*0.7=0.42 deterministic"
-    },
-    {
-      "command": "python probe_determinism.py (E2E run twice)",
-      "exit_code": 0,
-      "result": "in-process outputs bit-identical; pytest module twice rc=0 both, identical summaries '11 passed in 0.14s'"
-    },
-    {
-      "command": "grep zijin|bisha|barrick|ivanhoe in scripts/asset_ownership.py mine_year_operation.py commercial_terms.py internal_flow.py reconciliation.py",
-      "exit_code": 0,
-      "result": "zero hits in all 5 modules; kamoa/porgera only at asset_ownership.py:18 (module docstring) and :174 (function docstring) — docstring text only, not code logic"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-611/11_implementer_receipt.json (CWD assurance\\unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed"
-    },
-    {
-      "command": "git cat-file -e 30819677646e4d6cc3620a4b46d2bd017b81eb60 / 288ac881ad3ced4d77c3aa98eae59957ca38b61a",
-      "exit_code": 0,
-      "result": "both real git commits: 3081967=ZR-608 impl commit (base_triplet.revenue), 288ac88==HEAD (result_triplet.revenue); filing 5a1c18f / wiki 26a6b22 are sibling-repo commits (filing-fetch / company-wiki) per ZR-608 reviewer receipt, consistent across all prior accepted units"
-    }
-  ],
-  "created_at_utc": "2026-08-21T22:14:42.596710+00:00",
-  "findings": [
-    {
-      "detail": "Eight scenario classes deterministically recomputable, each confirmed non-vacuous by probe: holding (effective_group_share 0.6*0.7=0.42, recompute identical), equity method (one_hundred_percent applies 0.42 once; equity_share and consolidated bases rejected with ForecastInputError), multi-metal (byproduct_credit 5.0 independent addition — stays 5.0 under 10x volume, gross=saleable*60 never includes it), internal supply (internal_revenue 100*4.5=450; elimination net==external, gross=external+450 — never double counted), cross-currency (net==(gross-0.3)*7.2 to 1e-9 rel), ramp-up (saleable scales exactly x1.5, pure-function recompute bit-identical), gap (missing grade raises 'grade is required'; NaN volume and NaN realized_price rejected — never default 0), residual (unclosed 300 vs 350 -> gap status, difference -50, gap excluded from segment_total, never fabricated).",
-      "id": "REV-001",
-      "severity": "info",
-      "title": "All C1 acceptance criteria independently verified"
-    },
-    {
-      "detail": "Raw arithmetic reproduced in probe (no test-module import): Mine A saleable 1000*0.5*0.90*0.95=427.5, gross 427.5*5.0=2137.5, net (2137.5-0.3)*7.2=15387.84, group 15387.84*0.42=6462.8928; Mine B saleable 2000*0.8*0.85*0.90=1224.0, gross 1224*60=73440, +5.0 byproduct = 73445*7.2=528804.0; internal 450 eliminated; reconcile_layer(ext,ext,1e-6) closes reconciled_modeled with diff 0.0. Production chain outputs match hand values within 1e-9 relative tolerance (float evaluation-order noise, e.g. 15387.839999999998 vs 15387.84).",
-      "id": "REV-002",
-      "severity": "info",
-      "title": "C3 full-chain hand computation verified independently"
-    },
-    {
-      "detail": "scripts/asset_ownership.py, mine_year_operation.py, commercial_terms.py, internal_flow.py, reconciliation.py contain zero occurrences of zijin/bisha/barrick/ivanhoe. kamoa/porgera appear only in asset_ownership.py module docstring (line 18) and apply_ownership_share docstring (line 174) as anti-pattern semantic labels — docstring text only, not referenced in any code logic, key, or comparison.",
-      "id": "REV-003",
-      "severity": "info",
-      "title": "C2 zero production hardcoding confirmed by independent grep"
-    },
-    {
-      "detail": "E2E chain run twice in-process produced bit-identical 19-tuple outputs; pytest module run twice both rc=0 with identical '11 passed in 0.14s' summaries. Ruff clean; complexity ratchet 2 passed (true exit code 0 via Start-Process capture — the initial exit-1 was a PowerShell native-stderr wrapper artifact, not pytest). Full suite: 696 passed + 106 subtests, exit 0.",
-      "id": "REV-004",
-      "severity": "info",
-      "title": "Determinism and quality gates green"
-    },
-    {
-      "detail": "Implementer receipt claims '696 passed + 106 subtests; 2 deselected'; reviewer's independent run with the same -k 'not fc1103' filter produced '696 passed, 3 deselected, 2 warnings, 106 subtests'. The 696 passed + 106 subtests counts match exactly; the deselected discrepancy is collection/environment noise (e.g. an additional conditional-skip collection) and is non-blocking. The 2 warnings are a pre-existing UnicodeDecodeError resource-warning in a subprocess reader thread, unrelated to ZR-611.",
-      "id": "REV-005",
-      "severity": "minor",
-      "title": "Full-suite deselected count differs from implementer receipt (3 vs 2)"
-    },
-    {
-      "detail": "receipt-validate reports OK (canonical and well-formed). base_triplet.revenue=30819677646e4d6cc3620a4b46d2bd017b81eb60 is a real git commit (ZR-608 implementation); result_triplet.revenue=288ac881ad3ced4d77c3aa98eae59957ca38b61a is a real git commit and equals HEAD. filing 5a1c18f / wiki 26a6b22 are commits in the filing-fetch and company-wiki sibling repos respectively (not git objects in the revenue repo) — same hashes verified in every prior accepted unit's receipts, so expected. Commit 288ac88 includes the ZR-608 closure files (receipts/ZR-608/**, state.json with ZR-608 accepted + closure.next=ZR-611) merged with the ZR-611 test file, matching the noted 2nd-occurrence process deviation; the working tree additionally carries a post-commit ZR-611 'triplet_green' state entry, consistent with machine-state evolution. Review left tracked files untouched.",
-      "id": "REV-006",
-      "severity": "info",
-      "title": "Receipt triplets verified; process note about ZR-608 closure confirmed"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "288ac881ad3ced4d77c3aa98eae59957ca38b61a",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr611_synthetic_e2e.py -q --tb=short",
+   "exit_code": 0,
+   "result": "11 passed in 0.17s"
   },
-  "reviewed_object_sha256": "b611a590f98695992da5c491137725a5b762db40cb800b8fbecae37f61912d82",
-  "reviewer": "reviewer-zr611-independent",
-  "schema_version": 1,
-  "unit": "ZR-611",
-  "verdict": "accepted"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr608_reconciliation.py tests/test_zr607_internal_flow.py tests/test_zr606_commercial_terms.py tests/test_golden_behavior_lock.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "71 passed in 0.58s"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check tests/test_zr611_synthetic_e2e.py",
+   "exit_code": 0,
+   "result": "All checks passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q (Start-Process, true exit code captured)",
+   "exit_code": 0,
+   "result": "2 passed in 0.47s (earlier exit-1 artifact was PowerShell native-stderr wrapper, not pytest)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "696 passed, 3 deselected, 2 warnings, 106 subtests passed in 127.63s"
+  },
+  {
+   "command": "python probe_math.py (independent full-chain recomputation under %TEMP%\\zr611-reviewer\\)",
+   "exit_code": 0,
+   "result": "all checks PASSED: saleable A=427.5, net A=15387.84 (rel tol), group A=6462.8928, saleable B=1224.0, gross B=73440, additions B=5.0 (independent of volume), net B=73445*7.2=528804.0, internal=450.0, eliminated net==external, reconcile_layer reconciled_modeled diff=0.0, gap_report gap diff=-50.0, fallback listing closed=False gap=50.0 segment_total=300.0"
+  },
+  {
+   "command": "python probe_classes.py (eight scenario classes non-vacuous)",
+   "exit_code": 0,
+   "result": "all 8 class probes PASSED: equity_share rejected (double-multiply guard), consolidated rejected, missing grade raises ForecastInputError 'grade is required', NaN volume and NaN realized_price rejected, byproduct stays 5.0 under 10x volume (never x volume), internal 450 eliminated net=10000 gross=10450, unclosed->gap excluded from segment_total, FX chain (gross-tc-rc)*7.2, ramp-up saleable x1.5 exact, holding 0.6*0.7=0.42 deterministic"
+  },
+  {
+   "command": "python probe_determinism.py (E2E run twice)",
+   "exit_code": 0,
+   "result": "in-process outputs bit-identical; pytest module twice rc=0 both, identical summaries '11 passed in 0.14s'"
+  },
+  {
+   "command": "grep zijin|bisha|barrick|ivanhoe in scripts/asset_ownership.py mine_year_operation.py commercial_terms.py internal_flow.py reconciliation.py",
+   "exit_code": 0,
+   "result": "zero hits in all 5 modules; kamoa/porgera only at asset_ownership.py:18 (module docstring) and :174 (function docstring) — docstring text only, not code logic"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-611/11_implementer_receipt.json (CWD assurance\\unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed"
+  },
+  {
+   "command": "git cat-file -e 30819677646e4d6cc3620a4b46d2bd017b81eb60 / 288ac881ad3ced4d77c3aa98eae59957ca38b61a",
+   "exit_code": 0,
+   "result": "both real git commits: 3081967=ZR-608 impl commit (base_triplet.revenue), 288ac88==HEAD (result_triplet.revenue); filing 5a1c18f / wiki 26a6b22 are sibling-repo commits (filing-fetch / company-wiki) per ZR-608 reviewer receipt, consistent across all prior accepted units"
+  }
+ ],
+ "created_at_utc": "2026-08-21T22:14:42.596710+00:00",
+ "findings": [
+  {
+   "detail": "Eight scenario classes deterministically recomputable, each confirmed non-vacuous by probe: holding (effective_group_share 0.6*0.7=0.42, recompute identical), equity method (one_hundred_percent applies 0.42 once; equity_share and consolidated bases rejected with ForecastInputError), multi-metal (byproduct_credit 5.0 independent addition — stays 5.0 under 10x volume, gross=saleable*60 never includes it), internal supply (internal_revenue 100*4.5=450; elimination net==external, gross=external+450 — never double counted), cross-currency (net==(gross-0.3)*7.2 to 1e-9 rel), ramp-up (saleable scales exactly x1.5, pure-function recompute bit-identical), gap (missing grade raises 'grade is required'; NaN volume and NaN realized_price rejected — never default 0), residual (unclosed 300 vs 350 -> gap status, difference -50, gap excluded from segment_total, never fabricated).",
+   "id": "REV-001",
+   "severity": "info",
+   "title": "All C1 acceptance criteria independently verified"
+  },
+  {
+   "detail": "Raw arithmetic reproduced in probe (no test-module import): Mine A saleable 1000*0.5*0.90*0.95=427.5, gross 427.5*5.0=2137.5, net (2137.5-0.3)*7.2=15387.84, group 15387.84*0.42=6462.8928; Mine B saleable 2000*0.8*0.85*0.90=1224.0, gross 1224*60=73440, +5.0 byproduct = 73445*7.2=528804.0; internal 450 eliminated; reconcile_layer(ext,ext,1e-6) closes reconciled_modeled with diff 0.0. Production chain outputs match hand values within 1e-9 relative tolerance (float evaluation-order noise, e.g. 15387.839999999998 vs 15387.84).",
+   "id": "REV-002",
+   "severity": "info",
+   "title": "C3 full-chain hand computation verified independently"
+  },
+  {
+   "detail": "scripts/asset_ownership.py, mine_year_operation.py, commercial_terms.py, internal_flow.py, reconciliation.py contain zero occurrences of zijin/bisha/barrick/ivanhoe. kamoa/porgera appear only in asset_ownership.py module docstring (line 18) and apply_ownership_share docstring (line 174) as anti-pattern semantic labels — docstring text only, not referenced in any code logic, key, or comparison.",
+   "id": "REV-003",
+   "severity": "info",
+   "title": "C2 zero production hardcoding confirmed by independent grep"
+  },
+  {
+   "detail": "E2E chain run twice in-process produced bit-identical 19-tuple outputs; pytest module run twice both rc=0 with identical '11 passed in 0.14s' summaries. Ruff clean; complexity ratchet 2 passed (true exit code 0 via Start-Process capture — the initial exit-1 was a PowerShell native-stderr wrapper artifact, not pytest). Full suite: 696 passed + 106 subtests, exit 0.",
+   "id": "REV-004",
+   "severity": "info",
+   "title": "Determinism and quality gates green"
+  },
+  {
+   "detail": "Implementer receipt claims '696 passed + 106 subtests; 2 deselected'; reviewer's independent run with the same -k 'not fc1103' filter produced '696 passed, 3 deselected, 2 warnings, 106 subtests'. The 696 passed + 106 subtests counts match exactly; the deselected discrepancy is collection/environment noise (e.g. an additional conditional-skip collection) and is non-blocking. The 2 warnings are a pre-existing UnicodeDecodeError resource-warning in a subprocess reader thread, unrelated to ZR-611.",
+   "id": "REV-005",
+   "severity": "minor",
+   "title": "Full-suite deselected count differs from implementer receipt (3 vs 2)"
+  },
+  {
+   "detail": "receipt-validate reports OK (canonical and well-formed). base_triplet.revenue=30819677646e4d6cc3620a4b46d2bd017b81eb60 is a real git commit (ZR-608 implementation); result_triplet.revenue=288ac881ad3ced4d77c3aa98eae59957ca38b61a is a real git commit and equals HEAD. filing 5a1c18f / wiki 26a6b22 are commits in the filing-fetch and company-wiki sibling repos respectively (not git objects in the revenue repo) — same hashes verified in every prior accepted unit's receipts, so expected. Commit 288ac88 includes the ZR-608 closure files (receipts/ZR-608/**, state.json with ZR-608 accepted + closure.next=ZR-611) merged with the ZR-611 test file, matching the noted 2nd-occurrence process deviation; the working tree additionally carries a post-commit ZR-611 'triplet_green' state entry, consistent with machine-state evolution. Review left tracked files untouched.",
+   "id": "REV-006",
+   "severity": "info",
+   "title": "Receipt triplets verified; process note about ZR-608 closure confirmed"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "288ac881ad3ced4d77c3aa98eae59957ca38b61a",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "9667ac1cd925fb94cc9432e5912d0cb70ade0e8ee6e725997e7347897cdc1da6",
+ "reviewer": "reviewer-zr611-independent",
+ "schema_version": 1,
+ "unit": "ZR-611",
+ "verdict": "accepted"
 }

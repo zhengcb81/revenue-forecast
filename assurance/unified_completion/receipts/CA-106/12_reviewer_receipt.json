@@ -1,33 +1,37 @@
 {
-  "unit": "CA-106",
-  "reviewer": "reviewer-ca106-independent-fast",
-  "verdict": "accepted",
-  "reviewed_at_utc": "2026-08-14T01:01:11Z",
-  "base_triplet": {
-    "revenue": "d33f7662af98e3f7649f35f926ee33e134761b2e"
-  },
-  "result_triplet": {
-    "revenue": "bfd705d67ae47332367c83faf63bb6758640f24e"
-  },
-  "commands": [
-    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -1",
-    "python -B -m pytest assurance\\unified_completion\\tests\\test_ledger.py -q",
-    "python -B -m uc.cli receipt-validate --receipt assurance\\unified_completion\\receipts\\CA-106\\11_implementer_receipt.json",
-    "Select-String uc\\ledger.py -Pattern 'path_sha256'",
-    "Select-String uc\\ledger.py -Pattern 'verify_summary|declared'",
-    "Select-String uc\\ledger.py -Pattern 'diff_fingerprints|file_count_delta'",
-    "Select-String assurance\\fc\\FC-1001\\11_implementer_receipt.json -Pattern 'side_effect_counts'",
-    "python -B -m ruff check assurance\\unified_completion\\"
-  ],
-  "findings": [
-    "HEAD=bfd705d 'feat(CA-106): side-effect ledger + independent oracle — JSONL events, root fingerprints, declared-vs-measured reconciliation, path privacy' — matches expected commit.",
-    "pytest test_ledger.py: 8 passed.",
-    "receipt-validate on CA-106 implementer receipt: OK, rc=0.",
-    "ledger.py path_sha256 at L43 (privacy token hashing) and L66-67 (before/after token set diff) — path privacy implemented.",
-    "ledger.py verify_summary at L118-131 compares declared side-effect counts against ledger-measured counts (declared-vs-measured reconciliation).",
-    "ledger.py diff_fingerprints at L64-70 computes file_count_delta as after-before (OS-level diff oracle).",
-    "RED evidence: FC-1001 legacy implementer receipt contains 'side_effect_counts' with no measurement source (line 85).",
-    "ruff check: All checks passed (0 findings)."
-  ],
-  "note": "fast independent review"
+ "schema_version": 1,
+ "kind": "reviewer",
+ "unit": "CA-106",
+ "reviewer": "reviewer-ca106-independent-fast",
+ "verdict": "accepted",
+ "reviewed_object_sha256": "93fa9b68991db7ea1085d1a97df6712d6b3870a5e7c881e56ef79c6e25e39704",
+ "created_at_utc": "2026-08-14T01:01:11Z",
+ "commands": [
+  "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -1",
+  "python -B -m pytest assurance\\unified_completion\\tests\\test_ledger.py -q",
+  "python -B -m uc.cli receipt-validate --receipt assurance\\unified_completion\\receipts\\CA-106\\11_implementer_receipt.json",
+  "Select-String uc\\ledger.py -Pattern 'path_sha256'",
+  "Select-String uc\\ledger.py -Pattern 'verify_summary|declared'",
+  "Select-String uc\\ledger.py -Pattern 'diff_fingerprints|file_count_delta'",
+  "Select-String assurance\\fc\\FC-1001\\11_implementer_receipt.json -Pattern 'side_effect_counts'",
+  "python -B -m ruff check assurance\\unified_completion\\"
+ ],
+ "base_triplet": {
+  "revenue": "d33f7662af98e3f7649f35f926ee33e134761b2e"
+ },
+ "result_triplet": {
+  "revenue": "bfd705d67ae47332367c83faf63bb6758640f24e"
+ },
+ "findings": [
+  "HEAD=bfd705d 'feat(CA-106): side-effect ledger + independent oracle — JSONL events, root fingerprints, declared-vs-measured reconciliation, path privacy' — matches expected commit.",
+  "pytest test_ledger.py: 8 passed.",
+  "receipt-validate on CA-106 implementer receipt: OK, rc=0.",
+  "ledger.py path_sha256 at L43 (privacy token hashing) and L66-67 (before/after token set diff) — path privacy implemented.",
+  "ledger.py verify_summary at L118-131 compares declared side-effect counts against ledger-measured counts (declared-vs-measured reconciliation).",
+  "ledger.py diff_fingerprints at L64-70 computes file_count_delta as after-before (OS-level diff oracle).",
+  "RED evidence: FC-1001 legacy implementer receipt contains 'side_effect_counts' with no measurement source (line 85).",
+  "ruff check: All checks passed (0 findings)."
+ ],
+ "note": "fast independent review",
+ "canonical_hash": "28fdf47d84f9c4d4b3465a963dc8fcfb7df8eacbc986ab10155773e96af8c633"
 }

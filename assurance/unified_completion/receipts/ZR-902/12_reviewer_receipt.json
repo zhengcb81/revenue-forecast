@@ -1,104 +1,104 @@
 {
-  "unit": "ZR-902",
-  "reviewer": "reviewer-zr902-independent",
-  "kind": "reviewer",
-  "schema_version": 1,
-  "verdict": "accepted",
-  "reviewed_object_sha256": "81400b05ae7baf547940252443922b474f49c1cad6c106ad7627efdad729984c",
-  "commands": [
-    {
-      "command": "git log --oneline -3 && git rev-parse HEAD",
-      "exit_code": 0,
-      "result": "HEAD=2d4d807603b483e808fdb11379e550b2a8fac0a7 (fix(ZR-902): REV-001/002 ...), parent=6d3fced; delta commit touches exactly 2 files (+42/-11): tests/test_zr902_daily_schedule.py +28, tools/daily_t2_schedule.py +25/-11"
-    },
-    {
-      "command": "git diff 6d3fced 2d4d807 -- scripts/",
-      "exit_code": 0,
-      "result": "empty (0 lines) — zero production changes maintained in the delta"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr902_daily_schedule.py -q --tb=short",
-      "exit_code": 0,
-      "result": "14 passed in 0.43s (12 original + test_c2_corrupt_ledger_fails_closed + test_c4_subcommands_are_positional)"
-    },
-    {
-      "command": "REV-001 fail-closed probes (inline python): started_at='not-a-date' / key missing / value None -> freshness_status",
-      "exit_code": 0,
-      "result": "R1/R2/R3 all return ('stale', 'ledger started_at unparseable (corrupt ledger)') — NEVER raises (ValueError/TypeError caught); R4 release_gate on corrupt ledger file -> blocked ('daily T2 gate blocked: ledger started_at unparseable (corrupt ledger)'), no exception; R5 fresh+ok ledger still 'fresh' — no behavior change on the valid path"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/daily_t2_schedule.py --help",
-      "exit_code": 0,
-      "result": "usage line shows positional subcommands {run-daily,register,unregister,query,verify} — all 5 capabilities listed; --flag notation removed from module docstring (REV-002)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check tools/daily_t2_schedule.py tests/test_zr902_daily_schedule.py && C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
-      "exit_code": 0,
-      "result": "ruff: All checks passed; ratchet: exit 0 (2 tests OK)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_fc1102_t2_runner.py tests/test_zr806_real_t2_samples.py tests/test_zr805_t3_authorization.py -q --timeout=180",
-      "exit_code": 0,
-      "result": "17 passed in 28.71s — no regression in adjacent T2/authorization suites from the delta"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-902/11_implementer_receipt.json (CWD assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed — validates the ORIGINAL delivery (result_triplet.revenue=6d3fced, 12 passed); per ZR-805 precedent (13_delta_review_receipt.json) the implementer receipt is not rewritten for deltas — the delta commit 2d4d807 is pinned by THIS delta review receipt's result_triplet"
-    },
-    {
-      "command": "git cat-file -e 2d4d807603b483e808fdb11379e550b2a8fac0a7 (plus base 6d3fced, filing 5a1c18f in filing-fetch, wiki 26a6b22 in company-wiki)",
-      "exit_code": 0,
-      "result": "all triplet SHAs are real git objects in their respective repos; result_triplet.revenue == HEAD"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -c \"import hashlib; print(hashlib.sha256(open(r'tests/test_zr902_daily_schedule.py','rb').read()).hexdigest())\"",
-      "exit_code": 0,
-      "result": "81400b05ae7baf547940252443922b474f49c1cad6c106ad7627efdad729984c — reviewed_object_sha256 of the current test file (recomputed post-delta)"
-    }
-  ],
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "6d3fcedcfd79723566f54c73a96de9215376cad1",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "unit": "ZR-902",
+ "reviewer": "reviewer-zr902-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "e0410c3a561263d3aedc423dfe641d993e42306d7ae8270cbd6b4afe4cb961c5",
+ "commands": [
+  {
+   "command": "git log --oneline -3 && git rev-parse HEAD",
+   "exit_code": 0,
+   "result": "HEAD=2d4d807603b483e808fdb11379e550b2a8fac0a7 (fix(ZR-902): REV-001/002 ...), parent=6d3fced; delta commit touches exactly 2 files (+42/-11): tests/test_zr902_daily_schedule.py +28, tools/daily_t2_schedule.py +25/-11"
   },
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "2d4d807603b483e808fdb11379e550b2a8fac0a7",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git diff 6d3fced 2d4d807 -- scripts/",
+   "exit_code": 0,
+   "result": "empty (0 lines) — zero production changes maintained in the delta"
   },
-  "findings": [
-    {
-      "id": "REV-001",
-      "severity": "minor",
-      "title": "Corrupt ledger started_at fails closed as stale/blocked — RESOLVED by 2d4d807",
-      "detail": "Disposition: FIXED, verified by direct probe. freshness_status now wraps started_at parsing in try/except (ValueError, TypeError) and returns ('stale', 'ledger started_at unparseable (corrupt ledger)') for unparseable, missing-key, and None started_at; release_gate returns blocked without raising; valid fresh+ok path unchanged. Regression test test_c2_corrupt_ledger_fails_closed covers unparseable + missing-key, and passes. C4 letter ('anything else -> blocked') now honored even for corrupt ledger files."
-    },
-    {
-      "id": "REV-002",
-      "severity": "minor",
-      "title": "CLI entry points documented/verified as positional subcommands — RESOLVED by 2d4d807",
-      "detail": "Disposition: FIXED, verified by direct execution. Module docstring now documents run-daily/register/query/unregister/verify (no --flag notation); 'python tools/daily_t2_schedule.py --help' lists exactly {run-daily,register,unregister,query,verify}. Regression test test_c4_subcommands_are_positional asserts all five appear in --help and passes. Query/verify behavior unchanged from original acceptance (read-only, exit codes correct)."
-    },
-    {
-      "id": "REV-003",
-      "severity": "info",
-      "title": "run_daily records started_at at run completion, not run start (unchanged, non-blocking)",
-      "detail": "Carried from original review; delta does not touch run_daily. Freshness measured from completion time is conservative and functionally correct; naming nit only."
-    },
-    {
-      "id": "REV-004",
-      "severity": "info",
-      "title": "Working tree carries uncommitted unit-tracking changes; commit clean (unchanged, non-blocking)",
-      "detail": "Carried from original review: uncommitted state.json/plan_inputs.json unit-tracking edits and other units' .tmp-* dirs remain; the delta commit itself touches exactly the 2 declared files. state.json ZR-902 entry not yet updated for the delta — consistent with the flow where reviewer/closure receipts carry the delta record."
-    },
-    {
-      "id": "REV-005",
-      "severity": "info",
-      "title": "Implementer receipt 11_implementer_receipt.json remains pinned at original commit 6d3fced",
-      "detail": "receipt-validate on 11_implementer_receipt.json returns OK (canonical for the ORIGINAL delivery: result_triplet.revenue=6d3fced, 12 passed). No 2d4d807/14-passed/REV-00 reference exists anywhere under receipts/ZR-902/. Per the ZR-805 precedent (13_delta_review_receipt.json), deltas are recorded in a separate delta review receipt rather than rewriting the implementer receipt; this delta review receipt pins result_triplet.revenue=2d4d807603b483e808fdb11379e550b2a8fac0a7 (== HEAD). If the unit's closure process instead requires the implementer receipt to be updated per commit, that update (and state.json) is the only outstanding housekeeping item."
-    }
-  ],
-  "created_at_utc": "2026-08-22T22:32:27Z",
-  "canonical_hash": "5afe138ac8ad38386579e57ad0a404defb9200c1f802563e62f1acea99d5e883"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr902_daily_schedule.py -q --tb=short",
+   "exit_code": 0,
+   "result": "14 passed in 0.43s (12 original + test_c2_corrupt_ledger_fails_closed + test_c4_subcommands_are_positional)"
+  },
+  {
+   "command": "REV-001 fail-closed probes (inline python): started_at='not-a-date' / key missing / value None -> freshness_status",
+   "exit_code": 0,
+   "result": "R1/R2/R3 all return ('stale', 'ledger started_at unparseable (corrupt ledger)') — NEVER raises (ValueError/TypeError caught); R4 release_gate on corrupt ledger file -> blocked ('daily T2 gate blocked: ledger started_at unparseable (corrupt ledger)'), no exception; R5 fresh+ok ledger still 'fresh' — no behavior change on the valid path"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/daily_t2_schedule.py --help",
+   "exit_code": 0,
+   "result": "usage line shows positional subcommands {run-daily,register,unregister,query,verify} — all 5 capabilities listed; --flag notation removed from module docstring (REV-002)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check tools/daily_t2_schedule.py tests/test_zr902_daily_schedule.py && C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+   "exit_code": 0,
+   "result": "ruff: All checks passed; ratchet: exit 0 (2 tests OK)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_fc1102_t2_runner.py tests/test_zr806_real_t2_samples.py tests/test_zr805_t3_authorization.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "17 passed in 28.71s — no regression in adjacent T2/authorization suites from the delta"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-902/11_implementer_receipt.json (CWD assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed — validates the ORIGINAL delivery (result_triplet.revenue=6d3fced, 12 passed); per ZR-805 precedent (13_delta_review_receipt.json) the implementer receipt is not rewritten for deltas — the delta commit 2d4d807 is pinned by THIS delta review receipt's result_triplet"
+  },
+  {
+   "command": "git cat-file -e 2d4d807603b483e808fdb11379e550b2a8fac0a7 (plus base 6d3fced, filing 5a1c18f in filing-fetch, wiki 26a6b22 in company-wiki)",
+   "exit_code": 0,
+   "result": "all triplet SHAs are real git objects in their respective repos; result_triplet.revenue == HEAD"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -c \"import hashlib; print(hashlib.sha256(open(r'tests/test_zr902_daily_schedule.py','rb').read()).hexdigest())\"",
+   "exit_code": 0,
+   "result": "81400b05ae7baf547940252443922b474f49c1cad6c106ad7627efdad729984c — reviewed_object_sha256 of the current test file (recomputed post-delta)"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "6d3fcedcfd79723566f54c73a96de9215376cad1",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "2d4d807603b483e808fdb11379e550b2a8fac0a7",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "findings": [
+  {
+   "id": "REV-001",
+   "severity": "minor",
+   "title": "Corrupt ledger started_at fails closed as stale/blocked — RESOLVED by 2d4d807",
+   "detail": "Disposition: FIXED, verified by direct probe. freshness_status now wraps started_at parsing in try/except (ValueError, TypeError) and returns ('stale', 'ledger started_at unparseable (corrupt ledger)') for unparseable, missing-key, and None started_at; release_gate returns blocked without raising; valid fresh+ok path unchanged. Regression test test_c2_corrupt_ledger_fails_closed covers unparseable + missing-key, and passes. C4 letter ('anything else -> blocked') now honored even for corrupt ledger files."
+  },
+  {
+   "id": "REV-002",
+   "severity": "minor",
+   "title": "CLI entry points documented/verified as positional subcommands — RESOLVED by 2d4d807",
+   "detail": "Disposition: FIXED, verified by direct execution. Module docstring now documents run-daily/register/query/unregister/verify (no --flag notation); 'python tools/daily_t2_schedule.py --help' lists exactly {run-daily,register,unregister,query,verify}. Regression test test_c4_subcommands_are_positional asserts all five appear in --help and passes. Query/verify behavior unchanged from original acceptance (read-only, exit codes correct)."
+  },
+  {
+   "id": "REV-003",
+   "severity": "info",
+   "title": "run_daily records started_at at run completion, not run start (unchanged, non-blocking)",
+   "detail": "Carried from original review; delta does not touch run_daily. Freshness measured from completion time is conservative and functionally correct; naming nit only."
+  },
+  {
+   "id": "REV-004",
+   "severity": "info",
+   "title": "Working tree carries uncommitted unit-tracking changes; commit clean (unchanged, non-blocking)",
+   "detail": "Carried from original review: uncommitted state.json/plan_inputs.json unit-tracking edits and other units' .tmp-* dirs remain; the delta commit itself touches exactly the 2 declared files. state.json ZR-902 entry not yet updated for the delta — consistent with the flow where reviewer/closure receipts carry the delta record."
+  },
+  {
+   "id": "REV-005",
+   "severity": "info",
+   "title": "Implementer receipt 11_implementer_receipt.json remains pinned at original commit 6d3fced",
+   "detail": "receipt-validate on 11_implementer_receipt.json returns OK (canonical for the ORIGINAL delivery: result_triplet.revenue=6d3fced, 12 passed). No 2d4d807/14-passed/REV-00 reference exists anywhere under receipts/ZR-902/. Per the ZR-805 precedent (13_delta_review_receipt.json), deltas are recorded in a separate delta review receipt rather than rewriting the implementer receipt; this delta review receipt pins result_triplet.revenue=2d4d807603b483e808fdb11379e550b2a8fac0a7 (== HEAD). If the unit's closure process instead requires the implementer receipt to be updated per commit, that update (and state.json) is the only outstanding housekeeping item."
+  }
+ ],
+ "created_at_utc": "2026-08-22T22:32:27Z",
+ "canonical_hash": "186a88420a352732e274c802219872265dc3836a5430fdc9c1a111fe7a4c9f76"
 }

@@ -1,104 +1,104 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "073fd4d20eac6d66369fe5728e2d36087b4636f5",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "073fd4d20eac6d66369fe5728e2d36087b4636f5",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "canonical_hash": "6884dfa05c119cf7252243d291ab4faee22d6aaa7b1d71ba259068f0199da3b2",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
+   "exit_code": 0,
+   "result": "HEAD = 3081967 (feat(ZR-608) asset→segment→group reconciliation), parent = 073fd4d (feat(ZR-607)). Full sha: 30819677646e4d6cc3620a4b46d2bd017b81eb60 ← 073fd4d20eac6d66369fe5728e2d36087b4636f5. Commit contains 16 files incl. scripts/reconciliation.py + tests/test_zr608_reconciliation.py + ZR-607 closure files (receipts/ZR-607/**, state.json) — process-note confirmed (ZR-607 closure merged into this commit; machine state/receipt chain correct)."
   },
-  "canonical_hash": "1c9018b380d7ca23f51bfc0e11e3f3ed419609efb3f4a05188c60eea21f330d6",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
-      "exit_code": 0,
-      "result": "HEAD = 3081967 (feat(ZR-608) asset→segment→group reconciliation), parent = 073fd4d (feat(ZR-607)). Full sha: 30819677646e4d6cc3620a4b46d2bd017b81eb60 ← 073fd4d20eac6d66369fe5728e2d36087b4636f5. Commit contains 16 files incl. scripts/reconciliation.py + tests/test_zr608_reconciliation.py + ZR-607 closure files (receipts/ZR-607/**, state.json) — process-note confirmed (ZR-607 closure merged into this commit; machine state/receipt chain correct)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr608_reconciliation.py -q --tb=short",
-      "exit_code": 0,
-      "result": "11 passed in 0.14s (C1 x4, C2 x3, C3 x4)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr607_internal_flow.py tests/test_zr606_commercial_terms.py tests/test_golden_behavior_lock.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "60 passed (regression subset green)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/reconciliation.py tests/test_zr608_reconciliation.py",
-      "exit_code": 0,
-      "result": "All checks passed."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py -q",
-      "exit_code": 0,
-      "result": "Ran 2 tests, OK (ratchet green; NEW_FILE_MAX=10 applies to scripts/reconciliation.py via test_new_files_stay_simple). Verified real exit code 0 via cmd rerun."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr608-reviewer\\probe_zr608.py <repo>",
-      "exit_code": 0,
-      "result": "ALL ADVERSARIAL PROBES PASSED — 46 independent checks: C1 tolerance gate (exact/within/at-boundary/outside/relative-scale/tol=0, negative & NaN/inf/str/None tolerance rejected, bool asset rejected, negative values), C2 honest fallback (closed listing, unclosed gap=10 total=90 gap NEVER in total, overshoot signed gap, within-tolerance closed, empty vs 0 closed / empty vs 100 gap, NaN/inf/-inf/'abc'/None/bool revenue rejected, non-str & blank keys rejected, NaN group rejected), C3 anti-fake-revenue (reconciled, unreconciled gap -40, NaN/inf/-inf rejected with 'finite', 'abc'/None/bool rejected, empty assets → gap total 0 never 0-revenue fake, empty vs 0 closed, NaN reference rejected, custom tolerance honored)."
-    },
-    {
-      "command": "grep (ripgrep) for company/mine names in scripts/reconciliation.py",
-      "exit_code": 0,
-      "result": "Zero hardcoding confirmed: no zijin/kamoa/porgera/bisha or any company/mine name present; matches are only generic parameter names (asset_*) and docstrings. Only constants are formula tolerance terms (1.0, 1e-6)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
-      "exit_code": 0,
-      "result": "685 passed, 3 deselected, 106 subtests passed in 121.88s (2 pre-existing thread warnings, UnicodeDecodeError from another test; exit 0). Matches implementer claim exactly."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-608/11_implementer_receipt.json (CWD assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt receipts/ZR-608/11_implementer_receipt.json is canonical and well-formed. base_triplet.revenue=073fd4d20eac6d66369fe5728e2d36087b4636f5 is a real git commit in revenue repo (== parent of HEAD); result_triplet.revenue=30819677646e4d6cc3620a4b46d2bd017b81eb60 == HEAD; filing 5a1c18f5171db0e4b9113138ea360db361e1e435 real commit in filing-fetch repo; wiki 26a6b22f80ae964892d3f3f44fab364e65276583 real commit in company-wiki repo."
-    },
-    {
-      "command": "git diff --quiet HEAD -- tests/test_zr608_reconciliation.py scripts/reconciliation.py",
-      "exit_code": 0,
-      "result": "Reviewed files identical to committed HEAD (0 diff); reviewed_object_sha256=f836424ba9a73bc1d83bcd77f2ec032774e385d33b9df69b7bae5318d3eabb64."
-    }
-  ],
-  "created_at_utc": "2026-08-21T21:56:06.620Z",
-  "findings": [
-    {
-      "detail": "reconcile_layer implements the exact gate |diff| ≤ max(1.0,|reference|)×tol → 'reconciled_modeled' else 'gap'; negative tolerance rejected via require(); NaN/inf/non-numeric tolerance, asset and reference values rejected by finite_number. fallback_segment_listing reports unclosed difference as explicit gap, never added to segment_total, with closed flag at default 1e-6 tolerance; empty listing vs nonzero group → gap (never 0-revenue fake). gap_report rejects NaN/inf/-inf/'abc'/None/bool contributions (finite_number), empty assets → gap with total 0. 46/46 adversarial probes passed.",
-      "id": "REV-001",
-      "severity": "info",
-      "title": "C1/C2/C3 acceptance criteria independently verified"
-    },
-    {
-      "detail": "scripts/reconciliation.py contains no company/mine names or hardcoded revenue figures — purely the tolerance formula constants (1.0, 1e-6). Anti-fabrication property of the design holds.",
-      "id": "REV-002",
-      "severity": "info",
-      "title": "No hardcoded revenue data"
-    },
-    {
-      "detail": "As documented in the unit card, the ZR-607 closure commit did not land separately; closure files (receipts/ZR-607/**, state.json, README/planning docs) are inside commit 3081967 together with the ZR-608 implementation. Machine state is correct: state.json shows ZR-607 accepted with closure→ZR-608; ZR-607 closure receipt (13_closure_receipt.json, by reviewer-zr607-independent) seals decision=accepted next=ZR-608; ZR-608 is triplet_green awaiting this review. Git granularity is coarse but not blocking.",
-      "id": "REV-003",
-      "severity": "info",
-      "title": "Process note confirmed: ZR-607 closure files merged into ZR-608 commit"
-    },
-    {
-      "detail": "New tests 11/11; regression subset 60/60; full suite 685 passed + 106 subtests (3 deselected = pre-existing fc1103 hang) with exit 0; ruff clean; complexity ratchet 2/2 OK (reconciliation.py ≤ NEW_FILE_MAX=10). Two non-blocking pre-existing thread warnings (UnicodeDecodeError from another test module) not attributable to ZR-608.",
-      "id": "REV-004",
-      "severity": "info",
-      "title": "Quality gates all green"
-    },
-    {
-      "detail": "closed flag uses max(1.0,|group_reported|)×1e-6 with no tolerance parameter on the function. This matches the unit card signature (segment_revenues, group_reported) and the C2 'closed=True within tolerance' wording, so it is acceptable; noted only for future flexibility.",
-      "id": "REV-005",
-      "severity": "minor",
-      "title": "fallback_segment_listing closes only at hardcoded default tolerance"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "30819677646e4d6cc3620a4b46d2bd017b81eb60",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr608_reconciliation.py -q --tb=short",
+   "exit_code": 0,
+   "result": "11 passed in 0.14s (C1 x4, C2 x3, C3 x4)."
   },
-  "reviewed_object_sha256": "f836424ba9a73bc1d83bcd77f2ec032774e385d33b9df69b7bae5318d3eabb64",
-  "reviewer": "reviewer-zr608-independent",
-  "schema_version": 1,
-  "unit": "ZR-608",
-  "verdict": "accepted"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr607_internal_flow.py tests/test_zr606_commercial_terms.py tests/test_golden_behavior_lock.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "60 passed (regression subset green)."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check scripts/reconciliation.py tests/test_zr608_reconciliation.py",
+   "exit_code": 0,
+   "result": "All checks passed."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py -q",
+   "exit_code": 0,
+   "result": "Ran 2 tests, OK (ratchet green; NEW_FILE_MAX=10 applies to scripts/reconciliation.py via test_new_files_stay_simple). Verified real exit code 0 via cmd rerun."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr608-reviewer\\probe_zr608.py <repo>",
+   "exit_code": 0,
+   "result": "ALL ADVERSARIAL PROBES PASSED — 46 independent checks: C1 tolerance gate (exact/within/at-boundary/outside/relative-scale/tol=0, negative & NaN/inf/str/None tolerance rejected, bool asset rejected, negative values), C2 honest fallback (closed listing, unclosed gap=10 total=90 gap NEVER in total, overshoot signed gap, within-tolerance closed, empty vs 0 closed / empty vs 100 gap, NaN/inf/-inf/'abc'/None/bool revenue rejected, non-str & blank keys rejected, NaN group rejected), C3 anti-fake-revenue (reconciled, unreconciled gap -40, NaN/inf/-inf rejected with 'finite', 'abc'/None/bool rejected, empty assets → gap total 0 never 0-revenue fake, empty vs 0 closed, NaN reference rejected, custom tolerance honored)."
+  },
+  {
+   "command": "grep (ripgrep) for company/mine names in scripts/reconciliation.py",
+   "exit_code": 0,
+   "result": "Zero hardcoding confirmed: no zijin/kamoa/porgera/bisha or any company/mine name present; matches are only generic parameter names (asset_*) and docstrings. Only constants are formula tolerance terms (1.0, 1e-6)."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "685 passed, 3 deselected, 106 subtests passed in 121.88s (2 pre-existing thread warnings, UnicodeDecodeError from another test; exit 0). Matches implementer claim exactly."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-608/11_implementer_receipt.json (CWD assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt receipts/ZR-608/11_implementer_receipt.json is canonical and well-formed. base_triplet.revenue=073fd4d20eac6d66369fe5728e2d36087b4636f5 is a real git commit in revenue repo (== parent of HEAD); result_triplet.revenue=30819677646e4d6cc3620a4b46d2bd017b81eb60 == HEAD; filing 5a1c18f5171db0e4b9113138ea360db361e1e435 real commit in filing-fetch repo; wiki 26a6b22f80ae964892d3f3f44fab364e65276583 real commit in company-wiki repo."
+  },
+  {
+   "command": "git diff --quiet HEAD -- tests/test_zr608_reconciliation.py scripts/reconciliation.py",
+   "exit_code": 0,
+   "result": "Reviewed files identical to committed HEAD (0 diff); reviewed_object_sha256=f836424ba9a73bc1d83bcd77f2ec032774e385d33b9df69b7bae5318d3eabb64."
+  }
+ ],
+ "created_at_utc": "2026-08-21T21:56:06.620Z",
+ "findings": [
+  {
+   "detail": "reconcile_layer implements the exact gate |diff| ≤ max(1.0,|reference|)×tol → 'reconciled_modeled' else 'gap'; negative tolerance rejected via require(); NaN/inf/non-numeric tolerance, asset and reference values rejected by finite_number. fallback_segment_listing reports unclosed difference as explicit gap, never added to segment_total, with closed flag at default 1e-6 tolerance; empty listing vs nonzero group → gap (never 0-revenue fake). gap_report rejects NaN/inf/-inf/'abc'/None/bool contributions (finite_number), empty assets → gap with total 0. 46/46 adversarial probes passed.",
+   "id": "REV-001",
+   "severity": "info",
+   "title": "C1/C2/C3 acceptance criteria independently verified"
+  },
+  {
+   "detail": "scripts/reconciliation.py contains no company/mine names or hardcoded revenue figures — purely the tolerance formula constants (1.0, 1e-6). Anti-fabrication property of the design holds.",
+   "id": "REV-002",
+   "severity": "info",
+   "title": "No hardcoded revenue data"
+  },
+  {
+   "detail": "As documented in the unit card, the ZR-607 closure commit did not land separately; closure files (receipts/ZR-607/**, state.json, README/planning docs) are inside commit 3081967 together with the ZR-608 implementation. Machine state is correct: state.json shows ZR-607 accepted with closure→ZR-608; ZR-607 closure receipt (13_closure_receipt.json, by reviewer-zr607-independent) seals decision=accepted next=ZR-608; ZR-608 is triplet_green awaiting this review. Git granularity is coarse but not blocking.",
+   "id": "REV-003",
+   "severity": "info",
+   "title": "Process note confirmed: ZR-607 closure files merged into ZR-608 commit"
+  },
+  {
+   "detail": "New tests 11/11; regression subset 60/60; full suite 685 passed + 106 subtests (3 deselected = pre-existing fc1103 hang) with exit 0; ruff clean; complexity ratchet 2/2 OK (reconciliation.py ≤ NEW_FILE_MAX=10). Two non-blocking pre-existing thread warnings (UnicodeDecodeError from another test module) not attributable to ZR-608.",
+   "id": "REV-004",
+   "severity": "info",
+   "title": "Quality gates all green"
+  },
+  {
+   "detail": "closed flag uses max(1.0,|group_reported|)×1e-6 with no tolerance parameter on the function. This matches the unit card signature (segment_revenues, group_reported) and the C2 'closed=True within tolerance' wording, so it is acceptable; noted only for future flexibility.",
+   "id": "REV-005",
+   "severity": "minor",
+   "title": "fallback_segment_listing closes only at hardcoded default tolerance"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "30819677646e4d6cc3620a4b46d2bd017b81eb60",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "d549709616d8852cb55803403e7df12c5359a48ff43e3255bd9f0c36934fb965",
+ "reviewer": "reviewer-zr608-independent",
+ "schema_version": 1,
+ "unit": "ZR-608",
+ "verdict": "accepted"
 }

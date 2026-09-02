@@ -1,107 +1,107 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "f04f90e350b3468ea933aaaf0665a99c5726d6b2",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "f04f90e350b3468ea933aaaf0665a99c5726d6b2",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "canonical_hash": "8de5ba2fd391534ce29d478810a02627d23cdeb1e837fdd00f9e9e980abe9907",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
+   "exit_code": 0,
+   "result": "HEAD=e75debb (REV-001 delta), parent=b0d7291 (ZR-711 impl) — matches delta card"
   },
-  "canonical_hash": "91f802d5ded72f6e5fe4b65e26e63dda8710dbc1da96ea713273e4c3c93fc019",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
-      "exit_code": 0,
-      "result": "HEAD=e75debb (REV-001 delta), parent=b0d7291 (ZR-711 impl) — matches delta card"
-    },
-    {
-      "command": "git diff b0d7291 e75debb",
-      "exit_code": 0,
-      "result": "2 files +21/-1: document.py:606 gate ==3.7 -> in (3.7,3.8); test_zr711_schema_optin.py +1 regression test (test_c2_38_enforces_capture_consistency_like_37)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr711_schema_optin.py -q --tb=short",
-      "exit_code": 0,
-      "result": "15 passed (14 original + 1 REV-001 regression)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_golden_behavior_lock.py tests/test_schema_compatibility.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "8 passed; golden hashes unchanged"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
-      "exit_code": 0,
-      "result": "720 passed, 3 deselected, 106 subtests passed, exit 0 — matches claim"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/contracts/document.py tests/test_zr711_schema_optin.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q --tb=short",
-      "exit_code": 0,
-      "result": "2 passed"
-    },
-    {
-      "command": "probe_g_capture_scope.py (REV-001 repro on delta)",
-      "exit_code": 0,
-      "result": "3.8 now REJECTS all four capture mutations identically to 3.7 (fast-fail + collector); run_forecast on 3.8 corrupted-capture doc rejects with 'claim capture receipt mismatch' — REV-001 closed"
-    },
-    {
-      "command": "probe_a_37_golden.py (golden rerun on delta)",
-      "exit_code": 0,
-      "result": "5/5 golden families MATCH; 3.7 path validates; A4: 3.8 corrupted capture now rejected (was PASSED pre-delta)"
-    },
-    {
-      "command": "probe_bcd_38.py / probe_e_converter.py (regression on delta)",
-      "exit_code": 0,
-      "result": "3.8 opt-in, fail-closed gaps, version gate, converter round-trip all PASS unchanged"
-    },
-    {
-      "command": "python -c hashlib.sha256(tests/test_zr711_schema_optin.py)",
-      "exit_code": 0,
-      "result": "ef8a4fa46801bbcfa93449e965d845fba0f0abee36bd95442513cb9a0759f72d"
-    }
-  ],
-  "created_at_utc": "2026-08-22T07:33:17Z",
-  "findings": [
-    {
-      "detail": "Original b0d7291 gated capture-integrity checks on schema_version == '3.7' only, so 3.8 docs passed with corrupted capture_receipt_sha256 / content_sha256 / missing receipt. Delta e75debb changes document.py:606 to `in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION)` and adds test_c2_38_enforces_capture_consistency_like_37. Re-verified on committed state: 3.8 rejects all four capture mutations identically to 3.7 in fast-fail and collector paths; run_forecast(3.8 corrupted-capture) rejects. RESOLVED — no longer blocking.",
-      "id": "ZR711-REV-001",
-      "repro": "probe_g_capture_scope.py, probe_a_37_golden.py A4 on e75debb",
-      "severity": "resolved",
-      "title": "3.8 documents skip claim/source capture-consistency verification (blocked round 1)"
-    },
-    {
-      "detail": "Recorded '54 passed' for the 3-file regression command; exact re-run collects/passes 31 (7+1+23). All green either way; count transcription inaccurate. Not blocking; carry to closure as a transcription correction.",
-      "id": "ZR711-REV-002",
-      "repro": "pytest --collect-only + full run of the 3-file set",
-      "severity": "minor",
-      "title": "Implementer receipt regression count does not reproduce (claims 54, actual 31)"
-    },
-    {
-      "detail": "canonical_hash f273d1ee... does not equal canonical_sha256 of the receipt file under any tested exclusion set. Matches pre-existing convention for ZR-609/ZR-710 receipts; not unit-specific. No action required.",
-      "id": "ZR711-REV-003",
-      "repro": "python -c canonical_sha256 over receipt variants",
-      "severity": "info",
-      "title": "Implementer receipt canonical_hash does not recompute"
-    },
-    {
-      "detail": "analysis/confidence.py:202-205 and revenue_report.py contain ==3.7 branches; 3.8 results are treated like legacy 3.1-3.6 schemas in confidence quality gates / report formatting. Out of this card's acceptance scope (C2 requires validate_document only); flag for a follow-up unit if 3.8 must flow through reporting/confidence identically.",
-      "id": "ZR711-REV-004",
-      "repro": "grep FORECAST_SCHEMA_VERSION in scripts/",
-      "severity": "info",
-      "title": "Downstream consumers still branch on == FORECAST_SCHEMA_VERSION"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "e75debb6bcefb19901986a70f9fae1018829b714",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git diff b0d7291 e75debb",
+   "exit_code": 0,
+   "result": "2 files +21/-1: document.py:606 gate ==3.7 -> in (3.7,3.8); test_zr711_schema_optin.py +1 regression test (test_c2_38_enforces_capture_consistency_like_37)"
   },
-  "reviewed_object_sha256": "ef8a4fa46801bbcfa93449e965d845fba0f0abee36bd95442513cb9a0759f72d",
-  "reviewer": "reviewer-zr711-independent",
-  "schema_version": 1,
-  "unit": "ZR-711",
-  "verdict": "accepted"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr711_schema_optin.py -q --tb=short",
+   "exit_code": 0,
+   "result": "15 passed (14 original + 1 REV-001 regression)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_golden_behavior_lock.py tests/test_schema_compatibility.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "8 passed; golden hashes unchanged"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+   "exit_code": 0,
+   "result": "720 passed, 3 deselected, 106 subtests passed, exit 0 — matches claim"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check scripts/contracts/document.py tests/test_zr711_schema_optin.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q --tb=short",
+   "exit_code": 0,
+   "result": "2 passed"
+  },
+  {
+   "command": "probe_g_capture_scope.py (REV-001 repro on delta)",
+   "exit_code": 0,
+   "result": "3.8 now REJECTS all four capture mutations identically to 3.7 (fast-fail + collector); run_forecast on 3.8 corrupted-capture doc rejects with 'claim capture receipt mismatch' — REV-001 closed"
+  },
+  {
+   "command": "probe_a_37_golden.py (golden rerun on delta)",
+   "exit_code": 0,
+   "result": "5/5 golden families MATCH; 3.7 path validates; A4: 3.8 corrupted capture now rejected (was PASSED pre-delta)"
+  },
+  {
+   "command": "probe_bcd_38.py / probe_e_converter.py (regression on delta)",
+   "exit_code": 0,
+   "result": "3.8 opt-in, fail-closed gaps, version gate, converter round-trip all PASS unchanged"
+  },
+  {
+   "command": "python -c hashlib.sha256(tests/test_zr711_schema_optin.py)",
+   "exit_code": 0,
+   "result": "ef8a4fa46801bbcfa93449e965d845fba0f0abee36bd95442513cb9a0759f72d"
+  }
+ ],
+ "created_at_utc": "2026-08-22T07:33:17Z",
+ "findings": [
+  {
+   "detail": "Original b0d7291 gated capture-integrity checks on schema_version == '3.7' only, so 3.8 docs passed with corrupted capture_receipt_sha256 / content_sha256 / missing receipt. Delta e75debb changes document.py:606 to `in (FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION)` and adds test_c2_38_enforces_capture_consistency_like_37. Re-verified on committed state: 3.8 rejects all four capture mutations identically to 3.7 in fast-fail and collector paths; run_forecast(3.8 corrupted-capture) rejects. RESOLVED — no longer blocking.",
+   "id": "ZR711-REV-001",
+   "repro": "probe_g_capture_scope.py, probe_a_37_golden.py A4 on e75debb",
+   "severity": "resolved",
+   "title": "3.8 documents skip claim/source capture-consistency verification (blocked round 1)"
+  },
+  {
+   "detail": "Recorded '54 passed' for the 3-file regression command; exact re-run collects/passes 31 (7+1+23). All green either way; count transcription inaccurate. Not blocking; carry to closure as a transcription correction.",
+   "id": "ZR711-REV-002",
+   "repro": "pytest --collect-only + full run of the 3-file set",
+   "severity": "minor",
+   "title": "Implementer receipt regression count does not reproduce (claims 54, actual 31)"
+  },
+  {
+   "detail": "canonical_hash f273d1ee... does not equal canonical_sha256 of the receipt file under any tested exclusion set. Matches pre-existing convention for ZR-609/ZR-710 receipts; not unit-specific. No action required.",
+   "id": "ZR711-REV-003",
+   "repro": "python -c canonical_sha256 over receipt variants",
+   "severity": "info",
+   "title": "Implementer receipt canonical_hash does not recompute"
+  },
+  {
+   "detail": "analysis/confidence.py:202-205 and revenue_report.py contain ==3.7 branches; 3.8 results are treated like legacy 3.1-3.6 schemas in confidence quality gates / report formatting. Out of this card's acceptance scope (C2 requires validate_document only); flag for a follow-up unit if 3.8 must flow through reporting/confidence identically.",
+   "id": "ZR711-REV-004",
+   "repro": "grep FORECAST_SCHEMA_VERSION in scripts/",
+   "severity": "info",
+   "title": "Downstream consumers still branch on == FORECAST_SCHEMA_VERSION"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "e75debb6bcefb19901986a70f9fae1018829b714",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "f273d1eed1bbdec62b15b42d0341e6d1a1934425da96969d95697ba42a496ccd",
+ "reviewer": "reviewer-zr711-independent",
+ "schema_version": 1,
+ "unit": "ZR-711",
+ "verdict": "accepted"
 }

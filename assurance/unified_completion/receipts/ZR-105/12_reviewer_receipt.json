@@ -1,72 +1,72 @@
 {
-  "base_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "93d0042f364b7ede1c6fb04254173cf855957689",
-    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+ "base_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "93d0042f364b7ede1c6fb04254173cf855957689",
+  "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+ },
+ "canonical_hash": "b17f77b61e90ba8d88f1ad43e0611eeab8b49c0eea78b3862308431d87518c8e",
+ "commands": [
+  {
+   "command": "git rev-parse HEAD (revenue) + git log --oneline -5",
+   "exit_code": 0,
+   "result": "revenue HEAD = 93d0042f364b7ede1c6fb04254173cf855957689 (branch fcap); last two commits ca824e9 + 93d0042 touch only assurance/unified_completion/**"
   },
-  "canonical_hash": "c849fd3b079d5df2da7ce3c2401f4aab27724f2cdea74ee5e221f3f6d09c218f",
-  "commands": [
-    {
-      "command": "git rev-parse HEAD (revenue) + git log --oneline -5",
-      "exit_code": 0,
-      "result": "revenue HEAD = 93d0042f364b7ede1c6fb04254173cf855957689 (branch fcap); last two commits ca824e9 + 93d0042 touch only assurance/unified_completion/**"
-    },
-    {
-      "command": "git -C <each repo> status --porcelain + git diff --quiet HEAD -- .github/workflows",
-      "exit_code": 0,
-      "result": "no .github/workflows file dirty/modified in any repo; filing-fetch clean; company-wiki only .claude/settings.local.json (D) + llm_cost_log.csv (M); revenue workflows diff clean (exit 0); workflow files tracked in all three repos"
-    },
-    {
-      "command": "Get-FileHash -Algorithm SHA256 on the three workflow files",
-      "exit_code": 0,
-      "result": "revenue quality.yml F114943A...59A7D0, filing quality.yml CF67A44D...2174A, wiki ci.yml 8A4CFF64...C1594 — all match contract workflow_files.sha256 exactly"
-    },
-    {
-      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m uc.cli ci-gap",
-      "exit_code": 1,
-      "result": "honest gap report (exit 1 as required): exactly 9 gaps (3 repos x 3 checks), every check successor=CA-201 with non-empty evidence; revenue evidence cites stale compatibility/current.json current_triplet (1b41d62f.../592fae61.../f6eb5841... != frozen 19cb45ae.../83c638e7.../b6617553..., verified against file); filing evidence cites floating clone at quality.yml:19 (no pinned sha); wiki collected_skip_delta_controlled evidence cites || true at ci.yml:50 and 80; workflow_drift.unchanged=true for all three"
-    },
-    {
-      "command": "python -B -m pytest assurance/unified_completion/tests/test_zr105_ci_contract.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
-      "exit_code": 0,
-      "result": "9 passed"
-    },
-    {
-      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-105/11_implementer_receipt.json",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed; canonical_hash 08ea7d3a6d095d9bd7db10da829e360d608c2ef957a680f85362209b4303129b; result_triplet.revenue = ca824e9005c67e808547d28f01799f16746711aa; 4 findings (ZR105-GAP-001..004) all successor=CA-201"
-    },
-    {
-      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -m uc.cli state-show",
-      "exit_code": 0,
-      "result": "units.ZR-105.status=independent_review; current_next=ZR-105; current_phase=C_read_only_and_contracts; plan TRI-REPO-COMPLETION-2026-08-13-R1"
-    }
-  ],
-  "created_at_utc": "2026-08-14T08:40:16.889Z",
-  "findings": [
-    {
-      "detail": "ci-gap reports exactly 9 gaps (3 repos x 3 checks) each with successor CA-201 and non-empty evidence; the three signature evidence strings independently cross-checked against repo content: revenue stale manifest (compatibility/current.json current_triplet != frozen triplet), filing floating clone quality.yml:19 (no pinned sha), wiki unconditional || true at ci.yml:50 and 80.",
-      "id": "ZR105-REV-001",
-      "severity": "info",
-      "title": "Gap report honesty verified"
-    },
-    {
-      "detail": "No .github/workflows file changed in any of the three repos (working-tree and commit-scope checks); contract workflow_files sha256 match fresh Get-FileHash recomputation. Pre-existing unrelated dirt (revenue audit_review/*, assurance/runs/ untracked; wiki llm_cost_log.csv, .claude/settings.local.json) is out of ZR-105 scope and not blocking.",
-      "id": "ZR105-REV-002",
-      "severity": "info",
-      "title": "Workflow files untouched"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-105 independent review",
-  "result_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "93d0042f364b7ede1c6fb04254173cf855957689",
-    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  {
+   "command": "git -C <each repo> status --porcelain + git diff --quiet HEAD -- .github/workflows",
+   "exit_code": 0,
+   "result": "no .github/workflows file dirty/modified in any repo; filing-fetch clean; company-wiki only .claude/settings.local.json (D) + llm_cost_log.csv (M); revenue workflows diff clean (exit 0); workflow files tracked in all three repos"
   },
-  "reviewed_object_sha256": "12d33a75a551e560ab31270740f2db8658eb63781c25d3cec8a7bf6c0171b195",
-  "reviewer": "reviewer-zr105-independent",
-  "schema_version": 1,
-  "unit": "ZR-105",
-  "verdict": "accepted"
+  {
+   "command": "Get-FileHash -Algorithm SHA256 on the three workflow files",
+   "exit_code": 0,
+   "result": "revenue quality.yml F114943A...59A7D0, filing quality.yml CF67A44D...2174A, wiki ci.yml 8A4CFF64...C1594 — all match contract workflow_files.sha256 exactly"
+  },
+  {
+   "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m uc.cli ci-gap",
+   "exit_code": 1,
+   "result": "honest gap report (exit 1 as required): exactly 9 gaps (3 repos x 3 checks), every check successor=CA-201 with non-empty evidence; revenue evidence cites stale compatibility/current.json current_triplet (1b41d62f.../592fae61.../f6eb5841... != frozen 19cb45ae.../83c638e7.../b6617553..., verified against file); filing evidence cites floating clone at quality.yml:19 (no pinned sha); wiki collected_skip_delta_controlled evidence cites || true at ci.yml:50 and 80; workflow_drift.unchanged=true for all three"
+  },
+  {
+   "command": "python -B -m pytest assurance/unified_completion/tests/test_zr105_ci_contract.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+   "exit_code": 0,
+   "result": "9 passed"
+  },
+  {
+   "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-105/11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed; canonical_hash 08ea7d3a6d095d9bd7db10da829e360d608c2ef957a680f85362209b4303129b; result_triplet.revenue = ca824e9005c67e808547d28f01799f16746711aa; 4 findings (ZR105-GAP-001..004) all successor=CA-201"
+  },
+  {
+   "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -m uc.cli state-show",
+   "exit_code": 0,
+   "result": "units.ZR-105.status=independent_review; current_next=ZR-105; current_phase=C_read_only_and_contracts; plan TRI-REPO-COMPLETION-2026-08-13-R1"
+  }
+ ],
+ "created_at_utc": "2026-08-14T08:40:16.889Z",
+ "findings": [
+  {
+   "detail": "ci-gap reports exactly 9 gaps (3 repos x 3 checks) each with successor CA-201 and non-empty evidence; the three signature evidence strings independently cross-checked against repo content: revenue stale manifest (compatibility/current.json current_triplet != frozen triplet), filing floating clone quality.yml:19 (no pinned sha), wiki unconditional || true at ci.yml:50 and 80.",
+   "id": "ZR105-REV-001",
+   "severity": "info",
+   "title": "Gap report honesty verified"
+  },
+  {
+   "detail": "No .github/workflows file changed in any of the three repos (working-tree and commit-scope checks); contract workflow_files sha256 match fresh Get-FileHash recomputation. Pre-existing unrelated dirt (revenue audit_review/*, assurance/runs/ untracked; wiki llm_cost_log.csv, .claude/settings.local.json) is out of ZR-105 scope and not blocking.",
+   "id": "ZR105-REV-002",
+   "severity": "info",
+   "title": "Workflow files untouched"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-105 independent review",
+ "result_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "93d0042f364b7ede1c6fb04254173cf855957689",
+  "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+ },
+ "reviewed_object_sha256": "08ea7d3a6d095d9bd7db10da829e360d608c2ef957a680f85362209b4303129b",
+ "reviewer": "reviewer-zr105-independent",
+ "schema_version": 1,
+ "unit": "ZR-105",
+ "verdict": "accepted"
 }

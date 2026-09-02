@@ -1,90 +1,128 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "be8405cd8f60b9dda9446dec2cd45116f60a9e94",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "be8405cd8f60b9dda9446dec2cd45116f60a9e94",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "created_at_utc": "2026-08-22T19:59:31+00:00",
+ "findings": [
+  {
+   "id": "ZRR805-REV-001",
+   "severity": "minor",
+   "title": "Journal-oracle call-site miswired: post-run zero-download assertion is vacuous",
+   "detail": "tests/test_zr805_t3_authorization.py:142 passes project/'.source_catalog'/'catalog.sqlite3' (a FILE) into _journal_downloaded_new, which expects a DIRECTORY and appends 'acquisition_attempts.jsonl'; the call therefore always returns constant 0 and the assert only compares 0==before (seed state), never the post-run journal. Tamper probe (outside both repos): appending a fake {\"outcome\":\"downloaded_new\"} line to a COPY of the journal -> oracle with correct dir counts 1 (function genuinely reads the file), oracle with the exact as-wired argument returns 0 (blind). Production truth independently verified correct: unauthorized missing-source run (rc=3, stdout empty, stderr JSON error contains not_found) leaves acquisition_attempts.jsonl ABSENT -> zero downloaded_new. One-line follow-up fix: drop /\"catalog.sqlite3\" at line 142. Does not block: behavior pinned by rc/stdout/not_found assertions plus this review's independent oracle parse."
   },
-  "created_at_utc": "2026-08-22T19:59:31+00:00",
-  "findings": [
-    {
-      "id": "ZRR805-REV-001",
-      "severity": "minor",
-      "title": "Journal-oracle call-site miswired: post-run zero-download assertion is vacuous",
-      "detail": "tests/test_zr805_t3_authorization.py:142 passes project/'.source_catalog'/'catalog.sqlite3' (a FILE) into _journal_downloaded_new, which expects a DIRECTORY and appends 'acquisition_attempts.jsonl'; the call therefore always returns constant 0 and the assert only compares 0==before (seed state), never the post-run journal. Tamper probe (outside both repos): appending a fake {\"outcome\":\"downloaded_new\"} line to a COPY of the journal -> oracle with correct dir counts 1 (function genuinely reads the file), oracle with the exact as-wired argument returns 0 (blind). Production truth independently verified correct: unauthorized missing-source run (rc=3, stdout empty, stderr JSON error contains not_found) leaves acquisition_attempts.jsonl ABSENT -> zero downloaded_new. One-line follow-up fix: drop /\"catalog.sqlite3\" at line 142. Does not block: behavior pinned by rc/stdout/not_found assertions plus this review's independent oracle parse."
-    },
-    {
-      "id": "ZRR805-REV-002",
-      "severity": "minor",
-      "title": "Machine-state/cursor drift: ZR-805 artifacts exist while state.json/README/locks remain at ZR-804",
-      "detail": "Committed (HEAD 3fc5f3e) and working-tree state.json both show current_next=ZR-804, active_owner=zr804-implementer (lease acquired 2026-08-22T18:48Z), no ZR-804 or ZR-805 unit entries; locks/ contains ZR-804.lock.json but NO ZR-805 lock; audit_review/README.md line 13 says current_next: ZR-804. The ZR-805 WU card claims 'current_next=ZR-805（ZR-804 closure 后推进）；锁 owner=zr805-implementer' and the implementer receipt scope lists state.json+locks as touched, but no machine-state evidence of a ZR-805 lease/cursor exists anywhere. Governance/bookkeeping issue only; the reviewed commit itself touches exactly one new test file and is unaffected."
-    },
-    {
-      "id": "ZRR805-REV-003",
-      "severity": "info",
-      "title": "Positional failures from nested clean checkout (classified positional)",
-      "detail": "From .review-zr805-clean, test_t3_suite_is_opt_in_and_covers_three_markets fails ('filing-fetch T3 suite missing') and test_unauthorized_missing_source_zero_downloads_in_journal fails at the stderr assertion because PROJECT_ROOT.parent/'filing-fetch' resolves to revenue-forecast/filing-fetch which does not exist (real sibling is Projects/filing-fetch). Re-run of the single file from MAIN repo dir: 3 passed. Purely positional."
-    },
-    {
-      "id": "ZRR805-REV-004",
-      "severity": "info",
-      "title": "Layered approach satisfies registry row; no unmet demand for an actual network download",
-      "detail": "Registry row's explicit '网络缺失 blocked' clause matches the implemented design: real T3 first-download+second-zero-download execution is solely owned by filing-fetch tests/test_e2e_download.py behind skipUnless(FILING_FETCH_E2E_DOWNLOAD=='1') plus tool-presence gate, running real providers against a temporary wiki with staging/lock residue checks; without authorization/network it skips (blocked), never fake-passes. Nothing in the card text requires THIS unit to perform a real download: AC① is structural (verified against filing-fetch HEAD today), AC② is hermetic (independently reproduced), AC③ is static surface. Card's claim holds."
-    }
-  ],
-  "kind": "reviewer",
-  "objective": "Independent acceptance review of ZR-805 (CN/HK/US T3 first-download + second zero-download under strict authorization): re-verify test-only commit 3fc5f3e (diff isolation, suite runs, independent journal-oracle probe incl. tamper test, filing-fetch T3 ownership/gate/marker presence at HEAD, entry-surface single-downloader routing, hardcoding scan, receipt/triplet integrity) and judge the layered approach against the registry row's explicit blocked/opt-in clause.",
-  "probes": [
-    {
-      "id": "V1",
-      "command": "git diff be8405c 3fc5f3e --stat",
-      "exit_code": 0,
-      "result": "only tests/test_zr805_t3_authorization.py | 166 insertions, 1 file changed — zero production changes"
-    },
-    {
-      "id": "V2",
-      "command": "python -m pytest tests/test_zr805_t3_authorization.py -q (clean checkout, then MAIN dir); python -m pytest tests -q --timeout=120 -k 'not fc1103' (MAIN)",
-      "exit_code": 0,
-      "result": "clean checkout: 2 failed (positional sibling-path, see ZRR805-REV-003) + 1 passed; MAIN dir rerun: 3 passed in 2.02s; full suite MAIN: 803 passed, 3 deselected, 106 subtests passed in 161.35s — matches implementer claim"
-    },
-    {
-      "id": "V3",
-      "command": "%TEMP%/zr805_rev_probe/probe.py outside both repos (IsolatedLake seed=zr805 -> run source_preparation.py WITHOUT --allow-download for 紫金矿业 FY2023 -> self-parsed acquisition_attempts.jsonl; tamper-probe on journal COPY via committed _journal_downloaded_new)",
-      "exit_code": 0,
-      "result": "rc=3, stdout empty, stderr last-line JSON error contains not_found; journal ABSENT post-run -> 0 downloaded_new; tamper: correct-dir oracle=1 (reads file), as-wired-at-line-142 oracle=0 (blind) — see ZRR805-REV-001"
-    },
-    {
-      "id": "V4",
-      "command": "read ../filing-fetch/tests/test_e2e_download.py @HEAD 5a1c18f (clean tree)",
-      "exit_code": 0,
-      "result": "gate string os.environ.get(\"FILING_FETCH_E2E_DOWNLOAD\") == \"1\" present EXACTLY as asserted (line 43) + skipUnless; markers exist TODAY: test_download_cn_annual_report (118), test_download_us_annual_report (141), test_download_hk_annual_report (159), test_download_rejects_corrupted_local_copy (183), 'second run must not download again' (112); temp-wiki + _assert_no_residue confirmed"
-    },
-    {
-      "id": "V5",
-      "command": "inspect scripts/source_preparation.py + scripts/filing_fetch_client.py imports/spawn targets",
-      "exit_code": 0,
-      "result": "--allow-download store_true (default False); prepare_source(allow_download: bool = False); flag merely appends '--allow-download' to the SINGLE subprocess.run targeting scripts/filing_fetch_client.py; client imports argparse/json/os/re/subprocess/sys only (no requests/urllib/httpx/socket) — flipping the flag routes through filing-fetch, no second downloader"
-    },
-    {
-      "id": "V6",
-      "command": "grep -rn 'zr805|ZR-805|ZR805' scripts/ tools/",
-      "exit_code": 1,
-      "result": "zero hits (grep exit 1 = no matches) — no hardcoding"
-    },
-    {
-      "id": "V7",
-      "command": "sha256(00_wu_card.md); recompute 11_implementer_receipt.json canonical_hash; rev-parse be8405c/company-wiki/filing-fetch",
-      "exit_code": 0,
-      "result": "wu_card sha256 == plan_sha256 30a0e79f...349 TRUE; implementer canonical_hash recomputes (json.dumps insertion-order, separators=(',',':'), ensure_ascii=False); triplets: base revenue be8405cd8f60b9dda9446dec2cd45116f60a9e94, wiki 26a6b22f80ae964892d3f3f44fab364e65276583 == company-wiki HEAD, filing 5a1c18f... == filing-fetch HEAD, result revenue 3fc5f3e627f5cf5dcc712d0614e3abcf3b62b08e == HEAD"
-    }
-  ],
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "295f13844e7674da94e60434f1528b0cb6655b35",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "id": "ZRR805-REV-002",
+   "severity": "minor",
+   "title": "Machine-state/cursor drift: ZR-805 artifacts exist while state.json/README/locks remain at ZR-804",
+   "detail": "Committed (HEAD 3fc5f3e) and working-tree state.json both show current_next=ZR-804, active_owner=zr804-implementer (lease acquired 2026-08-22T18:48Z), no ZR-804 or ZR-805 unit entries; locks/ contains ZR-804.lock.json but NO ZR-805 lock; audit_review/README.md line 13 says current_next: ZR-804. The ZR-805 WU card claims 'current_next=ZR-805（ZR-804 closure 后推进）；锁 owner=zr805-implementer' and the implementer receipt scope lists state.json+locks as touched, but no machine-state evidence of a ZR-805 lease/cursor exists anywhere. Governance/bookkeeping issue only; the reviewed commit itself touches exactly one new test file and is unaffected."
   },
-  "reviewer": "reviewer-zr805-independent",
-  "schema_version": 1,
-  "unit": "ZR-805",
-  "verdict": "accepted",
-  "canonical_hash": "e23cf7e54f8a83e377dbe86498fdea024b994a803d01ea38fe4838fa1cc969bb"
+  {
+   "id": "ZRR805-REV-003",
+   "severity": "info",
+   "title": "Positional failures from nested clean checkout (classified positional)",
+   "detail": "From .review-zr805-clean, test_t3_suite_is_opt_in_and_covers_three_markets fails ('filing-fetch T3 suite missing') and test_unauthorized_missing_source_zero_downloads_in_journal fails at the stderr assertion because PROJECT_ROOT.parent/'filing-fetch' resolves to revenue-forecast/filing-fetch which does not exist (real sibling is Projects/filing-fetch). Re-run of the single file from MAIN repo dir: 3 passed. Purely positional."
+  },
+  {
+   "id": "ZRR805-REV-004",
+   "severity": "info",
+   "title": "Layered approach satisfies registry row; no unmet demand for an actual network download",
+   "detail": "Registry row's explicit '网络缺失 blocked' clause matches the implemented design: real T3 first-download+second-zero-download execution is solely owned by filing-fetch tests/test_e2e_download.py behind skipUnless(FILING_FETCH_E2E_DOWNLOAD=='1') plus tool-presence gate, running real providers against a temporary wiki with staging/lock residue checks; without authorization/network it skips (blocked), never fake-passes. Nothing in the card text requires THIS unit to perform a real download: AC① is structural (verified against filing-fetch HEAD today), AC② is hermetic (independently reproduced), AC③ is static surface. Card's claim holds."
+  }
+ ],
+ "kind": "reviewer",
+ "objective": "Independent acceptance review of ZR-805 (CN/HK/US T3 first-download + second zero-download under strict authorization): re-verify test-only commit 3fc5f3e (diff isolation, suite runs, independent journal-oracle probe incl. tamper test, filing-fetch T3 ownership/gate/marker presence at HEAD, entry-surface single-downloader routing, hardcoding scan, receipt/triplet integrity) and judge the layered approach against the registry row's explicit blocked/opt-in clause.",
+ "probes": [
+  {
+   "id": "V1",
+   "command": "git diff be8405c 3fc5f3e --stat",
+   "exit_code": 0,
+   "result": "only tests/test_zr805_t3_authorization.py | 166 insertions, 1 file changed — zero production changes"
+  },
+  {
+   "id": "V2",
+   "command": "python -m pytest tests/test_zr805_t3_authorization.py -q (clean checkout, then MAIN dir); python -m pytest tests -q --timeout=120 -k 'not fc1103' (MAIN)",
+   "exit_code": 0,
+   "result": "clean checkout: 2 failed (positional sibling-path, see ZRR805-REV-003) + 1 passed; MAIN dir rerun: 3 passed in 2.02s; full suite MAIN: 803 passed, 3 deselected, 106 subtests passed in 161.35s — matches implementer claim"
+  },
+  {
+   "id": "V3",
+   "command": "%TEMP%/zr805_rev_probe/probe.py outside both repos (IsolatedLake seed=zr805 -> run source_preparation.py WITHOUT --allow-download for 紫金矿业 FY2023 -> self-parsed acquisition_attempts.jsonl; tamper-probe on journal COPY via committed _journal_downloaded_new)",
+   "exit_code": 0,
+   "result": "rc=3, stdout empty, stderr last-line JSON error contains not_found; journal ABSENT post-run -> 0 downloaded_new; tamper: correct-dir oracle=1 (reads file), as-wired-at-line-142 oracle=0 (blind) — see ZRR805-REV-001"
+  },
+  {
+   "id": "V4",
+   "command": "read ../filing-fetch/tests/test_e2e_download.py @HEAD 5a1c18f (clean tree)",
+   "exit_code": 0,
+   "result": "gate string os.environ.get(\"FILING_FETCH_E2E_DOWNLOAD\") == \"1\" present EXACTLY as asserted (line 43) + skipUnless; markers exist TODAY: test_download_cn_annual_report (118), test_download_us_annual_report (141), test_download_hk_annual_report (159), test_download_rejects_corrupted_local_copy (183), 'second run must not download again' (112); temp-wiki + _assert_no_residue confirmed"
+  },
+  {
+   "id": "V5",
+   "command": "inspect scripts/source_preparation.py + scripts/filing_fetch_client.py imports/spawn targets",
+   "exit_code": 0,
+   "result": "--allow-download store_true (default False); prepare_source(allow_download: bool = False); flag merely appends '--allow-download' to the SINGLE subprocess.run targeting scripts/filing_fetch_client.py; client imports argparse/json/os/re/subprocess/sys only (no requests/urllib/httpx/socket) — flipping the flag routes through filing-fetch, no second downloader"
+  },
+  {
+   "id": "V6",
+   "command": "grep -rn 'zr805|ZR-805|ZR805' scripts/ tools/",
+   "exit_code": 1,
+   "result": "zero hits (grep exit 1 = no matches) — no hardcoding"
+  },
+  {
+   "id": "V7",
+   "command": "sha256(00_wu_card.md); recompute 11_implementer_receipt.json canonical_hash; rev-parse be8405c/company-wiki/filing-fetch",
+   "exit_code": 0,
+   "result": "wu_card sha256 == plan_sha256 30a0e79f...349 TRUE; implementer canonical_hash recomputes (json.dumps insertion-order, separators=(',',':'), ensure_ascii=False); triplets: base revenue be8405cd8f60b9dda9446dec2cd45116f60a9e94, wiki 26a6b22f80ae964892d3f3f44fab364e65276583 == company-wiki HEAD, filing 5a1c18f... == filing-fetch HEAD, result revenue 3fc5f3e627f5cf5dcc712d0614e3abcf3b62b08e == HEAD"
+  }
+ ],
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "295f13844e7674da94e60434f1528b0cb6655b35",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewer": "reviewer-zr805-independent",
+ "schema_version": 1,
+ "unit": "ZR-805",
+ "verdict": "accepted",
+ "canonical_hash": "b4664f91f6b515d5898a3f54992b1ef20137065f4e457e157ec26f7c2d3414c8",
+ "reviewed_object_sha256": "4b03d679b5f2f8f4bf40849f2581e5d13c19609de2fac3f8fc4a042295dee386",
+ "commands": [
+  {
+   "command": "git diff be8405c 3fc5f3e --stat",
+   "exit_code": 0,
+   "result": "only tests/test_zr805_t3_authorization.py | 166 insertions, 1 file changed — zero production changes"
+  },
+  {
+   "command": "python -m pytest tests/test_zr805_t3_authorization.py -q (clean checkout, then MAIN dir); python -m pytest tests -q --timeout=120 -k 'not fc1103' (MAIN)",
+   "exit_code": 0,
+   "result": "clean checkout: 2 failed (positional sibling-path, see ZRR805-REV-003) + 1 passed; MAIN dir rerun: 3 passed in 2.02s; full suite MAIN: 803 passed, 3 deselected, 106 subtests passed in 161.35s — matches implementer claim"
+  },
+  {
+   "command": "%TEMP%/zr805_rev_probe/probe.py outside both repos (IsolatedLake seed=zr805 -> run source_preparation.py WITHOUT --allow-download for 紫金矿业 FY2023 -> self-parsed acquisition_attempts.jsonl; tamper-probe on journal COPY via committed _journal_downloaded_new)",
+   "exit_code": 0,
+   "result": "rc=3, stdout empty, stderr last-line JSON error contains not_found; journal ABSENT post-run -> 0 downloaded_new; tamper: correct-dir oracle=1 (reads file), as-wired-at-line-142 oracle=0 (blind) — see ZRR805-REV-001"
+  },
+  {
+   "command": "read ../filing-fetch/tests/test_e2e_download.py @HEAD 5a1c18f (clean tree)",
+   "exit_code": 0,
+   "result": "gate string os.environ.get(\"FILING_FETCH_E2E_DOWNLOAD\") == \"1\" present EXACTLY as asserted (line 43) + skipUnless; markers exist TODAY: test_download_cn_annual_report (118), test_download_us_annual_report (141), test_download_hk_annual_report (159), test_download_rejects_corrupted_local_copy (183), 'second run must not download again' (112); temp-wiki + _assert_no_residue confirmed"
+  },
+  {
+   "command": "inspect scripts/source_preparation.py + scripts/filing_fetch_client.py imports/spawn targets",
+   "exit_code": 0,
+   "result": "--allow-download store_true (default False); prepare_source(allow_download: bool = False); flag merely appends '--allow-download' to the SINGLE subprocess.run targeting scripts/filing_fetch_client.py; client imports argparse/json/os/re/subprocess/sys only (no requests/urllib/httpx/socket) — flipping the flag routes through filing-fetch, no second downloader"
+  },
+  {
+   "command": "grep -rn 'zr805|ZR-805|ZR805' scripts/ tools/",
+   "exit_code": 1,
+   "result": "zero hits (grep exit 1 = no matches) — no hardcoding"
+  },
+  {
+   "command": "sha256(00_wu_card.md); recompute 11_implementer_receipt.json canonical_hash; rev-parse be8405c/company-wiki/filing-fetch",
+   "exit_code": 0,
+   "result": "wu_card sha256 == plan_sha256 30a0e79f...349 TRUE; implementer canonical_hash recomputes (json.dumps insertion-order, separators=(',',':'), ensure_ascii=False); triplets: base revenue be8405cd8f60b9dda9446dec2cd45116f60a9e94, wiki 26a6b22f80ae964892d3f3f44fab364e65276583 == company-wiki HEAD, filing 5a1c18f... == filing-fetch HEAD, result revenue 3fc5f3e627f5cf5dcc712d0614e3abcf3b62b08e == HEAD"
+  }
+ ]
 }

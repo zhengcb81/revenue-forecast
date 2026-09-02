@@ -1,97 +1,97 @@
 {
-  "unit": "ZR-1003",
-  "reviewer": "reviewer-zr1003-independent",
-  "kind": "reviewer",
-  "schema_version": 1,
-  "verdict": "accepted",
-  "reviewed_object_sha256": "8853fc7157f695e4c833c6bc106bd4fd9f0beebffea1dc8b4af09f02e3555092",
-  "commands": [
-    {
-      "command": "git -C company-wiki log --oneline -2",
-      "exit_code": 0,
-      "result": "HEAD=9a00df6 (9a00df609c16e99d153dbfbd3c41b4d5097f7c48) test(ZR-1003) ...; parent=6af6cc5 (6af6cc5b430733fde403e16be432930f1770e662) test(ZR-1002) ..."
-    },
-    {
-      "command": "git -C company-wiki diff --stat 6af6cc5 9a00df6",
-      "exit_code": 0,
-      "result": "1 file changed: tests/contract/test_zr1003_shadow_assertions.py | 241 +++ (exactly 1 file)"
-    },
-    {
-      "command": "git -C company-wiki diff 6af6cc5 9a00df6 -- src/",
-      "exit_code": 0,
-      "result": "EMPTY — zero product changes (wiki src/ untouched)"
-    },
-    {
-      "command": "python -m pytest tests/contract/test_zr1003_shadow_assertions.py -q --tb=short (company-wiki CWD)",
-      "exit_code": 0,
-      "result": "7 passed (C1 lifecycle / C2 safety x2 / C3 policy / C4 two cycles / C5 active unchanged / C6 flag-only)"
-    },
-    {
-      "command": "python %TEMP%\\zr1003-reviewer\\probe_zr1003.py (independent adversarial probes a-e)",
-      "exit_code": 0,
-      "result": "13/13 passed: a lifecycle shadow->active(1 row)->shadow; b unreviewed doc no receipt key + not_detected receipt written via store.transaction() conn; c wrong policy_hash -> ActivationError 'stale policy hash: activation bbb... != current aaa...', matching -> ok; d two cycles canonical_hash byte-identical (a285a4e8...), same assertion_id across cycles; e visibility_state=shadow, activation_epoch preserved, entity=Acme intact, journal kind=rollback count=1"
-    },
-    {
-      "command": "git -C revenue-forecast diff HEAD -- scripts/",
-      "exit_code": 0,
-      "result": "EMPTY — revenue scripts/ untouched (probe f); untracked .tmp-*/review dirs are pre-existing noise from other units"
-    },
-    {
-      "command": "python -m pytest tests/contract/test_zr1002_reader_first.py tests/contract/test_activation_transaction.py -q --timeout=180 (company-wiki CWD)",
-      "exit_code": 0,
-      "result": "20 passed — ZR-1002 5 + activation_transaction 15, zero regression"
-    },
-    {
-      "command": "python -m ruff check tests/contract/test_zr1003_shadow_assertions.py (company-wiki CWD)",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103' (revenue CWD)",
-      "exit_code": 0,
-      "result": "889 passed, 3 deselected, 106 subtests passed in 157.54s (benign UnicodeDecodeError in a pipe reader thread only)"
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-1003/11_implementer_receipt.json (unified_completion CWD)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed; base_triplet revenue=623020147032cfc58e731409330e87c29e4b4fdd wiki=6af6cc5b430733fde403e16be432930f1770e662 filing=5a1c18f5171db0e4b9113138ea360db361e1e435; result_triplet.wiki=9a00df609c16e99d153dbfbd3c41b4d5097f7c48 == company-wiki HEAD"
-    },
-    {
-      "command": "git -C filing-fetch rev-parse HEAD",
-      "exit_code": 0,
-      "result": "5a1c18f5171db0e4b9113138ea360db361e1e435 == filing triplet (untouched)"
-    }
-  ],
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "623020147032cfc58e731409330e87c29e4b4fdd",
-    "wiki": "6af6cc5b430733fde403e16be432930f1770e662"
+ "unit": "ZR-1003",
+ "reviewer": "reviewer-zr1003-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "6a119154249f5777e93e462dd1231afc4c510b241b7d75124b53e98bcc96e2b9",
+ "commands": [
+  {
+   "command": "git -C company-wiki log --oneline -2",
+   "exit_code": 0,
+   "result": "HEAD=9a00df6 (9a00df609c16e99d153dbfbd3c41b4d5097f7c48) test(ZR-1003) ...; parent=6af6cc5 (6af6cc5b430733fde403e16be432930f1770e662) test(ZR-1002) ..."
   },
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "623020147032cfc58e731409330e87c29e4b4fdd",
-    "wiki": "9a00df609c16e99d153dbfbd3c41b4d5097f7c48"
+  {
+   "command": "git -C company-wiki diff --stat 6af6cc5 9a00df6",
+   "exit_code": 0,
+   "result": "1 file changed: tests/contract/test_zr1003_shadow_assertions.py | 241 +++ (exactly 1 file)"
   },
-  "findings": [
-    {
-      "id": "REV-001",
-      "severity": "info",
-      "title": "All 7 acceptance criteria independently verified green",
-      "detail": "C1 lifecycle shadow->apply->active->rollback->shadow: test + independent probe a (13/13 probes). C2 safety fail-closed: unreviewed document metadata_json carries no PROMPT_INJECTION_REVIEW_KEY; recorded not_detected review via store.transaction() conn produces complete receipt (status/reviewer/reviewed_at/evidence_sha256). C3 RootPolicy: wrong policy_hash (current_policy_hash decoupled) -> ActivationError 'stale policy hash: activation bbb... != current aaa...'; correct policy activates with policy_hash recorded. C4 two apply->read->rollback cycles: canonical_hash byte-identical (a285a4e8... both). C5 rollback+re-apply at NEW epoch (02:00:00Z): full-row equality, no drift. C6 rollback only flips flag: visibility_state shadow, activation_epoch preserved, entity intact, journal kind=rollback count=1."
-    },
-    {
-      "id": "REV-002",
-      "severity": "info",
-      "title": "Determinism also holds at the id level",
-      "detail": "Independent probe d observed the SAME assertion_id (sa-66bc7effea144113807c9b209591ebb2) across both cycles, i.e. re-apply is deterministic beyond the selected output columns; consistent with C4/C5 semantics."
-    },
-    {
-      "id": "REV-003",
-      "severity": "info",
-      "title": "Zero product change gates hold",
-      "detail": "git diff 6af6cc5 9a00df6 -- src/ EMPTY; revenue git diff HEAD -- scripts/ EMPTY; commit touches exactly 1 file (241 insertions). filing-fetch HEAD 5a1c18f unchanged; revenue HEAD 6230201 unchanged. Pre-existing unrelated working-tree noise in both repos (.claude/settings.local.json deletion, llm_cost_log.csv, untracked coverage/docs, .tmp-zr4xx dirs) is not part of ZR-1003; the reviewed file is committed cleanly (git status shows no modification)."
-    }
-  ],
-  "created_at_utc": "2026-08-23T03:22:00+00:00",
-  "canonical_hash": "2bf1d0b50e85e9f2c0f577662bf48360ac769f453eaf1ea6b56031c7f0536d71"
+  {
+   "command": "git -C company-wiki diff 6af6cc5 9a00df6 -- src/",
+   "exit_code": 0,
+   "result": "EMPTY — zero product changes (wiki src/ untouched)"
+  },
+  {
+   "command": "python -m pytest tests/contract/test_zr1003_shadow_assertions.py -q --tb=short (company-wiki CWD)",
+   "exit_code": 0,
+   "result": "7 passed (C1 lifecycle / C2 safety x2 / C3 policy / C4 two cycles / C5 active unchanged / C6 flag-only)"
+  },
+  {
+   "command": "python %TEMP%\\zr1003-reviewer\\probe_zr1003.py (independent adversarial probes a-e)",
+   "exit_code": 0,
+   "result": "13/13 passed: a lifecycle shadow->active(1 row)->shadow; b unreviewed doc no receipt key + not_detected receipt written via store.transaction() conn; c wrong policy_hash -> ActivationError 'stale policy hash: activation bbb... != current aaa...', matching -> ok; d two cycles canonical_hash byte-identical (a285a4e8...), same assertion_id across cycles; e visibility_state=shadow, activation_epoch preserved, entity=Acme intact, journal kind=rollback count=1"
+  },
+  {
+   "command": "git -C revenue-forecast diff HEAD -- scripts/",
+   "exit_code": 0,
+   "result": "EMPTY — revenue scripts/ untouched (probe f); untracked .tmp-*/review dirs are pre-existing noise from other units"
+  },
+  {
+   "command": "python -m pytest tests/contract/test_zr1002_reader_first.py tests/contract/test_activation_transaction.py -q --timeout=180 (company-wiki CWD)",
+   "exit_code": 0,
+   "result": "20 passed — ZR-1002 5 + activation_transaction 15, zero regression"
+  },
+  {
+   "command": "python -m ruff check tests/contract/test_zr1003_shadow_assertions.py (company-wiki CWD)",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "python -m pytest tests -q --timeout=120 -k 'not fc1103' (revenue CWD)",
+   "exit_code": 0,
+   "result": "889 passed, 3 deselected, 106 subtests passed in 157.54s (benign UnicodeDecodeError in a pipe reader thread only)"
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-1003/11_implementer_receipt.json (unified_completion CWD)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed; base_triplet revenue=623020147032cfc58e731409330e87c29e4b4fdd wiki=6af6cc5b430733fde403e16be432930f1770e662 filing=5a1c18f5171db0e4b9113138ea360db361e1e435; result_triplet.wiki=9a00df609c16e99d153dbfbd3c41b4d5097f7c48 == company-wiki HEAD"
+  },
+  {
+   "command": "git -C filing-fetch rev-parse HEAD",
+   "exit_code": 0,
+   "result": "5a1c18f5171db0e4b9113138ea360db361e1e435 == filing triplet (untouched)"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "623020147032cfc58e731409330e87c29e4b4fdd",
+  "wiki": "6af6cc5b430733fde403e16be432930f1770e662"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "623020147032cfc58e731409330e87c29e4b4fdd",
+  "wiki": "9a00df609c16e99d153dbfbd3c41b4d5097f7c48"
+ },
+ "findings": [
+  {
+   "id": "REV-001",
+   "severity": "info",
+   "title": "All 7 acceptance criteria independently verified green",
+   "detail": "C1 lifecycle shadow->apply->active->rollback->shadow: test + independent probe a (13/13 probes). C2 safety fail-closed: unreviewed document metadata_json carries no PROMPT_INJECTION_REVIEW_KEY; recorded not_detected review via store.transaction() conn produces complete receipt (status/reviewer/reviewed_at/evidence_sha256). C3 RootPolicy: wrong policy_hash (current_policy_hash decoupled) -> ActivationError 'stale policy hash: activation bbb... != current aaa...'; correct policy activates with policy_hash recorded. C4 two apply->read->rollback cycles: canonical_hash byte-identical (a285a4e8... both). C5 rollback+re-apply at NEW epoch (02:00:00Z): full-row equality, no drift. C6 rollback only flips flag: visibility_state shadow, activation_epoch preserved, entity intact, journal kind=rollback count=1."
+  },
+  {
+   "id": "REV-002",
+   "severity": "info",
+   "title": "Determinism also holds at the id level",
+   "detail": "Independent probe d observed the SAME assertion_id (sa-66bc7effea144113807c9b209591ebb2) across both cycles, i.e. re-apply is deterministic beyond the selected output columns; consistent with C4/C5 semantics."
+  },
+  {
+   "id": "REV-003",
+   "severity": "info",
+   "title": "Zero product change gates hold",
+   "detail": "git diff 6af6cc5 9a00df6 -- src/ EMPTY; revenue git diff HEAD -- scripts/ EMPTY; commit touches exactly 1 file (241 insertions). filing-fetch HEAD 5a1c18f unchanged; revenue HEAD 6230201 unchanged. Pre-existing unrelated working-tree noise in both repos (.claude/settings.local.json deletion, llm_cost_log.csv, untracked coverage/docs, .tmp-zr4xx dirs) is not part of ZR-1003; the reviewed file is committed cleanly (git status shows no modification)."
+  }
+ ],
+ "created_at_utc": "2026-08-23T03:22:00+00:00",
+ "canonical_hash": "56b37fe2c08ee02f4a558adc0859273d6aaec871a957858aa957c30676ac2a87"
 }

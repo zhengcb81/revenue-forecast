@@ -1,100 +1,100 @@
 {
-  "base_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "430e468a97d68226a9ec54e7d3c9c7e52c337332",
-    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+ "base_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "430e468a97d68226a9ec54e7d3c9c7e52c337332",
+  "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+ },
+ "canonical_hash": "6fe8d1a7fc5281a807294541cf28837b0389283bc8bdfc0fd9647e71ab8d6f06",
+ "commands": [
+  {
+   "command": "git -C revenue-forecast rev-parse HEAD",
+   "exit_code": 0,
+   "result": "430e468a97d68226a9ec54e7d3c9c7e52c337332 == expected"
   },
-  "canonical_hash": "591edb63c522441eb5edcba6c1101b3ef52fdae307f94a715dcddb8cbc511fcc",
-  "commands": [
-    {
-      "command": "git -C revenue-forecast rev-parse HEAD",
-      "exit_code": 0,
-      "result": "430e468a97d68226a9ec54e7d3c9c7e52c337332 == expected"
-    },
-    {
-      "command": "git -C revenue-forecast show --stat 443f99f31735e77b97d700fa24757e7e0300c210",
-      "exit_code": 0,
-      "result": "only golden_corpus.json, receipts/ZR-003/00_wu_card.md, state.json, tests/test_zr003_corpus.py, uc/cli.py, uc/corpus.py"
-    },
-    {
-      "command": "git -C revenue-forecast show --stat 430e468a97d68226a9ec54e7d3c9c7e52c337332",
-      "exit_code": 0,
-      "result": "only receipts/ZR-003/11_implementer_receipt.json, state.json"
-    },
-    {
-      "command": "git -C filing-fetch rev-parse HEAD; git -C filing-fetch status --porcelain",
-      "exit_code": 0,
-      "result": "HEAD 83c638e76e40890262746cdf02b6df495dcb4031; clean"
-    },
-    {
-      "command": "git -C company-wiki rev-parse HEAD; git -C company-wiki status --porcelain",
-      "exit_code": 0,
-      "result": "HEAD ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875; dirt only .claude/settings.local.json D, llm_cost_log.csv M, .coverage ??, coverage.json ??"
-    },
-    {
-      "command": "git -C revenue-forecast diff --stat on ZR-003 scoped paths (corpus/uc/tests/receipts/state.json)",
-      "exit_code": 0,
-      "result": "no uncommitted changes in scope; log chain 430e468a->443f99f3->7716b876 (frozen base)"
-    },
-    {
-      "command": "python registry structural validation (schema/triplet/anchors/12 samples/roles/sha256/entities/period)",
-      "exit_code": 0,
-      "result": "schema_version 1, unit ZR-003, triplet == frozen; anchors kinds/paths OK; 12 samples; roles audited_filing=2 broker_research=7 company_release=1 revenue_forecast_input=1 revenue_forecast_result_draft=1; all sha256 64-hex, byte_size>0, entities list, period field; changjiang=2 entities (Zijin + Shaanxi Coal), wrong_strategy=[]"
-    },
-    {
-      "command": "Select-String for 'C:\\Users' and username literal in golden_corpus.json + all corpus/receipts files",
-      "exit_code": 0,
-      "result": "0 matches; no absolute user paths; registry raw bytes also negative for username UTF-8"
-    },
-    {
-      "command": "file listing + >1MB check + sample-byte hash collision scan under corpus/ and receipts/ZR-003/",
-      "exit_code": 0,
-      "result": "3 small files (8101/2992/4400 bytes, all <1MB); 0 collisions with the 12 sample sha256s"
-    },
-    {
-      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m pytest assurance/unified_completion/tests/test_zr003_corpus.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
-      "exit_code": 0,
-      "result": "10 passed"
-    },
-    {
-      "command": "python -B -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-003/11_implementer_receipt.json",
-      "exit_code": 0,
-      "result": "OK: canonical and well-formed; canonical_hash f042bb853801a97a6abbf9ba254cfd9f087f618de27bf6a8c1f393c895a24591; result_triplet.revenue == 443f99f31735e77b97d700fa24757e7e0300c210"
-    },
-    {
-      "command": "ZIJIN_GOLDEN_DROPBOX_STOCK_ROOT=set python -B -m uc.cli corpus-verify --corpus assurance/unified_completion/corpus/golden_corpus.json",
-      "exit_code": 0,
-      "result": "OK: corpus ... verified (samples intact, no leakage)"
-    },
-    {
-      "command": "same corpus-verify WITHOUT the env var",
-      "exit_code": 1,
-      "result": "7 dropbox samples listed as 'anchor dropbox_stock unresolved'; exit 1, no crash (blocked-style semantics)"
-    }
-  ],
-  "created_at_utc": "2026-08-14T03:51:21Z",
-  "findings": [
-    {
-      "id": "ZR003-REV-001",
-      "severity": "info",
-      "title": "all 8 verification checks passed; verdict accepted"
-    },
-    {
-      "id": "ZR003-REV-002",
-      "severity": "info",
-      "title": "wiki working-tree dirt matches known dirt (settings.local.json D, llm_cost_log.csv M, .coverage/coverage.json untracked); revenue working tree pre-existing dirt in audit_review/ and assurance/runs/ is outside ZR-003 scope"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-003 independent review",
-  "result_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "430e468a97d68226a9ec54e7d3c9c7e52c337332",
-    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  {
+   "command": "git -C revenue-forecast show --stat 443f99f31735e77b97d700fa24757e7e0300c210",
+   "exit_code": 0,
+   "result": "only golden_corpus.json, receipts/ZR-003/00_wu_card.md, state.json, tests/test_zr003_corpus.py, uc/cli.py, uc/corpus.py"
   },
-  "reviewed_object_sha256": "913cac07ed903c45b3f3aaae6d89001ccd5e116e742db4ba0e0de9b180edfe91",
-  "reviewer": "reviewer-zr003-independent",
-  "schema_version": 1,
-  "unit": "ZR-003",
-  "verdict": "accepted"
+  {
+   "command": "git -C revenue-forecast show --stat 430e468a97d68226a9ec54e7d3c9c7e52c337332",
+   "exit_code": 0,
+   "result": "only receipts/ZR-003/11_implementer_receipt.json, state.json"
+  },
+  {
+   "command": "git -C filing-fetch rev-parse HEAD; git -C filing-fetch status --porcelain",
+   "exit_code": 0,
+   "result": "HEAD 83c638e76e40890262746cdf02b6df495dcb4031; clean"
+  },
+  {
+   "command": "git -C company-wiki rev-parse HEAD; git -C company-wiki status --porcelain",
+   "exit_code": 0,
+   "result": "HEAD ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875; dirt only .claude/settings.local.json D, llm_cost_log.csv M, .coverage ??, coverage.json ??"
+  },
+  {
+   "command": "git -C revenue-forecast diff --stat on ZR-003 scoped paths (corpus/uc/tests/receipts/state.json)",
+   "exit_code": 0,
+   "result": "no uncommitted changes in scope; log chain 430e468a->443f99f3->7716b876 (frozen base)"
+  },
+  {
+   "command": "python registry structural validation (schema/triplet/anchors/12 samples/roles/sha256/entities/period)",
+   "exit_code": 0,
+   "result": "schema_version 1, unit ZR-003, triplet == frozen; anchors kinds/paths OK; 12 samples; roles audited_filing=2 broker_research=7 company_release=1 revenue_forecast_input=1 revenue_forecast_result_draft=1; all sha256 64-hex, byte_size>0, entities list, period field; changjiang=2 entities (Zijin + Shaanxi Coal), wrong_strategy=[]"
+  },
+  {
+   "command": "Select-String for 'C:\\Users' and username literal in golden_corpus.json + all corpus/receipts files",
+   "exit_code": 0,
+   "result": "0 matches; no absolute user paths; registry raw bytes also negative for username UTF-8"
+  },
+  {
+   "command": "file listing + >1MB check + sample-byte hash collision scan under corpus/ and receipts/ZR-003/",
+   "exit_code": 0,
+   "result": "3 small files (8101/2992/4400 bytes, all <1MB); 0 collisions with the 12 sample sha256s"
+  },
+  {
+   "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m pytest assurance/unified_completion/tests/test_zr003_corpus.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+   "exit_code": 0,
+   "result": "10 passed"
+  },
+  {
+   "command": "python -B -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-003/11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "OK: canonical and well-formed; canonical_hash f042bb853801a97a6abbf9ba254cfd9f087f618de27bf6a8c1f393c895a24591; result_triplet.revenue == 443f99f31735e77b97d700fa24757e7e0300c210"
+  },
+  {
+   "command": "ZIJIN_GOLDEN_DROPBOX_STOCK_ROOT=set python -B -m uc.cli corpus-verify --corpus assurance/unified_completion/corpus/golden_corpus.json",
+   "exit_code": 0,
+   "result": "OK: corpus ... verified (samples intact, no leakage)"
+  },
+  {
+   "command": "same corpus-verify WITHOUT the env var",
+   "exit_code": 1,
+   "result": "7 dropbox samples listed as 'anchor dropbox_stock unresolved'; exit 1, no crash (blocked-style semantics)"
+  }
+ ],
+ "created_at_utc": "2026-08-14T03:51:21Z",
+ "findings": [
+  {
+   "id": "ZR003-REV-001",
+   "severity": "info",
+   "title": "all 8 verification checks passed; verdict accepted"
+  },
+  {
+   "id": "ZR003-REV-002",
+   "severity": "info",
+   "title": "wiki working-tree dirt matches known dirt (settings.local.json D, llm_cost_log.csv M, .coverage/coverage.json untracked); revenue working tree pre-existing dirt in audit_review/ and assurance/runs/ is outside ZR-003 scope"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-003 independent review",
+ "result_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "430e468a97d68226a9ec54e7d3c9c7e52c337332",
+  "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+ },
+ "reviewed_object_sha256": "f042bb853801a97a6abbf9ba254cfd9f087f618de27bf6a8c1f393c895a24591",
+ "reviewer": "reviewer-zr003-independent",
+ "schema_version": 1,
+ "unit": "ZR-003",
+ "verdict": "accepted"
 }

@@ -1,115 +1,115 @@
 {
-  "schema_version": 1,
-  "unit": "ZR-306",
-  "kind": "reviewer",
-  "reviewer": "reviewer-zr306-independent",
-  "verdict": "accepted",
-  "note": "ZR-306 independent review",
-  "created_at_utc": "2026-08-17T21:36:58.763292Z",
-  "base_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "b784b547d976ea14d0ea0f9f0bc0297c6b944871",
-    "wiki": "080d20cefb4442199567a2c98911a83f6c583e40"
+ "schema_version": 1,
+ "unit": "ZR-306",
+ "kind": "reviewer",
+ "reviewer": "reviewer-zr306-independent",
+ "verdict": "accepted",
+ "note": "ZR-306 independent review",
+ "created_at_utc": "2026-08-17T21:36:58.763292Z",
+ "base_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "b784b547d976ea14d0ea0f9f0bc0297c6b944871",
+  "wiki": "080d20cefb4442199567a2c98911a83f6c583e40"
+ },
+ "result_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "769070943fb8357b2c1c04fc55deddd9623d6894",
+  "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+ },
+ "reviewed_object_sha256": "0006483e617d7a4655a97fbdc7d39b9556e90328fd9f5d243cdfb11dea7cdc4d",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD; git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD^",
+   "exit_code": 0,
+   "result": "HEAD=a608980f7662a5e4f2dcd2535461904c4aa94c31 (matches claimed result); parent=080d20cefb4442199567a2c98911a83f6c583e40 (matches claimed base)"
   },
-  "result_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "769070943fb8357b2c1c04fc55deddd9623d6894",
-    "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\filing-fetch rev-parse HEAD",
+   "exit_code": 0,
+   "result": "0e5d209bc352c6087fab51d09d55aa33aea81f85 (unchanged; matches base and result)"
   },
-  "reviewed_object_sha256": "1fd4c4317642ea3916f474a8756a67e6746c57eaad8fb6d82ef41983fd49f73b",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD; git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD^",
-      "exit_code": 0,
-      "result": "HEAD=a608980f7662a5e4f2dcd2535461904c4aa94c31 (matches claimed result); parent=080d20cefb4442199567a2c98911a83f6c583e40 (matches claimed base)"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\filing-fetch rev-parse HEAD",
-      "exit_code": 0,
-      "result": "0e5d209bc352c6087fab51d09d55aa33aea81f85 (unchanged; matches base and result)"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
-      "exit_code": 0,
-      "result": "769070943fb8357b2c1c04fc55deddd9623d6894 (matches claimed result)"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat a608980",
-      "exit_code": 0,
-      "result": "Exactly 1 file: tests/contract/test_zr306_role_dag.py, 134 insertions"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff 080d20c a608980 --stat",
-      "exit_code": 0,
-      "result": "Only tests/contract/test_zr306_role_dag.py (134 insertions). artifact_dag.py UNTOUCHED between base and HEAD."
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff b784b547d976ea14d0ea0f9f0bc0297c6b944871 769070943fb8357b2c1c04fc55deddd9623d6894 --stat",
-      "exit_code": 0,
-      "result": "Only assurance/unified_completion/state.json (+6/-1): ZR-306 unit entry (status implemented) + updated_at. No product code."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr306_role_dag.py tests/contract/test_source_catalog_artifact_backfill.py -q --tb=short (workdir company-wiki)",
-      "exit_code": 0,
-      "result": "17 passed in 3.15s: 6 new (test_zr306_role_dag.py) + 11 existing (test_source_catalog_artifact_backfill.py). Matches expected 17 passed."
-    },
-    {
-      "command": "read tests/contract/test_zr306_role_dag.py (134 lines, at HEAD)",
-      "exit_code": 0,
-      "result": "6 property tests verified. (1) document_hash -> every role, over ALL_ROLES + all 3-combinations; (2) role x PRODUCER_KEY -> exact transitive downstream closure via independently-written _downstream_closure, upstream excluded; (3) missing subtree (summary/sections) -> only its closure, explicit disjointness assertion that independent branch not recomputed; (4) idempotent + equals closure (document_hash -> all roles); (5) DAG acyclic, every chain terminates at normalized; (6) {prompt_hash,model_hash,config_hash} <= PRODUCER_KEYS asserted. Covers the registry mandate incl. producer/model/prompt invalidation scope."
-    },
-    {
-      "command": "read src/company_wiki/source_catalog/artifact_dag.py (77 lines)",
-      "exit_code": 0,
-      "result": "ROLE_DEPENDENCIES = {normalized:[], markdown:[normalized], summary:[markdown], sections:[normalized], consumer_analysis:[summary]} exactly matches frozen contract. PRODUCER_KEYS = (producer_name, producer_version, schema_version, prompt_hash, model_hash, config_hash). invalidate: document_hash -> all artifact roles; else sorted(_downstream(role)). Test _downstream_closure uses same traversal shape (stack frontier, skip seen, scan ROLE_DEPENDENCIES where current in parents) and reads same ROLE_DEPENDENCIES; independent reimplementation, not a copy of production _downstream."
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-306/11_implementer_receipt.json (workdir assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed. canonical_hash field = 0006483e617d7a4655a97fbdc7d39b9556e90328fd9f5d243cdfb11dea7cdc4d (matches frozen context)."
-    },
-    {
-      "command": "python -m uc.cli state-show (workdir assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "units.ZR-306.status = independent_review (updated 2026-08-17T21:34:07Z); current_next = ZR-306; current_phase = D_lifecycle_roots_freshness; implementation_status = in_progress; plan_status = ready_for_implementation."
-    },
-    {
-      "command": "cmd /c \"git -C C:\\Users\\郑曾波\\Projects\\company-wiki show a608980:tests/contract/test_zr306_role_dag.py > %TEMP%\\zr306-test-at-head.py\"; Get-FileHash -Algorithm SHA256 -Path ...",
-      "exit_code": 0,
-      "result": "SHA-256 of blob at HEAD = 1FD4C4317642EA3916F474A8756A67E6746C57EAAD8FB6D82EF41983FD49F73B; identical to hashlib sha256 of working-tree file (git diff a608980 confirms test file unmodified vs HEAD)."
-    }
-  ],
-  "findings": [
-    {
-      "id": "ZR306-REV-001",
-      "severity": "info",
-      "title": "Receipt recorded command output inaccurate: +148 vs actual +134",
-      "detail": "Implementer receipt commands[2] records 'git diff 080d20c a608980 --stat' result as '仅 tests/contract/test_zr306_role_dag.py（+148）' but the actual stat is 134 insertions (verified via git show --stat and git diff --stat). Substance unchanged (exactly 1 file, product code zero changes); recorded line count is wrong."
-    },
-    {
-      "id": "ZR306-REV-002",
-      "severity": "info",
-      "title": "Receipt note contradicts its own result_triplet.revenue field",
-      "detail": "notes[0] states 'result_triplet.revenue 取 b784b54（ZR-305 closure commit）' but the field result_triplet.revenue = 769070943fb8357b2c1c04fc55deddd9623d6894 (b784b54 is the base). Field is correct and matches verified revenue HEAD; the note text is stale/erroneous wording."
-    },
-    {
-      "id": "ZR306-REV-003",
-      "severity": "observation",
-      "title": "Test closure oracle is an independent reimplementation, not a literal hand computation",
-      "detail": "test _downstream_closure mirrors production _downstream traversal shape and reads the same ROLE_DEPENDENCIES dict (shared source of truth). Not a tautology: missing-subtree test (explicit independent-branch disjointness for summary and sections) and acyclic test (chains terminate at normalized) are concrete anchors independent of the closure function. Meets the card's property-test mandate over the small exhaustive domain (5 roles x 6 keys + role subsets)."
-    },
-    {
-      "id": "ZR306-REV-004",
-      "severity": "observation",
-      "title": "Full wiki suite not re-run per review instructions",
-      "detail": "Per instructions only the two hermetic contract files were run (17 passed). No regression in the 11 existing backfill contract tests. Full-suite regression not executed by reviewer."
-    },
-    {
-      "id": "ZR306-REV-005",
-      "severity": "observation",
-      "title": "Unrelated working-tree noise in company-wiki (not part of commit)",
-      "detail": "git status --porcelain shows .claude/settings.local.json deleted, llm_cost_log.csv modified, and untracked .coverage/coverage.json (pytest artifacts). None touch the reviewed test file or product code; commit a608980 contains only the test file."
-    }
-  ],
-  "canonical_hash": "36632f3331d150660e21274fb382e650cfe6cb56adedd21295a3c4fe29351630"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
+   "exit_code": 0,
+   "result": "769070943fb8357b2c1c04fc55deddd9623d6894 (matches claimed result)"
+  },
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat a608980",
+   "exit_code": 0,
+   "result": "Exactly 1 file: tests/contract/test_zr306_role_dag.py, 134 insertions"
+  },
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff 080d20c a608980 --stat",
+   "exit_code": 0,
+   "result": "Only tests/contract/test_zr306_role_dag.py (134 insertions). artifact_dag.py UNTOUCHED between base and HEAD."
+  },
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff b784b547d976ea14d0ea0f9f0bc0297c6b944871 769070943fb8357b2c1c04fc55deddd9623d6894 --stat",
+   "exit_code": 0,
+   "result": "Only assurance/unified_completion/state.json (+6/-1): ZR-306 unit entry (status implemented) + updated_at. No product code."
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr306_role_dag.py tests/contract/test_source_catalog_artifact_backfill.py -q --tb=short (workdir company-wiki)",
+   "exit_code": 0,
+   "result": "17 passed in 3.15s: 6 new (test_zr306_role_dag.py) + 11 existing (test_source_catalog_artifact_backfill.py). Matches expected 17 passed."
+  },
+  {
+   "command": "read tests/contract/test_zr306_role_dag.py (134 lines, at HEAD)",
+   "exit_code": 0,
+   "result": "6 property tests verified. (1) document_hash -> every role, over ALL_ROLES + all 3-combinations; (2) role x PRODUCER_KEY -> exact transitive downstream closure via independently-written _downstream_closure, upstream excluded; (3) missing subtree (summary/sections) -> only its closure, explicit disjointness assertion that independent branch not recomputed; (4) idempotent + equals closure (document_hash -> all roles); (5) DAG acyclic, every chain terminates at normalized; (6) {prompt_hash,model_hash,config_hash} <= PRODUCER_KEYS asserted. Covers the registry mandate incl. producer/model/prompt invalidation scope."
+  },
+  {
+   "command": "read src/company_wiki/source_catalog/artifact_dag.py (77 lines)",
+   "exit_code": 0,
+   "result": "ROLE_DEPENDENCIES = {normalized:[], markdown:[normalized], summary:[markdown], sections:[normalized], consumer_analysis:[summary]} exactly matches frozen contract. PRODUCER_KEYS = (producer_name, producer_version, schema_version, prompt_hash, model_hash, config_hash). invalidate: document_hash -> all artifact roles; else sorted(_downstream(role)). Test _downstream_closure uses same traversal shape (stack frontier, skip seen, scan ROLE_DEPENDENCIES where current in parents) and reads same ROLE_DEPENDENCIES; independent reimplementation, not a copy of production _downstream."
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-306/11_implementer_receipt.json (workdir assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed. canonical_hash field = 0006483e617d7a4655a97fbdc7d39b9556e90328fd9f5d243cdfb11dea7cdc4d (matches frozen context)."
+  },
+  {
+   "command": "python -m uc.cli state-show (workdir assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "units.ZR-306.status = independent_review (updated 2026-08-17T21:34:07Z); current_next = ZR-306; current_phase = D_lifecycle_roots_freshness; implementation_status = in_progress; plan_status = ready_for_implementation."
+  },
+  {
+   "command": "cmd /c \"git -C C:\\Users\\郑曾波\\Projects\\company-wiki show a608980:tests/contract/test_zr306_role_dag.py > %TEMP%\\zr306-test-at-head.py\"; Get-FileHash -Algorithm SHA256 -Path ...",
+   "exit_code": 0,
+   "result": "SHA-256 of blob at HEAD = 1FD4C4317642EA3916F474A8756A67E6746C57EAAD8FB6D82EF41983FD49F73B; identical to hashlib sha256 of working-tree file (git diff a608980 confirms test file unmodified vs HEAD)."
+  }
+ ],
+ "findings": [
+  {
+   "id": "ZR306-REV-001",
+   "severity": "info",
+   "title": "Receipt recorded command output inaccurate: +148 vs actual +134",
+   "detail": "Implementer receipt commands[2] records 'git diff 080d20c a608980 --stat' result as '仅 tests/contract/test_zr306_role_dag.py（+148）' but the actual stat is 134 insertions (verified via git show --stat and git diff --stat). Substance unchanged (exactly 1 file, product code zero changes); recorded line count is wrong."
+  },
+  {
+   "id": "ZR306-REV-002",
+   "severity": "info",
+   "title": "Receipt note contradicts its own result_triplet.revenue field",
+   "detail": "notes[0] states 'result_triplet.revenue 取 b784b54（ZR-305 closure commit）' but the field result_triplet.revenue = 769070943fb8357b2c1c04fc55deddd9623d6894 (b784b54 is the base). Field is correct and matches verified revenue HEAD; the note text is stale/erroneous wording."
+  },
+  {
+   "id": "ZR306-REV-003",
+   "severity": "observation",
+   "title": "Test closure oracle is an independent reimplementation, not a literal hand computation",
+   "detail": "test _downstream_closure mirrors production _downstream traversal shape and reads the same ROLE_DEPENDENCIES dict (shared source of truth). Not a tautology: missing-subtree test (explicit independent-branch disjointness for summary and sections) and acyclic test (chains terminate at normalized) are concrete anchors independent of the closure function. Meets the card's property-test mandate over the small exhaustive domain (5 roles x 6 keys + role subsets)."
+  },
+  {
+   "id": "ZR306-REV-004",
+   "severity": "observation",
+   "title": "Full wiki suite not re-run per review instructions",
+   "detail": "Per instructions only the two hermetic contract files were run (17 passed). No regression in the 11 existing backfill contract tests. Full-suite regression not executed by reviewer."
+  },
+  {
+   "id": "ZR306-REV-005",
+   "severity": "observation",
+   "title": "Unrelated working-tree noise in company-wiki (not part of commit)",
+   "detail": "git status --porcelain shows .claude/settings.local.json deleted, llm_cost_log.csv modified, and untracked .coverage/coverage.json (pytest artifacts). None touch the reviewed test file or product code; commit a608980 contains only the test file."
+  }
+ ],
+ "canonical_hash": "15a249f19d91b12d1eeb8a637c748155499412eb6c5446daf53a6563c23f4e9c"
 }

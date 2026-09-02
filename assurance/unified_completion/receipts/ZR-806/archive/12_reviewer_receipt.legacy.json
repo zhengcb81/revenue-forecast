@@ -1,0 +1,111 @@
+{
+  "unit": "ZR-806",
+  "reviewer": "reviewer-zr806-independent",
+  "kind": "reviewer",
+  "schema_version": 1,
+  "verdict": "accepted",
+  "reviewed_object_sha256": "54d1cc34fe36525806978f9a2b013c829de80423669a3beba38b6545cd5b4988",
+  "commands": [
+    {
+      "command": "git log --oneline -2",
+      "exit_code": 0,
+      "result": "HEAD=b716a81fd31d28671686e41f64452f8b92ed30ad, parent=9784c1800f3a1bdf159995d938ee3dddbb5ff185; commit message states fixed sample list + AUD2-05 missing-sample-is-blocked"
+    },
+    {
+      "command": "git show --stat b716a81",
+      "exit_code": 0,
+      "result": "1 file changed: tests/test_zr806_real_t2_samples.py (+253)"
+    },
+    {
+      "command": "git diff 9784c18 b716a81 --stat / --name-only",
+      "exit_code": 0,
+      "result": "only tests/test_zr806_real_t2_samples.py changed between parent and HEAD"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr806_real_t2_samples.py -q --tb=short",
+      "exit_code": 0,
+      "result": "10 passed in 1.19s (C1 x3, C2 x4, C3 x3)"
+    },
+    {
+      "command": "probe_a_samples.py (independent sha256/byte_size of all 5 samples + sidecars)",
+      "exit_code": 1,
+      "result": "5 distinct hashes; declared Zijin FY2025=01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d, FY2024=004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89, StarLake=eb965857b1e95a9cd6ccdaa3c1e324d4d8558c924d61e9300a12b8e222676124 all match; Zijin sizes 79925886/32100114; dayu=72b3ed25..., broker=3370d2c8...; starlake sidecar content_sha256 binds but sidecar has NO byte_size field (probe was stricter than test; see REV-001)"
+    },
+    {
+      "command": "probe_a2_missing.py (AUD2-05 temp variant pointing at missing path, real files untouched)",
+      "exit_code": 0,
+      "result": "suite FAILS on missing sample: 'T2 sample missing (companies-zijin-fy2025) blocked, never swap samples' - 3 failed, 7 passed; missing sample is never silently swapped"
+    },
+    {
+      "command": "probe_c_resolve.py (4 resolve journeys + fingerprints + catalog row counts)",
+      "exit_code": 0,
+      "result": "zijin-fy2025 REUSED_EXACT, zijin-fy2024 REUSED_EXACT, dayu-1548-fy2021 REUSED_EXACT, dropbox-starlake-fy2024 MISSING (trace: 2024 annual 'capture_incomplete' -> fail-closed); fingerprints companies/dayu/dropbox unchanged; catalog rows documents=23530/sources=43112/locations=46606 unchanged"
+    },
+    {
+      "command": "grep test file for INSERT|UPDATE|DELETE|write_text|open('w')|shutil|unlink|rmtree",
+      "exit_code": 0,
+      "result": "no mutating calls found; sqlite3 usage is read-only URI 'file:...?mode=ro'"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr802_combined_journeys.py tests/test_zr803_chaos_recovery.py tests/test_zr709_zijin_journey.py tests/test_zr804_platform_shape.py tests/test_zr805_t3_authorization.py -q --timeout=180",
+      "exit_code": 0,
+      "result": "30 passed in 44.92s"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check tests/test_zr806_real_t2_samples.py",
+      "exit_code": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py -v",
+      "exit_code": 0,
+      "result": "2 tests OK (frozen files not worsened; new files <= NEW_FILE_MAX=10; ratchet scopes scripts/ only)"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k 'not fc1103'",
+      "exit_code": 0,
+      "result": "813 passed, 3 deselected, 106 subtests passed in 167.84s"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-806/11_implementer_receipt.json (cwd assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt receipts/ZR-806/11_implementer_receipt.json is canonical and well-formed"
+    },
+    {
+      "command": "git rev-parse HEAD / HEAD^ + git cat-file -t",
+      "exit_code": 0,
+      "result": "HEAD=b716a81fd31d28671686e41f64452f8b92ed30ad, HEAD^=9784c1800f3a1bdf159995d938ee3dddbb5ff185, both real commit objects"
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -c 'hashlib.sha256 of tests/test_zr806_real_t2_samples.py'",
+      "exit_code": 0,
+      "result": "54d1cc34fe36525806978f9a2b013c829de80423669a3beba38b6545cd5b4988"
+    }
+  ],
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "9784c1800f3a1bdf159995d938ee3dddbb5ff185",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "b716a81fd31d28671686e41f64452f8b92ed30ad",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "findings": [
+    {
+      "id": "REV-001",
+      "severity": "info",
+      "title": "StarLake sidecar schema is narrower than the Zijin .source.json contract",
+      "detail": "C3 requires full field enumeration (fiscal_year/company_name/security_id/provider_document_id/content_sha256/byte_size/fiscal_period=FY) for the Zijin FY2025/FY2024 sidecars only; those all bind exactly (content_sha256 == measured hash, byte_size == 79925886/32100114, fiscal_period=FY, company_name=紫金矿业, security_id=601899). The Dropbox StarLake sidecar binds via content_sha256 (eb965857... == measured file) and carries fiscal_year=2024/security_id=688031/provider_document_id=1223325316/document_kind=annual_report, but omits byte_size/fiscal_period/company_name fields. This satisfies the card's 'StarLake sidecar binds' and the test's assertions, so it is non-blocking, but the sidecar would not support a byte_size/fiscal_period binding check."
+    },
+    {
+      "id": "REV-002",
+      "severity": "info",
+      "title": "AUD2-05 verified via temp variant, not by renaming real samples",
+      "detail": "The missing-sample probe copied the test into %TEMP% with the Zijin FY2025 path pointed at a nonexistent file; the suite failed hard with the 'blocked, never swap samples' message (3 failed/7 passed) and real sample files were never touched. Equivalently proves a missing sample is blocked, not swapped."
+    }
+  ],
+  "created_at_utc": "2026-08-22T21:11:41.163921+00:00",
+  "canonical_hash": "5a9ddad4f13e4f72d1fc46c2e7edd315b0bef41e49d814e08506227da164a128"
+}

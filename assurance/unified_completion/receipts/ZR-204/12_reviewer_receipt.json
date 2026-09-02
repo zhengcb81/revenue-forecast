@@ -1,43 +1,43 @@
 {
-  "base_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "cdda4220bd0fcc4d0c18b8303b82ee0606354f11",
-    "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
-  },
-  "canonical_hash": "5d62798e6876bb73215e2470553e840ee82d2956714d00812eebd8c56b0516d6",
-  "commands": [
-    "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD -> ad5402693ca9624c9d20690638df3af8b7db0d5d (exit 0)",
-    "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat ad54026 -> identity_cli.py only (exit 0)",
-    "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat a4ea60d -> error_taxonomy.py + 5 contract test files (exit 0)",
-    "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 65a9e33 -> error_taxonomy.py + cli.py + tests/unit/test_error_taxonomy.py (exit 0)",
-    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD -> cdda4220bd0fcc4d0c18b8303b82ee0606354f11 (exit 0)",
-    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast show --stat cdda422 -> receipts/ZR-204/** + state.json (exit 0)",
-    "python classification-matrix one-liner -> CatalogOperationLockedError=(catalog_locked,True); OperationalError(database is locked)=(catalog_busy,True); OperationalError(no such table: x)=(fatal,False); RuntimeError(source acquisition is paused...)=(worker_paused,True); TimeoutError=(db_timeout,True); classify_error_type(SomeFutureError,x)=(fatal,False); is_retryable(fatal)=False (exit 0)",
-    "grep structured_error cli.py + identity_cli.py -> present in both; no '\"error_type\": type(exc).__name__' in either file (exit 0)",
-    "uv run python -m pytest tests/unit/test_error_taxonomy.py -q --tb=short -> 15 passed in 0.35s (exit 0)",
-    "uv run python -m pytest <5 affected contract files full> + tests/contract/test_fc1204_complexity_ratchet.py::test_complexity_ratchet_new_files_stay_simple -q --tb=line -> 3 failed / 32 passed / 8 skipped in 35.21s (exit 1; 3 failures are pre-existing known, see findings)",
-    "uv run python -m pytest <7 changed error_type-assertion tests> + fc1204 ratchet -q --tb=short -> 8 passed in 11.25s (exit 0)",
-    "python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-204/11_implementer_receipt.json -> OK canonical; canonical_hash 1631b0a4...; result_triplet.wiki=ad5402693ca9624c9d20690638df3af8b7db0d5d (exit 0)",
-    "python -m uc.cli state-show -> units.ZR-204.status=independent_review, current_next=ZR-204 (exit 0)",
-    "Get-FileHash -Algorithm SHA256 src/company_wiki/source_catalog/error_taxonomy.py -> 14e09c3d41c8584cb59c05ac47ef31c5d4a1e34103c70fb8f4e95e83588c5183 (exit 0)"
-  ],
-  "created_at_utc": "2026-08-16T21:01:08+00:00",
-  "findings": [
-    "Contract batch nuance: the step-4 full-file batch (5 affected contract files + ratchet) yields 3 failed / 32 passed / 8 skipped. The 3 failures are pre-existing known failures unrelated to ZR-204: test_source_catalog_security_identity x2 (HK refresh asserts 'refreshed' but gets 'stale_cache') and test_source_catalog_extraction_quality[unsupported] ('parser_failed' is not a valid QualityFlag). These are 3 of the 7 known pre-existing failures documented in ZR-001/ZR-203 receipts; none touch error taxonomy. No ZR-204 regression.",
-    "ZR-204's own changed assertions verified green: the 7 error_type->fatal assertion tests (paused_guard x2, evidence_query x1, extraction_quality x1, focus_cleanup x1, security_identity x2) plus the fc1204 complexity ratchet pass (8 passed). The implementer receipt's batch result '全部通过' refers to this narrower changed-assertion set, not the full contract files.",
-    "Emission scope confirmed: cli.py main handler and identity_cli.py both emit structured_error (canonical code + retryable flag). Remaining 'error_type=type(exc).__name__' sites (normalizer.py parser envelope; acquisition_service/close_gap/duplicate_cleanup journal writes) are N-1 serialized producers mapped downstream via classify_error_type (the taxonomy's N-1 API), not in-scope CLI emission points.",
-    "Minor count notes (non-blocking): a4ea60d touches error_taxonomy.py + 5 contract test files (the fc1204 ratchet is exercised in the batch but not modified by a4ea60d); implementer finding 'security_identity x3' is actually x2 (7 total error_type assertion updates across the 5 files)."
-  ],
-  "kind": "reviewer",
-  "note": "ZR-204 independent review",
-  "result_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "cdda4220bd0fcc4d0c18b8303b82ee0606354f11",
-    "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
-  },
-  "reviewed_object_sha256": "14e09c3d41c8584cb59c05ac47ef31c5d4a1e34103c70fb8f4e95e83588c5183",
-  "reviewer": "reviewer-zr204-independent",
-  "schema_version": 1,
-  "unit": "ZR-204",
-  "verdict": "accepted"
+ "base_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "cdda4220bd0fcc4d0c18b8303b82ee0606354f11",
+  "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
+ },
+ "canonical_hash": "7d5711cef6c684407f519197ae62b21315f7ad3cc66aff64274fbca2c433c7e5",
+ "commands": [
+  "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD -> ad5402693ca9624c9d20690638df3af8b7db0d5d (exit 0)",
+  "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat ad54026 -> identity_cli.py only (exit 0)",
+  "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat a4ea60d -> error_taxonomy.py + 5 contract test files (exit 0)",
+  "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 65a9e33 -> error_taxonomy.py + cli.py + tests/unit/test_error_taxonomy.py (exit 0)",
+  "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD -> cdda4220bd0fcc4d0c18b8303b82ee0606354f11 (exit 0)",
+  "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast show --stat cdda422 -> receipts/ZR-204/** + state.json (exit 0)",
+  "python classification-matrix one-liner -> CatalogOperationLockedError=(catalog_locked,True); OperationalError(database is locked)=(catalog_busy,True); OperationalError(no such table: x)=(fatal,False); RuntimeError(source acquisition is paused...)=(worker_paused,True); TimeoutError=(db_timeout,True); classify_error_type(SomeFutureError,x)=(fatal,False); is_retryable(fatal)=False (exit 0)",
+  "grep structured_error cli.py + identity_cli.py -> present in both; no '\"error_type\": type(exc).__name__' in either file (exit 0)",
+  "uv run python -m pytest tests/unit/test_error_taxonomy.py -q --tb=short -> 15 passed in 0.35s (exit 0)",
+  "uv run python -m pytest <5 affected contract files full> + tests/contract/test_fc1204_complexity_ratchet.py::test_complexity_ratchet_new_files_stay_simple -q --tb=line -> 3 failed / 32 passed / 8 skipped in 35.21s (exit 1; 3 failures are pre-existing known, see findings)",
+  "uv run python -m pytest <7 changed error_type-assertion tests> + fc1204 ratchet -q --tb=short -> 8 passed in 11.25s (exit 0)",
+  "python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-204/11_implementer_receipt.json -> OK canonical; canonical_hash 1631b0a4...; result_triplet.wiki=ad5402693ca9624c9d20690638df3af8b7db0d5d (exit 0)",
+  "python -m uc.cli state-show -> units.ZR-204.status=independent_review, current_next=ZR-204 (exit 0)",
+  "Get-FileHash -Algorithm SHA256 src/company_wiki/source_catalog/error_taxonomy.py -> 14e09c3d41c8584cb59c05ac47ef31c5d4a1e34103c70fb8f4e95e83588c5183 (exit 0)"
+ ],
+ "created_at_utc": "2026-08-16T21:01:08+00:00",
+ "findings": [
+  "Contract batch nuance: the step-4 full-file batch (5 affected contract files + ratchet) yields 3 failed / 32 passed / 8 skipped. The 3 failures are pre-existing known failures unrelated to ZR-204: test_source_catalog_security_identity x2 (HK refresh asserts 'refreshed' but gets 'stale_cache') and test_source_catalog_extraction_quality[unsupported] ('parser_failed' is not a valid QualityFlag). These are 3 of the 7 known pre-existing failures documented in ZR-001/ZR-203 receipts; none touch error taxonomy. No ZR-204 regression.",
+  "ZR-204's own changed assertions verified green: the 7 error_type->fatal assertion tests (paused_guard x2, evidence_query x1, extraction_quality x1, focus_cleanup x1, security_identity x2) plus the fc1204 complexity ratchet pass (8 passed). The implementer receipt's batch result '全部通过' refers to this narrower changed-assertion set, not the full contract files.",
+  "Emission scope confirmed: cli.py main handler and identity_cli.py both emit structured_error (canonical code + retryable flag). Remaining 'error_type=type(exc).__name__' sites (normalizer.py parser envelope; acquisition_service/close_gap/duplicate_cleanup journal writes) are N-1 serialized producers mapped downstream via classify_error_type (the taxonomy's N-1 API), not in-scope CLI emission points.",
+  "Minor count notes (non-blocking): a4ea60d touches error_taxonomy.py + 5 contract test files (the fc1204 ratchet is exercised in the batch but not modified by a4ea60d); implementer finding 'security_identity x3' is actually x2 (7 total error_type assertion updates across the 5 files)."
+ ],
+ "kind": "reviewer",
+ "note": "ZR-204 independent review",
+ "result_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "cdda4220bd0fcc4d0c18b8303b82ee0606354f11",
+  "wiki": "ad5402693ca9624c9d20690638df3af8b7db0d5d"
+ },
+ "reviewed_object_sha256": "1631b0a4eb3a746e97e8d8da64358e359c7aa925bd8a30bdc7e586a21d045f90",
+ "reviewer": "reviewer-zr204-independent",
+ "schema_version": 1,
+ "unit": "ZR-204",
+ "verdict": "accepted"
 }

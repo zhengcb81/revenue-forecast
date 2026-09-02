@@ -29,6 +29,7 @@ LEDGER_PATH = (
     / "unified_completion"
     / "receipts"
     / "ZR-001"
+    / "archive"
     / "drift_ledger.json"
 )
 

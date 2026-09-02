@@ -1,74 +1,74 @@
 {
-  "base_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "b6682219d18032b141a7d50660a3156ce1b63efc",
-    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+ "base_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "b6682219d18032b141a7d50660a3156ce1b63efc",
+  "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+ },
+ "canonical_hash": "1d99dbd6a24a582d9f137f040be02300850ae49830afda68430aa9e483750722",
+ "commands": [
+  {
+   "command": "git rev-parse HEAD (revenue-forecast)",
+   "exit_code": 0,
+   "result": "b6682219d18032b141a7d50660a3156ce1b63efc"
   },
-  "canonical_hash": "92dcaf67c734d27806bdb27b270ae0420eae9408d329d6b4734041561345dfe3",
-  "commands": [
-    {
-      "command": "git rev-parse HEAD (revenue-forecast)",
-      "exit_code": 0,
-      "result": "b6682219d18032b141a7d50660a3156ce1b63efc"
-    },
-    {
-      "command": "git show --stat a9d46524dfbe18973213f6da0a4b13e10f358843; git show --stat b6682219d18032b141a7d50660a3156ce1b63efc",
-      "exit_code": 0,
-      "result": "a9d4652 touches only assurance/unified_completion/{t1/zr102_t1_runner.py,t1/probe_unauthorized_download.py,receipts/ZR-102/00_wu_card.md,tests/test_zr102_t1_runner.py,state.json}; b6682219 touches only receipts/ZR-102/11_implementer_receipt.json + state.json; no product code/config/CI in any repo"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\filing-fetch status --porcelain",
-      "exit_code": 0,
-      "result": "clean (empty)"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --porcelain",
-      "exit_code": 0,
-      "result": "only known dirt: D .claude/settings.local.json, M llm_cost_log.csv"
-    },
-    {
-      "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/test_zr102_t1_runner.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
-      "exit_code": 0,
-      "result": "9 passed in 41.36s"
-    },
-    {
-      "command": "python -B assurance/unified_completion/t1/zr102_t1_runner.py --work-dir %TEMP%\\zr102-review",
-      "exit_code": 0,
-      "result": "scenarios 1-5 all PASS: S1 dl=0/llm=0/parser=0/prov=0 3 distinct pids [20432,23520,15356]; S2 dl=1 llm=0 (5 provider invocations = 4 discover + 1 fetch) 3 distinct pids; S3 dl=0 provider_fetch stays 1; S4 dl=0/llm=0/prov=0 not_found; S5 dl=0/prov=0 fail-closed; every scenario 3 distinct boundary pids"
-    },
-    {
-      "command": "python -B assurance/unified_completion/t1/zr102_t1_runner.py --scenario 6 --work-dir %TEMP%\\zr102-review2",
-      "exit_code": 2,
-      "result": "GUARD_REFUSED: names escaping real paths company-wiki, filing-fetch, dayu-agent\\workspace\\config, StockInfoDLSimple\\v2-clean-rewrite, Dropbox\\Stock"
-    },
-    {
-      "command": "PYTHONPATH=assurance/unified_completion python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-102/11_implementer_receipt.json",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed; canonical_hash 56b91916...; result_triplet.revenue == a9d46524dfbe18973213f6da0a4b13e10f358843; findings ZR102-F1/F2->ZR-205, F3->ZR-302, F4->ZR-206 all carry successors"
-    },
-    {
-      "command": "PYTHONPATH=assurance/unified_completion python -m uc.cli state-show",
-      "exit_code": 0,
-      "result": "units.ZR-102.status=independent_review, current_next=ZR-102, current_phase=C_read_only_and_contracts"
-    },
-    {
-      "command": "Get-FileHash -Algorithm SHA256 assurance/unified_completion/t1/zr102_t1_runner.py",
-      "exit_code": 0,
-      "result": "AA47A82C09888D1CCCA4E4CF925CAE3FAF5BD7868D54173E52D079494FBB1D8C"
-    }
-  ],
-  "created_at_utc": "2026-08-14T06:19:00Z",
-  "findings": [],
-  "kind": "reviewer",
-  "note": "ZR-102 independent review",
-  "result_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "b6682219d18032b141a7d50660a3156ce1b63efc",
-    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  {
+   "command": "git show --stat a9d46524dfbe18973213f6da0a4b13e10f358843; git show --stat b6682219d18032b141a7d50660a3156ce1b63efc",
+   "exit_code": 0,
+   "result": "a9d4652 touches only assurance/unified_completion/{t1/zr102_t1_runner.py,t1/probe_unauthorized_download.py,receipts/ZR-102/00_wu_card.md,tests/test_zr102_t1_runner.py,state.json}; b6682219 touches only receipts/ZR-102/11_implementer_receipt.json + state.json; no product code/config/CI in any repo"
   },
-  "reviewed_object_sha256": "aa47a82c09888d1ccca4e4cf925cae3faf5bd7868d54173e52d079494fbb1d8c",
-  "reviewer": "reviewer-zr102-independent",
-  "schema_version": 1,
-  "unit": "ZR-102",
-  "verdict": "accepted"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\filing-fetch status --porcelain",
+   "exit_code": 0,
+   "result": "clean (empty)"
+  },
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --porcelain",
+   "exit_code": 0,
+   "result": "only known dirt: D .claude/settings.local.json, M llm_cost_log.csv"
+  },
+  {
+   "command": "PYTHONIOENCODING=utf-8 python -B -m pytest assurance/unified_completion/tests/test_zr102_t1_runner.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+   "exit_code": 0,
+   "result": "9 passed in 41.36s"
+  },
+  {
+   "command": "python -B assurance/unified_completion/t1/zr102_t1_runner.py --work-dir %TEMP%\\zr102-review",
+   "exit_code": 0,
+   "result": "scenarios 1-5 all PASS: S1 dl=0/llm=0/parser=0/prov=0 3 distinct pids [20432,23520,15356]; S2 dl=1 llm=0 (5 provider invocations = 4 discover + 1 fetch) 3 distinct pids; S3 dl=0 provider_fetch stays 1; S4 dl=0/llm=0/prov=0 not_found; S5 dl=0/prov=0 fail-closed; every scenario 3 distinct boundary pids"
+  },
+  {
+   "command": "python -B assurance/unified_completion/t1/zr102_t1_runner.py --scenario 6 --work-dir %TEMP%\\zr102-review2",
+   "exit_code": 2,
+   "result": "GUARD_REFUSED: names escaping real paths company-wiki, filing-fetch, dayu-agent\\workspace\\config, StockInfoDLSimple\\v2-clean-rewrite, Dropbox\\Stock"
+  },
+  {
+   "command": "PYTHONPATH=assurance/unified_completion python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-102/11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed; canonical_hash 56b91916...; result_triplet.revenue == a9d46524dfbe18973213f6da0a4b13e10f358843; findings ZR102-F1/F2->ZR-205, F3->ZR-302, F4->ZR-206 all carry successors"
+  },
+  {
+   "command": "PYTHONPATH=assurance/unified_completion python -m uc.cli state-show",
+   "exit_code": 0,
+   "result": "units.ZR-102.status=independent_review, current_next=ZR-102, current_phase=C_read_only_and_contracts"
+  },
+  {
+   "command": "Get-FileHash -Algorithm SHA256 assurance/unified_completion/t1/zr102_t1_runner.py",
+   "exit_code": 0,
+   "result": "AA47A82C09888D1CCCA4E4CF925CAE3FAF5BD7868D54173E52D079494FBB1D8C"
+  }
+ ],
+ "created_at_utc": "2026-08-14T06:19:00Z",
+ "findings": [],
+ "kind": "reviewer",
+ "note": "ZR-102 independent review",
+ "result_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "b6682219d18032b141a7d50660a3156ce1b63efc",
+  "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+ },
+ "reviewed_object_sha256": "56b91916c2927dc1c9f0c2bbcbc2e9a52e923e343c438c49b8c1a253d4790bef",
+ "reviewer": "reviewer-zr102-independent",
+ "schema_version": 1,
+ "unit": "ZR-102",
+ "verdict": "accepted"
 }

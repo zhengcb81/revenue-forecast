@@ -1,109 +1,109 @@
 {
-  "schema_version": 1,
-  "unit": "ZR-307",
-  "kind": "reviewer",
-  "reviewer": "reviewer-zr307-independent",
-  "verdict": "accepted",
-  "note": "ZR-307 independent review",
-  "created_at_utc": "2026-08-17T22:13:50+00:00",
-  "base_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "015268f9388e53fc085e53dd7feb09b233fc0018",
-    "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+ "schema_version": 1,
+ "unit": "ZR-307",
+ "kind": "reviewer",
+ "reviewer": "reviewer-zr307-independent",
+ "verdict": "accepted",
+ "note": "ZR-307 independent review",
+ "created_at_utc": "2026-08-17T22:13:50+00:00",
+ "base_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "015268f9388e53fc085e53dd7feb09b233fc0018",
+  "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+ },
+ "result_triplet": {
+  "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+  "revenue": "015268f9388e53fc085e53dd7feb09b233fc0018",
+  "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+ },
+ "reviewed_object_sha256": "3fbd978c8247bd626eab6e25b9b51be38525b656661d7200c51dbf8458a0cb11",
+ "commands": [
+  {
+   "command": "git -C filing-fetch rev-parse HEAD; git -C filing-fetch rev-parse HEAD~1; git -C revenue-forecast rev-parse HEAD; git -C company-wiki rev-parse HEAD",
+   "exit_code": 0,
+   "result": "filing HEAD=df667966928b6c7d72c19685be01f45268eaba5e parent=0e5d209bc352c6087fab51d09d55aa33aea81f85; revenue HEAD=015268f9388e53fc085e53dd7feb09b233fc0018; wiki HEAD=a608980f7662a5e4f2dcd2535461904c4aa94c31 — all match claimed result/base triplets"
   },
-  "result_triplet": {
-    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
-    "revenue": "015268f9388e53fc085e53dd7feb09b233fc0018",
-    "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+  {
+   "command": "git -C filing-fetch show --stat df66796",
+   "exit_code": 0,
+   "result": "commit touches exactly 3 files: scripts/fetch_filing.py, scripts/filing_contracts.py, tests/test_fetch_filing.py (168 insertions, 14 deletions); parent=0e5d209"
   },
-  "reviewed_object_sha256": "0f2cb2c333f1679c5c4e45de08f1b976b99b02a8f6317dae765580f19ca54ddf",
-  "commands": [
-    {
-      "command": "git -C filing-fetch rev-parse HEAD; git -C filing-fetch rev-parse HEAD~1; git -C revenue-forecast rev-parse HEAD; git -C company-wiki rev-parse HEAD",
-      "exit_code": 0,
-      "result": "filing HEAD=df667966928b6c7d72c19685be01f45268eaba5e parent=0e5d209bc352c6087fab51d09d55aa33aea81f85; revenue HEAD=015268f9388e53fc085e53dd7feb09b233fc0018; wiki HEAD=a608980f7662a5e4f2dcd2535461904c4aa94c31 — all match claimed result/base triplets"
-    },
-    {
-      "command": "git -C filing-fetch show --stat df66796",
-      "exit_code": 0,
-      "result": "commit touches exactly 3 files: scripts/fetch_filing.py, scripts/filing_contracts.py, tests/test_fetch_filing.py (168 insertions, 14 deletions); parent=0e5d209"
-    },
-    {
-      "command": "python -m pytest tests/test_fetch_filing.py -q --tb=short (filing-fetch)",
-      "exit_code": 0,
-      "result": "116 passed, 1 skipped, 39 subtests passed — matches implementer claim exactly"
-    },
-    {
-      "command": "python -m pytest tests -q --tb=short --ignore=tests/test_e2e_download.py --ignore=tests/test_real_tool_conformance.py (filing-fetch, optional full suite)",
-      "exit_code": 0,
-      "result": "338 passed, 6 skipped, 78 subtests passed — matches claimed expectation"
-    },
-    {
-      "command": "python -m pytest tests/test_fetch_filing.py -q --tb=short -k \"resolution_trace or not_found_error_carries or handle_validation_failure or envelope_failure_includes\"",
-      "exit_code": 0,
-      "result": "5 passed, 112 deselected — the 5 new ZR-307 tests all pass"
-    },
-    {
-      "command": "python -m pytest tests/test_complexity_ratchet.py -q (filing-fetch)",
-      "exit_code": 0,
-      "result": "2 passed — fetch_filing.py <= 34 frozen, filing_contracts.py <= 39 frozen (direct approx max cyclomatic 24 and 30 respectively)"
-    },
-    {
-      "command": "python -m mypy scripts/fetch_filing.py scripts/filing_contracts.py (filing-fetch)",
-      "exit_code": 0,
-      "result": "Success: no issues found in 2 source files — matches implementer claim verbatim"
-    },
-    {
-      "command": "git -C filing-fetch show HEAD:scripts/fetch_filing.py | python -c sha256",
-      "exit_code": 0,
-      "result": "reviewed_object_sha256 = 0f2cb2c333f1679c5c4e45de08f1b976b99b02a8f6317dae765580f19ca54ddf"
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-307/11_implementer_receipt.json (revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed; canonical_hash independently recomputed = 3fbd978c8247bd626eab6e25b9b51be38525b656661d7200c51dbf8458a0cb11 (MATCH)"
-    },
-    {
-      "command": "python -m uc.cli state-show (revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "units.ZR-307.status = independent_review (implementer zr307-implementer); current_next = ZR-307; current_phase = D_lifecycle_roots_freshness; ZR-303/ZR-306 accepted"
-    },
-    {
-      "command": "python (inline) FilingFetchError N-1 default check",
-      "exit_code": 0,
-      "result": "resolution_trace default None; explicit trace attaches; retryable/candidates/stage/attempts unaffected"
-    },
-    {
-      "command": "git -C filing-fetch status --porcelain; git -C revenue-forecast status --porcelain; git -C company-wiki status --porcelain",
-      "exit_code": 0,
-      "result": "filing-fetch clean; revenue has receipts/ZR-307/** + state.json (claimed) plus plan_inputs.json manifest refresh (control_page_sha256 only, matches machine_manifest_sha256 0bf3ae40...); wiki uncommitted changes are pre-existing environmental files, wiki HEAD unchanged"
-    }
-  ],
-  "findings": [
-    {
-      "id": "ZR307-REV-001",
-      "severity": "info",
-      "title": "gap_not_closed raise does not attach resolution_trace",
-      "detail": "In _close_gap_and_return_handle (scripts/fetch_filing.py ~line 992), the 'close-gap did not complete' raise and the 'close-gap resolution is missing' raise do not carry resolution_trace, although the initial ensure resolution (request_id/status/reason) is in scope at that point. The plan card's binding acceptance criteria cover _handle_from_resolution raises (exactly-one-match, capture-not-ready, validate_handle/validate_resolution_envelope) and the not_found path — all implemented and verified. The problem statement (00_wu_card line 9) names 'gap 未闭合' among downstream failures, but the fix contract does not require the trace there, and no test covers this path. Recorded for completeness; not a blocker against the frozen acceptance criteria."
-    },
-    {
-      "id": "ZR307-REV-002",
-      "severity": "info",
-      "title": "revenue plan_inputs.json uncommitted manifest refresh not in receipt touched_files",
-      "detail": "revenue working tree modifies assurance/unified_completion/manifests/plan_inputs.json (only control_page_sha256 values). Verified this is machine-state bookkeeping: current file sha256 0bf3ae4000961c97050f23c9414dca3671b256a467c8cb15d9b48e98e5558692 equals state-show machine_manifest_sha256, and control_page_sha256 matches state-show. Not a product change; not an overclaim."
-    },
-    {
-      "id": "ZR307-REV-003",
-      "severity": "info",
-      "title": "Implementer receipt claims verified accurate",
-      "detail": "side_effect_counts.product_code_changes=2 accurate (fetch_filing.py + filing_contracts.py; test file is not product code); touched_files accurate; finding ZR307-IMPL-001 (ZR-102-F1 -> ZR-407 handoff) confirmed documented in ZR-205 wu_card and implementer receipt; finding ZR307-IMPL-002 (unconditional resolution_trace, debug_trace kept --debug-gated) confirmed in main() code. Minor imprecision: receipt note states resolve_filing complexity 34; direct approximation measured 24, but the authoritative ratchet gate (frozen <=34) passes, so no behavioral overclaim."
-    },
-    {
-      "id": "ZR307-REV-004",
-      "severity": "info",
-      "title": "wiki working tree has uncommitted pre-existing changes",
-      "detail": "company-wiki HEAD = a608980 (unchanged, zero wiki commits this unit); uncommitted .claude/settings.local.json deletion, llm_cost_log.csv modification, .coverage/coverage.json are pre-existing environmental artifacts, not from ZR-307."
-    }
-  ],
-  "canonical_hash": "1e7f2631583eac3e8612824943f36ffc0ee0036b7024dedace2d9c3fd227db64"
+  {
+   "command": "python -m pytest tests/test_fetch_filing.py -q --tb=short (filing-fetch)",
+   "exit_code": 0,
+   "result": "116 passed, 1 skipped, 39 subtests passed — matches implementer claim exactly"
+  },
+  {
+   "command": "python -m pytest tests -q --tb=short --ignore=tests/test_e2e_download.py --ignore=tests/test_real_tool_conformance.py (filing-fetch, optional full suite)",
+   "exit_code": 0,
+   "result": "338 passed, 6 skipped, 78 subtests passed — matches claimed expectation"
+  },
+  {
+   "command": "python -m pytest tests/test_fetch_filing.py -q --tb=short -k \"resolution_trace or not_found_error_carries or handle_validation_failure or envelope_failure_includes\"",
+   "exit_code": 0,
+   "result": "5 passed, 112 deselected — the 5 new ZR-307 tests all pass"
+  },
+  {
+   "command": "python -m pytest tests/test_complexity_ratchet.py -q (filing-fetch)",
+   "exit_code": 0,
+   "result": "2 passed — fetch_filing.py <= 34 frozen, filing_contracts.py <= 39 frozen (direct approx max cyclomatic 24 and 30 respectively)"
+  },
+  {
+   "command": "python -m mypy scripts/fetch_filing.py scripts/filing_contracts.py (filing-fetch)",
+   "exit_code": 0,
+   "result": "Success: no issues found in 2 source files — matches implementer claim verbatim"
+  },
+  {
+   "command": "git -C filing-fetch show HEAD:scripts/fetch_filing.py | python -c sha256",
+   "exit_code": 0,
+   "result": "reviewed_object_sha256 = 0f2cb2c333f1679c5c4e45de08f1b976b99b02a8f6317dae765580f19ca54ddf"
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-307/11_implementer_receipt.json (revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed; canonical_hash independently recomputed = 3fbd978c8247bd626eab6e25b9b51be38525b656661d7200c51dbf8458a0cb11 (MATCH)"
+  },
+  {
+   "command": "python -m uc.cli state-show (revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "units.ZR-307.status = independent_review (implementer zr307-implementer); current_next = ZR-307; current_phase = D_lifecycle_roots_freshness; ZR-303/ZR-306 accepted"
+  },
+  {
+   "command": "python (inline) FilingFetchError N-1 default check",
+   "exit_code": 0,
+   "result": "resolution_trace default None; explicit trace attaches; retryable/candidates/stage/attempts unaffected"
+  },
+  {
+   "command": "git -C filing-fetch status --porcelain; git -C revenue-forecast status --porcelain; git -C company-wiki status --porcelain",
+   "exit_code": 0,
+   "result": "filing-fetch clean; revenue has receipts/ZR-307/** + state.json (claimed) plus plan_inputs.json manifest refresh (control_page_sha256 only, matches machine_manifest_sha256 0bf3ae40...); wiki uncommitted changes are pre-existing environmental files, wiki HEAD unchanged"
+  }
+ ],
+ "findings": [
+  {
+   "id": "ZR307-REV-001",
+   "severity": "info",
+   "title": "gap_not_closed raise does not attach resolution_trace",
+   "detail": "In _close_gap_and_return_handle (scripts/fetch_filing.py ~line 992), the 'close-gap did not complete' raise and the 'close-gap resolution is missing' raise do not carry resolution_trace, although the initial ensure resolution (request_id/status/reason) is in scope at that point. The plan card's binding acceptance criteria cover _handle_from_resolution raises (exactly-one-match, capture-not-ready, validate_handle/validate_resolution_envelope) and the not_found path — all implemented and verified. The problem statement (00_wu_card line 9) names 'gap 未闭合' among downstream failures, but the fix contract does not require the trace there, and no test covers this path. Recorded for completeness; not a blocker against the frozen acceptance criteria."
+  },
+  {
+   "id": "ZR307-REV-002",
+   "severity": "info",
+   "title": "revenue plan_inputs.json uncommitted manifest refresh not in receipt touched_files",
+   "detail": "revenue working tree modifies assurance/unified_completion/manifests/plan_inputs.json (only control_page_sha256 values). Verified this is machine-state bookkeeping: current file sha256 0bf3ae4000961c97050f23c9414dca3671b256a467c8cb15d9b48e98e5558692 equals state-show machine_manifest_sha256, and control_page_sha256 matches state-show. Not a product change; not an overclaim."
+  },
+  {
+   "id": "ZR307-REV-003",
+   "severity": "info",
+   "title": "Implementer receipt claims verified accurate",
+   "detail": "side_effect_counts.product_code_changes=2 accurate (fetch_filing.py + filing_contracts.py; test file is not product code); touched_files accurate; finding ZR307-IMPL-001 (ZR-102-F1 -> ZR-407 handoff) confirmed documented in ZR-205 wu_card and implementer receipt; finding ZR307-IMPL-002 (unconditional resolution_trace, debug_trace kept --debug-gated) confirmed in main() code. Minor imprecision: receipt note states resolve_filing complexity 34; direct approximation measured 24, but the authoritative ratchet gate (frozen <=34) passes, so no behavioral overclaim."
+  },
+  {
+   "id": "ZR307-REV-004",
+   "severity": "info",
+   "title": "wiki working tree has uncommitted pre-existing changes",
+   "detail": "company-wiki HEAD = a608980 (unchanged, zero wiki commits this unit); uncommitted .claude/settings.local.json deletion, llm_cost_log.csv modification, .coverage/coverage.json are pre-existing environmental artifacts, not from ZR-307."
+  }
+ ],
+ "canonical_hash": "14efdc4e093bf23ecf541a9684d56a5af2511cb97ab65af52394f88b5aad2471"
 }

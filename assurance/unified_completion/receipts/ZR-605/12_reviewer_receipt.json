@@ -1,96 +1,96 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "1bbc081cd3fe0ff055cac868ecaffc6663739673",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "1bbc081cd3fe0ff055cac868ecaffc6663739673",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "canonical_hash": "4565d87736a1542c55a37ee64fc6463be9788ad9a4232829f3928e6dcb4ceb96",
+ "commands": [
+  {
+   "command": "git log --oneline -2",
+   "exit_code": 0,
+   "result": "HEAD = b02f17ba154dbde9e0d98be910e4e1a45579ccf6, parent 1bbc081cd3fe0ff055cac868ecaffc6663739673 - matches expected HEAD"
   },
-  "canonical_hash": "c5abdf0d915b9de3e0716d5574ebde49dae03074b2606c001c74721d001ed3ed",
-  "commands": [
-    {
-      "command": "git log --oneline -2",
-      "exit_code": 0,
-      "result": "HEAD = b02f17ba154dbde9e0d98be910e4e1a45579ccf6, parent 1bbc081cd3fe0ff055cac868ecaffc6663739673 - matches expected HEAD"
-    },
-    {
-      "command": "git show --stat b02f17b && git diff 1bbc081 b02f17b --name-only",
-      "exit_code": 0,
-      "result": "Exactly 2 files: scripts/mine_year_operation.py (new, 136 lines) + tests/test_zr605_mine_year_operation.py (new, 153 lines), +289 insertions. No other tracked changes in the commit."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr605_mine_year_operation.py -q --tb=short",
-      "exit_code": 0,
-      "result": "30 passed in 0.20s - all 30 new tests green (C1 17 + C2 2 + C3 4 + frozen dataclass + misc)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr604_conflict_resolution.py tests/test_zr603_ownership_timeline.py tests/test_golden_behavior_lock.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "41 passed in 0.45s - regression subsets green"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/mine_year_operation.py tests/test_zr605_mine_year_operation.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q --tb=short + independent ast re-measure of scripts/mine_year_operation.py",
-      "exit_code": 0,
-      "result": "2 passed in 0.44s. Independent McCabe re-measure per top-level function: _positive_numeric=3, _ratio=3, validate_mine_year_operation=6, derive_saleable_volume=1, to_resource_model_drivers=4 -> max 6 <= NEW_FILE_MAX=10. Ratchet green."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr605-reviewer\\probe_a_h.py (adversarial probes a-f + extras)",
-      "exit_code": 0,
-      "result": "7/7 probe groups passed: a) all 7 fields missing -> ForecastInputError with message 'MineYearOperation.X is required (gap, not default 0)' - gap semantics present, never defaults 0; b) volume 0/-100/'abc'/True, grade 0/-0.5/'abc', recovery 0/-0.1/1.5/True, payable 0/-0.1/2.0, empty/whitespace/non-str product, empty period, scenario 'extreme'/'BASE'/'' all rejected; boundary ratios 1.0 accepted; c) 1000x0.5x0.90x0.95=427.5 and 2000x0.8x0.85x0.90=1224.0 hand-checks pass; d) to_resource_model_drivers valid map {saleable_volume:427.5, realized_price:5.5}, realized_price 0/-1.0/'abc'/None/True all ForecastInputError, int coerced to float; e) end-to-end calculate_model_path(model='resource') -> annual_revenue = 427.5x5.0=2137.5 across all years (re-run with tests/ on sys.path - initial ModuleNotFoundError was a probe-path artifact, not an implementation defect; the shipped test test_c3_drivers_feed_resource_model passes in pytest); f) frozen dataclass assignment raises AttributeError; extras: NaN rejected, non-dict rejected, volume=inf and realized_price=inf accepted (observed; see REV-001)."
-    },
-    {
-      "command": "git diff 1bbc081 b02f17b | Select-String company/mine names",
-      "exit_code": 0,
-      "result": "No matches for zijin/kamoa/porgera/bisha/barrick/ivanhoe/freeport/codelco/first quantum etc. - zero product hardcoding; product is free text."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
-      "exit_code": 0,
-      "result": "615 passed, 3 deselected, 2 warnings, 106 subtests passed in 134.73s - matches card expectation exactly (585 baseline + 30 new ZR-605 tests). 2 warnings include PytestUnhandledThreadExceptionWarning (UnicodeDecodeError in a subprocess reader thread) - pre-existing Windows environment artifact, not caused by ZR-605 (no subprocess use in new code)."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-605/11_implementer_receipt.json (cwd assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed. base_triplet.revenue=1bbc081cd3fe0ff055cac868ecaffc6663739673 is a real git object (cat-file -t -> commit); result_triplet.revenue=b02f17ba154dbde9e0d98be910e4e1a45579ccf6 == HEAD (rev-parse). filing/wiki triplets (5a1c18f / 26a6b22) are the frozen content-hash triplet shared across all unit receipts - consistent with card."
-    },
-    {
-      "command": "git cat-file -t 1bbc081cd3fe0ff055cac868ecaffc6663739673; git cat-file -t b02f17ba154dbde9e0d98be910e4e1a45579ccf6; git rev-parse HEAD",
-      "exit_code": 0,
-      "result": "commit / commit / b02f17ba154dbde9e0d98be910e4e1a45579ccf6 - base triplet revenue is a real git object; result triplet revenue == HEAD."
-    },
-    {
-      "command": "ADR cross-check: receipts/ZR-610/adr_mining_accounting.md + receipts/ZR-605/00_wu_card.md",
-      "exit_code": 0,
-      "result": "ADR 2: resource model consumes saleable_volume x realized_price (drivers disjoint from reserve_depletion); ADR 1: mine-level contributions are model estimates -> honest gaps over fabricated defaults. Implementation's derive_saleable_volume = volume x grade x recovery x payable and gap-on-missing (never default 0) match ADR 1/2 and the unit card C1-C3 verbatim."
-    }
-  ],
-  "created_at_utc": "2026-08-21T20:38:01.621Z",
-  "findings": [
-    {
-      "detail": "volume=float('inf') and realized_price=float('inf') pass _positive_numeric/_ratio and to_resource_model_drivers respectively (inf > 0 is True; bool/type gates pass). NaN is already rejected (nan > 0 is False). The card's enumerated rejection list (0, negative, non-numeric, None, bool, >1 for ratios) is fully enforced, so no acceptance criterion is violated; the 'incl.' wording makes the list illustrative rather than exhaustive. Recommendation (e.g. ZR-follow-up): reuse contracts.evidence.finite_number or add math.isfinite to the numeric gates so infinite values fail closed. Non-blocking: all shipped tests, all adversarial probes, and the full suite are green.",
-      "id": "REV-001",
-      "severity": "minor",
-      "title": "Non-finite numeric inputs (inf) pass validation"
-    },
-    {
-      "detail": "615 passed + 106 subtests with exit 0, but pytest reported 2 warnings including PytestUnhandledThreadExceptionWarning (UnicodeDecodeError in a subprocess reader thread). The new ZR-605 code spawns no subprocesses and the new-test run alone is warning-free; this is a pre-existing Windows environment artifact in the broader suite. No impact on acceptance.",
-      "id": "REV-002",
-      "severity": "info",
-      "title": "Full-suite run emits 2 pre-existing warnings"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "b02f17ba154dbde9e0d98be910e4e1a45579ccf6",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git show --stat b02f17b && git diff 1bbc081 b02f17b --name-only",
+   "exit_code": 0,
+   "result": "Exactly 2 files: scripts/mine_year_operation.py (new, 136 lines) + tests/test_zr605_mine_year_operation.py (new, 153 lines), +289 insertions. No other tracked changes in the commit."
   },
-  "reviewed_object_sha256": "5338c4ce88f7bf7d7a3e4a105490d9e78dae4647c2d2604157af537f520e3973",
-  "reviewer": "reviewer-zr605-independent",
-  "schema_version": 1,
-  "unit": "ZR-605",
-  "verdict": "accepted"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr605_mine_year_operation.py -q --tb=short",
+   "exit_code": 0,
+   "result": "30 passed in 0.20s - all 30 new tests green (C1 17 + C2 2 + C3 4 + frozen dataclass + misc)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr604_conflict_resolution.py tests/test_zr603_ownership_timeline.py tests/test_golden_behavior_lock.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "41 passed in 0.45s - regression subsets green"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check scripts/mine_year_operation.py tests/test_zr605_mine_year_operation.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q --tb=short + independent ast re-measure of scripts/mine_year_operation.py",
+   "exit_code": 0,
+   "result": "2 passed in 0.44s. Independent McCabe re-measure per top-level function: _positive_numeric=3, _ratio=3, validate_mine_year_operation=6, derive_saleable_volume=1, to_resource_model_drivers=4 -> max 6 <= NEW_FILE_MAX=10. Ratchet green."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr605-reviewer\\probe_a_h.py (adversarial probes a-f + extras)",
+   "exit_code": 0,
+   "result": "7/7 probe groups passed: a) all 7 fields missing -> ForecastInputError with message 'MineYearOperation.X is required (gap, not default 0)' - gap semantics present, never defaults 0; b) volume 0/-100/'abc'/True, grade 0/-0.5/'abc', recovery 0/-0.1/1.5/True, payable 0/-0.1/2.0, empty/whitespace/non-str product, empty period, scenario 'extreme'/'BASE'/'' all rejected; boundary ratios 1.0 accepted; c) 1000x0.5x0.90x0.95=427.5 and 2000x0.8x0.85x0.90=1224.0 hand-checks pass; d) to_resource_model_drivers valid map {saleable_volume:427.5, realized_price:5.5}, realized_price 0/-1.0/'abc'/None/True all ForecastInputError, int coerced to float; e) end-to-end calculate_model_path(model='resource') -> annual_revenue = 427.5x5.0=2137.5 across all years (re-run with tests/ on sys.path - initial ModuleNotFoundError was a probe-path artifact, not an implementation defect; the shipped test test_c3_drivers_feed_resource_model passes in pytest); f) frozen dataclass assignment raises AttributeError; extras: NaN rejected, non-dict rejected, volume=inf and realized_price=inf accepted (observed; see REV-001)."
+  },
+  {
+   "command": "git diff 1bbc081 b02f17b | Select-String company/mine names",
+   "exit_code": 0,
+   "result": "No matches for zijin/kamoa/porgera/bisha/barrick/ivanhoe/freeport/codelco/first quantum etc. - zero product hardcoding; product is free text."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "615 passed, 3 deselected, 2 warnings, 106 subtests passed in 134.73s - matches card expectation exactly (585 baseline + 30 new ZR-605 tests). 2 warnings include PytestUnhandledThreadExceptionWarning (UnicodeDecodeError in a subprocess reader thread) - pre-existing Windows environment artifact, not caused by ZR-605 (no subprocess use in new code)."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-605/11_implementer_receipt.json (cwd assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed. base_triplet.revenue=1bbc081cd3fe0ff055cac868ecaffc6663739673 is a real git object (cat-file -t -> commit); result_triplet.revenue=b02f17ba154dbde9e0d98be910e4e1a45579ccf6 == HEAD (rev-parse). filing/wiki triplets (5a1c18f / 26a6b22) are the frozen content-hash triplet shared across all unit receipts - consistent with card."
+  },
+  {
+   "command": "git cat-file -t 1bbc081cd3fe0ff055cac868ecaffc6663739673; git cat-file -t b02f17ba154dbde9e0d98be910e4e1a45579ccf6; git rev-parse HEAD",
+   "exit_code": 0,
+   "result": "commit / commit / b02f17ba154dbde9e0d98be910e4e1a45579ccf6 - base triplet revenue is a real git object; result triplet revenue == HEAD."
+  },
+  {
+   "command": "ADR cross-check: receipts/ZR-610/adr_mining_accounting.md + receipts/ZR-605/00_wu_card.md",
+   "exit_code": 0,
+   "result": "ADR 2: resource model consumes saleable_volume x realized_price (drivers disjoint from reserve_depletion); ADR 1: mine-level contributions are model estimates -> honest gaps over fabricated defaults. Implementation's derive_saleable_volume = volume x grade x recovery x payable and gap-on-missing (never default 0) match ADR 1/2 and the unit card C1-C3 verbatim."
+  }
+ ],
+ "created_at_utc": "2026-08-21T20:38:01.621Z",
+ "findings": [
+  {
+   "detail": "volume=float('inf') and realized_price=float('inf') pass _positive_numeric/_ratio and to_resource_model_drivers respectively (inf > 0 is True; bool/type gates pass). NaN is already rejected (nan > 0 is False). The card's enumerated rejection list (0, negative, non-numeric, None, bool, >1 for ratios) is fully enforced, so no acceptance criterion is violated; the 'incl.' wording makes the list illustrative rather than exhaustive. Recommendation (e.g. ZR-follow-up): reuse contracts.evidence.finite_number or add math.isfinite to the numeric gates so infinite values fail closed. Non-blocking: all shipped tests, all adversarial probes, and the full suite are green.",
+   "id": "REV-001",
+   "severity": "minor",
+   "title": "Non-finite numeric inputs (inf) pass validation"
+  },
+  {
+   "detail": "615 passed + 106 subtests with exit 0, but pytest reported 2 warnings including PytestUnhandledThreadExceptionWarning (UnicodeDecodeError in a subprocess reader thread). The new ZR-605 code spawns no subprocesses and the new-test run alone is warning-free; this is a pre-existing Windows environment artifact in the broader suite. No impact on acceptance.",
+   "id": "REV-002",
+   "severity": "info",
+   "title": "Full-suite run emits 2 pre-existing warnings"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "b02f17ba154dbde9e0d98be910e4e1a45579ccf6",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "3f780700ec22ab2de83627b60e1df2666beeb8777afd1277473474e119057e68",
+ "reviewer": "reviewer-zr605-independent",
+ "schema_version": 1,
+ "unit": "ZR-605",
+ "verdict": "accepted"
 }

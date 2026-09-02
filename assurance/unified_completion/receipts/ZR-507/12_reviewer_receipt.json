@@ -1,62 +1,62 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "397e6de42882eec3d76c47a70ae1e87852e8bf2f",
-    "wiki": "cbc6d8c25b98b005856601620b43eb1877a53a35"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "397e6de42882eec3d76c47a70ae1e87852e8bf2f",
+  "wiki": "cbc6d8c25b98b005856601620b43eb1877a53a35"
+ },
+ "canonical_hash": "a7cc97ead1c3fa3e2b7121cec39db18ec6d393c15a4c0d9d2b2011cf4c37d312",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3; git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff cbc6d8c bd337c4 --stat; git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --short",
+   "exit_code": 0,
+   "result": "HEAD = bd337c4 'feat(ZR-507): ProcessingDemand API — pure-memory demand queue (...) 14 tests'. diff cbc6d8c..bd337c4 = exactly 2 files, 436 insertions, 0 deletions (processing_demand.py +240, test_zr507_processing_demand.py +196). Working-tree dirt matches expected: D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json."
   },
-  "canonical_hash": "34a3e8d3107ec1e66682a9abaf7ed9eef30c88d92836a3b9dffe2c4b3f3bd9db",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3; git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff cbc6d8c bd337c4 --stat; git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --short",
-      "exit_code": 0,
-      "result": "HEAD = bd337c4 'feat(ZR-507): ProcessingDemand API — pure-memory demand queue (...) 14 tests'. diff cbc6d8c..bd337c4 = exactly 2 files, 436 insertions, 0 deletions (processing_demand.py +240, test_zr507_processing_demand.py +196). Working-tree dirt matches expected: D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr507_processing_demand.py -q --tb=short",
-      "exit_code": 0,
-      "result": "14 passed in 0.52s (Python 3.14.2, pytest 9.1.1). Test file contains exactly 14 tests: 4 C1, 5 C2, 3 C3, 2 C4."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
-      "exit_code": 0,
-      "result": "115 passed in 1.86s, zero failures/errors. Work-unit spec expected '129 passed'; actual collection is 115 — all green, stale expected count, not a regression."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe %TEMP%\\zr507_spotcheck.py (throwaway adversarial script, sys.path->src; 8 checks a-h)",
-      "exit_code": 0,
-      "result": "8/8 passed: a) enqueue same key twice -> same demand_id, snapshot len 1; b) claim order -> (b prio5, a prio1); c) claim now=1 lease 10 -> lease_until=11, heartbeat now=5 -> 15, heartbeat now=20 -> DemandStateError, complete wrong owner -> DemandStateError; d) fail now=2 backoff 60 -> attempts=1 retry_at=62, claim 61 -> DemandStateError, claim 62 -> ok; e) max_attempts=2 -> terminal_failed, retry_at None, claim -> DemandStateError; f) expire(12)=1, reclaim by w2, expire again=0; g) frozen ProcessingDemand.priority assignment raises; h) identical op sequences -> identical (key,status,priority,attempts,lease_owner,retry_at) snapshots."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/processing_demand.py tests/contract/test_zr507_processing_demand.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    }
-  ],
-  "created_at_utc": "2026-08-19T20:25:33+00:00",
-  "findings": [
-    {
-      "detail": "The work-unit spec stated the 9-file regression set should give '129 passed'. Replay collected 115 tests and all 115 passed (exit 0, 1.86s) with zero failures or errors. The delta is in the spec's expected count (per-file counts sum to 115), not in test health; the acceptance record should carry 115, not 129.",
-      "id": "ZR507-REV-001",
-      "severity": "minor",
-      "title": "Regression-suite count mismatch: 115 collected vs 129 expected"
-    },
-    {
-      "detail": "Observed in source (processing_demand.py enqueue): a repeated key dedupes only while the existing demand is pending/running/failed; a completed or terminal_failed demand with the same key is enqueued as a fresh demand. This is consistent with the C1 'repeated key returns the existing demand' reading for active work and lets a re-request after terminal completion create new work. Not a defect; recorded for downstream consumers (ZR-508 / filing-fetch) to rely on.",
-      "id": "ZR507-REV-002",
-      "severity": "info",
-      "title": "enqueue dedupe scope: non-terminal statuses only"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-507 independent review",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "397e6de42882eec3d76c47a70ae1e87852e8bf2f",
-    "wiki": "bd337c488bc8f0fcac8212451aab8fb0a7c68a74"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr507_processing_demand.py -q --tb=short",
+   "exit_code": 0,
+   "result": "14 passed in 0.52s (Python 3.14.2, pytest 9.1.1). Test file contains exactly 14 tests: 4 C1, 5 C2, 3 C3, 2 C4."
   },
-  "reviewed_object_sha256": "99e2c58e6b91e42aff326b84460066f0e15f89872cf6c779fef7ac46c708a081",
-  "reviewer": "reviewer-zr507-independent",
-  "schema_version": 1,
-  "unit": "ZR-507",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
+   "exit_code": 0,
+   "result": "115 passed in 1.86s, zero failures/errors. Work-unit spec expected '129 passed'; actual collection is 115 — all green, stale expected count, not a regression."
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe %TEMP%\\zr507_spotcheck.py (throwaway adversarial script, sys.path->src; 8 checks a-h)",
+   "exit_code": 0,
+   "result": "8/8 passed: a) enqueue same key twice -> same demand_id, snapshot len 1; b) claim order -> (b prio5, a prio1); c) claim now=1 lease 10 -> lease_until=11, heartbeat now=5 -> 15, heartbeat now=20 -> DemandStateError, complete wrong owner -> DemandStateError; d) fail now=2 backoff 60 -> attempts=1 retry_at=62, claim 61 -> DemandStateError, claim 62 -> ok; e) max_attempts=2 -> terminal_failed, retry_at None, claim -> DemandStateError; f) expire(12)=1, reclaim by w2, expire again=0; g) frozen ProcessingDemand.priority assignment raises; h) identical op sequences -> identical (key,status,priority,attempts,lease_owner,retry_at) snapshots."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/processing_demand.py tests/contract/test_zr507_processing_demand.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  }
+ ],
+ "created_at_utc": "2026-08-19T20:25:33+00:00",
+ "findings": [
+  {
+   "detail": "The work-unit spec stated the 9-file regression set should give '129 passed'. Replay collected 115 tests and all 115 passed (exit 0, 1.86s) with zero failures or errors. The delta is in the spec's expected count (per-file counts sum to 115), not in test health; the acceptance record should carry 115, not 129.",
+   "id": "ZR507-REV-001",
+   "severity": "minor",
+   "title": "Regression-suite count mismatch: 115 collected vs 129 expected"
+  },
+  {
+   "detail": "Observed in source (processing_demand.py enqueue): a repeated key dedupes only while the existing demand is pending/running/failed; a completed or terminal_failed demand with the same key is enqueued as a fresh demand. This is consistent with the C1 'repeated key returns the existing demand' reading for active work and lets a re-request after terminal completion create new work. Not a defect; recorded for downstream consumers (ZR-508 / filing-fetch) to rely on.",
+   "id": "ZR507-REV-002",
+   "severity": "info",
+   "title": "enqueue dedupe scope: non-terminal statuses only"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-507 independent review",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "397e6de42882eec3d76c47a70ae1e87852e8bf2f",
+  "wiki": "bd337c488bc8f0fcac8212451aab8fb0a7c68a74"
+ },
+ "reviewed_object_sha256": "f1eace9a5cf136bc74fa92ac37b8b8ca0b52c03d89601322d635e4d0e77d1c49",
+ "reviewer": "reviewer-zr507-independent",
+ "schema_version": 1,
+ "unit": "ZR-507",
+ "verdict": "accepted"
 }

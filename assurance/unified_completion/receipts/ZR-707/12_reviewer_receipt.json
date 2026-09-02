@@ -1,103 +1,103 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "2f5b8da17319e46cff24db38150f09e16d5e0fdf",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "2f5b8da17319e46cff24db38150f09e16d5e0fdf",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "canonical_hash": "a5562eae39db0eae1606e3aac10cc13653b09b409ad543b2b5bd78ab48accda6",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
+   "exit_code": 0,
+   "result": "HEAD=fdb560e (ZR-707 feat commit); parent=2f5b8da (ZR-711 closure)"
   },
-  "canonical_hash": "b18d941e3d11b18e5c7e208fca33bf567b40a18b0b88c9498e195d684dd0a03a",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2",
-      "exit_code": 0,
-      "result": "HEAD=fdb560e (ZR-707 feat commit); parent=2f5b8da (ZR-711 closure)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr707_mixed_recognition.py -q --tb=short",
-      "exit_code": 0,
-      "result": "13 passed (C1 mixed recognition 5 + C2 multi-commodity 3 + C3 presentation 5)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr711_schema_optin.py tests/test_golden_behavior_lock.py tests/test_zr609_zijin_pilot.py -q --timeout=120",
-      "exit_code": 0,
-      "result": "25 passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/mixed_recognition.py tests/test_zr707_mixed_recognition.py",
-      "exit_code": 0,
-      "result": "All checks passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py (exit captured via Start-Process)",
-      "exit_code": 0,
-      "result": "Ran 2 tests ... OK (EXITCODE=0; initial PowerShell NativeCommandError was a stderr-dot artifact)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr707-reviewer\\probe_zr707.py (11 adversarial probes)",
-      "exit_code": 0,
-      "result": "ALL ADVERSARIAL PROBES PASSED: mixed modes accepted, invalid mode rejected, empty/non-list pass; 3-commodity matrix accepted, duplicate names rejected; gross/net accepted, invalid presentation rejected, mixed gross+net accepted; malformed entries tolerated"
-    },
-    {
-      "command": "grep scripts/mixed_recognition.py for company/mine names (zijin|shuikoushan|copper|gold|mining|trading|紫金|水口山)",
-      "exit_code": 0,
-      "result": "Only generic docstring examples (copper+gold byproduct, trading/other); no company/mine hardcoding in logic"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
-      "exit_code": 0,
-      "result": "733 passed, 3 deselected, 106 subtests passed in 133.04s (2 pre-existing UnicodeDecodeError thread warnings from test_fc1004_platform.py)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-707/11_implementer_receipt.json (CWD assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt receipts/ZR-707/11_implementer_receipt.json is canonical and well-formed"
-    },
-    {
-      "command": "git cat-file -e 2f5b8da^{commit} / fdb560e^{commit}",
-      "exit_code": 0,
-      "result": "Both base (2f5b8da, real ZR-711 closure commit) and result (fdb560e == HEAD) objects exist"
-    },
-    {
-      "command": "git -C revenue-forecast diff 2f5b8da fdb560e --stat && git status --porcelain -- reviewed files",
-      "exit_code": 0,
-      "result": "Exactly 2 files changed, 244 insertions; working tree clean for both reviewed files"
-    }
-  ],
-  "created_at_utc": "2026-08-22T10:32:12Z",
-  "findings": [
-    {
-      "detail": "Re-ran every command myself. C1: mixed-mode segments accepted, invalid mode rejected, vocabulary exact (RECOGNITION_MODES == {modeled_as_recognized, lagged_activity}, contracts/constants.py:143). C2: 3-commodity matrix accepted, duplicate names rejected. C3: gross/net per segment accepted, invalid rejected, mixed mining-gross+trading-net accepted, PRESENTATIONS == {gross, net} (constants.py:149). New tests 13/13 green, regressions 25/25, ruff clean, ratchet 2/2 (real exit 0), full suite 733 passed + 106 subtests (3 deselected = documented fc1103 environment carve-out).",
-      "id": "REV-001",
-      "severity": "info",
-      "title": "All acceptance criteria C1/C2/C3 and quality gates verified independently"
-    },
-    {
-      "detail": "uc.cli receipt-validate returned OK; base_triplet.revenue=2f5b8da exists as a real git commit (ZR-711 closure) and result_triplet.revenue=fdb560e == HEAD. Filing/wiki hashes (5a1c18f/26a6b22) are cross-repo objects not present in revenue-forecast git, consistent with receipt note 'wiki 26a6b22、filing 5a1c18f（未动）'.",
-      "id": "REV-002",
-      "severity": "info",
-      "title": "Receipt verified canonical with correct triplets"
-    },
-    {
-      "detail": "grep for company/mine names found only generic docstring examples; git diff base..result shows exactly 2 files (+244 lines) matching the receipt claim; working tree clean for both reviewed files.",
-      "id": "REV-003",
-      "severity": "info",
-      "title": "No product hardcoding; diff scope exact"
-    },
-    {
-      "detail": "Full suite emits 2 PytestUnhandledThreadExceptionWarning (UnicodeDecodeError) originating in test_fc1004_platform.py reader threads — unrelated to ZR-707 (which adds no subprocess/thread code) and does not affect pass counts.",
-      "id": "REV-004",
-      "severity": "info",
-      "title": "Pre-existing unrelated warnings in full suite"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "fdb560ed81d5ced74b4707c33e08038b2ad7b9c1",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr707_mixed_recognition.py -q --tb=short",
+   "exit_code": 0,
+   "result": "13 passed (C1 mixed recognition 5 + C2 multi-commodity 3 + C3 presentation 5)"
   },
-  "reviewed_object_sha256": "7be44ec7aefb9835bfda122b890fc8c0c34d71f485de7718bcf1ea3c2a6ff686",
-  "reviewer": "reviewer-zr707-independent",
-  "schema_version": 1,
-  "unit": "ZR-707",
-  "verdict": "accepted"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr711_schema_optin.py tests/test_golden_behavior_lock.py tests/test_zr609_zijin_pilot.py -q --timeout=120",
+   "exit_code": 0,
+   "result": "25 passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check scripts/mixed_recognition.py tests/test_zr707_mixed_recognition.py",
+   "exit_code": 0,
+   "result": "All checks passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py (exit captured via Start-Process)",
+   "exit_code": 0,
+   "result": "Ran 2 tests ... OK (EXITCODE=0; initial PowerShell NativeCommandError was a stderr-dot artifact)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr707-reviewer\\probe_zr707.py (11 adversarial probes)",
+   "exit_code": 0,
+   "result": "ALL ADVERSARIAL PROBES PASSED: mixed modes accepted, invalid mode rejected, empty/non-list pass; 3-commodity matrix accepted, duplicate names rejected; gross/net accepted, invalid presentation rejected, mixed gross+net accepted; malformed entries tolerated"
+  },
+  {
+   "command": "grep scripts/mixed_recognition.py for company/mine names (zijin|shuikoushan|copper|gold|mining|trading|紫金|水口山)",
+   "exit_code": 0,
+   "result": "Only generic docstring examples (copper+gold byproduct, trading/other); no company/mine hardcoding in logic"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "733 passed, 3 deselected, 106 subtests passed in 133.04s (2 pre-existing UnicodeDecodeError thread warnings from test_fc1004_platform.py)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-707/11_implementer_receipt.json (CWD assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt receipts/ZR-707/11_implementer_receipt.json is canonical and well-formed"
+  },
+  {
+   "command": "git cat-file -e 2f5b8da^{commit} / fdb560e^{commit}",
+   "exit_code": 0,
+   "result": "Both base (2f5b8da, real ZR-711 closure commit) and result (fdb560e == HEAD) objects exist"
+  },
+  {
+   "command": "git -C revenue-forecast diff 2f5b8da fdb560e --stat && git status --porcelain -- reviewed files",
+   "exit_code": 0,
+   "result": "Exactly 2 files changed, 244 insertions; working tree clean for both reviewed files"
+  }
+ ],
+ "created_at_utc": "2026-08-22T10:32:12Z",
+ "findings": [
+  {
+   "detail": "Re-ran every command myself. C1: mixed-mode segments accepted, invalid mode rejected, vocabulary exact (RECOGNITION_MODES == {modeled_as_recognized, lagged_activity}, contracts/constants.py:143). C2: 3-commodity matrix accepted, duplicate names rejected. C3: gross/net per segment accepted, invalid rejected, mixed mining-gross+trading-net accepted, PRESENTATIONS == {gross, net} (constants.py:149). New tests 13/13 green, regressions 25/25, ruff clean, ratchet 2/2 (real exit 0), full suite 733 passed + 106 subtests (3 deselected = documented fc1103 environment carve-out).",
+   "id": "REV-001",
+   "severity": "info",
+   "title": "All acceptance criteria C1/C2/C3 and quality gates verified independently"
+  },
+  {
+   "detail": "uc.cli receipt-validate returned OK; base_triplet.revenue=2f5b8da exists as a real git commit (ZR-711 closure) and result_triplet.revenue=fdb560e == HEAD. Filing/wiki hashes (5a1c18f/26a6b22) are cross-repo objects not present in revenue-forecast git, consistent with receipt note 'wiki 26a6b22、filing 5a1c18f（未动）'.",
+   "id": "REV-002",
+   "severity": "info",
+   "title": "Receipt verified canonical with correct triplets"
+  },
+  {
+   "detail": "grep for company/mine names found only generic docstring examples; git diff base..result shows exactly 2 files (+244 lines) matching the receipt claim; working tree clean for both reviewed files.",
+   "id": "REV-003",
+   "severity": "info",
+   "title": "No product hardcoding; diff scope exact"
+  },
+  {
+   "detail": "Full suite emits 2 PytestUnhandledThreadExceptionWarning (UnicodeDecodeError) originating in test_fc1004_platform.py reader threads — unrelated to ZR-707 (which adds no subprocess/thread code) and does not affect pass counts.",
+   "id": "REV-004",
+   "severity": "info",
+   "title": "Pre-existing unrelated warnings in full suite"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "fdb560ed81d5ced74b4707c33e08038b2ad7b9c1",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "91aefa2ca46da5b3f83d40c715d047fb7780bcdb358f9f135611c4494cb2305c",
+ "reviewer": "reviewer-zr707-independent",
+ "schema_version": 1,
+ "unit": "ZR-707",
+ "verdict": "accepted"
 }

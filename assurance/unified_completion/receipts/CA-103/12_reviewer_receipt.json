@@ -1,53 +1,57 @@
 {
-  "unit": "CA-103",
-  "reviewer": "reviewer-ca103-independent-fast",
-  "verdict": "accepted",
-  "reviewed_at_utc": "2026-08-14T00:16:31Z",
-  "base_triplet": {
-    "revenue": "a745e06001f29653f424fd58643e24ca58af683b"
+ "schema_version": 1,
+ "kind": "reviewer",
+ "unit": "CA-103",
+ "reviewer": "reviewer-ca103-independent-fast",
+ "verdict": "accepted",
+ "reviewed_object_sha256": "75d613113bcb1f6769a4aa8cdf1a3b705e37c63d1d8b2a5d40fd654a3d086f27",
+ "created_at_utc": "2026-08-14T00:16:31Z",
+ "commands": [
+  "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -1",
+  "python -B -m pytest C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\tests\\test_revision.py -q",
+  "python -B -m uc.cli receipt-validate --receipt C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\receipts\\CA-103\\11_implementer_receipt.json",
+  "Select-String revision.py 'stale accepted must not win|reviewer identity equals implementer|unclosed P'",
+  "Select-String revision.py 'supersedes unknown|fork'",
+  "python -B -m ruff check C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\"
+ ],
+ "base_triplet": {
+  "revenue": "a745e06001f29653f424fd58643e24ca58af683b"
+ },
+ "result_triplet": {
+  "revenue": "4259cbbff157002a91dc8ffdae0c2bdb10104f23"
+ },
+ "findings": [
+  {
+   "check": "HEAD commit",
+   "result": "PASS",
+   "evidence": "HEAD = 4259cbb feat(CA-103): revision selector + reviewer pairing — supersedes chain validation, latest-revision selection, stale-accepted prevention, finding closure enforcement"
   },
-  "result_triplet": {
-    "revenue": "4259cbbff157002a91dc8ffdae0c2bdb10104f23"
+  {
+   "check": "pytest test_revision.py",
+   "result": "PASS",
+   "evidence": "12 passed in 0.15s"
   },
-  "commands": [
-    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -1",
-    "python -B -m pytest C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\tests\\test_revision.py -q",
-    "python -B -m uc.cli receipt-validate --receipt C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\receipts\\CA-103\\11_implementer_receipt.json",
-    "Select-String revision.py 'stale accepted must not win|reviewer identity equals implementer|unclosed P'",
-    "Select-String revision.py 'supersedes unknown|fork'",
-    "python -B -m ruff check C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\"
-  ],
-  "findings": [
-    {
-      "check": "HEAD commit",
-      "result": "PASS",
-      "evidence": "HEAD = 4259cbb feat(CA-103): revision selector + reviewer pairing — supersedes chain validation, latest-revision selection, stale-accepted prevention, finding closure enforcement"
-    },
-    {
-      "check": "pytest test_revision.py",
-      "result": "PASS",
-      "evidence": "12 passed in 0.15s"
-    },
-    {
-      "check": "receipt-validate (11_implementer_receipt.json)",
-      "result": "PASS",
-      "evidence": "OK: receipt is canonical and well-formed; rc=0"
-    },
-    {
-      "check": "guard keywords in uc/revision.py",
-      "result": "PASS",
-      "evidence": "Line 110 'reviewer identity equals implementer' (self-review rejection); Line 125 'stale accepted must not win' (stale-accepted prevention). Literal 'unclosed P' not matched (f-string '{severity}'), but finding closure enforcement confirmed: lines 129-149 P1/P2 findings require successor or status 'closed'; P3 promised closure requires successor (lines 139/148). Pattern hit count = 2 (>= 2 required)."
-    },
-    {
-      "check": "chain validation in uc/revision.py",
-      "result": "PASS",
-      "evidence": "Line 76 'supersedes unknown' (unknown edge rejection); Line 78 'fork: ... superseded by two revisions' (fork rejection); module docstring line 7 'validates the supersedes chain (no cycles, no forks)'"
-    },
-    {
-      "check": "ruff check",
-      "result": "PASS",
-      "evidence": "All checks passed!; rc=0"
-    }
-  ],
-  "note": "fast independent review"
+  {
+   "check": "receipt-validate (11_implementer_receipt.json)",
+   "result": "PASS",
+   "evidence": "OK: receipt is canonical and well-formed; rc=0"
+  },
+  {
+   "check": "guard keywords in uc/revision.py",
+   "result": "PASS",
+   "evidence": "Line 110 'reviewer identity equals implementer' (self-review rejection); Line 125 'stale accepted must not win' (stale-accepted prevention). Literal 'unclosed P' not matched (f-string '{severity}'), but finding closure enforcement confirmed: lines 129-149 P1/P2 findings require successor or status 'closed'; P3 promised closure requires successor (lines 139/148). Pattern hit count = 2 (>= 2 required)."
+  },
+  {
+   "check": "chain validation in uc/revision.py",
+   "result": "PASS",
+   "evidence": "Line 76 'supersedes unknown' (unknown edge rejection); Line 78 'fork: ... superseded by two revisions' (fork rejection); module docstring line 7 'validates the supersedes chain (no cycles, no forks)'"
+  },
+  {
+   "check": "ruff check",
+   "result": "PASS",
+   "evidence": "All checks passed!; rc=0"
+  }
+ ],
+ "note": "fast independent review",
+ "canonical_hash": "2c0a31d90f17e370a10747201a47b22d39975357533fae8661bedbcf7c1e1006"
 }

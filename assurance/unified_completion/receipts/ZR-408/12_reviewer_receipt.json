@@ -1,88 +1,88 @@
 {
-  "base_triplet": {
-    "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
-    "revenue": "6145dadfaa601476775b180be37cdfcfe4555e05",
-    "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
+ "base_triplet": {
+  "filing": "3087f28926fc36fd0cdad19a0fa0495de42f35ec",
+  "revenue": "6145dadfaa601476775b180be37cdfcfe4555e05",
+  "wiki": "45ae72124cf6b26dec90b20d89f9bbbde2030074"
+ },
+ "canonical_hash": "828763a463bc52cda1bdbaf4b882578e404f5c575ce445502121045ec1889be3",
+ "commands": [
+  {
+   "command": "git -C company-wiki rev-parse HEAD; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
+   "exit_code": 0,
+   "result": "wiki=71aa798eb4887197c24be0755d8e56e973b74006 (==claimed result); filing=5a1c18f5171db0e4b9113138ea360db361e1e435 (==claimed); revenue=6145dadfaa601476775b180be37cdfcfe4555e05 (==receipt base/result; at or after base)"
   },
-  "canonical_hash": "fe0d6df31e9fdb050e84b28e4bee16103921a5600109332b9dda2a75085ea6f0",
-  "commands": [
-    {
-      "command": "git -C company-wiki rev-parse HEAD; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
-      "exit_code": 0,
-      "result": "wiki=71aa798eb4887197c24be0755d8e56e973b74006 (==claimed result); filing=5a1c18f5171db0e4b9113138ea360db361e1e435 (==claimed); revenue=6145dadfaa601476775b180be37cdfcfe4555e05 (==receipt base/result; at or after base)"
-    },
-    {
-      "command": "git -C wiki diff 45ae721 71aa798 --stat ; git -C wiki show --stat 71aa798 ; git -C wiki diff bdffc54 71aa798 --stat ; git -C wiki diff bdffc54 71aa798 -- src/ ; git -C filing-fetch diff --stat",
-      "exit_code": 0,
-      "result": "base..result diff = 5 files +398/-88 (45ae721..71aa798 spans ZR-407 commit bdffc54: cli.py, close_gap.py, test_close_gap_fc801.py, test_zr407_ensure_readonly.py + fc804). `git show --stat 71aa798` = exactly 1 file, 67 insertions/1 deletion (matches claim). ZR-408 delta bdffc54..71aa798 = exactly 1 file (+67/-1), and diff bdffc54..71aa798 -- src/ is EMPTY (product delta ZERO for ZR-408). filing-fetch tree clean (diff empty). Commit chain verified: 45ae721 -> bdffc54 -> 71aa798."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_close_gap_concurrency_fc804.py -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr408-review (company-wiki)",
-      "exit_code": 0,
-      "result": "6 passed in 8.86s (Python 3.14.2, pytest 9.1.1). --collect-only shows 6 items including test_cg_c1b_cross_process_single_flight_one_fetch; `-k cross_process` runs it standalone: 1 passed, 5 deselected."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_close_gap_fc801.py tests/contract/test_close_gap_concurrency_fc804.py tests/contract/test_source_catalog_canonical_writer.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short --basetemp <rev>/.tmp-zr408-review2 (company-wiki)",
-      "exit_code": 1,
-      "result": "FIRST RUN (concurrent with two other heavy pytest processes): 21 passed, 1 FAILED — test_cg_c1_single_flight_one_fetch (PRE-EXISTING thread-level test, untouched by ZR-408) with sqlite3 InterfaceError('bad parameter or other API misuse') — cross-thread SQLite flakiness under load. Re-run ALONE (fresh basetemp .tmp-zr408-review2b): 22 passed in 12.64s, exit 0. Claim '22 passed' reproduced when run cleanly; the flake is pre-existing and unrelated to ZR-408 (diff shows zero changes to that test or to product code)."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/unit -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr408-review3 (company-wiki)",
-      "exit_code": 0,
-      "result": "787 passed in 45.17s — matches implementer commands[0] claim (787 passed, exit 0)."
-    },
-    {
-      "command": "python -m ruff check --no-cache tests/contract/test_close_gap_concurrency_fc804.py tests/contract/test_close_gap_fc801.py src/company_wiki/source_catalog/close_gap.py src/company_wiki/source_catalog/cli.py (base python, ruff 0.15.18)",
-      "exit_code": 0,
-      "result": "'All checks passed!' — matches implementer commands[2] claim."
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\receipts\\ZR-408\\11_implementer_receipt.json (from assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed. Independently recomputed canonical_hash (json.dumps minus canonical_hash, ensure_ascii=False, sort_keys=True, default separators, sha256) = 81210bf202e5bec4a9f6532b41faad46002c399c1774d343f814c465a10ad513 == stored. plan_sha256: sha256 of current 00_wu_card.md = 09e39b9e88ad535aad6c4b2eca261c6d59e01b876c54dddbdffa1f09273b83a3 == claimed. result_triplet matches claims (wiki 71aa798eb...; filing 5a1c18f...; revenue 6145dad...)."
-    },
-    {
-      "command": "python -m uc.cli state-show ; json query of state.json units.ZR-408",
-      "exit_code": 0,
-      "result": "units.ZR-408.status = independent_review (updated_at_utc 2026-08-18T22:44:29.590034+00:00); current_next = ZR-408; current_phase = D_lifecycle_roots_freshness — as claimed."
-    },
-    {
-      "command": "sha256 of test_close_gap_concurrency_fc804.py (checked-out file at HEAD, git-clean) and of `git show 71aa798:...` blob",
-      "exit_code": 0,
-      "result": "sha256(checked-out file bytes) = 708ce8951ccc31ba181e4f1902ea902d9474be813a8acece1b1bcc180b08160c == implementer's reviewed_object claim (the file is git-clean at HEAD). sha256(git blob, LF-normalized) = 321902f7ac72471d8c810a0b2bbaccd02e4d02ed7be585956552142c0f546446 (core.autocrlf=true; wtree has 304 CRLF + 76 LF — identical content under git normalization; see ZR408-REV-002)."
-    }
-  ],
-  "created_at_utc": "2026-08-18T22:48:11Z",
-  "findings": [
-    {
-      "detail": "Implementer receipt commands[3] labels `git diff 45ae721 71aa798 --stat (company-wiki)` with result '仅 tests/contract/test_close_gap_concurrency_fc804.py（+67/-1）...产品代码零改动'. That exact command actually outputs 5 files, 398 insertions/88 deletions — 45ae721..71aa798 spans ZR-407's bdffc54 (cli.py, close_gap.py, test_close_gap_fc801.py, test_zr407_ensure_readonly.py) in addition to the ZR-408 delta. The claimed numbers are exactly reproduced by `git diff bdffc54 71aa798 --stat` (= 1 file, +67/-1) and `git diff bdffc54 71aa798 -- src/` (empty). The substantive ZR-408 scope claim is TRUE; only the command label in the receipt does not reproduce the claimed output.",
-      "id": "ZR408-REV-001",
-      "severity": "minor",
-      "title": "Implementer receipt commands[3] command string does not reproduce its claimed output (label should be bdffc54..71aa798)"
-    },
-    {
-      "detail": "reviewed_object_sha256 708ce8951ccc31ba181e4f1902ea902d9474be813a8acece1b1bcc180b08160c equals sha256 of the checked-out working-tree bytes at HEAD (git-clean; core.autocrlf=true, file has 304 CRLF + 76 LF). Hashing the git blob (LF-normalized) yields 321902f7ac72471d8c810a0b2bbaccd02e4d02ed7be585956552142c0f546446. Content is identical under git line-ending normalization; the claim matches the file as checked out at HEAD.",
-      "id": "ZR408-REV-002",
-      "severity": "info",
-      "title": "reviewed_object_sha256 computed on CRLF checked-out bytes; LF-normalized blob hash differs (autocrlf artifact)"
-    },
-    {
-      "detail": "Under concurrent heavy load (three pytest processes started together) the pre-existing thread-level test test_cg_c1_single_flight_one_fetch failed once with sqlite3.InterfaceError('bad parameter or other API misuse') (cross-thread SQLite use; the thread test shares one catalog store across two threads — inherent race). Re-run alone the contract batch is green: 22 passed, exit 0. The failing test body and all product code are untouched by ZR-408 (verified via `git diff bdffc54 71aa798`), so the flake is demonstrably pre-existing and unrelated; the implementer's '22 passed' claim reproduces on a clean sequential run.",
-      "id": "ZR408-REV-003",
-      "severity": "info",
-      "title": "Pre-existing thread-level single-flight test flaked once under load (SQLite InterfaceError); batch green when run alone"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-408 independent review",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "6145dadfaa601476775b180be37cdfcfe4555e05",
-    "wiki": "71aa798eb4887197c24be0755d8e56e973b74006"
+  {
+   "command": "git -C wiki diff 45ae721 71aa798 --stat ; git -C wiki show --stat 71aa798 ; git -C wiki diff bdffc54 71aa798 --stat ; git -C wiki diff bdffc54 71aa798 -- src/ ; git -C filing-fetch diff --stat",
+   "exit_code": 0,
+   "result": "base..result diff = 5 files +398/-88 (45ae721..71aa798 spans ZR-407 commit bdffc54: cli.py, close_gap.py, test_close_gap_fc801.py, test_zr407_ensure_readonly.py + fc804). `git show --stat 71aa798` = exactly 1 file, 67 insertions/1 deletion (matches claim). ZR-408 delta bdffc54..71aa798 = exactly 1 file (+67/-1), and diff bdffc54..71aa798 -- src/ is EMPTY (product delta ZERO for ZR-408). filing-fetch tree clean (diff empty). Commit chain verified: 45ae721 -> bdffc54 -> 71aa798."
   },
-  "reviewed_object_sha256": "708ce8951ccc31ba181e4f1902ea902d9474be813a8acece1b1bcc180b08160c",
-  "reviewer": "reviewer-zr408-independent",
-  "schema_version": 1,
-  "unit": "ZR-408",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_close_gap_concurrency_fc804.py -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr408-review (company-wiki)",
+   "exit_code": 0,
+   "result": "6 passed in 8.86s (Python 3.14.2, pytest 9.1.1). --collect-only shows 6 items including test_cg_c1b_cross_process_single_flight_one_fetch; `-k cross_process` runs it standalone: 1 passed, 5 deselected."
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_close_gap_fc801.py tests/contract/test_close_gap_concurrency_fc804.py tests/contract/test_source_catalog_canonical_writer.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short --basetemp <rev>/.tmp-zr408-review2 (company-wiki)",
+   "exit_code": 1,
+   "result": "FIRST RUN (concurrent with two other heavy pytest processes): 21 passed, 1 FAILED — test_cg_c1_single_flight_one_fetch (PRE-EXISTING thread-level test, untouched by ZR-408) with sqlite3 InterfaceError('bad parameter or other API misuse') — cross-thread SQLite flakiness under load. Re-run ALONE (fresh basetemp .tmp-zr408-review2b): 22 passed in 12.64s, exit 0. Claim '22 passed' reproduced when run cleanly; the flake is pre-existing and unrelated to ZR-408 (diff shows zero changes to that test or to product code)."
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/unit -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr408-review3 (company-wiki)",
+   "exit_code": 0,
+   "result": "787 passed in 45.17s — matches implementer commands[0] claim (787 passed, exit 0)."
+  },
+  {
+   "command": "python -m ruff check --no-cache tests/contract/test_close_gap_concurrency_fc804.py tests/contract/test_close_gap_fc801.py src/company_wiki/source_catalog/close_gap.py src/company_wiki/source_catalog/cli.py (base python, ruff 0.15.18)",
+   "exit_code": 0,
+   "result": "'All checks passed!' — matches implementer commands[2] claim."
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\receipts\\ZR-408\\11_implementer_receipt.json (from assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed. Independently recomputed canonical_hash (json.dumps minus canonical_hash, ensure_ascii=False, sort_keys=True, default separators, sha256) = 81210bf202e5bec4a9f6532b41faad46002c399c1774d343f814c465a10ad513 == stored. plan_sha256: sha256 of current 00_wu_card.md = 09e39b9e88ad535aad6c4b2eca261c6d59e01b876c54dddbdffa1f09273b83a3 == claimed. result_triplet matches claims (wiki 71aa798eb...; filing 5a1c18f...; revenue 6145dad...)."
+  },
+  {
+   "command": "python -m uc.cli state-show ; json query of state.json units.ZR-408",
+   "exit_code": 0,
+   "result": "units.ZR-408.status = independent_review (updated_at_utc 2026-08-18T22:44:29.590034+00:00); current_next = ZR-408; current_phase = D_lifecycle_roots_freshness — as claimed."
+  },
+  {
+   "command": "sha256 of test_close_gap_concurrency_fc804.py (checked-out file at HEAD, git-clean) and of `git show 71aa798:...` blob",
+   "exit_code": 0,
+   "result": "sha256(checked-out file bytes) = 708ce8951ccc31ba181e4f1902ea902d9474be813a8acece1b1bcc180b08160c == implementer's reviewed_object claim (the file is git-clean at HEAD). sha256(git blob, LF-normalized) = 321902f7ac72471d8c810a0b2bbaccd02e4d02ed7be585956552142c0f546446 (core.autocrlf=true; wtree has 304 CRLF + 76 LF — identical content under git normalization; see ZR408-REV-002)."
+  }
+ ],
+ "created_at_utc": "2026-08-18T22:48:11Z",
+ "findings": [
+  {
+   "detail": "Implementer receipt commands[3] labels `git diff 45ae721 71aa798 --stat (company-wiki)` with result '仅 tests/contract/test_close_gap_concurrency_fc804.py（+67/-1）...产品代码零改动'. That exact command actually outputs 5 files, 398 insertions/88 deletions — 45ae721..71aa798 spans ZR-407's bdffc54 (cli.py, close_gap.py, test_close_gap_fc801.py, test_zr407_ensure_readonly.py) in addition to the ZR-408 delta. The claimed numbers are exactly reproduced by `git diff bdffc54 71aa798 --stat` (= 1 file, +67/-1) and `git diff bdffc54 71aa798 -- src/` (empty). The substantive ZR-408 scope claim is TRUE; only the command label in the receipt does not reproduce the claimed output.",
+   "id": "ZR408-REV-001",
+   "severity": "minor",
+   "title": "Implementer receipt commands[3] command string does not reproduce its claimed output (label should be bdffc54..71aa798)"
+  },
+  {
+   "detail": "reviewed_object_sha256 708ce8951ccc31ba181e4f1902ea902d9474be813a8acece1b1bcc180b08160c equals sha256 of the checked-out working-tree bytes at HEAD (git-clean; core.autocrlf=true, file has 304 CRLF + 76 LF). Hashing the git blob (LF-normalized) yields 321902f7ac72471d8c810a0b2bbaccd02e4d02ed7be585956552142c0f546446. Content is identical under git line-ending normalization; the claim matches the file as checked out at HEAD.",
+   "id": "ZR408-REV-002",
+   "severity": "info",
+   "title": "reviewed_object_sha256 computed on CRLF checked-out bytes; LF-normalized blob hash differs (autocrlf artifact)"
+  },
+  {
+   "detail": "Under concurrent heavy load (three pytest processes started together) the pre-existing thread-level test test_cg_c1_single_flight_one_fetch failed once with sqlite3.InterfaceError('bad parameter or other API misuse') (cross-thread SQLite use; the thread test shares one catalog store across two threads — inherent race). Re-run alone the contract batch is green: 22 passed, exit 0. The failing test body and all product code are untouched by ZR-408 (verified via `git diff bdffc54 71aa798`), so the flake is demonstrably pre-existing and unrelated; the implementer's '22 passed' claim reproduces on a clean sequential run.",
+   "id": "ZR408-REV-003",
+   "severity": "info",
+   "title": "Pre-existing thread-level single-flight test flaked once under load (SQLite InterfaceError); batch green when run alone"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-408 independent review",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "6145dadfaa601476775b180be37cdfcfe4555e05",
+  "wiki": "71aa798eb4887197c24be0755d8e56e973b74006"
+ },
+ "reviewed_object_sha256": "81210bf202e5bec4a9f6532b41faad46002c399c1774d343f814c465a10ad513",
+ "reviewer": "reviewer-zr408-independent",
+ "schema_version": 1,
+ "unit": "ZR-408",
+ "verdict": "accepted"
 }

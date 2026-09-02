@@ -1,78 +1,78 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "508627ea1d0e9e2a5b0d7bd48fcad2c18f8d369e",
-    "wiki": "19c3b73174170c3e7a3d9724b85599cce8237f42"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "508627ea1d0e9e2a5b0d7bd48fcad2c18f8d369e",
+  "wiki": "19c3b73174170c3e7a3d9724b85599cce8237f42"
+ },
+ "canonical_hash": "629c729539f86b5b62c2fbc2db15daec8ea599843b1eecc2b0e4e39be5c12089",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3 && git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --porcelain",
+   "exit_code": 0,
+   "result": "HEAD = e8e2926 feat(ZR-503): multi-entity attribution guard... (13 collected). Status shows only unrelated dirt: D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json. No uncommitted changes to any ZR-503 tracked file."
   },
-  "canonical_hash": "e7ac4ce8adb8cb869689a0adecd582c8181d0fe79c8a06abad9f4cd9431b98c7",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3 && git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --porcelain",
-      "exit_code": 0,
-      "result": "HEAD = e8e2926 feat(ZR-503): multi-entity attribution guard... (13 collected). Status shows only unrelated dirt: D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json. No uncommitted changes to any ZR-503 tracked file."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr503_multi_entity_attribution.py -q --tb=short",
-      "exit_code": 0,
-      "result": "13 passed in 0.40s (collected 13 items; all dots). Includes test_c3_golden_corpus_changjiang_anchor_is_frozen."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_cw_228_backfill.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
-      "exit_code": 0,
-      "result": "81 passed in 39.38s (collected 81 items). No regressions in ZR-501/ZR-502/FC-1301/CW-228/evidence-span/FC-1204."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/entity_detection.py src/company_wiki/source_catalog/normalizer.py src/company_wiki/source_catalog/observability.py src/company_wiki/source_contract/evidence_span.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr501_broker_metadata_contract.py",
-      "exit_code": 0,
-      "result": "All checks passed! (First attempt failed with E902 only because the workdir was omitted; re-run from the repo root passed clean.)"
-    },
-    {
-      "command": "throwaway %TEMP%\\zr503_spotcheck.py with sys.path->src (then deleted)",
-      "exit_code": 0,
-      "result": "10/10 spot-checks PASSED: (a) comparison text + declared => multi_entity, phrases=[紫金矿业集团股份有限公司, 陕西煤业股份有限公司], others contains 陕西煤业股份有限公司; (b) '紫金矿业集团股份有限公司2025年年度报告' => single with ONE phrase; (c) '附件：财务报表附注' => unverifiable, reason no_company_name_phrases, flag None; (d) no declared entity => conservative multi_entity; (e) abbreviation+full name same entity => single; (f) flag mapping multi_entity->multi_entity_attribution_needed, single->None; (g) ADVERSARIAL '我们分析紫金矿业集团股份有限公司的盈利能力' => phrase absorbs leading noise but verdict stays single (no false multi_entity); (h) QualityFlag.MULTI_ENTITY_ATTRIBUTION_NEEDED.value == 'multi_entity_attribution_needed' at runtime."
-    },
-    {
-      "command": "grep 紫金矿业|陕西煤业 in C:\\Users\\郑曾波\\Projects\\company-wiki\\src",
-      "exit_code": 0,
-      "result": "No matches found across the entire src/ tree (not just entity_detection.py) — zero hardcoded company names, including comments."
-    },
-    {
-      "command": "Read-only golden-corpus reference check: revenue-forecast/assurance/unified_completion/corpus/golden_corpus.json sample zijin_broker_20240304_changjiang",
-      "exit_code": 0,
-      "result": "sample_id=zijin_broker_20240304_changjiang, role=broker_research, entities=[紫金矿业集团股份有限公司, 陕西煤业股份有限公司], sha256=273d450887eff7c079b28f394c4831092fa3abbb81db86f2544cab425c2719d7 — matches the frozen constant in the test. Test only json.loads(read_text()); no download, no write to the corpus, no fetch of the original PDF (rel_path never dereferenced)."
-    }
-  ],
-  "created_at_utc": "2026-08-19T19:55:01+00:00",
-  "findings": [
-    {
-      "detail": "detect_entities evidence carries {company_phrases, others_unrelated_to_declared, declared_entity, declared_security_ids_count} for single/multi_entity and {reason, declared_entity, declared_security_ids_count} for unverifiable — the C1 card's evidence set {company_phrases, others_unrelated_to_declared, reason} is realized as a union across verdicts, matching the described semantics (reason only on the no-phrase path). Verified by tests and spot-checks c/b.",
-      "id": "ZR503-REV-001",
-      "severity": "info",
-      "title": "Evidence field set is per-verdict union, not always-present"
-    },
-    {
-      "detail": "test_c1_hermetic_no_hardcoded_company_names asserts only entity_detection.py. Independent reviewer grep over all of src/company_wiki for 紫金矿业/陕西煤业 returned zero hits, so the zero-hardcoding requirement holds repo-wide (including comments); the narrower test scope is not a defect.",
-      "id": "ZR503-REV-002",
-      "severity": "info",
-      "title": "In-repo C3 hardcode test scopes entity_detection.py only; full-src grep clean anyway"
-    },
-    {
-      "detail": "Spot-check g ('我们分析紫金矿业集团股份有限公司的盈利能力') absorbs the leading '我们分析' into the phrase but still returns single with no unrelated phrase — no false multi_entity. Noise absorption can only inflate phrase content, never fabricate an unrelated second phrase, so the conservative/fail-closed property is preserved.",
-      "id": "ZR503-REV-003",
-      "severity": "info",
-      "title": "Suffix-anchored phrase may absorb leading noise; fail-closed direction confirmed"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-503 independent review",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "508627ea1d0e9e2a5b0d7bd48fcad2c18f8d369e",
-    "wiki": "e8e2926a47d4c310ec66533249794e4b2baacb76"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr503_multi_entity_attribution.py -q --tb=short",
+   "exit_code": 0,
+   "result": "13 passed in 0.40s (collected 13 items; all dots). Includes test_c3_golden_corpus_changjiang_anchor_is_frozen."
   },
-  "reviewed_object_sha256": "7f617d7e96fc505c16e392fb26dbb7c899ca5157f0aa548e7bbad8afea447180",
-  "reviewer": "reviewer-zr503-independent",
-  "schema_version": 1,
-  "unit": "ZR-503",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_cw_228_backfill.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
+   "exit_code": 0,
+   "result": "81 passed in 39.38s (collected 81 items). No regressions in ZR-501/ZR-502/FC-1301/CW-228/evidence-span/FC-1204."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/entity_detection.py src/company_wiki/source_catalog/normalizer.py src/company_wiki/source_catalog/observability.py src/company_wiki/source_contract/evidence_span.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr501_broker_metadata_contract.py",
+   "exit_code": 0,
+   "result": "All checks passed! (First attempt failed with E902 only because the workdir was omitted; re-run from the repo root passed clean.)"
+  },
+  {
+   "command": "throwaway %TEMP%\\zr503_spotcheck.py with sys.path->src (then deleted)",
+   "exit_code": 0,
+   "result": "10/10 spot-checks PASSED: (a) comparison text + declared => multi_entity, phrases=[紫金矿业集团股份有限公司, 陕西煤业股份有限公司], others contains 陕西煤业股份有限公司; (b) '紫金矿业集团股份有限公司2025年年度报告' => single with ONE phrase; (c) '附件：财务报表附注' => unverifiable, reason no_company_name_phrases, flag None; (d) no declared entity => conservative multi_entity; (e) abbreviation+full name same entity => single; (f) flag mapping multi_entity->multi_entity_attribution_needed, single->None; (g) ADVERSARIAL '我们分析紫金矿业集团股份有限公司的盈利能力' => phrase absorbs leading noise but verdict stays single (no false multi_entity); (h) QualityFlag.MULTI_ENTITY_ATTRIBUTION_NEEDED.value == 'multi_entity_attribution_needed' at runtime."
+  },
+  {
+   "command": "grep 紫金矿业|陕西煤业 in C:\\Users\\郑曾波\\Projects\\company-wiki\\src",
+   "exit_code": 0,
+   "result": "No matches found across the entire src/ tree (not just entity_detection.py) — zero hardcoded company names, including comments."
+  },
+  {
+   "command": "Read-only golden-corpus reference check: revenue-forecast/assurance/unified_completion/corpus/golden_corpus.json sample zijin_broker_20240304_changjiang",
+   "exit_code": 0,
+   "result": "sample_id=zijin_broker_20240304_changjiang, role=broker_research, entities=[紫金矿业集团股份有限公司, 陕西煤业股份有限公司], sha256=273d450887eff7c079b28f394c4831092fa3abbb81db86f2544cab425c2719d7 — matches the frozen constant in the test. Test only json.loads(read_text()); no download, no write to the corpus, no fetch of the original PDF (rel_path never dereferenced)."
+  }
+ ],
+ "created_at_utc": "2026-08-19T19:55:01+00:00",
+ "findings": [
+  {
+   "detail": "detect_entities evidence carries {company_phrases, others_unrelated_to_declared, declared_entity, declared_security_ids_count} for single/multi_entity and {reason, declared_entity, declared_security_ids_count} for unverifiable — the C1 card's evidence set {company_phrases, others_unrelated_to_declared, reason} is realized as a union across verdicts, matching the described semantics (reason only on the no-phrase path). Verified by tests and spot-checks c/b.",
+   "id": "ZR503-REV-001",
+   "severity": "info",
+   "title": "Evidence field set is per-verdict union, not always-present"
+  },
+  {
+   "detail": "test_c1_hermetic_no_hardcoded_company_names asserts only entity_detection.py. Independent reviewer grep over all of src/company_wiki for 紫金矿业/陕西煤业 returned zero hits, so the zero-hardcoding requirement holds repo-wide (including comments); the narrower test scope is not a defect.",
+   "id": "ZR503-REV-002",
+   "severity": "info",
+   "title": "In-repo C3 hardcode test scopes entity_detection.py only; full-src grep clean anyway"
+  },
+  {
+   "detail": "Spot-check g ('我们分析紫金矿业集团股份有限公司的盈利能力') absorbs the leading '我们分析' into the phrase but still returns single with no unrelated phrase — no false multi_entity. Noise absorption can only inflate phrase content, never fabricate an unrelated second phrase, so the conservative/fail-closed property is preserved.",
+   "id": "ZR503-REV-003",
+   "severity": "info",
+   "title": "Suffix-anchored phrase may absorb leading noise; fail-closed direction confirmed"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-503 independent review",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "508627ea1d0e9e2a5b0d7bd48fcad2c18f8d369e",
+  "wiki": "e8e2926a47d4c310ec66533249794e4b2baacb76"
+ },
+ "reviewed_object_sha256": "c39c67e5fb02d319e86b2f51b434affa2cc305c08dc0376b323ef42a6d87ffc3",
+ "reviewer": "reviewer-zr503-independent",
+ "schema_version": 1,
+ "unit": "ZR-503",
+ "verdict": "accepted"
 }

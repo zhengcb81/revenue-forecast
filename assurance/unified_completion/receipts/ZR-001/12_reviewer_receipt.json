@@ -1,118 +1,118 @@
 {
-  "base_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "8039fb060e6e0a3e7ce97428b93964d2c1f0af3a",
-    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+ "base_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "8039fb060e6e0a3e7ce97428b93964d2c1f0af3a",
+  "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+ },
+ "canonical_hash": "de45f2ede0eab800d133563612f8d29f8c0f23002bfc124a6c46e2cc69962144",
+ "commands": [
+  {
+   "cmd": "git -C revenue-forecast rev-parse HEAD",
+   "exit": 0,
+   "result": "8039fb060e6e0a3e7ce97428b93964d2c1f0af3a (matches expected HEAD)"
   },
-  "canonical_hash": "6c6b23b935721655c033ef12c6ae08ec17f48df29f08e3dba0862da7e191b721",
-  "commands": [
-    {
-      "cmd": "git -C revenue-forecast rev-parse HEAD",
-      "exit": 0,
-      "result": "8039fb060e6e0a3e7ce97428b93964d2c1f0af3a (matches expected HEAD)"
-    },
-    {
-      "cmd": "git -C revenue-forecast status --porcelain",
-      "exit": 0,
-      "result": "untracked audit_review plan dirs + assurance/runs only; not part of reviewed commits"
-    },
-    {
-      "cmd": "git -C filing-fetch rev-parse HEAD",
-      "exit": 0,
-      "result": "83c638e76e40890262746cdf02b6df495dcb4031 (frozen, fcap)"
-    },
-    {
-      "cmd": "git -C company-wiki rev-parse HEAD",
-      "exit": 0,
-      "result": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875 (frozen, fcap)"
-    },
-    {
-      "cmd": "git -C filing-fetch status --porcelain",
-      "exit": 0,
-      "result": "empty (clean)"
-    },
-    {
-      "cmd": "git -C company-wiki status --porcelain",
-      "exit": 0,
-      "result": "only known dirty: .claude/settings.local.json D, llm_cost_log.csv M, .coverage ??, coverage.json ??; src/ and tests/ untouched"
-    },
-    {
-      "cmd": "git show --stat 7afcb965d190e27083c774ba3ff8e0a1b37b7653 / 9db69d7d58f4018080c9d19aab0f0261007564d4 / 8039fb060e6e0a3e7ce97428b93964d2c1f0af3a",
-      "exit": 0,
-      "result": "only assurance/unified_completion/, tests/, state.json touched across all three commits; no product code/config/CI"
-    },
-    {
-      "cmd": "python -B assurance/unified_completion/replays/zr001_build_ledger.py --verify",
-      "exit": 0,
-      "result": "verify=ok ledger_sha256=2a80f744ae904fe20a514f641dba2579082a3947c454e0a2d4e85ab626822d05 (matches expected)"
-    },
-    {
-      "cmd": "python -B -m pytest assurance/unified_completion/tests/test_zr001_drift_ledger.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
-      "exit": 0,
-      "result": "12 passed (run twice: before and after hermetic replays; sealed evidence untouched both times)"
-    },
-    {
-      "cmd": "python -B hashlib recompute of 13 evidence + 4 replay binding files",
-      "exit": 0,
-      "result": "all 17 sha256 match drift_ledger.json evidence_binding / replay_binding; 15 items, classifications={'still-failing'}, all items carry successors/evidence/source_findings"
-    },
-    {
-      "cmd": "python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-001/11_implementer_receipt.json",
-      "exit": 0,
-      "result": "OK: receipt is canonical and well-formed; canonical_hash=7f0bd6d47aa9849fee6f2f0fd8c0381b0e801597f5310940e28aab1614a826d1 (re-signed as expected); result_triplet.revenue=7afcb965d190e27083c774ba3ff8e0a1b37b7653"
-    },
-    {
-      "cmd": "python -B assurance/unified_completion/replays/zr001_revenue.py --evidence-dir %TEMP%\\zr001-review-r",
-      "exit": 0,
-      "result": "r1 engine_validate_rc=2 / engine_error_line_count=58; r2 registry_size_bytes=676 / registry_row_count=1; r3 renderer_outcome=rejected with 'publication_receipt gate_ids mismatch' in error; r4 fault_run_orphan_registry_rows=1 / duplicate_rows_for_identical_input=true — all PASS"
-    },
-    {
-      "cmd": "python -B assurance/unified_completion/replays/zr001_filing.py --evidence-dir %TEMP%\\zr001-review-f",
-      "exit": 0,
-      "result": "f1 outcome=rejected with 'outside the policy snapshot' in message; f2 raw_sqlite_operational_error code=fatal retryable=false vs structured_catalog_operation_locked retryable=true — all PASS"
-    },
-    {
-      "cmd": "git diff dc41ef335b0c71fc22610201b235a33528d3e950 HEAD -- scripts/",
-      "exit": 0,
-      "result": "0 lines: revenue product code identical to frozen base"
-    },
-    {
-      "cmd": "RED spot-checks (read-only): scripts/revenue_forecast.py:71-77; company-wiki src/company_wiki/source_catalog/store.py:921-929,992-1008; filing-fetch scripts/fetch_filing.py:789 + scripts/filing_contracts.py:350-357",
-      "exit": 0,
-      "result": "all 3 production defects confirmed present at frozen triplet: --validate-only calls run_forecast (line 73) before printing 'valid' (line 76); CatalogStore.__init__ does mkdir (925) then _initialize (929) with PRAGMA journal_mode=WAL (995)/DDL/commit (1008); fetch_filing.py:789 validate_handle(handle, request, root) passes no policy_snapshot (param exists at filing_contracts.py:355)"
-    },
-    {
-      "cmd": "cd company-wiki && uv run python -m pytest tests/contract/test_source_catalog_worker_bootstrap.py::test_stale_child_heartbeat_is_terminated_and_restarted -q --tb=short",
-      "exit": 1,
-      "result": "1 failed: AssertionError 'session_start_timeout' == 'heartbeat_timeout' at test line 952 — pre-existing, not caused by ZR-001 (wiki tree unchanged)"
-    },
-    {
-      "cmd": "Remove-Item -Recurse -Force %TEMP%\\zr001-review-r / %TEMP%\\zr001-review-f",
-      "exit": 0,
-      "result": "temp evidence dirs removed"
-    }
-  ],
-  "created_at_utc": "2026-08-14T03:20:00+00:00",
-  "findings": [
-    "All 8 verification steps PASS; no unexplained divergence. Verdict: accepted.",
-    "Ledger deterministic: --verify reproduces ledger_sha256 2a80f744ae904fe20a514f641dba2579082a3947c454e0a2d4e85ab626822d05 on rerun.",
-    "Ledger structure sound: schema_version 1, unit ZR-001, frozen triplet (revenue dc41ef335b, filing 83c638e76, wiki ef125ed63, branches fcap), 15 items all classified still-failing (summary 15/0/0/0), every item carries successors/evidence/source_findings; catalog_fingerprint.unchanged_by_this_script=true; all 17 file bindings hash-verified on raw bytes.",
-    "Hermetic replays into temp dirs reproduce every claimed production counterexample without touching sealed evidence (tests remain 12/12 afterwards); temp dirs removed.",
-    "RED spot-checks confirm the three defects remain live at the frozen triplet: --validate-only calls run_forecast before printing 'valid'; CatalogStore.__init__ mkdir+_initialize (WAL/DDL/commit) on read paths; fetch_filing.py:789 validate_handle(handle, request, root) without policy_snapshot.",
-    "Implementer receipt validates OK and is re-signed (canonical_hash 7f0bd6d4) consistent with the 8039fb ledger rebound; result_triplet.revenue is the implementation commit.",
-    "Wiki heartbeat test failure (session_start_timeout vs heartbeat_timeout) reproduces in isolation and predates this unit; wiki source tree has no changes.",
-    "Note: an initial f2 field check reported FAIL due to reviewer-side key-path error (checked top-level instead of outcomes.*), corrected after reading the evidence schema; not a unit defect."
-  ],
-  "kind": "reviewer",
-  "note": "ZR-001 independent review",
-  "result_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "8039fb060e6e0a3e7ce97428b93964d2c1f0af3a",
-    "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+  {
+   "cmd": "git -C revenue-forecast status --porcelain",
+   "exit": 0,
+   "result": "untracked audit_review plan dirs + assurance/runs only; not part of reviewed commits"
   },
-  "reviewed_object_sha256": "2a80f744ae904fe20a514f641dba2579082a3947c454e0a2d4e85ab626822d05",
-  "reviewer": "reviewer-zr001-independent",
-  "schema_version": 1,
-  "unit": "ZR-001",
-  "verdict": "accepted"
+  {
+   "cmd": "git -C filing-fetch rev-parse HEAD",
+   "exit": 0,
+   "result": "83c638e76e40890262746cdf02b6df495dcb4031 (frozen, fcap)"
+  },
+  {
+   "cmd": "git -C company-wiki rev-parse HEAD",
+   "exit": 0,
+   "result": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875 (frozen, fcap)"
+  },
+  {
+   "cmd": "git -C filing-fetch status --porcelain",
+   "exit": 0,
+   "result": "empty (clean)"
+  },
+  {
+   "cmd": "git -C company-wiki status --porcelain",
+   "exit": 0,
+   "result": "only known dirty: .claude/settings.local.json D, llm_cost_log.csv M, .coverage ??, coverage.json ??; src/ and tests/ untouched"
+  },
+  {
+   "cmd": "git show --stat 7afcb965d190e27083c774ba3ff8e0a1b37b7653 / 9db69d7d58f4018080c9d19aab0f0261007564d4 / 8039fb060e6e0a3e7ce97428b93964d2c1f0af3a",
+   "exit": 0,
+   "result": "only assurance/unified_completion/, tests/, state.json touched across all three commits; no product code/config/CI"
+  },
+  {
+   "cmd": "python -B assurance/unified_completion/replays/zr001_build_ledger.py --verify",
+   "exit": 0,
+   "result": "verify=ok ledger_sha256=2a80f744ae904fe20a514f641dba2579082a3947c454e0a2d4e85ab626822d05 (matches expected)"
+  },
+  {
+   "cmd": "python -B -m pytest assurance/unified_completion/tests/test_zr001_drift_ledger.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+   "exit": 0,
+   "result": "12 passed (run twice: before and after hermetic replays; sealed evidence untouched both times)"
+  },
+  {
+   "cmd": "python -B hashlib recompute of 13 evidence + 4 replay binding files",
+   "exit": 0,
+   "result": "all 17 sha256 match drift_ledger.json evidence_binding / replay_binding; 15 items, classifications={'still-failing'}, all items carry successors/evidence/source_findings"
+  },
+  {
+   "cmd": "python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-001/11_implementer_receipt.json",
+   "exit": 0,
+   "result": "OK: receipt is canonical and well-formed; canonical_hash=7f0bd6d47aa9849fee6f2f0fd8c0381b0e801597f5310940e28aab1614a826d1 (re-signed as expected); result_triplet.revenue=7afcb965d190e27083c774ba3ff8e0a1b37b7653"
+  },
+  {
+   "cmd": "python -B assurance/unified_completion/replays/zr001_revenue.py --evidence-dir %TEMP%\\zr001-review-r",
+   "exit": 0,
+   "result": "r1 engine_validate_rc=2 / engine_error_line_count=58; r2 registry_size_bytes=676 / registry_row_count=1; r3 renderer_outcome=rejected with 'publication_receipt gate_ids mismatch' in error; r4 fault_run_orphan_registry_rows=1 / duplicate_rows_for_identical_input=true — all PASS"
+  },
+  {
+   "cmd": "python -B assurance/unified_completion/replays/zr001_filing.py --evidence-dir %TEMP%\\zr001-review-f",
+   "exit": 0,
+   "result": "f1 outcome=rejected with 'outside the policy snapshot' in message; f2 raw_sqlite_operational_error code=fatal retryable=false vs structured_catalog_operation_locked retryable=true — all PASS"
+  },
+  {
+   "cmd": "git diff dc41ef335b0c71fc22610201b235a33528d3e950 HEAD -- scripts/",
+   "exit": 0,
+   "result": "0 lines: revenue product code identical to frozen base"
+  },
+  {
+   "cmd": "RED spot-checks (read-only): scripts/revenue_forecast.py:71-77; company-wiki src/company_wiki/source_catalog/store.py:921-929,992-1008; filing-fetch scripts/fetch_filing.py:789 + scripts/filing_contracts.py:350-357",
+   "exit": 0,
+   "result": "all 3 production defects confirmed present at frozen triplet: --validate-only calls run_forecast (line 73) before printing 'valid' (line 76); CatalogStore.__init__ does mkdir (925) then _initialize (929) with PRAGMA journal_mode=WAL (995)/DDL/commit (1008); fetch_filing.py:789 validate_handle(handle, request, root) passes no policy_snapshot (param exists at filing_contracts.py:355)"
+  },
+  {
+   "cmd": "cd company-wiki && uv run python -m pytest tests/contract/test_source_catalog_worker_bootstrap.py::test_stale_child_heartbeat_is_terminated_and_restarted -q --tb=short",
+   "exit": 1,
+   "result": "1 failed: AssertionError 'session_start_timeout' == 'heartbeat_timeout' at test line 952 — pre-existing, not caused by ZR-001 (wiki tree unchanged)"
+  },
+  {
+   "cmd": "Remove-Item -Recurse -Force %TEMP%\\zr001-review-r / %TEMP%\\zr001-review-f",
+   "exit": 0,
+   "result": "temp evidence dirs removed"
+  }
+ ],
+ "created_at_utc": "2026-08-14T03:20:00+00:00",
+ "findings": [
+  "All 8 verification steps PASS; no unexplained divergence. Verdict: accepted.",
+  "Ledger deterministic: --verify reproduces ledger_sha256 2a80f744ae904fe20a514f641dba2579082a3947c454e0a2d4e85ab626822d05 on rerun.",
+  "Ledger structure sound: schema_version 1, unit ZR-001, frozen triplet (revenue dc41ef335b, filing 83c638e76, wiki ef125ed63, branches fcap), 15 items all classified still-failing (summary 15/0/0/0), every item carries successors/evidence/source_findings; catalog_fingerprint.unchanged_by_this_script=true; all 17 file bindings hash-verified on raw bytes.",
+  "Hermetic replays into temp dirs reproduce every claimed production counterexample without touching sealed evidence (tests remain 12/12 afterwards); temp dirs removed.",
+  "RED spot-checks confirm the three defects remain live at the frozen triplet: --validate-only calls run_forecast before printing 'valid'; CatalogStore.__init__ mkdir+_initialize (WAL/DDL/commit) on read paths; fetch_filing.py:789 validate_handle(handle, request, root) without policy_snapshot.",
+  "Implementer receipt validates OK and is re-signed (canonical_hash 7f0bd6d4) consistent with the 8039fb ledger rebound; result_triplet.revenue is the implementation commit.",
+  "Wiki heartbeat test failure (session_start_timeout vs heartbeat_timeout) reproduces in isolation and predates this unit; wiki source tree has no changes.",
+  "Note: an initial f2 field check reported FAIL due to reviewer-side key-path error (checked top-level instead of outcomes.*), corrected after reading the evidence schema; not a unit defect."
+ ],
+ "kind": "reviewer",
+ "note": "ZR-001 independent review",
+ "result_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "8039fb060e6e0a3e7ce97428b93964d2c1f0af3a",
+  "wiki": "ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875"
+ },
+ "reviewed_object_sha256": "7f0bd6d47aa9849fee6f2f0fd8c0381b0e801597f5310940e28aab1614a826d1",
+ "reviewer": "reviewer-zr001-independent",
+ "schema_version": 1,
+ "unit": "ZR-001",
+ "verdict": "accepted"
 }

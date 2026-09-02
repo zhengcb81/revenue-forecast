@@ -1,96 +1,97 @@
 {
-  "schema_version": 1,
-  "unit": "ZR-906",
-  "kind": "reviewer",
-  "reviewer": "reviewer-zr906-independent",
-  "verdict": "accepted",
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "7865c7265b2a7d6753cf7d4557293bbb88613dfb",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "schema_version": 1,
+ "unit": "ZR-906",
+ "kind": "reviewer",
+ "reviewer": "reviewer-zr906-independent",
+ "verdict": "accepted",
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "7865c7265b2a7d6753cf7d4557293bbb88613dfb",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "65c9ad657a787cd8c73fac28315e9b5e2db725bf",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "commands": [
+  {
+   "command": "git rev-parse HEAD; git diff 7865c72 65c9ad6 --stat",
+   "exit_code": 0,
+   "result": "HEAD=65c9ad6, delta 2 files (tools/final_ratchet.py + tests/test_zr906_final_ratchet.py)"
   },
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "65c9ad657a787cd8c73fac28315e9b5e2db725bf",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "full six-gate aggregator run",
+   "exit_code": 0,
+   "result": "REV-001 FIXED: all gates ok=true, type 'mypy errors 69 (baseline 69)', EXIT_CODE=0 (was 1); coverage rc=0 89% no hang"
   },
-  "commands": [
-    {
-      "command": "git rev-parse HEAD; git diff 7865c72 65c9ad6 --stat",
-      "exit_code": 0,
-      "result": "HEAD=65c9ad6, delta 2 files (tools/final_ratchet.py + tests/test_zr906_final_ratchet.py)"
-    },
-    {
-      "command": "full six-gate aggregator run",
-      "exit_code": 0,
-      "result": "REV-001 FIXED: all gates ok=true, type 'mypy errors 69 (baseline 69)', EXIT_CODE=0 (was 1); coverage rc=0 89% no hang"
-    },
-    {
-      "command": "scan_hardcode real scripts/ + docstring probes",
-      "exit_code": 0,
-      "result": "REV-002 FIXED: real scripts/ == [] (asset_ownership 18/174 in docstrings); eol-closer state machine correct; residual info: one-line docstring `\"\"\"Foo.\"\"\"` stuck-state evasion (84 in scripts/, no real-code miss)"
-    },
-    {
-      "command": "encoding probes (.json/.yaml/.md BOM + undecodable .py)",
-      "exit_code": 0,
-      "result": "REV-003 FIXED: coverage extended, real tree clean"
-    },
-    {
-      "command": "ruff + ratchet + subsets + full suite",
-      "exit_code": 0,
-      "result": "ruff clean; ratchet 2 OK; 25 subsets; full suite 874 passed + 106 subtests exit 0"
-    },
-    {
-      "command": "negative aggregator probe (injected Zijin)",
-      "exit_code": 0,
-      "result": "RED -> exit 1 (gate still discriminates)"
-    }
-  ],
-  "created_at_utc": "2026-08-23T02:00:00+00:00",
-  "findings": [
-    {
-      "id": "REV-001",
-      "severity": "blocking",
-      "title": "Type gate baseline misapplied",
-      "detail": "FIXED in 65c9ad6: MYPY_BASELINE frozen to measured 69; full aggregator exits 0."
-    },
-    {
-      "id": "REV-002",
-      "severity": "minor",
-      "title": "Docstring state machine misparse",
-      "detail": "FIXED in 65c9ad6: end-of-line triple-quote closers handled; real code zero false positives. Residual info: one-line docstring stuck-state evasion (follow-up)."
-    },
-    {
-      "id": "REV-003",
-      "severity": "minor",
-      "title": "Encoding scan coverage",
-      "detail": "FIXED in 65c9ad6: .json/.yaml/.yml/.md BOM + undecodable .py."
-    },
-    {
-      "id": "REV-004",
-      "severity": "info",
-      "title": "Output spacing",
-      "detail": "FIXED in 65c9ad6."
-    },
-    {
-      "id": "DREV-002",
-      "severity": "minor",
-      "title": "11 implementer receipt stale for delta",
-      "detail": "RESOLVED at closure: delta provenance carried by this receipt; 12 updated to delta review version."
-    },
-    {
-      "id": "DREV-001",
-      "severity": "info",
-      "title": "One-line docstring stuck-state residual",
-      "detail": "Carried: `\"\"\"Foo.\"\"\"` single-line docstring leaves the line-based state machine stuck, skipping following code (false-negative evasion route); 84 occurrences in scripts/, no current real-code miss; follow-up card recommended."
-    },
-    {
-      "id": "DREV-004",
-      "severity": "info",
-      "title": "Module docstring stale baseline text",
-      "detail": "Carried as info (cosmetic; constant and tests carry the 69 baseline)."
-    }
-  ],
-  "objective": "Delta re-review of ZR-906 (prior accepted at 7865c72): verify REV-001/002/003 fixes in 65c9ad6 — measured type baseline, docstring state machine, encoding coverage.",
-  "reviewed_object_sha256": "ddd1719c8d815633802c7650398f9a6a7f2e31bb2ad2d5b4938b5623439818fd"
+  {
+   "command": "scan_hardcode real scripts/ + docstring probes",
+   "exit_code": 0,
+   "result": "REV-002 FIXED: real scripts/ == [] (asset_ownership 18/174 in docstrings); eol-closer state machine correct; residual info: one-line docstring `\"\"\"Foo.\"\"\"` stuck-state evasion (84 in scripts/, no real-code miss)"
+  },
+  {
+   "command": "encoding probes (.json/.yaml/.md BOM + undecodable .py)",
+   "exit_code": 0,
+   "result": "REV-003 FIXED: coverage extended, real tree clean"
+  },
+  {
+   "command": "ruff + ratchet + subsets + full suite",
+   "exit_code": 0,
+   "result": "ruff clean; ratchet 2 OK; 25 subsets; full suite 874 passed + 106 subtests exit 0"
+  },
+  {
+   "command": "negative aggregator probe (injected Zijin)",
+   "exit_code": 0,
+   "result": "RED -> exit 1 (gate still discriminates)"
+  }
+ ],
+ "created_at_utc": "2026-08-23T02:00:00+00:00",
+ "findings": [
+  {
+   "id": "REV-001",
+   "severity": "blocking",
+   "title": "Type gate baseline misapplied",
+   "detail": "FIXED in 65c9ad6: MYPY_BASELINE frozen to measured 69; full aggregator exits 0."
+  },
+  {
+   "id": "REV-002",
+   "severity": "minor",
+   "title": "Docstring state machine misparse",
+   "detail": "FIXED in 65c9ad6: end-of-line triple-quote closers handled; real code zero false positives. Residual info: one-line docstring stuck-state evasion (follow-up)."
+  },
+  {
+   "id": "REV-003",
+   "severity": "minor",
+   "title": "Encoding scan coverage",
+   "detail": "FIXED in 65c9ad6: .json/.yaml/.yml/.md BOM + undecodable .py."
+  },
+  {
+   "id": "REV-004",
+   "severity": "info",
+   "title": "Output spacing",
+   "detail": "FIXED in 65c9ad6."
+  },
+  {
+   "id": "DREV-002",
+   "severity": "minor",
+   "title": "11 implementer receipt stale for delta",
+   "detail": "RESOLVED at closure: delta provenance carried by this receipt; 12 updated to delta review version."
+  },
+  {
+   "id": "DREV-001",
+   "severity": "info",
+   "title": "One-line docstring stuck-state residual",
+   "detail": "Carried: `\"\"\"Foo.\"\"\"` single-line docstring leaves the line-based state machine stuck, skipping following code (false-negative evasion route); 84 occurrences in scripts/, no current real-code miss; follow-up card recommended."
+  },
+  {
+   "id": "DREV-004",
+   "severity": "info",
+   "title": "Module docstring stale baseline text",
+   "detail": "Carried as info (cosmetic; constant and tests carry the 69 baseline)."
+  }
+ ],
+ "objective": "Delta re-review of ZR-906 (prior accepted at 7865c72): verify REV-001/002/003 fixes in 65c9ad6 — measured type baseline, docstring state machine, encoding coverage.",
+ "reviewed_object_sha256": "4ae6138c8c538c5b7f4b21a59da0d876b3d56f443902f72ae6ee62da724bb8b6",
+ "canonical_hash": "017be6f94bb79d87a93fe196d0339bc0b430865ab4f210f09a83af31ffb553e6"
 }

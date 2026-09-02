@@ -1,110 +1,110 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "2139a2c67b0fec2fe14407775924620f285c0915",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "2139a2c67b0fec2fe14407775924620f285c0915",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "canonical_hash": "15ebf14852ffce2b01840beacf436c074c659e0486f6f0dfb23d6364d8ca62fd",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -3",
+   "exit_code": 0,
+   "result": "HEAD=03d716e (REV-001..004 delta fix), parent=b52568b (ZR-603 impl), grandparent=2139a2c (ZR-602 closure)"
   },
-  "canonical_hash": "18462dd92f3c26409151de0ded4daff32e71bb716b917cf3081832d6ef825303",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -3",
-      "exit_code": 0,
-      "result": "HEAD=03d716e (REV-001..004 delta fix), parent=b52568b (ZR-603 impl), grandparent=2139a2c (ZR-602 closure)"
-    },
-    {
-      "command": "git diff b52568b 03d716e --stat",
-      "exit_code": 0,
-      "result": "2 files +56/-3: asset_ownership.py (+23), test_zr603_ownership_timeline.py (+36) — all four fixes and 7 regression tests present as claimed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr603_ownership_timeline.py -q --tb=short",
-      "exit_code": 0,
-      "result": "29 passed in 0.21s (22 original + 7 delta regressions)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check scripts/asset_ownership.py scripts/contracts/document.py tests/test_zr603_ownership_timeline.py",
-      "exit_code": 0,
-      "result": "All checks passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q",
-      "exit_code": 0,
-      "result": "2 passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr603-reviewer\\probe_zr603.py",
-      "exit_code": 0,
-      "result": "ALL PROBES PASSED — previously failing 6c.basis_unhashable_list/dict now raise ForecastInputError ('unsupported ownership basis'); missing period key -> 'annual_revenue is missing period FY2026'; None revenue -> 'must be numeric'; geography_index containers -> 'must be objects'/'requires an iterable'"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe %TEMP%\\zr603-reviewer\\probe_delta_extra.py",
-      "exit_code": 1,
-      "result": "8/13 pass; 5 same-class residual gaps: annual_revenue=None/str/list -> TypeError, period_dates=None/str -> AttributeError (container shapes, NOT in the four named findings nor unit-card criteria) — reported as minor REV-005"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
-      "exit_code": 0,
-      "result": "574 passed, 3 deselected (fc1103), 106 subtests passed — +7 vs b52568b baseline, no regressions"
-    },
-    {
-      "command": "git rev-parse HEAD",
-      "exit_code": 0,
-      "result": "03d716e28029dec045f3fbb9833dcf7e8e99ee89 (40-hex; real git object)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-603/11_implementer_receipt.json",
-      "exit_code": 0,
-      "result": "OK: canonical and well-formed (still records b52568b as its result — sealed artifact; delta is an addendum on top)"
-    }
-  ],
-  "created_at_utc": "2026-08-21T18:56:36.503687+00:00",
-  "findings": [
-    {
-      "detail": "apply_ownership_share basis gate is now `isinstance(basis, str) and basis in ASSET_FACT_OWNERSHIP_BASES` (asset_ownership.py:178-181). Parametrized regression test test_c2_unhashable_basis_rejected_as_input_error covers [[\"one_hundred_percent\"], {\"a\": 1}, 7, None, 1.5]. Independent probe confirms list/dict basis now raise ForecastInputError 'unsupported ownership basis', never TypeError.",
-      "id": "REV-001",
-      "severity": "info",
-      "title": "FIXED — unhashable ownership basis now raises ForecastInputError"
-    },
-    {
-      "detail": "apply_ownership_share now requires `period_key in annual_revenue` with message 'annual_revenue is missing period {key}' before indexing. test_c2_missing_period_key_rejected covers FY2027-requested/FY2026-provided. Probe: KeyError gone.",
-      "id": "REV-002",
-      "severity": "info",
-      "title": "FIXED — missing period key raises ForecastInputError"
-    },
-    {
-      "detail": "annual_revenue values guarded with isinstance((int, float)) non-bool and 'must be numeric' message; bool True/False also rejected as non-numeric. test_c2_non_numeric_revenue_rejected covers None. Probe: TypeError from float(None) gone.",
-      "id": "REV-003",
-      "severity": "info",
-      "title": "FIXED — non-numeric revenue values raise ForecastInputError"
-    },
-    {
-      "detail": "geography_index now requires isinstance(assets, Iterable) non-str/bytes and per-asset isinstance(asset, Mapping) ('indexed assets must be objects'). Two regression cases added inside test_c3_geography_index_searchable. Probe: AttributeError/TypeError on [\"x\"] and 7 gone.",
-      "id": "REV-004",
-      "severity": "info",
-      "title": "FIXED — malformed geography_index containers raise ForecastInputError"
-    },
-    {
-      "detail": "apply_ownership_share validates keys/values but not the container shape: annual_revenue=None -> TypeError 'argument of type NoneType is not iterable'; annual_revenue='FY2026' -> TypeError 'string indices must be integers'; annual_revenue=[...] -> TypeError 'list indices'; period_dates=None or str -> AttributeError '.items'. Not part of the four named findings, not in the unit-card acceptance criteria (6g covers timeline fractions and basis), and the nominal/claimed paths are all green. Optional follow-up hardening: require isinstance(annual_revenue, Mapping) and isinstance(period_dates, Mapping) at entry.",
-      "id": "REV-005",
-      "severity": "minor",
-      "title": "Residual same-class gap: annual_revenue / period_dates container shapes leak TypeError/AttributeError"
-    },
-    {
-      "detail": "29/29 unit tests, ruff clean, ratchet 2 passed, full suite 574 passed + 106 subtests + 3 deselected (fc1103), original probe suite ALL PASSED. Hardcoding scan from b52568b unchanged (docstring-only semantic labels). skill-sync MATCH 126 files re-verified against temp destination on the delta tree. Implementer receipt remains valid (sealed at b52568b); result_triplet.revenue in THIS reviewer receipt updated to 03d716e28029dec045f3fbb9833dcf7e8e99ee89 = accepted HEAD.",
-      "id": "ZR603-REV-INFO-002",
-      "severity": "info",
-      "title": "Delta verification complete — all quality gates green on 03d716e"
-    }
-  ],
-  "kind": "reviewer",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "03d716e28029dec045f3fbb9833dcf7e8e99ee89",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git diff b52568b 03d716e --stat",
+   "exit_code": 0,
+   "result": "2 files +56/-3: asset_ownership.py (+23), test_zr603_ownership_timeline.py (+36) — all four fixes and 7 regression tests present as claimed"
   },
-  "reviewed_object_sha256": "8451c9a01e9cd0ba07ec581fecb896903e810acaac1c6896394e4cf70682cde1",
-  "reviewer": "reviewer-zr603-independent",
-  "schema_version": 1,
-  "unit": "ZR-603",
-  "verdict": "accepted"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr603_ownership_timeline.py -q --tb=short",
+   "exit_code": 0,
+   "result": "29 passed in 0.21s (22 original + 7 delta regressions)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check scripts/asset_ownership.py scripts/contracts/document.py tests/test_zr603_ownership_timeline.py",
+   "exit_code": 0,
+   "result": "All checks passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tools/tests/test_complexity_ratchet.py -q",
+   "exit_code": 0,
+   "result": "2 passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr603-reviewer\\probe_zr603.py",
+   "exit_code": 0,
+   "result": "ALL PROBES PASSED — previously failing 6c.basis_unhashable_list/dict now raise ForecastInputError ('unsupported ownership basis'); missing period key -> 'annual_revenue is missing period FY2026'; None revenue -> 'must be numeric'; geography_index containers -> 'must be objects'/'requires an iterable'"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe %TEMP%\\zr603-reviewer\\probe_delta_extra.py",
+   "exit_code": 1,
+   "result": "8/13 pass; 5 same-class residual gaps: annual_revenue=None/str/list -> TypeError, period_dates=None/str -> AttributeError (container shapes, NOT in the four named findings nor unit-card criteria) — reported as minor REV-005"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "574 passed, 3 deselected (fc1103), 106 subtests passed — +7 vs b52568b baseline, no regressions"
+  },
+  {
+   "command": "git rev-parse HEAD",
+   "exit_code": 0,
+   "result": "03d716e28029dec045f3fbb9833dcf7e8e99ee89 (40-hex; real git object)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-603/11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "OK: canonical and well-formed (still records b52568b as its result — sealed artifact; delta is an addendum on top)"
+  }
+ ],
+ "created_at_utc": "2026-08-21T18:56:36.503687+00:00",
+ "findings": [
+  {
+   "detail": "apply_ownership_share basis gate is now `isinstance(basis, str) and basis in ASSET_FACT_OWNERSHIP_BASES` (asset_ownership.py:178-181). Parametrized regression test test_c2_unhashable_basis_rejected_as_input_error covers [[\"one_hundred_percent\"], {\"a\": 1}, 7, None, 1.5]. Independent probe confirms list/dict basis now raise ForecastInputError 'unsupported ownership basis', never TypeError.",
+   "id": "REV-001",
+   "severity": "info",
+   "title": "FIXED — unhashable ownership basis now raises ForecastInputError"
+  },
+  {
+   "detail": "apply_ownership_share now requires `period_key in annual_revenue` with message 'annual_revenue is missing period {key}' before indexing. test_c2_missing_period_key_rejected covers FY2027-requested/FY2026-provided. Probe: KeyError gone.",
+   "id": "REV-002",
+   "severity": "info",
+   "title": "FIXED — missing period key raises ForecastInputError"
+  },
+  {
+   "detail": "annual_revenue values guarded with isinstance((int, float)) non-bool and 'must be numeric' message; bool True/False also rejected as non-numeric. test_c2_non_numeric_revenue_rejected covers None. Probe: TypeError from float(None) gone.",
+   "id": "REV-003",
+   "severity": "info",
+   "title": "FIXED — non-numeric revenue values raise ForecastInputError"
+  },
+  {
+   "detail": "geography_index now requires isinstance(assets, Iterable) non-str/bytes and per-asset isinstance(asset, Mapping) ('indexed assets must be objects'). Two regression cases added inside test_c3_geography_index_searchable. Probe: AttributeError/TypeError on [\"x\"] and 7 gone.",
+   "id": "REV-004",
+   "severity": "info",
+   "title": "FIXED — malformed geography_index containers raise ForecastInputError"
+  },
+  {
+   "detail": "apply_ownership_share validates keys/values but not the container shape: annual_revenue=None -> TypeError 'argument of type NoneType is not iterable'; annual_revenue='FY2026' -> TypeError 'string indices must be integers'; annual_revenue=[...] -> TypeError 'list indices'; period_dates=None or str -> AttributeError '.items'. Not part of the four named findings, not in the unit-card acceptance criteria (6g covers timeline fractions and basis), and the nominal/claimed paths are all green. Optional follow-up hardening: require isinstance(annual_revenue, Mapping) and isinstance(period_dates, Mapping) at entry.",
+   "id": "REV-005",
+   "severity": "minor",
+   "title": "Residual same-class gap: annual_revenue / period_dates container shapes leak TypeError/AttributeError"
+  },
+  {
+   "detail": "29/29 unit tests, ruff clean, ratchet 2 passed, full suite 574 passed + 106 subtests + 3 deselected (fc1103), original probe suite ALL PASSED. Hardcoding scan from b52568b unchanged (docstring-only semantic labels). skill-sync MATCH 126 files re-verified against temp destination on the delta tree. Implementer receipt remains valid (sealed at b52568b); result_triplet.revenue in THIS reviewer receipt updated to 03d716e28029dec045f3fbb9833dcf7e8e99ee89 = accepted HEAD.",
+   "id": "ZR603-REV-INFO-002",
+   "severity": "info",
+   "title": "Delta verification complete — all quality gates green on 03d716e"
+  }
+ ],
+ "kind": "reviewer",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "03d716e28029dec045f3fbb9833dcf7e8e99ee89",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "36a7e343c07952bad58c0e49e45660a61e06ee6e430c196848fc6ab25da19a08",
+ "reviewer": "reviewer-zr603-independent",
+ "schema_version": 1,
+ "unit": "ZR-603",
+ "verdict": "accepted"
 }

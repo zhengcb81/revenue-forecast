@@ -1,90 +1,128 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "86c8516cd68829575b951911173b71cbed3b2c71",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "86c8516cd68829575b951911173b71cbed3b2c71",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "created_at_utc": "2026-08-22T15:04:18Z",
+ "findings": [
+  {
+   "detail": "python -m pytest tests -q --timeout=120 -k 'not fc1103' run from the nested clean checkout (.review-zr709-clean inside revenue-forecast) yields 23 failed / 759 passed. Diagnosis: those tests resolve the three-repo siblings via Path(__file__).resolve().parents[2] (e.g. REPO_PARENT in tests/test_contract_registry.py), which from the nested layout lands on revenue-forecast itself instead of the Projects/ parent that actually hosts company-wiki and filing-fetch. Proof it is not a regression: (1) identical 23 failures with the ZR-709 file excluded (-k 'not fc1103 and not zijin_journey' -> 23 failed / 750 passed); (2) fresh clones in sibling position under Projects/: base 86c8516 -> 773 passed / 0 failed / 106 subtests, head ac68807 -> 782 passed / 0 failed / 106 subtests, exactly matching the implementer claim (773 baseline + 9 new). Environmental layout artifact affecting base and head identically; journey tests themselves 9/9 green in the clean checkout.",
+   "id": "ZRR709-INFO-001",
+   "severity": "info",
+   "title": "23 nested-checkout full-suite failures are positional, not regressions"
   },
-  "created_at_utc": "2026-08-22T15:04:18Z",
-  "findings": [
-    {
-      "detail": "python -m pytest tests -q --timeout=120 -k 'not fc1103' run from the nested clean checkout (.review-zr709-clean inside revenue-forecast) yields 23 failed / 759 passed. Diagnosis: those tests resolve the three-repo siblings via Path(__file__).resolve().parents[2] (e.g. REPO_PARENT in tests/test_contract_registry.py), which from the nested layout lands on revenue-forecast itself instead of the Projects/ parent that actually hosts company-wiki and filing-fetch. Proof it is not a regression: (1) identical 23 failures with the ZR-709 file excluded (-k 'not fc1103 and not zijin_journey' -> 23 failed / 750 passed); (2) fresh clones in sibling position under Projects/: base 86c8516 -> 773 passed / 0 failed / 106 subtests, head ac68807 -> 782 passed / 0 failed / 106 subtests, exactly matching the implementer claim (773 baseline + 9 new). Environmental layout artifact affecting base and head identically; journey tests themselves 9/9 green in the clean checkout.",
-      "id": "ZRR709-INFO-001",
-      "severity": "info",
-      "title": "23 nested-checkout full-suite failures are positional, not regressions"
-    },
-    {
-      "detail": "state.json's own base_triplet field holds a constant plan-baseline triplet (filing 83c638e76e40890262746cdf02b6df495dcb4031, revenue c3a0519303d78dfe283bea6247da53163b926dc8, wiki ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875) which already existed in the committed state.json at base 86c8516 (verified via git diff of the committed file at review time) and therefore predates ZR-709 with zero drift introduced by this card. The work-base triplet for ZR-709 (revenue 86c8516cd68829575b951911173b71cbed3b2c71 = ZR-713 closure commit, wiki 26a6b22f80ae964892d3f3f44fab364e65276583, filing 5a1c18f5171db0e4b9113138ea360db361e1e435) is consistently declared by the WU card, the implementer receipt, and prior accepted reviewer receipts (ZR-711/712/713 use the parent-commit convention). This receipt records the work-base triplet accordingly; all three SHAs verified as existing git objects (rev-parse in the revenue/company-wiki/filing-fetch repos).",
-      "id": "ZRR709-INFO-002",
-      "severity": "info",
-      "title": "state.json base_triplet field is a plan-baseline constant, not the per-card work base"
-    },
-    {
-      "detail": "test_j1_reuses_filing_and_research_with_explainable_receipt asserts concrete equalities on real subprocess output (returncode==0; source_type; download_calls==0; parser_calls==0; llm_calls==0; outcome=='reused_existing'; bundle_status=='available'; producer_events superset {markdown, normalized, sections, summary}; prompt_injection_status=='not_detected'; two distinct reused sources) and test_j1_missing_document_fails_closed_into_tracked_demand asserts returncode==3 plus stderr JSON error_code=='upstream' - none vacuous. Strength notes for future hardening: isinstance(receipt['artifact_read'], list) would pass with an empty list; 'policy_hash' in receipt is presence-only (honest-None passthrough is documented and acceptable); prompt_injection_status is a fixture->receipt pass-through proving propagation, not detection capability; the ProcessingDemand enqueue/claim/heartbeat/complete lifecycle runs on a fresh local queue rather than asserting the prepare_source->shared-queue wiring (that wiring is pinned by ZR-701 C4 tests, as disclosed in the test comment and implementer receipt IMPL-004).",
-      "id": "ZRR709-INFO-003",
-      "severity": "info",
-      "title": "J1 assertion-strength notes; no vacuous pass on acceptance criteria"
-    },
-    {
-      "detail": "Case-insensitive scan of scripts/**.py for zijin|kamoa|julong|acme finds exactly 2 hits: 'Kamoa/Porgera double-multiplication guard' in the module docstring (scripts/asset_ownership.py:18) and '(Kamoa/Porgera guard)' in apply_ownership_share's docstring (scripts/asset_ownership.py:174). Both are ADR-style rationale mentions inside the ZR-602 ownership contract module, byte-identical between 86c8516 and ac68807 (git diff on the file is empty; last modified at ZR-603-era commit 03d716e). Zero hardcoding introduced by ZR-709 (its diff touches only tests/); no hits in compatibility/, config/, tools/, e2e/, examples/ or root-level .py files. Within the tolerated pre-existing category; recorded for transparency. Note: an initial Grep-tool pass missed these hits (tool returned no files); the recorded result comes from an explicit Python recursive scan.",
-      "id": "ZRR709-INFO-004",
-      "severity": "info",
-      "title": "Two pre-existing 'Kamoa/Porgera' ADR docstring mentions in asset_ownership.py; nothing new from this card"
-    }
-  ],
-  "kind": "reviewer",
-  "objective": "Independent acceptance review of ZR-709 (F2 confluence, Zijin five-year forecast user journey fixture, test-only commit ac68807): verify zero production drift, re-run journey + full suites, adversarially probe the J2 reconciliation anti-fabrication math, audit J1 explainability and schema-3.8 zero-drift assertions, scan production hardcoding, and validate receipt integrity.",
-  "probes": [
-    {
-      "command": "git diff 86c8516 ac68807 --stat  (in .review-zr709-clean)",
-      "exit_code": 0,
-      "id": "V1",
-      "result": "1 file changed: tests/test_zr709_zijin_journey.py | 919 +++ (insertions only). Zero production/scripts/config changes. 86c8516 resolves to 86c8516cd68829575b951911173b71cbed3b2c71; ac68807 full sha ac6880734d6a151a103cec3c10cff7adffbca880, parent = 86c8516 (ZR-713 closure). Test-only claim CONFIRMED."
-    },
-    {
-      "command": "python -m pytest tests/test_zr709_zijin_journey.py -q --tb=short ; python -m pytest tests -q --timeout=120 -k 'not fc1103' (clean checkout) ; same command in sibling-positioned clones of 86c8516 and ac68807",
-      "exit_code": 0,
-      "id": "V2",
-      "result": "Journey suite: 9 passed in 6.08s. Nested clean checkout full suite: 23 failed / 759 passed - positional artifact (see ZRR709-INFO-001): same 23 fail with the new file excluded; sibling-positioned clones give base 86c8516 = 773 passed / 0 failed / 106 subtests and head ac68807 = 782 passed / 0 failed / 106 subtests, exactly matching the implementer claim (773 + 9). No regression attributable to ac68807."
-    },
-    {
-      "command": "python C:/Users/郑曾波/Projects/.tmp-zr709-review-probe.py (sys.path -> .review-zr709-clean/scripts + /tests)",
-      "exit_code": 0,
-      "id": "V3",
-      "result": "12/12 PASS. (a) Independent Kamoa FY2028 base: volume 450*1.0*1.10=495.00000000000006, saleable x2.8x0.86x0.965=1150.2413999999999, net 10877832.919799998; _mine_contribution('kamoa_copper',0.396,'base',2028) equals (saleable*0.396, net*0.396) BIT-EXACTLY. (b) Tamper probe: copper_base_2027_price +1% absorbed by engine (recognized revenue increases); reconcile_layer(mine_side, engine) -> status 'gap' (difference -104594.9987 vs allowed 10.564095); untampered control reconciles all 10 segment-years. (c) gap_report({'a':1000000.0}, 1000000.5): |diff|=0.5 <= max(1.0,|ref|)*1e-6=1.0000005 -> reconciled_modeled; residual +120 -> 'gap' (difference -119.9999999981); fallback listing gap=120/closed=False, closes without residual. (d) Draft with REVENUE_PUBLICATION_REGISTRY at nonexistent path: file still absent afterwards, receipt formal_output_mode=='draft', gate_ids==[], markdown renders >500 chars. Anti-fabrication claim VERIFIED."
-    },
-    {
-      "command": "static audit of test_j1_* in tests/test_zr709_zijin_journey.py (lines 687-750)",
-      "exit_code": 0,
-      "id": "V4",
-      "result": "All mandated J1 assertions present and non-vacuous: returncode==0, source_type match, download_calls==0, parser_calls==0, llm_calls==0, outcome=='reused_existing', bundle_status=='available', producer_events >= {markdown, normalized, sections, summary}, prompt_injection_status=='not_detected', two distinct reused sources; missing document_kind -> returncode==3 AND stderr JSON error_code=='upstream'. Assertion-strength notes recorded as ZRR709-INFO-003."
-    },
-    {
-      "command": "python -m pytest tests/test_zr709_zijin_journey.py::test_j2_schema_38_operating_units_embedded_zero_numeric_drift -q",
-      "exit_code": 0,
-      "id": "V5",
-      "result": "1 passed in 0.23s. Source confirms: per-year pytest.approx(expected, rel=1e-12) equality between 3.7 baseline and 3.8 opt-in formal runs across all segments x scenarios x years (3x3x5), validate_document on the embedded operating units, and convert_3_8_to_3_7 round-trip canonical_sha256 equality with the original document. Zero-drift claim CONFIRMED."
-    },
-    {
-      "command": "python recursive scan scripts/**.py for regex (?i)zijin|kamoa|julong|acme (plus compatibility/config/tools/e2e/examples sweep)",
-      "exit_code": 1,
-      "id": "V6",
-      "result": "exit 1 = hits exist: exactly 2, both pre-existing ADR-style docstring mentions ('Kamoa/Porgera guard') at scripts/asset_ownership.py:18 and :174; file byte-identical between 86c8516 and ac68807 (git diff empty, last touched at ZR-603-era 03d716e). Zero NEW hardcoding from this card; no hits elsewhere. See ZRR709-INFO-004."
-    },
-    {
-      "command": "python sha256/canonical-hash verification of receipts + git rev-parse checks (revenue, company-wiki, filing-fetch repos)",
-      "exit_code": 0,
-      "id": "V7",
-      "result": "sha256(00_wu_card.md)=caf5b2e5ac6bda25f75287848b9f9308d474110da0740bcc624e4333b9489aa9 == plan_sha256 MATCH. Implementer receipt canonical_hash recomputes to 134a2b130a72cbcdf8737728e87666371de70a5fed5d9ac5d60c29209edbf673 == recorded MATCH. git rev-parse --short=7 ac68807 = 'ac68807' == result_triplet.revenue. base revenue 86c8516cd68829575b951911173b71cbed3b2c71 verified via rev-parse; wiki 26a6b22f80ae964892d3f3f44fab364e65276583 and filing 5a1c18f5171db0e4b9113138ea360db361e1e435 exist as commits in the sibling repos. state.json's own base_triplet field holds an older plan-baseline constant (predates card, zero drift) - see ZRR709-INFO-002."
-    }
-  ],
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "ac6880734d6a151a103cec3c10cff7adffbca880",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "detail": "state.json's own base_triplet field holds a constant plan-baseline triplet (filing 83c638e76e40890262746cdf02b6df495dcb4031, revenue c3a0519303d78dfe283bea6247da53163b926dc8, wiki ef125ed63348c2b1cb41b2d7dd44f6d76b1ef875) which already existed in the committed state.json at base 86c8516 (verified via git diff of the committed file at review time) and therefore predates ZR-709 with zero drift introduced by this card. The work-base triplet for ZR-709 (revenue 86c8516cd68829575b951911173b71cbed3b2c71 = ZR-713 closure commit, wiki 26a6b22f80ae964892d3f3f44fab364e65276583, filing 5a1c18f5171db0e4b9113138ea360db361e1e435) is consistently declared by the WU card, the implementer receipt, and prior accepted reviewer receipts (ZR-711/712/713 use the parent-commit convention). This receipt records the work-base triplet accordingly; all three SHAs verified as existing git objects (rev-parse in the revenue/company-wiki/filing-fetch repos).",
+   "id": "ZRR709-INFO-002",
+   "severity": "info",
+   "title": "state.json base_triplet field is a plan-baseline constant, not the per-card work base"
   },
-  "reviewer": "reviewer-zr709-independent",
-  "schema_version": 1,
-  "unit": "ZR-709",
-  "verdict": "accepted",
-  "canonical_hash": "38d5170f4e3b008197548417e972da82b56ac26d4ed33afa8e91ba57bea800d4"
+  {
+   "detail": "test_j1_reuses_filing_and_research_with_explainable_receipt asserts concrete equalities on real subprocess output (returncode==0; source_type; download_calls==0; parser_calls==0; llm_calls==0; outcome=='reused_existing'; bundle_status=='available'; producer_events superset {markdown, normalized, sections, summary}; prompt_injection_status=='not_detected'; two distinct reused sources) and test_j1_missing_document_fails_closed_into_tracked_demand asserts returncode==3 plus stderr JSON error_code=='upstream' - none vacuous. Strength notes for future hardening: isinstance(receipt['artifact_read'], list) would pass with an empty list; 'policy_hash' in receipt is presence-only (honest-None passthrough is documented and acceptable); prompt_injection_status is a fixture->receipt pass-through proving propagation, not detection capability; the ProcessingDemand enqueue/claim/heartbeat/complete lifecycle runs on a fresh local queue rather than asserting the prepare_source->shared-queue wiring (that wiring is pinned by ZR-701 C4 tests, as disclosed in the test comment and implementer receipt IMPL-004).",
+   "id": "ZRR709-INFO-003",
+   "severity": "info",
+   "title": "J1 assertion-strength notes; no vacuous pass on acceptance criteria"
+  },
+  {
+   "detail": "Case-insensitive scan of scripts/**.py for zijin|kamoa|julong|acme finds exactly 2 hits: 'Kamoa/Porgera double-multiplication guard' in the module docstring (scripts/asset_ownership.py:18) and '(Kamoa/Porgera guard)' in apply_ownership_share's docstring (scripts/asset_ownership.py:174). Both are ADR-style rationale mentions inside the ZR-602 ownership contract module, byte-identical between 86c8516 and ac68807 (git diff on the file is empty; last modified at ZR-603-era commit 03d716e). Zero hardcoding introduced by ZR-709 (its diff touches only tests/); no hits in compatibility/, config/, tools/, e2e/, examples/ or root-level .py files. Within the tolerated pre-existing category; recorded for transparency. Note: an initial Grep-tool pass missed these hits (tool returned no files); the recorded result comes from an explicit Python recursive scan.",
+   "id": "ZRR709-INFO-004",
+   "severity": "info",
+   "title": "Two pre-existing 'Kamoa/Porgera' ADR docstring mentions in asset_ownership.py; nothing new from this card"
+  }
+ ],
+ "kind": "reviewer",
+ "objective": "Independent acceptance review of ZR-709 (F2 confluence, Zijin five-year forecast user journey fixture, test-only commit ac68807): verify zero production drift, re-run journey + full suites, adversarially probe the J2 reconciliation anti-fabrication math, audit J1 explainability and schema-3.8 zero-drift assertions, scan production hardcoding, and validate receipt integrity.",
+ "probes": [
+  {
+   "command": "git diff 86c8516 ac68807 --stat  (in .review-zr709-clean)",
+   "exit_code": 0,
+   "id": "V1",
+   "result": "1 file changed: tests/test_zr709_zijin_journey.py | 919 +++ (insertions only). Zero production/scripts/config changes. 86c8516 resolves to 86c8516cd68829575b951911173b71cbed3b2c71; ac68807 full sha ac6880734d6a151a103cec3c10cff7adffbca880, parent = 86c8516 (ZR-713 closure). Test-only claim CONFIRMED."
+  },
+  {
+   "command": "python -m pytest tests/test_zr709_zijin_journey.py -q --tb=short ; python -m pytest tests -q --timeout=120 -k 'not fc1103' (clean checkout) ; same command in sibling-positioned clones of 86c8516 and ac68807",
+   "exit_code": 0,
+   "id": "V2",
+   "result": "Journey suite: 9 passed in 6.08s. Nested clean checkout full suite: 23 failed / 759 passed - positional artifact (see ZRR709-INFO-001): same 23 fail with the new file excluded; sibling-positioned clones give base 86c8516 = 773 passed / 0 failed / 106 subtests and head ac68807 = 782 passed / 0 failed / 106 subtests, exactly matching the implementer claim (773 + 9). No regression attributable to ac68807."
+  },
+  {
+   "command": "python C:/Users/郑曾波/Projects/.tmp-zr709-review-probe.py (sys.path -> .review-zr709-clean/scripts + /tests)",
+   "exit_code": 0,
+   "id": "V3",
+   "result": "12/12 PASS. (a) Independent Kamoa FY2028 base: volume 450*1.0*1.10=495.00000000000006, saleable x2.8x0.86x0.965=1150.2413999999999, net 10877832.919799998; _mine_contribution('kamoa_copper',0.396,'base',2028) equals (saleable*0.396, net*0.396) BIT-EXACTLY. (b) Tamper probe: copper_base_2027_price +1% absorbed by engine (recognized revenue increases); reconcile_layer(mine_side, engine) -> status 'gap' (difference -104594.9987 vs allowed 10.564095); untampered control reconciles all 10 segment-years. (c) gap_report({'a':1000000.0}, 1000000.5): |diff|=0.5 <= max(1.0,|ref|)*1e-6=1.0000005 -> reconciled_modeled; residual +120 -> 'gap' (difference -119.9999999981); fallback listing gap=120/closed=False, closes without residual. (d) Draft with REVENUE_PUBLICATION_REGISTRY at nonexistent path: file still absent afterwards, receipt formal_output_mode=='draft', gate_ids==[], markdown renders >500 chars. Anti-fabrication claim VERIFIED."
+  },
+  {
+   "command": "static audit of test_j1_* in tests/test_zr709_zijin_journey.py (lines 687-750)",
+   "exit_code": 0,
+   "id": "V4",
+   "result": "All mandated J1 assertions present and non-vacuous: returncode==0, source_type match, download_calls==0, parser_calls==0, llm_calls==0, outcome=='reused_existing', bundle_status=='available', producer_events >= {markdown, normalized, sections, summary}, prompt_injection_status=='not_detected', two distinct reused sources; missing document_kind -> returncode==3 AND stderr JSON error_code=='upstream'. Assertion-strength notes recorded as ZRR709-INFO-003."
+  },
+  {
+   "command": "python -m pytest tests/test_zr709_zijin_journey.py::test_j2_schema_38_operating_units_embedded_zero_numeric_drift -q",
+   "exit_code": 0,
+   "id": "V5",
+   "result": "1 passed in 0.23s. Source confirms: per-year pytest.approx(expected, rel=1e-12) equality between 3.7 baseline and 3.8 opt-in formal runs across all segments x scenarios x years (3x3x5), validate_document on the embedded operating units, and convert_3_8_to_3_7 round-trip canonical_sha256 equality with the original document. Zero-drift claim CONFIRMED."
+  },
+  {
+   "command": "python recursive scan scripts/**.py for regex (?i)zijin|kamoa|julong|acme (plus compatibility/config/tools/e2e/examples sweep)",
+   "exit_code": 1,
+   "id": "V6",
+   "result": "exit 1 = hits exist: exactly 2, both pre-existing ADR-style docstring mentions ('Kamoa/Porgera guard') at scripts/asset_ownership.py:18 and :174; file byte-identical between 86c8516 and ac68807 (git diff empty, last touched at ZR-603-era 03d716e). Zero NEW hardcoding from this card; no hits elsewhere. See ZRR709-INFO-004."
+  },
+  {
+   "command": "python sha256/canonical-hash verification of receipts + git rev-parse checks (revenue, company-wiki, filing-fetch repos)",
+   "exit_code": 0,
+   "id": "V7",
+   "result": "sha256(00_wu_card.md)=caf5b2e5ac6bda25f75287848b9f9308d474110da0740bcc624e4333b9489aa9 == plan_sha256 MATCH. Implementer receipt canonical_hash recomputes to 134a2b130a72cbcdf8737728e87666371de70a5fed5d9ac5d60c29209edbf673 == recorded MATCH. git rev-parse --short=7 ac68807 = 'ac68807' == result_triplet.revenue. base revenue 86c8516cd68829575b951911173b71cbed3b2c71 verified via rev-parse; wiki 26a6b22f80ae964892d3f3f44fab364e65276583 and filing 5a1c18f5171db0e4b9113138ea360db361e1e435 exist as commits in the sibling repos. state.json's own base_triplet field holds an older plan-baseline constant (predates card, zero drift) - see ZRR709-INFO-002."
+  }
+ ],
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "ac6880734d6a151a103cec3c10cff7adffbca880",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewer": "reviewer-zr709-independent",
+ "schema_version": 1,
+ "unit": "ZR-709",
+ "verdict": "accepted",
+ "canonical_hash": "f0c9970a12de978b3424149905c33b2c029410cb6c5cb6f97a48031b16581b44",
+ "reviewed_object_sha256": "5fef95aa88521e42726f5f740b9c55ed4d14ebf263eed7ec5e2b63d44fcfacd0",
+ "commands": [
+  {
+   "command": "git diff 86c8516 ac68807 --stat  (in .review-zr709-clean)",
+   "exit_code": 0,
+   "result": "1 file changed: tests/test_zr709_zijin_journey.py | 919 +++ (insertions only). Zero production/scripts/config changes. 86c8516 resolves to 86c8516cd68829575b951911173b71cbed3b2c71; ac68807 full sha ac6880734d6a151a103cec3c10cff7adffbca880, parent = 86c8516 (ZR-713 closure). Test-only claim CONFIRMED."
+  },
+  {
+   "command": "python -m pytest tests/test_zr709_zijin_journey.py -q --tb=short ; python -m pytest tests -q --timeout=120 -k 'not fc1103' (clean checkout) ; same command in sibling-positioned clones of 86c8516 and ac68807",
+   "exit_code": 0,
+   "result": "Journey suite: 9 passed in 6.08s. Nested clean checkout full suite: 23 failed / 759 passed - positional artifact (see ZRR709-INFO-001): same 23 fail with the new file excluded; sibling-positioned clones give base 86c8516 = 773 passed / 0 failed / 106 subtests and head ac68807 = 782 passed / 0 failed / 106 subtests, exactly matching the implementer claim (773 + 9). No regression attributable to ac68807."
+  },
+  {
+   "command": "python C:/Users/郑曾波/Projects/.tmp-zr709-review-probe.py (sys.path -> .review-zr709-clean/scripts + /tests)",
+   "exit_code": 0,
+   "result": "12/12 PASS. (a) Independent Kamoa FY2028 base: volume 450*1.0*1.10=495.00000000000006, saleable x2.8x0.86x0.965=1150.2413999999999, net 10877832.919799998; _mine_contribution('kamoa_copper',0.396,'base',2028) equals (saleable*0.396, net*0.396) BIT-EXACTLY. (b) Tamper probe: copper_base_2027_price +1% absorbed by engine (recognized revenue increases); reconcile_layer(mine_side, engine) -> status 'gap' (difference -104594.9987 vs allowed 10.564095); untampered control reconciles all 10 segment-years. (c) gap_report({'a':1000000.0}, 1000000.5): |diff|=0.5 <= max(1.0,|ref|)*1e-6=1.0000005 -> reconciled_modeled; residual +120 -> 'gap' (difference -119.9999999981); fallback listing gap=120/closed=False, closes without residual. (d) Draft with REVENUE_PUBLICATION_REGISTRY at nonexistent path: file still absent afterwards, receipt formal_output_mode=='draft', gate_ids==[], markdown renders >500 chars. Anti-fabrication claim VERIFIED."
+  },
+  {
+   "command": "static audit of test_j1_* in tests/test_zr709_zijin_journey.py (lines 687-750)",
+   "exit_code": 0,
+   "result": "All mandated J1 assertions present and non-vacuous: returncode==0, source_type match, download_calls==0, parser_calls==0, llm_calls==0, outcome=='reused_existing', bundle_status=='available', producer_events >= {markdown, normalized, sections, summary}, prompt_injection_status=='not_detected', two distinct reused sources; missing document_kind -> returncode==3 AND stderr JSON error_code=='upstream'. Assertion-strength notes recorded as ZRR709-INFO-003."
+  },
+  {
+   "command": "python -m pytest tests/test_zr709_zijin_journey.py::test_j2_schema_38_operating_units_embedded_zero_numeric_drift -q",
+   "exit_code": 0,
+   "result": "1 passed in 0.23s. Source confirms: per-year pytest.approx(expected, rel=1e-12) equality between 3.7 baseline and 3.8 opt-in formal runs across all segments x scenarios x years (3x3x5), validate_document on the embedded operating units, and convert_3_8_to_3_7 round-trip canonical_sha256 equality with the original document. Zero-drift claim CONFIRMED."
+  },
+  {
+   "command": "python recursive scan scripts/**.py for regex (?i)zijin|kamoa|julong|acme (plus compatibility/config/tools/e2e/examples sweep)",
+   "exit_code": 1,
+   "result": "exit 1 = hits exist: exactly 2, both pre-existing ADR-style docstring mentions ('Kamoa/Porgera guard') at scripts/asset_ownership.py:18 and :174; file byte-identical between 86c8516 and ac68807 (git diff empty, last touched at ZR-603-era 03d716e). Zero NEW hardcoding from this card; no hits elsewhere. See ZRR709-INFO-004."
+  },
+  {
+   "command": "python sha256/canonical-hash verification of receipts + git rev-parse checks (revenue, company-wiki, filing-fetch repos)",
+   "exit_code": 0,
+   "result": "sha256(00_wu_card.md)=caf5b2e5ac6bda25f75287848b9f9308d474110da0740bcc624e4333b9489aa9 == plan_sha256 MATCH. Implementer receipt canonical_hash recomputes to 134a2b130a72cbcdf8737728e87666371de70a5fed5d9ac5d60c29209edbf673 == recorded MATCH. git rev-parse --short=7 ac68807 = 'ac68807' == result_triplet.revenue. base revenue 86c8516cd68829575b951911173b71cbed3b2c71 verified via rev-parse; wiki 26a6b22f80ae964892d3f3f44fab364e65276583 and filing 5a1c18f5171db0e4b9113138ea360db361e1e435 exist as commits in the sibling repos. state.json's own base_triplet field holds an older plan-baseline constant (predates card, zero drift) - see ZRR709-INFO-002."
+  }
+ ]
 }

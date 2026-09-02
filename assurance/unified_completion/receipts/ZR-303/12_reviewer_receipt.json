@@ -1,100 +1,100 @@
 {
-  "base_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "59338c19440fa64e26f39d7dad76adaa9182b340",
-    "wiki": "cbdb05453190fe0906cc352d25a19b70c3bdac54"
+ "base_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "59338c19440fa64e26f39d7dad76adaa9182b340",
+  "wiki": "cbdb05453190fe0906cc352d25a19b70c3bdac54"
+ },
+ "canonical_hash": "1359c42c65bb4394b868416e038362fa4d2a7cd8a6b888ab4938193a3125647d",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD / HEAD~1; git -C C:\\Users\\郑曾波\\Projects\\filing-fetch rev-parse HEAD; git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
+   "exit_code": 0,
+   "result": "wiki HEAD=77ce0f35284b0ef43ea8529a7e98b65d074a37db, parent=cbdb05453190fe0906cc352d25a19b70c3bdac54; filing HEAD=0e5d209bc352c6087fab51d09d55aa33aea81f85; revenue HEAD=59338c19440fa64e26f39d7dad76adaa9182b340"
   },
-  "canonical_hash": "b07b25b75ef7afb7a437f000a739d255c79a787f5b871b6d8a1f4dd52ccef8c0",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD / HEAD~1; git -C C:\\Users\\郑曾波\\Projects\\filing-fetch rev-parse HEAD; git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
-      "exit_code": 0,
-      "result": "wiki HEAD=77ce0f35284b0ef43ea8529a7e98b65d074a37db, parent=cbdb05453190fe0906cc352d25a19b70c3bdac54; filing HEAD=0e5d209bc352c6087fab51d09d55aa33aea81f85; revenue HEAD=59338c19440fa64e26f39d7dad76adaa9182b340"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 77ce0f3",
-      "exit_code": 0,
-      "result": "exactly 2 files: src/company_wiki/source_catalog/readiness_graph.py (+180) and tests/unit/test_readiness_graph.py (+362); 542 insertions; parent cbdb054"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_readiness_graph.py tests/unit/test_prompt_injection_guard.py tests/unit/test_source_lifecycle.py -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "35 passed (9 graph + 17 guard + 9 lifecycle) in 1.48s"
-    },
-    {
-      "command": "grep readiness_graph.py for execute|commit|UPDATE|INSERT|DELETE (shadow-only check)",
-      "exit_code": 0,
-      "result": "no matches; only reader.fetchone/fetchall reads (graph line 89 fetchone; guard reads via store.fetchone); no production import of readiness_graph anywhere under src/"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "2 passed; readiness_graph.py is a new file -> NEW_FILE_MAX=10; per-function AST McCabe recomputed with the ratchet's own algorithm: _safety_verdict=2, evaluate_readiness=9, max=9 <= 10 (claim of <=9 accurate)"
-    },
-    {
-      "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/readiness_graph.py (conda python C:\\Miniconda\\python.exe, mypy 1.19.0)",
-      "exit_code": 0,
-      "result": "Success: no issues found in 1 source file"
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-303/11_implementer_receipt.json (revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed; canonical_hash 9ba93b059656e8e98e72ec6112e60f443fcd7c5ca3501232fed12b3419eb7a43 independently recomputed = MATCH"
-    },
-    {
-      "command": "python -m uc.cli state-show (revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "units.ZR-303.status=independent_review; current_next=ZR-303; current_phase=D_lifecycle_roots_freshness; implementation_status=in_progress"
-    },
-    {
-      "command": "python sha256(manifests/plan_inputs.json entry) / sha256(receipts/ZR-303/00_wu_card.md) / sha256(completion_assurance_registry.md)",
-      "exit_code": 0,
-      "result": "plan_sha256 861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7 resolves to audit_review/2026-08-13_three_repo_completion_rebaseline_plan/completion_assurance_registry.md (registry hash matches); per-unit 00_wu_card.md hashes to 9bbfbd09b5bb880ec32bcfb727663de63f98c733f3ee5a7ba996f114dab45a34 (card is not the hashed artifact; receipt-validate checks plan_sha256 presence only)"
-    }
-  ],
-  "created_at_utc": "2026-08-17T20:22:47.231402Z",
-  "findings": [
-    {
-      "detail": "Triplet HEADs match the claimed result; commit 77ce0f3 touches exactly the 2 claimed files with parent cbdb054; hermetic subset (readiness_graph + prompt_injection_guard + source_lifecycle) = 35 passed, matching the implementer's claim.",
-      "id": "ZR303-REV-001",
-      "severity": "info",
-      "title": "HEAD / commit-scope / hermetic tests verified"
-    },
-    {
-      "detail": "READINESS_GRAPH_SCHEMA_VERSION='1.0'/SCHEMA='readiness-graph-1.0'; evaluate_readiness(reader, source_id, *, policy_hash, source_sha256, now, ttl_seconds, requirements) composes ZR-301 evaluate_source_readiness with ZR-302 evaluate_review; _SAFETY_MAP: hit->(satisfied,''), ignored/expired/tampered->(unsatisfied, next_action), absent->(unknown, next_action) — never faked green; _safety_verdict resolves source_id->document_id (SELECT document_id FROM documents WHERE primary_source_id=?) and passes document_id to evaluate_review; unbound source -> absent/unknown blocker; _STAGE_NEXT_ACTIONS covers all seven non-safety stages (identity/resolution/freshness/acquisition/artifact/semantic/consumer) with fallback; blocker condition is verdict != 'satisfied' so unknown never counts as satisfied; ready = no blockers among required stages; frozen ReadinessDecision + pure reads => deterministic (test_deterministic_same_inputs_same_decision); stage_sequence() always emits all 8 stages so no required stage can be silently dropped.",
-      "id": "ZR303-REV-002",
-      "severity": "info",
-      "title": "Acceptance criteria hold by direct code reading"
-    },
-    {
-      "detail": "Ratchet test passes; max McCabe = 9 (evaluate_readiness) <= NEW_FILE_MAX 10 — implementer's '<=9' claim is accurate; mypy Success under the project config; no execute/commit/UPDATE/INSERT/DELETE tokens in readiness_graph.py; no import of readiness_graph in production src/.",
-      "id": "ZR303-REV-003",
-      "severity": "info",
-      "title": "Complexity / mypy / shadow-only verified"
-    },
-    {
-      "detail": "side_effect_counts.product_code_changes=1 is consistent (only readiness_graph.py is product code; the test file is not); touched_files matches the wiki commit (2 files) plus revenue working-tree receipts/ZR-303/** and state.json (present, uncommitted — consistent with revenue HEAD staying at 59338c1); findings ZR303-IMPL-001..003 verified against code and tests; plan_sha256 accurate (resolves to the frozen registry).",
-      "id": "ZR303-REV-004",
-      "severity": "info",
-      "title": "Implementer receipt has no material overclaim"
-    },
-    {
-      "detail": "The implementer's second command claims '766 passed (756 -> +9 graph +1, no regression)' for the full tests/unit run. Per review instructions the full wiki suite was NOT re-run (7 known pre-existing failures unrelated to ZR-303); the hermetic 35-test subset passed independently. The '+1' term in the implementer's arithmetic is unexplained (756 + 9 graph tests = 765) but is a note, not a gate claim; flagged as an observation only.",
-      "id": "ZR303-REV-005",
-      "severity": "observation",
-      "title": "Full unit-suite claim not independently re-run"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-303 independent review",
-  "result_triplet": {
-    "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
-    "revenue": "59338c19440fa64e26f39d7dad76adaa9182b340",
-    "wiki": "77ce0f35284b0ef43ea8529a7e98b65d074a37db"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 77ce0f3",
+   "exit_code": 0,
+   "result": "exactly 2 files: src/company_wiki/source_catalog/readiness_graph.py (+180) and tests/unit/test_readiness_graph.py (+362); 542 insertions; parent cbdb054"
   },
-  "reviewed_object_sha256": "3f4c43b0049eca71fde4f7d9152b02674a26679b4470f6607383eb1820685acc",
-  "reviewer": "reviewer-zr303-independent",
-  "schema_version": 1,
-  "unit": "ZR-303",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_readiness_graph.py tests/unit/test_prompt_injection_guard.py tests/unit/test_source_lifecycle.py -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "35 passed (9 graph + 17 guard + 9 lifecycle) in 1.48s"
+  },
+  {
+   "command": "grep readiness_graph.py for execute|commit|UPDATE|INSERT|DELETE (shadow-only check)",
+   "exit_code": 0,
+   "result": "no matches; only reader.fetchone/fetchall reads (graph line 89 fetchone; guard reads via store.fetchone); no production import of readiness_graph anywhere under src/"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "2 passed; readiness_graph.py is a new file -> NEW_FILE_MAX=10; per-function AST McCabe recomputed with the ratchet's own algorithm: _safety_verdict=2, evaluate_readiness=9, max=9 <= 10 (claim of <=9 accurate)"
+  },
+  {
+   "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/readiness_graph.py (conda python C:\\Miniconda\\python.exe, mypy 1.19.0)",
+   "exit_code": 0,
+   "result": "Success: no issues found in 1 source file"
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-303/11_implementer_receipt.json (revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed; canonical_hash 9ba93b059656e8e98e72ec6112e60f443fcd7c5ca3501232fed12b3419eb7a43 independently recomputed = MATCH"
+  },
+  {
+   "command": "python -m uc.cli state-show (revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "units.ZR-303.status=independent_review; current_next=ZR-303; current_phase=D_lifecycle_roots_freshness; implementation_status=in_progress"
+  },
+  {
+   "command": "python sha256(manifests/plan_inputs.json entry) / sha256(receipts/ZR-303/00_wu_card.md) / sha256(completion_assurance_registry.md)",
+   "exit_code": 0,
+   "result": "plan_sha256 861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7 resolves to audit_review/2026-08-13_three_repo_completion_rebaseline_plan/completion_assurance_registry.md (registry hash matches); per-unit 00_wu_card.md hashes to 9bbfbd09b5bb880ec32bcfb727663de63f98c733f3ee5a7ba996f114dab45a34 (card is not the hashed artifact; receipt-validate checks plan_sha256 presence only)"
+  }
+ ],
+ "created_at_utc": "2026-08-17T20:22:47.231402Z",
+ "findings": [
+  {
+   "detail": "Triplet HEADs match the claimed result; commit 77ce0f3 touches exactly the 2 claimed files with parent cbdb054; hermetic subset (readiness_graph + prompt_injection_guard + source_lifecycle) = 35 passed, matching the implementer's claim.",
+   "id": "ZR303-REV-001",
+   "severity": "info",
+   "title": "HEAD / commit-scope / hermetic tests verified"
+  },
+  {
+   "detail": "READINESS_GRAPH_SCHEMA_VERSION='1.0'/SCHEMA='readiness-graph-1.0'; evaluate_readiness(reader, source_id, *, policy_hash, source_sha256, now, ttl_seconds, requirements) composes ZR-301 evaluate_source_readiness with ZR-302 evaluate_review; _SAFETY_MAP: hit->(satisfied,''), ignored/expired/tampered->(unsatisfied, next_action), absent->(unknown, next_action) — never faked green; _safety_verdict resolves source_id->document_id (SELECT document_id FROM documents WHERE primary_source_id=?) and passes document_id to evaluate_review; unbound source -> absent/unknown blocker; _STAGE_NEXT_ACTIONS covers all seven non-safety stages (identity/resolution/freshness/acquisition/artifact/semantic/consumer) with fallback; blocker condition is verdict != 'satisfied' so unknown never counts as satisfied; ready = no blockers among required stages; frozen ReadinessDecision + pure reads => deterministic (test_deterministic_same_inputs_same_decision); stage_sequence() always emits all 8 stages so no required stage can be silently dropped.",
+   "id": "ZR303-REV-002",
+   "severity": "info",
+   "title": "Acceptance criteria hold by direct code reading"
+  },
+  {
+   "detail": "Ratchet test passes; max McCabe = 9 (evaluate_readiness) <= NEW_FILE_MAX 10 — implementer's '<=9' claim is accurate; mypy Success under the project config; no execute/commit/UPDATE/INSERT/DELETE tokens in readiness_graph.py; no import of readiness_graph in production src/.",
+   "id": "ZR303-REV-003",
+   "severity": "info",
+   "title": "Complexity / mypy / shadow-only verified"
+  },
+  {
+   "detail": "side_effect_counts.product_code_changes=1 is consistent (only readiness_graph.py is product code; the test file is not); touched_files matches the wiki commit (2 files) plus revenue working-tree receipts/ZR-303/** and state.json (present, uncommitted — consistent with revenue HEAD staying at 59338c1); findings ZR303-IMPL-001..003 verified against code and tests; plan_sha256 accurate (resolves to the frozen registry).",
+   "id": "ZR303-REV-004",
+   "severity": "info",
+   "title": "Implementer receipt has no material overclaim"
+  },
+  {
+   "detail": "The implementer's second command claims '766 passed (756 -> +9 graph +1, no regression)' for the full tests/unit run. Per review instructions the full wiki suite was NOT re-run (7 known pre-existing failures unrelated to ZR-303); the hermetic 35-test subset passed independently. The '+1' term in the implementer's arithmetic is unexplained (756 + 9 graph tests = 765) but is a note, not a gate claim; flagged as an observation only.",
+   "id": "ZR303-REV-005",
+   "severity": "observation",
+   "title": "Full unit-suite claim not independently re-run"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-303 independent review",
+ "result_triplet": {
+  "filing": "0e5d209bc352c6087fab51d09d55aa33aea81f85",
+  "revenue": "59338c19440fa64e26f39d7dad76adaa9182b340",
+  "wiki": "77ce0f35284b0ef43ea8529a7e98b65d074a37db"
+ },
+ "reviewed_object_sha256": "9ba93b059656e8e98e72ec6112e60f443fcd7c5ca3501232fed12b3419eb7a43",
+ "reviewer": "reviewer-zr303-independent",
+ "schema_version": 1,
+ "unit": "ZR-303",
+ "verdict": "accepted"
 }

@@ -1,26 +1,30 @@
 {
-  "unit": "CA-104",
-  "reviewer": "reviewer-ca104-independent-fast",
-  "verdict": "accepted",
-  "reviewed_at_utc": "2026-08-14T00:32:16.0343759Z",
-  "base_triplet": {
-    "revenue": "10b574adc33cda7c7c298392bac6c903edaf688b"
-  },
-  "result_triplet": {
-    "revenue": "cac31f37ac4a85a4798c4bafc0db3e737b12a089"
-  },
-  "commands": [
-    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -1",
-    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --format=%H -2",
-    "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse cac31f3",
-    "python -B -m pytest C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\tests\\test_commands.py -q",
-    "python -B -m uc.cli receipt-validate --receipt C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\receipts\\CA-104\\11_implementer_receipt.json",
-    "Select-String -Path ...\\uc\\commands.py -Pattern 'stdout_sha256|business_outcome|structured_failure|infra_error'",
-    "Select-String -Path ...\\uc\\commands.py -Pattern 'env' | Select-String 'value|never|secret'",
-    "Select-String -Path 'C:\\Users\\郑曾波\\Projects\\company-wiki\\.github\\workflows\\ci.yml' -Pattern '\\|\\|\\s*true'",
-    "Select-String -Path ...\\receipts\\CA-104\\11_implementer_receipt.json -Pattern 'CI-001'",
-    "python -B -m ruff check C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\"
-  ],
-  "findings": [],
-  "note": "fast independent review"
+ "schema_version": 1,
+ "kind": "reviewer",
+ "unit": "CA-104",
+ "reviewer": "reviewer-ca104-independent-fast",
+ "verdict": "accepted",
+ "reviewed_object_sha256": "aaac9e1f027887d055d14777ae565ed88616cbb1f23d412bf835fd3559ba8eff",
+ "created_at_utc": "2026-08-14T00:32:16.0343759Z",
+ "commands": [
+  "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -1",
+  "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --format=%H -2",
+  "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse cac31f3",
+  "python -B -m pytest C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\tests\\test_commands.py -q",
+  "python -B -m uc.cli receipt-validate --receipt C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\receipts\\CA-104\\11_implementer_receipt.json",
+  "Select-String -Path ...\\uc\\commands.py -Pattern 'stdout_sha256|business_outcome|structured_failure|infra_error'",
+  "Select-String -Path ...\\uc\\commands.py -Pattern 'env' | Select-String 'value|never|secret'",
+  "Select-String -Path 'C:\\Users\\郑曾波\\Projects\\company-wiki\\.github\\workflows\\ci.yml' -Pattern '\\|\\|\\s*true'",
+  "Select-String -Path ...\\receipts\\CA-104\\11_implementer_receipt.json -Pattern 'CI-001'",
+  "python -B -m ruff check C:\\Users\\郑曾波\\Projects\\revenue-forecast\\assurance\\unified_completion\\"
+ ],
+ "base_triplet": {
+  "revenue": "10b574adc33cda7c7c298392bac6c903edaf688b"
+ },
+ "result_triplet": {
+  "revenue": "cac31f37ac4a85a4798c4bafc0db3e737b12a089"
+ },
+ "findings": [],
+ "note": "fast independent review",
+ "canonical_hash": "9529d9b5ff462a6c72fd81c120c65992e3eb8c361b7f0f977678b18a92c09288"
 }

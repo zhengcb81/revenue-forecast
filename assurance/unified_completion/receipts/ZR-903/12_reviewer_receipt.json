@@ -1,102 +1,102 @@
 {
-  "unit": "ZR-903",
-  "reviewer": "reviewer-zr903-independent",
-  "kind": "reviewer",
-  "schema_version": 1,
-  "verdict": "accepted",
-  "reviewed_object_sha256": "85ee819cca70d48ff5683cc8d07783eac10dfec3b2932175b85c39c1fe18106f",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2 && git rev-parse 90c829ecac30c390e1d4f9f49bfbe6bff116867f^",
-      "exit_code": 0,
-      "result": "HEAD=90c829e (ZR-903), parent=ac135a3 (ZR-902 closure) — matches unit card"
-    },
-    {
-      "command": "git show --stat --oneline 90c829ecac30c390e1d4f9f49bfbe6bff116867f",
-      "exit_code": 0,
-      "result": "exactly 2 files, +333 insertions: tests/test_zr903_weekly_t3.py (+179), tools/weekly_t3_schedule.py (+154)"
-    },
-    {
-      "command": "git diff ac135a30a9a057ccb9bacf8d168e84595742c956 90c829ecac30c390e1d4f9f49bfbe6bff116867f -- scripts/",
-      "exit_code": 0,
-      "result": "empty (0 lines) — zero production change in scripts/"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr903_weekly_t3.py -q --tb=short",
-      "exit_code": 0,
-      "result": "10 passed in 0.59s"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -B %TEMP%\\zr903-reviewer\\probe_zr903.py (hermetic adversarial probes a–g)",
-      "exit_code": 0,
-      "result": "29/29 checks passed: a) 7d=fresh, 7d+1h=stale, not-ok recent=stale, missing=missing; b) 5-skipped -> _suite_outcome (False,blocked), run_weekly appends blocked alert, ledger ok=False, release gate red — never a pass; c) exit-1 suite -> ledger ok=False + not-ok alert + rc=1 propagated; d) run_weekly e2e ok -> run_id %Y%m%dT%H%M%SZ, UTC started_at, 40-hex triplet, no alert when ok; e) fresh+ok=ready, not-ok/stale(8d)/missing=blocked; f) FILING_FETCH_E2E_DOWNLOAD=1 opt-in env, T3 suite resolves to filing-fetch/tests/test_e2e_download.py, tests never invoke schtasks, all test writes to tmp_path only; g) register=/create, query=/query (read-only), unregister=/delete — no create/delete executed in test flow"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr902_daily_schedule.py tests/test_zr805_t3_authorization.py -q --timeout=180",
-      "exit_code": 0,
-      "result": "17 passed in 2.20s — no regression"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check tools/weekly_t3_schedule.py tests/test_zr903_weekly_t3.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
-      "exit_code": 0,
-      "result": "Ran 2 tests in 0.301s — OK (2 passed)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
-      "exit_code": 0,
-      "result": "837 passed, 3 deselected, 106 subtests passed in 160.41s (2:40) — matches unit-card expectation"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-903/11_implementer_receipt.json (CWD assurance\\unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed; side_effect_counts all zero (downloads=0, product_code_changes=0, real_catalog_access=0)"
-    },
-    {
-      "command": "git rev-parse HEAD in revenue-forecast, filing-fetch, company-wiki + git cat-file -e on triplet hashes",
-      "exit_code": 0,
-      "result": "revenue HEAD=90c829e (=result_triplet.revenue), parent ac135a3 (=base_triplet.revenue) real object; filing-fetch HEAD=5a1c18f (=triplet.filing); company-wiki HEAD=26a6b22f (=triplet.wiki) — all triplet objects exist"
-    },
-    {
-      "command": "Get-FileHash -Algorithm SHA256 tests/test_zr903_weekly_t3.py",
-      "exit_code": 0,
-      "result": "85ee819cca70d48ff5683cc8d07783eac10dfec3b2932175b85c39c1fe18106f (lowercase, 6564 bytes)"
-    }
-  ],
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "ac135a30a9a057ccb9bacf8d168e84595742c956",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "unit": "ZR-903",
+ "reviewer": "reviewer-zr903-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "b5756895dac01fd1cd1c53eba2c939cac23a8febbcb5765cfd86967822ff9759",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -2 && git rev-parse 90c829ecac30c390e1d4f9f49bfbe6bff116867f^",
+   "exit_code": 0,
+   "result": "HEAD=90c829e (ZR-903), parent=ac135a3 (ZR-902 closure) — matches unit card"
   },
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "90c829ecac30c390e1d4f9f49bfbe6bff116867f",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git show --stat --oneline 90c829ecac30c390e1d4f9f49bfbe6bff116867f",
+   "exit_code": 0,
+   "result": "exactly 2 files, +333 insertions: tests/test_zr903_weekly_t3.py (+179), tools/weekly_t3_schedule.py (+154)"
   },
-  "findings": [
-    {
-      "id": "REV-001",
-      "severity": "info",
-      "title": "All-skipped suite returns rc=0 from run_weekly but is never recorded as a pass",
-      "detail": "pytest exits 0 for a fully skipped suite, so run_weekly returns rc=0 while status=blocked; the truth is carried by ledger ok=False, the weekly_alert.jsonl blocked entry, and the release gate going red. Verified by probe b: _suite_outcome('5 skipped') -> (False, 'blocked'), alert entry status=blocked, gate ready=False. Design-intentional (CA-203 RED reversal) and safe."
-    },
-    {
-      "id": "REV-002",
-      "severity": "info",
-      "title": "Freshness boundary is strictly > 7d = stale; exactly 7d = fresh",
-      "detail": "ZR-902 freshness_status uses age > max_age_hours, so exactly 7d (168h) is fresh and 7d+1h is stale — matches C2 '<=7d' semantics. Old green (ok=True, 8d) is stale; not-ok at any age is stale; absent ledger is missing. All four states verified independently."
-    },
-    {
-      "id": "REV-003",
-      "severity": "info",
-      "title": "Hermeticity confirmed: no real schtasks mutation, no real T3 download, no production writes",
-      "detail": "Tests never invoke schtasks (grep) and write only to tmp_path fixtures; the only subprocess in tests is a read-only --help invocation. Probe f4 initially flagged sys.path import line (probe bug, corrected); manual inspection confirmed zero writes outside assurance/runs/tmp dirs. register/unregister (/create, /delete) exist only as deployment subcommands and were never executed by reviewer or tests; only read-only /query semantics were exercised."
-    }
-  ],
-  "created_at_utc": "2026-08-22T23:00:28Z",
-  "canonical_hash": "ead4da69fa48ec184cfbbf7a62aff0f622f9a65b5fa1edb8b26bb5b2f1d777ea"
+  {
+   "command": "git diff ac135a30a9a057ccb9bacf8d168e84595742c956 90c829ecac30c390e1d4f9f49bfbe6bff116867f -- scripts/",
+   "exit_code": 0,
+   "result": "empty (0 lines) — zero production change in scripts/"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr903_weekly_t3.py -q --tb=short",
+   "exit_code": 0,
+   "result": "10 passed in 0.59s"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -B %TEMP%\\zr903-reviewer\\probe_zr903.py (hermetic adversarial probes a–g)",
+   "exit_code": 0,
+   "result": "29/29 checks passed: a) 7d=fresh, 7d+1h=stale, not-ok recent=stale, missing=missing; b) 5-skipped -> _suite_outcome (False,blocked), run_weekly appends blocked alert, ledger ok=False, release gate red — never a pass; c) exit-1 suite -> ledger ok=False + not-ok alert + rc=1 propagated; d) run_weekly e2e ok -> run_id %Y%m%dT%H%M%SZ, UTC started_at, 40-hex triplet, no alert when ok; e) fresh+ok=ready, not-ok/stale(8d)/missing=blocked; f) FILING_FETCH_E2E_DOWNLOAD=1 opt-in env, T3 suite resolves to filing-fetch/tests/test_e2e_download.py, tests never invoke schtasks, all test writes to tmp_path only; g) register=/create, query=/query (read-only), unregister=/delete — no create/delete executed in test flow"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr902_daily_schedule.py tests/test_zr805_t3_authorization.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "17 passed in 2.20s — no regression"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check tools/weekly_t3_schedule.py tests/test_zr903_weekly_t3.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+   "exit_code": 0,
+   "result": "Ran 2 tests in 0.301s — OK (2 passed)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "837 passed, 3 deselected, 106 subtests passed in 160.41s (2:40) — matches unit-card expectation"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-903/11_implementer_receipt.json (CWD assurance\\unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed; side_effect_counts all zero (downloads=0, product_code_changes=0, real_catalog_access=0)"
+  },
+  {
+   "command": "git rev-parse HEAD in revenue-forecast, filing-fetch, company-wiki + git cat-file -e on triplet hashes",
+   "exit_code": 0,
+   "result": "revenue HEAD=90c829e (=result_triplet.revenue), parent ac135a3 (=base_triplet.revenue) real object; filing-fetch HEAD=5a1c18f (=triplet.filing); company-wiki HEAD=26a6b22f (=triplet.wiki) — all triplet objects exist"
+  },
+  {
+   "command": "Get-FileHash -Algorithm SHA256 tests/test_zr903_weekly_t3.py",
+   "exit_code": 0,
+   "result": "85ee819cca70d48ff5683cc8d07783eac10dfec3b2932175b85c39c1fe18106f (lowercase, 6564 bytes)"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "ac135a30a9a057ccb9bacf8d168e84595742c956",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "90c829ecac30c390e1d4f9f49bfbe6bff116867f",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "findings": [
+  {
+   "id": "REV-001",
+   "severity": "info",
+   "title": "All-skipped suite returns rc=0 from run_weekly but is never recorded as a pass",
+   "detail": "pytest exits 0 for a fully skipped suite, so run_weekly returns rc=0 while status=blocked; the truth is carried by ledger ok=False, the weekly_alert.jsonl blocked entry, and the release gate going red. Verified by probe b: _suite_outcome('5 skipped') -> (False, 'blocked'), alert entry status=blocked, gate ready=False. Design-intentional (CA-203 RED reversal) and safe."
+  },
+  {
+   "id": "REV-002",
+   "severity": "info",
+   "title": "Freshness boundary is strictly > 7d = stale; exactly 7d = fresh",
+   "detail": "ZR-902 freshness_status uses age > max_age_hours, so exactly 7d (168h) is fresh and 7d+1h is stale — matches C2 '<=7d' semantics. Old green (ok=True, 8d) is stale; not-ok at any age is stale; absent ledger is missing. All four states verified independently."
+  },
+  {
+   "id": "REV-003",
+   "severity": "info",
+   "title": "Hermeticity confirmed: no real schtasks mutation, no real T3 download, no production writes",
+   "detail": "Tests never invoke schtasks (grep) and write only to tmp_path fixtures; the only subprocess in tests is a read-only --help invocation. Probe f4 initially flagged sys.path import line (probe bug, corrected); manual inspection confirmed zero writes outside assurance/runs/tmp dirs. register/unregister (/create, /delete) exist only as deployment subcommands and were never executed by reviewer or tests; only read-only /query semantics were exercised."
+  }
+ ],
+ "created_at_utc": "2026-08-22T23:00:28Z",
+ "canonical_hash": "0ca69ebeaa8cb67882090bb0654dbe421c0473af27af95d4e7cc9c373fc66a34"
 }

@@ -1,73 +1,73 @@
 {
-  "base_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "a0a28c5e3ccd6980afaacb11f4bf20fb11543b8a",
-    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+ "base_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "a0a28c5e3ccd6980afaacb11f4bf20fb11543b8a",
+  "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+ },
+ "canonical_hash": "6a0e862e526861d5173e96beec7f6915655da2952ce22d611ca71e893421879a",
+ "commands": [
+  {
+   "command": "git rev-parse HEAD (revenue/filing/wiki) + git log --oneline -6",
+   "exit_code": 0,
+   "result": "revenue HEAD = a0a28c5e3ccd6980afaacb11f4bf20fb11543b8a; fix commits d7d9ba4 (product-tree binding + re-freeze), 3401376 (receipt re-sealed e5c6fabe + ZR104-IMPL-003), a0a28c5 (drop informational triplet); each touches only assurance/unified_completion/**. filing 83c638e76e40890262746cdf02b6df495dcb4031, wiki b6617553b6cb787e8b59dbb2dac51d0570ee4ddc unchanged; working tree clean of ZR-104 files (only pre-existing audit_review dirt / untracked dirs)"
   },
-  "canonical_hash": "4a69b92d6064da80cbaa829a7c568b9407adf87679d9af269da34211075e409b",
-  "commands": [
-    {
-      "command": "git rev-parse HEAD (revenue/filing/wiki) + git log --oneline -6",
-      "exit_code": 0,
-      "result": "revenue HEAD = a0a28c5e3ccd6980afaacb11f4bf20fb11543b8a; fix commits d7d9ba4 (product-tree binding + re-freeze), 3401376 (receipt re-sealed e5c6fabe + ZR104-IMPL-003), a0a28c5 (drop informational triplet); each touches only assurance/unified_completion/**. filing 83c638e76e40890262746cdf02b6df495dcb4031, wiki b6617553b6cb787e8b59dbb2dac51d0570ee4ddc unchanged; working tree clean of ZR-104 files (only pre-existing audit_review dirt / untracked dirs)"
-    },
-    {
-      "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m uc.cli quality-verify",
-      "exit_code": 0,
-      "result": "OK: quality baseline matches-or-improves the recomputed three-repo state (types / coverage / complexity / hardcoding / dead callers)"
-    },
-    {
-      "command": "python -B -m pytest assurance/unified_completion/tests/test_zr104_quality.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
-      "exit_code": 0,
-      "result": "8 passed"
-    },
-    {
-      "command": "python -B -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-104/11_implementer_receipt.json",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed; canonical_hash e5c6fabe169f927fed8d352539ddf1bc915ba742c3d317a015eaacc8ebb8d532; result_triplet.revenue b6afeb3d9315a588f595e332e48fb5881419b518 (unchanged)"
-    },
-    {
-      "command": "python -c json check of quality_baseline.json (keys, product_trees, sha256)",
-      "exit_code": 0,
-      "result": "'triplet' key absent; product_trees = {revenue 6bcba49a34bb14d00095caf28f56b55cb9f41666, filing 18f0a8df9efb42a7efbd3b8bddd674ee8013d698, wiki 3eaac52d0c2d036267f57852c74e9cdd331d92a9}; sha256 = 35a0c38fe64634cef6ed4fa63229b46c8c74a7fe70d349f4fb208ad1c2aca018"
-    },
-    {
-      "command": "git rev-parse HEAD:scripts (revenue/filing) / HEAD:src/company_wiki/source_catalog (wiki)",
-      "exit_code": 0,
-      "result": "6bcba49a34bb14d00095caf28f56b55cb9f41666 / 18f0a8df9efb42a7efbd3b8bddd674ee8013d698 / 3eaac52d0c2d036267f57852c74e9cdd331d92a9 — all three equal the baseline product_trees values (real subtree shas)"
-    }
-  ],
-  "created_at_utc": "2026-08-14T08:04:43.350Z",
-  "findings": [
-    {
-      "detail": "ZR104-REV-001 (sealed HEAD failed quality-verify / 4-of-8 tests due to raw-triplet binding 313638b invalidated by assurance commits) is resolved: d7d9ba4 binds the baseline to product trees (HEAD:scripts / HEAD:src/company_wiki/source_catalog), a0a28c5 drops the informational triplet so the baseline is deterministic across assurance commits, 3401376 re-seals the receipt. quality-verify now exits 0 and all 8 tests pass at the committed HEAD.",
-      "id": "ZR104-REV-D1",
-      "severity": "info",
-      "title": "Prior blocking finding resolved"
-    },
-    {
-      "detail": "ZR104-REV-002 (fix present only in the working tree during the first review) is closed: the re-freeze and receipt re-seal are now committed (d7d9ba4 / 3401376 / a0a28c5) and the working tree contains no ZR-104 modifications.",
-      "id": "ZR104-REV-D2",
-      "severity": "info",
-      "title": "Concurrency observation closed"
-    },
-    {
-      "detail": "No dedicated 'strict set shrunk -> rejected' tamper test; the case is covered indirectly by test_compute_baseline_is_machine_computed (recomputed baseline must equal committed) and uc.quality._verify_types. Not blocking.",
-      "id": "ZR104-REV-D3",
-      "severity": "info",
-      "title": "Minor note carried forward"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-104 delta review (accepted after product-tree binding fix)",
-  "result_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "a0a28c5e3ccd6980afaacb11f4bf20fb11543b8a",
-    "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+  {
+   "command": "PYTHONIOENCODING=utf-8 PYTHONPATH=assurance/unified_completion python -B -m uc.cli quality-verify",
+   "exit_code": 0,
+   "result": "OK: quality baseline matches-or-improves the recomputed three-repo state (types / coverage / complexity / hardcoding / dead callers)"
   },
-  "reviewed_object_sha256": "35a0c38fe64634cef6ed4fa63229b46c8c74a7fe70d349f4fb208ad1c2aca018",
-  "reviewer": "reviewer-zr104-independent",
-  "schema_version": 1,
-  "unit": "ZR-104",
-  "verdict": "accepted"
+  {
+   "command": "python -B -m pytest assurance/unified_completion/tests/test_zr104_quality.py -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+   "exit_code": 0,
+   "result": "8 passed"
+  },
+  {
+   "command": "python -B -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-104/11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed; canonical_hash e5c6fabe169f927fed8d352539ddf1bc915ba742c3d317a015eaacc8ebb8d532; result_triplet.revenue b6afeb3d9315a588f595e332e48fb5881419b518 (unchanged)"
+  },
+  {
+   "command": "python -c json check of quality_baseline.json (keys, product_trees, sha256)",
+   "exit_code": 0,
+   "result": "'triplet' key absent; product_trees = {revenue 6bcba49a34bb14d00095caf28f56b55cb9f41666, filing 18f0a8df9efb42a7efbd3b8bddd674ee8013d698, wiki 3eaac52d0c2d036267f57852c74e9cdd331d92a9}; sha256 = 35a0c38fe64634cef6ed4fa63229b46c8c74a7fe70d349f4fb208ad1c2aca018"
+  },
+  {
+   "command": "git rev-parse HEAD:scripts (revenue/filing) / HEAD:src/company_wiki/source_catalog (wiki)",
+   "exit_code": 0,
+   "result": "6bcba49a34bb14d00095caf28f56b55cb9f41666 / 18f0a8df9efb42a7efbd3b8bddd674ee8013d698 / 3eaac52d0c2d036267f57852c74e9cdd331d92a9 — all three equal the baseline product_trees values (real subtree shas)"
+  }
+ ],
+ "created_at_utc": "2026-08-14T08:04:43.350Z",
+ "findings": [
+  {
+   "detail": "ZR104-REV-001 (sealed HEAD failed quality-verify / 4-of-8 tests due to raw-triplet binding 313638b invalidated by assurance commits) is resolved: d7d9ba4 binds the baseline to product trees (HEAD:scripts / HEAD:src/company_wiki/source_catalog), a0a28c5 drops the informational triplet so the baseline is deterministic across assurance commits, 3401376 re-seals the receipt. quality-verify now exits 0 and all 8 tests pass at the committed HEAD.",
+   "id": "ZR104-REV-D1",
+   "severity": "info",
+   "title": "Prior blocking finding resolved"
+  },
+  {
+   "detail": "ZR104-REV-002 (fix present only in the working tree during the first review) is closed: the re-freeze and receipt re-seal are now committed (d7d9ba4 / 3401376 / a0a28c5) and the working tree contains no ZR-104 modifications.",
+   "id": "ZR104-REV-D2",
+   "severity": "info",
+   "title": "Concurrency observation closed"
+  },
+  {
+   "detail": "No dedicated 'strict set shrunk -> rejected' tamper test; the case is covered indirectly by test_compute_baseline_is_machine_computed (recomputed baseline must equal committed) and uc.quality._verify_types. Not blocking.",
+   "id": "ZR104-REV-D3",
+   "severity": "info",
+   "title": "Minor note carried forward"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-104 delta review (accepted after product-tree binding fix)",
+ "result_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "a0a28c5e3ccd6980afaacb11f4bf20fb11543b8a",
+  "wiki": "b6617553b6cb787e8b59dbb2dac51d0570ee4ddc"
+ },
+ "reviewed_object_sha256": "e5c6fabe169f927fed8d352539ddf1bc915ba742c3d317a015eaacc8ebb8d532",
+ "reviewer": "reviewer-zr104-independent",
+ "schema_version": 1,
+ "unit": "ZR-104",
+ "verdict": "accepted"
 }

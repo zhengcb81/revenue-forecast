@@ -1,48 +1,52 @@
 {
-  "unit": "CA-105",
-  "reviewer": "reviewer-ca105-independent-fast",
-  "verdict": "accepted",
-  "reviewed_at_utc": "2026-08-14T00:49:59Z",
-  "base_triplet": {
-    "revenue": "48fa6412ea828bb60a3948cd1127d9eb4590c457"
+ "schema_version": 1,
+ "kind": "reviewer",
+ "unit": "CA-105",
+ "reviewer": "reviewer-ca105-independent-fast",
+ "verdict": "accepted",
+ "reviewed_object_sha256": "685474d4b7c780ed0d4d788fa2c0d4e34ca1f48c11a4698ddd980f868222cbe0",
+ "created_at_utc": "2026-08-14T00:49:59Z",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -1",
+   "result": "be0f527 feat(CA-105): 197-scenario per-tier machine result registry — 95+102 disjoint, machine-computable closure math"
   },
-  "result_triplet": {
-    "revenue": "be0f52796a91a7de9ffca0a9ec02fe82e271cdb7"
+  {
+   "command": "python -B -m pytest assurance/unified_completion/tests/test_scenarios.py -q -p no:cacheprovider",
+   "result": "7 passed in 0.42s"
   },
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast log --oneline -1",
-      "result": "be0f527 feat(CA-105): 197-scenario per-tier machine result registry — 95+102 disjoint, machine-computable closure math"
-    },
-    {
-      "command": "python -B -m pytest assurance/unified_completion/tests/test_scenarios.py -q -p no:cacheprovider",
-      "result": "7 passed in 0.42s"
-    },
-    {
-      "command": "python -B -m uc.cli scenario-verify (PYTHONPATH=assurance/unified_completion)",
-      "result": "rc=0; total_scenarios=197, unsatisfied=197, closure_ready=false (honest state, no drift)"
-    },
-    {
-      "command": "python -B -c independent count via uc.scenarios._extract_ids (OLD_MATRIX vs NEW_MATRIX)",
-      "result": "95 102 0 True (old=95, new=102, zero overlap, AUD2 present in new)"
-    },
-    {
-      "command": "python -B -m uc.cli receipt-validate --receipt receipts/CA-105/11_implementer_receipt.json (PYTHONPATH=assurance/unified_completion)",
-      "result": "OK: receipt is canonical and well-formed; rc=0"
-    },
-    {
-      "command": "python -B -m ruff check assurance/unified_completion/",
-      "result": "All checks passed; rc=0"
-    }
-  ],
-  "findings": [
-    "HEAD be0f527 matches the expected CA-105 commit subject exactly.",
-    "Base commit 48fa641 confirmed via git log -2 as the CA-104 closure commit (feat(CA-104): closure — command attestation accepted, advances to CA-105).",
-    "Closure report honestly reports unsatisfied=197, closure_ready=false — registry is not prematurely marked ready; no drift detected.",
-    "Independent count confirms 95 old + 102 new = 197 scenarios, 0 overlap (disjoint), and AUD-02 present in the new matrix.",
-    "Unit tests (7) pass and ruff reports zero lint findings.",
-    "receipt-validate requires PYTHONPATH=assurance/unified_completion (same env as scenario-verify); the spec step omitted it — rerun succeeded with it set.",
-    "pytest was run with -p no:cacheprovider to keep the verification strictly read-only (no .pytest_cache writes into the implementer repo)."
-  ],
-  "note": "fast independent review"
+  {
+   "command": "python -B -m uc.cli scenario-verify (PYTHONPATH=assurance/unified_completion)",
+   "result": "rc=0; total_scenarios=197, unsatisfied=197, closure_ready=false (honest state, no drift)"
+  },
+  {
+   "command": "python -B -c independent count via uc.scenarios._extract_ids (OLD_MATRIX vs NEW_MATRIX)",
+   "result": "95 102 0 True (old=95, new=102, zero overlap, AUD2 present in new)"
+  },
+  {
+   "command": "python -B -m uc.cli receipt-validate --receipt receipts/CA-105/11_implementer_receipt.json (PYTHONPATH=assurance/unified_completion)",
+   "result": "OK: receipt is canonical and well-formed; rc=0"
+  },
+  {
+   "command": "python -B -m ruff check assurance/unified_completion/",
+   "result": "All checks passed; rc=0"
+  }
+ ],
+ "base_triplet": {
+  "revenue": "48fa6412ea828bb60a3948cd1127d9eb4590c457"
+ },
+ "result_triplet": {
+  "revenue": "be0f52796a91a7de9ffca0a9ec02fe82e271cdb7"
+ },
+ "findings": [
+  "HEAD be0f527 matches the expected CA-105 commit subject exactly.",
+  "Base commit 48fa641 confirmed via git log -2 as the CA-104 closure commit (feat(CA-104): closure — command attestation accepted, advances to CA-105).",
+  "Closure report honestly reports unsatisfied=197, closure_ready=false — registry is not prematurely marked ready; no drift detected.",
+  "Independent count confirms 95 old + 102 new = 197 scenarios, 0 overlap (disjoint), and AUD-02 present in the new matrix.",
+  "Unit tests (7) pass and ruff reports zero lint findings.",
+  "receipt-validate requires PYTHONPATH=assurance/unified_completion (same env as scenario-verify); the spec step omitted it — rerun succeeded with it set.",
+  "pytest was run with -p no:cacheprovider to keep the verification strictly read-only (no .pytest_cache writes into the implementer repo)."
+ ],
+ "note": "fast independent review",
+ "canonical_hash": "9223e53b437f2740daab72889cfea1bcff3885cbdc493904aefea1b2e0359954"
 }

@@ -1,0 +1,100 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "de4430b574300453899224f64bbac51220f27e9d",
+    "wiki": "71aa798eb4887197c24be0755d8e56e973b74006"
+  },
+  "canonical_hash": "a00544d81d31bd8592478af20974af6e104d35130267ab448f5eba0e71154301",
+  "commands": [
+    {
+      "command": "git -C company-wiki rev-parse HEAD; git -C filing-fetch rev-parse HEAD; git -C revenue-forecast rev-parse HEAD",
+      "exit_code": 0,
+      "result": "wiki HEAD=eb3aa792eaf1a4711baa717f0b8a79f17c9a98cd (== claim); filing HEAD=5a1c18f5171db0e4b9113138ea360db361e1e435 (== claim); revenue HEAD=de4430b574300453899224f64bbac51220f27e9d (== receipt base_triplet; at-or-after base, binding base_triplet holds)"
+    },
+    {
+      "command": "git -C wiki diff 71aa798 eb3aa79 --stat; git -C wiki diff 71aa798 eb3aa79 --stat -- src/; git -C filing-fetch status --porcelain; git -C wiki status --porcelain",
+      "exit_code": 0,
+      "result": "Full diff = EXACTLY 3 files (config/source_catalog.yaml +10, future_lake/README.md +11, tests/contract/test_zr409_fourth_root_real_journeys.py +370); git diff -- src/ EMPTY (product core diff=0, verified); filing tree clean; wiki working-tree dirt = D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage (dir), ?? coverage.json (root) - unrelated to the diff"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr409_fourth_root_real_journeys.py -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr409-review (company-wiki)",
+      "exit_code": 0,
+      "result": "10 passed in 1.32s. No catalog_busy observed; no retry needed. Suite reads the PRODUCTION catalog read-only; zero-write asserted via shallow root fingerprints + canonical sample-file (size,mtime,sha256); catalog-DIR zero-write deliberately NOT asserted (ZR-206 lesson, disclosed in test docstrings + receipt)"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/contract/test_zr409_fourth_root_real_journeys.py tests/contract/test_future_root_config_only.py tests/contract/test_zr405_policy_export_cli.py tests/contract/test_fc1204_complexity_ratchet.py tests/contract/test_cross_root_dedup_fc603.py -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr409-review2 (company-wiki)",
+      "exit_code": 0,
+      "result": "28 passed in 3.31s (10 new + 18 existing EX-08/policy-export/ratchet/cross-root) - matches receipt claim"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest tests/unit -q --tb=short --basetemp C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.tmp-zr409-review3 (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed in 37.24s - matches receipt claim"
+    },
+    {
+      "command": "python -m ruff check --no-cache tests/contract/test_zr409_fourth_root_real_journeys.py (company-wiki, base python)",
+      "exit_code": 0,
+      "result": "All checks passed (ruff clean) - matches receipt claim"
+    },
+    {
+      "command": "sha256(test file) via working tree (blob bdc3647044caa4948dabd211e61ddec9ad9dcf12 == HEAD blob, tree clean for that path); sha256(00_wu_card.md); python -m uc.cli receipt-validate --receipt 11_implementer_receipt.json",
+      "exit_code": 0,
+      "result": "reviewed_object_sha256=29372a04daf2986f686e008a1fa0f6571638e9f3c1c4c046dec74f7b2fa2f44c == receipt claim; plan_sha256=20f14f60233b8a026d8604dc8a6f1222a52587399ae83cd09e17ea3c786271e5 == receipt claim == sha256 of CURRENT 00_wu_card.md; implementer receipt recomputed canonical_hash=5e0cb1a5192c5a525af64e5aaf458ef68070ff2f773eeddf256edb053da89533 == stored; receipt-validate prints OK; triplets are real git objects"
+    },
+    {
+      "command": "read-only sqlite3 queries on .source_catalog/catalog.sqlite3 (mode=ro); read resolver.py capture_ready logic; read config/source_catalog.yaml",
+      "exit_code": 0,
+      "result": "C1: config loads 4 roots; future_lake kind=directory, adapter_id=sidecar_filing_v1, read_only=true, reusable_for_filing=true, priority=40, path=${PROJECT_ROOT}/future_lake (verified in config + test); policy export lists exactly {company_raw, dayu_portfolio, dropbox_stock, future_lake} reusable (test asserts exact set). C2: Zijin FY2025 (pdoc 1225023658) located under company_raw AND dropbox_stock (same content 01819e1c7daa...), priorities company_raw p10 < dropbox p30 -> canonical companies (verified in DB); Genscript HK1548 FY2021 content 72b3ed25... has exactly 1 location (dayu_portfolio 1548/filings/...) and ZERO company_raw locations (precondition holds); Dropbox 星环 FY2024 (pdoc 1223325316) source_url=http://static.cninfo.com.cn/finalpage/2025-04-26/1223325316.PDF (http, not https) -> resolver sets https_url=None -> capture_ready=False -> capture_incomplete trace -> MISSING + download_required=True (code + test verified). C3: EX-08 temp-project scan errors==0, future_lake exported reusable, README fixture NOT indexed as annual_report (test asserts documents count=0)"
+    },
+    {
+      "command": "python -m uc.cli state-show",
+      "exit_code": 0,
+      "result": "units.ZR-409.status=independent_review; current_next=ZR-409; current_phase=D_lifecycle_roots_freshness - matches claim"
+    }
+  ],
+  "created_at_utc": "2026-08-19T18:28:02+00:00",
+  "findings": [
+    {
+      "detail": "The reviewed test module docstring (lines 15-17: '(c) Dropbox CN 688031 FY2024 annual -> REUSED_EXACT, canonical under the Dropbox root') and the preflight wu card (C2(c) line 31 + Annex line 42) still describe journey (c) as REUSED_EXACT canonical-in-Dropbox. The implemented test test_c2_journey_dropbox_fail_closed_incomplete_sample asserts FAIL-CLOSED MISSING with capture_incomplete trace and download_required=True, which matches the genuine production-data state (source_url is http, not https -> not capture-ready -> MISSING; verified independently in the catalog DB). The implementer receipt honestly discloses the fail-closed behavior (ZR409-IMPL-002); only the docstrings/card were not updated. Documentation-only inconsistency; behavior is correct and matches the review brief's expectation.",
+      "id": "ZR409-REV-001",
+      "severity": "minor",
+      "title": "Stale docstrings/card describe Dropbox journey as REUSED_EXACT while test asserts fail-closed MISSING"
+    },
+    {
+      "detail": "Wu card C2 (line 31) says '旅程前后真实三根+catalog 指纹不变（零写断言）'. The tests assert only real-root shallow fingerprints + canonical sample files; catalog-DIR zero-write is deliberately NOT asserted (ZR-206 lesson), disclosed in the receipt notes and test docstrings. The helper _catalog_dir_fingerprint() is defined but never called (dead code). Disclosure is present and the omission is intentional and reasonable; the card text is stale.",
+      "id": "ZR409-REV-002",
+      "severity": "minor",
+      "title": "Card C2 claims catalog-DIR fingerprint zero-write assertion; tests deliberately omit it"
+    },
+    {
+      "detail": "side_effect_counts.real_catalog_access=3 matches the three headline journey tests (companies Zijin, dayu-only Genscript, Dropbox 星环) as the receipt/card word it. Literally, the suite opens the production catalog read-only in 6 test functions (the 3 journeys + dayu-only precondition test, cross-root Zijin test, and the combined zero-write test; 7 resolver calls + 1 direct read-only sqlite connect). All accesses are read-only and zero-write is proven by the fingerprint oracles; the count is an undercount only under the literal interpretation.",
+      "id": "ZR409-REV-003",
+      "severity": "info",
+      "title": "real_catalog_access=3 counts the three journey tests; literal production-catalog reads are 6 tests"
+    },
+    {
+      "detail": "Independent analysis of the production catalog: 378 distinct annual_report contents under dropbox_stock, 325 content-shared with company_raw, 53 exclusive to dropbox. Of the 53 exclusive, only 2 carry http:// source_urls (星环 2024 pdoc 1223325316 and 星环 2025 pdoc 1225028771); the other 51 exclusive annuals have NO source_url in document metadata (also not capture-ready). So 'the Dropbox root's only exclusive annuals are http or shared with companies' is loose (51 no-url exclusives exist), but the substance holds: no dropbox-exclusive annual is currently a capture-ready REUSED_EXACT candidate, and the 星环 2024 fail-closed is genuine production-data truth (verified by my own sqlite query: http source_url, capture-incomplete).",
+      "id": "ZR409-REV-004",
+      "severity": "info",
+      "title": "Card parenthetical on Dropbox exclusive annuals is imprecise but substantively holds"
+    },
+    {
+      "detail": "git status shows '?? .coverage' (directory containing a .coverage data file) and '?? coverage.json' at repo root as two separate untracked entries; the card described '?? .coverage/coverage.json'. All dirt is untracked/modified and absent from the base..result diff, hence unrelated to the unit.",
+      "id": "ZR409-REV-005",
+      "severity": "info",
+      "title": "Wiki working-tree dirt naming detail"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-409 independent review",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "de4430b574300453899224f64bbac51220f27e9d",
+    "wiki": "eb3aa792eaf1a4711baa717f0b8a79f17c9a98cd"
+  },
+  "reviewed_object_sha256": "29372a04daf2986f686e008a1fa0f6571638e9f3c1c4c046dec74f7b2fa2f44c",
+  "reviewer": "reviewer-zr409-independent",
+  "schema_version": 1,
+  "unit": "ZR-409",
+  "verdict": "accepted"
+}

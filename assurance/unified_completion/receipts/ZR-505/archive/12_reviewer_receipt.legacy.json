@@ -1,0 +1,62 @@
+{
+  "base_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "682adf46f17a3bfc8deb1457f4ee8f3f9e0eaf92",
+    "wiki": "2781df937d65ef492f988bfb1af53ae263690ff5"
+  },
+  "canonical_hash": "59fb2545914cabc1b7d57a0d7c0a603c0a65ce5331be939fb4878ab108301104",
+  "commands": [
+    {
+      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3; git diff 2781df9 7c44904 --stat; git status --short",
+      "exit_code": 0,
+      "result": "HEAD = 7c44904 (test(ZR-505): typed table fidelity golden, 11 collected, zero product changes); diff 2781df9..7c44904 --stat shows only tests/contract/test_zr505_table_fidelity.py (+263); status dirt = D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json (documented unrelated files)."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr505_table_fidelity.py -q --tb=short",
+      "exit_code": 0,
+      "result": "11 passed in 0.45s (collected 11 items, 0 failed/0 errors)."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
+      "exit_code": 0,
+      "result": "90 passed in 1.60s (collected 90 items: 10+13+11+10+3+41+2; 0 failed/0 errors). NOTE: work-unit text predicted 101 passed; the 7 listed files actually collect 90 tests. All collected tests pass — no regression."
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe %TEMP%\\zr505_spotcheck.py (adversarial spot-checks, sys.path->src)",
+      "exit_code": 0,
+      "result": "(a) 3x2 mixed cells [[\"产量\",100,2.5],[True,None,\"x\"]] -> 6 spans, locators (1,0,r,c) row-major, raw types preserved [str,int,float,bool,NoneType,str], values ['产量','100','2.5','true',None,'x']; (b) two tables page1 + one page2 -> table_index [0,1,0]; (c) non-rectangular, rows!=len(data), dict cell, missing data field all raise PageAwarePDFAdapterError; (d) rendered body: paragraph precedes 'Table cell [0, 0]', cells row-major [0,0]<[0,1]<[1,0]<[1,1]; (e) ['',0,-1,0.0] round-trip raw types [str,int,int,float], values ['','0','-1','0.0']; (f) golden_corpus.json read-only (mtime/size unchanged): 7 broker samples, Changjiang sha256 == 273d450887eff7c079b28f394c4831092fa3abbb81db86f2544cab425c2719d7. ALL SPOT-CHECKS PASSED."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache tests/contract/test_zr505_table_fidelity.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    }
+  ],
+  "created_at_utc": "2026-08-19T20:10:05+00:00",
+  "findings": [
+    {
+      "detail": "C1: synthetic fixtures fed directly into adapt_pdf_pages yield one ParserResult per table cell with (page_number, table_index, row_index, column_index) in row-major order; paragraph and cell spans coexist on a page in document order (verified in unit tests and spot-check a/d). C2: str/int/float/bool/null raw types preserved in structured_value.raw_value; structured_value.value serializes as '100'/'true'/'2.5'/None; rows x cols spans cover the full rectangle. C3: _render_page_aware_markdown emits '- Table cell [r, c]: value' lines row-major after the page's paragraph spans. C4: non-rectangular data, rows != len(data), non-JSON-scalar dict cell, and inexact table field set all raise PageAwarePDFAdapterError. C5: table_index resets per page ([0,1,0]); golden-corpus broker samples >= 7 with Changjiang sha256 == 273d450887eff7c079b28f394c4831092fa3abbb81db86f2544cab425c2719d7, read-only json.loads with file stat unchanged.",
+      "id": "ZR505-REV-001",
+      "severity": "info",
+      "title": "All acceptance criteria C1-C5 verified by independent replay"
+    },
+    {
+      "detail": "The acceptance criteria predicted '101 passed' for the 7-file regression command, but the replay collected 90 tests (test_zr504=10, test_zr503=13, test_zr502=11, test_zr501=10, test_fc1301=3, test_evidence_span=41, test_fc1204=2) and all 90 passed with exit code 0. This is a documentation-count discrepancy, not a regression or product defect; zero prior-unit tests failed or errored. Non-blocking.",
+      "id": "ZR505-REV-002",
+      "severity": "minor",
+      "title": "Regression count in work-unit text (101) does not match actual collection (90)"
+    }
+  ],
+  "kind": "reviewer",
+  "note": "ZR-505 independent review",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "682adf46f17a3bfc8deb1457f4ee8f3f9e0eaf92",
+    "wiki": "7c4490496e2ead975f39519fcf8a9392cd00511b"
+  },
+  "reviewed_object_sha256": "b97494fa4e4f172453035d752292d4039b5ad227e9d2a8df57790726ca25ed86",
+  "reviewer": "reviewer-zr505-independent",
+  "schema_version": 1,
+  "unit": "ZR-505",
+  "verdict": "accepted"
+}

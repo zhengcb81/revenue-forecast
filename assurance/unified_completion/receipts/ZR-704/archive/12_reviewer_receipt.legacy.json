@@ -1,0 +1,69 @@
+{
+  "at_utc": "2026-08-20T19:46:43+00:00",
+  "canonical_hash": "c9509cdc652d18c502ccaa4a768abde1ba4e263ed45bf91af017815487582cce",
+  "commands": [
+    {
+      "command": "git log --oneline -3; git status --short; git rev-parse HEAD",
+      "exit_code": 0,
+      "result": "HEAD = 57e33f9 (test(ZR-704) commit). Status: pre-existing planning-doc edits + untracked .tmp-*/.review-* only; zero tracked product src/ changes."
+    },
+    {
+      "command": "git diff 50a2f52 57e33f9 --stat",
+      "exit_code": 0,
+      "result": "1 file changed: tests/test_zr704_validate_only_gate.py +133 insertions. Product src/ untouched."
+    },
+    {
+      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr704_validate_only_gate.py -q --tb=short",
+      "exit_code": 0,
+      "result": "4 passed in 0.75s"
+    },
+    {
+      "command": "adversarial spot-checks a-d (independent throwaway driver)",
+      "exit_code": 0,
+      "result": "ALL 4 PASS: a) valid->rc 0 stdout 'valid' zero residue registry never created; b) missing-required-field->rc 2 stderr 'missing required field: company_name' zero residue; c) non-JSON->rc 2 zero residue; d) pre-seeded registry sha256 byte-identical entry count unchanged."
+    },
+    {
+      "command": "ruff check --no-cache tests/test_zr704_validate_only_gate.py",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    {
+      "command": "tools/tests/test_complexity_ratchet.py",
+      "exit_code": 0,
+      "result": "2 passed in 0.37s"
+    }
+  ],
+  "findings": [
+    {
+      "detail": "test_c2 asserts 'missing required field' in proc.stderr.lower() or proc.stderr, whose 'or proc.stderr' disjunct makes message check vacuous when stderr is non-empty. Behavior correct; tightening would make test more precise. Not blocking.",
+      "id": "ZR704-REV-001",
+      "severity": "info",
+      "title": "C2 test assertion on stderr message is loose"
+    },
+    {
+      "detail": "C1/C3 residue assertions filter .json/.jsonl/.md suffix and exclude input by name; stray non-output artifacts not caught. Independent replay extended scan and found zero residue. Not blocking.",
+      "id": "ZR704-REV-002",
+      "severity": "info",
+      "title": "Residue checks scan only output-like suffixes"
+    },
+    {
+      "detail": "Modified assurance/runs/session-2026-08-13/progress.md, assurance/unified_completion/state.json, audit_review/progress.md. None are product src/ and none introduced by this unit or review. Not blocking.",
+      "id": "ZR704-REV-003",
+      "severity": "info",
+      "title": "Working tree carries pre-existing uncommitted planning-doc edits"
+    }
+  ],
+  "kind": "reviewer",
+  "result_triplet": {
+    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+    "revenue": "57e33f930ca23e5a890f5d3c66471999b78a609d",
+    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  },
+  "reviewed_commit": "57e33f930ca23e5a890f5d3c66471999b78a609d",
+  "reviewed_object_sha256": "4c2ea856401b6cc102c2d6a6b4c7ac59f06c4679a7457ebe79a188dfca6fd2f0",
+  "reviewer": "reviewer-zr704-independent",
+  "schema_version": 1,
+  "summary": "ZR-704 accepted. Independent replay confirmed: git claim exact (1 file +133, zero product src/ changes), 4/4 tests pass, ruff clean, ratchet green. Throwaway adversarial driver independently verified all four REV-05 acceptance criteria against the product CLI: C1-C3 validate-only success/failure/malformed JSON all leave zero residue (no output, no registry, exit codes correct); C4 pre-existing registry byte-identical after validate-only run. Only info-level observations. Verdict: accepted.",
+  "unit": "ZR-704",
+  "verdict": "accepted"
+}

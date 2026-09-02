@@ -1,23 +1,27 @@
 {
-  "unit": "CA-107",
-  "reviewer": "reviewer-ca107-independent-fast2",
-  "verdict": "accepted",
-  "reviewed_at_utc": "2026-08-14T01:25:49.7960957Z",
-  "base_triplet": {
-    "revenue": "2dad5bb31e4e1e3d7e160153148afb29608a2eae"
-  },
-  "result_triplet": {
-    "revenue": "fb306ba04c3d9152085c3a837fbcf34ff189e582"
-  },
-  "commands": [
-    "PYTHONPATH=<repo>/assurance/unified_completion; python -B -m uc.cli closure-report | Select-String 'incomplete|contradicted|pending|unsatisfied|R9|legacy' -First 12",
-    "git -C <repo> log --oneline -1",
-    "PYTHONPATH=<repo>/assurance/unified_completion; python -B -m uc.cli receipt-validate --receipt <repo>/assurance/unified_completion/receipts/CA-107/11_implementer_receipt.json"
-  ],
-  "findings": [
-    "closure-report: old_plan_verdict=incomplete; reasons contain '26 legacy FCs contradicted by current behavior', '5 legacy closure items pending (FC-1501..FC-1505)', '197 of 197 mandatory scenarios unsatisfied', 'R9 legacy removal frozen (4/4 RED at audit; deletion belongs to CA-304)', and legacy/grandfathered explanation (6 units with incomplete machine evidence: CA-102..CA-107). All expected markers present.",
-    "git log --oneline -1 == 'fb306ba fix(CA-107): correct full-suite count to 144 in receipt' (exact match).",
-    "receipt-validate: 'OK: receipt ... is canonical and well-formed', rc=0 (EXIT=0)."
-  ],
-  "note": "ultra-fast review; prior reviewer stalled"
+ "schema_version": 1,
+ "kind": "reviewer",
+ "unit": "CA-107",
+ "reviewer": "reviewer-ca107-independent-fast2",
+ "verdict": "accepted",
+ "reviewed_object_sha256": "e9656b8c8195f4d5eb6627901634c6473b0b044de190bb5e75e04583853fa91f",
+ "created_at_utc": "2026-08-14T01:25:49.7960957Z",
+ "commands": [
+  "PYTHONPATH=<repo>/assurance/unified_completion; python -B -m uc.cli closure-report | Select-String 'incomplete|contradicted|pending|unsatisfied|R9|legacy' -First 12",
+  "git -C <repo> log --oneline -1",
+  "PYTHONPATH=<repo>/assurance/unified_completion; python -B -m uc.cli receipt-validate --receipt <repo>/assurance/unified_completion/receipts/CA-107/11_implementer_receipt.json"
+ ],
+ "base_triplet": {
+  "revenue": "2dad5bb31e4e1e3d7e160153148afb29608a2eae"
+ },
+ "result_triplet": {
+  "revenue": "fb306ba04c3d9152085c3a837fbcf34ff189e582"
+ },
+ "findings": [
+  "closure-report: old_plan_verdict=incomplete; reasons contain '26 legacy FCs contradicted by current behavior', '5 legacy closure items pending (FC-1501..FC-1505)', '197 of 197 mandatory scenarios unsatisfied', 'R9 legacy removal frozen (4/4 RED at audit; deletion belongs to CA-304)', and legacy/grandfathered explanation (6 units with incomplete machine evidence: CA-102..CA-107). All expected markers present.",
+  "git log --oneline -1 == 'fb306ba fix(CA-107): correct full-suite count to 144 in receipt' (exact match).",
+  "receipt-validate: 'OK: receipt ... is canonical and well-formed', rc=0 (EXIT=0)."
+ ],
+ "note": "ultra-fast review; prior reviewer stalled",
+ "canonical_hash": "582188518e20def3fc1300a269b6cdd9d5b977c3e50dd4dfde2e2f540006be8d"
 }

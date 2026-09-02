@@ -1,67 +1,67 @@
 {
-  "base_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "3ebafb253fba6ab48e7ec6f956c336c463417e94",
-    "wiki": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
+ "base_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "3ebafb253fba6ab48e7ec6f956c336c463417e94",
+  "wiki": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
+ },
+ "canonical_hash": "58d111b7e1940bebfb3f6a7ab9afef4297d975e5537184fbfc869342b90479b1",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD",
+   "exit_code": 0,
+   "result": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
   },
-  "canonical_hash": "9d6f3a805c68363ed4e3035d13b235e6b00b65dbbabc56acf6ebe6b2d5fa3225",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD",
-      "exit_code": 0,
-      "result": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
-      "exit_code": 0,
-      "result": "3ebafb253fba6ab48e7ec6f956c336c463417e94"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9",
-      "exit_code": 0,
-      "result": "2 files changed (+547/-5): src/company_wiki/source_catalog/reader.py, tests/unit/test_catalog_reader_queries.py only"
-    },
-    {
-      "command": "Select-String -Path reader.py -Pattern 'execute\\(|executescript|commit\\(|journal_mode|CREATE TABLE|INSERT INTO|UPDATE |DELETE FROM'",
-      "exit_code": 0,
-      "result": "6 hits; executable ones are read-only SELECTs (lines 182, 185) and PRAGMA query_only=ON enforcement (line 175); lines 5/17/151 are docstring/comment only"
-    },
-    {
-      "command": "uv run python -m pytest tests/unit/test_catalog_reader_queries.py tests/unit/test_catalog_reader.py -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "23 passed in 0.93s"
-    },
-    {
-      "command": "uv run python -m pytest tests/unit -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "716 passed in 39.08s"
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-202/11_implementer_receipt.json (revenue-forecast, PYTHONPATH=assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: canonical and well-formed; canonical_hash 6f33abb75b547ffe472b9131858e39070183838045dc6dfb3287cc5d61db0600; result_triplet.wiki == 0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
-    },
-    {
-      "command": "python -m uc.cli state-show (revenue-forecast, PYTHONPATH=assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "units.ZR-202.status=independent_review, current_next=ZR-202"
-    }
-  ],
-  "created_at_utc": "2026-08-14T09:23:05.438Z",
-  "findings": [
-    "Implementer receipt base/result_triplet.revenue (236fa24ceb48a23729987904a430d2e3e98db34e) is a plan-time value that differs from the actual revenue-forecast HEAD (3ebafb253fba6ab48e7ec6f956c336c463417e94); ZR-202 changes no revenue-forecast code, so this does not affect the verdict. Reviewer receipt uses the verified current-HEAD triplet per instructions.",
-    "Schema version fail-closed verified in code: schema_version() raises CatalogReaderUnavailable when catalog_meta lacks the row or the value is not in SUPPORTED_SCHEMA_VERSIONS = {CATALOG_SCHEMA_VERSION} = {'1.2.0'} (models.py line 11)."
-  ],
-  "kind": "reviewer",
-  "note": "ZR-202 independent review",
-  "result_triplet": {
-    "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
-    "revenue": "3ebafb253fba6ab48e7ec6f956c336c463417e94",
-    "wiki": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
+   "exit_code": 0,
+   "result": "3ebafb253fba6ab48e7ec6f956c336c463417e94"
   },
-  "reviewed_object_sha256": "9397affe84b4e950dc1958d5905c9f1edd6ab30414ba271ce2929798e477d305",
-  "reviewer": "reviewer-zr202-independent",
-  "schema_version": 1,
-  "unit": "ZR-202",
-  "verdict": "accepted"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9",
+   "exit_code": 0,
+   "result": "2 files changed (+547/-5): src/company_wiki/source_catalog/reader.py, tests/unit/test_catalog_reader_queries.py only"
+  },
+  {
+   "command": "Select-String -Path reader.py -Pattern 'execute\\(|executescript|commit\\(|journal_mode|CREATE TABLE|INSERT INTO|UPDATE |DELETE FROM'",
+   "exit_code": 0,
+   "result": "6 hits; executable ones are read-only SELECTs (lines 182, 185) and PRAGMA query_only=ON enforcement (line 175); lines 5/17/151 are docstring/comment only"
+  },
+  {
+   "command": "uv run python -m pytest tests/unit/test_catalog_reader_queries.py tests/unit/test_catalog_reader.py -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "23 passed in 0.93s"
+  },
+  {
+   "command": "uv run python -m pytest tests/unit -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "716 passed in 39.08s"
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt assurance/unified_completion/receipts/ZR-202/11_implementer_receipt.json (revenue-forecast, PYTHONPATH=assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: canonical and well-formed; canonical_hash 6f33abb75b547ffe472b9131858e39070183838045dc6dfb3287cc5d61db0600; result_triplet.wiki == 0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
+  },
+  {
+   "command": "python -m uc.cli state-show (revenue-forecast, PYTHONPATH=assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "units.ZR-202.status=independent_review, current_next=ZR-202"
+  }
+ ],
+ "created_at_utc": "2026-08-14T09:23:05.438Z",
+ "findings": [
+  "Implementer receipt base/result_triplet.revenue (236fa24ceb48a23729987904a430d2e3e98db34e) is a plan-time value that differs from the actual revenue-forecast HEAD (3ebafb253fba6ab48e7ec6f956c336c463417e94); ZR-202 changes no revenue-forecast code, so this does not affect the verdict. Reviewer receipt uses the verified current-HEAD triplet per instructions.",
+  "Schema version fail-closed verified in code: schema_version() raises CatalogReaderUnavailable when catalog_meta lacks the row or the value is not in SUPPORTED_SCHEMA_VERSIONS = {CATALOG_SCHEMA_VERSION} = {'1.2.0'} (models.py line 11)."
+ ],
+ "kind": "reviewer",
+ "note": "ZR-202 independent review",
+ "result_triplet": {
+  "filing": "83c638e76e40890262746cdf02b6df495dcb4031",
+  "revenue": "3ebafb253fba6ab48e7ec6f956c336c463417e94",
+  "wiki": "0bc9ac7018e5e3ad3005469d2b7b51a743cd66a9"
+ },
+ "reviewed_object_sha256": "6f33abb75b547ffe472b9131858e39070183838045dc6dfb3287cc5d61db0600",
+ "reviewer": "reviewer-zr202-independent",
+ "schema_version": 1,
+ "unit": "ZR-202",
+ "verdict": "accepted"
 }

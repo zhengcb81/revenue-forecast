@@ -1,73 +1,73 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "665f4293383a81957a2dcccf1b42fe1a11d219a8",
-    "wiki": "ea9c49b6a7e0cafed6e923d0df5cc580b8492e96"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "665f4293383a81957a2dcccf1b42fe1a11d219a8",
+  "wiki": "ea9c49b6a7e0cafed6e923d0df5cc580b8492e96"
+ },
+ "canonical_hash": "73e538cc5be4b15bf66f6d87bfb79607fc111290e5190e404f7a8c02282eff9e",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3",
+   "exit_code": 0,
+   "result": "HEAD = 524a535 'feat(ZR-510): multi-entity chunk attribution ...; 9 tests'; parent ea9c49b (ZR-509), grandparent 8e2bf3f (ZR-508)"
   },
-  "canonical_hash": "149e595bd9145c9994a1cb3bf4d3ded5f151dcd9634e87cf0a75c4c03bb62f8e",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3",
-      "exit_code": 0,
-      "result": "HEAD = 524a535 'feat(ZR-510): multi-entity chunk attribution ...; 9 tests'; parent ea9c49b (ZR-509), grandparent 8e2bf3f (ZR-508)"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff ea9c49b 524a535 --stat; git status --short",
-      "exit_code": 0,
-      "result": "exactly 3 files, +315: attribution.py (+88, new), normalizer.py (+19, modified), test_zr510_attribution.py (+208, new). Status: only expected pre-existing dirt."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr510_attribution.py -q --tb=short",
-      "exit_code": 0,
-      "result": "9 passed (C1 x3, C2 x2, C3 x2, C4 x2) in 0.32s"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr509_html_capture.py tests/contract/test_zr508_scheduler.py tests/contract/test_zr507_processing_demand.py tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
-      "exit_code": 0,
-      "result": "152 passed in 1.63s (stated expectation 161 = 152 + the 9 ZR-510 tests; full contract suite 161, zero failures, zero regressions)"
-    },
-    {
-      "command": "python %TEMP%\\zr510_adversarial_check.py (sys.path->src; 22 checks incl. Changjiang-shaped doc, mixed chunk, determinism, frontmatter wiring, zero-hardcoding grep; plus locator-line production-pairing probe)",
-      "exit_code": 0,
-      "result": "22/22 checks passed: 紫金->紫金矿业集团股份有限公司, 陕西->陕西煤业股份有限公司, risk->unattributed, misattribution==0; both entities -> mixed; single 紫金 phrase -> full name; two runs identical; multi-entity doc -> chunk_attribution present len==chunk_count==4 with ZR-501..509 fields coexisting; single-entity doc -> key absent; no 紫金矿业/陕西煤业 in attribution.py"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/attribution.py src/company_wiki/source_catalog/normalizer.py tests/contract/test_zr510_attribution.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    }
-  ],
-  "created_at_utc": "2026-08-19T20:51:27+00:00",
-  "findings": [
-    {
-      "detail": "The 12-file regression command returns 152 passed (all green). 161 is the total including the 9 ZR-510 tests (152+9=161). No failures and no regressions observed; numeric expectation in the acceptance text is a combined-suite count. Not a defect.",
-      "id": "ZR510-REV-001",
-      "severity": "info",
-      "title": "Regression run count is 152, not the stated 161"
-    },
-    {
-      "detail": "attribute_document previously filtered ONLY blank lines while ZR-506 content_line_count/detect_sections also exclude '## ' and '<!--' and '# ' lines — chunk offsets drifted on production bodies (reproduced: 紫金 content chunk came back 'unattributed'; no cross-entity misattribution, BR-06/07 held). FIXED in wiki 26a6b22: attribute_document now reuses the same content-line filter (locator/heading lines excluded) + new locator-bearing alignment test; 10 collected green.",
-      "id": "ZR510-REV-002",
-      "severity": "minor",
-      "title": "Offset coordinate divergence between attribute_document and ZR-506 content-line filtering under production pairing"
-    },
-    {
-      "detail": "C3 candidate set inherited ZR-503's noisy company_phrases ('股份有限公司' fragment could shadow full names via substring containment with a single declared entity). FIXED in wiki 26a6b22: candidate-set substring decontamination (proper substrings of another candidate dropped, longest-first); 陕西 chunk attributes to 陕西煤业股份有限公司, not the legal-form suffix.",
-      "id": "ZR510-REV-003",
-      "severity": "minor",
-      "title": "Candidate-set pollution from ZR-503 company_phrases can yield non-entity attribution values on the C3 wiring"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-510 independent review; REV-002/003 minor findings fixed in wiki 26a6b22 (verified: 10 collected + full regression 121 green after fix)",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "665f4293383a81957a2dcccf1b42fe1a11d219a8",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff ea9c49b 524a535 --stat; git status --short",
+   "exit_code": 0,
+   "result": "exactly 3 files, +315: attribution.py (+88, new), normalizer.py (+19, modified), test_zr510_attribution.py (+208, new). Status: only expected pre-existing dirt."
   },
-  "reviewed_object_sha256": "8f52cd405071a034eacb59bbc0c76e3ebd84c0e1a08d2113917ddb5f5bcb0d50",
-  "reviewer": "reviewer-zr510-independent",
-  "schema_version": 1,
-  "unit": "ZR-510",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr510_attribution.py -q --tb=short",
+   "exit_code": 0,
+   "result": "9 passed (C1 x3, C2 x2, C3 x2, C4 x2) in 0.32s"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr509_html_capture.py tests/contract/test_zr508_scheduler.py tests/contract/test_zr507_processing_demand.py tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
+   "exit_code": 0,
+   "result": "152 passed in 1.63s (stated expectation 161 = 152 + the 9 ZR-510 tests; full contract suite 161, zero failures, zero regressions)"
+  },
+  {
+   "command": "python %TEMP%\\zr510_adversarial_check.py (sys.path->src; 22 checks incl. Changjiang-shaped doc, mixed chunk, determinism, frontmatter wiring, zero-hardcoding grep; plus locator-line production-pairing probe)",
+   "exit_code": 0,
+   "result": "22/22 checks passed: 紫金->紫金矿业集团股份有限公司, 陕西->陕西煤业股份有限公司, risk->unattributed, misattribution==0; both entities -> mixed; single 紫金 phrase -> full name; two runs identical; multi-entity doc -> chunk_attribution present len==chunk_count==4 with ZR-501..509 fields coexisting; single-entity doc -> key absent; no 紫金矿业/陕西煤业 in attribution.py"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/attribution.py src/company_wiki/source_catalog/normalizer.py tests/contract/test_zr510_attribution.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  }
+ ],
+ "created_at_utc": "2026-08-19T20:51:27+00:00",
+ "findings": [
+  {
+   "detail": "The 12-file regression command returns 152 passed (all green). 161 is the total including the 9 ZR-510 tests (152+9=161). No failures and no regressions observed; numeric expectation in the acceptance text is a combined-suite count. Not a defect.",
+   "id": "ZR510-REV-001",
+   "severity": "info",
+   "title": "Regression run count is 152, not the stated 161"
+  },
+  {
+   "detail": "attribute_document previously filtered ONLY blank lines while ZR-506 content_line_count/detect_sections also exclude '## ' and '<!--' and '# ' lines — chunk offsets drifted on production bodies (reproduced: 紫金 content chunk came back 'unattributed'; no cross-entity misattribution, BR-06/07 held). FIXED in wiki 26a6b22: attribute_document now reuses the same content-line filter (locator/heading lines excluded) + new locator-bearing alignment test; 10 collected green.",
+   "id": "ZR510-REV-002",
+   "severity": "minor",
+   "title": "Offset coordinate divergence between attribute_document and ZR-506 content-line filtering under production pairing"
+  },
+  {
+   "detail": "C3 candidate set inherited ZR-503's noisy company_phrases ('股份有限公司' fragment could shadow full names via substring containment with a single declared entity). FIXED in wiki 26a6b22: candidate-set substring decontamination (proper substrings of another candidate dropped, longest-first); 陕西 chunk attributes to 陕西煤业股份有限公司, not the legal-form suffix.",
+   "id": "ZR510-REV-003",
+   "severity": "minor",
+   "title": "Candidate-set pollution from ZR-503 company_phrases can yield non-entity attribution values on the C3 wiring"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-510 independent review; REV-002/003 minor findings fixed in wiki 26a6b22 (verified: 10 collected + full regression 121 green after fix)",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "665f4293383a81957a2dcccf1b42fe1a11d219a8",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "reviewed_object_sha256": "a01d1c85b1da3f6f3342f0bfb6f4fd75c7933c52903e2c871521bc4130a7abf4",
+ "reviewer": "reviewer-zr510-independent",
+ "schema_version": 1,
+ "unit": "ZR-510",
+ "verdict": "accepted"
 }

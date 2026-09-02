@@ -1,115 +1,115 @@
 {
-  "base_triplet": {
-    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
-    "revenue": "b8ebce507c675ea8a9083386219a179ea7c20d31",
-    "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+ "base_triplet": {
+  "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+  "revenue": "b8ebce507c675ea8a9083386219a179ea7c20d31",
+  "wiki": "a608980f7662a5e4f2dcd2535461904c4aa94c31"
+ },
+ "canonical_hash": "075a29f691f34ad96b726208e08ec29b2da888c1cd29884a6b7142d52b15736f",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD; git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD~1; git -C C:\\Users\\郑曾波\\Projects\\filing-fetch rev-parse HEAD; git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
+   "exit_code": 0,
+   "result": "wiki HEAD=251615ea9eb524b3c1d8594b3d6b004423a8ccfd, parent=a608980f7662a5e4f2dcd2535461904c4aa94c31; filing HEAD=df667966928b6c7d72c19685be01f45268eaba5e; revenue HEAD=b8ebce507c675ea8a9083386219a179ea7c20d31 — all match claimed triplets"
   },
-  "canonical_hash": "97e562bdc7371c3cae5e853b22d11700eea5d9fa330363f720c9bbb70e3bad59",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD; git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD~1; git -C C:\\Users\\郑曾波\\Projects\\filing-fetch rev-parse HEAD; git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD",
-      "exit_code": 0,
-      "result": "wiki HEAD=251615ea9eb524b3c1d8594b3d6b004423a8ccfd, parent=a608980f7662a5e4f2dcd2535461904c4aa94c31; filing HEAD=df667966928b6c7d72c19685be01f45268eaba5e; revenue HEAD=b8ebce507c675ea8a9083386219a179ea7c20d31 — all match claimed triplets"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 251615e",
-      "exit_code": 0,
-      "result": "exactly 5 files: architecture_gate.py, policy_2x.py, policy_3x.py, tests/contract/test_fc1201_root_hardcode_gate.py, tests/unit/test_policy_3x.py; 384 insertions / 5 deletions; parent=a608980f7662a5e4f2dcd2535461904c4aa94c31"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_policy_3x.py -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "12 passed"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "787 passed — matches implementer claim; no regression from policy_2x yaml_schema_version change"
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py tests/contract/test_fc1201_root_hardcode_gate.py tests/contract/test_root_policy_2x.py tests/contract/test_dropbox_root_policy_fc501.py tests/contract/test_future_root_config_only.py -q --tb=short (company-wiki)",
-      "exit_code": 0,
-      "result": "28 passed, 1 skipped (29 collected) — implementer receipt claimed 43 passed, brief expected 43 passed + 1 skipped; see finding ZR401-REV-002"
-    },
-    {
-      "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/policy_3x.py (base python; mypy not installed in wiki venv)",
-      "exit_code": 0,
-      "result": "Success: no issues found in 1 source file (mypy 1.19.0)"
-    },
-    {
-      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-401/11_implementer_receipt.json (revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt canonical and well-formed; recomputed canonical_hash be5f1cbe1369128ef5d176043482011ea2964ad6cae69a4aeb0a6cb3371218b7 matches"
-    },
-    {
-      "command": "python -m uc.cli state-show (revenue-forecast/assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "units.ZR-401.status=independent_review; current_next=ZR-401; current_phase=D_lifecycle_roots_freshness"
-    },
-    {
-      "command": "AST McCabe (FC-1204 method) over src/company_wiki/source_catalog/policy_3x.py",
-      "exit_code": 0,
-      "result": "max 8 (load_root_policy_3x=8, export_root_policy_3x=5, _privacy_rule=4) <= 10; ratchet contract test green"
-    },
-    {
-      "command": "python zr401_probe.py (company-wiki venv) — 3.0 loader edge probes",
-      "exit_code": 0,
-      "result": "company_raw WITHOUT privacy_class -> LOADED with implicit public (2.x default, see finding REV-001); company_raw privacy_class=null -> REJECTED; external directory WITHOUT privacy_class -> REJECTED (private_user required)"
-    },
-    {
-      "command": "git -C company-wiki diff a608980 251615e -- src/company_wiki/source_catalog/config.py; git status --porcelain",
-      "exit_code": 0,
-      "result": "config.py diff = 0 lines (unchanged at HEAD; production NOT switched to 3.0 — finding REV-003); dirty tree: D .claude/settings.local.json, M llm_cost_log.csv (pre-existing), ?? .coverage, ?? coverage.json (reviewer test-run artifacts); no tracked repo file modified by reviewer"
-    },
-    {
-      "command": "python sha256 receipts/ZR-401/00_wu_card.md",
-      "exit_code": 0,
-      "result": "4d36301fcd01397c78b472bdf6bb9d5c3c951ca9427a85407dc775a716bad919 — does NOT match receipt plan_sha256 861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7 (finding REV-005)"
-    }
-  ],
-  "created_at_utc": "2026-08-17T22:36:00+00:00",
-  "findings": [
-    {
-      "detail": "A 3.0 config whose company_raw root omits privacy_class LOADS with implicit privacy=public (policy_2x loader default, policy_2x.py:151; the 3.0 gate reads the already-defaulted spec attribute). The required-gate only fires on explicit null/empty; external-root omission is rejected via the kind rule. No implicit permission EXPANSION occurs (public is the only legal company_raw value), so the mandatory evidence 'no implicit permission expansion' holds; but the card criterion '缺失即失败' and the receipt claim 'privacy_class 必填（无默认值）' are slightly overstated. Recommend an explicit-presence check on the raw YAML to fully match the criterion.",
-      "id": "ZR401-REV-001",
-      "severity": "minor",
-      "title": "privacy_class required-no-default not literal for company_raw"
-    },
-    {
-      "detail": "Implementer receipt command log records '43 passed' for the five-file contract command and the review brief expected '43 passed, 1 skipped'; the independent run of the identical command at HEAD collected 29 items -> 28 passed, 1 skipped (exit 0, all green). Counts in receipt and brief are stale/incorrect; no test failure.",
-      "id": "ZR401-REV-002",
-      "severity": "info",
-      "title": "Contract test-count overclaim/stale"
-    },
-    {
-      "detail": "config.py has zero diff at HEAD (still the legacy loader). The receipt explicitly discloses the deferral (production switch to ZR-403/404 / stage D exit, rollback discipline). The plan card acceptance criterion '生产 config 加载切到 3.0 loader' is conditional and is NOT implemented at HEAD — the coordinator should record an explicit acceptance decision on this documented deviation.",
-      "id": "ZR401-REV-003",
-      "severity": "info",
-      "title": "Production config not switched to 3.0 loader"
-    },
-    {
-      "detail": "mypy is not installed in the wiki venv; ran base-python mypy 1.19.0 (Success). Reviewer ran only the mandated suites. Working tree had pre-existing dirty files (D .claude/settings.local.json, M llm_cost_log.csv); test runs generated untracked .coverage / coverage.json. No tracked repo file was modified by the reviewer.",
-      "id": "ZR401-REV-004",
-      "severity": "info",
-      "title": "Environment notes"
-    },
-    {
-      "detail": "Implementer receipt records plan_sha256=861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7 but the current receipts/ZR-401/00_wu_card.md hashes to 4d36301fcd01397c78b472bdf6bb9d5c3c951ca9427a85407dc775a716bad919 (card likely updated after plan freeze, e.g. claim timestamp 2026-08-18T11:00Z). Verify which artifact the frozen plan hash refers to.",
-      "id": "ZR401-REV-005",
-      "severity": "info",
-      "title": "plan_sha256 mismatch"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-401 independent review",
-  "result_triplet": {
-    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
-    "revenue": "b8ebce507c675ea8a9083386219a179ea7c20d31",
-    "wiki": "251615ea9eb524b3c1d8594b3d6b004423a8ccfd"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki show --stat 251615e",
+   "exit_code": 0,
+   "result": "exactly 5 files: architecture_gate.py, policy_2x.py, policy_3x.py, tests/contract/test_fc1201_root_hardcode_gate.py, tests/unit/test_policy_3x.py; 384 insertions / 5 deletions; parent=a608980f7662a5e4f2dcd2535461904c4aa94c31"
   },
-  "reviewed_object_sha256": "5fb3edcb85050c5b611a9bb3985033fb9434784c5b782df9f6cd4e5fd737300c",
-  "reviewer": "reviewer-zr401-independent",
-  "schema_version": 1,
-  "unit": "ZR-401",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/unit/test_policy_3x.py -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "12 passed"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "787 passed — matches implementer claim; no regression from policy_2x yaml_schema_version change"
+  },
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_fc1204_complexity_ratchet.py tests/contract/test_fc1201_root_hardcode_gate.py tests/contract/test_root_policy_2x.py tests/contract/test_dropbox_root_policy_fc501.py tests/contract/test_future_root_config_only.py -q --tb=short (company-wiki)",
+   "exit_code": 0,
+   "result": "28 passed, 1 skipped (29 collected) — implementer receipt claimed 43 passed, brief expected 43 passed + 1 skipped; see finding ZR401-REV-002"
+  },
+  {
+   "command": "python -m mypy --config-file pyproject.toml src/company_wiki/source_catalog/policy_3x.py (base python; mypy not installed in wiki venv)",
+   "exit_code": 0,
+   "result": "Success: no issues found in 1 source file (mypy 1.19.0)"
+  },
+  {
+   "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-401/11_implementer_receipt.json (revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt canonical and well-formed; recomputed canonical_hash be5f1cbe1369128ef5d176043482011ea2964ad6cae69a4aeb0a6cb3371218b7 matches"
+  },
+  {
+   "command": "python -m uc.cli state-show (revenue-forecast/assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "units.ZR-401.status=independent_review; current_next=ZR-401; current_phase=D_lifecycle_roots_freshness"
+  },
+  {
+   "command": "AST McCabe (FC-1204 method) over src/company_wiki/source_catalog/policy_3x.py",
+   "exit_code": 0,
+   "result": "max 8 (load_root_policy_3x=8, export_root_policy_3x=5, _privacy_rule=4) <= 10; ratchet contract test green"
+  },
+  {
+   "command": "python zr401_probe.py (company-wiki venv) — 3.0 loader edge probes",
+   "exit_code": 0,
+   "result": "company_raw WITHOUT privacy_class -> LOADED with implicit public (2.x default, see finding REV-001); company_raw privacy_class=null -> REJECTED; external directory WITHOUT privacy_class -> REJECTED (private_user required)"
+  },
+  {
+   "command": "git -C company-wiki diff a608980 251615e -- src/company_wiki/source_catalog/config.py; git status --porcelain",
+   "exit_code": 0,
+   "result": "config.py diff = 0 lines (unchanged at HEAD; production NOT switched to 3.0 — finding REV-003); dirty tree: D .claude/settings.local.json, M llm_cost_log.csv (pre-existing), ?? .coverage, ?? coverage.json (reviewer test-run artifacts); no tracked repo file modified by reviewer"
+  },
+  {
+   "command": "python sha256 receipts/ZR-401/00_wu_card.md",
+   "exit_code": 0,
+   "result": "4d36301fcd01397c78b472bdf6bb9d5c3c951ca9427a85407dc775a716bad919 — does NOT match receipt plan_sha256 861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7 (finding REV-005)"
+  }
+ ],
+ "created_at_utc": "2026-08-17T22:36:00+00:00",
+ "findings": [
+  {
+   "detail": "A 3.0 config whose company_raw root omits privacy_class LOADS with implicit privacy=public (policy_2x loader default, policy_2x.py:151; the 3.0 gate reads the already-defaulted spec attribute). The required-gate only fires on explicit null/empty; external-root omission is rejected via the kind rule. No implicit permission EXPANSION occurs (public is the only legal company_raw value), so the mandatory evidence 'no implicit permission expansion' holds; but the card criterion '缺失即失败' and the receipt claim 'privacy_class 必填（无默认值）' are slightly overstated. Recommend an explicit-presence check on the raw YAML to fully match the criterion.",
+   "id": "ZR401-REV-001",
+   "severity": "minor",
+   "title": "privacy_class required-no-default not literal for company_raw"
+  },
+  {
+   "detail": "Implementer receipt command log records '43 passed' for the five-file contract command and the review brief expected '43 passed, 1 skipped'; the independent run of the identical command at HEAD collected 29 items -> 28 passed, 1 skipped (exit 0, all green). Counts in receipt and brief are stale/incorrect; no test failure.",
+   "id": "ZR401-REV-002",
+   "severity": "info",
+   "title": "Contract test-count overclaim/stale"
+  },
+  {
+   "detail": "config.py has zero diff at HEAD (still the legacy loader). The receipt explicitly discloses the deferral (production switch to ZR-403/404 / stage D exit, rollback discipline). The plan card acceptance criterion '生产 config 加载切到 3.0 loader' is conditional and is NOT implemented at HEAD — the coordinator should record an explicit acceptance decision on this documented deviation.",
+   "id": "ZR401-REV-003",
+   "severity": "info",
+   "title": "Production config not switched to 3.0 loader"
+  },
+  {
+   "detail": "mypy is not installed in the wiki venv; ran base-python mypy 1.19.0 (Success). Reviewer ran only the mandated suites. Working tree had pre-existing dirty files (D .claude/settings.local.json, M llm_cost_log.csv); test runs generated untracked .coverage / coverage.json. No tracked repo file was modified by the reviewer.",
+   "id": "ZR401-REV-004",
+   "severity": "info",
+   "title": "Environment notes"
+  },
+  {
+   "detail": "Implementer receipt records plan_sha256=861e28f9dc72864347041ef1a8b0deabf38afdb3581ffce5050cb794f361f3e7 but the current receipts/ZR-401/00_wu_card.md hashes to 4d36301fcd01397c78b472bdf6bb9d5c3c951ca9427a85407dc775a716bad919 (card likely updated after plan freeze, e.g. claim timestamp 2026-08-18T11:00Z). Verify which artifact the frozen plan hash refers to.",
+   "id": "ZR401-REV-005",
+   "severity": "info",
+   "title": "plan_sha256 mismatch"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-401 independent review",
+ "result_triplet": {
+  "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+  "revenue": "b8ebce507c675ea8a9083386219a179ea7c20d31",
+  "wiki": "251615ea9eb524b3c1d8594b3d6b004423a8ccfd"
+ },
+ "reviewed_object_sha256": "be5f1cbe1369128ef5d176043482011ea2964ad6cae69a4aeb0a6cb3371218b7",
+ "reviewer": "reviewer-zr401-independent",
+ "schema_version": 1,
+ "unit": "ZR-401",
+ "verdict": "accepted"
 }

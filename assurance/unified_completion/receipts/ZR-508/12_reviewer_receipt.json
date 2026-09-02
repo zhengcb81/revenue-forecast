@@ -1,80 +1,80 @@
 {
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "1e3f70560cae81d94ba2015efeb99521955fd2e4",
-    "wiki": "bd337c488bc8f0fcac8212451aab8fb0a7c68a74"
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "1e3f70560cae81d94ba2015efeb99521955fd2e4",
+  "wiki": "bd337c488bc8f0fcac8212451aab8fb0a7c68a74"
+ },
+ "canonical_hash": "0b457c6b4e47af824d6895244a58f2d5776db33ce817eac43e19d0cb9b9a7840",
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3; git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff bd337c4 8e2bf3f --stat; git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --short",
+   "exit_code": 0,
+   "result": "HEAD = 8e2bf3f (feat(ZR-508) scheduler fairness commit). Diff bd337c4..8e2bf3f: exactly 3 files — processing_demand.py (38 lines, single hunk in claim()), scheduler.py (+116 new), tests/contract/test_zr508_scheduler.py (+191 new). claim() gained additive keyword-only demand_id=None; the None path is byte-identical to ZR-507 logic (status/retry_at/lease_until filter + min by (-priority, created_at)); the demand_id path checks status and retry_at. status --short shows only allowed unrelated dirt."
   },
-  "canonical_hash": "a3222bf04daefc488909db9c124957e7dd11470616ada23d40c81086a5467b5f",
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\company-wiki log --oneline -3; git -C C:\\Users\\郑曾波\\Projects\\company-wiki diff bd337c4 8e2bf3f --stat; git -C C:\\Users\\郑曾波\\Projects\\company-wiki status --short",
-      "exit_code": 0,
-      "result": "HEAD = 8e2bf3f (feat(ZR-508) scheduler fairness commit). Diff bd337c4..8e2bf3f: exactly 3 files — processing_demand.py (38 lines, single hunk in claim()), scheduler.py (+116 new), tests/contract/test_zr508_scheduler.py (+191 new). claim() gained additive keyword-only demand_id=None; the None path is byte-identical to ZR-507 logic (status/retry_at/lease_until filter + min by (-priority, created_at)); the demand_id path checks status and retry_at. status --short shows only allowed unrelated dirt."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr508_scheduler.py tests/contract/test_zr507_processing_demand.py -q --tb=short",
-      "exit_code": 0,
-      "result": "25 passed in 0.37s (11 ZR-508 + 14 ZR-507); ZR-507 contract preserved."
-    },
-    {
-      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
-      "exit_code": 0,
-      "result": "115 passed in 1.83s, exit 0, no skips/failures. Brief stated 'expect 140 passed' — actual collection 115 (verified via --collect-only); 140 = 115 regression + 25 ZR-508/507. Full suite green either way."
-    },
-    {
-      "command": "%TEMP%\\zr508_adversarial.py (throwaway, sys.path->src, repo .venv python 3.14.2)",
-      "exit_code": 0,
-      "result": "20/20 adversarial checks passed: (a) RED: bare DemandQueue starves low (never claimed in 500 rounds, still pending/unleased); wrapped in DemandScheduler(aging_window=100) low claimed at t=50 and strictly wins at wait=100 (0+10 > 5+0); (b) equal waits prefer higher priority; raw priority frozen; (c) urgent p0/deadline70 vs normal p5 at now=20 -> urgent claimed, effective_priority 6; past-deadline schedulable with deadline_expired True; no deadline -> False; (d) limit 2 llm: kinds=[llm,llm,normalize], reset restores llm; (e) identical sequences -> identical tuples; idle -> None; claimed demand running/lease_owner/lease_until; (f) bare claim(owner,now) w/o demand_id returns highest raw priority and created-asc on priority ties."
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/scheduler.py src/company_wiki/source_catalog/processing_demand.py tests/contract/test_zr508_scheduler.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    }
-  ],
-  "created_at_utc": "2026-08-19T20:35:20+00:00",
-  "findings": [
-    {
-      "detail": "The 9-file regression command collects and passes exactly 115 tests (verified twice: run and --collect-only). 140 = 115 regression + 25 ZR-508/507, i.e. the full contract suite count. All 115 pass with exit 0 and zero skips — no defect, purely a count discrepancy in the brief.",
-      "id": "ZR508-REV-001",
-      "severity": "info",
-      "title": "Regression command collects 115 tests, not the 140 stated in the brief"
-    },
-    {
-      "detail": "The aging design guarantees no starvation once wait >= aging_window ONLY when (p_high - p_low) <= aging_max_bonus, because aging is capped. With defaults (aging_max_bonus=10) and the tested gap (5), at wait=100 low's effective (0+10=10) strictly exceeds any fresh high (5+0=5), so the C1 scenario is starvation-free regardless of tie-break. The cap is a configurable constructor knob; this bounded-bonus property is inherent to the stated design, not a defect.",
-      "id": "ZR508-REV-002",
-      "severity": "info",
-      "title": "'Never starved' guarantee is conditional on priority gap <= aging_max_bonus"
-    },
-    {
-      "detail": "At now=20 both demands have waited 20s, so aging=1 for each: urgent effective = 0+1+5 = 6, normal effective = 5+1 = 6 — a tie resolved by snapshot order (demand_id asc, urgent is pd-0). The urgency bonus is still decisive (without it urgent would score 1 < normal 5), and the acceptance outcome (urgent claimed, effective_priority==6) holds. Deterministic and correct; noted for accuracy.",
-      "id": "ZR508-REV-003",
-      "severity": "info",
-      "title": "C2 urgency test outcome relies on deterministic tie-break, not a strict margin"
-    },
-    {
-      "detail": "The scheduler's ready filter and the additive claim(demand_id=...) branch check status and retry_at but not lease_until, unlike the default claim path. This is unreachable double-claim territory today because a leased demand always has status 'running' (rejected by the status check) — the ZR-507 lifecycle clears the lease on fail/complete/expire. Asymmetry worth documenting; not a current correctness issue.",
-      "id": "ZR508-REV-004",
-      "severity": "info",
-      "title": "schedule_once/claim(demand_id) omit the lease_until check present in the default claim path"
-    },
-    {
-      "detail": "Replay shows low is claimed at t=50, where aging int(10*50/100)=5 ties the fresh high's 5 and snapshot order favors pd-0. The design guarantee is unaffected: at wait=100 the margin is strict (10 > 5), so low is claimed by t=50 at the latest and can never be starved in this scenario. The unit test passes as shipped.",
-      "id": "ZR508-REV-005",
-      "severity": "info",
-      "title": "C1 starvation test claims low at t=50, earlier than the brief's 'waiting >= 100'"
-    }
-  ],
-  "kind": "reviewer",
-  "note": "ZR-508 independent review",
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "1e3f70560cae81d94ba2015efeb99521955fd2e4",
-    "wiki": "8e2bf3fbc3ea1009df82e3546dfffecfd9a50101"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr508_scheduler.py tests/contract/test_zr507_processing_demand.py -q --tb=short",
+   "exit_code": 0,
+   "result": "25 passed in 0.37s (11 ZR-508 + 14 ZR-507); ZR-507 contract preserved."
   },
-  "reviewed_object_sha256": "16283519c2024038deeb090a5ddcc33f9c3bc5638bab04926fc8235a4b25a192",
-  "reviewer": "reviewer-zr508-independent",
-  "schema_version": 1,
-  "unit": "ZR-508",
-  "verdict": "accepted"
+  {
+   "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr506_section_chunk_fact.py tests/contract/test_zr505_table_fidelity.py tests/contract/test_zr504_page_fidelity.py tests/contract/test_zr503_multi_entity_attribution.py tests/contract/test_zr502_homepage_identity.py tests/contract/test_zr501_broker_metadata_contract.py tests/contract/test_fc1301_reason_taxonomy.py tests/contract/test_evidence_span_contract.py tests/contract/test_fc1204_complexity_ratchet.py -q --tb=short",
+   "exit_code": 0,
+   "result": "115 passed in 1.83s, exit 0, no skips/failures. Brief stated 'expect 140 passed' — actual collection 115 (verified via --collect-only); 140 = 115 regression + 25 ZR-508/507. Full suite green either way."
+  },
+  {
+   "command": "%TEMP%\\zr508_adversarial.py (throwaway, sys.path->src, repo .venv python 3.14.2)",
+   "exit_code": 0,
+   "result": "20/20 adversarial checks passed: (a) RED: bare DemandQueue starves low (never claimed in 500 rounds, still pending/unleased); wrapped in DemandScheduler(aging_window=100) low claimed at t=50 and strictly wins at wait=100 (0+10 > 5+0); (b) equal waits prefer higher priority; raw priority frozen; (c) urgent p0/deadline70 vs normal p5 at now=20 -> urgent claimed, effective_priority 6; past-deadline schedulable with deadline_expired True; no deadline -> False; (d) limit 2 llm: kinds=[llm,llm,normalize], reset restores llm; (e) identical sequences -> identical tuples; idle -> None; claimed demand running/lease_owner/lease_until; (f) bare claim(owner,now) w/o demand_id returns highest raw priority and created-asc on priority ties."
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check --no-cache src/company_wiki/source_catalog/scheduler.py src/company_wiki/source_catalog/processing_demand.py tests/contract/test_zr508_scheduler.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  }
+ ],
+ "created_at_utc": "2026-08-19T20:35:20+00:00",
+ "findings": [
+  {
+   "detail": "The 9-file regression command collects and passes exactly 115 tests (verified twice: run and --collect-only). 140 = 115 regression + 25 ZR-508/507, i.e. the full contract suite count. All 115 pass with exit 0 and zero skips — no defect, purely a count discrepancy in the brief.",
+   "id": "ZR508-REV-001",
+   "severity": "info",
+   "title": "Regression command collects 115 tests, not the 140 stated in the brief"
+  },
+  {
+   "detail": "The aging design guarantees no starvation once wait >= aging_window ONLY when (p_high - p_low) <= aging_max_bonus, because aging is capped. With defaults (aging_max_bonus=10) and the tested gap (5), at wait=100 low's effective (0+10=10) strictly exceeds any fresh high (5+0=5), so the C1 scenario is starvation-free regardless of tie-break. The cap is a configurable constructor knob; this bounded-bonus property is inherent to the stated design, not a defect.",
+   "id": "ZR508-REV-002",
+   "severity": "info",
+   "title": "'Never starved' guarantee is conditional on priority gap <= aging_max_bonus"
+  },
+  {
+   "detail": "At now=20 both demands have waited 20s, so aging=1 for each: urgent effective = 0+1+5 = 6, normal effective = 5+1 = 6 — a tie resolved by snapshot order (demand_id asc, urgent is pd-0). The urgency bonus is still decisive (without it urgent would score 1 < normal 5), and the acceptance outcome (urgent claimed, effective_priority==6) holds. Deterministic and correct; noted for accuracy.",
+   "id": "ZR508-REV-003",
+   "severity": "info",
+   "title": "C2 urgency test outcome relies on deterministic tie-break, not a strict margin"
+  },
+  {
+   "detail": "The scheduler's ready filter and the additive claim(demand_id=...) branch check status and retry_at but not lease_until, unlike the default claim path. This is unreachable double-claim territory today because a leased demand always has status 'running' (rejected by the status check) — the ZR-507 lifecycle clears the lease on fail/complete/expire. Asymmetry worth documenting; not a current correctness issue.",
+   "id": "ZR508-REV-004",
+   "severity": "info",
+   "title": "schedule_once/claim(demand_id) omit the lease_until check present in the default claim path"
+  },
+  {
+   "detail": "Replay shows low is claimed at t=50, where aging int(10*50/100)=5 ties the fresh high's 5 and snapshot order favors pd-0. The design guarantee is unaffected: at wait=100 the margin is strict (10 > 5), so low is claimed by t=50 at the latest and can never be starved in this scenario. The unit test passes as shipped.",
+   "id": "ZR508-REV-005",
+   "severity": "info",
+   "title": "C1 starvation test claims low at t=50, earlier than the brief's 'waiting >= 100'"
+  }
+ ],
+ "kind": "reviewer",
+ "note": "ZR-508 independent review",
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "1e3f70560cae81d94ba2015efeb99521955fd2e4",
+  "wiki": "8e2bf3fbc3ea1009df82e3546dfffecfd9a50101"
+ },
+ "reviewed_object_sha256": "cb34ed85d5f617d8f3683aa5b3a64978bc720cf20229c6f306b41150d0416b7a",
+ "reviewer": "reviewer-zr508-independent",
+ "schema_version": 1,
+ "unit": "ZR-508",
+ "verdict": "accepted"
 }

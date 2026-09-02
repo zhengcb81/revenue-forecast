@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "kind": "reviewer",
+  "unit": "ZR-403",
+  "reviewer": "reviewer-zr403-independent",
+  "note": "ZR-403 independent review",
+  "base_triplet": {
+    "wiki": "57cd72e07800d5a0f3d1628475d6665e8a9a6302",
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "7d1119965d3c07aa27748561d95f1dff47cf1867"
+  },
+  "result_triplet": {
+    "wiki": "87ee0ac2c64b2c48ac6c5ff58829650a275cdf9d",
+    "filing": "df667966928b6c7d72c19685be01f45268eaba5e",
+    "revenue": "7d1119965d3c07aa27748561d95f1dff47cf1867"
+  },
+  "reviewed_object_sha256": "7648c2b154ad8de1591b74bd96239e3dd42a7ca63a5fc1401519580c018bb4f3",
+  "created_at_utc": "2026-08-18T18:40:35+00:00",
+  "verdict": "accepted",
+  "commands": [
+    {
+      "command": "git rev-parse HEAD / HEAD^ (company-wiki); git rev-parse HEAD (filing-fetch); git rev-parse HEAD (revenue-forecast)",
+      "exit_code": 0,
+      "result": "wiki HEAD=87ee0ac2c64b2c48ac6c5ff58829650a275cdf9d parent=57cd72e07800d5a0f3d1628475d6665e8a9a6302; filing HEAD=df667966928b6c7d72c19685be01f45268eaba5e (unchanged); revenue HEAD=7d1119965d3c07aa27748561d95f1dff47cf1867 (== receipt base_triplet.revenue; at-or-after satisfied)"
+    },
+    {
+      "command": "git show --stat 87ee0ac; git diff 57cd72e 87ee0ac --stat (company-wiki)",
+      "exit_code": 0,
+      "result": "exactly 1 file changed (+399 insertions): tests/contract/test_zr403_dedupe_resolver_generalization.py; product delta ZERO (no other file in the 57cd72e..87ee0ac diff)"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/test_zr403_dedupe_resolver_generalization.py -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "7 passed in 10.59s (collected 7)"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/contract/{fc603,fc604,determinism,reusable_roots,fail_closed,latest_mode,query_bundle,sql_pushdown,zr403} -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "42 passed in 32.16s (9 files: 7 new + 35 pre-existing dedupe/resolver/reusable-root/fail-closed/determinism; no regression)"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests/unit -q --tb=short (company-wiki)",
+      "exit_code": 0,
+      "result": "787 passed in 52.75s (no regression)"
+    },
+    {
+      "command": "python -m ruff check tests/contract/test_zr403_dedupe_resolver_generalization.py; python -m ruff format --check (company-wiki, base python 3.13.9, ruff 0.15.18)",
+      "exit_code": 0,
+      "result": "All checks passed!; 1 file already formatted"
+    },
+    {
+      "command": "python -m mypy --config-file pyproject.toml tests/contract/test_zr403_dedupe_resolver_generalization.py (company-wiki, mypy 1.19.0)",
+      "exit_code": 0,
+      "result": "Success: no issues found in 1 source file"
+    },
+    {
+      "command": "re-run red probe (patched WIKI path -> git worktree at base 57cd72e, temp out) : .venv\\Scripts\\python.exe %TEMP%\\zr403_red_probe_base.py %TEMP%\\zr403-red-recheck.json %TEMP%\\zr403-red-scratch",
+      "exit_code": 0,
+      "result": "red_confirmed=True; G1/G2/G3/G4 all survivor=true; re-run evidence JSON byte-identical to archived (sha256 8273efbbc2711f68f1cc25147b1b79d54a36600576a4d9df7c0dc42c996e4bbf); company-wiki git status --porcelain unchanged before/after (only pre-existing dirt: D .claude/settings.local.json, M llm_cost_log.csv, ?? .coverage, ?? coverage.json); temp worktree removed after"
+    },
+    {
+      "command": ".venv\\Scripts\\python.exe -c \"CatalogStore fresh catalog; PRAGMA table_info(locations)\" (company-wiki)",
+      "exit_code": 0,
+      "result": "is_canonical NOT among the 14 locations columns (location_id, root_id, relative_path, absolute_path, source_id, document_id, role, location_status, observed_size, observed_mtime_ns, last_seen_run, manifest_json, metadata_json, error) — canonical is derived on read"
+    },
+    {
+      "command": "grep future_lake test_cross_root_dedup_fc603.py; grep forward/reversed/shuffle test_cross_root_dedup_fc603.py + test_source_catalog_determinism.py; read fail-closed rejections/retired tests",
+      "exit_code": 0,
+      "result": "G1: fc603 has NO future_lake; G4: fc603 pins exactly forward + list(reversed(roots)) (lines 146-147); determinism 100-random test shuffles INSERT order (steps dict, random.shuffle(order) line 238), NOT config root order; G2: fail_closed rejection/retired tests are single-document refusals (no same-content cross-root healthy-vs-unhealthy priority competition)"
+    },
+    {
+      "command": "sha256 of tests/contract/test_zr403_dedupe_resolver_generalization.py @ HEAD, receipts/ZR-403/00_wu_card.md, receipts/ZR-403/red/zr403_red_evidence.json",
+      "exit_code": 0,
+      "result": "test file=7648c2b154ad8de1591b74bd96239e3dd42a7ca63a5fc1401519580c018bb4f3 (== claimed reviewed_object_sha256); wu card=45643d556d24ca07e501207fa15e73be6641c44d85c24f9c07a356a8cd14385b (== claimed plan_sha256, current bytes); red evidence=8273efbbc2711f68f1cc25147b1b79d54a36600576a4d9df7c0dc42c996e4bbf (== claimed)"
+    },
+    {
+      "command": "python -m uc.cli receipt-validate --receipt receipts/ZR-403/11_implementer_receipt.json (from assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "OK: receipt ... is canonical and well-formed"
+    },
+    {
+      "command": "python -m uc.cli state-show (from assurance/unified_completion)",
+      "exit_code": 0,
+      "result": "units.ZR-403.status=independent_review; current_next=ZR-403; current_phase=D_lifecycle_roots_freshness; ZR-402 accepted with closure.next=ZR-403 (dependency satisfied)"
+    },
+    {
+      "command": "read tests/contract/test_zr403_dedupe_resolver_generalization.py (399 lines) and map to criteria C1-C4",
+      "exit_code": 0,
+      "result": "C1: test_c1_four_contexts_one_document_canonical_lowest_priority + test_c1_future_lake_wins_on_priority (four roots company_raw/dayu_portfolio/dropbox_stock/future_lake, same bytes -> one document, 4 active original_primary locations, canonical=lowest priority incl. future_lake p5 wins); C2: test_c2_retired_high_priority_location_never_canonical (p10 retired -> dayu p20 canonical, REUSED_EXACT, duplicate_count=2) + test_c2_rejections_path_loses_to_healthy_lower_priority (UPDATE documents SET source_status='active' leak, .rejections never canonical); C3: test_c3_locations_schema_has_no_canonical_column + test_c3_resolve_and_queries_leave_database_bytes_unchanged (wal_checkpoint(TRUNCATE) fingerprint, resolve+service annotated read, sha256 unchanged); C4: test_c4_random_config_orders_produce_identical_catalogs (seed 20260818, 10 shuffles, own catalog each, identical canonical signature)"
+    }
+  ],
+  "findings": [
+    {
+      "id": "ZR403-REV-001",
+      "severity": "info",
+      "title": "Implementer prose overstates the .rejections test priority placement",
+      "detail": "ZR403-IMPL-002 claims the .rejections location is at the highest priority ('.rejections 最高优先级位置'), but in test_c2_rejections_path_loses_to_healthy_lower_priority the .rejections root is dropbox_stock at priority 30 while company_raw p10 is highest. The pinned properties are nonetheless real and distinct: (a) health-beats-priority is pinned by test_c2_retired_high_priority_location_never_canonical (p10 retired vs p20 healthy -> dayu canonical, REUSED_EXACT, duplicate_count=2), exactly matching C2's 'higher-priority unhealthy + lower-priority healthy' wording; (b) the .rejections test pins that a .rejections location never becomes canonical even when forced active (UPDATE source_status='active' leak), with the healthy p10 copy winning. Prose-only overstatement; no acceptance criterion is unmet."
+    }
+  ],
+  "canonical_hash": "0c2000a0b6d01ca044a7d2ee43f9c3405b95aebe9ff75e45b70147ac35166375"
+}

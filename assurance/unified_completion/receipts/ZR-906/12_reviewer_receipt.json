@@ -1,118 +1,118 @@
 {
-  "unit": "ZR-906",
-  "reviewer": "reviewer-zr906-independent",
-  "kind": "reviewer",
-  "schema_version": 1,
-  "verdict": "accepted",
-  "reviewed_object_sha256": "ddd1719c8d815633802c7650398f9a6a7f2e31bb2ad2d5b4938b5623439818fd",
-  "commands": [
-    {
-      "command": "git log --oneline -3 && git show --stat 65c9ad6 && git rev-parse 65c9ad6",
-      "exit_code": 0,
-      "result": "HEAD=65c9ad6 (REV-001/002/003 fix commit), parent=7865c72; commit touches exactly 2 files (tests/test_zr906_final_ratchet.py +29, tools/final_ratchet.py +38/-8); full sha 65c9ad657a787cd8c73fac28315e9b5e2db725bf"
-    },
-    {
-      "command": "git diff 7865c72 65c9ad6 -- scripts/",
-      "exit_code": 0,
-      "result": "EMPTY — zero production changes (scripts/ untouched) ✓"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr906_final_ratchet.py -q --tb=short",
-      "exit_code": 0,
-      "result": "12 passed (9 original + test_d1 baseline==69, test_d2 triple-quoted assignment is code, test_d3 non-py BOM)"
-    },
-    {
-      "command": "python probe_delta.py (independent delta probes, %TEMP%\\zr906-reviewer\\)",
-      "exit_code": 1,
-      "result": "18/19 PASS. REV-001 baseline==69 PASS; REV-002 triple-quoted assignment detected, eol-closer docstring NOT flagged, code after eol-closer scanned PASS; REV-003 BOM in .json/.yaml/.yml/.md + undecodable .py all detected PASS; real scripts/ hardcode==[] legacy==[] encoding==[] PASS; aggregator scanners-only exit 0 six-gates-all-ok PASS. 1 FAIL: one-line docstring \"\"\"Foo.\"\"\" leaves docstring state stuck -> following code skipped -> hardcode false negative (see DREV-001)"
-    },
-    {
-      "command": "python tools/final_ratchet.py --scripts scripts --print-json (FULL six-gate run at delta, background ~11 min)",
-      "exit_code": 0,
-      "result": "ALL SIX GATES ok=true: hardcode/legacy/encoding zero hits; complexity 'complexity ratchet OK'; type 'mypy errors 69 (baseline 69)'; coverage 'coverage gates rc=0 ... 89% PER-MODULE COVERAGE OK'. Aggregator EXIT_CODE=0 (was 1 at 7865c72) — REV-001 verified fixed end-to-end; run_coverage_gates no hang"
-    },
-    {
-      "command": "python tools/final_ratchet.py --scripts <tmp-with-Zijin> --scanners-only (negative probe)",
-      "exit_code": 1,
-      "result": "hardcode RED -> exit 1 (worst-gate exit code preserved)"
-    },
-    {
-      "command": "python tools/final_ratchet.py --scripts scripts --scanners-only (non-JSON mode)",
-      "exit_code": 0,
-      "result": "'complexity: OK skipped (scanners-only)' — REV-004 spacing fixed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
-      "exit_code": 0,
-      "result": "874 passed, 3 deselected (fc1103), 106 subtests passed in 166.37s — matches implementer claim (871 + 3 new)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check tools/final_ratchet.py tools/run_coverage_gates.py tests/test_zr906_final_ratchet.py",
-      "exit_code": 0,
-      "result": "All checks passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
-      "exit_code": 0,
-      "result": "Ran 2 tests ... OK"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr904_release_gate.py tests/test_zr905_audit_self_test.py -q --timeout=180",
-      "exit_code": 0,
-      "result": "25 passed"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-906/11_implementer_receipt.json",
-      "exit_code": 0,
-      "result": "OK: canonical and well-formed — BUT result_triplet.revenue still 7865c72 (stale, not 65c9ad6) and text still says 'mypy 基线 2'/'9 tests' (see DREV-002)"
-    },
-    {
-      "command": "git status --porcelain assurance/ && git diff assurance/unified_completion/state.json && grep triplet_green assurance/unified_completion/uc/strict_state.py",
-      "exit_code": 0,
-      "result": "receipts/ZR-906/ untracked; state.json working-tree-only ZR-906 entry status=triplet_green (valid strict_state status; not advanced to independent_review); receipt dir untracked convention — closure-commit artifact (see DREV-003)"
-    },
-    {
-      "command": "Grep scripts/ for hardcode terms + one-line docstring census",
-      "exit_code": 0,
-      "result": "Only 2 term occurrences in entire scripts/ tree, both in asset_ownership.py docstrings (lines 18, 174 — module + function docstring, verified by reading context). 84 one-line docstrings (start+end triple-quote same line) in scripts/ — stuck-state risk surface"
-    }
-  ],
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "7df930f1412f764ace9fd4fc73a6c2fd8a460c73",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ "unit": "ZR-906",
+ "reviewer": "reviewer-zr906-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "8e439c0b105fda567dd62561fcfd4b87d69d41b7183f5aea56267a0eba8ab5fe",
+ "commands": [
+  {
+   "command": "git log --oneline -3 && git show --stat 65c9ad6 && git rev-parse 65c9ad6",
+   "exit_code": 0,
+   "result": "HEAD=65c9ad6 (REV-001/002/003 fix commit), parent=7865c72; commit touches exactly 2 files (tests/test_zr906_final_ratchet.py +29, tools/final_ratchet.py +38/-8); full sha 65c9ad657a787cd8c73fac28315e9b5e2db725bf"
   },
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "65c9ad657a787cd8c73fac28315e9b5e2db725bf",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git diff 7865c72 65c9ad6 -- scripts/",
+   "exit_code": 0,
+   "result": "EMPTY — zero production changes (scripts/ untouched) ✓"
   },
-  "findings": [
-    {
-      "id": "DREV-001",
-      "severity": "info",
-      "title": "Residual docstring-state edge case: one-line docstring leaves the state machine stuck, skipping following code (scan_hardcode false-negative route)",
-      "detail": "A line that both opens and closes a docstring on the same line (\"\"\"Foo.\"\"\") toggles in_docstring to True and is never closed (the same-line closing quotes are not processed), so all following code lines are skipped as 'docstring'. Probe: file '\\\"\\\"\\\"One-liner docstring.\\\"\\\"\\\"\\ndef f():\\n    return \\'Zijin\\'' returns [] from scan_hardcode — the code-level hardcode is MISSED. 84 such one-line docstrings exist in scripts/. This is PRE-EXISTING (present in the original 7865c72 implementation too — not a regression of the REV-002 fix, which correctly addressed end-of-line closers and triple-quoted assignments). No current real-code miss: the entire scripts/ tree contains only 2 hardcode-term occurrences, both in docstrings. Non-blocking heuristic limitation; recommended follow-up: treat a line starting AND ending with the triple quote as a single-line block that does not change state, or switch to AST-based code-line extraction."
-    },
-    {
-      "id": "DREV-002",
-      "severity": "minor",
-      "title": "Implementer receipt not updated for the delta: result_triplet.revenue still 7865c72, text still says 'mypy 基线 2' and '9 tests'",
-      "detail": "commit 65c9ad6 touches only tests/test_zr906_final_ratchet.py and tools/final_ratchet.py; receipts/ZR-906/11_implementer_receipt.json is unchanged (result_triplet.revenue=7865c7265b2a7d6753cf7d4557293bbb88613dfb, canonical_hash 8e439c0b, design/findings text reference 'mypy 冻结基线 2' and '9 tests'). receipt-validate passes (canonical/well-formed) but the receipt misrepresents the current state: the shipped MYPY_BASELINE is 69 and the suite has 12 tests, and result_triplet should be 65c9ad6. Non-blocking documentation-accuracy issue; recommend the implementer update the receipt (result_triplet + baseline/test-count text) and fold the correction into the acceptance/closure commit."
-    },
-    {
-      "id": "DREV-003",
-      "severity": "info",
-      "title": "State/artifact housekeeping: ZR-906 state entry (triplet_green) and receipts/ZR-906/ live only in the working tree",
-      "detail": "git status shows state.json modified (ZR-906 entry, status triplet_green — a valid strict_state machine status) and receipts/ZR-906/ untracked; 65c9ad6 committed neither. The state was not advanced to independent_review for this re-review. Consistent with the closure-commit convention (receipts/docs committed at closure per anti-drift rule, cf. ZR-905), so noted as info; coordinator should commit the state/receipts and advance state at acceptance."
-    },
-    {
-      "id": "DREV-004",
-      "severity": "info",
-      "title": "Stale module docstring: tools/final_ratchet.py header still says type gate baseline '(2 pre-existing)'",
-      "detail": "Module docstring line 8 reads 'type mypy errors on scripts/ <= frozen baseline (2 pre-existing).' while MYPY_BASELINE is now 69 (the inline comment above the constant correctly documents the measured 69). Cosmetic doc/impl mismatch; the measured-69 comment is authoritative."
-    }
-  ],
-  "created_at_utc": "2026-08-23T01:24:03+00:00",
-  "canonical_hash": "7af2979c6f68bdebc6e7adef7f241ecda142355b664e49e7907b652c21d90218"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr906_final_ratchet.py -q --tb=short",
+   "exit_code": 0,
+   "result": "12 passed (9 original + test_d1 baseline==69, test_d2 triple-quoted assignment is code, test_d3 non-py BOM)"
+  },
+  {
+   "command": "python probe_delta.py (independent delta probes, %TEMP%\\zr906-reviewer\\)",
+   "exit_code": 1,
+   "result": "18/19 PASS. REV-001 baseline==69 PASS; REV-002 triple-quoted assignment detected, eol-closer docstring NOT flagged, code after eol-closer scanned PASS; REV-003 BOM in .json/.yaml/.yml/.md + undecodable .py all detected PASS; real scripts/ hardcode==[] legacy==[] encoding==[] PASS; aggregator scanners-only exit 0 six-gates-all-ok PASS. 1 FAIL: one-line docstring \"\"\"Foo.\"\"\" leaves docstring state stuck -> following code skipped -> hardcode false negative (see DREV-001)"
+  },
+  {
+   "command": "python tools/final_ratchet.py --scripts scripts --print-json (FULL six-gate run at delta, background ~11 min)",
+   "exit_code": 0,
+   "result": "ALL SIX GATES ok=true: hardcode/legacy/encoding zero hits; complexity 'complexity ratchet OK'; type 'mypy errors 69 (baseline 69)'; coverage 'coverage gates rc=0 ... 89% PER-MODULE COVERAGE OK'. Aggregator EXIT_CODE=0 (was 1 at 7865c72) — REV-001 verified fixed end-to-end; run_coverage_gates no hang"
+  },
+  {
+   "command": "python tools/final_ratchet.py --scripts <tmp-with-Zijin> --scanners-only (negative probe)",
+   "exit_code": 1,
+   "result": "hardcode RED -> exit 1 (worst-gate exit code preserved)"
+  },
+  {
+   "command": "python tools/final_ratchet.py --scripts scripts --scanners-only (non-JSON mode)",
+   "exit_code": 0,
+   "result": "'complexity: OK skipped (scanners-only)' — REV-004 spacing fixed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests -q --timeout=120 -k \"not fc1103\"",
+   "exit_code": 0,
+   "result": "874 passed, 3 deselected (fc1103), 106 subtests passed in 166.37s — matches implementer claim (871 + 3 new)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check tools/final_ratchet.py tools/run_coverage_gates.py tests/test_zr906_final_ratchet.py",
+   "exit_code": 0,
+   "result": "All checks passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+   "exit_code": 0,
+   "result": "Ran 2 tests ... OK"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr904_release_gate.py tests/test_zr905_audit_self_test.py -q --timeout=180",
+   "exit_code": 0,
+   "result": "25 passed"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-906/11_implementer_receipt.json",
+   "exit_code": 0,
+   "result": "OK: canonical and well-formed — BUT result_triplet.revenue still 7865c72 (stale, not 65c9ad6) and text still says 'mypy 基线 2'/'9 tests' (see DREV-002)"
+  },
+  {
+   "command": "git status --porcelain assurance/ && git diff assurance/unified_completion/state.json && grep triplet_green assurance/unified_completion/uc/strict_state.py",
+   "exit_code": 0,
+   "result": "receipts/ZR-906/ untracked; state.json working-tree-only ZR-906 entry status=triplet_green (valid strict_state status; not advanced to independent_review); receipt dir untracked convention — closure-commit artifact (see DREV-003)"
+  },
+  {
+   "command": "Grep scripts/ for hardcode terms + one-line docstring census",
+   "exit_code": 0,
+   "result": "Only 2 term occurrences in entire scripts/ tree, both in asset_ownership.py docstrings (lines 18, 174 — module + function docstring, verified by reading context). 84 one-line docstrings (start+end triple-quote same line) in scripts/ — stuck-state risk surface"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "7df930f1412f764ace9fd4fc73a6c2fd8a460c73",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "65c9ad657a787cd8c73fac28315e9b5e2db725bf",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "findings": [
+  {
+   "id": "DREV-001",
+   "severity": "info",
+   "title": "Residual docstring-state edge case: one-line docstring leaves the state machine stuck, skipping following code (scan_hardcode false-negative route)",
+   "detail": "A line that both opens and closes a docstring on the same line (\"\"\"Foo.\"\"\") toggles in_docstring to True and is never closed (the same-line closing quotes are not processed), so all following code lines are skipped as 'docstring'. Probe: file '\\\"\\\"\\\"One-liner docstring.\\\"\\\"\\\"\\ndef f():\\n    return \\'Zijin\\'' returns [] from scan_hardcode — the code-level hardcode is MISSED. 84 such one-line docstrings exist in scripts/. This is PRE-EXISTING (present in the original 7865c72 implementation too — not a regression of the REV-002 fix, which correctly addressed end-of-line closers and triple-quoted assignments). No current real-code miss: the entire scripts/ tree contains only 2 hardcode-term occurrences, both in docstrings. Non-blocking heuristic limitation; recommended follow-up: treat a line starting AND ending with the triple quote as a single-line block that does not change state, or switch to AST-based code-line extraction."
+  },
+  {
+   "id": "DREV-002",
+   "severity": "minor",
+   "title": "Implementer receipt not updated for the delta: result_triplet.revenue still 7865c72, text still says 'mypy 基线 2' and '9 tests'",
+   "detail": "commit 65c9ad6 touches only tests/test_zr906_final_ratchet.py and tools/final_ratchet.py; receipts/ZR-906/11_implementer_receipt.json is unchanged (result_triplet.revenue=7865c7265b2a7d6753cf7d4557293bbb88613dfb, canonical_hash 8e439c0b, design/findings text reference 'mypy 冻结基线 2' and '9 tests'). receipt-validate passes (canonical/well-formed) but the receipt misrepresents the current state: the shipped MYPY_BASELINE is 69 and the suite has 12 tests, and result_triplet should be 65c9ad6. Non-blocking documentation-accuracy issue; recommend the implementer update the receipt (result_triplet + baseline/test-count text) and fold the correction into the acceptance/closure commit."
+  },
+  {
+   "id": "DREV-003",
+   "severity": "info",
+   "title": "State/artifact housekeeping: ZR-906 state entry (triplet_green) and receipts/ZR-906/ live only in the working tree",
+   "detail": "git status shows state.json modified (ZR-906 entry, status triplet_green — a valid strict_state machine status) and receipts/ZR-906/ untracked; 65c9ad6 committed neither. The state was not advanced to independent_review for this re-review. Consistent with the closure-commit convention (receipts/docs committed at closure per anti-drift rule, cf. ZR-905), so noted as info; coordinator should commit the state/receipts and advance state at acceptance."
+  },
+  {
+   "id": "DREV-004",
+   "severity": "info",
+   "title": "Stale module docstring: tools/final_ratchet.py header still says type gate baseline '(2 pre-existing)'",
+   "detail": "Module docstring line 8 reads 'type mypy errors on scripts/ <= frozen baseline (2 pre-existing).' while MYPY_BASELINE is now 69 (the inline comment above the constant correctly documents the measured 69). Cosmetic doc/impl mismatch; the measured-69 comment is authoritative."
+  }
+ ],
+ "created_at_utc": "2026-08-23T01:24:03+00:00",
+ "canonical_hash": "4ae6138c8c538c5b7f4b21a59da0d876b3d56f443902f72ae6ee62da724bb8b6"
 }

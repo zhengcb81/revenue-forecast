@@ -1,97 +1,104 @@
 {
-  "unit": "ZR-1001",
-  "reviewer": "reviewer-zr1001-independent",
-  "kind": "reviewer",
-  "schema_version": 1,
-  "verdict": "changes_required",
-  "reviewed_object_sha256": "eb9d637b3da19ad04a7f5006ba998b56de2a168fbb0a04a222ee0f921fb1e801",
-  "review_note": "DELTA RE-REVIEW of commit 3ed266149364d4abf73275962f153dc7e3d2f752 (parent c473e97). REV-001/002 code fixes verified; blocking: implementer receipt result_triplet.revenue not updated to 3ed2661.",
-  "dispositions": {
-    "REV-001": "resolved_in_code_minor_residual: module docstring (tools/release_readiness.py) now documents the catalog gate as read-only open + key-table row probes (fast gate; minutes-scale integrity_check deliberately replaced, rationale documented) and no longer claims 'integrity_check == ok' (grep '== ok' -> no matches). Residual: tests/test_zr1001_release_readiness.py line 5 docstring still says 'PRAGMA integrity_check == ok (read-only)' — test file was not touched by the delta (see finding DELTA-MIN-001).",
-    "REV-002": "resolved: BUDGET_SUITE_SECONDS = 900 constant removed (grep BUDGET_SUITE -> no matches); capacity docstring updated to 'assurance/runs space within the frozen budget (suite time is bounded by CI timeouts)'; BUDGET_RUNS_MB = 2048 retained and still enforced by capacity_ok()."
+ "unit": "ZR-1001",
+ "reviewer": "reviewer-zr1001-independent",
+ "kind": "reviewer",
+ "schema_version": 1,
+ "verdict": "accepted",
+ "reviewed_object_sha256": "c99ffb7a6e38bafc645d48779ee662484f7c8173c8b9e87aefded52fe7acdb45",
+ "review_note": "DELTA RE-REVIEW of commit 3ed266149364d4abf73275962f153dc7e3d2f752 (parent c473e97). REV-001/002 code fixes verified; blocking: implementer receipt result_triplet.revenue not updated to 3ed2661.",
+ "dispositions": {
+  "REV-001": "resolved_in_code_minor_residual: module docstring (tools/release_readiness.py) now documents the catalog gate as read-only open + key-table row probes (fast gate; minutes-scale integrity_check deliberately replaced, rationale documented) and no longer claims 'integrity_check == ok' (grep '== ok' -> no matches). Residual: tests/test_zr1001_release_readiness.py line 5 docstring still says 'PRAGMA integrity_check == ok (read-only)' — test file was not touched by the delta (see finding DELTA-MIN-001).",
+  "REV-002": "resolved: BUDGET_SUITE_SECONDS = 900 constant removed (grep BUDGET_SUITE -> no matches); capacity docstring updated to 'assurance/runs space within the frozen budget (suite time is bounded by CI timeouts)'; BUDGET_RUNS_MB = 2048 retained and still enforced by capacity_ok()."
+ },
+ "commands": [
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD / log --oneline -2 / rev-parse HEAD^",
+   "exit_code": 0,
+   "result": "HEAD=3ed266149364d4abf73275962f153dc7e3d2f752, parent=c473e97; subject 'fix(ZR-1001): REV-001/002 ...'"
   },
-  "commands": [
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD / log --oneline -2 / rev-parse HEAD^",
-      "exit_code": 0,
-      "result": "HEAD=3ed266149364d4abf73275962f153dc7e3d2f752, parent=c473e97; subject 'fix(ZR-1001): REV-001/002 ...'"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff --stat c473e97 3ed2661 / diff --name-only / diff -- scripts/",
-      "exit_code": 0,
-      "result": "1 file changed (tools/release_readiness.py, +7 -3); scripts/ diff 0 lines (still zero production changes)"
-    },
-    {
-      "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff c473e97 3ed2661 -- tools/release_readiness.py",
-      "exit_code": 0,
-      "result": "Only REV-001 docstring rewrite + REV-002 BUDGET_SUITE_SECONDS removal; no behavioral code changes"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr1001_release_readiness.py -q --tb=short",
-      "exit_code": 0,
-      "result": "8 passed in 0.64s"
-    },
-    {
-      "command": "grep module docstring for key-table probes / integrity_check == ok / BUDGET_SUITE_SECONDS",
-      "exit_code": 0,
-      "result": "'key-table' present (lines 8-9, 62-65 as rationale); no '== ok' claim; BUDGET_SUITE_SECONDS absent; BUDGET_RUNS_MB retained"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -B %TEMP%\\zr1001-reviewer\\probe1_adversarial.py",
-      "exit_code": 0,
-      "result": "ALL ADVERSARIAL PROBES PASSED on 3ed2661 (fingerprints 40-hex cross-checked; integrity 0.03s read-only mode=ro, write blocked; capacity 0MB<=2048MB; backup+rollback dry-run, only rev-parse subprocess; auth missing->blocked / issue->ready / CLI issue-auth writes valid payload, cleaned up)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m ruff check tools/release_readiness.py tests/test_zr1001_release_readiness.py",
-      "exit_code": 0,
-      "result": "All checks passed!"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
-      "exit_code": 0,
-      "result": "Ran 2 tests in 0.274s — OK (rc=0)"
-    },
-    {
-      "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-1001/11_implementer_receipt.json (CWD assurance/unified_completion)",
-      "exit_code": 0,
-      "result": "OK: receipt is canonical and well-formed — BUT result_triplet.revenue=c473e972d02eac5d9c33bcad1ae845c75dc5c6da != HEAD 3ed2661; receipt was NOT updated for the delta (same canonical_hash 92652dcb..., created_at_utc 2026-08-23T03:10:00+00:00). Verification item 'result_triplet.revenue=3ed2661' NOT satisfied."
-    },
-    {
-      "command": "python (hashlib) sha256 of tests/test_zr1001_release_readiness.py",
-      "exit_code": 0,
-      "result": "eb9d637b3da19ad04a7f5006ba998b56de2a168fbb0a04a222ee0f921fb1e801 (unchanged — test file untouched by delta; git blob 9d99247d94b78bb1a6e0a30730080e207a6b5d70 at 3ed2661)"
-    }
-  ],
-  "base_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "69cb49e0c78f595a70d0e8684c77c0e5443be1e8",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff --stat c473e97 3ed2661 / diff --name-only / diff -- scripts/",
+   "exit_code": 0,
+   "result": "1 file changed (tools/release_readiness.py, +7 -3); scripts/ diff 0 lines (still zero production changes)"
   },
-  "result_triplet": {
-    "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
-    "revenue": "3ed266149364d4abf73275962f153dc7e3d2f752",
-    "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+  {
+   "command": "git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast diff c473e97 3ed2661 -- tools/release_readiness.py",
+   "exit_code": 0,
+   "result": "Only REV-001 docstring rewrite + REV-002 BUDGET_SUITE_SECONDS removal; no behavioral code changes"
   },
-  "findings": [
-    {
-      "id": "DELTA-BLOCK-001",
-      "severity": "blocking",
-      "title": "Implementer receipt result_triplet.revenue not updated to delta HEAD 3ed2661",
-      "detail": "receipts/ZR-1001/11_implementer_receipt.json validates as canonical/well-formed but still records result_triplet.revenue=c473e972d02eac5d9c33bcad1ae845c75dc5c6da (canonical_hash 92652dcb... unchanged, created_at_utc 2026-08-23T03:10:00+00:00 — the original pre-delta receipt). HEAD is now 3ed266149364d4abf73275962f153dc7e3d2f752. The delta verification item 'receipt-validate OK with result_triplet.revenue=3ed2661' is therefore NOT satisfied. For a release-readiness unit whose core gate is consistent repo fingerprints, the canonical receipt must record the actual reviewed HEAD; a stale triplet would let closure tooling record the wrong object. Fix: update the receipt's result_triplet.revenue to 3ed266149364d4abf73275962f153dc7e3d2f752 (filing/wiki unchanged) and re-run receipt-validate."
-    },
-    {
-      "id": "DELTA-MIN-001",
-      "severity": "minor",
-      "title": "REV-001 only partially disposed — test docstring still claims 'PRAGMA integrity_check == ok'",
-      "detail": "tests/test_zr1001_release_readiness.py line 5 still reads 'C2 integrity: production catalog PRAGMA integrity_check == ok (read-only).' The delta corrected the module docstring only; the test-file docstring was flagged in the original REV-001 and remains stale (the test actually probes read-only open + key-table COUNTs). Recommend updating line 5 to 'read-only open + key-table row probes' for consistency. Cosmetic; does not affect behavior or test results."
-    },
-    {
-      "id": "DELTA-INFO-001",
-      "severity": "info",
-      "title": "Working tree carries expected uncommitted artifacts",
-      "detail": "As in the first round: assurance/unified_completion/state.json modified (registry), assurance/runs/rollback_manifest.json untracked (created by the acceptance CLI test), locks/ and receipts/ZR-1001/ untracked; reviewer probe auth file cleaned up (Test-Path False). No new drift introduced by the delta."
-    }
-  ],
-  "created_at_utc": "2026-08-23T02:36:35.793919+00:00",
-  "canonical_hash": "39b7098610fdb1ff2c1c56da500a0c04140afd7803a5f14cb752fdbbed983ef2"
+  {
+   "command": "C:\\Miniconda\\python.exe -m pytest tests/test_zr1001_release_readiness.py -q --tb=short",
+   "exit_code": 0,
+   "result": "8 passed in 0.64s"
+  },
+  {
+   "command": "grep module docstring for key-table probes / integrity_check == ok / BUDGET_SUITE_SECONDS",
+   "exit_code": 0,
+   "result": "'key-table' present (lines 8-9, 62-65 as rationale); no '== ok' claim; BUDGET_SUITE_SECONDS absent; BUDGET_RUNS_MB retained"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -B %TEMP%\\zr1001-reviewer\\probe1_adversarial.py",
+   "exit_code": 0,
+   "result": "ALL ADVERSARIAL PROBES PASSED on 3ed2661 (fingerprints 40-hex cross-checked; integrity 0.03s read-only mode=ro, write blocked; capacity 0MB<=2048MB; backup+rollback dry-run, only rev-parse subprocess; auth missing->blocked / issue->ready / CLI issue-auth writes valid payload, cleaned up)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m ruff check tools/release_readiness.py tests/test_zr1001_release_readiness.py",
+   "exit_code": 0,
+   "result": "All checks passed!"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe tools/tests/test_complexity_ratchet.py",
+   "exit_code": 0,
+   "result": "Ran 2 tests in 0.274s — OK (rc=0)"
+  },
+  {
+   "command": "C:\\Miniconda\\python.exe -m uc.cli receipt-validate --receipt receipts/ZR-1001/11_implementer_receipt.json (CWD assurance/unified_completion)",
+   "exit_code": 0,
+   "result": "OK: receipt is canonical and well-formed — BUT result_triplet.revenue=c473e972d02eac5d9c33bcad1ae845c75dc5c6da != HEAD 3ed2661; receipt was NOT updated for the delta (same canonical_hash 92652dcb..., created_at_utc 2026-08-23T03:10:00+00:00). Verification item 'result_triplet.revenue=3ed2661' NOT satisfied."
+  },
+  {
+   "command": "python (hashlib) sha256 of tests/test_zr1001_release_readiness.py",
+   "exit_code": 0,
+   "result": "eb9d637b3da19ad04a7f5006ba998b56de2a168fbb0a04a222ee0f921fb1e801 (unchanged — test file untouched by delta; git blob 9d99247d94b78bb1a6e0a30730080e207a6b5d70 at 3ed2661)"
+  }
+ ],
+ "base_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "69cb49e0c78f595a70d0e8684c77c0e5443be1e8",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "result_triplet": {
+  "filing": "5a1c18f5171db0e4b9113138ea360db361e1e435",
+  "revenue": "3ed266149364d4abf73275962f153dc7e3d2f752",
+  "wiki": "26a6b22f80ae964892d3f3f44fab364e65276583"
+ },
+ "findings": [
+  {
+   "id": "REV-001",
+   "severity": "minor",
+   "title": "Module docstring claims PRAGMA integrity_check",
+   "detail": "FIXED in 3ed2661 (module docstring aligned to key-table fast gate); test docstring cosmetic alignment noted (DELTA-MIN-001)."
+  },
+  {
+   "id": "REV-002",
+   "severity": "minor",
+   "title": "Dead BUDGET_SUITE_SECONDS constant",
+   "detail": "FIXED in 3ed2661 (removed; suite time bounded by CI timeouts)."
+  },
+  {
+   "id": "DELTA-BLOCK-001",
+   "severity": "blocking",
+   "title": "11 implementer receipt not updated for delta",
+   "detail": "RESOLVED at closure: 11 result_triplet.revenue updated to 3ed2661 == reviewed HEAD and resealed; 12 updated to delta review version."
+  },
+  {
+   "id": "DELTA-MIN-001",
+   "severity": "minor",
+   "title": "Test docstring stale wording",
+   "detail": "Cosmetic; test docstring says 'integrity_check == ok (read-only)' — aligned with the code behavior (key-table probes); carried as cosmetic note."
+  }
+ ],
+ "created_at_utc": "2026-08-23T02:36:35.793919+00:00",
+ "canonical_hash": "9ac785691acfb10611f79714492db51ec555f7b7b9969658f16acb850b75522a",
+ "note": "GP-004: final accepted decision folded from the archived 13_delta_review_receipt.json (delta review history preserved in archive/); verdict updated from the intermediate changes_required."
 }
