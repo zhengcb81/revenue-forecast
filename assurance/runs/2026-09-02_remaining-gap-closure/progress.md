@@ -20,7 +20,7 @@
 | GP-002 | v2 scanner 生产切入 | ✅ 完成（wiki 9809127） | 全量 2638p/0f；gp002 7p；独立复核 PASS（F401+O1 修复复核通过） |
 | GP-003 | worker privacy 过滤 | ✅ 完成（wiki c3a99c8） | 全量 2641p/0f；gp003 5p；独立复核 PASS（F401 修复复核） |
 | GP-004 | receipt 重签发 | ✅ 完成（revenue 04556d5） | 87→0 incomplete；41 uc tests passed；closure-report machine_valid:112 |
-| GP-005 | scenario 证据回填 | 🔄 部分完成（135/197 passed） | scenario_runner.py + 135 evidence; 11 blocked; 51 pending(BR/MINE) |
+| GP-005 | scenario 证据回填 | 🔄 部分完成（141/197 passed） | scenario_runner.py + 141 evidence; 11 blocked; 45 pending(BR/MINE) |
 | GP-006 | 真实 roots E2E 进 CI | ✅ 完成（revenue 43fab74） | windows-latest job + 9 sibling tests |
 | GP-007 | privacy_class 3.0 config | ✅ 完成（wiki c636516） | 4 roots privacy_class added; config_doctor OK |
 | GP-008 | legacy 观测起点注册 | 📋 部署指南就绪 | gp008_009_deployment_guide.md; 需管理员权限运行 schtasks register |
