@@ -131,6 +131,7 @@ GP-001（回归）→ GP-002（scanner）→ GP-003（worker）→ GP-004（rece
 - ✅ **GP-002 完成**（wiki 9809127）：v2 scanner 生产切入（D-1 closed）
 - ✅ **GP-003 完成**（wiki c3a99c8）：LLM exit receipt+privacy gate（D-2 closed）
 - ✅ **GP-004 完成**（revenue 04556d5）：receipt 重签发 87→0 incomplete（C-1 closed）
+- ✅ **GP-005 完成**（revenue 48b185c）：scenario runner + 141/197 passed（71.6%），56 blocked（11 T3/T4 + 45 BR/MINE 专用基础设施）
 - ✅ **GP-006 完成**（revenue 43fab74）：real-roots CI job + 9 sibling tests（D-3 closed）
 - ✅ **GP-007 完成**（wiki c636516）：privacy_class 配置升级（B-4 closed）
 - 📋 **GP-008/009 部署指南就绪**：schtasks register 命令文档化，需管理员权限执行
