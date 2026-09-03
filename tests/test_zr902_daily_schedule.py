@@ -254,3 +254,66 @@ def test_c5_register_action_needs_no_extra_flags():
     assert args.catalog == DEFAULT_CATALOG
     assert args.manifest == DEFAULT_MANIFEST
     assert args.report_root == DEFAULT_REPORT_ROOT
+
+
+# ---------------------------------------------------------------------------
+# C6 — FC-705 observation advancement wired into the daily run (GP-008)
+# ---------------------------------------------------------------------------
+
+
+def test_c6_fresh_periods_file_starts_at_period_one(tmp_path):
+    """First daily run opens period 1 when no periods ledger exists yet."""
+    from daily_t2_schedule import next_period_number
+
+    assert next_period_number(tmp_path / "absent.json") == 1
+
+
+def test_c6_next_period_after_open_window(tmp_path):
+    """A second (or later) daily run opens max+1; an open period never
+    blocks the next number (it is closed by the new run's bookkeeping)."""
+    from daily_t2_schedule import next_period_number
+
+    path = tmp_path / "periods.json"
+    path.write_text(json.dumps({
+        "periods": [
+            {"period": 1, "started_at": "2026-09-04T03:30:00Z",
+             "ended_at": "2026-09-05T03:30:00Z", "legacy_bridge_hits": 0},
+            {"period": 2, "started_at": "2026-09-05T03:30:00Z",
+             "ended_at": None, "legacy_bridge_hits": 0},
+        ]
+    }), encoding="utf-8")
+    assert next_period_number(path) == 3
+
+
+def test_c6_corrupt_periods_file_fails_closed_to_one(tmp_path):
+    """A corrupt ledger must not crash the scheduled run; it restarts the
+    observation sequence (fail closed — an open restart is never a pass)."""
+    from daily_t2_schedule import next_period_number
+
+    path = tmp_path / "periods.json"
+    path.write_text("{not json", encoding="utf-8")
+    assert next_period_number(path) == 1
+
+
+def test_c6_observer_argv_is_read_only_with_period_file():
+    """The daily observation step invokes the wiki legacy_observer with
+    --read-only and an explicit period file (the FC-705 periods ledger)."""
+    from daily_t2_schedule import (
+        DEFAULT_PERIODS,
+        LEGACY_OBSERVER,
+        observer_argv,
+    )
+
+    argv = observer_argv(
+        Path(r"C:\repos\company-wiki\.source_catalog\catalog.sqlite3"),
+        period=3,
+        periods_path=Path(r"C:\repos\revenue-forecast\assurance\runs\legacy_periods.json"),
+    )
+    assert argv[0] == sys.executable
+    assert Path(argv[2]).resolve() == LEGACY_OBSERVER.resolve()
+    assert "--read-only" in argv
+    assert argv[argv.index("--period") + 1] == "3"
+    assert "--period-file" in argv
+    assert "--catalog" in argv
+    # default ledger location for the real scheduled run
+    assert DEFAULT_PERIODS.name == "legacy_periods.json"

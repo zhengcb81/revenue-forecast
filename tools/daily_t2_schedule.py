@@ -44,6 +44,48 @@ DEFAULT_CATALOG = PROJECT_ROOT.parent / "company-wiki" / ".source_catalog" / "ca
 DEFAULT_MANIFEST = PROJECT_ROOT / "compatibility" / "current.json"
 DEFAULT_REPORT_ROOT = PROJECT_ROOT / "assurance" / "runs"
 
+# FC-705 observation advancement (GP-008): the daily run also advances the
+# legacy-observation periods ledger through the read-only wiki observer.
+# The observer writes ONLY the periods JSON (audit state under
+# assurance/runs) and never touches the production catalog (mode=ro +
+# query_only + _ReadOnlyCatalog).  Without this wiring the periods ledger
+# never accumulates and close_gate_allowed stays False forever.
+WIKI_ROOT = PROJECT_ROOT.parent / "company-wiki"
+LEGACY_OBSERVER = WIKI_ROOT / "scripts" / "legacy_observer.py"
+DEFAULT_PERIODS = PROJECT_ROOT / "assurance" / "runs" / "legacy_periods.json"
+
+
+def read_periods(path: Path) -> dict:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(data, dict) and isinstance(data.get("periods"), list):
+            return data
+    except (OSError, json.JSONDecodeError):
+        pass
+    return {"periods": []}
+
+
+def next_period_number(path: Path) -> int:
+    """Next FC-705 observation period: max existing + 1, or 1 on a fresh/
+    corrupt ledger (a corrupt ledger restarts the sequence — fail closed,
+    an open restart is never a pass)."""
+    numbered = [
+        p.get("period") for p in read_periods(path)["periods"]
+        if isinstance(p, dict) and isinstance(p.get("period"), int)
+    ]
+    return (max(numbered) + 1) if numbered else 1
+
+
+def observer_argv(catalog: Path, period: int, periods_path: Path) -> list[str]:
+    """argv for the read-only FC-705 legacy observer invocation."""
+    return [
+        sys.executable, "-B", str(LEGACY_OBSERVER),
+        "--catalog", str(catalog),
+        "--period", str(period),
+        "--period-file", str(periods_path),
+        "--read-only",
+    ]
+
 
 def _now_iso() -> str:
     return datetime.now(UTC).isoformat()
@@ -54,7 +96,8 @@ def _iso_to_utc(value: str) -> datetime:
 
 
 def write_ledger(path: Path, run_id: str, started_at: str, triplet: dict,
-                 ok: bool, report_path: str) -> None:
+                 ok: bool, report_path: str,
+                 observation_period: int | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "latest_run_id": run_id,
@@ -63,6 +106,8 @@ def write_ledger(path: Path, run_id: str, started_at: str, triplet: dict,
         "ok": ok,
         "report_path": report_path,
     }
+    if observation_period is not None:
+        payload["observation_period"] = observation_period
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -112,7 +157,8 @@ def release_gate(ledger_path: Path, *, now: str | None = None,
 
 
 def run_daily(catalog: Path, manifest: Path, report_root: Path,
-              ledger_path: Path, alert_path: Path) -> int:
+              ledger_path: Path, alert_path: Path,
+              periods_path: Path | None = None) -> int:
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     report_dir = report_root / run_id
     proc = subprocess.run(
@@ -121,21 +167,36 @@ def run_daily(catalog: Path, manifest: Path, report_root: Path,
          "--report-root", str(report_root), "--run-id", run_id],
         capture_output=True, text=True, errors="replace", timeout=600,
     )
+    # FC-705 observation: advance the periods ledger through the read-only
+    # legacy observer (a new period closes the previous one).  Observer
+    # failure makes the run not-ok (alert + release blocked) — the windows
+    # must not silently stop accumulating.
+    period_path = periods_path or DEFAULT_PERIODS
+    period = next_period_number(period_path)
+    obs = subprocess.run(
+        observer_argv(catalog, period, period_path),
+        capture_output=True, text=True, errors="replace", timeout=600,
+    )
+    if obs.returncode != 0:
+        obs_tail = (obs.stderr or obs.stdout or "")[-300:].strip()
+        print(f"observation period {period} FAILED: {obs_tail}", file=sys.stderr)
     started = _now_iso()
-    ok = proc.returncode == 0
+    ok = proc.returncode == 0 and obs.returncode == 0
     triplet = {"revenue": _head(PROJECT_ROOT),
                "filing": _head(PROJECT_ROOT.parent / "filing-fetch"),
                "wiki": _head(PROJECT_ROOT.parent / "company-wiki")}
     write_ledger(ledger_path, run_id, started, triplet, ok,
-                 str(report_dir / "report.json"))
+                 str(report_dir / "report.json"),
+                 observation_period=period if obs.returncode == 0 else None)
     status, detail = freshness_status(read_ledger(ledger_path), now=started)
     if status != "fresh":
         append_alert(alert_path, {
             "at_utc": started, "run_id": run_id, "status": status,
             "reason": detail, "exit_code": proc.returncode,
         })
-    print(f"run_id={run_id} ok={ok} status={status} detail={detail}")
-    return proc.returncode
+    print(f"run_id={run_id} ok={ok} observation_period={period} "
+          f"status={status} detail={detail}")
+    return proc.returncode or obs.returncode
 
 
 def _head(repo: Path) -> str:
@@ -226,6 +287,9 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
     run.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     run.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
+    run.add_argument("--periods", type=Path, default=DEFAULT_PERIODS,
+                     help="FC-705 periods ledger (default: assurance/runs/"
+                          "legacy_periods.json)")
     for name in ("register", "unregister", "query", "verify"):
         sub.add_parser(name)
     return parser
@@ -235,7 +299,8 @@ def main() -> int:
     args = build_parser().parse_args()
     if args.command == "run-daily":
         return run_daily(args.catalog, args.manifest, args.report_root,
-                         Path(args.ledger), Path(args.alerts))
+                         Path(args.ledger), Path(args.alerts),
+                         periods_path=args.periods)
     if args.command == "register":
         return cmd_register(args)
     if args.command == "unregister":
