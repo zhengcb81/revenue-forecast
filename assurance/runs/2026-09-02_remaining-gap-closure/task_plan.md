@@ -140,3 +140,7 @@ GP-001（回归）→ GP-002（scanner）→ GP-003（worker）→ GP-004（rece
 - 机器状态：accepted 117/117，current_next=CA-201（终局游标），plan_status=completed
 - 三仓 CI：wiki 50b44ba / revenue 3552795 / filing 89c8bdb 全绿
 - **2026-09-03 晚间更新**：余下缺口全为部署/自然时间层——① daily 调度 argparse 缺陷已修（revenue 3552795）；② N-1（FC-150x）+ R9 分批删除授权已获 owner 批准（n1_r9_removal_request.md）；③ 删除执行前置 = 两个 ≥24h 零 hit 观测窗口（最早 2026-09-06 03:30 后），批 1~3 待窗口满足；④ weekly T3/7 Daily/1 Monthly/1 drill 自然累积中（GP-009）。详见 progress.md 2026-09-03 晚间条目。
+- **交接状态（2026-09-03 22:16，自然时间等待中）**：
+  - 已完成：观测接线 revenue 630b554（run-daily 推进 periods）+ observer 快照门控 wiki 25a8eea（真实 catalog hits=0 实证）+ 首次真实 run-daily（20260903T211059Z，period 1 open、hits=0、ok=True）+ R9 批 1+2 精确执行套件（n1_r9_removal_request.md §3.2，单 commit 理由 + 文件/行号清单）。
+  - **恢复检查点（下次会话/轮次）**：① 检查 `assurance/runs/daily_manifest.json` 的 started_at/observation_period——若 ≥2026-09-04 03:30 且 period=2 → 调度任务真实触发，继续等 run3（09-05 03:30）→ gate（09-06 03:30 后 close_gate_allowed=True）；② 若仍为 20260903T211059Z/period=1 → 调度未触发，需 owner 提权核查 revenue_daily_t2 注册（schtasks /query /tn revenue_daily_t2）并修复；③ gate 打开后按 n1_r9_removal_request.md §3.2 执行批 1+2 单 commit（工具 4 文件 + 测试 5 文件 + quality.yml 重接线 + zr1102 节点替换），legacy-gate 复扫 + 三仓 CI 全绿后执行批 3（wiki，以 final_ratchet/legacy-gate 复扫清单为准）；④ weekly T3 周日 04:30（2026-09-06 首跑）与 monthly/drill 自然累积（GP-009）。
+  - 后台任务：pwsh-1 轮询 run2 至 09-04 03:50；pwsh-2 wiki 全量回归（25a8eea 验证）。
