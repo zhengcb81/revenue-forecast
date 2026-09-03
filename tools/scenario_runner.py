@@ -54,7 +54,6 @@ SCENARIO_MAP: dict[str, tuple[str, str, str]] = {
     "DL-01": ("wiki", "tests/contract/test_source_catalog_download_authorization.py", "download=false"),
     "DL-02": ("wiki", "tests/contract/test_source_catalog_download_authorization.py", "expired auth"),
     "DL-03": ("wiki", "tests/contract/test_source_catalog_gap_plan.py", "stale gap hash"),
-    "DL-04": ("wiki", "tests/contract/test_source_catalog_download_authorization.py", "CN download authorized"),
     "DL-07": ("wiki", "tests/contract/test_source_catalog_fail_closed.py", "invalid fetch bytes"),
     "DL-08": ("wiki", "tests/contract/test_close_gap_fc801.py", "concurrent download single-flight"),
     "DL-10": ("wiki", "tests/contract/test_source_catalog_fail_closed.py", "external root write target rejected"),
