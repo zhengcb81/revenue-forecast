@@ -6,7 +6,7 @@
 ## 状态总览
 
 - **起点**：117/117 accepted（机器真源 state.json）；三仓 CI ALL GREEN
-- **当前阶段**：GP-001~007 完成，GP-008/009 部署指南就绪，GP-010 申请文档完成。三仓 CI ALL GREEN。
+- **当前阶段**：GP-001~009 完成（GP-008/009 定时任务已注册），GP-010 申请文档就绪待批准。三仓 CI ALL GREEN。
 - **锁**：无（无活动 lease）
 
 ## GP 进度表
@@ -23,8 +23,8 @@
 | GP-005 | scenario 证据回填 | ✅ 完成（141/197 passed, 56 blocked） | scenario_runner.py + 141 evidence; 56 blocked(11 T3/T4 + 45 BR/MINE) |
 | GP-006 | 真实 roots E2E 进 CI | ✅ 完成（revenue 43fab74） | windows-latest job + 9 sibling tests |
 | GP-007 | privacy_class 3.0 config | ✅ 完成（wiki c636516） | 4 roots privacy_class added; config_doctor OK |
-| GP-008 | legacy 观测起点注册 | 📋 部署指南就绪 | gp008_009_deployment_guide.md; 需管理员权限运行 schtasks register |
-| GP-009 | 动态审核调度注册 | 📋 部署指南就绪 | gp008_009_deployment_guide.md; daily_t2 + weekly_t3 register |
+| GP-008 | legacy 观测起点注册 | ✅ 完成（2026-09-03 注册） | revenue_daily_t2 registered（每日 03:30 SYSTEM）；query registered |
+| GP-009 | 动态审核调度注册 | ✅ 完成（2026-09-03 注册） | revenue_weekly_t3 registered（周日 04:30 SYSTEM）；query registered |
 | GP-010 | 研报 cutover 授权申请 | ✅ 申请文档完成 | gp010_cohort_cutover_request.md; 待 KD-08 批准 |
 
 ## 变更记录
