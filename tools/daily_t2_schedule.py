@@ -110,7 +110,7 @@ def run_daily(catalog: Path, manifest: Path, report_root: Path,
         [sys.executable, "-B", str(RUNNER),
          "--catalog", str(catalog), "--manifest", str(manifest),
          "--report-root", str(report_root), "--run-id", run_id],
-        capture_output=True, text=True, encoding="utf-8", timeout=600,
+        capture_output=True, text=True, errors="replace", timeout=600,
     )
     started = _now_iso()
     ok = proc.returncode == 0
@@ -136,7 +136,7 @@ def _head(repo: Path) -> str:
 
 def _schtasks(args: list[str]) -> subprocess.CompletedProcess:
     return subprocess.run(["schtasks", *args], capture_output=True,
-                          text=True, encoding="utf-8", timeout=60)
+                          text=True, errors="replace", timeout=60)
 
 
 def task_status() -> tuple[str, str]:

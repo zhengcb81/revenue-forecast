@@ -56,7 +56,7 @@ def main(argv: list[str] | None = None) -> int:
     env["PYTHONIOENCODING"] = "utf-8"
     proc = subprocess.run(
         [sys.executable, "-B", "-m", "pytest", str(T3_TEST), "-q"],
-        capture_output=True, text=True, encoding="utf-8", timeout=1800,
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800,
         cwd=str(FILING_ROOT), env=env,
     )
     report["returncode"] = proc.returncode

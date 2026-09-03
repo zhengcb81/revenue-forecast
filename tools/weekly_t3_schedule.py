@@ -52,7 +52,7 @@ def _run_t3_suite(timeout: int = 3600) -> subprocess.CompletedProcess:
     env["FILING_FETCH_E2E_DOWNLOAD"] = "1"
     return subprocess.run(
         [sys.executable, "-B", "-m", "pytest", str(T3_SUITE), "-q", "--tb=short"],
-        capture_output=True, text=True, encoding="utf-8", timeout=timeout,
+        capture_output=True, text=True, errors="replace", timeout=timeout,
         env=env,
     )
 
@@ -91,7 +91,7 @@ def cmd_register_weekly(_args: argparse.Namespace) -> int:
     proc = subprocess.run(
         ["schtasks", "/create", "/tn", WEEKLY_TASK, "/tr", command,
          "/sc", "weekly", "/d", "SUN", "/st", "04:30", "/ru", "SYSTEM"],
-        capture_output=True, text=True, encoding="utf-8", timeout=60,
+        capture_output=True, text=True, errors="replace", timeout=60,
     )
     if proc.returncode != 0:
         print((proc.stderr or "register failed").strip(), file=sys.stderr)
@@ -103,7 +103,7 @@ def cmd_register_weekly(_args: argparse.Namespace) -> int:
 def cmd_query_weekly(_args: argparse.Namespace) -> int:
     proc = subprocess.run(
         ["schtasks", "/query", "/tn", WEEKLY_TASK, "/fo", "csv", "/v"],
-        capture_output=True, text=True, encoding="utf-8", timeout=60,
+        capture_output=True, text=True, errors="replace", timeout=60,
     )
     found = proc.returncode == 0
     print(f"task={WEEKLY_TASK} status={'registered' if found else 'missing'}")
@@ -113,7 +113,7 @@ def cmd_query_weekly(_args: argparse.Namespace) -> int:
 def cmd_unregister_weekly(_args: argparse.Namespace) -> int:
     proc = subprocess.run(
         ["schtasks", "/delete", "/tn", WEEKLY_TASK, "/f"],
-        capture_output=True, text=True, encoding="utf-8", timeout=60,
+        capture_output=True, text=True, errors="replace", timeout=60,
     )
     if proc.returncode != 0:
         print((proc.stderr or "unregister failed").strip(), file=sys.stderr)
