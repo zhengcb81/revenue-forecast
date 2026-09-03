@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -194,35 +195,80 @@ SCENARIO_MAP: dict[str, tuple[str, str, str]] = {
     "UJ-06": ("wiki", "tests/contract/test_source_catalog_resolver.py", "stale summary recompute"),
     "UJ-07": ("wiki", "tests/contract/test_source_catalog_fail_closed.py", "identity conflict fail"),
     "UJ-08": ("wiki", "tests/contract/test_source_catalog_resolver.py", "mixed period request"),
-    # BR: broker research - map core catalog behaviors
-    "BR-03": ("wiki", "tests/contract/test_source_catalog_fail_closed.py", "non-filing kind rejection"),
-    "BR-08": ("wiki", "tests/contract/test_source_catalog_resolver.py", "published_date NULL"),
-    "BR-19": ("wiki", "tests/contract/test_source_catalog_artifact_handle.py", "source bytes change"),
-    "BR-20": ("wiki", "tests/contract/test_zr403_dedupe_resolver_generalization.py", "cross-root dedup"),
+    # BR via ZR-501..510 broker-research infrastructure
+    "BR-01": ("wiki", "tests/contract/test_zr501_broker_metadata_contract.py", "metadata contract"),
+    "BR-02": ("wiki", "tests/contract/test_zr501_broker_metadata_contract.py", "sidecar as metadata"),
+    "BR-04": ("wiki", "tests/contract/test_zr502_homepage_identity.py", "homepage identity verify"),
+    "BR-05": ("wiki", "tests/contract/test_zr502_homepage_identity.py", "filename vs homepage conflict"),
+    "BR-06": ("wiki", "tests/contract/test_zr503_multi_entity_attribution.py", "multi-entity comparison"),
+    "BR-07": ("wiki", "tests/contract/test_zr510_attribution.py", "table row attribution"),
+    "BR-11": ("wiki", "tests/contract/test_zr504_page_fidelity.py", "page fidelity locators"),
+    "BR-12": ("wiki", "tests/contract/test_zr505_table_fidelity.py", "table structure fidelity"),
+    "BR-15": ("wiki", "tests/contract/test_zr505_table_fidelity.py", "cell-level units"),
+    "BR-17": ("wiki", "tests/contract/test_zr506_section_chunk_fact.py", "section chunk fact"),
+    "BR-18": ("wiki", "tests/contract/test_zr506_section_chunk_fact.py", "retrieval with locators"),
+    "BR-21": ("wiki", "tests/contract/test_gp003_llm_exit_receipt_privacy_gate.py", "private_user no LLM"),
+    "BR-22": ("wiki", "tests/contract/test_zr507_processing_demand.py", "concurrent processing demand"),
+    "BR-23": ("wiki", "tests/contract/test_zr507_processing_demand.py", "ready/partial/restart"),
+    "BR-24": ("wiki", "tests/contract/test_zr508_scheduler.py", "queue scheduling fairness"),
+    "BR-25": ("wiki", "tests/contract/test_zr509_html_capture.py", "html title/entity gate"),
+    "BR-26": ("wiki", "tests/contract/test_zr509_html_capture.py", "official announcement capture"),
+    "BR-14": ("wiki", "tests/contract/test_source_catalog_fail_closed.py", "corrupt/scanned pdf fail closed"),
+    "BR-10": ("wiki", "tests/contract/test_close_gap_fc801.py", "revision supersedes gap"),
+    "BR-09": ("wiki", "tests/contract/test_source_catalog_resolver.py", "latest selection"),
+    "BR-13": ("wiki", "tests/contract/test_zr504_page_fidelity.py", "font/decoding quality flags"),
+    "BR-16": ("revenue", "tests/test_management_targets.py", "target types distinction"),
+    # DL real-provider downloads (T3, authorized 2026-09-03)
+    "DL-04": ("filing", "tests/test_e2e_download.py", "::DownloadE2E::test_download_cn_annual_report", "CN real download"),
+    "DL-05": ("filing", "tests/test_e2e_download.py", "::DownloadE2E::test_download_hk_annual_report", "HK real download"),
+    "DL-06": ("filing", "tests/test_e2e_download.py", "::DownloadE2E::test_download_us_annual_report", "US real download"),
+    # CTRL/MIG rollback T1 layers (T4 production cohort stays blocked)
+    "CTRL-04": ("wiki", "tests/contract/test_activation_transaction.py", "rollback restores prior response"),
+    "MIG-04": ("wiki", "tests/contract/test_zr305_legacy_migration.py", "migration reversible"),
+    # AUD-06 T1 layer: all-skipped T3 must be BLOCKED, never a green
+    "AUD-06": ("revenue", "tests/test_ca203_weekly_t3.py", "T3 blocked not green"),
     # MINE: mining - map core catalog behaviors
     "MINE-13": ("wiki", "tests/contract/test_source_catalog_fail_closed.py", "unit conversion"),
     "MINE-24": ("wiki", "tests/contract/test_zr403_dedupe_resolver_generalization.py", "second company generalization"),
+    # MINE via ZR-601..611 mining-facts infrastructure (revenue)
+    "MINE-01": ("revenue", "tests/test_zr601_asset_facts.py", "asset scope"),
+    "MINE-02": ("revenue", "tests/test_zr601_asset_facts.py", "asset aliases"),
+    "MINE-03": ("revenue", "tests/test_zr601_asset_facts.py", "asset hierarchy"),
+    "MINE-04": ("revenue", "tests/test_zr602_asset_facts_basis.py", "resource/reserve predicates"),
+    "MINE-05": ("revenue", "tests/test_zr602_asset_facts_basis.py", "attribution basis"),
+    "MINE-06": ("revenue", "tests/test_zr603_ownership_timeline.py", "attributable production"),
+    "MINE-07": ("revenue", "tests/test_zr603_ownership_timeline.py", "controlled subsidiary 100%"),
+    "MINE-08": ("revenue", "tests/test_zr603_ownership_timeline.py", "equity-accounted 0%"),
+    "MINE-09": ("revenue", "tests/test_zr603_ownership_timeline.py", "ownership timeline"),
+    "MINE-10": ("revenue", "tests/test_zr604_conflict_resolution.py", "quantity conflict"),
+    "MINE-11": ("revenue", "tests/test_zr604_conflict_resolution.py", "dual assertion validity"),
+    "MINE-12": ("revenue", "tests/test_zr604_conflict_resolution.py", "residual unallocated"),
+    "MINE-14": ("revenue", "tests/test_zr605_mine_year_operation.py", "ore to saleable chain"),
+    "MINE-15": ("revenue", "tests/test_zr606_commercial_terms.py", "product forms byproducts"),
+    "MINE-16": ("revenue", "tests/test_zr606_commercial_terms.py", "realized price terms"),
+    "MINE-17": ("revenue", "tests/test_zr607_internal_flow.py", "internal sales elimination"),
+    "MINE-18": ("revenue", "tests/test_zr608_reconciliation.py", "mine subledger reconciliation"),
+    "MINE-19": ("revenue", "tests/test_zr608_reconciliation.py", "bridge gap handling"),
+    "MINE-20": ("revenue", "tests/test_zr605_mine_year_operation.py", "source horizon limit"),
+    "MINE-21": ("revenue", "tests/test_zr605_mine_year_operation.py", "low/base/high ordering"),
+    "MINE-22": ("revenue", "tests/test_zr604_conflict_resolution.py", "fact change impact"),
+    "MINE-23": ("revenue", "tests/test_zr609_zijin_pilot.py", "Zijin asset coverage"),
 }
 
 # Scenarios that need T3/T4 authorization — marked blocked
 BLOCKED_SCENARIOS = {
-    # DL: need real provider
-    "DL-04", "DL-05", "DL-06",
-    # LT: need real provider
+    # LT/UJ: real-provider combination journeys (download+latest closure
+    # across roots) - no existing test covers the exact semantics
     "LT-02", "LT-08", "LT-09",
-    # UJ: need real provider
     "UJ-03", "UJ-05",
-    # CTRL: need production canary
-    "CTRL-04",
-    # MIG: need production canary
-    "MIG-04",
-    # AUD: need real T3
-    "AUD-06",
 }
 
 
-def run_test(repo: str, test_file: str, timeout: int = 300) -> tuple[bool, str]:
-    """Run a single test file and return (passed, output_summary)."""
+def run_test(
+    repo: str, test_file: str, node: str | None = None, timeout: int = 600
+) -> tuple[bool, str]:
+    """Run a single test file (optionally one node id) and return
+    (passed, output_summary)."""
     repo_root = {
         "revenue": PROJECT_ROOT,
         "wiki": PROJECT_ROOT.parent / "company-wiki",
@@ -231,14 +277,20 @@ def run_test(repo: str, test_file: str, timeout: int = 300) -> tuple[bool, str]:
     test_path = repo_root / test_file
     if not test_path.exists():
         return False, f"test file not found: {test_file}"
+    env = dict(os.environ)
+    # T3 real-download tests are opt-in (authorized cohort cutover).
+    if "e2e_download" in test_file:
+        env["FILING_FETCH_E2E_DOWNLOAD"] = "1"
+    target = str(test_path) + (node or "")
     try:
         proc = subprocess.run(
-            [sys.executable, "-B", "-m", "pytest", str(test_path), "-q", "--tb=line"],
+            [sys.executable, "-B", "-m", "pytest", target, "-q", "--tb=line"],
             capture_output=True,
             text=True,
             encoding="utf-8",
             errors="replace",
             cwd=str(repo_root),
+            env=env,
             timeout=timeout,
         )
         passed = proc.returncode == 0
@@ -291,16 +343,20 @@ def main() -> int:
             results[sid] = {"status": "skipped_limit"}
             continue
 
-        repo, test_file, desc = mapping
+        if len(mapping) >= 4:
+            repo, test_file, node, desc = mapping
+        else:
+            repo, test_file, desc = mapping
+            node = None
         run_count += 1
-        print(f"[{run_count}] {sid}: {desc} ({repo}/{test_file})")
-        passed, summary = run_test(repo, test_file)
+        print(f"[{run_count}] {sid}: {desc} ({repo}/{test_file}{node or ''})")
+        passed, summary = run_test(repo, test_file, node=node)
         print(f"    -> {'PASS' if passed else 'FAIL'}: {summary}")
 
         evidence_file = EVIDENCE_ROOT / f"{sid.replace('-', '_')}.json"
         evidence = {
             "scenario_id": sid,
-            "test_file": test_file,
+            "test_file": test_file + (node or ""),
             "repo": repo,
             "passed": passed,
             "summary": summary,
