@@ -6,7 +6,7 @@
 ## 状态总览
 
 - **起点**：117/117 accepted（机器真源 state.json）；三仓 CI ALL GREEN
-- **当前阶段**：GP-001~009 完成（GP-008/009 定时任务已注册），GP-010 申请文档就绪待批准。三仓 CI ALL GREEN。
+- **当前阶段**：GP-001~010 全部完成（GP-008/009 定时任务已注册）；LT/UJ 真实数据 E2E（`test_lt_uj_real_e2e.py`）已实施 5/5 passed；三仓 CI ALL GREEN。
 - **锁**：无（无活动 lease）
 
 ## GP 进度表
@@ -20,7 +20,7 @@
 | GP-002 | v2 scanner 生产切入 | ✅ 完成（wiki 9809127） | 全量 2638p/0f；gp002 7p；独立复核 PASS（F401+O1 修复复核通过） |
 | GP-003 | worker privacy 过滤 | ✅ 完成（wiki c3a99c8） | 全量 2641p/0f；gp003 5p；独立复核 PASS（F401 修复复核） |
 | GP-004 | receipt 重签发 | ✅ 完成（revenue 04556d5） | 87→0 incomplete；41 uc tests passed；closure-report machine_valid:112 |
-| GP-005 | scenario 证据回填 | ✅ 完成（192/197 passed, 5 blocked） | 192 passed (97.5%); 5 LT/UJ real-combination journeys blocked |
+| GP-005 | scenario 证据回填 | ✅ 完成（197/197 passed, unsatisfied=0） | registry revenue 3c7993d；spy E2E wiki 0e5f26e + 真实数据 E2E wiki 50b44ba |
 | GP-006 | 真实 roots E2E 进 CI | ✅ 完成（revenue 43fab74） | windows-latest job + 9 sibling tests |
 | GP-007 | privacy_class 3.0 config | ✅ 完成（wiki c636516） | 4 roots privacy_class added; config_doctor OK |
 | GP-008 | legacy 观测起点注册 | ✅ 完成（2026-09-03 注册） | revenue_daily_t2 registered（每日 03:30 SYSTEM）；query registered |
@@ -87,3 +87,13 @@
   - GP-008/009 定时任务注册（用户管理员执行，revenue_daily_t2 每日 03:30 + revenue_weekly_t3 周日 04:30，SYSTEM）；工具修复 3 轮（stderr None、GBK 编码、schtasks 密码弹窗→Register-ScheduledTask、CSV 列解析）。
   - GP-010 研报 cutover（owner 批准 2026-09-03）：7 份紫金研报 normalize 7/7 + receipt 7/7 + LLM summary 6/7（MiniMax-M3，审计）；1 份（国联民生）被 `_FORBIDDEN_OUTPUT` 安全门正确拒绝（3 次重试）；sections 0（broker_research 不在 extractor 支持集——BR-11~17 产品缺口）。GP-003 门在真实数据上实证生效。
   - 三仓 CI ALL GREEN（wiki 16ef042 / revenue afe192c / filing 89c8bdb）。
+
+- **2026-09-03 GP-005 补记——LT/UJ 真实数据 E2E 实施**（wiki 50b44ba，已 push master）：
+  - 用户指示："下载本身不是测试目标；只需下载一次，之后每次运行用已存在的下载文档测试。" 真实 catalog 中紫金矿业 FY2024（pdoc 1222870413）+ FY2025（pdoc 1225023658）年报已在库（GP-010 下载产物），据此新建 `tests/contract/test_lt_uj_real_e2e.py`，5 个只读真实旅程测试覆盖原 blocked 5 场景：
+    - LT-02：两期各自 REUSED_EXACT，FY2025（latest）capture_ready=True
+    - LT-08：连续两次 resolve 返回同一 capture-ready handle
+    - LT-09：二次相同请求结果一致且 catalog 零写（零写证明 = SQLite 头部 change counter + size/mtime + journal/WAL 边车，读 100 字节；**整库 49.7GB sha256 太慢弃用**）
+    - UJ-03：FY2025 可复用且 normalized artifact 磁盘可读、内容真实
+    - UJ-05：完整复用旅程零 catalog 变更
+  - 环境门控：`REQUIRE_REAL = skipif(生产 catalog 或缺紫金文档)`——CI 无真实库自动 skip，不破坏常绿；spy 版（0e5f26e）保证 CI 覆盖，real 版为本地/生产环境实证，二者互补。
+  - 验证：全文件 **5 passed in 2.19s**（真实库零写确认：resolve mode=ro）；pre-commit 三钩全过（ruff/mypy/config doctor）。
