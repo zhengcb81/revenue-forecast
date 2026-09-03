@@ -79,3 +79,11 @@
   - closure-report 验证：**machine_valid:112, incomplete:0**（原 87）；receipt/validation/revision/closure 测试 41 passed。
   - 剩余 incomplete 原因（非 C-1）：197 scenarios unsatisfied（GP-005）+ 26 legacy FCs contradicted + 5 legacy closure pending + R9 frozen（均 GP-008/B-1 范围）。
   - GP-004 正式 close。
+
+- **2026-09-02/03 GP-005~010 完成**：
+  - GP-005 scenario 证据回填：scenario_runner.py 建立（场景→三仓测试映射、node 级选择、T3 opt-in env、evidence 落盘），映射覆盖 141 → **192/197 passed（97.5%）**。新增证据：BR 17（ZR-501~510 broker 基础设施 + management_targets）、MINE 22（ZR-601~611 mining-facts）、READ-11（49.7GB catalog 真实 SLO 探针 p95<17ms）、DL-04/05/06（**真实 CN/HK/US 下载**，T3 授权）、CTRL-04/MIG-04（T1 rollback 层）、AUD-06（T1 blocked-not-green 层）。诚实 blocked 5（LT-02/08/09 + UJ-03/05 真实组合旅程需链 E2E）。
+  - GP-006 real-roots CI job（windows-latest + continue-on-error）。
+  - GP-007 privacy_class 配置 + **2026-09-03 owner 决策退役 private_user**（全部 public；GP-003 receipt 门保留防御）。
+  - GP-008/009 定时任务注册（用户管理员执行，revenue_daily_t2 每日 03:30 + revenue_weekly_t3 周日 04:30，SYSTEM）；工具修复 3 轮（stderr None、GBK 编码、schtasks 密码弹窗→Register-ScheduledTask、CSV 列解析）。
+  - GP-010 研报 cutover（owner 批准 2026-09-03）：7 份紫金研报 normalize 7/7 + receipt 7/7 + LLM summary 6/7（MiniMax-M3，审计）；1 份（国联民生）被 `_FORBIDDEN_OUTPUT` 安全门正确拒绝（3 次重试）；sections 0（broker_research 不在 extractor 支持集——BR-11~17 产品缺口）。GP-003 门在真实数据上实证生效。
+  - 三仓 CI ALL GREEN（wiki 16ef042 / revenue afe192c / filing 89c8bdb）。
