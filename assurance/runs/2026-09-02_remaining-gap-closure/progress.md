@@ -112,6 +112,12 @@
   - **真实 catalog 实证**：sampled=62、**legacy_bridge_hits=0**（reader=v2、bridge 禁用、snapshot c773099b——与 A-3 修复后生产快照一致）、零写。
   - **时间线更新**：窗口现可在生产语义下为零 → 从下一个 03:30 运行起累积：run1 开 period 1、run2 关 1 开 2、run3 关 2 → 最早 **run3（约 2026-09-06 03:30）后 close_gate_allowed=True** → 开始 R9 批 1~3（owner 已授权）。
 
+- **2026-09-03 首次真实运行证据（run-daily，生产状态路径）**：
+  - 部署指南文档化的手动 run-daily（ZR-902 卡要求的"首次 run 证据"）在真实路径执行：run_id=20260903T211059Z、**ok=True、status=fresh、observation_period=1、exit=0**。
+  - `assurance/runs/daily_manifest.json` 写入（triplet：filing 89c8bdb / revenue ecefd31 / wiki 25a8eea）；`legacy_periods.json` period 1 开启（2026-09-03T21:11:04Z）、**legacy_bridge_hits=0**、sampled=62、close-gate 正确评估（1 open 窗口 → False）。
+  - **门时间线不变**：手动 P1（21:11 → 09-04 03:30 ≈ 6.3h）<24h 自动出局（FC-705 只看最后两个 completed ≥24h 窗口）；调度 run2（09-04 03:30）开 P2 并关 P1、run3（09-05）开 P3 关 P2 → 最早 **09-06 03:30 后 gate=True**。若 03:30 调度未实际触发（注册不可提权验证），下一轮将检查并请 owner 处理。
+  - 运行产物（daily_manifest/legacy_periods/report 目录）按惯例不提交（untracked 持续写入）。
+
 - **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
   - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
   - **剩余缺口清单（部署/自然时间层）**：
