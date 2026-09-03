@@ -25,7 +25,7 @@
 | GP-007 | privacy_class 3.0 config | ✅ 完成（wiki c636516） | 4 roots privacy_class added; config_doctor OK |
 | GP-008 | legacy 观测起点注册 | ✅ 完成（2026-09-03 注册） | revenue_daily_t2 registered（每日 03:30 SYSTEM）；query registered |
 | GP-009 | 动态审核调度注册 | ✅ 完成（2026-09-03 注册） | revenue_weekly_t3 registered（周日 04:30 SYSTEM）；query registered |
-| GP-010 | 研报 cutover 授权申请 | ✅ 申请文档完成 | gp010_cohort_cutover_request.md; 待 KD-08 批准 |
+| GP-010 | 研报 cutover 授权申请 | ✅ 完成（2026-09-03 执行） | normalize 7/7 + summary 6/7 + receipt 7/7；1 安全门拒绝（正确） |
 
 ## 变更记录
 

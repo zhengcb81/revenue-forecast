@@ -62,4 +62,18 @@
 
 ---
 
+## 批准记录
+
+- **批准人**：郑曾波（repo owner）
+- **批准时间**：2026-09-03
+- **批准内容**：对 7 份紫金研报执行语义处理（normalize + LLM 摘要 + 分节提取）；同时决定**取消生产 catalog 的 private_user 隐私分类**（所有根 public，文件可发外部 LLM，见 config/source_catalog.yaml 注释；GP-003 receipt 门仍强制生效）
+- **执行状态**（2026-09-03）：
+  - normalize：**7/7 completed**（normalized artifacts 全部 v2-bindable reusable=True）
+  - review receipts：**7/7 written**（scan_text 全部 not_detected，source_sha256+policy_hash 绑定）
+  - LLM summary：**6/7 completed**（长江/天风/国盛/民生/太平洋金铜/太平洋紫气）
+  - 安全门拒绝：**1/7**（国联民生 2025 年报深度点评——LLM 输出复述评级/目标价触发 `_FORBIDDEN_OUTPUT`，3 次重试均拒绝。**正确 fail-closed，不绕过**）
+  - sections：0（section_extractor 仅支持 annual/semi_annual/prospectus；broker_research 分节是已知产品缺口 BR-11~17）
+  - LLM 调用记录：provider=minimax MiniMax-M3，逐份审计（content_hash/artifact_id 可查）
+  - BR-01~26 回填：无法声称 passed（BR-01 需独立黄金集比对；BR-02~26 多数需研报分节/表格基础设施）——保持 blocked 如实记录
+
 **等待 KD-08 批准后执行。**
