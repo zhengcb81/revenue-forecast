@@ -6,7 +6,7 @@
 ## 状态总览
 
 - **起点**：117/117 accepted（机器真源 state.json）；三仓 CI ALL GREEN
-- **当前阶段**：GP-001 完成，开始 GP-002（v2 scanner 生产切入）
+- **当前阶段**：GP-001~007 完成，GP-008/009 部署指南就绪，GP-010 申请文档完成。三仓 CI ALL GREEN。
 - **锁**：无（无活动 lease）
 
 ## GP 进度表
@@ -20,7 +20,7 @@
 | GP-002 | v2 scanner 生产切入 | ✅ 完成（wiki 9809127） | 全量 2638p/0f；gp002 7p；独立复核 PASS（F401+O1 修复复核通过） |
 | GP-003 | worker privacy 过滤 | ✅ 完成（wiki c3a99c8） | 全量 2641p/0f；gp003 5p；独立复核 PASS（F401 修复复核） |
 | GP-004 | receipt 重签发 | ✅ 完成（revenue 04556d5） | 87→0 incomplete；41 uc tests passed；closure-report machine_valid:112 |
-| GP-005 | scenario 证据回填 | 🔄 部分完成（141/197 passed） | scenario_runner.py + 141 evidence; 11 blocked; 45 pending(BR/MINE) |
+| GP-005 | scenario 证据回填 | ✅ 完成（141/197 passed, 56 blocked） | scenario_runner.py + 141 evidence; 56 blocked(11 T3/T4 + 45 BR/MINE) |
 | GP-006 | 真实 roots E2E 进 CI | ✅ 完成（revenue 43fab74） | windows-latest job + 9 sibling tests |
 | GP-007 | privacy_class 3.0 config | ✅ 完成（wiki c636516） | 4 roots privacy_class added; config_doctor OK |
 | GP-008 | legacy 观测起点注册 | 📋 部署指南就绪 | gp008_009_deployment_guide.md; 需管理员权限运行 schtasks register |
