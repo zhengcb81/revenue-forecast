@@ -143,11 +143,12 @@ def task_status() -> tuple[str, str]:
     proc = _schtasks(["/query", "/tn", TASK_NAME, "/fo", "csv", "/v"])
     if proc.returncode != 0:
         return "missing", "no scheduled task registered"
-    for line in proc.stdout.splitlines()[1:]:
-        fields = line.split(",")
-        # CSV columns: HostName, TaskName, NextRunTime, Status, ...
-        if len(fields) >= 2 and fields[1].strip('"') == TASK_NAME:
-            return "registered", f"last result: {fields[-1].strip()!r}"
+    out = proc.stdout or ""
+    # TaskName appears in CSV as "revenue_daily_t2" or "\revenue_daily_t2"
+    # (folder prefix); plain substring search is robust to column layout,
+    # BOM, and locale-specific headers.
+    if TASK_NAME in out:
+        return "registered", "task found in query output"
     return "missing", "task not found in query output"
 
 
