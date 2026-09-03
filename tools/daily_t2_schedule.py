@@ -151,9 +151,26 @@ def task_status() -> tuple[str, str]:
 
 
 def cmd_register(_args: argparse.Namespace) -> int:
-    command = f'"{sys.executable}" "{Path(__file__).resolve()}" --run-daily'
-    proc = _schtasks(["/create", "/tn", TASK_NAME, "/tr", command,
-                      "/sc", "daily", "/st", "03:30", "/ru", "SYSTEM"])
+    """Register via PowerShell Register-ScheduledTask (no password prompt).
+
+    ``schtasks /create /ru SYSTEM`` without ``/rp`` pops a credential dialog
+    on some Windows builds and hangs the subprocess; Register-ScheduledTask
+    with ``-LogonType ServiceAccount`` registers SYSTEM tasks without any
+    password.
+    """
+    script = (
+        "$action = New-ScheduledTaskAction -Execute "
+        f"'{sys.executable}' -Argument '\"{Path(__file__).resolve()}\" --run-daily'; "
+        "$trigger = New-ScheduledTaskTrigger -Daily -At 03:30; "
+        "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
+        "-LogonType ServiceAccount -RunLevel Highest; "
+        f"Register-ScheduledTask -TaskName '{TASK_NAME}' "
+        "-Action $action -Trigger $trigger -Principal $principal -Force | Out-Null"
+    )
+    proc = subprocess.run(
+        ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+        capture_output=True, text=True, errors="replace", timeout=60,
+    )
     if proc.returncode != 0:
         print((proc.stderr or "register failed").strip(), file=sys.stderr)
         return proc.returncode or 1

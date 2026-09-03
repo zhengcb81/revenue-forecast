@@ -87,10 +87,18 @@ def run_weekly(ledger_path: Path, alert_path: Path) -> int:
 
 
 def cmd_register_weekly(_args: argparse.Namespace) -> int:
-    command = f'"{sys.executable}" "{Path(__file__).resolve()}" run-weekly'
+    """Register via PowerShell Register-ScheduledTask (no password prompt)."""
+    script = (
+        "$action = New-ScheduledTaskAction -Execute "
+        f"'{sys.executable}' -Argument '\"{Path(__file__).resolve()}\" run-weekly'; "
+        "$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At 04:30; "
+        "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
+        "-LogonType ServiceAccount -RunLevel Highest; "
+        f"Register-ScheduledTask -TaskName '{WEEKLY_TASK}' "
+        "-Action $action -Trigger $trigger -Principal $principal -Force | Out-Null"
+    )
     proc = subprocess.run(
-        ["schtasks", "/create", "/tn", WEEKLY_TASK, "/tr", command,
-         "/sc", "weekly", "/d", "SUN", "/st", "04:30", "/ru", "SYSTEM"],
+        ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
         capture_output=True, text=True, errors="replace", timeout=60,
     )
     if proc.returncode != 0:
