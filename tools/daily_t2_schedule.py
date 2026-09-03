@@ -145,7 +145,8 @@ def task_status() -> tuple[str, str]:
         return "missing", "no scheduled task registered"
     for line in proc.stdout.splitlines()[1:]:
         fields = line.split(",")
-        if fields and fields[0].strip('"') == TASK_NAME:
+        # CSV columns: HostName, TaskName, NextRunTime, Status, ...
+        if len(fields) >= 2 and fields[1].strip('"') == TASK_NAME:
             return "registered", f"last result: {fields[-1].strip()!r}"
     return "missing", "task not found in query output"
 
