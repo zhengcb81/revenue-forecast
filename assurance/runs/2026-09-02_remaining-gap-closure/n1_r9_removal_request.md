@@ -66,7 +66,9 @@ legacy-gate 三仓扫描 verdict=`callers_found`，findings 全部集中在 reve
 ## 5. 执行前置状态（2026-09-03 实测）
 
 - **观测窗口：尚未开始累积**。daily T2 调度存在注册参数缺陷（已修 revenue 3552795：注册任务裸 `--run-daily` 曾因 required 参数 argparse 失败 exit=2——窗口永远无法累积；修复后三参数默认生产路径，ZR-902 16 passed + 兄弟套件 52 passed）。任务注册状态在非提权会话不可见（schtasks 列表 202 个任务零命中；/tn 查询 Access denied）——**需 owner 提权确认/重注册**。
-- **最早窗口满足时间**：任务确认注册后，首个 03:30 运行起两个连续 ≥24h 零 hit 窗口 → 最早 **2026-09-06 03:30 后**具备删除资格。
+- **观测推进接线（已修 revenue 630b554）**：发现注册任务只跑 T2 runner、从不调用 legacy_observer（periods 账本写入者）→ 窗口仍永不累积。现 run-daily 自动推进 period（next_period_number max+1；fresh/corrupt 从 1 重启 fail-closed）+ 只读 observer 调用（mode=ro，仅写 assurance/runs/legacy_periods.json）。冒烟测试通过（periods 推进 + close-gate 评估正常）。
+- **新发现阻塞（观测语义）**：真实 catalog 冒烟 = sample 接缝记录 **54/62 legacy_bridge_hits**，而 62 个采样文档中仅 32 个真正无 v2 覆盖（30 个已有 v2 normalized artifact 也被计 hit）→ sample 接缝用默认 `reader="v1"` + `legacy_bridge_allowed=True`，**不走生产快照门，高估 hits**；canary-matrix（生产 resolver 接缝 + 快照）= **0 hits**（4 canary 全 reused_exact）。→ 窗口在 sample 语义下永不为零，删除门正确 fail-closed。**下一缺口 = 快照门控 legacy_observer 的 sample pass**（reader/epoch/cohorts/legacy_bridge_allowed 取自 runtime_policy 快照，与 canary 路径同源）——完成后重测应得 0 hits（生产语义：bridge 已禁用，无实际流量）。
+- **最早窗口满足时间**：任务确认注册 + 快照门控修复后，首个 03:30 运行起两个连续 ≥24h 零 hit 窗口 → 最早约 **修复后第 3 个 03:30 运行**具备删除资格。
 - **N-1（范围 A）与执行授权（范围 B）批准后**：窗口满足即按 §3.2 分批执行，执行过程记录于本 run 的 progress.md。
 
 ## 6. 验收标准
@@ -86,4 +88,4 @@ legacy-gate 三仓扫描 verdict=`callers_found`，findings 全部集中在 reve
 - **批准时间**：2026-09-03
 - **批准内容**：**批准 A+B**——① FC-1501~1505 N-1 关闭确认（successor 链 CA-107~109/CA-201/CA-301~306 全 accepted，旧目录冻结不改写）；② R9 legacy 分批删除执行授权（批 1 quality.yml 移除 verify_closure_ledger L133 真实调用 + closure_gate/closure_ledger 相关 --ignore 条目；批 2 revenue legacy 工具/测试删除；批 3 wiki 产品层 _scan_root_v1/bridge/flags/无读者 backfill/promoter——以执行时 final_ratchet/legacy-gate 复扫清单为准）。每批独立 commit + 三仓 CI 全绿 + 可 revert；`audit_review/` 冻结目录与历史 closure_ledger.json 不删除。
 - **执行前置（仍生效）**：B 的实际删除等到两个连续 ≥24h 零 hit 观测窗口满足后开始（最早 2026-09-06 03:30 后）；owner 已确认 revenue_daily_t2 / revenue_weekly_t3 任务已注册（2026-09-03，提权会话 query registered；非提权会话不可见属正常 ACL）；daily 任务 argparse 缺陷已修复（revenue 3552795，2026-09-03 推送）。
-- **执行状态**：待观测窗口满足（最早 2026-09-06 03:30 后开始批 1）。
+- **执行状态**：待观测窗口满足。当前阻塞 = 观测语义（sample 接缝 54/62 hits vs canary 生产语义 0 hits）——下一缺口为快照门控 observer sample pass（wiki 变更），完成后窗口方可为零；删除最早窗口 = 修复后第 3 个 03:30 运行后开始批 1。

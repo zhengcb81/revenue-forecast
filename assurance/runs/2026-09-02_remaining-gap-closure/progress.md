@@ -98,6 +98,14 @@
   - 环境门控：`REQUIRE_REAL = skipif(生产 catalog 或缺紫金文档)`——CI 无真实库自动 skip，不破坏常绿；spy 版（0e5f26e）保证 CI 覆盖，real 版为本地/生产环境实证，二者互补。
   - 验证：全文件 **5 passed in 2.19s**（真实库零写确认：resolve mode=ro）；pre-commit 三钩全过（ruff/mypy/config doctor）。
 
+- **2026-09-03 深夜：观测推进接线（revenue 630b554）+ 观测语义阻塞发现**：
+  - **新缺口（接线）**：注册的 daily 任务只跑 T2 runner，从不调用 legacy_observer（FC-705 periods 账本写入者）→ periods.json 不存在 → close_gate_allowed 永远 False → R9 删除永远无法授权（fail-closed 安全但计划停滞）。
+  - **修复（630b554，已 push main）**：`run-daily` 现自动推进观测——`next_period_number()`（max+1；fresh/corrupt 从 1 重启 fail-closed）+ 只读 observer 子进程（mode=ro，仅写 `assurance/runs/legacy_periods.json`）；observer 失败 → run not-ok（告警+release 阻断）；ledger 增 observation_period 字段。ZR-902 新增 C6 四条测试 → **20 passed**；兄弟套件（CA-202/ZR-903/CA-203/CA-206/ZR-905）**52 passed**；ruff 绿。
+  - **冒烟实证（真实 catalog，period 文件在 TEMP 不污染真实窗口）**：periods 推进正常、close-gate 评估正常，但 **sample 接缝记录 legacy_bridge_hits=54/62**。
+  - **新缺口（观测语义）**：62 个采样 acquisition 文档中仅 32 个真正无 v2 normalized artifact（30 个已 v2 覆盖也被计 hit）→ `observe()` 调 `_source_metadata` 用默认 `reader="v1"` + `legacy_bridge_allowed=True`，不走生产快照门 → **高估 hits**；对照 `--canary-matrix`（生产 resolver 接缝 + 快照）= **0 hits**（Zijin FY24/25/美团/AAPL 全 reused_exact）。窗口在 sample 语义下永不为零 → 删除门正确 fail-closed。
+  - **下一缺口（wiki 变更）**：快照门控 legacy_observer 的 sample pass（reader/current_epoch/active_cohorts/legacy_bridge_allowed 取自 runtime_policy 快照，与 canary 路径同源）→ 重测应 0 hits（生产语义：bridge 已禁用，无实际流量）。完成后窗口方可累积：两个 ≥24h 零 hit → 最早第 3 个 03:30 运行后开始 R9 批 1~3（owner 已授权）。
+  - n1_r9_removal_request.md §5 已更新（阻塞与时间线修正）。
+
 - **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
   - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
   - **剩余缺口清单（部署/自然时间层）**：
