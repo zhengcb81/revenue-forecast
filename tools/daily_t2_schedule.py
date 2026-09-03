@@ -155,7 +155,7 @@ def cmd_register(_args: argparse.Namespace) -> int:
     proc = _schtasks(["/create", "/tn", TASK_NAME, "/tr", command,
                       "/sc", "daily", "/st", "03:30", "/ru", "SYSTEM"])
     if proc.returncode != 0:
-        print(proc.stderr.strip() or "register failed", file=sys.stderr)
+        print((proc.stderr or "register failed").strip(), file=sys.stderr)
         return proc.returncode or 1
     print(f"registered daily task {TASK_NAME}")
     return 0
@@ -164,7 +164,7 @@ def cmd_register(_args: argparse.Namespace) -> int:
 def cmd_unregister(_args: argparse.Namespace) -> int:
     proc = _schtasks(["/delete", "/tn", TASK_NAME, "/f"])
     if proc.returncode != 0:
-        print(proc.stderr.strip() or "unregister failed", file=sys.stderr)
+        print((proc.stderr or "unregister failed").strip(), file=sys.stderr)
         return proc.returncode or 1
     print(f"unregistered {TASK_NAME}")
     return 0

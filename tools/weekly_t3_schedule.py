@@ -94,7 +94,7 @@ def cmd_register_weekly(_args: argparse.Namespace) -> int:
         capture_output=True, text=True, encoding="utf-8", timeout=60,
     )
     if proc.returncode != 0:
-        print(proc.stderr.strip() or "register failed", file=sys.stderr)
+        print((proc.stderr or "register failed").strip(), file=sys.stderr)
         return proc.returncode or 1
     print(f"registered weekly task {WEEKLY_TASK}")
     return 0
@@ -116,7 +116,7 @@ def cmd_unregister_weekly(_args: argparse.Namespace) -> int:
         capture_output=True, text=True, encoding="utf-8", timeout=60,
     )
     if proc.returncode != 0:
-        print(proc.stderr.strip() or "unregister failed", file=sys.stderr)
+        print((proc.stderr or "unregister failed").strip(), file=sys.stderr)
         return proc.returncode or 1
     print(f"unregistered {WEEKLY_TASK}")
     return 0
