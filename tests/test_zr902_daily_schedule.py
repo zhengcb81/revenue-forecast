@@ -195,3 +195,62 @@ def test_c4_subcommands_are_positional(tmp_path):
     )
     for name in ("run-daily", "register", "unregister", "query", "verify"):
         assert name in proc.stdout, f"missing subcommand {name}"
+
+
+# ---------------------------------------------------------------------------
+# C5 — registered-task invocation resolves production defaults (GP-008)
+# ---------------------------------------------------------------------------
+
+
+def test_c5_bare_run_daily_parses_with_production_defaults(tmp_path):
+    """Regression (GP-008): the registered SYSTEM task fires the script with
+    ONLY ``--run-daily`` plus the module-level ledger/alerts defaults.  The
+    run-daily catalog/manifest/report-root arguments must default to the
+    production paths — previously they were required, so every 03:30 trigger
+    died in argparse (SystemExit 2) and daily_manifest.json never advanced,
+    which also froze the FC-705 observation windows forever."""
+    from daily_t2_schedule import (  # noqa: F811
+        DEFAULT_CATALOG,
+        DEFAULT_LEDGER,
+        DEFAULT_MANIFEST,
+        DEFAULT_REPORT_ROOT,
+        build_parser,
+    )
+
+    parser = build_parser()
+    # exactly what the scheduled task executes (no per-run flags)
+    args = parser.parse_args([
+        "--ledger", str(tmp_path / "daily_manifest.json"),
+        "--alerts", str(tmp_path / "alerts.jsonl"),
+        "run-daily",
+    ])
+    assert args.command == "run-daily"
+    assert args.catalog == DEFAULT_CATALOG
+    assert args.manifest == DEFAULT_MANIFEST
+    assert args.report_root == DEFAULT_REPORT_ROOT
+    # sanity: the defaults point at the real production surfaces
+    assert args.catalog.is_absolute() and args.catalog.name == "catalog.sqlite3"
+    assert args.manifest.name == "current.json"
+    assert DEFAULT_LEDGER.name == "daily_manifest.json"
+
+
+def test_c5_register_action_needs_no_extra_flags():
+    """The register subcommand stores a bare ``--run-daily`` action; parse
+    that exact argv (no --ledger/--alerts/--catalog/... overrides) to prove
+    a freshly registered task resolves every path from module defaults and
+    will not argparse-fail at trigger time."""
+    from daily_t2_schedule import (  # noqa: F811
+        DEFAULT_ALERTS,
+        DEFAULT_CATALOG,
+        DEFAULT_LEDGER,
+        DEFAULT_MANIFEST,
+        DEFAULT_REPORT_ROOT,
+        build_parser,
+    )
+
+    args = build_parser().parse_args(["run-daily"])
+    assert args.ledger == DEFAULT_LEDGER
+    assert args.alerts == DEFAULT_ALERTS
+    assert args.catalog == DEFAULT_CATALOG
+    assert args.manifest == DEFAULT_MANIFEST
+    assert args.report_root == DEFAULT_REPORT_ROOT

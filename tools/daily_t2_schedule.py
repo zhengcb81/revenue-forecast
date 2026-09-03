@@ -35,6 +35,15 @@ DEFAULT_ALERTS = PROJECT_ROOT / "assurance" / "runs" / "daily_alert.jsonl"
 TASK_NAME = "revenue_daily_t2"
 MAX_AGE_HOURS = 24
 
+# Production paths for the REGISTERED task: the SYSTEM task fires the script
+# with a bare ``--run-daily`` (no per-run flags), so these must default to
+# the real catalog/manifest/report root — otherwise every 03:30 trigger
+# dies in argparse with "the following arguments are required" and the
+# daily ledger (and with it the FC-705 observation windows) never advances.
+DEFAULT_CATALOG = PROJECT_ROOT.parent / "company-wiki" / ".source_catalog" / "catalog.sqlite3"
+DEFAULT_MANIFEST = PROJECT_ROOT / "compatibility" / "current.json"
+DEFAULT_REPORT_ROOT = PROJECT_ROOT / "assurance" / "runs"
+
 
 def _now_iso() -> str:
     return datetime.now(UTC).isoformat()
@@ -206,18 +215,24 @@ def cmd_verify(args: argparse.Namespace) -> int:
     return 0 if (status == "registered" and run_status == "fresh") else 1
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
+    """Parser factory (testable without executing commands)."""
     parser = argparse.ArgumentParser(description="Daily Windows T2 scheduling (ZR-902)")
     parser.add_argument("--ledger", type=Path, default=DEFAULT_LEDGER)
     parser.add_argument("--alerts", type=Path, default=DEFAULT_ALERTS)
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run-daily")
-    run.add_argument("--catalog", type=Path, required=True)
-    run.add_argument("--manifest", type=Path, required=True)
-    run.add_argument("--report-root", type=Path, required=True)
+    # Defaults == the production paths the registered SYSTEM task must hit.
+    run.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
+    run.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    run.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
     for name in ("register", "unregister", "query", "verify"):
         sub.add_parser(name)
-    args = parser.parse_args()
+    return parser
+
+
+def main() -> int:
+    args = build_parser().parse_args()
     if args.command == "run-daily":
         return run_daily(args.catalog, args.manifest, args.report_root,
                          Path(args.ledger), Path(args.alerts))
