@@ -121,7 +121,7 @@
 - **2026-09-03 深夜：wiki 全量回归暴露并修复 zr1006 C1 过时断言（wiki a0c7629）**：
   - wiki 全量本地回归（25a8eea 验证）2655 passed / **1 failed**：`test_zr1006_broker_cohort.py::test_c1_seven_zijin_brokers_active_zero_artifacts`——断言 7 份紫金研报"零 artifacts"（GP-010 前的 pending 前提），但 **GP-010 获批处理已写入真实库**（normalize 7/7 + summary 6/7，glms 国联民生被 `_FORBIDDEN_OUTPUT` 安全门正确拒绝 → 仅 normalized）。
   - **修复**：C1 更新为 GP-010 后的诚实快照断言——每份 broker active + broker_research、≥1 个 completed normalized artifact、零非 completed 行；docstring 同步。9 passed（真实库本地跑）；该文件本在 CI ignore 名单（ci.yml L50），GitHub CI 行为不变。
-  - 全量复跑进行中（后台）。
+  - **全量复跑确认：2656 passed / 7 skipped / 0 failed**（10m45s，HEAD a0c7629）——wiki 本地全量全绿。
 
 - **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
   - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
