@@ -106,6 +106,12 @@
   - **下一缺口（wiki 变更）**：快照门控 legacy_observer 的 sample pass（reader/current_epoch/active_cohorts/legacy_bridge_allowed 取自 runtime_policy 快照，与 canary 路径同源）→ 重测应 0 hits（生产语义：bridge 已禁用，无实际流量）。完成后窗口方可累积：两个 ≥24h 零 hit → 最早第 3 个 03:30 运行后开始 R9 批 1~3（owner 已授权）。
   - n1_r9_removal_request.md §5 已更新（阻塞与时间线修正）。
 
+- **2026-09-03 GP-008 续：observer sample pass 快照门控（wiki 25a8eea，已 push master）**：
+  - **修复**：`observe()` 裸调 `_source_metadata` 用 legacy 默认（reader=v1、bridge 允许）→ 真实 catalog 实测 54/62 hits（62 个采样文档仅 32 个真正无 v2 覆盖，30 个已覆盖也被计 hit）；canary 生产接缝 0 hits。现 observe() 加载生产 runtime_policy 快照（无快照 = pre-FC-201 默认，与 SourceResolver 完全一致），经 `resolver_visibility` 推导 reader/epoch/cohorts/legacy_bridge_allowed 传入——与生产 resolver 同源。结果增记 mode/reader/legacy_bridge_enabled/snapshot_policy_hash。
+  - **RED→GREEN**：新增 hermetic 测试 leg12（bridge off → 0 hits）/leg12b（bridge on → 1 hit，门非硬编码）/leg12c（无快照 → legacy 默认 1 hit）；初始 3 failed → 修复后 test_legacy_observation 19 passed；r9_v1_removal_gate + ratchet 套件无回归；ruff/mypy/config doctor 绿。
+  - **真实 catalog 实证**：sampled=62、**legacy_bridge_hits=0**（reader=v2、bridge 禁用、snapshot c773099b——与 A-3 修复后生产快照一致）、零写。
+  - **时间线更新**：窗口现可在生产语义下为零 → 从下一个 03:30 运行起累积：run1 开 period 1、run2 关 1 开 2、run3 关 2 → 最早 **run3（约 2026-09-06 03:30）后 close_gate_allowed=True** → 开始 R9 批 1~3（owner 已授权）。
+
 - **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
   - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
   - **剩余缺口清单（部署/自然时间层）**：
