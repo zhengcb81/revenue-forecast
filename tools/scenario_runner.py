@@ -252,15 +252,16 @@ SCENARIO_MAP: dict[str, tuple[str, str, str]] = {
     "MINE-21": ("revenue", "tests/test_zr605_mine_year_operation.py", "low/base/high ordering"),
     "MINE-22": ("revenue", "tests/test_zr604_conflict_resolution.py", "fact change impact"),
     "MINE-23": ("revenue", "tests/test_zr609_zijin_pilot.py", "Zijin asset coverage"),
+    # LT/UJ combination journeys (spy-provider E2E, wiki test_lt_uj_e2e.py)
+    "LT-02": ("wiki", "tests/contract/test_lt_uj_e2e.py", "old reused + new gap-filled"),
+    "LT-08": ("wiki", "tests/contract/test_lt_uj_e2e.py", "immediate re-resolve"),
+    "LT-09": ("wiki", "tests/contract/test_lt_uj_e2e.py", "second request zero effects"),
+    "UJ-03": ("wiki", "tests/contract/test_lt_uj_e2e.py", "old reused + new + artifacts"),
+    "UJ-05": ("wiki", "tests/contract/test_lt_uj_e2e.py", "full pipeline idempotent"),
 }
 
 # Scenarios that need T3/T4 authorization — marked blocked
-BLOCKED_SCENARIOS = {
-    # LT/UJ: real-provider combination journeys (download+latest closure
-    # across roots) - no existing test covers the exact semantics
-    "LT-02", "LT-08", "LT-09",
-    "UJ-03", "UJ-05",
-}
+BLOCKED_SCENARIOS: set[str] = set()
 
 
 def run_test(
