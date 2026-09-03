@@ -117,8 +117,8 @@ def test_v2_artifacts_are_bindable(tmp_path: Path):
             "path": row["path"], "content_sha256": row["content_sha256"],
             "generator_name": row["generator_name"], "generator_version": row["generator_version"],
             "status": row["status"], "created_at": row["created_at"],
-            "schema_version": meta.get("schema_version", ""),
-            "source_sha256": meta.get("source_sha256", ""),
+            "schema_version": row["schema_version"] or meta.get("schema_version", ""),
+            "source_sha256": row["source_sha256"] or meta.get("source_sha256", ""),
         }
         source = {"document_id": row["document_id"],
                   "primary_source_id": row["primary_source_id"],
@@ -257,8 +257,8 @@ def test_corruption_variants_fail_closed(tmp_path: Path, variant: str):
             "path": row["path"], "content_sha256": row["content_sha256"],
             "generator_name": row["generator_name"], "generator_version": row["generator_version"],
             "status": row["status"], "created_at": row["created_at"],
-            "schema_version": meta.get("schema_version", ""),
-            "source_sha256": meta.get("source_sha256", ""),
+            "schema_version": row["schema_version"] or meta.get("schema_version", ""),
+            "source_sha256": row["source_sha256"] or meta.get("source_sha256", ""),
         }
         source = {"document_id": row["document_id"],
                   "primary_source_id": row["primary_source_id"],

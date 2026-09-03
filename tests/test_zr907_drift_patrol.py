@@ -94,15 +94,14 @@ def test_c3_patrol_reports_all_seven_checks():
 
 
 def test_c3_patrol_core_gates_green():
-    """schema/manifest/installation (skill hash) must be green.  config is a
-    KNOWN red: company-wiki config_doctor still asserts kind=directory roots
-    == {dropbox_stock} but ZR-409 added future_lake — a real product drift
-    registered as a follow-up (ZR-907 finding), not fixable from this card."""
+    """schema/manifest/installation (skill hash) must be green.  config was
+    a KNOWN red (ZR-907 finding: future_lake vs CONFIG-DBX-02), fixed in
+    GP-001 by syncing the allowlist to {dropbox_stock, future_lake}."""
     results = {entry["check"]: entry for entry in dp.patrol()}
     for check in ("schema", "manifest", "installation"):
         assert results[check]["ok"], f"{check} must be green: {results[check]}"
-    assert results["config"]["ok"] is False, (
-        "config_doctor drift (future_lake) must be registered as known-red")
+    assert results["config"]["ok"] is True, (
+        "config_doctor must be green after GP-001 allowlist sync")
 
 
 def test_c3_cli_reports_all_checks():
