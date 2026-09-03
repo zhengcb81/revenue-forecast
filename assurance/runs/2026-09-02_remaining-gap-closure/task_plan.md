@@ -136,6 +136,7 @@ GP-001（回归）→ GP-002（scanner）→ GP-003（worker）→ GP-004（rece
 - ✅ **GP-007 完成**（wiki c636516）：privacy_class 配置升级（B-4 closed）
 - 📋 **GP-008/009 部署指南就绪**：schtasks register 命令文档化，需管理员权限执行
 - ✅ **GP-010 申请文档完成**：cohort cutover 授权申请，待 KD-08 批准
-- 进行中：GP-005（scenario 证据回填，197 scenarios）
-- 机器状态：accepted 117/117，current_next=CA-201（终局游标）
-- 三仓 CI：wiki 9809127 success / revenue 5e6f603 success（GP-004 在 assurance/，不影响 CI 测试路径）
+- 进行中：~~GP-005（scenario 证据回填，197 scenarios）~~ → **全部完成**：197/197 passed + 真实数据 E2E（wiki 50b44ba）
+- 机器状态：accepted 117/117，current_next=CA-201（终局游标），plan_status=completed
+- 三仓 CI：wiki 50b44ba / revenue 3552795 / filing 89c8bdb 全绿
+- **2026-09-03 晚间更新**：余下缺口全为部署/自然时间层——① daily 调度 argparse 缺陷已修（revenue 3552795）；② N-1（FC-150x）+ R9 分批删除授权已获 owner 批准（n1_r9_removal_request.md）；③ 删除执行前置 = 两个 ≥24h 零 hit 观测窗口（最早 2026-09-06 03:30 后），批 1~3 待窗口满足；④ weekly T3/7 Daily/1 Monthly/1 drill 自然累积中（GP-009）。详见 progress.md 2026-09-03 晚间条目。

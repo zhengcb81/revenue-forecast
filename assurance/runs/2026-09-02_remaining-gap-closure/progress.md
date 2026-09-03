@@ -6,7 +6,7 @@
 ## 状态总览
 
 - **起点**：117/117 accepted（机器真源 state.json）；三仓 CI ALL GREEN
-- **当前阶段**：GP-001~010 全部完成（GP-008/009 定时任务已注册）；LT/UJ 真实数据 E2E（`test_lt_uj_real_e2e.py`）已实施 5/5 passed；三仓 CI ALL GREEN。
+- **当前阶段**：GP-001~010 全部完成 + 真实数据 E2E 完成；机器层 117/117 accepted、scenario 197/197、closure-report incomplete=0。剩余 = 部署/自然时间层：N-1+R9 删除已获 owner 批准（2026-09-03），等两个 ≥24h 零 hit 观测窗口（最早 2026-09-06 03:30 后）执行批 1~3；weekly T3 自然累积（周日 04:30）。三仓 CI ALL GREEN。
 - **锁**：无（无活动 lease）
 
 ## GP 进度表
@@ -23,7 +23,7 @@
 | GP-005 | scenario 证据回填 | ✅ 完成（197/197 passed, unsatisfied=0） | registry revenue 3c7993d；spy E2E wiki 0e5f26e + 真实数据 E2E wiki 50b44ba |
 | GP-006 | 真实 roots E2E 进 CI | ✅ 完成（revenue 43fab74） | windows-latest job + 9 sibling tests |
 | GP-007 | privacy_class 3.0 config | ✅ 完成（wiki c636516） | 4 roots privacy_class added; config_doctor OK |
-| GP-008 | legacy 观测起点注册 | ✅ 完成（2026-09-03 注册） | revenue_daily_t2 registered（每日 03:30 SYSTEM）；query registered |
+| GP-008 | legacy 观测起点注册 | ✅ 完成（2026-09-03 注册；3552795 修复） | revenue_daily_t2 registered（每日 03:30 SYSTEM）；**argparse 缺陷修复 3552795**（裸 --run-daily 原必失败） |
 | GP-009 | 动态审核调度注册 | ✅ 完成（2026-09-03 注册） | revenue_weekly_t3 registered（周日 04:30 SYSTEM）；query registered |
 | GP-010 | 研报 cutover 授权申请 | ✅ 完成（2026-09-03 执行） | normalize 7/7 + summary 6/7 + receipt 7/7；1 安全门拒绝（正确） |
 
@@ -97,3 +97,14 @@
     - UJ-05：完整复用旅程零 catalog 变更
   - 环境门控：`REQUIRE_REAL = skipif(生产 catalog 或缺紫金文档)`——CI 无真实库自动 skip，不破坏常绿；spy 版（0e5f26e）保证 CI 覆盖，real 版为本地/生产环境实证，二者互补。
   - 验证：全文件 **5 passed in 2.19s**（真实库零写确认：resolve mode=ro）；pre-commit 三钩全过（ruff/mypy/config doctor）。
+
+- **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
+  - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
+  - **剩余缺口清单（部署/自然时间层）**：
+    1. ~~daily 调度注册参数缺陷~~（**已修 3552795**）：注册动作裸 `--run-daily` 而 catalog/manifest/report-root 为 required → SYSTEM 03:30 必 argparse 失败 exit=2 → daily_manifest 永不写、观测窗口永不累积。修复：三参数默认生产路径 + build_parser() 抽取；RED 实证 exit=2 → GREEN（ZR-902 16 passed，新增 C5 两条回归；兄弟套件 CA-202/ZR-903/CA-203/CA-206/ZR-905 52 passed）；ruff 绿；已 push main。
+    2. **N-1 关闭确认（FC-1501~1505）**：successor CA-107~109/CA-201/CA-301~306 全 accepted → **owner 批准（2026-09-03）**，记录于 n1_r9_removal_request.md。
+    3. **R9 分批删除执行**（批 1 quality.yml L133 verify_closure_ledger + legacy --ignore 条目；批 2 revenue legacy 工具/测试；批 3 wiki _scan_root_v1/bridge/backfill）→ **owner 授权（2026-09-03）**，执行前置 = 两个 ≥24h 零 hit 观测窗口（最早 2026-09-06 03:30 后开始批 1）。legacy-gate 实测残留：LEGACY-CALLER-001/002/003 全在 quality.yml（successor CA-201——吸收卡禁改 workflow，故为真实部署缺口）。
+    4. **观测窗口累积**：owner 确认任务已注册（提权 query registered；非提权不可见属正常 ACL）；3552795 后首个 03:30 运行即开始写 daily_manifest；窗口满足最早 2026-09-06 03:30。
+    5. **GP-009 自然时间审核**：7 Daily/2 Weekly/1 Monthly/1 alert drill（CA-206 窗口计算器已 accepted，累积靠调度真实运行）——weekly T3 周日 04:30（2026-09-06 起）；数周自然时间。
+    6. **CI 确认**：owner 确认今日三笔推送（wiki 50b44ba / revenue 4f82319 / 3552795）CI 全绿。
+  - 文档：n1_r9_removal_request.md（授权申请+批准记录）、gp008_009_deployment_guide.md（04:00→04:30 校正 + 3552795 注记）、本页更新。

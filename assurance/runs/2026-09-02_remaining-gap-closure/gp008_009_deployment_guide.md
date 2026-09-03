@@ -48,7 +48,15 @@ python tools\weekly_t3_schedule.py unregister
 | 任务 | 频率 | 时间 | 说明 |
 |---|---|---|---|
 | revenue_daily_t2 | 每日 | 03:30 | T2 只读验证，写 daily_manifest.json |
-| revenue_weekly_t3 | 每周 | 周日 04:00 | T3 真实下载验证，写 weekly_manifest.json |
+| revenue_weekly_t3 | 每周 | 周日 04:30 | T3 真实下载验证，写 weekly_manifest.json |
+
+> **2026-09-03 修复注记（revenue 3552795）**：daily 任务注册动作只带裸
+> `--run-daily`，而 run-daily 的 --catalog/--manifest/--report-root 原为
+> required——SYSTEM 03:30 触发必 argparse 失败（exit=2），daily_manifest
+> 永远不写、观测窗口永远不累积。修复后三参数默认生产路径（catalog=
+> company-wiki/.source_catalog/catalog.sqlite3、manifest=compatibility/
+> current.json、report-root=assurance/runs）。任务 action 指向脚本路径，
+> **已注册任务无需重注册**，代码落盘即生效。
 
 ## 观测目标（GP-008）
 
