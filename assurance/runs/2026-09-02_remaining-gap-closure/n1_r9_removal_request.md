@@ -42,8 +42,16 @@ legacy-gate 三仓扫描 verdict=`callers_found`，findings 全部集中在 reve
 
 ### 3.2 删除批次（CA-304 部署动作，每批独立 commit + 全矩阵回归 + 可 revert）
 
-- **批 1（CI 接线）**：quality.yml 移除 L133 真实调用 + 移除 closure_gate/closure_ledger 相关 `--ignore` 条目（L50/53/54/79/82/83/120/123/124/166）
-- **批 2（revenue legacy 工具/测试）**：删除 `tools/verify_closure_ledger.py`、`tests/test_zr1101_closure_gate.py`、`tests/test_zr1105_closure_ledger.py`、`tools/tests/test_closure_gate.py`（及其 archive 需要时）
+> **执行清点（2026-09-03，门开后按此机械执行）**：
+> **批 1+2 必须合为单一 commit**——quality.yml 的 `--ignore` 条目与 windows job 运行列表（L50/53/54/79/82/83/120/123/124/166/168）引用待删测试文件：先删文件则 CI 引用缺失文件，先改 CI 则 legacy 测试在 windows job 裸跑（必红）。单 commit 自洽、可整体 revert。
+
+- **批 1+2（revenue，单 commit）**：
+  - 删除工具：`tools/closure_gate.py`、`tools/closure_ledger.py`、`tools/receipt_validator.py`、`tools/verify_closure_ledger.py`（与 uc/legacy_gate.py 的 LEGACY_TOOL_FILES 排除面一致；已核实 tools+tests 外零导入者）
+  - 删除测试：`tests/test_zr1101_closure_gate.py`、`tests/test_zr1105_closure_ledger.py`、`tools/tests/test_closure_gate.py`、`tools/tests/test_receipt_validator.py`、`tools/tests/test_verify_closure_ledger.py`
+  - quality.yml 重接线：删除 L103-133 整个 "Closure ledger gate (WU-10.2)" 步骤（verify_closure_ledger L133 真实调用 + PYTEST_LEDGER env 块）；删除 `--ignore` 条目 L50/53/54（pytest 块）、L79/82/83（coverage 块）、L120/123/124（ledger env 块）；删除 windows job 运行列表 L166/168（test_zr1101/test_zr1105）
+  - 联动编辑：`tests/test_zr1102_adversarial_audit.py` L118-119 的 collect 节点含 test_zr1101_closure_gate.py → 换为存活测试文件（test-island 审计保持有效）
+  - 保留（非 legacy，不动）：`tools/verify_plan_claims.py` + quality.yml L101-102（活 CI 步骤，不在 legacy-gate 注册表）；`compatibility/scenario_coverage.py` + `tests/test_scenario_coverage.py`（新计划门，仅名字与 legacy 注册表撞名）；`tests/test_zr1009_legacy_removal.py`（纪律测试，用 scratch trio 合成 fake closure_gate，不依赖真实工具）
+  - 冻结边界：`audit_review/2026-08-08_adversarial_plan/closure_ledger.json` 历史文件不动（删除后仅失去其校验者，历史保持只读展示）
 - **批 3（wiki 产品层，执行时以 final_ratchet/legacy-gate 复扫清单为准）**：`_scan_root_v1` 分支、legacy bridge/flags、无生产读者 backfill/promoter
 - **冻结边界（不删除）**：`audit_review/` 6 个旧计划目录（CA-306 C2 稳定快照）、`closure_ledger.json` 历史文件本身、unified_completion receipts（CA-306 C2 历史不可变）
 
