@@ -57,6 +57,14 @@ python tools\weekly_t3_schedule.py unregister
 > company-wiki/.source_catalog/catalog.sqlite3、manifest=compatibility/
 > current.json、report-root=assurance/runs）。任务 action 指向脚本路径，
 > **已注册任务无需重注册**，代码落盘即生效。
+>
+> **2026-09-04 重注册记录**：09-04 03:30 调度实测未触发（daily_manifest
+> 停留在 09-03 21:11 手动 run1；无 alert 文件）→ owner 于管理员会话重新
+> 执行 register（daily + weekly），确认 registered。窗口时间线随之修正：
+> run2 09-05 03:30 → run3 09-06 → run4 09-07 → gate 最早 ~09-07 03:30 后
+> （详见 progress.md / n1_r9_removal_request.md §5）。09-04 另完成 weekly
+> T3 首跑预检（测试文件在位、FILING_FETCH_E2E_DOWNLOAD 门名一致、4 测试
+> 可收集——周日 04:30 首跑风险已降低）。
 
 ## 观测目标（GP-008）
 
