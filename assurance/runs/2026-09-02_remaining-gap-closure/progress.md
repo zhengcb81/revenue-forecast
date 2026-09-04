@@ -6,7 +6,7 @@
 ## 状态总览
 
 - **起点**：117/117 accepted（机器真源 state.json）；三仓 CI ALL GREEN
-- **当前阶段**：GP-001~010 全部完成 + 真实数据 E2E 完成；机器层 117/117 accepted、scenario 197/197、closure-report incomplete=0。剩余 = 部署/自然时间层：N-1+R9 删除已获 owner 批准（2026-09-03），等两个 ≥24h 零 hit 观测窗口（最早 2026-09-06 03:30 后）执行批 1~3；weekly T3 自然累积（周日 04:30）。三仓 CI ALL GREEN。
+- **当前阶段**：GP-001~010 全部完成 + 真实数据 E2E 完成；机器层 117/117 accepted、scenario 197/197、closure-report incomplete=0。剩余 = 部署/自然时间层：N-1+R9 删除已获 owner 批准（2026-09-03），任务已于 09-04 提权重注册，等两个 ≥24h 零 hit 观测窗口（**最早 2026-09-07 03:30 后**）执行批 1~3；weekly T3 自然累积（周日 04:30，09-06 首跑）。三仓 CI ALL GREEN。
 - **锁**：无（无活动 lease）
 
 ## GP 进度表

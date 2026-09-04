@@ -76,7 +76,7 @@ legacy-gate 三仓扫描 verdict=`callers_found`，findings 全部集中在 reve
 - **观测窗口：尚未开始累积**。daily T2 调度存在注册参数缺陷（已修 revenue 3552795：注册任务裸 `--run-daily` 曾因 required 参数 argparse 失败 exit=2——窗口永远无法累积；修复后三参数默认生产路径，ZR-902 16 passed + 兄弟套件 52 passed）。任务注册状态在非提权会话不可见（schtasks 列表 202 个任务零命中；/tn 查询 Access denied）——**需 owner 提权确认/重注册**。
 - **观测推进接线（已修 revenue 630b554）**：发现注册任务只跑 T2 runner、从不调用 legacy_observer（periods 账本写入者）→ 窗口仍永不累积。现 run-daily 自动推进 period（next_period_number max+1；fresh/corrupt 从 1 重启 fail-closed）+ 只读 observer 调用（mode=ro，仅写 assurance/runs/legacy_periods.json）。冒烟测试通过（periods 推进 + close-gate 评估正常）。
 - **新发现阻塞（观测语义）**：真实 catalog 冒烟 = sample 接缝记录 **54/62 legacy_bridge_hits**，而 62 个采样文档中仅 32 个真正无 v2 覆盖（30 个已有 v2 normalized artifact 也被计 hit）→ sample 接缝用默认 `reader="v1"` + `legacy_bridge_allowed=True`，**不走生产快照门，高估 hits**；canary-matrix（生产 resolver 接缝 + 快照）= **0 hits**（4 canary 全 reused_exact）。→ 窗口在 sample 语义下永不为零，删除门正确 fail-closed。**已修（wiki 25a8eea）**：observe() 加载生产快照经 resolver_visibility 门控（无快照 = pre-FC-201 默认，与 SourceResolver 同源）；真实 catalog 复测 **sampled=62、legacy_bridge_hits=0**（reader=v2、bridge 禁用、snapshot c773099b）。
-- **最早窗口满足时间**：任务确认注册 + 快照门控修复（wiki 25a8eea，hits=0 实证）后，从下一个 03:30 运行起累积：run1 开 period 1 → run2 关 1 开 2 → run3 关 2 → 最早 **run3（约 2026-09-06 03:30）后 close_gate_allowed=True**，随后开始 R9 批 1~3。
+- **最早窗口满足时间（2026-09-04 修正）**：09-04 03:30 调度实测未触发（daily_manifest 停留在 09-03 21:11 手动 run1；无 alert 文件）→ owner 当日提权**重新注册** revenue_daily_t2/revenue_weekly_t3。快照门控修复（wiki 25a8eea，hits=0 实证）在位。时间线：**09-05 03:30 run2**（P2 开，P1=6.5h 短窗出局）→ 09-06 03:30 run3（关 P2，24h ✓）→ 09-07 03:30 run4（关 P3，24h ✓）→ **最早 ~09-07 03:30 后 close_gate_allowed=True**，随后开始 R9 批 1~3。
 - **N-1（范围 A）与执行授权（范围 B）批准后**：窗口满足即按 §3.2 分批执行，执行过程记录于本 run 的 progress.md。
 
 ## 6. 验收标准
@@ -95,5 +95,5 @@ legacy-gate 三仓扫描 verdict=`callers_found`，findings 全部集中在 reve
 - **批准人**：郑曾波（repo owner）
 - **批准时间**：2026-09-03
 - **批准内容**：**批准 A+B**——① FC-1501~1505 N-1 关闭确认（successor 链 CA-107~109/CA-201/CA-301~306 全 accepted，旧目录冻结不改写）；② R9 legacy 分批删除执行授权（批 1 quality.yml 移除 verify_closure_ledger L133 真实调用 + closure_gate/closure_ledger 相关 --ignore 条目；批 2 revenue legacy 工具/测试删除；批 3 wiki 产品层 _scan_root_v1/bridge/flags/无读者 backfill/promoter——以执行时 final_ratchet/legacy-gate 复扫清单为准）。每批独立 commit + 三仓 CI 全绿 + 可 revert；`audit_review/` 冻结目录与历史 closure_ledger.json 不删除。
-- **执行前置（仍生效）**：B 的实际删除等到两个连续 ≥24h 零 hit 观测窗口满足后开始（最早 2026-09-06 03:30 后）；owner 已确认 revenue_daily_t2 / revenue_weekly_t3 任务已注册（2026-09-03，提权会话 query registered；非提权会话不可见属正常 ACL）；daily 任务 argparse 缺陷已修复（revenue 3552795，2026-09-03 推送）。
-- **执行状态**：待观测窗口满足。观测语义阻塞已清除（wiki 25a8eea：快照门控 sample pass，真实 catalog hits=0 实证）——窗口从下一个 03:30 运行开始真实累积，最早约 2026-09-06 03:30 后 close_gate_allowed=True，随后按批 1→2→3 执行（每批独立 commit + 三仓 CI 全绿 + legacy-gate 复扫清零）。
+- **执行前置（仍生效，2026-09-04 更新）**：B 的实际删除等到两个连续 ≥24h 零 hit 观测窗口满足后开始（**最早 2026-09-07 03:30 后**，见 §5 时间线修正）；任务已于 2026-09-04 由 owner 提权重新注册（09-04 03:30 未触发的处置）；daily 任务 argparse 缺陷已修复（revenue 3552795）。
+- **执行状态**：待观测窗口满足（最早 ~09-07 03:30 后 close_gate_allowed=True）。观测语义已清除（wiki 25a8eea，hits=0 实证）；随后按批 1→2→3 执行（每批独立 commit + 三仓 CI 全绿 + legacy-gate 复扫清零）。
