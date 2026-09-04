@@ -129,6 +129,13 @@
   - **时间线修正（诚实）**：昨晚 21:11 的手动 run1 使 period 1 无法构成完整窗口；注册后从 **09-05 03:30 run2**（P2 开、关 P1=6.5h 短窗出局）→ run3 09-06 03:30（关 P2，24h ✓）→ run4 09-07 03:30（关 P3，24h ✓）→ **gate 最早 ~09-07 03:30 后**（较原计划 09-06 晚一天，因手动 run1 偏移窗口起点）。期间不再手动 run-daily，避免进一步偏移。
   - 后续判定点：09-05 08:00 后检查 daily_manifest——started_at ≈09-05 03:30 且 observation_period=2 → 调度真实触发。
 
+- **2026-09-04 BR 工作单元：broker_research 分节提取（BR-11~17 真实能力，wiki 853dca2）**：
+  - **背景**：GP-010 记录"sections=0（broker_research 不在 section_extractor 支持集）"——BR-11~17 场景此前仅有基础设施层证据（zr504/zr506 hermetic 测试），真实分节能力缺失。owner 指示开始补齐。
+  - **实证先行**：分析 7 份 golden corpus 研报的 normalize 文本结构——研报不用"第X节"约定，用**独立关键词行**（报告要点/核心看点、投资建议/投资评级、风险提示、盈利预测[与财务指标]）+ 可选数字前缀；且**封面页含同形标签**（封面"投资评级"是字段不是章节）。
+  - **实现（wiki 853dca2，RED→GREEN）**：`BROKER_INVESTMENT_KEYWORDS` 角色 map + `BROKER_SECTION_RE`（关键词行 ± 数字前缀，`[ \t]*$` 防跨行）+ `extract_broker_sections_from_text` + **封面排除**（有 `## Page` 标记时从 page-2 标记起匹配）+ extract_sections_catalog 按 kind 分流。7 个新契约测试（关键词识别/非关键词吸收语义/连续切片/散文 fail-closed/投资评级变体/封面排除）；既有 catalog 集成测试补显式 annual_report sidecar（directory 根默认 kind=broker_research——旧测试无意依赖该默认 + document_id 绕过 kind 过滤）。31 passed 含 zr506；ruff/mypy/config doctor 绿。
+  - **真实数据预演（只读）**：5/7 产出精准 sections（changjiang 3 段含 6292 字符报告要点；tianfeng/guosheng/tpy×2 风险提示 15-31K 精准）；**minsheng/glms 诚实 0**（➢ 列表式研报无独立关键词行——记录为已知限制）；修复前 4/7 存在封面误命中超长 body，现已消除。
+  - **真实提取执行（写库）**：`catalog.extract_sections(document_kind="broker_research")` → eligible=752、completed=214、skipped=538、failed=0。**范围超 GP-010 批准的 7 份**（覆盖全 catalog broker_research）→ owner 决策**保留全部**（规则提取零 LLM、可回滚）；7 份紫金研报 5/7 有 sections artifacts（总 catalog sections artifacts 236）。已知限制如实记录：民生/国联 ➢ 列表式研报需不同策略（未来工作）。
+
 - **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
   - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
   - **剩余缺口清单（部署/自然时间层）**：
