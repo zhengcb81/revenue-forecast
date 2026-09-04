@@ -123,6 +123,12 @@
   - **修复**：C1 更新为 GP-010 后的诚实快照断言——每份 broker active + broker_research、≥1 个 completed normalized artifact、零非 completed 行；docstring 同步。9 passed（真实库本地跑）；该文件本在 CI ignore 名单（ci.yml L50），GitHub CI 行为不变。
   - **全量复跑确认：2656 passed / 7 skipped / 0 failed**（10m45s，HEAD a0c7629）——wiki 本地全量全绿。
 
+- **2026-09-04 08:21 判定：03:30 调度未触发 → owner 提权重注册完成**：
+  - 机器证据：daily_manifest 仍为手动 run1（20260903T211059Z，period 1）——**09-04 03:30 无 run2**；无 alert 文件（任务从未执行）；工具 query=missing、/tn Access denied（非提权不可区分 不存在 vs ACL 受限）。
+  - 处理：owner 于管理员会话重新执行 `daily_t2_schedule.py register` + `weekly_t3_schedule.py register`，确认 registered。
+  - **时间线修正（诚实）**：昨晚 21:11 的手动 run1 使 period 1 无法构成完整窗口；注册后从 **09-05 03:30 run2**（P2 开、关 P1=6.5h 短窗出局）→ run3 09-06 03:30（关 P2，24h ✓）→ run4 09-07 03:30（关 P3，24h ✓）→ **gate 最早 ~09-07 03:30 后**（较原计划 09-06 晚一天，因手动 run1 偏移窗口起点）。期间不再手动 run-daily，避免进一步偏移。
+  - 后续判定点：09-05 08:00 后检查 daily_manifest——started_at ≈09-05 03:30 且 observation_period=2 → 调度真实触发。
+
 - **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
   - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
   - **剩余缺口清单（部署/自然时间层）**：
