@@ -242,7 +242,7 @@ def cmd_register(_args: argparse.Namespace) -> int:
     """
     script = (
         "$action = New-ScheduledTaskAction -Execute "
-        f"'{sys.executable}' -Argument '\"{Path(__file__).resolve()}\" --run-daily'; "
+        f"'{sys.executable}' -Argument '\"{Path(__file__).resolve()}\" run-daily'; "
         "$trigger = New-ScheduledTaskTrigger -Daily -At 22:00; "
         "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
         "-LogonType ServiceAccount -RunLevel Highest; "

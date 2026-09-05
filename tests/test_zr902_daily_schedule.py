@@ -280,6 +280,35 @@ def test_c7_register_script_includes_power_and_wake_settings():
     assert "New-ScheduledTaskSettingsSet" in script
 
 
+def test_c8_register_action_uses_positional_subcommand():
+    """CRITICAL regression (found by independent planning review 2026-09-05):
+    the register script generated '--run-daily' (option-prefixed) but the
+    CLI parser expects the POSITIONAL subcommand 'run-daily'.  Every
+    scheduled trigger exited with argparse error 2 ('arguments required:
+    command') before reaching the runner.  The Action argument must use
+    the bare positional form."""
+    from unittest.mock import patch
+
+    from daily_t2_schedule import build_parser, cmd_register
+
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stderr = ""
+        result = cmd_register(None)
+    assert result == 0
+    script = mock_run.call_args[0][0][4]
+    # The action argument must contain ' run-daily' (bare positional), NOT
+    # ' --run-daily' (option-prefixed, which argparse rejects).
+    assert '" run-daily' in script, (
+        f"register Action must use positional 'run-daily', got: {script}")
+    assert '" --run-daily' not in script, (
+        "register Action must NOT use option-prefixed '--run-daily' "
+        "(argparse rejects it: exit 2 'arguments required: command')")
+    # And the bare positional must actually parse.
+    args = build_parser().parse_args(["run-daily"])
+    assert args.command == "run-daily"
+
+
 # ---------------------------------------------------------------------------
 # C6 — FC-705 observation advancement wired into the daily run (GP-008)
 # ---------------------------------------------------------------------------
