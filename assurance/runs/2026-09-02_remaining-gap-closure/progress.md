@@ -136,6 +136,15 @@
   - **真实数据预演（只读）**：5/7 产出精准 sections（changjiang 3 段含 6292 字符报告要点；tianfeng/guosheng/tpy×2 风险提示 15-31K 精准）；**minsheng/glms 诚实 0**（➢ 列表式研报无独立关键词行——记录为已知限制）；修复前 4/7 存在封面误命中超长 body，现已消除。
   - **真实提取执行（写库）**：`catalog.extract_sections(document_kind="broker_research")` → eligible=752、completed=214、skipped=538、failed=0。**范围超 GP-010 批准的 7 份**（覆盖全 catalog broker_research）→ owner 决策**保留全部**（规则提取零 LLM、可回滚）；7 份紫金研报 5/7 有 sections artifacts（总 catalog sections artifacts 236）。已知限制如实记录：民生/国联 ➢ 列表式研报需不同策略（未来工作）。
 
+- **2026-09-04 晚间：三仓全量回归确认**：
+  - **filing-fetch**（89c8bdb）：**358 passed / 8 skipped / 0 failed**（123s）✓
+  - **revenue**（0560212）：**1,093 passed / 0 failed**（7m37s）✓——1 个 pre-existing 挂起测试（test_fc1103_t3_runner test_with_force，Windows subprocess 环境，非回归，pytest-timeout 无法中断阻塞 I/O join；该文件其余 2 测试单独跑通过）
+  - **wiki**（853dca2）：全量回归运行中（后台，预期 ~11 分钟）
+
+- **2026-09-05 调度根因修复 + 触发时间改为 22:00（revenue c701f6d/3ea24b7/e9a6071，owner 重注册完成）**：
+  - **诊断**（owner 提权 schtasks /query /v）：上次运行 08:24:40（非 03:30）——电脑关机错过触发；补跑被拒 0x800710E0（Register-ScheduledTask 默认电源条件）。修复三轮：电源条件 + StartWhenAvailable + 触发 03:30→22:00（owner 决策）。
+  - **新时间线**：09-05 22:00 → P2 开（P1 = 73h ✓）；09-06 22:00 → P3（24h ✓）；09-07 22:00 → P4（24h ✓）→ **gate = True（09-07 22:00 后）** → R9 批 1+2 → 批 3。
+
 - **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
   - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
   - **剩余缺口清单（部署/自然时间层）**：
