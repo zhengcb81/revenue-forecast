@@ -229,6 +229,12 @@ def cmd_register(_args: argparse.Namespace) -> int:
     on some Windows builds and hangs the subprocess; Register-ScheduledTask
     with ``-LogonType ServiceAccount`` registers SYSTEM tasks without any
     password.
+
+    Power/wake fix (0x800710E0, diagnosed 2026-09-05): the DEFAULT settings
+    refuse to start on battery power and never wake the machine — when the
+    computer sleeps through the 03:30 trigger, the late catch-up run fails
+    with "operator refused the request" (-2147020576).  Explicit settings
+    allow any power source and wake the computer to run on schedule.
     """
     script = (
         "$action = New-ScheduledTaskAction -Execute "
@@ -236,8 +242,11 @@ def cmd_register(_args: argparse.Namespace) -> int:
         "$trigger = New-ScheduledTaskTrigger -Daily -At 03:30; "
         "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
         "-LogonType ServiceAccount -RunLevel Highest; "
+        "$settings = New-ScheduledTaskSettingsSet "
+        "-AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun; "
         f"Register-ScheduledTask -TaskName '{TASK_NAME}' "
-        "-Action $action -Trigger $trigger -Principal $principal -Force | Out-Null"
+        "-Action $action -Trigger $trigger -Principal $principal "
+        "-Settings $settings -Force | Out-Null"
     )
     proc = subprocess.run(
         ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],

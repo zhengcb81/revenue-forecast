@@ -256,6 +256,29 @@ def test_c5_register_action_needs_no_extra_flags():
     assert args.report_root == DEFAULT_REPORT_ROOT
 
 
+def test_c7_register_script_includes_power_and_wake_settings():
+    """0x800710E0 regression: the default ScheduledTask settings refuse to
+    start on battery power and never wake the machine — when the computer
+    sleeps through the 03:30 trigger, the late catch-up run fails with
+    'operator refused the request' (-2147020576, measured 2026-09-05).
+    The register script must explicitly allow any power source and set
+    wake-to-run."""
+    from unittest.mock import patch
+
+    from daily_t2_schedule import cmd_register
+
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stderr = ""
+        result = cmd_register(None)
+    assert result == 0
+    script = mock_run.call_args[0][0][4]  # ["powershell", "-NoProfile", "-NonInteractive", "-Command", script]
+    assert "-AllowStartIfOnBatteries" in script
+    assert "-DontStopIfGoingOnBatteries" in script
+    assert "-WakeToRun" in script
+    assert "New-ScheduledTaskSettingsSet" in script
+
+
 # ---------------------------------------------------------------------------
 # C6 — FC-705 observation advancement wired into the daily run (GP-008)
 # ---------------------------------------------------------------------------

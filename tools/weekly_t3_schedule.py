@@ -87,15 +87,23 @@ def run_weekly(ledger_path: Path, alert_path: Path) -> int:
 
 
 def cmd_register_weekly(_args: argparse.Namespace) -> int:
-    """Register via PowerShell Register-ScheduledTask (no password prompt)."""
+    """Register via PowerShell Register-ScheduledTask (no password prompt).
+
+    Power/wake fix (0x800710E0, diagnosed 2026-09-05): explicit settings
+    allow any power source and wake the computer to run on schedule —
+    the defaults refuse battery-mode starts and never wake.
+    """
     script = (
         "$action = New-ScheduledTaskAction -Execute "
         f"'{sys.executable}' -Argument '\"{Path(__file__).resolve()}\" run-weekly'; "
         "$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At 04:30; "
         "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
         "-LogonType ServiceAccount -RunLevel Highest; "
+        "$settings = New-ScheduledTaskSettingsSet "
+        "-AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun; "
         f"Register-ScheduledTask -TaskName '{WEEKLY_TASK}' "
-        "-Action $action -Trigger $trigger -Principal $principal -Force | Out-Null"
+        "-Action $action -Trigger $trigger -Principal $principal "
+        "-Settings $settings -Force | Out-Null"
     )
     proc = subprocess.run(
         ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
