@@ -234,7 +234,11 @@ def cmd_register(_args: argparse.Namespace) -> int:
     refuse to start on battery power and never wake the machine — when the
     computer sleeps through the 03:30 trigger, the late catch-up run fails
     with "operator refused the request" (-2147020576).  Explicit settings
-    allow any power source and wake the computer to run on schedule.
+    allow any power source, wake the computer to run on schedule, and
+    StartWhenAvailable catches up a missed run on the next boot (the owner
+    powers the machine off overnight — StartWhenAvailable fires the missed
+    daily run once when the machine is next turned on, without the
+    multiple-runs-per-day risk of a bare boot trigger).
     """
     script = (
         "$action = New-ScheduledTaskAction -Execute "
@@ -243,7 +247,8 @@ def cmd_register(_args: argparse.Namespace) -> int:
         "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
         "-LogonType ServiceAccount -RunLevel Highest; "
         "$settings = New-ScheduledTaskSettingsSet "
-        "-AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun; "
+        "-AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun "
+        "-StartWhenAvailable; "
         f"Register-ScheduledTask -TaskName '{TASK_NAME}' "
         "-Action $action -Trigger $trigger -Principal $principal "
         "-Settings $settings -Force | Out-Null"

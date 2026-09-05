@@ -90,8 +90,8 @@ def cmd_register_weekly(_args: argparse.Namespace) -> int:
     """Register via PowerShell Register-ScheduledTask (no password prompt).
 
     Power/wake fix (0x800710E0, diagnosed 2026-09-05): explicit settings
-    allow any power source and wake the computer to run on schedule —
-    the defaults refuse battery-mode starts and never wake.
+    allow any power source, wake the computer to run on schedule, and
+    StartWhenAvailable catches up a missed Sunday run on the next boot.
     """
     script = (
         "$action = New-ScheduledTaskAction -Execute "
@@ -100,7 +100,8 @@ def cmd_register_weekly(_args: argparse.Namespace) -> int:
         "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
         "-LogonType ServiceAccount -RunLevel Highest; "
         "$settings = New-ScheduledTaskSettingsSet "
-        "-AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun; "
+        "-AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun "
+        "-StartWhenAvailable; "
         f"Register-ScheduledTask -TaskName '{WEEKLY_TASK}' "
         "-Action $action -Trigger $trigger -Principal $principal "
         "-Settings $settings -Force | Out-Null"

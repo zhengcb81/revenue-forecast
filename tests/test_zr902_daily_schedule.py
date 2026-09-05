@@ -276,6 +276,7 @@ def test_c7_register_script_includes_power_and_wake_settings():
     assert "-AllowStartIfOnBatteries" in script
     assert "-DontStopIfGoingOnBatteries" in script
     assert "-WakeToRun" in script
+    assert "-StartWhenAvailable" in script
     assert "New-ScheduledTaskSettingsSet" in script
 
 
