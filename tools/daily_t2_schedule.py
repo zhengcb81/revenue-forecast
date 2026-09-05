@@ -37,7 +37,7 @@ MAX_AGE_HOURS = 24
 
 # Production paths for the REGISTERED task: the SYSTEM task fires the script
 # with a bare ``--run-daily`` (no per-run flags), so these must default to
-# the real catalog/manifest/report root — otherwise every 03:30 trigger
+# the real catalog/manifest/report root — otherwise every 22:00 trigger
 # dies in argparse with "the following arguments are required" and the
 # daily ledger (and with it the FC-705 observation windows) never advances.
 DEFAULT_CATALOG = PROJECT_ROOT.parent / "company-wiki" / ".source_catalog" / "catalog.sqlite3"
@@ -232,7 +232,7 @@ def cmd_register(_args: argparse.Namespace) -> int:
 
     Power/wake fix (0x800710E0, diagnosed 2026-09-05): the DEFAULT settings
     refuse to start on battery power and never wake the machine — when the
-    computer sleeps through the 03:30 trigger, the late catch-up run fails
+    computer sleeps through the 22:00 trigger, the late catch-up run fails
     with "operator refused the request" (-2147020576).  Explicit settings
     allow any power source, wake the computer to run on schedule, and
     StartWhenAvailable catches up a missed run on the next boot (the owner
@@ -243,7 +243,7 @@ def cmd_register(_args: argparse.Namespace) -> int:
     script = (
         "$action = New-ScheduledTaskAction -Execute "
         f"'{sys.executable}' -Argument '\"{Path(__file__).resolve()}\" --run-daily'; "
-        "$trigger = New-ScheduledTaskTrigger -Daily -At 03:30; "
+        "$trigger = New-ScheduledTaskTrigger -Daily -At 22:00; "
         "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
         "-LogonType ServiceAccount -RunLevel Highest; "
         "$settings = New-ScheduledTaskSettingsSet "
