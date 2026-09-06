@@ -1,5 +1,32 @@
 # 剩余缺口关闭实施进度
 
+> [当前状态总入口](../../../PLANNING_STATUS.md)
+
+## 2026-09-06 最新状态与领取规则（优先于下方全部旧覆盖/命令/批准摘要）
+
+用户本次只授权planning文档同步和详细计划，未授权实施、重新注册、删除或运行。原痛点当前判定以[新审计入口](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/README.md)为准，下一步使用[15包整改计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/remediation-plan.md)及执行手册；本组是历史执行/批准来源，不再并行领取第二套整改队列。
+
+- GP-008参数错误已在revenue HEAD `2ff20d9`修复，注册器现为`run-daily`。旧“代码仍阻塞/必须先改拼写”失效；部署Action及自然触发仍未独立闭环，不自动重注册。
+- latest观测daily manifest=`20260905T194055Z`、period=2、ok=true，绑定旧`2cbd585`而非当前HEAD；legacy一个ended_at完成窗口、第二个未完成，close_allowed=false。旧9/3唯一run/零completed不再是最新状态，仍不可按预计日期放行。
+- GP-010观测为normalized7/7、review7/7、summary6/7、sections5/7，安全拒绝保留，列表式缺口未闭。kind宽范围历史产物214份与精确7份cohort不是同一范围；按owner已有处置保留，不执行旧“DELETE+重扫即无外部副作用”的回滚说法。
+- 117 accepted/197 passed不是原目标完成证明：9/6审计找到required tier、真实消费、业务计算、失败账本和发布等实质反例。历史receipt/批准原字节不改，禁止批量重签来制造当前资格。
+- 新H01自动prune归档覆盖风险是worker恢复前置。当前整改全部NOT_IMPLEMENTATION_AUTHORIZED；旧授权不自动包含新scope/新版本。GP/R9历史批准保留，但继续执行需WP01/12/13/14相应门、真实数据E2E和当前精确授权。
+
+以下9/2–9/5内容均为有日期的历史快照，不是新的可执行指令；若与本节冲突按本节及新计划处理。真实报告、完整观察、受控删除未完成，不以文档同步勾成完成。
+
+## 2026-09-05 当前状态覆盖与只读复核
+
+本节覆盖下文“全部完成”“剩余只自然时间”等旧总览，不抹除历史执行日志。
+
+- GP-006=partial：Windows sibling临时数据CI job已建，但continue-on-error=true；真实catalog E2E仍需运行环境与阻断式覆盖决策。
+- GP-008=blocked_code + deployment_action_unverified：9/5的电源/补跑/22:00修复只关闭了一组调度条件；注册器仍生成--run-daily，parser仅收run-daily。安全argparse探针仍拒绝且未触发runner；owner重注册记录不能证明该Action可执行。
+- GP-009=自然时间验收未完成：保留owner重注册daily/weekly的历史声明，但Action与实际自然触发未形成闭环证据。7 Daily/2 Weekly/1 Monthly/1 drill尚不能宣称满足。
+- GP-010=已批准/部分执行：7 normalized、7 review receipts、6 summaries；1份安全门拒绝是正确fail-closed；9/4规则分节后目标研报sections=5/7，另2份列表式文档仍未覆盖。
+- GP-005=registry记录197/197 passed，不是生产语义全部完成；T1证据、分节能力和真实5/7产物不可互相替代。
+- 实际运行文件：daily_manifest=20260903T211059Z、period1；legacy_periods只有observing、completed=0、close_allowed=false。撤回固定9/6门开时间，仅待实际两个≥24h零hit完整窗口。
+- N-1/R9 A+B批准保留，删除未执行；revenue批1+2一个commit、wiki批3另一个commit，每批次需真实门/回归/可revert。
+- 本次未重跑全套测试、未联网、未生产扫描/下载/LLM、未修改代码/配置/任务/机器state/receipt。下一步若修代码或部署，另在该范围取得授权并独立复核。
+
 > 起始状态：2026-09-02 全面审查发现 12 项缺口（3 项已修复、9 项待实施）。
 > 每完成一个 GP，更新本页对应行。
 
@@ -144,6 +171,14 @@
 - **2026-09-05 调度根因修复 + 触发时间改为 22:00（revenue c701f6d/3ea24b7/e9a6071，owner 重注册完成）**：
   - **诊断**（owner 提权 schtasks /query /v）：上次运行 08:24:40（非 03:30）——电脑关机错过触发；补跑被拒 0x800710E0（Register-ScheduledTask 默认电源条件）。修复三轮：电源条件 + StartWhenAvailable + 触发 03:30→22:00（owner 决策）。
   - **新时间线**：09-05 22:00 → P2 开（P1 = 73h ✓）；09-06 22:00 → P3（24h ✓）；09-07 22:00 → P4（24h ✓）→ **gate = True（09-07 22:00 后）** → R9 批 1+2 → 批 3。
+
+- **2026-09-06 里程碑：22:00 定时触发成功 + GATE 打开 + R9 批 1+2 执行 + 批 3 延后**：
+  - **定时触发首次成功**：run_id=20260906T210001Z（22:00:28 本地）——`run-daily` 位置子命令修复（`2ff20d9`）后 owner 重注册的任务正常执行。
+  - **FC-705 GATE OPENED**：P1（09-03 21:11 → 09-05 19:41 = **46.5h ✓** hits=0）+ P2（09-05 19:41 → 09-06 21:00 = **25.3h ✓** hits=0）→ **close_gate_allowed=True**。
+  - **R9 批 1+2 执行（revenue `289fb6b`，单 commit）**：删除 4 工具（closure_gate/closure_ledger/receipt_validator/verify_closure_ledger.py）+ 5 测试（zr1101/zr1105/test_closure_gate/test_receipt_validator/test_verify_closure_ledger）+ quality.yml 重接线（closure ledger gate 步骤 + --ignore 条目 + windows job 条目）+ zr1102 collect 节点替换。**legacy-gate 复扫 verdict=isolated、findings=0** ✓。26 tests passed；ruff 绿。保留：verify_plan_claims（活 CI）、scenario_coverage（新计划门）、zr1009（纪律测试）、冻结 audit_review/ 目录。
+  - **R9 批 3 延后（owner 决策）**：wiki 依赖分析发现 `_scan_root_v1`（scanner L1401 生产调用）、`legacy_bridge_enabled`（rollback 机制需要）、`backfill_v2`（governance 导入）均有生产调用者——非死代码，是 v2 迁移期架构保障。仅 `artifact_backfill.py` 零生产导入。owner 决策整体延后，等 v2 迁移完全稳定后做 architectural cleanup。
+  - **SYSTEM 兼容修复（revenue `b049165`）**：T2 runner 的 git 命令加 `-c safe.directory=*`（SYSTEM 下 Git 拒绝用户拥有的仓库）；Dropbox 路径从 `Path.home()` 改为 PROJECT_ROOT 推导（SYSTEM 的 home 是 systemprofile）。32 tests passed；ruff 绿。
+  - **T2 runner 已知问题**：ok=False 因 SYSTEM 下 git/Dropbox 权限（已修 b049165，下次 22:00 触发验证）。观测窗口本身不受影响（observer 独立运行正常）。
 
 - **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
   - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
