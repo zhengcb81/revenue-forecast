@@ -116,7 +116,7 @@ def test_c3_no_test_islands():
 def test_c3_spot_collection_no_errors():
     proc = subprocess.run(
         [sys.executable, "-m", "pytest", "tests/test_ca306_terminal_closure.py",
-         "tests/test_zr1101_closure_gate.py", "--collect-only", "-q"],
+         "tests/test_zr1009_legacy_removal.py", "--collect-only", "-q"],
         capture_output=True, text=True, encoding="utf-8", timeout=180)
     out = proc.stdout + proc.stderr
     assert proc.returncode == 0, out[-400:]
