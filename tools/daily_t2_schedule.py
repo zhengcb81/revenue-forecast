@@ -46,13 +46,24 @@ DEFAULT_REPORT_ROOT = PROJECT_ROOT / "assurance" / "runs"
 
 # FC-705 observation advancement (GP-008): the daily run also advances the
 # legacy-observation periods ledger through the read-only wiki observer.
-# The observer writes ONLY the periods JSON (audit state under
-# assurance/runs) and never touches the production catalog (mode=ro +
-# query_only + _ReadOnlyCatalog).  Without this wiring the periods ledger
-# never accumulates and close_gate_allowed stays False forever.
+# The observer writes ONLY the periods JSON (audit state) and never touches
+# the production catalog (mode=ro + query_only + _ReadOnlyCatalog).
+# Without this wiring the periods ledger never accumulates and
+# close_gate_allowed stays False forever.
+#
+# Authoritative ledger path: the wiki catalog dir (.source_catalog/
+# legacy_periods.json) — the historical convention recorded in the old
+# plan's observer runs (2026-08-09_data_lake_refactor_plan/progress.md:
+# --period-file .source_catalog/legacy_periods.json).  GP-008 initially
+# wrote to revenue's assurance/runs/legacy_periods.json, which created a
+# SECOND, divergent ledger (periods 1-3, gate True 09-06) next to the
+# stale pre-cutover ledger there (periods 1-6, last written 08-13).
+# Reverted to the single historical path on 2026-09-06 so the next run
+# (opening period 7) continues the original ledger and the two files do
+# not drift apart again.
 WIKI_ROOT = PROJECT_ROOT.parent / "company-wiki"
 LEGACY_OBSERVER = WIKI_ROOT / "scripts" / "legacy_observer.py"
-DEFAULT_PERIODS = PROJECT_ROOT / "assurance" / "runs" / "legacy_periods.json"
+DEFAULT_PERIODS = WIKI_ROOT / ".source_catalog" / "legacy_periods.json"
 
 
 def read_periods(path: Path) -> dict:
