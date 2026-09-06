@@ -180,6 +180,13 @@
   - **SYSTEM 兼容修复（revenue `b049165`）**：T2 runner 的 git 命令加 `-c safe.directory=*`（SYSTEM 下 Git 拒绝用户拥有的仓库）；Dropbox 路径从 `Path.home()` 改为 PROJECT_ROOT 推导（SYSTEM 的 home 是 systemprofile）。32 tests passed；ruff 绿。
   - **T2 runner 已知问题**：ok=False 因 SYSTEM 下 git/Dropbox 权限（已修 b049165，下次 22:00 触发验证）。观测窗口本身不受影响（observer 独立运行正常）。
 
+- **2026-09-06 双账本发现与门状态修正（revenue a944bd2）**：
+  - **独立分析发现双账本漂移**：旧计划约定 observer 的 period-file = wiki `.source_catalog/legacy_periods.json`（08-09~08-13 的 P1~P6，bridge 活跃期 hits=30/46/6/6/6，最后写入 08-13）；GP-008 接线却写 revenue `assurance/runs/legacy_periods.json`（09-03 起的 P1~P3，快照门控后零 hit）→ 两个账本 verdict 不同（后者 09-06 gate=True）。
+  - **修正（a944bd2）**：DEFAULT_PERIODS 改回历史权威路径 `.source_catalog/legacy_periods.json`——下次运行开 P7 延续原始账本，单一账本恢复。
+  - **权威账本下的真实门时间线**：09-07 22:00 关 P6（08-13→09-07 ≈ 25 天 ✓ 零 hit ✓）但 P5（hits=6、1.75h 短窗）仍在 last-two 挡门 → False；09-08 22:00 关 P7（24h ✓ 零 hit ✓）→ last two = P6+P7 都合格 → **gate True ≈ 09-08 22:00**（此前"09-06 gate open"的声明基于非权威账本，已修正撤回）。
+  - **批 1+2 合法性不受影响**：其依据 = owner A+B 批准 + legacy-gate 复扫 findings=0 + 回归全绿——删除的是 revenue closure 工具/测试，**非 legacy bridge**；FC-705 观测门针对 bridge 删除（wiki 批 3，已延后）。
+  - **遗留风险**：SYSTEM 写 wiki `.source_catalog` 的权限待 09-07 22:00 实测（observer 失败会 ok=False + alert）。
+
 - **2026-09-03 晚间：余下缺口盘点 + 缺口 1 修复 + N-1/R9 授权（revenue 3552795 + 文档）**：
   - **机器层盘点（closure-report 实测）**：units machine_valid=112/legacy=72/incomplete=0；scenarios 197/197 unsatisfied=0；state.json 117/117 accepted、plan_status=completed；CA-306 terminal closure + TERMINAL_NOTICE 在位。closure-report 的旧计划 reasons（26 contradicted/5 pending FC-150x/R9 frozen/legacy receipts）全为旧计划**永久诚实标注**（successor 全 accepted），非待办缺口。
   - **剩余缺口清单（部署/自然时间层）**：
