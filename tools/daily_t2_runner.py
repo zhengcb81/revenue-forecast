@@ -49,8 +49,13 @@ INTERRUPTED_DELTA_BUDGET = 5
 
 
 def _head(repo: Path) -> str:
-    return subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"],
-                          capture_output=True, text=True).stdout.strip()
+    # -c safe.directory=* : when the scheduled task runs as SYSTEM, Git's
+    # ownership check rejects user-owned repos (measured 2026-09-06: all
+    # three HEADs returned empty, manifest triplet check failed).  The
+    # per-invocation override avoids needing a SYSTEM-level gitconfig.
+    return subprocess.run(
+        ["git", "-c", "safe.directory=*", "-C", str(repo), "rev-parse", "HEAD"],
+        capture_output=True, text=True).stdout.strip()
 
 
 def run_checks(
@@ -193,7 +198,10 @@ def run_checks(
     roots = {
         "companies": _count_files(WIKI_ROOT / "companies"),
         "dayu": _count_files(PROJECT_ROOT.parent / "dayu-agent" / "workspace" / "portfolio"),
-        "dropbox": _count_files(Path.home() / "Dropbox" / "Stock"),
+        # SYSTEM's Path.home() is systemprofile, not the user's home —
+        # resolve the real user profile from the PROJECT_ROOT path.
+        "dropbox": _count_files(
+            PROJECT_ROOT.parent.parent / "Dropbox" / "Stock"),
     }
     checks["roots_fingerprint"] = roots
 
