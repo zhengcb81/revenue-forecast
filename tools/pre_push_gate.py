@@ -71,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     gates: list[tuple[list[str], str]] = [
-        (["ruff", "check", "scripts", "tests", "tools", "e2e", "/nonexistent-neg"],
+        (["ruff", "check", "scripts", "tests", "tools", "e2e"],
          "ruff (CI WU-1.2 full scope)"),
         ([sys.executable, "-m", "compileall", "-q",
           "scripts", "tests", "tools", "e2e"],
