@@ -1,5 +1,7 @@
 # CI 反复失败根因与根治协议（2026-09-06）
 
+> **2026-09-07优先状态**：本组下方9/6覆盖后又有其他任务推进。revenue HEAD=6682ecf，latest daily=20260906T210001Z/ok=false/空triplet；DEFAULT_PERIODS改为wiki账本，旧revenue green不代表当前资格。Git确认R9 revenue批1+2工具/测试及CI step已删，wiki批3日志记录延后；不重复执行、不在此追认其全量验收。当前差异见[状态覆盖](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/current-delta-2026-09-07.md)，整改以同目录执行手册为编排依据。CI协议是现有WP11输入，旧命令/批准不是本轮push、真实测试、网络、任务或删除授权。保留下方原日志及批准字节。
+
 > 目的：终止"本地绿 → 推送 → CI 红 → 事后补丁"的循环。本页是机制纪律，
 > 不是一次性修复。凡推送任何三仓改动，必须走本协议。
 
@@ -49,13 +51,15 @@
 - CI 矩阵设 `fail-fast: false`（wiki ci.yml）——三版本全跑完，一次暴露全部失败
 - 新测试同时考虑 Windows/Linux 目录语义差异
 
-## 6. 待办（2026-09-07 起）
+## 6. 待办与执行记录（2026-09-07）
 
-- [ ] wiki 修复分支 d92f8bf 合并 → 确认 CI 全绿
-- [ ] wiki `ci.yml` matrix 加 `fail-fast: false`
-- [ ] wiki 版 pre-push gate（契约套件 + ratchet 元测试 + compileall + config doctor）
+- [x] wiki 修复分支 d92f8bf 合并 → PR #1 merge（master f08116a）；CI #67/#68 全绿
+- [x] wiki `ci.yml` matrix 加 `fail-fast: false`（wiki 279fa14；CI #69 三版本全绿）
+- [x] wiki 版 pre-push gate `tools/pre_push_gate.py`（ruff 全范围+compileall+config_doctor+复杂度 ratchet+契约测试）
+- [x] revenue 版 pre-push gate `tools/pre_push_gate.py`（6682ecf；CI #108 绿）
+- [x] **覆盖率 ratchet 根治**（4beb38d）：删除结构性不可达代码（_classify_broker return None 与 role-None continue——正则与分类器共用同一 keyword dict，正则匹配的标题必然分类成功，实证验证）+ 补 _extract_sections_for_kind dispatch 双向测试 → section_extractor 覆盖率 86%→88%，基线 87% 保持不降。
 - [ ] 两仓 README/planning 指向本协议
-- [ ] 全量回归后跑一次三仓完整验证闭环
+- [ ] 三仓完整验证闭环（全量回归 + 自盯 CI）
 
 ## 7. 生效范围
 
