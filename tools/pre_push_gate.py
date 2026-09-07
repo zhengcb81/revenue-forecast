@@ -1,4 +1,4 @@
-﻿"""Pre-push gate: CI-equivalent fast checks BEFORE pushing (root-cause fix).
+"""Pre-push gate: CI-equivalent fast checks BEFORE pushing (root-cause fix).
 
 Recurring failure pattern (2026-09-02..09-06): commits passed local
 single-file tests and pre-commit, then CI turned red on gates the local
