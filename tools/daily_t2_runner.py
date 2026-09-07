@@ -76,7 +76,7 @@ def run_checks(
     m_triplet = manifest.get("current_triplet", {})
     missing = [r for r in ("revenue", "filing", "wiki")
                if not subprocess.run(
-                   ["git", "-C", str(PROJECT_ROOT.parent /
+                   ["git", "-c", "safe.directory=*", "-C", str(PROJECT_ROOT.parent /
                                      {"revenue": "revenue-forecast",
                                       "filing": "filing-fetch",
                                       "wiki": "company-wiki"}[r]),
