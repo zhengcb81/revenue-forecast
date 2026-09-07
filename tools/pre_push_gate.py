@@ -64,6 +64,29 @@ def _run(cmd: list[str], label: str, timeout: int = 600) -> int:
     return proc.returncode
 
 
+def _no_bom_check() -> int:
+    """Root-fix: CA-304/final_ratchet require ZERO UTF-8 BOM python files in
+    scripts/tests/tools/e2e.  CI #113 failed because pre_push_gate.py
+    itself was written with a BOM (PowerShell Set-Content) and no local
+    gate caught it.  This check makes that failure class local."""
+    bad: list[str] = []
+    for directory in ("scripts", "tests", "tools", "e2e"):
+        base = PROJECT_ROOT / directory
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*.py")):
+            raw = path.read_bytes()
+            if raw.startswith(b"\xef\xbb\xbf"):
+                bad.append(str(path.relative_to(PROJECT_ROOT)))
+    if bad:
+        print("FAILED: UTF-8 BOM python files must be zero:")
+        for name in bad:
+            print(f"  {name}")
+        return 1
+    print("ok")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skip-mypy", action="store_true")
@@ -101,6 +124,10 @@ def main(argv: list[str] | None = None) -> int:
                   f"assurance/runs/2026-09-02_remaining-gap-closure/"
                   f"ci_root_fix.md), do not bypass.")
             return rc
+    # CA-304/final_ratchet zero-BOM gate (root-fix; CI #113 regression)
+    print("\n=== UTF-8 BOM scan (CA-304/final_ratchet surface) ===")
+    if _no_bom_check() != 0:
+        return 1
     print("\npre-push gate GREEN — safe to push (then self-monitor CI).")
     return 0
 
