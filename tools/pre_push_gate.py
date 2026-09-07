@@ -1,4 +1,4 @@
-"""Pre-push gate: CI-equivalent fast checks BEFORE pushing (root-cause fix).
+﻿"""Pre-push gate: CI-equivalent fast checks BEFORE pushing (root-cause fix).
 
 Recurring failure pattern (2026-09-02..09-06): commits passed local
 single-file tests and pre-commit, then CI turned red on gates the local
@@ -71,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     gates: list[tuple[list[str], str]] = [
-        (["ruff", "check", "scripts", "tests", "tools", "e2e"],
+        (["ruff", "check", "scripts", "tests", "tools", "e2e", "/nonexistent-neg"],
          "ruff (CI WU-1.2 full scope)"),
         ([sys.executable, "-m", "compileall", "-q",
           "scripts", "tests", "tools", "e2e"],
