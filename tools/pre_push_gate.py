@@ -244,6 +244,16 @@ def main(argv: list[str] | None = None) -> int:
     print("\n=== UTF-8 BOM scan (CA-304/final_ratchet surface) ===")
     if _no_bom_check() != 0:
         return 1
+    # Install consistency MUST run before the test suites: the real-data suite
+    # contains the drift patrol, which asserts that the install roots match the
+    # repo — running it against stale installs produced a false red on
+    # 2026-09-08 (tests/test_gp009_monthly_broker.py was not yet synced).
+    if not args.skip_install_sync:
+        rc = _install_sync()
+        if rc != 0:
+            print("\nGATE RED at: installed-skill consistency\n"
+                  "Fix: python tools/sync_installations.py --apply")
+            return rc
     if not args.skip_real_roots:
         rc = _real_roots()
         if rc != 0:
@@ -255,12 +265,6 @@ def main(argv: list[str] | None = None) -> int:
         if rc != 0:
             print("\nGATE RED at: real-data suite (production catalog)\n"
                   "Fix the root cause; do not bypass.")
-            return rc
-    if not args.skip_install_sync:
-        rc = _install_sync()
-        if rc != 0:
-            print("\nGATE RED at: installed-skill consistency\n"
-                  "Fix: python tools/sync_installations.py --apply")
             return rc
     print("\npre-push gate GREEN — safe to push (then self-monitor CI).")
     return 0
