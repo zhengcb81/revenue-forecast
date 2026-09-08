@@ -19,7 +19,13 @@ cannot reach CI again:
        required-checks contract — MUST run after ANY quality.yml change)
      - tests/test_compatibility_manifest.py (manifest + contract/scenario/
        command registry hashes — MUST run after ANY registry/config change)
-  6. installed-skill consistency (owner requirement 2026-09-08): the installed
+  6. real-roots E2E (GP-006): the sibling-dependent suite that CI's blocking
+     real-roots job runs on windows-latest — same set, so gate and CI cannot
+     diverge (skipped when the sibling repos are absent).
+  7. real-data suite (GP-006): the production-catalog tests that cannot run on
+     a GitHub-hosted runner; enforced here on the machine that owns the
+     catalog (skipped when the catalog is absent).
+  8. installed-skill consistency (owner requirement 2026-09-08): the installed
      copies under ~/.agents, ~/.claude, ~/.codex must equal this repo; stale
      copies are auto-synced from the repo and re-checked.  CI cannot cover
      this (runners have no install roots).
@@ -30,13 +36,13 @@ of this gate: on Windows it contains a pre-existing hang
 that pytest-timeout cannot interrupt).  Push protocol (see
 assurance/runs/2026-09-02_remaining-gap-closure/ci_root_fix.md):
 
-    python tools/pre_push_gate.py   # fast, ~1-2 min
+    python tools/pre_push_gate.py   # ~4-5 min
     git push ...
     # THEN self-monitor the GitHub Actions run until green; on red, fix
     # the ROOT CAUSE and extend this gate so it would have caught it.
 
 Usage: python tools/pre_push_gate.py [--skip-mypy] [--skip-meta-tests]
-       [--skip-install-sync]
+       [--skip-install-sync] [--skip-real-roots] [--skip-real-data]
 """
 
 from __future__ import annotations
@@ -132,11 +138,74 @@ def _install_sync() -> int:
                 "installed-skill consistency (re-check)")
 
 
+REAL_ROOTS_TESTS = (
+    "tests/test_zr803_chaos_recovery.py",
+    "tests/test_zr1103_journey_reverify.py",
+    "tests/test_ca203_weekly_t3.py",
+    "tests/test_fc1101_ci_manifest.py",
+    "tests/test_compatibility_manifest.py",
+    "tests/test_fc1002_three_process_e2e.py",
+    "tests/test_ca302_three_journeys.py",
+)
+REAL_DATA_TESTS = (
+    "tests/test_zr806_real_t2_samples.py",
+    "tests/test_zr1004_small_cohort.py",
+    "tests/test_fc1001_isolated_lake.py",
+    "tests/test_fc1003_uj.py",
+    "tests/test_fc1004_platform.py",
+    "tests/test_fc1105_fault_injection.py",
+    "tests/test_preparation_e2e_success.py",
+    "tests/test_zr709_zijin_journey.py",
+    "tests/test_zr907_drift_patrol.py",
+    "tests/test_ca202_daily_t2_runner.py",
+)
+
+
+def _real_roots() -> int:
+    """GP-006: the sibling-dependent E2E suite is blocking in CI's real-roots
+    job; this runs the same set locally so the gate and CI cannot diverge."""
+    missing = [
+        name
+        for name in ("company-wiki", "filing-fetch")
+        if not (PROJECT_ROOT.parent / name).is_dir()
+    ]
+    if missing:
+        print(
+            "\n=== real-roots E2E (CI real-roots job) ===\n"
+            f"SKIP: sibling repos missing: {', '.join(missing)}"
+        )
+        return 0
+    return _run(
+        [sys.executable, "-m", "pytest", "-q", "--tb=short", *REAL_ROOTS_TESTS],
+        "real-roots E2E (CI real-roots job)",
+    )
+
+
+def _real_data() -> int:
+    """GP-006: the REAL_DATA suite needs the production catalog, which cannot
+    live on a GitHub-hosted runner.  It is enforced here, on the machine that
+    owns the catalog; a self-hosted runner would be required to move it into
+    CI."""
+    catalog = PROJECT_ROOT.parent / "company-wiki" / ".source_catalog" / "catalog.sqlite3"
+    if not catalog.is_file():
+        print(
+            "\n=== real-data suite (production catalog) ===\n"
+            f"SKIP: no production catalog at {catalog}"
+        )
+        return 0
+    return _run(
+        [sys.executable, "-m", "pytest", "-q", "--tb=line", *REAL_DATA_TESTS],
+        "real-data suite (production catalog; CI needs a self-hosted runner)",
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skip-mypy", action="store_true")
     parser.add_argument("--skip-meta-tests", action="store_true")
     parser.add_argument("--skip-install-sync", action="store_true")
+    parser.add_argument("--skip-real-roots", action="store_true")
+    parser.add_argument("--skip-real-data", action="store_true")
     args = parser.parse_args(argv)
     _safe_console()
 
@@ -175,6 +244,18 @@ def main(argv: list[str] | None = None) -> int:
     print("\n=== UTF-8 BOM scan (CA-304/final_ratchet surface) ===")
     if _no_bom_check() != 0:
         return 1
+    if not args.skip_real_roots:
+        rc = _real_roots()
+        if rc != 0:
+            print("\nGATE RED at: real-roots E2E (CI real-roots job)\n"
+                  "Fix the root cause; do not bypass.")
+            return rc
+    if not args.skip_real_data:
+        rc = _real_data()
+        if rc != 0:
+            print("\nGATE RED at: real-data suite (production catalog)\n"
+                  "Fix the root cause; do not bypass.")
+            return rc
     if not args.skip_install_sync:
         rc = _install_sync()
         if rc != 0:

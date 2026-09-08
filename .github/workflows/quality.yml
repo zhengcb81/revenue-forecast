@@ -95,14 +95,14 @@ jobs:
       - name: Planning claim verifier (WU-8.3)
         run: python tools/verify_plan_claims.py --plan-dir .
 
-  # GP-006: sibling-repo E2E tests on windows-latest.
+  # GP-006: sibling-repo E2E tests on windows-latest (blocking).
   # Tests that need sibling repos (company-wiki, filing-fetch) but run on
   # temp data.  REAL_DATA tests (zr806/zr1004/fc1001/fc1003/fc1004/fc1105/
-  # preparation_e2e/zr709/zr907/ca202) require a self-hosted runner with
-  # production catalog access and are not included here.
+  # preparation_e2e/zr709/zr907/ca202) require the production catalog and run
+  # in the local pre-push gate on the machine that owns it; a self-hosted
+  # runner would be needed to move them into CI.
   real-roots:
     runs-on: windows-latest
-    continue-on-error: true  # GP-006: sibling repos may not be available in CI
     steps:
       - uses: actions/checkout@v4
         with:
@@ -120,6 +120,24 @@ jobs:
           SIBLING_DIR="$(dirname "$GITHUB_WORKSPACE")"
           python tools/ci_checkout_siblings.py --manifest compatibility/current.json --sibling-root "$SIBLING_DIR" --skip revenue
           echo "PYTHONPATH=$SIBLING_DIR/company-wiki/src" >> "$GITHUB_ENV"
+      - name: "Mirror the local sibling layout (GP-006/FC-1202)"
+        shell: pwsh
+        run: |
+          # revenue's config/filing_fetch.json resolves to
+          # ${USER_PROFILE}/Projects/filing-fetch, and filing-fetch's
+          # IsolatedWiki resolves PRODUCTION_WIKI as ~/Projects/company-wiki.
+          # CI clones the siblings next to the checkout, so mirror the local
+          # dev layout with junctions instead of letting those lookups fail.
+          $homeProjects = Join-Path $env:USERPROFILE 'Projects'
+          New-Item -ItemType Directory -Path $homeProjects -Force | Out-Null
+          $siblingRoot = Split-Path $env:GITHUB_WORKSPACE -Parent
+          foreach ($name in 'filing-fetch', 'company-wiki') {
+            $link = Join-Path $homeProjects $name
+            $target = Join-Path $siblingRoot $name
+            if (Test-Path $link) { Remove-Item $link -Recurse -Force }
+            New-Item -ItemType Junction -Path $link -Target $target | Out-Null
+            Write-Host "junction $link -> $target"
+          }
       - name: Sibling-dependent E2E tests
         run: |
           python -m pytest -q --tb=short `
