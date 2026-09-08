@@ -29,19 +29,26 @@ MAX_AGE_DAYS = 35
 
 
 def cmd_register(_args: argparse.Namespace) -> int:
-    """Register via Register-ScheduledTask (SYSTEM, no password prompt)."""
+    """Register a true calendar-monthly SYSTEM task (day 1, 05:00).
+
+    ``New-ScheduledTaskTrigger`` has NO ``-Monthly`` parameter (its parameter
+    sets are Once/Daily/Weekly/Startup/Logon), so the trigger is created with
+    ``schtasks /sc MONTHLY`` and the power/wake settings are then applied with
+    ``Set-ScheduledTask``.  The function self-verifies by querying the task
+    afterwards, so a silently-unregistered task cannot look like success.
+    """
+    action = (
+        f'"{sys.executable}" "{Path(__file__).resolve()}" run-monthly'
+    )
     script = (
-        "$action = New-ScheduledTaskAction -Execute "
-        f"'{sys.executable}' -Argument '\"{Path(__file__).resolve()}\" run-monthly'; "
-        "$trigger = New-ScheduledTaskTrigger -Monthly -DaysOfMonth 1 -At 05:00; "
-        "$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' "
-        "-LogonType ServiceAccount -RunLevel Highest; "
+        f"schtasks /create /tn '{MONTHLY_TASK}' /tr '{action}' "
+        "/sc MONTHLY /d 1 /st 05:00 /ru SYSTEM /rl HIGHEST /f | Out-Null; "
+        "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; "
         "$settings = New-ScheduledTaskSettingsSet "
         "-AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun "
         "-StartWhenAvailable; "
-        f"Register-ScheduledTask -TaskName '{MONTHLY_TASK}' "
-        "-Action $action -Trigger $trigger -Principal $principal "
-        "-Settings $settings -Force | Out-Null"
+        f"Set-ScheduledTask -TaskName '{MONTHLY_TASK}' "
+        "-Settings $settings | Out-Null"
     )
     proc = subprocess.run(
         ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -50,6 +57,17 @@ def cmd_register(_args: argparse.Namespace) -> int:
     if proc.returncode != 0:
         print((proc.stderr or "register failed").strip(), file=sys.stderr)
         return proc.returncode or 1
+    check = subprocess.run(
+        ["schtasks", "/query", "/tn", MONTHLY_TASK],
+        capture_output=True, text=True, errors="replace", timeout=60,
+    )
+    if check.returncode != 0:
+        print(
+            f"register reported success but task {MONTHLY_TASK} is not "
+            "queryable — treating as failure",
+            file=sys.stderr,
+        )
+        return 1
     print(f"registered monthly task {MONTHLY_TASK}")
     return 0
 

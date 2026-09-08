@@ -192,7 +192,7 @@ def test_register_action_uses_run_monthly_and_monthly_task(
         stderr = ""
 
     def fake_run(cmd, **kwargs):  # noqa: ANN001, ANN003
-        captured["cmd"] = cmd
+        captured.setdefault("cmd", cmd)
         return _Proc()
 
     monkeypatch.setattr(subprocess, "run", fake_run)
@@ -205,6 +205,32 @@ def test_register_action_uses_run_monthly_and_monthly_task(
     assert "run-monthly" in script
     assert "--run-monthly" not in script
     assert scheduler.MONTHLY_TASK in script
+    # 2026-09-08: New-ScheduledTaskTrigger has NO -Monthly parameter; the
+    # trigger must come from schtasks /sc MONTHLY plus Set-ScheduledTask.
+    assert "/sc MONTHLY" in script
+    assert "-Monthly " not in script
+    assert "Set-ScheduledTask" in script
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="PowerShell settings cmdlet")
+def test_settings_cmdlet_constructs() -> None:
+    """The power/wake settings the monthly task applies must be constructible
+    on this platform (the register script applies them after schtasks)."""
+    proc = subprocess.run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries "
+            "-DontStopIfGoingOnBatteries -WakeToRun -StartWhenAvailable "
+            "| Out-Null; 'ok'",
+        ],
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+        timeout=60,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "ok" in proc.stdout
 
 
 def test_verify_treats_30_day_old_ok_ledger_as_fresh(tmp_path: Path) -> None:

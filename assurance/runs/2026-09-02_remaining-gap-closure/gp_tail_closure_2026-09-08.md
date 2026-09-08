@@ -68,9 +68,15 @@
 
 ### 3.3 尚未完成的自然时间部分（不可压缩）
 
-- Daily 还差 5 次、Weekly 还差 2 次（且需 ≥7 天间隔）。
+- Daily 还差 4 次（09-06/07/08 已完成 3 次）、Weekly 还差 2 次（且需 ≥7 天间隔）。
 - 任务注册（monthly 新任务）需 owner 提权执行：
-  `python tools\monthly_broker_schedule.py register`（已提供，未执行）。
+  `python tools\monthly_broker_schedule.py register`。**已实测**：非提权会话返回
+  `ERROR: Access is denied.`（schtasks 语法本身已通过校验）；注册函数在成功后会自查
+  `schtasks /query`，静默失败不会被当成成功。
+- 修复一处新调度器自身缺陷：`New-ScheduledTaskTrigger` **没有** `-Monthly` 参数
+  （参数集仅 Once/Daily/Weekly/Startup/Logon），原写法在注册时必然
+  `ParameterBindingValidationException`。现改为 `schtasks /create /sc MONTHLY /d 1 /st 05:00`
+  + `Set-ScheduledTask` 应用电源/唤醒设置，并加源码级回归测试与 PowerShell 设置构造测试。
 
 ## 4. N-1 / FC-150x —— 关闭记录
 
@@ -88,6 +94,15 @@
   **全部具备 `sections` artifact（7/7）**；`summary` 6/7，缺的 1 份为
   `1711c700…`（国联民生 20260324），是 `_FORBIDDEN_OUTPUT` 安全门正确 fail-closed，
   **不得为凑数绕过**，保持拒绝。
+- **欠抽取刷新（2026-09-08 补做）**：新规则会让旧的 5 份 artifact 少一个
+  「盈利预测与投资建议」分节。已用生产 CLI（`extract-sections --document-id … --force`，
+  无 LLM、无门禁绕过）刷新 5 份：
+  - 6/7 现为统一的 `earnings_forecast + risk_warning` 两分节；
+  - 长江证券 20240304（多实体对比报告）刷新后仍为 3 分节
+    （`investment_highlights + risk_warning×2`），规则下未产生 earnings_forecast——
+    如实保留，不强行造节；
+  - 刷新前已确认这些 artifact 在仓库内**无任何引用**（grep 零命中），不破坏冻结收据；
+  - 刷新后月度审计重跑仍 `ok=true`、7/7（`run_id=20260908T212321Z`）。
 - 结论：sections 缺口已关闭；summary 的 1 份按「预期安全拒绝」记录，不是待办缺陷。
 
 ## 6. 运行记录与剩余边界
@@ -142,7 +157,9 @@ findings=0）。若任一窗口再次 <24h 或 hits≠0，继续等，不提前�
 
 | 仓库 | 全量回归 | CI（最新推送） |
 |---|---|---|
-| revenue-forecast | 1108 passed / 1 failed（`test_ca202_daily_t2_runner::test_c1_runner_report_shape_and_triplet`，单独重跑通过 → 全量顺序/状态相关的假红，非产品缺陷；已记录） | 见最新 run |
-| company-wiki | 见当日运行结果 | #77（623e831）success；协议指向推送后另跑 |
-| filing-fetch | hermetic 356 passed + 7 skipped（门禁） | #45（d1ac50c）success |
+| revenue-forecast | 1108 passed / 1 failed —— `test_ca202_daily_t2_runner::test_c1_runner_report_shape_and_triplet` 断言"报告内 triplet == 当前仓库 HEAD"，而该轮回归期间**本 agent 正在推送**（revenue HEAD 2f57c14→add326a→1da366a）；单独重跑通过。**根因=并发推送竞态，非产品缺陷**（CI 检出不可变，不受影响） | #122（1da366a）success |
+| company-wiki | 2668 passed / 7 skipped | #78（d25d79e）success |
+| filing-fetch | hermetic 356 passed / 7 skipped（门禁内） | #46（8e484bb）success |
+
+**结论**：三仓全量回归 + CI 自盯闭环成立；唯一红灯已定位为并发推送竞态并有单独重跑证据。
 

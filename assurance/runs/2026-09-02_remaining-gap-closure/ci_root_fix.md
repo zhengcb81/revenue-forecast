@@ -70,7 +70,14 @@
 - [x] **门禁顺序修正**（2026-09-08）：`pre_push_gate.py` 的安装一致性步骤移到 real-roots/real-data
   **之前**——real-data 套件内的 drift patrol 会断言安装副本与仓库一致，顺序颠倒会在"新文件尚未同步"
   时产生假红（当日实际发生并被门禁拦下）。
-- [ ] 三仓完整验证闭环（全量回归 + 自盯 CI）
+- [x] **三仓完整验证闭环（全量回归 + 自盯 CI）**（2026-09-08）：wiki `pytest tests` =
+  **2668 passed / 7 skipped**；revenue `pytest tests tools/tests`（排除已知 Windows 挂起文件
+  `test_fc1103_t3_runner.py`）= **1108 passed**，唯一失败
+  `test_ca202_daily_t2_runner::test_c1_runner_report_shape_and_triplet` 是**并发推送竞态**
+  （断言报告 triplet == 当前 HEAD，而该轮回归期间本 agent 正在推送；单独重跑通过，CI 检出不可变
+  故不受影响）；filing 门禁 hermetic **356 passed / 7 skipped**。三仓最新推送 CI：
+  revenue #122 / filing #46 / wiki #78 全绿。详见
+  [gp_tail_closure_2026-09-08.md §7](gp_tail_closure_2026-09-08.md)。
 
 ## 7. 生效范围
 
