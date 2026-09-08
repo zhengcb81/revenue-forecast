@@ -128,6 +128,35 @@ def test_run_writes_ok_ledger_without_alert(tmp_path: Path) -> None:
     payload = read_ledger(ledger)
     assert payload is not None and payload["ok"] is True
     assert not alert.exists()
+    # The report dir follows the ledger's parent: hermetic runs must not write
+    # into the repo's assurance/runs (2026-09-08 residue bug).
+    report = tmp_path / "20261001T050000Z" / "monthly_broker_report.json"
+    assert report.is_file()
+    assert not (ROOT / "assurance" / "runs" / "20261001T050000Z").exists()
+
+
+def test_head_uses_safe_directory_for_system_context(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """GP-008 class: the SYSTEM scheduled task needs safe.directory=* or git
+    returns an empty HEAD and the ledger records a green run with an empty
+    triplet (observed 2026-09-08)."""
+    captured: dict[str, list[str]] = {}
+
+    class _Proc:
+        returncode = 0
+        stdout = "a" * 40 + "\n"
+
+    def fake_run(cmd, **kwargs):  # noqa: ANN001, ANN003
+        captured["cmd"] = cmd
+        return _Proc()
+
+    sys.path.insert(0, str(ROOT / "tools"))
+    import daily_t2_schedule as schedule
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    schedule._head(ROOT)
+    assert "safe.directory=*" in captured["cmd"]
 
 
 def test_run_blocked_when_catalog_missing(tmp_path: Path) -> None:

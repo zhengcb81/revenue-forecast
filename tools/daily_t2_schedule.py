@@ -211,7 +211,12 @@ def run_daily(catalog: Path, manifest: Path, report_root: Path,
 
 
 def _head(repo: Path) -> str:
-    return subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"],
+    # safe.directory=* is required in the SYSTEM scheduled-task context: git
+    # refuses "dubious ownership" there and would return an empty HEAD, so the
+    # ledger recorded a green run with an empty triplet (2026-09-08, same class
+    # as the 56ba0eb manifest cat-file fix).
+    return subprocess.run(["git", "-c", "safe.directory=*", "-C", str(repo),
+                           "rev-parse", "HEAD"],
                           capture_output=True, text=True).stdout.strip()
 
 

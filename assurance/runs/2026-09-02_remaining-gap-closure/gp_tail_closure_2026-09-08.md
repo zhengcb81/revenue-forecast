@@ -92,11 +92,57 @@
 
 ## 6. 运行记录与剩余边界
 
-- 2026-09-08 22:00 daily：见 `assurance/runs/daily_manifest.json`（本节随运行更新）。
-- **FC-705 关闸**：`close_gate_allowed=false`（last-two 含 P5：hits=6 且 1:45:55 短窗）。
-  P7 自 `2026-09-07T21:00:29Z` 开启，需 09-08 22:00 运行完成后重评；若 P7 窗口 <24h，
-  需再等一个窗口，**不按日历放行**。
-- **R9 批 3（wiki）**：仍以 FC-705 门为前置，门开即按
-  `n1_r9_removal_request.md §3.2` 执行（独立 commit + 三仓 CI 全绿 + legacy-gate 复扫）。
-- CI 根因协议两项（README/planning 指向协议、三仓完整验证闭环）：见
-  `ci_root_fix.md §6` 后续更新。
+### 6.1 2026-09-08 22:00 daily（自然触发）
+
+- `latest_run_id=20260908T210001Z`、`observation_period=8`、**`ok=true`**、
+  `started_at=2026-09-08T21:00:10Z`（=22:00:10 本地，自然触发）。
+- `report.json`：`triplet.heads` = revenue `add326a` / filing `8e484bb` / wiki `d25d79e`
+  （三仓真实 HEAD），`manifest_missing=[]`、`policy_freshness.matches=true`、
+  `legacy_hits=[]`、`problems=[]`。`56ba0eb` 的 `safe.directory` 修复在真实触发中生效。
+- 当日另修一处同类缺陷：`daily_t2_schedule._head()` 缺 `safe.directory=*`，SYSTEM 上下文
+  git 因 dubious ownership 返回空 → 账本出现"ok=true 但 triplet 为空"的失真记录；已修复并加回归测试。
+
+### 6.2 FC-705 关闸（**仍未开**，差 19 秒）
+
+P7 已关闭，但窗口 = `2026-09-07T21:00:29Z → 2026-09-08T21:00:10Z` = **23:59:41**，
+比 24h 短 19 秒（本次调度比前一次早启动 19 秒）。因此
+`close_gate.reasons = ["period 7: window 23:59:41 is shorter than 24h"]`，
+`close_allowed=false`。
+
+按窗口规则推导（不按日历放行）：
+
+| 运行 | 关闭的窗口 | last-two | 判定 |
+|---|---|---|---|
+| 09-09 22:00 | P8 | P7(短) + P8 | 仍 false（P7 在末两窗内） |
+| **09-10 22:00** | P9 | P8 + P9（若均 ≥24h） | **预计 true** |
+
+即：**R9 批 3 最早在 2026-09-10 22:00 运行通过后具备执行条件**；届时应按
+`n1_r9_removal_request.md §3.2` 执行（独立 commit + 三仓 CI 全绿 + legacy-gate 复扫
+findings=0）。若任一窗口再次 <24h 或 hits≠0，继续等，不提前删除。
+
+### 6.3 其他修复（当日发现）
+
+- `monthly_broker_runner.run()` 的报告目录改为跟随账本所在目录——此前 hermetic 测试会在
+  仓库 `assurance/runs/<run_id>/` 留下报告残留（已删除该残留并加测试断言）。
+- 推送门顺序：安装一致性同步移到 real-roots/real-data 之前（real-data 内的 drift patrol
+  断言安装副本一致，顺序颠倒会产生假红）。
+
+### 6.4 剩余边界
+
+- **R9 批 3（wiki）**：以 FC-705 门为前置，见 §6.2。
+- **GP-009 自然时间**：Daily 3/7（09-06/07/08）、Weekly 0/2（机制已修，下次 09-13）、
+  Monthly 1/1 ✓、Alert drill 1/1 ✓。
+- **monthly 任务注册**：需 owner 提权执行
+  `python tools\monthly_broker_schedule.py register`（已提供，未执行）。
+- **GP-010 后续（owner 决策）**：新规则会让已覆盖的 5 份中 4 份多出一个
+  「盈利预测与投资建议」分节；是否 `--force` 刷新属改写既有 artifact 内容哈希，留给 owner 决定。
+- **CI 根因协议**：README/planning 指向 + 门禁顺序已闭环；三仓全量回归见 §7。
+
+## 7. 三仓完整验证闭环（2026-09-08）
+
+| 仓库 | 全量回归 | CI（最新推送） |
+|---|---|---|
+| revenue-forecast | 1108 passed / 1 failed（`test_ca202_daily_t2_runner::test_c1_runner_report_shape_and_triplet`，单独重跑通过 → 全量顺序/状态相关的假红，非产品缺陷；已记录） | 见最新 run |
+| company-wiki | 见当日运行结果 | #77（623e831）success；协议指向推送后另跑 |
+| filing-fetch | hermetic 356 passed + 7 skipped（门禁） | #45（d1ac50c）success |
+

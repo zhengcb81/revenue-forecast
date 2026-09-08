@@ -107,7 +107,10 @@ def run(
     result = audit(catalog, entity_like=entity_like)
     write_ledger(ledger_path, run_id, started, triplet, result["ok"],
                  f"monthly-run-{run_id}")
-    report = Path(PROJECT_ROOT / "assurance" / "runs" / run_id)
+    # Report dir follows the ledger's parent so tests/alternate ledger paths
+    # never write into the repo's assurance/runs (2026-09-08: hermetic tests
+    # left assurance/runs/<run_id>/monthly_broker_report.json behind).
+    report = ledger_path.parent / run_id
     report.mkdir(parents=True, exist_ok=True)
     (report / "monthly_broker_report.json").write_text(
         json.dumps({"run_id": run_id, "started_at": started, **result},
