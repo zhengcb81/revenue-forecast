@@ -50,6 +50,16 @@ MAX_AGE_DAYS = 7
 def _run_t3_suite(timeout: int = 3600) -> subprocess.CompletedProcess:
     env = dict(os.environ)
     env["FILING_FETCH_E2E_DOWNLOAD"] = "1"
+    # SYSTEM-context fix (GP-009, 2026-09-08): the isolated-wiki adapter config
+    # resolves ${USERPROFILE}/Projects/... tokens and the download-tool gate
+    # checks ~/Projects, but under the SYSTEM account Path.home() is the system
+    # profile.  The suite therefore skipped every Sunday ("production download
+    # tools not found") and the weekly window could never accumulate an ok run.
+    # Derive the real profile from the repo location, exactly like the daily
+    # runner derives the Dropbox root.
+    profile = PROJECT_ROOT.parent.parent
+    if profile.is_dir():
+        env["USERPROFILE"] = str(profile)
     return subprocess.run(
         [sys.executable, "-B", "-m", "pytest", str(T3_SUITE), "-q", "--tb=short"],
         capture_output=True, text=True, errors="replace", timeout=timeout,
