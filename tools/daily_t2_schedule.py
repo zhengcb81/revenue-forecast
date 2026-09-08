@@ -225,17 +225,29 @@ def _schtasks(args: list[str]) -> subprocess.CompletedProcess:
                           text=True, errors="replace", timeout=60)
 
 
-def task_status() -> tuple[str, str]:
-    proc = _schtasks(["/query", "/tn", TASK_NAME, "/fo", "csv", "/v"])
+def query_task_status(task_name: str) -> tuple[str, str]:
+    """registered / missing / unknown — never claim "missing" when unreadable.
+
+    A SYSTEM task is not queryable from a non-elevated session (`Access is
+    denied`), so a failed query is UNKNOWN, not missing: reporting a
+    successfully registered task as missing is a false signal (observed
+    2026-09-08 right after the monthly task was registered).
+    """
+    proc = _schtasks(["/query", "/tn", task_name, "/fo", "csv", "/v"])
     if proc.returncode != 0:
-        return "missing", "no scheduled task registered"
+        detail = (proc.stderr or proc.stdout or "").strip().splitlines()
+        first = detail[0] if detail else "schtasks query failed"
+        return "unknown", f"cannot read task (run elevated): {first}"
     out = proc.stdout or ""
-    # TaskName appears in CSV as "revenue_daily_t2" or "\revenue_daily_t2"
-    # (folder prefix); plain substring search is robust to column layout,
-    # BOM, and locale-specific headers.
-    if TASK_NAME in out:
+    # TaskName appears in CSV as "name" or "\name" (folder prefix); plain
+    # substring search is robust to column layout, BOM, locale headers.
+    if task_name in out:
         return "registered", "task found in query output"
     return "missing", "task not found in query output"
+
+
+def task_status() -> tuple[str, str]:
+    return query_task_status(TASK_NAME)
 
 
 def cmd_register(_args: argparse.Namespace) -> int:

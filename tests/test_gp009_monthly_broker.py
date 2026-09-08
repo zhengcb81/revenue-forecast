@@ -255,3 +255,46 @@ def test_verify_treats_30_day_old_ok_ledger_as_fresh(tmp_path: Path) -> None:
     assert status == "fresh"
     status, _ = freshness_status(read_ledger(ledger), max_age_hours=20 * 24)
     assert status == "stale"
+
+
+class _QueryProc:
+    def __init__(self, returncode: int, stdout: str = "", stderr: str = "") -> None:
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+def test_query_task_status_unknown_when_unreadable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """2026-09-08: a SYSTEM task is not queryable without elevation; reporting
+    a successfully registered task as 'missing' is a false signal."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import daily_t2_schedule as schedule
+
+    monkeypatch.setattr(
+        schedule, "_schtasks",
+        lambda args: _QueryProc(1, stderr="ERROR: Access is denied."),
+    )
+    status, detail = schedule.query_task_status("revenue_monthly_broker")
+    assert status == "unknown"
+    assert "elevated" in detail
+
+
+def test_query_task_status_registered_and_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sys.path.insert(0, str(ROOT / "tools"))
+    import daily_t2_schedule as schedule
+
+    monkeypatch.setattr(
+        schedule, "_schtasks",
+        lambda args: _QueryProc(0, stdout='TaskName\n\\revenue_monthly_broker\n'),
+    )
+    assert schedule.query_task_status("revenue_monthly_broker")[0] == "registered"
+
+    monkeypatch.setattr(
+        schedule, "_schtasks",
+        lambda args: _QueryProc(0, stdout='TaskName\n\\some_other_task\n'),
+    )
+    assert schedule.query_task_status("revenue_monthly_broker")[0] == "missing"

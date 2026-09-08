@@ -32,6 +32,7 @@ from pathlib import Path
 from daily_t2_schedule import (
     append_alert,
     freshness_status,
+    query_task_status,
     read_ledger,
     release_gate,
     write_ledger,
@@ -128,13 +129,9 @@ def cmd_register_weekly(_args: argparse.Namespace) -> int:
 
 
 def cmd_query_weekly(_args: argparse.Namespace) -> int:
-    proc = subprocess.run(
-        ["schtasks", "/query", "/tn", WEEKLY_TASK, "/fo", "csv", "/v"],
-        capture_output=True, text=True, errors="replace", timeout=60,
-    )
-    found = proc.returncode == 0
-    print(f"task={WEEKLY_TASK} status={'registered' if found else 'missing'}")
-    return 0 if found else 1
+    status, detail = query_task_status(WEEKLY_TASK)
+    print(f"task={WEEKLY_TASK} status={status} detail={detail}")
+    return 0 if status == "registered" else 1
 
 
 def cmd_unregister_weekly(_args: argparse.Namespace) -> int:

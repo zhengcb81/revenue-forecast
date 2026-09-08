@@ -20,7 +20,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-from daily_t2_schedule import freshness_status, read_ledger, release_gate
+from daily_t2_schedule import (
+    freshness_status,
+    query_task_status,
+    read_ledger,
+    release_gate,
+)
 from monthly_broker_runner import DEFAULT_ALERT, DEFAULT_LEDGER, run as run_audit
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -85,13 +90,9 @@ def cmd_unregister(_args: argparse.Namespace) -> int:
 
 
 def cmd_query(_args: argparse.Namespace) -> int:
-    proc = subprocess.run(
-        ["schtasks", "/query", "/tn", MONTHLY_TASK, "/fo", "csv", "/v"],
-        capture_output=True, text=True, errors="replace", timeout=60,
-    )
-    found = proc.returncode == 0
-    print(f"task={MONTHLY_TASK} status={'registered' if found else 'missing'}")
-    return 0 if found else 1
+    status, detail = query_task_status(MONTHLY_TASK)
+    print(f"task={MONTHLY_TASK} status={status} detail={detail}")
+    return 0 if status == "registered" else 1
 
 
 def cmd_verify(args: argparse.Namespace) -> int:

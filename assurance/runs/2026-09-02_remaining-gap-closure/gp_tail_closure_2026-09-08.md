@@ -59,7 +59,7 @@
 |---|---|---|---|
 | Daily T2 | 7 连续日 | **2/7**（09-06、09-07；09-08 22:00 为第 3 次） | 预计 2026-09-12 满足 |
 | Weekly T3 | 2 次、间隔 ≥7 天、均 ok | **0/2** | 09-06 首跑为 blocked（机制缺陷，已修）；下次 2026-09-13 04:30 起累积，且需 provider 可用（cninfo 偶发 upstream_timeout） |
-| Monthly | 1 次（35 天内） | **1/1 ✓** | 首次真实运行 `20260908T203214Z`，`ok=true`，broker 语料 7/7 完整 |
+| Monthly | 1 次（35 天内） | **1/1 ✓**（机制 + 任务注册均已完成） | 首次真实运行 `20260908T203214Z`、第二次 `20260908T212321Z`，均 `ok=true`、broker 语料 7/7 完整；任务 `revenue_monthly_broker` 已于 09-08 注册（每月 1 日 05:00，SYSTEM） |
 | Alert drill | 1 条带 ack 的告警 | **1/1 ✓** | 真实告警 `20260907T210001Z` 经 `release_gate.py ack` 确认（`acked: true`） |
 
 证据文件：`assurance/runs/monthly_manifest.json`、
@@ -69,14 +69,19 @@
 ### 3.3 尚未完成的自然时间部分（不可压缩）
 
 - Daily 还差 4 次（09-06/07/08 已完成 3 次）、Weekly 还差 2 次（且需 ≥7 天间隔）。
-- 任务注册（monthly 新任务）需 owner 提权执行：
-  `python tools\monthly_broker_schedule.py register`。**已实测**：非提权会话返回
-  `ERROR: Access is denied.`（schtasks 语法本身已通过校验）；注册函数在成功后会自查
-  `schtasks /query`，静默失败不会被当成成功。
+- **monthly 任务注册：已完成**（2026-09-08，owner 在管理员 PowerShell 执行
+  `C:\Miniconda\python.exe tools\monthly_broker_schedule.py register` → 输出
+  `registered monthly task revenue_monthly_broker`）。注册函数自带 `schtasks /query`
+  自校验，因此该输出即"任务确实可查"的证据；非提权会话无法复核（见下）。
 - 修复一处新调度器自身缺陷：`New-ScheduledTaskTrigger` **没有** `-Monthly` 参数
   （参数集仅 Once/Daily/Weekly/Startup/Logon），原写法在注册时必然
   `ParameterBindingValidationException`。现改为 `schtasks /create /sc MONTHLY /d 1 /st 05:00`
   + `Set-ScheduledTask` 应用电源/唤醒设置，并加源码级回归测试与 PowerShell 设置构造测试。
+- **新增修复（假信号）**：`schtasks /query` 在非提权会话返回 `Access is denied`，
+  旧代码把它当成 `missing`——任务明明注册成功却显示"未注册"。现统一为三态
+  `registered / missing / unknown`（无法读取时报 `unknown (run elevated)`），
+  daily/weekly/monthly 三个工具共用 `query_task_status()`，并加 2 个回归测试。
+  实测：`task=revenue_monthly_broker status=unknown detail=cannot read task (run elevated): ERROR: Access is denied.`
 
 ## 4. N-1 / FC-150x —— 关闭记录
 
