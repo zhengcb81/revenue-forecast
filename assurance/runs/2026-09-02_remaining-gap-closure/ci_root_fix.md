@@ -62,6 +62,7 @@
 - [x] revenue 版 pre-push gate `tools/pre_push_gate.py`（6682ecf；CI #108 绿）
 - [x] **filing 版 pre-push gate**（filing eceae2d）：此前 filing 无任何 CI 等价本地门，推送直达 GitHub；新增 `tools/pre_push_gate.py`（ruff/compileall/import smoke/mypy 契约/unique symbols/全 hermetic 套件/三仓 doctor/install-sync 信息性/plan claims/BOM 扫描）+ `.githooks/pre-push`（`#!/bin/sh`）+ `core.hooksPath=.githooks` + `/.githooks/** eol=lf`；`.githooks/pre-commit` 换为 pre-commit 框架 wrapper（旧自定义脚本未被 core.hooksPath 启用过）
 - [x] **filing CI #42 环境依赖型检查根治**（filing 8660ac2，见 §8）
+- [x] **安装一致性纳入推送门**（2026-09-08，owner 要求"已安装 skill 必须与 Projects 仓同步"）：revenue `tools/pre_push_gate.py` 新增 `_install_sync()`（check → 检测到过期即自动 repo→install 同步 → 复检），filing 同款（原先只是信息性 WARN）；三仓安装现已全部 MATCH（revenue 180×2、filing 31×3、invest 73×2；`.claude/revenue-forecast` 是指向 `.agents` 的 junction）。顺带修掉两仓门禁打印失败输出时的 GBK 控制台崩溃（`_safe_console()`）——该缺陷会**掩盖真实失败结果**。CI 无法覆盖此类：GitHub runner 无安装根，`installation_diff` 恒返回 []。
 - [x] **覆盖率 ratchet 根治**（4beb38d）：删除结构性不可达代码（_classify_broker return None 与 role-None continue——正则与分类器共用同一 keyword dict，正则匹配的标题必然分类成功，实证验证）+ 补 _extract_sections_for_kind dispatch 双向测试 → section_extractor 覆盖率 86%→88%，基线 87% 保持不降。
 - [ ] 两仓 README/planning 指向本协议
 - [ ] 三仓完整验证闭环（全量回归 + 自盯 CI）
