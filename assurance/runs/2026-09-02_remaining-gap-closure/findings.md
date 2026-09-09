@@ -6,6 +6,8 @@
 
 > **2026-09-09 状态修正**：GP-006（real-roots 阻断且绿）、GP-008（自然触发闭环）、GP-010（sections 7/7）、N-1/FC-150x、CI 协议两项已关闭；GP-009 monthly 1/1、drill 1/1、daily 3/7、weekly 0/2 自然累积中；FC-705 仍关（P7 窗口差 19 秒）。当前逐项结案与证据见 [gp_tail_closure_2026-09-08.md](gp_tail_closure_2026-09-08.md)。
 
+> **2026-09-09 深夜新增发现（R9 批 3 范围失真）**：09-02 申请把批 3 写成「无生产读者 backfill/promoter」，今晚逐符号实测后**该口径大部分已不成立**——`backfill_v2` 有生产导入（`dropbox_governance.py:22` 的 `classify_bucket`）、`portfolio_promoter` 有 CLI 导入（`cli.py:27`）、`_scan_root_v1` 有生产分派（`scanner.py:1401`）与对账调用（`shadow_parity.py:94`/`trace_parity.py:206`）、`legacy_bridge_enabled` 被 `resolver.py:322` 与 `architecture_gate.py:127/139/278` 使用；**仅 `artifact_backfill.py` 零生产读者**。结论：批 3 是"退役 v1 路径/迁移期机制的架构清理"，必须先给出替代路径与回滚，不能按旧清单机械删除。清单与两道门见 [r9_batch3_checklist.md](r9_batch3_checklist.md)。
+
 ## 2026-09-06 最新状态与领取规则（优先于下方全部旧覆盖/命令/批准摘要）
 
 2026-09-08规划覆盖：用户只批准planning调整，不授权实施、重新注册、删除或运行。原痛点审计继续保留，活动整改使用[R4虚拟数据湖计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md)及其测试矩阵/旧WP迁移表。A/B本地读取、C生产、D运维、M收入按实际依赖推进，不再叠加旧15包95门。本组只作历史执行/批准来源，不并行领取第二套队列，不把旧批准扩大为新动作许可。

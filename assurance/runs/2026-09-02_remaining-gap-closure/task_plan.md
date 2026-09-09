@@ -6,6 +6,8 @@
 
 > **2026-09-09 状态修正**：GP-006（real-roots 阻断且绿）、GP-008（自然触发闭环）、GP-010（sections 7/7）、N-1/FC-150x、CI 协议两项已关闭；GP-009 monthly 1/1、drill 1/1、daily 3/7、weekly 0/2 自然累积中；FC-705 仍关（P7 窗口差 19 秒）。当前逐项结案与证据见 [gp_tail_closure_2026-09-08.md](gp_tail_closure_2026-09-08.md)。
 
+> **2026-09-09 深夜更新（22:00 运行后）**：daily `20260909T210001Z` ok=true，权威账本开 **period 9**（hits=0）；FC-705 last-two = P7（23:59:41 ✗）+ P8（24:00:11 ✓）→ 仍 false，**预计 2026-09-10 22:00 运行后转 true**。GP-009 累积更新为 daily **4/7**、weekly 0/2。**R9 批 3 范围已按实测修正**（仅 `artifact_backfill.py` 零生产读者；其余候选均有活跃调用者），执行清单见 [r9_batch3_checklist.md](r9_batch3_checklist.md)，需技术门 + owner 政策门双重满足。Worker v5 独立轨道全部完成（冻结 51 项 + 三轴审查 accepted），仍不授权实施。
+
 ## 2026-09-06 最新状态与领取规则（优先于下方全部旧覆盖/命令/批准摘要）
 
 2026-09-08规划覆盖：用户只批准planning调整，不授权实施、重新注册、删除或运行。原痛点审计继续保留，活动整改使用[R4虚拟数据湖计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md)及其测试矩阵/旧WP迁移表。A/B本地读取、C生产、D运维、M收入按实际依赖推进，不再叠加旧15包95门。本组只作历史执行/批准来源，不并行领取第二套队列，不把旧批准扩大为新动作许可。

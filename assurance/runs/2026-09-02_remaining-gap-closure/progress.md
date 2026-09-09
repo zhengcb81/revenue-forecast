@@ -201,3 +201,12 @@
     5. **GP-009 自然时间审核**：7 Daily/2 Weekly/1 Monthly/1 alert drill（CA-206 窗口计算器已 accepted，累积靠调度真实运行）——weekly T3 周日 04:30（2026-09-06 起）；数周自然时间。
     6. **CI 确认**：owner 确认今日三笔推送（wiki 50b44ba / revenue 4f82319 / 3552795）CI 全绿。
   - 文档：n1_r9_removal_request.md（授权申请+批准记录）、gp008_009_deployment_guide.md（04:00→04:30 校正 + 3552795 注记）、本页更新。
+
+- **2026-09-09 深夜（22:00 运行后，只读核对 + 文档同步）**：
+  - **daily 触发成功**：`run_id=20260909T210001Z`（22:00:20 本地）、`ok=true`、`problems=[]`、`legacy_hits=[]`、`resolve_sample_sec=0.0066`；`daily_manifest.json` → `observation_period=9`，triplet revenue `218ba7e` / filing `bb8d485` / wiki `454f632`（运行时刻快照）。
+  - **权威账本开 period 9**：wiki `.source_catalog/legacy_periods.json`（22:00:21 写入）→ `started_at 2026-09-09T21:00:21Z`、`legacy_bridge_hits=0`、`mode=sample`、`sampled_documents=62`。
+  - **FC-705 门仍 false**：`close_gate.reasons=["period 7: window 23:59:41 is shorter than 24h"]`（evaluated_at 2026-09-09T21:00:21Z）。last-two = P7（23:59:41 ✗）+ P8（24:00:11 ✓）。**预计 2026-09-10 22:00 运行后**（P8+P9 两个连续 ≥24h 零 hit）→ `close_gate_allowed=true`。**今晚不可手动跑 observer**：会把 P9 在 0:57 结束，反而把关闭时点推后一天。
+  - **R9 批 3 范围修正（实测，替换 09-02 旧口径）**：新增 [r9_batch3_checklist.md](r9_batch3_checklist.md)。逐符号实测调用者——`backfill_v2`（`dropbox_governance.py:22` 生产导入）、`portfolio_promoter`（`cli.py:27` CLI 导入）、`_scan_root_v1`（`scanner.py:1401` 生产分派 + `shadow_parity.py:94`/`trace_parity.py:206`）、`legacy_bridge_enabled`（`resolver.py:322`、`architecture_gate.py:127/139/278`）**均有活跃调用者**；仅 `artifact_backfill.py` 零生产读者。批 3 = 架构清理（需替代路径 + 回滚），不是机械删除；且需**技术门（FC-705）+ owner 政策门（2026-09-06 延后至 v2 迁移稳定）**双重满足。
+  - **GP-009 自然累积**：Daily **4/7**（09-06/07/08/09）、Weekly 0/2（下次 2026-09-13 04:30）、Monthly 1/1、alert drill 1/1。
+  - **Worker v5 独立轨道全部完成**（company-wiki `6559075`）：V5-0/R/1/2/3 completed；正式冻结 51 项 + 三轴独立审查 `accepted`（SQL/性能、生命周期/安全、测试/DAG）；四轮整改关闭 14 P1 + 3 P2；`--verify-manifest` 9188 通过、`--self-test` 17 例/32 变异 + 4 默认模式 + 3 守卫全拒。仍 PLAN_ONLY、不授权实施。
+  - **本轮边界**：只写文档 + 只读核对；未删除、未实施、未恢复 worker、未注册/修改任务；revenue 工作树仅 3 个 ACL 受限空目录未清理。
