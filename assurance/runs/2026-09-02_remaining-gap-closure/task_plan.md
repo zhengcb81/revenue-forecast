@@ -1,5 +1,40 @@
 # 剩余缺口关闭实施计划（2026-09-02）
 
+> **2026-09-07优先状态**：本组下方9/6覆盖后又有其他任务推进。revenue HEAD=6682ecf，latest daily=20260906T210001Z/ok=false/空triplet；DEFAULT_PERIODS改为wiki账本，旧revenue green不代表当前资格。Git确认R9 revenue批1+2工具/测试及CI step已删，wiki批3日志记录延后；不重复执行、不在此追认其全量验收。当前差异见[状态覆盖](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/current-delta-2026-09-07.md)，整改以同目录执行手册为编排依据。CI协议是现有WP11输入，旧命令/批准不是本轮push、真实测试、网络、任务或删除授权。保留下方原日志及批准字节。
+
+> [当前状态总入口](../../../PLANNING_STATUS.md)
+
+> **2026-09-09 状态修正**：GP-006（real-roots 阻断且绿）、GP-008（自然触发闭环）、GP-010（sections 7/7）、N-1/FC-150x、CI 协议两项已关闭；GP-009 monthly 1/1、drill 1/1、daily 3/7、weekly 0/2 自然累积中；FC-705 仍关（P7 窗口差 19 秒）。当前逐项结案与证据见 [gp_tail_closure_2026-09-08.md](gp_tail_closure_2026-09-08.md)。
+
+## 2026-09-06 最新状态与领取规则（优先于下方全部旧覆盖/命令/批准摘要）
+
+2026-09-08规划覆盖：用户只批准planning调整，不授权实施、重新注册、删除或运行。原痛点审计继续保留，活动整改使用[R4虚拟数据湖计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md)及其测试矩阵/旧WP迁移表。A/B本地读取、C生产、D运维、M收入按实际依赖推进，不再叠加旧15包95门。本组只作历史执行/批准来源，不并行领取第二套队列，不把旧批准扩大为新动作许可。
+
+- GP-008参数错误已在revenue HEAD `2ff20d9`修复，注册器现为`run-daily`。旧“代码仍阻塞/必须先改拼写”失效；部署Action及自然触发仍未独立闭环，不自动重注册。
+- latest观测daily manifest=`20260905T194055Z`、period=2、ok=true，绑定旧`2cbd585`而非当前HEAD；legacy一个ended_at完成窗口、第二个未完成，close_allowed=false。旧9/3唯一run/零completed不再是最新状态，仍不可按预计日期放行。
+- GP-010观测为normalized7/7、review7/7、summary6/7、sections5/7，安全拒绝保留，列表式缺口未闭。kind宽范围历史产物214份与精确7份cohort不是同一范围；按owner已有处置保留，不执行旧“DELETE+重扫即无外部副作用”的回滚说法。
+- 117 accepted/197 passed不是原目标完成证明：9/6审计找到required tier、真实消费、业务计算、失败账本和发布等实质反例。历史receipt/批准原字节不改，禁止批量重签来制造当前资格。
+- 新H01自动prune归档覆盖风险是worker恢复前置。当前整改全部NOT_IMPLEMENTATION_AUTHORIZED；旧授权不自动包含新scope/新版本。GP/R9历史批准保留，但继续执行需WP01/12/13/14相应门、真实数据E2E和当前精确授权。
+
+以下9/2–9/5内容均为有日期的历史快照，不是新的可执行指令；若与本节冲突按本节及新计划处理。真实报告、完整观察、受控删除未完成，不以文档同步勾成完成。
+
+## 2026-09-05 当前状态覆盖（以下历史基线与旧停止点不再代表当前状态）
+
+本次为只读证据核对后的文档纠偏，不重开或改写原 CA/ZR DAG、receipt、scenario registry、冻结旧计划。原 DAG 的 completed / CA-201 是终局记录；不得据此推断 GP 与生产余项全部完成。
+
+| 工作单元 | 当前状态 | 证据与剩余项 |
+|---|---|---|
+| GP-001～004、007 | 历史实施已记录 | 保留原提交/验证记录，本次未重跑三仓全量 |
+| GP-005 | registry 登记 197/197 passed；生产语义不等同完成 | 9/4新增broker分节能力并真实执行；七份目标研报当前5/7有sections，仍非7/7 |
+| GP-006 | partial | Windows sibling 临时数据 job 已接入；continue-on-error=true，真实 catalog 套件仍未进入阻断式 CI |
+| GP-008 | blocked_code + deployment_action_unverified | 9/5已修电源条件、StartWhenAvailable并改22:00，owner记录重注册；但注册器仍生成 --run-daily，而 parser 只接受 run-daily，安全解析探针仍拒绝 |
+| GP-009 | 注册声明已记录；自然时间验收未完成 | owner记录daily/weekly已重注册；当前Action与实际自然触发未闭环，7 Daily/2 Weekly/1 Monthly/1 drill也未满足 |
+| GP-010 | 已批准、部分执行 | normalized 7/7、review receipt 7/7、summary 6/7；1份安全门正确拒绝；9/4规则提取后sections为5/7，仍有2份列表式研报缺口 |
+
+运行证据快照：daily_manifest=20260903T211059Z、observation_period=1；legacy_periods 仅一个 observing 窗口，completed=0、close_allowed=false。旧“最早9/6 03:30”预测已失去前提；只以两个实际 completed、各≥24h且hits=0窗口判门，不按日历自动放行。
+
+R9：9/3 owner 已批准 A+B，但本次不执行删除。GP-008修复/实际部署核验和窗口证据未满足；批1+2为revenue单commit，随后wiki批3独立commit。GP-010授权已获得，不再等待KD-08重新批准。详见本组两份授权记录与后续纠偏。
+
 > 目标：把 2026-09-02 全面审查发现的未完成目标全部实现。每个工作单元必须有机器证据（测试 + 独立复核 + receipt），每一步完成后必须核实并更新本页进度。
 
 ## 1. 审查发现总表（全部 12 项缺口）
