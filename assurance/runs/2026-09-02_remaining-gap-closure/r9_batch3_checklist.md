@@ -7,7 +7,7 @@
 > ③ **FC-906 工作单元卡把它列为 Forbidden files**：`assurance/fc/FC-906/00_wu_card_a.md:24`「`artifact_backfill.py`（FC-901 工具，**不改**）」；
 > ④ 冻结的 v5 基线 `baseline/plan/test_acceptance_plan.md` 有 **ZR1005-C1~C4** 验收行指向其测试；
 > ⑤ 复杂度/覆盖率 ratchet 为其登记 `37` / `79`；`.github/workflows/ci.yml:53` 把 zr1005 测试列在 CI ignore 名单。
-> → **按本清单自己的规则（"无替代路径的不删"、"冻结边界绝不触碰"），3a 不予执行。** 若确要退役该运维能力，那是**能力退役**（需同时处理 3 个测试、ratchet、FC-906 卡片与运维替代方案），不是死代码清理，且应与 v2 迁移收尾一并决定。owner 2026-09-10 的"直接执行最小步 3a"指令因前提证伪而**暂停执行**，等待重新裁定。
+> → **按本清单自己的规则（"无替代路径的不删"、"冻结边界绝不触碰"），3a 不予执行。** owner 于 **2026-09-10 正式撤销 3a**（裁定：`artifact_backfill.py` 认定为受 FC-906 卡片保护的运维工具，不再是删除候选）。若将来确要退役该运维能力，那是**能力退役**（需同时处理 3 个测试、ratchet、FC-906 卡片与运维替代方案），不是死代码清理，且应与 v2 迁移收尾一并决定。**批 3 自此只剩 3b/3c。**
 
 > 关联：[n1_r9_removal_request.md](n1_r9_removal_request.md)（owner A+B 批准原文）、[gp_tail_closure_2026-09-08.md](gp_tail_closure_2026-09-08.md) §6.2/§6.4、
 > [progress.md](progress.md) 2026-09-06「批 3 延后（owner 决策）」。
@@ -62,8 +62,8 @@ Select-String -Path src\**\*.py,scripts\*.py,tests\**\*.py -Pattern '_scan_root_
 ## 4. 执行顺序（仅在两道门都满足后）
 
 1. **冻结基线**：记录三仓 HEAD、`legacy-gate`/`final_ratchet` 输出、批 3 每个候选的调用者清单。
-2. **拆分批次**（2026-09-10 修订：3a 作废）
-   - ~~3a：`artifact_backfill.py`（零生产读者）+ 其测试/ratchet 条目~~ → **作废**：该模块有运维 CLI、3 个契约测试、FC-906「不改」标注与冻结基线验收行（见文首更正块），**不是死代码**；
+2. **拆分批次**（2026-09-10 修订：3a 已由 owner 撤销）
+   - ~~3a：`artifact_backfill.py`（零生产读者）+ 其测试/ratchet 条目~~ → **已撤销**（owner 2026-09-10）：该模块有运维 CLI、3 个契约测试、FC-906「不改」标注与冻结基线验收行（见文首更正块），**不是死代码**，不再作为删除候选；
    - 3b：`_scan_root_v1` + `shadow_parity`/`trace_parity` 的 v1 对账路径（需替代方案）；
    - 3c：`legacy_bridge_enabled` + `flags`/`resolver`/`architecture_gate` 的 bridge 分支（需回滚方案）。
    每小批**独立 commit**、独立 revert。**当前没有任何小批具备"零读者 + 无冻结约束"的机械删除条件**——3b/3c 都需要先给出替代路径与回滚。
