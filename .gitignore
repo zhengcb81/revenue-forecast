@@ -14,3 +14,19 @@ e2e/.runs/
 
 # Publication registry runtime output (regenerable)
 artifacts/
+
+# Daily/weekly/monthly runtime output (2026-09-10, owner-approved).
+# `daily_manifest.json` is a runtime pointer (latest_run_id / period / triplet),
+# not a decision record: it changes on every run by design, so tracking it made
+# the worktree dirty every night while adding no evidence. Per-run report dirs
+# (`assurance/runs/<UTC timestamp>/`) are output of the same kind. Historical
+# copies that were committed earlier stay tracked as evidence; the ledger files
+# that ARE evidence (ledger.json, legacy_periods.json, rollback_manifest.json,
+# *_alert.jsonl) also stay tracked.
+assurance/runs/daily_manifest.json
+assurance/runs/20[0-9][0-9][0-9][0-9][0-9][0-9]T*/
+
+# Local historical review clone (ZR-407, 2026-08-18). Kept on disk for reference
+# by explicit decision ("不修改/删除"); it is a local checkout of other repos and
+# is not part of this repository's content.
+.review-zr407-20260818/
