@@ -149,14 +149,13 @@ findings=0）。若任一窗口再次 <24h 或 hits≠0，继续等，不提前�
 
 ### 6.4 剩余边界
 
-- **R9 批 3（wiki）**：以 FC-705 门为前置，见 §6.2。
-- **GP-009 自然时间**：Daily 3/7（09-06/07/08）、Weekly 0/2（机制已修，下次 09-13）、
-  Monthly 1/1 ✓、Alert drill 1/1 ✓。
-- **monthly 任务注册**：需 owner 提权执行
-  `python tools\monthly_broker_schedule.py register`（已提供，未执行）。
-- **GP-010 后续（owner 决策）**：新规则会让已覆盖的 5 份中 4 份多出一个
-  「盈利预测与投资建议」分节；是否 `--force` 刷新属改写既有 artifact 内容哈希，留给 owner 决定。
-- **CI 根因协议**：README/planning 指向 + 门禁顺序已闭环；三仓全量回归见 §7。
+> **2026-09-10 更正**：本节原有两处与本文 §3.3/§5 自相矛盾（monthly 注册、GP-010 刷新），已就地更正；计数按 09-10 实测更新。保留原判断的其余部分。
+
+- **R9 批 3（wiki）**：技术门 = FC-705 门（last-two P7 差 19 秒，**预计 2026-09-10 22:00 运行后满足**）；**政策门仍未开**（owner 2026-09-06 决定延后至 v2 迁移稳定）。范围已按实测修正（仅 `artifact_backfill.py` 零生产读者），执行清单见 [r9_batch3_checklist.md](r9_batch3_checklist.md)。
+- **GP-009 自然时间（2026-09-10 实测）**：Daily **4/7**（09-06/07/08/09；09-10 22:00 后 5/7）、Weekly 0/2（首次 09-13 周日 04:30，第二次需 ≥7 天间隔）、Monthly 1/1 ✓、Alert drill 1/1 ✓；首次**自然**月度运行 2026-10-01 05:00。
+- ~~**monthly 任务注册**：需 owner 提权执行 …（已提供，未执行）~~ → **更正：已完成**（2026-09-08 owner 提权执行 `tools\monthly_broker_schedule.py register`，输出 `registered monthly task revenue_monthly_broker`，注册函数自带 `schtasks /query` 自校验；见 §3.3）。
+- ~~**GP-010 后续（owner 决策）**：… 是否 `--force` 刷新 … 留给 owner 决定。~~ → **更正：已于 2026-09-08 补做**（5 份 `--force` 刷新，刷新前确认仓库内无引用；刷新后月度审计 7/7 仍 `ok=true`；见 §5）。
+- **CI 根因协议**：README/planning 指向 + 门禁顺序已闭环；三仓全量回归见 §7。后续每次推送仍按该协议（本仓 pre-push gate → push → 自盯 CI 至绿）。
 
 ## 7. 三仓完整验证闭环（2026-09-08）
 

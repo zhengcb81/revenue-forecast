@@ -8,7 +8,7 @@
 
 > 最新核对2026-09-06，观测HEAD为2ff20d9；本页是非执行性状态覆盖层，不修改冻结证据，不授权下载、生产处理、任务注册或legacy删除。用户本次批准文档同步与步骤细化。原痛点效果及下一步唯一整改编排见[新审计及15包计划](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/README.md)，全部整改仍未实施；旧GP组保留为历史工作/批准记录。
 
-> **2026-09-08 最新观测修正（本地只读核对）**：调度已连续触发成功——09-06 22:00（P2 关闭 25.3h、P3 开启）、09-07 22:00（P6 关闭 25 天零 hit、P7 开启）；最新 daily=`20260907T210001Z`、period=7。本仓 `2ff20d9` 修复 `--run-daily` 参数（已由真实触发验证）；`56ba0eb` 补 manifest `cat-file` 的 `safe.directory`（SYSTEM 上下文 triplet 检查）。**FC-705 门仍 close_allowed=false**（权威账本在 wiki `.source_catalog/legacy_periods.json`；last-two = P5 历史 hits=6 短窗 + P6 合格，待 P7 于 09-08 22:00 完成后满足）。上方 9/07 段的 HEAD/daily 为当时快照。
+> **2026-09-08 观测快照（历史，已被上方 09-09/09-10 段覆盖）**：调度已连续触发成功——09-06 22:00（P2 关闭 25.3h、P3 开启）、09-07 22:00（P6 关闭 25 天零 hit、P7 开启）；最新 daily=`20260907T210001Z`、period=7。本仓 `2ff20d9` 修复 `--run-daily` 参数（已由真实触发验证）；`56ba0eb` 补 manifest `cat-file` 的 `safe.directory`（SYSTEM 上下文 triplet 检查）。**FC-705 门仍 close_allowed=false**（权威账本在 wiki `.source_catalog/legacy_periods.json`；last-two = P5 历史 hits=6 短窗 + P6 合格，待 P7 于 09-08 22:00 完成后满足）。上方 9/07 段的 HEAD/daily 为当时快照。**保留原文以便追溯；当前状态与门判定以本页顶部 09-09/09-10 段为准。**
 
 ## 活动计划全量索引（2026-09-08，防遗漏路由）
 
@@ -30,7 +30,7 @@
 | 14 | 审计报告群 | [revenue-audit](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/revenue-audit.md) / [assurance-audit](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/assurance-audit.md) / [gp-audit](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/gp-audit.md) / [upstream-asset-audit](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/upstream-asset-audit.md) / [legacy-inheritance](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/legacy-inheritance.md) | 只读审计已交付 | 需独立复核 |
 | 15 | 独立审查群 | [assurance](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/assurance-independent-review.md) / [retention](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/retention-independent-review.md) / [plan](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/remediation-plan-independent-review.md) / [consistency](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/document-consistency-review.md) | 历史/计划级 | 不绑定 R4 当前版本 |
 | 16 | 并发差异覆盖（9/7） | [current-delta-2026-09-07.md](../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/current-delta-2026-09-07.md) | 覆盖 9/6 观测 | 旧反证须新 HEAD 复验 |
-| 17 | **Worker v5 独立计划**（V5-0/R/1/2/3 **全部 completed**，2026-09-09） | [v5 README](../company-wiki/docs/plans/source-catalog-worker-recovery-v5-2026-09-03/README.md) / [task_plan](../company-wiki/docs/plans/source-catalog-worker-recovery-v5-2026-09-03/task_plan.md) | V5_2_COMPLETED / PLAN_ONLY / NOT_IMPLEMENTATION_AUTHORIZED | 与主线不合并；H01 为恢复前置；冻结 51 项 + 三轴审查 accepted |
+| 17 | **Worker v5 独立计划**（V5-0/R/1/2/3 **全部 completed**，2026-09-09；交接双审 2026-09-10） | [v5 README](../company-wiki/docs/plans/source-catalog-worker-recovery-v5-2026-09-03/README.md) / [task_plan](../company-wiki/docs/plans/source-catalog-worker-recovery-v5-2026-09-03/task_plan.md) | V5_3_COMPLETED / PLAN_ONLY / NOT_IMPLEMENTATION_AUTHORIZED | 与主线不合并；H01 为恢复前置；冻结 51 项 + 三轴审查 accepted |
 | 18 | GP 组（本仓历史执行/批准 + 部署尾项） | [remaining-gap-closure](assurance/runs/2026-09-02_remaining-gap-closure/task_plan.md) | 历史 + 部署尾项 | 不并行领取；旧批准不扩为新许可 |
 | 19 | 文档同步（9/4，历史） | [planning-sync-2026-09-04](../company-wiki/docs/plans/planning-sync-2026-09-04/task_plan.md) | 历史交付 | 历史 hash 库存非当前合同 |
 
@@ -38,11 +38,13 @@
 
 ## 当前事实
 
+> **2026-09-06 快照 + 2026-09-10 状态标注**：下列 9/6 判断保留原文；已变化的部分就地标注，不删除历史判断。当前状态以本页顶部 09-09/09-10 段与 [gp_tail_closure_2026-09-08.md](assurance/runs/2026-09-02_remaining-gap-closure/gp_tail_closure_2026-09-08.md) 为准。
+
 - 原CA/ZR DAG机器登记accepted 117/117，state为completed/J_terminal；旧FC/WU/ZR的pending、current_next和首卡提示不再是活动队列。历史accepted只表示当时范围，不证明目前所有生产能力持续健康。
-- [remaining-gap-closure](assurance/runs/2026-09-02_remaining-gap-closure/task_plan.md)保留历史执行/批准，新整改不从旧勾选领取。GP-006只完成临时sibling roots非阻断CI子集，真实roots门未完。GP-008参数已在2ff20d9改为`run-daily`，但重注册后的实际Action及自然触发仍缺独立证据。
-- GP-009保留owner重注册daily/weekly历史记录；latest观测daily manifest为20260905T194055Z、period2、ok=true但绑定旧2cbd585；一个ended_at完整窗口，第二个未完、close_allowed=false。两个实际completed且各≥24h/hits=0及真实7/2/1/1尚不能宣称完成，未来时间/重复run/skip等门仍需修复，不按日历放行。
-- GP-010已授权并部分执行：normalized7/7、receipt7/7、summary6/7；1份安全拒绝为预期fail-closed；9/4规则分节后七份目标研报sections=5/7，另2份列表式文档仍缺。registry197/197 passed不等于生产语义7/7闭环。
-- N-1/R9已有A+B批准历史，但未执行删除；GP-008及真实观察证据仍阻塞。revenue批1+2同一commit、随后wiki批3独立commit是当前批次口径；本页不触发执行。
+- [remaining-gap-closure](assurance/runs/2026-09-02_remaining-gap-closure/task_plan.md)保留历史执行/批准，新整改不从旧勾选领取。GP-006只完成临时sibling roots非阻断CI子集，真实roots门未完。GP-008参数已在2ff20d9改为`run-daily`，但重注册后的实际Action及自然触发仍缺独立证据。 → **2026-09-10 标注：两项均已关闭**（GP-006 real-roots job 改为阻断且绿；GP-008 自 09-06 22:00 起自然触发连续成功、09-08 起 daily 连续 ok=true；见 gp_tail §1/§2）
+- GP-009保留owner重注册daily/weekly历史记录；latest观测daily manifest为20260905T194055Z、period2、ok=true但绑定旧2cbd585；一个ended_at完整窗口，第二个未完、close_allowed=false。两个实际completed且各≥24h/hits=0及真实7/2/1/1尚不能宣称完成，未来时间/重复run/skip等门仍需修复，不按日历放行。 → **2026-09-10 标注：机制缺陷已修且已自然累积**——Daily 4/7（09-06~09-09）、Weekly 0/2（首次 09-13）、Monthly 1/1、drill 1/1；`close_allowed` 仍按真实窗口判（不按日历放行），见 gp_tail §3
+- GP-010已授权并部分执行：normalized7/7、receipt7/7、summary6/7；1份安全拒绝为预期fail-closed；9/4规则分节后七份目标研报sections=5/7，另2份列表式文档仍缺。registry197/197 passed不等于生产语义7/7闭环。 → **2026-09-10 标注：sections 已 7/7**（wiki `623e831` 列表式标题识别 + 09-08 欠抽取刷新 5 份）；summary 6/7 的 1 份为国联民生 `_FORBIDDEN_OUTPUT` 正确拒绝，**不是待办缺陷**；§"机器T1不代真实语义闭环"的判断仍成立
+- N-1/R9已有A+B批准历史，但未执行删除；GP-008及真实观察证据仍阻塞。revenue批1+2同一commit、随后wiki批3独立commit是当前批次口径；本页不触发执行。 → **2026-09-10 标注：批 1+2 已于 09-06 执行**（revenue `289fb6b`，legacy-gate 复扫 findings=0）；**批 3 未执行**，现卡在技术门（FC-705，预计 09-10 22:00 后满足）+ owner 政策门（09-06 延后至 v2 迁移稳定），且范围需重拆（见 [r9_batch3_checklist.md](assurance/runs/2026-09-02_remaining-gap-closure/r9_batch3_checklist.md)）
 
 ## 各组处置
 
