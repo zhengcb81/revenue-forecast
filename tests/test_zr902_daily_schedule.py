@@ -370,3 +370,118 @@ def test_c6_observer_argv_is_read_only_with_period_file():
     assert "--catalog" in argv
     # default ledger location for the real scheduled run
     assert DEFAULT_PERIODS.name == "legacy_periods.json"
+
+
+# ---------------------------------------------------------------------------
+# C7 — FC-705 window integrity (2026-09-10): the daily task fires on a
+# jittering wall clock, so a window can land seconds short of 24h
+# (observed 23:59:41 and 23:59:52) while the zero-hit condition holds.  The
+# runner waits out the missing seconds instead of leaving the >= 24h
+# threshold to luck.
+# ---------------------------------------------------------------------------
+
+
+def _periods_file(tmp_path: Path, periods: list[dict]) -> Path:
+    path = tmp_path / "legacy_periods.json"
+    path.write_text(json.dumps({"periods": periods}), encoding="utf-8")
+    return path
+
+
+def _open_period(ago: timedelta, period: int = 9) -> dict:
+    return {"period": period, "started_at": (NOW - ago).isoformat(),
+            "ended_at": None, "legacy_bridge_hits": 0}
+
+
+def _closed_period(period: int = 8) -> dict:
+    return {"period": period, "started_at": _old_iso(48),
+            "ended_at": _old_iso(24), "legacy_bridge_hits": 0}
+
+
+def test_c7_no_wait_without_an_open_window(tmp_path):
+    from daily_t2_schedule import window_wait_seconds
+
+    assert window_wait_seconds(_periods_file(tmp_path, [])) == 0
+    assert window_wait_seconds(_periods_file(tmp_path, [_closed_period()])) == 0
+
+
+def test_c7_waits_the_missing_seconds(tmp_path):
+    """A window 8s short (the 09-10 real case) waits exactly those 8s."""
+    from daily_t2_schedule import window_wait_seconds
+
+    path = _periods_file(tmp_path, [_closed_period(),
+                                    _open_period(timedelta(hours=24) - timedelta(seconds=8))])
+    assert window_wait_seconds(path, now=NOW) == 8
+
+
+def test_c7_no_wait_when_window_is_long_enough(tmp_path):
+    from daily_t2_schedule import window_wait_seconds
+
+    path = _periods_file(tmp_path, [_open_period(timedelta(hours=25))])
+    assert window_wait_seconds(path, now=NOW) == 0
+
+
+def test_c7_early_manual_rerun_is_not_padded(tmp_path):
+    """A manual re-run hours early must stay fail-closed: the missing time
+    exceeds the cap, so nothing is waited and the window stays short."""
+    from daily_t2_schedule import MAX_WINDOW_WAIT_SECONDS, window_wait_seconds
+
+    path = _periods_file(tmp_path, [_open_period(timedelta(hours=2))])
+    assert window_wait_seconds(path, now=NOW) == 0
+    assert window_wait_seconds(path, now=NOW,
+                               max_wait=10 ** 6) > MAX_WINDOW_WAIT_SECONDS
+
+
+def test_c7_corrupt_or_missing_ledger_never_waits(tmp_path):
+    from daily_t2_schedule import window_wait_seconds
+
+    missing = tmp_path / "absent.json"
+    assert window_wait_seconds(missing, now=NOW) == 0
+    broken = tmp_path / "broken.json"
+    broken.write_text("{not json", encoding="utf-8")
+    assert window_wait_seconds(broken, now=NOW) == 0
+    # also an entry with an unparsable timestamp must not raise
+    assert window_wait_seconds(
+        _periods_file(tmp_path, [{"period": 9, "started_at": "not-a-date",
+                                  "ended_at": None}]), now=NOW) == 0
+
+
+def test_c7_run_daily_waits_before_opening_the_period(tmp_path, monkeypatch):
+    """``run_daily`` sleeps the missing seconds BEFORE the observer runs, so
+    the window closes at a real (later) timestamp."""
+    import daily_t2_schedule as mod
+
+    periods = _periods_file(tmp_path, [
+        _closed_period(),
+        _open_period(timedelta(hours=24) - timedelta(seconds=5)),
+    ])
+    calls: list[list[str]] = []
+    sleeps: list[float] = []
+
+    class _Proc:
+        returncode = 0
+        stdout = "c" * 40
+        stderr = ""
+
+    def _fake_run(cmd, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        calls.append(list(cmd))
+        return _Proc()
+
+    monkeypatch.setattr(mod.subprocess, "run", _fake_run)
+    monkeypatch.setattr(mod.time, "sleep", lambda seconds: sleeps.append(seconds))
+
+    rc = mod.run_daily(
+        catalog=tmp_path / "catalog.sqlite3",
+        manifest=tmp_path / "manifest.json",
+        report_root=tmp_path / "runs",
+        ledger_path=tmp_path / "daily_manifest.json",
+        alert_path=tmp_path / "daily_alert.jsonl",
+        periods_path=periods,
+    )
+
+    assert rc == 0
+    assert sleeps == [5], f"expected a single 5s wait, got {sleeps}"
+    # the wait must happen before the observer is invoked
+    observer_index = next(
+        i for i, cmd in enumerate(calls) if any("legacy_observer" in str(part) for part in cmd)
+    )
+    assert observer_index == 1  # [0] = T2 runner, [1] = observer

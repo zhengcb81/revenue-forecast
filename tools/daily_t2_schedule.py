@@ -25,6 +25,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -34,6 +35,17 @@ DEFAULT_LEDGER = PROJECT_ROOT / "assurance" / "runs" / "daily_manifest.json"
 DEFAULT_ALERTS = PROJECT_ROOT / "assurance" / "runs" / "daily_alert.jsonl"
 TASK_NAME = "revenue_daily_t2"
 MAX_AGE_HOURS = 24
+
+# FC-705 window integrity (2026-09-10).  A close window is the gap between two
+# consecutive daily runs, and the task fires on a wall clock with sub-minute
+# jitter, so a gap can land seconds short of 24h (observed 23:59:41 and
+# 23:59:52) even though the zero-hit condition holds every night.  The runner
+# therefore waits out the missing seconds before closing the window, so the
+# >= 24h threshold is *satisfied* rather than met by luck.  The wait is
+# bounded: a run must never hang, and a manual re-run hours early stays
+# fail-closed (its window simply remains short and cannot count).
+OBSERVATION_WINDOW_MIN = timedelta(hours=24)
+MAX_WINDOW_WAIT_SECONDS = 180
 
 # Production paths for the REGISTERED task: the SYSTEM task fires the script
 # with a bare ``--run-daily`` (no per-run flags), so these must default to
@@ -96,6 +108,51 @@ def observer_argv(catalog: Path, period: int, periods_path: Path) -> list[str]:
         "--period-file", str(periods_path),
         "--read-only",
     ]
+
+
+def open_period_started_at(path: Path, *,
+                           now: datetime | None = None) -> datetime | None:
+    """``started_at`` of the newest still-open (``ended_at is None``) period.
+
+    Returns ``None`` when no window is open (a fresh ledger, or every period
+    already closed) — that is the state in which the next run opens the very
+    first window and there is nothing to complete.
+    """
+    now = now or datetime.now(UTC)
+    newest: datetime | None = None
+    for entry in read_periods(path)["periods"]:
+        if not isinstance(entry, dict) or entry.get("ended_at") is not None:
+            continue
+        started = entry.get("started_at")
+        if not isinstance(started, str) or not started:
+            continue
+        try:
+            candidate = _iso_to_utc(started)
+        except ValueError:
+            continue
+        if candidate <= now and (newest is None or candidate > newest):
+            newest = candidate
+    return newest
+
+
+def window_wait_seconds(path: Path, *, now: datetime | None = None,
+                        minimum: timedelta = OBSERVATION_WINDOW_MIN,
+                        max_wait: int = MAX_WINDOW_WAIT_SECONDS) -> int:
+    """Seconds to wait so the open FC-705 window reaches ``minimum``.
+
+    ``0`` means "do not wait": no window is open, it is already long enough,
+    or the missing time exceeds ``max_wait`` (a scheduled run must not hang,
+    and an early manual re-run must stay fail-closed instead of being padded
+    into a window it did not observe).
+    """
+    now = now or datetime.now(UTC)
+    started = open_period_started_at(path, now=now)
+    if started is None:
+        return 0
+    missing = int(((started + minimum) - now).total_seconds() + 0.999)
+    if missing <= 0 or missing > max_wait:
+        return 0
+    return missing
 
 
 def _now_iso() -> str:
@@ -184,6 +241,15 @@ def run_daily(catalog: Path, manifest: Path, report_root: Path,
     # must not silently stop accumulating.
     period_path = periods_path or DEFAULT_PERIODS
     period = next_period_number(period_path)
+    # FC-705 window integrity: wait out the seconds a jittering wall clock
+    # shaved off the open window, so the >= 24h requirement is satisfied by
+    # the mechanism instead of by luck.  The observer still timestamps with
+    # the real time it runs (no backdating).
+    wait_seconds = window_wait_seconds(period_path)
+    if wait_seconds:
+        print(f"FC-705 window {wait_seconds}s short of {OBSERVATION_WINDOW_MIN}; "
+              f"waiting before opening period {period}", flush=True)
+        time.sleep(wait_seconds)
     obs = subprocess.run(
         observer_argv(catalog, period, period_path),
         capture_output=True, text=True, errors="replace", timeout=600,
