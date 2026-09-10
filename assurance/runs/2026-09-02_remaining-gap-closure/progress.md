@@ -218,3 +218,11 @@
   - **可选根治（待 owner 授权，属生产 runner 代码改动）**：daily runner 在调用 observer 前检查 `now - 上一窗口 started_at`，不足 24h 则**真实等待**补足（≤~60s），时间戳仍为真实时刻；**不放宽 24h 阈值**（那会削弱门语义）。不修的话门仍会在抖动允许时自然满足，只是到达时间不可预测。
   - GP-009 累积更新：Daily **5/7**（09-06~09-10）、Weekly 0/2（首次 09-13）、Monthly 1/1、drill 1/1。
   - 本轮只读核对 + 文档：未改代码/任务、未删除、未恢复 worker。
+
+- **2026-09-10 根治抖动（owner 授权后实施 `41117ce`）+ 运行指针停止跟踪（`e957d94`）**
+  - **修复**：`tools/daily_t2_schedule.py` 新增 `open_period_started_at()` / `window_wait_seconds()`；`run_daily` 在调用只读 observer **之前**，若开放窗口距满 24h 还差 ≤180 秒则**真实等待**补足再运行。**不放宽 24h 阈值**、不回溯时间戳（observer 记录实际运行时刻）、提前数小时的手动重跑**不补**（窗口保持短窗，fail-closed 不变）。
+  - **测试**：`tests/test_zr902_daily_schedule.py` 新增 C7 六条（无开放窗口/恰好差 8 秒/已足够/提前重跑不补/账本损坏不抛异常/"等待发生在 observer 之前"的行为断言）→ 该文件 **28 passed**；对真实账本模拟：准点触发等 **13s**、早 30 秒等 **43s**、迟到 **0s**。
+  - **生效与预期**：从 **2026-09-11 22:00** 运行起生效（P10 恰满 24h，门仍 false，因 last-two 含 P9 短窗）→ **门预计 2026-09-12 22:00 确定性打开**（P10+P11 均 ≥24h）。
+  - **停止跟踪运行指针**（owner 2026-09-10 同意）：`git rm --cached assurance/runs/daily_manifest.json`（文件仍在磁盘）、`.gitignore` 增补运行指针、`assurance/runs/<UTC时间戳>/` 运行目录与本地 `.review-zr407-20260818/` 评审克隆；**证据类文件保持跟踪**（ledger.json / legacy_periods.json / rollback_manifest.json / *_alert.jsonl / 早期已提交的 run report）。效果：夜间运行不再制造脏工作树（提交后 `git status` = 0 条目）。
+  - 提交：`41117ce`（修复 + 测试 + 取消跟踪）、`e957d94`（.gitignore 规则）；pre-push gate 绿、revenue CI **#130 success**。安装副本（`~/.agents/skills/revenue-forecast`、`~/.codex/skills/revenue-forecast`）随 gate 自动同步一致。
+  - 说明（如实）：该文件的"取消跟踪"因 `git rm --cached` 先于提交进入暂存区，实际落在 `41117ce` 而非 `e957d94`；两个提交信息合起来表达完整意图，未改写已推送历史。
