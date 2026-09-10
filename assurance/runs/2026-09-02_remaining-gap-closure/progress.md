@@ -226,3 +226,9 @@
   - **停止跟踪运行指针**（owner 2026-09-10 同意）：`git rm --cached assurance/runs/daily_manifest.json`（文件仍在磁盘）、`.gitignore` 增补运行指针、`assurance/runs/<UTC时间戳>/` 运行目录与本地 `.review-zr407-20260818/` 评审克隆；**证据类文件保持跟踪**（ledger.json / legacy_periods.json / rollback_manifest.json / *_alert.jsonl / 早期已提交的 run report）。效果：夜间运行不再制造脏工作树（提交后 `git status` = 0 条目）。
   - 提交：`41117ce`（修复 + 测试 + 取消跟踪）、`e957d94`（.gitignore 规则）；pre-push gate 绿、revenue CI **#130 success**。安装副本（`~/.agents/skills/revenue-forecast`、`~/.codex/skills/revenue-forecast`）随 gate 自动同步一致。
   - 说明（如实）：该文件的"取消跟踪"因 `git rm --cached` 先于提交进入暂存区，实际落在 `41117ce` 而非 `e957d94`；两个提交信息合起来表达完整意图，未改写已推送历史。
+
+- **2026-09-10 深夜：3a 授权后扫描发现前提为假 → 暂停执行（未删任何文件）**
+  - owner 指示"直接执行最小步 3a"（只删 `artifact_backfill.py`）。执行前按清单规则做**完整依赖扫描**（逐符号 + 计划语料 + 冻结卡 + ratchet，而非只看 import），结论：**先前"零生产读者"的判断错误**。
+  - 证据：① `src/company_wiki/source_catalog/artifact_backfill.py:305 def main()` 是**运维 CLI**（`--mode dry-run|apply`），`assurance/fc/FC-901/11_implementer_receipt.json` 明确记载「run_artifact_backfill 的 production caller 就是同模块的 CLI main()」——FC-901 的 caller≥1 正由此成立；② 被 **3 个契约测试**导入（`test_zr305_legacy_migration.py`、`test_zr1005_artifact_backfill.py`、`test_source_catalog_artifact_backfill.py`）；③ **FC-906 工作单元卡把该文件列为 Forbidden**（`assurance/fc/FC-906/00_wu_card_a.md:24`「`artifact_backfill.py`（FC-901 工具，**不改**）」）；④ 冻结 v5 基线 `baseline/plan/test_acceptance_plan.md` 有 **ZR1005-C1~C4** 验收行；⑤ 复杂度/覆盖率 ratchet 登记 `37`/`79`，`.github/workflows/ci.yml:53` 把 zr1005 测试列入 ignore。
+  - 处置：**不执行删除**（按清单自身规则"无替代路径的不删、冻结边界绝不触碰"）；把更正写入本清单文首与 §2/§4/§5，并同步 wiki 侧 R4 目录四处文档；**未改任何产品代码/测试**（`git status -- src tests .github` = 0 条目）。
+  - 后续：批 3 只剩 3b（`_scan_root_v1`+parity）/3c（bridge+flags+resolver），二者均需先给出替代路径与回滚；**若确要退役 `artifact_backfill.py` 的运维能力，属"能力退役"**（需同时处理 3 个测试、ratchet、FC-906 卡片与运维替代方案），应与 v2 迁移收尾一并裁定。
