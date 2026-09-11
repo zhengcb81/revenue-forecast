@@ -113,15 +113,15 @@
       "dirty": 1
     },
     "revenue-forecast": {
-      "head": "3e0c8f33d96ad4f96450035e72e21fc6f9ee471e",
-      "dirty": 16
+      "head": "640c8bde06ed21e6dd8cb9e2b18600fc28af655a",
+      "dirty": 0
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "0408abb",
+  "reviewed_commit": "640c8bd",
   "reviewed_commit_note": "`reviewed_commit` carries the v0.2 corrections (documents, evidence and ledgers). The stamp that records this value necessarily lands in the immediately following commit, which changes only checkpoint.json - so the reviewer should read reviewed_commit for the contracts and the tip commit for the ledger stamp. A commit cannot contain its own hash, which is exactly the staleness A-DR-09 flagged; recording both removes the ambiguity instead of hiding it.",
   "inputs_note": "revenue-forecast: `head` is the tree the reviewer reads and `dirty` is its working-tree count at generation time (non-zero only because the corrections were still uncommitted when this file was generated; see `reviewed_commit`). Every commit made in this run touches only assurance/runs/2026-09-11_r4-phase-a/, so the twelve product input hashes frozen in baseline-map.md section 0 and inputs.json stay byte-accurate (independently re-derived by A.DR rev1: 12/12 HASH_OK). company-wiki carries two doc-only edits outside this run directory (PLANNING_STATUS.md and the audit plan's progress.md/task_plan.md) plus PLANNING_STATUS.md's own entry; no product code or config is touched in any repository.",
   "produced_files": {
@@ -211,5 +211,5 @@
     "all_match": true,
     "post_commit_recheck": "Run `python evidence/build_checkpoint.py --verify-only` after committing: it re-checks every recorded digest against `git cat-file blob HEAD:<path>`. Build time can only check the staged blob, because the commit that carries this file does not exist yet."
   },
-  "generated_at_utc": "2026-09-11T21:24:05.875667+00:00"
+  "generated_at_utc": "2026-09-11T21:24:22.801785+00:00"
 }
