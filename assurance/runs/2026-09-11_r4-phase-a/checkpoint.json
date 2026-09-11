@@ -65,8 +65,8 @@
       "dirty": 3
     },
     "revenue-forecast": {
-      "head": "0408abb046e520aee924821ffd0262a6c6de142e",
-      "dirty": 0
+      "head": "d152833fb2976c6e831b7280e14eb06305c8a077",
+      "dirty": 1
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
@@ -74,6 +74,7 @@
     }
   },
   "reviewed_commit": "0408abb",
+  "reviewed_commit_note": "`reviewed_commit` carries the v0.2 corrections (documents, evidence and ledgers). The stamp that records this value necessarily lands in the immediately following commit, which changes only checkpoint.json - so the reviewer should read reviewed_commit for the contracts and the tip commit for the ledger stamp. A commit cannot contain its own hash, which is exactly the staleness A-DR-09 flagged; recording both removes the ambiguity instead of hiding it.",
   "inputs_note": "revenue-forecast: `head` is the tree the reviewer reads and `dirty` is its working-tree count at generation time (non-zero only because the corrections were still uncommitted when this file was generated; see `reviewed_commit`). Every commit made in this run touches only assurance/runs/2026-09-11_r4-phase-a/, so the twelve product input hashes frozen in baseline-map.md section 0 and inputs.json stay byte-accurate (independently re-derived by A.DR rev1: 12/12 HASH_OK). company-wiki carries two doc-only edits outside this run directory (PLANNING_STATUS.md and the audit plan's progress.md/task_plan.md) plus PLANNING_STATUS.md's own entry; no product code or config is touched in any repository.",
   "produced_files": {
     ".gitattributes": {
@@ -93,8 +94,8 @@
       "size": 1971
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "92c13fb15654c6e79816ee6d3d43d77f8892431e53645eeabf9ed9f7faf4a8e3",
-      "size": 10225
+      "sha256": "12197d231971e0559ce854155f9ff1e73fc25ab5fdf655cb5d166a4d1c5e3146",
+      "size": 10791
     },
     "evidence/catalog-companion-observation.csv": {
       "sha256": "18da3da04d1a89e0d29faa8a3e5a7811e34ac2b0680bccc049ac43372bd49f8b",
@@ -150,5 +151,5 @@
     }
   },
   "produced_files_note": "Computed by evidence/build_checkpoint.py over the whole run directory; checkpoint.json itself is excluded (it cannot hash itself). The A.DR review file is included because the reviewer wrote it inside this run directory.",
-  "generated_at_utc": "2026-09-11T21:08:11.142215+00:00"
+  "generated_at_utc": "2026-09-11T21:08:20.776305+00:00"
 }

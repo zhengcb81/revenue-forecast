@@ -166,6 +166,14 @@ def main(argv: list[str] | None = None) -> int:
         "filing-fetch": {"head": head(FILING), "dirty": dirty(FILING)},
     }
     ledger["reviewed_commit"] = args.reviewed_commit or "PENDING (stamped in the follow-up commit)"
+    ledger["reviewed_commit_note"] = (
+        "`reviewed_commit` carries the v0.2 corrections (documents, evidence and ledgers). The "
+        "stamp that records this value necessarily lands in the immediately following commit, "
+        "which changes only checkpoint.json - so the reviewer should read reviewed_commit for "
+        "the contracts and the tip commit for the ledger stamp. A commit cannot contain its own "
+        "hash, which is exactly the staleness A-DR-09 flagged; recording both removes the "
+        "ambiguity instead of hiding it."
+    )
     ledger["inputs_note"] = (
         "revenue-forecast: `head` is the tree the reviewer reads and `dirty` is its "
         "working-tree count at generation time (non-zero only because the corrections were "
