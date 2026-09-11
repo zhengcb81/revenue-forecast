@@ -1,80 +1,154 @@
 {
   "run_id": "2026-09-11_r4-phase-a",
   "phase": "A",
-  "step": "A01",
+  "step": "A.DR rev2 (re-review of the corrected A01-A04 contracts)",
+  "last_completed_step": "A01 baseline map v0.2; A02 root-contract v0.2; A03 operation-contract v0.2; A04 identity-contract v0.2; A.DR rev1 closed with verdict rejected and all 16 findings corrected in place; inputs.json and boundary-audit.md added; --help manifest re-run with catalog-family snapshot coverage (52 x rc=0)",
+  "current_gate": "A.DR rev2 package (A01-A04 v0.2 + inputs.json + boundary-audit.md) ready for an independent reviewer",
+  "pending_review": [
+    {
+      "gate": "A.DR rev2",
+      "scope": "A01-A04 v0.2 and the run ledgers",
+      "status": "pending",
+      "reviewer": "independent subagent (non-author)",
+      "assignment_stamp": "NOT YET STAMPED EXTERNALLY (A-DR-16): the reviewer identity must be written into this checkpoint by the orchestrator/operator from outside the reviewer session; a reviewer self-reported id does not make independence auditable"
+    },
+    {
+      "gate": "A.DR rev1",
+      "scope": "A01-A04 v0.1 and the run ledgers",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 8,
+        "P2": 5,
+        "P3": 3,
+        "P0": 0
+      },
+      "record": "reviews/A.DR.json",
+      "reviewer_self_reported_id": "7cd316cc-50bc-44d5-9574-180030d9ee09",
+      "closed_at_utc": "2026-09-11T20:23:44Z"
+    }
+  ],
+  "actual_side_effects": "R4 A-phase actions: 52 x `python -B -m company_wiki.source_catalog.cli <cmd> [sub] --help` (re-run once with the extended snapshot; every invocation rc=0) plus read-only file/git inspection - none of which opens the catalog (catalog.sqlite3, -shm and -wal all unchanged across the run; wiki's CI-equivalent gate was separately shown not to touch it either). No data command, no --dry-run, no network, no config/DB/task/worker change in any repository. DISCLOSED: the session ALSO pushed to GitHub five times tonight, and this repo's mandatory pre-push gate runs its real-data suite against the PRODUCTION catalog read-only (tools/pre_push_gate.py:184-199). That is what advanced catalog.sqlite3-shm at 21:18:15 and 21:26:47 (gate runs preceding pushes #139 21:19:16 and #140 21:27:44; reproduced by the manual gate at 22:05:03). The v0.1 statement that no code path touching the catalog was executed was therefore too strong and is retracted; the reading was read-only throughout (main DB and -wal never changed). A 99-sample/1500 s passive observation found zero -shm transitions, and the 22:00 daily task touched it at 22:00:02/22:00:18 as expected. See boundary-audit.md and F-A01-8.",
+  "failed_or_unknown": [
+    "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is now resolved by CI timestamps + gate code",
+    "reviewer independence is NOT externally stamped (gate G6, A-DR-16)",
+    "six owner rulings are required before A02 can be frozen (gate G2): symlink_policy (declared but never read), reusable_for_filing (explicit false is fail-open), convergence of the two divergent root-admission implementations, privacy_class defaulting to public, an owner for identity rule R6, and whether A04 R4's strict reading covers location-representation",
+    "A02 section 4 items 1-2 and A04 V1/V2/V4 remain VR items needing an isolated copy (production catalog is 49,677,344,768 bytes; behavioural probes are forbidden on it)",
+    "behavioural probes (--dry-run / read-only data commands) have no approved command manifest yet (gate G4)",
+    "A05 real-corpus sample list not yet submitted for per-item confirmation (gate G7)",
+    "A06 L01-L12 baseline and read-only trace not started",
+    "A03 section 2.3 items 3-5 and A04 V3's data-side half stay open pending VR",
+    "the execution-plan section 50 minimum-artifact list is still partial: results/, oracle/, tests/, rollback-contract.json and outcomes.json belong to later phases and are not created; reviews/ now exists"
+  ],
+  "authorization_needed": [
+    "GRANTED 2026-09-11: A-phase precise DEV/data-read permission; --help-only command manifest; VR reviewer assignment",
+    "STILL NEEDED: owner rulings on the six open questions (gate G2)",
+    "STILL NEEDED: an isolated catalog copy (or an operator-run equivalent) before any behavioural probe",
+    "STILL NEEDED: operator action for G5/G6 (independent boundary observation, external reviewer stamp)"
+  ],
+  "gate_status": {
+    "G1_A_DR": "rev1 rejected; corrections complete; rev2 pending",
+    "G2_owner_rulings": "pending (6 items)",
+    "G3_input_manifest": "done (inputs.json)",
+    "G4_command_manifest": "partial: --help manifest approved and executed; behavioural-probe manifest not submitted",
+    "G5_independent_boundary_observation": "pending operator action",
+    "G6_reviewer_independence_stamp": "pending operator action",
+    "G7_A05_sample_list": "pending",
+    "G8_isolated_copy": "pending"
+  },
+  "next_step": "Commit the v0.2 corrections and boundary evidence, spawn A.DR rev2 (independent, non-author), then put the six owner rulings and the A05 sample list to the owner.",
+  "worker_desired_state_note": "not used as process-liveness evidence",
+  "catalog_size_bytes": 49677344768,
   "inputs": {
     "company-wiki": {
       "head": "7d4852fa35023aaf467ba7a7277c0ff4d77c2eb9",
-      "dirty": 0
+      "dirty": 3
     },
     "revenue-forecast": {
-      "head": "4c8bc276ca2922664100d404feafd296eac4f122",
-      "dirty": 1
+      "head": "cd0c0ca47d3d342cf90b4dc0965a84809819bcb2",
+      "dirty": 20
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "last_completed_step": "A01 (+ --help command-manifest executed: 52 probes, 51 commands, zero side effects proven by pre/post snapshots); A02/A03/A04 drafts",
-  "current_gate": "A.DR package ready for submission (A01-A04)",
-  "pending_review": [],
+  "reviewed_commit": "PENDING (stamped in the follow-up commit)",
+  "inputs_note": "revenue-forecast: `head` is the tree the reviewer reads and `dirty` is its working-tree count at generation time (non-zero only because the corrections were still uncommitted when this file was generated; see `reviewed_commit`). Every commit made in this run touches only assurance/runs/2026-09-11_r4-phase-a/, so the twelve product input hashes frozen in baseline-map.md section 0 and inputs.json stay byte-accurate (independently re-derived by A.DR rev1: 12/12 HASH_OK). company-wiki carries two doc-only edits outside this run directory (PLANNING_STATUS.md and the audit plan's progress.md/task_plan.md) plus PLANNING_STATUS.md's own entry; no product code or config is touched in any repository.",
   "produced_files": {
+    ".gitattributes": {
+      "sha256": "8d10b3ccbbcb5902f06f726e757fa33fbc418ae0167007c36587dfd6ed3823f5",
+      "size": 703
+    },
     "baseline-map.md": {
-      "sha256": "991ddc7b4ee2e7baea4599ad0a94f656040c56cc627d30637e0e5003645cad19",
-      "size": 7479
+      "sha256": "394077da1007013e547e03d924ddf3760b41e12793f471d316ca07313d2b32f1",
+      "size": 12696
+    },
+    "boundary-audit.md": {
+      "sha256": "6bce5289b326bceb9a20af67460fcc274486e297313f2abbe6df7119986f5550",
+      "size": 11496
     },
     "command-manifest.json": {
-      "sha256": "d920432583d562b1e958ffbecf1cb9745b02075330268f2006ab20e282138751",
-      "size": 1095
+      "sha256": "cce1b173640a4372844e0706e94d9958e845a82cdf35c0faaba019775bd72a0f",
+      "size": 1971
+    },
+    "evidence/build_checkpoint.py": {
+      "sha256": "92c13fb15654c6e79816ee6d3d43d77f8892431e53645eeabf9ed9f7faf4a8e3",
+      "size": 10225
+    },
+    "evidence/catalog-companion-observation.csv": {
+      "sha256": "18da3da04d1a89e0d29faa8a3e5a7811e34ac2b0680bccc049ac43372bd49f8b",
+      "size": 13106
+    },
+    "evidence/catalog-companion-observation.json": {
+      "sha256": "f8a0f14fdb782517c4b2841a31cad88380051625e2c479be3b7e02ca6334604c",
+      "size": 740
     },
     "evidence/cli-help-matrix.json": {
-      "sha256": "71432eff4200a53861a989f3896a897e821402d5c4eaa6a7a873f785e4373b34",
-      "size": 44370
+      "sha256": "4a95ded2b310f3f8b0e28f2ac61ee14f1246b77bfbbd8138a8cd63aa5cb0d9ca",
+      "size": 46812
+    },
+    "evidence/observe_catalog_companions.ps1": {
+      "sha256": "4ee5b3eff1db267ed6590ec2263e5e575b56cff73c4e868d7bf3e807a1e4e2bb",
+      "size": 4396
     },
     "evidence/run_cli_help_matrix.py": {
-      "sha256": "8b0e1e67906905b94c4716885fb332b7aa28a0f5dd0cdf2f5c984c3252f79a5e",
-      "size": 6015
+      "sha256": "a402ef1ce2f514a9c741203f32b4a308c04961371714d6c43f2e1ca9684fc0df",
+      "size": 8582
     },
     "findings.md": {
-      "sha256": "dda0eff0eadf83177d59ac50be39f37ac89b46f46d509edd1f9bc00901575562",
-      "size": 4134
+      "sha256": "bac153110071889247497e386d5a0714eb6565afec692759fb7fd9ffef0f0b45",
+      "size": 11070
     },
     "identity-contract.md": {
-      "sha256": "ce7d6920d39752da395db3e1b5d29eadae1325704f596ebbcd52cfd078da2ccc",
-      "size": 5249
+      "sha256": "028e44bc87db0d0b93094d081534c9509c9a9809995ad0d628e703de3d241be6",
+      "size": 11798
+    },
+    "inputs.json": {
+      "sha256": "64b6592a7b3f6ea89bf03fa68f7e685efa92a9fb89598013f51a9ea00e116ff3",
+      "size": 7711
     },
     "operation-contract.md": {
-      "sha256": "61ed94b2e4cdc49fed99b82d3f6e110105f4269a7ce3ff98d3158bb11dab84ac",
-      "size": 6720
+      "sha256": "99a307169ed932dff3619bec7289e8a921f317d92a34adef03791c1dedf5b22b",
+      "size": 13068
     },
     "progress.md": {
-      "sha256": "b2f8532a2fbd26a1fe7dda4ba0a63b35315e04ad13632b50226776a0327d14c8",
-      "size": 1699
+      "sha256": "6c1769c0f48a2f2c0319b53a5354e85b7269d390e1d08249a5eeda4d56ba7c9a",
+      "size": 8594
+    },
+    "reviews/A.DR.json": {
+      "sha256": "93900926df672d7d214763196771e99c780ce9237fe19565e0768dff9ee2c67d",
+      "size": 45789
     },
     "root-contract.md": {
-      "sha256": "e0b9b8ea5bc887e2c5f97b7ca048b635e0a78d1e3606f6928ee66c161fb42d1f",
-      "size": 6702
+      "sha256": "955b012ffe8b3102aef2fa04256f08bca130084bf5ca94c9d7224cd97445c886",
+      "size": 8926
     },
     "task_plan.md": {
-      "sha256": "d4e06f92ee3f4ad91df10c36eb424fe1115985a4eede2027963491b5bf4344fb",
-      "size": 3304
+      "sha256": "76dc9f1e5faa2a79da6fa6a2a84a32cbae241c270866ea8b3e1681ad73a2ee25",
+      "size": 6975
     }
   },
-  "actual_side_effects": "command-manifest executed 2026-09-11: 52 x `python -B -m ...cli <cmd> --help`; pre/post snapshots show catalog.sqlite3, config/source_catalog.yaml, __pycache__ set and git dirty all UNCHANGED; no DB read, no network, no product file written",
-  "failed_or_unknown": [
-    "A.DR independent review in progress (subagent)",
-    "--dry-run / behavioural probes for the two A03 high-risk mappings (resolve no-network, summarize->LLM) need an isolated copy (A06/VR)",
-    "A05 real-corpus selection + independent oracle (data-read permission granted in principle; sample list to be submitted)",
-    "A06 L01-L12 baseline + read-only trace on an isolated copy",
-    "A02 sec4 three TO-VERIFY items and A04 sec4 five TO-VERIFY items"
-  ],
-  "next_step": "collect A.DR verdict; then submit the A05 corpus sample list for per-item confirmation, and plan A06 isolated-copy baseline",
-  "authorization_needed": [
-    "A-phase precise DEV/data-read permission",
-    "command-manifest for --help/--dry-run",
-    "A.DR independent reviewer assignment"
-  ],
-  "worker_desired_state_note": "not used as process-liveness evidence",
-  "generated_at_utc": "2026-09-11T20:06:33.469447+00:00"
+  "produced_files_note": "Computed by evidence/build_checkpoint.py over the whole run directory; checkpoint.json itself is excluded (it cannot hash itself). The A.DR review file is included because the reviewer wrote it inside this run directory.",
+  "generated_at_utc": "2026-09-11T21:07:51.628496+00:00"
 }

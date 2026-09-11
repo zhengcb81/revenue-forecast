@@ -1,0 +1,95 @@
+{
+  "manifest_id": "r4-phase-a-input-manifest",
+  "run_id": "2026-09-11_r4-phase-a",
+  "step": "A01-A04 (frozen inputs for the A-phase design contracts)",
+  "generated_at_local": "2026-09-11T21:35:00+01:00",
+  "generator": "authoring session (documentation-only step; no CLI, no database access)",
+  "purpose": "Close A-DR-11: execution-plan section 3 item 3 requires the actual input dirty state plus config, schema and dependency hashes, which baseline-map section 0 recorded only partially (three HEADs, dirty counts, twelve file hashes).",
+  "hash_format": "sha256_16 / sha256_32 are the leading 16 / 32 hex characters of the whole-file SHA-256. Truncation is deliberate (matching baseline-map section 0 and the A.DR review); the reviewer re-derived full hashes independently.",
+  "self_hash_excluded": true,
+  "self_hash_note": "This file cannot hash itself. It contains no run-directory file hashes; the run directory's own commits and produced-file hashes are recorded in checkpoint.json.",
+  "repositories": [
+    {
+      "name": "company-wiki",
+      "path": "C:/Users/郑曾波/Projects/company-wiki",
+      "head": "7d4852fa35023aaf467ba7a7277c0ff4d77c2eb9",
+      "head_short": "7d4852f",
+      "branch": "master",
+      "dirty_lines_at_freeze": 0,
+      "role": "product under design (source catalog)"
+    },
+    {
+      "name": "filing-fetch",
+      "path": "C:/Users/郑曾波/Projects/filing-fetch",
+      "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
+      "head_short": "b44edd8",
+      "dirty_lines_at_freeze": 0,
+      "role": "cross-repo consumer (first hop of the spawn chain)"
+    },
+    {
+      "name": "revenue-forecast",
+      "path": "C:/Users/郑曾波/Projects/revenue-forecast",
+      "head_at_a01": "4c8bc276ca2922664100d404feafd296eac4f122",
+      "head_after_run_dir_commits": "b644e167b299965812eee3a6013727d4cd76bf57",
+      "branch": "main",
+      "dirty_lines_at_freeze": 0,
+      "dirty_note": "At A01 the only untracked entry was the ignored run pointer; after the A01-A04 commits the tree is clean. The commit range 4c8bc27..b644e16 touches only assurance/runs/2026-09-11_r4-phase-a/ and no product file, so the twelve frozen input hashes still describe the tree.",
+      "role": "run-directory host and second cross-repo consumer"
+    }
+  ],
+  "application_config_hashed": [
+    {"path": "company-wiki/config/source_catalog.yaml", "sha256_16": "f9eb72a6c37c2dfe", "bytes": 1712, "role": "the root admission config frozen by A02"}
+  ],
+  "input_code_files_hashed": [
+    {"path": "company-wiki/src/company_wiki/source_catalog/resolver.py", "sha256_16": "6962b258ce198f19", "bytes": 56769},
+    {"path": "company-wiki/src/company_wiki/source_catalog/service.py", "sha256_16": "6412b19e8e9a3073", "bytes": 55519},
+    {"path": "company-wiki/src/company_wiki/source_catalog/policy.py", "sha256_16": "78320c429e4b7bc9", "bytes": 3384},
+    {"path": "company-wiki/src/company_wiki/source_catalog/scanner.py", "sha256_16": "c2ada3e26a53b535", "bytes": 62894},
+    {"path": "company-wiki/src/company_wiki/source_catalog/cli.py", "sha256_16": "2f5c574034369707", "bytes": 65553},
+    {"path": "company-wiki/src/company_wiki/source_catalog/config.py", "sha256_16": "e96cea75cb27bcf6", "bytes": 9744},
+    {"path": "company-wiki/src/company_wiki/source_catalog/models.py", "sha256_16": "fc6cc009fb22f6d6", "bytes": 10292},
+    {"path": "filing-fetch/scripts/fetch_filing.py", "sha256_16": "046cc7dc4e3ff2f4", "bytes": 48392},
+    {"path": "filing-fetch/scripts/filing_contracts.py", "sha256_16": "2d1b2e3374f1d0c2", "bytes": 22631},
+    {"path": "revenue-forecast/scripts/company_wiki_source.py", "sha256_16": "aeeb7b2a63047c73", "bytes": 14377},
+    {"path": "revenue-forecast/scripts/source_preparation.py", "sha256_16": "5ec16eaf0fe48012", "bytes": 9605}
+  ],
+  "cited_but_not_hashed": [
+    {"path": "company-wiki/src/company_wiki/source_catalog/policy_2x.py", "reason": "A-DR-03 / root-contract R8 (non-production admission loader)", "hashed_by": "A.DR review (full sha256 recorded in reviews/A.DR.json)"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/policy_3x.py", "reason": "second caller of the non-production loader", "hashed_by": "not hashed; line citations only"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/llm_summarizer.py", "reason": "A02 C3 egress gate citation (privacy_class)", "hashed_by": "not hashed; line citations only"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/security_identity.py", "reason": "A-DR-04 identify --refresh citation", "hashed_by": "A.DR review (full sha256 in reviews/A.DR.json)"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/store.py", "reason": "schema, PRAGMA and journal-mode citations", "hashed_by": "not hashed (reviewer read by line range)"},
+    {"path": "company-wiki/src/company_wiki/source_catalog/duplicate_cleanup.py", "reason": "duplicate confirmation-token citation", "hashed_by": "not hashed (reviewer read by line range)"}
+  ],
+  "dependency_hashes": [
+    {"path": "company-wiki/pyproject.toml", "sha256_32": "e8f77c42fa5773f7f9e018b006fedf01", "bytes": 2447},
+    {"path": "company-wiki/requirements.txt", "sha256_32": "05dbf2204c21ddbad51380a6b76bc2a0", "bytes": 604},
+    {"path": "company-wiki/requirements-test.txt", "sha256_32": "b19ea72472c5405ec9f7835a1e919adc", "bytes": 181},
+    {"path": "company-wiki/pytest.ini", "sha256_32": "013980c5b2d94d7aacc078c198e810e6", "bytes": 360},
+    {"path": "company-wiki/uv.lock", "sha256_32": "cb48a8a5ec9ea0e119236b0d848ccfbb", "bytes": 472229},
+    {"path": "filing-fetch/pyproject.toml", "sha256_32": "c0e6144b2076eeefa7025b4c4a3cb612", "bytes": 330, "note": "tool configuration only (ruff/pytest/coverage); declares no runtime dependencies and no lockfile"}
+  ],
+  "dependency_note": "revenue-forecast declares no root pyproject.toml / requirements.txt / uv.lock, and filing-fetch has a pyproject.toml with tool configuration but no dependency or lock section; neither repository hosted an interpreter for any A-phase action, so no resolved dependency set is claimed for them. Absence is recorded rather than assumed.",
+  "schema": {
+    "catalog_schema_version_constant": "1.2.0",
+    "catalog_schema_version_source": "company-wiki/src/company_wiki/source_catalog/models.py:11 (CATALOG_SCHEMA_VERSION)",
+    "normalizer_version_constant": "1.0.0",
+    "normalizer_version_source": "company-wiki/src/company_wiki/source_catalog/models.py:13 (NORMALIZER_VERSION)",
+    "upgradeable_versions_constant": ["1.0.0", "1.1.0"],
+    "upgradeable_versions_source": "company-wiki/src/company_wiki/source_catalog/store.py:25 (_UPGRADEABLE_SCHEMA_VERSIONS)",
+    "database_actual_schema_version": "TO-VERIFY (data-side; needs a catalog_meta read on an isolated copy — not read in this run)",
+    "journal_mode": "WAL (store.py:995 PRAGMA journal_mode=WAL, writer path only)",
+    "root_kinds_constant": ["company_raw", "directory", "dayu_portfolio"],
+    "root_kinds_source": "company-wiki/src/company_wiki/source_catalog/models.py:39 (ROOT_KINDS)"
+  },
+  "interpreter": {
+    "path": "C:\\Miniconda\\python.exe",
+    "version": "3.13.9",
+    "note": "The interpreter used by the A-phase --help manifest is recorded in command-manifest.json entrypoint. No A-phase action used the company-wiki .venv."
+  },
+  "data_read_boundary": {
+    "declared": "no product database content was read by the authoring session and no CLI data command was executed",
+    "not_claimed": "that no other process opened the catalog during the window; catalog.sqlite3-shm was observed to change at 21:18:15 and 21:26:47 local with unknown attribution (finding F-A01-8, boundary-audit.md)",
+    "catalog_size_bytes": 49677344768
+  }
+}

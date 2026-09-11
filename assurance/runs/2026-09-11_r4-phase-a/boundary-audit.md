@@ -1,0 +1,102 @@
+# R4 Phase A 边界审计（boundary-audit）
+
+> 目的：回应 A.DR-08 —— 首轮复审发现 **`catalog.sqlite3-shm` 在本 run 期间被写入**，而 v0.1 的边界声明（"未访问 DB / 零副作用"）是**作者自述**，不构成独立证据；且当时的副作用快照**只看主库文件**，对 `-shm`/`-wal` 完全**没有覆盖**。
+> **v0.2 结论（2026-09-11 22:1x 定案）**：两次前移**已归因**——是本会话**自己的强制 pre-push gate**（`tools/pre_push_gate.py` 的 real-data 套件）**以只读方式打开生产 catalog** 所致。A.DR 的推断方向正确，而本会话先前"未执行任何会打开 catalog 的代码路径"的自我豁免**是错的**：push 协议本身就是这样一条路径。证据与标定见 §3。
+> 状态：**已归因 + 已标定 + 仍登记操作员级独立观测（G5）**，因为"作者自证"永远不构成独立证据。
+
+## 1. 待解释的事实（A.DR 独立观测）
+
+| 观测 | 值 | 来源 |
+|---|---|---|
+| `catalog.sqlite3-shm` LastWriteTime | **2026-09-11 21:18:15** | [reviews/A.DR.json](reviews/A.DR.json) A-DR-08（reviewer 独立测量） |
+| 该时刻与本 run 的关系 | checkpoint.json 写于 21:16:54（+81 s）；run 目录首个文件 21:06:05 | 同上 |
+| 当日 `.source_catalog` 树中变动文件数 | **恰好 1 个**（即 `-shm`） | 同上 |
+| `catalog.sqlite3`（主库，49,677,344,768 B） | **未变**，mtime 停在 2026-09-08 22:23:21 | 同上 + 作者复核 |
+| `catalog.sqlite3-wal` | **0 字节**，mtime 停在 2026-09-08 22:23:21 | 作者复核 |
+| 作者侧再次观测 | `-shm` mtime = **21:26:47**（比 A.DR 观测晚 8 分 32 秒） | 作者复核（21:2x） |
+| 22:00 每日任务 | `-shm` → **22:00:02 / 22:00:18** | §3.4 |
+| 本会话 22:03 的 pre-push gate | `-shm` → **22:05:03** | §3.4 |
+
+**技术含义**：WAL 模式下，任何进程**打开**该库（即使只读连接）都会更新 `-shm`；因此 `-shm` 的 mtime 变化证明"**有连接打开过**"，**不**证明"有逻辑写入"（主库与 `-wal` 全程未变即为反证），也**不**单独指认进程——需要外部时间戳（本文件用 CI 记录）来归因。
+
+## 2. 归因（已解决：本会话自己的强制 push 门）
+
+| 候选解释 | 检查 | 结果 |
+|---|---|---|
+| **本会话的强制 pre-push gate**（`revenue-forecast/tools/pre_push_gate.py`） | 该 gate 的第 7 步 real-data 套件**直接对生产 catalog 运行 pytest**（`:184-199`；`catalog = ../company-wiki/.source_catalog/catalog.sqlite3`）；本会话当晚**推送 5 次**（GitHub Actions：`#136 21:09:02`、`#137 21:12:29`、`#138 21:16:28`、`#139 21:19:16`、`#140 21:27:44`，全部 success）。每推一次就要在推**之前**跑完整 gate（约 4–5 min，real-data 是最后一步） | ✅ **与两处前移吻合**：#139 的 gate ≈21:14:30 起跑 → real-data ≈**21:18:15**；#140 的 gate ≈21:23 起跑 → real-data ≈**21:26:47**。22:03 手动跑同一 gate 时也把 `-shm` 推到 **22:05:03**（§3.4） |
+| 22:00 每日任务（`revenue_daily_t2` → wiki `legacy_observer.py --read-only`） | 触发时刻 22:00，与 21:18/21:26 不符 | 不解释 21:1x/21:2x；但它**是**另一个合法开库者（§3.4 已标定） |
+| 作者侧 `--help` 探针 | `--help` 在 `parse_args` 内退出，**早于** `config.resolve()`（`cli.py:860-868`） | 排除（且被两处阴性对照证明：见 §3.4） |
+| wiki 后台 worker / 登录自启动任务 | 无匹配进程；`company-wiki-source-catalog-worker` 任务不存在 | 排除 |
+| 符号链接 / Dropbox·OneDrive 同步 | `.source_catalog` 与 `Projects` 均**无 reparse point**；仓库不在同步目录内 | 排除 |
+| **"环境周期性触碰者"** | 被动观测窗（99 样本 / 25 min）**零前移**；窗口内没有 push，也就没有 gate | ❌ **该假设被证伪**，v0.1 的猜测已撤回 |
+
+> **修正记录（必须保留）**：本会话在 21:2x 曾断言"作者未执行任何会打开 catalog 的代码路径"，并据此把前移归因于不明环境进程。**该断言错误**：`git push` 触发的强制 gate（本仓 CI 根因治理协议的一部分）就是一条会打开生产 catalog 的代码路径（只读）。A.DR-08 要求"独立观测而非作者声明"，方向完全正确；本条即为其结果的自我更正。
+> **实测的只读性**：全程 `catalog.sqlite3`（主库）与 `-wal`（0 字节）**从未变化**，只有 `-shm` 的 mtime 前移 → 与"只读打开"一致，**没有证据**表明发生过逻辑写入。
+
+## 3. 受控实验
+
+### 3.1 反证实验（先前已做，v0.2 重述）
+
+| 条件 | 该条件下 `-shm` mtime 是否前移 |
+|---|---|
+| 单次 `python -B -m …cli --help` | 否 |
+| 仅 `import company_wiki.source_catalog.cli`（无 main） | 否 |
+| 完整 52 次 manifest 重跑（旧快照版） | 否 |
+| **两处已观测到的前移（21:18:15、21:26:47）** | 时刻上**无 `--help` 探针在跑** |
+
+结论：已观测的前移**与 `--help` 探针无时间相关性**；但受控重跑也**没有复现**任何前移——即既不能归因于本会话命令，也不能证明本会话命令"绝不会"触碰（单次实验的阴性结果不足以证明全称命题）。
+
+### 3.2 被动观测（v0.2 新增，可复现，**双仪器**）
+
+- 工具：[evidence/observe_catalog_companions.ps1](evidence/observe_catalog_companions.ps1)（**不执行任何 CLI、不打开数据库**，仅按固定节奏 stat 三个文件 + 进程命令行探针）。
+- 产物：[evidence/catalog-companion-observation.json](evidence/catalog-companion-observation.json) + 同名 `.csv`（逐样本时间线）。
+- **仪器有效性已验证**：观测窗内进程探针**确实捕获到** manifest 执行器的 `python.exe` 子进程（CSV 中 `matching_processes` 非空行），说明探针不是"永远静默"的装饰。
+- **观测结果（2026-09-11 21:35:01 → 22:00:08 本地，99 样本 / 15 s 间隔）**：`distinct_mtime_sets = 1`、**`transitions = []`** —— 窗内**零前移**，且窗口覆盖了 manifest 重跑；`process_probe` 捕获到 `10344:python.exe` / `19888:python.exe`（manifest 子进程），证明探针有效。
+- **窗口外的紧邻事件**：22:00 每日任务在 **22:00:02 / 22:00:18** 前移了 `-shm`（见 §3.4），即最后一次采样（21:59:31）之后 31 s——因此该前移**不在**观测样本内，而是由随后的文件检查记录，二者不冲突。
+- **方法学注意（已踩过）**：该 `.ps1` 为无 BOM 的 UTF-8；Windows PowerShell 5.1 以 ANSI 代码页解码 `-File` 脚本，**含中文的路径字面量/参数会被破坏**（首次运行全部 stat 返回 −1，等于"读到了不存在的路径"）。脚本已改为 `Join-Path $env:USERPROFILE 'Projects\company-wiki\.source_catalog'` 并在目录缺失时**硬失败**。
+
+### 3.4 标定的"已知开库者"与阴性对照（2026-09-11 22:00 实测）
+
+| 事件 | 时刻（本地） | `-shm` mtime | 结论 |
+|---|---|---|---|
+| 被动观测窗口（99 样本 / 1500 s，含 manifest 重跑；**窗内无 push**） | 21:35:01 → 22:00:08（末样本 21:59:31） | 全程 21:26:47 | **0 次前移**；探针捕获到 manifest 的 `python.exe` |
+| **22:00 每日任务**（`revenue_daily_t2` → wiki `legacy_observer.py --read-only`；`run_id=20260911T210001Z`） | **22:00:02**、**22:00:18** | → 22:00:02 → 22:00:18 | ✅ 标定：**只读**打开 WAL 库确实更新 `-shm` |
+| wiki pre-push gate（ruff/compileall/config_doctor/ratchet/4 契约测试，全绿） | 22:00:22 → 22:01:45 | 保持 22:00:18 | ✅ **阴性对照**：wiki 的 CI 等价门**不**打开生产 catalog |
+| **revenue pre-push gate**（含 real-data 套件，全绿） | 22:03:30 → 22:05:5x | **→ 22:05:03** | ✅ **正认**：revenue 的 gate **会**只读打开生产 catalog——正是 21:18:15 / 21:26:47 两处的成因 |
+| 外部独立时间戳（GitHub Actions，机器外） | #139 21:19:16、#140 21:27:44（push 事件） | — | ✅ 推前 gate ≈21:14:30 / ≈21:23:00 起跑 → real-data 步骤正好落在 21:18:15 / 21:26:47 |
+
+**由此得到的判定规则（写入后续阶段）**：
+1. `-shm` mtime 前移 ⇒ **确有进程打开过该库**（机制已标定：连只读打开也会前移，主库/`-wal` 不变）；
+2. 已知会打开该库的本机动作有**两个**：22:00 每日任务（只读观测器）与**本仓任意一次 `git push` 前的强制 gate**（real-data 套件）——后者是"边界声明"最容易漏掉的一条；
+3. 因此**A 阶段的"零触碰"表述必须排除 push 协议**：设计动作不触碰，但把设计推上远端这件事本身会触碰（只读）；
+4. 作者侧的 `--help` 探针与 wiki 的 CI 等价门在本轮**均被证明不触碰**该库（两处独立阴性对照）。
+
+
+
+## 4. 覆盖盲区修复（本 run 的实际缺陷）
+
+| 项 | v0.1 | v0.2 |
+|---|---|---|
+| 副作用快照字段 | `catalog.sqlite3` 单文件（size/mtime_ns） | **`catalog.sqlite3` + `-shm` + `-wal`** 三件套 |
+| 结论口径 | "零副作用已证明" | "**在快照覆盖范围内**未观察到变化"，并显式列出 `not_covered` 与 `interpretation_limit` |
+| 证据 | [evidence/cli-help-matrix.json](evidence/cli-help-matrix.json)（旧版） | 同文件 v2：新增 `side_effects.catalog_files_per_file`、`catalog_shm_unchanged`、`side_effect_scope` |
+| 执行器 | [evidence/run_cli_help_matrix.py](evidence/run_cli_help_matrix.py) 旧版 | 同文件：`CATALOG_FILES` 三件套快照 + `stat_set` 写入 manifest |
+
+## 5. 能力边界（本机做不到的取证）与登记的操作员动作
+
+本机（Windows 11 家用机，无管理员取证工具链）**无法**自行取得下列任何一项：
+
+1. **对象访问审计**（`auditpol` + SACL on the DB file）→ 需要管理员权限与审计策略变更；
+2. **句柄级快照**（Sysinternals `handle.exe` / `Get-SmbOpenFile`）→ 无该工具，且安装属环境变更，需 owner 授权；
+3. **ETW/进程监视**（Procmon 等）→ 同上。
+
+因此 **G5（独立边界观测）登记为操作员/owner 动作**（见 [task_plan.md](task_plan.md) 门禁表），**作者不自行签发**。在 G5 完成前，正确的口径是：
+
+> 作者声明（v0.2 修正后）：本会话在 **A 阶段设计动作**中未执行任何会打开 catalog 的 CLI 或代码路径，也未读取库内容；**但**本会话执行过 `git push`，而本仓的强制 pre-push gate 的 real-data 套件会**以只读方式打开生产 catalog**——这已由 §3.4 标定并归因。
+> 环境事实：`-shm` 的三处已观测前移（21:18:15、21:26:47、22:00:02/18）**全部归因**：前两处 = 本会话 #139/#140 推送前的 gate，后两处 = 22:00 每日任务；22:05:03 一处 = 本会话的 22:03 手动 gate。全程**无**逻辑写入证据（主库与 `-wal` 未变）。
+> 可证伪性：若后续句柄级审计显示存在**写入型**连接，则"只读"这一部分**被推翻**，届时按 A-DR-08 的要求更正边界与 checkpoint。
+
+## 6. 对下游步骤的影响
+
+- **A03 §2 / A04**：任何"纯读"分类在 VR 阶段都必须在**隔离副本**上重测（生产库禁止行为探针），本文件即为该约束的证据来源。
+- **门禁设计教训（写入 v6/后续 backlog）**：把"`-shm` mtime 不变"当作"未打开数据库"的**判据是无效的**；后续阶段的边界证据必须以独立观测或隔离副本为唯一合法形式。

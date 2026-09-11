@@ -8,8 +8,14 @@ Design constraints:
   * cwd = company-wiki repo root; PYTHONPATH=<wiki>/src (the CI convention)
   * every invocation is `<cmd> [sub] --help`, which argparse answers and exits
     from BEFORE cli.main() resolves/loads the catalog config
-  * pre/post snapshots of the production catalog + config + __pycache__ prove
-    the zero-side-effect claim rather than asserting it
+  * pre/post snapshots of the production catalog (main + -shm + -wal companions),
+    the config and __pycache__ prove the zero-side-effect claim rather than
+    asserting it
+
+Scope limit (A-DR-08 / finding F-A01-8): an ambient process on this machine
+touches `catalog.sqlite3-shm` on its own schedule, so a changed -shm mtime is NOT
+attributable to this script. The snapshot therefore records the raw values and
+labels the shm comparison as non-decisive instead of claiming proof.
 
 Output: evidence/cli-help-matrix.json (+ command-manifest.json written first).
 """
@@ -27,7 +33,13 @@ from pathlib import Path
 
 RUN = Path(__file__).resolve().parents[1]
 WIKI = Path(r"C:\Users\郑曾波\Projects\company-wiki")
-CATALOG = WIKI / ".source_catalog" / "catalog.sqlite3"
+CATALOG_DIR = WIKI / ".source_catalog"
+CATALOG = CATALOG_DIR / "catalog.sqlite3"
+CATALOG_FILES = (
+    "catalog.sqlite3",
+    "catalog.sqlite3-shm",
+    "catalog.sqlite3-wal",
+)
 CONFIG = WIKI / "config" / "source_catalog.yaml"
 PY = sys.executable
 TIMEOUT = 60
@@ -40,12 +52,14 @@ def snapshot() -> dict:
             return None
         s = p.stat()
         return {"size": s.st_size, "mtime_ns": s.st_mtime_ns}
+    catalog_files = {name: stat(CATALOG_DIR / name) for name in CATALOG_FILES}
     pycache = sorted(str(p.relative_to(WIKI)) for p in WIKI.rglob("__pycache__"))
     dirty = subprocess.run(
         ["git", "-c", "safe.directory=*", "-C", str(WIKI), "status", "--porcelain"],
         capture_output=True, text=True).stdout
     return {
-        "catalog": stat(CATALOG),
+        "catalog": catalog_files["catalog.sqlite3"],
+        "catalog_files": catalog_files,
         "config": stat(CONFIG),
         "pycache_dirs": pycache[:20],
         "git_dirty_lines": len([line for line in dirty.splitlines() if line.strip()]),
@@ -87,7 +101,12 @@ def main() -> int:
         "env_keys": ["PYTHONPATH", "PYTHONDONTWRITEBYTECODE", "PYTHONIOENCODING"],
         "read_set": [str(WIKI / "src" / "company_wiki" / "source_catalog"),
                      str(CONFIG)],
-        "write_set": [],
+        "stat_set": [
+            str(CATALOG_DIR / name) for name in CATALOG_FILES
+        ] + [f"{WIKI}/**/__pycache__ (directory list)",
+             "git -C <wiki> status --porcelain"],
+        "write_set": [str(RUN / "command-manifest.json"),
+                      str(RUN / "evidence" / "cli-help-matrix.json")],
         "network_destinations": [],
         "budget": {"bytes": 0, "tokens": 0, "cost": 0},
         "timeout_seconds": TIMEOUT,
@@ -95,6 +114,11 @@ def main() -> int:
         "exit_expectation": "0 for every --help",
         "approval": {"by": "repo owner", "at": "2026-09-11", "scope": "--help only"},
         "evidence_path": "evidence/cli-help-matrix.json",
+        "revision": (
+            "v2 (2026-09-11): snapshot extended to the catalog family "
+            "(catalog.sqlite3 + -shm + -wal) to close the coverage gap reported by "
+            "A.DR (A-DR-08); scope limits recorded under side_effect_scope"
+        ),
     }
     (RUN / "command-manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -122,6 +146,18 @@ def main() -> int:
             results.append({**res, "level": 3, "name": f"{parent} {kid}"})
     post = snapshot()
 
+    pre_files = pre["catalog_files"]
+    post_files = post["catalog_files"]
+    per_file = {
+        name: {
+            "before": pre_files[name],
+            "after": post_files[name],
+            "unchanged": pre_files[name] == post_files[name],
+        }
+        for name in CATALOG_FILES
+    }
+    shm_unchanged = per_file["catalog.sqlite3-shm"]["unchanged"]
+
     matrix = {
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "invocations": len(results),
@@ -131,9 +167,27 @@ def main() -> int:
         "post_snapshot": post,
         "side_effects": {
             "catalog_unchanged": pre["catalog"] == post["catalog"],
+            "catalog_files_per_file": per_file,
+            "catalog_shm_unchanged": shm_unchanged,
             "config_unchanged": pre["config"] == post["config"],
             "pycache_unchanged": pre["pycache_dirs"] == post["pycache_dirs"],
             "git_dirty_unchanged": pre["git_dirty_lines"] == post["git_dirty_lines"],
+        },
+        "side_effect_scope": {
+            "covered": list(CATALOG_FILES)
+            + [str(CONFIG.relative_to(WIKI)), "__pycache__/ (dir set)", "git dirty lines"],
+            "not_covered": [
+                "every other file under .source_catalog (only the catalog family is sampled)",
+                "open file handles / object access by other processes",
+                "network activity (no capture in this run)",
+            ],
+            "interpretation_limit": (
+                "catalog.sqlite3-shm is touched by an ambient process on this machine "
+                "on its own schedule (see finding F-A01-8 and boundary-audit.md), so a "
+                "changed -shm mtime cannot be attributed to these --help invocations; "
+                "a stable -shm across the run is weak (not decisive) evidence."
+            ),
+            "cli_commands": "--help only; no --dry-run, no data command, no network",
         },
         "results": results,
     }

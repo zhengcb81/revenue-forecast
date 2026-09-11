@@ -1,0 +1,11 @@
+# Byte-stability policy for this run directory (same rationale as the v5 plan dir).
+#
+# checkpoint.json records a sha256 for every produced file in this directory. Those
+# hashes are computed over the working-tree bytes, so the repository must store
+# exactly those bytes: with the machine-wide `core.autocrlf=true`, text files would
+# be committed as LF and re-checked-out as CRLF, and a reviewer hashing
+# `git show HEAD:<path>` would get a different digest than the one recorded here.
+#
+# `-text` disables EOL conversion, `-filter`/`-working-tree-encoding` guard against
+# any smudge/clean filter, so blob bytes == working-tree bytes for every file below.
+* -text -eol -filter -working-tree-encoding
