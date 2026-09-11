@@ -62,11 +62,11 @@ Select-String -Path src\**\*.py,scripts\*.py,tests\**\*.py -Pattern '_scan_root_
 ## 4. 执行顺序（仅在两道门都满足后）
 
 1. **冻结基线**：记录三仓 HEAD、`legacy-gate`/`final_ratchet` 输出、批 3 每个候选的调用者清单。
-2. **拆分批次**（2026-09-10 修订：3a 已由 owner 撤销）
-   - ~~3a：`artifact_backfill.py`（零生产读者）+ 其测试/ratchet 条目~~ → **已撤销**（owner 2026-09-10）：该模块有运维 CLI、3 个契约测试、FC-906「不改」标注与冻结基线验收行（见文首更正块），**不是死代码**，不再作为删除候选；
-   - 3b：`_scan_root_v1` + `shadow_parity`/`trace_parity` 的 v1 对账路径（需替代方案）；
-   - 3c：`legacy_bridge_enabled` + `flags`/`resolver`/`architecture_gate` 的 bridge 分支（需回滚方案）。
-   每小批**独立 commit**、独立 revert。**当前没有任何小批具备"零读者 + 无冻结约束"的机械删除条件**——3b/3c 都需要先给出替代路径与回滚。
+2. **拆分批次**（2026-09-11 修订：**以执行包为准**）
+   - 🔴 **权威范围 = [R9 执行包](../../fc/Phase-14/01_r9_packet.md) §1 的 7 项清单**（v1 scanner + 分支、facade v1 默认、`backfill_v2`、`portfolio_promoter` + CLI、`visibility_bridge`、`legacy_close_gate` + observer、`flags.legacy_bridge_enabled` 依赖链）。**包内不含 `artifact_backfill.py`**——与 owner 2026-09-10 撤销 3a 一致；我先前的 3a/3b/3c 拆分**作废**。
+   - **逐项前置（今日实测调用者 → 替代/级联 → 回滚 → 验证）见 [r9_batch3_prerequisites.md](r9_batch3_prerequisites.md)**：`classify_bucket` 必须先内联/迁移才能删 `backfill_v2`；`legacy_close_gate.py` **每晚在观测链上跑，必须最后删**；`flags.legacy_bridge_enabled` 有**数据面**（runtime_policy 快照）兼容要求。
+   - 执行协议：RED 门测试（已预置，`R9_GATE=1` 才真跑）→ 删除 → GREEN → 全量 → mutation（复活即红）→ schema-2.0 receipt → 独立 reviewer → can_accept。
+   - **包本身三处缺陷**（跨仓指针、过期进入条件、过期行号）见前置件 §3，执行前必须处理。
 3. **逐批验证**：wiki 全量 pytest（含 contract）→ 三仓 CI 全绿 → `legacy-gate` 复扫 findings=0 → `final_ratchet` 零残留。
 4. **文档**：更新本清单、[progress.md](progress.md)、R4 侧 `r4-unit-remediation-map.md` 的 CA-304/ZR-1009 行（仅记退役，不从旧勾选领取）。
 
