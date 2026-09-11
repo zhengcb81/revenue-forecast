@@ -17,9 +17,9 @@
 | 步骤 | 动作 | 产出 | 状态 |
 |---|---|---|---|
 | **A01** | 重核三仓代码/配置，映射 query→identify→resolve→open→消费、子进程/hash、root 分支与副作用 | [baseline-map.md](baseline-map.md)（v0.3） | **完成（草案 v0.3）**：§0 输入冻结 + §1 主链 + §1.1 子进程 **7 模块 / 9 真实调用点（+4 处默认绑定）** + §2 root 分支 + §4 CLI 表面积 + §5 未覆盖项；A.DR rev1/rev2 独立复核 12/12 哈希、3 HEAD、51 节点/47 叶子结构 |
-| **A02** | 冻结四个已批准 root 的读取等价；root capability 与文档证据质量分开；显式 deny/未注册 root 不放行 | [root-contract.md](root-contract.md)（v0.2） | **完成（草案 v0.2）**：更正 A-DR-01/02/03，新增规则 R7（假保证字段）/R8（两套准入实现），§5 四条默认值面待 owner 裁定 |
-| **A03** | 定义 `query_local` / `open_version` / `request_work` 三接口；本地 latest 只指已索引集合 | [operation-contract.md](operation-contract.md)（v0.2） | **完成（草案 v0.2）**：更正 A-DR-04/05/10/12；47 叶子命令完整性对账闭合；`identify --refresh` 与 `ensure` 的 flag 条件已分轴 |
-| **A04** | 定义对外引用 `document_id` + 版本/source hash + locator；路径诊断不入业务身份 | [identity-contract.md](identity-contract.md)（v0.2） | **完成（草案 v0.2）**：更正 A-DR-07/13；R4 重述为目标并点名残留；R6 补齐 owner/机制/存储/负例；V3 静态一半已答 |
+| **A02** | 冻结四个已批准 root 的读取等价；root capability 与文档证据质量分开；显式 deny/未注册 root 不放行 | [root-contract.md](root-contract.md)（v0.3.1） | **完成（草案 v0.3.1）**：更正 A-DR-01/02/03/14 与 A-DR3-08；新增规则 R7（假保证字段）/R8（两套准入实现），§5 四条默认值面待 owner 裁定 |
+| **A03** | 定义 `query_local` / `open_version` / `request_work` 三接口；本地 latest 只指已索引集合 | [operation-contract.md](operation-contract.md)（v0.3.1） | **完成（草案 v0.3.1）**：更正 A-DR-04/05/10/12/15 与 A-DR3-04/A-DR3-13；47 叶子命令完整性对账闭合；`identify --refresh` 与 `ensure` 的 flag 条件已分轴 |
+| **A04** | 定义对外引用 `document_id` + 版本/source hash + locator；路径诊断不入业务身份 | [identity-contract.md](identity-contract.md)（v0.3.1） | **完成（草案 v0.3.1）**：更正 A-DR-07/13 与 A-DR3-02/A-DR3-06；R4 重述为目标并点名残留（含 9 处同型排序）；R6 补齐 owner/机制/存储/负例；V3 静态一半已答 |
 | **A05** | 独立 Data-Agent 从**真实资料**挑报告/版本并标注 | corpus-manifest + 独立 oracle | **阻塞**：需精确数据读取许可（owner 已给 A 阶段原则许可，**样本清单未提交**） |
 | **A06** | 冻结 L01–L12 本地测试与错误状态；生成小型只读 trace/profile（禁止整库重复扫描） | 每例基线结果 | **阻塞**：需数据读取许可 + 行为探针 manifest（`--dry-run` 属另一份 manifest，未批准）+ **隔离副本** |
 | **A07** | 独立 VR 核查询/读取的身份-字节-来源合同；preview 不扩大正式分析/LLM 许可 | 设计负例与副作用审查 | 未开始（需独立 reviewer，实现者不得自签） |
@@ -29,11 +29,11 @@
 
 | # | 门禁 / 前置 | 状态 |
 |---|---|---|
-| G1 | **A.DR 设计审查**（A01–A04 完成后，独立 reviewer） | rev1 **rejected**（[reviews/A.DR.json](reviews/A.DR.json)，8×P1/5×P2/3×P3）→ v0.2；rev2 **rejected**（[reviews/A.DR-rev2.json](reviews/A.DR-rev2.json)，1×P1/7×P2/3×P3，16 项中 10 项闭环）→ v0.3 更正完成 → **待 rev3** |
+| G1 | **A.DR 设计审查**（A01–A04 完成后，独立 reviewer） | rev1 **rejected**（[reviews/A.DR.json](reviews/A.DR.json)，8×P1/5×P2/3×P3）→ v0.2；rev2 **rejected**（[reviews/A.DR-rev2.json](reviews/A.DR-rev2.json)，1×P1/7×P2/3×P3，16 项中 10 项闭环）→ v0.3；rev3 **accepted_with_findings**（[reviews/A.DR-rev3.json](reviews/A.DR-rev3.json)，0×P0/0×P1，5×P2/8×P3）→ **v0.3.1 纯文本更正已并入本提交**；reviewer 明确"无需重跑探针"，**不再安排 rev4** |
 | G2 | **owner 裁定 6 项开放问题**（见下） | **pending**（A.DR 明确要求先裁定再冻结 A02） |
 | G3 | **inputs.json 输入清单**（依赖/lockfile/schema 版本） | ✅ 已补：[inputs.json](inputs.json) |
 | G4 | **command-manifest 缺失登记**（A-DR-11 要求：不得只写在散文里） | ✅ 已补：`--help` 探针 manifest = [command-manifest.json](command-manifest.json)（owner 已批）；**行为探针（`--dry-run`）manifest 尚未提交**，属 A06 前置，登记为 blocked |
-| G5 | **独立边界观测（OS 级）**（A-DR-08 要求以独立观测替代作者声明） | **pending，需操作员动作**；**归因已完成**（`-shm` 前移 = 本会话强制 push gate 只读打开生产库 + 22:00 每日任务；见 [boundary-audit.md](boundary-audit.md) §2/§3.4）。仍保留本门：作者自证不构成独立证据 |
+| G5 | **独立边界观测（OS 级）**（A-DR-08 要求以独立观测替代作者声明） | **pending，需操作员动作**；**归因已完成**（`-shm` 前移 = 本会话强制 push gate 只读打开生产库 + 22:00 每日任务；见 [boundary-audit.md](boundary-audit.md) §2/§3.3）。仍保留本门：作者自证不构成独立证据 |
 | G6 | **reviewer 独立性戳记**（A-DR-16：ID 不得由 reviewer 自报） | **pending**：需编排方/操作员在 checkpoint 中从 reviewer 会话外部写入指派记录。**本 run 已按此要求把两个 reviewer ID 记入 checkpoint 的 `reviewer_assignments`（作者从会话外部代记），但仍缺"操作员持有的指派原件"** |
 | G7 | **A05/A06 数据读取的样本清单** | **pending**：owner 已给原则许可，样本清单待 A05 提交后逐项确认 |
 | G8 | **隔离副本**（行为探针与 VR 的硬前置） | **pending**：生产 catalog **49,677,344,768 B**，禁止在其上做行为探针 |

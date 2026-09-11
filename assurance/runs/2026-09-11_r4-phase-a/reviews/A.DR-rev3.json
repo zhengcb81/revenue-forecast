@@ -1,0 +1,571 @@
+{
+  "review_id": "A.DR-rev3",
+  "reviewed_scope": "R4 阶段 A 第三轮设计审查（gate A.DR rev3）。对象为 revenue-forecast 运行目录 assurance/runs/2026-09-11_r4-phase-a/ 在 commit 640c8bd 的冻结包：A01 baseline-map.md、A02 root-contract.md、A03 operation-contract.md、A04 identity-contract.md；台账 findings.md / progress.md / task_plan.md / checkpoint.json / inputs.json / boundary-audit.md / command-manifest.json / .gitattributes；证据目录 evidence/（build_checkpoint.py、run_cli_help_matrix.py、cli-help-matrix.json、observe_catalog_companions.ps1、catalog-companion-observation.{json,csv}）；以及两份复审记录 reviews/A.DR.json 与 reviews/A.DR-rev2.json。已独立核实跟进提交 34b2291 只改 checkpoint.json（`git diff --name-status 640c8bd 34b2291` 仅 `M assurance/runs/2026-09-11_r4-phase-a/checkpoint.json`，4 增 4 删）。验收标准取自 company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/{simplified-execution-plan.md, execution-handbook.md, simplified-test-matrix.md}（wiki HEAD ca63ff2）。",
+  "reviewed_commit": "640c8bd",
+  "reviewer_agent_id": "70b62d2f-920e-463c-aeb5-dcfc3ebc5f11",
+  "reviewer_identity_note": "读自运行时管理的 DSH_SESSION_ID；本会话没有任何返回调用者自身 agent 身份的工具，故该值仍是自报（与 A-DR-16 的限制相同）。可外部核对的一点：它与 checkpoint 记录的作者会话 session-bfecd191-fbc3-4a66-8ed1-6562479bf102、两轮复审自报 ID 7cd316cc-50bc-44d5-9574-180030d9ee09 / b31cbc67-7142-495a-a9db-8886c700ed8f 三者均不同。",
+  "independence_statement": "我是 A.DR rev3 的独立复审者：未撰写、未编辑、未参与被审目录任何文件（四份合同、五份台账、证据与生成器）的创作；除 reviews/A.DR-rev3.json 外未向任何仓库写入任何字节；未执行任何 wiki CLI 命令（连 --help 也没有）；未打开、查询、复制或哈希 company-wiki\\.source_catalog\\catalog.sqlite3，只用 Get-Item 读其元数据（49,677,344,768 B，mtime 2026-09-08 22:23:21）；未 git commit、未 git push、未下载；只做了 git 只读查询、文件/对象哈希、文本正则检索、Python ast 解析、文件元数据读取与 GitHub REST 只读查询。",
+  "inputs_read": [
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/baseline-map.md",
+      "sha256": "47dfce9f0a40f05faf85a9a637eee72d74b7c280892dffa7812671b7b324f2b9"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/root-contract.md",
+      "sha256": "00a5c8c36f3d65ca5cf7445c264839464846002760186fe1f492c58689af030b"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/operation-contract.md",
+      "sha256": "8f24ee9999e753d6fdf14c7e59fe1023a9bc0e79605007ef90d834f10d360192"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/identity-contract.md",
+      "sha256": "028e44bc87db0d0b93094d081534c9509c9a9809995ad0d628e703de3d241be6"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/findings.md",
+      "sha256": "ea9bbe591e7d1b8186eec82d727c2b2062c0fb7563d235a675fa0cdca124da34"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/progress.md",
+      "sha256": "629c4b77a874a950fa91982e651d78ef86c6d0cda8ef12723c5169a73a69e9eb"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/task_plan.md",
+      "sha256": "ec909be90831a4c777d73021bbeb26f733ba2f519cf6690442878112ee745290"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/checkpoint.json",
+      "sha256": "0421f03c0ef0ad8d8c582b6a83ad908e446e02c8af4c192007825f5020bde56b"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/inputs.json",
+      "sha256": "33eddeaaf41fdabdf9a5ec20a088d5f29645ba74b3801de137915c2a32c603da"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md",
+      "sha256": "f7ed5cd96ff7df54ad9d36b472dea522ba16127cdd42d5fb765ef98a164ff114"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/command-manifest.json",
+      "sha256": "cce1b173640a4372844e0706e94d9958e845a82cdf35c0faaba019775bd72a0f"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/.gitattributes",
+      "sha256": "c323b7ecd6485f2a7321768163c948d816ed2aa06de0ea80dbafa336f5b1884f"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/evidence/build_checkpoint.py",
+      "sha256": "d78cd287ee24022435f8bfa3babba849c127d179efe13df5a915fa2546a4d065"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/evidence/run_cli_help_matrix.py",
+      "sha256": "fe0b7cf7279761d0b70b4f90fb832c872d02f349964ae952940f95c94f68c9dd"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/evidence/observe_catalog_companions.ps1",
+      "sha256": "4ee5b3eff1db267ed6590ec2263e5e575b56cff73c4e868d7bf3e807a1e4e2bb"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/evidence/cli-help-matrix.json",
+      "sha256": "013ea19bc458f3c144c7d3b36f74db04f4788ee6fbbfa7a31f2b04c72b988412"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/evidence/catalog-companion-observation.csv",
+      "sha256": "18da3da04d1a89e0d29faa8a3e5a7811e34ac2b0680bccc049ac43372bd49f8b"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/evidence/catalog-companion-observation.json",
+      "sha256": "f8a0f14fdb782517c4b2841a31cad88380051625e2c479be3b7e02ca6334604c"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/reviews/A.DR.json",
+      "sha256": "93900926df672d7d214763196771e99c780ce9237fe19565e0768dff9ee2c67d"
+    },
+    {
+      "path": "assurance/runs/2026-09-11_r4-phase-a/reviews/A.DR-rev2.json",
+      "sha256": "8438c504537dfa2c6339db8cc282a90ffad8ea245452a19832f06455cf3cd06e"
+    },
+    {
+      "path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md",
+      "sha256": "e0dccd11ef9191c97c1a9688a319ba253aed7c936836b8b01a476cdcf2896467"
+    },
+    {
+      "path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/execution-handbook.md",
+      "sha256": "b20ace43143727376e83801771d08ba550d2ba3429d8f3f902db6847c2b113af"
+    },
+    {
+      "path": "company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-test-matrix.md",
+      "sha256": "b90ef4d0b1c3e9446210953f1fa9696575e5c14292a914a8f8469679a1380f49"
+    },
+    {
+      "path": "company-wiki/config/source_catalog.yaml",
+      "sha256": "f9eb72a6c37c2dfeacf18a10df9b983dac104276efaf55b0a55b2c5c15f655df"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/cli.py",
+      "sha256": "2f5c5740343697078d1e69b3a6a9ef9b0809277799c2d9c28a2d3e4048c4d512"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/resolver.py",
+      "sha256": "6962b258ce198f1927fb2a63205e3c2f3572f5571089038ec33939dc188b7cec"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/service.py",
+      "sha256": "6412b19e8e9a3073b2b74f298f1d43c7848bd12eda9df5b657a26cfb94161f96"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/models.py",
+      "sha256": "fc6cc009fb22f6d6f844ee3d35cd43da4da5bf5be37eb50612bb586f84159000"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/config.py",
+      "sha256": "e96cea75cb27bcf6a696829f0c01a640b09b6fa6e8a5f6083ad99f72e89437f7"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/policy_2x.py",
+      "sha256": "4cebc3babf16aa617c72f756d51b910f06c0f4bffa3af077dfe977a5c364d1d5"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/policy_3x.py",
+      "sha256": "651613d8320da71da1eaf3fab37082c05caed321bb3d27b13a97ac3bd030559c"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/llm_summarizer.py",
+      "sha256": "13ff33b76547d39dc72e33c55fda6fb397aad59646daa3afa17b474098c27f12"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/security_identity.py",
+      "sha256": "656cb235ceebbc6788342e80e74200d324d95e182481ca924aec9333c8f30eac"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/duplicate_cleanup.py",
+      "sha256": "d2cf4413a8558e46c4fa2a6cf2594616d34cbb14890ccfa2b550a534440c031d"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/canonical_writer.py",
+      "sha256": "c23a935852cce71a9f1cc2454337cb714ec185b0823c33ddcc50407b7687c258"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/normalizer.py",
+      "sha256": "5015486e7a322914a9f3acb5d011e9d0b9fd5ed8350eb2eb459b41ac865e13c8"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/evidence_query.py",
+      "sha256": "a60a9249257a79d7500b2aa7bc7875cd7f77fa9ecea43126eaddbf1f403f1493"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/startup.py",
+      "sha256": "211590a0d629142fb548575e96fb9d11f1429bac08a5a34a8ccfcca5de470804"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/control.py",
+      "sha256": "553a35607be39c57460c8e781d697a60bcb627eaace0e85ad61810d3e1326bbb"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/worker.py",
+      "sha256": "e83179915333eb472807b15a0580d93dcf280caadc31b0099988a3b744c469c6"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/adapter_process.py",
+      "sha256": "6943730f9bdcf4585310a3389c76a9c110ce6d87d823cbcb7fa7a4b991e92fa9"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/dayu_cli_adapter.py",
+      "sha256": "bcbbbfd955306c3ed7ca4febff03813ea7dfafeb068c114873bfbfd3456eab5a"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/lock.py",
+      "sha256": "2303d3e5a4a790070b253cbf3a319b38be25d4d412da8f8e067726d0553d5b4c"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/policy.py",
+      "sha256": "78320c429e4b7bc92e257c87bbee3dd97b1a384111cb1bd059828713b54763df"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_catalog/scanner.py",
+      "sha256": "c2ada3e26a53b53527cf82bea8a31f6a5e0af3535b73246a4cf0c799e84920ac"
+    },
+    {
+      "path": "company-wiki/src/company_wiki/source_contract/announcement_collector.py",
+      "sha256": "33333e0c22eabf8584f8bebb850b8922d54ae3938f3231fd705a018097a5bff8"
+    },
+    {
+      "path": "company-wiki/tests/contract/test_dropbox_root_policy_fc501.py",
+      "sha256": "ed44da1cfc18689f199b3d67e15f6bcde08b958586cc722d0e4412b9c6a0a635"
+    },
+    {
+      "path": "company-wiki/tests/contract/test_future_root_config_only.py",
+      "sha256": "a79ba08084f80a44339a738cb2014cec24f54c51348f4f69cd3e188214f6ddc0"
+    },
+    {
+      "path": "company-wiki/tests/contract/test_root_policy_2x.py",
+      "sha256": "e9a8e9d97e166f00e66ab7a73202faba1cabffe3b53d3c88b296a87d17546be5"
+    },
+    {
+      "path": "company-wiki/tests/unit/test_policy_3x.py",
+      "sha256": "a2ea51aaf8b73aae7bcfdbdab50df7ed0899b8280280345526eff23b74eac6d5"
+    },
+    {
+      "path": "revenue-forecast/tools/pre_push_gate.py",
+      "sha256": "e63d2e78c1410a0cfade5ae7870ee694fd19927d698187d0ef3e843ad797fa06"
+    },
+    {
+      "path": "revenue-forecast/scripts/source_preparation.py",
+      "sha256": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46"
+    },
+    {
+      "path": "filing-fetch/scripts/fetch_filing.py",
+      "sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088"
+    }
+  ],
+  "commands_run": [
+    "git -C revenue-forecast log --oneline/-stat; git rev-parse HEAD; git status --porcelain",
+    "git -C revenue-forecast diff --name-status 640c8bd 34b2291; git diff 640c8bd 34b2291; git diff --numstat 3e0c8f3 640c8bd; git diff 3e0c8f3 640c8bd -- <每份文档/证据>",
+    "git -C revenue-forecast log --format=%h %cI -- 运行目录；git rev-parse HEAD:<path>；git hash-object <checkpoint.json>",
+    "git -C revenue-forecast cat-file blob {HEAD|640c8bd|3e0c8f3}:assurance/runs/2026-09-11_r4-phase-a/<rel> 并逐条 sha256 比对（19 个 produced_files）",
+    "python evidence/build_checkpoint.py --verify-only（只读；exit 0）",
+    "python runpy.run_path(...build_checkpoint.py) 后调用 verify_blobs()：原样 / 篡改一个摘要 / 增加不存在路径 / 空 dict 四种输入（内存内，不写盘）",
+    "python：ast 解析 company-wiki/src 全树，枚举 subprocess/Popen/self.popen/runner 调用点与默认参数绑定；ast 枚举 cli.py 的 add_parser/add_subparsers 以重建命令树",
+    "python：正则/文本检索（is_symlink|reparse|symlink、ORDER BY、load_root_policy_2x、subprocess\\.|Popen|os\\.system|CREATE_NO_WINDOW）与逐行上下文打印",
+    "python：catalog-companion-observation.csv/json 解析（样本数、首末样本时间、间隔均值、跨度、matching_processes、字段数直方图）",
+    "python：cli-help-matrix.json 解析（results 长度、rc 直方图、side_effect_scope、三件套 before/after、-shm mtime_ns 解码）",
+    "python：inputs.json 的 12 个输入哈希与 6 个依赖哈希逐条整文件重算",
+    "Get-Item company-wiki\\.source_catalog\\catalog.sqlite3（仅元数据）；git -C company-wiki log/status/show（478bb92、ca63ff2）",
+    "GitHub REST 只读：GET /repos/zhengcb81/revenue-forecast/actions/runs?per_page=12 与 /repos/zhengcb81/company-wiki/actions/runs?per_page=12",
+    "Get-Date/Get-TimeZone（确立本地=UTC+1，用于把 CI UTC 时间戳换算为文档中的本地时刻）"
+  ],
+  "verifications_passed": [
+    "【P1 端到端复现】19 个 produced_files 的 SHA-256 与 `git cat-file blob HEAD:<path>`、`git cat-file blob 640c8bd:<path>` 及工作树原始字节三者完全一致；字节数亦与记录 size 相等。HEAD 与 640c8bd 对全部 19 个路径给出同一 blob。",
+    "【P1 失败态复现（改前）】在 3e0c8f3 处恰好 4 个文件的 blob 与其自身 checkpoint 记录不符：command-manifest.json（blob 1922 B / LF，记录 cce1b173…/1971 B）、evidence/catalog-companion-observation.csv（13006/13106）、…observation.json（716/740）、evidence/cli-help-matrix.json（46062/46812）；对每个旧 blob 做 LF→CRLF 变换后重算 SHA-256，得到的 16 位前缀与旧记录值逐字符相等（cce1b173640a4372、18da3da04d1a89e0、f8a0f14fdb782517、4a95ded2b310f3f8），差额恰等于 CRLF 计数（49/100/24/750）。→ A-DR2-01 的机制、范围与\"renormalise 后修正\"的说法我全部独立复现。",
+    "【--verify-only 不空过】实跑 `python evidence/build_checkpoint.py --verify-only` 输出 {\"checked\": 19, \"source\": \"head\", \"all_match\": true} 且 exit 0；随后以内存输入做对抗测试：篡改任一 recorded sha256 → all_match=false 并给出 blob_bytes/recorded_bytes；加入不存在的路径 → 报 `not in head`。唯一空过面是 produced_files 本身为空/被截断时 checked=0 且 all_match=true（见 verdict_reason 与 gate 项说明），故该脚本只证\"记录值与 blob 一致\"，不证\"记录清单完整\"——清单完整性由我另行核对：运行目录共 20 个文件，恰好 19 个被记录，只排除 checkpoint.json 自身。",
+    "【checkpoint 自身】`git hash-object checkpoint.json` = ff55900c59e9acfd3f8e5489a5ff29f2c88da9ad = `HEAD:…/checkpoint.json`（640c8bd 处为 57d4dae…，差异即 34b2291 的 4 行）；工作树在 assurance/ 下无未提交改动。",
+    "【CLI 表面积】ast 解析 cli.py：顶层 add_parser 41 个（含 L579 动态注册 worker-* 5 个）、嵌套叶子 10 个、纯分组 4 个（documents:255、identity-enrichment:272、activation:634、runtime-policy:664）→ 41+10=51 节点、47 叶子，与 baseline-map §4、operation-contract §2 的枚举一致（§2.1 15 + §2.2 32 = 47）。",
+    "【is_symlink = 5 行】全 src 树 `is_symlink` 命中恰 5 行，位置与 v0.3 所述逐行一致：source_catalog/duplicate_cleanup.py:46/534/545 与 source_contract/announcement_collector.py:301/323；`reparse` 命中 0 行；`symlink`（不含 is_symlink）另有 8 行，全部是 symlink_policy 的解析/默认化/白名单（config.py:79/140、models.py:101、policy_2x.py:39/164、policy_3x.py:43）与两条报错文案（announcement_collector.py:302/325）。→ 结论\"该字段无任何读取点\"成立。",
+    "【真实 spawn 调用点 = 9】ast 全树恰好 9 个调用：adapter_process.py:137、control.py:91、control.py:1127（self.popen，默认 subprocess.Popen 在 :651）、dayu_cli_adapter.py:192、lock.py:85、normalizer.py:286、normalizer.py:1261、startup.py:109（runner(...)）、worker.py:110；startup.py:107/124/176/212 确为 `runner: Callable[..., Any] = subprocess.run` 默认参数绑定；全树无 os.system、无 shell=True。",
+    "【复用/排序/残留在场证据】resolver.py:782-786 以 kind 构造 reusable_root_ids、:933-940 只测 root_id 属于该集合、全文件 reusable_for_filing 零命中；:531 是字符串字面量 `lowest_priority_active_original_primary_then_tiebreak`；service.py:329/:527/:772 三处 `ORDER BY … r.priority,l.root_id,l.relative_path(,l.location_id)`；service.py:643-653 选择键 `(root_priority, root_id, relative_path, location_id)`（_annotate_locations 起于 :621）；resolver.py:912-921 按 \".rejections\" 过滤。",
+    "【默认值与准入】models.py:91 priority=100、:96 read_only=True、:97 reusable_for_filing=None、:101 symlink_policy=\"reject\"、:105 privacy_class=\"public\"、:108-109 cohort/canonical_write_target、:39 ROOT_KINDS、:141-142 kind 准入；config.py:75-84 未知字段拒绝（白名单不含 canonical_write_target）、:86-88 重复 root_id、:90-95 未解析变量、:106 read_only 缺省、:108-111 CFG-05；policy_2x.py:49 _WRITABLE_KINDS、:121-131 写目标 kind/read_only 强制；llm_summarizer.py:45 _PRIVATE_PRIVACY_CLASS、:333-337 白名单构造（:327 确为 docstring 文本）；models.py:206-208 export_dir = catalog_dir/\"index\"。",
+    "【ensure / close-gap / identify】cli.py:751-752 与 :752-758 纯读路径、:760-762 写入器初始化、:764-771 三条件与关系（args.allow_download and paused and not allow_acquisition_while_paused）、:772-778 仅在 allow_download and paused 时记审计；cli.py:1217-1218 close-gap 条件为 `paused and not allow_acquisition_while_paused`；cli.py:1080-1087 identify --refresh → OfficialSecurityMasterRefresher.refresh；security_identity.py:20 requests、:26-45 https 端点、:348 write_text、:1007 requests.get、:1047 def refresh；cli.py:860-868 parse_args 早于 config.resolve；cli.py:277/:361/:366/:634/:639 的 help 原文与合同所引逐字一致。",
+    "【输入哈希】inputs.json 的 12 个输入哈希（sha256_16 + 字节）我逐条整文件重算：12/12 一致（含 source_catalog.yaml 1712 B、cli.py 65553 B、models.py 10292 B、fetch_filing.py 48392 B 等）；6 个依赖/lockfile 哈希（sha256_32）亦 6/6 一致（含 uv.lock 472229 B）；schema 常量 ROOT_KINDS 与 models.py:39 一致。",
+    "【52 次探针与快照】cli-help-matrix.json 的 results 长度 52，`rc` 直方图 {0: 52}；invocations=52；top_level_commands 41 项、nested 4 组 10 项；side_effects 三件套 before/after 全 unchanged=true、config/pycache/git dirty 全 true；其中 -shm 的 mtime_ns=1789161011817923500 解码为 2026-09-11T21:10:11.817924Z = 本地 22:10:11——即快照本身就把第 6 次前移固化在内，且探针窗口（22:23:41 本地生成）内未再前移。",
+    "【CI 时间戳 10/10】GitHub REST 只读查询逐条复现文档所列全部时间戳（本地 = UTC+1 已由 Get-TimeZone 证实）：revenue #134 20:19:41、#135 20:22:10、#136 21:09:02、#137 21:12:29、#138 21:16:28、#139 21:19:16、#140 21:27:44、#141 22:11:22（head 3e0c8f3，与 boundary-audit.md:68 所述一致）；wiki #100 20:17:26、#101 22:08:58。",
+    "【观测窗数字】evidence/catalog-companion-observation.json：samples=99、seconds=1500、interval_seconds=15、distinct_mtime_sets=1、transitions=[]、process_probe 含 \"10344:python.exe\" 与 \"19888:python.exe\"。CSV 首样本 2026-09-11 21:35:01.716、末样本 21:59:53.255（本地），跨度 1491.539 s、98 个间隔均值 15.2198 s——与 boundary-audit.md:54/:64 的 1491.5 s / 15.22 s / 末样本 21:59:53 完全一致；22:00:02 与末样本相差 9 s 亦成立。",
+    "【源码路径与 pre-push gate】revenue tools/pre_push_gate.py:184-199 的 _real_data() 确以 `PROJECT_ROOT.parent/\"company-wiki\"/\".source_catalog\"/\"catalog.sqlite3\"` 为生产库并对它跑 pytest（real-data 为 gate 的独立步骤）；scripts/source_preparation.py:18 import subprocess、:99 subprocess.run；filing scripts/fetch_filing.py 摘要与 inputs.json 记录一致。",
+    "【授权与身份记录（新增项）】checkpoint.json:59-76 与 inputs.json 的 authorization 块已补：授权原文引用、granted_by/granted_at_local、scope_granted/scope_not_granted、author_session_id=session-bfecd191…（并自述\"self-reported id is process evidence, not institutional proof\"）；checkpoint.json:46-58 的 reviewer_assignments 记录了两位复审 ID 并说明其为编排方证据而非操作员原件。这是相对 rev2 的真实改进。"
+  ],
+  "round1_finding_closure": [
+    {
+      "id": "A-DR-01",
+      "closed": true,
+      "evidence": "root-contract.md:4 的假保证判定保留，v0.3 在 :5 增补措辞更正并删除\"命中 0 次\"假句；:46 R7、:65 §5 行与代码一致。我独立复核：is_symlink 全 src 树恰 5 行（duplicate_cleanup.py:46/534/545、announcement_collector.py:301/323），symlink_policy 在解析/默认化之外无读取点。",
+      "residual": "无（\"5 处独立检查\"的计数经我复核成立，但请注意这些检查与 root 的 symlink_policy 无关——合同已如此表述）。"
+    },
+    {
+      "id": "A-DR-02",
+      "closed": true,
+      "evidence": "resolver.py:782-786/:933-940 只看 root.kind、reusable_for_filing 零命中、:531 为字符串字面量、真实排序在 service.py:329/:527（v0.3 又补 :772）——全部逐行复核成立；baseline-map.md:45/:72 与 root-contract.md:6/:41 表述一致，不再宣称不存在的复用链。",
+      "residual": "显式 false 是否必须生效的 owner 裁定仍 pending，已登记 task_plan.md:44（G2 第 2 项）。"
+    },
+    {
+      "id": "A-DR-03",
+      "closed": true,
+      "evidence": "policy_2x.py:49 _WRITABLE_KINDS={company_raw}、:121-131 对 kind 与 read_only 强制；config.py:75-84 的白名单不含 canonical_write_target，故活 loader 报未知字段；两条 2x/3x loader 均无生产调用者（load_root_policy_3x 仅 tests/unit/test_policy_3x.py:67 调用）——全部复核成立；R8 记录在 root-contract.md:48。",
+      "residual": "调用者计数仍不精确（把 def/__all__/import 当调用点，并把 3 个测试文件的 10 处文本计为\"9 处调用\"）→ 见 A-DR3-08。"
+    },
+    {
+      "id": "A-DR-04",
+      "closed": true,
+      "evidence": "operation-contract.md:47 把 identify 标注为 flag 条件（默认只读；--refresh = 网络 + 本地写）、:64 §2.3 第 1 条要求走 request_work 或更高授权；cli.py:1080-1087 与 security_identity.py:20/26-45/348/1007/1047 逐行复核一致。",
+      "residual": "identify 默认形式是否写 identity cache 仍为 VR 项（§4 问题 5），属正确保留。"
+    },
+    {
+      "id": "A-DR-05",
+      "closed": true,
+      "evidence": "我以 ast 独立枚举命令树：41 顶层 + 10 嵌套 − 4 分组 = 47 叶子；operation-contract.md:55/:60 已包含 worker-status/start/resume/pause/stop、derived-audit、import-portfolio 全部 7 个原漏项；:70 对账 15+32=47 与 §2.1/:53-60 的枚举集合一致。",
+      "residual": "§2.2 S 行花括号内多列 activation preview，与同文件 :49 注与 :70 的 S=11 冲突 → 见 A-DR3-13。"
+    },
+    {
+      "id": "A-DR-06",
+      "closed": false,
+      "evidence": "基线表与三处台账已改为 9 + 4 默认绑定（baseline-map.md:52/:63、findings.md:17、task_plan.md:19、progress.md:36），我的 ast 复核恰为 9 个调用点且在所引行号上；docstring 伪引用仍为已删除状态。",
+      "residual": "同一文件 baseline-map.md:103 仍写\"v0.2 已补 §1.1 的 **7 模块 / 12 spawn 点**静态清单\"，与 §1.1 的 9 直接矛盾 → 见 A-DR3-05。"
+    },
+    {
+      "id": "A-DR-07",
+      "closed": true,
+      "evidence": "identity-contract.md:25 把 R4 重述为目标、:27-31 点名三处残留、:76 V3 静态一半已答（选择键含 priority/root_id/relative_path）；代码复核与所引行号一致。",
+      "residual": "残留清单不完整：A-DR2-10(e) 要求的 service.py:772 只补进了 baseline-map，身份契约本身仍是\"三处\"，另有 ≥5 处同型排序未列 → 见 A-DR3-06。"
+    },
+    {
+      "id": "A-DR-08",
+      "closed": false,
+      "evidence": "归因链已可核：boundary-audit §2/§3.3、findings F-A01-8、checkpoint.actual_side_effects 的归因结论、inputs.json:91-93、cli-help-matrix.json 的 interpretation_limit 均已改写；我复现了全部 10 个 CI 时间戳、pre_push_gate 的生产库代码路径、以及 22:10:11 与 #141（22:11:22）的配对；G5 仍如实登记为操作员动作。",
+      "residual": "四处撤回不彻底或与归因结论冲突：baseline-map.md:5、identity-contract.md:11、boundary-audit.md:26、checkpoint.json:77（详见 A-DR3-01/02/03/04）；另 progress.md:58 的\"执行过\"清单漏记 gate/push。"
+    },
+    {
+      "id": "A-DR-09",
+      "closed": false,
+      "evidence": "task_plan.md:5/:32 与 progress.md:60/:69-74 已一致指向 rev3 并记录 rev2 结论。",
+      "residual": "checkpoint.json 内部自相矛盾且未随 v0.3 前进：:6 current_gate 仍写 rev2 包\"ready for an independent reviewer\"、:98 G1_A_DR 仍写\"rev2 pending\"、:107 next_step 仍要求\"spawn A.DR rev2\"，而 :9-28 的 pending_review 已记 rev2 closed + rev3 pending；另 :125 注释仍称 reviewed_commit 承载 v0.2、:126 称 dirty 非零而 :117 dirty=0 → 见 A-DR3-01。这是在 rev2 已闭环项上的回归。"
+    },
+    {
+      "id": "A-DR-10",
+      "closed": true,
+      "evidence": "operation-contract.md:43 已按叶子 help 改写（分组 cli.py:634-637 与叶子 :639-641 分列，自述只读），我以 ast 提取的 help 原文逐字一致；§2.3 第 4 条（:67）与 §4 问题 2（:90）口径统一；identity-enrichment preview（:277）与 extraction-quality（:366）两行仍正确。",
+      "residual": "§2.2 S 行重复列 activation preview → 见 A-DR3-13。"
+    },
+    {
+      "id": "A-DR-11",
+      "closed": true,
+      "evidence": "inputs.json 已提供三仓 HEAD/dirty、12 输入哈希（12/12 我整文件重算一致）、6 依赖哈希（6/6 一致）、schema 常量与解释器；command-manifest.json 逐命令字段齐备（entrypoint/cwd/env_keys/read_set/stat_set/write_set/network_destinations/budget/timeout_seconds/subprocesses/exit_expectation/approval/evidence_path）；行为探针 manifest 已登记为门禁项（task_plan.md:35 G4）而非散文。",
+      "residual": "handbook §3 结构中的 requirements.csv 仍未出现在任何缺件条目中 → 见 A-DR3-10。"
+    },
+    {
+      "id": "A-DR-12",
+      "closed": true,
+      "evidence": "operation-contract.md:57 把 export/policy-export/archive-retired-evidence 归 X-local，:58 X-egress 只留 LLM 路径；我复核 models.py:206-208 export_dir = catalog_dir/\"index\"（本地），故\"外发\"与\"本地导出\"确已分轴。",
+      "residual": "X-egress 目前无具体命令入口（依赖 llm_summarizer 门控），属如实保留。"
+    },
+    {
+      "id": "A-DR-13",
+      "closed": false,
+      "evidence": "identity-contract.md:47-53 已补 owner/机制/存储位置/负例/验证方式五要素，:53 与 :78 的 V5 已收紧为\"必须不带 --refresh\"的 identify，与 cli.py:1080-1087 一致。",
+      "residual": "owner 字段本身仍写\"**本阶段无 owner 指派**，需 owner 裁定（§5 问题 2）\"（identity-contract.md:49），首轮\"Give R6 an owner\"未交付，只登记为 G2 第 5 项（task_plan.md:47）；在 owner 指派前 R6 仍不是可检测的冻结条款。"
+    },
+    {
+      "id": "A-DR-14",
+      "closed": true,
+      "evidence": "config.py:86-88 只管重复 root_id（我逐行确认 75-95 无任何 kind 校验）、kind 准入在 models.py:141-142 对 :39 ROOT_KINDS；root-contract.md:8/:16-17 已拆开引用。",
+      "residual": "无。"
+    },
+    {
+      "id": "A-DR-15",
+      "closed": true,
+      "evidence": "baseline-map.md:46 与 operation-contract.md:56 已按 cli.py:742-824 原文给出全连接条件，我逐行复核 :752-758 纯读、:760-762 写入器初始化、:764-771 三条件与关系、:772-778 审计条件；findings.md:22 同步；pause 审计方向已改正。",
+      "residual": "无（latest_as_of 无 flag 路径不触发拒绝与审计一节已写明）。"
+    },
+    {
+      "id": "A-DR-16",
+      "closed": false,
+      "evidence": "task_plan.md:37（G6）与 checkpoint.json:13/:47 均已声明 reviewer 身份须由操作员从会话外部写入，且 :46-58 新增 reviewer_assignments 由作者从会话外代记两个 ID——方向正确、作者未代签独立性结论。",
+      "residual": "操作员持有的指派原件仍不存在；本轮我同样只能自报 DSH_SESSION_ID，故\"独立\"仍只有流程性证据、无制度性证据。"
+    }
+  ],
+  "round2_finding_closure": [
+    {
+      "id": "A-DR2-01",
+      "closed": true,
+      "evidence": "四份文件已在 640c8bd 重新按原始字节入库并重算：我逐条比对 19/19 的 recorded sha256 == HEAD blob == 640c8bd blob == 工作树字节；并对 3e0c8f3 复现了失败态（4 个文件旧 blob 与其记录不符，LF→CRLF 变换后恰好等于旧记录值，差额 49/100/24/750 = CRLF 计数）。`--verify-only` 实跑 exit 0、checked 19、source=head；对抗测试证明它不空过（篡改摘要/幽灵路径均被检出）。.gitattributes:12-18 的 SCOPE/HISTORY 与 checkpoint 的 produced_files_verification 均已写明机制与校验方法。",
+      "residual": "两个非阻断残留：(1) 空/被截断的 produced_files 会得到 checked=0 且 all_match=true（脚本不校验清单完整性），本轮由我人工核对补齐（20 文件 − checkpoint.json = 19）；(2) 本轮复审记录 A.DR-rev3.json 必然不在该清单内（生成器早于它），未来读者不应据 produced_files 断言\"运行目录只有 19 个产物\"。"
+    },
+    {
+      "id": "A-DR2-02",
+      "closed": false,
+      "evidence": "四处指名的文本确已同步：cli-help-matrix.json 的 side_effect_scope.interpretation_limit 已是归因后表述（我解析确认原 ambient 句消失）、run_cli_help_matrix.py 头部说明与字段源同步、inputs.json:91-93 的 not_claimed/attribution_status 改写、progress.md:38/:60 改写。",
+      "residual": "同一类旧表述仍在至少两处存活：identity-contract.md:11\"（21:18:15），**归属未明**\"（四份合同之一，且是 A-DR-08 最初点名的边界文件），以及 evidence/observe_catalog_companions.ps1:7\"so an ambient toucher can be distinguished\"。另 \"wiki 侧\"同步在受审修订上并不成立：`git show 478bb92:docs/plans/painpoint-outcome-audit-2026-09-05/progress.md` 仍写\"**归属未知**\"，改写落在 wiki ca63ff2（22:24:32，晚于 640c8bd 22:24:13）而该 commit 在包内任何台账中都未被命名 → 见 A-DR3-02。"
+    },
+    {
+      "id": "A-DR2-03",
+      "closed": true,
+      "evidence": "\"命中 0 次\"已删除并改写为实测 5 行（root-contract.md:5），我独立复核 is_symlink 全 src 树恰 5 行且位置逐行一致、reparse 0 行；结论（symlink_policy 无读取点、该字段对扫描/准入无效）不变。",
+      "residual": "无。"
+    },
+    {
+      "id": "A-DR2-04",
+      "closed": false,
+      "evidence": "§1.1 表与前言、findings.md:17、task_plan.md:19、progress.md:36 均已改为\"9 个真实调用点（+4 处默认绑定）\"，我的 ast 复核与所列行号完全一致（startup 行改引 :109 亦正确）。",
+      "residual": "baseline-map.md:103 仍写\"7 模块 / 12 spawn 点\"，是同一计数在该文件内的残留 → 见 A-DR3-05。"
+    },
+    {
+      "id": "A-DR2-05",
+      "closed": false,
+      "evidence": "§3.3（:58-71）已把 -shm 记录补到 22:10:11、push 计数改为 revenue 8（#134–#141）+ wiki 2（#100/#101）、并新增\"手动跑 gate 未推送\"这一类；22:10:11 归因于 #141 推送前 gate，我用 GitHub REST 复核 #141 created_at=2026-09-11T21:11:22Z=本地 22:11:22、head 3e0c8f3，配对成立；findings.md:52 与 progress.md:60 亦同步。",
+      "residual": "同一文件 §2:26 仍写\"本会话当晚**推送 5 次**（#136 21:09:02、…、#140 21:27:44）… ✅ **与两处前移吻合**\"，与 :69/:71 直接冲突；checkpoint.json:77 的 authoritative 字段同样仍是\"five times\"且只列 21:18:15/21:26:47 → 见 A-DR3-01/A-DR3-03。"
+    },
+    {
+      "id": "A-DR2-06",
+      "closed": true,
+      "evidence": "boundary-audit.md:31 已把\"❌ 该假设被证伪\"改为\"❌ 该假设**不被观测支持**（…零结果不能\"证伪\"存在性…）\"，findings.md:56 同步说明\"逻辑越权\"；\"证伪\"一词此后只出现在更正说明与可证伪性声明中。",
+      "residual": "无。"
+    },
+    {
+      "id": "A-DR2-07",
+      "closed": true,
+      "evidence": "operation-contract.md:43 已按叶子 help 原文改写并显式标注 v0.3 更正，与 §2.3 第 4 条、§4 问题 2 口径一致；cli.py:634/:639 的 help 原文经我 ast 提取逐字一致。",
+      "residual": "无（§2.2 S 行的 preview 重复列属另一处小瑕疵，见 A-DR3-13）。"
+    },
+    {
+      "id": "A-DR2-08",
+      "closed": false,
+      "evidence": "漂移记录与边界收窄已写入 baseline-map.md:35、task_plan.md:3、progress.md:73：478bb92 于 22:08:29 只改三个台账文件、不含产品代码，且承认\"不写回审计证据目录\"若读作\"从未改动该目录\"则不准确。",
+      "residual": "三份台账对同一冻结状态给出三种说法：baseline-map.md:11\"干净\"、inputs.json（company-wiki.head=7d4852f、dirty_lines_at_freeze=0）、checkpoint.json:112-114（head=478bb92、dirty=1），而 baseline-map.md:35 又写 A01 冻结时\"dirty 3\"；且 company-wiki 在 checkpoint 生成后又前移到 ca63ff2（22:24:32，push #102 于 22:25:06 触发），该提交是\"wiki 侧已归因\"这一 v0.3 声明的实际载体却未记录在任何台账中 → 见 A-DR3-02。"
+    },
+    {
+      "id": "A-DR2-09",
+      "closed": true,
+      "evidence": "末样本 21:59:53（CSV 21:59:53.255）、均值间隔 15.22 s（我算得 15.2198）、跨度 1491.5 s（1491.539）全部复现；§3.3 编号已恢复并附编号说明；\"9 s\"与 21:59:53 一致；F-A01-8 的重复\"处置\"块已合并；task_plan 的\"最后更新 22:4x\"已改正。",
+      "residual": "重编号未清干净：boundary-audit.md:17/:18/:27/:28 仍指向已不存在的 §3.4，task_plan.md:36 亦同 → 见 A-DR3-07。"
+    },
+    {
+      "id": "A-DR2-10",
+      "closed": false,
+      "evidence": "(a) models.py:97（我逐行确认 :105 是 privacy_class）✓；(b) llm_summarizer.py:333-337 与常量 :45 ✓，root-contract.md:40 已改；(d) ensure 第③道闸的 `args.allow_download and` 连接条件 ✓（baseline-map.md:46、operation-contract.md:56 与 cli.py:764-767 逐字一致）；(e) service.py:772 已补入 baseline-map.md:45。",
+      "residual": "(c) root-contract.md:7 的调用者计数仍不精确：`policy_2x.py:58` 是 def、`:319` 是 __all__ 字符串、`policy_3x.py:37` 是 import，均非调用；3 个测试文件实为 10 处文本/5 处调用，不是\"9 处调用\"→ 见 A-DR3-08。(e) service.py:772 只补进 baseline-map，未补进身份契约的 R4 残留清单（identity-contract.md:27-31 仍写\"三处\"），同型排序还散落在 canonical_writer.py:287、duplicate_cleanup.py:210/:486、normalizer.py:1600/:1892、llm_summarizer.py:371、evidence_query.py:269 → 见 A-DR3-06。"
+    },
+    {
+      "id": "A-DR2-11",
+      "closed": false,
+      "evidence": "授权记录已补（checkpoint.json:59-76、inputs.json 的 authorization 块，含原文引用、时间、授权/未授权范围），作者会话 ID 已记（author_session_id=session-bfecd191…，并自述其为过程证据），两位 reviewer 的 ID 由作者从会话外部代记（checkpoint.json:46-58），缺件清单也新增了 card.json/baseline.json/data-manifest.json（checkpoint.json:88）。",
+      "residual": "该缺件清单仍不完整：handbook §3（execution-handbook.md:38-45）明确列出的 requirements.csv 既未提供也未列入任何缺件/门禁条目；另两份 oracle/、tests/ 只在 :87 以\"属后续阶段\"一句带过 → 见 A-DR3-10。"
+    }
+  ],
+  "findings": [
+    {
+      "id": "A-DR3-01",
+      "severity": "P2",
+      "area": "台账一致性：checkpoint.json 未随 v0.3 前进（A-DR-09 回归 + A-DR2-05 未作用于权威字段）",
+      "claim": "checkpoint.json 是 handbook §3（execution-handbook.md:51\"checkpoint字段：三仓输入hash、last_completed_step、current_gate、pending_review、produced_files+sha、actual side effects、failed/unknown、next_step、需补授权\"）规定的接班权威台账，包内声称 v0.3 已把 push 计数写实、-shm 记录补到审查时刻，且 rev2 已闭环、rev3 待审。",
+      "counter_evidence": "该文件内部自相矛盾且仍停留在 v0.2 叙事：(1) checkpoint.json:6 `\"current_gate\": \"A.DR rev2 package (A01-A04 v0.2 + inputs.json + boundary-audit.md) ready for an independent reviewer\"`、:98 `\"G1_A_DR\": \"rev1 rejected; corrections complete; rev2 pending\"`、:107 `\"next_step\": \"Commit the v0.2 corrections and boundary evidence, spawn A.DR rev2 (independent, non-author), ...\"`，而同一文件 :16-19 已记 rev2 `\"status\": \"closed\"`、:9-11 记 rev3 `\"status\": \"pending\"`——读者按 next_step 会重做 rev2。(2) :77 的 actual_side_effects 仍写 `\"the session ALSO pushed to GitHub five times tonight\"` 且 `\"advanced catalog.sqlite3-shm at 21:18:15 and 21:26:47 (gate runs preceding pushes #139 21:19:16 and #140 21:27:44; reproduced by the manual gate at 22:05:03)\"`——既未改成 revenue 8 + wiki 2，也完全没有第 6 处 22:10:11/#141，与 boundary-audit.md:69/:71、findings.md:52、progress.md:60、baseline-map.md:36 相对立。(3) 34b2291 只改了值未改注释：:124-125 `\"reviewed_commit\": \"640c8bd\"` 配 `\"`reviewed_commit` carries the v0.2 corrections\"`；:117 `\"dirty\": 0` 配 :126 `\"(non-zero only because the corrections were still uncommitted when this file was generated)\"`。(4) 根因在生成器：evidence/build_checkpoint.py:104/:111/:165-181/:202/:211-214 的 LEDGER 文本仍是 v0.2 版本，而 v0.3 只改动了该文件的 verify_blobs 部分。",
+      "required_fix": "在同一次提交内更新 evidence/build_checkpoint.py 的 LEDGER 并重新生成 checkpoint.json：step/current_gate 指向 A.DR rev3 包；G1_A_DR 改为\"rev1/rev2 rejected；v0.3 更正完成；rev3 pending\"；next_step 改为\"提交并推送 v0.3 → 启动 A.DR rev3 → 通过后向 owner 提交 6 项裁定与 A05 样本清单\"；actual_side_effects 改为 6 处前移（21:18:15、21:26:47、22:00:02、22:00:18、22:05:03、22:10:11）+ revenue 8 / wiki 2 并保留\"手动 gate 未推送\"类；last_completed_step 增补 v0.3 与 rev2 结论；reviewed_commit_note/inputs_note 与新值自洽。建议同时给 build_checkpoint.py 增加一个自检：LEDGER 中的 push 计数/前移清单与 boundary-audit 的对照项不一致时拒绝写出。"
+    },
+    {
+      "id": "A-DR3-02",
+      "severity": "P2",
+      "area": "撤回传播：A04 契约仍宣称 -shm 归属未明；wiki 侧同步声明在受审修订上不成立",
+      "claim": "progress.md:73（以及 task_plan.md:66）称 v0.3 已把陈旧\"ambient/unknown\"文本同步为归因后表述（列了 cli-help-matrix.json、run_cli_help_matrix.py、inputs.json、progress.md，并加\"+ wiki 侧\"）；boundary-audit.md:101 称 6 处前移\"**均有归属**\"。",
+      "counter_evidence": "(1) identity-contract.md:11 仍原文写着 `本 run 期间生产 catalog 的 catalog.sqlite3-shm 被观测到有写入（21:18:15），**归属未明**`——这是四份合同之一对同一事实的相反陈述，直接冲突于 boundary-audit.md:101\"**全部 6 处**已观测前移（21:18:15、21:26:47、22:00:02、22:00:18、22:05:03、22:10:11）**均有归属**\"；identity-contract.md 在整个 v0.3 diff 中未被改动（`git diff --numstat 3e0c8f3 640c8bd` 无该文件）。(2) evidence/observe_catalog_companions.ps1:7 仍写 `# so an ambient toucher can be distinguished from a command-triggered open.`。(3) \"+ wiki 侧\"在受审修订上不成立：wiki 在 640c8bd 时刻的 HEAD 是 478bb92，`git show 478bb92:docs/plans/painpoint-outcome-audit-2026-09-05/progress.md` 第 8 条仍写\"**归属未知**\"；改写实际落在 wiki ca63ff2（提交时间 2026-09-11 22:24:32，晚于 640c8bd 的 22:24:13），并由 push #102（GitHub run created 22:25:06 本地）触发 CI——该 commit 未被 checkpoint.json/inputs.json/baseline-map.md 任何一处记录（它们冻结的是 7d4852f / 478bb92）。",
+      "required_fix": "把 identity-contract.md:11 改写为\"归属已核（见 boundary-audit.md §2/§3.3：推送前 gate 与 22:00 每日任务，均只读打开）\"，并删除 observe_catalog_companions.ps1:7 的 ambient 措辞；把\"+ wiki 侧\"补成可核形式——写明 company-wiki `ca63ff2`（22:24:32，仅改该审计目录 progress.md 一行）为 wiki 侧同步的载体，并把该 commit 记入 inputs.json 的 repositories[0]（或明确声明\"本包对 company-wiki 的冻结时点为 478bb92；其后的 ca63ff2 只改台账，不影响 12 个产品输入哈希\"）。"
+    },
+    {
+      "id": "A-DR3-03",
+      "severity": "P2",
+      "area": "边界证据内部矛盾：boundary-audit §2 仍用被更正前的 push 计数与\"两处前移\"模型",
+      "claim": "同一次 v0.3 更正已在 §3.3 与文末改写 push 计数为 revenue 8 + wiki 2、前移 6 处，并在 :71 明确\"v0.2 写\"pushed five times\"**少算**\"。",
+      "counter_evidence": "boundary-audit.md:26（§2 归因表）仍原文写着 `本会话当晚**推送 5 次**（GitHub Actions：`#136 21:09:02`、`#137 21:12:29`、`#138 21:16:28`、`#139 21:19:16`、`#140 21:27:44`，全部 success）` 与 `✅ **与两处前移吻合**`，即 A-DR2-05 点名要改的那句话原样存活在同一文件的上半部分；它同时缺 #134/#135/#141，也与 :69 的 `revenue 当晚 **8 次**推送：#134 … **#141 22:11:22**` 冲突。",
+      "required_fix": "把 :26 单元格改写为与 :69/:71 同口径（revenue 8 次 + wiki 2 次；三次前移 21:18:15/21:26:47/22:10:11 分别对应 #139/#140/#141 推送前的 gate），或直接以\"见 §3.3\"替代该处的计数复述。"
+    },
+    {
+      "id": "A-DR3-04",
+      "severity": "P2",
+      "area": "边界声明：baseline-map 头部仍宣称本轮未执行任何 CLI",
+      "claim": "baseline-map.md:4 的运行目录说明称本 run\"只读\"，:5 进一步写\"**本轮**未执行任何 CLI\"。",
+      "counter_evidence": "baseline-map.md:5 原文：`> 状态：**只读**。本轮**未执行任何 CLI**（连 \\`--help\\` 也留到 command-manifest 批准后，handbook §2.8），**未改产品代码/配置/DB/任务**。` 但同一文件 :85-95（§4）记载 owner 批准的 `--help` command-manifest 已执行 **52 次**探针且全部 rc=0，:95 还写\"以本表为准\"；checkpoint.json:77 亦记 `52 x \\`python -B -m company_wiki.source_catalog.cli <cmd> [sub] --help\\``；command-manifest.json 的 write_set 就包含本 run 目录的两个文件。即 A-DR-08/A-DR2-05 反复要求修正的\"边界陈述与事实不符\"在同一份 A01 文件里仍有一处：该句若被后续阶段引用，会得出\"本轮连 --help 都没跑\"的错误前提。同类的宽松表述还有 operation-contract.md:98\"本文件是设计草案：**未运行任何 CLI**\"（其 §2:23 却写\"52 次探针全部 rc=0\"）。",
+      "required_fix": "改写 baseline-map.md:5 为\"本步（A01 起草时）未执行任何 CLI；其后在 owner 批准的 --help-only command-manifest 下执行了 52 次 --help 探针（见 §4）\"，并把 operation-contract.md:98 限定为\"本文件为设计草案；除 §2 记载的 52 次 --help 探针外未运行任何 CLI\"。"
+    },
+    {
+      "id": "A-DR3-05",
+      "severity": "P3",
+      "area": "A01 内部计数矛盾：§5 未覆盖项仍写 12 个 spawn 点",
+      "claim": "v0.3 已把子进程计数更正为\"9 个真实调用点 + 4 处默认绑定\"（baseline-map.md:52、findings.md:17、task_plan.md:19、progress.md:36）。",
+      "counter_evidence": "baseline-map.md:103 原文仍写 `5. **子进程逐条副作用矩阵**：v0.2 已补 §1.1 的 **7 模块 / 12 spawn 点**静态清单`，与同文件 :52 的 `**真实调用点 = 9 个**（下表逐行给号），另有 4 处默认绑定（不计入）` 及 :56-64 的 9 行表直接矛盾。我的 ast 复核支持 9（adapter_process.py:137、control.py:91/:1127、dayu_cli_adapter.py:192、lock.py:85、normalizer.py:286/:1261、startup.py:109、worker.py:110）。",
+      "required_fix": "把 baseline-map.md:103 的\"7 模块 / 12 spawn 点\"改为\"7 模块 / 9 个真实调用点（+4 处 runner 默认绑定）\"，与 §1.1 统一。"
+    },
+    {
+      "id": "A-DR3-06",
+      "severity": "P2",
+      "area": "A04 身份契约：R4 残留清单不完整（A-DR2-10(e) 只改在 A01）",
+      "claim": "identity-contract.md:27 称\"该目标**当前未达成**，三处代码把路径/优先级放进了\"代表该文档的位置\"这一**身份投影**\"，:31 进一步写\"**注意边界**：**这三处**…\"；progress.md:74 则把 `service.py:772` 的补入列为已完成的 P3 修正。",
+      "counter_evidence": "identity-contract.md:28-30 的清单仍只有 service.py:643-653、service.py:329/:527、resolver.py:912-921/:528-533——**不含 service.py:772**，该处只被补进 baseline-map.md:45。且同型（以 root priority / root_id / relative_path 决定\"哪个位置代表文档\"）的排序在别处至少还有 5 处我逐行确认：canonical_writer.py:287 `ORDER BY r.priority,l.root_id,l.relative_path`、duplicate_cleanup.py:486 `ORDER BY r.priority,l.root_id,l.relative_path,l.location_id`（及 :210）、normalizer.py:1600 与 :1892 `ORDER BY r.priority,l.relative_path`、llm_summarizer.py:371 `ORDER BY CASE WHEN l.role='original_primary' THEN 0 ELSE 1 END,l.relative_path`、evidence_query.py:269-271 `ORDER BY CASE l.location_status … ,r.priority,l.root_id,l.relative_path,l.location_id`。B/C 阶段的整改若按这份\"三处\"清单执行，会漏掉这些位置代表权判定点。",
+      "required_fix": "在 identity-contract.md §1 的残留块中补入 service.py:772，并把清单改为可核的分层清单（核心两处 SQL + 规范位选择键 + 至少列名 canonical_writer.py:287 / duplicate_cleanup.py:486 / normalizer.py:1600/:1892 / llm_summarizer.py:371 / evidence_query.py:269-271 作为同类点），或明确声明\"以下为已核实清单，非穷举\"并登记一条静态盘点任务。"
+    },
+    {
+      "id": "A-DR3-07",
+      "severity": "P3",
+      "area": "编号残留：v0.3 重编号后 5 处交叉引用指向已不存在的 §3.4",
+      "claim": "A-DR2-09 要求补齐 §3 的小节编号；v0.3 把 3.4 改名为 3.3 并在 :60 加了编号说明。",
+      "counter_evidence": "boundary-audit.md:17 `| 22:00 每日任务 | … | §3.4 |`、:18 `| 本会话 22:03 的 pre-push gate | … | §3.4 |`、:27 `（§3.4 已标定）`、:28 `见 §3.4`，以及 task_plan.md:36 `见 [boundary-audit.md](boundary-audit.md) §2/§3.4` 仍指向已被删除的编号（文件内已无 §3.4 标题）。",
+      "required_fix": "把这 5 处引用统一改为 §3.3。"
+    },
+    {
+      "id": "A-DR3-08",
+      "severity": "P3",
+      "area": "引用精度：root-contract 的调用者计数把定义/__all__/import 当作调用点",
+      "claim": "root-contract.md:7 写\"调用者只有 `policy_2x.py:58/319`、`policy_3x.py:37/95` 与 **3 个测试文件**（…），共 9 处调用\"。",
+      "counter_evidence": "我逐条分类（全仓 src+tests）后事实是：policy_2x.py:58 是 `def load_root_policy_2x(`（定义）、:319 是 `\"load_root_policy_2x\",`（__all__ 字符串）、policy_3x.py:37 是 from-import，三者都不是调用点；真正调用只有 policy_3x.py:95 与 5 处测试调用（test_dropbox_root_policy_fc501.py:212、test_future_root_config_only.py:73/:114/:184、test_root_policy_2x.py:57），共 6 处；三个测试文件内 `load_root_policy_2x` 的文本出现是 10 行（另 5 行是 import），既不是 9 也不是\"调用\"。结论（该 loader 无生产调用者）仍成立，但替换\"5 个测试\"的新数字同样不精确。",
+      "required_fix": "改为\"调用点：`policy_3x.py:95` + 3 个测试文件共 5 处（逐行列号）；`policy_2x.py:58` 为定义、`:319` 为 `__all__`、`policy_3x.py:37` 为 import\"，或直接写\"除 `policy_3x.py:95` 与 3 个测试文件外无任何调用者\"。"
+    },
+    {
+      "id": "A-DR3-09",
+      "severity": "P3",
+      "area": "版本标签：三份合同的标题/状态仍是 v0.2，task_plan 的 A02–A04 行也仍是 v0.2",
+      "claim": "包与台账把本次送审对象称为 v0.3（checkpoint.json:10/pending_review 的 scope\"A01-A04 v0.3\"、task_plan.md:5\"A01–A04 v0.3 完成\"、progress.md:69\"第三轮就地更正（v0.3）\"）。",
+      "counter_evidence": "root-contract.md:1\"（v0.2 草案，已按 A.DR 更正）\"与 :10\"状态：**草案 v0.2，待 A.DR 复审**\"、operation-contract.md:1/:9、identity-contract.md:1/:9 均为 v0.2 字样（三份文件内部却含\"v0.3 更正\"小节）；task_plan.md:20-22 的 A02/A03/A04 行仍写\"（v0.2）/完成（草案 v0.2）\"，而 A01 行 :19 已写\"（v0.3）\"。同一修订在两个地方有两个版本号，会让后续引用无法唯一指向被审字节。",
+      "required_fix": "把三份合同的标题与状态行改为 v0.3（或统一改为\"v0.3 草案，含 v0.2/v0.3 就地更正\"），并把 task_plan.md:20-22 的 A02–A04 行更新为 v0.3。"
+    },
+    {
+      "id": "A-DR3-10",
+      "severity": "P3",
+      "area": "门禁/缺件清单：handbook §3 的 requirements.csv 仍未被登记",
+      "claim": "A-DR2-11 要求\"在 checkpoint.failed_or_unknown 的缺件条目中同时列出 handbook §3 的 card.json/baseline.json/data-manifest.json/oracle/tests 与执行计划 §50 的 results，并说明各自归属阶段\"；v0.3 已在 :87-88 补入 card.json/baseline.json/data-manifest.json。",
+      "counter_evidence": "execution-handbook.md:38-45 的 run 目录结构还包含 `requirements.csv`（与 card.json/baseline.json/command-manifest.json 同列一行），而 checkpoint.json:87 只列 results/oracle/tests/rollback-contract.json/outcomes.json、:88 只列 card.json/baseline.json/data-manifest.json——requirements.csv 既未提供也未出现在任何缺件或门禁条目中；task_plan.md 的 G3/G4 行亦未提及。注意：execution-handbook.md:3 的 R4 状态头把该文件正文声明为 R3 历史、:36 写\"建议结构（将来创建，不是现在）\"，因此缺件本身可接受，缺登记不可接受（正是 A-DR-11 要求\"登记为门禁条目而非散文\"）。",
+      "required_fix": "在 checkpoint.json 的 failed_or_unknown（以及 task_plan 门禁表）中补列 requirements.csv，并注明其归属（A 阶段合同已由 A01–A04 承载，requirements.csv 属后续阶段或明确弃用）。"
+    },
+    {
+      "id": "A-DR3-11",
+      "severity": "P3",
+      "area": "证据文件结构：观测 CSV 的表头 10 列与全部 99 行数据的 6 字段不一致",
+      "claim": "boundary-audit.md:53 以\"CSV 中 `matching_processes` 非空行\"作为\"仪器有效性已验证\"的判据，:54 称 `process_probe` 捕获到 `10344:python.exe` / `19888:python.exe`。",
+      "counter_evidence": "evidence/catalog-companion-observation.csv 的表头为 `sample,utc,local,mtime_ns_catalog,mtime_ns_shm,mtime_ns_wal,size_catalog,size_shm,size_wal,matching_processes`（10 列），而全部 99 行数据只有 6 个逗号分隔字段：第 4 字段是三值竖线拼接（如 `639244994010727473|639247552076590712|639244994012079376`）、第 5 字段同理（`49677344768|32768|0`）、第 6 字段才是进程探针。后果：按表头解析（csv.DictReader）时 `matching_processes` 列在 99 行中**全为空**，而进程证据被塞进 `size_wal` 列——文档引用的列名无法复现该证据（只有按原始文本读\"最后一个字段\"才能看到 sample 10 与 11 的 `10344:python.exe` / `19888:python.exe`，这两行确实存在）。实质结论（探针非装饰）成立，但引用方式与证据文件结构不符。",
+      "required_fix": "重生成 CSV 使每行与表头列数一致（或把竖线拼接写进表头注释并明确字段语义），并把 boundary-audit.md:53 的引用改为\"CSV 第 10 列（或原始末字段）在 sample 10/11 非空，值为 10344:python.exe / 19888:python.exe\"。"
+    },
+    {
+      "id": "A-DR3-12",
+      "severity": "P3",
+      "area": "副作用台账：progress.md 的\"执行过\"清单漏记被本 run 归因的 gate 运行与推送",
+      "claim": "progress.md:56 标题为\"本步实际副作用（如实）\"，:60（同一节的\"已知偏差\"）声明 6 处 -shm 前移中 4 处由\"本会话的 gate（#139/#140/#141 推送前 + 22:03 手动）\"造成；checkpoint.json:77 也把 push 与 gate 列为已披露副作用。",
+      "counter_evidence": "progress.md:58 的\"执行过\"只列：`--help` 探针、`wiki tools/pre_push_gate.py`（CI 等价门，5 项全绿）、只读文件读取、被动观测脚本——完全没有列入 revenue 的强制 pre-push gate（4 次：3 次推送前 + 1 次手动）与 5 次 `git push`，而这两项正是同一 run 认定会打开生产 catalog 的动作。读者若只看该行，会得到\"本 run 从未运行过会打开 catalog 的代码路径\"的错误印象，而这恰是 v0.1 已被撤回的说法。",
+      "required_fix": "在 progress.md:58 的\"执行过\"中补入\"revenue `tools/pre_push_gate.py` 的 real-data 套件（#139/#140/#141 推送前各一次 + 22:03 手动一次，均只读打开生产 catalog）\"与\"`git push`：revenue 8 次、wiki 2 次\"，与 :60 及 checkpoint 同口径。"
+    },
+    {
+      "id": "A-DR3-13",
+      "severity": "P3",
+      "area": "A03 完整性对账：§2.2 S 行重复列出 activation preview",
+      "claim": "operation-contract.md:70 的对账写\"47 个叶子命令 = §2.1 的 15 个 + §2.2 的 32 个（W 14 + N 2 + X-local 3 + D 2 + S 11）＝ 47\"，并且 §2.1 的 15 个中已含 `activation preview`；同文件 :49 明确\"同理 `activation preview` 在本表、`activation apply/rollback` 在 §2.2 S 类\"。",
+      "counter_evidence": "operation-contract.md:60 的 S 行却写 `**S 系统/后台** | \\`worker\\`、**\\`worker-status\\` / \\`worker-start\\` / \\`worker-resume\\` / \\`worker-pause\\` / \\`worker-stop\\`**（…）、\\`install-startup\\` / \\`uninstall-startup\\`、\\`activation {preview,apply,rollback}\\`、\\`runtime-policy apply\\``——花括号内含 preview，按字面计数该行为 12 个叶子，与 :49 的注和 :70 的 S=11 冲突（S=11 只有在 preview 不计入本行时才成立）。",
+      "required_fix": "把 §2.2 S 行的 `activation {preview,apply,rollback}` 改为 `activation {apply,rollback}`（与 :49 注一致），或把对账改为 S 12 并相应调整总数说明。"
+    }
+  ],
+  "to_verify_assessment": {
+    "items_that_should_have_been_resolved_statically_now": [
+      "checkpoint.json 与 evidence/build_checkpoint.py 的 LEDGER 文本（step/current_gate/next_step/G1_A_DR/actual_side_effects 的 push 计数与前移清单/两条 note）——纯文本，本轮即可改对（A-DR3-01）。",
+      "identity-contract.md:11 的\"归属未明\"与 observe_catalog_companions.ps1:7 的 ambient 措辞——与本包其他文件对照即可判定（A-DR3-02）。",
+      "boundary-audit.md:26 的\"推送 5 次 / 两处前移\"与 §3.3:69/:71 的同文件冲突（A-DR3-03）。",
+      "baseline-map.md:5 的\"本轮未执行任何 CLI\"与 §4 的 52 次探针、baseline-map.md:103 的\"12 spawn 点\"与 §1.1 的 9（A-DR3-04/A-DR3-05）。",
+      "R4 残留清单的完整性——一次全树 `ORDER BY` 检索即可枚举（A-DR3-06，我已代做并给出 ≥5 处同型点）。",
+      "boundary-audit.md:17/:18/:27/:28 与 task_plan.md:36 的 §3.4 悬空引用（A-DR3-07）。",
+      "root-contract.md:7 的调用者计数——一次全树检索即可区分 def/__all__/import 与调用（A-DR3-08）。",
+      "三份合同的版本标签与 task_plan.md:20-22 的版本列（A-DR3-09）。",
+      "requirements.csv 的登记（读 execution-handbook.md:38-45 即可，A-DR3-10）。",
+      "观测 CSV 的表头/行字段一致性（读文件即可，A-DR3-11）。",
+      "progress.md:58\"执行过\"清单与本 run 归因结论的一致性（A-DR3-12）；§2.2 S 行的叶子计数（A-DR3-13）。",
+      "正向已收口且我复现的项目：19/19 blob==记录摘要、--verify-only 非空过、12/12 输入哈希、6/6 依赖哈希、52×rc=0、51 节点/47 叶子、9 个 spawn 调用点、is_symlink 5 行、10/10 CI 时间戳、观测窗 99 样本/1491.539 s/15.2198 s。"
+    ],
+    "items_correctly_deferred_to_vr_or_data_access": [
+      "A02 §4 的①②（不在四个 root 内的 locator/path 行为、privacy_class 显式 deny 在全部出口的一致性）：需真实命令 + 隔离副本，正确保留（root-contract.md:57）。",
+      "A04 V1/V2/V4 与 V3 的数据侧一半（schema/主键/多版本并存/跨 root exact-copy 实际分布/是否存在覆盖式写入）：需读库，在\"本轮不开生产库\"边界下正确保留（identity-contract.md:74-77）。",
+      "A03 §2.3 第 3-5 条（summarize/run/worker 哪条到达 LLM、activation preview 的行为只读性、duplicate-preview 的 confirmation token 是否落盘）：行为层，正确保留（operation-contract.md:66-68）。",
+      "G5（句柄级/对象访问审计）与 G8（隔离副本，生产库 49,677,344,768 B）：需操作员权限与磁盘预算，作者未自签，正确（boundary-audit.md:90-98、task_plan.md:36/:39）。",
+      "A05/A06（样本清单、L01–L12 基线、错误状态码全集）：需精确数据读取许可，正确登记为 blocked（task_plan.md:23-24、G7）。",
+      "数据库实际 schema 版本（inputs.json 的 schema.database_actual_schema_version = TO-VERIFY）：正确保留。"
+    ],
+    "asserted_as_verified_but_actually_requiring_execution_or_observation": [
+      "baseline-map.md:92/:99 的\"零副作用（前后快照比对）… 全部 true\"与\"零副作用已由前后快照证明\"：实际只覆盖 cli-help-matrix.json 记录的那一次探针运行的前后（快照生成于本地 22:23:41，其中 -shm 的 mtime_ns 已等于本地 22:10:11 的第 6 次前移），因此该结论必须读作\"该次探针窗口内三件套未变\"，不能读作\"整个 run 期间无进程打开过库\"。operation-contract.md:23 的同一表述已限定为\"前后快照\"，建议 baseline-map §4 同样加限定语。（这正是 rev2 在 to_verify 中提出、但本轮未落到 baseline-map 的一处。）",
+      "boundary-audit.md:66 的\"wiki pre-push gate（ruff/compileall/config_doctor/ratchet/4 契约测试，全绿）22:00:22 → 22:01:45 未前移\"：属作者自报的过程事实，包内没有对应的原始输出文件（不像 cli-help-matrix.json 那样可复核），我无法在不运行该 gate 的前提下独立复现。",
+      "-shm 前移与 gate 的配对：现在是\"CI 外部时间戳 + gate 代码路径 + 一次受控复现（22:03 手动 gate → 22:05:03）\"的强相关证据链（我逐条复现了 10 个时间戳），但仍不是对\"该进程确实打开了该库\"的直接观测；G5 保留是正确的。",
+      "22:00 每日任务相关事实（run_id=20260911T210001Z、legacy_bridge_hits=0、close_gate 原因）：来自 wiki .source_catalog/legacy_periods.json 与台账转述，本轮我未复核（不影响本次裁决的结论）。"
+    ]
+  },
+  "gate_items_absent_from_the_package": [
+    "操作员持有的 reviewer 指派原件（G6 / A-DR-16）：checkpoint.json:46-58 现由作者从审查会话外部代记两个 ID，并自述\"that is orchestrator evidence, not an operator-held assignment record\"——方向正确，但制度性证据仍缺。",
+    "owner 授权原件（签名/工单/消息哈希）：现有 authorization_record 是会话转录引用（checkpoint.json:59-76、inputs.json authorization），比 rev2 前进了一步，但仍非可核原件；execution-handbook.md:47 的 card.authorization_refs 因此仍无载体。",
+    "handbook §3（execution-handbook.md:38-45）结构中的 card.json、baseline.json、data-manifest.json、requirements.csv、oracle/、tests/ 与 rollback-contract.json、outcomes.json：前六项中 card/baseline/data-manifest 已登记（checkpoint.json:88）、oracle/tests 与 rollback-contract/outcomes 以后续阶段登记（:87），**requirements.csv 未登记**（A-DR3-10）。",
+    "行为探针（--dry-run / 只读数据命令）的 command-manifest（G4）：已作为门禁项登记（task_plan.md:35），作为交付物仍缺。",
+    "A05 的 corpus-manifest 与独立 oracle、A06 的每例基线结果（执行计划第 50 行的 results 项）：如实登记为后续阶段/blocked。",
+    "reviewer 独立性的第二隔离环境复跑（矩阵 §6 只适用于 VR 层，A 阶段为 DR，故此缺项不构成本门缺陷，仅记录）。",
+    "本轮 A.DR-rev3 复审记录自身不在 checkpoint.produced_files 中（生成器早于它），属时序必然，但应在下次重生成时补入。"
+  ],
+  "verdict": "accepted_with_findings",
+  "verdict_reason": "本轮的目标是复核 v0.3 是否关闭 rev2 的 1×P1 与 10 项 P2/P3。结论：唯一的 P1（A-DR2-01）已被完整修好并经我端到端复现——19/19 个 produced_files 的 SHA-256 与 HEAD/640c8bd 的 blob 及工作树字节三者相等；在 3e0c8f3 处我复现了失败态（恰好 4 个文件，LF→CRLF 变换后逐字符命中旧记录值，差额等于 CRLF 计数）；`--verify-only` 实跑 exit 0、checked 19、source=head，并通过对抗测试证明它不空过（篡改摘要与幽灵路径均被检出；唯一空过面是清单本身为空时 checked=0，故脚本不证明清单完整性——我已人工核对 20 文件 − checkpoint.json = 19）。技术内容也整体可核：我用 ast/正则/哈希独立重推了 51 节点/47 叶子、9 个真实 spawn 调用点（+4 处默认绑定）、is_symlink 5 行、resolver 只按 kind 复用、service.py:329/:527/:772 三处排序与 :643-653 选择键、config.py 与 policy_2x.py 两套准入、llm_summarizer.py:333-337 与 :45、ensure 的 :764-771 三条件与 :772-778 审计条件、close-gap :1217-1218、identify --refresh 的完整网络+写链路、pre_push_gate.py:184-199 的生产库路径、12/12 输入哈希 + 6/6 依赖哈希、52×rc=0、以及 10/10 个 CI 时间戳（revenue #134–#141、wiki #100/#101，本地=UTC+1 已证实），观测窗的 99 样本/1491.539 s/15.2198 s/末样本 21:59:53.255 也逐项吻合。但包内仍存活 5 项 P2 与 8 项 P3，其中三类属实质：(1) 接班权威台账 checkpoint.json 未随 v0.3 前进——current_gate/G1_A_DR/next_step 仍停在 rev2、actual_side_effects 仍写\"pushed five times\"且缺第 6 处前移 22:10:11（A-DR3-01），这是 rev2 已闭环的 A-DR-09 范围内的回归；(2) 撤回未传播到位——身份契约 identity-contract.md:11 仍写 -shm\"归属未明\"，与 boundary-audit 的\"全部 6 处均有归属\"直接冲突，且\"wiki 侧已同步\"在受审修订上不成立（wiki 在 640c8bd 时仍是\"归属未知\"，改写落在 ca63ff2，包内未记）（A-DR3-02）；(3) boundary-audit.md:26 与 baseline-map.md:5/:103 仍是被更正前的句子（A-DR3-03/04/05）。这些都不改变任何合同结论、不需重做技术核验，故按\"accepted_with_findings\"处理：A01–A04 的**内容**可作为 B/C 阶段的基线，但本记录中的 P2 项必须在\"stamp rev3 reviewed-commit\"的那一次提交里一并修掉，且在该提交之前 A02 不得冻结（G2 的 6 项 owner 裁定与 G5/G6/G7/G8 仍 pending，与包内声明一致）。",
+  "resubmission_path": "同一运行目录内做一次纯文本更正即可，无需重跑任何探针：(1) 更新 evidence/build_checkpoint.py 的 LEDGER（step/current_gate/next_step/G1_A_DR/actual_side_effects/last_completed_step/reviewed_commit_note/inputs_note）并以 `python evidence/build_checkpoint.py --verify-only` + 重生成后再次 `--verify-only` 验证 19/19；(2) identity-contract.md:11 与 observe_catalog_companions.ps1:7 的清稿，并把 wiki ca63ff2 记入 inputs.json/台账；(3) boundary-audit.md:26 与 §3.4 的 5 处悬空引用；(4) baseline-map.md:5 与 :103；(5) identity-contract §1 的 R4 残留清单补 service.py:772 及同型点；(6) root-contract.md:7 的调用者计数；(7) 三份合同与 task_plan A02–A04 行的版本标签；(8) checkpoint 缺件清单补 requirements.csv；(9) 观测 CSV 的行/表头列数一致化并修正 boundary-audit.md:53 的引用；(10) progress.md:58 补记 gate/push；operation-contract §2.2 S 行的 activation preview 去重。更正后再由外部操作员在 checkpoint 中盖上 rev3 的指派原件（G6），本记录即可视为 reviewed-commit 的复审依据。",
+  "closed_at_utc": "2026-09-11T21:30:54Z"
+}

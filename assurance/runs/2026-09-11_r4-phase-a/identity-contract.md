@@ -1,4 +1,4 @@
-# A04 identity-contract —— 对外引用与版本身份（v0.2 草案，已按 A.DR 更正）
+# A04 identity-contract —— 对外引用与版本身份（v0.3.1 草案，已按 A.DR rev1/rev2/rev3 更正）
 
 > 🔴 **v0.2 更正（2026-09-11，回应 A.DR rejected）**：
 > 1. **R4 不是现状，而是目标**（A-DR-07）：现行代码里 **`priority`/`root_id`/`relative_path` 确实参与"哪个位置代表该文档"的判定** —— `service.py:621-663` 的 `_annotate_locations` 按 `source_id` 分组后以 `(root_priority, root_id, relative_path, location_id)` 排序，取 `ordered[0]` 标 `is_canonical=True`；排序 SQL 亦为 `ORDER BY l.document_id, r.priority, l.root_id, l.relative_path`（`service.py:329`、`:527`）；`resolver.py:912-921` 还按**路径内容**过滤（排除含 `.rejections` 的 `original_primary`），`:528-533` 的 rationale 亦自述 `lowest_priority_active_original_primary_then_tiebreak`。→ R4 重述为**目标**并点名残留。
@@ -8,7 +8,7 @@
 >
 > 阶段 A · 步骤 A04 · 只读产出 · 状态：**草案 v0.2，待 A.DR 复审**。
 > 本轮**未访问 catalog 数据库**（保持 A01 声明的"无数据读取"边界）；DB 结构级事实列为 **TO-VERIFY**，附 VR 应执行的**只读**命令。
-> ⚠️ **边界更正如实披露**（A-DR-08）：本 run 期间生产 catalog 的 `catalog.sqlite3-shm` 被观测到有写入（21:18:15），**归属未明**；"未访问 DB"仅是作者对**本会话未执行 CLI/未打开 DB** 的声明，**不构成"无第三方连接"的证明**。详见 [boundary-audit.md](boundary-audit.md)。
+> ⚠️ **边界更正如实披露**（A-DR-08；**v0.3.1 定案**）：本 run 期间生产 catalog 的 `catalog.sqlite3-shm` 出现**7 处前移，已全部归因**——`21:18:15`/`21:26:47`/`22:05:03`/`22:10:11`/`22:26:59` 为本会话的**推送前/手动 pre-push gate**（其 real-data 套件**只读**打开生产库，`tools/pre_push_gate.py:184-199`），`22:00:02`/`22:00:18` 为 22:00 每日任务；主库与 `-wal` 全程未变（**无逻辑写入**）。"未访问 DB"仅是作者对**本会话未执行数据命令、未读取库内容**的声明；**不**声称本会话从未打开该库（gate 会打开）。详见 [boundary-audit.md](boundary-audit.md)。**v0.3.1 更正（A-DR3-02）**：此处 v0.2 曾写"归属未明"，与 boundary-audit 的归因结论冲突，现同步。
 
 ## 1. 设计契约（对外引用 = 三元组）
 
@@ -24,11 +24,12 @@
 
 **契约规则 R4（目标，非现状 —— v0.2 更正）**：**路径诊断信息不得进入业务身份**。即在比较、去重、复用、对外引用时，只能使用 `document_id` + `version/source_hash`；`root_id`/相对路径只用于**定位**与诊断，不得作为"是否同一文档"的判据。
 
-> **残留（已核实的反面事实，A-DR-07）**：该目标**当前未达成**，三处代码把路径/优先级放进了"代表该文档的位置"这一**身份投影**：
+> **残留（已核实的反面事实，A-DR-07；v0.3.1 扩充，A-DR3-06）**：该目标**当前未达成**，把路径/优先级放进"代表该文档的位置"这一**身份投影**的代码**远不止三处**：
 > 1. `service.py:643-653`：`sorted(group, key=(root_priority, root_id, relative_path, location_id))` → `ordered[0]` 即 `is_canonical`。**优先级与路径决定"规范位"**。
-> 2. `service.py:329` / `:527`：locations 读取的 `ORDER BY l.document_id, r.priority, l.root_id, l.relative_path`。
+> 2. `service.py:329` / `:527` / **`:772`**：locations 读取的 `ORDER BY l.document_id, r.priority, l.root_id, l.relative_path[, l.location_id]`。
 > 3. `resolver.py:912-921`：canonical 候选**按路径字符串内容**过滤（`.rejections` 排除）；`:528-533` rationale 自述 `lowest_priority_active_original_primary_then_tiebreak`。
-> **注意边界**：这三处影响的是"**哪个位置代表文档**"（locator/规范位选择），**不是** `document_id` 本身的生成；因此 R4 的严格读法是"**身份投影**中不得含路径"，而当前实现是"身份稳定、**位置代表权**由路径与优先级决定"。是否把后者也算违例，请 A.DR/owner 裁定（§5 问题 1）。
+> 4. **同型排序的其它点（v0.3.1 新增，均按 `priority`/`relative_path` 定序）**：`canonical_writer.py:287`、`duplicate_cleanup.py:210`/`:486`、`normalizer.py:1600`/`:1892`、`llm_summarizer.py:371`（`ORDER BY CASE role…, l.relative_path`）、`evidence_query.py:269`（`ORDER BY CASE location_status…`）。→ **R4 的整改面因此不是"三处"，而是"规范位/取数位置在至少 9 处由路径与优先级决定"**；A08 的旧目标映射须按此清单展开。
+> **注意边界**：这些点影响的是"**哪个位置代表文档**"（locator/规范位选择），**不是** `document_id` 本身的生成；因此 R4 的严格读法是"**身份投影**中不得含路径"，而当前实现是"身份稳定、**位置代表权**由路径与优先级决定"。是否把后者也算违例，请 A.DR/owner 裁定（§5 问题 1）。
 >
 > **与 A02 的交叉**：`priority` 正是 A02 §2 表中 `dropbox_stock`(30)/`future_lake`(40) 等 root 的字段——即**同一字段**既服务于"复用能力"（A02 C4，实际不读它）又服务于"代表位选择"（此处读它）。A02 R8 的收敛必须同时覆盖这两条用途。
 

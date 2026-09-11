@@ -1,4 +1,4 @@
-# A03 operation-contract —— query_local / open_version / request_work（v0.2 草案，已按 A.DR 更正）
+# A03 operation-contract —— query_local / open_version / request_work（v0.3.1 草案，已按 A.DR rev1/rev2/rev3 更正）
 
 > 🔴 **v0.2 更正（2026-09-11，回应 A.DR rejected）**：
 > 1. **`identify` 不是无条件只读**（A-DR-04）：`cli.py:1080-1087` 在 `--refresh` 时调用 `OfficialSecurityMasterRefresher.refresh` → `security_identity.py:20` 构造请求、`:26-45` https 端点、`:1007` `requests.get`、`:348` `write_text`。**网络 + 本地写**。→ `identify` 移入"**flag 条件**"类，默认只读、`--refresh` 属 **N+W**。
@@ -57,7 +57,7 @@
 | **X-local 本地导出** | `export`（写 `catalog_dir/index`，`models.py:206-208`）、`policy-export`、`archive-retired-evidence` |
 | **X-egress 对外外发** | LLM 摘要路径（经 `llm_summarizer`，受 `privacy_class` + review receipt 门控；具体入口命令待 VR 确认，见 §2.3） |
 | **D 破坏性** | `prune-retired-evidence`（**物理删除**，dry-run 默认）、`duplicate-recycle`（移入回收站，需确认 token） |
-| **S 系统/后台** | `worker`、**`worker-status` / `worker-start` / `worker-resume` / `worker-pause` / `worker-stop`**（`cli.py:579` 注册、`:1405/:1479/:1484/:1489/:1494` 分派）、`install-startup` / `uninstall-startup`、`activation {preview,apply,rollback}`、`runtime-policy apply` |
+| **S 系统/后台** | `worker`、**`worker-status` / `worker-start` / `worker-resume` / `worker-pause` / `worker-stop`**（`cli.py:579` 注册、`:1405/:1479/:1484/:1489/:1494` 分派）、`install-startup` / `uninstall-startup`、**`activation apply` / `activation rollback`**、`runtime-policy apply`（**v0.3.1 更正，A-DR3-13**：`activation preview` 只在 §2.1，不在此行重复，S 类叶子数 = **11**，与 §2.3 的对账一致） |
 
 ### 2.3 高风险映射（v0.2：一条已就地定性，三条仍需 VR；两处已静态收窄）
 
@@ -95,4 +95,4 @@ independent_approval: <reviewer/时间>
 
 ## 5. 边界
 
-- 本文件是设计草案：**未运行任何 CLI**、未改产品代码/配置；映射为暂定，VR 复核前不得据此执行。
+- 本文件是设计草案：**除 §2 记载的 52 次 `--help` 探针（owner 批准范围）外，未运行任何 CLI**、未改产品代码/配置；映射为暂定，VR 复核前不得据此执行。**v0.3.1 更正（A-DR3-04）**：v0.2 的"未运行任何 CLI"与 §2 的探针记录自相矛盾，现限定范围。

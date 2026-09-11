@@ -1,10 +1,10 @@
-# A02 root-contract —— 四个已批准 root 的读取等价与能力分轴（v0.2 草案，已按 A.DR 更正）
+# A02 root-contract —— 四个已批准 root 的读取等价与能力分轴（v0.3.1 草案，已按 A.DR rev1/rev2/rev3 更正）
 
 > 🔴 **v0.2 更正（2026-09-11，回应 A.DR rejected）**：v0.1 有三处把"字段存在"当成"已被强制"，**均已在下方就地更正**：
 > 1. **`symlink_policy` 并非已强制**（A-DR-01）：该字段只被解析与默认化（`config.py:79/140`、`models.py:101`、`policy_2x.py:39/164`），**在 `resolver`/`service`/`scanner`/`store`/`reader` 或 `src` 内任何位置都没有读取点**——**存储但从未被读取**。v0.1 把它写成"强制 fail-closed"是错的；这是一处**假保证字段**（见 R7）。
 >    ⚠️ **v0.3 措辞更正（A-DR2-03）**：v0.2 曾写"wiki `src` 内 `is_symlink|reparse` 命中 0 次"——**该句为假**。实测 `is_symlink()` 命中 **5 行**：`source_catalog/duplicate_cleanup.py:46/534/545` 与 `source_contract/announcement_collector.py:301/323`。它们各自做符号链接检查，但**都不读 root 的 `symlink_policy`**，因此"该字段对扫描/准入无效"的结论不变；措辞已按实测收窄。
 > 2. **"`reusable_root_kinds` → `is_canonical` → `priority`" 这条链不存在**（A-DR-02）：真实复用判定只看 **`root.kind`**（`resolver.py:782-786`、`:933-940`），**从不读 `reusable_for_filing`**——因此该字段显式写 `false` **也无法关闭复用（fail-open）**；v0.1 说的"`priority` 1 处分支（`resolver.py:531`）"其实是一个**字符串字面量**，真正的排序在 SQL：`service.py:329` 与 `:527`。
-> 3. **`canonical_write_target` 的 TO-VERIFY 结论不准确**（A-DR-03）：强制**存在**于 `policy_2x.py:49`（`_WRITABLE_KINDS`）与 `:121-131`，但**该 loader 没有生产调用者**（调用者只有 `policy_2x.py:58/319`、`policy_3x.py:37/95` 与 **3 个测试文件**（`test_dropbox_root_policy_fc501.py`、`test_future_root_config_only.py`、`test_root_policy_2x.py`，共 9 处调用）；v0.2 曾写"5 个测试"，**v0.3 按实测更正为 3 个文件 / 9 处**）；而**现行** loader `config.py` 把该字段当**未知字段拒绝**（`:75-84`）。→ 同一个 YAML 存在**两套分叉的 root 准入实现**（见 R8）。
+> 3. **`canonical_write_target` 的 TO-VERIFY 结论不准确**（A-DR-03）：强制**存在**于 `policy_2x.py:49`（`_WRITABLE_KINDS`）与 `:121-131`，但**该 loader 没有生产调用者**——`load_root_policy_2x` 的出现点是：**定义** `policy_2x.py:58`、**`__all__` 导出** `policy_2x.py:319`、**导入** `policy_3x.py:37`、**唯一真实调用** `policy_3x.py:95`，以及 3 个测试文件（`test_dropbox_root_policy_fc501.py`、`test_future_root_config_only.py`、`test_root_policy_2x.py`）共 10 处文本出现（其中真实调用见 `test_dropbox_root_policy_fc501.py:212`、`test_future_root_config_only.py:73/114`、`test_root_policy_2x.py:57`，其余为 import/参数列表——**v0.3.1 更正，A-DR3-08**：v0.2 把定义/导出/导入当成"调用者"，并误称"5 个测试"）；而**现行** loader `config.py` 把该字段当**未知字段拒绝**（`:75-84`）。→ 同一个 YAML 存在**两套分叉的 root 准入实现**（见 R8）。
 > 4. **A02 §1 引用精度**（A-DR-14，P3，v0.2 已修）：v0.1 把 `root_id` 唯一性与 `kind` 准入一并挂在 `config.py:70-118`。实测 `config.py` **没有任何 kind 校验**，只有 `:86-88` 的重复 `root_id` 判定；`kind` 准入在 `models.py:141-142`（对 `models.py:39` 的 `ROOT_KINDS`），经 `RootSpec` 构造到达。§1 已拆开引用。
 >
 > 状态：**草案 v0.2，待 A.DR 复审**。只读产出；未改产品代码/配置。

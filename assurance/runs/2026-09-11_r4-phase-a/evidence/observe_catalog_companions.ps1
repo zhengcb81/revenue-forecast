@@ -3,8 +3,12 @@
 #
 # Purpose (A-DR-08): the v0.1 side-effect snapshot covered ONLY the main database
 # file, so a write to catalog.sqlite3-shm was invisible to it. This observer records
-# all three files at a fixed cadence WITHOUT opening the database (metadata only),
-# so an ambient toucher can be distinguished from a command-triggered open.
+# all three files at a fixed cadence WITHOUT opening the database (metadata only), so
+# that a catalog open can be time-stamped independently of the author's commands.
+# Every observed -shm advance has since been attributed (boundary-audit.md sections
+# 1-3): this repo's mandatory pre-push gate reads the production catalog read-only,
+# and the 22:00 daily task opens it read-only. This script only observes; it never
+# opens the DB itself.
 #
 # It executes no wiki CLI command and opens no database handle.
 param(
@@ -31,7 +35,7 @@ if (-not (Test-Path -LiteralPath $CatalogDir)) {
 $files = @('catalog.sqlite3', 'catalog.sqlite3-shm', 'catalog.sqlite3-wal')
 $csv = Join-Path $OutDir 'catalog-companion-observation.csv'
 $summary = Join-Path $OutDir 'catalog-companion-observation.json'
-$header = 'sample,utc,local,mtime_ns_catalog,mtime_ns_shm,mtime_ns_wal,size_catalog,size_shm,size_wal,matching_processes'
+$header = 'sample,utc,local,mtime_ns_catalog|shm|wal,size_catalog|shm|wal,matching_processes'
 $header | Set-Content -LiteralPath $csv -Encoding utf8
 
 $started = Get-Date

@@ -101,26 +101,32 @@ def verify_blobs(files: dict, source: str = "index") -> dict:
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-a",
     "phase": "A",
-    "step": "A.DR rev2 (re-review of the corrected A01-A04 contracts)",
+    "step": "A.DR rev3 closed (accepted_with_findings); v0.3.1 text corrections applied",
     "last_completed_step": (
-        "A01 baseline map v0.2; A02 root-contract v0.2; A03 operation-contract v0.2; "
-        "A04 identity-contract v0.2; A.DR rev1 closed with verdict rejected and all "
-        "16 findings corrected in place; inputs.json and boundary-audit.md added; "
-        "--help manifest re-run with catalog-family snapshot coverage (52 x rc=0)"
+        "A01 baseline map v0.3; A02 root-contract v0.3; A03 operation-contract v0.3; "
+        "A04 identity-contract v0.3; A.DR rev1 rejected (8P1/5P2/3P3) -> v0.2; A.DR rev2 "
+        "rejected (1P1/7P2/3P3, 10/16 round-1 findings closed) -> v0.3 (blob renormalisation + "
+        "attribution propagation + citation precision); A.DR rev3 accepted_with_findings "
+        "(0 P0/P1, 5 P2 + 8 P3) -> v0.3.1 text corrections in this commit"
     ),
-    "current_gate": "A.DR rev2 package (A01-A04 v0.2 + inputs.json + boundary-audit.md) ready for an independent reviewer",
+    "current_gate": (
+        "A.DR rev3 closed with accepted_with_findings; the package is usable as the B/C baseline "
+        "ONLY after the six owner rulings (G2). A02 must not be frozen before G2."
+    ),
     "pending_review": [
         {
             "gate": "A.DR rev3",
             "scope": "A01-A04 v0.3 and the run ledgers",
-            "status": "pending",
-            "reviewer": "independent subagent (non-author)",
-            "assignment_stamp": (
-                "NOT YET STAMPED BY AN OPERATOR (A-DR-16 / gate G6): the reviewer id must be "
-                "recorded by the operator from outside the reviewer session. The author has "
-                "recorded the two ids it received (see reviewer_assignments) but that is "
-                "orchestrator evidence, not an operator-held assignment record"
-            ),
+            "status": "closed",
+            "verdict": "accepted_with_findings",
+            "findings": {"P0": 0, "P1": 0, "P2": 5, "P3": 8},
+            "round1_closure": "11 of 16 closed (open: A-DR-06/08/09/13/16)",
+            "round2_closure": "5 of 11 closed (open: A-DR2-02/04/05/08/10/11)",
+            "record": "reviews/A.DR-rev3.json",
+            "reviewer_self_reported_id": "70b62d2f-920e-463c-aeb5-dcfc3ebc5f11",
+            "note": ("the reviewer asked for ten pure-text corrections and explicitly said no probe "
+                     "re-run is needed; those corrections land in this commit, so no rev4 round is "
+                     "scheduled"),
         },
         {
             "gate": "A.DR rev2",
@@ -151,6 +157,7 @@ LEDGER = {
         ),
         "rev1": {"reviewer_session_id": "7cd316cc-50bc-44d5-9574-180030d9ee09", "assigned_by": "authoring session (subagent spawn)", "record": "reviews/A.DR.json"},
         "rev2": {"reviewer_session_id": "b31cbc67-7142-495a-a9db-8886c700ed8f", "assigned_by": "authoring session (subagent spawn)", "record": "reviews/A.DR-rev2.json"},
+        "rev3": {"reviewer_session_id": "70b62d2f-920e-463c-aeb5-dcfc3ebc5f11", "assigned_by": "authoring session (subagent spawn)", "record": "reviews/A.DR-rev3.json"},
     },
     "authorization_record": {
         "record_type": "session-transcript quote; no separately signed artefact exists (A-DR2-11)",
@@ -164,20 +171,22 @@ LEDGER = {
     },
     "actual_side_effects": (
         "R4 A-phase actions: 52 x `python -B -m company_wiki.source_catalog.cli <cmd> [sub] "
-        "--help` (re-run once with the extended snapshot; every invocation rc=0) plus read-only "
-        "file/git inspection - none of which opens the catalog (catalog.sqlite3, -shm and -wal "
-        "all unchanged across the run; wiki's CI-equivalent gate was separately shown not to "
-        "touch it either). No data command, no --dry-run, no network, no config/DB/task/worker "
-        "change in any repository. "
-        "DISCLOSED: the session ALSO pushed to GitHub five times tonight, and this repo's "
-        "mandatory pre-push gate runs its real-data suite against the PRODUCTION catalog "
-        "read-only (tools/pre_push_gate.py:184-199). That is what advanced catalog.sqlite3-shm "
-        "at 21:18:15 and 21:26:47 (gate runs preceding pushes #139 21:19:16 and #140 21:27:44; "
-        "reproduced by the manual gate at 22:05:03). The v0.1 statement that no code path "
-        "touching the catalog was executed was therefore too strong and is retracted; the "
-        "reading was read-only throughout (main DB and -wal never changed). "
-        "A 99-sample/1500 s passive observation found zero -shm transitions, and the 22:00 daily "
-        "task touched it at 22:00:02/22:00:18 as expected. See boundary-audit.md and F-A01-8."
+        "--help` (run three times across the correction rounds; every invocation rc=0) plus "
+        "read-only file/git inspection - none of which opens the catalog (catalog.sqlite3, -shm "
+        "and -wal all unchanged across each run; wiki's CI-equivalent gate was separately shown "
+        "not to touch it either). No data command, no --dry-run, no network download, no "
+        "config/DB/task/worker change in any repository. "
+        "DISCLOSED: the session ALSO pushed to GitHub - revenue 10 times (#134 20:19:41 through "
+        "#142 22:28:17) and company-wiki 3 times (#100 20:17:26, #101 22:08:58, #102 22:25:06), "
+        "all CI-success - and this repo's mandatory pre-push gate runs its real-data suite "
+        "against the PRODUCTION catalog read-only (tools/pre_push_gate.py:184-199), while a "
+        "manual gate run opens it too. That explains every observed catalog.sqlite3-shm advance: "
+        "21:18:15 and 21:26:47 (#139/#140 gates), 22:05:03 (manual gate), 22:10:11 (#141 gate), "
+        "22:26:59 (#142 gate), plus 22:00:02/22:00:18 (the daily task). The v0.1 statement that "
+        "no code path touching the catalog was executed was therefore too strong and is "
+        "retracted; the reads were read-only throughout (main DB and -wal never changed). "
+        "A 99-sample/1491.5 s passive observation found zero -shm transitions. See "
+        "boundary-audit.md and F-A01-8."
     ),
     "failed_or_unknown": [
         "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is now resolved by CI timestamps + gate code",
@@ -189,7 +198,7 @@ LEDGER = {
         "A06 L01-L12 baseline and read-only trace not started",
         "A03 section 2.3 items 3-5 and A04 V3's data-side half stay open pending VR",
         "the execution-plan section 50 minimum-artifact list is still partial: results/, oracle/, tests/, rollback-contract.json and outcomes.json belong to later phases and are not created; reviews/ now exists",
-        "handbook section 3's run structure is ALSO partial and was missing from the earlier list (A-DR2-11): card.json, baseline.json and data-manifest.json are not provided (command-manifest.json and inputs.json are the nearest equivalents; baseline-map.md is prose, not baseline.json)",
+        "handbook section 3's run structure is ALSO partial and was missing from the earlier list (A-DR2-11/A-DR3-10): card.json, baseline.json, data-manifest.json and requirements.csv are not provided (command-manifest.json and inputs.json are the nearest equivalents; baseline-map.md is prose, not baseline.json)",
         "no separately signed owner-authorization artefact exists - authorization_record is a transcript quote (A-DR2-11)",
     ],
     "authorization_needed": [
@@ -199,8 +208,8 @@ LEDGER = {
         "STILL NEEDED: operator action for G5/G6 (independent boundary observation, external reviewer stamp)",
     ],
     "gate_status": {
-        "G1_A_DR": "rev1 rejected; corrections complete; rev2 pending",
-        "G2_owner_rulings": "pending (6 items)",
+        "G1_A_DR": "closed: rev1 rejected, rev2 rejected, rev3 accepted_with_findings (0 P0/P1); v0.3.1 text corrections applied, no rev4 scheduled",
+        "G2_owner_rulings": "pending (6 items) - A02 must not be frozen before this",
         "G3_input_manifest": "done (inputs.json)",
         "G4_command_manifest": "partial: --help manifest approved and executed; behavioural-probe manifest not submitted",
         "G5_independent_boundary_observation": "pending operator action",
@@ -209,8 +218,9 @@ LEDGER = {
         "G8_isolated_copy": "pending",
     },
     "next_step": (
-        "Commit the v0.2 corrections and boundary evidence, spawn A.DR rev2 (independent, "
-        "non-author), then put the six owner rulings and the A05 sample list to the owner."
+        "Hand the six owner rulings (G2) and the A05 real-corpus sample list (G7) to the owner; "
+        "arrange the operator actions for G5/G6 and the isolated copy for G8. Do not freeze A02 "
+        "or start B/C work before G2."
     ),
     "worker_desired_state_note": "not used as process-liveness evidence",
     "catalog_size_bytes": 49677344768,
@@ -249,23 +259,23 @@ def main(argv: list[str] | None = None) -> int:
     }
     ledger["reviewed_commit"] = args.reviewed_commit or "PENDING (stamped in the follow-up commit)"
     ledger["reviewed_commit_note"] = (
-        "`reviewed_commit` carries the v0.2 corrections (documents, evidence and ledgers). The "
-        "stamp that records this value necessarily lands in the immediately following commit, "
-        "which changes only checkpoint.json - so the reviewer should read reviewed_commit for "
-        "the contracts and the tip commit for the ledger stamp. A commit cannot contain its own "
-        "hash, which is exactly the staleness A-DR-09 flagged; recording both removes the "
-        "ambiguity instead of hiding it."
+        "`reviewed_commit` carries the reviewed corrections (documents, evidence and ledgers). "
+        "The stamp that records this value necessarily lands in the immediately following commit "
+        "(d152833/3e0c8f3 for v0.2, 34b2291 for v0.3), which changes only checkpoint.json - so "
+        "the reviewer should read reviewed_commit for the contracts and the tip commit for the "
+        "ledger stamp. A commit cannot contain its own hash, which is exactly the staleness "
+        "A-DR-09 flagged; recording both removes the ambiguity instead of hiding it."
     )
     ledger["inputs_note"] = (
-        "revenue-forecast: `head` is the tree the reviewer reads and `dirty` is its "
-        "working-tree count at generation time (non-zero only because the corrections were "
-        "still uncommitted when this file was generated; see `reviewed_commit`). Every commit "
-        "made in this run touches only assurance/runs/2026-09-11_r4-phase-a/, so the twelve "
-        "product input hashes frozen in baseline-map.md section 0 and inputs.json stay "
-        "byte-accurate (independently re-derived by A.DR rev1: 12/12 HASH_OK). company-wiki "
-        "carries two doc-only edits outside this run directory (PLANNING_STATUS.md and the "
-        "audit plan's progress.md/task_plan.md) plus PLANNING_STATUS.md's own entry; no product "
-        "code or config is touched in any repository."
+        "revenue-forecast `dirty` is the working-tree count at generation time; it is non-zero "
+        "only when this file is regenerated before the corrections are committed. `reviewed_commit` "
+        "is the clean tree the reviewer reads, and every commit in this run touches only "
+        "assurance/runs/2026-09-11_r4-phase-a/, so the twelve product input hashes frozen in "
+        "baseline-map.md section 0 and inputs.json stay byte-accurate (independently re-derived "
+        "by A.DR rev1 and rev2: 12/12 HASH_OK). company-wiki moved from the A01 freeze 7d4852f to "
+        "478bb92 (planning ledger edits only) and then to ca63ff2 (one ledger sentence), i.e. "
+        "no product code or config is touched in any repository; the drift and its scope are "
+        "recorded in baseline-map.md section 0 (A-DR2-08)."
     )
     ledger["produced_files"] = produced_files()
     ledger["produced_files_note"] = (
