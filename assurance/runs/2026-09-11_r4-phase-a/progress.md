@@ -80,14 +80,20 @@ owner 三项批准：**① A 阶段精确 DEV/数据读取许可；② `--help`-
 - **v0.3.1 已修（本提交）**：① checkpoint LEDGER 随 v0.3.1 前进（step/current_gate/next_step/G1/actual_side_effects/reviewed_commit_note/inputs_note，并补 22:26:59 第七处前移与 revenue 10 次推送）；② 撤回传播到位（`identity-contract.md` 的"归属未明"→已归因、`observe_catalog_companions.ps1` 的 ambient 措辞删除、wiki `ca63ff2` 记入 inputs.json 与台账）；③ `boundary-audit.md` §2 的"5 次/两处"改写并与 §3.3 一致；④ `baseline-map.md` 头部 CLI 声明与 §5 的 12→9 计数；⑤ A04 的 R4 残留清单扩到 9 处同型排序；⑥ `root-contract.md` 的 loader 调用者计数（定义/导出/导入 vs 真实调用）；⑦ 三份合同与 task_plan 的版本标签 → v0.3.1；⑧ 缺件清单补 `requirements.csv`；⑨ 观测 CSV 表头与数据列数一致化（6 列，去 BOM）；⑩ `progress.md` 副作用补记 gate/推送 + `operation-contract` §2.2 S 行去掉重复的 `activation preview`。
 - **未闭环项的处置**：A-DR-06/08/09/13/16 与 A-DR2-02/04/05/08/10/11 的剩余部分均为**本轮已就地修正的同一批文本**或**只能由 owner/操作员完成**的事项（G2 六项裁定、G5 独立观测、G6 指派原件、G7 样本清单、G8 隔离副本）；reviewer 明确"更正后即可作为 B/C 基线，但 A02 在 G2 前不得冻结"。
 
+### 5e. owner 裁定（G2，2026-09-11）→ **A02 封版**
+
+- owner 回"按你建议办"，六条全部按建议定案，逐条见 [owner-rulings-2026-09-11.md](owner-rulings-2026-09-11.md)：**R-1** `symlink_policy` 按假保证字段处置（登记整改，倾向删字段）；**R-2** `reusable_for_filing: false` 必须生效（高优先）；**R-3** 两套准入实现收敛到生效的 `config.py`；**R-4** `privacy_class` 缺省改为默认不外发（高优先）；**R-5** A04 R6 指派 `identity-enrichment`+`security_identity`；**R-6** A04 R4 保持目标并登记 9 处整改。
+- **A02 据此封版**（[root-contract.md](root-contract.md) v0.4：§5 默认值面与 §6 问题已带裁定结论）。
+- **边界**：本次裁定**只定方向与登记整改**，**未改产品代码/配置/DB/任务**；R-1…R-4/R-6 进入 B/C 范围，实施前仍需按 §2.5 批准精确 DEV 工作包。
+
 ### 6. 未完成 / 阻塞
 
-1. **G2 owner 裁定 6 项**：`symlink_policy`（假保证）、`reusable_for_filing`（fail-open）、两套 root 准入实现收敛方向、`privacy_class` 缺省 public、R6 owner 指派、R4 严格读法。**A02 在裁定前不得冻结**。
-2. **G5/G6**：独立边界观测与 reviewer 指派**原件** → 需操作员动作（checkpoint 已从会话外部代记三个 reviewer ID，但缺操作员持有的指派凭证）。
-3. **G7/G8**：A05 样本清单 + 隔离副本（生产库 49,677,344,768 B，禁止行为探针）。
-4. **A05/A06** 本体未开始；错误状态码全集（A06 冻结对象）未整理。
+1. **G5/G6**：独立边界观测与 reviewer 指派**原件** → 需操作员动作（checkpoint 已从会话外部代记三个 reviewer ID，但缺操作员持有的指派凭证）。
+2. **G7/G8**：A05 真实语料样本清单 + 隔离副本（生产库 49,677,344,768 B，禁止行为探针）。
+3. **A05/A06** 本体未开始；错误状态码全集（A06 冻结对象）未整理。
+4. **B/C 整改项**（R-1…R-4、R-6）：每项实施前需精确 DEV 工作包批准。
 5. **handbook §3 缺件**：`card.json`、`baseline.json`、`data-manifest.json`、`requirements.csv`（已在 checkpoint 缺件清单登记）。
 
 ### 7. 下一步（精确）
 
-- 提交 v0.3.1 更正 + 推送并自盯 CI 至绿 → 向 owner 提交 **G2 六项裁定请求** 与 **A05 样本清单** → 获裁定后冻结 A02 并进入 B 阶段设计。
+- 提交本裁定与 A02 封版 → 推送并自盯 CI 至绿 → 等 owner/操作员给 **A05 样本清单（G7）** 与 **隔离副本（G8）**；B/C 整改项按优先级（R-2/R-4 先行）准备精确 DEV 工作包。

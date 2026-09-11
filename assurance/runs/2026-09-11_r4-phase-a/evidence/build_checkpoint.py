@@ -110,8 +110,10 @@ LEDGER = {
         "(0 P0/P1, 5 P2 + 8 P3) -> v0.3.1 text corrections in this commit"
     ),
     "current_gate": (
-        "A.DR rev3 closed with accepted_with_findings; the package is usable as the B/C baseline "
-        "ONLY after the six owner rulings (G2). A02 must not be frozen before G2."
+        "A.DR rev3 closed with accepted_with_findings and the six owner rulings (G2) are "
+        "recorded, so A02 is FROZEN (root-contract v0.4, owner-rulings-2026-09-11.md). Remaining "
+        "blockers are outside this session's authority: G5/G6 operator actions and G7/G8 "
+        "(A05 sample list + isolated copy)."
     ),
     "pending_review": [
         {
@@ -191,7 +193,7 @@ LEDGER = {
     "failed_or_unknown": [
         "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is now resolved by CI timestamps + gate code",
         "reviewer independence is NOT externally stamped (gate G6, A-DR-16)",
-        "six owner rulings are required before A02 can be frozen (gate G2): symlink_policy (declared but never read), reusable_for_filing (explicit false is fail-open), convergence of the two divergent root-admission implementations, privacy_class defaulting to public, an owner for identity rule R6, and whether A04 R4's strict reading covers location-representation",
+        "no more owner rulings are pending (G2 decided 2026-09-11); what remains is B/C scope work on the five registered remediation items (R-1 symlink_policy, R-2 reusable_for_filing, R-3 admission convergence, R-4 privacy_class default, R-6 the nine path-ordering sites), each of which needs a precise DEV work package before any product change",
         "A02 section 4 items 1-2 and A04 V1/V2/V4 remain VR items needing an isolated copy (production catalog is 49,677,344,768 bytes; behavioural probes are forbidden on it)",
         "behavioural probes (--dry-run / read-only data commands) have no approved command manifest yet (gate G4)",
         "A05 real-corpus sample list not yet submitted for per-item confirmation (gate G7)",
@@ -203,13 +205,14 @@ LEDGER = {
     ],
     "authorization_needed": [
         "GRANTED 2026-09-11: A-phase precise DEV/data-read permission; --help-only command manifest; VR reviewer assignment",
-        "STILL NEEDED: owner rulings on the six open questions (gate G2)",
+        "DECIDED 2026-09-11: the six open questions (G2) - see owner-rulings-2026-09-11.md",
         "STILL NEEDED: an isolated catalog copy (or an operator-run equivalent) before any behavioural probe",
         "STILL NEEDED: operator action for G5/G6 (independent boundary observation, external reviewer stamp)",
+        "STILL NEEDED (later, for B/C): a precise DEV work package per remediation item before any product code change",
     ],
     "gate_status": {
         "G1_A_DR": "closed: rev1 rejected, rev2 rejected, rev3 accepted_with_findings (0 P0/P1); v0.3.1 text corrections applied, no rev4 scheduled",
-        "G2_owner_rulings": "pending (6 items) - A02 must not be frozen before this",
+        "G2_owner_rulings": "DECIDED 2026-09-11 ('go with your recommendations'): R-1 symlink_policy treated as a false-assurance field, R-2 reusable_for_filing false must take effect, R-3 converge admissions on the active config.py, R-4 privacy_class defaults to not-outward, R-5 owner assigned for identity rule R6, R-6 A04 R4 stays a target with nine registered residue sites - see owner-rulings-2026-09-11.md; A02 frozen accordingly",
         "G3_input_manifest": "done (inputs.json)",
         "G4_command_manifest": "partial: --help manifest approved and executed; behavioural-probe manifest not submitted",
         "G5_independent_boundary_observation": "pending operator action",
@@ -218,9 +221,11 @@ LEDGER = {
         "G8_isolated_copy": "pending",
     },
     "next_step": (
-        "Hand the six owner rulings (G2) and the A05 real-corpus sample list (G7) to the owner; "
-        "arrange the operator actions for G5/G6 and the isolated copy for G8. Do not freeze A02 "
-        "or start B/C work before G2."
+        "A02 is frozen. Remaining work needs owner/operator input, not more authoring: the A05 "
+        "real-corpus sample list (G7), an isolated catalog copy for behavioural probes (G8), and "
+        "the operator-held records for G5/G6. The five remediation items from the rulings "
+        "(R-1..R-4, R-6) enter the B/C scope and require a precise DEV work package before any "
+        "product code changes."
     ),
     "worker_desired_state_note": "not used as process-liveness evidence",
     "catalog_size_bytes": 49677344768,

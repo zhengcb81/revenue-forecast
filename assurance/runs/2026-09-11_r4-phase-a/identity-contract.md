@@ -78,15 +78,15 @@
 | V4 | 同字节副本跨 root 的实际分布（exact copy 判定是否只看 `content_sha256`） | `duplicates` 命令（只读）在隔离副本上运行；**另需核** `source_id` 与 `sources.content_sha256` 是否一一对应（`service.py:634-641` 以 `source_id` 分组） |
 | V5 | alias/旧引用：是否存在"改名即失效"的路径 | `identify --query <旧别名>`（**严禁 `--refresh`**，见 §2 R6 表）+ 别名表结构复核 |
 
-## 5. 交给 A.DR 的问题（v0.2）
+## 5. 原"交给 A.DR 的问题"（**owner 已于 2026-09-11 裁定**，见 [owner-rulings-2026-09-11.md](owner-rulings-2026-09-11.md)）
 
-1. **R4 的严格读法**（A-DR-07 引出）：现行 `is_canonical`/规范位选择把 `priority`/`root_id`/`relative_path` 纳入排序。这影响的是**位置代表权**而非 `document_id` 生成。是否把"位置代表权由路径决定"也算违反 R4？若算，R4 需在 B/C 阶段登记为整改项。
-2. **R6 的 owner**：别名迁移目前**无 owner 指派**（§2 R6 表）。请裁定 owner（建议：`identity-enrichment` 断言路径 + `security_identity` 主数据刷新共同负责），否则 R6 仍不可检测。
-3. `locator` 里是否允许携带**页码/表格锚点**（证据级定位）而不污染身份？本草案认为允许，但要明确"锚点属于证据，不属于身份"。
-4. 契约 R5 的"凭据"清单是否要收敛为闭集（provider 文档号 / 原始 URL / 申报期+实体三者之一）？
-5. `duplicate-preview` 的 confirmation token 是否应写入"副本处置"审计（与 A03 §4 同一问题）？
-6. 同一 `document_id` 的**字节完全相同**的两份，是否允许**都**作为 locator 保留（当前 `is_canonical` 选一处，其余为 `duplicate_relation=exact_copy`，`service.py:659-662`）？
-7. **V1/V2/V4 的数据读取权限**：本轮在"无 DB 读取"边界下完成；是否同意在 A06 的**隔离副本**上执行（而非生产 catalog，其体积 **49,677,344,768 B**）？
+1. **R4 的严格读法 → 已裁定 R-6**：现行 `is_canonical`/规范位选择把 `priority`/`root_id`/`relative_path` 纳入排序（共 **9 处**）。裁定：**认作"需要整改"**，R4 保持为**目标**而非现状，9 处登记进 B/C 的整改与验收范围；**不要求现在改代码**。
+2. **R6 的 owner → 已裁定 R-5**：由 `identity-enrichment`（断言路径）+ `security_identity`（证券主数据/别名刷新）**共同负责**；机制=追加式映射；存储位置在 VR（隔离副本）中核清。
+3. `locator` 是否允许携带页码/表格锚点：本草案认为允许，且"锚点属于证据、不属于身份"——保留为设计约定，VR 复核。
+4. 契约 R5 的"凭据"清单是否收敛为闭集：保留为设计约定（provider 文档号 / 原始 URL / 申报期+实体 三者之一），VR 复核。
+5. `duplicate-preview` 的 confirmation token 是否写入副本处置审计（与 A03 §4 同一问题）：**仍待 VR 行为确认**（未裁）。
+6. 同一 `document_id` 的字节完全相同两份是否都作为 locator 保留（当前 `is_canonical` 选一处，其余 `duplicate_relation=exact_copy`，`service.py:659-662`）：保留现状，VR 复核。
+7. **V1/V2/V4 的数据读取权限**：本轮在"无 DB 读取"边界下完成；**仍按 G8 在 A06 的隔离副本**上执行（生产 catalog 体积 **49,677,344,768 B**）。
 
 ## 6. 边界
 

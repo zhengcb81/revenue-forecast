@@ -1,4 +1,4 @@
-# A02 root-contract —— 四个已批准 root 的读取等价与能力分轴（v0.3.1 草案，已按 A.DR rev1/rev2/rev3 更正）
+# A02 root-contract —— 四个已批准 root 的读取等价与能力分轴（v0.4，**owner 已裁定并封版 2026-09-11**）
 
 > 🔴 **v0.2 更正（2026-09-11，回应 A.DR rejected）**：v0.1 有三处把"字段存在"当成"已被强制"，**均已在下方就地更正**：
 > 1. **`symlink_policy` 并非已强制**（A-DR-01）：该字段只被解析与默认化（`config.py:79/140`、`models.py:101`、`policy_2x.py:39/164`），**在 `resolver`/`service`/`scanner`/`store`/`reader` 或 `src` 内任何位置都没有读取点**——**存储但从未被读取**。v0.1 把它写成"强制 fail-closed"是错的；这是一处**假保证字段**（见 R7）。
@@ -45,7 +45,7 @@
 
 **契约规则 R7（新增，来自更正 1）**：**任何"看起来是安全默认"但从未被读取的字段，必须从契约的"已强制"清单中剔除**，并登记为 remediation 候选（`symlink_policy` 当前即此状态）。
 
-**契约规则 R8（新增，来自更正 3）**：**同一份 YAML 不得存在两套分叉的 root 准入实现**。现行事实：`config.py`（活）与 `policy_2x.py`（无生产调用者）对 `canonical_write_target` 的处理相反——A 阶段只记录，B/C 阶段必须收敛为一套并给出迁移。
+**契约规则 R8（新增，来自更正 3；owner 裁定 R-3 已定收敛方向）**：**同一份 YAML 不得存在两套分叉的 root 准入实现**。现行事实：`config.py`（活）与 `policy_2x.py`（无生产调用者）对 `canonical_write_target` 的处理相反——A 阶段只记录；**owner 2026-09-11 裁定：以生效的 `config.py` 为唯一来源，停用无生产调用者的那套**，B/C 阶段给出迁移与验收。
 
 ## 4. 未注册 / 显式 deny 的 root 不得因"默认等价"放行
 
@@ -56,20 +56,20 @@
 - **已由源码判读回答（不再挂 TO-VERIFY）**：③ `canonical_write_target` 的归属校验**存在于 `policy_2x.py:49/121-131`，但该 loader 无生产调用者**；现行 `config.py` 拒绝该字段（更正 3）。
 - **仍需 VR 实测（需隔离副本，非本步可做）**：① 传入**不在四个 root 内**的 locator/path 时 resolver 的行为；② `privacy_class` 显式 deny 在**所有**外部出口（LLM、export、外部服务）是否一致拒绝——`llm_summarizer` 一处已证，其它出口未核。
 
-## 5. 默认值即"默认放行"面（必须由 owner/A.DR 显式裁定）
+## 5. 默认值即"默认放行"面（**owner 已于 2026-09-11 裁定**，见 [owner-rulings-2026-09-11.md](owner-rulings-2026-09-11.md)）
 
-| 字段 | 默认值 | 影响 | 建议裁定 |
+| 字段 | 默认值 | 影响 | **owner 裁定（2026-09-11）** |
 |---|---|---|---|
-| `privacy_class` | `"public"`（`models.py:105`） | 省略该字段的 root 默认**可外发** | 与 owner 2026-09-03 决定一致；**新增 root 时建议强制显式声明**，或把缺省改为 fail-closed——**需 owner 裁定** |
-| `read_only` | `True`（`config.py:106`） | 省略即不可写 | fail-closed ✓ 保留 |
-| `symlink_policy` | `"reject"`（`models.py:101`） | **默认值存在但从未被读取**（更正 1）→ 不构成任何保护。**注意**：仓库内确有 5 处独立的 `is_symlink()` 检查（`duplicate_cleanup.py:46/534/545`、`announcement_collector.py:301/323`），但它们**不看该字段** | **登记为 remediation 候选（R7）**：要么实现逐段 reparse 检查（并让这些检查读同一政策），要么删除该字段以免误导 |
-| `reusable_for_filing` | `None`=跟随 kind | **显式 `false` 也不能关闭复用**（更正 2，fail-open） | **高优先裁定**：要么让判定读该字段（`false` 必须生效），要么从 schema 删除它 |
+| `privacy_class` | `"public"`（`models.py:105`） | 省略该字段的 root 默认**可外发** | **R-4：改为默认不外发**——缺省取"仅内部"，要外发必须显式声明公开；新 root 一律显式声明。登记为 B/C 高优先整改（**本裁定只定方向，未改代码**） |
+| `read_only` | `True`（`config.py:106`） | 省略即不可写 | fail-closed ✓ 保留（无需整改） |
+| `symlink_policy` | `"reject"`（`models.py:101`） | **默认值存在但从未被读取**（更正 1）→ 不构成任何保护。仓库内确有 5 处独立的 `is_symlink()` 检查（`duplicate_cleanup.py:46/534/545`、`announcement_collector.py:301/323`），但它们**不看该字段** | **R-1：按假保证字段处置**——从"已强制"清单剔除（已做）并登记整改：实现真实检查**或删除该字段**（倾向删除）。见 R7 |
+| `reusable_for_filing` | `None`=跟随 kind（`models.py:97`） | **显式 `false` 也不能关闭复用**（更正 2，fail-open） | **R-2：让 `false` 真的生效**（显式关闭必须被尊重）；`None` 仍表示跟随 kind 政策。登记为 B/C 高优先整改 |
 
-## 6. 交给 A.DR 复审的问题（v0.2）
+## 6. 原"交给 A.DR 复审的问题"（**已由 owner 裁定，保留为记录**）
 
-1. §5 四条默认值面：`symlink_policy`（假保证）与 `reusable_for_filing`（fail-open）是否应升级为 **B/C 阶段的强制整改项**？
-2. R8（两套分叉准入实现）的收敛方向：以 `config.py` 为准并删除 `policy_2x` 的写目标校验，还是反过来？
-3. §4 剩余两条 VR 实测是否同意放到 A06 的隔离副本上做？
+1. §5 四条默认值面 → **已裁定**（见 §5 的 R-1/R-2/R-4；`read_only` 保留不动）。
+2. R8（两套分叉准入实现）的收敛方向 → **已裁定 R-3：以生效的 `config.py` 为唯一来源**，停用无生产调用者的那套；`canonical_write_target` 当前实际不可用，暂不引入。
+3. §4 剩余两条 VR 实测（越界 locator、显式 deny 的一致性） → **仍按计划放到 A06 的隔离副本**上做（属 G8，未变）。
 
 ## 7. 边界
 

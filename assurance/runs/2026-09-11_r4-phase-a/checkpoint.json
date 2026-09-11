@@ -3,7 +3,7 @@
   "phase": "A",
   "step": "A.DR rev3 closed (accepted_with_findings); v0.3.1 text corrections applied",
   "last_completed_step": "A01 baseline map v0.3; A02 root-contract v0.3; A03 operation-contract v0.3; A04 identity-contract v0.3; A.DR rev1 rejected (8P1/5P2/3P3) -> v0.2; A.DR rev2 rejected (1P1/7P2/3P3, 10/16 round-1 findings closed) -> v0.3 (blob renormalisation + attribution propagation + citation precision); A.DR rev3 accepted_with_findings (0 P0/P1, 5 P2 + 8 P3) -> v0.3.1 text corrections in this commit",
-  "current_gate": "A.DR rev3 closed with accepted_with_findings; the package is usable as the B/C baseline ONLY after the six owner rulings (G2). A02 must not be frozen before G2.",
+  "current_gate": "A.DR rev3 closed with accepted_with_findings and the six owner rulings (G2) are recorded, so A02 is FROZEN (root-contract v0.4, owner-rulings-2026-09-11.md). Remaining blockers are outside this session's authority: G5/G6 operator actions and G7/G8 (A05 sample list + isolated copy).",
   "pending_review": [
     {
       "gate": "A.DR rev3",
@@ -93,7 +93,7 @@
   "failed_or_unknown": [
     "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is now resolved by CI timestamps + gate code",
     "reviewer independence is NOT externally stamped (gate G6, A-DR-16)",
-    "six owner rulings are required before A02 can be frozen (gate G2): symlink_policy (declared but never read), reusable_for_filing (explicit false is fail-open), convergence of the two divergent root-admission implementations, privacy_class defaulting to public, an owner for identity rule R6, and whether A04 R4's strict reading covers location-representation",
+    "no more owner rulings are pending (G2 decided 2026-09-11); what remains is B/C scope work on the five registered remediation items (R-1 symlink_policy, R-2 reusable_for_filing, R-3 admission convergence, R-4 privacy_class default, R-6 the nine path-ordering sites), each of which needs a precise DEV work package before any product change",
     "A02 section 4 items 1-2 and A04 V1/V2/V4 remain VR items needing an isolated copy (production catalog is 49,677,344,768 bytes; behavioural probes are forbidden on it)",
     "behavioural probes (--dry-run / read-only data commands) have no approved command manifest yet (gate G4)",
     "A05 real-corpus sample list not yet submitted for per-item confirmation (gate G7)",
@@ -105,13 +105,14 @@
   ],
   "authorization_needed": [
     "GRANTED 2026-09-11: A-phase precise DEV/data-read permission; --help-only command manifest; VR reviewer assignment",
-    "STILL NEEDED: owner rulings on the six open questions (gate G2)",
+    "DECIDED 2026-09-11: the six open questions (G2) - see owner-rulings-2026-09-11.md",
     "STILL NEEDED: an isolated catalog copy (or an operator-run equivalent) before any behavioural probe",
-    "STILL NEEDED: operator action for G5/G6 (independent boundary observation, external reviewer stamp)"
+    "STILL NEEDED: operator action for G5/G6 (independent boundary observation, external reviewer stamp)",
+    "STILL NEEDED (later, for B/C): a precise DEV work package per remediation item before any product code change"
   ],
   "gate_status": {
     "G1_A_DR": "closed: rev1 rejected, rev2 rejected, rev3 accepted_with_findings (0 P0/P1); v0.3.1 text corrections applied, no rev4 scheduled",
-    "G2_owner_rulings": "pending (6 items) - A02 must not be frozen before this",
+    "G2_owner_rulings": "DECIDED 2026-09-11 ('go with your recommendations'): R-1 symlink_policy treated as a false-assurance field, R-2 reusable_for_filing false must take effect, R-3 converge admissions on the active config.py, R-4 privacy_class defaults to not-outward, R-5 owner assigned for identity rule R6, R-6 A04 R4 stays a target with nine registered residue sites - see owner-rulings-2026-09-11.md; A02 frozen accordingly",
     "G3_input_manifest": "done (inputs.json)",
     "G4_command_manifest": "partial: --help manifest approved and executed; behavioural-probe manifest not submitted",
     "G5_independent_boundary_observation": "pending operator action",
@@ -119,7 +120,7 @@
     "G7_A05_sample_list": "pending",
     "G8_isolated_copy": "pending"
   },
-  "next_step": "Hand the six owner rulings (G2) and the A05 real-corpus sample list (G7) to the owner; arrange the operator actions for G5/G6 and the isolated copy for G8. Do not freeze A02 or start B/C work before G2.",
+  "next_step": "A02 is frozen. Remaining work needs owner/operator input, not more authoring: the A05 real-corpus sample list (G7), an isolated catalog copy for behavioural probes (G8), and the operator-held records for G5/G6. The five remediation items from the rulings (R-1..R-4, R-6) enter the B/C scope and require a precise DEV work package before any product code changes.",
   "worker_desired_state_note": "not used as process-liveness evidence",
   "catalog_size_bytes": 49677344768,
   "inputs": {
@@ -128,15 +129,15 @@
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "2147297347a9e23da8fb89cdfd303b95b662c677",
-      "dirty": 1
+      "head": "c3a0dd2042696642608a999416e9ef1a685d97e7",
+      "dirty": 6
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "2147297",
+  "reviewed_commit": "pending-owner-rulings",
   "reviewed_commit_note": "`reviewed_commit` carries the reviewed corrections (documents, evidence and ledgers). The stamp that records this value necessarily lands in the immediately following commit (d152833/3e0c8f3 for v0.2, 34b2291 for v0.3), which changes only checkpoint.json - so the reviewer should read reviewed_commit for the contracts and the tip commit for the ledger stamp. A commit cannot contain its own hash, which is exactly the staleness A-DR-09 flagged; recording both removes the ambiguity instead of hiding it.",
   "inputs_note": "revenue-forecast `dirty` is the working-tree count at generation time; it is non-zero only when this file is regenerated before the corrections are committed. `reviewed_commit` is the clean tree the reviewer reads, and every commit in this run touches only assurance/runs/2026-09-11_r4-phase-a/, so the twelve product input hashes frozen in baseline-map.md section 0 and inputs.json stay byte-accurate (independently re-derived by A.DR rev1 and rev2: 12/12 HASH_OK). company-wiki moved from the A01 freeze 7d4852f to 478bb92 (planning ledger edits only) and then to ca63ff2 (one ledger sentence), i.e. no product code or config is touched in any repository; the drift and its scope are recorded in baseline-map.md section 0 (A-DR2-08).",
   "produced_files": {
@@ -157,8 +158,8 @@
       "size": 1971
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "9f9de08f5183d570438c3bc5be91fef46320a9f985ad91b6ad3f28688f2a5a25",
-      "size": 17590
+      "sha256": "60c07439c631f8fecb36db1800397c416e6a6b9e4b502c92644a6d09fa5b7855",
+      "size": 18388
     },
     "evidence/catalog-companion-observation.csv": {
       "sha256": "0b0a33420c105dcdeaf1c1cbf4a63bdfc9739ab76e5998316f9a106df92a0604",
@@ -185,8 +186,8 @@
       "size": 11517
     },
     "identity-contract.md": {
-      "sha256": "b54a297eb4608cd58dd5bb2e4dd8a94a1bbef58d17bb4b9fb582c2b948d9a70c",
-      "size": 12846
+      "sha256": "84c6aec96886761c7ae4cc5eebe24400e0c3cd985d40e753d35724a3b4803c4c",
+      "size": 12991
     },
     "inputs.json": {
       "sha256": "bc5be6d28eea5f75822e20c7c90f690a0bea37d134dd40da2ef118c016d43004",
@@ -196,9 +197,13 @@
       "sha256": "8f3727ff39f685b0f557d103349bd810f7e661d39da13952115d5c9e4a2b7ec2",
       "size": 14102
     },
+    "owner-rulings-2026-09-11.md": {
+      "sha256": "70e7b4d4eb85e731443dcd397be6b5e35571ac223a04d92ee53223fd80e451ae",
+      "size": 5083
+    },
     "progress.md": {
-      "sha256": "4e4ab985c54673900b6b726a37a2b9fa440aa63bd9b943c026e1781305abaa0b",
-      "size": 13362
+      "sha256": "9b8bd1170fecac5eac0ead4e7953035a9107c406f172b8856777c829b9630bae",
+      "size": 14176
     },
     "reviews/A.DR-rev2.json": {
       "sha256": "8438c504537dfa2c6339db8cc282a90ffad8ea245452a19832f06455cf3cd06e",
@@ -213,22 +218,22 @@
       "size": 45789
     },
     "root-contract.md": {
-      "sha256": "cf716bec9241c94ad210b1bdf422a799f9e874ee2b79ade29295f2a48bb30591",
-      "size": 10658
+      "sha256": "cecab8cfff54285d461505201beb816fc069d46c48fdf9662e80095704c4bd43",
+      "size": 11155
     },
     "task_plan.md": {
-      "sha256": "e2fd4c2f5c46664d1d50ff6df5c0f60bdf13f832ccb11d0d716dc518d2184913",
-      "size": 8365
+      "sha256": "79f28158effea90f6bf7ce830b9d627a95e19465a3aea92a0ea6837ae595179c",
+      "size": 9384
     }
   },
   "produced_files_note": "Computed by evidence/build_checkpoint.py over the whole run directory; checkpoint.json itself is excluded (it cannot hash itself). The A.DR review records are included because the reviewers wrote them inside this run directory. SHA-256 is taken over the RAW working-tree bytes; because a commit cannot contain its own hash, the recorded digest for checkpoint.json would be circular and is therefore omitted - verify it with `git hash-object` instead.",
   "produced_files_verification": {
-    "checked": 20,
+    "checked": 21,
     "source": "index",
     "blob_mismatches": [],
     "method": "sha256 of the indicated blob compared with produced_files[rel].sha256 (source=index)",
     "all_match": true,
     "post_commit_recheck": "Run `python evidence/build_checkpoint.py --verify-only` after committing: it re-checks every recorded digest against `git cat-file blob HEAD:<path>`. Build time can only check the staged blob, because the commit that carries this file does not exist yet."
   },
-  "generated_at_utc": "2026-09-11T21:43:35.547013+00:00"
+  "generated_at_utc": "2026-09-11T22:04:01.045139+00:00"
 }
