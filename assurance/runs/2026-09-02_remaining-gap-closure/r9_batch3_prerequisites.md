@@ -26,6 +26,23 @@
 
 ## 2. 执行协议（包 §2/§4 + 今日落点）
 
+**执行前 RED 基线（2026-09-11 实测，只读）**：
+
+```
+cd company-wiki
+$env:R9_GATE='1'; python -m pytest tests/contract/test_r9_v1_removal_gate.py -q
+  → 4 failed  （test_deleted_modules_are_unimportable / test_v1_scanner_function_is_absent /
+                test_bridge_flag_removed_from_flags / test_allowlist_shrinks_after_scanner_cleanup）
+python -m pytest tests/contract/test_r9_v1_removal_gate.py -q
+  → 4 skipped （默认不跑，日常套件不受影响）
+```
+这 4 条断言就是**执行时的 oracle**：全绿 = 波次落地；任一仍红 = 未完成。
+
+**顺带实测到的 allowlist 现状**：`architecture_gate._ROOT_HARDCODE_ALLOWED_FILES` 当前含
+`scanner.py`、`backfill_v2.py`、`portfolio_promoter.py`（以及 `adapter_dispatch.py`、`admission.py`、
+`architecture_gate.py`、`canonical_writer.py`、`cli.py` 等）——波次后至少 `scanner.py` 必须移出（门测试第 4 条），
+`backfill_v2.py`/`portfolio_promoter.py` 随模块删除一并移出（FC-1201 ratchet **只允许收缩**）。
+
 ```
 冻结基线（三仓 HEAD + legacy-gate/final_ratchet 输出）
   → 预置 RED 门测试已存在：company-wiki/tests/contract/test_r9_v1_removal_gate.py（默认 skip，R9_GATE=1 才真跑）
