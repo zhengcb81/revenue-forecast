@@ -12,10 +12,14 @@
 
 **契约规则 R3**：任何"纯查询"接口若可能触发 `ensure`/`download`/`pause`/worker 启动，**该设计退回**（执行计划 §A03 原文）。`query_local` 与 `request_work` 必须在**进程、写入集合、网络目的地**三个层面可区分。
 
-## 2. 现有命令映射（**暂定**分类，来源：`cli.py` 解析器 help 文本）
+## 2. 现有命令映射（**分类依据已升级：真实解析器 `--help` 探针**）
+
+> **2026-09-11 更新**：owner 已批准 `--help`-only command-manifest，**52 次探针全部 rc=0、零副作用**（前后快照：catalog/config/`__pycache__`/git 全未变）。
+> 权威表面积：**41 个顶层命令 + 10 个嵌套 = 51**（`documents{retire,restore}`、`identity-enrichment{preview,verify,reject}`、`activation{preview,apply,rollback}`、`runtime-policy{show,apply}`）。
+> 证据：[evidence/cli-help-matrix.json](evidence/cli-help-matrix.json)、[command-manifest.json](command-manifest.json)、[baseline-map.md](baseline-map.md) §4。
+> 下列分类因此从"暂定（源码 grep）"升级为"**依据真实 help 文本**"；但仍**不是行为验证**——`--dry-run`/真实行为探针留 A06/VR（需隔离副本）。
 
 > 分类轴：**R**=只读 / **W**=本地写 / **N**=网络或 provider / **X**=外发（LLM/外部服务/导出到外部位置） / **D**=破坏性（删除/回收） / **S**=系统（任务/自启动/后台）。
-> CLI 为**两级**结构（顶层命令 + 嵌套子命令）。
 
 ### 2.1 可支撑 `query_local`（R，暂定）
 

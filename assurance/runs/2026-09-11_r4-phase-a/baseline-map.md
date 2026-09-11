@@ -59,9 +59,21 @@
 | **2026-09-10/11 新增** | revenue `41117ce`（FC-705 窗口补足 24h）、`e957d94`（停止跟踪运行指针）、agent 层无产品改动 |
 | 诊断行号 | 9/7 诊断文档的行号**只是定位线索**（handbook §2.3），本映射以**符号**为准 |
 
-## 4. 本步未覆盖（如实声明）
+## 4. CLI 表面积（2026-09-11 **已由真实解析器确认**，owner 批准的 `--help` command-manifest）
 
-1. **47 个子命令的逐条副作用矩阵**未做——需要 run 每个 `--help`/`--dry-run`，属**执行动作**，等 command-manifest 批准（handbook §2.5/§2.8）。
-2. **真实语料选取与基线 trace**（A05/A06）需 owner 的**精确数据读取许可**；本步未读任何真实报表正文。
+| 项 | 值 |
+|---|---|
+| 探针 | **52 次 `python -B -m company_wiki.source_catalog.cli <cmd> [sub] --help`**，全部 rc=0 |
+| **顶层命令 41 个** | scan, normalize, summarize, fingerprint-backfill, extract-sections, export, policy-export, derived-audit, status, focus-cleanup, documents, identity-enrichment, identify, query, evidence, evidence-list, sections-list, reconcile-retire, archive-retired-evidence, prune-retired-evidence, size-report, extraction-quality, duplicates, duplicate-preview, duplicate-recycle, resolve, ensure, close-gap, import-portfolio, run, worker, worker-status, worker-start, worker-resume, worker-pause, worker-stop, install-startup, uninstall-startup, startup-status, activation, runtime-policy |
+| **嵌套 10 个** | `documents {retire,restore}`、`identity-enrichment {preview,verify,reject}`、`activation {preview,apply,rollback}`、`runtime-policy {show,apply}` |
+| **零副作用（前后快照比对）** | `catalog.sqlite3` 未变、`config/source_catalog.yaml` 未变、`__pycache__` 未变、git dirty 行数未变 —— **全部 true** |
+| 证据 | [evidence/cli-help-matrix.json](evidence/cli-help-matrix.json)、[command-manifest.json](command-manifest.json)、执行器 [evidence/run_cli_help_matrix.py](evidence/run_cli_help_matrix.py) |
+
+> **更正（如实）**：§0/§1 早先写的"47 个子命令"来自**源码 grep**；真实解析器给出的是 **41 顶层 + 10 嵌套 = 51 个命令**。以本表为准。
+
+## 5. 本步未覆盖（如实声明）
+
+1. ~~逐条副作用矩阵未做~~ → **已完成**：51 个命令的 `--help` 探针（§4），零副作用已由前后快照证明。**仍未做**：`--dry-run` 行为探针（会打开生产 catalog，属数据读取动作，留 A06/VR 在隔离副本上做）。
+2. **真实语料选取与基线 trace**（A05/A06）需 owner 的**精确数据读取许可**（2026-09-11 已获原则批准，具体样本清单待 A05 提交后逐项确认）；本步未读任何真实报表正文。
 3. **错误状态码全集**（A06 冻结对象）未整理。
 4. 上表哈希为**工作树当前字节**；A02 冻结前若发生并发提交需重算（handbook §2.3：并发漂移则重审受影响部分）。

@@ -16,25 +16,37 @@
       "dirty": 0
     }
   },
-  "last_completed_step": "A01 baseline map; A02 root-contract; A03 operation-contract; A04 identity-contract (all read-only drafts)",
+  "last_completed_step": "A01 (+ --help command-manifest executed: 52 probes, 51 commands, zero side effects proven by pre/post snapshots); A02/A03/A04 drafts",
   "current_gate": "A.DR package ready for submission (A01-A04)",
   "pending_review": [],
   "produced_files": {
     "baseline-map.md": {
-      "sha256": "635c90ada3386368ca6b6d492f30357eb28e30610e769b84d01a6eafbc59c509",
-      "size": 5716
+      "sha256": "991ddc7b4ee2e7baea4599ad0a94f656040c56cc627d30637e0e5003645cad19",
+      "size": 7479
+    },
+    "command-manifest.json": {
+      "sha256": "d920432583d562b1e958ffbecf1cb9745b02075330268f2006ab20e282138751",
+      "size": 1095
+    },
+    "evidence/cli-help-matrix.json": {
+      "sha256": "71432eff4200a53861a989f3896a897e821402d5c4eaa6a7a873f785e4373b34",
+      "size": 44370
+    },
+    "evidence/run_cli_help_matrix.py": {
+      "sha256": "8b0e1e67906905b94c4716885fb332b7aa28a0f5dd0cdf2f5c984c3252f79a5e",
+      "size": 6015
     },
     "findings.md": {
-      "sha256": "041e4d53de72f7d08dfd2e5276faf0fa5cd308b609d02f7807a404efb86dbf95",
-      "size": 2713
+      "sha256": "dda0eff0eadf83177d59ac50be39f37ac89b46f46d509edd1f9bc00901575562",
+      "size": 4134
     },
     "identity-contract.md": {
       "sha256": "ce7d6920d39752da395db3e1b5d29eadae1325704f596ebbcd52cfd078da2ccc",
       "size": 5249
     },
     "operation-contract.md": {
-      "sha256": "8a8cb0c4bf34924d98e2474c4dbb7350fb7e6c1f6c0eaaab38e0c39f31eec5f6",
-      "size": 6027
+      "sha256": "61ed94b2e4cdc49fed99b82d3f6e110105f4269a7ce3ff98d3158bb11dab84ac",
+      "size": 6720
     },
     "progress.md": {
       "sha256": "b2f8532a2fbd26a1fe7dda4ba0a63b35315e04ad13632b50226776a0327d14c8",
@@ -49,14 +61,15 @@
       "size": 3304
     }
   },
-  "actual_side_effects": "none: no CLI executed, no product file/data/DB/network/task touched",
+  "actual_side_effects": "command-manifest executed 2026-09-11: 52 x `python -B -m ...cli <cmd> --help`; pre/post snapshots show catalog.sqlite3, config/source_catalog.yaml, __pycache__ set and git dirty all UNCHANGED; no DB read, no network, no product file written",
   "failed_or_unknown": [
-    "A.DR not yet performed by an independent reviewer",
-    "47-subcommand side-effect matrix + command manifest (needs approval to run --help/--dry-run)",
-    "A05/A06 real-corpus selection and baseline trace (needs explicit data-read authorization)",
-    "A02 sec4 three TO-VERIFY items; A03 sec2.3 two high-risk mappings; A04 sec4 five TO-VERIFY items"
+    "A.DR independent review in progress (subagent)",
+    "--dry-run / behavioural probes for the two A03 high-risk mappings (resolve no-network, summarize->LLM) need an isolated copy (A06/VR)",
+    "A05 real-corpus selection + independent oracle (data-read permission granted in principle; sample list to be submitted)",
+    "A06 L01-L12 baseline + read-only trace on an isolated copy",
+    "A02 sec4 three TO-VERIFY items and A04 sec4 five TO-VERIFY items"
   ],
-  "next_step": "submit A.DR (independent design review of A01-A04); await owner decision on A-phase data-read permission and the command manifest",
+  "next_step": "collect A.DR verdict; then submit the A05 corpus sample list for per-item confirmation, and plan A06 isolated-copy baseline",
   "authorization_needed": [
     "A-phase precise DEV/data-read permission",
     "command-manifest for --help/--dry-run",
