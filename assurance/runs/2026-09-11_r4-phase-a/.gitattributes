@@ -1,11 +1,20 @@
 # Byte-stability policy for this run directory (same rationale as the v5 plan dir).
 #
 # checkpoint.json records a sha256 for every produced file in this directory. Those
-# hashes are computed over the working-tree bytes, so the repository must store
-# exactly those bytes: with the machine-wide `core.autocrlf=true`, text files would
-# be committed as LF and re-checked-out as CRLF, and a reviewer hashing
+# hashes are computed over the raw working-tree bytes, so the repository must store
+# exactly those bytes: with the machine-wide `core.autocrlf=true`, text files would be
+# committed as LF and re-checked-out as CRLF, and a reviewer hashing
 # `git show HEAD:<path>` would get a different digest than the one recorded here.
 #
 # `-text` disables EOL conversion, `-filter`/`-working-tree-encoding` guard against
 # any smudge/clean filter, so blob bytes == working-tree bytes for every file below.
+#
+# SCOPE / HISTORY (A-DR2-01): this file first took effect with the commit that added
+# it. Four files (command-manifest.json, evidence/cli-help-matrix.json and the two
+# catalog-companion-observation files) had already been staged before that commit, so
+# their blobs were stored LF. They were renormalised (`git add --renormalize`) in the
+# v0.3 correction commit; from that commit on the promise holds for every file here.
+# Verify with the produced_files_verification block in checkpoint.json, which compares
+# each recorded digest against `git cat-file blob HEAD:<path>`.
 * -text -eol -filter -working-tree-encoding
+

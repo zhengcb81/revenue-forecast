@@ -61,6 +61,43 @@ def produced_files() -> dict:
     return files
 
 
+def verify_blobs(files: dict, source: str = "index") -> dict:
+    """Prove that each recorded sha256 equals the blob that will be/was committed.
+
+    A-DR2-01: four files were committed before the run directory's .gitattributes
+    existed, so core.autocrlf stored them as LF while the hashes were computed on a
+    CRLF working tree. The recorded digest must therefore be checked against the
+    repository blob, not only against the working tree.
+
+    source="index" -> `git show :<path>` (what the pending commit will publish); this
+    is what build time can check, because a commit cannot contain its own verification.
+    source="head"  -> `git cat-file blob HEAD:<path>` (post-commit re-check).
+    """
+    run_rel = RUN.relative_to(REVENUE).as_posix()
+    mismatched = []
+    for rel, meta in files.items():
+        spec = (f":{run_rel}/{rel}" if source == "index"
+                else f"HEAD:{run_rel}/{rel}")
+        proc = subprocess.run(
+            ["git", "-c", "safe.directory=*", "-C", str(REVENUE), "show", spec],
+            capture_output=True)
+        if proc.returncode != 0:
+            mismatched.append({"path": rel, "reason": f"not in {source}",
+                               "detail": proc.stderr.decode(errors="replace").strip()[:120]})
+            continue
+        if hashlib.sha256(proc.stdout).hexdigest() != meta["sha256"]:
+            mismatched.append({"path": rel, "reason": f"{source} digest != recorded digest",
+                               "blob_bytes": len(proc.stdout), "recorded_bytes": meta["size"]})
+    return {
+        "checked": len(files),
+        "source": source,
+        "blob_mismatches": mismatched,
+        "method": (f"sha256 of the indicated blob compared with produced_files[rel].sha256 "
+                   f"(source={source})"),
+        "all_match": not mismatched,
+    }
+
+
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-a",
     "phase": "A",
@@ -74,15 +111,26 @@ LEDGER = {
     "current_gate": "A.DR rev2 package (A01-A04 v0.2 + inputs.json + boundary-audit.md) ready for an independent reviewer",
     "pending_review": [
         {
-            "gate": "A.DR rev2",
-            "scope": "A01-A04 v0.2 and the run ledgers",
+            "gate": "A.DR rev3",
+            "scope": "A01-A04 v0.3 and the run ledgers",
             "status": "pending",
             "reviewer": "independent subagent (non-author)",
             "assignment_stamp": (
-                "NOT YET STAMPED EXTERNALLY (A-DR-16): the reviewer identity must be written "
-                "into this checkpoint by the orchestrator/operator from outside the reviewer "
-                "session; a reviewer self-reported id does not make independence auditable"
+                "NOT YET STAMPED BY AN OPERATOR (A-DR-16 / gate G6): the reviewer id must be "
+                "recorded by the operator from outside the reviewer session. The author has "
+                "recorded the two ids it received (see reviewer_assignments) but that is "
+                "orchestrator evidence, not an operator-held assignment record"
             ),
+        },
+        {
+            "gate": "A.DR rev2",
+            "scope": "A01-A04 v0.2 and the run ledgers",
+            "status": "closed",
+            "verdict": "rejected",
+            "findings": {"P1": 1, "P2": 7, "P3": 3, "P0": 0},
+            "round1_closure": "10 of 16 closed; A-DR-01/06/08/10/13/16 not closed",
+            "record": "reviews/A.DR-rev2.json",
+            "reviewer_self_reported_id": "b31cbc67-7142-495a-a9db-8886c700ed8f",
         },
         {
             "gate": "A.DR rev1",
@@ -95,6 +143,25 @@ LEDGER = {
             "closed_at_utc": "2026-09-11T20:23:44Z",
         },
     ],
+    "reviewer_assignments": {
+        "note": (
+            "Recorded by the authoring session from outside the reviewer sessions (A-DR-16 asks "
+            "for exactly this), but process evidence only: an operator-held assignment record is "
+            "still required to make independence institutionally auditable (gate G6)."
+        ),
+        "rev1": {"reviewer_session_id": "7cd316cc-50bc-44d5-9574-180030d9ee09", "assigned_by": "authoring session (subagent spawn)", "record": "reviews/A.DR.json"},
+        "rev2": {"reviewer_session_id": "b31cbc67-7142-495a-a9db-8886c700ed8f", "assigned_by": "authoring session (subagent spawn)", "record": "reviews/A.DR-rev2.json"},
+    },
+    "authorization_record": {
+        "record_type": "session-transcript quote; no separately signed artefact exists (A-DR2-11)",
+        "granted_by": "repository owner (human)",
+        "granted_at_local": "2026-09-11 (evening, before 21:00)",
+        "verbatim": "1，授权，2，尽快开门，3，可以",
+        "author_interpretation": "(1) authorise the A-phase precise DEV/data-read permission; (2) open the gate as soon as possible; (3) approve the remaining items (--help-only command manifest, VR reviewer assignment)",
+        "scope_granted": ["A-phase read-only design work (A01-A04)", "--help-only command manifest execution", "VR reviewer assignment"],
+        "scope_not_granted": ["product/config/database writes", "any command beyond --help (including --dry-run and data commands)", "network downloads, LLM egress, task registration, worker resume, deletion"],
+        "author_session_id": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102 (DSH_SESSION_ID, runtime-managed)",
+    },
     "actual_side_effects": (
         "R4 A-phase actions: 52 x `python -B -m company_wiki.source_catalog.cli <cmd> [sub] "
         "--help` (re-run once with the extended snapshot; every invocation rc=0) plus read-only "
@@ -122,6 +189,8 @@ LEDGER = {
         "A06 L01-L12 baseline and read-only trace not started",
         "A03 section 2.3 items 3-5 and A04 V3's data-side half stay open pending VR",
         "the execution-plan section 50 minimum-artifact list is still partial: results/, oracle/, tests/, rollback-contract.json and outcomes.json belong to later phases and are not created; reviews/ now exists",
+        "handbook section 3's run structure is ALSO partial and was missing from the earlier list (A-DR2-11): card.json, baseline.json and data-manifest.json are not provided (command-manifest.json and inputs.json are the nearest equivalents; baseline-map.md is prose, not baseline.json)",
+        "no separately signed owner-authorization artefact exists - authorization_record is a transcript quote (A-DR2-11)",
     ],
     "authorization_needed": [
         "GRANTED 2026-09-11: A-phase precise DEV/data-read permission; --help-only command manifest; VR reviewer assignment",
@@ -157,7 +226,20 @@ def main(argv: list[str] | None = None) -> int:
               "stamped in the immediate follow-up commit because a commit cannot contain "
               "its own hash"),
     )
+    parser.add_argument(
+        "--verify-only",
+        action="store_true",
+        help=("do not write anything: re-check the EXISTING checkpoint.json produced_files "
+              "against the committed blobs (source=head) and print the result; exit 1 on any "
+              "mismatch. Run this after committing."),
+    )
     args = parser.parse_args(argv)
+
+    if args.verify_only:
+        existing = json.loads((RUN / "checkpoint.json").read_text(encoding="utf-8"))
+        result = verify_blobs(existing["produced_files"], source="head")
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result["all_match"] else 1
 
     ledger = dict(LEDGER)
     ledger["inputs"] = {
@@ -188,8 +270,17 @@ def main(argv: list[str] | None = None) -> int:
     ledger["produced_files"] = produced_files()
     ledger["produced_files_note"] = (
         "Computed by evidence/build_checkpoint.py over the whole run directory; checkpoint.json "
-        "itself is excluded (it cannot hash itself). The A.DR review file is included because "
-        "the reviewer wrote it inside this run directory."
+        "itself is excluded (it cannot hash itself). The A.DR review records are included because "
+        "the reviewers wrote them inside this run directory. SHA-256 is taken over the RAW "
+        "working-tree bytes; because a commit cannot contain its own hash, the recorded digest "
+        "for checkpoint.json would be circular and is therefore omitted - verify it with "
+        "`git hash-object` instead."
+    )
+    ledger["produced_files_verification"] = verify_blobs(ledger["produced_files"], source="index")
+    ledger["produced_files_verification"]["post_commit_recheck"] = (
+        "Run `python evidence/build_checkpoint.py --verify-only` after committing: it re-checks "
+        "every recorded digest against `git cat-file blob HEAD:<path>`. Build time can only "
+        "check the staged blob, because the commit that carries this file does not exist yet."
     )
     ledger["generated_at_utc"] = datetime.now(UTC).isoformat()
     out = RUN / "checkpoint.json"

@@ -40,7 +40,7 @@
 | `startup-status` | show Windows logon task status | 只读（系统面） |
 | `runtime-policy show` | load and print the current snapshot（absent 时 fail closed） | 只读 |
 | `identity-enrichment preview` | preview a candidate assertion **without writing**（`cli.py:277`） | help 自述不写 |
-| `activation preview` | preview/apply/rollback cohort-epoch activation（`cli.py:639`） | **只读性未自述**，待 VR |
+| `activation preview` | preview（`cli.py:634-637` 分组 help "preview/apply/rollback cohort-epoch activation (FC-203)"；叶子 help 见 `:639-641`） | **自述只读**（叶子 help 原文 "read-only: which assertions would flip"），但**未自述具体读写集合** → 待 VR 行为证明（见 §2.3 第 4 条、§4 问题 2）。**v0.3 更正（A-DR2-07）**：v0.2 此行残留"只读性未自述"，与本文件 §2.3/§4 自相矛盾，已按叶子 help 原文改写 |
 | `extraction-quality` | assess deterministic source/extraction quality **without span bodies**（`cli.py:366`） | "无 span 正文"≠"只读"，**不标只读** |
 | `duplicate-preview` | revalidate one noncanonical exact-copy and **issue a confirmation token** | **待确认**：token 是否落盘 |
 | `resolve` | resolve an existing source **before any downloader is considered** | 设计上属"查询+复用"；VR 需证明无隐式下载 |
@@ -53,7 +53,7 @@
 | 类别 | 命令（**v0.2 已补全**） |
 |---|---|
 | **W 本地写** | `scan`、`normalize`、`summarize`、`fingerprint-backfill`、`extract-sections`、`documents retire`、`documents restore`、`identity-enrichment verify`、`identity-enrichment reject`、`reconcile-retire`（dry-run 默认）、`focus-cleanup`（dry-run 或 apply）、`run`（scan→normalize→summarize→export）、**`derived-audit`（`cli.py:972`/`:976-980` 调 `reconcile_artifacts`）**、**`import-portfolio`（规范写入，`cli.py:1336`）** |
-| **N 网络/provider**（**flag 条件，v0.2 按 `cli.py:742-824` 细化**） | `ensure`：**裸调用（无 `--allow-download` 且 mode≠`latest_as_of`）走 `:752-758` 纯读路径（R）**；一旦 `--allow-download` 或 `latest_as_of`，即进入写流程（`:760-762` 先取 `get_catalog().store`，**写入器初始化可能先建 catalog**）。三道闸：① `--allow-download` 决定是否进入获取路径；② `latest_as_of` 即使无该 flag 也强制走写流程（help 自述"仅返回 metadata-only gap plan、不下载"）；③ worker `desired_state == "paused"` 时**拒绝**下载（`:764-771` `RuntimeError`），除非显式加 `--allow-acquisition-while-paused`；**被该 flag 放行时才写入暂停期审计**（`:772-778` → `_append_paused_acquisition_audit`，`:109` 追加 `catalog_dir/paused_acquisition.log`，best-effort、失败只 warn 不阻断）。`close-gap`：同样在 paused 且无 override 时拒绝（`:1217-1218`）。**`identify --refresh`**（网络+写，见更正 1） |
+| **N 网络/provider**（**flag 条件，v0.2 按 `cli.py:742-824` 细化；v0.3 补全条件连接词**） | `ensure`：**裸调用（无 `--allow-download` 且 mode≠`latest_as_of`）走 `:752-758` 纯读路径（R）**；一旦 `--allow-download` 或 `latest_as_of`，即进入写流程（`:760-762` 先取 `get_catalog().store`，**写入器初始化可能先建 catalog**）。三道闸（**按源码原文给全连接条件**）：① `--allow-download` 决定是否进入获取路径（`:751-752`）；② `latest_as_of` 即使无该 flag 也强制走写流程（help 自述"仅返回 metadata-only gap plan、不下载"）；③ **`if args.allow_download and desired_state == "paused" and not args.allow_acquisition_while_paused:` → `RuntimeError` 拒绝**（`:764-771`；**注意三个条件是与关系，缺少 `args.allow_download` 时该拒绝分支不成立**）；**仅当 `args.allow_download and desired_state == "paused"` 时才写入暂停期审计**（`:772-778` → `_append_paused_acquisition_audit`，`:109` 追加 `catalog_dir/paused_acquisition.log`，best-effort、失败只 warn 不阻断）。`close-gap`：同样在 paused 且无 override 时拒绝（`:1217-1218`，条件为 `desired_state == "paused" and not args.allow_acquisition_while_paused`）。**`identify --refresh`**（网络+写，见更正 1） |
 | **X-local 本地导出** | `export`（写 `catalog_dir/index`，`models.py:206-208`）、`policy-export`、`archive-retired-evidence` |
 | **X-egress 对外外发** | LLM 摘要路径（经 `llm_summarizer`，受 `privacy_class` + review receipt 门控；具体入口命令待 VR 确认，见 §2.3） |
 | **D 破坏性** | `prune-retired-evidence`（**物理删除**，dry-run 默认）、`duplicate-recycle`（移入回收站，需确认 token） |

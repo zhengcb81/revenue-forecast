@@ -1,9 +1,10 @@
 # A02 root-contract —— 四个已批准 root 的读取等价与能力分轴（v0.2 草案，已按 A.DR 更正）
 
 > 🔴 **v0.2 更正（2026-09-11，回应 A.DR rejected）**：v0.1 有三处把"字段存在"当成"已被强制"，**均已在下方就地更正**：
-> 1. **`symlink_policy` 并非已强制**（A-DR-01）：该字段只被解析与默认化（`config.py:79/140`、`models.py:101`、`policy_2x.py:39/164`），wiki `src` 内 **`is_symlink|reparse` 命中 0 次**——**存储但从未被读取**。v0.1 把它写成"强制 fail-closed"是错的；这是一处**假保证字段**（见 R7）。
+> 1. **`symlink_policy` 并非已强制**（A-DR-01）：该字段只被解析与默认化（`config.py:79/140`、`models.py:101`、`policy_2x.py:39/164`），**在 `resolver`/`service`/`scanner`/`store`/`reader` 或 `src` 内任何位置都没有读取点**——**存储但从未被读取**。v0.1 把它写成"强制 fail-closed"是错的；这是一处**假保证字段**（见 R7）。
+>    ⚠️ **v0.3 措辞更正（A-DR2-03）**：v0.2 曾写"wiki `src` 内 `is_symlink|reparse` 命中 0 次"——**该句为假**。实测 `is_symlink()` 命中 **5 行**：`source_catalog/duplicate_cleanup.py:46/534/545` 与 `source_contract/announcement_collector.py:301/323`。它们各自做符号链接检查，但**都不读 root 的 `symlink_policy`**，因此"该字段对扫描/准入无效"的结论不变；措辞已按实测收窄。
 > 2. **"`reusable_root_kinds` → `is_canonical` → `priority`" 这条链不存在**（A-DR-02）：真实复用判定只看 **`root.kind`**（`resolver.py:782-786`、`:933-940`），**从不读 `reusable_for_filing`**——因此该字段显式写 `false` **也无法关闭复用（fail-open）**；v0.1 说的"`priority` 1 处分支（`resolver.py:531`）"其实是一个**字符串字面量**，真正的排序在 SQL：`service.py:329` 与 `:527`。
-> 3. **`canonical_write_target` 的 TO-VERIFY 结论不准确**（A-DR-03）：强制**存在**于 `policy_2x.py:49`（`_WRITABLE_KINDS`）与 `:121-131`，但**该 loader 没有生产调用者**（调用者只有 `policy_3x.py:95` 与 5 个测试）；而**现行** loader `config.py` 把该字段当**未知字段拒绝**（`:75-84`）。→ 同一个 YAML 存在**两套分叉的 root 准入实现**（见 R8）。
+> 3. **`canonical_write_target` 的 TO-VERIFY 结论不准确**（A-DR-03）：强制**存在**于 `policy_2x.py:49`（`_WRITABLE_KINDS`）与 `:121-131`，但**该 loader 没有生产调用者**（调用者只有 `policy_2x.py:58/319`、`policy_3x.py:37/95` 与 **3 个测试文件**（`test_dropbox_root_policy_fc501.py`、`test_future_root_config_only.py`、`test_root_policy_2x.py`，共 9 处调用）；v0.2 曾写"5 个测试"，**v0.3 按实测更正为 3 个文件 / 9 处**）；而**现行** loader `config.py` 把该字段当**未知字段拒绝**（`:75-84`）。→ 同一个 YAML 存在**两套分叉的 root 准入实现**（见 R8）。
 > 4. **A02 §1 引用精度**（A-DR-14，P3，v0.2 已修）：v0.1 把 `root_id` 唯一性与 `kind` 准入一并挂在 `config.py:70-118`。实测 `config.py` **没有任何 kind 校验**，只有 `:86-88` 的重复 `root_id` 判定；`kind` 准入在 `models.py:141-142`（对 `models.py:39` 的 `ROOT_KINDS`），经 `RootSpec` 构造到达。§1 已拆开引用。
 >
 > 状态：**草案 v0.2，待 A.DR 复审**。只读产出；未改产品代码/配置。
@@ -14,7 +15,8 @@
 `root_id` 与 `kind` 的准入校验**分处两个模块**（v0.2 更正 4，A-DR-14）：
 - **`root_id` 唯一性**：`config.py:86-88`（重复即报错）。
 - **`kind` 准入**：`config.py` **完全不做 kind 校验**；真正的检查在 `models.py:141-142`，对 `ROOT_KINDS`（`models.py:39`）判定，经 `RootSpec` 构造路径到达。
-- root 模型与默认值：`models.py:86-109`（`read_only=True` 在 `:96`、`symlink_policy="reject"` 在 `:101`、`reusable_for_filing=None` 在 `:105` 附近、`privacy_class="public"` 在 `:105`）。
+- root 模型与默认值：`models.py:86-109`（`priority=100` 在 `:91`、`read_only=True` 在 `:96`、`reusable_for_filing=None` 在 **`:97`**、`symlink_policy="reject"` 在 `:101`、`privacy_class="public"` 在 `:105`、`cohort`/`canonical_write_target` 在 `:108-109`）。**v0.3 更正（A-DR2-10）**：v0.2 把 `reusable_for_filing` 写成"`:105` 附近"，实测在 **`:97`**。
+- `canonical_write_target` 的强制点：`policy_2x.py:49`（`_WRITABLE_KINDS = frozenset({'company_raw'})`）与 `:121-131`（写目标 kind/read_only 校验）。
 - 未知字段拒绝：`config.py:82-84`；`${VAR}` 未解析拒绝：`config.py:90-95`。
 
 ## 2. 四个已批准 root（冻结）
@@ -35,7 +37,7 @@
 |---|---|---|---|
 | **C1 可读** | 平台可读该 root 下字节 | root 已注册 + `path` 变量可解析 | **强制**：未注册字段→报错（`config.py:82-84`）；`${VAR}` 未解析→报错（`config.py:90-95`）。`symlink_policy` **不在此列**（见更正 1） |
 | **C2 可写** | 平台可向该 root 写入 | `read_only`（默认 **True**） | **强制（部分）**：`read_only` 省略即 True（`config.py:106`）；`reusable_for_filing=True ⇒ read_only=True`（**CFG-05**，`config.py:108-111`）。"只有 `company_raw` 可设写目标"的强制在 `policy_2x.py:49/121-131`，但**该 loader 无生产调用者**，而现行 `config.py` 直接拒绝该字段（更正 3） |
-| **C3 可外发** | 内容可送外部 LLM/服务 | `privacy_class`（默认 `"public"`） | **部分强制**：LLM 出口门读 `privacy_class` 且保留 `private_user` 拒绝（`llm_summarizer.py:327/336`）。**省略该字段默认 `public`** 是"默认放行"面，见 §5 |
+| **C3 可外发** | 内容可送外部 LLM/服务 | `privacy_class`（默认 `"public"`，`models.py:105`） | **部分强制**：LLM 出口门按 `privacy_class != _PRIVATE_PRIVACY_CLASS` 构造可外发 root 白名单（`llm_summarizer.py:333-337`，常量 `_PRIVATE_PRIVACY_CLASS` 在 `:45`）。**省略该字段默认 `public`** 是"默认放行"面，见 §5 |
 | **C4 可复用** | 可免下载直接复用 | **只看 `root.kind`**（`reusable_root_kinds`）；`reusable_for_filing` **未被读取** | **fail-open（更正 2）**：`resolver.py:782-786`/`:933-940` 以 `root.kind in reusable_root_kinds` 判定；显式 `reusable_for_filing: false` **不能**关闭复用。CFG-05/CFG-07 只约束"声明为 true 时的一致性"，不约束"声明 false 时不得复用" |
 | **C5 证据质量** | 来源/期间/页码/locator 的完整度 | **不是能力字段** | 与 C1–C4 **正交** |
 
@@ -60,7 +62,7 @@
 |---|---|---|---|
 | `privacy_class` | `"public"`（`models.py:105`） | 省略该字段的 root 默认**可外发** | 与 owner 2026-09-03 决定一致；**新增 root 时建议强制显式声明**，或把缺省改为 fail-closed——**需 owner 裁定** |
 | `read_only` | `True`（`config.py:106`） | 省略即不可写 | fail-closed ✓ 保留 |
-| `symlink_policy` | `"reject"`（`models.py:101`） | **默认值存在但从未被读取**（更正 1）→ 不构成任何保护 | **登记为 remediation 候选（R7）**：要么实现逐段 reparse 检查，要么删除该字段以免误导 |
+| `symlink_policy` | `"reject"`（`models.py:101`） | **默认值存在但从未被读取**（更正 1）→ 不构成任何保护。**注意**：仓库内确有 5 处独立的 `is_symlink()` 检查（`duplicate_cleanup.py:46/534/545`、`announcement_collector.py:301/323`），但它们**不看该字段** | **登记为 remediation 候选（R7）**：要么实现逐段 reparse 检查（并让这些检查读同一政策），要么删除该字段以免误导 |
 | `reusable_for_filing` | `None`=跟随 kind | **显式 `false` 也不能关闭复用**（更正 2，fail-open） | **高优先裁定**：要么让判定读该字段（`false` 必须生效），要么从 schema 删除它 |
 
 ## 6. 交给 A.DR 复审的问题（v0.2）

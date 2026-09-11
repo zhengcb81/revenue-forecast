@@ -12,10 +12,14 @@ Design constraints:
     the config and __pycache__ prove the zero-side-effect claim rather than
     asserting it
 
-Scope limit (A-DR-08 / finding F-A01-8): an ambient process on this machine
-touches `catalog.sqlite3-shm` on its own schedule, so a changed -shm mtime is NOT
-attributable to this script. The snapshot therefore records the raw values and
-labels the shm comparison as non-decisive instead of claiming proof.
+Scope limit (A-DR-08 / finding F-A01-8, RESOLVED in v0.2): the `-shm` mtime is NOT a
+reliable "no process opened the catalog" oracle on this machine, because at least two
+legitimate openers exist: the 22:00 daily task (wiki `scripts/legacy_observer.py
+--read-only`) and this repository's own mandatory pre-push gate, whose real-data suite
+reads the production catalog read-only (`tools/pre_push_gate.py:184-199`). Every
+observed advance has since been attributed to one of those two (see boundary-audit.md
+section 1-3). The snapshot therefore records the raw per-file values and labels the
+interpretation limit instead of claiming proof.
 
 Output: evidence/cli-help-matrix.json (+ command-manifest.json written first).
 """
@@ -182,10 +186,13 @@ def main() -> int:
                 "network activity (no capture in this run)",
             ],
             "interpretation_limit": (
-                "catalog.sqlite3-shm is touched by an ambient process on this machine "
-                "on its own schedule (see finding F-A01-8 and boundary-audit.md), so a "
-                "changed -shm mtime cannot be attributed to these --help invocations; "
-                "a stable -shm across the run is weak (not decisive) evidence."
+                "catalog.sqlite3-shm is not a reliable no-open oracle on this machine: the "
+                "22:00 daily task and this repo's mandatory pre-push gate (its real-data "
+                "suite, tools/pre_push_gate.py:184-199) both open the catalog read-only and "
+                "advance -shm. All observed advances have been attributed to one of those "
+                "two (see boundary-audit.md sections 1-3); a stable -shm across this run is "
+                "therefore consistent with, but not proof of, zero opens by these "
+                "invocations. Main DB and -wal stayed unchanged, i.e. no logical write."
             ),
             "cli_commands": "--help only; no --dry-run, no data command, no network",
         },

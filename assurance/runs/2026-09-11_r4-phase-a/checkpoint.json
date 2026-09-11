@@ -6,11 +6,26 @@
   "current_gate": "A.DR rev2 package (A01-A04 v0.2 + inputs.json + boundary-audit.md) ready for an independent reviewer",
   "pending_review": [
     {
-      "gate": "A.DR rev2",
-      "scope": "A01-A04 v0.2 and the run ledgers",
+      "gate": "A.DR rev3",
+      "scope": "A01-A04 v0.3 and the run ledgers",
       "status": "pending",
       "reviewer": "independent subagent (non-author)",
-      "assignment_stamp": "NOT YET STAMPED EXTERNALLY (A-DR-16): the reviewer identity must be written into this checkpoint by the orchestrator/operator from outside the reviewer session; a reviewer self-reported id does not make independence auditable"
+      "assignment_stamp": "NOT YET STAMPED BY AN OPERATOR (A-DR-16 / gate G6): the reviewer id must be recorded by the operator from outside the reviewer session. The author has recorded the two ids it received (see reviewer_assignments) but that is orchestrator evidence, not an operator-held assignment record"
+    },
+    {
+      "gate": "A.DR rev2",
+      "scope": "A01-A04 v0.2 and the run ledgers",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 1,
+        "P2": 7,
+        "P3": 3,
+        "P0": 0
+      },
+      "round1_closure": "10 of 16 closed; A-DR-01/06/08/10/13/16 not closed",
+      "record": "reviews/A.DR-rev2.json",
+      "reviewer_self_reported_id": "b31cbc67-7142-495a-a9db-8886c700ed8f"
     },
     {
       "gate": "A.DR rev1",
@@ -28,6 +43,37 @@
       "closed_at_utc": "2026-09-11T20:23:44Z"
     }
   ],
+  "reviewer_assignments": {
+    "note": "Recorded by the authoring session from outside the reviewer sessions (A-DR-16 asks for exactly this), but process evidence only: an operator-held assignment record is still required to make independence institutionally auditable (gate G6).",
+    "rev1": {
+      "reviewer_session_id": "7cd316cc-50bc-44d5-9574-180030d9ee09",
+      "assigned_by": "authoring session (subagent spawn)",
+      "record": "reviews/A.DR.json"
+    },
+    "rev2": {
+      "reviewer_session_id": "b31cbc67-7142-495a-a9db-8886c700ed8f",
+      "assigned_by": "authoring session (subagent spawn)",
+      "record": "reviews/A.DR-rev2.json"
+    }
+  },
+  "authorization_record": {
+    "record_type": "session-transcript quote; no separately signed artefact exists (A-DR2-11)",
+    "granted_by": "repository owner (human)",
+    "granted_at_local": "2026-09-11 (evening, before 21:00)",
+    "verbatim": "1，授权，2，尽快开门，3，可以",
+    "author_interpretation": "(1) authorise the A-phase precise DEV/data-read permission; (2) open the gate as soon as possible; (3) approve the remaining items (--help-only command manifest, VR reviewer assignment)",
+    "scope_granted": [
+      "A-phase read-only design work (A01-A04)",
+      "--help-only command manifest execution",
+      "VR reviewer assignment"
+    ],
+    "scope_not_granted": [
+      "product/config/database writes",
+      "any command beyond --help (including --dry-run and data commands)",
+      "network downloads, LLM egress, task registration, worker resume, deletion"
+    ],
+    "author_session_id": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102 (DSH_SESSION_ID, runtime-managed)"
+  },
   "actual_side_effects": "R4 A-phase actions: 52 x `python -B -m company_wiki.source_catalog.cli <cmd> [sub] --help` (re-run once with the extended snapshot; every invocation rc=0) plus read-only file/git inspection - none of which opens the catalog (catalog.sqlite3, -shm and -wal all unchanged across the run; wiki's CI-equivalent gate was separately shown not to touch it either). No data command, no --dry-run, no network, no config/DB/task/worker change in any repository. DISCLOSED: the session ALSO pushed to GitHub five times tonight, and this repo's mandatory pre-push gate runs its real-data suite against the PRODUCTION catalog read-only (tools/pre_push_gate.py:184-199). That is what advanced catalog.sqlite3-shm at 21:18:15 and 21:26:47 (gate runs preceding pushes #139 21:19:16 and #140 21:27:44; reproduced by the manual gate at 22:05:03). The v0.1 statement that no code path touching the catalog was executed was therefore too strong and is retracted; the reading was read-only throughout (main DB and -wal never changed). A 99-sample/1500 s passive observation found zero -shm transitions, and the 22:00 daily task touched it at 22:00:02/22:00:18 as expected. See boundary-audit.md and F-A01-8.",
   "failed_or_unknown": [
     "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is now resolved by CI timestamps + gate code",
@@ -38,7 +84,9 @@
     "A05 real-corpus sample list not yet submitted for per-item confirmation (gate G7)",
     "A06 L01-L12 baseline and read-only trace not started",
     "A03 section 2.3 items 3-5 and A04 V3's data-side half stay open pending VR",
-    "the execution-plan section 50 minimum-artifact list is still partial: results/, oracle/, tests/, rollback-contract.json and outcomes.json belong to later phases and are not created; reviews/ now exists"
+    "the execution-plan section 50 minimum-artifact list is still partial: results/, oracle/, tests/, rollback-contract.json and outcomes.json belong to later phases and are not created; reviews/ now exists",
+    "handbook section 3's run structure is ALSO partial and was missing from the earlier list (A-DR2-11): card.json, baseline.json and data-manifest.json are not provided (command-manifest.json and inputs.json are the nearest equivalents; baseline-map.md is prose, not baseline.json)",
+    "no separately signed owner-authorization artefact exists - authorization_record is a transcript quote (A-DR2-11)"
   ],
   "authorization_needed": [
     "GRANTED 2026-09-11: A-phase precise DEV/data-read permission; --help-only command manifest; VR reviewer assignment",
@@ -61,12 +109,12 @@
   "catalog_size_bytes": 49677344768,
   "inputs": {
     "company-wiki": {
-      "head": "7d4852fa35023aaf467ba7a7277c0ff4d77c2eb9",
-      "dirty": 3
+      "head": "478bb92ab8928059bed575bf98eb734aca969d33",
+      "dirty": 1
     },
     "revenue-forecast": {
-      "head": "d152833fb2976c6e831b7280e14eb06305c8a077",
-      "dirty": 1
+      "head": "3e0c8f33d96ad4f96450035e72e21fc6f9ee471e",
+      "dirty": 16
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
@@ -78,24 +126,24 @@
   "inputs_note": "revenue-forecast: `head` is the tree the reviewer reads and `dirty` is its working-tree count at generation time (non-zero only because the corrections were still uncommitted when this file was generated; see `reviewed_commit`). Every commit made in this run touches only assurance/runs/2026-09-11_r4-phase-a/, so the twelve product input hashes frozen in baseline-map.md section 0 and inputs.json stay byte-accurate (independently re-derived by A.DR rev1: 12/12 HASH_OK). company-wiki carries two doc-only edits outside this run directory (PLANNING_STATUS.md and the audit plan's progress.md/task_plan.md) plus PLANNING_STATUS.md's own entry; no product code or config is touched in any repository.",
   "produced_files": {
     ".gitattributes": {
-      "sha256": "8d10b3ccbbcb5902f06f726e757fa33fbc418ae0167007c36587dfd6ed3823f5",
-      "size": 703
+      "sha256": "c323b7ecd6485f2a7321768163c948d816ed2aa06de0ea80dbafa336f5b1884f",
+      "size": 1286
     },
     "baseline-map.md": {
-      "sha256": "394077da1007013e547e03d924ddf3760b41e12793f471d316ca07313d2b32f1",
-      "size": 12696
+      "sha256": "47dfce9f0a40f05faf85a9a637eee72d74b7c280892dffa7812671b7b324f2b9",
+      "size": 14770
     },
     "boundary-audit.md": {
-      "sha256": "6bce5289b326bceb9a20af67460fcc274486e297313f2abbe6df7119986f5550",
-      "size": 11496
+      "sha256": "f7ed5cd96ff7df54ad9d36b472dea522ba16127cdd42d5fb765ef98a164ff114",
+      "size": 13393
     },
     "command-manifest.json": {
       "sha256": "cce1b173640a4372844e0706e94d9958e845a82cdf35c0faaba019775bd72a0f",
       "size": 1971
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "12197d231971e0559ce854155f9ff1e73fc25ab5fdf655cb5d166a4d1c5e3146",
-      "size": 10791
+      "sha256": "d78cd287ee24022435f8bfa3babba849c127d179efe13df5a915fa2546a4d065",
+      "size": 16603
     },
     "evidence/catalog-companion-observation.csv": {
       "sha256": "18da3da04d1a89e0d29faa8a3e5a7811e34ac2b0680bccc049ac43372bd49f8b",
@@ -106,50 +154,62 @@
       "size": 740
     },
     "evidence/cli-help-matrix.json": {
-      "sha256": "4a95ded2b310f3f8b0e28f2ac61ee14f1246b77bfbbd8138a8cd63aa5cb0d9ca",
-      "size": 46812
+      "sha256": "013ea19bc458f3c144c7d3b36f74db04f4788ee6fbbfa7a31f2b04c72b988412",
+      "size": 47047
     },
     "evidence/observe_catalog_companions.ps1": {
       "sha256": "4ee5b3eff1db267ed6590ec2263e5e575b56cff73c4e868d7bf3e807a1e4e2bb",
       "size": 4396
     },
     "evidence/run_cli_help_matrix.py": {
-      "sha256": "a402ef1ce2f514a9c741203f32b4a308c04961371714d6c43f2e1ca9684fc0df",
-      "size": 8582
+      "sha256": "fe0b7cf7279761d0b70b4f90fb832c872d02f349964ae952940f95c94f68c9dd",
+      "size": 9206
     },
     "findings.md": {
-      "sha256": "bac153110071889247497e386d5a0714eb6565afec692759fb7fd9ffef0f0b45",
-      "size": 11070
+      "sha256": "ea9bbe591e7d1b8186eec82d727c2b2062c0fb7563d235a675fa0cdca124da34",
+      "size": 11517
     },
     "identity-contract.md": {
       "sha256": "028e44bc87db0d0b93094d081534c9509c9a9809995ad0d628e703de3d241be6",
       "size": 11798
     },
     "inputs.json": {
-      "sha256": "64b6592a7b3f6ea89bf03fa68f7e685efa92a9fb89598013f51a9ea00e116ff3",
-      "size": 7711
+      "sha256": "33eddeaaf41fdabdf9a5ec20a088d5f29645ba74b3801de137915c2a32c603da",
+      "size": 9363
     },
     "operation-contract.md": {
-      "sha256": "99a307169ed932dff3619bec7289e8a921f317d92a34adef03791c1dedf5b22b",
-      "size": 13068
+      "sha256": "8f24ee9999e753d6fdf14c7e59fe1023a9bc0e79605007ef90d834f10d360192",
+      "size": 13742
     },
     "progress.md": {
-      "sha256": "6c1769c0f48a2f2c0319b53a5354e85b7269d390e1d08249a5eeda4d56ba7c9a",
-      "size": 8594
+      "sha256": "629c4b77a874a950fa91982e651d78ef86c6d0cda8ef12723c5169a73a69e9eb",
+      "size": 10962
+    },
+    "reviews/A.DR-rev2.json": {
+      "sha256": "8438c504537dfa2c6339db8cc282a90ffad8ea245452a19832f06455cf3cd06e",
+      "size": 69014
     },
     "reviews/A.DR.json": {
       "sha256": "93900926df672d7d214763196771e99c780ce9237fe19565e0768dff9ee2c67d",
       "size": 45789
     },
     "root-contract.md": {
-      "sha256": "955b012ffe8b3102aef2fa04256f08bca130084bf5ca94c9d7224cd97445c886",
-      "size": 8926
+      "sha256": "00a5c8c36f3d65ca5cf7445c264839464846002760186fe1f492c58689af030b",
+      "size": 10310
     },
     "task_plan.md": {
-      "sha256": "76dc9f1e5faa2a79da6fa6a2a84a32cbae241c270866ea8b3e1681ad73a2ee25",
-      "size": 6975
+      "sha256": "ec909be90831a4c777d73021bbeb26f733ba2f519cf6690442878112ee745290",
+      "size": 8067
     }
   },
-  "produced_files_note": "Computed by evidence/build_checkpoint.py over the whole run directory; checkpoint.json itself is excluded (it cannot hash itself). The A.DR review file is included because the reviewer wrote it inside this run directory.",
-  "generated_at_utc": "2026-09-11T21:08:20.776305+00:00"
+  "produced_files_note": "Computed by evidence/build_checkpoint.py over the whole run directory; checkpoint.json itself is excluded (it cannot hash itself). The A.DR review records are included because the reviewers wrote them inside this run directory. SHA-256 is taken over the RAW working-tree bytes; because a commit cannot contain its own hash, the recorded digest for checkpoint.json would be circular and is therefore omitted - verify it with `git hash-object` instead.",
+  "produced_files_verification": {
+    "checked": 19,
+    "source": "index",
+    "blob_mismatches": [],
+    "method": "sha256 of the indicated blob compared with produced_files[rel].sha256 (source=index)",
+    "all_match": true,
+    "post_commit_recheck": "Run `python evidence/build_checkpoint.py --verify-only` after committing: it re-checks every recorded digest against `git cat-file blob HEAD:<path>`. Build time can only check the staged blob, because the commit that carries this file does not exist yet."
+  },
+  "generated_at_utc": "2026-09-11T21:24:05.875667+00:00"
 }

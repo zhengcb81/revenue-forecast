@@ -88,8 +88,26 @@
     "note": "The interpreter used by the A-phase --help manifest is recorded in command-manifest.json entrypoint. No A-phase action used the company-wiki .venv."
   },
   "data_read_boundary": {
-    "declared": "no product database content was read by the authoring session and no CLI data command was executed",
-    "not_claimed": "that no other process opened the catalog during the window; catalog.sqlite3-shm was observed to change at 21:18:15 and 21:26:47 local with unknown attribution (finding F-A01-8, boundary-audit.md)",
+    "declared": "no product database CONTENT was read by the authoring session and no CLI data command was executed",
+    "not_claimed": "that the session never opened the catalog: the mandatory pre-push gate of revenue-forecast runs its real-data suite against the production catalog read-only (tools/pre_push_gate.py:184-199), so every push in this session opened it without reading content into this run. All catalog.sqlite3-shm mtime advances observed during the run are attributed to that gate (21:18:15, 21:26:47, 22:05:03, 22:10:11) or to the 22:00 daily task (22:00:02/22:00:18); main DB and -wal never changed. See boundary-audit.md.",
+    "attribution_status": "resolved (round-2 review A-DR2-02/A-DR2-05); the earlier 'unknown attribution / ambient process' wording in this field's predecessors is superseded",
     "catalog_size_bytes": 49677344768
+  },
+  "authorization": {
+    "record_type": "session-transcript quote (no separate signed artefact exists; this is the limitation A-DR2-11 names)",
+    "granted_by": "repository owner (human)",
+    "granted_at_local": "2026-09-11 (evening, before 21:00)",
+    "verbatim": "1，授权，2，尽快开门，3，可以 — interpreted by the author as: (1) authorise the A-phase precise DEV/data-read permission, (2) proceed to open the gate as soon as possible, (3) approve the remaining items including the --help-only command manifest and the VR reviewer assignment",
+    "scope_granted": [
+      "A-phase read-only design work (A01-A04)",
+      "--help-only command manifest execution",
+      "VR reviewer assignment"
+    ],
+    "scope_not_granted": [
+      "product/config/database writes",
+      "any command execution beyond --help (including --dry-run and data commands)",
+      "network downloads, LLM egress, task registration, worker resume, deletion"
+    ],
+    "author_session_id": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102 (read from the runtime-managed DSH_SESSION_ID; a self-reported id is process evidence, not institutional proof - see gate G6)"
   }
 }

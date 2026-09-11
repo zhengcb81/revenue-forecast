@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-11T20:37:43.160521+00:00",
+  "generated_at_utc": "2026-09-11T21:23:41.534764+00:00",
   "invocations": 52,
   "top_level_commands": [
     "scan",
@@ -76,7 +76,7 @@
       },
       "catalog.sqlite3-shm": {
         "size": 32768,
-        "mtime_ns": 1789158407659071200
+        "mtime_ns": 1789161011817923500
       },
       "catalog.sqlite3-wal": {
         "size": 0,
@@ -109,7 +109,7 @@
       ".venv\\Lib\\site-packages\\certifi\\__pycache__",
       ".venv\\Lib\\site-packages\\charset_normalizer\\__pycache__"
     ],
-    "git_dirty_lines": 2
+    "git_dirty_lines": 1
   },
   "post_snapshot": {
     "catalog": {
@@ -123,7 +123,7 @@
       },
       "catalog.sqlite3-shm": {
         "size": 32768,
-        "mtime_ns": 1789158407659071200
+        "mtime_ns": 1789161011817923500
       },
       "catalog.sqlite3-wal": {
         "size": 0,
@@ -156,7 +156,7 @@
       ".venv\\Lib\\site-packages\\certifi\\__pycache__",
       ".venv\\Lib\\site-packages\\charset_normalizer\\__pycache__"
     ],
-    "git_dirty_lines": 2
+    "git_dirty_lines": 1
   },
   "side_effects": {
     "catalog_unchanged": true,
@@ -175,11 +175,11 @@
       "catalog.sqlite3-shm": {
         "before": {
           "size": 32768,
-          "mtime_ns": 1789158407659071200
+          "mtime_ns": 1789161011817923500
         },
         "after": {
           "size": 32768,
-          "mtime_ns": 1789158407659071200
+          "mtime_ns": 1789161011817923500
         },
         "unchanged": true
       },
@@ -214,7 +214,7 @@
       "open file handles / object access by other processes",
       "network activity (no capture in this run)"
     ],
-    "interpretation_limit": "catalog.sqlite3-shm is touched by an ambient process on this machine on its own schedule (see finding F-A01-8 and boundary-audit.md), so a changed -shm mtime cannot be attributed to these --help invocations; a stable -shm across the run is weak (not decisive) evidence.",
+    "interpretation_limit": "catalog.sqlite3-shm is not a reliable no-open oracle on this machine: the 22:00 daily task and this repo's mandatory pre-push gate (its real-data suite, tools/pre_push_gate.py:184-199) both open the catalog read-only and advance -shm. All observed advances have been attributed to one of those two (see boundary-audit.md sections 1-3); a stable -shm across this run is therefore consistent with, but not proof of, zero opens by these invocations. Main DB and -wal stayed unchanged, i.e. no logical write.",
     "cli_commands": "--help only; no --dry-run, no data command, no network"
   },
   "results": [

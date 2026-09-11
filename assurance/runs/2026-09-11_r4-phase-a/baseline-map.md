@@ -31,8 +31,10 @@
 
 > wiki `src/company_wiki/source_catalog/` 现有 **86 个 .py**；`reader.py` 存在。
 
-> **v0.2 补记（A-DR-09：HEAD/工作树再冻结）**：上表是 **A01 时刻**（21:0x）的实测值。A02–A04 的文档与 run 目录本身随后被提交，revenue HEAD 因此前移：`4c8bc276…`（A01）→ **`b644e167b299965812eee3a6013727d4cd76bf57`**（本文件 A02–A04 提交后，工作树**干净**）。`4c8bc27..b644e16` 只含 run 目录的 4 个提交、**不含任何产品文件**，故 §0 的 12 个输入哈希在提交后**仍逐字节成立**（A.DR 已独立复核）。checkpoint.json 的 `revenue_head`/`revenue_dirty` 已按本注记重冻结。
-> **v0.2 补记（A-DR-08：边界声明收窄）**：§0 的"干净"仅指 **git 工作树**；它**不**覆盖 `.source_catalog` 等被 ignore 的运行时状态。实测该目录下 `catalog.sqlite3-shm` 在本 run 期间（21:18:15）有过写入、且 21:26:47 再次出现，**归属未知**；v0.1 的"未触碰 DB"式表述不得被读作"期间无任何连接"。证据与实验见 [boundary-audit.md](boundary-audit.md)。
+> **v0.2 补记（A-DR-09：HEAD/工作树再冻结）**：上表是 **A01 时刻**（21:0x）的实测值。A02–A04 的文档与 run 目录本身随后被提交，revenue HEAD 因此前移：`4c8bc276…`（A01）→ **`b644e167…`**（A02–A04 提交后，工作树**干净**）→ 本 v0.3 更正前为 `3e0c8f3`。`4c8bc27..b644e16` 只含 run 目录的 4 个提交、**不含任何产品文件**，故 §0 的 12 个输入哈希在提交后**仍逐字节成立**（A.DR rev1/rev2 均独立复核）。
+> **v0.3 漂移记录（A-DR2-08，handbook §2.3）**：company-wiki 从 A01 冻结的 `7d4852f`（dirty 3，即当时本会话的两份文档改动）漂移到 **`478bb92`**（**clean**）。`478bb92` 于 22:08:29 提交，**只改三个台账文件**：本仓 `PLANNING_STATUS.md`、`docs/plans/painpoint-outcome-audit-2026-09-05/progress.md` 与 `task_plan.md`（+31 行，无产品代码/配置/测试）。→ **边界表述据此收窄**：本轮 run 的**证据产物**只落在 `revenue-forecast/assurance/runs/2026-09-11_r4-phase-a/`（**不在审计证据目录内**）；但同一会话**另行**更新了该审计目录内的**计划台账**（`progress.md`/`task_plan.md`）——它们是台账而非冻结证据，且属 owner 指定的文档任务。**v0.2 中"不写回审计证据目录"的表述若被读作"本会话从未改动该目录任何文件"是不准确的**，以此注记为准。
+> **v0.3 补记（A-DR2-05：`-shm` 观测已到审查时刻）**：`catalog.sqlite3-shm` 的已观测前移共 **6 处**：`21:18:15`、`21:26:47`（#139/#140 推送前 gate）、`22:00:02`、`22:00:18`（22:00 每日任务）、`22:05:03`（22:03 手动 gate，**跑了 gate 未推送**这一类）、`22:10:11`（**#141 推送前 gate**，GitHub run #141 创建于 22:11:22）。全部归因，主库与 `-wal` 全程未变。
+> **v0.2 补记（A-DR-08：边界声明收窄；v0.3 已归因，见上一条）**：§0 的"干净"仅指 **git 工作树**；它**不**覆盖 `.source_catalog` 等被 ignore 的运行时状态。实测该目录下 `catalog.sqlite3-shm` 在本 run 期间多次前移（21:18:15、21:26:47、22:00:02/18、22:05:03、22:10:11），**v0.3 已全部归因**（推送前 gate / 每日任务，均为只读打开；主库与 `-wal` 未变）；v0.1 的"未触碰 DB"式表述不得被读作"期间无任何连接"。证据见 [boundary-audit.md](boundary-audit.md)。
 > **v0.2 更正（A-DR-15 / A-DR-02）**：§1 表 ②③ 行的机制描述与 §2 的复用链表述见就地更正。
 
 ## 1. 主链：query → identify → resolve → open → 消费
@@ -40,14 +42,14 @@
 | 跳 | 入口（实测） | 进程形态 | 读写性质（代码判读） |
 |---|---|---|---|
 | ① query/identify | wiki `cli.py` 子命令 `identify`（面积为 §4：41 顶层 + 10 嵌套 = 51 个解析器节点，其中 4 个是纯分组 → **47 个叶子命令**） | 同进程 | 只读：解析请求→身份/路由，不落盘。**例外**：`identify --refresh` 触网+写（`cli.py:1080-1087`、`security_identity.py:1007/:348`）——见 A03 更正 1 |
-| ② resolve（复用） | wiki `cli.py::resolve` → `service.py` → `resolver.py` | 同进程 | 只读：在已索引集合上返回 handle（`resolver.py` 内 `is_canonical` 2 处 `:915/:1157`；复用判定读 `root.kind` ∈ `reusable_root_kinds`，`resolver.py:782-786`/`:933-940`）。**v0.2 更正（A-DR-02）**：v0.1 写的"`priority` 1 处分支"**是错的**——`resolver.py` 内 `priority` 仅 1 处命中且位于**字符串字面量** `:531`；真正的优先级排序在 **SQL**：`service.py:329`/`:527`，以及 `service.py:643-653` 的 canonical 选择键 `(root_priority, root_id, relative_path, location_id)` |
-| ③ ensure（下载，显式） | wiki `cli.py::ensure` | 同进程 + 可能 fork 子进程 | **三道闸（v0.2 按 `cli.py:742-824` 重述，A-DR-15）**：① 无 `--allow-download` 且 mode≠`latest_as_of` → `:752-758` **纯读**返回 resolve 结果；② 有 `--allow-download` 或 `latest_as_of` → 写流程（`:760-762` 先取 `get_catalog().store`，**写入器初始化可能先建 catalog**）；③ worker `desired_state=="paused"` 时 `:764-771` **RuntimeError 拒绝**下载，**除非**显式 `--allow-acquisition-while-paused`；**被该 flag 放行时才** `:772-778` 记暂停期审计（`_append_paused_acquisition_audit` → 追加 `catalog_dir/paused_acquisition.log`，`:109`；best-effort，失败只 warn 不阻断）。v0.1 把审计写成"worker 非 paused 时记录"，**方向写反了** |
+| ② resolve（复用） | wiki `cli.py::resolve` → `service.py` → `resolver.py` | 同进程 | 只读：在已索引集合上返回 handle（`resolver.py` 内 `is_canonical` 2 处 `:915/:1157`；复用判定读 `root.kind` ∈ `reusable_root_kinds`，`resolver.py:782-786`/`:933-940`）。**v0.2 更正（A-DR-02）**：v0.1 写的"`priority` 1 处分支"**是错的**——`resolver.py` 内 `priority` 仅 1 处命中且位于**字符串字面量** `:531`；真正的优先级排序在 **SQL**：`service.py:329`/`:527`/**`:772`（第三处，v0.3 补，A-DR2-10）**，以及 `service.py:643-653` 的 canonical 选择键 `(root_priority, root_id, relative_path, location_id)` |
+| ③ ensure（下载，显式） | wiki `cli.py::ensure` | 同进程 + 可能 fork 子进程 | **三道闸（v0.2 按 `cli.py:742-824` 重述，A-DR-15；v0.3 补全连接条件）**：① 无 `--allow-download` 且 mode≠`latest_as_of` → `:752-758` **纯读**返回 resolve 结果；② 有 `--allow-download` 或 `latest_as_of` → 写流程（`:760-762` 先取 `get_catalog().store`，**写入器初始化可能先建 catalog**）；③ **`if args.allow_download and desired_state == "paused" and not args.allow_acquisition_while_paused:` → `:764-771` RuntimeError 拒绝**（三条件为**与**关系）；**仅当 `args.allow_download and desired_state == "paused"` 时** `:772-778` 记暂停期审计（`_append_paused_acquisition_audit` → 追加 `catalog_dir/paused_acquisition.log`，`:109`；best-effort，失败只 warn 不阻断）。v0.1 把审计写成"worker 非 paused 时记录"，**方向写反了** |
 | ④ open/读取 | wiki `cli.py::query`/`preview`/`documents`/`export` 等 | 同进程 | 只读（`preview` 允许不扩大正式分析/LLM 许可——A03/A07 要冻结此边界） |
 | ⑤ 消费（跨仓） | **filing**：`scripts/fetch_filing.py::_run_company_wiki_json`（L199–213，`subprocess.run` + Windows `CREATE_NO_WINDOW`）→ 调 wiki CLI；**revenue**：`scripts/source_preparation.py`（L3–4 注释即"真实跨仓链：filing-fetch (resolve/ensure) → company-wiki catalog"，`subprocess` L18、`subprocess.run` L99） | **子进程** | 取决于所选子命令；resolve 路线只读、ensure 路线写 |
 
 ### 1.1 子进程清单（v0.2 **逐模块重建**，A-DR-06）
 
-> v0.1 的 wiki 侧只有一句"`ensure` 内部按 provider 起子进程"，**严重低估**。实测 `company-wiki/src` 全树 grep `subprocess\.|Popen|os\.system|CREATE_NO_WINDOW` 命中 **7 个模块、12 个真实 spawn 调用点**：
+> v0.1 的 wiki 侧只有一句"`ensure` 内部按 provider 起子进程"，**严重低估**。实测 `company-wiki/src` 全树 grep `subprocess\.|Popen|os\.system|CREATE_NO_WINDOW` 命中 **7 个模块**。**v0.3 计数更正（A-DR2-04）**：v0.2 写的"12 个真实 spawn 调用点"**不成立**——`startup.py:107/124/176/212` 是 `runner: Callable[...] = subprocess.run` 的**默认参数绑定**，不是调用；`startup.py` 内**唯一真实调用点**是 `:109`（`_run` 里的 `runner(args, ...)`，被 `schtasks`/`reg` 路径复用）。**真实调用点 = 9 个**（下表逐行给号），另有 4 处默认绑定（不计入）。
 
 | 模块 | spawn 点 | 被执行体 | 性质 / 边界 |
 |---|---|---|---|
@@ -58,7 +60,7 @@
 | `lock.py` | `:85` `subprocess.run`（`:101` flags） | `powershell.exe -ExecutionPolicy Bypass -Command Get-CimInstance …CreationDate` | 系统面**只读**（PID 复用防护） |
 | `normalizer.py` | `:286` `subprocess.run` | **`taskkill.exe /PID <pid> /T /F`** | **本机破坏性动作**（强杀进程树）——`normalize` 不是纯 W，含 D 语义，A03 需补注 |
 | `normalizer.py` | `:1261` `subprocess.run` | **`antiword <path>`**（`.doc` → markdown） | 外部可执行体（本地转换） |
-| `startup.py` | `:107`/`:124`/`:176`/`:212`（默认参数 `runner=subprocess.run`） | **`schtasks.exe`**（计划任务安装/卸载/查询；`:100` 附近 `/F`） | **S 类**：Windows 登录任务 |
+| `startup.py` | **`:109`**（`_run` 内 `runner(args, …)`；`:107` 是 `runner=subprocess.run` 的**默认绑定**） | **`schtasks.exe` / `reg`**（计划任务安装/卸载/查询；`:100` 附近 `/F`） | **S 类**：Windows 登录任务。**注**：`:124`/`:176`/`:212` 同为默认绑定，不是调用点 |
 | `worker.py` | `:110` `subprocess.run` | `git -C <root> rev-parse --short HEAD` | 只读（代码版本戳） |
 
 跨仓 spawn（前表 ⑤）：filing `fetch_filing.py:213`、revenue `source_preparation.py:99`。

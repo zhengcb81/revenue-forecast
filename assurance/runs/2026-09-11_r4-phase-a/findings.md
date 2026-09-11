@@ -14,7 +14,7 @@
 - 证据（**v0.2 仅保留符号级可核实引用**）：filing `scripts/fetch_filing.py:199` `_run_company_wiki_json` → `:209` `creationflags = subprocess.CREATE_NO_WINDOW` → `:213` `subprocess.run`（调 wiki CLI）；revenue `scripts/source_preparation.py:18` `import subprocess` → `:99` `subprocess.run`（`L3-5` 为模块 docstring 中的链路说明，**不作为证据**）。
 - **已删除的错误引用**（A-DR-06）：v0.1 引用的 revenue `scripts/company_wiki_source.py:12/261`（`filing_fetch_client.resolve_filing`）**是 docstring 文本，不是代码**——该文件内 `subprocess`/`filing_fetch_client` 命中全部落在 docstring（模块 docstring L1-14、函数 docstring L259-267），**无 import、无调用**。引用与 handbook §2.3"以符号为准"的要求相抵触，故删除。
 - 影响：A03 的"副作用表"必须**按子进程边界**给（解释器路径/cwd/argv/env/读写集合/网络/预算/timeout），不能只按函数调用描述；VR 的隔离测试也要在子进程层观测。
-- **范围更正**：级联**不止跨仓两处**——wiki 侧自身另有 **7 模块 / 12 个 spawn 点**（见 [baseline-map.md](baseline-map.md) §1.1），其中 `dayu_cli_adapter.py:192` 与 `adapter_process.py:137` 是**外部 provider 边界**。
+- **范围更正**：级联**不止跨仓两处**——wiki 侧自身另有 **7 个模块 / 9 个真实 spawn 调用点**（**v0.3 更正，A-DR2-04**：v0.2 写"12 个调用点"不成立，`startup.py:107/124/176/212` 是 `runner=subprocess.run` 默认绑定，唯一真实调用为 `startup.py:109`；见 [baseline-map.md](baseline-map.md) §1.1），其中 `dayu_cli_adapter.py:192` 与 `adapter_process.py:137` 是**外部 provider 边界**。
 
 ## F-A01-3：wiki CLI 面很大（**51 个解析器节点 / 47 个叶子命令**），其中既有只读也有写
 
@@ -49,19 +49,16 @@
 - 证据（v0.2 新增，回应 A-DR-08；**定案于 22:1x**）：
   1. A.DR 独立观测：`catalog.sqlite3-shm` `LastWriteTime = 2026-09-11 21:18:15`（checkpoint.json 写于 21:16:54 之后 81 秒）；全 `.source_catalog` 树中该日仅此一个文件被改。
   2. 作者观测：同一文件在 `21:26:47` 再次出现。
-  3. **归因证据（决定性）**：`revenue-forecast/tools/pre_push_gate.py:184-199` 的 **real-data 套件直接对生产 catalog 跑 pytest**；本会话当晚 **push 5 次**（GitHub Actions 外部时间戳：`#136 21:09:02`、`#137 21:12:29`、`#138 21:16:28`、`#139 21:19:16`、`#140 21:27:44`，全部 success），每次推送**之前**必须跑完该 gate（约 4–5 min，real-data 为最后一步）→ #139 的 real-data ≈ **21:18:15**、#140 的 ≈ **21:26:47**，与两处前移吻合。22:03 手动跑同一 gate 时把 `-shm` 推到 **22:05:03**（复现实验）。
+  3. **归因证据（决定性）**：`revenue-forecast/tools/pre_push_gate.py:184-199` 的 **real-data 套件直接对生产 catalog 跑 pytest**；本会话当晚 **revenue 推送 8 次**（GitHub Actions 外部时间戳：`#134 20:19:41`、`#135 20:22:10`、`#136 21:09:02`、`#137 21:12:29`、`#138 21:16:28`、`#139 21:19:16`、`#140 21:27:44`、`#141 22:11:22`，全部 success；wiki 另推 2 次 `#100 20:17:26`/`#101 22:08:58`），每次 revenue 推送**之前**必须跑完该 gate（约 4–5 min，real-data 为最后一步）→ #139 的 real-data ≈ **21:18:15**、#140 的 ≈ **21:26:47**、#141 的 ≈ **22:10:11**，与三处前移吻合；22:03 手动跑同一 gate（**未推送**）把 `-shm` 推到 **22:05:03**（复现实验）。**v0.3 更正（A-DR2-05）**：v0.2 写"push 5 次"**少算**（实为 revenue 8 + wiki 2），且未登记"手动跑 gate 未推送"这一类开库路径。
   4. **标定**：22:00 每日任务（`legacy_observer.py --read-only`）在 22:00:02/22:00:18 前移 `-shm` → **只读打开 WAL 库确实更新 `-shm`**；同时主库与 `-wal`（0 字节）全程未变 → **无逻辑写入证据**。
-  5. **阴性对照**：`--help` 探针（52×2 轮）、纯 import、watch 窗口（99 样本 / 25 min，窗内无 push）**零前移**；wiki 的 CI 等价门（22:00:22–22:01:45）**未前移**。
+  5. **阴性对照**：`--help` 探针（52×2 轮）、纯 import、观测窗（99 样本 / 1491.5 s，末样本 21:59:53，窗内无 push）**零前移**；wiki 的 CI 等价门（22:00:22–22:01:45）**未前移**。
   6. 已排除：无 `company_wiki`/`source_catalog` 进程；`company-wiki-source-catalog-worker` 任务不存在；`.source_catalog` 与 `Projects` 非 reparse point、不在 Dropbox/OneDrive 内。
-- **结论**：先前"无法归因 / 疑为环境周期性触碰"的表述**已撤回**；正确表述是——**本会话的 push 协议会以只读方式打开生产 catalog**，两次前移即由其造成。**A 阶段的设计动作**（读代码、写文档、`--help` 探针）确实不触碰该库，但"本会话未运行任何会打开 catalog 的代码路径"这一更强的说法**是错的**。
+  7. **措辞更正（A-DR2-06）**：v0.2 说"环境周期性触碰者假设被**证伪**"属**逻辑越权**——25 min 的零结果**不能**证伪存在性。正确表述：该窗口**未观察到**前移；在 6 处前移全部被 gate/每日任务解释后，已无需要引入该假设。
+- **结论**：先前"无法归因 / 疑为环境周期性触碰"的表述**已撤回**；正确表述是——**本会话的 push/gate 协议会以只读方式打开生产 catalog**，四处前移即由其造成（另两处为每日任务）。**A 阶段的设计动作**（读代码、写文档、`--help` 探针）确实不触碰该库，但"本会话未运行任何会打开 catalog 的代码路径"这一更强的说法**是错的**。
 - 影响：
   - v0.1（及 A01 §4/F-A01-6）的"零副作用"结论**范围过窄**：快照只看主库文件，看不到 `-shm`/`-wal`。
-  - **门禁教训（重要）**：任何"零触碰生产数据"的边界声明**必须显式排除 push 协议**（gate 会读生产 catalog）；边界证据应以**外部时间戳 + 隔离副本**为准，而非作者声明。
-- 处置：1) [boundary-audit.md](boundary-audit.md) 全文按归因结论重写；2) 快照字段扩展为三件套并重跑；3) G5（操作员级独立观测）**保留**——作者自证永不构成独立证据；4) 该"push 即读生产库"的事实已写入 A02/A03 的 VR 约束与后续阶段注意事项。
-- 处置：
-  1. 边界声明收窄为"作者会话未执行任何会打开 catalog 的 CLI/代码路径"，并把 shm 观测写入 [boundary-audit.md](boundary-audit.md)。
-  2. 证据执行器 [evidence/run_cli_help_matrix.py](evidence/run_cli_help_matrix.py) 的快照字段**扩展**为 `catalog.sqlite3` + `-shm` + `-wal`（覆盖盲区修复），并重跑 manifest 记录前后值。
-  3. **未完成（需 owner/操作员）**：本机无法自行开启对象访问审计或取得可靠的句柄级证据；该项登记为 A 阶段门禁的**操作员动作**（见 [task_plan.md](task_plan.md) 门禁表）。
+  - **门禁教训（重要）**：任何"零触碰生产数据"的边界声明**必须显式排除 push/gate 协议**（gate 会读生产 catalog）；边界证据应以**外部时间戳 + 隔离副本**为准，而非作者声明。
+- 处置：1) [boundary-audit.md](boundary-audit.md) 全文按归因结论重写（含 §3.3 计数与措辞更正）；2) 快照字段扩展为三件套并重跑（[evidence/cli-help-matrix.json](evidence/cli-help-matrix.json) 的 `side_effect_scope.interpretation_limit` 已同步为归因后表述）；3) [inputs.json](inputs.json) 的 `data_read_boundary` 与 `progress.md` 的 A-DR-08 行同步；4) G5（操作员级独立观测）**保留**——作者自证永不构成**制度性**独立证据。
 
 ## F-A01-9：A.DR 首轮复审结论 = **rejected**（8×P1 / 5×P2 / 3×P3），更正已就地完成并送复审
 
