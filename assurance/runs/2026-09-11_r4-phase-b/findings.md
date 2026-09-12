@@ -2,6 +2,17 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B04-1：同路径被新修订覆盖后，被取代修订的引用**不可再解引用**（实测确认；**B 无权修**，登记独立工作包）
+
+- **事实（本机复现，非推断）**：`company-wiki/tests/contract/test_r4b04_reference_stability.py::test_r4b04_same_path_new_revision_repoints_the_location_row` 把同一相对路径覆盖为新修订（sidecar 同步声明新 hash/provider id）并重扫后：
+  1. 该 location 行被 **改指**到新 document（`scanner.py:1123` 的 `ON CONFLICT(root_id,relative_path) DO UPDATE SET … source_id=excluded.source_id, document_id=excluded.document_id …`），`location_status='active'`；
+  2. **被取代的修订不再有任何 `active` location**（实测查询为空）；
+  3. 请求**旧版本** → `MISSING`，trace 为 `no_canonical_active_location`；请求**新版本** → `REUSED_EXACT`。
+- **影响**：设计 §B04 的目标"引用不因搬家失效"**有条件成立**——只要该版本在别处仍有合格副本（另一 root／另一路径）就成立；**同一路径被覆盖后旧字节已物理消失**，任何读取路径都救不回来。
+- **为什么不修**：位置 upsert 在 `scanner.py:1123`，**不在** file-scope 的 allowed 落点（F3 = `:1007-1099` 的 metadata 合并）；可用"墓碑/快照"缓解，但那属**写面**（`store.py`/`canonical_writer.py` 均在禁止表）。
+- **处置**：登记为**独立工作包**（与 R-6 的 6 处排序锚点、C/D 面同类）：候选方案 = (i) 覆盖时保留旧行并按 `moved`/`superseded` 标记（需要 DDL/写路径改动）；(ii) 由 canonical writer 在导入新修订时对旧修订留一份受控快照；(iii) 明确接受"同路径覆盖即失去旧引用"并在合同里写死（最小改动，但要在 A 侧合同里登记为已知限制）。
+- **同时钉住的正确行为**（同一文件的另 3 个用例，全部通过）：搬家（换路径）不破坏引用；`location_id` 只是 `(root_id, relative_path)` 的派生定位子；本版本全失效时**不会**用另一修订顶替。
+
 ## F-B02-7：`B.VR` rev4（定点复核 rev4 实施）= **accepted_with_findings**（0×P0 / 0×P1 / 1×P2 / 3×P3）→ 实施 rev5
 
 审查记录 [reviews/B.VR-b02-rev4.json](reviews/B.VR-b02-rev4.json)（第四个独立会话）。它确认 **M5/M6/M7 三个变异全部 KILLED**、`b02_mutation_check.py` 跑完把 `resolver.py` 还原到同一哈希、前几轮 4 条历史反例仍全 fixed，并独立复现了差异 a/b 的行为；但指出上一版的"更正"**没做全**：

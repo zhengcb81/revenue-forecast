@@ -1,0 +1,19 @@
+﻿== B04 raw run capture ==
+date: 2026-09-12T16:31:30.7949336+01:00
+git HEAD (company-wiki): 1d8b1f7
+
+$ python -m pytest tests/contract/test_r4b04_reference_stability.py -q
+tests\contract\test_r4b04_reference_stability.py ....                    [100%]
+
+============================== 4 passed in 0.95s ==============================
+
+$ python -m pytest -q <B04 + B02 + gates + ratchet set>
+tests\contract\test_fc1204_complexity_ratchet.py ..                      [100%]
+
+============================= 69 passed in 31.07s =============================
+
+$ python -m ruff check src tests/unit tests/contract scripts
+All checks passed!
+
+$ python -c <hash of the new test file>
+test_r4b04_reference_stability.py sha256(16) 6039984dfb394e46 12713 bytes

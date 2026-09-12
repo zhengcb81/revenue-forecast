@@ -154,32 +154,28 @@ LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": ("B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: "
               "B02 landed; B01/B03-B07 still design-only"),
-    "step": ("B02 rev5 implemented (wiki 1d8b1f7, text-only): the pre-B02 difference list now lives in ONE "
-             "authoritative place and every other location - including the product docstring and comment - "
-             "only references it; the audit enforces that and searches the product files"),
+    "step": ("B04 implemented (acceptance + finding, NO product change): a move keeps the reference, and the "
+             "same-path overwrite case is pinned and registered as F-B04-1 (out of the allowed file set)"),
     "last_completed_step": (
-        "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). "
-        "B02 went through five revisions under four independent reviews: rev1 (cab1fd6) rejected (2xP1); "
-        "rev2 (350b67a) accepted_with_findings (2xP2); rev3 (182846b) accepted_with_findings (1xP2 + 6xP3); "
-        "rev4 (da5e0f5) accepted_with_findings (1xP2 + 3xP3); rev5 (1d8b1f7) is text-only convergence. "
-        "Reviews rev2, rev3 and rev4 each falsified one of the author's own justification sentences, so the "
-        "wording now has a single authoritative list (evidence/b02-implementation.md section 3, items a-d) "
-        "that everything else references, and the two-sided audit both requires that list and forbids the "
-        "retired wordings as a family - while also searching the three product files, which is where the "
-        "drift was hiding (32/32 checks). Behaviour is unchanged since rev4 and was verified by the rev4 "
-        "reviewer: all four historical counter-examples fixed, mutants M5/M6/M7 killed, mutation harness "
-        "restores the file byte-identically. Measured: 30 acceptance cases, full suite 2698 passed / "
-        "7 skipped / 0 failed, coverage resolver.py 87.72% and service.py 95.16%, both ratchet tables green, "
-        "CI green on all four step commits (fresh Linux measurement)."
+        "B02 closed after five revisions under four independent reviews (see the review entries below; all "
+        "counter-examples fixed, mutants M5/M6/M7 killed, CI green on every step commit). "
+        "B04 then implemented as acceptance plus a registered finding, with NO product change - the design "
+        "goal already held after B02, so per the step's own plan the deliverable is verification, not code: "
+        "new file company-wiki/tests/contract/test_r4b04_reference_stability.py (4 cases) proves that a move "
+        "within a root keeps document_id/source_id/content_sha256 while the locator changes and the old row "
+        "is marked missing, that location_id is only a derived locator, and that a vanished version is "
+        "answered MISSING rather than substituted by another revision. Measured: 4 passed, the combined "
+        "B04+B02+gates+ratchet set 69 passed, ruff clean. The pinned gap (scanner.py:1123 re-points the "
+        "location row when the same relative path holds a new revision, so the superseded revision loses "
+        "its only locator) is registered as finding F-B04-1 with three candidate remedies, all of which "
+        "touch files outside this step's allowed set (write face / DDL / another work package)."
     ),
     "current_gate": (
-        "B.VR rev4 (focused recheck of the corrected S-10 wording, the anchor predicate/reason and the "
-        "three new regression cases), then B04 (landing plan already written: evidence/b04-plan.md). Two "
-        "deviations await the owner, both now stated falsifiably: S-10 (verified copies always win; only "
-        "when nothing verifies may one row - the legacy canonical of the document's own version - be "
-        "served on the catalog's claim; differences (a) and (b) above are listed for approval) and S-11 "
-        "(budget exhaustion maps to that same row instead of the design's blocked, because "
-        "ResolutionStatus has exactly five values)."
+        "B04 independent review (focused: the four acceptance cases and the F-B04-1 registration), then "
+        "B05 -> B01 -> B03 -> B06 -> B07. The owner still owes two rulings on B02, both stated as a single "
+        "authoritative difference list (evidence/b02-implementation.md section 3): S-10 (the claim-trusted "
+        "row and its four differences from pre-B02) and S-11 (budget exhaustion maps to that row instead of "
+        "the design's blocked, because ResolutionStatus has exactly five values)."
     ),
     "pending_review": [
         {
@@ -193,6 +189,16 @@ LEDGER = {
                      "re-runnable and searches the whole run directory"),
             "record": "reviews/B.DR-rev6.json",
             "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d",
+        },
+        {
+            "gate": "B.VR (B04, focused)",
+            "scope": "company-wiki/tests/contract/test_r4b04_reference_stability.py (4 cases) + finding F-B04-1",
+            "status": "pending",
+            "reviewer": ("independent subagent (non-author) - must differ from the four B02 reviewer sessions; "
+                         "the questions are whether the four cases really pin the claimed behaviour (including "
+                         "the pinned scanner re-point) and whether 'no product change' is the right call "
+                         "rather than a gap in the step"),
+            "note": "evidence: evidence/b04-implementation.md, evidence/b04-test-run.txt, findings.md F-B04-1",
         },
         {
             "gate": "B02 closure decision (author, 2026-09-12)",
@@ -316,10 +322,14 @@ LEDGER = {
     "gate_status": {
         "B.DR": ("rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 "
                  "implementation record (no design change); the ratchet table stays frozen (S-7)"),
-        "B.VR": ("rev1 = rejected (2xP1/2xP2/3xP3, reviews/B.VR-b02.json) and its findings are fixed in "
-                 "350b67a; rev2 pending. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by "
-                 "S-5, L2 real-byte layer still needs G8"),
+        "B.VR": ("rev1 = rejected (2xP1/2xP2/3xP3); rev2/rev3/rev4 = accepted_with_findings and each round "
+                 "falsified one of the author's justification sentences, now single-sourced; B02 closed by "
+                 "the author's documented decision (no fifth prose-only round); B04 review pending. "
+                 "Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer "
+                 "still needs G8"),
         "B.AR": "not started",
+        "B04": ("implemented as acceptance + finding F-B04-1 with NO product change (the design goal already "
+                "held after B02); review pending"),
         "S-1_test_files": "APPROVED (F10/F11); F10 landing used by tests/contract/test_r4b02_candidate_selection.py (23 cases)",
         "S-2_R1_R4_out_of_B": "DECIDED - R-1/R-4 stay outside B as separate work packages",
         "S-3_export_path": "DECIDED - export_policy_2x untouched, payload hash frozen (B-payload-hash still NOT executed)",

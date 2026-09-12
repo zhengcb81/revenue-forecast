@@ -1,5 +1,14 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-12（实施期）— **B04 已实施**（验收 + 发现登记；产品代码零改动）
+
+- **交付**：`company-wiki/tests/contract/test_r4b04_reference_stability.py`（4 用例，sha256(16) `6039984dfb394e46`）+ 发现 **F-B04-1**；记录 [evidence/b04-implementation.md](evidence/b04-implementation.md)、原始输出 [evidence/b04-test-run.txt](evidence/b04-test-run.txt)。
+- **验收结论**：① 搬家（同 root 换路径 + 重扫）**不破坏引用**——`document_id`/`source_id`/`content_sha256` 不变、`download_required=false`，只有 locator（相对路径、`location_id`）变化，旧行被标 `missing`；② `location_id` 是 `(root_id, relative_path)` 的纯函数 = 定位子提示，不是引用；③ 本版本全部失效时**不会**用另一修订顶替（`MISSING` + `matches == ()`）。
+- **发现（B 无权修）**：`scanner.py:1123` 的位置 upsert 在**同一相对路径**被新修订覆盖时**改指**该行 → 被取代修订再无 `active` location → 其引用不可解引用（请求旧版本 = `MISSING`，trace `no_canonical_active_location`）。该 upsert 不在 file-scope allowed 落点（F3 仅 `:1007-1099`），缓解方案属写面 → **登记独立工作包**（三个候选方案见 F-B04-1）。
+- **为什么零产品改动**：B04 的设计目标在 B02 落地后已经成立；按 [b04-plan.md](b04-plan.md) §2 的纪律，"无缺陷不改产品代码"，本步价值在**验收 + 钉住 + 登记**。
+- **复跑**：新用例 4 passed；B04+B02+门+棘轮合集 **69 passed**；`ruff` clean（原始输出见 [evidence/b04-test-run.txt](evidence/b04-test-run.txt)）。
+- **待办**：B04 的独立复审（`B.VR`，新会话）；随后 B05 → B01 → B03 → B06 → B07。
+
 ## 2026-09-12（实施期，第二轮复审后）— **B02 rev3**（B.VR rev2 = accepted_with_findings，5 条已逐条处置）
 
 - **独立复审 rev2**：新会话，记录 [reviews/B.VR-b02-rev2.json](reviews/B.VR-b02-rev2.json)，verdict = **accepted_with_findings**（0×P0/0×P1/2×P2/3×P3）。它**原样重跑**了 rev1 的两条 P1 反例并确认真的修好；独立复现了 23/23/10/787、覆盖率 87.29 %/95.16 %、复杂度棘轮、ruff；做了 7 个变异（6 个被杀）。

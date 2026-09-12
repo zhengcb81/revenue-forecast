@@ -149,6 +149,8 @@
 
 **测试**：L03、L07。
 
+> **实施回填（2026-09-12）**：B04 已实施，交付物是**验收 + 发现登记，产品代码零改动**（设计目标在 B02 之后已成立）。验收 = `company-wiki/tests/contract/test_r4b04_reference_stability.py`（4 用例：搬家不破坏引用、`location_id` 只是 locator 派生、本版本全失效时不用另一修订顶替、**同路径覆盖的改指行为被钉住**）；发现 = **F-B04-1**（`scanner.py:1123` 的 `ON CONFLICT` 改指使被取代修订失去唯一 locator → 旧引用不可解引用；该文件不在 allowed 集，登记独立工作包）。详见 [evidence/b04-implementation.md](evidence/b04-implementation.md) 与 [findings.md](findings.md) F-B04-1。
+
 ---
 
 ## B05 —— metadata 合并：来源优先，冲突保留（v0.1.1：覆盖整条 UPDATE，B-DR-03；落点与持久化决策，B-DR-12）
