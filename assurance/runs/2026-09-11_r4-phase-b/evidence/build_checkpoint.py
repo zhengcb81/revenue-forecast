@@ -153,35 +153,45 @@ def commit_anchor() -> dict:
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": ("B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: "
-              "B02, B04, B05 and B01 landed; B03/B06/B07 still design-only"),
-    "step": ("B01 implemented (one reuse rule: the resolver calls policy._effective_reusable, plus a "
-             "candidate-level filter because the document-level gate alone was not enough) and pushed as "
-             "0e28d99; the owner approved S-10/S-11/S-12/S-13 as recommended and put the simplified working "
-             "mode (section 11) in force - one independent review per step, one implementation record per "
-             "step, CI per step rather than per text-only revision"),
+              "B02, B04, B05, B01 (reviewed) and B03 landed; B06/B07 still design-only"),
+    "step": ("B01's review came back accepted_with_findings (1xP1/3xP2/2xP3) and every P1/P2 is disposed of in "
+             "be2e4ed - the P1 was the author's own acceptance defect (it froze the resolver-side policy export "
+             "and called it cross-repo, while filing-fetch consumes the policy_2x payload) and the P2s include a "
+             "real fail-open in config admission (a quoted boolean was admitted and read as reusable). B03 then "
+             "landed as 5ab0779: SourceResolver.read_verified_bytes serves a version's bytes or fails "
+             "explicitly, which closes the byte-level hard gate that decision S-10 deferred to the read path"),
     "last_completed_step": (
         "B04 closed after its focused review (all six findings addressed, plus an author-side mutation "
-        "harness). B05 implemented in three commits and then REJECTED by its own review (2xP1/5xP2/3xP3); "
-        "both P1s and the P2s are fixed (b6a8442, 9826b3c) with regression cases - conflict preservation no "
-        "longer depends on scan order, declaration is bound to the value the scanner actually consumed, "
-        "agreeing captures accumulate as sources and keep their attribution - and the two residual items "
-        "(B-VR05-09 wording, B-VR05-10 field names and low-entropy hashes) are registered as known follow-ups "
-        "rather than opening a prose-only round. B01 then landed: the reuse decision had TWO live "
-        "implementations (the exported policy honoured an explicit reusable_for_filing false, the resolver's "
-        "own kind-only set ignored it), so the resolver now calls the same policy function and passes that "
-        "set down to candidate selection. Measured: B01 6 acceptance cases; full suite 2716 passed / 7 "
-        "skipped with the only failure being the known leaked-worker environment artefact (it fails on the "
-        "pre-change tree too); coverage resolver.py 87.95% (floor 86), scanner.py 91.12% (floor 91), "
-        "service.py 95.20% (floor 95); both FC-1204 ratchet tables green; ruff clean; pre-push gate green. "
-        "The blast radius in production is NONE: every shipped root was already effectively reusable, so no "
-        "production answer changes and the exported policy hash is byte-identical - now frozen by a test "
-        "(cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626) because filing-fetch pins it."
+        "harness). B05 implemented in three commits, rejected by its own review, and its P1s and P2s fixed "
+        "(b6a8442, 9826b3c) with the two residual items registered. B01 then landed (0e28d99), was reviewed "
+        "independently (accepted_with_findings) and its findings were disposed of in be2e4ed: (a) P1 "
+        "B-VR01-01 - the frozen cross-repo hash was the WRONG artifact (export_policy v1 instead of the "
+        "policy_2x payload filing-fetch pins); both are now frozen with their roles and a new case compares "
+        "the consumer payload's reusable set with the resolver's OBSERVED behaviour on configs where an "
+        "explicit flag contradicts the kind list, which a kind-only revert of the policy_2x copy now fails; "
+        "(b) P2 - the record's causal sentence was false and is corrected to the measured mutation result; "
+        "(c) P2 - the B05 declaration test did not normalise the way the classifier does, so a "
+        "case-variant declared kind was downgraded to derived and manufactured a conflict (fixed per column: "
+        "document_kind casefolds, free-text and date columns stay exact); (d) P2 - config admission accepted "
+        "quoted booleans, so reusable_for_filing \"false\" was read as reusable (fail-open) and \"true\" "
+        "skipped CFG-05/CFG-07 (fixed as CFG-08, in its own function because the frozen complexity entry for "
+        "config.py caught the inline version at 50 > 46); (e) P3 - the empty-set escape in the candidate "
+        "filter is gone, so an omitted or empty set means 'nothing qualifies'; (f) P3 - record precision. "
+        "B03 then landed as 5ab0779: read_verified_bytes reads the file ONCE, digests exactly the buffer it "
+        "returns, and refuses everything else inside the contract's five error values (out-of-root locator "
+        "-> not_found before any read; cloud placeholder never hydrated; unreadable/interrupted/changed "
+        "mid-read; the size ceiling; cancellation sticky) with the bytes and their evidence returned "
+        "together. Measured: B01 acceptance 9 cases, B05 acceptance 10 cases, B03 acceptance 13 cases plus "
+        "one host-limited skip, unit + contract neighbourhood 816 passed, ruff clean, both FC-1204 ratchet "
+        "tables green, wiki pre-push gate green on both pushes."
     ),
     "current_gate": (
-        "B01's independent review (one round per step, section 11), which also samples the B05 P2 fixes; then "
-        "B03 -> B06 -> B07. B06/B07 must deliver the response-level blocked verdict that the owner assigned "
-        "to them (S-13), and B03 carries the deferred byte-level hard gate (the other half of S-10). No owner "
-        "ruling is outstanding: S-10/S-11/S-12/S-13 were all approved as recommended on 2026-09-12."
+        "B03's independent review (one round per step, section 11), which also samples the B01 dispositions; "
+        "then B06 -> B07. B06 must deliver both the response-level blocked verdict (S-13) and the "
+        "sidecar/identity rule that F-B01-7 shows is missing; B07 owns the versioned read contract, "
+        "including wiring consumers to read_verified_bytes instead of their own open() calls. No owner ruling "
+        "is outstanding: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12, and the working "
+        "mode is the simplified one (only scope or risk questions go back to the owner)."
     ),
     "pending_review": [
         {
@@ -197,19 +207,32 @@ LEDGER = {
             "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d",
         },
         {
-            "gate": "B.VR (B01, to be run)",
-            "scope": ("company-wiki 0e28d99: resolver.py (single reuse rule + candidate-level filter) and "
-                      "tests/contract/test_r4b01_field_owner_alignment.py (6 cases)"),
+            "gate": "B.VR (B01)",
+            "scope": ("company-wiki 0e28d99 (resolver reuse alignment + 6 cases) and the FC-1001 strict xfail "
+                      "in revenue-forecast b6d1fdc"),
+            "status": "closed",
+            "verdict": "accepted_with_findings",
+            "findings": {"P1": 1, "P2": 3, "P3": 2},
+            "note": ("reproduced every measured number and the FC-1001 justification with a real pre-change "
+                     "tree, and found one P1 in the AUTHOR'S OWN acceptance: the frozen 'cross-repo' hash was "
+                     "the resolver-side export, not the policy_2x payload filing-fetch consumes, and a "
+                     "kind-only revert of that copy left all six cases green while turning the consumer "
+                     "fail-open. Two P2s were real defects as well (a case-variant declared kind was "
+                     "downgraded to derived, and config admission accepted quoted booleans so a declared "
+                     "false read as reusable). All six are disposed of in be2e4ed, each with a mutation that "
+                     "now fails; the dispositions are tabulated in evidence/b01-review-disposition.md"),
+            "record": "reviews/B.VR-b01.json",
+        },
+        {
+            "gate": "B.VR (B03, to be run)",
+            "scope": "company-wiki 5ab0779: resolver.read_verified_bytes + ByteReadResult, 13 acceptance cases",
             "status": "pending",
-            "reviewer": ("independent subagent (non-author) - one round per step (section 11); the questions "
-                         "are (a) whether the resolver's reusable set really equals the exported policy's set "
-                         "in every configuration the config admits, (b) whether filtering candidates by root "
-                         "can silently turn a previously answerable request into MISSING for a root that was "
-                         "effectively reusable before, and (c) whether the frozen cross-repo policy hash is "
-                         "the right coupling to pin"),
-            "note": ("same round samples the B05 P2 fixes (9826b3c) instead of opening a prose-only round; "
-                     "evidence: evidence/b01-implementation.md, evidence/field-owner-map.json, findings.md "
-                     "F-B01-6"),
+            "reviewer": ("independent subagent (non-author), one round per step: does the entry point really "
+                         "return only bytes that were digested as returned (TOCTOU), are all refusals inside "
+                         "the contract's five values, can the mid-read check be defeated, and is the "
+                         "unimplemented snapshot tier honestly registered rather than implied"),
+            "note": ("same round samples the B01 dispositions (be2e4ed); evidence: "
+                     "evidence/b03-implementation.md, evidence/b03-plan.md, findings F-B01-8"),
         },
         {
             "gate": "B.VR (B05)",
@@ -379,12 +402,22 @@ LEDGER = {
                  "its one review round. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by "
                  "S-5, L2 real-byte layer still needs G8"),
         "B.AR": "not started",
-        "B01": ("implemented as 0e28d99: the resolver now calls policy._effective_reusable instead of "
-                "keeping a kind-only copy, and candidate selection filters by that set (the group-level gate "
-                "alone let an excluded root's copy win). No production answer changes - every shipped root "
-                "was already effectively reusable - so the exported cross-repo policy hash is byte-identical "
-                "and is now frozen by an acceptance case. Residual: the resolver imports the private "
-                "function, recorded in findings F-B01-6 and evidence/b01-implementation.md section 5"),
+        "B01": ("implemented as 0e28d99 and REVIEWED (accepted_with_findings); dispositions in be2e4ed. The "
+                "resolver calls policy._effective_reusable instead of keeping a kind-only copy, candidate "
+                "selection requires membership (no empty-set escape), config admission refuses quoted "
+                "booleans (CFG-08) and the declaration test normalises document_kind the way the classifier "
+                "does. Production blast radius is none (every shipped root was already effectively reusable). "
+                "Residual: the policy_2x copy of the rule cannot be removed (S-3 freezes the export path), so "
+                "agreement is asserted by a case instead of guaranteed by one implementation - and the "
+                "consumer-side hash that filing-fetch pins is now frozen in addition to the resolver-side one"),
+        "B03": ("implemented as 5ab0779: read_verified_bytes reads a version ONCE, digests exactly the buffer "
+                "it returns and refuses everything else inside the contract's five error values, closing the "
+                "byte-level hard gate S-10 deferred to the read path. Registered limits: the design's middle "
+                "tier (read an EXISTING controlled snapshot) has no object to read in this repository, so it "
+                "is unimplemented and bytes_source='snapshot' stays unreachable; ACL denial was not "
+                "synthesised separately; the cloud-placeholder case uses synthetic stat attributes; the "
+                "symlink case skips on this host; consumers that still open canonical_path themselves are "
+                "B07's to wire"),
         "B04": ("implemented as acceptance + findings with NO product change and reviewed (B.VR b04 = "
                 "accepted_with_findings, 2xP2 + 4xP3 addressed). Design goal 1-2 verified; goal 3 is "
                 "CONDITIONAL: a same-path overwrite destroys the old bytes, and with a second copy the old "

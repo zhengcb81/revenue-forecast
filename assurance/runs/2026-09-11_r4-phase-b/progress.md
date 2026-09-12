@@ -1,5 +1,15 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-12（实施期）— **B01 复审 = accepted_with_findings（1×P1/3×P2/2×P3）→ P1+P2 全部处置（`be2e4ed`）；B03 已实施（`5ab0779`）**
+
+- **B01 复审**（第七个独立会话）：[reviews/B.VR-b01.json](reviews/B.VR-b01.json)。它**独立复现了我的全部数字**（6/6 用例、两文件哈希、覆盖率 87.95/91.12/95.20、两张棘轮、ruff），并用**真实 pre-change 树**复核 F-B01-7 的论证 = **sound**（`strict xfail` 在实现后会 XPASS→FAIL ✓）。
+- **P1 是我自己的验收缺陷（B-VR01-01）**：我冻结的"跨仓 hash"是 `policy.export_policy`（`cf0ac2ad…`），而 filing-fetch 消费的是 `cli._policy_export_payload` → `policy_2x.export_policy_2x`（`c773099b…`，也是在产 `runtime_policy.json` 的值）。在产配置下两者可复用集合相同 ⇒ 混淆**看不出来**；但在"显式声明与 kind 列表冲突"的配置上，把 `policy_2x` 那行改回 kind-only 就能让 consumer **fail-open**（说声明 false 的 root 可复用）而我的 6 个用例**全绿**。→ 现已**两个 hash 都冻结并各标角色**，新增"consumer payload ↔ 解析器**可观察行为**"的一致性用例（该变异现在**被杀**）；`policy_2x` 的副本仍在（S-3），登记为残余。
+- **P2×3 全部已修**：① 我写的因果句是假的（变红的是集合一致性用例，不是"显式 false"用例）→ 记录更正为实测口径；② 我上一轮的 B05 P2 修复**过窄**（声明判定逐字比较，而分类器对 `document_kind` 做 casefold）⇒ `"Annual_Report"` 被降级为派生、制造假冲突 + blocked → 改为**按列归一化**（`document_kind` casefold，文本/日期仍逐字）+ 新用例；③ 准入点接受**带引号布尔** ⇒ `"false"` 被当作可复用（fail-open）且跳过 CFG-05/07 → 新增 **CFG-08**（内联版把 `config.py` 棘轮从 46 顶到 50，**被棘轮当场抓住**，抽成独立函数后回落）。
+- **P3×2**：删除"空集=不过滤"的逃逸（成员资格成为硬条件，新增直接调用选择器的用例，使 `filter_off` 变异**同时杀掉两条**）；记录精度更正（复杂度棘轮是 **2** 个用例，不是 4）。
+- **B03 已实施（`5ab0779`）**：`resolver.py::read_verified_bytes` —— **读一次**、对**实际返回的字节**复算摘要、与请求版本比对；失败全部落在合同**五值**内（`not_found`/`unavailable`），预算与取消是 `reason` 不是状态；越界 locator（含 symlink 逃逸）**零读**拒绝；占位**不水合**；读后再 `stat` 比对 `size`+`mtime_ns`（读中变化 ⇒ `changed_during_read`，即使摘要碰巧自洽）。新增 F10 **13 用例 +1 skip**。**设计第 2 级（受控快照）无对象可读** ⇒ **如实登记未实现**，`bytes_source="snapshot"` 保留为不可达取值，句柄不可固定时走**显式失败**。**S-10 的字节硬门就此闭合**（仍自开 `canonical_path` 的消费者归 B07 接线，已在 docstring 写明，不夸大）。
+- **流程教训（如实登记）**：B03 为避开与复审争用同一棵树，先在**独立 worktree** 实现；但 worktree 隔离**代码**、不隔离**机器资源**——复审测量期间我并行跑的全量套件很可能造成其报告中第二条失败。后续改为**复审先跑、实现等待**。
+- **门**：本轮 wiki 两次推送的 pre-push 门均 **GREEN**（含真数据套件）；CI 见 [evidence/b02-ci-runs.md](evidence/b02-ci-runs.md)（`be2e4ed` run `34720686541`）。revenue 侧提交见 §5 变更记录。
+
 ## 2026-09-12（实施期）— **B01 已实施**（复用判定收敛为一份实现 + 候选级过滤；在产爆炸半径 = none）
 
 - **交付**：`company-wiki/src/company_wiki/source_catalog/resolver.py`（sha256(16) `e43bc42b6108063c`）+ 新增 F10 验收 `tests/contract/test_r4b01_field_owner_alignment.py`（sha256(16) `810569b1f0ddb898`，**6 用例**）+ [evidence/field-owner-map.json](evidence/field-owner-map.json)（5 归属方 / 12 行 16 字段名 / 在产 config 事实 / 验收清单）。提交 `0e28d99`（`fcap`→`origin/master`），CI run `34717481812`。记录 [evidence/b01-implementation.md](evidence/b01-implementation.md)。

@@ -1,0 +1,66 @@
+{
+  "C1": {
+    "export_policy_v1_hash": "cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626",
+    "export_policy_2x_hash": "c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd",
+    "consumer_payload_source": "company_wiki.source_catalog.cli",
+    "consumer_payload": {
+      "policy_hash": "c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd",
+      "reusable_roots": [
+        "company_raw",
+        "dayu_portfolio",
+        "dropbox_stock",
+        "future_lake"
+      ]
+    },
+    "frozen_by_my_case": "cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626",
+    "my_case_froze_the_consumer_artifact": false,
+    "v1_reusable_roots": [
+      "company_raw",
+      "dayu_portfolio",
+      "dropbox_stock",
+      "future_lake"
+    ],
+    "v2_reusable_roots": [
+      "company_raw",
+      "dayu_portfolio",
+      "dropbox_stock",
+      "future_lake"
+    ],
+    "consumer_source_line": [
+      "def _policy_export_payload(config) -> dict[str, Any]:",
+      "    \"\"\"ZR-405: the root policy export payload (policy_hash + roots),",
+      "    shared by the ``policy-export`` command and the resolve/ensure response",
+      "    bodies so consumers validate containment against exactly what the wiki",
+      "    exports.",
+      "",
+      "    The payload is the verbatim ``export_policy_2x`` document plus its",
+      "    canonical hash: consumers re-compute the hash over the SAME bytes",
+      "    (excluding the ``policy_hash`` envelope key) — tokenizing or reshaping",
+      "    the roots here would break the byte-for-byte hash contract.  Paths are",
+      "    absolute by construction (the wiki->filing channel is a local",
+      "    subprocess; the RESOLUTION ENVELOPE carries the redacted copies for"
+    ]
+  },
+  "C2": {
+    "quoted_false_admitted": true,
+    "parsed_flag_value": "false",
+    "effective_reusable": true,
+    "fail_open": true,
+    "shipped_config_untouched": true
+  },
+  "C3": {
+    "resolve_rejects_when_set_empty": true,
+    "escape_present": true,
+    "select_candidate_callers": [
+      "_handle",
+      "_select_candidate"
+    ]
+  },
+  "C4": {
+    "complexity_ratchet_tests": [
+      "test_complexity_ratchet_frozen_files_do_not_worsen",
+      "test_complexity_ratchet_new_files_stay_simple"
+    ],
+    "count": 2
+  }
+}

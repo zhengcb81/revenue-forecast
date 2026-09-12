@@ -33,11 +33,11 @@
       "owner": "policy layer, ONE function",
       "carrier": "policy.py::_effective_reusable",
       "fields": ["reusable_for_filing (per root)"],
-      "b01_action": "the resolver now CALLS that function instead of keeping a kind-only copy, so an explicit false takes effect (owner R-2 / design P-7) and the resolver cannot disagree with the exported containment policy",
+      "b01_action": "the resolver now CALLS that function instead of keeping a kind-only copy, so an explicit false takes effect (owner R-2 / design P-7) and the resolver cannot disagree with the policy it aligns to",
       "live_implementations": [
         {"where": "resolver.py resolve()", "before": "kind-only set (ignored an explicit false)", "after": "calls policy._effective_reusable (B01)"},
-        {"where": "policy.py::_effective_reusable", "role": "authoritative function; unchanged by B01"},
-        {"where": "policy_2x.py::_effective_reusable_2x (via export_policy_2x)", "role": "frozen: in production, the only source of filing-fetch's FC-501 policy_hash; must not change (S-3)"}
+        {"where": "policy.py::_effective_reusable", "role": "the function the resolver aligns to; unchanged by B01; feeds policy.export_policy (hash cf0ac2ad...)", "role_correction": "B-VR01-01: this is NOT the export filing-fetch consumes"},
+        {"where": "policy_2x.py::_effective_reusable_2x (via export_policy_2x -> cli._policy_export_payload)", "role": "THE cross-repo source: what filing-fetch pins for FC-501 containment (payload hash c773099b...) and what the production runtime_policy.json carries; must not change (S-3)", "residual": "it is still a SEPARATE copy of the same rule (B-VR01-01). B01 may not delete it (S-3 freezes the export path), so the agreement is asserted instead: tests/contract/test_r4b01_field_owner_alignment.py compares the consumer payload's reusable set with the resolver's OBSERVED behaviour on configs where an explicit flag contradicts the kind list - a kind-only revert of this copy fails that case"}
       ],
       "semantics": {
         "explicit_true": "reusable regardless of the kind list",
@@ -92,19 +92,36 @@
       {"root_id": "future_lake", "kind": "directory", "reusable_for_filing_declared": true, "effective_reusable": true}
     ],
     "blast_radius_of_b01": "none in production: every shipped root was already effectively reusable, so aligning the resolver changed no production answer",
-    "policy_sha256": "cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626",
-    "policy_hash_pinned_by": "tests/contract/test_r4b01_field_owner_alignment.py (cross-repo: filing-fetch FC-501 containment)"
+    "policy_exports": {
+      "resolver_side": {
+        "artifact": "policy.export_policy",
+        "sha256": "cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626",
+        "consumed_by": "the resolver-side chain only",
+        "pinned_by": "tests/contract/test_r4b01_field_owner_alignment.py (test_r4b01_shipped_policy_hash_is_frozen)"
+      },
+      "cross_repo_consumer": {
+        "artifact": "policy_2x.export_policy_2x, reached through cli._policy_export_payload (ZR-405 payload)",
+        "sha256": "c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd",
+        "consumed_by": "filing-fetch, which pins it as its FC-501 containment source (filing_contracts.py:449-497); the production runtime_policy.json carries the same value",
+        "pinned_by": "tests/contract/test_r4b01_field_owner_alignment.py (same case, second assertion)",
+        "correction": "B-VR01-01: the first version of this file pinned the resolver-side hash and called it the cross-repo one, which was wrong; both are pinned now, each with its role"
+      }
+    },
   },
   "acceptance": {
     "file": "company-wiki/tests/contract/test_r4b01_field_owner_alignment.py",
-    "cases": 6,
+    "cases": 9,
+    "cases_note": "6 at implementation time; 3 added while disposing of the B01 review (consumer-payload agreement on contradicting configs, empty-set fail-closed selection, quoted-boolean refusal)",
     "covers": [
       "explicit false is not reusable (MISSING, trace names no_reusable_root_location)",
       "unset flag still follows the kind list",
       "explicit true wins over the kind list, agreeing with the exported policy",
       "the resolver's reusable set equals the exported reusable set (agreement property)",
+      "the consumer payload's reusable set equals the resolver's OBSERVED behaviour on configs where an explicit flag contradicts the kind list (kills a kind-only revert of the policy_2x copy - B-VR01-01)",
       "an unknown root field is refused by the single admission point",
-      "the shipped policy hash is frozen (a change must fail loudly and demand a cross-repo migration)"
+      "a quoted boolean is refused by the single admission point (CFG-08 - B-VR01-04)",
+      "an empty reuse set selects nothing (no fail-open escape - B-VR01-05)",
+      "both exported policy hashes are frozen with their real roles: resolver-side cf0ac2ad... and the consumed cross-repo c773099b..."
     ]
   }
 }

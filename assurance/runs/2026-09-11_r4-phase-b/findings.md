@@ -2,6 +2,18 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B01-8：`B.VR`（B01）= **accepted_with_findings**（1×P1 / 3×P2 / 2×P3）→ P1 与 P2 全部已处置（提交 `be2e4ed`）
+
+- **记录**：[reviews/B.VR-b01.json](reviews/B.VR-b01.json)；**逐条处置表**见 [evidence/b01-review-disposition.md](evidence/b01-review-disposition.md)；复现证据 [evidence/b01-review-verify.json](evidence/b01-review-verify.json)、变异 harness [evidence/b01_mutations.py](evidence/b01_mutations.py) 与 [evidence/b01_x2_agreement_probe.py](evidence/b01_x2_agreement_probe.py)。
+- **复审独立复现了作者的全部数字**（6/6 用例、两个文件哈希、覆盖率 87.95/91.12/95.20、两张棘轮、ruff），并用**真实 pre-change 树**复核了 F-B01-7 的论证 = **sound**。
+- **P1（B-VR01-01，我自己的验收缺陷）**：我冻结的"跨仓 policy hash"**是错的产物**——filing-fetch 消费的是 `cli._policy_export_payload`（= `policy_2x.export_policy_2x`，`c773099b…`，也是在产 `runtime_policy.json` 的值），而我冻的是 `policy.export_policy`（`cf0ac2ad…`）。在产配置下两个导出的可复用集合相同，所以这个混淆**看不出来**；但在"显式声明与 kind 列表冲突"的配置上，把 `policy_2x._effective_reusable_2x` 一行改回 kind-only 就能让 consumer 说"声明 false 的 root 可复用"（**fail-open**）而我的 6 个用例**全绿**。→ 已改为两个 hash 都冻结并各标角色 + 新增"consumer payload ↔ 解析器可观察行为"的一致性用例（变异现在被杀）。`policy_2x` 的副本仍在（S-3 冻结导出路径），**残余登记**：一致性由断言保证，不由"同一份实现"保证。
+- **P2（B-VR01-02）**：我写的因果句是**假的**（详见 §F-B01-6 的更正与 [evidence/b01-implementation.md](evidence/b01-implementation.md) §2.1）：去掉候选过滤后变红的是集合一致性用例，不是"显式 false"用例。
+- **P2（B-VR01-03）**：抽样复核我上一轮的 B05 P2 修复，发现它**过窄**——`_classification` 对 sidecar `document_kind` 做 `casefold`，而我的声明判定是**逐字比较** ⇒ `"Annual_Report"` 被判成"派生"，于是"声明压派生"失效并**制造假冲突 + blocked**。→ 已按列归一化修复（`document_kind` 走 casefold，文本/日期列仍逐字），新增用例。
+- **P2（B-VR01-04）**：准入点接受**带引号的布尔** ⇒ `reusable_for_filing: "false"` 被当作**可复用**（fail-open），且 `"true" is not True` 会让 CFG-05/CFG-07 **整条跳过**。→ 新增 **CFG-08**（bool 或 null）；内联版顶破 `config.py` 的棘轮值（46→50）被当场抓住，抽成独立函数后回落——S-7 的"新判定进新函数"再次被证明是硬约束。
+- **P3（B-VR01-05）**：空集逃逸不可达但**方向 fail-open** → 删除逃逸，成员资格成为硬条件；新增用例使 `filter_off` 变异**同时杀掉两条**用例。
+- **P3（B-VR01-06）**：记录精度（"4 passed"实为两张棘轮表合计；复杂度文件只有 2 个用例）→ 已分列（见 [evidence/b01-implementation.md](evidence/b01-implementation.md) §3.2）。
+- **作者的流程教训（如实登记）**：复审测量期间我在**独立 worktree** 里并行跑了一次全量套件，其报告中第二条失败很可能是我的并发造成的（worktree 隔离**代码**，不隔离**机器资源**）。下一步起复审期间不并行跑全量套件。
+
 ## F-B01-7（**阻塞性**）：FC-1001 的 `sidecar_missing` 真数据用例**从来没有**按它宣称的理由通过——它靠的是旧的复用门
 
 - **触发**：B01 落到 wiki 后，revenue-forecast 的 pre-push 门（真数据套件）变红：
@@ -43,7 +55,7 @@
 
 - **事实（B01 实施时实测）**：`reusable_for_filing` 的判定有两处——导出面 `policy.py::_effective_reusable`（filing-fetch 通过 FC-501 pin 的 `policy_hash` 就来自这里）**认**显式 `false`；解析器 `resolve()` 自己算的那份**只看 `kind`**。于是 owner R-2 / 设计 P-7 要求的"显式声明必须生效"**在解析侧不发生**：一个 `reusable_for_filing: false` 的 root 照样会被拿去复用。
 - **修法**：删掉第二份规则，解析器改**调用**同一个函数（`resolver.py:17` import，`:951` 算一次集合，透传到 `_handle`/`_select_candidate`）。语义：显式 `true` 胜过 kind 列表；显式 `false` 胜过 kind 列表；未声明跟随 `reusable_root_kinds`。
-- **实测到的第二层缺口（值得单独记住）**：只加**文档级**门（"存在某个合格 location 落在可复用 root 下"）**不充分**——排序后的**赢家**仍可能是被排除 root 的副本（`candidate_rank` 1）。B01 的新用例 `test_r4b01_explicit_false_is_not_reusable` 先**红**（观察到被排除 root 的副本被服务），加**候选级**过滤后才**绿**（`resolver.py:1373-1376`）。→ 同类"加过滤"的改动以后要问一句："门是加在**集合**上还是加在**赢家**上？"
+- **实测到的第二层缺口（值得单独记住；原因果句经 `B.VR` B01 更正）**：只加**文档级**门（"存在某个合格 location 落在可复用 root 下"）**不充分**——排序后的**赢家**仍可能是被排除 root 的副本（`candidate_rank` 1）。**更正**：原句说"新用例 `test_r4b01_explicit_false_is_not_reusable` 先红"**是错的**（该用例不进 `_select_candidate`）；变异实测（[evidence/b01_mutations.py](evidence/b01_mutations.py) `filter_off`，直接删掉过滤行）显示变红的是 **`test_r4b01_resolver_set_matches_the_exported_policy`**（其 rank-1 副本落在显式 false 的 root 下），本轮又新增 `test_r4b01_empty_reusable_set_serves_nothing` 一并守住。→ 同类"加过滤"的改动以后要问一句："门是加在**集合**上还是加在**赢家**上？"，并**确认哪条用例真的会因此变红**。
 - **爆炸半径 = none（有实测支撑）**：在产四个 root 本就都实际可复用，故对齐后**在产答案不变**、`policy_hash` **逐字节不变**；用例 `test_r4b01_shipped_policy_hash_is_frozen` 把 `cf0ac2adf971…` 冻住，未来改动会响亮失败。
 - **残留（登记，不在 B 内修）**：解析器 import 的是"私有"函数 `_effective_reusable`——这是"一份实现优先于再写一份"的取舍；若 `policy.py` 日后提供公开访问器，此 import 应随之改写。**没有**顺手公开它，因为那会动导出面 payload，而 `B-payload-hash` 目前仍不可执行。
 

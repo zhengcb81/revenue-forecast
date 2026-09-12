@@ -1,6 +1,8 @@
 # B01 实施与验证记录（2026-09-12）
 
-> 状态：**已实施**（产品代码 1 文件 + 新增验收 6 用例）。提交 `0e28d99`（company-wiki，`fcap` → `origin/master`），CI run id `34717481812` = **success**；run 目录提交在 revenue 侧**暂留本地**，原因是 pre-push 门出现一处**跨仓红**——见 §6 / [findings.md](../findings.md) **F-B01-7**（根因已定位：不是 B01 的缺陷，而是一条一直靠偶然理由通过的 FC-1001 断言）。
+> 状态：**已实施 + 已复审**（产品代码 1 文件 + 新增验收 6 用例 → 处置复审后 **9 用例**）。提交 `0e28d99`（company-wiki，`fcap` → `origin/master`），CI run id `34717481812` = **success**；复审处置提交 **`be2e4ed`**（产品 3 文件 + 2 个验收文件，见 [b01-review-disposition.md](b01-review-disposition.md)）。
+> `B.VR`（B01）= **accepted_with_findings**（1×P1 / 3×P2 / 2×P3，全部已处置）。其中 **P1（B-VR01-01）是我自己的验收缺陷**：我冻结的是 `policy.export_policy`（`cf0ac2ad…`）却称其为跨仓 hash，而 filing-fetch 消费的是 `policy_2x.export_policy_2x`（`c773099b…`）——现已**两个都冻结并各标角色**，并把"一致性"改成在**冲突配置矩阵**上比对 consumer payload 与解析器可观察行为。
+> run 目录提交在 revenue 侧曾一度**暂留本地**（原因：pre-push 门出现跨仓红，见 §6 / [findings.md](../findings.md) **F-B01-7**）——该阻塞已按 owner 裁定 A 解决，相关提交已推送。
 > 机器可读的字段归属表：[field-owner-map.json](field-owner-map.json)（B01 的第二个交付）。
 > 入口：本页给结论与命令；设计依据见 [../b-design.md](../b-design.md) §B01.1/§B01.2，允许集见 [../file-scope.md](../file-scope.md)（F2 `resolver.py`、F10 `tests/contract/**` 仅新增）。
 
@@ -36,9 +38,11 @@ B01 的题面是"字段归属与版本映射"，但设计 §B01.2 的 P-7 指出
 | `:1373-1376` | **候选级**过滤：`_select_candidate` 只保留 `root_id` 在集合内的候选（集合为空 = 不过滤，保持旧调用方的行为） |
 | `:1465` | `_handle` 签名同步（默认 `frozenset()`） |
 
-### 2.1 本步实测到的真缺口：**组级门不够**
+### 2.1 本步实测到的真缺口：**组级门不够**（原表述经 `B.VR` B01 更正）
 
-只加文档级门**不足以**实现 R-2：组级门只要求"**存在**某个合格 location 落在可复用 root 下"，而排序后的赢家仍然可能是**被排除 root 的副本**（`candidate_rank` 1）。新用例 `test_r4b01_explicit_false_is_not_reusable` 先**红**——观察到的正是"被排除 root 的副本被服务出去"——加上候选级过滤后才**绿**。这是 B01 自己的用例抓到的 B02 遗留缺口，不是文字问题。
+只加文档级门**不足以**实现 R-2：组级门只要求"**存在**某个合格 location 落在可复用 root 下"，而排序后的赢家仍然可能是**被排除 root 的副本**（`candidate_rank` 1）。
+
+**更正（`B.VR` B01 的 P2 B-VR01-02）**：原句写"新用例 `test_r4b01_explicit_false_is_not_reusable` 先红、加过滤后才绿"，**是错的**——该用例根本不进 `_select_candidate`。实测（变异 harness [b01_mutations.py](b01_mutations.py) 的 `filter_off`，直接删掉过滤行）：**唯一**变红的是 `test_r4b01_resolver_set_matches_the_exported_policy`（它的 rank-1 副本正好落在"显式 false"的 root 下），另有本轮新增的 `test_r4b01_empty_reusable_set_serves_nothing` 也变红（1→2 failed / 其余 passed）。→ 该过滤器的守卫用例是这两条。
 
 （对齐后的语义与 B02 的资格轨不冲突：候选级过滤只是**收窄**"谁有资格"，排序、预算、取消、`verified` 优先等 B02 语义原样保留。）
 
@@ -73,13 +77,11 @@ python -m pytest -q            (全量套件)
 
 | 门 | 阈值 | 实测 |
 |---|---|---|
-| FC-1204 复杂度棘轮 | 每文件仅计模块级函数 | **4 passed**（未改棘轮文件、未新增顶层函数） |
-| TIER1 `service.py` | 95 | 95.20% |
-| TIER2 `resolver.py` | 86 | **87.95%** |
-| FROZEN `scanner.py` | 91 | 91.12% |
+| FC-1204 **复杂度**棘轮（`test_fc1204_complexity_ratchet.py`，该文件**只有 2 个用例**） | 每文件仅计模块级函数 | **2 passed**（未改棘轮文件；B01 修复期内联的新判定一度把 `config.py` 顶到 50 > 46，被棘轮当场抓住 → 抽成独立函数后回落） |
+| FC-1204 **覆盖率**棘轮 | TIER1 `service.py` 95 / TIER2 `resolver.py` 86 / FROZEN `scanner.py` 91 | 需在**新测量**下判定（跟踪的 `coverage.json` 是**陈旧**的，属 B-VR05-08）：本机实测 service 95.20% / resolver 87.95% / scanner 91.12%，CI 另做一次全新测量 |
 | `ruff check src tests/unit tests/contract scripts` | — | All checks passed |
 
-> 覆盖率数字来自本机 `--cov-branch` 新测量；**CI 在 Linux 上重新测量**同一批门槛（见 §4.3），两者互证。
+> **更正（`B.VR` B01 的 P3 B-VR01-06）**：本节原先把"4 passed"写成复杂度棘轮的结果；4 是**复杂度 + 覆盖率两张表合计**，而覆盖率表只有在**先跑一次 `--cov` 产出新 `coverage.json`** 之后才绿。现已分列，不再混写。
 
 ## 4. 边界与"没做"的事
 
