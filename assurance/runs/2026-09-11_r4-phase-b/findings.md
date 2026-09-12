@@ -230,7 +230,7 @@
 | `legacy_observer.py:90` 入共享读取者 | 新值 @ `b-design.md:154` | ✅ |
 | provenance 禁写原文片段 + `schema_version` | 新值 @ `b-design.md:159-160` | ✅ |
 | 覆盖率棘轮 + `NEW_FILE_MAX` 登记 | 新值 @ `b-design.md:228` | ✅ |
-| `B-payload-hash` 当前不可执行 | 新值 @ `test-acceptance-map.md` §1c | ✅ |
+| `B-payload-hash` 曾登记为不可执行 → **现可执行且通过**（§F-B07-1） | 新值 @ `test-acceptance-map.md` §1c + `evidence/b07-payload-baseline.json` | ✅ |
 | VR-N21 移出 B | 新值（否定式）@ `b-design.md:193`；旧断言串 0 处 | ✅ |
 | R-6 计数 = 11 锚点（v0.1.6） | 新值 @ `file-scope.md:51`；旧断言 `9 处同型排序` 0 处 | ✅ |
 | F2 步骤列含 B06 / F11 移出 allowed | 新值 @ `file-scope.md:15`、§1b | ✅ |
