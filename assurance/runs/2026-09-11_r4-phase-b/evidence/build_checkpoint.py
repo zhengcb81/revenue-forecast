@@ -153,7 +153,7 @@ def commit_anchor() -> dict:
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": "B (position-transparent index and read-only access) - DESIGN ONLY",
-    "step": "B design v0.1.5 - four B.DR rounds corrected in place; S-1..S-6 decided by the owner, S-7 raised",
+    "step": "B design v0.1.6 - six B.DR rounds corrected; two-sided audit tool now in the package",
     "last_completed_step": (
         "B run directory created; b-design v0.1 (B01-B07) submitted to B.DR; B.DR returned "
         "rejected with 1 P0 + 7 P1 + 9 P2 + 3 P3 (8 of 17 claims did not reproduce); phase-A "
@@ -167,8 +167,20 @@ LEDGER = {
     ),
     "pending_review": [
         {
-            "gate": "B.DR rev5",
+            "gate": "B.DR rev6",
             "scope": "B design v0.1.5",
+            "status": "closed",
+            "verdict": "rejected",
+            "findings": {"P1": 3, "P2": 6, "P3": 4},
+            "note": ("also falsified the first two-sided claim audit: it asserted verification without "
+                     "patterns/commands/output; replaced by evidence/claim_fact_audit.py, which is "
+                     "re-runnable and searches the whole run directory"),
+            "record": "reviews/B.DR-rev6.json",
+            "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d",
+        },
+        {
+            "gate": "B.DR rev5",
+            "scope": "B design v0.1.4",
             "status": "pending",
             "reviewer": "independent subagent (non-author) - must differ from rev1-rev4 sessions",
         },

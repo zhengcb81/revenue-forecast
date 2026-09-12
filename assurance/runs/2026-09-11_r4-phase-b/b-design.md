@@ -142,23 +142,23 @@
 **现状（已核实）**：`scanner.py:1007-1081`。开关在 `:1038`（`elif root.priority <= existing_document["metadata_priority"]`）；进入分支后 `:1078-1081` 的 `UPDATE documents SET primary_source_id=…, title=?, source_type=?, document_kind=?, published_date=COALESCE(…), source_status=?, metadata_priority=?, metadata_json=?, last_seen_at=?` —— **只有 `metadata_json` 受 `prefer_new` 影响（`:1074-1076`）**，其余列全部取自**按 priority 胜出**的那一份。v0.1 只写"metadata 真伪"是**不完整**的（B-DR-03 正确）。
 
 **设计**：
-1. 每个字段记录 **provenance**（root/source/抓取时间/原始片段或 hash）；
+1. 每个字段记录 **provenance**（来源标识 + 抓取时间 + **hash 或短规范化值**；**不得存原文片段**，见下条 v0.1.6 约束）；
 2. 一致 → 取值 + 合并 provenance；冲突 → **保留全部候选 + 冲突标记**，不自动择一；
 3. `priority` **退出"真伪"判定**，只在"必须给出单一值"时用于**候选排序**；
 4. **覆盖面 = 上表全部列**（title / source_type / document_kind / published_date / source_status / primary_source_id / metadata_json），不只是 `metadata_json`。
-5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`），`:1095-1099` 的更高优先级重扫分支同型 → 两处都必须改为**读-改-写**（保留既有键，仅更新 B 负责的字段）。**F3 的锚点因此扩为 `scanner.py:1007-1099`**。
+5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`），`:1095-1099` 的更高优先级重扫分支**不是整列替换**（实测只写 `last_seen_at`，v0.1.6 更正，B-DR6-10），但它同样**不得**被改成整列替换——两处都按**读-改-写**处理。**F3 的锚点因此扩为 `scanner.py:1007-1099`**（含 `:1009-1027` INSERT）。
 
 **落点与持久化（v0.1.2 定案，B-DR2-05/B-DR2-12）**：v0.1.1 的"只在读取合同输出、不落库"**无法满足 L08**——因为落选值已被 `scanner.py:1078-1081` 的 UPDATE **覆盖销毁**，读取层再也拿不到它们。因此 B05 改为：
 
 1. **在写入侧停止销毁**：`scanner.py:1078-1081` 改为**保留**落选来源的值与 provenance，存进**既有列** `metadata_json`（**不新增列、不改 DDL**，因此无需 `store.py`，仍在 allowed F3 范围内）。
    ⚠️ **v0.1.5 关键更正（B-DR4-01，P1）**：该列是**多方共享的扁平 JSON 命名空间**，不是 B 的私有字段 —— 既有读取点至少包括：`service.py:271-272`（按 `$.acquisition.fiscal_year` / `$.dayu_meta.fiscal_year` 过滤）、`llm_summarizer.py:388-392`（按 `$.prompt_injection_review.*` 做 LLM 门，**且该文件在禁止表内，B 无权修**）、`prompt_injection.py:101-128`、`scanner.py:1039-1045`，以及 **`scripts/legacy_observer.py:90`**（FC-705/R9 权威账本用 `LIKE '%acquisition%'` 探测该列——shared 列的**非路径读取者**）。因此写入形状**必须是可加性的**：
-   - **只在保留键下新增**：`{"r4_provenance": {"fields": {<列名>: {"value": …, "sources": […], "conflicts": […]}}}`；
+   - **只在保留键下新增**：`{"r4_provenance": {"schema_version": "1.0", "fields": {<列名>: {"value": …, "sources": […], "conflicts": […]}}}}`；
    - **既有键一律原样保留**（不得重命名/搬移/改变类型）；
    - **回归断言**：L08 必须加一条 `json_extract` 断言，证明 **fiscal_year 过滤**与 **prompt_injection_review 门** 在改动后仍读到原值（否则本步即视为破坏共享命名空间，必须回到设计）；
    - B05 的读取侧只读 `r4_provenance`，**不得**假设整列由自己独占；
    - **禁止把原文片段写进 provenance**（v0.1.6，B-DR5-05）：只允许**来源标识 + 时间 + hash/短规范化值**，避免无意的正文入库给 `LIKE` 类消费者带来误命中；
    - 保留键带 **`schema_version`**（v0.1.6，B-DR5-11）：`r4_provenance = {"schema_version": "1.0", "fields": {…}}`（`r4_` 指 **R4 计划**，不是复审轮次）。
-   形状示意（**仅新增保留键**）：`{"acquisition": {…}, "dayu_meta": {…}, "prompt_injection_review": {…}, "r4_provenance": {"fields": {…}}}`；
+   形状示意（**仅新增保留键**）：`{"acquisition": {…}, "dayu_meta": {…}, "prompt_injection_review": {…}, "r4_provenance": {"schema_version": "1.0", "fields": {…}}}`；
 2. **`metadata_priority` 的处置**：该列**保留**（由 `scanner` 继续维护，用于"必须给出单一值"时的排序提示），但**不再决定哪些列被写**；`:1038` 的 `elif root.priority <= existing_document["metadata_priority"]` 分支语义必须改写为"**只决定是否补充 provenance/冲突记录**"，不得再整体覆盖 `title/source_type/document_kind/published_date/source_status/primary_source_id`；
 3. **读取合同**（B05 的输出）暴露 `provenance` 与 `conflicts` 两个字段；
 4. **若 owner 要求把 provenance 提升为一等列**（可查询、可索引），那需要 `store.py` DDL/迁移 → **升级为独立工作包**（不在本包范围）。
@@ -207,7 +207,7 @@
 | （新增，本包要求）`resolve` 输出的 **policy_export payload 字节/hash 不变** | ✅ **必须由 B 自测**（见 [test-acceptance-map.md](test-acceptance-map.md) §1c 的 `B-payload-hash`） | — |
 | ⚠️ **N-1 支持** | **v0.1.5 更正（B-DR4-03）：从 B 的完成定义中移除** —— 两侧代码目前都只接受 `"1.0"`（wiki `resolver.py:163-166`、filing `filing_contracts.py:273-277`），**不存在 N-1 规则**；`filing-audit.md:61` 反而要求废除"字段缺失即降级"的伪 N-1，改为**显式版本协商** | **登记为待定义项**：N-1 的定义与实现属**跨仓协议工作**，不在 B 的完成定义内；B 只保证"**未知版本必须显式拒绝**"（`not_found`/`blocked`），不承诺向后兼容 |
 
-> **B07 的"完成"因此是**："wiki 侧版本化合同 + 未知版本显式拒绝 + 无新增 fallback + payload hash 不变"四件（**不含 N-1**，见上表说明）；**消费者侧的 adapter 转换与 fallback 删除明确不在 B 的签名内**（C 阶段）。
+> **B07 的"完成"因此是**："wiki 侧版本化合同 + 未知版本显式拒绝 + 无新增 fallback + payload hash 不变"四件（**不含 N-1**，见上表说明）；其中 **`payload hash 不变` 当前为 `blocked`**（无冻结基线、取值需待批 CLI，见 [test-acceptance-map.md](test-acceptance-map.md) §1c），**不得计入已满足项**；**消费者侧的 adapter 转换与 fallback 删除明确不在 B 的签名内**（C 阶段）。
 
 **测试**：L11、L12（L11 的消费者侧部分标记为"B 只验 wiki 侧"）。
 

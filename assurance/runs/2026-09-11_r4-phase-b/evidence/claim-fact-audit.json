@@ -1,221 +1,675 @@
 {
-  "method": "two-sided check per v0.1.6 claim: the new value must be present AND the superseded value must no longer appear as an assertion. findings.md is exempt for old values because its tables quote superseded wording as history (each such line carries a version prefix).",
-  "search_set": [
+  "method": "two-sided: for every claim the required value must be present AND the superseded value must not appear as a live assertion anywhere in the run directory; a superseded value is exempt only on a line that carries a version/review prefix (change-log or finding history)",
+  "tool": "evidence/claim_fact_audit.py (re-runnable: python evidence/claim_fact_audit.py)",
+  "files_searched": [
+    ".gitattributes",
     "b-design.md",
-    "file-scope.md",
-    "test-acceptance-map.md",
-    "task_plan.md",
-    "progress.md",
     "b-vr-protocol.md",
-    "owner-scope-decisions-2026-09-12.md",
-    "risk-and-stop-rules.md",
-    "findings.md",
     "evidence/build_checkpoint.py",
-    "checkpoint.json"
+    "file-scope.md",
+    "findings.md",
+    "owner-scope-decisions-2026-09-12.md",
+    "progress.md",
+    "reviews/B.DR-rev2.json",
+    "reviews/B.DR-rev3.json",
+    "reviews/B.DR-rev4.json",
+    "reviews/B.DR-rev5.json",
+    "reviews/B.DR-rev6.json",
+    "reviews/B.DR.json",
+    "risk-and-stop-rules.md",
+    "task_plan.md",
+    "test-acceptance-map.md"
   ],
-  "history_exempt_files": [
-    "findings.md"
+  "excluded_from_search": [
+    "checkpoint.json",
+    "evidence/claim-fact-audit.json",
+    "evidence/claim_fact_audit.py",
+    "evidence/claim_fact_audit.pyc"
   ],
   "checks": [
     {
-      "claim": "N-1 不再作为完成项",
-      "new_value_at": [
-        "b-design.md:210",
-        "owner-scope-decisions-2026-09-12.md:12"
+      "claim": "B05 provenance 不得存原文片段（许可已删除）",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 145,
+          "text": "1. 每个字段记录 **provenance**（来源标识 + 抓取时间 + **hash 或短规范化值**；**不得存原文片段**，见下条 v0.1.6 约束）；"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 163,
+          "kind": "history",
+          "text": "\"claim\": \"b-design.md:114-117 要求「每个字段记录 **provenance**（root/source/抓取时间/原始片段或 hash）」「冲突 → **保留全部候选 + 冲突标记**，不自动择一」，:117「**覆盖面 = 上表全部列**（title / source_type / do"
+        },
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 163,
+          "kind": "history",
+          "text": "\"claim\": \"b-design.md:114-117 要求「每个字段记录 **provenance**（root/source/抓取时间/原始片段或 hash）」「冲突 → **保留全部候选 + 冲突标记**，不自动择一」，:117「**覆盖面 = 上表全部列**（title / source_type / do"
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 141,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR5-05\", \"severity\": \"P2\", \"area\": \"保留键的影响面分析漏掉同一列唯一的非路径读取者，且 provenance 被允许承载\\\"原始片段\\\"\", \"claim\": \"b-design.md:152 声称 既有读取点至少包括 四处，据此断言加性写入是安全的；:144 允"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 171,
+          "kind": "history",
+          "text": "\"Check 6 (provenance 禁写原文片段, new_value_at b-design.md:159) declares verified although the superseded permission survives at b-design.md:145: 「1. 每个字段记录 **proven"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 171,
+          "kind": "history",
+          "text": "\"Check 6 (provenance 禁写原文片段, new_value_at b-design.md:159) declares verified although the superseded permission survives at b-design.md:145: 「1. 每个字段记录 **proven"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 184,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR5-05\", \"closed\": false, \"evidence\": \"Option ① was chosen and the prohibition was added (b-design.md:159), and the missing reader was named (b-design"
+        }
       ],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "B07 可签列不含 N-1",
-      "new_value_at": [
-        "b-design.md:205"
+      "claim": "B05 保留键两处形状定义都带 schema_version",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 155,
+          "text": "- **只在保留键下新增**：`{\"r4_provenance\": {\"schema_version\": \"1.0\", \"fields\": {<列名>: {\"value\": …, \"sources\": […], \"conflicts\": […]}}}}`；"
+        },
+        {
+          "file": "b-design.md",
+          "line": 155,
+          "text": "- **只在保留键下新增**：`{\"r4_provenance\": {\"schema_version\": \"1.0\", \"fields\": {<列名>: {\"value\": …, \"sources\": […], \"conflicts\": […]}}}}`；"
+        },
+        {
+          "file": "b-design.md",
+          "line": 161,
+          "text": "形状示意（**仅新增保留键**）：`{\"acquisition\": {…}, \"dayu_meta\": {…}, \"prompt_injection_review\": {…}, \"r4_provenance\": {\"schema_version\": \"1.0\", \"fields\": {…}}}`；"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
-      ],
+      "superseded_hits": [],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "metadata_json 禁整列替换",
-      "new_value_at": [
-        "b-design.md:3",
-        "b-design.md:149",
-        "file-scope.md:6"
+      "claim": "B05 禁止 metadata_json 整列替换（含胜利路径）",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 3,
+          "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
+        },
+        {
+          "file": "b-design.md",
+          "line": 3,
+          "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
+        },
+        {
+          "file": "b-design.md",
+          "line": 149,
+          "text": "5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`"
+        },
+        {
+          "file": "b-design.md",
+          "line": 149,
+          "text": "5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
-      ],
+      "superseded_hits": [],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "F3 锚点含 :1095-1099",
-      "new_value_at": [
-        "b-design.md:3",
-        "b-design.md:149",
-        "file-scope.md:6"
+      "claim": "scanner 锚点唯一取值 :1007-1099",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 149,
+          "text": "5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`"
+        },
+        {
+          "file": "file-scope.md",
+          "line": 16,
+          "text": "| F3 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/scanner.py` | metadata 合并 **`:1007-1099`**（开关 `:1038`；**整条 UPDATE `:1078-1081`**；**`p"
+        },
+        {
+          "file": "file-scope.md",
+          "line": 67,
+          "text": "| B05 | F3（**`scanner.py:1007-1099`**：`:1009-1027` INSERT、`:1038` 开关、`:1073-1077` `prefer_new` 整列替换、`:1078-1081` UPDATE、`:1095-1099` 重扫分支）+ F1（读取侧暴露 provenance/"
+        },
+        {
+          "file": "findings.md",
+          "line": 31,
+          "text": "**其余处置**：`B-DR5-03`（`metadata_json` 胜利路径整列替换）→ 已在 §B05 第 5 条禁止，并把 F3 锚点扩到 `scanner.py:1007-1099`；`B-DR5-04`（`B-payload-hash` 无基线且需待批 CLI）→ 标注为**当前不可执行**，须先在隔离副本"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [
+        {
+          "file": "b-design.md",
+          "line": 142,
+          "kind": "history",
+          "text": "**现状（已核实）**：`scanner.py:1007-1081`。开关在 `:1038`（`elif root.priority <= existing_document[\"metadata_priority\"]`）；进入分支后 `:1078-1081` 的 `UPDATE documents SET primar"
+        },
+        {
+          "file": "reviews/B.DR-rev3.json",
+          "line": 161,
+          "kind": "history",
+          "text": "\"notes\": \"① 在范围内的部分（可实施）：B02/B04 的落点齐备 —— service.py:621-663（F1）与 resolver.py:1142-1224 `_handle`（F2）同改，canonical/资格排序、候选清单入参与切换逻辑都落在 F1/F2；B03 的稳定字节底座在 F4 read"
+        },
+        {
+          "file": "reviews/B.DR-rev3.json",
+          "line": 182,
+          "kind": "history",
+          "text": "\"verdict_reason\": \"本包的事实层质量依旧高于常态，且 v0.1.2 的多数更正为真：八个候选文件哈希与字节数、11 个 R-6 锚点、scanner.py:1007-1081/:1038/:1078-1081/:1120-1131、resolver.py:912-921/:1142-1224/:116"
+        },
+        {
+          "file": "reviews/B.DR-rev4.json",
+          "line": 74,
+          "kind": "history",
+          "text": "\"Every code anchor I spot-checked in the B design resolves as cited: resolver.py:782-786/:933-940 (kind-only reusability), :912-921 and :1153-1165 (.rejections "
+        },
+        {
+          "file": "reviews/B.DR-rev4.json",
+          "line": 144,
+          "kind": "history",
+          "text": "\"notes\": \"正向结论（经实测）：① B01-B07 的**主体**设计要素都能落到 allowed 文件——B02/B04 → F1 `service.py:621-663` + F2 `resolver.py:1142-1224/:912-921`；B03 → F4 `reader.py` + F2；B05 "
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 139,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR5-03\", \"severity\": \"P2\", \"area\": \"B05 的\\\"既有键一律原样保留\\\"没有覆盖 metadata_json 的全部写入点，且 F3 的锚点范围止于 :1081\", \"claim\": \"b-design.md:154 声称 既有键一律原样保留（不得重命名/搬移/改"
+        }
       ],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "legacy_observer.py:90 已入共享读取者",
-      "new_value_at": [
-        "b-design.md:3",
-        "b-design.md:154",
-        "file-scope.md:6"
+      "claim": "B05 覆盖 INSERT 分支 :1009-1027",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 149,
+          "text": "5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`"
+        },
+        {
+          "file": "file-scope.md",
+          "line": 67,
+          "text": "| B05 | F3（**`scanner.py:1007-1099`**：`:1009-1027` INSERT、`:1038` 开关、`:1073-1077` `prefer_new` 整列替换、`:1078-1081` UPDATE、`:1095-1099` 重扫分支）+ F1（读取侧暴露 provenance/"
+        },
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 74,
+          "text": "\"scanner.py 元数据合并锚点复现：:1007 SELECT metadata_priority, source_status, metadata_json；:1009-1027 INSERT 分支（:1022 用 root.priority 建行）；:1038 elif root.priority <= ex"
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 139,
+          "text": "{\"id\": \"B-DR5-03\", \"severity\": \"P2\", \"area\": \"B05 的\\\"既有键一律原样保留\\\"没有覆盖 metadata_json 的全部写入点，且 F3 的锚点范围止于 :1081\", \"claim\": \"b-design.md:154 声称 既有键一律原样保留（不得重命名/搬移/改"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
-      ],
+      "superseded_hits": [],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "provenance 禁写原文片段",
-      "new_value_at": [
-        "b-design.md:159"
+      "claim": "`metadata_json` 共享读取者含 legacy_observer.py:90",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 3,
+          "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
+        },
+        {
+          "file": "b-design.md",
+          "line": 154,
+          "text": "⚠️ **v0.1.5 关键更正（B-DR4-01，P1）**：该列是**多方共享的扁平 JSON 命名空间**，不是 B 的私有字段 —— 既有读取点至少包括：`service.py:271-272`（按 `$.acquisition.fiscal_year` / `$.dayu_meta.fiscal_year` "
+        },
+        {
+          "file": "file-scope.md",
+          "line": 6,
+          "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
+        },
+        {
+          "file": "findings.md",
+          "line": 14,
+          "text": "| `legacy_observer.py:90` 入共享读取者 | 新值 @ `b-design.md:154` | ✅ |"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
-      ],
+      "superseded_hits": [],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "保留键带 schema_version",
-      "new_value_at": [
-        "b-design.md:160"
+      "claim": "N-1 不在 B 的完成定义/可签列/迁移前置/测试映射/VR 协议中",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 42,
+          "text": "| 字段（现状） | 语义 owner | 目标处置 | 迁移/兼容条件（**先做 L11 的当前协议与未知版本拒绝判定**；N-1 未定义，不得作为前置） |"
+        },
+        {
+          "file": "b-design.md",
+          "line": 205,
+          "text": "| \"支持兼容由单 adapter 转换且来源不变\" | **wiki 侧的版本化读取合同本身**：`schema_version` + `ResolutionEnvelope`（`resolver.py:359-552`）的**当前版本**判定与拒绝语义（`not_found/not_indexed/unavaila"
+        },
+        {
+          "file": "b-design.md",
+          "line": 210,
+          "text": "> **B07 的\"完成\"因此是**：\"wiki 侧版本化合同 + 未知版本显式拒绝 + 无新增 fallback + payload hash 不变\"四件（**不含 N-1**，见上表说明）；其中 **`payload hash 不变` 当前为 `blocked`**（无冻结基线、取值需待批 CLI，见 [test-"
+        },
+        {
+          "file": "findings.md",
+          "line": 11,
+          "text": "| N-1 从 B07 完成定义移除（v0.1.6） | 新值 `**不含 N-1**` @ `b-design.md:210`；旧值 `N-1 判定` 仅存于 findings 历史行 | ✅ |"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [
+        {
+          "file": "reviews/B.DR-rev3.json",
+          "line": 154,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR3-09\", \"severity\": \"P2\", \"area\": \"B07 可签内容与执行计划的范围改判\", \"claim\": \"B07 的可签列声称 B 签『N-1 支持 的判定逻辑与拒绝语义』，但包内没有任何 N-1 规则；同时把执行计划明文归 B 的『filing/revenue 仅最小协"
+        },
+        {
+          "file": "reviews/B.DR-rev4.json",
+          "line": 84,
+          "kind": "history",
+          "text": "{\"claim\": \"「B07 的完成定义 = wiki 侧四件（版本化合同、N-1 判定、不新增 fallback、payload hash 不变）」（owner-scope-decisions-2026-09-12.md:12；b-design.md:197）\", \"reproduced\": false, \"evi"
+        },
+        {
+          "file": "reviews/B.DR-rev4.json",
+          "line": 107,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR3-09\", \"closed\": false, \"evidence\": \"范围改判一半已由 owner 裁定收口：S-4（owner-scope-decisions-2026-09-12.md:12）把消费者侧（含最小协议适配）判给 C、B 不签 ✓。但 N-1 一半未做：b-design.md"
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 95,
+          "kind": "history",
+          "text": "{\"claim\": \"B-DR4-03：N-1 支持已从 B07 的完成定义中移除并登记为跨仓协议待定义项\", \"reproduced\": false, \"evidence\": \"b-design.md:206（v0.1.5 未改动的原文）逐字为：> **B07 的\\\"完成\\\"因此是**：\\\"wiki 侧版本化合同 +"
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 95,
+          "kind": "history",
+          "text": "{\"claim\": \"B-DR4-03：N-1 支持已从 B07 的完成定义中移除并登记为跨仓协议待定义项\", \"reproduced\": false, \"evidence\": \"b-design.md:206（v0.1.5 未改动的原文）逐字为：> **B07 的\\\"完成\\\"因此是**：\\\"wiki 侧版本化合同 +"
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 138,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR5-02\", \"severity\": \"P1\", \"area\": \"B07 的完成定义与可签列仍把未定义、无落点的 N-1 判定写在 B 内（同一文件内相隔两行自相矛盾）\", \"claim\": \"findings.md:13 声称 B07 完成定义**移除 N-1**；owner-scope-d"
+        }
       ],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "覆盖率棘轮 + NEW_FILE_MAX",
-      "new_value_at": [
-        "b-design.md:3",
-        "b-design.md:228",
-        "file-scope.md:6"
+      "claim": "复杂度棘轮 + 覆盖率棘轮 + NEW_FILE_MAX 均已登记",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 3,
+          "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
+        },
+        {
+          "file": "b-design.md",
+          "line": 228,
+          "text": "**另一道默认门（v0.1.6 新增，B-DR5-06）**：**新增文件本身有上限** —— 棘轮的 `NEW_FILE_MAX = 10`，且 CI 实跑**覆盖率棘轮**（`tests/contract/test_fc1204_coverage_ratchet.py`，`ci.yml:64`）：**TIER1 `"
+        },
+        {
+          "file": "b-design.md",
+          "line": 228,
+          "text": "**另一道默认门（v0.1.6 新增，B-DR5-06）**：**新增文件本身有上限** —— 棘轮的 `NEW_FILE_MAX = 10`，且 CI 实跑**覆盖率棘轮**（`tests/contract/test_fc1204_coverage_ratchet.py`，`ci.yml:64`）：**TIER1 `"
+        },
+        {
+          "file": "file-scope.md",
+          "line": 6,
+          "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
-      ],
+      "superseded_hits": [],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "B-payload-hash 当前不可执行",
-      "new_value_at": [
-        "b-design.md:3",
-        "file-scope.md:6",
-        "test-acceptance-map.md:28"
+      "claim": "B-payload-hash 标注当前不可执行/blocked",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 3,
+          "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
+        },
+        {
+          "file": "file-scope.md",
+          "line": 6,
+          "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
+        },
+        {
+          "file": "findings.md",
+          "line": 17,
+          "text": "| `B-payload-hash` 当前不可执行 | 新值 @ `test-acceptance-map.md` §1c | ✅ |"
+        },
+        {
+          "file": "findings.md",
+          "line": 31,
+          "text": "**其余处置**：`B-DR5-03`（`metadata_json` 胜利路径整列替换）→ 已在 §B05 第 5 条禁止，并把 F3 锚点扩到 `scanner.py:1007-1099`；`B-DR5-04`（`B-payload-hash` 无基线且需待批 CLI）→ 标注为**当前不可执行**，须先在隔离副本"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
-      ],
+      "superseded_hits": [],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "VR-N21 从 B 移除",
-      "new_value_at": [
-        "b-design.md:193",
-        "test-acceptance-map.md:15"
+      "claim": "VR-N21 不在 B",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 193,
+          "text": "**测试**：L09、L10（**不含** VR-N21：无门外发出口属 owner R-4 独立工作包，S-2）。"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 132,
+          "text": "\"evidence\": \"b-design.md:193 verbatim 「**测试**：L09、L10（**不含** VR-N21：无门外发出口属 owner R-4 独立工作包，S-2）。」 and b-vr-protocol.md:38 「**不含** A07 的 VR-N21（属 owner R-4 独立工作"
+        },
+        {
+          "file": "test-acceptance-map.md",
+          "line": 15,
+          "text": "| **B06** | **L09**、L10 | L09\"preview 可读并标 provenance 缺口；正式合同缺身份/期间则不通过；不伪造 URL、不默认联网\"；L10\"只检查所需能力；原文不因无 summary 消失；LLM/正式分析不能继承 preview 许可\" | preview vs verifi"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 137,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR5-01\", \"severity\": \"P1\", \"area\": \"findings.md F-B01-4 的 v0.1.5 处置栏再次把未做的改动记为已做（round 4 的核心批评原样复现）\", \"claim\": \"findings.md:17 声称 逐条先做再写：inputs 注记与 R-"
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 143,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR5-07\", \"severity\": \"P3\", \"area\": \"VR-N21 仍在 B 的测试清单里（b-design 与 VR 协议未同步）\", \"claim\": \"findings.md:19 声称 VR-N21 从 B 移除；test-acceptance-map.md:15/:39 "
+        }
       ],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "R-6 = 11 个锚点",
-      "new_value_at": [
-        "file-scope.md:51",
-        "risk-and-stop-rules.md:59"
+      "claim": "R-6 计数 = 11 个锚点（A 侧口径已注明）",
+      "required_hits": [
+        {
+          "file": "file-scope.md",
+          "line": 51,
+          "text": "## 3. owner R-6 的排序锚点分类（**11 个锚点**；A 侧 identity-contract §1 记 **9 处**，两者口径差异见 F-B01-5，v0.1.6 更正）"
+        },
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 77,
+          "text": "\"R-6 的 11 个锚点全部存在且确为路径/优先级定序：service.py:329、:527、:646（:643-653）、:772；canonical_writer.py:287；duplicate_cleanup.py:210、:486；normalizer.py:1600、:1892；llm_summariz"
+        },
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 117,
+          "text": "{\"id\": \"B-DR-13\", \"closed\": true, \"evidence\": \"file-scope.md:40-47 给出 §3「owner R-6 的 9 处同型排序：分类」：service.py:329/:527/:643-653/:772 判给 F1（allowed）、canonical_writ"
+        },
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 270,
+          "text": "\"notes\": \"① 八个候选文件的绝对路径、存在性与 sha256(16) 全部复现（service.py 6412b19e…/resolver.py 6962b258…/scanner.py c2ada3e2…/reader.py ad8cb914…/models.py fc6cc009…/config.py e"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [
+        {
+          "file": "findings.md",
+          "line": 19,
+          "kind": "history",
+          "text": "| R-6 计数 = 11 锚点（v0.1.6） | 新值 @ `file-scope.md:51`；旧断言 `9 处同型排序` 0 处 | ✅ |"
+        },
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 117,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR-13\", \"closed\": true, \"evidence\": \"file-scope.md:40-47 给出 §3「owner R-6 的 9 处同型排序：分类」：service.py:329/:527/:643-653/:772 判给 F1（allowed）、canonical_writ"
+        },
+        {
+          "file": "reviews/B.DR-rev3.json",
+          "line": 152,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR3-07\", \"severity\": \"P2\", \"area\": \"计数与交叉引用不reconcile（含悬空 F9 与缺项）\", \"claim\": \"v0.1.2 修好了『12 行/16 名』，但同一批数字在包内其它位置仍相反；R-6 表头『9 处』与表内 11 个锚点不符且漏述 `servi"
+        },
+        {
+          "file": "reviews/B.DR-rev4.json",
+          "line": 86,
+          "kind": "history",
+          "text": "{\"claim\": \"「计数统一为 12 行 / 16 名 + `kind`；R-6 表头改 11 处锚点；F9 引用清理；`evidence_query.py` 移入禁止表」（findings.md:17）\", \"reproduced\": false, \"evidence\": \"b-design.md:39/:57 "
+        },
+        {
+          "file": "reviews/B.DR-rev4.json",
+          "line": 135,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR4-07\", \"severity\": \"P2\", \"area\": \"findings.md 的更正报告与实物不符（closure 证据不可靠）\", \"claim\": \"findings.md 作为三轮更正的权威处置表，有四处把**未做**的改动记为已做。第三方若以 findings.md 而非实"
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 112,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR4-07\", \"closed\": false, \"evidence\": \"四项被点名的\\\"声称已做\\\"在 v0.1.5 仍未做，且 findings.md:17 改成了更明确的\\\"已落地/已明确\\\"：① inputs 注记——build_checkpoint.py:264-267 确有一段 in"
+        }
       ],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "F2 步骤列含 B06",
-      "new_value_at": [
-        "file-scope.md:15"
+      "claim": "F2 步骤列含 B06；F11 属只读调用目标而非 allowed",
+      "required_hits": [
+        {
+          "file": "file-scope.md",
+          "line": 15,
+          "text": "| F2 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/resolver.py` | **`_handle` `:1142-1224`（`:1153-1165` 二次 canonical 过滤、`:1166 is_file()"
+        },
+        {
+          "file": "file-scope.md",
+          "line": 28,
+          "text": "## 1b. 只读调用目标（**不属于 allowed_files**，不修改，仅调用）"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 144,
+          "text": "\"evidence\": \"file-scope.md:28 now has 「## 1b. 只读调用目标（**不属于 allowed_files**，不修改，仅调用）」 with readonly_canary.py's measured hash 0ee11644da75e24d (2792 B, recompute"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 180,
+          "text": "{\"id\": \"B-DR5-01\", \"closed\": false, \"evidence\": \"Four of the seven claimed-but-absent items did land (inputs note now reaches checkpoint.json:110 via build_chec"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [
+        {
+          "file": "reviews/B.DR-rev4.json",
+          "line": 138,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR4-10\", \"severity\": \"P3\", \"area\": \"file-scope F11 的冻结哈希栏是占位符，且该行同时声明「允许修改」与「不修改」\", \"claim\": \"file-scope.md:26 的 F11 行在「sha256(16)」栏填「见文件哈希」，而该页 :4 自称"
+        }
       ],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "inputs 内层注记",
-      "new_value_at": [
-        "evidence/build_checkpoint.py:302"
+      "claim": "test-acceptance-map 的 L06 只出现一次口径（= B）且无 B/C 残留",
+      "required_hits": [
+        {
+          "file": "test-acceptance-map.md",
+          "line": 50,
+          "text": "| `L06`（反覆盖表） | **= B**（矩阵 `:33` 原文即 `L06 B`；本表统一为 **B**） | ✅ | — |"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 96,
+          "kind": "history",
+          "text": "{\"claim\": \"test-acceptance-map.md:45：「**L06/L11 的阶段列以矩阵原文为准**（L06 = B/C，L11 = B/C），本表此前写法与矩阵不一致，已按矩阵改正」\", \"reproduced\": false, \"evidence\": \"simplified-test-matr"
+        },
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 124,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR-20\", \"closed\": false, \"evidence\": \"O03 半边已改：test-acceptance-map.md:41 把 O03 从「❌ 不属 B」改为「⚠️ **交叉**…因此 **B 必须实现该约束**（拒绝不因换 root 而放行），只是**不执行 O03 的完整验"
+        },
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 155,
+          "kind": "history",
+          "text": "\"claim\": \"test-acceptance-map.md:45 逐字：「**L06/L11 的阶段列以矩阵原文为准**（L06 = B/C，L11 = B/C），本表此前写法与矩阵不一致，已按矩阵改正。」\","
+        },
+        {
+          "file": "reviews/B.DR-rev2.json",
+          "line": 157,
+          "kind": "history",
+          "text": "\"required_fix\": \"把 §2 反覆盖表拆成逐 ID 一行并照抄矩阵阶段列（L06 = B）；删除 :45 的更正句中错误的「L06 = B/C」，改为「L06 = B（本表原写作 B/C，已改）」。\""
+        },
+        {
+          "file": "reviews/B.DR-rev3.json",
+          "line": 100,
+          "kind": "history",
+          "text": "{\"claim\": \"被审包的候选文件哈希、行锚点与矩阵阶段字母可直接引用（含 L05/L06 = B/C 与 B 的更正）。\", \"reproduced\": false, \"evidence\": \"哈希 8/8 与 11 个 R-6 锚点全部复现（见 verifications_passed 第 10/12 条）；矩"
+        },
+        {
+          "file": "reviews/B.DR-rev3.json",
+          "line": 126,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR-20\", \"closed\": false, \"evidence\": \"O03 半边已改对：test-acceptance-map.md:49 把 O03 从『❌ 不属 B』改为『⚠️ **交叉**…因此 **B 必须实现该约束**（拒绝不因换 root 而放行），只是**不执行 O03 的完整"
+        }
       ],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "v0.1.6 note 存在",
-      "new_value_at": [
-        "b-design.md:3",
-        "file-scope.md:6"
+      "claim": "P01–P03 归属按时引用矩阵原文（B/C 本地栏）",
+      "required_hits": [
+        {
+          "file": "test-acceptance-map.md",
+          "line": 52,
+          "text": "| P01–P03 | **矩阵 `:88` 原文**：\"L01–L12、P01/P02/P03 只读部分 … **B 和 C 本地栏**对真实原文与既有 root 覆盖独立核验；不要求网络/worker\" | ⚠️ 部分 | 进程边界与字节合同在 C；B 只保证\"不多起 Python/不套壳\"的设计约束 |"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 187,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR5-08\", \"closed\": false, \"evidence\": \"test-acceptance-map.md:57 still reads verbatim 「另：**L06/L11** 的阶段列以矩阵原文为准（**L06 = B/C**，L11 = B/C），本表此前写法与矩阵不一致"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 314,
+          "kind": "history",
+          "text": "\"claim\": \"test-acceptance-map.md:51 (v0.1.6 edit) asserts 「P01–P03 | **矩阵原文 = B/C**（只读部分）」.\","
+        }
       ],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "task_plan F10 = 已获批",
-      "new_value_at": [
-        "task_plan.md:80"
+      "claim": "版本/状态行 = v0.1.6（file-scope / task_plan / vr-protocol / progress）",
+      "required_hits": [
+        {
+          "file": "b-vr-protocol.md",
+          "line": 10,
+          "text": "| B.DR | 设计被接受（或 accepted_with_findings） | **六轮 rejected**（rev1–rev6）；剩余 P1 多为文本/落点级，另有 scope 决定 S-7/S-8 |"
+        },
+        {
+          "file": "file-scope.md",
+          "line": 1,
+          "text": "# B 阶段文件范围（file-scope v0.1.6）—— 待 owner 批准的 DEV 工作包附件"
+        },
+        {
+          "file": "task_plan.md",
+          "line": 6,
+          "text": "> 状态：**B 设计 v0.1.6（DESIGN_ONLY + 边界已定：owner 六项 scope 裁定已写入 §5；`B.DR` 前六轮 rejected 已逐条更正）**；产品代码零改动；实施入口待 owner 一句确认；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，2"
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 113,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR4-08\", \"closed\": false, \"evidence\": \"设计侧 blocked 与粒度已改（b-design.md:166-172），但可执行协议 b-vr-protocol.md:36 的 L08 行仍写 冲突保留（conflicts + ambiguous），与设计相反，而"
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 145,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR5-09\", \"severity\": \"P3\", \"area\": \"progress.md 与 task_plan.md 的状态行仍是旧态，且其中一条与设计正文相反\", \"claim\": \"findings.md:19 声称版本标签统一 v0.1.5 且 progress 已从 v0.1.1 推"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 150,
+          "kind": "history",
+          "text": "\"evidence\": \"Superseded labels survive as assertions in five files: file-scope.md:1 「# B 阶段文件范围（file-scope **v0.1.5**）—— 待 owner 批准的 DEV 工作包附件」; checkpoint.json"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 150,
+          "kind": "history",
+          "text": "\"evidence\": \"Superseded labels survive as assertions in five files: file-scope.md:1 「# B 阶段文件范围（file-scope **v0.1.5**）—— 待 owner 批准的 DEV 工作包附件」; checkpoint.json"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 188,
+          "kind": "history",
+          "text": "{\"id\": \"B-DR5-09\", \"closed\": false, \"evidence\": \"progress.md changed by exactly one line in v0.1.6 (git diff 42650eb b7ec5b6 -- progress.md shows only the :15 「"
+        },
+        {
+          "file": "reviews/B.DR-rev6.json",
+          "line": 235,
+          "kind": "history",
+          "text": "\"counter_evidence\": \"Superseded labels are still asserted: file-scope.md:1 「# B 阶段文件范围（file-scope v0.1.5）—— 待 owner 批准的 DEV 工作包附件」; checkpoint.json:4 step 「B de"
+        }
       ],
+      "live_superseded": [],
       "verified": true
     },
     {
-      "claim": "checkpoint 含 S-7",
-      "new_value_at": [
-        "evidence/build_checkpoint.py:237",
-        "checkpoint.json:95"
+      "claim": "inputs 注记写在 inputs 内层（外层会被 main() 覆盖）",
+      "required_hits": [
+        {
+          "file": "evidence/build_checkpoint.py",
+          "line": 302,
+          "text": "\"note\": (\"per-file versions matter: root-contract is v0.4.2 while operation-contract and \""
+        }
       ],
-      "old_assertion_at": [],
-      "history_exempt_files": [
-        "findings.md"
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "S-7/S-8 已登记且 S-8 不在\"裁定结果\"表内",
+      "required_hits": [
+        {
+          "file": "evidence/build_checkpoint.py",
+          "line": 237,
+          "text": "\"S-7_ratchet_edit\": \"OPEN - see b-design section B0x\","
+        }
       ],
+      "superseded_hits": [],
+      "live_superseded": [],
       "verified": true
     }
   ],
-  "passed": 16,
-  "total": 16,
-  "audit_script_defects_found_and_fixed": [
-    "v1 only checked 'new value present' -> wrongly reported 22/22 while old values survived (this is B-DR5-01's root cause)",
-    "v2 omitted evidence/build_checkpoint.py from the search set -> false FAIL on the inputs note",
-    "v2 asserted exactly 4 review rounds -> false FAIL (the ledger holds 5)",
-    "v3 lacked the history exemption -> false FAIL on findings.md quoting superseded wording"
-  ],
-  "conclusion": "all v0.1.6 claims verified two-sided in the artifacts as of this audit"
+  "passed": 17,
+  "total": 17,
+  "generated_by": "python evidence/claim_fact_audit.py"
 }

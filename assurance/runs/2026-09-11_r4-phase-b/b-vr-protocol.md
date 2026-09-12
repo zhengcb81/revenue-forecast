@@ -7,7 +7,7 @@
 
 | 门 | 要求 | 现状 |
 |---|---|---|
-| B.DR | 设计被接受（或 accepted_with_findings） | **三轮 rejected**；剩余 P1 为 scope 决定（S-1…S-6） |
+| B.DR | 设计被接受（或 accepted_with_findings） | **六轮 rejected**（rev1–rev6）；剩余 P1 多为文本/落点级，另有 scope 决定 S-7/S-8 |
 | B 实施 | owner 批准 DEV 工作包 + 文件范围（handbook §1 第 5 项） | **未批准** |
 | G8 | 隔离副本（**两级**：机制层小 catalog / 真实字节读取） | **未建** |
 | G7 | 真实语料样本清单确认 | **未确认** |
@@ -33,7 +33,7 @@
 | L05 | L1 | 打开后替换文件 / 同 size 改内容 / 路径重指 / symlink·reparse 逃逸 | **只返回验证版本的字节**或明确失败；**TOCTOU 不混读**；越界零读/写；无 mtime 冒充 hash。**注意**：本机不支持 symlink（A06 基线里该用例 skip）→ 必须在支持 symlink 的环境或用**目录联接**构造 |
 | L06 | L1 | 占用 / ACL 拒绝 / 云占位不可读 / 损坏 PDF / 超大文件 / 读取中断 | 明确原因 + 同版本副本选择；**有限资源、可取消**（对应 B02 预算与取消） |
 | L07 | L1+L2 | 搬目录重索引 → 用旧 locator 再打开；真实修订并存 | 原引用仍指原字节；**新旧不由 mtime/词序决定**；未知关系 = `ambiguous` |
-| L08 | L1 | 同 source 两 root **交换 priority/扫描顺序**；完整/缺字段/矛盾字段 | 业务事实不变；可信字段**有来源**；**冲突保留**（`conflicts` + `ambiguous`），**不得按 priority 择一**；含"先缺后补"分支（capture_ready 恢复路径） |
+| L08 | L1 | 同 source 两 root **交换 priority/扫描顺序**；完整/缺字段/矛盾字段 | 业务事实不变；可信字段**有来源**；**冲突保留**（`conflicts` + 响应级 `blocked`），**不得按 priority 择一**；含"先缺后补"分支（capture_ready 恢复路径） |
 | L09 | L2 | 真实本地 PDF：缺下载 URL/捕获日志，但有本地导入 source hash | `preview` 可读并标 provenance 缺口；**正式合同缺身份/期间则不通过**；不伪造 URL、不默认联网 |
 | L10 | L1+L2 | 同文档原文 ready / 文本缺失 / sections 失败 / summary 安全拒绝，逐次请求不同能力 | **只检查所需能力**；原文不因无 summary 消失；**LLM/正式分析不得继承 preview 许可**；**不含** A07 的 VR-N21（属 owner R-4 独立工作包，S-2） |
 | L11 | L2 | 当前协议 / **未知版本（N-1 未定义，须显式拒绝）** / 缺版本 / 未知 schema / 缺 policy，从 filing/revenue 真实入口调用 | 兼容由**单 adapter** 转换且来源不变；未知**拒绝**；**无 companies 静默 fallback**；无第二权限语义。**B 只签 wiki 侧**，消费者侧记"未验" |

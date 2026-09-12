@@ -1,4 +1,4 @@
-# B 阶段文件范围（file-scope v0.1.5）—— 待 owner 批准的 DEV 工作包附件
+# B 阶段文件范围（file-scope v0.1.6）—— 待 owner 批准的 DEV 工作包附件
 
 > 依据 handbook **§1 第 5 项**（"首次实施前用户须批准 DEV 精确工作包及文件范围"）与 **§3**（run 目录结构 / card 字段）；B.DR-18 指出 v0.1 把两处误写为"§2.5"，已改。
 > 本页给出 **B 阶段候选改动文件的精确定位 + 冻结哈希**（实测 2026-09-12，wiki 产品树 = A01 冻结的 `7d4852f`，`git diff 7d4852f 032da52 -- src config` 为空，B.DR 已复核）。
@@ -64,7 +64,7 @@
 | B01 | F5/F6（schema 与准入）、F8（policy 侧语义对齐点） | 字段映射的机器可读产物写在本 run 目录 |
 | B02/B04 | **F1 + F2** | 两处必须同改 |
 | B03 | F4（只读底座）+ F2（切换与失败语义） | 不新增写路径 |
-| B05 | F3（`scanner.py:1007-1081`，含 `:1078-1081`）+ F1（读取侧暴露 provenance/conflicts） | 既有列承载，无 DDL |
+| B05 | F3（**`scanner.py:1007-1099`**：`:1009-1027` INSERT、`:1038` 开关、`:1073-1077` `prefer_new` 整列替换、`:1078-1081` UPDATE、`:1095-1099` 重扫分支）+ F1（读取侧暴露 provenance/conflicts） | 既有列承载，无 DDL；**禁整列替换** |
 | B06 | **F2**（`ResolutionEnvelope` 新增 `qualification`，`resolver.py:359-417/418-552`） | 消费者门不动 |
 | B0x（棘轮约束） | 见 [b-design](b-design.md) §B0x：`config.py`/`scanner.py`/`policy.py` **顶格**，改动须**复杂度中性**或走 S-7 | 每步须真跑棘轮测试 |
 | B07 | F2（合同版本与五值拒绝）+ F8（`export_policy` 语义不变） | 消费者侧不签 |

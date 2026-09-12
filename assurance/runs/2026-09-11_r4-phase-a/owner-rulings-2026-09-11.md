@@ -15,7 +15,7 @@
 | **R-4** | 配置不写"隐私级别"时默认"公开"，即**默认允许外发到外部 AI** | `privacy_class` 默认 `"public"`（`models.py:105`）；LLM 出口按该字段构造白名单（`llm_summarizer.py:333-337`） | **改为默认不外发**：缺省值取"仅内部"，要外发必须**显式**声明公开（新 root 一律显式声明） | root-contract §5；B/C 整改登记（**优先级高**） |
 | | | ⚠️ **范围扩大（2026-09-12，A.VR-04）** | 整改范围须包含**无门的正文外发**：`company_wiki/src/company_wiki/legacy_research_ingest.py:128-136`（`content[:8000]` → `self._llm.generate`，**不读 privacy_class、不查 receipt、不做字节绑定**）。这是独立于 `worker` 的**第二条 LLM 出口且完全无门**；须在 A06/L10 增加负例（A.VR 的 VR-N21） | operation-contract §2.3 第 0 条 |
 | **R-5** | 规则"公司改名后旧引用必须还能解析"没有负责人 | A04 R6 只有规范句，无 owner/机制/存储/负例 | **指派 owner**：`identity-enrichment`（断言路径）+ `security_identity`（证券主数据/别名刷新）作为共同负责人；机制=**追加式**映射（不覆盖），存储位置在 VR 阶段用隔离副本核清 | identity-contract §2 R6、§5 问题 2 |
-| **R-6** | 规则"路径不能决定身份"，但代码**确实**用"路径+优先级"决定哪份算正本（**9 处**） | 规范位/取值顺序由 `(root_priority, root_id, relative_path, location_id)` 决定：`service.py:329/:527/:643-653/:772`、`canonical_writer.py:287`、`duplicate_cleanup.py:210/:486`、`normalizer.py:1600/:1892`、`llm_summarizer.py:371`、`evidence_query.py:269` | **认作"需要整改"**：R4 保持为**目标**（不是现状），9 处登记进 B/C 的整改与验收范围；**不要求**现在改代码 | identity-contract §1 R4、§5 问题 1；B/C 整改登记 |
+| **R-6** | 规则"路径不能决定身份"，但代码**确实**用"路径+优先级"决定哪份算正本（**计数口径已核对，2026-09-12**：本行 v1 写"9 处"但实际枚举 **11 个锚点**；A 侧 [identity-contract](identity-contract.md) §1 另列 **13 个点**——差异来自"是否把 canonical 选择键与路径过滤计入"，两处已各自注明） | 规范位/取值顺序由 `(root_priority, root_id, relative_path, location_id)` 决定：`service.py:329/:527/:643-653/:772`、`canonical_writer.py:287`、`duplicate_cleanup.py:210/:486`、`normalizer.py:1600/:1892`、`llm_summarizer.py:371`、`evidence_query.py:269` | **认作"需要整改"**：R4 保持为**目标**（不是现状），9 处登记进 B/C 的整改与验收范围；**不要求**现在改代码 | identity-contract §1 R4、§5 问题 1；B/C 整改登记 |
 
 ## 后续动作（已登记，未执行）
 
@@ -24,7 +24,7 @@
 2. **B/C 整改清单**（按优先级，v0.4.1 更新）：
    - 高：R-2（显式 `false` 生效——**落点三处**：`resolver.py:782-786`/`:933-940`、`policy.py:67-72`、`policy_2x.py:308-312`（第三处在在产导出路径内，**不可删**，只能**对齐语义**，且其输出变化须与跨仓 policy_hash 迁移绑定））、R-4（默认不外发 **+ `legacy_research_ingest.py:128-136` 的无门出口**）；
    - 中：R-3（**仅**准入 loader 收敛为一套；导出路径不在内）、R-1（假保证字段处置：`symlink_policy` **与 `read_only`**）；
-   - 线：R-6（路径不入身份投影，9 处）、R-5（R6 的存储与负例在 VR 中核清）。
+   - 线：R-6（路径不入身份投影，**11 个排序锚点**；identity-contract §1 记 13 个点，口径差异已注明）、R-5（R6 的存储与负例在 VR 中核清）。
 3. **三份独立复审的结论（2026-09-12）**：A07 = `accepted_with_findings`（11 项，含 22 条负例与 5 值错误模型）、A08 = `rejected`（映射已产出，13 行无法指派）、B.DR = `rejected`（20 项，含上述 P0）。→ 合同已就地更正为各 v0.4.1，B 设计需按其 P1 全面重做后送 rev2 复审。
 
 ## 边界

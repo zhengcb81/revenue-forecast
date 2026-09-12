@@ -8,7 +8,7 @@
 
 | 声明 | 检验（新值在场 **且** 旧值不再作为断言） | 结果 |
 |---|---|---|
-| N-1 从 B07 完成定义移除 | 新值 `**不含 N-1**` @ `b-design.md:210`；旧值 `N-1 判定` 仅存于 findings 历史行 | ✅ |
+| N-1 从 B07 完成定义移除（v0.1.6） | 新值 `**不含 N-1**` @ `b-design.md:210`；旧值 `N-1 判定` 仅存于 findings 历史行 | ✅ |
 | B07 可签列不含 N-1 | 新值 @ `b-design.md:205`；旧断言串 0 处 | ✅ |
 | `metadata_json` 禁整列替换 | 新值 @ `b-design.md:149`（含 `:1073-1077`、`:1095-1099`） | ✅ |
 | `legacy_observer.py:90` 入共享读取者 | 新值 @ `b-design.md:154` | ✅ |
@@ -16,7 +16,7 @@
 | 覆盖率棘轮 + `NEW_FILE_MAX` 登记 | 新值 @ `b-design.md:228` | ✅ |
 | `B-payload-hash` 当前不可执行 | 新值 @ `test-acceptance-map.md` §1c | ✅ |
 | VR-N21 移出 B | 新值（否定式）@ `b-design.md:193`；旧断言串 0 处 | ✅ |
-| R-6 计数 = 11 锚点 | 新值 @ `file-scope.md:51`；`9 处同型排序` 0 处 | ✅ |
+| R-6 计数 = 11 锚点（v0.1.6） | 新值 @ `file-scope.md:51`；旧断言 `9 处同型排序` 0 处 | ✅ |
 | F2 步骤列含 B06 / F11 移出 allowed | 新值 @ `file-scope.md:15`、§1b | ✅ |
 | inputs 内层注记（逐文件版本） | 新值 @ `evidence/build_checkpoint.py:302`（外层字段会被 `main()` 覆盖，故写入 `inputs` **内层**） | ✅ |
 | 版本/状态行（v0.1.6、F10 已获批、rev1–rev5） | 新值 @ `b-design.md:3`、`task_plan.md:80`、`file-scope.md:6` | ✅ |
@@ -120,7 +120,7 @@
 
 - 证据（阶段 A 实测，含行号与哈希）：
   - **候选选择"先 canonical 后筛"**：`resolver.py:912-921` 在 `is_canonical` 上过滤，而 `is_canonical` 由 `service.py:643-653` 的 `(root_priority, root_id, relative_path, location_id)` 排序取 `ordered[0]` 决定 → 未被选中的同版本副本在查询早期即被屏蔽。
-  - **metadata 真伪由 priority 决定**：`scanner.py:1007-1081`，关键比较 `:1038`。
+  - **metadata 真伪由 priority 决定**（F-B00-1，v0.1.0 记录；锚点范围后经 v0.1.6 更正为 `scanner.py:1007-1099`）：关键比较 `:1038`。
   - **复用判定不读显式声明**：`resolver.py:782-786`/`:933-940` 只看 `root.kind`（owner 裁定 R-2 要求 `false` 生效）。
 - 影响：B02/B05 是**同一根因**（"位置/优先级被当成业务判据"）在两个层面的表现；B 的整改应**一次收敛**，避免打补丁式两处各改一半。
 

@@ -1,13 +1,27 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
   "phase": "B (position-transparent index and read-only access) - DESIGN ONLY",
-  "step": "B design v0.1.5 - four B.DR rounds corrected in place; S-1..S-6 decided by the owner, S-7 raised",
+  "step": "B design v0.1.6 - six B.DR rounds corrected; two-sided audit tool now in the package",
   "last_completed_step": "B run directory created; b-design v0.1 (B01-B07) submitted to B.DR; B.DR returned rejected with 1 P0 + 7 P1 + 9 P2 + 3 P3 (8 of 17 claims did not reproduce); phase-A A07 returned accepted_with_findings and A08 rejected; all twenty B findings and the phase-A findings corrected in place (A contracts -> v0.4.1, B design -> v0.1.1)",
   "current_gate": "S-1..S-6 are decided (owner 2026-09-12); S-7 (may the complexity ratchet table be edited if a step cannot stay complexity-neutral?) is the only open boundary question. Implementation itself still awaits the owner's go-ahead (handbook section 1 item 5).",
   "pending_review": [
     {
-      "gate": "B.DR rev5",
+      "gate": "B.DR rev6",
       "scope": "B design v0.1.5",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P1": 3,
+        "P2": 6,
+        "P3": 4
+      },
+      "note": "also falsified the first two-sided claim audit: it asserted verification without patterns/commands/output; replaced by evidence/claim_fact_audit.py, which is re-runnable and searches the whole run directory",
+      "record": "reviews/B.DR-rev6.json",
+      "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d"
+    },
+    {
+      "gate": "B.DR rev5",
+      "scope": "B design v0.1.4",
       "status": "pending",
       "reviewer": "independent subagent (non-author) - must differ from rev1-rev4 sessions"
     },
@@ -113,18 +127,18 @@
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "b7ec5b6a26bc017bc5c06344150236b3ecbb9335",
-      "dirty": 0
+      "head": "eef00ce1205af92c20a9115af7af8fdf7ae2496a",
+      "dirty": 14
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "b7ec5b6a26bc017bc5c06344150236b3ecbb9335",
+  "reviewed_commit": "eef00ce1205af92c20a9115af7af8fdf7ae2496a",
   "commit_anchor": {
-    "head": "b7ec5b6a26bc017bc5c06344150236b3ecbb9335",
-    "index_tree": "de68b7f6cb985568da97db5252e45e3d755e204b",
+    "head": "eef00ce1205af92c20a9115af7af8fdf7ae2496a",
+    "index_tree": "df5af24f81c1ec0af21217e1dda3be2d1e09d326",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -133,36 +147,40 @@
       "size": 907
     },
     "b-design.md": {
-      "sha256": "25617de9dacc192d755e7dae2618b65f7b091cad1b9da6dac251d57fee002b6a",
-      "size": 31458
+      "sha256": "7f083f6033aef9b592b25412764adecbcdd3962ec342b325be0b71d5ef7533ae",
+      "size": 31862
     },
     "b-vr-protocol.md": {
-      "sha256": "1fb9faea4c6c53ce15437100be4c3bdb92de3265bafde967de835421b6c9c8f4",
-      "size": 7320
+      "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
+      "size": 7366
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "2ce0c2214b23a8f0eaf30bbc6ceaea929ab859e7579ecc682ead1d9f130ff9ae",
-      "size": 18061
+      "sha256": "70b09f13a6aba50282fb24ffeb0643ba0be53725797c33e1dffde47c219475b4",
+      "size": 18684
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "d046e1b58256c902cc1fda9525d48fe3f62306bb3bf56d87d4ffc37602d2cdb1",
-      "size": 5641
+      "sha256": "114eca1844c9664b2670bc967e714fec50425979fefd245b17d4543413a6d5f0",
+      "size": 35943
+    },
+    "evidence/claim_fact_audit.py": {
+      "sha256": "3cbff62199a8007ec0d47683c0474f17c93d87feb24728e4053c2afa8fac9632",
+      "size": 8407
     },
     "file-scope.md": {
-      "sha256": "4a097f2e1035b1278a1d87767e6ecf700c8ab6b4c2f26e36eba329afee2a2ddc",
-      "size": 11924
+      "sha256": "21e32cfb60b5f53e762f8be85819306248345df28e577ce467805c78fd436d0d",
+      "size": 12061
     },
     "findings.md": {
-      "sha256": "0665d70ff96e2f1ec5bc311ea5c9218538c6123be528c64be4fd256f7a0bc12b",
-      "size": 27772
+      "sha256": "56ae593c95755526adeb8e1abbdd99208a85a5230d3a2e61066165923ddb3c70",
+      "size": 27871
     },
     "owner-scope-decisions-2026-09-12.md": {
-      "sha256": "bae7b9bf3bd1ae644be7a2beb6578e12a4417430a1fdcd8b5fa78c583a0c329b",
-      "size": 4579
+      "sha256": "33f6f1eb3cfb8f4885f3199b4d1637b1ff50bcb4e593f6c3c187b13ed99e948b",
+      "size": 4600
     },
     "progress.md": {
-      "sha256": "8426f6aba4c4e8a763862dc3927fc47bf0530c173369cf0e232fb357f097c482",
-      "size": 6037
+      "sha256": "260433090bd0c52646695d97aafdc6a9389728842a402db233c71bca0c54a68c",
+      "size": 6262
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -180,6 +198,10 @@
       "sha256": "e3dfca7eb0885d07dfd78ce2e1dc418f427e08f0158e7485dceb5bbfd382cbfc",
       "size": 73005
     },
+    "reviews/B.DR-rev6.json": {
+      "sha256": "0cb4a4c3b27bb73d39d4342b3f4fbe9481f3c6b8a6ee330ec771cb6829611cca",
+      "size": 78074
+    },
     "reviews/B.DR.json": {
       "sha256": "bbe383f34872b44cfed1894d5c7c7c62d894d4bf424ac911a242dc89cd081af4",
       "size": 66878
@@ -189,20 +211,20 @@
       "size": 7165
     },
     "task_plan.md": {
-      "sha256": "52eb547d7f7ae55b51a5c6b2c4817938cf5ce92ea7314b92e6059202f90271ca",
-      "size": 12269
+      "sha256": "4f8ce05e0fb9809f6ba541906cc477fc616103060aaa3bdc1a0a661ab8702a20",
+      "size": 12319
     },
     "test-acceptance-map.md": {
-      "sha256": "03778bf0590e4e3f52d50b1d465c860fa8ee469d521381b07dd8a06f7cc447b6",
-      "size": 10023
+      "sha256": "20fb868baa7a8315a0f219dd06e6d366cbd95b0ba3f7d263ad618a3dc400647a",
+      "size": 10836
     }
   },
   "produced_files_verification": {
-    "checked": 17,
+    "checked": 19,
     "source": "index",
-    "compared_revision": "de68b7f6cb985568da97db5252e45e3d755e204b",
-    "head_revision": "b7ec5b6a26bc017bc5c06344150236b3ecbb9335",
-    "index_tree": "de68b7f6cb985568da97db5252e45e3d755e204b",
+    "compared_revision": "df5af24f81c1ec0af21217e1dda3be2d1e09d326",
+    "head_revision": "eef00ce1205af92c20a9115af7af8fdf7ae2496a",
+    "index_tree": "df5af24f81c1ec0af21217e1dda3be2d1e09d326",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -212,8 +234,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 17,
-    "files_listed": 17,
+    "files_on_disk": 19,
+    "files_listed": 19,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -222,5 +244,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T10:01:19.810158+00:00"
+  "generated_at_utc": "2026-09-12T10:14:44.139003+00:00"
 }

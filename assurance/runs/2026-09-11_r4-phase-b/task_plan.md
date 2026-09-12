@@ -3,7 +3,7 @@
 > 运行目录：`revenue-forecast/assurance/runs/2026-09-11_r4-phase-b/`（**本 run 的证据产物只落在此目录**，不写回审计证据目录）
 > 权威来源：[R4 执行计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md) §B（B01–B10） · [R4 测试矩阵](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-test-matrix.md)（L01–L12 / P / O / M） · [接班手册](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/execution-handbook.md) §2/§3/§5
 > 阶段 A 产物（冻结输入）：[../2026-09-11_r4-phase-a/](../2026-09-11_r4-phase-a/)（A01–A04 v0.3.1、A.DR rev3 `accepted_with_findings`、owner 六项裁定 = [owner-rulings-2026-09-11.md](../2026-09-11_r4-phase-a/owner-rulings-2026-09-11.md)）
-> 状态：**B 设计 v0.1.6（DESIGN_ONLY + 边界已定：owner 六项 scope 裁定已写入 §5；`B.DR` 前三轮 rejected 已逐条更正）**；产品代码零改动；实施入口待 owner 一句确认；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，20 条已逐条更正，见 [findings.md](findings.md) F-B01-1）；产品代码**未被修改**；B 的实施需 owner 批准本包 DEV 工作包与文件范围（handbook **§1 第 5 项** + §3；v0.1 曾误写"§2.5"）
+> 状态：**B 设计 v0.1.6（DESIGN_ONLY + 边界已定：owner 六项 scope 裁定已写入 §5；`B.DR` 前六轮 rejected 已逐条更正）**；产品代码零改动；实施入口待 owner 一句确认；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，20 条已逐条更正，见 [findings.md](findings.md) F-B01-1）；产品代码**未被修改**；B 的实施需 owner 批准本包 DEV 工作包与文件范围（handbook **§1 第 5 项** + §3；v0.1 曾误写"§2.5"）
 
 ## 0. 起点与授权
 
@@ -35,7 +35,7 @@
 
 | 门 | 内容 | 现状 |
 |---|---|---|
-| **B.DR** | 独立设计审查：字段 owner 合并/弃用、**不得新增第二套 effective_reusable**（执行计划 §B01 原文）、显式 `false` 必须保留含义；测试与验收映射是否覆盖 L01–L12 | **rev1–rev5 = rejected**（最新一轮 rev5 的 11 条已逐条处置；架构无需推翻）（20 条，已逐条更正为 v0.1.1）→ **待 rev2**（须基于新冻结提交与新输入哈希集） |
+| **B.DR** | 独立设计审查：字段 owner 合并/弃用、**不得新增第二套 effective_reusable**（执行计划 §B01 原文）、显式 `false` 必须保留含义；测试与验收映射是否覆盖 L01–L12 | **rev1–rev6 = rejected**（最新一轮 rev6 的 13 条已逐条处置；架构无需推翻）（20 条，已逐条更正为 v0.1.1）→ **待 rev2**（须基于新冻结提交与新输入哈希集） |
 | **B.VR** | 隔离环境重跑 L01–L12（+必要旧 C01–C10），独立 OS/文件观察证明本地零副作用 | 阻塞（G8） |
 | **B.AR** | 从原文独立复本身份与 hash；真实四 root + 第五 root 的最小读取 | 阻塞（G8 + G7） |
 | **D.SAFE 交叉** | H01（自动 prune 可达性）与写/删除路径的隔离证据 | 见 [risk-and-stop-rules.md](risk-and-stop-rules.md) |
@@ -69,7 +69,7 @@
 | S-4 | ➡️ 消费者侧（filing/revenue）**归 C**，B 不签 | B07 完成定义 = wiki 侧四件 |
 | S-5 | ✅ G8 **两级**：L1 机制层**可立即开工** | [b-vr-protocol.md](b-vr-protocol.md) §1 |
 | S-6 | ✅ 需要**第四轮**复审，先写实边界再送 | `B.DR-rev4` = rejected（文本/落点级，11 条）→ **v0.1.5 一次收敛**，随后送 `B.DR-rev5` |
-| **S-8**（v0.1.6 新增，**待 owner**） | 把执行计划 §B07 的「**先测 N-1 支持合同**」整体移出 B，是否同意？ | 两侧代码只接受 `1.0`，包内无 N-1 规则；按本包自订标准「范围改判须 owner 确认」 | **同意**：N-1 登记为跨仓协议待定义项，B 只承诺「未知版本显式拒绝」 | **不同意**：需先定义 N-1 规则再纳入 B07 |
+| **S-8**（v0.1.6 新增，**待 owner**，列于本节而非 §5b 的"裁定结果"表内） | 把执行计划 §B07 的「**先测 N-1 支持合同**」整体移出 B，是否同意？ | 两侧代码只接受 `1.0`，包内无 N-1 规则；按本包自订标准「范围改判须 owner 确认」 | **同意**：N-1 登记为跨仓协议待定义项，B 只承诺「未知版本显式拒绝」 | **不同意**：需先定义 N-1 规则再纳入 B07 |
 | **S-7**（v0.1.5 新增，**待 owner**） | 若某步**无法**做到复杂度中性，是否允许**更新复杂度棘轮表**（= 修改既有测试文件 `test_fc1204_complexity_ratchet.py`，与 F10"仅新增"互斥）？ | 见 [b-design §B0x](b-design.md)；**作者建议：不允许**，改用把新判定放进**新增独立模块/函数**的方式保持棘轮文件不变 |
 
 > **仍未批准**：**"开始实施"本身**（handbook §1 第 5 项）——边界已定、file-scope 已按裁定更新，但改产品代码需 owner 一句确认。建议实施顺序：B02 → B04 → B05 → B01 → B03 → B06 → B07，每步独立 commit + 独立复审。
