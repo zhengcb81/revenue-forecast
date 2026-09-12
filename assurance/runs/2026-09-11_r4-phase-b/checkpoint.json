@@ -213,8 +213,9 @@
     "S-13_response_blocked": "APPROVED as recommended: the response-level blocked verdict moves into B06/B07; B05's scope was NOT widened, it delivers the field-level facts and the read-side metadata_status",
     "implementation_go_ahead": "GRANTED (owner 2026-09-12, second batch); B02, B04, B05 and B01 have landed and B01 is the next review round"
   },
-  "actual_side_effects": "Unlike the design-only rounds, this run has MODIFIED PRODUCT FILES in company-wiki: src/company_wiki/source_catalog/service.py, src/company_wiki/source_catalog/scanner.py (the B05 merge path), src/company_wiki/source_catalog/resolver.py, plus four new files under tests/contract/ (test_r4b02_candidate_selection.py, test_r4b04_reference_stability.py, test_r4b05_metadata_provenance.py, test_r4b01_field_owner_alignment.py) - all inside the authorized file scope (F1/F2/F3/F10) and pushed (cab1fd6 ... 9826b3c, then 0e28d99 for B01). Executed locally: pytest (including the full suite with coverage), ruff, git worktree, read-only probes over synthetic tmp fixtures, and mutation harnesses that restore the product files to the same digest. NOT executed: any network/download/LLM egress, any product-data write, any DB write, task registration, worker action or deletion; no behavioural probe against the production catalog. The run directory IS pushed (origin/main) and every push ran revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY and advances -shm (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md). Several pre-existing wiki tests also open the production catalog read-only when the suite runs (known limitation, attributed in phase A).",
+  "actual_side_effects": "Unlike the design-only rounds, this run has MODIFIED PRODUCT FILES in company-wiki: src/company_wiki/source_catalog/service.py, src/company_wiki/source_catalog/scanner.py (the B05 merge path), src/company_wiki/source_catalog/resolver.py, plus four new files under tests/contract/ (test_r4b02_candidate_selection.py, test_r4b04_reference_stability.py, test_r4b05_metadata_provenance.py, test_r4b01_field_owner_alignment.py) - all inside the authorized file scope (F1/F2/F3/F10) and pushed (cab1fd6 ... 9826b3c, then 0e28d99 for B01). Executed locally: pytest (including the full suite with coverage), ruff, git worktree, read-only probes over synthetic tmp fixtures (including evidence/b01_fc1001_probe.py, which builds the FC-1001 lake in a temp directory to explain the F-B01-7 gate failure), and mutation harnesses that restore the product files to the same digest. NOT executed: any network/download/LLM egress, any product-data write, any DB write, task registration, worker action or deletion; no behavioural probe against the production catalog. The run directory IS pushed (origin/main) and every push ran revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY and advances -shm (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md); that gate is currently RED for the F-B01-7 reason, so the B01 run-directory commits remain LOCAL and no push was attempted with --no-verify. Several pre-existing wiki tests also open the production catalog read-only when the suite runs (known limitation, attributed in phase A).",
   "failed_or_unknown": [
+    "BLOCKER (F-B01-7): after B01 landed, revenue-forecast's pre-push gate (real-data suite) is RED on tests/test_fc1001_isolated_lake.py::test_corruption_variants_fail_closed[sidecar_missing]. Root cause located with a six-way probe (evidence/b01_fc1001_probe.py): that case NEVER passed for the reason it names - the rejection came from the resolver's old kind-only reuse gate under the case's inline synthetic config (default reusable_root_kinds=['company_raw'] against a 'directory' root), and under the production-shaped config the same document resolves BOTH before and after B01 (matches=1), including after a re-scan and with sidecar_suffixes declared. So B01 removed an incidental cover, not an identity check (the entity gate still rejects as before), and the case's fail-closed expectation has never held in production - the real gap it exposes (a document whose sidecar is missing must not default to a trusted filing) belongs to B06 by the design text. The fix is a one-case correction in revenue-forecast, which is OUTSIDE phase B's file scope, so it is with the owner (options A-D in findings F-B01-7). Until then the revenue-side commits stay local; the gate was NOT bypassed",
     "B03/B06/B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so a preferred copy whose bytes drifted is served on the catalog's claim (S-10's other half, assigned to B03), and no response-level blocked verdict exists yet (S-13, assigned to B06/B07)",
     "B-payload-hash has never been executed (no frozen baseline in the package and the value needs a CLI that is not approved); B05 changes the metadata_json bytes, so any baseline must be taken after B05",
     "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped); the B-side cases cover L01-L04 plus budget/cancel/no-network, the review regressions and the B01 alignment property, not the whole matrix",
@@ -227,7 +228,7 @@
     "test_dbx05_symlink_escape_rejected skips on this host (symlinks not supported), so the symlink-escape control did not run here",
     "the current acceptance cases run on tmp fixtures; the real four-root and cloud-placeholder behaviour still needs the isolated copy (G8)"
   ],
-  "next_step": "Run B01's one independent review round (section 11), which also samples the B05 P2 fixes, then implement B03 per evidence (stable read bytes: a fixed handle or a controlled snapshot, streaming hashing, and the TOCTOU/cloud-placeholder/bad-byte/interruption cases) - B03 carries the byte-level hard gate deferred by S-10 - and then B06 -> B07, which must deliver the response-level blocked verdict assigned by S-13. Each step: F10 cases, one commit, the ratchet/coverage rerun, one independent review and one implementation record.",
+  "next_step": "Resolve the F-B01-7 blocker with the owner (authorise the one-case correction in revenue-forecast's tests/test_fc1001_isolated_lake.py and register the sidecar-missing rule as a B06 acceptance item, or defer), then push the revenue-side commits. Then run B01's one independent review round (section 11), which also samples the B05 P2 fixes; then implement B03 (stable read bytes: a fixed handle or a controlled snapshot, streaming hashing, and the TOCTOU/cloud-placeholder/bad-byte/interruption cases) - B03 carries the byte-level hard gate deferred by S-10 - and then B06, which must deliver both the response-level blocked verdict (S-13) and the sidecar/identity rule that F-B01-7 shows is missing, then B07. Each step: F10 cases, one commit, the ratchet/coverage rerun, one independent review and one implementation record.",
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
@@ -235,7 +236,7 @@
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "4d4176227ef23ed0966d492bcd93e751023ea4f8",
+      "head": "9ddb4ea08034e58f79f9ae3998abe583786bed57",
       "dirty": 0
     },
     "filing-fetch": {
@@ -243,10 +244,10 @@
       "dirty": 0
     }
   },
-  "reviewed_commit": "4d4176227ef23ed0966d492bcd93e751023ea4f8",
+  "reviewed_commit": "9ddb4ea08034e58f79f9ae3998abe583786bed57",
   "commit_anchor": {
-    "head": "4d4176227ef23ed0966d492bcd93e751023ea4f8",
-    "index_tree": "359142d6af00f0bab6d364dbbd41935545edd9cc",
+    "head": "9ddb4ea08034e58f79f9ae3998abe583786bed57",
+    "index_tree": "f0c48757569acaaf0e5eb176eda74c03013cc7d4",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -262,9 +263,17 @@
       "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
       "size": 7366
     },
+    "evidence/b01-fc1001-probe.json": {
+      "sha256": "9deeb5256f8e7448676efa25435fef283795c39c48f166f361b9386874c4dd3e",
+      "size": 17145
+    },
     "evidence/b01-implementation.md": {
-      "sha256": "4593a901b6a98e2e45bcc2cbee5fba7b249ba97b7485e69dd966c1fd13dc4d81",
-      "size": 8190
+      "sha256": "fe0b56c880bb7b9a0219ed7f59b26eba8574f1bed340f5090a076e0fbf262ed6",
+      "size": 10925
+    },
+    "evidence/b01_fc1001_probe.py": {
+      "sha256": "be742268e14bd1ce3d31ccc0ccd2b65833c2192a34452dc8dc61b24786813512",
+      "size": 10979
     },
     "evidence/b02-ci-runs.md": {
       "sha256": "4becd03b7a49fb53d25518f31228c08f799d8cf98a63173d862a492faf4ab70a",
@@ -331,16 +340,16 @@
       "size": 6624
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "6198a587897f5e77655e5fc2491920daaad0e42d0d868e5d2b5ca817145cd651",
-      "size": 35040
+      "sha256": "d70a2e9c133114ec8248003977b298f749eecb486ca0b482269c658db11d7ee0",
+      "size": 36876
     },
     "evidence/ci_query.py": {
       "sha256": "742e2af08750ae4edbbd143162d126a21867e1e66a17f03e5ed2b62e0dc085d8",
       "size": 2304
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "56e17d06fea315e28861f33e97edc514609aa4ab7e070abcdf5f1a32b6636f94",
-      "size": 83500
+      "sha256": "47977e52c8320d43456240ea04132539a62d68849f99233d879917abd01a085c",
+      "size": 83005
     },
     "evidence/claim_fact_audit.py": {
       "sha256": "674264798459310c08313a4739171ed790826135ce334d554107dd15010635a5",
@@ -355,16 +364,16 @@
       "size": 12565
     },
     "findings.md": {
-      "sha256": "7fc42f048def1778c07d0120dd27f76c90d2cea1066fab2151d41ac863ff3a04",
-      "size": 59982
+      "sha256": "24cd02c7c9a0679a84fc16677d40d89c41cb38be7751f36cd7708661a0426996",
+      "size": 64505
     },
     "owner-scope-decisions-2026-09-12.md": {
       "sha256": "cb6ac486f03de140a4dfdd308b7dd484809ded199c69122d8e180bc5c3483d24",
       "size": 10926
     },
     "progress.md": {
-      "sha256": "d2c6fb56973b1e9d025713a0306cee94cefa38100145f109732e1e28c9fcf93a",
-      "size": 25119
+      "sha256": "259397c389ba9ea12dd40e428e8f5e79fbf923b1e30892531f1fcb2eb7c0bad4",
+      "size": 26141
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -428,11 +437,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 44,
+    "checked": 46,
     "source": "index",
-    "compared_revision": "359142d6af00f0bab6d364dbbd41935545edd9cc",
-    "head_revision": "4d4176227ef23ed0966d492bcd93e751023ea4f8",
-    "index_tree": "359142d6af00f0bab6d364dbbd41935545edd9cc",
+    "compared_revision": "f0c48757569acaaf0e5eb176eda74c03013cc7d4",
+    "head_revision": "9ddb4ea08034e58f79f9ae3998abe583786bed57",
+    "index_tree": "f0c48757569acaaf0e5eb176eda74c03013cc7d4",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -442,8 +451,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 44,
-    "files_listed": 44,
+    "files_on_disk": 46,
+    "files_listed": 46,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -452,5 +461,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T20:37:30.707716+00:00"
+  "generated_at_utc": "2026-09-12T20:49:09.142579+00:00"
 }
