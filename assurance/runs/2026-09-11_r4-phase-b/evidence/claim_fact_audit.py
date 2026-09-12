@@ -252,13 +252,39 @@ def classify(line: str, rel: str) -> str:
     return "history" if HISTORY_HINT.search(line) else "ASSERTION"
 
 
+def _read_evidence_text(path: Path) -> tuple[str, str]:
+    """Read an evidence file as text, tolerating a non-UTF-8 encoding.
+
+    Evidence in this directory is produced by several tools, and PowerShell
+    redirection on this host can emit UTF-16 with a BOM (it did, once, for a
+    reviewer's captured baseline).  A stray encoding must degrade to a WARN -
+    never kill the audit, because the audit is what proves the claims.
+    Returns ``(text, encoding_used)``.
+    """
+    raw = path.read_bytes()
+    for encoding in ("utf-8", "utf-16"):
+        try:
+            return raw.decode(encoding), encoding
+        except (UnicodeDecodeError, UnicodeError):
+            continue
+    return raw.decode("utf-8", "replace"), "utf-8/replace"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
 
     files = eligible_files()
-    texts = {p.relative_to(RUN).as_posix(): p.read_text(encoding="utf-8") for p in files}
+    texts: dict[str, str] = {}
+    fallback_encodings: dict[str, str] = {}
+    for path in files:
+        rel = path.relative_to(RUN).as_posix()
+        text, encoding = _read_evidence_text(path)
+        texts[rel] = text
+        if encoding != "utf-8":
+            fallback_encodings[rel] = encoding
+            print(f"WARN  {rel}: read as {encoding} (not UTF-8)")
     for extra in EXTRA_ROOTS:
         if extra.is_file():
             texts[f"product:{extra.as_posix()}"] = extra.read_text(encoding="utf-8")
@@ -297,6 +323,7 @@ def main(argv: list[str] | None = None) -> int:
                    "(change-log or finding history)"),
         "tool": "evidence/claim_fact_audit.py (re-runnable: python evidence/claim_fact_audit.py)",
         "files_searched": sorted(texts),
+        "files_read_with_a_fallback_encoding": fallback_encodings,
         "excluded_from_search": sorted(EXCLUDE_SELF | EXCLUDE_NAMES),
         "checks": results,
         "passed": passed, "total": len(CHECKS),
