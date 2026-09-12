@@ -135,7 +135,7 @@
 2. **B 的 DEV 工作包与文件范围批准**（[file-scope.md](file-scope.md)）——owner 一句话即可，之后才能改代码。
 3. **隔离副本（G8）**——建议按 findings F-B00-3 分两级；B.DR 已独立复核该技术前提（wiki 既有测试确实用 `tmp_path` 造 catalog）。
 4. **A05 样本清单（G7）与只读命令 manifest**——已写好待确认。
-5. **A-AR-02 的桥接表**（13 行无法指派 → E01–E13 / U117 / FC903 / CL·AC → L/P/O/M）——A08 的整改项，待做。
+5. **A-AR-02 的桥接表**（13 行无法指派 → E01–E13 / U117 / FC903 / CL·AC → L/P/O/M）——**已闭环**：表落在 [../2026-09-11_r4-phase-a/a08-goal-bridge.md](../2026-09-11_r4-phase-a/a08-goal-bridge.md)（提交 `83c33a4`）。表 A 逐族点名全部 13 行（CA-001–004、ZR-001–004、ZR-1002/1003、ZR-307、ZR-404/405）并给**矩阵外**关闭依据 + 来源文件；表 B 列出只在传递行里出现的矩阵 ID（去重后 11 个，与 A.AR 的"13"计数差异已在表内说明）；§3 **如实登记**仍无 L/P/O/M 路由的三族（E01–E13 / U117 / FC903），未新造 ID、未改任何历史文件。阶段 A 台账里"bridge table is outstanding"的三处陈旧表述已在本轮更正（`evidence/build_checkpoint.py` 的 LEDGER + checkpoint 重建）。**边界不变**：B 阶段不得借本表声称这三族已闭。
 6. **B05 的 provenance 持久化**——本轮决定**不落库**；若 owner 要求持久化，需独立工作包（含 `store.py` DDL/迁移）。
 
 ### 5. 变更记录（真实时间）

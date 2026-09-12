@@ -154,7 +154,13 @@ LEDGER = {
             "record": "reviews/A.AR.json",
             "reviewer_self_reported_id": "b17b1524-2114-4dfa-ab3e-fc8e0a030a1c",
             "note": ("the single P0 is the same fact as B.DR-01; A-AR-02's bridge table "
-                     "(E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) is registered as outstanding"),
+                     "(E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) LANDED as a08-goal-bridge.md "
+                     "(table A: the 13 unassignable rows, grouped by their identical closure basis, each "
+                     "family naming its rows, its matrix-external cases and the source file; table B: the "
+                     "matrix ids with no directly linked row, 11 after de-duplication with the counting "
+                     "difference against A.AR's 13 stated; section 3 registers what still has no L/P/O/M "
+                     "route instead of claiming coverage). No new L/P/O/M id was invented and no product "
+                     "or historical file was touched"),
         },
         {
             "gate": "A07 (A.VR)",
@@ -200,7 +206,7 @@ LEDGER = {
     "failed_or_unknown": [
         "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is resolved by CI timestamps + gate code",
         "reviewer independence is NOT externally stamped (gate G6, A-DR-16)",
-        "A-AR-02: 13 of the 117 goal rows cannot be assigned to any L/P/O/M group (CA-001..004, ZR-001..004, ZR-1002/1003, ZR-307, ZR-404/405) and 13 matrix ids have no directly linked row - the bridge table (E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) is outstanding",
+        "A-AR-02 is CLOSED (was: 13 of the 117 goal rows cannot be assigned to any L/P/O/M group and the matrix ids with no directly linked row have no bridge): the bridge table landed as a08-goal-bridge.md, which names all 13 rows (CA-001..004, ZR-001..004, ZR-1002/1003, ZR-307, ZR-404/405) with their matrix-external closure basis and source file, lists the matrix ids that only appear transitively (11 after de-duplication, with the counting difference against A.AR's 13 stated in the file), and registers in its section 3 what still has NO L/P/O/M route (E01-E13, U117.01-.07, FC903.01-.08) rather than claiming coverage. It stays true that those three families are carried by O06/D07, the A08 freeze and the C/D phases - B must not read this bridge as 'those families are closed'",
         "R-3's narrowed scope (admission loader only) needs the owner's explicit re-confirmation, because the widening was based on a factual error; the export path stays in production",
         "A05 has not selected real samples (rules only) and the bounded read-only manifest is unapproved (G4/G7)",
         "A06 has produced no baseline results yet, so 'B fixed it' cannot be verified independently until it exists (G8)",
@@ -224,7 +230,7 @@ LEDGER = {
         "G7_A05_sample_list": "pending (selection rules ready in a05-corpus-sample-plan.md)",
         "G8_isolated_copy": "pending",
         "A07_A_VR": "closed: accepted_with_findings; findings corrected in v0.4.1",
-        "A08_A_AR": "closed: rejected; the 117-row mapping was produced, the bridge table is outstanding",
+        "A08_A_AR": "closed: rejected; the 117-row mapping was produced, and A-AR-02's bridge table landed as a08-goal-bridge.md (13 rows annotated with matrix-external closure basis; 11 transitively-only matrix ids listed with the counting difference; no invented L/P/O/M id)",
     },
     "next_step": (
         "A02 is frozen. Remaining work needs owner/operator input, not more authoring: the A05 "
