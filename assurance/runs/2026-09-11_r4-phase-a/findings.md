@@ -49,11 +49,11 @@
 - 证据（v0.2 新增，回应 A-DR-08；**定案于 22:1x**）：
   1. A.DR 独立观测：`catalog.sqlite3-shm` `LastWriteTime = 2026-09-11 21:18:15`（checkpoint.json 写于 21:16:54 之后 81 秒）；全 `.source_catalog` 树中该日仅此一个文件被改。
   2. 作者观测：同一文件在 `21:26:47` 再次出现。
-  3. **归因证据（决定性）**：`revenue-forecast/tools/pre_push_gate.py:184-199` 的 **real-data 套件直接对生产 catalog 跑 pytest**；本会话当晚 **revenue 推送 8 次**（GitHub Actions 外部时间戳：`#134 20:19:41`、`#135 20:22:10`、`#136 21:09:02`、`#137 21:12:29`、`#138 21:16:28`、`#139 21:19:16`、`#140 21:27:44`、`#141 22:11:22`，全部 success；wiki 另推 2 次 `#100 20:17:26`/`#101 22:08:58`），每次 revenue 推送**之前**必须跑完该 gate（约 4–5 min，real-data 为最后一步）→ #139 的 real-data ≈ **21:18:15**、#140 的 ≈ **21:26:47**、#141 的 ≈ **22:10:11**，与三处前移吻合；22:03 手动跑同一 gate（**未推送**）把 `-shm` 推到 **22:05:03**（复现实验）。**v0.3 更正（A-DR2-05）**：v0.2 写"push 5 次"**少算**（实为 revenue 8 + wiki 2），且未登记"手动跑 gate 未推送"这一类开库路径。
+  3. **归因证据（决定性）**：`revenue-forecast/tools/pre_push_gate.py:184-199` 的 **real-data 套件直接对生产 catalog 跑 pytest**；本会话当晚 **revenue 推送 10 次**（`#134 20:19:41` … `#142 22:28:17`，全部 success；wiki 另推 3 次 `#100 20:17:26`/`#101 22:08:58`/`#102 22:25:06`），每次 revenue 推送**之前**必须跑完该 gate（约 4–5 min，real-data 为最后一步）→ #139 的 real-data ≈ **21:18:15**、#140 的 ≈ **21:26:47**、#141 的 ≈ **22:10:11**，与三处前移吻合；22:03 手动跑同一 gate（**未推送**）把 `-shm` 推到 **22:05:03**（复现实验）。**v0.3 更正（A-DR2-05）**：v0.2 写"push 5 次"**少算**（实为 revenue 8 + wiki 2），且未登记"手动跑 gate 未推送"这一类开库路径。
   4. **标定**：22:00 每日任务（`legacy_observer.py --read-only`）在 22:00:02/22:00:18 前移 `-shm` → **只读打开 WAL 库确实更新 `-shm`**；同时主库与 `-wal`（0 字节）全程未变 → **无逻辑写入证据**。
   5. **阴性对照**：`--help` 探针（52×2 轮）、纯 import、观测窗（99 样本 / 1491.5 s，末样本 21:59:53，窗内无 push）**零前移**；wiki 的 CI 等价门（22:00:22–22:01:45）**未前移**。
   6. 已排除：无 `company_wiki`/`source_catalog` 进程；`company-wiki-source-catalog-worker` 任务不存在；`.source_catalog` 与 `Projects` 非 reparse point、不在 Dropbox/OneDrive 内。
-  7. **措辞更正（A-DR2-06）**：v0.2 说"环境周期性触碰者假设被**证伪**"属**逻辑越权**——25 min 的零结果**不能**证伪存在性。正确表述：该窗口**未观察到**前移；在 6 处前移全部被 gate/每日任务解释后，已无需要引入该假设。
+  7. **措辞更正（A-DR2-06）**：v0.2 说"环境周期性触碰者假设被**证伪**"属**逻辑越权**——25 min 的零结果**不能**证伪存在性。正确表述：该窗口**未观察到**前移；在 **7 处**前移全部被 gate/每日任务解释后（v0.4.1 更正计数），已无需要引入该假设。
 - **结论**：先前"无法归因 / 疑为环境周期性触碰"的表述**已撤回**；正确表述是——**本会话的 push/gate 协议会以只读方式打开生产 catalog**，四处前移即由其造成（另两处为每日任务）。**A 阶段的设计动作**（读代码、写文档、`--help` 探针）确实不触碰该库，但"本会话未运行任何会打开 catalog 的代码路径"这一更强的说法**是错的**。
 - 影响：
   - v0.1（及 A01 §4/F-A01-6）的"零副作用"结论**范围过窄**：快照只看主库文件，看不到 `-shm`/`-wal`。
@@ -64,4 +64,15 @@
 
 - 证据：本轮独立复审记录 [reviews/A.DR.json](reviews/A.DR.json)（reviewer session `7cd316cc-…`，非作者会话）。复审确认的正向事实：12/12 输入哈希与字节数、三个 HEAD、root 配置表、51 节点 CLI 结构、checkpoint 7 个产物哈希、跨仓 spawn 引用、仓库与目录边界隔离。
 - P1 更正映射：A-DR-01/02/03 → [root-contract.md](root-contract.md) v0.2（新增 R7/R8）；A-DR-04/05/10/12 → [operation-contract.md](operation-contract.md) v0.2；A-DR-06/15 → [baseline-map.md](baseline-map.md) §1.1/§0 与 F-A01-2；A-DR-07/13 → [identity-contract.md](identity-contract.md) v0.2；A-DR-08 → 本文件 F-A01-8 与 [boundary-audit.md](boundary-audit.md)。P2/P3：A-DR-09（三份台账一致化，见 task_plan/checkpoint）、A-DR-11（inputs.json + command-manifest 说明）、A-DR-14（A02 §1 引用拆分）、A-DR-16（复审 ID 由编排方从外部戳记 → 见 task_plan 门禁表）。
-- **仍然开放的 owner 裁定**（A.DR 明确要求先裁定再冻结 A02）：`symlink_policy` 假保证是否升级为 B/C 强制整改；`reusable_for_filing` fail-open 是否强制 `false` 生效；两套分叉准入实现（R8）收敛方向；`privacy_class` 缺省 public 是否改为 fail-closed；R6 owner 指派；R4 严格读法（位置代表权是否算违例）。
+- **owner 六项裁定**：**已于 2026-09-11 全部定案**（"按你建议办"）→ 见 [owner-rulings-2026-09-11.md](owner-rulings-2026-09-11.md)。**v0.4.1（2026-09-12）**：三份独立复审命中同一 P0 —— R-3 的适用范围**已收窄为"仅准入 loader"**（`export_policy_2x` 在产且是 filing-fetch 的 FC-501 containment 来源，不在收敛范围）；R-4 的整改范围**已扩大**至 `legacy_research_ingest.py:128-136` 的无门出口；`read_only` 追加为假保证字段候选。
+
+## F-A01-10：三份独立复审（A07 / A08 / B.DR）的结论与处置（2026-09-12）
+
+| 门 | 裁决 | 规模 | 处置 |
+|---|---|---|---|
+| **A07（A.VR）** | `accepted_with_findings` | 6×P1 / 3×P2 / 2×P3；**22 条负例** + 5 值错误模型 | 合同就地更正为 **v0.4.1**；负例与错误模型并入 A03 §2.4；`preview` 合同责任划给 **B06**；`read_only` 假保证、C4 两处反义活实现、R 类进程级副作用、**无门 LLM 出口**全部登记 |
+| **A08（A.AR）** | `rejected` | 1×P0（与 B.DR-01 同一事实）+ 2×P1 / 2×P2 / 2×P3；**117 行逐行映射已产出**（98 可直连 / 6 经 AC 桥接 / 13 无法指派） | P0 已更正；A-AR-01 陈旧文本已修；A-AR-02 的 13 行"无法指派"登记为**桥接表待做**（E01–E13 / U117 / FC903 / CL·AC → L/P/O/M）；A-AR-03 的 checkpoint 缺件已重建 |
+| **B.DR** | `rejected` | 1×P0（同上）+ 7×P1 / 9×P2 / 3×P3 | B 设计按 P1 重做后送 `B.DR-rev2` |
+
+- **共同的 P0（三份复审从不同角度独立命中）**：`policy_2x.py` **并非整体无生产调用者**——`export_policy_2x` 在产（`cli.py:835` `_policy_export_payload` → `:849-851`，由 `:811` ensure / `:831` policy-export / `:1182` **resolve** 调用），且 `policy.py:67-72 _effective_reusable` 是**同一字段的第二处活实现**（fail-closed），与 `resolver.py:782-786` 的 fail-open 语义相反。**本 run 先前据此扩大了 owner R-3 的范围，属事实错误**，已就地更正（root-contract v0.4.1 + owner-rulings 范围更正）。
+- **教训（写入后续阶段）**：审查给的"无生产调用者"结论**只对某个符号成立**；一旦把结论从"某个函数"提升到"某个模块/某条路径"，**必须重新做一次 caller 追踪**。本轮错误正是这样产生的；B 设计因此也必须按"每个结论都重追 caller"的标准重写。

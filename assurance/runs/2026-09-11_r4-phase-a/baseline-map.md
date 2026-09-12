@@ -44,7 +44,7 @@
 | ① query/identify | wiki `cli.py` 子命令 `identify`（面积为 §4：41 顶层 + 10 嵌套 = 51 个解析器节点，其中 4 个是纯分组 → **47 个叶子命令**） | 同进程 | 只读：解析请求→身份/路由，不落盘。**例外**：`identify --refresh` 触网+写（`cli.py:1080-1087`、`security_identity.py:1007/:348`）——见 A03 更正 1 |
 | ② resolve（复用） | wiki `cli.py::resolve` → `service.py` → `resolver.py` | 同进程 | 只读：在已索引集合上返回 handle（`resolver.py` 内 `is_canonical` 2 处 `:915/:1157`；复用判定读 `root.kind` ∈ `reusable_root_kinds`，`resolver.py:782-786`/`:933-940`）。**v0.2 更正（A-DR-02）**：v0.1 写的"`priority` 1 处分支"**是错的**——`resolver.py` 内 `priority` 仅 1 处命中且位于**字符串字面量** `:531`；真正的优先级排序在 **SQL**：`service.py:329`/`:527`/**`:772`（第三处，v0.3 补，A-DR2-10）**，以及 `service.py:643-653` 的 canonical 选择键 `(root_priority, root_id, relative_path, location_id)` |
 | ③ ensure（下载，显式） | wiki `cli.py::ensure` | 同进程 + 可能 fork 子进程 | **三道闸（v0.2 按 `cli.py:742-824` 重述，A-DR-15；v0.3 补全连接条件）**：① 无 `--allow-download` 且 mode≠`latest_as_of` → `:752-758` **纯读**返回 resolve 结果；② 有 `--allow-download` 或 `latest_as_of` → 写流程（`:760-762` 先取 `get_catalog().store`，**写入器初始化可能先建 catalog**）；③ **`if args.allow_download and desired_state == "paused" and not args.allow_acquisition_while_paused:` → `:764-771` RuntimeError 拒绝**（三条件为**与**关系）；**仅当 `args.allow_download and desired_state == "paused"` 时** `:772-778` 记暂停期审计（`_append_paused_acquisition_audit` → 追加 `catalog_dir/paused_acquisition.log`，`:109`；best-effort，失败只 warn 不阻断）。v0.1 把审计写成"worker 非 paused 时记录"，**方向写反了** |
-| ④ open/读取 | wiki `cli.py::query`/`preview`/`documents`/`export` 等 | 同进程 | 只读（`preview` 允许不扩大正式分析/LLM 许可——A03/A07 要冻结此边界） |
+| ④ open/读取 | wiki `cli.py::query` / `documents` / `export` / `evidence` / `sections-list` 等**真实存在的叶子** | 同进程 | 只读（**v0.4.1 更正，A-VR-10**：v0.3.1 此处写的 `preview` **不是**顶层命令，全仓无该入口；preview 的合同责任见 [operation-contract.md](operation-contract.md) §4 第 7 条 → 划给 B06） |
 | ⑤ 消费（跨仓） | **filing**：`scripts/fetch_filing.py::_run_company_wiki_json`（L199–213，`subprocess.run` + Windows `CREATE_NO_WINDOW`）→ 调 wiki CLI；**revenue**：`scripts/source_preparation.py`（L3–4 注释即"真实跨仓链：filing-fetch (resolve/ensure) → company-wiki catalog"，`subprocess` L18、`subprocess.run` L99） | **子进程** | 取决于所选子命令；resolve 路线只读、ensure 路线写 |
 
 ### 1.1 子进程清单（v0.2 **逐模块重建**，A-DR-06）
@@ -64,7 +64,9 @@
 | `worker.py` | `:110` `subprocess.run` | `git -C <root> rev-parse --short HEAD` | 只读（代码版本戳） |
 
 跨仓 spawn（前表 ⑤）：filing `fetch_filing.py:213`、revenue `source_preparation.py:99`。
+**v0.4.1 补漏（A-VR-09）**：本表的构造方法 = grep `subprocess\.|Popen|os\.system|CREATE_NO_WINDOW`，**不含 `multiprocessing`**；实测另有一处**同进程 Python 子进程/解析器监督**：`normalizer.py:516`（`multiprocessing` spawn）——它属 L12"二次读取 0 parser"必须被独立观察的对象，已列入 [../2026-09-11_r4-phase-b/test-acceptance-map.md](../2026-09-11_r4-phase-b/test-acceptance-map.md) 的 B03/B07 观察点。
 **另有两处非本链调度/观测**：`revenue/scripts/legacy_observer.py`、`revenue/tools/daily_t2_runner.py`（声明不在 A 阶段主链上）。
+**v0.4.1 追加披露（A.VR）**：wiki 侧还有 **7 个契约测试被 CI 明确排除**（`.github/workflows/ci.yml:51-58` 的 `--ignore`），其中 **3 个会打开生产 catalog 只读**（`test_zr1005_artifact_backfill.py`、`test_zr1006_broker_cohort.py`、`test_zr409_fourth_root_real_journeys.py`），6 个依赖 sibling 仓/Dropbox，0 个触网——即"本机可跑、CI 与两道 pre-push gate 都不跑"的**未强制测试面**（对 D07「最小有效阻断」与 A06 基线都是缺口）。
 
 ## 2. root 分支与副作用面
 

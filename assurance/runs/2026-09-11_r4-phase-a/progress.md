@@ -57,7 +57,7 @@ owner 三项批准：**① A 阶段精确 DEV/数据读取许可；② `--help`-
 
 - **执行过**：`--help` 探针（52 次 manifest ×3 轮，owner 批准范围）；**wiki 与 revenue 两个 `tools/pre_push_gate.py`**（CI 等价门；revenue 的 gate 含 real-data 套件，会**只读**打开生产 catalog——见 §5）；**revenue 推送 10 次 + wiki 推送 3 次**（GitHub Actions #134–#142 / #100–#102，全部 success 或进行中）；只读文件读取（源码/git/文件元数据）；被动观测脚本（**不开库、不执行 CLI**）。**v0.3.1 补记（A-DR3-12）**：v0.3 此处漏记 gate 运行与推送次数。
 - **未执行**：任何数据命令、`--dry-run`、网络、删除、任务注册、worker 操作、产品文件写入。
-- **已知偏差（已归因，v0.3 定案）**：生产库 `-shm` 的**全部 6 处**已观测前移均有归属——`21:18:15`/`21:26:47`/`22:10:11` = 本会话 **#139/#140/#141 推送前的强制 gate**；`22:05:03` = **22:03 手动 gate（未推送）**；`22:00:02`/`22:00:18` = 22:00 每日任务；四者都由 `tools/pre_push_gate.py` 的 real-data 套件（`:184-199`）或 wiki `legacy_observer.py --read-only` **只读**打开该库。**只有 `-shm` 前移，主库与 `-wal` 全程未变 → 无逻辑写入证据**。当晚推送计数更正为 **revenue 8 次（#134–#141）+ wiki 2 次（#100/#101）**，全部 CI success。阴性对照：`--help` 探针（52×2）、纯 import、99 样本观测窗（末样本 21:59:53）、wiki CI 等价门**均零前移**。v0.1 的边界快照未覆盖 `-shm`/`-wal` 属**证据缺陷**（已修复）；v0.1 中"本会话未执行任何会打开 catalog 的代码路径"的**更强说法已撤回**。详见 [boundary-audit.md](boundary-audit.md) §2/§3.3。
+- **已知偏差（已归因，v0.3 定案）**：生产库 `-shm` 的**全部 7 处**已观测前移均有归属——`21:18:15`/`21:26:47`/`22:10:11` = 本会话 **#139/#140/#141 推送前的强制 gate**；`22:05:03` = **22:03 手动 gate（未推送）**；`22:00:02`/`22:00:18` = 22:00 每日任务；四者都由 `tools/pre_push_gate.py` 的 real-data 套件（`:184-199`）或 wiki `legacy_observer.py --read-only` **只读**打开该库。**只有 `-shm` 前移，主库与 `-wal` 全程未变 → 无逻辑写入证据**。当晚推送计数更正为 **revenue 8 次（#134–#141）+ wiki 2 次（#100/#101）**，全部 CI success。阴性对照：`--help` 探针（52×2）、纯 import、99 样本观测窗（末样本 21:59:53）、wiki CI 等价门**均零前移**。v0.1 的边界快照未覆盖 `-shm`/`-wal` 属**证据缺陷**（已修复）；v0.1 中"本会话未执行任何会打开 catalog 的代码路径"的**更强说法已撤回**。详见 [boundary-audit.md](boundary-audit.md) §2/§3.3。
 
 ### 5b. 并行核对：FC-705 门（只读，2026-09-11 22:00 运行后）
 
@@ -70,7 +70,7 @@ owner 三项批准：**① A 阶段精确 DEV/数据读取许可；② `--help`-
 
 - 复审记录：[reviews/A.DR-rev2.json](reviews/A.DR-rev2.json)（reviewer session `b31cbc67-…`，非作者会话；1×P1 / 7×P2 / 3×P3；首轮 16 项中 **10 项闭环、6 项未闭环**：A-DR-01/06/08/10/13/16）。
 - **P1（已修）**：`checkpoint.produced_files` 中 4 个文件的**已提交 blob 与记录 sha256 不符**（差异恰为 CRLF 字节数）——它们在 `.gitattributes` 生效前入库。→ 该 4 个文件已 `git add --renormalize` 重新入库，`build_checkpoint.py` 重算，并**逐条校验 committed blob == 记录值**（见 checkpoint 的 `produced_files_verification`）。
-- **P2 已修**：① 陈旧"ambient/unknown"文本四处同步为归因后表述（`cli-help-matrix.json`、`run_cli_help_matrix.py`、`inputs.json`、`progress.md` + wiki 侧）；② `-shm` 记录补到审查时刻 22:10:11 并逐一说明；push 计数写实（revenue 8 + wiki 2）并登记"手动 gate 未推送"这一类；③ `is_symlink` 措辞更正（实测 5 行命中，结论不变）；④ 子进程计数更正为 **9 个调用点 + 4 处默认绑定**；⑤ 撤回"证伪"越权表述；⑥ `activation preview` 行按叶子 help 原文改写；⑦ company-wiki 漂移（`478bb92`，仅台账）与"不写回审计证据目录"的表述收窄。
+- **P2 已修**：① 陈旧"ambient/unknown"文本四处同步为归因后表述（`cli-help-matrix.json`、`run_cli_help_matrix.py`、`inputs.json`、`progress.md` + wiki 侧）；② `-shm` 记录补到审查时刻 22:10:11 并逐一说明；push 计数写实（revenue 10 + wiki 3）并登记"手动 gate 未推送"这一类；③ `is_symlink` 措辞更正（实测 5 行命中，结论不变）；④ 子进程计数更正为 **9 个调用点 + 4 处默认绑定**；⑤ 撤回"证伪"越权表述；⑥ `activation preview` 行按叶子 help 原文改写；⑦ company-wiki 漂移（`478bb92`，仅台账）与"不写回审计证据目录"的表述收窄。
 - **P3 已修**：观测窗末样本/间隔数字、`§3.3` 编号、F-A01-8 重复"处置"块；引用精度（`models.py:97`、`llm_summarizer.py:333-337`、3 个测试文件/9 处调用、`ensure` ③ 的 `args.allow_download and` 连接条件、`service.py:772` 第三处排序）；新增 **owner 授权记录**与**作者会话 ID**，并把 handbook §3 的 `card.json`/`baseline.json`/`data-manifest.json` 列入缺件清单。
 
 ### 5d. A.DR rev3（第三轮独立复审）= **accepted_with_findings** → v0.3.1 纯文本更正

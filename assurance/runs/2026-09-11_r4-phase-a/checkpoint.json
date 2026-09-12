@@ -1,56 +1,48 @@
 {
   "run_id": "2026-09-11_r4-phase-a",
   "phase": "A",
-  "step": "A.DR rev3 closed (accepted_with_findings); v0.3.1 text corrections applied",
-  "last_completed_step": "A01 baseline map v0.3; A02 root-contract v0.3; A03 operation-contract v0.3; A04 identity-contract v0.3; A.DR rev1 rejected (8P1/5P2/3P3) -> v0.2; A.DR rev2 rejected (1P1/7P2/3P3, 10/16 round-1 findings closed) -> v0.3 (blob renormalisation + attribution propagation + citation precision); A.DR rev3 accepted_with_findings (0 P0/P1, 5 P2 + 8 P3) -> v0.3.1 text corrections in this commit",
-  "current_gate": "A.DR rev3 closed with accepted_with_findings and the six owner rulings (G2) are recorded, so A02 is FROZEN (root-contract v0.4, owner-rulings-2026-09-11.md). Remaining blockers are outside this session's authority: G5/G6 operator actions and G7/G8 (A05 sample list + isolated copy).",
+  "step": "A v0.4.1 corrections applied after the A07/A08 (and B.DR) reviews",
+  "last_completed_step": "A01 baseline map v0.4.1; A02 root-contract v0.4.1; A03 operation-contract v0.4.1; A04 identity-contract v0.4.1; A.DR rev1/rev2/rev3 rounds; owner six rulings recorded; A07=A.VR accepted_with_findings (22 negative cases + a five-value error model) and A08=A.AR rejected (117-row mapping produced) - all their document findings corrected in v0.4.1, including the corroborated P0 that export_policy_2x IS in production use",
+  "current_gate": "A07/A08 corrections applied; the A package is resubmitted for re-review (A.VR-rev2), and the R-3 scope narrowing to the admission loader only is flagged for the owner's explicit re-confirmation (the export path stays in production).",
   "pending_review": [
     {
-      "gate": "A.DR rev3",
-      "scope": "A01-A04 v0.3 and the run ledgers",
+      "gate": "A.VR-rev2",
+      "scope": "the v0.4.1 contract corrections",
+      "status": "pending",
+      "reviewer": "independent subagent (non-author)"
+    },
+    {
+      "gate": "A08 (A.AR)",
+      "scope": "implementation readiness + the 117-row goal mapping",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P0": 1,
+        "P1": 2,
+        "P2": 2,
+        "P3": 2
+      },
+      "record": "reviews/A.AR.json",
+      "reviewer_self_reported_id": "b17b1524-2114-4dfa-ab3e-fc8e0a030a1c",
+      "note": "the single P0 is the same fact as B.DR-01; A-AR-02's bridge table (E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) is registered as outstanding"
+    },
+    {
+      "gate": "A07 (A.VR)",
+      "scope": "identity/bytes/provenance contracts, preview licence boundary, negative cases",
       "status": "closed",
       "verdict": "accepted_with_findings",
       "findings": {
         "P0": 0,
-        "P1": 0,
-        "P2": 5,
-        "P3": 8
+        "P1": 6,
+        "P2": 3,
+        "P3": 2
       },
-      "round1_closure": "11 of 16 closed (open: A-DR-06/08/09/13/16)",
-      "round2_closure": "5 of 11 closed (open: A-DR2-02/04/05/08/10/11)",
-      "record": "reviews/A.DR-rev3.json",
-      "reviewer_self_reported_id": "70b62d2f-920e-463c-aeb5-dcfc3ebc5f11",
-      "note": "the reviewer asked for ten pure-text corrections and explicitly said no probe re-run is needed; those corrections land in this commit, so no rev4 round is scheduled"
-    },
-    {
-      "gate": "A.DR rev2",
-      "scope": "A01-A04 v0.2 and the run ledgers",
-      "status": "closed",
-      "verdict": "rejected",
-      "findings": {
-        "P1": 1,
-        "P2": 7,
-        "P3": 3,
-        "P0": 0
-      },
-      "round1_closure": "10 of 16 closed; A-DR-01/06/08/10/13/16 not closed",
-      "record": "reviews/A.DR-rev2.json",
-      "reviewer_self_reported_id": "b31cbc67-7142-495a-a9db-8886c700ed8f"
-    },
-    {
-      "gate": "A.DR rev1",
-      "scope": "A01-A04 v0.1 and the run ledgers",
-      "status": "closed",
-      "verdict": "rejected",
-      "findings": {
-        "P1": 8,
-        "P2": 5,
-        "P3": 3,
-        "P0": 0
-      },
-      "record": "reviews/A.DR.json",
-      "reviewer_self_reported_id": "7cd316cc-50bc-44d5-9574-180030d9ee09",
-      "closed_at_utc": "2026-09-11T20:23:44Z"
+      "record": "reviews/A.VR.json",
+      "reviewer_self_reported_id": "2c26659c-ec0c-4696-ae29-022b750b0e11",
+      "deliverables_absorbed": [
+        "22 negative cases VR-N01..VR-N22",
+        "five-value error model in A03 section 2.4"
+      ]
     }
   ],
   "reviewer_assignments": {
@@ -89,19 +81,16 @@
     ],
     "author_session_id": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102 (DSH_SESSION_ID, runtime-managed)"
   },
-  "actual_side_effects": "R4 A-phase actions: 52 x `python -B -m company_wiki.source_catalog.cli <cmd> [sub] --help` (run three times across the correction rounds; every invocation rc=0) plus read-only file/git inspection - none of which opens the catalog (catalog.sqlite3, -shm and -wal all unchanged across each run; wiki's CI-equivalent gate was separately shown not to touch it either). No data command, no --dry-run, no network download, no config/DB/task/worker change in any repository. DISCLOSED: the session ALSO pushed to GitHub - revenue 10 times (#134 20:19:41 through #142 22:28:17) and company-wiki 3 times (#100 20:17:26, #101 22:08:58, #102 22:25:06), all CI-success - and this repo's mandatory pre-push gate runs its real-data suite against the PRODUCTION catalog read-only (tools/pre_push_gate.py:184-199), while a manual gate run opens it too. That explains every observed catalog.sqlite3-shm advance: 21:18:15 and 21:26:47 (#139/#140 gates), 22:05:03 (manual gate), 22:10:11 (#141 gate), 22:26:59 (#142 gate), plus 22:00:02/22:00:18 (the daily task). The v0.1 statement that no code path touching the catalog was executed was therefore too strong and is retracted; the reads were read-only throughout (main DB and -wal never changed). A 99-sample/1491.5 s passive observation found zero -shm transitions. See boundary-audit.md and F-A01-8.",
+  "actual_side_effects": "Inside this run: documentation and read-only inspection only - no CLI of any kind, no data command, no network, no product/config/DB/task/worker change. The three review records (A.DR*, A.VR, A.AR) are the reviewers' own writes inside reviews/. DISCLOSED (B-DR-17): 'no CLI was executed' is an author statement with no independent observation artefact behind it, and the -shm mtime advanced at 07:48 on 2026-09-12, which the reviewer correctly attributed to the pre-push gate of this run's own push (revenue #145) rather than to the authoring actions; main DB and -wal unchanged. See boundary-audit.md for the full opener inventory (daily task, push gate, manual gate).",
   "failed_or_unknown": [
-    "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is now resolved by CI timestamps + gate code",
+    "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is resolved by CI timestamps + gate code",
     "reviewer independence is NOT externally stamped (gate G6, A-DR-16)",
-    "no more owner rulings are pending (G2 decided 2026-09-11); what remains is B/C scope work on the five registered remediation items (R-1 symlink_policy, R-2 reusable_for_filing, R-3 admission convergence, R-4 privacy_class default, R-6 the nine path-ordering sites), each of which needs a precise DEV work package before any product change",
-    "A02 section 4 items 1-2 and A04 V1/V2/V4 remain VR items needing an isolated copy (production catalog is 49,677,344,768 bytes; behavioural probes are forbidden on it)",
-    "behavioural probes (--dry-run / read-only data commands) have no approved command manifest yet (gate G4)",
-    "A05 real-corpus sample list not yet submitted for per-item confirmation (gate G7)",
-    "A06 L01-L12 baseline and read-only trace not started",
-    "A03 section 2.3 items 3-5 and A04 V3's data-side half stay open pending VR",
-    "the execution-plan section 50 minimum-artifact list is still partial: results/, oracle/, tests/, rollback-contract.json and outcomes.json belong to later phases and are not created; reviews/ now exists",
-    "handbook section 3's run structure is ALSO partial and was missing from the earlier list (A-DR2-11/A-DR3-10): card.json, baseline.json, data-manifest.json and requirements.csv are not provided (command-manifest.json and inputs.json are the nearest equivalents; baseline-map.md is prose, not baseline.json)",
-    "no separately signed owner-authorization artefact exists - authorization_record is a transcript quote (A-DR2-11)"
+    "A-AR-02: 13 of the 117 goal rows cannot be assigned to any L/P/O/M group (CA-001..004, ZR-001..004, ZR-1002/1003, ZR-307, ZR-404/405) and 13 matrix ids have no directly linked row - the bridge table (E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) is outstanding",
+    "R-3's narrowed scope (admission loader only) needs the owner's explicit re-confirmation, because the widening was based on a factual error; the export path stays in production",
+    "A05 has not selected real samples (rules only) and the bounded read-only manifest is unapproved (G4/G7)",
+    "A06 has produced no baseline results yet, so 'B fixed it' cannot be verified independently until it exists (G8)",
+    "behavioural probes still have no isolated copy (G8), and the CI-excluded local-only wiki tests (ci.yml:51-58) have no enforced surface (D07 gap)",
+    "handbook section 3 run structure is still partial: card.json, baseline.json, data-manifest.json and requirements.csv are absent (registered)"
   ],
   "authorization_needed": [
     "GRANTED 2026-09-11: A-phase precise DEV/data-read permission; --help-only command manifest; VR reviewer assignment",
@@ -111,33 +100,35 @@
     "STILL NEEDED (later, for B/C): a precise DEV work package per remediation item before any product code change"
   ],
   "gate_status": {
-    "G1_A_DR": "closed: rev1 rejected, rev2 rejected, rev3 accepted_with_findings (0 P0/P1); v0.3.1 text corrections applied, no rev4 scheduled",
-    "G2_owner_rulings": "DECIDED 2026-09-11 ('go with your recommendations'): R-1 symlink_policy treated as a false-assurance field, R-2 reusable_for_filing false must take effect, R-3 converge admissions on the active config.py, R-4 privacy_class defaults to not-outward, R-5 owner assigned for identity rule R6, R-6 A04 R4 stays a target with nine registered residue sites - see owner-rulings-2026-09-11.md; A02 frozen accordingly",
+    "G1_A_DR": "closed (rev1/rev2 rejected, rev3 accepted_with_findings)",
+    "G2_owner_rulings": "DECIDED 2026-09-11; R-3 scope narrowed 2026-09-12 after the corroborated P0 (admission loader only; export_policy_2x stays) - flagged for the owner's explicit re-confirmation",
     "G3_input_manifest": "done (inputs.json)",
-    "G4_command_manifest": "partial: --help manifest approved and executed; behavioural-probe manifest not submitted",
+    "G4_command_manifest": "partial: --help manifest approved and executed; the bounded read-only manifest for A05/A06 is written and awaiting approval",
     "G5_independent_boundary_observation": "pending operator action",
     "G6_reviewer_independence_stamp": "pending operator action",
-    "G7_A05_sample_list": "pending",
-    "G8_isolated_copy": "pending"
+    "G7_A05_sample_list": "pending (selection rules ready in a05-corpus-sample-plan.md)",
+    "G8_isolated_copy": "pending",
+    "A07_A_VR": "closed: accepted_with_findings; findings corrected in v0.4.1",
+    "A08_A_AR": "closed: rejected; the 117-row mapping was produced, the bridge table is outstanding"
   },
   "next_step": "A02 is frozen. Remaining work needs owner/operator input, not more authoring: the A05 real-corpus sample list (G7), an isolated catalog copy for behavioural probes (G8), and the operator-held records for G5/G6. The five remediation items from the rulings (R-1..R-4, R-6) enter the B/C scope and require a precise DEV work package before any product code changes.",
   "worker_desired_state_note": "not used as process-liveness evidence",
   "catalog_size_bytes": 49677344768,
   "inputs": {
     "company-wiki": {
-      "head": "ca63ff2b59ee3d06c97e4cb7d2bb1f4b66c0c23f",
+      "head": "032da52cf699e26c4de86557dcc9189f883f1292",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "7051134f7292743a5ad878be7d25f25cb1692f78",
-      "dirty": 0
+      "head": "4c37ca32d53ca521dd9b26890146f1b091ff0031",
+      "dirty": 13
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "7051134",
+  "reviewed_commit": "PENDING (stamped in the follow-up commit)",
   "reviewed_commit_note": "`reviewed_commit` carries the reviewed corrections (documents, evidence and ledgers). The stamp that records this value necessarily lands in the immediately following commit (d152833/3e0c8f3 for v0.2, 34b2291 for v0.3), which changes only checkpoint.json - so the reviewer should read reviewed_commit for the contracts and the tip commit for the ledger stamp. A commit cannot contain its own hash, which is exactly the staleness A-DR-09 flagged; recording both removes the ambiguity instead of hiding it.",
   "inputs_note": "revenue-forecast `dirty` is the working-tree count at generation time; it is non-zero only when this file is regenerated before the corrections are committed. `reviewed_commit` is the clean tree the reviewer reads, and every commit in this run touches only assurance/runs/2026-09-11_r4-phase-a/, so the twelve product input hashes frozen in baseline-map.md section 0 and inputs.json stay byte-accurate (independently re-derived by A.DR rev1 and rev2: 12/12 HASH_OK). company-wiki moved from the A01 freeze 7d4852f to 478bb92 (planning ledger edits only) and then to ca63ff2 (one ledger sentence), i.e. no product code or config is touched in any repository; the drift and its scope are recorded in baseline-map.md section 0 (A-DR2-08).",
   "produced_files": {
@@ -145,21 +136,33 @@
       "sha256": "c323b7ecd6485f2a7321768163c948d816ed2aa06de0ea80dbafa336f5b1884f",
       "size": 1286
     },
+    "a05-corpus-sample-plan.md": {
+      "sha256": "9f5b856ff310ba34239e8684789e077192502feb09371cb442980f468dc87a76",
+      "size": 3993
+    },
+    "a06-baseline-plan.md": {
+      "sha256": "9b21c8278431166694a96fb45fb8a48f00c57e82dd5a9660014ff7b7bc5878e4",
+      "size": 4178
+    },
     "baseline-map.md": {
-      "sha256": "9eb319a5b8e06cdd5945142679e8c51421d1a969b299ebc93d8776d1d336e227",
-      "size": 15237
+      "sha256": "77584a458d0c6c1a352889044f7280fe13acdd1d1ccab3d7ba2009f6c063e742",
+      "size": 16392
     },
     "boundary-audit.md": {
-      "sha256": "52183e1427648b6695e346514131d358fe0e46accb3153dd0762cd54763b0cdc",
-      "size": 14155
+      "sha256": "8f533308bfe2f0a58d8a480a0cff01a017757b6801a51d303706f35a7f414a5d",
+      "size": 14290
+    },
+    "command-manifest-readonly.json": {
+      "sha256": "4382e434805910a401898c037a9abdf497d7e279dc9694106decee4eb97e7556",
+      "size": 5663
     },
     "command-manifest.json": {
       "sha256": "cce1b173640a4372844e0706e94d9958e845a82cdf35c0faaba019775bd72a0f",
       "size": 1971
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "60c07439c631f8fecb36db1800397c416e6a6b9e4b502c92644a6d09fa5b7855",
-      "size": 18388
+      "sha256": "c6c0d3c595eebbee176202c81fc47235d0b628ec536770813fa56a91f43ea4d1",
+      "size": 17040
     },
     "evidence/catalog-companion-observation.csv": {
       "sha256": "0b0a33420c105dcdeaf1c1cbf4a63bdfc9739ab76e5998316f9a106df92a0604",
@@ -182,28 +185,32 @@
       "size": 9206
     },
     "findings.md": {
-      "sha256": "ea9bbe591e7d1b8186eec82d727c2b2062c0fb7563d235a675fa0cdca124da34",
-      "size": 11517
+      "sha256": "88c26ba264a41d6fbc37fcda8de0023f2e8641efd4f1394263f993baa096fac7",
+      "size": 13531
     },
     "identity-contract.md": {
-      "sha256": "84c6aec96886761c7ae4cc5eebe24400e0c3cd985d40e753d35724a3b4803c4c",
-      "size": 12991
+      "sha256": "7636ba9ce9bed3b2d7f2f8b022da1e99788acb710e278a70d1bbc4f49cf67d23",
+      "size": 15398
     },
     "inputs.json": {
       "sha256": "bc5be6d28eea5f75822e20c7c90f690a0bea37d134dd40da2ef118c016d43004",
       "size": 9883
     },
     "operation-contract.md": {
-      "sha256": "8f3727ff39f685b0f557d103349bd810f7e661d39da13952115d5c9e4a2b7ec2",
-      "size": 14102
+      "sha256": "44ae98cb5850e5d4144ecdc68e14f7b583051605fa4748629fe8f52a1548d7c0",
+      "size": 18771
     },
     "owner-rulings-2026-09-11.md": {
-      "sha256": "70e7b4d4eb85e731443dcd397be6b5e35571ac223a04d92ee53223fd80e451ae",
-      "size": 5083
+      "sha256": "3d7ff418d3258ecd5b76661a849bd7af109bdf0f92adffad137a9c4ee80808c3",
+      "size": 7083
     },
     "progress.md": {
-      "sha256": "9b8bd1170fecac5eac0ead4e7953035a9107c406f172b8856777c829b9630bae",
-      "size": 14176
+      "sha256": "1e1e48c2ef170a5925a2502d603b17b69966a0cc719330249e105101f8d5880a",
+      "size": 14276
+    },
+    "reviews/A.AR.json": {
+      "sha256": "672674310255e74402776315c7482d017de280378c1feee2c1955480ad94c4d0",
+      "size": 67560
     },
     "reviews/A.DR-rev2.json": {
       "sha256": "8438c504537dfa2c6339db8cc282a90ffad8ea245452a19832f06455cf3cd06e",
@@ -217,9 +224,13 @@
       "sha256": "93900926df672d7d214763196771e99c780ce9237fe19565e0768dff9ee2c67d",
       "size": 45789
     },
+    "reviews/A.VR.json": {
+      "sha256": "33aba85ad511760bf73825dd5f33f4dca458edb287017683e8167be9b5006be5",
+      "size": 83140
+    },
     "root-contract.md": {
-      "sha256": "cecab8cfff54285d461505201beb816fc069d46c48fdf9662e80095704c4bd43",
-      "size": 11155
+      "sha256": "ac5170f1476047870e68d5cfa0401203a5006a7042fdca8bf22da4bd1b06fd4b",
+      "size": 16708
     },
     "task_plan.md": {
       "sha256": "79f28158effea90f6bf7ce830b9d627a95e19465a3aea92a0ea6837ae595179c",
@@ -228,12 +239,18 @@
   },
   "produced_files_note": "Computed by evidence/build_checkpoint.py over the whole run directory; checkpoint.json itself is excluded (it cannot hash itself). The A.DR review records are included because the reviewers wrote them inside this run directory. SHA-256 is taken over the RAW working-tree bytes; because a commit cannot contain its own hash, the recorded digest for checkpoint.json would be circular and is therefore omitted - verify it with `git hash-object` instead.",
   "produced_files_verification": {
-    "checked": 21,
+    "checked": 26,
     "source": "index",
+    "source_revision": "4f94860104988909871358e0f10a81696ae50851",
+    "head_revision": "4c37ca32d53ca521dd9b26890146f1b091ff0031",
     "blob_mismatches": [],
-    "method": "sha256 of the indicated blob compared with produced_files[rel].sha256 (source=index)",
     "all_match": true,
+    "proves": "recorded digest == stored blob at the reported revision",
+    "does_not_prove": [
+      "manifest completeness",
+      "that reviewed_commit equals the compared revision"
+    ],
     "post_commit_recheck": "Run `python evidence/build_checkpoint.py --verify-only` after committing: it re-checks every recorded digest against `git cat-file blob HEAD:<path>`. Build time can only check the staged blob, because the commit that carries this file does not exist yet."
   },
-  "generated_at_utc": "2026-09-11T22:04:09.887291+00:00"
+  "generated_at_utc": "2026-09-12T07:02:39.748565+00:00"
 }

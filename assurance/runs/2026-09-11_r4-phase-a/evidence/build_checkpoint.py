@@ -62,22 +62,24 @@ def produced_files() -> dict:
 
 
 def verify_blobs(files: dict, source: str = "index") -> dict:
-    """Prove that each recorded sha256 equals the blob that will be/was committed.
+    """Compare every recorded digest with the blob git stores for that path.
 
-    A-DR2-01: four files were committed before the run directory's .gitattributes
-    existed, so core.autocrlf stored them as LF while the hashes were computed on a
-    CRLF working tree. The recorded digest must therefore be checked against the
-    repository blob, not only against the working tree.
-
-    source="index" -> `git show :<path>` (what the pending commit will publish); this
-    is what build time can check, because a commit cannot contain its own verification.
-    source="head"  -> `git cat-file blob HEAD:<path>` (post-commit re-check).
+    B-DR-16 limitation, stated here rather than hidden: this proves "recorded digest
+    == blob at <source>", NOT that the manifest is complete, and it anchors the
+    RUNTIME revision (index or HEAD) - it does not bind `reviewed_commit`. The
+    revision actually compared is reported in the result so a reader can tell which
+    tree was checked.
     """
     run_rel = RUN.relative_to(REVENUE).as_posix()
+    revisions = {}
+    for label, args in (("index", ["git", "-C", str(REVENUE), "write-tree"]),
+                        ("head", ["git", "-C", str(REVENUE), "rev-parse", "HEAD"])):
+        proc = subprocess.run([*args[:1], "-c", "safe.directory=*", *args[1:]],
+                              capture_output=True, text=True)
+        revisions[label] = proc.stdout.strip() if proc.returncode == 0 else "unknown"
     mismatched = []
     for rel, meta in files.items():
-        spec = (f":{run_rel}/{rel}" if source == "index"
-                else f"HEAD:{run_rel}/{rel}")
+        spec = f":{run_rel}/{rel}" if source == "index" else f"HEAD:{run_rel}/{rel}"
         proc = subprocess.run(
             ["git", "-c", "safe.directory=*", "-C", str(REVENUE), "show", spec],
             capture_output=True)
@@ -91,64 +93,58 @@ def verify_blobs(files: dict, source: str = "index") -> dict:
     return {
         "checked": len(files),
         "source": source,
+        "source_revision": revisions.get(source, "unknown"),
+        "head_revision": revisions.get("head", "unknown"),
         "blob_mismatches": mismatched,
-        "method": (f"sha256 of the indicated blob compared with produced_files[rel].sha256 "
-                   f"(source={source})"),
         "all_match": not mismatched,
+        "proves": "recorded digest == stored blob at the reported revision",
+        "does_not_prove": ["manifest completeness", "that reviewed_commit equals the compared revision"],
     }
 
 
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-a",
     "phase": "A",
-    "step": "A.DR rev3 closed (accepted_with_findings); v0.3.1 text corrections applied",
+    "step": "A v0.4.1 corrections applied after the A07/A08 (and B.DR) reviews",
     "last_completed_step": (
-        "A01 baseline map v0.3; A02 root-contract v0.3; A03 operation-contract v0.3; "
-        "A04 identity-contract v0.3; A.DR rev1 rejected (8P1/5P2/3P3) -> v0.2; A.DR rev2 "
-        "rejected (1P1/7P2/3P3, 10/16 round-1 findings closed) -> v0.3 (blob renormalisation + "
-        "attribution propagation + citation precision); A.DR rev3 accepted_with_findings "
-        "(0 P0/P1, 5 P2 + 8 P3) -> v0.3.1 text corrections in this commit"
+        "A01 baseline map v0.4.1; A02 root-contract v0.4.1; A03 operation-contract v0.4.1; "
+        "A04 identity-contract v0.4.1; A.DR rev1/rev2/rev3 rounds; owner six rulings recorded; "
+        "A07=A.VR accepted_with_findings (22 negative cases + a five-value error model) and "
+        "A08=A.AR rejected (117-row mapping produced) - all their document findings corrected "
+        "in v0.4.1, including the corroborated P0 that export_policy_2x IS in production use"
     ),
     "current_gate": (
-        "A.DR rev3 closed with accepted_with_findings and the six owner rulings (G2) are "
-        "recorded, so A02 is FROZEN (root-contract v0.4, owner-rulings-2026-09-11.md). Remaining "
-        "blockers are outside this session's authority: G5/G6 operator actions and G7/G8 "
-        "(A05 sample list + isolated copy)."
+        "A07/A08 corrections applied; the A package is resubmitted for re-review "
+        "(A.VR-rev2), and the R-3 scope narrowing to the admission loader only is flagged for "
+        "the owner's explicit re-confirmation (the export path stays in production)."
     ),
     "pending_review": [
         {
-            "gate": "A.DR rev3",
-            "scope": "A01-A04 v0.3 and the run ledgers",
+            "gate": "A.VR-rev2",
+            "scope": "the v0.4.1 contract corrections",
+            "status": "pending",
+            "reviewer": "independent subagent (non-author)",
+        },
+        {
+            "gate": "A08 (A.AR)",
+            "scope": "implementation readiness + the 117-row goal mapping",
+            "status": "closed",
+            "verdict": "rejected",
+            "findings": {"P0": 1, "P1": 2, "P2": 2, "P3": 2},
+            "record": "reviews/A.AR.json",
+            "reviewer_self_reported_id": "b17b1524-2114-4dfa-ab3e-fc8e0a030a1c",
+            "note": ("the single P0 is the same fact as B.DR-01; A-AR-02's bridge table "
+                     "(E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) is registered as outstanding"),
+        },
+        {
+            "gate": "A07 (A.VR)",
+            "scope": "identity/bytes/provenance contracts, preview licence boundary, negative cases",
             "status": "closed",
             "verdict": "accepted_with_findings",
-            "findings": {"P0": 0, "P1": 0, "P2": 5, "P3": 8},
-            "round1_closure": "11 of 16 closed (open: A-DR-06/08/09/13/16)",
-            "round2_closure": "5 of 11 closed (open: A-DR2-02/04/05/08/10/11)",
-            "record": "reviews/A.DR-rev3.json",
-            "reviewer_self_reported_id": "70b62d2f-920e-463c-aeb5-dcfc3ebc5f11",
-            "note": ("the reviewer asked for ten pure-text corrections and explicitly said no probe "
-                     "re-run is needed; those corrections land in this commit, so no rev4 round is "
-                     "scheduled"),
-        },
-        {
-            "gate": "A.DR rev2",
-            "scope": "A01-A04 v0.2 and the run ledgers",
-            "status": "closed",
-            "verdict": "rejected",
-            "findings": {"P1": 1, "P2": 7, "P3": 3, "P0": 0},
-            "round1_closure": "10 of 16 closed; A-DR-01/06/08/10/13/16 not closed",
-            "record": "reviews/A.DR-rev2.json",
-            "reviewer_self_reported_id": "b31cbc67-7142-495a-a9db-8886c700ed8f",
-        },
-        {
-            "gate": "A.DR rev1",
-            "scope": "A01-A04 v0.1 and the run ledgers",
-            "status": "closed",
-            "verdict": "rejected",
-            "findings": {"P1": 8, "P2": 5, "P3": 3, "P0": 0},
-            "record": "reviews/A.DR.json",
-            "reviewer_self_reported_id": "7cd316cc-50bc-44d5-9574-180030d9ee09",
-            "closed_at_utc": "2026-09-11T20:23:44Z",
+            "findings": {"P0": 0, "P1": 6, "P2": 3, "P3": 2},
+            "record": "reviews/A.VR.json",
+            "reviewer_self_reported_id": "2c26659c-ec0c-4696-ae29-022b750b0e11",
+            "deliverables_absorbed": ["22 negative cases VR-N01..VR-N22", "five-value error model in A03 section 2.4"],
         },
     ],
     "reviewer_assignments": {
@@ -172,36 +168,24 @@ LEDGER = {
         "author_session_id": "session-bfecd191-fbc3-4a66-8ed1-6562479bf102 (DSH_SESSION_ID, runtime-managed)",
     },
     "actual_side_effects": (
-        "R4 A-phase actions: 52 x `python -B -m company_wiki.source_catalog.cli <cmd> [sub] "
-        "--help` (run three times across the correction rounds; every invocation rc=0) plus "
-        "read-only file/git inspection - none of which opens the catalog (catalog.sqlite3, -shm "
-        "and -wal all unchanged across each run; wiki's CI-equivalent gate was separately shown "
-        "not to touch it either). No data command, no --dry-run, no network download, no "
-        "config/DB/task/worker change in any repository. "
-        "DISCLOSED: the session ALSO pushed to GitHub - revenue 10 times (#134 20:19:41 through "
-        "#142 22:28:17) and company-wiki 3 times (#100 20:17:26, #101 22:08:58, #102 22:25:06), "
-        "all CI-success - and this repo's mandatory pre-push gate runs its real-data suite "
-        "against the PRODUCTION catalog read-only (tools/pre_push_gate.py:184-199), while a "
-        "manual gate run opens it too. That explains every observed catalog.sqlite3-shm advance: "
-        "21:18:15 and 21:26:47 (#139/#140 gates), 22:05:03 (manual gate), 22:10:11 (#141 gate), "
-        "22:26:59 (#142 gate), plus 22:00:02/22:00:18 (the daily task). The v0.1 statement that "
-        "no code path touching the catalog was executed was therefore too strong and is "
-        "retracted; the reads were read-only throughout (main DB and -wal never changed). "
-        "A 99-sample/1491.5 s passive observation found zero -shm transitions. See "
-        "boundary-audit.md and F-A01-8."
+        "Inside this run: documentation and read-only inspection only - no CLI of any kind, no "
+        "data command, no network, no product/config/DB/task/worker change. The three review "
+        "records (A.DR*, A.VR, A.AR) are the reviewers' own writes inside reviews/. "
+        "DISCLOSED (B-DR-17): 'no CLI was executed' is an author statement with no independent "
+        "observation artefact behind it, and the -shm mtime advanced at 07:48 on 2026-09-12, "
+        "which the reviewer correctly attributed to the pre-push gate of this run's own push "
+        "(revenue #145) rather than to the authoring actions; main DB and -wal unchanged. "
+        "See boundary-audit.md for the full opener inventory (daily task, push gate, manual gate)."
     ),
     "failed_or_unknown": [
-        "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is now resolved by CI timestamps + gate code",
+        "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is resolved by CI timestamps + gate code",
         "reviewer independence is NOT externally stamped (gate G6, A-DR-16)",
-        "no more owner rulings are pending (G2 decided 2026-09-11); what remains is B/C scope work on the five registered remediation items (R-1 symlink_policy, R-2 reusable_for_filing, R-3 admission convergence, R-4 privacy_class default, R-6 the nine path-ordering sites), each of which needs a precise DEV work package before any product change",
-        "A02 section 4 items 1-2 and A04 V1/V2/V4 remain VR items needing an isolated copy (production catalog is 49,677,344,768 bytes; behavioural probes are forbidden on it)",
-        "behavioural probes (--dry-run / read-only data commands) have no approved command manifest yet (gate G4)",
-        "A05 real-corpus sample list not yet submitted for per-item confirmation (gate G7)",
-        "A06 L01-L12 baseline and read-only trace not started",
-        "A03 section 2.3 items 3-5 and A04 V3's data-side half stay open pending VR",
-        "the execution-plan section 50 minimum-artifact list is still partial: results/, oracle/, tests/, rollback-contract.json and outcomes.json belong to later phases and are not created; reviews/ now exists",
-        "handbook section 3's run structure is ALSO partial and was missing from the earlier list (A-DR2-11/A-DR3-10): card.json, baseline.json, data-manifest.json and requirements.csv are not provided (command-manifest.json and inputs.json are the nearest equivalents; baseline-map.md is prose, not baseline.json)",
-        "no separately signed owner-authorization artefact exists - authorization_record is a transcript quote (A-DR2-11)",
+        "A-AR-02: 13 of the 117 goal rows cannot be assigned to any L/P/O/M group (CA-001..004, ZR-001..004, ZR-1002/1003, ZR-307, ZR-404/405) and 13 matrix ids have no directly linked row - the bridge table (E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) is outstanding",
+        "R-3's narrowed scope (admission loader only) needs the owner's explicit re-confirmation, because the widening was based on a factual error; the export path stays in production",
+        "A05 has not selected real samples (rules only) and the bounded read-only manifest is unapproved (G4/G7)",
+        "A06 has produced no baseline results yet, so 'B fixed it' cannot be verified independently until it exists (G8)",
+        "behavioural probes still have no isolated copy (G8), and the CI-excluded local-only wiki tests (ci.yml:51-58) have no enforced surface (D07 gap)",
+        "handbook section 3 run structure is still partial: card.json, baseline.json, data-manifest.json and requirements.csv are absent (registered)",
     ],
     "authorization_needed": [
         "GRANTED 2026-09-11: A-phase precise DEV/data-read permission; --help-only command manifest; VR reviewer assignment",
@@ -211,14 +195,16 @@ LEDGER = {
         "STILL NEEDED (later, for B/C): a precise DEV work package per remediation item before any product code change",
     ],
     "gate_status": {
-        "G1_A_DR": "closed: rev1 rejected, rev2 rejected, rev3 accepted_with_findings (0 P0/P1); v0.3.1 text corrections applied, no rev4 scheduled",
-        "G2_owner_rulings": "DECIDED 2026-09-11 ('go with your recommendations'): R-1 symlink_policy treated as a false-assurance field, R-2 reusable_for_filing false must take effect, R-3 converge admissions on the active config.py, R-4 privacy_class defaults to not-outward, R-5 owner assigned for identity rule R6, R-6 A04 R4 stays a target with nine registered residue sites - see owner-rulings-2026-09-11.md; A02 frozen accordingly",
+        "G1_A_DR": "closed (rev1/rev2 rejected, rev3 accepted_with_findings)",
+        "G2_owner_rulings": "DECIDED 2026-09-11; R-3 scope narrowed 2026-09-12 after the corroborated P0 (admission loader only; export_policy_2x stays) - flagged for the owner's explicit re-confirmation",
         "G3_input_manifest": "done (inputs.json)",
-        "G4_command_manifest": "partial: --help manifest approved and executed; behavioural-probe manifest not submitted",
+        "G4_command_manifest": "partial: --help manifest approved and executed; the bounded read-only manifest for A05/A06 is written and awaiting approval",
         "G5_independent_boundary_observation": "pending operator action",
         "G6_reviewer_independence_stamp": "pending operator action",
-        "G7_A05_sample_list": "pending",
+        "G7_A05_sample_list": "pending (selection rules ready in a05-corpus-sample-plan.md)",
         "G8_isolated_copy": "pending",
+        "A07_A_VR": "closed: accepted_with_findings; findings corrected in v0.4.1",
+        "A08_A_AR": "closed: rejected; the 117-row mapping was produced, the bridge table is outstanding",
     },
     "next_step": (
         "A02 is frozen. Remaining work needs owner/operator input, not more authoring: the A05 "
