@@ -35,7 +35,7 @@ STEPS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
          # the B03 review dispositions (B-VR03-01/04/06/07/08)
          r"expected_content_sha256 is PINNED", r"B03_REASON_EXPECTED_VERSION_MISMATCH",
          r"TAIL GUARD", r"B03_BYTES_VERIFIED", r"B03_BYTES_SOURCE_NONE",
-         r"resolved = Path\(os\.path\.realpath", r"isinstance\(handle, SourceHandle\)",
+         r"resolved = Path\(os\.path\.realpath",
          r"caller_supplied_version_is_pinned", r"cancellation_stops_the_read_early",
          r"cancellation_inside_the_last_read_is_honoured"),
         ("src/company_wiki/source_catalog/resolver.py",
@@ -49,14 +49,17 @@ STEPS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     ),
     "b06": (
         (r"QUALIFICATION_", r"qualification", r"_qualification_gaps",
-         r"_metadata_conflict_reason", r"B06", r"qualification_is_additive",
-         r"from \.scanner import R4_PROVENANCE_KEY"),
-        ("src/company_wiki/source_catalog/resolver.py",),
+         r"_metadata_conflict_reason", r"B06", r"B-VR06", r"qualification_is_additive",
+         r"from \.scanner import R4_PROVENANCE_KEY", r"conflict_check"),
+        ("src/company_wiki/source_catalog/resolver.py",
+         "tests/contract/test_r4b06_qualification.py"),
     ),
     "b07": (
-        (r"B07", r"accepts EXACTLY this version", r"NO directory-level fallback",
-         r"belong to phase C", r"unknown versions are refused"),
-        ("src/company_wiki/source_catalog/resolver.py",),
+        (r"B07", r"B-VR07", r"accepts EXACTLY this version", r"NO directory-level fallback",
+         r"belong to phase C", r"unknown versions are refused", r"unsupported_version",
+         r"B03_REASON_UNSUPPORTED_VERSION", r"foreign_version"),
+        ("src/company_wiki/source_catalog/resolver.py",
+         "tests/contract/test_r4b07_version_contract.py"),
     ),
 }
 
@@ -101,11 +104,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--check", action="store_true",
                         help="classify only; report and exit")
+    parser.add_argument("--steps", default=None,
+                        help="comma-separated subset of steps to consider (e.g. b06,b07); "
+                             "useful once earlier steps are already committed, because their "
+                             "signatures then match only as CONTEXT lines")
     args = parser.parse_args(argv)
 
     worktree = args.worktree
     if not (worktree / "src").is_dir():
         raise SystemExit(f"not a worktree: {worktree}")
+    candidates = set(STEPS)
+    if args.steps:
+        candidates = {step.strip() for step in args.steps.split(",") if step.strip()}
+        unknown = candidates - set(STEPS)
+        if unknown:
+            raise SystemExit(f"unknown step(s): {sorted(unknown)}")
     diff = run(["git", "diff", "--unified=6"], worktree)
 
     patches: dict[str, list[str]] = {step: [] for step in STEPS}
@@ -125,7 +138,8 @@ def main(argv: list[str] | None = None) -> int:
             matches = [
                 step
                 for step, (signatures, files) in STEPS.items()
-                if rel in files and any(re.search(sig, hunk) for sig in signatures)
+                if step in candidates and rel in files
+                and any(re.search(sig, hunk) for sig in signatures)
             ]
             if len(matches) != 1:
                 unassigned.append(f"{rel} hunk#{index} matches={matches}")

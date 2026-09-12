@@ -1,0 +1,49 @@
+{
+  "rule2_drift_after_scan": {
+    "before": {
+      "status": "reused_exact",
+      "matches": 1,
+      "reason": "one_existing_source_matches_provider_identity",
+      "served_sha_is_original": true
+    },
+    "after_drift": {
+      "status": "reused_exact",
+      "matches": 1,
+      "reason": "one_existing_source_matches_provider_identity",
+      "trace": [
+        "entity_gate_rejected: 0",
+        "Acme 2025 Annual Report: unverified_content_sha256_mismatch_on_pre_b02_canonical",
+        "Acme 2025 Annual Report: candidate urn:company-wiki:location:sha256:0e864cdab4107629dbfb16e42f70d7c771b71ae49124fb023d03983048a1d379:content_sha256_mismatch:82b1519db82f",
+        "Acme 2025 Annual Report: matched"
+      ],
+      "served_sha256": "442ae3b75ab341f9eba58ea29eee1c810615c86a28ff4b90e8b1c5e052d9e444",
+      "served_sha_is_indexed_original": true,
+      "bytes_now_on_disk_sha256": "82b1519db82f46b7f92cdec12bfd427060ea1589e51bb33a63d0d2ce559256ef",
+      "read_path": {
+        "status": "unavailable",
+        "reason": "content_sha256_mismatch",
+        "bytes_returned": 0
+      }
+    }
+  },
+  "baseline_vs_current_envelope_on_foreign_version": {
+    "baseline_7d4852f": {
+      "current_constant": "1.0",
+      "foreign_version_result": "ACCEPTED",
+      "envelope_schema_version": "1.0"
+    },
+    "current": {
+      "current_constant": "1.0",
+      "foreign_version_result": "refused:ValueError"
+    }
+  },
+  "consumer_identity_of_compared_payload": {
+    "consumer_document_hash": "c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd",
+    "payload_policy_hash": "c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd",
+    "consumer_hash_matches": true,
+    "fetch_filing_reads_key": true,
+    "script_compared_function": "company_wiki.source_catalog.cli._policy_export_payload",
+    "same_function_used_by_cli_response": true,
+    "filed_payload_roots_are_absolute": true
+  }
+}

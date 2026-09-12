@@ -2,6 +2,16 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B06-1 / F-B07-2：`B.VR`（B06）与 `B.VR`（B07）= **均 `accepted_with_findings`**（各 1×P1）→ 全部处置（`3740857` / `f2ba5c1`）
+
+- **记录**：[reviews/B.VR-b06.json](reviews/B.VR-b06.json)、[reviews/B.VR-b07.json](reviews/B.VR-b07.json)；**逐条处置表** [evidence/b0607-review-disposition.md](evidence/b0607-review-disposition.md)。两个独立会话**并行**完成（我明确要求**只跑定向用例**以免互相制造负载假失败）。
+- **B06 的 P1（B-VR06-01）是真缺陷、且方向是"我违背了自己的计划"**：`b06-plan` 写"期间 = fiscal_year 且 (period_end 或 published_date)"、"无 fiscal_year ⇒ blocked"，而**代码与用例都断言相反**（把 `published_date` 当期间）⇒ `period_missing` **不可达**、期间那一半标签是空话；复审的变异 M11（把代码改成合规）**被我的用例杀掉**——即**用例在保护错误行为**。→ 已按计划反转为"**期间只认期间事实**（`fiscal_year` 或 `fiscal_period`）"，并**实测出该状态在真实管线里可达**（`latest_as_of` 会服务出 `fiscal_year=None` 的句柄，[evidence/b06_period_probe.py](evidence/b06_period_probe.py)），据此新增**端到端**用例。
+- **B06 的 P2 里有一条值得单独记（B-VR06-03）**：复审的变异 **M6（信封完全忽略缺口规则）在整份定向用例集合下存活**——因为我的用例只测了**规则函数**，没测**接线**。→ 新增"用手搓 `ResolutionResult` 驱动 `build_resolution_envelope`"的用例，M6 被杀。
+- **B06 另两条 P2**：`conflict_check`（`store` / `not_available`）让"检查过没有"变得显式；消费者侧许可对齐 **登记为 `not_verified`（归 C）**，不再读起来像已覆盖。**B-VR06-02 的另一半**（畸形共享列时**读侧**抛异常）属 B05 读路径的独立缺陷，**登记为后续工作包**。
+- **B07 的 P1（B-VR07-01）是一句假保证**：我新写的"请求版本没有合格副本 ⇒ 必须显式失败"**不成立**——owner 批准的 **S-10 规则 2** 允许在**无任何副本通过验证**时**凭目录声明服务一行**（trace 记 `unverified_…_on_pre_b02_canonical`）；复审实测复现（句柄 sha 与磁盘字节不符仍 `reused_exact`）。→ **契约注释与用例 docstring 点名该例外**，并写明"需要验证字节请用 `read_verified_bytes`"。
+- **B07 的 P2/P3**：`read_verified_bytes` 现在**校验句柄版本**（不符 ⇒ `unavailable` + `unsupported_version`，不再验证字节）；裸 `ValueError` 的定位写明为"**调用方/编程错误**，五值模型管的是解析结果"（若 owner 要求严格按五值表达，属另一次范围裁定）；payload 门**只是单一配置的字节相等**（复审的 M5 变异存活）——这一边界补注进 **F-B07-1**；**我自己写的假断言**（`"served" in trace` 永远为真）已改为"拒绝必须被解释"；验收表里 **L12 的归属改回 B08**（B07 没有 L12 用例）。
+- **两份复审都确认：消费者侧一律未验**，且记录里**没有夸大**这一点。
+
 ## F-B00-6：验收用例与矩阵 ID 的**双向可追溯性**不足（B 侧 5 处 L-ID 在用例文件里没被点名）
 
 - **怎么发现的**：B 阶段七步实现完毕后，我用自建的完整性检查 [evidence/l_coverage_check.py](evidence/l_coverage_check.py) 把**验收映射表**（`test-acceptance-map.md` §1 每步的矩阵列）与**代码**对了一遍（产出 [evidence/l-item-coverage.json](evidence/l-item-coverage.json)）：解析表里 B01–B07 声称覆盖的 L-ID，再去 B 侧新增的 7 个契约测试文件里找这些 ID 的**文字点名**。

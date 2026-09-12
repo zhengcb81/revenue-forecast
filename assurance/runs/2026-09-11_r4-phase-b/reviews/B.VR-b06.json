@@ -1,0 +1,246 @@
+{
+  "gate": "B.VR (B06)",
+  "scope": "Independent verification of step B06 (commit 5138546: ResolutionEnvelope.qualification, the three labels, the S-13 response-level blocked, and the additive schema claim) plus sampled verification of 728b5e0 (B01 CFG-08 null fix) and 2f1ddab (B03 review dispositions). Only the target repo's source/tests were read; all probes ran on TEMP fixtures or on TEMP copies of the tree produced by git archive. The production catalog was never read or written; no network, no downloads, no LLM calls.",
+  "reviewed_commits": {
+    "primary": "5138546 (feat(r4b06): qualification labels and the response-level blocked (S-13)) - 2 files, +529 lines (resolver.py +126, tests/contract/test_r4b06_qualification.py +403)",
+    "sampled": [
+      "728b5e0 (fix(r4b01): CFG-08 refuses a present-but-empty read_only (B-VR03-03))",
+      "2f1ddab (fix(r4b03): dispose of the B03 review (1xP1/4xP2/3xP3))",
+      "context: 52d394d = HEAD (test-only follow-up to the B03 volume-root case), 5b7ef10 = B07"
+    ]
+  },
+  "reviewer_session_self_report": {
+    "role": "fresh independent reviewer session (delegated subagent; not the author, not any prior reviewer); parent agent id session-bfecd191-fbc3-4a66-8ed1-6562479bf102",
+    "method": "read the reviewed diffs and the run documents (b06-plan.md, b06-implementation.md, b-design.md B06, findings.md F-B01-7/F-B03-1, owner-scope-decisions sections 9 and 11, test-acceptance-map B06 row, filing-fetch/scripts/filing_contracts.py, revenue-forecast/scripts/company_wiki_source.py), then reproduced every number with targeted pytest/ruff and falsified the claims with new probe scripts and an 11-mutation matrix on a TEMP copy of the tree",
+    "environment": "Windows host; Python 3.13.9 (Anaconda); pytest 9.1.1; ruff 0.15.18; product repo C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki at HEAD 52d394d, git status --short EMPTY before and after; installed company_wiki resolves to this checkout (src layout via sys.path in tests)",
+    "no_external_uuid": "the harness exposes no session UUID to this delegated reviewer; identity is the parent agent id plus the b06_review_* artefacts written under RUN/evidence",
+    "declaration": "I did not modify product code, tests, or the production catalog; I did not commit, push, or bypass any hook. The only writes are under RUN/evidence (b06_review_*) and %TEMP%."
+  },
+  "verdict": "accepted_with_findings",
+  "claims_rechecked": [
+    {
+      "claim": "1. ResolutionEnvelope.qualification is ADDITIVE (default None, exported through to_dict(), envelope_schema_version stays 1.0) with labels verified_input / preview / blocked",
+      "status": "confirmed for the additive mechanics; the label RULE is not the rule the run registered (see B-VR06-01)",
+      "evidence": "b06_review_probe.json#claim1_additive: dataclass field default is None, type 'dict[str, Any] | None', to_dict() carries the key, envelope_schema_version == '1.0', a served complete handle yields {label: verified_input, gaps: [], reason: ''}; b06_review_prepost.json: pre-B06 vs post-B06 envelope dumps differ ONLY in qualification.* with a run-noise control proving the envelope has no other run-varying key"
+    },
+    {
+      "claim": "2. The response-level blocked lives in the new field and NOT in outcome, because the consumer's validator requires outcome to be one of its eight values (no blocked)",
+      "status": "confirmed, exactly as stated",
+      "evidence": "b06_review_probe.json#claim2_consumer_validator: filing_contracts.RESOLUTION_ENVELOPE_OUTCOMES = the eight values {ambiguous, downloaded_new, failed, gap, missing, rejected, reused_after_discovery, reused_existing}, no 'blocked'; an envelope carrying qualification.label='blocked' passes validate_resolution_envelope and the field survives normalization with outcome unchanged; setting outcome='blocked' raises FilingFetchError('resolution_envelope outcome is outside the taxonomy') = upstream_error"
+    },
+    {
+      "claim": "3. The S-13 wiring reads B05's reserved provenance key from the shared metadata_json through the read-only store - the same fact the read side reports as metadata_status='blocked', not a second opinion",
+      "status": "true for well-formed content and for the conflict predicate; NOT exactly true when the shared column is malformed or when no store is supplied (see B-VR06-02)",
+      "evidence": "b06_review_probe.json#claim3_read_side_agreement: on the same document, envelope qualification = blocked/'field conflict recorded for: title' and service.query_filing_candidates metadata_status = 'blocked' with conflicts ['title']; the predicates are literally the same (dict-check + record.get('conflicts')). Divergence: with metadata_json = '{\"r4_provenance\": {\"fields\": []}}' or a list-of-pairs, the read side RAISES AttributeError('list' object has no attribute 'items') while B06 returns '' and the envelope says verified_input; with invalid JSON the read side RAISES JSONDecodeError while B06 says verified_input. The resolve CLI passes store=get_catalog().reader (ReadOnlyCatalogReader, sqlite mode=ro), so the 'read-only store' wording holds for that path; the ensure CLI and close_gap pass the writable CatalogStore, where the call is still a plain SELECT"
+    },
+    {
+      "claim": "4. The design's preview case is currently UNREACHABLE: resolve refuses every non-capture-ready handle with capture_incomplete, so the label is defined and rule-tested but no entry point produces it; the author did NOT relax the cross-repo gate",
+      "status": "confirmed, and understated: all five gap codes are unreachable from any in-package producer, not only the two preview codes (see B-VR06-04)",
+      "evidence": "b06_review_probe.json#claim4_missing_url: a locally readable copy with source_url=None resolves to MISSING, trace ['entity_gate_rejected: 0', 'Acme 2025 Annual Report: capture_incomplete'], qualification None; #claim4_forged_handle_preview: the envelope builder DOES emit preview (label preview, gaps ['url_missing'], outcome reused_existing) when handed a forged handle - so the rule is live, the producer is missing; resolver.py:1466-1472 refuses not handle.capture_ready inside the single candidate loop (applies to every mode); ResolutionResult(...) is constructed in exactly one place (resolver.py:1894, _result), so SourceResolver.resolve is the only producer; the three build_resolution_envelope call sites (cli.py:812 ensure, cli.py:1188 resolve, close_gap.py:475) all pass a resolution from that resolver; reader.py::resolve_handle/bundle build no envelope at all. The capture_incomplete gate was NOT relaxed (the resolver comment is unchanged and the refusal is a cross-repo rule)"
+    },
+    {
+      "claim": "5. The conflict reader cannot crash the envelope on malformed shared-column content (non-object payload, non-object reserved key, non-object field record)",
+      "status": "confirmed for every content shape I could construct, including shapes beyond the author's seven (see B-VR06-07 for the two non-content edges that do raise)",
+      "evidence": "b06_review_probe.json#claim5_fuzz_conflict_reader: 27 shapes, zero exceptions - payload list/string/null/int/bytes, bytes that are not JSON, invalid JSON text, reserved key as string/list/null, fields as empty list / list of pairs / string / null, record as string / list of dicts / nested list, conflicts as string / dict / empty list / 0 / null, 10 MB payload (9.8 ms), empty object/string, literal 'null'. Truthiness note: conflicts as the string 'yes' or as a dict counts as a conflict (blocked) - same predicate as the read side"
+    },
+    {
+      "claim": "6. Measured: test_r4b06_qualification.py 12 passed; the pre-existing envelope suites (FC-704, FC-902, FC-905-a, ZR-404) still pass; ruff clean; the FC-1204 complexity ratchet still passes; the whole contract suite was 1900 passed / 8 skipped with two environment-only failures",
+      "status": "confirmed for the five targeted numbers; the full-suite split is corroborated arithmetically but its pass/fail assignment was NOT executed (targeted-tests-only rule)",
+      "evidence": "RUN/evidence/b06_review_tests.txt: `pytest tests/contract/test_r4b06_qualification.py test_resolution_envelope_fc704.py test_fc902_bundle_in_resolver.py test_fc905_receipt_envelope.py test_zr404_envelope_trace_rationale.py test_fc1204_complexity_ratchet.py -q` -> 50 passed in 9.45s (12 + 9 + 7 + 9 + 11 + 2); `ruff check src tests/contract` -> All checks passed; pytest --collect-only over tests/contract -> 1910 tests collected, i.e. exactly 1900 + 8 skipped + 2 failures; the leaked worker PID 17684 is ALIVE (python, started 2026/9/12 21:18:04, i.e. before the 23:50 B06 commit) and was never touched; tests/contract/test_zr409_fourth_root_real_journeys.py is in the CI --ignore list (.github/workflows/ci.yml lines 51-59), so the second failure's 'CI-ignored' label is accurate"
+    }
+  ],
+  "questions": {
+    "a_label_rule_fail_open": "YES - a document can be served and labelled verified_input while the period the plan demands is absent. Constructed case (b06_review_probe.json#claim4_no_fiscal_year): sidecar with no fiscal_year/period_end and the year removed from the title, filing_date kept so the handle stays capture_ready; request with fiscal_year=None. resolve -> reused_exact, 1 match, handle.fiscal_year=None, handle.published_date='2026-02-20', capture_ready=True; envelope qualification = {label: verified_input, gaps: [], reason: ''}. Same in mode=latest_as_of (where the consumer contract FORBIDS fiscal_year). b06-plan.md section 2 defines '期间' as fiscal_year AND (period_end OR published_date) and section 4 lists '期间不明（无 fiscal_year ...）=> blocked + period_missing'; the implementation (resolver.py _qualification_gaps) and its test (test_r4b06_unknown_period_blocks_the_formal_contract, line 243-245: 'a published date alone still counts as a known period') assert the opposite. Net effect: period_missing can never appear for a served handle (resolve.py:1397-1399 refuses a document with no published_date), so the period half of 'identity + period + source complete' is vacuous. Counter-argument recorded honestly: b-design.md B06 never defines '期间'; a published date is a period fact; and in latest_as_of the caller has no year by contract - so the fix may legitimately be to amend the plan instead of the code. See B-VR06-01.",
+    "b_weaker_licence_inherited": "YES - nothing except the new field signals anything but success. Measured on the conflict fixture with a real bundle (b06_review_probe.json#claim2b_blocked_looks_like_success): qualification={label: blocked, gaps: [], reason: 'field conflict recorded for: title'} while outcome='reused_existing', download_events=0, bundle_status='available' with a bundle_hash, prompt_injection_status='not_reviewed', handle.capture_ready=True with missing_capture_fields=[]. The consumer's validator accepts the envelope and its permission gate (revenue-forecast/scripts/company_wiki_source.py:280-281) only tests handle.capture_ready - a conflict-blocked handle is capture_ready, so the gate passes; grep shows no consumer reads 'qualification' at all (filing-fetch and revenue-forecast). A missing qualification is not the failure mode: build_resolution_envelope sets it whenever resolution.matches is non-empty (verified). The design sentence requiring the consumer gate to align with the label is undelivered and unregistered (S-4 moves consumer work to phase C, but test-acceptance-map.md carries no not_verified marking; the string 'not_verified' does not appear in that file). See B-VR06-05.",
+    "c_claim3_exact": "Mostly, but not exactly. Same column (documents.metadata_json), same reserved key constant (scanner.R4_PROVENANCE_KEY, imported not copied), same conflict predicate (record is a dict and record.get('conflicts') is truthy) - so for well-formed content the two agree, measured on the same document (envelope blocked / read side metadata_status='blocked'). They disagree in two reachable-by-a-caller situations: (1) malformed shared-column content - the read side raises (AttributeError for fields as a list, JSONDecodeError for invalid JSON) while B06 answers '' and the envelope says verified_input, i.e. the two are not the same fact there, and B06's answer is the fail-open one; (2) store omitted/None - build_resolution_envelope(res, store=None) labels the very same document verified_input while the read side (and the store-supplied envelope) says blocked (b06_review_probe.json#claim3_store_none_label). A consumer sees whichever artefact it reads: the CLI resolve/ensure responses embed the envelope, so a consumer of the envelope sees qualification; the read side is a separate API (query_filing_candidates) that no consumer currently calls through the envelope. The read-side crash on a malformed column is a pre-existing B05 defect, not introduced by B06, but the 'same fact, not a second opinion' claim does not cover it. See B-VR06-02.",
+    "d_preview_reachable": "NO path found, and I looked for one. Probed: SourceResolver.resolve (missing URL -> MISSING/capture_incomplete/qualification None), all three build_resolution_envelope call sites (cli resolve, cli ensure, close_gap - all fed by resolve), reader.resolve_handle/bundle (no envelope), and the public builder itself. The only way to obtain label='preview' is to hand build_resolution_envelope a ResolutionResult whose handle was doctored (dataclasses.replace(handle, https_url=None, missing_capture_fields=('https_url',))), which no in-package code can produce: ResolutionResult has exactly one constructor (resolver.py:1894) and the unique producer refuses not handle.capture_ready at resolver.py:1466. The same argument kills identity_missing / period_missing / source_missing on the production path: missing_capture_fields is always empty for a served handle, published_date is required to be served, and document_entities always has at least one row because scanner.py:1026-1033 inserts an entity for every document it indexes (falling back to f'unresolved:{root_id}'); scanner.py is the ONLY writer of documents/document_entities in the package (verified by grep over src). identity_missing does fire on the envelope when the DB is put into a state the pipeline never creates - deleting the entity rows on a TEMP catalog produced label blocked/gaps ['identity_missing'] with the document still served (b06_review_probe.json#claim4_identity_db_surgery).",
+    "e_fuzz": "Nothing raised on content. 27 shapes (including nested lists of dicts, fields as a list of pairs, conflicts as a string, a 10 MB valid-JSON payload, and metadata_json delivered as bytes) all returned a string; no exception, worst case 9.8 ms. Two edges outside 'shared-column content' do propagate: a store whose fetchone raises (RuntimeError) and a row that lacks the metadata_json column (KeyError) - the latter because the read is not wrapped, though any such store already breaks the pre-existing read_prompt_injection_review call earlier in the same block (measured: it failed there first with KeyError: 0 when handed a dict-row store). See B-VR06-07.",
+    "f_pre_existing_behaviour": "Additive, measured rather than assumed. b06_review_prepost.json: the same fixtures built with resolver.py from 5139546^ (pre-B06) and from 5138546 (B06) on the same tree - the envelope is byte-identical except for the three qualification.* entries; outcome, download_events, bundle_status, bundle_hash, policy_hash, activation_epoch, cohorts, prompt_injection_status, parser_calls, llm_calls, source_sha256, candidate_exclusion_trace, canonical_location_rationale and envelope_schema_version are unchanged. A control run of the same tree twice shows the envelope has NO run-varying key (diff {}), while matches[].canonical_path varies with the temp directory name in both control and pre/post diffs, so that difference is not a B06 effect. resolve() output (resolution.to_dict()) is likewise unchanged. The only new side effect on the response path is one extra SELECT (documents.metadata_json) per served match - on the resolve path that is the existing ReadOnlyCatalogReader connection.",
+    "g_sampled_commits": {
+      "CFG-08_728b5e0": "Rule consistent with the annotations: RootSpec declares read_only: bool = True (config.py:137 item.get('read_only', True)) and reusable_for_filing: bool | None = None ('None = follow kind policy'); the new _require_boolean refuses a present null for read_only and still admits null for reusable_for_filing; absent fields skip so their defaults apply. Measured pre/post (b06_review_cfg08_pre.json / _head.json, config.py swapped to the 728b5e0^ blob): pre-fix `read_only:` (null) was refused by RootSpec.__post_init__ with a raw TypeError('read_only must be a boolean') (models.py:147-148, present before this commit) and post-fix it is refused by the admission point with CatalogConfigError('...CFG-08'); `read_only: \"false\"` is CatalogConfigError in both; `reusable_for_filing:` (null) is accepted with None in both. So the rule now matches the annotations - but the reason recorded in the commit message, the config.py comment and the new test docstring ('a present-but-empty value is refused instead of being stored as None - which is falsy, while the absent field's default is True') is not what the old code did: a null was never stored, it raised TypeError. The B03 review's own finding (B-VR03-03) stated the mechanism correctly; only the new wording overstates it. See B-VR06-08.",
+      "B03_dispositions_2f1ddab": "All three reproduced red -> green with direct probes (b06_review_b03_pre.json = resolver.py from 2f1ddab^, b06_review_b03_head.json = HEAD). (1) commonpath containment: pre volumes-root case _inside_configured_roots(file_on_C:, root=Path('C:\\\\')) = false (the prefix bug: base + os.sep becomes 'c:\\\\\\\\'), post = true; sibling-with-shared-prefix stays false, the root itself stays true, a different drive stays false via the ValueError branch. (2) pinned expected_content_sha256: with the handle naming version A and the file on disk holding version B, calling read_verified_bytes(handle, expected_content_sha256=<hash of B on disk>) returned status 'verified' with the bytes and reported content_sha256 = B's hash BEFORE, and status 'unavailable' reason 'expected_version_mismatch' with no bytes AFTER - i.e. the P1 scenario (one version's document_id beside another version's bytes while calling itself verified) is really closed. (3) cancellation tail guard: with a budget that cancels only on the 4th read of .cancelled (the check after the final b''-returning read), the pre code returned the bytes (only 3 accesses existed) and the post code returns unavailable/'cancelled' with no bytes (4 accesses). The reviewer-independent claim 'the tail guard is needed' is therefore confirmed, not merely asserted."
+    }
+  },
+  "mutations": [
+    {
+      "id": "M1_preview_is_verified_input",
+      "status": "killed",
+      "killed_by": "tests/contract/test_r4b06_qualification.py (preview rule cases: url_gap_rule / missing_capture_trace)"
+    },
+    {
+      "id": "M2_conflict_ignored",
+      "status": "killed",
+      "killed_by": "test_r4b06_field_conflict_blocks_the_formal_contract"
+    },
+    {
+      "id": "M3_identity_not_blocking",
+      "status": "killed",
+      "killed_by": "test_r4b06_unknown_identity_blocks_the_formal_contract"
+    },
+    {
+      "id": "M4_conflict_reader_blind",
+      "status": "killed",
+      "killed_by": "test_r4b06_field_conflict_blocks_the_formal_contract (and the malformed-metadata case)"
+    },
+    {
+      "id": "M5_qualification_not_exported",
+      "status": "killed",
+      "killed_by": "test_r4b06_qualification_is_additive_for_pre_b06_consumers"
+    },
+    {
+      "id": "M6_envelope_wiring_ignores_gaps",
+      "status": "survived",
+      "killed_by": "NOTHING - the mutant ('gaps = [] if handle.capture_ready else _qualification_gaps(handle)') passes the B06 file AND the whole wider targeted set (50 passed, b06_review_m6.json). Only the conflict read and the happy path are wired into the envelope by the suite; the identity/period/source gap wiring is pinned only at rule level. See B-VR06-03",
+      "evidence": "RUN/evidence/b06_review_mutations.json#M6_envelope_wiring_ignores_gaps, RUN/evidence/b06_review_m6.json"
+    },
+    {
+      "id": "M7_qualification_for_every_response",
+      "status": "killed",
+      "killed_by": "test_r4b06_an_unanswered_request_carries_no_qualification"
+    },
+    {
+      "id": "M8_schema_version_bumped",
+      "status": "killed",
+      "killed_by": "test_r4b06_qualification_is_additive_for_pre_b06_consumers (and the FC-704 envelope suite)"
+    },
+    {
+      "id": "M9_envelope_skips_conflict_read",
+      "status": "killed",
+      "killed_by": "test_r4b06_field_conflict_blocks_the_formal_contract"
+    },
+    {
+      "id": "M10_gap_map_ignored",
+      "status": "killed",
+      "killed_by": "the two preview rule cases (url_missing / capture_log_missing)"
+    },
+    {
+      "id": "M11_period_rule_plan_conformant",
+      "status": "killed",
+      "killed_by": "test_r4b06_unknown_period_blocks_the_formal_contract - i.e. the SUITE actively pins the relaxed period rule that contradicts b06-plan.md section 2/4 (B-VR06-01)"
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-VR06-01",
+      "severity": "P1",
+      "claim": "The delivered label rule is not the rule the run registered for the period: 'verified_input' is emitted for a served document that has no fiscal_year, while b06-plan.md defines the period as fiscal_year AND (period_end OR published_date) and lists 'no fiscal_year' as blocked/period_missing. period_missing is therefore unreachable for any served handle and the period component of 'identity + period + source complete' is vacuous.",
+      "evidence": "b06_review_probe.json#claim4_no_fiscal_year (exact mode with fiscal_year=None: reused_exact, handle.fiscal_year=None, handle.published_date='2026-02-20', qualification {verified_input, [], ''}; identical in latest_as_of, the mode in which filing-fetch FORBIDS fiscal_year). Code: resolver.py _qualification_gaps requires only 'fiscal_year is None AND no published_date' - and resolve refuses a document with no published_date (resolver.py:1397-1399), so the branch can never fire. The delivered test asserts the relaxation explicitly (test_r4b06_qualification.py:243-245), and mutation M11 (making the code conform to the plan) is killed by that test, so the divergence is intentional but unregistered. Reachable entry points: the resolve CLI's --fiscal-year is optional (cli.py:417) and SourceRequest.fiscal_year is nullable (resolver.py:487).",
+      "impact": "A caller (or consumer in latest_as_of, which is forbidden from sending fiscal_year) can receive a response whose qualification asserts a complete period for a document whose fiscal period is not established by its own facts - the fail-open direction the design's 'period unknown => blocked' rule exists to prevent. It also means the F-B01-7 acceptance item registered on the B06 row has no reachable trigger (see B-VR06-04).",
+      "required_action": "Decide and make the two records agree: either (a) treat 'no fiscal_year' as period_missing/blocked (restore the plan's rule; the delivered test must then be corrected), or (b) keep published_date as a sufficient period and record the relaxation in b06-plan.md section 2/4 with the reason, so the rule and its evidence match. Also register the F-B01-7 carrier question explicitly (the xfail in revenue-forecast/tests/test_fc1001_isolated_lake.py will not XPASS on B06)."
+    },
+    {
+      "id": "B-VR06-02",
+      "severity": "P2",
+      "claim": "'The same fact the read side reports as metadata_status=blocked, not a second opinion' holds only for well-formed metadata_json; when the conflict evidence is unreadable or not supplied, the envelope reports the STRONGEST label (verified_input) instead of the read side's blocked (or its hard failure).",
+      "evidence": "b06_review_probe.json#claim3_read_side_agreement#malformed_shared_column: for '{\"r4_provenance\": {\"fields\": []}}' and for a list-of-pairs fields value the read side raises AttributeError(\"'list' object has no attribute 'items'\") while _metadata_conflict_reason returns '' and the envelope label is verified_input; for invalid JSON the read side raises JSONDecodeError and B06 again says verified_input. #claim3_store_none_label: with store=None the same conflicted document yields qualification verified_input while the store-supplied envelope (and query_filing_candidates) says blocked. Evidence direction is fail-open, and the malformed-column read side failure is a pre-existing B05 defect, so the two artefacts do not describe one fact in those states.",
+      "impact": "A consumer holding an envelope built without a store, or built while the shared column is damaged, sees a clean 'verified_input' for a document the read side calls blocked (or cannot read at all). No in-package caller omits the store today, but build_resolution_envelope is public API and the FC-704/FC-902 suites call it without one.",
+      "required_action": "Make absence of conflict evidence visible rather than green: either distinguish 'no evidence' from 'no conflict' in the label (e.g. a gaps code such as conflict_evidence_unavailable) or refuse/soften the label when store is None; and record the malformed-column asymmetry with the read side (which still raises) as a known divergence, since B06 explicitly reasoned about that column's shape."
+    },
+    {
+      "id": "B-VR06-03",
+      "severity": "P2",
+      "claim": "The acceptance suite does not pin the wiring of the identity/period/source gaps into the response: a mutant that keeps the conflict read but never applies _qualification_gaps in build_resolution_envelope survives the entire targeted set.",
+      "evidence": "RUN/evidence/b06_review_mutations.json (M6 survived the B06 file) and RUN/evidence/b06_review_m6.json (M6 survived all six targeted files: 50 passed; the temp tree's resolver.py blob was verified identical to HEAD before and after the run). The mutant is the fail-open direction - every capture-ready handle keeps gaps=[].",
+      "impact": "The claim 'blocked when identity/period/source are unknown' is enforced only at rule level; a future edit that stops calling the rule (or reorders it) would not turn any test red even though it changes the response contract.",
+      "required_action": "Add one envelope-level case per blocking code exercised through the public builder (an unambiguous way to do it without touching the cross-repo gate: build the ResolutionResult via dataclasses.replace on a real handle, as the rule-level cases already do, but assert through build_resolution_envelope(...).to_dict()), so at least identity_missing and source_missing are pinned on the response path."
+    },
+    {
+      "id": "B-VR06-04",
+      "severity": "P2",
+      "claim": "The implementation record classifies the identity/period/source blocking cases as reachable via the real resolve plus envelope assertions, but they are rule-level only, and no catalog the pipeline can produce reaches them: the reachable label surface is verified_input and blocked-by-conflict alone.",
+      "evidence": "b06-implementation.md section 4 ('reachable path' list includes _unknown_identity/_unknown_period/_missing_source), while the test bodies for those three do dataclasses.replace(handle, ...) and call _qualification_gaps/_qualification_label directly (test file lines 216-270); only complete_handle, missing_url, unanswered_request and field_conflict go through a real resolve. Probes: #claim4_missing_url (missing URL -> refusal, qualification None), #claim4_no_fiscal_year (no year -> verified_input), #claim4_identity_from_scan (a sidecar with canonical_entity_id=None still yields entity row 'ticker:ACME' because _entity() derives it from the path; scanner.py:1026-1033 inserts an entity for EVERY indexed document and scanner.py is the only writer of documents/document_entities in the package), #claim4_identity_db_surgery (identity_missing fires on the envelope only after deleting the entity rows in a TEMP catalog - a state the pipeline never creates). F-B01-7's registered half ('identity unknown => blocked') therefore has no reachable trigger on any indexed state, which is consistent with the author's own note that the revenue xfail will not XPASS.",
+      "impact": "Reviewers and the owner may read 'blocked covers identity/period/source' as delivered behaviour when only one of the four blocking triggers (a real field conflict) can actually occur today. The F-B01-7 acceptance item stays open under B06 while appearing covered.",
+      "required_action": "Correct the classification in b06-implementation.md section 4 (rule-level vs reachable) and state the reachable surface explicitly in the B06 acceptance row, including that the F-B01-7 item is NOT delivered by B06 (as b06-plan.md section 5 already argues) so the map does not read as covered."
+    },
+    {
+      "id": "B-VR06-05",
+      "severity": "P2",
+      "claim": "The design requires the consumer's existing permission gate to align with the qualification label; B06 delivers the fact only, and neither the acceptance map nor the implementation record registers the undelivered half as not_verified.",
+      "evidence": "b-design.md B06: 'requires the consumer existing permission gate (revenue-forecast/scripts/company_wiki_source.py:280-281 capture_ready) to align with it - B only provides facts, does not change consumers'. Measured (b06_review_probe.json#claim2b_blocked_looks_like_success): a conflict-blocked response still carries outcome=reused_existing, download_events=0, bundle_status=available, prompt_injection_status=not_reviewed and a capture_ready handle, so company_wiki_source.record_source's gate passes; grep shows neither filing-fetch nor revenue-forecast reads 'qualification'; test-acceptance-map.md contains no not_verified marking (owner decision S-4 requires the consumer side to be marked not_verified in B's acceptance record, and the B06 row lists only L09/L10 and the F-B01-7 item).",
+      "impact": "The S-13 deliverable - a response-level blocked a consumer can act on - is currently unobservable to the only existing consumer, so 'blocked' behaves like success for anyone who does not read the new field. Nothing in the B06 record tells phase C what it must now enforce.",
+      "required_action": "Register on the B06 row that the consumer-side alignment is NOT delivered and mark it not_verified (consumer licence gate must check qualification.label before accepting a handle), so the C phase inherits an explicit requirement instead of an implied one."
+    },
+    {
+      "id": "B-VR06-06",
+      "severity": "P3",
+      "claim": "For a multi-match (AMBIGUOUS) response the envelope qualifies matches[0] and can therefore carry label 'verified_input' on a response that is not a single verified input.",
+      "evidence": "resolver.py:1488-1505 returns AMBIGUOUS with matches=tuple(exact) (>1 handle); build_resolution_envelope qualifies matches[0] unconditionally; probe #claim4_two_matches_label: an envelope built from a two-match resolution reports {label: verified_input, gaps: [], reason: ''}. outcome stays 'ambiguous', which is why this is P3 rather than worse.",
+      "impact": "A consumer that reads qualification without outcome could read an ambiguous answer as a verified input. The design does not define the label for zero/multiple handles, so the choice is unspecified rather than wrong.",
+      "required_action": "Either define the multi-match case in the design/record (e.g. no qualification for AMBIGUOUS, or a label that says which handle the label describes) or state in the docstring that qualification always describes matches[0]."
+    },
+    {
+      "id": "B-VR06-07",
+      "severity": "P3",
+      "claim": "Two non-content failure modes of the new blocking read propagate instead of being absorbed, and the new public label vocabulary is absent from the module's declared public API.",
+      "evidence": "b06_review_probe.json#claim5_fuzz_conflict_reader#edges: a store whose fetchone raises propagates RuntimeError; a row without the metadata_json column raises KeyError('metadata_json') - the read has no try around fetchone. (Context: with a dict-row store the pre-existing read_prompt_injection_review in the same block fails first with KeyError: 0, so such a store is already unsupported.) resolver.__all__ lists the B03 sentinels but no QUALIFICATION_* constant, and company_wiki/source_catalog/__init__.py does not re-export them either, although the test file imports them by name.",
+      "impact": "Low: no in-package caller passes such a store, and the constants are reachable by direct import. But the label vocabulary is a cross-repo contract value, so its non-listing weakens the 'this is the public contract' signal that the neighbouring B03 constants already carry.",
+      "required_action": "Optional: add the three QUALIFICATION_* constants to resolver.__all__ (and decide whether the package should re-export them); note in the docstring that fetchone-level failures are not absorbed (only column CONTENT is)."
+    },
+    {
+      "id": "B-VR06-08",
+      "severity": "P3",
+      "claim": "Sampled commit 728b5e0: the recorded reason for the CFG-08 null fix is not what the pre-fix code did - a present-but-empty read_only was never stored as a falsy None, it raised a raw TypeError from RootSpec.__post_init__.",
+      "evidence": "b06_review_cfg08_pre.json (config.py swapped to the 728b5e0^ blob on an otherwise identical tree): 'read_only:' -> refused(TypeError, 'read_only must be a boolean'); 'read_only: \"false\"' -> refused(CatalogConfigError CFG-08); 'reusable_for_filing:' -> accepted with None. models.py:147-148 (unchanged by this commit and present before it) is the source of the TypeError. b06_review_cfg08_head.json: 'read_only:' -> CatalogConfigError('...CFG-08'). The commit message, the new config.py comment and the new test docstring all say the value 'would be stored as None - which is falsy, while the absent field's default is True'. The prior reviewer's finding (reviews/B.VR-b03.json B-VR03-03) described the mechanism correctly, and the disposition row repeats it correctly.",
+      "impact": "The fix itself is right and matches the annotations (null refused for read_only, null legal for reusable_for_filing); only the justification in the code comment, the test docstring and the commit message is wrong, which is the same class of reason/behaviour mismatch this run has repeatedly flagged (a future reader would conclude the pre-fix path was fail-open).",
+      "required_action": "Correct the three wordings to what was measured: the admission check let a null through and the config died later with a TypeError from RootSpec.__post_init__ instead of the CatalogConfigError callers handle; the fix normalises the error type to the admission point. Keep the test."
+    }
+  ],
+  "limitations": [
+    "The full contract suite was NOT executed (targeted tests only, per the review protocol and because B07's reviewer may run concurrently). The author's '1900 passed / 8 skipped / 2 environment-only failures' split is therefore not reproduced: I confirmed the 1910 collected total (1900+8+2), that PID 17684 is alive and predates the B06 commit, and that tests/contract/test_zr409_fourth_root_real_journeys.py is in the CI ignore list - but not the pass/fail assignment of the two failures or the skip count.",
+    "Coverage was not measured (no --cov run), so the resolver.py 86% floor was not re-verified on the delivered test set.",
+    "The production catalog was not read: every behavioural statement above comes from TEMP fixtures or TEMP copies of the tree. Nothing was verified about real company_raw/dayu_portfolio data, real file sizes, or real sidecar populations.",
+    "AMBIGUOUS could not be produced end-to-end through resolve with the fixture shapes I tried (the scanner merges captures of one business key into one document), so B-VR06-06 rests on the code path (resolver.py:1488-1505) plus a builder-level probe rather than a served AMBIGUOUS response.",
+    "B06's blast radius outside the resolve/ensure/close_gap envelope path (workers, write surfaces, the acquisition journal, the coverage ratchet run under FC1204_COVERAGE_GATE=1) was inspected by reading only; FC1204_COVERAGE_GATE=1 was not run.",
+    "The identity_missing reachability conclusion (B-VR06-04) is supported by 'scanner.py is the only writer of documents/document_entities in the package' (grep over src) plus the unconditional INSERT at scanner.py:1026-1033; I did not enumerate every external tool/script that could write the catalog database directly (scripts/, tools/ were not audited).",
+    "Per the targeted set I did not run tests/contract/test_r4b01_field_owner_alignment.py or tests/contract/test_r4b03_stable_bytes.py; the sampled-commit dispositions were reproduced with direct probes instead (b06_review_b03probe.py, b06_review_cfg08probe.py) rather than with the author's own cases."
+  ],
+  "extra_evidence": {
+    "environment": {
+      "host_os": "Windows (win32)",
+      "python": "3.13.9 (Anaconda)",
+      "pytest": "9.1.1",
+      "ruff": "0.15.18",
+      "product_repo": "C:\\\\Users\\\\郑曾波\\\\Projects\\\\company-wiki",
+      "head": "52d394d74d3ab8b05145c7d9dbe8111ab7d97198 (branch fcap)",
+      "git_status_short": "empty before and after the review; .coverage and coverage.json untouched (no coverage run)",
+      "resolver_blob_at_head": "efa7d4b263a2d7e0e76ef34cb9968b82b33f61c8",
+      "leaked_worker": "PID 17684 alive (python, start 2026/9/12 21:18:04, before the 23:50 B06 commit) - attributed, never touched",
+      "temp_artefacts": "%TEMP%\\\\b06_review (git archive of HEAD; mutation + probe tree), %TEMP%\\\\b06_pp_pre / b06_pp_post / b06_b03pre / b06_cfg08pre (single-file swaps from git blobs, hash-verified)"
+    },
+    "commands_run": [
+      "python -m pytest tests/contract/test_r4b06_qualification.py tests/contract/test_resolution_envelope_fc704.py tests/contract/test_fc902_bundle_in_resolver.py tests/contract/test_fc905_receipt_envelope.py tests/contract/test_zr404_envelope_trace_rationale.py tests/contract/test_fc1204_complexity_ratchet.py -q  -> 50 passed (RUN/evidence/b06_review_tests.txt)",
+      "python -m ruff check src tests/contract -> All checks passed",
+      "python -m pytest tests/contract --collect-only -q -> 1910 tests collected",
+      "git -C <wiki> archive -o %TEMP%\\\\b06_review\\\\tree_head.tar HEAD && tar -xf ... (read-only copy for mutation/probe work)",
+      "python b06_review_probe.py -> b06_review_probe.json (claims 1-5, questions a-d)",
+      "python b06_review_mutations.py %TEMP%\\\\b06_review -> b06_review_mutations.json (11 mutations; M1-M5, M7-M11 killed; M6 survived)",
+      "python b06_review_m6_check.py -> b06_review_m6.json (M6 survives the whole targeted set; tree blob restored identical)",
+      "python b06_review_envdump.py <tree> <out> (x3) + python b06_review_prepost.py -> b06_review_pre.json / b06_review_post.json / b06_review_post2.json / b06_review_prepost.json (question f)",
+      "python b06_review_b03probe.py <2f1ddab^ tree> / <HEAD tree> -> b06_review_b03_pre.json / b06_review_b03_head.json (question g)",
+      "python b06_review_cfg08probe.py <728b5e0^ tree> / <HEAD tree> -> b06_review_cfg08_pre.json / b06_review_cfg08_head.json (question g)",
+      "git -C <wiki> hash-object / rev-parse / cat-file (byte-exact blob swaps; tree hashes verified identical before and after every mutation run)"
+    ],
+    "artefacts": [
+      "RUN/evidence/b06_review_tests.txt",
+      "RUN/evidence/b06_review_probe.py",
+      "RUN/evidence/b06_review_probe.json",
+      "RUN/evidence/b06_review_mutations.py",
+      "RUN/evidence/b06_review_mutations.json",
+      "RUN/evidence/b06_review_m6_check.py",
+      "RUN/evidence/b06_review_m6.json",
+      "RUN/evidence/b06_review_envdump.py",
+      "RUN/evidence/b06_review_prepost.py",
+      "RUN/evidence/b06_review_prepost.json",
+      "RUN/evidence/b06_review_pre.json",
+      "RUN/evidence/b06_review_post.json",
+      "RUN/evidence/b06_review_post2.json",
+      "RUN/evidence/b06_review_b03probe.py",
+      "RUN/evidence/b06_review_b03_pre.json",
+      "RUN/evidence/b06_review_b03_head.json",
+      "RUN/evidence/b06_review_cfg08probe.py",
+      "RUN/evidence/b06_review_cfg08_pre.json",
+      "RUN/evidence/b06_review_cfg08_head.json",
+      "RUN/evidence/b06_review_patch.py"
+    ]
+  }
+}
