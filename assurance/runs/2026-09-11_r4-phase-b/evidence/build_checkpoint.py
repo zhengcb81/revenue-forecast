@@ -60,40 +60,53 @@ def produced_files() -> dict:
     return files
 
 
-def verify_blobs(files: dict, source: str = "index") -> dict:
-    """Compare each recorded digest with the stored blob, and say what that proves.
+def verify_blobs(files: dict, source: str = "index", revision: str | None = None) -> dict:
+    """Compare each recorded digest with the blob stored for that path.
 
-    B-DR-16: `--verify-only` anchors the RUNTIME revision (index or HEAD) and cannot bind
-    `reviewed_commit`; it also cannot prove the manifest is complete. Both limits are
-    reported in the result instead of being left implicit, and the compared revision is
-    echoed back so a reader can tell which tree was checked.
+    Hardened after B-DR3-05 (the earlier version could pass vacuously):
+      * when `revision` is given the comparison is made against THAT commit
+        (`git show <rev>:<path>`), and a revision that does not resolve is an error -
+        this is what actually binds `reviewed_commit`;
+      * without it the caller gets index/HEAD behaviour and the result says which
+        revision was compared.
     """
     run_rel = RUN.relative_to(REVENUE).as_posix()
-    tree = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE), "write-tree"],
-                          capture_output=True, text=True)
     head_rev = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE),
-                               "rev-parse", "HEAD"], capture_output=True, text=True)
-    revision = (tree.stdout.strip() if source == "index" else head_rev.stdout.strip()) or "unknown"
+                               "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    tree = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE), "write-tree"],
+                          capture_output=True, text=True).stdout.strip()
+    if revision:
+        ok = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE),
+                             "rev-parse", "--verify", f"{revision}^{{commit}}"],
+                            capture_output=True, text=True)
+        if ok.returncode != 0:
+            return {"checked": 0, "source": f"commit:{revision}", "all_match": False,
+                    "error": f"reviewed_commit {revision!r} does not resolve to a commit",
+                    "blob_mismatches": []}
+        spec_prefix, compared = revision, ok.stdout.strip()
+    else:
+        spec_prefix = None
+        compared = tree if source == "index" else head_rev
     mismatched = []
     for rel, meta in files.items():
-        spec = f":{run_rel}/{rel}" if source == "index" else f"HEAD:{run_rel}/{rel}"
-        proc = subprocess.run(
-            ["git", "-c", "safe.directory=*", "-C", str(REVENUE), "show", spec],
-            capture_output=True)
+        spec = (f"{spec_prefix}:{run_rel}/{rel}" if spec_prefix
+                else (f":{run_rel}/{rel}" if source == "index" else f"HEAD:{run_rel}/{rel}"))
+        proc = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE),
+                               "show", spec], capture_output=True)
         if proc.returncode != 0:
-            mismatched.append({"path": rel, "reason": f"not in {source}",
+            mismatched.append({"path": rel, "reason": "not in the compared revision",
                                "detail": proc.stderr.decode(errors="replace").strip()[:120]})
             continue
         if hashlib.sha256(proc.stdout).hexdigest() != meta["sha256"]:
-            mismatched.append({"path": rel, "reason": f"{source} digest != recorded digest",
+            mismatched.append({"path": rel, "reason": "stored digest != recorded digest",
                                "blob_bytes": len(proc.stdout), "recorded_bytes": meta["size"]})
     return {
-        "checked": len(files), "source": source, "source_revision": revision,
-        "head_revision": head_rev.stdout.strip() or "unknown",
+        "checked": len(files), "source": f"commit:{revision}" if revision else source,
+        "compared_revision": compared, "head_revision": head_rev, "index_tree": tree,
         "blob_mismatches": mismatched, "all_match": not mismatched,
         "proves": "recorded digest == stored blob at the reported revision",
-        "does_not_prove": ["manifest completeness",
-                           "that reviewed_commit equals the compared revision"],
+        "does_not_prove": ["manifest completeness (see the completeness block)",
+                           "that the working tree equals the compared revision"],
     }
 
 
@@ -135,14 +148,17 @@ def commit_anchor() -> dict:
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": "B (position-transparent index and read-only access) - DESIGN ONLY",
-    "step": "B design v0.1.1 corrections applied after B.DR rev1 = rejected",
+    "step": "B design v0.1.3 - three B.DR rounds corrected; remaining P1s are scope decisions",
     "last_completed_step": (
         "B run directory created; b-design v0.1 (B01-B07) submitted to B.DR; B.DR returned "
         "rejected with 1 P0 + 7 P1 + 9 P2 + 3 P3 (8 of 17 claims did not reproduce); phase-A "
         "A07 returned accepted_with_findings and A08 rejected; all twenty B findings and the "
         "phase-A findings corrected in place (A contracts -> v0.4.1, B design -> v0.1.1)"
     ),
-    "current_gate": "B.DR rev2 (re-review of the corrected design on a new frozen commit)",
+    "current_gate": ("owner scope decisions S-1..S-6 (task_plan section 5): whether B may add test files, "
+                     "whether owner R-1/R-4 remediation enters B, whether the export path converges, who owns "
+                     "the consumer-side adapter work, whether G8 is split in two levels, and whether a fourth "
+                     "B.DR round is wanted. No further authoring can close the remaining P1s."),
     "pending_review": [
         {
             "gate": "B.DR rev2",
@@ -189,6 +205,7 @@ LEDGER = {
         "../2026-09-11_r4-phase-a/boundary-audit.md). Main DB and -wal are never changed."
     ),
     "failed_or_unknown": [
+        "the remaining B.DR P1 findings are scope decisions (S-1 test files, S-2 owner R-1/R-4 scope, S-4 consumer-side ownership), not text defects",
         "no B step can be marked implemented: implementation needs the owner-approved DEV work package (handbook section 1 item 5 + section 3)",
         "B08/B09 need the isolated copy (G8) and the confirmed sample list (G7)",
         "the L01-L12 mechanism-layer baseline (A06) does not exist yet, so 'B fixed it' cannot be verified independently until it does",
@@ -219,14 +236,23 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.verify_only:
         existing = json.loads((RUN / "checkpoint.json").read_text(encoding="utf-8"))
-        result = verify_blobs(existing["produced_files"], source="head")
+        result = verify_blobs(existing["produced_files"], source="head",
+                              revision=existing.get("reviewed_commit"))
         result["completeness"] = completeness(existing["produced_files"])
         print(json.dumps(result, ensure_ascii=False, indent=2))
-        return 0 if result["all_match"] and result["completeness"]["complete"] else 1
+        ok = (result["all_match"] and result["completeness"]["complete"]
+              and "error" not in result)
+        return 0 if ok else 1
 
     if not args.reviewed_commit:
-        print("ERROR: --reviewed-commit is required (B-DR2-09). Generate after committing the "
-              "corrections, then commit the rebuilt checkpoint as the stamp commit.")
+        print("ERROR: --reviewed-commit is required (B-DR2-09/B-DR3-05).")
+        return 2
+    resolved = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE),
+                               "rev-parse", "--verify", f"{args.reviewed_commit}^{{commit}}"],
+                              capture_output=True, text=True)
+    if resolved.returncode != 0:
+        print(f"ERROR: --reviewed-commit {args.reviewed_commit!r} is not an existing commit "
+              f"(B-DR3-05: the stamp must name a real revision).")
         return 2
 
     ledger = dict(LEDGER)
@@ -235,12 +261,16 @@ def main(argv: list[str] | None = None) -> int:
         "revenue-forecast": {"head": head(REVENUE), "dirty": dirty(REVENUE)},
         "filing-fetch": {"head": head(FILING), "dirty": dirty(FILING)},
     }
-    ledger["reviewed_commit"] = args.reviewed_commit
+    ledger["reviewed_commit"] = resolved.stdout.strip()
     ledger["commit_anchor"] = commit_anchor()
     ledger["produced_files"] = produced_files()
     ledger["produced_files_verification"] = verify_blobs(ledger["produced_files"], source="index")
     ledger["produced_files_completeness"] = completeness(ledger["produced_files"])
     ledger["generated_at_utc"] = datetime.now(UTC).isoformat()
+    if not ledger["produced_files_completeness"]["complete"]:
+        print("ERROR: manifest is not complete (B-DR3-05: this is an assertion, not a record): "
+              f"unlisted={ledger['produced_files_completeness']['unlisted']}")
+        return 3
     out = RUN / "checkpoint.json"
     out.write_text(json.dumps(ledger, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {out} with {len(ledger['produced_files'])} files; "

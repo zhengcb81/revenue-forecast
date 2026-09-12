@@ -3,7 +3,7 @@
 > 运行目录：`revenue-forecast/assurance/runs/2026-09-11_r4-phase-b/`（**本 run 的证据产物只落在此目录**，不写回审计证据目录）
 > 权威来源：[R4 执行计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md) §B（B01–B10） · [R4 测试矩阵](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-test-matrix.md)（L01–L12 / P / O / M） · [接班手册](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/execution-handbook.md) §2/§3/§5
 > 阶段 A 产物（冻结输入）：[../2026-09-11_r4-phase-a/](../2026-09-11_r4-phase-a/)（A01–A04 v0.3.1、A.DR rev3 `accepted_with_findings`、owner 六项裁定 = [owner-rulings-2026-09-11.md](../2026-09-11_r4-phase-a/owner-rulings-2026-09-11.md)）
-> 状态：**B 设计 v0.1.2（DESIGN_ONLY；`B.DR` 两轮 rejected 均已逐条更正）**；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，20 条已逐条更正，见 [findings.md](findings.md) F-B01-1）；产品代码**未被修改**；B 的实施需 owner 批准本包 DEV 工作包与文件范围（handbook **§1 第 5 项** + §3；v0.1 曾误写"§2.5"）
+> 状态：**B 设计 v0.1.3（DESIGN_ONLY；`B.DR` 三轮 rejected 均已逐条更正，剩余 P1 全部转为 scope 决定，见 §5）**；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，20 条已逐条更正，见 [findings.md](findings.md) F-B01-1）；产品代码**未被修改**；B 的实施需 owner 批准本包 DEV 工作包与文件范围（handbook **§1 第 5 项** + §3；v0.1 曾误写"§2.5"）
 
 ## 0. 起点与授权
 
@@ -35,7 +35,7 @@
 
 | 门 | 内容 | 现状 |
 |---|---|---|
-| **B.DR** | 独立设计审查：字段 owner 合并/弃用、**收敛现存两处 effective_reusable（不得出现第三处）**、显式 `false` 必须保留含义；测试与验收映射是否覆盖 L01–L12 | **rev1 = rejected**（20 条，已逐条更正为 v0.1.1）→ **待 rev2**（须基于新冻结提交与新输入哈希集） |
+| **B.DR** | 独立设计审查：字段 owner 合并/弃用、**不得新增第二套 effective_reusable**（执行计划 §B01 原文）、显式 `false` 必须保留含义；测试与验收映射是否覆盖 L01–L12 | **rev1/rev2/rev3 = rejected**（14/20 与 6/15 闭环）（20 条，已逐条更正为 v0.1.1）→ **待 rev2**（须基于新冻结提交与新输入哈希集） |
 | **B.VR** | 隔离环境重跑 L01–L12（+必要旧 C01–C10），独立 OS/文件观察证明本地零副作用 | 阻塞（G8） |
 | **B.AR** | 从原文独立复本身份与 hash；真实四 root + 第五 root 的最小读取 | 阻塞（G8 + G7） |
 | **D.SAFE 交叉** | H01（自动 prune 可达性）与写/删除路径的隔离证据 | 见 [risk-and-stop-rules.md](risk-and-stop-rules.md) |
@@ -56,10 +56,26 @@
 - **不改**：`company-wiki` 与 `filing-fetch` 的任何文件；`revenue-forecast` 内除本目录外的任何文件。
 - 三仓推送仍走各自强制 gate（revenue 的 gate 会**只读**打开生产 catalog，已在阶段 A 的 [boundary-audit.md](../2026-09-11_r4-phase-a/boundary-audit.md) 归因）。
 
-## 5. 变更记录
+
+## 5. 现在只剩 scope 决定（v0.1.3，需 owner 定夺）
+
+三轮 `B.DR` 均判 rejected，但**剩余 P1 全部不是文字问题，而是"B 可以动哪里"的决定**：
+
+| # | 决定 | 现状 | 若"是" | 若"否" |
+|---|---|---|---|---|
+| **S-1** | **B 是否可以改测试文件？** | allowed 里原本没有测试；v0.1.3 新增 **F10**（`tests/contract/**` 仅新增）但**尚未获批** | 新增断言有落笔处，B08/B.VR 可按同一套用例验证 | 本包**不能声称可实施**（B-DR3-04 的 P1 只能以"不实施"收口） |
+| **S-2** | **owner R-4（外发门 + 无门出口）与 R-1（假保证字段）是否纳入 B？** | 已移出 B（[b-design §B01.3](b-design.md)），承载文件在禁区 | 需把这些文件移出禁区并**重签**工作包（涉及安全门，建议单独工作包） | 维持现状：它们留在 owner 的整改清单里，B 只引用 |
+| **S-3** | **是否连 `export_policy_2x` 一并收敛（跨仓 policy_hash 迁移）？** | owner R-3 已收窄为"仅准入 loader"；导出路径冻结 | 需 filing-fetch 同步迁移方案 + 新裁定 | 维持现状（推荐） |
+| **S-4** | **B07 的消费者侧（filing/revenue 的 adapter 与 `companies` fallback）归谁？** | v0.1.3 明确 **B 不签**，并把它留给 C | 把消费者仓纳入 B 的 allowed（跨仓工作包） | 维持"归 C"（与执行计划 §B 的"filing/revenue 仅最小协议适配"一致，但**该适配本身仍未指派**） |
+| **S-5** | **G8 隔离副本按"两级"做吗？**（机制层用小 catalog；真实字节读取另批） | [findings.md](findings.md) F-B00-3 已提案，B.DR 已独立复核技术前提 | 机制层可立即开工（A06-D0 基线已就绪） | 只能等 G8 完整方案，B08/B.VR 继续阻塞 |
+| **S-6** | **是否需要第四轮 B.DR？** | 三轮 rejected；剩余 P1 均为 scope 决定 | 更正后送 rev4（须全新会话） | 视为"设计已到 scope 边界"，B 停在设计态，等 scope 决定 |
+
+> **作者的判断（供 owner 参考）**：S-1、S-2、S-4 是**同一类问题**——"B 的边界画在哪"；建议一次性决定，避免每轮复审都因边界不清被拒。
+
+## 6. 变更记录
 
 | 时间（本地，实测） | 变更 |
 |---|---|
 | 2026-09-12 07:43–07:46 | 建立 B run 目录；B01–B07 设计 v0.1、文件范围、测试映射、风险/停止规则；A05/A06 准备件；提交 `B.DR` 复审（提交 07:46:12 / 07:46:17） |
 | 2026-09-12 07:54–08:05 | **B.DR = rejected**（20 条；8 条 claim 未复现）+ **A07 = accepted_with_findings** + **A08 = rejected**（三份复审共同命中同一 P0） |
-| 2026-09-12 08:05–09:20 | **阶段 A 更正为 v0.4.1**（P0 范围更正、C2/C4/§2/§5、R 轴与进程级副作用、五值错误模型、版本轴、无门出口、A 台账一致性）；**B 设计更正为 v0.1.1**（20 条逐条处置，见 [findings.md](findings.md) F-B01-1） |
+| 2026-09-12 08:05–09:35 | **阶段 A 更正为 v0.4.1**（P0 范围更正、C2/C4/§2/§5、R 轴与进程级副作用、五值错误模型、版本轴、无门出口、A 台账一致性）；**B 设计更正为 v0.1.1 → v0.1.2 → v0.1.3**（三轮共 20+15+11 条逐条处置；v0.1.3 另把 R-1/R-4 移出 B、补 F10 测试落点、重写 B02 预算与 B05 合并规则、生成器改真断言，见 [findings.md](findings.md) F-B01-1） |

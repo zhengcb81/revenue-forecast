@@ -1,9 +1,9 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
   "phase": "B (position-transparent index and read-only access) - DESIGN ONLY",
-  "step": "B design v0.1.1 corrections applied after B.DR rev1 = rejected",
+  "step": "B design v0.1.3 - three B.DR rounds corrected; remaining P1s are scope decisions",
   "last_completed_step": "B run directory created; b-design v0.1 (B01-B07) submitted to B.DR; B.DR returned rejected with 1 P0 + 7 P1 + 9 P2 + 3 P3 (8 of 17 claims did not reproduce); phase-A A07 returned accepted_with_findings and A08 rejected; all twenty B findings and the phase-A findings corrected in place (A contracts -> v0.4.1, B design -> v0.1.1)",
-  "current_gate": "B.DR rev2 (re-review of the corrected design on a new frozen commit)",
+  "current_gate": "owner scope decisions S-1..S-6 (task_plan section 5): whether B may add test files, whether owner R-1/R-4 remediation enters B, whether the export path converges, who owns the consumer-side adapter work, whether G8 is split in two levels, and whether a fourth B.DR round is wanted. No further authoring can close the remaining P1s.",
   "pending_review": [
     {
       "gate": "B.DR rev2",
@@ -49,6 +49,7 @@
   },
   "actual_side_effects": "This run: documentation and read-only inspection only - no CLI of any kind was executed in this run, no data command, no network, no product/config/DB/task/worker change. DISCLOSED rather than asserted (B-DR-17): 'no CLI executed' is an author statement with no independent observation artefact behind it; pushing this run directory triggers revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY and advances -shm (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md). Main DB and -wal are never changed.",
   "failed_or_unknown": [
+    "the remaining B.DR P1 findings are scope decisions (S-1 test files, S-2 owner R-1/R-4 scope, S-4 consumer-side ownership), not text defects",
     "no B step can be marked implemented: implementation needs the owner-approved DEV work package (handbook section 1 item 5 + section 3)",
     "B08/B09 need the isolated copy (G8) and the confirmed sample list (G7)",
     "the L01-L12 mechanism-layer baseline (A06) does not exist yet, so 'B fixed it' cannot be verified independently until it does",
@@ -60,22 +61,22 @@
   "next_step": "Collect the B.DR verdict, correct the design in place, then (in parallel) start A07/A08 on the frozen phase-A contracts and prepare the A06 mechanism-layer baseline. Product changes wait for the owner's approval of file-scope.md.",
   "inputs": {
     "company-wiki": {
-      "head": "032da52cf699e26c4de86557dcc9189f883f1292",
+      "head": "9888fc6ad566ac741638ca9f2b42835f681ba372",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "9d2196360e9f48e4fb3aade0ff7db7e71dfcbfff",
-      "dirty": 1
+      "head": "8e3396b9d4dd352f8c7eef124afb4f87d443a9e0",
+      "dirty": 8
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "9d21963",
+  "reviewed_commit": "8e3396b9d4dd352f8c7eef124afb4f87d443a9e0",
   "commit_anchor": {
-    "head": "9d2196360e9f48e4fb3aade0ff7db7e71dfcbfff",
-    "index_tree": "c72358bcf2e2eb2cf91269045972b76e80270f0f",
+    "head": "8e3396b9d4dd352f8c7eef124afb4f87d443a9e0",
+    "index_tree": "23fd10ff031df6c7ff5b37422d709990e504767c",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -84,28 +85,32 @@
       "size": 907
     },
     "b-design.md": {
-      "sha256": "a5ba0fbef3e8d8eca08167ab94baa69d0674aed96891684c2c6d69cfb94a566f",
-      "size": 20424
+      "sha256": "1137d74a25901e45327034f5e276f202e44c04afdef614ef7e593c82b7a631b2",
+      "size": 25274
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "966b9282094e20599216c002648581c53b7a49997b53173f4f8b149537052a53",
-      "size": 13028
+      "sha256": "7675ad5f9b9701b6b08de648710c8a4013f837ce997cf3216f76d3addb0ebbf9",
+      "size": 15118
     },
     "file-scope.md": {
-      "sha256": "bd113e7f772670a3c392cf4417d2eb9b8a91ba40c52bc0870896a2073bf03b30",
-      "size": 8217
+      "sha256": "f060513acf64f37ad6d7e942ae18678fe286659921be6cda73e4867a9943ad4e",
+      "size": 10240
     },
     "findings.md": {
-      "sha256": "b135b9bc3e947e402265388f190619b2bddeb30de1a2afbe60d470d16baf6902",
-      "size": 14128
+      "sha256": "e841e95ebe24513afeda564476e77d8773318a267539dbfdfcc3b4f886c696f5",
+      "size": 18720
     },
     "progress.md": {
-      "sha256": "1dc1b34b752ad29642a0febde7bb8c3938d4cdc6f7b0c83756f2db2b24859cbc",
-      "size": 5020
+      "sha256": "a21318f5979477b37967c8ff6bcbf8822f73521ee50e3527845954c52cde8f54",
+      "size": 6025
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
       "size": 86930
+    },
+    "reviews/B.DR-rev3.json": {
+      "sha256": "4e49ee381f51679f94ca8c6273d2dfa8f3c12d01b5133eabe4a82dd349ed4fa3",
+      "size": 99809
     },
     "reviews/B.DR.json": {
       "sha256": "bbe383f34872b44cfed1894d5c7c7c62d894d4bf424ac911a242dc89cd081af4",
@@ -116,33 +121,34 @@
       "size": 5878
     },
     "task_plan.md": {
-      "sha256": "b3d67cea1b1abd7d6b3e27e75a406eea846640c4295c7279304dbe230b52421b",
-      "size": 7326
+      "sha256": "2e464e0803972ab130d419f568996ac1d12f82af47003f78d0d1cd167121a974",
+      "size": 9769
     },
     "test-acceptance-map.md": {
-      "sha256": "c78755fd7621f6cdfa0deb6e45b1b2427635594b17d73a461cc52198080337d7",
-      "size": 8557
+      "sha256": "4e11244458436c008ecc0dccb9b1ea20a0593adc69c333f772982ab38467f863",
+      "size": 9209
     }
   },
   "produced_files_verification": {
-    "checked": 11,
+    "checked": 12,
     "source": "index",
-    "source_revision": "c72358bcf2e2eb2cf91269045972b76e80270f0f",
-    "head_revision": "9d2196360e9f48e4fb3aade0ff7db7e71dfcbfff",
+    "compared_revision": "23fd10ff031df6c7ff5b37422d709990e504767c",
+    "head_revision": "8e3396b9d4dd352f8c7eef124afb4f87d443a9e0",
+    "index_tree": "23fd10ff031df6c7ff5b37422d709990e504767c",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
     "does_not_prove": [
-      "manifest completeness",
-      "that reviewed_commit equals the compared revision"
+      "manifest completeness (see the completeness block)",
+      "that the working tree equals the compared revision"
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 11,
-    "files_listed": 11,
+    "files_on_disk": 12,
+    "files_listed": 12,
     "unlisted": [],
     "phantom": [],
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T07:28:48.190684+00:00"
+  "generated_at_utc": "2026-09-12T07:51:27.803991+00:00"
 }

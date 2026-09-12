@@ -2,6 +2,27 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B01-3：`B.DR-rev3` = **rejected**（round-1 14/20、round-2 6/15 闭环；新增 11 条）→ v0.1.3 更正
+
+审查记录 [reviews/B.DR-rev3.json](reviews/B.DR-rev3.json)（reviewer `ba59c7cd-…`，非作者会话；14 条 claim 中 6 条未复现）。**实际读到的修订**：phase-b 除 `checkpoint.json` 外的 11 个 blob = `9d21963`（逐字节相符），`checkpoint.json` = `472bd206`；**A 侧并非整体 v0.4.2**（只有 `root-contract.md` 是，`operation-contract.md`/`identity-contract.md`/`owner-rulings` 仍是 26fb780）——该观察正确，本 run 未声称过 A 侧整体 v0.4.2，但**台账里确实容易误读**，v0.1.3 在 checkpoint 的 `inputs` 注记里写清"逐文件版本"。
+
+| 发现 | 严重度 | 事实 | v0.1.3 处置 |
+|---|---|---|---|
+| **B-DR3-01** | **P1** | owner **R-4**（外发门 + 无门出口）与 **R-1**（假保证字段处置）被写成 B01 的"处置/验收"，但承载文件**全在禁区** → 设计要素不可实施 | 新增 **[b-design §B01.3](b-design.md)**：两项**移出 B 的处置与验收**，只作引用；纳入 B 的条件 = owner 扩大 allowed_files 并重签工作包 |
+| **B-DR3-02** | **P1** | B05 取消整行覆盖却**未给逐列合并规则**；"冲突按 priority 择一"与执行计划 §B05「真冲突仍 blocked/待选择」及 L08 相反；`scanner.py:1046-1058` 的 `capture_ready` 死锁恢复路径有回归风险 | §B05 新增**逐列合并表**（单值仅用于 `primary_source_id`；真冲突 → `ambiguous`）；显式保留"后到来源补空值、但不覆盖已确认单值"的恢复路径，并把"先缺后补"加入 L08 用例 |
+| **B-DR3-04** | **P1** | allowed 全是产品源码/冻结 YAML，**无测试落笔处**，新断言无处实现 | file-scope 新增 **F10**（`tests/contract/**` **仅新增**文件）与 **F11**（只读金丝雀）；test-map 加注"若 F10 未获批，则本包不能声称可实施" |
+| B-DR3-03 | P2 | 抽样预算无法证明整文件 `content_sha256`（L03 不可判定）；且引入五值之外的 `unknown` | §B02 预算**重写**：合格必须**全量 hash**（≤256 MiB/候选，超限即 `unavailable`），抽样**只用于排除**；**撤销 `unknown`**，未判定表达为 `blocked`/`unavailable` + `pending_candidates` |
+| B-DR3-05 | P2 | 生成器"断言完整性"实为记录：写路径无条件 rc=0、生成时刻自比较、`--reviewed-commit` 不校验存在性、比对锚点从不取被审修订 | 生成器改为**真断言**：`--reviewed-commit` 必须解析为存在的 commit（否则 rc=2）、清单不完整时**拒绝写出**（rc=3）、`--verify-only` **按 `reviewed_commit` 比对**并同时报告完整性 |
+| B-DR3-06 | P2 | 版本/台账标注失真（step=B v0.1.1、current_gate=rev2 pending 等） | checkpoint LEDGER 随 v0.1.3 前进；§inputs 注记说明"逐文件版本"（A 侧并非整体 v0.4.2） |
+| B-DR3-07 | P2 | 计数与交叉引用不 reconcile（12 行/16 名 vs 14；R-6 表头 9 处 vs 11 锚点；F2 引用已删除的 F9；`evidence_query.py` 未入禁止表） | 计数统一为 **12 行 / 16 名 + `kind`**；R-6 表头改 **11 处锚点**；F9 引用清理；`evidence_query.py` 移入禁止表 |
+| B-DR3-08 | P2 | 同一文件 L06 自相矛盾（§1 = B、§2 = B/C），矩阵原文 = **B** | test-map 两处统一为 **B**，并注明更正来源 |
+| B-DR3-09 | P2 | B07 可签列含无规则的"N-1 支持"，并把执行计划归 B 的"最小协议适配"**单方面改判给 C** | §B07 改为**明确不签**消费者侧（含最小协议适配），并登记"是否扩范围"为 **owner 决定**，不由本设计改判 |
+| B-DR3-10 | P2 | B06/L09–L10 未切分；file-scope 无 B06 落点行 | file-scope 新增 **§3b 各步骤落点行**（B06 → F2 `ResolutionEnvelope`）；test-map 的 B06 行标注"仅 wiki 侧" |
+| B-DR3-11 | P3 | 推送**已发生**但 checkpoint 仍用将来时、未登记为实际副作用 | progress.md 新增 **§2b 实际副作用（已发生）**；checkpoint 的 `actual_side_effects` 同步 |
+
+- **三轮的共同教训（v0.1.3 写入 risk-and-stop-rules §4）**：① **"写了却做不了"**（设计要素无 allowed 落点）是本包最容易被拒的形态；② **同一事实多处维护必漂移**（"两处/三处"、"4 个/0 个"、L06 = B/B/C）；③ **护栏必须是断言而不是记录**。
+- **状态**：v0.1.3 已就地更正；**剩余 P1 已全部转为 scope 决定**（见 [task_plan.md](task_plan.md) §6），需 owner 定夺后才能进入下一轮复审或实施。
+
 ## F-B01-2：`B.DR-rev2` = **rejected**（7/20 闭环；新增 1×? 计的 15 条）→ v0.1.2 逐条更正
 
 审查记录 [reviews/B.DR-rev2.json](reviews/B.DR-rev2.json)（reviewer `92aeb4c7-…`，非作者会话；**18 条 claim 中 10 条未复现**）。**round-1 的 20 条中 7 条真闭环**（B-DR-01 P0、06、07、08、09、10、13），其余 13 条仍未闭环；**新增 15 条**（P1×3 / P2×9 / P3×3）。

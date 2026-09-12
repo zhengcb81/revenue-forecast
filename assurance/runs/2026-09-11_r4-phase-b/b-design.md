@@ -1,4 +1,6 @@
-# B 阶段设计（b-design v0.1.1）—— 位置透明索引与只读读取
+# B 阶段设计（b-design v0.1.3）—— 位置透明索引与只读读取
+
+> **v0.1.3（2026-09-12）**：按 `B.DR-rev3` 的 11 条更正——**把 owner R-1/R-4 的整改移出 B 的处置与验收**（载体在禁区，见 §B01.3）、B05 补**逐列合并规则**（冲突不得按 priority 择一）、B02 预算改为**能证明整文件 hash 的判据**且不引入五值之外的状态、B06/B07 的可签切分与 file-scope 步骤行补齐、护栏改为真断言。
 
 > 状态：**DESIGN_ONLY**。本文件只描述"要做什么、改哪些文件、怎么验"，**未修改任何产品代码**。
 > 依据：R4 执行计划 §B（B01–B10）；阶段 A 冻结合同 **v0.4.1**（[root-contract](../2026-09-11_r4-phase-a/root-contract.md)、[operation-contract](../2026-09-11_r4-phase-a/operation-contract.md)、[identity-contract](../2026-09-11_r4-phase-a/identity-contract.md)）；owner 六项裁定 + 其**范围更正**（[owner-rulings](../2026-09-11_r4-phase-a/owner-rulings-2026-09-11.md)）。
@@ -11,12 +13,12 @@
 |---|---|---|
 | P-1 | 能力四轴（可读/可写/可外发/可复用）**互不推导** | A02 R1 |
 | P-2 | 未注册 root / 显式 deny 不因"默认等价"放行 | A02 R2 |
-| P-3 | **假保证字段不得留在"已强制"清单**（`symlink_policy` **与 `read_only`**） | A02 R7 + v0.4.1 |
+| P-3 | **假保证字段不得留在"已强制"清单**（`symlink_policy` **与 `read_only`**）——**处置本身不属于 B 范围**（owner R-1 的整改在禁区文件内），B 只按其读取语义行事 | A02 R7 + v0.4.2 |
 | P-4 | 准入语义**只能有一套**（= 生效的 `config.py`）；**导出路径 `export_policy_2x` 在产，其字节/hash 契约不可破坏** | A02 R8 + v0.4.1 范围更正 |
 | P-5 | 纯查询接口不得触网/不得 `ensure`/不得改 worker 状态/不得写 catalog；**R 轴 = 无逻辑写 + 无网络 + 无子进程**，进程级副作用单列 | A03 §2.1 |
 | P-6 | 路径诊断信息**不得进入业务身份**（9 处残留登记整改） | A04 R4（owner R-6） |
-| P-7 | 显式 `reusable_for_filing: false` **必须生效**，且**两处活实现收敛为一处** | owner R-2 + v0.4.1 更正 |
-| P-8 | `privacy_class` 缺省**不再默认可外发**；整改范围含 `legacy_research_ingest.py:128-136` | owner R-4 + v0.4.1 扩大 |
+| P-7 | 显式 `reusable_for_filing: false` **必须生效**（对齐语义）；**不得新增第二套 effective_reusable**（执行计划 §B01 原文；现存第三处在冻结的导出路径内，不可删） | owner R-2 + 执行计划 §B01 |
+| P-8 | `privacy_class` 缺省**不再默认可外发**（owner R-4）——**该整改不属于 B 范围**（承载文件在禁区，见 §B01.3）；B 只**引用**该裁定，不实施、不验收 | owner R-4 + v0.4.2 惰性限定 |
 | P-9 | 接口错误**恰好五值**：`not_found` / `not_indexed` / `unavailable` / `blocked` / `ambiguous`（+ reason）；重试性/预算/超时是独立字段 | A03 §2.4 |
 
 ---
@@ -55,7 +57,19 @@
 
 **产出**：`field-owner-map.json`（机器可读版，供 A06/A08 与 B.VR 引用）。
 
-**DR 检查点（B.DR 第一项）**：① 字段映射完整（12 行 / 16 名 + `kind`）；② **`false` 语义在①resolver 上生效，且②③的输出变化与 policy_hash 迁移绑定**（v0.1.2 更正：不是"收敛为一处"，因为第三处在冻结的导出路径内）；③ 显式 `false` 含义保留。
+**DR 检查点（B.DR 第一项）**：① 字段映射完整（12 行 / 16 名 + `kind`）；② **`false` 语义在①resolver 上生效**，②③的输出变化与 policy_hash 迁移绑定；**不得新增第二套 effective_reusable**（执行计划 §B01 原文）；③ 显式 `false` 含义保留。
+
+### B01.3 owner R-1/R-4 的整改**不在 B 的处置与验收范围内**（v0.1.3 更正，B-DR3-01）
+
+`B.DR-rev3` 指出：v0.1.2 把 owner **R-4**（外发门整改，含 `legacy_research_ingest.py:128-136`）与 **R-1**（`symlink_policy`/`read_only` 假保证处置）写进了 B01 的"处置"与验收映射，但**这些改动的承载文件全在 [file-scope.md](file-scope.md) §2 的禁区**（`llm_summarizer.py`、`legacy_research_ingest.py`、以及删除 YAML 字段所需的 `config/source_catalog.yaml` 变更）→ 该设计要素**在提案范围内不可实现**（属"写了却做不了"）。据此：
+
+| 项 | B 的角色（v0.1.3） |
+|---|---|
+| **R-4**（隐私缺省 + 无门出口） | **注册在 A 侧与 owner 裁定里，不属于 B**；B 的设计**不依赖**它（B06 的 `qualification` 只描述资格事实，不实现外发门）；**B 的验收不含 R-4** |
+| **R-1**（`symlink_policy` / `read_only` 假保证） | 同上：**B 不改这两个字段的处置**；B 只按其**实际语义**行事（写轴判据 = `kind == 'company_raw'`；symlink 行为由 B03 的读取路径与 L05 负例覆盖） |
+| **把它们纳入 B 的条件** | 若 owner 希望 B 一并做，须**扩大 allowed_files**（把相关文件移出禁区）并**重签**工作包——属**新的 scope 决定**，本设计不自行改判 |
+
+> 理由不是"减少工作量"，而是 `B.DR-rev3` 的判据：**设计要素必须映射到范围内的可写文件**，否则不可实施。
 
 ---
 
@@ -82,10 +96,13 @@
 2. 只有在**清单内所有候选都不可读**时才返回 `None`（= `unavailable`），而不是第一份不可读就放弃；
 3. 返回值必须携带"实际选中的是哪一份 + 为什么选它"，供 L03/L07 的引用不变验收。
 
-**读取预算与取消（v0.1.2 补，B-DR2-11）**：
-- 资格判定（第 3 段）**每个候选最多读 `min(file_size, 1 MiB)` 采样 + 首末块**用于摘要校验；**单次请求的资格判定总量上限 = 32 MiB / 64 个候选**，超限即停止并把剩余候选标 `unknown`（不是 `unavailable`）；
-- **不联网**（见下）；**必须可取消**：调用方取消后不得继续读盘（L06 的"有限资源/可取消"）；
-- 交付读取（B03）**另计预算**：单次 `open_version` 上限由调用方给出 `max_bytes`，超过即 `blocked`。
+**读取预算与取消（v0.1.3 重写，B-DR3-03/B-DR2-11）**：v0.1.2 的"每候选抽样 ≤1 MiB + 首末块"**不能证明整文件 `content_sha256` 相同**，因此 L03 的"合格副本切换"将不可判定。改为：
+
+1. **资格判定的摘要判据必须覆盖整文件**：对进入第 3 段的候选，**按文件大小上限**决定是否允许全量流式 hash——`file_size ≤ per_candidate_bytes_cap`（默认 **256 MiB**，可配置）时**全量计算** `content_sha256`；超过上限则**直接判 `unavailable`**（reason=`exceeds_candidate_cap`），**不得**以抽样结果声称"同 hash"；
+2. **抽样只用于排除**：允许先比对 `size` 与首末块以**快速排除**明显不同的候选（省 I/O），但**任何"合格"结论都必须由全量 hash 支撑**；
+3. **单请求总量**：`max_candidates`（默认 64）与 `max_total_bytes`（默认 2 GiB 流式读）双上限；**任一超限 → `blocked`（reason=budget_exceeded）**，并把未判定的候选列入诊断；
+4. **不引入五值之外的状态**（B-DR3-03）：v0.1.2 草案里的 `unknown` **撤销**——"未判定"在返回里表达为 `blocked`/`unavailable` + `pending_candidates` 诊断列表，错误模型仍**恰好五值**（A03 §2.4）；
+5. **可取消**：调用方取消后不得继续读盘；已读字节计入证据（L06 的"有限资源/可取消"）。
 
 **测试**：L01/L02/L03/L04（L03 的关键验收"撤首选→自动切换"由 `_handle` 承担）；预算与取消由 **L06** 与 **L12** 覆盖。
 
@@ -134,6 +151,18 @@
 2. **`metadata_priority` 的处置**：该列**保留**（由 `scanner` 继续维护，用于"必须给出单一值"时的排序提示），但**不再决定哪些列被写**；`:1038` 的 `elif root.priority <= existing_document["metadata_priority"]` 分支语义必须改写为"**只决定是否补充 provenance/冲突记录**"，不得再整体覆盖 `title/source_type/document_kind/published_date/source_status/primary_source_id`；
 3. **读取合同**（B05 的输出）暴露 `provenance` 与 `conflicts` 两个字段；
 4. **若 owner 要求把 provenance 提升为一等列**（可查询、可索引），那需要 `store.py` DDL/迁移 → **升级为独立工作包**（不在本包范围）。
+
+**逐列合并规则（v0.1.3 新增，B-DR3-02）**：取消"整行覆盖"并不等于没有单值来源；B05 必须为每一列给出规则，否则读取侧会出现"没有值"或"值随扫描顺序变化"：
+
+| 列 | 合并规则 | 冲突时 |
+|---|---|---|
+| `title` / `source_type` / `document_kind` | 取**声明该列且来源可追**的值；多来源一致 → 单值 + provenance 列表 | `not_indexed` 类冲突不适用；真冲突 → **保留全部候选 + `conflicts`**，读取合同返回 **`ambiguous`**（**不得按 priority 择一**，与执行计划 §B05"真冲突仍 blocked/待选择"一致） |
+| `published_date` | **只允许由"报告自身声明"的来源写入**（现有 `capture_ready` 恢复路径见下） | 冲突 → 保留候选 + `ambiguous` |
+| `source_status` | 取**最新一次真实观测**的状态（可追时间戳） | 冲突 → 保留 + `ambiguous` |
+| `primary_source_id` | 取 **exact-copy 组内**按 B02 第 4 段排序的第一份（**仅此列允许用排序结果**） | 无冲突概念 |
+| `metadata_json` | 承载 `provenance` 与 `conflicts`（既有列，无 DDL 变更） | — |
+
+**必须保留的既有恢复路径（回归风险，B-DR3-02）**：`scanner.py:1046-1058` 的注释记录了 `capture_ready` 死锁——若 `published_date`/`source_url` 无法补齐，某些 capture 永远不就绪。B05 改写合并语义时**必须显式保留"后来来源补齐缺失列"的能力**（即：**后到的、更权威的字段可以补空值，但不能覆盖已确认的单值**），并在 L08 用例里加入"先缺后补"分支。
 
 **测试**：L08（交换 priority/扫描顺序 → 业务事实不变、可信字段有来源、冲突保留）。
 
