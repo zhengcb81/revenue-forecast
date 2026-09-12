@@ -20,7 +20,7 @@
 
 1. **`outcome` 不能承载 `blocked`**：消费者 `filing-fetch/scripts/filing_contracts.py::validate_resolution_envelope` 要求 `envelope_schema_version == "1.0"`，且 `outcome` 必须落在**它自己的八值**里（`reused_existing` / `reused_after_discovery` / `downloaded_new` / `gap` / `ambiguous` / `rejected` / `missing` / `failed`）——**没有 `blocked`**。⇒ S-13 的响应级 `blocked` **只能落在新字段 `qualification` 里**（`label="blocked"`），不得改 `outcome`（否则跨仓消费者直接 `upstream_error`）。
 2. **加法是安全的**：同一验证函数**不拒绝未知键**（实测：函数体内无 `unknown|extra|unexpected|allowed_keys` 检查，且会返回规范化副本，N/N-1 容忍"省略 `bundle_status`"这种旧信封）⇒ 新增 `qualification` 与 ZR-404 的加法先例一致，`envelope_schema_version` 保持 `"1.0"`。
-3. 连带影响（登记，不隐藏）：新增键**改变了响应 payload 的字节**。`B-payload-hash` 至今**不可执行**；若将来执行，基线必须建立在 **B06 之后**；[test-acceptance-map.md](../test-acceptance-map.md) 里 B07 那句"payload hash 不变"应读作"**相对 B06 基线不再变**"。
+3. 连带影响（登记，不隐藏）：新增键**改变了 `ResolutionEnvelope` 的字节**。**更正（精确化）**：`B-payload-hash` 门指的是 **policy_export payload**（`resolve` 输出里的那一段，`cli._policy_export_payload`），**不是** `ResolutionEnvelope`——两者是不同产物，所以 B06 的新键**不影响** `B-payload-hash`；原先本节写的"payload 基线必须在 B06 之后"**过度概括**，已改为：`B-payload-hash` 的基线与 B06 无关，其可执行化路径见 [b07-plan.md](b07-plan.md) §2④。
 
 **新增字段（加法，默认 `None`）**：`ResolutionEnvelope.qualification: dict | None = None`，形状
 

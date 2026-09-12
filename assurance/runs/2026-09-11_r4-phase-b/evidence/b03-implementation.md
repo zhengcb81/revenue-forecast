@@ -65,7 +65,7 @@ python -m ruff check src tests/unit tests/contract scripts
 
 S-10 的裁定原文："B02 段 3 的 hash 相等实现为**优先 + 逐候选诊断**，**字节硬门归 B03 读路径**"。本步即该硬门：
 - **只经过本入口取字节**的调用方，不可能拿到与请求版本不符的字节；
-- **仍自己 `open(handle.canonical_path)` 的调用方**不受本步保护——把消费者接到本入口是 **B07 的版本化读取合同**的交付（已在 docstring 与本节写明，不夸大）。
+- **仍自己 `open(handle.canonical_path)` 的调用方**不受本步保护——**把消费者接到本入口属消费者仓（filing-fetch / revenue），归 C 阶段**（设计 §B07 的范围表明写：消费者侧 adapter/fallback 不在 B 的签名内）。**更正**：本记录早先一句"接消费者归 B07 的交付"**是错的**；B07 只交 **wiki 侧**的版本化合同（并在合同里声明该入口），消费者接线仍归 C。已在 docstring 与 [b07-plan.md](b07-plan.md) §3 同步更正。
 
 ## 5. 边界与"没做"的事（如实登记）
 

@@ -53,3 +53,7 @@ python -m pytest tests/contract/test_fc1204_complexity_ratchet.py   -> 2 passed
 2. 再把 B06 以补丁形式**移植**到主检出（分支 `r4b06-wip` 的 diff + 新测试文件），落盘后重跑 ruff + 棘轮 + 邻域。
 3. **推送前**按 F-B01-9 的规则**本地跑一遍 `pytest tests/contract`**（CI 的失败步骤），确认无新 reason 码/跨机器常量/平台相关行为引入的红。
 4. 一处**已知待改精确**的文本（等 B03 复审落地后再改，避免污染其测量）：`tests/test_fc1001_isolated_lake.py` 的 `strict xfail` 理由句暗示"B06 实现后即 XPASS"；实际上按 §3 与 F-B01-7 的分析，**B06 单独不会**让它 XPASS（需要 F3 或 F5/F6 侧机制）。
+
+## 7. 一处更正（精确化，2026-09-12）
+
+本节曾写"新增键改变响应 payload 字节 ⇒ `B-payload-hash` 基线须在 B06 之后"。**过度概括**：`B-payload-hash` 指的是 **policy_export payload**（`cli._policy_export_payload` 的输出），**不是** `ResolutionEnvelope`；B06 只改后者 ⇒ **不影响** `B-payload-hash`。已在 [b06-plan.md](b06-plan.md) §2.0 与 [b07-plan.md](b07-plan.md) §2④ 更正，并把该门的**可执行化路径**（pre-B worktree + 固定 `project_root` 逐字节比较）写进 B07 的计划。

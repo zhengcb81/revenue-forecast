@@ -31,6 +31,7 @@
     "evidence/b05-implementation.md",
     "evidence/b05-plan.md",
     "evidence/b05-review-disposition.md",
+    "evidence/b06-plan.md",
     "evidence/build_checkpoint.py",
     "evidence/ci_logs.py",
     "evidence/ci_query.py",
@@ -378,7 +379,7 @@
         },
         {
           "file": "evidence/b03-plan.md",
-          "line": 55,
+          "line": 54,
           "text": "| `reader.py` | **不在**冻结表 ⇒ 每个模块级函数 ≤ `NEW_FILE_MAX`=10 | 若把纯函数落 F4，必须保持 ≤10 |"
         }
       ],
@@ -785,12 +786,12 @@
         },
         {
           "file": "evidence/b02-ci-runs.md",
-          "line": 32,
+          "line": 35,
           "text": "| revenue-forecast | `41d06de` | B05 三子步记录 + F-B05-1/F-B05-2 | quality | **success** | 34709826139 |"
         },
         {
           "file": "evidence/b02-ci-runs.md",
-          "line": 32,
+          "line": 35,
           "text": "| revenue-forecast | `41d06de` | B05 三子步记录 + F-B05-1/F-B05-2 | quality | **success** | 34709826139 |"
         },
         {
@@ -1138,7 +1139,7 @@
       "required_hits": [
         {
           "file": "evidence/b02-ci-runs.md",
-          "line": 30,
+          "line": 33,
           "text": "| revenue-forecast | `d15f04e` | B04 复审更正（F-B04-1 改写 / F-B04-2 / 变异 harness） | quality | **success** | 34704727273 |"
         },
         {
@@ -1546,6 +1547,11 @@
           "text": "| **B-VR01-01** | **P1** | 我冻结的\"跨仓 policy hash\"是**错的产物**：filing-fetch 消费 `cli._policy_export_payload` = `policy_2x.export_policy_2x`（`c773099b…`），而我冻的是 `policy."
         },
         {
+          "file": "evidence/b02-ci-runs.md",
+          "line": 43,
+          "text": "| revenue-forecast | `c247c44` | F-B01-9（CI 首红三因）+ 记录 + checkpoint（55 文件） | quality | **success** | 34721932758 |"
+        },
+        {
           "file": "evidence/b03-implementation.md",
           "line": 25,
           "text": "| 附加 | **越界 locator（含 symlink 逃逸）零读**：按 realpath 比对配置 roots | `_inside_configured_roots`，在**读之前** | `not_found` / **`artifact_path_outside_allowed_root`**（见 §7 "
@@ -1554,11 +1560,6 @@
           "file": "evidence/b03-implementation.md",
           "line": 85,
           "text": "## 7. CI 首次失败与更正（`5ab0779` → 本次更正；见 [findings.md](../findings.md) **F-B01-9**）"
-        },
-        {
-          "file": "evidence/b03-implementation.md",
-          "line": 89,
-          "text": "1. **reason 词表门**（`test_fc1301_reason_taxonomy.py`）：该门只扫描 `reason=\"x\"` 关键字写法，我的 `not_found` 分支正好用了这种写法 ⇒ 必须已在 `observability.REASONS` 里。新增码要改 `observability.py`"
         }
       ],
       "superseded_hits": [],
