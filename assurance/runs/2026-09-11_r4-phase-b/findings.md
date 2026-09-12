@@ -2,6 +2,15 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B07-1：`B-payload-hash` **从 `blocked` 变为"可执行且通过"**（写 B07 计划时发现"需待批 CLI"这条理由不成立）
+
+- **原登记（[test-acceptance-map.md](test-acceptance-map.md) §1c）**：`resolve` 输出的 **policy_export payload** 字节/hash 不变（跨仓 FC-501 containment 的唯一来源）；**当前不可执行**——理由是"包内无冻结基线"**且**"取值需要 `--help` 之外的 CLI（属待批 manifest）"。
+- **实测**：第二条理由**不成立**。该 payload 由 `cli._policy_export_payload(config)` 产出，是**纯函数**，可在进程内调用（B01 的验收用例一直在用）。于是把它改成**可执行的相对校验**：
+  - 脚本 [evidence/b07_payload_baseline.py](evidence/b07_payload_baseline.py)（**可复跑**）：两侧都用**同一份在产配置** + **显式固定 `project_root`**（payload 内嵌每个 root 的绝对 `path_ref`，用 `${PROJECT_ROOT}` 会随检出目录漂移），对 payload 做**规范化 JSON**（sorted keys/UTF-8）后逐字节比较；
+  - 结果 [evidence/b07-payload-baseline.json](evidence/b07-payload-baseline.json)：基线 = **phase-A 冻结修订 `7d4852f`** 的只读 worktree，当前 = `f0aacbf`（B01–B05 全部落盘后）⇒ `canonical_sha256` **两侧同为 `bd1a359f…`、1216 字节、结构相同** ⇒ **`identical: true`**。
+- **结论**：**B 的改动没有移动这个 payload**（该修订窗口内），门可判**通过**；**不**声称跨机器可比——payload hash 内嵌绝对路径，是**机器/检出范围**的量（F-B01-9 已实测：真实 project_root 下本机 `c773099b…`、CI Linux `ca3b7f5d…`；本次固定 `project_root=C:\r4-b07-payload-baseline` 下为 `5659a22f…`）。**可移植的是这次比较，不是那个值。**
+- **对 B07 的影响**：设计的四件交付里，第 ④ 件（"payload hash 不变"）**从"登记不判过"变为"有命令、有产出、已通过"**；B07 实施时只需**复跑该脚本**并确认仍相同。
+
 ## F-B01-9：**CI 抓到我自己两处"本地绿、远端红"**（消费端 payload hash **机器相关**；reason 词表门只认关键字写法）
 
 - **触发**：B01 处置（`be2e4ed`）与 B03（`5ab0779`）两次 wiki 推送的 CI **均失败**（三份 Python 全挂，失败步骤 = `Contract tests`，run `34720686541` / `34720741197`）。本机 `pre_push_gate` 是绿的——因为该门只跑 ruff/compileall/config_doctor/棘轮/契约子集，**不跑全量契约套件**。

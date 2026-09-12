@@ -41,7 +41,9 @@
     "evidence/b05-review-disposition.md",
     "evidence/b06-implementation.md",
     "evidence/b06-plan.md",
+    "evidence/b07-payload-baseline.json",
     "evidence/b07-plan.md",
+    "evidence/b07_payload_baseline.py",
     "evidence/build_checkpoint.py",
     "evidence/ci_logs.py",
     "evidence/ci_query.py",
@@ -299,7 +301,7 @@
         },
         {
           "file": "findings.md",
-          "line": 221,
+          "line": 230,
           "text": "| `legacy_observer.py:90` 入共享读取者 | 新值 @ `b-design.md:154` | ✅ |"
         }
       ],
@@ -401,32 +403,82 @@
       "verified": true
     },
     {
-      "claim": "B-payload-hash 标注当前不可执行/blocked",
+      "claim": "B-payload-hash 已从 blocked 变为可执行且**通过**（不得再声称不可执行）",
       "required_hits": [
+        {
+          "file": "evidence/b02_mutation_check.py",
+          "line": 110,
+          "text": "f\"({'identical' if before == after else 'MISMATCH'})\")"
+        },
+        {
+          "file": "evidence/b02_red_green_probe.py",
+          "line": 5,
+          "text": "1. three roots hold byte-identical copies of one annual report"
+        },
+        {
+          "file": "evidence/b03_review_bytes.py",
+          "line": 248,
+          "text": "\"\"\"Guard defeated (size and mtime identical) -- does the digest still hold?\"\"\""
+        },
+        {
+          "file": "evidence/b04-test-run.txt",
+          "line": 28,
+          "text": "restored: all product files byte-identical"
+        }
+      ],
+      "superseded_hits": [
         {
           "file": "b-design.md",
           "line": 4,
+          "kind": "history",
           "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
         },
         {
           "file": "file-scope.md",
           "line": 8,
+          "kind": "history",
           "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
         },
         {
           "file": "findings.md",
-          "line": 224,
+          "line": 7,
+          "kind": "ASSERTION",
+          "text": "- **原登记（[test-acceptance-map.md](test-acceptance-map.md) §1c）**：`resolve` 输出的 **policy_export payload** 字节/hash 不变（跨仓 FC-501 containment 的唯一来源）；**当前不可执行**——理由是\""
+        },
+        {
+          "file": "findings.md",
+          "line": 233,
+          "kind": "ASSERTION",
           "text": "| `B-payload-hash` 当前不可执行 | 新值 @ `test-acceptance-map.md` §1c | ✅ |"
         },
         {
           "file": "findings.md",
-          "line": 238,
+          "line": 247,
+          "kind": "history",
           "text": "**其余处置**：`B-DR5-03`（`metadata_json` 胜利路径整列替换）→ 已在 §B05 第 5 条禁止，并把 F3 锚点扩到 `scanner.py:1007-1099`；`B-DR5-04`（`B-payload-hash` 无基线且需待批 CLI）→ 标注为**当前不可执行**，须先在隔离副本"
+        },
+        {
+          "file": "reviews/B.DR-rev5.json",
+          "line": 174,
+          "kind": "history",
+          "text": "\"verdict_reason\": \"round 4 的 11 条里 6 条真闭环（B-DR4-01/02/04/05/10/11），5 条未闭环（B-DR4-03/06/07/08/09），其中两条是 P1 且都能被第三方直接照包施工时撞上：① B07 的完成定义仍把未定义、无落点文件的 N-1 判定写在 B 内，而"
         }
       ],
-      "superseded_hits": [],
-      "live_superseded": [],
-      "verified": true
+      "live_superseded": [
+        {
+          "file": "findings.md",
+          "line": 7,
+          "kind": "ASSERTION",
+          "text": "- **原登记（[test-acceptance-map.md](test-acceptance-map.md) §1c）**：`resolve` 输出的 **policy_export payload** 字节/hash 不变（跨仓 FC-501 containment 的唯一来源）；**当前不可执行**——理由是\""
+        },
+        {
+          "file": "findings.md",
+          "line": 233,
+          "kind": "ASSERTION",
+          "text": "| `B-payload-hash` 当前不可执行 | 新值 @ `test-acceptance-map.md` §1c | ✅ |"
+        }
+      ],
+      "verified": false
     },
     {
       "claim": "VR-N21 不在 B",
@@ -491,7 +543,7 @@
       "superseded_hits": [
         {
           "file": "findings.md",
-          "line": 226,
+          "line": 235,
           "kind": "history",
           "text": "| R-6 计数 = 11 锚点（v0.1.6） | 新值 @ `file-scope.md:51`；旧断言 `9 处同型排序` 0 处 | ✅ |"
         },
@@ -885,17 +937,17 @@
       "required_hits": [
         {
           "file": "findings.md",
-          "line": 166,
+          "line": 175,
           "text": "| **B-VR02R2-05** | P3 | 证据与代码不一致三处：(a) `b02-red-green-post-b02.json` 仍是 rev1 时代产物；(b) 测试文件 module docstring 还写着 rev1 的\"偏好而非硬门\"语义；(c) 证据 §1 行锚最多偏移 7 行；另\"每条 find"
         },
         {
           "file": "findings.md",
-          "line": 197,
+          "line": 206,
           "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
         },
         {
           "file": "findings.md",
-          "line": 197,
+          "line": 206,
           "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
         },
         {
@@ -951,12 +1003,12 @@
         },
         {
           "file": "findings.md",
-          "line": 179,
+          "line": 188,
           "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
         },
         {
           "file": "findings.md",
-          "line": 179,
+          "line": 188,
           "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
         }
       ],
@@ -984,7 +1036,7 @@
         },
         {
           "file": "findings.md",
-          "line": 181,
+          "line": 190,
           "text": "| **B-VR02-04** | P2 | 预算耗尽被折进 S-10，但设计原文要求 `blocked`；且 `_ReadBudget` 跨请求带计数器 → 复用同一 budget/resolver 时**后续请求静默失去全部验证** | `resolve()` 现在每次请求调用 `budget.begin_requ"
         }
       ],
@@ -1035,19 +1087,19 @@
         },
         {
           "file": "findings.md",
-          "line": 144,
+          "line": 153,
           "text": "| **B-VR02R3-01** | **P2** | **\"锚点 = pre-B02 会服务的那一行，故『不宽于 pre-B02』由构造保证\"这句话为假**（两个反例）：(a) 唯一副本在 `my.rejections_backup/2025.pdf`（含 `.rejections` **子串**但非路径段）且字节"
         },
         {
           "file": "findings.md",
-          "line": 144,
+          "line": 153,
           "text": "| **B-VR02R3-01** | **P2** | **\"锚点 = pre-B02 会服务的那一行，故『不宽于 pre-B02』由构造保证\"这句话为假**（两个反例）：(a) 唯一副本在 `my.rejections_backup/2025.pdf`（含 `.rejections` **子串**但非路径段）且字节"
         }
       ],
       "superseded_hits": [
         {
           "file": "findings.md",
-          "line": 195,
+          "line": 204,
           "kind": "history",
           "text": "- **残余风险（如实）**：规则 2 允许的那一行仍可能**字节已漂移**而被服务（trace 记 `unverified_<该行失败状态>_on_pre_b02_canonical`）；读路径在 B03 落地前不会拦它。**该行与 pre-B02 会服务的行并不等价**，四处差异（a/b/c/d）只有一处权威清单："
         },
@@ -1214,25 +1266,25 @@
         },
         {
           "file": "findings.md",
-          "line": 129,
+          "line": 138,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 129,
+          "line": 138,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 129,
+          "line": 138,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 129,
+          "line": 138,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         }
@@ -1306,7 +1358,7 @@
         },
         {
           "file": "findings.md",
-          "line": 145,
+          "line": 154,
           "text": "| B-VR02R3-02 | P3 | 变异 M5（删收尾守卫 `or budget.cancelled`）**存活**且非等价：取消发生在**最后一个**候选读取中时，变异体会返回句柄 | 新增 `test_r4b02_cancel_during_the_last_candidate_read`（三份全漂移 + 第"
         },
         {
@@ -1755,7 +1807,7 @@
       "verified": true
     }
   ],
-  "passed": 51,
+  "passed": 50,
   "total": 51,
   "generated_by": "python evidence/claim_fact_audit.py"
 }
