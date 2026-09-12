@@ -1,0 +1,14 @@
+# Byte-stability policy for this run directory (same rationale as the phase-A and v5
+# plan directories, and it must exist from the FIRST commit).
+#
+# checkpoint.json records a sha256 for every produced file here, computed over the raw
+# working-tree bytes. With the machine-wide `core.autocrlf=true`, text files would be
+# committed as LF and re-checked-out as CRLF, so a reviewer hashing
+# `git show HEAD:<path>` would get a different digest than the recorded one. That is
+# exactly the phase-A defect A-DR2-01 flagged for files staged before their
+# .gitattributes landed - this directory therefore ships the file up front.
+#
+# `-text` disables EOL conversion; `-filter`/`-working-tree-encoding` guard against any
+# smudge/clean filter, so blob bytes == working-tree bytes for every file below.
+# Verify with: python evidence/build_checkpoint.py --verify-only
+* -text -eol -filter -working-tree-encoding
