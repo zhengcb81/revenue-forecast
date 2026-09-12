@@ -1,5 +1,18 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-12（实施期）— **B06/B07 已在隔离 worktree 实现；`B-payload-hash` 从 `blocked` 变为"可执行且通过"**
+
+- **`B-payload-hash` 闭合（F-B07-1）**：该门自设计期登记为 `blocked`（"无冻结基线 + 取值需待批 CLI"）。实测**第二条理由不成立**——`cli._policy_export_payload` 是**纯函数**。于是做成可执行的相对校验：脚本 [evidence/b07_payload_baseline.py](evidence/b07_payload_baseline.py) 以**固定 `project_root`** 在 **phase-A 冻结修订 `7d4852f`**（只读 worktree）与当前树之间对 payload 做规范化字节比较 ⇒ **`identical: true`**（两侧 `canonical_sha256` 同为 `bd1a359f…`，1216 B）。**口径**：绝对值与机器/检出相关（F-B01-9），**可移植的是这次比较**；B07 实施时复跑确认。
+- **B06 实现（worktree `r4b06-wip`，基线 `f0aacbf`）**：`ResolutionEnvelope` 新增**加法**字段 `qualification`（`verified_input`/`preview`/`blocked` + 缺口清单），承载 **S-13 的响应级 `blocked`**（真字段冲突 ⇒ blocked，与读侧 `metadata_status` 同一事实）；F10 新增 11 用例；**信封既有 36 用例不回归**。**实施期发现**：设计里的 `preview` 情形被既有 `capture_incomplete` 门拒成 `MISSING` ⇒ **已定义但当前不可达**，按最保守默认**不放宽跨仓行为**，如实登记并把 (a)/(b) 上呈 owner（未阻塞）。见 [evidence/b06-implementation.md](evidence/b06-implementation.md)。
+- **B07 实现（同 worktree）**：把**版本政策**写在版本常量旁（只接受当前版本 / 未知**显式拒绝** / 失败用合同**五值** / **无目录级 fallback** / 消费者侧归 C），并让 `build_resolution_envelope` 对未知 `schema_version` **fail closed**（此前不检查）；F10 新增 4 用例（含契约声明守卫与"不取另一修订"负例）；⑤ 既有信封用例 18 条不回归，棘轮 2 passed。见 [evidence/b07-plan.md](evidence/b07-plan.md)。
+- **两处读探针读出来的边界修复（worktree）**：
+  1. **盘根 root 的越界判定**：root 配成 `C:\` 时，字符串前缀比较拿 `"C:\\"` 去比 ⇒ **盘上每个文件都被判越界**（fail-closed 但错）。改为 `commonpath` 判定；实测 5 组（含"文本前缀兄弟仍不算在内"的反向断言）。这是**读复审的探针产物**发现的（它建了 NTFS junction 做边界测试）。
+  2. **CFG-08 可空边界**：`read_only` 注解是纯 `bool`，而我上一轮的检查允许"布尔或 null" ⇒ `read_only:`（空值）被准入并存成 `None`（**falsy**，而字段缺省是 `True`）⇒ fail-open 方向。改为"出现即必须是真布尔"，`reusable_for_filing` 仍允许 null（`bool | None`）。
+- **硬链接边界（如实声明，不改）**：包含判定是**路径级**的，`realpath` 不解析硬链接 ⇒ root 内指向外部的硬链接会被服务（字节仍与请求版本摘要相符）。已写进函数 docstring：若要 inode 级 provenance，那是**另一条需求**。
+- **移植工具链（已校验）**：[evidence/transplant_split.py](evidence/transplant_split.py) 按**内容签名**把 13 个 hunk 唯一归类到四步（B03/B01/B06/B07），分类不完整就拒跑；四个 patch 对主检出 **dry-run 全部 `APPLIES CLEANLY`**，主检出**仍未改动**。过程中修掉自己两个工具缺陷（GBK 解码 git 输出导致 stdout 变 None；`write_text` 把 patch 写成 CRLF 导致上下文不匹配）。
+- **门**：claim-audit **51/51**；本 worktree 内 B03(14+1skip)/B06(11)/B07(4)/既有信封(18)/棘轮(2) 全绿，ruff clean。
+- **待办**：等 `B.VR`（B03）复审落地（其全量套件仍在跑，PID 28620）→ 处置 → 按四步移植 → **先本地跑 `pytest tests/contract`** → 推送 → CI 全绿。
+
 ## 2026-09-12（实施期）— **B01 复审 = accepted_with_findings（1×P1/3×P2/2×P3）→ P1+P2 全部处置（`be2e4ed`）；B03 已实施（`5ab0779`）**
 
 - **B01 复审**（第七个独立会话）：[reviews/B.VR-b01.json](reviews/B.VR-b01.json)。它**独立复现了我的全部数字**（6/6 用例、两文件哈希、覆盖率 87.95/91.12/95.20、两张棘轮、ruff），并用**真实 pre-change 树**复核 F-B01-7 的论证 = **sound**（`strict xfail` 在实现后会 XPASS→FAIL ✓）。
