@@ -16,6 +16,9 @@
 | company-wiki | `9db3394` | **B05 子步 3**（逐列规则 + 读侧 `blocked`；6 用例） | CI | **success** | 34709578267 |
 | company-wiki | `9826b3c` | **B05 P2 修复**（声明绑定到"实际用到的值" + 同意来源累积 + 归属补齐；9 用例） | CI | **success** | 34715944895 |
 | company-wiki | `0e28d99` | **B01**（复用判定收敛为一份实现 + 候选级过滤；新增 6 用例 + 字段归属表） | CI | **success** | 34717481812 |
+| company-wiki | `be2e4ed` | **B01 复审处置**（P1 改冻被消费产物 + P2×3 + P3×2） | CI | ❌ **failure**（`Contract tests`，三份 Python 全红） | 34720686541 |
+| company-wiki | `5ab0779` | **B03**（`read_verified_bytes` + 13 用例） | CI | ❌ **failure**（同上三因） | 34720741197 |
+| company-wiki | `f0aacbf` | **CI 首红的三处更正**（词表码 / 可移植冻结 / symlink 层次） | CI | 见下方"待回填" | — |
 | revenue-forecast | `2ced153` | B 运行目录：B02 实施记录（rev1） | quality | **success** | 34691409601 |
 | revenue-forecast | `7b34c12` | B 运行目录：`B.VR` rev1 记录 + rev2 证据 | quality | **success** | 34693783149 |
 | revenue-forecast | `63422f1` | B 运行目录：`B.VR` rev2 记录 + rev3 证据 | quality | **success** | 34697489835 |

@@ -2,6 +2,20 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B01-9：**CI 抓到我自己两处"本地绿、远端红"**（消费端 payload hash **机器相关**；reason 词表门只认关键字写法）
+
+- **触发**：B01 处置（`be2e4ed`）与 B03（`5ab0779`）两次 wiki 推送的 CI **均失败**（三份 Python 全挂，失败步骤 = `Contract tests`，run `34720686541` / `34720741197`）。本机 `pre_push_gate` 是绿的——因为该门只跑 ruff/compileall/config_doctor/棘轮/契约子集，**不跑全量契约套件**。
+- **三个原因，全部是我的**（逐条实测自 CI 日志，见 [evidence/ci_logs.py](evidence/ci_logs.py)）：
+
+| # | 现象 | 根因 | 处置 |
+|---|---|---|---|
+| 1 | `test_fc1301_reason_taxonomy.py`：`unregistered reason codes in production source: ['path_outside_configured_roots']` | **FC-1301 词表门**只扫描 `reason="x"` / `_reject(..., "x")` 两种**关键字写法**；我的 `not_found` 分支正好用了关键字写法，于是必须已在 `observability.REASONS` 里（新增码还要改该文件 + 顶 taxonomy 版本，**两者都在 B 的允许集之外**） | 改用**已注册**的 `artifact_path_outside_allowed_root`（语义 = "path outside allowed roots"，正是同一含义），并在代码里写明为何不新增码；**顺带登记一条真实缺口**：解析器其余 reason 都是**元组位置**写法，词表门**看不见**它们（B02 的 `not_readable`/`hydration_required`/`content_sha256_mismatch` 等同样未注册）→ **登记为独立工作包**（扩大词表门覆盖面 + 补齐注册），不夹在本步里做 |
+| 2 | `test_r4b01_shipped_policy_hash_is_frozen`：CI 上 consumer hash = `ca3b7f5d…` ≠ 我冻的 `c773099b…` | **消费端 payload 内嵌每个 root 的绝对 `path_ref`** ⇒ 它的 hash **与机器相关**。我在本机测到 `c773099b…` 就把它当成"跨仓常量"冻进仓库测试——**这个冻法本身就是错的**（复审的建议在这一点上也不成立；本机绿、Linux 红正好证明了它） | 验收里**只冻可移植的量**：解析器侧 hash（路径已脱敏）+ consumer payload 的 `schema_version`/`reusable_root_kinds`/可复用集合一致性 + "两个 hash 必须不同"；**明确不冻** consumer hash，并把"它只能按机器断言"写进用例 docstring；在产 `runtime_policy.json` 的该值同样是机器相关的（登记为事实） |
+| 3 | `test_r4b03_symlink_escape_is_refused_where_symlinks_exist`：Linux 上 `assert len(result.matches) == 1` 失败 | 该用例在**能建 symlink 的宿主**上才真正执行；而 Linux 上**扫描层**根本不收录越界 symlink ⇒ 没有候选，我的前置断言（必须服务一个句柄）**假设错了层** | 改为断言**性质**而非层次："越界字节永不交出"——扫描层拒收（无候选）**或**读层拒读都算通过，只有**交出字节**算失败；本机仍 skip（宿主不支持 symlink） |
+
+- **教训（写进流程）**：**本地 pre-push 门不等于 CI**。涉及新 reason 码、跨机器常量、平台相关行为（symlink/路径/属性）的改动，推送前应**本地跑一遍 CI 的失败步骤**（`pytest tests/contract`），而不是只看 pre-push 门。此后本 run 的每步推送都遵守这条。
+- **第二次更正（诚实记录）**：我为修 P1 而加的"冻结 consumer hash"**本身**是错的，且被 CI 而非复审抓到——说明"复审通过"不等于"验收写法正确"。
+
 ## F-B01-8：`B.VR`（B01）= **accepted_with_findings**（1×P1 / 3×P2 / 2×P3）→ P1 与 P2 全部已处置（提交 `be2e4ed`）
 
 - **记录**：[reviews/B.VR-b01.json](reviews/B.VR-b01.json)；**逐条处置表**见 [evidence/b01-review-disposition.md](evidence/b01-review-disposition.md)；复现证据 [evidence/b01-review-verify.json](evidence/b01-review-verify.json)、变异 harness [evidence/b01_mutations.py](evidence/b01_mutations.py) 与 [evidence/b01_x2_agreement_probe.py](evidence/b01_x2_agreement_probe.py)。

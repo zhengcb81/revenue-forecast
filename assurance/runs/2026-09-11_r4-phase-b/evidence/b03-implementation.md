@@ -22,7 +22,7 @@
 | R4 | 超上限（含**读取中增长**）⇒ 失败，**绝不**返回部分字节 | `_CANDIDATE_BYTES_CAP` 前后两处检查 | `unavailable` / `exceeds_candidate_cap` |
 | R5 | 返回证据：`bytes_source="handle"`、`verified_sha256`（= `content_sha256` 字段）、`byte_size`、`read_at`；**不新增 `SourceHandle` 字段** | `ByteReadResult` | — |
 | R6 | 取消**粘性**：读取中途取消也绝不返回字节 | 循环内 `budget.cancelled` 检查 | `unavailable` / `cancelled` |
-| 附加 | **越界 locator（含 symlink 逃逸）零读**：按 realpath 比对配置 roots | `_inside_configured_roots`，在**读之前** | `not_found` / `path_outside_configured_roots` |
+| 附加 | **越界 locator（含 symlink 逃逸）零读**：按 realpath 比对配置 roots | `_inside_configured_roots`，在**读之前** | `not_found` / **`artifact_path_outside_allowed_root`**（见 §7 的词表说明） |
 
 **错误值口径**：全部落在 `operation-contract.md` §2.4 的**五值**内（`not_found` / `not_indexed` / `unavailable` / `blocked` / `ambiguous`），**未新增状态**；预算与取消按合同要求作为**独立事实**（`reason`/字段），不是状态。
 
@@ -81,3 +81,13 @@ S-10 的裁定原文："B02 段 3 的 hash 相等实现为**优先 + 逐候选�
 - 本步的独立复审（`B.VR` b03）**尚未进行**；按 §11 每步一次，下一次复审将覆盖 B03（并抽样 B01 的处置）。
 - **本轮的实施方式**：为了不与正在跑的 `B.VR`（B01）复审争用同一棵树，B03 先在 `0e28d99` 的**独立 worktree**（`%TEMP%\cw-b03-wt`）里实现并验证，复审结束后再以补丁形式落到主检出（`5ab0779`），落盘后**重新跑过** ruff + 棘轮 + 邻域用例。
 - **教训（与 F-B01-8 同一条）**：worktree 隔离的是**代码**，不是**机器资源**——复审测量期间并行跑全量套件会给复审者制造假失败。后续步骤改为：复审先跑、实现等待。
+
+## 7. CI 首次失败与更正（`5ab0779` → 本次更正；见 [findings.md](../findings.md) **F-B01-9**）
+
+第一次推送后 CI **三份 Python 全红**（失败步骤 = `Contract tests`），三个原因**都是本步的**：
+
+1. **reason 词表门**（`test_fc1301_reason_taxonomy.py`）：该门只扫描 `reason="x"` 关键字写法，我的 `not_found` 分支正好用了这种写法 ⇒ 必须已在 `observability.REASONS` 里。新增码要改 `observability.py` 并顶 `REASON_TAXONOMY_VERSION`，**两者都在 B 的允许集之外**。→ 改用**已注册**且语义相同的 `artifact_path_outside_allowed_root`（"path outside allowed roots"），并在代码里写明理由。**顺带登记的缺口**：解析器其余 reason 都是元组位置写法，词表门**看不见**（B02 的 `not_readable`/`hydration_required` 等同样未注册）→ 独立工作包（扩大扫描覆盖面 + 补齐注册），不夹在本步做。
+2. **symlink 用例**：本机 skip，**Linux 上真跑** ⇒ 而 Linux 的**扫描层**不收录越界 symlink，没有候选，我的前置断言（必须服务一个句柄）**假设错了层**。→ 改为断言**性质**："越界字节永不交出"——扫描层拒收 **或** 读层拒读都算通过，只有交出字节算失败。
+3. **（跨步影响）** B01 处置里我曾把 consumer hash 冻进仓库测试——**CI 证明那是错的**（该 payload 内嵌绝对 `path_ref`，hash 与机器相关：本机 `c773099b…` / CI Linux `ca3b7f5d…`）。该冻结已撤，改为只断言可移植部分。
+
+**流程结论（已写入 findings）**：本地 `pre_push_gate` **不等于** CI（它不跑全量契约套件）⇒ 涉及新 reason 码、跨机器常量、平台相关行为的改动，推送前**必须本地跑 `pytest tests/contract`**。
