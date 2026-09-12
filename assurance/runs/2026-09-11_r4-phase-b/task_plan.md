@@ -21,7 +21,7 @@
 | 步骤 | 执行计划原文动作（摘） | 交付物 | 状态 |
 |---|---|---|---|
 | **B01** | 每个 root 字段的唯一 owner（path/adapter 在 storage，身份在 catalog，外发策略在动作边界）；旧字段版本映射 | [b-design.md](b-design.md) §B01 | 设计完成 |
-| **B02** | 选同版本全部候选 location：注册/能力→状态→可读/同 hash→健康 I/O 偏好；优先级只在合格集合内排序 | [b-design.md](b-design.md) §B02 | ✅ **已实施**（F1+F2+F10；16 新用例；RED/GREEN 探针）→ [evidence/b02-implementation.md](evidence/b02-implementation.md)；**待 B.VR**；⚠️ 段 3 有一处**已登记的偏差**（S-10） |
+| **B02** | 选同版本全部候选 location：注册/能力→状态→可读/同 hash→健康 I/O 偏好；优先级只在合格集合内排序 | [b-design.md](b-design.md) §B02 | ✅ **已实施 rev2**（F1+F2+F10；23 新用例）→ [evidence/b02-implementation.md](evidence/b02-implementation.md)；`B.VR` rev1 = **rejected**（2×P1/2×P2/3×P3）**已逐条处置**（[findings.md](findings.md) F-B02-4）→ **待 B.VR rev2**；⚠️ 两处已登记偏差 **S-10/S-11**（待 owner） |
 | **B03** | 稳定只读字节提供：固定句柄或受控快照；流式 hash；TOCTOU/云占位/坏字节/中断 | [b-design.md](b-design.md) §B03 | 设计完成 |
 | **B04** | 绝对路径与 location_id 留在诊断；移动后 source/version/locator 仍可解引用 | [b-design.md](b-design.md) §B04 | 设计完成 |
 | **B05** | metadata 按原文/捕获来源/质量合并；保留 provenance 与冲突，**不以 priority 决定真伪** | [b-design.md](b-design.md) §B05 | 设计完成 |
@@ -101,3 +101,4 @@
 | 2026-09-12 07:54–08:05 | **B.DR = rejected**（20 条；8 条 claim 未复现）+ **A07 = accepted_with_findings** + **A08 = rejected**（三份复审共同命中同一 P0） |
 | 2026-09-12 08:05–09:35 | **阶段 A 更正为 v0.4.1**（P0 范围更正、C2/C4/§2/§5、R 轴与进程级副作用、五值错误模型、版本轴、无门出口、A 台账一致性）；**B 设计更正为 v0.1.1 → v0.1.2 → v0.1.3**（三轮共 20+15+11 条逐条处置；v0.1.3 另把 R-1/R-4 移出 B、补 F10 测试落点、重写 B02 预算与 B05 合并规则、生成器改真断言，见 [findings.md](findings.md) F-B01-1） |
 | 2026-09-12（实施期） | owner 授权实施（`owner-scope-decisions-2026-09-12.md` §8）→ **B02 实施**（F1 `service.py` + F2 `resolver.py` + F10 新测试 16 用例）；RED/GREEN 探针落盘；棘轮/覆盖率/全量套件复跑；段 3 偏差登记为 **S-10**；见 [evidence/b02-implementation.md](evidence/b02-implementation.md) |
+| 2026-09-12（实施期，复审后） | **`B.VR` rev1 = rejected**（2×P1/2×P2/3×P3，独立会话逐位复现了作者的全量/覆盖率/探针数字）→ **B02 rev2**：非首选副本回退删除（只服务**验证通过**的副本）、遗留注解契约恢复（修 `duplicate_cleanup` StopIteration）、预算按请求重置、理由带 source 组、`.rejections` 按路径段匹配、水合掩码补 `RECALL_ON_OPEN`；新增 7 个回归用例；偏差重述为 **S-10/S-11**；见 [findings.md](findings.md) F-B02-4 |

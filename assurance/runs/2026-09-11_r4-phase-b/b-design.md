@@ -109,13 +109,16 @@
 
 **测试**：L01/L02/L03/L04（L03 的关键验收"撤首选→自动切换"由 `_handle` 承担）；预算与取消由 **L06** 与 **L12** 覆盖。
 
-**⚠️ 实施偏差（v0.1.7 回填，2026-09-12；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md)）**：本段第 3 段的"同 hash"在 **B02 的实际实现**里是**优先 + 逐候选诊断**，不是硬门：
+**⚠️ 实施偏差（v0.1.7 回填，2026-09-12；2026-09-12 按 `B.VR` rev1 收紧；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md) / [S-11](owner-scope-decisions-2026-09-12.md)）**：本段第 3 段的"同 hash"在 **B02 的实际实现**里对**首选副本**是"目录声明信任级"（= pre-B02 行为），对**非首选副本**是**硬门**：
 
 1. 仍**真的读字节**并做**整文件**摘要比对（上限 256 MiB/候选；抽样只用于排除），验证通过的候选**优先**被选中，并记 `verified_sha256`；
-2. 但若清单里**没有任何**候选的字节通过验证、却存在**本地可读**的合格副本，`resolve` 仍返回该副本，并在 `debug_trace` 标注 `unverified_bytes`（**绝不静默**）；
-3. **字节级硬门归 B03 的读路径**（"只返回验证版本字节或明确失败"）——B03 落地前，这一层整体缺失（见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §8）。
+2. **首选副本**（rank 1，且属于该文档自身的 source 组）即便字节无法验证也可按目录声明服务（trace 记 `unverified_preferred_copy` + 具体原因）——这是 pre-B02 的信任级，也是 A 侧冻结 fixture 仍能复用**唯一**的原因；
+3. **非首选副本只有在字节验证通过时才会被服务**；否则一律不返回句柄（→ MISSING）。这条由 `B.VR` rev1 的 P1（B-VR02-01）钉死：rev1 的"可读即可回退"会把**不同修订**当本版本发出；
+4. **字节级硬门归 B03 的读路径**（"只返回验证版本字节或明确失败"）——B03 落地前，首选副本的漂移不会被拦（见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §8）。
 
-**为什么让步**：A 侧**冻结断言**的合成目录里，文件字节与其声明的 `content_sha256` 本就不同（既有 fixture 用 `b"%PDF-fake"` 作字节、`sha256(b"same-bytes")` 作 hash），硬门会让 4 条既有断言失败：`test_source_catalog_determinism.py::{test_same_hash_three_roots_picks_priority_primary_preserves_all,test_same_period_different_hash_is_ambiguous}`、`test_source_catalog_sql_pushdown.py::{test_resolver_uses_sql_pushdown_not_all_table_query,test_old_period_not_shadowed_by_cap}`。按 **S-1**（只新增测试、**不得修改既有断言**），让步只能发生在实现侧。复跑命令与实测输出见 evidence 文件 §3。
+**另一处命名偏差（S-11）**：预算耗尽（`budget_exceeded`）在 `resolve` 里**不是**设计写的 `blocked`，而是"按 pre-B02 信任级服务首选副本 + trace 标记"：`ResolutionStatus` 只有五个值、没有 `blocked`，新增第六值会违反 A03 §2.4。`_ReadBudget` 的计数**每次请求重置**（取消保持粘性）。
+
+**为什么让步**：A 侧**冻结断言**的合成目录里，文件字节与其声明的 `content_sha256` **和** `byte_size` 都不一致（`test_source_catalog_sql_pushdown.py` 把 13 B 的文件声明为 1000 B；`test_source_catalog_determinism.py` 用 `b"%PDF-fake"` 配 `sha256(b"same-bytes")`），因此任何"先验证再服务首选"的硬门都会失败 4 条既有断言：`test_source_catalog_determinism.py::{test_same_hash_three_roots_picks_priority_primary_preserves_all,test_same_period_different_hash_is_ambiguous}`、`test_source_catalog_sql_pushdown.py::{test_resolver_uses_sql_pushdown_not_all_table_query,test_old_period_not_shadowed_by_cap}`。按 **S-1**（只新增测试、**不得修改既有断言**），让步只能发生在实现侧。复跑命令与实测输出见 evidence 文件 §3。
 
 ---
 

@@ -8,7 +8,9 @@
     "evidence/b02-implementation.md",
     "evidence/b02-red-green-post-b02.json",
     "evidence/b02-red-green-pre-b02.json",
+    "evidence/b02-verification.json",
     "evidence/b02_red_green_probe.py",
+    "evidence/b02_verify.py",
     "evidence/build_checkpoint.py",
     "file-scope.md",
     "findings.md",
@@ -20,6 +22,7 @@
     "reviews/B.DR-rev5.json",
     "reviews/B.DR-rev6.json",
     "reviews/B.DR.json",
+    "reviews/B.VR-b02.json",
     "risk-and-stop-rules.md",
     "task_plan.md",
     "test-acceptance-map.md"
@@ -36,7 +39,7 @@
       "required_hits": [
         {
           "file": "b-design.md",
-          "line": 154,
+          "line": 157,
           "text": "1. 每个字段记录 **provenance**（来源标识 + 抓取时间 + **hash 或短规范化值**；**不得存原文片段**，见下条 v0.1.6 约束）；"
         }
       ],
@@ -86,17 +89,17 @@
       "required_hits": [
         {
           "file": "b-design.md",
-          "line": 164,
+          "line": 167,
           "text": "- **只在保留键下新增**：`{\"r4_provenance\": {\"schema_version\": \"1.0\", \"fields\": {<列名>: {\"value\": …, \"sources\": […], \"conflicts\": […]}}}}`；"
         },
         {
           "file": "b-design.md",
-          "line": 164,
+          "line": 167,
           "text": "- **只在保留键下新增**：`{\"r4_provenance\": {\"schema_version\": \"1.0\", \"fields\": {<列名>: {\"value\": …, \"sources\": […], \"conflicts\": […]}}}}`；"
         },
         {
           "file": "b-design.md",
-          "line": 170,
+          "line": 173,
           "text": "形状示意（**仅新增保留键**）：`{\"acquisition\": {…}, \"dayu_meta\": {…}, \"prompt_injection_review\": {…}, \"r4_provenance\": {\"schema_version\": \"1.0\", \"fields\": {…}}}`；"
         }
       ],
@@ -119,12 +122,12 @@
         },
         {
           "file": "b-design.md",
-          "line": 158,
+          "line": 161,
           "text": "5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`"
         },
         {
           "file": "b-design.md",
-          "line": 158,
+          "line": 161,
           "text": "5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`"
         }
       ],
@@ -137,7 +140,7 @@
       "required_hits": [
         {
           "file": "b-design.md",
-          "line": 158,
+          "line": 161,
           "text": "5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`"
         },
         {
@@ -152,14 +155,14 @@
         },
         {
           "file": "findings.md",
-          "line": 51,
+          "line": 71,
           "text": "**其余处置**：`B-DR5-03`（`metadata_json` 胜利路径整列替换）→ 已在 §B05 第 5 条禁止，并把 F3 锚点扩到 `scanner.py:1007-1099`；`B-DR5-04`（`B-payload-hash` 无基线且需待批 CLI）→ 标注为**当前不可执行**，须先在隔离副本"
         }
       ],
       "superseded_hits": [
         {
           "file": "b-design.md",
-          "line": 151,
+          "line": 154,
           "kind": "history",
           "text": "**现状（已核实）**：`scanner.py:1007-1081`。开关在 `:1038`（`elif root.priority <= existing_document[\"metadata_priority\"]`）；进入分支后 `:1078-1081` 的 `UPDATE documents SET primar"
         },
@@ -202,7 +205,7 @@
       "required_hits": [
         {
           "file": "b-design.md",
-          "line": 158,
+          "line": 161,
           "text": "5. **`metadata_json` 在胜利路径上也不得整列替换**（v0.1.6 新增，B-DR5-03）：`scanner.py:1073-1077` 在 `prefer_new` 时用新字典**整体替换**该列（会一并抹掉 `prompt_injection_review` 与 `r4_provenance`"
         },
         {
@@ -235,7 +238,7 @@
         },
         {
           "file": "b-design.md",
-          "line": 163,
+          "line": 166,
           "text": "⚠️ **v0.1.5 关键更正（B-DR4-01，P1）**：该列是**多方共享的扁平 JSON 命名空间**，不是 B 的私有字段 —— 既有读取点至少包括：`service.py:271-272`（按 `$.acquisition.fiscal_year` / `$.dayu_meta.fiscal_year` "
         },
         {
@@ -245,7 +248,7 @@
         },
         {
           "file": "findings.md",
-          "line": 34,
+          "line": 54,
           "text": "| `legacy_observer.py:90` 入共享读取者 | 新值 @ `b-design.md:154` | ✅ |"
         }
       ],
@@ -263,17 +266,17 @@
         },
         {
           "file": "b-design.md",
-          "line": 214,
+          "line": 217,
           "text": "| \"支持兼容由单 adapter 转换且来源不变\" | **wiki 侧的版本化读取合同本身**：`schema_version` + `ResolutionEnvelope`（`resolver.py:359-552`）的**当前版本**判定与拒绝语义（`not_found/not_indexed/unavaila"
         },
         {
           "file": "b-design.md",
-          "line": 219,
+          "line": 222,
           "text": "> **B07 的\"完成\"因此是**：\"wiki 侧版本化合同 + 未知版本显式拒绝 + 无新增 fallback + payload hash 不变\"四件（**不含 N-1**，见上表说明）；其中 **`payload hash 不变` 当前为 `blocked`**（无冻结基线、取值需待批 CLI，见 [test-"
         },
         {
           "file": "findings.md",
-          "line": 31,
+          "line": 51,
           "text": "| N-1 从 B07 完成定义移除（v0.1.6） | 新值 `**不含 N-1**` @ `b-design.md:210`；旧值 `N-1 判定` 仅存于 findings 历史行 | ✅ |"
         }
       ],
@@ -328,12 +331,12 @@
         },
         {
           "file": "b-design.md",
-          "line": 237,
+          "line": 240,
           "text": "**另一道默认门（v0.1.6 新增，B-DR5-06）**：**新增文件本身有上限** —— 棘轮的 `NEW_FILE_MAX = 10`，且 CI 实跑**覆盖率棘轮**（`tests/contract/test_fc1204_coverage_ratchet.py`，`ci.yml:64`）：**TIER1 `"
         },
         {
           "file": "b-design.md",
-          "line": 237,
+          "line": 240,
           "text": "**另一道默认门（v0.1.6 新增，B-DR5-06）**：**新增文件本身有上限** —— 棘轮的 `NEW_FILE_MAX = 10`，且 CI 实跑**覆盖率棘轮**（`tests/contract/test_fc1204_coverage_ratchet.py`，`ci.yml:64`）：**TIER1 `"
         },
         {
@@ -361,12 +364,12 @@
         },
         {
           "file": "findings.md",
-          "line": 37,
+          "line": 57,
           "text": "| `B-payload-hash` 当前不可执行 | 新值 @ `test-acceptance-map.md` §1c | ✅ |"
         },
         {
           "file": "findings.md",
-          "line": 51,
+          "line": 71,
           "text": "**其余处置**：`B-DR5-03`（`metadata_json` 胜利路径整列替换）→ 已在 §B05 第 5 条禁止，并把 F3 锚点扩到 `scanner.py:1007-1099`；`B-DR5-04`（`B-payload-hash` 无基线且需待批 CLI）→ 标注为**当前不可执行**，须先在隔离副本"
         }
       ],
@@ -379,7 +382,7 @@
       "required_hits": [
         {
           "file": "b-design.md",
-          "line": 202,
+          "line": 205,
           "text": "**测试**：L09、L10（**不含** VR-N21：无门外发出口属 owner R-4 独立工作包，S-2）。"
         },
         {
@@ -437,7 +440,7 @@
       "superseded_hits": [
         {
           "file": "findings.md",
-          "line": 39,
+          "line": 59,
           "kind": "history",
           "text": "| R-6 计数 = 11 锚点（v0.1.6） | 新值 @ `file-scope.md:51`；旧断言 `9 处同型排序` 0 处 | ✅ |"
         },
@@ -595,6 +598,11 @@
           "text": "| B.DR | 设计被接受（或 accepted_with_findings） | **六轮 rejected**（rev1–rev6）；剩余 P1 多为文本/落点级，另有 scope 决定 S-7/S-8 |"
         },
         {
+          "file": "evidence/build_checkpoint.py",
+          "line": 158,
+          "text": "\"run directory record 2ced153; B design / file-scope v0.1.7 back-fill\"),"
+        },
+        {
           "file": "file-scope.md",
           "line": 1,
           "text": "# B 阶段文件范围（file-scope v0.1.7）—— 待 owner 批准的 DEV 工作包附件"
@@ -656,18 +664,18 @@
         },
         {
           "file": "b-design.md",
-          "line": 116,
-          "text": "3. **字节级硬门归 B03 的读路径**（\"只返回验证版本字节或明确失败\"）——B03 落地前，这一层整体缺失（见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §8）。"
+          "line": 117,
+          "text": "4. **字节级硬门归 B03 的读路径**（\"只返回验证版本字节或明确失败\"）——B03 落地前，首选副本的漂移不会被拦（见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §8）。"
         },
         {
-          "file": "file-scope.md",
-          "line": 3,
-          "text": "> **v0.1.7（2026-09-12）**：**B02 实施回填** —— allowed 集**不变**（F1+F2+F10）；§1 表内 F1/F2 的 `6412b19e…`/`6962b258…` 是**开工前**的 A01 §0 冻结输入哈希（按 §5 已消费），实施后的新哈希为 `service.py"
+          "file": "evidence/build_checkpoint.py",
+          "line": 195,
+          "text": "\"reviewer must re-run the checks rather than trust evidence/b02-implementation.md\"),"
         },
         {
-          "file": "findings.md",
-          "line": 10,
-          "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
+          "file": "evidence/build_checkpoint.py",
+          "line": 196,
+          "text": "\"note\": \"evidence to review: evidence/b02-implementation.md, evidence/b02-verification.json, evidence/b02-red-green-*.json\","
         }
       ],
       "superseded_hits": [
@@ -692,17 +700,17 @@
         {
           "file": "b-design.md",
           "line": 112,
-          "text": "**⚠️ 实施偏差（v0.1.7 回填，2026-09-12；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md)）**：本段第 3 段的\"同 hash\"在 **B02 的实际实现**里是**优先 + 逐候选诊断**，不是硬门："
+          "text": "**⚠️ 实施偏差（v0.1.7 回填，2026-09-12；2026-09-12 按 `B.VR` rev1 收紧；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md) / [S-11](owner-scope-decisions-2026-09-12.md"
         },
         {
           "file": "b-design.md",
-          "line": 116,
-          "text": "3. **字节级硬门归 B03 的读路径**（\"只返回验证版本字节或明确失败\"）——B03 落地前，这一层整体缺失（见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §8）。"
+          "line": 117,
+          "text": "4. **字节级硬门归 B03 的读路径**（\"只返回验证版本字节或明确失败\"）——B03 落地前，首选副本的漂移不会被拦（见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §8）。"
         },
         {
           "file": "evidence/b02-implementation.md",
-          "line": 38,
-          "text": "## 3. ⚠️ 与设计正文的一处偏差（待 owner 确认，编号 **S-10**）"
+          "line": 5,
+          "text": "> 阅读顺序建议：§0 版本史 → §2 语义 → §3 偏差（S-10/S-11）→ §7 验证 → §8 未做。"
         }
       ],
       "superseded_hits": [],
@@ -713,19 +721,154 @@
       "claim": "B02 的 RED/GREEN 证据文件在场（含 pre 对照）",
       "required_hits": [
         {
+          "file": "findings.md",
+          "line": 30,
+          "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
+        },
+        {
+          "file": "findings.md",
+          "line": 30,
+          "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B02 非首选副本绝不「可读即用」（B-VR02-01 已修）",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 112,
+          "text": "**⚠️ 实施偏差（v0.1.7 回填，2026-09-12；2026-09-12 按 `B.VR` rev1 收紧；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md) / [S-11](owner-scope-decisions-2026-09-12.md"
+        },
+        {
+          "file": "b-design.md",
+          "line": 116,
+          "text": "3. **非首选副本只有在字节验证通过时才会被服务**；否则一律不返回句柄（→ MISSING）。这条由 `B.VR` rev1 的 P1（B-VR02-01）钉死：rev1 的\"可读即可回退\"会把**不同修订**当本版本发出；"
+        },
+        {
+          "file": "b-design.md",
+          "line": 116,
+          "text": "3. **非首选副本只有在字节验证通过时才会被服务**；否则一律不返回句柄（→ MISSING）。这条由 `B.VR` rev1 的 P1（B-VR02-01）钉死：rev1 的\"可读即可回退\"会把**不同修订**当本版本发出；"
+        },
+        {
           "file": "evidence/b02-implementation.md",
-          "line": 86,
-          "text": "| **RED/GREEN 探针** | `python evidence/b02_red_green_probe.py --label pre-b02 --out evidence/b02-red-green-pre-b02.json`（`PYTHONPATH` 指向 `git worktree` 的 HEAD 源码"
+          "line": 12,
+          "text": "| **rev2** | **`350b67a`** | 按上述 7 条逐条修复（非首选副本只服务**验证通过**者、遗留注解契约恢复、预算按请求重置、理由带 source 组、`.rejections` 按路径段、水合掩码补 `RECALL_ON_OPEN`）+ 7 个回归用例 | **本页描述的版本**；待 `B."
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B02 遗留注解契约保持不变（B-VR02-02/-03 已修）",
+      "required_hits": [
+        {
+          "file": "evidence/b02-implementation.md",
+          "line": 12,
+          "text": "| **rev2** | **`350b67a`** | 按上述 7 条逐条修复（非首选副本只服务**验证通过**者、遗留注解契约恢复、预算按请求重置、理由带 source 组、`.rejections` 按路径段、水合掩码补 `RECALL_ON_OPEN`）+ 7 个回归用例 | **本页描述的版本**；待 `B."
+        },
+        {
+          "file": "evidence/b02-implementation.md",
+          "line": 20,
+          "text": "| **F1** `src/company_wiki/source_catalog/service.py` | `_REJECTIONS_SEGMENT` `:26`；`_location_exclusion_reason` `:35-63`；`_location_order_key` `:66-80`；`_annot"
         },
         {
           "file": "findings.md",
-          "line": 10,
-          "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
+          "line": 12,
+          "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
         },
         {
           "file": "findings.md",
-          "line": 10,
-          "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
+          "line": 12,
+          "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B02 预算按请求重置（B-VR02-04）",
+      "required_hits": [
+        {
+          "file": "evidence/b02-implementation.md",
+          "line": 21,
+          "text": "| **F2** `src/company_wiki/source_catalog/resolver.py` | 常量 `:152-161`；`_sha256_of_file` `:164`；`_needs_hydration` `:174`；`_ReadBudget`（含 `begin_request`）`:182`"
+        },
+        {
+          "file": "evidence/b02-implementation.md",
+          "line": 78,
+          "text": "| 每请求重置 | `resolve()` 调 `budget.begin_request()` | 注入/复用同一 budget 不会让后续请求静默失去验证（B-VR02-04） |"
+        },
+        {
+          "file": "evidence/b02-implementation.md",
+          "line": 78,
+          "text": "| 每请求重置 | `resolve()` 调 `budget.begin_request()` | 注入/复用同一 budget 不会让后续请求静默失去验证（B-VR02-04） |"
+        },
+        {
+          "file": "findings.md",
+          "line": 14,
+          "text": "| **B-VR02-04** | P2 | 预算耗尽被折进 S-10，但设计原文要求 `blocked`；且 `_ReadBudget` 跨请求带计数器 → 复用同一 budget/resolver 时**后续请求静默失去全部验证** | `resolve()` 现在每次请求调用 `budget.begin_requ"
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B.VR rev1 记录在场且 verdict = rejected",
+      "required_hits": [
+        {
+          "file": "evidence/b02-implementation.md",
+          "line": 11,
+          "text": "| rev1 | `cab1fd6` | 资格先于排序 + `candidate_rank`/`exclusion_reason`；有序合格清单逐份尝试；预算/取消；`_Selection` | **`B.VR` rev1 = rejected**（2×P1 / 2×P2 / 3×P3，记录 [reviews/B.VR"
+        },
+        {
+          "file": "evidence/b02-implementation.md",
+          "line": 99,
+          "text": "| **独立复审（rev1）** | 新会话 subagent，记录 [reviews/B.VR-b02.json](reviews/B.VR-b02.json) | **rejected**：2×P1 / 2×P2 / 3×P3；它**独立逐位复现**了作者的全量/覆盖率/探针数字，并发现作者自检漏掉的两条 P1 |"
+        },
+        {
+          "file": "evidence/build_checkpoint.py",
+          "line": 182,
+          "text": "\"verdict\": \"rejected\","
+        },
+        {
+          "file": "evidence/build_checkpoint.py",
+          "line": 202,
+          "text": "\"verdict\": \"rejected\","
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "S-11（预算耗尽映射）已登记且 S-10 已重述",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 112,
+          "text": "**⚠️ 实施偏差（v0.1.7 回填，2026-09-12；2026-09-12 按 `B.VR` rev1 收紧；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md) / [S-11](owner-scope-decisions-2026-09-12.md"
+        },
+        {
+          "file": "b-design.md",
+          "line": 115,
+          "text": "2. **首选副本**（rank 1，且属于该文档自身的 source 组）即便字节无法验证也可按目录声明服务（trace 记 `unverified_preferred_copy` + 具体原因）——这是 pre-B02 的信任级，也是 A 侧冻结 fixture 仍能复用**唯一**的原因；"
+        },
+        {
+          "file": "b-design.md",
+          "line": 119,
+          "text": "**另一处命名偏差（S-11）**：预算耗尽（`budget_exceeded`）在 `resolve` 里**不是**设计写的 `blocked`，而是\"按 pre-B02 信任级服务首选副本 + trace 标记\"：`ResolutionStatus` 只有五个值、没有 `blocked`，新增第六值会违反 A03"
+        },
+        {
+          "file": "evidence/b02-implementation.md",
+          "line": 5,
+          "text": "> 阅读顺序建议：§0 版本史 → §2 语义 → §3 偏差（S-10/S-11）→ §7 验证 → §8 未做。"
         }
       ],
       "superseded_hits": [],
@@ -737,13 +880,23 @@
       "required_hits": [
         {
           "file": "evidence/b02-implementation.md",
-          "line": 70,
+          "line": 82,
           "text": "- **不新增产品模块**（S-7/work-package：新增文件不在 allowed 集）；`test_r4b02_no_new_source_catalog_module_was_added` 断言这一点。"
         },
         {
           "file": "evidence/b02-implementation.md",
-          "line": 71,
+          "line": 83,
           "text": "- **不改棘轮表**：`test_r4b02_complexity_ratchet_table_is_not_edited` 断言 `FROZEN_MAX[\"service.py\"] == 45`、`[\"resolver.py\"] == 103`。"
+        },
+        {
+          "file": "evidence/build_checkpoint.py",
+          "line": 271,
+          "text": "\"S-7_ratchet_edit\": \"DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited\","
+        },
+        {
+          "file": "reviews/B.VR-b02.json",
+          "line": 174,
+          "text": "\"test_r4b02_no_new_source_catalog_module_was_added - only asserts two hard-coded filenames are absent plus os.path.isdir(src); any other new module would pass, "
         }
       ],
       "superseded_hits": [],
@@ -755,7 +908,7 @@
       "required_hits": [
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 314,
+          "line": 343,
           "text": "\"note\": (\"per-file versions matter: root-contract is v0.4.2 while operation-contract and \""
         }
       ],
@@ -768,8 +921,8 @@
       "required_hits": [
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 249,
-          "text": "\"S-7_ratchet_edit\": \"OPEN - see b-design section B0x\","
+          "line": 271,
+          "text": "\"S-7_ratchet_edit\": \"DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited\","
         }
       ],
       "superseded_hits": [],
@@ -777,7 +930,7 @@
       "verified": true
     }
   ],
-  "passed": 21,
-  "total": 21,
+  "passed": 26,
+  "total": 26,
   "generated_by": "python evidence/claim_fact_audit.py"
 }

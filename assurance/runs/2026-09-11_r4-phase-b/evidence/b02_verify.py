@@ -99,9 +99,36 @@ def _coverage() -> dict:
                 "percent": round(100.0 * (cov + covb) / (num + total), 2),
                 "lines": f"{cov}/{num}", "branches": f"{covb}/{total}",
             }
-    return {"measured": True,
-            "coverage_json_written": data.get("meta", {}).get("timestamp", ""),
-            "files": out}
+    written = data.get("meta", {}).get("timestamp", "")
+    # Reproducibility caveat (B-VR02-06): the repo TRACKS a coverage.json from an
+    # older measurement, and the gate reads whatever coverage.json exists.  The
+    # gate command is therefore only meaningful immediately after the --cov run
+    # in the same working tree; record how old the artefact is so nobody reads a
+    # stale baseline as fresh evidence.
+    import datetime as _dt
+
+    age_hours = None
+    try:
+        measured_at = _dt.datetime.fromisoformat(written)
+        age_hours = round(
+            (_dt.datetime.now() - measured_at).total_seconds() / 3600.0, 2
+        )
+    except ValueError:
+        pass
+    return {
+        "measured": True,
+        "coverage_json_written": written,
+        "coverage_json_age_hours": age_hours,
+        "files": out,
+        "gate_precondition": (
+            "FC1204_COVERAGE_GATE=1 must run immediately after "
+            "`pytest tests/ --cov=src/company_wiki/source_catalog --cov-branch "
+            "--cov-report=json` in the same working tree; the tracked "
+            "coverage.json in the repository is a stale older measurement and "
+            "running the gate alone against a fresh checkout fails for that "
+            "reason, not because of this change"
+        ),
+    }
 
 
 def main(argv: list[str] | None = None) -> int:

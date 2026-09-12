@@ -2,19 +2,39 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B02-4：`B.VR`（B02 实施独立复审）= **rejected**（2×P1 / 2×P2 / 3×P3）→ 实施 rev2
+
+审查记录 [reviews/B.VR-b02.json](reviews/B.VR-b02.json)（独立会话，非作者；自报 UUID 见记录；它独立复跑了全套并**逐位复现**了作者的数字：新用例 16→（rev1 时）通过、全量 2684 passed/7 skipped、覆盖率 resolver 87.36% / service 95.16%、复杂度表 45/103、RED/GREEN 探针、S-10 的因果实验）。**两条 P1 都是真缺陷**，且都是作者在自检时**未识别**的：
+
+| # | 级别 | 事实（reviewer 复现） | rev2 处置 |
+|---|---|---|---|
+| **B-VR02-01** | **P1** | rev1 的"回退到任意**可读**副本"会把**不同修订**当成本版本发出去：3 份同字节副本 → 删掉首选与第三份、把存活那份改成**不同字节**（声明 28 B / 实际 34 B）→ rev1 返回 `reused_exact` + `download_required=false`，而 pre-B02 返回 `missing`。这既是**相对 pre-B02 的 fail-open 回归**，也违反本 run 自己的 L03 验收"全失效 unavailable、**不取另一修订**" | **收紧服务规则**：只有**首选副本**（rank 1）可凭目录声明被采用（= pre-B02 信任级，且 trace 记 `unverified_preferred_copy`）；**非首选副本只有字节验证通过才会被采用**，否则一律不返回句柄（→ MISSING）。回落目标也限定在**文档自身 source 组**内。新增回归用例 `test_r4b02_different_bytes_copy_is_never_served_as_the_same_version`（断言 MISSING + `content_sha256_mismatch`、且无任何 unverified 行） |
+| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成"有资格才选"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在"同文档两份 `.rejections` 副本"（scanner 自产布局）下抛 `StopIteration`，整个 `duplicates` CLI 命令 exit 1 | **恢复遗留注解契约**：`is_canonical` / `duplicate_relation` / `duplicate_group_id` / `canonical_location_id` 仍按 pre-B02 规则在**该组全部 active original_primary** 上选举；B02 只**新增**资格轨（`candidate_rank`/`exclusion_reason`），resolver 的复用判定改看资格轨。新增回归用例 `test_r4b02_rejected_only_document_still_lists_for_cleanup`（`list_groups()` 不抛错且列出该组） |
+| **B-VR02-03** | P2 | 副作用比 rev1 登记的更大：被 provider 拒绝的副本从清理计划的**可回收集合**中消失（3→2），导出的索引行也随之改变（`is_canonical`/计数） | 同上一行：`_duplicate_summary` 与 `duplicate_relation` 全部回到 pre-B02 口径；新增用例 `test_r4b02_rejected_copy_stays_reclaimable_next_to_healthy_copies`（断言 2 组 / 3 个可回收副本 = reviewer 实测的 pre-B02 值，且被拒副本仍在清单里） |
+| **B-VR02-04** | P2 | 预算耗尽被折进 S-10，但设计原文要求 `blocked`；且 `_ReadBudget` 跨请求带计数器 → 复用同一 budget/resolver 时**后续请求静默失去全部验证** | `resolve()` 现在每次请求调用 `budget.begin_request()` **重置计数**（取消保持粘性）；预算耗尽对外仍是"按 pre-B02 信任级服务首选副本"，作为**独立命名偏差 S-11** 登记（`ResolutionStatus` 无 `blocked` 值，五值模型不新增状态）。新增用例 `test_r4b02_injected_budget_is_per_request` |
+| **B-VR02-05** | P3 | 诊断不完备：rank 型理由跨 source 组有歧义，且 `tried` 非空时仍可能被丢弃 | 理由改为携带 source 组后缀（`verified_candidate_rank_1:<sha 前 12>`）；`tried` 只要非空就写 trace；两修订的注释改为"资格轨按 source 组计算、而良构目录里该状态不可达" |
+| **B-VR02-06** | P3 | 证据可复现性：`b02-verification.json` 绑定的是**提交前**的 HEAD（`c986c7a`），且记录的棘轮命令在干净检出上会因**仓库跟踪的陈旧 `coverage.json`** 而红 | `evidence/b02_verify.py` 记录**提交后**的 HEAD、`coverage.json` 的**时间戳与年龄**，并显式声明"棘轮门必须在同一次 `--cov` 运行之后立即执行；仓库里跟踪的 `coverage.json` 是旧基线" |
+| **B-VR02-07** | P3 | `.rejections` 用**子串**匹配（`my.rejections_backup/` 被误判），水合掩码漏了 `RECALL_ON_OPEN (0x40000)` | 改为**按路径段**匹配（与 adapters/dayu.py 的既有约定一致）；掩码加 `0x40000`。新增用例 `test_r4b02_rejections_is_matched_as_a_path_segment`、`test_r4b02_recall_on_open_placeholders_are_detected` |
+
+**reviewer 明确未能验证**（记入其 limitations，作者同此口径）：S-9 的"无新测试时 resolver=61.3%"（需再跑一次 15 分钟全量）、历史上"首轮 3 条 FC-1201 失败"的断言、`B-payload-hash`（包内无基线）、以及任何真实云占位 / R1/R2 层（本机不可得）。
+
+**rev2 的状态**：上述 7 条已全部处置并各自留下回归用例；`B.VR rev2`（新会话）待发。
+
 ## F-B02-1：B02 段 3 的"同 hash 硬门"与 A 侧 4 条冻结断言冲突 → 实施让步（**S-10，待 owner 确认**）
 
 - **事实**：`tests/contract/test_source_catalog_determinism.py` 的 fixture 写 `b"%PDF-fake"` 作字节，却把 `sha256(b"same-bytes")`/`sha256(b"other-bytes")` 当 `content_sha256`；`test_source_catalog_sql_pushdown.py` 同类。因此"字节必须等于声明 hash"若作为 **resolve 期硬门**，这 4 条既有断言必然失败（实测：硬门实现下 `determinism` 2 条 + `sql_pushdown` 2 条 FAILED）。
-- **处置（已落盘）**：段 3 实现为**优先 + 逐候选诊断** —— 仍真读字节做**整文件**摘要比对、验证通过者优先、`verified_sha256` 仅验证通过时写入；若无任何候选通过验证但存在**本地可读**合格副本，则返回该副本并标注 `unverified_bytes`。**字节硬门归 B03 读路径**（设计 §B03 原文即"只返回验证版本字节或明确失败"）。
-- **理由**：**S-1** 明令"仅新增测试、不得修改既有测试的任何断言"→ 让步只能在实现侧。若 owner 不认可，可选 (a) 另行批准修改那 4 条既有断言（与 S-1 互斥）或 (b) 把 B03 提前与 B02 合并交付。
+- **处置（已落盘，rev2 收紧）**：段 3 实现对**首选副本**是"目录声明信任级"（= pre-B02 行为），对**非首选副本**是**硬门**（字节验证不过就不采用、不返回句柄）；验证通过者优先，`verified_sha256` 仅验证通过时写入。**字节级硬门归 B03 读路径**（设计 §B03 原文即"只返回验证版本字节或明确失败"）。
+- **理由**：**S-1** 明令"仅新增测试、不得修改既有测试的任何断言"→ 让步只能在实现侧；且冻结 fixture 的**字节与声明 hash 不一致**（`sql_pushdown` 甚至把 13 B 的文件声明为 1000 B），任何"先验证再服务首选"的硬门都会让这 4 条断言失败。若 owner 不认可，可选 (a) 另行批准修改那 4 条既有断言（与 S-1 互斥）或 (b) 把 B03 提前与 B02 合并交付。
+- **残余风险（如实）**：首选副本仍可能**字节已漂移**而被服务（trace 记 `unverified_preferred_copy` + 具体原因）；读路径在 B03 落地前不会拦它。这**不是**相对 pre-B02 的放宽——pre-B02 对首选副本无条件信任，且**根本不做**字节校验。
+- **B-VR02-01 已把这条边界钉死**：非首选副本的"可读即可用"回退（rev1）已删除，reviewer 的反例现在是回归用例。
 - **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / [post-b02.json](evidence/b02-red-green-post-b02.json)。
 - **未做（勿当已完成）**：B03 落地前，**没有任何一层**对"读出来的字节"做返回前复验 —— 字节级硬门整体缺失。
 
-## F-B02-2：重复计数口径随"合格"定义收敛（P2，副作用）
+## F-B02-2：重复计数口径（P2，**rev2 已撤销该项改动**）
 
-- **事实**：`_duplicate_summary` 原先按 `role/active/source_id` 统计副本，与新的"合格"定义（多一条 `.rejections` 排除）不一致。
-- **处置**：改为只统计**合格**副本（`candidate_rank != 0`）。影响面仅 `.rejections` 泄漏场景：`exact_duplicate_location_count` / `exact_original_copy_count` 会变小。
-- **证据**：`test_r4b02_l04_rejected_copy_with_best_priority_is_not_a_candidate` 断言新口径（`exact_duplicate_location_count == 0`、`exact_original_copy_count == len(healthy)`）。
+- **事实**：rev1 把 `_duplicate_summary` 改为只统计"合格"副本，导致被拒副本从清理计划的可回收集合中消失（B-VR02-03 实测 3→2）且导出索引随之改变。
+- **处置（rev2）**：**恢复 pre-B02 口径**——`is_canonical` / `duplicate_relation` / `_duplicate_summary` 一律按"该组全部 active original_primary"计算；B02 只**新增**资格轨（`candidate_rank`/`exclusion_reason`）。这条改动的净效果现在是：**无**计数语义变化。
+- **证据**：`test_r4b02_l04_rejected_copy_with_best_priority_is_not_a_candidate`（`exact_original_copy_count == 2`、`exact_duplicate_location_count == 1`、被拒行 `is_canonical is True`）与 `test_r4b02_rejected_copy_stays_reclaimable_next_to_healthy_copies`（2 组 / 3 个可回收副本）。
 
 ## F-B02-3：首轮实现触发 FC-1201 根 token 门（P3，门按设计生效）
 

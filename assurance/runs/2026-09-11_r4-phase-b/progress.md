@@ -1,5 +1,21 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-12（实施期，复审后）— **B02 rev2**（B.VR rev1 = rejected，7 条已逐条处置）
+
+- **独立复审**：`B.VR`（新会话）verdict = **rejected**，记录 [reviews/B.VR-b02.json](reviews/B.VR-b02.json)：2×P1 / 2×P2 / 3×P3。它独立复跑了全套并**逐位复现**了作者的数字（全量 2684 passed / 7 skipped、覆盖率 resolver 87.36% / service 95.16%、复杂度表 45/103、RED/GREEN 探针、S-10 的因果实验、变异测试证明新用例"有牙"），同时发现作者自检**漏掉的两条 P1**。
+- **两条 P1（真缺陷）**：
+  1. **B-VR02-01**：rev1 的"回退到任意可读副本"会把**不同修订**当本版本发出（reviewer 反例：删首选+第三份、把存活那份改成不同字节 → rev1 返回 `reused_exact`，pre-B02 返回 `missing`）——既是相对 pre-B02 的 fail-open，也违反本 run 自己的 L03 验收。
+  2. **B-VR02-02**：rev1 让 `is_canonical` 变成"有资格才选"，使**未修改的** `duplicate_cleanup.list_groups()`（`next(...)` 无默认值）在同文档两份 `.rejections` 副本时抛 `StopIteration`，`duplicates` CLI 整条命令 exit 1。
+- **rev2 处置**：非首选副本只在**字节验证通过**时服务（否则不返回句柄）；恢复遗留注解契约（`is_canonical`/`duplicate_relation`/`_duplicate_summary` 全部回到 pre-B02 口径），B02 只新增资格轨；`_ReadBudget` 计数**每请求重置**（取消粘性）；理由带 source 组后缀、`tried` 非空必写；`.rejections` 改**按路径段**匹配；水合掩码补 `RECALL_ON_OPEN`。新增 7 个回归用例（共 **23** 个）。
+- **逐条处置表**：[findings.md](findings.md) F-B02-4；偏差重述为 **S-10**（首选副本信任级 vs 非首选硬门）与 **S-11**（预算耗尽不是 `blocked`）。
+- **完整记录**：[evidence/b02-implementation.md](evidence/b02-implementation.md)（rev2 更新）；机器可读结果：[evidence/b02-verification.json](evidence/b02-verification.json)。
+
+### 本步实际副作用（如实，含 rev2）
+
+- **执行过**：修改 `company-wiki` 的 2 个 allowed 产品文件 + 新增 1 个测试文件；本机运行 `pytest`（含全量套件与覆盖率）、`ruff`、只读探针（合成 fixture，临时目录）；`git worktree`（干净 HEAD 源码，用于 RED 对照）。
+- **未执行**：任何网络/下载/LLM、任何产品写入、DB 写入、任务注册、worker 操作、删除；**未**在生产 catalog 上做行为探针。
+- **注意**：全量 `pytest` 中的既有用例会**只读**打开生产 catalog（阶段 A 已归因，属已知限制）。
+
 ## 2026-09-12（实施期）— **B02 已实施**（F1+F2+F10；待 B.VR 独立复审）
 
 - **授权**：owner「全按推荐：定 S-7/S-8 并开始实施」→ [owner-scope-decisions-2026-09-12.md](owner-scope-decisions-2026-09-12.md) §8。

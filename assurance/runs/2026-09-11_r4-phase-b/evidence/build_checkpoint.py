@@ -154,25 +154,27 @@ LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": ("B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: "
               "B02 landed; B01/B03-B07 still design-only"),
-    "step": ("B02 implemented (company-wiki cab1fd6: F1 service.py + F2 resolver.py + F10 new tests); "
-             "run directory record 2ced153; B design / file-scope v0.1.7 back-fill"),
+    "step": ("B02 rev2 implemented (company-wiki 350b67a: F1 service.py + F2 resolver.py + F10 tests); "
+             "B.VR rev1 was rejected with 2 P1 findings, all seven addressed"),
     "last_completed_step": (
         "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). "
-        "B02 implemented: qualification decided BEFORE ordering in service._annotate_locations "
-        "(candidate_rank 1..N plus exclusion_reason per location), ordered-qualified fall-through and "
-        "segment-3 byte verification with budget/cancellation in resolver._handle. Evidence: 16 new "
-        "acceptance cases, a RED/GREEN probe against a clean HEAD worktree (pre-B02: MISSING after the "
-        "preferred copy was withdrawn; post-B02: reused_exact from the next equivalent copy), full suite "
-        "2684 passed / 7 skipped, coverage resolver.py 87.36% (TIER2 floor 85.5) and service.py 95.16% "
-        "(TIER1 floor 94.5), complexity ratchet table unchanged and green, FC-1201 root-token gates green "
-        "after a first-round failure was fixed."
+        "B02 implemented (cab1fd6) and then fixed as rev2 (350b67a) after its own independent review "
+        "(B.VR rev1 = rejected, 2xP1/2xP2/3xP3, reviews/B.VR-b02.json) found two real defects the author "
+        "had missed: (a) the unverified fallback could serve a DIFFERENT revision (fail-open versus "
+        "pre-B02), now removed - a non-preferred copy is served only when its bytes verify; (b) making "
+        "is_canonical conditional raised StopIteration in the untouched duplicate_cleanup.list_groups(), "
+        "now fixed by restoring the legacy annotation contract and adding a separate reuse-qualification "
+        "track. Also fixed: per-request budget reset, source-tagged selection reasons, path-segment "
+        "matching for .rejections, RECALL_ON_OPEN in the hydration mask. Evidence: 23 acceptance cases "
+        "(7 of them regressions for the review findings), full suite 2691 passed / 7 skipped, coverage "
+        "resolver.py 87.29% and service.py 95.16%, ratchet table untouched and green."
     ),
     "current_gate": (
-        "B02 awaits its own independent review (B.VR, fresh session). One deviation is registered as S-10 "
-        "and awaits the owner: design section B02 segment 3 wanted hash equality as a HARD gate, but the "
-        "A-side frozen fixtures (determinism / sql-pushdown) claim hashes their bytes do not have and S-1 "
-        "forbids editing existing assertions, so B02 implements verification as a preference plus "
-        "per-candidate diagnostics and leaves the byte-level hard gate to B03's read path."
+        "B.VR rev2 (fresh session) for the same step, then B04. Two deviations await the owner: S-10 "
+        "(byte equality is a hard gate for NON-preferred copies only; the preferred copy keeps the "
+        "pre-B02 claim-trust level and the read path owns the hard gate in B03) and S-11 (budget "
+        "exhaustion maps to that same trust level instead of the design's blocked, because "
+        "ResolutionStatus has exactly five values)."
     ),
     "pending_review": [
         {
@@ -194,6 +196,24 @@ LEDGER = {
             "reviewer": ("independent subagent (non-author) - must differ from the authoring session; the "
                          "reviewer must re-run the checks rather than trust evidence/b02-implementation.md"),
             "note": "evidence to review: evidence/b02-implementation.md, evidence/b02-verification.json, evidence/b02-red-green-*.json",
+        },
+        {
+            "gate": "B.VR rev2 (B02 rev2)",
+            "scope": "company-wiki 350b67a: the seven B.VR rev1 findings addressed, 23 acceptance cases",
+            "status": "pending",
+            "reviewer": ("independent subagent (non-author) - must differ from the rev1 reviewer session; "
+                         "should re-run the reviewer's own P1 counter-examples rather than trust this record"),
+            "note": "evidence: evidence/b02-implementation.md (rev2 sections), evidence/b02-verification.json, reviews/B.VR-b02.json (rev1)",
+        },
+        {
+            "gate": "B.VR rev1 (B02)",
+            "scope": "company-wiki cab1fd6",
+            "status": "closed",
+            "verdict": "rejected",
+            "findings": {"P1": 2, "P2": 2, "P3": 3},
+            "note": ("reproduced the author's numbers digit-for-digit AND found two real defects the author "
+                     "had missed; both fixed in 350b67a, each with a regression case"),
+            "record": "reviews/B.VR-b02.json",
         },
         {
             "gate": "B.DR rev5",
@@ -259,10 +279,11 @@ LEDGER = {
     "gate_status": {
         "B.DR": ("rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 "
                  "implementation record (no design change); the ratchet table stays frozen (S-7)"),
-        "B.VR": ("B02 review pending (this run directory carries the evidence); protocol ready "
-                 "(b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer still needs G8"),
+        "B.VR": ("rev1 = rejected (2xP1/2xP2/3xP3, reviews/B.VR-b02.json) and its findings are fixed in "
+                 "350b67a; rev2 pending. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by "
+                 "S-5, L2 real-byte layer still needs G8"),
         "B.AR": "not started",
-        "S-1_test_files": "APPROVED (F10/F11); F10 landing used by tests/contract/test_r4b02_candidate_selection.py",
+        "S-1_test_files": "APPROVED (F10/F11); F10 landing used by tests/contract/test_r4b02_candidate_selection.py (23 cases)",
         "S-2_R1_R4_out_of_B": "DECIDED - R-1/R-4 stay outside B as separate work packages",
         "S-3_export_path": "DECIDED - export_policy_2x untouched, payload hash frozen (B-payload-hash still NOT executed)",
         "S-4_consumer_side": "DECIDED - belongs to phase C, B does not sign it",
@@ -270,8 +291,10 @@ LEDGER = {
         "S-6_fourth_round": "done - five review rounds were run in total (rev4 then rev5/rev6)",
         "S-7_ratchet_edit": "DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited",
         "S-8_N1": "DECIDED - N-1 stays outside B, registered as a cross-repo protocol item",
-        "S-10_byte_hard_gate": "OPEN - owner confirmation requested; hard gate deferred to B03's read path",
-        "implementation_go_ahead": "GRANTED (owner 2026-09-12, second batch); B02 landed, B04 next",
+        "S-10_byte_hard_gate": ("OPEN - non-preferred copies are hard-gated; the preferred copy keeps the "
+                                "pre-B02 claim-trust level and B03 owns the read-path gate"),
+        "S-11_budget_status": "OPEN - budget exhaustion maps to that trust level, not to a sixth status value",
+        "implementation_go_ahead": "GRANTED (owner 2026-09-12, second batch); B02 landed and revised, B04 next",
     },
     "actual_side_effects": (
         "Unlike the design-only rounds, this run has now MODIFIED PRODUCT FILES in company-wiki: "
@@ -287,20 +310,22 @@ LEDGER = {
         "production catalog read-only when the suite runs (known limitation, attributed in phase A)."
     ),
     "failed_or_unknown": [
-        "B03-B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so S-10's other half is open",
+        "B03-B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so a preferred copy whose bytes drifted is served on the catalog's claim (S-10's other half)",
         "B-payload-hash has never been executed (no frozen baseline in the package and the value needs a CLI that is not approved) - B02 only claims that no SourceHandle field was added",
-        "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped); the B-side cases added by B02 cover L01-L04 plus budget/cancel/no-network, not the whole matrix",
+        "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped); the B-side cases added by B02 cover L01-L04 plus budget/cancel/no-network and the seven review regressions, not the whole matrix",
         "B05's provenance shape is now additive under a reserved key, but the json_extract regression assertion can only be proved when the tests run (needs implementation)",
         "N-1 support is undefined on both sides and is therefore registered as a cross-repo protocol item, no longer part of B07's completion",
         "handbook section 3 run structure is still partial: card.json, baseline.json, data-manifest.json, requirements.csv and oracle/ are absent",
         "G5/G6/G7/G8 remain owner/operator items",
         "revenue-forecast dirty=0 is incomplete: three .tmp-zr408-unit* directories are unreadable (permission denied), so git cannot enumerate them",
         "test_dbx05_symlink_escape_rejected skips on this host (symlinks not supported), so the symlink-escape control did not run here",
+        "the reviewer could not verify S-9's 61.3% counterfactual, the historical first-round FC-1201 failure claim, B-payload-hash, or any real cloud-placeholder layer (recorded in reviews/B.VR-b02.json limitations)",
     ],
     "next_step": (
-        "Independent B.VR review of B02 (fresh session), then continue with B04 -> B05 -> B01 -> B03 -> B06 "
-        "-> B07, each step as its own commit with the ratchet/coverage rerun and its own independent review. "
-        "The owner still owes one ruling: S-10 (byte-equality preference vs hard gate)."
+        "Send B02 rev2 to a fresh independent B.VR session (the rev1 reviewer's own counter-examples are "
+        "now regression cases; ask the new reviewer to re-run them), then continue with B04 -> B05 -> B01 "
+        "-> B03 -> B06 -> B07, each step as its own commit with the ratchet/coverage rerun and its own "
+        "independent review. The owner still owes two rulings: S-10 and S-11."
     ),
     "inputs": {
         "note": ("phase A froze the product inputs at wiki 7d4852f; the phase-A run directory "
