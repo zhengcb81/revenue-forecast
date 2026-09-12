@@ -31,6 +31,11 @@
 | revenue-forecast | `d63fc21` | checkpoint 锚定（38 文件，`all_match=True`） | quality | **success** | 34704899066 |
 | revenue-forecast | `41d06de` | B05 三子步记录 + F-B05-1/F-B05-2 | quality | **success** | 34709826139 |
 | revenue-forecast | `cab7b74` | checkpoint 锚定（39 文件，`all_match=True`） | quality | **success** | 34710000495 |
+| revenue-forecast | `f4fa572` | checkpoint 锚定（B05 P2 修复后） | quality | **success** | 34716290083 |
+| revenue-forecast | `4d41762`→`349c837` | B01 实施记录 + 字段归属表 + 判定批次 | quality | **未单独触发**（与后面数行同一次推送，CI 只跑推送 tip） | — |
+| revenue-forecast | `9ddb4ea`→`4a70c17` | F-B01-7 阻塞登记（**当时门为红，未推送**） | quality | **未单独触发** | — |
+| revenue-forecast | `b6d1fdc` | **FC-1001 `sidecar_missing` 改 strict xfail**（owner 裁定 A）+ B06 验收项登记 | quality | **未单独触发**（同一次推送） | — |
+| revenue-forecast | `f6d83bb`→`62f4da7` | 裁定记录 + checkpoint 锚定（46 文件，`all_match=True`）**= 本次推送 tip** | quality | **success** | 34718795208 |
 
 **CI 覆盖到的与本步直接相关的门**（`company-wiki/.github/workflows/ci.yml`，三个 Python 版本 3.11/3.12/3.13 全部 success）：
 
