@@ -1,9 +1,9 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
   "phase": "B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: B02 landed; B01/B03-B07 still design-only",
-  "step": "B02 rev2 implemented (company-wiki 350b67a: F1 service.py + F2 resolver.py + F10 tests); B.VR rev1 was rejected with 2 P1 findings, all seven addressed",
-  "last_completed_step": "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). B02 implemented (cab1fd6) and then fixed as rev2 (350b67a) after its own independent review (B.VR rev1 = rejected, 2xP1/2xP2/3xP3, reviews/B.VR-b02.json) found two real defects the author had missed: (a) the unverified fallback could serve a DIFFERENT revision (fail-open versus pre-B02), now removed - a non-preferred copy is served only when its bytes verify; (b) making is_canonical conditional raised StopIteration in the untouched duplicate_cleanup.list_groups(), now fixed by restoring the legacy annotation contract and adding a separate reuse-qualification track. Also fixed: per-request budget reset, source-tagged selection reasons, path-segment matching for .rejections, RECALL_ON_OPEN in the hydration mask. Evidence: 23 acceptance cases (7 of them regressions for the review findings), full suite 2691 passed / 7 skipped, coverage resolver.py 87.29% and service.py 95.16%, ratchet table untouched and green.",
-  "current_gate": "B.VR rev2 (fresh session) for the same step, then B04. Two deviations await the owner: S-10 (byte equality is a hard gate for NON-preferred copies only; the preferred copy keeps the pre-B02 claim-trust level and the read path owns the hard gate in B03) and S-11 (budget exhaustion maps to that same trust level instead of the design's blocked, because ResolutionStatus has exactly five values).",
+  "step": "B02 rev3 implemented (F1 service.py + F2 resolver.py + F10 tests); B.VR rev1 rejected and rev2 accepted_with_findings, both rounds' findings addressed",
+  "last_completed_step": "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). B02 went through three revisions under two independent reviews: rev1 (cab1fd6) was REJECTED (2xP1: an unverified fallback could serve a different revision, and a conditional is_canonical raised StopIteration in the untouched duplicate_cleanup); rev2 (350b67a) fixed those and was accepted_with_findings (2xP2: the claim-trusted fallback short-circuited the walk so a drifted preferred copy beat a verified one, and the S-10 justification 'no wider than pre-B02' was falsified by a counter-example where a .rejections copy held the best priority); rev3 fixes both by serving verified copies first and anchoring the claim-trusted fallback to the row pre-B02 would have served, plus mid-read cancellation, an own-source-group regression case and evidence-consistency repairs. Latest measurement: 27 acceptance cases, full suite 2693 passed / 7 skipped / 2 load-flakes (both pass in isolation), coverage resolver.py 87.70% and service.py 95.16%, ratchet table untouched and green.",
+  "current_gate": "B.VR rev3 (fresh session) on the rev3 commit, then B04 (its landing plan is already written: evidence/b04-plan.md). Two deviations await the owner: S-10 (a verified copy always wins; only when nothing verifies may ONE row be served on the catalog's claim, namely the row pre-B02 would have served - so the trust level is provably no wider than pre-B02; the read path owns the byte-level gate in B03) and S-11 (budget exhaustion maps to that same row instead of the design's blocked, because ResolutionStatus has exactly five values).",
   "pending_review": [
     {
       "gate": "B.DR rev6",
@@ -27,11 +27,23 @@
       "note": "evidence to review: evidence/b02-implementation.md, evidence/b02-verification.json, evidence/b02-red-green-*.json"
     },
     {
-      "gate": "B.VR rev2 (B02 rev2)",
-      "scope": "company-wiki 350b67a: the seven B.VR rev1 findings addressed, 23 acceptance cases",
+      "gate": "B.VR rev3 (B02 rev3)",
+      "scope": "the rev3 commit: verified copies win, claim-trusted fallback anchored to the pre-B02 row, mid-read cancellation, own-source regression case",
       "status": "pending",
-      "reviewer": "independent subagent (non-author) - must differ from the rev1 reviewer session; should re-run the reviewer's own P1 counter-examples rather than trust this record",
-      "note": "evidence: evidence/b02-implementation.md (rev2 sections), evidence/b02-verification.json, reviews/B.VR-b02.json (rev1)"
+      "reviewer": "independent subagent (non-author) - must differ from both earlier reviewer sessions; should re-run the rev2 counter-example (rejections best priority + drifted copy) and the rev1 counter-example (drifted survivor) itself",
+      "note": "evidence: evidence/b02-implementation.md (rev3 sections), evidence/b02-verification.json, reviews/B.VR-b02.json, reviews/B.VR-b02-rev2.json"
+    },
+    {
+      "gate": "B.VR rev2 (B02 rev2)",
+      "scope": "company-wiki 350b67a",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 2,
+        "P3": 3
+      },
+      "note": "confirmed both rev1 P1s genuinely fixed; found that the claim-trusted fallback short-circuited the walk and that S-10's 'no wider than pre-B02' justification was false; all five addressed in rev3",
+      "record": "reviews/B.VR-b02-rev2.json"
     },
     {
       "gate": "B.VR rev1 (B02)",
@@ -163,11 +175,11 @@
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "350b67a869a61841a3bcd3b30fd1ab09bba69d49",
+      "head": "182846b52e239e824ee3a6519ee9e8b33ba82b60",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "7b34c12d228b6b05e7bfd5771b5ee2cece827304",
+      "head": "63422f1b4a474e6ed4e91063a37ebb17d9411c03",
       "dirty": 0
     },
     "filing-fetch": {
@@ -175,10 +187,10 @@
       "dirty": 0
     }
   },
-  "reviewed_commit": "7b34c12d228b6b05e7bfd5771b5ee2cece827304",
+  "reviewed_commit": "63422f1b4a474e6ed4e91063a37ebb17d9411c03",
   "commit_anchor": {
-    "head": "7b34c12d228b6b05e7bfd5771b5ee2cece827304",
-    "index_tree": "e3d499a54ceba34e5d032aa69ce167139322f7ae",
+    "head": "63422f1b4a474e6ed4e91063a37ebb17d9411c03",
+    "index_tree": "0b7ac825ff88d89a0c97e1a3ef253bd3d7fcd271",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -187,64 +199,68 @@
       "size": 907
     },
     "b-design.md": {
-      "sha256": "96673509553229600720ae1938c3b94d6cc3602b8e9d918c84bf2ab2b40d671a",
-      "size": 34870
+      "sha256": "191dc31e56f0c9cbf5396d3afce106308e64967578c52c02aec96adb2d99689e",
+      "size": 35352
     },
     "b-vr-protocol.md": {
       "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
       "size": 7366
     },
     "evidence/b02-implementation.md": {
-      "sha256": "5bdb8fb6a6b9a4ccca6d19ec3d65645a99ebb3bf4c5ee0c5cd9705116b22b88c",
-      "size": 13843
+      "sha256": "dcd05fc378bd4b317eb75f72ee0a0d16c24de59a28f801c4e0232176c6c3d50c",
+      "size": 16554
     },
     "evidence/b02-red-green-post-b02.json": {
-      "sha256": "6f75edcf2bdcdf67042870fb7214665cea921c22c8e5090c2c1a2ce9486d6448",
-      "size": 1549
+      "sha256": "cdb7cee25037e74d682e0b86a8fe1cbb3ba0c1c3e3640e826447a4f967d8cab0",
+      "size": 1562
     },
     "evidence/b02-red-green-pre-b02.json": {
       "sha256": "ceb0159a736c91b910fe53e8f8b395eaa4985f0c16b42366181c6e0a58b6cfeb",
       "size": 1213
     },
     "evidence/b02-verification.json": {
-      "sha256": "15ef0e2e386f6307e6a002e3c2ae75b20b69ba1697c54e43e96df40c944420cf",
-      "size": 4391
+      "sha256": "c374b53aa4d599cf0184bfd87d22db3522038fed88e63e300788f6d2a03fbc64",
+      "size": 4641
     },
     "evidence/b02_red_green_probe.py": {
       "sha256": "5da5159fffa1a504228e130388ac730c76bf1dac765648d7eea9f969a6197134",
       "size": 7595
     },
     "evidence/b02_verify.py": {
-      "sha256": "b52bfd734a548e6332b5a335a8f1aaa2bb2f259a0186a6c6952cfe4cdf382d6f",
-      "size": 7713
+      "sha256": "e21ba0377d26ed9d7b6f6e2b71b2233c1334f9c406e19c111dbb59b211e3bb1e",
+      "size": 8559
+    },
+    "evidence/b04-plan.md": {
+      "sha256": "ae0342550d6e5c5185de63bf27a8e47460444ff2bb1d0c967b657a7e4223d207",
+      "size": 3755
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "c84e12cbf41ca565297785d8aaa6a76505308ceda1651db3447b0f4e06de56ad",
-      "size": 23471
+      "sha256": "963e9a8e504b714c68bfd33a453547d613475bbe313d6f096f3725a59c9137c9",
+      "size": 24422
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "57e5ba784b346c95c4c558fa1e31e30401558a6b2ff4e8c84716c95aa2827161",
-      "size": 48892
+      "sha256": "09ec5a5fb19553293da9b92ae23d0386d4c66e50bf934e4aa99873337407f9f6",
+      "size": 55073
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "b436cdfe3d55bd598648bc7c1bc9ed89c1d029dab3516cf744cfacdb486e601b",
-      "size": 9867
+      "sha256": "03e2de726f7c8848056c7cff952458d6dc984fc87e118ede175172e13f6e78ba",
+      "size": 10291
     },
     "file-scope.md": {
       "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
       "size": 12565
     },
     "findings.md": {
-      "sha256": "943939a295d7e1eb21270fc7326535078aa9b29c78dcf68368f0f32acd40b068",
-      "size": 36609
+      "sha256": "fc4a6535d6f674db2193bb2cde665a1d50c45ad70111ef682e69ded496bbd357",
+      "size": 40622
     },
     "owner-scope-decisions-2026-09-12.md": {
-      "sha256": "2dc179a63407c2d3025f79c091261dd708c52a6da58539329f94f65455fa12ec",
-      "size": 7694
+      "sha256": "1742dcc7ecaa262ff7efe2ec3afe177b45fd95bedbca87f0e9462b70c316957c",
+      "size": 8222
     },
     "progress.md": {
-      "sha256": "41cae6c31a14f4a2fa12e0fa63e61705f7b41bcbba183cf80b521eb6693ca614",
-      "size": 11459
+      "sha256": "1cc16696b2a121a056e983ad1f4fe833ac296ab9057f30b4438ddea1725baee6",
+      "size": 13971
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -270,6 +286,10 @@
       "sha256": "bbe383f34872b44cfed1894d5c7c7c62d894d4bf424ac911a242dc89cd081af4",
       "size": 66878
     },
+    "reviews/B.VR-b02-rev2.json": {
+      "sha256": "c055c0ea2cdb803698bdc76bb32d94d36bff5578fc236cdb2e3f37fab87f0ce9",
+      "size": 32941
+    },
     "reviews/B.VR-b02.json": {
       "sha256": "cea22427b73237fb27da26f416018f528799f73004193574d72575e400717ad5",
       "size": 30525
@@ -279,8 +299,8 @@
       "size": 7165
     },
     "task_plan.md": {
-      "sha256": "98903f877c80c0ca88f085a0be8f8331cb59e9aec3f56fb2b4b6a8b7be38dd55",
-      "size": 14584
+      "sha256": "b982fac411d7cb0db916f086d80951cda9b479f75708438bcd6e9e63801497d0",
+      "size": 14839
     },
     "test-acceptance-map.md": {
       "sha256": "20fb868baa7a8315a0f219dd06e6d366cbd95b0ba3f7d263ad618a3dc400647a",
@@ -288,11 +308,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 26,
+    "checked": 28,
     "source": "index",
-    "compared_revision": "e3d499a54ceba34e5d032aa69ce167139322f7ae",
-    "head_revision": "7b34c12d228b6b05e7bfd5771b5ee2cece827304",
-    "index_tree": "e3d499a54ceba34e5d032aa69ce167139322f7ae",
+    "compared_revision": "0b7ac825ff88d89a0c97e1a3ef253bd3d7fcd271",
+    "head_revision": "63422f1b4a474e6ed4e91063a37ebb17d9411c03",
+    "index_tree": "0b7ac825ff88d89a0c97e1a3ef253bd3d7fcd271",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -302,8 +322,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 26,
-    "files_listed": 26,
+    "files_on_disk": 28,
+    "files_listed": 28,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -312,5 +332,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T12:28:54.510341+00:00"
+  "generated_at_utc": "2026-09-12T13:49:19.476810+00:00"
 }
