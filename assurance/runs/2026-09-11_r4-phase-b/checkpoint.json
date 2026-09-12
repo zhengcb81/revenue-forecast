@@ -2,8 +2,8 @@
   "run_id": "2026-09-11_r4-phase-b",
   "phase": "B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: B02 landed; B01/B03-B07 still design-only",
   "step": "B04 implemented (acceptance + finding, NO product change): a move keeps the reference, and the same-path overwrite case is pinned and registered as F-B04-1 (out of the allowed file set)",
-  "last_completed_step": "B02 closed after five revisions under four independent reviews (see the review entries below; all counter-examples fixed, mutants M5/M6/M7 killed, CI green on every step commit). B04 then implemented as acceptance plus a registered finding, with NO product change - the design goal already held after B02, so per the step's own plan the deliverable is verification, not code: new file company-wiki/tests/contract/test_r4b04_reference_stability.py (4 cases) proves that a move within a root keeps document_id/source_id/content_sha256 while the locator changes and the old row is marked missing, that location_id is only a derived locator, and that a vanished version is answered MISSING rather than substituted by another revision. Measured: 4 passed, the combined B04+B02+gates+ratchet set 69 passed, ruff clean. The pinned gap (scanner.py:1123 re-points the location row when the same relative path holds a new revision, so the superseded revision loses its only locator) is registered as finding F-B04-1 with three candidate remedies, all of which touch files outside this step's allowed set (write face / DDL / another work package).",
-  "current_gate": "B04 independent review (focused: the four acceptance cases and the F-B04-1 registration), then B05 -> B01 -> B03 -> B06 -> B07. The owner still owes two rulings on B02, both stated as a single authoritative difference list (evidence/b02-implementation.md section 3): S-10 (the claim-trusted row and its four differences from pre-B02) and S-11 (budget exhaustion maps to that row instead of the design's blocked, because ResolutionStatus has exactly five values).",
+  "last_completed_step": "B02 closed after five revisions under four independent reviews (all counter-examples fixed, mutants M5/M6/M7 killed, CI green on every step commit). B04 then implemented as acceptance plus findings with NO product change, and reviewed: the reviewer reproduced every number and ran its own mutation matrix (M3/M4/M5/M6/M7 killed), corrected two author statements (F-B04-1's overstated consequence; L03's protection comes from the pre-B02 provider_document_id gate, not from B02's source-group restriction) and found F-B04-2 (moving the PDF without its sidecar answers MISSING with an EMPTY trace). All six findings are addressed: F-B04-1 rewritten with a labelled remedy table (a new in-scope diagnostic option is explicitly rejected), F-B04-2 registered, the capture rebound to the reviewed commit, and an author-side mutation harness added (evidence/b04_mutation_check.py). Measured: 4 acceptance cases, combined 69-case set green, ruff clean, CI green for bc3590f.",
+  "current_gate": "B05 (metadata merge: provenance and per-column rules; its landing plan is written - evidence/b05-plan.md - and records that scanner.py is AT its complexity ceiling, so the merge block must be extracted into a new module-level function rather than extended in place). The owner owes three rulings, all stated with their evidence: S-10 and S-11 on B02's claim-trust rule and budget mapping (single authoritative difference list, evidence/b02-implementation.md section 3), and S-12 on what to do about same-path overwrites (contract-level limitation vs a byte snapshot work package).",
   "pending_review": [
     {
       "gate": "B.DR rev6",
@@ -21,10 +21,15 @@
     },
     {
       "gate": "B.VR (B04, focused)",
-      "scope": "company-wiki/tests/contract/test_r4b04_reference_stability.py (4 cases) + finding F-B04-1",
-      "status": "pending",
-      "reviewer": "independent subagent (non-author) - must differ from the four B02 reviewer sessions; the questions are whether the four cases really pin the claimed behaviour (including the pinned scanner re-point) and whether 'no product change' is the right call rather than a gap in the step",
-      "note": "evidence: evidence/b04-implementation.md, evidence/b04-test-run.txt, findings.md F-B04-1"
+      "scope": "company-wiki bc3590f: tests/contract/test_r4b04_reference_stability.py (4 cases) + findings",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 2,
+        "P3": 4
+      },
+      "note": "reproduced every number (4/69/ruff, hashes, anchors, one new test file) and ran its own mutation matrix (M3/M4/M5/M6/M7 killed); it corrected two of the author's statements - F-B04-1 overstated the loss (a metadata-level handle lookup still answers; with a second copy the old reference still resolves) and L03's protection comes from the pre-B02 provider_document_id gate, not from B02's source-group restriction - and it found F-B04-2 (moving the PDF without its sidecar drops the document out of the candidate slice, answering MISSING with an empty trace). All six findings are addressed in the run directory, including a new author-side mutation harness and a capture bound to the reviewed commit.",
+      "record": "reviews/B.VR-b04.json"
     },
     {
       "gate": "B02 closure decision (author, 2026-09-12)",
@@ -170,7 +175,7 @@
     "B.DR": "rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 implementation record (no design change); the ratchet table stays frozen (S-7)",
     "B.VR": "rev1 = rejected (2xP1/2xP2/3xP3); rev2/rev3/rev4 = accepted_with_findings and each round falsified one of the author's justification sentences, now single-sourced; B02 closed by the author's documented decision (no fifth prose-only round); B04 review pending. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer still needs G8",
     "B.AR": "not started",
-    "B04": "implemented as acceptance + finding F-B04-1 with NO product change (the design goal already held after B02); review pending",
+    "B04": "implemented as acceptance + findings with NO product change and reviewed (B.VR b04 = accepted_with_findings, 2xP2 + 4xP3 addressed). Design goal 1-2 verified; goal 3 is CONDITIONAL: a same-path overwrite destroys the old bytes, and with a second copy the old reference still resolves. Remedy choice (byte snapshot vs contract-level limitation) is registered as S-12 for the owner; F-B04-2 registers the silent MISSING when only the PDF is moved without its sidecar",
     "S-1_test_files": "APPROVED (F10/F11); F10 landing used by tests/contract/test_r4b02_candidate_selection.py (23 cases)",
     "S-2_R1_R4_out_of_B": "DECIDED - R-1/R-4 stay outside B as separate work packages",
     "S-3_export_path": "DECIDED - export_policy_2x untouched, payload hash frozen (B-payload-hash still NOT executed)",
@@ -196,7 +201,7 @@
     "test_dbx05_symlink_escape_rejected skips on this host (symlinks not supported), so the symlink-escape control did not run here",
     "the reviewer could not verify S-9's 61.3% counterfactual, the historical first-round FC-1201 failure claim, B-payload-hash, or any real cloud-placeholder layer (recorded in reviews/B.VR-b02.json limitations)"
   ],
-  "next_step": "Send B02 rev2 to a fresh independent B.VR session (the rev1 reviewer's own counter-examples are now regression cases; ask the new reviewer to re-run them), then continue with B04 -> B05 -> B01 -> B03 -> B06 -> B07, each step as its own commit with the ratchet/coverage rerun and its own independent review. The owner still owes two rulings: S-10 and S-11.",
+  "next_step": "Implement B05 per evidence/b05-plan.md in the order the plan fixes: extract _merge_document_row equivalently (the scanner's merge block), then add the reserved r4_provenance key with read-modify-write (never a whole-column replacement, or the prompt_injection_review receipt that resolver.py exposes is lost), then the per-column rules and the read-side blocked detail - each with F10 cases, its own commit, the ratchet/coverage rerun and an independent review. Then B01 -> B03 -> B06 -> B07. Three rulings remain with the owner: S-10, S-11, S-12.",
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
@@ -204,18 +209,18 @@
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "2b480cbd0d083c94fb9664e766f90b5e2b233eca",
-      "dirty": 1
+      "head": "d15f04ea971a3dfbb74b1a86c87c9adcb974ce85",
+      "dirty": 0
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "2b480cbd0d083c94fb9664e766f90b5e2b233eca",
+  "reviewed_commit": "d15f04ea971a3dfbb74b1a86c87c9adcb974ce85",
   "commit_anchor": {
-    "head": "2b480cbd0d083c94fb9664e766f90b5e2b233eca",
-    "index_tree": "5a6a425eb7f5b5ff80ca4523febe6d0a8894e9a9",
+    "head": "d15f04ea971a3dfbb74b1a86c87c9adcb974ce85",
+    "index_tree": "adf1f2bf26ec9b4fcc0548805f36618de99d37f0",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -232,8 +237,8 @@
       "size": 7366
     },
     "evidence/b02-ci-runs.md": {
-      "sha256": "b078423ae5fc75adff08ca01358c8a3ca919ce7db431862814baea3c540e98e3",
-      "size": 3548
+      "sha256": "a0e9913571a733c23d098fa1becace9e00651d6a327534b2d16cb89163f802d6",
+      "size": 4144
     },
     "evidence/b02-implementation.md": {
       "sha256": "cccbda6085f3254a5d13d7337887016b4a76ad3344aaf4b672ce257cac847dcc",
@@ -268,44 +273,52 @@
       "size": 8559
     },
     "evidence/b04-implementation.md": {
-      "sha256": "ff6e865e51f50865fdcba0afdfd3119770a5af0a06a425ffa4933b72b6fe2cfa",
-      "size": 5324
+      "sha256": "be2a8be365a934ef0440bd978ad0ac7d78bfc6201e7fcc56818b4bf687e1e38c",
+      "size": 7544
     },
     "evidence/b04-plan.md": {
       "sha256": "ae0342550d6e5c5185de63bf27a8e47460444ff2bb1d0c967b657a7e4223d207",
       "size": 3755
     },
     "evidence/b04-test-run.txt": {
-      "sha256": "6531958adfa2a4da8c8c995973672b65dd487d5ff95c7e3695f1d3ff4e0f9f38",
-      "size": 764
+      "sha256": "8edbc8547bbd4735dc31892a78397c57337ab964c9041490115f6c13953bbe68",
+      "size": 2377
+    },
+    "evidence/b04_mutation_check.py": {
+      "sha256": "a75b38195a8d481e48291cc410ff9b99f29e062c33ce875ef1bb365e3ffd0f52",
+      "size": 4800
+    },
+    "evidence/b05-plan.md": {
+      "sha256": "a2cd23fae0e78db7e0b93358662b27c218f92d962d3c12c0e253f09b54ad5c9a",
+      "size": 6925
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "5562b7c83d351ad9c6b4ae62938f33d3a18334a73c4686f9803dc15ed4b35af4",
-      "size": 26717
+      "sha256": "8b6b6705e2e346739c0257a1799f4db35ff6c7f49c6a5a9772c6a7b8d22f2f77",
+      "size": 27865
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "fb8b5511c09dec28bce3262979eeb4d494e7e9fe35612d93ad1e4747aecf26d1",
-      "size": 65136
+      "sha256": "f01418eec29384328ef6131597dde10125f28ed8910dae245d7605315550085c",
+      "size": 70302
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "4cf33ee65579705d955e204dd8a07fa0e678c1081f339dfb41bf8aadc0dee7cd",
-      "size": 12710
+      "sha256": "566a5f5a20a92c717ff11c9938b8adccc42122601fc5ef180a12191754dae759",
+      "size": 13312
     },
     "file-scope.md": {
       "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
       "size": 12565
     },
     "findings.md": {
-      "sha256": "bbe5281aa993aac24becf1cbb8301b28d2f2c34144ca7e453c850b57e814bc2e",
-      "size": 51044
+      "sha256": "2d25f2469c2db8fa625492185c53261e980948c6b0d089a6f2b77dc4e103118b",
+      "size": 54919
     },
     "owner-scope-decisions-2026-09-12.md": {
-      "sha256": "05c1f6d7bbdabcec47a6ac5a2078beac29ae4b50fe01f67dbb74262cf9c1c385",
-      "size": 8557
+      "sha256": "a2e7ae6c653dbb66f37b7b5b7021f026d56f1dccefe35891eb47a4f38b61ee98",
+      "size": 9587
     },
     "progress.md": {
-      "sha256": "f26404dc0075cf4ffe271b76e638b0709dbe9e60ae20ec4940377d2e441dfb85",
-      "size": 15854
+      "sha256": "a7d1dcdf9efa49b29a03dcffb4332a3f5277fdc0b2ff26386a8dc719fef5712c",
+      "size": 16579
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -347,13 +360,17 @@
       "sha256": "cea22427b73237fb27da26f416018f528799f73004193574d72575e400717ad5",
       "size": 30525
     },
+    "reviews/B.VR-b04.json": {
+      "sha256": "1b7c07a371524598d5df5283c43708c20ce8f1732a23456b54e92f53845c2831",
+      "size": 31720
+    },
     "risk-and-stop-rules.md": {
       "sha256": "c6aab0d76c8c0ff946de655c9da09901d3cc898c1e2cdf2fac21c967cd6ab24c",
       "size": 7165
     },
     "task_plan.md": {
-      "sha256": "62cba6a2eea53d319c11914dba4931593832575a866971e4ee05fc9449816ec0",
-      "size": 14987
+      "sha256": "796caf19ca099220f11abf3d709d24f100e6cef103a140bd0dc755a9e25b40d5",
+      "size": 15010
     },
     "test-acceptance-map.md": {
       "sha256": "20fb868baa7a8315a0f219dd06e6d366cbd95b0ba3f7d263ad618a3dc400647a",
@@ -361,11 +378,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 35,
+    "checked": 38,
     "source": "index",
-    "compared_revision": "5a6a425eb7f5b5ff80ca4523febe6d0a8894e9a9",
-    "head_revision": "2b480cbd0d083c94fb9664e766f90b5e2b233eca",
-    "index_tree": "5a6a425eb7f5b5ff80ca4523febe6d0a8894e9a9",
+    "compared_revision": "adf1f2bf26ec9b4fcc0548805f36618de99d37f0",
+    "head_revision": "d15f04ea971a3dfbb74b1a86c87c9adcb974ce85",
+    "index_tree": "adf1f2bf26ec9b4fcc0548805f36618de99d37f0",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -375,8 +392,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 35,
-    "files_listed": 35,
+    "files_on_disk": 38,
+    "files_listed": 38,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -385,5 +402,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T15:34:03.451608+00:00"
+  "generated_at_utc": "2026-09-12T16:16:36.994036+00:00"
 }
