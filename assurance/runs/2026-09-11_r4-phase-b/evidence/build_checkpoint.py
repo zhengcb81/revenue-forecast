@@ -154,29 +154,33 @@ LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": ("B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: "
               "B02 landed; B01/B03-B07 still design-only"),
-    "step": ("B02 rev3 implemented (F1 service.py + F2 resolver.py + F10 tests); B.VR rev1 rejected and "
-             "rev2 accepted_with_findings, both rounds' findings addressed"),
+    "step": ("B02 rev4 implemented (wiki da5e0f5): the claim-trust statement now lists the two "
+             "deliberate differences from pre-B02 instead of claiming equivalence; three further "
+             "review findings closed; B.VR rev4 focused recheck pending"),
     "last_completed_step": (
         "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). "
-        "B02 went through three revisions under two independent reviews: rev1 (cab1fd6) was REJECTED "
-        "(2xP1: an unverified fallback could serve a different revision, and a conditional is_canonical "
-        "raised StopIteration in the untouched duplicate_cleanup); rev2 (350b67a) fixed those and was "
-        "accepted_with_findings (2xP2: the claim-trusted fallback short-circuited the walk so a drifted "
-        "preferred copy beat a verified one, and the S-10 justification 'no wider than pre-B02' was "
-        "falsified by a counter-example where a .rejections copy held the best priority); rev3 fixes both "
-        "by serving verified copies first and anchoring the claim-trusted fallback to the row pre-B02 "
-        "would have served, plus mid-read cancellation, an own-source-group regression case and "
-        "evidence-consistency repairs. Latest measurement: 27 acceptance cases, full suite 2693 passed / "
-        "7 skipped / 2 load-flakes (both pass in isolation), coverage resolver.py 87.70% and service.py "
-        "95.16%, ratchet table untouched and green."
+        "B02 went through four revisions under three independent reviews: rev1 (cab1fd6) rejected (2xP1); "
+        "rev2 (350b67a) accepted_with_findings (2xP2); rev3 (182846b) accepted_with_findings (1xP2 + 6xP3) "
+        "after confirming all four earlier counter-examples fixed. The rev3 review falsified the sentence "
+        "the owner was being asked to approve - 'the claim-trusted row is the row pre-B02 would have "
+        "served, so the trust level is no wider than pre-B02 by construction' - with two reproducible "
+        "configurations, so rev4 (da5e0f5) replaces it everywhere with a falsifiable statement that lists "
+        "the two deliberate differences ((a) .rejections matched as a path SEGMENT instead of a substring, "
+        "which is wider on paths such as my.rejections_backup/; (b) election restricted to the document's "
+        "own source group, which is stricter), keeps only the deciding condition in the anchor predicate, "
+        "reports the anchor's own failure status in the reason, and adds three regression cases - the three "
+        "mutants that survived the suite (M5/M6/M7) are now killed. Latest measurement: 30 acceptance "
+        "cases, full suite 2698 passed / 7 skipped / 0 failed, coverage resolver.py 87.72% and service.py "
+        "95.16%, both ratchet tables green."
     ),
     "current_gate": (
-        "B.VR rev3 (fresh session) on the rev3 commit, then B04 (its landing plan is already written: "
-        "evidence/b04-plan.md). Two deviations await the owner: S-10 (a verified copy always wins; only "
-        "when nothing verifies may ONE row be served on the catalog's claim, namely the row pre-B02 would "
-        "have served - so the trust level is provably no wider than pre-B02; the read path owns the "
-        "byte-level gate in B03) and S-11 (budget exhaustion maps to that same row instead of the design's "
-        "blocked, because ResolutionStatus has exactly five values)."
+        "B.VR rev4 (focused recheck of the corrected S-10 wording, the anchor predicate/reason and the "
+        "three new regression cases), then B04 (landing plan already written: evidence/b04-plan.md). Two "
+        "deviations await the owner, both now stated falsifiably: S-10 (verified copies always win; only "
+        "when nothing verifies may one row - the legacy canonical of the document's own version - be "
+        "served on the catalog's claim; differences (a) and (b) above are listed for approval) and S-11 "
+        "(budget exhaustion maps to that same row instead of the design's blocked, because "
+        "ResolutionStatus has exactly five values)."
     ),
     "pending_review": [
         {
@@ -200,13 +204,24 @@ LEDGER = {
             "note": "evidence to review: evidence/b02-implementation.md, evidence/b02-verification.json, evidence/b02-red-green-*.json",
         },
         {
-            "gate": "B.VR rev3 (B02 rev3)",
-            "scope": "the rev3 commit: verified copies win, claim-trusted fallback anchored to the pre-B02 row, mid-read cancellation, own-source regression case",
+            "gate": "B.VR rev4 (B02 rev4, focused)",
+            "scope": "wiki da5e0f5: corrected S-10 wording (differences listed), simplified anchor predicate, anchor-failure reason, 3 new regression cases",
             "status": "pending",
-            "reviewer": ("independent subagent (non-author) - must differ from both earlier reviewer sessions; "
-                         "should re-run the rev2 counter-example (rejections best priority + drifted copy) and "
-                         "the rev1 counter-example (drifted survivor) itself"),
-            "note": "evidence: evidence/b02-implementation.md (rev3 sections), evidence/b02-verification.json, reviews/B.VR-b02.json, reviews/B.VR-b02-rev2.json",
+            "reviewer": ("independent subagent (non-author) - must differ from all three earlier reviewer "
+                         "sessions; the focused question is whether the corrected wording is now falsifiable "
+                         "and true, and whether the three mutants (M5/M6/M7) are really killed"),
+            "note": "evidence: evidence/b02-implementation.md (rev4 sections), reviews/B.VR-b02-rev3.json",
+        },
+        {
+            "gate": "B.VR rev3 (B02 rev3)",
+            "scope": "company-wiki 182846b",
+            "status": "closed",
+            "verdict": "accepted_with_findings",
+            "findings": {"P2": 1, "P3": 6},
+            "note": ("confirmed all four earlier counter-examples fixed and reproduced every measured "
+                     "number; falsified the 'no wider than pre-B02 by construction' sentence and found "
+                     "three surviving mutants; all seven findings addressed in rev4"),
+            "record": "reviews/B.VR-b02-rev3.json",
         },
         {
             "gate": "B.VR rev2 (B02 rev2)",

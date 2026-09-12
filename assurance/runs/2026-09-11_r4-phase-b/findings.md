@@ -2,6 +2,24 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B02-6：`B.VR` rev3（复核 rev3 实施）= **accepted_with_findings**（0×P0 / 0×P1 / 1×P2 / 6×P3）→ 实施 rev4
+
+审查记录 [reviews/B.VR-b02-rev3.json](reviews/B.VR-b02-rev3.json)（第三个独立会话）。它**逐位重跑了前两轮的全部 4 条反例并确认全部 fixed**（rev1-P1-1、rev1-P1-2、rev2-P2-1、rev2-P2-2；pre 对照 = `c986c7a` worktree），程序化复现了 27/23/10/787、覆盖率 87.70 %/95.16 %、棘轮门 2 passed、claim 审计 28/28、`b02_verify.py` 7/7、探针 JSON 逐字段相同、三个文件哈希一致；并做了 8 个变异（M1/M2/M3/M4/M8 被杀，**M5/M6/M7 存活**）。
+
+| # | 级别 | 事实（reviewer 复现） | rev4 处置 |
+|---|---|---|---|
+| **B-VR02R3-01** | **P2** | **"锚点 = pre-B02 会服务的那一行，故『不宽于 pre-B02』由构造保证"这句话为假**（两个反例）：(a) 唯一副本在 `my.rejections_backup/2025.pdf`（含 `.rejections` **子串**但非路径段）且字节漂移 → pre-B02 = `missing`，rev3 = `reused_exact` 按声明服务；(b) 跨 source 组时同理。该句正是 **S-10 请求 owner 批准的核心依据**，且出现在证据 §3 / `b-design.md` / findings / owner 文本 / docstring / commit message 六处 | **改写为可证伪的精确表述**并在**六处**同步：明说规则 2 是"本版本合格候选中那一行 legacy `is_canonical`"，**列出与 pre-B02 的两处差异（a 更宽：子串→路径段；b 更严：加 source 组限定）**，并说明 a 是刻意保留的**缺陷修复**。新增 `test_r4b02_documented_difference_from_pre_b02_is_pinned` 把 a 这一角钉住，`test_r4b02_other_source_group_is_never_served` 钉住 b |
+| B-VR02R3-02 | P3 | 变异 M5（删收尾守卫 `or budget.cancelled`）**存活**且非等价：取消发生在**最后一个**候选读取中时，变异体会返回句柄 | 新增 `test_r4b02_cancel_during_the_last_candidate_read`（三份全漂移 + 第三次读取中取消）；复查 **M5 = KILLED** |
+| B-VR02R3-03 | P3 | 锚点谓词里 `role`/`location_status`/非 `.rejections` 三条件对 `ordered` 成员**恒真**（M6/M7 存活），真正起作用的是 rank 过滤排除 `.rejections` canonical | 谓词**简化为 `item.get("is_canonical")`**（成员资格即全部条件，并注明差异），死条件删除；复查 **M6/M7 = KILLED** |
+| B-VR02R3-04 | P3 | 证据四处文字不实：rev3 行的 wiki 提交列是**占位符**；"`B.VR` rev2 复审未做"为假；`service.py +74/−20` 实为 +71/−9；行锚偏移 1–11 行（上一轮还声称"已核对"） | rev4 重写这些行：提交号写实值、删掉假陈述、行锚**用脚本从最终代码重新解析**（见证据 §1 注） |
+| B-VR02R3-05 | P3 | `handle.content_sha256` 在"manifest 声明与 documents 行冲突"时取值会变（pre = 目录声明，rev3 = 验证到的摘要），证据副作用清单未登记 | 在证据 §6 显式登记（这是 B02 的**有意**取值：句柄报告被验证的字节摘要；**B-payload-hash 仍未执行**，无法在字节层面声称 payload 不变） |
+| B-VR02R3-06 | P3 | 理由串 `unverified_<status>_…` 的 `<status>` 取的是"**遍历为何停止**"而非"锚点为何失败"（锚点 mismatch + 后续候选 budget_exceeded 时会写成 budget_exceeded） | 改为记录**锚点自身的失败状态**（`claimed_fallback_status`）；新增 `test_r4b02_claim_reason_names_the_anchor_failure` |
+| B-VR02R3-07 | P3 | §7 的"棘轮有牙：新增测试未落盘时 resolver = 61.3 %（FAILED）"**不可复现**：reviewer 实测（排除新测试文件的 `--cov`）resolver = **86.34 %** ≥ 容差底 85.5，棘轮仍 PASS | 该行改为**限定其来源**：那是 **rev1 树**（`cab1fd6` 之前的实现 + 无新测试文件）上的一次测量，**在当前树上不成立**，并记录 reviewer 的 86.34 % 反测值 |
+
+**reviewer 明确未能验证**（记入其 limitations）：生产 catalog/真实数据（全为合成 fixture）、真实云占位层（`RECALL_ON_*` 本机不可得）、`B-payload-hash`（无基线）、作者全量的 2 条失败（reviewer 本轮 0 失败，collected 2702 与用例名吻合）、61.3 % 所指的具体树（未给 commit）、C/D 步与写面/外发面/worker 面、resolver 读放大的实测性能。
+
+**rev4 的状态**：上述 7 条已全部处置（3 条代码 + 4 条文档/证据），三条存活变异全部被杀；**待 `B.VR` rev4 定点复核**（新会话）。
+
 ## F-B02-5：`B.VR` rev2（复核 rev2 实施）= **accepted_with_findings**（0×P0 / 0×P1 / 2×P2 / 3×P3）→ 实施 rev3
 
 审查记录 [reviews/B.VR-b02-rev2.json](reviews/B.VR-b02-rev2.json)（新会话，非作者、非 rev1 会话）。它**逐位重跑了 rev1 的两条 P1 反例并确认真的修好了**（P1-1：HEAD = `missing`/0 matches/`download_required=true`/trace 含 `content_sha256_mismatch`/**无** `unverified_*` 行；P1-2：`list_groups()` 不再抛错且 PRE 与 POST 输出逐字节相同），并独立复现了 23/23/10/787、覆盖率 87.29 %/95.16 %、复杂度棘轮 2 passed、ruff clean。

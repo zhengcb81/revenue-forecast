@@ -109,14 +109,14 @@
 
 **测试**：L01/L02/L03/L04（L03 的关键验收"撤首选→自动切换"由 `_handle` 承担）；预算与取消由 **L06** 与 **L12** 覆盖。
 
-**⚠️ 实施偏差（v0.1.7 回填，2026-09-12；经 `B.VR` rev1/rejected 与 rev2/accepted_with_findings 两轮收紧；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md) / [S-11](owner-scope-decisions-2026-09-12.md)）**：本段第 3 段的"同 hash"在 **B02 的实际实现**里是两条规则：
+**⚠️ 实施偏差（v0.1.7 回填，2026-09-12；经 `B.VR` rev1/rejected、rev2/accepted_with_findings、rev3/accepted_with_findings 三轮收紧；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md) / [S-11](owner-scope-decisions-2026-09-12.md)）**：本段第 3 段的"同 hash"在 **B02 的实际实现**里是两条规则：
 
 1. **验证通过的副本永远优先被服务**（无论 rank）——仍**真的读字节**并做**整文件**摘要比对（上限 256 MiB/候选；抽样只用于排除），验证通过时记 `verified_sha256`；
-2. **只有在没有任何候选通过验证时**，才允许**一行**凭目录声明被服务，且该行必须是"**pre-B02 会服务的那一行**"（legacy `is_canonical` 且 active / `original_primary` / 非 `.rejections` / 属于本版本），trace 记 `unverified_<状态>_on_pre_b02_canonical`。这条**锚定**让"不宽于 pre-B02"**由构造成立**：pre-B02 服务的正是这一行，当它不可用时 pre-B02 什么都不服务；
-3. **其余任何副本都必须字节验证通过**，否则不返回句柄（→ `unavailable`）；**取消永不回答**（含读取中途取消）；
+2. **只有在没有任何候选通过验证时**，才允许**一行**凭目录声明被服务：**本版本（文档自身 source 组）合格候选中那一行 legacy `is_canonical`**，trace 记 `unverified_<该行自身的失败状态>_on_pre_b02_canonical`。**注意：该行不是"pre-B02 会服务的那一行"的逐位复制**——pre-B02 有两个缺陷且 rev4 不恢复：(a) `.rejections` 当时按**子串**匹配（rev4 按**路径段**，因此 rev4 在 `my.rejections_backup/` 这类路径上**更宽**）；(b) 当时**不限定 source 组**（rev4 限定，因此 rev4 **更严**，不会取另一版本的行）。权威表述见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 的差异表；
+3. **其余任何副本都必须字节验证通过**，否则不返回句柄（→ `unavailable`）；**取消永不回答**（读取中途取消、收尾守卫、粘性取消都算）；
 4. **字节级硬门归 B03 的读路径**（"只返回验证版本字节或明确失败"）——B03 落地前，规则 2 的那一行仍可能字节漂移而被服务（trace 已标注；见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §8）。
 
-> **v0.1.7 修订记录（同一版内）**：rev2 曾写作"首选（rank 1）副本凭声明服务"，被 `B.VR` rev2 用反例证伪（`.rejections` 副本占最优优先级 + 唯一合格副本漂移时，pre-B02 = `missing` 而 rev2 = `reused_exact` 服务了 hash 不匹配的字节 → "不宽于 pre-B02"不成立），故 rev3 改为上面的**锚定**写法。
+> **v0.1.7 修订记录（同一版内，三次）**：rev2 曾写"首选（rank 1）副本凭声明服务"→ 被 `B.VR` rev2 用反例证伪（`.rejections` 占最优优先级时 pre-B02 = `missing` 而 rev2 = `reused_exact`）；rev3 曾写"锚定到 pre-B02 会服务的那一行，故不宽于 pre-B02 **由构造保证**"→ 被 `B.VR` rev3 用两个反例证伪（子串 vs 路径段、source 组限定）；rev4 改为上面的**差异列举**写法。
 
 **另一处命名偏差（S-11）**：预算耗尽（`budget_exceeded`）在 `resolve` 里**不是**设计写的 `blocked`，而是"按 pre-B02 信任级服务首选副本 + trace 标记"：`ResolutionStatus` 只有五个值、没有 `blocked`，新增第六值会违反 A03 §2.4。`_ReadBudget` 的计数**每次请求重置**（取消保持粘性）。
 
