@@ -1,5 +1,7 @@
 # B 阶段边界裁定（owner 2026-09-12，"全按推荐来"）
 
+> **§11 owner 复裁（2026-09-12 晚）：S-10/S-11/S-12/S-13 四条全部按建议通过**，并给出**简化指示**（详见 §11）。
+
 > 背景：`B.DR` 连续六轮 rejected（v0.1.0→v0.1.6），但从第四轮起**剩余 P1 全部不是文字缺陷，而是"B 可以动哪里"的边界问题**。owner 于 2026-09-12 就六项 scope 问题逐条采纳建议。
 > 效力：**这六条即 B 阶段的边界**；本页是权威处，其他文档只引用。
 > 注意：本裁定**确定边界**，不等同于"批准开始改产品代码"——按 handbook §1 第 5 项，首次实施仍需 owner 对**最终 file-scope** 的一句确认（见 §7）。
@@ -39,14 +41,27 @@
 
 > 说明：本授权覆盖**产品代码改动**（此前一直未授权），但**不**覆盖"run 目录之外的任何写动作"以外的边界扩张——若实施中发现需要改 allowed 集以外的文件，**停下并请示**（见 [task_plan.md](task_plan.md) §3 停止条件）。
 
-## 9. 实施期新增待定项（v0.1.7 登记，**待 owner**）
+## 9. 实施期新增待定项（v0.1.7 登记；**2026-09-12 晚 owner 全部按建议通过**）
 
-| # | 问题 | 作者建议 |
+| # | 问题 | **owner 裁定（2026-09-12 晚："全按推荐"）** |
 |---|---|---|
-| **S-10** | **B02 段 3 的"同 hash"硬门与 A 侧 4 条冻结断言冲突**（那些 fixture 的字节与声明 `content_sha256`／`byte_size` 都不一致）。实施规则（**rev5 定稿**）：**① 验证通过的副本永远优先被服务**（无论 rank）；**② 只有在没有任何副本通过验证时**，才允许**一行**凭目录声明被服务 —— 即**本版本合格候选中那一行 legacy `is_canonical`**，trace 记 `unverified_<该行失败状态>_on_pre_b02_canonical`；③ 其余副本一律要求字节验证通过，否则不返回句柄（→ MISSING）；④ 取消永不回答。**该行与 pre-B02 会服务的行不等价，四处差异（a 子串→路径段＝更宽；b 条件性 source 组限定＝更严；c 需过本地探针/非云占位＝更严；d 验证副本优先＝更宽但更正确）以 [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 的清单为唯一权威处**，请连同该清单一起批准。字节硬门归 **B03 读路径**。是否认可？ | **认可**：请以 §3 的 a–d 清单为准（本表不复述，避免再次出现"多处措辞不一致"）；该清单由 `B.VR` rev2/rev3/rev4 三轮反例逼出，且每条都有回归用例。若不认可：(a) 另行批准修改那 4 条既有断言（与 S-1 互斥）；(b) 把 B03 提前、与 B02 合并交付。依据与复跑命令见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 |
-| **S-11** | **预算耗尽（`budget_exceeded`）的对外状态**：设计第 3 条要 `blocked`，但 `ResolutionStatus` 只有五个值（A03 §2.4 不新增状态）。实施为"按规则 ② 服务 pre-B02 canonical + trace 标记"，且 `_ReadBudget` 计数**每请求重置**、取消粘性（含读取中途取消）。是否认可这一映射？ | **认可**：把 `blocked` 映射为"该候选不可用 + 请求保持既有 MISSING/信任语义"，不新增第六值；若 owner 要真正的 `blocked`，需先改 A03 的五值模型（另立工作包） |
-| **S-12**（B04 复审后新增，**待 owner**） | **同一路径被新修订覆盖后，旧副本的字节被物理销毁**（locator 也随之消失；若旧版本在别处仍有副本则引用照常可用）。三条路可选：**(ii) 导入新修订时为旧修订留受控快照**（能恢复可解引用；属写面 + 空间/保留策略，需独立工作包）；**(iii) 合同级已知限制**（零代码，把限制写进 A 侧合同，避免"以为还能解引用"）；(iv) 读侧诊断细化（把"没有任何 location 行"与"有行但都不合格"在 trace 里分开；作者**已否决**，理由见 [findings.md](findings.md) F-B04-1）。选哪条？ | **建议 (iii) + 登记 (ii)**：先用合同把限制写实（零风险、可立即生效），把快照方案留作独立工作包待排期；若 owner 认为"旧引用必须永远可用"，则选 (ii) 并单独批准写面改动。依据见 [findings.md](findings.md) F-B04-1 与 [evidence/b04-implementation.md](evidence/b04-implementation.md) §4 |
+| **S-10** | **B02 段 3 的"同 hash"硬门与 A 侧 4 条冻结断言冲突**（那些 fixture 的字节与声明 `content_sha256`／`byte_size` 都不一致）。实施规则（**rev5 定稿**）：**① 验证通过的副本永远优先被服务**（无论 rank）；**② 只有在没有任何副本通过验证时**，才允许**一行**凭目录声明被服务 —— 即**本版本合格候选中那一行 legacy `is_canonical`**，trace 记 `unverified_<该行失败状态>_on_pre_b02_canonical`；③ 其余副本一律要求字节验证通过，否则不返回句柄（→ MISSING）；④ 取消永不回答。**该行与 pre-B02 会服务的行不等价，四处差异（a 子串→路径段＝更宽；b 条件性 source 组限定＝更严；c 需过本地探针/非云占位＝更严；d 验证副本优先＝更宽但更正确）以 [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 的清单为唯一权威处**。字节硬门归 **B03 读路径**。 | ✅ **通过**（以 §3 的 a–d 清单为准） |
+| **S-11** | **预算耗尽（`budget_exceeded`）的对外状态**：设计第 3 条要 `blocked`，但 `ResolutionStatus` 只有五个值（A03 §2.4 不新增状态）。实施为"按规则 ② 服务 pre-B02 canonical + trace 标记"，且 `_ReadBudget` 计数**每请求重置**、取消粘性（含读取中途取消）。 | ✅ **通过**（不新增第六值；要真 `blocked` 须先改 A03 合同，另立工作包） |
+| **S-12** | **同一路径被新修订覆盖后，旧副本的字节被物理销毁**（locator 也随之消失；若旧版本在别处仍有副本则引用照常可用）。三条路：(ii) 导入新修订时留受控快照（写面工作包）；(iii) 合同级已知限制（零代码）；(iv) 读侧诊断细化（作者已否决）。 | ✅ **通过 (iii)**：把限制写成"已知限制"（记录在本 run 目录，见 [findings.md](findings.md) F-B04-1；**不动 A 侧冻结件**，若将来触碰 A 侧合同再随版带上）；(ii) 登记为独立工作包待排期 |
+| **S-13** | **响应级 `blocked` 由谁交付？**（设计要求响应级 `blocked` + 字段级明细；载体 `resolver.py` 不在 B05 的 allowed 集） | ✅ **通过**：**并入 B06/B07**（它们本就改 `ResolutionEnvelope`）；B05 只交付字段级事实 + 读侧 `metadata_status`，**不扩 B05 范围** |
 
-| **S-13**（B05 复审后新增，**待 owner**） | **响应级 `blocked` 由谁交付？** 设计 §B05（line 186/192）与 L08 要求"字段冲突 ⇒ **响应级**五值状态为 `blocked` + 字段级明细"，但 B05 的 allowed 落点是 **F3 `scanner.py` + F1 `service.py`**；响应级载体是 `resolver.py`（**F2**，本步无权改）。现状：读侧 `query_filing_candidates` 已暴露 `provenance`/`conflicts`/`metadata_status="blocked"`，但 `resolver.resolve` **不读**它们——请求被保留的那个 kind 时照常 `reused_equivalent`（无冲突痕迹），请求落选 kind 时静默 `MISSING`（`debug_trace` 为空，SQL 下推过滤）。reviewer 复现并记为 **P2 B-VR05-03**。 | **建议**：把"响应级 `blocked`"**并入 B06/B07**（它们的 F2 落点已包含 `ResolutionEnvelope` 的 `qualification`），B05 只交付字段级事实 + 读侧 `metadata_status`；若 owner 要求 B05 内交付，则需把 **F2 加进 B05 的 allowed**（一次范围扩张，需单独批准）。依据见 [reviews/B.VR-b05.json](reviews/B.VR-b05.json) 与 [evidence/b05-review-disposition.md](evidence/b05-review-disposition.md) §3 |
+> 说明：S-10/S-11 是**实施期**才发现的事实冲突（设计期未识别），因此按本包自订标准「范围/语义改判须 owner 确认」登记。S-10 已由**四轮**独立复审检过（`B.VR` rev1 = rejected；rev2/rev3/rev4 = accepted_with_findings，其中 rev2、rev3、rev4 **各证伪过一次作者为 S-10 写的理由句**——现口径 = [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 的 a–d 清单，本目录其他文件一律只引用它）。四条已于 2026-09-12 晚按建议通过（见上表）。
 
-> 说明：S-10/S-11 是**实施期**才发现的事实冲突（设计期未识别），因此按本包自订标准「范围/语义改判须 owner 确认」登记，**不自行认定已获批准**。S-10 已由**四轮**独立复审检过（`B.VR` rev1 = rejected；rev2/rev3/rev4 = accepted_with_findings，其中 rev2、rev3、rev4 **各证伪过一次作者为 S-10 写的理由句**——现口径 = [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 的 a–d 清单，本目录其他文件一律只引用它）。S-12（B04）与 S-13（B05）分别是"同路径覆盖后的旧引用"与"响应级 `blocked` 的归属"，都属于**范围/取舍**问题，需 owner 一句话。
+> 说明：S-10/S-11 是**实施期**才发现的事实冲突（设计期未识别），因此按本包自订标准「范围/语义改判须 owner 确认」登记。S-10 已由**四轮**独立复审检过（`B.VR` rev1 = rejected；rev2/rev3/rev4 = accepted_with_findings，其中 rev2、rev3、rev4 **各证伪过一次作者为 S-10 写的理由句**——现口径 = [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 的 a–d 清单，本目录其他文件一律只引用它）。四条已于 2026-09-12 晚按建议通过（见上表）。
+
+## 11. owner 简化指示（2026-09-12 晚："许多地方太严格了，尽量简化并减少权限审批"）
+
+自本轮起按以下更轻的方式推进（不改安全底线：不越权、不造假、CI 必须绿）：
+
+| 项 | 之前的做法 | **简化后** |
+|---|---|---|
+| 待裁事项 | 几乎每个实施期发现都登记 S-xx 等 owner 一句话 | **只有"范围扩张/风险取舍"才登记**；其余由作者在已批边界内自行决定，并在记录里写"作者决定 + 理由"，owner 可随时否决 |
+| 独立复审 | 每个修订（rev1…rev5）各一轮 | **每个步骤一轮**；P0/P1 的修复做**定点复核**，P2/P3 的修复由本步证据 + **下一步复审抽样**覆盖，不再单独开轮 |
+| 产物 | 每步多份（实施记录 + 逐轮 disposition + 多份 review） | 每步**一份实施记录**，处置与实测写在同文件里；review 记录仍独立存档 |
+| 推送/CI | 文字类修订也各自等 CI | 每步一次提交序列 + 推送；**CI 绿**即可，文字类修订不单独等 CI（随下一步一起验） |
+| 合同类限制 | 想动 A 侧冻结合同 | 记在本 run 目录（findings/记录），**不动 A 侧冻结件** |

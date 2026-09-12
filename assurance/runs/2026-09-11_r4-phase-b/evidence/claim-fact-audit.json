@@ -748,13 +748,13 @@
         },
         {
           "file": "evidence/b05-review-disposition.md",
-          "line": 24,
-          "text": "| B-VR05-03 | P2 | **未解决，需 owner 裁范围** | `blocked/conflicts/provenance` 目前**没有消费者**：`resolver.resolve` 不读它们（请求被保留的 kind → `reused_equivalent` 且无冲突痕迹；请求落选 kind →"
+          "line": 25,
+          "text": "| B-VR05-04 | P2 | ✅ **已修（`9826b3c`）** | \"声明\"不再只看键存在，而是**要求扫描器实际使用的值就是该键的值**（`_declared_columns(container, values)`）；`document_kind: \"10-K\"` 这类被分类器忽略的值不再算声明 → 不"
         },
         {
           "file": "evidence/b05-review-disposition.md",
-          "line": 25,
-          "text": "| B-VR05-04 | P2 | **未解决** | \"声明\"与\"分类器实际读到的值\"脱钩：sidecar 里 `document_kind='10-K'`（映射不到已知 kind、分类器忽略）仍算声明 → 假冲突/假 `blocked`。修法：声明判定应建立在**分类器实际消费的输入**上（或只认映射成功的值） "
+          "line": 31,
+          "text": "| B-VR05-10 | P3 | ⚠️ **未解决（登记，暂不实施）** | \"不写原文\"只对**值**成立（注入的 canary **键名**会作为 `fields` 名出现）；低熵值的 12 位 hash 可暴力反推。候选处置：(a) 字段名白名单/规范化；(b) 低熵值改用加盐摘要或只记来源+时间。owner"
         }
       ],
       "superseded_hits": [],
@@ -816,7 +816,7 @@
       "superseded_hits": [
         {
           "file": "owner-scope-decisions-2026-09-12.md",
-          "line": 28,
+          "line": 30,
           "kind": "history",
           "text": "- **v0.1.6 状态（历史，已被 §8 授权取代）**：设计 + 边界 + 验证协议就绪；产品代码零改动。"
         }
