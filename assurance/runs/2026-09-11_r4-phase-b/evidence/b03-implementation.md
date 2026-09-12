@@ -2,7 +2,7 @@
 
 > **复审与处置（2026-09-12 晚）**：`B.VR`（B03）= **accepted_with_findings**（1×P1/4×P2/3×P3），**逐条处置表**见 [b03-review-disposition.md](b03-review-disposition.md)，处置提交 **`2f1ddab`**（本步）+ `728b5e0`（B01 的 CFG-08 空值，同一轮发现）。用例数 **13 → 18**（新增：版本绑定、尾守卫/取消停止读取、盘根包含、错类型守卫）。三处修复均以**变异**验证被守住（[b03_disposition_mutations.py](b03_disposition_mutations.py)：`version_pin_off`/`tail_guard_off`/`inloop_cancel_off` 全 **KILLED**）。下面 §2/§3 是**处置后**的口径。
 
-> 状态：**已实施**（产品代码 1 文件 `resolver.py` + 新增验收 **13 用例**（+1 skip））。提交 **`5ab0779`**（company-wiki，`fcap` → `origin/master`）。
+> 状态：**已实施 + 已复审 + 已处置**（产品代码 1 文件 `resolver.py` + 验收用例 **18 条**（+1 host skip）；提交 `5ab0779` 实施、`2f1ddab` 处置复审）。company-wiki，`fcap` → `origin/master`。
 > 依据：设计 [b-design.md](../b-design.md) §B03（三级：固定句柄 + 读后复验 / 受控快照 / 显式失败）；计划 [b03-plan.md](b03-plan.md)；允许集 F4 `reader.py` + F2 `resolver.py` + F10（**仅新增**测试）。
 > 本步交付的是 **S-10 推迟的"字节级硬门"**：B02 让**首选副本**按目录声明被服务、且消费者拿到的是**路径**；B03 让"取字节"这个动作本身只可能返回**已验证的字节**。
 
@@ -11,7 +11,7 @@
 | 交付 | 位置 | 内容 |
 |---|---|---|
 | 产品代码（改动） | `company-wiki/src/company_wiki/source_catalog/resolver.py` | 新增 `read_verified_bytes(...)` + `ByteReadResult` + `_read_verified_bytes` + `_inside_configured_roots`（**未改** `reader.py`，理由见 §5） |
-| 验收用例（新增，F10） | `company-wiki/tests/contract/test_r4b03_stable_bytes.py` | 13 用例（+1 host skip），见 §3 |
+| 验收用例（新增，F10） | `company-wiki/tests/contract/test_r4b03_stable_bytes.py` | **18 用例**（+1 host skip；处置复审后由 13 增至 18），见 §3 |
 | 计划 | [b03-plan.md](b03-plan.md) | 规则 R1–R6 与用例清单（实施与计划一致，偏差见 §5） |
 
 ## 2. 规则实现（逐条对应计划 §2）
@@ -23,7 +23,8 @@
 | R3 | 中断 / 类型不符 / 读中变化 ⇒ 显式失败；**读后**再 `stat` 比对 `size` 与 `mtime_ns` | `read_failed` / `not_regular_file` / `changed_during_read` 分支 | 同左 |
 | R4 | 超上限（含**读取中增长**）⇒ 失败，**绝不**返回部分字节 | `_CANDIDATE_BYTES_CAP` 前后两处检查 | `unavailable` / `exceeds_candidate_cap` |
 | R5 | 返回证据：`bytes_source="handle"`、`verified_sha256`（= `content_sha256` 字段）、`byte_size`、`read_at`；**不新增 `SourceHandle` 字段** | `ByteReadResult` | — |
-| R6 | 取消**粘性**：读取中途取消也绝不返回字节 | 循环内 `budget.cancelled` 检查 | `unavailable` / `cancelled` |
+| R6 | 取消**粘性**：读取中途取消也绝不返回字节 | 循环内 `budget.cancelled` 检查 **+ 读完后的尾守卫**（B-VR03-04：落在"返回 `b''` 的那次 read 内部"的取消只有尾守卫能看见） | `unavailable` / `cancelled` |
+| R7 | 调用方传入的 `expected_content_sha256` **必须与句柄一致**（B-VR03-01） | 入口处绑定检查 | `unavailable` / `expected_version_mismatch` |
 | 附加 | **越界 locator（含 symlink 逃逸）零读**：按 realpath 比对配置 roots | `_inside_configured_roots`，在**读之前** | `not_found` / **`artifact_path_outside_allowed_root`**（见 §7 的词表说明） |
 
 **错误值口径**：全部落在 `operation-contract.md` §2.4 的**五值**内（`not_found` / `not_indexed` / `unavailable` / `blocked` / `ambiguous`），**未新增状态**；预算与取消按合同要求作为**独立事实**（`reason`/字段），不是状态。
@@ -34,7 +35,7 @@
 
 ```
 python -m pytest tests/contract/test_r4b03_stable_bytes.py -q
-   -> 13 passed, 1 skipped
+   -> 18 passed, 1 skipped
 python -m pytest tests/contract/test_r4b03_stable_bytes.py \
     tests/contract/test_r4b01_field_owner_alignment.py \
     tests/contract/test_r4b02_candidate_selection.py \
