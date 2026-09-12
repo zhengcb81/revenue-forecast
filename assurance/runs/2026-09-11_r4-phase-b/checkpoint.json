@@ -231,7 +231,7 @@
   "failed_or_unknown": [
     "BLOCKER (F-B01-7): after B01 landed, revenue-forecast's pre-push gate (real-data suite) is RED on tests/test_fc1001_isolated_lake.py::test_corruption_variants_fail_closed[sidecar_missing]. Root cause located with a six-way probe (evidence/b01_fc1001_probe.py): that case NEVER passed for the reason it names - the rejection came from the resolver's old kind-only reuse gate under the case's inline synthetic config (default reusable_root_kinds=['company_raw'] against a 'directory' root), and under the production-shaped config the same document resolves BOTH before and after B01 (matches=1), including after a re-scan and with sidecar_suffixes declared. So B01 removed an incidental cover, not an identity check (the entity gate still rejects as before), and the case's fail-closed expectation has never held in production - the real gap it exposes (a document whose sidecar is missing must not default to a trusted filing) belongs to B06 by the design text. The fix is a one-case correction in revenue-forecast, which is OUTSIDE phase B's file scope, so it is with the owner (options A-D in findings F-B01-7). Until then the revenue-side commits stay local; the gate was NOT bypassed",
     "B03/B06/B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so a preferred copy whose bytes drifted is served on the catalog's claim (S-10's other half, assigned to B03), and no response-level blocked verdict exists yet (S-13, assigned to B06/B07)",
-    "B-payload-hash has never been executed (no frozen baseline in the package and the value needs a CLI that is not approved); B05 changes the metadata_json bytes, so any baseline must be taken after B05",
+    "B-payload-hash is now EXECUTABLE and PASSES (findings F-B07-1): the gate's stated blocker ('reading the value needs an unapproved CLI') is false - cli._policy_export_payload is a pure function - so evidence/b07_payload_baseline.py compares the payload byte for byte between a read-only worktree of the phase-A frozen revision 7d4852f and the current tree with a FIXED project_root, and the two are identical (canonical_sha256 bd1a359f... on both sides, 1216 bytes). The absolute hash remains machine-scoped (it embeds each root's absolute path_ref - F-B01-9), so what is portable is the comparison, not the value; B07 re-runs the script to confirm",
     "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped); the B-side cases cover L01-L04 plus budget/cancel/no-network, the review regressions and the B01 alignment property, not the whole matrix",
     "B01's residual: the resolver imports the private policy function _effective_reusable - recorded in F-B01-6; promoting it to a public API would touch the export payload, and B-payload-hash is not executable",
     "B05's residuals: B-VR05-09 (flat-shape wording, 35 vs 30 complexity) and B-VR05-10 ('no raw text' holds for values only - injected canary key NAMES appear as fields - and a low-entropy value's 12-hex hash is brute-forceable)",
@@ -247,10 +247,10 @@
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
       "head": "f0aacbfd258b85b2eb76d41365786abf58179067",
-      "dirty": 0
+      "dirty": 1
     },
     "revenue-forecast": {
-      "head": "ce005e8da996f03388c61ba531ea66acf48b714a",
+      "head": "cdbd34c6c8a351f96527ebe9518b826fefba31cc",
       "dirty": 0
     },
     "filing-fetch": {
@@ -258,10 +258,10 @@
       "dirty": 0
     }
   },
-  "reviewed_commit": "ce005e8da996f03388c61ba531ea66acf48b714a",
+  "reviewed_commit": "cdbd34c6c8a351f96527ebe9518b826fefba31cc",
   "commit_anchor": {
-    "head": "ce005e8da996f03388c61ba531ea66acf48b714a",
-    "index_tree": "89175417a8f8dea5c91d9c73355df5934965aedc",
+    "head": "cdbd34c6c8a351f96527ebe9518b826fefba31cc",
+    "index_tree": "5b5e69128a94a48d4915982750fa44f747e9f736",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -282,8 +282,8 @@
       "size": 17145
     },
     "evidence/b01-implementation.md": {
-      "sha256": "faa8f48fd4b77c9218209ecbee35e553e6dda3b34c4c3fe32358309aca85a4b1",
-      "size": 12453
+      "sha256": "0f98797dccb532f8c55527eab2c04a8c0dfaf0a82653aaa781a806f20db43b43",
+      "size": 12745
     },
     "evidence/b01-review-disposition.md": {
       "sha256": "790f2b1bd5e9ff14fc176cfeb912c90667dbf5acad42e8b72ee8702b38922fb0",
@@ -346,12 +346,44 @@
       "size": 8559
     },
     "evidence/b03-implementation.md": {
-      "sha256": "64cdd5667d89a11a4d25c70df24730386fc3ab99262d58c0a2b801e7c756e4a5",
-      "size": 9690
+      "sha256": "114cde89440cfb6c3dd9cd1b45b6f7be847c794375ecefe17c2d1589a3c14877",
+      "size": 10002
     },
     "evidence/b03-plan.md": {
       "sha256": "a708b31df635daf810865af0c678bd6c65f632a4e6cb61fe8773ed211cfbd396",
       "size": 9233
+    },
+    "evidence/b03_review_bytes.json": {
+      "sha256": "4ce39dd42fb95ebd1fb0feaf3fc1d31c92fededa2fce3fa454f116415ca885ff",
+      "size": 11530
+    },
+    "evidence/b03_review_bytes.py": {
+      "sha256": "523aaa325a9d7a03307c3f4154b7006d088e83580c4395abef10a9baf5f9ff1e",
+      "size": 19235
+    },
+    "evidence/b03_review_cfg08.json": {
+      "sha256": "8b59430cc6c98074c8e093587b8cfaef5158120383b87dd866193ebbab294004",
+      "size": 5763
+    },
+    "evidence/b03_review_cfg08.py": {
+      "sha256": "d1f37e309cc31cb7bfd5920091c6928dbfbbec2d770687371aa95426643ba6e5",
+      "size": 4539
+    },
+    "evidence/b03_review_cfg08_null.py": {
+      "sha256": "9d2553a96c5acf369b9a8a560429e598578ffb23a47f6ee6768b145aad661aeb",
+      "size": 866
+    },
+    "evidence/b03_review_mutations_baseline.txt": {
+      "sha256": "b5096b55b87060bce384bb3d50a3328b4d58d2bff2e4088ebf68e0d56e5d1507",
+      "size": 614
+    },
+    "evidence/b03_review_paths.json": {
+      "sha256": "2c3fc78f1ee695fac3846d4f99e25e75149c781154eb88e97d351def44271dc6",
+      "size": 9087
+    },
+    "evidence/b03_review_paths.py": {
+      "sha256": "4d62e05e199b6b2ed1763b7fa2ca8b8d5be14d9825c37020c78aa8c081fb4619",
+      "size": 9777
     },
     "evidence/b04-implementation.md": {
       "sha256": "be2a8be365a934ef0440bd978ad0ac7d78bfc6201e7fcc56818b4bf687e1e38c",
@@ -381,9 +413,29 @@
       "sha256": "6358c41b7938d3680a5a689488faeb6ab0681ee8155eed497bf69a0fd748123a",
       "size": 6624
     },
+    "evidence/b06-implementation.md": {
+      "sha256": "0dae65896a21131c8f5d44e5428815438ae88895c43a79747075275074452d34",
+      "size": 6869
+    },
+    "evidence/b06-plan.md": {
+      "sha256": "0e1f1c1669fcbbde848b034fdff0da7663fce284d7f36c7ccc3a99dca7b4e2c0",
+      "size": 8957
+    },
+    "evidence/b07-payload-baseline.json": {
+      "sha256": "53b6f4e0d8b0294910842d1037041eed1012f6974eb6f73ca5363fadc840a76d",
+      "size": 1578
+    },
+    "evidence/b07-plan.md": {
+      "sha256": "2a103c229f9094e6bdb3c51d008375628bcabc2a5a1592ef9546198bc35bbb91",
+      "size": 6359
+    },
+    "evidence/b07_payload_baseline.py": {
+      "sha256": "9cd1dcd49f2f9e2f0e22ff9dfc2103d77d599a8ad740bab69408672586f96bb8",
+      "size": 4644
+    },
     "evidence/build_checkpoint.py": {
-      "sha256": "4de75dee26fe381e40dd7d023381f1ab1e82565187b36baabd44a5e23ec27ae1",
-      "size": 39943
+      "sha256": "717c82d26783906b60cc032f03243aca7f4f54308e52826e3c3f9cc2b11c8ffa",
+      "size": 40391
     },
     "evidence/ci_logs.py": {
       "sha256": "76f1e3a5384115f485bfd27348c3f237bdd342c6d2e44d498ab45dd8b5de7e4e",
@@ -394,12 +446,12 @@
       "size": 2304
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "127680c7dd1593a38721bec4546e753aaf13a7984a36f80364720e32702d0380",
-      "size": 92386
+      "sha256": "b5d581c74247ee7fe9a96b2efb141bad1228962fbf4664a55cdeef387de4c736",
+      "size": 95152
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "68e46219f5c39ec98b26c4bfde5ce73e37d490a276c5329e54018e31b1140c7f",
-      "size": 16939
+      "sha256": "31e8e9c59461d072a63c477c58f8d4a1c1bf09148968444dd60a52d779cd81c1",
+      "size": 18197
     },
     "evidence/field-owner-map.json": {
       "sha256": "d8b76aa21010b9f2895935f4d7de767b266dfaf5590d49d8f16d704fea3fe08e",
@@ -410,8 +462,8 @@
       "size": 12565
     },
     "findings.md": {
-      "sha256": "bab11993dc3dea44d4528c4d9ddafad55fb4310d25c944eeafb37d3aa6750543",
-      "size": 72412
+      "sha256": "e48412d195e52f84c2f7f9e83b0601ee963ef3d6344cb298290dd13df22589fe",
+      "size": 74569
     },
     "owner-scope-decisions-2026-09-12.md": {
       "sha256": "cb6ac486f03de140a4dfdd308b7dd484809ded199c69122d8e180bc5c3483d24",
@@ -478,20 +530,20 @@
       "size": 7165
     },
     "task_plan.md": {
-      "sha256": "f7afdee4e9b416231c61bbf79cecd477541a77137e72c8fd720ee6607eee3a1c",
-      "size": 19198
+      "sha256": "19abebf0acc8e854b31703ff270f65e8fdbe49fbf266734ec4e831c89abda3ab",
+      "size": 20310
     },
     "test-acceptance-map.md": {
-      "sha256": "5b646325ac191a4f6a92ba2ae483c63d85b16d04651645c619e6fa310c2ad88e",
-      "size": 11264
+      "sha256": "49ca23af4ad2190c4789098643f34a84173d7d207116888531f4d95c685a6fad",
+      "size": 11462
     }
   },
   "produced_files_verification": {
-    "checked": 55,
+    "checked": 68,
     "source": "index",
-    "compared_revision": "89175417a8f8dea5c91d9c73355df5934965aedc",
-    "head_revision": "ce005e8da996f03388c61ba531ea66acf48b714a",
-    "index_tree": "89175417a8f8dea5c91d9c73355df5934965aedc",
+    "compared_revision": "5b5e69128a94a48d4915982750fa44f747e9f736",
+    "head_revision": "cdbd34c6c8a351f96527ebe9518b826fefba31cc",
+    "index_tree": "5b5e69128a94a48d4915982750fa44f747e9f736",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -501,8 +553,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 55,
-    "files_listed": 55,
+    "files_on_disk": 68,
+    "files_listed": 68,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -511,5 +563,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T22:15:29.172274+00:00"
+  "generated_at_utc": "2026-09-12T22:32:41.784347+00:00"
 }
