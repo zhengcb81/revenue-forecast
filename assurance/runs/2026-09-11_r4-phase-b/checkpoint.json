@@ -1,8 +1,8 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
   "phase": "B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: B02 landed; B01/B03-B07 still design-only",
-  "step": "B02 rev4 implemented (wiki da5e0f5): the claim-trust statement now lists the two deliberate differences from pre-B02 instead of claiming equivalence; three further review findings closed; B.VR rev4 focused recheck pending",
-  "last_completed_step": "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). B02 went through four revisions under three independent reviews: rev1 (cab1fd6) rejected (2xP1); rev2 (350b67a) accepted_with_findings (2xP2); rev3 (182846b) accepted_with_findings (1xP2 + 6xP3) after confirming all four earlier counter-examples fixed. The rev3 review falsified the sentence the owner was being asked to approve - 'the claim-trusted row is the row pre-B02 would have served, so the trust level is no wider than pre-B02 by construction' - with two reproducible configurations, so rev4 (da5e0f5) replaces it everywhere with a falsifiable statement that lists the two deliberate differences ((a) .rejections matched as a path SEGMENT instead of a substring, which is wider on paths such as my.rejections_backup/; (b) election restricted to the document's own source group, which is stricter), keeps only the deciding condition in the anchor predicate, reports the anchor's own failure status in the reason, and adds three regression cases - the three mutants that survived the suite (M5/M6/M7) are now killed. Latest measurement: 30 acceptance cases, full suite 2698 passed / 7 skipped / 0 failed, coverage resolver.py 87.72% and service.py 95.16%, both ratchet tables green.",
+  "step": "B02 rev5 implemented (wiki 1d8b1f7, text-only): the pre-B02 difference list now lives in ONE authoritative place and every other location - including the product docstring and comment - only references it; the audit enforces that and searches the product files",
+  "last_completed_step": "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). B02 went through five revisions under four independent reviews: rev1 (cab1fd6) rejected (2xP1); rev2 (350b67a) accepted_with_findings (2xP2); rev3 (182846b) accepted_with_findings (1xP2 + 6xP3); rev4 (da5e0f5) accepted_with_findings (1xP2 + 3xP3); rev5 (1d8b1f7) is text-only convergence. Reviews rev2, rev3 and rev4 each falsified one of the author's own justification sentences, so the wording now has a single authoritative list (evidence/b02-implementation.md section 3, items a-d) that everything else references, and the two-sided audit both requires that list and forbids the retired wordings as a family - while also searching the three product files, which is where the drift was hiding (32/32 checks). Behaviour is unchanged since rev4 and was verified by the rev4 reviewer: all four historical counter-examples fixed, mutants M5/M6/M7 killed, mutation harness restores the file byte-identically. Measured: 30 acceptance cases, full suite 2698 passed / 7 skipped / 0 failed, coverage resolver.py 87.72% and service.py 95.16%, both ratchet tables green, CI green on all four step commits (fresh Linux measurement).",
   "current_gate": "B.VR rev4 (focused recheck of the corrected S-10 wording, the anchor predicate/reason and the three new regression cases), then B04 (landing plan already written: evidence/b04-plan.md). Two deviations await the owner, both now stated falsifiably: S-10 (verified copies always win; only when nothing verifies may one row - the legacy canonical of the document's own version - be served on the catalog's claim; differences (a) and (b) above are listed for approval) and S-11 (budget exhaustion maps to that same row instead of the design's blocked, because ResolutionStatus has exactly five values).",
   "pending_review": [
     {
@@ -20,18 +20,11 @@
       "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d"
     },
     {
-      "gate": "B.VR (B02)",
-      "scope": "company-wiki cab1fd6: F1 service.py + F2 resolver.py + F10 new tests",
-      "status": "pending",
-      "reviewer": "independent subagent (non-author) - must differ from the authoring session; the reviewer must re-run the checks rather than trust evidence/b02-implementation.md",
-      "note": "evidence to review: evidence/b02-implementation.md, evidence/b02-verification.json, evidence/b02-red-green-*.json"
-    },
-    {
-      "gate": "B.VR rev4 (B02 rev4, focused)",
-      "scope": "wiki da5e0f5: corrected S-10 wording (differences listed), simplified anchor predicate, anchor-failure reason, 3 new regression cases",
-      "status": "pending",
-      "reviewer": "independent subagent (non-author) - must differ from all three earlier reviewer sessions; the focused question is whether the corrected wording is now falsifiable and true, and whether the three mutants (M5/M6/M7) are really killed",
-      "note": "evidence: evidence/b02-implementation.md (rev4 sections), reviews/B.VR-b02-rev3.json"
+      "gate": "B02 closure decision (author, 2026-09-12)",
+      "scope": "wiki 1d8b1f7 (rev5, text-only) on top of the four reviewed revisions",
+      "status": "closed",
+      "verdict": "no further review round requested",
+      "note": "The behavioural surface converged under four independent rounds (all four historical counter-examples fixed, mutants M5/M6/M7 killed, mutation harness restores the file byte-identically, CI green on every step commit). rev5 changes words only: the difference list moved to one authoritative place and the two-sided audit - now also searching the three product files - enforces it (32/32). A fifth prose-only round would add no behavioural evidence, so B02 is closed here; the next independent review (B04) is asked to re-check the single-source rule as part of its own scope, and the owner still rules on S-10/S-11 using the authoritative list."
     },
     {
       "gate": "B.VR rev3 (B02 rev3)",
@@ -42,8 +35,20 @@
         "P2": 1,
         "P3": 6
       },
-      "note": "confirmed all four earlier counter-examples fixed and reproduced every measured number; falsified the 'no wider than pre-B02 by construction' sentence and found three surviving mutants; all seven findings addressed in rev4",
+      "note": "confirmed all four earlier counter-examples fixed and reproduced every measured number; rev3 falsified the (now-retired) claim that the trust level was equivalent to pre-B02 and found three surviving mutants; all seven findings addressed in rev4",
       "record": "reviews/B.VR-b02-rev3.json"
+    },
+    {
+      "gate": "B.VR rev4 (B02 rev4, focused)",
+      "scope": "company-wiki da5e0f5",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 1,
+        "P3": 3
+      },
+      "note": "the corrected wording had reached only four of the nine places that restated it, and two further differences (c: the local probe; d: verified-copy preference) were missing from the list; all four findings addressed in rev5, which moved the list to one authoritative place and taught the audit to search the product files",
+      "record": "reviews/B.VR-b02-rev4.json"
     },
     {
       "gate": "B.VR rev2 (B02 rev2)",
@@ -54,7 +59,7 @@
         "P2": 2,
         "P3": 3
       },
-      "note": "confirmed both rev1 P1s genuinely fixed; found that the claim-trusted fallback short-circuited the walk and that S-10's 'no wider than pre-B02' justification was false; all five addressed in rev3",
+      "note": "rev2 confirmed both rev1 P1s genuinely fixed; it found that the claim-trusted fallback short-circuited the walk and that the then-current justification for the S-10 deviation was false; all five addressed in rev3",
       "record": "reviews/B.VR-b02-rev2.json"
     },
     {
@@ -187,11 +192,11 @@
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "da5e0f50cec91b1c142140db21e86fcc78c1c08d",
+      "head": "1d8b1f76d4622881cb791382ca7066ac8695c79c",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "01f6059ebb91abfa202880b5b31c1d8ca8ea0e18",
+      "head": "c2d6555f6213909e964ba6e77fbac3737f9d5229",
       "dirty": 0
     },
     "filing-fetch": {
@@ -199,10 +204,10 @@
       "dirty": 0
     }
   },
-  "reviewed_commit": "01f6059ebb91abfa202880b5b31c1d8ca8ea0e18",
+  "reviewed_commit": "c2d6555f6213909e964ba6e77fbac3737f9d5229",
   "commit_anchor": {
-    "head": "01f6059ebb91abfa202880b5b31c1d8ca8ea0e18",
-    "index_tree": "705fa46a4c1b6e5aac14783ab3675b529daea044",
+    "head": "c2d6555f6213909e964ba6e77fbac3737f9d5229",
+    "index_tree": "28d036efed5c01c83d0748f4f1b8cb514a3ec3fe",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -211,20 +216,20 @@
       "size": 907
     },
     "b-design.md": {
-      "sha256": "36de8657df70c09a2831dd3c67018488db15fea93c9e3403ef382690a8012dfd",
-      "size": 35790
+      "sha256": "54c6548167ebddfc7050f2e3d72319a3bb8ec98fa9de1af848cb6f19195d143e",
+      "size": 35694
     },
     "b-vr-protocol.md": {
       "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
       "size": 7366
     },
     "evidence/b02-ci-runs.md": {
-      "sha256": "a2a77bcb3fb62fd41870df5cb0574df306ce4259d5c7aa226ce6f120c591808d",
-      "size": 2286
+      "sha256": "6294e7749a15f492bfa8799ce753ac3ff402834bc03e385abb9e2f50b246cce7",
+      "size": 3081
     },
     "evidence/b02-implementation.md": {
-      "sha256": "ec565d6b32dfe15cc6f74c65e06c167d37c6c3922f15e75fe1b4fa3aff66ac82",
-      "size": 20637
+      "sha256": "cccbda6085f3254a5d13d7337887016b4a76ad3344aaf4b672ce257cac847dcc",
+      "size": 21973
     },
     "evidence/b02-red-green-post-b02.json": {
       "sha256": "cdb7cee25037e74d682e0b86a8fe1cbb3ba0c1c3e3640e826447a4f967d8cab0",
@@ -235,8 +240,12 @@
       "size": 1213
     },
     "evidence/b02-verification.json": {
-      "sha256": "729257e2f2e167a4243296d9ef227fc841cf3a111bf3b438fbfe1a68f83671d4",
+      "sha256": "27ec103b95a2e5ab327c92090978bccd092e37389618874a82e3933186d93a08",
       "size": 4641
+    },
+    "evidence/b02_anchors.py": {
+      "sha256": "fce781bec5d72237fa379de35dcf1f7c2cb01eeff3671c46af0a3bcf076fb243",
+      "size": 2788
     },
     "evidence/b02_mutation_check.py": {
       "sha256": "6a5a7267ed42e19997b6b42b697a4d55ba47a908967cd72c5bff16787df4af82",
@@ -255,32 +264,32 @@
       "size": 3755
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "91d7eb1a74edba78e640c883bde5bec9b06515aa63f9b3c56c1704cbb813c564",
-      "size": 25376
+      "sha256": "a93148f8bd21d534d79c179660cc75cecc07a8eb832865eebe11b1bf1176e061",
+      "size": 25983
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "7827155d92b062d39589fde1ee5f6101405d643e5a94a49dbddb4fae8381b9df",
-      "size": 56542
+      "sha256": "90636b2b5911f4a7c5ba9fc44ed215b7ee9b8a00679a6c8caaceda05bd225dd9",
+      "size": 63211
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "295c515f057af3dffe043b3490a6f9b735dd3fee51607d317723d580cb0a9db8",
-      "size": 10621
+      "sha256": "89e5788689c99064afcad40606fcbf2ef6b6ba36cb1227728e6a7168e3315c12",
+      "size": 12453
     },
     "file-scope.md": {
       "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
       "size": 12565
     },
     "findings.md": {
-      "sha256": "621edeb1391c3903bd9219bb2f292ae35c7e815412434f70c03a5c1db5b043af",
-      "size": 45123
+      "sha256": "3017aca24885b72323afbd8395470232ad6b2022d958128eae4ad98f58d77dc5",
+      "size": 48956
     },
     "owner-scope-decisions-2026-09-12.md": {
-      "sha256": "1335df0ecd3584f65b15fee40664f12b5a0b442a328f92e5b8fb769bf6b1297b",
-      "size": 8530
+      "sha256": "05c1f6d7bbdabcec47a6ac5a2078beac29ae4b50fe01f67dbb74262cf9c1c385",
+      "size": 8557
     },
     "progress.md": {
-      "sha256": "1cc16696b2a121a056e983ad1f4fe833ac296ab9057f30b4438ddea1725baee6",
-      "size": 13971
+      "sha256": "8a82f04cea8994ca527df229f58a68524f33393b8a20af70f1c8cf0d2d86afa2",
+      "size": 14082
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -314,6 +323,10 @@
       "sha256": "c65499e6d6fd305f3f20d0db5d3f2af1371f78d53b2e7d61c9e83d48266db467",
       "size": 38074
     },
+    "reviews/B.VR-b02-rev4.json": {
+      "sha256": "31707359c4537d9a646596f8576fe293d84969545dde2f2e34bf0916e5cf8706",
+      "size": 31771
+    },
     "reviews/B.VR-b02.json": {
       "sha256": "cea22427b73237fb27da26f416018f528799f73004193574d72575e400717ad5",
       "size": 30525
@@ -332,11 +345,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 31,
+    "checked": 33,
     "source": "index",
-    "compared_revision": "705fa46a4c1b6e5aac14783ab3675b529daea044",
-    "head_revision": "01f6059ebb91abfa202880b5b31c1d8ca8ea0e18",
-    "index_tree": "705fa46a4c1b6e5aac14783ab3675b529daea044",
+    "compared_revision": "28d036efed5c01c83d0748f4f1b8cb514a3ec3fe",
+    "head_revision": "c2d6555f6213909e964ba6e77fbac3737f9d5229",
+    "index_tree": "28d036efed5c01c83d0748f4f1b8cb514a3ec3fe",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -346,8 +359,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 31,
-    "files_listed": 31,
+    "files_on_disk": 33,
+    "files_listed": 33,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -356,5 +369,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T14:52:55.393088+00:00"
+  "generated_at_utc": "2026-09-12T15:17:53.062633+00:00"
 }
