@@ -49,6 +49,26 @@ def dirty(repo: Path) -> int:
     return len([line for line in out.splitlines() if line.strip()])
 
 
+def completeness(files: dict) -> dict:
+    """Assert the manifest lists EVERY file in the run directory (B-DR2-09).
+
+    Verification otherwise only walks the manifest and therefore cannot notice an
+    unlisted file (the gap the reviewer named).
+    """
+    on_disk = set()
+    for path in sorted(RUN.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(RUN)
+        if rel.name in EXCLUDE_NAMES or any(part in EXCLUDE_DIRS for part in rel.parts):
+            continue
+        on_disk.add(rel.as_posix())
+    listed = set(files)
+    return {"files_on_disk": len(on_disk), "files_listed": len(listed),
+            "unlisted": sorted(on_disk - listed), "phantom": sorted(listed - on_disk),
+            "complete": on_disk == listed}
+
+
 def produced_files() -> dict:
     files: dict[str, dict] = {}
     for path in sorted(RUN.rglob("*")):
@@ -239,8 +259,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.verify_only:
         existing = json.loads((RUN / "checkpoint.json").read_text(encoding="utf-8"))
         result = verify_blobs(existing["produced_files"], source="head")
+        result["completeness"] = completeness(existing["produced_files"])
         print(json.dumps(result, ensure_ascii=False, indent=2))
-        return 0 if result["all_match"] else 1
+        return 0 if result["all_match"] and result["completeness"]["complete"] else 1
+
+    if not args.reviewed_commit:
+        print("ERROR: --reviewed-commit is required (B-DR2-09): commit the corrections first, "
+              "then rebuild and commit the checkpoint as the stamp commit.")
+        return 2
 
     ledger = dict(LEDGER)
     ledger["inputs"] = {
@@ -248,7 +274,14 @@ def main(argv: list[str] | None = None) -> int:
         "revenue-forecast": {"head": head(REVENUE), "dirty": dirty(REVENUE)},
         "filing-fetch": {"head": head(FILING), "dirty": dirty(FILING)},
     }
-    ledger["reviewed_commit"] = args.reviewed_commit or "PENDING (stamped in the follow-up commit)"
+    ledger["reviewed_commit"] = args.reviewed_commit
+    ledger["commit_anchor"] = {
+        "head": subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE),
+                               "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip(),
+        "index_tree": subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE),
+                                     "write-tree"], capture_output=True, text=True).stdout.strip(),
+        "note": "anchor for the tree this checkpoint was generated from",
+    }
     ledger["reviewed_commit_note"] = (
         "`reviewed_commit` carries the reviewed corrections (documents, evidence and ledgers). "
         "The stamp that records this value necessarily lands in the immediately following commit "
@@ -278,6 +311,7 @@ def main(argv: list[str] | None = None) -> int:
         "`git hash-object` instead."
     )
     ledger["produced_files_verification"] = verify_blobs(ledger["produced_files"], source="index")
+    ledger["produced_files_completeness"] = completeness(ledger["produced_files"])
     ledger["produced_files_verification"]["post_commit_recheck"] = (
         "Run `python evidence/build_checkpoint.py --verify-only` after committing: it re-checks "
         "every recorded digest against `git cat-file blob HEAD:<path>`. Build time can only "
