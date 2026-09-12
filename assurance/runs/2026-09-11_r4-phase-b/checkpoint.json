@@ -1,9 +1,9 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
   "phase": "B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: B02 landed; B01/B03-B07 still design-only",
-  "step": "B02 rev3 implemented (F1 service.py + F2 resolver.py + F10 tests); B.VR rev1 rejected and rev2 accepted_with_findings, both rounds' findings addressed",
-  "last_completed_step": "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). B02 went through three revisions under two independent reviews: rev1 (cab1fd6) was REJECTED (2xP1: an unverified fallback could serve a different revision, and a conditional is_canonical raised StopIteration in the untouched duplicate_cleanup); rev2 (350b67a) fixed those and was accepted_with_findings (2xP2: the claim-trusted fallback short-circuited the walk so a drifted preferred copy beat a verified one, and the S-10 justification 'no wider than pre-B02' was falsified by a counter-example where a .rejections copy held the best priority); rev3 fixes both by serving verified copies first and anchoring the claim-trusted fallback to the row pre-B02 would have served, plus mid-read cancellation, an own-source-group regression case and evidence-consistency repairs. Latest measurement: 27 acceptance cases, full suite 2693 passed / 7 skipped / 2 load-flakes (both pass in isolation), coverage resolver.py 87.70% and service.py 95.16%, ratchet table untouched and green.",
-  "current_gate": "B.VR rev3 (fresh session) on the rev3 commit, then B04 (its landing plan is already written: evidence/b04-plan.md). Two deviations await the owner: S-10 (a verified copy always wins; only when nothing verifies may ONE row be served on the catalog's claim, namely the row pre-B02 would have served - so the trust level is provably no wider than pre-B02; the read path owns the byte-level gate in B03) and S-11 (budget exhaustion maps to that same row instead of the design's blocked, because ResolutionStatus has exactly five values).",
+  "step": "B02 rev4 implemented (wiki da5e0f5): the claim-trust statement now lists the two deliberate differences from pre-B02 instead of claiming equivalence; three further review findings closed; B.VR rev4 focused recheck pending",
+  "last_completed_step": "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). B02 went through four revisions under three independent reviews: rev1 (cab1fd6) rejected (2xP1); rev2 (350b67a) accepted_with_findings (2xP2); rev3 (182846b) accepted_with_findings (1xP2 + 6xP3) after confirming all four earlier counter-examples fixed. The rev3 review falsified the sentence the owner was being asked to approve - 'the claim-trusted row is the row pre-B02 would have served, so the trust level is no wider than pre-B02 by construction' - with two reproducible configurations, so rev4 (da5e0f5) replaces it everywhere with a falsifiable statement that lists the two deliberate differences ((a) .rejections matched as a path SEGMENT instead of a substring, which is wider on paths such as my.rejections_backup/; (b) election restricted to the document's own source group, which is stricter), keeps only the deciding condition in the anchor predicate, reports the anchor's own failure status in the reason, and adds three regression cases - the three mutants that survived the suite (M5/M6/M7) are now killed. Latest measurement: 30 acceptance cases, full suite 2698 passed / 7 skipped / 0 failed, coverage resolver.py 87.72% and service.py 95.16%, both ratchet tables green.",
+  "current_gate": "B.VR rev4 (focused recheck of the corrected S-10 wording, the anchor predicate/reason and the three new regression cases), then B04 (landing plan already written: evidence/b04-plan.md). Two deviations await the owner, both now stated falsifiably: S-10 (verified copies always win; only when nothing verifies may one row - the legacy canonical of the document's own version - be served on the catalog's claim; differences (a) and (b) above are listed for approval) and S-11 (budget exhaustion maps to that same row instead of the design's blocked, because ResolutionStatus has exactly five values).",
   "pending_review": [
     {
       "gate": "B.DR rev6",
@@ -27,11 +27,23 @@
       "note": "evidence to review: evidence/b02-implementation.md, evidence/b02-verification.json, evidence/b02-red-green-*.json"
     },
     {
-      "gate": "B.VR rev3 (B02 rev3)",
-      "scope": "the rev3 commit: verified copies win, claim-trusted fallback anchored to the pre-B02 row, mid-read cancellation, own-source regression case",
+      "gate": "B.VR rev4 (B02 rev4, focused)",
+      "scope": "wiki da5e0f5: corrected S-10 wording (differences listed), simplified anchor predicate, anchor-failure reason, 3 new regression cases",
       "status": "pending",
-      "reviewer": "independent subagent (non-author) - must differ from both earlier reviewer sessions; should re-run the rev2 counter-example (rejections best priority + drifted copy) and the rev1 counter-example (drifted survivor) itself",
-      "note": "evidence: evidence/b02-implementation.md (rev3 sections), evidence/b02-verification.json, reviews/B.VR-b02.json, reviews/B.VR-b02-rev2.json"
+      "reviewer": "independent subagent (non-author) - must differ from all three earlier reviewer sessions; the focused question is whether the corrected wording is now falsifiable and true, and whether the three mutants (M5/M6/M7) are really killed",
+      "note": "evidence: evidence/b02-implementation.md (rev4 sections), reviews/B.VR-b02-rev3.json"
+    },
+    {
+      "gate": "B.VR rev3 (B02 rev3)",
+      "scope": "company-wiki 182846b",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 1,
+        "P3": 6
+      },
+      "note": "confirmed all four earlier counter-examples fixed and reproduced every measured number; falsified the 'no wider than pre-B02 by construction' sentence and found three surviving mutants; all seven findings addressed in rev4",
+      "record": "reviews/B.VR-b02-rev3.json"
     },
     {
       "gate": "B.VR rev2 (B02 rev2)",
@@ -175,11 +187,11 @@
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "182846b52e239e824ee3a6519ee9e8b33ba82b60",
+      "head": "da5e0f50cec91b1c142140db21e86fcc78c1c08d",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "63422f1b4a474e6ed4e91063a37ebb17d9411c03",
+      "head": "01f6059ebb91abfa202880b5b31c1d8ca8ea0e18",
       "dirty": 0
     },
     "filing-fetch": {
@@ -187,10 +199,10 @@
       "dirty": 0
     }
   },
-  "reviewed_commit": "63422f1b4a474e6ed4e91063a37ebb17d9411c03",
+  "reviewed_commit": "01f6059ebb91abfa202880b5b31c1d8ca8ea0e18",
   "commit_anchor": {
-    "head": "63422f1b4a474e6ed4e91063a37ebb17d9411c03",
-    "index_tree": "0b7ac825ff88d89a0c97e1a3ef253bd3d7fcd271",
+    "head": "01f6059ebb91abfa202880b5b31c1d8ca8ea0e18",
+    "index_tree": "705fa46a4c1b6e5aac14783ab3675b529daea044",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -199,16 +211,20 @@
       "size": 907
     },
     "b-design.md": {
-      "sha256": "191dc31e56f0c9cbf5396d3afce106308e64967578c52c02aec96adb2d99689e",
-      "size": 35352
+      "sha256": "36de8657df70c09a2831dd3c67018488db15fea93c9e3403ef382690a8012dfd",
+      "size": 35790
     },
     "b-vr-protocol.md": {
       "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
       "size": 7366
     },
+    "evidence/b02-ci-runs.md": {
+      "sha256": "a2a77bcb3fb62fd41870df5cb0574df306ce4259d5c7aa226ce6f120c591808d",
+      "size": 2286
+    },
     "evidence/b02-implementation.md": {
-      "sha256": "dcd05fc378bd4b317eb75f72ee0a0d16c24de59a28f801c4e0232176c6c3d50c",
-      "size": 16554
+      "sha256": "ec565d6b32dfe15cc6f74c65e06c167d37c6c3922f15e75fe1b4fa3aff66ac82",
+      "size": 20637
     },
     "evidence/b02-red-green-post-b02.json": {
       "sha256": "cdb7cee25037e74d682e0b86a8fe1cbb3ba0c1c3e3640e826447a4f967d8cab0",
@@ -219,8 +235,12 @@
       "size": 1213
     },
     "evidence/b02-verification.json": {
-      "sha256": "c374b53aa4d599cf0184bfd87d22db3522038fed88e63e300788f6d2a03fbc64",
+      "sha256": "729257e2f2e167a4243296d9ef227fc841cf3a111bf3b438fbfe1a68f83671d4",
       "size": 4641
+    },
+    "evidence/b02_mutation_check.py": {
+      "sha256": "6a5a7267ed42e19997b6b42b697a4d55ba47a908967cd72c5bff16787df4af82",
+      "size": 4520
     },
     "evidence/b02_red_green_probe.py": {
       "sha256": "5da5159fffa1a504228e130388ac730c76bf1dac765648d7eea9f969a6197134",
@@ -235,28 +255,28 @@
       "size": 3755
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "963e9a8e504b714c68bfd33a453547d613475bbe313d6f096f3725a59c9137c9",
-      "size": 24422
+      "sha256": "91d7eb1a74edba78e640c883bde5bec9b06515aa63f9b3c56c1704cbb813c564",
+      "size": 25376
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "09ec5a5fb19553293da9b92ae23d0386d4c66e50bf934e4aa99873337407f9f6",
-      "size": 55073
+      "sha256": "7827155d92b062d39589fde1ee5f6101405d643e5a94a49dbddb4fae8381b9df",
+      "size": 56542
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "03e2de726f7c8848056c7cff952458d6dc984fc87e118ede175172e13f6e78ba",
-      "size": 10291
+      "sha256": "295c515f057af3dffe043b3490a6f9b735dd3fee51607d317723d580cb0a9db8",
+      "size": 10621
     },
     "file-scope.md": {
       "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
       "size": 12565
     },
     "findings.md": {
-      "sha256": "fc4a6535d6f674db2193bb2cde665a1d50c45ad70111ef682e69ded496bbd357",
-      "size": 40622
+      "sha256": "621edeb1391c3903bd9219bb2f292ae35c7e815412434f70c03a5c1db5b043af",
+      "size": 45123
     },
     "owner-scope-decisions-2026-09-12.md": {
-      "sha256": "1742dcc7ecaa262ff7efe2ec3afe177b45fd95bedbca87f0e9462b70c316957c",
-      "size": 8222
+      "sha256": "1335df0ecd3584f65b15fee40664f12b5a0b442a328f92e5b8fb769bf6b1297b",
+      "size": 8530
     },
     "progress.md": {
       "sha256": "1cc16696b2a121a056e983ad1f4fe833ac296ab9057f30b4438ddea1725baee6",
@@ -290,6 +310,10 @@
       "sha256": "c055c0ea2cdb803698bdc76bb32d94d36bff5578fc236cdb2e3f37fab87f0ce9",
       "size": 32941
     },
+    "reviews/B.VR-b02-rev3.json": {
+      "sha256": "c65499e6d6fd305f3f20d0db5d3f2af1371f78d53b2e7d61c9e83d48266db467",
+      "size": 38074
+    },
     "reviews/B.VR-b02.json": {
       "sha256": "cea22427b73237fb27da26f416018f528799f73004193574d72575e400717ad5",
       "size": 30525
@@ -308,11 +332,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 28,
+    "checked": 31,
     "source": "index",
-    "compared_revision": "0b7ac825ff88d89a0c97e1a3ef253bd3d7fcd271",
-    "head_revision": "63422f1b4a474e6ed4e91063a37ebb17d9411c03",
-    "index_tree": "0b7ac825ff88d89a0c97e1a3ef253bd3d7fcd271",
+    "compared_revision": "705fa46a4c1b6e5aac14783ab3675b529daea044",
+    "head_revision": "01f6059ebb91abfa202880b5b31c1d8ca8ea0e18",
+    "index_tree": "705fa46a4c1b6e5aac14783ab3675b529daea044",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -322,8 +346,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 28,
-    "files_listed": 28,
+    "files_on_disk": 31,
+    "files_listed": 31,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -332,5 +356,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T13:49:19.476810+00:00"
+  "generated_at_utc": "2026-09-12T14:52:55.393088+00:00"
 }
