@@ -1,5 +1,7 @@
 # B07 实施计划（唯一版本化读取合同，**wiki 侧**）——v0.1（2026-09-12）
 
+> **状态（2026-09-12）**：①②③ 已在**隔离 worktree**（`r4b06-wip`，基线 `f0aacbf`）实现并自测通过——契约声明写在版本常量旁（版本政策 / 五值词汇 / **无目录级 fallback** / 消费者侧归 C），`build_resolution_envelope` 对**未知版本显式拒绝**（fail closed），新增 F10 `test_r4b07_version_contract.py` **4 用例**；既有信封用例 18 条不回归，棘轮 2 passed。④ **`B-payload-hash` 已可执行且通过**（见 [findings.md](../findings.md) F-B07-1，独立于本 worktree）。**待移植到主检出 + 独立复审。**
+
 > 依据：[b-design.md](../b-design.md) §B07（范围重划：**B07 只签 wiki 侧**；消费者侧 adapter/fallback 归 **C**）；允许集 [file-scope.md](../file-scope.md) §3b：**B07 = F2（合同版本与五值拒绝）+ F8（`export_policy` 语义不变）** + F10（仅新增测试）。
 > 完成定义（设计原文）：**四件**——① wiki 侧版本化合同；② 未知版本**显式拒绝**；③ **不新增** fallback 分支（并显式声明"本接口无目录级 fallback 语义"）；④ **payload hash 不变**。**不含 N-1**（登记为跨仓待定义项）。
 
