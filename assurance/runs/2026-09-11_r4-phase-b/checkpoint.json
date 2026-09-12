@@ -1,9 +1,9 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
-  "phase": "B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: B02, B04, B05, B01 (reviewed) and B03 landed; B06/B07 still design-only",
-  "step": "B01's review came back accepted_with_findings (1xP1/3xP2/2xP3) and every P1/P2 is disposed of in be2e4ed - the P1 was the author's own acceptance defect (it froze the resolver-side policy export and called it cross-repo, while filing-fetch consumes the policy_2x payload) and the P2s include a real fail-open in config admission (a quoted boolean was admitted and read as reusable). B03 then landed as 5ab0779: SourceResolver.read_verified_bytes serves a version's bytes or fails explicitly, which closes the byte-level hard gate that decision S-10 deferred to the read path",
-  "last_completed_step": "B04 closed after its focused review (all six findings addressed, plus an author-side mutation harness). B05 implemented in three commits, rejected by its own review, and its P1s and P2s fixed (b6a8442, 9826b3c) with the two residual items registered. B01 then landed (0e28d99), was reviewed independently (accepted_with_findings) and its findings were disposed of in be2e4ed: (a) P1 B-VR01-01 - the frozen cross-repo hash was the WRONG artifact (export_policy v1 instead of the policy_2x payload filing-fetch pins); both are now frozen with their roles and a new case compares the consumer payload's reusable set with the resolver's OBSERVED behaviour on configs where an explicit flag contradicts the kind list, which a kind-only revert of the policy_2x copy now fails; (b) P2 - the record's causal sentence was false and is corrected to the measured mutation result; (c) P2 - the B05 declaration test did not normalise the way the classifier does, so a case-variant declared kind was downgraded to derived and manufactured a conflict (fixed per column: document_kind casefolds, free-text and date columns stay exact); (d) P2 - config admission accepted quoted booleans, so reusable_for_filing \"false\" was read as reusable (fail-open) and \"true\" skipped CFG-05/CFG-07 (fixed as CFG-08, in its own function because the frozen complexity entry for config.py caught the inline version at 50 > 46); (e) P3 - the empty-set escape in the candidate filter is gone, so an omitted or empty set means 'nothing qualifies'; (f) P3 - record precision. B03 then landed as 5ab0779: read_verified_bytes reads the file ONCE, digests exactly the buffer it returns, and refuses everything else inside the contract's five error values (out-of-root locator -> not_found before any read; cloud placeholder never hydrated; unreadable/interrupted/changed mid-read; the size ceiling; cancellation sticky) with the bytes and their evidence returned together. Measured: B01 acceptance 9 cases, B05 acceptance 10 cases, B03 acceptance 13 cases plus one host-limited skip, unit + contract neighbourhood 816 passed, ruff clean, both FC-1204 ratchet tables green, wiki pre-push gate green on both pushes.",
-  "current_gate": "B03's independent review (one round per step, section 11), which also samples the B01 dispositions; then B06 -> B07. B06 must deliver both the response-level blocked verdict (S-13) and the sidecar/identity rule that F-B01-7 shows is missing; B07 owns the versioned read contract, including wiring consumers to read_verified_bytes instead of their own open() calls. No owner ruling is outstanding: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12, and the working mode is the simplified one (only scope or risk questions go back to the owner).",
+  "phase": "B (position-transparent index and read-only access) - ALL SEVEN STEPS IMPLEMENTED: B01-B05 pushed with B01/B03/B04/B05 reviewed and disposed of; B06 and B07 landed this round and await their reviews",
+  "step": "B03's review came back accepted_with_findings (1xP1/4xP2/3xP3) and every finding is disposed of (2f1ddab). The P1 was my own public keyword not bound to the handle - a caller could mix one version's document_id with another version's bytes and call it verified - and two of its P2s (the drive-root containment bug and CFG-08's null read_only) had already been found independently from the reviewer's own probe output and were fixed before it reported. B06 (5138546) and B07 (5b7ef10) were then transplanted from the isolated worktree as separate commits, with B-payload-hash turned into an executable comparison that passes",
+  "last_completed_step": "B03 reviewed and disposed of, then B06 and B07 landed. B03 dispositions (2f1ddab, acceptance cases 13 -> 18): expected_content_sha256 is PINNED to the handle (mismatch -> unavailable/expected_version_mismatch, never another version's bytes labelled verified); a TAIL guard honours a cancellation landing inside the read that returns b'', and a second case requires cancellation to STOP reading rather than refuse after consuming the file (this closes the reviewer's surviving mutant M4); containment uses commonpath, so a root configured as a drive root no longer refuses every file on that drive, and the read opens the path containment resolved (closing the check-then-open window) while hardlinks and name-based containment stay registered limitations; the size+mtime re-check is documented as precise refusal labelling, NOT as the integrity mechanism (the digest of the returned buffer is; os.utime can defeat the re-check); the success status and the empty bytes_source got names, and the entry point type-checks its handle. Each fix is guarded by a mutation that is now killed (evidence/b03_disposition_mutations.py). B01's CFG-08 now refuses a present-but-empty read_only (728b5e0). B06 (5138546): the envelope gains the additive qualification label (verified_input / preview / blocked + gap codes) and the response-level blocked reads B05's reserved provenance key through the read-only store; the design's preview case is registered as unreachable because resolve's existing capture_incomplete gate refuses such handles (the conservative default, not a widened cross-repo behaviour). B07 (5b7ef10): the version policy sits next to the constant, build_resolution_envelope refuses an unknown schema_version instead of parsing leniently, and B-payload-hash became executable and PASSES (pre-B 7d4852f and the current tree are byte-identical with a fixed project_root). Pre-flight before the push: the full contract suite ran locally - 1900 passed / 8 skipped, with the only two failures being the known leaked-worker artefact and the load-sensitive zr409 real-sample case that CI ignores and that passes when run alone.",
+  "current_gate": "B.VR for B06 and B07 (one independent review per step). No owner ruling is outstanding: S-10 to S-13 were approved as recommended on 2026-09-12. Two questions the author raised without blocking on them: whether the preview label should become REACHABLE (that needs either relaxing resolve's capture_incomplete gate - a cross-repo behaviour change - or an explicit preview entry point in a later contract), and whether the FC-1301 taxonomy should be widened to see the resolver's positionally-returned reasons (registered follow-up work package).",
   "pending_review": [
     {
       "gate": "B.DR rev6",
@@ -246,11 +246,11 @@
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "f0aacbfd258b85b2eb76d41365786abf58179067",
-      "dirty": 1
+      "head": "5b7ef10111e53bef74097128bf6e7e742b02e6ca",
+      "dirty": 0
     },
     "revenue-forecast": {
-      "head": "cdbd34c6c8a351f96527ebe9518b826fefba31cc",
+      "head": "b2d0b5fac13c9d23df0d17e4c09941b95484fd86",
       "dirty": 0
     },
     "filing-fetch": {
@@ -258,10 +258,10 @@
       "dirty": 0
     }
   },
-  "reviewed_commit": "cdbd34c6c8a351f96527ebe9518b826fefba31cc",
+  "reviewed_commit": "b2d0b5fac13c9d23df0d17e4c09941b95484fd86",
   "commit_anchor": {
-    "head": "cdbd34c6c8a351f96527ebe9518b826fefba31cc",
-    "index_tree": "5b5e69128a94a48d4915982750fa44f747e9f736",
+    "head": "b2d0b5fac13c9d23df0d17e4c09941b95484fd86",
+    "index_tree": "694cacf47dd83ff03ff80b8633ee8fbd6ab259e9",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -346,20 +346,28 @@
       "size": 8559
     },
     "evidence/b03-implementation.md": {
-      "sha256": "114cde89440cfb6c3dd9cd1b45b6f7be847c794375ecefe17c2d1589a3c14877",
-      "size": 10002
+      "sha256": "d2655a24b80eb016eb94bec7651004159a5073b22fe31dbe2748e7241c47a9cb",
+      "size": 10638
     },
     "evidence/b03-plan.md": {
       "sha256": "a708b31df635daf810865af0c678bd6c65f632a4e6cb61fe8773ed211cfbd396",
       "size": 9233
     },
+    "evidence/b03-review-disposition.md": {
+      "sha256": "14b88495fda7a1d3868fbc2f496aa317212f69bd5c772efd0f302e1340c82351",
+      "size": 7492
+    },
+    "evidence/b03_disposition_mutations.py": {
+      "sha256": "7a6a32dc37c1a0064bfd9091ffcce32012a883aa49c5ca1f82c6ed6f16d4f7fa",
+      "size": 3032
+    },
     "evidence/b03_review_bytes.json": {
-      "sha256": "4ce39dd42fb95ebd1fb0feaf3fc1d31c92fededa2fce3fa454f116415ca885ff",
-      "size": 11530
+      "sha256": "0d609463ac396f648f8f5d04e92e7db297830b63c93515da6d3b91e51fa80db5",
+      "size": 12559
     },
     "evidence/b03_review_bytes.py": {
-      "sha256": "523aaa325a9d7a03307c3f4154b7006d088e83580c4395abef10a9baf5f9ff1e",
-      "size": 19235
+      "sha256": "5cd7d78c2bd8cb5991e2fe8151a6473c6a56663116fe6d6f9fdb3230c15f361b",
+      "size": 20650
     },
     "evidence/b03_review_cfg08.json": {
       "sha256": "8b59430cc6c98074c8e093587b8cfaef5158120383b87dd866193ebbab294004",
@@ -372,6 +380,22 @@
     "evidence/b03_review_cfg08_null.py": {
       "sha256": "9d2553a96c5acf369b9a8a560429e598578ffb23a47f6ee6768b145aad661aeb",
       "size": 866
+    },
+    "evidence/b03_review_junction.json": {
+      "sha256": "4b1d2b8930e07a61a3e0f9beb942a7bba9c1be7614de684f1a5d606b07a01329",
+      "size": 469
+    },
+    "evidence/b03_review_junction.py": {
+      "sha256": "db485cd161f4b81538a84309494d3f6e4522266a1b0be8ce772954a145505c08",
+      "size": 4448
+    },
+    "evidence/b03_review_mutations.json": {
+      "sha256": "91eb4308ba3ea5f9564442f66ec1a9abd78dba9dacfa266c51e1284cfed996c7",
+      "size": 3227
+    },
+    "evidence/b03_review_mutations.py": {
+      "sha256": "0e0dfb96a079a804855c1b8f353497b13bc70d8a23fa41b47e607691c8e7c172",
+      "size": 5086
     },
     "evidence/b03_review_mutations_baseline.txt": {
       "sha256": "b5096b55b87060bce384bb3d50a3328b4d58d2bff2e4088ebf68e0d56e5d1507",
@@ -414,8 +438,8 @@
       "size": 6624
     },
     "evidence/b06-implementation.md": {
-      "sha256": "0dae65896a21131c8f5d44e5428815438ae88895c43a79747075275074452d34",
-      "size": 6869
+      "sha256": "b03e442e202997a310b39a7859efd3f1d95e6c8497860f30451ed2574c46ffca",
+      "size": 7192
     },
     "evidence/b06-plan.md": {
       "sha256": "0e1f1c1669fcbbde848b034fdff0da7663fce284d7f36c7ccc3a99dca7b4e2c0",
@@ -426,16 +450,16 @@
       "size": 1578
     },
     "evidence/b07-plan.md": {
-      "sha256": "2a103c229f9094e6bdb3c51d008375628bcabc2a5a1592ef9546198bc35bbb91",
-      "size": 6359
+      "sha256": "a340e0d2f392efc28a36b499a18c5bb7a710f8dd58cd8a51ba9250ebe5cf0030",
+      "size": 6963
     },
     "evidence/b07_payload_baseline.py": {
       "sha256": "9cd1dcd49f2f9e2f0e22ff9dfc2103d77d599a8ad740bab69408672586f96bb8",
       "size": 4644
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "717c82d26783906b60cc032f03243aca7f4f54308e52826e3c3f9cc2b11c8ffa",
-      "size": 40391
+      "sha256": "211f3a2546f1b206e40ff6701600e61944c5ec35ae4152079712bed7214d9d44",
+      "size": 40456
     },
     "evidence/ci_logs.py": {
       "sha256": "76f1e3a5384115f485bfd27348c3f237bdd342c6d2e44d498ab45dd8b5de7e4e",
@@ -446,32 +470,40 @@
       "size": 2304
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "b5d581c74247ee7fe9a96b2efb141bad1228962fbf4664a55cdeef387de4c736",
-      "size": 95152
+      "sha256": "a46fc4b8bd536a0dfff8337603d237f43eee2acc68fec7fb8eca63c442591e38",
+      "size": 100223
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "31e8e9c59461d072a63c477c58f8d4a1c1bf09148968444dd60a52d779cd81c1",
-      "size": 18197
+      "sha256": "d93af76fcbc65c1835b2188c7d79ffe02c7d977b0b5680813f3b2853bcfc91b2",
+      "size": 18979
     },
     "evidence/field-owner-map.json": {
       "sha256": "d8b76aa21010b9f2895935f4d7de767b266dfaf5590d49d8f16d704fea3fe08e",
       "size": 10582
+    },
+    "evidence/transplant-manifest.json": {
+      "sha256": "f8c24660218f1efb9f7f03af5fbe85eb90e09bdfec6a5945d41b2474df045b68",
+      "size": 2784
+    },
+    "evidence/transplant_split.py": {
+      "sha256": "d12657b791f0025e90667e7804cf3677c76331ed8f1cea46f7e3447af2cb6c87",
+      "size": 7274
     },
     "file-scope.md": {
       "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
       "size": 12565
     },
     "findings.md": {
-      "sha256": "e48412d195e52f84c2f7f9e83b0601ee963ef3d6344cb298290dd13df22589fe",
-      "size": 74569
+      "sha256": "10fa8ae406a1a48877d553d3e27a060df7aebaaf86d766add7856096769219f4",
+      "size": 77585
     },
     "owner-scope-decisions-2026-09-12.md": {
       "sha256": "cb6ac486f03de140a4dfdd308b7dd484809ded199c69122d8e180bc5c3483d24",
       "size": 10926
     },
     "progress.md": {
-      "sha256": "eb257f700ca489de084acf8802bbccb35543f3f6073282e5cd15b217162a66f2",
-      "size": 30471
+      "sha256": "97dec89c883a91d300987e2df10dc81d75a44ee0d964a350f94a7c2c71d25407",
+      "size": 34312
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -517,6 +549,10 @@
       "sha256": "cea22427b73237fb27da26f416018f528799f73004193574d72575e400717ad5",
       "size": 30525
     },
+    "reviews/B.VR-b03.json": {
+      "sha256": "44dbe92636e6a74a0a6686a9be91472295ba0573c30837bd79d1071b92ca580d",
+      "size": 58607
+    },
     "reviews/B.VR-b04.json": {
       "sha256": "1b7c07a371524598d5df5283c43708c20ce8f1732a23456b54e92f53845c2831",
       "size": 31720
@@ -530,8 +566,8 @@
       "size": 7165
     },
     "task_plan.md": {
-      "sha256": "19abebf0acc8e854b31703ff270f65e8fdbe49fbf266734ec4e831c89abda3ab",
-      "size": 20310
+      "sha256": "e95978748b88ac16766df411c3d499f2c4907d4f9fc978900258d3ac4137cfa9",
+      "size": 20604
     },
     "test-acceptance-map.md": {
       "sha256": "49ca23af4ad2190c4789098643f34a84173d7d207116888531f4d95c685a6fad",
@@ -539,11 +575,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 68,
+    "checked": 77,
     "source": "index",
-    "compared_revision": "5b5e69128a94a48d4915982750fa44f747e9f736",
-    "head_revision": "cdbd34c6c8a351f96527ebe9518b826fefba31cc",
-    "index_tree": "5b5e69128a94a48d4915982750fa44f747e9f736",
+    "compared_revision": "694cacf47dd83ff03ff80b8633ee8fbd6ab259e9",
+    "head_revision": "b2d0b5fac13c9d23df0d17e4c09941b95484fd86",
+    "index_tree": "694cacf47dd83ff03ff80b8633ee8fbd6ab259e9",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -553,8 +589,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 68,
-    "files_listed": 68,
+    "files_on_disk": 77,
+    "files_listed": 77,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -563,5 +599,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T22:32:41.784347+00:00"
+  "generated_at_utc": "2026-09-12T23:06:10.588575+00:00"
 }
