@@ -1,0 +1,199 @@
+{
+  "gate": "B.VR rev4 (focused)",
+  "scope": "定点复核 R4 phase-B 步骤 B02 的 rev4 实施（company-wiki `da5e0f5`，相对 rev3 `182846b`、pre-B02 起点 `c986c7a`）。范围仅限上一轮（reviews/B.VR-b02-rev3.json，accepted_with_findings，1×P2 + 6×P3）的 7 条 finding 是否真的闭合，重点是 owner 被要求批准的『规则 2 信任范围』表述：(1) B-VR02R3-01 更正后的文本是否出现在原句出现过的所有位置、是否真实且可证伪、除 (a)(b) 外是否还有第三处差异（我在临时目录里自行复现了子串 .rejections 与跨 source 组两种配置）；(2) B-VR02R3-02 变异 M5/M6/M7 是否被杀、harness 是否把 resolver.py 还原到同一 sha256、是否会残留变异树；(3) B-VR02R3-03 锚点谓词化简是否行为保持；(4) B-VR02R3-06 理由串是否报告锚点自身失败；(5) B-VR02R3-04/-05/-07 四处文档不实是否更正、§1 行锚/哈希/diffstat 是否与代码一致。全部复跑都在 %TEMP% 下的临时目录、临时 git worktree（c986c7a 与 da5e0f5）与临时副本中进行；产品仓库工作树未被修改（复核结束时 git status 为空），run 目录只新增本记录。",
+  "reviewed_commit": "da5e0f50cec91b1c142140db21e86fcc78c1c08d",
+  "reviewer_session_self_report": "c60b5366-dc7d-4d78-b30a-75014888d830 —— 本条是复审会话的自报会话标识（random UUID），仅为可追溯性自述，不是 operator 持有的派工记录，也无法由本会话自证；本会话未参与 B02 的任何实现，也未参与 rev1/rev2/rev3 三轮复审，且未写入任何产品文件。",
+  "verdict": "accepted_with_findings",
+  "commands_run": [
+    "python -m pytest tests/contract/test_r4b02_candidate_selection.py -q  → 30 passed in 3.06s",
+    "python -m pytest -q tests/contract/test_source_catalog_determinism.py tests/contract/test_source_catalog_sql_pushdown.py tests/contract/test_zr403_dedupe_resolver_generalization.py tests/contract/test_source_catalog_fail_closed.py  → 23 passed in 23.10s",
+    "python -m pytest -q tests/contract/test_fc1204_complexity_ratchet.py  → 2 passed in 0.66s",
+    "python -m ruff check src tests/unit tests/contract scripts  → All checks passed!",
+    "python -m pytest tests/ --collect-only -q  → 2705 tests collected（= §7 的 2698 passed + 7 skipped，与 rev3 的 collected 2702 + 3 条新用例自洽）",
+    "python evidence/b02_mutation_check.py --all（run 目录）→ M5/M6/M7 全部 KILLED，exit 0，resolver.py sha256(16) 419938604e6a8495 → 419938604e6a8495 identical；随后 git -C company-wiki status --porcelain 为空",
+    "临时 worktree da5e0f5 + 自写 mutate.py（LF 归一化匹配、finally 还原）：M5 → test_r4b02_cancel_during_the_last_candidate_read；M6（anchor=rank 1）→ test_r4b02_rejected_best_priority_plus_drifted_copy_is_unavailable；M7（anchor 从不记忆）→ test_r4b02_budget_counters_bound_candidate_reads / test_r4b02_claim_reason_names_the_anchor_failure / test_r4b02_documented_difference_from_pre_b02_is_pinned；自设 M8（理由改回 stop_status）→ test_r4b02_claim_reason_names_the_anchor_failure；自设 M9（删本方组过滤）→ test_r4b02_other_source_group_is_never_served；自设 M10（还原 rev3 的四条件锚点谓词）→ 30 passed（等价变异存活）。全部失败均为断言级行为失败，非收集/导入错误；worktree 事后 git status 为空",
+    "自写独立探针 %TEMP%\\bvr4\\probe.py（26 次运行：13 场景 × rev4 src / c986c7a worktree src）",
+    "python evidence/claim_fact_audit.py（把 run 目录整体复制到临时目录后运行，避免改写 run 目录）→ 30/30 checks pass (two-sided, whole-directory search)"
+  ],
+  "findings_rechecked": [
+    {
+      "id": "B-VR02R3-01",
+      "status": "partially_fixed",
+      "observed": "六个指定落点里改好 4 个：evidence/b02-implementation.md §3（差异表 a/b + 『减去 a、b 两个缺陷』）、b-design.md:115（差异列举 + v0.1.7 修订记录）、findings.md F-B02-6、owner-scope-decisions S-10 行(:46)、resolver._select_candidate docstring(:1344-1354)。**仍在 5 处保留被证伪的等价断言**：(1) tests/contract/test_r4b02_candidate_selection.py:29-43 模块 docstring —— 『Scope note (B02, rev3)』…『the row the pre-B02 resolver would have served (the legacy is_canonical, active, original_primary, not under .rejections, still the document's own version)』『That anchoring is what keeps this strictly no wider than pre-B02』（逐字保留原句，且版本标签仍是 rev3）；(2) resolver.py:1380-1381 注释首两行『The row pre-B02 would have served: the legacy canonical, filtered by the very same conditions the pre-B02 resolver applied to it.』—— 紧随其后的 1382-1390 又写 NOT bit-for-bit，同一注释块自相矛盾；(3) evidence/b02-implementation.md:46（§2 段 3）『且必须是「pre-B02 会服务的那一行」』，与本文件 §3 矛盾；(4) findings.md:62（F-B02-1 残余风险）『= pre-B02 会服务的那一行 … 这不宽于 pre-B02』；(5) owner-scope-decisions-2026-09-12.md:49（S-10/S-11 表下的说明，owner 直接阅读）『S-10 的理由在 rev2 被实测证伪一次，rev3 已改为构造性成立，见 findings.md F-B02-4/F-B02-5』—— 在 rev4 下为假（rev3 的构造性说法正是被 B-VR02R3-01 证伪的那句），且『两轮独立复审』已过时（现有三轮）。旁证：claim_fact_audit.py 在临时副本里 30/30 PASS —— 该审计只做『新串在场 + 两个旧串逐字不在』的全文存在性检查，抓不到上述换词后的残留。两条**列出的**差异本身为真、方向正确（见 counter_examples_rechecked），但『除这两处外没有第三种差异』不成立（见 B-VR02R4-02/-03），故判 partially_fixed。"
+    },
+    {
+      "id": "B-VR02R3-02",
+      "status": "fixed",
+      "observed": "交付的 harness 实跑：`python evidence/b02_mutation_check.py --all`（run 目录）→ 『M5 (end-of-walk cancellation guard): KILLED | 1 failed, 29 passed』『M6: KILLED | 1 failed, 29 passed』『M7: KILLED | 3 failed, 27 passed』『restored resolver.py: sha256(16) 419938604e6a8495 -> 419938604e6a8495 (identical)』exit=0；独立以 Get-FileHash 复核前后一致（419938604E6A8495…），`git -C company-wiki status --porcelain` 为空。我另在 da5e0f5 临时 worktree 用自写变异器复跑，确认三者都是被**行为性断言**杀死（M5 恰好死于新增的 test_r4b02_cancel_during_the_last_candidate_read：取消后变异体仍返回 1 个 handle）。harness 的还原机制：每轮写回 original_bytes + finally 再写一次，正常退出/异常/Ctrl-C 均会还原；唯一例外是进程被硬杀（finally 不执行），但此时下一轮的 pattern 检查会以 exit 2『pattern NOT FOUND』暴露、git status 也会显形。另注：harness 不校验起始文件是否等于 HEAD blob，若起始即残留变异且该变异不破坏本轮 pattern，它会『还原』到该残留态（本轮无此情况）。"
+    },
+    {
+      "id": "B-VR02R3-03",
+      "status": "fixed",
+      "observed": "锚点谓词已化简为 resolver.py:1391-1394 `next((item for item in ordered if item.get(\"is_canonical\")), None)`，并在 1382-1384 注明『ordered already carries role/status/.rejections/own-source, so membership is the whole test』。行为保持的三重证据：(a) 结构：ordered 成员满足 candidate_rank 非 0，而 candidate_rank 只发给 exclusion_reason=='' 的行，其定义即 role==original_primary ∧ location_status=='active' ∧ source_id 非空 ∧ 路径段不含 .rejections（service.py:35-62），旧谓词三条件恒真；(b) 直测：我的 probe 场景 predicate_equivalence 在三种布局（三副本 / .rejections 占最优优先级 / 外 source 组）上逐成员核对『三个被删条件全部为真』=True，且新旧谓词取到同一行（same_pick=True）；(c) 变异：自设 M10（把旧四条件谓词整段还原）→ 30 passed（等价变异存活），而 M6（anchor=rank 1）与 M7（anchor 从不记忆）均被杀死（见 B-VR02R3-02 的 observed 与 mutations_rechecked）。"
+    },
+    {
+      "id": "B-VR02R3-06",
+      "status": "fixed",
+      "observed": "自写探针（三副本全部字节漂移；companies=锚点、dropbox 漂移，max_candidates=2 让第三个候选撞预算）：status=reused_exact，trace 首行为 `unverified_content_sha256_mismatch_on_pre_b02_canonical`（= 锚点自身失败），同时 tried 里既有锚点的 `content_sha256_mismatch:981e2309543e` 也有 `budget_exceeded`（budget.candidates=2）。对照（max_bytes=1，锚点自己撞预算）：`unverified_budget_exceeded_on_pre_b02_canonical`。自设 M8（把理由改回 `stop_status or 'content_sha256_mismatch'`，即 rev3 的写法）被新用例 test_r4b02_claim_reason_names_the_anchor_failure 杀死（1 failed, 29 passed）。"
+    },
+    {
+      "id": "B-VR02R3-04",
+      "status": "partially_fixed",
+      "observed": "① 提交号已填：§0 rev4 行 = `da5e0f5`，全文已无『本页所在提交』占位符（Select-String 无命中）→ fixed。② 『B.VR rev2 复审未做』已删（Select-String '复审未做' 无命中），§7 以 reviews/B.VR-b02-rev2.json 为依据 → fixed。③ service.py 增删数**仍未修正**：旧的 `+74/−20` 已删，但换成了新的错值并且带字面省略号 —— §1:35 写『resolver.py +364、service.py +80/−…、测试文件 +1030』；实测 `git diff --numstat c986c7a da5e0f5` = resolver.py 335/29、service.py 71/9、tests 1030/0（364=335+29、80=71+9，把『改动行总数』当成了新增行数）。④ 行锚：逐一比对 16 处，15 处与代码完全一致（service 27/35/65/670/726；resolver 152-158/161/171/181/224/243/278/285/435/885/1326/1444），唯一区间锚 `resolve :930-1149` 实测为 930-1232（1234 起已是 @staticmethod/_identity_matches），且 §1:38 声称『行锚由脚本从最终代码重新解析（ast/逐行匹配）』，但 run 目录 evidence/*.py 中没有这样的脚本（Select-String '930|1149|ast.parse|lineno' 无命中），声明不可复跑。另外 §1 表内三个文件 sha256(16)/字节数与 rev3→rev4 的 `2 files/111+/19-` 全部与实测一致。"
+    },
+    {
+      "id": "B-VR02R3-05",
+      "status": "fixed",
+      "observed": "evidence §6 第 5 条已登记该取值变化（并声明 B-payload-hash 仍未执行、不声称 payload 契约已验证）。我的独立探针复现：把被服务行（company_raw 的 2025.pdf）manifest_json.content_sha256 改成 'a'*64、文件字节不变 → pre-B02 handle.content_sha256='aaaa…aaaa'（目录声明），rev4 handle.content_sha256=完整 DIGEST（= 被验证字节摘要，亦等于 documents/sources 行声明）。登记内容与代码一致（resolver.py:1470-1478 的注释与实现）。"
+    },
+    {
+      "id": "B-VR02R3-07",
+      "status": "fixed",
+      "observed": "§7 注 2（:133）已把 61.3% 限定为『rev1 树（cab1fd6 之前、新测试文件尚不存在）上的一次测量』、明确『在当前树上不成立』、记录 reviewer 的 86.34% 反测值，并声明该数字不再作为当前证据，与之矛盾的旧行已删除。我无法复核 61.3% 本身（未给该树/commit），但该行的归因、否定与『不再作为当前证据』的措辞与 B-VR02R3-07 的要求一致。"
+    }
+  ],
+  "statement_review": {
+    "corrected_text_true": false,
+    "third_difference_exists": true,
+    "evidence": "结论：**两条列出的差异本身为真且可复现，但整段『更正后的表述』作为可批准的不变量仍不精确**，故 corrected_text_true = false；第三处差异存在，故 third_difference_exists = true。（1）(a) 子串→路径段：独立复现（唯一副本在 future_lake/my.rejections_backup/2025.pdf 且字节漂移）—— rev4 = reused_exact 服务该副本（tried 含 content_sha256_mismatch:981e2309543e，理由 unverified_content_sha256_mismatch_on_pre_b02_canonical），pre-B02 = missing（trace 'rejections_path'）。方向『rev4 更宽』属实。（2）(b) 本方组限定：独立复现（把最优优先级行 company_raw 改到外部 source、删其文件、漂移本方组 canonical）—— rev4 = reused_exact 服务 Dropbox/Stock/2025.pdf（本方组 legacy canonical），pre-B02 = missing（trace 'placeholder_no_handle'，它选中的是外组那份不可读行）。方向『rev4 更严』在该配置下属实。（3）第三处差异 (c)：该行还必须先通过 segment 3 的本地探针（_local_copy_probe：stat、非云占位），而 pre-B02 只看 Path.is_file()。探针：三副本全部字节漂移 + 把锚点副本的 Path.stat 打成 0x400000（云占位；产品自己的测试也用同一手法模拟）→ rev4 = missing、trace 含 'candidate 0e864cdab410…:hydration_required' 与 'no_verifiable_candidate'（锚点因探针失败根本没被记为 claim-trusted 行），pre-B02 = reused_exact 服务同一行 companies/…/annual/2025.pdf（不读字节）。方向更严（fail-closed、查询路径不触发下载），但它使『除这两处外没有第三种差异』（evidence §3:69）与 resolver docstring『it is that row minus two defects』为假。（4）(b) 的措辞是无条件的，代码里组限定却是条件性的（resolver.py:1369-1372 `not own_source_id or …`）：当 documents.primary_source_id 为 NULL（LEFT JOIN 使 content_sha256 也为 NULL ⇒ 必然走规则 2）时不做组限定，而 ordered 的 (candidate_rank, location_id) 合并序与 pre-B02 的列表序（ORDER BY priority, root_id, relative_path）择行不同。探针：把 company_raw+dropbox 两行改成外部 source、future_lake 留作本组、primary_source_id 置 NULL、优先级改为 future_lake 10 / company_raw 30 / dropbox 40、三份全部漂移 → pre-B02 = reused_exact 服务 future_lake/2025.pdf，rev4 = reused_exact 服务 companies/…/annual/2025.pdf（两行都是各自组的 legacy canonical，但不是同一行）。该差异既非 (a) 也非 (b)。（5）传播不全：被证伪的原句仍在测试 docstring、resolver 注释首两行、evidence §2、findings F-B02-1 残余风险段与 owner 文件说明行共 5 处（见 B-VR02R4-01）。因此经更正的文本**是**可证伪的、且方向描述基本正确，但按现文本批准 S-10 仍会同时读到『不是那一行』与『就是那一行 / rev3 已构造性成立』两种说法，并漏掉 (c) 与 own-source 为空的前提。"
+  },
+  "counter_examples_rechecked": [
+    {
+      "id": "rev1-P1-1（不同字节的幸存副本）",
+      "status": "fixed",
+      "observed": "三份同字节副本 → 删首选(companies)与第三份(future_lake)、把幸存副本(dropbox)改写为不同字节：rev4 = missing、matches=0、download_required=true、tried 含 content_sha256_mismatch:981e2309543e 且**无** unverified_* 行；pre-B02 = missing（trace 'placeholder_no_handle'）。两侧均不返回句柄。"
+    },
+    {
+      "id": "rev1-P1-2（两份 .rejections 副本 + DuplicateCleanupService.list_groups()）",
+      "status": "fixed",
+      "observed": "两份 .rejections 副本（…/.rejections/{123,456}/2025.pdf）：list_groups() 不抛错，pre 与 rev4 **逐字段相同**（total_groups=1、total_reclaimable_copies=1、copy_counts=[2]、两条被拒路径都在清单里）；混排布局（.rejections 占最优优先级 + dropbox/future 健康副本）两侧亦逐字段相同（total_groups=2、copy_counts=[2,4]、路径集合相同）。注：我的合成 fixture 含 .source.json 旁文件，故绝对数值与测试断言的 3 不同；关键是 pre/rev4 相等。"
+    },
+    {
+      "id": "rev2-P2-1（首选漂移 + 可验证副本）",
+      "status": "fixed",
+      "observed": "只漂移首选(companies)副本：rev4 = reused_exact 服务 Dropbox/Stock/2025.pdf（trace '2025: verified_candidate_rank_2:5fd9e164d5cd'），pre-B02 = reused_exact 但服务漂移的 companies 副本。规则 1（验证通过者优先）严格优于 pre-B02。"
+    },
+    {
+      "id": "rev2-P2-2（.rejections 占最优优先级 + 唯一合格副本漂移）",
+      "status": "fixed",
+      "observed": "rev4 = missing、matches=0、download_required=true，trace 无 unverified_*，tried 含 {.rejections 行: candidate_rank=0/exclusion_reason='rejections_path'/is_canonical=true} 与 {dropbox: rank=1/content_sha256_mismatch}；pre-B02 = missing（trace 'rejections_path'）。"
+    },
+    {
+      "id": "S-10(a) 子串 .rejections（本轮复跑）",
+      "status": "reproduced_as_documented",
+      "observed": "rev4 服务 my.rejections_backup/2025.pdf（按声明），pre-B02 = missing（见 statement_review (1)）。"
+    },
+    {
+      "id": "S-10(b) 跨 source 组（本轮复跑）",
+      "status": "reproduced_as_documented",
+      "observed": "rev4 服务本方组 Dropbox 副本，pre-B02 = missing（见 statement_review (2)）。"
+    }
+  ],
+  "mutations_rechecked": [
+    {
+      "id": "M5（删收尾守卫 or budget.cancelled）",
+      "status": "killed",
+      "killed_by": "tests/contract/test_r4b02_candidate_selection.py::test_r4b02_cancel_during_the_last_candidate_read"
+    },
+    {
+      "id": "M6（锚点 = candidate_rank==1）",
+      "status": "killed",
+      "killed_by": "…::test_r4b02_rejected_best_priority_plus_drifted_copy_is_unavailable"
+    },
+    {
+      "id": "M7（锚点从不被记住）",
+      "status": "killed",
+      "killed_by": "…::test_r4b02_budget_counters_bound_candidate_reads / …::test_r4b02_claim_reason_names_the_anchor_failure / …::test_r4b02_documented_difference_from_pre_b02_is_pinned"
+    },
+    {
+      "id": "M8（reviewer 自设：理由串改回遍历停止状态，= rev3 行为）",
+      "status": "killed",
+      "killed_by": "…::test_r4b02_claim_reason_names_the_anchor_failure"
+    },
+    {
+      "id": "M9（reviewer 自设：删本方组过滤）",
+      "status": "killed",
+      "killed_by": "…::test_r4b02_other_source_group_is_never_served"
+    },
+    {
+      "id": "M10（reviewer 自设：还原 rev3 的四条件锚点谓词）",
+      "status": "survived（等价变异，符合预期）",
+      "killed_by": "无（30 passed）—— 佐证 B-VR02R3-03 的化简行为保持"
+    }
+  ],
+  "documentation_checks": [
+    {
+      "item": "§1 行锚（16 处）",
+      "result": "15/16 一致；`resolve` 区间写作 930-1149，实测 930-1232（见 B-VR02R4-04）"
+    },
+    {
+      "item": "§1 三文件 sha256(16)/字节",
+      "result": "全部一致：service.py fe2018305c805428/58909、resolver.py 419938604e6a8495/71210、测试文件 eca0d54f4a7b7ad0/41685"
+    },
+    {
+      "item": "§1 diffstat rev3→rev4",
+      "result": "一致（2 files changed, 111 insertions(+), 19 deletions(-)）；c986c7a→rev4 的 3 files/1436+/38- 一致，但 per-file 拆分数字错误（见 B-VR02R4-04）"
+    },
+    {
+      "item": "§0 提交号与状态行",
+      "result": "rev1 cab1fd6 / rev2 350b67a / rev3 182846b / rev4 da5e0f5 均与 git log 一致；无占位符"
+    },
+    {
+      "item": "§7 全量结果 2698 passed / 7 skipped",
+      "result": "未重跑全量；`pytest tests/ --collect-only -q` = 2705，与 2698+7 自洽（rev3 基线 collected 2702 + 3 条新用例）"
+    },
+    {
+      "item": "§7 claim 审计行",
+      "result": "该行写『见下方全量结果』，但全量结果段未列该结果；临时副本实跑 = 30/30 checks pass（见 B-VR02R4-04）"
+    },
+    {
+      "item": "evidence/b02-verification.json",
+      "result": "已按 rev4 重新生成：wiki_head=da5e0f5，三文件哈希与 §1 一致，acceptance 摘要『30 passed in 3.06s』与我的实跑逐字相同，覆盖率段如实标注 stale/skipped"
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-VR02R4-01",
+      "severity": "P2",
+      "claim": "B-VR02R3-01 的处置要求『在六处同步改写为可证伪表述』只完成了一部分：被证伪的等价断言仍在 5 处保留（测试模块 docstring、resolver 注释首两行、evidence §2、findings F-B02-1 残余风险段、owner 文件的 S-10 说明行），其中测试 docstring 逐字写着 'strictly no wider than pre-B02'，owner 文件的说明行写着『rev3 已改为构造性成立』。",
+      "evidence": "① tests/contract/test_r4b02_candidate_selection.py:29-43（模块 docstring，标题仍是 'Scope note (B02, rev3)'，第 37-40 行 = 原句）；② src/company_wiki/source_catalog/resolver.py:1380-1381 与 1382-1390 自相矛盾；③ evidence/b02-implementation.md:46（§2）与同文件 §3(:62-69) 矛盾；④ findings.md:62（F-B02-1「残余风险（如实，rev3 口径）」）『这不宽于 pre-B02 —— 该规则锚定在 pre-B02 实际会服务的那一行上』；⑤ owner-scope-decisions-2026-09-12.md:49『S-10 的理由在 rev2 被实测证伪一次，rev3 已改为构造性成立，见 findings.md F-B02-4/F-B02-5』（该句为假，且『两轮独立复审』已过时）。旁证：python evidence/claim_fact_audit.py 在临时副本中 30/30 PASS —— 其 B-VR02R3-01 检查只查新串在场与两个旧串逐字不在，抓不到换词后的残留；且它只搜 run 目录，看不见产品仓库里的测试 docstring。",
+      "impact": "S-10 是请 owner 批准的偏差登记，其可批准性取决于『信任范围到底等于什么』的说法一致。现文本里『不是 pre-B02 那一行』（evidence §3 / b-design / S-10 行）与『就是那一行 / rev3 已构造性成立』（owner 说明行、测试 spec 文本、resolver 注释）并存；测试 docstring 又是 B02 验收用例自己的语义说明，后续维护者按它理解代码会得出与 §3 相反的结论。这正是本 programme 反复出现的『文字与落盘不一致』失效模式。",
+      "required_action": "按 §3 的差异列举写法统一这 5 处：测试 docstring 改为『the legacy canonical that is a qualified candidate of the document's own version — deliberately NOT bit-for-bit the pre-B02 row（差异 a/b/c 见 evidence §3）』并更新版本标签为 rev4；删掉 resolver.py:1380-1381 两行（保留 1382-1390）；§2 段 3 与 findings.md:62 段改写为『本版本合格候选中那一行 legacy is_canonical（与 pre-B02 的差异见 §3）』；owner 文件说明行改为『rev3 的构造性说法已被 B.VR rev3 证伪，rev4 改为差异列举（F-B02-6）』并把『两轮』改为『三轮』。建议同时把 claim_fact_audit 的该项检查升级为『旧说法按语义（而非逐字）不得出现在 §2/§7/owner 文本与测试 docstring』。"
+    },
+    {
+      "id": "B-VR02R4-02",
+      "severity": "P3",
+      "claim": "更正后的差异清单仍不完备：存在第三处差异 (c) —— 凭声明的那一行还必须先通过 segment 3 的本地探针（stat 成功、是普通文件、不是云占位），pre-B02 只要求 Path.is_file()，因此会服务一个未水合的占位行。『除这两处外没有第三种差异』（evidence §3:69）与 resolver docstring『it is that row minus two defects』为假。",
+      "evidence": "自写探针 %TEMP%\\bvr4\\probe.py --scenario hydration_anchor（三份同字节副本 → 三份全部改写为漂移字节；把锚点副本的 Path.stat 打成 st_file_attributes=0x400000，与产品自身 test_r4b02_cloud_placeholder_candidate_is_not_read 同一手法）：rev4 = status=missing、matches=0、download_required=true，trace 为 'candidate 0e864cdab410…:hydration_required'、'…cab433…:content_sha256_mismatch:981e2309543e'、'…e5e0c53f…:content_sha256_mismatch:981e2309543e'、'2025: no_verifiable_candidate'（锚点因探针失败未被记为 claim-trusted 行）；pre-B02（c986c7a worktree，同一 fixture，无云占位概念）= reused_exact 服务同一行 companies/…/annual/2025.pdf 且不读任何字节（pre-resolver.py:1153-1167 仅 is_file()）。代码依据：resolver.py:1400-1404 的探针 continue 与 1420-1425 的记忆点。",
+      "impact": "影响方向是**更严**（fail-closed、查询路径不触发下载），不会把信任放宽，因此无安全风险；但它是与 (a)(b) 同级的『与 pre-B02 的差异』，且正好落在 S-10 要 owner 批准的同一句话里。owner 若被告知『只有两处差异』，其批准文本就不是对实现的完整刻画（本次差异只会缩小而非扩大信任范围）。",
+      "required_action": "在 evidence §3 差异表、b-design.md:115、S-10 行与 resolver docstring 补 (c)：『该行还须通过 segment 3 的本地探针（存在、普通文件、非云占位；pre-B02 只要 is_file()）』，或把『除这两处外没有第三种差异』改成『除 a/b 外 rev4 另有两道只会更严的门（本地探针、预算/取消），不会放宽信任』。"
+    },
+    {
+      "id": "B-VR02R4-03",
+      "severity": "P3",
+      "claim": "差异 (b) 的表述是无条件的（『the election is restricted to the document's own source group / 不会取另一版本的行』），但代码里组限定是条件性的（`not own_source_id or …`）：当 documents.primary_source_id 为 NULL 时不做组限定，此时 ordered 的合并 (candidate_rank, location_id) 序会选出与 pre-B02 列表序**不同**的那一行。",
+      "evidence": "代码：resolver.py:1364-1377（own_source_id 为空时不过滤、ordered 按 (candidate_rank, location_id) 排序）与 service.py:370-380（pre/rev4 的 locations 列表序均为 ORDER BY priority, root_id, relative_path）。探针 %TEMP%\\bvr4\\probe.py --scenario null_source_tiebreak：三副本全部漂移；把 company_raw 与 dropbox_stock 两行改到外部 source、future_lake 行留作本组；documents.primary_source_id=NULL（LEFT JOIN ⇒ content_sha256 NULL ⇒ 必然走规则 2）；优先级 future_lake 10 / company_raw 30 / dropbox 40 → pre-B02 = reused_exact 服务 future_lake/2025.pdf，rev4 = reused_exact 服务 companies/…/annual/2025.pdf（trace unverified_content_sha256_mismatch_on_pre_b02_canonical；tried 顺序 companies→future→dropbox 显示合并序）。两行都是各自组的 legacy canonical，但不是同一行；该差异既非 (a) 也非 (b)。（对照：own source 非空的 null_source_a/null_source_b 两场景两侧服务同一行，说明差异只在无 own source 时出现。）",
+      "impact": "在 own source 为空这个（需 DB 层异常的）角落，『rev4 的凭声明信任范围 = pre-B02 那一行减去 a、b』不成立，『更严』也不再是无条件的（是择行不同，不是范围更窄）。影响面窄，但属同一类过度陈述，且该分支是代码显式写出的（`not own_source_id`），不是不可达路径。",
+      "required_action": "二选一：(i) 在 §3/S-10/resolver docstring 明写 (b) 的前提『文档自身有 source_id』，并登记无 source_id 时的锚点取法（ordered 的 (rank, location_id) 序第一个 legacy canonical）；或 (ii) 在该分支改用与 pre-B02 相同的列表序取法（document['locations'] 序第一个合格 is_canonical），使『不是那一行』的例外只剩 a/b/c。无论哪种，都建议为 no-own-source 分支补一条回归用例（现有 null-source 断言只覆盖单组布局）。"
+    },
+    {
+      "id": "B-VR02R4-04",
+      "severity": "P3",
+      "claim": "evidence §1/§7 仍有 4 处与磁盘/代码不符（含一处字面省略号占位），其中 per-file 增删行数正是上一轮 B-VR02R3-04③ 声称已改的那一项；另有两处旧版本标签留在 rev4 文件中。",
+      "evidence": "① §1:35『resolver.py +364、service.py +80/−…、测试文件 +1030』：实测 `git diff --numstat c986c7a da5e0f5` = 335/29、71/9、1030/0；364=335+29、80=71+9（把改动行总数当成新增行数），且 `−…` 是字面省略号。② §1:23/38 的 `resolve` 区间锚 `:930-1149`：实测 resolve 从 930 行到 1232 行（1233 空行、1234 起 @staticmethod `_identity_matches`）。其余 15 个锚点、三文件哈希/字节数、rev3→rev4 的 111+/19- 均一致。③ §1:38『行锚由脚本从最终代码重新解析（ast/逐行匹配）』：run 目录 evidence/*.py 中无此脚本（Select-String '930|1149|ast.parse|lineno' 无命中），声明不可复跑。④ §7:130 的 claim 审计行写『见下方全量结果』，而 §7『全量结果（rev4，本次测量）』(:135-141) 未列该结果；临时副本实跑 = 30/30 checks pass（rev3 轮的 28/28 已过时）。⑤ 测试文件内旧标签：模块 docstring 'Scope note (B02, rev3)'、新用例 docstring『rev3 follows the adapters' SEGMENT convention』（rev4 文件里应写 rev4）。",
+      "impact": "行锚、提交号与增删行数是复审者/owner 定位实现的唯一入口，且『声称已核对/已修』本身是上一轮 P3 的主题；字面 `−…` 出现在一份声明『只写已落盘且可复跑事实』的证据文件里。本次 4 处不影响代码结论，但重复了同一失效模式（声明与落盘不一致）。",
+      "required_action": "把 §1:35 的 per-file 数字改为 numstat 原值（resolver.py +335/−29、service.py +71/−9、测试文件 +1030/−0）；把 `resolve` 锚改为 930-1232（或只写起点 930，避免区间随改动漂移）；§7 claim 审计行写实测的 30/30；把两处 'rev3' 标签改为 rev4；若要保留『脚本解析行锚』的说法，请把该脚本放进 evidence/ 以便复跑（否则建议删去该声明）。"
+    }
+  ],
+  "limitations": [
+    "未重跑 ~13 分钟全量套件与覆盖率：§7 的『2698 passed / 7 skipped』只用 `pytest tests/ --collect-only -q`（2705 collected）与 rev3 基线（collected 2702 + 3 条新用例）做自洽性核对；resolver.py 87.72%（620/687+223/274）与 service.py 95.16% 未独立复测。",
+    "本机拿不到真实云占位文件（OneDrive/Dropbox 的 RECALL_ON_* 属性）：差异 (c) 是用与产品测试相同的 Path.stat 属性模拟 + 代码路径（探针 continue 后锚点不被记住）证明的；真实占位文件上 pre-B02 的 is_file() 行为未实测（按 Win32 语义 stat 不触发水合，is_file() 为真）。",
+    "差异 (d)/B-VR02R4-03 的配置需要 DB 手术（documents.primary_source_id=NULL、把某行改到外部 source）；该分支是代码显式写出的，但我未在真实 catalog 上见到 NULL primary_source_id 的文档。",
+    "未在生产 catalog（C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog）或任何真实数据上验证：全部结论来自合成 fixture、既有测试与临时 worktree；未使用 G8 隔离副本。",
+    "§7 注 2 的 61.3%（rev1 树）无法复核：文档未给该树的 commit，我只能确认该行的归因与『当前树不成立』的表述与 reviewer 的 86.34% 反测一致。",
+    "未复跑 evidence/b02_verify.py（它会改写 run 目录的 b02-verification.json）：只读核对了该 JSON 的内容（wiki_head=da5e0f5、哈希一致、coverage 段如实标 stale/skipped）与我的实跑摘要一致；claim_fact_audit.py 是在 run 目录的临时副本里跑的。",
+    "变异 harness 的还原在进程被硬杀（finally 不执行）时无法保证，且它不校验起始文件是否等于 HEAD blob；本轮不存在残留（前后 sha256 与 git status 均已核对），但这是机制上的边界。",
+    "未审 C/D 步（B01/B03–B07）与写面/外发面/worker 面；B03 的读后复验/TOCTOU 闭合仍缺失（只确认仍被登记为未做）。",
+    "未做 resolver 读放大的性能测量；未验证真实云占位层下的不读字节承诺。"
+  ]
+}

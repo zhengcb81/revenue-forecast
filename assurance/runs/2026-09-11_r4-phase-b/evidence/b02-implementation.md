@@ -11,7 +11,8 @@
 | rev1 | `cab1fd6` | 资格先于排序 + `candidate_rank`/`exclusion_reason`；有序合格清单逐份尝试；预算/取消；`_Selection` | **`B.VR` rev1 = rejected**（2×P1 / 2×P2 / 3×P3，[reviews/B.VR-b02.json](reviews/B.VR-b02.json)） |
 | rev2 | `350b67a` | 非首选副本只服务验证通过者、遗留注解契约恢复、预算按请求重置、理由带 source 组、`.rejections` 按路径段、水合掩码补 `RECALL_ON_OPEN` | **`B.VR` rev2 = accepted_with_findings**（2×P2 / 3×P3，[reviews/B.VR-b02-rev2.json](reviews/B.VR-b02-rev2.json)） |
 | rev3 | `182846b` | 凭声明回退**移到遍历之后**（验证副本永远优先）+ 锚定到 legacy canonical + 读取中途取消 + 外 source 组用例 | **`B.VR` rev3 = accepted_with_findings**（1×P2 / 6×P3，[reviews/B.VR-b02-rev3.json](reviews/B.VR-b02-rev3.json)） |
-| **rev4** | **`da5e0f5`** | 规则 2 的**精确表述**（列出与 pre-B02 的两处差异，撤销"由构造保证"的说法）+ 锚点谓词删死条件 + 理由报告**锚点自身**的失败状态 + 3 个回归（收尾取消 / 理由 / 差异钉住）；M5/M6/M7 三个存活变异全部被杀 | **本页描述的版本**；待 `B.VR` rev4 定点复核 |
+| rev4 | `da5e0f5` | 凭声明回退**移到遍历之后**（验证副本永远优先）+ 锚定到 legacy canonical + 读取中途取消 + 外 source 组用例 | **`B.VR` rev3 = accepted_with_findings**（1×P2 / 6×P3，[reviews/B.VR-b02-rev3.json](reviews/B.VR-b02-rev3.json)） |
+| **rev5** | **`1d8b1f7`** | **文字收口**：差异清单**只在 §3 维护一处**，其余位置（含产品 docstring/注释）一律只引用；清单补 (c)/(d)；§1/§7 数字与行锚改实值并补 `b02_anchors.py`；审计升级为"权威清单 + 语义族禁现 + 检索产品文件"（32/32） | **本页描述的版本**（行为与 rev4 相同，仅文字/证据）；`B.VR` rev4 的 4 条已全部处置 |
 
 逐条处置表见 [findings.md](findings.md) F-B02-4（rev1）、F-B02-5（rev2）、F-B02-6（rev3）。**三轮独立复审各抓到作者自检漏掉的真实缺陷**（rev1：fail-open 回退 + `duplicate_cleanup` `StopIteration`；rev2：凭声明回退提前返回 + S-10 理由被证伪；rev3：**S-10 的理由句再次为假** + 3 个存活变异 + 4 处证据文字不实）。
 
@@ -20,20 +21,19 @@
 | 落点 | 实施后位置 | 内容 |
 |---|---|---|
 | **F1** `src/company_wiki/source_catalog/service.py` | `_REJECTIONS_SEGMENT` `:27`；`_location_exclusion_reason` `:35`；`_location_order_key` `:65`；`_annotate_locations` `:670`；`_duplicate_summary` `:726` | **新增**复用资格轨（`candidate_rank` / `exclusion_reason`）；**保留**遗留注解契约（`is_canonical` / `duplicate_relation` / `duplicate_group_id` / 计数口径 = pre-B02） |
-| **F2** `src/company_wiki/source_catalog/resolver.py` | 常量 `:152-158`；`_sha256_of_file` `:161`；`_needs_hydration` `:171`；`_ReadBudget`（含 `begin_request`）`:181`；`_local_copy_probe` `:224`；`_verify_candidate` `:243`；`_is_rejections_path` `:278`；`_candidate_reason` `:285`；`_Selection` `:435`；`__init__(read_budget=…)` `:885`；`resolve`（预算重置 / 资格轨过滤 `:1090` / trace）`:930-1149`；`_select_candidate` `:1326`；`_handle` `:1444` | 只对**本版本自身 source 组**的有序合格候选逐份尝试；**验证通过的副本永远优先**，仅在无一通过时按目录声明服务**本版本的 legacy canonical**（规则 2，差异见 §3）；预算/取消（含读取中途与收尾守卫）；返回 `_Selection`（选了哪份 + 为什么） |
-| **F10** `tests/contract/test_r4b02_candidate_selection.py` | 新增文件 | **30** 个用例：L01/L02/L03/L04、预算/取消/每请求重置/读取中途取消/收尾取消、零网络/水合、外 source 组、验证副本优先、规则 2 的锚定与理由、**与 pre-B02 的两处差异被显式钉住**、rev1 的 7 条 + rev2 的 4 条 + rev3 的 3 条回归、S-7 棘轮表冻结 |
+| **F2** `src/company_wiki/source_catalog/resolver.py` | 常量 `:152`/`:158`；`_sha256_of_file` `:161`；`_needs_hydration` `:171`；`_ReadBudget`（含 `begin_request`）`:181`；`_local_copy_probe` `:224`；`_verify_candidate` `:243`；`_is_rejections_path` `:278`；`_candidate_reason` `:285`；`_Selection` `:435`；`__init__(read_budget=…)` `:885`；`resolve` `:930-1232`；`_select_candidate` `:1326`；`_handle` `:1446` | 只对**本版本自身 source 组**的有序合格候选逐份尝试；**验证通过的副本永远优先**；仅在无一通过时按目录声明服务**本版本的 legacy canonical**（与 pre-B02 的差异见 §3，那是唯一权威处）；预算/取消（含读取中途与收尾守卫）；返回 `_Selection`（选了哪份 + 为什么） |
+| **F10** `tests/contract/test_r4b02_candidate_selection.py` | 新增文件 | **30** 个用例：L01/L02/L03/L04、预算/取消/每请求重置/读取中途取消/收尾取消、零网络/水合、外 source 组、验证副本优先、规则 2 的锚定与理由、**差异 a 的显式钉住**、rev1 的 7 条 + rev2 的 4 条 + rev3 的 3 条回归、S-7 棘轮表冻结 |
 
-哈希与规模（rev4 实测）：
+哈希与规模（rev5 实测）：
 
 | 文件 | sha256(16) | 字节 |
 |---|---|---|
 | `service.py` | `fe2018305c805428` | 58 909 |
-| `resolver.py` | `419938604e6a8495` | 71 210 |
-| `test_r4b02_candidate_selection.py` | `eca0d54f4a7b7ad0` | 41 685 |
+| `resolver.py` | `111c5365d112ab4e` | 71 366 |
+| `test_r4b02_candidate_selection.py` | `420afc53d9dee325` | 42 092 |
 
-`git diff --stat`（rev3 → rev4）= **2 files changed, 111 insertions(+), 19 deletions(-)**（`resolver.py` 规则 2 谓词与理由串、测试文件新增 3 例）。
-`git diff --stat`（步骤起点 `c986c7a` → rev4 `da5e0f5`）= **3 files changed, 1436 insertions(+), 38 deletions(-)**（`resolver.py` +364、`service.py` +80/−…、测试文件 +1030）。
-file-scope §1 里 F1/F2 的 `6412b19e…`/`6962b258…` 是**开工前**的 A01 §0 冻结输入哈希（按 §5「B 开工即视为已消费」），rev1/rev2/rev3/rev4 的哈希见 §0 与本表。
+`git diff --numstat c986c7a da5e0f5`（步骤起点 → rev4 提交）= `resolver.py` **335/29**、`service.py` **71/9**、测试文件 **1030/0**；`git diff --numstat c986c7a 1d8b1f7`（→ rev5 收口）= `resolver.py` **337/29**、`service.py` **71/9**、测试文件 **1038/0**。
+行锚**由脚本重新解析**：`python evidence/b02_anchors.py`（本目录，随本步交付）打印每个符号的行号与文件 sha256(16)/字节数——上一版把锚点写成"脚本解析"却没有脚本，已被 `B.VR` rev4 记为 B-VR02R4-04，本版补上。
 
 > 行锚由脚本从**最终代码**重新解析（`ast`/逐行匹配），不是手写；rev3 的复审（B-VR02R3-04）指出过上一版行锚偏移 1–11 行，本版已按最终代码重算。
 
@@ -43,7 +43,7 @@ file-scope §1 里 F1/F2 的 `6412b19e…`/`6962b258…` 是**开工前**的 A01
 |---|---|---|
 | 1 注册/能力 | locations SQL 的 `JOIN roots`（结构性）+ resolver `reusable_root_ids` | 未注册 root 不产生行；复用能力由 `reusable_root_kinds` 决定 |
 | 2 状态与安全 | `_location_exclusion_reason` | `original_primary` + `location_status='active'` + `source_id` 非空 + 路径**段**不含 `.rejections`；**保持"排除"语义** |
-| 3 可读且同 hash | `_local_copy_probe` → `_verify_candidate` → `_select_candidate` | 先 `stat`（**不读字节、不触发水合**）→ 全文件流式 sha256。**服务规则只有两条**：① **验证通过的副本永远优先被服务**（无论 rank）；② 只有在**没有任何**副本通过验证时，才允许**一行**凭目录声明被服务 —— 且必须是"**pre-B02 会服务的那一行**"（legacy `is_canonical` 且 active / `original_primary` / 非 `.rejections` / 属于本版本），trace 记 `unverified_<状态>_on_pre_b02_canonical`。其余情况一律不返回句柄 |
+| 3 可读且同 hash | `_local_copy_probe` → `_verify_candidate` → `_select_candidate` | 先 `stat`（**不读字节、不触发水合**）→ 全文件流式 sha256。**服务规则只有两条**：① 验证通过的副本永远优先被服务（无论 rank）；② 只有在没有任何副本通过验证时，才允许**一行**凭目录声明被服务（本版本合格候选中的 legacy `is_canonical`）。**规则 ② 与 pre-B02 的差异、以及它们的可复跑证据，只在 §3 维护一处** |
 | 4 健康/IO 偏好 | `_location_order_key` | 仅在**已合格集合内**按 `priority → root_id → relative_path → location_id` 排序，只决定"先用哪份" |
 
 **输出**：每个 location 带 `candidate_rank`（1..N，0=被排除）与 `exclusion_reason`；候选集合被限定在**该文档自身 `source_id`** 的合格行内。**遗留注解**（`is_canonical`/`duplicate_relation`/`_duplicate_summary` 计数）仍按 pre-B02 规则在该组**全部 active original_primary** 上计算 —— 复用判定看资格轨，清理/导出看遗留轨（这正是 `B.VR` rev1 的 P1-02 要求的分离）。
@@ -59,14 +59,16 @@ file-scope §1 里 F1/F2 的 `6412b19e…`/`6962b258…` 是**开工前**的 A01
 3. 其余任何副本都必须字节验证通过，否则不返回句柄（→ `unavailable`/MISSING）；
 4. **取消永不回答**（读取中途取消、收尾守卫、粘性取消都算）；**字节级硬门归 B03 的读路径**（"只返回验证版本字节或明确失败"）——B03 落地前，规则 2 的那一行仍可能字节漂移而被服务（trace 已标注）。
 
-**与 pre-B02 的两处差异（必须列出，不能省略）**：规则 2 的那一行**不是**"pre-B02 会服务的那一行"的逐位复制——pre-B02 有两个缺陷，rev4 **没有恢复**它们：
+**与 pre-B02 的差异（权威清单，本页 §3 是唯一维护处；其他地方一律只引用，不重述）**：规则 2 的那一行**不是**"pre-B02 会服务的那一行"。pre-B02 有四个缺陷/差异，rev4 **没有逐位恢复**它们：
 
-| # | pre-B02 的谓词 | rev4 的谓词 | 差异方向 |
+| # | pre-B02 的谓词 | rev4 的谓词 | 方向 |
 |---|---|---|---|
-| a | `.rejections` 按**子串**匹配 → 路径里只要含该子串就被拒 | 按**路径段**匹配（与 `adapters/dayu.py` 的既有约定一致） | rev4 **更宽**：`my.rejections_backup/2025.pdf` 这类路径在 pre-B02 会被拒、rev4 视为普通候选（`test_r4b02_documented_difference_from_pre_b02_is_pinned` 把这一角显式钉住） |
-| b | 不做 source 组限定 → 可能选中并服务**另一版本**的行 | 限定在文档自身 source 组 | rev4 **更严**：外组可读副本不能顶替本版本（`test_r4b02_other_source_group_is_never_served`） |
+| a | `.rejections` 按**子串**匹配 → 路径里只要含该子串就被拒 | 按**路径段**匹配（与 `adapters/dayu.py` 的既有约定一致） | rev4 **更宽**：`my.rejections_backup/2025.pdf` 这类路径在 pre-B02 被拒、rev4 视为普通候选（`test_r4b02_documented_difference_from_pre_b02_is_pinned` 钉住） |
+| b | 不做 source 组限定 → 可能选中并服务**另一版本**的行 | 限定在文档自身 source 组（**条件性**：仅当文档有 `source_id` 时；为空则不做限定） | rev4 **更严**；但"无条件限定"的说法不成立（B-VR02R4-03） |
+| c | 只要求 `Path.is_file()` → 云占位/超大文件也会被服务 | 先过**本地探针**（存在、普通文件、非水合占位；随后还有 256 MiB 与预算上限） | rev4 **更严**：占位行会被拒（`no_verifiable_candidate`，tried 记 `hydration_required`） |
+| d | （无） | 规则 1 会把**验证通过**的等价副本提前服务 | rev4 **更宽但更正确**：pre-B02 只认 elected canonical，首选不可读时直接 MISSING（rev1 的 P1-1 已确立这条改进） |
 
-因此**正确说法**是："rev4 的凭声明信任范围 = pre-B02 的那一行**减去 a、b 两个缺陷**"。在 a（`my.rejections_backup` 类路径）**且**字节漂移的组合下，pre-B02 会 `missing` 而 rev4 会按声明服务该副本（trace 已标注）——这是**刻意保留的差异**（a 本身是缺陷修复），已在 [S-10](owner-scope-decisions-2026-09-12.md) 逐条列出。**除这两处外没有第三种差异**：`B.VR` rev3 用两个反例把这句话逼到当前这个可证伪的形态（[reviews/B.VR-b02-rev3.json](reviews/B.VR-b02-rev3.json) B-VR02R3-01），rev4 据此改写。
+因此**正确说法**：rev4 的凭声明信任范围 = pre-B02 那一行 **减去 a/b/c 三个缺陷、加上 d 这一处等价副本切换**；在 a **且**字节漂移的组合下 pre-B02 会 `missing` 而 rev4 会按声明服务该副本（trace 已标注），这是**刻意保留**的差异。**除 a–d 外没有第五处差异**（`B.VR` rev4 用云占位与 `primary_source_id=NULL` 两个探针把上一版的"两处"说法逼到这张表）。权威处就是本表；`b-design.md`、`findings.md`、`owner-scope-decisions`、产品 docstring/注释一律**只引用本表**。
 
 **为什么让步**：A 侧冻结断言构造的合成目录里，文件字节与其声明的 `content_sha256` **和** `byte_size` 都不一致（`test_source_catalog_sql_pushdown.py` 甚至把 13 B 的文件声明为 1000 B；`test_source_catalog_determinism.py` 用 `b"%PDF-fake"` 配 `sha256(b"same-bytes")`），任何"先验证再服务首选"的硬门都会失败这 4 条既有断言：
 
@@ -115,7 +117,8 @@ file-scope §1 里 F1/F2 的 `6412b19e…`/`6962b258…` 是**开工前**的 A01
 |---|---|---|
 | **独立复审（rev1）** | 新会话 subagent，记录 [reviews/B.VR-b02.json](reviews/B.VR-b02.json) | **rejected**：2×P1 / 2×P2 / 3×P3；它**独立逐位复现**了作者的全量/覆盖率/探针数字，并发现作者自检漏掉的两条 P1 |
 | **独立复审（rev2）** | 新会话 subagent，记录 [reviews/B.VR-b02-rev2.json](reviews/B.VR-b02-rev2.json) | **accepted_with_findings**：0×P0 / 0×P1 / 2×P2 / 3×P3；确认 rev1 两条 P1 **真的修好**（原样重跑反例），抓到"凭声明回退提前返回"与"S-10 理由被证伪" |
-| **独立复审（rev3）** | 新会话 subagent，记录 [reviews/B.VR-b02-rev3.json](reviews/B.VR-b02-rev3.json) | **accepted_with_findings**：0×P0 / 0×P1 / **1×P2** / 6×P3；确认前两轮 **4 条反例全部 fixed**，逐位复现 27/23/10/787、覆盖率 87.70 %/95.16 %、棘轮门 2 passed、claim 28/28、`b02_verify` 7/7、探针 JSON 与文件哈希；8 个变异里 **M5/M6/M7 存活**（已全部处置） |
+| **独立复审（rev3）** | 新会话 subagent，记录 [reviews/B.VR-b02-rev3.json](reviews/B.VR-b02-rev3.json) | **accepted_with_findings**：0×P0 / 0×P1 / **1×P2** / 6×P3；确认前两轮 **4 条反例全部 fixed**，逐位复现 27/23/10/787、覆盖率 87.70 %/95.16 %、棘轮门 2 passed、claim 28/28、`b02_verify` 7/7、探针 JSON 与文件哈希；8 个变异里 **M5/M6/M7 存活** |
+| **独立复审（rev4，定点）** | 新会话 subagent，记录 [reviews/B.VR-b02-rev4.json](reviews/B.VR-b02-rev4.json) | **accepted_with_findings**：0×P0 / 0×P1 / **1×P2** / 3×P3；确认 M5/M6/M7 **全部 KILLED**、历史反例仍全 fixed、`b02_mutation_check.py` 还原哈希一致；指出上一版的更正**只到 4/9 处**、存在**第三/第四处差异**（c 云占位探针、d 验证副本优先）、§1/§7 仍有 4 处数字不准 |
 | 新增用例（rev4） | `python -m pytest tests/contract/test_r4b02_candidate_selection.py -q` | **30 passed**（rev1 的 7 条 + rev2 的 4 条 + rev3 的 3 条回归） |
 | 变异复查（rev4） | `python evidence/b02_mutation_check.py --all` | **M5 / M6 / M7 全部 KILLED**（rev3 复审时三者存活）；harness 以字节读写、跑完把 `resolver.py` 还原到同一 sha256(16)，并打印前后哈希以便核对 |
 | 目标回归 | `python -m pytest -q tests/contract/test_source_catalog_determinism.py tests/contract/test_source_catalog_sql_pushdown.py tests/contract/test_zr403_dedupe_resolver_generalization.py tests/contract/test_source_catalog_fail_closed.py` | **23 passed** |
@@ -127,7 +130,7 @@ file-scope §1 里 F1/F2 的 `6412b19e…`/`6962b258…` 是**开工前**的 A01
 | 静态检查 | `python -m ruff check src tests/unit tests/contract scripts` | All checks passed |
 | RED/GREEN 探针 | `evidence/b02_red_green_probe.py`（pre 用 `git worktree` 的 HEAD 源码） | 在 rev3 代码上重新生成：pre = `missing`（`placeholder_no_handle`）；post = `reused_exact`（dropbox 副本，`verified_candidate_rank_2:e5a09d70ca5c`）；rev4 未改这段行为 |
 | 汇总（可复跑） | `python evidence/b02_verify.py --fast` | **7/7 executed checks pass** → [b02-verification.json](b02-verification.json)（含命令、返回码、摘要行、`coverage.json` 时间戳与年龄、改动文件哈希、`gate_precondition`） |
-| claim 审计（双向） | `python evidence/claim_fact_audit.py` | 见下方"全量结果" |
+| claim 审计（双向） | `python evidence/claim_fact_audit.py` | **31/31 checks pass**（其中一项专门检查"S-10 差异只有一处权威清单"，且审计现在**同时检索三个产品文件**——这正是上一版漏掉的方位） |
 
 > **§7 注（B-VR02-06）**：仓库**跟踪**着一份陈旧的 `coverage.json`（2026-08-17 测量），而棘轮门读的就是这个文件 → **单独**运行棘轮命令会红，这不是本次改动导致的。`b02_verify.py` 现在把"陈旧的 coverage.json"报成 **SKIPPED + 年龄**而不是假红。
 > **§7 注 2（B-VR02R3-07，更正）**：早先一版 §7 写过"新增测试未落盘时 `resolver.py` = 61.3 %（FAILED）"——那是 **rev1 树**（`cab1fd6` 之前、且新测试文件尚不存在）上的一次测量；**在当前树上不成立**：`B.VR` rev3 用"排除新测试文件的全量 `--cov`"实测 **86.34 %**，棘轮仍 PASS。该数字不再作为当前证据使用。

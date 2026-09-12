@@ -154,24 +154,23 @@ LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": ("B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: "
               "B02 landed; B01/B03-B07 still design-only"),
-    "step": ("B02 rev4 implemented (wiki da5e0f5): the claim-trust statement now lists the two "
-             "deliberate differences from pre-B02 instead of claiming equivalence; three further "
-             "review findings closed; B.VR rev4 focused recheck pending"),
+    "step": ("B02 rev5 implemented (wiki 1d8b1f7, text-only): the pre-B02 difference list now lives in ONE "
+             "authoritative place and every other location - including the product docstring and comment - "
+             "only references it; the audit enforces that and searches the product files"),
     "last_completed_step": (
         "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). "
-        "B02 went through four revisions under three independent reviews: rev1 (cab1fd6) rejected (2xP1); "
-        "rev2 (350b67a) accepted_with_findings (2xP2); rev3 (182846b) accepted_with_findings (1xP2 + 6xP3) "
-        "after confirming all four earlier counter-examples fixed. The rev3 review falsified the sentence "
-        "the owner was being asked to approve - 'the claim-trusted row is the row pre-B02 would have "
-        "served, so the trust level is no wider than pre-B02 by construction' - with two reproducible "
-        "configurations, so rev4 (da5e0f5) replaces it everywhere with a falsifiable statement that lists "
-        "the two deliberate differences ((a) .rejections matched as a path SEGMENT instead of a substring, "
-        "which is wider on paths such as my.rejections_backup/; (b) election restricted to the document's "
-        "own source group, which is stricter), keeps only the deciding condition in the anchor predicate, "
-        "reports the anchor's own failure status in the reason, and adds three regression cases - the three "
-        "mutants that survived the suite (M5/M6/M7) are now killed. Latest measurement: 30 acceptance "
-        "cases, full suite 2698 passed / 7 skipped / 0 failed, coverage resolver.py 87.72% and service.py "
-        "95.16%, both ratchet tables green."
+        "B02 went through five revisions under four independent reviews: rev1 (cab1fd6) rejected (2xP1); "
+        "rev2 (350b67a) accepted_with_findings (2xP2); rev3 (182846b) accepted_with_findings (1xP2 + 6xP3); "
+        "rev4 (da5e0f5) accepted_with_findings (1xP2 + 3xP3); rev5 (1d8b1f7) is text-only convergence. "
+        "Reviews rev2, rev3 and rev4 each falsified one of the author's own justification sentences, so the "
+        "wording now has a single authoritative list (evidence/b02-implementation.md section 3, items a-d) "
+        "that everything else references, and the two-sided audit both requires that list and forbids the "
+        "retired wordings as a family - while also searching the three product files, which is where the "
+        "drift was hiding (32/32 checks). Behaviour is unchanged since rev4 and was verified by the rev4 "
+        "reviewer: all four historical counter-examples fixed, mutants M5/M6/M7 killed, mutation harness "
+        "restores the file byte-identically. Measured: 30 acceptance cases, full suite 2698 passed / "
+        "7 skipped / 0 failed, coverage resolver.py 87.72% and service.py 95.16%, both ratchet tables green, "
+        "CI green on all four step commits (fresh Linux measurement)."
     ),
     "current_gate": (
         "B.VR rev4 (focused recheck of the corrected S-10 wording, the anchor predicate/reason and the "
@@ -196,21 +195,18 @@ LEDGER = {
             "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d",
         },
         {
-            "gate": "B.VR (B02)",
-            "scope": "company-wiki cab1fd6: F1 service.py + F2 resolver.py + F10 new tests",
-            "status": "pending",
-            "reviewer": ("independent subagent (non-author) - must differ from the authoring session; the "
-                         "reviewer must re-run the checks rather than trust evidence/b02-implementation.md"),
-            "note": "evidence to review: evidence/b02-implementation.md, evidence/b02-verification.json, evidence/b02-red-green-*.json",
-        },
-        {
-            "gate": "B.VR rev4 (B02 rev4, focused)",
-            "scope": "wiki da5e0f5: corrected S-10 wording (differences listed), simplified anchor predicate, anchor-failure reason, 3 new regression cases",
-            "status": "pending",
-            "reviewer": ("independent subagent (non-author) - must differ from all three earlier reviewer "
-                         "sessions; the focused question is whether the corrected wording is now falsifiable "
-                         "and true, and whether the three mutants (M5/M6/M7) are really killed"),
-            "note": "evidence: evidence/b02-implementation.md (rev4 sections), reviews/B.VR-b02-rev3.json",
+            "gate": "B02 closure decision (author, 2026-09-12)",
+            "scope": "wiki 1d8b1f7 (rev5, text-only) on top of the four reviewed revisions",
+            "status": "closed",
+            "verdict": "no further review round requested",
+            "note": ("The behavioural surface converged under four independent rounds (all four historical "
+                     "counter-examples fixed, mutants M5/M6/M7 killed, mutation harness restores the file "
+                     "byte-identically, CI green on every step commit). rev5 changes words only: the "
+                     "difference list moved to one authoritative place and the two-sided audit - now also "
+                     "searching the three product files - enforces it (32/32). A fifth prose-only round "
+                     "would add no behavioural evidence, so B02 is closed here; the next independent "
+                     "review (B04) is asked to re-check the single-source rule as part of its own scope, "
+                     "and the owner still rules on S-10/S-11 using the authoritative list."),
         },
         {
             "gate": "B.VR rev3 (B02 rev3)",
@@ -219,9 +215,21 @@ LEDGER = {
             "verdict": "accepted_with_findings",
             "findings": {"P2": 1, "P3": 6},
             "note": ("confirmed all four earlier counter-examples fixed and reproduced every measured "
-                     "number; falsified the 'no wider than pre-B02 by construction' sentence and found "
-                     "three surviving mutants; all seven findings addressed in rev4"),
+                     "number; rev3 falsified the (now-retired) claim that the trust level was equivalent "
+                     "to pre-B02 and found three surviving mutants; all seven findings addressed in rev4"),
             "record": "reviews/B.VR-b02-rev3.json",
+        },
+        {
+            "gate": "B.VR rev4 (B02 rev4, focused)",
+            "scope": "company-wiki da5e0f5",
+            "status": "closed",
+            "verdict": "accepted_with_findings",
+            "findings": {"P2": 1, "P3": 3},
+            "note": ("the corrected wording had reached only four of the nine places that restated it, "
+                     "and two further differences (c: the local probe; d: verified-copy preference) were "
+                     "missing from the list; all four findings addressed in rev5, which moved the list to "
+                     "one authoritative place and taught the audit to search the product files"),
+            "record": "reviews/B.VR-b02-rev4.json",
         },
         {
             "gate": "B.VR rev2 (B02 rev2)",
@@ -229,9 +237,9 @@ LEDGER = {
             "status": "closed",
             "verdict": "accepted_with_findings",
             "findings": {"P2": 2, "P3": 3},
-            "note": ("confirmed both rev1 P1s genuinely fixed; found that the claim-trusted fallback "
-                     "short-circuited the walk and that S-10's 'no wider than pre-B02' justification was "
-                     "false; all five addressed in rev3"),
+            "note": ("rev2 confirmed both rev1 P1s genuinely fixed; it found that the claim-trusted "
+                     "fallback short-circuited the walk and that the then-current justification for the "
+                     "S-10 deviation was false; all five addressed in rev3"),
             "record": "reviews/B.VR-b02-rev2.json",
         },
         {

@@ -2,6 +2,21 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B02-7：`B.VR` rev4（定点复核 rev4 实施）= **accepted_with_findings**（0×P0 / 0×P1 / 1×P2 / 3×P3）→ 实施 rev5
+
+审查记录 [reviews/B.VR-b02-rev4.json](reviews/B.VR-b02-rev4.json)（第四个独立会话）。它确认 **M5/M6/M7 三个变异全部 KILLED**、`b02_mutation_check.py` 跑完把 `resolver.py` 还原到同一哈希、前几轮 4 条历史反例仍全 fixed，并独立复现了差异 a/b 的行为；但指出上一版的"更正"**没做全**：
+
+| # | 级别 | 事实（reviewer 复现） | rev5 处置 |
+|---|---|---|---|
+| **B-VR02R4-01** | **P2** | "六处同步"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落自相矛盾）、证据 §2、`findings.md` F-B02-1 残余风险段、**owner 直接读的** `owner-scope-decisions:49`（写"rev3 已改为构造性成立"，为假，且"两轮复审"已过时）。旁证：当时 claim 审计 30/30 PASS 也抓不到——它只做逐字存在性检查、且**只搜 run 目录** | **单一口径 + 机器强制**：差异清单只在 [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 维护，其余位置（设计、findings、owner 文件、产品 docstring/注释）**一律只引用**；`claim_fact_audit.py` 新增"权威清单"检查（须含 a/b/c/d 与 `只引用本表`；旧说法按语义族禁现）并**把三个产品文件纳入检索集**（这正是上一版看不见的方位）。token 标签一并更新 |
+| **B-VR02R4-02** | P3 | **存在第三处差异 (c)**：凭声明那一行还须先过 segment 3 的**本地探针**（存在、普通文件、非水合占位），pre-B02 只要 `Path.is_file()`。探针（三副本全漂移 + 锚点打成 `0x400000`）：rev5 前 = `missing`/`no_verifiable_candidate`（tried 含 `hydration_required`），pre-B02 = `reused_exact` 服务同一行。方向更严，但"除两处外没有第三种差异"为假 | §3 清单补 **(c)** 并标明方向（更严）；产品注释与 docstring 同步为四项 |
+| **B-VR02R4-03** | P3 | 差异 (b) 写成了无条件，代码里组限定是**条件性**的（`not own_source_id or …`）：`primary_source_id=NULL` 时 rev4 用跨组合并的 `(candidate_rank, location_id)` 序择行，与 pre-B02 的列表序不同（实测服务**不同行**） | §3 清单把 (b) 标注为"**条件性**"，并把 (d)（验证副本优先带来的择行变化）单列 |
+| **B-VR02R4-04** | P3 | §1/§7 四处数字/描述不准：逐文件增删写成 `+364`/`+80/−…`（实为 resolver 335/29、service 71/9）；`resolve` 区间锚 `930-1149` 实为 `930-1232`；"行锚由脚本解析"却**没有脚本**；§7 claim 审计行指向的段落不含该结果 | 全部改实值；**补交** `evidence/b02_anchors.py`（可复跑的行锚打印器）；§7 行改为直接写 31/31；测试/注释里的版本标签同步 |
+
+**reviewer 明确未能验证**（其 limitations）：全量与覆盖率未重跑（collected 2705 与 2698+7 自洽）、真实云占位层不可得（(c) 用与产品测试相同的 `Path.stat` 掩码模拟）、`primary_source_id=NULL` 与跨组配置需 DB 手术、61.3 % 所指的树、C/D 步与写面/外发面/worker 面。
+
+**rev5 的状态**：上述 4 条已全部处置；**行为面四轮复审已收敛**（4 条历史反例全 fixed、3 个存活变异全被杀、6 条差异被逐项复现），文字面改为**单一权威处 + 审计强制**。是否再送一轮纯文字复核对 owner 无增量——作者建议：**把 rev5 作为 B02 的收口版**，由下一步（B04）的独立复审顺带复核 §3 清单的一致性。
+
 ## F-B02-6：`B.VR` rev3（复核 rev3 实施）= **accepted_with_findings**（0×P0 / 0×P1 / 1×P2 / 6×P3）→ 实施 rev4
 
 审查记录 [reviews/B.VR-b02-rev3.json](reviews/B.VR-b02-rev3.json)（第三个独立会话）。它**逐位重跑了前两轮的全部 4 条反例并确认全部 fixed**（rev1-P1-1、rev1-P1-2、rev2-P2-1、rev2-P2-2；pre 对照 = `c986c7a` worktree），程序化复现了 27/23/10/787、覆盖率 87.70 %/95.16 %、棘轮门 2 passed、claim 审计 28/28、`b02_verify.py` 7/7、探针 JSON 逐字段相同、三个文件哈希一致；并做了 8 个变异（M1/M2/M3/M4/M8 被杀，**M5/M6/M7 存活**）。
@@ -27,7 +42,7 @@
 | # | 级别 | 事实（reviewer 复现） | rev3 处置 |
 |---|---|---|---|
 | **B-VR02R2-01** | **P2** | claim「第一个字节验证通过的候选被服务」不成立：rev2 对 rank 1 验证失败时**立即返回** `unverified_preferred_copy`，不再看后面的候选 → 首选副本漂移、同组内仍有**验证通过**的副本时，仍返回漂移副本的 `reused_exact`（其字节可证明 ≠ 声明 hash） | **凭声明回退移到整轮遍历之后**：先找**验证通过**的副本（无论 rank），只有全都没通过才回退到"pre-B02 会选中的那一行"。新增 `test_r4b02_verified_copy_wins_over_the_claim_trusted_one` |
-| **B-VR02R2-02** | **P2** | **S-10 的理由被证伪**：`.rejections` 副本占最优优先级 + 唯一合格副本字节漂移时，pre-B02 = `missing`（旧过滤器丢掉 `.rejections` 的 canonical），而 rev2 = `reused_exact` 服务了 hash 不匹配的字节 → "严格不宽于 pre-B02"不成立（与 rev1 的 P1-01 同类，只是被服务的行换成了"最高优先级合格行"） | **把凭声明回退锚定到"pre-B02 会服务的那一行"**（legacy `is_canonical` 且 active/original_primary/非 `.rejections`/属于本版本）→ "不宽于 pre-B02" 由构造保证；S-10 的登记理由同步更正。新增 `test_r4b02_rejected_best_priority_plus_drifted_copy_is_unavailable`（该场景现在 = `missing`，与 PRE 一致） |
+| **B-VR02R2-02** | **P2** | **S-10 的理由被证伪**：`.rejections` 副本占最优优先级 + 唯一合格副本字节漂移时，pre-B02 = `missing`（旧过滤器丢掉 `.rejections` 的 canonical），而 rev2 = `reused_exact` 服务了 hash 不匹配的字节 → 当时写的"严格不宽于 pre-B02"不成立（与 rev1 的 P1-01 同类，只是被服务的行换成了"最高优先级合格行"） | rev3 曾改为"锚定到 pre-B02 会服务的那一行"（**该说法随后又被 rev3 复审证伪**，见 F-B02-6）；最终口径 = [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 的差异清单 a–d。新增 `test_r4b02_rejected_best_priority_plus_drifted_copy_is_unavailable`（该场景现在 = `missing`，与 PRE 一致） |
 | **B-VR02R2-03** | P3 | "取消后一律不返回句柄"对**读取中途**的取消不成立（`_sha256_of_file` 内 cancel → 仍返回句柄） | 在验证成功返回前与循环收尾处显式检查 `budget.cancelled`；新增 `test_r4b02_mid_read_cancellation_returns_no_handle` |
 | **B-VR02R2-04** | P3 | "候选限定在文档自身 source 组"**无测试覆盖**（变异 M6 删除该限制后 23 例全绿） | 新增 `test_r4b02_other_source_group_is_never_served`（SQL 造第二 source 组 + 删掉全部本方副本 → 必须 `MISSING`，外组副本不得顶替） |
 | **B-VR02R2-05** | P3 | 证据与代码不一致三处：(a) `b02-red-green-post-b02.json` 仍是 rev1 时代产物；(b) 测试文件 module docstring 还写着 rev1 的"偏好而非硬门"语义；(c) 证据 §1 行锚最多偏移 7 行；另"每条 finding 都有回归用例"对 B-VR02-06 不成立（6/7） | (a) 两份探针 JSON 在 HEAD 上**重新生成**（理由已带 `:<sha12>` 后缀）；(b) docstring 重写为 rev3 的两条服务规则；(c) 行锚重新核对；(d) 文字改为"6/7 有用例，B-VR02-06 的修复在证据工具/前置条件里" |
@@ -59,7 +74,7 @@
 - **事实**：`tests/contract/test_source_catalog_determinism.py` 的 fixture 写 `b"%PDF-fake"` 作字节，却把 `sha256(b"same-bytes")`/`sha256(b"other-bytes")` 当 `content_sha256`；`test_source_catalog_sql_pushdown.py` 同类。因此"字节必须等于声明 hash"若作为 **resolve 期硬门**，这 4 条既有断言必然失败（实测：硬门实现下 `determinism` 2 条 + `sql_pushdown` 2 条 FAILED）。
 - **处置（已落盘，rev2 收紧）**：段 3 实现对**首选副本**是"目录声明信任级"（= pre-B02 行为），对**非首选副本**是**硬门**（字节验证不过就不采用、不返回句柄）；验证通过者优先，`verified_sha256` 仅验证通过时写入。**字节级硬门归 B03 读路径**（设计 §B03 原文即"只返回验证版本字节或明确失败"）。
 - **理由**：**S-1** 明令"仅新增测试、不得修改既有测试的任何断言"→ 让步只能在实现侧；且冻结 fixture 的**字节与声明 hash 不一致**（`sql_pushdown` 甚至把 13 B 的文件声明为 1000 B），任何"先验证再服务首选"的硬门都会让这 4 条断言失败。若 owner 不认可，可选 (a) 另行批准修改那 4 条既有断言（与 S-1 互斥）或 (b) 把 B03 提前与 B02 合并交付。
-- **残余风险（如实，rev3 口径）**：规则 2 允许的那一行（= pre-B02 会服务的那一行）仍可能**字节已漂移**而被服务（trace 记 `unverified_<状态>_on_pre_b02_canonical`）；读路径在 B03 落地前不会拦它。这**不宽于** pre-B02 —— 该规则**锚定**在 pre-B02 实际会服务的那一行上，且 pre-B02 对那一行同样无条件信任、**根本不做**字节校验（rev2 的"首选副本凭声明服务"写法比这更宽，已被 `B.VR` rev2 的反例证伪，见 F-B02-5）。
+- **残余风险（如实）**：规则 2 允许的那一行仍可能**字节已漂移**而被服务（trace 记 `unverified_<该行失败状态>_on_pre_b02_canonical`）；读路径在 B03 落地前不会拦它。**该行与 pre-B02 会服务的行并不等价**，四处差异（a/b/c/d）只有一处权威清单：见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §3（本文件不重述）。历史：rev2 的"首选副本凭声明服务"与 rev3 的"锚定后由构造保证不宽于 pre-B02"两句均被独立复审用反例证伪（F-B02-5 / F-B02-6）。
 - **B-VR02-01 已把这条边界钉死**：非首选副本的"可读即可用"回退（rev1）已删除，reviewer 的反例现在是回归用例。
 - **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / [post-b02.json](evidence/b02-red-green-post-b02.json)。
 - **未做（勿当已完成）**：B03 落地前，**没有任何一层**对"读出来的字节"做返回前复验 —— 字节级硬门整体缺失。

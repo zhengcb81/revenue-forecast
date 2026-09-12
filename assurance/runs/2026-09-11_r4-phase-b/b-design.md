@@ -112,7 +112,7 @@
 **⚠️ 实施偏差（v0.1.7 回填，2026-09-12；经 `B.VR` rev1/rejected、rev2/accepted_with_findings、rev3/accepted_with_findings 三轮收紧；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md) / [S-11](owner-scope-decisions-2026-09-12.md)）**：本段第 3 段的"同 hash"在 **B02 的实际实现**里是两条规则：
 
 1. **验证通过的副本永远优先被服务**（无论 rank）——仍**真的读字节**并做**整文件**摘要比对（上限 256 MiB/候选；抽样只用于排除），验证通过时记 `verified_sha256`；
-2. **只有在没有任何候选通过验证时**，才允许**一行**凭目录声明被服务：**本版本（文档自身 source 组）合格候选中那一行 legacy `is_canonical`**，trace 记 `unverified_<该行自身的失败状态>_on_pre_b02_canonical`。**注意：该行不是"pre-B02 会服务的那一行"的逐位复制**——pre-B02 有两个缺陷且 rev4 不恢复：(a) `.rejections` 当时按**子串**匹配（rev4 按**路径段**，因此 rev4 在 `my.rejections_backup/` 这类路径上**更宽**）；(b) 当时**不限定 source 组**（rev4 限定，因此 rev4 **更严**，不会取另一版本的行）。权威表述见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 的差异表；
+2. **只有在没有任何候选通过验证时**，才允许**一行**凭目录声明被服务：**本版本（文档自身 source 组）合格候选中那一行 legacy `is_canonical`**，trace 记 `unverified_<该行自身的失败状态>_on_pre_b02_canonical`。**该行与 pre-B02 会服务的行不等价**；四处差异（a `.rejections` 子串→路径段＝更宽；b 条件性的 source 组限定＝更严；c 需过本地探针/非云占位＝更严；d 验证通过的副本优先＝更宽但更正确）的**唯一权威清单在 [evidence/b02-implementation.md](evidence/b02-implementation.md) §3**——本文件不重述；
 3. **其余任何副本都必须字节验证通过**，否则不返回句柄（→ `unavailable`）；**取消永不回答**（读取中途取消、收尾守卫、粘性取消都算）；
 4. **字节级硬门归 B03 的读路径**（"只返回验证版本字节或明确失败"）——B03 落地前，规则 2 的那一行仍可能字节漂移而被服务（trace 已标注；见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §8）。
 

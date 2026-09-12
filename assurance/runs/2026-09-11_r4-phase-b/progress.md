@@ -6,7 +6,7 @@
 - **两条 P2（真问题）**：
   1. **B-VR02R2-01**：rev2 把"凭声明回退"写成 rank-1 验证失败就**立即返回** → 漂移的首选副本压过了同组内**可验证**的副本（claim「第一个验证通过的候选被服务」不成立）。
   2. **B-VR02R2-02**：**S-10 的登记理由被反例证伪** —— `.rejections` 副本占最优优先级 + 唯一合格副本漂移时，pre-B02 = `missing`、rev2 = `reused_exact` 服务了 hash 不匹配的字节 → "不宽于 pre-B02"不成立（若带着这句话去请 owner 批准，就是**误导**）。
-- **rev3 处置**：凭声明回退**移到整轮遍历之后**，并**锚定到"pre-B02 会服务的那一行"**（构造性保证不宽于 pre-B02）；读取中途取消不再返回句柄；补外 source 组回归用例（杀掉存活的 M6）；重生成探针 JSON、重写测试 docstring、核对证据行锚、"每条 finding 都有用例"改为 6/7（B-VR02-06 的修复在工具/前置条件）。
+- **rev3 处置**：凭声明回退**移到整轮遍历之后**（验证副本永远优先）；读取中途取消不再返回句柄；补外 source 组回归用例（杀掉存活的 M6）；重生成探针 JSON、重写测试 docstring、核对证据行锚。**当时写的"锚定到 pre-B02 会服务的那一行（构造性保证不宽于 pre-B02）"随后被 `B.VR` rev3 证伪** → 最终口径 = [evidence/b02-implementation.md](evidence/b02-implementation.md) §3 的 a–d 差异清单（单一权威处）。
 - **逐条处置表**：[findings.md](findings.md) F-B02-5；S-10 已在 [owner-scope-decisions](owner-scope-decisions-2026-09-12.md) §9 按 rev3 规则重述。
 - **B04 计划**已排布（[evidence/b04-plan.md](evidence/b04-plan.md)），待 B02 rev3 复审关闭后实施。
 

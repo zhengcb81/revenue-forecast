@@ -36,6 +36,20 @@ EXCLUDE_NAMES = {"checkpoint.json"}  # same exclusion the checkpoint generator d
 EXCLUDE_SELF = {"evidence/claim_fact_audit.py", "evidence/claim-fact-audit.json", "evidence/claim_fact_audit.pyc"}
 EXCLUDE_DIRS = {".git", "__pycache__", ".pytest_cache"}
 
+# B-VR02R4-01: the wording about the S-10 deviation drifted because it was RESTATED in several
+# places, and the previous audit could not see it — it only searched this run directory, while the
+# claims also live in the product repo (docstrings and comments).  These extra roots are searched
+# with the same two-sided rules and the same history exemption, so a restatement that contradicts
+# the authoritative section fails the audit wherever it hides.
+EXTRA_ROOTS = [
+    Path(r"C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/service.py"),
+    Path(r"C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/resolver.py"),
+    Path(
+        r"C:/Users/郑曾波/Projects/company-wiki/tests/contract/"
+        "test_r4b02_candidate_selection.py"
+    ),
+]
+
 # Checks: (label, [required strings], [superseded strings])
 CHECKS: list[tuple[str, list[str], list[str]]] = [
     ("B05 provenance 不得存原文片段（许可已删除）",
@@ -107,6 +121,17 @@ CHECKS: list[tuple[str, list[str], list[str]]] = [
     ("B02 与 pre-B02 的差异被逐条列出（不再声称「由构造保证」）（B-VR02R3-01）",
      ["与 pre-B02 的两处差异", "my.rejections_backup", "B-VR02R3-01"],
      ["不宽于 pre-B02**的**由构造保证", "由构造保证不宽于 pre-B02"]),
+    ("S-10 差异只有一处权威清单（a/b/c/d），其他地方只引用不重述",
+     ["权威清单", "| a |", "| b |", "| c |", "| d |", "只引用本表",
+      "section 3", "b02-implementation.md"],
+     ["Two differences from pre-B02", "除这两处外没有第三种差异",
+      "no wider than pre-B02", "strictly no wider than pre-B02",
+      "that row minus two defects", "减去 a、b 两个缺陷",
+      "构造性保证不宽于 pre-B02", "已改为构造性成立", "构造性成立",
+      "= pre-B02 会服务的那一行", "锚定到 pre-B02 会服务的那一行"]),
+    ("差异清单含第三/第四处（云占位探针、验证副本优先）",
+     ["本地探针", "hydration_required", "验证通过的副本永远优先", "条件性"],
+     []),
     ("B.VR rev3 记录在场且逐条处置已登记",
      ['"verdict": "accepted_with_findings"', "B.VR-b02-rev3.json", "B-VR02R3-07"],
      []),
@@ -167,6 +192,11 @@ def main(argv: list[str] | None = None) -> int:
 
     files = eligible_files()
     texts = {p.relative_to(RUN).as_posix(): p.read_text(encoding="utf-8") for p in files}
+    for extra in EXTRA_ROOTS:
+        if extra.is_file():
+            texts[f"product:{extra.as_posix()}"] = extra.read_text(encoding="utf-8")
+        else:
+            print(f"WARN  extra search root missing: {extra}")
     results, failures = [], 0
     for label, required, superseded in CHECKS:
         req_hits, old_hits = [], []
