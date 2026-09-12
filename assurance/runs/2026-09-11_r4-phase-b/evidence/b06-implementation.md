@@ -8,7 +8,7 @@
 | 交付 | 位置 | 内容 |
 |---|---|---|
 | 产品代码 | `src/company_wiki/source_catalog/resolver.py` | `ResolutionEnvelope.qualification`（**加法，默认 `None`**，`to_dict()` 同步）+ 三个模块级新函数：`_qualification_gaps` / `_qualification_label` / `_metadata_conflict_reason` |
-| 验收用例（新增，F10） | `tests/contract/test_r4b06_qualification.py` | **11 用例** |
+| 验收用例（新增，F10） | `tests/contract/test_r4b06_qualification.py` | **12 用例**（11 条规则/可达性 + 1 条共享列畸形输入不崩） |
 
 ## 2. 规则（与计划 §2 一致）
 
@@ -32,9 +32,9 @@
 - **作者决定（在边界内，最保守）**：**选 (c)** —— 不放宽既有门（不改跨仓行为），把 `preview` 登记为"**已定义、当前不可达**"，并把 (a)/(b) 作为**范围问题**上呈 owner。**不声称 preview 已交付**。
 - 用例据此分成两类：**可达的**（`verified_input` / `blocked`，经真实 `resolve` + 信封断言）与**规则级的**（`preview`，在真实句柄上注入缺口后断言规则本身），后者在 docstring 里写明"这是规则、不是可达结果"。
 
-## 4. 用例清单（11 条，全绿）
+## 4. 用例清单（12 条，全绿）
 
-可达路径：`..._complete_handle_is_verified_input`、`..._missing_url_is_refused_before_any_preview_label`（钉住 `capture_incomplete` 事实 + 无句柄时 `qualification is None`）、`..._unknown_identity_blocks_the_formal_contract`、`..._unknown_period_blocks_the_formal_contract`（含"只有 published_date 也算期间已知"）、`..._missing_source_identity_blocks_the_formal_contract`、`..._field_conflict_blocks_the_formal_contract`（S-13）、`..._an_unanswered_request_carries_no_qualification`、`..._qualification_is_additive_for_pre_b06_consumers`。
+可达路径：`..._complete_handle_is_verified_input`、`..._missing_url_is_refused_before_any_preview_label`（钉住 `capture_incomplete` 事实 + 无句柄时 `qualification is None`）、`..._unknown_identity_blocks_the_formal_contract`、`..._unknown_period_blocks_the_formal_contract`（含"只有 published_date 也算期间已知"）、`..._missing_source_identity_blocks_the_formal_contract`、`..._field_conflict_blocks_the_formal_contract`（S-13）、`..._an_unanswered_request_carries_no_qualification`、`..._qualification_is_additive_for_pre_b06_consumers`、`..._malformed_shared_metadata_is_not_a_crash`（自查发现的健壮性洞：`metadata_json` 是**共享列**，非对象 payload／非对象保留键／非对象字段记录一律视为"无可读冲突证据"，**不崩**；覆盖 7 种畸形输入）。
 规则级：`..._url_gap_rule_is_preview_and_invents_nothing`、`..._missing_capture_trace_is_preview`、`..._preview_is_not_inherited_by_a_formal_input`。
 
 > 冲突夹具的**关键前提**（踩过一次）：扫描器只在**新捕获的 root priority 不低于已存值**时才走合并/来源记录分支；用更高（数值更大）的 priority 写第二份捕获 ⇒ **根本不合并**，也就不会记录冲突。用例已把两个 root 都设为 `priority=10` 并写明原因。
