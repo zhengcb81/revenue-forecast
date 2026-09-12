@@ -33,6 +33,12 @@
 | `NEW_FILE_MAX = 10` | 新文件每个函数 ≤10 | **本步不新增产品模块**；若新增文件，函数必须很小 |
 | 覆盖率棘轮 | `scanner.py` 档 = **FROZEN 91**（容差底 90.5）；`service.py` TIER1 = 95 | 新分支必须由 F10 用例**真跑到**，否则 CI 直接红 |
 
+## 3b. "禁止整列替换"的**具体后果**（本机核实，不是泛泛的风险提示）
+
+- 先例：`prompt_injection.py:101-128` 的 `record_prompt_injection_review` **自己就是读-改-写**（读 `metadata_json`、写入保留键 `prompt_injection_review`、再整列写回）。→ 说明这张表里**已经存在**由别的模块写入的保留键，scanner 若整列替换就会把它们抹掉。
+- 消费者：`resolver.py:676-686` 在构建 `ResolutionEnvelope` 时读该 receipt 并把它作为 `prompt_injection_status` 暴露；receipt 丢失 ⇒ 该字段退回 `not_reviewed`（对下游是"未复核"）。
+- 因此 B05 的"读-改-写"要求有**可观测**的验收对象：`prefer_new` 路径跑完后，`prompt_injection_review` 与 `r4_provenance` 两个保留键都必须**仍在场**（F10 用例直接断言），而不是只断言"新键写进去了"。
+
 ## 4. 实施设计（草案，实施时按实测收敛）
 
 1. **抽取**：把 `:1038-1099` 的合并逻辑抽成模块级 `_merge_document_row(...)`（纯函数：入参 = 既有行、新文档元数据、新 root 优先级、各列新值；返回 = 待 UPDATE 的列字典）。**行为先保持等价**，抽取后立刻跑既有套件确认零回归。

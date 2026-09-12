@@ -1,19 +1,28 @@
 ﻿== B04 raw run capture ==
-date: 2026-09-12T16:31:30.7949336+01:00
-git HEAD (company-wiki): 1d8b1f7
+date: 2026-09-12T17:10:57.9881568+01:00
+reviewed commit (company-wiki, contains the new test file): bc3590f  full: bc3590fc019be7267681e4861609bf39bb1b1588
+note: earlier capture was bound to the parent commit 1d8b1f7 (the file was still untracked then) and used a placeholder for the combined command - both corrected here (B-VR04-06).
 
 $ python -m pytest tests/contract/test_r4b04_reference_stability.py -q
 tests\contract\test_r4b04_reference_stability.py ....                    [100%]
 
-============================== 4 passed in 0.95s ==============================
+============================== 4 passed in 1.05s ==============================
 
-$ python -m pytest -q <B04 + B02 + gates + ratchet set>
+$ python -m pytest -q tests/contract/test_r4b04_reference_stability.py tests/contract/test_r4b02_candidate_selection.py tests/contract/test_source_catalog_determinism.py tests/contract/test_source_catalog_sql_pushdown.py tests/contract/test_zr403_dedupe_resolver_generalization.py tests/contract/test_source_catalog_fail_closed.py tests/contract/test_fc1201_root_hardcode_gate.py tests/contract/test_future_root_config_only.py tests/contract/test_fc1204_complexity_ratchet.py
 tests\contract\test_fc1204_complexity_ratchet.py ..                      [100%]
 
-============================= 69 passed in 31.07s =============================
+============================= 69 passed in 34.63s =============================
 
 $ python -m ruff check src tests/unit tests/contract scripts
 All checks passed!
 
-$ python -c <hash of the new test file>
-test_r4b04_reference_stability.py sha256(16) 6039984dfb394e46 12713 bytes
+$ python evidence/b04_mutation_check.py --all   (run from the revenue run directory)
+
+$ python -c <hashes>
+tests/contract/test_r4b04_reference_stability.py sha256(16) 6039984dfb394e46 12713 bytes
+M3 (resolver.py: the pre-B02 provider_document_id strong-identity gate): KILLED | ========================= 2 failed, 2 passed in 1.15s =========================
+M4 (scanner.py: location_id derived from (root_id, relative_path)): KILLED | ========================= 1 failed, 3 passed in 1.13s =========================
+M5 (scanner.py: the source of a location (a move must not create another version)): KILLED | ============================== 4 failed in 1.59s ==============================
+M6 (scanner.py: marking unseen location rows as missing): KILLED | ============================== 4 failed in 0.89s ==============================
+M7 (scanner.py: the re-point of a location row to the new revision): KILLED | ========================= 1 failed, 3 passed in 1.11s =========================
+restored: all product files byte-identical

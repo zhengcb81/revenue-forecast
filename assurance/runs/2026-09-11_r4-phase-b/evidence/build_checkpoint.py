@@ -157,25 +157,25 @@ LEDGER = {
     "step": ("B04 implemented (acceptance + finding, NO product change): a move keeps the reference, and the "
              "same-path overwrite case is pinned and registered as F-B04-1 (out of the allowed file set)"),
     "last_completed_step": (
-        "B02 closed after five revisions under four independent reviews (see the review entries below; all "
-        "counter-examples fixed, mutants M5/M6/M7 killed, CI green on every step commit). "
-        "B04 then implemented as acceptance plus a registered finding, with NO product change - the design "
-        "goal already held after B02, so per the step's own plan the deliverable is verification, not code: "
-        "new file company-wiki/tests/contract/test_r4b04_reference_stability.py (4 cases) proves that a move "
-        "within a root keeps document_id/source_id/content_sha256 while the locator changes and the old row "
-        "is marked missing, that location_id is only a derived locator, and that a vanished version is "
-        "answered MISSING rather than substituted by another revision. Measured: 4 passed, the combined "
-        "B04+B02+gates+ratchet set 69 passed, ruff clean. The pinned gap (scanner.py:1123 re-points the "
-        "location row when the same relative path holds a new revision, so the superseded revision loses "
-        "its only locator) is registered as finding F-B04-1 with three candidate remedies, all of which "
-        "touch files outside this step's allowed set (write face / DDL / another work package)."
+        "B02 closed after five revisions under four independent reviews (all counter-examples fixed, mutants "
+        "M5/M6/M7 killed, CI green on every step commit). B04 then implemented as acceptance plus findings "
+        "with NO product change, and reviewed: the reviewer reproduced every number and ran its own mutation "
+        "matrix (M3/M4/M5/M6/M7 killed), corrected two author statements (F-B04-1's overstated consequence; "
+        "L03's protection comes from the pre-B02 provider_document_id gate, not from B02's source-group "
+        "restriction) and found F-B04-2 (moving the PDF without its sidecar answers MISSING with an EMPTY "
+        "trace). All six findings are addressed: F-B04-1 rewritten with a labelled remedy table (a new "
+        "in-scope diagnostic option is explicitly rejected), F-B04-2 registered, the capture rebound to the "
+        "reviewed commit, and an author-side mutation harness added (evidence/b04_mutation_check.py). "
+        "Measured: 4 acceptance cases, combined 69-case set green, ruff clean, CI green for bc3590f."
     ),
     "current_gate": (
-        "B04 independent review (focused: the four acceptance cases and the F-B04-1 registration), then "
-        "B05 -> B01 -> B03 -> B06 -> B07. The owner still owes two rulings on B02, both stated as a single "
-        "authoritative difference list (evidence/b02-implementation.md section 3): S-10 (the claim-trusted "
-        "row and its four differences from pre-B02) and S-11 (budget exhaustion maps to that row instead of "
-        "the design's blocked, because ResolutionStatus has exactly five values)."
+        "B05 (metadata merge: provenance and per-column rules; its landing plan is written - "
+        "evidence/b05-plan.md - and records that scanner.py is AT its complexity ceiling, so the merge block "
+        "must be extracted into a new module-level function rather than extended in place). The owner owes "
+        "three rulings, all stated with their evidence: S-10 and S-11 on B02's claim-trust rule and budget "
+        "mapping (single authoritative difference list, evidence/b02-implementation.md section 3), and S-12 "
+        "on what to do about same-path overwrites (contract-level limitation vs a byte snapshot work "
+        "package)."
     ),
     "pending_review": [
         {
@@ -192,13 +192,20 @@ LEDGER = {
         },
         {
             "gate": "B.VR (B04, focused)",
-            "scope": "company-wiki/tests/contract/test_r4b04_reference_stability.py (4 cases) + finding F-B04-1",
-            "status": "pending",
-            "reviewer": ("independent subagent (non-author) - must differ from the four B02 reviewer sessions; "
-                         "the questions are whether the four cases really pin the claimed behaviour (including "
-                         "the pinned scanner re-point) and whether 'no product change' is the right call "
-                         "rather than a gap in the step"),
-            "note": "evidence: evidence/b04-implementation.md, evidence/b04-test-run.txt, findings.md F-B04-1",
+            "scope": "company-wiki bc3590f: tests/contract/test_r4b04_reference_stability.py (4 cases) + findings",
+            "status": "closed",
+            "verdict": "accepted_with_findings",
+            "findings": {"P2": 2, "P3": 4},
+            "note": ("reproduced every number (4/69/ruff, hashes, anchors, one new test file) and ran its "
+                     "own mutation matrix (M3/M4/M5/M6/M7 killed); it corrected two of the author's "
+                     "statements - F-B04-1 overstated the loss (a metadata-level handle lookup still "
+                     "answers; with a second copy the old reference still resolves) and L03's protection "
+                     "comes from the pre-B02 provider_document_id gate, not from B02's source-group "
+                     "restriction - and it found F-B04-2 (moving the PDF without its sidecar drops the "
+                     "document out of the candidate slice, answering MISSING with an empty trace). All six "
+                     "findings are addressed in the run directory, including a new author-side mutation "
+                     "harness and a capture bound to the reviewed commit."),
+            "record": "reviews/B.VR-b04.json",
         },
         {
             "gate": "B02 closure decision (author, 2026-09-12)",
@@ -328,8 +335,12 @@ LEDGER = {
                  "Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer "
                  "still needs G8"),
         "B.AR": "not started",
-        "B04": ("implemented as acceptance + finding F-B04-1 with NO product change (the design goal already "
-                "held after B02); review pending"),
+        "B04": ("implemented as acceptance + findings with NO product change and reviewed (B.VR b04 = "
+                "accepted_with_findings, 2xP2 + 4xP3 addressed). Design goal 1-2 verified; goal 3 is "
+                "CONDITIONAL: a same-path overwrite destroys the old bytes, and with a second copy the old "
+                "reference still resolves. Remedy choice (byte snapshot vs contract-level limitation) is "
+                "registered as S-12 for the owner; F-B04-2 registers the silent MISSING when only the PDF "
+                "is moved without its sidecar"),
         "S-1_test_files": "APPROVED (F10/F11); F10 landing used by tests/contract/test_r4b02_candidate_selection.py (23 cases)",
         "S-2_R1_R4_out_of_B": "DECIDED - R-1/R-4 stay outside B as separate work packages",
         "S-3_export_path": "DECIDED - export_policy_2x untouched, payload hash frozen (B-payload-hash still NOT executed)",
@@ -369,10 +380,12 @@ LEDGER = {
         "the reviewer could not verify S-9's 61.3% counterfactual, the historical first-round FC-1201 failure claim, B-payload-hash, or any real cloud-placeholder layer (recorded in reviews/B.VR-b02.json limitations)",
     ],
     "next_step": (
-        "Send B02 rev2 to a fresh independent B.VR session (the rev1 reviewer's own counter-examples are "
-        "now regression cases; ask the new reviewer to re-run them), then continue with B04 -> B05 -> B01 "
-        "-> B03 -> B06 -> B07, each step as its own commit with the ratchet/coverage rerun and its own "
-        "independent review. The owner still owes two rulings: S-10 and S-11."
+        "Implement B05 per evidence/b05-plan.md in the order the plan fixes: extract _merge_document_row "
+        "equivalently (the scanner's merge block), then add the reserved r4_provenance key with "
+        "read-modify-write (never a whole-column replacement, or the prompt_injection_review receipt that "
+        "resolver.py exposes is lost), then the per-column rules and the read-side blocked detail - each "
+        "with F10 cases, its own commit, the ratchet/coverage rerun and an independent review. Then B01 -> "
+        "B03 -> B06 -> B07. Three rulings remain with the owner: S-10, S-11, S-12."
     ),
     "inputs": {
         "note": ("phase A froze the product inputs at wiki 7d4852f; the phase-A run directory "

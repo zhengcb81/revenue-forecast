@@ -2,16 +2,35 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
-## F-B04-1：同路径被新修订覆盖后，被取代修订的引用**不可再解引用**（实测确认；**B 无权修**，登记独立工作包）
+## F-B04-1：同一路径被新修订覆盖后，**旧副本的 active locator 消失、旧字节被物理销毁**（实测；B 无权修）——原措辞经 `B.VR` b04 更正
 
-- **事实（本机复现，非推断）**：`company-wiki/tests/contract/test_r4b04_reference_stability.py::test_r4b04_same_path_new_revision_repoints_the_location_row` 把同一相对路径覆盖为新修订（sidecar 同步声明新 hash/provider id）并重扫后：
-  1. 该 location 行被 **改指**到新 document（`scanner.py:1123` 的 `ON CONFLICT(root_id,relative_path) DO UPDATE SET … source_id=excluded.source_id, document_id=excluded.document_id …`），`location_status='active'`；
-  2. **被取代的修订不再有任何 `active` location**（实测查询为空）；
-  3. 请求**旧版本** → `MISSING`，trace 为 `no_canonical_active_location`；请求**新版本** → `REUSED_EXACT`。
-- **影响**：设计 §B04 的目标"引用不因搬家失效"**有条件成立**——只要该版本在别处仍有合格副本（另一 root／另一路径）就成立；**同一路径被覆盖后旧字节已物理消失**，任何读取路径都救不回来。
-- **为什么不修**：位置 upsert 在 `scanner.py:1123`，**不在** file-scope 的 allowed 落点（F3 = `:1007-1099` 的 metadata 合并）；可用"墓碑/快照"缓解，但那属**写面**（`store.py`/`canonical_writer.py` 均在禁止表）。
-- **处置**：登记为**独立工作包**（与 R-6 的 6 处排序锚点、C/D 面同类）：候选方案 = (i) 覆盖时保留旧行并按 `moved`/`superseded` 标记（需要 DDL/写路径改动）；(ii) 由 canonical writer 在导入新修订时对旧修订留一份受控快照；(iii) 明确接受"同路径覆盖即失去旧引用"并在合同里写死（最小改动，但要在 A 侧合同里登记为已知限制）。
-- **同时钉住的正确行为**（同一文件的另 3 个用例，全部通过）：搬家（换路径）不破坏引用；`location_id` 只是 `(root_id, relative_path)` 的派生定位子；本版本全失效时**不会**用另一修订顶替。
+> **更正说明（`B.VR` b04 的 P2 B-VR04-01/-04/-05）**：本发现最初写成"被取代修订的**引用不可再解引用**"，**这是夸大**。下面是按实测更正后的精确陈述；改写的直接原因是 reviewer 复现出 `reader.resolve_handle(old_document_id, expected_content_sha256=old_sha)` **仍然返回**（该 API 只读 `documents`/`sources`，**根本不看 `locations`**）。
+
+- **实测行为**（`company-wiki/tests/contract/test_r4b04_reference_stability.py::test_r4b04_same_path_new_revision_repoints_the_location_row` + reviewer 的独立复现）：
+  1. 同一相对路径覆盖为新修订后重扫，`scanner.py:1123-1124` 的 `ON CONFLICT(root_id,relative_path) DO UPDATE … document_id=excluded.document_id` 把该行**改指**到新修订（`location_status='active'`）；
+  2. 被取代修订**在那条路径上**失去 locator；**当且仅当**该路径是旧修订的**唯一**副本时，它才不再有任何 `active` location（reviewer 反例：旧修订在别处仍有副本时，旧引用照常 `reused_exact` 且字节正确）；
+  3. **旧字节是被"原地覆盖"销毁的，不是 upsert 销毁的**——夹具里已不存在任何带旧 sha 的文件；任何读路径都无法凭 locator 取回它；
+  4. 元数据级查询（`reader.resolve_handle`，只读 `documents`/`sources`）**不受影响**：它不需要 locator，因此仍然作答。受影响的只有**需要 locator 的读路径**（`resolve` / `bundle`）：请求旧版本 → `MISSING`，trace `no_canonical_active_location`；请求新修订 → `REUSED_EXACT`。
+- **对设计 §B04 目标 3 的准确结论**：**有条件成立**——只要该版本在别处（另一路径／另一 root）仍有合格副本就成立；**同路径被覆盖且无他处副本时不可满足**，且在 allowed 集（F1/F2）内**无法**修（改指发生在 `scanner.py:1123-1124` 对 `store.py` 的唯一索引上，两者都在允许集之外）。
+- **候选补救（各自能恢复什么，逐条标注——reviewer 指出原表未标注）**：
+  | # | 方案 | 能恢复 | 代价/归属 |
+  |---|---|---|---|
+  | i | 覆盖时**保留旧行**并标 `superseded` | **只能恢复"诊断"**（看得见哪些修订被替换过、原路径在哪）；**不能**恢复可解引用——旧字节已不存在 | `scanner.py`（越权），且需要 `location_status` 语义扩展 |
+  | ii | 导入新修订时**为旧修订留一份受控快照** | **能**恢复可解引用（读路径可退回快照） | 写面（`canonical_writer.py`/`store.py`）+ 空间与保留策略 → **独立工作包**；需 owner 决定 |
+  | iii | **合同级已知限制**（不改代码） | 什么都不恢复，但把限制写进 A 侧合同，避免"以为能解引用" | 零代码；需 owner/合同侧登记 |
+  | iv | **F2 诊断细化**（reviewer 提出）：把"该文档根本没有任何 location 行"与"有行但都不合格"在 trace 里分开（当前两者都是 `no_canonical_active_location`） | 只恢复**可观测性**，不恢复能力 | **本步明确否决**，理由：两者在 resolve 语义上同义（都=不可复用）；理由串被既有用例断言，改动属跨步变更；字段级事实仍可由 catalog 查询获得。**登记为"已决策的否决"，不是遗漏** |
+- **处置**：补救 (ii) 与 (iii) 需要 owner 选择 → 已登记为 **[S-12](owner-scope-decisions-2026-09-12.md)**（与 S-10/S-11 并列）；本步不实施任何一项。
+
+## F-B04-2：只搬 PDF、不搬 sidecar ⇒ 文档掉出候选切片，`resolve` 返回 `MISSING` 且 **trace 为空**（静默）
+
+- **实测（reviewer 独立发现并复现）**：把 `2025.pdf` 单独移到别处、把 `2025.pdf.source.json` 留在原地并重扫后，该文档因**失去 sidecar 元数据**而不再是 `annual_report` 候选（候选查询按 `document_kind` 过滤），`resolve` 于是给出 `MISSING`，**`debug_trace` 为空**——调用方看不到任何原因。
+- **为什么"静默"是问题**：本包的诊断纪律是"任何未被服务的情况都要留下原因"；此处连文档都没进入 resolver 的视野，因此**无法**在 resolve 侧留下原因。
+- **候选处置**：(a) 读侧（F1，允许集内）提供"元数据缺失/半搬移"的**清单类**诊断（例如 `documents` 中 location 存在但 sidecar/kind 缺失的行）；(b) 仅在文档里写明该运维约束（移动时 PDF 与 sidecar 必须同移）。
+- **本步处置**：登记为发现，**不在 B04 实施**（B04 的交付物是验收 + 登记）；建议在 B06/B07 的"preview/资格标签"里一并考虑，或由 owner 决定是否单列。
+
+## B-VR04 复审（B04 定点）= **accepted_with_findings**（0×P0 / 0×P1 / 2×P2 / 4×P3）
+
+审查记录 [reviews/B.VR-b04.json](reviews/B.VR-b04.json)（第五个独立会话）。**复现全部作者数字**（4 passed / 69 passed / ruff clean / 文件哈希与行锚一致 / 仅新增一个测试文件），并对四个用例做了变异矩阵：**M3/M4/M5/M6/M7 全被杀**（其中 M7 只被 GAP 用例杀）；同时指出两处**我的措辞不实**（F-B04-1 的后果陈述与 L03 的归因，见上）与四处 P3（"设计目标已在 B02 后成立"对目标 3 为假；"再无任何 active location"缺前提；补救表未标注各自恢复什么、且 F2 选项既未实施也未否决；证据未绑定被审提交、69 条命令写成占位符、本步无作者侧变异记录）。**本节的全部更正已落盘**：F-B04-1 重写、F-B04-2 新增、`evidence/b04-implementation.md` §2/§4 更正、`evidence/b04_mutation_check.py`（5 个变异全 KILLED，跑完还原到同一哈希）、`evidence/b04-test-run.txt` 重新生成并绑定 `bc3590f`。
 
 ## F-B02-7：`B.VR` rev4（定点复核 rev4 实施）= **accepted_with_findings**（0×P0 / 0×P1 / 1×P2 / 3×P3）→ 实施 rev5
 

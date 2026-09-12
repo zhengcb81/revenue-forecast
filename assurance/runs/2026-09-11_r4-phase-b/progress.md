@@ -1,13 +1,15 @@
 # R4 Phase B 进度（progress）
 
-## 2026-09-12（实施期）— **B04 已实施**（验收 + 发现登记；产品代码零改动）
+## 2026-09-12（实施期）— **B04 已实施**（验收 + 发现登记；产品代码零改动）+ `B.VR` b04 复审 `accepted_with_findings`
 
-- **交付**：`company-wiki/tests/contract/test_r4b04_reference_stability.py`（4 用例，sha256(16) `6039984dfb394e46`）+ 发现 **F-B04-1**；记录 [evidence/b04-implementation.md](evidence/b04-implementation.md)、原始输出 [evidence/b04-test-run.txt](evidence/b04-test-run.txt)。
-- **验收结论**：① 搬家（同 root 换路径 + 重扫）**不破坏引用**——`document_id`/`source_id`/`content_sha256` 不变、`download_required=false`，只有 locator（相对路径、`location_id`）变化，旧行被标 `missing`；② `location_id` 是 `(root_id, relative_path)` 的纯函数 = 定位子提示，不是引用；③ 本版本全部失效时**不会**用另一修订顶替（`MISSING` + `matches == ()`）。
-- **发现（B 无权修）**：`scanner.py:1123` 的位置 upsert 在**同一相对路径**被新修订覆盖时**改指**该行 → 被取代修订再无 `active` location → 其引用不可解引用（请求旧版本 = `MISSING`，trace `no_canonical_active_location`）。该 upsert 不在 file-scope allowed 落点（F3 仅 `:1007-1099`），缓解方案属写面 → **登记独立工作包**（三个候选方案见 F-B04-1）。
-- **为什么零产品改动**：B04 的设计目标在 B02 落地后已经成立；按 [b04-plan.md](b04-plan.md) §2 的纪律，"无缺陷不改产品代码"，本步价值在**验收 + 钉住 + 登记**。
-- **复跑**：新用例 4 passed；B04+B02+门+棘轮合集 **69 passed**；`ruff` clean（原始输出见 [evidence/b04-test-run.txt](evidence/b04-test-run.txt)）。
-- **待办**：B04 的独立复审（`B.VR`，新会话）；随后 B05 → B01 → B03 → B06 → B07。
+- **交付**：`company-wiki/tests/contract/test_r4b04_reference_stability.py`（4 用例，sha256(16) `6039984dfb394e46`，提交 `bc3590f`）+ 发现 **F-B04-1 / F-B04-2** + 变异 harness `evidence/b04_mutation_check.py`（5 变异全 KILLED，跑完还原）；记录 [evidence/b04-implementation.md](evidence/b04-implementation.md)、原始输出 [evidence/b04-test-run.txt](evidence/b04-test-run.txt)（绑定 `bc3590f`）。
+- **验收结论**：① 搬家（同 root 换路径 + 重扫）**不破坏引用**——`document_id`/`source_id`/`content_sha256` 不变、`download_required=false`，只有 locator 变化，旧行被标 `missing`；② `location_id` 是 `(root_id, relative_path)` 的纯函数 = 定位子提示；③ 请求钉住 `provider_document_id` 时，另一修订**不会**被当成它服务。
+- **发现**：
+  - **F-B04-1**（**原措辞经复审更正**）：同一路径被新修订覆盖 ⇒ 旧副本 **active locator 消失 + 旧字节被物理销毁**；若旧版本在别处仍有副本，引用照常 `reused_exact`；`reader.resolve_handle`（只读 documents/sources、不看 locations）**仍会作答**——所以"引用不可再解引用"的旧说法不成立。设计 §B04 目标 3 因此是**有条件**成立。补救 (ii) 快照 vs (iii) 合同级限制 → 待 owner（**S-12**）；(iv) 读侧诊断细化由作者**明确否决**（理由在 F-B04-1）。
+  - **F-B04-2**（reviewer 发现）：只搬 PDF、不搬 sidecar ⇒ 文档掉出 `annual_report` 候选切片，`resolve` 返回 `MISSING` 且 **trace 为空**（静默）→ 登记，建议在 B06/B07 的 preflight/资格标签里处理。
+- **复跑**：新用例 4 passed；B04+B02+门+棘轮合集 **69 passed**；`ruff` clean；变异 M3/M4/M5/M6/M7 **全 KILLED**（原始输出见 [evidence/b04-test-run.txt](evidence/b04-test-run.txt) 与本文档提交说明）。
+- **复审要点（已全部落盘）**：`B.VR` b04 复现了全部数字，指出 2×P2（F-B04-1 后果陈述夸大、"L03 由 B02 组限定保证"归因错误）+ 4×P3（含"设计目标已在 B02 后成立"过度概括、补救表未标注各自恢复什么、证据未绑定被审提交、本步缺变异记录）。
+- **待办**：B05（落地计划已写：[evidence/b05-plan.md](evidence/b05-plan.md)），随后 B01 → B03 → B06 → B07。
 
 ## 2026-09-12（实施期，第二轮复审后）— **B02 rev3**（B.VR rev2 = accepted_with_findings，5 条已逐条处置）
 
