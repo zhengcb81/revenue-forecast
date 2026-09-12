@@ -152,18 +152,27 @@ def commit_anchor() -> dict:
 
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
-    "phase": "B (position-transparent index and read-only access) - DESIGN ONLY",
-    "step": "B design v0.1.6 - six B.DR rounds corrected; two-sided audit tool now in the package",
+    "phase": ("B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: "
+              "B02 landed; B01/B03-B07 still design-only"),
+    "step": ("B02 implemented (company-wiki cab1fd6: F1 service.py + F2 resolver.py + F10 new tests); "
+             "run directory record 2ced153; B design / file-scope v0.1.7 back-fill"),
     "last_completed_step": (
-        "B run directory created; b-design v0.1 (B01-B07) submitted to B.DR; B.DR returned "
-        "rejected with 1 P0 + 7 P1 + 9 P2 + 3 P3 (8 of 17 claims did not reproduce); phase-A "
-        "A07 returned accepted_with_findings and A08 rejected; all twenty B findings and the "
-        "phase-A findings corrected in place (A contracts -> v0.4.1, B design -> v0.1.1)"
+        "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). "
+        "B02 implemented: qualification decided BEFORE ordering in service._annotate_locations "
+        "(candidate_rank 1..N plus exclusion_reason per location), ordered-qualified fall-through and "
+        "segment-3 byte verification with budget/cancellation in resolver._handle. Evidence: 16 new "
+        "acceptance cases, a RED/GREEN probe against a clean HEAD worktree (pre-B02: MISSING after the "
+        "preferred copy was withdrawn; post-B02: reused_exact from the next equivalent copy), full suite "
+        "2684 passed / 7 skipped, coverage resolver.py 87.36% (TIER2 floor 85.5) and service.py 95.16% "
+        "(TIER1 floor 94.5), complexity ratchet table unchanged and green, FC-1201 root-token gates green "
+        "after a first-round failure was fixed."
     ),
     "current_gate": (
-        "S-1..S-6 are decided (owner 2026-09-12); S-7 (may the complexity ratchet table be edited if a "
-        "step cannot stay complexity-neutral?) is the only open boundary question. Implementation itself "
-        "still awaits the owner's go-ahead (handbook section 1 item 5)."
+        "B02 awaits its own independent review (B.VR, fresh session). One deviation is registered as S-10 "
+        "and awaits the owner: design section B02 segment 3 wanted hash equality as a HARD gate, but the "
+        "A-side frozen fixtures (determinism / sql-pushdown) claim hashes their bytes do not have and S-1 "
+        "forbids editing existing assertions, so B02 implements verification as a preference plus "
+        "per-candidate diagnostics and leaves the byte-level hard gate to B03's read path."
     ),
     "pending_review": [
         {
@@ -179,10 +188,21 @@ LEDGER = {
             "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d",
         },
         {
+            "gate": "B.VR (B02)",
+            "scope": "company-wiki cab1fd6: F1 service.py + F2 resolver.py + F10 new tests",
+            "status": "pending",
+            "reviewer": ("independent subagent (non-author) - must differ from the authoring session; the "
+                         "reviewer must re-run the checks rather than trust evidence/b02-implementation.md"),
+            "note": "evidence to review: evidence/b02-implementation.md, evidence/b02-verification.json, evidence/b02-red-green-*.json",
+        },
+        {
             "gate": "B.DR rev5",
             "scope": "B design v0.1.4",
-            "status": "pending",
-            "reviewer": "independent subagent (non-author) - must differ from rev1-rev4 sessions",
+            "status": "closed",
+            "verdict": "rejected",
+            "findings": {"P1": 2, "P2": 4, "P3": 5},
+            "note": "corrected as v0.1.6 (see findings F-B01-5); rev6 then rejected v0.1.5's successor as well",
+            "record": "reviews/B.DR-rev5.json",
         },
         {
             "gate": "B.DR rev4",
@@ -231,47 +251,56 @@ LEDGER = {
         "B.DR_rev1": {"reviewer_session_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe", "record": "reviews/B.DR.json"},
     },
     "authorization_needed": [
-        "OWNER: approve the B DEV work package and file scope (file-scope.md) before any product file is touched - handbook section 1 item 5",
+        "OWNER: rule on S-10 (B02 implements segment-3 hash equality as a preference, not a hard gate) - see evidence/b02-implementation.md section 3",
         "OWNER: confirm the A05 sample list and the read-only command manifest (gate G7 + G4 for behaviour beyond --help)",
         "OWNER/OPERATOR: isolated copy for behavioural probes (gate G8) - see findings F-B00-3 for a two-level proposal",
         "OPERATOR: independent boundary observation and reviewer assignment records (G5/G6)",
     ],
     "gate_status": {
-        "B.DR": "rev1/rev2/rev3/rev4 all rejected; v0.1.5 is the single-pass convergence of rev4's 11 findings (text and landing defects; the reviewer stated no architectural rework is needed)",
-        "B.VR": "protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer still needs G8",
+        "B.DR": ("rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 "
+                 "implementation record (no design change); the ratchet table stays frozen (S-7)"),
+        "B.VR": ("B02 review pending (this run directory carries the evidence); protocol ready "
+                 "(b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer still needs G8"),
         "B.AR": "not started",
-        "S-1_test_files": "APPROVED (F10/F11)",
+        "S-1_test_files": "APPROVED (F10/F11); F10 landing used by tests/contract/test_r4b02_candidate_selection.py",
         "S-2_R1_R4_out_of_B": "DECIDED - R-1/R-4 stay outside B as separate work packages",
-        "S-3_export_path": "DECIDED - export_policy_2x untouched, payload hash frozen",
+        "S-3_export_path": "DECIDED - export_policy_2x untouched, payload hash frozen (B-payload-hash still NOT executed)",
         "S-4_consumer_side": "DECIDED - belongs to phase C, B does not sign it",
         "S-5_isolated_copy": "DECIDED - two levels; L1 can start now",
-        "S-6_fourth_round": "done (rev4) - a fifth round is now suggested by that reviewer",
-        "S-7_ratchet_edit": "OPEN - see b-design section B0x",
-        "implementation_go_ahead": "NOT GRANTED - handbook section 1 item 5",
+        "S-6_fourth_round": "done - five review rounds were run in total (rev4 then rev5/rev6)",
+        "S-7_ratchet_edit": "DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited",
+        "S-8_N1": "DECIDED - N-1 stays outside B, registered as a cross-repo protocol item",
+        "S-10_byte_hard_gate": "OPEN - owner confirmation requested; hard gate deferred to B03's read path",
+        "implementation_go_ahead": "GRANTED (owner 2026-09-12, second batch); B02 landed, B04 next",
     },
     "actual_side_effects": (
-        "This run: documentation and read-only inspection only - no CLI of any kind was executed here, no "
-        "data command, no network, no product/config/DB/task/worker change. ACTUAL, not future tense "
-        "(B-DR3-11/B-DR4-04): the run directory HAS been pushed - origin/main = 910c957 at review time - "
-        "and every push ran revenue-forecast's mandatory pre-push gate, whose real-data suite opens the "
-        "production catalog READ-ONLY and advances -shm (attributed in ../2026-09-11_r4-phase-a/"
-        "boundary-audit.md). The A06-D0 baseline run (pytest, CI-equivalent subset) also opened the "
-        "production catalog read-only at 08:11:45 and 08:13:46 on 2026-09-12. Main DB and -wal are never "
-        "changed. An independent observation artefact for 'no CLI executed' still does not exist (G5)."
+        "Unlike the design-only rounds, this run has now MODIFIED PRODUCT FILES in company-wiki: "
+        "src/company_wiki/source_catalog/service.py, src/company_wiki/source_catalog/resolver.py and the new "
+        "tests/contract/test_r4b02_candidate_selection.py - all inside the authorized file scope (F1/F2/F10) "
+        "and pushed as cab1fd6. Executed locally: pytest (including the full suite with coverage), ruff, "
+        "git worktree, and read-only probes over synthetic tmp fixtures. NOT executed: any network/download/"
+        "LLM egress, any product-data write, any DB write, task registration, worker action or deletion; no "
+        "behavioural probe against the production catalog. The run directory HAS been pushed "
+        "(origin/main = 2ced153) and every push ran revenue-forecast's mandatory pre-push gate, whose "
+        "real-data suite opens the production catalog READ-ONLY and advances -shm (attributed in "
+        "../2026-09-11_r4-phase-a/boundary-audit.md). Several pre-existing wiki tests also open the "
+        "production catalog read-only when the suite runs (known limitation, attributed in phase A)."
     ),
     "failed_or_unknown": [
-        "S-7 is open: if a step cannot stay complexity-neutral, editing the ratchet table would conflict with F10 (new files only)",
-        "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped), but no B-side run has happened yet - implementation is not authorized",
+        "B03-B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so S-10's other half is open",
+        "B-payload-hash has never been executed (no frozen baseline in the package and the value needs a CLI that is not approved) - B02 only claims that no SourceHandle field was added",
+        "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped); the B-side cases added by B02 cover L01-L04 plus budget/cancel/no-network, not the whole matrix",
         "B05's provenance shape is now additive under a reserved key, but the json_extract regression assertion can only be proved when the tests run (needs implementation)",
         "N-1 support is undefined on both sides and is therefore registered as a cross-repo protocol item, no longer part of B07's completion",
         "handbook section 3 run structure is still partial: card.json, baseline.json, data-manifest.json, requirements.csv and oracle/ are absent",
         "G5/G6/G7/G8 remain owner/operator items",
         "revenue-forecast dirty=0 is incomplete: three .tmp-zr408-unit* directories are unreadable (permission denied), so git cannot enumerate them",
+        "test_dbx05_symlink_escape_rejected skips on this host (symlinks not supported), so the symlink-escape control did not run here",
     ],
     "next_step": (
-        "Send v0.1.5 to B.DR rev5 (fresh session). S-7 is the only open boundary question; implementation "
-        "still awaits the owner's go-ahead, after which the suggested order is B02 -> B04 -> B05 -> B01 "
-        "-> B03 -> B06 -> B07, each step with its own commit, ratchet run and review."
+        "Independent B.VR review of B02 (fresh session), then continue with B04 -> B05 -> B01 -> B03 -> B06 "
+        "-> B07, each step as its own commit with the ratchet/coverage rerun and its own independent review. "
+        "The owner still owes one ruling: S-10 (byte-equality preference vs hard gate)."
     ),
     "inputs": {
         "note": ("phase A froze the product inputs at wiki 7d4852f; the phase-A run directory "
