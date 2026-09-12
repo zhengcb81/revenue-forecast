@@ -24,7 +24,7 @@
       },
       "record": "reviews/A.AR.json",
       "reviewer_self_reported_id": "b17b1524-2114-4dfa-ab3e-fc8e0a030a1c",
-      "note": "the single P0 is the same fact as B.DR-01; A-AR-02's bridge table (E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) is registered as outstanding"
+      "note": "the single P0 is the same fact as B.DR-01; A-AR-02's bridge table (E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) LANDED as a08-goal-bridge.md (table A: the 13 unassignable rows, grouped by their identical closure basis, each family naming its rows, its matrix-external cases and the source file; table B: the matrix ids with no directly linked row, 11 after de-duplication with the counting difference against A.AR's 13 stated; section 3 registers what still has no L/P/O/M route instead of claiming coverage). No new L/P/O/M id was invented and no product or historical file was touched"
     },
     {
       "gate": "A07 (A.VR)",
@@ -85,7 +85,7 @@
   "failed_or_unknown": [
     "boundary independence is NOT independently observed: object-access auditing / handle-level evidence needs an operator (gate G5); the author does not self-certify it, even though the -shm attribution is resolved by CI timestamps + gate code",
     "reviewer independence is NOT externally stamped (gate G6, A-DR-16)",
-    "A-AR-02: 13 of the 117 goal rows cannot be assigned to any L/P/O/M group (CA-001..004, ZR-001..004, ZR-1002/1003, ZR-307, ZR-404/405) and 13 matrix ids have no directly linked row - the bridge table (E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) is outstanding",
+    "A-AR-02 is CLOSED (was: 13 of the 117 goal rows cannot be assigned to any L/P/O/M group and the matrix ids with no directly linked row have no bridge): the bridge table landed as a08-goal-bridge.md, which names all 13 rows (CA-001..004, ZR-001..004, ZR-1002/1003, ZR-307, ZR-404/405) with their matrix-external closure basis and source file, lists the matrix ids that only appear transitively (11 after de-duplication, with the counting difference against A.AR's 13 stated in the file), and registers in its section 3 what still has NO L/P/O/M route (E01-E13, U117.01-.07, FC903.01-.08) rather than claiming coverage. It stays true that those three families are carried by O06/D07, the A08 freeze and the C/D phases - B must not read this bridge as 'those families are closed'",
     "R-3's narrowed scope (admission loader only) needs the owner's explicit re-confirmation, because the widening was based on a factual error; the export path stays in production",
     "A05 has not selected real samples (rules only) and the bounded read-only manifest is unapproved (G4/G7)",
     "A06 has produced no baseline results yet, so 'B fixed it' cannot be verified independently until it exists (G8)",
@@ -109,29 +109,29 @@
     "G7_A05_sample_list": "pending (selection rules ready in a05-corpus-sample-plan.md)",
     "G8_isolated_copy": "pending",
     "A07_A_VR": "closed: accepted_with_findings; findings corrected in v0.4.1",
-    "A08_A_AR": "closed: rejected; the 117-row mapping was produced, the bridge table is outstanding"
+    "A08_A_AR": "closed: rejected; the 117-row mapping was produced, and A-AR-02's bridge table landed as a08-goal-bridge.md (13 rows annotated with matrix-external closure basis; 11 transitively-only matrix ids listed with the counting difference; no invented L/P/O/M id)"
   },
   "next_step": "A02 is frozen. Remaining work needs owner/operator input, not more authoring: the A05 real-corpus sample list (G7), an isolated catalog copy for behavioural probes (G8), and the operator-held records for G5/G6. The five remediation items from the rulings (R-1..R-4, R-6) enter the B/C scope and require a precise DEV work package before any product code changes.",
   "worker_desired_state_note": "not used as process-liveness evidence",
   "catalog_size_bytes": 49677344768,
   "inputs": {
     "company-wiki": {
-      "head": "0df3347effb8f3eae2752e12351855f109ec332b",
+      "head": "0e28d9996ffe2a6196385fcc03f3a7d8577bfffe",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "1f92ec4b954c229211b131f4ba43440f7afe6d6f",
-      "dirty": 1
+      "head": "8e030c67eaddd3a0201286397ea7206e75830f33",
+      "dirty": 0
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "1f92ec4",
+  "reviewed_commit": "8e030c6",
   "commit_anchor": {
-    "head": "1f92ec4b954c229211b131f4ba43440f7afe6d6f",
-    "index_tree": "bb6119b7e929e7da99e5d9aa91d4d0c5041f5996",
+    "head": "8e030c67eaddd3a0201286397ea7206e75830f33",
+    "index_tree": "93d03c7bcea06698bd79f7784e46d805a3675f62",
     "note": "anchor for the tree this checkpoint was generated from"
   },
   "reviewed_commit_note": "`reviewed_commit` carries the reviewed corrections (documents, evidence and ledgers). The stamp that records this value necessarily lands in the immediately following commit (d152833/3e0c8f3 for v0.2, 34b2291 for v0.3), which changes only checkpoint.json - so the reviewer should read reviewed_commit for the contracts and the tip commit for the ledger stamp. A commit cannot contain its own hash, which is exactly the staleness A-DR-09 flagged; recording both removes the ambiguity instead of hiding it.",
@@ -186,8 +186,8 @@
       "size": 1971
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "52a89bb0d6a678b1ebf77bd6eab6af3287f367c7d0a78e5038e86e8790ef5117",
-      "size": 19007
+      "sha256": "4eaf3e681313635c49e981f6b6e36307f5454bcd43f8818e7362ccf47c11859a",
+      "size": 20294
     },
     "evidence/catalog-companion-observation.csv": {
       "sha256": "0b0a33420c105dcdeaf1c1cbf4a63bdfc9739ab76e5998316f9a106df92a0604",
@@ -266,8 +266,8 @@
   "produced_files_verification": {
     "checked": 31,
     "source": "index",
-    "source_revision": "bb6119b7e929e7da99e5d9aa91d4d0c5041f5996",
-    "head_revision": "1f92ec4b954c229211b131f4ba43440f7afe6d6f",
+    "source_revision": "93d03c7bcea06698bd79f7784e46d805a3675f62",
+    "head_revision": "8e030c67eaddd3a0201286397ea7206e75830f33",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -284,5 +284,5 @@
     "phantom": [],
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T10:14:59.649957+00:00"
+  "generated_at_utc": "2026-09-12T21:05:42.756260+00:00"
 }
