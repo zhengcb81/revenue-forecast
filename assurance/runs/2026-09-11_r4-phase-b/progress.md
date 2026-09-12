@@ -12,7 +12,7 @@
 |---|---|
 | [task_plan.md](task_plan.md) | B01–B10 状态、B.DR/B.VR/B.AR/D.SAFE 门、停止条件、交付边界 |
 | [b-design.md](b-design.md) | **v0.1.1**：B01（含 14 字段 owner/版本映射表）、B02（四段式 + `_handle` 同改 + 禁联网资格判定）、B03（读后复验闭合 TOCTOU）、B04、B05（覆盖整条 UPDATE；持久化决策）、B06（preview 合同归 B06）、B07（范围重划表） |
-| [file-scope.md](file-scope.md) | **v0.1.1**：8+1 候选文件的绝对路径、符号、行号、冻结哈希与"是否 A01 冻结项"逐行标注；`policy_2x` 的**在产导出路径**改为禁区首行；owner R-6 的 9 处排序分类 |
+| [file-scope.md](file-scope.md) | **v0.1.1**：8+1 候选文件的绝对路径、符号、行号、冻结哈希与"是否 A01 冻结项"逐行标注；`policy_2x` 的**在产导出路径**改为禁区首行；owner R-6 的排序锚点分类（11 个） |
 | [test-acceptance-map.md](test-acceptance-map.md) | B 步骤 → L/P/O/M 映射、**裁定↔测试绑定表**、反覆盖更正（O03 = 交叉）、完成定义 |
 | [risk-and-stop-rules.md](risk-and-stop-rules.md) | H01/D.SAFE 交叉、10 条硬停止、6 类"看起来跑通"陷阱、引用口径更正 |
 | [findings.md](findings.md) | **F-B01-1：B.DR 20 条发现逐条处置表**；F-B00-1…5 |

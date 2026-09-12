@@ -2,6 +2,37 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B01-5：`B.DR-rev5` = **rejected**（2×P1 / 4×P2 / 5×P3）→ v0.1.6，且**本次改用"新值在场 + 旧值不再作为断言"的双向自证**
+
+审查记录 [reviews/B.DR-rev5.json](reviews/B.DR-rev5.json)（reviewer `52907a2f-…`；55 条输入哈希全部独立复算相符）。**本轮最重要的发现是过程性的，而非技术性的**：`B-DR5-01` 指出 **F-B01-4 的"处置"栏第二次把未做的改动写成已做** —— 与前一轮同一根因。作者据此把自证方法改为**双向**：
+
+| 声明 | 检验（新值在场 **且** 旧值不再作为断言） | 结果 |
+|---|---|---|
+| N-1 从 B07 完成定义移除 | 新值 `**不含 N-1**` @ `b-design.md:210`；旧值 `N-1 判定` 仅存于 findings 历史行 | ✅ |
+| B07 可签列不含 N-1 | 新值 @ `b-design.md:205`；旧断言串 0 处 | ✅ |
+| `metadata_json` 禁整列替换 | 新值 @ `b-design.md:149`（含 `:1073-1077`、`:1095-1099`） | ✅ |
+| `legacy_observer.py:90` 入共享读取者 | 新值 @ `b-design.md:154` | ✅ |
+| provenance 禁写原文片段 + `schema_version` | 新值 @ `b-design.md:159-160` | ✅ |
+| 覆盖率棘轮 + `NEW_FILE_MAX` 登记 | 新值 @ `b-design.md:228` | ✅ |
+| `B-payload-hash` 当前不可执行 | 新值 @ `test-acceptance-map.md` §1c | ✅ |
+| VR-N21 移出 B | 新值（否定式）@ `b-design.md:193`；旧断言串 0 处 | ✅ |
+| R-6 计数 = 11 锚点 | 新值 @ `file-scope.md:51`；`9 处同型排序` 0 处 | ✅ |
+| F2 步骤列含 B06 / F11 移出 allowed | 新值 @ `file-scope.md:15`、§1b | ✅ |
+| inputs 内层注记（逐文件版本） | 新值 @ `evidence/build_checkpoint.py:302`（外层字段会被 `main()` 覆盖，故写入 `inputs` **内层**） | ✅ |
+| 版本/状态行（v0.1.6、F10 已获批、rev1–rev5） | 新值 @ `b-design.md:3`、`task_plan.md:80`、`file-scope.md:6` | ✅ |
+
+**自证脚本自身的缺陷（一并登记，因为它同样属于"声明 vs 事实"）**：
+1. v1 只查"新值在场" → 误报 22/22（**这正是 B-DR5-01 的根因**）；
+2. v2 未把 `evidence/build_checkpoint.py` 纳入检索集 → 对 inputs 注记误报 FAIL；
+3. v2 断言"恰好 4 轮复审" → 台账实为 5 轮，误报 FAIL；
+4. v3 缺少"历史行豁免" → 对 `findings.md` 引用旧措辞误报 FAIL。
+→ 现法：**双向 + 明确检索集 + 历史豁免（仅限带版本前缀的变更记录）**，结果 `16/16`，落盘 [evidence/claim-fact-audit.json](evidence/claim-fact-audit.json)。
+
+**其余处置**：`B-DR5-03`（`metadata_json` 胜利路径整列替换）→ 已在 §B05 第 5 条禁止，并把 F3 锚点扩到 `scanner.py:1007-1099`；`B-DR5-04`（`B-payload-hash` 无基线且需待批 CLI）→ 标注为**当前不可执行**，须先在隔离副本冻结基线；`B-DR5-05` → 补 `legacy_observer.py:90` 并**禁止把原文片段写进 provenance**；`B-DR5-06` → 登记**覆盖率棘轮**（TIER1 `policy.py`/`service.py`=95、TIER2 `resolver.py`=86）与 `NEW_FILE_MAX=10`；`B-DR5-07…11` → VR-N21 移除、L06 口径统一、progress 状态行改真、F11 移出 allowed 表并写明调用目标、保留键加 `schema_version`。
+
+- **新增待 owner 决定项 S-8**：把执行计划 `§B07` 的"先测 N-1 支持合同"整体移出 B，属**范围改判**，按本包自订标准（"不由本设计改判"）须 owner 确认——已登记在 [task_plan.md](task_plan.md) §5。
+- **状态**：v0.1.6 已就地更正并双向自证；reviewer 明示架构无需推翻。
+
 ## F-B01-4：`B.DR-rev4` = **rejected**（11 条，均为文本/落点级；reviewer 明示"一次编辑可收敛、架构无需推翻"）→ v0.1.5
 
 审查记录 [reviews/B.DR-rev4.json](reviews/B.DR-rev4.json)（reviewer `1f962189-…`，非作者会话；claim_checks 复现 5/15）。**该记录最有价值的部分是它抓到的"声称已修但实际未改"**——这正是本包连续被拒的根因。

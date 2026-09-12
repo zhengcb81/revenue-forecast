@@ -35,8 +35,8 @@
 | L07 | L1+L2 | 搬目录重索引 → 用旧 locator 再打开；真实修订并存 | 原引用仍指原字节；**新旧不由 mtime/词序决定**；未知关系 = `ambiguous` |
 | L08 | L1 | 同 source 两 root **交换 priority/扫描顺序**；完整/缺字段/矛盾字段 | 业务事实不变；可信字段**有来源**；**冲突保留**（`conflicts` + `ambiguous`），**不得按 priority 择一**；含"先缺后补"分支（capture_ready 恢复路径） |
 | L09 | L2 | 真实本地 PDF：缺下载 URL/捕获日志，但有本地导入 source hash | `preview` 可读并标 provenance 缺口；**正式合同缺身份/期间则不通过**；不伪造 URL、不默认联网 |
-| L10 | L1+L2 | 同文档原文 ready / 文本缺失 / sections 失败 / summary 安全拒绝，逐次请求不同能力 | **只检查所需能力**；原文不因无 summary 消失；**LLM/正式分析不得继承 preview 许可**；含 A07 的 **VR-N21**（无门外发出口） |
-| L11 | L2 | 当前协议 / 明确支持 N-1 / 缺版本 / 未知 schema / 缺 policy，从 filing/revenue 真实入口调用 | 兼容由**单 adapter** 转换且来源不变；未知**拒绝**；**无 companies 静默 fallback**；无第二权限语义。**B 只签 wiki 侧**，消费者侧记"未验" |
+| L10 | L1+L2 | 同文档原文 ready / 文本缺失 / sections 失败 / summary 安全拒绝，逐次请求不同能力 | **只检查所需能力**；原文不因无 summary 消失；**LLM/正式分析不得继承 preview 许可**；**不含** A07 的 VR-N21（属 owner R-4 独立工作包，S-2） |
+| L11 | L2 | 当前协议 / **未知版本（N-1 未定义，须显式拒绝）** / 缺版本 / 未知 schema / 缺 policy，从 filing/revenue 真实入口调用 | 兼容由**单 adapter** 转换且来源不变；未知**拒绝**；**无 companies 静默 fallback**；无第二权限语义。**B 只签 wiki 侧**，消费者侧记"未验" |
 | L12 | L1+L2 | 真 `query_local` → `open` 两次；不完整/不存在/本地 latest 分别运行；**旁观**文件/DB/子进程/network | 查询**零写/联网/worker 控制**；不以 `ensure` 填缺；原文读取**有真实读 I/O**（不得声称零成本）；二次 0 parser/LLM/download **由独立观察证明**。观察点须含 `normalizer.py:516` 的 multiprocessing spawn 与 `evidence_query.py` 的查询路径 |
 
 ## 3. 独立观察方法（B08 的核心要求，不能只信应用自报）

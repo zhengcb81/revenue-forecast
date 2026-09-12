@@ -299,6 +299,9 @@ def main(argv: list[str] | None = None) -> int:
 
     ledger = dict(LEDGER)
     ledger["inputs"] = {
+        "note": ("per-file versions matter: root-contract is v0.4.2 while operation-contract and "
+                 "identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side "
+                 "checkpoint records the per-file digests"),
         "company-wiki": {"head": head(WIKI), "dirty": dirty(WIKI)},
         "revenue-forecast": {"head": head(REVENUE), "dirty": dirty(REVENUE)},
         "filing-fetch": {"head": head(FILING), "dirty": dirty(FILING)},

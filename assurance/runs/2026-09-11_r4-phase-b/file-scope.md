@@ -3,6 +3,7 @@
 > 依据 handbook **§1 第 5 项**（"首次实施前用户须批准 DEV 精确工作包及文件范围"）与 **§3**（run 目录结构 / card 字段）；B.DR-18 指出 v0.1 把两处误写为"§2.5"，已改。
 > 本页给出 **B 阶段候选改动文件的精确定位 + 冻结哈希**（实测 2026-09-12，wiki 产品树 = A01 冻结的 `7d4852f`，`git diff 7d4852f 032da52 -- src config` 为空，B.DR 已复核）。
 > **本页只是提案**：owner 批准前**没有任何文件会被修改**。
+> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1073-1077`/`:1095-1099` 锚点）、`legacy_observer.py:90` 与 `schema_version` 补入、覆盖率棘轮与 `NEW_FILE_MAX` 登记、`B-payload-hash` 标注为**当前不可执行（无基线、需待批 CLI）**、VR-N21 从 B 移除、计数与状态行全部对齐。
 > **v0.1.4（2026-09-12）**：owner 六项边界已定（[owner-scope-decisions-2026-09-12.md](owner-scope-decisions-2026-09-12.md)）——**F10/F11 已获批准**；`export_policy_2x` 按 S-3 **永久在禁止表**；消费者侧按 S-4 **不签**。
 > **v0.1.3**：按 `B.DR-rev3` 补入 **F10（新增测试文件）** 与 **F11（只读金丝雀）**、§3b 各步骤落点行、把 `evidence_query.py` 移入禁止表；R-1/R-4 的整改明确**不含在本包**（见 [b-design §B01.3](b-design.md)）。
 
@@ -11,8 +12,8 @@
 | # | 绝对路径 | 符号 / 区域（实测） | sha256(16) | 步骤 | 改动性质 | 是否 A01 冻结项 |
 |---|---|---|---|---|---|---|
 | F1 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/service.py` | `_annotate_locations` `:621-663`；locations 取值 SQL `:329`/`:527`/`:772` | `6412b19e8e9a3073` | B02/B04 | 候选集合与排序分离 + 完整候选清单 | ✅ 是 |
-| F2 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/resolver.py` | **`_handle` `:1142-1224`（`:1153-1165` 二次 canonical 过滤、`:1166 is_file()` —— v0.1.1 补，B-DR-04）**；复用判定 `:782-786`/`:933-940`；canonical 过滤 `:912-921`；rationale `:528-533`；`SourceRequest` `:144-161` | `6962b258ce198f19` | B02/B04/B07 | 资格≠排序；`false` 生效（与 F9 收敛）；切换逻辑在合格清单上 | ✅ 是 |
-| F3 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/scanner.py` | metadata 合并 `:1007-1081`（开关 `:1038`；**整条 UPDATE `:1078-1081`**）；root 选择 `_select_roots:753`；candidate admission `:872`/`:993` | `c2ada3e26a53b535` | B05 | provenance + 冲突保留；priority 退出真伪判定（**覆盖表全部列**） | ✅ 是 |
+| F2 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/resolver.py` | **`_handle` `:1142-1224`（`:1153-1165` 二次 canonical 过滤、`:1166 is_file()` —— v0.1.1 补，B-DR-04）**；复用判定 `:782-786`/`:933-940`；canonical 过滤 `:912-921`；rationale `:528-533`；`SourceRequest` `:144-161` | `6962b258ce198f19` | B02/B04/B06/B07 | 资格≠排序；`false` 生效（三处实现对齐语义）；切换逻辑在合格清单上；B06 的 `qualification` 字段载体 | ✅ 是 |
+| F3 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/scanner.py` | metadata 合并 **`:1007-1099`**（开关 `:1038`；**整条 UPDATE `:1078-1081`**；**`prefer_new` 整列替换 `:1073-1077`**；**重扫分支 `:1095-1099`**）；root 选择 `_select_roots:753`；candidate admission `:872`/`:993` | `c2ada3e26a53b535` | B05 | provenance + 冲突保留；priority 退出真伪判定（**覆盖表全部列**） | ✅ 是 |
 | F4 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/reader.py` | `CatalogReader` `:47`；`ReadOnlyCatalogReader` `:144`；`mode=ro`+`query_only` `:16`/`:181` | `ad8cb9147d4f2f51` | B03/B07 | 稳定字节底座（只读，不新增写路径） | ❌ **新增**（A01 未冻结此文件——v0.1.1 更正，B-DR-09） |
 | F5 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/models.py` | `RootSpec` `:86-109`；`ROOT_KINDS` `:39`；`CATALOG_SCHEMA_VERSION` `:11` | `fc6cc009fb22f6d6` | B01/B07 | 字段 owner 与合同版本（schema 变更须单列迁移） | ✅ 是 |
 | F6 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/config.py` | 字段准入 `:70-118`；未知字段拒绝 `:82-84`；`read_only` 默认 `:106`；`privacy_class` 默认 `:144` | `e96cea75cb27bcf6` | B01 | 唯一准入（**不含** `privacy_class` 缺省改动——S-2：R-4 属独立工作包，B 不实施） | ✅ 是 |
@@ -23,7 +24,12 @@
 > 完整读数（供引用）：`llm_summarizer.py` sha256(16) = `13ff33b76547d39d`，24 572 B。
 
 | F10 ✅**已批准**（S-1） | `C:/Users/郑曾波/Projects/company-wiki/tests/contract/**`（**仅新增**文件，命名沿用 `test_<id>_<slug>.py`；**不得修改既有测试的任何断言**） | 新增用例：L01–L12 的 B 侧、显式 `false`、L08 逐列合并（含"先缺后补"与 **json_extract 回归断言**：fiscal_year 过滤 + prompt_injection_review 门）、`B-payload-hash`、B02 预算/取消、复杂度棘轮复核 | 新增（无既有哈希） | B02/B03/B05/B06/B07 | 新断言必须有落笔处（v0.1.3 补，B-DR3-04；**S-1 已批准**）。**断言清单不含 R-4 合成配置**（B-DR4-02） | ❌ 新增 |
-| F11 ✅**已批准**（S-1/S-5） | `C:/Users/郑曾波/Projects/company-wiki/scripts/readonly_canary.py` | 只读金丝雀（既有脚本，供 L12 的独立观察复用） | `0ee11644da75e24d`（2792 B） | B03/B07 | **允许的是"只读调用"，不是"修改文件"**；若需修改则升级为单独工作包（v0.1.5 更正，B-DR4-10） | ❌ 新增 |
+
+## 1b. 只读调用目标（**不属于 allowed_files**，不修改，仅调用）
+
+| 目标 | 用途 | 哈希 | 步骤 | 说明 |
+|---|---|---|---|---|
+| `company-wiki/scripts/readonly_canary.py` | L12/§3 的独立观察复用（该脚本自述即为**探生产 catalog 的只读金丝雀**） | `0ee11644da75e24d`（2792 B） | B03/B07 | **只读调用**；**不修改**；若确需修改，升级为单独工作包 |
 
 ## 2. 明确禁止（prohibited，除非另行单独批准）
 
@@ -42,7 +48,7 @@
 | 任何 `*.ps1` 自启动脚本、计划任务、`install-startup` 路径 | S 类系统动作 |
 | prune / duplicate-recycle / archive-retired-evidence 相关路径 | 删除类（D + H01） |
 
-## 3. owner R-6 的 9 处同型排序：**分类（v0.1.1 补，B-DR-13）**
+## 3. owner R-6 的排序锚点分类（**11 个锚点**；A 侧 identity-contract §1 记 **9 处**，两者口径差异见 F-B01-5，v0.1.6 更正）
 
 | 位置 | 处置 |
 |---|---|
