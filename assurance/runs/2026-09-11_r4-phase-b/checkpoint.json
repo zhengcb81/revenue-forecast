@@ -1,9 +1,9 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
-  "phase": "B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: B02 landed; B01/B03-B07 still design-only",
-  "step": "B05 implemented and then REJECTED by its own review (2xP1/5xP2/3xP3); both P1s fixed in b6a8442 with regression cases, the remaining P2/P3 items and the response-level blocked scope question (S-13) are open",
-  "last_completed_step": "B04 closed after its focused review (all six findings addressed, plus an author-side mutation harness). B05 then implemented in three commits (extraction of the merge, the reserved r4_provenance block with read-modify-write, the per-column rules plus the read-side blocked verdict), and its independent review REJECTED the step with two P1 findings: conflict preservation depended on scan order (a later agreeing capture erased the recorded candidates, and swapping the root order changed whether a conflict was recorded at all), and a DECLARED value could be overwritten silently because declaration was recomputed from whatever container happened to be stored instead of from what was recorded about the value. Both are fixed in b6a8442: provenance fields merge field by field (sources accumulate, candidates are never erased), each container's declaring keys are aligned with the merged column values, every source record carries a 'declared' flag, the stored side is judged from the recorded declaration, INSERT writes provenance too (otherwise the first capture's declarations were never recorded), and published_date is no longer filled from a file-name-derived guess. Measured: 7 acceptance cases; canonical writer + pipeline 21; unit plus the B05 neighbourhood plus both ratchets 836 passed / 2 skipped with the only failure being the known leaked-worker environment artefact (it fails on the pre-change tree too); full suite 2707 passed / 7 skipped / 2 failed (that artefact plus the pre-fix order case); coverage scanner.py 90.89% against its 90.5 floor; ruff clean. Open: B-VR05-03 (response-level blocked has no consumer - scope question S-13 for the owner), B-VR05-04/-05/-09/-10, and the B05 rev2 review.",
-  "current_gate": "B05 rework: the remaining P2/P3 findings (align declaration with what the classifier actually consumed, the fill-attribution mutation case, the evidence re-check, the field-name and low-entropy-hash question), then B.VR B05 rev2, then B01 -> B03 -> B06 -> B07. The owner owes FOUR rulings: S-10 and S-11 (B02's claim-trust rule and budget mapping - single authoritative difference list in evidence/b02-implementation.md section 3), S-12 (same-path overwrite: contract-level limitation vs a byte-snapshot work package) and S-13 (who delivers the response-level blocked verdict - its carrier is resolver.py, which is not in B05's allowed set).",
+  "phase": "B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: B02, B04, B05 and B01 landed; B03/B06/B07 still design-only",
+  "step": "B01 implemented (one reuse rule: the resolver calls policy._effective_reusable, plus a candidate-level filter because the document-level gate alone was not enough) and pushed as 0e28d99; the owner approved S-10/S-11/S-12/S-13 as recommended and put the simplified working mode (section 11) in force - one independent review per step, one implementation record per step, CI per step rather than per text-only revision",
+  "last_completed_step": "B04 closed after its focused review (all six findings addressed, plus an author-side mutation harness). B05 implemented in three commits and then REJECTED by its own review (2xP1/5xP2/3xP3); both P1s and the P2s are fixed (b6a8442, 9826b3c) with regression cases - conflict preservation no longer depends on scan order, declaration is bound to the value the scanner actually consumed, agreeing captures accumulate as sources and keep their attribution - and the two residual items (B-VR05-09 wording, B-VR05-10 field names and low-entropy hashes) are registered as known follow-ups rather than opening a prose-only round. B01 then landed: the reuse decision had TWO live implementations (the exported policy honoured an explicit reusable_for_filing false, the resolver's own kind-only set ignored it), so the resolver now calls the same policy function and passes that set down to candidate selection. Measured: B01 6 acceptance cases; full suite 2716 passed / 7 skipped with the only failure being the known leaked-worker environment artefact (it fails on the pre-change tree too); coverage resolver.py 87.95% (floor 86), scanner.py 91.12% (floor 91), service.py 95.20% (floor 95); both FC-1204 ratchet tables green; ruff clean; pre-push gate green. The blast radius in production is NONE: every shipped root was already effectively reusable, so no production answer changes and the exported policy hash is byte-identical - now frozen by a test (cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626) because filing-fetch pins it.",
+  "current_gate": "B01's independent review (one round per step, section 11), which also samples the B05 P2 fixes; then B03 -> B06 -> B07. B06/B07 must deliver the response-level blocked verdict that the owner assigned to them (S-13), and B03 carries the deferred byte-level hard gate (the other half of S-10). No owner ruling is outstanding: S-10/S-11/S-12/S-13 were all approved as recommended on 2026-09-12.",
   "pending_review": [
     {
       "gate": "B.DR rev6",
@@ -20,11 +20,11 @@
       "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d"
     },
     {
-      "gate": "B.VR (B05)",
-      "scope": "company-wiki 6909e78 + bdd99dc + 9db3394: scanner merge extraction, reserved r4_provenance with read-modify-write, per-column rules, read-side blocked; F10 6 cases",
+      "gate": "B.VR (B01, to be run)",
+      "scope": "company-wiki 0e28d99: resolver.py (single reuse rule + candidate-level filter) and tests/contract/test_r4b01_field_owner_alignment.py (6 cases)",
       "status": "pending",
-      "reviewer": "independent subagent (non-author) - must differ from the five earlier reviewer sessions; the questions are (a) whether the per-column rules really keep a confirmed value and record conflicts rather than resolving them by priority, (b) whether the declared-vs-derived refinement (F-B05-1) is the right reading of the design or needs a design change, (c) whether the behaviour changes listed in F-B05-2 are acceptable or need an owner ruling, and (d) whether the reserved key stays additive for the other readers of the shared column",
-      "note": "evidence: evidence/b05-implementation.md, evidence/b05-plan.md, findings.md F-B05-1/F-B05-2"
+      "reviewer": "independent subagent (non-author) - one round per step (section 11); the questions are (a) whether the resolver's reusable set really equals the exported policy's set in every configuration the config admits, (b) whether filtering candidates by root can silently turn a previously answerable request into MISSING for a root that was effectively reusable before, and (c) whether the frozen cross-repo policy hash is the right coupling to pin",
+      "note": "same round samples the B05 P2 fixes (9826b3c) instead of opening a prose-only round; evidence: evidence/b01-implementation.md, evidence/field-owner-map.json, findings.md F-B01-6"
     },
     {
       "gate": "B.VR (B05)",
@@ -37,6 +37,7 @@
         "P3": 3
       },
       "note": "reproduced the author's numbers and the whole column-rule matrix, and confirmed the core fix (pre-B05 dropped other modules' keys; post-B05 only adds the reserved one). It falsified two things: conflict preservation depended on scan order (and a later agreeing capture erased the candidates), and a declared value could be overwritten silently because declaration was recomputed from the stored container instead of being bound to the value. Both P1s are fixed in b6a8442 with regression cases; the remaining P2/P3 items are tracked in evidence/b05-review-disposition.md, and the response-level blocked question became scope item S-13 for the owner",
+      "rework": "completed rather than re-reviewed (section 11): the P2s are fixed in 9826b3c (declaration must match the value the scanner actually consumed; agreeing captures accumulate as sources and keep their attribution), B-VR05-03 was resolved by the owner (S-13 -> B06/B07), and B-VR05-09/-10 are registered follow-ups; the next step's review samples these fixes instead of opening a second full round",
       "record": "reviews/B.VR-b05.json"
     },
     {
@@ -186,17 +187,19 @@
     }
   },
   "authorization_needed": [
-    "OWNER: rule on S-10 (B02 implements segment-3 hash equality as a preference, not a hard gate) - see evidence/b02-implementation.md section 3",
-    "OWNER: confirm the A05 sample list and the read-only command manifest (gate G7 + G4 for behaviour beyond --help)",
     "OWNER/OPERATOR: isolated copy for behavioural probes (gate G8) - see findings F-B00-3 for a two-level proposal",
-    "OPERATOR: independent boundary observation and reviewer assignment records (G5/G6)"
+    "OPERATOR: independent boundary observation and reviewer assignment records (G5/G6)",
+    "OWNER: confirm the A05 sample list and the read-only command manifest (gate G7 + G4 for behaviour beyond --help)",
+    "NO OWNER RULING IS OUTSTANDING for phase B: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12 and the simplified working mode (section 11) is in force - only scope and risk questions go back to the owner from here"
   ],
   "gate_status": {
     "B.DR": "rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 implementation record (no design change); the ratchet table stays frozen (S-7)",
-    "B.VR": "rev1 = rejected (2xP1/2xP2/3xP3); rev2/rev3/rev4 = accepted_with_findings and each round falsified one of the author's justification sentences, now single-sourced; B02 closed by the author's documented decision (no fifth prose-only round); B04 review pending. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer still needs G8",
+    "B.VR": "rev1 = rejected (2xP1/2xP2/3xP3); rev2/rev3/rev4 = accepted_with_findings and each round falsified one of the author's justification sentences, now single-sourced; B02 closed by the author's documented decision (no fifth prose-only round); B04 = accepted_with_findings (all six findings addressed); B05 = rejected (2xP1/5xP2/3xP3) with the P1s and P2s fixed and the residuals registered (no second round, section 11); B01 = implemented and awaiting its one review round. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer still needs G8",
     "B.AR": "not started",
-    "B04": "implemented as acceptance + findings with NO product change and reviewed (B.VR b04 = accepted_with_findings, 2xP2 + 4xP3 addressed). Design goal 1-2 verified; goal 3 is CONDITIONAL: a same-path overwrite destroys the old bytes, and with a second copy the old reference still resolves. Remedy choice (byte snapshot vs contract-level limitation) is registered as S-12 for the owner; F-B04-2 registers the silent MISSING when only the PDF is moved without its sidecar",
-    "S-1_test_files": "APPROVED (F10/F11); F10 landing used by tests/contract/test_r4b02_candidate_selection.py (23 cases)",
+    "B01": "implemented as 0e28d99: the resolver now calls policy._effective_reusable instead of keeping a kind-only copy, and candidate selection filters by that set (the group-level gate alone let an excluded root's copy win). No production answer changes - every shipped root was already effectively reusable - so the exported cross-repo policy hash is byte-identical and is now frozen by an acceptance case. Residual: the resolver imports the private function, recorded in findings F-B01-6 and evidence/b01-implementation.md section 5",
+    "B04": "implemented as acceptance + findings with NO product change and reviewed (B.VR b04 = accepted_with_findings, 2xP2 + 4xP3 addressed). Design goal 1-2 verified; goal 3 is CONDITIONAL: a same-path overwrite destroys the old bytes, and with a second copy the old reference still resolves. The owner chose option (iii), the contract-level known limitation (S-12), recorded in the run directory only; F-B04-2 registers the silent MISSING when only the PDF is moved without its sidecar",
+    "B05": "implemented and then rejected by its own review; the P1s and P2s are fixed with regression cases and the read side exposes provenance/conflicts/metadata_status. The response-level blocked verdict is NOT in B05 (owner S-13 assigns it to B06/B07). Residuals: B-VR05-09 (wording) and B-VR05-10 (field names appear in provenance; a low-entropy value's 12-hex hash can be brute-forced) - registered, not silently dropped",
+    "S-1_test_files": "APPROVED (F10/F11); F10 landing used by the four new contract files (6+30+4+9 cases)",
     "S-2_R1_R4_out_of_B": "DECIDED - R-1/R-4 stay outside B as separate work packages",
     "S-3_export_path": "DECIDED - export_policy_2x untouched, payload hash frozen (B-payload-hash still NOT executed)",
     "S-4_consumer_side": "DECIDED - belongs to phase C, B does not sign it",
@@ -204,32 +207,35 @@
     "S-6_fourth_round": "done - five review rounds were run in total (rev4 then rev5/rev6)",
     "S-7_ratchet_edit": "DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited",
     "S-8_N1": "DECIDED - N-1 stays outside B, registered as a cross-repo protocol item",
-    "S-10_byte_hard_gate": "OPEN - non-preferred copies are hard-gated; the preferred copy keeps the pre-B02 claim-trust level and B03 owns the read-path gate",
-    "S-11_budget_status": "OPEN - budget exhaustion maps to that trust level, not to a sixth status value",
-    "implementation_go_ahead": "GRANTED (owner 2026-09-12, second batch); B02 landed and revised, B04 next"
+    "S-10_byte_hard_gate": "APPROVED as recommended (owner 2026-09-12): B02 implements the segment-3 hash equality as a preference with per-candidate diagnostics; the byte-level hard gate ('serve verified bytes or fail explicitly') belongs to B03's read path. The authoritative a-d difference list lives in evidence/b02-implementation.md section 3 and nowhere else",
+    "S-11_budget_status": "APPROVED as recommended: budget exhaustion maps onto the pre-B02 row plus a trace entry, no sixth status value; the counters reset per request and cancellation stays sticky",
+    "S-12_same_path_overwrite": "APPROVED as recommended: option (iii), a contract-level known limitation (the old bytes are physically destroyed by an in-place overwrite); a byte-snapshot remedy would be a separate work package. Recorded in the run directory only, per the owner's instruction not to touch the frozen phase-A artifacts",
+    "S-13_response_blocked": "APPROVED as recommended: the response-level blocked verdict moves into B06/B07; B05's scope was NOT widened, it delivers the field-level facts and the read-side metadata_status",
+    "implementation_go_ahead": "GRANTED (owner 2026-09-12, second batch); B02, B04, B05 and B01 have landed and B01 is the next review round"
   },
-  "actual_side_effects": "Unlike the design-only rounds, this run has now MODIFIED PRODUCT FILES in company-wiki: src/company_wiki/source_catalog/service.py, src/company_wiki/source_catalog/resolver.py and the new tests/contract/test_r4b02_candidate_selection.py - all inside the authorized file scope (F1/F2/F10) and pushed as cab1fd6. Executed locally: pytest (including the full suite with coverage), ruff, git worktree, and read-only probes over synthetic tmp fixtures. NOT executed: any network/download/LLM egress, any product-data write, any DB write, task registration, worker action or deletion; no behavioural probe against the production catalog. The run directory HAS been pushed (origin/main = 2ced153) and every push ran revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY and advances -shm (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md). Several pre-existing wiki tests also open the production catalog read-only when the suite runs (known limitation, attributed in phase A).",
+  "actual_side_effects": "Unlike the design-only rounds, this run has MODIFIED PRODUCT FILES in company-wiki: src/company_wiki/source_catalog/service.py, src/company_wiki/source_catalog/scanner.py (the B05 merge path), src/company_wiki/source_catalog/resolver.py, plus four new files under tests/contract/ (test_r4b02_candidate_selection.py, test_r4b04_reference_stability.py, test_r4b05_metadata_provenance.py, test_r4b01_field_owner_alignment.py) - all inside the authorized file scope (F1/F2/F3/F10) and pushed (cab1fd6 ... 9826b3c, then 0e28d99 for B01). Executed locally: pytest (including the full suite with coverage), ruff, git worktree, read-only probes over synthetic tmp fixtures, and mutation harnesses that restore the product files to the same digest. NOT executed: any network/download/LLM egress, any product-data write, any DB write, task registration, worker action or deletion; no behavioural probe against the production catalog. The run directory IS pushed (origin/main) and every push ran revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY and advances -shm (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md). Several pre-existing wiki tests also open the production catalog read-only when the suite runs (known limitation, attributed in phase A).",
   "failed_or_unknown": [
-    "B03-B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so a preferred copy whose bytes drifted is served on the catalog's claim (S-10's other half)",
-    "B-payload-hash has never been executed (no frozen baseline in the package and the value needs a CLI that is not approved) - B02 only claims that no SourceHandle field was added",
-    "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped); the B-side cases added by B02 cover L01-L04 plus budget/cancel/no-network and the seven review regressions, not the whole matrix",
-    "B05's provenance shape is now additive under a reserved key, but the json_extract regression assertion can only be proved when the tests run (needs implementation)",
+    "B03/B06/B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so a preferred copy whose bytes drifted is served on the catalog's claim (S-10's other half, assigned to B03), and no response-level blocked verdict exists yet (S-13, assigned to B06/B07)",
+    "B-payload-hash has never been executed (no frozen baseline in the package and the value needs a CLI that is not approved); B05 changes the metadata_json bytes, so any baseline must be taken after B05",
+    "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped); the B-side cases cover L01-L04 plus budget/cancel/no-network, the review regressions and the B01 alignment property, not the whole matrix",
+    "B01's residual: the resolver imports the private policy function _effective_reusable - recorded in F-B01-6; promoting it to a public API would touch the export payload, and B-payload-hash is not executable",
+    "B05's residuals: B-VR05-09 (flat-shape wording, 35 vs 30 complexity) and B-VR05-10 ('no raw text' holds for values only - injected canary key NAMES appear as fields - and a low-entropy value's 12-hex hash is brute-forceable)",
     "N-1 support is undefined on both sides and is therefore registered as a cross-repo protocol item, no longer part of B07's completion",
     "handbook section 3 run structure is still partial: card.json, baseline.json, data-manifest.json, requirements.csv and oracle/ are absent",
     "G5/G6/G7/G8 remain owner/operator items",
     "revenue-forecast dirty=0 is incomplete: three .tmp-zr408-unit* directories are unreadable (permission denied), so git cannot enumerate them",
     "test_dbx05_symlink_escape_rejected skips on this host (symlinks not supported), so the symlink-escape control did not run here",
-    "the reviewer could not verify S-9's 61.3% counterfactual, the historical first-round FC-1201 failure claim, B-payload-hash, or any real cloud-placeholder layer (recorded in reviews/B.VR-b02.json limitations)"
+    "the current acceptance cases run on tmp fixtures; the real four-root and cloud-placeholder behaviour still needs the isolated copy (G8)"
   ],
-  "next_step": "Implement B05 per evidence/b05-plan.md in the order the plan fixes: extract _merge_document_row equivalently (the scanner's merge block), then add the reserved r4_provenance key with read-modify-write (never a whole-column replacement, or the prompt_injection_review receipt that resolver.py exposes is lost), then the per-column rules and the read-side blocked detail - each with F10 cases, its own commit, the ratchet/coverage rerun and an independent review. Then B01 -> B03 -> B06 -> B07. Three rulings remain with the owner: S-10, S-11, S-12.",
+  "next_step": "Run B01's one independent review round (section 11), which also samples the B05 P2 fixes, then implement B03 per evidence (stable read bytes: a fixed handle or a controlled snapshot, streaming hashing, and the TOCTOU/cloud-placeholder/bad-byte/interruption cases) - B03 carries the byte-level hard gate deferred by S-10 - and then B06 -> B07, which must deliver the response-level blocked verdict assigned by S-13. Each step: F10 cases, one commit, the ratchet/coverage rerun, one independent review and one implementation record.",
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "9826b3ceaf4b95fd6f56d772ecd5a216a6ab4838",
+      "head": "0e28d9996ffe2a6196385fcc03f3a7d8577bfffe",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "5935a96005be8ab6d83ba8659861e7da5af6d582",
+      "head": "4d4176227ef23ed0966d492bcd93e751023ea4f8",
       "dirty": 0
     },
     "filing-fetch": {
@@ -237,10 +243,10 @@
       "dirty": 0
     }
   },
-  "reviewed_commit": "5935a96005be8ab6d83ba8659861e7da5af6d582",
+  "reviewed_commit": "4d4176227ef23ed0966d492bcd93e751023ea4f8",
   "commit_anchor": {
-    "head": "5935a96005be8ab6d83ba8659861e7da5af6d582",
-    "index_tree": "d75bb4e3aa121be0babc601c3ae55a7be519611e",
+    "head": "4d4176227ef23ed0966d492bcd93e751023ea4f8",
+    "index_tree": "359142d6af00f0bab6d364dbbd41935545edd9cc",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -255,6 +261,10 @@
     "b-vr-protocol.md": {
       "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
       "size": 7366
+    },
+    "evidence/b01-implementation.md": {
+      "sha256": "4593a901b6a98e2e45bcc2cbee5fba7b249ba97b7485e69dd966c1fd13dc4d81",
+      "size": 8190
     },
     "evidence/b02-ci-runs.md": {
       "sha256": "4becd03b7a49fb53d25518f31228c08f799d8cf98a63173d862a492faf4ab70a",
@@ -321,32 +331,40 @@
       "size": 6624
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "e917b0aa6ceb4dab4d0b9f6d1790e5df6d97bcd7716bb0ec9cf30c6a4d5867f0",
-      "size": 31217
+      "sha256": "6198a587897f5e77655e5fc2491920daaad0e42d0d868e5d2b5ca817145cd651",
+      "size": 35040
+    },
+    "evidence/ci_query.py": {
+      "sha256": "742e2af08750ae4edbbd143162d126a21867e1e66a17f03e5ed2b62e0dc085d8",
+      "size": 2304
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "c4ce7eaff605e42464343232ea8dfc5124c93527f937b33ffe06a35cbb25e213",
-      "size": 75971
+      "sha256": "56e17d06fea315e28861f33e97edc514609aa4ab7e070abcdf5f1a32b6636f94",
+      "size": 83500
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "1a0f518e7b5cfde191957f51c60180b9347afdabf112db24ef4df0c067213ce9",
-      "size": 14157
+      "sha256": "674264798459310c08313a4739171ed790826135ce334d554107dd15010635a5",
+      "size": 15278
+    },
+    "evidence/field-owner-map.json": {
+      "sha256": "73d1c1934598f07ea6fd0310ab138ee25eeeaf1e8711ec21aef1fde21222ff2e",
+      "size": 8482
     },
     "file-scope.md": {
       "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
       "size": 12565
     },
     "findings.md": {
-      "sha256": "aa8a49c3402ab252c2a9a5ea7762e07eb3fe71a7bafea0ed5761c80aa5c2bf13",
-      "size": 57921
+      "sha256": "7fc42f048def1778c07d0120dd27f76c90d2cea1066fab2151d41ac863ff3a04",
+      "size": 59982
     },
     "owner-scope-decisions-2026-09-12.md": {
       "sha256": "cb6ac486f03de140a4dfdd308b7dd484809ded199c69122d8e180bc5c3483d24",
       "size": 10926
     },
     "progress.md": {
-      "sha256": "abe7a05a351992d673894c206355d99df4d2518ea971328219cf51e615e7ff4f",
-      "size": 20591
+      "sha256": "d2c6fb56973b1e9d025713a0306cee94cefa38100145f109732e1e28c9fcf93a",
+      "size": 25119
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -401,8 +419,8 @@
       "size": 7165
     },
     "task_plan.md": {
-      "sha256": "e7b6cf1bc60ee8989589d5162c76dc45a2837b63da2d6d77837aeaf2fb4e0147",
-      "size": 15426
+      "sha256": "41ab9b377eb2f506a8cd9fa4680aa6b02240046ac9a6142fe593dc4ddb13ab81",
+      "size": 17823
     },
     "test-acceptance-map.md": {
       "sha256": "20fb868baa7a8315a0f219dd06e6d366cbd95b0ba3f7d263ad618a3dc400647a",
@@ -410,11 +428,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 41,
+    "checked": 44,
     "source": "index",
-    "compared_revision": "d75bb4e3aa121be0babc601c3ae55a7be519611e",
-    "head_revision": "5935a96005be8ab6d83ba8659861e7da5af6d582",
-    "index_tree": "d75bb4e3aa121be0babc601c3ae55a7be519611e",
+    "compared_revision": "359142d6af00f0bab6d364dbbd41935545edd9cc",
+    "head_revision": "4d4176227ef23ed0966d492bcd93e751023ea4f8",
+    "index_tree": "359142d6af00f0bab6d364dbbd41935545edd9cc",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -424,8 +442,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 41,
-    "files_listed": 41,
+    "files_on_disk": 44,
+    "files_listed": 44,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -434,5 +452,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T20:06:58.065960+00:00"
+  "generated_at_utc": "2026-09-12T20:37:30.707716+00:00"
 }
