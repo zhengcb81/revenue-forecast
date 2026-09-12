@@ -1,0 +1,97 @@
+{
+  "run_id": "2026-09-11_r4-phase-b",
+  "phase": "B (position-transparent index and read-only access) - DESIGN ONLY",
+  "step": "B01-B07 design delivered; B.DR independent design review submitted",
+  "last_completed_step": "B run directory created; b-design.md (B01-B07 design + B08-B10 preconditions), file-scope.md (8 candidate files with absolute paths, symbols, line anchors and frozen hashes), test-acceptance-map.md (step -> L/P/O/M mapping and the definition of done), risk-and-stop-rules.md (H01 and D.SAFE intersections, 10 hard stops), findings.md; plus phase-A completion runway: a05-corpus-sample-plan.md, a06-baseline-plan.md and command-manifest-readonly.json",
+  "current_gate": "B.DR (independent design review of this package)",
+  "pending_review": [
+    {
+      "gate": "B.DR",
+      "scope": "B phase design package (task_plan, b-design, file-scope, test-acceptance-map, risk-and-stop-rules)",
+      "status": "pending",
+      "reviewer": "independent subagent (non-author)"
+    }
+  ],
+  "authorization_needed": [
+    "OWNER: approve the B DEV work package and file scope (file-scope.md) before any product file is touched - handbook section 2.5",
+    "OWNER: confirm the A05 sample list and the read-only command manifest (gate G7 + G4 for behaviour beyond --help)",
+    "OWNER/OPERATOR: isolated copy for behavioural probes (gate G8) - see findings F-B00-3 for a two-level proposal",
+    "OPERATOR: independent boundary observation and reviewer assignment records (G5/G6)"
+  ],
+  "gate_status": {
+    "B.DR": "submitted (independent design review)",
+    "B.VR": "blocked: needs the isolated environment (G8)",
+    "B.AR": "blocked: needs G8 + the confirmed real-corpus sample list (G7)",
+    "A07_A08": "not started (phase-A VR/AR of the contracts and baseline)",
+    "D_SAFE_cross": "not started; B only aligns with it (no delete/write paths touched)"
+  },
+  "actual_side_effects": "Documentation only. Read-only inspection of repository files (grep, hashes, line anchors). No CLI of any kind was executed in this run, no data command, no network, no product/config/DB/task/worker change. Note: pushing this run directory triggers revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md).",
+  "failed_or_unknown": [
+    "no B step can be marked implemented: implementation needs the owner-approved DEV work package",
+    "B08/B09 need the isolated copy (G8) and the confirmed sample list (G7)",
+    "the L01-L12 mechanism-layer baseline (A06) has not been produced yet, so 'B fixed it' cannot be independently verified until A06 exists",
+    "A05 has not selected real samples; only the selection rules and the bounded read-only manifest exist",
+    "handbook section 3 run structure for this directory is partial: card.json, baseline.json, data-manifest.json, requirements.csv and reviews/ are not created yet"
+  ],
+  "next_step": "Collect the B.DR verdict, correct the design in place, then (in parallel) start A07/A08 on the frozen phase-A contracts and prepare the A06 mechanism-layer baseline. Product changes wait for the owner's approval of file-scope.md.",
+  "inputs": {
+    "company-wiki": {
+      "head": "032da52cf699e26c4de86557dcc9189f883f1292",
+      "dirty": 0
+    },
+    "revenue-forecast": {
+      "head": "1b4bab434ad39c5afdbc53c0ac45f7a63d7dafc7",
+      "dirty": 1
+    },
+    "filing-fetch": {
+      "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
+      "dirty": 0
+    }
+  },
+  "reviewed_commit": "1b4bab4",
+  "produced_files": {
+    ".gitattributes": {
+      "sha256": "2380dc1cb5c4831e386ce5df2b0ab9bb333dddaee7b615e42b20d94b617de879",
+      "size": 907
+    },
+    "b-design.md": {
+      "sha256": "d4828aa46862114c49f15465c078024b17867372c0e524280bf1ad3fcc75f5c3",
+      "size": 11800
+    },
+    "evidence/build_checkpoint.py": {
+      "sha256": "0dcd085d52cf542131d90b38d204b0581612ffdbb023c149fc27da8afdb21d0e",
+      "size": 8308
+    },
+    "file-scope.md": {
+      "sha256": "192c68a81406fb1d52dd741e9b53c198048c4101730ac674a92fb35a1aae38c8",
+      "size": 5238
+    },
+    "findings.md": {
+      "sha256": "fccaabdfccf597465af24c4984355733632e48932449ad9282a2efbcc55ca5b0",
+      "size": 3208
+    },
+    "progress.md": {
+      "sha256": "40e8361a4f0152cdb60eaea04d34ee7980f07027ffe5a40dec1bee341550a290",
+      "size": 3760
+    },
+    "risk-and-stop-rules.md": {
+      "sha256": "c6fd3048ca1afeac68f06628341819179077ec3d83fd72328c99952232212a71",
+      "size": 4255
+    },
+    "task_plan.md": {
+      "sha256": "17f7f2c5cb12ae314e11d7f564f719246a74a254f88697cfb764a4c3a3d18b63",
+      "size": 5965
+    },
+    "test-acceptance-map.md": {
+      "sha256": "6c26776ab22313c63d8719050fb09cbfb2fd8d7f791d30e7d535cfc7003658d8",
+      "size": 5158
+    }
+  },
+  "produced_files_verification": {
+    "checked": 9,
+    "source": "index",
+    "blob_mismatches": [],
+    "all_match": true
+  },
+  "generated_at_utc": "2026-09-12T06:46:17.664581+00:00"
+}
