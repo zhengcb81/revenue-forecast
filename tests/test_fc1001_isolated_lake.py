@@ -131,7 +131,21 @@ def test_v2_artifacts_are_bindable(tmp_path: Path):
 
 
 @pytest.mark.parametrize("variant", [
-    "hash_mismatch", "truncated_source", "sidecar_missing",
+    "hash_mismatch", "truncated_source",
+    # KNOWN GAP, not a pass.  "A document whose identity sidecar is missing must
+    # not default to a trusted filing" has NO implementation today: the resolver
+    # answers from the INDEX, and the index keeps the document's location rows
+    # and recorded entity rows after the sidecar FILE is deleted.  Measured six
+    # ways (scan/resolve, before/after the resolver's reuse-alignment change,
+    # synthetic vs production-shaped config) in the R4 phase-B run directory:
+    # findings F-B01-7 and evidence/b01-fc1001_probe.py.  The assertion below is
+    # deliberately kept so the requirement stays written down; strict=True turns
+    # this into a FAILURE the moment the requirement is implemented, i.e. the
+    # marker then has to be removed deliberately.  Carrier: B06 acceptance item
+    # "identity sidecar missing => not reusable".
+    pytest.param("sidecar_missing", marks=pytest.mark.xfail(
+        strict=True,
+        reason="F-B01-7: sidecar-missing fail-closed is unimplemented (carrier: B06)")),
     "location_inactive", "column_drop",
 ])
 def test_corruption_variants_fail_closed(tmp_path: Path, variant: str):
@@ -188,9 +202,18 @@ def test_corruption_variants_fail_closed(tmp_path: Path, variant: str):
         return
 
     if variant == "sidecar_missing":
-        # Dropbox identity comes from the sidecar (FC-501): without it the
-        # document cannot be RESOLVED by entity (scan keeps the row; the
-        # resolver must not match — fail closed at the resolve layer).
+        # Dropbox identity comes from the sidecar (FC-501) - but that is a
+        # SCAN-time rule, and this corruption deletes the sidecar FILE only,
+        # while the catalog row it produced stays intact (the fixture comment in
+        # e2e_support/isolated_lake.py:381-386 states the same intent).  What
+        # used to reject the document here was therefore NOT identity: it was
+        # the resolver's old kind-only reuse set, applied to this inline
+        # synthetic config whose default reusable_root_kinds is ('company_raw',)
+        # while the root below is a `directory` root.  B01 aligned the resolver
+        # with the exported policy (an explicit reusable_for_filing=True makes
+        # this root reusable), which removed that incidental cover and exposed
+        # the real gap - the assertion below is kept as a strict xfail until the
+        # requirement has an implementation (F-B01-7; carrier: B06).
         from company_wiki.source_catalog import (
             CatalogConfig,
             RootSpec,
