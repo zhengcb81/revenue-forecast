@@ -1,0 +1,57 @@
+# B05 落地计划（2026-09-12，实施前排布；**尚未实施**）
+
+> 依据：[b-design.md](b-design.md) §B05（metadata 合并：来源优先、冲突保留）+ file-scope §3b（B05 = **F3 + F1**）+ `B.VR` 三轮复审确立的纪律（**文字不得超出代码**、差异要逐条列出）。
+> 纪律：本页只是**计划**；实施后才允许改成完成态，且必须带命令与实测输出。
+
+## 1. 设计要点（b-design §B05 原文摘要）
+
+1. 每个字段记录 **provenance**（来源标识 + 抓取时间 + **hash 或短规范化值**；**不得存原文片段**），放在 `documents.metadata_json` 的**保留键** `r4_provenance = {"schema_version": "1.0", "fields": {...}}` 里；既有键一律保留。
+2. **逐列合并规则**：`:1078-1081` 那条 UPDATE 涉及的每一列都要有明确规则；**冲突不得按 priority 择一**。
+3. **禁止整列替换 `metadata_json`**：含 `prefer_new` 路径（`:1073-1077`）与重扫分支（`:1095-1099`），一律**读-改-写**。
+4. 冲突在**读侧**暴露为 `blocked`（不是 `ambiguous`——那个词留给 L07 的未知版本关系），并给出**字段级**明细；`capture_ready` 不变量在 L09 里断言。
+5. 测试（F10）：L08 逐列合并，含"先缺后补"与 **json_extract 回归断言**（`fiscal_year` 过滤 + `prompt_injection_review` 门）。
+
+## 2. 现状锚点（本机实测行号与语义，2026-09-12）
+
+| 锚点 | 语义 |
+|---|---|
+| `scanner.py:1006-1008` | 读既有行 `metadata_priority, source_status, metadata_json` |
+| `:1009-1027` | INSERT 分支（新文档）：`metadata_json = canonical_json(document_metadata)` |
+| `:1028-1037` | `retired` 分支：只写 `last_seen_at`（**终态，不复活**） |
+| `:1038` | 开关：`root.priority <= existing.metadata_priority` 才进入合并分支（数字越小优先级越高） |
+| `:1044-1045` | 内层容器二选一：`dayu_meta` 或 `acquisition` |
+| `:1059-1072` | `prefer_new` 三条件（source_url / market+security_id / provider_document_id） |
+| **`:1073-1077`** | **整列替换**：`prefer_new` 时直接用 `canonical_json(document_metadata)`（会抹掉 `prompt_injection_review` 与任何 `r4_provenance`）→ **B05 必须改为读-改-写** |
+| **`:1078-1081`** | UPDATE **全部列**取自"胜者"：`primary_source_id/title/source_type/document_kind/published_date/source_status/metadata_priority/metadata_json/last_seen_at` → **逐列规则要覆盖到每一列** |
+| `:1095-1099` | 重扫分支（新 root 优先级更差）：只写 `last_seen_at`（**不是**整列替换，实测确认） |
+
+## 3. 棘轮与覆盖率约束（实测，决定实现方式）
+
+| 约束 | 实测 | 对实现的硬性影响 |
+|---|---|---|
+| 复杂度棘轮（只数**模块级函数**） | `scanner.py` **ratchet-max 140 = FROZEN 140（顶格）**；`service.py` 5/45；`resolver.py` 32/103 | **不能**在 `scan_catalog` 里新增任何判定点。做法：把合并块（`:1038-1099`）**抽成新的模块级函数**（如 `_merge_document_row(...)`）——`scan_catalog` 的复杂度随之**下降**（棘轮只降不升，表不动 ✔），新函数自身 ≤140（预期 ~15） |
+| `NEW_FILE_MAX = 10` | 新文件每个函数 ≤10 | **本步不新增产品模块**；若新增文件，函数必须很小 |
+| 覆盖率棘轮 | `scanner.py` 档 = **FROZEN 91**（容差底 90.5）；`service.py` TIER1 = 95 | 新分支必须由 F10 用例**真跑到**，否则 CI 直接红 |
+
+## 4. 实施设计（草案，实施时按实测收敛）
+
+1. **抽取**：把 `:1038-1099` 的合并逻辑抽成模块级 `_merge_document_row(...)`（纯函数：入参 = 既有行、新文档元数据、新 root 优先级、各列新值；返回 = 待 UPDATE 的列字典）。**行为先保持等价**，抽取后立刻跑既有套件确认零回归。
+2. **加保留键**：`r4_provenance = {"schema_version": "1.0", "fields": {<field>: {"source_id", "observed_at", "value_hash"}}}`，只记 **hash/短规范化值**，绝不写原文片段；`metadata_json` 一律读-改-写，`prefer_new` 只影响**内层业务键**的选择，不再整列替换。
+3. **逐列规则**（每条都要在计划评审时定稿）：`title/source_type/document_kind/published_date/source_status` 各自"何时接受新值、何时保留旧值、冲突如何标注"；`metadata_priority` 只作排序（B02 已确立）；`primary_source_id` 维持 `COALESCE` 语义（不为空则不改）。
+4. **读侧暴露**（F1 `service.py`）：provenance 与冲突从 `metadata_json` 读出，冲突 → `blocked` + 字段级明细；不改 `SourceHandle` 字段（`B-payload-hash` 不可执行）。
+5. **测试（F10，L08）**：逐列合并用例（含"先缺后补"）、`prefer_new` 不再抹列（`prompt_injection_review` 与 `r4_provenance` 存活）、`json_extract` 回归（`fiscal_year` 过滤 + 注入复核门）。
+
+## 5. 风险与边界
+
+- **不新增产品模块**（S-7 的替代路径是"抽新函数"，不是新文件）；**不改棘轮表**。
+- **不动** `policy_2x.py` 导出路径、`export_policy` 输出（跨仓 policy_hash）。
+- 抽取重构**先等价后扩展**：先抽（零行为变化 + 全量绿），再加保留键与逐列规则（各自独立 commit 亦可）。
+- 若发现"逐列规则"需要改 DDL（新列/新表），**停下并请示**——那属写面/迁移工作包（file-scope §1 无 `store.py`）。
+- 冲突判定不得引入第六种状态：读侧仍用五值模型（`blocked` 的载体见 §4.4）。
+
+## 6. 步骤
+
+1. 抽取 `_merge_document_row`（等价重构）→ 复跑既有套件 + 棘轮（`scanner.py` ratchet-max 应下降）→ 单独 commit。
+2. 加 `r4_provenance` + 读-改-写（含 `prefer_new` / 重扫分支）→ F10 用例 → commit。
+3. 逐列规则 + 读侧 `blocked`/字段级明细 → F10 用例 → commit。
+4. 全量 + 覆盖率（`FC1204_COVERAGE_GATE=1`，先跑 `--cov`）、`ruff`、FC-1201 门、claim 审计与 checkpoint 回填 → 独立复审（`B.VR`，新会话）。

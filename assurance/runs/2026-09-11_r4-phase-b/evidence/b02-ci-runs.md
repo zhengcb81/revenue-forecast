@@ -1,6 +1,6 @@
-# B02 的 CI 记录（独立于本机的第三方验证）
+# B02 / B04 的 CI 记录（独立于本机的第三方验证）
 
-> 本机（Windows）的测量已写在 [b02-implementation.md](b02-implementation.md) §7；本页只登记 **GitHub Actions** 的结果，因为 CI 在 Linux 上**重新测量**覆盖率与复杂度棘轮，是本步最强的独立验证。
+> 本机（Windows）的测量已写在 [b02-implementation.md](b02-implementation.md) §7 与 [b04-implementation.md](b04-implementation.md)；本页只登记 **GitHub Actions** 的结果，因为 CI 在 Linux 上**重新测量**覆盖率与复杂度棘轮，是这两步最强的独立验证。
 > 采集方式（只读 API）：`GET /repos/{owner}/{repo}/actions/runs`；下表时间与 id 为实测。
 
 | 仓库 | 提交 | 内容 | 工作流 | 状态 | run id |
@@ -10,6 +10,7 @@
 | company-wiki | `182846b` | B02 rev3（`B.VR` rev2 的 5 条处置） | CI | **success** | 34697070398 |
 | company-wiki | `da5e0f5` | B02 rev4（`B.VR` rev3 的 7 条处置：可证伪表述 + 谓词/理由 + 3 个回归） | CI | **success** | 34700254033 |
 | company-wiki | `1d8b1f7` | B02 rev5（文字收口：差异清单单点维护 + 审计检索产品文件；**仅注释/docstring**） | CI | **success** | 34701684837 |
+| company-wiki | `bc3590f` | **B04**（新验收文件 `test_r4b04_reference_stability.py`，4 用例；**产品代码零改动**） | CI | **success** | 34702604627 |
 | revenue-forecast | `2ced153` | B 运行目录：B02 实施记录（rev1） | quality | **success** | 34691409601 |
 | revenue-forecast | `7b34c12` | B 运行目录：`B.VR` rev1 记录 + rev2 证据 | quality | **success** | 34693783149 |
 | revenue-forecast | `63422f1` | B 运行目录：`B.VR` rev2 记录 + rev3 证据 | quality | **success** | 34697489835 |
@@ -18,6 +19,9 @@
 | revenue-forecast | `5cca0b4` | checkpoint 锚定（31 文件，`all_match=True`） | quality | **success** | 34700707748 |
 | revenue-forecast | `c2d6555` | B 运行目录：`B.VR` rev4 记录 + rev5 单点化（含 `b02_anchors.py`） | quality | **未单独触发**（与下一行同一次推送，CI 只跑推送 tip） | — |
 | revenue-forecast | `38abbdd` | checkpoint 锚定（33 文件，`all_match=True`） | quality | **success** | 34701950839 |
+| revenue-forecast | `90fbb9e` | CI 记录补 rev5 两行 | quality | **success** | 34702387242 |
+| revenue-forecast | `2b480cb` | B04 验收记录 + F-B04-1 + 台账回填 | quality | **success**（与下一行同一推送） | 34702769951 |
+| revenue-forecast | `3078a34` | checkpoint 锚定（35 文件，`all_match=True`） | quality | **success** | 34702769951 |
 
 **CI 覆盖到的与本步直接相关的门**（`company-wiki/.github/workflows/ci.yml`，三个 Python 版本 3.11/3.12/3.13 全部 success）：
 
