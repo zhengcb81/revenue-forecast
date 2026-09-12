@@ -14,6 +14,8 @@
 | company-wiki | `6909e78` | **B05 子步 1**（抽取 `_merge_document_row`；与下一行同一次推送，CI 只跑 tip） | CI | **未单独触发** | — |
 | company-wiki | `bdd99dc` | **B05 子步 2**（保留键 `r4_provenance` + 读-改-写；3 用例） | CI | **success** | 34707677701 |
 | company-wiki | `9db3394` | **B05 子步 3**（逐列规则 + 读侧 `blocked`；6 用例） | CI | **success** | 34709578267 |
+| company-wiki | `9826b3c` | **B05 P2 修复**（声明绑定到"实际用到的值" + 同意来源累积 + 归属补齐；9 用例） | CI | **success** | 34715944895 |
+| company-wiki | `0e28d99` | **B01**（复用判定收敛为一份实现 + 候选级过滤；新增 6 用例 + 字段归属表） | CI | **success** | 34717481812 |
 | revenue-forecast | `2ced153` | B 运行目录：B02 实施记录（rev1） | quality | **success** | 34691409601 |
 | revenue-forecast | `7b34c12` | B 运行目录：`B.VR` rev1 记录 + rev2 证据 | quality | **success** | 34693783149 |
 | revenue-forecast | `63422f1` | B 运行目录：`B.VR` rev2 记录 + rev3 证据 | quality | **success** | 34697489835 |

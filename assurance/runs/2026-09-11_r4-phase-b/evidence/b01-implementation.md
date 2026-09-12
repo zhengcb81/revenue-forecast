@@ -1,6 +1,6 @@
 # B01 实施与验证记录（2026-09-12）
 
-> 状态：**已实施**（产品代码 1 文件 + 新增验收 6 用例）。提交 `0e28d99`（company-wiki，`fcap` → `origin/master`，CI run id `34717481812`）；run 目录提交在 revenue 侧**暂留本地**，原因是 pre-push 门出现一处**跨仓红**——见 §6 / [findings.md](../findings.md) **F-B01-7**（根因已定位：不是 B01 的缺陷，而是一条一直靠偶然理由通过的 FC-1001 断言）。
+> 状态：**已实施**（产品代码 1 文件 + 新增验收 6 用例）。提交 `0e28d99`（company-wiki，`fcap` → `origin/master`），CI run id `34717481812` = **success**；run 目录提交在 revenue 侧**暂留本地**，原因是 pre-push 门出现一处**跨仓红**——见 §6 / [findings.md](../findings.md) **F-B01-7**（根因已定位：不是 B01 的缺陷，而是一条一直靠偶然理由通过的 FC-1001 断言）。
 > 机器可读的字段归属表：[field-owner-map.json](field-owner-map.json)（B01 的第二个交付）。
 > 入口：本页给结论与命令；设计依据见 [../b-design.md](../b-design.md) §B01.1/§B01.2，允许集见 [../file-scope.md](../file-scope.md)（F2 `resolver.py`、F10 `tests/contract/**` 仅新增）。
 
