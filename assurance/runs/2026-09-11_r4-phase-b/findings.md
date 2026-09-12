@@ -4,7 +4,7 @@
 
 ## F-B07-1：`B-payload-hash` **从 `blocked` 变为"可执行且通过"**（写 B07 计划时发现"需待批 CLI"这条理由不成立）
 
-- **原登记（[test-acceptance-map.md](test-acceptance-map.md) §1c）**：`resolve` 输出的 **policy_export payload** 字节/hash 不变（跨仓 FC-501 containment 的唯一来源）；**当前不可执行**——理由是"包内无冻结基线"**且**"取值需要 `--help` 之外的 CLI（属待批 manifest）"。
+- **原登记（[test-acceptance-map.md](test-acceptance-map.md) §1c 的 **v0.1.6 / B-DR5-04** 一版）**：`resolve` 输出的 **policy_export payload** 字节/hash 不变（跨仓 FC-501 containment 的唯一来源）；当时判为"不可执行"——理由是"包内无冻结基线"**且**"取值需要 `--help` 之外的 CLI（属待批 manifest）"。
 - **实测**：第二条理由**不成立**。该 payload 由 `cli._policy_export_payload(config)` 产出，是**纯函数**，可在进程内调用（B01 的验收用例一直在用）。于是把它改成**可执行的相对校验**：
   - 脚本 [evidence/b07_payload_baseline.py](evidence/b07_payload_baseline.py)（**可复跑**）：两侧都用**同一份在产配置** + **显式固定 `project_root`**（payload 内嵌每个 root 的绝对 `path_ref`，用 `${PROJECT_ROOT}` 会随检出目录漂移），对 payload 做**规范化 JSON**（sorted keys/UTF-8）后逐字节比较；
   - 结果 [evidence/b07-payload-baseline.json](evidence/b07-payload-baseline.json)：基线 = **phase-A 冻结修订 `7d4852f`** 的只读 worktree，当前 = `f0aacbf`（B01–B05 全部落盘后）⇒ `canonical_sha256` **两侧同为 `bd1a359f…`、1216 字节、结构相同** ⇒ **`identical: true`**。
