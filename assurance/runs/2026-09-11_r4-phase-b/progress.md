@@ -1,5 +1,20 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-12（实施期）— **B 阶段七步全部实施并推送；B03 复审已闭环；CI 全绿；B06/B07 复审在跑**
+
+- **B03 复审 = `accepted_with_findings`（1×P1/4×P2/3×P3）→ 八条全部处置**（提交 `2f1ddab`，逐条处置表 [evidence/b03-review-disposition.md](evidence/b03-review-disposition.md)）：
+  - **P1**：`expected_content_sha256` 从未与句柄绑定 ⇒ 结果会把**A 版本的 `document_id` 配上 B 版本的字节与摘要**并自称 `verified`（同名参数在 `reader.resolve_handle`/`bundle` 里是 fail-closed 的）→ **绑定到句柄**，不符即 `unavailable` + `expected_version_mismatch`。
+  - **P2 取消尾窗**：落在"返回 `b''` 的那次 `read()` 内部"的取消被漏掉、字节照样交出；复审的变异 **M4 存活** ⇒ 加**尾守卫** + 两条用例（一条要求"取消必须**停止读取**"）⇒ M4 **被杀**。（我的第一版用例没杀住尾守卫变异，据此重写——变异检查的价值在此。）
+  - **P2×2（盘根 root / CFG-08 空值）**：我**在复审报告前**就从它的探针产物里读出并修好（`commonpath`；`read_only` 出现即须真布尔），复审独立确认同一根因。
+  - **P3×3**：复验的定位改为"精确拒因"（完整性由**对返回缓冲的摘要**承担，`os.utime` 可击败复验）；改为**打开 containment 已解析的路径**（关掉检查-打开窗口），硬链接登记为限制；状态/哨兵常量 + 类型守卫。用例 **13 → 18**。
+- **B06 实施并推送**（`5138546`）：`ResolutionEnvelope.qualification`（加法：`verified_input`/`preview`/`blocked` + 缺口码），**S-13 响应级 `blocked`** 落在其中（真字段冲突经只读 `store` 读 B05 保留键判定）；F10 新增 **12 用例**。**实施期发现**：`preview` 被既有 `capture_incomplete` 门拒成 `MISSING` ⇒ **已定义、当前不可达**；**不放宽跨仓行为**，如实登记并上呈 owner（不阻塞）。另修一处自查发现的健壮性洞（共享列畸形输入不得让信封崩）。
+- **B07 实施并推送**（`5b7ef10`）：版本政策写在常量旁（只接受当前版本 / 未知**显式拒绝** / 五值词汇 / **无目录级 fallback** / 消费者侧归 C）；`build_resolution_envelope` 对未知 `schema_version` **fail closed**；F10 新增 **4 用例**。
+- **`B-payload-hash` 从 `blocked` 变为"可执行且通过"**（F-B07-1）：其"需待批 CLI"的阻塞理由不成立（纯函数可达）⇒ 以**固定 `project_root`** 在 phase-A 冻结修订 `7d4852f` 与当前树之间逐字节比较 ⇒ `identical: true`（`bd1a359f…`，1216 B）。**不声称跨机器可比**。
+- **移植方式（可复核）**：[evidence/transplant_split.py](evidence/transplant_split.py) 按内容签名把 **16/16 hunks** 唯一归类到四步，`git apply --index` 逐步提交（B03/B01/B06/B07 四个独立 commit）；[evidence/transplant-manifest.json](evidence/transplant-manifest.json) 记录来源、规则与验证（一次性 worktree 里真实应用后 62 passed）。
+- **CI 又抓到我一处错并已修**：我新写的卷根用例**硬编码 Windows 路径** ⇒ Linux 必然失败；改为用**本平台自己的卷锚点**（`tmp_path.anchor`），并用 POSIX 语义推演确认。**CI 现状：wiki `52d394d` = success（34724833934）、revenue `077d8c0` = success（34724733730）**。
+- **门**：推送前按 F-B01-9 的规则**本地跑了 CI 的失败步骤**（`pytest tests/contract`：1900 passed / 8 skipped，仅两条环境性失败——泄漏 worker 与 CI 已 ignore 的负载敏感用例，后者单独跑通过）；claim-audit **54/54**；checkpoint 77 文件 `all_match`。
+- **在途**：**B06 与 B07 的独立复审**（两个独立会话并行，已按"只跑定向用例、不跑全量套件"约束它们以避免互相干扰）。
+
 ## 2026-09-12（实施期）— **B06/B07 已在隔离 worktree 实现；`B-payload-hash` 从 `blocked` 变为"可执行且通过"**
 
 - **`B-payload-hash` 闭合（F-B07-1）**：该门自设计期登记为 `blocked`（"无冻结基线 + 取值需待批 CLI"）。实测**第二条理由不成立**——`cli._policy_export_payload` 是**纯函数**。于是做成可执行的相对校验：脚本 [evidence/b07_payload_baseline.py](evidence/b07_payload_baseline.py) 以**固定 `project_root`** 在 **phase-A 冻结修订 `7d4852f`**（只读 worktree）与当前树之间对 payload 做规范化字节比较 ⇒ **`identical: true`**（两侧 `canonical_sha256` 同为 `bd1a359f…`，1216 B）。**口径**：绝对值与机器/检出相关（F-B01-9），**可移植的是这次比较**；B07 实施时复跑确认。
