@@ -1,0 +1,44 @@
+{
+  "artifact": "b-transplant-manifest",
+  "generated_at_utc": "2026-09-12",
+  "purpose": "Record exactly which changes are waiting to be transplanted from the isolated worktree into the main checkout, and the evidence that the transplant set is complete and green - so the transplant itself is an auditable, mechanical step.",
+  "source": {
+    "worktree": "%TEMP%/cw-b06-wt",
+    "branch": "r4b06-wip",
+    "base_commit": "f0aacbf",
+    "base_note": "the reviewed B03 revision after the first CI failure was disposed of"
+  },
+  "split_tool": {
+    "path": "evidence/transplant_split.py",
+    "rule": "hunks are classified by content signature; the tool REFUSES to emit if any hunk matches zero or more than one step, and its union check reproduces the whole diff",
+    "result": "13 of 13 hunks classified uniquely",
+    "per_step_hunks": {"b03": 2, "b01": 3, "b06": 6, "b07": 2}
+  },
+  "patch_files": {
+    "b03.patch": "containment via commonpath (a configured drive root refused every file) + its acceptance case",
+    "b01.patch": "CFG-08: a present-but-empty read_only is refused (the field is bool, not bool|None) + its acceptance case",
+    "b06.patch": "the qualification label, the gap codes and the S-13 response-level blocked + the conflict reader's hardening",
+    "b07.patch": "the version policy next to the constant + build_resolution_envelope refusing an unknown version",
+    "b06-new-file.txt": "tests/contract/test_r4b06_qualification.py (12 cases)",
+    "b07-new-file.txt": "tests/contract/test_r4b07_version_contract.py (4 cases)"
+  },
+  "files_touched": [
+    "src/company_wiki/source_catalog/resolver.py",
+    "src/company_wiki/source_catalog/config.py",
+    "tests/contract/test_r4b03_stable_bytes.py",
+    "tests/contract/test_r4b01_field_owner_alignment.py",
+    "tests/contract/test_r4b06_qualification.py (new)",
+    "tests/contract/test_r4b07_version_contract.py (new)"
+  ],
+  "verification": {
+    "method": "a throwaway worktree at f0aacbf, the four patches applied for real plus the two new files, then the affected gates",
+    "ruff": "All checks passed (src, tests/contract)",
+    "tests": "62 passed / 1 skipped (B01 10, B03 14+1 skip, B06 12, B07 4, existing envelope suites 18, FC-1204 complexity ratchet 2)",
+    "main_checkout": "NOT modified by any of this (only the running review's .coverage intermediate state was present)",
+    "dry_run_against_main": "all four patches: git apply --check clean"
+  },
+  "pending": [
+    "B.VR (B03) review record - its full-suite/coverage run was still going when this manifest was written",
+    "then: apply the patches in the order b03, b01, b06, b07; add the two new files; four commits (one per step); run pytest tests/contract locally BEFORE the push (the lesson from F-B01-9); push; watch CI"
+  ]
+}
