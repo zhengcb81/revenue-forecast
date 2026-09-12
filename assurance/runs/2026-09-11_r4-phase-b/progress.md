@@ -8,6 +8,7 @@
 - **在产影响 = 无**：四个在产 root 本就都实际可复用 ⇒ 答案不变、`policy_hash` **逐字节不变**（`cf0ac2adf971…`），并由用例 `test_r4b01_shipped_policy_hash_is_frozen` 冻结（跨仓：filing-fetch FC-501 containment）。
 - **复跑**：新用例 **6 passed**；`pre_push_gate` **GREEN**；全量套件 **2716 passed / 7 skipped / 1 failed**（唯一 failed = 已知 worker 残留环境产物，pre-change 树同样失败）；覆盖率 `resolver.py` **87.95 %**（底 86）、`scanner.py` 91.12 %（底 91）、`service.py` 95.20 %（底 95）；复杂度棘轮 4 passed；`ruff` clean。
 - **残余（登记，不在 B 内修）**：解析器 import 的是私有函数 `_effective_reusable`（"一份实现优先"的取舍；公开它会动导出面 payload，而 `B-payload-hash` 仍不可执行）。
+- **跨仓副作用 + 当前阻塞（F-B01-7）**：wiki 侧已推送（`0e28d99`），但 revenue 侧 push 被自己的 pre-push 门挡住 —— `tests/test_fc1001_isolated_lake.py::test_corruption_variants_fail_closed[sidecar_missing]` 失败（真数据套件）。**没有绕过门**：六组对照探针（[evidence/b01_fc1001_probe.py](evidence/b01_fc1001_probe.py)）证明该用例从来不是按它宣称的理由通过的——拒绝来自旧解析器的"只看 kind"复用门（用例内联配置是默认 `['company_raw']`，而 root 是 `directory` kind），在**在产同形配置**下 B01 前后都会解析成功（含重扫、含声明 `sidecar_suffixes`）。→ B01 取消的是**偶然掩护**，不是身份检查；真实缺口"sidecar 缺失不得默认为可信财报"按设计归 **B06**。修法（改 revenue 的该用例）**不在 B 的允许集**，已上呈 owner（选项 A/B/C/D，见 [findings.md](findings.md) F-B01-7）。**revenue 侧提交暂留本地**，门恢复绿后推送。
 
 ## 2026-09-12（实施期）— **B05 = `B.VR` rejected（2×P1/5×P2/3×P3）→ P1/P2 已修（`b6a8442`/`9826b3c`）；残余仅 B-VR05-09/-10**
 

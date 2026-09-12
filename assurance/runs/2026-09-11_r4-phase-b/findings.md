@@ -2,6 +2,39 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B01-7（**阻塞性**）：FC-1001 的 `sidecar_missing` 真数据用例**从来没有**按它宣称的理由通过——它靠的是旧的复用门
+
+- **触发**：B01 落到 wiki 后，revenue-forecast 的 pre-push 门（真数据套件）变红：
+  `FAILED tests/test_fc1001_isolated_lake.py::test_corruption_variants_fail_closed[sidecar_missing]`
+  → `AssertionError: sidecar-missing dropbox doc must not resolve`。**push 被门挡住**（未绕过，见 §"取数纪律"）。
+- **用例自称的理由**（`tests/e2e_support/isolated_lake.py:381-386` 原文）：Dropbox root 的身份来自 sidecar，删掉 sidecar 后文档"必须不可解析"。断言在 `tests/test_fc1001_isolated_lake.py:212`。
+- **实测（`evidence/b01_fc1001_probe.py` → `evidence/b01-fc1001-probe.json`，四+二组对照，全部只读、临时目录夹具）**：
+
+  | 复用规则 | 配置的 `reusable_root_kinds` | 结果 | 被文档级复用门拒？ |
+  |---|---|---|---|
+  | B01 后（`policy._effective_reusable`） | **用例内联的**默认 `['company_raw']` | **matches=1** | 否 |
+  | B01 后 | 在产同形 `[company_raw, dayu_portfolio, directory]` | **matches=1** | 否 |
+  | B01 前（只看 kind） | **用例内联的**默认 `['company_raw']` | **matches=0** | **是**（trace `no_reusable_root_location`） |
+  | B01 前（只看 kind） | 在产同形（含 `directory`） | **matches=1** | 否 |
+  | B01 后 + **删 sidecar 后重扫** | 在产同形 | **matches=1** | 否 |
+  | B01 后 + **root 声明 `sidecar_suffixes`** + 重扫 | 在产同形 | **matches=1** | 否 |
+
+- **结论（两条，都可证伪地写在这里）**：
+  1. **该用例保护的性质从未由"身份"实现**。它以前通过，唯一原因是它内联构造的 `CatalogConfig` 用了默认 `reusable_root_kinds=['company_raw']`，而夹具的 root 是 `directory` kind ⇒ 旧解析器算出的可复用集合为空 ⇒ 文档在**复用门**就被拒。**B01 只是取消了这个偶然的掩护**，没有删掉任何身份检查（探针里 `entity_gate_rejected` 四组均为真，实体门照常工作）。
+  2. **在"在产同形"配置下，B01 前后都会解析成功**（第 2、4 行）：夹具自己写的"生产同形配置"（`isolated_lake.py:248`）就把 `directory` 列为可复用 kind ⇒ **FC-1001 的这条 fail-closed 期望在在产配置下从来不成立**。删 sidecar 后**重扫**也不成立（第 5、6 行）：`locations` 仍留着 PDF 与 `.source.json` 两行 `active`，`document_entities` 仍留 3 行，被服务的句柄 `capture_ready=True`、`provider_document_id=1223023656` —— 身份在**索引**里，读层不读 sidecar。
+- **这是什么性质的问题**：不是 B01 的缺陷，而是 **FC-1001 的一条"假保证"**（阶段 A 的教训同一类：断言通过的理由与它宣称的理由不一致），并且暴露一条**真实的产品缺口**——"身份（sidecar）缺失时不得默认为可信财报"在实现里**没有落点**。这条缺口的归属是 **B06**（设计 §B06 原话："缺 URL 可预览，**身份/期间不明不得默认为可信财报**"），不是 B01。
+- **为什么不自行修**：`tests/test_fc1001_isolated_lake.py` 属 **revenue-forecast**，**不在 B 的允许集**（file-scope 只到 wiki 的 F1/F2/F3/F5/F6/F8/F10）。改它 = 越权改一条真数据验收用例；把它改松更是弱化门。**已按 §11 上呈 owner 定夺**（选项见下）。
+- **对推进的影响**：wiki 侧已推送（`0e28d99`，B01）；**revenue 侧的 run 目录提交与 checkpoint 只能暂留本地**，直到门恢复绿。
+
+### 可选的处置（供 owner 选）
+
+| 选项 | 做法 | 代价 |
+|---|---|---|
+| **A（作者推荐）** | 批准**最小测试更正**：把该 variant 的断言改成它真正验证的东西（读层只按索引作答），并把"sidecar 缺失不得默认为可信"登记为 **B06 的验收项**；门立刻恢复绿，且**不静默弱化**（旧断言换成有指向的已知缺口 + 新载体） | 需 owner 授权动一个 revenue 测试文件（B 的允许集之外） |
+| B | 不动用例，把该要求并入 **B06**，等 B06 落地后门自然恢复 | B06 完成前 revenue 侧**不能推送**（含 run 目录与 checkpoint） |
+| C | 撤销 B01（解析器回到只看 kind） | 门恢复绿，但 owner R-2/P-7 要修的"显式 `false` 不生效"**重新变成缺陷**，且该用例继续靠偶然理由通过 |
+| D | owner 另有指示 | — |
+
 ## F-B01-6：复用判定原有**两份实现**，解析器那份忽略显式 `false`（实施期实测；且"文档级门"不足以修）
 
 - **事实（B01 实施时实测）**：`reusable_for_filing` 的判定有两处——导出面 `policy.py::_effective_reusable`（filing-fetch 通过 FC-501 pin 的 `policy_hash` 就来自这里）**认**显式 `false`；解析器 `resolve()` 自己算的那份**只看 `kind`**。于是 owner R-2 / 设计 P-7 要求的"显式声明必须生效"**在解析侧不发生**：一个 `reusable_for_filing: false` 的 root 照样会被拿去复用。

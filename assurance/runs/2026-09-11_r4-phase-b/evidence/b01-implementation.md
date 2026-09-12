@@ -1,6 +1,6 @@
 # B01 实施与验证记录（2026-09-12）
 
-> 状态：**已实施**（产品代码 1 文件 + 新增验收 6 用例）。提交 `0e28d99`（company-wiki，`fcap` → `origin/master`）；CI run id `34717481812`，登记时为 **in_progress**（本页 §4.3 记录采集时刻，落地后按 [b02-ci-runs.md](b02-ci-runs.md) 的同一纪律回填）。
+> 状态：**已实施**（产品代码 1 文件 + 新增验收 6 用例）。提交 `0e28d99`（company-wiki，`fcap` → `origin/master`，CI run id `34717481812`）；run 目录提交在 revenue 侧**暂留本地**，原因是 pre-push 门出现一处**跨仓红**——见 §6 / [findings.md](../findings.md) **F-B01-7**（根因已定位：不是 B01 的缺陷，而是一条一直靠偶然理由通过的 FC-1001 断言）。
 > 机器可读的字段归属表：[field-owner-map.json](field-owner-map.json)（B01 的第二个交付）。
 > 入口：本页给结论与命令；设计依据见 [../b-design.md](../b-design.md) §B01.1/§B01.2，允许集见 [../file-scope.md](../file-scope.md)（F2 `resolver.py`、F10 `tests/contract/**` 仅新增）。
 
@@ -94,3 +94,31 @@ python -m pytest -q            (全量套件)
 - `git checkout HEAD -- .coverage coverage.json`：这两份**是被跟踪的**构建产物，跑完测试必须还原，否则会把本机测量混进提交。
 - 提交信息落临时文件后用 `git commit -F`（PowerShell 无 heredoc）；**未**使用 `--no-verify`，pre-commit 与 pre-push 两个门都是真跑过的。
 - 推送用显式 refspec `git push origin fcap:master`（不依赖本地分支的上游配置）。
+
+## 6. 跨仓副作用：revenue-forecast 的 pre-push 门在 B01 后变红（**F-B01-7**，阻塞推送）
+
+wiki 侧推送成功（`0e28d99`）。**revenue 侧的推送被自己的 pre-push 门挡住**：
+
+```
+FAILED tests/test_fc1001_isolated_lake.py::test_corruption_variants_fail_closed[sidecar_missing]
+AssertionError: sidecar-missing dropbox doc must not resolve
+GATE RED at: real-data suite (production catalog)
+```
+
+**没有绕过门**（未用 `--no-verify`，未跳过该套件），而是先定位根因。结论（完整证据见 [findings.md](../findings.md) **F-B01-7**，探针 [b01_fc1001_probe.py](b01_fc1001_probe.py) → [b01-fc1001-probe.json](b01-fc1001-probe.json)，六组对照）：
+
+| 复用规则 | `reusable_root_kinds` | 结果 | 被复用门拒？ |
+|---|---|---|---|
+| B01 后（`policy._effective_reusable`） | **用例内联默认** `['company_raw']` | matches=**1** | 否 |
+| B01 后 | 在产同形（含 `directory`） | matches=**1** | 否 |
+| B01 前（只看 kind） | **用例内联默认** `['company_raw']` | matches=**0** | **是** |
+| B01 前（只看 kind） | 在产同形（含 `directory`） | matches=**1** | 否 |
+| B01 后 + 删 sidecar 后**重扫** | 在产同形 | matches=**1** | 否 |
+| B01 后 + root 声明 `sidecar_suffixes` + 重扫 | 在产同形 | matches=**1** | 否 |
+
+两点结论：
+
+1. 该用例**不是**因为"身份"才通过的：它内联构造的配置用默认 kind 列表，而 root 是 `directory` kind ⇒ 旧解析器可复用集合为空 ⇒ 文档在**复用门**被拒。B01 取消的是这个**偶然掩护**，没有删掉任何身份检查（探针里实体门四组均为真）。
+2. **在在产同形配置下，B01 前后都会解析成功**（第 2、4 行），删 sidecar 后重扫也成功（第 5、6 行）。夹具自己写的"生产同形配置"（`tests/e2e_support/isolated_lake.py:248`）就把 `directory` 列为可复用 kind。→ FC-1001 这条 fail-closed 期望**在在产配置下从来没成立过**，并且暴露一条**真实产品缺口**："身份（sidecar）缺失不得默认为可信财报"在实现里没有落点——按设计正文，这条归 **B06**，不属 B01。
+
+**处置**：`tests/test_fc1001_isolated_lake.py` 属 revenue-forecast，**不在 B 的允许集**（越权改真数据验收用例 = 越界；改松 = 弱化门），因此按 §11 上呈 owner（选项 A/B/C/D 见 F-B01-7）。**在此期间**：wiki 侧已完成并推送；revenue 侧的 run 目录提交与 checkpoint **暂留本地**，门恢复绿后按同一套流程推送（CI 自监控同样待那时补记）。

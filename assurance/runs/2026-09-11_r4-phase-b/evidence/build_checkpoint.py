@@ -431,15 +431,19 @@ LEDGER = {
         "test_r4b05_metadata_provenance.py, test_r4b01_field_owner_alignment.py) - all inside the authorized "
         "file scope (F1/F2/F3/F10) and pushed (cab1fd6 ... 9826b3c, then 0e28d99 for B01). Executed locally: "
         "pytest (including the full suite with coverage), ruff, git worktree, read-only probes over synthetic "
-        "tmp fixtures, and mutation harnesses that restore the product files to the same digest. NOT executed: "
-        "any network/download/LLM egress, any product-data write, any DB write, task registration, worker "
-        "action or deletion; no behavioural probe against the production catalog. The run directory IS pushed "
-        "(origin/main) and every push ran revenue-forecast's mandatory pre-push gate, whose real-data suite "
-        "opens the production catalog READ-ONLY and advances -shm (attributed in "
-        "../2026-09-11_r4-phase-a/boundary-audit.md). Several pre-existing wiki tests also open the production "
-        "catalog read-only when the suite runs (known limitation, attributed in phase A)."
+        "tmp fixtures (including evidence/b01_fc1001_probe.py, which builds the FC-1001 lake in a temp "
+        "directory to explain the F-B01-7 gate failure), and mutation harnesses that restore the product files "
+        "to the same digest. NOT executed: any network/download/LLM egress, any product-data write, any DB "
+        "write, task registration, worker action or deletion; no behavioural probe against the production "
+        "catalog. The run directory IS pushed (origin/main) and every push ran revenue-forecast's mandatory "
+        "pre-push gate, whose real-data suite opens the production catalog READ-ONLY and advances -shm "
+        "(attributed in ../2026-09-11_r4-phase-a/boundary-audit.md); that gate is currently RED for the "
+        "F-B01-7 reason, so the B01 run-directory commits remain LOCAL and no push was attempted with "
+        "--no-verify. Several pre-existing wiki tests also open the production catalog read-only when the "
+        "suite runs (known limitation, attributed in phase A)."
     ),
     "failed_or_unknown": [
+        "BLOCKER (F-B01-7): after B01 landed, revenue-forecast's pre-push gate (real-data suite) is RED on tests/test_fc1001_isolated_lake.py::test_corruption_variants_fail_closed[sidecar_missing]. Root cause located with a six-way probe (evidence/b01_fc1001_probe.py): that case NEVER passed for the reason it names - the rejection came from the resolver's old kind-only reuse gate under the case's inline synthetic config (default reusable_root_kinds=['company_raw'] against a 'directory' root), and under the production-shaped config the same document resolves BOTH before and after B01 (matches=1), including after a re-scan and with sidecar_suffixes declared. So B01 removed an incidental cover, not an identity check (the entity gate still rejects as before), and the case's fail-closed expectation has never held in production - the real gap it exposes (a document whose sidecar is missing must not default to a trusted filing) belongs to B06 by the design text. The fix is a one-case correction in revenue-forecast, which is OUTSIDE phase B's file scope, so it is with the owner (options A-D in findings F-B01-7). Until then the revenue-side commits stay local; the gate was NOT bypassed",
         "B03/B06/B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so a preferred copy whose bytes drifted is served on the catalog's claim (S-10's other half, assigned to B03), and no response-level blocked verdict exists yet (S-13, assigned to B06/B07)",
         "B-payload-hash has never been executed (no frozen baseline in the package and the value needs a CLI that is not approved); B05 changes the metadata_json bytes, so any baseline must be taken after B05",
         "the L01-L12 mechanism-layer baseline exists as A06-D0 (787 unit + 1748 contract passed / 7 skipped); the B-side cases cover L01-L04 plus budget/cancel/no-network, the review regressions and the B01 alignment property, not the whole matrix",
@@ -453,12 +457,15 @@ LEDGER = {
         "the current acceptance cases run on tmp fixtures; the real four-root and cloud-placeholder behaviour still needs the isolated copy (G8)",
     ],
     "next_step": (
-        "Run B01's one independent review round (section 11), which also samples the B05 P2 fixes, then "
-        "implement B03 per evidence (stable read bytes: a fixed handle or a controlled snapshot, streaming "
-        "hashing, and the TOCTOU/cloud-placeholder/bad-byte/interruption cases) - B03 carries the byte-level "
-        "hard gate deferred by S-10 - and then B06 -> B07, which must deliver the response-level blocked "
-        "verdict assigned by S-13. Each step: F10 cases, one commit, the ratchet/coverage rerun, one "
-        "independent review and one implementation record."
+        "Resolve the F-B01-7 blocker with the owner (authorise the one-case correction in "
+        "revenue-forecast's tests/test_fc1001_isolated_lake.py and register the sidecar-missing rule as a "
+        "B06 acceptance item, or defer), then push the revenue-side commits. Then run B01's one independent "
+        "review round (section 11), which also samples the B05 P2 fixes; then implement B03 (stable read "
+        "bytes: a fixed handle or a controlled snapshot, streaming hashing, and the TOCTOU/"
+        "cloud-placeholder/bad-byte/interruption cases) - B03 carries the byte-level hard gate deferred by "
+        "S-10 - and then B06, which must deliver both the response-level blocked verdict (S-13) and the "
+        "sidecar/identity rule that F-B01-7 shows is missing, then B07. Each step: F10 cases, one commit, "
+        "the ratchet/coverage rerun, one independent review and one implementation record."
     ),
     "inputs": {
         "note": ("phase A froze the product inputs at wiki 7d4852f; the phase-A run directory "
