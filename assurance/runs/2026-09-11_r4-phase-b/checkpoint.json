@@ -1,9 +1,9 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
   "phase": "B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: B02 landed; B01/B03-B07 still design-only",
-  "step": "B02 rev5 implemented (wiki 1d8b1f7, text-only): the pre-B02 difference list now lives in ONE authoritative place and every other location - including the product docstring and comment - only references it; the audit enforces that and searches the product files",
-  "last_completed_step": "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). B02 went through five revisions under four independent reviews: rev1 (cab1fd6) rejected (2xP1); rev2 (350b67a) accepted_with_findings (2xP2); rev3 (182846b) accepted_with_findings (1xP2 + 6xP3); rev4 (da5e0f5) accepted_with_findings (1xP2 + 3xP3); rev5 (1d8b1f7) is text-only convergence. Reviews rev2, rev3 and rev4 each falsified one of the author's own justification sentences, so the wording now has a single authoritative list (evidence/b02-implementation.md section 3, items a-d) that everything else references, and the two-sided audit both requires that list and forbids the retired wordings as a family - while also searching the three product files, which is where the drift was hiding (32/32 checks). Behaviour is unchanged since rev4 and was verified by the rev4 reviewer: all four historical counter-examples fixed, mutants M5/M6/M7 killed, mutation harness restores the file byte-identically. Measured: 30 acceptance cases, full suite 2698 passed / 7 skipped / 0 failed, coverage resolver.py 87.72% and service.py 95.16%, both ratchet tables green, CI green on all four step commits (fresh Linux measurement).",
-  "current_gate": "B.VR rev4 (focused recheck of the corrected S-10 wording, the anchor predicate/reason and the three new regression cases), then B04 (landing plan already written: evidence/b04-plan.md). Two deviations await the owner, both now stated falsifiably: S-10 (verified copies always win; only when nothing verifies may one row - the legacy canonical of the document's own version - be served on the catalog's claim; differences (a) and (b) above are listed for approval) and S-11 (budget exhaustion maps to that same row instead of the design's blocked, because ResolutionStatus has exactly five values).",
+  "step": "B04 implemented (acceptance + finding, NO product change): a move keeps the reference, and the same-path overwrite case is pinned and registered as F-B04-1 (out of the allowed file set)",
+  "last_completed_step": "B02 closed after five revisions under four independent reviews (see the review entries below; all counter-examples fixed, mutants M5/M6/M7 killed, CI green on every step commit). B04 then implemented as acceptance plus a registered finding, with NO product change - the design goal already held after B02, so per the step's own plan the deliverable is verification, not code: new file company-wiki/tests/contract/test_r4b04_reference_stability.py (4 cases) proves that a move within a root keeps document_id/source_id/content_sha256 while the locator changes and the old row is marked missing, that location_id is only a derived locator, and that a vanished version is answered MISSING rather than substituted by another revision. Measured: 4 passed, the combined B04+B02+gates+ratchet set 69 passed, ruff clean. The pinned gap (scanner.py:1123 re-points the location row when the same relative path holds a new revision, so the superseded revision loses its only locator) is registered as finding F-B04-1 with three candidate remedies, all of which touch files outside this step's allowed set (write face / DDL / another work package).",
+  "current_gate": "B04 independent review (focused: the four acceptance cases and the F-B04-1 registration), then B05 -> B01 -> B03 -> B06 -> B07. The owner still owes two rulings on B02, both stated as a single authoritative difference list (evidence/b02-implementation.md section 3): S-10 (the claim-trusted row and its four differences from pre-B02) and S-11 (budget exhaustion maps to that row instead of the design's blocked, because ResolutionStatus has exactly five values).",
   "pending_review": [
     {
       "gate": "B.DR rev6",
@@ -18,6 +18,13 @@
       "note": "also falsified the first two-sided claim audit: it asserted verification without patterns/commands/output; replaced by evidence/claim_fact_audit.py, which is re-runnable and searches the whole run directory",
       "record": "reviews/B.DR-rev6.json",
       "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d"
+    },
+    {
+      "gate": "B.VR (B04, focused)",
+      "scope": "company-wiki/tests/contract/test_r4b04_reference_stability.py (4 cases) + finding F-B04-1",
+      "status": "pending",
+      "reviewer": "independent subagent (non-author) - must differ from the four B02 reviewer sessions; the questions are whether the four cases really pin the claimed behaviour (including the pinned scanner re-point) and whether 'no product change' is the right call rather than a gap in the step",
+      "note": "evidence: evidence/b04-implementation.md, evidence/b04-test-run.txt, findings.md F-B04-1"
     },
     {
       "gate": "B02 closure decision (author, 2026-09-12)",
@@ -161,8 +168,9 @@
   ],
   "gate_status": {
     "B.DR": "rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 implementation record (no design change); the ratchet table stays frozen (S-7)",
-    "B.VR": "rev1 = rejected (2xP1/2xP2/3xP3, reviews/B.VR-b02.json) and its findings are fixed in 350b67a; rev2 pending. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer still needs G8",
+    "B.VR": "rev1 = rejected (2xP1/2xP2/3xP3); rev2/rev3/rev4 = accepted_with_findings and each round falsified one of the author's justification sentences, now single-sourced; B02 closed by the author's documented decision (no fifth prose-only round); B04 review pending. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer still needs G8",
     "B.AR": "not started",
+    "B04": "implemented as acceptance + finding F-B04-1 with NO product change (the design goal already held after B02); review pending",
     "S-1_test_files": "APPROVED (F10/F11); F10 landing used by tests/contract/test_r4b02_candidate_selection.py (23 cases)",
     "S-2_R1_R4_out_of_B": "DECIDED - R-1/R-4 stay outside B as separate work packages",
     "S-3_export_path": "DECIDED - export_policy_2x untouched, payload hash frozen (B-payload-hash still NOT executed)",
@@ -192,22 +200,22 @@
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "1d8b1f76d4622881cb791382ca7066ac8695c79c",
+      "head": "bc3590fc019be7267681e4861609bf39bb1b1588",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "c2d6555f6213909e964ba6e77fbac3737f9d5229",
-      "dirty": 0
+      "head": "2b480cbd0d083c94fb9664e766f90b5e2b233eca",
+      "dirty": 1
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "c2d6555f6213909e964ba6e77fbac3737f9d5229",
+  "reviewed_commit": "2b480cbd0d083c94fb9664e766f90b5e2b233eca",
   "commit_anchor": {
-    "head": "c2d6555f6213909e964ba6e77fbac3737f9d5229",
-    "index_tree": "28d036efed5c01c83d0748f4f1b8cb514a3ec3fe",
+    "head": "2b480cbd0d083c94fb9664e766f90b5e2b233eca",
+    "index_tree": "5a6a425eb7f5b5ff80ca4523febe6d0a8894e9a9",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -216,16 +224,16 @@
       "size": 907
     },
     "b-design.md": {
-      "sha256": "54c6548167ebddfc7050f2e3d72319a3bb8ec98fa9de1af848cb6f19195d143e",
-      "size": 35694
+      "sha256": "c871ab0687d354771a9668cf0955569d0cf219b48925f64d30c0ddbe7dc92f41",
+      "size": 36406
     },
     "b-vr-protocol.md": {
       "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
       "size": 7366
     },
     "evidence/b02-ci-runs.md": {
-      "sha256": "6294e7749a15f492bfa8799ce753ac3ff402834bc03e385abb9e2f50b246cce7",
-      "size": 3081
+      "sha256": "b078423ae5fc75adff08ca01358c8a3ca919ce7db431862814baea3c540e98e3",
+      "size": 3548
     },
     "evidence/b02-implementation.md": {
       "sha256": "cccbda6085f3254a5d13d7337887016b4a76ad3344aaf4b672ce257cac847dcc",
@@ -259,37 +267,45 @@
       "sha256": "e21ba0377d26ed9d7b6f6e2b71b2233c1334f9c406e19c111dbb59b211e3bb1e",
       "size": 8559
     },
+    "evidence/b04-implementation.md": {
+      "sha256": "ff6e865e51f50865fdcba0afdfd3119770a5af0a06a425ffa4933b72b6fe2cfa",
+      "size": 5324
+    },
     "evidence/b04-plan.md": {
       "sha256": "ae0342550d6e5c5185de63bf27a8e47460444ff2bb1d0c967b657a7e4223d207",
       "size": 3755
     },
+    "evidence/b04-test-run.txt": {
+      "sha256": "6531958adfa2a4da8c8c995973672b65dd487d5ff95c7e3695f1d3ff4e0f9f38",
+      "size": 764
+    },
     "evidence/build_checkpoint.py": {
-      "sha256": "a93148f8bd21d534d79c179660cc75cecc07a8eb832865eebe11b1bf1176e061",
-      "size": 25983
+      "sha256": "5562b7c83d351ad9c6b4ae62938f33d3a18334a73c4686f9803dc15ed4b35af4",
+      "size": 26717
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "90636b2b5911f4a7c5ba9fc44ed215b7ee9b8a00679a6c8caaceda05bd225dd9",
-      "size": 63211
+      "sha256": "fb8b5511c09dec28bce3262979eeb4d494e7e9fe35612d93ad1e4747aecf26d1",
+      "size": 65136
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "89e5788689c99064afcad40606fcbf2ef6b6ba36cb1227728e6a7168e3315c12",
-      "size": 12453
+      "sha256": "4cf33ee65579705d955e204dd8a07fa0e678c1081f339dfb41bf8aadc0dee7cd",
+      "size": 12710
     },
     "file-scope.md": {
       "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
       "size": 12565
     },
     "findings.md": {
-      "sha256": "3017aca24885b72323afbd8395470232ad6b2022d958128eae4ad98f58d77dc5",
-      "size": 48956
+      "sha256": "bbe5281aa993aac24becf1cbb8301b28d2f2c34144ca7e453c850b57e814bc2e",
+      "size": 51044
     },
     "owner-scope-decisions-2026-09-12.md": {
       "sha256": "05c1f6d7bbdabcec47a6ac5a2078beac29ae4b50fe01f67dbb74262cf9c1c385",
       "size": 8557
     },
     "progress.md": {
-      "sha256": "8a82f04cea8994ca527df229f58a68524f33393b8a20af70f1c8cf0d2d86afa2",
-      "size": 14082
+      "sha256": "f26404dc0075cf4ffe271b76e638b0709dbe9e60ae20ec4940377d2e441dfb85",
+      "size": 15854
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -336,8 +352,8 @@
       "size": 7165
     },
     "task_plan.md": {
-      "sha256": "b982fac411d7cb0db916f086d80951cda9b479f75708438bcd6e9e63801497d0",
-      "size": 14839
+      "sha256": "62cba6a2eea53d319c11914dba4931593832575a866971e4ee05fc9449816ec0",
+      "size": 14987
     },
     "test-acceptance-map.md": {
       "sha256": "20fb868baa7a8315a0f219dd06e6d366cbd95b0ba3f7d263ad618a3dc400647a",
@@ -345,11 +361,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 33,
+    "checked": 35,
     "source": "index",
-    "compared_revision": "28d036efed5c01c83d0748f4f1b8cb514a3ec3fe",
-    "head_revision": "c2d6555f6213909e964ba6e77fbac3737f9d5229",
-    "index_tree": "28d036efed5c01c83d0748f4f1b8cb514a3ec3fe",
+    "compared_revision": "5a6a425eb7f5b5ff80ca4523febe6d0a8894e9a9",
+    "head_revision": "2b480cbd0d083c94fb9664e766f90b5e2b233eca",
+    "index_tree": "5a6a425eb7f5b5ff80ca4523febe6d0a8894e9a9",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -359,8 +375,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 33,
-    "files_listed": 33,
+    "files_on_disk": 35,
+    "files_listed": 35,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -369,5 +385,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T15:17:53.062633+00:00"
+  "generated_at_utc": "2026-09-12T15:34:03.451608+00:00"
 }
