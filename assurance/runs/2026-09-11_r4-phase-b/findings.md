@@ -2,6 +2,25 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B01-4：`B.DR-rev4` = **rejected**（11 条，均为文本/落点级；reviewer 明示"一次编辑可收敛、架构无需推翻"）→ v0.1.5
+
+审查记录 [reviews/B.DR-rev4.json](reviews/B.DR-rev4.json)（reviewer `1f962189-…`，非作者会话；claim_checks 复现 5/15）。**该记录最有价值的部分是它抓到的"声称已修但实际未改"**——这正是本包连续被拒的根因。
+
+| 发现 | 级别 | 事实 | v0.1.5 处置 |
+|---|---|---|---|
+| **B-DR4-01** | **P1** | B05 把 provenance/冲突塞进既有列 `documents.metadata_json` 的**顶层**，而该列是**多方共享的扁平命名空间**：`service.py:271-272`（`$.acquisition.fiscal_year` / `$.dayu_meta.fiscal_year` 过滤）、`llm_summarizer.py:388-392`（`$.prompt_injection_review.*` LLM 门，**该文件在禁止表内**）、`prompt_injection.py:101-128`、`scanner.py:1039-1045` 都按固定路径读它 → 照 v0.1.4 施工会**静默打断财政年度过滤与 LLM 门** | §B05 改为**只在保留键 `r4_provenance` 下新增**、**既有键原样保留**；L08 增加 **`json_extract` 回归断言**（证明 fiscal_year 过滤与 prompt_injection_review 门仍读到原值）；读取侧只读 `r4_provenance` |
+| **B-DR4-02** | **P1** | **S-2 只在一处生效**：`b-design.md:36` 仍写"按 owner R-4：补门"、`:47` 仍令"两处默认值必须同改"、`:43/:45` 仍带 R-1 处置、`file-scope.md` F6 改动性质栏仍写 R-4、F10 与 test-map 仍把"合成 `privacy_class` 配置"列为 B 的断言 → **照 file-scope 施工即越界** | 全部就地改判：外向策略行标"**不属于 B**"、`privacy_class` 行改"**B 不改**"、`read_only`/`symlink_policy` 行改"**B 不改其处置**"、F6 改动性质去掉 R-4、F10 断言清单删"合成配置"、test-map 的 R-4 绑定行划掉 |
+| B-DR4-03 | P2 | S-4 把**尚未定义**的"N-1 判定"写进 B07 的完成定义；两侧代码都只接受 `"1.0"`（`resolver.py:163-166`、`filing_contracts.py:273-277`），唯一"真实 N-1"是 `filing-audit.md:61` 要求**废除**的字段缺失降级 | B07 完成定义**移除 N-1**；N-1 登记为**跨仓协议待定义项**；B 只承诺"未知版本显式拒绝" |
+| B-DR4-04 | P2 | checkpoint LEDGER 在受审修订处仍失真（step=v0.1.3、S-1..S-6 写"待裁定"、pending_review 无 rev2/rev3、gate="submitted"、next_step 是 rev1 时代、两条 failed_or_unknown 已被推翻、副作用现在时无时刻） | LEDGER **整体重写**：step=v0.1.5、S-1..S-6 记"已定"、**四轮复审全部登记**、`gate_status` 含 S-1..S-6 与 S-7、副作用改"**已发生**"并带时间戳与推送号 |
+| B-DR4-05 | P2 | 生成器**写路径从不检查 `all_match`**；completeness 是同进程自比较（rc=3 不可达）；排除集未披露致 `files_on_disk` 对"目录内真实文件数"为假 | 写路径新增 **all_match 断言（rc=4）**；completeness 记录 `excluded_by_design` 与说明（"自比较，不能发现生成后新增的文件；`--verify-only` 才是发现点"） |
+| B-DR4-06 | P2 | **未登记的默认门**：`test_fc1204_complexity_ratchet.py` 默认运行，且 **`config.py` 46/46、`scanner.py` 140/140、`policy.py` 5/5 恰好顶格** → 加一个判定点即失败；其自述补救是**改既有测试文件**，与 F10"仅新增"互斥 | 新增 **[b-design §B0x](b-design.md) 复杂度棘轮约束**（要求改动**复杂度中性**、每步真跑棘轮测试、做不到就停）；并把"是否允许更新棘轮表"登记为**新边界问题 S-7（待 owner）** |
+| B-DR4-07 | P2 | findings.md 把**四处未做的改动**记为已做（LEDGER 前进/inputs 注记、R-6 表头 11 处、F9 引用清理、"§B03 给 max_bytes"） | 逐条**先做再写**：inputs 注记与 R-6 计数已在 v0.1.5 落地；F9 引用清理与 `max_bytes` 表述在 §B03/§B02 明确；本表即更正记录 |
+| B-DR4-08 | P2 | B05 冲突结果写 `ambiguous`，而执行计划原文是"真冲突仍 **blocked**/待选择"；且响应级/字段级粒度与 `capture_ready` 不变式未定 | 冲突状态改回 **`blocked`**（`ambiguous` 只用于 L07 的"版本关系未知"）；明确**响应级状态 + 字段级冲突明细**；新增 `capture_ready` **不变式**（合格副本存在且身份/期间可判时不得变 false）并在 L09 断言 |
+| B-DR4-09/10/11 | P3 | ① v0.1.4 编辑遗留（file-scope H1 版本、task_plan"F10 尚未获批"、changelog 止于 v0.1.3、F2 步骤列缺 B06、VR-N21 仍挂 B、progress 仍 v0.1.1）；② F11 哈希占位且"允许修改/不修改"自相矛盾；③ 继承的 `owner-rulings:25` 仍写 R-2"两处…收敛为一处"，与 root-contract v0.4.2 相反 | 三处就地更正（本批 diff）：版本标签统一 v0.1.5、F10 记"已批准"、changelog 补 v0.1.5、F2 步骤列补 B06、VR-N21 从 B 移除、F11 填实测哈希 `0ee11644da75e24d`（2792 B）并明确"只读调用≠可修改"；**A 侧 `owner-rulings` 的 R-2 措辞同步更正为"三处、对齐语义"** |
+
+- **过程教训（v0.1.5 写入 risk-and-stop-rules §4）**：本轮被抓的实质是 **"我声称改了、文件里没改"**。→ 规则：**每条"已修"声明必须当场用 grep 自证**；提交前跑一遍"声明 vs 事实"清单（见 §5 的验证方法）。
+- **状态**：v0.1.5 已就地更正；reviewer 明示**架构无需推翻**，故按其建议送 `B.DR-rev5`（须全新会话）。**S-7 是唯一未定的边界问题**。
+
 ## F-B01-3：`B.DR-rev3` = **rejected**（round-1 14/20、round-2 6/15 闭环；新增 11 条）→ v0.1.3 更正
 
 审查记录 [reviews/B.DR-rev3.json](reviews/B.DR-rev3.json)（reviewer `ba59c7cd-…`，非作者会话；14 条 claim 中 6 条未复现）。**实际读到的修订**：phase-b 除 `checkpoint.json` 外的 11 个 blob = `9d21963`（逐字节相符），`checkpoint.json` = `472bd206`；**A 侧并非整体 v0.4.2**（只有 `root-contract.md` 是，`operation-contract.md`/`identity-contract.md`/`owner-rulings` 仍是 26fb780）——该观察正确，本 run 未声称过 A 侧整体 v0.4.2，但**台账里确实容易误读**，v0.1.3 在 checkpoint 的 `inputs` 注记里写清"逐文件版本"。
@@ -44,7 +63,7 @@
 | **B-DR2-13/14/15** | P3 | ① "handbook §2.5" 仍残留在 `progress.md` 与生成器 LEDGER；`findings.md:40` 仍引 a06 §1；② `progress.md` 仍是"23:3x"与未来时（推送**已发生**）；③ loader"无调用者"漏了 `policy_3x.py:95` 这个真实调用点，"先停用"无 allowed 文件 | 三处就地更正（本批 diff）：引用改 §1 第 5 项 + §3；时间改实测值、推送改过去时；file-scope 的 loader 行补 `policy_3x.py:95` 并说明"停用=不引入，无需改文件" |
 
 - **教训（v0.1.2 新增）**：**同一事实在两个 run 目录各写一遍就会漂移**——本轮"两处/三处"与"4 个/0 个"都源于重复维护。→ 规则：事实的**权威处唯一**（此处 = A 侧 root-contract v0.4.2），B 侧只引用不重述。
-- **v0.1.2 的三处 P3 已就地更正**：handbook 引用改为 §1 第 5 项 + §3（`progress.md`、生成器 LEDGER）；变更记录时间改为实测值、推送改为过去时（`progress.md`/`task_plan.md`）；`file-scope` 的 loader 行补 `policy_3x.py:95` 并说明"停用=不引入，无需改文件"。
+- **v0.1.2 声称的三处 P3**（实际未全部落地，见 F-B01-4）：handbook 引用改为 §1 第 5 项 + §3（`progress.md`、生成器 LEDGER）；变更记录时间改为实测值、推送改为过去时（`progress.md`/`task_plan.md`）；`file-scope` 的 loader 行补 `policy_3x.py:95` 并说明"停用=不引入，无需改文件"。
 
 ## F-B01-1：`B.DR` 独立设计审查 = **rejected**（1×P0 + 7×P1 + 9×P2 + 3×P3）→ v0.1.1 逐条更正
 

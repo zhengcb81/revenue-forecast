@@ -12,18 +12,19 @@
 | **B03** | **L05**、L06 | L05"只返回验证版本字节或明确失败，TOCTOU 不混读；越界零读/写，无 mtime 冒充 hash"；L06"明确原因与同版本副本选择；有限资源/可取消" | 句柄固定 + **读后复验** → 受控快照 → 五值失败；**预算与取消见 [b-design §B02/§B03](b-design.md)（B-DR2-11）** | D0 可测（注入替换/拒绝）；云场景**如实标限制** |
 | **B04** | L03、**L07** | L07"原引用仍指原字节；新修订独立版本，不能只因 mtime/accession 词序决定新旧；未知关系 **ambiguous**" | 位置退出身份；搬家建新 location，引用链不断 | D0 可测；R1 需隔离副本内移动 |
 | **B05** | **L08** | "业务事实不随位置改变；可信字段有来源，冲突保留而非按 priority 默选" | provenance + 冲突保留；**覆盖 `scanner.py:1078-1081` 全部列** | D0 可测（交换 priority/扫描顺序） |
-| **B06** | **L09**、L10 | L09"preview 可读并标 provenance 缺口；正式合同缺身份/期间则不通过；不伪造 URL、不默认联网"；L10"只检查所需能力；原文不因无 summary 消失；LLM/正式分析不能继承 preview 许可" | preview vs verified_input 资格标签（**含 A07 的 VR-N21 无门出口负例**） | D0 可测；R1 需真实本地 PDF |
+| **B06** | **L09**、L10 | L09"preview 可读并标 provenance 缺口；正式合同缺身份/期间则不通过；不伪造 URL、不默认联网"；L10"只检查所需能力；原文不因无 summary 消失；LLM/正式分析不能继承 preview 许可" | preview vs verified_input 资格标签（**不含** VR-N21：R-4 属独立工作包，S-2） | D0 可测；R1 需真实本地 PDF |
 | **B07** | **L11**、L12 | L11 原文见上；L12"查询零写/联网/worker 控制；不以 ensure 填缺。原文读取可产生实际读 I/O，不能声称零成本；二次 0parser/LLM/download 由独立观察证明" | 版本化读取合同（**wiki 侧**）+ payload hash 不变；**消费者侧 adapter/fallback 不在 B 签名内（归 C，见 [b-design §B07](b-design.md) 范围表）**；L12 的"二次 0 parser"必须观察 `normalizer.py:516` 的 multiprocessing spawn（A-VR-09） | D0 可测；L12 独立观察需 B08 |
 | **B08** | L01–L12 全量 + 必要旧 C01–C10 | "不用人工构造 catalog 结果冒充真实 parser/索引；特殊 cloud 无法测标限制" | B.VR 在**新隔离环境**重跑 | **需隔离副本（G8）** |
 | **B09** | 真实四 root + 第五 root 端到端 | "独立 AR 从原文重新核身份与 hash；仅隔离副本变化，不改用户原文件" | B.AR 最小读取 | **需 G8 + G7** |
 | **B10** | 切换与回退 | "变更独立审查后才切换；回退代码/配置不回滚原始数据和历史来源证据。无法兼容则停切换，不永久默默双跑" | 单一读取链 + 显式版本 adapter | **前序门通过后** |
 
-> **新增断言的落点（v0.1.3，B-DR3-04）**：本表新增/收紧的断言（显式 `false`、合成 `privacy_class` 配置、L08 逐列合并、`B-payload-hash`、B02 预算与取消）全部落在 **file-scope F10 的新增测试文件**里；**S-1 已批准 F10**（owner 2026-09-12），故这些断言有落笔处；限制仍是：仅新增文件，不改既有断言。
+> **新增断言的落点（v0.1.3，B-DR3-04）**：本表新增/收紧的断言（显式 `false`、L08 逐列合并 + **json_extract 回归**、`B-payload-hash`、`B-ratchet`、B02 预算与取消）全部落在 **file-scope F10 的新增测试文件**里；**S-1 已批准 F10**（owner 2026-09-12），故这些断言有落笔处；限制仍是：仅新增文件，不改既有断言。
 
 ### 1c. 附加必测项（v0.1.2 补，B-DR2-12）
 
 | 测试 ID | 内容 | 依据 | 通过判据 |
 |---|---|---|---|
+| **`B-ratchet`**（本包登记） | 实施后 `pytest tests/contract/test_fc1204_complexity_ratchet.py -q` 必须通过 | [b-design §B0x](b-design.md)（`config.py` 46/46、`scanner.py` 140/140、`policy.py` 5/5 顶格） | 通过；若需新增判定点则停止并走 S-7 |
 | **`B-payload-hash`**（本包新登记，非矩阵 ID） | `resolve` 输出的 **policy_export payload 的字节/hash 不变** | A 合同明文要求：`operation-contract.md` §2.3 第 2 条"**resolve 是只读但产生对外契约产物**；B02/B04 改动 resolve 时必须保持该 payload 的字节/hash 契约"，且该 payload 是 filing-fetch FC-501 containment 的唯一来源（`filing_contracts.py:450/461-497`） | 改动前后对同一配置重算 `policy_hash` 与 payload 字节，**必须逐字节相同**；不同即**阻断合入**（除非同时提交跨仓迁移） |
 
 > 说明：矩阵没有"payload 字节契约"这一 ID，但 A 合同把它列为 **B02/B04 的必测项**；按"不新造矩阵 ID"的纪律，本项以 **`B-payload-hash`** 之名登记在**本包**（不进矩阵），并在 B.DR/B.VR 的检查表里逐次引用。
@@ -34,8 +35,8 @@ v0.1 未把改判项绑定到测试 ID，现补齐：
 
 | 裁定 | 绑定测试 | 说明 |
 |---|---|---|
-| **R-2**（显式 `false` 生效；两处实现收敛） | **L01**（调换 priority 不改业务投影）+ **L08**（业务事实不随位置改变）+ L04（deny 不被平权绕过） | 收敛后必须同时满足"`false` 关闭复用"与"policy_hash 迁移同步" |
-| ~~**R-4**（默认不外发 + 无门出口）~~ | **v0.1.3 移出：不属于 B**（承载文件在禁区，见 [b-design §B01.3](b-design.md)）；其测试归属仍在 A07 的 VR-N21 与 owner 的整改工作包内 | — |
+| **R-2**（显式 `false` 生效；**三处实现对齐语义**，第三处在在产导出路径内不可删） | **L01**（调换 priority 不改业务投影）+ **L08**（业务事实不随位置改变）+ L04（deny 不被平权绕过） | 对齐后必须同时满足"`false` 关闭复用"与"policy_hash 迁移同步" |
+| ~~**R-4**（默认不外发 + 无门出口）~~ | **不属于 B**（S-2 已裁定；[b-design §B01.3](b-design.md)）。**B 不产出"合成 `privacy_class` 配置"断言，也不做 VR-N21**（B-DR4-02）——它们归 owner 的独立整改工作包与 A07 | — |
 | ~~**R-1**（`symlink_policy`/`read_only` 处置）~~ | **v0.1.3 移出：处置不属于 B**；但 B 的 **L05/L04** 仍需覆盖 symlink 逃逸与 deny 的**读取行为**（B 侧）。注：本机 symlink 测试因宿主不支持而 **skip**（A06 基线），须在支持 symlink 的环境验证 | — |
 | **R-6**（路径不入身份投影） | **L03**（撤首选自动切换、引用不变）+ **L07**（搬家后旧引用仍解引用） | 与 B02/B04 同一批验收 |
 

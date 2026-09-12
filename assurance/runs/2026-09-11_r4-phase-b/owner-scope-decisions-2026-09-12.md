@@ -6,12 +6,13 @@
 
 | # | 问题 | **owner 裁定** | 对 B 的直接影响 |
 |---|---|---|---|
-| **S-1** | B 是否可以修改/新增**测试文件**？ | ✅ **可以**——按 [file-scope.md](file-scope.md) **F10**：`company-wiki/tests/contract/**` **仅新增**文件，**不得修改既有测试的任何断言** | 新断言（显式 `false`、合成 `privacy_class` 配置、L08 逐列合并、`B-payload-hash`、B02 预算与取消）**有落笔处**；B08/B.VR 用同一套用例验证 |
+| **S-1** | B 是否可以修改/新增**测试文件**？ | ✅ **可以**——按 [file-scope.md](file-scope.md) **F10**：`company-wiki/tests/contract/**` **仅新增**文件，**不得修改既有测试的任何断言** | 新断言（显式 `false`、L08 逐列合并 + `json_extract` 回归、`B-payload-hash`、`B-ratchet`、B02 预算与取消）**有落笔处**（**不含** R-4 的合成配置断言，见 S-2）；B08/B.VR 用同一套用例验证 |
 | **S-2** | owner **R-1**（假保证字段处置）/ **R-4**（外发门 + 无门出口）是否纳入 B？ | ❌ **不纳入**：留在 owner 的整改清单，**另立工作包**（涉及安全门与 YAML 字段，建议独立批准） | [b-design §B01.3](b-design.md) 的"移出 B"生效；B 只**引用**这两条裁定，**不实施、不验收** |
 | **S-3** | 是否连**在产的 `export_policy_2x`** 一并收敛（需跨仓 policy_hash 迁移）？ | ❌ **不动**：维持 owner R-3 的收窄（仅准入 loader）；导出路径**保持现状** | B 的任何改动**必须保持该 payload 字节/hash 不变**，由 `B-payload-hash` 逐次验证；`policy_2x.py` 的导出路径**永久在禁止表** |
 | **S-4** | **B07 的消费者侧**（filing/revenue 的 adapter 与 `companies` fallback、最小协议适配）归谁？ | ➡️ **归 C 阶段**；**B 不签** | B07 的完成定义 = wiki 侧四件（版本化合同、N-1 判定、不新增 fallback、payload hash 不变）；消费者侧在 B 的验收记录里标 **`not_verified`** |
 | **S-5** | G8 隔离副本是否按**两级**做？ | ✅ **按两级**（[findings.md](findings.md) F-B00-3）：**L1 机制层可立即开工**（tmp catalog），L2 真实字节层另批 | B08/B.VR 的 L1 部分**不再被 G8 完整方案阻塞**；[b-vr-protocol.md](b-vr-protocol.md) §1 的两级表生效 |
-| **S-6** | 是否需要**第四轮** `B.DR`？ | ✅ **需要**，但**先**把上述边界写实再送（须由未参与前三轮的会话执行） | 本批更正后提交 `reviews/B.DR-rev4.json` |
+| **S-6** | 是否需要**第四轮** `B.DR`？ | ✅ **需要**，但**先**把上述边界写实再送（须由未参与前三轮的会话执行） | `B.DR-rev4` = rejected（11 条，文本/落点级，reviewer 明示架构无需推翻）→ **v0.1.5 一次收敛** → 送 `B.DR-rev5` |
+| **S-7**（v0.1.5 新增，**待 owner**） | 若某步无法做到**复杂度中性**（`config.py` 46/46、`scanner.py` 140/140、`policy.py` 5/5 顶格），是否允许**更新棘轮表**（= 修改既有测试文件，与 F10"仅新增"互斥）？ | **作者建议：不允许**——把新判定放进**新增独立模块/函数**以保持棘轮文件不变；若确需改表，请裁定 |
 
 ## 7. 仍未批准的一项（如实登记）
 

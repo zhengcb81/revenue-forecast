@@ -1,4 +1,4 @@
-# B 阶段文件范围（file-scope v0.1.3）—— 待 owner 批准的 DEV 工作包附件
+# B 阶段文件范围（file-scope v0.1.5）—— 待 owner 批准的 DEV 工作包附件
 
 > 依据 handbook **§1 第 5 项**（"首次实施前用户须批准 DEV 精确工作包及文件范围"）与 **§3**（run 目录结构 / card 字段）；B.DR-18 指出 v0.1 把两处误写为"§2.5"，已改。
 > 本页给出 **B 阶段候选改动文件的精确定位 + 冻结哈希**（实测 2026-09-12，wiki 产品树 = A01 冻结的 `7d4852f`，`git diff 7d4852f 032da52 -- src config` 为空，B.DR 已复核）。
@@ -15,22 +15,22 @@
 | F3 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/scanner.py` | metadata 合并 `:1007-1081`（开关 `:1038`；**整条 UPDATE `:1078-1081`**）；root 选择 `_select_roots:753`；candidate admission `:872`/`:993` | `c2ada3e26a53b535` | B05 | provenance + 冲突保留；priority 退出真伪判定（**覆盖表全部列**） | ✅ 是 |
 | F4 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/reader.py` | `CatalogReader` `:47`；`ReadOnlyCatalogReader` `:144`；`mode=ro`+`query_only` `:16`/`:181` | `ad8cb9147d4f2f51` | B03/B07 | 稳定字节底座（只读，不新增写路径） | ❌ **新增**（A01 未冻结此文件——v0.1.1 更正，B-DR-09） |
 | F5 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/models.py` | `RootSpec` `:86-109`；`ROOT_KINDS` `:39`；`CATALOG_SCHEMA_VERSION` `:11` | `fc6cc009fb22f6d6` | B01/B07 | 字段 owner 与合同版本（schema 变更须单列迁移） | ✅ 是 |
-| F6 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/config.py` | 字段准入 `:70-118`；未知字段拒绝 `:82-84`；`read_only` 默认 `:106`；`privacy_class` 默认 `:144` | `e96cea75cb27bcf6` | B01 | 唯一准入；`privacy_class` 缺省语义（owner R-4） | ✅ 是 |
+| F6 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/config.py` | 字段准入 `:70-118`；未知字段拒绝 `:82-84`；`read_only` 默认 `:106`；`privacy_class` 默认 `:144` | `e96cea75cb27bcf6` | B01 | 唯一准入（**不含** `privacy_class` 缺省改动——S-2：R-4 属独立工作包，B 不实施） | ✅ 是 |
 | F7 | `C:/Users/郑曾波/Projects/company-wiki/config/source_catalog.yaml` | 四 root 声明（1712 B） | `f9eb72a6c37c2dfe` | B01（**仅在裁定后**） | 仅在需要显式声明时改；**改动即 A01 冻结哈希失效**，须重跑 A01 §0 | ✅ 是 |
 | F8 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/policy.py` | `_effective_reusable` `:67-72`（**在产**活性实现之一）；`export_policy` 哈希 `:56-64`；文件共 **86 行**（v0.1.1 更正：v0.1 误把 3384 B 当行号） | `78320c429e4b7bc9` | B01/B07 | R-2 对齐点之一；**其输出是跨仓 policy_hash，改动须同步迁移** | ✅ 是 |
 
 > **v0.1.2 更正（B-DR2-08）**：v0.1.1 把 `llm_summarizer.py` 同时列进 §1（F9）与 §2（禁止）——**自相矛盾**，现已从 allowed 表移除，只保留在 §2 的禁止清单（它属 owner R-4 的外发门整改范围，**不属于 B 的读取面**）。
 > 完整读数（供引用）：`llm_summarizer.py` sha256(16) = `13ff33b76547d39d`，24 572 B。
 
-| F10 ✅**已批准**（S-1） | `C:/Users/郑曾波/Projects/company-wiki/tests/contract/**`（**仅新增**文件，命名沿用 `test_<id>_<slug>.py`；**不得修改既有测试的任何断言**） | 新增用例：L01–L12 的 B 侧、显式 `false`、合成 `privacy_class` 配置、L08 逐列合并（含"先缺后补"）、`B-payload-hash`、B02 预算/取消 | 新增（无既有哈希） | B02/B03/B05/B06/B07 | 新断言必须有落笔处（v0.1.3 补，B-DR3-04） | ❌ 新增 |
-| F11 ✅**已批准**（S-1/S-5） | `C:/Users/郑曾波/Projects/company-wiki/scripts/readonly_canary.py` | 只读金丝雀（既有脚本，供 L12 的独立观察复用） | 见文件哈希 | B03/B07 | **只读调用，不修改**；若需修改则升级为单独工作包 | ❌ 新增 |
+| F10 ✅**已批准**（S-1） | `C:/Users/郑曾波/Projects/company-wiki/tests/contract/**`（**仅新增**文件，命名沿用 `test_<id>_<slug>.py`；**不得修改既有测试的任何断言**） | 新增用例：L01–L12 的 B 侧、显式 `false`、L08 逐列合并（含"先缺后补"与 **json_extract 回归断言**：fiscal_year 过滤 + prompt_injection_review 门）、`B-payload-hash`、B02 预算/取消、复杂度棘轮复核 | 新增（无既有哈希） | B02/B03/B05/B06/B07 | 新断言必须有落笔处（v0.1.3 补，B-DR3-04；**S-1 已批准**）。**断言清单不含 R-4 合成配置**（B-DR4-02） | ❌ 新增 |
+| F11 ✅**已批准**（S-1/S-5） | `C:/Users/郑曾波/Projects/company-wiki/scripts/readonly_canary.py` | 只读金丝雀（既有脚本，供 L12 的独立观察复用） | `0ee11644da75e24d`（2792 B） | B03/B07 | **允许的是"只读调用"，不是"修改文件"**；若需修改则升级为单独工作包（v0.1.5 更正，B-DR4-10） | ❌ 新增 |
 
 ## 2. 明确禁止（prohibited，除非另行单独批准）
 
 | 禁止项 | 原因 |
 |---|---|
 | **`policy_2x.py` 的 `export_policy_2x` 路径**（`cli.py:835-857 _policy_export_payload` 及其调用点 `:811`/`:831`/`:1182`） | **在产**且是 filing-fetch FC-501 containment / ZR-405 policy_hash 的**唯一来源**（`filing_contracts.py:450/461-497`）。**v0.1.1 更正（B-DR-01/A-AR-05/A-VR-05 共同 P0）**：v0.1 把它列为"可停用"是**事实错误**；B 的任何改动都必须**保持该 payload 字节/hash 不变** |
-| `policy_2x.py` / `policy_3x.py` 的 **loader**（`load_root_policy_2x`/`load_root_policy_3x`） | owner R-3 范围（准入收敛）。**v0.1.2 更正（B-DR2-15）**：所谓"无生产调用者"**只对生产运行路径成立**——`load_root_policy_2x` 的**唯一真实调用点在 `policy_3x.py:95`**（该模块自身也无生产调用者）→ 因此**"停用"不需要改任何文件**（只需不在新代码里引入）；若将来要真的删/改这两个 loader，**必须把 `policy_2x.py`/`policy_3x.py` 纳入 allowed_files**（当前在禁区）。注意：**仅限 loader，不含 `export_policy_2x`** |
+| `policy_2x.py` / `policy_3x.py` 的 **loader**（S-3 已定：导出路径永久禁止）（`load_root_policy_2x`/`load_root_policy_3x`） | owner R-3 范围（准入收敛）。**v0.1.2 更正（B-DR2-15）**：所谓"无生产调用者"**只对生产运行路径成立**——`load_root_policy_2x` 的**唯一真实调用点在 `policy_3x.py:95`**（该模块自身也无生产调用者）→ 因此**"停用"不需要改任何文件**（只需不在新代码里引入）；若将来要真的删/改这两个 loader，**必须把 `policy_2x.py`/`policy_3x.py` 纳入 allowed_files**（当前在禁区）。注意：**仅限 loader，不含 `export_policy_2x`** |
 | `llm_summarizer.py`、`legacy_research_ingest.py`、`evidence_query.py` | owner R-4 的外发门整改范围与只读查询层，**不属于 B**；`evidence_query.py:269-271` 的排序残留登记为 C/D 工作包（v0.1.3 补，B-DR3-07） |
 | `adapters/*`、`adapter_dispatch.py`、`adapter_process.py`、`dayu_cli_adapter.py` | provider 获取面（N/X），非读取面 |
 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/{store.py, canonical_writer.py, normalizer.py, duplicate_cleanup.py}` | 写/加工面；**B05 的持久化若需要它们，则本步升级为独立工作包**（B-DR-12） |
@@ -46,7 +46,7 @@
 
 | 位置 | 处置 |
 |---|---|
-| `service.py:329`/`:527`/`:643-653`/`:772`、`canonical_writer.py:287` | 前三个在 **F1**（allowed）；`canonical_writer.py:287` 在 **forbidden**（写面）→ R-6 整改须单列工作包 |
+| `service.py:329`/`:527`/`:643-653`/`:772`、`canonical_writer.py:287` | 四处均在 **F1**（allowed，共 4 个排序点）；`canonical_writer.py:287` 在 **forbidden**（写面）→ R-6 的该点须单列工作包（v0.1.5 更正计数，B-DR4-09） |
 | `duplicate_cleanup.py:210`/`:486`、`normalizer.py:1600`/`:1892`、`llm_summarizer.py:371`、`evidence_query.py:269` | 全部 **forbidden**（写/加工/外发/查询只读层）→ 登记为 **C/D 或独立工作包**，B 不改 |
 
 > 结论：**B 只改 `service.py` 与 `resolver.py` 内的排序语义**；其余 6 处是"登记 + 归属"，避免 B 越界。
@@ -60,6 +60,7 @@
 | B03 | F4（只读底座）+ F2（切换与失败语义） | 不新增写路径 |
 | B05 | F3（`scanner.py:1007-1081`，含 `:1078-1081`）+ F1（读取侧暴露 provenance/conflicts） | 既有列承载，无 DDL |
 | B06 | **F2**（`ResolutionEnvelope` 新增 `qualification`，`resolver.py:359-417/418-552`） | 消费者门不动 |
+| B0x（棘轮约束） | 见 [b-design](b-design.md) §B0x：`config.py`/`scanner.py`/`policy.py` **顶格**，改动须**复杂度中性**或走 S-7 | 每步须真跑棘轮测试 |
 | B07 | F2（合同版本与五值拒绝）+ F8（`export_policy` 语义不变） | 消费者侧不签 |
 | 全部步骤的测试 | **F10**（新增测试文件） | 无测试落点则断言无处落笔（B-DR3-04） |
 

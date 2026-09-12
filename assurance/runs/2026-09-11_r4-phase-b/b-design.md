@@ -33,18 +33,18 @@
 | 物理位置（path、adapter、symlink 政策、大小/编码限制） | **storage 层**（`config.py` → `models.RootSpec`） | `config.py:70-118`（活、唯一准入）；`policy_2x.py`/`policy_3x.py` 的 **loader** 无生产调用者 | 按 owner R-3（**范围 = 仅准入 loader**）：收敛为一套；**不动 `export_policy_2x`** |
 | 业务身份（document_id、version/source_hash、locator） | **catalog 层**（`models.py` + `service.py` 投影） | `service.py:621-663` 规范位选择含路径/优先级（残留） | 按 owner R-6：**登记整改**；B 不改身份语义，先把 locator 显式化（B04） |
 | 可复用资格 | **policy 层单一函数** | **三处活实现**（v0.1.2 更正，B-DR2-01）：① `resolver.py:782-786`/`:933-940`（kind-only，fail-open，不读字段）；② `policy.py:67-72 _effective_reusable`（读字段，fail-closed）；③ **`policy_2x.py:308-312 _effective_reusable_2x`**（读字段，经 `:292` 被 `export_policy_2x` 调用，再由 `cli.py:849-851` 在产） | 按 owner R-2：**对齐①的语义到②③**（`false` 生效），**不是**"删除多余实现"——③位于被冻结的跨仓导出路径（P-4），删不得。任何使②③输出变化的改动**必须与 filing-fetch 的 policy_hash 迁移同步** |
-| 外发策略 | **动作边界**（调用外部服务那一刻） | `llm_summarizer.py:333-337`（白名单）；**外加一处无门出口** `legacy_research_ingest.py:128-136` | 按 owner R-4：缺省不外发 + 补门（范围含无门出口）；**注意 R-4 在现网惰性**（见 B01.2） |
+| 外发策略 | **动作边界**（调用外部服务那一刻）——**不属于 B**（S-2） | `llm_summarizer.py:333-337`（白名单）；另有 `legacy_research_ingest.py:128-136` 无门出口 | **B 不实施、不验收**（S-2）；仅**引用**记录，供 owner 的独立整改工作包使用 |
 | 文档证据质量 | **不由 root 字段承载**（与能力正交） | A02 C5 | B 不引入"质量即能力" |
 
 ### B01.2 旧字段版本映射（**16 个字段名 / 12 行合并项**——v0.1.2 更正计数与遗漏，B-DR2-10；`admission_profile_id` 于 v0.1.2 补入）
 
 | 字段（现状） | 语义 owner | 目标处置 | 迁移/兼容条件（**必须先测 N-1，L11**） |
 |---|---|---|---|
-| `read_only` | storage | **降级为"文档性字段"**：真实可写判据 = `kind == 'company_raw'`（`canonical_writer.py:126-131/284-287`） | 保留字段以免破坏 YAML 解析；**删除其"安全承诺"表述**；若未来要真强制，须实现读取点并配负例 |
+| `read_only` | storage | **B 不改其处置**（S-2：R-1 属独立工作包）；B 只按**实际语义**行事 | 真实可写判据 = `kind == 'company_raw'`（`canonical_writer.py:126-131/284-287`）；B 的读取路径**不得**依赖 `read_only` 的默认值 |
 | `reusable_for_filing` | policy（单一函数） | **保留并使 `false` 生效**（对齐三处实现，见 §B01.1） | ②③ 的输出变化 ⇒ **policy_hash 变化** ⇒ 必须与 filing-fetch 的 FC-501 期望值同步迁移（跨仓）；`None` 保持"跟随 kind" |
-| `symlink_policy` | storage | **候选删除**（owner R-1 倾向删） | 删除前须确认无外部消费者读取该 YAML 键（含 filing/revenue 与本仓测试）；删除是 YAML 变更 → 触发 A01 重冻结 |
+| `symlink_policy` | storage | **B 不改**（S-2：R-1 属独立工作包） | B 的 L05 负例只验证**读取路径**的 symlink/reparse 行为，不验证（也不修改）该字段的处置 |
 | `priority` | storage | **保留，但只作排序**（B02 第 4 段），**退出 metadata 真伪判定**（B05） | 无 schema 变更；语义变更须有 L01/L08 负例 |
-| `privacy_class` | 动作边界 | **缺省改为不外发**（owner R-4） | **v0.1.2 关键限定（B-DR2-02）**：现网 `config/source_catalog.yaml` 的**四个 root 全部显式声明 `privacy_class: public`**（`:19/:24/:29/:40`）→ **受影响集合 = 0，该改动在现网是惰性的**；其验收**只能靠合成配置**（新增 root 或删掉声明）。`models.py:105` 与 `config.py:144` 两处默认值必须同改；**不得声称现网行为会因此变化** |
+| `privacy_class` | 动作边界 | **B 不改**（S-2：owner R-4 属独立工作包） | **v0.1.5 更正（B-DR4-02）**：v0.1.2/v0.1.3 曾在此写"缺省改为不外发"与"两处默认值必须同改"——**那是 R-4 的实施指令，不属于 B**。B 只记录事实：现网四个 root **全部显式声明 `privacy_class: public`**（`:19/:24/:29/:40`），故 R-4 在现网**惰性**（受影响集合 = 0）；**B 不实施该变更，也不产出"合成配置"断言** |
 | `cohort` | catalog | 保留 | 现不在活 loader 的允许字段集（`config.py:75-81`）→ **声明即被拒**；如需启用属新特性 |
 | `canonical_write_target` | storage | **暂不引入**（当前声明即被 `config.py:75-84` 拒绝） | 若要引入，须在 `config.py` 正式实现并配写目标负例；**不得恢复 `policy_2x` 的 loader** |
 | `adapter_id` / `adapter_version_range` | storage | 保留 | `config.py:96-105` 强制"必须已注册" → 保持 |
@@ -148,7 +148,13 @@
 
 **落点与持久化（v0.1.2 定案，B-DR2-05/B-DR2-12）**：v0.1.1 的"只在读取合同输出、不落库"**无法满足 L08**——因为落选值已被 `scanner.py:1078-1081` 的 UPDATE **覆盖销毁**，读取层再也拿不到它们。因此 B05 改为：
 
-1. **在写入侧停止销毁**：`scanner.py:1078-1081` 改为**保留**落选来源的值与 provenance，存进**既有列** `metadata_json`（**不新增列、不改 DDL**，因此无需 `store.py`，仍在 allowed F3 范围内）——形如 `{"value": …, "provenance": [ … ], "conflicts": [ {value, source, captured_at} ]}`；
+1. **在写入侧停止销毁**：`scanner.py:1078-1081` 改为**保留**落选来源的值与 provenance，存进**既有列** `metadata_json`（**不新增列、不改 DDL**，因此无需 `store.py`，仍在 allowed F3 范围内）。
+   ⚠️ **v0.1.5 关键更正（B-DR4-01，P1）**：该列是**多方共享的扁平 JSON 命名空间**，不是 B 的私有字段 —— 既有读取点至少包括：`service.py:271-272`（按 `$.acquisition.fiscal_year` / `$.dayu_meta.fiscal_year` 过滤）、`llm_summarizer.py:388-392`（按 `$.prompt_injection_review.*` 做 LLM 门，**且该文件在禁止表内，B 无权修**）、`prompt_injection.py:101-128`、`scanner.py:1039-1045`。因此写入形状**必须是可加性的**：
+   - **只在保留键下新增**：`{"r4_provenance": {"fields": {<列名>: {"value": …, "sources": […], "conflicts": […]}}}`；
+   - **既有键一律原样保留**（不得重命名/搬移/改变类型）；
+   - **回归断言**：L08 必须加一条 `json_extract` 断言，证明 **fiscal_year 过滤**与 **prompt_injection_review 门** 在改动后仍读到原值（否则本步即视为破坏共享命名空间，必须回到设计）；
+   - B05 的读取侧只读 `r4_provenance`，**不得**假设整列由自己独占。
+   形状示意（**仅新增保留键**）：`{"acquisition": {…}, "dayu_meta": {…}, "prompt_injection_review": {…}, "r4_provenance": {"fields": {…}}}`；
 2. **`metadata_priority` 的处置**：该列**保留**（由 `scanner` 继续维护，用于"必须给出单一值"时的排序提示），但**不再决定哪些列被写**；`:1038` 的 `elif root.priority <= existing_document["metadata_priority"]` 分支语义必须改写为"**只决定是否补充 provenance/冲突记录**"，不得再整体覆盖 `title/source_type/document_kind/published_date/source_status/primary_source_id`；
 3. **读取合同**（B05 的输出）暴露 `provenance` 与 `conflicts` 两个字段；
 4. **若 owner 要求把 provenance 提升为一等列**（可查询、可索引），那需要 `store.py` DDL/迁移 → **升级为独立工作包**（不在本包范围）。
@@ -157,11 +163,13 @@
 
 | 列 | 合并规则 | 冲突时 |
 |---|---|---|
-| `title` / `source_type` / `document_kind` | 取**声明该列且来源可追**的值；多来源一致 → 单值 + provenance 列表 | `not_indexed` 类冲突不适用；真冲突 → **保留全部候选 + `conflicts`**，读取合同返回 **`ambiguous`**（**不得按 priority 择一**，与执行计划 §B05"真冲突仍 blocked/待选择"一致） |
-| `published_date` | **只允许由"报告自身声明"的来源写入**（现有 `capture_ready` 恢复路径见下） | 冲突 → 保留候选 + `ambiguous` |
-| `source_status` | 取**最新一次真实观测**的状态（可追时间戳） | 冲突 → 保留 + `ambiguous` |
+| `title` / `source_type` / `document_kind` | 取**声明该列且来源可追**的值；多来源一致 → 单值 + provenance 列表 | 真冲突 → **保留全部候选 + `conflicts`**，读取合同返回 **`blocked`**（执行计划 §B05 原文"真冲突仍 blocked/待选择"；v0.1.5 更正，B-DR4-08——`ambiguous` 只用于 **L07 的"版本关系未知"**，不用于字段冲突）；**不得按 priority 择一** |
+| `published_date` | **只允许由"报告自身声明"的来源写入**（现有 `capture_ready` 恢复路径见下） | 冲突 → 保留候选 + `blocked` |
+| `source_status` | 取**最新一次真实观测**的状态（可追时间戳） | 冲突 → 保留 + `blocked` |
 | `primary_source_id` | 取 **exact-copy 组内**按 B02 第 4 段排序的第一份（**仅此列允许用排序结果**） | 无冲突概念 |
 | `metadata_json` | 承载 `provenance` 与 `conflicts`（既有列，无 DDL 变更） | — |
+
+**粒度与不变式（v0.1.5 补，B-DR4-08）**：状态是**响应级**（整份响应一个五值状态），冲突明细是**字段级**（`r4_provenance.fields[<列>].conflicts`）；`capture_ready` 的不变式 = "**只要有任一合格副本且身份/期间可判，capture_ready 不得因合并规则改变而变 false**"，该不变式须在 L09 用例里断言。
 
 **必须保留的既有恢复路径（回归风险，B-DR3-02）**：`scanner.py:1046-1058` 的注释记录了 `capture_ready` 死锁——若 `published_date`/`source_url` 无法补齐，某些 capture 永远不就绪。B05 改写合并语义时**必须显式保留"后来来源补齐缺失列"的能力**（即：**后到的、更权威的字段可以补空值，但不能覆盖已确认的单值**），并在 L08 用例里加入"先缺后补"分支。
 
@@ -193,12 +201,32 @@
 | "支持兼容由单 adapter 转换且来源不变" | **wiki 侧的版本化读取合同本身**：`schema_version` + `ResolutionEnvelope`（`resolver.py:359-552`）的兼容判定；**N-1 支持**的判定逻辑与拒绝语义（`not_found/not_indexed/unavailable/blocked/ambiguous`） | **消费者侧的转换实现**：`filing-fetch/scripts/filing_contracts.py`、`revenue` 侧 adapter —— 归 **C**；B 只在验收记录里注明"消费者侧未验" |
 | "未知拒绝，无 companies 静默 fallback，无第二权限语义" | **wiki 侧不新增任何 fallback 分支**；在合同里**显式声明"本接口无目录级 fallback 语义"**；并给出探测负例（构造未知版本 → 必须 `not_found`/`blocked`，不得读到别的目录） | **消费者侧的 `companies` fallback 代码**（若存在）在 `filing-fetch` 内 → 归 **C**；B 不得声称已删除它 |
 | （新增，本包要求）`resolve` 输出的 **policy_export payload 字节/hash 不变** | ✅ **必须由 B 自测**（见 [test-acceptance-map.md](test-acceptance-map.md) §1c 的 `B-payload-hash`） | — |
+| ⚠️ **N-1 支持** | **v0.1.5 更正（B-DR4-03）：从 B 的完成定义中移除** —— 两侧代码目前都只接受 `"1.0"`（wiki `resolver.py:163-166`、filing `filing_contracts.py:273-277`），**不存在 N-1 规则**；`filing-audit.md:61` 反而要求废除"字段缺失即降级"的伪 N-1，改为**显式版本协商** | **登记为待定义项**：N-1 的定义与实现属**跨仓协议工作**，不在 B 的完成定义内；B 只保证"**未知版本必须显式拒绝**"（`not_found`/`blocked`），不承诺向后兼容 |
 
 > **B07 的"完成"因此是**："wiki 侧版本化合同 + N-1 判定 + 无新增 fallback + payload hash 不变"四件；**消费者侧的 adapter 转换与 fallback 删除明确不在 B 的签名内**（C 阶段）。
 
 **测试**：L11、L12（L11 的消费者侧部分标记为"B 只验 wiki 侧"）。
 
 ---
+
+## B0x —— 复杂度棘轮约束（v0.1.5 新增，B-DR4-06）
+
+**事实（reviewer 实测复算）**：`tests/contract/test_fc1204_complexity_ratchet.py` 是**默认运行**的门，且以下文件**恰好顶格**：
+
+| 文件 | 实测 | 冻结上限 |
+|---|---|---|
+| `config.py` | 46 | 46 |
+| `scanner.py` | 140 | 140 |
+| `policy.py` | 5 | 5 |
+| `resolver.py` | 32 | 103（有余量） |
+| `models.py` | 5 | 18（有余量） |
+
+**后果**：B 在 `config.py`/`scanner.py`/`policy.py` 内**只要新增一个判定点，棘轮即失败**；而该门自述的补救是"**更新棘轮表**"，那需要**修改既有测试文件**——与 F10"仅新增"**互斥**。
+
+**设计约束（B 必须遵守）**：
+1. **B02/B03/B05/B07 的实现必须在棘轮文件内保持复杂度中性**（不新增判定点；用既有分支内的数据流与提前返回重组，或把新判定放进**新增的独立模块/函数**——新增文件不计入既有文件的上限）；
+2. 每一步实施后**必须真跑** `pytest tests/contract/test_fc1204_complexity_ratchet.py -q`，并把结果入证据；
+3. 若某步**无法**做到复杂度中性，则该步**停止**，并按 §5 的边界流程请 owner 决定"是否允许更新棘轮表"（属新增 scope 问题 **S-7**，见 [task_plan.md](task_plan.md) §5）。
 
 ## B08–B10（实施与验收，本轮不执行）
 
