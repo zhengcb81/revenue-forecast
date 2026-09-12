@@ -87,7 +87,7 @@ python -m pytest -q            (全量套件)
 
 1. **不需要跨仓迁移**：在产四个 root（`company_raw` / `dayu_portfolio` / `dropbox_stock` / `future_lake`）**本来就都实际可复用**（`future_lake` 显式 `true`，其余未声明而 kind 在列表内），所以解析器对齐后**在产答案不变**，`policy_hash` **逐字节不变**（已由用例冻结）。→ B01 在生产的爆炸半径为 **none**；这条结论有实测支撑，见 [field-owner-map.json](field-owner-map.json) `shipped_config_facts`。
 2. **没有动导出路径** `export_policy_2x` / `policy_2x.py`：owner S-3 已裁定维持冻结（改了就要 filing-fetch 同步迁移）。
-3. **没有把 `_effective_reusable` 提为公开 API**：解析器 import 的是**私有函数**，这是本步的取舍登记——"一份实现"优先于"再写一份"；代价是跨模块私有依赖。若日后 `policy.py` 提供公开访问器，此 import 应随之改写。**没有**顺手把它公开，因为那会动导出面 payload，而 `B-payload-hash` 目前**仍不可执行**（包内无冻结基线）。
+3. **没有把 `_effective_reusable` 提为公开 API**：解析器 import 的是**私有函数**，这是本步的取舍登记——"一份实现"优先于"再写一份"；代价是跨模块私有依赖。若日后 `policy.py` 提供公开访问器，此 import 应随之改写。**没有**顺手把它公开，因为那会动导出面的**读法**、而本步只需对齐语义。**更新（F-B07-1）**：`B-payload-hash` 已从"不可执行"变为**可执行且通过**（固定 `project_root` 的逐字节比较，见 [b07_payload_baseline.py](b07_payload_baseline.py)）⇒ 将来若真要动导出面，**有办法验证**了；本步当时按"不可验证即不动"处理，事后看是保守但正确的。
 4. **R-1（`symlink_policy` / `read_only` 的真处理）与 R-4（外发门）不在 B 内**（owner S-2），字段归属表里只登记"不在 B"与理由，不假装已解决。
 5. 本步**没有**在生产 catalog 上做任何写入或验证（读路径仍在 B03；写入属未批准范围）。
 
