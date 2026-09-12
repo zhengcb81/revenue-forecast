@@ -2,6 +2,16 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B03-1：`B.VR`（B03）= **accepted_with_findings**（1×P1 / 4×P2 / 3×P3）→ **全部处置**（提交 `2f1ddab`/`728b5e0`/`5138546`/`5b7ef10`）
+
+- **记录**：[reviews/B.VR-b03.json](reviews/B.VR-b03.json)；**逐条处置表**见 [evidence/b03-review-disposition.md](evidence/b03-review-disposition.md)；我的变异验证脚本 [evidence/b03_disposition_mutations.py](evidence/b03_disposition_mutations.py)。
+- **复审复现了我全部六条主张**（13+1 用例、ruff、68 条邻域、两张棘轮、`FC1204_COVERAGE_GATE=1` 下 `resolver.py` **88.4%** vs 底 86），并**独立确认了两条最关键的事实**："一次 open、两次 stat、无重开、无缓存" 与 "库内**不存在**源字节受控快照"（它自己找了最强反例 `focus_cleanup._archive_files`，证明那只归档 sidecar/派生产物）。它还**用我自己的变异 harness 复核了 B01 的处置**：`filter_off` 被两条用例杀、`x2_kind_only` 被一致性用例杀 —— 与处置声明一致。
+- **P1（B-VR03-01）**：公开关键字 `expected_content_sha256` **从未与句柄绑定** ⇒ 结果会拿**句柄的 `document_id`** 配上**另一版本的字节与摘要**并自称 `verified`；而同名参数在 `reader.resolve_handle`/`bundle` 里是 **fail closed** 的。→ 已**绑定到句柄**（不符即 `unavailable` + `expected_version_mismatch`），用例 + 变异 `version_pin_off` **KILLED**。
+- **P2（B-VR03-04）**：**"取消粘性"在位一处是假的** —— 落在"返回 `b''` 的那次 read 内部"的取消被漏掉，字节照样交出；复审的变异 **M4 存活**全部 13 用例。→ 加**尾守卫**（与 `_select_candidate` 同构）；**两条**新用例分别杀"尾守卫"与 M4（后者要求"取消必须**停止读取**"）。我的**第一版用例没杀住尾守卫变异**，据此重写了用例——变异检查的价值正在此。
+- **P2×2（B-VR03-02 盘根 root / B-VR03-03 CFG-08 空值）**：这两条我**在复审落地前就从它的探针产物里读出来并修好了**（`commonpath` 判定；`read_only` 出现即必须为真布尔），复审独立确认了同一根因——两处都不是"它说了我才改"。
+- **P2（B-VR03-05）**：越界拒绝**借用 artifact 家族码**、而另 8 个读路径码**未注册**。→ 按建议**保留码**（改 `observability.py` + 顶 taxonomy 版本在允许集外），把"借用"写进代码注释与处置表，**并要求后续工作包**扩面扫描 + 注册全部读路径码 + 给源文档定位违规一个自己的码。
+- **P3×3**：① `size`+`mtime` 复验被写成完整性机制（可被 `os.utime` 击败）⇒ 改为"**摘要承担完整性**，复验只负责**精确标注拒绝原因**"；② 包含判定是**名字级**且**检查与打开之间有 TOCTOU** ⇒ 改为**打开 containment 已解析出的路径**，硬链接与名字级包含作为**已登记限制**；③ API 面不一致 ⇒ 新增成功/哨兵常量 + `isinstance` 守卫。
+
 ## F-B07-1：`B-payload-hash` **从 `blocked` 变为"可执行且通过"**（写 B07 计划时发现"需待批 CLI"这条理由不成立）
 
 - **原登记（[test-acceptance-map.md](test-acceptance-map.md) §1c 的 **v0.1.6 / B-DR5-04** 一版）**：`resolve` 输出的 **policy_export payload** 字节/hash 不变（跨仓 FC-501 containment 的唯一来源）；当时判为"不可执行"——理由是"包内无冻结基线"**且**"取值需要 `--help` 之外的 CLI（属待批 manifest）"。

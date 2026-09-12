@@ -1,5 +1,7 @@
 # B03 实施与验证记录（2026-09-12）
 
+> **复审与处置（2026-09-12 晚）**：`B.VR`（B03）= **accepted_with_findings**（1×P1/4×P2/3×P3），**逐条处置表**见 [b03-review-disposition.md](b03-review-disposition.md)，处置提交 **`2f1ddab`**（本步）+ `728b5e0`（B01 的 CFG-08 空值，同一轮发现）。用例数 **13 → 18**（新增：版本绑定、尾守卫/取消停止读取、盘根包含、错类型守卫）。三处修复均以**变异**验证被守住（[b03_disposition_mutations.py](b03_disposition_mutations.py)：`version_pin_off`/`tail_guard_off`/`inloop_cancel_off` 全 **KILLED**）。下面 §2/§3 是**处置后**的口径。
+
 > 状态：**已实施**（产品代码 1 文件 `resolver.py` + 新增验收 **13 用例**（+1 skip））。提交 **`5ab0779`**（company-wiki，`fcap` → `origin/master`）。
 > 依据：设计 [b-design.md](../b-design.md) §B03（三级：固定句柄 + 读后复验 / 受控快照 / 显式失败）；计划 [b03-plan.md](b03-plan.md)；允许集 F4 `reader.py` + F2 `resolver.py` + F10（**仅新增**测试）。
 > 本步交付的是 **S-10 推迟的"字节级硬门"**：B02 让**首选副本**按目录声明被服务、且消费者拿到的是**路径**；B03 让"取字节"这个动作本身只可能返回**已验证的字节**。

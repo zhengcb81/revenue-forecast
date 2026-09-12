@@ -29,7 +29,7 @@
 
 - 实测（worktree 探针）：一个**本地可读但无 `source_url`** 的副本，`resolve` 直接返回 `MISSING`，trace = `capture_incomplete` —— 命中的是 `resolver.py` 里既有的拒绝分支（`if not handle.capture_ready:`，注释原文："a capture-incomplete handle (e.g. missing https_url) cannot be consumed by filing-fetch; offering it as reusable deadlocks the download path"）。
 - 含义：**本步交付的是"标签 + 规则 + S-13 的响应级 `blocked`"**；`preview` 这个取值**已定义、已测规则，但当前没有任何入口能产生它**。三条出路都要**改跨仓行为或加入口**：(a) 放宽 `capture_incomplete` 门（会让消费者看到它明确声明无法消费的句柄）；(b) 由 **B07 的版本化读取合同**提供显式的 preview 入口；(c) 保持现状，preview 仅作为**合同词汇**存在。
-- **作者决定（在边界内，最保守）**：**选 (c)** —— 不放宽既有门（不改跨仓行为），把 `preview` 登记为"**已定义、当前不可达**"，并把 (a)/(b) 作为**范围问题**上呈 owner。**不声称 preview 已交付**。
+- **作者决定（在边界内，最保守）**：**选 (c)** —— 不放宽既有门（不改跨仓行为），把 `preview` 登记为"**已定义、当前不可达**"，并把 (a)/(b) 作为**范围问题**上呈 owner。**不声称这一级已经交付**。
 - 用例据此分成两类：**可达的**（`verified_input` / `blocked`，经真实 `resolve` + 信封断言）与**规则级的**（`preview`，在真实句柄上注入缺口后断言规则本身），后者在 docstring 里写明"这是规则、不是可达结果"。
 
 ## 4. 用例清单（12 条，全绿）

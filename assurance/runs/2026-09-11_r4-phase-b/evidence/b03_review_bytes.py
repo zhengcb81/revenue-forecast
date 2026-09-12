@@ -497,6 +497,47 @@ def _cancel_budget():
     return b
 
 
+def s_cancel_during_the_final_read(tmp):
+    """Cancellation that lands INSIDE the read call that returns b''.
+
+    The in-loop check runs BEFORE each read(), so this window is uncovered: the
+    loop then breaks, the tail runs, and the bytes are returned even though the
+    budget is cancelled.  ``_select_candidate`` (B02) has a post-walk guard for
+    exactly this class (B-VR02R2-03 / B-VR02R3-02); the B03 read loop has none.
+    """
+    resolver, handle, path = fixture(tmp)
+    budget = _ReadBudget()
+
+    def action():
+        budget.cancel()
+
+    real = Path.open
+    Path.open = patched_open(path, action, None)
+    try:
+        out = resolver.read_verified_bytes(handle, budget=budget)
+    finally:
+        Path.open = real
+    record(
+        "cancel_inside_final_read",
+        budget_cancelled=budget.cancelled,
+        answered_despite_cancellation=(out.data is not None and budget.cancelled),
+        **snapshot(out),
+    )
+
+
+def s_cancel_before_call(tmp):
+    resolver, handle, path = fixture(tmp)
+    budget = _ReadBudget()
+    budget.cancel()
+    out = resolver.read_verified_bytes(handle, budget=budget)
+    record(
+        "cancel_before_call",
+        budget_cancelled=budget.cancelled,
+        answered_despite_cancellation=out.data is not None,
+        **snapshot(out),
+    )
+
+
 def s_status_of_a_success(tmp):
     resolver, handle, path = fixture(tmp)
     out = resolver.read_verified_bytes(handle)
@@ -543,6 +584,8 @@ def main(argv):
         ("non_handle", s_non_handle_argument),
         ("no_handle_digest", s_empty_handle_digest),
         ("invariants", s_invariants),
+        ("cancel_final_read", s_cancel_during_the_final_read),
+        ("cancel_before", s_cancel_before_call),
         ("success_status", s_status_of_a_success),
         ("read_at", s_read_at_timing),
     ]

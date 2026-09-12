@@ -31,7 +31,13 @@ DEFAULT_WORKTREE = Path(tempfile.gettempdir()) / "cw-b06-wt"
 STEPS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "b03": (
         (r"commonpath", r"drive root", r"_inside_configured_roots",
-         r"_drive_root_configured_root", r"hardlinks are NOT distinguished"),
+         r"_drive_root_configured_root", r"hardlinks are NOT distinguished",
+         # the B03 review dispositions (B-VR03-01/04/06/07/08)
+         r"expected_content_sha256 is PINNED", r"B03_REASON_EXPECTED_VERSION_MISMATCH",
+         r"TAIL GUARD", r"B03_BYTES_VERIFIED", r"B03_BYTES_SOURCE_NONE",
+         r"resolved = Path\(os\.path\.realpath", r"isinstance\(handle, SourceHandle\)",
+         r"caller_supplied_version_is_pinned", r"cancellation_stops_the_read_early",
+         r"cancellation_inside_the_last_read_is_honoured"),
         ("src/company_wiki/source_catalog/resolver.py",
          "tests/contract/test_r4b03_stable_bytes.py"),
     ),
