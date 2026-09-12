@@ -1,5 +1,21 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-12（实施期，第二轮复审后）— **B02 rev3**（B.VR rev2 = accepted_with_findings，5 条已逐条处置）
+
+- **独立复审 rev2**：新会话，记录 [reviews/B.VR-b02-rev2.json](reviews/B.VR-b02-rev2.json)，verdict = **accepted_with_findings**（0×P0/0×P1/2×P2/3×P3）。它**原样重跑**了 rev1 的两条 P1 反例并确认真的修好；独立复现了 23/23/10/787、覆盖率 87.29 %/95.16 %、复杂度棘轮、ruff；做了 7 个变异（6 个被杀）。
+- **两条 P2（真问题）**：
+  1. **B-VR02R2-01**：rev2 把"凭声明回退"写成 rank-1 验证失败就**立即返回** → 漂移的首选副本压过了同组内**可验证**的副本（claim「第一个验证通过的候选被服务」不成立）。
+  2. **B-VR02R2-02**：**S-10 的登记理由被反例证伪** —— `.rejections` 副本占最优优先级 + 唯一合格副本漂移时，pre-B02 = `missing`、rev2 = `reused_exact` 服务了 hash 不匹配的字节 → "不宽于 pre-B02"不成立（若带着这句话去请 owner 批准，就是**误导**）。
+- **rev3 处置**：凭声明回退**移到整轮遍历之后**，并**锚定到"pre-B02 会服务的那一行"**（构造性保证不宽于 pre-B02）；读取中途取消不再返回句柄；补外 source 组回归用例（杀掉存活的 M6）；重生成探针 JSON、重写测试 docstring、核对证据行锚、"每条 finding 都有用例"改为 6/7（B-VR02-06 的修复在工具/前置条件）。
+- **逐条处置表**：[findings.md](findings.md) F-B02-5；S-10 已在 [owner-scope-decisions](owner-scope-decisions-2026-09-12.md) §9 按 rev3 规则重述。
+- **B04 计划**已排布（[evidence/b04-plan.md](evidence/b04-plan.md)），待 B02 rev3 复审关闭后实施。
+
+### 本步实际副作用（如实，含 rev3）
+
+- **执行过**：修改 `company-wiki` 的 2 个 allowed 产品文件 + 1 个测试文件；本机运行 `pytest`（含全量套件与覆盖率）、`ruff`、只读探针（合成 fixture，临时目录）；`git worktree`（干净 HEAD 源码，用于 RED 对照）。
+- **未执行**：任何网络/下载/LLM、任何产品写入、DB 写入、任务注册、worker 操作、删除；**未**在生产 catalog 上做行为探针。
+- **注意**：全量 `pytest` 中的既有用例会**只读**打开生产 catalog（阶段 A 已归因，属已知限制）；并发负载下 2 条 SLO/真实旅程用例可能瞬时失败（单独重跑通过，reviewer 亦复现此现象）。
+
 ## 2026-09-12（实施期，复审后）— **B02 rev2**（B.VR rev1 = rejected，7 条已逐条处置）
 
 - **独立复审**：`B.VR`（新会话）verdict = **rejected**，记录 [reviews/B.VR-b02.json](reviews/B.VR-b02.json)：2×P1 / 2×P2 / 3×P3。它独立复跑了全套并**逐位复现**了作者的数字（全量 2684 passed / 7 skipped、覆盖率 resolver 87.36% / service 95.16%、复杂度表 45/103、RED/GREEN 探针、S-10 的因果实验、变异测试证明新用例"有牙"），同时发现作者自检**漏掉的两条 P1**。

@@ -2,6 +2,22 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B02-5：`B.VR` rev2（复核 rev2 实施）= **accepted_with_findings**（0×P0 / 0×P1 / 2×P2 / 3×P3）→ 实施 rev3
+
+审查记录 [reviews/B.VR-b02-rev2.json](reviews/B.VR-b02-rev2.json)（新会话，非作者、非 rev1 会话）。它**逐位重跑了 rev1 的两条 P1 反例并确认真的修好了**（P1-1：HEAD = `missing`/0 matches/`download_required=true`/trace 含 `content_sha256_mismatch`/**无** `unverified_*` 行；P1-2：`list_groups()` 不再抛错且 PRE 与 POST 输出逐字节相同），并独立复现了 23/23/10/787、覆盖率 87.29 %/95.16 %、复杂度棘轮 2 passed、ruff clean。
+
+| # | 级别 | 事实（reviewer 复现） | rev3 处置 |
+|---|---|---|---|
+| **B-VR02R2-01** | **P2** | claim「第一个字节验证通过的候选被服务」不成立：rev2 对 rank 1 验证失败时**立即返回** `unverified_preferred_copy`，不再看后面的候选 → 首选副本漂移、同组内仍有**验证通过**的副本时，仍返回漂移副本的 `reused_exact`（其字节可证明 ≠ 声明 hash） | **凭声明回退移到整轮遍历之后**：先找**验证通过**的副本（无论 rank），只有全都没通过才回退到"pre-B02 会选中的那一行"。新增 `test_r4b02_verified_copy_wins_over_the_claim_trusted_one` |
+| **B-VR02R2-02** | **P2** | **S-10 的理由被证伪**：`.rejections` 副本占最优优先级 + 唯一合格副本字节漂移时，pre-B02 = `missing`（旧过滤器丢掉 `.rejections` 的 canonical），而 rev2 = `reused_exact` 服务了 hash 不匹配的字节 → "严格不宽于 pre-B02"不成立（与 rev1 的 P1-01 同类，只是被服务的行换成了"最高优先级合格行"） | **把凭声明回退锚定到"pre-B02 会服务的那一行"**（legacy `is_canonical` 且 active/original_primary/非 `.rejections`/属于本版本）→ "不宽于 pre-B02" 由构造保证；S-10 的登记理由同步更正。新增 `test_r4b02_rejected_best_priority_plus_drifted_copy_is_unavailable`（该场景现在 = `missing`，与 PRE 一致） |
+| **B-VR02R2-03** | P3 | "取消后一律不返回句柄"对**读取中途**的取消不成立（`_sha256_of_file` 内 cancel → 仍返回句柄） | 在验证成功返回前与循环收尾处显式检查 `budget.cancelled`；新增 `test_r4b02_mid_read_cancellation_returns_no_handle` |
+| **B-VR02R2-04** | P3 | "候选限定在文档自身 source 组"**无测试覆盖**（变异 M6 删除该限制后 23 例全绿） | 新增 `test_r4b02_other_source_group_is_never_served`（SQL 造第二 source 组 + 删掉全部本方副本 → 必须 `MISSING`，外组副本不得顶替） |
+| **B-VR02R2-05** | P3 | 证据与代码不一致三处：(a) `b02-red-green-post-b02.json` 仍是 rev1 时代产物；(b) 测试文件 module docstring 还写着 rev1 的"偏好而非硬门"语义；(c) 证据 §1 行锚最多偏移 7 行；另"每条 finding 都有回归用例"对 B-VR02-06 不成立（6/7） | (a) 两份探针 JSON 在 HEAD 上**重新生成**（理由已带 `:<sha12>` 后缀）；(b) docstring 重写为 rev3 的两条服务规则；(c) 行锚重新核对；(d) 文字改为"6/7 有用例，B-VR02-06 的修复在证据工具/前置条件里" |
+
+**reviewer 的其他实测记录**：全量在**并发探针负载**下出现 2 条瞬时失败（`test_100k_candidate_lookup_within_slo`、`test_zr409_fourth_dayu_only_real_sample`），单独重跑 `2 passed` —— 与作者此前的观察一致（主机负载抖动，非本改动）；它同时确认 `git diff c986c7a 350b67a` 只动 3 个文件（无棘轮表 / 无 `policy_2x` / 无新模块）。
+
+**rev3 的状态**：上述 5 条已全部处置并各自留下回归用例（B-VR02R2-05 为文档/工具修复）；`B.VR` rev3（新会话）待发。
+
 ## F-B02-4：`B.VR`（B02 实施独立复审）= **rejected**（2×P1 / 2×P2 / 3×P3）→ 实施 rev2
 
 审查记录 [reviews/B.VR-b02.json](reviews/B.VR-b02.json)（独立会话，非作者；自报 UUID 见记录；它独立复跑了全套并**逐位复现**了作者的数字：新用例 16→（rev1 时）通过、全量 2684 passed/7 skipped、覆盖率 resolver 87.36% / service 95.16%、复杂度表 45/103、RED/GREEN 探针、S-10 的因果实验）。**两条 P1 都是真缺陷**，且都是作者在自检时**未识别**的：
@@ -25,7 +41,7 @@
 - **事实**：`tests/contract/test_source_catalog_determinism.py` 的 fixture 写 `b"%PDF-fake"` 作字节，却把 `sha256(b"same-bytes")`/`sha256(b"other-bytes")` 当 `content_sha256`；`test_source_catalog_sql_pushdown.py` 同类。因此"字节必须等于声明 hash"若作为 **resolve 期硬门**，这 4 条既有断言必然失败（实测：硬门实现下 `determinism` 2 条 + `sql_pushdown` 2 条 FAILED）。
 - **处置（已落盘，rev2 收紧）**：段 3 实现对**首选副本**是"目录声明信任级"（= pre-B02 行为），对**非首选副本**是**硬门**（字节验证不过就不采用、不返回句柄）；验证通过者优先，`verified_sha256` 仅验证通过时写入。**字节级硬门归 B03 读路径**（设计 §B03 原文即"只返回验证版本字节或明确失败"）。
 - **理由**：**S-1** 明令"仅新增测试、不得修改既有测试的任何断言"→ 让步只能在实现侧；且冻结 fixture 的**字节与声明 hash 不一致**（`sql_pushdown` 甚至把 13 B 的文件声明为 1000 B），任何"先验证再服务首选"的硬门都会让这 4 条断言失败。若 owner 不认可，可选 (a) 另行批准修改那 4 条既有断言（与 S-1 互斥）或 (b) 把 B03 提前与 B02 合并交付。
-- **残余风险（如实）**：首选副本仍可能**字节已漂移**而被服务（trace 记 `unverified_preferred_copy` + 具体原因）；读路径在 B03 落地前不会拦它。这**不是**相对 pre-B02 的放宽——pre-B02 对首选副本无条件信任，且**根本不做**字节校验。
+- **残余风险（如实，rev3 口径）**：规则 2 允许的那一行（= pre-B02 会服务的那一行）仍可能**字节已漂移**而被服务（trace 记 `unverified_<状态>_on_pre_b02_canonical`）；读路径在 B03 落地前不会拦它。这**不宽于** pre-B02 —— 该规则**锚定**在 pre-B02 实际会服务的那一行上，且 pre-B02 对那一行同样无条件信任、**根本不做**字节校验（rev2 的"首选副本凭声明服务"写法比这更宽，已被 `B.VR` rev2 的反例证伪，见 F-B02-5）。
 - **B-VR02-01 已把这条边界钉死**：非首选副本的"可读即可用"回退（rev1）已删除，reviewer 的反例现在是回归用例。
 - **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / [post-b02.json](evidence/b02-red-green-post-b02.json)。
 - **未做（勿当已完成）**：B03 落地前，**没有任何一层**对"读出来的字节"做返回前复验 —— 字节级硬门整体缺失。

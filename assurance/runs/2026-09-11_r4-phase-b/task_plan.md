@@ -21,9 +21,9 @@
 | 步骤 | 执行计划原文动作（摘） | 交付物 | 状态 |
 |---|---|---|---|
 | **B01** | 每个 root 字段的唯一 owner（path/adapter 在 storage，身份在 catalog，外发策略在动作边界）；旧字段版本映射 | [b-design.md](b-design.md) §B01 | 设计完成 |
-| **B02** | 选同版本全部候选 location：注册/能力→状态→可读/同 hash→健康 I/O 偏好；优先级只在合格集合内排序 | [b-design.md](b-design.md) §B02 | ✅ **已实施 rev2**（F1+F2+F10；23 新用例）→ [evidence/b02-implementation.md](evidence/b02-implementation.md)；`B.VR` rev1 = **rejected**（2×P1/2×P2/3×P3）**已逐条处置**（[findings.md](findings.md) F-B02-4）→ **待 B.VR rev2**；⚠️ 两处已登记偏差 **S-10/S-11**（待 owner） |
+| **B02** | 选同版本全部候选 location：注册/能力→状态→可读/同 hash→健康 I/O 偏好；优先级只在合格集合内排序 | [b-design.md](b-design.md) §B02 | ✅ **已实施 rev3**（F1+F2+F10；27 新用例）→ [evidence/b02-implementation.md](evidence/b02-implementation.md)；`B.VR` rev1 = **rejected**（7 条已处置）→ rev2 = **accepted_with_findings**（5 条已处置，见 [findings.md](findings.md) F-B02-4/F-B02-5）→ **待 B.VR rev3**；⚠️ 两处已登记偏差 **S-10/S-11**（待 owner） |
 | **B03** | 稳定只读字节提供：固定句柄或受控快照；流式 hash；TOCTOU/云占位/坏字节/中断 | [b-design.md](b-design.md) §B03 | 设计完成 |
-| **B04** | 绝对路径与 location_id 留在诊断；移动后 source/version/locator 仍可解引用 | [b-design.md](b-design.md) §B04 | 设计完成 |
+| **B04** | 绝对路径与 location_id 留在诊断；移动后 source/version/locator 仍可解引用 | [b-design.md](b-design.md) §B04 | 计划已排布（[evidence/b04-plan.md](evidence/b04-plan.md)：F1+F2 落点、L03/L07 用例、`scanner.py:1120-1131` 的 ON CONFLICT 改指**不在 allowed** → 只验证并登记），待 B02 rev2 复审关闭后实施 |
 | **B05** | metadata 按原文/捕获来源/质量合并；保留 provenance 与冲突，**不以 priority 决定真伪** | [b-design.md](b-design.md) §B05 | 设计完成 |
 | **B06** | 本地可读与正式 capture 分开：缺 URL 可预览，身份/期间不明不得默认为可信财报 | [b-design.md](b-design.md) §B06 | 设计完成 |
 | **B07** | 唯一版本化读取合同；缺/未知版本明确不兼容；旧客户端在边界 adapter 一次转换 | [b-design.md](b-design.md) §B07 | 设计完成 |

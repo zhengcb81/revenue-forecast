@@ -154,27 +154,29 @@ LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": ("B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: "
               "B02 landed; B01/B03-B07 still design-only"),
-    "step": ("B02 rev2 implemented (company-wiki 350b67a: F1 service.py + F2 resolver.py + F10 tests); "
-             "B.VR rev1 was rejected with 2 P1 findings, all seven addressed"),
+    "step": ("B02 rev3 implemented (F1 service.py + F2 resolver.py + F10 tests); B.VR rev1 rejected and "
+             "rev2 accepted_with_findings, both rounds' findings addressed"),
     "last_completed_step": (
         "Owner authorized implementation (S-7/S-8 settled - owner-scope-decisions-2026-09-12.md section 8). "
-        "B02 implemented (cab1fd6) and then fixed as rev2 (350b67a) after its own independent review "
-        "(B.VR rev1 = rejected, 2xP1/2xP2/3xP3, reviews/B.VR-b02.json) found two real defects the author "
-        "had missed: (a) the unverified fallback could serve a DIFFERENT revision (fail-open versus "
-        "pre-B02), now removed - a non-preferred copy is served only when its bytes verify; (b) making "
-        "is_canonical conditional raised StopIteration in the untouched duplicate_cleanup.list_groups(), "
-        "now fixed by restoring the legacy annotation contract and adding a separate reuse-qualification "
-        "track. Also fixed: per-request budget reset, source-tagged selection reasons, path-segment "
-        "matching for .rejections, RECALL_ON_OPEN in the hydration mask. Evidence: 23 acceptance cases "
-        "(7 of them regressions for the review findings), full suite 2691 passed / 7 skipped, coverage "
-        "resolver.py 87.29% and service.py 95.16%, ratchet table untouched and green."
+        "B02 went through three revisions under two independent reviews: rev1 (cab1fd6) was REJECTED "
+        "(2xP1: an unverified fallback could serve a different revision, and a conditional is_canonical "
+        "raised StopIteration in the untouched duplicate_cleanup); rev2 (350b67a) fixed those and was "
+        "accepted_with_findings (2xP2: the claim-trusted fallback short-circuited the walk so a drifted "
+        "preferred copy beat a verified one, and the S-10 justification 'no wider than pre-B02' was "
+        "falsified by a counter-example where a .rejections copy held the best priority); rev3 fixes both "
+        "by serving verified copies first and anchoring the claim-trusted fallback to the row pre-B02 "
+        "would have served, plus mid-read cancellation, an own-source-group regression case and "
+        "evidence-consistency repairs. Latest measurement: 27 acceptance cases, full suite 2693 passed / "
+        "7 skipped / 2 load-flakes (both pass in isolation), coverage resolver.py 87.70% and service.py "
+        "95.16%, ratchet table untouched and green."
     ),
     "current_gate": (
-        "B.VR rev2 (fresh session) for the same step, then B04. Two deviations await the owner: S-10 "
-        "(byte equality is a hard gate for NON-preferred copies only; the preferred copy keeps the "
-        "pre-B02 claim-trust level and the read path owns the hard gate in B03) and S-11 (budget "
-        "exhaustion maps to that same trust level instead of the design's blocked, because "
-        "ResolutionStatus has exactly five values)."
+        "B.VR rev3 (fresh session) on the rev3 commit, then B04 (its landing plan is already written: "
+        "evidence/b04-plan.md). Two deviations await the owner: S-10 (a verified copy always wins; only "
+        "when nothing verifies may ONE row be served on the catalog's claim, namely the row pre-B02 would "
+        "have served - so the trust level is provably no wider than pre-B02; the read path owns the "
+        "byte-level gate in B03) and S-11 (budget exhaustion maps to that same row instead of the design's "
+        "blocked, because ResolutionStatus has exactly five values)."
     ),
     "pending_review": [
         {
@@ -198,12 +200,24 @@ LEDGER = {
             "note": "evidence to review: evidence/b02-implementation.md, evidence/b02-verification.json, evidence/b02-red-green-*.json",
         },
         {
-            "gate": "B.VR rev2 (B02 rev2)",
-            "scope": "company-wiki 350b67a: the seven B.VR rev1 findings addressed, 23 acceptance cases",
+            "gate": "B.VR rev3 (B02 rev3)",
+            "scope": "the rev3 commit: verified copies win, claim-trusted fallback anchored to the pre-B02 row, mid-read cancellation, own-source regression case",
             "status": "pending",
-            "reviewer": ("independent subagent (non-author) - must differ from the rev1 reviewer session; "
-                         "should re-run the reviewer's own P1 counter-examples rather than trust this record"),
-            "note": "evidence: evidence/b02-implementation.md (rev2 sections), evidence/b02-verification.json, reviews/B.VR-b02.json (rev1)",
+            "reviewer": ("independent subagent (non-author) - must differ from both earlier reviewer sessions; "
+                         "should re-run the rev2 counter-example (rejections best priority + drifted copy) and "
+                         "the rev1 counter-example (drifted survivor) itself"),
+            "note": "evidence: evidence/b02-implementation.md (rev3 sections), evidence/b02-verification.json, reviews/B.VR-b02.json, reviews/B.VR-b02-rev2.json",
+        },
+        {
+            "gate": "B.VR rev2 (B02 rev2)",
+            "scope": "company-wiki 350b67a",
+            "status": "closed",
+            "verdict": "accepted_with_findings",
+            "findings": {"P2": 2, "P3": 3},
+            "note": ("confirmed both rev1 P1s genuinely fixed; found that the claim-trusted fallback "
+                     "short-circuited the walk and that S-10's 'no wider than pre-B02' justification was "
+                     "false; all five addressed in rev3"),
+            "record": "reviews/B.VR-b02-rev2.json",
         },
         {
             "gate": "B.VR rev1 (B02)",
