@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "artifact": "field-owner-map",
+  "step": "B01",
+  "generated_for": "R4 phase B (position-transparent index / read-only access)",
+  "generated_at_utc": "2026-09-12",
+  "generated_by": "author session (run 2026-09-11_r4-phase-b); counts verified against b-design.md section B01.1/B01.2",
+  "authority": {
+    "design": "b-design.md sections B01.1 and B01.2",
+    "file_scope": "file-scope.md (F5 models.py, F6 config.py, F8 policy.py)",
+    "owner_rulings": "owner-rulings-2026-09-11.md (R-1, R-2, R-3, R-4, R-6) + owner-scope-decisions-2026-09-12.md (S-2, S-3)",
+    "note": "This file is the machine-readable form the design asks for; the prose tables stay authoritative for wording."
+  },
+  "semantic_owners": [
+    {
+      "area": "physical_location",
+      "owner": "storage layer",
+      "carrier": "config.py (admission) -> models.RootSpec",
+      "fields": ["kind", "path", "adapter_id", "adapter_version_range", "admission_profile_id", "routes", "sidecar_suffixes", "max_file_size", "encoding", "allowed_document_kinds", "allowed_statuses", "priority", "symlink_policy", "read_only"],
+      "b01_action": "keep; unknown root fields are refused by config.py (single admission point)",
+      "not_in_b": ["symlink_policy handling (owner R-1 work package)", "read_only handling (owner R-1 work package)"]
+    },
+    {
+      "area": "business_identity",
+      "owner": "catalog layer",
+      "carrier": "models.py + service.py projection (+ resolver handle fields)",
+      "fields": ["document_id", "source_id", "content_sha256", "locator (root_id + relative_path)"],
+      "b01_action": "B does not change identity semantics; B04 makes the locator explicit and keeps paths as diagnostics",
+      "residual": "service.py canonical election still consults root priority (owner R-6 queued outside B)"
+    },
+    {
+      "area": "reuse_qualification",
+      "owner": "policy layer, ONE function",
+      "carrier": "policy.py::_effective_reusable",
+      "fields": ["reusable_for_filing (per root)"],
+      "b01_action": "the resolver now CALLS that function instead of keeping a kind-only copy, so an explicit false takes effect (owner R-2 / design P-7) and the resolver cannot disagree with the exported containment policy",
+      "live_implementations": [
+        {"where": "resolver.py resolve()", "before": "kind-only set (ignored an explicit false)", "after": "calls policy._effective_reusable (B01)"},
+        {"where": "policy.py::_effective_reusable", "role": "authoritative function; unchanged by B01"},
+        {"where": "policy_2x.py::_effective_reusable_2x (via export_policy_2x)", "role": "frozen: in production, the only source of filing-fetch's FC-501 policy_hash; must not change (S-3)"}
+      ],
+      "semantics": {
+        "explicit_true": "reusable regardless of the kind list",
+        "explicit_false": "not reusable (wins over the kind list)",
+        "unset_null": "follows config.reusable_root_kinds"
+      }
+    },
+    {
+      "area": "egress_policy",
+      "owner": "action boundary",
+      "carrier": "llm_summarizer.py (allowlist) and legacy_research_ingest.py (ungated exit)",
+      "b01_action": "NOT in this phase (owner S-2): recorded for the owner's separate R-4 work package"
+    },
+    {
+      "area": "document_evidence_quality",
+      "owner": "not carried by root fields",
+      "carrier": "orthogonal to root capability",
+      "b01_action": "B does not introduce quality-as-capability"
+    }
+  ],
+  "field_version_map": {
+    "row_count": 12,
+    "field_name_count": 16,
+    "counting_note": "12 merged rows expand to 16 field names (the list below) plus kind itself; v0.1.1 said 14 and omitted admission_profile_id (B-DR2-10)",
+    "fields": [
+      {"field": "read_only", "owner": "storage", "b01_disposition": "not changed by B (owner R-1 work package); the read path must not rely on its default", "migration_condition": "real writability is decided by kind == 'company_raw' in canonical_writer.py"},
+      {"field": "reusable_for_filing", "owner": "policy (single function)", "b01_disposition": "kept and made to take effect (explicit false wins)", "migration_condition": "a change to policy.py/policy_2x output changes the cross-repo policy_hash and requires a synchronized filing-fetch migration"},
+      {"field": "symlink_policy", "owner": "storage", "b01_disposition": "not changed by B (owner R-1)", "migration_condition": "L05 only verifies the read path's symlink/reparse behaviour"},
+      {"field": "priority", "owner": "storage", "b01_disposition": "kept as ORDERING only (B02 segment 4); no longer decides metadata truth (B05)", "migration_condition": "no schema change; semantics covered by L01/L08 cases"},
+      {"field": "privacy_class", "owner": "action boundary", "b01_disposition": "not changed by B (owner R-4)", "migration_condition": "shipped config declares public on all four roots, so R-4 is inert in production; B produces no synthetic-config assertion"},
+      {"field": "cohort", "owner": "catalog", "b01_disposition": "kept; not in the live loader's admitted set, so declaring it is refused", "migration_condition": "enabling it is a new feature"},
+      {"field": "canonical_write_target", "owner": "storage", "b01_disposition": "not introduced; declaring it is refused by config.py", "migration_condition": "introducing it requires an admission implementation plus write-target negative cases"},
+      {"field": "adapter_id", "owner": "storage", "b01_disposition": "kept", "migration_condition": "config.py requires it to be registered"},
+      {"field": "adapter_version_range", "owner": "storage", "b01_disposition": "kept", "migration_condition": "config.py requires it to be registered/valid"},
+      {"field": "admission_profile_id", "owner": "storage", "b01_disposition": "kept", "migration_condition": "registry location: adapters/registry.py (admission_profile) via adapters/registry.json"},
+      {"field": "allowed_document_kinds", "owner": "storage", "b01_disposition": "kept (admission allowlist)", "migration_condition": "none"},
+      {"field": "allowed_statuses", "owner": "storage", "b01_disposition": "kept (admission allowlist)", "migration_condition": "none"},
+      {"field": "sidecar_suffixes", "owner": "storage", "b01_disposition": "kept", "migration_condition": "none"},
+      {"field": "max_file_size", "owner": "storage", "b01_disposition": "kept", "migration_condition": "none"},
+      {"field": "encoding", "owner": "storage", "b01_disposition": "kept", "migration_condition": "none"},
+      {"field": "routes", "owner": "storage", "b01_disposition": "kept", "migration_condition": "none"},
+      {"field": "kind", "owner": "storage", "b01_disposition": "kept (one of the capability predicates)", "migration_condition": "models.ROOT_KINDS + config admission"}
+    ]
+  },
+  "shipped_config_facts": {
+    "config_path": "config/source_catalog.yaml",
+    "reusable_root_kinds": ["company_raw", "dayu_portfolio", "directory"],
+    "roots": [
+      {"root_id": "company_raw", "kind": "company_raw", "reusable_for_filing_declared": null, "effective_reusable": true},
+      {"root_id": "dayu_portfolio", "kind": "dayu_portfolio", "reusable_for_filing_declared": null, "effective_reusable": true},
+      {"root_id": "dropbox_stock", "kind": "directory", "reusable_for_filing_declared": null, "effective_reusable": true},
+      {"root_id": "future_lake", "kind": "directory", "reusable_for_filing_declared": true, "effective_reusable": true}
+    ],
+    "blast_radius_of_b01": "none in production: every shipped root was already effectively reusable, so aligning the resolver changed no production answer",
+    "policy_sha256": "cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626",
+    "policy_hash_pinned_by": "tests/contract/test_r4b01_field_owner_alignment.py (cross-repo: filing-fetch FC-501 containment)"
+  },
+  "acceptance": {
+    "file": "company-wiki/tests/contract/test_r4b01_field_owner_alignment.py",
+    "cases": 6,
+    "covers": [
+      "explicit false is not reusable (MISSING, trace names no_reusable_root_location)",
+      "unset flag still follows the kind list",
+      "explicit true wins over the kind list, agreeing with the exported policy",
+      "the resolver's reusable set equals the exported reusable set (agreement property)",
+      "an unknown root field is refused by the single admission point",
+      "the shipped policy hash is frozen (a change must fail loudly and demand a cross-repo migration)"
+    ]
+  }
+}

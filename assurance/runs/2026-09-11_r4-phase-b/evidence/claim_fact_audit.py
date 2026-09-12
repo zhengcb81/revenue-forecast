@@ -180,6 +180,23 @@ CHECKS: list[tuple[str, list[str], list[str]]] = [
     ("S-7/S-8 已登记且 S-8 不在\"裁定结果\"表内",
      ["S-7_ratchet_edit", "**S-8**（v0.1.6 新增，**待 owner**）"],
      ["| **S-8**（v0.1.6 新增，**待 owner**） | 把执行计划 §B07"]),
+    ("B01 已实施（F2 + F10 6 用例）且实施记录在场",
+     ["B01 已实施", "evidence/b01-implementation.md",
+      "test_r4b01_field_owner_alignment.py"],
+     ["§B01 | 设计完成"]),
+    ("B01 复用判定收敛为一份实现（解析器调用 policy._effective_reusable）",
+     ["唯一实现", "from .policy import _effective_reusable"],
+     ["解析器仍自行计算可复用集合（现状）", "保留第二份 kind-only 规则"]),
+    ("B01 的缺口 F-B01-6 已登记（两份实现 + 组级门不足 + 候选级过滤）",
+     ["F-B01-6", "no_reusable_root_location", "candidate_rank"],
+     []),
+    ("B01 在产爆炸半径 = none 且 policy_hash 已冻结",
+     ["cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626",
+      "爆炸半径", "test_r4b01_shipped_policy_hash_is_frozen"],
+     ["14 个字段名", "在产答案因此改变"]),
+    ("B01 的残余（私有 import / payload 门）如实登记，不谎称已公开 API",
+     ["_effective_reusable", "B-payload-hash", "field-owner-map.json"],
+     ["_effective_reusable 已成为公开 API"]),
 ]
 
 HISTORY_HINT = re.compile(r"(v0\.\d\.\d|rev\d|B-DR|A-DR|BDR)", re.IGNORECASE)

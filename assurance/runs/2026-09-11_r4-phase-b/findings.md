@@ -2,6 +2,14 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B01-6：复用判定原有**两份实现**，解析器那份忽略显式 `false`（实施期实测；且"文档级门"不足以修）
+
+- **事实（B01 实施时实测）**：`reusable_for_filing` 的判定有两处——导出面 `policy.py::_effective_reusable`（filing-fetch 通过 FC-501 pin 的 `policy_hash` 就来自这里）**认**显式 `false`；解析器 `resolve()` 自己算的那份**只看 `kind`**。于是 owner R-2 / 设计 P-7 要求的"显式声明必须生效"**在解析侧不发生**：一个 `reusable_for_filing: false` 的 root 照样会被拿去复用。
+- **修法**：删掉第二份规则，解析器改**调用**同一个函数（`resolver.py:17` import，`:951` 算一次集合，透传到 `_handle`/`_select_candidate`）。语义：显式 `true` 胜过 kind 列表；显式 `false` 胜过 kind 列表；未声明跟随 `reusable_root_kinds`。
+- **实测到的第二层缺口（值得单独记住）**：只加**文档级**门（"存在某个合格 location 落在可复用 root 下"）**不充分**——排序后的**赢家**仍可能是被排除 root 的副本（`candidate_rank` 1）。B01 的新用例 `test_r4b01_explicit_false_is_not_reusable` 先**红**（观察到被排除 root 的副本被服务），加**候选级**过滤后才**绿**（`resolver.py:1373-1376`）。→ 同类"加过滤"的改动以后要问一句："门是加在**集合**上还是加在**赢家**上？"
+- **爆炸半径 = none（有实测支撑）**：在产四个 root 本就都实际可复用，故对齐后**在产答案不变**、`policy_hash` **逐字节不变**；用例 `test_r4b01_shipped_policy_hash_is_frozen` 把 `cf0ac2adf971…` 冻住，未来改动会响亮失败。
+- **残留（登记，不在 B 内修）**：解析器 import 的是"私有"函数 `_effective_reusable`——这是"一份实现优先于再写一份"的取舍；若 `policy.py` 日后提供公开访问器，此 import 应随之改写。**没有**顺手公开它，因为那会动导出面 payload，而 `B-payload-hash` 目前仍不可执行。
+
 ## F-B05-1：**"声明值 vs 派生值"需要写进设计正文**（实施期细化；请 B.VR 确认是否回填）
 
 - **事实**：设计 §B05 的逐列规则写"取**声明该列且来源可追**的值"，但**没有定义"声明"**。实施按字面"两边非空且不同即冲突"落地时，**打破一条既有冻结断言** `test_writer_dedup_ignores_dayu_portfolio_locations`（用 `git stash` 对照确认因果）：dayu 的 `same.htm` 让文档先有 `document_kind='regulatory_filing'`（**文件名派生**、`dayu_meta` 为空即无声明），canonical 导入的 sidecar **声明**了 `annual_report`；按字面规则会把后者当冲突压住 → writer 的身份校验解析不到 → `CanonicalImportError`。

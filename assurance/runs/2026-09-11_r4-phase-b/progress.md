@@ -1,14 +1,24 @@
 # R4 Phase B 进度（progress）
 
-## 2026-09-12（实施期）— **B05 = `B.VR` rejected（2×P1/5×P2/3×P3）→ P1 已修（`b6a8442`）；P2/P3 部分待做**
+## 2026-09-12（实施期）— **B01 已实施**（复用判定收敛为一份实现 + 候选级过滤；在产爆炸半径 = none）
+
+- **交付**：`company-wiki/src/company_wiki/source_catalog/resolver.py`（sha256(16) `e43bc42b6108063c`）+ 新增 F10 验收 `tests/contract/test_r4b01_field_owner_alignment.py`（sha256(16) `810569b1f0ddb898`，**6 用例**）+ [evidence/field-owner-map.json](evidence/field-owner-map.json)（5 归属方 / 12 行 16 字段名 / 在产 config 事实 / 验收清单）。提交 `0e28d99`（`fcap`→`origin/master`），CI run `34717481812`。记录 [evidence/b01-implementation.md](evidence/b01-implementation.md)。
+- **改了什么**：设计 P-7 / owner R-2 要求"显式 `reusable_for_filing` 必须生效"，但复用判定原有**两份实现**——导出面 `policy._effective_reusable` 认显式 `false`，解析器那份**只看 kind**。现在解析器**调用同一个函数**（`resolver.py:17/:951`），并把同一集合透传到 `_handle`/`_select_candidate`。
+- **实测到的第二层缺口（F-B01-6）**：只加**文档级**门不够——赢家仍可能是被排除 root 的副本。新用例 `test_r4b01_explicit_false_is_not_reusable` 先**红**（观察到被排除 root 的副本被服务），加**候选级**过滤（`:1373-1376`）后**绿**。
+- **在产影响 = 无**：四个在产 root 本就都实际可复用 ⇒ 答案不变、`policy_hash` **逐字节不变**（`cf0ac2adf971…`），并由用例 `test_r4b01_shipped_policy_hash_is_frozen` 冻结（跨仓：filing-fetch FC-501 containment）。
+- **复跑**：新用例 **6 passed**；`pre_push_gate` **GREEN**；全量套件 **2716 passed / 7 skipped / 1 failed**（唯一 failed = 已知 worker 残留环境产物，pre-change 树同样失败）；覆盖率 `resolver.py` **87.95 %**（底 86）、`scanner.py` 91.12 %（底 91）、`service.py` 95.20 %（底 95）；复杂度棘轮 4 passed；`ruff` clean。
+- **残余（登记，不在 B 内修）**：解析器 import 的是私有函数 `_effective_reusable`（"一份实现优先"的取舍；公开它会动导出面 payload，而 `B-payload-hash` 仍不可执行）。
+
+## 2026-09-12（实施期）— **B05 = `B.VR` rejected（2×P1/5×P2/3×P3）→ P1/P2 已修（`b6a8442`/`9826b3c`）；残余仅 B-VR05-09/-10**
 
 - **复审**：第六个独立会话，记录 [reviews/B.VR-b05.json](reviews/B.VR-b05.json)。它**复现了作者的数字**（逐列规则矩阵 (i)–(vii) 全对；共享列可加性成立；2706/7/1 中唯一失败在 pre-change 树上同样失败=环境残留），但**证伪两处**：
   1. **B-VR05-01（P1）**：冲突保留**依赖扫描顺序**——根顺序对调 `conflicts` 从 2 变 0；第三份一致副本会抹掉候选清单（`_merge_columns` 逐捕获重算 + `fields.update()` 覆盖）。
   2. **B-VR05-02（P1）**：**声明值可被静默覆盖**——声明性从"当前存储容器"重算，A（声明 kind）→ B（`prefer_new`、不声明）→ C（声明另一种 kind）之后 C 直接胜出且 `conflicts=[]`。
 - **P1 修复（`b6a8442`，各有回归用例）**：① `_merge_metadata_json` 逐字段合并（来源只增、候选不抹）+ 新增 `aligned_columns`（容器中已存在的声明键对齐到合并后的列值）；② 来源记录新增 `declared` 标志（**声明随值记录**），存储侧优先读已记录来源，**INSERT 也写 provenance**（否则首次捕获的声明从未落盘）；③ 顺带修 B-VR05-07（`published_date` 补空也要求声明）。
-- **P2/P3 处置**：见 [evidence/b05-review-disposition.md](evidence/b05-review-disposition.md) §3 —— **未解决**：B-VR05-03（响应级 `blocked` **没有消费者**，载体是 F2 `resolver.py` → **S-13 待 owner 裁范围**）、B-VR05-04（声明与分类器输入脱钩）、B-VR05-10（字段名/低熵 hash 可逆）；**部分**：B-VR05-05/-09；**已修**：B-VR05-06（用例数改实测：7）、B-VR05-07、B-VR05-08。
-- **复跑**：B05 文件 **7 passed**；writer+pipeline **21 passed**；`tests/unit` + B05 邻域 + 两张棘轮 **836 passed / 2 skipped**，唯一失败是**环境残留** worker 进程（pre-change 树同样失败）；全量 **2707 passed / 7 skipped / 2 failed**（其一环境残留，其二为本轮已修的旧版顺序用例）；覆盖率 `scanner.py` **90.89 %**（底 90.5）、`service.py` 95.20 %；`ruff` clean。
-- **待办**：修 B-VR05-04/-05 与文档核对 → 送 `B.VR` B05 rev2；owner 待裁 **S-10 / S-11 / S-12 / S-13**。
+- **P2/P3 处置**：见 [evidence/b05-review-disposition.md](evidence/b05-review-disposition.md) §3 —— **已修**：B-VR05-04（"声明"绑定到**扫描器实际用到的值**）、B-VR05-05（一致副本累积为来源 + 归属从已记录来源读回）、B-VR05-06（用例数改实测：**9**）、B-VR05-07、B-VR05-08；**已定案**：B-VR05-03（响应级 `blocked` **并入 B06/B07**，owner S-13 已批）；**残余登记**：B-VR05-09（个别文案：扁平形状/35 vs 30 复杂度）、B-VR05-10（"不写原文"只对**值**成立 + 低熵值 12 位 hash 可反推）——按 §11 不复开纯文字复审轮，随下一步抽样复核。
+- **复跑（P2 修复后，`9826b3c`）**：B05 文件 **9 passed**；全量套件 **2716 passed / 7 skipped / 1 failed**（唯一 failed = 环境残留 worker，pre-change 树同样失败）；覆盖率 `scanner.py` 91.12 %、`service.py` 95.20 %；`ruff` clean；CI run `34715944895` = **success**。
+- **待办**：B03（稳定只读字节 + 读后校验；承接 S-10 推迟的字节级硬门），随后 B06 → B07（须交付 S-13 的响应级 `blocked`）。
+- **复跑（P1 修复时，`b6a8442`）**：B05 文件 **7 passed**；writer+pipeline **21 passed**；`tests/unit` + B05 邻域 + 两张棘轮 **836 passed / 2 skipped**，唯一失败是**环境残留** worker 进程（pre-change 树同样失败）；全量 **2707 passed / 7 skipped / 2 failed**（其一环境残留，其二为已修的旧版顺序用例）；覆盖率 `scanner.py` **90.89 %**、`service.py` 95.20 %；`ruff` clean。
 
 ### B05 交付概要（子步 1–3）
 
@@ -135,3 +145,6 @@
 | 2026-09-12 07:54–08:05 | **B.DR = rejected**（20 条 / 8 条 claim 未复现）、**A07 = accepted_with_findings**、**A08 = rejected**（三份复审共同命中同一 P0） |
 | 2026-09-12 08:05–11:20 | 阶段 A → **v0.4.1** 再 → **v0.4.2**；B → **v0.1.1 → v0.1.2 → v0.1.3 → v0.1.4 → v0.1.5 → v0.1.6**（对应 B.DR rev1–rev6 六轮）；A06-D0 基线产出（787 unit / 1748 contract passed）；两份 checkpoint 重建（`reviews/**` 纳入产物清单）；上述提交**已推送**，CI #146 success |
 | 2026-09-12（实施期） | owner 授权实施 → **B02 实施**（`service.py` + `resolver.py` + 新增 F10 测试 16 用例）；RED/GREEN 探针（`git worktree` 对照）落盘；全量套件 + 覆盖率/复杂度棘轮 + ruff + FC-1201 门复跑；**偏差登记 S-10**；B 设计/file-scope/task_plan → **v0.1.7**（实施回填，正文语义未变） |
+| 2026-09-12（实施期） | `B.VR` 复审链：**B02** rev1 rejected → rev2/rev3/rev4 accepted_with_findings（逐条处置，新增回归）→ **rev5 文字收口 + 作者收口决定**（§11 不再开第五轮纯文字复审）；**B04** 实施（4 用例 + 5 变异全 KILLED，产品代码零改动）→ accepted_with_findings（2×P2/4×P3 落盘，F-B04-1 措辞按实测改写）；**B05** 实施 → **rejected**（2×P1/5×P2/3×P3）→ P1（顺序无关冲突保留 + 声明绑定到值）与 P2（声明判定绑定"实际用到的值"、同意来源累积、归属补齐）修复，残余 B-VR05-09/-10 登记 |
+| 2026-09-12 晚 | **owner 第二批裁定**（§9 全按作者推荐：S-10 差异清单为权威口径 / S-11 预算耗尽取 pre-B02 行 + trace / S-12 同路径覆盖记为契约级已知限制 / S-13 响应级 `blocked` 移入 B06+B07）+ **§11 简化工作模式生效**（只上呈范围/风险问题；每步一次独立复审；每步一份实施记录；CI 按步；契约限制留 run 目录） |
+| 2026-09-12 晚（实施期） | **B01 实施** → 提交 `0e28d99`（wiki `fcap`→`origin/master`，CI run `34717481812`）：复用判定**收敛为一份实现**（`resolver.py` 调用 `policy._effective_reusable`）+ **候选级过滤**（用例实测：只加文档级门时被排除 root 的副本仍会被服务）；新增 F10 验收 **6 用例**（含在产 `policy_hash` 冻结）；交付 [evidence/field-owner-map.json](evidence/field-owner-map.json)；全量套件 2716 passed / 7 skipped（唯一 failed 为已知 worker 残留环境产物）；覆盖率 resolver 87.95% / scanner 91.12% / service 95.20%；缺口登记 **F-B01-6** → [evidence/b01-implementation.md](evidence/b01-implementation.md) |

@@ -5,6 +5,7 @@
     ".gitattributes",
     "b-design.md",
     "b-vr-protocol.md",
+    "evidence/b01-implementation.md",
     "evidence/b02-ci-runs.md",
     "evidence/b02-implementation.md",
     "evidence/b02-red-green-post-b02.json",
@@ -22,6 +23,8 @@
     "evidence/b05-plan.md",
     "evidence/b05-review-disposition.md",
     "evidence/build_checkpoint.py",
+    "evidence/ci_query.py",
+    "evidence/field-owner-map.json",
     "file-scope.md",
     "findings.md",
     "owner-scope-decisions-2026-09-12.md",
@@ -271,7 +274,7 @@
         },
         {
           "file": "findings.md",
-          "line": 150,
+          "line": 158,
           "text": "| `legacy_observer.py:90` 入共享读取者 | 新值 @ `b-design.md:154` | ✅ |"
         }
       ],
@@ -299,7 +302,7 @@
         },
         {
           "file": "findings.md",
-          "line": 147,
+          "line": 155,
           "text": "| N-1 从 B07 完成定义移除（v0.1.6） | 新值 `**不含 N-1**` @ `b-design.md:210`；旧值 `N-1 判定` 仅存于 findings 历史行 | ✅ |"
         }
       ],
@@ -387,12 +390,12 @@
         },
         {
           "file": "findings.md",
-          "line": 153,
+          "line": 161,
           "text": "| `B-payload-hash` 当前不可执行 | 新值 @ `test-acceptance-map.md` §1c | ✅ |"
         },
         {
           "file": "findings.md",
-          "line": 167,
+          "line": 175,
           "text": "**其余处置**：`B-DR5-03`（`metadata_json` 胜利路径整列替换）→ 已在 §B05 第 5 条禁止，并把 F3 锚点扩到 `scanner.py:1007-1099`；`B-DR5-04`（`B-payload-hash` 无基线且需待批 CLI）→ 标注为**当前不可执行**，须先在隔离副本"
         }
       ],
@@ -463,7 +466,7 @@
       "superseded_hits": [
         {
           "file": "findings.md",
-          "line": 155,
+          "line": 163,
           "kind": "history",
           "text": "| R-6 计数 = 11 锚点（v0.1.6） | 新值 @ `file-scope.md:51`；旧断言 `9 处同型排序` 0 处 | ✅ |"
         },
@@ -857,17 +860,17 @@
       "required_hits": [
         {
           "file": "findings.md",
-          "line": 95,
+          "line": 103,
           "text": "| **B-VR02R2-05** | P3 | 证据与代码不一致三处：(a) `b02-red-green-post-b02.json` 仍是 rev1 时代产物；(b) 测试文件 module docstring 还写着 rev1 的\"偏好而非硬门\"语义；(c) 证据 §1 行锚最多偏移 7 行；另\"每条 find"
         },
         {
           "file": "findings.md",
-          "line": 126,
+          "line": 134,
           "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
         },
         {
           "file": "findings.md",
-          "line": 126,
+          "line": 134,
           "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
         },
         {
@@ -900,7 +903,7 @@
         },
         {
           "file": "findings.md",
-          "line": 107,
+          "line": 115,
           "text": "| **B-VR02-01** | **P1** | rev1 的\"回退到任意**可读**副本\"会把**不同修订**当成本版本发出去：3 份同字节副本 → 删掉首选与第三份、把存活那份改成**不同字节**（声明 28 B / 实际 34 B）→ rev1 返回 `reused_exact` + `download_re"
         }
       ],
@@ -923,12 +926,12 @@
         },
         {
           "file": "findings.md",
-          "line": 108,
+          "line": 116,
           "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
         },
         {
           "file": "findings.md",
-          "line": 108,
+          "line": 116,
           "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
         }
       ],
@@ -956,7 +959,7 @@
         },
         {
           "file": "findings.md",
-          "line": 110,
+          "line": 118,
           "text": "| **B-VR02-04** | P2 | 预算耗尽被折进 S-10，但设计原文要求 `blocked`；且 `_ReadBudget` 跨请求带计数器 → 复用同一 budget/resolver 时**后续请求静默失去全部验证** | `resolve()` 现在每次请求调用 `budget.begin_requ"
         }
       ],
@@ -979,12 +982,12 @@
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 195,
+          "line": 191,
           "text": "\"verdict\": \"rejected\","
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 220,
+          "line": 218,
           "text": "\"verdict\": \"rejected\","
         }
       ],
@@ -1007,19 +1010,19 @@
         },
         {
           "file": "findings.md",
-          "line": 73,
+          "line": 81,
           "text": "| **B-VR02R3-01** | **P2** | **\"锚点 = pre-B02 会服务的那一行，故『不宽于 pre-B02』由构造保证\"这句话为假**（两个反例）：(a) 唯一副本在 `my.rejections_backup/2025.pdf`（含 `.rejections` **子串**但非路径段）且字节"
         },
         {
           "file": "findings.md",
-          "line": 73,
+          "line": 81,
           "text": "| **B-VR02R3-01** | **P2** | **\"锚点 = pre-B02 会服务的那一行，故『不宽于 pre-B02』由构造保证\"这句话为假**（两个反例）：(a) 唯一副本在 `my.rejections_backup/2025.pdf`（含 `.rejections` **子串**但非路径段）且字节"
         }
       ],
       "superseded_hits": [
         {
           "file": "findings.md",
-          "line": 124,
+          "line": 132,
           "kind": "history",
           "text": "- **残余风险（如实）**：规则 2 允许的那一行仍可能**字节已漂移**而被服务（trace 记 `unverified_<该行失败状态>_on_pre_b02_canonical`）；读路径在 B03 落地前不会拦它。**该行与 pre-B02 会服务的行并不等价**，四处差异（a/b/c/d）只有一处权威清单："
         },
@@ -1186,25 +1189,25 @@
         },
         {
           "file": "findings.md",
-          "line": 58,
+          "line": 66,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 58,
+          "line": 66,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 58,
+          "line": 66,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 58,
+          "line": 66,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         }
@@ -1278,7 +1281,7 @@
         },
         {
           "file": "findings.md",
-          "line": 74,
+          "line": 82,
           "text": "| B-VR02R3-02 | P3 | 变异 M5（删收尾守卫 `or budget.cancelled`）**存活**且非等价：取消发生在**最后一个**候选读取中时，变异体会返回句柄 | 新增 `test_r4b02_cancel_during_the_last_candidate_read`（三份全漂移 + 第"
         },
         {
@@ -1316,7 +1319,7 @@
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 236,
+          "line": 239,
           "text": "\"verdict\": \"accepted_with_findings\","
         }
       ],
@@ -1367,7 +1370,7 @@
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 389,
+          "line": 405,
           "text": "\"S-7_ratchet_edit\": \"DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited\","
         },
         {
@@ -1385,7 +1388,7 @@
       "required_hits": [
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 467,
+          "line": 501,
           "text": "\"note\": (\"per-file versions matter: root-contract is v0.4.2 while operation-contract and \""
         }
       ],
@@ -1398,8 +1401,155 @@
       "required_hits": [
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 389,
+          "line": 405,
           "text": "\"S-7_ratchet_edit\": \"DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited\","
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B01 已实施（F2 + F10 6 用例）且实施记录在场",
+      "required_hits": [
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 12,
+          "text": "| 验收用例（新增，F10） | `company-wiki/tests/contract/test_r4b01_field_owner_alignment.py`（sha256(16) `810569b1f0ddb898`，11 140 B） | 6 个用例，见 §3 |"
+        },
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 59,
+          "text": "python -m pytest tests/contract/test_r4b01_field_owner_alignment.py -q"
+        },
+        {
+          "file": "evidence/build_checkpoint.py",
+          "line": 202,
+          "text": "\"tests/contract/test_r4b01_field_owner_alignment.py (6 cases)\"),"
+        },
+        {
+          "file": "evidence/build_checkpoint.py",
+          "line": 211,
+          "text": "\"evidence: evidence/b01-implementation.md, evidence/field-owner-map.json, findings.md \""
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B01 复用判定收敛为一份实现（解析器调用 policy._effective_reusable）",
+      "required_hits": [
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 32,
+          "text": "| `:17` | `from .policy import _effective_reusable` —— 唯一实现 |"
+        },
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 32,
+          "text": "| `:17` | `from .policy import _effective_reusable` —— 唯一实现 |"
+        },
+        {
+          "file": "reviews/B.DR.json",
+          "line": 271,
+          "text": "\"required_fix\": \"在 B01 现状栏列出三处分叉并指定唯一实现归属与 import 方向（例如 resolver 复用 `policy.*` 的那个函数），把 DR 检查点从『不得新增』升级为『存量两套必须收敛为一套，且导出与 resolver 结果一致性需有测试』。\""
+        },
+        {
+          "file": "reviews/B.DR.json",
+          "line": 373,
+          "text": "\"B.DR 第 2 项『不得新增第二套 effective_reusable』：包内未列出**已存在**的两套在产实现（policy.py:67、policy_2x.py:308），也未指定唯一实现归属，检查点因此无法执行\","
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B01 的缺口 F-B01-6 已登记（两份实现 + 组级门不足 + 候选级过滤）",
+      "required_hits": [
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 34,
+          "text": "| `:1102-1109` | **文档级**门：该文档没有任何落在可复用 root 下的合格 location ⇒ `no_reusable_root_location`（写进 trace，不再服务） |"
+        },
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 41,
+          "text": "只加文档级门**不足以**实现 R-2：组级门只要求\"**存在**某个合格 location 落在可复用 root 下\"，而排序后的赢家仍然可能是**被排除 root 的副本**（`candidate_rank` 1）。新用例 `test_r4b01_explicit_false_is_not_reusable` 先*"
+        },
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 49,
+          "text": "| `test_r4b01_explicit_false_is_not_reusable` | 显式 `false` 的 root 持有唯一副本 | 不服务（`MISSING`），trace 含 `no_reusable_root_location` |"
+        },
+        {
+          "file": "evidence/b02-implementation.md",
+          "line": 11,
+          "text": "| rev1 | `cab1fd6` | 资格先于排序 + `candidate_rank`/`exclusion_reason`；有序合格清单逐份尝试；预算/取消；`_Selection` | **`B.VR` rev1 = rejected**（2×P1 / 2×P2 / 3×P3，[reviews/B.VR-b0"
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B01 在产爆炸半径 = none 且 policy_hash 已冻结",
+      "required_hits": [
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 13,
+          "text": "| 字段归属表（新增） | [field-owner-map.json](field-owner-map.json) | 5 个语义归属方；12 行 / 16 个字段名的版本映射；**在产 config 事实**与 B01 爆炸半径；验收清单 |"
+        },
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 54,
+          "text": "| `test_r4b01_shipped_policy_hash_is_frozen` | 冻结跨仓契约 | 在产 `policy_sha256 = cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626` —— 未来改动会**响亮失败**，而"
+        },
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 54,
+          "text": "| `test_r4b01_shipped_policy_hash_is_frozen` | 冻结跨仓契约 | 在产 `policy_sha256 = cf0ac2adf9714fe003eb1d1497d678877840e35a6a6c32bc65aa7e5d0c0e1626` —— 未来改动会**响亮失败**，而"
+        },
+        {
+          "file": "evidence/b01-implementation.md",
+          "line": 86,
+          "text": "1. **不需要跨仓迁移**：在产四个 root（`company_raw` / `dayu_portfolio` / `dropbox_stock` / `future_lake`）**本来就都实际可复用**（`future_lake` 显式 `true`，其余未声明而 kind 在列表内），所以解析器对齐后**在产"
+        }
+      ],
+      "superseded_hits": [
+        {
+          "file": "reviews/B.DR.json",
+          "line": 108,
+          "kind": "history",
+          "text": "\"evidence\": \"b-design.md:34「**旧字段版本映射**（B01 交付物）：为下列字段给出『保留 / 弃用 / 改名』的目标与迁移条件——」后仅列出 14 个字段名（read_only、reusable_for_filing、symlink_policy、priority、privacy_clas"
+        }
+      ],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B01 的残余（私有 import / payload 门）如实登记，不谎称已公开 API",
+      "required_hits": [
+        {
+          "file": "b-design.md",
+          "line": 4,
+          "text": "> **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1"
+        },
+        {
+          "file": "b-design.md",
+          "line": 37,
+          "text": "| 可复用资格 | **policy 层单一函数** | **三处活实现**（v0.1.2 更正，B-DR2-01）：① `resolver.py:782-786`/`:933-940`（kind-only，fail-open，不读字段）；② `policy.py:67-72 _effective_reusable`（"
+        },
+        {
+          "file": "b-design.md",
+          "line": 61,
+          "text": "**产出**：`field-owner-map.json`（机器可读版，供 A06/A08 与 B.VR 引用）。"
+        },
+        {
+          "file": "b-design.md",
+          "line": 223,
+          "text": "| （新增，本包要求）`resolve` 输出的 **policy_export payload 字节/hash 不变** | ✅ **必须由 B 自测**（见 [test-acceptance-map.md](test-acceptance-map.md) §1c 的 `B-payload-hash`） | — |"
         }
       ],
       "superseded_hits": [],
@@ -1407,7 +1557,7 @@
       "verified": true
     }
   ],
-  "passed": 40,
-  "total": 40,
+  "passed": 45,
+  "total": 45,
   "generated_by": "python evidence/claim_fact_audit.py"
 }
