@@ -19,6 +19,8 @@
 | company-wiki | `be2e4ed` | **B01 复审处置**（P1 改冻被消费产物 + P2×3 + P3×2） | CI | ❌ **failure**（`Contract tests`，三份 Python 全红） | 34720686541 |
 | company-wiki | `5ab0779` | **B03**（`read_verified_bytes` + 13 用例） | CI | ❌ **failure**（同上三因） | 34720741197 |
 | company-wiki | `f0aacbf` | **CI 首红的三处更正**（词表码改已注册码 / 只冻可移植量 / symlink 断言改性质） | CI | **success** | 34721761521 |
+| company-wiki | `2f1ddab`→`5b7ef10` | **B03 复审处置 + B01 CFG-08 空值 + B06 资格标签 + B07 版本合同**（四个独立提交，一次推送） | CI | ❌ **failure**（`Contract tests`：**我自己新用例**在 Linux 上失败——它硬编码了 Windows 路径 `C:\Windows\win.ini`） | 34724539364 |
+| company-wiki | `52d394d` | **该用例改为用本平台自己的卷锚点**（`tmp_path.anchor`：Windows `C:\`／POSIX `/`） | CI | **success** | 34724833934 |
 | revenue-forecast | `2ced153` | B 运行目录：B02 实施记录（rev1） | quality | **success** | 34691409601 |
 | revenue-forecast | `7b34c12` | B 运行目录：`B.VR` rev1 记录 + rev2 证据 | quality | **success** | 34693783149 |
 | revenue-forecast | `63422f1` | B 运行目录：`B.VR` rev2 记录 + rev3 证据 | quality | **success** | 34697489835 |
@@ -41,6 +43,7 @@
 | revenue-forecast | `f6d83bb`→`62f4da7` | 裁定记录 + checkpoint 锚定（46 文件，`all_match=True`）**= 本次推送 tip** | quality | **success** | 34718795208 |
 | revenue-forecast | `0249d60`→`e5ea728` | B01 复审处置记录 + B03 实施记录 + 台账 + checkpoint（54 文件） | quality | **success** | 34721069977 |
 | revenue-forecast | `c247c44` | F-B01-9（CI 首红三因）+ 记录 + checkpoint（55 文件） | quality | **success** | 34721932758 |
+| revenue-forecast | `d3770c5` | B03 复审处置 + B06/B07 实施记录 + 台账 + checkpoint（77 文件） | quality | **success** | 34724733730 |
 
 **CI 覆盖到的与本步直接相关的门**（`company-wiki/.github/workflows/ci.yml`，三个 Python 版本 3.11/3.12/3.13 全部 success）：
 
