@@ -3,7 +3,8 @@
 > 依据 handbook **§1 第 5 项**（"首次实施前用户须批准 DEV 精确工作包及文件范围"）与 **§3**（run 目录结构 / card 字段）；B.DR-18 指出 v0.1 把两处误写为"§2.5"，已改。
 > 本页给出 **B 阶段候选改动文件的精确定位 + 冻结哈希**（实测 2026-09-12，wiki 产品树 = A01 冻结的 `7d4852f`，`git diff 7d4852f 032da52 -- src config` 为空，B.DR 已复核）。
 > **本页只是提案**：owner 批准前**没有任何文件会被修改**。
-> **v0.1.3（2026-09-12）**：按 `B.DR-rev3` 补入 **F10（新增测试文件）** 与 **F11（只读金丝雀）**、§3b 各步骤落点行、把 `evidence_query.py` 移入禁止表；R-1/R-4 的整改明确**不含在本包**（见 [b-design §B01.3](b-design.md)）。
+> **v0.1.4（2026-09-12）**：owner 六项边界已定（[owner-scope-decisions-2026-09-12.md](owner-scope-decisions-2026-09-12.md)）——**F10/F11 已获批准**；`export_policy_2x` 按 S-3 **永久在禁止表**；消费者侧按 S-4 **不签**。
+> **v0.1.3**：按 `B.DR-rev3` 补入 **F10（新增测试文件）** 与 **F11（只读金丝雀）**、§3b 各步骤落点行、把 `evidence_query.py` 移入禁止表；R-1/R-4 的整改明确**不含在本包**（见 [b-design §B01.3](b-design.md)）。
 
 ## 1. 允许修改（proposed allowed_files）
 
@@ -21,8 +22,8 @@
 > **v0.1.2 更正（B-DR2-08）**：v0.1.1 把 `llm_summarizer.py` 同时列进 §1（F9）与 §2（禁止）——**自相矛盾**，现已从 allowed 表移除，只保留在 §2 的禁止清单（它属 owner R-4 的外发门整改范围，**不属于 B 的读取面**）。
 > 完整读数（供引用）：`llm_summarizer.py` sha256(16) = `13ff33b76547d39d`，24 572 B。
 
-| F10 | `C:/Users/郑曾波/Projects/company-wiki/tests/contract/**`（**仅新增**文件，命名沿用 `test_<id>_<slug>.py`；**不得修改既有测试的任何断言**） | 新增用例：L01–L12 的 B 侧、显式 `false`、合成 `privacy_class` 配置、L08 逐列合并（含"先缺后补"）、`B-payload-hash`、B02 预算/取消 | 新增（无既有哈希） | B02/B03/B05/B06/B07 | 新断言必须有落笔处（v0.1.3 补，B-DR3-04） | ❌ 新增 |
-| F11 | `C:/Users/郑曾波/Projects/company-wiki/scripts/readonly_canary.py` | 只读金丝雀（既有脚本，供 L12 的独立观察复用） | 见文件哈希 | B03/B07 | **只读调用，不修改**；若需修改则升级为单独工作包 | ❌ 新增 |
+| F10 ✅**已批准**（S-1） | `C:/Users/郑曾波/Projects/company-wiki/tests/contract/**`（**仅新增**文件，命名沿用 `test_<id>_<slug>.py`；**不得修改既有测试的任何断言**） | 新增用例：L01–L12 的 B 侧、显式 `false`、合成 `privacy_class` 配置、L08 逐列合并（含"先缺后补"）、`B-payload-hash`、B02 预算/取消 | 新增（无既有哈希） | B02/B03/B05/B06/B07 | 新断言必须有落笔处（v0.1.3 补，B-DR3-04） | ❌ 新增 |
+| F11 ✅**已批准**（S-1/S-5） | `C:/Users/郑曾波/Projects/company-wiki/scripts/readonly_canary.py` | 只读金丝雀（既有脚本，供 L12 的独立观察复用） | 见文件哈希 | B03/B07 | **只读调用，不修改**；若需修改则升级为单独工作包 | ❌ 新增 |
 
 ## 2. 明确禁止（prohibited，除非另行单独批准）
 

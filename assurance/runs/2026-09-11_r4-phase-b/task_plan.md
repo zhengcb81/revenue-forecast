@@ -3,7 +3,7 @@
 > 运行目录：`revenue-forecast/assurance/runs/2026-09-11_r4-phase-b/`（**本 run 的证据产物只落在此目录**，不写回审计证据目录）
 > 权威来源：[R4 执行计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md) §B（B01–B10） · [R4 测试矩阵](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-test-matrix.md)（L01–L12 / P / O / M） · [接班手册](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/execution-handbook.md) §2/§3/§5
 > 阶段 A 产物（冻结输入）：[../2026-09-11_r4-phase-a/](../2026-09-11_r4-phase-a/)（A01–A04 v0.3.1、A.DR rev3 `accepted_with_findings`、owner 六项裁定 = [owner-rulings-2026-09-11.md](../2026-09-11_r4-phase-a/owner-rulings-2026-09-11.md)）
-> 状态：**B 设计 v0.1.3（DESIGN_ONLY；`B.DR` 三轮 rejected 均已逐条更正，剩余 P1 全部转为 scope 决定，见 §5）**；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，20 条已逐条更正，见 [findings.md](findings.md) F-B01-1）；产品代码**未被修改**；B 的实施需 owner 批准本包 DEV 工作包与文件范围（handbook **§1 第 5 项** + §3；v0.1 曾误写"§2.5"）
+> 状态：**B 设计 v0.1.4（DESIGN_ONLY + 边界已定：owner 六项 scope 裁定已写入 §5；`B.DR` 前三轮 rejected 已逐条更正）**；产品代码零改动；实施入口待 owner 一句确认；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，20 条已逐条更正，见 [findings.md](findings.md) F-B01-1）；产品代码**未被修改**；B 的实施需 owner 批准本包 DEV 工作包与文件范围（handbook **§1 第 5 项** + §3；v0.1 曾误写"§2.5"）
 
 ## 0. 起点与授权
 
@@ -57,7 +57,20 @@
 - 三仓推送仍走各自强制 gate（revenue 的 gate 会**只读**打开生产 catalog，已在阶段 A 的 [boundary-audit.md](../2026-09-11_r4-phase-a/boundary-audit.md) 归因）。
 
 
-## 5. 现在只剩 scope 决定（v0.1.3，需 owner 定夺）
+## 5. 边界已由 owner 定案（2026-09-12，见 [owner-scope-decisions-2026-09-12.md](owner-scope-decisions-2026-09-12.md)）
+
+### 5b. 裁定结果（owner 2026-09-12「全按推荐来」）
+
+| # | 裁定 | 落地 |
+|---|---|---|
+| S-1 | ✅ B **可以新增**测试文件（仅新增、不改既有断言） | [file-scope.md](file-scope.md) F10 生效 |
+| S-2 | ❌ owner R-1/R-4 整改**不纳入 B**（另立工作包） | [b-design §B01.3](b-design.md) |
+| S-3 | ❌ **不动**在产 `export_policy_2x`（跨仓 policy_hash 保持） | `B-payload-hash` 逐次验证 |
+| S-4 | ➡️ 消费者侧（filing/revenue）**归 C**，B 不签 | B07 完成定义 = wiki 侧四件 |
+| S-5 | ✅ G8 **两级**：L1 机制层**可立即开工** | [b-vr-protocol.md](b-vr-protocol.md) §1 |
+| S-6 | ✅ 需要**第四轮**复审，先写实边界再送 | 本批更正后提交 `B.DR-rev4` |
+
+> **仍未批准**：**"开始实施"本身**（handbook §1 第 5 项）——边界已定、file-scope 已按裁定更新，但改产品代码需 owner 一句确认。建议实施顺序：B02 → B04 → B05 → B01 → B03 → B06 → B07，每步独立 commit + 独立复审。
 
 三轮 `B.DR` 均判 rejected，但**剩余 P1 全部不是文字问题，而是"B 可以动哪里"的决定**：
 
