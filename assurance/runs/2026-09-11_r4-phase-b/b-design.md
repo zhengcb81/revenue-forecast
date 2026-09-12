@@ -1,5 +1,6 @@
-# B 阶段设计（b-design v0.1.6）—— 位置透明索引与只读读取
+# B 阶段设计（b-design v0.1.7）—— 位置透明索引与只读读取
 
+> **v0.1.7（2026-09-12）**：**B02 实施回填**（owner §8 授权后第一步）—— 新增 [§B02 实施偏差](#b02--同版本候选-location-的选择v011新增-_handle-锚点与资格判定不得联网约束) 说明（段 3 的 hash 相等在 B02 中实现为"优先 + 逐候选诊断"，**字节硬门归 B03 读路径**；依据、复跑命令与新哈希见 [evidence/b02-implementation.md](evidence/b02-implementation.md)）；设计正文其余部分**未改**，B03–B07 仍为 DESIGN_ONLY。
 > **v0.1.6（2026-09-12）**：第五轮 `B.DR-rev5` = rejected（2×P1 / 4×P2 / 5×P3，均为文本与落点级）→ 本版按「新值在场 **且旧值不再作为断言**」的标准逐条落地：N-1 从 B07 完成定义彻底移除、`metadata_json` 整列替换被禁（含 `:1073-1077`/`:1095-1099` 锚点）、`legacy_observer.py:90` 与 `schema_version` 补入、覆盖率棘轮与 `NEW_FILE_MAX` 登记、`B-payload-hash` 标注为**当前不可执行（无基线、需待批 CLI）**、VR-N21 从 B 移除、计数与状态行全部对齐。
 > **v0.1.4（2026-09-12）**：owner 六项边界已定（[owner-scope-decisions-2026-09-12.md](owner-scope-decisions-2026-09-12.md)）——S-1 允许新增测试（F10/F11 已批）、S-2 把 R-1/R-4 留在 B 之外、S-3 冻结在产导出、S-4 消费者侧归 C、S-5 隔离副本两级、S-6 需要第四轮复审。
 > **v0.1.3（2026-09-12）**：按 `B.DR-rev3` 的 11 条更正——**把 owner R-1/R-4 的整改移出 B 的处置与验收**（载体在禁区，见 §B01.3）、B05 补**逐列合并规则**（冲突不得按 priority 择一）、B02 预算改为**能证明整文件 hash 的判据**且不引入五值之外的状态、B06/B07 的可签切分与 file-scope 步骤行补齐、护栏改为真断言。
@@ -107,6 +108,14 @@
 5. **可取消**：调用方取消后不得继续读盘；已读字节计入证据（L06 的"有限资源/可取消"）。
 
 **测试**：L01/L02/L03/L04（L03 的关键验收"撤首选→自动切换"由 `_handle` 承担）；预算与取消由 **L06** 与 **L12** 覆盖。
+
+**⚠️ 实施偏差（v0.1.7 回填，2026-09-12；待 owner 确认 = [S-10](owner-scope-decisions-2026-09-12.md)）**：本段第 3 段的"同 hash"在 **B02 的实际实现**里是**优先 + 逐候选诊断**，不是硬门：
+
+1. 仍**真的读字节**并做**整文件**摘要比对（上限 256 MiB/候选；抽样只用于排除），验证通过的候选**优先**被选中，并记 `verified_sha256`；
+2. 但若清单里**没有任何**候选的字节通过验证、却存在**本地可读**的合格副本，`resolve` 仍返回该副本，并在 `debug_trace` 标注 `unverified_bytes`（**绝不静默**）；
+3. **字节级硬门归 B03 的读路径**（"只返回验证版本字节或明确失败"）——B03 落地前，这一层整体缺失（见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §8）。
+
+**为什么让步**：A 侧**冻结断言**的合成目录里，文件字节与其声明的 `content_sha256` 本就不同（既有 fixture 用 `b"%PDF-fake"` 作字节、`sha256(b"same-bytes")` 作 hash），硬门会让 4 条既有断言失败：`test_source_catalog_determinism.py::{test_same_hash_three_roots_picks_priority_primary_preserves_all,test_same_period_different_hash_is_ambiguous}`、`test_source_catalog_sql_pushdown.py::{test_resolver_uses_sql_pushdown_not_all_table_query,test_old_period_not_shadowed_by_cap}`。按 **S-1**（只新增测试、**不得修改既有断言**），让步只能发生在实现侧。复跑命令与实测输出见 evidence 文件 §3。
 
 ---
 

@@ -1,0 +1,114 @@
+{
+  "generated_by": "python evidence/b02_verify.py",
+  "generated_at": "2026-09-12T11:29:40Z",
+  "wiki_repo": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+  "wiki_head": "c986c7a",
+  "changed_files": {
+    "src/company_wiki/source_catalog/service.py": {
+      "sha256_16": "ae45537d3740816d",
+      "bytes": 57997
+    },
+    "src/company_wiki/source_catalog/resolver.py": {
+      "sha256_16": "b7b7fa9b37ccd9a6",
+      "bytes": 67157
+    },
+    "tests/contract/test_r4b02_candidate_selection.py": {
+      "sha256_16": "a61e32ffaa4dd802",
+      "bytes": 22538
+    }
+  },
+  "coverage": {
+    "measured": true,
+    "coverage_json_written": "2026-09-12T12:27:31.995157",
+    "files": {
+      "resolver.py": {
+        "percent": 87.36,
+        "lines": "607/675",
+        "branches": "222/274"
+      },
+      "service.py": {
+        "percent": 95.16,
+        "lines": "362/372",
+        "branches": "110/124"
+      }
+    }
+  },
+  "checks": [
+    {
+      "command": "python -m pytest tests/contract/test_r4b02_candidate_selection.py -q",
+      "returncode": 0,
+      "summary_lines": [
+        "tests\\contract\\test_r4b02_candidate_selection.py ................        [100%]",
+        "",
+        "============================= 16 passed in 1.96s =============================="
+      ],
+      "passed": true,
+      "check": "B02 acceptance cases"
+    },
+    {
+      "command": "python -m pytest -q tests/contract/test_source_catalog_determinism.py tests/contract/test_source_catalog_sql_pushdown.py tests/contract/test_zr403_dedupe_resolver_generalization.py tests/contract/test_source_catalog_fail_closed.py",
+      "returncode": 0,
+      "summary_lines": [
+        "tests\\contract\\test_source_catalog_fail_closed.py ........               [100%]",
+        "",
+        "============================= 23 passed in 29.91s ============================="
+      ],
+      "passed": true,
+      "check": "B02 targeted regression"
+    },
+    {
+      "command": "python -m pytest -q tests/contract/test_fc1201_root_hardcode_gate.py tests/contract/test_future_root_config_only.py",
+      "returncode": 0,
+      "summary_lines": [
+        "tests\\contract\\test_future_root_config_only.py .....                     [100%]",
+        "",
+        "============================= 10 passed in 6.98s =============================="
+      ],
+      "passed": true,
+      "check": "FC-1201 root-token gates"
+    },
+    {
+      "command": "python -m pytest -q tests/contract/test_fc1204_complexity_ratchet.py",
+      "returncode": 0,
+      "summary_lines": [
+        "tests\\contract\\test_fc1204_complexity_ratchet.py ..                      [100%]",
+        "",
+        "============================== 2 passed in 0.71s =============================="
+      ],
+      "passed": true,
+      "check": "complexity ratchet"
+    },
+    {
+      "command": "python -m pytest tests/unit -q",
+      "returncode": 0,
+      "summary_lines": [
+        "tests\\unit\\test_zr304_read_model.py .........                            [100%]",
+        "",
+        "============================ 787 passed in 59.18s ============================="
+      ],
+      "passed": true,
+      "check": "unit tests"
+    },
+    {
+      "command": "python -m ruff check src tests/unit tests/contract scripts",
+      "returncode": 0,
+      "summary_lines": [
+        "All checks passed!"
+      ],
+      "passed": true,
+      "check": "ruff (CI scope)"
+    },
+    {
+      "command": "python -m pytest -q tests/contract/test_fc1204_coverage_ratchet.py",
+      "returncode": 0,
+      "summary_lines": [
+        "tests\\contract\\test_fc1204_coverage_ratchet.py ..                        [100%]",
+        "",
+        "============================== 2 passed in 0.18s =============================="
+      ],
+      "passed": true,
+      "check": "coverage ratchet gate (FC1204_COVERAGE_GATE=1)"
+    }
+  ],
+  "failed_checks": 0
+}

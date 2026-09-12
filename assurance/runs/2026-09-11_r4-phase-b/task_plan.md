@@ -3,7 +3,7 @@
 > 运行目录：`revenue-forecast/assurance/runs/2026-09-11_r4-phase-b/`（**本 run 的证据产物只落在此目录**，不写回审计证据目录）
 > 权威来源：[R4 执行计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md) §B（B01–B10） · [R4 测试矩阵](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-test-matrix.md)（L01–L12 / P / O / M） · [接班手册](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/execution-handbook.md) §2/§3/§5
 > 阶段 A 产物（冻结输入）：[../2026-09-11_r4-phase-a/](../2026-09-11_r4-phase-a/)（A01–A04 v0.3.1、A.DR rev3 `accepted_with_findings`、owner 六项裁定 = [owner-rulings-2026-09-11.md](../2026-09-11_r4-phase-a/owner-rulings-2026-09-11.md)）
-> 状态：**B 设计 v0.1.6（DESIGN_ONLY + 边界已定：owner 六项 scope 裁定已写入 §5；`B.DR` 前六轮 rejected 已逐条更正）**；产品代码零改动；实施入口待 owner 一句确认；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，20 条已逐条更正，见 [findings.md](findings.md) F-B01-1）；产品代码**未被修改**；B 的实施需 owner 批准本包 DEV 工作包与文件范围（handbook **§1 第 5 项** + §3；v0.1 曾误写"§2.5"）
+> 状态：**B 设计 v0.1.7——owner 已授权实施（[owner-scope-decisions-2026-09-12.md](owner-scope-decisions-2026-09-12.md) §8）；B02 已实施**（F1+F2+F10，见 [evidence/b02-implementation.md](evidence/b02-implementation.md)），**待 B.VR 独立复审**；B04/B05/B01/B03/B06/B07 仍为 DESIGN_ONLY（产品代码未动）；`B.DR` 前六轮 rejected 已逐条更正（[findings.md](findings.md) F-B01-1）；每步独立 commit + 棘轮/覆盖率复跑 + 独立复审
 
 ## 0. 起点与授权
 
@@ -21,7 +21,7 @@
 | 步骤 | 执行计划原文动作（摘） | 交付物 | 状态 |
 |---|---|---|---|
 | **B01** | 每个 root 字段的唯一 owner（path/adapter 在 storage，身份在 catalog，外发策略在动作边界）；旧字段版本映射 | [b-design.md](b-design.md) §B01 | 设计完成 |
-| **B02** | 选同版本全部候选 location：注册/能力→状态→可读/同 hash→健康 I/O 偏好；优先级只在合格集合内排序 | [b-design.md](b-design.md) §B02 | 设计完成 |
+| **B02** | 选同版本全部候选 location：注册/能力→状态→可读/同 hash→健康 I/O 偏好；优先级只在合格集合内排序 | [b-design.md](b-design.md) §B02 | ✅ **已实施**（F1+F2+F10；16 新用例；RED/GREEN 探针）→ [evidence/b02-implementation.md](evidence/b02-implementation.md)；**待 B.VR**；⚠️ 段 3 有一处**已登记的偏差**（S-10） |
 | **B03** | 稳定只读字节提供：固定句柄或受控快照；流式 hash；TOCTOU/云占位/坏字节/中断 | [b-design.md](b-design.md) §B03 | 设计完成 |
 | **B04** | 绝对路径与 location_id 留在诊断；移动后 source/version/locator 仍可解引用 | [b-design.md](b-design.md) §B04 | 设计完成 |
 | **B05** | metadata 按原文/捕获来源/质量合并；保留 provenance 与冲突，**不以 priority 决定真伪** | [b-design.md](b-design.md) §B05 | 设计完成 |
@@ -52,8 +52,9 @@
 
 ## 4. 交付边界（本 run）
 
-- **只写文档**：本目录内 task_plan / findings / progress / b-design / file-scope / test-acceptance-map / risk-and-stop-rules / checkpoint 与 A05/A06 准备件。
-- **不改**：`company-wiki` 与 `filing-fetch` 的任何文件；`revenue-forecast` 内除本目录外的任何文件。
+- **实施已授权**（owner §8）：B02 起，改动**严格限于** [file-scope.md](file-scope.md) 的 allowed 集（F1–F10）；超出 allowed 集即停并请示（§3 停止条件）。
+- **文档落在本目录**：task_plan / findings / progress / b-design / file-scope / test-acceptance-map / risk-and-stop-rules / evidence / checkpoint。
+- **仍不改**：`filing-fetch` 的任何文件；`revenue-forecast` 内除本目录外的任何文件；`company-wiki` 内 allowed 集以外的文件（含 `config/source_catalog.yaml`、`scripts/**`、`.source_catalog/**`）。
 - 三仓推送仍走各自强制 gate（revenue 的 gate 会**只读**打开生产 catalog，已在阶段 A 的 [boundary-audit.md](../2026-09-11_r4-phase-a/boundary-audit.md) 归因）。
 
 
@@ -71,8 +72,9 @@
 | S-6 | ✅ 需要**第四轮**复审，先写实边界再送 | `B.DR-rev4` = rejected（文本/落点级，11 条）→ **v0.1.5 一次收敛**，随后送 `B.DR-rev5` |
 | **S-8**（v0.1.6 新增，**待 owner**，列于本节而非 §5b 的"裁定结果"表内） | 把执行计划 §B07 的「**先测 N-1 支持合同**」整体移出 B，是否同意？ | 两侧代码只接受 `1.0`，包内无 N-1 规则；按本包自订标准「范围改判须 owner 确认」 | **同意**：N-1 登记为跨仓协议待定义项，B 只承诺「未知版本显式拒绝」 | **不同意**：需先定义 N-1 规则再纳入 B07 |
 | **S-7**（v0.1.5 新增，**待 owner**） | 若某步**无法**做到复杂度中性，是否允许**更新复杂度棘轮表**（= 修改既有测试文件 `test_fc1204_complexity_ratchet.py`，与 F10"仅新增"互斥）？ | 见 [b-design §B0x](b-design.md)；**作者建议：不允许**，改用把新判定放进**新增独立模块/函数**的方式保持棘轮文件不变 |
+| **S-10**（v0.1.7 新增，**待 owner**） | B02 段 3 的"同 hash"**硬门**与 A 侧 4 条冻结断言冲突（那些 fixture 的字节与声明 hash 本就不同）→ 实施为"**优先 + 逐候选诊断**"，字节硬门归 B03 读路径。**是否认可这一让步？** | 依据与复跑命令：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3；**作者建议：认可**（S-1 明令不得改既有断言；B03 落地后硬门补齐）。若 owner 不认可，可选：(a) 申请修改那 4 条既有断言（需 owner 另行批准、与 S-1 互斥）；(b) 把 B03 提前并与 B02 合并交付 |
 
-> **仍未批准**：**"开始实施"本身**（handbook §1 第 5 项）——边界已定、file-scope 已按裁定更新，但改产品代码需 owner 一句确认。建议实施顺序：B02 → B04 → B05 → B01 → B03 → B06 → B07，每步独立 commit + 独立复审。
+> **实施已授权**（2026-09-12 第二批，见 [owner-scope-decisions-2026-09-12.md](owner-scope-decisions-2026-09-12.md) §8）：owner 原话「全按推荐：定 S-7/S-8 并开始实施」→ **B02 已实施**（F1+F2+F10），按序推进 B04 → B05 → B01 → B03 → B06 → B07，每步独立 commit + 棘轮/覆盖率复跑 + 独立复审。**新增待确认项 S-10**（B02 段 3 的硬门偏差）见 §5b 下方的待定表。
 
 三轮 `B.DR` 均判 rejected，但**剩余 P1 全部不是文字问题，而是"B 可以动哪里"的决定**：
 
@@ -98,3 +100,4 @@
 | 2026-09-12 07:43–07:46 | 建立 B run 目录；B01–B07 设计 v0.1、文件范围、测试映射、风险/停止规则；A05/A06 准备件；提交 `B.DR` 复审（提交 07:46:12 / 07:46:17） |
 | 2026-09-12 07:54–08:05 | **B.DR = rejected**（20 条；8 条 claim 未复现）+ **A07 = accepted_with_findings** + **A08 = rejected**（三份复审共同命中同一 P0） |
 | 2026-09-12 08:05–09:35 | **阶段 A 更正为 v0.4.1**（P0 范围更正、C2/C4/§2/§5、R 轴与进程级副作用、五值错误模型、版本轴、无门出口、A 台账一致性）；**B 设计更正为 v0.1.1 → v0.1.2 → v0.1.3**（三轮共 20+15+11 条逐条处置；v0.1.3 另把 R-1/R-4 移出 B、补 F10 测试落点、重写 B02 预算与 B05 合并规则、生成器改真断言，见 [findings.md](findings.md) F-B01-1） |
+| 2026-09-12（实施期） | owner 授权实施（`owner-scope-decisions-2026-09-12.md` §8）→ **B02 实施**（F1 `service.py` + F2 `resolver.py` + F10 新测试 16 用例）；RED/GREEN 探针落盘；棘轮/覆盖率/全量套件复跑；段 3 偏差登记为 **S-10**；见 [evidence/b02-implementation.md](evidence/b02-implementation.md) |

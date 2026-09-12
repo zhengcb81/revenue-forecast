@@ -1,5 +1,21 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-12（实施期）— **B02 已实施**（F1+F2+F10；待 B.VR 独立复审）
+
+- **授权**：owner「全按推荐：定 S-7/S-8 并开始实施」→ [owner-scope-decisions-2026-09-12.md](owner-scope-decisions-2026-09-12.md) §8。
+- **本步改了什么**：`service.py`（资格先于排序 + `candidate_rank`/`exclusion_reason`）、`resolver.py`（有序合格清单上的逐份尝试 + 段 3 字节校验 + 预算/取消 + `_Selection`）、新增 `tests/contract/test_r4b02_candidate_selection.py`（16 用例）。**没有**新增产品模块、**没有**改棘轮表、**没有**改 `SourceHandle` 字段。
+- **完整记录**：[evidence/b02-implementation.md](evidence/b02-implementation.md)（含 RED/GREEN 探针、命令、副作用、未做清单）；机器可读结果：[evidence/b02-verification.json](evidence/b02-verification.json)。
+- **本步新发现**：
+  1. **F-B02-1（P1，需 owner 知情）**：设计 §B02 段 3 的"同 hash 硬门"与 A 侧 4 条**冻结断言**的合成 fixture 冲突（fixture 的字节与声明 hash 本来就不同）→ 实施为"优先 + 逐候选诊断"，硬门归 B03；登记为待定项 **S-10**。
+  2. **F-B02-2（P2）**：`exact_duplicate_location_count` / `exact_original_copy_count` 口径改为**只统计合格副本**（`.rejections` 行不再计入）。
+  3. **F-B02-3（P3）**：首轮实现把 `dropbox_stock`/`Dropbox` 写进 docstring，被 **FC-1201 根 token 门**挡下 → 改为与 root 无关的措辞后通过（门按设计生效，非误报）。
+
+### 本步实际副作用（如实）
+
+- **执行过**：修改 `company-wiki` 的 2 个 allowed 产品文件 + 新增 1 个测试文件；本机运行 `pytest`（含全量套件与覆盖率）、`ruff`、只读探针（合成 fixture，临时目录）；`git worktree`（干净 HEAD 源码，用于 RED 对照）。
+- **未执行**：任何网络/下载/LLM、任何产品写入、DB 写入、任务注册、worker 操作、删除；**未**在生产 catalog 上做行为探针。
+- **注意**：全量 `pytest` 中的既有用例会**只读**打开生产 catalog（阶段 A 已归因，属已知限制）。
+
 ## 2026-09-12 07:43 — B 阶段启动（设计，DESIGN_ONLY；时间戳为实测，v0.1.2 更正）
 
 - **授权**：owner「接着做 B 阶段，一直做不要停」（2026-09-11 夜）。按 handbook §1 第 5 项 + §3 解释为：**B 的设计可连续推进**；产品代码写入与 `--help` 之外的命令执行**仍需精确批准**。
@@ -58,3 +74,4 @@
 | 2026-09-12 07:43–07:46 | 建立 B run 目录；交付 v0.1 六份文档 + Phase A 三份准备件；提交 `B.DR` 复审（**已推送**：`1b4bab4`/`4c37ca3` 在 revenue #145） |
 | 2026-09-12 07:54–08:05 | **B.DR = rejected**（20 条 / 8 条 claim 未复现）、**A07 = accepted_with_findings**、**A08 = rejected**（三份复审共同命中同一 P0） |
 | 2026-09-12 08:05–11:20 | 阶段 A → **v0.4.1** 再 → **v0.4.2**；B → **v0.1.1 → v0.1.2 → v0.1.3 → v0.1.4 → v0.1.5 → v0.1.6**（对应 B.DR rev1–rev6 六轮）；A06-D0 基线产出（787 unit / 1748 contract passed）；两份 checkpoint 重建（`reviews/**` 纳入产物清单）；上述提交**已推送**，CI #146 success |
+| 2026-09-12（实施期） | owner 授权实施 → **B02 实施**（`service.py` + `resolver.py` + 新增 F10 测试 16 用例）；RED/GREEN 探针（`git worktree` 对照）落盘；全量套件 + 覆盖率/复杂度棘轮 + ruff + FC-1201 门复跑；**偏差登记 S-10**；B 设计/file-scope/task_plan → **v0.1.7**（实施回填，正文语义未变） |

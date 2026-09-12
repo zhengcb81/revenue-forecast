@@ -1,4 +1,6 @@
-# B 阶段文件范围（file-scope v0.1.6）—— 待 owner 批准的 DEV 工作包附件
+# B 阶段文件范围（file-scope v0.1.7）—— 待 owner 批准的 DEV 工作包附件
+
+> **v0.1.7（2026-09-12）**：**B02 实施回填** —— allowed 集**不变**（F1+F2+F10）；§1 表内 F1/F2 的 `6412b19e…`/`6962b258…` 是**开工前**的 A01 §0 冻结输入哈希（按 §5 已消费），实施后的新哈希为 `service.py ae45537d3740816d` / `resolver.py b7b7fa9b37ccd9a6`（见 [evidence/b02-implementation.md](evidence/b02-implementation.md) §1）；**F10 落点已用**：`company-wiki/tests/contract/test_r4b02_candidate_selection.py`（新增，16 用例）。
 
 > 依据 handbook **§1 第 5 项**（"首次实施前用户须批准 DEV 精确工作包及文件范围"）与 **§3**（run 目录结构 / card 字段）；B.DR-18 指出 v0.1 把两处误写为"§2.5"，已改。
 > 本页给出 **B 阶段候选改动文件的精确定位 + 冻结哈希**（实测 2026-09-12，wiki 产品树 = A01 冻结的 `7d4852f`，`git diff 7d4852f 032da52 -- src config` 为空，B.DR 已复核）。

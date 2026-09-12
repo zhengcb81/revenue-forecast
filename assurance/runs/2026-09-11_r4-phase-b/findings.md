@@ -2,6 +2,26 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B02-1：B02 段 3 的"同 hash 硬门"与 A 侧 4 条冻结断言冲突 → 实施让步（**S-10，待 owner 确认**）
+
+- **事实**：`tests/contract/test_source_catalog_determinism.py` 的 fixture 写 `b"%PDF-fake"` 作字节，却把 `sha256(b"same-bytes")`/`sha256(b"other-bytes")` 当 `content_sha256`；`test_source_catalog_sql_pushdown.py` 同类。因此"字节必须等于声明 hash"若作为 **resolve 期硬门**，这 4 条既有断言必然失败（实测：硬门实现下 `determinism` 2 条 + `sql_pushdown` 2 条 FAILED）。
+- **处置（已落盘）**：段 3 实现为**优先 + 逐候选诊断** —— 仍真读字节做**整文件**摘要比对、验证通过者优先、`verified_sha256` 仅验证通过时写入；若无任何候选通过验证但存在**本地可读**合格副本，则返回该副本并标注 `unverified_bytes`。**字节硬门归 B03 读路径**（设计 §B03 原文即"只返回验证版本字节或明确失败"）。
+- **理由**：**S-1** 明令"仅新增测试、不得修改既有测试的任何断言"→ 让步只能在实现侧。若 owner 不认可，可选 (a) 另行批准修改那 4 条既有断言（与 S-1 互斥）或 (b) 把 B03 提前与 B02 合并交付。
+- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / [post-b02.json](evidence/b02-red-green-post-b02.json)。
+- **未做（勿当已完成）**：B03 落地前，**没有任何一层**对"读出来的字节"做返回前复验 —— 字节级硬门整体缺失。
+
+## F-B02-2：重复计数口径随"合格"定义收敛（P2，副作用）
+
+- **事实**：`_duplicate_summary` 原先按 `role/active/source_id` 统计副本，与新的"合格"定义（多一条 `.rejections` 排除）不一致。
+- **处置**：改为只统计**合格**副本（`candidate_rank != 0`）。影响面仅 `.rejections` 泄漏场景：`exact_duplicate_location_count` / `exact_original_copy_count` 会变小。
+- **证据**：`test_r4b02_l04_rejected_copy_with_best_priority_is_not_a_candidate` 断言新口径（`exact_duplicate_location_count == 0`、`exact_original_copy_count == len(healthy)`）。
+
+## F-B02-3：首轮实现触发 FC-1201 根 token 门（P3，门按设计生效）
+
+- **事实**：`_needs_hydration` 的 docstring 写了 `dropbox_stock` 与 `Dropbox` → `test_fc1201_root_hardcode_gate.py`（2 条）与 `test_future_root_config_only.py`（1 条）FAILED；同文件在干净 HEAD 上 10/10 passed（`git worktree` 对照）。
+- **处置**：改写为与 root 无关的措辞（"a synced vendor root that materialises files on access"），三处门恢复通过。
+- **意义**：这条门确实能挡住"把 root id 写进代码（含注释）"，是有效护栏而非误报。
+
 ## F-B01-5：`B.DR-rev5` = **rejected**（2×P1 / 4×P2 / 5×P3）→ v0.1.6，且**本次改用"新值在场 + 旧值不再作为断言"的双向自证**
 
 审查记录 [reviews/B.DR-rev5.json](reviews/B.DR-rev5.json)（reviewer `52907a2f-…`；55 条输入哈希全部独立复算相符）。**本轮最重要的发现是过程性的，而非技术性的**：`B-DR5-01` 指出 **F-B01-4 的"处置"栏第二次把未做的改动写成已做** —— 与前一轮同一根因。作者据此把自证方法改为**双向**：
