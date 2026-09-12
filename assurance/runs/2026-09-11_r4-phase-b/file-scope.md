@@ -15,17 +15,17 @@
 | F5 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/models.py` | `RootSpec` `:86-109`；`ROOT_KINDS` `:39`；`CATALOG_SCHEMA_VERSION` `:11` | `fc6cc009fb22f6d6` | B01/B07 | 字段 owner 与合同版本（schema 变更须单列迁移） | ✅ 是 |
 | F6 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/config.py` | 字段准入 `:70-118`；未知字段拒绝 `:82-84`；`read_only` 默认 `:106`；`privacy_class` 默认 `:144` | `e96cea75cb27bcf6` | B01 | 唯一准入；`privacy_class` 缺省语义（owner R-4） | ✅ 是 |
 | F7 | `C:/Users/郑曾波/Projects/company-wiki/config/source_catalog.yaml` | 四 root 声明（1712 B） | `f9eb72a6c37c2dfe` | B01（**仅在裁定后**） | 仅在需要显式声明时改；**改动即 A01 冻结哈希失效**，须重跑 A01 §0 | ✅ 是 |
-| F8 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/policy.py` | `_effective_reusable` `:67-72`（**在产第二实现**）；`export_policy` 哈希 `:56-64`；文件共 **86 行**（v0.1.1 更正，B-DR-10：v0.1 误把 3384 B 当行号） | `78320c429e4b7bc9` | B01/B07 | R-2 收敛点之一；**其输出是跨仓 policy_hash，改动须同步迁移** | ✅ 是 |
-| F9 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/llm_summarizer.py` | 白名单 `:333-341`；发送 `:443-449`；常量 `:45` | 见文件哈希 | B01（只读范围声明） | **只登记不改**（属 owner R-4 整改范围，不在 B 实施面） | ❌ 新增 |
+| F8 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/policy.py` | `_effective_reusable` `:67-72`（**在产**活性实现之一）；`export_policy` 哈希 `:56-64`；文件共 **86 行**（v0.1.1 更正：v0.1 误把 3384 B 当行号） | `78320c429e4b7bc9` | B01/B07 | R-2 对齐点之一；**其输出是跨仓 policy_hash，改动须同步迁移** | ✅ 是 |
 
-> **F9 说明**：`llm_summarizer.py` 与 `legacy_research_ingest.py` 属 **owner R-4 的整改范围**，但那属"外发门"工作，**不属于 B 的读取面**；v0.1.1 把它们**列入 forbidden**（见 §2），避免 B 顺手改安全门。
+> **v0.1.2 更正（B-DR2-08）**：v0.1.1 把 `llm_summarizer.py` 同时列进 §1（F9）与 §2（禁止）——**自相矛盾**，现已从 allowed 表移除，只保留在 §2 的禁止清单（它属 owner R-4 的外发门整改范围，**不属于 B 的读取面**）。
+> 完整读数（供引用）：`llm_summarizer.py` sha256(16) = `13ff33b76547d39d`，24 572 B。
 
 ## 2. 明确禁止（prohibited，除非另行单独批准）
 
 | 禁止项 | 原因 |
 |---|---|
 | **`policy_2x.py` 的 `export_policy_2x` 路径**（`cli.py:835-857 _policy_export_payload` 及其调用点 `:811`/`:831`/`:1182`） | **在产**且是 filing-fetch FC-501 containment / ZR-405 policy_hash 的**唯一来源**（`filing_contracts.py:450/461-497`）。**v0.1.1 更正（B-DR-01/A-AR-05/A-VR-05 共同 P0）**：v0.1 把它列为"可停用"是**事实错误**；B 的任何改动都必须**保持该 payload 字节/hash 不变** |
-| `policy_2x.py` / `policy_3x.py` 的 **loader**（`load_root_policy_2x`/`load_root_policy_3x`） | owner R-3 范围（准入收敛）；**先停用、不就地改**（改它=维护第二套准入）。注意：仅限 loader，不含上面的 export |
+| `policy_2x.py` / `policy_3x.py` 的 **loader**（`load_root_policy_2x`/`load_root_policy_3x`） | owner R-3 范围（准入收敛）。**v0.1.2 更正（B-DR2-15）**：所谓"无生产调用者"**只对生产运行路径成立**——`load_root_policy_2x` 的**唯一真实调用点在 `policy_3x.py:95`**（该模块自身也无生产调用者）→ 因此**"停用"不需要改任何文件**（只需不在新代码里引入）；若将来要真的删/改这两个 loader，**必须把 `policy_2x.py`/`policy_3x.py` 纳入 allowed_files**（当前在禁区）。注意：**仅限 loader，不含 `export_policy_2x`** |
 | `llm_summarizer.py`、`legacy_research_ingest.py` | owner R-4 的外发门整改范围，**不属于 B**（避免 B 顺手改安全门） |
 | `adapters/*`、`adapter_dispatch.py`、`adapter_process.py`、`dayu_cli_adapter.py` | provider 获取面（N/X），非读取面 |
 | `C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/{store.py, canonical_writer.py, normalizer.py, duplicate_cleanup.py}` | 写/加工面；**B05 的持久化若需要它们，则本步升级为独立工作包**（B-DR-12） |

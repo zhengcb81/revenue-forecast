@@ -1,4 +1,4 @@
-# A02 root-contract —— 四个已批准 root 的读取等价与能力分轴（v0.4.1，owner 已裁定；按 A.VR/A.AR/B.DR 三份独立复审更正）
+# A02 root-contract —— 四个已批准 root 的读取等价与能力分轴（v0.4.2，owner 已裁定；按 A.DR/A.VR/A.AR/B.DR/B.DR-rev2 五轮独立复审更正）
 
 > 🔴 **v0.4.1 更正（2026-09-12，回应 A.VR-05/A-VR-06/A-VR-11、A-AR-05、B-DR-01 —— 三份独立复审从不同角度命中同一 P0）**：
 > 1. **`policy_2x.py` 并非"整体无生产调用者"**（P0，事实错误）：无调用者的只是 **loader** `load_root_policy_2x`（`policy_2x.py:58` 定义、`:319` 导出、`policy_3x.py:37` 导入、`policy_3x.py:95` 唯一真实调用，其余为测试）。但 **`export_policy_2x` 是活的**：`cli.py:835 _policy_export_payload` → `:849-851 from .policy_2x import export_policy_2x; policy_hash, policy = export_policy_2x(config)`，被 **`cli.py:811`（ensure）、`:831`（policy-export）、`:1182`（resolve）** 三处调用；其 payload 是 filing-fetch 的 **FC-501 containment / ZR-405 policy_hash 唯一来源**（`filing_contracts.py:450` 自述"single containment source"、`:461-467` 重算校验、`:480-497` 造 allowance）。→ **R-3 的适用范围必须收窄为"准入 loader"，导出路径不在 R-3 内**；本文件 v0.4 曾把两者混为一谈，已在 R3/R8 就地更正。
@@ -48,7 +48,7 @@
 | **C1 可读** | 平台可读该 root 下字节 | root 已注册 + `path` 变量可解析 | **强制**：未注册字段→报错（`config.py:82-84`）；`${VAR}` 未解析→报错（`config.py:90-95`）。`symlink_policy` **不在此列**（见更正 1） |
 | **C2 可写** | 平台可向该 root 写入 | **实际判据 = `kind == 'company_raw'`**（`canonical_writer.py:126-131` 要求恰好一个 company_raw root；`:284-287` 按 `r.kind='company_raw'` 选落点）。`read_only` 字段本身**无读取点**（按 R7 标准属假保证候选） | **不成立为"由 `read_only` 强制"**（v0.4.1 更正，A-VR-06）：`read_only` 只被解析/默认化（`config.py:106`、`models.py:96`）+ 一条一致性检查（`config.py:108-111`：`reusable_for_filing=True ⇒ read_only=True`）；**四个生产 root 全部未声明 `read_only`**（全默认 True）而 `company_raw` 仍可写 → 披露见 §2 与 §5 |
 | **C3 可外发** | 内容可送外部 LLM/服务 | `privacy_class`（默认 `"public"`，`models.py:105`） | **部分强制**：LLM 出口门按 `privacy_class != _PRIVATE_PRIVACY_CLASS` 构造可外发 root 白名单（`llm_summarizer.py:333-337`，常量 `_PRIVATE_PRIVACY_CLASS` 在 `:45`）。**省略该字段默认 `public`** 是"默认放行"面，见 §5 |
-| **C4 可复用** | 可免下载直接复用 | **两处实现、语义相反**（v0.4.1 更正，A-VR-05）：① `resolver.py:782-786`/`:933-940` **只看 `root.kind`**（fail-open；`reusable_for_filing` 不被读取）；② `policy.py:67-72 _effective_reusable` **读该字段**（显式 `false` 生效，fail-closed），其输出进入**在产**的 policy_export 链（`cli.py:835/849-851` → filing-fetch FC-501） | **分裂（不是单一"fail-open"）**：同一字段在**读取路径**上 fail-open、在**导出/契约路径**上 fail-closed；owner R-2 要求"显式 `false` 必须生效"→ 整改须把两处**收敛为一处**（建议以 `policy.py` 的语义为准，因其同时服务于跨仓 policy_hash），见 R8 第 3 条 |
+| **C4 可复用** | 可免下载直接复用 | **三处实现**（v0.4.2 更正，B-DR2-01：此前写"两处"仍不完整）：① `resolver.py:782-786`/`:933-940` **只看 `root.kind`**（fail-open；不读该字段）；② `policy.py:67-72 _effective_reusable` **读该字段**（显式 `false` 生效，fail-closed）；③ **`policy_2x.py:308-312 _effective_reusable_2x`** 同样读该字段（经 `:292` 被 `export_policy_2x` 调用，再由 `cli.py:849-851` 在产） | **三处并存、读路径与导出路径语义相反**：① fail-open，②③ fail-closed。owner R-2 要求"显式 `false` 必须生效" → 整改须**收敛①与②③的语义**；但因③位于**在产且被跨仓消费的导出路径**（其 hash 是 filing-fetch 的 FC-501 containment 来源），**收敛的方向与时机须与 policy_hash 迁移绑定**——见 R8 第 3 条 |
 | **C5 证据质量** | 来源/期间/页码/locator 的完整度 | **不是能力字段** | 与 C1–C4 **正交** |
 
 **契约规则 R1（不变）**：C1–C4 是四个独立轴，**任一声明不得推导出另一轴**。
@@ -58,9 +58,9 @@
 **契约规则 R8（新增，来自更正 3；owner 裁定 R-3 已定收敛方向并**收窄范围**）**：**同一份 YAML 的同一语义不得存在两处实现或两处相反语义**。现行事实（v0.4.1 已核实为**三处**，不再是一处）：
 1. **准入 loader 分叉**：`config.py`（活、唯一生产准入）vs `policy_2x.py`/`policy_3x.py` 的 loader（**均无生产调用者**）；
 2. **导出路径是活的**：`export_policy_2x`（`cli.py:835/849-851`，由 `:811`/`:831`/`:1182` 调用）承担 filing-fetch 的 FC-501 containment / ZR-405 policy_hash —— **不属于 R-3 的收敛范围**，任何改动须走跨仓迁移与 owner 裁定；
-3. **同一字段两处相反语义（活）**：`resolver.py` 侧 kind-only（fail-open）vs `policy.py:67-72 _effective_reusable` 读字段（fail-closed）—— **owner R-2 的整改落点，须收敛为一处**。
+3. **同一字段三处实现（活）**：`resolver.py` 侧 kind-only（fail-open，不读字段）vs `policy.py:67-72`（读字段，fail-closed）vs **`policy_2x.py:308-312`（读字段，fail-closed；经 `export_policy_2x` 在产）**—— **owner R-2 的整改落点**。**v0.4.2 更正（B-DR2-01）**：v0.4.1 写"两处"**仍是错的**，第三处在被冻结的导出路径内，因此"收敛为一处"不能靠删除该处，只能**对齐语义**并同步 policy_hash（跨仓）。
 
-→ **owner 2026-09-11 裁定 R-3 的适用范围 = 上述第 1 条（准入 loader）**；第 2 条保持现状；第 3 条按 R-2 实施。
+→ **owner 2026-09-11 裁定 R-3 的适用范围 = 上述第 1 条（准入 loader）**；第 2 条保持现状；第 3 条按 R-2 实施，且**必须与 filing-fetch 的 policy_hash 迁移绑定**。
 
 ## 4. 未注册 / 显式 deny 的 root 不得因"默认等价"放行
 
@@ -75,7 +75,7 @@
 
 | 字段 | 默认值 | 影响 | **owner 裁定（2026-09-11）+ v0.4.1 更正** |
 |---|---|---|---|
-| `privacy_class` | `"public"`（`models.py:105`） | 省略该字段的 root 默认**可外发** | **R-4：改为默认不外发**——缺省取"仅内部"，要外发必须显式声明公开；新 root 一律显式声明。登记为 B/C 高优先整改（本裁定只定方向，未改代码）。**v0.4.1 扩大范围（A-VR-04）**：整改范围还须包含**无门的正文外发** `legacy_research_ingest.py:128-136`（`content[:8000]` 直发 `self._llm.generate`，无 privacy_class / receipt / 字节绑定） |
+| `privacy_class` | `"public"`（`models.py:105`；`config.py:144`） | 省略该字段的 root 默认**可外发** | **R-4：改为默认不外发**——缺省取"仅内部"，要外发必须显式声明公开。**v0.4.2 重要限定（B-DR2-02）**：现网 `config/source_catalog.yaml` 的**四个 root 全部显式声明了 `privacy_class: public`**（`:19/:24/:29/:40`）→ **该裁定在当前生产配置上是惰性的（受影响集合 = 0）**，其验收只能靠**合成配置**（新增 root 或删掉声明）。→ B/C 整改登记（高优先），但**不得声称现网行为会因此改变**。**v0.4.1 扩大范围**：整改还须包含无门的正文外发 `legacy_research_ingest.py:128-136` |
 | `read_only` | `True`（`config.py:106`、`models.py:96`） | 省略即 True | **v0.4.1 更正（A-VR-06）：不再是"fail-closed ✓ 保留"**——该字段**无读取点**（同 R7 标准），写轴实际由 `kind == 'company_raw'` 决定（`canonical_writer.py:126-131/284-287`）。**四个生产 root 全部未声明它**（全默认 True）而 `company_raw` 仍可写 → 登记为**假保证字段候选（R-1 同类）**，处置同 R-1（实现真实检查或删除/改写文档口径） |
 | `symlink_policy` | `"reject"`（`models.py:101`） | **默认值存在但从未被读取**（更正 1）→ 不构成任何保护。仓库内确有 5 处独立的 `is_symlink()` 检查（`duplicate_cleanup.py:46/534/545`、`announcement_collector.py:301/323`），但它们**不看该字段** | **R-1：按假保证字段处置**——从"已强制"清单剔除（已做）并登记整改：实现真实检查**或删除该字段**（倾向删除）。见 R7 |
 | `reusable_for_filing` | `None`=跟随 kind（`models.py:97`） | 读路径 fail-open（`resolver.py` 只看 kind）；**导出路径 fail-closed**（`policy.py:67-72` 读该字段） | **R-2：让 `false` 真的生效**，**且两处实现收敛为一处**（v0.4.1 更正：整改点不止 resolver，还含 `policy.py:67-72`；两处语义相反本身即 R8 分叉）。登记为 B/C 高优先整改 |

@@ -2,7 +2,30 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
-## F-B01-1：`B.DR` 独立设计审查 = **rejected**（1×P0 + 7×P1 + 9×P2 + 3×P3）→ 本版 v0.1.1 逐条更正
+## F-B01-2：`B.DR-rev2` = **rejected**（7/20 闭环；新增 1×? 计的 15 条）→ v0.1.2 逐条更正
+
+审查记录 [reviews/B.DR-rev2.json](reviews/B.DR-rev2.json)（reviewer `92aeb4c7-…`，非作者会话；**18 条 claim 中 10 条未复现**）。**round-1 的 20 条中 7 条真闭环**（B-DR-01 P0、06、07、08、09、10、13），其余 13 条仍未闭环；**新增 15 条**（P1×3 / P2×9 / P3×3）。
+
+| 发现 | 严重度 | 事实（作者复核） | v0.1.2 处置 |
+|---|---|---|---|
+| **B-DR2-01** | **P1** | gate ②"收敛现存两处"按字面**不可满足**：活实现是**三处**——`policy.py:67-72`、**`policy_2x.py:308-312 _effective_reusable_2x`**（经 `:292` 在 `export_policy_2x` 内 → `cli.py:849-851` 在产）、`resolver.py:782-786/:933-940`；而第三处正位于 v0.1.1 自己冻结的导出路径内 | [b-design §B01.1/§B01.2](b-design.md) 改为"**对齐①的语义到②③**，不删③（在冻结导出路径内）"；A 侧 root-contract 同步更正为 **v0.4.2**（三处） |
+| **B-DR2-02** | **P1** | `b-design.md:44` 写"缺省值变更影响所有未显式声明的 root（现为 4 个）"与冻结配置相反：`config/source_catalog.yaml` 的**四个 root 全部显式声明 `privacy_class: public`**（`:19/:24/:29/:40`）→ **受影响集合 = 0**，R-4 在现网**惰性** | 该行改为"受影响集合 = 0；验收只能靠**合成配置**；不得声称现网行为会变"；A 侧 root-contract §5 同步 |
+| **B-DR2-03** | **P1** | B07 的"边界 adapter / 无 companies fallback"在 allowed 内**无落点**（`adapters/*`、`filing-fetch/**` 全在禁区），而验收映射把整条 L11 挂给 B07 | [b-design §B07](b-design.md) 新增**可签/不可签对照表**（B 只签 wiki 侧四件：版本化合同、N-1 判定、不新增 fallback、payload hash 不变）；[test-acceptance-map](test-acceptance-map.md) 的 B07 行同步标注"消费者侧未验" |
+| **B-DR2-05** | P2 | B05 在"不落库"下**无法满足 L08**：落选值已被 `scanner.py:1078-1081` 覆盖销毁，读取层拿不到；`metadata_priority`/`:1038` 未处置 | §B05 改为：**写入侧停止销毁**（provenance/冲突写进**既有列 `metadata_json`**，**不新增列、无需 store.py**）；`metadata_priority` 保留但**不再决定覆盖**；若要求一等列（可索引）则**升级为独立工作包** |
+| **B-DR2-06** | P2 | `resolver.py:1166` 是 `return None`——"首选不可用→切换"**今天不存在**，v0.1.1 的"保留该行为"是错的 | §B02 给出 `_handle` 的三条具体要求（合格清单入参、清单耗尽才 `unavailable`、返回实际选中项与理由） |
+| **B-DR2-07** | P2 | B06 的 preview **无承载接口**、allowed 内无文件承载 | §B06 定案：载体 = **`ResolutionEnvelope`（`resolver.py:359-417`/`:418-552`）新增 `qualification` 字段**；消费者既有门与之对齐；若需新命令则属新增能力（待批） |
+| **B-DR2-04** | P2 | L06 阶段写错（矩阵是 **L06 B**），反覆盖表仍归并 | [test-acceptance-map](test-acceptance-map.md) §1/§2 改为**逐行照抄矩阵**（L05 B/C、L06 B、L10 A/B/C、L12 A/B/C…） |
+| **B-DR2-08** | P2 | `llm_summarizer.py` 同时出现在 allowed（F9）与 forbidden；F9 的哈希格为空 | [file-scope](file-scope.md) 从 allowed 表移除 F9（只留禁止清单）并给出哈希 `13ff33b76547d39d` / 24 572 B |
+| **B-DR2-09** | P2 | checkpoint 机制未按 round-1 要求落地：无 commit 锚点、无完整性断言、`reviewed_commit` 非必填；被审修订自身 `reviewed_commit` 仍是 `"PENDING…"` | **生成器改造**：`--reviewed-commit` 变为**必填**；新增 `commit_anchor`（生成时 HEAD + tree）与 `completeness`（遍历运行目录断言"无未登记文件"）；`--verify-only` 报告对比修订与"不能证明什么" |
+| **B-DR2-10** | P2 | B01.2 计数不自洽（写"14 字段"，实际 16 名 / 12 行），`admission_profile_id` 未映射 | §B01.2 更正为**12 行 / 16 名 + `kind`**，并补 `admission_profile_id` 行与"计数口径"说明 |
+| **B-DR2-11** | P2 | B02 资格判定与 B03 交付**无预算/取消/尺寸上限**（L06/L12 要"有限资源/可取消"） | §B02 新增预算段（每候选 ≤1 MiB 采样、单请求 ≤32 MiB / ≤64 候选、超限标 `unknown`、可取消）；§B03 要求调用方给 `max_bytes` |
+| **B-DR2-12** | P2 | A 合同明文"resolve payload 字节契约 = B02/B04 必测"，B 的验收映射**缺失** | [test-acceptance-map](test-acceptance-map.md) §1c 新增 **`B-payload-hash`** 必测项（不新造矩阵 ID，登记在本包） |
+| **B-DR2-13/14/15** | P3 | ① "handbook §2.5" 仍残留在 `progress.md` 与生成器 LEDGER；`findings.md:40` 仍引 a06 §1；② `progress.md` 仍是"23:3x"与未来时（推送**已发生**）；③ loader"无调用者"漏了 `policy_3x.py:95` 这个真实调用点，"先停用"无 allowed 文件 | 三处就地更正（本批 diff）：引用改 §1 第 5 项 + §3；时间改实测值、推送改过去时；file-scope 的 loader 行补 `policy_3x.py:95` 并说明"停用=不引入，无需改文件" |
+
+- **教训（v0.1.2 新增）**：**同一事实在两个 run 目录各写一遍就会漂移**——本轮"两处/三处"与"4 个/0 个"都源于重复维护。→ 规则：事实的**权威处唯一**（此处 = A 侧 root-contract v0.4.2），B 侧只引用不重述。
+- **v0.1.2 的三处 P3 已就地更正**：handbook 引用改为 §1 第 5 项 + §3（`progress.md`、生成器 LEDGER）；变更记录时间改为实测值、推送改为过去时（`progress.md`/`task_plan.md`）；`file-scope` 的 loader 行补 `policy_3x.py:95` 并说明"停用=不引入，无需改文件"。
+
+## F-B01-1：`B.DR` 独立设计审查 = **rejected**（1×P0 + 7×P1 + 9×P2 + 3×P3）→ v0.1.1 逐条更正
 
 审查记录 [reviews/B.DR.json](reviews/B.DR.json)（reviewer session `7ad6f0f0-…`，非作者会话；17 条 claim_checks 中 **8 条未复现**）。**未复现的声明是最有价值的部分**——它证明"文档写了"≠"事实成立"。
 
@@ -37,7 +60,7 @@
 
 ## F-B00-3：B08/B09 的硬前置是**隔离副本**，而隔离副本不必是 49.7 GB 的拷贝
 
-- 证据：矩阵 L01–L12 的机制层可用"新建小 catalog + 既有测试的 tmp-catalog 机制"覆盖（wiki 既有测试即如此运行，见 [a06-baseline-plan.md](../2026-09-11_r4-phase-a/a06-baseline-plan.md) §1 盘点）；只有"真实四 root 端到端读取"（B09/L02/L09/L12 的 R1 层）需要真实字节。
+- 证据：矩阵 L01–L12 的机制层可用"新建小 catalog + 既有测试的 tmp-catalog 机制"覆盖（wiki 既有测试即如此运行，见 [a06-baseline-plan.md](../2026-09-11_r4-phase-a/a06-baseline-plan.md) §2/§4（v0.1.2 更正引用，B-DR2-13））；只有"真实四 root 端到端读取"（B09/L02/L09/L12 的 R1 层）需要真实字节。
 - 影响：**G8 可分两级**——① 机制层隔离目录（成本低，可立即建，只需 owner 同意"允许在非生产路径创建目录"）；② 真实字节读取（需要在隔离根下引用真实文件，**只读**）。把 G8 当成"复制 50 GB"会无谓阻塞 B08。
 
 ## F-B00-4：B 的"零副作用"证明不能靠作者声明（阶段 A 的教训）

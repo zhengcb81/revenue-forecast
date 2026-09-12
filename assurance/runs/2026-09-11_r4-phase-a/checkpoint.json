@@ -120,15 +120,15 @@
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "449dc80668c8c0f9948f323ebd4cd262787c1910",
-      "dirty": 0
+      "head": "52f38a5440a2977c6c05d0d36ebf0849d6559108",
+      "dirty": 16
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "26fb780",
+  "reviewed_commit": "PENDING-COMMIT",
   "reviewed_commit_note": "`reviewed_commit` carries the reviewed corrections (documents, evidence and ledgers). The stamp that records this value necessarily lands in the immediately following commit (d152833/3e0c8f3 for v0.2, 34b2291 for v0.3), which changes only checkpoint.json - so the reviewer should read reviewed_commit for the contracts and the tip commit for the ledger stamp. A commit cannot contain its own hash, which is exactly the staleness A-DR-09 flagged; recording both removes the ambiguity instead of hiding it.",
   "inputs_note": "revenue-forecast `dirty` is the working-tree count at generation time; it is non-zero only when this file is regenerated before the corrections are committed. `reviewed_commit` is the clean tree the reviewer reads, and every commit in this run touches only assurance/runs/2026-09-11_r4-phase-a/, so the twelve product input hashes frozen in baseline-map.md section 0 and inputs.json stay byte-accurate (independently re-derived by A.DR rev1 and rev2: 12/12 HASH_OK). company-wiki moved from the A01 freeze 7d4852f to 478bb92 (planning ledger edits only) and then to ca63ff2 (one ledger sentence), i.e. no product code or config is touched in any repository; the drift and its scope are recorded in baseline-map.md section 0 (A-DR2-08).",
   "produced_files": {
@@ -144,13 +144,29 @@
       "sha256": "9b21c8278431166694a96fb45fb8a48f00c57e82dd5a9660014ff7b7bc5878e4",
       "size": 4178
     },
+    "baseline/a06-d0-baseline.md": {
+      "sha256": "2ef13398e6bc8a6af3dc934f7790a00aff999a9e8b4db7d6cb28e6e040e8bda4",
+      "size": 3892
+    },
+    "baseline/evidence/a06_contract_junit.xml": {
+      "sha256": "b55e973054f9f4b5fddfeb3c49be6f9e25b2cc7d638cbd2cd6d59930717bb283",
+      "size": 248405
+    },
+    "baseline/evidence/a06_skips.json": {
+      "sha256": "313dbe8b7c9d1dfc9bf83b192b63e4a8bd47022e63514656e19a859eb8e47d52",
+      "size": 1668
+    },
+    "baseline/evidence/a06_unit.txt": {
+      "sha256": "70dbc899279c6690deb04d55a244d7435dd1334d40efb7aa952cbb0d7aadc576",
+      "size": 11326
+    },
     "baseline-map.md": {
-      "sha256": "77584a458d0c6c1a352889044f7280fe13acdd1d1ccab3d7ba2009f6c063e742",
-      "size": 16392
+      "sha256": "78e88013601450dc93ac328a1ebaa004c43de02d4569cbb1d3933c61a6f46fe9",
+      "size": 16904
     },
     "boundary-audit.md": {
-      "sha256": "8f533308bfe2f0a58d8a480a0cff01a017757b6801a51d303706f35a7f414a5d",
-      "size": 14290
+      "sha256": "9ca3dc3e14bc5bb57f745f7c35efebdbae2c3cea2ab991a312e5a9418940dafa",
+      "size": 14814
     },
     "command-manifest-readonly.json": {
       "sha256": "4382e434805910a401898c037a9abdf497d7e279dc9694106decee4eb97e7556",
@@ -185,8 +201,8 @@
       "size": 9206
     },
     "findings.md": {
-      "sha256": "88c26ba264a41d6fbc37fcda8de0023f2e8641efd4f1394263f993baa096fac7",
-      "size": 13531
+      "sha256": "78ab5381e808097a2fd1ac626062501154d2a7468788be0453e227c5f16afcf3",
+      "size": 17665
     },
     "identity-contract.md": {
       "sha256": "7636ba9ce9bed3b2d7f2f8b022da1e99788acb710e278a70d1bbc4f49cf67d23",
@@ -229,8 +245,8 @@
       "size": 83140
     },
     "root-contract.md": {
-      "sha256": "ac5170f1476047870e68d5cfa0401203a5006a7042fdca8bf22da4bd1b06fd4b",
-      "size": 16708
+      "sha256": "11a66dc462d6bbe88f78fa4b32763959e34a20dfc244140e5c2f4b667999a3e6",
+      "size": 17381
     },
     "task_plan.md": {
       "sha256": "79f28158effea90f6bf7ce830b9d627a95e19465a3aea92a0ea6837ae595179c",
@@ -239,10 +255,10 @@
   },
   "produced_files_note": "Computed by evidence/build_checkpoint.py over the whole run directory; checkpoint.json itself is excluded (it cannot hash itself). The A.DR review records are included because the reviewers wrote them inside this run directory. SHA-256 is taken over the RAW working-tree bytes; because a commit cannot contain its own hash, the recorded digest for checkpoint.json would be circular and is therefore omitted - verify it with `git hash-object` instead.",
   "produced_files_verification": {
-    "checked": 26,
+    "checked": 30,
     "source": "index",
-    "source_revision": "56a2fce5e1c2cee99320ab8fc171a2db6ea1a106",
-    "head_revision": "449dc80668c8c0f9948f323ebd4cd262787c1910",
+    "source_revision": "0ac448c1dcb7140e058a660288cb1eb7c07347ea",
+    "head_revision": "52f38a5440a2977c6c05d0d36ebf0849d6559108",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -252,5 +268,5 @@
     ],
     "post_commit_recheck": "Run `python evidence/build_checkpoint.py --verify-only` after committing: it re-checks every recorded digest against `git cat-file blob HEAD:<path>`. Build time can only check the staged blob, because the commit that carries this file does not exist yet."
   },
-  "generated_at_utc": "2026-09-12T07:05:33.261898+00:00"
+  "generated_at_utc": "2026-09-12T07:28:22.075523+00:00"
 }

@@ -97,6 +97,41 @@ def verify_blobs(files: dict, source: str = "index") -> dict:
     }
 
 
+def completeness(files: dict) -> dict:
+    """Assert that the manifest lists EVERY file in the run directory (B-DR2-09).
+
+    Without this, a stale or partial manifest still "verifies" because verification only
+    walks the manifest, never the directory.
+    """
+    on_disk = set()
+    for path in sorted(RUN.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(RUN)
+        if rel.name in EXCLUDE_NAMES or any(part in EXCLUDE_DIRS for part in rel.parts):
+            continue
+        on_disk.add(rel.as_posix())
+    listed = set(files)
+    return {
+        "files_on_disk": len(on_disk),
+        "files_listed": len(listed),
+        "unlisted": sorted(on_disk - listed),
+        "phantom": sorted(listed - on_disk),
+        "complete": on_disk == listed,
+    }
+
+
+def commit_anchor() -> dict:
+    head = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE),
+                           "rev-parse", "HEAD"], capture_output=True, text=True)
+    tree = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE),
+                           "write-tree"], capture_output=True, text=True)
+    return {"head": head.stdout.strip() or "unknown",
+            "index_tree": tree.stdout.strip() or "unknown",
+            "note": ("anchor for the tree this checkpoint was generated from; the commit that "
+                     "publishes this file does not exist yet (that is what reviewed_commit names)")}
+
+
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": "B (position-transparent index and read-only access) - DESIGN ONLY",
@@ -132,7 +167,7 @@ LEDGER = {
         "B.DR_rev1": {"reviewer_session_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe", "record": "reviews/B.DR.json"},
     },
     "authorization_needed": [
-        "OWNER: approve the B DEV work package and file scope (file-scope.md) before any product file is touched - handbook section 2.5",
+        "OWNER: approve the B DEV work package and file scope (file-scope.md) before any product file is touched - handbook section 1 item 5",
         "OWNER: confirm the A05 sample list and the read-only command manifest (gate G7 + G4 for behaviour beyond --help)",
         "OWNER/OPERATOR: isolated copy for behavioural probes (gate G8) - see findings F-B00-3 for a two-level proposal",
         "OPERATOR: independent boundary observation and reviewer assignment records (G5/G6)",
@@ -176,15 +211,23 @@ LEDGER = {
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--reviewed-commit", default=None)
+    parser.add_argument("--reviewed-commit", default=None,
+                        help="REQUIRED to write: the commit carrying the reviewed corrections "
+                             "(B-DR2-09 made this mandatory instead of a PENDING placeholder)")
     parser.add_argument("--verify-only", action="store_true")
     args = parser.parse_args(argv)
 
     if args.verify_only:
         existing = json.loads((RUN / "checkpoint.json").read_text(encoding="utf-8"))
         result = verify_blobs(existing["produced_files"], source="head")
+        result["completeness"] = completeness(existing["produced_files"])
         print(json.dumps(result, ensure_ascii=False, indent=2))
-        return 0 if result["all_match"] else 1
+        return 0 if result["all_match"] and result["completeness"]["complete"] else 1
+
+    if not args.reviewed_commit:
+        print("ERROR: --reviewed-commit is required (B-DR2-09). Generate after committing the "
+              "corrections, then commit the rebuilt checkpoint as the stamp commit.")
+        return 2
 
     ledger = dict(LEDGER)
     ledger["inputs"] = {
@@ -192,14 +235,17 @@ def main(argv: list[str] | None = None) -> int:
         "revenue-forecast": {"head": head(REVENUE), "dirty": dirty(REVENUE)},
         "filing-fetch": {"head": head(FILING), "dirty": dirty(FILING)},
     }
-    ledger["reviewed_commit"] = args.reviewed_commit or "PENDING (stamped in the follow-up commit)"
+    ledger["reviewed_commit"] = args.reviewed_commit
+    ledger["commit_anchor"] = commit_anchor()
     ledger["produced_files"] = produced_files()
     ledger["produced_files_verification"] = verify_blobs(ledger["produced_files"], source="index")
+    ledger["produced_files_completeness"] = completeness(ledger["produced_files"])
     ledger["generated_at_utc"] = datetime.now(UTC).isoformat()
     out = RUN / "checkpoint.json"
     out.write_text(json.dumps(ledger, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {out} with {len(ledger['produced_files'])} files; "
-          f"blob verify all_match={ledger['produced_files_verification']['all_match']}")
+          f"blob all_match={ledger['produced_files_verification']['all_match']}; "
+          f"complete={ledger['produced_files_completeness']['complete']}")
     return 0
 
 

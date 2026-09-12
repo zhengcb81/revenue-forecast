@@ -66,7 +66,21 @@
 - P1 更正映射：A-DR-01/02/03 → [root-contract.md](root-contract.md) v0.2（新增 R7/R8）；A-DR-04/05/10/12 → [operation-contract.md](operation-contract.md) v0.2；A-DR-06/15 → [baseline-map.md](baseline-map.md) §1.1/§0 与 F-A01-2；A-DR-07/13 → [identity-contract.md](identity-contract.md) v0.2；A-DR-08 → 本文件 F-A01-8 与 [boundary-audit.md](boundary-audit.md)。P2/P3：A-DR-09（三份台账一致化，见 task_plan/checkpoint）、A-DR-11（inputs.json + command-manifest 说明）、A-DR-14（A02 §1 引用拆分）、A-DR-16（复审 ID 由编排方从外部戳记 → 见 task_plan 门禁表）。
 - **owner 六项裁定**：**已于 2026-09-11 全部定案**（"按你建议办"）→ 见 [owner-rulings-2026-09-11.md](owner-rulings-2026-09-11.md)。**v0.4.1（2026-09-12）**：三份独立复审命中同一 P0 —— R-3 的适用范围**已收窄为"仅准入 loader"**（`export_policy_2x` 在产且是 filing-fetch 的 FC-501 containment 来源，不在收敛范围）；R-4 的整改范围**已扩大**至 `legacy_research_ingest.py:128-136` 的无门出口；`read_only` 追加为假保证字段候选。
 
-## F-A01-10：三份独立复审（A07 / A08 / B.DR）的结论与处置（2026-09-12）
+## F-A01-10：本机跑"CI 等价测试套件"会**打开生产 catalog（只读）**，且 symlink 逃逸控制在**本机从未执行**
+
+- 证据（A06-D0 基线的副产物；见 [baseline/a06-d0-baseline.md](baseline/a06-d0-baseline.md) 与 [baseline/evidence/a06_contract_junit.xml](baseline/evidence/a06_contract_junit.xml)）：
+  1. 2026-09-12 08:11:45 与 08:13:46（+01:00），生产库 `catalog.sqlite3-shm` 的 mtime 两次前移，**恰好落在本次 `pytest tests/contract` 运行窗口内**（unit 阶段结束 08:11:42，contract 阶段 08:11:45 → 08:23:32）。B.DR-rev2 复审独立观测到 08:11:45 那一次，并如实声明"无法指认进程"。
+  2. 归因：`tests/contract/test_lt_uj_real_e2e.py:36/39/40` **硬编码生产路径**（WIKI_ROOT / PRODUCTION_DB / PRODUCTION_CONFIG），其模块级 `pytest.mark.skipif(not _zijin_docs_present(), …)`（`:70-73`）在**收集阶段**就连接生产库（`mode=ro`）；该文件**不在 CI 的 8 个 `--ignore` 之列**（`.github/workflows/ci.yml:51-59`）→ 本机运行时会真跑并反复打开生产库（CI 上因无该目录而 skip）。
+  3. 因此"跑测试是零副作用"为**假**：本机 CI 等价套件至少通过该文件打开生产库（只读；主库与 `-wal` 全程未变）。
+  4. **symlink 逃逸控制未被执行**：junit 显示 `test_dbx05_symlink_escape_rejected` 以 `symlinks not supported on this host` **skip**（7 个 skip 之一）→ owner R-1 与 A07/L05 的 symlink 负例**在本机不可验证**。
+- 影响：
+  - **opener 清单再次扩项**：除"22:00 每日任务""推送前 gate""手动 gate"之外，新增 **"本机跑 CI 等价测试套件（经 `test_lt_uj_real_e2e.py` 收集期连接）"**。→ [boundary-audit.md](boundary-audit.md) 已同步。
+  - **A06/L12 的设计约束**：要证明"query 零副作用"，必须**逐例**观察，且先把这类"测试自己打开生产库"的路径显式化（或纳入 ignore / 改为显式 opt-in 环境变量）。
+  - **R-1 的验收环境要求**：symlink/reparse 负例必须在支持符号链接的环境（或隔离副本中显式创建的 reparse point）上跑。
+- **如实披露**：本 run 作者于 08:11–08:23 执行了这次 pytest（CI 等价子集，用于 A06-D0 基线）；**该动作打开了生产库（只读）**——这是本会话**第二次**自己成为"开库者"（第一次是 push 前的 gate）。
+- **A06-D0 基线本身**：[baseline/a06-d0-baseline.md](baseline/a06-d0-baseline.md)（787 unit passed；1748 contract passed / 7 skipped / 0 failed）。
+
+## F-A01-11：三份独立复审（A07 / A08 / B.DR）的结论与处置（2026-09-12）
 
 | 门 | 裁决 | 规模 | 处置 |
 |---|---|---|---|
@@ -76,3 +90,12 @@
 
 - **共同的 P0（三份复审从不同角度独立命中）**：`policy_2x.py` **并非整体无生产调用者**——`export_policy_2x` 在产（`cli.py:835` `_policy_export_payload` → `:849-851`，由 `:811` ensure / `:831` policy-export / `:1182` **resolve** 调用），且 `policy.py:67-72 _effective_reusable` 是**同一字段的第二处活实现**（fail-closed），与 `resolver.py:782-786` 的 fail-open 语义相反。**本 run 先前据此扩大了 owner R-3 的范围，属事实错误**，已就地更正（root-contract v0.4.1 + owner-rulings 范围更正）。
 - **教训（写入后续阶段）**：审查给的"无生产调用者"结论**只对某个符号成立**；一旦把结论从"某个函数"提升到"某个模块/某条路径"，**必须重新做一次 caller 追踪**。本轮错误正是这样产生的；B 设计因此也必须按"每个结论都重追 caller"的标准重写。
+
+## F-A01-12：B.DR **rev2 = rejected**（7/20 闭环、新增 15 条），并暴露 A 侧一处未登记的工作面
+
+- 记录：[../2026-09-11_r4-phase-b/reviews/B.DR-rev2.json](../2026-09-11_r4-phase-b/reviews/B.DR-rev2.json)（reviewer `92aeb4c7-…`，非作者会话）。**7 条真闭环**（B-DR-01/06/07/08/09/10/13）、13 条未闭环、新增 15 条（P1×3 / P2×9 / P3×3）；18 条 claim 中 **10 条未复现**。
+- 三条 P1 中有两条**直接指向 A 侧**：
+  1. **`effective_reusable` 的活实现是"三处"而不是两处**（`policy.py:67-72`、`policy_2x.py:308-312`（经 `:292` 在 `export_policy_2x` 内、由 `cli.py:849-851` 在产）、`resolver.py:782-786`/`:933-940`）→ 本 run 的 P-4（导出路径冻结）与"收敛两处"**互相矛盾**，B01 的 gate 条款按字面不可满足。
+  2. **`privacy_class` 在现网配置上是"惰性"的**：`config/source_catalog.yaml` 的**四个 root 全部显式声明 `privacy_class: public`**（`:19/:24/:29/:40`）→ owner R-4 的"缺省改为不外发"**对现网零影响**（受影响集合为空）；其验收只能靠**合成配置**。
+- 处置：A 侧据此把 R8/C4 的"两处"更正为**三处**（root-contract v0.4.2），并在 owner-rulings 里补注"R-4 在现网惰性"；B 侧按 15 条全面更正（v0.1.2）。
+- **教训**：同一事实在两个 run 目录里各写一次时，**必须指定唯一的权威处并互相引用**；本轮"两处/三处"与"4 个/0 个"的不一致，正是同一事实两处维护的结果。

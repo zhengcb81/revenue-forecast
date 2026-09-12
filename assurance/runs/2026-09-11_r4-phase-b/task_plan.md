@@ -3,7 +3,7 @@
 > 运行目录：`revenue-forecast/assurance/runs/2026-09-11_r4-phase-b/`（**本 run 的证据产物只落在此目录**，不写回审计证据目录）
 > 权威来源：[R4 执行计划](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md) §B（B01–B10） · [R4 测试矩阵](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-test-matrix.md)（L01–L12 / P / O / M） · [接班手册](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/execution-handbook.md) §2/§3/§5
 > 阶段 A 产物（冻结输入）：[../2026-09-11_r4-phase-a/](../2026-09-11_r4-phase-a/)（A01–A04 v0.3.1、A.DR rev3 `accepted_with_findings`、owner 六项裁定 = [owner-rulings-2026-09-11.md](../2026-09-11_r4-phase-a/owner-rulings-2026-09-11.md)）
-> 状态：**B 设计 v0.1.1（DESIGN_ONLY）**；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，20 条已逐条更正，见 [findings.md](findings.md) F-B01-1）；产品代码**未被修改**；B 的实施需 owner 批准本包 DEV 工作包与文件范围（handbook **§1 第 5 项** + §3；v0.1 曾误写"§2.5"）
+> 状态：**B 设计 v0.1.2（DESIGN_ONLY；`B.DR` 两轮 rejected 均已逐条更正）**；`B.DR` 首轮 **rejected**（1×P0+7×P1+9×P2+3×P3，20 条已逐条更正，见 [findings.md](findings.md) F-B01-1）；产品代码**未被修改**；B 的实施需 owner 批准本包 DEV 工作包与文件范围（handbook **§1 第 5 项** + §3；v0.1 曾误写"§2.5"）
 
 ## 0. 起点与授权
 
@@ -61,5 +61,5 @@
 | 时间（本地，实测） | 变更 |
 |---|---|
 | 2026-09-12 07:43–07:46 | 建立 B run 目录；B01–B07 设计 v0.1、文件范围、测试映射、风险/停止规则；A05/A06 准备件；提交 `B.DR` 复审（提交 07:46:12 / 07:46:17） |
-| 2026-09-12 07:54–08:0x | **B.DR = rejected**（20 条；8 条 claim 未复现）+ **A07 = accepted_with_findings** + **A08 = rejected**（三份复审共同命中同一 P0） |
-| 2026-09-12 08:0x–09:0x | **阶段 A 更正为 v0.4.1**（P0 范围更正、C2/C4/§2/§5、R 轴与进程级副作用、五值错误模型、版本轴、无门出口、A 台账一致性）；**B 设计更正为 v0.1.1**（20 条逐条处置，见 [findings.md](findings.md) F-B01-1） |
+| 2026-09-12 07:54–08:05 | **B.DR = rejected**（20 条；8 条 claim 未复现）+ **A07 = accepted_with_findings** + **A08 = rejected**（三份复审共同命中同一 P0） |
+| 2026-09-12 08:05–09:20 | **阶段 A 更正为 v0.4.1**（P0 范围更正、C2/C4/§2/§5、R 轴与进程级副作用、五值错误模型、版本轴、无门出口、A 台账一致性）；**B 设计更正为 v0.1.1**（20 条逐条处置，见 [findings.md](findings.md) F-B01-1） |

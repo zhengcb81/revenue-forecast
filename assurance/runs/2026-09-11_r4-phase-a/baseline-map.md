@@ -66,7 +66,8 @@
 跨仓 spawn（前表 ⑤）：filing `fetch_filing.py:213`、revenue `source_preparation.py:99`。
 **v0.4.1 补漏（A-VR-09）**：本表的构造方法 = grep `subprocess\.|Popen|os\.system|CREATE_NO_WINDOW`，**不含 `multiprocessing`**；实测另有一处**同进程 Python 子进程/解析器监督**：`normalizer.py:516`（`multiprocessing` spawn）——它属 L12"二次读取 0 parser"必须被独立观察的对象，已列入 [../2026-09-11_r4-phase-b/test-acceptance-map.md](../2026-09-11_r4-phase-b/test-acceptance-map.md) 的 B03/B07 观察点。
 **另有两处非本链调度/观测**：`revenue/scripts/legacy_observer.py`、`revenue/tools/daily_t2_runner.py`（声明不在 A 阶段主链上）。
-**v0.4.1 追加披露（A.VR）**：wiki 侧还有 **7 个契约测试被 CI 明确排除**（`.github/workflows/ci.yml:51-58` 的 `--ignore`），其中 **3 个会打开生产 catalog 只读**（`test_zr1005_artifact_backfill.py`、`test_zr1006_broker_cohort.py`、`test_zr409_fourth_root_real_journeys.py`），6 个依赖 sibling 仓/Dropbox，0 个触网——即"本机可跑、CI 与两道 pre-push gate 都不跑"的**未强制测试面**（对 D07「最小有效阻断」与 A06 基线都是缺口）。
+**v0.4.1/v0.4.2 追加披露（A.VR + 本 run 实测）**：wiki 侧有 **8 个契约测试被 CI 明确排除**（`.github/workflows/ci.yml:51-59` 的 8 条 `--ignore`；v0.4.1 写"7 个"是漏数，已更正）。按本 run 实测分类：**3 个打开生产 catalog 只读**（`test_zr1005_artifact_backfill.py`、`test_zr1006_broker_cohort.py`、`test_zr409_fourth_root_real_journeys.py`）或依赖 sibling（`test_dropbox_config_invariants.py` 等 6 个），第 8 个 `test_close_gap_concurrency_fc804.py` **含网络调用**。→ 这 8 个是"本机可跑、CI 不跑"的**未强制面**。
+**更重要的是反过来的一面（v0.4.2，F-A01-10）**：**CI 会跑的**契约测试里也有**打开生产 catalog** 的——`tests/contract/test_lt_uj_real_e2e.py`（`:36/39/40` 硬编码生产路径；`:70-73` 的 skipif 在**收集阶段**即连接生产库 `mode=ro`），本机 08:11:45/08:13:46 的 `-shm` 前移即由此产生。→ **"跑测试零副作用"不成立**，A06/L12 的观察必须逐例做。
 
 ## 2. root 分支与副作用面
 

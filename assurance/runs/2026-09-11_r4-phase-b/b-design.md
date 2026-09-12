@@ -29,30 +29,33 @@
 |---|---|---|---|
 | 物理位置（path、adapter、symlink 政策、大小/编码限制） | **storage 层**（`config.py` → `models.RootSpec`） | `config.py:70-118`（活、唯一准入）；`policy_2x.py`/`policy_3x.py` 的 **loader** 无生产调用者 | 按 owner R-3（**范围 = 仅准入 loader**）：收敛为一套；**不动 `export_policy_2x`** |
 | 业务身份（document_id、version/source_hash、locator） | **catalog 层**（`models.py` + `service.py` 投影） | `service.py:621-663` 规范位选择含路径/优先级（残留） | 按 owner R-6：**登记整改**；B 不改身份语义，先把 locator 显式化（B04） |
-| 可复用资格 | **policy 层单一函数** | **两处活实现、语义相反**：`resolver.py:782-786`/`:933-940`（kind-only，fail-open） vs `policy.py:67-72 _effective_reusable`（读字段，fail-closed，进在产 policy_export） | 按 owner R-2：**收敛为一处**（建议采用 `policy.py` 的 fail-closed 语义，因其同时服务跨仓 policy_hash）；**不得新增第三处** |
-| 外发策略 | **动作边界**（调用外部服务那一刻） | `llm_summarizer.py:333-337`（白名单）；**外加一处无门出口** `legacy_research_ingest.py:128-136` | 按 owner R-4：缺省不外发 + 补门（范围含无门出口） |
+| 可复用资格 | **policy 层单一函数** | **三处活实现**（v0.1.2 更正，B-DR2-01）：① `resolver.py:782-786`/`:933-940`（kind-only，fail-open，不读字段）；② `policy.py:67-72 _effective_reusable`（读字段，fail-closed）；③ **`policy_2x.py:308-312 _effective_reusable_2x`**（读字段，经 `:292` 被 `export_policy_2x` 调用，再由 `cli.py:849-851` 在产） | 按 owner R-2：**对齐①的语义到②③**（`false` 生效），**不是**"删除多余实现"——③位于被冻结的跨仓导出路径（P-4），删不得。任何使②③输出变化的改动**必须与 filing-fetch 的 policy_hash 迁移同步** |
+| 外发策略 | **动作边界**（调用外部服务那一刻） | `llm_summarizer.py:333-337`（白名单）；**外加一处无门出口** `legacy_research_ingest.py:128-136` | 按 owner R-4：缺省不外发 + 补门（范围含无门出口）；**注意 R-4 在现网惰性**（见 B01.2） |
 | 文档证据质量 | **不由 root 字段承载**（与能力正交） | A02 C5 | B 不引入"质量即能力" |
 
-### B01.2 旧字段版本映射（14 字段，含迁移条件）
+### B01.2 旧字段版本映射（**16 个字段名 / 12 行合并项**——v0.1.2 更正计数与遗漏，B-DR2-10；`admission_profile_id` 于 v0.1.2 补入）
 
 | 字段（现状） | 语义 owner | 目标处置 | 迁移/兼容条件（**必须先测 N-1，L11**） |
 |---|---|---|---|
 | `read_only` | storage | **降级为"文档性字段"**：真实可写判据 = `kind == 'company_raw'`（`canonical_writer.py:126-131/284-287`） | 保留字段以免破坏 YAML 解析；**删除其"安全承诺"表述**；若未来要真强制，须实现读取点并配负例 |
-| `reusable_for_filing` | policy（单一函数） | **保留并使其生效**（`false` 必须关闭复用） | **两处实现先收敛**（R-2）；`None` 保持"跟随 kind"；导出 hash 会随之变化 → 必须与 filing-fetch 的 FC-501 期望值同步迁移（**跨仓**） |
+| `reusable_for_filing` | policy（单一函数） | **保留并使 `false` 生效**（对齐三处实现，见 §B01.1） | ②③ 的输出变化 ⇒ **policy_hash 变化** ⇒ 必须与 filing-fetch 的 FC-501 期望值同步迁移（跨仓）；`None` 保持"跟随 kind" |
 | `symlink_policy` | storage | **候选删除**（owner R-1 倾向删） | 删除前须确认无外部消费者读取该 YAML 键（含 filing/revenue 与本仓测试）；删除是 YAML 变更 → 触发 A01 重冻结 |
 | `priority` | storage | **保留，但只作排序**（B02 第 4 段），**退出 metadata 真伪判定**（B05） | 无 schema 变更；语义变更须有 L01/L08 负例 |
-| `privacy_class` | 动作边界 | **缺省改为不外发**（owner R-4） | 缺省值变更影响**所有未显式声明的 root**（现为 4 个）→ 须列出影响面与回退；`models.py:105` 与 `config.py:144` 两处默认值必须同改 |
+| `privacy_class` | 动作边界 | **缺省改为不外发**（owner R-4） | **v0.1.2 关键限定（B-DR2-02）**：现网 `config/source_catalog.yaml` 的**四个 root 全部显式声明 `privacy_class: public`**（`:19/:24/:29/:40`）→ **受影响集合 = 0，该改动在现网是惰性的**；其验收**只能靠合成配置**（新增 root 或删掉声明）。`models.py:105` 与 `config.py:144` 两处默认值必须同改；**不得声称现网行为会因此变化** |
 | `cohort` | catalog | 保留 | 现不在活 loader 的允许字段集（`config.py:75-81`）→ **声明即被拒**；如需启用属新特性 |
 | `canonical_write_target` | storage | **暂不引入**（当前声明即被 `config.py:75-84` 拒绝） | 若要引入，须在 `config.py` 正式实现并配写目标负例；**不得恢复 `policy_2x` 的 loader** |
 | `adapter_id` / `adapter_version_range` | storage | 保留 | `config.py:96-105` 强制"必须已注册" → 保持 |
-| `allowed_document_kinds` / `allowed_statuses` | storage | 保留 | 同上，属准入白名单 |
+| **`admission_profile_id`**（v0.1.2 补） | storage | 保留 | 与 `adapter_id` 同属"必须已注册"面；须在 B01 的机器可读产物里给出其注册表位置 |
+| `allowed_document_kinds` / `allowed_statuses` | storage | 保留 | 属准入白名单 |
 | `sidecar_suffixes` / `max_file_size` / `encoding` | storage | 保留 | 无变更 |
 | `routes` | storage | 保留 | 无变更 |
 | `kind` | storage | 保留（唯一能力判据之一） | `models.py:39 ROOT_KINDS` + `:141-142` 准入 |
 
-**产出**：`field-owner-map.json`（机器可读版，供 A06/A08 与 B.VR 引用）——本表即其人工可读形式。
+> **计数口径（v0.1.2）**：上表共 **12 行合并项**，展开后含 **16 个字段名**（`read_only`、`reusable_for_filing`、`symlink_policy`、`priority`、`privacy_class`、`cohort`、`canonical_write_target`、`adapter_id`、`adapter_version_range`、`admission_profile_id`、`allowed_document_kinds`、`allowed_statuses`、`sidecar_suffixes`、`max_file_size`、`encoding`、`routes`）+ `kind` 本身。v0.1.1 写"14 字段"且漏 `admission_profile_id`。
 
-**DR 检查点（B.DR 第一项）**：① 字段合并/弃用方案完整（本表 14 行）；② **不得新增第二套 effective_reusable**（v0.1.1：改为"**收敛现存两处**，不得出现第三处"）；③ 显式 `false` 含义保留。
+**产出**：`field-owner-map.json`（机器可读版，供 A06/A08 与 B.VR 引用）。
+
+**DR 检查点（B.DR 第一项）**：① 字段映射完整（12 行 / 16 名 + `kind`）；② **`false` 语义在①resolver 上生效，且②③的输出变化与 policy_hash 迁移绑定**（v0.1.2 更正：不是"收敛为一处"，因为第三处在冻结的导出路径内）；③ 显式 `false` 含义保留。
 
 ---
 
@@ -73,9 +76,18 @@
 
 **输出**：`canonical`（排序第一）+ **完整候选清单**（含每个候选的排除原因与所落五值状态）。
 
-**实现点**（两处，必须同改）：`service.py:621-663 _annotate_locations`（资格与排序分离）与 `resolver.py:1142-1224 _handle`（在**合格清单**上取第一份，并保留"首选不可用→改用下一份合格候选"的行为）。
+**实现点**（两处，必须同改）：`service.py:621-663 _annotate_locations`（资格与排序分离）与 `resolver.py:1142-1224 _handle`。
+**`_handle` 的具体要求（v0.1.2 更正，B-DR2-06）**：现行 `:1166` 是 `if canonical is None or not Path(canonical["absolute_path"]).is_file(): return None` —— **整体放弃**，因此"首选不可用→改用下一份合格候选"**今天并不存在**，v0.1.1 写"保留该行为"是错的。B02 要求：
+1. `_handle` 新增**合格候选清单**入参（由 `service._annotate_locations` 产出），按第 4 段的排序逐份尝试；
+2. 只有在**清单内所有候选都不可读**时才返回 `None`（= `unavailable`），而不是第一份不可读就放弃；
+3. 返回值必须携带"实际选中的是哪一份 + 为什么选它"，供 L03/L07 的引用不变验收。
 
-**测试**：L01/L02/L03/L04（L03 的关键验收"撤首选→自动切换"由 `_handle` 承担）。
+**读取预算与取消（v0.1.2 补，B-DR2-11）**：
+- 资格判定（第 3 段）**每个候选最多读 `min(file_size, 1 MiB)` 采样 + 首末块**用于摘要校验；**单次请求的资格判定总量上限 = 32 MiB / 64 个候选**，超限即停止并把剩余候选标 `unknown`（不是 `unavailable`）；
+- **不联网**（见下）；**必须可取消**：调用方取消后不得继续读盘（L06 的"有限资源/可取消"）；
+- 交付读取（B03）**另计预算**：单次 `open_version` 上限由调用方给出 `max_bytes`，超过即 `blocked`。
+
+**测试**：L01/L02/L03/L04（L03 的关键验收"撤首选→自动切换"由 `_handle` 承担）；预算与取消由 **L06** 与 **L12** 覆盖。
 
 ---
 
@@ -116,21 +128,24 @@
 3. `priority` **退出"真伪"判定**，只在"必须给出单一值"时用于**候选排序**；
 4. **覆盖面 = 上表全部列**（title / source_type / document_kind / published_date / source_status / primary_source_id / metadata_json），不只是 `metadata_json`。
 
-**落点与持久化（v0.1.1 决定，B-DR-12）**：
-- **B05 只在"读取合同"里新增 provenance/冲突的输出字段**（不落库）——因为持久化需要 `store.py` 的 DDL/迁移，而 `store.py` 不在本包 allowed 范围；
-- 若 owner 要求**持久化** provenance/冲突，则本步升级为"含 schema 变更的工作包"，须把 `store.py` 与迁移脚本纳入 allowed_files 并单列迁移/回退（**待批准**）。
+**落点与持久化（v0.1.2 定案，B-DR2-05/B-DR2-12）**：v0.1.1 的"只在读取合同输出、不落库"**无法满足 L08**——因为落选值已被 `scanner.py:1078-1081` 的 UPDATE **覆盖销毁**，读取层再也拿不到它们。因此 B05 改为：
 
-**测试**：L08。
+1. **在写入侧停止销毁**：`scanner.py:1078-1081` 改为**保留**落选来源的值与 provenance，存进**既有列** `metadata_json`（**不新增列、不改 DDL**，因此无需 `store.py`，仍在 allowed F3 范围内）——形如 `{"value": …, "provenance": [ … ], "conflicts": [ {value, source, captured_at} ]}`；
+2. **`metadata_priority` 的处置**：该列**保留**（由 `scanner` 继续维护，用于"必须给出单一值"时的排序提示），但**不再决定哪些列被写**；`:1038` 的 `elif root.priority <= existing_document["metadata_priority"]` 分支语义必须改写为"**只决定是否补充 provenance/冲突记录**"，不得再整体覆盖 `title/source_type/document_kind/published_date/source_status/primary_source_id`；
+3. **读取合同**（B05 的输出）暴露 `provenance` 与 `conflicts` 两个字段；
+4. **若 owner 要求把 provenance 提升为一等列**（可查询、可索引），那需要 `store.py` DDL/迁移 → **升级为独立工作包**（不在本包范围）。
+
+**测试**：L08（交换 priority/扫描顺序 → 业务事实不变、可信字段有来源、冲突保留）。
 
 ---
 
 ## B06 —— 本地可读与正式 capture 分离；**preview 合同归 B06**（v0.1.1：B-DR-14）
 
 - 返回值携带**资格标签**：`preview`（本地可读、provenance 可能有缺口）vs `verified_input`（身份+期间+来源齐备）。
-- **承载接口（v0.1.1 明确）**：本仓**没有顶层 `preview` 命令**（A03 §2.1/§4 已确认）；正式分析的许可门实际在**消费者仓**（`revenue-forecast/scripts/company_wiki_source.py:280-281`：`capture_ready is not True → raise`）。因此：
-  - **A 阶段无 preview 合同**（已在 [operation-contract](../2026-09-11_r4-phase-a/operation-contract.md) §4 第 7 条登记）；
-  - **B06 负责定义 preview 合同**，并须给出**具体承载**：字段名、由哪个真实命令返回（若无既有命令，则登记为**新增能力**并单列其请求/拒绝语义）；
-  - 消费者侧 `capture_ready` 是**既有执行点**，B06 必须与它对齐而不是新造第二套许可语义。
+- **承载接口（v0.1.2 定案，B-DR2-07）**：本仓**没有顶层 `preview` 命令**（A03 §2.1/§4 已确认）；因此 B06 的承载**不是新命令，而是既有 `resolve` 的响应包**：
+  - 载体 = **`ResolutionEnvelope`**（`resolver.py:359-417`，由 `:418-552 build_resolution_envelope` 构造）新增 **`qualification`** 字段（取值 `preview` / `verified_input` + 缺口清单）；
+  - 该字段由 **B06 定义**，并要求**消费者既有的许可门**（`revenue-forecast/scripts/company_wiki_source.py:280-281` 的 `capture_ready`）与之对齐——B 只提供事实，**不改消费者**；
+  - 若 owner 要求新增独立命令，则属**新增能力**，须单列请求/拒绝语义与 allowed 文件（**待批准**）。
 - 缺 URL/捕获日志但有本地导入 hash → 可 preview 并标缺口；身份/期间不明 → 正式合同 `blocked`；缺文本 → 只返回所需产物的 pending，不伪造 URL、不默认联网。
 
 **测试**：L09、L10（含 A07 的 VR-N21：无门外发出口的负例）。
@@ -141,16 +156,17 @@
 
 **目标**：对外只有一个**版本化**读取合同；不兼容**明确报错**；旧客户端在**边界 adapter** 一次转换。
 
-**范围重划（B-DR-05 正确指出）**：v0.1 把"缺 policy 禁止静默退回 `companies`"写成 B07 的实现在**禁止仓**（filing-fetch `filing_contracts.py:485-486`）。按执行计划 §B「主责任 wiki；filing/revenue 仅最小协议适配」：
+**范围重划（v0.1.2 定案，B-DR-05 + B-DR2-03）**：v0.1 把"缺 policy 禁止静默退回 `companies`"与"边界 adapter"写成 B07 的实现，但两者都没有可改的文件（消费者仓与 `adapters/*` 都在禁区）。按执行计划 §B「主责任 wiki；filing/revenue 仅最小协议适配」，**B07 只签 wiki 侧**：
 
-| 事项 | 归属 | 说明 |
+| L11 验收句（矩阵原文） | B 可签部分（wiki 侧，本包 allowed 内） | 不可签部分（归 C / 消费者仓） |
 |---|---|---|
-| 读取合同的**版本/校验/五值错误** | **B（wiki）** | 本步主体 |
-| **N-1 支持合同**的测试 | **B（wiki）**，从 filing/revenue 真实入口调用（L11） | 需要跨仓只读调用 |
-| "无 `companies` 静默 fallback" | **B 只做"不新增 fallback + 在合同里显式声明无此语义"**；**消费者侧实现**（filing/revenue）**归 C** | 若 owner 要求 B 一并改消费者，须把 `filing-fetch/scripts/filing_contracts.py` 纳入 allowed_files（**待批准**） |
-| `adapters/*`、`adapter_dispatch.py`、`cli.py`（policy_export/preview 承载） | **v0.1.1 明确分类**：`cli.py:835-857 _policy_export_payload` 与 `export_policy_2x` 的**字节/hash 契约冻结**（改动须跨仓迁移）；`adapters/*`/`adapter_dispatch.py` **列入 forbidden**（属 provider 获取面，非读取面） | 见 [file-scope.md](file-scope.md) |
+| "支持兼容由单 adapter 转换且来源不变" | **wiki 侧的版本化读取合同本身**：`schema_version` + `ResolutionEnvelope`（`resolver.py:359-552`）的兼容判定；**N-1 支持**的判定逻辑与拒绝语义（`not_found/not_indexed/unavailable/blocked/ambiguous`） | **消费者侧的转换实现**：`filing-fetch/scripts/filing_contracts.py`、`revenue` 侧 adapter —— 归 **C**；B 只在验收记录里注明"消费者侧未验" |
+| "未知拒绝，无 companies 静默 fallback，无第二权限语义" | **wiki 侧不新增任何 fallback 分支**；在合同里**显式声明"本接口无目录级 fallback 语义"**；并给出探测负例（构造未知版本 → 必须 `not_found`/`blocked`，不得读到别的目录） | **消费者侧的 `companies` fallback 代码**（若存在）在 `filing-fetch` 内 → 归 **C**；B 不得声称已删除它 |
+| （新增，本包要求）`resolve` 输出的 **policy_export payload 字节/hash 不变** | ✅ **必须由 B 自测**（见 [test-acceptance-map.md](test-acceptance-map.md) §1c 的 `B-payload-hash`） | — |
 
-**测试**：L11、L12。
+> **B07 的"完成"因此是**："wiki 侧版本化合同 + N-1 判定 + 无新增 fallback + payload hash 不变"四件；**消费者侧的 adapter 转换与 fallback 删除明确不在 B 的签名内**（C 阶段）。
+
+**测试**：L11、L12（L11 的消费者侧部分标记为"B 只验 wiki 侧"）。
 
 ---
 
