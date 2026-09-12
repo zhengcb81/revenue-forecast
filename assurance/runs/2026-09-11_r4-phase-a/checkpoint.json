@@ -120,15 +120,15 @@
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "52f38a5440a2977c6c05d0d36ebf0849d6559108",
-      "dirty": 16
+      "head": "9d2196360e9f48e4fb3aade0ff7db7e71dfcbfff",
+      "dirty": 0
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "PENDING-COMMIT",
+  "reviewed_commit": "9d21963",
   "reviewed_commit_note": "`reviewed_commit` carries the reviewed corrections (documents, evidence and ledgers). The stamp that records this value necessarily lands in the immediately following commit (d152833/3e0c8f3 for v0.2, 34b2291 for v0.3), which changes only checkpoint.json - so the reviewer should read reviewed_commit for the contracts and the tip commit for the ledger stamp. A commit cannot contain its own hash, which is exactly the staleness A-DR-09 flagged; recording both removes the ambiguity instead of hiding it.",
   "inputs_note": "revenue-forecast `dirty` is the working-tree count at generation time; it is non-zero only when this file is regenerated before the corrections are committed. `reviewed_commit` is the clean tree the reviewer reads, and every commit in this run touches only assurance/runs/2026-09-11_r4-phase-a/, so the twelve product input hashes frozen in baseline-map.md section 0 and inputs.json stay byte-accurate (independently re-derived by A.DR rev1 and rev2: 12/12 HASH_OK). company-wiki moved from the A01 freeze 7d4852f to 478bb92 (planning ledger edits only) and then to ca63ff2 (one ledger sentence), i.e. no product code or config is touched in any repository; the drift and its scope are recorded in baseline-map.md section 0 (A-DR2-08).",
   "produced_files": {
@@ -257,8 +257,8 @@
   "produced_files_verification": {
     "checked": 30,
     "source": "index",
-    "source_revision": "0ac448c1dcb7140e058a660288cb1eb7c07347ea",
-    "head_revision": "52f38a5440a2977c6c05d0d36ebf0849d6559108",
+    "source_revision": "c72358bcf2e2eb2cf91269045972b76e80270f0f",
+    "head_revision": "9d2196360e9f48e4fb3aade0ff7db7e71dfcbfff",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -268,5 +268,5 @@
     ],
     "post_commit_recheck": "Run `python evidence/build_checkpoint.py --verify-only` after committing: it re-checks every recorded digest against `git cat-file blob HEAD:<path>`. Build time can only check the staged blob, because the commit that carries this file does not exist yet."
   },
-  "generated_at_utc": "2026-09-12T07:28:22.075523+00:00"
+  "generated_at_utc": "2026-09-12T07:28:46.791399+00:00"
 }
