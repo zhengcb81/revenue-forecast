@@ -1,9 +1,9 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
-  "phase": "B (position-transparent index and read-only access) - ALL SEVEN STEPS IMPLEMENTED: B01-B05 pushed with B01/B03/B04/B05 reviewed and disposed of; B06 and B07 landed this round and await their reviews",
-  "step": "B03's review came back accepted_with_findings (1xP1/4xP2/3xP3) and every finding is disposed of (2f1ddab). The P1 was my own public keyword not bound to the handle - a caller could mix one version's document_id with another version's bytes and call it verified - and two of its P2s (the drive-root containment bug and CFG-08's null read_only) had already been found independently from the reviewer's own probe output and were fixed before it reported. B06 (5138546) and B07 (5b7ef10) were then transplanted from the isolated worktree as separate commits, with B-payload-hash turned into an executable comparison that passes",
-  "last_completed_step": "B03 reviewed and disposed of, then B06 and B07 landed. B03 dispositions (2f1ddab, acceptance cases 13 -> 18): expected_content_sha256 is PINNED to the handle (mismatch -> unavailable/expected_version_mismatch, never another version's bytes labelled verified); a TAIL guard honours a cancellation landing inside the read that returns b'', and a second case requires cancellation to STOP reading rather than refuse after consuming the file (this closes the reviewer's surviving mutant M4); containment uses commonpath, so a root configured as a drive root no longer refuses every file on that drive, and the read opens the path containment resolved (closing the check-then-open window) while hardlinks and name-based containment stay registered limitations; the size+mtime re-check is documented as precise refusal labelling, NOT as the integrity mechanism (the digest of the returned buffer is; os.utime can defeat the re-check); the success status and the empty bytes_source got names, and the entry point type-checks its handle. Each fix is guarded by a mutation that is now killed (evidence/b03_disposition_mutations.py). B01's CFG-08 now refuses a present-but-empty read_only (728b5e0). B06 (5138546): the envelope gains the additive qualification label (verified_input / preview / blocked + gap codes) and the response-level blocked reads B05's reserved provenance key through the read-only store; the design's preview case is registered as unreachable because resolve's existing capture_incomplete gate refuses such handles (the conservative default, not a widened cross-repo behaviour). B07 (5b7ef10): the version policy sits next to the constant, build_resolution_envelope refuses an unknown schema_version instead of parsing leniently, and B-payload-hash became executable and PASSES (pre-B 7d4852f and the current tree are byte-identical with a fixed project_root). Pre-flight before the push: the full contract suite ran locally - 1900 passed / 8 skipped, with the only two failures being the known leaked-worker artefact and the load-sensitive zr409 real-sample case that CI ignores and that passes when run alone.",
-  "current_gate": "B.VR for B06 and B07 (one independent review per step). No owner ruling is outstanding: S-10 to S-13 were approved as recommended on 2026-09-12. Two questions the author raised without blocking on them: whether the preview label should become REACHABLE (that needs either relaxing resolve's capture_incomplete gate - a cross-repo behaviour change - or an explicit preview entry point in a later contract), and whether the FC-1301 taxonomy should be widened to see the resolver's positionally-returned reasons (registered follow-up work package).",
+  "phase": "B (position-transparent index and read-only access) - ALL SEVEN STEPS IMPLEMENTED, PUSHED, REVIEWED AND DISPOSED OF; the remaining gates are the independent VR/AR runs (B08/B09), which need the isolated copy (G8), and two registered follow-up work packages",
+  "step": "B06's and B07's reviews both came back accepted_with_findings (one P1 each) and both are disposed of in 3740857 and f2ba5c1. The B06 P1 was the author contradicting his own plan: a handle with no fiscal year was labelled verified_input, so period_missing was unreachable - the period is now a period fact (fiscal_year or fiscal_period; a published date is when the filing was published, not which period it covers) and the state was measured to be reachable through latest_as_of, which turned a rule-level case into an end-to-end one. The B07 P1 was a false guarantee in the new contract text: it promised an explicit failure whenever no qualified copy of the requested version exists, while owner decision S-10 rule 2 allows one row to be served on the catalog's declaration - the exception is now named where the sentence lives",
+  "last_completed_step": "B03 reviewed and disposed of (2f1ddab), B06 and B07 transplanted (5138546, 5b7ef10), then both reviews landed and were disposed of (3740857, f2ba5c1). B06 disposition: the period rule now requires a period fact, so a served document without a fiscal year is blocked with period_missing (measured reachable via latest_as_of, and covered by an end-to-end case); the qualification dict gained conflict_check so it says whether the conflict evidence could be consulted at all; a new envelope-level case drives the gap rule through build_resolution_envelope, killing the reviewer's surviving mutant M6 (the wiring had been untested); the consumer-side licence alignment is marked not_verified (phase C) and the identity/source gaps are registered as rule-level with no pipeline state reaching them. B07 disposition: the contract comment names the S-10 rule-2 exception instead of promising an unconditional explicit failure; read_verified_bytes now refuses a handle stamped with another version (unavailable/unsupported_version) instead of verifying its bytes; the bare ValueError for an unknown version is documented as a caller/programming error rather than a resolution outcome; the vacuous trace assertion was replaced by 'the refusal must be explained'; and the L12 credit moved back to B08. Measured after the dispositions: the targeted set (B01/B03/B06/B07 acceptance + the four pre-existing envelope suites + both ratchets + the reason-taxonomy gate) 89 passed / 1 skipped, ruff clean, and CI on the disposition commit f2ba5c1 = success (run 34726243938).",
+  "current_gate": "No author-owned gate remains open for the B steps: B01-B07 are implemented, pushed, reviewed and disposed of, with CI green on the disposition commit. What remains is outside this session's authority or scope: B08/B09 (independent VR/AR on an isolated copy) need gate G8 plus G7, the A05 sample list needs the owner's G7 confirmation, and two follow-up work packages are registered - the FC-1301 taxonomy does not see the resolver's positionally-returned reasons, and B05's read side raises on malformed shared-column metadata where B06 reports no conflict evidence. Two scope questions also wait for the owner: whether the preview label should become REACHABLE, and whether an unknown version must be expressed with the five error values instead of a caller-type error.",
   "pending_review": [
     {
       "gate": "B.DR rev6",
@@ -246,11 +246,11 @@
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "52d394d74d3ab8b05145c7d9dbe8111ab7d97198",
+      "head": "f2ba5c13b6dab469d5031159ff7b5985f1ba763f",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "2fd604ce5c8793422f9f90129963aab04ceb3c37",
+      "head": "1bc7284c898ddd620f3d31c4f6f2115d0b2103a9",
       "dirty": 0
     },
     "filing-fetch": {
@@ -258,10 +258,10 @@
       "dirty": 0
     }
   },
-  "reviewed_commit": "2fd604ce5c8793422f9f90129963aab04ceb3c37",
+  "reviewed_commit": "1bc7284c898ddd620f3d31c4f6f2115d0b2103a9",
   "commit_anchor": {
-    "head": "2fd604ce5c8793422f9f90129963aab04ceb3c37",
-    "index_tree": "2df05f2f74bce359a7095384a7ae235709d4b248",
+    "head": "1bc7284c898ddd620f3d31c4f6f2115d0b2103a9",
+    "index_tree": "974b6c88cda814cd404182788c32390cc46f0c74",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -310,8 +310,8 @@
       "size": 2905
     },
     "evidence/b02-ci-runs.md": {
-      "sha256": "de9ff3da0c7d88532d796df4870c0c97faf1725171ea381d280f36a7746db908",
-      "size": 7630
+      "sha256": "e5a183a003c94d48f7acb96ba6acd5dddb874095e3cbe1bab0864e74b7f97dc1",
+      "size": 7853
     },
     "evidence/b02-implementation.md": {
       "sha256": "cccbda6085f3254a5d13d7337887016b4a76ad3344aaf4b672ce257cac847dcc",
@@ -346,8 +346,8 @@
       "size": 8559
     },
     "evidence/b03-implementation.md": {
-      "sha256": "d2655a24b80eb016eb94bec7651004159a5073b22fe31dbe2748e7241c47a9cb",
-      "size": 10638
+      "sha256": "c1cd9d480f831d2abda2d7faf1557df3dc03e9740714a6f5ff1fff6b8f1a821c",
+      "size": 11013
     },
     "evidence/b03-plan.md": {
       "sha256": "a708b31df635daf810865af0c678bd6c65f632a4e6cb61fe8773ed211cfbd396",
@@ -438,28 +438,156 @@
       "size": 6624
     },
     "evidence/b06-implementation.md": {
-      "sha256": "b03e442e202997a310b39a7859efd3f1d95e6c8497860f30451ed2574c46ffca",
-      "size": 7192
+      "sha256": "a34da8b1bae548d3e57afec88d39c0faf74d09136d8150bd0b545e79f5d9cfab",
+      "size": 6951
     },
     "evidence/b06-plan.md": {
       "sha256": "0e1f1c1669fcbbde848b034fdff0da7663fce284d7f36c7ccc3a99dca7b4e2c0",
       "size": 8957
+    },
+    "evidence/b0607-review-disposition.md": {
+      "sha256": "02957b1e050968bb9ebc6ec887dd295d144f4fe91a045ea5c4d9c1965c0a3521",
+      "size": 8628
+    },
+    "evidence/b06_period_probe.py": {
+      "sha256": "8bd94f9a3e24c81d159954420020e33673edfe44e8202f3e1a5f18b1e606adda",
+      "size": 4617
+    },
+    "evidence/b06_review_b03_head.json": {
+      "sha256": "a1b42ebc6fac01e1ee1b346fbf5ddd4349a504fc4f5da24867077f89b895074a",
+      "size": 2257
+    },
+    "evidence/b06_review_b03_pre.json": {
+      "sha256": "59980d61989c8fe44041b6e3a874ca7abccd8451e2f00ca525b07db7a949f578",
+      "size": 2284
+    },
+    "evidence/b06_review_b03probe.py": {
+      "sha256": "1699ea687726c0b6247891228b374b09c732c515c4462b4c985168f3b8ff4f05",
+      "size": 9118
+    },
+    "evidence/b06_review_cfg08_head.json": {
+      "sha256": "2791093c16e23f175e44faaac2e5d5e8d2c3859af3342aedff2b8769b83671f9",
+      "size": 821
+    },
+    "evidence/b06_review_cfg08_pre.json": {
+      "sha256": "d117718f5338121116963b07f004ef3bd44ea98ca517d28bd5232d3e2b6daf60",
+      "size": 785
+    },
+    "evidence/b06_review_cfg08probe.py": {
+      "sha256": "4ac5172c7c43262ac99f75d2557ec3492352b426450e66ca241830ad6b320d5f",
+      "size": 2347
+    },
+    "evidence/b06_review_envdump.py": {
+      "sha256": "1e33bd0dfc35f4203ce26d15f0e162f1cc470c3b9b631b1bc15fb106df927cd0",
+      "size": 4162
+    },
+    "evidence/b06_review_m6.json": {
+      "sha256": "fc143c99555cd07dbcab06060d8eef3874262e468ec206cbb459081fafcaa17b",
+      "size": 430
+    },
+    "evidence/b06_review_m6_check.py": {
+      "sha256": "ddbcf3c2a6854808653302e46f4c6dff5276220f2ddbd3d50a08b0ca83523e6e",
+      "size": 2943
+    },
+    "evidence/b06_review_mutations.json": {
+      "sha256": "bdffde302c8569ad0e0b929947cd2b1931a577a4cf32f82499c8ac8fe4413ec5",
+      "size": 8353
+    },
+    "evidence/b06_review_mutations.py": {
+      "sha256": "8a18e20f4ade8ce5a49301f71fd982c4c4793b1d87d58cf5327d4223799e9bcb",
+      "size": 7003
+    },
+    "evidence/b06_review_patch.py": {
+      "sha256": "810a1c4b2de20b9fdc5a7a956c453e914747181de212fc41e48cfd328d4462d2",
+      "size": 825
+    },
+    "evidence/b06_review_post.json": {
+      "sha256": "1e0aa63eea107d2627cf4021c853ffe025679e618f4c782bf86b2164ab933691",
+      "size": 7065
+    },
+    "evidence/b06_review_post2.json": {
+      "sha256": "394aec30fbca41ec177a6d64c43d516e41113e0c9d3b49736a59edaa804cdac7",
+      "size": 7065
+    },
+    "evidence/b06_review_pre.json": {
+      "sha256": "a3f4c38ed2f4463fc266f337bc68207c3de6ac9a09f8f5df356f4613ca224a16",
+      "size": 6808
+    },
+    "evidence/b06_review_prepost.json": {
+      "sha256": "6ab68ecd0b4ca4d973d62a0595e82024b9f95ba977f8cd9aa5cc1aee12705bdb",
+      "size": 17034
+    },
+    "evidence/b06_review_prepost.py": {
+      "sha256": "dc1ffe2305889931d50766ea8a72afd8f7c4592d62523d5ad768618327851b4a",
+      "size": 1914
+    },
+    "evidence/b06_review_probe.json": {
+      "sha256": "1297cb313987b9ae041e27d79c39638b4bf430c042e6a4a6c47174fa18a77ddd",
+      "size": 10643
+    },
+    "evidence/b06_review_probe.py": {
+      "sha256": "7cbbf0268c695922d426cd0c896c4c15bc666325fe02cfba9de912844f3b675f",
+      "size": 22550
+    },
+    "evidence/b06_review_tests.txt": {
+      "sha256": "281fb7b65e49fa606a5f3c830e5109a8c6a2a7ba61a011beff2b69de0ca1de0a",
+      "size": 2616
     },
     "evidence/b07-payload-baseline.json": {
       "sha256": "53b6f4e0d8b0294910842d1037041eed1012f6974eb6f73ca5363fadc840a76d",
       "size": 1578
     },
     "evidence/b07-plan.md": {
-      "sha256": "a340e0d2f392efc28a36b499a18c5bb7a710f8dd58cd8a51ba9250ebe5cf0030",
-      "size": 6963
+      "sha256": "317908a599ce9ad4bde7eb75028e4adc0096b4dba6e5c172c0e1a9708b956003",
+      "size": 6811
     },
     "evidence/b07_payload_baseline.py": {
       "sha256": "9cd1dcd49f2f9e2f0e22ff9dfc2103d77d599a8ad740bab69408672586f96bb8",
       "size": 4644
     },
+    "evidence/b07_review_mutations.json": {
+      "sha256": "a212a9b69c66922506f38c05e5c385bdce3f3031aa0433491b6edd27940e8290",
+      "size": 3118
+    },
+    "evidence/b07_review_mutations.py": {
+      "sha256": "04ca5adba54040b186cc542d4c2b37bc6c919cf3da17e19a4e671f06ba23a409",
+      "size": 6386
+    },
+    "evidence/b07_review_payload-baseline.author-original.json": {
+      "sha256": "53b6f4e0d8b0294910842d1037041eed1012f6974eb6f73ca5363fadc840a76d",
+      "size": 1578
+    },
+    "evidence/b07_review_probe.json": {
+      "sha256": "1defff8d344de01250076255c7058ead53be8c84e671ceb855c999375586083c",
+      "size": 3039
+    },
+    "evidence/b07_review_probe.py": {
+      "sha256": "0d91f13765c84dc45865b3e3f11443235fd46cb13c880d9b31d82d2770e3eb66",
+      "size": 13534
+    },
+    "evidence/b07_review_probe2.json": {
+      "sha256": "0aad2241d8eedb16086f6a17591bbb8a7e88b85779022b14ac7509f6fa79b353",
+      "size": 1974
+    },
+    "evidence/b07_review_probe2.py": {
+      "sha256": "0daa24687020c2c7b2da3c47a261b5ae4b41500b2d8f5f3a7c91fec8a32c1cc4",
+      "size": 8525
+    },
+    "evidence/b07_review_probe3.json": {
+      "sha256": "50d552325ac32c7b5b96dd049d45c465e04bc6ad19710070c3969ab6eed64259",
+      "size": 778
+    },
+    "evidence/b07_review_probe3.py": {
+      "sha256": "930208147bdaae9766b67bacad0be72d602ffb0ac7124e2d6e842250267cef0a",
+      "size": 4543
+    },
+    "evidence/b07_review_report.py": {
+      "sha256": "1940d5e2e3d90095478c6ee5db9a3760a025065b21d1a7a0619570f0bc98b35d",
+      "size": 50887
+    },
     "evidence/build_checkpoint.py": {
-      "sha256": "211f3a2546f1b206e40ff6701600e61944c5ec35ae4152079712bed7214d9d44",
-      "size": 40456
+      "sha256": "e29ab6b7f4a1fea268bb1096c5ca7bbdaf4c27a7a95dd8cece088146ab0f140a",
+      "size": 40364
     },
     "evidence/ci_logs.py": {
       "sha256": "76f1e3a5384115f485bfd27348c3f237bdd342c6d2e44d498ab45dd8b5de7e4e",
@@ -470,40 +598,48 @@
       "size": 2304
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "a46fc4b8bd536a0dfff8337603d237f43eee2acc68fec7fb8eca63c442591e38",
-      "size": 100223
+      "sha256": "852fe1adc5979b9af898f320722c80e7658e8d23628dac1d86eab07c943cdd28",
+      "size": 108261
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "d93af76fcbc65c1835b2188c7d79ffe02c7d977b0b5680813f3b2853bcfc91b2",
-      "size": 18979
+      "sha256": "652e58faa611d4844ae33129ab183b094d488a85e4a4756392a63828009fc740",
+      "size": 19990
     },
     "evidence/field-owner-map.json": {
       "sha256": "d8b76aa21010b9f2895935f4d7de767b266dfaf5590d49d8f16d704fea3fe08e",
       "size": 10582
+    },
+    "evidence/l-item-coverage.json": {
+      "sha256": "4cdb3354d796f0d32e061cf11fce5d2ba9a0d41e6ca842d9cd85a1aee83e2b8d",
+      "size": 1954
+    },
+    "evidence/l_coverage_check.py": {
+      "sha256": "55b3e956a07fb22c745cbc78853ab7cfb197625002de3b77113eadb654af13b5",
+      "size": 4025
     },
     "evidence/transplant-manifest.json": {
       "sha256": "f8c24660218f1efb9f7f03af5fbe85eb90e09bdfec6a5945d41b2474df045b68",
       "size": 2784
     },
     "evidence/transplant_split.py": {
-      "sha256": "d12657b791f0025e90667e7804cf3677c76331ed8f1cea46f7e3447af2cb6c87",
-      "size": 7274
+      "sha256": "f30b001e078ed52d6728bed151b58c615986b20d8713cd8655c9f8468a5a70b9",
+      "size": 8089
     },
     "file-scope.md": {
       "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
       "size": 12565
     },
     "findings.md": {
-      "sha256": "10fa8ae406a1a48877d553d3e27a060df7aebaaf86d766add7856096769219f4",
-      "size": 77585
+      "sha256": "4adf4d094af30e45411779af5fb4c850ede6311dded80bf3a075373faa6db114",
+      "size": 82567
     },
     "owner-scope-decisions-2026-09-12.md": {
       "sha256": "cb6ac486f03de140a4dfdd308b7dd484809ded199c69122d8e180bc5c3483d24",
       "size": 10926
     },
     "progress.md": {
-      "sha256": "97dec89c883a91d300987e2df10dc81d75a44ee0d964a350f94a7c2c71d25407",
-      "size": 34312
+      "sha256": "3631fcf12e242558074e955a641371b4ce49cff7b8e2c8c4476452f5721f9230",
+      "size": 38204
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -561,6 +697,14 @@
       "sha256": "c502639ce1009c7c8a353cf3f0e3f1e4bd868f720a99c971381bc3bbcbad543c",
       "size": 47251
     },
+    "reviews/B.VR-b06.json": {
+      "sha256": "0b217e2b8cedee3e56729d2308df029f2a451d4248077b3fe649be3bdca040b5",
+      "size": 40638
+    },
+    "reviews/B.VR-b07.json": {
+      "sha256": "de4c03b95b96e5b4ccb0e54bf8407609c23b8e5e0afd3bcc0f97e188e85b1ac0",
+      "size": 41259
+    },
     "risk-and-stop-rules.md": {
       "sha256": "c6aab0d76c8c0ff946de655c9da09901d3cc898c1e2cdf2fac21c967cd6ab24c",
       "size": 7165
@@ -570,16 +714,16 @@
       "size": 20604
     },
     "test-acceptance-map.md": {
-      "sha256": "49ca23af4ad2190c4789098643f34a84173d7d207116888531f4d95c685a6fad",
-      "size": 11462
+      "sha256": "168fa024977e3acd9f32e5fa42b6804c483de5d7439ca9838ac70b186ffebe59",
+      "size": 12198
     }
   },
   "produced_files_verification": {
-    "checked": 77,
+    "checked": 113,
     "source": "index",
-    "compared_revision": "2df05f2f74bce359a7095384a7ae235709d4b248",
-    "head_revision": "2fd604ce5c8793422f9f90129963aab04ceb3c37",
-    "index_tree": "2df05f2f74bce359a7095384a7ae235709d4b248",
+    "compared_revision": "974b6c88cda814cd404182788c32390cc46f0c74",
+    "head_revision": "1bc7284c898ddd620f3d31c4f6f2115d0b2103a9",
+    "index_tree": "974b6c88cda814cd404182788c32390cc46f0c74",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -589,8 +733,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 77,
-    "files_listed": 77,
+    "files_on_disk": 113,
+    "files_listed": 113,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -599,5 +743,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-12T23:23:29.478820+00:00"
+  "generated_at_utc": "2026-09-12T23:57:05.885002+00:00"
 }
