@@ -157,24 +157,34 @@ LEDGER = {
     "step": ("B04 implemented (acceptance + finding, NO product change): a move keeps the reference, and the "
              "same-path overwrite case is pinned and registered as F-B04-1 (out of the allowed file set)"),
     "last_completed_step": (
-        "B02 closed after five revisions under four independent reviews (all counter-examples fixed, mutants "
-        "M5/M6/M7 killed, CI green on every step commit). B04 then implemented as acceptance plus findings "
-        "with NO product change, and reviewed: the reviewer reproduced every number and ran its own mutation "
-        "matrix (M3/M4/M5/M6/M7 killed), corrected two author statements (F-B04-1's overstated consequence; "
-        "L03's protection comes from the pre-B02 provider_document_id gate, not from B02's source-group "
-        "restriction) and found F-B04-2 (moving the PDF without its sidecar answers MISSING with an EMPTY "
-        "trace). All six findings are addressed: F-B04-1 rewritten with a labelled remedy table (a new "
-        "in-scope diagnostic option is explicitly rejected), F-B04-2 registered, the capture rebound to the "
-        "reviewed commit, and an author-side mutation harness added (evidence/b04_mutation_check.py). "
-        "Measured: 4 acceptance cases, combined 69-case set green, ruff clean, CI green for bc3590f."
+        "B04 closed after its focused review (the reviewer reproduced every number, corrected two author "
+        "statements and found F-B04-2; all six findings are addressed, plus an author-side mutation harness "
+        "that kills M3/M4/M5/M6/M7). "
+        "B05 then implemented in three commits: (1) the document-row merge extracted out of "
+        "_scan_catalog_impl so it can be tested and grown - the complexity ceiling of 140 turned out to "
+        "belong to _scan_root_v1, not the merge site, and the B05 plan was corrected accordingly; (2) the "
+        "scanner no longer REPLACES documents.metadata_json on the prefer_new path - it reads, keeps every "
+        "key it does not own (the prompt_injection_review receipt that resolver exposes as "
+        "prompt_injection_status was being silently dropped), and writes the reserved r4_provenance block "
+        "with per-field {value, sources, conflicts} records holding hashes only; (3) the reviewed "
+        "per-column rules (fill a gap, keep a confirmed value, a DECLARED value beats a file-name-derived "
+        "one, and a disagreement between two declared values is preserved as a conflict instead of being "
+        "resolved by priority) plus the read contract in service.query_filing_candidates (provenance / "
+        "conflicts / metadata_status=blocked). Two findings are registered for review: F-B05-1 (the "
+        "declared-vs-derived refinement was forced by the frozen canonical-writer test and should be "
+        "back-filled into the design text) and F-B05-2 (two behaviour changes: a confirmed single value is "
+        "no longer overwritten, and published_date no longer COALESCEs unconditionally, so a conflict can "
+        "fail closed for resolution - which the read side now reports as blocked). Measured: 6 acceptance "
+        "cases, full suite 2706 passed / 7 skipped with one failure that is an environment artefact (a "
+        "worker process leaked by an earlier interrupted run; it fails the same way on the pre-change code "
+        "and passes after cleanup), coverage scanner.py 91.31% (frozen floor 90.5), service.py 95.20%, both "
+        "ratchet tables green, ruff clean."
     ),
     "current_gate": (
-        "B05 (metadata merge: provenance and per-column rules; its landing plan is written - "
-        "evidence/b05-plan.md - and records that scanner.py is AT its complexity ceiling, so the merge block "
-        "must be extracted into a new module-level function rather than extended in place). The owner owes "
-        "three rulings, all stated with their evidence: S-10 and S-11 on B02's claim-trust rule and budget "
+        "B05 independent review (fresh session), then B01 -> B03 -> B06 -> B07. The owner owes three "
+        "rulings, each stated with its evidence: S-10 and S-11 on B02's claim-trust rule and budget "
         "mapping (single authoritative difference list, evidence/b02-implementation.md section 3), and S-12 "
-        "on what to do about same-path overwrites (contract-level limitation vs a byte snapshot work "
+        "on what to do about same-path overwrites (contract-level limitation vs a byte-snapshot work "
         "package)."
     ),
     "pending_review": [
@@ -189,6 +199,19 @@ LEDGER = {
                      "re-runnable and searches the whole run directory"),
             "record": "reviews/B.DR-rev6.json",
             "reviewer_self_reported_id": "394101b5-bbc0-428e-a490-758a2fd5390d",
+        },
+        {
+            "gate": "B.VR (B05)",
+            "scope": "company-wiki 6909e78 + bdd99dc + 9db3394: scanner merge extraction, reserved r4_provenance with read-modify-write, per-column rules, read-side blocked; F10 6 cases",
+            "status": "pending",
+            "reviewer": ("independent subagent (non-author) - must differ from the five earlier reviewer "
+                         "sessions; the questions are (a) whether the per-column rules really keep a "
+                         "confirmed value and record conflicts rather than resolving them by priority, "
+                         "(b) whether the declared-vs-derived refinement (F-B05-1) is the right reading of "
+                         "the design or needs a design change, (c) whether the behaviour changes listed in "
+                         "F-B05-2 are acceptable or need an owner ruling, and (d) whether the reserved key "
+                         "stays additive for the other readers of the shared column"),
+            "note": "evidence: evidence/b05-implementation.md, evidence/b05-plan.md, findings.md F-B05-1/F-B05-2",
         },
         {
             "gate": "B.VR (B04, focused)",

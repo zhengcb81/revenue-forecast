@@ -1,5 +1,14 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-12（实施期）— **B05 已实施**（3 子步：抽取 / 保留键+读-改-写 / 逐列规则+读侧 blocked）
+
+- **提交**：`6909e78`（等价抽取 `_merge_document_row`）、`bdd99dc`（保留键 `r4_provenance` + 读-改-写，修掉"整列替换抹掉复核收据"这一真实缺陷）、`9db3394`（逐列规则 + 读侧 `blocked`）；记录 [evidence/b05-implementation.md](evidence/b05-implementation.md)、计划 [evidence/b05-plan.md](evidence/b05-plan.md)。
+- **核心修复**：B05 之前 `prefer_new` 分支用新字典**整列替换** `documents.metadata_json`，会抹掉 `prompt_injection.py` 写在同一列的复核收据（`resolver` 把它作为 `prompt_injection_status` 暴露给下游）——现在读-改-写，**其他模块的键一律存活**。
+- **新增**：保留键 `r4_provenance`（设计形状 `{schema_version, fields:{<列/键>:{value,sources,conflicts}}}`，**只存 hash 不存原文**）；逐列规则（补空 / 保留已确认值 / 声明压派生 / 真冲突保留全部候选）；`source_status` 取最新观测；`primary_source_id` 每次扫描按 B02 顺序重选；读侧 `query_filing_candidates` 新增 `provenance` / `conflicts` / `metadata_status`（有冲突 = `blocked`）。
+- **两条需复审/owner 过目的发现**：**F-B05-1** —— "声明值 vs 派生值"是实施期细化（设计正文没定义"声明"），它由一条**冻结断言**逼出（`test_writer_dedup_ignores_dayu_portfolio_locations`，`git stash` 对照确认）；**F-B05-2** —— 两处行为变化（已确认单值不再被更优先捕获覆盖；`published_date` 不再无条件 COALESCE），后果是冲突场景下解析可能 **fail-closed** 并需要重新获取，读侧会显示 `blocked`。
+- **验收/复跑**：F10 `test_r4b05_metadata_provenance.py` **6 用例**通过；全量 **2706 passed / 7 skipped**，唯一失败 `test_pytest_temp_worker_governance_fixture_is_autouse_safe` 是**环境残留**（早先被中断的运行留下的 worker 进程；在 pre-change 代码上同样失败，清理后通过）；覆盖率 `scanner.py` **91.31 %**（冻结底 90.5）、`service.py` 95.20 %；两张棘轮表 **4 passed**；`ruff` clean。
+- **待办**：B05 的独立复审（`B.VR`，新会话）；随后 B01 → B03 → B06 → B07。owner 待裁：S-10、S-11、S-12。
+
 ## 2026-09-12（实施期）— **B04 已实施**（验收 + 发现登记；产品代码零改动）+ `B.VR` b04 复审 `accepted_with_findings`
 
 - **交付**：`company-wiki/tests/contract/test_r4b04_reference_stability.py`（4 用例，sha256(16) `6039984dfb394e46`，提交 `bc3590f`）+ 发现 **F-B04-1 / F-B04-2** + 变异 harness `evidence/b04_mutation_check.py`（5 变异全 KILLED，跑完还原）；记录 [evidence/b04-implementation.md](evidence/b04-implementation.md)、原始输出 [evidence/b04-test-run.txt](evidence/b04-test-run.txt)（绑定 `bc3590f`）。

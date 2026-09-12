@@ -2,6 +2,23 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B05-1：**"声明值 vs 派生值"需要写进设计正文**（实施期细化；请 B.VR 确认是否回填）
+
+- **事实**：设计 §B05 的逐列规则写"取**声明该列且来源可追**的值"，但**没有定义"声明"**。实施按字面"两边非空且不同即冲突"落地时，**打破一条既有冻结断言** `test_writer_dedup_ignores_dayu_portfolio_locations`（用 `git stash` 对照确认因果）：dayu 的 `same.htm` 让文档先有 `document_kind='regulatory_filing'`（**文件名派生**、`dayu_meta` 为空即无声明），canonical 导入的 sidecar **声明**了 `annual_report`；按字面规则会把后者当冲突压住 → writer 的身份校验解析不到 → `CanonicalImportError`。
+- **细化实现**（已落盘，见 [evidence/b05-implementation.md](evidence/b05-implementation.md) §0b）：声明判定 = 该捕获元数据容器里的对应键（`scanner._DECLARING_KEYS`：`title←source_title`、`document_kind←document_kind`、`source_type←source_type`、`published_date←filing_date/published_date`）。规则：**声明压派生（双向）**，**冲突只在两个声明值之间**成立（两边都派生且不同时也保守记为冲突）。
+- **为什么需要 reviewer/owner 过目**：这条细化改变了"什么算冲突"，而冲突会驱动读侧 `blocked`；设计正文没写它。若不回填，后续复审与实现会再次踩到同一处。
+
+## F-B05-2：合并语义的两处**行为变化**（如实登记，供 `B.VR` 与 owner 判断）
+
+| # | 变化 | 触发条件 | 影响与缓解 |
+|---|---|---|---|
+| a | **已确认的单值不再被"更优先"的捕获覆盖**（B05 之前是"胜者整行覆盖"） | 两个捕获对同一列都给出**声明值**且不同 | 保留旧值 + `conflicts` 记录 + 读侧 `metadata_status="blocked"`。**可能后果**：若旧值"更差"（如 `document_kind` 不同），依赖 `document_kind` 的解析会因此不可复用（**fail-closed**，需重新获取）；B05 之前该场景会静默采用新值。这是设计"冲突不按 priority 择一"的直接后果 |
+| b | **`published_date` 不再无条件 `COALESCE(新,旧)`** | 旧值非空且与新值不同 | 保留旧值 + 冲突标记；旧值为空时仍由新捕获补齐（capture_ready 恢复路径保留） |
+
+- **未受影响的既有行为（实测全量 2706 passed）**：单捕获首次入库（INSERT 分支**未改**）、退休终态、`prefer_new` 的业务键选择、`prompt_injection_review` 收据存活、`json_extract` 下推过滤。
+- **明确未做**：**首次 INSERT 不写 provenance**（只在合并路径写）——有意的最小改动（保持新入库行的 `metadata_json` 字节形状）；若 reviewer 认为新行也必须有 provenance，是一个小增量。
+- **`B-payload-hash`** 仍未执行：`r4_provenance` 会改变 `metadata_json` 的字节，因此**若将来执行该门，基线必须建立在本步之后**（本步不声称 payload 不变）。
+
 ## F-B04-1：同一路径被新修订覆盖后，**旧副本的 active locator 消失、旧字节被物理销毁**（实测；B 无权修）——原措辞经 `B.VR` b04 更正
 
 > **更正说明（`B.VR` b04 的 P2 B-VR04-01/-04/-05）**：本发现最初写成"被取代修订的**引用不可再解引用**"，**这是夸大**。下面是按实测更正后的精确陈述；改写的直接原因是 reviewer 复现出 `reader.resolve_handle(old_document_id, expected_content_sha256=old_sha)` **仍然返回**（该 API 只读 `documents`/`sources`，**根本不看 `locations`**）。

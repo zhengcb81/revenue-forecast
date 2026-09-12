@@ -24,7 +24,7 @@
 | **B02** | 选同版本全部候选 location：注册/能力→状态→可读/同 hash→健康 I/O 偏好；优先级只在合格集合内排序 | [b-design.md](b-design.md) §B02 | ✅ **已实施 rev3**（F1+F2+F10；27 新用例）→ [evidence/b02-implementation.md](evidence/b02-implementation.md)；`B.VR` rev1 = **rejected**（7 条已处置）→ rev2 = **accepted_with_findings**（5 条已处置，见 [findings.md](findings.md) F-B02-4/F-B02-5）→ **待 B.VR rev3**；⚠️ 两处已登记偏差 **S-10/S-11**（待 owner） |
 | **B03** | 稳定只读字节提供：固定句柄或受控快照；流式 hash；TOCTOU/云占位/坏字节/中断 | [b-design.md](b-design.md) §B03 | 设计完成 |
 | **B04** | 绝对路径与 location_id 留在诊断；移动后 source/version/locator 仍可解引用 | [b-design.md](b-design.md) §B04 | ✅ **已实施 + 已复审**（`B.VR` b04 = accepted_with_findings，2×P2/4×P3 已全部落盘）：F10 验收 4 用例 + 变异 harness（5 变异全 KILLED）+ **F-B04-1/F-B04-2**；**产品代码零改动**（目标 1/2 成立，目标 3 **有条件**）→ [evidence/b04-implementation.md](evidence/b04-implementation.md)；⚠️ 同路径覆盖的补救选择 = **S-12（待 owner）** |
-| **B05** | metadata 按原文/捕获来源/质量合并；保留 provenance 与冲突，**不以 priority 决定真伪** | [b-design.md](b-design.md) §B05 | 设计完成 |
+| **B05** | metadata 按原文/捕获来源/质量合并；保留 provenance 与冲突，**不以 priority 决定真伪** | [b-design.md](b-design.md) §B05 | ✅ **已实施**（3 子步，提交 `6909e78`/`bdd99dc`/`9db3394`）：抽取 `_merge_document_row`、保留键 `r4_provenance`（设计形状 `{value,sources,conflicts}`）+ 读-改-写、逐列规则 + 读侧 `blocked`；F10 6 用例 → [evidence/b05-implementation.md](evidence/b05-implementation.md)；⚠️ **F-B05-1**（"声明 vs 派生"应回填设计）与 **F-B05-2**（两处行为变化）待 `B.VR` 复审 |
 | **B06** | 本地可读与正式 capture 分开：缺 URL 可预览，身份/期间不明不得默认为可信财报 | [b-design.md](b-design.md) §B06 | 设计完成 |
 | **B07** | 唯一版本化读取合同；缺/未知版本明确不兼容；旧客户端在边界 adapter 一次转换 | [b-design.md](b-design.md) §B07 | 设计完成 |
 | **B08** | 独立 VR 在新隔离环境重跑 L01–L12 与必要旧 C01–C10；独立文件/OS 观察证零副作用 | 待 B.VR（隔离副本） | **阻塞：需隔离副本（G8）** |
