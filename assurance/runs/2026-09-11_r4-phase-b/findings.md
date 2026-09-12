@@ -28,12 +28,16 @@
 
 ### 可选的处置（供 owner 选）
 
+> **owner 裁定（2026-09-12 晚）：选 A** —— 授权做最小测试更正，并把该要求登记为 B06 的验收项。
+
 | 选项 | 做法 | 代价 |
 |---|---|---|
-| **A（作者推荐）** | 批准**最小测试更正**：把该 variant 的断言改成它真正验证的东西（读层只按索引作答），并把"sidecar 缺失不得默认为可信"登记为 **B06 的验收项**；门立刻恢复绿，且**不静默弱化**（旧断言换成有指向的已知缺口 + 新载体） | 需 owner 授权动一个 revenue 测试文件（B 的允许集之外） |
+| **A（owner 已选，已落地）** | 该 variant 的断言**保留**（要求继续写在测试里）但改为 **strict xfail**（`tests/test_fc1001_isolated_lake.py`，`pytest.param("sidecar_missing", marks=...)`），理由字段直接指向 **F-B01-7 + B06**；并在 [test-acceptance-map.md](test-acceptance-map.md) 的 **B06 行**登记该验收项。→ 门恢复绿、**不静默弱化**：B06 一旦实现，XPASS 会让该用例**响亮失败**，逼人**主动**摘掉标记 | 已授权动一个 revenue 测试文件（本为 B 允许集之外）；改的是**标记**而非断言，故不削弱判据 |
 | B | 不动用例，把该要求并入 **B06**，等 B06 落地后门自然恢复 | B06 完成前 revenue 侧**不能推送**（含 run 目录与 checkpoint） |
 | C | 撤销 B01（解析器回到只看 kind） | 门恢复绿，但 owner R-2/P-7 要修的"显式 `false` 不生效"**重新变成缺陷**，且该用例继续靠偶然理由通过 |
 | D | owner 另有指示 | — |
+
+**A 的实测结果**：`python -m pytest tests/test_fc1001_isolated_lake.py -q` → **8 passed / 1 xfailed**（该 variant 不再是 pass，而是**带指向的已知缺口**）；pre-push 门随后复跑见 [evidence/b01-implementation.md](evidence/b01-implementation.md) §7。
 
 ## F-B01-6：复用判定原有**两份实现**，解析器那份忽略显式 `false`（实施期实测；且"文档级门"不足以修）
 
