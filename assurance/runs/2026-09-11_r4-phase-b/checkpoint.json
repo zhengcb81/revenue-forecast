@@ -1,17 +1,39 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
   "phase": "B (position-transparent index and read-only access) - DESIGN ONLY",
-  "step": "B01-B07 design delivered; B.DR independent design review submitted",
-  "last_completed_step": "B run directory created; b-design.md (B01-B07 design + B08-B10 preconditions), file-scope.md (8 candidate files with absolute paths, symbols, line anchors and frozen hashes), test-acceptance-map.md (step -> L/P/O/M mapping and the definition of done), risk-and-stop-rules.md (H01 and D.SAFE intersections, 10 hard stops), findings.md; plus phase-A completion runway: a05-corpus-sample-plan.md, a06-baseline-plan.md and command-manifest-readonly.json",
-  "current_gate": "B.DR (independent design review of this package)",
+  "step": "B design v0.1.1 corrections applied after B.DR rev1 = rejected",
+  "last_completed_step": "B run directory created; b-design v0.1 (B01-B07) submitted to B.DR; B.DR returned rejected with 1 P0 + 7 P1 + 9 P2 + 3 P3 (8 of 17 claims did not reproduce); phase-A A07 returned accepted_with_findings and A08 rejected; all twenty B findings and the phase-A findings corrected in place (A contracts -> v0.4.1, B design -> v0.1.1)",
+  "current_gate": "B.DR rev2 (re-review of the corrected design on a new frozen commit)",
   "pending_review": [
     {
-      "gate": "B.DR",
-      "scope": "B phase design package (task_plan, b-design, file-scope, test-acceptance-map, risk-and-stop-rules)",
+      "gate": "B.DR rev2",
+      "scope": "B phase design package v0.1.1",
       "status": "pending",
-      "reviewer": "independent subagent (non-author)"
+      "reviewer": "independent subagent (non-author) - must be a different session from rev1"
+    },
+    {
+      "gate": "B.DR rev1",
+      "scope": "B phase design package v0.1",
+      "status": "closed",
+      "verdict": "rejected",
+      "findings": {
+        "P0": 1,
+        "P1": 7,
+        "P2": 9,
+        "P3": 3
+      },
+      "claims_not_reproduced": 8,
+      "record": "reviews/B.DR.json",
+      "reviewer_self_reported_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe"
     }
   ],
+  "reviewer_assignments": {
+    "note": "recorded by the authoring session from outside the reviewer session; still only process evidence - an operator-held assignment record is required (gate G6)",
+    "B.DR_rev1": {
+      "reviewer_session_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe",
+      "record": "reviews/B.DR.json"
+    }
+  },
   "authorization_needed": [
     "OWNER: approve the B DEV work package and file scope (file-scope.md) before any product file is touched - handbook section 2.5",
     "OWNER: confirm the A05 sample list and the read-only command manifest (gate G7 + G4 for behaviour beyond --help)",
@@ -25,13 +47,15 @@
     "A07_A08": "not started (phase-A VR/AR of the contracts and baseline)",
     "D_SAFE_cross": "not started; B only aligns with it (no delete/write paths touched)"
   },
-  "actual_side_effects": "Documentation only. Read-only inspection of repository files (grep, hashes, line anchors). No CLI of any kind was executed in this run, no data command, no network, no product/config/DB/task/worker change. Note: pushing this run directory triggers revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md).",
+  "actual_side_effects": "This run: documentation and read-only inspection only - no CLI of any kind was executed in this run, no data command, no network, no product/config/DB/task/worker change. DISCLOSED rather than asserted (B-DR-17): 'no CLI executed' is an author statement with no independent observation artefact behind it; pushing this run directory triggers revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY and advances -shm (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md). Main DB and -wal are never changed.",
   "failed_or_unknown": [
-    "no B step can be marked implemented: implementation needs the owner-approved DEV work package",
+    "no B step can be marked implemented: implementation needs the owner-approved DEV work package (handbook section 1 item 5 + section 3)",
     "B08/B09 need the isolated copy (G8) and the confirmed sample list (G7)",
-    "the L01-L12 mechanism-layer baseline (A06) has not been produced yet, so 'B fixed it' cannot be independently verified until A06 exists",
-    "A05 has not selected real samples; only the selection rules and the bounded read-only manifest exist",
-    "handbook section 3 run structure for this directory is partial: card.json, baseline.json, data-manifest.json, requirements.csv and reviews/ are not created yet"
+    "the L01-L12 mechanism-layer baseline (A06) does not exist yet, so 'B fixed it' cannot be verified independently until it does",
+    "B05's provenance persistence is deliberately NOT designed here (it would need store.py DDL/migrations, which are out of the proposed file scope) - registered as a separate work package if the owner wants persistence",
+    "A-AR-02's bridge table (E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) for the 13 unassignable goal rows is still outstanding",
+    "R-3's narrowed scope (admission loader only) awaits the owner's explicit re-confirmation",
+    "handbook section 3 run structure is partial: card.json, baseline.json, data-manifest.json, requirements.csv and reviews/ (beyond the review records) are not created"
   ],
   "next_step": "Collect the B.DR verdict, correct the design in place, then (in parallel) start A07/A08 on the frozen phase-A contracts and prepare the A06 mechanism-layer baseline. Product changes wait for the owner's approval of file-scope.md.",
   "inputs": {
@@ -40,58 +64,69 @@
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "1b4bab434ad39c5afdbc53c0ac45f7a63d7dafc7",
-      "dirty": 1
+      "head": "26fb780f35a932fbe407999f4665db45d1f644dc",
+      "dirty": 9
     },
     "filing-fetch": {
       "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
       "dirty": 0
     }
   },
-  "reviewed_commit": "1b4bab4",
+  "reviewed_commit": "PENDING (stamped in the follow-up commit)",
   "produced_files": {
     ".gitattributes": {
       "sha256": "2380dc1cb5c4831e386ce5df2b0ab9bb333dddaee7b615e42b20d94b617de879",
       "size": 907
     },
     "b-design.md": {
-      "sha256": "d4828aa46862114c49f15465c078024b17867372c0e524280bf1ad3fcc75f5c3",
-      "size": 11800
+      "sha256": "06bea43c02bb7e5bba14ee19c6e761bd726a2157519aec0e127b3111c878584d",
+      "size": 16224
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "0dcd085d52cf542131d90b38d204b0581612ffdbb023c149fc27da8afdb21d0e",
-      "size": 8308
+      "sha256": "f8f01adbad47e5f70dcc6ff6fed4e996d22de08c9a4e7a8072d602e014d9b1c8",
+      "size": 10615
     },
     "file-scope.md": {
-      "sha256": "192c68a81406fb1d52dd741e9b53c198048c4101730ac674a92fb35a1aae38c8",
-      "size": 5238
+      "sha256": "93da99c82a11576ea81e69f8ac7fe69a3bf5e736718e7f5d9191ee9ff545b516",
+      "size": 8017
     },
     "findings.md": {
-      "sha256": "fccaabdfccf597465af24c4984355733632e48932449ad9282a2efbcc55ca5b0",
-      "size": 3208
+      "sha256": "5fc0c4195ea33c40757c123e4e10aed98ced94542d2b42cd2b52e6722e7dffac",
+      "size": 8279
     },
     "progress.md": {
-      "sha256": "40e8361a4f0152cdb60eaea04d34ee7980f07027ffe5a40dec1bee341550a290",
-      "size": 3760
+      "sha256": "1bf6b41a492342075ff58d3946c20f3e95b30e07f858af3009ec663269d163b2",
+      "size": 4726
+    },
+    "reviews/B.DR.json": {
+      "sha256": "bbe383f34872b44cfed1894d5c7c7c62d894d4bf424ac911a242dc89cd081af4",
+      "size": 66878
     },
     "risk-and-stop-rules.md": {
-      "sha256": "c6fd3048ca1afeac68f06628341819179077ec3d83fd72328c99952232212a71",
-      "size": 4255
+      "sha256": "883667a3b28343b5da6df8bb489a56c4b49fa36edc5685c87f121795bfb66a87",
+      "size": 5878
     },
     "task_plan.md": {
-      "sha256": "17f7f2c5cb12ae314e11d7f564f719246a74a254f88697cfb764a4c3a3d18b63",
-      "size": 5965
+      "sha256": "52898da87e8e241e26073732483a4c5f61f8c162afbf2ae89f2de1e28c0c38ff",
+      "size": 7217
     },
     "test-acceptance-map.md": {
-      "sha256": "6c26776ab22313c63d8719050fb09cbfb2fd8d7f791d30e7d535cfc7003658d8",
-      "size": 5158
+      "sha256": "47c412a3e3acfdca08398d846a9f92cc14945d6ff8016253dee10caab079f517",
+      "size": 7032
     }
   },
   "produced_files_verification": {
-    "checked": 9,
+    "checked": 10,
     "source": "index",
+    "source_revision": "d2885326934d2432f518d37df70ba30b80801df4",
+    "head_revision": "26fb780f35a932fbe407999f4665db45d1f644dc",
     "blob_mismatches": [],
-    "all_match": true
+    "all_match": true,
+    "proves": "recorded digest == stored blob at the reported revision",
+    "does_not_prove": [
+      "manifest completeness",
+      "that reviewed_commit equals the compared revision"
+    ]
   },
-  "generated_at_utc": "2026-09-12T06:46:17.664581+00:00"
+  "generated_at_utc": "2026-09-12T07:05:11.893418+00:00"
 }

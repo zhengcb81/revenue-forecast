@@ -61,7 +61,19 @@ def produced_files() -> dict:
 
 
 def verify_blobs(files: dict, source: str = "index") -> dict:
+    """Compare each recorded digest with the stored blob, and say what that proves.
+
+    B-DR-16: `--verify-only` anchors the RUNTIME revision (index or HEAD) and cannot bind
+    `reviewed_commit`; it also cannot prove the manifest is complete. Both limits are
+    reported in the result instead of being left implicit, and the compared revision is
+    echoed back so a reader can tell which tree was checked.
+    """
     run_rel = RUN.relative_to(REVENUE).as_posix()
+    tree = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE), "write-tree"],
+                          capture_output=True, text=True)
+    head_rev = subprocess.run(["git", "-c", "safe.directory=*", "-C", str(REVENUE),
+                               "rev-parse", "HEAD"], capture_output=True, text=True)
+    revision = (tree.stdout.strip() if source == "index" else head_rev.stdout.strip()) or "unknown"
     mismatched = []
     for rel, meta in files.items():
         spec = f":{run_rel}/{rel}" if source == "index" else f"HEAD:{run_rel}/{rel}"
@@ -75,31 +87,50 @@ def verify_blobs(files: dict, source: str = "index") -> dict:
         if hashlib.sha256(proc.stdout).hexdigest() != meta["sha256"]:
             mismatched.append({"path": rel, "reason": f"{source} digest != recorded digest",
                                "blob_bytes": len(proc.stdout), "recorded_bytes": meta["size"]})
-    return {"checked": len(files), "source": source, "blob_mismatches": mismatched,
-            "all_match": not mismatched}
+    return {
+        "checked": len(files), "source": source, "source_revision": revision,
+        "head_revision": head_rev.stdout.strip() or "unknown",
+        "blob_mismatches": mismatched, "all_match": not mismatched,
+        "proves": "recorded digest == stored blob at the reported revision",
+        "does_not_prove": ["manifest completeness",
+                           "that reviewed_commit equals the compared revision"],
+    }
 
 
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": "B (position-transparent index and read-only access) - DESIGN ONLY",
-    "step": "B01-B07 design delivered; B.DR independent design review submitted",
+    "step": "B design v0.1.1 corrections applied after B.DR rev1 = rejected",
     "last_completed_step": (
-        "B run directory created; b-design.md (B01-B07 design + B08-B10 preconditions), "
-        "file-scope.md (8 candidate files with absolute paths, symbols, line anchors and frozen "
-        "hashes), test-acceptance-map.md (step -> L/P/O/M mapping and the definition of done), "
-        "risk-and-stop-rules.md (H01 and D.SAFE intersections, 10 hard stops), findings.md; "
-        "plus phase-A completion runway: a05-corpus-sample-plan.md, a06-baseline-plan.md and "
-        "command-manifest-readonly.json"
+        "B run directory created; b-design v0.1 (B01-B07) submitted to B.DR; B.DR returned "
+        "rejected with 1 P0 + 7 P1 + 9 P2 + 3 P3 (8 of 17 claims did not reproduce); phase-A "
+        "A07 returned accepted_with_findings and A08 rejected; all twenty B findings and the "
+        "phase-A findings corrected in place (A contracts -> v0.4.1, B design -> v0.1.1)"
     ),
-    "current_gate": "B.DR (independent design review of this package)",
+    "current_gate": "B.DR rev2 (re-review of the corrected design on a new frozen commit)",
     "pending_review": [
         {
-            "gate": "B.DR",
-            "scope": "B phase design package (task_plan, b-design, file-scope, test-acceptance-map, risk-and-stop-rules)",
+            "gate": "B.DR rev2",
+            "scope": "B phase design package v0.1.1",
             "status": "pending",
-            "reviewer": "independent subagent (non-author)",
-        }
+            "reviewer": "independent subagent (non-author) - must be a different session from rev1",
+        },
+        {
+            "gate": "B.DR rev1",
+            "scope": "B phase design package v0.1",
+            "status": "closed",
+            "verdict": "rejected",
+            "findings": {"P0": 1, "P1": 7, "P2": 9, "P3": 3},
+            "claims_not_reproduced": 8,
+            "record": "reviews/B.DR.json",
+            "reviewer_self_reported_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe",
+        },
     ],
+    "reviewer_assignments": {
+        "note": ("recorded by the authoring session from outside the reviewer session; still only "
+                 "process evidence - an operator-held assignment record is required (gate G6)"),
+        "B.DR_rev1": {"reviewer_session_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe", "record": "reviews/B.DR.json"},
+    },
     "authorization_needed": [
         "OWNER: approve the B DEV work package and file scope (file-scope.md) before any product file is touched - handbook section 2.5",
         "OWNER: confirm the A05 sample list and the read-only command manifest (gate G7 + G4 for behaviour beyond --help)",
@@ -114,18 +145,22 @@ LEDGER = {
         "D_SAFE_cross": "not started; B only aligns with it (no delete/write paths touched)",
     },
     "actual_side_effects": (
-        "Documentation only. Read-only inspection of repository files (grep, hashes, line "
-        "anchors). No CLI of any kind was executed in this run, no data command, no network, no "
-        "product/config/DB/task/worker change. Note: pushing this run directory triggers "
+        "This run: documentation and read-only inspection only - no CLI of any kind was executed "
+        "in this run, no data command, no network, no product/config/DB/task/worker change. "
+        "DISCLOSED rather than asserted (B-DR-17): 'no CLI executed' is an author statement with "
+        "no independent observation artefact behind it; pushing this run directory triggers "
         "revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production "
-        "catalog READ-ONLY (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md)."
+        "catalog READ-ONLY and advances -shm (attributed in "
+        "../2026-09-11_r4-phase-a/boundary-audit.md). Main DB and -wal are never changed."
     ),
     "failed_or_unknown": [
-        "no B step can be marked implemented: implementation needs the owner-approved DEV work package",
+        "no B step can be marked implemented: implementation needs the owner-approved DEV work package (handbook section 1 item 5 + section 3)",
         "B08/B09 need the isolated copy (G8) and the confirmed sample list (G7)",
-        "the L01-L12 mechanism-layer baseline (A06) has not been produced yet, so 'B fixed it' cannot be independently verified until A06 exists",
-        "A05 has not selected real samples; only the selection rules and the bounded read-only manifest exist",
-        "handbook section 3 run structure for this directory is partial: card.json, baseline.json, data-manifest.json, requirements.csv and reviews/ are not created yet",
+        "the L01-L12 mechanism-layer baseline (A06) does not exist yet, so 'B fixed it' cannot be verified independently until it does",
+        "B05's provenance persistence is deliberately NOT designed here (it would need store.py DDL/migrations, which are out of the proposed file scope) - registered as a separate work package if the owner wants persistence",
+        "A-AR-02's bridge table (E01-E13 / U117 / FC903 / CL-AC -> L/P/O/M) for the 13 unassignable goal rows is still outstanding",
+        "R-3's narrowed scope (admission loader only) awaits the owner's explicit re-confirmation",
+        "handbook section 3 run structure is partial: card.json, baseline.json, data-manifest.json, requirements.csv and reviews/ (beyond the review records) are not created",
     ],
     "next_step": (
         "Collect the B.DR verdict, correct the design in place, then (in parallel) start A07/A08 "

@@ -11,12 +11,12 @@
 | 文件 | 内容 |
 |---|---|
 | [task_plan.md](task_plan.md) | B01–B10 状态、B.DR/B.VR/B.AR/D.SAFE 门、停止条件、交付边界 |
-| [b-design.md](b-design.md) | B01–B07 设计（含 P-1…P-8 原则、四段式候选选择、稳定只读字节、metadata provenance、preview/verified 分离、版本化读取合同）与 B08–B10 前置 |
-| [file-scope.md](file-scope.md) | 8 个候选改动文件的绝对路径 + 符号/行号 + 冻结哈希；禁止清单；回退策略 |
-| [test-acceptance-map.md](test-acceptance-map.md) | B 步骤 → L01–L12/P/O/M 测试 ID → 验收点 → 完成定义（防"勾成完成"） |
-| [risk-and-stop-rules.md](risk-and-stop-rules.md) | H01 交叉、D.SAFE 交叉、10 条硬停止、5 类"看起来跑通但不算通过"陷阱 |
-| [findings.md](findings.md) | 设计期发现 F-B00-1…5（含"G8 可分两级"的关键判断） |
-| Phase A 侧新增 | [a05-corpus-sample-plan.md](../2026-09-11_r4-phase-a/a05-corpus-sample-plan.md)、[a06-baseline-plan.md](../2026-09-11_r4-phase-a/a06-baseline-plan.md)、[command-manifest-readonly.json](../2026-09-11_r4-phase-a/command-manifest-readonly.json) |
+| [b-design.md](b-design.md) | **v0.1.1**：B01（含 14 字段 owner/版本映射表）、B02（四段式 + `_handle` 同改 + 禁联网资格判定）、B03（读后复验闭合 TOCTOU）、B04、B05（覆盖整条 UPDATE；持久化决策）、B06（preview 合同归 B06）、B07（范围重划表） |
+| [file-scope.md](file-scope.md) | **v0.1.1**：8+1 候选文件的绝对路径、符号、行号、冻结哈希与"是否 A01 冻结项"逐行标注；`policy_2x` 的**在产导出路径**改为禁区首行；owner R-6 的 9 处排序分类 |
+| [test-acceptance-map.md](test-acceptance-map.md) | B 步骤 → L/P/O/M 映射、**裁定↔测试绑定表**、反覆盖更正（O03 = 交叉）、完成定义 |
+| [risk-and-stop-rules.md](risk-and-stop-rules.md) | H01/D.SAFE 交叉、10 条硬停止、6 类"看起来跑通"陷阱、引用口径更正 |
+| [findings.md](findings.md) | **F-B01-1：B.DR 20 条发现逐条处置表**；F-B00-1…5 |
+| Phase A 侧 | [a05-corpus-sample-plan.md](../2026-09-11_r4-phase-a/a05-corpus-sample-plan.md)、[a06-baseline-plan.md](../2026-09-11_r4-phase-a/a06-baseline-plan.md)、[command-manifest-readonly.json](../2026-09-11_r4-phase-a/command-manifest-readonly.json) |
 
 ### 2. 关键设计结论（一句话版）
 
@@ -33,14 +33,17 @@
 
 ### 4. 未完成 / 阻塞（不阻塞设计，阻塞实施）
 
-1. **B 的 DEV 工作包与文件范围批准**（[file-scope.md](file-scope.md)）——owner 一句话即可，之后才能改代码。
-2. **B.DR 独立设计审查**——本轮已提交复审（见 §5）。
-3. **隔离副本（G8）**——建议按 findings F-B00-3 分两级；机制层可立即做。
+1. **B.DR rev2**（本轮已提交）：v0.1.1 须由**另一名**独立 reviewer 复审，且 rev2 必须基于**新的冻结提交与新输入哈希集**（B.DR 明确要求）。
+2. **B 的 DEV 工作包与文件范围批准**（[file-scope.md](file-scope.md)）——owner 一句话即可，之后才能改代码。
+3. **隔离副本（G8）**——建议按 findings F-B00-3 分两级；B.DR 已独立复核该技术前提（wiki 既有测试确实用 `tmp_path` 造 catalog）。
 4. **A05 样本清单（G7）与只读命令 manifest**——已写好待确认。
-5. **A07/A08**（阶段 A 的 VR/AR）——可基于现有合同立即启动。
+5. **A-AR-02 的桥接表**（13 行无法指派 → E01–E13 / U117 / FC903 / CL·AC → L/P/O/M）——A08 的整改项，待做。
+6. **B05 的 provenance 持久化**——本轮决定**不落库**；若 owner 要求持久化，需独立工作包（含 `store.py` DDL/迁移）。
 
-### 5. 变更记录
+### 5. 变更记录（真实时间）
 
 | 时间（本地） | 变更 |
 |---|---|
-| 23:3x | 建立 B run 目录；交付上述 6 份文档 + Phase A 三份准备件；提交 B.DR 复审 |
+| 2026-09-12 07:43–07:46 | 建立 B run 目录；交付 v0.1 六份文档 + Phase A 三份准备件；提交 `B.DR` 复审 |
+| 2026-09-12 07:54–08:05 | **B.DR = rejected**（20 条 / 8 条 claim 未复现）、**A07 = accepted_with_findings**、**A08 = rejected**（三份复审共同命中同一 P0） |
+| 2026-09-12 08:05–09:0x | 阶段 A → **v0.4.1**；B → **v0.1.1**（20 条逐条更正）；两份 checkpoint 重建（`reviews/**` 纳入产物清单） |
