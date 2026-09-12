@@ -21,8 +21,7 @@
 
 | # | 规则 | 失败时的显式结果 |
 |---|---|---|
-| R1 | 取字节前先 `stat`，命中云占位属性 ⇒ **拒绝**（不读、不联网） | `unavailable` + reason `placeholder_not_hydrated` |
-| R2 | 以**只读共享**打开；边流式读入缓冲边算摘要；**对"实际返回的字节"复算**并与请求的 `content_sha256` 比较（首选副本**一视同仁**） | `unavailable` + reason `content_sha256_mismatch`（附短摘要，绝不返回部分字节） |
+| R1 | 取字节前先 `stat`，命中云占位属性 ⇒ **拒绝**（不读、不联网） | `unavailable` + reason `placeholder_not_hydrated` || R2 | 以**只读共享**打开；边流式读入缓冲边算摘要；**对"实际返回的字节"复算**并与请求的 `content_sha256` 比较（首选副本**一视同仁**） | `unavailable` + reason `content_sha256_mismatch`（附短摘要，绝不返回部分字节） |
 | R3 | 读取过程中文件被替换/截断/中断 ⇒ 复验不等或 I/O 错 ⇒ 失败（**不得**回退到"打开时校验过"的说法） | `unavailable` + `read_failed` / `truncated_during_read` |
 | R4 | 超上限（`_CANDIDATE_BYTES_CAP`）或超预算 ⇒ 失败，**不做**"先返回一部分" | `blocked` + `exceeds_candidate_cap` / `budget_exhausted` |
 | R5 | 返回结构带**证据**：`bytes_source="handle"`、`verified_sha256`、`size`、`read_at`（UTC）；**不新增 `SourceHandle` 字段**（payload 形状不变，B02 先例） | — |
@@ -75,3 +74,12 @@
 ## 7. 停止规则（沿用 [risk-and-stop-rules.md](../risk-and-stop-rules.md)）
 
 命中任一即停并记录：需要改 allowed 集之外的文件；需要新建快照/写路径；需要真实云占位或 G8 隔离副本才能继续；覆盖率/棘轮无法在既有文件内保持；发现"只返回验证字节"与 B02/B05 的既有断言冲突。
+
+## 8. 实施回填（2026-09-12，见 [b03-implementation.md](b03-implementation.md)）
+
+- **落点**：全部在 **F2 `resolver.py`**（`reader.py` 未改，理由见实施记录 §5）；新增 F10 `test_r4b03_stable_bytes.py`（13 用例 +1 host skip）。
+- **对计划的偏差（三处，均因既有门而变，非设计变更）**：
+  1. **越界 locator 的 reason 码**由计划里的工作名 `path_outside_configured_roots` 改为**已注册**的 `artifact_path_outside_allowed_root`——FC-1301 词表门只认 `reason="..."` 关键字写法，新增码要改 `observability.py` + 顶 taxonomy 版本（**都在允许集之外**）。见实施记录 §7。
+  2. **R4 的失败值**由计划的 `blocked` 收敛为 **`unavailable` + `exceeds_candidate_cap`**：预算/资源上限按合同是**独立事实**而非状态；`blocked` 保留给策略/授权/质量门（本入口的越界 locator 用 `not_found`）。理由记录在实施记录 §2 的口径说明里。
+  3. **设计第 2 级（受控快照）不可实现**（库内无"源字节的受控快照"对象）⇒ 如实登记未实现，`bytes_source="snapshot"` 保留为不可达取值。
+- **第 1 级与第 3 级**按计划实现（读一次 + 对实际返回的字节复算；失败显式且落在五值内）。

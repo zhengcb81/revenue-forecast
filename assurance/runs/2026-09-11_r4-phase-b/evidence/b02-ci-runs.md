@@ -18,7 +18,7 @@
 | company-wiki | `0e28d99` | **B01**（复用判定收敛为一份实现 + 候选级过滤；新增 6 用例 + 字段归属表） | CI | **success** | 34717481812 |
 | company-wiki | `be2e4ed` | **B01 复审处置**（P1 改冻被消费产物 + P2×3 + P3×2） | CI | ❌ **failure**（`Contract tests`，三份 Python 全红） | 34720686541 |
 | company-wiki | `5ab0779` | **B03**（`read_verified_bytes` + 13 用例） | CI | ❌ **failure**（同上三因） | 34720741197 |
-| company-wiki | `f0aacbf` | **CI 首红的三处更正**（词表码 / 可移植冻结 / symlink 层次） | CI | 见下方"待回填" | — |
+| company-wiki | `f0aacbf` | **CI 首红的三处更正**（词表码改已注册码 / 只冻可移植量 / symlink 断言改性质） | CI | **success** | 34721761521 |
 | revenue-forecast | `2ced153` | B 运行目录：B02 实施记录（rev1） | quality | **success** | 34691409601 |
 | revenue-forecast | `7b34c12` | B 运行目录：`B.VR` rev1 记录 + rev2 证据 | quality | **success** | 34693783149 |
 | revenue-forecast | `63422f1` | B 运行目录：`B.VR` rev2 记录 + rev3 证据 | quality | **success** | 34697489835 |
@@ -39,6 +39,8 @@
 | revenue-forecast | `9ddb4ea`→`4a70c17` | F-B01-7 阻塞登记（**当时门为红，未推送**） | quality | **未单独触发** | — |
 | revenue-forecast | `b6d1fdc` | **FC-1001 `sidecar_missing` 改 strict xfail**（owner 裁定 A）+ B06 验收项登记 | quality | **未单独触发**（同一次推送） | — |
 | revenue-forecast | `f6d83bb`→`62f4da7` | 裁定记录 + checkpoint 锚定（46 文件，`all_match=True`）**= 本次推送 tip** | quality | **success** | 34718795208 |
+| revenue-forecast | `0249d60`→`e5ea728` | B01 复审处置记录 + B03 实施记录 + 台账 + checkpoint（54 文件） | quality | **success** | 34721069977 |
+| revenue-forecast | `c247c44` | F-B01-9（CI 首红三因）+ 记录 + checkpoint（55 文件） | quality | **success** | 34721932758 |
 
 **CI 覆盖到的与本步直接相关的门**（`company-wiki/.github/workflows/ci.yml`，三个 Python 版本 3.11/3.12/3.13 全部 success）：
 
