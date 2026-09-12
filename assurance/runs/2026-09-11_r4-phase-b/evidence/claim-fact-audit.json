@@ -20,6 +20,7 @@
     "evidence/b04_mutation_check.py",
     "evidence/b05-implementation.md",
     "evidence/b05-plan.md",
+    "evidence/b05-review-disposition.md",
     "evidence/build_checkpoint.py",
     "file-scope.md",
     "findings.md",
@@ -39,6 +40,7 @@
     "reviews/B.VR-b02-rev4.json",
     "reviews/B.VR-b02.json",
     "reviews/B.VR-b04.json",
+    "reviews/B.VR-b05.json",
     "risk-and-stop-rules.md",
     "task_plan.md",
     "test-acceptance-map.md"
@@ -704,26 +706,82 @@
       "verified": true
     },
     {
-      "claim": "B05 的两条发现已登记（声明/派生细化 + 行为变化）",
+      "claim": "B05 复审 rejected 与 P1 修复已登记（含 S-13）",
       "required_hits": [
         {
           "file": "evidence/b05-implementation.md",
-          "line": 4,
-          "text": "> 计划与实测依据见 [b05-plan.md](b05-plan.md)；两条需 reviewer/owner 过目的发现见 [findings.md](findings.md) **F-B05-1**（\"声明值 vs 派生值\"应回填设计正文）与 **F-B05-2**（两处行为变化）。"
+          "line": 3,
+          "text": "> 状态：**子步 1** = `6909e78`、**子步 2** = `bdd99dc`、**子步 3** = `9db3394`、**P1 修复** = `b6a8442`（均已推送）。"
         },
         {
           "file": "evidence/b05-implementation.md",
           "line": 4,
-          "text": "> 计划与实测依据见 [b05-plan.md](b05-plan.md)；两条需 reviewer/owner 过目的发现见 [findings.md](findings.md) **F-B05-1**（\"声明值 vs 派生值\"应回填设计正文）与 **F-B05-2**（两处行为变化）。"
+          "text": "> 复审：`B.VR` B05 = **rejected**（2×P1 / 5×P2 / 3×P3，[../reviews/B.VR-b05.json](../reviews/B.VR-b05.json)）→ **P1 已修**；P2/P3 的逐条处置见 [b05-review-disposition.md](b05-"
         },
+        {
+          "file": "evidence/b05-implementation.md",
+          "line": 4,
+          "text": "> 复审：`B.VR` B05 = **rejected**（2×P1 / 5×P2 / 3×P3，[../reviews/B.VR-b05.json](../reviews/B.VR-b05.json)）→ **P1 已修**；P2/P3 的逐条处置见 [b05-review-disposition.md](b05-"
+        },
+        {
+          "file": "evidence/b05-implementation.md",
+          "line": 5,
+          "text": "> 计划与实测依据见 [b05-plan.md](b05-plan.md)；需 owner 裁的范围问题见 [owner-scope-decisions](../owner-scope-decisions-2026-09-12.md) **S-13**（响应级 `blocked` 由谁交付）。"
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B05 未决 P2/P3 如实标注（不谎称完成）",
+      "required_hits": [
         {
           "file": "evidence/b05-implementation.md",
           "line": 14,
+          "text": "P2/P3 的状态（含未解决项与 owner 待裁项）见 [b05-review-disposition.md](b05-review-disposition.md) §3。"
+        },
+        {
+          "file": "evidence/b05-implementation.md",
+          "line": 128,
+          "text": "- **B-VR05-04/-05/-09/-10 未完成**：声明与分类器实际输入的对齐、\"补空值归属\"的变异复测、证据 §2 的逐句核对、\"字段名/低熵 hash\"的可逆性处置——逐条状态见 [b05-review-disposition.md](b05-review-disposition.md) §3。"
+        },
+        {
+          "file": "evidence/b05-review-disposition.md",
+          "line": 24,
+          "text": "| B-VR05-03 | P2 | **未解决，需 owner 裁范围** | `blocked/conflicts/provenance` 目前**没有消费者**：`resolver.resolve` 不读它们（请求被保留的 kind → `reused_equivalent` 且无冲突痕迹；请求落选 kind →"
+        },
+        {
+          "file": "evidence/b05-review-disposition.md",
+          "line": 25,
+          "text": "| B-VR05-04 | P2 | **未解决** | \"声明\"与\"分类器实际读到的值\"脱钩：sidecar 里 `document_kind='10-K'`（映射不到已知 kind、分类器忽略）仍算声明 → 假冲突/假 `blocked`。修法：声明判定应建立在**分类器实际消费的输入**上（或只认映射成功的值） "
+        }
+      ],
+      "superseded_hits": [],
+      "live_superseded": [],
+      "verified": true
+    },
+    {
+      "claim": "B05 的两条发现已登记（声明/派生细化 + 行为变化）",
+      "required_hits": [
+        {
+          "file": "evidence/b02-ci-runs.md",
+          "line": 30,
+          "text": "| revenue-forecast | `41d06de` | B05 三子步记录 + F-B05-1/F-B05-2 | quality | **success** | 34709826139 |"
+        },
+        {
+          "file": "evidence/b02-ci-runs.md",
+          "line": 30,
+          "text": "| revenue-forecast | `41d06de` | B05 三子步记录 + F-B05-1/F-B05-2 | quality | **success** | 34709826139 |"
+        },
+        {
+          "file": "evidence/b05-implementation.md",
+          "line": 24,
           "text": "| `service.py::query_filing_candidates`（F1，读侧） | 新增派生键：`provenance`（= 保留键的 `fields`）、`conflicts`（有冲突的字段名列表）、`metadata_status` = **`blocked`**（有冲突时）/ `ok`；`R4_PR"
         },
         {
           "file": "evidence/b05-implementation.md",
-          "line": 33,
+          "line": 43,
           "text": "| **两边都声明**且不同 | **冲突**：保留存储值 + `conflicts` 记录全部候选；读侧 `metadata_status=\"blocked\"` |"
         }
       ],
@@ -926,7 +984,7 @@
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 285,
+          "line": 220,
           "text": "\"verdict\": \"rejected\","
         }
       ],
@@ -1065,6 +1123,11 @@
       "claim": "F-B04-2 + B04 变异记录在场",
       "required_hits": [
         {
+          "file": "evidence/b02-ci-runs.md",
+          "line": 28,
+          "text": "| revenue-forecast | `d15f04e` | B04 复审更正（F-B04-1 改写 / F-B04-2 / 变异 harness） | quality | **success** | 34704727273 |"
+        },
+        {
           "file": "evidence/b04-implementation.md",
           "line": 11,
           "text": "| 变异证据（新增） | [b04_mutation_check.py](b04_mutation_check.py) | 5 个变异（reviewer 用过的 M3/M4/M5/M6/M7）：**全部 KILLED**，跑完把产品文件还原到同一 sha256(16) |"
@@ -1078,11 +1141,6 @@
           "file": "evidence/b04-implementation.md",
           "line": 12,
           "text": "| 发现登记 | [findings.md](findings.md) **F-B04-1**（已按复审更正）/ **F-B04-2**（新增） | F-B04-1：同路径覆盖 ⇒ 旧副本 active locator 消失 + **旧字节被物理销毁**；F-B04-2：只搬 PDF 不搬 sidecar ⇒ 掉出候选"
-        },
-        {
-          "file": "evidence/b04-implementation.md",
-          "line": 61,
-          "text": "**本步新增的两个发现**：F-B04-1（同路径覆盖 ⇒ locator 消失 + 旧字节销毁；补救 (ii) 快照 vs (iii) 合同级限制 → 待 owner 选，登记为 **S-12**）、F-B04-2（只搬 PDF 不搬 sidecar ⇒ 掉出候选切片、`MISSING` 且 **trace 为空**"
         }
       ],
       "superseded_hits": [],
@@ -1258,7 +1316,7 @@
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 220,
+          "line": 236,
           "text": "\"verdict\": \"accepted_with_findings\","
         }
       ],
@@ -1309,7 +1367,7 @@
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 373,
+          "line": 389,
           "text": "\"S-7_ratchet_edit\": \"DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited\","
         },
         {
@@ -1327,7 +1385,7 @@
       "required_hits": [
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 451,
+          "line": 467,
           "text": "\"note\": (\"per-file versions matter: root-contract is v0.4.2 while operation-contract and \""
         }
       ],
@@ -1340,7 +1398,7 @@
       "required_hits": [
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 373,
+          "line": 389,
           "text": "\"S-7_ratchet_edit\": \"DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited\","
         }
       ],
@@ -1349,7 +1407,7 @@
       "verified": true
     }
   ],
-  "passed": 38,
-  "total": 38,
+  "passed": 40,
+  "total": 40,
   "generated_by": "python evidence/claim_fact_audit.py"
 }

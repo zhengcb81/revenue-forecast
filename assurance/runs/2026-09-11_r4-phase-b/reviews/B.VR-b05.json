@@ -1,0 +1,311 @@
+{
+  "gate": "B.VR (B05)",
+  "scope": "company-wiki fcap commits 6909e78 (extract _merge_document_row), bdd99dc (reserved r4_provenance + read-modify-write), 9db3394 (per-column rules + read-side blocked). Verified: every claim of b-design §B05 and of evidence/b05-plan.md, evidence/b05-implementation.md, findings.md F-B05-1/F-B05-2; own re-runs of the acceptance file, the two named contract files, tests/unit, the FC-1204 complexity ratchet, ruff, the full suite with an independent branch-coverage measurement, 16 adversarial probe scenarios (temporary catalogs), a pre-B05 baseline tree extracted from bc3590f, and an 8-mutant mutation matrix. Product files, existing tests and run-directory files were not modified; the temporary coverage.json substitution was restored byte-identically (sha256 8F9F5093... == 8F9F5093..., git status --porcelain empty).",
+  "reviewed_commits": ["6909e78", "bdd99dc", "9db3394"],
+  "reviewer_session_self_report": "bcbb9787-9742-413a-b3d8-4add7bd6c479 - self-report by the reviewing agent session. This is a self-report and NOT an operator-held assignment record: no operator issued or countersigned this id, and the independence of this session rests on the operator's own statement that it did not write the code under review.",
+  "verdict": "rejected",
+  "claims_rechecked": [
+    {
+      "claim": "C1: documents.metadata_json is a SHARED flat namespace; before B05 the prefer_new path replaced it wholesale (canonical_json(document_metadata)) and silently dropped keys written by other modules, concretely the prompt_injection_review receipt.",
+      "method": "command + probe: 16 scenarios in C:\\Users\\郑曾波\\AppData\\Local\\Temp\\bvr05\\probe.py (temp catalogs only), run against the product src AND against a pre-B05 tree extracted with `git archive bc3590f`; scenario c1 writes the real receipt via prompt_injection.record_prompt_injection_review plus an arbitrary unknown key (`third_party_block`, dict with list/float/bool/null), then lets a richer capture merge through prefer_new.",
+      "result": "reproduced",
+      "observed": "pre-B05 baseline: removed_top_level_keys=['prompt_injection_review','third_party_block'], receipt=null, receipt_survived=false, third_party_survived=false. Post-B05: removed_top_level_keys=[], added_top_level_keys=['r4_provenance'], type_changes={}, receipt_survived=true, third_party_survived=true. The defect is real and B05 fixes it."
+    },
+    {
+      "claim": "C1 (additivity): after a merge ALL pre-existing keys keep their names/types, and json_extract($.acquisition.fiscal_year), a LIKE '%acquisition%' probe and read_prompt_injection_review still read the same values as before.",
+      "method": "command: same c1 scenario, doc-scoped probes `SELECT json_extract(metadata_json,'$.acquisition.fiscal_year')`, `... WHERE document_id=? AND metadata_json LIKE '%acquisition%'`, `json_extract(metadata_json,'$.prompt_injection_review.status')`, `json_extract(metadata_json,'$.admission')`, read_prompt_injection_review(catalog.reader, doc).",
+      "result": "reproduced",
+      "observed": "fiscal_year 2025 -> 2025; doc-scoped LIKE hits 1 -> 1; receipt status extract 'not_detected' after the merge; $.admission still JSON null; acquisition stays a dict (15 keys); dayu_meta stays NoneType; only r4_provenance added; no key renamed or retyped."
+    },
+    {
+      "claim": "C2: per-field provenance lives ONLY under the reserved key r4_provenance = {schema_version, fields:{<field>:{value, sources, conflicts}}}, hashes/short normalised values only, NEVER raw text fragments; existing keys keep names and types.",
+      "method": "command: scenario c2 injects a long unique canary both as a metadata VALUE (acquisition.probe_free_text, acquisition.nested_free_text) and as a metadata KEY name; the whole provenance JSON is searched for every string value leaf of the incoming sidecar; also brute-forced a low-entropy hash.",
+      "result": "partially_reproduced",
+      "observed": "Shape and reserved key: exact (fields entries are exactly {value, sources, conflicts}; schema_version '1.0'). Canary VALUE never appears in provenance (provenance_json_contains_canary=false). BUT a canary used as a metadata KEY appears verbatim as the provenance field name `acquisition.BVR05CANARYKEYNAME9d3f`, and the 12-hex hash of fiscal_year was reversed to 2025 by brute force (1900-2100). Both stay inside the design's 'hash or short normalised value' allowance, but 'NEVER raw text fragments' holds for values only, and the hashes are not a confidentiality barrier."
+    },
+    {
+      "claim": "C3: per-column merge rules replace 'winner takes the whole row': fill a gap, keep a confirmed single value, never resolve a real disagreement by priority - keep every candidate and mark it.",
+      "method": "command + probe: scenarios c3i, c3ii, c3iii, c3iv, c3v (declared-vs-declared), c3vd (derived-vs-derived, the shape the F10 file actually exercises), c4_swapped, c4_annual_first, c4_quarterly_first, c5b; each compared against the pre-B05 tree.",
+      "result": "partially_reproduced",
+      "observed": "Fill-a-gap, keep-a-confirmed-value, mark-and-keep-stored, source_status-latest and primary_source_id all reproduce. 'Never resolve a real disagreement ... keep every candidate' is FALSIFIED in two shapes: (a) a recorded conflict is erased by any later capture that agrees with the stored value, so the same catalog reports blocked or ok depending on the order of CatalogConfig.roots (c4_swapped; also c4_quarterly_first, c3v); (b) after a prefer_new capture replaces the metadata container, a later declared value silently overwrites an earlier declared value with conflicts=[] and metadata_status='ok' (c5b), i.e. the same outcome as pre-B05."
+    },
+    {
+      "claim": "C4: the read contract exposes provenance and conflicts; a document whose merged columns disagree is reported blocked (not ambiguous).",
+      "method": "command + probe: grep for consumers of query_filing_candidates and of metadata_status/provenance/conflicts; scenarios c4_annual_first and c4_title drive SourceResolver.resolve on a conflicted document and dump status/reason/debug_trace/envelope keys; grep 'ambiguous' in scanner.py+service.py.",
+      "result": "partially_reproduced",
+      "observed": "The candidate dict carries provenance/conflicts/metadata_status and the values are only 'blocked'/'ok' (the string 'ambiguous' appears nowhere in the changed code). But the only production caller is resolver.resolve (resolver.py:964) and it never reads these keys: for the conflicted document resolve(document_kind=stored_kind) returns status='reused_equivalent', trace ['entity_gate_rejected: 0','ACME 2025 Annual Report: matched'], with no metadata_status/conflicts/provenance in the envelope payload; resolve(document_kind=losing_kind) returns status='missing', reason='no_existing_source_satisfies_request', debug_trace=[] (no signal at all, because document_kind is pushed down in SQL and the row is filtered out). So the design's response-level blocked (b-design:186/:192, b-vr-protocol L08) is not delivered; the new signal is candidate-level and unconsumed."
+    },
+    {
+      "claim": "C5: F-B05-1 refinement - a DECLARED value beats a file-name-DERIVED one in both directions; a CONFLICT exists only between two declared values (and conservatively between two derived ones).",
+      "method": "command + probe: c3iii (stored declared vs incoming derived), c3iv (incoming declared vs stored derived), c3v (two declared, different), c3vd (two derived, different), c5a (sidecar document_kind value not in _SIDECAR_MAP), c5b (declaration erased by prefer_new); code read of _DECLARING_KEYS/_declared_columns/_classification.",
+      "result": "partially_reproduced",
+      "observed": "All four rows of the documented table reproduce on the single-scan-order path (c3iii title kept with conflicts=[]; c3iv 'zzz' -> 'ACME 2025 Annual Report' and regulatory_filing -> annual_report with conflicts=[]; c3v 2 candidate hashes + blocked; c3vd same). The INPUT to the rule does not: declaredness is 'the capture's metadata container has a truthy key', which (a) counts a document_kind that _classification ignores (unmapped value) and a source_type key the classifier never reads, producing a FALSE conflict+blocked (c5a: sidecar document_kind='10-K' with a quarterly file name -> conflict between annual_report and a file-name-derived quarterly_report), and (b) is recomputed from the currently stored container, which prefer_new replaces - so a stored declaration can be lost and a later declaration silently wins (c5b: final kind quarterly_report, conflicts=[], metadata_status='ok')."
+    },
+    {
+      "claim": "C3 extra (design column table): published_date may only be written by a source that DECLARES it.",
+      "method": "command + probe: scenario c3viii - stored published_date set to NULL, incoming capture whose sidecar declares no filing_date/published_date/period_end but whose file name is 2026-02-20_acme-annual.pdf; run post- and pre-B05.",
+      "result": "not_reproduced",
+      "observed": "Post-B05 the merge writes published_date='2026-02-20' from the file name alone (fill-gap branch never consults incoming_declared); pre-B05 does the same. The design's explicit per-column rule for published_date is therefore not implemented by B05, and the resolver treats a missing published_date as a hard drop ('published_date_unknown')."
+    },
+    {
+      "claim": "C6a: 6 acceptance cases in tests/contract/test_r4b05_metadata_provenance.py.",
+      "method": "command: `python -m pytest tests/contract/test_r4b05_metadata_provenance.py -q`; `Select-String -Pattern '^def test_'`; `git show 9db3394:tests/contract/test_r4b05_metadata_provenance.py | Select-String '^def test_'`.",
+      "result": "not_reproduced",
+      "observed": "collected 5 items, 5 passed; exactly 5 test functions in the working tree and in the committed blob. The number 6 is stated in the commit message of 9db3394 ('now 6 cases'), evidence/b05-implementation.md (section 0, section 2, section 3 '-> 6 passed'), progress.md:9 and checkpoint.json last_completed_step."
+    },
+    {
+      "claim": "C6b: full suite 2706 passed / 7 skipped with ONE failure (test_pytest_temp_worker_governance_fixture_is_autouse_safe), attributed to a worker process leaked by an earlier interrupted run, failing the same way on the pre-change code.",
+      "method": "command: `python -m pytest -q --cov=src/company_wiki/source_catalog --cov-branch --cov-report=json:<temp>` with COVERAGE_FILE in temp (811s); then the same single test file in the extracted pre-B05 tree (bc3590f).",
+      "result": "reproduced",
+      "observed": "1 failed, 2706 passed, 7 skipped; the failure is exactly test_source_catalog_temp_worker_governance.py::test_pytest_temp_worker_governance_fixture_is_autouse_safe with `assert owned_before == set()` -> {2696}. The same test fails identically in the bc3590f tree (owned_before={2696}), so the environment attribution is confirmed; I did not kill the leaked process, so 'passes after cleanup' is unverified by me."
+    },
+    {
+      "claim": "C6c: coverage scanner.py 91.31% (frozen floor 90.5), service.py 95.20%; both FC-1204 ratchet tables green; ruff clean.",
+      "method": "command: own full-suite run with COVERAGE_FILE and --cov-report=json in a temp path, then re-evaluated both FC-1204 tables with the ratchet test's own formula; `FC1204_COVERAGE_GATE=1 python -m pytest tests/contract/test_fc1204_coverage_ratchet.py -q` against (i) the committed coverage.json and (ii) my own measurement copied in temporarily; `python -m ruff check src tests/unit tests/contract scripts`.",
+      "result": "reproduced",
+      "observed": "my measurement: scanner.py 91.31% (610/657 lines, 273/310 branches; frozen floor 91, tolerance floor 90.5 -> margin +0.81pt), service.py 95.20% exactly, resolver.py 87.93%; ratchet re-evaluation -> no problems in TIER1/TIER2/FROZEN. The gate passes 2/2 against my fresh coverage.json and fails 2/2 against the committed one (see finding B-VR05-08). ruff: 'All checks passed!'."
+    },
+    {
+      "claim": "C6d (commit 6909e78): behaviour-preserving extraction; per-function complexity after extraction _scan_root_v1 140, _scan_catalog_impl 73, _classification 37, _merge_document_row 30, _observe_file 26, scan_catalog 12; the frozen 140 belongs to _scan_root_v1.",
+      "method": "command: re-implemented the ratchet's own AST counter (tests/contract/test_fc1204_complexity_ratchet.py::_mccabe over module-level functions) and ran it on the final scanner.py, the pre-B05 scanner.py and service.py.",
+      "result": "partially_reproduced",
+      "observed": "final scanner.py: _scan_root_v1 140 (ceiling, unchanged), _scan_catalog_impl 73, _classification 37, _merge_document_row 35, _observe_file 26, scan_catalog 12, _merge_columns 17, _merge_metadata_json 9; pre-B05: _scan_catalog_impl 102 (so the extraction really did shrink it). The 140-belongs-to-_scan_root_v1 claim is correct; the quoted 30 for _merge_document_row is the post-extraction value and was never refreshed after sub-steps 2-3 (now 35)."
+    },
+    {
+      "claim": "C7 (declared not done): L09 capture_ready invariant, provenance on first INSERT, B-payload-hash, production/G8 validation are NOT done.",
+      "method": "code read of the INSERT branch of _merge_document_row (canonical_json(document_metadata) with no provenance), grep for the L09 invariant, review of the commit file list (F1+F3+F10 only), and the run-directory records.",
+      "result": "reproduced",
+      "observed": "The INSERT path writes canonical_json(document_metadata) with no r4_provenance (confirmed by reading scanner.py:1450-1469 and by c1: a row that is never merged has no r4_provenance); no L09 assertion exists; the commits touch only scanner.py, service.py and the new test file; no G8/production run is claimed. No overstatement found here."
+    },
+    {
+      "claim": "Scope: B05 may only touch F3 (scanner.py) + F1 (service.py) + a new F10 test file, and must not modify an existing test.",
+      "method": "command: `git diff --name-status bc3590f 9db3394`, `git status --porcelain`.",
+      "result": "reproduced",
+      "observed": "M src/company_wiki/source_catalog/scanner.py; M src/company_wiki/source_catalog/service.py; A tests/contract/test_r4b05_metadata_provenance.py. No existing test or other file touched; working tree clean before and after my probes (all mutations restored with identical sha256 prefixes scanner=31e78f0033a63ba2, service=ff46ef3c1f0b1c5f)."
+    }
+  ],
+  "column_rule_matrix": [
+    {
+      "rule": "(i) stored empty -> filled by this capture (capture_ready recovery path)",
+      "reproduced": true,
+      "notes": "c3i: published_date forced to NULL and title to '' by SQL, then a same-tier capture rescans -> title 'ACME 2025 Annual Report', published_date '2026-02-20'. Pre-B05 also filled, so the recovery path survives unchanged."
+    },
+    {
+      "rule": "(ii) stored confirmed and the incoming value equal -> single value kept, no conflict",
+      "reproduced": true,
+      "notes": "c3ii: two captures with the same declared title and document_kind -> conflicts=[], metadata_status='ok'. However the provenance record collapses to one entry with source_id=null (see B-VR05-05) instead of the design's 'multi-source agreement -> single value + provenance list'."
+    },
+    {
+      "rule": "(iii) stored DECLARED, incoming DERIVED -> stored value kept, not a conflict",
+      "reproduced": true,
+      "notes": "c3iii: stored title from a sidecar source_title; incoming dayu bundle whose meta.json has no source_title (title would be the file stem 'zzz') -> title unchanged, title_conflicts=[], document_kind_conflicts=[]. Pre-B05 would have overwritten it."
+    },
+    {
+      "rule": "(iv) incoming DECLARED, stored DERIVED -> incoming wins, not a conflict",
+      "reproduced": true,
+      "notes": "c3iv: stored derived title 'zzz' and derived document_kind 'regulatory_filing' from a dayu bundle; a later sidecar declaring source_title/document_kind=annual_report wins -> title 'ACME 2025 Annual Report', kind 'annual_report', conflicts=[]."
+    },
+    {
+      "rule": "(v) both DECLARED and different -> keep stored value AND list both candidates AND read side reports blocked",
+      "reproduced": true,
+      "notes": "True for the single-scan-order case only. c3v (declared titles 'ACME 2025 Annual Report' vs '... (Restated)'): title stays stored, title_record.conflicts has 2 candidate hashes, read side conflicts=['title'], metadata_status='blocked'. c4_annual_first (declared kinds annual vs quarterly) behaves the same. BUT with CatalogConfig.roots listed in the opposite order the identical data yields conflicts=[] and metadata_status='ok' (c4_swapped; c4_quarterly_first), and a third capture that agrees with the stored value clears the conflict and destroys the candidate list -> B-VR05-01."
+    },
+    {
+      "rule": "(vi) source_status takes the latest real observation",
+      "reproduced": true,
+      "notes": "c3vi: source_status forced to 'quarantined' then a same-tier copy rescanned -> 'active', provenance role 'incoming' with a real source_id and timestamp. Identical pre-B05 (that path always wrote the incoming status), so no behaviour change."
+    },
+    {
+      "rule": "(vii) primary_source_id re-election by the scan",
+      "reproduced": true,
+      "notes": "c3vii: NULL -> filled with the incoming primary source; a bogus non-null value -> replaced by the incoming. Pre-B05 gives byte-identical results (the old UPDATE used COALESCE(?, primary_source_id)), so this column's semantics are UNCHANGED and the _merge_columns docstring's 'only fills a gap' is a fair description of the same behaviour."
+    },
+    {
+      "rule": "(extra, design text) published_date may only be written by a source that DECLARES it",
+      "reproduced": false,
+      "notes": "c3viii: the fill-gap branch writes a file-name-derived date (2026-02-20 from '2026-02-20_acme-annual.pdf') for a capture whose sidecar declares no date at all -> B-VR05-07."
+    },
+    {
+      "rule": "(extra, design text) conflicts are preserved, so business facts do not depend on priority or scan order (L08)",
+      "reproduced": false,
+      "notes": "The merged VALUES became order-independent in the declared/derived cases I built, but the conflict MARKER and the read-side blocked are not: identical data gives blocked or ok depending on the order of CatalogConfig.roots (c4_swapped) -> B-VR05-01."
+    }
+  ],
+  "mutations": [
+    {
+      "id": "M1-whole-column-replacement-returns (_merge_metadata_json: merged = dict(incoming) if prefer_new else {})",
+      "status": "killed",
+      "killed_by": "tests/contract/test_r4b05_metadata_provenance.py::test_r4b05_merge_records_provenance_without_replacing_the_column and ::test_r4b05_merge_without_prefer_new_still_records_provenance (2 failed, 3 passed)"
+    },
+    {
+      "id": "M2-conflict-not-recorded (conflicted.append -> pass; conflict candidate list -> [])",
+      "status": "killed",
+      "killed_by": "tests/contract/test_r4b05_metadata_provenance.py::test_r4b05_true_conflict_keeps_every_candidate_and_blocks_the_read_side (1 failed, 4 passed)"
+    },
+    {
+      "id": "M3-declared-derived-rule-removed (both declaration guards -> if False: every disagreement is a conflict)",
+      "status": "survived",
+      "killed_by": "SURVIVES the F10 acceptance file (5 passed); killed only by the pre-existing cross-step assertion tests/contract/test_source_catalog_canonical_writer.py::test_writer_dedup_ignores_dayu_portfolio_locations (1 failed, 6 passed). This independently confirms the author's F-B05-1 causal claim and shows the refinement has no coverage in B05's own acceptance file."
+    },
+    {
+      "id": "M4-read-side-blocked-removed (metadata_status always 'ok')",
+      "status": "killed",
+      "killed_by": "tests/contract/test_r4b05_metadata_provenance.py::test_r4b05_true_conflict_keeps_every_candidate_and_blocks_the_read_side (1 failed, 4 passed)"
+    },
+    {
+      "id": "M5-provenance-stores-raw-values (_short_value_hash returns str(value))",
+      "status": "killed",
+      "killed_by": "tests/contract/test_r4b05_metadata_provenance.py::test_r4b05_merge_records_provenance_without_replacing_the_column (canary assertion; 1 failed, 4 passed)"
+    },
+    {
+      "id": "M6-kept-value-attribution-inverted (final non-conflict branch credits the incoming instead of the stored value)",
+      "status": "survived",
+      "killed_by": "SURVIVES the F10 acceptance file (5 passed). The value semantics are unchanged by this mutant, so it is an attribution-only mutant: the file checks only the record shape ({source_id, observed_at, role}) and that value is a non-empty string, never WHICH source a kept/filled value is attributed to -> evidence for B-VR05-05."
+    },
+    {
+      "id": "M7-conflict-resolved-by-incoming (conflict branch writes new_value)",
+      "status": "killed",
+      "killed_by": "tests/contract/test_r4b05_metadata_provenance.py::test_r4b05_true_conflict_keeps_every_candidate_and_blocks_the_read_side (1 failed, 4 passed) - the 'keep a confirmed value' rule itself IS pinned."
+    },
+    {
+      "id": "M8-fill-a-gap-rule-removed (never take the incoming value when stored is empty)",
+      "status": "killed",
+      "killed_by": "tests/contract/test_r4b05_metadata_provenance.py::test_r4b05_later_capture_fills_a_missing_column (1 failed, 4 passed) - the capture_ready recovery path IS pinned."
+    }
+  ],
+  "design_questions": [
+    {
+      "id": "F-B05-1",
+      "author_view": "The refinement ('a DECLARED value beats a file-name-DERIVED one, in both directions; a CONFLICT exists only between two declared values, and conservatively between two derived ones') is presented as a faithful implementation of the design's 'take the value that declares the column and whose source is traceable'; because the design never defines 'declared', the author asks whether it should be back-filled into the design text.",
+      "reviewer_view": "The direction of the rule is defensible: b-design:186 does say 'take the value that DECLARES the column', and the rule is what saved the frozen canonical-writer assertion (I confirmed the causality myself: M3, which removes the rule, fails test_writer_dedup_ignores_dayu_portfolio_locations). So the RULE is not a design change - but its DEFINITION is, and it is not stated anywhere: 'declared' is implemented as 'the capture's metadata container has a truthy key for that column', which (a) is not tied to the value it labels (an unmapped sidecar document_kind, or a source_type key the classifier never reads, still counts as a declaration and produces a false conflict + blocked - B-VR05-04), and (b) is recomputed from the currently stored container, which prefer_new replaces, so a stored declaration can be erased and a later declaration then silently overwrites it with no conflict and no blocked (B-VR05-02). The design text must define 'declared' AND fix those two couplings; a text-only back-fill of the current wording would freeze a rule that is not sound as implemented.",
+      "needs_owner": true
+    },
+    {
+      "id": "F-B05-2",
+      "author_view": "Two behaviour changes are registered honestly: (a) a confirmed single value is no longer overwritten by a 'more preferred' capture, and the document is marked blocked - the author warns this can make resolution fail closed and require a re-fetch; (b) published_date no longer unconditionally COALESCEs, so an old non-empty value wins and is marked conflicted (an empty old value is still filled, preserving the capture_ready path).",
+      "reviewer_view": "(a) is a direct consequence of the design's own requirement ('conflicts must not be resolved by priority'), so the behaviour change itself needs no owner ruling - but the author's description of its consequences is inaccurate in both directions: when the KEPT value is the requested kind, resolution SUCCEEDS (reused_equivalent) and nothing in the response (status, reason, trace, envelope) mentions the conflict, so it does NOT fail closed; when the LOSING declared kind is requested, the document is filtered out in SQL and resolve returns missing with an EMPTY debug_trace, i.e. the failure is silent (B-VR05-03). Neither direction is 'fail-closed with a visible blocked'. In addition the same data can report blocked or ok depending on the root order inside one scan (B-VR05-01/02), which the design's L08 acceptance sentence explicitly forbids. (b) is likewise design-mandated (b-design:187), but the implementation did not implement the OTHER half of that same rule: published_date may only be written by a source that DECLARES it, and the fill-gap path still writes a file-name-derived date (B-VR05-07). Owner ruling needed on the read-side/blast-radius questions (is a candidate-level metadata_status enough for B05's slice, with the response-level blocked deferred to B06/B07 in resolver.py, or must B05 carry it?) and on the published_date rule (fix the code to the design or widen the design).",
+      "needs_owner": true
+    },
+    {
+      "id": "B-VR05-DQ3 (scope: response-level blocked)",
+      "author_view": "evidence/b05-implementation.md places the read side entirely in service.query_filing_candidates (provenance / conflicts / metadata_status) and does not claim to touch the resolution status.",
+      "reviewer_view": "b-design:186 and :192 and b-vr-protocol L08 require the RESPONSE-level五值 model to report blocked with field-level detail. file-scope §3b allocates B05 = F3 (scanner.py) + F1 (service.py); resolver.py (F2) is allocated to B02/B04/B06/B07 - so the response-level half cannot be delivered inside B05's allowed set. This is a genuine scope gap between the design's acceptance sentence and the file allocation; it must be recorded explicitly (B05 delivers candidate-level only) and the response-level blocked assigned to a named step, otherwise L08 can never pass.",
+      "needs_owner": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-VR05-01",
+      "severity": "P1",
+      "claim": "Conflict preservation is not order-independent: a recorded conflict is erased by any later capture that agrees with the stored value, so the SAME catalog reports blocked or ok depending only on the order of CatalogConfig.roots (and a third agreeing capture destroys the candidate list permanently).",
+      "evidence": "Temp-catalog probe (probe.py c4_swapped), replicating the committed F10 conflict fixture exactly (same sidecar without source_title, same two file names acme-2025-annual.pdf / acme-2025-annual-restated.pdf, same root kinds company_raw + directory at priority 10): roots [company_raw, dropbox_stock] -> title_conflicts = 2 candidate hashes, conflicts=['title'], metadata_status='blocked' (identical to the committed test's assertions); roots [dropbox_stock, company_raw] -> title_conflicts=[], conflicts=[], metadata_status='ok'. Same effect for document_kind (c4_quarterly_first: the conflict recorded by the company_raw pass is erased by the dropbox_stock pass in the same scan run) and for a third agreeing capture in a later scan (c3v). Mechanism: _merge_columns recomputes each field record from (stored, incoming) per capture and _merge_metadata_json does fields.update(provenance_fields), so the last capture processed owns the record; the 'equal values' branch writes conflicts=[].",
+      "impact": "b-design §B05 requires 'keep every candidate + conflict mark, never resolve automatically' and b-vr-protocol L08 requires 'swap priority/scan order -> business facts unchanged; conflicts preserved'. Both are false here: the conflict marker and the read-side blocked flip with scan order while the merged values stay the same. The committed acceptance case test_r4b05_true_conflict_keeps_every_candidate_and_blocks_the_read_side passes only because its fixture happens to list company_raw before dropbox_stock (which makes the conflicting capture the last one processed).",
+      "required_action": "Make the conflict record cumulative and non-erasable: keep the union of candidate hashes (and never clear conflicts because a later capture agrees), or derive conflicts from stored provenance plus the incoming capture without letting agreement overwrite it. Add F10 cases with (a) the two roots in the opposite order and (b) a third agreeing capture proving the conflict survives."
+    },
+    {
+      "id": "B-VR05-02",
+      "severity": "P1",
+      "claim": "A genuinely declared value can be silently overwritten with no conflict record and no blocked signal, because declaredness is recomputed from the stored metadata container, which a prefer_new merge replaces.",
+      "evidence": "Temp-catalog probe (probe.py c5b). Step 1: capture A (company_raw sidecar) declares document_kind='annual_report' -> column annual_report and acquisition.document_kind present. Step 2: capture B (same bytes, provider_document_id present while the stored copy lacks one, so prefer_new fires) declares NO document_kind -> merged.update(incoming) replaces the acquisition container (acquisition_has_document_kind=false) while the column stays annual_report. Step 3: capture C declares document_kind='quarterly_report' -> stored_declared is now computed from B's container (false) and new_declares is true -> 'declared beats derived' -> final kind 'quarterly_report', document_kind record conflicts=[], metadata_status='ok'. The pre-B05 tree produces the same final kind with no signal at all, so in this shape B05 changes nothing.",
+      "impact": "Two captures genuinely declared different document_kind values and the second silently replaced the first - the exact 'real conflict resolved without a mark' that b-design §B05 item 2 forbids and that findings.md F-B05-1 states as the rule ('a CONFLICT exists only between two declared values'). The document's identity (document_kind drives the resolver's candidate slice) silently changes between scans, and nothing in the read contract records the disagreement. It also means a prefer_new merge can destroy provenance-relevant declaration evidence that the step's own rule depends on.",
+      "required_action": "Tie declaredness to the stored COLUMN value, not to the currently stored container: persist the declaring capture/key per column (e.g. an extra field in r4_provenance) and never let a container replacement erase it; alternatively keep the declaring keys of the losing container. Add an F10 case for the A -> B(prefer_new, declares nothing) -> C(declares differently) sequence."
+    },
+    {
+      "id": "B-VR05-03",
+      "severity": "P2",
+      "claim": "The new read-side signal (provenance/conflicts/metadata_status='blocked') has no consumer and no response-level effect, and in the losing direction the document becomes unresolvable with an empty trace.",
+      "evidence": "grep: the only production caller of query_filing_candidates is resolver.resolve (resolver.py:964); grep for metadata_status/R4_PROVENANCE_KEY across src shows service.py (writer of the field) and scanner.py (the key) only. Probe c4_annual_first: on a document with a document_kind conflict, resolve(document_kind='annual_report') -> status 'reused_equivalent', reason 'one_existing_source_satisfies_semantic_request', debug_trace ['entity_gate_rejected: 0','ACME 2025 Annual Report: matched'], and the envelope payload contains none of metadata_status/conflicts/provenance; resolve(document_kind='quarterly_report') -> status 'missing', reason 'no_existing_source_satisfies_request', debug_trace [] (the row is filtered out by the SQL document_kind predicate, so no exclusion reason can even be produced).",
+      "impact": "b-design:186/:192 and b-vr-protocol L08 require the RESPONSE-level five-value status to report blocked with field-level detail; what exists is a candidate-level field that no caller reads. F-B05-2a's 'fail-closed' story is therefore half wrong: the kept direction is served without any warning, and the losing direction misses silently - a consumer cannot distinguish 'no such document' from 'this document's identity is disputed'.",
+      "required_action": "Register explicitly that B05 delivers the candidate-level field only (resolver.py = F2 is not in B05's allocation) and assign the response-level blocked to a named step (B06/B07); at minimum make resolve() put the conflict into its trace so the miss is not silent. Needs an owner decision because it changes the step's completion definition (see design question B-VR05-DQ3)."
+    },
+    {
+      "id": "B-VR05-04",
+      "severity": "P2",
+      "claim": "The declaration test is decoupled from the value it labels: a column counts as DECLARED even when the classifying code ignored or never reads the declaring key, which manufactures false conflicts and false 'blocked'.",
+      "evidence": "_DECLARING_KEYS = {title<-source_title, document_kind<-document_kind, source_type<-source_type, published_date<-filing_date|published_date}, but _classification only honours a sidecar document_kind that is one of the nine values in _SIDECAR_MAP and never reads a source_type key at all. Probe c5a: stored annual_report (declared) plus an incoming sidecar with document_kind='10-K' (unmapped, therefore ignored by _classification) and file name acme-2025-q3-quarterly-report.pdf -> the incoming column value is the file-name-derived 'quarterly_report' but is flagged declared, so the merge records a two-candidate conflict and metadata_status='blocked' - while the sidecar's actual declaration ('10-K' -> annual_report) agrees with the stored value.",
+      "impact": "Documents that do not really disagree are reported blocked, so the new signal is unreliable exactly where a reviewer would use it; conversely a file-name-derived value can be credited as a declaration, weakening the F-B05-1 rule the step relies on.",
+      "required_action": "Compute declaredness from the key/value that actually produced the column (have _classification report which input decided, or restrict _DECLARING_KEYS to values the classifier consumes) and drop source_type from _DECLARING_KEYS unless the column is genuinely taken from it. Add F10 cases for an unmapped document_kind and for a source_type-only sidecar."
+    },
+    {
+      "id": "B-VR05-05",
+      "severity": "P2",
+      "claim": "Provenance never accumulates agreeing sources, and a value that is kept (or just filled) is attributed to source_id=null; the acceptance file does not pin the attribution at all.",
+      "evidence": "Probe c3i: the value the CURRENT scan filled (stored published_date NULL, title '') ends up recorded as sources=[{source_id: null, observed_at: null, role: 'stored'}] because the second root processed in the same scan agrees and takes the record over - the capture that actually supplied the value is discarded. Probe c3ii/c3v: two agreeing captures produce exactly one source entry with source_id=null (no list). Mutant M6 (credit the incoming instead, i.e. invert role/source for kept values) SURVIVES the F10 file, which only asserts set(source) == {source_id, observed_at, role} and that value is a non-empty string. evidence/b05-implementation.md section 2 still claims the opposite ('on stored-win the previous record's source and time are carried over; a row written before provenance existed records null') - that was the sub-step-2 behaviour and is not what the shipped code does.",
+      "impact": "b-design §B05 requires 'agreement -> value + merged provenance' and 'multi-source agreement -> single value + provenance LIST', and L08 requires 'trustworthy fields have a source'. After any merge the kept columns - precisely the ones B05 is about - carry no source, so a reviewer cannot tell which capture supplied the stored value; and because the attribution is unpinned, a future change can silently invert it.",
+      "required_action": "Carry the previous record forward and append deduplicated agreeing sources (source_id, observed_at, role) for kept values; add F10 assertions on source_id/role for (a) a kept value and (b) two agreeing captures; correct section 2 of the implementation record."
+    },
+    {
+      "id": "B-VR05-06",
+      "severity": "P2",
+      "claim": "The claimed acceptance-case count is false: 6 cases are claimed, 5 exist.",
+      "evidence": "`python -m pytest tests/contract/test_r4b05_metadata_provenance.py -q` -> collected 5 items, 5 passed; 5 `def test_` functions in the working tree and in `git show 9db3394:...`. The number 6 is asserted in the commit message of 9db3394 ('Acceptance (same F10 file, now 6 cases)'), evidence/b05-implementation.md (section 0 table, section 2 '3 用例', section 3 '-> 6 passed'), progress.md:9 ('6 用例') and checkpoint.json last_completed_step ('Measured: 6 acceptance cases').",
+      "impact": "The gate is asked to re-check a measurement that is not true, and a reader of the record cannot tell which cases exist (the file has 3 pre-existing + 2 added: the declared-conflict case and the fill-a-gap case).",
+      "required_action": "Correct the count in all five places and state the case list once."
+    },
+    {
+      "id": "B-VR05-07",
+      "severity": "P2",
+      "claim": "The design's published_date column rule is not implemented: the fill-gap path still writes a date the scanner only DERIVED from a file name.",
+      "evidence": "Probe c3viii: stored published_date set to NULL, incoming capture whose sidecar declares no filing_date/published_date/period_end but whose file name is 2026-02-20_acme-annual.pdf -> the merge writes published_date='2026-02-20'. _merge_columns' fill-gap branch never consults incoming_declared. The pre-B05 tree behaves identically.",
+      "impact": "b-design:187 says published_date 'may only be written by a source that declares it', and the resolver treats a missing/invalid date as a hard drop (published_date_unknown / published_after_as_of_date). A file-name-derived date can therefore qualify a document that declares no period at all, and its provenance record misattributes it as role 'stored' with no source (compounds B-VR05-05).",
+      "required_action": "Gate the published_date fill on incoming_declared['published_date'] (as the design states) and add an F10 case; if the wider behaviour is wanted, the design must be changed by the owner."
+    },
+    {
+      "id": "B-VR05-08",
+      "severity": "P3",
+      "claim": "The recorded coverage-gate command is not reproducible against the committed tree: it fails 2/2 because the gate reads the tracked, stale coverage.json.",
+      "evidence": "`FC1204_COVERAGE_GATE=1 python -m pytest tests/contract/test_fc1204_coverage_ratchet.py -q` -> 2 failed: 'service.py branch coverage 94.4% < 95% (required)' and 'evidence_query.py 49.1% < 87%; extraction_quality.py 74.3% < 77%; security_identity.py 73.5% < 77%'. Cause: coverage.json is a tracked file whose last commit is 90fb08d (2026-09-01) and the gate loads <repo>/coverage.json whenever FC1204_COVERAGE_GATE=1; the file the author measured with (which reproduces 91.31/95.20) was regenerated locally and never committed. With my own fresh measurement copied in temporarily the same command prints '2 passed', and coverage.json was restored byte-identically afterwards (sha256 before == after == 8F9F5093..., git status --porcelain empty).",
+      "impact": "The step's claim '-> 2 passed' is correct only in the two-command sequence (fresh coverage run first, as CI does), but the record presents it as a standalone command; anyone re-running just the gate on the committed tree sees two red tests - and the stale artifact still advertises pre-B02/B04/B05 numbers (scanner 90.49, service 94.42, resolver 85.64).",
+      "required_action": "Record the sequence explicitly and add a freshness guard (or delete coverage.json from tracking) so the gate cannot judge a stale measurement; note in the evidence that the committed coverage.json must not be used as the source of the claimed percentages."
+    },
+    {
+      "id": "B-VR05-09",
+      "severity": "P3",
+      "claim": "Evidence and test documentation drift: the reserved-block shape is documented in two contradictory versions, the carry-over behaviour is still described in the record although the code no longer does it, the per-function complexity table is stale, and two case counts are inconsistent and unreproducible.",
+      "evidence": "(a) tests/contract/test_r4b05_metadata_provenance.py lines 6-8 document the reserved key as {schema_version, fields:{field:{source_id, observed_at, value_hash}}} while the file's own assertion (line 212) requires set(record) == {value, sources, conflicts}. (b) evidence/b05-implementation.md section 2 prints that flat shape and states that on a stored-win the previous record's source and time are carried over (code writes nulls - see B-VR05-05); section 0 says only that the shape changed in sub-step 3. (c) section 1 / b05-plan.md section 3 quote _merge_document_row = 30 (post-extraction); my re-measurement with the ratchet's own counter gives 35 for the final code (_scan_root_v1 140, _scan_catalog_impl 73, _classification 37, _merge_columns 17, _merge_metadata_json 9, _observe_file 26, scan_catalog 12) - the file ceiling claim itself is correct. (d) b05-plan.md section 1 says '823 用例 passed' for the extraction while evidence/b05-implementation.md section 1 says 825, and neither equals the current tests/unit + tests/contract collection total (2647).",
+      "impact": "Readers (including later reviewers) get two different provenance shapes, a behaviour description the code does not have, and numbers they cannot reproduce; the claim audit only checks literal presence, so these slips pass it.",
+      "required_action": "Keep one authoritative shape + case list + number set, update the per-function table after sub-step 3, and delete the superseded flat-shape description."
+    },
+    {
+      "id": "B-VR05-10",
+      "severity": "P3",
+      "claim": "'No raw text can enter provenance' is true for metadata VALUES but not for field NAMES, and the 12-hex hash of a low-entropy value is trivially reversible.",
+      "evidence": "Probe c2: the canary VALUE never appears in the provenance JSON, but a canary used as a metadata KEY is written verbatim as the field name 'acquisition.BVR05CANARYKEYNAME9d3f' (field names are f'{container}.{key}'), so raw text from a shared namespace can land in r4_provenance; and fiscal_year=2025 was recovered from its stored hash b2b2f104d32c by brute-forcing 1900-2100. The design allows 'hash or short normalised value', so neither is a design violation.",
+      "impact": "The reserved block is not text-free in general: like the rest of the shared column it can carry arbitrary key names, which is exactly the vector the design's 'no raw fragments (avoid LIKE false hits)' constraint was aimed at; and 'hash' should not be read as a confidentiality guarantee for low-entropy values.",
+      "required_action": "Precision only: say 'values are hashed; field names are metadata keys' in the evidence, and (optionally) cap/normalise the field-name channel."
+    }
+  ],
+  "limitations": [
+    "No production data, no real four-root corpus, no G8 isolated copy and no real cloud hydration/large-file behaviour were exercised - every probe ran on synthetic temp catalogs under %TEMP%, as the step's own 'not done' list anticipates.",
+    "The L09 capture_ready invariant was not asserted (out of B05's declared scope); I only reproduced the fill-a-gap recovery path it depends on.",
+    "B-payload-hash was not executed (no frozen baseline exists; the design registers it as blocked), so I cannot speak to the byte/hash contract of the resolve payload.",
+    "The other readers of the shared column were exercised as equivalents, not as the shipped code paths: json_extract($.acquisition.fiscal_year), json_extract($.prompt_injection_review.status), a doc-scoped LIKE '%acquisition%' probe and read_prompt_injection_review; llm_summarizer.py's LLM gate and scripts/legacy_observer.py were NOT run.",
+    "The root-order fragility (B-VR05-01) was demonstrated with a fixture I rebuilt in a temp dir that reproduces the committed F10 case's assertions exactly when the roots keep the committed order (2 candidate hashes, conflicts=['title'], blocked); I did not permute the committed test file itself, because modifying an existing test is forbidden for this review.",
+    "I reproduced the worker-governance failure on the pre-B05 tree (owned_before={2696}) but did not identify or kill the leaked process, so the author's 'passes after cleanup' half of the claim is unverified.",
+    "Concurrency (two scanners on one catalog), symlink/reparse behaviour and Windows path edge cases were not probed; the metadata merge is only exercised single-process.",
+    "The provenance hash reversal was demonstrated for one low-entropy value (fiscal_year); no general entropy analysis was attempted.",
+    "Consumer-side code (filing-fetch, revenue-forecast) was not run, so the 'downstream sees not_reviewed' consequence of the pre-B05 defect is inferred from resolver.py's read of the receipt, not observed end-to-end."
+  ],
+  "extra_evidence": {
+    "environment": "Windows, Python 3.13.9, pytest 9.1.1, coverage 7.0.0; full suite 811s.",
+    "commands_run": [
+      "python -m pytest tests/contract/test_r4b05_metadata_provenance.py -q  -> 5 passed in 1.44s (collected 5)",
+      "python -m pytest tests/contract/test_source_catalog_canonical_writer.py tests/contract/test_source_catalog_pipeline.py -q  -> 21 passed in 15.16s",
+      "python -m pytest tests/unit -q  -> 787 passed in 61.43s",
+      "python -m pytest -q tests/contract/test_fc1204_complexity_ratchet.py  -> 2 passed in 0.76s",
+      "python -m ruff check src tests/unit tests/contract scripts  -> All checks passed!",
+      "COVERAGE_FILE=<temp>\\.coverage python -m pytest -q --cov=src/company_wiki/source_catalog --cov-branch --cov-report=json:<temp>\\coverage_mine.json  -> 1 failed, 2706 passed, 7 skipped in 811.29s",
+      "python cov.py coverage_mine.json  -> scanner 91.31 / service 95.20 / resolver 87.93; ratchet problems: NONE",
+      "FC1204_COVERAGE_GATE=1 python -m pytest tests/contract/test_fc1204_coverage_ratchet.py -q  -> 2 failed against the committed coverage.json; 2 passed after temporarily copying my fresh measurement in (restored, hash equal, git status clean)",
+      "python -m pytest tests/contract/test_source_catalog_temp_worker_governance.py -q  (in the bc3590f tree)  -> 1 failed (owned_before={2696}), 4 passed",
+      "BVR05_SRC=<repo>\\src python probe.py <scenario>  (16 scenarios, post- and pre-B05)",
+      "python mutate.py  -> M1 killed, M2 killed, M3 survived-F10/killed-canonical, M4 killed, M5 killed, M6 survived, M7 killed, M8 killed; scanner sha 31e78f0033a63ba2 and service sha ff46ef3c1f0b1c5f unchanged after every mutation; git status --porcelain empty"
+    ],
+    "artifacts": [
+      "%TEMP%\\bvr05\\probe.py (probe harness)",
+      "%TEMP%\\bvr05\\mutate.py (mutation harness)",
+      "%TEMP%\\bvr05\\coverage_mine.json (independent coverage measurement)",
+      "%TEMP%\\bvr05\\pre-b05\\ (bc3590f tree extracted with git archive, used as the pre-change baseline)"
+    ]
+  }
+}

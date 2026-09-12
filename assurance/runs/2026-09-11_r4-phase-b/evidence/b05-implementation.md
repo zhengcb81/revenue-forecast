@@ -1,7 +1,17 @@
-# B05 实施记录（子步 1–3 已全部落盘并提交）
+# B05 实施记录（子步 1–3 + **`B.VR` B05 = rejected 的 P1 修复**）
 
-> 状态：**子步 1「等价抽取」= `6909e78`**、**子步 2「保留键 + 读-改-写」= `bdd99dc`**、**子步 3「逐列规则 + 读侧 blocked」= `9db3394`**（均已推送，CI 见 [b02-ci-runs.md](b02-ci-runs.md) 的追加行）。
-> 计划与实测依据见 [b05-plan.md](b05-plan.md)；两条需 reviewer/owner 过目的发现见 [findings.md](findings.md) **F-B05-1**（"声明值 vs 派生值"应回填设计正文）与 **F-B05-2**（两处行为变化）。
+> 状态：**子步 1** = `6909e78`、**子步 2** = `bdd99dc`、**子步 3** = `9db3394`、**P1 修复** = `b6a8442`（均已推送）。
+> 复审：`B.VR` B05 = **rejected**（2×P1 / 5×P2 / 3×P3，[../reviews/B.VR-b05.json](../reviews/B.VR-b05.json)）→ **P1 已修**；P2/P3 的逐条处置见 [b05-review-disposition.md](b05-review-disposition.md)。
+> 计划与实测依据见 [b05-plan.md](b05-plan.md)；需 owner 裁的范围问题见 [owner-scope-decisions](../owner-scope-decisions-2026-09-12.md) **S-13**（响应级 `blocked` 由谁交付）。
+
+## 0c. `B.VR` B05 的 P1 与修复（`b6a8442`）
+
+| # | reviewer 复现 | 修复 | 回归用例 |
+|---|---|---|---|
+| B-VR05-01 | 冲突保留**依赖扫描顺序**（根顺序对调 → `conflicts` 2→0；同一 `scan()` 内"先记后抹"；第三份一致副本抹掉候选） | `_merge_metadata_json` 逐字段合并：来源**只增**、候选**不抹**；新增 `aligned_columns` 把容器中**已存在的声明键**对齐到合并后的列值（避免下次扫描拿被拒绝的值当"已声明"） | `test_r4b05_conflict_record_survives_scan_order_and_agreement` |
+| B-VR05-02 | 声明值可被**静默覆盖**（声明性从"当前容器"重算，而非绑定所标注的值） | 来源记录新增 `declared` 标志（**声明随值记录**）；存储侧优先读**已记录**来源；**INSERT 也写 provenance**（否则首次捕获的声明从未落盘） | `test_r4b05_declaration_is_bound_to_the_value_it_labels` |
+
+P2/P3 的状态（含未解决项与 owner 待裁项）见 [b05-review-disposition.md](b05-review-disposition.md) §3。
 
 ## 0. 子步 3 概要（逐列规则 + 读侧暴露）
 
@@ -92,25 +102,31 @@ python -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q
 python -m ruff check src tests/unit tests/contract scripts
 ```
 
-## 3. 最后实测（子步 3 之后）
+## 3. 最后实测（P1 修复之后）
 
 ```
-python -m pytest tests/contract/test_r4b05_metadata_provenance.py -q      -> 6 passed
+python -m pytest tests/contract/test_r4b05_metadata_provenance.py -q              -> 7 passed
 python -m pytest tests/contract/test_source_catalog_canonical_writer.py \
-    tests/contract/test_source_catalog_pipeline.py tests/unit -q          -> 全部通过
-python -m pytest tests/ -q --cov=... --cov-branch --cov-report=json        -> 2706 passed, 7 skipped,
-     1 failed：test_pytest_temp_worker_governance_fixture_is_autouse_safe（环境残留：早先被中断的
-     测试运行留下的 worker 进程；**在 pre-change 代码上用 git stash 复现同样失败**，清理残留进程后通过）
+                 tests/contract/test_source_catalog_pipeline.py -q                -> 21 passed
+python -m pytest tests/unit <B05 + writer + pipeline + admission + worker-governance \
+                 + 两张棘轮>-q                                                    -> 836 passed, 2 skipped,
+     1 failed：test_pytest_temp_worker_governance_fixture_is_autouse_safe（环境残留 worker 进程；
+     **在 pre-change 代码上同样失败**，清理残留后通过）
+python -m pytest tests/ -q --cov=... --cov-branch --cov-report=json                 -> 2707 passed, 7 skipped,
+     2 failed（其一为上面的环境残留；其二为本轮**已修复**的顺序用例在旧版下的失败，修复后单跑 7 passed）
 FC1204_COVERAGE_GATE=1 python -m pytest tests/contract/test_fc1204_coverage_ratchet.py -q  -> 2 passed
-python -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q       -> 2 passed
-python -m ruff check src tests/unit tests/contract scripts                 -> All checks passed
-覆盖率：scanner.py 91.31 %（冻结底 90.5）、service.py 95.20 %、resolver.py 87.93 %
+python -m pytest tests/contract/test_fc1204_complexity_ratchet.py -q                -> 2 passed
+python -m ruff check src tests/unit tests/contract scripts                          -> All checks passed
+覆盖率（全量那次测量）：scanner.py 90.89 %（冻结底 90.5，余量 +0.39）、service.py 95.20 %、resolver.py 87.93 %
 ```
+
+> **注意（B-VR05-08）**：覆盖率门必须**两步**跑——先 `pytest tests/ --cov=… --cov-report=json`，再 `FC1204_COVERAGE_GATE=1 pytest tests/contract/test_fc1204_coverage_ratchet.py -q`；单独跑第二步会因仓库跟踪的**陈旧 `coverage.json`** 而 2 failed（`b02_verify.py` 对陈旧文件报 SKIPPED + 年龄）。
 
 ## 4. 未做（不得当作已完成）
 
-- **`capture_ready` 不变量（L09）未在 B05 内断言**：设计 §B05 line 192 要求"只要有任一合格副本且身份/期间可判，`capture_ready` 不得因合并规则改变而变 false"，该断言落在 **L09**（B06/B07 的验收面），本步只保证"补空"路径保留、并未跑 L09。
-- **首次 INSERT 不写 provenance**（有意的最小改动，见 §0b/F-B05-2）：新入库行没有 `r4_provenance`，只有经历合并的行才有。
-- `B-payload-hash` 仍未执行；`r4_provenance` 会改变 `metadata_json` 的字节，因此该门**若将来执行，基线必须建立在本步之后**（本步不声称 payload 不变）。
-- 未做真实四 root／生产数据的合并演练（需 G8 隔离副本）；未验证 `metadata_json` 的既有读取者（`llm_summarizer` 的注入门、`legacy_observer` 的 `LIKE '%acquisition%'`）在**生产数据**上的表现——本步只对 `json_extract` 下推与收据存活做了合成断言。
-- 未做 B05 的独立复审（`B.VR` B05 轮）。
+- **响应级 `blocked` 的消费者未实现**（B-VR05-03，P2）：读侧只暴露 `provenance/conflicts/metadata_status`，`resolver.resolve` 不读、响应级状态未变 → **范围问题 S-13（待 owner）**。
+- **B-VR05-04/-05/-09/-10 未完成**：声明与分类器实际输入的对齐、"补空值归属"的变异复测、证据 §2 的逐句核对、"字段名/低熵 hash"的可逆性处置——逐条状态见 [b05-review-disposition.md](b05-review-disposition.md) §3。
+- **`capture_ready` 不变量（L09）未断言**（设计 §B05 line 192；落在 L09 的验收面）。
+- `B-payload-hash` 仍未执行；`r4_provenance`（现在**含首次 INSERT**）会改变 `metadata_json` 的字节，因此该门**若将来执行，基线必须建立在本步之后**（本步不声称 payload 不变）。
+- 未做真实四 root／生产数据的合并演练（需 G8 隔离副本）；未验证 `llm_summarizer` 的注入门与 `legacy_observer` 的 `LIKE '%acquisition%'` 在**生产数据**上的表现（只做了等价 SQL/Python 探针）。
+- **`B.VR` B05 rev2 未做**（P1 修复与未决 P2 的复核）。

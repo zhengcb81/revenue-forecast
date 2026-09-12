@@ -154,38 +154,38 @@ LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": ("B (position-transparent index and read-only access) - IMPLEMENTATION IN PROGRESS: "
               "B02 landed; B01/B03-B07 still design-only"),
-    "step": ("B04 implemented (acceptance + finding, NO product change): a move keeps the reference, and the "
-             "same-path overwrite case is pinned and registered as F-B04-1 (out of the allowed file set)"),
+    "step": ("B05 implemented and then REJECTED by its own review (2xP1/5xP2/3xP3); both P1s fixed in b6a8442 "
+             "with regression cases, the remaining P2/P3 items and the response-level blocked scope question "
+             "(S-13) are open"),
     "last_completed_step": (
-        "B04 closed after its focused review (the reviewer reproduced every number, corrected two author "
-        "statements and found F-B04-2; all six findings are addressed, plus an author-side mutation harness "
-        "that kills M3/M4/M5/M6/M7). "
-        "B05 then implemented in three commits: (1) the document-row merge extracted out of "
-        "_scan_catalog_impl so it can be tested and grown - the complexity ceiling of 140 turned out to "
-        "belong to _scan_root_v1, not the merge site, and the B05 plan was corrected accordingly; (2) the "
-        "scanner no longer REPLACES documents.metadata_json on the prefer_new path - it reads, keeps every "
-        "key it does not own (the prompt_injection_review receipt that resolver exposes as "
-        "prompt_injection_status was being silently dropped), and writes the reserved r4_provenance block "
-        "with per-field {value, sources, conflicts} records holding hashes only; (3) the reviewed "
-        "per-column rules (fill a gap, keep a confirmed value, a DECLARED value beats a file-name-derived "
-        "one, and a disagreement between two declared values is preserved as a conflict instead of being "
-        "resolved by priority) plus the read contract in service.query_filing_candidates (provenance / "
-        "conflicts / metadata_status=blocked). Two findings are registered for review: F-B05-1 (the "
-        "declared-vs-derived refinement was forced by the frozen canonical-writer test and should be "
-        "back-filled into the design text) and F-B05-2 (two behaviour changes: a confirmed single value is "
-        "no longer overwritten, and published_date no longer COALESCEs unconditionally, so a conflict can "
-        "fail closed for resolution - which the read side now reports as blocked). Measured: 6 acceptance "
-        "cases, full suite 2706 passed / 7 skipped with one failure that is an environment artefact (a "
-        "worker process leaked by an earlier interrupted run; it fails the same way on the pre-change code "
-        "and passes after cleanup), coverage scanner.py 91.31% (frozen floor 90.5), service.py 95.20%, both "
-        "ratchet tables green, ruff clean."
+        "B04 closed after its focused review (all six findings addressed, plus an author-side mutation "
+        "harness). B05 then implemented in three commits (extraction of the merge, the reserved "
+        "r4_provenance block with read-modify-write, the per-column rules plus the read-side blocked "
+        "verdict), and its independent review REJECTED the step with two P1 findings: conflict preservation "
+        "depended on scan order (a later agreeing capture erased the recorded candidates, and swapping the "
+        "root order changed whether a conflict was recorded at all), and a DECLARED value could be "
+        "overwritten silently because declaration was recomputed from whatever container happened to be "
+        "stored instead of from what was recorded about the value. Both are fixed in b6a8442: provenance "
+        "fields merge field by field (sources accumulate, candidates are never erased), each container's "
+        "declaring keys are aligned with the merged column values, every source record carries a 'declared' "
+        "flag, the stored side is judged from the recorded declaration, INSERT writes provenance too "
+        "(otherwise the first capture's declarations were never recorded), and published_date is no longer "
+        "filled from a file-name-derived guess. Measured: 7 acceptance cases; canonical writer + pipeline "
+        "21; unit plus the B05 neighbourhood plus both ratchets 836 passed / 2 skipped with the only "
+        "failure being the known leaked-worker environment artefact (it fails on the pre-change tree too); "
+        "full suite 2707 passed / 7 skipped / 2 failed (that artefact plus the pre-fix order case); "
+        "coverage scanner.py 90.89% against its 90.5 floor; ruff clean. Open: B-VR05-03 (response-level "
+        "blocked has no consumer - scope question S-13 for the owner), B-VR05-04/-05/-09/-10, and the B05 "
+        "rev2 review."
     ),
     "current_gate": (
-        "B05 independent review (fresh session), then B01 -> B03 -> B06 -> B07. The owner owes three "
-        "rulings, each stated with its evidence: S-10 and S-11 on B02's claim-trust rule and budget "
-        "mapping (single authoritative difference list, evidence/b02-implementation.md section 3), and S-12 "
-        "on what to do about same-path overwrites (contract-level limitation vs a byte-snapshot work "
-        "package)."
+        "B05 rework: the remaining P2/P3 findings (align declaration with what the classifier actually "
+        "consumed, the fill-attribution mutation case, the evidence re-check, the field-name and "
+        "low-entropy-hash question), then B.VR B05 rev2, then B01 -> B03 -> B06 -> B07. The owner owes FOUR "
+        "rulings: S-10 and S-11 (B02's claim-trust rule and budget mapping - single authoritative "
+        "difference list in evidence/b02-implementation.md section 3), S-12 (same-path overwrite: "
+        "contract-level limitation vs a byte-snapshot work package) and S-13 (who delivers the "
+        "response-level blocked verdict - its carrier is resolver.py, which is not in B05's allowed set)."
     ),
     "pending_review": [
         {
@@ -212,6 +212,22 @@ LEDGER = {
                          "F-B05-2 are acceptable or need an owner ruling, and (d) whether the reserved key "
                          "stays additive for the other readers of the shared column"),
             "note": "evidence: evidence/b05-implementation.md, evidence/b05-plan.md, findings.md F-B05-1/F-B05-2",
+        },
+        {
+            "gate": "B.VR (B05)",
+            "scope": "company-wiki 6909e78 + bdd99dc + 9db3394: merge extraction, reserved r4_provenance with read-modify-write, per-column rules, read-side blocked; 6 F10 cases",
+            "status": "closed",
+            "verdict": "rejected",
+            "findings": {"P1": 2, "P2": 5, "P3": 3},
+            "note": ("reproduced the author's numbers and the whole column-rule matrix, and confirmed the "
+                     "core fix (pre-B05 dropped other modules' keys; post-B05 only adds the reserved one). "
+                     "It falsified two things: conflict preservation depended on scan order (and a later "
+                     "agreeing capture erased the candidates), and a declared value could be overwritten "
+                     "silently because declaration was recomputed from the stored container instead of "
+                     "being bound to the value. Both P1s are fixed in b6a8442 with regression cases; the "
+                     "remaining P2/P3 items are tracked in evidence/b05-review-disposition.md, and the "
+                     "response-level blocked question became scope item S-13 for the owner"),
+            "record": "reviews/B.VR-b05.json",
         },
         {
             "gate": "B.VR (B04, focused)",

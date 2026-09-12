@@ -1,13 +1,21 @@
 # R4 Phase B 进度（progress）
 
-## 2026-09-12（实施期）— **B05 已实施**（3 子步：抽取 / 保留键+读-改-写 / 逐列规则+读侧 blocked）
+## 2026-09-12（实施期）— **B05 = `B.VR` rejected（2×P1/5×P2/3×P3）→ P1 已修（`b6a8442`）；P2/P3 部分待做**
 
-- **提交**：`6909e78`（等价抽取 `_merge_document_row`）、`bdd99dc`（保留键 `r4_provenance` + 读-改-写，修掉"整列替换抹掉复核收据"这一真实缺陷）、`9db3394`（逐列规则 + 读侧 `blocked`）；记录 [evidence/b05-implementation.md](evidence/b05-implementation.md)、计划 [evidence/b05-plan.md](evidence/b05-plan.md)。
+- **复审**：第六个独立会话，记录 [reviews/B.VR-b05.json](reviews/B.VR-b05.json)。它**复现了作者的数字**（逐列规则矩阵 (i)–(vii) 全对；共享列可加性成立；2706/7/1 中唯一失败在 pre-change 树上同样失败=环境残留），但**证伪两处**：
+  1. **B-VR05-01（P1）**：冲突保留**依赖扫描顺序**——根顺序对调 `conflicts` 从 2 变 0；第三份一致副本会抹掉候选清单（`_merge_columns` 逐捕获重算 + `fields.update()` 覆盖）。
+  2. **B-VR05-02（P1）**：**声明值可被静默覆盖**——声明性从"当前存储容器"重算，A（声明 kind）→ B（`prefer_new`、不声明）→ C（声明另一种 kind）之后 C 直接胜出且 `conflicts=[]`。
+- **P1 修复（`b6a8442`，各有回归用例）**：① `_merge_metadata_json` 逐字段合并（来源只增、候选不抹）+ 新增 `aligned_columns`（容器中已存在的声明键对齐到合并后的列值）；② 来源记录新增 `declared` 标志（**声明随值记录**），存储侧优先读已记录来源，**INSERT 也写 provenance**（否则首次捕获的声明从未落盘）；③ 顺带修 B-VR05-07（`published_date` 补空也要求声明）。
+- **P2/P3 处置**：见 [evidence/b05-review-disposition.md](evidence/b05-review-disposition.md) §3 —— **未解决**：B-VR05-03（响应级 `blocked` **没有消费者**，载体是 F2 `resolver.py` → **S-13 待 owner 裁范围**）、B-VR05-04（声明与分类器输入脱钩）、B-VR05-10（字段名/低熵 hash 可逆）；**部分**：B-VR05-05/-09；**已修**：B-VR05-06（用例数改实测：7）、B-VR05-07、B-VR05-08。
+- **复跑**：B05 文件 **7 passed**；writer+pipeline **21 passed**；`tests/unit` + B05 邻域 + 两张棘轮 **836 passed / 2 skipped**，唯一失败是**环境残留** worker 进程（pre-change 树同样失败）；全量 **2707 passed / 7 skipped / 2 failed**（其一环境残留，其二为本轮已修的旧版顺序用例）；覆盖率 `scanner.py` **90.89 %**（底 90.5）、`service.py` 95.20 %；`ruff` clean。
+- **待办**：修 B-VR05-04/-05 与文档核对 → 送 `B.VR` B05 rev2；owner 待裁 **S-10 / S-11 / S-12 / S-13**。
+
+### B05 交付概要（子步 1–3）
+
+- **提交**：`6909e78`（等价抽取 `_merge_document_row`）、`bdd99dc`（保留键 `r4_provenance` + 读-改-写，修掉"整列替换抹掉复核收据"这一真实缺陷）、`9db3394`（逐列规则 + 读侧 `blocked`）、`b6a8442`（P1 修复）；记录 [evidence/b05-implementation.md](evidence/b05-implementation.md)、计划 [evidence/b05-plan.md](evidence/b05-plan.md)。
 - **核心修复**：B05 之前 `prefer_new` 分支用新字典**整列替换** `documents.metadata_json`，会抹掉 `prompt_injection.py` 写在同一列的复核收据（`resolver` 把它作为 `prompt_injection_status` 暴露给下游）——现在读-改-写，**其他模块的键一律存活**。
-- **新增**：保留键 `r4_provenance`（设计形状 `{schema_version, fields:{<列/键>:{value,sources,conflicts}}}`，**只存 hash 不存原文**）；逐列规则（补空 / 保留已确认值 / 声明压派生 / 真冲突保留全部候选）；`source_status` 取最新观测；`primary_source_id` 每次扫描按 B02 顺序重选；读侧 `query_filing_candidates` 新增 `provenance` / `conflicts` / `metadata_status`（有冲突 = `blocked`）。
-- **两条需复审/owner 过目的发现**：**F-B05-1** —— "声明值 vs 派生值"是实施期细化（设计正文没定义"声明"），它由一条**冻结断言**逼出（`test_writer_dedup_ignores_dayu_portfolio_locations`，`git stash` 对照确认）；**F-B05-2** —— 两处行为变化（已确认单值不再被更优先捕获覆盖；`published_date` 不再无条件 COALESCE），后果是冲突场景下解析可能 **fail-closed** 并需要重新获取，读侧会显示 `blocked`。
-- **验收/复跑**：F10 `test_r4b05_metadata_provenance.py` **6 用例**通过；全量 **2706 passed / 7 skipped**，唯一失败 `test_pytest_temp_worker_governance_fixture_is_autouse_safe` 是**环境残留**（早先被中断的运行留下的 worker 进程；在 pre-change 代码上同样失败，清理后通过）；覆盖率 `scanner.py` **91.31 %**（冻结底 90.5）、`service.py` 95.20 %；两张棘轮表 **4 passed**；`ruff` clean。
-- **待办**：B05 的独立复审（`B.VR`，新会话）；随后 B01 → B03 → B06 → B07。owner 待裁：S-10、S-11、S-12。
+- **新增**：保留键 `r4_provenance`（设计形状 `{schema_version, fields:{<列/键>:{value,sources,conflicts}}}`，来源含 `declared` 标志，**只存 hash 不存原值**）；逐列规则（补空 / 保留已确认值 / 声明压派生 / 真冲突保留全部候选）；`source_status` 取最新观测；`primary_source_id` 每次扫描按 B02 顺序重选；读侧 `query_filing_candidates` 新增 `provenance` / `conflicts` / `metadata_status`（有冲突 = `blocked`）。
+- **两条需复审/owner 过目的发现**：**F-B05-1** —— "声明值 vs 派生值"是实施期细化（设计正文没定义"声明"），它由一条**冻结断言**逼出（`test_writer_dedup_ignore_dayu_portfolio_locations` 的同类场景，`git stash` 对照确认）；**F-B05-2** —— 两处行为变化（已确认单值不再被更优先捕获覆盖；`published_date` 不再无条件 COALESCE）。
 
 ## 2026-09-12（实施期）— **B04 已实施**（验收 + 发现登记；产品代码零改动）+ `B.VR` b04 复审 `accepted_with_findings`
 
