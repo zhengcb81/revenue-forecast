@@ -24,8 +24,8 @@
 | company-wiki | `3740857`→`f2ba5c1` | **B06 处置 + B07 处置**（期间规则反转 + 缺口接线用例 / S-10 例外点名 + 外来版本拒绝 + 真断言；两个独立提交） | CI | **success** | 34726243938 |
 | company-wiki | `0e73cf6` | **F-B00-6 收尾**：7 个验收文件各点名自己的矩阵 ID（docstring，行为零变化；双向检查归零） | CI | **success** | 34726908410 |
 | company-wiki | `ccb3c82` | **FC-1307-a 门本体**（本机假设守卫 + 58 条棘轮基线 + 5 条登记摘要 + 5 用例 + pre-commit/pre-push 接线） | CI | ❌ **failure**（`Unit tests`，三份 Python 全红：**门自己**触发了冻结写者清单） | 34751519232 |
-| company-wiki | `b28b5a0` | **该红的第一因修复**：守卫改**纯只读**（`--write-baseline`→`--emit-baseline` 只打印），不再落入"直接写者 CLI"类 | CI | 见下方 §CI-1307 行 | 34751718915 |
-| company-wiki | `62695fb` | **该红的第二因修复（类别级）**：pre-push 门第 6 步改为同时跑**判定门自身的测试**（`tests/unit/test_writer_freeze.py` + `tests/contract/test_fc1307_host_assumption_gate.py`），并用一次性写者探针证明该步是承重的 | CI | 见下方 §CI-1307 行 | 待触发 |
+| company-wiki | `b28b5a0` | **该红的第一因修复**：守卫改**纯只读**（`--write-baseline`→`--emit-baseline` 只打印），不再落入"直接写者 CLI"类 | CI | **success** | 34751718915 |
+| company-wiki | `62695fb`→`1fab7f6` | **该红的第二因修复（类别级）**：pre-push 门第 6 步改为同时跑**判定门自身的测试**；并把该门的**三条设计性质**写成用例（只打印不写盘 / 棘轮按**值**而非按文件 / 规则①只判 `tests/`），三个变异**全部被杀**（[evidence/fc1307a_mutations.py](fc1307a_mutations.py)） | CI | 见下方 §CI-1307 行 | 待触发 |
 | revenue-forecast | `2ced153` | B 运行目录：B02 实施记录（rev1） | quality | **success** | 34691409601 |
 | revenue-forecast | `7b34c12` | B 运行目录：`B.VR` rev1 记录 + rev2 证据 | quality | **success** | 34693783149 |
 | revenue-forecast | `63422f1` | B 运行目录：`B.VR` rev2 记录 + rev3 证据 | quality | **success** | 34697489835 |
@@ -49,6 +49,7 @@
 | revenue-forecast | `0249d60`→`e5ea728` | B01 复审处置记录 + B03 实施记录 + 台账 + checkpoint（54 文件） | quality | **success** | 34721069977 |
 | revenue-forecast | `c247c44` | F-B01-9（CI 首红三因）+ 记录 + checkpoint（55 文件） | quality | **success** | 34721932758 |
 | revenue-forecast | `d3770c5` | B03 复审处置 + B06/B07 实施记录 + 台账 + checkpoint（77 文件） | quality | **success** | 34724733730 |
+| revenue-forecast | `a524191` | FC-1307-a 闭环记录 + 门自红的证据（含红行原文与测试名订正）+ F-B01-10（周度 T3 观察项） | quality | **success** | 34751993473 |
 
 **CI 覆盖到的与本步直接相关的门**（`company-wiki/.github/workflows/ci.yml`，三个 Python 版本 3.11/3.12/3.13 全部 success）：
 
@@ -77,6 +78,16 @@ FAILED tests/unit/test_writer_freeze.py::test_every_direct_writer_cli_has_an_exp
 **根因**：守卫是 `scripts/*.py` + `__main__` + 写盘调用（`--write-baseline`），因此落入"直接写者 CLI"清单，而该清单要求每个此类 CLI 携带 `enforce_direct_cli`（legacy 写者冻结两因子）。**修法选择**：不给检查器发写者授权（一个检查器不该持有改写被检查树的权限），而是**删掉写模式**：`--write-baseline` → `--emit-baseline`（只打印 JSON 供人粘贴），文件内不再有任何写原语。
 
 **第二因（类别级，见 `62695fb`）**：把"判定门自身的测试"加入 pre-push 门第 6 步，并用一次性写者探针（`scripts/_gate_hardening_probe.py`，同一条命令内建后即删）证明该步承重——探针在位时该步红且断言消息与 CI 打印的一致，删除后 13 passed。
+
+**该门的自测（`1fab7f6`）**：把门赖以成立的**三条设计性质**写成契约用例，并逐条用变异证明承重（harness [fc1307a_mutations.py](fc1307a_mutations.py)，退出码 0）：
+
+| 性质 | 用例 | 变异 | 结果 |
+|---|---|---|---|
+| 只打印、**绝不写盘**（正是它自己触发 CI 红的那条） | `test_fc1307a_emit_baseline_only_prints_and_never_writes` | A：`--emit-baseline` 里补一句 `BASELINE.write_text(...)` | **KILLED** |
+| 棘轮按**值**（`rule\|路径\|值`）而非按文件 | `test_fc1307a_the_ratchet_is_value_level_not_file_level` | B：`key()` 去掉值 ⇒ 基线退化成"按文件豁免" | **KILLED** |
+| 规则①**只判 `tests/`**（产品代码可合法分支宿主） | `test_fc1307a_product_code_may_branch_on_the_host` | C：`in_tests = True`（全库扫描） | **KILLED** |
+
+harness 退出码 0 = 基线 8 passed + 三个变异全杀 + **树已还原**（`tree_restored=true`；还原走 `git checkout --`，因为普通 `write_text` 会翻转工作副本的换行而留下幻影改动）。
 
 **订正一条我自己的错误**：提交 `b28b5a0` 的说明把该测试写成 `test_every_direct_writer_cli_has_an_implicit_guard`，**真实符号是 `..._an_explicit_guard`**（日志行如上）。已推送的历史不为一个错字改写，订正记录在此处与 `62695fb` 的提交说明里。
 

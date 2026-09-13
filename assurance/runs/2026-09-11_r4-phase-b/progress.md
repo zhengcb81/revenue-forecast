@@ -8,6 +8,7 @@
 - **修复①（wiki `b28b5a0`）**：守卫改**纯只读**——`--write-baseline` → `--emit-baseline`（只打印基线 JSON 供人粘贴），文件内**不再有任何写原语**。取舍写明：**不给检查器发 legacy 写者授权**（检查器不该有改写被检查树的权限）。
 - **修复②（wiki `62695fb`，类别级）**：pre-push 门第 6 步改为**同时跑判定门自身的测试**（`tests/unit/test_writer_freeze.py` + 门自己的契约测试），并**证明该步承重**：一次性写者探针（`scripts/_gate_hardening_probe.py`，同一条命令内建后即删）在位时该步**红**且断言文本与 CI 打印一致，删除后 **13 passed**；门 docstring 从"5 步"更正为实际的 6 步。
 - **门/证据**：守卫实测 `violations=94 / new=0 / baseline=58 / registered=5`；新契约文件 5 passed；`ruff` clean；6 步 pre-push 门 **GREEN**（含新增 meta 步）。CI 结果逐行登记在 [evidence/b02-ci-runs.md](evidence/b02-ci-runs.md) §FC-1307-a（含红的那一行原文与全部 run id）。
+- **门的自测（`1fab7f6`，把"新用例必须承重"用在门自己身上）**：三条设计性质各写一条契约用例——① 只打印**绝不写盘**（正是它自己触发 CI 红的那条）；② 棘轮按**值**而非按文件（文件级棘轮 = 橡皮图章）；③ 规则①**只判 `tests/`**（产品代码的 `/proc/stat`、`C:/Windows` 是合法平台分支）——并用变异 harness [evidence/fc1307a_mutations.py](evidence/fc1307a_mutations.py) 逐条证明**三个变异全部被杀**、基线 8 passed、**树已还原**。（该 harness 自身也修了一处：普通 `write_text` 还原会翻转换行留下幻影改动 ⇒ 改用 `git checkout --`。）
 - **订正一处我自己的错误**：`b28b5a0` 的提交说明把测试名写成 `..._an_implicit_guard`，真实符号是 `..._an_explicit_guard`。已推送历史不为错字改写，订正落在证据页与 `62695fb` 的说明里。
 - **边界不变**：本轮**无**产品行为改动（新增文件全部是门/台账/测试），**未**执行任何数据命令或产品写入；B08/B09/B10 仍按 G8/G7 由 owner/操作者把关。
 
