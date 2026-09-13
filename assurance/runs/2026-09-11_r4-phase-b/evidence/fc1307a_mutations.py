@@ -12,6 +12,11 @@ requires the matching FC-1307-a case to fail each time:
   C. rule A's scope widens from tests/ to everything -> the "product code may branch
      on the host" case must fail
 
+Each mutant names the case (a pytest -k EXPRESSION, so one mutant may be pinned by
+several cases) that must fail.  A mutant of the *author's own* harness counts too: the
+first version of mutant E only broke the exemption path and "survived", which said
+nothing about the test - the mutant, not the test, was wrong.
+
 Read-only w.r.t. the product: it edits one script, runs one test file, then restores
 the file from git and asserts the tree is clean.  Usage:
 
@@ -42,15 +47,41 @@ MUTANTS: list[tuple[str, str, str, str]] = [
     ),
     (
         "B: baseline key drops the offending value (file-level ratchet)",
-        '        return f"{item[\'rule\']}|{rel}|{item[\'value\'][:40]}"',
+        '        return f"{item[\'rule\']}|{rel}|{item[\'value\']}"',
         '        return f"{item[\'rule\']}|{rel}"',
         "test_fc1307a_the_ratchet_is_value_level_not_file_level",
     ),
     (
-        "C: rule A scope widens to every file",
+        "C: rule 1 scope widens to every file",
         '    in_tests = "tests" in path.parts',
         "    in_tests = True",
         "test_fc1307a_product_code_may_branch_on_the_host",
+    ),
+    (
+        "D: ratchet identity goes back to the 40-character prefix (B-VR1307-03)",
+        "        return f\"{item['rule']}|{rel}|{item['value']}\"",
+        "        return f\"{item['rule']}|{rel}|{item['value'][:40]}\"",
+        "test_fc1307a_a_shared_prefix_does_not_inherit_a_baseline_entry",
+    ),
+    (
+        "E: any skip marker ANYWHERE in the module exempts the file (B-VR1307-02)",
+        "def _module_level_skip(tree: ast.AST) -> bool:",
+        "def _module_level_skip(tree: ast.AST) -> bool:\n"
+        "    return \"skip\" in ast.dump(tree)  # mutant: the old file-wide behaviour",
+        "test_fc1307a_an_unrelated_skip_marker_does_not_exempt"
+        " or test_fc1307a_a_guarded_capability_use_is_clean",
+    ),
+    (
+        "F: HEX64 loses re.IGNORECASE (B-VR1307-05)",
+        'HEX64 = re.compile(r"^[0-9a-f]{64}$", re.IGNORECASE)',
+        'HEX64 = re.compile(r"^[0-9a-f]{64}$")',
+        "test_fc1307a_an_uppercase_digest_is_flagged_too",
+    ),
+    (
+        "G: POSIX roots go back to the original 12-entry list (B-VR1307-04)",
+        '    r"|//[^/\\s]+/"\n    r")"\n)',
+        '    r")"\n)',
+        "test_fc1307a_widened_posix_roots_are_flagged",
     ),
 ]
 

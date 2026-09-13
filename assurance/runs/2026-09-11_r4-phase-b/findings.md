@@ -2,13 +2,33 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## B.VR-fc1307a（主机假设门）= **accepted_with_findings**（0×P0 / 3×P1 / 2×P2 / 3×P3）→ **全部处置**（wiki `a920ab1`；记录 [reviews/B.VR-fc1307a.json](reviews/B.VR-fc1307a.json)）
+
+- **复审的独立性与可核性**：它自证 repo A 全树 57908 文件的 relpath+size+mtime 快照 SHA-256 在每条命令前后**逐字节相同**、`git status` 为空；repo B 只新增它自己的记录。CI 日志它**取不到**（禁网），故"CI 红/绿"只有**机理复现**（用 `test_writer_freeze.py` 的同一条谓词判 `ccb3c82` vs HEAD）。
+- **作者**先把两个结构性 P1 **独立复现**再动手（见下），第三个是一行代码事实。**逐条处置**：
+
+| # | 级别 | 发现（它证明的） | 处置 |
+|---|---|---|---|
+| B-VR1307-01 | P1 | 规则②**抓不到**它声称覆盖的那次历史失败：`git show 5ab0779:tests/contract/test_r4b03_stable_bytes.py` 的 blob 里**本来就有** `pytest.skip`（所以本机绿），真实根因是**断言语义错层**；且文案自相矛盾（"without a skip" vs "skips on Windows"） | **撤回夸大的声明**：守卫/测试 docstring 与本文档都改成"规则②覆盖的是**本地门不跑的新文件里未加守卫的能力调用**"，并**明写**"规则②**不覆盖** F-B01-9 第 3 行——那类只能靠推送前跑契约套件"。**作者独立复现**：`scan_file(<该 blob>)` → `rules: []` |
+| B-VR1307-02 | P1 | 规则②豁免是**整文件原始文本**匹配 ⇒ 兄弟用例里的 `pytest.skip`、注释、变量名 `skipif_note` 都会让整文件免疫；反向还有误报：辅助函数 `def link(a,b)` 被当成 `os.link` | 豁免改为 **AST 级、按函数**：`pytest.skip`/`pytest.importorskip` **调用**在同一函数体内、或该函数带 skip/skipif **装饰器**、或模块级 `pytestmark = pytest.mark.skipif(...)`/`importorskip(...)`；能力 API 按**完整接收者**匹配（`os.symlink`/`os.link`/`os.mkfifo`、`*.symlink_to`/`*.hardlink_to`），裸 `link()` 不再算 |
+| B-VR1307-03 | P1 | 棘轮 key `rule\|rel\|value[:40]` **截断身份** ⇒ 在同文件里新增一条与已基线值**共享前 40 字符**的路径会被判 `new=0` 放行（58 条基线里**10 条**正处于被截断状态，今天就是活的）；这推翻了用例自己写的"excuse the EXACT recorded offender only" | key 改为**全值**；基线重新生成 **58 → 71**（13 条因去截断重键、2 条是下面的 POSIX 扩枚举**新发现**的真违规）；`violations=97; new=0; baseline=71; registered=5`。**作者独立复现**：碰撞字面量 exit 0、不同前缀对照 exit 1（**注意**：key 含 relpath ⇒ 只在**同一文件内**成立） |
+| B-VR1307-04 | P2 | `POSIX_ABS` 只有 12 项，漏 `/Users`、`/Volumes`、`/private`、`/srv`、`/data`、`/Library`、`/workspace`、`/builds`、`/github`、`/bin`… 与 `//server/share` | 扩枚举（macOS/容器侧常见根 + POSIX 式 UNC），并在 docstring 写明这是**有限枚举**、拼接构造（`os.path.join`）不在语法门能力内 |
+| B-VR1307-05 | P2 | `HEX64` 没有 `IGNORECASE`（同文件 URL 正则却有）⇒ **全大写**摘要直接放行；且登记表按大小写敏感查找 | 加 `re.IGNORECASE`，登记表查找统一 `lower()`；docstring 写明"只覆盖字面量、恰好 64 位" |
+| B-VR1307-06 | P3 | 行内注释说不可解析的文件"不归它管"，代码却让它**红** | **保留 fail-closed**（未解析=未检查），改注释与 docstring，并加用例钉住；同时写明"故意不可解析的夹具不要放在被扫的 `.py` 集合里" |
+| B-VR1307-07 | P3 | 三条崩溃路径给 traceback：非 UTF-8 ⇒ `UnicodeDecodeError`；`--roots` 指到仓外 ⇒ `relative_to` 抛 `ValueError`；登记表 JSON 损坏 ⇒ `JSONDecodeError` | 三条都改为**可读报告/拒绝**：不可读文件报 `unreadable-file`（fail-closed）、仓外 root 直接拒绝并说明、JSON 损坏给出文件名与原因 |
+| B-VR1307-08 | P3 | 三处文字落后于代码：pre-push 说"第 6 步"（守卫是第 5 步）、"新用例 5 passed"（现 25）、`.pre-commit` 注释说"whole tree"（实为 `tests/`+`src/`） | 三处全部更正；另把 `rglob('*.py')` 的**大小写平台差异**（Windows 不敏感/Linux 敏感）用显式 `.py` 过滤消除 |
+
+- **承重证明**：用例 **8 → 25**，每条发现至少一条用例钉住；变异 harness [evidence/fc1307a_mutations.py](evidence/fc1307a_mutations.py) 扩到 **7 个变异**（新增"key 退回 40 字符前缀""任何 skip 出现在模块里即豁免""去掉 IGNORECASE""POSIX 退回 12 项"）→ **7/7 KILLED**、`tree_restored=true`、基线 25 passed。
+- **作者的一处自纠**：第一版变异 E 只破坏了"豁免路径"而**不是**复审所指的"整文件原始文本"行为，于是它"存活"——**是变异写错了，不是用例没覆盖**；改成忠实复现旧行为（`"skip" in ast.dump(tree)`）后即被杀死。harness 现在允许一个变异用 `-k` **表达式**绑定多条用例。
+- **未被复审覆盖的**（它自己列的 `not_checked`，与我的记录一致）：CI 日志原文、完整 6 步 pre-push 门、ruff/mypy、Linux/macOS 实机行为、87 条基线各自的语义正确性、以及"该门对未知未来缺陷类别的完备性"——**都不声称**。
+
 ## F-B01-10（**观察项，非 B 工作、未归因**）：本机的**周度 T3 真下载套件**在 B 窗口内记了一次 `not-ok`，而**失败原因没有被留下**
 
 - **发现路径**：核对工作树时看到两个**被跟踪**的自动产物在同一轮被改动：`assurance/runs/weekly_manifest.json` 与 `assurance/runs/weekly_alert.jsonl`（两者都由 `tools/weekly_t3_schedule.py` 写，**非我本轮所写**）。
 - **记录到的内容（逐字取自这两个文件）**：`latest_run_id=20260913T064640Z`，`started_at=2026-09-13T06:48:04.984641+00:00`，`ok=false`，告警行 `status="not-ok"`、`reason="T3 suite exit 1"`、`exit_code=1`；三元组为 filing `b44edd8`、revenue `fd2e56a`、wiki `0e73cf6`——**即当时三个仓库的 tip**（filing-fetch `HEAD` 实测 `b44edd8`；revenue 当时 tip `fd2e56a`；wiki 当时 tip `0e73cf6`）。
 - **这是什么套件**：`filing-fetch/tests/test_e2e_download.py`（**真下载** E2E，`FILING_FETCH_E2E_DOWNLOAD=1` 才跑，写临时 wiki），由 `tools/weekly_t3_schedule.py run-weekly` 包裹；ZR-902 的发布门读该台账，**`fresh + ok` 才 ready** ⇒ 现在这次 `not-ok` 让**周度发布门处于 blocked**。
 - **与上一次的区别**：台账窗口内上一条（`20260906T070858Z`）是 `blocked` = **整套跳过**（缺凭据/网络）；**本次是真正执行后失败**（`exit_code=1`），所以这不是"又一次全跳过"。
-- **证据缺口（本条的重点）**：`_run_t3_suite()` 用 `capture_output=True` 把子进程输出**收进内存**，`write_ledger` 的 `report_path` 只是**标签** `weekly-run-<id>`，**不落任何文件** ⇒ 套件为什么返回 1 **无法从记录里查**（实测：在 revenue-forecast 下递归搜索该 run id，**零命中**）。也就是说这条 `not-ok` 目前**不可诊断、也不可复核**。
+- **证据缺口（本条的重点）**：`_run_t3_suite()` 用 `capture_output=True` 把子进程输出**收进内存**，`write_ledger` 的 `report_path` 只是**标签** `weekly-run-<id>`，**不落任何文件** ⇒ 套件为什么返回 1 **无法从记录里查**（实测：在 revenue-forecast 下递归搜索该 run id，**零命中**；**措辞更正（B-VR903-09）**：告警日志 `weekly_alert.jsonl` 里**当然有**这个 id，这里说的是**没有任何以它命名的文件**）。也就是说这条 `not-ok` 目前**不可诊断、也不可复核**。
 - **明确不做的推断**：**不**归因于 B（B 改的是 `source_catalog` 的解析/抽取路径，不是下载路径；且这次运行发生在 `ccb3c82` 之前），**也不**声称是环境原因——**没有证据**。要定性必须**重跑**该套件，而重跑 = 真下载 + 覆盖周度台账（数据/网络命令）⇒ **owner 门**，我不擅自执行。
 - **可复跑的最小验证（只读）**：`python -c` 读上述两个 JSON 即可复核本条引用的全部字段；重跑命令为 `python tools/weekly_t3_schedule.py run-weekly`（**待批**）。
 - **建议（待 owner 定，不在 B 内改）**：① 让 `weekly_t3_schedule` 把套件输出尾部落盘（例如 `assurance/runs/weekly-run-<id>.log`），否则同类失败永远只能看到一行 `exit 1`；② 把"凭据/工具缺失导致的**收集期错误**"与"真失败"分开记（现在 `exit 1` 一律记 `not-ok`，而之前那类是 `blocked`）。
@@ -22,7 +42,9 @@
   | 次序 | run_id | 结果 | 证据文件 |
   |---|---|---|---|
   | 第 1 次 | `20260913T194021Z` | `ok=true` / `exit 0` / **`4 passed in 78.35s`** | `assurance/runs/weekly-run-20260913T194021Z.log` |
-  | 第 2 次（改为记录**相对**报表名之后） | `20260913T194234Z` | `ok=true` / `exit 0` | `assurance/runs/weekly-run-20260913T194234Z.log`（台账现指向它） |
+  | 第 2 次 | `20260913T194234Z` | `ok=true` / `exit 0` | `assurance/runs/weekly-run-20260913T194234Z.log`（台账现指向它） |
+
+  > **订正（B-VR903-04 触发）**：本节原写"改为记录**相对**报表名之后"，读起来像"第 1 次的台账曾以绝对路径被记录进历史"。**可核的事实是**：第 1 次运行**在工作树**里写下的台账确实记着绝对路径（我当时打印过），但那一版**从未被提交**，随后被第 2 次运行覆盖 ⇒ **事后不可复核**；能复核的只有代码（`abdd168`）与用例。22 s 的 mtime 间隔**可能**来自 `git commit` 触发 pre-commit 的 stash/restore 重写工作树文件（提交输出里能看到该 stash/restore），但那是**解释**不是证明。本页按"证据能支持的范围"重述，不保留更强的主张。
 
 - **三元组**：两次都是 filing `b44edd8`（**与失败那次相同**）/ revenue `cd8c0e2` / wiki `1fab7f6`（revenue 与 wiki 相对失败那次只多了文档与新门/门自测，**无产品行为改动**）。
 - **结论（可证伪、不越界）**：该套件**现在通过**，且在**同一 filing-fetch 修订**下**连续两次**通过；`20260913T064640Z` 的 `not-ok` **仍无法解释**——它的输出当时没有落盘（这正是本次修掉的缺口），所以**我不归因**（不提"网络抖动"之类的猜测）。可复核的事实只有：那次失败不可复现，且当时的证据已不可恢复。
@@ -38,6 +60,25 @@
 - **用例**：`tests/test_zr903_weekly_t3.py` **12 → 16**，四条新增各钉一条性质（环境收集错误 ⇒ blocked；`no tests ran` ⇒ blocked；歧义的 import 收集错误 ⇒ 仍 not-ok；**跑过并失败** ⇒ 绝不被洗成 blocked）。
 - **承重证明（变异 4/4 KILLED，树已还原）**：① 去掉"必须命中环境标记" ⇒ 被"歧义 import 仍 not-ok"杀；② verdict 检测恒假 ⇒ 被"真失败不被洗白"杀；③ 忽略 `no tests ran` ⇒ 被"未收集到测试"杀；④ 清空环境标记表 ⇒ 被"环境收集错误 ⇒ blocked"杀。连同上一条的 3 个变异，本项共 **7 个变异全部被杀**。
 - **残余（登记，未做）**：日常 T2 运行器 `daily_t2_schedule.run_daily` 仍用 `ok = returncode == 0 and observer == 0` 的粗判；要不要同样分档属**另一次范围**（本项只动周度 T3）。
+
+## B.VR-zr903（周度 harness）= **accepted_with_findings**（0×P0 / 1×P1 / 5×P2 / 4×P3）→ **全部处置**（记录 [reviews/B.VR-zr903.json](reviews/B.VR-zr903.json)）
+
+- 复审用**真实捕获的 pytest 输出**（不是手写字符串）做探针，并**独立重跑了 7 个变异**（全部真 KILLED）、确认 16/16 用例、ruff clean、两次重跑确为 `4 passed`、`report_path` **没有任何消费者**按路径解析（S4 被驳回）、06:48Z 那次失败**确实不可解释**（无报表文件且早于 `e45bace`）。
+- **逐条处置**：
+
+| # | 级别 | 发现 | 处置 |
+|---|---|---|---|
+| B-VR903-01 | **P1** | 分类器的**绝对保证是假的**：docstring 与 `00ad509` 都写"真缺陷绝不会被洗成环境问题"，而真实采集的输出里，**产品侧**收集期 `FileNotFoundError`（配置路径不存在）被记为 `blocked`（"修机器"），门受影响为零但**记录在指控环境** | **撤回该保证**：docstring 明写 `blocked` 的判据是**启发式**（哨兵 / pytest 自己的 `no tests ran` / 环境样标记），并写"产品侧收集期错误可能被记为 blocked，**以落盘报表为准**"；报警 `detail` 点名**匹配到的词**并附"check the report before blaming either side"。新增**权威信号** `T3-SUITE-COULD-NOT-RUN` 哨兵（套件自己声明"跑不起来"，优先于一切启发式） |
+| B-VR903-02 | P2 | 镜像缺口：本地化宿主（`FileNotFoundError: [WinError 2] 系统找不到指定的文件。`）**一个英文标记都不含** ⇒ 记为 `not-ok`；`No module named` / `XX is not set` 同理 | 标记表补**语言中立**项：异常**类名**（`filenotfounderror`/`timeoutexpired`/`connectionerror`/`permissionerror`/`sslerror`/`socket.gaierror`/`urlerror`/`httperror`）与**数字 OS 码**（`winerror 2`/`errno 2`）；`No module named` 仍**刻意不列**（与产品 import 错误不可区分）→ **登记为残余**，方向保守 |
+| B-VR903-03 | P2 | 声称的 7 个变异全真 KILLED，但**存在一个声明外的存活变异**：删掉"退出 0 且无 verdict ⇒ blocked"这条规则，16 条用例全过 | 补两条用例（`exit 0` 无 verdict ⇒ blocked；**裸** `[WinError 2]` 无类名也 ⇒ blocked），并把它写进新 harness 的 **P6/P8** 变异 |
+| B-VR903-04 | P2 | 台账 `report_path` **无法被证明**由它所命名的那次运行写入：manifest mtime 比该次报表晚 22.37 s，而代码里两者之间只有 3 次 git 调用（实测 0.35 s）；且"第 2 次（改为相对名之后）"与 `abdd168` 说明互相矛盾——**绝对路径那一版从未被提交** | **如实更正**（见下方 §F-B01-10-rerun 的订正）：绝对路径那版只存在于**工作树**（我当时的观测），**不可复核**；22 s 间隔的**可能**解释是 `git commit` 触发 pre-commit 的 stash/restore **重写了工作树里的台账文件**（提交输出里有该 stash/restore 记录），但**这只是解释、不是证明**。不改代码 |
+| B-VR903-05 | P2 | 报表正文记录 `argv`，而计划任务用**绝对路径**调用 ⇒ 落盘（被跟踪）文件里带本机用户目录 | 报表改记 **脚本名 + 参数**（`Path(sys.argv[0]).name`），并加用例断言报表里**不出现** profile 路径 |
+| B-VR903-06 | P2 | 挂起/未处理异常（如 3600 s `TimeoutExpired`）**不留台账、不留告警、不留报表** ⇒ 旧的成功运行继续满足发布门最长 7 天，且无痕迹 | `run_weekly` 捕获 `TimeoutExpired`/`OSError` 并把**崩溃本身记成一次运行**（台账 ok=False + 告警 + 报表，退出码 124），另有 `run_id` **同秒碰撞**加后缀、报表写失败时台账记 `(NOT WRITTEN: OSError)` |
+| B-VR903-07/-08/-09/-10 | P3 | ①报表写失败后台账仍指向不存在的文件且只 stderr 告警；②同秒 `run_id` 碰撞会覆盖报表并让台账/告警对一个 id 说法矛盾；③本文档写"零命中"字面为假（该 id **在** `weekly_alert.jsonl` 里）；④周度 `verify` 打印**日常**措辞 | ①已在 06 内处置；②加 `_unique_run_id`；③措辞更正为"在 revenue-forecast 下递归搜索该 run id **零命中**（告警日志里当然有它）"；④`verify` 把共享门的 `daily T2` 措辞替换为 `weekly T3` |
+| （复审额外指出） | — | `run_weekly` 对 **blocked（全跳过）** 返回 0 ⇒ 任务计划程序把"门被卡住"记成**成功** | 已改：`status != "ok"` 时返回非零（并加用例） |
+
+- **承重证明**：`tests/test_zr903_weekly_t3.py` **16 → 24**；新 harness [evidence/zr903_mutations.py](evidence/zr903_mutations.py) 覆盖 **12 个变异**（含复审指出的存活变异）→ **12/12 KILLED**、`tree_restored=true`、基线 24 passed。
+- **作者自纠**：第一版 P8 变异只删了 `winerror 2`/`errno 2` 却留下 `filenotfounderror`，于是"存活"——**变异太窄**；补一条"只有裸 `[WinError 2]`、无类名"的用例并把变异扩到三个标记后即被杀死。
 
 ## F-B06-1 / F-B07-2：`B.VR`（B06）与 `B.VR`（B07）= **均 `accepted_with_findings`**（各 1×P1）→ 全部处置（`3740857` / `f2ba5c1`）
 

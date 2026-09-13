@@ -1,0 +1,246 @@
+{
+  "review": "B.VR-zr903",
+  "reviewed_at_utc": "2026-09-13T21:36:00Z",
+  "reviewer_agent_id": "1bddca51-641e-4060-ab56-09774f686a7a (read from $env:DSH_SESSION_ID). This is PROCESS-LEVEL SELF-REPORT, not institutional independence evidence: nothing in the harness attests that this id belongs to a different session, model or owner than the author. What the id does support is that this reviewer session authored none of the artifacts under review.",
+  "independence_statement": "I did not author e45bace / abdd168 / 00ad509, tests/test_zr903_weekly_t3.py, the weekly ledger/alerts/report logs, or the F-B01-10* sections of findings.md; I first saw them in this session. Commands I ran: read-only git (log/show/status/diff/rev-parse/hash-object/ls-files/check-ignore/reflog in revenue-forecast, filing-fetch, company-wiki), file reads, SHA-256 hashing, text search, file metadata, `python -m pytest tests\\test_zr903_weekly_t3.py -q` (16 passed), `python tools\\weekly_t3_schedule.py verify`, `python -m ruff check` on the two changed files, and scratch Python scripts written ONLY under $env:TEMP (classifier probe battery, real-pytest probes, ordering/crash/collision probes, argv-leak probe, git-head timing, and an independent mutation harness that copies tools/ + tests/ into TEMP). Commands I did NOT run: `run-weekly` (real downloads + ledger/alert writes), any network or download command, any other test file or the full suite, the repo's pre-push gate, anything reading or querying company-wiki/.source_catalog/catalog.sqlite3, and any git command that writes. I created/modified exactly one file in the repo: this review record. Two errors of my own, corrected: (1) my first S1a probe used the English WinError-2 wording, so I re-ran the case as a REAL subprocess launch, which showed the message is LOCALIZED on this machine; (2) my first HEAD-blob hash comparison used a PowerShell `>` redirect (UTF-16LE, BOM 255,254), which produced a bogus mismatch, so I redid it with `git hash-object` vs `git rev-parse HEAD:<path>`.",
+  "artifacts": {
+    "tools/weekly_t3_schedule.py": "sha256 5af36813aa3a1af4802a6de56dd41f67174cd4eeb102083d3dc6275f1dc44fa5; 276 lines; git blob == HEAD blob 6f2b712c0661c6dcd2131289044f22b921f988e1 (byte-identical to HEAD)",
+    "tests/test_zr903_weekly_t3.py": "sha256 ab273118be2fdfb74a0f8902c89159d19a64314d48815e98e4d4db4656a0dc60; 275 lines; HEAD blob 33733c038d5ae1bc8f42d54d19a2eefee6f9ad3c",
+    "assurance/runs/weekly_manifest.json": "sha256 382605d18f6b436f30ebb092593a817a78479784d61d3642620843eabb0d4f46; 11 lines; latest_run_id=20260913T194234Z ok=true report_path=weekly-run-20260913T194234Z.log",
+    "assurance/runs/weekly_alert.jsonl": "sha256 904524145ba25de90cc9d9e441e82d79c3ea3d344b2a27a1dae022f8704e8942; 2 lines (20260906T070858Z blocked exit 0; 20260913T064640Z not-ok exit 1)",
+    "assurance/runs/weekly-run-20260913T194021Z.log": "sha256 6859235ba158a65bd0ffcc4a33a44b38ec843aac20cf308d86f71c4a9c6cbbe8; 8 lines; '4 passed in 78.35s (0:01:18)'",
+    "assurance/runs/weekly-run-20260913T194234Z.log": "sha256 a396b11bee2174078bb845b35be6e54acb616ded6a79c0e04f94f8ce1c1f5a1a; 8 lines; '4 passed in 56.02s'",
+    "assurance/runs/2026-09-11_r4-phase-b/findings.md": "sha256 8ca27b33c4056325d4537e14fc0956faaf077d97ec62ef3a9f6f04d24f9dcca3; 430 lines",
+    "tools/daily_t2_schedule.py": "sha256 5003b9e26bdad7714e9bd9168e7a896b9127c15506c49c9bc6511e6303dd5c18; 422 lines (comparison baseline for report_path/release_gate)"
+  },
+  "verdict": "accepted_with_findings",
+  "counts": {"P0": 0, "P1": 1, "P2": 5, "P3": 4},
+  "claims_verified": [
+    {
+      "claim": "The three commits are the tip-relevant changes and the working tree is byte-identical to HEAD (i.e. I reviewed what is committed, and the author's mutation harness left no residue).",
+      "verdict": "sound",
+      "evidence": "`git log --oneline -12` shows 6eeb805 <- 00ad509 <- 3d77365 <- 9f849f9 <- abdd168 <- cd8c0e2 <- e45bace; `git status --porcelain` empty; `git hash-object tools/weekly_t3_schedule.py` == `git rev-parse HEAD:tools/weekly_t3_schedule.py` == 6f2b712c..., same for tests/test_zr903_weekly_t3.py == 33733c03...; `git diff --stat HEAD -- <both files>` empty.",
+      "note": "The author's throwaway mutation harness itself is not preserved, so 'restored byte-identically' is corroborated (clean tree, blob equality) but not reproduced."
+    },
+    {
+      "claim": "The 16-case suite is hermetic and passes: `python -m pytest tests\\test_zr903_weekly_t3.py`.",
+      "verdict": "sound",
+      "evidence": "Observed: '................  [100%]  16 passed in 1.52s', exit 0. The runner is stubbed via `monkeypatch.setattr(w3, \"_run_t3_suite\", fake_suite)`; test_c4_subcommands_positional spawns the script with `--help` only (no downloads, no ledger writes).",
+      "note": "git ls-files shows the test file is tracked; count of `^def test_` is 16 at HEAD, 12 at e45bace/abdd168, 10 at e45bace~1 - matching the '12 passed (10 before, 2 added)' and 'Tests 12 -> 16' claims."
+    },
+    {
+      "claim": "Supporting claim: 7 mutants KILLED (3 persistence + 4 classifier), tool file restored byte-identically.",
+      "verdict": "sound",
+      "evidence": "Independent harness on COPIES (`python %TEMP%\\zr903_review\\mutate_zr903.py`; copies tools/ + tests/ into TEMP so the test's sys.path picks the mutated module): baseline copy 'rc=0 :: 16 passed'; killed: P-A old label -> 2 failed; P-B report never written -> 1 failed; P-C unwritable report propagates -> 1 failed; C-D marker requirement removed -> 3 failed (incl. test_c3_an_ambiguous_collection_error_stays_not_ok); C-E verdict detection forced false -> 2 failed; C-F 'no tests ran' ignored -> 1 failed; C-G marker list emptied -> 1 failed. The repo was never mutated (all mutants applied to TEMP copies).",
+      "note": "7/7 reproduced. One surviving mutant OUTSIDE the claimed set was found (finding B-VR903-03)."
+    },
+    {
+      "claim": "The ledger's report_path is a bare file NAME that resolves beside the ledger and names a real file whose content matches the ledger's run_id and status.",
+      "verdict": "sound",
+      "evidence": "Ledger: latest_run_id=20260913T194234Z, ok=true, report_path=weekly-run-20260913T194234Z.log. `Test-Path assurance/runs/<report_path>` -> True. Report head: 'run_id=20260913T194234Z / status=ok ok=True exit_code=0 / detail=T3 suite passed'. Test test_c1_... asserts both the exact name and `not Path(recorded).is_absolute()`. `python tools\\weekly_t3_schedule.py verify` -> 'last_run=fresh (latest run ok, 97m old) / release_gate=True (daily T2 gate ready)', exit 0.",
+      "note": "The bare name was NEVER committed as an absolute path: `git log --all --oneline -S Users -- assurance/runs/weekly_manifest.json` is empty."
+    },
+    {
+      "claim": "An all-skipped suite is BLOCKED, never a pass (CA-203 reversal), and both new statuses still block the ZR-902 release gate.",
+      "verdict": "sound",
+      "evidence": "Real pytest run of a skip-only module (`probe_real_pytest.py`, t_skip_stray.py, rc=0, output 'ss [100%] / 2 skipped in 0.02s') -> ok=False status=blocked. The tracked evidence agrees: weekly_alert.jsonl line 1 is {status: blocked, exit_code: 0} for 20260906T070858Z. Both statuses write ok=False (run_weekly -> write_ledger(..., ok, report)), and freshness_status returns 'stale' when ok is false, so release_gate is False in both branches (test_c3_all_skipped_... plus code path in tools/daily_t2_schedule.py:203-208, 217-224).",
+      "note": "CAVEAT (see S3): the 'never a pass' invariant is text-based and can be broken by a stray 'N passed' in the captured output; I could not reach that with a real pytest run because pytest discards captured prints when nothing fails."
+    },
+    {
+      "claim": "The persisted report makes a failed weekly run diagnosable (F-B01-10's remedy).",
+      "verdict": "sound",
+      "evidence": "Report body carries run_id, status/ok/exit_code, detail, argv and the last 20000 chars of combined stdout+stderr; test_c1_... asserts the failure text ('RuntimeError: no tool') is recoverable. For a failing suite pytest's FAILURES/short-summary section is inside that tail.",
+      "note": "Three residual holes, each reproduced: tail truncation at 20000 chars can drop the first failure in a long run; a same-second run_id collision overwrites the earlier report (B-VR903-08); if the write raises OSError the record still names a file that does not exist (B-VR903-07). Also the concatenation is stdout+stderr, so the file's true tail is the stderr tail, not pytest's summary line."
+    },
+    {
+      "claim": "The 06:48Z failure still cannot be explained from the record (its output was never persisted), and the two 19:4xZ re-runs both passed with '4 passed'.",
+      "verdict": "sound",
+      "evidence": "Only two report files exist (19:40:21Z, 19:42:34Z); no FILE is named after 20260913T064640Z (`Get-ChildItem -Recurse -Filter '*20260913T064640Z*'` -> none); the failed run at 06:48:04Z predates e45bace (committed 20:40:09 +0100 = 19:40:09Z). Both logs say '4 passed' (78.35s / 56.02s) with status=ok exit_code=0, and the alert line for 06:48Z reads exactly {reason: 'T3 suite exit 1', exit_code: 1, status: 'not-ok'}, matching the findings quote.",
+      "note": "The 'cannot be explained' claim is therefore internally consistent: the evidence was destroyed before the fix, and the classifier change cannot retro-diagnose it either."
+    },
+    {
+      "claim": "The failed run's ledger triplet (filing b44edd8 / revenue fd2e56a / wiki 0e73cf6) was the then-current tip of each repo.",
+      "verdict": "sound",
+      "evidence": "revenue-forecast reflog: fd2e56a @2026-09-13 01:11:53 +0100, next commit ca4595f @11:48:31 -> tip at 06:48Z(07:48 local). filing-fetch reflog: b44edd8 @2026-09-09 23:06:26 is the newest entry -> tip. company-wiki reflog: 0e73cf6 @2026-09-13 01:01:27, next ccb3c82 @11:18:26 -> tip. Current heads also match the 19:42Z ledger triplet: filing b44edd818202..., wiki 1fab7f6d621..., revenue cd8c0e29... (= the tip during that run, committed 20:40:16).",
+      "note": "The ledger's triplet is genuine machine-read data."
+    },
+    {
+      "claim": "The report write is best-effort: an OSError warns and does not break the ledger/alert/exit code.",
+      "verdict": "sound",
+      "evidence": "probe_order.py case 4 (Path.write_text raises OSError only for .log): 'run_weekly rc=3', ledger written with latest_run_id 20260913T212415Z, alert line {status: not-ok, exit_code: 3}, stderr 'warning: could not persist the suite report: disk full'. test_c1_report_write_failure_never_breaks_the_assurance_run pins the same behaviour.",
+      "note": "See B-VR903-07 for the cost: the ledger then names a nonexistent file with nothing in the record saying so."
+    },
+    {
+      "claim": "Bare-name report_path is safe: no consumer resolves it as a path, assumes a directory, or breaks.",
+      "verdict": "sound",
+      "evidence": "grep for report_path across the repo (*.py and *.md/*.json/*.jsonl/*.yml/*.ps1/...) hits only tools/daily_t2_schedule.py (parameter + write_ledger), tools/weekly_t3_schedule.py (docstrings), and tests. read_ledger/freshness_status/release_gate read only ok/started_at (tools/daily_t2_schedule.py:185-224); cmd_verify_weekly and cmd_query_weekly never touch the report. `git -C filing-fetch grep -n -I -E 'report_path|weekly-run-|weekly_t3_schedule'` -> empty. company-wiki has no reference to this ledger (its report_path hits are unrelated local variables/schemas).",
+      "note": "The weekly ledger and its report logs ARE tracked ('git ls-files assurance/runs' lists weekly_manifest.json, weekly_alert.jsonl and both weekly-run-*.log; `git check-ignore` says not ignored), while daily_manifest.json is gitignored - so the 'tracked artifact' premise of abdd168 holds for the weekly ledger."
+    },
+    {
+      "claim": "Test counts / lint claims in the commit messages (12 passed at e45bace and abdd168, ruff clean, 12 -> 16).",
+      "verdict": "sound",
+      "evidence": "`git show <c>:tests/test_zr903_weekly_t3.py | Select-String '^def test_'` -> e45bace~1: 10, e45bace: 12, abdd168: 12, 00ad509: 16, HEAD: 16. `python -m ruff check tools/weekly_t3_schedule.py tests/test_zr903_weekly_t3.py` -> 'All checks passed!' (ruff 0.15.18).",
+      "note": "Counts are of test functions, not of an actual run at those revisions (I did not check out old revisions)."
+    },
+    {
+      "claim": "The classifier detail text is accurate: 'no test reached a verdict'.",
+      "verdict": "false",
+      "evidence": "Real pytest output with a fixture error (`probe_real_pytest.py`, t_fixture_conn.py, rc=1): the output contains 'ERROR at setup of test_download' and '1 error in 0.21s' - a test DID reach an outcome (an error) - yet `_suite_outcome` returned detail 'T3 suite could not run here (exit 1; environment: connection) - no test reached a verdict'.",
+      "note": "VERDICT_REACHED is defined as a passed/failed/xfailed/xpassed COUNT, so pytest errors are lumped into 'nothing was evaluated'. This wording is what makes the laundering in B-VR903-01 possible."
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-VR903-01",
+      "severity": "P1",
+      "area": "classifier / attribution (tools/weekly_t3_schedule.py:108-141, commit 00ad509)",
+      "claim": "The code docstring asserts (lines 116-117): 'Anything else stays ``not-ok`` - a real failure must never be laundered into \"the environment did it\"', and the commit says 'A real defect cannot be laundered into \"the environment did it\"'. findings.md line 37 repeats it ('真失败绝不会被洗成\"环境问题\"').",
+      "counter_evidence": "A REAL product defect whose collection error text contains a listed marker is recorded as blocked. `python %TEMP%\\zr903_review\\probe_real_pytest.py` builds a one-line suite that reproduces a product-side path bug (`Path('config/filing_fetch.toml').read_text()` looked up against the wrong root) and feeds the genuine `pytest -q --tb=short` output to `_suite_outcome`: observed 't_product_path_bug.py :: real pytest rc=2 -> ok=False status=blocked', detail 'T3 suite could not run here (exit 2; environment: no such file) - no test reached a verdict', with the real output line 'E   FileNotFoundError: [Errno 2] No such file or directory: \\'config\\\\filing_fetch.toml\\''. The same probe shows a fixture/setup error from the code under test ('ERROR at setup of test_download - ConnectionResetError') -> blocked. Any no-verdict error containing 'not found', 'no such file', 'connection', 'network', 'permission denied', 'credentials', 'timed out', 'unauthorized' or 'not installed' is attributed to the machine, including errors raised BY the product under test.",
+      "required_fix": "Make the blocked branch evidence-based instead of text-based. Cheapest options: (a) require the marker to appear in a frame outside the code under test (pytest's traceback names the failing file, so 'tests/...' vs product path is decidable); (b) let the suite emit an explicit machine-readable 'environment unavailable' banner (e.g. a sentinel line the harness requires) and drop the free-text markers; (c) if the heuristic is kept, record WHICH word matched in the alert/ledger (it is currently only in `detail`, and only the alert journal keeps it) and add a third state for 'no verdict, cause unattributed'. Until then, do not state the absolute guarantee in the docstring or the commit message.",
+      "residual": "Both statuses write ok=False, so no green gate results from this; the harm is attribution inside the assurance record - an operator is directed to fix the environment while the product is broken, which is precisely the failure mode F-B01-10-classify set out to remove. I could not construct a case where this produces ok=True."
+    },
+    {
+      "id": "B-VR903-02",
+      "severity": "P2",
+      "area": "classifier / marker coverage (ENVIRONMENT_MARKERS, lines 70-80)",
+      "claim": "blocked 'says the suite could not be evaluated here (no credentials, no tool, nothing collected)' (docstring lines 111-112) and the commit's rule is 'non-zero with NO test reaching a verdict -> blocked when ... the output carries an environment marker'.",
+      "counter_evidence": "Real, local, non-network failures whose text matches NO marker, each observed as ok=False status=not-ok (a statement about the product): (1) the production download tool is missing and launched the way the suite launches it - `python %TEMP%\\zr903_review\\probe_winerror.py` -> 'rc=2 -> ok=False status=not-ok', real output 'E   FileNotFoundError: [WinError 2] <localized Chinese message>' (on this machine the Windows API message is LOCALIZED, so even 'cannot find the file' would not match); (2) pytest itself missing - same probe, `python -B -m not_a_module_at_all` -> 'rc=1 -> not-ok', stderr 'C:\\\\Miniconda\\\\python.exe: No module named not_a_module_at_all'; (3) a required env var absent - real pytest run t_envvar.py -> 'rc=2 -> not-ok', 'E   RuntimeError: FILING_FETCH_WIKI is not set'. Also demonstrated: an environment error that DOES match ('RuntimeError: production download tool not found') is flipped to not-ok when any captured-stdout line reads like a verdict count - t_flip.py printed 'adapter: 3 passed validation checks, 0 failed', pytest shows it under 'Captured stdout' in the error report, and the observed status became 'not-ok' instead of 'blocked' (constructed text, but real pytest output and a realistic product log line).",
+      "required_fix": "Either widen the evidence base or stop substring-matching free text: prefer structured signals (pytest exit codes 3/4/5, the final summary line, a suite-emitted environment banner). If markers stay, cover the observed wordings ('is not set', 'No module named', 'Access is denied', 'No space left', 'WinError 2', localized variants) and require the verdict count to come from the summary line rather than anywhere in the log.",
+      "residual": "The narrow list is documented as a deliberate choice ('Deliberately narrow ... the conservative direction for a release gate'), which is why this is P2 rather than P1 - but the docstring's own parenthetical claims missing-tool coverage that the most realistic missing-tool output does not get. Both directions of error coexist: the same heuristic launders product defects (B-VR903-01) and mislabels environment failures."
+    },
+    {
+      "id": "B-VR903-03",
+      "severity": "P2",
+      "area": "test coverage of a documented decision rule (commit 00ad509 rule 1; tools/weekly_t3_schedule.py:123-124)",
+      "claim": "The commit lists as rule #1 'exit 0 with no verdict count at all -> blocked (nothing evaluated)', the test docstring says the cases pin 'one case per property', and the supporting claim is 'All four classifier mutants are killed ... 7/7'.",
+      "counter_evidence": "The rule has no test. Independent mutation on copies (`python %TEMP%\\zr903_review\\mutate_zr903.py`) deleting the branch `if not _tests_reached_a_verdict(out): return False, \"blocked\", \"T3 suite collected no tests (nothing was evaluated)\"` (lines 123-124) gives 'SURVIVED | X-H exit-0-no-verdict rule deleted (rule #1) | 16 passed, 10 warnings in 1.00s', while the unmutated copy is 'rc=0 :: 16 passed'. All 7 claimed mutants are killed (verified separately).",
+      "required_fix": "Add one case: `_suite_outcome(_fake_proc(0, \"\"))` and/or `_fake_proc(0, \"4 deselected in 0.1s\\n\")` asserting blocked, so rule #1 is load-bearing like the other three.",
+      "residual": "Reachability is low in practice (pytest exits 5 when nothing is collected), so this is a coverage gap rather than a live behaviour bug; the 7/7 claim reads as fuller coverage of the classifier than it is."
+    },
+    {
+      "id": "B-VR903-04",
+      "severity": "P2",
+      "area": "evidence integrity of the tracked ledger (assurance/runs/weekly_manifest.json; findings.md F-B01-10-rerun table row 2; abdd168 message)",
+      "claim": "findings.md F-B01-10-rerun row 2 records the second run as '第 2 次（改为记录**相对**报表名之后）' (i.e. made AFTER the change to record the relative report name) and says the ledger now points at it; abdd168's message says 'The real re-run showed the difference: the ledger had `C:\\\\Users\\\\<profile>\\\\Projects\\\\revenue-forecast\\\\assurance\\\\runs\\\\weekly-run-....log` and now records `weekly-run-<run_id>.log`' (i.e. the run's ledger held an ABSOLUTE path). Both cannot be true.",
+      "counter_evidence": "File timestamps: report weekly-run-20260913T194234Z.log created/last written 2026-09-13 20:43:32.422450 (+0100), weekly_manifest.json last written 20:43:54.790632 - a 22.37 s gap - although run_weekly writes the ledger on the line immediately after the report (lines 187-188) with nothing between them except three `_head()` git calls, which I measured at 0.064 + 0.132 + 0.151 = 0.35 s total (`python %TEMP%\\zr903_review\\head_timing.py`). abdd168 was committed at 20:43:53 (+0100), i.e. 1.8 s BEFORE the ledger's final write, and the two logs were committed 7 s later in 9f849f9 (20:44:01). The absolute-path ledger was never committed (`git log --all -S Users -- assurance/runs/weekly_manifest.json` -> empty), so it existed only in the working tree. Therefore at least one of the two statements is false, and the ledger field that is now tracked under 20260913T194234Z cannot be shown to have been written by that run's own write path.",
+      "required_fix": "State in findings.md how the field was produced (a manual/scripted correction, or a third run with the fixed code - no third report file exists, so the latter is ruled out) and correct the row that asserts the causal order. Process fix: never hand-adjust a ledger; re-run, or re-derive the pointer with a recorded tool invocation, and log the amendment. A same-second-safe run_id (B-VR903-08) would also make the pointer self-verifying.",
+      "residual": "I cannot prove which process wrote the file (a 22 s process/IO stall is improbable but not impossible, and file writes can be blocked by a sync client), so I do not claim forgery. The recorded VALUE is nonetheless truthful and consistent: the file exists, its body carries run_id=20260913T194234Z / status=ok / exit_code=0, it is not an absolute path, and the triplet matched the then-current tips. No status or gate outcome depends on this. If the owner treats the findings row as a factual claim, it is false and would read as P1 by the guide's letter; I graded the item P2 because the artifact's content is correct and only its provenance story is broken."
+    },
+    {
+      "id": "B-VR903-05",
+      "severity": "P2",
+      "area": "machine-scoped constant leaked by the new persisted report (tools/weekly_t3_schedule.py:167 writes argv; 205-217 registers an ABSOLUTE script path)",
+      "claim": "_write_suite_report's docstring (lines 154-159, and abdd168's message) justifies the bare file name because 'the ledger is a TRACKED artifact, so an absolute path would bake this machine's user profile into the repository' (the F-B01-9 class).",
+      "counter_evidence": "The report BODY records `argv=sys.argv`, the report sits next to the ledger and is tracked (both weekly-run-*.log are in `git ls-files`, and `git check-ignore` reports them as not ignored), and the registered scheduled task invokes the script by its resolved absolute path (`New-ScheduledTaskAction -Execute <python> -Argument '\"<Path(__file__).resolve()>\" run-weekly'`, lines 206-207). Simulating exactly that argv (`python %TEMP%\\zr903_review\\probe_argv_leak.py`) produced a persisted report whose first lines are 'run_id=... status=ok ok=True exit_code=0' / 'argv=[\\'C:\\\\\\\\Users\\\\\\\\<profile>\\\\\\\\Projects\\\\\\\\revenue-forecast\\\\\\\\tools\\\\\\\\weekly_t3_schedule.py\\', \\'run-weekly\\']' -> 'contains the absolute profile path: True', while the same run's ledger field stayed relative ('report_path': 'weekly-run-20260913T212729Z.log'). The two committed logs escape this only because they were manual runs from the repo root (`argv=['tools/weekly_t3_schedule.py', 'run-weekly']`).",
+      "required_fix": "Do not persist argv verbatim into a tracked file: record the subcommand only (argv[1:]) or a redacted/relative form, or write the report outside the tracked tree (e.g. a gitignored per-run directory like the daily runner's `assurance/runs/<run_id>/`), or add a report-path redaction step before the file is committed.",
+      "residual": "The ledger's own report_path field is clean, so abdd168's stated protection for the ledger holds; the leak is in the sibling tracked artifact introduced by e45bace and only materialises when a scheduled/absolute-path run's report is committed (the operator does commit these logs - 9f849f9)."
+    },
+    {
+      "id": "B-VR903-06",
+      "severity": "P2",
+      "area": "harness failure modes leave no record (run_weekly / _run_t3_suite timeout, lines 96-100, 179-195)",
+      "claim": "The module docstring enumerates what run-weekly records (ledger, alert, report) and implies a blocked/failed run is always recorded; nothing documents a run that never reaches write_ledger.",
+      "counter_evidence": "`python %TEMP%\\zr903_review\\probe_order.py` case 1 stubs `_run_t3_suite` to raise subprocess.TimeoutExpired (the real 3600 s timeout in `_run_t3_suite` is exactly this path) and the observed result is 'raised TimeoutExpired out of run_weekly' with files: [] -> no ledger, no alert, no report. The same is true of any unhandled exception before write_ledger (probe case 2: crash between report and ledger -> one orphan report file, ledger absent, alerts absent). Because freshness_status reads the PREVIOUS ledger, `verify` can keep reporting fresh + release_gate=True (up to the 7-day MAX_AGE_DAYS window) while this week's run died, and the JSON record contains no trace of the crash.",
+      "required_fix": "Wrap the run in try/except: on TimeoutExpired/OSError/subprocess failure record a blocked entry (ok=False, report_path with the exception text, alert status=blocked) so a hang or a git failure is a recorded state rather than silence; and make the report/ledger write failure paths leave a marker instead of only stderr (see B-VR903-07).",
+      "residual": "Pre-existing (not introduced by tonight's three commits), and the Task Scheduler's own last-run result would show the non-zero exit - but that signal lives outside the assurance record this work is about, and the docstring's blocked definition ('fully skipped, nothing collected, or a collection error carrying an environment marker') does not cover it. Not verified: whether a SYSTEM-context git failure (the GP-009 class) can also abort between report and ledger."
+    },
+    {
+      "id": "B-VR903-07",
+      "severity": "P3",
+      "area": "best-effort report write leaves a dangling pointer (lines 171-176)",
+      "claim": "The module docstring states unconditionally (lines 16-20): 'The suite's own output is persisted next to the ledger as ``weekly-run-<run_id>.log`` and that file name is what the ledger's ``report_path`` records'.",
+      "counter_evidence": "`python %TEMP%\\zr903_review\\probe_order.py` case 4 makes Path.write_text raise OSError for .log only: observed ledger report_path 'weekly-run-20260913T212415Z.log' with file exists=False, run_weekly rc=3, alert {status: not-ok, exit_code: 3}, and the only notice is the harness's own stderr ('warning: could not persist the suite report: disk full') which the scheduled task discards. Neither the ledger nor the alert carries a field saying the report is missing, and test_c1_report_write_failure_never_breaks_the_assurance_run PINS this silence.",
+      "required_fix": "On OSError, record something visible in the durable artifacts - e.g. report_path = '<not persisted>' plus the exception text in the alert entry, or an extra alert field - so the F-B01-10 defect (a pointer with no file behind it) cannot recur silently. At minimum, qualify the docstring sentence with the failure path.",
+      "residual": "Deliberate ('a diagnostic file must never break the assurance run', e45bace message) and the failure needs a full/read-only disk; but the record then looks normal while the evidence is absent."
+    },
+    {
+      "id": "B-VR903-08",
+      "severity": "P3",
+      "area": "run_id collision / report overwrite (run_id from start time, line 180; target name line 161)",
+      "claim": "The report 'always sits next to the ledger, so the name resolves unambiguously' (docstring lines 156-158).",
+      "counter_evidence": "`python %TEMP%\\zr903_review\\probe_order.py` case 3 freezes the clock to one second and runs run_weekly twice: both runs get run_id 20260913T120000Z, produce ONE report file, and the second run's output overwrites the first - observed 'report files after run A: 1 after run B: 1' and 'run A's evidence still on disk: False'. The journal keeps A's not-ok entry while the ledger (B, ok=true) carries the SAME run_id, so the two tracked artifacts contradict each other for one identity, and the alert's report pointer resolves to the other run's report.",
+      "required_fix": "Make the id unique (append a short random/PID suffix or a counter) or refuse to overwrite an existing `weekly-run-<run_id>.log`; a collision is cheap to detect (target.exists()) and should at least be recorded.",
+      "residual": "Needs two overlapping starts inside the same wall-clock second (the suite itself runs ~1 min), so it is a manual/overlap scenario rather than a scheduled one; the file-name ambiguity is limited to that second."
+    },
+    {
+      "id": "B-VR903-09",
+      "severity": "P3",
+      "area": "wording of the evidence gap in findings.md F-B01-10 (line 11)",
+      "claim": "'实测：在 revenue-forecast 下递归搜索该 run id，零命中' (a recursive search for that run id under revenue-forecast found zero hits).",
+      "counter_evidence": "As literally written the claim is false: the run id 20260913T064640Z appears in the tracked assurance/runs/weekly_alert.jsonl ('{\"run_id\": \"20260913T064640Z\", ... \"status\": \"not-ok\"}') and in the ledger as committed by cd8c0e2 (`git show cd8c0e2:assurance/runs/weekly_manifest.json` -> latest_run_id 20260913T064640Z) - both quoted in the same finding two bullets earlier. The intended meaning does hold: no FILE is named after that run (`Get-ChildItem -Recurse -Filter '*20260913T064640Z*'` -> none).",
+      "required_fix": "Say what was actually searched: 'no file (report) named after that run id exists' rather than 'the run id has zero hits'.",
+      "residual": "Word-level only; the substantive evidence gap claim is correct and I verified it."
+    },
+    {
+      "id": "B-VR903-10",
+      "severity": "P3",
+      "area": "weekly oracle wording (cmd_verify_weekly, lines 247-253, reusing the daily gate)",
+      "claim": "verify is documented as the ZR-903 'combined status: schedule + last run - AUD2-01/02/03 oracle' (docstring line 25).",
+      "counter_evidence": "Observed output of `python tools\\weekly_t3_schedule.py verify`: 'last_run=fresh (latest run ok, 97m old)' / 'release_gate=True (daily T2 gate ready)'. release_gate/freshness_status are imported from daily_t2_schedule, whose strings say 'daily T2 gate blocked: latest daily run reported not-ok' (tools/daily_t2_schedule.py:204, 224) - so the WEEKLY oracle reports on the WEEKLY ledger using daily wording, exactly in the record-area whose purpose (F-B01-10-classify) is unambiguous attribution.",
+      "required_fix": "Pass a label/subject into the shared gate (e.g. release_gate(..., subject='weekly T3')) or wrap the message in cmd_verify_weekly.",
+      "residual": "Cosmetic; the boolean semantics are correct (the weekly ledger is judged by fresh+ok)."
+    }
+  ],
+  "suspicions": [
+    {
+      "id": "S1",
+      "status": "confirmed",
+      "evidence": "`python %TEMP%\\zr903_review\\probe_classifier.py` (11 hand-built environment outputs) plus REAL local process output in `probe_winerror.py` and `probe_real_pytest.py`: missing download tool launched via subprocess -> real 'E FileNotFoundError: [WinError 2] <localized>' -> rc=2 not-ok; pytest itself missing -> 'No module named not_a_module_at_all' -> rc=1 not-ok; 'RuntimeError: FILING_FETCH_WIKI is not set' -> rc=2 not-ok; 'PermissionError: [WinError 5] Access is denied' -> not-ok; 'OSError: [Errno 28] No space left on device' -> not-ok; pytest INTERNALERROR (rc=3) and KeyboardInterrupt (rc=2) -> not-ok. Match-directed: 'timed out', 'connection', 'not found', 'no such file' and 'no tests ran' do produce blocked.",
+      "why": "The marker list is a free-text heuristic over a localized, tool-dependent message space, so several canonical 'could not run here' failures are recorded as statements about the product - the opposite of the change's documented intent. Note the localization: on this non-English Windows the WinError-2 message carries no English marker at all, so the gap is wider here than on an English host. Recorded as B-VR903-02."
+    },
+    {
+      "id": "S2",
+      "status": "confirmed",
+      "evidence": "Real pytest runs (`probe_real_pytest.py`): a product-side path bug at collection ('FileNotFoundError: [Errno 2] No such file or directory: config\\\\filing_fetch.toml', rc=2) -> blocked 'environment: no such file'; a fixture error raised by the code under test ('ERROR at setup of test_download - ConnectionResetError', rc=1) -> blocked 'environment: connection'; the hand-built analogue 'RuntimeError: adapter config not found' -> blocked 'environment: not found'. Both files are in the real pytest error report, i.e. no contrived packaging was needed.",
+      "why": "A genuine product defect that breaks collection/setup with a marker-flavoured message is attributed to the machine, and the harness's own detail line then asserts 'no test reached a verdict' (false for setup errors - see the claims_verified entry). Impact is bounded because blocked still blocks the ZR-902 gate (ok=False in both branches), so this is misattribution, not a green gate; the record nevertheless sends the reader to the environment instead of the code. Recorded as B-VR903-01 (P1) for the false stated guarantee."
+    },
+    {
+      "id": "S3",
+      "status": "confirmed",
+      "evidence": "VERDICT_COUNTS is matched against the whole stdout+stderr. Real pytest output proves the flip is reachable in the blocked->not-ok direction: t_flip.py raises 'RuntimeError: production download tool not found' at collection (which alone matches 'not found' -> blocked) while printing 'adapter: 3 passed validation checks, 0 failed'; pytest shows that line under '------------------------------- Captured stdout -------------------------------' inside the error report, and the observed classification became 'not-ok' (detail 'T3 suite exit 2'). The reverse (false PASS) is constructible - rc=0, '4 skipped in 0.10s' plus a stray '1 passed ...' line yields ok=True via the verdict branch - but I could NOT reach it with a real pytest run: in the skip-only experiment pytest discarded the module-level print entirely (observed output was only 'ss [100%] / 2 skipped in 0.02s'), and filing-fetch's pyproject.toml sets no addopts and no conftest/plugin prints counts. Also noted: the verdict regex is case-SENSITIVE while markers are matched case-insensitively, so '4 PASSED' would not count as a verdict.",
+      "why": "Confirmed for the direction that matters here: a product log line hidden in a captured-stdout block silently converts an environment failure into a product failure. The dangerous direction (a suite that never ran recorded as ok) requires an uncaptured writer (plugin/terminal-summary hook) that I could not demonstrate, so I did not raise it as a finding; the docstring's absolute 'never a pass' would need re-wording if such a writer is ever added."
+    },
+    {
+      "id": "S4",
+      "status": "refuted",
+      "evidence": "grep for report_path over the whole repo (*.py, *.md, *.json, *.jsonl, *.yml, *.ps1, ...) hits only daily_t2_schedule.py (parameter/write_ledger) and tests; read_ledger/freshness_status/release_gate consume only ok/started_at; cmd_verify_weekly and cmd_query_weekly never read it. `git -C filing-fetch grep -I -E 'report_path|weekly-run-|weekly_t3_schedule'` -> nothing. company-wiki's report_path hits are unrelated local variables in its own scripts and unrelated JSON schemas; its assurance-audit documents discuss _suite_outcome semantics, not report_path. The tracked set is known: weekly_manifest.json, weekly_alert.jsonl and both weekly-run-*.log are tracked, daily_manifest.json is gitignored (so the daily runner's absolute path is never committed), monthly_manifest.json is tracked and holds a bare LABEL (no file behind it), and tools/weekly_t3_runner.py (FC-1103) writes an unrelated assurance/runs/<run_id>/t3_report.json under a gitignored directory.",
+      "why": "Nothing resolves report_path as a path, assumes a directory, or breaks; the relative-name change is safe for every consumer that exists. The only wording defect found in this area is the oracle message (B-VR903-10), and the one machine-scoped leak is in the report body (B-VR903-05), not in the ledger field."
+    },
+    {
+      "id": "S5",
+      "status": "confirmed",
+      "evidence": "`python %TEMP%\\zr903_review\\probe_order.py`: (case 2) a crash between the report write and the ledger write leaves one orphan report file with no ledger and no alert; (case 3) two runs starting in the same second share one report name - the first run's evidence is overwritten ('run A's evidence still on disk: False') and the journal vs ledger then contradict each other for the same run_id; (case 4) a failed report write leaves the ledger naming a nonexistent file with only a stderr warning; (case 1) TimeoutExpired leaves nothing at all. The write order itself is report-then-ledger (lines 187-188), so a run can leave a report that no ledger entry ever names (an older run's report being named by a newer entry would need the clock to go backwards - not observed; the reachable variant is the collision above).",
+      "why": "The failure modes are real but mostly benign for the gate; the material ones are the silent dangling pointer (B-VR903-07), the collision overwrite (B-VR903-08) and the crashed run with no record at all (B-VR903-06). None of them is documented - the F-B01-10 write-up covers only the happy path plus 'an OSError is reported and the ledger keeps the pointer anyway'."
+    },
+    {
+      "id": "S6",
+      "status": "refuted",
+      "evidence": "All 7 claimed mutants are KILLED on COPIES (never the repo): `python %TEMP%\\zr903_review\\mutate_zr903.py` -> P-A old label recorded: 2 failed; P-B report never written: 1 failed; P-C unwritable report propagates: 1 failed; C-D marker requirement removed: 3 failed; C-E verdict detection forced false: 2 failed; C-F 'no tests ran' ignored: 1 failed; C-G marker list emptied: 1 failed; baseline copy 16 passed. The tests are load-bearing for every property the commits claim.",
+      "why": "The suspicion that the new tests might not be load-bearing is refuted. One SURVIVOR exists outside the claimed set: deleting the 'exit 0 with no verdict count -> blocked' rule (commit rule #1) passes all 16 cases (X-H, '16 passed'), and making the verdict regex case-insensitive also survives (X-J, benign). Reported as B-VR903-03."
+    },
+    {
+      "id": "S7",
+      "status": "confirmed",
+      "evidence": "Overstatements found: (a) 'a real failure must never be laundered'/'A real defect cannot be laundered'/'真失败绝不会被洗成环境问题' - false as stated (real pytest evidence, B-VR903-01); (b) the docstring's blocked gloss '(no credentials, no tool, nothing collected)' is not delivered for the most realistic missing-tool output (localized WinError 2 -> not-ok, B-VR903-02); (c) 'The suite's own output is persisted next to the ledger ... and that file name is what the ledger's report_path records' - false on the OSError path (ledger names a file that does not exist, B-VR903-07); (d) findings.md's '零命中' is false as written (B-VR903-09). Claims I CHECKED AND FOUND SOUND: 'an all-skipped suite is BLOCKED, never a pass' (real skip-only pytest run -> blocked; 2026-09-06 alert status=blocked exit_code=0); 'the 06:48Z failure still cannot be explained' (no report file, run predates the fix, evidence unrecoverable - consistent); '4 passed' for both re-runs (log bodies: '4 passed in 78.35s (0:01:18)' and '4 passed in 56.02s', exit 0 both); the persisted-report remedy is real (report body carries run_id/status/exit/detail/argv and the output tail); 12 -> 16 tests, 12 passed at e45bace/abdd168, ruff clean.",
+      "why": "The evidence base is mostly accurate and unusually well-cross-referenced; the failures are the three absolute guarantees about the classifier/persistence and one literal search claim. The single most consequential one (laundering) is what makes this an accepted_with_findings rather than accepted."
+    },
+    {
+      "id": "S8",
+      "status": "confirmed",
+      "evidence": "Consistent parts (verified myself): ledger hash 382605d1...; run_id 20260913T194234Z == the report file's run_id; ok=true == report 'status=ok ok=True exit_code=0'; report_path resolves beside the ledger and is not absolute; triplet filing b44edd8182028f6a134c30bc58f5900fdc539aab == filing-fetch HEAD, wiki 1fab7f6d621f1beaec6c599a335ee7de62e43db7 == company-wiki HEAD, revenue cd8c0e299baa45b741046da3f18d7cb7408ef7e7 was the revenue tip during that run (reflog); `git show 9f849f9:assurance/runs/weekly_manifest.json` equals the working-tree ledger; the alert journal keeps the historical not-ok line verbatim; the failed run's triplet matched the then-current tips (reflogs). Inconsistent part: the ledger's LastWrite (20:43:54.790632) is 22.37 s after its own run's report (20:43:32.422450) and 1.8 s after the abdd168 commit, although the code writes them adjacently and the only intervening work measures 0.35 s - so the tracked report_path field cannot be shown to have been written by the run it names (B-VR903-04).",
+      "why": "The record's values are all mutually consistent and independently reproducible from the artifacts; what does not hold up is the provenance of one field and the findings row that describes it. I state what I measured and explicitly do not claim to know which process wrote the ledger."
+    }
+  ],
+  "not_checked": [
+    "The author's original throwaway mutation harness and its 'file restored byte-identically' step (not preserved); I re-derived the 7 mutants on TEMP copies instead, and corroborated restoration only via `git status` + `git hash-object` == `git rev-parse HEAD:<path>`.",
+    "The registered scheduled task's real invocation: I did not run `query`/`schtasks` and did not execute the task; the absolute-argv leak (B-VR903-05) was demonstrated by simulating exactly the argv that cmd_register_weekly builds.",
+    "The CI runs cited by 3d77365 (34778801257) and 6eeb805 (34782742134) - no network access, so I did not fetch the CI results; likewise the pre-push gate (forbidden).",
+    "The real cause of the 2026-09-13T06:48Z failure (its output was never persisted; nothing to inspect).",
+    "Whether a stray 'N passed' line can arise in the REAL filing-fetch T3 suite: I inspected tests/test_e2e_download.py, pyproject.toml ([tool.pytest.ini_options], no addopts), the absence of conftest/plugin output, and proved that pytest discards a module-level print in a skip-only run; I did not instrument a real download run (forbidden).",
+    "DNS/SSL and disk-full wordings as REAL output: my S1e/S1f/S1h cases are realistic hand-written strings, not captured process output, because producing them needs network or a full disk. The WinError-2, missing-env-var, missing-module, fixture-error and product-path-bug cases are real captured output.",
+    "All other test files, the full suite, ruff/mypy over the rest of the repo, and the daily/monthly harnesses beyond the report_path and release_gate comparison used here.",
+    "Finding out whether the ledger's 22 s write gap came from the process or from a later edit; I could not prove it either way (recorded as residual in B-VR903-04).",
+    "Behaviour at revisions before HEAD: I did not check out e45bace/abdd168 (forbidden), so their '12 passed' claims were checked by counting test functions, not by running them."
+  ],
+  "notes": "For the author, in rough priority order. (1) The classifier's two failure directions are the same defect: a free-text marker list over a localized, tool-dependent message space. If you keep the heuristic, require an explicit environment signal (a sentinel the suite prints, or 'no test collected/ran' plus a pytest exit code) instead of free text, and put the matched word into the alert entry rather than only into `detail`. (2) Never hand-adjust a tracked ledger: B-VR903-04 shows a 22 s gap that no code path in run_weekly can account for (measured 0.35 s of intervening git work), and the findings table and abdd168's message state opposite causal orders; whichever is right, the record should say how the field was produced. (3) B-VR903-05 is the F-B01-9 class re-entering through the door e45bace opened: the tracked report body carries argv, and the scheduled task passes an absolute path; redact it or move the report to a gitignored directory. (4) Two gaps already flagged OUTSIDE this repo and still open, so I did not raise them as findings: company-wiki docs/plans/painpoint-outcome-audit-2026-09-05/assurance-audit.md:46 and findings.md:57 note (a) that `_suite_outcome` records '1 passed, 2 skipped' as ok even though the acceptance wants no skipped required market, and (b) that run_weekly returns proc.returncode, which is 0 for the all-skipped/blocked branch, so Task Scheduler reports success while the gate is blocked - tonight's change kept both behaviours (the return value path at lines 189-195 is `return proc.returncode`; I confirmed it empirically by running a blocked case, `probe_blocked_rc.py`: 'blocked run: run_weekly returned 0' with ledger ok=False and alert status=blocked, so the Task Scheduler result is now the only remaining 'silent success' signal for a blocked run). (5) The weekly ledger still has no status field: the blocked/not-ok distinction lives only in weekly_alert.jsonl and the report body, so a reader of the tracked ledger alone (or of its history) cannot tell the two apart - defensible because write_ledger's schema is shared with daily/monthly and both statuses are ok=False, but worth a sentence in the docstring. (6) My own two mistakes are recorded in independence_statement: an English-only WinError-2 probe string (corrected to a real subprocess run, which showed the message is localized) and a UTF-16 PowerShell redirect that produced a bogus blob-hash mismatch (corrected with git hash-object). Both corrections changed the review: the localization widened S1, and the hash check confirmed the working tree is byte-identical to HEAD."
+}

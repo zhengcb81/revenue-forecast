@@ -119,7 +119,9 @@ def test_c1_suite_output_is_persisted_and_the_ledger_names_a_real_file(
 def test_c1_report_write_failure_never_breaks_the_assurance_run(tmp_path, monkeypatch):
     """A diagnostic side file is best-effort: if it cannot be written, the ledger
     and the alert must still be recorded (the release gate must not depend on the
-    log file's fate).  Only ``.log`` writes fail here, so the ledger write is real."""
+    log file's fate).  Only ``.log`` writes fail here, so the ledger write is real.
+    The ledger must SAY the report is missing instead of naming a file that does not
+    exist (B-VR903-06's sibling)."""
     ledger = tmp_path / "weekly_manifest.json"
     alerts = tmp_path / "weekly_alert.jsonl"
     real_write_text = Path.write_text
@@ -139,9 +141,124 @@ def test_c1_report_write_failure_never_breaks_the_assurance_run(tmp_path, monkey
 
     data = w3.read_ledger(ledger)
     assert data["ok"] is False and data["latest_run_id"]
-    assert data["report_path"] == f"weekly-run-{data['latest_run_id']}.log"
+    assert data["report_path"] == (
+        f"weekly-run-{data['latest_run_id']}.log (NOT WRITTEN: OSError)"
+    ), data["report_path"]
     entry = json.loads(alerts.read_text(encoding="utf-8").strip().splitlines()[0])
     assert entry["status"] == "not-ok" and entry["exit_code"] == 3
+
+
+# ---------------------------------------------------------------------------
+# C5 — the classification's own edges, the sentinel, crashes and run identity
+# (B.VR903-01/-02/-03/-04/-05/-06)
+# ---------------------------------------------------------------------------
+
+
+def test_c5_exit_zero_without_a_verdict_is_blocked():
+    """Rule 1 of the classifier had ZERO coverage: the first review's surviving
+    mutant deleted it and all cases still passed (B-VR903-03)."""
+    ok, status, detail = w3._suite_outcome(_fake_proc(0, "collected 0 items\n"))
+    assert ok is False and status == "blocked", (status, detail)
+
+
+def test_c5_the_sentinel_beats_every_heuristic():
+    """The authoritative signal: the suite says it could not run here."""
+    proc = _fake_proc(1, f"ERROR ... {w3.ENVIRONMENT_SENTINEL}: no download credential\n")
+    ok, status, detail = w3._suite_outcome(proc)
+    assert ok is False and status == "blocked" and "sentinel" in detail
+
+
+def test_c5_a_localized_missing_tool_is_blocked_not_not_ok():
+    """B-VR903-02: on a non-English host `FileNotFoundError: [WinError 2] 系统找不到
+    指定的文件。` carries no English marker at all, so the first list read it as a code
+    failure.  Exception CLASS names and numeric OS codes survive localization."""
+    proc = _fake_proc(2, "ERROR tests/test_e2e_download.py - FileNotFoundError: "
+                         "[WinError 2] \u7cfb\u7edf\u627e\u4e0d\u5230\u6307\u5b9a\u7684"
+                         "\u6587\u4ef6\u3002\n\n1 error in 0.20s\n")
+    ok, status, detail = w3._suite_outcome(proc)
+    assert ok is False and status == "blocked", (status, detail)
+
+
+def test_c5_a_bare_localized_os_error_code_is_enough():
+    """The numeric code is the language-neutral half: no exception class name and no
+    English word, only ``[WinError 2]``."""
+    proc = _fake_proc(2, "OSError: [WinError 2] \u7cfb\u7edf\u627e\u4e0d\u5230\u6307"
+                         "\u5b9a\u7684\u6587\u4ef6\u3002\n\n1 error in 0.20s\n")
+    ok, status, _detail = w3._suite_outcome(proc)
+    assert ok is False and status == "blocked"
+
+
+def test_c5_a_crash_is_recorded_as_a_run(tmp_path, monkeypatch):
+    """B-VR903-06: a timeout used to leave no ledger, no alert and no report, so the
+    previous green run kept satisfying the gate for up to seven days."""
+    ledger = tmp_path / "weekly_manifest.json"
+    alerts = tmp_path / "weekly_alert.jsonl"
+
+    def exploding_suite(timeout=3600):
+        raise subprocess.TimeoutExpired(cmd="pytest", timeout=timeout)
+
+    monkeypatch.setattr(w3, "_run_t3_suite", exploding_suite)
+    assert w3.run_weekly(ledger, alerts) == 124
+
+    data = w3.read_ledger(ledger)
+    assert data["ok"] is False
+    report = ledger.parent / data["report_path"]
+    assert report.is_file(), "a crashed run must still leave a report"
+    assert "TimeoutExpired" in report.read_text(encoding="utf-8")
+    entry = json.loads(alerts.read_text(encoding="utf-8").strip().splitlines()[0])
+    assert entry["status"] == "not-ok" and entry["exit_code"] == 124
+
+
+def test_c5_a_blocked_run_exits_non_zero_even_when_pytest_exited_zero(
+        tmp_path, monkeypatch):
+    """The all-skipped case: pytest exits 0, but the gate is blocked - the scheduler
+    must not record a success (B-VR903: run_weekly used to return 0)."""
+    ledger = tmp_path / "weekly_manifest.json"
+    alerts = tmp_path / "weekly_alert.jsonl"
+
+    def fake_suite(timeout=3600):
+        return _fake_proc(0, "5 skipped in 0.10s")
+
+    monkeypatch.setattr(w3, "_run_t3_suite", fake_suite)
+    assert w3.run_weekly(ledger, alerts) != 0
+    assert w3.read_ledger(ledger)["ok"] is False
+
+
+def test_c5_a_second_run_in_the_same_second_gets_a_distinct_id(tmp_path):
+    """B-VR903-06: a second-resolution id used to overwrite the earlier report and
+    make the ledger and the alert journal disagree about that id.
+
+    Written without freezing the clock on purpose: the property asserted is "never
+    equal to the ledger's current id", which holds whether or not the second ticks.
+    """
+    ledger = tmp_path / "weekly_manifest.json"
+    stale = "20260913T000000Z"
+    ledger.write_text(json.dumps({"latest_run_id": stale}), encoding="utf-8")
+    fresh = w3._unique_run_id(ledger)
+    assert fresh != stale and len(fresh) >= len(stale)
+
+    ledger.write_text(json.dumps({"latest_run_id": fresh}), encoding="utf-8")
+    assert w3._unique_run_id(ledger) != fresh, "the id collided with the ledger's"
+
+
+def test_c5_the_persisted_report_does_not_leak_the_machine_profile(tmp_path, monkeypatch):
+    """B-VR903-05: the report is a TRACKED file, and under the scheduled task
+    argv[0] is an absolute path containing the user profile."""
+    ledger = tmp_path / "weekly_manifest.json"
+    alerts = tmp_path / "weekly_alert.jsonl"
+
+    def fake_suite(timeout=3600):
+        return _fake_proc(0, "4 passed in 80.00s")
+
+    monkeypatch.setattr(w3, "_run_t3_suite", fake_suite)
+    monkeypatch.setattr(w3.sys, "argv",
+                        [r"C:\Users\someone\Projects\revenue-forecast\tools"
+                         r"\weekly_t3_schedule.py", "run-weekly"])
+    assert w3.run_weekly(ledger, alerts) == 0
+    report = ledger.parent / w3.read_ledger(ledger)["report_path"]
+    text = report.read_text(encoding="utf-8")
+    assert "weekly_t3_schedule.py" in text
+    assert "someone" not in text and "C:\\Users" not in text, "profile leaked into a tracked file"
 
 
 # ---------------------------------------------------------------------------
