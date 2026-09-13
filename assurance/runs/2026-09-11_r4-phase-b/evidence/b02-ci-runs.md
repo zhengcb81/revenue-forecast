@@ -25,7 +25,7 @@
 | company-wiki | `0e73cf6` | **F-B00-6 收尾**：7 个验收文件各点名自己的矩阵 ID（docstring，行为零变化；双向检查归零） | CI | **success** | 34726908410 |
 | company-wiki | `ccb3c82` | **FC-1307-a 门本体**（本机假设守卫 + 58 条棘轮基线 + 5 条登记摘要 + 5 用例 + pre-commit/pre-push 接线） | CI | ❌ **failure**（`Unit tests`，三份 Python 全红：**门自己**触发了冻结写者清单） | 34751519232 |
 | company-wiki | `b28b5a0` | **该红的第一因修复**：守卫改**纯只读**（`--write-baseline`→`--emit-baseline` 只打印），不再落入"直接写者 CLI"类 | CI | **success** | 34751718915 |
-| company-wiki | `62695fb`→`1fab7f6` | **该红的第二因修复（类别级）**：pre-push 门第 6 步改为同时跑**判定门自身的测试**；并把该门的**三条设计性质**写成用例（只打印不写盘 / 棘轮按**值**而非按文件 / 规则①只判 `tests/`），三个变异**全部被杀**（[evidence/fc1307a_mutations.py](fc1307a_mutations.py)） | CI | 见下方 §CI-1307 行 | 待触发 |
+| company-wiki | `62695fb`→`1fab7f6` | **该红的第二因修复（类别级）**：pre-push 门第 6 步改为同时跑**判定门自身的测试**；并把该门的**三条设计性质**写成用例（只打印不写盘 / 棘轮按**值**而非按文件 / 规则①只判 `tests/`），三个变异**全部被杀**（[evidence/fc1307a_mutations.py](fc1307a_mutations.py)） | CI | **success**（两次推送一次 CI：只跑 tip `1fab7f6`；`62695fb` 未单独触发） | 34752267614 |
 | revenue-forecast | `2ced153` | B 运行目录：B02 实施记录（rev1） | quality | **success** | 34691409601 |
 | revenue-forecast | `7b34c12` | B 运行目录：`B.VR` rev1 记录 + rev2 证据 | quality | **success** | 34693783149 |
 | revenue-forecast | `63422f1` | B 运行目录：`B.VR` rev2 记录 + rev3 证据 | quality | **success** | 34697489835 |
@@ -50,6 +50,7 @@
 | revenue-forecast | `c247c44` | F-B01-9（CI 首红三因）+ 记录 + checkpoint（55 文件） | quality | **success** | 34721932758 |
 | revenue-forecast | `d3770c5` | B03 复审处置 + B06/B07 实施记录 + 台账 + checkpoint（77 文件） | quality | **success** | 34724733730 |
 | revenue-forecast | `a524191` | FC-1307-a 闭环记录 + 门自红的证据（含红行原文与测试名订正）+ F-B01-10（周度 T3 观察项） | quality | **success** | 34751993473 |
+| revenue-forecast | `06458aa` | 门自测的**变异证据**（`fc1307a_mutations.py`）+ 只读 run 进度工具（`ci_progress.py`） | quality | **success** | 34752249798 |
 
 **CI 覆盖到的与本步直接相关的门**（`company-wiki/.github/workflows/ci.yml`，三个 Python 版本 3.11/3.12/3.13 全部 success）：
 
@@ -88,6 +89,10 @@ FAILED tests/unit/test_writer_freeze.py::test_every_direct_writer_cli_has_an_exp
 | 规则①**只判 `tests/`**（产品代码可合法分支宿主） | `test_fc1307a_product_code_may_branch_on_the_host` | C：`in_tests = True`（全库扫描） | **KILLED** |
 
 harness 退出码 0 = 基线 8 passed + 三个变异全杀 + **树已还原**（`tree_restored=true`；还原走 `git checkout --`，因为普通 `write_text` 会翻转工作副本的换行而留下幻影改动）。
+
+**一处已测量、**未**采纳的范围选项（留给 owner，不擅自扩）**：把扫描根从 `tests src` 扩到 `tests src scripts`，今天实测**结果完全相同**（`violations=94 / new=0 / baseline=58 / registered=5`，因为规则①/②本就只判 `tests/`，`scripts/` 下没有未登记的 64 位常量）。扩了会多覆盖"脚本里冻结机器相关摘要"这一类；代价是**将来**在脚本里合法地冻结**内容**哈希（与宿主无关）时会被要求登记理由。故保持现范围并在本页登记这次测量。
+
+**本次两条 tip 的 CI（逐条取自只读 API）**：`company-wiki` tip `1fab7f6` = **success**（`34752267614`）；`revenue-forecast` tip `06458aa` = **success**（`34752249798`）。
 
 **订正一条我自己的错误**：提交 `b28b5a0` 的说明把该测试写成 `test_every_direct_writer_cli_has_an_implicit_guard`，**真实符号是 `..._an_explicit_guard`**（日志行如上）。已推送的历史不为一个错字改写，订正记录在此处与 `62695fb` 的提交说明里。
 
