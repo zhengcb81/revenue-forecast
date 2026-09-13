@@ -23,6 +23,9 @@
 | company-wiki | `52d394d` | **该用例改为用本平台自己的卷锚点**（`tmp_path.anchor`：Windows `C:\`／POSIX `/`） | CI | **success** | 34724833934 |
 | company-wiki | `3740857`→`f2ba5c1` | **B06 处置 + B07 处置**（期间规则反转 + 缺口接线用例 / S-10 例外点名 + 外来版本拒绝 + 真断言；两个独立提交） | CI | **success** | 34726243938 |
 | company-wiki | `0e73cf6` | **F-B00-6 收尾**：7 个验收文件各点名自己的矩阵 ID（docstring，行为零变化；双向检查归零） | CI | **success** | 34726908410 |
+| company-wiki | `ccb3c82` | **FC-1307-a 门本体**（本机假设守卫 + 58 条棘轮基线 + 5 条登记摘要 + 5 用例 + pre-commit/pre-push 接线） | CI | ❌ **failure**（`Unit tests`，三份 Python 全红：**门自己**触发了冻结写者清单） | 34751519232 |
+| company-wiki | `b28b5a0` | **该红的第一因修复**：守卫改**纯只读**（`--write-baseline`→`--emit-baseline` 只打印），不再落入"直接写者 CLI"类 | CI | 见下方 §CI-1307 行 | 34751718915 |
+| company-wiki | `62695fb` | **该红的第二因修复（类别级）**：pre-push 门第 6 步改为同时跑**判定门自身的测试**（`tests/unit/test_writer_freeze.py` + `tests/contract/test_fc1307_host_assumption_gate.py`），并用一次性写者探针证明该步是承重的 | CI | 见下方 §CI-1307 行 | 待触发 |
 | revenue-forecast | `2ced153` | B 运行目录：B02 实施记录（rev1） | quality | **success** | 34691409601 |
 | revenue-forecast | `7b34c12` | B 运行目录：`B.VR` rev1 记录 + rev2 证据 | quality | **success** | 34693783149 |
 | revenue-forecast | `63422f1` | B 运行目录：`B.VR` rev2 记录 + rev3 证据 | quality | **success** | 34697489835 |
@@ -57,3 +60,23 @@
 
 > 取数纪律：表中的 run id 与状态**逐条取自只读 API 响应**（`GET /repos/{owner}/{repo}/actions/runs?per_page=N`，按 `head_sha` 对齐），不是凭记忆填写——本页早先一版曾把两个 run id 写错（凭印象转录），已按 API 实际值更正；采集不到的行标注"登记时的状态"，不猜。
 > 注：本页**不**声称 `B-payload-hash` 已执行（包内无冻结基线，见 [test-acceptance-map.md](../test-acceptance-map.md) §1c），也**不**声称在生产 catalog 上做过验证。
+
+## FC-1307-a：新门在 CI 上先红一次（本页必须记录，不粉饰）
+
+**红的是新门自己，且三份 Python 一致**（`run 34751519232`，三个 `test (*)` job 的 `Unit tests` 步）。日志原文（只读 API 取回，`ci_logs.py`）：
+
+```
+tests/unit/test_writer_freeze.py:126: in test_every_direct_writer_cli_has_an_explicit_guard
+    assert not missing, f"direct writer CLIs without fail-closed guard: {missing}"
+E   AssertionError: direct writer CLIs without fail-closed guard: ['host_assumption_guard.py']
+FAILED tests/unit/test_writer_freeze.py::test_every_direct_writer_cli_has_an_explicit_guard
+```
+
+**为什么本机没看见**：当次推送前跑的门里确实**执行了**守卫本体（绿），但 `tests/unit/test_writer_freeze.py` 这个**测试类不在门内**——同一类盲区在本页上方 `f0aacbf` 一轮已登记过（"测试类不在门内"），这次是它在**门自己身上**的第二次发作。
+
+**根因**：守卫是 `scripts/*.py` + `__main__` + 写盘调用（`--write-baseline`），因此落入"直接写者 CLI"清单，而该清单要求每个此类 CLI 携带 `enforce_direct_cli`（legacy 写者冻结两因子）。**修法选择**：不给检查器发写者授权（一个检查器不该持有改写被检查树的权限），而是**删掉写模式**：`--write-baseline` → `--emit-baseline`（只打印 JSON 供人粘贴），文件内不再有任何写原语。
+
+**第二因（类别级，见 `62695fb`）**：把"判定门自身的测试"加入 pre-push 门第 6 步，并用一次性写者探针（`scripts/_gate_hardening_probe.py`，同一条命令内建后即删）证明该步承重——探针在位时该步红且断言消息与 CI 打印的一致，删除后 13 passed。
+
+**订正一条我自己的错误**：提交 `b28b5a0` 的说明把该测试写成 `test_every_direct_writer_cli_has_an_implicit_guard`，**真实符号是 `..._an_explicit_guard`**（日志行如上）。已推送的历史不为一个错字改写，订正记录在此处与 `62695fb` 的提交说明里。
+

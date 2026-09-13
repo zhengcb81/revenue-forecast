@@ -1,5 +1,16 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-13 — **FC-1307-a 主机假设门落地（owner 同意）→ 门自己在 CI 上红了一次 → 两处修复 + 把"判定门的测试"纳入本地门**
+
+- **背景（owner 提问驱动）**：owner 问"远端 CI 又出现测试失败，什么情况"与"每次 commit 都跑 pre-commit，为什么仍会引起测试失败"。答复要点：pre-commit 只做 ruff/mypy/config_doctor，pre-push 门只加复杂度棘轮 + 4 个契约文件，而 CI 跑**全量**套件 × 3 个 Python ⇒ **测试类不在门内**与**宿主差异**这两类本地必然看不见。owner 回"好的"⇒ 授权把**宿主假设类**做成门。
+- **交付（wiki `ccb3c82`）**：`scripts/host_assumption_guard.py`（AST 扫描，三类规则：测试内硬编码绝对宿主路径 / 宿主能力未 skip / 未登记的 64 位十六进制冻结摘要）+ `tests/contract/host_assumption_baseline.json`（58 条**棘轮基线**，只让**新增**失败）+ `tests/contract/host_assumption_allowlist.json`（5 条已登记摘要，各带"在哪 + 为什么与宿主无关"）+ `tests/contract/test_fc1307_host_assumption_gate.py`（5 用例，**反向自测门本体**）+ pre-commit hook + pre-push 门新步。规则①**只扫 `tests/`**：产品代码里的 `/proc/stat`、`C:/Windows` 是**有意的**平台分支（误报会毁掉门）。
+- **门自己在 CI 上红了（诚实记录，`34751519232`，三个 Python 全红）**：`tests/unit/test_writer_freeze.py:126` → `direct writer CLIs without fail-closed guard: ['host_assumption_guard.py']`。**第二因**：`test_writer_freeze.py` 这个测试类**不在 pre-push 门内** ⇒ F-B01-9 的"测试类不在门内"盲区在**门自己身上**重演（与宿主差异无关）。
+- **修复①（wiki `b28b5a0`）**：守卫改**纯只读**——`--write-baseline` → `--emit-baseline`（只打印基线 JSON 供人粘贴），文件内**不再有任何写原语**。取舍写明：**不给检查器发 legacy 写者授权**（检查器不该有改写被检查树的权限）。
+- **修复②（wiki `62695fb`，类别级）**：pre-push 门第 6 步改为**同时跑判定门自身的测试**（`tests/unit/test_writer_freeze.py` + 门自己的契约测试），并**证明该步承重**：一次性写者探针（`scripts/_gate_hardening_probe.py`，同一条命令内建后即删）在位时该步**红**且断言文本与 CI 打印一致，删除后 **13 passed**；门 docstring 从"5 步"更正为实际的 6 步。
+- **门/证据**：守卫实测 `violations=94 / new=0 / baseline=58 / registered=5`；新契约文件 5 passed；`ruff` clean；6 步 pre-push 门 **GREEN**（含新增 meta 步）。CI 结果逐行登记在 [evidence/b02-ci-runs.md](evidence/b02-ci-runs.md) §FC-1307-a（含红的那一行原文与全部 run id）。
+- **订正一处我自己的错误**：`b28b5a0` 的提交说明把测试名写成 `..._an_implicit_guard`，真实符号是 `..._an_explicit_guard`。已推送历史不为错字改写，订正落在证据页与 `62695fb` 的说明里。
+- **边界不变**：本轮**无**产品行为改动（新增文件全部是门/台账/测试），**未**执行任何数据命令或产品写入；B08/B09/B10 仍按 G8/G7 由 owner/操作者把关。
+
 ## 2026-09-12（实施期）— **B 阶段七步全部实施并推送；B03 复审已闭环；CI 全绿；B06/B07 复审在跑**
 
 - **B03 复审 = `accepted_with_findings`（1×P1/4×P2/3×P3）→ 八条全部处置**（提交 `2f1ddab`，逐条处置表 [evidence/b03-review-disposition.md](evidence/b03-review-disposition.md)）：

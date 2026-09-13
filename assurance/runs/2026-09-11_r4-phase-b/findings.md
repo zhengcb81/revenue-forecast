@@ -2,6 +2,17 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## F-B01-10（**观察项，非 B 工作、未归因**）：本机的**周度 T3 真下载套件**在 B 窗口内记了一次 `not-ok`，而**失败原因没有被留下**
+
+- **发现路径**：核对工作树时看到两个**被跟踪**的自动产物在同一轮被改动：`assurance/runs/weekly_manifest.json` 与 `assurance/runs/weekly_alert.jsonl`（两者都由 `tools/weekly_t3_schedule.py` 写，**非我本轮所写**）。
+- **记录到的内容（逐字取自这两个文件）**：`latest_run_id=20260913T064640Z`，`started_at=2026-09-13T06:48:04.984641+00:00`，`ok=false`，告警行 `status="not-ok"`、`reason="T3 suite exit 1"`、`exit_code=1`；三元组为 filing `b44edd8`、revenue `fd2e56a`、wiki `0e73cf6`——**即当时三个仓库的 tip**（filing-fetch `HEAD` 实测 `b44edd8`；revenue 当时 tip `fd2e56a`；wiki 当时 tip `0e73cf6`）。
+- **这是什么套件**：`filing-fetch/tests/test_e2e_download.py`（**真下载** E2E，`FILING_FETCH_E2E_DOWNLOAD=1` 才跑，写临时 wiki），由 `tools/weekly_t3_schedule.py run-weekly` 包裹；ZR-902 的发布门读该台账，**`fresh + ok` 才 ready** ⇒ 现在这次 `not-ok` 让**周度发布门处于 blocked**。
+- **与上一次的区别**：台账窗口内上一条（`20260906T070858Z`）是 `blocked` = **整套跳过**（缺凭据/网络）；**本次是真正执行后失败**（`exit_code=1`），所以这不是"又一次全跳过"。
+- **证据缺口（本条的重点）**：`_run_t3_suite()` 用 `capture_output=True` 把子进程输出**收进内存**，`write_ledger` 的 `report_path` 只是**标签** `weekly-run-<id>`，**不落任何文件** ⇒ 套件为什么返回 1 **无法从记录里查**（实测：在 revenue-forecast 下递归搜索该 run id，**零命中**）。也就是说这条 `not-ok` 目前**不可诊断、也不可复核**。
+- **明确不做的推断**：**不**归因于 B（B 改的是 `source_catalog` 的解析/抽取路径，不是下载路径；且这次运行发生在 `ccb3c82` 之前），**也不**声称是环境原因——**没有证据**。要定性必须**重跑**该套件，而重跑 = 真下载 + 覆盖周度台账（数据/网络命令）⇒ **owner 门**，我不擅自执行。
+- **可复跑的最小验证（只读）**：`python -c` 读上述两个 JSON 即可复核本条引用的全部字段；重跑命令为 `python tools/weekly_t3_schedule.py run-weekly`（**待批**）。
+- **建议（待 owner 定，不在 B 内改）**：① 让 `weekly_t3_schedule` 把套件输出尾部落盘（例如 `assurance/runs/weekly-run-<id>.log`），否则同类失败永远只能看到一行 `exit 1`；② 把"凭据/工具缺失导致的**收集期错误**"与"真失败"分开记（现在 `exit 1` 一律记 `not-ok`，而之前那类是 `blocked`）。
+
 ## F-B06-1 / F-B07-2：`B.VR`（B06）与 `B.VR`（B07）= **均 `accepted_with_findings`**（各 1×P1）→ 全部处置（`3740857` / `f2ba5c1`）
 
 - **记录**：[reviews/B.VR-b06.json](reviews/B.VR-b06.json)、[reviews/B.VR-b07.json](reviews/B.VR-b07.json)；**逐条处置表** [evidence/b0607-review-disposition.md](evidence/b0607-review-disposition.md)。两个独立会话**并行**完成（我明确要求**只跑定向用例**以免互相制造负载假失败）。
@@ -53,8 +64,10 @@
 
 - **教训（写进流程）**：**本地 pre-push 门不等于 CI**。涉及新 reason 码、跨机器常量、平台相关行为（symlink/路径/属性）的改动，推送前应**本地跑一遍 CI 的失败步骤**（`pytest tests/contract`），而不是只看 pre-push 门。此后本 run 的每步推送都遵守这条。
 - **第二次更正（诚实记录）**：我为修 P1 而加的"冻结 consumer hash"**本身**是错的，且被 CI 而非复审抓到——说明"复审通过"不等于"验收写法正确"。
+- **闭环（2026-09-13，owner 同意后新增门）**：光靠"推送前本地跑全量契约套件"仍防不住**宿主差异**（那三次失败在本机**必然**是绿的）。因此新增 **FC-1307-a 主机假设门**（提交 `ccb3c82`）：`scripts/host_assumption_guard.py` 用 AST 查三类——① 测试里硬编码的绝对宿主路径（**仅**扫 `tests/`：产品代码里的 `/proc/stat`、`C:/Windows` 是**有意的**平台分支，不能被误报）；② 用了宿主能力却**没有 skip**（symlink 等）；③ 把 **64 位十六进制常量**冻进测试而**没有登记理由**（登记表 `tests/contract/host_assumption_allowlist.json`，每条必须写"在哪 + 为什么与宿主无关"）。既有 58 处测试侧路径/能力写法进**棘轮基线**，**只有新增的**才失败。三处同时跑：**commit 时**（`.pre-commit-config.yaml` 新 hook）、**push 时**（`tools/pre_push_gate.py` 新第 6 步）、**CI**（`tests/contract/test_fc1307_host_assumption_gate.py`——它还**反向自测这个门本身**：把三类缺陷注入临时文件、要求被报出，削弱规则会**在这里**失败而不是在生产）。**实测**：本树 0 新增（94 原始命中 / 58 基线 / 5 已登记）；注入一个 `C:/Windows/win.ini` 字面量 ⇒ 门 exit 1 并点名文件；新用例 5 passed；ruff clean；pre-push 门（6 步）GREEN。
 
-## F-B01-8：`B.VR`（B01）= **accepted_with_findings**（1×P1 / 3×P2 / 2×P3）→ P1 与 P2 全部已处置（提交 `be2e4ed`）
+- **同一门自己又红了一次（2026-09-13，诚实记录）**：`ccb3c82` 的 CI **失败**（run `34751519232`，三个 `test (*)` 的 `Unit tests`）：`tests/unit/test_writer_freeze.py:126 ... AssertionError: direct writer CLIs without fail-closed guard: ['host_assumption_guard.py']`。**原因**：守卫是 `scripts/*.py` + `__main__` + 写盘（当时的 `--write-baseline`），因此落入"直接写者 CLI"清单；**而 `test_writer_freeze.py` 这个测试类不在 pre-push 门内**——即 F-B01-9 的盲区（"测试类不在门内"）在**门自己身上**重演，与前两次宿主差异无关。**两处修法**：① 提交 `b28b5a0` 把守卫改**纯只读**（`--emit-baseline` 只打印基线 JSON 供人粘贴）——**不给检查器发写者授权**，因为一个检查器不该有改写被检查树的权限；② 提交 `62695fb` 把**判定门自身的测试**加入 pre-push 门第 6 步（`test_writer_freeze.py` + 门自己的契约测试），并用一次性写者探针证明该步**承重**（探针在位⇒该步红且断言文本与 CI 一致；删除后 13 passed）。**由此得到的类别级规则**：新增/修改 `scripts/` 下的 CLI 时，本地门必须能回答"它是否触发写者冻结清单"——否则同一类事故会以第三次形式出现。
+- **订正一处我自己的错误**：`b28b5a0` 的提交说明把该测试名写成 `test_every_direct_writer_cli_has_an_implicit_guard`，**真实符号为 `..._an_explicit_guard`**（CI 日志行原文见 [evidence/b02-ci-runs.md](evidence/b02-ci-runs.md) §FC-1307-a）。已推送的历史不为错字改写；订正记录在证据页与 `62695fb` 的提交说明中。
 
 - **记录**：[reviews/B.VR-b01.json](reviews/B.VR-b01.json)；**逐条处置表**见 [evidence/b01-review-disposition.md](evidence/b01-review-disposition.md)；复现证据 [evidence/b01-review-verify.json](evidence/b01-review-verify.json)、变异 harness [evidence/b01_mutations.py](evidence/b01_mutations.py) 与 [evidence/b01_x2_agreement_probe.py](evidence/b01_x2_agreement_probe.py)。
 - **复审独立复现了作者的全部数字**（6/6 用例、两个文件哈希、覆盖率 87.95/91.12/95.20、两张棘轮、ruff），并用**真实 pre-change 树**复核了 F-B01-7 的论证 = **sound**。
