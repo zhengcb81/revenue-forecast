@@ -10,6 +10,11 @@ scheduled assurance loop, reusing the ZR-902 ledger machinery:
                append an alert journal entry when not fresh, and record a
                BLOCKED status (never a pass) when the suite was entirely
                skipped (missing credentials/network — CA-203 RED).
+               The suite's own output is persisted next to the ledger as
+               ``weekly-run-<run_id>.log`` and that path is what the ledger's
+               ``report_path`` names — before F-B01-10 it was a label with no
+               file behind it, so a failed weekly run said only "exit 1" and
+               could not be diagnosed.
   register     register a Windows Task Scheduler weekly task (deployment
                action; requires elevation) that invokes ``run-weekly``.
   query        read-only status of the scheduled task (exists / last run).
@@ -46,6 +51,9 @@ WEEKLY_LEDGER = PROJECT_ROOT / "assurance" / "runs" / "weekly_manifest.json"
 WEEKLY_ALERTS = PROJECT_ROOT / "assurance" / "runs" / "weekly_alert.jsonl"
 WEEKLY_TASK = "revenue_weekly_t3"
 MAX_AGE_DAYS = 7
+# How much of the suite's output the persisted report keeps.  The tail is where
+# pytest puts the failure summary; the full log can be megabytes.
+REPORT_TAIL_CHARS = 20000
 
 
 def _run_t3_suite(timeout: int = 3600) -> subprocess.CompletedProcess:
@@ -78,6 +86,35 @@ def _suite_outcome(proc: subprocess.CompletedProcess) -> tuple[bool, str, str]:
     return True, "ok", "T3 suite passed"
 
 
+def _write_suite_report(ledger_path: Path, run_id: str,
+                        proc: subprocess.CompletedProcess, ok: bool,
+                        status: str, detail: str) -> str:
+    """Persist the suite's output beside the ledger; return the path recorded in it.
+
+    F-B01-10 (2026-09-13): the weekly ledger recorded ``not-ok`` / ``exit 1`` while
+    the subprocess output lived only in memory and ``report_path`` was a label with
+    no file behind it, so that failure could not be diagnosed from the record at
+    all.  The daily T2 runner already records a real report path; this makes the
+    weekly loop do the same.
+    """
+    target = ledger_path.parent / f"weekly-run-{run_id}.log"
+    output = (proc.stdout or "") + (proc.stderr or "")
+    body = (
+        f"run_id={run_id}\n"
+        f"status={status} ok={ok} exit_code={proc.returncode}\n"
+        f"detail={detail}\n"
+        f"argv={sys.argv}\n"
+        f"--- suite output, last {REPORT_TAIL_CHARS} chars ---\n"
+        f"{output[-REPORT_TAIL_CHARS:]}\n"
+    )
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(body, encoding="utf-8")
+    except OSError as exc:  # a diagnostic file must never break the assurance run
+        print(f"warning: could not persist the suite report: {exc}", file=sys.stderr)
+    return str(target)
+
+
 def run_weekly(ledger_path: Path, alert_path: Path) -> int:
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     proc = _run_t3_suite()
@@ -86,8 +123,8 @@ def run_weekly(ledger_path: Path, alert_path: Path) -> int:
     triplet = {"revenue": _head(PROJECT_ROOT),
                "filing": _head(FILING_ROOT),
                "wiki": _head(PROJECT_ROOT.parent / "company-wiki")}
-    write_ledger(ledger_path, run_id, started, triplet, ok,
-                 f"weekly-run-{run_id}")
+    report = _write_suite_report(ledger_path, run_id, proc, ok, status, detail)
+    write_ledger(ledger_path, run_id, started, triplet, ok, report)
     if status != "ok":
         append_alert(alert_path, {
             "at_utc": started, "run_id": run_id, "status": status,

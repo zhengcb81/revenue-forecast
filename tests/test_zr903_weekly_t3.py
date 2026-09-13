@@ -86,6 +86,60 @@ def test_c1_not_ok_still_recorded(tmp_path, monkeypatch):
     assert json.loads(lines[0])["status"] == "not-ok"
 
 
+def test_c1_suite_output_is_persisted_and_the_ledger_names_a_real_file(
+        tmp_path, monkeypatch):
+    """F-B01-10: a failed weekly run must stay diagnosable.  The ledger used to
+    record `report_path="weekly-run-<id>"` with no file behind it, so the recorded
+    `exit 1` could not be explained from the record — the suite's output has to be
+    persisted, and the ledger has to point at it."""
+    ledger = tmp_path / "weekly_manifest.json"
+    alerts = tmp_path / "weekly_alert.jsonl"
+
+    def fake_suite(timeout=3600):
+        return _fake_proc(
+            1, "FAILED tests/test_e2e_download.py::test_download - RuntimeError: no tool"
+        )
+
+    monkeypatch.setattr(w3, "_run_t3_suite", fake_suite)
+    assert w3.run_weekly(ledger, alerts) != 0
+
+    data = w3.read_ledger(ledger)
+    report = Path(data["report_path"])
+    assert report.name == f"weekly-run-{data['latest_run_id']}.log", report
+    assert report.is_file(), "report_path must name a real file"
+    text = report.read_text(encoding="utf-8")
+    assert "RuntimeError: no tool" in text, "the failure reason must be recoverable"
+    assert "status=not-ok" in text and data["latest_run_id"] in text
+
+
+def test_c1_report_write_failure_never_breaks_the_assurance_run(tmp_path, monkeypatch):
+    """A diagnostic side file is best-effort: if it cannot be written, the ledger
+    and the alert must still be recorded (the release gate must not depend on the
+    log file's fate).  Only ``.log`` writes fail here, so the ledger write is real."""
+    ledger = tmp_path / "weekly_manifest.json"
+    alerts = tmp_path / "weekly_alert.jsonl"
+    real_write_text = Path.write_text
+
+    def fake_suite(timeout=3600):
+        return _fake_proc(3, "3 errors")
+
+    def selective(self, *args, **kwargs):
+        if self.suffix == ".log":
+            raise OSError("disk full")
+        return real_write_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(w3, "_run_t3_suite", fake_suite)
+    monkeypatch.setattr(Path, "write_text", selective)
+
+    assert w3.run_weekly(ledger, alerts) == 3, "the suite's exit code must survive"
+
+    data = w3.read_ledger(ledger)
+    assert data["ok"] is False and data["latest_run_id"]
+    assert Path(data["report_path"]).name == f"weekly-run-{data['latest_run_id']}.log"
+    entry = json.loads(alerts.read_text(encoding="utf-8").strip().splitlines()[0])
+    assert entry["status"] == "not-ok" and entry["exit_code"] == 3
+
+
 # ---------------------------------------------------------------------------
 # C2 — freshness <=7d (AUD2-02)
 # ---------------------------------------------------------------------------
