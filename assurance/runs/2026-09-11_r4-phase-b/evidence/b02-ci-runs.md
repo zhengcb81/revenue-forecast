@@ -53,6 +53,9 @@
 | revenue-forecast | `06458aa` | 门自测的**变异证据**（`fc1307a_mutations.py`）+ 只读 run 进度工具（`ci_progress.py`） | quality | **success** | 34752249798 |
 | revenue-forecast | `e45bace`→`9f849f9` | **F-B01-10**：周度 T3 套件输出**落盘**（台账指向真实文件且用**相对名**）+ 台账 blocked 状态入史 + owner 批准的**重跑**（两次 `4 passed`，原失败**仍不解释**） | quality | **success**（一次推送只跑 tip `9f849f9`） | 34778801257 |
 | revenue-forecast | `00ad509` | **F-B01-10-classify**：`blocked`（本机跑不起来）与 `not-ok`（跑了并失败）按**证据**分开；用例 12→16，4 个分类变异全杀 | quality | **success** | 34782742134 |
+| company-wiki | `a920ab1` | **B.VR-fc1307a 复审处置**（撤回夸大声明 / AST 级能力守卫 / 棘轮改全值+基线重生成 / POSIX 扩枚举 / IGNORECASE / 崩溃路径可读化；用例 8→25，变异 7/7） | CI | **success** | 34784823162 |
+| revenue-forecast | `fa017c8` | **B.VR-zr903 复审处置**（撤回"绝不会洗白"的保证、哨兵、崩溃记成一次运行、argv 去 profile、run_id 防碰撞、blocked 返回非零；用例 16→24，变异 12/12） | quality | ❌ **failure**（**我自己新写的用例**硬编码了 `C:\Users\someone\...`：POSIX 上反斜杠不是分隔符 ⇒ `Path(...).name` 返回整串，"无泄漏"断言翻转——又是 F-B01-9 那一类） | 34784800110 |
+| revenue-forecast | `9cf7042` | 该用例改为 `tmp_path`（本平台分隔符 + Windows 上含真实 profile）⇒ 成为真正的跨宿主断言 | quality | **success** | 34785187889 |
 
 **CI 覆盖到的与本步直接相关的门**（`company-wiki/.github/workflows/ci.yml`，三个 Python 版本 3.11/3.12/3.13 全部 success）：
 
