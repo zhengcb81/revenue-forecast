@@ -78,7 +78,10 @@
 | （复审额外指出） | — | `run_weekly` 对 **blocked（全跳过）** 返回 0 ⇒ 任务计划程序把"门被卡住"记成**成功** | 已改：`status != "ok"` 时返回非零（并加用例） |
 
 - **承重证明**：`tests/test_zr903_weekly_t3.py` **16 → 24**；新 harness [evidence/zr903_mutations.py](evidence/zr903_mutations.py) 覆盖 **12 个变异**（含复审指出的存活变异）→ **12/12 KILLED**、`tree_restored=true`、基线 24 passed。
-- **作者自纠**：第一版 P8 变异只删了 `winerror 2`/`errno 2` 却留下 `filenotfounderror`，于是"存活"——**变异太窄**；补一条"只有裸 `[WinError 2]`、无类名"的用例并把变异扩到三个标记后即被杀死。
+- **作者自纠（两处，其中一处又被 CI 抓）**：
+  1. 第一版 P8 变异只删了 `winerror 2`/`errno 2` 却留下 `filenotfounderror`，于是"存活"——**变异太窄**；补一条"只有裸 `[WinError 2]`、无类名"的用例并把变异扩到三个标记后即被杀死。
+  2. **我为 B-VR903-05 新写的用例本身是宿主相关的**：它把 `r"C:\Users\someone\...\weekly_t3_schedule.py"` 当字面量，而在 POSIX 上反斜杠**不是分隔符** ⇒ `Path(...).name` 返回整个字符串，于是"没有泄漏"的断言在 Linux 上**必然失败**（`revenue` CI run `34784800110`）。这正是 F-B01-9 的那一类，**我自己又犯了一次**。改用 `tmp_path`（本平台分隔符、且 Windows 上含真实 profile）后，断言变成真正的跨宿主检查，并写明理由。
+  **由此登记一条范围缺口**：**FC-1307-a 主机假设门只在 company-wiki 里**，`revenue-forecast`/`filing-fetch` 的测试**不被扫描** ⇒ 本次这类缺陷在 revenue 侧仍只能靠 CI 抓。要不要把门推广到另两个仓（或至少在 revenue 的 pre-push 门里跑同一脚本）属 **owner 裁定**（已登记为待办，不擅自扩范围）。
 
 ## F-B06-1 / F-B07-2：`B.VR`（B06）与 `B.VR`（B07）= **均 `accepted_with_findings`**（各 1×P1）→ 全部处置（`3740857` / `f2ba5c1`）
 

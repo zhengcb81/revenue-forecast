@@ -243,22 +243,31 @@ def test_c5_a_second_run_in_the_same_second_gets_a_distinct_id(tmp_path):
 
 def test_c5_the_persisted_report_does_not_leak_the_machine_profile(tmp_path, monkeypatch):
     """B-VR903-05: the report is a TRACKED file, and under the scheduled task
-    argv[0] is an absolute path containing the user profile."""
+    argv[0] is an absolute path containing the user profile.
+
+    HOST-NEUTRAL on purpose: the first version hard-coded a ``C:\\Users\\someone\\...``
+    string, and on POSIX ``Path(...).name`` keeps the whole string (backslash is not a
+    separator), so the test failed on CI - the exact host-assumption class this change
+    set is about.  ``tmp_path`` carries native separators and, on Windows, the real
+    user profile, so asserting that it does not appear is a real check on both hosts.
+    """
     ledger = tmp_path / "weekly_manifest.json"
     alerts = tmp_path / "weekly_alert.jsonl"
+    script = tmp_path / "tools" / "weekly_t3_schedule.py"
+    script.parent.mkdir(parents=True, exist_ok=True)
+    script.write_text("# stand-in for the real CLI\n", encoding="utf-8")
 
     def fake_suite(timeout=3600):
         return _fake_proc(0, "4 passed in 80.00s")
 
     monkeypatch.setattr(w3, "_run_t3_suite", fake_suite)
-    monkeypatch.setattr(w3.sys, "argv",
-                        [r"C:\Users\someone\Projects\revenue-forecast\tools"
-                         r"\weekly_t3_schedule.py", "run-weekly"])
+    monkeypatch.setattr(w3.sys, "argv", [str(script), "run-weekly"])
     assert w3.run_weekly(ledger, alerts) == 0
     report = ledger.parent / w3.read_ledger(ledger)["report_path"]
     text = report.read_text(encoding="utf-8")
-    assert "weekly_t3_schedule.py" in text
-    assert "someone" not in text and "C:\\Users" not in text, "profile leaked into a tracked file"
+    assert "weekly_t3_schedule.py" in text, "the script name is still recorded"
+    assert str(tmp_path) not in text, "an absolute host path leaked into a tracked report"
+    assert "run-weekly" in text, "the arguments are still recorded"
 
 
 # ---------------------------------------------------------------------------
