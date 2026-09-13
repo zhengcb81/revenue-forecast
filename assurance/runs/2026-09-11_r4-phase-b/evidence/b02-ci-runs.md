@@ -52,6 +52,7 @@
 | revenue-forecast | `a524191` | FC-1307-a 闭环记录 + 门自红的证据（含红行原文与测试名订正）+ F-B01-10（周度 T3 观察项） | quality | **success** | 34751993473 |
 | revenue-forecast | `06458aa` | 门自测的**变异证据**（`fc1307a_mutations.py`）+ 只读 run 进度工具（`ci_progress.py`） | quality | **success** | 34752249798 |
 | revenue-forecast | `e45bace`→`9f849f9` | **F-B01-10**：周度 T3 套件输出**落盘**（台账指向真实文件且用**相对名**）+ 台账 blocked 状态入史 + owner 批准的**重跑**（两次 `4 passed`，原失败**仍不解释**） | quality | **success**（一次推送只跑 tip `9f849f9`） | 34778801257 |
+| revenue-forecast | `00ad509` | **F-B01-10-classify**：`blocked`（本机跑不起来）与 `not-ok`（跑了并失败）按**证据**分开；用例 12→16，4 个分类变异全杀 | quality | **success** | 34782742134 |
 
 **CI 覆盖到的与本步直接相关的门**（`company-wiki/.github/workflows/ci.yml`，三个 Python 版本 3.11/3.12/3.13 全部 success）：
 
