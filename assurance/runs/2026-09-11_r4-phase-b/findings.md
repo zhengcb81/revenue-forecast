@@ -28,7 +28,16 @@
 - **结论（可证伪、不越界）**：该套件**现在通过**，且在**同一 filing-fetch 修订**下**连续两次**通过；`20260913T064640Z` 的 `not-ok` **仍无法解释**——它的输出当时没有落盘（这正是本次修掉的缺口），所以**我不归因**（不提"网络抖动"之类的猜测）。可复核的事实只有：那次失败不可复现，且当时的证据已不可恢复。
 - **发布门**：`python tools/weekly_t3_schedule.py verify` → `last_run=fresh`、`release_gate=True`（ready）。`weekly_alert.jsonl` 是**追加式**日志，那条 `not-ok` 作为历史**保留**，不被覆盖。
 - **顺带定性的一处设计选择**：台账是**被跟踪**的产物，所以 `report_path` 记**相对文件名**而非绝对路径——否则会把本机用户目录写进仓库（正是 F-B01-9 的"机器相关常量"类）。日常 T2 记绝对路径是因为它的报表在**另一棵树**里；此处报表与台账同目录，相对名可无歧义解析。
-- **仍未做（未获批）**：把"凭据/工具缺失导致的**收集期错误**"与"真失败"分开记（现在 `exit 1` 一律 `not-ok`，而 09-06 那类是 `blocked`）。
+- **仍未做（未获批）**：把"凭据/工具缺失导致的**收集期错误**"与"真失败"分开记（现在 `exit 1` 一律 `not-ok`，而 09-06 那类是 `blocked`）。→ **已获批并实现，见下 §F-B01-10-classify。**
+
+### F-B01-10-classify：`blocked` 与 `not-ok` 按**证据**分开（owner 2026-09-13「你来改」后已实现）
+
+- **要解决的问题**：`not-ok` 是对**产品**的陈述（"测试跑了并失败"），"本机跑不起来"（缺凭据/工具/网络、什么都没收集到）不该冒充它——否则记录在**指控代码**，而真正该做的是修环境。两者都仍然**卡住发布门**（行为不变），改的只是**归因**。
+- **判据（写在 `_suite_outcome` 的 docstring 里，可复核）**：① `returncode == 0` 且无任何 verdict 计数 ⇒ `blocked`；② `returncode != 0` 且**没有任何测试到达 verdict**（`passed/failed/xfailed/xpassed` 全为 0），并且 pytest 自己说 `no tests ran` **或** 输出命中**环境标记**（`not found`/`no such file`/`credentials`/`unauthorized`/`permission denied`/`connection`/`timed out`/`network`/`not installed`）⇒ `blocked`；③ **其余一律 `not-ok`**。
+- **刻意保守的一点**：**import 错误不算环境标记**（"缺第三方依赖"与"代码坏了"无法从一行里区分）⇒ 仍读作 `not-ok`。**真失败绝不会被洗成"环境问题"**：只要测试跑出过 verdict 就一定 `not-ok`，哪怕失败文本里出现 `connection` 之类的词。
+- **用例**：`tests/test_zr903_weekly_t3.py` **12 → 16**，四条新增各钉一条性质（环境收集错误 ⇒ blocked；`no tests ran` ⇒ blocked；歧义的 import 收集错误 ⇒ 仍 not-ok；**跑过并失败** ⇒ 绝不被洗成 blocked）。
+- **承重证明（变异 4/4 KILLED，树已还原）**：① 去掉"必须命中环境标记" ⇒ 被"歧义 import 仍 not-ok"杀；② verdict 检测恒假 ⇒ 被"真失败不被洗白"杀；③ 忽略 `no tests ran` ⇒ 被"未收集到测试"杀；④ 清空环境标记表 ⇒ 被"环境收集错误 ⇒ blocked"杀。连同上一条的 3 个变异，本项共 **7 个变异全部被杀**。
+- **残余（登记，未做）**：日常 T2 运行器 `daily_t2_schedule.run_daily` 仍用 `ok = returncode == 0 and observer == 0` 的粗判；要不要同样分档属**另一次范围**（本项只动周度 T3）。
 
 ## F-B06-1 / F-B07-2：`B.VR`（B06）与 `B.VR`（B07）= **均 `accepted_with_findings`**（各 1×P1）→ 全部处置（`3740857` / `f2ba5c1`）
 

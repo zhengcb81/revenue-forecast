@@ -202,6 +202,44 @@ def test_c3_all_skipped_suite_is_blocked_never_pass(tmp_path, monkeypatch):
     assert ready is False
 
 
+def test_c3_missing_environment_is_blocked_not_a_code_failure():
+    """F-B01-10 follow-up: a collection error caused by the environment (no tool,
+    no credentials, no network) is BLOCKED - the suite never evaluated the product -
+    while still blocking the release gate."""
+    proc = _fake_proc(
+        4,
+        "ERROR tests/test_e2e_download.py - RuntimeError: download tool not found\n"
+        "\n1 error in 0.42s\n",
+    )
+    ok, status, detail = w3._suite_outcome(proc)
+    assert ok is False and status == "blocked", (status, detail)
+    assert "environment" in detail and "no test reached a verdict" in detail
+
+
+def test_c3_no_tests_collected_is_blocked():
+    ok, status, _detail = w3._suite_outcome(_fake_proc(5, "no tests ran in 0.01s\n"))
+    assert ok is False and status == "blocked"
+
+
+def test_c3_an_ambiguous_collection_error_stays_not_ok():
+    """An import error is ambiguous (missing dependency vs. broken code), so it must
+    keep reading as a code failure - the conservative direction: never launder a
+    real defect into "the environment did it"."""
+    ok, status, _detail = w3._suite_outcome(_fake_proc(
+        2, "ERROR tests/test_e2e_download.py - ImportError: cannot import name 'x'\n"
+           "\n1 error in 0.20s\n"))
+    assert ok is False and status == "not-ok"
+
+
+def test_c3_a_failing_test_is_never_laundered_into_blocked():
+    """A suite that RAN and failed is not-ok even when the failure text happens to
+    mention the network - the verdict, not the wording, decides."""
+    ok, status, _detail = w3._suite_outcome(_fake_proc(
+        1, "1 failed, 3 passed in 80.11s\n"
+           "FAILED tests/test_e2e_download.py::test_download - ConnectionResetError"))
+    assert ok is False and status == "not-ok"
+
+
 def test_c3_release_blocked_on_stale_and_missing(tmp_path):
     stale = tmp_path / "stale.json"
     w3.write_ledger(stale, "r", _old_iso(9), {}, True, "x")

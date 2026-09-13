@@ -8,12 +8,15 @@ scheduled assurance loop, reusing the ZR-902 ledger machinery:
                (``assurance/runs/weekly_manifest.json``), judge freshness
                (<= 7d and ok -> fresh; older -> stale; absent -> missing),
                append an alert journal entry when not fresh, and record a
-               BLOCKED status (never a pass) when the suite was entirely
-               skipped (missing credentials/network — CA-203 RED).
+               BLOCKED status (never a pass) when the suite could not be
+               evaluated here - fully skipped, nothing collected, or a collection
+               error carrying an environment marker (missing credentials/tool/
+               network) - as opposed to ``not-ok``, which means tests ran and
+               failed (CA-203 RED; the two are separated on evidence, F-B01-10).
                The suite's own output is persisted next to the ledger as
-               ``weekly-run-<run_id>.log`` and that path is what the ledger's
-               ``report_path`` names — before F-B01-10 it was a label with no
-               file behind it, so a failed weekly run said only "exit 1" and
+               ``weekly-run-<run_id>.log`` and that file name is what the ledger's
+               ``report_path`` records — before F-B01-10 the value was a label with
+               no file behind it, so a failed weekly run said only "exit 1" and
                could not be diagnosed.
   register     register a Windows Task Scheduler weekly task (deployment
                action; requires elevation) that invokes ``run-weekly``.
@@ -29,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -55,6 +59,26 @@ MAX_AGE_DAYS = 7
 # pytest puts the failure summary; the full log can be megabytes.
 REPORT_TAIL_CHARS = 20000
 
+# pytest's summary counts.  A count of passed/failed/xfailed/xpassed means the
+# suite reached a verdict ON THE PRODUCT; anything else means it never got that
+# far (collection error, missing tool, no tests collected).
+VERDICT_COUNTS = re.compile(r"(\d+)\s+(?:passed|failed|xfailed|xpassed)")
+# Markers that mean "we could not run the suite here" rather than "the code is
+# broken".  Deliberately narrow: an import error is ambiguous (missing third-party
+# dependency vs. a real defect), so it is NOT here and therefore still reads as a
+# code failure - the conservative direction for a release gate.
+ENVIRONMENT_MARKERS = (
+    "not found",
+    "no such file",
+    "credentials",
+    "unauthorized",
+    "permission denied",
+    "connection",
+    "timed out",
+    "network",
+    "not installed",
+)
+
 
 def _run_t3_suite(timeout: int = 3600) -> subprocess.CompletedProcess:
     env = dict(os.environ)
@@ -76,14 +100,45 @@ def _run_t3_suite(timeout: int = 3600) -> subprocess.CompletedProcess:
     )
 
 
+def _tests_reached_a_verdict(out: str) -> bool:
+    """True when pytest reported at least one test that ran to a result."""
+    return any(int(count) > 0 for count in VERDICT_COUNTS.findall(out))
+
+
 def _suite_outcome(proc: subprocess.CompletedProcess) -> tuple[bool, str, str]:
-    """(ok, status, detail) — an all-skipped suite is BLOCKED, never a pass."""
+    """(ok, status, detail) — an all-skipped suite is BLOCKED, never a pass.
+
+    ``not-ok`` blames the code; ``blocked`` says the suite could not be evaluated
+    here (no credentials, no tool, nothing collected).  Both block the release gate,
+    but only one of them is a statement about the product, so the two are separated
+    on evidence rather than on the exit code alone (F-B01-10): a non-zero exit is
+    ``blocked`` only when NO test reached a verdict AND the output carries an
+    environment marker.  Anything else stays ``not-ok`` - a real failure must never
+    be laundered into "the environment did it".
+    """
     out = (proc.stdout or "") + (proc.stderr or "")
-    if proc.returncode != 0:
-        return False, "not-ok", f"T3 suite exit {proc.returncode}"
-    if "skipped" in out and "passed" not in out:
-        return False, "blocked", "T3 suite fully skipped (credentials/network missing)"
-    return True, "ok", "T3 suite passed"
+    if proc.returncode == 0:
+        if "skipped" in out and "passed" not in out:
+            return False, "blocked", "T3 suite fully skipped (credentials/network missing)"
+        if not _tests_reached_a_verdict(out):
+            return False, "blocked", "T3 suite collected no tests (nothing was evaluated)"
+        return True, "ok", "T3 suite passed"
+    if not _tests_reached_a_verdict(out):
+        # pytest's own wording for "nothing was collected" (exit 5) is evidence in
+        # itself: no test was evaluated, so no marker is needed.
+        if "no tests ran" in out.lower():
+            return False, "blocked", (
+                f"T3 suite collected no tests (exit {proc.returncode}) - nothing was "
+                "evaluated"
+            )
+        lowered = out.lower()
+        markers = [m for m in ENVIRONMENT_MARKERS if m in lowered]
+        if markers:
+            return False, "blocked", (
+                f"T3 suite could not run here (exit {proc.returncode}; environment: "
+                f"{', '.join(markers[:3])}) - no test reached a verdict"
+            )
+    return False, "not-ok", f"T3 suite exit {proc.returncode}"
 
 
 def _write_suite_report(ledger_path: Path, run_id: str,
