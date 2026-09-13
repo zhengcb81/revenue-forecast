@@ -91,7 +91,9 @@ def test_c1_suite_output_is_persisted_and_the_ledger_names_a_real_file(
     """F-B01-10: a failed weekly run must stay diagnosable.  The ledger used to
     record `report_path="weekly-run-<id>"` with no file behind it, so the recorded
     `exit 1` could not be explained from the record — the suite's output has to be
-    persisted, and the ledger has to point at it."""
+    persisted, and the ledger has to point at it.  The recorded value is a bare file
+    name (resolved against the ledger's directory), because the ledger is tracked
+    and an absolute path would commit this machine's profile into the repo."""
     ledger = tmp_path / "weekly_manifest.json"
     alerts = tmp_path / "weekly_alert.jsonl"
 
@@ -104,9 +106,11 @@ def test_c1_suite_output_is_persisted_and_the_ledger_names_a_real_file(
     assert w3.run_weekly(ledger, alerts) != 0
 
     data = w3.read_ledger(ledger)
-    report = Path(data["report_path"])
-    assert report.name == f"weekly-run-{data['latest_run_id']}.log", report
-    assert report.is_file(), "report_path must name a real file"
+    recorded = data["report_path"]
+    assert recorded == f"weekly-run-{data['latest_run_id']}.log", recorded
+    assert not Path(recorded).is_absolute(), "a tracked ledger must stay portable"
+    report = ledger.parent / recorded
+    assert report.is_file(), "report_path must name a real file beside the ledger"
     text = report.read_text(encoding="utf-8")
     assert "RuntimeError: no tool" in text, "the failure reason must be recoverable"
     assert "status=not-ok" in text and data["latest_run_id"] in text
@@ -135,7 +139,7 @@ def test_c1_report_write_failure_never_breaks_the_assurance_run(tmp_path, monkey
 
     data = w3.read_ledger(ledger)
     assert data["ok"] is False and data["latest_run_id"]
-    assert Path(data["report_path"]).name == f"weekly-run-{data['latest_run_id']}.log"
+    assert data["report_path"] == f"weekly-run-{data['latest_run_id']}.log"
     entry = json.loads(alerts.read_text(encoding="utf-8").strip().splitlines()[0])
     assert entry["status"] == "not-ok" and entry["exit_code"] == 3
 

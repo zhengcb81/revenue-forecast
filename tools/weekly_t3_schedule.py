@@ -89,13 +89,19 @@ def _suite_outcome(proc: subprocess.CompletedProcess) -> tuple[bool, str, str]:
 def _write_suite_report(ledger_path: Path, run_id: str,
                         proc: subprocess.CompletedProcess, ok: bool,
                         status: str, detail: str) -> str:
-    """Persist the suite's output beside the ledger; return the path recorded in it.
+    """Persist the suite's output beside the ledger; return the file NAME.
 
     F-B01-10 (2026-09-13): the weekly ledger recorded ``not-ok`` / ``exit 1`` while
     the subprocess output lived only in memory and ``report_path`` was a label with
     no file behind it, so that failure could not be diagnosed from the record at
-    all.  The daily T2 runner already records a real report path; this makes the
-    weekly loop do the same.
+    all.
+
+    The returned value is deliberately a bare file name, not an absolute path: the
+    ledger is a TRACKED artifact, so an absolute path would bake this machine's user
+    profile into the repository - the machine-scoped-constant class F-B01-9 is
+    about.  The report always sits next to the ledger, so the name resolves
+    unambiguously; the daily T2 runner records an absolute path only because its
+    report lives in a different directory tree.
     """
     target = ledger_path.parent / f"weekly-run-{run_id}.log"
     output = (proc.stdout or "") + (proc.stderr or "")
@@ -112,7 +118,7 @@ def _write_suite_report(ledger_path: Path, run_id: str,
         target.write_text(body, encoding="utf-8")
     except OSError as exc:  # a diagnostic file must never break the assurance run
         print(f"warning: could not persist the suite report: {exc}", file=sys.stderr)
-    return str(target)
+    return target.name
 
 
 def run_weekly(ledger_path: Path, alert_path: Path) -> int:
