@@ -15,9 +15,10 @@
 ## F-B00-6：验收用例与矩阵 ID 的**双向可追溯性**不足（B 侧 5 处 L-ID 在用例文件里没被点名）
 
 - **怎么发现的**：B 阶段七步实现完毕后，我用自建的完整性检查 [evidence/l_coverage_check.py](evidence/l_coverage_check.py) 把**验收映射表**（`test-acceptance-map.md` §1 每步的矩阵列）与**代码**对了一遍（产出 [evidence/l-item-coverage.json](evidence/l-item-coverage.json)）：解析表里 B01–B07 声称覆盖的 L-ID，再去 B 侧新增的 7 个契约测试文件里找这些 ID 的**文字点名**。
-- **结果**：**L05 / L08 / L09 / L11 四个 ID 在任何 B 侧用例文件里都没有出现**（相应地，表里 5 处"步骤→ID"的声称在代码侧没有落点：B01→L11、B03→L05、B05→L08、B06→L09、B07→L11）；另有 L04/L06/L12 只在 `test_r4b02_candidate_selection.py` 里被点名，**不是**由声称覆盖它的那一步的文件点名。
+- **结果（处置前的实测）**：**当时**有四个 ID（**L05 / L08 / L09 / L11**）在任何 B 侧用例文件里**都找不到点名**（相应地，表里 5 处"步骤→ID"的声称在代码侧没有落点：B01→L11、B03→L05、B05→L08、B06→L09、B07→L11）；另有 L04/L06/L12 只在 `test_r4b02_candidate_selection.py` 里被点名，**不是**由声称覆盖它的那一步的文件点名。
 - **性质认定（重要，不要夸大成"没测"）**：**行为覆盖是有的**——L05（稳定字节/TOCTOU）由 B03 的用例覆盖、L08（合并语义）由 B05、L09（preview/资格）由 B06、L11（版本化合同）由 B07、L12（查询零写）由 B02/B07。缺的是**点名**：读者（以及 B.VR/B.AR 的抽样审查）**无法从用例侧反查**它在验哪一条矩阵 ID，只能单向从表到代码。
-- **处置**：**待两个在途复审（B06/B07）落地后再改**——那 5 个文件正在被复审测量，现在改会污染其对象（这是 F-B01-9/F-B08 记过的同类教训）。改法很小：每个用例文件的开头 docstring 加一行矩阵 ID 点名（代码行为零变化，属 F10 范围内的文字），改完**双向检查**应显示零 gap。
+- **处置（已闭环，2026-09-12）**：两个复审落地后立即补齐——脚本 [evidence/name_matrix_items.py](evidence/name_matrix_items.py) 从**验收映射表本身**读出每步的 L-ID 清单，往 7 个用例文件的 docstring 各加一行点名（**不新增任何声称**，行为零变化），提交 `0e73cf6`。**双向复检归零**：`python evidence/l_coverage_check.py` ⇒ "no mention in any B-side acceptance file: **none**；claimed items with no mention anywhere: **none**；steps whose own file does not name the item: **none**"。
+  - 过程中还顺手**修掉一处被复审指出的归属错误**（B-VR07-06）：映射表里 **L12 原本记在 B07 名下**，而 B07 并没有 L12 用例（该独立观察归 B08）⇒ 表内 B07 的矩阵列收为 **L11**，并把"L12 归 B08"写进说明列；脚本首轮据此把 L12 也写进 B07 文件的行为已被纠正（这正说明脚本必须**从表读**而不是从我的记忆读）。
 - **可复核**：`python evidence/l_coverage_check.py`（有 gap 时退出码非零）。
 
 ## F-B03-1：`B.VR`（B03）= **accepted_with_findings**（1×P1 / 4×P2 / 3×P3）→ **全部处置**（提交 `2f1ddab`/`728b5e0`/`5138546`/`5b7ef10`）

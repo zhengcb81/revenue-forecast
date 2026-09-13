@@ -88,6 +88,7 @@
     "evidence/field-owner-map.json",
     "evidence/l-item-coverage.json",
     "evidence/l_coverage_check.py",
+    "evidence/name_matrix_items.py",
     "evidence/transplant-manifest.json",
     "evidence/transplant_split.py",
     "file-scope.md",
@@ -347,7 +348,7 @@
         },
         {
           "file": "findings.md",
-          "line": 258,
+          "line": 259,
           "text": "| `legacy_observer.py:90` 入共享读取者 | 新值 @ `b-design.md:154` | ✅ |"
         }
       ],
@@ -487,7 +488,7 @@
         },
         {
           "file": "findings.md",
-          "line": 275,
+          "line": 276,
           "kind": "history",
           "text": "**其余处置**：`B-DR5-03`（`metadata_json` 胜利路径整列替换）→ 已在 §B05 第 5 条禁止，并把 F3 锚点扩到 `scanner.py:1007-1099`；`B-DR5-04`（`B-payload-hash` 无基线且需待批 CLI）→ 标注为**当前不可执行**，须先在隔离副本"
         },
@@ -576,7 +577,7 @@
       "superseded_hits": [
         {
           "file": "findings.md",
-          "line": 263,
+          "line": 264,
           "kind": "history",
           "text": "| R-6 计数 = 11 锚点（v0.1.6） | 新值 @ `file-scope.md:51`；旧断言 `9 处同型排序` 0 处 | ✅ |"
         },
@@ -970,17 +971,17 @@
       "required_hits": [
         {
           "file": "findings.md",
-          "line": 203,
+          "line": 204,
           "text": "| **B-VR02R2-05** | P3 | 证据与代码不一致三处：(a) `b02-red-green-post-b02.json` 仍是 rev1 时代产物；(b) 测试文件 module docstring 还写着 rev1 的\"偏好而非硬门\"语义；(c) 证据 §1 行锚最多偏移 7 行；另\"每条 find"
         },
         {
           "file": "findings.md",
-          "line": 234,
+          "line": 235,
           "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
         },
         {
           "file": "findings.md",
-          "line": 234,
+          "line": 235,
           "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
         },
         {
@@ -1036,12 +1037,12 @@
         },
         {
           "file": "findings.md",
-          "line": 216,
+          "line": 217,
           "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
         },
         {
           "file": "findings.md",
-          "line": 216,
+          "line": 217,
           "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
         }
       ],
@@ -1092,12 +1093,12 @@
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 203,
+          "line": 201,
           "text": "\"verdict\": \"rejected\","
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 243,
+          "line": 241,
           "text": "\"verdict\": \"rejected\","
         }
       ],
@@ -1120,19 +1121,19 @@
         },
         {
           "file": "findings.md",
-          "line": 181,
+          "line": 182,
           "text": "| **B-VR02R3-01** | **P2** | **\"锚点 = pre-B02 会服务的那一行，故『不宽于 pre-B02』由构造保证\"这句话为假**（两个反例）：(a) 唯一副本在 `my.rejections_backup/2025.pdf`（含 `.rejections` **子串**但非路径段）且字节"
         },
         {
           "file": "findings.md",
-          "line": 181,
+          "line": 182,
           "text": "| **B-VR02R3-01** | **P2** | **\"锚点 = pre-B02 会服务的那一行，故『不宽于 pre-B02』由构造保证\"这句话为假**（两个反例）：(a) 唯一副本在 `my.rejections_backup/2025.pdf`（含 `.rejections` **子串**但非路径段）且字节"
         }
       ],
       "superseded_hits": [
         {
           "file": "findings.md",
-          "line": 232,
+          "line": 233,
           "kind": "history",
           "text": "- **残余风险（如实）**：规则 2 允许的那一行仍可能**字节已漂移**而被服务（trace 记 `unverified_<该行失败状态>_on_pre_b02_canonical`）；读路径在 B03 落地前不会拦它。**该行与 pre-B02 会服务的行并不等价**，四处差异（a/b/c/d）只有一处权威清单："
         },
@@ -1299,25 +1300,25 @@
         },
         {
           "file": "findings.md",
-          "line": 166,
+          "line": 167,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 166,
+          "line": 167,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 166,
+          "line": 167,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 166,
+          "line": 167,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         }
@@ -1391,7 +1392,7 @@
         },
         {
           "file": "findings.md",
-          "line": 182,
+          "line": 183,
           "text": "| B-VR02R3-02 | P3 | 变异 M5（删收尾守卫 `or budget.cancelled`）**存活**且非等价：取消发生在**最后一个**候选读取中时，变异体会返回句柄 | 新增 `test_r4b02_cancel_during_the_last_candidate_read`（三份全漂移 + 第"
         },
         {
@@ -1480,7 +1481,7 @@
         },
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 440,
+          "line": 438,
           "text": "\"S-7_ratchet_edit\": \"DECIDED - NOT allowed; table unchanged and asserted by test_r4b02_complexity_ratchet_table_is_not_edited\","
         },
         {
@@ -1498,7 +1499,7 @@
       "required_hits": [
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 543,
+          "line": 541,
           "text": "\"note\": (\"per-file versions matter: root-contract is v0.4.2 while operation-contract and \""
         }
       ],
@@ -1665,27 +1666,27 @@
       "verified": true
     },
     {
-      "claim": "L/P/O/M 映射的双向可追溯性缺口已如实登记（不谎称已点名）",
+      "claim": "L/P/O/M 映射双向可追溯性已归零（F-B00-6 已闭环，不再有未点名的 ID）",
       "required_hits": [
         {
-          "file": "evidence/b0607-review-disposition.md",
-          "line": 27,
-          "text": "| **B-VR07-06** | P3 | 验收表把 **L12\"查询零写\"记在 B06/B07 上**，但 B07 **没有** L12 用例（该观察归 B08） | 确认 | ✅ **应在验收表改正**（与本轮 F-B00-6 的点名工作同批）；已在本节登记，表内标注 `L12 → B08（独立观察）` |"
+          "file": "evidence/b01-implementation.md",
+          "line": 88,
+          "text": "1. **不需要跨仓迁移**：在产四个 root（`company_raw` / `dayu_portfolio` / `dropbox_stock` / `future_lake`）**本来就都实际可复用**（`future_lake` 显式 `true`，其余未声明而 kind 在列表内），所以解析器对齐后**在产"
         },
         {
-          "file": "evidence/l_coverage_check.py",
-          "line": 14,
-          "text": "Usage: python evidence/l_coverage_check.py"
+          "file": "evidence/b03_review_bytes.json",
+          "line": 13,
+          "text": "\"data_is_none\": false,"
         },
         {
-          "file": "evidence/l_coverage_check.py",
-          "line": 89,
-          "text": "out = RUN / \"evidence\" / \"l-item-coverage.json\""
+          "file": "evidence/b03_review_bytes.json",
+          "line": 36,
+          "text": "\"data_is_none\": true,"
         },
         {
-          "file": "findings.md",
-          "line": 15,
-          "text": "## F-B00-6：验收用例与矩阵 ID 的**双向可追溯性**不足（B 侧 5 处 L-ID 在用例文件里没被点名）"
+          "file": "evidence/b03_review_bytes.json",
+          "line": 52,
+          "text": "\"data_is_none\": true,"
         }
       ],
       "superseded_hits": [],
