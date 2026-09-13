@@ -90,7 +90,7 @@ FAILED tests/unit/test_writer_freeze.py::test_every_direct_writer_cli_has_an_exp
 
 harness 退出码 0 = 基线 8 passed + 三个变异全杀 + **树已还原**（`tree_restored=true`；还原走 `git checkout --`，因为普通 `write_text` 会翻转工作副本的换行而留下幻影改动）。
 
-**一处已测量、**未**采纳的范围选项（留给 owner，不擅自扩）**：把扫描根从 `tests src` 扩到 `tests src scripts`，今天实测**结果完全相同**（`violations=94 / new=0 / baseline=58 / registered=5`，因为规则①/②本就只判 `tests/`，`scripts/` 下没有未登记的 64 位常量）。扩了会多覆盖"脚本里冻结机器相关摘要"这一类；代价是**将来**在脚本里合法地冻结**内容**哈希（与宿主无关）时会被要求登记理由。故保持现范围并在本页登记这次测量。
+**一处已测量、**未**采纳的范围选项（owner 2026-09-13 已裁定：**不加**）**：把扫描根从 `tests src` 扩到 `tests src scripts`，实测**结果完全相同**（`violations=94 / new=0 / baseline=58 / registered=5`，因为规则①/②本就只判 `tests/`，`scripts/` 下没有未登记的 64 位常量）。扩了会多覆盖"脚本里冻结机器相关摘要"这一类；代价是**将来**在脚本里合法地冻结**内容**哈希（与宿主无关）时会被要求登记理由。裁定：**保持 `tests src`**，测量留档于此，便于日后复审。
 
 **本次两条 tip 的 CI（逐条取自只读 API）**：`company-wiki` tip `1fab7f6` = **success**（`34752267614`）；`revenue-forecast` tip `06458aa` = **success**（`34752249798`）。
 
