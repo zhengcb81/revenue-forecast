@@ -22,6 +22,7 @@
 | company-wiki | `2f1ddab`→`5b7ef10` | **B03 复审处置 + B01 CFG-08 空值 + B06 资格标签 + B07 版本合同**（四个独立提交，一次推送） | CI | ❌ **failure**（`Contract tests`：**我自己新用例**在 Linux 上失败——它硬编码了 Windows 路径 `C:\Windows\win.ini`） | 34724539364 |
 | company-wiki | `52d394d` | **该用例改为用本平台自己的卷锚点**（`tmp_path.anchor`：Windows `C:\`／POSIX `/`） | CI | **success** | 34724833934 |
 | company-wiki | `3740857`→`f2ba5c1` | **B06 处置 + B07 处置**（期间规则反转 + 缺口接线用例 / S-10 例外点名 + 外来版本拒绝 + 真断言；两个独立提交） | CI | **success** | 34726243938 |
+| company-wiki | `0e73cf6` | **F-B00-6 收尾**：7 个验收文件各点名自己的矩阵 ID（docstring，行为零变化；双向检查归零） | CI | **success** | 34726908410 |
 | revenue-forecast | `2ced153` | B 运行目录：B02 实施记录（rev1） | quality | **success** | 34691409601 |
 | revenue-forecast | `7b34c12` | B 运行目录：`B.VR` rev1 记录 + rev2 证据 | quality | **success** | 34693783149 |
 | revenue-forecast | `63422f1` | B 运行目录：`B.VR` rev2 记录 + rev3 证据 | quality | **success** | 34697489835 |
