@@ -22,6 +22,21 @@
 - **作者的一处自纠**：第一版变异 E 只破坏了"豁免路径"而**不是**复审所指的"整文件原始文本"行为，于是它"存活"——**是变异写错了，不是用例没覆盖**；改成忠实复现旧行为（`"skip" in ast.dump(tree)`）后即被杀死。harness 现在允许一个变异用 `-k` **表达式**绑定多条用例。
 - **未被复审覆盖的**（它自己列的 `not_checked`，与我的记录一致）：CI 日志原文、完整 6 步 pre-push 门、ruff/mypy、Linux/macOS 实机行为、87 条基线各自的语义正确性、以及"该门对未知未来缺陷类别的完备性"——**都不声称**。
 
+## FC-1307-a **推广到 revenue-forecast 与 filing-fetch**（owner 2026-09-13「可以」→ 已落地）
+
+- **前置 = 先修实测到的误报**：filing-fetch 唯一那条"能力未加守卫"是**假阳性**（`test_zr405_policy_roots.py:290-293` 用的是 unittest 的 `self.skipTest`）⇒ 守卫先补 `self.skipTest`/`skipTest`（wiki `1664ab3`，新变异 H 被杀死，harness **8/8**）。修完再测，filing-fetch 的能力命中**归零**——这也是修复生效的独立证据。
+- **先测后接（只读、空棘轮；工具已入库 [evidence/measure_guard_exposure.py](evidence/measure_guard_exposure.py)）**：
+
+  | 仓 | 根 | 扫到的 .py | 命中 | 拆分 |
+  |---|---|---|---|---|
+  | revenue-forecast | `tests tools scripts e2e` | 191 | **24 / 9 文件** | 19 绝对路径 + 5 未登记摘要 |
+  | filing-fetch | `tests tools scripts e2e` | 30 | **5 / 4 文件** | 全是路径（`C:/catalog`、`/tmp`×4） |
+
+- **收益的诚实评估（不吹）**：revenue 的 24 处里 **16 处在 CI 已 `--ignore` 的文件**里，CI 真会跑的 8 处是 `/tmp/n.md` 之类**合成字面量**（两平台行为一致）⇒ 按"会不会打红 CI"算，这两个仓今天的答案是**"不会"**；5 个摘要是**样本申报的内容哈希**（与宿主无关）⇒ 走**登记**而非基线。因此推广的真实收益是：把"30 分钟后 CI 红"提前到 **commit 时红**（那一晚就是这么发生的），并保护**未来**新写的用例——不是"修掉了一批会红的测试"。
+- **落地形态**：三仓**字节一致**的 `host_assumption_guard.py`（wiki `scripts/`、两仓 `tools/`），各自 `tests/contract/host_assumption_{baseline,allowlist}.json`（revenue **16 条基线 + 3 条登记**；filing **4 条基线**），各自接 **commit hook + pre-push 门**，外加**仓内契约测试**（门为绿 / 基线结构 / 登记理由 / **三份副本逐字节漂移检查**——兄弟检出不在时 `skip`，CI 不误红）。跨仓 import 不可行：各仓 CI 只 checkout 自己。
+- **状态**：revenue `798d3af`、filing-fetch `d35b6f5`、company-wiki `cf765a3`（CI 结果逐行见 [evidence/b02-ci-runs.md](evidence/b02-ci-runs.md)）。
+- **一处未解释的观察（如实登记，不假装查到）**：filing-fetch **第一次**跑新用例时红过一次（门子进程 exit 1 = 有新增违规），我把该文件按 UTF-8 无 BOM 重写后**无法复现**；**CRLF 与 BOM 两个假设都做了实验并被否掉**，确切原因**未定位**。当前状态经两次独立验证为绿（`tools/host_assumption_guard.py` 直跑 exit 0 + 该用例 4 passed），且两仓的测试文件与 revenue 的**逐字节相同**。
+
 ## F-B01-10（**观察项，非 B 工作、未归因**）：本机的**周度 T3 真下载套件**在 B 窗口内记了一次 `not-ok`，而**失败原因没有被留下**
 
 - **发现路径**：核对工作树时看到两个**被跟踪**的自动产物在同一轮被改动：`assurance/runs/weekly_manifest.json` 与 `assurance/runs/weekly_alert.jsonl`（两者都由 `tools/weekly_t3_schedule.py` 写，**非我本轮所写**）。
