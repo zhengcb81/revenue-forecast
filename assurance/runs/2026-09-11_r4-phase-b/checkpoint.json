@@ -227,7 +227,7 @@
     "S-13_response_blocked": "APPROVED as recommended: the response-level blocked verdict moves into B06/B07; B05's scope was NOT widened, it delivers the field-level facts and the read-side metadata_status",
     "implementation_go_ahead": "GRANTED (owner 2026-09-12, second batch); B02, B04, B05 and B01 have landed and B01 is the next review round"
   },
-  "actual_side_effects": "Unlike the design-only rounds, this run has MODIFIED PRODUCT FILES in company-wiki: src/company_wiki/source_catalog/service.py, src/company_wiki/source_catalog/scanner.py (the B05 merge path), src/company_wiki/source_catalog/resolver.py, plus four new files under tests/contract/ (test_r4b02_candidate_selection.py, test_r4b04_reference_stability.py, test_r4b05_metadata_provenance.py, test_r4b01_field_owner_alignment.py) - all inside the authorized file scope (F1/F2/F3/F10) and pushed (cab1fd6 ... 9826b3c, then 0e28d99 for B01). Executed locally: pytest (including the full suite with coverage), ruff, git worktree, read-only probes over synthetic tmp fixtures (including evidence/b01_fc1001_probe.py, which builds the FC-1001 lake in a temp directory to explain the F-B01-7 gate failure), and mutation harnesses that restore the product files to the same digest. NOT executed: any network/download/LLM egress, any product-data write, any DB write, task registration, worker action or deletion; no behavioural probe against the production catalog. The run directory IS pushed (origin/main) and every push ran revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY and advances -shm (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md); that gate is currently RED for the F-B01-7 reason, so the B01 run-directory commits remain LOCAL and no push was attempted with --no-verify. Several pre-existing wiki tests also open the production catalog read-only when the suite runs (known limitation, attributed in phase A).",
+  "actual_side_effects": "Unlike the design-only rounds, this run has MODIFIED PRODUCT FILES in company-wiki: src/company_wiki/source_catalog/service.py, src/company_wiki/source_catalog/scanner.py (the B05 merge path), src/company_wiki/source_catalog/resolver.py, plus four new files under tests/contract/ (test_r4b02_candidate_selection.py, test_r4b04_reference_stability.py, test_r4b05_metadata_provenance.py, test_r4b01_field_owner_alignment.py) - all inside the authorized file scope (F1/F2/F3/F10) and pushed (cab1fd6 ... 9826b3c, then 0e28d99 for B01). Executed locally: pytest (including the full suite with coverage), ruff, git worktree, read-only probes over synthetic tmp fixtures (including evidence/b01_fc1001_probe.py, which builds the FC-1001 lake in a temp directory to explain the F-B01-7 gate failure), and mutation harnesses that restore the product files to the same digest. DECLARED, not evidenced (G5 closed 2026-09-15 by an independent read-only observation, reviews/G5-boundary-observation.json): no CLI of the product was executed by the authoring session, and no network/download/LLM egress, task registration, worker action or deletion was performed. This host keeps no launch log, so that half is UNFALSIFIABLE - no read-only instrument can confirm or refute it - and it is recorded as a declaration rather than a result. EVIDENCED: no persisted write to the production catalog - catalog.sqlite3 (49,677,344,768 B) still carries its 2026-09-08 22:23:21 mtime and -wal is 0 bytes (main DB independently re-confirmed 2026-09-15). NOT evidenced either way: whether a session opened the catalog read-only, because -shm moves on this host with no session acting (the observer measured >=4 advances in 2.5 minutes while running only Get-Item, and the OS refused to hash -wal/-shm because another process held the catalog open), so -shm movement reproduces mechanically but cannot attribute. Known opens inside the window: the mandatory pre-push gate of every push (its real-data suite opens the production catalog READ-ONLY), the 22:00 daily task, and several pre-existing wiki tests. At the time of writing that gate was RED for the F-B01-7 reason, so the B01 run-directory commits were local; the owner later resolved that blocker (decision A) and every commit of this run is pushed - never with --no-verify. Several pre-existing wiki tests also open the production catalog read-only when the suite runs (known limitation, attributed in phase A).",
   "failed_or_unknown": [
     "BLOCKER (F-B01-7): after B01 landed, revenue-forecast's pre-push gate (real-data suite) is RED on tests/test_fc1001_isolated_lake.py::test_corruption_variants_fail_closed[sidecar_missing]. Root cause located with a six-way probe (evidence/b01_fc1001_probe.py): that case NEVER passed for the reason it names - the rejection came from the resolver's old kind-only reuse gate under the case's inline synthetic config (default reusable_root_kinds=['company_raw'] against a 'directory' root), and under the production-shaped config the same document resolves BOTH before and after B01 (matches=1), including after a re-scan and with sidecar_suffixes declared. So B01 removed an incidental cover, not an identity check (the entity gate still rejects as before), and the case's fail-closed expectation has never held in production - the real gap it exposes (a document whose sidecar is missing must not default to a trusted filing) belongs to B06 by the design text. The fix is a one-case correction in revenue-forecast, which is OUTSIDE phase B's file scope, so it is with the owner (options A-D in findings F-B01-7). Until then the revenue-side commits stay local; the gate was NOT bypassed",
     "B03/B06/B07 are still design-only: the byte-level hard gate ('serve verified bytes or fail explicitly') does not exist yet, so a preferred copy whose bytes drifted is served on the catalog's claim (S-10's other half, assigned to B03), and no response-level blocked verdict exists yet (S-13, assigned to B06/B07)",
@@ -246,22 +246,22 @@
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "0e73cf69719031c9a5a45752755fc9940a03fa31",
+      "head": "cf765a3a4eb7b4432dc30a9867283b5aeb15794b",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "3474d6412802538acd0b9a4b76332672f828ecf8",
+      "head": "ffc08b73adfe278a4502c59dfb0c1fafb796d504",
       "dirty": 0
     },
     "filing-fetch": {
-      "head": "b44edd8182028f6a134c30bc58f5900fdc539aab",
+      "head": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
       "dirty": 0
     }
   },
-  "reviewed_commit": "3474d6412802538acd0b9a4b76332672f828ecf8",
+  "reviewed_commit": "ffc08b73adfe278a4502c59dfb0c1fafb796d504",
   "commit_anchor": {
-    "head": "3474d6412802538acd0b9a4b76332672f828ecf8",
-    "index_tree": "908b231e0a59ced9058843829150617ae4eb7d15",
+    "head": "ffc08b73adfe278a4502c59dfb0c1fafb796d504",
+    "index_tree": "af8c25b4dda81344c9b8b9229740db46ac911b14",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -276,6 +276,10 @@
     "b-vr-protocol.md": {
       "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
       "size": 7366
+    },
+    "b08-mechanism-plan.md": {
+      "sha256": "ad75079175fe9c8e2a888850f3c0cc1a37d827c8e988029182950951519536b0",
+      "size": 3896
     },
     "evidence/b01-fc1001-probe.json": {
       "sha256": "9deeb5256f8e7448676efa25435fef283795c39c48f166f361b9386874c4dd3e",
@@ -310,8 +314,8 @@
       "size": 2905
     },
     "evidence/b02-ci-runs.md": {
-      "sha256": "bbd7860c66a49c997978b55a677f5593667ba4bee159897d1e5901120ab72f3a",
-      "size": 8037
+      "sha256": "3b2932a89af74c7e9980e30d109b63d849789fd15b998c53f25bac137c52da74",
+      "size": 15630
     },
     "evidence/b02-implementation.md": {
       "sha256": "cccbda6085f3254a5d13d7337887016b4a76ad3344aaf4b672ce257cac847dcc",
@@ -586,24 +590,40 @@
       "size": 50887
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "e29ab6b7f4a1fea268bb1096c5ca7bbdaf4c27a7a95dd8cece088146ab0f140a",
-      "size": 40364
+      "sha256": "3444c7649b77ab57592a24a7b223a8387945338d762868f21008a96b6178ca2c",
+      "size": 41353
+    },
+    "evidence/ci_audit.py": {
+      "sha256": "6013ac03d0468aa80fe1256d6ff2d3bde854f58a7270106d5c77be5986116b94",
+      "size": 2695
+    },
+    "evidence/ci_failures.py": {
+      "sha256": "2e629d73e45205a02907f82866b431efcd7cc323442eeac4263b169d6602696a",
+      "size": 2780
     },
     "evidence/ci_logs.py": {
       "sha256": "76f1e3a5384115f485bfd27348c3f237bdd342c6d2e44d498ab45dd8b5de7e4e",
       "size": 3904
+    },
+    "evidence/ci_progress.py": {
+      "sha256": "5ef52cc0fe55562a0733122302e9237c7fd5da8c825a76d5fcd045544f0ead37",
+      "size": 3060
     },
     "evidence/ci_query.py": {
       "sha256": "742e2af08750ae4edbbd143162d126a21867e1e66a17f03e5ed2b62e0dc085d8",
       "size": 2304
     },
     "evidence/claim-fact-audit.json": {
-      "sha256": "d3ce9fc358d65a8ad8098b294e796f54d720e7cc1b3dfc3a4391a26f666e18f0",
-      "size": 108153
+      "sha256": "507b2eda3e7e946aa44d9c03f355c62f8d2c19676a83afeaa68dcd7e4c42f165",
+      "size": 110669
     },
     "evidence/claim_fact_audit.py": {
-      "sha256": "5fda169c25e307bb50a45315d144b6b0c8a839a07b1366b94c44038e665f4997",
-      "size": 20126
+      "sha256": "38dc00a5fe8e22b4b848363c116b4121f17b4d0a8659680a4e5853c21f9efca4",
+      "size": 20511
+    },
+    "evidence/fc1307a_mutations.py": {
+      "sha256": "4189a6a3a08041d4bb78e3908e99a00db00e86af5283f7b1bcbb2faed5e7edef",
+      "size": 7513
     },
     "evidence/field-owner-map.json": {
       "sha256": "d8b76aa21010b9f2895935f4d7de767b266dfaf5590d49d8f16d704fea3fe08e",
@@ -617,6 +637,10 @@
       "sha256": "55b3e956a07fb22c745cbc78853ab7cfb197625002de3b77113eadb654af13b5",
       "size": 4025
     },
+    "evidence/measure_guard_exposure.py": {
+      "sha256": "ccfe3dfa065da66d2bf489928c15fe67b85440b66cd49d9508e838cca69459bd",
+      "size": 2612
+    },
     "evidence/name_matrix_items.py": {
       "sha256": "e0ff7ecef7b57ecc966bf13cb797c38deb85ba68c0afbb6d26d52d0c3120bda2",
       "size": 3044
@@ -629,21 +653,45 @@
       "sha256": "f30b001e078ed52d6728bed151b58c615986b20d8713cd8655c9f8468a5a70b9",
       "size": 8089
     },
+    "evidence/zr902_mutations.py": {
+      "sha256": "88a1a0245a155376b9c928ecbfad9163d453b3e45b98ed9eb6a2193fdb9a422c",
+      "size": 4704
+    },
+    "evidence/zr903_mutations.py": {
+      "sha256": "fc1148167ae11216851df4001c165758d66fd5189dad688df3f69b8f34cdc907",
+      "size": 6493
+    },
     "file-scope.md": {
       "sha256": "3d8131518ddf03f3888f489019a1b5cd378328f8e0690186f84ffbe3637d4910",
       "size": 12565
     },
     "findings.md": {
-      "sha256": "21d3a8305c17f240a106560c712d4cd971724bd05dff6379730cab40b8d00172",
-      "size": 83221
+      "sha256": "ea63ebd79c0073addedd5a65b12c5467c140fae653b5b34292714829bcd7e321",
+      "size": 114046
+    },
+    "operator-reviewer-assignment-DRAFT.md": {
+      "sha256": "83ccba5782b8a0b2006cbe9652aff62761fd9015a640bdb2aa3e66475a75bc10",
+      "size": 3055
     },
     "owner-scope-decisions-2026-09-12.md": {
       "sha256": "cb6ac486f03de140a4dfdd308b7dd484809ded199c69122d8e180bc5c3483d24",
       "size": 10926
     },
+    "owner-scope-decisions-2026-09-13.md": {
+      "sha256": "4d1b06e3deb26695cf4b85fb0b7aac4a5be0589c221ecdeb7a75269d2b9f0362",
+      "size": 3558
+    },
+    "packages/b05-read-side-malformed-columns.md": {
+      "sha256": "2c9a4d003e1ebbba1e99166310c596518d4a1f4f83adb1d1e053e38012f17df0",
+      "size": 2727
+    },
+    "packages/fc1301-taxonomy-coverage.md": {
+      "sha256": "032164029d4448ad91d2ccf375123b62679103180ba01077e5076e72792866de",
+      "size": 3323
+    },
     "progress.md": {
-      "sha256": "3631fcf12e242558074e955a641371b4ce49cff7b8e2c8c4476452f5721f9230",
-      "size": 38204
+      "sha256": "448c2690827b75c7e484a55b151ff8f63d107713c897c9af5c5756a02f0f3e80",
+      "size": 42146
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -709,6 +757,18 @@
       "sha256": "de4c03b95b96e5b4ccb0e54bf8407609c23b8e5e0afd3bcc0f97e188e85b1ac0",
       "size": 41259
     },
+    "reviews/B.VR-fc1307a.json": {
+      "sha256": "e2914b6b07ed90cf158745e9623a8f39197807f59ef975c51de36fd1b835e5b3",
+      "size": 36256
+    },
+    "reviews/B.VR-zr903.json": {
+      "sha256": "8d0b5c66f98f0db3f262bc814687f8fde6b4008df45b370a0ed9801f915bb809",
+      "size": 47057
+    },
+    "reviews/G5-boundary-observation.json": {
+      "sha256": "3526df73a8245c25c71da998b1c4718c3deb2c1a680ced213677f09031f04595",
+      "size": 46832
+    },
     "risk-and-stop-rules.md": {
       "sha256": "c6aab0d76c8c0ff946de655c9da09901d3cc898c1e2cdf2fac21c967cd6ab24c",
       "size": 7165
@@ -723,11 +783,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 114,
+    "checked": 129,
     "source": "index",
-    "compared_revision": "908b231e0a59ced9058843829150617ae4eb7d15",
-    "head_revision": "3474d6412802538acd0b9a4b76332672f828ecf8",
-    "index_tree": "908b231e0a59ced9058843829150617ae4eb7d15",
+    "compared_revision": "af8c25b4dda81344c9b8b9229740db46ac911b14",
+    "head_revision": "ffc08b73adfe278a4502c59dfb0c1fafb796d504",
+    "index_tree": "af8c25b4dda81344c9b8b9229740db46ac911b14",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -737,8 +797,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 114,
-    "files_listed": 114,
+    "files_on_disk": 129,
+    "files_listed": 129,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -747,5 +807,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-13T00:11:53.832362+00:00"
+  "generated_at_utc": "2026-09-15T22:02:48.095522+00:00"
 }
