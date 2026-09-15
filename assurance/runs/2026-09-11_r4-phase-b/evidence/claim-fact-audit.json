@@ -5,6 +5,7 @@
     ".gitattributes",
     "b-design.md",
     "b-vr-protocol.md",
+    "b08-mechanism-plan.md",
     "evidence/b01-fc1001-probe.json",
     "evidence/b01-implementation.md",
     "evidence/b01-review-disposition.md",
@@ -96,10 +97,15 @@
     "evidence/name_matrix_items.py",
     "evidence/transplant-manifest.json",
     "evidence/transplant_split.py",
+    "evidence/zr902_mutations.py",
     "evidence/zr903_mutations.py",
     "file-scope.md",
     "findings.md",
+    "operator-reviewer-assignment-DRAFT.md",
     "owner-scope-decisions-2026-09-12.md",
+    "owner-scope-decisions-2026-09-13.md",
+    "packages/b05-read-side-malformed-columns.md",
+    "packages/fc1301-taxonomy-coverage.md",
     "product:C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/resolver.py",
     "product:C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/service.py",
     "product:C:/Users/郑曾波/Projects/company-wiki/tests/contract/test_r4b02_candidate_selection.py",
@@ -122,6 +128,7 @@
     "reviews/B.VR-b07.json",
     "reviews/B.VR-fc1307a.json",
     "reviews/B.VR-zr903.json",
+    "reviews/G5-boundary-observation.json",
     "risk-and-stop-rules.md",
     "task_plan.md",
     "test-acceptance-map.md"
@@ -356,7 +363,7 @@
         },
         {
           "file": "findings.md",
-          "line": 358,
+          "line": 374,
           "text": "| `legacy_observer.py:90` 入共享读取者 | 新值 @ `b-design.md:154` | ✅ |"
         }
       ],
@@ -496,7 +503,7 @@
         },
         {
           "file": "findings.md",
-          "line": 375,
+          "line": 391,
           "kind": "history",
           "text": "**其余处置**：`B-DR5-03`（`metadata_json` 胜利路径整列替换）→ 已在 §B05 第 5 条禁止，并把 F3 锚点扩到 `scanner.py:1007-1099`；`B-DR5-04`（`B-payload-hash` 无基线且需待批 CLI）→ 标注为**当前不可执行**，须先在隔离副本"
         },
@@ -585,7 +592,7 @@
       "superseded_hits": [
         {
           "file": "findings.md",
-          "line": 363,
+          "line": 379,
           "kind": "history",
           "text": "| R-6 计数 = 11 锚点（v0.1.6） | 新值 @ `file-scope.md:51`；旧断言 `9 处同型排序` 0 处 | ✅ |"
         },
@@ -979,17 +986,17 @@
       "required_hits": [
         {
           "file": "findings.md",
-          "line": 303,
+          "line": 319,
           "text": "| **B-VR02R2-05** | P3 | 证据与代码不一致三处：(a) `b02-red-green-post-b02.json` 仍是 rev1 时代产物；(b) 测试文件 module docstring 还写着 rev1 的\"偏好而非硬门\"语义；(c) 证据 §1 行锚最多偏移 7 行；另\"每条 find"
         },
         {
           "file": "findings.md",
-          "line": 334,
+          "line": 350,
           "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
         },
         {
           "file": "findings.md",
-          "line": 334,
+          "line": 350,
           "text": "- **证据**：[evidence/b02-implementation.md](evidence/b02-implementation.md) §3（复跑命令）；[evidence/b02-red-green-pre-b02.json](evidence/b02-red-green-pre-b02.json) / "
         },
         {
@@ -1045,12 +1052,12 @@
         },
         {
           "file": "findings.md",
-          "line": 316,
+          "line": 332,
           "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
         },
         {
           "file": "findings.md",
-          "line": 316,
+          "line": 332,
           "text": "| **B-VR02-02** | **P1** | rev1 让 `is_canonical` 变成\"有资格才选\"，于是**未修改的** `duplicate_cleanup.list_groups()`（`:228` 的 `next(... is_canonical)` 无默认值）在\"同文档两份 `.rejecti"
         }
       ],
@@ -1129,19 +1136,19 @@
         },
         {
           "file": "findings.md",
-          "line": 281,
+          "line": 297,
           "text": "| **B-VR02R3-01** | **P2** | **\"锚点 = pre-B02 会服务的那一行，故『不宽于 pre-B02』由构造保证\"这句话为假**（两个反例）：(a) 唯一副本在 `my.rejections_backup/2025.pdf`（含 `.rejections` **子串**但非路径段）且字节"
         },
         {
           "file": "findings.md",
-          "line": 281,
+          "line": 297,
           "text": "| **B-VR02R3-01** | **P2** | **\"锚点 = pre-B02 会服务的那一行，故『不宽于 pre-B02』由构造保证\"这句话为假**（两个反例）：(a) 唯一副本在 `my.rejections_backup/2025.pdf`（含 `.rejections` **子串**但非路径段）且字节"
         }
       ],
       "superseded_hits": [
         {
           "file": "findings.md",
-          "line": 332,
+          "line": 348,
           "kind": "history",
           "text": "- **残余风险（如实）**：规则 2 允许的那一行仍可能**字节已漂移**而被服务（trace 记 `unverified_<该行失败状态>_on_pre_b02_canonical`）；读路径在 B03 落地前不会拦它。**该行与 pre-B02 会服务的行并不等价**，四处差异（a/b/c/d）只有一处权威清单："
         },
@@ -1308,25 +1315,25 @@
         },
         {
           "file": "findings.md",
-          "line": 266,
+          "line": 282,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 266,
+          "line": 282,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 266,
+          "line": 282,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         },
         {
           "file": "findings.md",
-          "line": 266,
+          "line": 282,
           "kind": "history",
           "text": "| **B-VR02R4-01** | **P2** | \"六处同步\"实际只到 **4/9 处**：被证伪的等价说法仍在 **5 个位置**——测试 docstring（逐字 `strictly no wider than pre-B02`，标签还是 rev3）、`resolver.py` 注释首两行（与紧随其后的段落"
         }
@@ -1400,7 +1407,7 @@
         },
         {
           "file": "findings.md",
-          "line": 282,
+          "line": 298,
           "text": "| B-VR02R3-02 | P3 | 变异 M5（删收尾守卫 `or budget.cancelled`）**存活**且非等价：取消发生在**最后一个**候选读取中时，变异体会返回句柄 | 新增 `test_r4b02_cancel_during_the_last_candidate_read`（三份全漂移 + 第"
         },
         {
@@ -1507,7 +1514,7 @@
       "required_hits": [
         {
           "file": "evidence/build_checkpoint.py",
-          "line": 541,
+          "line": 551,
           "text": "\"note\": (\"per-file versions matter: root-contract is v0.4.2 while operation-contract and \""
         }
       ],
@@ -1665,7 +1672,7 @@
         },
         {
           "file": "evidence/b02-ci-runs.md",
-          "line": 73,
+          "line": 77,
           "text": "**红的是新门自己，且三份 Python 一致**（`run 34751519232`，三个 `test (*)` job 的 `Unit tests` 步）。日志原文（只读 API 取回，`ci_logs.py`）："
         }
       ],

@@ -1,0 +1,295 @@
+{
+  "review": "G5-boundary-observation",
+  "observed_at_utc": "2026-09-15T21:54:43Z .. 2026-09-15T21:58:35Z (observation window; every number below carries the instant at which it was read). Local clock = UTC+01:00 on this host: Get-TimeZone reports Id 'GMT Standard Time' with BaseUtcOffset 00:00 and DST in effect, and (Get-Date) returned 2026-09-15T22:54:43.8820951+01:00 while (Get-Date).ToUniversalTime() returned 2026-09-15T21:54:43.8917300Z - i.e. local = UTC+1h.",
+  "observer_agent_id": "41919c15-f755-4ce0-b4fa-ba910a41b9a3 - this is $env:DSH_SESSION_ID read from the observer process environment, i.e. PROCESS-LEVEL SELF-REPORT. Nothing in this record proves that this id names an independent session; the same class of self-declaration that G5 exists to replace applies to this field. The owner's authorization for this step is recorded at owner-scope-decisions-2026-09-13.md:10 (row 3, 'G5 boundary observation: DO (independent, read-only)').",
+  "independence_statement": "I did not author any artefact under observation. I did not write, edit, move or delete any file under company-wiki, revenue-forecast or filing-fetch; commits, checkouts, adds, resets, stash and pushes were not run. The only file I created is this record. Command classes RAN: (1) file metadata reads - Get-Item / Get-ChildItem -Force -Recurse on .source_catalog and on the run directory, reading Length, LastWriteTime, LastWriteTimeUtc, CreationTime, CreationTimeUtc, LastAccessTime, Attributes; (2) Get-FileHash -Algorithm SHA256 on catalog.sqlite3-wal and catalog.sqlite3-shm ONLY (never on catalog.sqlite3); (3) read-only git in all three repos - rev-parse HEAD, rev-parse --abbrev-ref HEAD, status --porcelain, log (--since/--until/--all), no log/show/diff of blob content was needed and none was run against the catalog; (4) text search with ripgrep over the run directory and phase-A directory; (5) plain reads of run-directory markdown/json; (6) read-only process inspection - Get-Process (Id, ProcessName, StartTime) and Get-CimInstance Win32_Process (ProcessId, Name, CreationDate, CommandLine) - used only to test whether a local process could be holding the catalog open; (7) two passive sampling loops (stat every 2 s for 60 s and for 45 s) that performed no operation other than Get-Item on the three catalog files plus Get-Process. Command classes NOT ran: no CLI of the wiki product (not even --help), no pytest, no python invocation of any project module, no sqlite3/DBAPI open or query of catalog.sqlite3, no read of the bytes of catalog.sqlite3 and no hash of it, no network, no download, no package install, no scheduled-task or worker action, no write outside this record, and nothing touched inside .tmp-zr408-* or .review-zr407-*. No sandbox escalation was requested (approval prompts are disabled in this session).",
+  "catalog_metadata": {
+    "catalog.sqlite3": {
+      "full_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3",
+      "length_bytes": 49677344768,
+      "last_write_time_local": "2026-09-08T22:23:21.0727473+01:00",
+      "last_write_time_utc": "2026-09-08T21:23:21.0727473Z",
+      "creation_time_local": "2026-07-18T14:24:29.7298724+01:00",
+      "creation_time_utc": "2026-07-18T13:24:29.7298724Z",
+      "last_access_time_local": "2026-09-15T22:57:59.1840293+01:00 (observed at the final snapshot; this field moved during my own observation and is NOT trustworthy evidence - see notes)",
+      "attributes": "Archive",
+      "sha256": "DELIBERATELY NOT COMPUTED - hashing this 46.3 GiB content file was forbidden by the task; it was also never opened or queried by any command I ran",
+      "stability": "Length and LastWriteTime were identical in all four snapshots I took (22:54:4x, 22:55:26, 22:58:00, 22:58:34 local). The main database file has not been written since 2026-09-08T22:23:21+01:00, i.e. BEFORE the authoring window (2026-09-12..2026-09-13) began.",
+      "command": "Get-Item -LiteralPath <path> -Force | Select Length,LastWriteTime,LastWriteTimeUtc,CreationTime,CreationTimeUtc,LastAccessTime,Attributes"
+    },
+    "-wal": {
+      "full_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3-wal",
+      "length_bytes": 0,
+      "last_write_time_local": "2026-09-13T00:01:27.9844681+01:00",
+      "last_write_time_utc": "2026-09-12T23:01:27.9844681Z",
+      "creation_time_local": "2026-09-04T09:07:46.2625603+01:00",
+      "creation_time_utc": "2026-09-04T08:07:46.2625603Z",
+      "last_access_time_local": "2026-09-13T00:01:27.9844681+01:00",
+      "attributes": "Archive",
+      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855 (obtained once, at ~2026-09-15T22:55:07+01:00). That digest is exactly the SHA-256 of the empty byte string, which agrees with Length=0. Later attempts at 22:57:5x and 22:58:0x local were REFUSED by the OS: 'The process cannot access the file ... because it is being used by another process.' So even this 0-byte side file cannot be hashed on demand right now.",
+      "stability": "Length stayed 0 and LastWriteTime stayed 2026-09-13T00:01:27.9844681+01:00 across all four snapshots and both passive windows - i.e. it did NOT move during my observation, while -shm moved repeatedly.",
+      "command": "Get-FileHash -LiteralPath <path> -Algorithm SHA256  (allowed: metadata side file); Get-Item -LiteralPath <path> -Force"
+    },
+    "-shm": {
+      "full_path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3-shm",
+      "length_bytes": 32768,
+      "last_write_time_local": "MOVED REPEATEDLY DURING MY OBSERVATION. Sequence observed (local, UTC+01:00): 2026-09-15T22:28:14.3560748 (first snapshot, 22:54:4x) -> 2026-09-15T22:55:32 (Get-ChildItem, second precision) -> 2026-09-15T22:56:02.547 (UTC 21:56:02.547) -> 2026-09-15T22:56:12.824 (UTC 21:56:12.824) -> 2026-09-15T22:57:41.2538884 (final snapshots at 22:58:00 and 22:58:34). A separate earlier sample in the very first passive window already read UTC 21:55:48.931.",
+      "last_write_time_utc": "2026-09-15T21:57:41.2538884Z (value at the end of the observation window)",
+      "creation_time_local": "2026-09-04T09:07:46.2635777+01:00",
+      "creation_time_utc": "2026-09-04T08:07:46.2635777Z",
+      "last_access_time_local": "2026-09-15T22:57:41.2538884+01:00 (at the final snapshot LastAccess equalled LastWrite; at 22:55:07 LastAccess was 22:55:07.2064506, which is my own Get-FileHash read - so this field tracks readers too and is not clean evidence)",
+      "attributes": "Archive",
+      "sha256": "FD4C9FDA9CD3F9AE7C962B0DDF37232294D55580E1AA165AA06129B8549389EB (obtained ONCE at ~2026-09-15T22:55:07+01:00). It is NOT reproducible: hashing at 22:58:0x local failed twice, 6 s apart, with 'The file ... cannot be read: The process cannot access the file ... because it is being used by another process.' Given the observed rewrite cadence, any such digest is a fleeting value, not an identity.",
+      "stability": "NOT STABLE. Advanced at least four times inside a 2.5-minute window (22:55:32, 22:56:02.5, 22:56:12.8, 22:57:41.3 local). During the 45 s triple-file window the value changed once; during the 60 s single-file window it changed twice.",
+      "command": "Get-FileHash -LiteralPath <path> -Algorithm SHA256  (allowed: metadata side file); Get-Item -LiteralPath <path> -Force"
+    },
+    "why_shm_mtime_matters": "In WAL mode SQLite must open and map the -shm shared-memory index for ANY connection, including a strictly read-only one, so a -shm write proves 'a process opened this database' and does NOT prove 'a logical write happened'. The phase-A record states exactly this mechanism at 2026-09-11_r4-phase-a/boundary-audit.md:21 and calibrates it at :66. I independently reproduced the PHENOMENON today: -shm advanced repeatedly while catalog.sqlite3 (last write 2026-09-08) and catalog.sqlite3-wal (0 bytes, last write 2026-09-13T00:01:27+01:00) both stayed frozen. Separately, at ~22:58 local the OS refused to let me read -shm and -wal at all because another process holds them - direct evidence that a foreign process had the catalog open at that moment.",
+    "sibling_and_directory_context": {
+      "directory": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog",
+      "directory_last_write_time_local": "2026-09-13T00:01:27+01:00",
+      "directory_creation_time_local": "2026-07-18T14:24:29+01:00",
+      "entry_counts": "941 entries = 929 files + 12 directories (Get-ChildItem -Force)",
+      "other_sqlite_named_files": [
+        "catalog.db | 0 bytes | 2026-08-10 22:18:40 (local)",
+        "catalog.sqlite3.pre-remediation-2026-08-09 | 49314422784 bytes | 2026-08-09 21:11:54 (local)"
+      ],
+      "files_modified_since_2026-09-11": [
+        "catalog.sqlite3-wal | 0 B | 2026-09-13 00:01:27 (local)",
+        "legacy_periods.json | 5150 B | 2026-09-15 22:00:41 (local)",
+        "catalog.sqlite3-shm | 32768 B | 2026-09-15 22:5x (moving, see above)"
+      ],
+      "significance": "legacy_periods.json (5150 B) was written TODAY at 2026-09-15 22:00:41 +01:00, roughly 54 minutes before my first snapshot, and I wrote nothing. That is the 22:00 daily task the phase-A record calibrates at boundary-audit.md:17/:66 (revenue_daily_t2 -> wiki legacy_observer.py --read-only). It means the .source_catalog tree mutates on a schedule with no human session involved, so a naive before/after mtime diff will produce false positives."
+    }
+  },
+  "shm_history_from_run_records": [
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:11",
+      "quoted": "| `catalog.sqlite3-shm` LastWriteTime | **2026-09-11 21:18:15** | [reviews/A.DR.json](reviews/A.DR.json) A-DR-08（reviewer 独立测量） |",
+      "status": "unverifiable",
+      "why": "The -shm file has been rewritten many times since; its only mtime is the latest one (2026-09-15T22:57:41.2538884+01:00). No journal of past -shm mtimes exists on this host, and NTFS keeps only the last value. The 2026-09-11 event is not recoverable by any read-only means available to me."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:14",
+      "quoted": "| `catalog.sqlite3`（主库，49,677,344,768 B） | **未变**，mtime 停在 2026-09-08 22:23:21 | 同上 + 作者复核 |",
+      "status": "verifiable",
+      "why": "INDEPENDENTLY CONFIRMED TODAY, byte count and timestamp both. I observe Length=49677344768 and LastWriteTime=2026-09-08T22:23:21.0727473+01:00 at every snapshot. The main database file has therefore not been written from 2026-09-08 through my 2026-09-15 observation - a 7-day span that CONTAINS the whole authoring window (2026-09-12..2026-09-13)."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:15",
+      "quoted": "| `catalog.sqlite3-wal` | **0 字节**，mtime 停在 2026-09-08 22:23:21 | 作者复核 |",
+      "status": "contradicted",
+      "why": "Half true, half falsified as a currently checkable statement. CONFIRMED: Length is still 0 bytes. CONTRADICTED: the mtime is NOT 2026-09-08 22:23:21 any more - I observe 2026-09-13T00:01:27.9844681+01:00. The -wal file's last write therefore moved at least once AFTER that record was written, and the new value falls INSIDE the phase-B authoring window (2026-09-12..2026-09-13, and specifically within ~1 minute of revenue-forecast commit fd2e56a at 2026-09-13T01:11:53+01:00 activity). Note the file's CreationTime is still 2026-09-04T09:07:46, so the file object was not deleted and recreated - its contents were touched. WHAT CAUSED IT IS NOT OBSERVABLE NOW: the cause could equally be a read-only open that reset/truncated the WAL header (the phase-B checkpoint itself discloses that wiki tests and the revenue pre-push gate open the catalog on every suite run, checkpoint.json:230) or an actual logical write. I do not claim either. The honest verdict is: a phase-A/phase-B statement of the form '-wal never changed' is no longer true as a present-tense fact, and the 2026-09-13 00:01:27 event is unattributable."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:16",
+      "quoted": "| 作者侧再次观测 | `-shm` mtime = **21:26:47**（比 A.DR 观测晚 8 分 32 秒） | 作者复核（21:2x） |",
+      "status": "unverifiable",
+      "why": "Same reason as :11 - superseded by later rewrites of the same file; also it is author self-report, which is the very thing G5 exists to replace."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:17",
+      "quoted": "| 22:00 每日任务 | `-shm` → **22:00:02 / 22:00:18** | §3.3 |",
+      "status": "unverifiable",
+      "why": "The two -shm values cannot be re-read (superseded). BUT the MECHANISM is independently corroborated today by a different, still-readable artefact: legacy_periods.json in the same directory carries LastWriteTime 2026-09-15 22:00:41 +01:00, i.e. the 22:00 scheduled task did write inside .source_catalog today. So 'a 22:00 daily task touches production state without any work session' is verifiable-now; the specific 2026-09-11 -shm seconds are not."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:18",
+      "quoted": "| 本会话 22:03 的 pre-push gate（未推送） | `-shm` → **22:05:03** | §3.3 |",
+      "status": "unverifiable",
+      "why": "Superseded -shm value; the causal claim ('running the gate without pushing still opens the catalog') cannot be re-tested by me without running the gate, which is a forbidden action for this observation."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:19",
+      "quoted": "| 本会话 #142 推送前的 pre-push gate | `-shm` → **22:26:59** | §3.3 |",
+      "status": "unverifiable",
+      "why": "Superseded -shm value; external CI run ids could in principle anchor it, but I ran no network command, so the GitHub-side timestamp was not re-checked by me."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:35",
+      "quoted": "> **实测的只读性**：全程 `catalog.sqlite3`（主库）与 `-wal`（0 字节）**从未变化**，只有 `-shm` 的 mtime 前移 → 与\"只读打开\"一致，**没有证据**表明发生过逻辑写入。",
+      "status": "contradicted",
+      "why": "As a statement about phase A's own window it may have been true. As a statement that can be checked today it fails on one of its two conjuncts: catalog.sqlite3 is indeed unchanged (still 2026-09-08T22:23:21+01:00), but `-wal` HAS changed since (mtime now 2026-09-13T00:01:27+01:00, see :15 above). The record was not wrong when written; it is simply no longer a true description of the artefact."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:103",
+      "quoted": "> 环境事实：`-shm` 的**全部 7 处**已观测前移（21:18:15、21:26:47、22:00:02、22:00:18、22:05:03、22:10:11、22:26:59）**均有归属**",
+      "status": "unverifiable",
+      "why": "None of the seven values can be re-read. More importantly, today's observation shows the ATTRIBUTION METHOD itself is unsound as a general instrument: in a 2.5-minute window I saw at least four -shm advances caused by a concurrent session I could not identify, so 'every advance has an owner' is not a property that holds on this host in general - it held for a window in which the author happened to know all his own actions."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:21",
+      "quoted": "**技术含义**：WAL 模式下，任何进程**打开**该库（即使只读连接）都会更新 `-shm`；因此 `-shm` 的 mtime 变化证明\"**有连接打开过**\"，**不**证明\"有逻辑写入\"（主库与 `-wal` 全程未变即为反证），也**不**单独指认进程——需要外部时间戳（本文件用 CI 记录）来归因。",
+      "status": "verifiable",
+      "why": "The mechanism reproduces. I observed exactly this pattern with no project command of my own: -shm advancing while catalog.sqlite3 (2026-09-08) and -wal (0 B) stood still. I also confirm the closing clause independently - mtime alone did not identify the process; I could only observe that some foreign process held the files (hash denied, 'being used by another process') and that many short-lived python.exe PIDs were appearing on the machine."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-b/progress.md:170",
+      "quoted": "| 推送触发的强制 gate 打开生产 catalog（只读） | **已发生**（`-shm` 前移：2026-09-12 08:32:21 等） | [../2026-09-11_r4-phase-a/boundary-audit.md](../2026-09-11_r4-phase-a/boundary-audit.md) |",
+      "status": "unverifiable",
+      "why": "The cited 2026-09-12 08:32:21 -shm value is superseded and unrecoverable. The DISCLOSURE it makes (a push-triggered gate opened the production catalog read-only during the authoring window) is not falsified by anything I observed - and it is itself the reason a bare 'no production data touched' claim cannot be read as 'the catalog was never opened'."
+    },
+    {
+      "source": "assurance/runs/2026-09-11_r4-phase-b/progress.md:171",
+      "quoted": "| A06-D0 基线运行（`pytest`，CI 等价子集） | **已发生**，且**打开了生产 catalog（只读）**（`-shm` 08:11:45 / 08:13:46） | [../2026-09-11_r4-phase-a/baseline/a06-d0-baseline.md](../2026-09-11_r4-phase-a/baseline/a06-d0-baseline.md) |",
+      "status": "unverifiable",
+      "why": "Superseded -shm values; the grep hits at progress.md:105/:121/:137/:106/:122/:138 independently corroborate that full pytest runs were executed by the authoring session and that they open the production catalog read-only, which is consistent with the un-attributable 2026-09-13T00:01:27 -wal touch."
+    }
+  ],
+  "repo_states": {
+    "company-wiki": {
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+      "rev_parse_head": "cf765a3a4eb7b4432dc30a9867283b5aeb15794b",
+      "branch": "fcap",
+      "status_porcelain_literal": "(EMPTY - clean working tree; the command produced no lines at all)",
+      "most_recent_commit": "cf765a3a4eb7b4432dc30a9867283b5aeb15794b | committer date 2026-09-15T22:10:58+01:00 | 'chore(fc1307a): drop the unused sys import (revenue ruff is stricter about scripts/)'",
+      "stable_during_observation": true,
+      "note": ".source_catalog is not reported by status --porcelain, so it is ignored/untracked by design; a clean git status therefore says NOTHING about whether the catalog was opened or written. This is the most easily misread line in any boundary snapshot.",
+      "command": "git -C <path> rev-parse HEAD ; git -C <path> rev-parse --abbrev-ref HEAD ; git -C <path> status --porcelain ; git -C <path> log -1 --format='%H|%cI|%s'"
+    },
+    "revenue-forecast": {
+      "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+      "rev_parse_head_at_first_snapshot": "89494e0720ab881191f8142c1093ece3a7e52ad9",
+      "rev_parse_head_at_final_snapshot": "81817c470b5055463b2520fe1433c3aeb6230df5",
+      "branch": "fcap",
+      "status_porcelain_literal": "warning: could not open directory '.tmp-zr408-unit/': Permission denied\nwarning: could not open directory '.tmp-zr408-unit-final/': Permission denied\nwarning: could not open directory '.tmp-zr408-unit-retry/': Permission denied\n?? assurance/runs/2026-09-11_r4-phase-b/owner-scope-decisions-2026-09-13.md\n(at 2026-09-15T22:55 local; the three .tmp-zr408-* warnings are written to stderr and are the pre-registered permission-denied artefacts, which I did not touch. Re-running the same command at 2026-09-15T22:58:29 local produced the SAME three warnings and NO untracked entries, because the owner-scope file had been committed in the meantime.)",
+      "most_recent_commit_at_first_snapshot": "89494e0720ab881191f8142c1093ece3a7e52ad9 | 2026-09-15T22:26:49+01:00 | 'docs(r4b0x): CI rows for the three-repo gate rollout (all green)'",
+      "most_recent_commit_at_final_snapshot": "81817c470b5055463b2520fe1433c3aeb6230df5 | 2026-09-15T22:57:16+01:00 | 'feat(zr902): the daily T2 loop gets the same blocked/not-ok split (owner decision)'",
+      "stable_during_observation": false,
+      "why_unstable": "A CONCURRENT SESSION was working in this repository and in this very run directory while I observed. Evidence, all from read-only commands: (a) HEAD moved 89494e07 -> 81817c47 between 22:55 and 22:58:34 local, with a new commit dated 2026-09-15T22:57:16+01:00; (b) the untracked file assurance/runs/2026-09-11_r4-phase-b/owner-scope-decisions-2026-09-13.md disappeared from porcelain because it was committed; (c) a brand-new file evidence/zr902_mutations.py appeared with CreationTime 2026/9/15 22:56:31 and LastWriteTime 2026/9/15 22:56:55, i.e. created and written DURING my observation; (d) 18 distinct sets of transient python.exe PIDs were seen in a 45 s process sample. This is the single most important caveat on every repo anchor in this record: the anchors are point-in-time, not a frozen tree.",
+      "note_on_tmp_dirs": "The three .tmp-zr408-* directories are reported as unreadable and were deliberately NOT touched, per the task rules; checkpoint.json:241 already registers this as an incompleteness in the 'revenue-forecast dirty=0' claim.",
+      "command": "git -C <path> rev-parse HEAD ; git -C <path> status --porcelain ; git -C <path> log -1 --format='%H|%cI|%s' ; git -C <path> log --since=... --format='%h|%cI|%s'"
+    },
+    "filing-fetch": {
+      "path": "C:\\Users\\郑曾波\\Projects\\filing-fetch",
+      "rev_parse_head": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
+      "branch": "fcap",
+      "status_porcelain_literal": "(EMPTY - clean working tree; the command produced no lines at all)",
+      "most_recent_commit": "d35b6f5b09f1a7dad37d226504bf998802a852d7 | committer date 2026-09-15T22:12:54+01:00 | 'feat(fc1307a): vendor the host-assumption gate here too, wired into commit and push'",
+      "stable_during_observation": true,
+      "note": "git log --since=2026-09-11 --until=2026-09-14 --all returned NO commits in this repository for the authoring window, and its current HEAD is dated 2026-09-15 - i.e. filing-fetch was untouched during the authoring window and was only committed to today. That is a genuine, independently checkable corroboration of the phase-B scope statement that filing-fetch files were out of bounds.",
+      "command": "git -C <path> rev-parse HEAD ; git -C <path> status --porcelain ; git -C <path> log -1 --format='%H|%cI|%s'"
+    }
+  },
+  "claims_under_observation": [
+    {
+      "id": "G5-01",
+      "quote": "| 本 run 内的 CLI（含 `--help`） | **未执行** | 作者声明（无独立观测产物——该限制已登记为 G5） |",
+      "source": "assurance/runs/2026-09-11_r4-phase-b/progress.md:172",
+      "classification": "disclosed-unverified",
+      "evidence": "This is the clearest statement of the limitation and it discloses itself: the evidence cell reads 'author declaration (no independent observation artefact - this limitation is registered as G5)'. So the run does not overclaim here; it explicitly flags the absence of an independent artefact. Nothing in my observation can change that status: I found no artefact anywhere that records process launches, so 'the CLI was not executed' remains an author declaration. I also did not run the CLI myself, so I add no counter-evidence either."
+    },
+    {
+      "id": "G5-02",
+      "quote": "- **未执行**：任何网络/下载/LLM、任何产品写入、DB 写入、任务注册、worker 操作、删除；**未**在生产 catalog 上做行为探针。",
+      "source": "assurance/runs/2026-09-11_r4-phase-b/progress.md:105 (the identical sentence repeats at progress.md:121 and progress.md:137; the same content appears in English at checkpoint.json:230)",
+      "classification": "unfalsifiable",
+      "evidence": "This is a session-scoped negative about the past. The authoring window (2026-09-12..2026-09-13) is over; no per-session record of opens exists on this host, and the only instrument that could have spoken to it (-shm mtime) holds exactly ONE value at a time and has since been overwritten many times - I measured at least four advances inside 2.5 minutes on 2026-09-15. It is therefore not falsifiable now, and it was arguably not falsifiable at the time either. Note the second half of the sentence is weakened by the run's own disclosures elsewhere (checkpoint.json:230 admits the pre-push gate's real-data suite opens the production catalog read-only and advances -shm; progress.md:170/:171 admit pushes and a pytest baseline opened it): 'no behavioural probe' survives, 'the catalog was never opened' would not."
+    },
+    {
+      "id": "G5-03",
+      "quote": "NOT executed: any network/download/LLM egress, any product-data write, any DB write, task registration, worker action or deletion; no behavioural probe against the production catalog.",
+      "source": "assurance/runs/2026-09-11_r4-phase-b/checkpoint.json:230",
+      "classification": "unfalsifiable",
+      "evidence": "Same reasoning as G5-02: it is a negative existential claim about a closed window, with no independent artefact. The ONE part of it that is testable in the negative direction comes out in the claim's favour and should be recorded as such: the main database file was not written during the window - catalog.sqlite3 LastWriteTime is 2026-09-08T22:23:21.0727473+01:00, which is 4 days BEFORE the window opened, and it is still that value today; and catalog.sqlite3-wal is 0 bytes. So there is currently no observable evidence of a persisted logical write during the authoring window. That is corroboration of absence-of-persisted-write, not proof of absence-of-write, and it cannot be attributed to this session rather than to any other actor."
+    },
+    {
+      "id": "G5-04",
+      "quote": "The run directory IS pushed (origin/main) and every push ran revenue-forecast's mandatory pre-push gate, whose real-data suite opens the production catalog READ-ONLY and advances -shm (attributed in ../2026-09-11_r4-phase-a/boundary-audit.md); that gate is currently RED for the F-B01-7 reason, so the B01 run-directory commits remain LOCAL and no push was attempted with --no-verify.",
+      "source": "assurance/runs/2026-09-11_r4-phase-b/checkpoint.json:230",
+      "classification": "falsifiable-now",
+      "evidence": "SPLIT VERDICT, and this is the most interesting line in the whole run for my purposes. (i) The MECHANISM is independently CONFIRMED today: 'opening the catalog advances -shm' reproduced with no project command of my own - -shm advanced at least four times in 2.5 minutes while catalog.sqlite3 and -wal stood still, and at ~22:58 the OS refused to let me read -shm and -wal because another process held them. (ii) The sub-claim 'READ-ONLY' is NOT verifiable: distinguishing a read-only open from a write-capable one needs handle-level, ETW or object-access-audit tooling, which phase A already recorded as unavailable on this host (boundary-audit.md:94-98) and which I did not attempt. (iii) The sub-claim that 'the run directory IS pushed' is checkable and I did not check the remote, because any network command is forbidden to me - I note only that this is exactly the class of claim a future observer with network access could falsify directly, and that falsifying it is not the same as falsifying G5-02."
+    },
+    {
+      "id": "G5-05",
+      "quote": "⑨ \"未执行任何 CLI\"纯自述",
+      "source": "assurance/runs/2026-09-11_r4-phase-b/findings.md:457 (row 'B-DR-09~17 | P2 x9', item 9, in the list of findings the B.DR reviewer raised)",
+      "classification": "disclosed-unverified",
+      "evidence": "This is the run's own registration that the 'no CLI executed' claim is PURE SELF-DECLARATION - it is the reviewer's finding, accepted by the author, and it is the origin of gate G5. It is important because it means the claim was never presented as verified. I record it as disclosed-unverified, and I note the disposition recorded in the same row ('checkpoint 的副作用字段改为如实披露') is what produced the honest English side-effects paragraph at checkpoint.json:230."
+    },
+    {
+      "id": "G5-06",
+      "quote": "G5/G6/G7/G8 remain owner/operator items",
+      "source": "assurance/runs/2026-09-11_r4-phase-b/checkpoint.json:240 (also checkpoint.json:204 'OPERATOR: independent boundary observation and reviewer assignment records (G5/G6)')",
+      "classification": "disclosed-unverified",
+      "evidence": "The checkpoint openly lists G5 as outstanding, which is why this observation was commissioned (owner ruling at owner-scope-decisions-2026-09-13.md:10). Note the checkpoint.json mtime is 2026-09-13 1:11:53 local, matching revenue-forecast commit fd2e56a 'chore(r4b0x): final checkpoint anchor' at 2026-09-13T01:11:53+01:00 - an independently checkable anchor tying that checkpoint to a commit, which I verified from the git log."
+    },
+    {
+      "id": "G5-07",
+      "quote": "全程 `catalog.sqlite3`（主库）与 `-wal`（0 字节）**从未变化**，只有 `-shm` 的 mtime 前移 → 与\"只读打开\"一致，**没有证据**表明发生过逻辑写入。",
+      "source": "assurance/runs/2026-09-11_r4-phase-a/boundary-audit.md:35",
+      "classification": "falsifiable-now",
+      "evidence": "Testable and PARTLY FALSIFIED as a present-tense statement. catalog.sqlite3: holds (Length 49677344768, mtime 2026-09-08T22:23:21.0727473+01:00, unchanged). `-wal`: does NOT hold any more - it is still 0 bytes, but its mtime is now 2026-09-13T00:01:27.9844681+01:00, not 2026-09-08 22:23:21. The -wal file object was not recreated (CreationTime 2026-09-04T09:07:46), so its contents were touched at some point after that record was written, and the new timestamp lands inside the authoring window. I explicitly do NOT conclude that a logical write occurred: the same touch is equally consistent with a read-only open resetting the WAL, which the phase-B checkpoint itself says happens on every wiki test run (checkpoint.json:230). The actionable result is that a sentence of this form may no longer be quoted as a current fact."
+    },
+    {
+      "id": "G5-08",
+      "quote": "no behavioural probe against the production catalog",
+      "source": "assurance/runs/2026-09-11_r4-phase-b/checkpoint.json:230",
+      "classification": "unfalsifiable",
+      "evidence": "A negative about intent and method rather than about file state. There is no artefact that would distinguish 'ran the tool against a synthetic tmp fixture' from 'ran the same tool against the production path' after the fact, and the run's own evidence files describe synthetic tmp fixtures (evidence/b01_fc1001_probe.py, evidence/b01-implementation.md:92, evidence/b02-implementation.md:151 'not verified against the production catalog - all synthetic fixtures'). Those evidence statements are consistent with the claim, but they are again author-written, so they raise the claim's plausibility without making it falsifiable."
+    }
+  ],
+  "protocol": {
+    "preconditions": "Run the whole protocol while no other agent session is active in these repositories, and record whether that precondition actually held. It did NOT hold during my observation: a concurrent session committed to revenue-forecast at 2026-09-15T22:57:16+01:00 and created evidence/zr902_mutations.py at 22:56:31 local, i.e. inside my own window. If you cannot get a quiet machine, this protocol degrades from an attribution instrument to a change-detector - which is still worth something, but say so instead of implying attribution.",
+    "before": [
+      "# 0. Anchor the clock and the precondition (local clock here is UTC+1; always store UTC)",
+      "(Get-Date).ToString('o'); (Get-Date).ToUniversalTime().ToString('o'); (Get-TimeZone).Id",
+      "# 1. Snapshot the three catalog files at FULL precision. Use $env:USERPROFILE, never a typed path with non-ASCII characters (phase A lost a whole run to ANSI/GBK decoding of a Chinese path, boundary-audit.md:57). Never open or hash catalog.sqlite3.",
+      "$c = Join-Path $env:USERPROFILE 'Projects\\company-wiki\\.source_catalog'; foreach ($f in 'catalog.sqlite3','catalog.sqlite3-wal','catalog.sqlite3-shm') { $i = Get-Item -LiteralPath (Join-Path $c $f) -Force; \"$f|Len=$($i.Length)|LW=$($i.LastWriteTime.ToString('o'))|LWutc=$($i.LastWriteTimeUtc.ToString('o'))|CT=$($i.CreationTime.ToString('o'))|LA=$($i.LastAccessTime.ToString('o'))\" }",
+      "# 2. Hash ONLY the side files, and tolerate refusal - refusal is itself a datum (it means a foreign process holds the catalog open right now).",
+      "foreach ($f in 'catalog.sqlite3-wal','catalog.sqlite3-shm') { try { (Get-FileHash -LiteralPath (Join-Path $c $f) -Algorithm SHA256 -ErrorAction Stop).Hash } catch { \"BLOCKED $f : $($_.Exception.Message)\" } }",
+      "# 3. List the whole .source_catalog tree by mtime so scheduled writers are visible, not just the three catalog files.",
+      "Get-ChildItem -LiteralPath $c -Force | Sort-Object LastWriteTime | Select-Object Name,Length,LastWriteTime | Format-Table -AutoSize",
+      "# 4. THE KEY STEP - establish the machine's own baseline motion BEFORE the session. Poll every 2 s for 120 s doing nothing else, and count transitions. If the baseline is non-zero, a later move proves nothing about the session.",
+      "$s = Join-Path $c 'catalog.sqlite3-shm'; $prev=$null; $t=@(); $st=Get-Date; while (((Get-Date)-$st).TotalSeconds -lt 120) { $v=(Get-Item -LiteralPath $s -Force).LastWriteTimeUtc.ToString('o'); if ($prev -ne $null -and $v -ne $prev) { $t += \"$(Get-Date -Format HH:mm:ss.fff) : $prev -> $v\" }; $prev=$v; Start-Sleep -Seconds 2 }; \"baseline_transitions=$($t.Count)\"; $t",
+      "# 5. Anchor every repository tree. Record that these are point-in-time, and re-run them at the end.",
+      "foreach ($r in 'company-wiki','revenue-forecast','filing-fetch') { $p = Join-Path $env:USERPROFILE \"Projects\\$r\"; \"== $r ==\"; git -C $p rev-parse HEAD; git -C $p rev-parse --abbrev-ref HEAD; git -C $p status --porcelain; git -C $p log -1 --format='%H|%cI|%s' }",
+      "# 6. Anchor the run directory itself so the audit trail's own motion is visible.",
+      "Get-ChildItem -LiteralPath (Join-Path $env:USERPROFILE 'Projects\\revenue-forecast\\assurance\\runs\\2026-09-11_r4-phase-b') -Recurse -Force -File | Sort-Object LastWriteTime | Select-Object FullName,Length,LastWriteTime",
+      "# 7. Write the whole output of steps 0-6 to ONE file OUTSIDE the three repositories (a before-snapshot is worthless inside a tree the session may commit)."
+    ],
+    "after": [
+      "# Re-run steps 1, 2, 3, 5 and 6 of 'before' VERBATIM and diff the two files. Do not paraphrase or re-type the commands; a changed command is a different measurement.",
+      "# Then re-run the baseline poll of step 4 so the after-window's own noise is measured too, then compare like with like:",
+      "$s = Join-Path $c 'catalog.sqlite3-shm'; $prev=$null; $t=@(); $st=Get-Date; while (((Get-Date)-$st).TotalSeconds -lt 120) { $v=(Get-Item -LiteralPath $s -Force).LastWriteTimeUtc.ToString('o'); if ($prev -ne $null -and $v -ne $prev) { $t += \"$(Get-Date -Format HH:mm:ss.fff) : $prev -> $v\" }; $prev=$v; Start-Sleep -Seconds 2 }; \"after_transitions=$($t.Count)\"; $t",
+      "# Verdict rules, in order of strength:",
+      "# (A) catalog.sqlite3 Length or LastWriteTime changed  => a persisted write is very likely; this is the strongest available positive signal and needs no attribution to be alarming.",
+      "# (B) catalog.sqlite3-wal Length > 0  => uncommitted/uncheckpointed frames exist; treat as a write.",
+      "# (C) -shm advanced while the baseline poll (step 4) was flat AND no scheduled task, push or test run is known  => a new open occurred; the session is a candidate but NOT identified.",
+      "# (D) -shm advanced but the baseline poll also advanced  => NO conclusion about the session. This is the case on this host today.",
+      "# (E) Get-FileHash on -wal/-shm refused with 'being used by another process'  => a process holds the catalog open at that instant; it proves an open, never a write, and names no one."
+    ],
+    "detects": [
+      "Whether the production database FILE changed: catalog.sqlite3 Length and LastWriteTime. This is the one signal that is currently clean, because it did not budge across my whole window while -shm moved four times.",
+      "Whether uncommitted write frames exist: catalog.sqlite3-wal Length (0 or not).",
+      "Whether SOME process opened the catalog at some point between the two snapshots: -shm LastWriteTime advancing beyond the before-value - valid ONLY if the step-4 baseline was flat and the known openers were idle.",
+      "Whether a process holds the catalog open RIGHT NOW: a 'being used by another process' refusal when reading -wal/-shm. This is a real, currently-reproducible instrument: it fired for me at ~22:58 and it did not fire at ~22:55, so it is intermittent and its positive result is meaningful.",
+      "Scheduled and out-of-session writers, via the whole-directory mtime listing: this is how I found legacy_periods.json written at 2026-09-15 22:00:41 with no session involved.",
+      "Which files a session touched in the tracked trees: git status --porcelain plus the run-directory mtime listing. This is the only part of the protocol that reliably attributes anything, and it attributes WORKING-TREE files, not database opens.",
+      "Whether the tree moved at all during the window: re-running rev-parse HEAD at the end caught a concurrent commit (89494e07 -> 81817c47) that no mtime reading would have surfaced as cleanly."
+    ],
+    "cannot_detect": [
+      "A past open. NTFS holds one mtime; -shm is overwritten every time. The authoring window (2026-09-12..2026-09-13) is closed and NOTHING in this protocol can reach back into it. This is the central limitation of gate G5 and no amount of future care removes it.",
+      "A read-only open that writes nothing and takes no conflicting share mode. If it coincides with the machine's own baseline accessor - which on this host touches the catalog roughly every 10-90 seconds - it leaves no distinguishable trace at all.",
+      "A logical write that was rolled back, or one that was checkpointed and then had its timestamps restored: the observed value would be identical to no-write.",
+      "WHICH process caused any given -shm advance. Attribution needs handle enumeration (Sysinternals handle.exe), ETW/Procmon, or an object-access audit policy with a SACL on the database file; phase A already recorded all three as unavailable on this Windows 11 home machine without administrator tooling (boundary-audit.md:94-98), and installing them is itself an environment change that needs owner authorization. I confirmed the practical consequence: after 18 distinct sets of transient python.exe PIDs in 45 seconds, I could not name the opener.",
+      "Whether a CLI of the product was executed. There is no process-launch log, no shell history I am permitted to consult as evidence, and running the CLI to test the question is forbidden. 'No CLI was executed' is therefore permanently a declaration, not a measurement - it can only ever be corroborated by its absence from other artefacts.",
+      "Whether an open was READ-ONLY. -shm movement is identical for read-only and read-write opens (the mechanism the run itself states at boundary-audit.md:21). Only the main DB / -wal changing separates them, and only for writes that actually persisted.",
+      "LastAccessTime as evidence. It is updated by the observer's own reads (mine moved to 22:55:07 on a Get-FileHash) and is then overwritten by the next writer; it is also subject to lazy/disabled last-access updates. Treat it as noise.",
+      "Anything about a session that runs while another session is active. Two concurrent actors produce one interleaved mtime stream; my own window is the worked example - I could not separate the concurrent session's catalog opens from any other cause."
+    ],
+    "conclusion_for_g5": "On this host, at this time, the -shm instrument is SATURATED and therefore cannot support any claim in either direction about a specific session. The only currently-clean signals are (i) catalog.sqlite3 Length/LastWriteTime, which supports 'no persisted write since 2026-09-08' and (ii) the -wal Length, which supports 'no uncheckpointed frames'. Both are consistent with the authoring session's no-write claim and neither can attribute it. The 'no CLI executed' half of the claim is not merely unverified - it is structurally unverifiable by read-only observation and should be re-worded in the run's ledger as a declaration rather than carried forward as a boundary result."
+  },
+  "not_done": [
+    "Did NOT run any CLI of the wiki product - not even --help - and did not run pytest or invoke any project python module.",
+    "Did NOT open, query, copy, read the bytes of, or hash catalog.sqlite3. Its content is untouched by me; only Length, LastWriteTime, CreationTime, LastAccessTime and Attributes were read via Get-Item.",
+    "Did NOT run any network command: no web request, no git fetch/pull/push/ls-remote, no download, no package install. Consequently the CI run ids and 'the run directory IS pushed' sub-claim were NOT re-verified against GitHub.",
+    "Did NOT write anything except this record file. No other file was created, edited, moved, renamed or deleted; no git add/commit/checkout/reset/stash/clean/push in any of the three repositories.",
+    "Did NOT touch .tmp-zr408-unit, .tmp-zr408-unit-final or .tmp-zr408-unit-retry, nor the .review-zr407-* permission-denied artefacts; they are visible only as the three stderr warnings in git status.",
+    "Did NOT request or attempt any sandbox escalation; no command was denied by the sandbox during this observation.",
+    "Did NOT attempt handle-level, ETW, Procmon or audit-policy forensics, and did NOT install any tool.",
+    "Did NOT verify the historical -shm values and make no claim about them beyond 'not observable'.",
+    "Did NOT identify the concurrent session or the process that holds the catalog open; I only established that both exist.",
+    "Did NOT read the phase-A reviews/A.DR.json, phase-a/checkpoint.json, baseline/a06-d0-baseline.md or the run's evidence/*.json in full; where a record was needed I read the sections the task named (checkpoint.json, findings.md G5/disposition rows, progress.md boundary tables, owner-scope-decisions-2026-09-13.md, phase-a/boundary-audit.md)."
+  ],
+  "notes": "WHAT THIS OBSERVATION ACTUALLY SETTLES. The short answer is: it confirms the boundary state that is still observable, and it demonstrates that the historical claim is now formally UNFALSIFIABLE rather than merely unverified. Three findings carry the weight. (1) A CONCURRENT SESSION was active during my observation, in the same run directory: revenue-forecast HEAD moved from 89494e0720ab881191f8142c1093ece3a7e52ad9 (commit 'docs(r4b0x): CI rows for the three-repo gate rollout (all green)', 2026-09-15T22:26:49+01:00) to 81817c470b5055463b2520fe1433c3aeb6230df5 ('feat(zr902): the daily T2 loop gets the same blocked/not-ok split (owner decision)', 2026-09-15T22:57:16+01:00) between 22:55 and 22:58:34 local; the previously-untracked owner-scope-decisions-2026-09-13.md was committed in that interval; and a new file evidence/zr902_mutations.py was created at 22:56:31 and written at 22:56:55. So no repo anchor I record is a frozen tree, and any future observer must re-anchor rather than quote mine. (2) The -shm instrument is a MOVING TARGET with a high idle rate: it advanced at least four times inside a 2.5-minute window (22:55:32, 22:56:02.5, 22:56:12.8, 22:57:41.3 local) while I did nothing but stat it, while catalog.sqlite3 stayed frozen at 2026-09-08T22:23:21.0727473+01:00 and -wal stayed 0 bytes at 2026-09-13T00:01:27.9844681+01:00. Both passive windows (60 s and 45 s, stat-only) recorded transitions, which is the cleanest proof that the movement is external to the observer. At ~22:58 the OS then refused to let me read -wal and -shm at all ('being used by another process'), which is direct evidence of a foreign open at that instant. Phase A's calibration (boundary-audit.md:21/:66) therefore reproduces, but its USE as an attribution instrument does not: with a ~10-90 s ambient cadence, a single before/after -shm comparison carries essentially zero information about one session. (3) The one clean, genuinely checkable fact that favours the run's no-write claim: catalog.sqlite3 has not been written since 2026-09-08T22:23:21+01:00, which PREDATES the authoring window (2026-09-12..2026-09-13) by four days, and it is still that value on 2026-09-15 - and -wal is 0 bytes. So there is currently no observable evidence of a persisted logical write during the window. That is the strongest support the run gets from me, and it is support for 'no persisted write', not for 'the catalog was never opened' and not for 'no CLI ran'. THE UNCOMFORTABLE PART, recorded because it is the point of an independent observation: the run's own phase-A record at boundary-audit.md:15 asserted that `-wal` was frozen at 2026-09-08 22:23:21 with 0 bytes; the length still holds but the mtime is now 2026-09-13T00:01:27.9844681+01:00, inside the authoring window, and the file object was not recreated (CreationTime still 2026-09-04T09:07:46). I do NOT read that as evidence of a write - a read-only open can reset the WAL header, and checkpoint.json:230 discloses that full pytest runs during the window opened the production catalog - but it does mean the corresponding sentences must stop being quoted as present-tense facts, and it is the kind of drift that a single-snapshot boundary claim cannot survive. WHAT WOULD ACTUALLY CLOSE G5. Not this file. The honest closing condition is a change of claim: strike 'no CLI was executed, no production data was touched' from the run's results and re-register it, as findings.md:457 already does, as a DECLARATION that no read-only instrument on this host can confirm or refute - and then, for any FUTURE session, run the before/after protocol above on a quiet machine so that the bracket is meaningful. If the owner wants attribution rather than detection, the only real remedies are environment changes outside my authority: a SACL plus auditpol object-access auditing on catalog.sqlite3, or Procmon/ETW capture during the session. Finally, a caution about my own evidence: the machine was demonstrably busy with another agent while I worked, so even the 'clean' main-DB signal is a statement about 2026-09-15T21:54Z..21:58Z only, and it should be re-measured before anyone relies on it."
+}
