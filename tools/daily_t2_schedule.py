@@ -36,6 +36,35 @@ DEFAULT_ALERTS = PROJECT_ROOT / "assurance" / "runs" / "daily_alert.jsonl"
 TASK_NAME = "revenue_daily_t2"
 MAX_AGE_HOURS = 24
 
+# Outcome vocabulary shared with the weekly T3 loop (owner decision 2026-09-13: the
+# daily run gets the SAME split).  ``not-ok`` is a statement about the product;
+# ``blocked`` says the run could not be evaluated here.  The two tuples are mirrored
+# in tools/weekly_t3_schedule.py on purpose (that module imports this one, so a shared
+# constant here would invert the dependency); tests/test_zr902b_run_outcome.py pins
+# that the two vocabularies are IDENTICAL, so a change in one place cannot drift.
+ENVIRONMENT_SENTINEL = "T2-RUN-COULD-NOT-RUN"
+ENVIRONMENT_MARKERS = (
+    "not found",
+    "no such file",
+    "filenotfounderror",
+    "winerror 2",
+    "errno 2",
+    "timeoutexpired",
+    "connectionerror",
+    "connection",
+    "timed out",
+    "network",
+    "sslerror",
+    "socket.gaierror",
+    "urlerror",
+    "httperror",
+    "credentials",
+    "unauthorized",
+    "permission denied",
+    "permissionerror",
+    "not installed",
+)
+
 # FC-705 window integrity (2026-09-10).  A close window is the gap between two
 # consecutive daily runs, and the task fires on a wall clock with sub-minute
 # jitter, so a gap can land seconds short of 24h (observed 23:59:41 and
@@ -224,6 +253,66 @@ def release_gate(ledger_path: Path, *, now: str | None = None,
     return False, f"daily T2 gate blocked: {detail}"
 
 
+def _read_runner_report(report_path: Path) -> dict | None:
+    try:
+        data = json.loads(report_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def run_outcome(proc: subprocess.CompletedProcess,
+                obs: subprocess.CompletedProcess,
+                report_path: Path) -> tuple[bool, str, str]:
+    """(ok, outcome, detail) for one daily run - the same split the weekly T3 loop uses.
+
+    ``ok`` (and therefore the ledger and the release gate) is unchanged: both the
+    runner and the observation must succeed.  What is new is the ATTRIBUTION recorded
+    in the alert: ``not-ok`` = the run produced a verdict and the verdict was bad;
+    ``blocked`` = no verdict was produced and the output looks like an environment
+    failure (explicit sentinel, or a marker), i.e. "this machine could not run it"
+    rather than "the product is broken".  The marker path is a HEURISTIC - the report
+    is the authority - and an observer failure always reads ``not-ok`` (the observer
+    IS part of the mechanism under test, so blaming the environment for it would be
+    the wrong direction).
+    """
+    output = ((proc.stdout or "") + (proc.stderr or "") + (obs.stdout or "")
+              + (obs.stderr or ""))
+    lowered = output.lower()
+    report = _read_runner_report(report_path)
+
+    if proc.returncode == 0 and report is not None and report.get("ok") is True \
+            and not report.get("problems"):
+        if obs.returncode == 0:
+            return True, "ok", "T2 run passed and the observation period advanced"
+        return False, "not-ok", (
+            f"observation period failed (exit {obs.returncode}) while the T2 run itself "
+            f"passed - the FC-705 window did not advance"
+        )
+
+    if report is not None:
+        problems = report.get("problems") or []
+        reason = "; ".join(str(item) for item in problems[:3]) or "runner reported ok=false"
+        return False, "not-ok", f"T2 runner produced a verdict: {reason}"
+
+    if ENVIRONMENT_SENTINEL.lower() in lowered:
+        return False, "blocked", (
+            f"the run declared it could not run here (sentinel {ENVIRONMENT_SENTINEL}; "
+            f"runner exit {proc.returncode})"
+        )
+    markers = [marker for marker in ENVIRONMENT_MARKERS if marker in lowered]
+    if markers:
+        return False, "blocked", (
+            f"no verdict was produced and the output looks environmental (runner exit "
+            f"{proc.returncode}; matched: {', '.join(markers[:3])}) - heuristic, check the "
+            f"report before blaming either side"
+        )
+    return False, "not-ok", (
+        f"T2 runner failed without a report (exit {proc.returncode}) and the output "
+        f"carries no environment marker"
+    )
+
+
 def run_daily(catalog: Path, manifest: Path, report_root: Path,
               ledger_path: Path, alert_path: Path,
               periods_path: Path | None = None) -> int:
@@ -258,21 +347,23 @@ def run_daily(catalog: Path, manifest: Path, report_root: Path,
         obs_tail = (obs.stderr or obs.stdout or "")[-300:].strip()
         print(f"observation period {period} FAILED: {obs_tail}", file=sys.stderr)
     started = _now_iso()
-    ok = proc.returncode == 0 and obs.returncode == 0
+    report_path = report_dir / "report.json"
+    ok, outcome, outcome_detail = run_outcome(proc, obs, report_path)
     triplet = {"revenue": _head(PROJECT_ROOT),
                "filing": _head(PROJECT_ROOT.parent / "filing-fetch"),
                "wiki": _head(PROJECT_ROOT.parent / "company-wiki")}
     write_ledger(ledger_path, run_id, started, triplet, ok,
-                 str(report_dir / "report.json"),
+                 str(report_path),
                  observation_period=period if obs.returncode == 0 else None)
     status, detail = freshness_status(read_ledger(ledger_path), now=started)
     if status != "fresh":
         append_alert(alert_path, {
             "at_utc": started, "run_id": run_id, "status": status,
-            "reason": detail, "exit_code": proc.returncode,
+            "outcome": outcome, "reason": f"{outcome_detail} (ledger: {detail})",
+            "exit_code": proc.returncode,
         })
-    print(f"run_id={run_id} ok={ok} observation_period={period} "
-          f"status={status} detail={detail}")
+    print(f"run_id={run_id} ok={ok} outcome={outcome} observation_period={period} "
+          f"status={status} detail={outcome_detail}")
     return proc.returncode or obs.returncode
 
 
