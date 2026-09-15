@@ -56,6 +56,10 @@
 | company-wiki | `a920ab1` | **B.VR-fc1307a 复审处置**（撤回夸大声明 / AST 级能力守卫 / 棘轮改全值+基线重生成 / POSIX 扩枚举 / IGNORECASE / 崩溃路径可读化；用例 8→25，变异 7/7） | CI | **success** | 34784823162 |
 | revenue-forecast | `fa017c8` | **B.VR-zr903 复审处置**（撤回"绝不会洗白"的保证、哨兵、崩溃记成一次运行、argv 去 profile、run_id 防碰撞、blocked 返回非零；用例 16→24，变异 12/12） | quality | ❌ **failure**（**我自己新写的用例**硬编码了 `C:\Users\someone\...`：POSIX 上反斜杠不是分隔符 ⇒ `Path(...).name` 返回整串，"无泄漏"断言翻转——又是 F-B01-9 那一类） | 34784800110 |
 | revenue-forecast | `9cf7042` | 该用例改为 `tmp_path`（本平台分隔符 + Windows 上含真实 profile）⇒ 成为真正的跨宿主断言 | quality | **success** | 34785187889 |
+| company-wiki | `1664ab3`→`cf765a3` | **推广前置**：默认守卫识别 unittest 的 `self.skipTest`（实测假阳性修正）+ 去掉未用 import（revenue 的 ruff 更严） | CI | **success**（一次推送只跑 tip `cf765a3`） | 35024375333 |
+| filing-fetch | `d35b6f5` | **FC-1307-a 推广**：字节一致的 vendored 门 + 4 条基线 + commit/push 接线 + 仓内契约测试（含三副本漂移检查） | quality | **success** | 35024593890 |
+| revenue-forecast | `798d3af` | **FC-1307-a 推广**：vendored 门 + 16 条基线 + 3 条登记摘要 + commit/push 接线 + 漂移检查用例 | quality | **success** | 35024851461 |
+| revenue-forecast | `f87252d` | 推广记录：实测暴露面、收益的诚实评估（"不打红 CI，只是提前 30 分钟"）、一处**未解释**的瞬时红 | quality | **success** | 35025250318 |
 
 **CI 覆盖到的与本步直接相关的门**（`company-wiki/.github/workflows/ci.yml`，三个 Python 版本 3.11/3.12/3.13 全部 success）：
 
