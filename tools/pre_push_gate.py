@@ -217,6 +217,13 @@ def main(argv: list[str] | None = None) -> int:
          "compileall"),
         ([sys.executable, str(PROJECT_ROOT / "tools" / "check_unique_test_symbols.py")],
          "unique test symbols (CI WU-1.1)"),
+        # FC-1307-a (vendored from company-wiki): host assumptions - a test path or
+        # frozen value that is host-dependent, green here and red on Linux CI.  This
+        # is the class that broke CI on 2026-09-13 the moment a new test of mine
+        # hard-coded a Windows path; the pre-push gate is where it should have died.
+        ([sys.executable, str(PROJECT_ROOT / "tools" / "host_assumption_guard.py"),
+          "--roots", "tests", "tools", "scripts", "e2e"],
+         "host assumption guard (FC-1307-a)"),
     ]
     if not args.skip_mypy:
         gates.append((

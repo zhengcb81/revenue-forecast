@@ -83,6 +83,14 @@ MUTANTS: list[tuple[str, str, str, str]] = [
         '    r")"\n)',
         "test_fc1307a_widened_posix_roots_are_flagged",
     ),
+    (
+        "H: unittest's self.skipTest is not recognised as a guard (the measured "
+        "filing-fetch false positive)",
+        'SKIP_CALLS = ("pytest.skip", "pytest.importorskip", "self.skipTest", '
+        '"self.skip_test",\n              "skipTest", "skip_test")',
+        'SKIP_CALLS = ("pytest.skip", "pytest.importorskip")',
+        "test_fc1307a_a_unittest_skiptest_guard_does_exempt",
+    ),
 ]
 
 
