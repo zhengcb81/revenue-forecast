@@ -202,6 +202,7 @@ def main(argv: list[str]) -> int:
             location_path = Path(str(row[4]))
             with location_path.open("rb") as held:
                 held.read(4096)
+                held_mode = held.mode  # observed on the handle we actually hold (B-VR08L2-03)
                 occupied = SourceResolver(catalog).read_verified_bytes(
                     handle, expected_content_sha256=document["content_sha256"]
                 )
@@ -213,7 +214,8 @@ def main(argv: list[str]) -> int:
                 "digest_ok": bool(occupied_data) and (
                     env.hashlib.sha256(occupied_data).hexdigest()
                     == document["content_sha256"]),
-                "held_handle_mode": "rb (read-only; no production write open)",
+                "held_handle_mode": held_mode,
+                "held_handle_mode_note": "read from the open file object, not a literal",
             }
 
     after_real = env._real_root_state(real_root)

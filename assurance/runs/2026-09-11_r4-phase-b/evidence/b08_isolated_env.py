@@ -150,21 +150,32 @@ def build(root: Path, manifest_out: Path | None) -> int:
     return 0
 
 
-def _real_root_state(root: Path, cap: int = 200) -> dict:
-    """(name, size, mtime_ns, sha256) of every file in a REAL production directory.
+def _real_root_state(root: Path, cap: int = 500) -> dict:
+    """(relpath, size, mtime_ns, sha256) of every file under a REAL production root.
 
     G8 level 2 references real files read-only, so "nothing was written" has to be shown
     on those files and not only on the catalog: this snapshot is taken before and after
     the scan and the two must be identical.
+
+    RECURSIVE on purpose (B-VR08L2-02): the first version listed ``root.iterdir()`` only,
+    so a file created inside a SUBDIRECTORY - at any depth - would have left
+    ``real_root_unchanged`` true.  The independent review proved that on a fake root, and
+    it also proved that a new *empty* directory was invisible for the same reason, so
+    ``dirs`` is recorded as well.  A capped walk reports ``capped_at`` instead of
+    silently covering less than it claims.
     """
-    entries = sorted(entry for entry in root.iterdir() if entry.is_file())
+    files = sorted((entry for entry in root.rglob("*") if entry.is_file()),
+                   key=lambda entry: str(entry))
+    dirs = sorted(str(entry.relative_to(root)) for entry in root.rglob("*") if entry.is_dir())
     state = {}
-    for entry in entries[:cap]:
+    for entry in files[:cap]:
         stat = entry.stat()
-        state[entry.name] = {"bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns,
-                             "sha256": _sha256(entry)}
-    return {"root": str(root), "file_count": len(entries), "files": state,
-            "capped_at": cap if len(entries) > cap else None}
+        state[str(entry.relative_to(root))] = {
+            "bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns, "sha256": _sha256(entry),
+        }
+    return {"root": str(root), "file_count": len(files), "dir_count": len(dirs),
+            "dirs": dirs, "files": state,
+            "capped_at": cap if len(files) > cap else None}
 
 
 def build_level2(real_root: Path, isolated_root: Path, manifest_out: Path | None) -> int:
@@ -224,6 +235,15 @@ def build_level2(real_root: Path, isolated_root: Path, manifest_out: Path | None
             table: connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
             for table in ("sources", "documents", "locations", "artifacts", "evidence_spans")
         }
+        # B-VR08L2-03: the first version published `root_spec` with literal values copied
+        # from the object we ASKED for - that is intent, not observation.  The isolated
+        # catalog is the thing under test, so its own `roots` row is read back here (the
+        # review found the table has no read_only/canonical_write_target columns at all,
+        # which is exactly why the intent block must not be dressed up as a measurement).
+        root_columns = [row[1] for row in connection.execute("PRAGMA table_info(roots)")]
+        root_values = connection.execute("SELECT * FROM roots LIMIT 1").fetchone()
+        root_row = (dict(zip(root_columns, [str(value)[:80] for value in root_values]))
+                    if root_values else None)
 
     payload = {
         "level": 2,
@@ -241,8 +261,12 @@ def build_level2(real_root: Path, isolated_root: Path, manifest_out: Path | None
         "production_catalog_before": before_production,
         "production_catalog_after": after_production,
         "production_catalog_unchanged": before_production == after_production,
-        "root_spec": {"root_id": spec.root_id, "kind": spec.kind, "read_only": True,
-                      "canonical_write_target": None},
+        "root_row_from_catalog": root_row,
+        "root_row_columns": root_columns,
+        "root_spec_intent": {"root_id": spec.root_id, "kind": spec.kind, "read_only": True,
+                             "canonical_write_target": None,
+                             "note": "INTENT passed to CatalogConfig - not an observation; "
+                                     "see root_row_from_catalog for what was stored"},
     }
     if manifest_out:
         manifest_out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n",

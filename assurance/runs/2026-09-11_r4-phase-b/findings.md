@@ -13,7 +13,12 @@
 - **`F-BAR-1`（我自己的记账 bug，已修）**：重核器第一版把"超过上限而跳过"的文件计成 `digest_mismatch`（首跑报 1 例"摘要不符"）。**先复现**确认为"跳过"而非内容不符，再修（跳过项不计入 match/mismatch，上限提到 512 MB 并重跑）⇒ 6/6 相符。
 - **`F-BAR-2`（事实，非缺陷）**：85 个真实候选**全部**没有 sections 产物（20 + 65 次 `sections-list` 全 `exit 1`）⇒ 任何依赖 sections 的验收（含 B08 的 L10）在**本机语料**上到不了。
 - **授权口径**：manifest 自带的 `NOT APPROVED - awaiting owner confirmation` 状态字段**原样保留**在证据里（不掩盖），实际授权来自 owner 的会话指令（`approval_basis` 同时记录两者）。
-- **状态**：两份产物**都待独立复审**（`B.VR-b08l2` / `B.VR-bar`）；复审通过前**不得**记为"通过"，也不得据此宣称"四 root 端到端已完成"。
+- **状态**：B08 第②级已过独立复审 **`B.VR-b08l2` = `APPROVE_WITH_FINDINGS`（0×P0 / 0×P1 / 2×P2 / 5×P3）**，**7 条全部处置**（逐条表 [evidence/b-vr-b08l2-disposition.md](evidence/b-vr-b08l2-disposition.md)）。复审的最强复现：把探针输出改到自己 temp **完整重跑** ⇒ 与仓库证据**逐字节相同**，并在 `addaudithook` 看门狗下跑 `build_level2` + 探针 ⇒ **生产 catalog 打开次数 = 0**、所有写入都在 `%TEMP%`；守卫 `selftest` 5/5、**12/12** 对抗路径被拒且未创建、**4/4** junction 逃逸被拒。
+  - **它抓到我的两处 P2**：① 篡改用例**不是内容比对**（错误摘要在**句柄版本钉死门**就被拒、**文件从未打开**），我却在 §2/L05 写成"真实字节/内容不符"⇒ 已改口径并登记缺口（真内容替换需写生产或复制真实语料，均未授权）；② `_real_root_state` **只列直接文件**（它用假根证明"新增空子目录/子目录内新增文件"都看不见）⇒ 已改**递归**并重跑证据（补 `dir_count`/`dirs`/`capped_at`）。
+  - **它的 2×REFUTED 里有一条是我的措辞**："仓库无新增文件"字面为假（本轮导入留下 gitignored 的 `__pycache__/*.pyc`）⇒ 改为"**无新增被跟踪文件、无生产数据文件被改动**"并删掉该 `.pyc`。
+  - **它把一条转交 B.AR 复审裁定**（`B-VR08L2-07`）：owner 的"继续做，直到全部完成"把"命令逐条批"变成"只读子集整批批准"，而 manifest 自带状态串仍是 `NOT APPROVED`；我已改键名并写明授权口径，**最终裁定权交给 `B.VR-bar`**。
+  - **残余风险（复审明示，必须一直带着）**：生产 catalog 只能 `stat` ⇒ "**大小+mtime 不变的内容写入**"对工具与复审**都不可见**；OS 级进程旁观在本机不可得。
+- **B.AR** 的独立复审（`B.VR-bar`）**进行中**（含上面那条授权裁定）；通过前不得记为"通过"，也不得据此宣称"四 root 端到端已完成"。
 
 ## FC-1301 词表门加宽：**已实施**（wiki `76cc1bc`，工作包 [packages/fc1301-taxonomy-coverage.md](packages/fc1301-taxonomy-coverage.md)）
 

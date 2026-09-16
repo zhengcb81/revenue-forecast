@@ -1,0 +1,404 @@
+{
+  "review": "B.VR-b08l2",
+  "reviewed_at_utc": "2026-09-16T21:03:55Z",
+  "reviewer_agent_id": "1598e667-beec-4757-8bf8-ce85d559d75f (process-level self-report: the value of $env:DSH_SESSION_ID in this delegated reviewer process; the harness exposes no cross-checkable UUID, so this is a self-report, not an attested identity; parent agent id session-bfecd191-fbc3-4a66-8ed1-6562479bf102)",
+  "independence_statement": "I am an independent read-only reviewer and I wrote none of the material under review: not b08-level2-report.md, not owner-directive-2026-09-16.md, not evidence/choose_resolved_real_root.py, evidence/b08_isolated_env.py, evidence/b08_level2_run.py or evidence/b08_level2_probe.py, and not the three evidence JSONs (b08-real-root-choice.json, b08-level2-evidence.json, b08-level2-probe.json). I fixed nothing and changed no product code, and I fixed no bug found during this review. WHAT I DID: read those files; took my own read-only stat + sha256 of the two real filing files; opened the ISOLATED catalog read-only; read the real sidecar; ran the reviewed tools ('python evidence/b08_isolated_env.py selftest', a re-run of 'python evidence/b08_level2_probe.py --isolated-root %TEMP%\\b08-level2-resolved --out %TEMP%\\b08l2-reviewer\\probe-rerun.json', and two further build/probe runs under my own sys.addaudithook tripwire); ran my own guard-invasion scripts that call only _ensure_isolated() (no build); measured _real_root_state's blind spots on a FAKE root in my own temp. All my scripts and outputs live only in %TEMP%\\b08l2-reviewer\\. WHAT I NEVER DID: never opened, queried, read or hashed the production catalog company-wiki\\.source_catalog\\catalog.sqlite3 (Path.stat() only, three times, on it and its -wal/-shm); no network (no web_fetch/web_search/download); no pip install; no git checkout/add/commit/push and no --no-verify (only rev-parse/status/check-ignore/ls-files/diff HEAD, all read-only); wrote, deleted, renamed or moved NOTHING inside the three repositories or the production directory - the only file I created anywhere outside my temp directory is this review record; did not modify any pre-existing file under the run directory; did not run the level-2 build against the reviewed isolated root (I built into my own temp root instead) and never built into any forbidden path. The numeric claims in my task prompt were treated as unverified: the sidecar sha256 quoted there has 62 hex digits and is wrong - the real value is 386487167b74b3b31949643d6f2a1853d161a909736f1a5da23ee9c17e9be3b0, which is what the reviewed evidence and report already say.",
+  "verified_head_revenue_forecast": "70c90d4e7ad27544b28739af0556a194a2e3d4a3",
+  "verified_head_company_wiki": "41fdfe14b530098f6c26ec571d79f08dac96d757",
+  "verified_head_filing_fetch": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
+  "artifacts_hashed_by_me": {
+    "revenue-forecast:.../evidence/b08_isolated_env.py": "7ec151d79a086086dbb0e0d19b4425b61ce3dd92e2dc62ffadf8f8421bc7145c",
+    "revenue-forecast:.../evidence/b08_level2_probe.py": "f3b00e571194a714e83af51ffb7ee5e8509ad1ee8f71ec4831063e7af20f2378",
+    "revenue-forecast:.../evidence/b08_level2_run.py": "2e7adaba2128d02d84227ae4720dcee3919a05090c0076d599385ce563c7bc19",
+    "revenue-forecast:.../evidence/b08-level2-evidence.json": "79e291632a526f630b5d8fa01f4790b2110d3e93860ca092cbddb7c55de95736",
+    "revenue-forecast:.../evidence/b08-level2-probe.json (before my runs)": "1c08440b5124d495d33bda25e294c8a990019145a68db529b6af596a4dc5490d",
+    "revenue-forecast:.../evidence/b08-level2-probe.json (after my runs - unchanged)": "1c08440b5124d495d33bda25e294c8a990019145a68db529b6af596a4dc5490d",
+    "company-wiki:companies/<ALIBABA-W>/raw/financial_reports/annual/<CJK>.pdf": "e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350",
+    "company-wiki:.../<CJK>.pdf.source.json": "386487167b74b3b31949643d6f2a1853d161a909736f1a5da23ee9c17e9be3b0",
+    "revenue-forecast:.../evidence/__pycache__/b08_isolated_env.cpython-313.pyc": "62bddb897d04c9a5b6558c174d097632fe849d08261b2a84718e23f0b71541a2"
+  },
+  "scope": [
+    "b08-level2-report.md (every claim in sections 1-7)",
+    "owner-directive-2026-09-16.md (does it transcribe the owner boundary accurately and avoid promoting the 2026-09-13 unauthorized items?)",
+    "owner-scope-decisions-2026-09-13.md (the boundary the directive claims to reinterpret)",
+    "evidence/choose_resolved_real_root.py, evidence/b08_isolated_env.py, evidence/b08_level2_run.py, evidence/b08_level2_probe.py (full read: write-point audit, guard audit, derived-parent audit)",
+    "evidence/b08-real-root-choice.json, evidence/b08-level2-evidence.json, evidence/b08-level2-probe.json",
+    "the two real filing files under company-wiki companies/<ALIBABA-W>/raw/financial_reports/annual and their .source.json sidecar content (READ ONLY: stat + sha256 + JSON read)",
+    "the isolated catalog %TEMP%\\b08-level2-resolved\\.source_catalog\\catalog.sqlite3 (opened READ-ONLY via file:...?mode=ro)",
+    "the claim 'zero production side effects' (real directory before/after, production catalog metadata before/after)",
+    "the L01-L12 grading table as far as the level-2 evidence can carry it"
+  ],
+  "method": [
+    "Read-only stat + sha256 of both real files with my own Python (temp script %TEMP%\\b08l2-reviewer\\verify1.py); compared field by field with real_root_before/real_root_after in BOTH evidence JSONs",
+    "Read-only sqlite open of the isolated catalog: sqlite3.connect(Path(db).as_uri() + '?mode=ro', uri=True) in verify1.py; dumped sqlite_master tables, per-table COUNT(*), entities, PRAGMA table_info(roots) + SELECT * FROM roots, documents.metadata_json, sources, locations, document_entities",
+    "Read the real sidecar and recomputed sha256(company_name)[:16], sha256(directory)[:16] and the resolver request_id from SourceRequest with PYTHONPATH=company-wiki\\src (verify2.py, recompute.py)",
+    "Re-ran the reviewed probe with MY OWN --out: python <RUN>\\evidence\\b08_level2_probe.py --isolated-root %TEMP%\\b08-level2-resolved --out %TEMP%\\b08l2-reviewer\\probe-rerun.json; then a recursive field-by-field JSON walker (diff.py) against the repo's evidence/b08-level2-probe.json",
+    "python <RUN>\\evidence\\b08_isolated_env.py selftest",
+    "guard.py: import the module and call _ensure_isolated() ONLY (no build) on 12 paths, then Test-Path each path to prove none was created",
+    "junction.py + PowerShell New-Item -ItemType Junction: four junction-evasion cases inside my temp, then the junctions removed and the targets re-checked",
+    "audit_build.py: sys.addaudithook tripwire that RAISES on any write-open/os.mkdir/os.remove/os.rename/os.replace/os.rmdir/os.truncate/os.chmod/os.utime/shutil.*/subprocess.Popen/socket.* resolving under the three repos, the production .source_catalog or the real data root, wrapped around a full env.build_level2() into %TEMP%\\b08l2-reviewer\\iso-audit",
+    "probe_audit2.py: the same tripwire plus sqlite3.connect monitoring (sys.dont_write_bytecode=True), driving b08_level2_probe.main() with --out into my temp",
+    "blindspot.py: 6 controlled mutations of a FAKE root in my temp to measure exactly what _real_root_state detects",
+    "Code reading: the four reviewed scripts in full, plus company-wiki scanner.py:185-210 and :390-484, resolver.py:1632-1674, :1936-2052, :397-471",
+    "Evidence cross-checks: a05-readonly-manifest-run.json (A05-5 / A05-5b attempts), findings.md / task_plan.md / progress.md / checkpoint.json for premature 'B08 passed' claims, git status / ls-files / check-ignore / diff HEAD (read-only)",
+    "Three metadata-only (Path.stat()) observations of the production catalog, plus a 25-sample 1 Hz -shm baseline (shm_baseline.py)"
+  ],
+  "claims_checked": [
+    {
+      "id": "C1",
+      "claim": "The two real files are PDF 4,172,424 B / sha256 e39fbf9c...fb350 / mtime_ns 1785602175329382700 and sidecar 2,576 B / sha256 386487167b74b3b3...e9c17e9be3b0 / mtime_ns 1785602175353807300, file_count=2, identical before and after.",
+      "method": "My own stat + sha256 (verify1.py), compared against real_root_before/real_root_after in both evidence JSONs.",
+      "observed": "EXACT match on every field in both JSONs. PDF bytes=4172424 mtime_ns=1785602175329382700 sha256=e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350; sidecar bytes=2576 mtime_ns=1785602175353807300 sha256=386487167b74b3b31949643d6f2a1853d161a909736f1a5da23ee9c17e9be3b0; file_count=2. The sidecar hash quoted in my task prompt (62 hex digits) is wrong; the reviewed evidence is right.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C2",
+      "claim": "b08_isolated_env._real_root_state records the file SET and the count, so a newly added file in the real root is detectable ('nothing was written' is evidenced, not asserted).",
+      "method": "Code read of _real_root_state (b08_isolated_env.py:153-167) + 6 controlled mutations of a fake root in my temp (blindspot.py).",
+      "observed": "It returns {'root', 'file_count': len(entries), 'files': {name: {bytes, mtime_ns, sha256}}, 'capped_at'} keyed by name, so a new DIRECT file IS detected: direct-file add DETECTED=True, content change DETECTED=True, deletion DETECTED=True. LIMIT: entries = [e for e in root.iterdir() if e.is_file()], so a new EMPTY SUBDIRECTORY is NOT detected (False), a file added INSIDE a subdirectory is NOT detected (False), a file in a nested subdirectory is NOT detected (False); cap=200 truncates with only the capped_at flag as warning. The real root currently has no subdirectories (any(p.is_dir()) == False) and 2 files, so the blind spot is latent. See finding B-VR08L2-02.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C3",
+      "claim": "Isolated catalog counts are sources=2 / documents=2 / locations=2 / artifacts=0 / evidence_spans=0.",
+      "method": "Read-only open (file:...?mode=ro) and COUNT(*) per table (verify1.py).",
+      "observed": "EXACT: {'sources': 2, 'documents': 2, 'locations': 2, 'artifacts': 0, 'evidence_spans': 0}, confirmed a second time after my three probe re-runs. The two documents are the PDF (annual_report) and the .source.json sidecar (classified broker_research).",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C4",
+      "claim": "The entities table holds exactly one row whose name starts with 'Unresolved'.",
+      "method": "Read-only SELECT * FROM entities (verify1.py).",
+      "observed": "EXACTLY one row: entity_id='unresolved:r4b08_real_sample', name='Unresolved (r4b08_real_sample)', entity_kind='unresolved'. document_entities carries the same entity for both documents with method='unresolved', confidence=0.0.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C5",
+      "claim": "In the roots table the real root carries read_only / canonical_write_target showing read-only / no write target.",
+      "method": "PRAGMA table_info(roots) + SELECT * FROM roots (verify1.py), then a code read of build_level2.",
+      "observed": "REFUTED AS STATED: the roots table has exactly the columns root_id, path, kind, priority, last_scan_run, last_scanned_at - there is NO read_only and NO canonical_write_target column anywhere in the isolated schema, so those two attributes cannot be read back from the catalog at all. The row is ('r4b08_real_sample', <real path>, 'directory', 10, 'scan-55a0fbd60213421781c91f49b21f149c', '2026-09-16T20:51:03Z'). The values exist in the Python RootSpec (constructed read_only=True, canonical_write_target=None at b08_isolated_env.py:198-207) and in the evidence JSON's root_spec block - but that block is written from hardcoded literals ({'read_only': True, 'canonical_write_target': None} at b08_isolated_env.py:244-245), not from spec. See finding B-VR08L2-03.",
+      "verdict": "REFUTED"
+    },
+    {
+      "id": "C6",
+      "claim": "The probe's request identity comes from the document's own sidecar: company_name with sha256[:16]=8d264e7eb4150881 and len=6.",
+      "method": "Read the real sidecar (verify2.py), recompute sha256(company_name)[:16] myself, and trace the catalog chain documents.metadata_json -> acquisition.",
+      "observed": "CONFIRMED. The real sidecar's top-level company_name is the CJK issuer name; my independently computed sha256[:16] = 8d264e7eb4150881, len = 6. The catalog's acquisition key set is identical to the sidecar's top-level key set (26 keys), and acquisition.company_name hashes to the same 8d264e7eb4150881. The probe's request.entity is exactly that string, and recomputing SourceRequest(entity=..., market=None, security_id=None, document_kind='annual_report', as_of_date='2026-12-31', mode='latest_as_of').request_id yields urn:company-wiki:source-request:sha256:05272e5946f8c473ac90c75474ddecadf1a54c93b8271b8955538574b25b7ffd, identical to the recorded one.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C7",
+      "claim": "The other request identity fields (security_id, fiscal_year, document_kind) also come from the sidecar.",
+      "method": "Compare the probe JSON's request/document blocks with the real sidecar and the catalog metadata (verify1.py, verify2.py) plus a code read of b08_level2_probe.py:68-145.",
+      "observed": "PARTIAL. security_id='09988' is in the sidecar AND in acquisition metadata AND is recorded in the probe's document block - but the REQUEST carries security_id=None (deliberate: the code comment says a request identity would fail-close on a candidate lacking market, testing that gate instead of the byte path). fiscal_year does NOT appear anywhere in the probe JSON; the request passes fiscal_year=None while the catalog has acquisition.fiscal_year=2026 from the sidecar. document_kind in the request is the HARDCODED literal 'annual_report' (b08_level2_probe.py:132,143) and the query filter is the hardcoded string 'annual_report' (lines 69, 80) - it coincides with the sidecar's document_kind but is not read from it. So only company_name is a sidecar-sourced request identity; the report's section 2 claim names only company_name and is therefore accurate.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C8",
+      "claim": "The probe reproduces resolution_status=REUSED_EQUIVALENT, resolution_matches=1, entity_gate_rejected=0, trace '2026<CJK>: matched', handle.document_id == the catalog row.",
+      "method": "My own re-run of the reviewed probe with --out into my temp (probe-rerun.json) and a third audit-hooked run (probe-audited.json).",
+      "observed": "Reproduced exactly in both runs: resolution_status='ResolutionStatus.REUSED_EQUIVALENT', resolution_reason='one_existing_source_satisfies_semantic_request', resolution_matches=1, resolution_trace_head=['entity_gate_rejected: 0', '2026<CJK>: matched'], handle_document_matches_row=True. Mechanism confirmed in code: _entity_matches (resolver.py:1632-1674) unions the document's entity ids/names WITH _source_metadata's ticker/security_id/company_name, so the request entity matches through acquisition.company_name even though the entities table says Unresolved.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C9",
+      "claim": "Both verified reads return status=verified, bytes=4,172,424, a matching digest, and digest_in_real_root_snapshot=true, from bytes_source=handle.",
+      "method": "The same two independent re-runs; the snapshot flag is computed inside the probe against the digests recorded by _real_root_state in b08-level2-evidence.json.",
+      "observed": "Both attempts in both of my runs: status='verified', ok=True, bytes=4172424, byte_size=4172424, bytes_source='handle', data_sha256_16='e39fbf9c80866759', digest_ok=True, digest_in_real_root_snapshot=True. I independently confirmed the snapshot set is the real files' own sha256 (my own hashing agrees), so the flag is not a self-referential catalog claim.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C10",
+      "claim": "The tamper case (expected_content_sha256 = 0*64) proves that B03's 'verified bytes or explicit failure' holds ON REAL BYTES, returning 0 bytes.",
+      "method": "Read the probe's tamper case, then read resolver.read_verified_bytes (resolver.py:1936-2052) and _read_verified_bytes (resolver.py:397-471) to locate WHERE the refusal happens.",
+      "observed": "The recorded result is exactly as claimed (status='unavailable', reason='expected_version_mismatch', bytes=0, no_bytes_returned=True) and I reproduced it three times. BUT the refusal happens at resolver.py:1999-2010, which returns BEFORE 'path = Path(str(handle.canonical_path))' is executed (line 2011) - so no file is opened, no real byte is read, and the detail 'e39fbf9c8086' is the first 12 chars of the HANDLE's content_sha256 (resolver.py:2005), not a digest of any file content. The case exercises the B-VR03-01 version-pin rule (expected != handle.content_sha256), not a comparison of real content against the requested version; it would behave identically for a nonexistent path. The content-level check does exist (resolver.py:470-471 refuses when the digest of the returned buffer differs) but is unreachable with a wrong expectation through this entry point. The 'explicit failure with 0 bytes' half is SUPPORTED; the 'on real bytes / content differs from the requested version' half is not. See finding B-VR08L2-01.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C11",
+      "claim": "While another reader holds the real file open (rb), the read still returns verifiable bytes, and the report does NOT claim the writer boundary.",
+      "method": "Read the probe's occupied case (b08_level2_probe.py:202-217) + my re-runs + report cross-read (section 2 last bullet, L06 row, F5).",
+      "observed": "Reproduced: status='verified', ok=True, bytes=4172424, digest_ok=True, held_handle_mode='rb (read-only; no production write open)'. The holder is location_path.open('rb') on the real PDF, with-scoped, so it is genuinely a reader. The report explicitly refuses the writer claim ('writer occupation ... needs to open the production file for writing, which this authorization does not include, so it is NOT claimed'), so the case is not written up as a writer boundary. Minor: held_handle_mode is a hardcoded literal (see B-VR08L2-03), though I verified the mode in the code.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C12",
+      "claim": "real_root_unchanged=true and production_catalog_unchanged=true, with verbatim before/after states in both JSONs.",
+      "method": "My own recomputation of both states, my own re-runs, and comparison with the repo JSONs.",
+      "observed": "Both booleans are true in the repo evidence and in all of my re-runs; the embedded before/after blocks are identical to each other and to my independent measurements. For the production catalog the before/after blocks are also identical to my three independent stats (see C21).",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C13",
+      "claim": "No code path in the four scripts can write bytes into the three repositories, the production .source_catalog, or the real data root.",
+      "method": "Full read of all four scripts enumerating every write point, PLUS an empirical tripwire: sys.addaudithook raising on any write-open/os.mkdir/os.remove/os.rename/os.replace/os.rmdir/os.truncate/os.chmod/os.utime/shutil.*/subprocess.Popen/socket.* resolving under the three repos, the prod .source_catalog or the real root, wrapped around a full env.build_level2() and a full b08_level2_probe.main().",
+      "observed": "Write points in the code: env.build -> root.mkdir + manifest_out.write_text; env.snapshot -> EVIDENCE/b08-side-effects-<label>.json; env.build_level2 -> isolated.mkdir + CatalogStore(database) + catalog.scan() + sqlite3.connect(database) + manifest_out.write_text; b08_level2_run -> manifest_out default HERE/b08-level2-evidence.json; b08_level2_probe -> sqlite3.connect(database) (READ-WRITE, but on the ISOLATED db) + args.out.write_text (default HERE/b08-level2-probe.json) + location_path.open('rb') on the real file. No shutil, no os.remove/rename/replace, no subprocess, no network in any of the four. TRIPWIRE RESULT (audit_build.py): return_code=0, error=null, blocked_count=0, real_root_unchanged=true, production_catalog_unchanged=true, 12 write-ish events, all landing in %TEMP% (my iso-audit catalog dir + a tempfile lock), 0 network/subprocess events. TRIPWIRE RESULT (probe_audit2.py): return_code=0, blocked_count=0, production_catalog_open_count=0 (the hook also watched sqlite3.connect - the only connects were to the ISOLATED db, once via ?mode=ro and once plain), writes observed = one temp lock file in %TEMP% (created then removed) and my own output JSON. The only writes the reviewed tools make outside temp are their own evidence JSONs inside the run directory, which is their designed deliverable.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C14",
+      "claim": "The isolation guard refuses the five selftest cases and cannot be bypassed from the paths that matter.",
+      "method": "'python evidence/b08_isolated_env.py selftest'; my own guard.py calling _ensure_isolated() only on 12 paths followed by Test-Path; junction.py after creating NTFS junctions in my temp.",
+      "observed": "selftest: 5/5 refused, exit 0, ok=true, temp root accepted. My 12 cases: prod .source_catalog\\b08-vr-test, prod .source_catalog itself, revenue-forecast\\b08-vr-test, company-wiki\\b08-vr-test, filing-fetch\\b08-vr-test, Dropbox/OneDrive/Google Drive/iCloud paths, C:\\b08-vr-outside-temp, the real data root itself, and the prod catalog FILE path - 12/12 SystemExit, and Test-Path afterwards shows only the pre-existing paths exist; none of the test paths was created. Junction evasion (4/4 refused): resolve() follows the junction, so <temp>\\junc-to-prodcat\\b08-vr-test was refused as 'inside the production catalog dir', <temp>\\junc-to-repo\\b08-vr-test as 'inside a repository', <temp>\\junc-outside\\b08-vr-test as 'outside the system temp directory'; after removing the junctions the targets still contain no b08-vr-test.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C15",
+      "claim": "The historical parents[2] vs parents[3] dead-code bug is fixed: the repo/production/sync refusals actually fire, and no path judgement depends on a fragile derived parent level.",
+      "method": "Runtime check of the module constants plus a read of every path comparison in _ensure_isolated and build_level2.",
+      "observed": "At runtime REPO=C:\\Users\\<user>\\Projects\\revenue-forecast, PROJECTS=C:\\Users\\<user>\\Projects, PROD_CATALOG=...\\company-wiki\\.source_catalog, REPO_DIRS=the three checkouts, and HERE.parents[3]==REPO printed True - so parents[3] is the repository, not assurance/. The refusals demonstrably fire (C14), which is the direct evidence that the dead-code condition is gone. The containment tests use the correct direction (resolved == repo or repo in resolved.parents), plus a belt-and-braces '.source_catalog' path-part scan. The only other derived ancestor is RUN_DIR=HERE.parent, used for nothing security-relevant, and build_level2's overlap check (real_root == isolated / in each other's parents), which is correctly directed. git diff HEAD shows b08_isolated_env.py's working-tree delta is a pure 117-line addition (the level-2 feature); the constants, including parents[3], are in the committed version.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C16",
+      "claim": "Report section 1: the chosen real directory is 'annual' (name len 6) with path sha256[:16] 465769c177228b0d, 2 files / 1 candidate / 1 with entity.",
+      "method": "Recomputed sha256 of the directory string and len('annual') myself; compared with b08-real-root-choice.json.",
+      "observed": "Recomputed exactly: sha256(path)[:16]=465769c177228b0d, len('annual')=6. The choice JSON records candidates=1, with_entity=1, files=2 for that directory and it is the first option under the script's (files, candidates) sort key. Note the tie-break among the eight equally small options is dict order, not a deterministic content rule - harmless here, but the choice is not uniquely determined by the stated criterion.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C17",
+      "claim": "Report section 5 F2: scanner._infer_company infers entities from the PATH only, and its name set is collected only from company_raw roots.",
+      "method": "Read scanner.py:188-210 (_entity/_company_names/_infer_company) and the isolated catalog's entities/document_entities rows.",
+      "observed": "CONFIRMED IN CODE: _company_names iterates config.roots and skips every root whose kind != 'company_raw' or that is not a dir (scanner.py:199-200), then collects only direct child directories containing a 'raw' subdir; _infer_company(relative_path, names) does a casefolded SUBSTRING test of each candidate name against the relative PATH string and returns a match only if exactly one name matches (scanner.py:207-210). The level-2 config registers one root of kind 'directory', so names is empty, entity_name is None and _entity returns ('unresolved:r4b08_real_sample', 'Unresolved (r4b08_real_sample)', 'unresolved', 0.0, 'unresolved') (scanner.py:193) - exactly the single row I read, even though the sidecar carries company_name. The gate still anchors through metadata (C8).",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C18",
+      "claim": "Report section 5 F3: the non-focus branch creates a separate primary document for EVERY supported file, so one real PDF yields sources=2/documents=2 (PDF + sidecar).",
+      "method": "Read scanner.py:391-437 and the isolated catalog's documents row for the sidecar.",
+      "observed": "CONFIRMED IN CODE: at scanner.py:408, if not focus_scope, the loop appends a _Candidate(root, path, relative, relative, 'original_primary', ..., 'active', None) for EVERY path in supported (sidecars included) and then 'continue', skipping the focus branch that pairs a sidecar with its primary; only a non-sidecar path loads sidecar metadata (scanner.py:418-423). The catalog agrees: documents=2, the second document's title ends '.pdf.source' and its document_kind is 'broker_research' with an EMPTY acquisition block, while the PDF's is 'annual_report' with the full sidecar metadata. The report's F3 description is accurate; it does not mention that the sidecar gets a different (broker_research) kind, which is true but additional.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C19",
+      "claim": "Report section 5 F4 / L10: A05-5 measured 85 candidates of which 0 have sections artifacts.",
+      "method": "Parsed evidence/a05-readonly-manifest-run.json and counted the per-attempt records.",
+      "observed": "SUPPORTED with a citation nuance: A05-5 has 20 attempts and A05-5b has 65 attempts, 85 distinct document ids in total (document_ids_available=20 + document_ids_available_filtered=65 = 85), every one exit_code=1, stdout_bytes=0, stderr 'no sections artifact for document_id'. The report cites 'A05-5' for the 85 figure; the 85 actually spans A05-5 and A05-5b. The claim itself holds.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C20",
+      "claim": "Report section 4: 'isolated writes - only %TEMP%\\b08-level2-resolved\\ (catalog.sqlite3 + lock file) - the repository and the production directory have NO new files'.",
+      "method": "Enumerated the isolated root before and after my runs; compared the run directory's file list and hashes with my first listing; git status / ls-files / check-ignore.",
+      "observed": "PARTIALLY REFUTED. (a) The isolated-write description is imprecise: the files live one level deeper, in %TEMP%\\b08-level2-resolved\\.source_catalog\\ (catalog.sqlite3 253,952 B, plus at review time -wal and -shm and operation.lock.acquire) - there is no catalog.sqlite3 directly at the isolated root. (b) 'no new files in the repository' is refuted at the letter: assurance/runs/2026-09-11_r4-phase-b/evidence/__pycache__/b08_isolated_env.cpython-313.pyc (22,995 B, mtime 2026-09-16T20:51:54.553599Z) is a file created inside the revenue-forecast repository during this work by CPython when the reviewed scripts imported the module. It is git-ignored (.gitignore line 1 '__pycache__/') and untracked, and it is bytecode, not production data - so the substance of 'no production writes' survives, but the absolute wording does not. I proved the mechanism adversarially: my own import attempt to create __pycache__/b08_level2_probe.cpython-313.pyc was stopped by my tripwire, after which I ran with sys.dont_write_bytecode=True, and that file still does not exist. See findings B-VR08L2-04 and B-VR08L2-06.",
+      "verdict": "REFUTED"
+    },
+    {
+      "id": "C21",
+      "claim": "Production catalog metadata is unchanged: catalog.sqlite3 49,677,344,768 B / mtime 2026-09-08T21:23:21.072747Z; -wal 0 B / 2026-09-16T20:44:52.235839Z; -shm 32,768 B / 2026-09-16T20:48:14.252430Z.",
+      "method": "Path.stat() ONLY (never open) at 2026-09-16T20:57:23.222192Z, 2026-09-16T21:00:01.967604Z and 2026-09-16T21:00:57.572564Z, compared with both evidence JSONs' before/after blocks.",
+      "observed": "The first two stats match the record EXACTLY on all three files (main 49677344768 B / 2026-09-08T21:23:21.072747Z; wal 0 B / 2026-09-16T20:44:52.235839Z; shm 32768 B / 2026-09-16T20:48:14.252430Z). At the third stat (21:00:57Z) the -shm mtime had moved to 2026-09-16T21:00:15.342546Z while the main DB and the 0-byte -wal were unchanged. That movement is AFTER the reviewed work package's window (build 20:51:03Z, probe evidence 20:55:15Z, my re-runs 20:56-21:00Z), and my 25-sample 1 Hz passive baseline 21:01:05-21:01:30Z showed 0 further transitions with wal bytes [0] and the main mtime constant. Per the G5 discipline I do NOT attribute it (a python process PID 14960 started at 21:00:08Z was present, but I did not observe handles). It is a live, independent demonstration that -shm moves on this host without an attributable actor - exactly why the report declines to attribute it. No discrepancy with the report's before/after record.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C22",
+      "claim": "The evidence JSONs are genuine tool output, not hand-edited afterwards (the re-run comparison is the key test).",
+      "method": "Byte/field comparison of my independent re-run against the repo's b08-level2-probe.json, plus a third run under the audit hook, plus mtime sanity.",
+      "observed": "STRONGLY SUPPORTED: my re-run (probe-rerun.json) is BYTE-IDENTICAL to the repo's evidence/b08-level2-probe.json - a recursive walker reported TOTAL DIFFS: 0 and json.dumps(sort_keys=True) equality True, even though the payload contains no timestamps and is fully deterministic. A third run under the audit hook produced the same bytes again. The repo file's hash (1c08440b5124d495d33bda25e294c8a990019145a68db529b6af596a4dc5490d) is unchanged before and after my runs, and its mtime 20:55:15.669659Z postdates the script edit at 20:55:12Z, consistent with 'fix the vacuous probe, then rerun'.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C23",
+      "claim": "owner-directive-2026-09-16.md transcribes the owner's boundary accurately and does NOT present the 2026-09-13 unauthorized items (production catalog writes, copying/moving the real corpus) as authorized.",
+      "method": "Read owner-scope-decisions-2026-09-13.md in full and compare line by line with the directive, then check the actual actions against my own measurements.",
+      "observed": "ACCURATE for B08. 2026-09-13 item 1 splits G8 into two levels, marks level 2 'another batch' and states 'no production catalog write authorized, no copying/moving of the real corpus authorized'; its section 22 lists B08's real-byte part as still gated; section 28 lists product writes/deletes, data commands, read-only manifest commands, any production catalog write and any cross-repo contract change as not decided and not to be advanced unilaterally. The directive (sections 11, 17, 23-26, 29) says it converts the two 'another batch' items into this batch 'with their boundaries unchanged', voids section 22's line ONLY within read-only scope, re-affirms the 'no production catalog write / no copy or move of the real corpus' boundary as still in force, and forbids product behaviour changes, cross-repo contract changes, CI gates and --no-verify. It does not promote any 2026-09-13 unauthorized item. The actual level-2 actions are read-only by my own measurement (C13/C21), not merely by the report's assertion.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C24",
+      "claim": "The level-2 actions really were read-only (judged from evidence and code, not from the report's prose).",
+      "method": "The two audit-hook runs (C13), my own hashing of the real files (C1), my own production-catalog stats (C21), and a code read of the read path.",
+      "observed": "CONFIRMED independently: 0 tripwire hits; the production catalog was never opened, queried or hashed by the reviewed tools (audit hook: production_catalog_open_count=0 across both a full build and a full probe run); the only sqlite connects target the isolated temp database; the real files' bytes/mtimes/sha256 are identical to the recorded before state; the production main DB and its 0-byte WAL never moved across any of my observation windows. The read path uses 'with path.open(\"rb\")' (resolver.py:434), so it is read-only AND the handle is closed on every return path, including the early in-loop returns - no handle leak.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C25",
+      "claim": "The report does not read itself as 'B08 passed' before independent review, and the surrounding planning files do not record it as passed.",
+      "method": "Read report sections 3 and 7; grep findings.md, task_plan.md, progress.md, checkpoint.json for B08 status wording.",
+      "observed": "HOLDS. Report section 3's reading paragraph says 'do not read this report as B08 passed - until independent review (B.VR-b08l2) passes, B08 is level 1 + level 2 executed, pending review', and section 7 repeats it. findings.md says the products are 'pending independent review' and 'must not be recorded as passed before review'; progress.md says the same; task_plan.md still shows B08 as awaiting B.VR. Note findings.md's section heading uses the word 'achieved' (CJK) for the level-2 run, but the same section's status line explicitly forbids recording it as passed - a wording tension, not a premature pass.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C26",
+      "claim": "L12 is graded 'covered' for level 2 without concealing that OS-level process observation was not done.",
+      "method": "Read the L-table row L12, the reading paragraph under it, section 7, and the -shm row in section 4.",
+      "observed": "NO CONCEALMENT, but an inconsistent grade label. The same table row's 'still missing' column says 'OS-level process observation (who opened what) is not available on this host; G5 already showed -shm cannot be attributed, so that half is registered as unobtainable and is not pretended to be covered', and the reading paragraph below says level 2 advanced 'L12's real-read HALF'. So the missing half is disclosed three times. However the level-2 cell itself reads 'COVERED (real read + file/DB observation)', while L05 and L06 - with the identical structure of a real half plus an explicitly unavailable half - are graded 'PARTIAL (strengthened)'. The single word 'covered' therefore overstates relative to the report's own text. See finding B-VR08L2-05.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C27",
+      "claim": "Report section 4's -shm wording follows the G5 non-attribution discipline.",
+      "method": "Compare the report's -shm row with reviews/G5-boundary-observation.json's stated rule as quoted in the report, and with my own -shm observation (C21).",
+      "observed": "CONSISTENT: the report says the -shm did not move in this window but moved in another window and therefore attributes no open to it. I can pin the other window: the recorded -shm mtime 2026-09-16T20:48:14.252430Z is 53 ms from the A05 run's ran_at_utc 2026-09-16T20:48:14.305241Z, i.e. it moved when the read-only CLI run (B.AR) started, not during B08 (build 20:51:03Z, probe 20:55:15Z, -shm mtime constant across both snapshots). My own later observation (a movement at 21:00:15Z with no attributable actor, then a flat 25 s baseline) independently confirms that -shm is not attributable on this host.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C28",
+      "claim": "The material committed for B08 (commit 70c90d4) is the same content this review examined, so the verdicts transfer to the committed revision.",
+      "method": "Detected the head movement via 'git status --porcelain' count drop (29 -> 1) and 'git rev-parse HEAD'; then blob_check.py compared sha256 of each reviewed working-tree file with sha256 of the bytes of 'git show HEAD:<path>' captured through subprocess as BYTES.",
+      "observed": "Head moved 09cce40f5ce53d9f58dad9d8806600e08c19a0e5 -> 70c90d4e7ad27544b28739af0556a194a2e3d4a3 by a CONCURRENT AUTHOR session (subject 'docs(r4): B08 level-2 real-byte reads + B.AR identity/hash re-derivation (both awaiting review)', committer date 2026-09-16T21:59:46+01:00); 09cce40 is an ancestor of the new HEAD (merge-base --is-ancestor exit 0). All nine reviewed files are byte-identical between working tree and committed blobs and their sha256 equal the hashes I recorded during the review (b08-level2-probe.json 1c08440b5124d495..., b08-level2-evidence.json 79e291632a526f63..., b08_isolated_env.py 7ec151d79a086086..., b08_level2_probe.py f3b00e571194a714..., b08_level2_run.py 2e7adaba2128d02d..., b08-real-root-choice.json 3c5a55d3eb5a3f35..., choose_resolved_real_root.py 3e27d6ebfda82e15..., b08-level2-report.md cc07c8c25ffce623..., owner-directive-2026-09-16.md 0a9409616a336e7f...). The repo's only working-tree entry is now my own reviews/B.VR-b08l2.json. Method caveat I hit and corrected: piping 'git show' through PowerShell 'Out-File -Encoding utf8' re-encodes the text and produced a spurious hash 0a241519...; the byte-exact comparison via subprocess is the valid one. This also supplies the context for the -shm movements I observed: a concurrent author session was active on this host during my review.",
+      "verdict": "SUPPORTED"
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-VR08L2-01",
+      "severity": "P2",
+      "claim": "The tamper case does not test what the report says it tests. Report section 2 ('case 3 proves that B03's either-verified-bytes-or-explicit-failure holds ON REAL BYTES') and the L05 cell ('on real bytes, content-differing-from-the-requested-version is explicitly refused (0 bytes)') describe a content-vs-requested-version comparison, but the probe's expected=0*64 trips the handle version-pin gate before the file is ever touched.",
+      "evidence": "MY OWN OBSERVATION: (1) code read of resolver.py:1997-2010 - 'if expected_content_sha256 and expected_content_sha256 != handle.content_sha256:' returns ByteReadResult(status=unavailable, reason=expected_version_mismatch, data=None, byte_size=0), and the line that builds the path, 'path = Path(str(handle.canonical_path))', is only at resolver.py:2011, after that return; the file open happens later still, at resolver.py:434 ('with path.open(\"rb\")') inside _read_verified_bytes. (2) my three re-runs all recorded tamper_probe = {status: 'unavailable', reason: 'expected_version_mismatch', detail: 'e39fbf9c8086', bytes: 0, no_bytes_returned: true}, and that detail is the first 12 hex chars of the HANDLE's content_sha256 (resolver.py:2005 'detail=str(handle.content_sha256)[:12]') - quoted from the handle, not computed from any file content. (3) the content-level refusal that WOULD be a real-byte test exists at resolver.py:470-471 (computed != expected_sha256) but is unreachable with a wrong expectation through read_verified_bytes because of the pin at :1999. (4) This is the same failure family the report itself reports as F1 (a probe that passes without exercising the claimed path) - here the probe does run, but it exercises the pin gate rather than the byte-comparison gate.",
+      "impact": "The L05 row and one bullet of section 2 overstate what the level-2 evidence establishes. The underlying contract is genuinely implemented and the 'explicit failure, no bytes' property IS demonstrated, so no safety conclusion is wrong - but a reader would believe real-content divergence was measured, and it was not. The report's own framing ('these two lines are the point of level 2') sits immediately next to this bullet, so the overstatement is load-bearing for how strong the level-2 claim looks.",
+      "suggested_disposition": "Relabel the case as what it is: 'a request whose expected version contradicts the handle's pinned version is refused with 0 bytes (version-pin gate, B-VR03-01)'. If a genuine content-divergence read is wanted, it is constructible inside the current authorization without touching production: copy the real PDF into the temp isolated root (the directive excludes copying the real corpus INTO A REPOSITORY, not into temp), register a temp root over the copy with a deliberately wrong content_sha256, and read that - or call the internal _read_verified_bytes directly with a wrong expected digest and record content_sha256_mismatch. Either way, record explicitly that the failing digest was computed from bytes actually read."
+    },
+    {
+      "id": "B-VR08L2-02",
+      "severity": "P2",
+      "claim": "The zero-side-effect evidence on the real directory covers only the DIRECT files of the one registered directory: _real_root_state enumerates root.iterdir() filtered by is_file() and file_count counts files only, so a newly created subdirectory - or any file created inside a subdirectory at any depth - is invisible to the before/after comparison, and the cap=200 truncation is unrecorded except by the capped_at flag.",
+      "evidence": "MY OWN OBSERVATION (blindspot.py, a FAKE root in %TEMP%\\b08l2-reviewer; no production path involved): baseline 2 files; +new DIRECT file -> file_count 2->3, DETECTED=True; +new EMPTY SUBDIRECTORY -> state identical, DETECTED=False; +file INSIDE that subdirectory -> identical, DETECTED=False; +nested subdir and file -> identical, DETECTED=False; modified existing file -> DETECTED=True; deleted direct file -> DETECTED=True. Code: b08_isolated_env.py:160 'entries = sorted(entry for entry in root.iterdir() if entry.is_file())' and :166 'file_count': len(entries). Today the real root has no subdirectories at all (my check: any(p.is_dir()) == False) and only 2 files, so the blind spot is latent rather than exploited, and my audit-hook runs independently closed the whole filesystem-write surface for the reviewed code - which is why this is not a P0.",
+      "impact": "The statement 'real directory before/after per-file identical' is a narrower observation than it reads. It would fail to notice exactly the side-effect class a read-only reference experiment should fear most (the scanner materialising a directory, a cache, or a sidecar inside the referenced tree), and it silently ignores changes beyond the 200th direct file. The conclusion is currently CORRECT, but its stated coverage is wider than its actual coverage.",
+      "suggested_disposition": "State the boundary explicitly in report section 4 ('the snapshot covers the direct files of that one directory; the tree had no subdirectories at this revision') and either make the snapshot recursive (rglob over all entries, recording the directory set and a recursive file count) or add the directory set and a recursive count as separate fields so a future nested real root cannot slip through. Keep cap=200 but require capped_at to be null for the comparison to count as conclusive."
+    },
+    {
+      "id": "B-VR08L2-03",
+      "severity": "P3",
+      "claim": "The load-bearing 'read-only, no write target' claim in the evidence is a source-level literal, not an observation: the roots table has no such columns, so if the RootSpec were ever constructed differently the evidence JSON would still say read_only=true.",
+      "evidence": "MY OWN OBSERVATION: PRAGMA table_info(roots) in the isolated catalog returns exactly root_id, path, kind, priority, last_scan_run, last_scanned_at - no read_only, no canonical_write_target; SELECT * FROM roots gives ('r4b08_real_sample', <real path>, 'directory', 10, 'scan-55a0fbd60213421781c91f49b21f149c', '2026-09-16T20:51:03Z'). In the tool, b08_isolated_env.py:244-245 writes \"root_spec\": {\"root_id\": spec.root_id, \"kind\": spec.kind, \"read_only\": True, \"canonical_write_target\": None} - the first two values are read from spec, the last two are hardcoded literals. The same pattern appears at b08_level2_probe.py:216 ('held_handle_mode': 'rb (read-only; no production write open)') and in the note fields. I verified the underlying facts independently (the spec really is constructed read_only=True / canonical_write_target=None at :198-207; the holder really does open 'rb' at :203), so nothing recorded is false.",
+      "impact": "B08 exists to replace declarations with evidence; these three fields are declarations inside the evidence file. A reviewer or future reader cannot check 'read-only' from the artifact, and a regression that flipped read_only would not change the JSON. It also means the expectation of finding read_only in the roots table cannot be satisfied by this schema at all.",
+      "suggested_disposition": "Derive the block from the object instead of the literal - e.g. serialise the policy/config view that already exposes spec.read_only (company-wiki policy.py:41 emits 'read_only': spec.read_only) or record the result of the config validation that enforces reusable-external-root => read_only (policy_3x.py). Failing that, rename the block so it is clear it echoes the constructor arguments rather than the persisted root row."
+    },
+    {
+      "id": "B-VR08L2-04",
+      "severity": "P3",
+      "claim": "Report section 4's absolute claim 'the repository and the production directory have NO new files' is literally false: running/importing the reviewed tools created a bytecode file inside the revenue-forecast repository during this work.",
+      "evidence": "MY OWN OBSERVATION: assurance/runs/2026-09-11_r4-phase-b/evidence/__pycache__/b08_isolated_env.cpython-313.pyc exists, 22,995 B, mtime 2026-09-16T20:51:54.553599Z (inside the B08 window; the level-2 build finished 20:51:03Z and the probe ran 20:55:15Z), sha256 62bddb897d04c9a5b6558c174d097632fe849d08261b2a84718e23f0b71541a2. It is git-ignored (.gitignore line 1 '__pycache__/') and untracked (git check-ignore confirms it; git ls-files reports no such file), and it is Python bytecode, not production data. MECHANISM PROVEN ADVERSARIALLY: my own import of b08_level2_probe tripped my audit hook on '...\\evidence\\__pycache__\\b08_level2_probe.cpython-313.pyc.<temp>', i.e. CPython writes .pyc files into the repo on import; I then re-ran with sys.dont_write_bytecode=True and Test-Path confirms that file still does not exist, so I added nothing.",
+      "impact": "Small, but it is precisely the kind of statement section 4 exists to make checkable. Any reviewer diffing the repository tree finds a file the report says cannot be there, which weakens trust in the adjacent absolute claims (which ARE true). The production half of the sentence is unaffected.",
+      "suggested_disposition": "Either narrow the wording to 'no new version-controlled files; importing the tools leaves an ignored __pycache__ .pyc under evidence/', or run the tools with PYTHONDONTWRITEBYTECODE=1 / sys.dont_write_bytecode=True (as I did) and say so in the rerun instructions in section 6."
+    },
+    {
+      "id": "B-VR08L2-05",
+      "severity": "P3",
+      "claim": "L12's level-2 cell is graded 'covered' while L05 and L06 - structurally identical cases of a real half plus an explicitly unavailable half - are graded 'partial (strengthened)'; the report's own reading paragraph calls L12's advance a 'half'.",
+      "evidence": "MY OWN OBSERVATION: b08-level2-report.md line 55, the L12 level-2 cell reads 'COVERED (real read + file/DB observation)' and its own 'still missing' cell in the same row reads 'OS-level process observation (who opened what) is not available on this host ... that half is registered as unobtainable, and is not pretended to be covered'; line 57's reading paragraph says level 2 pushed 'L12's real-read HALF' into reach; lines 48-49 grade L05/L06 'PARTIAL (strengthened)' with comparable disclosures. Lines 59 and 96 both forbid reading the report as 'B08 passed'. So the missing half is disclosed three times and is NOT concealed.",
+      "impact": "Grading inconsistency rather than concealment: a reader skimming only the L-table sees L12 as fully covered when one of its two named halves was never attempted. Because the neighbouring rows say 'partial', the single word 'covered' is the one place in the table where the level-2 contribution reads stronger than the report's own prose.",
+      "suggested_disposition": "Relabel the L12 level-2 cell as 'PARTIAL (strengthened)' and keep the existing disclosure text, or split L12 into L12a/L12b so the covered half and the unobtainable OS-level half are graded separately."
+    },
+    {
+      "id": "B-VR08L2-06",
+      "severity": "P3",
+      "claim": "Report section 4's description of the isolated writes ('only %TEMP%\\b08-level2-resolved\\ (catalog.sqlite3 + lock file)') misdescribes the layout: the database lives under the .source_catalog subdirectory and, at review time, -wal and -shm were present there too.",
+      "evidence": "MY OWN OBSERVATION: enumerating %TEMP%\\b08-level2-resolved recursively at 2026-09-16T20:57Z returned exactly .source_catalog plus .source_catalog\\{catalog.sqlite3 (253,952 B, mtime 2026-09-16T20:51:03.725706Z), catalog.sqlite3-shm, catalog.sqlite3-wal, operation.lock.acquire (1 B)} - there is no catalog.sqlite3 directly under the isolated root (Test-Path %TEMP%\\b08-level2-resolved\\catalog.sqlite3 = False). After my three probe re-runs (which, per the probe's own code, open that database read-write) sqlite removed the transient -wal/-shm on clean close, so by 21:00:57Z only catalog.sqlite3 and operation.lock.acquire remained. The evidence JSONs' 'database' field is correct (it names ...\\.source_catalog\\catalog.sqlite3); only the report's summary row is loose.",
+      "impact": "Cosmetic, but it sits in the zero-side-effect table and the isolation boundary is the object of the whole exercise - a reader who goes to check the path will not find the file the row names.",
+      "suggested_disposition": "Name the paths as they are: '%TEMP%\\b08-level2-resolved\\.source_catalog\\ (catalog.sqlite3, plus sqlite's transient -wal/-shm and operation.lock.acquire)'."
+    },
+    {
+      "id": "B-VR08L2-07",
+      "severity": "P3",
+      "claim": "OUTSIDE the B08 work package (directive consistency only, no B08 impact): the directive points at a key name that does not exist in the evidence file it cites, and it converts 2026-09-13's 'approve the manifest commands one by one' into a blanket approval of every command the manifest marks read-only - a relaxation that is disclosed but is wider than the earlier decision.",
+      "evidence": "MY OWN OBSERVATION (read-only): owner-directive-2026-09-16.md section 27 says the remaining entries 'stay in explicitly_excluded and were not run', but evidence/a05-readonly-manifest-run.json has no 'explicitly_excluded' key - the actual key is 'explicitly_excluded_not_run' (a list of 6 groups: ensure/close-gap; scan/normalize/summarize/run/worker*; identify --refresh; derived-audit; prune-retired-evidence/duplicate-recycle/focus-cleanup; install-startup/...), so the substance holds and only the name is off. Also in that file, 'manifest_status_at_run' still reads 'NOT APPROVED - awaiting owner confirmation (gate G4 ... gate G7 for the sample list)' while 'approval_basis' cites the owner's in-session instruction, and 2026-09-13 item 2 says 'approved one by one (no command approved this time)' with section 22 listing B09/B.AR as still gated. The directive resolves both 'another batch' items at once (disclosed in its section 11), so the interpretation is transparent rather than silent. I did NOT audit the manifest itself, the excluded command list, or any B.AR/B09 artifact, and this finding does not affect my B08 adjudication.",
+      "impact": "None on B08's substance; relevant to whoever reviews B.AR/B09, who should confirm that the blanket read-only approval matches the owner's intent and that 'no command approved this time' was genuinely superseded.",
+      "suggested_disposition": "Have the B.AR reviewer adjudicate it. Fix the key name in the directive to 'explicitly_excluded_not_run' (or add the intended key), and record in the B.AR evidence why the manifest's own status banner still says NOT APPROVED at run time."
+    }
+  ],
+  "adjudication": "APPROVE_WITH_FINDINGS",
+  "adjudication_reason": "The level-2 core is independently confirmed and reproducible, and I found no live P0. (1) I re-hashed both real files myself and every field (bytes, mtime_ns, sha256) matches the evidence exactly; file_count=2. (2) I opened the isolated catalog read-only and the counts are exactly 2/2/2/0/0 with exactly one Unresolved entity row. (3) The identity chain is real: the request entity is the sidecar's own company_name (sha256[:16]=8d264e7eb4150881, recomputed by me), and I reproduced the request_id exactly. (4) The strongest test - my own re-run of the probe with --out into my temp - is BYTE-IDENTICAL to the repo's evidence/b08-level2-probe.json (0 field diffs), and a third audit-hooked run reproduced it again; the repo file's hash is unchanged, so the evidence is genuine tool output, not hand-edited. All four cases reproduce: REUSED_EQUIVALENT / matches=1 / entity_gate_rejected=0, two verified 4,172,424-byte reads whose digest equals the independently hashed real file, the tamper refusal with 0 bytes, and the reader-occupied read. (5) The guard is real and I could not break it: selftest 5/5, my 12 adversarial paths 12/12 refused with Test-Path proving nothing was created, and 4/4 junction-evasion cases refused. The historical parents[2] dead-code condition is genuinely fixed (parents[3] verified at runtime, and the refusals demonstrably fire). (6) 'Cannot write production' is proven empirically, not just by reading code: with a sys.addaudithook tripwire raising on any write/mkdir/remove/rename/subprocess/socket under the three repos, the production .source_catalog or the real root, a full build and a full probe both completed with blocked_count=0 and production_catalog_open_count=0, and every observed write landed in %TEMP%. (7) The production catalog metadata matches the record exactly at my two earlier stats; a -shm movement I observed at 21:00:15Z was outside the reviewed window, unattributable, and followed by a flat 25 s baseline - which independently validates the report's G5 non-attribution wording. (8) The directive does not promote any 2026-09-13 unauthorized item, and the actions really were read-only. The report also does not claim B08 passed and explicitly forbids that reading. It is nevertheless not APPROVE: there are two substantive overclaims about what was verified - the tamper case is described as a real-content divergence test when it only trips the handle version-pin gate before any file access (B-VR08L2-01, P2), and the real-directory zero-side-effect snapshot covers only the direct files of one directory while the report states it as a general per-file before/after (B-VR08L2-02, P2) - plus four P3s (self-asserted read-only literals; an absolute 'no new files in the repository' that is literally refuted by a gitignored .pyc; an inconsistent L12 grade; an imprecise isolated-write path) and one out-of-scope directive naming/supersession note. None of these invalidates the level-2 result; all are wording-or-coverage issues that a one-pass revision of the report and one added case can close.",
+  "not_checked": [
+    "OS-level process observation (which process opened which file, via Win32/NT handles): not obtainable on this host without extra tooling. My substitute is an IN-PROCESS Python audit hook, so it observes only this process's Python-level API calls; a C extension, an open performed outside the audited calls, or any OTHER process on the machine would not be seen. The report registers this same half as unobtainable and I agree.",
+    "Production catalog CONTENT: forbidden by my instructions and by the directive, so 'unchanged' is a metadata-only statement (size + mtime). A content write that preserved both size and mtime would be invisible to me and to the tools. I consider this the residual risk of the whole zero-side-effect claim, and it is inherent to the authorization, not a defect of the work.",
+    "Writer-boundary cases: write-mode occupation, concurrent replacement (TOCTOU with a real writer), real ACLs, cloud placeholders and symlink escape - all need either write access to production bytes or an environment I must not create. The report declines to claim them; I did not test them.",
+    "L03 / L07 / L10's real-corpus halves (real move/rename, real revision pairs, real sections artifacts) - out of reach for the same reasons; for L10 I verified only the A05-5/A05-5b count the report cites (85 ids, 0 sections).",
+    "I did not re-run evidence/b08_level2_run.py against the reviewed isolated root, deliberately: that would have mutated the artifact under review. I built into my own temp root (%TEMP%\\b08l2-reviewer\\iso-audit) instead and got identical counts, so 'the reviewed isolated database is exactly what the recorded build produced' is inferred from count/entity/last_scanned_at equality plus a byte-identical probe re-run against it, not from a byte-for-byte re-build in place.",
+    "My three probe re-runs did open the reviewed isolated catalog (the probe itself connects to it read-write), which removed its transient -wal/-shm on clean close; I verified the contents are unchanged, but I did not preserve the pre-review byte image of that temp artifact.",
+    "The A05 command manifest, the excluded command list and all B.AR/B09 artifacts: not audited (a different work package). Finding B-VR08L2-07 is a naming/status observation from the directive's cross-reference only.",
+    "filing-fetch: nothing in it participates in level 2; I verified only its HEAD and the guard's refusal coverage of its path.",
+    "_real_root_state's cap=200 truncation was reasoned from code, not exercised (the real root has 2 files; my mutation experiment used 3). Its behaviour with a >200-file real root is therefore untested.",
+    "The report's claim that the superseded vacuous probe versions existed and produced MISSING / 0 matches (F1): the superseded code is gone, so I could confirm only the mechanism (the entity gate would indeed match nothing for a fabricated or Unresolved entity) and that the current probe anchors a real identity - not the historical runs.",
+    "Whether the choice function's tie-break among the eight equally small candidate directories matters for G7 representativeness: I checked only that the chosen directory satisfies the stated criterion."
+  ],
+  "side_effects_i_observed": {
+    "production_catalog_stat_observations": [
+      {
+        "at_utc": "2026-09-16T20:57:23.222192+00:00",
+        "catalog.sqlite3": {
+          "bytes": 49677344768,
+          "mtime_utc": "2026-09-08T21:23:21.072747+00:00"
+        },
+        "catalog.sqlite3-wal": {
+          "bytes": 0,
+          "mtime_utc": "2026-09-16T20:44:52.235839+00:00"
+        },
+        "catalog.sqlite3-shm": {
+          "bytes": 32768,
+          "mtime_utc": "2026-09-16T20:48:14.252430+00:00"
+        }
+      },
+      {
+        "at_utc": "2026-09-16T21:00:01.967604+00:00",
+        "catalog.sqlite3": {
+          "bytes": 49677344768,
+          "mtime_utc": "2026-09-08T21:23:21.072747+00:00"
+        },
+        "catalog.sqlite3-wal": {
+          "bytes": 0,
+          "mtime_utc": "2026-09-16T20:44:52.235839+00:00"
+        },
+        "catalog.sqlite3-shm": {
+          "bytes": 32768,
+          "mtime_utc": "2026-09-16T20:48:14.252430+00:00"
+        }
+      },
+      {
+        "at_utc": "2026-09-16T21:00:57.572564+00:00",
+        "catalog.sqlite3": {
+          "bytes": 49677344768,
+          "mtime_utc": "2026-09-08T21:23:21.072747+00:00"
+        },
+        "catalog.sqlite3-wal": {
+          "bytes": 0,
+          "mtime_utc": "2026-09-16T20:44:52.235839+00:00"
+        },
+        "catalog.sqlite3-shm": {
+          "bytes": 32768,
+          "mtime_utc": "2026-09-16T21:00:15.342546+00:00"
+        }
+      },
+      {
+        "at_utc": "2026-09-16T21:04:01.925382+00:00",
+        "catalog.sqlite3": {
+          "bytes": 49677344768,
+          "mtime_utc": "2026-09-08T21:23:21.072747+00:00"
+        },
+        "catalog.sqlite3-wal": {
+          "bytes": 0,
+          "mtime_utc": "2026-09-16T20:44:52.235839+00:00"
+        },
+        "catalog.sqlite3-shm": {
+          "bytes": 32768,
+          "mtime_utc": "2026-09-16T21:03:27.714877+00:00"
+        }
+      }
+    ],
+    "shm_movement_i_observed": "The production -shm mtime moved twice inside my review session but never inside the reviewed work package's window. Observed values: 2026-09-16T20:48:14.252430Z (my 20:57:23Z and 21:00:01Z stats, equal to the value recorded in both evidence JSONs), then 2026-09-16T21:00:15.342546Z (my 21:00:57Z stat), then 2026-09-16T21:03:27.714877Z (my 21:04:01Z stat); the main DB stayed at its 2026-09-08T21:23:21.072747Z mtime and the -wal stayed 0 B throughout. The reviewed package's window is build 20:51:03Z / probe evidence 20:55:15Z, both before the first of my movements, and both evidence JSONs record the same 20:48:14.252430Z value before and after - so nothing moved for the reviewed run. My own 25-sample 1 Hz passive baseline 21:01:05-21:01:30Z recorded 0 further transitions. Per the G5 discipline I attribute NONE of these movements; the context (a concurrent author session that committed at 20:59:46Z and kept working, plus a python process PID 14960 starting at 21:00:08Z) is recorded as coincidence, not as proof. The movements independently confirm the report's decision not to attribute -shm to anything.",
+    "production_catalog_never_opened": "I never opened, queried, read or hashed company-wiki\\.source_catalog\\catalog.sqlite3 (or its -wal/-shm) - Path.stat() only, three times. My audit hook additionally proves the REVIEWED tools did not open it either (production_catalog_open_count=0 across a full build and a full probe run).",
+    "writes_i_made": "Only %TEMP%\\b08l2-reviewer\\ (scratch scripts and JSON outputs, plus two throwaway isolated catalogs: iso-audit\\ and the reused %TEMP%\\b08-level2-resolved\\) and the single file reviews/B.VR-b08l2.json. Nothing else, anywhere.",
+    "repository_state": "No repository file was created, modified or deleted BY ME. evidence/b08-level2-probe.json is byte-identical before and after my runs (sha256 1c08440b5124d495d33bda25e294c8a990019145a68db529b6af596a4dc5490d); b08-level2-evidence.json 79e291632a526f63..., b08-real-root-choice.json 3c5a55d3eb5a3f35..., b08_isolated_env.py 7ec151d79a086086..., b08_level2_probe.py f3b00e571194a714..., b08_level2_run.py 2e7adaba2128d02d... were read only. I did NOT create evidence/__pycache__/b08_level2_probe.cpython-313.pyc: my first import attempt was stopped by my own tripwire and I then ran with sys.dont_write_bytecode=True; Test-Path confirms that file still does not exist. CORRECTION to an earlier draft of this record: revenue-forecast HEAD was NOT constant throughout - it moved from 09cce40... to 70c90d4... when a CONCURRENT AUTHOR SESSION committed the B08 level-2 work mid-review (see head_movement_during_review). That was not my action: I ran only read-only git (rev-parse/status/check-ignore/ls-files/log/merge-base/diff/show). I verified afterwards that every reviewed file's bytes equal the committed blob bytes, so the commit carried exactly the content I reviewed. company-wiki HEAD stayed 41fdfe14b530098f6c26ec571d79f08dac96d757 and filing-fetch HEAD stayed d35b6f5b09f1a7dad37d226504bf998802a852d7 throughout. The repository's only working-tree change at the end of my review is my own records/B.VR-b08l2.json.",
+    "temp_artifact_mutation_disclosed": "My three probe re-runs opened %TEMP%\\b08-level2-resolved\\.source_catalog\\catalog.sqlite3 (the probe's own code connects read-write), which removed the transient -wal/-shm on clean close; the database contents are unchanged after all three (counts 2/2/2/0/0, entities exactly ['Unresolved (r4b08_real_sample)'], roots.last_scanned_at still 2026-09-16T20:51:03Z). So I mutated the FILE SET of a temp experiment artifact, not its data and not anything in RUN.",
+    "guard_probe_side_effects": "I created and then removed three NTFS junctions inside %TEMP%\\b08l2-reviewer (pointing at the production .source_catalog, the revenue-forecast assurance dir, and C:\\Windows\\Temp) purely to test that _ensure_isolated resolves through them. Afterwards I re-checked the targets: no b08-vr-test path exists at any of them. I ran _ensure_isolated() only; I never built into any forbidden path.",
+    "network_and_installs": "No network use (no web_fetch, no web_search, no download), no pip install, and no subprocess spawn by me beyond the python/pwsh commands reported in method; my audit hook recorded 0 socket and 0 subprocess events during the reviewed tools' runs.",
+    "run_directory_files_touched": [
+      "reviews/B.VR-b08l2.json (created by me - the only file I wrote inside the run directory)"
+    ]
+  },
+  "head_movement_during_review": {
+    "reviewed_head_at_start": "09cce40f5ce53d9f58dad9d8806600e08c19a0e5",
+    "head_at_end_of_review": "70c90d4e7ad27544b28739af0556a194a2e3d4a3",
+    "new_commit_subject": "docs(r4): B08 level-2 real-byte reads + B.AR identity/hash re-derivation (both awaiting review)",
+    "new_commit_committer_date": "2026-09-16T21:59:46+01:00 (= 2026-09-16T20:59:46Z)",
+    "who_moved_it": "NOT me - a concurrent AUTHOR session committed while this review was in progress (its commit appeared between my 29-entry 'git status --porcelain' observation and my 1-entry observation roughly four minutes later). I ran no git write command at any point: only rev-parse, status, check-ignore, ls-files, log, merge-base --is-ancestor, diff HEAD and show - all read-only.",
+    "ancestry": "git merge-base --is-ancestor 09cce40... 70c90d4... -> exit 0, so the reviewed tree is a strict ancestor of the new HEAD.",
+    "byte_identity_verified": {
+      "how": "blob_check.py: for each reviewed file, compared sha256(bytes on disk) with sha256(bytes of 'git show HEAD:<path>') captured as BYTES via subprocess (not through a PowerShell text pipeline - my first attempt used 'git show | Out-File -Encoding utf8', which re-encoded the text and produced a spurious hash 0a2415...; that was my measurement artifact, not a content difference).",
+      "result": "ALL nine files byte-identical between the working tree and the committed blobs, and their sha256 equal the hashes I recorded during the review: b08_isolated_env.py 7ec151d79a086086..., b08_level2_probe.py f3b00e571194a714..., b08_level2_run.py 2e7adaba2128d02d..., choose_resolved_real_root.py 3e27d6ebfda82e15..., b08-level2-evidence.json 79e291632a526f63..., b08-level2-probe.json 1c08440b5124d495..., b08-real-root-choice.json 3c5a55d3eb5a3f35..., b08-level2-report.md cc07c8c25ffce623..., owner-directive-2026-09-16.md 0a9409616a336e7f... . 'git status --porcelain' in the repo is now exactly one entry: '?? .../reviews/B.VR-b08l2.json' - my own record.",
+      "conclusion": "The commit contains exactly the bytes this review examined; nothing under review changed under me. The verdicts above apply to both the working tree at 09cce40 and to the content now committed at 70c90d4."
+    }
+  }
+}

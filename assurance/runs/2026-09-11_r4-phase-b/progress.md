@@ -9,7 +9,7 @@
 - **A05/B.AR（G7）只读跑完**：10 条只读命令逐条落盘（argv/退出码/输出 sha256），写/网络/破坏性条目**一条未跑**；随后**从原文独立重核身份与 hash**（6/6 摘要相符、10/10 派生产物相符、3/3 sidecar 身份一致）。记录 [b-ar-record.md](b-ar-record.md)、证据 [evidence/a05-readonly-manifest-run.json](evidence/a05-readonly-manifest-run.json) + [evidence/b-ar-identity-hash.json](evidence/b-ar-identity-hash.json)。
   - **两处必须记住的事实**：sections 覆盖为 **0/85**；manifest 自带的 `NOT APPROVED` 状态字段**原样保留**在证据里，授权来自 [owner-directive-2026-09-16.md](owner-directive-2026-09-16.md)。
 - **B08 第②级读到真实字节**：`%TEMP%` 隔离根 → 真实目录只读引用 → `REUSED_EQUIVALENT` → **两次 `verified` 读取**（4,172,424 B，摘要 = 独立哈希真实文件所得）+ 篡改探测 0 字节 + 读者占用下仍可核验；零副作用证据齐全。报告 [b08-level2-report.md](b08-level2-report.md)、证据 [evidence/b08-level2-probe.json](evidence/b08-level2-probe.json)。探针**前两版是 vacuous 的**（编造实体 / 用 `Unresolved` 行）——已登记为纪律（见 findings 顶部）。
-- **状态**：B08 第②级与 B.AR **都待独立复审**（`B.VR-b08l2` / `B.VR-bar`）；B10 等 B.AR 复审结论再开工。
+- **状态**：B08 第②级已过独立复审（`B.VR-b08l2` = `APPROVE_WITH_FINDINGS`，0×P0/0×P1/2×P2/5×P3，**7 条全部处置**，见 [evidence/b-vr-b08l2-disposition.md](evidence/b-vr-b08l2-disposition.md)；其中"递归快照""口径更正""定级一致"三处是复审逼出来的实改）。B.AR 的独立复审 `B.VR-bar` **进行中**（含 `B-VR08L2-07` 转交的授权口径裁定）；B10 等该结论再开工。
 
 ## 2026-09-13 — **FC-1307-a 主机假设门落地（owner 同意）→ 门自己在 CI 上红了一次 → 两处修复 + 把"判定门的测试"纳入本地门**
 
