@@ -1,0 +1,328 @@
+{
+  "review": "B.VR-b10",
+  "reviewed_at_utc": "2026-09-16T22:48:12Z",
+  "reviewer_agent_id": "3b85ea5b-7fc3-4655-995c-d39246d0ea0d (self-reported $env:DSH_SESSION_ID)",
+  "independence_statement": "I am an independent read-only reviewer and I wrote none of the material under review: not company-wiki b829b03/c4a69e0 (read_chain.py, service.py, tests/contract/test_b10_read_chain.py), not the RUN evidence (b10-implementation.md, b10-mutations.json, b10_mutations.py, b10_read_chain_inventory.py, b10-read-chain-inventory.json, b10-ci-step1-unit.txt, b10-ci-step2-contract.txt), not packages/b10-plan.md or packages/b10-recon.md. I fixed no bug and changed no product code. WHAT I DID: read those files (company-wiki working tree read-only; evidence read at the exact committed blobs via `git show <sha>:<path>`); wrote my OWN AST scanner and my OWN mutation/bypass runners (I did not import the author's b10_read_chain_inventory.py and did not run the author's harness against any repository); extracted the reviewed revision with `git archive c4a69e0` into %TEMP%\\b10vr\\rev and ran every mutation/bypass experiment THERE, in process copies, never in a repository; ran a COPY of the author's committed b10_mutations.py against that temp copy with --out in temp, only to test its reproducibility. My only writes anywhere were %TEMP%\\b10vr\\** (scripts, copies, JSON outputs) and the single file assurance/runs/2026-09-11_r4-phase-b/reviews/B.VR-b10.json (this record). I did NOT: mutate anything in place (the previous session's incident was exactly what I avoided), write/delete/rename/move anything under company-wiki, revenue-forecast, filing-fetch or any production directory, run git add/commit/push/checkout/--no-verify, use the network (no web_fetch/web_search), pip install anything, open/query/hash the production catalog company-wiki\\.source_catalog\\catalog.sqlite3 (I never touched it at all, not even stat), or modify any pre-existing file under RUN. I observed a CONCURRENT AUTHOR SESSION while reviewing (see side_effects_i_observed and head_movement_during_review); that session, not I, moved company-wiki HEAD and rewrote RUN evidence files mid-review.",
+  "verified_heads": {
+    "company_wiki": "c4a69e042bbeefaffaacf970384a28c5ed9c9f26 = the reviewed increment (branch fcap, and origin/master == origin/fcap == c4a69e0, which corroborates 'pushed and CI-triggered' offline). CAVEAT: during my review a concurrent author session committed a SECOND increment on fcap, d92bb3331416d516120c82ea412a88df77822acb ('second ratchet for column value handoffs'), which I did NOT review; the local master branch (109a1a6) does not contain c4a69e0 at all.",
+    "revenue_forecast": "022f481e40082dfe20491f518aae9e963cdc4f42 = fcap HEAD and origin/main == origin/fcap (local main 3ce9cc4 is stale/behind). The RUN evidence files are tracked in this repo but were being rewritten (staged + unstaged) by the concurrent author session while I read them; I reviewed the committed blobs of 1dc4c3b / 36084a3 / cfe4ccc / 022f481.",
+    "filing_fetch": "not part of this work package; grep-only check for reader entry-point usage (none found)."
+  },
+  "artifacts_hashed_by_me": [
+    {"path": "company-wiki src/company_wiki/source_catalog/read_chain.py @c4a69e0", "sha256_16": "a6e23f88e97217ca", "how": "git archive c4a69e0 -> temp copy (I hashed the copy, not the repo file)"},
+    {"path": "company-wiki src/company_wiki/source_catalog/service.py @c4a69e0", "sha256_16": "81c41ea2ee3546b7", "how": "same temp copy"},
+    {"path": "company-wiki src/company_wiki/source_catalog/service.py @b829b03~1 (pre-B10)", "sha256_16": "b982058f97a8c227", "how": "git show b829b03~1:<path> into temp, raw bytes"},
+    {"path": "company-wiki tests/contract/test_b10_read_chain.py @c4a69e0", "sha256_16": "e50eb4c5a8bd0560", "how": "git show blob bytes"},
+    {"path": "company-wiki tests/contract/test_b10_read_chain.py @b829b03", "sha256_16": "6c757dee70fc5198", "how": "git show blob bytes"},
+    {"path": "RUN evidence/b10-implementation.md @022f481", "sha256_16": "68c41776bd1cbac8", "how": "git show blob bytes"},
+    {"path": "RUN evidence/b10-mutations.json @cfe4ccc", "sha256_16": "89adb57ab5151665", "how": "git show blob bytes"},
+    {"path": "RUN evidence/b10_mutations.py @cfe4ccc", "sha256_16": "a08a2a7d2b1a5161", "how": "git show blob bytes"},
+    {"path": "RUN evidence/b10-ci-step1-unit.txt @36084a3", "sha256_16": "301f61ea081847d1", "how": "git show blob bytes"},
+    {"path": "RUN evidence/b10-ci-step2-contract.txt @36084a3", "sha256_16": "d19b2354f1261137", "how": "git show blob bytes"},
+    {"path": "RUN evidence/b10-read-chain-inventory.json @1dc4c3b", "sha256_16": "b4fc354957be6746", "how": "git show blob bytes"},
+    {"path": "RUN evidence/b10_read_chain_inventory.py @1dc4c3b", "sha256_16": "c86e2f922d0493f2", "how": "git show blob bytes"},
+    {"path": "RUN packages/b10-plan.md @1dc4c3b", "sha256_16": "0842358e6837f184", "how": "git show blob bytes"},
+    {"path": "RUN packages/b10-recon.md @1dc4c3b", "sha256_16": "1d717145589e29f6", "how": "git show blob bytes"}
+  ],
+  "scope": [
+    "company-wiki @c4a69e0: src/company_wiki/source_catalog/read_chain.py (new, 110 lines), src/company_wiki/source_catalog/service.py (the _read_shared_metadata delegation only), tests/contract/test_b10_read_chain.py (new, 191 lines / 7 cases), plus read-only context: store.metadata_object, reader.py, source_bundle.py, artifact_handle.py, the 9 baselined reader sites and their feeding SQL",
+    "RUN @1dc4c3b/36084a3/cfe4ccc/022f481: evidence/b10-implementation.md, evidence/b10-mutations.json, evidence/b10_mutations.py, evidence/b10_read_chain_inventory.py, evidence/b10-read-chain-inventory.json, evidence/b10-ci-step1-unit.txt, evidence/b10-ci-step2-contract.txt, packages/b10-plan.md, packages/b10-recon.md",
+    "boundary checks: company-wiki/src and company-wiki/tests (grep for callers), revenue-forecast and filing-fetch (grep for reader entry-point usage), git refs of all three repositories"
+  ],
+  "method": [
+    "1. Baseline recomputation, my own code: %TEMP%\\b10vr\\myscan.py and myscan2.py parse every .py under src/company_wiki/source_catalog recursively, resolve the enclosing symbol TWO ways (the gate's BFS/setdefault convention, independently reimplemented, and an innermost-definition convention via parent links), collect json.loads calls whose argument names metadata_json (confirmed) or whose enclosing symbol mentions it (heuristic), and also sweep a WIDE callee set (loads/decode/JSONDecoder/load/parser) to see what the narrow gate cannot.",
+    "2. Table attribution: %TEMP%\\b10vr\\sqlctx.py prints, for every baselined site, the SQL string constants in its enclosing symbol, so I could resolve WHICH table's metadata_json each site actually parses.",
+    "3. Behaviour equivalence: %TEMP%\\b10vr\\equiv.py loads the REAL pre-B10 service.py (git show b829b03~1, installed into the temp package as _vr_old_service so its relative imports work) and compares old vs new vs store.metadata_object in ONE process over 24 inputs (None/''/'{}'/'[]'/invalid/123/0/True/dict/list/unicode/BOM/deep nesting 200k/non-UTF-8 bytes/surrogate string/closed file/memoryview/two objects that raise a bare ValueError), recording sha256[:16] of each input's repr and the exception TYPE on each side.",
+    "4. My own mutants and gate-bypass attempts: %TEMP%\\b10vr\\run_mutations.py rebuilds a pristine temp tree per case, applies ONE edit, and runs tests/contract/test_b10_read_chain.py alone; 15 cases, separating assertion kills from collection/import errors by pytest's exit code and output.",
+    "5. Extra cases (extra_cases.py / firstdef_probe.py): the pre-fix (b829b03) test file against an adapters/ reader (hole reproduction), a cross-column false positive, a chain-user control, and the first-definition/stub probe.",
+    "6. reader.bundle byte-level probe (bundle_bytes.py): a ReadOnlyCatalogReader built with __new__ and three stubbed query methods, an artifact file in temp, instrumented Path.is_file/Path.read_bytes counters, and a corruption test (does the verdict change when the file bytes change?).",
+    "7. Evidence adjudication: read the COMMITTED blobs (`git show <sha>:<path>`) of every evidence file; verified the last lines of both CI logs; re-ran the author's committed mutation harness against a temp copy of the reviewed revision; checked the recorded fingerprint's reproducibility and scope; checked git refs for the claimed pushes."
+  ],
+  "claims_checked": [
+    {
+      "id": "C1",
+      "claim": "read_chain.py declares READ_CHAIN_VERSION='1', SINGLE_READ_CHAIN=store.metadata_object, LEGACY_READ_ADAPTERS (3 entries, each with version/semantics/byte_level/removal_condition), CONFIRMED_DIRECT_READERS (9), HEURISTIC_READER_CANDIDATES (9)",
+      "method": "read the committed blob; count the entries; compare with b10-implementation.md §1",
+      "observed": "all five names present; 3 adapters each carry the 4 required keys, byte_level is a real bool; 9 confirmed and 9 heuristic entries. read_chain.py is imported ONLY by the contract test (grep over src: no production importer), so the registry is documentation+test-enforced, not runtime-enforced - consistent with its docstring.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C2",
+      "claim": "CONFIRMED_DIRECT_READERS (9) is machine-derived and exactly matches a recursive AST scan of source_catalog/",
+      "method": "my own scanner, both attribution conventions, compared element by element with the tuple",
+      "observed": "exact match, 9/9 identical keys (`artifact_backfill.py::_classify`, `artifact_read_model.py::_artifact_row`, `normalizer.py::_frontmatter`, `normalizer.py::normalize_catalog`, `resolver.py::_metadata_conflict_reason`, `scanner.py::_merge_document_row`, `section_query.py::SectionQueryService`, `service.py::SourceCatalog`, `source_lifecycle.py::_safety_receipt`). The inventory's 10th confirmed ROW is normalize_catalog again (2 sites in one symbol), so 10 rows / 9 keys is consistent. No missing and no extra key under the gate's attribution rule.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C3",
+      "claim": "HEURISTIC_READER_CANDIDATES (9) holds machine-derived values (its first version was written from memory and named four symbols that do not exist)",
+      "method": "my scanner on the reviewed revision under the gate's own attribution rule; symbol existence check",
+      "observed": "8 of the 9 reproduce exactly. The 9th, `service.py::_read_shared_metadata`, is STALE: after B10-2 it contains no parse at all, so no scan can produce it; it is carried over from the pre-change inventory. The code comment presents it as the registered v1 adapter, so it is a deliberate carry-over, but the comment's claim that the values are machine-derived is only true of the pre-change tree. Historical claim (4 non-existent symbols in a version that no longer exists) is not verifiable from git.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C4",
+      "claim": "service._read_shared_metadata changed from a second implementation to `return metadata_object(raw)`, with the import added",
+      "method": "git show b829b03 -- src/.../service.py; compare with the committed blob",
+      "observed": "exactly as claimed: -9 lines of try/json.loads/isinstance, +1 line `return metadata_object(raw)`, and the import line changed from `from .store import CatalogStore` to `from .store import CatalogStore, metadata_object`. The name is kept and only one call site exists (service.py:736, `document[\"metadata_json\"]`).",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C5",
+      "claim": "behaviour equivalence measured on 8 pathological inputs, including the deep-nesting RecursionError path and non-object JSON",
+      "method": "my own 24-input dual-implementation matrix in one process (old module vs committed new function + chain)",
+      "observed": "22 of 24 inputs identical, including every input the record names: None, '', '{}', '[]', invalid JSON, '123', a real dict, deep nesting (200k list and object nesting -> RecursionError -> {}), non-UTF-8 bytes, plus closed file-like objects and memoryview (both TypeError -> {}, NOT ValueError as I first hypothesised). Every one of those returns {} on both sides. The only divergence is an object whose __bool__ raises a bare ValueError: old {} vs new raises ValueError (the new catch set is JSONDecodeError/TypeError/RecursionError/UnicodeDecodeError, strictly narrower than the old TypeError/ValueError/RecursionError). There is NO evidence artifact in RUN for this claim - I had to measure it myself.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C6",
+      "claim": "tests/contract/test_b10_read_chain.py adds 7 cases (anti-vacuity, adapter delegation, ratchet, no-rot, registry completeness, claim-level never reads bytes x2)",
+      "method": "read the file; count pytest items on a clean temp copy",
+      "observed": "5 test functions + one parametrized x2 = 7 items; my clean run of the reviewed revision reports '7 passed in 6.77s'; each of the 7 descriptions in the record's section 2 matches the code.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C7",
+      "claim": "mutation proof: 7/7 KILLED, every kill by assertion (not by a collection error); the record's section 3 header says 6/6",
+      "method": "read the committed b10-mutations.json and b10_mutations.py; re-run the committed harness against a temp copy of the reviewed revision; my own 5 mutants",
+      "observed": "the committed JSON has 7 mutants (M1..M7), all killed=True with killed_by=assertion and exit_code=1; re-running the COMMITTED harness on the reviewed revision reproduces it exactly (M1..M7 killed by assertion, baseline '7 passed in 5.23s', all_killed=true). My own 5 mutants are also all killed by assertion, on the expected tests. So the substance holds - but the record's section 3 headline number ('6/6 KILLED') contradicts its own 7-row table and section 3bis ('7/7'), which is a stale number left behind when cfe4ccc added M7.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C8",
+      "claim": "repository_untouched=true, proven by an src/**/*.py fingerprint before and after",
+      "method": "read the harness's _repo_fingerprint and _make_copy; recompute the fingerprint myself on a git-archive copy of c4a69e0 and on the live repo",
+      "observed": "the harness copies src/company_wiki + the test + pytest.ini into a system temp dir and mutates only there, so it cannot write to the repo; the fingerprint scope is exactly src/**/*.py (tests/ and root files are not covered) and the record says so. The recorded VALUE 5202ca372c6929ea is not reproducible from git (my c4a69e0 copy fingerprints c2580ba5abbeee27; the live tree differs again) because it includes per-file sizes/hashes over a working tree with a mixed LF/CRLF checkout - so the number is a before==after self-check, not a reproducible tree identity. The self-check itself is sound and I have no evidence of any repository write.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C9",
+      "claim": "the gate first used glob('*.py') and therefore could not see a direct reader added under source_catalog/adapters/ (8 modules); fixed with rglob + relative-path keys and pinned with mutant M7",
+      "method": "diff both test-file versions; append a direct reader to adapters/parity.py in a temp copy and run (a) the b829b03 test file, (b) the c4a69e0 test file; run my scanner on the mutated tree",
+      "observed": "independently reproduced both halves: with the OLD test file the mutant leaves all 7 tests GREEN (the hole is real); with the REVIEWED test file the same mutant is killed by assertion on test_b10_no_new_confirmed_direct_reader (the fix works), and my scanner's key is `adapters/parity.py::_b10_vr_adapter_probe`, i.e. the relative path is really carried. adapters/ contains exactly 8 modules.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C10",
+      "claim": "reader.resolve_handle and reader.bundle are CLAIM-level; they compare the sha256 the catalog claims and never open a file; therefore they must not be silently re-pointed at the byte-level chain",
+      "method": "code read of both implementations (and both Protocol stubs); instrumented Path.is_file/Path.read_bytes during a real bundle() call with stubbed queries; corruption test",
+      "observed": "resolve_handle: TRUE claim-level (only self.document/self.source_sha/dict; no filesystem access). bundle: FALSE - during bundle() the instrumented counters recorded is_file:normalized.md and read_bytes:normalized.md (through build_source_bundle -> validate_artifact), and corrupting the artifact flipped the verdict from reusable to reason=artifact_hash_mismatch, which a claim-level function could not notice. The registry says byte_level=False and 'never opens a file' for this entry, and the module docstring says both entry points 'verify the catalog's claim, never the bytes'. See finding B-VR-B10-01.",
+      "verdict": "REFUTED"
+    },
+    {
+      "id": "C11",
+      "claim": "src 内调用者 = 0 for resolve_handle and bundle (removal condition not yet met, but nothing in production calls them)",
+      "method": "grep over company-wiki/src (including adapters/) and over the consumer repositories",
+      "observed": "confirmed for company-wiki/src: resolve_handle appears only as the Protocol stub (reader.py:108), the implementation (reader.py:333) and the registry strings; `.bundle(` has no call site in src (service.query_source_bundle uses build_source_bundle directly; resolver.py:896 is a dataclass field named 'bundle'). Tests reference both (tests/unit/test_catalog_reader_queries.py, tests/contract/test_zr206_slo_49gb.py). In the consumer repositories, revenue-forecast's assurance/unified_completion/t2/zr206_t2_probe.py DOES call reader.resolve_handle (a read-only benchmark probe, not a production path); filing-fetch has no reader usage. The registry's removal condition names 'the consumer repositories', so that condition is not yet satisfied for resolve_handle.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C12",
+      "claim": "local CI (exact CI commands): unit 787 passed; contract 1896 passed, 8 skipped",
+      "method": "read the LAST lines of the committed evidence logs (not the summary in the record)",
+      "observed": "evidence/b10-ci-step1-unit.txt ends '787 passed in 62.25s (0:01:02)'; evidence/b10-ci-step2-contract.txt ends '1896 passed, 8 skipped in 745.04s (0:12:25)'. Both match the record's section 5 table exactly (787/62.25s and 1896/8 skipped/745.04s). NOTE: during my review the live RUN copies of these two files were being rewritten by the concurrent author session (the live step2 file was truncated to 33% at one point); the reviewed numbers come from the committed blobs.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C13",
+      "claim": "remote CI green: company-wiki c4a69e0 6/6 jobs success on master, fcap pushed; revenue-forecast cfe4ccc green on main and fcap",
+      "method": "no network available to me (forbidden); offline corroboration via local git refs only",
+      "observed": "the PUSHES are corroborated: origin/master == origin/fcap == c4a69e0 and origin/main == origin/fcap == 022f481 (a descendant of cfe4ccc). The CI RESULTS themselves (6/6 jobs, 'success') cannot be verified without the network - NOT_CHECKED, as instructed.",
+      "verdict": "NOT_CHECKED"
+    },
+    {
+      "id": "C14",
+      "claim": "the increment is implemented + locally green + mutation-proved, but NOT reviewed, and B10 as a whole is not claimed complete",
+      "method": "read the record's section 6 and the commit messages",
+      "observed": "accurate and honest: section 6 says '独立复审尚未执行' and names the review as the next first step; no commit message claims B10 completion.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C15",
+      "claim": "section 4.1: M4 survived at first because the helper inspected the first definition (the Protocol stub)",
+      "method": "read both committed test-file versions; run four probes (real-impl vs stub mutant) x (old helper vs fixed helper)",
+      "observed": "the all-definitions helper is ALREADY in b829b03 (the first commit), so the pre-fix version never existed in git and 'M4 survived at first' cannot be reproduced from the artifacts. What I can verify: mutating the REAL resolve_handle is killed by BOTH test versions, and mutating the STUB is also killed by both (the old helper already considered every definition). The resulting state is correct; the incident narrative is unverifiable, not false.",
+      "verdict": "PARTIAL"
+    }
+  ],
+  "independent_baseline": {
+    "my_confirmed": [
+      "artifact_backfill.py::_classify",
+      "artifact_read_model.py::_artifact_row",
+      "normalizer.py::_frontmatter",
+      "normalizer.py::normalize_catalog",
+      "resolver.py::_metadata_conflict_reason",
+      "scanner.py::_merge_document_row",
+      "section_query.py::SectionQueryService",
+      "service.py::SourceCatalog",
+      "source_lifecycle.py::_safety_receipt"
+    ],
+    "my_heuristic": [
+      "extraction_quality.py::ExtractionQualityService",
+      "normalizer.py::normalize_catalog",
+      "prompt_injection.py::read_prompt_injection_review",
+      "prompt_injection.py::record_prompt_injection_review",
+      "prompt_injection_guard.py::_receipt_from_store",
+      "scanner.py::_merge_metadata_json",
+      "store.py::metadata_object",
+      "store.py::read_pipeline_status"
+    ],
+    "missing_from_baseline": [
+      "scanner.py::_previous_provenance_fields - a REAL reader of documents.metadata_json (json.loads at scanner.py:1405, fed by `existing_document[\"metadata_json\"]` at scanner.py:1739) that appears in NEITHER tuple and is invisible to the gate: the parse's argument is `stored_json`, and the helper's own text never names the column. The author's manual plan list (b10-plan.md section 1) does name scanner.py:1405, so the machine-derived registry silently dropped a site the author already knew about.",
+      "extraction_quality.py::_artifact_metadata - a real reader of artifacts.metadata_json (json.loads at extraction_quality.py:195 via `_artifact_metadata(row[\"metadata_json\"])` at :373, row from `SELECT ... FROM artifacts`), invisible to both scans for the same reason."
+    ],
+    "extra_in_baseline": [
+      "service.py::_read_shared_metadata (HEURISTIC_READER_CANDIDATES only, never enforced) - no longer parses anything after B10-2; a stale entry carried over from the pre-change inventory."
+    ],
+    "misclassified": [
+      "artifact_backfill.py::_classify - parses the ARTIFACTS table's same-named column (row is an artifact row; the site's own comment says 'the artifacts table has no such columns'), not documents.metadata_json as the registry/recon claim.",
+      "artifact_read_model.py::_artifact_row - SQL is `... FROM artifacts WHERE artifact_id=?` (artifact_read_model.py:91-94).",
+      "section_query.py::SectionQueryService - SQL is `SELECT a.document_id, a.path, a.metadata_json ... FROM artifacts a JOIN documents d` (section_query.py:95): the parsed value is a.metadata_json, the artifacts column.",
+      "normalizer.py::normalize_catalog - one of its two sites parses documents.metadata_json (line 1633, `SELECT d.* ... FROM documents d`), the other parses the aliased artifacts column (line 1684, `existing.metadata_json AS normalization_metadata_json`, `LEFT JOIN artifacts existing`).",
+      "Only 6 of the 9 baselined keys touch the shared documents.metadata_json column at all: 5 are documents-only (normalizer._frontmatter, resolver._metadata_conflict_reason, scanner._merge_document_row, service.SourceCatalog, source_lifecycle._safety_receipt) and normalizer.normalize_catalog reads both columns; the remaining 3 keys (artifact_backfill._classify, artifact_read_model._artifact_row, section_query.SectionQueryService) read only the artifacts column. The heuristic list has the same conflation (extraction_quality, prompt_injection* and store.read_pipeline_status parse artifacts/other columns or report_json)."
+    ]
+  },
+  "equivalence": [
+    {"input_sha16": "dc937b59892604f5", "label": "None", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "6f49cdbd80e1b95d", "label": "empty string", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "437da515a768a74b", "label": "'{}'", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "47db3da7eb4c650e", "label": "'[]' (non-object JSON)", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "e9e67f762cfc3e9c", "label": "invalid JSON", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "a4dec65b08a6fea3", "label": "'123' (scalar JSON)", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "a665a45920422f9d", "label": "int 123", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "5feceb66ffc86f38", "label": "0 (falsy, goes through '{}')", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "240f5ff9499fabe7", "label": "real dict", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "3a316d6d3226f84c", "label": "real list", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "965622deae7fe1cc", "label": "'{\"a\": 1}'", "old": "RETURN {'a': 1}", "new": "RETURN {'a': 1}", "equal": true},
+    {"input_sha16": "a6ea09a2590838f6", "label": "string starting with a BOM", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "16e251b8e6fa6b74", "label": "200k-deep JSON list (RecursionError path)", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "44bd0658d434e987", "label": "200k-deep JSON object (RecursionError path)", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "c48784d5fd033d4b", "label": "non-UTF-8 bytes", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "726996c6142abb63", "label": "valid UTF-8 bytes", "old": "RETURN {'a': 1}", "new": "RETURN {'a': 1}", "equal": true},
+    {"input_sha16": "9eb9a7a288a63b79", "label": "lone surrogate inside JSON", "old": "RETURN {'a': '\\ud800'}", "new": "RETURN {'a': '\\ud800'}", "equal": true},
+    {"input_sha16": "a35e4cff17f1c988", "label": "closed file-like", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "475f9ae105106780", "label": "memoryview", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "f5273b21012f0b18", "label": "object whose read() raises ValueError", "old": "RETURN {}", "new": "RETURN {}", "equal": true},
+    {"input_sha16": "de9bfc5ec6dde690", "label": "object whose __bool__ raises a bare ValueError", "old": "RETURN {}", "new": "RAISE ValueError: truthiness blew up", "equal": false}
+  ],
+  "my_mutants": [
+    {"id": "VR-M1", "changed": "temp copy service.py: `return metadata_object(raw)` -> the old try/json.loads/isinstance body (the second implementation comes back)", "test": "test_b10_v1_adapter_delegates_to_the_single_chain", "failed": true, "failure_kind": "assertion", "expected": true},
+    {"id": "VR-M2", "changed": "temp copy artifact_backfill.py: appended a NEW function `_vr_new_reader(row)` with `json.loads(row[\"metadata_json\"] or \"{}\")`", "test": "test_b10_no_new_confirmed_direct_reader", "failed": true, "failure_kind": "assertion", "expected": true},
+    {"id": "VR-M3", "changed": "temp copy resolver.py: `payload = json.loads(row[\"metadata_json\"] or \"{}\")` -> `raw = row[\"metadata_json\"]` + `json.loads(raw or \"{}\")` (a baselined site stops naming the column, baseline not lowered)", "test": "test_b10_baseline_has_no_stale_entry", "failed": true, "failure_kind": "assertion", "expected": true},
+    {"id": "VR-M4", "changed": "temp copy reader.py: added `with open(self.database_path, \"rb\") as fh: fh.read(1)` immediately before `handle[\"content_sha256\"] = ...` in the REAL resolve_handle (the 2nd definition, line ~333; verified by anchor uniqueness)", "test": "test_b10_claim_level_adapters_never_read_bytes[resolve_handle]", "failed": true, "failure_kind": "assertion", "expected": true},
+    {"id": "VR-M4b", "changed": "temp copy reader.py: replaced the Protocol STUB's `...` body with `return open(\"x\").read()` (the 1st definition only)", "test": "test_b10_claim_level_adapters_never_read_bytes[resolve_handle]", "failed": true, "failure_kind": "assertion", "expected": true},
+    {"id": "VR-X1..X4", "changed": "the same real-impl and stub mutants, run against the b829b03 test file and the c4a69e0 test file", "test": "test_b10_claim_level_adapters_never_read_bytes", "failed": true, "failure_kind": "assertion", "expected": true, "note": "all four are red, i.e. the all-definitions helper is already present in b829b03 - the section 4.1 'M4 survived at first' state is not reproducible from git"},
+    {"id": "VR-H1", "changed": "temp copy: appended a direct reader to source_catalog/adapters/parity.py, then used the PRE-FIX test file (git show b829b03:tests/contract/test_b10_read_chain.py, glob() instead of rglob())", "test": "(all 7)", "failed": false, "failure_kind": "none", "expected": false, "note": "the claimed adapters/ hole is real: the gate passes an unregistered direct reader under a subdirectory"},
+    {"id": "VR-H2", "changed": "same mutant, REVIEWED test file (rglob + relative-path keys)", "test": "test_b10_no_new_confirmed_direct_reader", "failed": true, "failure_kind": "assertion", "expected": true, "note": "independent reproduction of mutant M7"}
+  ],
+  "gate_bypasses": [
+    {"id": "VR-B4", "path": "a NEW module whose function renames the value first: `raw = row[\"metadata_json\"]; return json.loads(raw or \"{}\")`", "constructed": true, "gate_verdict": "allowed", "severity": "P2", "meaning": "the whole gate passes (7 passed). The call's argument is `raw` (no column) and the parse is in the same symbol that mentions the column, so the site lands in HEURISTIC_READER_CANDIDATES - which the gate reports but never enforces. This is the most natural shape of a new reader and the ratchet is blind to it. (The author's UNCOMMITTED second ratchet would not catch it either: the handoff scan looks for a call that RECEIVES the column value, and here the value is received by an assignment.)"},
+    {"id": "VR-B5", "path": "a NEW method containing `json.loads(row[\"metadata_json\"] or \"{}\")` inserted into the ALREADY-baselined class `SourceCatalog` (service.py)", "constructed": true, "gate_verdict": "allowed", "severity": "P2", "meaning": "7 passed. The gate attributes a method's calls to the enclosing CLASS, so the new site's key is `service.py::SourceCatalog`, which the baseline already contains: `confirmed - baseline` is empty and `baseline - confirmed` is empty. Any new reader added to an already-baselined class is therefore invisible - including to the author's uncommitted COLUMN_VALUE_HANDOFFS ratchet, whose baseline also lists `service.py::SourceCatalog` and `section_query.py::SectionQueryService`."},
+    {"id": "VR-B2", "path": "parse-by-helper: `def _parse(raw): return json.loads(raw or \"{}\")` plus a call site `_parse(row[\"metadata_json\"])`", "constructed": true, "gate_verdict": "allowed", "severity": "P2", "meaning": "7 passed. The loads site's argument is a parameter and its symbol never names the column; the call site's callee is not `loads`. BOTH ends of the indirection are invisible. (This is the same probe the author measured for the uncommitted fix - it is undocumented in the reviewed commit's record, which is why it is a finding here.)"},
+    {"id": "VR-B1", "path": "aliased import: `from json import loads as parse_metadata` then `parse_metadata(row[\"metadata_json\"] or \"{}\")`", "constructed": true, "gate_verdict": "allowed", "severity": "P3", "meaning": "7 passed: the scan compares the callee NAME to the literal 'loads'. Root cause: name-based detection."},
+    {"id": "VR-B3", "path": "`json.JSONDecoder().decode(row[\"metadata_json\"] or \"{}\")`", "constructed": true, "gate_verdict": "allowed", "severity": "P3", "meaning": "7 passed: the callee attribute is `decode`, and the wide sweep shows no other scan covers JSONDecoder either."},
+    {"id": "VR-B10", "path": "`getattr(json, \"loads\")(row[\"metadata_json\"] or \"{}\")`", "constructed": true, "gate_verdict": "allowed", "severity": "P3", "meaning": "7 passed: the call's func is itself a Call, so the extracted name is the empty string."},
+    {"id": "VR-B11", "path": "key built at runtime: `key = \"metadata\" + \"_json\"; json.loads(row[key] or \"{}\")`", "constructed": true, "gate_verdict": "allowed", "severity": "P3", "meaning": "7 passed: the scan tests whether the literal string metadata_json appears in the unparsed argument."},
+    {"id": "VR-B6", "path": "the same direct reader in a NEW package one level outside the scanned root (`src/company_wiki/vr_probe/read_model.py`)", "constructed": true, "gate_verdict": "allowed", "severity": "P3", "meaning": "7 passed: the scan is bounded to src/company_wiki/source_catalog. The scope is declared in the plan/recon, so this is a stated boundary rather than a hidden hole - but note that today there is no such reader anywhere else in src/company_wiki, so the boundary has never been exercised."},
+    {"id": "VR-FP1", "path": "a DIFFERENT column whose name merely ENDS with `_metadata_json`: `json.loads(row[\"acquisition_metadata_json\"] or \"{}\")` in a new module", "constructed": true, "gate_verdict": "blocked", "severity": "P3", "meaning": "the gate FIRES (red on test_b10_no_new_confirmed_direct_reader) and its message calls this 'a new direct reader of the shared column'. It is a false positive in normal development: the substring match cannot tell `metadata_json` from `something_metadata_json` (the existing `normalization_metadata_json` shows this naming is idiomatic here), and the demanded remedy - 'converge it onto store.metadata_object or register it' - is wrong advice for another table's column."},
+    {"id": "VR-E1", "path": "a new module that USES the chain: `metadata_object(row[\"metadata_json\"])`", "constructed": true, "gate_verdict": "allowed", "severity": "none", "meaning": "positive control: 7 passed. Converging a site onto the single chain is not punished (the confirmed scan does not count metadata_object calls), so the ratchet does not create a perverse incentive."},
+    {"id": "VR-P1", "path": "control: `import json as j; j.loads(row[\"metadata_json\"] or \"{}\")`", "constructed": true, "gate_verdict": "blocked", "severity": "none", "meaning": "positive control: red. Aliasing the MODULE is caught (the attribute name is still `loads`), which is why the alias bypass has to alias the FUNCTION."},
+    {"id": "VR-P2", "path": "control: `json.loads(row.get(\"metadata_json\") or \"{}\")`", "constructed": true, "gate_verdict": "blocked", "severity": "none", "meaning": "positive control: red. `.get()` of the named column is caught."},
+    {"id": "VR-B-CLASSKEY", "path": "root cause shared by VR-B5 (and by any second reader inside `normalizer.py::normalize_catalog`)", "constructed": true, "gate_verdict": "allowed", "severity": "P2", "meaning": "the ratchet compares SETS OF SYMBOL NAMES, not sites. Even without classes, a second reader inside an already-baselined function is invisible; with classes, an entire new method of `SourceCatalog`/`SectionQueryService` is invisible. A count-based check would not be enough either (this adds one site and one key that already exists)."}
+  ],
+  "findings": [
+    {
+      "id": "B-VR-B10-01",
+      "severity": "P1",
+      "claim": "The registry declares `reader.ReadOnlyCatalogReader.bundle` claim-level with `byte_level: False` and the semantics 'CLAIM-level, same rule as resolve_handle, plus SourceBundle assembly', and the module docstring states as MEASURED that both entry points 'verify the catalog's claim, never the bytes'. For `bundle` this is false: its bundle assembly opens and hashes artifact files, so its result depends on bytes.",
+      "evidence": "MY OWN OBSERVATION. Code: reader.py:353-389 builds the source dict from the catalog row/claim, then calls source_bundle.build_source_bundle (source_bundle.py:126) -> artifact_handle.validate_artifact, which does `path.is_file()` (artifact_handle.py:106) and `hashlib.sha256(path.read_bytes()).hexdigest()` (artifact_handle.py:111). Measurement (%TEMP%\\b10vr\\bundle_bytes.py, a ReadOnlyCatalogReader built with __new__ and three stubbed query methods over a temp artifact file, so no catalog is opened): with an intact artifact the instrumented counters recorded `is_file:normalized.md` and `read_bytes:normalized.md`, verdict reusable=['normalized']; after overwriting the file with different bytes the SAME call returned reusable=[] with reason='artifact_hash_mismatch' - a claim-level function could not notice. The gate's guard (test_b10_claim_level_adapters_never_read_bytes) passes because it only looks for the NAMES open/read_bytes/read_text/read_verified_bytes inside reader.py's own function bodies, so it cannot see filesystem access reached through a callee. resolve_handle is genuinely claim-level (verified the same way: no filesystem access at all).",
+      "impact": "A machine-readable registry entry - the deliverable of B10-1/B10-4 - states a factually wrong byte_level, and the guard that exists to protect it is name-local, so the same class of change made transitively (e.g. resolve_handle delegating to a helper that opens a file) would also pass. The 'switch stop' DECISION for bundle (keep it as an explicit adapter) is still the right call, but its recorded reason is wrong: bundle is claim-level on the SOURCE sha and byte-level on the ARTIFACTS. Anyone who trusts the registry will mis-describe the failure semantics - the exact thing B10-4 was supposed to pin down.",
+      "suggested_disposition": "Fix the entry to `byte_level: True` with an explicit split semantics ('claim-level on the source sha256; verifies each artifact's bytes through build_source_bundle/validate_artifact, so it can reject a bundle for artifact_hash_mismatch'), correct the module docstring's 'never the bytes' sentence for bundle, and consider making the claim-level guard walk the callee closure (or assert that the registered entry's transitive closure contains no read_bytes/open) instead of only the entry's own body."
+    },
+    {
+      "id": "B-VR-B10-02",
+      "severity": "P2",
+      "claim": "CONFIRMED_DIRECT_READERS is documented as 'the ratchet baseline of places that still parse the shared documents.metadata_json column', and b10-recon.md section 1 labels the same list 'shared column documents.metadata_json'. The scan keys on the bare string 'metadata_json', and the schema has THREE same-named columns (documents / artifacts / locations), so the scan cannot tell them apart.",
+      "evidence": "MY OWN TABLE RESOLUTION (%TEMP%\\b10vr\\sqlctx.py over the reviewed revision, plus a read of each feeding query). artifacts.metadata_json: artifact_backfill.py::_classify (row is an artifact row; the site's own comment at :177 says 'the artifacts table has no such columns'); artifact_read_model.py::_artifact_row (SQL 'FROM artifacts WHERE artifact_id=?'); section_query.py::SectionQueryService (SQL 'SELECT a.document_id, a.path, a.metadata_json ... FROM artifacts a JOIN documents d'); normalizer.py::normalize_catalog's SECOND site (document['normalization_metadata_json'] <- 'existing.metadata_json AS normalization_metadata_json', 'LEFT JOIN artifacts existing'). documents.metadata_json: normalizer.py::_frontmatter; normalizer.py::normalize_catalog's FIRST site (document['metadata_json'] from 'SELECT d.* ... FROM documents d JOIN sources s'); resolver.py::_metadata_conflict_reason ('SELECT metadata_json FROM documents'); scanner.py::_merge_document_row ('SELECT ... metadata_json ... FROM documents'); service.py::SourceCatalog ('entity_rows = ... SELECT d.metadata_json ... FROM documents d', consumed at service.py:434 - I initially mis-attributed this one to the locations row that a LATER query (service.py:404-415) builds, and corrected it after reading the loop at service.py:417); source_lifecycle.py::_safety_receipt ('SELECT metadata_json FROM documents'). Net: 3 of the 9 baselined keys are wholly artifact-column readers, 1 reads BOTH columns (one site each), and 5 are documents-column readers. A third same-named column (locations.metadata_json, selected at service.py:408) is not in the baseline today but would be caught by the same string match. The conflation also appears in read_chain.HEURISTIC_READER_CANDIDATES (extraction_quality, prompt_injection*) and in b10-plan.md section 1's list ('仍在自行解析共享列 documents.metadata_json 的模块: artifact_backfill.py:175, artifact_read_model.py:105, extraction_quality.py:195, ...').",
+      "impact": "B10-3's convergence work list is mis-scoped: converging an artifacts-column reader onto store.metadata_object 'because it reads the shared documents column' is a different change from what the registry says, and lowering the baseline by doing so would be recorded as progress on the documents chain. It also produces a false-positive gate error message for genuinely different columns (finding B-VR-B10-05). No data-safety impact: metadata_object is behaviourally identical, so converging them is harmless - the defect is in what the artifact CLAIMS to measure.",
+      "suggested_disposition": "Resolve (table, column) per site from the feeding SQL (or from the row's provenance) and either key the baseline as 'artifacts.metadata_json::symbol' / 'documents.metadata_json::symbol' or rename the registry to 'metadata_json parse sites across the catalog schema' and split the ratchet into one baseline per table. Re-run the inventory after the change and correct the recon/plan wording."
+    },
+    {
+      "id": "B-VR-B10-03",
+      "severity": "P2",
+      "claim": "The convergence ratchet is bypassable: 8 constructed shapes that add a NEW direct reader of the column pass the entire gate (7 passed each time), while the 2 positive controls are correctly killed. The gate is a ratchet over one common shape, not a proof that no new direct reader appeared.",
+      "evidence": "MY OWN CONSTRUCTION AND RUN (%TEMP%\\b10vr\\run_mutations.py, each case applied to a pristine temp copy of c4a69e0; results in vr_mutations.json). ALLOWED (gate green): VR-B1 aliased FUNCTION import; VR-B2 parse-by-helper; VR-B3 json.JSONDecoder().decode; VR-B4 rename-the-value-then-loads (lands in the unenforced heuristic list); VR-B5 a new method inside the already-baselined class SourceCatalog (key collapses to `service.py::SourceCatalog`); VR-B6 a reader outside the scanned root; VR-B10 getattr(json,'loads')(...); VR-B11 a concatenated key. BLOCKED (gate red): VR-P1 `import json as j; j.loads(...)`, VR-P2 `row.get('metadata_json')`. The registry itself notes that the first version of the baseline was written from memory and that the heuristic list is 'reported, never enforced', so the boundary is partly acknowledged - but no document in the reviewed increment states that a new reader can enter without tripping the ratchet, and the gate's own failure text presents the baseline as the thing that 'may only shrink'.",
+      "impact": "A future contributor (or the same author in B10-3) can add a real second read chain - most plausibly by renaming the value in a new function (VR-B4) or by adding a method to SourceCatalog (VR-B5) - and the contract suite stays green, so 'the read chain stays single' is not enforced for those shapes. The class-key variant also defeats the author's uncommitted COLUMN_VALUE_HANDOFFS ratchet, whose baseline contains the same class names.",
+      "suggested_disposition": "State the measured boundary in read_chain.py (the author's uncommitted text already does this for the helper shape) and harden the scan: (a) detect any call that RECEIVES a subscript/.get() of the column (the uncommitted second ratchet), (b) key by (file, symbol, line-range) or by SITE COUNT per symbol so a second reader inside an existing key is visible, (c) match the exact key `metadata_json` instead of the substring, (d) treat `from json import loads [as X]` as the same callee. None of these is a completeness proof either - the honest claim is 'a ratchet over the shapes we can see'."
+    },
+    {
+      "id": "B-VR-B10-04",
+      "severity": "P3",
+      "claim": "At least one REAL reader of the shared documents.metadata_json column is in NEITHER registry tuple and cannot be found by the gate: scanner.py::_previous_provenance_fields. The registry therefore under-reports the sites that B10-3 still has to converge.",
+      "evidence": "MY OWN SCAN + CODE READ. scanner.py:1405 `stored = json.loads(stored_json or \"{}\")` inside `_previous_provenance_fields(stored_json)`, called at scanner.py:1739 as `_previous_provenance_fields(existing_document[\"metadata_json\"])` where existing_document came from `SELECT ... metadata_json ... FROM documents` (scanner.py:1006-1010). The heuristic rule requires the enclosing symbol to mention the column, and this helper's body never does; the call site's callee is not `loads`. Confirmed by my scanner: the site does not appear in either set under either attribution convention. The author's manual plan list DOES name scanner.py:1405, so the machine-derived registry dropped a site that was already known. Same mechanism hides extraction_quality.py::_artifact_metadata (artifacts column, json.loads at :195 via `_artifact_metadata(row[\"metadata_json\"])` at :373).",
+      "impact": "Under-reporting is the dangerous direction: the confirmed baseline is the only enforced list, and it is neither complete for 'documents.metadata_json' (this site) nor narrowly scoped to it (4 sites of other tables, finding B-VR-B10-02). A reviewer applying the recorded rule 'the 9 confirmed sites remain to be converged' would miss this one.",
+      "suggested_disposition": "Add the call-site-based handoff scan (the author's uncommitted COLUMN_VALUE_HANDOFFS does catch both of these: they are in its 12-entry baseline) and say explicitly in read_chain.py which list is the convergence work list."
+    },
+    {
+      "id": "B-VR-B10-05",
+      "severity": "P3",
+      "claim": "The gate produces a FALSE POSITIVE on a legitimate new module that parses a differently-named column of another table, because it matches the substring 'metadata_json' anywhere in the call's argument.",
+      "evidence": "MY OWN CONSTRUCTION AND RUN: a new module with `json.loads(row[\"acquisition_metadata_json\"] or \"{}\")` makes test_b10_no_new_confirmed_direct_reader FAIL with the message 'new direct readers of the shared column: ... - converge them onto store.metadata_object, or register and justify them in read_chain.CONFIRMED_DIRECT_READERS'. That column is not documents.metadata_json. The naming pattern is idiomatic in this codebase (`normalization_metadata_json` already exists and is baselined).",
+      "impact": "In normal development the gate demands either a wrong convergence (re-pointing a different column's reader at the documents chain) or an unjustified baseline entry, and it teaches contributors that the baseline is a list of 'shared column readers' when it is a list of name matches. Compounds B-VR-B10-02.",
+      "suggested_disposition": "Match the exact subscript/.get() key (the author's uncommitted handoff scan already does this) and only count calls whose argument reads the column as a VALUE."
+    },
+    {
+      "id": "B-VR-B10-06",
+      "severity": "P3",
+      "claim": "The mutation-proof headline number in the record contradicts the record's own table: b10-implementation.md section 3 says '6/6 KILLED' while listing M1..M7 and while section 3bis says '7/7', and the committed b10-mutations.json has 7 mutants.",
+      "evidence": "evidence/b10-implementation.md @022f481 line '**6/6 KILLED，且全部 killed_by=assertion**' followed by a table with M1..M7; section 3bis '修后 7/7 通过、M7 被 assertion 杀死'; b10-mutations.json @cfe4ccc: 7 entries, all killed=true / killed_by=assertion / exit_code=1. I re-ran the committed harness on the reviewed revision and reproduced 7/7 by assertion. (The wiki commit message of b829b03 also says 6/6, which was correct before M7 was added in c4a69e0 - the record was never updated in that one line.)",
+      "impact": "The single most load-bearing number of the mutation proof reads as 6 when the evidence says 7. Low safety impact; it costs a reader time and looks like the record was not re-read after the M7 commit.",
+      "suggested_disposition": "Change the section 3 header to 7/7 (or '7 mutants, all killed by assertion') and state the mutant count once."
+    },
+    {
+      "id": "B-VR-B10-07",
+      "severity": "P3",
+      "claim": "The claim that the two metadata readers were 'the SAME contract' with 'equivalent catch sets' is not exactly true: the delegated chain catches a STRICTLY NARROWER set of exceptions than the adapter did, and the equivalence claim has no evidence artifact in RUN.",
+      "evidence": "MY OWN MEASUREMENT. Old (b829b03~1 service.py:92-96): `except (TypeError, ValueError, RecursionError)`. New (store.metadata_object, store.py:946-950): `except (json.JSONDecodeError, TypeError, RecursionError, UnicodeDecodeError)` - every one of those is a subclass of the old set, so the new set is a subset. Consequence, measured: an object whose __bool__ raises a bare ValueError returns {} through the old adapter and RAISES ValueError through the new one (input_sha16 de9bfc5ec6dde690). The reverse direction cannot happen. All the shapes the record names (None/''/'{}'/'[]'/invalid JSON/'123'/dict/deep-nesting RecursionError/non-UTF-8 bytes, 22 of my 24 inputs) are identical. Reachability: the only call site (service.py:736) passes `document[\"metadata_json\"]`, a sqlite TEXT value (store._tolerate_undecodable_text makes it a str), so the divergence is not reachable in production today. The docstring/commit text asserts 'their catch sets are equivalent ... both return {} for anything that is not a JSON object', and there is no script or log for the '8 pathological inputs' in RUN (I re-measured them myself).",
+      "impact": "The converged adapter's guarantee is now slightly narrower than the one it replaced, which is a real (if currently unreachable) contract change recorded as if it were a pure equivalence. If a future caller passes a non-str/bytes object with a raising __bool__/read, the old name would have returned {} and the new one raises - and SourceCatalog.query has no guard around that call.",
+      "suggested_disposition": "Write the direction precisely ('the chain's catch set is a subset of the adapter's; JSONDecodeError/UnicodeDecodeError are ValueError subclasses') and either record the 8-input matrix as an evidence file or state that it was measured without an artifact to publish."
+    },
+    {
+      "id": "B-VR-B10-08",
+      "severity": "P3",
+      "claim": "'repository_untouched=true' is scoped to src/**/*.py, and the recorded fingerprint value is not reproducible from git, so the claim is a self-consistency check rather than a re-derivable fact.",
+      "evidence": "b10_mutations.py::_repo_fingerprint hashes `(repo/'src').rglob('*.py')` as 'relpath size sha256' and returns hexdigest()[:16]; tests/, scripts/ and root files are outside it (the record's section 4 wording does say 'src/**/*.py', so the scope is disclosed - the JSON KEY 'repository_untouched' is what overstates). I recomputed the same construction: my git-archive copy of the reviewed revision fingerprints c2580ba5abbeee27 and the live tree af7163024566828f, neither equal to the recorded 5202ca372c6929ea; the value depends on the working tree's mixed LF/CRLF checkout state (git archive gave my copy CRLF for all files while the live tree is mixed), so it is environment-dependent by construction. Before==after within one run is still a valid check, and the harness only ever writes inside its own temp copy, so I found no evidence of any repository write.",
+      "impact": "A future reader cannot verify the recorded number, and 'repository_untouched' as a name suggests a scope wider than what was hashed. Low risk in practice (the tool's write path is temp-only).",
+      "suggested_disposition": "Rename the field to src_py_fingerprint_unchanged, and/or fingerprint the bytes git would report (blob hashes via `git status --porcelain` / `git diff --stat` being empty) so the value is re-derivable."
+    }
+  ],
+  "adjudication": "APPROVE_WITH_FINDINGS",
+  "adjudication_reason": "No live P0. The product change itself - service._read_shared_metadata delegating to store.metadata_object - is behaviourally equivalent on every input reachable from its only call site (22 of my 24 inputs identical, including the deep-nesting RecursionError path, non-object JSON, non-UTF-8 bytes and None/''/'{}'/'[]'/invalid/'123'/dict; the single divergence needs a non-str object whose __bool__ raises a bare ValueError, which the sqlite TEXT column cannot produce). The gate works for what it claims to measure: I independently reproduced the adapters/ hole with the pre-fix test file and its closure with the reviewed one, killed all five of my own mutants by assertion on the expected tests, reproduced the author's committed 7/7 mutation proof by re-running the committed harness on the reviewed revision, and confirmed the '7 passed' baseline on a clean copy. Converging a site onto the chain is explicitly not punished. What keeps this from a clean APPROVE is the registry itself: one of its three entries (reader.bundle) is declared byte_level False / 'never opens a file' while it demonstrably reads and hashes artifact bytes and changes its verdict when they change (P1), the ratchet baseline conflates three same-named columns while claiming to be the documents.metadata_json list (P2), and the ratchet is bypassable by at least seven constructed shapes including the two most natural ones (P2). None of those makes the increment unsafe to keep; all of them mean the increment's central artifact - the machine-readable registry - currently says things about the code that are not true, which is exactly what a later convergence batch (B10-3) will rely on. The three P2/P1 items should be fixed (or the boundary stated in the registry) before the next convergence batch is planned from this list.",
+  "not_checked": [
+    "Remote CI results ('c4a69e0 6/6 jobs green', 'cfe4ccc green on main and fcap'): the network is forbidden to me, so I could only corroborate offline that the pushes happened (origin/master == origin/fcap == c4a69e0; origin/main == origin/fcap == 022f481). The job conclusions themselves are NOT_CHECKED.",
+    "The 2026-09-16 pre-push incident (a mutation harness reading a half-mutated tree and blocking a push): no log or artifact of it exists in the reviewed evidence, and the harness's first in-place version is not in git, so the narrative can be neither confirmed nor refuted.",
+    "section 4.1's 'M4 survived at first': the all-definitions helper is already in b829b03, so the pre-fix state is not in git; my four probes show both the real-implementation and the stub mutant are killed by BOTH test versions. The fix's effect is verified; the historical survival is not.",
+    "The '8 pathological inputs equivalent' measurement has no evidence artifact in RUN; I re-measured it with my own 24-input matrix instead (results in this record).",
+    "company-wiki's own test suites at the reviewed revision: I ran only tests/contract/test_b10_read_chain.py (7 passed) and never the 787-unit / 1896-contract suites - those numbers are taken from the committed CI logs' last lines, not reproduced by me.",
+    "The uncommitted/next increment (wiki fcap d92bb33: COLUMN_VALUE_HANDOFFS and the handoff ratchet, committed by a concurrent author session while I reviewed): read for context only, NOT reviewed and NOT covered by this adjudication. Two of my bypasses (VR-B4, VR-B5) survive it as far as I could tell from reading it, but I did not run it.",
+    "Production catalog state and any runtime behaviour against real data: the catalog was never opened (not even stat'd), and this work package writes no catalog data, so 'unchanged' is not something I measured - I simply never touched it.",
+    "filing-fetch and revenue-forecast production behaviour: only greps for reader entry-point usage; the revenue-forecast assurance probe zr206_t2_probe.py does call reader.resolve_handle, but I did not run it or assess whether it must be treated as a 'consumer repository caller' in the registry's removal condition.",
+    "Whether the ratchet's false positive (VR-FP1) or its class-key coarseness has already caused friction in the author's own B10-3 work on the wiki master branch (109a1a6), which I did not inspect."
+  ],
+  "side_effects_i_observed": {
+    "writes_i_made": "Only %TEMP%\\b10vr\\ (myscan.py, myscan2.py, sqlctx.py, equiv.py, run_mutations.py, extra_cases.py, firstdef_probe.py, bundle_bytes.py, their_harness.py plus the JSON outputs and the git-archive/extracted copies rev\\, work\\, work2\\, crlf\\, keep\\, ev\\) and the single file assurance/runs/2026-09-11_r4-phase-b/reviews/B.VR-b10.json. Nothing else, anywhere. My temp pythons ran with PYTHONDONTWRITEBYTECODE=1 wherever I controlled the env, so no __pycache__ was created in any repository.",
+    "repository_state": "No repository file was created, modified or deleted BY ME. company-wiki `git status --porcelain` was empty at the start of my review (with read_chain.py + the test file uncommitted-but-modified by the author) and is empty again at the end (at d92bb33, committed by the author). I ran only read-only git commands (rev-parse/status/log/show/diff/branch/merge-base/for-each-ref/ls-files/check-ignore/archive). The only git command of mine that writes anything is `git archive -o <temp>`, which writes outside the repository.",
+    "concurrent_author_session_observed": "A second session was working in the same trees throughout my review. Timeline I observed: at 23:33 local, company-wiki HEAD was c4a69e0 with `M src/company_wiki/source_catalog/read_chain.py` and `M tests/contract/test_b10_read_chain.py`; RUN evidence/b10-implementation.md was 8492 bytes; by 23:38-23:41 those files were rewritten (implementation.md 11041, b10-mutations.json 3893 with an 8th mutant M8, b10_mutations.py 11671 with a pytest_exit_code field, b10-ci-step2-contract.txt truncated to 7045 bytes mid-rewrite); by 23:43-23:44 company-wiki had committed d92bb33 on fcap and the working tree was clean; revenue-forecast showed staged copies of the same five evidence files (M/MM) with no new commit yet. I attribute none of this to myself, and I anchored every judgment on the COMMITTED blobs of 1dc4c3b/36084a3/cfe4ccc/022f481 via `git show`, not on the moving working tree.",
+    "head_movement_during_review": {
+      "company_wiki": "c4a69e042bbeefaffaacf970384a28c5ed9c9f26 (reviewed) -> d92bb3331416d516120c82ea412a88df77822acb (a concurrent author commit, NOT reviewed). origin/master and origin/fcap were c4a69e0 at the end of my review.",
+      "revenue_forecast": "022f481e40082dfe20491f518aae9e963cdc4f42 throughout (no new commit while I reviewed; only staged/unstaged rewrites of the RUN evidence files by the author).",
+      "filing_fetch": "not inspected beyond greps."
+    },
+    "production_catalog_never_opened": "I never opened, queried, read, hashed or even stat'd company-wiki\\.source_catalog\\catalog.sqlite3 (or its -wal/-shm). No command of mine referenced that path.",
+    "network_and_installs": "No network use (no web_fetch, no web_search), no pip install, no new packages; every command was local python 3.13.9 / pytest 9.1.1 / git / tar / robocopy / PowerShell.",
+    "run_directory_files_touched": [
+      "reviews/B.VR-b10.json (created by me - the only file I wrote inside the run directory)"
+    ],
+    "bugs_i_fixed": "None. I fixed nothing, in either the product or the evidence tooling; every defect is reported in findings only."
+  }
+}

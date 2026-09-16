@@ -123,6 +123,20 @@ MUTANTS: list[dict] = [
                    "    \"\"\"Only exists while this mutant is in place.\"\"\"\n"
                    "    return json.loads(row[\"metadata_json\"] or \"{}\")\n"),
     },
+    {
+        "id": "M8",
+        "file": "src/company_wiki/source_catalog/adapters/parity.py",
+        "test": "test_b10_no_new_column_value_handoff",
+        "why": ("the parse-by-helper BYPASS: a generic helper plus a call site that names the "
+                "column - the shape the json.loads scan cannot see (measured: the gate passed "
+                "on exactly this probe before the handoff ratchet existed)"),
+        "append": ("\n\ndef _b10_vr_parse(raw):\n"
+                   "    \"\"\"Generic parameter: the loads scan sees no column here.\"\"\"\n"
+                   "    return json.loads(raw or \"{}\")\n\n\n"
+                   "def _b10_vr_classify(row):\n"
+                   "    \"\"\"Only exists while this mutant is in place.\"\"\"\n"
+                   "    return _b10_vr_parse(row[\"metadata_json\"]).get(\"document_kind\")\n"),
+    },
 ]
 
 
@@ -164,11 +178,13 @@ def main(argv: list[str]) -> int:
             tail = (proc.stdout or "").strip().splitlines()[-1][:120] if proc.stdout else ""
             results.append({
                 "id": mutant["id"], "applied": True, "killed": proc.returncode != 0,
-                # A kill by COLLECTION ERROR is not a kill by assertion: record which one it
-                # was, because a mutant that only breaks the syntax proves nothing about the
-                # guard it was aimed at.
-                "killed_by": ("assertion" if "failed" in tail and "error" not in tail.lower()
-                              else "collection_or_import_error"),
+                # A kill by COLLECTION ERROR is not a kill by assertion.  pytest's exit code
+                # says which: 1 = tests failed, 2 = interrupted/collection error.  The first
+                # version of this harness matched on the words in the output line, which is a
+                # weaker signal than the code itself.
+                "killed_by": ("assertion" if proc.returncode == 1 else
+                              "collection_or_other_error" if proc.returncode != 0 else "-"),
+                "pytest_exit_code": proc.returncode,
                 "test": mutant["test"], "why": mutant["why"],
                 "exit_code": proc.returncode, "tail": tail,
             })
