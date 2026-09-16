@@ -9,6 +9,10 @@
 
 ## 1. 只读侦察（本次实测，全部为 file:line 证据）
 
+> **机器导出的完整基线见 [b10-recon.md](b10-recon.md)** 与 [evidence/b10-read-chain-inventory.json](../evidence/b10-read-chain-inventory.json)
+> （AST 扫描：21 个解析点 = 2 个单一链调用 + **10 个确认的直接读取者** + 9 个启发式候选；含一处**假阳性**的教训）。
+> 下面这节是最初的手工侦察，保留以对照。
+
 **读取链 A —— 现行单一链（字节级）**
 - `SourceResolver.resolve(request)` → `SourceHandle`（`resolver.py:1282`）
 - `SourceResolver.read_verified_bytes(handle, expected_content_sha256=…)` → 一次读取、对**同一缓冲**取摘要，返回字节或**显式失败**（`resolver.py:1936`；契约见 `ByteReadResult`，`resolver.py:343`：`data`/`status`/`reason`/`byte_size`/`bytes_source`）
