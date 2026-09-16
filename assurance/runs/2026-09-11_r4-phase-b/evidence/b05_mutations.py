@@ -18,6 +18,10 @@ from pathlib import Path
 DEFAULT_WIKI = Path(r"C:\Users\郑曾波\Projects\company-wiki")
 SERVICE = "src/company_wiki/source_catalog/service.py"
 RESOLVER = "src/company_wiki/source_catalog/resolver.py"
+PROMPT_INJECTION = "src/company_wiki/source_catalog/prompt_injection.py"
+STORE = "src/company_wiki/source_catalog/store.py"
+SCANNER = "src/company_wiki/source_catalog/scanner.py"
+MUTATED_FILES = (SERVICE, RESOLVER, PROMPT_INJECTION, STORE, SCANNER)
 TEST_FILES = (
     "tests/contract/test_r4b05_metadata_provenance.py",
     "tests/contract/test_r4b06_qualification.py",
@@ -29,7 +33,11 @@ MUTANTS: list[tuple[str, str, str, str, str]] = [
         "M1: the read side parses the shared column without a guard again",
         SERVICE,
         "            try:\n                payload = json.loads(row[\"metadata_json\"] or \"{}\")\n"
-        "            except (TypeError, ValueError):\n                payload = None\n",
+        "            except (TypeError, ValueError, RecursionError):\n"
+        "                # RecursionError is a RuntimeError, NOT a ValueError (B-VR05M-02):\n"
+        "                # deeply nested JSON raised straight past the first version of this\n"
+        "                # guard, so \"never a crash\" was literally false for that shape.\n"
+        "                payload = None\n",
         "            payload = json.loads(row[\"metadata_json\"] or \"{}\")\n",
         "test_r4b05_malformed_shared_column_is_blocked_never_a_crash",
     ),
@@ -43,9 +51,8 @@ MUTANTS: list[tuple[str, str, str, str, str]] = [
     (
         "M3: the envelope stays silent for malformed content (the old fail-open answer)",
         RESOLVER,
-        '    except (TypeError, ValueError):\n'
         '        return "shared metadata column is not readable JSON"\n',
-        "    except (TypeError, ValueError):\n        return \"\"\n",
+        '        return ""\n',
         "test_r4b06_malformed_shared_metadata_blocks_instead_of_staying_silent",
     ),
     (
@@ -59,13 +66,63 @@ MUTANTS: list[tuple[str, str, str, str, str]] = [
         "test_r4b06_malformed_shared_metadata_blocks_instead_of_staying_silent"
         " or test_r4b06_a_malformed_shared_column_blocks_the_envelope",
     ),
+    (
+        "M5: the SQL period filter loses its json_valid guard (P0 B-VR05M-01)",
+        SERVICE,
+        '            "AND (NOT json_valid(d.metadata_json)"\n'
+        '            " OR json_extract(d.metadata_json, \'$.acquisition.fiscal_year\') = ?"\n'
+        '            " OR json_extract(d.metadata_json, \'$.dayu_meta.fiscal_year\') = ?)"\n',
+        '            "AND (json_extract(d.metadata_json, \'$.acquisition.fiscal_year\') = ?"\n'
+        '            " OR json_extract(d.metadata_json, \'$.dayu_meta.fiscal_year\') = ?)"\n',
+        "test_r4b05_malformed_column_survives_the_fiscal_year_filter",
+    ),
+    (
+        "M6: the read side stops catching RecursionError (P1 B-VR05M-02)",
+        SERVICE,
+        "            except (TypeError, ValueError, RecursionError):\n"
+        "                # RecursionError is a RuntimeError, NOT a ValueError (B-VR05M-02):",
+        "            except (TypeError, ValueError):\n"
+        "                # RecursionError is a RuntimeError, NOT a ValueError (B-VR05M-02):",
+        "test_r4b05_malformed_shared_column_is_blocked_never_a_crash",
+    ),
+    (
+        "M7: the envelope stops catching RecursionError (P1 B-VR05M-02)",
+        RESOLVER,
+        "    except (TypeError, ValueError, RecursionError):\n"
+        "        # RecursionError is a RuntimeError and escaped the first version of this guard",
+        "    except (TypeError, ValueError):\n"
+        "        # RecursionError is a RuntimeError and escaped the first version of this guard",
+        "test_r4b06_malformed_shared_metadata_blocks_instead_of_staying_silent",
+    ),
+    (
+        "M8: the prompt-injection reader catches only JSONDecodeError again (P1 B-VR05M-03)",
+        PROMPT_INJECTION,
+        "    except (json.JSONDecodeError, TypeError, RecursionError, UnicodeDecodeError):",
+        "    except json.JSONDecodeError:",
+        "test_r4b06_the_prompt_injection_reader_tolerates_malformed_shapes",
+    ),
+    (
+        "M9: the store stops tolerating undecodable TEXT (P1 B-VR05M-03)",
+        STORE,
+        "    connection.text_factory = lambda raw: raw.decode(\"utf-8\", \"replace\")",
+        "    pass  # mutant: no tolerant text_factory",
+        "test_r4b06_non_utf8_bytes_block_both_sides_not_just_the_read_side",
+    ),
+    (
+        "M10: the scanner merge loses its non-dict guard (P2 B-VR05M-04)",
+        SCANNER,
+        "        except (json.JSONDecodeError, TypeError, RecursionError):\n"
+        "            # B-VR05M-04: only JSONDecodeError was caught, so a VALID-JSON non-object",
+        "        except json.JSONDecodeError:\n"
+        "            # B-VR05M-04: only JSONDecodeError was caught, so a VALID-JSON non-object",
+        "test_r4b05_a_rescan_survives_a_malformed_existing_column",
+    ),
 ]
 
 
 def main(argv: list[str]) -> int:
     wiki = Path(argv[1]) if len(argv) > 1 else DEFAULT_WIKI
-    originals = {rel: (wiki / rel).read_bytes() for rel, in
-                 {(SERVICE,), (RESOLVER,)}}
+    originals = {rel: (wiki / rel).read_bytes() for rel in MUTATED_FILES}
     failures = 0
     try:
         for label, rel, old, new, case in MUTANTS:

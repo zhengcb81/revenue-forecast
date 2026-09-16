@@ -57,4 +57,10 @@
 **验证**：`tests/contract/test_r4b05_metadata_provenance.py` + `test_r4b06_qualification.py` **28 passed**；变异 harness **4/4 KILLED**（去掉读侧守卫 / `metadata_status` 只看冲突 / 信封回到沉默 / 非对象保留键回到沉默）+ `tree_restored=true`；ruff clean；本地**两个 CI 步骤**（unit + contract）全跑。
 **harness 自纠**：M4 最初只绑定"信封"那条用例，而该形状的断点在"沉默"那条 ⇒ 变异存活；**是 harness 绑错了用例**，改成 `-k "A or B"` 后被杀（与 fc1307a/zr903 两次同类自纠一致）。另：wiki 检出是 **CRLF**，文本型 harness 必须先归一化换行再匹配（已修）。
 
-**残余**：读侧只改了 `query_filing_candidates` 这一条返回路径；`artifact_backfill` / `artifact_read_model` / `backfill_v2` / `extraction_quality` 等**其它** `json.loads(metadata_json)` 站点（§6 表）**未一并改**——它们是否也有"畸形 ⇒ 崩溃"的行为**未验证**，登记为后续（不假装已覆盖）。
+**第二轮（B.VR-b05malformed 复审在修复之上又抓到 1×P0/2×P1/1×P2/2×P3，全部已处置；逐条见 [../evidence/b-vr-b05malformed-disposition.md](../evidence/b-vr-b05malformed-disposition.md)）**：
+- **P0**：`query_filing_candidates(fiscal_year=...)` 走的是 **SQL 先行**的 `json_extract` 过滤，**先于** Python 守卫 ⇒ 畸形/空列仍抛 `sqlite3.OperationalError: malformed JSON`。已加 `json_valid()` 并把不可解析的行**保留为可见 blocked**（静默过滤会让"blocked"对带期间查询不可达）；用例改为**带/不带 `fiscal_year` 都跑**。
+- **P1×2**：`RecursionError` 逃出两处守卫（深嵌套 JSON）；信封经 `prompt_injection.py` 早于冲突检查调用、且**真正的抛出点在 sqlite3 驱动内部**（`Could not decode to UTF-8 column`）⇒ 连接层加 `text_factory` 容忍（`store` 与 `reader` 两个连接），调用方捕获同时扩面。
+- **P2**：残余清单**按实测重写**（区分 `documents.` 与 `artifacts.metadata_json` 两列）：已修 = `scanner.py:1695`（数组 payload 重扫）、`scanner.py:1330`/`:1403`（合并与旧 provenance 两个嵌套站点，实测**依次**崩）、`service.py:699`（`SourceCatalog.query()`）。**仍未验证**（不假装覆盖）：`artifact_backfill.py:175`、`artifact_read_model.py:105`、`backfill_v2.py:212`、`extraction_quality.py:373`、`llm_summarizer.py:388-391`、`migration_ledger.py:37` —— 这些读的是 `artifacts.metadata_json`（**另一列**），是否同类可达**未测**。
+- **P3**：`metadata_problem="field_conflicts"` 现在有用例保护；修复前捕获里的行号（306）按**捕获时树**，提交后为 309（+3 行 NULL 说明）。
+
+**残余**：见上一段的"仍未验证"清单；另有 `normalizer` / `source_lifecycle` / `prompt_injection_guard` / `section_query` / `llm_summarizer` 的畸形输入行为**未逐一执行**（复审自列的 not_checked）。
