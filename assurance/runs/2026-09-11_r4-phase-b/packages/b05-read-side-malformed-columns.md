@@ -1,8 +1,7 @@
-# 工作包：B05 读侧的畸形共享列（立项，owner 2026-09-13 裁定第 8 条）
+# 工作包：B05 读侧的畸形共享列（**已实施**；owner 2026-09-13 立项，2026-09-16 实施）
 
-> **状态 = 已开工（owner 2026-09-15「都要」）**：只读前置部分完成（见 §6），实施待下一步。
+> **状态 = 已实施并验证**（wiki 提交见 `findings.md` 的 FC-1301/B05 段；变异 harness [../evidence/b05_mutations.py](../evidence/b05_mutations.py) **4/4 KILLED**；修复前的崩溃证据 [../evidence/b05-malformed-column-pre-fix.txt](../evidence/b05-malformed-column-pre-fix.txt)）。
 
-> **状态 = 已立项、未实施。** 本包只界定范围与验收；实施需 owner 一次 go/no-go。
 > 来源：B.VR06-02 的**另一半**——B06 复审确认"畸形共享列元数据"在**读侧**会让管线**抛异常**（不是返回一个显式状态），当时按"属 B05 读路径的独立缺陷"登记，未在 B06 内修。
 
 ## 1. 问题（可复核）
@@ -44,3 +43,18 @@
 | 是否依赖该异常 | 未查（实施第一步的第二个产物） |
 
 **结论**：本包的第 1 步不是改代码，而是**先做一个能复现的畸形输入**——没有它，改法就是猜。"文件级枚举"只说明候选面有多大，**不**说明缺陷在哪个键上。
+
+## 7. 实施结果（2026-09-16）
+
+**先复现（RED，证据 [../evidence/b05-malformed-column-pre-fix.txt](../evidence/b05-malformed-column-pre-fix.txt)）**：新增用例 `test_r4b05_malformed_shared_column_is_blocked_never_a_crash` 在修复前**直接崩溃**：`json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes`，从 `service.py` 的 `json.loads(row["metadata_json"])` 抛出——**证实了 B-VR06-02 的描述**（不是猜）。可用形状（逐个用例化）：非法 JSON、`r4_provenance.fields` 为 list、`r4_provenance` 为 list、整个 payload 为 JSON 数组、空字符串。
+
+**修法（两侧同说一件事）**：
+- **读侧 `service.py`**：解析加守卫；畸形不再抛异常，而是**命名的显式状态** `metadata_problem="unreadable_metadata"` + `metadata_status="blocked"` + `provenance={}`；字段冲突仍为 `blocked`，但 `metadata_problem="field_conflicts"`（两者可区分）。**空字符串 = "无元数据"**，不是畸形（`metadata_status="ok"`）。
+- **B06 侧 `resolver._metadata_conflict_reason`**：畸形内容**返回原因**（原来返回 `""` = "没有冲突证据"，是**fail-open** 那一侧）⇒ 信封落 `blocked`，与读侧**同一个事实**。
+- **方向改判（必须记）**：B06 原有的用例 `test_r4b06_malformed_shared_metadata_is_not_a_crash` **把 fail-open 行为钉住了**（断言畸形 ⇒ `== ""`）。这正是"用例在保护错误行为"的又一次实例（与 B06 的 P1 同类）。该用例已改写为 `..._blocks_instead_of_staying_silent`，docstring 里写明方向变更为何发生。
+- **一处事实更正**：复审提到的 `TypeError`（NULL 列）**不可达**——`documents.metadata_json` 声明为 **NOT NULL**（实测 `sqlite3.IntegrityError`），可达的"空"形态是**空字符串**。
+
+**验证**：`tests/contract/test_r4b05_metadata_provenance.py` + `test_r4b06_qualification.py` **28 passed**；变异 harness **4/4 KILLED**（去掉读侧守卫 / `metadata_status` 只看冲突 / 信封回到沉默 / 非对象保留键回到沉默）+ `tree_restored=true`；ruff clean；本地**两个 CI 步骤**（unit + contract）全跑。
+**harness 自纠**：M4 最初只绑定"信封"那条用例，而该形状的断点在"沉默"那条 ⇒ 变异存活；**是 harness 绑错了用例**，改成 `-k "A or B"` 后被杀（与 fc1307a/zr903 两次同类自纠一致）。另：wiki 检出是 **CRLF**，文本型 harness 必须先归一化换行再匹配（已修）。
+
+**残余**：读侧只改了 `query_filing_candidates` 这一条返回路径；`artifact_backfill` / `artifact_read_model` / `backfill_v2` / `extraction_quality` 等**其它** `json.loads(metadata_json)` 站点（§6 表）**未一并改**——它们是否也有"畸形 ⇒ 崩溃"的行为**未验证**，登记为后续（不假装已覆盖）。
