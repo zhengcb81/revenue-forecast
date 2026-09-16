@@ -1,6 +1,6 @@
 {
   "tool": "b_ar_verify_identity_hash.py",
-  "note": "B.AR/B09: identity and hash re-derived from the ORIGINAL files, read-only. The production catalog database was never opened; the catalog's claims come from the captured read-only CLI output in this directory.",
+  "note": "B.AR/B09: the HASH leg is re-derived from the ORIGINAL files, read-only. The IDENTITY leg compares the sidecar with the catalog's metadata.acquisition, which the scanner copied FROM that sidecar: it is a CONSISTENCY check, not an independent re-derivation of identity (B-VR-BAR-04). The production catalog database was never opened; the catalog's claims come from the captured read-only CLI output here.",
   "source_run": {
     "manifest_id": "r4-readonly-data-manifest-a05-a06",
     "manifest_status_at_run": "NOT APPROVED - awaiting owner confirmation (gate G4 for behaviour beyond --help; gate G7 for the sample list)",
@@ -20,13 +20,15 @@
     "documents_checked": 12
   },
   "totals": {
-    "artifact_digest_match": 10,
+    "artifact_digest_match": 18,
     "digest_match": 6,
-    "entity_resolved": 6,
+    "entity_resolved": 9,
+    "entity_unresolved": 3,
     "hashed": 6,
-    "identity_agree": 3,
+    "identity_fields_agree": 3,
+    "identity_not_comparable": 6,
     "no_canonical_location": 3,
-    "sidecar_absent": 3,
+    "sidecar_absent": 6,
     "sidecar_digest_agrees": 2,
     "sidecar_present": 3,
     "skipped_cloud_sync": 3
@@ -40,7 +42,35 @@
       "catalog_byte_size": 511,
       "file_name_len": 0,
       "file_exists": false,
-      "status": "no_canonical_location"
+      "identity": {},
+      "artifacts": [
+        {
+          "role": "normalized",
+          "status": "completed",
+          "catalog_sha256": "6ea77a417e09a6b3",
+          "catalog_bytes": 1157,
+          "exists": true,
+          "status_on_disk": "hashed",
+          "bytes_on_disk": 1157,
+          "digest_matches_catalog": true
+        },
+        {
+          "role": "summary",
+          "status": "completed",
+          "catalog_sha256": "4d8ff592494fb838",
+          "catalog_bytes": 2204,
+          "exists": true,
+          "status_on_disk": "hashed",
+          "bytes_on_disk": 2204,
+          "digest_matches_catalog": true
+        }
+      ],
+      "title_ends_with_dot_source": true,
+      "status": "no_canonical_location",
+      "entity_methods": [
+        "unresolved"
+      ],
+      "entity_resolved": false
     },
     {
       "root_id": "<no location>",
@@ -50,7 +80,14 @@
       "catalog_byte_size": 535,
       "file_name_len": 0,
       "file_exists": false,
-      "status": "no_canonical_location"
+      "identity": {},
+      "artifacts": [],
+      "title_ends_with_dot_source": true,
+      "status": "no_canonical_location",
+      "entity_methods": [
+        "company_raw_path"
+      ],
+      "entity_resolved": true
     },
     {
       "root_id": "<no location>",
@@ -60,7 +97,14 @@
       "catalog_byte_size": 511,
       "file_name_len": 0,
       "file_exists": false,
-      "status": "no_canonical_location"
+      "identity": {},
+      "artifacts": [],
+      "title_ends_with_dot_source": true,
+      "status": "no_canonical_location",
+      "entity_methods": [
+        "unresolved"
+      ],
+      "entity_resolved": false
     },
     {
       "root_id": "company_raw",
@@ -70,13 +114,6 @@
       "catalog_byte_size": 32100114,
       "file_name_len": 54,
       "file_exists": true,
-      "status": "hashed",
-      "file_size_on_disk": 32100114,
-      "disk_sha256": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89",
-      "bytes_read": 32100114,
-      "size_matches_catalog": true,
-      "digest_matches_catalog": true,
-      "sidecar_exists": true,
       "identity": {
         "company_name": {
           "sidecar_sha256_16": "8c19d90993d8c545",
@@ -119,7 +156,6 @@
           "agree": true
         }
       },
-      "sidecar_content_sha256_matches_disk": true,
       "artifacts": [
         {
           "role": "normalized",
@@ -142,6 +178,15 @@
           "digest_matches_catalog": true
         }
       ],
+      "title_ends_with_dot_source": false,
+      "status": "hashed",
+      "file_size_on_disk": 32100114,
+      "disk_sha256": "004f733e709beea878229ae02b80a952c543129037fc940aaf01b77dfa977a89",
+      "bytes_read": 32100114,
+      "size_matches_catalog": true,
+      "digest_matches_catalog": true,
+      "sidecar_exists": true,
+      "sidecar_content_sha256_matches_disk": true,
       "entity_methods": [
         "company_raw_path"
       ],
@@ -155,13 +200,6 @@
       "catalog_byte_size": 79925886,
       "file_name_len": 54,
       "file_exists": true,
-      "status": "hashed",
-      "file_size_on_disk": 79925886,
-      "disk_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
-      "bytes_read": 79925886,
-      "size_matches_catalog": true,
-      "digest_matches_catalog": true,
-      "sidecar_exists": true,
       "identity": {
         "company_name": {
           "sidecar_sha256_16": "8c19d90993d8c545",
@@ -204,7 +242,6 @@
           "agree": true
         }
       },
-      "sidecar_content_sha256_matches_disk": true,
       "artifacts": [
         {
           "role": "normalized",
@@ -227,6 +264,15 @@
           "digest_matches_catalog": true
         }
       ],
+      "title_ends_with_dot_source": false,
+      "status": "hashed",
+      "file_size_on_disk": 79925886,
+      "disk_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+      "bytes_read": 79925886,
+      "size_matches_catalog": true,
+      "digest_matches_catalog": true,
+      "sidecar_exists": true,
+      "sidecar_content_sha256_matches_disk": true,
       "entity_methods": [
         "company_raw_path"
       ],
@@ -240,13 +286,6 @@
       "catalog_byte_size": 82325,
       "file_name_len": 27,
       "file_exists": true,
-      "status": "hashed",
-      "file_size_on_disk": 82325,
-      "disk_sha256": "048bf062eaffc9b34fc0e4ca9345a511cf2f5338ec417a159d88bf1fa4d24d2c",
-      "bytes_read": 82325,
-      "size_matches_catalog": true,
-      "digest_matches_catalog": true,
-      "sidecar_exists": true,
       "identity": {
         "market": {
           "sidecar_sha256_16": "9fc4508238942e7c",
@@ -259,7 +298,6 @@
           "agree": true
         }
       },
-      "sidecar_content_sha256_matches_disk": null,
       "artifacts": [
         {
           "role": "normalized",
@@ -282,6 +320,15 @@
           "digest_matches_catalog": true
         }
       ],
+      "title_ends_with_dot_source": false,
+      "status": "hashed",
+      "file_size_on_disk": 82325,
+      "disk_sha256": "048bf062eaffc9b34fc0e4ca9345a511cf2f5338ec417a159d88bf1fa4d24d2c",
+      "bytes_read": 82325,
+      "size_matches_catalog": true,
+      "digest_matches_catalog": true,
+      "sidecar_exists": true,
+      "sidecar_content_sha256_matches_disk": null,
       "entity_methods": [
         "company_raw_path"
       ],
@@ -295,13 +342,6 @@
       "catalog_byte_size": 1794755,
       "file_name_len": 51,
       "file_exists": true,
-      "status": "hashed",
-      "file_size_on_disk": 1794755,
-      "disk_sha256": "0d40d94aef8d2fa08c4c75760198be426a0b579be3d7200ec9450a7e04522b4f",
-      "bytes_read": 1794755,
-      "size_matches_catalog": true,
-      "digest_matches_catalog": true,
-      "sidecar_exists": false,
       "identity": {},
       "artifacts": [
         {
@@ -325,6 +365,15 @@
           "digest_matches_catalog": true
         }
       ],
+      "title_ends_with_dot_source": false,
+      "status": "hashed",
+      "file_size_on_disk": 1794755,
+      "disk_sha256": "0d40d94aef8d2fa08c4c75760198be426a0b579be3d7200ec9450a7e04522b4f",
+      "bytes_read": 1794755,
+      "size_matches_catalog": true,
+      "digest_matches_catalog": true,
+      "sidecar_exists": false,
+      "sidecar_content_sha256_matches_disk": null,
       "entity_methods": [
         "path_ticker",
         "unresolved"
@@ -339,13 +388,6 @@
       "catalog_byte_size": 4122822,
       "file_name_len": 51,
       "file_exists": true,
-      "status": "hashed",
-      "file_size_on_disk": 4122822,
-      "disk_sha256": "236efadda82625eed8c29dcb35c9cca5c015aba153d828f193ed488130d17864",
-      "bytes_read": 4122822,
-      "size_matches_catalog": true,
-      "digest_matches_catalog": true,
-      "sidecar_exists": false,
       "identity": {},
       "artifacts": [
         {
@@ -369,6 +411,15 @@
           "digest_matches_catalog": true
         }
       ],
+      "title_ends_with_dot_source": false,
+      "status": "hashed",
+      "file_size_on_disk": 4122822,
+      "disk_sha256": "236efadda82625eed8c29dcb35c9cca5c015aba153d828f193ed488130d17864",
+      "bytes_read": 4122822,
+      "size_matches_catalog": true,
+      "digest_matches_catalog": true,
+      "sidecar_exists": false,
+      "sidecar_content_sha256_matches_disk": null,
       "entity_methods": [
         "path_ticker"
       ],
@@ -382,6 +433,9 @@
       "catalog_byte_size": 21862179,
       "file_name_len": 51,
       "file_exists": true,
+      "identity": {},
+      "artifacts": [],
+      "title_ends_with_dot_source": false,
       "status": "hashed",
       "file_size_on_disk": 21862179,
       "disk_sha256": "3384b52c31e87bc7081941a9d3ca776aaa6579ff33e7528c3c5326172952ac6d",
@@ -389,8 +443,7 @@
       "size_matches_catalog": true,
       "digest_matches_catalog": true,
       "sidecar_exists": false,
-      "identity": {},
-      "artifacts": [],
+      "sidecar_content_sha256_matches_disk": null,
       "entity_methods": [
         "path_ticker"
       ],
@@ -404,8 +457,39 @@
       "catalog_byte_size": 543,
       "file_name_len": 30,
       "file_exists": true,
+      "identity": {},
+      "artifacts": [
+        {
+          "role": "normalized",
+          "status": "completed",
+          "catalog_sha256": "9eb0cfeac43ff2ab",
+          "catalog_bytes": 1188,
+          "exists": true,
+          "status_on_disk": "hashed",
+          "bytes_on_disk": 1188,
+          "digest_matches_catalog": true
+        },
+        {
+          "role": "summary",
+          "status": "completed",
+          "catalog_sha256": "53578fdcc3cd7d46",
+          "catalog_bytes": 2257,
+          "exists": true,
+          "status_on_disk": "hashed",
+          "bytes_on_disk": 2257,
+          "digest_matches_catalog": true
+        }
+      ],
+      "title_ends_with_dot_source": true,
       "status": "skipped_cloud_sync",
-      "note": "not hashed: reading a synced placeholder would hydrate it"
+      "skip_trigger": "root_id",
+      "note": "not hashed: the row's root lives in a cloud-synced folder and reading a placeholder could hydrate it (placeholder state itself is NOT verified here)",
+      "sidecar_exists": false,
+      "sidecar_content_sha256_matches_disk": null,
+      "entity_methods": [
+        "unresolved"
+      ],
+      "entity_resolved": false
     },
     {
       "root_id": "dropbox_stock",
@@ -415,8 +499,39 @@
       "catalog_byte_size": 567,
       "file_name_len": 42,
       "file_exists": true,
+      "identity": {},
+      "artifacts": [
+        {
+          "role": "normalized",
+          "status": "completed",
+          "catalog_sha256": "2aa7d07f358465c1",
+          "catalog_bytes": 1284,
+          "exists": true,
+          "status_on_disk": "hashed",
+          "bytes_on_disk": 1284,
+          "digest_matches_catalog": true
+        },
+        {
+          "role": "summary",
+          "status": "completed",
+          "catalog_sha256": "b40d563be4c93194",
+          "catalog_bytes": 2171,
+          "exists": true,
+          "status_on_disk": "hashed",
+          "bytes_on_disk": 2171,
+          "digest_matches_catalog": true
+        }
+      ],
+      "title_ends_with_dot_source": true,
       "status": "skipped_cloud_sync",
-      "note": "not hashed: reading a synced placeholder would hydrate it"
+      "skip_trigger": "root_id",
+      "note": "not hashed: the row's root lives in a cloud-synced folder and reading a placeholder could hydrate it (placeholder state itself is NOT verified here)",
+      "sidecar_exists": false,
+      "sidecar_content_sha256_matches_disk": null,
+      "entity_methods": [
+        "company_raw_path"
+      ],
+      "entity_resolved": true
     },
     {
       "root_id": "dropbox_stock",
@@ -426,8 +541,39 @@
       "catalog_byte_size": 567,
       "file_name_len": 42,
       "file_exists": true,
+      "identity": {},
+      "artifacts": [
+        {
+          "role": "normalized",
+          "status": "completed",
+          "catalog_sha256": "92894db644392624",
+          "catalog_bytes": 1284,
+          "exists": true,
+          "status_on_disk": "hashed",
+          "bytes_on_disk": 1284,
+          "digest_matches_catalog": true
+        },
+        {
+          "role": "summary",
+          "status": "completed",
+          "catalog_sha256": "2c67ba1613c755a1",
+          "catalog_bytes": 2094,
+          "exists": true,
+          "status_on_disk": "hashed",
+          "bytes_on_disk": 2094,
+          "digest_matches_catalog": true
+        }
+      ],
+      "title_ends_with_dot_source": true,
       "status": "skipped_cloud_sync",
-      "note": "not hashed: reading a synced placeholder would hydrate it"
+      "skip_trigger": "root_id",
+      "note": "not hashed: the row's root lives in a cloud-synced folder and reading a placeholder could hydrate it (placeholder state itself is NOT verified here)",
+      "sidecar_exists": false,
+      "sidecar_content_sha256_matches_disk": null,
+      "entity_methods": [
+        "company_raw_path"
+      ],
+      "entity_resolved": true
     }
   ]
 }

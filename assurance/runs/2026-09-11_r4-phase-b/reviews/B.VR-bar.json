@@ -1,0 +1,348 @@
+{
+  "review": "B.VR-bar",
+  "reviewed_at_utc": "2026-09-16T21:20:00Z",
+  "reviewer_agent_id": "537ff955-41d6-4699-88f3-50bf1860df80 (process-level self-report: the value of $env:DSH_SESSION_ID in this delegated reviewer process; the harness exposes no cross-checkable UUID, so this is a self-report, not an attested identity; parent agent id session-bfecd191-fbc3-4a66-8ed1-6562479bf102)",
+  "independence_statement": "I am an independent read-only reviewer and I wrote none of the material under review: not b-ar-record.md, not owner-directive-2026-09-16.md, not the two tools under audit (evidence/run_a05_readonly_manifest.py, evidence/b_ar_verify_identity_hash.py), not evidence/summarise_a05_run.py, and not the evidence JSONs (a05-readonly-manifest-run.json, b-ar-identity-hash.json). I fixed no bug and changed no product code. WHAT I DID (all read-only unless marked): read the record, the two authorisations, the manifest, the tools and the evidence; re-hashed all 8 stdout side files myself and compared them with the recorded stdout_sha256/stdout_bytes and with the inline (2000-char) stdout; independently re-hashed the 6 original filing files from raw bytes (including the 79,925,886 B annual report), re-read 3 sidecars myself and re-hashed 10 derived artifacts, taking every path from the raw captured CLI stdout rather than from the derived evidence JSON; ran the manifest's read-only argv myself in my own temp output directory (%TEMP%\\barvr\\rerun) with the recorded interpreter/cwd; stat'ed the three production catalog files before and after; read the wiki source code paths that the executed commands dispatch to (read paths, duplicate_cleanup, store, sections/evidence services, CLI dispatch). WHAT I NEVER DID: no write/delete/rename/move in the three repos or in any production data directory; no git add/commit/push/checkout/--no-verify; no network (web_fetch/web_search unused); no pip install; I modified no existing file under the RUN directory (my only writes are %TEMP%\\barvr\\* and this review file); I fixed nothing; I did not read any path under Dropbox (hydration); I did not open the production catalog with any connection of my own (no sqlite3 shell, no hash of the 49.7 GB file) - the only production-catalog access I performed is the set of read-only CLI commands the manifest itself declares, plus stat. I DID rerun read-only manifest commands, including `duplicates`, which - as reported in B-VR-BAR-01 - internally constructs the write-capable CatalogStore; no write resulted (main DB and -wal unchanged).",
+  "verified_head_revenue_forecast": "54695aadbefbfb2e3e06a95d6e071d72c336752d (git -C C:\\Users\\郑曾波\\Projects\\revenue-forecast rev-parse HEAD, 2026-09-16T22:08:02+01:00)",
+  "verified_head_company_wiki": "41fdfe14b530098f6c26ec571d79f08dac96d757 (git -C C:\\Users\\郑曾波\\Projects\\company-wiki rev-parse HEAD, 2026-09-16T21:20:12+01:00)",
+  "scope": [
+    "b-ar-record.md (B.AR / B09 execution record) - all sections",
+    "owner-directive-2026-09-16.md and owner-scope-decisions-2026-09-13.md item 2, for the authorization adjudication",
+    "evidence/run_a05_readonly_manifest.py, evidence/b_ar_verify_identity_hash.py, evidence/summarise_a05_run.py (full text)",
+    "evidence/a05-readonly-manifest-run.json + its 8 stdout side files; evidence/b-ar-identity-hash.json; ../2026-09-11_r4-phase-a/command-manifest-readonly.json",
+    "production catalog metadata only (stat of catalog.sqlite3/-shm/-wal) and the real filing files/sidecars/artifacts the record claims to have hashed",
+    "OUT OF SCOPE (not reviewed): B08 level-2 real-byte work and b08-level2-report.md; the authorship of the manifest itself; every other item of the 2026-09-13 decision table; product behaviour outside the read paths the executed commands touch"
+  ],
+  "method": [
+    "1. Evidence internal consistency computed by me: for each result in a05-readonly-manifest-run.json I hashed the recorded stdout_file bytes and compared them with stdout_sha256/stdout_bytes, checked that the inline stdout is an exact 2000-char prefix (or the whole text when shorter), and checked the stated convention 'empty output => no side file' including that no stray side file exists.",
+    "2. Independent re-derivation from raw bytes: I re-hashed the 6 sampled filings (paths taken from the raw A05-2/A05-2b JSON, not from the derived JSON), compared with (a) the catalog's content_sha256 in that raw stdout, (b) the derived b-ar-identity-hash.json disk_sha256, (c) the sha256 embedded in document_id, (d) the on-disk sidecar's own content_sha256; I re-read the 3 sidecars and compared 14 identity fields myself; I re-hashed all 10 derived artifacts against their raw-row content_sha256.",
+    "3. Read-only rerun: the manifest argv (status, query --limit 20, duplicates, size-report, runtime-policy show, query --document-kind annual_report --limit 100, evidence-list --document-id <id> --limit 20 x2, sections-list --document-id <id> x2) executed by C:\\Miniconda\\python.exe -B -m company_wiki.source_catalog.cli with cwd=C:\\Users\\郑曾波\\Projects\\company-wiki and PYTHONPATH/PYTHONDONTWRITEBYTECODE/PYTHONIOENCODING set (the keys the manifest declares), output captured in text mode with encoding=utf-8 exactly as the audited runner did, then compared byte-for-byte (sha256) with the recorded values.",
+    "4. Location-triple check the audited tool did NOT do: for the 6 hashed documents I compared every catalog location row (observed_size, observed_mtime_ns, relative_path, root_id, role, canonical flag) against the real file's size/mtime.",
+    "5. Code audit (read-only) of the two tools for every write point and network call, plus the wiki command paths they invoke: read-only vs read-write connections, the _sha256_file cap semantics, CLOUD_MARKERS matching, _load_rows() de-duplication, and the --per-root/--max-docs sampling rule.",
+    "6. Adversarial claim checking: every number in b-ar-record.md section 1 recomputed from stdout verbatim; sections 3/4/5 claims traced to the exact evidence field that supports or fails to support them; post-hoc-edit and hand-picked-sample tests (candidate provenance, document_ids_available, sampling order).",
+    "7. Authorization adjudication: read owner-directive-2026-09-16.md, owner-scope-decisions-2026-09-13.md item 2 and its closing sections, the manifest's own status/approval/limit/budget/stop-rule/approval block, and the recorded approval_basis, then compared the executed argv set against the manifest as written."
+  ],
+  "claims_checked": [
+    {
+      "id": "C1",
+      "claim": "record section 1: the 10 executed commands' recorded exit codes / stdout bytes / stdout sha256 are faithful to the full stdout, and the two empty-output commands (A05-5/A05-5b) have no side file by design (their evidence is the attempts arrays).",
+      "method": "I hashed the 8 side files myself and compared with stdout_sha256/stdout_bytes; checked inline-vs-full prefix behaviour; checked for stray/absent side files; inspected the two attempts arrays.",
+      "observed": "8/8 side files hash exactly to the recorded sha256 and have exactly the recorded byte counts (206 / 114913 / 504834 / 107132 / 42446 / 43585 / 212 / 510); every inline stdout is either the full text (short outputs) or exactly the first 2000 characters; no stray side files, no missing ones; A05-5 (20 attempts) and A05-5b (65 attempts) have stdout_bytes 0, exit 1, no stdout_file, and every attempt records exit_code 1 / stdout_bytes 0 with the fatal error text.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C2",
+      "claim": "record section 0 / evidence: the manifest's own NOT APPROVED status string is preserved verbatim (not masked) and the actual authorization is recorded separately in approval_basis.",
+      "method": "Read both strings in the evidence JSON and compared them with the manifest file itself.",
+      "observed": "manifest_status_at_run = 'NOT APPROVED - awaiting owner confirmation (gate G4 for behaviour beyond --help; gate G7 for the sample list)' - character-identical to the manifest's own 'status' field (command-manifest-readonly.json:5); approval_basis quotes the owner's in-session instruction and names the still-unapproved write/network set; the manifest file is unmodified (its approval block still has by: null, at: null).",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C3",
+      "claim": "record section 2: the write/network/destructive entries (and any --dry-run of them) were not executed - '一条都没跑'.",
+      "method": "Checked every recorded argv (and the per-attempt stderr strings) against the manifest's read-only list and against the wiki source that produces those strings; looked for any trace of a write in the production catalog before/after; compared my byte-identical rerun.",
+      "observed": "All 10 recorded argv are read-only manifest entries plus the runner-added A05-2b (query, read-only). The 85 fatal stderr strings are produced only by evidence_query.py:397 (evidence-list) and section_query.py:106 (sections-list). No argv of a write/network command appears anywhere in the evidence. Production catalog main DB and -wal never moved (see side_effects_i_observed). No trace of a write command was executed - but note B-VR-BAR-01: `duplicates` is not read-only in code.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C4",
+      "claim": "record section 1 table: the status / size-report / runtime-policy numbers and policy_hash are taken verbatim from stdout.",
+      "method": "Recomputed every quoted number from the side files.",
+      "observed": "status: documents 23530, sources 43112, evidence_spans 27199666, normalized 4984, summary 2969, llm_summary 2734, active_locations 25046, missing_locations 6 - all verbatim. size-report: database_bytes 49677344768, documents_total 23530, documents_retired 9501, page_count 12128258, freelist_count 9, warnings [] - all verbatim. runtime-policy: policy_hash c773099b3dcfa2cc0f8e4b1c3e2f783f9c8f9715a415ba708c12bf79398675dd, cohort canary-2026-08-10, flags v2_resolve_active=true / v2_bundle_active=false / legacy_bridge_enabled=false / v2_resolve_shadow=true / v2_scan_shadow=true / v2_persist_assertions=true - all verbatim. The sha256[:16] values and byte counts in the section 1 table are the correct prefixes of the recorded hashes.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C5",
+      "claim": "record section 1: exit code 1 on A05-5/A05-5b is an explicit answer ('no sections artifact'), not a failure; error_type fatal, retryable false.",
+      "method": "Read the raw stderr of all 85 attempts and located the producing code.",
+      "observed": "Every attempt stderr is exactly {\"error\": \"no sections artifact for document_id\", \"error_type\": \"fatal\", \"retryable\": false, \"status\": \"failed\"} (section_query.py:106). My own rerun of two sections-list candidates (exit 1, 0 bytes) reproduced it.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C6",
+      "claim": "record section 3: 66 de-duplicated candidates (company_raw 39 / dayu_portfolio 19 / dropbox_stock 4 / no location 4); 6 documents hashed with digest 6/6 and size 6/6; 10 derived artifacts hashed 10/10; 3 sidecars present with identity fields equal field-by-field; 2 sidecar digests equal the disk digest.",
+      "method": "Full independent re-derivation (see method 2); candidate counts re-read from the raw A05-2/A05-2b stdout.",
+      "observed": "candidates_seen 66 with per-root 39/19/4/4 confirmed from the raw rows; my own hashes of the 6 files equal the catalog claim, the derived JSON and the digest embedded in document_id (6/6 each) and my sizes equal byte_size 6/6; my own re-hash of the 10 artifacts matches their raw-row content_sha256 10/10; my own read of the 3 sidecars gives 14/14 identity fields equal (company_raw only) and 2 sidecars whose content_sha256 equals my disk digest (the third has no such field).",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C7",
+      "claim": "record section 1/4 (F-BAR-5) and progress.md: '85 real candidates, 0 with a sections artifact' (20 + 65 sections-list attempts).",
+      "method": "Split the 65 A05-5b attempts by id shape, located every non-urn id in the raw stdout JSON, and compared the candidate pool with the query results.",
+      "observed": "The 85 are invocations, not candidates: 20 (A05-2 page) + 65 (A05-5b list) with zero overlap. 46 of the 65 are urn:company-wiki:document:sha256:... ids; the other 19 are values like fil_cn_54c0700088fc613ab3ef746391b5eea541a36c50 that occur in the raw stdout only as metadata.dayu_meta.document_id (exactly the 19 dayu_portfolio rows, matching candidates_per_root.dayu_portfolio=19) and cannot be catalog document ids at all. Distinct documents actually probed = 66 = 20 + 46, exactly the candidates_seen of the derived JSON. The substantive result survives: all 66 real documents answered exit 1 'no sections artifact'.",
+      "verdict": "REFUTED"
+    },
+    {
+      "id": "C8",
+      "claim": "record section 4 F-BAR-1: 3 documents whose title ends in .pdf.source have empty canonical_path and locations, entities mostly Unresolved (dropbox_stock), and one of them has a normalized artifact of 1,157 B; status reports missing_locations 6.",
+      "method": "Traced each element to the evidence field that contains it (raw A05-2b stdout rows vs the derived JSON).",
+      "observed": "The titles, the empty canonical_path/locations, the entities Unresolved (dropbox_stock) x2 + one resolved name, byte_size 511/535/511 and the 1157 B normalized artifact are all present in the raw A05-2b stdout row. missing_locations: 6 is verbatim in the A05-1 stdout. BUT the record cites 'b-ar-identity-hash.json's no_canonical_location entries' for the 1,157 B fact, and that JSON contains no artifacts for those rows at all (the tool returns before artifact handling) - the citation is wrong even though the fact is true one file over.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C9",
+      "claim": "record section 3/4 (F-BAR-4): the 3 dropbox_stock candidates were skipped because reading a cloud placeholder would hydrate it.",
+      "method": "Inspected the raw rows for those 3 candidates (paths, titles, kinds, sizes) and the skip predicate in the tool.",
+      "observed": "The 3 skipped candidates are *.pdf.source.json files under ...\\Dropbox\\Stock\\..., titles ending .pdf.source, byte_size 543/567/567, file_exists true, catalog observed_size equal to byte_size; they are sidecar JSON documents, not filings. Nothing in the captured rows establishes online-only/placeholder state, and stat cannot decide it. The skip policy is right; the stated cause is unverified, and even a successful read would not have verified a filing's bytes.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C10",
+      "claim": "record section 5: '4 real roots each have real candidates at the catalog level (39/19/4/4)', and the two 'achieved' rows (independent re-derivation; user files unmodified).",
+      "method": "Compared the claim wording with the candidate rows per root and with my own production-catalog stat and reruns.",
+      "observed": "The counts are exact. But the 4 dropbox_stock candidates are *.pdf.source.json sidecar documents, and 6 of the 46 annual_report rows are such sidecar entries, so 'real candidates' overstates what the dropbox root contributed; the pool is 66 of 23,530 documents (0.28%), drawn from one arbitrary unfiltered page (20 rows, kinds news/investor_relations/other) plus all 46 annual_report rows. 'User files unmodified' holds on the evidence I could take: catalog.sqlite3 49,677,344,768 B and mtime 2026-09-08T21:23:21.0727473Z identical before and after both the recorded run window and my rerun window; -wal 0 B unmoved; my rerun reproduced 9 of 10 command outputs byte-for-byte and the 10th differs only in disk_free_bytes.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C11",
+      "claim": "record section 3: all 6 hashed documents have a resolved entity (company_raw_path or path_ticker).",
+      "method": "Read the evidence's entity fields for the 6 documents.",
+      "observed": "entity_resolved 6/6; methods are company_raw_path (3, company_raw) and path_ticker / path_ticker+unresolved (3, dayu_portfolio). Note these methods are catalog-internal path inferences, so this is a property of the catalog row, not an independent identification of the document.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C12",
+      "claim": "record section 3 'honest boundary': dayu_portfolio documents have no per-document sidecar, so their identity is 'consistent with the catalog's path_ticker', not 'consistent with the sidecar'.",
+      "method": "Checked sidecar_absent/identity_agree counters and the tool's identity branch.",
+      "observed": "Accurate: sidecar_absent 3, identity_agree 3 (the three company_raw documents only); for the dayu documents the tool compares nothing (no sidecar), and the record says so instead of claiming an identity match.",
+      "verdict": "SUPPORTED"
+    },
+    {
+      "id": "C13",
+      "claim": "record section 6: replaying `run_a05_readonly_manifest.py --label round1` and `b_ar_verify_identity_hash.py --per-root 3 --max-docs 20` reproduces the evidence.",
+      "method": "Compared the documented replay commands with the parameters actually needed, and compared the tool defaults with the recorded output shape.",
+      "observed": "The A05-2b entry was produced with --limit 100 (resolved_argv) and A05-5b has 65 attempts, so the run used --candidate-limit 100; the runner's default is 25 and the payload records no candidate_limit parameter. Replaying section 6 verbatim therefore produces `query --document-kind annual_report --limit 25` and different hashes. I only reproduced the evidence because I used the recorded resolved_argv.",
+      "verdict": "REFUTED"
+    },
+    {
+      "id": "C14",
+      "claim": "record section 1 remark: A05-4's first 9 attempts failed with 'no evidence spans'.",
+      "method": "Read the raw stderr of those attempts and located the producing code.",
+      "observed": "The actual text is {\"error\": \"no evidence matches the exact source or document identity\", \"error_type\": \"fatal\", \"retryable\": false, \"status\": \"failed\"} (evidence_query.py:397); 'no evidence spans' is not what the CLI said.",
+      "verdict": "REFUTED"
+    },
+    {
+      "id": "C15",
+      "claim": "The tool that re-derives hashes does not merely compare the catalog's claim with another copy of the catalog's claim (the 'input as its own verification' failure).",
+      "method": "Read both tools end to end; for the file hashes I derived every path from the raw CLI stdout and compared file bytes against the DB claim; for identity I checked where metadata.acquisition comes from.",
+      "observed": "For the content hash the check is genuinely independent: the file bytes on disk vs the catalog's claim in the DB, plus the document_id's embedded sha256 as a third, content-derived anchor (6/6 agree with my own digest). For the identity fields it is NOT independent: the tool compares the sidecar on disk with row['metadata']['acquisition'], which the scanner populated FROM that sidecar, so only drift can be detected - and for 3 of the 6 documents nothing is compared at all. Instance of a consistent-but-questionable value: security_id = a company name (a CJK name, sha256_16 858512d639e77d9e) for the 周大生 investor-relations PDF 048bf062..., identical in the sidecar and the catalog.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C16",
+      "claim": "The location triple (document_id / content_sha256 / locator) is re-derived, as b-vr-protocol.md section 5 defines B.AR's scope.",
+      "method": "Compared every catalog location row of the 6 hashed documents with the real file (size, mtime_ns, relative_path, role, canonical flag).",
+      "observed": "The audited tool checks only existence + content hash; it never checks observed_size/observed_mtime_ns. I did: all 6 role=original_primary rows in company_raw/dayu_portfolio match the real file's size AND mtime_ns exactly, and relative_path ends with the real file name; the other 12 rows are metadata/processed_docling rows or the dropbox_stock twin originals (same observed_size, different observed_mtime_ns). So the locator leg is correct where I could check it, but B.AR's record does not report having checked it.",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "C17",
+      "claim": "The record's numbers were not produced by a post-hoc edit of the evidence (no tamper path).",
+      "method": "Side-file hashes recomputed (C1) plus a byte-for-byte rerun of the same argv against the live catalog (method 3).",
+      "observed": "9 of 10 commands reproduce the recorded sha256 exactly today (status, query, duplicates, runtime-policy show, query annual_report limit 100, both evidence-list runs, and the two sections-list exit codes); size-report differs only in disk_free_bytes (79798804480 recorded vs 79490736128 now), every other field identical including database_bytes. That is consistent with genuine capture from this catalog and rules out the simplest post-hoc-edit scenarios (edited side files or fabricated hashes).",
+      "verdict": "SUPPORTED"
+    }
+  ],
+  "reruns": [
+    {
+      "id": "A05-1",
+      "argv": ["status"],
+      "exit_code": 0,
+      "my_stdout_sha256": "c74996c6a18968193492c54db4be71fc1c6881f6c9b91d52c517eacdc62bbcfa",
+      "recorded_sha256": "c74996c6a18968193492c54db4be71fc1c6881f6c9b91d52c517eacdc62bbcfa",
+      "match": true,
+      "note": "206 bytes both times; 154.5 s (contended with other sessions)."
+    },
+    {
+      "id": "A05-2",
+      "argv": ["query", "--limit", "20"],
+      "exit_code": 0,
+      "my_stdout_sha256": "edb92c010925ac413278e4ce064294ce5bedaefa5a29ac7cae01e28ad6714f74",
+      "recorded_sha256": "edb92c010925ac413278e4ce064294ce5bedaefa5a29ac7cae01e28ad6714f74",
+      "match": true,
+      "note": "114,913 bytes both times."
+    },
+    {
+      "id": "A05-3",
+      "argv": ["duplicates"],
+      "exit_code": 0,
+      "my_stdout_sha256": "bd77a701ae03b58783b41bc24df013f1ff89700d34075cf903ad32ae2da91342",
+      "recorded_sha256": "bd77a701ae03b58783b41bc24df013f1ff89700d34075cf903ad32ae2da91342",
+      "match": true,
+      "note": "107,132 bytes both times; total_groups 2935, total_reclaimable_bytes 5100583769. This command internally constructs the write-capable CatalogStore (B-VR-BAR-01)."
+    },
+    {
+      "id": "A06-1",
+      "argv": ["size-report"],
+      "exit_code": 0,
+      "my_stdout_sha256": "dfd90d962effbecdedd7d62c4f438c748e1e9a414d029fb9ab3de4f9220af216",
+      "recorded_sha256": "7f1a322e47cd4e4accfd1c8da7ca4c07aaefcaad40662d514f469b539c2c8602",
+      "match": false,
+      "note": "DIFFERENCE, reported as observed, not dismissed: 212 bytes both times and identical in every field EXCEPT disk_free_bytes (recorded 79,798,804,480 B vs mine 79,490,736,128 B, i.e. ~308 MB less free host space after ~10 more minutes of concurrent work). database_bytes 49,677,344,768, documents_total 23,530, documents_retired 9,501, page_count 12,128,258, freelist_count 9, evidence_spans_total 27,199,666 and warnings [] are all identical. So this is a volatile host metric inside the output, not a catalog discrepancy."
+    },
+    {
+      "id": "A06-2",
+      "argv": ["runtime-policy", "show"],
+      "exit_code": 0,
+      "my_stdout_sha256": "a0ce50c99bee075d3f0a873dc92288b623dc4aa44d8d0180092d3b5feebb01e1",
+      "recorded_sha256": "a0ce50c99bee075d3f0a873dc92288b623dc4aa44d8d0180092d3b5feebb01e1",
+      "match": true,
+      "note": "510 bytes both times; policy_hash and updated_at 2026-09-02T18:34:03.610353+00:00 unchanged."
+    },
+    {
+      "id": "A05-2b",
+      "argv": ["query", "--document-kind", "annual_report", "--limit", "100"],
+      "exit_code": 0,
+      "my_stdout_sha256": "539d78dd7123c1e072c418191177a67fd0762af675fbaaed24d93141416eb240",
+      "recorded_sha256": "539d78dd7123c1e072c418191177a67fd0762af675fbaaed24d93141416eb240",
+      "match": true,
+      "note": "504,834 bytes both times - this also confirms the run really used --limit 100, not the runner's default 25."
+    },
+    {
+      "id": "A05-4",
+      "argv": ["evidence-list", "--document-id", "urn:company-wiki:document:sha256:048bf062eaffc9b34fc0e4ca9345a511cf2f5338ec417a159d88bf1fa4d24d2c", "--limit", "20"],
+      "exit_code": 0,
+      "my_stdout_sha256": "a321586981ae3a066b5dfee670363f6d653bd53f476b00a1f610125ecd80dcb0",
+      "recorded_sha256": "a321586981ae3a066b5dfee670363f6d653bd53f476b00a1f610125ecd80dcb0",
+      "match": true,
+      "note": "42,446 bytes both times."
+    },
+    {
+      "id": "A05-4b",
+      "argv": ["evidence-list", "--document-id", "urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350", "--limit", "20"],
+      "exit_code": 0,
+      "my_stdout_sha256": "a725350862da3730926731f0e9404c30e4aa548f1df70c87267b4f5a669e60e1",
+      "recorded_sha256": "a725350862da3730926731f0e9404c30e4aa548f1df70c87267b4f5a669e60e1",
+      "match": true,
+      "note": "43,585 bytes both times; the same real 阿里巴巴 annual report B08 level-2 used."
+    },
+    {
+      "id": "A05-5",
+      "argv": ["sections-list", "--document-id", "urn:company-wiki:document:sha256:bfd7f21523a6fb3c808013156e7de3fab4cf09d6a450906b30d78311547a1c45"],
+      "exit_code": 1,
+      "my_stdout_sha256": null,
+      "recorded_sha256": null,
+      "match": true,
+      "note": "Exit code matches (1) and stdout is empty both times, so there is no sha to compare; stderr identical fatal 'no sections artifact for document_id'."
+    },
+    {
+      "id": "A05-5b",
+      "argv": ["sections-list", "--document-id", "urn:company-wiki:document:sha256:e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350"],
+      "exit_code": 1,
+      "my_stdout_sha256": null,
+      "recorded_sha256": null,
+      "match": true,
+      "note": "Exit code matches (1), stdout empty, same fatal error."
+    },
+    {
+      "id": "A05-5c",
+      "argv": ["sections-list", "--document-id", "fil_cn_54c0700088fc613ab3ef746391b5eea541a36c50"],
+      "exit_code": 1,
+      "my_stdout_sha256": null,
+      "recorded_sha256": null,
+      "match": false,
+      "note": "Not a recorded command of its own: I ran this one extra read-only probe to characterise the 19 non-urn ids that make up part of A05-5b (B-VR-BAR-02). Exit 1, 0 bytes, identical fatal error - i.e. the CLI answers the same for a value that is not a catalog document id, so those 19 attempts cannot be counted as documents probed. 'match: false' here only means there is no recorded counterpart."
+    }
+  ],
+  "authorization_adjudication": {
+    "verdict": "OVERREACH",
+    "reasoning": "(a) Is the owner's in-session instruction enough to authorise a bulk approval of the read-only subset? NOT ESTABLISHED on the record. owner-scope-decisions-2026-09-13.md item 2 is a specific decision about exactly this manifest ('commands approved one by one; no command approved this time'), and its closing section lists 'the read-only commands in the manifest' among the things not decided in that round and not to be advanced on the author's own initiative; owner-directive-2026-09-16.md section 3 says that closing section 'continues to be valid'. The only trace of the later instruction is the executor's own paraphrase ('继续做，直到全部完成' answering a request to approve the read-only manifest) recorded in approval_basis and in the directive it wrote; no verbatim owner approval of commands exists in the RUN, the owner transcript is not in the repo, and the manifest's own approval block is still by: null, at: null. A generic 'keep going until it is all done' does not by itself revoke a specific 'approve them one by one' rule, so only the owner can settle this half. (b) Is the presentation of the authorization state honest? YES. The manifest's NOT APPROVED string is preserved character-for-character in manifest_status_at_run; approval_basis sits beside it; b-ar-record.md section 0 raises the inconsistency itself rather than hiding it; the directive discloses that it resolves two 'separate batch' items at once, admits the earlier key-name slip, and explicitly hands this very question to B.VR-bar. I found no masking or rewriting, in the evidence or in the record. (c) Did the execution exceed the authorization? YES - and this is why the verdict is OVERREACH rather than 'owner must decide': the executor's own stated basis is that 'the manifest AS WRITTEN is approved', yet the executed set is not the manifest as written. Named items: (1) A05-2b, `query --document-kind annual_report --limit 100`, is a command that does not exist in command-manifest-readonly.json (the runner added it and labelled it as such); (2) that same command uses --limit 100 while the manifest's A05-2 entry caps query at '--limit <= 50 each'; (3) the manifest's per-command caps ('<= 6 invocations' for A05-4/A05-5) and its budget.max_invocations: 25 were exceeded by roughly 4x (102 invocations: 10 + 20 + 1 + 65 attempts plus 6 single-shot); (4) the manifest's stop rule 'a command returns non-zero -> stop immediately and record; do not retry with different flags' was not honoured - 85 consecutive fatal retries, plus a re-run of the per-document candidates through a second candidate list after the first list answered nothing. None of these four points depends on how the owner's sentence is read, and all four are inside the read-only envelope, so the harm is procedural, not to the data. Consequence: the executed set is partly unauthorised even under the most generous reading of the owner's instruction; the owner should be asked to ratify or void (i) the bulk read-only reading itself and (ii) A05-2b plus the over-budget retries, and the record's authorization sentence should be corrected either way.",
+    "evidence": "owner-scope-decisions-2026-09-13.md:9 (item 2 'commands approved one by one; no command approved this time'), :22 ('B09/B.AR (G7 commands not approved)' still gated), :28 (the read-only manifest commands are outside that round's decisions); owner-directive-2026-09-16.md:11 ('turns the two separate-batch items into this batch'), :27 ('approved as a read-only subset wholesale, not one by one'), :31-32 (status string not masked; the final say on this authorization reading is handed to B.VR-bar), :24 (section 28 continues to be valid); command-manifest-readonly.json:5 (status NOT APPROVED), :34 (query '<=5 invocations, --limit <= 50 each'), :54,:64 ('<= 6 invocations'), :98 (budget max_invocations 25), :105 (non-zero -> stop rule), :109-113 (approval by/at null); evidence/a05-readonly-manifest-run.json (manifest_status_at_run, approval_basis, results[].argv/resolved_argv, attempts counts 10/20/1/65, document_ids_available 20, document_ids_available_filtered 65, no candidate_limit field); evidence/run_a05_readonly_manifest.py:3-6 (the tool's own docstring asserts the owner approved the manifest as written), :94-99 (--candidate-limit default 25), :144-157 (A05-2b added by the runner); git: owner-directive-2026-09-16.md and evidence/a05-readonly-manifest-run.json first appear in revenue-forecast commit 70c90d4 (2026-09-16T21:59:46+01:00), i.e. the directive document was committed about 11 minutes AFTER the run recorded at 2026-09-16T20:48:14Z (21:48:14 local), and the runner's docstring already asserted approval at 21:36:45 local - so the on-disk authorization paper trail was produced by the executing session itself, after the decision to run."
+  },
+  "findings": [
+    {
+      "id": "B-VR-BAR-01",
+      "severity": "P1",
+      "claim": "A command the manifest declares read-only (A05-3 `duplicates`, write_set: []) is not read-only in code: it reads through the write-capable store, which on open runs DDL, additive migrations and an unconditional INSERT against the production catalog. The 'read-only' guarantee of that entry rests on data state, not on a read-only connection.",
+      "evidence": "company-wiki/src/company_wiki/source_catalog/duplicate_cleanup.py:175 (`self.catalog = catalog`), :192 (`self.catalog.store.fetchall(...)`); service.py:115-117 (`store` property -> `CatalogStore(self.config.database_path)`); store.py:964-971 (RW `sqlite3.connect`), :1026-1044 (`_initialize`: `PRAGMA journal_mode=WAL`, `executescript(_DDL)`, `_apply_additive_migrations`, commit), :1078-1089 (`ALTER TABLE documents/artifacts ADD COLUMN`), :1151-1155 (`UPDATE catalog_meta SET value=? WHERE key='schema_version'`), :1157-1188 (`_seed_fingerprint_state`: `INSERT INTO document_fingerprint_state ... SELECT ... WHERE NOT EXISTS`). The other nine executed commands go through genuinely read-only connections (service.py:285-286 and :629-640 -> reader; reader.py:165,:188 (`mode=ro` + `PRAGMA query_only=ON`); evidence_query.py:236,:247; section_query.py:82; catalog_size_report.py:41). No write actually occurred: catalog.sqlite3 49,677,344,768 B / mtime 2026-09-08T21:23:21.0727473Z identical before and after both the recorded run window and my rerun window; -wal 0 B with mtime 2026-09-16T20:44:52Z, i.e. before the recorded run started at 20:48:14Z. My own rerun of `duplicates` reproduced the recorded output byte-for-byte and also produced no change.",
+      "impact": "On this catalog the INSERT/ALTERs were no-ops (every document already has a fingerprint-state row and schema_version is current), so nothing was written. But an owner-approved 'read-only' run would silently write to the production catalog on a catalog where a document lacks a fingerprint-state row or where schema_version is upgradeable - the exact class of change the G7 gate exists to prevent. The record's section 2 statement ('not one of them was run', scoped to write commands) is true and does not cover this.",
+      "suggested_disposition": "Report only (fixing product code is not part of this work package and is not authorised here). Correct the manifest's A05-3 entry or the reader path (route list_groups through the read-only reader), and add a mechanical post-run observation to the evidence: main-DB size+mtime, -wal size+mtime, and `PRAGMA data_version`/`total_changes` from a read-only connection, so 'no write' is observed rather than inferred from idempotence."
+    },
+    {
+      "id": "B-VR-BAR-02",
+      "severity": "P2",
+      "claim": "'85 real candidates, 0 with sections artifacts' is wrong: 19 of the 65 A05-5b entries are not documents but dayu-internal metadata ids harvested from nested JSON by a regex.",
+      "evidence": "_document_ids() (run_a05_readonly_manifest.py:53-61) matches every `\"document_id\": \"...\"` anywhere in the output. In the A05-2b stdout those extra values occur only as `metadata.dayu_meta.document_id` (19 occurrences = candidates_per_root.dayu_portfolio 19), e.g. fil_cn_54c0700088fc613ab3ef746391b5eea541a36c50; catalog document ids are urn:company-wiki:document:sha256:<64 hex>, so these cannot be document ids. Counts I recomputed: A05-5 attempts 20, A05-5b attempts 65, overlap 0, urn-shaped ids 46 -> distinct documents probed 66, exactly the candidates_seen recorded in b-ar-identity-hash.json. The substantive conclusion does hold for the real 66: every one answered exit 1 with 'no sections artifact for document_id' (my extra probe A05-5c shows the same fatal answer for a non-document id, so the CLI cannot distinguish the two cases).",
+      "impact": "A wrong metric that has already propagated: b-ar-record.md section 1 remark and section 4 F-BAR-5, findings.md (R4 section, 'sections coverage 0/85'), progress.md (line 10). Readers would conclude 85 documents were probed where 66 were, and the extra 19 attempts are evidence-free probes of values that are not documents.",
+      "suggested_disposition": "Change the wording to '66 distinct documents probed (85 invocations, 19 of them against non-document metadata.dayu_meta.document_id values)' in all three files, and make _document_ids() parse the JSON and take only top-level `document_id` values."
+    },
+    {
+      "id": "B-VR-BAR-03",
+      "severity": "P2",
+      "claim": "The execution exceeded the manifest it claims to have executed 'as written': an extra command, a query limit above the manifest's own cap, ~4x the invocation budget, and 85 retries against an explicit stop rule.",
+      "evidence": "command-manifest-readonly.json:34 (query '<=5 invocations, --limit <= 50 each'), :54 and :64 ('<= 6 invocations' for A05-4/A05-5), :98 (budget.max_invocations 25), :105 ('a command returns non-zero -> stop and record; do not retry with different flags'); evidence/a05-readonly-manifest-run.json: A05-2b = `query --document-kind annual_report --limit 100` with the runner's own note that it is 'added by the runner, not part of the manifest's command list'; attempts 10 (A05-4), 20 (A05-5), 1 (A05-4b), 65 (A05-5b) = 102 invocations including the 6 single-shot commands; A05-5/A05-5b are 85 consecutive non-zero results. The parameter that determines the evidence shape, candidate_limit 100, is not recorded as a parameter in the payload (only inferable from A05-2b's resolved_argv), which is why section 6's replay line reproduces different evidence (see B-VR-BAR-07).",
+      "impact": "The record's premise ('execute the read-only command manifest as written, as approved by the owner') is only partly true of what ran; the extra command and the retry strategy were never presented to the owner for approval. No data harm: everything stayed inside the read-only envelope and the catalog did not move.",
+      "suggested_disposition": "Disclose the four deviations explicitly in b-ar-record.md (extra command + parameter + attempt counts vs declared limits + stop-rule deviation) and either obtain owner ratification for them or strike A05-2b from the evidence; add the candidate_limit parameter to the payload and to section 6."
+    },
+    {
+      "id": "B-VR-BAR-04",
+      "severity": "P2",
+      "claim": "The 'independent identity re-derivation' half is a self-consistency check, not a re-derivation: for company_raw it compares the sidecar with the catalog row that was populated from that sidecar, and for the 3 dayu documents it compares nothing at all.",
+      "evidence": "b_ar_verify_identity_hash.py:168-181 compares each sidecar field with row['metadata']['acquisition'] (or acquisition['candidate']) - the scan-time copy of the same sidecar - so only drift is detectable; the genuinely independent anchors are the file bytes and the digest embedded in document_id, which I confirmed 6/6 against my own hashes. sidecar_absent: 3 and identity_agree: 3 show that the dayu documents had no identity comparison; the record itself says their identity is 'consistent with the catalog's path_ticker', and the recorded entity_methods are catalog path inferences (['company_raw_path'] x3, ['path_ticker'] / ['path_ticker','unresolved'] x3). Concrete consistent-but-wrong value: for the 周大生 investor-relations PDF (048bf062..., 82,325 B) the field security_id holds a company name (sha256_16 858512d639e77d9e), identical in sidecar and catalog.",
+      "impact": "b-ar-record.md sections 3/5 present 'independent re-derivation of identity and hash from the original' as achieved; the hash half is achieved, the identity half is not (3/6 documents unchecked, 3/6 only self-consistent). An identity error that exists consistently in both copies would pass this check.",
+      "suggested_disposition": "Reword the claim to 'content hash re-derived from raw bytes (independent); identity fields cross-checked against their own acquisition record (self-consistent, not independently re-derived; no check at all for the 3 dayu documents)'. If the acceptance criterion really needs identity re-derived from the document, that is a separate authorised step (parse the PDF's own title/company/period)."
+    },
+    {
+      "id": "B-VR-BAR-05",
+      "severity": "P2",
+      "claim": "Two dropbox-related statements are stronger than the evidence: the skipped candidates are sidecar JSON files rather than filings, and the hydration hazard is asserted as fact; and the hydration guard is keyed on path text rather than on the registered root.",
+      "evidence": "The 3 sampled dropbox_stock candidates are `...\\Dropbox\\Stock\\...\\*.pdf.source.json`, titles ending .pdf.source, byte_size 543/567/567, file_exists true, catalog observed_size equal to byte_size - i.e. ordinary small sidecar documents that the scanner also registered as annual_report rows; nothing captured establishes online-only placeholder state. F-BAR-4 nevertheless states that reading them 'would hydrate' a cloud placeholder. Separately, b_ar_verify_identity_hash.py:44 and :135 decide with `any(marker in str(path).lower() for marker in ('dropbox','onedrive','google drive','icloud'))` although the tool already has the real root_id ('dropbox_stock') from the location rows; a synced root mounted under a path without those words (different folder name, junction, short path) would be hashed and hydrated.",
+      "impact": "F-BAR-4 is presented as a capability boundary while it is an unverified premise (the conservative refusal is still correct), and the 'no hydration' protection is weaker than it reads - it can be bypassed by a path name, which is exactly the kind of silent side effect this work package is meant to exclude.",
+      "suggested_disposition": "Reword F-BAR-4 to 'not read by policy; placeholder state not verified'; key the skip on the root_id/root kind from config (fail closed for any root whose kind is a synced directory) instead of path substrings."
+    },
+    {
+      "id": "B-VR-BAR-06",
+      "severity": "P3",
+      "claim": "The verifier silently drops artifacts for every candidate whose document file it does not hash, so '10 artifacts hashed, 10/10 match' is not the artifact population of the sample; and one record claim cites a JSON that does not contain it.",
+      "evidence": "b_ar_verify_identity_hash.py:126-140 returns before artifact handling for file_missing / no_canonical_location / skipped_cloud_sync. From the raw A05-2b stdout those 4 documents (1 no-location + 3 cloud-skipped) have 8 artifact files: normalized 1157 + summary 2204; normalized 1188 + summary 2257; normalized 1284 + summary 2171; normalized 1284 + summary 2094 bytes - none of them appears in checks[].artifacts or in totals. Those artifact paths are under company-wiki/.source_catalog/derived/..., i.e. not in Dropbox, so they were hashable without hydration risk. b-ar-record.md section 4 F-BAR-1 cites 'b-ar-identity-hash.json's no_canonical_location entries' for the 1,157 B normalized artifact, but that JSON has no artifacts field for those rows; the number is in the raw A05-2b stdout.",
+      "impact": "The record's artifact coverage reads as complete for the sample when 8 known artifact files were never examined; the citation for a specific number points at the one file that cannot support it.",
+      "suggested_disposition": "Either verify artifacts independently of the document file's hashability, or record an explicit artifacts_skipped count with reasons, and fix the F-BAR-1 citation to the raw stdout row."
+    },
+    {
+      "id": "B-VR-BAR-07",
+      "severity": "P3",
+      "claim": "A quoted error string is wrong, and the documented replay command does not reproduce the evidence.",
+      "evidence": "A05-4's 9 failing attempts' stderr is {\"error\": \"no evidence matches the exact source or document identity\", \"error_type\": \"fatal\", \"retryable\": false, \"status\": \"failed\"} (evidence_query.py:397), not 'no evidence spans' as b-ar-record.md section 1 says. b-ar-record.md section 6 gives `run_a05_readonly_manifest.py --label round1`; the recorded run used --candidate-limit 100 (A05-2b resolved_argv `--limit 100`, A05-5b 65 attempts) while the runner's default is 25, and the payload stores no candidate_limit parameter - so a replay exactly as documented produces `query --document-kind annual_report --limit 25` with different hashes.",
+      "impact": "Minor factual misquote, plus a reproducibility trap: the next reviewer or operator following section 6 verbatim would get different evidence and might mistake the difference for drift.",
+      "suggested_disposition": "Correct the error string, record candidate_limit in the payload, and put --candidate-limit 100 into the section 6 replay line."
+    },
+    {
+      "id": "B-VR-BAR-08",
+      "severity": "P3",
+      "claim": "Section 5's coverage wording invites a stronger reading than the evidence supports ('4 real roots each with real candidates'), and it states the sample bound as size only.",
+      "evidence": "The 39/19/4/4 counts are exact, but the 4 dropbox_stock candidates are *.pdf.source.json sidecar documents (and 6 of the 46 annual_report rows are such sidecar entries), so the dropbox root contributed no filing candidate; the candidate pool is one arbitrary unfiltered page (20 rows, kinds news/investor_relations/other, zero overlap with the filing page) plus all 46 annual_report rows = 66 of 23,530 documents (0.28%); the 6 hashed documents are the lexicographically smallest document_id within each root (b_ar_verify_identity_hash.py:105-111), i.e. deterministic, not a random sample.",
+      "impact": "The record already says 'partial' and 'bounded sample', so this is a precision issue, not an overclaim of completion; but 'real candidates' for the dropbox root and 'sample enlarged (6 documents)' understate how narrow the pool is.",
+      "suggested_disposition": "Reword to 'catalog-level candidates exist for 4 roots by first location; filing bytes were verified only for company_raw and dayu_portfolio, on 6 documents chosen deterministically (smallest document_id per root) from a 66-candidate pool drawn from 23,530 documents'."
+    }
+  ],
+  "adjudication": "APPROVE_WITH_FINDINGS",
+  "adjudication_reason": "The evidence chain holds up under adversarial re-derivation and is reproducible: all 8 stdout side files hash exactly to the recorded sha256/byte counts, the inline stdout is a truthful 2000-character prefix, the two empty-output commands follow the stated no-side-file convention, and my own read-only rerun reproduced 9 of the 10 commands byte-for-byte (the 10th, size-report, differs only in the volatile disk_free_bytes field - reported above, not waved away). My own hashing of the original bytes confirms the core deliverable: 6/6 content digests equal the catalog claim, the derived JSON and the digest embedded in document_id (including the 79,925,886 B 紫金矿业 annual report, 01819e1c...e609cb28c2c405634a8f343d); 10/10 artifacts match; 14/14 sidecar identity fields agree; and the location rows' observed_size/observed_mtime_ns match the real files exactly for all 6 primary locations - a leg the audited tool did not check. Nothing in the production catalog moved (main DB size and mtime unchanged, -wal 0 B and untouched), so the 'user files unmodified' conclusion stands on the evidence I could take. What keeps this from a clean approval: the authorization chain is an OVERREACH (the executed set exceeds the manifest as written - an unlisted command with --limit 100 vs the manifest's <=50 cap, ~102 invocations vs a budget of 25, and 85 retries against the manifest's non-zero stop rule), the owner still has to confirm the bulk read-only reading, one P1 shows that an approved 'read-only' command reaches a write-capable code path, and two refuted numbers ('85 real candidates', the A05-4 error quote) plus a non-reproducing replay line have already propagated into findings.md and progress.md. Conditions to close: (1) owner answers the authorization question above and the record's authorization sentence is corrected either way; (2) the '85' figure and the error quote are fixed in b-ar-record.md, findings.md and progress.md; (3) section 6 gains --candidate-limit 100 and the payload records candidate_limit; (4) section 3/5 identity wording is qualified per B-VR-BAR-04; (5) B-VR-BAR-01 is carried forward as a product-side item (report only, no fix here). B.AR may not be recorded as passed, and B10 should not start, until (1) and (2) are done. No live P0: I found no path that makes 'no write command ran / user files unmodified' false on this catalog.",
+  "not_checked": [
+    "Whether the owner really said '继续做，直到全部完成' in the sense paraphrased, and whether the owner intended to approve the read-only subset wholesale - the session transcript is not in the repo and I did not read any session record; this is precisely why the authorization half is left to the owner.",
+    "Network egress during the run: no OS-level or proxy monitor. I only verified by reading the dispatched code paths that the seven executed command types contain no download/network call.",
+    "A same-size, same-mtime in-place write to the 49.7 GB catalog: stat cannot exclude it, and I did not hash the database (not authorised and far outside budget). What I can say is that a committed SQLite write would have moved -wal or the main DB mtime, and neither moved.",
+    "The 23,464 catalog documents outside the 66-candidate pool, and 60 of the 66 candidates: not verified (only 6 documents were hashed, by the audited run and independently by me).",
+    "The 3 dropbox_stock candidates' bytes: not read (hydration), so their catalog claims remain unverified - as the record states.",
+    "Semantic identity of any document against its own content: I did not parse any PDF, so I did not confirm that a file's text is the filing it is claimed to be; only the byte hash and the acquisition/sidecar metadata were checked.",
+    "The runtime-policy snapshot's semantics beyond its recorded hash/fields, and the correctness of the product code outside the read paths I inspected.",
+    "B08 level-2, the B09/B10 acceptance matrix as a whole, and every other item of the 2026-09-13 decision table.",
+    "Whether other concurrent sessions (I observed several python processes and -shm movement from another session at 21:09:32Z, right before my rerun) touched the catalog or the repos during my window - I attribute none of that movement to the audited run or to mine, and I did not audit those sessions."
+  ],
+  "side_effects_i_observed": {
+    "production_catalog_before": {
+      "captured_at_utc": "2026-09-16T21:09:52Z (immediately before my rerun; a first identical snapshot was taken at 21:08:05Z)",
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\",
+      "catalog.sqlite3": {"size": 49677344768, "mtime_utc": "2026-09-08T21:23:21.0727473Z", "mtime_ticks": 639244994010727473},
+      "catalog.sqlite3-shm": {"size": 32768, "mtime_utc": "2026-09-16T21:09:32.1733425Z", "mtime_ticks": 639251897721733425},
+      "catalog.sqlite3-wal": {"size": 0, "mtime_utc": "2026-09-16T20:44:52.2358389Z", "mtime_ticks": 639251882922358389}
+    },
+    "production_catalog_after": {
+      "captured_at_utc": "2026-09-16T21:15:57Z (after my rerun, which ran 21:09:52Z-21:15:5xZ; a final confirmation snapshot was taken at 21:16:39Z with the same values)",
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\",
+      "catalog.sqlite3": {"size": 49677344768, "mtime_utc": "2026-09-08T21:23:21.0727473Z", "mtime_ticks": 639244994010727473},
+      "catalog.sqlite3-shm": {"size": 32768, "mtime_utc": "2026-09-16T21:09:32.1733425Z", "mtime_ticks": 639251897721733425},
+      "catalog.sqlite3-wal": {"size": 0, "mtime_utc": "2026-09-16T20:44:52.2358389Z", "mtime_ticks": 639251882922358389}
+    },
+    "shm_note": "Main DB and -wal are bit-for-bit unchanged in size and mtime across the recorded run window AND my rerun window: catalog.sqlite3 has mtime 2026-09-08T21:23:21.0727473Z and size 49,677,344,768 B throughout, and -wal is 0 B with mtime 2026-09-16T20:44:52Z, which PREDATES the recorded run start (ran_at_utc 2026-09-16T20:48:14Z). The -shm moved once at 2026-09-16T21:09:32Z - 20 seconds BEFORE my first rerun invocation (21:09:52Z) and it did not move during or after my reruns; at 21:09:29Z I saw a python process (PID 21912) start in another session, and several concurrent python processes (2204, 21912, 9444, 23908, 5116, 20520, 22968, 6396, 23432, 24764) were live during my window, so I attribute that -shm movement to a concurrent session and, per G5, to neither party. My reruns touched no file in the repo, the run directory or the catalog (my writes are confined to %TEMP%\\barvr\\ and this review file). Disclosure: my rerun of `duplicates` exercised the same write-capable CatalogStore constructor described in B-VR-BAR-01; like the recorded run it produced no change to the catalog."
+  }
+}

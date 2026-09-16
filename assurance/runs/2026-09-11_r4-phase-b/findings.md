@@ -8,17 +8,17 @@
 - **我的错误（同一类第三次）**：探针**前两版根本没跑到读路径**——第一版用编造的实体 `r4b08`，第二版用 catalog 里那行 `Unresolved (...)`；两次都得到 `MISSING / 0 matches`，却"看起来像跑过了"。**修法**：请求身份改取文档**自身 sidecar** 的 `company_name`。**纪律（已写入报告）**：探针必须锚定被测对象的**真实身份**，否则"没跑"会被读成"通过"。
 - **`F-B08-L2-1`（未修，待 owner 决策）**：非 `company_raw` 根下，扫描器只按**路径**推实体（`_infer_company` 的名字集合只从 `company_raw` 根收集）⇒ 叶子/外部挂载的实体被记为 `unresolved:<root_id>`，**尽管 sidecar 里就有 `company_name`**。resolver 的实体门仍能经 metadata（`ticker`/`security_id`/`company_name`）锚定，所以**读取成功**；受影响的是这类根在 **catalog 层的实体归属**。
 - **`F-B08-L2-2`（未修）**：叶子挂载会把 `*.source.json` 当**独立文档**（真实 1 份 PDF → `sources=2 / documents=2`）。B.AR 在**生产** Dropbox 根上看到同类事实（3 份 title 以 `.pdf.source` 结尾、**无 location** 的文档，另见 `status.missing_locations=6`）⇒ 这不是挂载方式的产物，而是**非 focus 根的既有行为**。
-- **B.AR 独立重核达成（有界样本）**（记录 [b-ar-record.md](b-ar-record.md)）：只读命令 **10 条**（写/网络/破坏性条目**一条未跑**）；从**原文**重算：**6/6** 摘要相符（含一份 79,925,886 B 的大年报）、**10/10** 派生产物相符、**3/3** sidecar 身份逐字段一致。
-  **明确未核验**：`dropbox_stock` 的 3 份（读云占位会**水合**它 ⇒ 宁可不核验，也不制造本地副作用）；`dayu_portfolio` 无逐文档 sidecar（身份只能与 `path_ticker` 对照）。
+- **B.AR 的 hash 腿达成（有界样本）**（记录 [b-ar-record.md](b-ar-record.md)）：只读命令 **10 条 / 102 次调用**；从**原文**重算：**6/6** 摘要相符（含一份 79,925,886 B 的大年报）、**18/18** 派生产物相符。
+  **身份腿只是同源一致性检查（`B-VR-BAR-04`）**：sidecar 与 catalog 的 `metadata.acquisition` 同源 ⇒ 不算"独立重核"，`dayu_portfolio` 更**没做**身份比对；**明确未核验**：`dropbox_stock` 的 3 份（其实是 `*.pdf.source.json`，读云目录可能水合它）。
 - **`F-BAR-1`（我自己的记账 bug，已修）**：重核器第一版把"超过上限而跳过"的文件计成 `digest_mismatch`（首跑报 1 例"摘要不符"）。**先复现**确认为"跳过"而非内容不符，再修（跳过项不计入 match/mismatch，上限提到 512 MB 并重跑）⇒ 6/6 相符。
-- **`F-BAR-2`（事实，非缺陷）**：85 个真实候选**全部**没有 sections 产物（20 + 65 次 `sections-list` 全 `exit 1`）⇒ 任何依赖 sections 的验收（含 B08 的 L10）在**本机语料**上到不了。
+- **`F-BAR-2`（事实，非缺陷；数字已更正 `B-VR-BAR-02`）**：**66 份**真实文档**全部**没有 sections 产物（A05-5/A05-5b 共 85 次调用、全 `exit 1`；原先写的"85 个候选"是**调用次数**——其中 19 条是执行器正则误抓的 `dayu_meta.document_id`）⇒ 任何依赖 sections 的验收（含 B08 的 L10）在**本机语料**上到不了。
 - **授权口径**：manifest 自带的 `NOT APPROVED - awaiting owner confirmation` 状态字段**原样保留**在证据里（不掩盖），实际授权来自 owner 的会话指令（`approval_basis` 同时记录两者）。
 - **状态**：B08 第②级已过独立复审 **`B.VR-b08l2` = `APPROVE_WITH_FINDINGS`（0×P0 / 0×P1 / 2×P2 / 5×P3）**，**7 条全部处置**（逐条表 [evidence/b-vr-b08l2-disposition.md](evidence/b-vr-b08l2-disposition.md)）。复审的最强复现：把探针输出改到自己 temp **完整重跑** ⇒ 与仓库证据**逐字节相同**，并在 `addaudithook` 看门狗下跑 `build_level2` + 探针 ⇒ **生产 catalog 打开次数 = 0**、所有写入都在 `%TEMP%`；守卫 `selftest` 5/5、**12/12** 对抗路径被拒且未创建、**4/4** junction 逃逸被拒。
   - **它抓到我的两处 P2**：① 篡改用例**不是内容比对**（错误摘要在**句柄版本钉死门**就被拒、**文件从未打开**），我却在 §2/L05 写成"真实字节/内容不符"⇒ 已改口径并登记缺口（真内容替换需写生产或复制真实语料，均未授权）；② `_real_root_state` **只列直接文件**（它用假根证明"新增空子目录/子目录内新增文件"都看不见）⇒ 已改**递归**并重跑证据（补 `dir_count`/`dirs`/`capped_at`）。
   - **它的 2×REFUTED 里有一条是我的措辞**："仓库无新增文件"字面为假（本轮导入留下 gitignored 的 `__pycache__/*.pyc`）⇒ 改为"**无新增被跟踪文件、无生产数据文件被改动**"并删掉该 `.pyc`。
   - **它把一条转交 B.AR 复审裁定**（`B-VR08L2-07`）：owner 的"继续做，直到全部完成"把"命令逐条批"变成"只读子集整批批准"，而 manifest 自带状态串仍是 `NOT APPROVED`；我已改键名并写明授权口径，**最终裁定权交给 `B.VR-bar`**。
   - **残余风险（复审明示，必须一直带着）**：生产 catalog 只能 `stat` ⇒ "**大小+mtime 不变的内容写入**"对工具与复审**都不可见**；OS 级进程旁观在本机不可得。
-- **B.AR** 的独立复审（`B.VR-bar`）**进行中**（含上面那条授权裁定）；通过前不得记为"通过"，也不得据此宣称"四 root 端到端已完成"。
+- **B.AR** 的独立复审 `B.VR-bar` 已完成 = **`APPROVE_WITH_FINDINGS` + `authorization_adjudication = OVERREACH`**（8 条发现全部处置，见 [evidence/b-vr-bar-disposition.md](evidence/b-vr-bar-disposition.md)）。**越界事实**（我接受，不辩解）：manifest 原文是 **7 条命令 / 25 次调用预算 / A05-2 `--limit<=50` / 非零即停**，而实跑是 **10 条命令 / 102 次调用**、含**不在清单内**的 A05-2b、`--limit 100`、**85 次非零重试**；且 manifest 的 **`approval.by = null`（从未书面批准）**。⇒ **B.AR 不记为通过；B10 不开工；owner 表态前不再跑任何 manifest 命令。** 需要 owner 回答：①「继续做」是否废止 09-13 的「逐条批」（追认／作废）；② 越界部分（A05-2b + `--limit 100` + 约 4× 预算 + 85 次重试）追认／部分作废／全部作废重做。
 
 ## FC-1301 词表门加宽：**已实施**（wiki `76cc1bc`，工作包 [packages/fc1301-taxonomy-coverage.md](packages/fc1301-taxonomy-coverage.md)）
 

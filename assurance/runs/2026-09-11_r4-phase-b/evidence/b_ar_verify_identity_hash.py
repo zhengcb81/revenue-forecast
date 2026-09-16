@@ -42,6 +42,9 @@ RUN = HERE / "a05-readonly-manifest-run.json"
 A05_2 = "a05-readonly-manifest-run-A05-2-stdout.txt"
 A05_2B = "a05-readonly-manifest-run-A05-2b-stdout.txt"
 CLOUD_MARKERS = ("dropbox", "onedrive", "google drive", "icloud")
+# B-VR-BAR-05: the AUTHORITATIVE trigger is the registered root, not a path substring -
+# a renamed or junctioned cloud root would otherwise slip past the hydration guard.
+CLOUD_ROOT_IDS = ("dropbox_stock",)
 MAX_BYTES_PER_FILE = 512 * 1024 * 1024
 IDENTITY_FIELDS = ("company_name", "market", "security_id", "fiscal_year", "form_type",
                    "document_kind", "provider", "provider_document_id")
@@ -123,6 +126,15 @@ def main(argv: list[str]) -> int:
             "file_name_len": len(path.name) if path.name else 0,
             "file_exists": path.is_file(),
         }
+        entry["identity"] = {}
+        entry["artifacts"] = []
+        digest: str | None = None
+        hashed = False
+        # Recorded because the review showed these rows are sidecar-only documents, not
+        # filings: the classification must be checkable from the evidence, not asserted.
+        entry["title_ends_with_dot_source"] = str(row.get("title") or "").endswith(".source")
+
+        # --- the file leg (hash) -------------------------------------------------
         if not entry["file_exists"]:
             # A document with no location at all is not a "missing file": the catalog
             # knows no path for it (the A05 output has such rows - sidecar-only entries
@@ -130,58 +142,75 @@ def main(argv: list[str]) -> int:
             entry["status"] = ("no_canonical_location" if not str(row.get("canonical_path") or "")
                                else "file_missing")
             totals[entry["status"]] += 1
-            checks.append(entry)
-            continue
-        if any(marker in str(path).lower() for marker in CLOUD_MARKERS):
-            entry["status"] = "skipped_cloud_sync"
-            entry["note"] = "not hashed: reading a synced placeholder would hydrate it"
-            totals["skipped_cloud_sync"] += 1
-            checks.append(entry)
-            continue
-        digest, read, status = _sha256_file(path)
-        entry["status"] = status
-        entry["file_size_on_disk"] = read
-        entry["disk_sha256"] = digest
-        totals[status] += 1
-        if status != "hashed":
-            # An over-cap file has NO digest: it must not be tallied as a mismatch.
-            entry["size_matches_catalog"] = None
-            entry["digest_matches_catalog"] = None
-            checks.append(entry)
-            continue
-        entry["bytes_read"] = read
-        entry["size_matches_catalog"] = (read == entry["catalog_byte_size"])
-        entry["digest_matches_catalog"] = (digest == entry["catalog_content_sha256"])
-        totals["digest_match" if entry["digest_matches_catalog"] else "digest_mismatch"] += 1
+        else:
+            # B-VR-BAR-05: the hydration guard keyed on PATH SUBSTRINGS only, so a
+            # differently named (or junctioned) cloud root would slip past it.  The
+            # registered `root_id` is the authoritative signal; the path markers stay as
+            # a second, weaker trigger, and WHICH one fired is recorded.
+            by_root_id = root_id in CLOUD_ROOT_IDS
+            by_path = any(marker in str(path).lower() for marker in CLOUD_MARKERS)
+            if by_root_id or by_path:
+                entry["status"] = "skipped_cloud_sync"
+                entry["skip_trigger"] = ("root_id" if by_root_id else "path_marker")
+                entry["note"] = ("not hashed: the row's root lives in a cloud-synced folder "
+                                 "and reading a placeholder could hydrate it (placeholder "
+                                 "state itself is NOT verified here)")
+                totals["skipped_cloud_sync"] += 1
+            else:
+                digest, read, status = _sha256_file(path)
+                entry["status"] = status
+                entry["file_size_on_disk"] = read
+                entry["disk_sha256"] = digest
+                totals[status] += 1
+                if status == "hashed":
+                    hashed = True
+                    entry["bytes_read"] = read
+                    entry["size_matches_catalog"] = (read == entry["catalog_byte_size"])
+                    entry["digest_matches_catalog"] = (
+                        digest == entry["catalog_content_sha256"])
+                    totals["digest_match" if entry["digest_matches_catalog"]
+                           else "digest_mismatch"] += 1
+                else:
+                    # An over-cap file has NO digest: it must not be tallied as a mismatch.
+                    entry["size_matches_catalog"] = None
+                    entry["digest_matches_catalog"] = None
 
-        # identity: the sidecar next to the original file, not the catalog's word for it
-        sidecar = path.with_name(path.name + ".source.json")
-        entry["sidecar_exists"] = sidecar.is_file()
-        totals["sidecar_present" if entry["sidecar_exists"] else "sidecar_absent"] += 1
-        entry["identity"] = {}
-        if sidecar.is_file():
-            try:
-                sidecar_data = json.loads(sidecar.read_text(encoding="utf-8"))
-            except (OSError, ValueError) as exc:
-                entry["sidecar_error"] = type(exc).__name__
-                sidecar_data = {}
-            acquisition = (row.get("metadata") or {}).get("acquisition") or {}
-            candidate = sidecar_data.get("candidate") or {}
-            for field in IDENTITY_FIELDS:
-                from_sidecar = sidecar_data.get(field, candidate.get(field))
-                from_catalog = acquisition.get(field, (acquisition.get("candidate") or {}).get(field))
-                if from_sidecar is None and from_catalog is None:
-                    continue
-                entry["identity"][field] = {
-                    "sidecar_sha256_16": (hashlib.sha256(str(from_sidecar).encode("utf-8"))
-                                          .hexdigest()[:16] if from_sidecar is not None else None),
-                    "catalog_sha256_16": (hashlib.sha256(str(from_catalog).encode("utf-8"))
-                                          .hexdigest()[:16] if from_catalog is not None else None),
+        # --- the identity leg (always attempted; digest comparison needs the hash) --
+        # B-VR-BAR-04: the sidecar and the catalog's `metadata.acquisition` are the SAME
+        # SOURCE (the scanner copied one from the other), so this is a CONSISTENCY check,
+        # not an independent re-derivation of identity.  Recorded as such on purpose.
+        if entry["file_exists"]:
+            sidecar = path.with_name(path.name + ".source.json")
+            entry["sidecar_exists"] = sidecar.is_file()
+            totals["sidecar_present" if entry["sidecar_exists"] else "sidecar_absent"] += 1
+            if sidecar.is_file():
+                try:
+                    sidecar_data = json.loads(sidecar.read_text(encoding="utf-8"))
+                except (OSError, ValueError) as exc:
+                    entry["sidecar_error"] = type(exc).__name__
+                    sidecar_data = {}
+                acquisition = (row.get("metadata") or {}).get("acquisition") or {}
+                candidate = sidecar_data.get("candidate") or {}
+                for field in IDENTITY_FIELDS:
+                    from_sidecar = sidecar_data.get(field, candidate.get(field))
+                    from_catalog = acquisition.get(
+                        field, (acquisition.get("candidate") or {}).get(field))
+                    if from_sidecar is None and from_catalog is None:
+                        continue
+                    entry["identity"][field] = {
+                        "sidecar_sha256_16": (hashlib.sha256(str(from_sidecar).encode("utf-8"))
+                                              .hexdigest()[:16] if from_sidecar is not None else None),
+                        "catalog_sha256_16": (hashlib.sha256(str(from_catalog).encode("utf-8"))
+                                              .hexdigest()[:16] if from_catalog is not None else None),
                     "agree": str(from_sidecar) == str(from_catalog),
                 }
-            totals["identity_agree" if entry["identity"] and all(
-                item["agree"] for item in entry["identity"].values())
-                else "identity_disagree_or_empty"] += 1
+            if entry["identity"]:
+                totals["identity_fields_agree" if all(
+                    item["agree"] for item in entry["identity"].values())
+                    else "identity_fields_disagree"] += 1
+            else:
+                # No sidecar (or no file): NOT a disagreement - nothing to compare.
+                totals["identity_not_comparable"] += 1
             # the sidecar's own digest for the ORIGINAL bytes must equal the file digest
             sidecar_claim = sidecar_data.get("content_sha256")
             entry["sidecar_content_sha256_matches_disk"] = (
@@ -219,9 +248,12 @@ def main(argv: list[str]) -> int:
 
     payload = {
         "tool": "b_ar_verify_identity_hash.py",
-        "note": ("B.AR/B09: identity and hash re-derived from the ORIGINAL files, read-only. "
-                 "The production catalog database was never opened; the catalog's claims "
-                 "come from the captured read-only CLI output in this directory."),
+        "note": ("B.AR/B09: the HASH leg is re-derived from the ORIGINAL files, read-only. "
+                 "The IDENTITY leg compares the sidecar with the catalog's "
+                 "metadata.acquisition, which the scanner copied FROM that sidecar: it is a "
+                 "CONSISTENCY check, not an independent re-derivation of identity "
+                 "(B-VR-BAR-04). The production catalog database was never opened; the "
+                 "catalog's claims come from the captured read-only CLI output here."),
         "source_run": {"manifest_id": run.get("manifest_id"),
                        "manifest_status_at_run": run.get("manifest_status_at_run"),
                        "approval_basis": run.get("approval_basis"),

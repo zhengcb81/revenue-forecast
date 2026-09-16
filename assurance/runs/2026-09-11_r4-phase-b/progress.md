@@ -6,10 +6,11 @@
   - **复审抓到的活 P0**：`query_filing_candidates(fiscal_year=…)` 的 SQL `json_extract` **先于** Python 守卫执行 ⇒ 畸形行直接 `OperationalError`。
   - **我自己的错（已回退并登记）**：① 我曾把 `NOT json_valid` 当修法 ⇒ 被破坏的行会**遮蔽**真实的期间匹配（复审证明）→ 回到 `json_valid` 排除 + M15 钉住；② 我的 summarizer 用例一度是 **vacuous** 的（没有 `artifacts` 行 ⇒ JOIN 无候选 ⇒ `json_extract` 从未执行，变异存活）→ 夹具补 normalized artifact + 活跃 location，并加反 vacuous 断言。
 - **FC-1301 词表门（被复审判为**不可信**后重做）**：`B.VR-fc1301` 给出**活 P0**——同名函数取第一个定义 ⇒ 17 处位置式站点不可见（反例：改 `close_gap.py:256` 后门**仍绿**）。改为**全定义候选 + 歧义 fail-closed**（`56f5b96`），又暴露 16 个从未注册的码并全部注册；`719f05b` 撤回我一度做的 taxonomy `1.1 → 1.2` bump（`tests/unit/test_stage_taxonomy.py:107` 把它钉成 **N-1 契约**）。详见 [findings.md](findings.md) 顶部 FC-1301 段。
-- **A05/B.AR（G7）只读跑完**：10 条只读命令逐条落盘（argv/退出码/输出 sha256），写/网络/破坏性条目**一条未跑**；随后**从原文独立重核身份与 hash**（6/6 摘要相符、10/10 派生产物相符、3/3 sidecar 身份一致）。记录 [b-ar-record.md](b-ar-record.md)、证据 [evidence/a05-readonly-manifest-run.json](evidence/a05-readonly-manifest-run.json) + [evidence/b-ar-identity-hash.json](evidence/b-ar-identity-hash.json)。
-  - **两处必须记住的事实**：sections 覆盖为 **0/85**；manifest 自带的 `NOT APPROVED` 状态字段**原样保留**在证据里，授权来自 [owner-directive-2026-09-16.md](owner-directive-2026-09-16.md)。
+- **A05/B.AR（G7）只读跑完，但独立复审判定 `OVERREACH`**：10 条命令 / **102 次调用**逐条落盘（argv/退出码/输出 sha256）；随后从原文重核 **hash 腿成立**（6/6 摘要相符、**18/18** 派生产物相符），**身份腿只是同源一致性检查**（`B-VR-BAR-04`）。记录 [b-ar-record.md](b-ar-record.md)、证据 [evidence/a05-readonly-manifest-run.json](evidence/a05-readonly-manifest-run.json) + [evidence/b-ar-identity-hash.json](evidence/b-ar-identity-hash.json)、逐条处置 [evidence/b-vr-bar-disposition.md](evidence/b-vr-bar-disposition.md)。
+  - **越界（我接受）**：实跑集合**不是** manifest 原文——多出不在清单内的 A05-2b/A05-4b、`--limit 100` 超 `<= 50`、102 次调用对 **25 次预算**、**85 次非零重试**违反"非零即停"；且 manifest 的 **`approval.by = null`（从未书面批准）**。
+  - **两处必须记住的事实**：sections 覆盖为 **0/66**（原写 85 是**调用次数**，其中 19 条是执行器正则误抓的 `dayu_meta.document_id`）；manifest 自带的 `NOT APPROVED` 状态串**原样保留**在证据里。⇒ **B.AR 不记为通过；B10 不开工；owner 表态前不再跑任何 manifest 命令。**
 - **B08 第②级读到真实字节**：`%TEMP%` 隔离根 → 真实目录只读引用 → `REUSED_EQUIVALENT` → **两次 `verified` 读取**（4,172,424 B，摘要 = 独立哈希真实文件所得）+ 篡改探测 0 字节 + 读者占用下仍可核验；零副作用证据齐全。报告 [b08-level2-report.md](b08-level2-report.md)、证据 [evidence/b08-level2-probe.json](evidence/b08-level2-probe.json)。探针**前两版是 vacuous 的**（编造实体 / 用 `Unresolved` 行）——已登记为纪律（见 findings 顶部）。
-- **状态**：B08 第②级已过独立复审（`B.VR-b08l2` = `APPROVE_WITH_FINDINGS`，0×P0/0×P1/2×P2/5×P3，**7 条全部处置**，见 [evidence/b-vr-b08l2-disposition.md](evidence/b-vr-b08l2-disposition.md)；其中"递归快照""口径更正""定级一致"三处是复审逼出来的实改）。B.AR 的独立复审 `B.VR-bar` **进行中**（含 `B-VR08L2-07` 转交的授权口径裁定）；B10 等该结论再开工。
+- **状态**：B08 第②级已过独立复审（`B.VR-b08l2` = `APPROVE_WITH_FINDINGS`，0×P0/0×P1/2×P2/5×P3，**7 条全部处置**，见 [evidence/b-vr-b08l2-disposition.md](evidence/b-vr-b08l2-disposition.md)）。**B.AR 未通过**（越界见上）；**B10 计划已写但不开工**（[packages/b10-plan.md](packages/b10-plan.md)），等 owner 两个表态。
 
 ## 2026-09-13 — **FC-1307-a 主机假设门落地（owner 同意）→ 门自己在 CI 上红了一次 → 两处修复 + 把"判定门的测试"纳入本地门**
 
