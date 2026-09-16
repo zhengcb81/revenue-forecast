@@ -100,12 +100,14 @@
 
 ## 8. 状态与下一步
 
-**提交与 CI**（本轮小阶段收口）：
+**提交与 CI**（本轮小阶段收口，**已核对**）：
 
 | 仓 | 提交 | 远端 CI |
 |---|---|---|
-| company-wiki | `b829b03`（增量本体）、`c4a69e0`（门补洞 + M7） | **`c4a69e0` on `master` = success**，6/6 job 全绿（`test (3.11)`/`test (3.12)`/`test (3.13)`/`cli-smoke`/`markdown-lint`/`secret-scan`）；`fcap` 亦已推送 |
-| revenue-forecast | `1dc4c3b`（侦察）、`36084a3`（增量证据）、`cfe4ccc`（门补洞证据） | **`cfe4ccc` = success**（`main` 与 `fcap` 双绿） |
+| company-wiki | `b829b03`（增量本体）、`c4a69e0`（门补洞 + M7）、`d92bb33`（棘轮② + 边界）、**`e36b984`（P1 修正 + 钉住）** | **`e36b984` on `master` = success**；`fcap` 同步（`c4a69e0` 亦为 success，6/6 job） |
+| revenue-forecast | `1dc4c3b`、`36084a3`、`cfe4ccc`、`022f481`、**`144345b`（复审记录 + 处置）** | **`144345b` = success（`main` 与 `fcap` 双绿）** |
+
+**本地两个 CI 步骤**见 §5（unit 787；contract 1900 passed / 8 skipped，口径已注明）。**独立复审**见 §7（`APPROVE_WITH_FINDINGS`，P1 已修，其余 6 条登记为下次第一批）。
 
 - 本增量 = **B10-1 + B10-2 + B10-4 的门部分**；**未**声明 B10 整体完成。
 - **⚠️ 独立复审尚未执行**（`B.VR-b10` 未派）。因此本增量目前的状态是"**已实施 + 本地两步 CI 绿 + 远端 CI 绿 + 变异 7/7**"，**不是**"已通过"。
