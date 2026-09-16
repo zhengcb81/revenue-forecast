@@ -37,6 +37,15 @@
 | M4 | 让 claim-level adapter 开始读字节 | KILLED（assertion，见 §4 的"M4 存活"事故） |
 | M5 | 注册表条目丢掉 `removal_condition` | KILLED（assertion） |
 | M6 | 注册表指向不存在的符号 | KILLED（assertion） |
+| **M7** | 在 **`adapters/` 子目录**里新增一个直接读取者 | **KILLED（assertion）** —— 见 §4 第 4 条：这正是我第一版扫描**看不见**的位置 |
+
+## 3bis. 门自己的一个洞（我自己找到并修掉）
+
+- **洞**：`_scan_confirmed_direct_readers()` 第一版用 `SOURCE.glob("*.py")`（**不递归**），而
+  `src/company_wiki/source_catalog/` 下还有一个 **`adapters/` 子目录（8 个模块）** ⇒ 在那里新增一个直接读取者**不会**触发棘轮。
+- **为什么会出现**：侦察工具用的是 `rglob`（覆盖了子目录、结论没受影响），但我在写门时把"目录里的模块"理解成了"目录下的模块"。
+- **修法**：扫描改 `rglob`，键改为**相对路径**（`adapters/parity.py::symbol`）以免不同目录同名文件互相碰撞；并加 **M7** 变异把这个位置钉住。
+- **验证**：修后 7/7 通过、M7 被 assertion 杀死；现基线（9 条）与递归扫描结果**完全一致**（`adapters/` 里确实没有直接读取者，但这不再是"运气"，而是**被测过**的）。
 
 ## 4. 我自己犯的两处错 + 一处**事故**（全部登记）
 

@@ -113,6 +113,16 @@ MUTANTS: list[dict] = [
                     "    \"company_wiki.source_catalog.reader.ReadOnlyCatalogReader."
                     "bundle_typo\": {"),
     },
+    {
+        "id": "M7",
+        "file": "src/company_wiki/source_catalog/adapters/parity.py",
+        "test": "test_b10_no_new_confirmed_direct_reader",
+        "why": ("a NEW direct reader appears in the adapters/ SUBDIRECTORY - the case the "
+                "first non-recursive scan could not see"),
+        "append": ("\n\ndef _b10_mutation_probe(row):\n"
+                   "    \"\"\"Only exists while this mutant is in place.\"\"\"\n"
+                   "    return json.loads(row[\"metadata_json\"] or \"{}\")\n"),
+    },
 ]
 
 
@@ -129,13 +139,21 @@ def main(argv: list[str]) -> int:
         for mutant in MUTANTS:
             path = copy / mutant["file"]
             text = path.read_text(encoding="utf-8")
-            old, new = mutant["replace"]
-            if text.count(old) != 1:
+            if "append" in mutant:
+                # Appending needs no anchor and works on files whose content is unknown to
+                # this harness - which is what makes the adapters/ mutant expressible.
+                mutated = text + mutant["append"]
+                applied = True
+            else:
+                old, new = mutant["replace"]
+                applied = text.count(old) == 1
+                mutated = text.replace(old, new)
+            if not applied:
                 results.append({"id": mutant["id"], "applied": False,
-                                "detail": f"anchor found {text.count(old)} times",
+                                "detail": f"anchor found {text.count(mutant['replace'][0])} times",
                                 "killed": None})
                 continue
-            path.write_text(text.replace(old, new), encoding="utf-8", newline="")
+            path.write_text(mutated, encoding="utf-8", newline="")
             proc = subprocess.run(
                 [sys.executable, "-m", "pytest", TEST_REL, "-q", "-k", mutant["test"],
                  "-p", "no:cacheprovider"],
