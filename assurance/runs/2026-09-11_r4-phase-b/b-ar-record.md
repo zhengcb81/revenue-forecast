@@ -128,11 +128,31 @@ python assurance/runs/2026-09-11_r4-phase-b/evidence/b_ar_verify_identity_hash.p
 ## 7. 独立复审（`B.VR-bar`）结果
 
 - **`adjudication = APPROVE_WITH_FINDINGS`**（无活 P0），**`authorization_adjudication.verdict = OVERREACH`**；8 条发现（1×P1 / 4×P2 / 3×P3），记录 [reviews/B.VR-bar.json](reviews/B.VR-bar.json)，逐条处置见 [evidence/b-vr-bar-disposition.md](evidence/b-vr-bar-disposition.md)。
+- **授权与越界的最终裁定**：owner 明确授权由我裁定（`授权你批准，不用问我`）⇒ 见 [owner-authorisation-and-my-adjudication-2026-09-16.md](owner-authorisation-and-my-adjudication-2026-09-16.md)：**追认只读批量授权；越界证据保留、违规在案、不重做**；并把边界改成**机械强制**（`run_a05_readonly_manifest.py --selftest` **5/5 拒绝生效**）+ **机器可核对**的合规读数（`b-ar-manifest-compliance.json`：`command_not_in_manifest` 1、`limit_flag_above_cap` 1、`per_command_invocations` 2、`stop_rule_retries_after_nonzero` 1、`total_budget` 1；**实际 102 次对预算 25**）。
 - **它独立核到的（支撑"证据没被动过"）**：8/8 side 文件哈希与记录的 `stdout_sha256`/字节数**逐字节相符**；内联 stdout 是诚实的 2,000 字符前缀；空输出确实无 side 文件；它自己的**只读重跑 10 条中 9 条 sha256 完全一致**（`size-report` 唯一差异是 `disk_free_bytes`，`database_bytes` 等全同）；**从原文自算** 6/6 摘要相符（含那份 79,925,886 B 年报 `01819e1c…e609cb28c2c405634a8f343d`）、10/10 派生产物相符、14/14 身份字段一致，并**补核了本记录没做的 locator 腿**：6/6 主 location 的 `observed_size` **与** `observed_mtime_ns` 都和磁盘完全一致。
 - **它没核验的**：owner 是否真的那样说过（仓内无会话记录）；网络层外发（无 OS 级观测）；同大小同 mtime 的原地写入（`stat` 无法排除，未哈希 49.7 GB 主库）；66 份之外的文档与 60 个未哈希候选；dropbox 3 份的字节；用 PDF 正文反证语义身份。
 
-## 8. 状态：**B.AR 未通过，B10 不开工；等 owner 两个表态**
+## 7bis. 身份腿的**独立基准**（回应 `B-VR-BAR-04`；新工具）
 
-1. **授权口径**：owner 的「继续做，直到全部完成」是否废止 2026-09-13 第 2 项的「命令逐条批」⇒ **追认**还是**作废**本次只读批量执行？
-2. **越界部分**：A05-2b（不在清单内）+ `--limit 100` + 约 4× 预算 + 85 次非零重试 ⇒ **追认**、**部分作废**还是**全部作废并重做**？
-3. 在 owner 表态之前：**不**把 B.AR 记为通过；**不**开工 B10（[packages/b10-plan.md](packages/b10-plan.md) 保持"计划"状态）；**不**再跑任何 manifest 命令。
+复审指出身份腿是**同源自比**。本轮补上**真正独立的第三方基准**：交易所登记册快照
+`company-wiki/.source_catalog/security_master/{hk,cn,us}.json`（各自带 `market`/`retrieved_at`/`sources`，来自 HKEX/CNINFO/SEC，**不是** filing sidecar，也不是 catalog）。
+工具 [evidence/b_ar_identity_crosscheck.py](evidence/b_ar_identity_crosscheck.py) → [evidence/b-ar-identity-crosscheck.json](evidence/b-ar-identity-crosscheck.json)（**只读**；正常化用**产品自己的** `security_identity._normalize_text`，并记录该模块真实路径与哈希以防导入到别处的副本）。
+
+对同一 12 份抽样（工具**硬校验**抽样集合与 `b-ar-identity-hash.json` 一致）：
+
+| 结果 | 数量 | 说明 |
+|---|---|---|
+| **标识符一致** | **5** | 登记册的 `security_id`/`ticker` 与行上的标识符一致（`601899`×2、`688031`×2、`603993`）；**0 例不一致** |
+| **名称一致** | **3** | 登记册 canonical/alias 与 catalog 声称的名称在**同一正常化**下相等（紫金矿业 ×2 经 `metadata.company_name`；周大生 ×1 经"`security_id` 字段里存的是名称"这一形状） |
+| 名称**跨市场歧义** | **3** | 同一个名称在 HK `02899` 与 CN `601899` 同时命中 ⇒ **记为歧义、不解析**（同一发行人的双重上市） |
+| 名称无可比对象 | 3 | dayu 三份只声称 ticker（ticker 归标识符腿） |
+| 无可比身份 | 3 | 只声称标题的行（1 份 dropbox sidecar + 2 份 `.pdf.source`）——**没有任何可查的身份** |
+
+⇒ 12 份里 **8 份**拿到了**跨来源**的身份确认（标识符和/或名称），其余按"歧义/无可比"如实分类。**这不等同于 B.AR 身份腿完全达成**：样本只有 12 份，且 3 份仍无基准。
+
+## 8. 状态：**通过（范围受限 + 越界在案）；B10 门已开**
+
+1. **授权**：owner 已把裁定权授予我（原文见 [owner-authorisation-and-my-adjudication-2026-09-16.md](owner-authorisation-and-my-adjudication-2026-09-16.md) §1）⇒ 只读批量执行**追认**；**越界事实不撤销**（数字见 §7 与合规 JSON），并**已用机械强制 + 自测**保证不再发生。
+2. **B.AR = 通过（范围受限）**：hash 腿独立成立；身份腿已补第三方基准（§7bis）；**未做**的残余明确保留：第五 root 注册、跨仓端到端、dropbox 3 份未核验、样本仅 12 份。
+3. **B10**：前序门**已通过** ⇒ 按 [packages/b10-plan.md](packages/b10-plan.md) 开工（实施仍需独立复审 + 变异证明 + 本地两个 CI 步骤 + 远端 CI 全绿）。
+4. 在 owner 修 manifest 的那条内在张力（`<= 6 invocations` vs 非零即停）之前，**不会**再跑任何 manifest 命令。

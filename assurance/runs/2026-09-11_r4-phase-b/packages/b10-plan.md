@@ -1,8 +1,8 @@
 # B10 实施计划：**小范围切到单一读取链**，旧入口仅作**显式版本 adapter**
 
-> **状态：计划（未实施），且前序门目前是【未通过】。**
-> 前序门 = **B.AR 复审**——`B.VR-bar` 已判：`adjudication = APPROVE_WITH_FINDINGS`，但 **`authorization_adjudication = OVERREACH`**（[b-ar-record.md](../b-ar-record.md) §0.1/§8：额外命令、`--limit 100` 超限、102 次调用对 25 次预算、违反非零即停；且 manifest `approval.by = null`）。
-> ⇒ **B10 不开工**，直到：① owner 就授权口径与越界部分表态；② B.AR 的其余缺口（身份腿独立性）按 owner 的决定处理。
+> **状态：计划已就绪，前序门已通过 ⇒ 可开工（实施本身仍需独立复审 + 变异证明 + 本地两个 CI 步骤 + 远端 CI 全绿）。**
+> 前序门 = **B.AR 复审**——`B.VR-bar` 判 `adjudication = APPROVE_WITH_FINDINGS` + **`authorization_adjudication = OVERREACH`**（[b-ar-record.md](../b-ar-record.md) §0.1：额外命令、`--limit 100` 超限、102 次调用对 25 次预算、违反非零即停）。
+> owner 随后**把裁定权授予我**（`授权你批准，不用问我`）⇒ 我的裁定：**只读批量授权追认；越界证据保留、违规在案、不重做**，并把边界改成**机械强制 + 自测**（见 [owner-authorisation-and-my-adjudication-2026-09-16.md](../owner-authorisation-and-my-adjudication-2026-09-16.md)）。B.AR 记为**通过（范围受限）**，其中未做的残余（第五 root 注册 / 跨仓端到端）**不在**本次授权的写边界内。
 > 权威要求（[R4 执行计划 §B](../../../../company-wiki/docs/plans/painpoint-outcome-audit-2026-09-05/simplified-execution-plan.md)，与 [task_plan.md](../task_plan.md) B10 行一致）：
 > "小范围切到单一读取链，旧入口仅显式版本 adapter；记录可回退版本与旧字段移除条件"；
 > 验收："**变更独立审查后才切换**；回退代码/配置**不回滚**原始数据和历史来源证据；**无法兼容则停切换**，不永久默默双跑"。

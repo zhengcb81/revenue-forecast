@@ -29,6 +29,184 @@ DEFAULT_OUT = HERE / "a05-readonly-manifest-run.json"
 WIKI = Path(r"C:\Users\郑曾波\Projects\company-wiki")
 
 
+class Bounds:
+    """The manifest's OWN limits, as executable refusals (owner-authorised, 2026-09-16).
+
+    The first execution of this manifest exceeded its own bounds - an extra command that
+    was never in the list, `--limit 100` against "--limit <= 50 each", 102 invocations
+    against `budget.max_invocations = 25`, and 85 consecutive non-zero retries against
+    "a command returns non-zero -> stop and record".  None of that harmed the production
+    catalog (main DB and -wal unchanged; an independent reviewer reproduced 9/10 command
+    outputs byte-for-byte), but a limit that is only written down is not a limit.  This
+    class turns each one into a refusal, and `selftest` proves every refusal fires.
+    """
+
+    def __init__(self, manifest: dict):
+        self.commands = manifest.get("commands") or []
+        self.allowed = [tuple(entry.get("argv") or ()) for entry in self.commands]
+        self.per_command_cap = {entry["id"]: _parse_invocation_cap(str(entry.get("limit") or ""))
+                                for entry in self.commands}
+        self.max_limit_flag = _parse_limit_flag(manifest)
+        self.max_invocations = int((manifest.get("budget") or {}).get("max_invocations") or 0)
+        self.stop_on_non_zero = True
+        self.used: dict[str, int] = {}
+        self.total = 0
+        self.violations: list[str] = []
+
+    def _matches_template(self, argv: list[str]) -> bool:
+        """Template-aware: `<doc>` is a slot, and so is the VALUE after `--limit`.
+
+        The `--limit` value must be a wildcard, otherwise the template pins it (the
+        manifest writes `query --limit 20`) and the dedicated `--limit <= 50` guard below
+        can never fire - which is what the first selftest run exposed: its `--limit 100`
+        case was refused by the template comparison, so the cap check was dead code.
+        """
+        for template in self.allowed:
+            if len(template) != len(argv):
+                continue
+            matched = True
+            for index, (expected, actual) in enumerate(zip(template, argv)):
+                if expected == actual or expected == "<doc>":
+                    continue
+                if index >= 1 and template[index - 1] == "--limit":
+                    continue  # bounded wildcard; the cap guard owns this position
+                matched = False
+                break
+            if matched:
+                return True
+        return False
+
+    def check(self, command_id: str, argv: list[str]) -> None:
+        """Refuse anything the manifest does not allow.  Raises SystemExit on violation."""
+        if not self._matches_template(argv):
+            raise SystemExit(f"refusing argv not in the manifest command list: {argv}")
+        for index, part in enumerate(argv):
+            if part == "--limit":
+                value = int(argv[index + 1])
+                if value > self.max_limit_flag:
+                    raise SystemExit(
+                        f"refusing --limit {value}: the manifest allows <= {self.max_limit_flag}")
+        cap = self.per_command_cap.get(command_id)
+        if cap is not None and self.used.get(command_id, 0) + 1 > cap:
+            raise SystemExit(
+                f"refusing invocation {self.used.get(command_id, 0) + 1} of {command_id}: "
+                f"the manifest allows {cap}")
+        if self.max_invocations and self.total + 1 > self.max_invocations:
+            raise SystemExit(
+                f"refusing invocation {self.total + 1}: budget.max_invocations is "
+                f"{self.max_invocations}")
+
+    def charge(self, command_id: str) -> None:
+        self.used[command_id] = self.used.get(command_id, 0) + 1
+        self.total += 1
+
+    def on_exit(self, command_id: str, exit_code: int) -> None:
+        """The manifest's stop rule, applied LITERALLY.
+
+        Note the manifest's internal tension, registered rather than smoothed over: the
+        same table gives A05-4/A05-5 "<= 6 invocations" while the stop rule says a non-zero
+        exit stops the run.  Literal wins here - a stop rule that is quietly relaxed is how
+        the 85-retry run happened.  Which rule bound the run is recorded in the evidence.
+        """
+        if self.stop_on_non_zero and exit_code != 0:
+            raise SystemExit(
+                f"stopping: {command_id} returned non-zero ({exit_code}); the manifest's "
+                f"stop rule forbids retrying with different flags")
+
+
+def _parse_invocation_cap(text: str) -> int | None:
+    """'single invocation' -> 1; '<= 6 invocations, one per sample' -> 6; else None."""
+    import re
+
+    lowered = text.lower()
+    if "single invocation" in lowered:
+        return 1
+    match = re.search(r"<=\s*(\d+)\s*invocations", lowered)
+    return int(match.group(1)) if match else None
+
+
+def _parse_limit_flag(manifest: dict) -> int:
+    """'--limit <= 50 each (no full scan)' -> 50.  Defaults to 0 (no --limit allowed)."""
+    import re
+
+    for entry in manifest.get("commands") or []:
+        match = re.search(r"--limit\s*<=\s*(\d+)", str(entry.get("limit") or ""))
+        if match:
+            return int(match.group(1))
+    return 0
+
+
+def _selftest() -> int:
+    """Prove every refusal fires.  A limit that cannot be shown to refuse is not a limit."""
+    manifest = json.loads(DEFAULT_MANIFEST.read_text(encoding="utf-8"))
+    cases: list[tuple[str, str, list[str], str | None]] = [
+        ("argv absent from the manifest", "A05-2", ["query", "--document-kind", "x", "--limit", "5"],
+         "not in the manifest command list"),
+        ("--limit above the manifest cap", "A05-2", ["query", "--limit", "100"], "--limit 100"),
+        ("per-command invocation cap", "A05-1", ["status"], "the manifest allows 1"),
+    ]
+    results = []
+    for label, command_id, argv, expected in cases:
+        bounds = Bounds(manifest)
+        if label == "per-command invocation cap":
+            # `status` allows a single invocation, so the SECOND call must refuse
+            bounds.check(command_id, argv)
+            bounds.charge(command_id)
+        try:
+            bounds.check(command_id, argv)
+        except SystemExit as exc:
+            message = str(exc)
+            results.append({"case": label, "refused": True,
+                            "message_matches": bool(expected and expected in message),
+                            "message": message[:90]})
+        else:
+            results.append({"case": label, "refused": False, "message": "NOT REFUSED"})
+
+    # The total budget is tested on a SYNTHETIC manifest: in the real one the per-command
+    # caps sum to fewer invocations than `budget.max_invocations`, so the per-command caps
+    # always bind first (measured below and reported in `parsed`).  Testing the budget on
+    # the real manifest would therefore have proven nothing - it would have tripped the
+    # per-command cap instead, which is exactly what the first version of this selftest did.
+    synthetic = {"commands": [{"id": "T-1", "argv": ["status"], "limit": "<= 99 invocations"}],
+                 "budget": {"max_invocations": 2}}
+    bounds = Bounds(synthetic)
+    budget_refused = False
+    message = ""
+    for _ in range(2):
+        bounds.check("T-1", ["status"])
+        bounds.charge("T-1")
+    try:
+        bounds.check("T-1", ["status"])
+    except SystemExit as exc:
+        budget_refused = "budget.max_invocations" in str(exc)
+        message = str(exc)[:90]
+    results.append({"case": "total budget (synthetic manifest)", "refused": budget_refused,
+                    "message": message})
+
+    bounds = Bounds(manifest)
+    try:
+        bounds.on_exit("A05-5", 1)
+    except SystemExit as exc:
+        results.append({"case": "stop rule on non-zero", "refused": "stop rule" in str(exc),
+                        "message": str(exc)[:90]})
+    else:
+        results.append({"case": "stop rule on non-zero", "refused": False,
+                        "message": "NOT REFUSED"})
+    ok = all(item["refused"] for item in results)
+    parsed = Bounds(manifest)
+    caps_total = sum(value for value in parsed.per_command_cap.values() if value)
+    print(json.dumps({
+        "cases": results, "ok": ok,
+        "parsed": {"per_command_cap": parsed.per_command_cap,
+                   "per_command_caps_total": caps_total,
+                   "max_limit_flag": parsed.max_limit_flag,
+                   "max_invocations": parsed.max_invocations,
+                   "binding_constraint": ("per-command caps" if caps_total <= parsed.max_invocations
+                                          else "total budget")},
+    }, ensure_ascii=True, indent=2))
+    return 0 if ok else 1
+
+
 def _run(python: str, cwd: Path, argv: list[str], timeout: int) -> dict:
     proc = subprocess.run(
         [python, "-B", "-m", "company_wiki.source_catalog.cli", *argv],
@@ -96,7 +274,12 @@ def main(argv: list[str]) -> int:
                              "(the approved `query` command with the kind filter its "
                              "purpose requires: 'pick candidates across roots')")
     parser.add_argument("--candidate-limit", type=int, default=25)
+    parser.add_argument("--selftest", action="store_true",
+                        help="prove every manifest bound refuses (no production command is run)")
     args = parser.parse_args(argv)
+
+    if args.selftest:
+        return _selftest()
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     entrypoint = manifest["entrypoint"]

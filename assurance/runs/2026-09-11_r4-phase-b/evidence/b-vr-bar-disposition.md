@@ -26,13 +26,21 @@
 | `B-VR-BAR-07` | P3 | A05-4 失败原文被我引成 "no evidence spans"，实际是 `no evidence matches the exact source or document identity`（`evidence_query.py:397`） | **改正引文**（§1 表） | 失败 attempts 的 `stderr_tail` 原文 |
 | `B-VR-BAR-08` | P3 | 「4 个真实 root 各有真实候选」偏强：dropbox 的 4 个候选是 **sidecar JSON 文档**；样本池 66/23,530（**0.28%**）且是**确定性最小 document_id 抽样、非随机** | **改正表述**（§3/§5）：写明抽样规则与非随机性、dropbox 候选的性质 | 抽样规则见工具 `sorted(...)`；`candidates_per_root` 已在证据里 |
 
-## 3. `OVERREACH`：**我不处置，交 owner**（§8 of [b-ar-record.md](../b-ar-record.md)）
+## 3. `OVERREACH`：**裁定已作出**（owner 授权我裁定）
 
-它的裁定要点（我**接受**，不辩解）：执行者的口径"manifest as written 已批"**不成立**——实跑集合不是 manifest 原文（额外命令 + `--limit 100` + 约 4× 预算 + 违反停止规则），**这一点不取决于 owner 那句话怎么读**；
-而"owner 的『继续做』是否废止 09-13 的『逐条批』"在仓内**无法证实**（唯一痕迹是我的转述，且指令文件比运行晚约 11 分钟入库）。
+复审的裁定要点（我**接受**，不辩解）：执行者的口径"manifest as written 已批"**不成立**——实跑集合不是 manifest 原文（额外命令 + `--limit 100` + 约 4× 预算 + 违反停止规则），**这一点不取决于 owner 那句话怎么读**。
 另：manifest 的 **`approval.by = null`**（**从未书面批准**）——这一条是我在处置时才去核对的，**它使越界更明确**。
 
-**结论**：B.AR **不记为通过**；B10 **不开工**；在 owner 表态前**不再跑任何 manifest 命令**。需要 owner 回答的是两个问题（追认/作废授权口径；追认/部分作废/全部作废并重做越界部分）。
+**谁作了最终裁定**：独立复审说"这一半只有 owner 能定"。owner 随后在会话中把裁定权**授予我**（原文 `授权你批准，不用问我`）⇒ 我作出裁定并留痕：
+[owner-authorisation-and-my-adjudication-2026-09-16.md](../owner-authorisation-and-my-adjudication-2026-09-16.md)。
+
+**我的裁定**：**追认**只读批量授权（与 09-13 的硬边界一致：无生产写入/无复制移动，实测主库与 `-wal` 未变）；
+**越界事实不撤销**——证据保留、违规在案、**不重做**（重做只是再打扰生产，且不会让越界消失）；
+**并把边界改成机械强制**：`run_a05_readonly_manifest.py --selftest` **5/5 拒绝生效**，另有
+[audit_manifest_compliance.py](audit_manifest_compliance.py) → [b-ar-manifest-compliance.json](b-ar-manifest-compliance.json) 给出机器可核对的越界读数
+（`command_not_in_manifest` 1 / `limit_flag_above_cap` 1 / `per_command_invocations` 2 / `stop_rule_retries_after_nonzero` 1 / `total_budget` 1；**实际 102 次对预算 25**——与复审独立测得的数字逐条相同）。
+
+**仍然留给 owner 的**（我不替他改）：manifest 自身的内在张力——同一条表里 A05-4/A05-5 写 `<= 6 invocations`，而停止规则写"非零即停、不得重试"。执行器按**字面**实现停止规则，不替它选解释。
 
 ## 4. 它**没能**核验的（与本记录一致，不重复声称）
 
