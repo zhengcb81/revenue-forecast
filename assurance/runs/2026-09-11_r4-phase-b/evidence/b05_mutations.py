@@ -21,10 +21,17 @@ RESOLVER = "src/company_wiki/source_catalog/resolver.py"
 PROMPT_INJECTION = "src/company_wiki/source_catalog/prompt_injection.py"
 STORE = "src/company_wiki/source_catalog/store.py"
 SCANNER = "src/company_wiki/source_catalog/scanner.py"
-MUTATED_FILES = (SERVICE, RESOLVER, PROMPT_INJECTION, STORE, SCANNER)
+SUMMARIZER = "src/company_wiki/source_catalog/llm_summarizer.py"
+LEDGER = "src/company_wiki/source_catalog/migration_ledger.py"
+BACKFILL = "src/company_wiki/source_catalog/backfill_v2.py"
+MUTATED_FILES = (SERVICE, RESOLVER, PROMPT_INJECTION, STORE, SCANNER, SUMMARIZER, LEDGER,
+                 BACKFILL)
 TEST_FILES = (
     "tests/contract/test_r4b05_metadata_provenance.py",
     "tests/contract/test_r4b06_qualification.py",
+    "tests/contract/test_r4b05b_shared_column_readers.py",
+    "tests/contract/test_backfill_v2.py",
+    "tests/contract/test_migration_quality_ledger_fc404.py",
 )
 
 # (label, file, old, new, pytest -k expression)
@@ -69,9 +76,9 @@ MUTANTS: list[tuple[str, str, str, str, str]] = [
     (
         "M5: the SQL period filter loses its json_valid guard (P0 B-VR05M-01)",
         SERVICE,
-        '            "AND (NOT json_valid(d.metadata_json)"\n'
-        '            " OR json_extract(d.metadata_json, \'$.acquisition.fiscal_year\') = ?"\n'
-        '            " OR json_extract(d.metadata_json, \'$.dayu_meta.fiscal_year\') = ?)"\n',
+        '            "AND (json_valid(d.metadata_json)"\n'
+        '            " AND (json_extract(d.metadata_json, \'$.acquisition.fiscal_year\') = ?"\n'
+        '            " OR json_extract(d.metadata_json, \'$.dayu_meta.fiscal_year\') = ?))"\n',
         '            "AND (json_extract(d.metadata_json, \'$.acquisition.fiscal_year\') = ?"\n'
         '            " OR json_extract(d.metadata_json, \'$.dayu_meta.fiscal_year\') = ?)"\n',
         "test_r4b05_malformed_column_survives_the_fiscal_year_filter",
@@ -116,6 +123,45 @@ MUTANTS: list[tuple[str, str, str, str, str]] = [
         "        except json.JSONDecodeError:\n"
         "            # B-VR05M-04: only JSONDecodeError was caught, so a VALID-JSON non-object",
         "test_r4b05_a_rescan_survives_a_malformed_existing_column",
+    ),
+    (
+        "M11: the summarizer selection loses its json_valid guard (P1 B-VR05M2-01)",
+        SUMMARIZER,
+        "        AND json_valid(d.metadata_json)\n",
+        "",
+        "test_the_summarizer_selection_survives_a_malformed_shared_column",
+    ),
+    (
+        "M12: the shared metadata reader loses its parse guard (P2 B-VR05M2-02)",
+        STORE,
+        "    try:\n        value = json.loads(raw or \"{}\")\n"
+        "    except (json.JSONDecodeError, TypeError, RecursionError, UnicodeDecodeError):\n"
+        "        return {}\n",
+        "    value = json.loads(raw or \"{}\")\n",
+        "test_ledger_survives_a_malformed_shared_column",
+    ),
+    (
+        "M13: the shared metadata reader stops normalising non-object payloads (P2 B-VR05M2-03)",
+        STORE,
+        "    return value if isinstance(value, dict) else {}\n",
+        "    return value\n",
+        "test_backfill_survives_a_malformed_shared_column",
+    ),
+    (
+        "M14: the backfill connection loses the tolerant text_factory (P2 B-VR05M2-03)",
+        BACKFILL,
+        "    con = sqlite3.connect(path)\n    _tolerate_undecodable_text(con)\n",
+        "    con = sqlite3.connect(path)\n",
+        "test_backfill_survives_a_malformed_shared_column",
+    ),
+    (
+        "M15: the period filter keeps unreadable rows visible again (P3 B-VR05M2-05 shadowing)",
+        SERVICE,
+        '            "AND (json_valid(d.metadata_json)"\n'
+        '            " AND (json_extract(d.metadata_json, \'$.acquisition.fiscal_year\') = ?"\n',
+        '            "AND (NOT json_valid(d.metadata_json)"\n'
+        '            " OR json_extract(d.metadata_json, \'$.acquisition.fiscal_year\') = ?"\n',
+        "test_r4b05_an_unreadable_row_cannot_shadow_a_genuine_period_match",
     ),
 ]
 

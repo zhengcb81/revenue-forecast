@@ -1,5 +1,7 @@
 # B.VR-b05malformed 复审处置表（1×P0 / 2×P1 / 1×P2 / 2×P3 → 全部处置）
 
+> **第二轮（验证复审 B.VR-b05malformed-verify 的结果，见文末 §验证轮）**：三条崩溃修复被独立验证为**真修好且被变异钉住**（10/10 KILLED 在副本上复现、还原经新鲜导出比对），**但它又发现 1×P1 + 2×P2 + 3×P3**：同一失败模式仍在 `llm_summarizer`（documents 列）、`migration_ledger`、`backfill_v2` 里活着，且我的残余清单**仍把三处 documents 列误标成 artifacts 列**；另外**我自己引入的 `NOT json_valid` 选择**让一条畸形行能**顶掉**真正的期间命中（丢答案 —— 比"看不到 blocked"更糟）。§第二轮 逐条处置。
+
 > 复审记录：[reviews/B.VR-b05malformed.json](reviews/B.VR-b05malformed.json)（独立会话；repo A 未写入，探针全部跑在 `74ffeeb` 的 TEMP 副本上；`catalog.sqlite3` 未打开）。
 > 被审对象：`74ffeeb`（B05 读侧畸形共享列的**第一版修复**）。**复审在修复之上又抓到一个 P0 和两个 P1**——这正是"修复必须被独立复审"的价值。
 > 处置落点：wiki 的后续提交（本表写完后紧随其后）；变异 harness 扩到 **10 个变异、10/10 KILLED**。
@@ -23,3 +25,19 @@ claim 1（RED 在副本上复现：`JSONDecodeError` 出自 `service.py:388`，�
 1. **"我修了崩溃"必须按"参数组合 × 形状"矩阵验证，不能按"我试过的那个调用"验证**：P0 之所以活着，是因为我的新用例**从不传 `fiscal_year`**，而同一方法有一条 SQL 先行的过滤路径。**规则：修一个入口函数时，先枚举它的全部参数组合**（尤其"SQL 先行"的参数），再逐格断言。
 2. **捕获物里的行号会漂**：证据文件是**当时**的树；提交后再引用行号必须标注"按捕获时树"。
 3. **CI 数字必须落盘**：口头/正文里的"通过 N 条"没有捕获就不可核对（复审据此把 claim 7 记为 unproven）。
+
+## 第二轮：验证复审（B.VR-b05malformed-verify）新发现 → 处置
+
+| # | 级别 | 验证复审的结论 / 新发现 | 处置 |
+|---|---|---|---|
+| （我的三处修复） | — | **B-VR05M-01 / -02 与 -04 的崩溃修复 = CLOSED**（6 形状 × 带/不带 `fiscal_year` 全测、~25 形状无 RecursionError 逃逸、M5/M6/M7/M10 各自精确杀死命名用例）；**-03 / -04 = partially_closed**（剩余见下）；-05/-06 = closed | 照录；不重复自证 |
+| **B-VR05M2-01** | **P1** | `llm_summarizer.summarize_catalog_with_llm`（`json_extract` on **documents**.metadata_json）在 `{not json`/深嵌套/`""`/非 UTF-8 上抛 `sqlite3.OperationalError: malformed JSON` —— **与 P0 完全同一模式**，而我的清单把它写成"artifacts 读取者、未验证" | SQL 加 `json_valid(d.metadata_json)`；**新增用例文件** `tests/contract/test_r4b05b_shared_column_readers.py`（5 形状 + 反空洞断言：查询必须真的跑、且 SQL 文本里必须有 `json_valid`） |
+| **B-VR05M2-02** | P2 | `migration_ledger.build_quality_ledger`（documents 列）⇒ `'[]'` AttributeError、深嵌套 RecursionError | 捕获扩到 `(JSONDecodeError, TypeError, RecursionError)` + 非 dict 归零；在该文件的既有套件里加用例（`test_migration_quality_ledger_fc404.py`） |
+| **B-VR05M2-03** | P2 | `backfill_v2.run_backfill`（documents 列）⇒ AttributeError / RecursionError / 驱动层 `OperationalError`（其 `_connect` 没有容忍 `text_factory`） | 同上 + `_connect` 用 `store._tolerate_undecodable_text`；在 `test_backfill_v2.py` 加用例（含 `CAST(? AS TEXT)` 的非 UTF-8 形状） |
+| **B-VR05M2-05** | P3 | **我自己引入的 bug**：`NOT json_valid(...)` 让畸形行**留在结果里**，在 `limit` 下能**顶掉**真正的期间命中（实测 2 文档 + `limit=1`：返回被污染的 Z、丢掉真正的 2025 A） | **改回 `json_valid(...)` 排除**（原文写法）：期间过滤下"无法证明属于该期间的行不是命中"；未过滤读仍报 blocked。新增用例 `test_r4b05_an_unreadable_row_cannot_shadow_a_genuine_period_match`；变异 **M15** 钉住 |
+| **B-VR05M2-04** | P3 | `prompt_injection.py:108`（写侧兄弟）仍只捕 JSONDecodeError | 捕获扩面（与读侧一致） |
+| **B-VR05M2-06** | P3 | §7 的"提交后 309"已过时（HEAD 312） | 改为"按捕获时树 306；**行号随提交漂移，引用时以当次树为准**" |
+| （我的措辞） | — | "非合法 JSON ⇒ 可见且 blocked"对 `""` 不成立（可见但 ok）；"写进 M2 的覆盖面"为假（M2 不选该用例） | 逐条更正（本轮正文与 §7） |
+
+**本轮验证**：15 个变异 **15/15 KILLED**、`tree_restored=true`、基线 **57 passed**（五个相关套件）；两个 CI 步骤的捕获在本目录（`b05b-ci-step1-unit.txt`、`b05b-ci-step2-contract.txt`）。
+**本轮自纠（重要）**：`llm_summarizer` 那条用例**第一版是空洞的**——夹具没有 `artifacts` 行，JOIN 产不出候选，`json_extract` **从未被求值**，于是"去掉 `json_valid` 守卫"的变异**存活**。加了 normalized artifact + active location 后，表达式才真正被求值，变异随即被杀。**教训：SQL 层的守卫，必须用"能产出候选行"的夹具验证，且要有反空洞断言（查询跑了 ≠ 表达式被求值）。**
