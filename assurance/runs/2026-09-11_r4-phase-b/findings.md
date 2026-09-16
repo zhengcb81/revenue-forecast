@@ -5,8 +5,9 @@
 ## FC-1301 词表门加宽：**已实施**（wiki `76cc1bc`，工作包 [packages/fc1301-taxonomy-coverage.md](packages/fc1301-taxonomy-coverage.md)）
 
 - **只读清单（工具已入库 [evidence/fc1301_reason_inventory.py](evidence/fc1301_reason_inventory.py)，输出 [evidence/fc1301-reason-inventory.json](evidence/fc1301-reason-inventory.json)）**：扫 142 个文件、注册表 83 码；**位置式** reason 站点 33 个（32 个 code-like）⇒ **15 个码从未注册**（13 个 `focus_policy_*` + `stale_gap_hash` + `v2_profile_admitted`）；**关键字式** 34 个 code-like、**0 个未注册**——这正是旧门"看起来够用"的原因：它只看得见本来就干净的那种写法。
-- **一处方法学修正（重要）**：`reason` 在这套代码里有**两种含义**——taxonomy **码**（snake_case）与**自由文本解释**（如 `receipt reviewed_at is not ISO-8601 UTC`）。第一版清单把两者混在一起报"17 个未注册"，是**错的**；按形状分类后才是 15 个真缺口 + 17 个散文。门的实现照此分类（要求散文注册是无意义的）。
-- **实施**：15 码注册（附其调用点语义）+ 进 `STAGES_BY_REASON`（注册码无 stage 就无法被采集器归类）+ 版本 `1.1 → 1.2`；门改为 **AST**（位置/关键字实参映射到被调参数名，含 dataclass 字段），新增三条用例：位置码与关键字码**必须**被扫到（加宽的**负例**）、散文**不得**当成码、每个注册码**必须**有 stage。前置已查：**无跨仓消费者**（filing-fetch 0、revenue 0）。
+- **一处方法学修正（重要）**：`reason` 在这套代码里有**两种含义**——taxonomy **码**（snake_case）与**自由文本解释**（如 `receipt reviewed_at is not ISO-8601 UTC`）。第一版清单把两者混在一起报"17 个未注册"，是**错的**；按形状分类后才是真缺口 + 散文。门的实现照此分类（要求散文注册是无意义的）。
+- **第二轮（因复审 P0 才暴露，见 [evidence/b-vr-fc1301-disposition.md](evidence/b-vr-fc1301-disposition.md)）**：我"加宽后"的门**仍然漏 17 处**——同名函数取**第一个定义**（`setdefault`）导致 `_reject`/`_result` 映射到**错误的形参**；复审给出反例（`close_gap.py:256` 改成新码门仍绿）。改为**全定义候选（歧义 fail-closed）**后，**又发现 16 个从未注册的码**（resolver 8 + security_identity 6 + close_gap 2），全部注册；反例现已复现为**红**，清单重跑 = **114 注册码 / 位置式 49 处 / 未注册 0**（与复审测量的 49 一致）。**因此"15 个"应读作"15 + 16，分两批，第二批由独立复审判定我的门不可信之后才发现"。**
+- **实施**：31 码注册（附其调用点语义）+ 进 `STAGES_BY_REASON`（并按该表自身规则**改正**归属：13 个 `focus_policy_*` → `semantic`、`v2_profile_admitted` → `identity`、`stale_gap_hash` → `freshness`；错 stage 会被 `record_stage_event` **fail-closed 丢弃**）+ 版本**保持冻结的 1.1**（`719f05b` 撤回了我一度做的 1.2 bump：`tests/unit/test_stage_taxonomy.py:107` 把它钉成 N-1 契约）；门改为 AST + **全定义候选**，并新增：同名多定义回归用例、注册表身份校验、新码 stage 检查。
 - **承重证明**：删掉其中一个新注册 ⇒ 门**变红并点名 `stale_gap_hash` 及其调用点 `close_gap.py:380`**；还原 ⇒ 绿。门文件 6 passed、ruff clean、契约套件 1934 passed / 8 skipped。
 - **作者自纠（同一类错误第三次）**：清单工具第一版把根路径算错一层（`parents[3]` 是**仓库**、不是其父目录），`rglob` 扫了个不存在的目录 ⇒ **所有计数为 0**，看起来像"没有发现"。现已加三条硬断言：根必须存在、必须扫到 `.py`、**导入的注册表必须就是被扫仓库里那一份**（防止悄悄比对了 site-packages 里的副本）。
 
@@ -14,7 +15,8 @@
 
 - **现象**：契约全量套件里 `test_zr409_fourth_root_real_journeys.py::test_c2_journey_dayu_only_real_sample` 红了（`portfolio_before != after` 指纹）；**单独跑通过（0.84 s）**，且该文件本来就在 CI 的 `--ignore` 里。
 - **不是本次改动造成的**：本次只动"注册表 + 词表门"（`observability.py` 与 `tests/contract/test_fc1301_reason_taxonomy.py`），与 `dayu-agent/workspace/portfolio` 无任何代码路径相关；实测该目录**顶层子项 mtime 仍是 7/8 月**（今天没有任何写入）。
-- **它暴露的真实缺陷（登记）**：`_shallow_fingerprint()`（该文件 `:79-93`）在 `child.stat()` 抛 `OSError` 时把 `b"inaccessible"` 拼进摘要 ⇒ **一次瞬时 stat 失败会被读成"发生了写入"**，于是在满负载/多进程/杀毒扫描等情况下产生**假红**。这与 F-B01-9 是同一类问题（"判据比它声称的弱"），方向相反：这次是**误报**而非漏报。
+- **它暴露的真实缺陷（登记）**：`_shallow_fingerprint()`（该文件 `:79-93`）在 `child.stat()` 抛 `OSError` 时把 `b"inaccessible"` 拼进摘要 ⇒ **一次瞬时 stat 失败可能被读成"发生了写入"**，于是在满负载/多进程/杀毒扫描等情况下产生**假红**。这与 F-B01-9 是同一类问题（"判据比它声称的弱"），方向相反：这次是**误报**而非漏报。
+  **口径更正（B-VR1301-08）**：这是**机理候选，未被证明**——我只有"单跑绿 + 满套件红 + 目录无变化"三条事实，没有抓到那次 `OSError`；不得写成已证实的成因。**另**：本条红在最近一次本地全量契约跑（1938 passed / 8 skipped）**没有复现**，与"偶发"一致。
 - **建议（未做，属该文件的独立工作）**：把 `OSError` 路径改为**重试后仍失败才标记**，或把"不可读"与"内容变化"分成两种结论；并给它一个**安静的**独立运行槽（它要读真实语料，不适合与全量套件并行）。
 - **口径**：我没有把这条红说成"与本改动无关所以忽略"——它**确实**不是本改动引起（有上面的证据），但它**是**一个真实缺陷，已登记。
 

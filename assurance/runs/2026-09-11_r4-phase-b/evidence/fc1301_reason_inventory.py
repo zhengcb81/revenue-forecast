@@ -56,9 +56,11 @@ def _param_names(node: ast.FunctionDef | ast.AsyncFunctionDef) -> list[str]:
     return names
 
 
-def collect_signatures(root: Path) -> dict[str, Signature]:
-    """name -> Signature, for module-level functions, methods, dataclasses and classes."""
-    signatures: dict[str, Signature] = {}
+def collect_signatures(root: Path) -> dict[str, list[Signature]]:
+    """name -> ALL signatures found for that name (B-VR1301-02: the first version kept
+    only the first definition, which made the inventory under-report exactly like the
+    gate it was measuring - a name like ``_reject`` has several shapes in this tree)."""
+    signatures: dict[str, list[Signature]] = {}
     for path in sorted(root.rglob("*.py")):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -66,7 +68,7 @@ def collect_signatures(root: Path) -> dict[str, Signature]:
             continue
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                signatures.setdefault(node.name, Signature(_param_names(node)))
+                signatures.setdefault(node.name, []).append(Signature(_param_names(node)))
             elif isinstance(node, ast.ClassDef):
                 is_dataclass = any(
                     (isinstance(d, ast.Name) and d.id == "dataclass")
@@ -79,9 +81,10 @@ def collect_signatures(root: Path) -> dict[str, Signature]:
                     if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name)
                 ]
                 if is_dataclass and fields:
-                    signatures.setdefault(node.name, Signature(fields, kind="dataclass"))
+                    signatures.setdefault(node.name, []).append(
+                        Signature(fields, kind="dataclass"))
                 else:
-                    signatures.setdefault(node.name, Signature(kind="class"))
+                    signatures.setdefault(node.name, []).append(Signature(kind="class"))
     return signatures
 
 
@@ -140,8 +143,8 @@ def inventory(root: Path, registered: dict[str, str]) -> dict:
                             "param": keyword.arg, "value": literal,
                             "registered": literal in registered,
                         })
-            signature = signatures.get(callee)
-            if signature is None or signature.kind == "class":
+            signature_list = signatures.get(callee)
+            if not signature_list or all(sig.kind == "class" for sig in signature_list):
                 if node.args and any(_literal(arg) for arg in node.args):
                     unresolved.append({
                         "file": rel, "line": node.lineno, "callee": callee,
@@ -150,18 +153,21 @@ def inventory(root: Path, registered: dict[str, str]) -> dict:
                     })
                 continue
             for index, arg in enumerate(node.args):
-                if index >= len(signature.params):
-                    break
-                param = signature.params[index]
-                if not _is_reason_param(param):
-                    continue
                 literal = _literal(arg)
                 if literal is None:
                     continue
+                # a position counts as a reason position if ANY definition names it so
+                matched = [
+                    sig for sig in signature_list
+                    if index < len(sig.params) and _is_reason_param(sig.params[index])
+                ]
+                if not matched:
+                    continue
                 resolved.append({
                     "file": rel, "line": node.lineno, "callee": callee,
-                    "param": param, "kind": signature.kind, "value": literal,
-                    "registered": literal in registered,
+                    "param": matched[0].params[index],
+                    "definitions": len(signature_list), "kind": matched[0].kind,
+                    "value": literal, "registered": literal in registered,
                 })
     def _summary(items: list[dict]) -> dict:
         values: dict[str, int] = {}
