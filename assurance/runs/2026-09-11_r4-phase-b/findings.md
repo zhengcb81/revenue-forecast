@@ -2,6 +2,22 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## FC-1301 词表门加宽：**已实施**（wiki `76cc1bc`，工作包 [packages/fc1301-taxonomy-coverage.md](packages/fc1301-taxonomy-coverage.md)）
+
+- **只读清单（工具已入库 [evidence/fc1301_reason_inventory.py](evidence/fc1301_reason_inventory.py)，输出 [evidence/fc1301-reason-inventory.json](evidence/fc1301-reason-inventory.json)）**：扫 142 个文件、注册表 83 码；**位置式** reason 站点 33 个（32 个 code-like）⇒ **15 个码从未注册**（13 个 `focus_policy_*` + `stale_gap_hash` + `v2_profile_admitted`）；**关键字式** 34 个 code-like、**0 个未注册**——这正是旧门"看起来够用"的原因：它只看得见本来就干净的那种写法。
+- **一处方法学修正（重要）**：`reason` 在这套代码里有**两种含义**——taxonomy **码**（snake_case）与**自由文本解释**（如 `receipt reviewed_at is not ISO-8601 UTC`）。第一版清单把两者混在一起报"17 个未注册"，是**错的**；按形状分类后才是 15 个真缺口 + 17 个散文。门的实现照此分类（要求散文注册是无意义的）。
+- **实施**：15 码注册（附其调用点语义）+ 进 `STAGES_BY_REASON`（注册码无 stage 就无法被采集器归类）+ 版本 `1.1 → 1.2`；门改为 **AST**（位置/关键字实参映射到被调参数名，含 dataclass 字段），新增三条用例：位置码与关键字码**必须**被扫到（加宽的**负例**）、散文**不得**当成码、每个注册码**必须**有 stage。前置已查：**无跨仓消费者**（filing-fetch 0、revenue 0）。
+- **承重证明**：删掉其中一个新注册 ⇒ 门**变红并点名 `stale_gap_hash` 及其调用点 `close_gap.py:380`**；还原 ⇒ 绿。门文件 6 passed、ruff clean、契约套件 1934 passed / 8 skipped。
+- **作者自纠（同一类错误第三次）**：清单工具第一版把根路径算错一层（`parents[3]` 是**仓库**、不是其父目录），`rglob` 扫了个不存在的目录 ⇒ **所有计数为 0**，看起来像"没有发现"。现已加三条硬断言：根必须存在、必须扫到 `.py`、**导入的注册表必须就是被扫仓库里那一份**（防止悄悄比对了 site-packages 里的副本）。
+
+## ZR-409 真语料旅程：**满套件下的一次偶发红**，以及它暴露的**测试质量**问题（`F-ZR409-1`）
+
+- **现象**：契约全量套件里 `test_zr409_fourth_root_real_journeys.py::test_c2_journey_dayu_only_real_sample` 红了（`portfolio_before != after` 指纹）；**单独跑通过（0.84 s）**，且该文件本来就在 CI 的 `--ignore` 里。
+- **不是本次改动造成的**：本次只动"注册表 + 词表门"（`observability.py` 与 `tests/contract/test_fc1301_reason_taxonomy.py`），与 `dayu-agent/workspace/portfolio` 无任何代码路径相关；实测该目录**顶层子项 mtime 仍是 7/8 月**（今天没有任何写入）。
+- **它暴露的真实缺陷（登记）**：`_shallow_fingerprint()`（该文件 `:79-93`）在 `child.stat()` 抛 `OSError` 时把 `b"inaccessible"` 拼进摘要 ⇒ **一次瞬时 stat 失败会被读成"发生了写入"**，于是在满负载/多进程/杀毒扫描等情况下产生**假红**。这与 F-B01-9 是同一类问题（"判据比它声称的弱"），方向相反：这次是**误报**而非漏报。
+- **建议（未做，属该文件的独立工作）**：把 `OSError` 路径改为**重试后仍失败才标记**，或把"不可读"与"内容变化"分成两种结论；并给它一个**安静的**独立运行槽（它要读真实语料，不适合与全量套件并行）。
+- **口径**：我没有把这条红说成"与本改动无关所以忽略"——它**确实**不是本改动引起（有上面的证据），但它**是**一个真实缺陷，已登记。
+
 ## B.VR-fc1307a（主机假设门）= **accepted_with_findings**（0×P0 / 3×P1 / 2×P2 / 3×P3）→ **全部处置**（wiki `a920ab1`；记录 [reviews/B.VR-fc1307a.json](reviews/B.VR-fc1307a.json)）
 
 - **复审的独立性与可核性**：它自证 repo A 全树 57908 文件的 relpath+size+mtime 快照 SHA-256 在每条命令前后**逐字节相同**、`git status` 为空；repo B 只新增它自己的记录。CI 日志它**取不到**（禁网），故"CI 红/绿"只有**机理复现**（用 `test_writer_freeze.py` 的同一条谓词判 `ccb3c82` vs HEAD）。
