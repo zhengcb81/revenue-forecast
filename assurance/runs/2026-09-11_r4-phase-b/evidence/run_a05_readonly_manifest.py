@@ -41,7 +41,11 @@ def _run(python: str, cwd: Path, argv: list[str], timeout: int) -> dict:
         "exit_code": proc.returncode,
         "stdout_sha256": hashlib.sha256(out.encode("utf-8")).hexdigest(),
         "stdout_bytes": len(out.encode("utf-8")),
-        "stdout": out[:20000],
+        # FULL output, not a slice: the first version truncated at 20,000 chars, so only
+        # the first few documents were visible to the candidate selector and A05-4/A05-5
+        # were tried against 4 `news` items that have neither evidence nor sections -
+        # a vacuous "no candidate answered".  The text is also written to a side file.
+        "stdout": out,
         "stderr_tail": (proc.stderr or "")[-2000:],
     }
 
@@ -87,6 +91,11 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--candidate-kind", default="annual_report",
+                        help="document kind used to pick the A05-4/A05-5 candidates "
+                             "(the approved `query` command with the kind filter its "
+                             "purpose requires: 'pick candidates across roots')")
+    parser.add_argument("--candidate-limit", type=int, default=25)
     args = parser.parse_args(argv)
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
@@ -112,7 +121,8 @@ def main(argv: list[str]) -> int:
                 results.append({"id": entry_id, "purpose": purpose, "argv": cmd_argv,
                                 "skipped": "no document ids available from an earlier command"})
                 continue
-            outcome = _first_success(python, cwd, cmd_argv, document_ids, timeout)
+            outcome = _first_success(python, cwd, cmd_argv, document_ids, timeout,
+                                     cap=args.candidate_limit)
             outcome.update({"id": entry_id, "purpose": purpose})
             results.append(outcome)
             print(f"{entry_id:8} exit={outcome['exit_code']:>3} "
@@ -127,6 +137,50 @@ def main(argv: list[str]) -> int:
         print(f"{entry_id:8} exit={outcome['exit_code']:>3} bytes={outcome['stdout_bytes']:>7} "
               f"{' '.join(cmd_argv)[:70]}")
 
+    # Candidate resolution for the per-document commands: the approved `query` command
+    # with the kind filter its stated purpose needs ("pick candidates across roots").
+    # Without this the per-document commands were tried against whatever came first in an
+    # unfiltered page, which in this catalog is `news` - no evidence, no sections.
+    candidate_outcome = _run(
+        python, cwd,
+        ["query", "--document-kind", args.candidate_kind, "--limit", str(args.candidate_limit)],
+        timeout,
+    )
+    candidate_outcome.update({
+        "id": "A05-2b", "purpose": (f"candidate resolution: the approved query command "
+                                    f"filtered to --document-kind {args.candidate_kind}"),
+        "resolved_argv": ["query", "--document-kind", args.candidate_kind,
+                          "--limit", str(args.candidate_limit)],
+        "note": ("added by the runner, not part of the manifest's command list: A05-2's "
+                 "purpose is to pick candidates, and an unfiltered first page is all news "
+                 "in this catalog"),
+    })
+    filing_ids = _document_ids(candidate_outcome["stdout"])
+    results.append(candidate_outcome)
+    print(f"A05-2b   exit={candidate_outcome['exit_code']:>3} "
+          f"bytes={candidate_outcome['stdout_bytes']:>7} filings={len(filing_ids)}")
+
+    for entry_id, cmd_argv, purpose in plan:
+        if "<doc>" not in cmd_argv or not filing_ids:
+            continue
+        outcome = _first_success(python, cwd, cmd_argv, filing_ids, timeout,
+                                 cap=args.candidate_limit)
+        outcome.update({"id": f"{entry_id}b", "purpose": purpose,
+                        "candidates": f"{len(filing_ids)} {args.candidate_kind} documents"})
+        results.append(outcome)
+        print(f"{entry_id}b  exit={outcome['exit_code']:>3} "
+              f"bytes={outcome['stdout_bytes']:>7} attempts={len(outcome.get('attempts', []))} "
+              f"used={str(outcome.get('document_id_used'))[-12:]}")
+
+    for item in results:
+        text = item.get("stdout") or ""
+        if not text:
+            continue
+        side = args.out.with_name(f"{args.out.stem}-{item['id']}-stdout.txt")
+        side.write_text(text, encoding="utf-8", newline="")
+        item["stdout_file"] = side.name
+        item["stdout"] = text[:2000]
+
     payload = {
         "manifest_id": manifest.get("manifest_id"),
         "manifest_status_at_run": manifest.get("status"),
@@ -138,6 +192,8 @@ def main(argv: list[str]) -> int:
         "cwd": str(cwd),
         "python": python,
         "document_ids_available": len(document_ids),
+        "document_ids_available_filtered": len(filing_ids),
+        "candidate_filter": f"--document-kind {args.candidate_kind}",
         "results": results,
         "explicitly_excluded_not_run": manifest.get("explicitly_excluded"),
     }

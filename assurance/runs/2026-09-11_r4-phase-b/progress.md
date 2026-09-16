@@ -1,5 +1,16 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-14 → 2026-09-16 — **B05 实施+两轮复审闭环；FC-1301 门被复审判为不可信后重做；A05/B.AR 只读跑完；B08 第②级读到真实字节**（三仓 CI 全绿：wiki `41fdfe1` run `35146033771`、revenue `09cce40` run `35146465514`）
+
+- **B05 读侧畸形共享列（已交付）**：从"可复现的畸形输入"开始（[evidence/b05-malformed-column-pre-fix.txt](evidence/b05-malformed-column-pre-fix.txt)）→ 修 → 用例 + 变异证明（[evidence/b05_mutations.py](evidence/b05_mutations.py)，**15/15 KILLED**）→ 两轮独立复审（[reviews/B.VR-b05malformed.json](reviews/B.VR-b05malformed.json)、[…-verify.json](reviews/B.VR-b05malformed-verify.json)）→ 全部处置（[evidence/b-vr-b05malformed-disposition.md](evidence/b-vr-b05malformed-disposition.md)）。wiki 提交 `74ffeeb`（具名 blocked 状态而非崩溃）→ `91a20ec`（SQL `json_valid`、`RecursionError`、驱动层 UTF-8 解码、三处 reader）→ `41fdfe1`（第二轮：三个 documents 列 reader + **我自己的 shadowing bug**）。
+  - **复审抓到的活 P0**：`query_filing_candidates(fiscal_year=…)` 的 SQL `json_extract` **先于** Python 守卫执行 ⇒ 畸形行直接 `OperationalError`。
+  - **我自己的错（已回退并登记）**：① 我曾把 `NOT json_valid` 当修法 ⇒ 被破坏的行会**遮蔽**真实的期间匹配（复审证明）→ 回到 `json_valid` 排除 + M15 钉住；② 我的 summarizer 用例一度是 **vacuous** 的（没有 `artifacts` 行 ⇒ JOIN 无候选 ⇒ `json_extract` 从未执行，变异存活）→ 夹具补 normalized artifact + 活跃 location，并加反 vacuous 断言。
+- **FC-1301 词表门（被复审判为**不可信**后重做）**：`B.VR-fc1301` 给出**活 P0**——同名函数取第一个定义 ⇒ 17 处位置式站点不可见（反例：改 `close_gap.py:256` 后门**仍绿**）。改为**全定义候选 + 歧义 fail-closed**（`56f5b96`），又暴露 16 个从未注册的码并全部注册；`719f05b` 撤回我一度做的 taxonomy `1.1 → 1.2` bump（`tests/unit/test_stage_taxonomy.py:107` 把它钉成 **N-1 契约**）。详见 [findings.md](findings.md) 顶部 FC-1301 段。
+- **A05/B.AR（G7）只读跑完**：10 条只读命令逐条落盘（argv/退出码/输出 sha256），写/网络/破坏性条目**一条未跑**；随后**从原文独立重核身份与 hash**（6/6 摘要相符、10/10 派生产物相符、3/3 sidecar 身份一致）。记录 [b-ar-record.md](b-ar-record.md)、证据 [evidence/a05-readonly-manifest-run.json](evidence/a05-readonly-manifest-run.json) + [evidence/b-ar-identity-hash.json](evidence/b-ar-identity-hash.json)。
+  - **两处必须记住的事实**：sections 覆盖为 **0/85**；manifest 自带的 `NOT APPROVED` 状态字段**原样保留**在证据里，授权来自 [owner-directive-2026-09-16.md](owner-directive-2026-09-16.md)。
+- **B08 第②级读到真实字节**：`%TEMP%` 隔离根 → 真实目录只读引用 → `REUSED_EQUIVALENT` → **两次 `verified` 读取**（4,172,424 B，摘要 = 独立哈希真实文件所得）+ 篡改探测 0 字节 + 读者占用下仍可核验；零副作用证据齐全。报告 [b08-level2-report.md](b08-level2-report.md)、证据 [evidence/b08-level2-probe.json](evidence/b08-level2-probe.json)。探针**前两版是 vacuous 的**（编造实体 / 用 `Unresolved` 行）——已登记为纪律（见 findings 顶部）。
+- **状态**：B08 第②级与 B.AR **都待独立复审**（`B.VR-b08l2` / `B.VR-bar`）；B10 等 B.AR 复审结论再开工。
+
 ## 2026-09-13 — **FC-1307-a 主机假设门落地（owner 同意）→ 门自己在 CI 上红了一次 → 两处修复 + 把"判定门的测试"纳入本地门**
 
 - **背景（owner 提问驱动）**：owner 问"远端 CI 又出现测试失败，什么情况"与"每次 commit 都跑 pre-commit，为什么仍会引起测试失败"。答复要点：pre-commit 只做 ruff/mypy/config_doctor，pre-push 门只加复杂度棘轮 + 4 个契约文件，而 CI 跑**全量**套件 × 3 个 Python ⇒ **测试类不在门内**与**宿主差异**这两类本地必然看不见。owner 回"好的"⇒ 授权把**宿主假设类**做成门。

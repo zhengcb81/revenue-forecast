@@ -2,6 +2,19 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## B08 第②级 + B.AR（2026-09-16，同一轮）：**真字节读到了**，但探针前两版是 **vacuous** 的；B.AR 的"独立重核"半边达成
+
+- **B08 第②级达成**（授权 [owner-directive-2026-09-16.md](owner-directive-2026-09-16.md)；报告 [b08-level2-report.md](b08-level2-report.md)）：`%TEMP%` 隔离根 → 真实 sidecar adapter 挂 1 个真实目录 → 真实候选 1 份 → `REUSED_EQUIVALENT` → `read_verified_bytes` **两次都 `verified`**（4,172,424 B，摘要 = **独立哈希真实文件**所得的 `e39fbf9c…`）；篡改探测返回 **0 字节 + `expected_version_mismatch`**；**读者**占用下仍可核验。零副作用：真实目录 2 文件 before/after 逐文件一致，生产 catalog 元数据一致（主库 49,677,344,768 B / `2026-09-08T21:23:21.072747Z`）。
+- **我的错误（同一类第三次）**：探针**前两版根本没跑到读路径**——第一版用编造的实体 `r4b08`，第二版用 catalog 里那行 `Unresolved (...)`；两次都得到 `MISSING / 0 matches`，却"看起来像跑过了"。**修法**：请求身份改取文档**自身 sidecar** 的 `company_name`。**纪律（已写入报告）**：探针必须锚定被测对象的**真实身份**，否则"没跑"会被读成"通过"。
+- **`F-B08-L2-1`（未修，待 owner 决策）**：非 `company_raw` 根下，扫描器只按**路径**推实体（`_infer_company` 的名字集合只从 `company_raw` 根收集）⇒ 叶子/外部挂载的实体被记为 `unresolved:<root_id>`，**尽管 sidecar 里就有 `company_name`**。resolver 的实体门仍能经 metadata（`ticker`/`security_id`/`company_name`）锚定，所以**读取成功**；受影响的是这类根在 **catalog 层的实体归属**。
+- **`F-B08-L2-2`（未修）**：叶子挂载会把 `*.source.json` 当**独立文档**（真实 1 份 PDF → `sources=2 / documents=2`）。B.AR 在**生产** Dropbox 根上看到同类事实（3 份 title 以 `.pdf.source` 结尾、**无 location** 的文档，另见 `status.missing_locations=6`）⇒ 这不是挂载方式的产物，而是**非 focus 根的既有行为**。
+- **B.AR 独立重核达成（有界样本）**（记录 [b-ar-record.md](b-ar-record.md)）：只读命令 **10 条**（写/网络/破坏性条目**一条未跑**）；从**原文**重算：**6/6** 摘要相符（含一份 79,925,886 B 的大年报）、**10/10** 派生产物相符、**3/3** sidecar 身份逐字段一致。
+  **明确未核验**：`dropbox_stock` 的 3 份（读云占位会**水合**它 ⇒ 宁可不核验，也不制造本地副作用）；`dayu_portfolio` 无逐文档 sidecar（身份只能与 `path_ticker` 对照）。
+- **`F-BAR-1`（我自己的记账 bug，已修）**：重核器第一版把"超过上限而跳过"的文件计成 `digest_mismatch`（首跑报 1 例"摘要不符"）。**先复现**确认为"跳过"而非内容不符，再修（跳过项不计入 match/mismatch，上限提到 512 MB 并重跑）⇒ 6/6 相符。
+- **`F-BAR-2`（事实，非缺陷）**：85 个真实候选**全部**没有 sections 产物（20 + 65 次 `sections-list` 全 `exit 1`）⇒ 任何依赖 sections 的验收（含 B08 的 L10）在**本机语料**上到不了。
+- **授权口径**：manifest 自带的 `NOT APPROVED - awaiting owner confirmation` 状态字段**原样保留**在证据里（不掩盖），实际授权来自 owner 的会话指令（`approval_basis` 同时记录两者）。
+- **状态**：两份产物**都待独立复审**（`B.VR-b08l2` / `B.VR-bar`）；复审通过前**不得**记为"通过"，也不得据此宣称"四 root 端到端已完成"。
+
 ## FC-1301 词表门加宽：**已实施**（wiki `76cc1bc`，工作包 [packages/fc1301-taxonomy-coverage.md](packages/fc1301-taxonomy-coverage.md)）
 
 - **只读清单（工具已入库 [evidence/fc1301_reason_inventory.py](evidence/fc1301_reason_inventory.py)，输出 [evidence/fc1301-reason-inventory.json](evidence/fc1301-reason-inventory.json)）**：扫 142 个文件、注册表 83 码；**位置式** reason 站点 33 个（32 个 code-like）⇒ **15 个码从未注册**（13 个 `focus_policy_*` + `stale_gap_hash` + `v2_profile_admitted`）；**关键字式** 34 个 code-like、**0 个未注册**——这正是旧门"看起来够用"的原因：它只看得见本来就干净的那种写法。

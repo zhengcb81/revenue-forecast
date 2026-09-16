@@ -150,6 +150,112 @@ def build(root: Path, manifest_out: Path | None) -> int:
     return 0
 
 
+def _real_root_state(root: Path, cap: int = 200) -> dict:
+    """(name, size, mtime_ns, sha256) of every file in a REAL production directory.
+
+    G8 level 2 references real files read-only, so "nothing was written" has to be shown
+    on those files and not only on the catalog: this snapshot is taken before and after
+    the scan and the two must be identical.
+    """
+    entries = sorted(entry for entry in root.iterdir() if entry.is_file())
+    state = {}
+    for entry in entries[:cap]:
+        stat = entry.stat()
+        state[entry.name] = {"bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns,
+                             "sha256": _sha256(entry)}
+    return {"root": str(root), "file_count": len(entries), "files": state,
+            "capped_at": cap if len(entries) > cap else None}
+
+
+def build_level2(real_root: Path, isolated_root: Path, manifest_out: Path | None) -> int:
+    """G8 level 2: an isolated catalog that REFERENCES a real directory read-only.
+
+    Writes: the isolated catalog and its artifacts, under the system temp directory only.
+    The referenced directory is registered as a `directory`-kind read-only root (never a
+    canonical write target), and its files are hashed before and after so "no writes to
+    production bytes" is evidence rather than a promise.
+    """
+    real_root = real_root.resolve()
+    if not real_root.is_dir():
+        raise SystemExit(f"--real-root is not a directory: {real_root}")
+    isolated = _ensure_isolated(isolated_root)
+    if real_root == isolated or real_root in isolated.parents or isolated in real_root.parents:
+        raise SystemExit(f"refusing overlapping roots: {real_root} vs {isolated}")
+
+    sys.path.insert(0, str(WIKI_SRC))
+    from company_wiki.source_catalog import CatalogConfig, SourceCatalog  # noqa: PLC0415
+    from company_wiki.source_catalog.models import RootSpec  # noqa: PLC0415
+    from company_wiki.source_catalog.store import CatalogStore  # noqa: PLC0415
+
+    isolated.mkdir(parents=True, exist_ok=True)
+    catalog_dir = isolated / ".source_catalog"
+    database = catalog_dir / "catalog.sqlite3"
+    CatalogStore(database)
+
+    before_production = _production_state()
+    before_real = _real_root_state(real_root)
+
+    spec = RootSpec(
+        "r4b08_real_sample",
+        real_root,
+        "directory",
+        priority=10,
+        adapter_id="sidecar_filing_v1",
+        read_only=True,
+        reusable_for_filing=True,
+        canonical_write_target=None,
+    )
+    config = CatalogConfig(
+        project_root=isolated,
+        catalog_dir=catalog_dir,
+        reusable_root_kinds=("directory",),
+        roots=(spec,),
+    )
+    catalog = SourceCatalog(config)
+    started = _utc_now()
+    catalog.scan()
+    finished = _utc_now()
+
+    after_real = _real_root_state(real_root)
+    after_production = _production_state()
+
+    with __import__("sqlite3").connect(database) as connection:
+        counts = {
+            table: connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+            for table in ("sources", "documents", "locations", "artifacts", "evidence_spans")
+        }
+
+    payload = {
+        "level": 2,
+        "note": ("references a REAL production directory read-only; the isolated catalog "
+                 "and its artifacts are written under the system temp directory only"),
+        "started_at_utc": started,
+        "finished_at_utc": finished,
+        "real_root": str(real_root),
+        "isolated_root": str(isolated),
+        "database": str(database),
+        "isolated_counts": counts,
+        "real_root_before": before_real,
+        "real_root_after": after_real,
+        "real_root_unchanged": before_real == after_real,
+        "production_catalog_before": before_production,
+        "production_catalog_after": after_production,
+        "production_catalog_unchanged": before_production == after_production,
+        "root_spec": {"root_id": spec.root_id, "kind": spec.kind, "read_only": True,
+                      "canonical_write_target": None},
+    }
+    if manifest_out:
+        manifest_out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                                encoding="utf-8", newline="")
+    print(json.dumps({k: v for k, v in payload.items()
+                      if k not in ("real_root_before", "real_root_after",
+                                   "production_catalog_before", "production_catalog_after")},
+                     ensure_ascii=False, indent=2))
+    print(f"real_root_unchanged={payload['real_root_unchanged']} "
+          f"production_catalog_unchanged={payload['production_catalog_unchanged']}")
+    return 0 if payload["real_root_unchanged"] and payload["production_catalog_unchanged"] else 1
+
+
 def _shm_baseline(seconds: int) -> dict:
     """Count `-shm` mtime transitions over a passive window.  A NON-ZERO baseline
     means a later `-shm` move proves nothing about this session (G5 finding)."""
@@ -252,6 +358,13 @@ def main(argv: list[str]) -> int:
     p_build.add_argument("--root", type=Path,
                          default=Path(tempfile.gettempdir()) / f"b08-isolated-{os.getpid()}")
     p_build.add_argument("--manifest-out", type=Path, default=None)
+    p_build.add_argument("--real-root", type=Path, default=None,
+                         help="G8 LEVEL 2: reference this REAL directory read-only")
+    p_l2 = sub.add_parser("build-level2")
+    p_l2.add_argument("--real-root", type=Path, required=True)
+    p_l2.add_argument("--root", type=Path,
+                      default=Path(tempfile.gettempdir()) / "b08-level2-isolated")
+    p_l2.add_argument("--manifest-out", type=Path, default=None)
     p_snap = sub.add_parser("snapshot")
     p_snap.add_argument("--label", choices=("before", "after"), required=True)
     p_snap.add_argument("--baseline-seconds", type=int, default=0)
@@ -261,7 +374,11 @@ def main(argv: list[str]) -> int:
     sub.add_parser("selftest")
     args = parser.parse_args(argv)
     if args.command == "build":
+        if args.real_root is not None:
+            return build_level2(args.real_root, args.root, args.manifest_out)
         return build(args.root, args.manifest_out)
+    if args.command == "build-level2":
+        return build_level2(args.real_root, args.root, args.manifest_out)
     if args.command == "snapshot":
         return snapshot(args.label, args.baseline_seconds)
     if args.command == "selftest":
