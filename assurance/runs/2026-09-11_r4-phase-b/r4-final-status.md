@@ -1,6 +1,7 @@
-# R4 最终状态小结（草稿，待 `B.VR-b10-r3` 结论后定稿）
+# R4 最终状态小结（**定稿**，2026-09-17）
 
 > 口径：本文件只写**有证据支撑**的结论；每条都指向可核对的提交/证据文件。**未过独立复审的项**明确标注。
+> 最终提交：company-wiki **`c4f5b8a`**（master，CI run `35283319814` success）、revenue-forecast **`65cc18d`**（main，CI run `35283938871` success）。
 
 ## 1. 四个工作包的状态
 
@@ -9,7 +10,9 @@
 | ① | **B05** 读侧畸形共享列 | ✅ **完成并闭环** | wiki `74ffeeb`→`91a20ec`→`41fdfe1`（run `35146033771` 绿）；两轮复审（`B.VR-b05malformed`、`-verify`）全部处置；变异 15/15 |
 | ② | **B08** G8 第②级 | ✅ **完成并闭环** | 隔离根只读引用真实文件、两次 `verified` 读（4,172,424 B，摘要=独立哈希真实文件）、篡改 0 字节、读者占用；零副作用（真实目录递归快照一致、生产主库 49,677,344,768 B / mtime 未变）；`B.VR-b08l2` = APPROVE_WITH_FINDINGS，7 条全处置 |
 | ③ | **B09 / B.AR** | ⚠️ **完成（范围受限，越界在案）** | 只读 manifest 执行 + 从原文重核 hash（6/6 摘要、18/18 产物）；`B.VR-bar` = APPROVE_WITH_FINDINGS + **OVERREACH**；owner 授权我裁定 ⇒ 追认授权、越界**保留在案不重做**、边界改**机械强制**（自测 5/5）+ **机器可核对**（102 次对 25 预算）；身份腿补**交易所登记册**独立基准（8/12 跨来源确认） |
-| ④ | **B10** 单一读取链 | 🔄 **主体完成，最终验证复审在跑** | 见 §2 |
+| ④ | **B10** 单一读取链 | ✅ **完成并闭环**（四轮复审全部处置） | 见 §2 |
+
+**复审汇总**：`B.VR-b10`（增量 1）accepted_with_findings 8 条已处置 → `B.VR-b10-r2`（批次 1-2）**REJECT**，P0+P1×2 已处置 → `B.VR-b10-r3`（r2 处置）**REJECT**，3 条核心 **FIXED**、6 条已处置 → `B.VR-b10-r4`（最终验证）**APPROVE_WITH_FINDINGS**，1 条活 P2 + 4 条 P3 已处置。四轮记录均在 `reviews/`。
 
 ## 2. B10 交付内容（`f92fc71` 为当前形态）
 
@@ -26,11 +29,11 @@
 | 项 | 结果 | 证据 |
 |---|---|---|
 | 门用例 | **15** | `tests/contract/test_b10_read_chain.py` |
-| 变异 | **10/10 KILLED by assertion**（`repository_untouched=true`，副本基线 24 passed） | [evidence/b10-mutations.json](evidence/b10-mutations.json) |
-| 本地 CI 两步 | unit **796 passed**；contract **1904 passed / 8 skipped**（**环境相关**：r3 在 Python 3.14.2 且缺 `xlrd`/`fitz` 的环境下得 `7 failed / 1886 passed / 19 skipped`，并证明 7 条全部**既有且属环境**） | [evidence/b10r5-ci-step1-unit.txt](evidence/b10r5-ci-step1-unit.txt)、[evidence/b10r5-ci-step2-contract.txt](evidence/b10r5-ci-step2-contract.txt) |
-| 远端 CI | wiki `f92fc71`(master) ✅；revenue 文档提交 `b7f6847`(main) ✅（**-01 修复后的最终 sha 见定稿**） | GitHub Actions |
-| P0/P2 行为级验证 | 探针阶段 2（共享列）`escaped:false` + flag + 判定降级；阶段 3（姊妹列）真树 `escaped:false`、**变异副本 `escaped:true` @1727** | [evidence/b10-p0-probe.txt](evidence/b10-p0-probe.txt)、[evidence/b10_p0_probe.py](b10_p0_probe.py) |
-| 独立复审 | `B.VR-b10`（处置完）、`B.VR-b10-r2` = **REJECT**（7 条处置完）、`B.VR-b10-r3` = **REJECT**（核心三条 **FIXED**，6 条新发现处置完） | `reviews/` |
+| 变异 | **12/12 KILLED by assertion**（`repository_untouched=true`，副本基线 26 passed） | [evidence/b10-mutations.json](evidence/b10-mutations.json) |
+| 本地 CI 两步 | unit **798 passed**；contract **1904 passed / 8 skipped**（**环境相关**：r3 在 Python 3.14.2 且缺 `xlrd`/`fitz` 的环境下得 `7 failed / 1886 passed / 19 skipped`，r3 已证明那 7 条全部**既有且属环境**；r4 在 3.13.9 下**逐字复现**本行数字） | [evidence/b10r7-ci-step1-unit.txt](evidence/b10r7-ci-step1-unit.txt)、[evidence/b10r7-ci-step2-contract.txt](evidence/b10r7-ci-step2-contract.txt) |
+| 远端 CI | wiki **`c4f5b8a`**(master) = success，run `35283319814`；revenue **`65cc18d`**(main) = success，run `35283938871`（两条均为最终状态） | GitHub Actions |
+| 行为级验证 | 共享列：探针阶段 2 `escaped:false` + `metadata_unreadable` flag（判定读数**不**归因，归因证据在单元用例）；姊妹列：真树 `escaped:false / failed:1`、**退回那一行的副本 `escaped:true` @1727**；主路径 manifest：坏 manifest + 后面健康文档 ⇒ 真树归一化继续、**副本逃逸**（r4 用真实 `.docx` 独立复现） | [evidence/b10-p0-probe.txt](evidence/b10-p0-probe.txt)、`tests/unit/test_b10_manifest_abort_paths.py` |
+| 独立复审 | 四轮（见上表），全部结论与处置均在 `reviews/` 与 [evidence/b10-implementation.md](evidence/b10-implementation.md) §7/§7bis/§7ter/§7quater/§7quinquies/§7sexies/§7septies | `reviews/` |
 
 ## 4. 边界与残留（不得含糊）
 
@@ -40,8 +43,8 @@
 4. **零副作用主张的残余风险**（复审明示）：生产 catalog 只能 `stat`，故"大小+mtime 不变的内容写入"对工具与复审**都不可见**。
 5. **B.AR 抽样仅 12 份**、`dropbox_stock` 3 份未核验。
 
-## 5. 定稿待办
+## 5. 定稿结论
 
-- [ ] `B.VR-b10-r3` 结论 → 若有发现，逐条处置并入库（可能再动产品/测试）
-- [ ] checkpoint 重建：`python evidence/build_checkpoint.py --reviewed-commit <最终 sha>`
-- [ ] 把本文件的"草稿"标记去掉，并把最终 sha 与 CI run 号写进 §3
+- **四个工作包**：① B05 ✅、② B08 ✅、③ B09/B.AR ⚠️（完成但范围受限 + 越界已裁定在案）、④ B10 ✅ —— 四者均**已实施、已独立复审、发现全部处置、本地两步 CI 与远端 CI 全绿、记录入库**。
+- **未完成项全部是"未获授权"或"已登记待 owner 决定"**，不是"做了一半"：第五 root 注册与跨仓端到端需要**写**权限；`F-B10R2-MISSINGFILE` 一族（缺文件/坏行仍可中止整批）、`scripts/` 两处不受棘轮覆盖的读取者、云同步样本不哈希、以及"大小+mtime 不变的写入不可见"这一残余风险，均需 owner 表态。
+- **checkpoint**：本文件定稿后由 `evidence/build_checkpoint.py --reviewed-commit <最终 sha>` 生成，并 `--verify-only` 复核（见 `checkpoint.json`）。

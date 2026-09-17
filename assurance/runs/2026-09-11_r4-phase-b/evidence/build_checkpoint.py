@@ -152,46 +152,46 @@ def commit_anchor() -> dict:
 
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
-    "phase": ("B (position-transparent index and read-only access) - ALL SEVEN STEPS IMPLEMENTED, PUSHED, "
-              "REVIEWED AND DISPOSED OF; the remaining gates are the independent VR/AR runs (B08/B09), which "
-              "need the isolated copy (G8), and two registered follow-up work packages"),
-    "step": ("B06's and B07's reviews both came back accepted_with_findings (one P1 each) and both are "
-             "disposed of in 3740857 and f2ba5c1. The B06 P1 was the author contradicting his own plan: a "
-             "handle with no fiscal year was labelled verified_input, so period_missing was unreachable - the "
-             "period is now a period fact (fiscal_year or fiscal_period; a published date is when the filing "
-             "was published, not which period it covers) and the state was measured to be reachable through "
-             "latest_as_of, which turned a rule-level case into an end-to-end one. The B07 P1 was a false "
-             "guarantee in the new contract text: it promised an explicit failure whenever no qualified copy "
-             "of the requested version exists, while owner decision S-10 rule 2 allows one row to be served "
-             "on the catalog's declaration - the exception is now named where the sentence lives"),
+    "phase": ("B (position-transparent index and read-only access) - B01-B10 IMPLEMENTED, PUSHED, "
+              "REVIEWED AND DISPOSED OF. B05, B08 (G8 level 2), B09/B.AR and B10 all closed; the "
+              "only open items are registered follow-ups that need the owner's go-ahead (see "
+              "failed_or_unknown)"),
+    "step": ("B10 (single read chain) closed on 2026-09-17 after four review rounds: increment 1 "
+             "(registry + v1 adapters + gate) = accepted_with_findings; batches 1-2 (seven readers "
+             "converged, metadata_state added) = REJECT then disposed; the r2 dispositions = REJECT "
+             "then disposed; and the final verification = APPROVE_WITH_FINDINGS, whose one live P2 "
+             "(the MAIN-path manifest parse) and four evidence problems are disposed of in "
+             "company-wiki c4f5b8a / revenue-forecast 65cc18d. The chain now has ONE parse "
+             "implementation (store.metadata_state / metadata_object), one declared non-chain reader "
+             "(section_query, whose contract is a named error), two count-based ratchets "
+             "(CONFIRMED_DIRECT_READERS = 1 entry; COLUMN_VALUE_HANDOFFS = 12 scopes / 15 sites) plus "
+             "a hard zero for the rest of the product package, and measured gate boundaries written "
+             "into the product"),
     "last_completed_step": (
-        "B03 reviewed and disposed of (2f1ddab), B06 and B07 transplanted (5138546, 5b7ef10), then both "
-        "reviews landed and were disposed of (3740857, f2ba5c1). B06 disposition: the period rule now "
-        "requires a period fact, so a served document without a fiscal year is blocked with period_missing "
-        "(measured reachable via latest_as_of, and covered by an end-to-end case); the qualification dict "
-        "gained conflict_check so it says whether the conflict evidence could be consulted at all; a new "
-        "envelope-level case drives the gap rule through build_resolution_envelope, killing the reviewer's "
-        "surviving mutant M6 (the wiring had been untested); the consumer-side licence alignment is marked "
-        "not_verified (phase C) and the identity/source gaps are registered as rule-level with no pipeline "
-        "state reaching them. B07 disposition: the contract comment names the S-10 rule-2 exception instead "
-        "of promising an unconditional explicit failure; read_verified_bytes now refuses a handle stamped "
-        "with another version (unavailable/unsupported_version) instead of verifying its bytes; the bare "
-        "ValueError for an unknown version is documented as a caller/programming error rather than a "
-        "resolution outcome; the vacuous trace assertion was replaced by 'the refusal must be explained'; "
-        "and the L12 credit moved back to B08. Measured after the dispositions: the targeted set (B01/B03/"
-        "B06/B07 acceptance + the four pre-existing envelope suites + both ratchets + the reason-taxonomy "
-        "gate) 89 passed / 1 skipped, ruff clean, and CI on the disposition commit f2ba5c1 = success "
-        "(run 34726243938)."
+        "B10 dispositions (c4f5b8a / 65cc18d): the main-path manifest parse in normalize_catalog AND "
+        "backfill_text_fingerprints went through a new never-raising _manifest_from_column(), so a "
+        "damaged manifest column is a per-document failure instead of a dead run - pinned by "
+        "tests/unit/test_b10_manifest_abort_paths.py and mutants M11/M12. Before that, the same round "
+        "fixed the sibling-column parse in the failure handler (B-VR-B10R3-01, with a pre-fix reading "
+        "taken against a reverted temp copy) and corrected four evidence defects the review named. "
+        "Measured on the final state: gate 15 cases, mutation 12/12 KILLED by assertion with the "
+        "repository untouched, local CI unit 798 passed and contract 1904 passed / 8 skipped, remote "
+        "CI green on company-wiki c4f5b8a (run 35283319814) and revenue-forecast 65cc18d (run "
+        "35283938871). B05 closed with two review rounds (a live P0 in the author's own fix), B08 "
+        "level 2 closed with a byte-identical probe re-run plus an audit-hook tripwire (production "
+        "catalog open count 0), and B09/B.AR closed with the read-only manifest run plus an "
+        "independently reproduced identity/hash re-derivation - carrying an adjudicated OVERREACH on "
+        "the manifest's own bounds"
     ),
     "current_gate": (
-        "No author-owned gate remains open for the B steps: B01-B07 are implemented, pushed, reviewed and "
-        "disposed of, with CI green on the disposition commit. What remains is outside this session's "
-        "authority or scope: B08/B09 (independent VR/AR on an isolated copy) need gate G8 plus G7, the A05 "
-        "sample list needs the owner's G7 confirmation, and two follow-up work packages are registered - "
-        "the FC-1301 taxonomy does not see the resolver's positionally-returned reasons, and B05's read side "
-        "raises on malformed shared-column metadata where B06 reports no conflict evidence. Two scope "
-        "questions also wait for the owner: whether the preview label should become REACHABLE, and whether "
-        "an unknown version must be expressed with the five error values instead of a caller-type error."
+        "No author-owned gate remains open for phase B. Every step (B01-B10) is implemented, pushed, "
+        "independently reviewed and disposed of, with both repositories green on the final commits. "
+        "What remains is OUTSIDE this session's authority and is listed in failed_or_unknown: the "
+        "whole-run abort paths that a missing file or a damaged row can still reach (registered, not "
+        "fixed), the two scripts/ readers that no ratchet covers, the B.AR halves that would need "
+        "writes (a fifth root registration and a cross-repo end-to-end call), the cloud-synced sample "
+        "that was deliberately not hashed, and the residual risk that a size- and mtime-preserving "
+        "write to the production catalog is invisible to a metadata-only observation"
     ),
     "pending_review": [
         {
@@ -469,6 +469,23 @@ LEDGER = {
                      "override"),
             "record": "reviews/B.VR-b10-r3.json",
         },
+        {
+            "gate": "B.VR (B10 r3 dispositions, final verification)",
+            "scope": "company-wiki 396c5d6 (sibling-column abort fix + evidence corrections)",
+            "status": "closed",
+            "verdict": "approve_with_findings",
+            "findings": {"P2": 1, "P3": 5},
+            "note": ("it independently verified the sibling-column fix as FIXED (its own real-.docx "
+                     "parse failure plus a reverted copy: escaped=true at 1727 with zero "
+                     "normalized.md, and the healthy document behind it starved), re-confirmed the "
+                     "three core fixes and the baseline counts key for key, and reproduced the "
+                     "recorded regression numbers exactly. It then found a live P2 of the same "
+                     "family that needed no parser failure to fire (the MAIN-path manifest parse) "
+                     "and four evidence problems (a probe verdict reading that isolates nothing, "
+                     "stale/unanchored citations, an over-claimed 'all fixed', and a mislabelled "
+                     "phase-3 failure). All disposed of in c4f5b8a/65cc18d"),
+            "record": "reviews/B.VR-b10-r4.json",
+        },
     ],
     "reviewer_assignments": {
         "note": ("recorded by the authoring session from outside the reviewer session; still only "
@@ -476,10 +493,11 @@ LEDGER = {
         "B.DR_rev1": {"reviewer_session_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe", "record": "reviews/B.DR.json"},
     },
     "authorization_needed": [
-        "OWNER/OPERATOR: isolated copy for behavioural probes (gate G8) - see findings F-B00-3 for a two-level proposal",
-        "OPERATOR: independent boundary observation and reviewer assignment records (G5/G6)",
-        "OWNER: confirm the A05 sample list and the read-only command manifest (gate G7 + G4 for behaviour beyond --help)",
-        "NO OWNER RULING IS OUTSTANDING for phase B: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12 and the simplified working mode (section 11) is in force - only scope and risk questions go back to the owner from here",
+        "OWNER: whether to fix the registered whole-run abort paths (a missing file or a damaged row can still abort a whole normalization batch) - see findings F-B10R2-MISSINGFILE",
+        "OWNER: whether the two scripts/ readers of the shared column should be converged, since no ratchet covers them",
+        "OWNER: the B.AR halves that need WRITES (a fifth root registration; a cross-repo end-to-end call) - not authorised in this run and therefore not done",
+        "OPERATOR: reviewer assignment records remain process evidence only (gate G6); the operator-held record is still outstanding",
+        "NO OWNER RULING IS OUTSTANDING for phase B's code: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12, the G8 two-level decision and the read-only manifest were approved on 2026-09-13, and the adjudication of the A05 overreach was delegated to the authoring session on 2026-09-16",
     ],
     "gate_status": {
         "B.DR": ("rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 "
@@ -488,10 +506,34 @@ LEDGER = {
                  "falsified one of the author's justification sentences, now single-sourced; B02 closed by "
                  "the author's documented decision (no fifth prose-only round); B04 = accepted_with_findings "
                  "(all six findings addressed); B05 = rejected (2xP1/5xP2/3xP3) with the P1s and P2s fixed "
-                 "and the residuals registered (no second round, section 11); B01 = implemented and awaiting "
-                 "its one review round. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by "
-                 "S-5, L2 real-byte layer still needs G8"),
-        "B.AR": "not started",
+                 "and the residuals registered, then a verification round = rejected with a LIVE P0 in the "
+                 "author's own fix (the SQL filter ran before the Python guard), disposed of; B01/B03/B06/"
+                 "B07 = accepted_with_findings, all disposed of; B08 = accepted_with_findings (7 findings, "
+                 "disposed of) after a byte-identical probe re-run and an audit-hook tripwire; B10 = four "
+                 "rounds: accepted_with_findings (increment 1), REJECT (batches 1-2: a P0 that was the "
+                 "author's own misfiled crash path plus a false declaration the author's test had PINNED), "
+                 "REJECT (r2 dispositions: one live P2 of the same family), and finally "
+                 "APPROVE_WITH_FINDINGS (r3 dispositions) - all findings disposed of"),
+        "B.AR": ("EXECUTED and reviewed: the read-only manifest run (10 commands / 102 invocations) plus an "
+                 "independent identity/hash re-derivation from the originals (6/6 digests, 18/18 derived "
+                 "artifacts, 8/12 documents confirmed against the exchange registry snapshots). Its review "
+                 "returned APPROVE_WITH_FINDINGS with authorization OVERREACH: the executed set was not the "
+                 "manifest as written (an extra command, --limit 100 against <=50, 102 invocations against "
+                 "budget 25, 85 retries against the stop rule, and approval.by = null). The owner delegated "
+                 "the adjudication to the authoring session, which ratified the read-only reading, kept the "
+                 "overreach on the record, and turned the bounds into mechanical refusals (5/5 selftest) "
+                 "plus a machine-checkable compliance read. Unfinished by AUTHORIZATION, not by choice: a "
+                 "fifth root registration and a cross-repo end-to-end call both need writes; the "
+                 "cloud-synced sample was deliberately not hashed (reading a placeholder hydrates it)"),
+        "G7": ("read-only manifest commands: APPROVED by the owner's in-session instruction, executed, and "
+               "the over-budget/extra-command part ADJUDICATED (ratified with the violation on the record) "
+               "after the independent review refused to treat it as compliant"),
+        "G8": ("two levels, both EXERCISED: level 1 = a temp isolated catalog; level 2 = an isolated root "
+               "referencing a REAL filing directory read-only, with 4,172,424 verified bytes, a tamper "
+               "probe returning zero bytes, and before/after evidence that the real files and the "
+               "production catalog metadata did not move. Residual risk stated by the review: a "
+               "size- and mtime-preserving write to the production catalog would be invisible to a "
+               "metadata-only rule"),
         "B01": ("implemented as 0e28d99 and REVIEWED (accepted_with_findings); dispositions in be2e4ed. The "
                 "resolver calls policy._effective_reusable instead of keeping a kind-only copy, candidate "
                 "selection requires membership (no empty-set escape), config admission refuses quoted "
@@ -590,15 +632,18 @@ LEDGER = {
         "the current acceptance cases run on tmp fixtures; the real four-root and cloud-placeholder behaviour still needs the isolated copy (G8)",
     ],
     "next_step": (
-        "Resolve the F-B01-7 blocker with the owner (authorise the one-case correction in "
-        "revenue-forecast's tests/test_fc1001_isolated_lake.py and register the sidecar-missing rule as a "
-        "B06 acceptance item, or defer), then push the revenue-side commits. Then run B01's one independent "
-        "review round (section 11), which also samples the B05 P2 fixes; then implement B03 (stable read "
-        "bytes: a fixed handle or a controlled snapshot, streaming hashing, and the TOCTOU/"
-        "cloud-placeholder/bad-byte/interruption cases) - B03 carries the byte-level hard gate deferred by "
-        "S-10 - and then B06, which must deliver both the response-level blocked verdict (S-13) and the "
-        "sidecar/identity rule that F-B01-7 shows is missing, then B07. Each step: F10 cases, one commit, "
-        "the ratchet/coverage rerun, one independent review and one implementation record."
+        "Nothing in phase B is waiting on the authoring session. The registered follow-ups that need "
+        "the OWNER's decision before any code moves: (1) the whole-run abort paths a missing file or a "
+        "damaged row can still reach (the unsupported handler's IngestService.ingest, _atomic_write's "
+        "mkdir, the success-path ingest / transaction block / two fetchall calls, and four in-package "
+        "unguarded column parses in activation.py, assertion_service.py, remediation.py and "
+        "scanner.py) - each would make a single bad row a per-document failure; (2) the two scripts/ "
+        "readers of the shared column that no ratchet covers (legacy_observer.py, "
+        "wu904_remediation_restore.py); (3) the B.AR halves that need writes (registering a fifth root, "
+        "and a cross-repo end-to-end call); (4) whether the gate's syntactic ratchets should become a "
+        "dataflow check, given the four measured bypass shapes recorded in GATE_BOUNDARIES. A further "
+        "B10 increment requires no owner input but also no further value: the chain is single, declared "
+        "and gated"
     ),
     "inputs": {
         "note": ("phase A froze the product inputs at wiki 7d4852f; the phase-A run directory "
