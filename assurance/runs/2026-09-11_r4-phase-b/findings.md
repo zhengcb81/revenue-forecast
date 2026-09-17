@@ -1,5 +1,15 @@
 # R4 Phase B 发现（findings）
 
+## `F-B10R2-MISSINGFILE`（**既有问题，非本次改动引起；已登记，未修**）：主文件缺失仍会中止整轮 normalize
+
+- **是什么**：`normalize_catalog` 的**队列**会把"有 active 的 `original_primary` location"的文档全部取出来（SQL 里 `EXISTS (... location_status='active')`），但**不检查该 location 的文件是否还在磁盘上**。文件已缺失时：解析阶段抛 `UnsupportedDocumentError` → 其 handler（`normalizer.py:1725`）里的 `IngestService(...).ingest(...)` 因 manifest 与磁盘不一致抛出 `SourceManifestMismatchError` → **逃出整个 `normalize_catalog`**（该 handler **不在**任何 try 内）。
+- **证据**：`evidence/b10_p0_probe.py` 阶段 1（有效 manifest、磁盘上没有该文件）实测：
+  `escaped: true` / `SourceManifestMismatchError: [WinError 2] 系统找不到指定的文件 … raised_from normalizer.py:1725`（输出存 `evidence/b10-p0-probe.txt`）。
+- **与本次改动的关系**：**无关**。改前它逃得更早（`normalizer.py:1638` 的解析处，即已修的 P0）；现在解析不再逃，于是这条**原本就在**的路径显形。它属于 B05 立下的"单文档问题不得中止整轮"同一族，但**不在** B10（读取链收敛）范围内。
+- **影响面（未量化，别夸大）**：只在"catalog 里 location 仍 active、磁盘文件却已消失"时触发——例如外部删除/移动、同步目录未落地、云占位不可读。**生产影响面我没有量化**（未跑生产 normalize），不得声称。
+- **建议（未实施，需 owner 决定）**：把该 handler 里的 `ingest` 纳入与解析同级的 `try`，或在队列 SQL 里加"文件存在性"过滤（后者改变队列语义）。两条都属**行为改动**，须单独立项 + 用例 + 变异 + 复审。
+- 关联：`F-B10R2-*` 其余各条见 [evidence/b10-implementation.md](b10-implementation.md) §7quinquies。
+
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
 ## B10 批次 1 收敛 + `B.VR-b10` 六条残留处置完成（2026-09-17；wiki `326383d`、revenue `bc799c6`，远端 CI 双绿）

@@ -184,6 +184,38 @@
 **修法**：dict 分支若值是 dict 就**按原样使用**（与批次 2 之前一致），只有**列文本**才走链。修后 ZR-502 11 例 + B10 24 例全绿，整包契约 **1904 passed / 8 skipped**。
 **教训**：把"解析"接进一个既有函数时，必须先确认该函数**两种入参形态**的合同——我只核了 Row 分支，漏了 dict 夹具分支；这次是本地两步 CI（而非我的定点用例）把它抓出来的。
 
+## 9. **B10-5 收口**：可回退版本、移除条件、以及 B10 **声称/不声称**什么
+
+### 9.1 可回退版本（每个批次一个回退点，均在 company-wiki）
+
+| 批次 | 提交 | 父提交（= 回退目标） | 回退方式与代价 |
+|---|---|---|---|
+| 增量 1：注册表 + v1 adapter 收敛 + 门 | `b829b03` | `41fdfe1` | `git revert b829b03`：恢复 `service._read_shared_metadata` 的第二份实现（只影响读侧，**不动任何数据**） |
+| 门补洞（递归 + M7） | `c4a69e0` | `b829b03` | 同上，属门/测试 |
+| 棘轮②（值传递）+ 边界记录 | `d92bb33` | `c4a69e0` | 回退即回到"只有棘轮①"，**会**重新打开已实测的 parse-by-helper 绕过 ⇒ 回退前须知 |
+| P1 修正（`bundle.reads_files`） | `e36b984` | `d92bb33` | 回退会把"bundle 从不打开文件"的**错误声明**放回 ⇒ 不建议 |
+| 六条残留处置（表注解 + 限定键） | `60b1198` | `e36b984` | 回退回到"键集合"棘轮 ⇒ 同作用域新增会被放行 |
+| **批次 1 收敛（7 站点 + `metadata_state`）** | `326383d` | `60b1198` | `git revert 326383d`：7 个站点恢复各自解析；**读侧行为回到"部分畸形输入会抛"**（不丢数据、不改血缘） |
+| **批次 2（`_frontmatter`）+ 两处修复** | `5ec18a5` | `326383d` | 回退回到"元数据不可读会中止整轮"（**不建议**） |
+| **P0/P1 处置（r2）** | `f92fc71` | `5ec18a5` | 回退重新打开 P0（中止整轮）与 P1（证据缺失记成通过）⇒ **不建议** |
+
+**回退不回滚任何数据**：B10 全程**只改读取路径**——没有 catalog 写入、没有 migration、没有删除、没有改动血缘/证据；`metadata_state` 只是解析入口，不落盘。因此"回退代码/配置不回滚原始数据与历史来源证据"这一验收条件**天然成立**（可核对：这些提交里没有 `INSERT/UPDATE/DELETE` 语义变更，唯一涉及的写路径是既有行为）。
+
+### 9.2 旧入口 / 旧字段的**移除条件**（写在产品代码里，可被测试读到）
+
+| 入口 | 现状 | 移除条件 |
+|---|---|---|
+| `service._read_shared_metadata` | 已收敛为**委托**（v1 adapter 名字保留） | `read_chain.LEGACY_READ_ADAPTERS[..]["removal_condition"]`：两个 R4 周期内除该 adapter 本身外无调用者，且调用点直接用 `store.metadata_object` |
+| `reader.ReadOnlyCatalogReader.resolve_handle` | **claim-level**，src 内 0 调用者 | 调用者迁到 `SourceResolver.resolve` + `read_verified_bytes`，并在两个周期内无 src/adapters/消费者仓调用 |
+| `reader.ReadOnlyCatalogReader.bundle` | **claim-level（但读 artifact 文件 `reads_files=True`）** | 同上 |
+| `section_query.list_sections` 的直读 | **刻意保留**（具名报错） | `EXPLICIT_NON_CHAIN_READERS` 里的理由消失时（即其合同改为不报错）才可收敛 |
+| `CONFIRMED_DIRECT_READERS` 基线 | 只剩 1 条（上述 section_query），带**表注解 + 站点计数** | 基线**只许降**；新增/同作用域多一处 ⇒ 门红 |
+
+### 9.3 B10 **声称**什么 / **不声称**什么
+
+- **声称**：共享列/同名 artifacts 列的全部**已知直接解析点**已收敛到**单一解析实现**（`store.metadata_state` / `metadata_object`），或用**显式声明**保留（section_query）；两条**计数棘轮**（每作用域站点数）覆盖 `source_catalog/**`，另有"产品包其余部分 0 处"硬规则；`reader` 的两个旧入口**具名**为 v1 adapter 并声明了它们**不是**字节级；`normalize_catalog` 的解析不再能中止整轮；不可读元数据是**可见的**（flag + 降级判定）。
+- **不声称**：① 棘轮是**语法形状**上的棘轮，**不是**数据流分析——`GATE_BOUNDARIES` 列出的四种形状（中间变量、被调方内部下标、第三方解析器、库外读者）**未覆盖**；② `scripts/legacy_observer.py:96`、`scripts/wu904_remediation_restore.py:65` **不受任何棘轮覆盖**（已实测登记）；③ 主文件缺失仍会中止整轮（`F-B10R2-MISSINGFILE`，既有问题，未修）；④ `tests/` 里 10 处直读是夹具，不在门内；⑤ B10 未做"全仓所有 `metadata_json` 语义统一"——`artifacts.metadata_json` 与 `documents.metadata_json` 共用解析器，但两者的**字段语义**未统一（不在本工作包范围）。
+
 ## 8. 状态与下一步
 
 **提交与 CI**（本轮小阶段收口，**已核对**）：
