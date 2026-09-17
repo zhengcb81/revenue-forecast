@@ -75,11 +75,14 @@ MUTANTS: list[dict] = [
     },
     {
         "id": "M3",
-        "file": "src/company_wiki/source_catalog/artifact_backfill.py",
+        "file": "src/company_wiki/source_catalog/normalizer.py",
         "test": "test_b10_baseline_has_no_stale_entry",
-        "why": "a baselined site is converged but the baseline is not lowered",
-        "replace": ("metadata = json.loads(row[\"metadata_json\"] or \"{}\")",
-                    "metadata = metadata_object(row[\"metadata_json\"])"),
+        "why": ("a DEFERRED baselined site (normalizer.py::normalize_catalog, failure-path "
+                "semantics) is converged without lowering the baseline - the stale-entry test "
+                "must catch the un-lowered entry.  Retargeted after batch 1 converged the "
+                "original artifact_backfill site for real."),
+        "replace": ("        metadata = json.loads(document[\"metadata_json\"])",
+                    "        metadata = metadata_object(document[\"metadata_json\"])"),
     },
     {
         "id": "M4",

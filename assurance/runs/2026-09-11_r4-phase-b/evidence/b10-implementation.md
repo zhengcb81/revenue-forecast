@@ -78,10 +78,10 @@
 
 | 步骤 | 命令 | 结果 |
 |---|---|---|
-| Unit tests | `python -m pytest tests/unit -q --tb=short` | **787 passed**（51.94s）→ [evidence/b10r2-ci-step1-unit.txt](b10r2-ci-step1-unit.txt) |
-| Contract tests | `python -m pytest tests/contract -q --tb=short --ignore=…（CI 的 8 条 ignore 原样）` | **1902 passed, 8 skipped**（672.73s）→ [evidence/b10r2-ci-step2-contract.txt](b10r2-ci-step2-contract.txt) |
+| Unit tests | `python -m pytest tests/unit -q --tb=short` | **791 passed**（49.65s）→ [evidence/b10r3-ci-step1-unit.txt](b10r3-ci-step1-unit.txt)（含 `metadata_state` 的 4 个新用例） |
+| Contract tests | `python -m pytest tests/contract -q --tb=short --ignore=…（CI 的 8 条 ignore 原样）` | **1903 passed, 8 skipped**（689.53s）→ [evidence/b10r3-ci-step2-contract.txt](b10r3-ci-step2-contract.txt) |
 
-**口径（不夸大）**：这两次跑在六条残留处置完成后的**最终修订**上（门 13 用例；1902 = 1896 + 6）。早先一次 11 用例修订的跑（787 / 1900+8）保留在 `b10-ci-step1-unit.txt` / `b10-ci-step2-contract.txt`。
+**口径（不夸大）**：这是**批次 1 收敛后最终状态**的两步全绿（791 = 787 + 4；1903 = 1896 + 7）。历史捕获：11 用例修订 787/1900+8（`b10-ci-step*.txt`）、13 用例修订 787/1902+8（`b10r2-ci-step*.txt`）。
 
 ## 7. 独立复审 `B.VR-b10`（记录 [reviews/B.VR-b10.json](../reviews/B.VR-b10.json)）
 
@@ -112,6 +112,31 @@
 | `B-VR-B10-08` | **已修** | `repository_untouched` 主判据改为 **`git status --porcelain` 前后一致**，辅以**行尾不敏感**指纹（CRLF 归一 LF 再哈希）；证据里记录前后两次 `git status`，不再声称可从 git 复现原始字节哈希 |
 
 **复核数字**：门 **13 用例**全绿；变异 **8/8 KILLED by assertion**（M2/M3 在新键格式下仍被杀；M8 钉住助手绕过）；ruff clean。`killed_by` 判定从"看输出里的字"改为"看 **pytest 退出码**（1=断言失败，2=收集错误）"。
+
+## 7ter. **B10-3 批次 1**：7 个站点收敛到单一链 + `metadata_state`（报告半链）+ 显式非链注册表
+
+**新增产品能力**（`store.py`）：`metadata_state(raw) -> (object, state)` —— 单一链的**报告半**。
+`state ∈ {None, "unreadable", "not_object"}`；`metadata_object(raw)` 变为 `metadata_state(raw)[0]`
+（**同一个解析实现**，两个入口）。这样"只想要对象"的调用者与"要报告状态"的调用者**共享同一次解析**，
+而不是各留一份 guard。
+
+**本批收敛（7 处）**：
+
+| 站点 | 原来 | 收敛后 | 行为差 |
+|---|---|---|---|
+| `artifact_backfill._classify`（artifacts 列） | `json.loads(row[...] or "{}")` + try/(JSONDecodeError, TypeError) | `metadata_object(...)` | `RecursionError`/`UnicodeDecodeError` 从传播变为降级 `{}`（更稳，不丢数据） |
+| `artifact_read_model._artifact_row`（artifacts 列） | `json.loads(str(... or "{}"))` + try/JSONDecodeError | `metadata_object(...)` | 同上；另去掉了一个多余的 `str()` 包裹与函数内 `import json` |
+| `scanner._merge_document_row`（documents） | try/(JSONDecodeError, TypeError, RecursionError) + isinstance | `metadata_object(...)` | 等价（链的 catch 是旧集的超集方向，isinstance 由链保证） |
+| `scanner._previous_provenance_fields`（documents，**盲点**） | try/(JSONDecodeError, TypeError, RecursionError) + isinstance | `metadata_object(stored_json)` | 等价；`B-VR-B10-04` 的漏报条目随之从基线移除 |
+| `source_lifecycle._safety_receipt`（documents） | try/JSONDecodeError + isinstance | `metadata_object(...)` | `RecursionError`/`TypeError` 从传播变为"无回执"（更稳） |
+| `service.SourceCatalog.query_filing_candidates`（documents，**报告型**） | try/(TypeError, ValueError, RecursionError) + isinstance → `metadata_problem="unreadable_metadata"` | `metadata_state(...)`，两个状态都映射到**同一个** `metadata_problem` 字符串 | 命名状态逐字保留 |
+| `resolver._metadata_conflict_reason`（documents，**报告型**） | 同上形状 → 两个 reason 字符串 | `metadata_state(...)`，两个状态映射到原来的两个 reason 字符串 | 命名状态逐字保留 |
+
+**不动（登记理由）**：
+- `normalizer._frontmatter` / `normalize_catalog:1633`：解析位于 normalize 的**失败路径**（畸形列现在产生"逐文档 normalization-failure 记录 + 尝试计数"）；收敛成 `{}` 会改变这些记录。**需单独分析后再动**（B10-3 批次 2 候选）。
+- `section_query.list_sections`：合同就是**具名报错**（`SectionQueryError`）→ 改成 `{}` 会把错误藏起来 ⇒ 入册 `EXPLICIT_NON_CHAIN_READERS`（新注册表），声明"为什么不走链"——落实"不永久默默双跑"。
+
+**收敛后基线**：`CONFIRMED_DIRECT_READERS` 只剩 **3 条**（normalizer ×2 + section_query），每条带**表注解**与"为什么还没收敛"的 note；`COLUMN_VALUE_HANDOFFS` 13 条（链调用本身也在内，按设计不许增长）。
 
 ## 8. 状态与下一步
 
