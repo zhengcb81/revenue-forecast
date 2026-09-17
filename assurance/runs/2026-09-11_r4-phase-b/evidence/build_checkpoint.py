@@ -379,6 +379,96 @@ LEDGER = {
             "record": "reviews/B.DR.json",
             "reviewer_self_reported_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe",
         },
+        {
+            "gate": "B.VR (B05 malformed shared column)",
+            "scope": "company-wiki 74ffeeb..41fdfe1 (read side of documents.metadata_json)",
+            "status": "closed",
+            "verdict": "rejected_then_verified",
+            "findings": {"P0": 1, "P1": 3, "P2": 2},
+            "note": ("round 1 found a LIVE P0 in the author's own fix: the SQL json_extract ran before "
+                     "the Python guard, so a malformed row raised OperationalError; round 1's P1s "
+                     "(RecursionError escaping both guards, the driver-level decode failure) were real "
+                     "too. All disposed of; the verification round confirmed 15/15 mutants and the "
+                     "shadowing bug the author had introduced and reverted"),
+            "records": ["reviews/B.VR-b05malformed.json", "reviews/B.VR-b05malformed-verify.json"],
+            "disposition": "evidence/b-vr-b05malformed-disposition.md",
+        },
+        {
+            "gate": "B.VR (B08, G8 level 2)",
+            "scope": "isolated root referencing a REAL filing directory read-only",
+            "status": "closed",
+            "verdict": "accepted_with_findings",
+            "findings": {"P2": 2, "P3": 5},
+            "note": ("its strongest result is a byte-identical re-run of the probe plus an "
+                     "add-audit-hook tripwire around a full build and probe (production catalog open "
+                     "count 0). It caught two P2s in the author's work: the tamper case is not a "
+                     "content test (the wrong digest is refused at the handle version-pin gate before "
+                     "any file is opened) and _real_root_state only covered direct files. Both fixed"),
+            "record": "reviews/B.VR-b08l2.json",
+            "disposition": "evidence/b-vr-b08l2-disposition.md",
+        },
+        {
+            "gate": "B.AR / B09",
+            "scope": "approved READ-ONLY manifest commands + identity/hash re-derivation from the originals",
+            "status": "closed_with_overreach",
+            "verdict": "approve_with_findings_plus_authorization_overreach",
+            "findings": {"P1": 1, "P2": 4, "P3": 3},
+            "note": ("it confirmed the evidence was not tampered with (8/8 side-file hashes, its own "
+                     "read-only re-run reproducing 9/10 commands byte-for-byte) and that the executed "
+                     "set was NOT the manifest as written: an extra command, --limit 100 against the "
+                     "manifest's own <= 50, 102 invocations against budget 25, 85 non-zero retries "
+                     "against the stop rule, and approval.by = null (never approved in writing). The "
+                     "owner delegated the adjudication to the authoring session, which RATIFIED the "
+                     "read-only reading, kept the overreach on the record, and turned the bounds into "
+                     "mechanical refusals with a 5/5 selftest plus a machine-checkable compliance read"),
+            "record": "reviews/B.VR-bar.json",
+            "disposition": "evidence/b-vr-bar-disposition.md",
+            "adjudication": "owner-authorisation-and-my-adjudication-2026-09-16.md",
+        },
+        {
+            "gate": "B.VR (B10 increment 1)",
+            "scope": "company-wiki b829b03/c4a69e0/d92bb33 (read-chain registry + v1 adapter + gate)",
+            "status": "closed",
+            "verdict": "accepted_with_findings",
+            "findings": {"P1": 1, "P2": 2, "P3": 4},
+            "note": ("the P1 was a false declaration in the author's own registry: reader.bundle was "
+                     "registered as claim-level/'never opens a file' while it hashes artifact files "
+                     "through artifact_handle.validate_artifact. It also measured eight gate-bypass "
+                     "shapes, which drove the second ratchet and the count-based ratchets"),
+            "record": "reviews/B.VR-b10.json",
+            "disposition": "evidence/b-vr-b10-disposition.md",
+        },
+        {
+            "gate": "B.VR (B10 batches 1-2)",
+            "scope": "company-wiki 326383d/5ec18a5 (seven readers converged + metadata_state)",
+            "status": "closed",
+            "verdict": "rejected_then_disposed",
+            "findings": {"P0": 1, "P1": 2, "P2": 2, "P3": 2},
+            "note": ("the P0 was real and was the author's own misfiling: the metadata parse in "
+                     "normalize_catalog is NOT inside the per-document try (AST: the only Try covers "
+                     "1665-1679), so one malformed column aborted the whole run - and the author had "
+                     "registered that unguarded crash path as a deliberate non-chain reader, WITH a "
+                     "test pinning the false declaration. A P1 followed (degrading silently recorded "
+                     "an identity verdict with no evidence). All disposed of"),
+            "record": "reviews/B.VR-b10-r2.json",
+            "note_2": ("its partial work also exposed two holes the author then fixed: count-less "
+                       "ratchets let a second reader inside a baselined scope pass, and the harness "
+                       "recorded a mutant-induced SyntaxError as an assertion kill"),
+        },
+        {
+            "gate": "B.VR (B10 r2 dispositions)",
+            "scope": "company-wiki f92fc71 (P0 fix + true declaration + visible degradation)",
+            "status": "closed",
+            "verdict": "rejected_then_disposed",
+            "findings": {"P2": 1, "P3": 5},
+            "note": ("it verified all three core fixes as FIXED with its own AST map, its own "
+                     "before/after driver and a re-applied mutant, then rejected on one live P2 (the "
+                     "SAME defect shape on the sibling normalization_metadata_json column) plus stale "
+                     "counts/reasons in the record. Both were disposed of; the P2 fix carries a "
+                     "pre-fix reading taken against a mutated temp copy via the probe's B10_WIKI_SRC "
+                     "override"),
+            "record": "reviews/B.VR-b10-r3.json",
+        },
     ],
     "reviewer_assignments": {
         "note": ("recorded by the authoring session from outside the reviewer session; still only "
