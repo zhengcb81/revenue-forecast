@@ -1,5 +1,19 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-17 — **B10 主体交付：批次 1/2 收敛 + 计数棘轮 + r2 的 P0/P1 处置 + B10-5 收口**（wiki `f92fc71`、revenue `473444f`；远端 CI 全绿）
+
+- **增量 1**（`b829b03`/`c4a69e0`/`d92bb33`）：`read_chain.py` 注册表（单一链 `store.metadata_object`、3 条 legacy adapter 带 `reads_files`/移除条件、机器导出棘轮基线）+ `service._read_shared_metadata` 收敛为委托 + 门；复审 `B.VR-b10` 8 条**全部处置**（其中 P1：`reader.bundle` **不是**无文件访问——它经 `validate_artifact` 读 artifact 字节）。
+- **批次 1**（`326383d`）：新增 `store.metadata_state`（单一链的**报告半**：`(object, state)`），7 个站点收敛（4 处健壮性：畸形从抛异常→降级；2 处报告型：逐字保留命名状态）；`section_query` 的具名报错**声明**为 `EXPLICIT_NON_CHAIN_READERS`。
+- **批次 2**（`5ec18a5`）：`_frontmatter` 由"**中止整轮**"改为"降级"；`normalize_catalog` 的解析一度被我误判为"在 try 内、异常进 `failure_reasons`"（**假声明**）。
+- **我实测出并修掉的两个洞**：① 棘轮只比键集合 ⇒ **同作用域新增解析被放行**（实测 exit 0）⇒ 升级为**每作用域站点计数**（13 作用域/16 站点，机器导出）；② harness 把"变异体语法错误"记成 assertion 杀死 ⇒ 新增 `invalid_mutant_syntax` 且**不算 kill**（M2 曾是无效变异）。
+- **r2 复审判定 `REJECT` + 活 P0，7 条全部处置**（`f92fc71`）：**P0** `normalizer` 的解析确实不在 try 内（AST：唯一 try 起于 1664、body 1665-1679）⇒ 畸形列中止整轮；改走 `metadata_state`，**行为级证据** = 新探针 `evidence/b10_p0_probe.py`（阶段 2 `escaped:false` + 产物带 flag）+ 变异 **M10**；**P1** 删除假声明（**我上一版测试把它钉住了** ⇒ 等于让门保护缺陷，断言已删）；**P1** 不可读元数据现在**可见**（`metadata_unreadable` flag + identity 降级 `unverifiable`）；门扩到**整个产品包**（0 处硬规则）+ 库外读者实测登记（`scripts/`2、`tools/`0、`tests/`10）。
+- **我自己制造并由本地 CI 抓住的回归**：第一版把 `_frontmatter` 的 **dict 分支**也送去链路，而该分支合同是"值已是解析好的对象"（ZR-502 夹具）⇒ **三例契约用例变红**（`unverifiable` vs `consistent`）⇒ 修为"dict 按原样、只有列文本走链"。**教训**：接线前核**两种入参形态**的合同。
+- **B10-5 收口**（`473444f`）：逐批次**回退点**（父提交）、旧入口/旧字段的**移除条件**（写在 `read_chain` 注册表里可被测试读到）、以及 B10 **声称/不声称**清单（棘轮是语法形状、非数据流；库外读者未覆盖；`F-B10R2-MISSINGFILE` 未修）。
+- **新登记（既有问题，非本次引起）**：`F-B10R2-MISSINGFILE` —— 主文件缺失时整轮仍中止（`normalizer.py:1725`，探针阶段 1 证据）；影响面**未量化**，建议需 owner 决定。
+- **数字**：门 **15 用例**、变异 **10/10 KILLED by assertion**、本地 unit **796** / contract **1904 passed + 8 skipped**、远端 CI wiki `f92fc71` ✅ / revenue `4749b05`+`473444f` ✅。
+- **在跑**：`B.VR-b10-r3` 最终验证复审（独立验证 7 条是否真修 + 是否引入新问题）。它回来后：处置 → checkpoint 重建（`evidence/build_checkpoint.py --reviewed-commit <最终 sha>`）→ R4 最终状态小结。
+
+
 ## 2026-09-14 → 2026-09-16 — **B05 实施+两轮复审闭环；FC-1301 门被复审判为不可信后重做；A05/B.AR 只读跑完；B08 第②级读到真实字节**（三仓 CI 全绿：wiki `41fdfe1` run `35146033771`、revenue `09cce40` run `35146465514`）
 
 - **B05 读侧畸形共享列（已交付）**：从"可复现的畸形输入"开始（[evidence/b05-malformed-column-pre-fix.txt](evidence/b05-malformed-column-pre-fix.txt)）→ 修 → 用例 + 变异证明（[evidence/b05_mutations.py](evidence/b05_mutations.py)，**15/15 KILLED**）→ 两轮独立复审（[reviews/B.VR-b05malformed.json](reviews/B.VR-b05malformed.json)、[…-verify.json](reviews/B.VR-b05malformed-verify.json)）→ 全部处置（[evidence/b-vr-b05malformed-disposition.md](evidence/b-vr-b05malformed-disposition.md)）。wiki 提交 `74ffeeb`（具名 blocked 状态而非崩溃）→ `91a20ec`（SQL `json_valid`、`RecursionError`、驱动层 UTF-8 解码、三处 reader）→ `41fdfe1`（第二轮：三个 documents 列 reader + **我自己的 shadowing bug**）。
