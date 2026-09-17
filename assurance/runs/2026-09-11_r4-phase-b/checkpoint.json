@@ -1,9 +1,9 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
-  "phase": "B (position-transparent index and read-only access) - ALL SEVEN STEPS IMPLEMENTED, PUSHED, REVIEWED AND DISPOSED OF; the remaining gates are the independent VR/AR runs (B08/B09), which need the isolated copy (G8), and two registered follow-up work packages",
-  "step": "B06's and B07's reviews both came back accepted_with_findings (one P1 each) and both are disposed of in 3740857 and f2ba5c1. The B06 P1 was the author contradicting his own plan: a handle with no fiscal year was labelled verified_input, so period_missing was unreachable - the period is now a period fact (fiscal_year or fiscal_period; a published date is when the filing was published, not which period it covers) and the state was measured to be reachable through latest_as_of, which turned a rule-level case into an end-to-end one. The B07 P1 was a false guarantee in the new contract text: it promised an explicit failure whenever no qualified copy of the requested version exists, while owner decision S-10 rule 2 allows one row to be served on the catalog's declaration - the exception is now named where the sentence lives",
-  "last_completed_step": "B03 reviewed and disposed of (2f1ddab), B06 and B07 transplanted (5138546, 5b7ef10), then both reviews landed and were disposed of (3740857, f2ba5c1). B06 disposition: the period rule now requires a period fact, so a served document without a fiscal year is blocked with period_missing (measured reachable via latest_as_of, and covered by an end-to-end case); the qualification dict gained conflict_check so it says whether the conflict evidence could be consulted at all; a new envelope-level case drives the gap rule through build_resolution_envelope, killing the reviewer's surviving mutant M6 (the wiring had been untested); the consumer-side licence alignment is marked not_verified (phase C) and the identity/source gaps are registered as rule-level with no pipeline state reaching them. B07 disposition: the contract comment names the S-10 rule-2 exception instead of promising an unconditional explicit failure; read_verified_bytes now refuses a handle stamped with another version (unavailable/unsupported_version) instead of verifying its bytes; the bare ValueError for an unknown version is documented as a caller/programming error rather than a resolution outcome; the vacuous trace assertion was replaced by 'the refusal must be explained'; and the L12 credit moved back to B08. Measured after the dispositions: the targeted set (B01/B03/B06/B07 acceptance + the four pre-existing envelope suites + both ratchets + the reason-taxonomy gate) 89 passed / 1 skipped, ruff clean, and CI on the disposition commit f2ba5c1 = success (run 34726243938).",
-  "current_gate": "No author-owned gate remains open for the B steps: B01-B07 are implemented, pushed, reviewed and disposed of, with CI green on the disposition commit. What remains is outside this session's authority or scope: B08/B09 (independent VR/AR on an isolated copy) need gate G8 plus G7, the A05 sample list needs the owner's G7 confirmation, and two follow-up work packages are registered - the FC-1301 taxonomy does not see the resolver's positionally-returned reasons, and B05's read side raises on malformed shared-column metadata where B06 reports no conflict evidence. Two scope questions also wait for the owner: whether the preview label should become REACHABLE, and whether an unknown version must be expressed with the five error values instead of a caller-type error.",
+  "phase": "B (position-transparent index and read-only access) - B01-B10 IMPLEMENTED, PUSHED, REVIEWED AND DISPOSED OF. B05, B08 (G8 level 2), B09/B.AR and B10 all closed; the only open items are registered follow-ups that need the owner's go-ahead (see failed_or_unknown)",
+  "step": "B10 (single read chain) closed on 2026-09-17 after four review rounds: increment 1 (registry + v1 adapters + gate) = accepted_with_findings; batches 1-2 (seven readers converged, metadata_state added) = REJECT then disposed; the r2 dispositions = REJECT then disposed; and the final verification = APPROVE_WITH_FINDINGS, whose one live P2 (the MAIN-path manifest parse) and four evidence problems are disposed of in company-wiki c4f5b8a / revenue-forecast 65cc18d. The chain now has ONE parse implementation (store.metadata_state / metadata_object), one declared non-chain reader (section_query, whose contract is a named error), two count-based ratchets (CONFIRMED_DIRECT_READERS = 1 entry; COLUMN_VALUE_HANDOFFS = 12 scopes / 15 sites) plus a hard zero for the rest of the product package, and measured gate boundaries written into the product",
+  "last_completed_step": "B10 dispositions (c4f5b8a / 65cc18d): the main-path manifest parse in normalize_catalog AND backfill_text_fingerprints went through a new never-raising _manifest_from_column(), so a damaged manifest column is a per-document failure instead of a dead run - pinned by tests/unit/test_b10_manifest_abort_paths.py and mutants M11/M12. Before that, the same round fixed the sibling-column parse in the failure handler (B-VR-B10R3-01, with a pre-fix reading taken against a reverted temp copy) and corrected four evidence defects the review named. Measured on the final state: gate 15 cases, mutation 12/12 KILLED by assertion with the repository untouched, local CI unit 798 passed and contract 1904 passed / 8 skipped, remote CI green on company-wiki c4f5b8a (run 35283319814) and revenue-forecast 65cc18d (run 35283938871). B05 closed with two review rounds (a live P0 in the author's own fix), B08 level 2 closed with a byte-identical probe re-run plus an audit-hook tripwire (production catalog open count 0), and B09/B.AR closed with the read-only manifest run plus an independently reproduced identity/hash re-derivation - carrying an adjudicated OVERREACH on the manifest's own bounds",
+  "current_gate": "No author-owned gate remains open for phase B. Every step (B01-B10) is implemented, pushed, independently reviewed and disposed of, with both repositories green on the final commits. What remains is OUTSIDE this session's authority and is listed in failed_or_unknown: the whole-run abort paths that a missing file or a damaged row can still reach (registered, not fixed), the two scripts/ readers that no ratchet covers, the B.AR halves that would need writes (a fifth root registration and a cross-repo end-to-end call), the cloud-synced sample that was deliberately not hashed, and the residual risk that a size- and mtime-preserving write to the production catalog is invisible to a metadata-only observation",
   "pending_review": [
     {
       "gate": "B.DR rev6",
@@ -190,6 +190,104 @@
       },
       "record": "reviews/B.DR.json",
       "reviewer_self_reported_id": "7ad6f0f0-717a-4b25-a1bf-b3604b8953fe"
+    },
+    {
+      "gate": "B.VR (B05 malformed shared column)",
+      "scope": "company-wiki 74ffeeb..41fdfe1 (read side of documents.metadata_json)",
+      "status": "closed",
+      "verdict": "rejected_then_verified",
+      "findings": {
+        "P0": 1,
+        "P1": 3,
+        "P2": 2
+      },
+      "note": "round 1 found a LIVE P0 in the author's own fix: the SQL json_extract ran before the Python guard, so a malformed row raised OperationalError; round 1's P1s (RecursionError escaping both guards, the driver-level decode failure) were real too. All disposed of; the verification round confirmed 15/15 mutants and the shadowing bug the author had introduced and reverted",
+      "records": [
+        "reviews/B.VR-b05malformed.json",
+        "reviews/B.VR-b05malformed-verify.json"
+      ],
+      "disposition": "evidence/b-vr-b05malformed-disposition.md"
+    },
+    {
+      "gate": "B.VR (B08, G8 level 2)",
+      "scope": "isolated root referencing a REAL filing directory read-only",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P2": 2,
+        "P3": 5
+      },
+      "note": "its strongest result is a byte-identical re-run of the probe plus an add-audit-hook tripwire around a full build and probe (production catalog open count 0). It caught two P2s in the author's work: the tamper case is not a content test (the wrong digest is refused at the handle version-pin gate before any file is opened) and _real_root_state only covered direct files. Both fixed",
+      "record": "reviews/B.VR-b08l2.json",
+      "disposition": "evidence/b-vr-b08l2-disposition.md"
+    },
+    {
+      "gate": "B.AR / B09",
+      "scope": "approved READ-ONLY manifest commands + identity/hash re-derivation from the originals",
+      "status": "closed_with_overreach",
+      "verdict": "approve_with_findings_plus_authorization_overreach",
+      "findings": {
+        "P1": 1,
+        "P2": 4,
+        "P3": 3
+      },
+      "note": "it confirmed the evidence was not tampered with (8/8 side-file hashes, its own read-only re-run reproducing 9/10 commands byte-for-byte) and that the executed set was NOT the manifest as written: an extra command, --limit 100 against the manifest's own <= 50, 102 invocations against budget 25, 85 non-zero retries against the stop rule, and approval.by = null (never approved in writing). The owner delegated the adjudication to the authoring session, which RATIFIED the read-only reading, kept the overreach on the record, and turned the bounds into mechanical refusals with a 5/5 selftest plus a machine-checkable compliance read",
+      "record": "reviews/B.VR-bar.json",
+      "disposition": "evidence/b-vr-bar-disposition.md",
+      "adjudication": "owner-authorisation-and-my-adjudication-2026-09-16.md"
+    },
+    {
+      "gate": "B.VR (B10 increment 1)",
+      "scope": "company-wiki b829b03/c4a69e0/d92bb33 (read-chain registry + v1 adapter + gate)",
+      "status": "closed",
+      "verdict": "accepted_with_findings",
+      "findings": {
+        "P1": 1,
+        "P2": 2,
+        "P3": 4
+      },
+      "note": "the P1 was a false declaration in the author's own registry: reader.bundle was registered as claim-level/'never opens a file' while it hashes artifact files through artifact_handle.validate_artifact. It also measured eight gate-bypass shapes, which drove the second ratchet and the count-based ratchets",
+      "record": "reviews/B.VR-b10.json",
+      "disposition": "evidence/b-vr-b10-disposition.md"
+    },
+    {
+      "gate": "B.VR (B10 batches 1-2)",
+      "scope": "company-wiki 326383d/5ec18a5 (seven readers converged + metadata_state)",
+      "status": "closed",
+      "verdict": "rejected_then_disposed",
+      "findings": {
+        "P0": 1,
+        "P1": 2,
+        "P2": 2,
+        "P3": 2
+      },
+      "note": "the P0 was real and was the author's own misfiling: the metadata parse in normalize_catalog is NOT inside the per-document try (AST: the only Try covers 1665-1679), so one malformed column aborted the whole run - and the author had registered that unguarded crash path as a deliberate non-chain reader, WITH a test pinning the false declaration. A P1 followed (degrading silently recorded an identity verdict with no evidence). All disposed of",
+      "record": "reviews/B.VR-b10-r2.json",
+      "note_2": "its partial work also exposed two holes the author then fixed: count-less ratchets let a second reader inside a baselined scope pass, and the harness recorded a mutant-induced SyntaxError as an assertion kill"
+    },
+    {
+      "gate": "B.VR (B10 r2 dispositions)",
+      "scope": "company-wiki f92fc71 (P0 fix + true declaration + visible degradation)",
+      "status": "closed",
+      "verdict": "rejected_then_disposed",
+      "findings": {
+        "P2": 1,
+        "P3": 5
+      },
+      "note": "it verified all three core fixes as FIXED with its own AST map, its own before/after driver and a re-applied mutant, then rejected on one live P2 (the SAME defect shape on the sibling normalization_metadata_json column) plus stale counts/reasons in the record. Both were disposed of; the P2 fix carries a pre-fix reading taken against a mutated temp copy via the probe's B10_WIKI_SRC override",
+      "record": "reviews/B.VR-b10-r3.json"
+    },
+    {
+      "gate": "B.VR (B10 r3 dispositions, final verification)",
+      "scope": "company-wiki 396c5d6 (sibling-column abort fix + evidence corrections)",
+      "status": "closed",
+      "verdict": "approve_with_findings",
+      "findings": {
+        "P2": 1,
+        "P3": 5
+      },
+      "note": "it independently verified the sibling-column fix as FIXED (its own real-.docx parse failure plus a reverted copy: escaped=true at 1727 with zero normalized.md, and the healthy document behind it starved), re-confirmed the three core fixes and the baseline counts key for key, and reproduced the recorded regression numbers exactly. It then found a live P2 of the same family that needed no parser failure to fire (the MAIN-path manifest parse) and four evidence problems (a probe verdict reading that isolates nothing, stale/unanchored citations, an over-claimed 'all fixed', and a mislabelled phase-3 failure). All disposed of in c4f5b8a/65cc18d",
+      "record": "reviews/B.VR-b10-r4.json"
     }
   ],
   "reviewer_assignments": {
@@ -200,15 +298,18 @@
     }
   },
   "authorization_needed": [
-    "OWNER/OPERATOR: isolated copy for behavioural probes (gate G8) - see findings F-B00-3 for a two-level proposal",
-    "OPERATOR: independent boundary observation and reviewer assignment records (G5/G6)",
-    "OWNER: confirm the A05 sample list and the read-only command manifest (gate G7 + G4 for behaviour beyond --help)",
-    "NO OWNER RULING IS OUTSTANDING for phase B: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12 and the simplified working mode (section 11) is in force - only scope and risk questions go back to the owner from here"
+    "OWNER: whether to fix the registered whole-run abort paths (a missing file or a damaged row can still abort a whole normalization batch) - see findings F-B10R2-MISSINGFILE",
+    "OWNER: whether the two scripts/ readers of the shared column should be converged, since no ratchet covers them",
+    "OWNER: the B.AR halves that need WRITES (a fifth root registration; a cross-repo end-to-end call) - not authorised in this run and therefore not done",
+    "OPERATOR: reviewer assignment records remain process evidence only (gate G6); the operator-held record is still outstanding",
+    "NO OWNER RULING IS OUTSTANDING for phase B's code: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12, the G8 two-level decision and the read-only manifest were approved on 2026-09-13, and the adjudication of the A05 overreach was delegated to the authoring session on 2026-09-16"
   ],
   "gate_status": {
     "B.DR": "rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 implementation record (no design change); the ratchet table stays frozen (S-7)",
-    "B.VR": "rev1 = rejected (2xP1/2xP2/3xP3); rev2/rev3/rev4 = accepted_with_findings and each round falsified one of the author's justification sentences, now single-sourced; B02 closed by the author's documented decision (no fifth prose-only round); B04 = accepted_with_findings (all six findings addressed); B05 = rejected (2xP1/5xP2/3xP3) with the P1s and P2s fixed and the residuals registered (no second round, section 11); B01 = implemented and awaiting its one review round. Protocol ready (b-vr-protocol.md); L1 mechanism layer unblocked by S-5, L2 real-byte layer still needs G8",
-    "B.AR": "not started",
+    "B.VR": "rev1 = rejected (2xP1/2xP2/3xP3); rev2/rev3/rev4 = accepted_with_findings and each round falsified one of the author's justification sentences, now single-sourced; B02 closed by the author's documented decision (no fifth prose-only round); B04 = accepted_with_findings (all six findings addressed); B05 = rejected (2xP1/5xP2/3xP3) with the P1s and P2s fixed and the residuals registered, then a verification round = rejected with a LIVE P0 in the author's own fix (the SQL filter ran before the Python guard), disposed of; B01/B03/B06/B07 = accepted_with_findings, all disposed of; B08 = accepted_with_findings (7 findings, disposed of) after a byte-identical probe re-run and an audit-hook tripwire; B10 = four rounds: accepted_with_findings (increment 1), REJECT (batches 1-2: a P0 that was the author's own misfiled crash path plus a false declaration the author's test had PINNED), REJECT (r2 dispositions: one live P2 of the same family), and finally APPROVE_WITH_FINDINGS (r3 dispositions) - all findings disposed of",
+    "B.AR": "EXECUTED and reviewed: the read-only manifest run (10 commands / 102 invocations) plus an independent identity/hash re-derivation from the originals (6/6 digests, 18/18 derived artifacts, 8/12 documents confirmed against the exchange registry snapshots). Its review returned APPROVE_WITH_FINDINGS with authorization OVERREACH: the executed set was not the manifest as written (an extra command, --limit 100 against <=50, 102 invocations against budget 25, 85 retries against the stop rule, and approval.by = null). The owner delegated the adjudication to the authoring session, which ratified the read-only reading, kept the overreach on the record, and turned the bounds into mechanical refusals (5/5 selftest) plus a machine-checkable compliance read. Unfinished by AUTHORIZATION, not by choice: a fifth root registration and a cross-repo end-to-end call both need writes; the cloud-synced sample was deliberately not hashed (reading a placeholder hydrates it)",
+    "G7": "read-only manifest commands: APPROVED by the owner's in-session instruction, executed, and the over-budget/extra-command part ADJUDICATED (ratified with the violation on the record) after the independent review refused to treat it as compliant",
+    "G8": "two levels, both EXERCISED: level 1 = a temp isolated catalog; level 2 = an isolated root referencing a REAL filing directory read-only, with 4,172,424 verified bytes, a tamper probe returning zero bytes, and before/after evidence that the real files and the production catalog metadata did not move. Residual risk stated by the review: a size- and mtime-preserving write to the production catalog would be invisible to a metadata-only rule",
     "B01": "implemented as 0e28d99 and REVIEWED (accepted_with_findings); dispositions in be2e4ed. The resolver calls policy._effective_reusable instead of keeping a kind-only copy, candidate selection requires membership (no empty-set escape), config admission refuses quoted booleans (CFG-08) and the declaration test normalises document_kind the way the classifier does. Production blast radius is none (every shipped root was already effectively reusable). Residual: the policy_2x copy of the rule cannot be removed (S-3 freezes the export path), so agreement is asserted by a case instead of guaranteed by one implementation - and the consumer-side hash that filing-fetch pins is now frozen in addition to the resolver-side one",
     "B03": "implemented as 5ab0779: read_verified_bytes reads a version ONCE, digests exactly the buffer it returns and refuses everything else inside the contract's five error values, closing the byte-level hard gate S-10 deferred to the read path. Registered limits: the design's middle tier (read an EXISTING controlled snapshot) has no object to read in this repository, so it is unimplemented and bytes_source='snapshot' stays unreachable; ACL denial was not synthesised separately; the cloud-placeholder case uses synthetic stat attributes; the symlink case skips on this host; consumers that still open canonical_path themselves are B07's to wire",
     "B04": "implemented as acceptance + findings with NO product change and reviewed (B.VR b04 = accepted_with_findings, 2xP2 + 4xP3 addressed). Design goal 1-2 verified; goal 3 is CONDITIONAL: a same-path overwrite destroys the old bytes, and with a second copy the old reference still resolves. The owner chose option (iii), the contract-level known limitation (S-12), recorded in the run directory only; F-B04-2 registers the silent MISSING when only the PDF is moved without its sidecar",
@@ -242,15 +343,15 @@
     "test_dbx05_symlink_escape_rejected skips on this host (symlinks not supported), so the symlink-escape control did not run here",
     "the current acceptance cases run on tmp fixtures; the real four-root and cloud-placeholder behaviour still needs the isolated copy (G8)"
   ],
-  "next_step": "Resolve the F-B01-7 blocker with the owner (authorise the one-case correction in revenue-forecast's tests/test_fc1001_isolated_lake.py and register the sidecar-missing rule as a B06 acceptance item, or defer), then push the revenue-side commits. Then run B01's one independent review round (section 11), which also samples the B05 P2 fixes; then implement B03 (stable read bytes: a fixed handle or a controlled snapshot, streaming hashing, and the TOCTOU/cloud-placeholder/bad-byte/interruption cases) - B03 carries the byte-level hard gate deferred by S-10 - and then B06, which must deliver both the response-level blocked verdict (S-13) and the sidecar/identity rule that F-B01-7 shows is missing, then B07. Each step: F10 cases, one commit, the ratchet/coverage rerun, one independent review and one implementation record.",
+  "next_step": "Nothing in phase B is waiting on the authoring session. The registered follow-ups that need the OWNER's decision before any code moves: (1) the whole-run abort paths a missing file or a damaged row can still reach (the unsupported handler's IngestService.ingest, _atomic_write's mkdir, the success-path ingest / transaction block / two fetchall calls, and four in-package unguarded column parses in activation.py, assertion_service.py, remediation.py and scanner.py) - each would make a single bad row a per-document failure; (2) the two scripts/ readers of the shared column that no ratchet covers (legacy_observer.py, wu904_remediation_restore.py); (3) the B.AR halves that need writes (registering a fifth root, and a cross-repo end-to-end call); (4) whether the gate's syntactic ratchets should become a dataflow check, given the four measured bypass shapes recorded in GATE_BOUNDARIES. A further B10 increment requires no owner input but also no further value: the chain is single, declared and gated",
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "cf765a3a4eb7b4432dc30a9867283b5aeb15794b",
+      "head": "c4f5b8a7b727e3944da36b7e96b47f440ee787df",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "ffc08b73adfe278a4502c59dfb0c1fafb796d504",
+      "head": "11419b6fe80cc25a0b02e3fef8276c5df7d32d3a",
       "dirty": 0
     },
     "filing-fetch": {
@@ -258,16 +359,20 @@
       "dirty": 0
     }
   },
-  "reviewed_commit": "ffc08b73adfe278a4502c59dfb0c1fafb796d504",
+  "reviewed_commit": "11419b6fe80cc25a0b02e3fef8276c5df7d32d3a",
   "commit_anchor": {
-    "head": "ffc08b73adfe278a4502c59dfb0c1fafb796d504",
-    "index_tree": "af8c25b4dda81344c9b8b9229740db46ac911b14",
+    "head": "11419b6fe80cc25a0b02e3fef8276c5df7d32d3a",
+    "index_tree": "e62cb165ec440b69f878caa53014274f626c156a",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
     ".gitattributes": {
       "sha256": "2380dc1cb5c4831e386ce5df2b0ab9bb333dddaee7b615e42b20d94b617de879",
       "size": 907
+    },
+    "b-ar-record.md": {
+      "sha256": "ec33059b216a3a65863c28c59948ab371c017f4f03af52975e61f19940bdb37d",
+      "size": 23033
     },
     "b-design.md": {
       "sha256": "c871ab0687d354771a9668cf0955569d0cf219b48925f64d30c0ddbe7dc92f41",
@@ -277,9 +382,85 @@
       "sha256": "5672b19e3690c79cef2ac451aeb34548fa2201b990046c086b50a88ac49073aa",
       "size": 7366
     },
+    "b08-level2-report.md": {
+      "sha256": "ca1297bb62e379d1b9ddbe37de56e5189b880eecb56722d6a83f6ef7e9e6a74d",
+      "size": 18149
+    },
     "b08-mechanism-plan.md": {
       "sha256": "ad75079175fe9c8e2a888850f3c0cc1a37d827c8e988029182950951519536b0",
       "size": 3896
+    },
+    "b08-mechanism-report.md": {
+      "sha256": "2a48950d67ee0745cc51302aeca7cc7b0cb267805b60c7e441c2cfb820b9f4ef",
+      "size": 6990
+    },
+    "evidence/a05-readonly-manifest-run-A05-1-stdout.txt": {
+      "sha256": "c74996c6a18968193492c54db4be71fc1c6881f6c9b91d52c517eacdc62bbcfa",
+      "size": 206
+    },
+    "evidence/a05-readonly-manifest-run-A05-2-stdout.txt": {
+      "sha256": "edb92c010925ac413278e4ce064294ce5bedaefa5a29ac7cae01e28ad6714f74",
+      "size": 114913
+    },
+    "evidence/a05-readonly-manifest-run-A05-2b-stdout.txt": {
+      "sha256": "539d78dd7123c1e072c418191177a67fd0762af675fbaaed24d93141416eb240",
+      "size": 504834
+    },
+    "evidence/a05-readonly-manifest-run-A05-3-stdout.txt": {
+      "sha256": "bd77a701ae03b58783b41bc24df013f1ff89700d34075cf903ad32ae2da91342",
+      "size": 107132
+    },
+    "evidence/a05-readonly-manifest-run-A05-4-stdout.txt": {
+      "sha256": "a321586981ae3a066b5dfee670363f6d653bd53f476b00a1f610125ecd80dcb0",
+      "size": 42446
+    },
+    "evidence/a05-readonly-manifest-run-A05-4b-stdout.txt": {
+      "sha256": "a725350862da3730926731f0e9404c30e4aa548f1df70c87267b4f5a669e60e1",
+      "size": 43585
+    },
+    "evidence/a05-readonly-manifest-run-A06-1-stdout.txt": {
+      "sha256": "7f1a322e47cd4e4accfd1c8da7ca4c07aaefcaad40662d514f469b539c2c8602",
+      "size": 212
+    },
+    "evidence/a05-readonly-manifest-run-A06-2-stdout.txt": {
+      "sha256": "a0ce50c99bee075d3f0a873dc92288b623dc4aa44d8d0180092d3b5feebb01e1",
+      "size": 510
+    },
+    "evidence/a05-readonly-manifest-run.json": {
+      "sha256": "57345772a46243982e6fe3a83f109964ea9cb27f5d3b260a6da3387ecced7afb",
+      "size": 64529
+    },
+    "evidence/audit_manifest_compliance.py": {
+      "sha256": "75b028c851e73b3f6af497665b824a815ccc925185f6796cd7ca77757bc46953",
+      "size": 8112
+    },
+    "evidence/b-ar-identity-crosscheck.json": {
+      "sha256": "23ffab67a1c0b1bcb757d1e480df7ef692842f1c07faeb272c7ec9a8b89360c6",
+      "size": 12391
+    },
+    "evidence/b-ar-identity-hash.json": {
+      "sha256": "a38e600fd5cce2c208cd8fddc9768bf16669645f1c74a652b00e76d3dd694c1b",
+      "size": 20082
+    },
+    "evidence/b-ar-manifest-compliance.json": {
+      "sha256": "9cb143c720c4a866bf0976d7d5493142a3eb147035de9510dd324143d283b6d7",
+      "size": 3946
+    },
+    "evidence/b-vr-b05malformed-disposition.md": {
+      "sha256": "48847945d0922e78e9aed28d7d8ce16978175558e2cd2fe38a84bb27015307fe",
+      "size": 10899
+    },
+    "evidence/b-vr-b08l2-disposition.md": {
+      "sha256": "2370d106c539b382d0564876966a149097029219133869f25aff1e3e1bd75038",
+      "size": 6774
+    },
+    "evidence/b-vr-bar-disposition.md": {
+      "sha256": "4786426c795a6f09a9a69827f909c479ab5d1064eb15be339314e3c5a2e416ae",
+      "size": 8240
+    },
+    "evidence/b-vr-fc1301-disposition.md": {
+      "sha256": "9a81c26a49d3fbafc345ebda610716ecec9d2c62288ae9092f793311b492410a",
+      "size": 6176
     },
     "evidence/b01-fc1001-probe.json": {
       "sha256": "9deeb5256f8e7448676efa25435fef283795c39c48f166f361b9386874c4dd3e",
@@ -429,9 +610,21 @@
       "sha256": "a75b38195a8d481e48291cc410ff9b99f29e062c33ce875ef1bb365e3ffd0f52",
       "size": 4800
     },
+    "evidence/b05-ci-step1-unit.txt": {
+      "sha256": "38bc7591c37d37587470119d1af2337ba576dc1fd5a600fc17bd6cc8d5b61436",
+      "size": 5674
+    },
+    "evidence/b05-ci-step2-contract.txt": {
+      "sha256": "1fc3f0c41857c1fe94188c7ae12991ea804880595a535e7d640434dc811ca31e",
+      "size": 18230
+    },
     "evidence/b05-implementation.md": {
       "sha256": "bfa1901bac303115391e590f2f51d68044c90d877c397700b21ec99c10e65862",
       "size": 13488
+    },
+    "evidence/b05-malformed-column-pre-fix.txt": {
+      "sha256": "d085c496175c3efc402fe24895983946308091a25ae351d546a8e143ff91bb8c",
+      "size": 2155
     },
     "evidence/b05-plan.md": {
       "sha256": "b088cedff3db3cf8c419a86a4faf6465f315099bdc31e04ca37374279cf8f416",
@@ -440,6 +633,18 @@
     "evidence/b05-review-disposition.md": {
       "sha256": "6358c41b7938d3680a5a689488faeb6ab0681ee8155eed497bf69a0fd748123a",
       "size": 6624
+    },
+    "evidence/b05_mutations.py": {
+      "sha256": "a0fb8699d9069a8f968dfec9e99bd725b6bd10aab3713a3bbd697e4f54ccde3b",
+      "size": 10339
+    },
+    "evidence/b05b-ci-step1-unit.txt": {
+      "sha256": "773959fd5e9059707ca334224f9cc26192fb3c3fd6e6af1ae3f15575b335c2ef",
+      "size": 5674
+    },
+    "evidence/b05b-ci-step2-contract.txt": {
+      "sha256": "50e453cf17459c5a43fa9306324d7fd44e54647c6a504377158b5fa48742a3a9",
+      "size": 18311
     },
     "evidence/b06-implementation.md": {
       "sha256": "a34da8b1bae548d3e57afec88d39c0faf74d09136d8150bd0b545e79f5d9cfab",
@@ -589,9 +794,141 @@
       "sha256": "1940d5e2e3d90095478c6ee5db9a3760a025065b21d1a7a0619570f0bc98b35d",
       "size": 50887
     },
+    "evidence/b08-level2-evidence.json": {
+      "sha256": "a105ee397a10575d215701ba004e1504c72bd312e6522f7d837d82c5d9b9cd33",
+      "size": 4020
+    },
+    "evidence/b08-level2-probe.json": {
+      "sha256": "736d9adb254c82562eaae7f16807e68e1547a517e5097fb553ff71e75054356f",
+      "size": 5299
+    },
+    "evidence/b08-real-root-choice.json": {
+      "sha256": "3c5a55d3eb5a3f35041565ad91067a44eed5cd0283a779e3eda98db28e263ad4",
+      "size": 1863
+    },
+    "evidence/b08-side-effects-after.json": {
+      "sha256": "fdc948f0d75e93f7a6c58d1feacb934025a54e1bbda9479adbd328b32aa3b76e",
+      "size": 585
+    },
+    "evidence/b08-side-effects-before.json": {
+      "sha256": "3c1226165ac0b3555d0c97b46c2d901d7fd993918cdfe1be98baf4be60704a55",
+      "size": 733
+    },
+    "evidence/b08_isolated_env.py": {
+      "sha256": "57074424e931d9b7ea7729ec814062a4dd3b99df97448164da4d2fc88255e941",
+      "size": 19184
+    },
+    "evidence/b08_level2_probe.py": {
+      "sha256": "960e93ca74a9ab9eb542acb5f8c11ce478d3277f1d49e06773991ec3398548a6",
+      "size": 12705
+    },
+    "evidence/b08_level2_run.py": {
+      "sha256": "2e7adaba2128d02d84227ae4720dcee3919a05090c0076d599385ce563c7bc19",
+      "size": 3069
+    },
+    "evidence/b09-bar-inputs.txt": {
+      "sha256": "a0447cda9eb1c79c6f95bf44f7979a56b7a79d5d98a7db16456be85f957044df",
+      "size": 4375
+    },
+    "evidence/b10-ci-step1-unit.txt": {
+      "sha256": "0566684241b7f071c488934cb15b7ee7022a9c19ed657fe97e701ac840c6e588",
+      "size": 5669
+    },
+    "evidence/b10-ci-step2-contract.txt": {
+      "sha256": "fc02db1100f920f990fed18291c00ab368c0e5782e1cef7c48bc2d74cf26f807",
+      "size": 17739
+    },
+    "evidence/b10-implementation.md": {
+      "sha256": "b437c591fe4694af3b44e4ad7d5647b74c0570cb91fcc34dc779ea0af3947907",
+      "size": 43646
+    },
+    "evidence/b10-mutations.json": {
+      "sha256": "0ecb50cf67e52ca2264db24111d19190946ba898630c89d395cbd37802e63091",
+      "size": 7583
+    },
+    "evidence/b10-p0-probe.txt": {
+      "sha256": "ec8255b96ff22076f6b45b88a7e04beb1a3a1e8ada684a1dbaecd6c007b7c85d",
+      "size": 1628
+    },
+    "evidence/b10-read-chain-inventory.json": {
+      "sha256": "b4fc354957be6746b16a7f695c618b5bccb380048d9fbd59cc4c99f4ccb9ceae",
+      "size": 16903
+    },
+    "evidence/b10_mutations.py": {
+      "sha256": "f86237ef6e9f75e01253d6f725703a67426caea79763ee24402fab68d3249616",
+      "size": 17580
+    },
+    "evidence/b10_p0_probe.py": {
+      "sha256": "fd3b5d7795e9b33c6d6d997f6efc6cf9ddd26f486e16a2dff9b49a127d3b6aee",
+      "size": 12806
+    },
+    "evidence/b10_read_chain_inventory.py": {
+      "sha256": "c86e2f922d0493f260b6f80f52e56f463e5522dab97d5aba61259cf1cfad28fa",
+      "size": 6754
+    },
+    "evidence/b10r2-ci-step1-unit.txt": {
+      "sha256": "6d0de21b2009a2056acd1ab173b425c3535919b1019e799e6e99a766c586af05",
+      "size": 5669
+    },
+    "evidence/b10r2-ci-step2-contract.txt": {
+      "sha256": "e51104c565bf895d9b03bbac482207a1aa6278e6a6f9ebbf30c0e4591f8a9a66",
+      "size": 17739
+    },
+    "evidence/b10r3-ci-step1-unit.txt": {
+      "sha256": "83737220dd01830a0e4d594a5810a421ca06d68d4a40d98ab4edb33db8d8ab14",
+      "size": 5750
+    },
+    "evidence/b10r3-ci-step2-contract.txt": {
+      "sha256": "24cf71266acc65f38926ac6f5443949363955393025b8a4737d76fda964b798a",
+      "size": 17739
+    },
+    "evidence/b10r4-ci-step1-unit.txt": {
+      "sha256": "6b79dd26105e3b577a00427132c63e6e29010df98b46fb1accfc4edd850c47ba",
+      "size": 5831
+    },
+    "evidence/b10r4-ci-step2-contract.txt": {
+      "sha256": "65785bd4a906672930723a594b2b82cb9350d4ff441527574d3867d7cefad056",
+      "size": 17739
+    },
+    "evidence/b10r5-ci-step1-unit.txt": {
+      "sha256": "479d59a33725eb8f21aebac0311661c8262b91b18d78234b9eb569b0d76345dc",
+      "size": 5831
+    },
+    "evidence/b10r5-ci-step2-contract.txt": {
+      "sha256": "436a403656500c2517f3e20a0c44cf492dd0086a64bee8f901a114dbea80152e",
+      "size": 17739
+    },
+    "evidence/b10r6-ci-step1-unit.txt": {
+      "sha256": "6b8a337a145c212fc81ea291eb2f1025542fe9fc9532f83559ed9a852a042fee",
+      "size": 5831
+    },
+    "evidence/b10r6-ci-step2-contract.txt": {
+      "sha256": "3f57c4dbd87bbe4ece34a07846836dc02d71987ab17f183353170d09bc7e6ed1",
+      "size": 17739
+    },
+    "evidence/b10r7-ci-step1-unit.txt": {
+      "sha256": "271603347ef4ab828d67e1972d37a154e61282f9ffcaa787ef600b79484fae3a",
+      "size": 5912
+    },
+    "evidence/b10r7-ci-step2-contract.txt": {
+      "sha256": "bc76e72136d3966ef446d914f4e71b65604f1ebf09ac7caf9751b238e4a1eaf4",
+      "size": 17739
+    },
+    "evidence/b_ar_identity_crosscheck.py": {
+      "sha256": "c57aca9278bb50cb0e0ce1b73b757dbfdfe63f8e40f2383461bee855d8740d61",
+      "size": 18153
+    },
+    "evidence/b_ar_verify_identity_hash.py": {
+      "sha256": "83d0d5024fe2ca2a36dd907126c738095cbec4a1ae15f02c8970d1b40449325e",
+      "size": 14273
+    },
     "evidence/build_checkpoint.py": {
-      "sha256": "3444c7649b77ab57592a24a7b223a8387945338d762868f21008a96b6178ca2c",
-      "size": 41353
+      "sha256": "7a5cf80c45ab5d02d399f788a7dde487fcac7768782988130bec800860b9ca34",
+      "size": 51553
+    },
+    "evidence/choose_resolved_real_root.py": {
+      "sha256": "3e27d6ebfda82e1594f872c602de854cd2ff4f5d5d6439b680a641a927ebc38b",
+      "size": 2993
     },
     "evidence/ci_audit.py": {
       "sha256": "6013ac03d0468aa80fe1256d6ff2d3bde854f58a7270106d5c77be5986116b94",
@@ -621,6 +958,18 @@
       "sha256": "38dc00a5fe8e22b4b848363c116b4121f17b4d0a8659680a4e5853c21f9efca4",
       "size": 20511
     },
+    "evidence/fc1301-reason-inventory.json": {
+      "sha256": "6d3ad774ab4d70eb68c9caea057c449a34714074f717d163d74e72c4441db2e4",
+      "size": 40683
+    },
+    "evidence/fc1301-unregistered.txt": {
+      "sha256": "c7050788f62e757695bd2b4beb1aa0a0b8aa03a8c7f2da1f976140278c359492",
+      "size": 412
+    },
+    "evidence/fc1301_reason_inventory.py": {
+      "sha256": "70992bfe4dfd4ae7af3d8b70b029e1b78feccab43d1410025c7149b49f1c3829",
+      "size": 11660
+    },
     "evidence/fc1307a_mutations.py": {
       "sha256": "4189a6a3a08041d4bb78e3908e99a00db00e86af5283f7b1bcbb2faed5e7edef",
       "size": 7513
@@ -628,6 +977,14 @@
     "evidence/field-owner-map.json": {
       "sha256": "d8b76aa21010b9f2895935f4d7de767b266dfaf5590d49d8f16d704fea3fe08e",
       "size": 10582
+    },
+    "evidence/inspect_isolated_identity.py": {
+      "sha256": "76f3db5c69d40a8999e964b9bfdcfb25b3f462d5bd3c457fbfeb309c1361139d",
+      "size": 975
+    },
+    "evidence/inspect_isolated_metadata.py": {
+      "sha256": "02c118d765557f8cdd65a99e9e6dd40248de6085c0e4a6e341c461942b285231",
+      "size": 1177
     },
     "evidence/l-item-coverage.json": {
       "sha256": "058e8a5bbb6af1309fece7cb23fb31552eb49f5e0cab327d193f6c56f658d381",
@@ -637,6 +994,14 @@
       "sha256": "55b3e956a07fb22c745cbc78853ab7cfb197625002de3b77113eadb654af13b5",
       "size": 4025
     },
+    "evidence/list_filing_dirs.py": {
+      "sha256": "8a9addf6e0ae21cf62f81a2b4bc7af78fba2a30b1c7abca8dce4091cb5292fc7",
+      "size": 1366
+    },
+    "evidence/manifest-bounds-selftest.json": {
+      "sha256": "0c9de697a8a4033b593152b9ca6bf6aa84907f1bc9ae33055fa3497c013b6468",
+      "size": 1325
+    },
     "evidence/measure_guard_exposure.py": {
       "sha256": "ccfe3dfa065da66d2bf489928c15fe67b85440b66cd49d9508e838cca69459bd",
       "size": 2612
@@ -644,6 +1009,18 @@
     "evidence/name_matrix_items.py": {
       "sha256": "e0ff7ecef7b57ecc966bf13cb797c38deb85ba68c0afbb6d26d52d0c3120bda2",
       "size": 3044
+    },
+    "evidence/run_a05_readonly_manifest.py": {
+      "sha256": "77c0d67a95c7fff76e340be96ba7a53427bb0333ed39557661a1d1c8b111ac40",
+      "size": 18949
+    },
+    "evidence/show_fc1301_unregistered.py": {
+      "sha256": "b1bf0768be8eb63e2e04a9ccb2c8ba1ea41fc61f0f567600609e175e5fbf36e7",
+      "size": 1183
+    },
+    "evidence/summarise_a05_run.py": {
+      "sha256": "1f1a44c68536d3997c2d02f3327960c3f25a031beadb9290326734bf36231b82",
+      "size": 1742
     },
     "evidence/transplant-manifest.json": {
       "sha256": "f8c24660218f1efb9f7f03af5fbe85eb90e09bdfec6a5945d41b2474df045b68",
@@ -666,12 +1043,20 @@
       "size": 12565
     },
     "findings.md": {
-      "sha256": "ea63ebd79c0073addedd5a65b12c5467c140fae653b5b34292714829bcd7e321",
-      "size": 114046
+      "sha256": "c657b4e4bb9bfc2e0cd3b48d3ee220d362ff02c46d88a03f3c432b2de05004fa",
+      "size": 134274
     },
-    "operator-reviewer-assignment-DRAFT.md": {
-      "sha256": "83ccba5782b8a0b2006cbe9652aff62761fd9015a640bdb2aa3e66475a75bc10",
-      "size": 3055
+    "operator-reviewer-assignment.md": {
+      "sha256": "a9ce18a780bbafc7f0c897ea2abf1207176847bf2be6f2bc3bac51b4c3d86513",
+      "size": 3500
+    },
+    "owner-authorisation-and-my-adjudication-2026-09-16.md": {
+      "sha256": "2f761789525da9e71c4b35c95f3fd9a303eb8513b8bd1701b7a54dfb35fc91d3",
+      "size": 6484
+    },
+    "owner-directive-2026-09-16.md": {
+      "sha256": "d8ab3823d6e5a3799042f6514d58d64927276620f6443e8ac4b3e9ee65951680",
+      "size": 4022
     },
     "owner-scope-decisions-2026-09-12.md": {
       "sha256": "cb6ac486f03de140a4dfdd308b7dd484809ded199c69122d8e180bc5c3483d24",
@@ -682,16 +1067,28 @@
       "size": 3558
     },
     "packages/b05-read-side-malformed-columns.md": {
-      "sha256": "2c9a4d003e1ebbba1e99166310c596518d4a1f4f83adb1d1e053e38012f17df0",
-      "size": 2727
+      "sha256": "53ae92dd7f166bd92262128a8e0bcf44fdae4e55cccd8fe5d27023f8847546c4",
+      "size": 8468
+    },
+    "packages/b10-plan.md": {
+      "sha256": "0842358e6837f184f517298c82f9d2b428a76f86a489e56462cab4a47ef2640e",
+      "size": 8288
+    },
+    "packages/b10-recon.md": {
+      "sha256": "1d717145589e29f645e2043f08daede467e793030d23d645c8df5ce50f3c6e82",
+      "size": 4086
     },
     "packages/fc1301-taxonomy-coverage.md": {
-      "sha256": "032164029d4448ad91d2ccf375123b62679103180ba01077e5076e72792866de",
-      "size": 3323
+      "sha256": "bad1b86e630e56433525112092fb8c12d342310e9b6968c390ea0e409ba571b2",
+      "size": 4819
     },
     "progress.md": {
-      "sha256": "448c2690827b75c7e484a55b151ff8f63d107713c897c9af5c5756a02f0f3e80",
-      "size": 42146
+      "sha256": "5a2df14fc82666d2bcaa6a063bc0a89a57782f848ddb7fe5e9e7003ef705cdec",
+      "size": 51155
+    },
+    "r4-final-status.md": {
+      "sha256": "34fb1f15fc2ff0faed525bc2125a9a987a421cd723dd6ecc56a93bd1ec67413f",
+      "size": 7593
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -749,6 +1146,14 @@
       "sha256": "c502639ce1009c7c8a353cf3f0e3f1e4bd868f720a99c971381bc3bbcbad543c",
       "size": 47251
     },
+    "reviews/B.VR-b05malformed-verify.json": {
+      "sha256": "a60ddd026a6e7ac1414298010c0105ca862a110c8cffa4475c778ce688cbee5d",
+      "size": 34561
+    },
+    "reviews/B.VR-b05malformed.json": {
+      "sha256": "25de70f8e6ef70a6b1c2c2fd42ce9763067befb48bf8c3f2c35ef03f6910c67f",
+      "size": 42774
+    },
     "reviews/B.VR-b06.json": {
       "sha256": "0b217e2b8cedee3e56729d2308df029f2a451d4248077b3fe649be3bdca040b5",
       "size": 40638
@@ -756,6 +1161,34 @@
     "reviews/B.VR-b07.json": {
       "sha256": "de4c03b95b96e5b4ccb0e54bf8407609c23b8e5e0afd3bcc0f97e188e85b1ac0",
       "size": 41259
+    },
+    "reviews/B.VR-b08l2.json": {
+      "sha256": "ffda2abc67668b190ac3d180c6e49de8386e11ceea9051a90d765ad87af27bfe",
+      "size": 68230
+    },
+    "reviews/B.VR-b10-r2.json": {
+      "sha256": "a5bf6856f05e03918a16d03cab8abd349bb725c46255443a12f30e6815c79c59",
+      "size": 42046
+    },
+    "reviews/B.VR-b10-r3.json": {
+      "sha256": "513cbcd35494c78eaf7487ef24f585a69ac55f30195731d949063c663d3ccb49",
+      "size": 48572
+    },
+    "reviews/B.VR-b10-r4.json": {
+      "sha256": "684d7314c57ab8098a8e31711625f75508ebb1f9584f132576a028f82a7531ac",
+      "size": 55199
+    },
+    "reviews/B.VR-b10.json": {
+      "sha256": "c1baf704ade23a5459fb3b9fcb56bd95e93ff20fdde600eca7ed7e1b63672072",
+      "size": 60301
+    },
+    "reviews/B.VR-bar.json": {
+      "sha256": "5015096abd7cd32cd498f0e27d2c7c3a2af4af7c5946f74a2530e3a9358953d0",
+      "size": 52716
+    },
+    "reviews/B.VR-fc1301.json": {
+      "sha256": "99fb067ee04a6d977976c1a467f7547673fae0a900f67b55d6a4117a005b039b",
+      "size": 45384
     },
     "reviews/B.VR-fc1307a.json": {
       "sha256": "e2914b6b07ed90cf158745e9623a8f39197807f59ef975c51de36fd1b835e5b3",
@@ -783,11 +1216,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 129,
+    "checked": 212,
     "source": "index",
-    "compared_revision": "af8c25b4dda81344c9b8b9229740db46ac911b14",
-    "head_revision": "ffc08b73adfe278a4502c59dfb0c1fafb796d504",
-    "index_tree": "af8c25b4dda81344c9b8b9229740db46ac911b14",
+    "compared_revision": "e62cb165ec440b69f878caa53014274f626c156a",
+    "head_revision": "11419b6fe80cc25a0b02e3fef8276c5df7d32d3a",
+    "index_tree": "e62cb165ec440b69f878caa53014274f626c156a",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -797,8 +1230,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 129,
-    "files_listed": 129,
+    "files_on_disk": 212,
+    "files_listed": 212,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -807,5 +1240,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-15T22:02:48.095522+00:00"
+  "generated_at_utc": "2026-09-17T23:01:06.526303+00:00"
 }
