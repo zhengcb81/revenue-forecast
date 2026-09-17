@@ -2,6 +2,16 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## B10 批次 1 收敛 + `B.VR-b10` 六条残留处置完成（2026-09-17；wiki `326383d`、revenue `bc799c6`，远端 CI 双绿）
+
+- **B10-3 批次 1 交付**：新增 `store.metadata_state(raw) -> (object, state)`（单一链的**报告半**；`metadata_object = metadata_state(raw)[0]`——一次解析实现、两个入口）；**7 个 confirmed 直接读取者收敛**（artifact_backfill / artifact_read_model / scanner ×2 / source_lifecycle 4 处健壮性收敛：畸形从抛异常变降级 `{}`；service.query_filing_candidates 与 resolver._metadata_conflict_reason 经 `metadata_state` **逐字保留**各自命名状态）；`section_query.list_sections` 因合同是**具名报错**而登记 `EXPLICIT_NON_CHAIN_READERS`（不收敛的决策显式化，落实"不永久默默双跑"）。
+- **基线收缩**：`CONFIRMED_DIRECT_READERS` 10 → **3 条**（normalizer ×2 失败路径语义待分析、section_query 已声明），每条带**表注解**（documents/artifacts/both，修 `B-VR-B10-02`）；键全部**限定名** `Class.method`（修"类内新方法键塌缩"绕过，`B-VR-B10-03` 残余）。
+- **六条残留全部处置**（[evidence/b10-implementation.md](b10-implementation.md) §7bis）：`-04` `scanner._previous_provenance_fields` 以盲点条目入册（stale 豁免但要求代码仍存在）、`-05` 列名改精确匹配、`-07` 等价域措辞、`-08` `git status --porcelain` 主判据 + 行尾不敏感指纹。
+- **我自己实测出门的一个真绕过并修掉**：`_parse(row["metadata_json"])`（泛型 helper + 调用点给列值）在只有棘轮①时**整门放行**，且生产里已有 3 处同形状 ⇒ 加**棘轮② `COLUMN_VALUE_HANDOFFS`**（值传递，13 键）+ M8 变异钉住；仍开放的形状（中间变量、被调方内部下标、第三方解析器）写入 `GATE_BOUNDARIES` 并有用例钉住"不许悄悄删"。
+- **门 13 用例 / 变异 8/8 KILLED by assertion**（`killed_by` 改按 **pytest 退出码**判定）；本地两步 CI：unit **791**、contract **1903 passed / 8 skipped**；远端 CI：wiki `326383d`(master) ✅、revenue `bc799c6`(main) ✅。
+- **批次 1 的独立复审 `B.VR-b10-r2` 进行中**（逐站点等价性对父提交 `d92bb33` 验、独立基线重导、4+ 绕门构造）。结果出来前，批次 1 状态 = **已实施 + 全绿，待复审**。
+- **B10-3 批次 2（未做，需设计决策）**：`normalizer` 两处解析在 normalize 的**失败路径**上（畸形列现在产生"逐文档失败记录 + 尝试计数"）；收敛成 `{}` 会改变这些记录 ⇒ 不自行决定，留待与 owner/B10-5 一起过。
+
 ## B08 第②级 + B.AR（2026-09-16，同一轮）：**真字节读到了**，但探针前两版是 **vacuous** 的；B.AR 的"独立重核"半边达成
 
 - **B08 第②级达成**（授权 [owner-directive-2026-09-16.md](owner-directive-2026-09-16.md)；报告 [b08-level2-report.md](b08-level2-report.md)）：`%TEMP%` 隔离根 → 真实 sidecar adapter 挂 1 个真实目录 → 真实候选 1 份 → `REUSED_EQUIVALENT` → `read_verified_bytes` **两次都 `verified`**（4,172,424 B，摘要 = **独立哈希真实文件**所得的 `e39fbf9c…`）；篡改探测返回 **0 字节 + `expected_version_mismatch`**；**读者**占用下仍可核验。零副作用：真实目录 2 文件 before/after 逐文件一致，生产 catalog 元数据一致（主库 49,677,344,768 B / `2026-09-08T21:23:21.072747Z`）。
