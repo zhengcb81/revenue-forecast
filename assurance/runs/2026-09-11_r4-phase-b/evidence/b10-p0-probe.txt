@@ -1,0 +1,21 @@
+﻿=== phase 1: valid manifest, NO file on disk (the reviewer's shape) ===
+{
+  "label": "phase1",
+  "escaped": true,
+  "error": "SourceManifestMismatchError: [WinError 2] \u7cfb\u7edf\u627e\u4e0d\u5230\u6307\u5b9a\u7684\u6587\u4ef6\u3002: 'C:\\\\Users\\\\\u90d1\u66fe\u6ce2\\\\AppData\\\\Local\\\\Temp\\\\b10p0probe\\\\p1\\\\raw\\\\reports\\\\x.md'",
+  "raised_from": "normalizer.py:1725 bundle = IngestService(root=Path(primary[\"root_path\"])).ingest("
+}
+=== phase 2: the same file written, so normalization runs to completion ===
+{
+  "label": "phase2",
+  "escaped": false,
+  "failure_reasons": {},
+  "failed": 0
+}
+produced artifact: normalized.md
+  has metadata_unreadable flag: True
+  verdict consistent           : False
+  verdict unverifiable         : True
+
+phase 1 escape (informational): SourceManifestMismatchError: [WinError 2] 系统找不到指定的文件。: 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b10p0probe\\p1\\raw\\reports\\x.md'
+P0 VERDICT: FIXED (the parse no longer escapes; degradation is visible)

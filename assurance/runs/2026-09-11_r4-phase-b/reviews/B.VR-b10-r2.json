@@ -1,0 +1,511 @@
+{
+  "review": "B.VR-b10-r2",
+  "reviewed_at_utc": "2026-09-17T19:52:17Z",
+  "reviewer_agent_id": "dsh-subagent-b10-readonly-reviewer-r2",
+  "independence_statement": "Read-only review. I wrote no file under either repository except this record. I never opened the production catalog. I did not run the product's own AST scanner to produce my numbers: I wrote a second scanner from scratch (my own scope map, my own exact-column matcher) and compared its output to the registry, so agreement is evidence and not a tautology. All mutation work happened in copies under %TEMP%\\b10vr3. The verifier's own narrative (the commit message and evidence/b10-implementation.md) was treated as a CLAIM to be reproduced, not as input: both fixes were re-derived from source and re-run before being accepted or rejected, and one of them (the ratchet) was accepted only after I reproduced the RED verdict myself, while a registry justification was rejected because my own structural and empirical probes refuted it. I did not use git to write anything.",
+  "verified_heads": {
+    "company_wiki": "5ec18a5 (HEAD, master) - clean tree; parents 326383d (batch 1), d92bb33 (second ratchet). All B10-3 product files live in THIS repo.",
+    "revenue_forecast": "2f960f8 (HEAD) - clean tree; carries the RUN with the evidence and the reviews. NOTE: this repo has its OWN parallel b10 commits (bc799c6 batch 1, 2f960f8 batch 2); the identical commit messages mean the work was replayed here.",
+    "filing_fetch": "not touched by this review"
+  },
+  "scope": [
+    "company-wiki 5ec18a5 vs its parents 326383d (batch 1) and d92bb33 (base): B10-3 batch 1 + batch 2 convergence onto one read chain.",
+    "store.py: metadata_state (the reporting half) and metadata_object (the plain half).",
+    "read_chain.py: CONFIRMED_DIRECT_READERS (with sites), COLUMN_VALUE_HANDOFFS (counting dict), EXPLICIT_NON_CHAIN_READERS, GATE_BOUNDARIES, LEGACY_READ_ADAPTERS.",
+    "normalizer.py _frontmatter convergence (batch 2) and the UNCONVERTED normalize_catalog:1638 site.",
+    "tests/contract/test_b10_read_chain.py (14 cases), tests/unit/test_b10_metadata_state.py (4), tests/unit/test_b10_frontmatter_tolerance.py (2).",
+    "Evidence under RUN/evidence: b10-implementation.md sections 7bis/7ter/7quater, b10-mutations.json, b10_mutations.py, b10r4-ci-step1-unit.txt, b10r4-ci-step2-contract.txt.",
+    "The two repairs the failed review's partial work exposed: (1) per-scope SITE COUNTS in both ratchets, (2) SyntaxError detection in the harness's killed_by."
+  ],
+  "method": [
+    "Independent AST scan: wrote %TEMP%\\b10vr3\\probes\\p_baseline.py from scratch (own ast.NodeVisitor scope map, own exact-constant 'metadata_json' matcher, own Subscript/.get value-read matcher), scanned all 95 .py files under src/company_wiki/source_catalog recursively, and diffed against the registry. I did NOT import read_chain or the contract test's scanner to produce these numbers.",
+    "Four ratchet probes on scratch copies (src + pytest.ini + the contract test, PYTHONPATH=<copy>\\src): a SECOND reader inside a baselined scope, a reader in a NEW module, a baselined site REMOVED without lowering the count, and a second HANDOFF inside the 13-scope dict. Every mutated file was proved to still parse (ast.parse) before the gate was run, so a kill cannot be a syntax accident.",
+    "Batch-2 equivalence: extracted the OLD _frontmatter body from `git show d92bb33:...normalizer.py` with ast.get_source_segment, exec'd it in the current interpreter with the current module's globals, and ran OLD and NEW over 9 inputs x 2 container shapes (plain dict, and a REAL sqlite3.Row built in a throwaway :memory: database).",
+    "Harness re-run: executed the SHIPPED evidence/b10_mutations.py with --out pointing at %TEMP% (never the repository evidence), then diffed my JSON against the recorded b10-mutations.json.",
+    "Harness adversarially re-run: imported the shipped harness in-process and replaced ONLY M2's replacement text with the 8-space variant that the failed review exposed, to test whether a syntax break is really excluded from the kill count.",
+    "Structural claim test: mapped EVERY ast.Try inside normalize_catalog and asked, for each statement under test, which try (if any) contains it; then confirmed it end-to-end by driving normalize_catalog with a real (throwaway, %TEMP%) catalog seeded through the product's own CatalogStore.",
+    "Metadata contract probe: metadata_state/metadata_object over 16 inputs including the ones the task named (raw='  ', raw=0, raw=[], raw=False) plus deep nesting.",
+    "Numeric cross-check of the evidence: CI tails, collected-test counts, mutant ids and killed_by values, and the 16-site/13-scope claim."
+  ],
+  "claims_checked": [
+    {
+      "id": "RATCHET-COUNT-FIX",
+      "claim": "The ratchet now counts SITES PER SCOPE, so a SECOND direct reader inside an already-baselined scope is refused (before: exit 0 / '1 passed').",
+      "method": "Probe P1 on a scratch copy: inserted, with CORRECT 16-space indentation, a second `json.loads(row['metadata_json'] or '{}')` into section_query.py::SectionQueryService.list_sections; proved ast.parse succeeds; ran the gate. Probe P1b repeated it inside the 13-scope handoff ratchet (scanner._merge_document_row).",
+      "observed": "P1 RED: 2 failed / 12 passed; 'an ADDITIONAL direct reader appeared inside an already-baselined scope: section_query.py::SectionQueryService.list_sections (2 > 1)' and the matching handoff message '(2 > 1)'. P1b RED: 'an ADDITIONAL handoff of the column appeared inside an already-baselined scope: scanner.py::_merge_document_row (4 > 3)'.",
+      "verdict": "CONFIRMED - the fix is real and it fires"
+    },
+    {
+      "id": "RATCHET-NEW-MODULE",
+      "claim": "A new direct reader in a new module fails the gate.",
+      "method": "Probe P2: added source_catalog/review_probe_new_reader.py containing `def probe_read(raw): return json.loads(raw['metadata_json'] or '{}')`.",
+      "observed": "RED: 'new direct readers of the shared column: review_probe_new_reader.py::probe_read'.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "id": "RATCHET-REMOVAL",
+      "claim": "One FEWER site also fails, so a stale allowance cannot hide a future one.",
+      "method": "Probe P3: removed the baselined parse from list_sections (replaced it with a dict literal) and did NOT lower the baseline.",
+      "observed": "RED on BOTH ratchets: 'the handoff baseline still lists sites that no longer pass the column: section_query.py::SectionQueryService.list_sections - remove them' and 'the baseline still lists sites that no longer parse the column'.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "id": "BASELINE-EXACT",
+      "claim": "CONFIRMED_DIRECT_READERS[*].sites and every COLUMN_VALUE_HANDOFFS number match the tree exactly (13 scopes / 16 sites).",
+      "method": "My own scanner (not the product's) over 95 files.",
+      "observed": "Handoffs: 13 scopes / 16 sites - the 13 keys and all 13 counts match to the digit, including the two the author says he first under-counted (scanner.py::_merge_document_row = 3, service.py::SourceCatalog.query = 2). Confirmed readers: 2 scopes / 2 sites, matching the registry's two entries. missing=[] extra=[] mismatched_counts={}.",
+      "verdict": "CONFIRMED - exact"
+    },
+    {
+      "id": "BATCH2-EQUIVALENCE",
+      "claim": "Batch 2: the old _frontmatter raised on a malformed Row-branch column and aborted the whole run; the new one degrades and never crashes.",
+      "method": "OLD (d92bb33) vs NEW (5ec18a5) over 9 inputs x {dict, real sqlite3.Row}.",
+      "observed": "ROW branch old: JSONDecodeError for 'not json at all' and for non-UTF-8 bytes and for whitespace-only; AttributeError for a JSON array ('list' object has no attribute 'get'), for JSON null ('NoneType'), and for a JSON string scalar. All 9 new: ok, degraded. DICT branch old: AttributeError for EVERY non-empty value including the READABLE one (it called .get on the raw column string); new: ok. For readable input the ROW path is byte-identical old vs new, so nothing was lost on the working path.",
+      "verdict": "CONFIRMED - and the author's 'both branches' phrasing understates the dict-branch breakage, which was total"
+    },
+    {
+      "id": "HARNESS-KILL-SEMANTICS",
+      "claim": "9/9 mutants killed by assertion; a mutant that only breaks the syntax is recorded invalid_mutant_syntax and is NOT counted as a kill.",
+      "method": "Re-ran the shipped harness with --out in %TEMP%; then re-ran it with ONLY M2's replacement text swapped back to the 8-space version.",
+      "observed": "Clean run: all_killed=true, killed_by=assertion for all 9, repository_untouched=true, baseline_in_copy 20 passed - identical to the recorded b10-mutations.json. Adversarial run: exit code 1, all_killed=false, M2 killed=false / killed_by=invalid_mutant_syntax / syntax_broken_by_mutant=true, the other 8 still killed by assertion. My M2-mutant check also proved the CURRENT M2 mutant ast.parse-es cleanly and the gate fails WITHOUT any SyntaxError in the output, so its kill really is the count assertion.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "id": "REGISTRY-JUSTIFICATION",
+      "claim": "EXPLICIT_NON_CHAIN_READERS says normalize_catalog:1633 'sits in normalize_catalog's per-document try, and the handler at :1689 records error_code = type(exc).__name__ into normalization_metadata_json and the report's failure_reasons'; the site is therefore a DELIBERATE raise whose exception type is recorded data.",
+      "method": "Mapped every ast.Try inside normalize_catalog; then drove normalize_catalog with a malformed metadata_json in a throwaway %TEMP% catalog.",
+      "observed": "FALSE. The only try in normalize_catalog is at line 1664 and its body is lines 1665-1679 (_run_parser_isolated + IngestService.ingest). The parse at 1638 and the _frontmatter call at 1731 are both OUTSIDE it. Driving it: 'ESCAPED: JSONDecodeError -> Expecting value: line 1 column 1 (char 0)' raised from normalizer.py:1638. The exception type is NEVER recorded in failure_reasons; the whole run aborts.",
+      "verdict": "REFUTED - see finding B-VR-B10R2-01 and -02"
+    },
+    {
+      "id": "SECTION-QUERY-DECLARATION",
+      "claim": "section_query.list_sections deliberately raises a named error on malformed artifact metadata.",
+      "method": "Read the code at section_query.py:108-113.",
+      "observed": "TRUE as declared: `except json.JSONDecodeError` raises SectionQueryError('sections artifact metadata is not valid JSON'). Converting it to {} would hide a contract error.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "id": "METADATA-STATE-CONTRACT",
+      "claim": "metadata_state(raw) -> (object, state) with state in {None, 'unreadable', 'not_object'}, and the callers' named states are preserved verbatim.",
+      "method": "16-input probe on metadata_state/metadata_object; read service.py 442-444 and resolver.py 818-827; compared against d92bb33's inline guards.",
+      "observed": "Enumeration is complete: every input lands in exactly one of the three states. service maps BOTH non-None states to the single string 'unreadable_metadata' (exactly the old behaviour, since the old code did `if not isinstance(payload, dict): metadata_problem='unreadable_metadata'`). resolver maps them to the two verbatim strings 'shared metadata column is not readable JSON' and 'shared metadata column is not a JSON object' - identical to the old branches. VERBATIM PRESERVATION CONFIRMED.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "id": "NUMBERS-14-9-793-1903",
+      "claim": "Gate 14 cases; mutation 9/9; unit 793 passed; contract 1903 passed / 8 skipped; 16 sites.",
+      "method": "Collected the contract test and the two unit tests; read the CI evidence tails; counted mutants in the recorded JSON; recounted sites with my own scanner.",
+      "observed": "14 collected (12 functions + 2 parametrisations) = 14 passed. Units 4 + 2 = 6 passed. b10r4-ci-step1-unit.txt ends '793 passed in 58.23s'; b10r4-ci-step2-contract.txt ends '1903 passed, 8 skipped in 782.25s'. 9 mutants, all killed_by=assertion. 16 handoff sites. EVERY NUMBER MATCHES.",
+      "verdict": "CONFIRMED - no inflation found"
+    },
+    {
+      "id": "SEMANTIC-DELTA-FALSY",
+      "claim": "(from my own probe of the task's named inputs) raw='  ' / raw=0 / raw=[] / raw=False behave as the docstring implies.",
+      "method": "metadata_state over those four values plus 'null', '\"s\"', b'\\xff\\xfe', deep nesting, and the readable control.",
+      "observed": "raw='  ' -> ({}, 'unreadable') because json.loads('  ') raises (json.loads(raw or '{}') keeps the whitespace: it is truthy). raw=0, raw=[], raw=False, raw=None, raw='' -> ({}, None) - the `raw or '{}'` coercion makes a FALSY non-string indistinguishable from '{}'. raw=True / raw=1.5 -> ({}, 'unreadable') (TypeError). Deep nesting -> ({}, 'unreadable'). The asymmetry (False -> None, True -> 'unreadable') is real but unreachable from a sqlite TEXT column and matches the pre-B10 inline guards, so it is not a regression.",
+      "verdict": "CONFIRMED as documented behaviour; the falsy coercion is the one part the docstring does not mention"
+    },
+    {
+      "id": "WRITE-PATH-DELTA",
+      "claim": "(task item 8) convergence may have changed WRITE behaviour in scanner's merge write-back or normalizer's artifact write.",
+      "method": "Diffed the old and new scanner parse sites; read _previous_provenance__fields, _merge_document_row and the merge call sites.",
+      "observed": "The delta is narrow and provably non-lossy on the write side: the OLD scanner sites already caught (JSONDecodeError, TypeError, RecursionError) AND applied `if not isinstance(existing_meta, dict): existing_meta = {}`, so for every input a TEXT column can hold the old and new code store the SAME {}. Only raw BYTES (which sqlite TEXT cannot deliver; the driver raises or the store's _tolerate_undecodable_text replaces them) would have differed, and there the old code was the crashing one. _previous_provenance_fields and _merge_metadata_json still hand the column's value to the chain and still count as 3 handoffs. No write-side P0 found.",
+      "verdict": "CONFIRMED - no write-behaviour regression found"
+    }
+  ],
+  "independent_baseline": {
+    "confirmed": [
+      "normalizer.py::normalize_catalog",
+      "section_query.py::SectionQueryService.list_sections"
+    ],
+    "confirmed_counts_mine": {
+      "normalizer.py::normalize_catalog": 1,
+      "section_query.py::SectionQueryService.list_sections": 1
+    },
+    "confirmed_counts_registry": {
+      "normalizer.py::normalize_catalog": 1,
+      "section_query.py::SectionQueryService.list_sections": 1
+    },
+    "handoff": [
+      "artifact_backfill.py::_classify",
+      "artifact_read_model.py::_artifact_row",
+      "backfill_v2.py::run_backfill",
+      "extraction_quality.py::ExtractionQualityService._artifact",
+      "migration_ledger.py::build_quality_ledger",
+      "normalizer.py::_frontmatter",
+      "normalizer.py::normalize_catalog",
+      "resolver.py::_metadata_conflict_reason",
+      "scanner.py::_merge_document_row",
+      "section_query.py::SectionQueryService.list_sections",
+      "service.py::SourceCatalog.query",
+      "service.py::SourceCatalog.query_filing_candidates",
+      "source_lifecycle.py::_safety_receipt"
+    ],
+    "handoff_counts_mine": {
+      "artifact_backfill.py::_classify": 1,
+      "artifact_read_model.py::_artifact_row": 1,
+      "backfill_v2.py::run_backfill": 1,
+      "extraction_quality.py::ExtractionQualityService._artifact": 1,
+      "migration_ledger.py::build_quality_ledger": 1,
+      "normalizer.py::_frontmatter": 1,
+      "normalizer.py::normalize_catalog": 1,
+      "resolver.py::_metadata_conflict_reason": 1,
+      "scanner.py::_merge_document_row": 3,
+      "section_query.py::SectionQueryService.list_sections": 1,
+      "service.py::SourceCatalog.query": 2,
+      "service.py::SourceCatalog.query_filing_candidates": 1,
+      "source_lifecycle.py::_safety_receipt": 1
+    },
+    "handoff_counts_registry": {
+      "artifact_backfill.py::_classify": 1,
+      "artifact_read_model.py::_artifact_row": 1,
+      "backfill_v2.py::run_backfill": 1,
+      "extraction_quality.py::ExtractionQualityService._artifact": 1,
+      "migration_ledger.py::build_quality_ledger": 1,
+      "normalizer.py::_frontmatter": 1,
+      "normalizer.py::normalize_catalog": 1,
+      "resolver.py::_metadata_conflict_reason": 1,
+      "scanner.py::_merge_document_row": 3,
+      "section_query.py::SectionQueryService.list_sections": 1,
+      "service.py::SourceCatalog.query": 2,
+      "service.py::SourceCatalog.query_filing_candidates": 1,
+      "source_lifecycle.py::_safety_receipt": 1
+    },
+    "missing": [],
+    "extra": [],
+    "mismatched_counts": {},
+    "totals": {
+      "my_scanner_files_scanned": 95,
+      "confirmed_scopes": 2,
+      "confirmed_sites": 2,
+      "handoff_scopes": 13,
+      "handoff_sites": 16,
+      "registry_claim": "13 scopes / 16 sites for COLUMN_VALUE_HANDOFFS"
+    },
+    "note": "Derived with my own scanner (%TEMP%\\b10vr3\\probes\\p_baseline.py), not by importing the product's. Exact match on all 15 keys and all 15 counts. The counts the author says he first got wrong by hand are confirmed at 3 and 2."
+  },
+  "per_site_equivalence": [
+    {
+      "input_sha16": "4390e56a11ca4996",
+      "label": "readable_json_object::DICT",
+      "old": "AttributeError: 'str' object has no attribute 'get'",
+      "new": "ok, identity carried",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "63cf68e728ad412a",
+      "label": "malformed_text::DICT",
+      "old": "AttributeError: 'str' object has no attribute 'get'",
+      "new": "ok, degraded (no identity)",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "55d64caff082bf20",
+      "label": "empty_string::DICT",
+      "old": "ok (falsy -> {})",
+      "new": "ok, degraded",
+      "equal": true,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "38dc926dbdb771f7",
+      "label": "sql_null::DICT",
+      "old": "ok (falsy -> {})",
+      "new": "ok, degraded",
+      "equal": true,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "2389940dbc898bec",
+      "label": "valid_json_array::DICT",
+      "old": "AttributeError: 'str' object has no attribute 'get'",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "582a9c3ee41ef38e",
+      "label": "non_utf8_bytes::DICT",
+      "old": "AttributeError: 'bytes' object has no attribute 'get'",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "61438eab179b70e2",
+      "label": "whitespace_only::DICT",
+      "old": "AttributeError: 'str' object has no attribute 'get'",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "3449f5bcec42995d",
+      "label": "json_null::DICT",
+      "old": "AttributeError: 'str' object has no attribute 'get'",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "02c989c9d0916d31",
+      "label": "json_string_scalar::DICT",
+      "old": "AttributeError: 'str' object has no attribute 'get'",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "89b1304f220cd8ed",
+      "label": "readable_json_object::ROW",
+      "old": "ok, identity carried",
+      "new": "ok, identity carried",
+      "equal": true,
+      "verdict": "identical output"
+    },
+    {
+      "input_sha16": "4bcc7b1236294a52",
+      "label": "malformed_text::ROW",
+      "old": "JSONDecodeError: Expecting value: line 1 column 1",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "6f0cd75ff554074a",
+      "label": "empty_string::ROW",
+      "old": "ok (falsy -> {})",
+      "new": "ok, degraded",
+      "equal": true,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "0067c481f0ca2028",
+      "label": "sql_null::ROW",
+      "old": "ok (falsy -> {})",
+      "new": "ok, degraded",
+      "equal": true,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "908d972513f8c12d",
+      "label": "valid_json_array::ROW",
+      "old": "AttributeError: 'list' object has no attribute 'get'",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "21a0e56b8fe30d24",
+      "label": "non_utf8_bytes::ROW",
+      "old": "JSONDecodeError: Expecting value: line 1 column 1",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "f364f28143bd241f",
+      "label": "whitespace_only::ROW",
+      "old": "JSONDecodeError: Expecting value: line 1 column 3",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "6f0bd7ef11e68065",
+      "label": "json_null::ROW",
+      "old": "AttributeError: 'NoneType' object has no attribute 'get'",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    },
+    {
+      "input_sha16": "47d75d89c5c69602",
+      "label": "json_string_scalar::ROW",
+      "old": "AttributeError: 'str' object has no attribute 'get'",
+      "new": "ok, degraded",
+      "equal": false,
+      "verdict": "old THROWS / new degrades"
+    }
+  ],
+  "my_mutants": [
+    {
+      "id": "P1",
+      "changed": "section_query.py::SectionQueryService.list_sections - added a SECOND json.loads(row['metadata_json']) at correct 16-space indent (ast.parse verified)",
+      "test": "tests/contract/test_b10_read_chain.py",
+      "failed": true,
+      "failure_kind": "assertion",
+      "expected": true,
+      "gate_exit_code": 1,
+      "gate_summary": "2 failed, 12 passed",
+      "message": "an ADDITIONAL direct reader appeared inside an already-baselined scope: section_query.py::SectionQueryService.list_sections (2 > 1)"
+    },
+    {
+      "id": "P1b",
+      "changed": "scanner.py::_merge_document_row - added a second HANDOFF of the column in the 13-scope ratchet",
+      "test": "tests/contract/test_b10_read_chain.py",
+      "failed": true,
+      "failure_kind": "assertion",
+      "expected": true,
+      "gate_exit_code": 1,
+      "gate_summary": "1 failed, 13 passed",
+      "message": "an ADDITIONAL handoff of the column appeared inside an already-baselined scope: scanner.py::_merge_document_row (4 > 3)"
+    },
+    {
+      "id": "P2",
+      "changed": "added source_catalog/review_probe_new_reader.py with a direct reader",
+      "test": "tests/contract/test_b10_read_chain.py",
+      "failed": true,
+      "failure_kind": "assertion",
+      "expected": true,
+      "gate_exit_code": 1,
+      "gate_summary": "2 failed, 12 passed",
+      "message": "new direct readers of the shared column: review_probe_new_reader.py::probe_read"
+    },
+    {
+      "id": "P3",
+      "changed": "section_query.py - REMOVED the baselined site without lowering the baseline count",
+      "test": "tests/contract/test_b10_read_chain.py",
+      "failed": true,
+      "failure_kind": "assertion",
+      "expected": true,
+      "gate_exit_code": 1,
+      "gate_summary": "2 failed, 12 passed",
+      "message": "the handoff baseline still lists sites that no longer pass the column: section_query.py::SectionQueryService.list_sections"
+    },
+    {
+      "id": "S1",
+      "changed": "shipped b10_mutations.py re-run with ONLY M2's replacement text reverted to the 8-space (unparseable) variant",
+      "test": "the harness itself",
+      "failed": true,
+      "failure_kind": "harness refused the mutant (exit code 1, all_killed=false)",
+      "expected": true,
+      "message": "M2: killed=False by=invalid_mutant_syntax, syntax_broken_by_mutant=true; the other 8 stayed assertion kills"
+    }
+  ],
+  "ratchet_probes": {
+    "added_in_baselined_scope": {
+      "probe": "P1 (and P1b in the 13-scope handoff ratchet)",
+      "injected_at": "section_query.py::SectionQueryService.list_sections (16-space indent), scanner.py::_merge_document_row",
+      "mutated_file_still_parses": true,
+      "gate_verdict": "RED (blocked)",
+      "gate_exit_code": 1,
+      "failing_assertions": [
+        "test_b10_no_new_column_value_handoff",
+        "test_b10_no_new_confirmed_direct_reader"
+      ],
+      "message": "an ADDITIONAL direct reader appeared inside an already-baselined scope: section_query.py::SectionQueryService.list_sections (2 > 1)",
+      "verdict": "FIX CONFIRMED (the old key-set gate passed this exact shape)"
+    },
+    "added_in_new_module": {
+      "probe": "P2",
+      "injected_at": "new file src/company_wiki/source_catalog/review_probe_new_reader.py",
+      "mutated_file_still_parses": true,
+      "gate_verdict": "RED (blocked)",
+      "gate_exit_code": 1,
+      "message": "new direct readers of the shared column: review_probe_new_reader.py::probe_read",
+      "verdict": "CONFIRMED"
+    },
+    "removed_without_lowering": {
+      "probe": "P3",
+      "injected_at": "section_query.py::SectionQueryService.list_sections (site deleted, baseline count left at 1)",
+      "mutated_file_still_parses": true,
+      "gate_verdict": "RED (blocked)",
+      "gate_exit_code": 1,
+      "failing_assertions": [
+        "test_b10_baseline_has_no_stale_entry",
+        "test_b10_handoff_baseline_has_no_stale_entry"
+      ],
+      "message": "the handoff baseline still lists sites that no longer pass the column: section_query.py::SectionQueryService.list_sections",
+      "verdict": "CONFIRMED"
+    }
+  },
+  "findings": [
+    {
+      "id": "B-VR-B10R2-01",
+      "severity": "P0",
+      "claim": "normalizer.py:1638 `metadata = json.loads(document[\"metadata_json\"])` is UNGUARDED and OUTSIDE any try in normalize_catalog, so ONE malformed documents.metadata_json still aborts the WHOLE normalization run - the exact failure mode batch 2 says it fixed, left standing in the sibling parse three lines above.",
+      "evidence": "AST: the only ast.Try in normalize_catalog starts at 1664 and its body is 1665-1679; both 1638 and the _frontmatter call at 1731 are outside it. Probe %TEMP%\\b10vr3\\probes\\p_normalize_abort.py seeds a throwaway catalog through the product's own CatalogStore with one row whose metadata_json is 'not json at all' and calls normalize_catalog: 'ESCAPED: JSONDecodeError -> Expecting value: line 1 column 1 (char 0)' raised from normalizer.py:1638, nothing recorded. Neither caller protects it: service.py:194 returns normalize_catalog(...) directly inside only a CatalogOperationLock, and cli.py:958 calls get_catalog().normalize(...).",
+      "impact": "On a catalog containing any document whose metadata_json is not valid JSON, `company-wiki catalog normalize` aborts on that document instead of degrading it: no ProcessingReport, no per-document failure record, no attempt counting, and every document queued BEHIND it is never normalized. This directly violates the B05 contract the evidence invokes ('malformed content must never crash the ingest path'), which is the contract batch 2 was written to satisfy.",
+      "suggested_disposition": "Treat the parse at 1638 exactly like _frontmatter: hand it to store.metadata_object, or move the parse+use inside a per-document guard. If the exception TYPE must keep reaching failure_reasons, ALSO move the parse inside the try at 1664 - today it cannot reach it at all. Do not close this by editing the registry text only."
+    },
+    {
+      "id": "B-VR-B10R2-02",
+      "severity": "P1",
+      "claim": "normalizer.py::normalize_catalog is registered in EXPLICIT_NON_CHAIN_READERS on a FALSE premise, so a declared 'deliberate non-chain reader' is in fact an unguarded crash path.",
+      "evidence": "read_chain.py:150-156 states 'the parse at :1633 sits in normalize_catalog's per-document try, and the handler at :1689 records error_code = type(exc).__name__ into normalization_metadata_json and the report's failure_reasons ... today: JSONDecodeError for malformed, TypeError for NULL, AttributeError for a non-object payload'. My structural map shows the handler at 1688 covers only 1665-1679, so none of those three types is recorded; the malformed case (JSONDecodeError) and the NULL case (TypeError from json.loads(None)) abort the run, and the non-object payload case raises AttributeError at the `metadata.get(\"dayu_meta\")` on line 1639 - also outside the try, so also an abort, not a record.",
+      "impact": "The registry is the artefact a future converger reads to decide what is safe to leave alone. Its stated reason is wrong in the direction that KEEPS the defect: a reader is excused as 'deliberate, its exception type is recorded data' when in reality nothing is recorded at all. It also makes the registry's own audit trail false, and the EXPLICIT_NON_CHAIN/CONFIRMED set equality assertion (test_b10_read_chain.py:361-367) locks the wrong entry into place.",
+      "suggested_disposition": "Correct the declaration to the measured truth (unguarded crash site, not a recorded-type raise) and either guard it or register it as a known OPEN defect rather than a design decision. Findings 01 and 02 have the same root: the site was declared from the failure-path docstring's reputation instead of from its control flow."
+    },
+    {
+      "id": "B-VR-B10R2-03",
+      "severity": "P1",
+      "claim": "_frontmatter's degradation does not tell the identity layer that the metadata is missing, so a row with an UNREADABLE metadata_json now records an identity PASS ('consistent') instead of 'no evidence'.",
+      "evidence": "_frontmatter passes publisher=inner.get('publisher') with inner={} when metadata is unreadable, and assess_homepage_identity returns {'verdict': 'consistent'} as soon as ANY declared value appears verbatim in the first page - in that call the only declared value left is the document title, which trivially appears. Measured: assess_homepage_identity('Test Filing\\nbody text', title='Test Filing', publisher=None) -> {'verdict': 'consistent', 'evidence': {'declared_count': 1}} and homepage_identity_quality_flag('consistent') -> None (no quality flag). Meanwhile detect_entities with declared_entity=None returns 'unverifiable', which also raises no flag. Net effect on the degraded path: zero quality flags, identity='consistent', declared entity and security ids simply absent from the rendered frontmatter (the shipped tolerance test asserts exactly that absence).",
+      "impact": "Opting out of the entity/publisher declaration silently converts an uncheckable identity into a recorded PASS. The old code did not have this hole because it raised - but that fix must not buy tolerance at the price of a false pass: the convergence removes the crash AND removes the signal, so the row looks cleaner than a row that was never declarable in the first place. This is the 'evidence missing recorded as passed' failure mode, arrived at from the opposite direction.",
+      "suggested_disposition": "Thread the metadata state into _frontmatter (it is already available as metadata_state(...)[1]) and record 'unverifiable: metadata unreadable' - or add a quality flag such as metadata_unreadable - so degradation is visible in the artifact rather than invisible."
+    },
+    {
+      "id": "B-VR-B10R2-04",
+      "severity": "P2",
+      "claim": "The registry's line-number citations were left at the pre-batch-1 revision.",
+      "evidence": "EXPLICIT_NON_CHAIN_READERS says ':1633' and ':1689'; at d92bb33 those were exactly right (metadata = json.loads(...) at 1633, error_code at 1689) but at 5ec18a5 the same statements are at 1638 and 1694. read_chain.py:1400's '1739' is also stale. read_chain.py:139-140's 'normalizer.py:1726' is right for d92bb33 and off by five for the tree it ships with (1731).",
+      "impact": "The citations resolve to the right statements, so this is not misleading about content - but a registry whose whole point is to be the machine-checkable statement of the read chain should not cite line numbers that no longer exist. A future reader who greps 1633 lands on a progress() call.",
+      "suggested_disposition": "Re-anchor the citations (or cite symbols instead of line numbers) in the same change that fixes -01/-02."
+    },
+    {
+      "id": "B-VR-B10R2-05",
+      "severity": "P2",
+      "claim": "The 'exception TYPE is recorded data' argument for leaving normalize_catalog unconverted does not survive contact with the rest of the codebase, even setting aside that it never reaches failure_reasons.",
+      "evidence": "The handler's own fallback is `DOCUMENT_PARSE_TIMEOUT_CODE if isinstance(exc, NormalizationTimeoutError) else type(exc).__name__` (normalizer.py:1694-1698), i.e. the codebase already folds a large family of parser exceptions into a type-name-derived code, and normalization_metadata_json/error_code are diagnostic fields, not a frozen contract constant.",
+      "impact": "Small: it means the one justification offered for keeping this site unconverged is weaker than the registry implies, which matters because the same justification is what makes the site look settled.",
+      "suggested_disposition": "If the owner does want the type preserved, say so as a decision with the alternative named; do not rest it on 'it is recorded data' alone."
+    },
+    {
+      "id": "B-VR-B10R2-06",
+      "severity": "P3",
+      "claim": "The two ratchets' scope boundary is true but load-bearing: they can only see src/company_wiki/source_catalog.",
+      "evidence": "The contract test scans SOURCE = tests/../src/company_wiki/source_catalog recursively. Real direct readers of the same columns live outside it: scripts/legacy_observer.py:96, scripts/wu904_remediation_restore.py:65, and eleven contract tests including tests/contract/test_r4b05_metadata_provenance.py:136 and tests/contract/test_source_catalog_section_extractor.py:168.",
+      "impact": "Low and NOT introduced by this batch - those sites predate B10 and the gate's reach is explicitly documented in GATE_BOUNDARIES, which is better than the usual case. Recorded because EXPLICIT_NON_CHAIN_READERS reads as though the read chain were enumerated for the repository, while it is enumerated for one package.",
+      "suggested_disposition": "Add one boundary entry naming the out-of-package readers so the next reader of the registry does not mistake the package scope for the repository scope."
+    },
+    {
+      "id": "B-VR-B10R2-07",
+      "severity": "P3",
+      "claim": "The evidence document carries two generations of numbers and section 7bis was not updated.",
+      "evidence": "b10-implementation.md section 7bis states 'gate 13 cases' and 'mutation 8/8 KILLED'; section 7quater states 'gate 14 cases' and 'mutation 9/9'. The tree and the evidence JSON agree with 7quater (14 collected, 9 mutants). Section 7ter also says CONFIRMED_DIRECT_READERS 'only 3 left (normalizer x2 + section_query)' while the shipped registry has 2 - 7quater's own text ('x2') is the correct one.",
+      "impact": "Cosmetic for anyone who reads to the end, but these documents are the review's raw material and the stale lines are exactly the kind that get quoted out of context. No inflation found: the CURRENT numbers are the true ones.",
+      "suggested_disposition": "Mark 7bis/7ter as superseded, or drop their counts."
+    }
+  ],
+  "adjudication": "REJECT",
+  "adjudication_reason": "The two repairs this round is built on are REAL and I reproduced both, so the ratchet's counting fix and the harness's syntax-kill fix are accepted without reservation: four independent probes (second reader in a baselined scope, second handoff in the 13-scope ratchet, reader in a new module, site removed without lowering the count) all came back RED with the intended messages, every mutated file was proved parseable first, and my own scanner reproduced the baseline to the digit (2/2 confirmed, 13 scopes / 16 handoff sites, zero mismatches). The harness re-run gave 9/9 killed_by=assertion with the repository untouched, and when I put the 8-space variant back it recorded invalid_mutant_syntax, set all_killed=false and exited 1 - exactly the guarantee claimed. The recorded evidence matches my independent run mutant for mutant, and every number in section 7quater (14 cases, 9/9, 793, 1903/8, 16 sites, both repairs) checks out against the tree and the CI logs. I found no inflation. I nevertheless REJECT, on one P0 that the batch's own reasoning should have caught: normalizer.py:1638 still parses the shared column with a bare json.loads OUTSIDE every try in normalize_catalog, and I drove a throwaway catalog through normalize_catalog to watch a single malformed metadata_json raise JSONDecodeError straight out of the whole run. That is the same abort-the-whole-normalization failure the batch-2 commit message describes at length for _frontmatter five lines below - the fix went to the sibling that was noticed and not to the one beside it. It is coupled to a P1 that makes it worse rather than better: read_chain.py declares that very site as a deliberate non-chain reader whose 'exception TYPE is recorded data', and its cited handler covers only lines 1665-1679, so the registry's justification is refuted by the control flow it describes. A third P1 records that the _frontmatter degradation now lets a row with unreadable metadata reach an identity verdict of 'consistent' with no quality flag at all - tolerance bought by removing the signal. None of the three is a large code change; -01 is a one-line convergence, -02 is a correction of a declaration, -03 is threading a state that is already computed. But B10's entire subject is that malformed data must be a recorded state rather than a crash or a silence, so shipping the convergence with an unguarded parse of the same column in the same function, and a registry entry that certifies it as intentional, is the one thing this review cannot sign.",
+  "not_checked": [
+    "The production catalog was never opened, so I do not know how many real rows carry a malformed documents.metadata_json; finding -01's blast radius is therefore demonstrated on a synthetic catalog, not measured against production data.",
+    "I did not run the full unit/contract suites myself (793 / 1903+8). I verified the recorded CI tails match their claims and re-ran only the B10 gate and its unit tests; the rest is taken from evidence I read but did not reproduce.",
+    "Remote CI status was not verified (no network). The claims about e36b984 and 144345b being green on the remotes are unchecked.",
+    "batch 1's other five convergences (artifact_backfill._classify, artifact_read_model._artifact_row, scanner._previous_provenance_fields, source_lifecycle._safety_receipt, service.query_filing_candidates) were checked only structurally - registry vs scanner vs the call sites they name - and not driven input-by-input the way _frontmatter was.",
+    "I did not attempt to defeat the two ratchets in the shapes GATE_BOUNDARIES already admits are open (intermediate variable, subscript inside the callee, third-party parser). I confirmed the boundaries are documented and pinned by a test, but I did not re-probe the two that are marked PROBED.",
+    "The out-of-package readers listed in -06 were found by grep of column name + loads; I did not classify each one as a true reader or a false positive.",
+    "Tests in the two unit files were run but not adversarially mutated beyond what the shipped harness does (M9 covers the _frontmatter tolerance test).",
+    "No judgement is offered on B10 as a whole, on B10-5 (revertible version / removal conditions) or on whether the remaining sites should be converged; this review is scoped to batch 1 + batch 2 and the two repairs."
+  ],
+  "side_effects_i_observed": {
+    "writes_i_made": "Exactly two locations, both outside the product: %TEMP%\\b10vr3\\ (probe scripts, scratch copies of the tree, harness output) and this one record, RUN/reviews/B.VR-b10-r2.json. No file under either repository was created, edited, moved or deleted - in particular no in-place mutation of any product file, and no modification of any existing file under the RUN.",
+    "repository_state": "company-wiki at 5ec18a51c1c69c460844232e117ae6768f0bcd4f, `git status --porcelain` empty before and after every experiment. revenue-forecast at 2f960f8cb29838b8e186f23f09e1a246ebedad87, clean. The mutation harness reported repository_untouched=true with identical git status before/after, and I verified that myself.",
+    "head_movement_during_review": {
+      "company_wiki": "none - HEAD stayed 5ec18a5 from first read to last",
+      "revenue_forecast": "none - HEAD stayed 2f960f8",
+      "filing_fetch": "not observed (out of scope)"
+    },
+    "production_catalog_never_opened": "Confirmed. Both catalogs I touched were throwaway sqlite files created under %TEMP%\\b10vr3\\ through the product's own CatalogStore; the sqlite3.Row probes used an empty :memory: database.",
+    "network_and_installs": "None. No pip, no network, no git write command. All git use was read-only (show, log, blame, grep, status, rev-parse).",
+    "run_directory_files_touched": [
+      "reviews/B.VR-b10-r2.json (created; the only one)"
+    ],
+    "harness_output_redirected": "evidence/b10_mutations.py was run with --out pointing at %TEMP%\\b10vr3\\evidence\\my-b10-mutations.json so the recorded evidence/b10-mutations.json was not overwritten; the recorded file still has its original 2026/9/17 20:17:24 timestamp and I diffed my output against it instead.",
+    "bugs_i_fixed": "None - this was a read-only review and I changed no product code."
+  }
+}

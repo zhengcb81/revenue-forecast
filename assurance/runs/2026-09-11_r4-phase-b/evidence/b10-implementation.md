@@ -164,6 +164,26 @@
 
 **本批数字**：门 **14 用例**；变异 **9/9 KILLED by assertion**（`repository_untouched=true`，副本基线 20 passed）；ruff clean。
 
+## 7quinquies. `B.VR-b10-r2`（重派版）**REJECT** + 7 条发现全部处置（2026-09-17）
+
+**结论：`REJECT`，含 1 个活 P0。** 它同时**独立复现**并确认了我上一轮的两处修复（计数棘轮四方向探针全 RED、harness kill 语义正确、基线计数 13 作用域/16 站点与它自写扫描器精确吻合、批次 2 等价性 9 输入 × {dict, sqlite3.Row}）。记录：[reviews/B.VR-b10-r2.json](../reviews/B.VR-b10-r2.json)。
+
+| # | 级别 | 它证明的 | 处置 |
+|---|---|---|---|
+| `B-VR-B10R2-01` | **P0** | `normalizer.py:1638` 的 `json.loads(document["metadata_json"])` **不在任何 try 内**（AST：`normalize_catalog` 内唯一 try 起于 1664、body 仅 1665-1679）⇒ 一个畸形列仍**中止整轮 normalize**；实测 `ESCAPED: JSONDecodeError ... normalizer.py:1638`，`failure_reasons` 无记录 | **已修**：该处改走 `metadata_state`（链），不可读只是"本文档无 dayu/pdf 关联"，**运行继续**。**行为级验证**：新探针 [evidence/b10_p0_probe.py](b10_p0_probe.py)（复刻它的夹具；输出存 [evidence/b10-p0-probe.txt](b10-p0-probe.txt)）阶段 2 = `escaped: false`、产物已生成且带 flag。**回归钉住**：变异 **M10**（把无守卫 `json.loads` 放回该行）⇒ 被棘轮 KILLED by assertion |
+| `B-VR-B10R2-02` | P1 | `read_chain` 对该站点的登记理由是**假的**（称解析在逐文档 try 内、异常类型进 `failure_reasons`）——把一个**未防护的崩溃路径**登记成"刻意的非链读取者" | **已修**：**删除**该条声明（并把我这条错误连同教训写进 `read_chain` 的历史注释）；`EXPLICIT_NON_CHAIN_READERS` 现仅剩 `section_query`（那条是真的）；CONFIRMED 基线 2 → **1**。**并且**：我上一版测试**把这个假声明钉住了**（"必须仍在册"）——等于让门保护缺陷，该断言已删除并留下 HISTORY 注释 |
+| `B-VR-B10R2-03` | P1 | `_frontmatter` 降级**不告知 identity 层** ⇒ 元数据不可读的行被记成 identity **`consistent`** 且零 quality flag（实测 `assess_homepage_identity(...publisher=None)` → `consistent`）——"证据缺失被记成通过" | **已修**：不可读时**追加 `metadata_unreadable` 质量 flag** 且**把 identity 判定降级为 `unverifiable`**（fail-closed）；新增 2 个用例（不可读 ⇒ flag+降级；空/NULL ⇒ 按链的 falsy 合同**不算不可读**）。探针阶段 2 的产物里实测：flag=True、`verdict: consistent`=False、`verdict: unverifiable`=True |
+| `B-VR-B10R2-04` | P2 | 登记里的 `:1633/:1689/:1739` 是旧行号 | **已随 -02 消除**（该登记已删） |
+| `B-VR-B10R2-05` | P2 | "异常类型是记录数据"的论点站不住（handler 自身有 `type(exc).__name__` 回退） | **接受**：该论点随之作废，理由是**它根本不成立**（不是"换成另一个理由"） |
+| `B-VR-B10R2-06` | P3 | 门只看 `src/company_wiki/source_catalog` | **已修**：新增硬规则 `test_b10_no_direct_reader_outside_source_catalog`（覆盖**整个产品包**，当前 0 处）；库外读者**实测**登记进 `GATE_BOUNDARIES`：`scripts/` **2** 处（legacy_observer.py:96、wu904_remediation_restore.py:65）、`tools/` 0、`tests/` 10（夹具），并写明**不被任何棘轮覆盖** |
+| `B-VR-B10R2-07` | P3 | §7bis 写 13 用例/8-8、§7ter 写"只剩 3 条"与现状矛盾 | **已修**：本文件数字已按现行 **15 用例 / 10 变异 / CONFIRMED 1 条** 更新 |
+
+**附带发现（不属于本 P0，但如实登记）**：探针阶段 1 显示——**主文件在磁盘上缺失**时，整轮 normalize 仍会中止（`SourceManifestMismatchError` 逃出 `normalizer.py:1725`，即 unsupported 分支里的 `IngestService.ingest`）。这**不是**本次改动引起（改前逃得更早），但它是同类的"单文档问题中止整轮"路径 ⇒ 登记为待评估项（`F-B10R2-MISSINGFILE`）。
+
+**我在修 -03 时自己制造并修掉的一处回归（本地 CI 步骤抓住的）**：第一版把 `_frontmatter` 的两个分支都改走 `metadata_state(raw)`，而 **dict 分支的合同是"值已经是解析好的对象"**（`tests/contract/test_zr502_homepage_identity.py` 的夹具就这么传）⇒ `json.loads(dict)` 抛 `TypeError` ⇒ 每个这样的文档都被判 `unreadable` 并把 identity 降级，**三例 ZR-502 契约用例变红**（`assert 'unverifiable' == 'consistent'/'contradiction'`）。
+**修法**：dict 分支若值是 dict 就**按原样使用**（与批次 2 之前一致），只有**列文本**才走链。修后 ZR-502 11 例 + B10 24 例全绿，整包契约 **1904 passed / 8 skipped**。
+**教训**：把"解析"接进一个既有函数时，必须先确认该函数**两种入参形态**的合同——我只核了 Row 分支，漏了 dict 夹具分支；这次是本地两步 CI（而非我的定点用例）把它抓出来的。
+
 ## 8. 状态与下一步
 
 **提交与 CI**（本轮小阶段收口，**已核对**）：

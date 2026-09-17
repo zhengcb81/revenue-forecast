@@ -84,14 +84,15 @@ MUTANTS: list[dict] = [
     },
     {
         "id": "M3",
-        "file": "src/company_wiki/source_catalog/normalizer.py",
+        "file": "src/company_wiki/source_catalog/section_query.py",
         "test": "test_b10_baseline_has_no_stale_entry",
-        "why": ("a DEFERRED baselined site (normalizer.py::normalize_catalog, failure-path "
-                "semantics) is converged without lowering the baseline - the stale-entry test "
-                "must catch the un-lowered entry.  Retargeted after batch 1 converged the "
-                "original artifact_backfill site for real."),
-        "replace": ("        metadata = json.loads(document[\"metadata_json\"])",
-                    "        metadata = metadata_object(document[\"metadata_json\"])"),
+        "why": ("the ONE remaining baselined reader (section_query, declared non-chain) is "
+                "converged without lowering the baseline - the stale-entry test must catch it. "
+                "Retargeted twice now: batch 1 converged the original artifact_backfill "
+                "target, and the P0 fix converged the normalizer target, so a baselined "
+                "reader is a moving thing and this mutant has to follow the baseline"),
+        "replace": ('                meta = json.loads(row["metadata_json"] or "{}")',
+                    '                meta = metadata_object(row["metadata_json"])'),
     },
     {
         "id": "M4",
@@ -158,18 +159,21 @@ MUTANTS: list[dict] = [
                 "malformed column raises out of the whole normalization run again - the "
                 "tolerance test must fail"),
         "replace": (
-            "    metadata = metadata_object(\n"
-            "        document.get(\"metadata_json\") if isinstance(document, dict)\n"
-            "        else document[\"metadata_json\"]\n"
-            "    )",
-            "    if isinstance(document, dict):\n"
-            "        metadata = document.get(\"metadata_json\") or {}\n"
-            "    else:\n"
-            "        metadata = (\n"
-            "            json.loads(document[\"metadata_json\"])\n"
-            "            if document[\"metadata_json\"]\n"
-            "            else {}\n"
-            "        )",
+            "        metadata, metadata_problem = metadata_state(raw_metadata)",
+            "        metadata, metadata_problem = json.loads(raw_metadata), None",
+        ),
+    },
+    {
+        "id": "M10",
+        "file": "src/company_wiki/source_catalog/normalizer.py",
+        "test": "test_b10_no_new_confirmed_direct_reader",
+        "why": ("B-VR-B10R2-01 (P0) reverted: the unguarded json.loads comes back at the site "
+                "that used to abort the whole normalization run. The ratchet must refuse it "
+                "as a new direct reader even though the file still parses"),
+        "replace": (
+            "        metadata, metadata_problem = metadata_state(document[\"metadata_json\"])",
+            "        metadata_problem = None\n"
+            "        metadata = json.loads(document[\"metadata_json\"])",
         ),
     },
 ]
