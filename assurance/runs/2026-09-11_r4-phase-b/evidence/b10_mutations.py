@@ -39,13 +39,16 @@ def _sha256(path: Path) -> str:
 
 
 def _make_copy(repo: Path, work: Path) -> Path:
-    """A temp copy carrying only what the gate test needs: the package, the test, pytest.ini."""
+    """A temp copy carrying only what the gate tests need: the package, the tests, pytest.ini."""
     root = work / "repo"
     if root.exists():
         shutil.rmtree(root)
     (root / "tests" / "contract").mkdir(parents=True)
+    (root / "tests" / "unit").mkdir(parents=True)
     shutil.copytree(repo / PACKAGE_REL, root / PACKAGE_REL)
     shutil.copy2(repo / TEST_REL, root / TEST_REL)
+    for unit_test in sorted((repo / "tests" / "unit").glob("test_b10_*.py")):
+        shutil.copy2(unit_test, root / "tests" / "unit" / unit_test.name)
     ini = repo / "pytest.ini"
     if ini.is_file():
         shutil.copy2(ini, root / "pytest.ini")
@@ -67,11 +70,17 @@ MUTANTS: list[dict] = [
         "id": "M2",
         "file": "src/company_wiki/source_catalog/section_query.py",
         "test": "test_b10_no_new_confirmed_direct_reader",
-        "why": "a NEW direct reader appears in a symbol that is not in the baseline",
-        "replace": ("        meta = json.loads(row[\"metadata_json\"] or \"{}\")",
-                    "        meta = json.loads(row[\"metadata_json\"] or \"{}\")\n"
-                    "        extra = json.loads(row[\"metadata_json\"] or \"{}\")\n"
-                    "        meta = {**meta, **extra}"),
+        "why": ("a SECOND direct reader inside an ALREADY-BASELINED scope - the hole the "
+                "review's partial work exposed (it used to pass: exit 0, '1 passed'). The "
+                "count ratchet must catch it. NOTE the indent: the first version injected "
+                "8-space lines into a 16-space block, which made the file unparseable, so "
+                "the 'kill' was really my own scanner hitting a SyntaxError - a mutant that "
+                "breaks the syntax proves nothing about the guard"),
+        "replace": ('                meta = json.loads(row["metadata_json"] or "{}")',
+                    '                meta = json.loads(row["metadata_json"] or "{}")\n'
+                    '                _b10_extra_meta = json.loads('
+                    'row["metadata_json"] or "{}")\n'
+                    '                meta = {**meta, **_b10_extra_meta}'),
     },
     {
         "id": "M3",
@@ -140,6 +149,29 @@ MUTANTS: list[dict] = [
                    "    \"\"\"Only exists while this mutant is in place.\"\"\"\n"
                    "    return _b10_vr_parse(row[\"metadata_json\"]).get(\"document_kind\")\n"),
     },
+    {
+        "id": "M9",
+        "file": "src/company_wiki/source_catalog/normalizer.py",
+        "test": "test_b10_frontmatter_tolerates_malformed_metadata",
+        "test_file": "tests/unit/test_b10_frontmatter_tolerance.py",
+        "why": ("batch 2 reverted: _frontmatter goes back to the unguarded json.loads, so a "
+                "malformed column raises out of the whole normalization run again - the "
+                "tolerance test must fail"),
+        "replace": (
+            "    metadata = metadata_object(\n"
+            "        document.get(\"metadata_json\") if isinstance(document, dict)\n"
+            "        else document[\"metadata_json\"]\n"
+            "    )",
+            "    if isinstance(document, dict):\n"
+            "        metadata = document.get(\"metadata_json\") or {}\n"
+            "    else:\n"
+            "        metadata = (\n"
+            "            json.loads(document[\"metadata_json\"])\n"
+            "            if document[\"metadata_json\"]\n"
+            "            else {}\n"
+            "        )",
+        ),
+    },
 ]
 
 
@@ -172,29 +204,37 @@ def main(argv: list[str]) -> int:
                                 "killed": None})
                 continue
             path.write_text(mutated, encoding="utf-8", newline="")
+            test_file = mutant.get("test_file", TEST_REL)
             proc = subprocess.run(
-                [sys.executable, "-m", "pytest", TEST_REL, "-q", "-k", mutant["test"],
+                [sys.executable, "-m", "pytest", test_file, "-q", "-k", mutant["test"],
                  "-p", "no:cacheprovider"],
                 cwd=str(copy), capture_output=True, text=True, encoding="utf-8",
                 errors="replace",
                 env={**__import__("os").environ, "PYTHONPATH": str(copy / "src")},
             )
             tail = (proc.stdout or "").strip().splitlines()[-1][:120] if proc.stdout else ""
+            output = proc.stdout or ""
+            # A mutant that BREAKS THE SYNTAX proves nothing about the guard: the scan simply
+            # fails to parse the file.  The review caught this on M2 - its first version
+            # injected 8-space lines into a 16-space block and the "kill" was really a
+            # SyntaxError.  Such a mutant is reported as a HARNESS failure (not a kill), so it
+            # cannot masquerade as evidence.
+            syntax_broken = ("SyntaxError" in output) or ("IndentationError" in output)
+            killed = proc.returncode != 0 and not syntax_broken
             results.append({
-                "id": mutant["id"], "applied": True, "killed": proc.returncode != 0,
-                # A kill by COLLECTION ERROR is not a kill by assertion.  pytest's exit code
-                # says which: 1 = tests failed, 2 = interrupted/collection error.  The first
-                # version of this harness matched on the words in the output line, which is a
-                # weaker signal than the code itself.
-                "killed_by": ("assertion" if proc.returncode == 1 else
-                              "collection_or_other_error" if proc.returncode != 0 else "-"),
+                "id": mutant["id"], "applied": True, "killed": killed,
+                "killed_by": ("assertion" if killed else
+                              "invalid_mutant_syntax" if syntax_broken else
+                              "survived" if proc.returncode == 0 else "other_error"),
+                "syntax_broken_by_mutant": syntax_broken,
                 "pytest_exit_code": proc.returncode,
                 "test": mutant["test"], "why": mutant["why"],
                 "exit_code": proc.returncode, "tail": tail,
             })
             path.write_text(text, encoding="utf-8", newline="")
         base = subprocess.run(
-            [sys.executable, "-m", "pytest", TEST_REL, "-q", "-p", "no:cacheprovider"],
+            [sys.executable, "-m", "pytest", TEST_REL, "tests/unit", "-q",
+             "-p", "no:cacheprovider"],
             cwd=str(copy), capture_output=True, text=True, encoding="utf-8", errors="replace",
             env={**__import__("os").environ, "PYTHONPATH": str(copy / "src")},
         )

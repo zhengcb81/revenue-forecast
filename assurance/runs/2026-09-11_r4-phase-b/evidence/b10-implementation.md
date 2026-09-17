@@ -138,6 +138,32 @@
 
 **收敛后基线**：`CONFIRMED_DIRECT_READERS` 只剩 **3 条**（normalizer ×2 + section_query），每条带**表注解**与"为什么还没收敛"的 note；`COLUMN_VALUE_HANDOFFS` 13 条（链调用本身也在内，按设计不许增长）。
 
+## 7quater. **B10-3 批次 2 + 复审半成品暴露的两个真洞**（2026-09-17）
+
+**背景**：`B.VR-b10-r2` 这次复审**中途失败、未落记录**，但它的半成品观察点**实测有效**，逼出两处必须修的东西——下面第 1、2 条都先**复现**再改。
+
+### 1. 批次 2：`_frontmatter` 收敛（崩溃 → 降级）
+
+`_frontmatter` 在 `normalizer.py:1726` 被调用——**在 `normalize_catalog` 的逐文档 try 之外** ⇒ 批次 2 之前，一个不可读的 `documents.metadata_json` 会**整轮归一化中止**（不是单文档失败记录）。这违反 B05 立下的"畸形内容不得崩掉 ingest 路径"。
+**修**：两个分支（sqlite3.Row / dict）统一走 `metadata_object`。
+**行为差（如实登记）**：不可读 → 不再抛，而是"无元数据"继续渲染；dict 分支里值是 JSON **字符串**时也不再 `AttributeError`。
+**定点用例**：`tests/unit/test_b10_frontmatter_tolerance.py`（对照 + 5 种畸形 × 两种入参形态）。
+
+### 2. 棘轮只认"键集合"⇒ **同作用域内新增解析被放行**（复审怀疑 #2，**已实测复现**）
+
+- **复现**：在已入基线的 `section_query.py::SectionQueryService.list_sections` 里加**第二个** `json.loads(row["metadata_json"] ...)`（16 空格缩进，文件仍可解析）⇒ 旧门 **exit 0 / "1 passed"（放行）**。
+- **修**：两道棘轮从"键集合"升级为**每作用域站点计数**（`sites` / 计数 dict）：同一作用域多一处 ⇒ 红（报"an ADDITIONAL direct reader appeared inside an already-baselined scope"）；少一处 ⇒ 也红（必须降基线，防"陈旧额度"掩盖未来的新增）。
+- **验证**：同一个同作用域注入现在 **BLOCKED**（精确报出该键）；harness 的 **M2 改为正确缩进的同作用域变异** ⇒ KILLED by assertion。
+- **计数是机器导出的**（13 作用域 / **16 站点**）；我手填的第一版把 `scanner._merge_document_row` 记成 2、`SourceCatalog.query` 记成 1（实际 **3** 与 **2**）——**又一次"凭估填数"被抓**，所以计数现在由脚本导出。
+
+### 3. harness 的"杀死"判定不可靠（复审怀疑 #1，**已实测复现**）
+
+- **复现**：M2 旧版把 **8 空格**的行注入 **16 空格**块 ⇒ 文件语法错误 ⇒ 我的扫描器 `ast.parse` 抛 `SyntaxError` ⇒ 用例"失败"，被我记成 `killed_by=assertion`。**这证明的是扫描器会崩，而不是棘轮会拦**。
+- **修**：`killed_by` 现在先检查输出里是否出现 `SyntaxError`/`IndentationError` ⇒ 记为 **`invalid_mutant_syntax`** 且**不计入 kill**（`all_killed` 变 false），从机制上禁止"坏变异冒充证据"。
+- M2 改为正确缩进后，它的 kill 来自**计数棘轮的断言**（见 §2）。
+
+**本批数字**：门 **14 用例**；变异 **9/9 KILLED by assertion**（`repository_untouched=true`，副本基线 20 passed）；ruff clean。
+
 ## 8. 状态与下一步
 
 **提交与 CI**（本轮小阶段收口，**已核对**）：
