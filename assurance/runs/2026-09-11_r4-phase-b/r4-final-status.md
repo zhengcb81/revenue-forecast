@@ -15,8 +15,9 @@
 
 - **单一解析实现**：`store.metadata_state(raw) -> (object, state)`（报告半）+ `metadata_object = metadata_state(...)[0]`（plain 半）；**9 个曾各自解析的站点**收敛（批次 1 的 7 处 + 批次 2 的 `_frontmatter` + P0 的 `normalize_catalog`），`section_query` 的具名报错**声明**保留。
 - **旧入口具名**：`reader.resolve_handle` / `bundle` 登记为 v1 adapter，**声明**它们不是字节级（`bundle` 读 artifact 文件：`reads_files=True`，P1 修正后的事实）+ 各自的移除条件。
-- **两道计数棘轮**（每作用域站点数；键为 `Class.method` 限定名）：`CONFIRMED_DIRECT_READERS` **1 条**（已声明的 section_query）、`COLUMN_VALUE_HANDOFFS` **13 作用域 / 16 站点**；另有"产品包其余部分 0 处直读"硬规则；`GATE_BOUNDARIES` 记录**实测**边界（4 种绕过形状 + 库外读者 `scripts/`2、`tools/`0、`tests/`10）。
-- **可读性/可见性**：不可读元数据 ⇒ `metadata_unreadable` flag + identity 判定降级 `unverifiable`（不再"证据缺失=通过"）；`normalize_catalog` 的解析**不再**能中止整轮（P0 修复，探针阶段 2 证）。
+- **两道计数棘轮**（每作用域站点数；键为 `Class.method` 限定名）：`CONFIRMED_DIRECT_READERS` **1 条**（已声明的 section_query）、`COLUMN_VALUE_HANDOFFS` **12 作用域 / 15 站点**（机器导出；早先写的 13/16 是批次 2 与 P0 收敛前的读数，r3 已指出该陈旧文字并已改）；另有"产品包其余部分 0 处直读"硬规则（**enforced**）；`GATE_BOUNDARIES` 记录**实测**边界（4 种绕过形状 + 库外读者 `scripts/`2、`tools/`0、`tests/`10 —— 后三者是**观察**，注入到 `scripts/`/`tools/` **不会**变红，r3 的 `B-VR-B10R3-02` 已指出并改正措辞）。
+- **可读性/可见性**：不可读元数据 ⇒ `metadata_unreadable` flag + identity 判定降级 `unverifiable`（不再"证据缺失=通过"）；**共享列**的解析**不再**能中止整轮（P0 修复，探针阶段 2 + 修前/修后对照证）；**失败 handler 里的姊妹列**解析也不再能中止整轮（r3 的 `B-VR-B10R3-01`，一行修复 + 探针阶段 3 的修前读数证）。
+- **仍然存在的整轮中止路径（未修，需 owner 决定）**：主文件缺失 ⇒ unsupported 分支的 `IngestService.ingest` 逃出（会**饿死后面的文档**）；`_atomic_write`（阅读发现，未驱动）。见 [findings.md](findings.md) `F-B10R2-MISSINGFILE`。
 - **回退**：逐批次回退点见 [evidence/b10-implementation.md](b10-implementation.md) §9.1；**回退不回滚任何数据**（B10 全程只改读取路径）。
 - **不声称**：棘轮是**语法形状**上的（非数据流），四种形状未覆盖；`scripts/` 两处不在门内；`F-B10R2-MISSINGFILE`（主文件缺失中止整轮，**既有**问题）**未修**；`tests/` 10 处夹具直读不在门内。
 
@@ -26,10 +27,10 @@
 |---|---|---|
 | 门用例 | **15** | `tests/contract/test_b10_read_chain.py` |
 | 变异 | **10/10 KILLED by assertion**（`repository_untouched=true`，副本基线 24 passed） | [evidence/b10-mutations.json](evidence/b10-mutations.json) |
-| 本地 CI 两步 | unit **796 passed**；contract **1904 passed / 8 skipped** | [evidence/b10r5-ci-step1-unit.txt](evidence/b10r5-ci-step1-unit.txt)、[evidence/b10r5-ci-step2-contract.txt](evidence/b10r5-ci-step2-contract.txt) |
-| 远端 CI | wiki `f92fc71`(master) ✅；revenue `5cc534b`(main) ✅ | GitHub Actions |
-| P0 行为级验证 | 探针阶段 2 `escaped:false` + 产物带 `metadata_unreadable` + 判定 `unverifiable` | [evidence/b10-p0-probe.txt](evidence/b10-p0-probe.txt)、[evidence/b10_p0_probe.py](b10_p0_probe.py) |
-| 独立复审 | `B.VR-b10`（处置完）、`B.VR-b10-r2` = **REJECT**（7 条处置完）；**`B.VR-b10-r3` 验证复审在跑** | `reviews/` |
+| 本地 CI 两步 | unit **796 passed**；contract **1904 passed / 8 skipped**（**环境相关**：r3 在 Python 3.14.2 且缺 `xlrd`/`fitz` 的环境下得 `7 failed / 1886 passed / 19 skipped`，并证明 7 条全部**既有且属环境**） | [evidence/b10r5-ci-step1-unit.txt](evidence/b10r5-ci-step1-unit.txt)、[evidence/b10r5-ci-step2-contract.txt](evidence/b10r5-ci-step2-contract.txt) |
+| 远端 CI | wiki `f92fc71`(master) ✅；revenue 文档提交 `b7f6847`(main) ✅（**-01 修复后的最终 sha 见定稿**） | GitHub Actions |
+| P0/P2 行为级验证 | 探针阶段 2（共享列）`escaped:false` + flag + 判定降级；阶段 3（姊妹列）真树 `escaped:false`、**变异副本 `escaped:true` @1727** | [evidence/b10-p0-probe.txt](evidence/b10-p0-probe.txt)、[evidence/b10_p0_probe.py](b10_p0_probe.py) |
+| 独立复审 | `B.VR-b10`（处置完）、`B.VR-b10-r2` = **REJECT**（7 条处置完）、`B.VR-b10-r3` = **REJECT**（核心三条 **FIXED**，6 条新发现处置完） | `reviews/` |
 
 ## 4. 边界与残留（不得含糊）
 

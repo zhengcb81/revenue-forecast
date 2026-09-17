@@ -1,0 +1,288 @@
+{
+  "review": "B.VR-b10-r3",
+  "reviewed_at_utc": "2026-09-17T22:05:00Z",
+  "reviewer_agent_id": "deepseek-flash/b10vr4-independent-reviewer",
+  "independence_statement": "I am the independent read-only reviewer for this round, re-dispatched after B.VR-b10-r2 returned REJECT. I did not write, move, delete or mutate any file in either repository, and I ran no git write command and used no network. Every probe ran against a private copy of the tree under %TEMP%\\b10vr4 (built with read-only `git archive` at f92fc71 and at 5ec18a5 for before/after), or against throwaway sqlite catalogs created there. No production catalog was opened. The only file I created outside %TEMP% is this record. My measurements were taken with my own tools (my own AST scanner, my own normalize_catalog driver, my own _frontmatter matrix, my own mutant application, my own gate-injection probes); I re-used the author's evidence files only as CLAIMS to be checked, never as inputs to my own measurements.",
+  "verified_heads": {
+    "company_wiki": "f92fc7194225a3b7ee77dce25bc7f7a81f428108 (HEAD, master) - `git status --porcelain` empty at first read and at last read; reviewed commits f92fc71 (disposition) on top of 5ec18a5 (the REJECTed state), which I also extracted separately as my before/after baseline.",
+    "revenue_forecast": "4749b055bb48791cb5fd560d6586b3927983203e was HEAD when this review started (clean tree); three docs-only commits landed on top DURING the review and HEAD is now b7f684756c8e556ef092ffe85ca32a421b2b8b89 (4749b05 -> 473444f B10-5 closure + F-B10R2-MISSINGFILE -> 5cc534b progress entry -> b7f6847 draft of r4-final-status.md). None of them touches product code (which lives in company-wiki and did not move) and every evidence file I measured (b10-mutations.json, b10_p0_probe.py, b10-p0-probe.txt, both b10r5-ci-step*.txt) is byte-identical across that range; `git diff HEAD -- <this record>` is empty, i.e. the record I wrote is not modified by any of them. My readings therefore stand, and the citations in this record are to 4749b05 unless stated otherwise.",
+    "filing_fetch": "not touched and not inspected by this review."
+  },
+  "scope": [
+    "B-VR-B10R2-01 (P0): was normalizer.py's documents.metadata_json parse really moved inside the chain, and does the whole-run abort really stop?",
+    "B-VR-B10R2-02 (P1): is the false EXPLICIT_NON_CHAIN_READERS declaration gone, is the test that pinned it gone, and do the registry counts match a scanner I wrote myself?",
+    "B-VR-B10R2-03 (P1): does an unreadable column now record flag + unverifiable, does empty/NULL stay unflagged, and is the dict-branch contract (ZR-502) preserved?",
+    "B-VR-B10R2-04/-05/-07 (P2/P2/P3): stale line-number citations, the withdrawn 'exception type is data' argument, and the record's numbers.",
+    "B-VR-B10R2-06 (P3): does the new whole-package hard rule actually refuse an out-of-source_catalog direct reader, and are the GATE_BOUNDARIES numbers true?",
+    "Numbers and honesty: the two CI tails, the gate case count, 10/10 mutation kills, the 24-passed copy baseline, and whether b10-p0-probe.txt supports what the record says it supports.",
+    "Live P0/P1 hunt on this change itself (dict-branch metadata_problem, identity overwrite, flag vocabulary leakage, other single-document abort paths)."
+  ],
+  "method": [
+    "Built a private tree copy at f92fc71 and a second at 5ec18a5 (`git archive` -> %TEMP%\\b10vr4\\scratch, scratch_prev) and used them for every execution, so the repositories were never executed against and never written to.",
+    "Wrote my own AST mapper (v1_ast_normalize.py) that lists every json.loads / chain-helper call inside normalize_catalog and _frontmatter together with the innermost enclosing Try BODY span, and separately lists every subscript read of the shared column.",
+    "Wrote my own normalize_catalog driver (v2_normalize_probe.py) that seeds a throwaway catalog through the product's own CatalogStore and runs 6 scenarios on BOTH revisions, so each reading has a before/after pair.",
+    "Wrote my own _frontmatter matrix (v3_frontmatter_matrix.py): 12 column values x {dict shape, real sqlite3.Row shape}, with a synthetic first page that CONTAINS the title so the pre-fix 'consistent' failure mode is actually reachable; ran it on both revisions and diffed.",
+    "Wrote my own column scanner (v4_my_scanner.py) over 143 product files, 126 scripts, 7 tools, 278 tests, and compared every registry count against it.",
+    "Applied the recorded M10 replacement myself (v5_mutants_and_gate.py) and then drove normalize_catalog with the malformed column on that mutated copy (v5b_m10_behaviour.py), to test whether M10 kills a REAL regression.",
+    "Injected a direct reader into three different roots (another product subpackage, tools/, scripts/) and ran only the new hard-rule test on each.",
+    "Ran the focused suites and the two full CI-scoped suites in the scratch copy and read the tails.",
+    "Re-derived the handoff/reader counts from the shipped registry and from my scan, and re-read every count claim in the implementation record and in read_chain.py against the tree."
+  ],
+  "per_finding_verification": [
+    {
+      "id": "B-VR-B10R2-01",
+      "previous_severity": "P0",
+      "claim": "normalizer.py:1638 `json.loads(document[\"metadata_json\"])` was outside every try, so one malformed column aborted the whole normalization run. Claimed fix: route it through metadata_state; behavioural proof in evidence/b10_p0_probe.py + b10-p0-probe.txt; regression pinned by mutant M10.",
+      "my_check": "AST: my own mapper over the reviewed tree enumerates every call in normalize_catalog and its enclosing Try body. Behaviour: my own 6-scenario driver on the malformed-column fixture in a private copy, run on f92fc71 AND on 5ec18a5. Mutant: I applied the recorded M10 text myself to a fresh copy, confirmed ast.parse still succeeds, ran the named gate test, then drove normalize_catalog with the malformed column on that same mutated copy.",
+      "observed": "AST: normalize_catalog's ONLY Try is at line 1695 with body 1696-1710; the shared-column parse is now `metadata_state(document[\"metadata_json\"])` at 1669, and the only remaining `json.loads` in the function is 1720 (`document[\"normalization_metadata_json\"]`, a DIFFERENT column) and 1660 (`primary[\"manifest_json\"]`, another table's column). No unguarded parse of the shared column remains. Behaviour on f92fc71: malformed column -> `escaped=false`, report `completed=1 failed=0`, artifact written with `quality_flags: [metadata_unreadable]` and `verdict: unverifiable`, `metadata_problem: unreadable`. The SAME fixture on 5ec18a5 -> `escaped=true`, `JSONDecodeError`, raised from normalizer.py:1638, nothing recorded, no artifact. M10: anchor found exactly once, file still parses, gate test fails with a clean assertion ('new direct readers of the shared column: normalizer.py::normalize_catalog'), NO SyntaxError/IndentationError in the output, and driving the malformed fixture on the M10 copy reproduces `JSONDecodeError` from line 1670 `metadata = json.loads(document[\"metadata_json\"])`.",
+      "verdict": "FIXED"
+    },
+    {
+      "id": "B-VR-B10R2-02",
+      "previous_severity": "P1",
+      "claim": "read_chain.EXPLICIT_NON_CHAIN_READERS carried a FALSE declaration for normalizer.py::normalize_catalog, and the test pinned it. Claimed fix: delete the declaration and the assertion; EXPLICIT holds only section_query; CONFIRMED holds 1 entry.",
+      "my_check": "Read the shipped read_chain.py; grepped the whole tests/ tree for any assertion that still requires normalize_catalog in the non-chain registry; ran a scanner I wrote myself over the product package and compared every registry count; re-read the surrounding docstring for surviving false statements.",
+      "observed": "EXPLICIT_NON_CHAIN_READERS = {section_query.py::SectionQueryService.list_sections} only; CONFIRMED_DIRECT_READERS = {section_query...: table=artifacts, sites=1} only; COLUMN_VALUE_HANDOFFS = 12 scopes / 15 sites. My independent scan: source_catalog has exactly 1 direct reader site (section_query.py:109) and 15 handoff sites - every registry count matches to the digit. The only remaining occurrence of the string 'normalizer.py::normalize_catalog' under tests/ is a HISTORY comment, not an assertion (test_b10_read_chain.py:399). The false reason is retracted in a comment. HOWEVER the CONFIRMED_DIRECT_READERS docstring ABOVE the registry (read_chain.py:96-98) still says `normalizer (both) - the parse sits in normalize_catalog's FAILURE path (a malformed column currently produces a per-document normalization-failure record with attempt counting)`, which my probes falsify for the current tree: the parse is not in the failure path and a malformed column produces a COMPLETED document, not a failure record. See findings[] B-VR-B10R3-01.",
+      "verdict": "FIXED"
+    },
+    {
+      "id": "B-VR-B10R2-03",
+      "previous_severity": "P1",
+      "claim": "_frontmatter's degradation recorded identity 'consistent' with zero flags (missing evidence read as a pass). Claimed fix: unreadable -> metadata_unreadable flag + verdict unverifiable; empty/NULL stays unflagged per the chain's falsy contract; both directions asserted.",
+      "my_check": "My own 12-value x 2-shape matrix through the REAL _frontmatter, on both revisions, with a first page that contains the title (so 'consistent' is genuinely reachable). Plus the shipped test file and the ZR-502 contract file run in the scratch copy.",
+      "observed": "Baseline re-measured: assess_homepage_identity(page, title=<present in page>, publisher=None) -> 'consistent', and homepage_identity_quality_flag('consistent') -> None, i.e. the P1's premise is real. HEAD, for each of 8 unreadable values ('not json at all', '[1, 2, 3]', '\"a string\"', '123', 'null', b'\\xff\\xfe', '  ', and the JSON-string-as-dict-branch case) in BOTH shapes: metadata_unreadable flag PRESENT, 'verdict: consistent' ABSENT, 'verdict: unverifiable' PRESENT, declared identity ABSENT. Pre-fix, the same 16 cells had flag ABSENT and 'verdict: consistent' PRESENT. Empty ('') and NULL (None) in both shapes: flag ABSENT, no metadata_problem, no declared identity invented - the falsy contract is preserved. Readable text and readable dict: flag ABSENT, declared_entity/declared_security_ids reach the frontmatter, no false downgrade. Focused suites in the scratch copy: test_zr502_homepage_identity.py 11 passed, test_b10_read_chain.py 15 passed, test_b10_frontmatter_tolerance.py 5 passed, test_b10_metadata_state.py 4 passed (35 passed total), so the reported first-version ZR-502 regression is gone.",
+      "verdict": "FIXED"
+    },
+    {
+      "id": "B-VR-B10R2-04",
+      "previous_severity": "P2",
+      "claim": "The registry's line-number citations (:1633/:1689/:1739, read_chain 139-140's 1726) were left at the pre-batch-1 revision.",
+      "my_check": "Read the shipped read_chain.py and grepped the product package and the record for those stale line numbers.",
+      "observed": "All those citations disappeared with the deleted entry. The one remaining line number in read_chain.py is ':1638' inside the HISTORY comment; 1638 was exactly right for 5ec18a5, which is the revision the comment is about, so the remaining citation is a correct historical reference, not a stale live one. (The record itself still carries stale line numbers - see B-VR-B10R3-03.)",
+      "verdict": "FIXED"
+    },
+    {
+      "id": "B-VR-B10R2-05",
+      "previous_severity": "P2",
+      "claim": "'The exception type is recorded data' was the only justification for keeping the site unconverted, and it does not survive contact with the codebase.",
+      "my_check": "Read the current read_chain.py for any surviving version of that argument, and read the record's disposition.",
+      "observed": "The argument is withdrawn rather than replaced: the declaration carrying it is deleted, and the history comment states the reason was proved false. No remaining text rests the decision on it. (Note in passing: the round-2 claim also mis-named the report field - the recorded attribute is ProcessingReport.terminal_reasons, not failure_reasons - but that error came from the deleted declaration and is not repeated in the product.)",
+      "verdict": "FIXED"
+    },
+    {
+      "id": "B-VR-B10R2-06",
+      "previous_severity": "P3",
+      "claim": "The gate could only see src/company_wiki/source_catalog. Claimed fix: a hard 'zero readers' rule over the whole product package plus a GATE_BOUNDARIES entry with measured out-of-scope numbers (scripts/ 2, tools/ 0, tests/ 10).",
+      "my_check": "Ran the new rule alone on a clean copy (control) and after injecting a direct reader into (a) src/company_wiki/source_contract/, (b) tools/, (c) scripts/. Counted readers myself in every root with my own scanner.",
+      "observed": "Control: 1 passed. (a) product subpackage injection -> RED, 'product code outside source_catalog parses the shared column directly: source_contract/compatibility.py:519'; injected file parses, so the refusal is the rule and not a SyntaxError. (b) tools/ injection -> 1 passed, (c) scripts/ injection -> 1 passed, i.e. the rule genuinely does NOT cover those roots. My own counts: product package outside source_catalog = 48 files / 0 readers; scripts/ = 126 files / 2 readers (legacy_observer.py:96, wu904_remediation_restore.py:65); tools/ = 7 files / 0; tests/ = 278 files / 10. Every number in GATE_BOUNDARIES matches my scan. The entry's remaining overstatement ('the REST of the product package') is recorded as B-VR-B10R3-02.",
+      "verdict": "FIXED"
+    },
+    {
+      "id": "B-VR-B10R2-07",
+      "previous_severity": "P3",
+      "claim": "The evidence document carried two generations of numbers (7bis: 13 cases / 8-8; 7quater: 14 / 9-9; 7ter: 'only 3 left') and they were not marked superseded.",
+      "my_check": "Re-read the whole record after the commit, grepped it for every count, and compared each against the tree, the gate collection, the mutation JSON and the CI files.",
+      "observed": "The claimed disposition is 'the file's numbers have been updated to the current 15 cases / 10 mutants / CONFIRMED 1'. The strings '15 用例' and '10 变异' DO occur in the file, but only inside that disposition row itself; the body headings and tables still read '13 个用例' (§2 title), 'gate 13 cases / mutation 8/8' (§7bis), 'only 3 left' (§7ter), 'gate 14 cases / mutation 9/9' (§7quater) and 'unit 787; contract 1900 passed / 8 skipped' (§8), none of them marked superseded. AND this commit's own change made §7quater line 157 wrong in a new place: it still says the handoff counts are '13 scopes / 16 sites' while the registry now holds 12 scopes / 15 sites (my scan agrees with 12/15). The CURRENT numbers themselves are true and no inflation was found - see claims_checked.",
+      "verdict": "PARTIAL"
+    }
+  ],
+  "independent_ast_checks": [
+    {
+      "what": "normalize_catalog: every parse, its argument, and the innermost enclosing Try BODY span",
+      "tool": "%TEMP%\\b10vr4\\v1_ast_normalize.py (written by me)",
+      "result": "Try count in the function: 1 (line 1695, body 1696-1710, handlers NormalizationCancelledError/UnsupportedDocumentError/Exception). Calls: 1660 json.loads(primary['manifest_json']) no enclosing try; 1669 metadata_state(document['metadata_json']) - the chain; 1720 json.loads(document['normalization_metadata_json'] or '{}') no enclosing try; 1762 _frontmatter(document, normalized) no enclosing try. Shared-column subscript reads: 1669 (inside the chain call) and 1721 (different column). No unguarded parse of the SHARED column remains."
+    },
+    {
+      "what": "the two remaining unguarded parses are on OTHER columns - confirmed",
+      "tool": "read of the SELECT at normalizer.py:1589-1594 + the schema",
+      "result": "`normalization_metadata_json` is the alias of `existing.metadata_json` from a LEFT JOIN on `artifacts` (a different table with a same-named column); `manifest_json` is `locations.manifest_json` (a third column). Neither is `documents.metadata_json`, so neither is in scope of B-VR-B10R2-01 - but both are genuine whole-run abort paths (measured in my_probes P6)."
+    },
+    {
+      "what": "my own registry-vs-tree count comparison",
+      "tool": "%TEMP%\\b10vr4\\v4_my_scanner.py",
+      "result": "143 product .py files scanned; source_catalog 95 files -> 1 direct reader (section_query.py:109) and 15 handoff sites; registry says CONFIRMED=1 scope/1 site, EXPLICIT=1 entry, COLUMN_VALUE_HANDOFFS=12 scopes/15 sites. Match. Product package outside source_catalog: 48 files, 0 readers."
+    }
+  ],
+  "my_probes": [
+    {
+      "id": "P1",
+      "file": "%TEMP%\\b10vr4\\v1_ast_normalize.py",
+      "purpose": "independent AST map of normalize_catalog / _frontmatter",
+      "result": "see independent_ast_checks"
+    },
+    {
+      "id": "P2",
+      "file": "%TEMP%\\b10vr4\\v2_normalize_probe.py (f92fc71 vs 5ec18a5)",
+      "purpose": "does one malformed documents.metadata_json still abort the run?",
+      "result": "HEAD: S1 malformed + file present -> escaped=false, completed=1, artifact with metadata_unreadable. S2 '' -> escaped=false. S3 readable -> escaped=false. 5ec18a5: S1 -> JSONDecodeError from 1638; S2 ('') -> JSONDecodeError from 1638 (a pre-existing trap an empty column also hit). Direct before/after proof of the P0 fix."
+    },
+    {
+      "id": "P3",
+      "file": "%TEMP%\\b10vr4\\v3_frontmatter_matrix.py (f92fc71 vs 5ec18a5)",
+      "purpose": "flag + verdict for 12 values x {dict, real sqlite3.Row}",
+      "result": "16 unreadable cells: flag+unverifiable on HEAD, no flag+'consistent' pre-fix. 4 empty cells: no flag in both. 4 readable cells: no flag, declared identity present, no false downgrade, identical pre-fix vs HEAD (so nothing was lost on the working path)."
+    },
+    {
+      "id": "P4",
+      "file": "%TEMP%\\b10vr4\\v4_my_scanner.py",
+      "purpose": "independent counts for CONFIRMED / EXPLICIT / HANDOFFS / GATE_BOUNDARIES",
+      "result": "all registry numbers reproduced; scripts/ 2, tools/ 0, tests/ 10 reproduced exactly."
+    },
+    {
+      "id": "P5",
+      "file": "%TEMP%\\b10vr4\\v5_mutants_and_gate.py + v5b_m10_behaviour.py",
+      "purpose": "is M10 a real kill? does the new hard rule refuse an out-of-package reader?",
+      "result": "M10: anchor 1x, parses, gate RED by assertion, and the malformed-column abort really comes back on the mutated copy (JSONDecodeError from 1670). Gate rule: RED for a source_contract/ injection, GREEN for tools/ and scripts/ injections."
+    },
+    {
+      "id": "P6",
+      "file": "%TEMP%\\b10vr4\\v6_abort_hunt.py",
+      "purpose": "are there OTHER single-document abort paths in normalize_catalog?",
+      "result": "S1/S4: a malformed `artifacts.metadata_json` on a document whose parse fails -> JSONDecodeError at normalizer.py:1720 -> whole run aborts, 0 artifacts written, a healthy document queued behind it starved. S2: a missing primary file -> SourceManifestMismatchError at normalizer.py:1732 -> whole run aborts, both documents starved. S3 control: 2 documents -> completed=2, 2 artifacts. S5 control: malformed artifact metadata with a healthy parse never reaches the handler -> completed=1."
+    },
+    {
+      "id": "P7",
+      "file": "focused + full suites in %TEMP%\\b10vr4\\scratch and in the repository working tree",
+      "purpose": "reproduce the recorded counts",
+      "result": "focused 35 passed (ZR-502 11 + gate 15 + tolerance 5 + metadata_state 4); unit suite 796 passed in 73.58s (recorded 796); contract collection with the CI ignore set 1912 collected, exactly as the recorded log reports. Full contract RUN in the real repository: 7 failed / 1886 passed / 19 skipped, and I proved all 7 failures pre-existing and environmental (6 fail identically on 5ec18a5 with the same signatures; the 7th is an unrelated Windows-only PowerShell-host test). The venv lacks xlrd and fitz and is Python 3.14.2, while the recorded log is Python 3.13.9 - hence parser_failed where the tests expect unsupported. Not a regression from this change."
+    },
+    {
+      "id": "P8",
+      "file": "%TEMP%\\b10vr4\\v7_flag_check.py",
+      "purpose": "is the new frontmatter flag a vocabulary risk for extraction_quality?",
+      "result": "QualityFlag is a closed vocabulary that does NOT contain 'metadata_unreadable', and extraction_quality._artifact_metadata raises 'artifact quality_flags contains an unknown flag' on anything outside it - so the new flag would be FATAL if it reached the stored artifact metadata. It does not: normalizer.py:1833 writes `list(normalized.quality_flags)` (the parser's flags only), while the new flag is appended to the frontmatter's local list and rendered into normalized.md. No regression on this axis, and no downstream consumer of homepage_identity exists beyond normalizer.py itself (checked by grepping src/)."
+    }
+  ],
+  "claims_checked": [
+    {
+      "id": "GATE-15-CASES",
+      "claim": "Gate 15 cases.",
+      "method": "collected and ran tests/contract/test_b10_read_chain.py in the scratch copy",
+      "observed": "collected 15 items, 15 passed (12 functions + 3 parametrisations: resolve_handle/bundle). TRUE.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "id": "MUTATION-10-10",
+      "claim": "Mutation 10/10 KILLED by assertion; repository untouched; copy baseline 24 passed.",
+      "method": "read evidence/b10-mutations.json with my own summariser; re-applied M10 myself",
+      "observed": "10 mutants, all_killed=true, killed_by=assertion for all 10, repository_untouched=true, git_status_unchanged=true, baseline_in_copy tail '24 passed in 6.02s' (15 gate + 5 tolerance + 4 metadata_state). M10's kill reproduced independently as an assertion failure with the file still parsing. TRUE.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "id": "CI-796-1904-8",
+      "claim": "unit 796 passed; contract 1904 passed / 8 skipped.",
+      "method": "read both evidence tails; ran the unit suite myself; collected the contract suite with the same 8 --ignore files",
+      "observed": "b10r5-ci-step1-unit.txt ends '796 passed in 47.13s'; b10r5-ci-step2-contract.txt ends '1904 passed, 8 skipped in 825.29s'. My own unit run in the scratch copy: '796 passed in 73.58s' - reproduced exactly. My contract collection with the CI ignore set: '1912 tests collected', the same number the recorded log reports. The contract PASS COUNT I could not reproduce: my full run of the same command in the real repository gives 7 failed / 1886 passed / 19 skipped, and I proved all 7 failures environmental and pre-existing (6 fail identically on 5ec18a5; the 7th is an unrelated Windows PowerShell-host test). The venv is Python 3.14.2 without xlrd/fitz, while the log is Python 3.13.9 with a fuller plugin set - so the discrepancy is the environment, not the claim. The arithmetic of the recorded tail is self-consistent (1912 = 1904 + 8).",
+      "verdict": "CONFIRMED for the unit tail and the collection count; NOT REPRODUCIBLE for the contract pass count, with the cause identified and shown not to be this change"
+    },
+    {
+      "id": "CONFIRMED-1-EXPLICIT-1-HANDOFFS-12-15",
+      "claim": "CONFIRMED_DIRECT_READERS is down to 1 entry; EXPLICIT holds only section_query.",
+      "method": "my own scanner + reading the shipped registry",
+      "observed": "1 entry each; handoffs 12 scopes / 15 sites. TRUE. The record's own §7quater prose still says 13/16 (finding B-VR-B10R3-03).",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "id": "P0-PROBE-SUPPORTS-CONCLUSION",
+      "claim": "b10-p0-probe.txt shows phase 2 escaped:false with the flag, and the phase-1 escape is a DIFFERENT, pre-existing path.",
+      "method": "read the probe script and its output; re-ran the same shapes myself",
+      "observed": "The output says exactly that, the script's comment names phase 1 as 'a separate, pre-existing behaviour', and the script's own pass criterion explicitly EXCLUDES any phase-1 escape that is not a JSONDecodeError/1638 - so it does not launder a different abort into a green verdict. TRUE and not exaggerated. One nuance: on the .md fixture the first page is empty, so 'verdict: unverifiable' was ALREADY the verdict before this fix and is overdetermined in phase 2; the flag is the part this fix adds. The record's §7quinquies row presents both readings side by side without that nuance (finding B-VR-B10R3-04).",
+      "verdict": "CONFIRMED with a nuance"
+    },
+    {
+      "id": "MISSINGFILE-REGISTERED",
+      "claim": "Registered as F-B10R2-MISSINGFILE: a missing main file still aborts the run, escaping from normalizer.py:1725.",
+      "method": "re-measured the shape on both revisions and walked the call chain",
+      "observed": "The defect is REAL and correctly described as pre-existing and column-independent (S5 readable-metadata also escapes). The line number is wrong: it escapes at normalizer.py:1732 on f92fc71 (the `IngestService.ingest` inside the UnsupportedDocumentError handler) and at 1701 on 5ec18a5; 1725 is the retry-arithmetic line in the old file and the artifact_id line in the new one. Mechanism: SourceExportBundle.build -> manifest.verify_file -> SourceManifestMismatchError, outside every try.",
+      "verdict": "CONFIRMED in substance, WRONG in the cited line number"
+    }
+  ],
+  "findings": [
+    {
+      "id": "B-VR-B10R3-01",
+      "severity": "P2",
+      "title": "normalizer.py:1720 - a MALFORMED artifacts.metadata_json still aborts the WHOLE normalization run from a different column, and starves every document behind it",
+      "claim": "`existing_metadata = json.loads(document[\"normalization_metadata_json\"] or \"{}\")` (normalizer.py:1720) sits INSIDE the `except Exception` handler but OUTSIDE every try, so it is exactly the P0 shape on a different column: a document whose parse fails AND whose existing normalized artifact row carries malformed metadata raises JSONDecodeError out of the loop.",
+      "evidence": "My probe V-r3 P6, scenario S1/S4: seeded one document with a healthy-at-insert artifacts row whose metadata_json = 'not json at all' and a primary file missing so the parser fails -> `escaped: true`, `JSONDecodeError`, `normalizer.py:1720 existing_metadata = json.loads(`, 0 artifacts on disk. S4 is the blast-radius proof: TWO documents seeded, the second healthy and queued behind -> still `escaped: true` at 1720, 0 artifacts on disk, so the healthy document is never normalized. S5 control (same malformed artifact metadata but a HEALTHY parse) -> escaped=false, completed=1, proving the handler is the only route. The column is written only by normalizer.py:1833 (canonical_json, always valid) and artifact_backfill, so this is a latent/robustness hole today rather than an everyday production crash - which is why it is P2 and not P1. Note the sibling defect on the SAME line family is one I did NOT reproduce: `_atomic_write(output_path, content)` at 1766 is likewise outside the try.",
+      "impact": "One document with a damaged artifact row stops the batch: no ProcessingReport, no per-document failure record, no attempt counting, and every queued document behind it is silently unprocessed while the operator sees a traceback instead of progress.",
+      "suggested_disposition": "One-line change: `existing_metadata, _ = metadata_state(document[\"normalization_metadata_json\"])`. The chain already degrades malformed text, None and non-object payloads to {} and metadata_state is already imported in this module. Then extend the P0 probe with this column as a third phase, and consider wrapping the artifact write too."
+    },
+    {
+      "id": "B-VR-B10R3-02",
+      "severity": "P3",
+      "title": "The new GATE_BOUNDARIES entry is accurate in its numbers but describes the rule's coverage as wider than it is, and the underlying tools/ count is an observation rather than an enforced zero",
+      "claim": "read_chain.GATE_BOUNDARIES['readers_outside_the_scanned_roots'] says 'a second hard rule covers the REST of the product package and currently finds ZERO readers there ... `tools/` has 0'.",
+      "evidence": "`tools/` and `scripts/` are NOT under `src/company_wiki`, so the rule's PACKAGE root cannot see them by construction. Measured: injecting a direct reader into `tools/` -> 'test_b10_no_direct_reader_outside_source_catalog' still 1 passed; injecting the same shape into `scripts/` -> 1 passed. My own scan agrees with the numbers (tools/ 0 of 7 files, scripts/ 2 of 126) but shows the tools/ zero has no ratchet behind it: nothing fails if a tools/ reader is added tomorrow. The entry also omits `build/lib/company_wiki/**`, which contains stale copies of normalizer.py/evidence_span.py (build output, not product source - a judgement call, but the entry does not say so).",
+      "impact": "Low and honest-in-intent: the entry does name the boundary and does say the scripts/ pair is unratcheted. But a future reader can take '0 in tools/' for an enforced guarantee when it is a measurement, and can take 'the REST of the product package' for 'everything under src/company_wiki' rather than 'the scanned package root'.",
+      "suggested_disposition": "Either widen the hard rule to tools/ (tools/ is 7 files and currently clean, so a zero rule costs nothing) or add one clause to the entry: '`tools/` and `scripts/` are outside the rule's root - their numbers are measurements, not guarantees'. Same one line covers build/."
+    },
+    {
+      "id": "B-VR-B10R3-03",
+      "severity": "P3",
+      "title": "Stale counts and false statements that THIS commit created or left in the very artefacts it cites",
+      "claim": "Three separate places still carry pre-fix or pre-deletion statements about the sites this commit changed: (a) the CONFIRMED_DIRECT_READERS docstring, (b) the COLUMN_VALUE_HANDOFFS docstring, (c) the implementation record's own §7quater.",
+      "evidence": "read_chain.py:96-98 still reads '`normalizer` (both) - the parse sits in normalize_catalog's FAILURE path (a malformed column currently produces a per-document normalization-failure record with attempt counting); converging it to {} would change those records.' Both halves are now false: my P2/P6 probes show a malformed column produces a COMPLETED document (not a failure record) and that the parse is not in the failure path at all - which is precisely what B-VR-B10R2-02 established; only the EXPLICIT entry was retracted, not this docstring. (b) read_chain.py:117 still states the handoff counts are '13 scopes / 16 sites' while the registry it documents now holds 12 scopes / 15 sites (this commit deleted the `normalizer.py::_frontmatter` entry) - the comment went stale as a direct result of the fix. (c) b10-implementation.md §7quater line 157 still says '13 作用域 / 16 站点' for the same reason, and the §7quinquies disposition row claims \"the file's numbers have been updated to the current 15 cases / 10 mutants / CONFIRMED 1\" while §2's heading, §7bis, §7ter and §8 still print the old generations and the strings '15 用例'/'10 变异' appear nowhere except that row. (d) The same wrong 13/16 number and the same over-broad claim were then copied into the newest draft of the round summary, r4-final-status.md (commit b7f6847, landed after I started reviewing): line 18 says '`COLUMN_VALUE_HANDOFFS` **13 作用域 / 16 站点**' and line 19 says '`normalize_catalog` 的解析**不再**能中止整轮' - my finding B-VR-B10R3-01 shows a sibling parse in the same function still can. That draft is labelled 'to be finalized after B.VR-b10-r3', so it is the right place to take both corrections before it is finalized.",
+      "impact": "The registry is the artefact a future converger reads to decide what is safe to leave alone, and B-VR-B10R2-02's whole lesson was that a wrong reason keeps a defect. These are comments, so nothing breaks at runtime - but they are false statements about the current tree in a file whose stated purpose is to be the machine-checkable truth, and they are the same class of defect the previous round rated P1 in the same lines.",
+      "suggested_disposition": "Rewrite the docstring bullet to the measured truth ('a malformed column degrades to no metadata and the document still completes; it is on the chain now - reverted by M10 if it ever comes back') and correct 13/16 -> 12/15 in read_chain.py, in §7quater and in the r4-final-status draft, or mark §7bis/§7ter/§7quater/§8 as superseded in one line each."
+    },
+    {
+      "id": "B-VR-B10R3-04",
+      "severity": "P3",
+      "title": "Stale line citations in the record itself (the round-2 finding's own residual, one revision on)",
+      "claim": "§7quinquies cites `normalizer.py:1725` as the line the missing-file abort escapes from, and '唯一 try 起于 1664、body 仅 1665-1679' as the current structure.",
+      "evidence": "Measured: the escape is at normalizer.py:1732 on f92fc71 (the `IngestService.ingest` call in the UnsupportedDocumentError handler) and at 1701 on 5ec18a5; 1725 is the retry arithmetic on 5ec18a5 and the artifact_id assignment on f92fc71 - never the cited statement. The Try is at 1695 with body 1696-1710 on f92fc71 (the 1664/1665-1679 numbers were correct for 5ec18a5). The phase-1 evidence file is internally consistent (it recorded 1725 with the matching source line for whatever revision produced it), so this is record drift, not fabricated evidence. Related: the same row quotes the report field as `failure_reasons`, but the attribute is `ProcessingReport.terminal_reasons` (normalizer.py:1857) - the in-function local is named failure_reasons.",
+      "impact": "Cosmetic for a reader who lands on a real statement, misleading for one who greps: this is exactly the recurrence B-VR-B10R2-04 was raised about, and it survived into the next section of the same file.",
+      "suggested_disposition": "Cite symbols (`IngestService.ingest` in the unsupported-document handler) or re-anchor the numbers, and correct failure_reasons -> terminal_reasons."
+    },
+    {
+      "id": "B-VR-B10R3-05",
+      "severity": "P3",
+      "title": "The P0 probe's phase 2 reports two readings as one piece of evidence, and only one of them is caused by the fix",
+      "claim": "b10-p0-probe.txt prints 'has metadata_unreadable flag: True / verdict consistent: False / verdict unverifiable: True' and the record's §7quinquies row presents all three as the behavioural proof of the -03 fix.",
+      "evidence": "The probe's fixture is a .md file, and the plain-text parser returns no first page, so `assess_homepage_identity(None, ...)` returns 'unverifiable' with reason 'no_first_page_text' BEFORE any metadata logic runs - i.e. 'verdict consistent: False' and 'verdict unverifiable: True' would hold even without the fix. My own P3 matrix, run with a first page that contains the title, is what actually isolates the delta: pre-fix those same cells read 'verdict: consistent' with no flag; on HEAD they read 'verdict: unverifiable' with the flag. So the fix is real and I confirmed it independently - the criticism is only that the cited evidence does not by itself separate the two causes.",
+      "impact": "Low: the conclusion is true and my probes prove it. But 'the artifact was flagged AND the verdict was downgraded' reads as two independent confirmations when the second is overdetermined on that fixture, and this is the sort of over-claim the round-2 record was rejected for elsewhere.",
+      "suggested_disposition": "Add the first-page-bearing fixture (or the value matrix) as a third phase so 'downgraded BY this fix' has its own reading, and say in the record that the .md fixture's verdict is unverifiable for the parser reason too."
+    },
+    {
+      "id": "B-VR-B10R3-06",
+      "severity": "P3",
+      "title": "Two more measured whole-run abort paths outside the batch's scope (registered here so the picture is complete, NOT introduced by this change)",
+      "claim": "(i) `_atomic_write(output_path, content)` at normalizer.py:1766 is outside every try. (ii) The unsupported-document handler's own `IngestService.ingest` at 1716 is outside every try, so a missing/changed primary file escapes as SourceManifestMismatchError at 1732 (the F-B10R2-MISSINGFILE shape).",
+      "evidence": "(ii) is measured in my P6 S2: two documents seeded, the first with a missing file and an extension with no parser -> SourceManifestMismatchError from 1732, 0 artifacts on disk, the healthy document behind it never normalized. (i) is an AST/read finding, not driven: I did not create a failing write.",
+      "impact": "Same class as the P0 this round fixed: a per-document problem that stops the batch and leaves the documents behind it untouched. The record registers the missing-file case as F-B10R2-MISSINGFILE and explicitly says it is pre-existing; the artifact-write case is not mentioned anywhere.",
+      "suggested_disposition": "Fold (ii) into F-B10R2-MISSINGFILE's evaluation (already registered, and the record's description of it is correct apart from the line number), and add (i) as a second named item so the next pass evaluates the whole set rather than one instance."
+    }
+  ],
+  "adjudication": "REJECT",
+  "adjudication_reason": "All four findings I was asked to adjudicate as the round's core are really fixed, and I verified each one independently rather than by reading the author's evidence. P0 (B-VR-B10R2-01): the shared-column parse is now `metadata_state(document[\"metadata_json\"])` at normalizer.py:1669, my own AST map finds no unguarded parse of that column left in normalize_catalog, and my own before/after driver shows the exact transition - `JSONDecodeError` from 1638 with nothing recorded on 5ec18a5, versus `escaped=false, completed=1` and an artifact carrying `metadata_unreadable` + `verdict: unverifiable` on f92fc71. I also re-applied the recorded M10 myself: the file still parses, the gate refuses it with a clean assertion, and the malformed-column abort really comes back on that mutated copy - a real kill of a real regression. P1-02: the false declaration is gone, the assertion that pinned it is gone (the only surviving string in tests/ is a HISTORY comment), and the registry counts (1 confirmed reader, 1 explicit non-chain reader, 12 scopes / 15 handoff sites) match a scanner I wrote myself to the digit. P1-03: across 8 unreadable values in both the dict and the real sqlite3.Row shape, HEAD adds the flag and downgrades the verdict where the pre-fix tree recorded a bare 'consistent'; empty and NULL stay unflagged, readable metadata still reaches the frontmatter, and ZR-502's 11 cases plus the three B10 files pass (35 passed), so the regression the author reported from his first attempt is genuinely gone. P3-06: the new hard rule really does refuse a direct reader placed in another product subpackage (RED with the file still parsing), and every GATE_BOUNDARIES number reproduces. The numbers are not inflated either: gate 15 cases, 10/10 killed by assertion, copy baseline 24 passed, 796 unit, and a contract collection of exactly the 1912 the CI log reports. I nevertheless return REJECT, on a live P2 that this round was specifically asked to hunt for and that the previous round's P0-fix narrative now obscures: `existing_metadata = json.loads(document[\"normalization_metadata_json\"] or \"{}\")` at normalizer.py:1720 is the SAME defect shape on a sibling column - one document whose parse fails while its existing artifacts row carries malformed metadata raises JSONDecodeError out of `normalize_catalog`, and I measured that a HEALTHY document queued behind it is then never normalized at all (0 artifacts written). It is a one-line change to `metadata_state(...)`, in a module that already imports it for exactly this reason, and it is the difference between 'the P0 class is closed' and 'this instance of it is closed'. Alongside it, the CONFIRMED_DIRECT_READERS docstring still states the false reason that B-VR-B10R2-02 was raised about (that the parse sits in a failure path and produces a failure record - my probes show a malformed column produces a COMPLETED document), two comments and the record's §7quater still carry the now-wrong 13/16 handoff counts that this very commit invalidated, and the record's own disposition claims the file's numbers were updated to 15/10/1 while they appear nowhere in the body. None of that is fatal on its own; together with a live abort path that this round's own report does not mention, the honest verdict is that the fixes landed but the class is not closed. Step to reproduce the P2: build a throwaway catalog through CatalogStore with two documents and their `original_primary` locations, insert an `artifacts` row for the FIRST document with artifact_role='normalized', generator_name='source_catalog_normalizer', status='failed' and metadata_json='not json at all', make the first document's primary file absent from disk (so its parse fails), leave the second document healthy, then call normalize_catalog(config, store, force=True) - expect 'escaped: true, JSONDecodeError, normalizer.py:1720' and zero normalized.md on disk. My probe file is %TEMP%\\b10vr4\\v6_abort_hunt.py, scenarios S1/S4, with S3/S5 as controls. Before the round summary is finalized, two sentences in it need correcting as well: r4-final-status.md still carries 'COLUMN_VALUE_HANDOFFS 13 作用域 / 16 站点' (current: 12/15) and 'normalize_catalog 的解析不再能中止整轮' (not yet true for the sibling artifacts column), and the same 13/16 number and the retracted failure-path reason are still in read_chain.py's docstrings.",
+  "not_checked": [
+    "The production catalog was never opened, so I cannot say how many real rows carry a malformed documents.metadata_json or artifacts.metadata_json. The blast radius of the fixed P0 and of my new P2 is demonstrated on synthetic catalogs, not measured against production data.",
+    "I did NOT reproduce the recorded 'contract 1904 passed / 8 skipped'. My own full run of the CI-scoped command in the REAL repository at f92fc71 gives '7 failed, 1886 passed, 19 skipped' (note: 1886+19 = 1905 collected in that run, one more than the 1904 the log reports for the same command, because one parametrisation that is collected here is not in the recorded run). All 7 failures are ENVIRONMENTAL and PRE-EXISTING, which I proved rather than assumed: 6 of them fail identically on the pre-fix revision 5ec18a5 with the same exception signatures, and the 7th (test_wscript_logon_host_launches_powershell_without_a_visible_window) passes on 5ec18a5 but is a Windows PowerShell-host test unrelated to these files, and the same test also failed/deselected inconsistently in my copy runs. The venv is Python 3.14.2 and is missing xlrd and fitz, which is why the .xls and corrupt-PDF cases come out as parser_failed instead of unsupported; the recorded log is Python 3.13.9 with pytest 9.1.1 and a different plugin set. So the recorded number is not something I could confirm, and it is not something this change can have caused: the B10-relevant contract files all pass (ZR-502 11, gate 15, tolerance 5, metadata_state 4 = 35 passed).",
+    "I ran the contract suite twice in the real repository working tree (read-only with respect to files: pytest wrote no source file, and `git status --porcelain` was empty afterwards) because my first scratch copy excluded docs/ and fixtures and therefore produced 41 failures that were purely artefacts of the copy.",
+    "Remote CI status was not verified: no network. The claims that these commits are green on the remotes are unchecked.",
+    "`_atomic_write`'s exposure (finding -06(i)) is an AST/read finding; I did not drive a failing artifact write, so I do not know which real OSErrors reach it.",
+    "I did not test batch 1's other five convergences input-by-input; my checks there are structural (registry vs my scanner vs the call sites the registry names).",
+    "I did not attempt the shapes GATE_BOUNDARIES admits are open (intermediate variable, subscript inside the callee, third-party parser); I verified that they are documented and pinned by a test, not that they are still open.",
+    "The out-of-scope readers were counted by AST shape only; I did not classify each scripts/ and tests/ hit as a true reader or a false positive by running it.",
+    "The P8 vocabulary check is a read of the code plus the enum, not a driven experiment: I did not construct a catalog row whose stored normalized-artifact metadata contains 'metadata_unreadable' to watch extraction_quality reject it. The code path shows the flag cannot get there, which is what I claim - no more.",
+    "No judgement on B10 as a whole, on B10-5's substance (revert points, removal conditions, the claims/does-not-claim list), or on whether the remaining section_query site should be converged. This review is scoped to the seven round-2 findings and the change that claims to dispose of them.",
+    "The revenue-forecast repository's own test suites were not run; this review only read the RUN's evidence and the two records."
+  ],
+  "side_effects_i_observed": {
+    "writes_i_made": "Two locations only, both outside the product: %TEMP%\\b10vr4\\ (probe scripts, two scratch tree copies, private mutant copies, throwaway sqlite catalogs and their outputs) and this record, RUN/reviews/B.VR-b10-r3.json. No file under either repository was created, edited, moved or deleted.",
+    "repository_state": "company-wiki at f92fc7194225a3b7ee77dce25bc7f7a81f428108 with `git status --porcelain` empty at the start and the end of this review; revenue-forecast at 4749b055bb48791cb5fd560d6586b3927983203e, clean. Every mutation I applied was applied to a copy under %TEMP%\\b10vr4\\p5out\\, and I confirmed by reading the copies that the repository files themselves kept their original content.",
+    "head_movement_during_review": {
+      "company_wiki": "none - HEAD stayed f92fc71 from first read to last",
+      "revenue_forecast": "moved three times, mid-review, and not by me: 4749b05 -> 473444f ('docs(r4): B10-5 closure (revert points, removal conditions, claims) + register F-B10R2-MISSINGFILE') -> 5cc534b ('docs(r4): progress entry for the B10 delivery round') -> b7f6847 ('docs(r4): draft the R4 final status summary (to be finalized after B.VR-b10-r3)'). All documentation; 4749b05 is an ancestor of b7f6847, no measured evidence file changed, and this record itself is untouched by all three. It is reported because it happened while I was reviewing, because the newest draft repeats two claims my findings correct (the 13/16 handoff count and 'normalize_catalog 的解析不再能中止整轮'), and because the record I was given to review is therefore no longer byte-identical to the tree's tip. The company-wiki code under review did not move at all.",
+      "filing_fetch": "not observed (out of scope)"
+    },
+    "production_catalog_never_opened": "Confirmed. Every catalog I drove was a throwaway sqlite file created under %TEMP%\\b10vr4\\ through the product's own CatalogStore; the sqlite3.Row probes used an empty :memory: database.",
+    "network_and_installs": "None. No pip, no network, no git write command; all git use was read-only (log, show, rev-parse, status).",
+    "run_directory_files_touched": [
+      "reviews/B.VR-b10-r3.json (created; the only one)"
+    ],
+    "existing_run_files_read_only": "I read evidence/b10-implementation.md, b10-mutations.json, b10_p0_probe.py, b10-p0-probe.txt, b10r5-ci-step1-unit.txt, b10r5-ci-step2-contract.txt and reviews/B.VR-b10-r2.json. None was modified; the mutation harness's --out was never used against the recorded file because I did not re-run the shipped harness at all - I applied its recorded M10 text myself in a copy.",
+    "bugs_i_fixed": "None - this was a read-only review and I changed no product code. The scratch trees, the fuller copies and all mutant copies live under %TEMP%\\b10vr4\\ and can be deleted at any time.",
+    "test_processes_i_started_in_the_repository": "I ran pytest twice with the repository working directory as rootdir (the focused B10/ZR-502 files, and the full CI-scoped contract suite) because a scratch copy turned out not to carry docs/ and fixtures and produced 41 copy-artefact failures. `git status --porcelain` in company-wiki was empty before and after, HEAD never moved (f92fc71), and pytest wrote no file inside the repository (the runs used -p no:cacheprovider). No product file was created, edited or deleted by these runs."
+  }
+}

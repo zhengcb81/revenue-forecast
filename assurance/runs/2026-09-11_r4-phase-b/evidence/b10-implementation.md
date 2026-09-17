@@ -111,7 +111,7 @@
 | `B-VR-B10-07` | **已修（措辞）** | docstring 改为如实的范围表述：**等价域** = "列能实际持有的输入"（24 输入实测等价）；**catch 集不同**（链更窄），差异仅在"`__bool__` 抛裸 `ValueError` 的合成对象"且当前调用点不可达 |
 | `B-VR-B10-08` | **已修** | `repository_untouched` 主判据改为 **`git status --porcelain` 前后一致**，辅以**行尾不敏感**指纹（CRLF 归一 LF 再哈希）；证据里记录前后两次 `git status`，不再声称可从 git 复现原始字节哈希 |
 
-**复核数字**：门 **13 用例**全绿；变异 **8/8 KILLED by assertion**（M2/M3 在新键格式下仍被杀；M8 钉住助手绕过）；ruff clean。`killed_by` 判定从"看输出里的字"改为"看 **pytest 退出码**（1=断言失败，2=收集错误）"。
+**复核数字**（**已按 r3 的 `B-VR-B10R2-07` 更正为当前值**）：门现为 **15 用例**全绿、变异 **10/10 KILLED by assertion**、`CONFIRMED_DIRECT_READERS` 现为 **1 条**（section_query）。本节记录的是六条残留处置**当时**的状态（13 用例 / 8 变异 / 3 条），后续批次 2、P0 修复与 r3 处置又把门加到 15、变异加到 10、基线降到 1——**历史数字保留、当前值以本行为准**。`killed_by` 判定从"看输出里的字"改为"看 **pytest 退出码**"（后又升级为识别 `SyntaxError`/`IndentationError`）。
 
 ## 7ter. **B10-3 批次 1**：7 个站点收敛到单一链 + `metadata_state`（报告半链）+ 显式非链注册表
 
@@ -154,7 +154,7 @@
 - **复现**：在已入基线的 `section_query.py::SectionQueryService.list_sections` 里加**第二个** `json.loads(row["metadata_json"] ...)`（16 空格缩进，文件仍可解析）⇒ 旧门 **exit 0 / "1 passed"（放行）**。
 - **修**：两道棘轮从"键集合"升级为**每作用域站点计数**（`sites` / 计数 dict）：同一作用域多一处 ⇒ 红（报"an ADDITIONAL direct reader appeared inside an already-baselined scope"）；少一处 ⇒ 也红（必须降基线，防"陈旧额度"掩盖未来的新增）。
 - **验证**：同一个同作用域注入现在 **BLOCKED**（精确报出该键）；harness 的 **M2 改为正确缩进的同作用域变异** ⇒ KILLED by assertion。
-- **计数是机器导出的**（13 作用域 / **16 站点**）；我手填的第一版把 `scanner._merge_document_row` 记成 2、`SourceCatalog.query` 记成 1（实际 **3** 与 **2**）——**又一次"凭估填数"被抓**，所以计数现在由脚本导出。
+- **计数是机器导出的**（**当前 12 作用域 / 15 站点**；本行早先写的 13/16 是批次 2 与 P0 收敛**之前**的读数，r3 已指出该陈旧文字 ⇒ 已改）；我手填的第一版把 `scanner._merge_document_row` 记成 2、`SourceCatalog.query` 记成 1（当时实际 3 与 2）——**"凭估填数"被抓**，所以计数现在由脚本导出。
 
 ### 3. harness 的"杀死"判定不可靠（复审怀疑 #1，**已实测复现**）
 
@@ -178,7 +178,7 @@
 | `B-VR-B10R2-06` | P3 | 门只看 `src/company_wiki/source_catalog` | **已修**：新增硬规则 `test_b10_no_direct_reader_outside_source_catalog`（覆盖**整个产品包**，当前 0 处）；库外读者**实测**登记进 `GATE_BOUNDARIES`：`scripts/` **2** 处（legacy_observer.py:96、wu904_remediation_restore.py:65）、`tools/` 0、`tests/` 10（夹具），并写明**不被任何棘轮覆盖** |
 | `B-VR-B10R2-07` | P3 | §7bis 写 13 用例/8-8、§7ter 写"只剩 3 条"与现状矛盾 | **已修**：本文件数字已按现行 **15 用例 / 10 变异 / CONFIRMED 1 条** 更新 |
 
-**附带发现（不属于本 P0，但如实登记）**：探针阶段 1 显示——**主文件在磁盘上缺失**时，整轮 normalize 仍会中止（`SourceManifestMismatchError` 逃出 `normalizer.py:1725`，即 unsupported 分支里的 `IngestService.ingest`）。这**不是**本次改动引起（改前逃得更早），但它是同类的"单文档问题中止整轮"路径 ⇒ 登记为待评估项（`F-B10R2-MISSINGFILE`）。
+**附带发现（不属于本 P0，但如实登记；行号按当时提交 `5ec18a5`）**：探针阶段 1 显示——**主文件在磁盘上缺失**时，整轮 normalize 仍会中止（`SourceManifestMismatchError` 逃出 `IngestService.ingest`；**在 `f92fc71` 上是 `normalizer.py:1732`，在本轮 -01 修复后是 `1739`**——行号随提交漂移，r3 的 `B-VR-B10R3-04` 正是抓我引了陈旧行号）。这**不是**本次改动引起（改前逃得更早），但它是同类的"单文档问题中止整轮"路径 ⇒ 登记 `F-B10R2-MISSINGFILE`；**r3 又补了两条同类路径**（见 §7sexies）。
 
 **我在修 -03 时自己制造并修掉的一处回归（本地 CI 步骤抓住的）**：第一版把 `_frontmatter` 的两个分支都改走 `metadata_state(raw)`，而 **dict 分支的合同是"值已经是解析好的对象"**（`tests/contract/test_zr502_homepage_identity.py` 的夹具就这么传）⇒ `json.loads(dict)` 抛 `TypeError` ⇒ 每个这样的文档都被判 `unreadable` 并把 identity 降级，**三例 ZR-502 契约用例变红**（`assert 'unverifiable' == 'consistent'/'contradiction'`）。
 **修法**：dict 分支若值是 dict 就**按原样使用**（与批次 2 之前一致），只有**列文本**才走链。修后 ZR-502 11 例 + B10 24 例全绿，整包契约 **1904 passed / 8 skipped**。
@@ -216,6 +216,19 @@
 - **声称**：共享列/同名 artifacts 列的全部**已知直接解析点**已收敛到**单一解析实现**（`store.metadata_state` / `metadata_object`），或用**显式声明**保留（section_query）；两条**计数棘轮**（每作用域站点数）覆盖 `source_catalog/**`，另有"产品包其余部分 0 处"硬规则；`reader` 的两个旧入口**具名**为 v1 adapter 并声明了它们**不是**字节级；`normalize_catalog` 的解析不再能中止整轮；不可读元数据是**可见的**（flag + 降级判定）。
 - **不声称**：① 棘轮是**语法形状**上的棘轮，**不是**数据流分析——`GATE_BOUNDARIES` 列出的四种形状（中间变量、被调方内部下标、第三方解析器、库外读者）**未覆盖**；② `scripts/legacy_observer.py:96`、`scripts/wu904_remediation_restore.py:65` **不受任何棘轮覆盖**（已实测登记）；③ 主文件缺失仍会中止整轮（`F-B10R2-MISSINGFILE`，既有问题，未修）；④ `tests/` 里 10 处直读是夹具，不在门内；⑤ B10 未做"全仓所有 `metadata_json` 语义统一"——`artifacts.metadata_json` 与 `documents.metadata_json` 共用解析器，但两者的**字段语义**未统一（不在本工作包范围）。
 
+## 7sexies. `B.VR-b10-r3`（验证复审）**REJECT** + 6 条新发现处置（2026-09-17）
+
+**结论：`REJECT`（1 条活 P2、无活 P0）。三条核心修复被它逐条独立判定 `FIXED`**（自写 AST、自写 before/after 驱动器、自放 M10、12 值 × {dict, 真 `sqlite3.Row`} 矩阵、向 `source_contract/` 注入直读复现门红）。它同时给出**两点保留**：① 它的环境（Python 3.14.2、缺 `xlrd`/`fitz`）复现我记录的 contract `1904 passed / 8 skipped` 时得 `7 failed / 1886 passed / 19 skipped`，并证明**7 条全部既有且属环境**（6 条在 `5ec18a5` 上同样失败）——我的数字在**我的环境（3.13.9）**下成立，此差异已如实记录；② 新增的 `metadata_unreadable` **只进 frontmatter**（`normalizer.py` 落盘的是 `normalized.quality_flags`），`extraction_quality` 的封闭词表不受影响。
+
+| # | 级别 | 它证明的 | 处置 |
+|---|---|---|---|
+| `B-VR-B10R3-01` | **P2（活）** | `normalizer.py` 的 `except Exception` handler 里 `json.loads(document["normalization_metadata_json"] or "{}")` **在 handler 内但不在任何 try 内**——同一缺陷形状换到**姊妹列**：文档解析失败 **且**其既有 normalized 产物 metadata 畸形 ⇒ 逃逸并中止整轮（实测：2 文档、后面的健康文档也被饿死、磁盘 0 个 `normalized.md`） | **已修**（一行）：`existing_metadata, _ = metadata_state(document["normalization_metadata_json"])`。**行为级验证含修前读数**：探针 **阶段 3**（我按它的场景自建）——真树 `escaped:false / failed:1 / terminal_reasons`；把该行在 **temp 副本**里退回旧写法后，同一探针 **`escaped:true` + `JSONDecodeError ... normalizer.py:1727 existing_metadata = json.loads(`**（`B10_WIKI_SRC` 覆盖点，含修前/修后对照） |
+| `B-VR-B10R3-02` | P3 | 新 `GATE_BOUNDARIES` 写"产品包其余部分…tools/ 0"，但 `tools/`、`scripts/` 在该规则根**之外**（注入后仍绿）⇒ 那两个数字是**观察**不是**强制** | **已改措辞**：明确"**enforced** 的是产品包（`src/company_wiki/**` 减 source_catalog）0 处；`scripts/`/`tools/`/`tests/` 的数字是**观察**，注入到那两处**不会**变红" |
+| `B-VR-B10R3-03` | P3 | 陈旧/失真文字：`read_chain` 仍写着**已撤回的**理由（"解析在 FAILURE path、产生逐文档失败记录"）、`read_chain` 与 §7quater 仍写 13 作用域/16 站点、`r4-final-status.md` 草稿把 13/16 与"`normalize_catalog` 的解析不再能中止整轮"一起抄了进去（后者被 -01 证伪） | **已全部改**：`read_chain` 追加 **CORRECTION** 段落（撤回而非改写措辞）；计数改 **12/15**；`r4-final-status.md` 的那句改成"**共享列**的解析不再能中止整轮，**其余单文档中止路径仍在**（-01 已修、缺失文件未修）" |
+| `B-VR-B10R3-04` | P3 | 记录自身**行号陈旧**：缺失文件逃出点在 `f92fc71` 是 **1732**（`5ec18a5` 是 1701）而非 1725；try 在 **1695/1696-1710** 而非 1664/1665-1679；报告字段是 **`terminal_reasons`** 而非 `failure_reasons` | **已改**（本节与本文件相关处），并**加注"行号随提交漂移"**——引行号必须**带上提交** |
+| `B-VR-B10R3-05` | P3 | 探针阶段 2 的 `verdict` 差异**不能**单独证明 -03：该 `.md` 夹具首页为空 ⇒ 判定本就是 `unverifiable`（与元数据无关），只有 flag 来自修复 | **已改探针**：夹具首页**含标题**（使 `consistent` 真正可达），flag 与判定**同时**作为通过判据；修前/修后由 `B10_WIKI_SRC` 对照 |
+| `B-VR-B10R3-06` | P3 | 另两条**既有**整轮中止路径（记录未提）：unsupported 分支的 `IngestService.ingest`（缺文件 ⇒ 逃出，**饿死后面的文档**）；`_atomic_write`（AST/阅读发现，**未驱动**） | **已登记**为 `F-B10R2-MISSINGFILE` 的补充条目（见 [findings.md](../findings.md)），**未修**（需 owner 决定） |
+
 ## 8. 状态与下一步
 
 **提交与 CI**（本轮小阶段收口，**已核对**）：
@@ -225,7 +238,7 @@
 | company-wiki | `b829b03`（增量本体）、`c4a69e0`（门补洞 + M7）、`d92bb33`（棘轮② + 边界）、**`e36b984`（P1 修正 + 钉住）** | **`e36b984` on `master` = success**；`fcap` 同步（`c4a69e0` 亦为 success，6/6 job） |
 | revenue-forecast | `1dc4c3b`、`36084a3`、`cfe4ccc`、`022f481`、**`144345b`（复审记录 + 处置）** | **`144345b` = success（`main` 与 `fcap` 双绿）** |
 
-**本地两个 CI 步骤**见 §5（unit 787；contract 1900 passed / 8 skipped，口径已注明）。**独立复审**见 §7（`APPROVE_WITH_FINDINGS`，P1 已修，其余 6 条登记为下次第一批）。
+**本地两个 CI 步骤**见 §5（**当前：unit 796；contract 1904 passed / 8 skipped**；r3 指出这两个数字**依赖环境**——它在 Python 3.14.2 且缺 `xlrd`/`fitz` 的环境下复现出 `7 failed / 1886 passed / 19 skipped`，并证明 7 条全部既有且属环境）。**独立复审**见 §7/§7quinquies/§7sexies。
 
 - 本增量 = **B10-1 + B10-2 + B10-4 的门部分**；**未**声明 B10 整体完成。
 - **⚠️ 独立复审尚未执行**（`B.VR-b10` 未派）。因此本增量目前的状态是"**已实施 + 本地两步 CI 绿 + 远端 CI 绿 + 变异 7/7**"，**不是**"已通过"。

@@ -3,7 +3,7 @@
   "label": "phase1",
   "escaped": true,
   "error": "SourceManifestMismatchError: [WinError 2] \u7cfb\u7edf\u627e\u4e0d\u5230\u6307\u5b9a\u7684\u6587\u4ef6\u3002: 'C:\\\\Users\\\\\u90d1\u66fe\u6ce2\\\\AppData\\\\Local\\\\Temp\\\\b10p0probe\\\\p1\\\\raw\\\\reports\\\\x.md'",
-  "raised_from": "normalizer.py:1725 bundle = IngestService(root=Path(primary[\"root_path\"])).ingest("
+  "raised_from": "normalizer.py:1739 bundle = IngestService(root=Path(primary[\"root_path\"])).ingest("
 }
 === phase 2: the same file written, so normalization runs to completion ===
 {
@@ -16,6 +16,17 @@ produced artifact: normalized.md
   has metadata_unreadable flag: True
   verdict consistent           : False
   verdict unverifiable         : True
+=== phase 3 (B-VR-B10R3-01): a FAILING document whose existing normalized artifact carries malformed metadata ===
+{
+  "label": "phase3",
+  "escaped": false,
+  "completed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "terminal_reasons": {
+    "ValueError": 1
+  }
+}
 
 phase 1 escape (informational): SourceManifestMismatchError: [WinError 2] 系统找不到指定的文件。: 'C:\\Users\\郑曾波\\AppData\\Local\\Temp\\b10p0probe\\p1\\raw\\reports\\x.md'
-P0 VERDICT: FIXED (the parse no longer escapes; degradation is visible)
+P0/P2 VERDICT: FIXED (the shared-column parse no longer escapes; degradation is visible; the sibling-column parse in the failure handler no longer escapes either)

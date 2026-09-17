@@ -10,6 +10,12 @@
 - **建议（未实施，需 owner 决定）**：把该 handler 里的 `ingest` 纳入与解析同级的 `try`，或在队列 SQL 里加"文件存在性"过滤（后者改变队列语义）。两条都属**行为改动**，须单独立项 + 用例 + 变异 + 复审。
 - 关联：`F-B10R2-*` 其余各条见 [evidence/b10-implementation.md](b10-implementation.md) §7quinquies。
 
+### `F-B10R2-MISSINGFILE` 的补充条目（r3 的 `B-VR-B10R3-06` 实测/阅读所得）
+
+- **① unsupported 分支的 `IngestService.ingest`**：主文件缺失 ⇒ `SourceManifestMismatchError` 从该 handler 逃出，**并饿死队列里排在后面的文档**（r3 实测：第二个健康文档也被连带中止）。r3 的复现：`%TEMP%\b10vr4\v6_abort_hunt.py` 场景 S1/S4（S3/S5 为对照）。
+- **② `_atomic_write`（`normalizer.py`）**：r3 以 AST/阅读指出是同类逃逸点，**未驱动**（不得写成已复现）。
+- **③ 已修的一条同类路径**：失败 handler 里的姊妹列解析（`B-VR-B10R3-01`，P2 **活**）——一行改走 `metadata_state`；修前读数为 `JSONDecodeError ... normalizer.py:1727`（temp 副本），真树修后 `escaped:false / failed:1`。
+
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
 ## B10 批次 1 收敛 + `B.VR-b10` 六条残留处置完成（2026-09-17；wiki `326383d`、revenue `bc799c6`，远端 CI 双绿）

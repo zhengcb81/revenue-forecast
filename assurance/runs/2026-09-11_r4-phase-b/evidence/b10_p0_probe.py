@@ -17,13 +17,18 @@ Read-only w.r.t. production: everything happens under %TEMP%.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import sys
 import tempfile
 import traceback
 from pathlib import Path
 
-WIKI_SRC = Path(__file__).resolve().parents[4] / "company-wiki" / "src"
+# B10_WIKI_SRC lets the probe run against a MUTATED COPY, so each phase can be shown to fail
+# before its fix (a probe that cannot fail proves nothing).
+WIKI_SRC = Path(os.environ.get("B10_WIKI_SRC")
+                or Path(__file__).resolve().parents[4] / "company-wiki" / "src")
 sys.path.insert(0, str(WIKI_SRC))
 
 from company_wiki.source_catalog.config import CatalogConfig  # noqa: E402
@@ -121,10 +126,56 @@ def _run(label: str, tmp: Path, payload: bytes | None, *, write: bool = True) ->
     return outcome
 
 
+def _run_failing_document_with_bad_artifact(tmp: Path) -> dict:
+    """B-VR-B10R3-01: a FAILING document whose existing normalized artifact is malformed.
+
+    The handler that records a per-document failure reads
+    `document["normalization_metadata_json"]` - the metadata of the document's existing
+    `normalized` artifact row.  When that value was malformed the parse escaped the handler
+    and aborted the whole run.  A tiny parser timeout forces the failure deterministically
+    without depending on which parser errors count as "unsupported".
+    """
+    body = b"# Test Filing\n\nTest Filing body text\n"
+    config, store, target = _seed(tmp, payload=body, write=True)
+    with store.transaction() as connection:
+        _insert(connection, "artifacts", {
+            "artifact_id": "urn:company-wiki:artifact:sha256:" + "a" * 64,
+            "document_id": DOC, "source_id": source_id_for_sha256(
+                __import__("hashlib").sha256(body).hexdigest()),
+            "artifact_role": "normalized", "path": str(tmp / "existing-normalized.md"),
+            "content_sha256": "e" * 64, "byte_size": 10,
+            "generator_name": "source_catalog_normalizer", "generator_version": "1.0.0",
+            "status": "ok", "created_at": "2026-01-01T00:00:00Z",
+            "mime_type": "text/markdown", "schema_version": "1.0",
+            "source_sha256": hashlib.sha256(body).hexdigest(),
+            # the malformed sibling column: this is what used to escape the handler
+            "metadata_json": "not json at all"})
+    outcome: dict = {"label": "phase3"}
+    try:
+        report = normalize_catalog(config, store, force=True, retry_limit=3,
+                                   parser_timeout_seconds=0.001,
+                                   parser_heartbeat_interval_seconds=0.001)
+        outcome["escaped"] = False
+        for field in ("completed", "failed", "skipped"):
+            outcome[field] = getattr(report, field, None)
+        outcome["terminal_reasons"] = dict(getattr(report, "terminal_reasons", {}) or {})
+    except BaseException as exc:  # noqa: BLE001
+        outcome["escaped"] = True
+        outcome["error"] = f"{type(exc).__name__}: {str(exc)[:120]}"
+        for frame in traceback.extract_tb(sys.exc_info()[2]):
+            if "normalizer.py" in frame.filename:
+                outcome["raised_from"] = f"normalizer.py:{frame.lineno} {frame.line}"
+    return outcome
+
+
 def main() -> int:
     base = Path(tempfile.gettempdir()) / "b10p0probe"
     base.mkdir(parents=True, exist_ok=True)
-    body = b"# Test Filing\n\nbody text\n"
+    # B-VR-B10R3-05 (P3): the first version used an EMPTY first page, so the verdict was
+    # already "unverifiable" for a parser reason and only the flag isolated the fix.  The
+    # body now CONTAINS the document title, which is exactly what makes "consistent" reachable
+    # without readable metadata - so the downgrade is attributable to the fix.
+    body = b"# Test Filing\n\nTest Filing body text\n"
 
     print("=== phase 1: valid manifest, NO file on disk (the reviewer's shape) ===")
     first = _run("phase1", base / "p1", payload=body, write=False)
@@ -148,19 +199,26 @@ def main() -> int:
         print("no normalized.md produced in phase 2")
         second["artifact_flagged"] = None
 
+    print("=== phase 3 (B-VR-B10R3-01): a FAILING document whose existing normalized "
+          "artifact carries malformed metadata ===")
+    third = _run_failing_document_with_bad_artifact(base / "p3")
+    print(json.dumps(third, ensure_ascii=True, indent=2))
+
     # Phase 1 is informational: a MISSING primary file surfaces in the unsupported-document
     # handler (a separate, pre-existing behaviour, recorded below).  What matters for this P0
     # is that the escape is NOT the metadata parse any more - no JSONDecodeError and no
-    # normalizer.py:1638 in the traceback.
+    # metadata-parse line in the traceback.
     first_escaped_at_parse = (
         first.get("escaped") and ("JSONDecodeError" in str(first.get("error", ""))
                                   or "1638" in str(first.get("raised_from", "")))
     )
     ok = ((not second["escaped"]) and bool(second.get("artifact_flagged"))
-          and bool(second.get("artifact_verdict_downgraded")) and not first_escaped_at_parse)
+          and bool(second.get("artifact_verdict_downgraded")) and not first_escaped_at_parse
+          and (not third["escaped"]))
     print("\nphase 1 escape (informational):", first.get("error", "<none>"))
-    print("P0 VERDICT:", "FIXED (the parse no longer escapes; degradation is visible)" if ok
-          else "STILL BROKEN or undemonstrated - read the readings above")
+    print("P0/P2 VERDICT:", "FIXED (the shared-column parse no longer escapes; degradation "
+          "is visible; the sibling-column parse in the failure handler no longer escapes "
+          "either)" if ok else "STILL BROKEN or undemonstrated - read the readings above")
     return 0 if ok else 1
 
 
