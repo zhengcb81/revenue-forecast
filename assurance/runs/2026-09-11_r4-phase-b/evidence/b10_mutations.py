@@ -146,7 +146,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--out", type=Path, default=HERE / "b10-mutations.json")
     args = parser.parse_args(argv)
 
-    repo_before = _repo_fingerprint(args.repo)
+    status_before = _git_status(args.repo)
+    fingerprint_before = _repo_fingerprint(args.repo)
     results: list[dict] = []
     with tempfile.TemporaryDirectory(prefix="b10-mut-") as tmp:
         copy = _make_copy(args.repo, Path(tmp))
@@ -194,16 +195,24 @@ def main(argv: list[str]) -> int:
             cwd=str(copy), capture_output=True, text=True, encoding="utf-8", errors="replace",
             env={**__import__("os").environ, "PYTHONPATH": str(copy / "src")},
         )
-    repo_after = _repo_fingerprint(args.repo)
+    status_after = _git_status(args.repo)
+    fingerprint_after = _repo_fingerprint(args.repo)
     payload = {
         "tool": "b10_mutations.py",
         "note": ("each mutant changes ONE thing in a TEMP COPY of the package; the named test "
                  "must FAIL while it is in place. The repository is never written to, which is "
-                 "verified by fingerprinting every .py file before and after."),
+                 "verified two ways: `git status --porcelain` identical before/after (primary), "
+                 "and a line-ending-insensitive fingerprint of every .py under src/."),
         "mutants": results,
         "all_killed": all(item.get("killed") for item in results),
-        "repository_untouched": repo_before == repo_after,
-        "repository_fingerprint_sha256_16": repo_before,
+        "repository_untouched": (status_before == status_after
+                                 and fingerprint_before == fingerprint_after),
+        "git_status_unchanged": status_before == status_after,
+        "git_status_before": status_before[:400],
+        "git_status_after": status_after[:400],
+        "repository_fingerprint_sha256_16": fingerprint_before,
+        "fingerprint_note": ("line-ending insensitive (B-VR-B10-08): CRLF is normalised to LF "
+                            "before hashing, so the value is comparable across checkouts"),
         "baseline_in_copy": {
             "exit_code": base.returncode,
             "tail": (base.stdout or "").strip().splitlines()[-1][:120] if base.stdout else "",
@@ -223,12 +232,25 @@ def main(argv: list[str]) -> int:
 
 
 def _repo_fingerprint(repo: Path) -> str:
-    """sha256 over `path  size  sha256` of every .py under src/ - 'untouched' as a number."""
+    """sha256 over `path  size  normalized-sha256` of every .py under src/.
+
+    B-VR-B10-08: the first version hashed RAW bytes, so the value depended on the checkout's
+    line endings (LF vs CRLF) and could not be reproduced from git.  Content is normalised
+    to \n before hashing, which keeps the comparison meaningful across checkouts; and the
+    primary untouched-criterion in `main()` is now `git status --porcelain` anyway.
+    """
     digest = hashlib.sha256()
     for path in sorted((repo / "src").rglob("*.py")):
-        digest.update(f"{path.relative_to(repo)} {path.stat().st_size} {_sha256(path)}\n"
-                      .encode("utf-8"))
+        content = path.read_bytes().replace(b"\r\n", b"\n")
+        digest.update(f"{path.relative_to(repo)} {len(content)} "
+                      f"{hashlib.sha256(content).hexdigest()}\n".encode("utf-8"))
     return digest.hexdigest()[:16]
+
+
+def _git_status(repo: Path) -> str:
+    proc = subprocess.run(["git", "-C", str(repo), "status", "--porcelain"],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return (proc.stdout or "").strip()
 
 
 if __name__ == "__main__":

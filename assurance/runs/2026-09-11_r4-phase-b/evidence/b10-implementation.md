@@ -14,20 +14,22 @@
 
 **"无法兼容则停切换"落到实处**：`reader.resolve_handle`/`bundle` 是**声明级**（比对 catalog 声称的 `content_sha256`，从不打开文件），与字节级链**语义不同** ⇒ **不**把它们悄悄改指向链，而是**具名 v1 adapter** + 移除条件；门会拒绝任何"未经声明就把 claim-level 变成读字节"的改动。
 
-## 2. 门：11 个用例各管什么
+## 2. 门：13 个用例各管什么
 
 | 用例 | 管什么 |
 |---|---|
 | `test_b10_scan_is_not_vacuous` | 扫描必须真扫到东西；且**单一链**不得以字面 `json.loads(列)` 的形式出现（防"扫描空转也算通过"） |
 | `test_b10_v1_adapter_delegates_to_the_single_chain` | v1 adapter 必须调用 `metadata_object`，且**不得**再出现 `loads`（第二份实现不许回来） |
-| `test_b10_no_new_confirmed_direct_reader` | **棘轮 ①**：新增"参数里自带该列"的直接读取者 ⇒ 红 |
-| `test_b10_baseline_has_no_stale_entry` | **不许腐烂**：基线里已不存在的站点必须删掉 ⇒ 否则红 |
+| `test_b10_no_new_confirmed_direct_reader` | **棘轮 ①**：新增"参数里自带该列"的直接读取者 ⇒ 红（限定名 `Class.method` 键，类内新方法不再隐身） |
+| `test_b10_baseline_has_no_stale_entry` | **不许腐烂**：基线里已不存在的站点必须删掉 ⇒ 否则红；**盲点条目**（`visible_to_scan=False`）豁免，但要求代码仍存在 |
+| `test_b10_baseline_declares_which_table_each_reader_reads` | 每条基线必须注明读的是**哪张表**（documents/artifacts/both）与依据（`B-VR-B10-02`） |
 | `test_b10_handoff_scan_is_not_vacuous` | 棘轮 ② 的防空转 |
 | `test_b10_no_new_column_value_handoff` | **棘轮 ②**：新增"把该列的值交给某个调用"的位置 ⇒ 红（**堵住 parse-by-helper 绕过**，见 §3ter） |
 | `test_b10_handoff_baseline_has_no_stale_entry` | 棘轮 ② 的不许腐烂 |
 | `test_b10_gate_boundaries_stay_documented` | 门的**已知边界**必须留在产品代码里且不得被悄悄删掉（每条都注明是否**实测**过） |
-| `test_b10_registered_adapters_are_complete_and_importable` | 每条 adapter 必须声明 version/semantics/byte_level/removal_condition，且**符号真的存在** |
-| `test_b10_claim_level_adapters_never_read_bytes`（参数化 ×2） | claim-level adapter 内**不得**出现 `open/read_bytes/read_text/read_verified_bytes` |
+| `test_b10_registered_adapters_are_complete_and_importable` | 每条 adapter 必须声明 version/semantics/byte_level/reads_files/removal_condition，且**符号真的存在** |
+| `test_b10_claim_level_adapters_never_read_bytes`（参数化 ×2） | claim-level adapter 的**函数体**内**不得**出现 `open/read_bytes/read_text/read_verified_bytes`（语法级；传递性由下一条管） |
+| `test_b10_registry_states_transitive_file_access_truthfully` | `bundle.reads_files=True`（读 artifact 文件）、另两条 `False` —— **钉住** `B-VR-B10-01` 修正后的事实 |
 
 ## 3ter. **棘轮 ②：我自己找到的门洞，以及它暴露的漏报**
 
@@ -76,10 +78,10 @@
 
 | 步骤 | 命令 | 结果 |
 |---|---|---|
-| Unit tests | `python -m pytest tests/unit -q --tb=short` | **787 passed**（55.7s）→ [evidence/b10-ci-step1-unit.txt](b10-ci-step1-unit.txt) |
-| Contract tests | `python -m pytest tests/contract -q --tb=short --ignore=…（CI 的 8 条 ignore 原样）` | **1900 passed, 8 skipped**（793.96s）→ [evidence/b10-ci-step2-contract.txt](b10-ci-step2-contract.txt) |
+| Unit tests | `python -m pytest tests/unit -q --tb=short` | **787 passed**（51.94s）→ [evidence/b10r2-ci-step1-unit.txt](b10r2-ci-step1-unit.txt) |
+| Contract tests | `python -m pytest tests/contract -q --tb=short --ignore=…（CI 的 8 条 ignore 原样）` | **1902 passed, 8 skipped**（672.73s）→ [evidence/b10r2-ci-step2-contract.txt](b10r2-ci-step2-contract.txt) |
 
-**口径（不夸大）**：这两次跑是在本增量**倒数第二次**修订上收集的（当时门是 11 用例；1900 = 1896 + 4）。P1 修完后的**最终**修订（门 12 用例）**只单独重跑了该门文件**（**12 passed**、ruff clean、变异 8/8），**没有**重跑整套契约套件。因此"本地两步全绿"对 11 用例修订成立；12 用例修订的对应证据是门文件本身 + 变异表。
+**口径（不夸大）**：这两次跑在六条残留处置完成后的**最终修订**上（门 13 用例；1902 = 1896 + 6）。早先一次 11 用例修订的跑（787 / 1900+8）保留在 `b10-ci-step1-unit.txt` / `b10-ci-step2-contract.txt`。
 
 ## 7. 独立复审 `B.VR-b10`（记录 [reviews/B.VR-b10.json](../reviews/B.VR-b10.json)）
 
@@ -96,7 +98,20 @@
 | `B-VR-B10-07` | P3 | "catch sets equivalent" **不成立**：委派后 catch 集**更窄**（24 输入中 23 个相等，唯一不等是 `__bool__` 抛裸 `ValueError` 的合成对象；唯一调用点传 sqlite TEXT ⇒ 当前不可达） | **未修**：下次改为"**行为等价的范围**"措辞并加一个用例记录该不可达差异（不引入更宽的 catch） |
 | `B-VR-B10-08` | P3 | `repository_untouched` 只覆盖 `src/**/*.py`，且指纹值受行尾（LF/CRLF）影响、**不能从 git 复现** | **未修**：下次扩到整个仓（或改用 `git status --porcelain` 作为判据），并说明该值环境相关 |
 
-**注**：本节写于本轮收尾时，**未**对 `B-VR-B10-02/03(残余)/04/05/07/08` 做代码改动——它们已逐条登记为**下次开工的第一批**。修订后门为 **12 用例、8/8 变异 KILLED by assertion**、ruff clean。
+**注**：本节写于复审收尾时；六条残留的处置见下节 §7bis。
+
+## 7bis. 六条残留的处置（第二轮，owner 说「继续」后）
+
+| # | 处置 | 具体改动 |
+|---|---|---|
+| `B-VR-B10-02` | **已修** | `CONFIRMED_DIRECT_READERS` 从 tuple 改为 **`module.py::Class.method → {table, note}`** 注册表：每条注明读的是**哪张表**（`documents` / `artifacts` / `documents+artifacts`）与依据。3 个 artifacts-only 键、`normalize_catalog` 的"一键两表"如实标注；B10-3 的收敛清单从此按表正确分层 |
+| `B-VR-B10-03`（残余） | **部分已修 + 边界入库** | ① 键改为**限定名** `Class.method`（修掉"往已入基线的类里加方法 ⇒ 键塌缩成类名"的绕过，`service.py::SourceCatalog.query` 与 `.query_filing_candidates` 从此是两个键）；② 列名改**精确匹配**（同修 `-05`）；③ 剩余绕过形态（中间变量、被调方内部下标、第三方解析器）**实测**后写入 `GATE_BOUNDARIES`，并用例钉住"这四条不许被悄悄删掉" |
+| `B-VR-B10-04` | **已修** | `scanner._previous_provenance_fields` 入册为 **盲点条目**（`visible_to_scan="False"`，注明 1405 `loads(stored_json)` ← 1739 喂入）；stale 检查对盲点豁免，但**要求代码仍存在** |
+| `B-VR-B10-05` | **已修** | 确认扫描从"参数**含**列名子串"改为"参数里出现**精确**的 `metadata_json` 常量" ⇒ `row["acquisition_metadata_json"]` 不再误报（复审构造的反例现被正确放行） |
+| `B-VR-B10-07` | **已修（措辞）** | docstring 改为如实的范围表述：**等价域** = "列能实际持有的输入"（24 输入实测等价）；**catch 集不同**（链更窄），差异仅在"`__bool__` 抛裸 `ValueError` 的合成对象"且当前调用点不可达 |
+| `B-VR-B10-08` | **已修** | `repository_untouched` 主判据改为 **`git status --porcelain` 前后一致**，辅以**行尾不敏感**指纹（CRLF 归一 LF 再哈希）；证据里记录前后两次 `git status`，不再声称可从 git 复现原始字节哈希 |
+
+**复核数字**：门 **13 用例**全绿；变异 **8/8 KILLED by assertion**（M2/M3 在新键格式下仍被杀；M8 钉住助手绕过）；ruff clean。`killed_by` 判定从"看输出里的字"改为"看 **pytest 退出码**（1=断言失败，2=收集错误）"。
 
 ## 8. 状态与下一步
 
