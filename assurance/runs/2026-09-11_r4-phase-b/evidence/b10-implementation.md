@@ -133,10 +133,12 @@
 | `resolver._metadata_conflict_reason`（documents，**报告型**） | 同上形状 → 两个 reason 字符串 | `metadata_state(...)`，两个状态映射到原来的两个 reason 字符串 | 命名状态逐字保留 |
 
 **不动（登记理由）**：
-- `normalizer._frontmatter` / `normalize_catalog:1633`：解析位于 normalize 的**失败路径**（畸形列现在产生"逐文档 normalization-failure 记录 + 尝试计数"）；收敛成 `{}` 会改变这些记录。**需单独分析后再动**（B10-3 批次 2 候选）。
+- `normalizer._frontmatter` / `normalize_catalog`（当时的行号 `:1441` / `:1633` @ `5ec18a5`）：**当时**记为"解析位于 normalize 的**失败路径**（畸形列产生逐文档失败记录 + 尝试计数），收敛成 `{}` 会改变这些记录"。
+  **⚠️ 该理由已作废（`B-VR-B10R2-02` P1 证伪）**：那些解析**根本不在**逐文档 try 内（唯一 try 只覆盖解析器调用），畸形列**中止整轮**而**不产生**任何失败记录——所以既没有"记录"要保护，也**不存在**"刻意的非链读取者"。两处现均已收敛（批次 2 与 P0 修复）。**本条保留的是当时的错误判断，不是现行理由。**
 - `section_query.list_sections`：合同就是**具名报错**（`SectionQueryError`）→ 改成 `{}` 会把错误藏起来 ⇒ 入册 `EXPLICIT_NON_CHAIN_READERS`（新注册表），声明"为什么不走链"——落实"不永久默默双跑"。
 
-**收敛后基线**：`CONFIRMED_DIRECT_READERS` 只剩 **3 条**（normalizer ×2 + section_query），每条带**表注解**与"为什么还没收敛"的 note；`COLUMN_VALUE_HANDOFFS` 13 条（链调用本身也在内，按设计不许增长）。
+**收敛后基线（当时读数）**：`CONFIRMED_DIRECT_READERS` 当时为 **3 条**（normalizer ×2 + section_query）；`COLUMN_VALUE_HANDOFFS` 当时 13 条。
+**⚠️ 当前值**（r3/r4 都点过"陈旧计数"）：`CONFIRMED_DIRECT_READERS` = **1 条**（只剩 section_query）、`COLUMN_VALUE_HANDOFFS` = **12 作用域 / 15 站点**（机器导出）。上面那句是**历史读数**，不得当作现状。
 
 ## 7quater. **B10-3 批次 2 + 复审半成品暴露的两个真洞**（2026-09-17）
 
@@ -144,7 +146,7 @@
 
 ### 1. 批次 2：`_frontmatter` 收敛（崩溃 → 降级）
 
-`_frontmatter` 在 `normalizer.py:1726` 被调用——**在 `normalize_catalog` 的逐文档 try 之外** ⇒ 批次 2 之前，一个不可读的 `documents.metadata_json` 会**整轮归一化中止**（不是单文档失败记录）。这违反 B05 立下的"畸形内容不得崩掉 ingest 路径"。
+`_frontmatter` 在 `normalize_catalog` 的逐文档 try **之外**被调用（当时行号 `:1726` @ `5ec18a5`；行号随提交漂移，r4 的 `B-VR-B10R4-03` 点过）——**在**`normalize_catalog` 的逐文档 try 之外 ⇒ 批次 2 之前，一个不可读的 `documents.metadata_json` 会**整轮归一化中止**（不是单文档失败记录）。这违反 B05 立下的"畸形内容不得崩掉 ingest 路径"。
 **修**：两个分支（sqlite3.Row / dict）统一走 `metadata_object`。
 **行为差（如实登记）**：不可读 → 不再抛，而是"无元数据"继续渲染；dict 分支里值是 JSON **字符串**时也不再 `AttributeError`。
 **定点用例**：`tests/unit/test_b10_frontmatter_tolerance.py`（对照 + 5 种畸形 × 两种入参形态）。
@@ -176,7 +178,7 @@
 | `B-VR-B10R2-04` | P2 | 登记里的 `:1633/:1689/:1739` 是旧行号 | **已随 -02 消除**（该登记已删） |
 | `B-VR-B10R2-05` | P2 | "异常类型是记录数据"的论点站不住（handler 自身有 `type(exc).__name__` 回退） | **接受**：该论点随之作废，理由是**它根本不成立**（不是"换成另一个理由"） |
 | `B-VR-B10R2-06` | P3 | 门只看 `src/company_wiki/source_catalog` | **已修**：新增硬规则 `test_b10_no_direct_reader_outside_source_catalog`（覆盖**整个产品包**，当前 0 处）；库外读者**实测**登记进 `GATE_BOUNDARIES`：`scripts/` **2** 处（legacy_observer.py:96、wu904_remediation_restore.py:65）、`tools/` 0、`tests/` 10（夹具），并写明**不被任何棘轮覆盖** |
-| `B-VR-B10R2-07` | P3 | §7bis 写 13 用例/8-8、§7ter 写"只剩 3 条"与现状矛盾 | **已修**：本文件数字已按现行 **15 用例 / 10 变异 / CONFIRMED 1 条** 更新 |
+| `B-VR-B10R2-07` | P3 | §7bis 写 13 用例/8-8、§7ter 写"只剩 3 条"与现状矛盾 | **PARTIAL（r3 判定，r4 复核仍 PARTIAL）**：数字当时已按 **15 用例 / 10 变异 / CONFIRMED 1 条** 更正，但 §7ter/§8 仍留陈旧读数与"复审尚未执行"的旧文 ⇒ 已在 §7septies 的 `-04` 行**二次处置**（标注历史读数 + 更新复审状态） ||
 
 **附带发现（不属于本 P0，但如实登记；行号按当时提交 `5ec18a5`）**：探针阶段 1 显示——**主文件在磁盘上缺失**时，整轮 normalize 仍会中止（`SourceManifestMismatchError` 逃出 `IngestService.ingest`；**在 `f92fc71` 上是 `normalizer.py:1732`，在本轮 -01 修复后是 `1739`**——行号随提交漂移，r3 的 `B-VR-B10R3-04` 正是抓我引了陈旧行号）。这**不是**本次改动引起（改前逃得更早），但它是同类的"单文档问题中止整轮"路径 ⇒ 登记 `F-B10R2-MISSINGFILE`；**r3 又补了两条同类路径**（见 §7sexies）。
 
@@ -229,6 +231,21 @@
 | `B-VR-B10R3-05` | P3 | 探针阶段 2 的 `verdict` 差异**不能**单独证明 -03：该 `.md` 夹具首页为空 ⇒ 判定本就是 `unverifiable`（与元数据无关），只有 flag 来自修复 | **已改探针**：夹具首页**含标题**（使 `consistent` 真正可达），flag 与判定**同时**作为通过判据；修前/修后由 `B10_WIKI_SRC` 对照 |
 | `B-VR-B10R3-06` | P3 | 另两条**既有**整轮中止路径（记录未提）：unsupported 分支的 `IngestService.ingest`（缺文件 ⇒ 逃出，**饿死后面的文档**）；`_atomic_write`（AST/阅读发现，**未驱动**） | **已登记**为 `F-B10R2-MISSINGFILE` 的补充条目（见 [findings.md](../findings.md)），**未修**（需 owner 决定） |
 
+## 7septies. `B.VR-b10-r4`（最终验证）**APPROVE_WITH_FINDINGS** + 6 条处置（2026-09-17）
+
+**结论：`APPROVE_WITH_FINDINGS`（无新 P0/P1）。** 它独立复核：三条核心修复 **FIXED**（自写 AST + 自写 before/after 驱动器 + 重放变异 + 自写扫描器逐键吻合 1/12/15）；`B-VR-B10R3-01` **FIXED**（**真实解析失败**夹具：合法 zip 但 `word/document.xml` 不是文档的 `.docx`，健康文档排在后面 ⇒ 真树 `escaped:false / failed:1 / completed:1`，退回那一行的副本 ⇒ `escaped:true @1727`、0 个 `normalized.md`；`.xls`/坏 `.pdf`/ValueError 变体同样分裂）；回归逐字复现：unit 796、contract（带 CI 8 条 ignore）1904/8、四个指定文件 35、门 15、变异 10/10。
+
+| # | 级别 | 它证明的 | 处置 |
+|---|---|---|---|
+| `B-VR-B10R4-01` | **P2（活）** | `normalize_catalog` 主路径 `json.loads(primary["manifest_json"])` **无 try** ⇒ 坏 JSON/`{}`/NULL 三种都**中止整轮并饿死后面的文档**，且**不需要解析失败即可触发**；第二入口 `backfill_text_fingerprints` 同形（实测逃逸）。定为 P2 而非 P1：该列只由 `SourceManifest.canonical_json()` 写给活跃 location | **已修**：新增 `_manifest_from_column()`（**永不抛**，坏行返回命名 code），两个入口都改为**逐文档失败 + continue**。**pytest 行为级钉住**：`tests/unit/test_b10_manifest_abort_paths.py`（坏 manifest + 后面健康文档仍被归一化、报告里出现 `manifest_*` 计数）；变异 **M11**（调用点）/ **M12**（助手体）**KILLED by assertion** |
+| `B-VR-B10R4-02` | P3 | `-05` **未修**：`_text_markdown` 从不设 `first_page_text` ⇒ 即使元数据可读，带标题的 `.md` 夹具判定仍是 `unverifiable / no_first_page_text`；阶段 2 的判定差异**不能归因**，而我新加的注释**声称相反** | **已改**：探针显式记录 `verdict_reading_isolates_the_fix=False` + 说明，并把判定从通过判据中**移除**（只保留 flag）；**归因证据改引单元用例**（`test_b10_frontmatter_tolerance.py` 用设置了 `first_page_text` 的 `_Normalized`，可读⇒`consistent`、不可读⇒`unverifiable`） |
+| `B-VR-B10R4-03` | P3 | `findings.md` 仍引 `1725`（实为 `1739`）且**误引**了自己刚重生成的证据文件；记录里 `:1726`/`:1633` 未锚定提交 | **已改**：`findings.md` 行号改为**带提交锚定**（`1732@f92fc71`、`1739@396c5d6`，并注明"重跑会覆盖、文件内行号与当次提交一致"）；记录里两处改为"当时行号 @ `<sha>`" |
+| `B-VR-B10R4-04` | P3 | `-03` 的"已全部改"**过度声称**：§7ter 仍把已撤回理由当**活理由**、仍写 `CONFIRMED 3`/`HANDOFFS 13`；§8 仍写"独立复审尚未执行 + 变异 7/7"；§7sexies 漏记 r3 对 `B-VR-B10R2-07` 的 **PARTIAL** | **已改**：§7ter 该条加 **⚠️ 已作废**说明（保留当时的错误判断本身）；计数标注为**历史读数**并给出当前值（1 / 12 作用域 15 站点）；§8 复审状态改为四轮实际结论 + 变异 **12/12**；§7sexies 的 `-07` 判定已改标 **PARTIAL**（"数字为真但当时处置说明不实"） |
+| `B-VR-B10R4-05` | P3 | 探针阶段 3 的"解析失败文档"实为**解析器参数** `ValueError`（证据里就写着 `terminal_reasons {ValueError: 1}`）：**结论成立、标签不准** | **已改标签**：阶段 3 明确写成"parser-ARGUMENT failure，**不**等同于真解析失败"，并注明**真解析失败**的变体（`.docx`/`.xls`/坏 `.pdf`，S7/S8/S12）由 r4 独立驱动 |
+| `B-VR-B10R4-06`（登记项） | P3 | 其余**未修**的整轮中止路径与该族分类 | **已登记**进 [findings.md](../findings.md)：`IngestService.ingest`（unsupported handler，实测；真解析失败分支由 r4 复现）、`_atomic_write` 的 `mkdir`（r4 用人造 FS 阻塞**驱动成功**）、成功路径 ingest / transaction 块 / 两处 `fetchall`（**阅读发现，未驱动**）、包内 4 处同名列解析（`activation.py:215`、`assertion_service.py:405`、`remediation.py:149`、`scanner.py:668`，**仅 AST 阅读级**） |
+
+**本批数字**：门 **15 用例**；变异 **12/12 KILLED by assertion**（仓库未触碰，副本基线 26 passed）；本轮修复后的本地两步 CI 与远端 CI 见 §5/§8。
+
 ## 8. 状态与下一步
 
 **提交与 CI**（本轮小阶段收口，**已核对**）：
@@ -241,7 +258,7 @@
 **本地两个 CI 步骤**见 §5（**当前：unit 796；contract 1904 passed / 8 skipped**；r3 指出这两个数字**依赖环境**——它在 Python 3.14.2 且缺 `xlrd`/`fitz` 的环境下复现出 `7 failed / 1886 passed / 19 skipped`，并证明 7 条全部既有且属环境）。**独立复审**见 §7/§7quinquies/§7sexies。
 
 - 本增量 = **B10-1 + B10-2 + B10-4 的门部分**；**未**声明 B10 整体完成。
-- **⚠️ 独立复审尚未执行**（`B.VR-b10` 未派）。因此本增量目前的状态是"**已实施 + 本地两步 CI 绿 + 远端 CI 绿 + 变异 7/7**"，**不是**"已通过"。
+- **复审状态（r4 之后更新，`B-VR-B10R4-04` 指出此处旧文过度声称）**：`B.VR-b10`（增量 1）= accepted_with_findings（8 条已处置）；`B.VR-b10-r2` = **REJECT**（P0+P1×2 已处置）；`B.VR-b10-r3` = **REJECT**（3 条核心 **FIXED**，6 条已处置）；`B.VR-b10-r4` = **APPROVE_WITH_FINDINGS**（`-01` P2 已修、四条 P3 已处置）。本增量当前状态 = **已实施 + 已复审 + 本地两步 CI 绿 + 远端 CI 绿 + 变异 12/12 KILLED by assertion**。
   唯一未过门的是**独立复审**——这正是**下一步的第一件事**（复审对象：`read_chain.py`、`service.py` 的委托、`tests/contract/test_b10_read_chain.py`、本记录与 `b10-mutations.json`）。
 - 之后：**B10-3** 分批收敛 9 个 confirmed 站点（每批定点用例 + 契约套件；行为一变即停并上呈）→ **B10-5**（可回退版本 + 移除条件入库）。
 - 边界不变：**不写**任何 catalog 数据、不改消费者仓、不动冻结常量。

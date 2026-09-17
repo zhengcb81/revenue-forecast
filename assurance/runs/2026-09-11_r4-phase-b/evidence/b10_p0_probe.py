@@ -195,12 +195,23 @@ def main() -> int:
         second["artifact_flagged"] = "metadata_unreadable" in text
         second["artifact_verdict_downgraded"] = (
             "verdict: unverifiable" in text and "verdict: consistent" not in text)
+        # B-VR-B10R4-02 (P3): on a .md fixture the verdict is `unverifiable / no_first_page_text`
+        # REGARDLESS of the metadata (the markdown parser never sets first_page_text), so this
+        # probe's verdict reading does NOT isolate the -03 fix.  The isolating evidence is the
+        # unit test, which drives _frontmatter with first_page_text set (readable metadata ->
+        # "consistent", unreadable -> "unverifiable").  Only the FLAG is attributable here.
+        second["verdict_reading_isolates_the_fix"] = False
+        second["verdict_isolation_note"] = (
+            "md fixtures have no first page, so 'unverifiable' is expected without the fix too; "
+            "see tests/unit/test_b10_frontmatter_tolerance.py for the isolating cases")
     else:
         print("no normalized.md produced in phase 2")
         second["artifact_flagged"] = None
 
-    print("=== phase 3 (B-VR-B10R3-01): a FAILING document whose existing normalized "
-          "artifact carries malformed metadata ===")
+    print("=== phase 3 (B-VR-B10R3-01/B10R4-05): a document whose parse FAILS - here a parser-"
+          "ARGUMENT failure (heartbeat >= timeout), which is NOT the same as a genuine parse "
+          "failure; the review verified the genuine variants (.docx/.xls/bad .pdf, S7/S8/S12) "
+          "against the fixed tree and against a reverted copy ===")
     third = _run_failing_document_with_bad_artifact(base / "p3")
     print(json.dumps(third, ensure_ascii=True, indent=2))
 
@@ -213,12 +224,12 @@ def main() -> int:
                                   or "1638" in str(first.get("raised_from", "")))
     )
     ok = ((not second["escaped"]) and bool(second.get("artifact_flagged"))
-          and bool(second.get("artifact_verdict_downgraded")) and not first_escaped_at_parse
-          and (not third["escaped"]))
+          and not first_escaped_at_parse and (not third["escaped"]))
     print("\nphase 1 escape (informational):", first.get("error", "<none>"))
-    print("P0/P2 VERDICT:", "FIXED (the shared-column parse no longer escapes; degradation "
-          "is visible; the sibling-column parse in the failure handler no longer escapes "
-          "either)" if ok else "STILL BROKEN or undemonstrated - read the readings above")
+    print("P0/P2 VERDICT:", "FIXED (the shared-column parse no longer escapes; the "
+          "metadata_unreadable flag is attributable to the fix; the sibling-column parse in the "
+          "failure handler no longer escapes either)" if ok
+          else "STILL BROKEN or undemonstrated - read the readings above")
     return 0 if ok else 1
 
 

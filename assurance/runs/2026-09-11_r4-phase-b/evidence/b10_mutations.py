@@ -176,6 +176,38 @@ MUTANTS: list[dict] = [
             "        metadata = json.loads(document[\"metadata_json\"])",
         ),
     },
+    {
+        "id": "M11",
+        "file": "src/company_wiki/source_catalog/normalizer.py",
+        "test": "test_b10_damaged_manifest_is_a_per_document_failure",
+        "test_file": "tests/unit/test_b10_manifest_abort_paths.py",
+        "why": ("B-VR-B10R4-01 (P2) reverted at the CALL SITE: normalize_catalog goes back to "
+                "the unguarded manifest parse in the main path, so a damaged manifest column "
+                "aborts the whole run and the healthy document queued behind it is starved"),
+        "replace": (
+            "        manifest, manifest_problem = _manifest_from_column(primary[\"manifest_json\"])",
+            "        manifest_problem = None\n"
+            "        manifest = SourceManifest.from_dict(json.loads(primary[\"manifest_json\"]))",
+        ),
+    },
+    {
+        "id": "M12",
+        "file": "src/company_wiki/source_catalog/normalizer.py",
+        "test": "test_b10_manifest_helper_never_raises_and_codes_the_problem",
+        "test_file": "tests/unit/test_b10_manifest_abort_paths.py",
+        "why": ("the helper's never-raises contract is removed: every damaged shape raises out "
+                "of it again"),
+        "replace": (
+            "    payload, state = metadata_state(raw)\n"
+            "    if state is not None:\n"
+            "        return None, f\"manifest_column_{state}\"\n"
+            "    try:\n"
+            "        return SourceManifest.from_dict(payload), None\n"
+            "    except Exception:  # data boundary: any parse/validation failure is a bad row\n"
+            "        return None, \"manifest_invalid\"",
+            "    return SourceManifest.from_dict(json.loads(raw)), None",
+        ),
+    },
 ]
 
 

@@ -2,19 +2,24 @@
 
 ## `F-B10R2-MISSINGFILE`（**既有问题，非本次改动引起；已登记，未修**）：主文件缺失仍会中止整轮 normalize
 
-- **是什么**：`normalize_catalog` 的**队列**会把"有 active 的 `original_primary` location"的文档全部取出来（SQL 里 `EXISTS (... location_status='active')`），但**不检查该 location 的文件是否还在磁盘上**。文件已缺失时：解析阶段抛 `UnsupportedDocumentError` → 其 handler（`normalizer.py:1725`）里的 `IngestService(...).ingest(...)` 因 manifest 与磁盘不一致抛出 `SourceManifestMismatchError` → **逃出整个 `normalize_catalog`**（该 handler **不在**任何 try 内）。
-- **证据**：`evidence/b10_p0_probe.py` 阶段 1（有效 manifest、磁盘上没有该文件）实测：
-  `escaped: true` / `SourceManifestMismatchError: [WinError 2] 系统找不到指定的文件 … raised_from normalizer.py:1725`（输出存 `evidence/b10-p0-probe.txt`）。
+- **是什么**：`normalize_catalog` 的**队列**会把"有 active 的 `original_primary` location"的文档全部取出来（SQL 里 `EXISTS (... location_status='active')`），但**不检查该 location 的文件是否还在磁盘上**。文件已缺失时：解析阶段抛 `UnsupportedDocumentError` → 其 handler 里的 `IngestService(...).ingest(...)` 因 manifest 与磁盘不一致抛出 `SourceManifestMismatchError` → **逃出整个 `normalize_catalog`**（该 handler **不在**任何 try 内）。
+- **证据（行号带提交，避免漂移——r3/r4 都点过这个毛病）**：`evidence/b10_p0_probe.py` 阶段 1（有效 manifest、磁盘上没有该文件）实测 `escaped: true`，逃出点 **`normalizer.py:1732` @ `f92fc71`** / **`:1739` @ `396c5d6`** / 本轮修复后再次右移；输出存 `evidence/b10-p0-probe.txt`（每次重跑会覆盖，文件内行号与当次提交一致）。
 - **与本次改动的关系**：**无关**。改前它逃得更早（`normalizer.py:1638` 的解析处，即已修的 P0）；现在解析不再逃，于是这条**原本就在**的路径显形。它属于 B05 立下的"单文档问题不得中止整轮"同一族，但**不在** B10（读取链收敛）范围内。
 - **影响面（未量化，别夸大）**：只在"catalog 里 location 仍 active、磁盘文件却已消失"时触发——例如外部删除/移动、同步目录未落地、云占位不可读。**生产影响面我没有量化**（未跑生产 normalize），不得声称。
 - **建议（未实施，需 owner 决定）**：把该 handler 里的 `ingest` 纳入与解析同级的 `try`，或在队列 SQL 里加"文件存在性"过滤（后者改变队列语义）。两条都属**行为改动**，须单独立项 + 用例 + 变异 + 复审。
 - 关联：`F-B10R2-*` 其余各条见 [evidence/b10-implementation.md](b10-implementation.md) §7quinquies。
 
-### `F-B10R2-MISSINGFILE` 的补充条目（r3 的 `B-VR-B10R3-06` 实测/阅读所得）
+### `F-B10R2-MISSINGFILE` 的补充条目（r3 的 `B-VR-B10R3-06` 与 r4 的 `B-VR-B10R4-01` 实测/阅读所得）
 
-- **① unsupported 分支的 `IngestService.ingest`**：主文件缺失 ⇒ `SourceManifestMismatchError` 从该 handler 逃出，**并饿死队列里排在后面的文档**（r3 实测：第二个健康文档也被连带中止）。r3 的复现：`%TEMP%\b10vr4\v6_abort_hunt.py` 场景 S1/S4（S3/S5 为对照）。
-- **② `_atomic_write`（`normalizer.py`）**：r3 以 AST/阅读指出是同类逃逸点，**未驱动**（不得写成已复现）。
-- **③ 已修的一条同类路径**：失败 handler 里的姊妹列解析（`B-VR-B10R3-01`，P2 **活**）——一行改走 `metadata_state`；修前读数为 `JSONDecodeError ... normalizer.py:1727`（temp 副本），真树修后 `escaped:false / failed:1`。
+**已修（本族）**：
+- **① 失败 handler 里的姊妹列解析**（`B-VR-B10R3-01`，P2 **活**）：一行改走 `metadata_state`；修前读数 `JSONDecodeError ... normalizer.py:1727`（temp 副本），真树修后 `escaped:false / failed:1`。
+- **② 主路径的 `manifest_json` 解析**（`B-VR-B10R4-01`，P2 **活**，**不需要解析失败即可触发**）：`normalize_catalog` 与 `backfill_text_fingerprints` 两处改为 `_manifest_from_column()`（**永不抛**），坏行变成**逐文档失败**（`manifest_column_unreadable` / `manifest_column_not_object` / `manifest_invalid`）并 `continue`；**pytest 钉住**：`tests/unit/test_b10_manifest_abort_paths.py`（坏 manifest + 后面健康文档仍被归一化），变异 **M11**（调用点）与 **M12**（助手体）均 KILLED by assertion。
+
+**仍未修（登记，需 owner 决定）**：
+- **③ `IngestService.ingest`（unsupported handler）**：主文件缺失 ⇒ `SourceManifestMismatchError` 逃出，**饿死队列里后面的文档**（r3 实测 S1/S4；r4 用真实 `.docx`/`.xls`/坏 `.pdf` 复现 S7/S8/S12 的真解析失败分支）。
+- **④ `_atomic_write` 的 `mkdir`**：r4 用**人造 FS 阻塞**驱动成功（S10）；r3 当时只是阅读发现。
+- **⑤ 阅读发现（未驱动）**：`normalize_catalog` 成功路径的 `IngestService.ingest`、其后的 transaction 块、两处 `fetchall`；包内另有 **4 处**未守卫的同名列解析（`activation.py:215`、`assertion_service.py:405`、`remediation.py:149`、`scanner.py:668`）——r4 只做到 AST 阅读级，**不得**写成已复现。
+- **按设计保留**：`section_query.py:109`（显式非链、具名报错）。
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 

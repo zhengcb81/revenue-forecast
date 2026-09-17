@@ -12,7 +12,7 @@
       "test": "test_b10_v1_adapter_delegates_to_the_single_chain",
       "why": "the v1 adapter goes back to its own parse (the second implementation)",
       "exit_code": 1,
-      "tail": "====================== 1 failed, 14 deselected in 0.75s ======================="
+      "tail": "====================== 1 failed, 14 deselected in 0.95s ======================="
     },
     {
       "id": "M2",
@@ -24,7 +24,7 @@
       "test": "test_b10_no_new_confirmed_direct_reader",
       "why": "a SECOND direct reader inside an ALREADY-BASELINED scope - the hole the review's partial work exposed (it used to pass: exit 0, '1 passed'). The count ratchet must catch it. NOTE the indent: the first version injected 8-space lines into a 16-space block, which made the file unparseable, so the 'kill' was really my own scanner hitting a SyntaxError - a mutant that breaks the syntax proves nothing about the guard",
       "exit_code": 1,
-      "tail": "====================== 1 failed, 14 deselected in 2.74s ======================="
+      "tail": "====================== 1 failed, 14 deselected in 4.52s ======================="
     },
     {
       "id": "M3",
@@ -36,7 +36,7 @@
       "test": "test_b10_baseline_has_no_stale_entry",
       "why": "the ONE remaining baselined reader (section_query, declared non-chain) is converged without lowering the baseline - the stale-entry test must catch it. Retargeted twice now: batch 1 converged the original artifact_backfill target, and the P0 fix converged the normalizer target, so a baselined reader is a moving thing and this mutant has to follow the baseline",
       "exit_code": 1,
-      "tail": "====================== 1 failed, 14 deselected in 1.01s ======================="
+      "tail": "====================== 1 failed, 14 deselected in 1.14s ======================="
     },
     {
       "id": "M4",
@@ -48,7 +48,7 @@
       "test": "test_b10_claim_level_adapters_never_read_bytes",
       "why": "the claim-level adapter starts reading bytes instead of the claim",
       "exit_code": 1,
-      "tail": "================= 1 failed, 1 passed, 13 deselected in 0.55s =================="
+      "tail": "================= 1 failed, 1 passed, 13 deselected in 0.62s =================="
     },
     {
       "id": "M5",
@@ -60,7 +60,7 @@
       "test": "test_b10_registered_adapters_are_complete_and_importable",
       "why": "a registered adapter loses its removal condition",
       "exit_code": 1,
-      "tail": "====================== 1 failed, 14 deselected in 0.56s ======================="
+      "tail": "====================== 1 failed, 14 deselected in 0.78s ======================="
     },
     {
       "id": "M6",
@@ -72,7 +72,7 @@
       "test": "test_b10_registered_adapters_are_complete_and_importable",
       "why": "the registry points at a symbol that does not exist",
       "exit_code": 1,
-      "tail": "====================== 1 failed, 14 deselected in 0.53s ======================="
+      "tail": "====================== 1 failed, 14 deselected in 1.16s ======================="
     },
     {
       "id": "M7",
@@ -84,7 +84,7 @@
       "test": "test_b10_no_new_confirmed_direct_reader",
       "why": "a NEW direct reader appears in the adapters/ SUBDIRECTORY - the case the first non-recursive scan could not see",
       "exit_code": 1,
-      "tail": "====================== 1 failed, 14 deselected in 1.06s ======================="
+      "tail": "====================== 1 failed, 14 deselected in 1.39s ======================="
     },
     {
       "id": "M8",
@@ -96,7 +96,7 @@
       "test": "test_b10_no_new_column_value_handoff",
       "why": "the parse-by-helper BYPASS: a generic helper plus a call site that names the column - the shape the json.loads scan cannot see (measured: the gate passed on exactly this probe before the handoff ratchet existed)",
       "exit_code": 1,
-      "tail": "====================== 1 failed, 14 deselected in 1.03s ======================="
+      "tail": "====================== 1 failed, 14 deselected in 1.32s ======================="
     },
     {
       "id": "M9",
@@ -108,7 +108,7 @@
       "test": "test_b10_frontmatter_tolerates_malformed_metadata",
       "why": "batch 2 reverted: _frontmatter goes back to the unguarded json.loads, so a malformed column raises out of the whole normalization run again - the tolerance test must fail",
       "exit_code": 1,
-      "tail": "======================= 1 failed, 4 deselected in 0.60s ======================="
+      "tail": "======================= 1 failed, 4 deselected in 0.98s ======================="
     },
     {
       "id": "M10",
@@ -120,18 +120,42 @@
       "test": "test_b10_no_new_confirmed_direct_reader",
       "why": "B-VR-B10R2-01 (P0) reverted: the unguarded json.loads comes back at the site that used to abort the whole normalization run. The ratchet must refuse it as a new direct reader even though the file still parses",
       "exit_code": 1,
-      "tail": "====================== 1 failed, 14 deselected in 1.06s ======================="
+      "tail": "====================== 1 failed, 14 deselected in 1.34s ======================="
+    },
+    {
+      "id": "M11",
+      "applied": true,
+      "killed": true,
+      "killed_by": "assertion",
+      "syntax_broken_by_mutant": false,
+      "pytest_exit_code": 1,
+      "test": "test_b10_damaged_manifest_is_a_per_document_failure",
+      "why": "B-VR-B10R4-01 (P2) reverted at the CALL SITE: normalize_catalog goes back to the unguarded manifest parse in the main path, so a damaged manifest column aborts the whole run and the healthy document queued behind it is starved",
+      "exit_code": 1,
+      "tail": "======================= 1 failed, 1 deselected in 0.86s ======================="
+    },
+    {
+      "id": "M12",
+      "applied": true,
+      "killed": true,
+      "killed_by": "assertion",
+      "syntax_broken_by_mutant": false,
+      "pytest_exit_code": 1,
+      "test": "test_b10_manifest_helper_never_raises_and_codes_the_problem",
+      "why": "the helper's never-raises contract is removed: every damaged shape raises out of it again",
+      "exit_code": 1,
+      "tail": "======================= 1 failed, 1 deselected in 0.74s ======================="
     }
   ],
   "all_killed": true,
   "repository_untouched": true,
   "git_status_unchanged": true,
-  "git_status_before": "M src/company_wiki/source_catalog/normalizer.py\n M src/company_wiki/source_catalog/read_chain.py",
-  "git_status_after": "M src/company_wiki/source_catalog/normalizer.py\n M src/company_wiki/source_catalog/read_chain.py",
-  "repository_fingerprint_sha256_16": "864daa36b872ae42",
+  "git_status_before": "M src/company_wiki/source_catalog/normalizer.py\n?? tests/unit/test_b10_manifest_abort_paths.py",
+  "git_status_after": "M src/company_wiki/source_catalog/normalizer.py\n?? tests/unit/test_b10_manifest_abort_paths.py",
+  "repository_fingerprint_sha256_16": "5fa854bd6944cefb",
   "fingerprint_note": "line-ending insensitive (B-VR-B10-08): CRLF is normalised to LF before hashing, so the value is comparable across checkouts",
   "baseline_in_copy": {
     "exit_code": 0,
-    "tail": "============================= 24 passed in 6.82s =============================="
+    "tail": "============================= 26 passed in 9.16s =============================="
   }
 }
