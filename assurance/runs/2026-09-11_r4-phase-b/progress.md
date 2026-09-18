@@ -10,6 +10,7 @@
 - **两条产品边界（登记，未修）**：**`F-BAR-10`** 无快照时 sidecar 侧车被当独立文档入库（M5 实测；**不**声称是生产那 3 份 `.pdf.source` 的已证成因）；**`F-BAR-11`** deny 只覆盖 resolver **决定**，字节入口 `read_verified_bytes` 只查根包含性、**仍放行**（已实测入证 `deny.byte_entry_point`）。
 - **独立复审 `B.VR-r3`（第四个独立会话）= `approve_with_findings`（0×P0 / 0×P1 / 3×P2 / 3×P3）**，6 条**全部处置**（[evidence/b-vr-r3-disposition.md](evidence/b-vr-r3-disposition.md)）：它重跑主跑/变异/`--verify`、逐个复现数字、并**重算磁盘摘要**确认 `open` 返回的是磁盘字节。三条 P2 全是我自己的问题：① deny 覆盖面被我写宽（已实测+收窄）；② 授权依据只在被授权的产物里（已落盘 owner 文件）；③ 证据文件用完成时宣布了尚未做的账本改动（三处账本现已真的改掉）。
 - **本地两个 CI 步骤**（照 `.github/workflows/ci.yml` 的两条命令，wiki 树**零改动**故为回归门）：unit **799 passed**（120.28s，[evidence/r3-ci-step1-unit.txt](evidence/r3-ci-step1-unit.txt)）、contract **1905 passed / 8 skipped**（762.79s，[evidence/r3-ci-step2-contract.txt](evidence/r3-ci-step2-contract.txt)）。
+- **远端 CI**：revenue-forecast **`4dfdc02`**（R3 交付提交）workflow `quality` run **`35382672249`** = **success**，两个 job（`real-roots`、`verify`）全绿；company-wiki **零改动**（HEAD 仍 `8665c8c`，其 run `35325679266` = success）。随后只含本记录行与 checkpoint 的提交由同一工作流覆盖，结果见会话报告。
 - **R6 残余风险登记落盘**：[risk-and-stop-rules.md](risk-and-stop-rules.md) §7——"零写入"只被证明到**元数据观察口径**（size/mtime/`-wal`/`-shm`/worktree/树指纹），**同时保持大小与 mtime 的写入不可见**；两个可选消解方向（生产主库全文件 sha256、USN/ETW 写审计）连同各自的代价与限制一并登记，**均未做**。
 
 ## 2026-09-17 — **B10 主体交付：批次 1/2 收敛 + 计数棘轮 + r2 的 P0/P1 处置 + B10-5 收口**（wiki `f92fc71`、revenue `473444f`；远端 CI 全绿）

@@ -104,6 +104,8 @@ C:\Miniconda\python.exe "$E\run_bar_fifth_root_isolated.py" --verify
 **本地两个 CI 步骤**（照 `company-wiki/.github/workflows/ci.yml` 的两条命令跑；本步 **wiki 树零改动**，所以这两步是**回归门**）：
 unit **799 passed**（120.28s，[r3-ci-step1-unit.txt](r3-ci-step1-unit.txt)）、
 contract **1905 passed / 8 skipped**（762.79s，[r3-ci-step2-contract.txt](r3-ci-step2-contract.txt)）。
+**远端 CI**：revenue-forecast `4dfdc02`（交付提交）workflow `quality` run **`35382672249`** = **success**
+（`real-roots` + `verify` 两个 job 全绿）；company-wiki 零改动，HEAD 仍 `8665c8c`（run `35325679266` = success）。
 
 ## 6. 变异矩阵：**5/5 KILLED**（`b-ar-fifth-root-mutations.json`）
 
