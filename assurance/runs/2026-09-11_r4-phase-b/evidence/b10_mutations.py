@@ -208,6 +208,28 @@ MUTANTS: list[dict] = [
             "    return SourceManifest.from_dict(json.loads(raw)), None",
         ),
     },
+    {
+        "id": "M13",
+        "file": "src/company_wiki/source_catalog/normalizer.py",
+        "test": "test_b10_missing_primary_file_is_a_per_document_failure",
+        "test_file": "tests/unit/test_b10_manifest_abort_paths.py",
+        "why": ("R1 reverted: the is_file() early-exit check is removed, so a document whose "
+                "primary file is missing on disk lets IngestService.ingest -> manifest.verify_file "
+                "raise SourceManifestMismatchError inside the except handler, which escapes and "
+                "aborts the whole run, starving the healthy document queued behind it"),
+        "replace": (
+            "        if not source_path.is_file():\n"
+            "            failed += 1\n"
+            "            last_failure_code = \"primary_file_missing\"\n"
+            "            last_failed_document_id = document[\"document_id\"]\n"
+            "            last_failed_path = str(source_path.resolve(strict=False))\n"
+            "            failure_reasons[\"primary_file_missing\"] = (\n"
+            "                failure_reasons.get(\"primary_file_missing\", 0) + 1\n"
+            "            )\n"
+            "            continue",
+            "",
+        ),
+    },
 ]
 
 
