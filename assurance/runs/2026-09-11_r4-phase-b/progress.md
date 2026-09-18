@@ -12,6 +12,7 @@
 - **两处既有用例的期望更新（不是放宽）**：① `test_r4b02_rejected_copy_stays_reclaimable_next_to_healthy_copies`：`groups 2→1`、`reclaimable 3→2`——旧"第二组"是**侧车自己被当文档**形成的（正是 F-BAR-10 修掉的假象；同一夹具两种配置实测得出），意图断言原样保留并**新增**"侧车不得再是文档"；② `test_gp002_scan_v2_wiring` 的两处"stay v1"改用**无 adapter 的根**（快照现在只管这类根），并**新增**一例钉住"声明 adapter 的根在 flag=false 时仍走适配器"。
 - **本地 CI 抓到的三处红，全部修掉**：FC-502（我的透传把 legacy 容器键也带出来了 ⇒ 加排除）、FC-1307 宿主假设门（我在新用例里硬写了 `C:\nowhere\…` ⇒ 改成 `tmp_path`）、以及我自己用 PowerShell 写文件带进 **BOM** 导致"无法解析"（已清）。
 - **剩余（未做）**：`F-B10R2` 家族的 **normalize 侧**站点（unsupported handler 里的 `IngestService.ingest`、成功路径 ingest/事务块/两处 `fetchall`、`_atomic_write` 的 `mkdir`）——属**行为改动**，需行为级探针 + 变异 + 独立复审。记录 [evidence/barfix-product-fixes.md](evidence/barfix-product-fixes.md)。
+- **本地 CI 与远端 CI**：本地 unit **799** / contract **1927 passed + 8 skipped**（[evidence/barfix2-ci-step1-unit.txt](evidence/barfix2-ci-step1-unit.txt)、[evidence/barfix2-ci-step2-contract.txt](evidence/barfix2-ci-step2-contract.txt)）；远端 wiki **`4205803`** 曾**红在 FC-1204 覆盖率棘轮**（`adapters/sidecar.py` 90.2% < 95、`activation.py` 81.3% < 82 —— 都是我新加分支造成的），**补测后棘轮 2 passed**（[evidence/barfix-coverage-ratchet.txt](evidence/barfix-coverage-ratchet.txt)），随后 wiki **`58d4a1e`** run **`35399125862`** = success、revenue **`5a604ad`** run **`35399429249`** = success。**注意**：这次是"远端 CI 抓到本地没抓到的门"——本地两步 CI 命令**不含**覆盖率棘轮那条，所以我在本地复跑了 CI 的完整覆盖率命令才定位到。
 
 ## 2026-09-18 — **R4 交付：跨仓端到端只读（filing-fetch 真实入口）；R5 交付：`dropbox_stock` 3 份字节核验（自纠一处仪器缺陷）**
 
