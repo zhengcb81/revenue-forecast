@@ -1,10 +1,25 @@
 {
   "run_id": "2026-09-11_r4-phase-b",
-  "phase": "B (position-transparent index and read-only access) - B01-B10 IMPLEMENTED, PUSHED, REVIEWED AND DISPOSED OF. B05, B08 (G8 level 2), B09/B.AR and B10 all closed; the only open items are registered follow-ups that need the owner's go-ahead (see failed_or_unknown)",
-  "step": "B10 (single read chain) closed on 2026-09-17 after four review rounds: increment 1 (registry + v1 adapters + gate) = accepted_with_findings; batches 1-2 (seven readers converged, metadata_state added) = REJECT then disposed; the r2 dispositions = REJECT then disposed; and the final verification = APPROVE_WITH_FINDINGS, whose one live P2 (the MAIN-path manifest parse) and four evidence problems are disposed of in company-wiki c4f5b8a / revenue-forecast 65cc18d. The chain now has ONE parse implementation (store.metadata_state / metadata_object), one declared non-chain reader (section_query, whose contract is a named error), two count-based ratchets (CONFIRMED_DIRECT_READERS = 1 entry; COLUMN_VALUE_HANDOFFS = 12 scopes / 15 sites) plus a hard zero for the rest of the product package, and measured gate boundaries written into the product",
-  "last_completed_step": "B10 dispositions (c4f5b8a / 65cc18d): the main-path manifest parse in normalize_catalog AND backfill_text_fingerprints went through a new never-raising _manifest_from_column(), so a damaged manifest column is a per-document failure instead of a dead run - pinned by tests/unit/test_b10_manifest_abort_paths.py and mutants M11/M12. Before that, the same round fixed the sibling-column parse in the failure handler (B-VR-B10R3-01, with a pre-fix reading taken against a reverted temp copy) and corrected four evidence defects the review named. Measured on the final state: gate 15 cases, mutation 12/12 KILLED by assertion with the repository untouched, local CI unit 798 passed and contract 1904 passed / 8 skipped, remote CI green on company-wiki c4f5b8a (run 35283319814) and revenue-forecast 65cc18d (run 35283938871). B05 closed with two review rounds (a live P0 in the author's own fix), B08 level 2 closed with a byte-identical probe re-run plus an audit-hook tripwire (production catalog open count 0), and B09/B.AR closed with the read-only manifest run plus an independently reproduced identity/hash re-derivation - carrying an adjudicated OVERREACH on the manifest's own bounds",
-  "current_gate": "No author-owned gate remains open for phase B. Every step (B01-B10) is implemented, pushed, independently reviewed and disposed of, with both repositories green on the final commits. What remains is OUTSIDE this session's authority and is listed in failed_or_unknown: the whole-run abort paths that a missing file or a damaged row can still reach (registered, not fixed), the two scripts/ readers that no ratchet covers, the B.AR halves that would need writes (a fifth root registration and a cross-repo end-to-end call), the cloud-synced sample that was deliberately not hashed, and the residual risk that a size- and mtime-preserving write to the production catalog is invisible to a metadata-only observation",
+  "phase": "B (position-transparent index and read-only access) - B01-B10 IMPLEMENTED, PUSHED, REVIEWED AND DISPOSED OF, plus the first of the registered residuals (R3, the fifth root, delivered 2026-09-18 inside an isolated catalog). B05, B08 (G8 level 2), B09/B.AR, B10 and R3 all closed; the only open items are registered follow-ups that need the owner's go-ahead (see failed_or_unknown)",
+  "step": "R3 (fifth root by CONFIG ONLY, in an isolated catalog) closed on 2026-09-18; the preceding step B10 (single read chain) closed on 2026-09-17 after four review rounds: increment 1 (registry + v1 adapters + gate) = accepted_with_findings; batches 1-2 (seven readers converged, metadata_state added) = REJECT then disposed; the r2 dispositions = REJECT then disposed; and the final verification = APPROVE_WITH_FINDINGS, whose one live P2 (the MAIN-path manifest parse) and four evidence problems are disposed of in company-wiki c4f5b8a / revenue-forecast 65cc18d. The chain now has ONE parse implementation (store.metadata_state / metadata_object), one declared non-chain reader (section_query, whose contract is a named error), two count-based ratchets (CONFIRMED_DIRECT_READERS = 1 entry; COLUMN_VALUE_HANDOFFS = 12 scopes / 15 sites) plus a hard zero for the rest of the product package, and measured gate boundaries written into the product",
+  "last_completed_step": "R3 (revenue-forecast 3825db2, 2026-09-18) - the B.AR residual 'register a fifth root' is delivered INSIDE an isolated catalog (design gate G8), which is what the owner chose on 2026-09-18 (owner-scope-decisions-2026-09-18.md: option A = isolated copy, and the fifth root takes the future_lake placeholder SHAPE). The fifth root is NOT future_lake: that id is already the FOURTH root (ZR-409/EX-08 fixture, future_lake/README.md:1), so the new root is r4_fifth_root (kind directory + registered sidecar_filing_v1 + read_only + reusable_for_filing, priority 50). Measured: the scanner's own INSERT wrote the roots row (scanner.py:847-854) with no product-code change (company-wiki/src tree fingerprint of 143 files unchanged; all three repo HEADs unchanged); query listed the two fixture documents; resolve(mode=exact) returned reused_exact twice with capture_ready=[true]; read_verified_bytes returned verified twice (59 B, sha256 equal to the file on disk); query_filing_candidates returned 2 rows. Refusals: an unregistered adapter_id fails closed at config load (CatalogConfigError CFG-01); an unknown root id is refused on BOTH branches (empty selection, and the dedicated unknown-root_ids branch reached with a mixed --root-id set, with scan_runs still 1 so the valid root was not scanned as a side effect); a root declared reusable_for_filing: false resolves to missing. Invariants 7/7 (production catalog 49,677,344,768 B and its mtime_ns, -wal and -shm unchanged; three repos unchanged; product source unchanged) and --verify 4/4; mutation matrix 5/5 KILLED; local CI unit 799 passed and contract 1905 passed / 8 skipped. Independent review B.VR-r3 = approve_with_findings (0xP0/0xP1/3xP2/3xP3), all six disposed of in evidence/b-vr-r3-disposition.md; it re-ran all three harness modes, reproduced every recorded number and re-hashed the files on disk. Two product boundaries registered rather than fixed: F-BAR-10 (without an activation snapshot a v1 walk indexes .source.json sidecars as documents) and F-BAR-11 (the deny a root can carry binds the resolver DECISION; the byte primitive gates on containment only and still serves that root's bytes - now measured, not implied). Earlier: B10 dispositions (c4f5b8a / 65cc18d) routed the main-path manifest parse in normalize_catalog AND backfill_text_fingerprints through a new never-raising _manifest_from_column(), so a damaged manifest column is a per-document failure instead of a dead run - pinned by tests/unit/test_b10_manifest_abort_paths.py and mutants M11/M12, gate 15 cases, mutation 12/12 KILLED. B05 closed with two review rounds (a live P0 in the author's own fix), B08 level 2 closed with a byte-identical probe re-run plus an audit-hook tripwire (production catalog open count 0), and B09/B.AR closed with the read-only manifest run plus an independently reproduced identity/hash re-derivation - carrying an adjudicated OVERREACH on the manifest's own bounds",
+  "current_gate": "No author-owned gate remains open for phase B, and R3 is closed inside the isolated catalog. Every step is implemented, pushed, independently reviewed and disposed of. What remains is OUTSIDE this session's authority and is listed in failed_or_unknown: the whole-run abort paths that a missing file or a damaged row can still reach (registered, not fixed), the two scripts/ readers that no ratchet covers, the B.AR halves that still need writes (a cross-repo end-to-end call) or a cloud-side effect (hashing the dropbox sample), the coexistence of the four production roots WITH a fifth root in the production catalog (not verifiable without a 46.3 GiB copy or an approved production write), the two product boundaries R3 measured (F-BAR-10, F-BAR-11), and the residual risk that a size- and mtime-preserving write to the production catalog is invisible to a metadata-only observation",
   "pending_review": [
+    {
+      "gate": "B.VR-r3 (R3)",
+      "scope": "revenue-forecast 3825db2: the fifth root registered by CONFIG ONLY inside an isolated catalog + the query -> open -> consumer minimal read",
+      "status": "closed",
+      "verdict": "approve_with_findings",
+      "findings": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 3,
+        "P3": 3
+      },
+      "note": "the fourth independent session re-ran all three harness modes (main / --mutations / --verify), reproduced every recorded number, re-hashed the fixture files on disk to confirm the open leg really returned the bytes on disk, and re-confirmed the production triple and all three HEADs. C1-C4 and C6 confirmed, C5 partly. Its three P2s were all the author's: the deny claim was written wider than the evidence (the deny binds the resolver decision, while the byte primitive still serves that root's bytes - now MEASURED in deny.byte_entry_point and narrowed in the L04 table, plus registered as F-BAR-11); the authorisation basis existed only inside the artefact it authorised (now owner-scope-decisions-2026-09-18.md, and the author's own one-day date error 09-17 -> 09-18 is corrected); and the new evidence file announced two ledger edits in the completed voice before making them (all three ledgers are now actually edited). All six disposed of in evidence/b-vr-r3-disposition.md",
+      "record": "reviews/B.VR-r3.json",
+      "reviewer_self_reported_id": "independent read-only subagent (no id self-reported)"
+    },
     {
       "gate": "B.DR rev6",
       "scope": "B design v0.1.5",
@@ -300,14 +315,18 @@
   "authorization_needed": [
     "OWNER: whether to fix the registered whole-run abort paths (a missing file or a damaged row can still abort a whole normalization batch) - see findings F-B10R2-MISSINGFILE",
     "OWNER: whether the two scripts/ readers of the shared column should be converged, since no ratchet covers them",
-    "OWNER: the B.AR halves that need WRITES (a fifth root registration; a cross-repo end-to-end call) - not authorised in this run and therefore not done",
+    "OWNER: the remaining B.AR half that needs WRITES (a cross-repo end-to-end call: which exact read-only command(s) count) - the fifth-root half was DELIVERED on 2026-09-18 inside an isolated catalog after the owner chose that option, so no production write is needed for it; what is still unverifiable is the coexistence of the four production roots WITH a fifth root in the production catalog (needs a 46.3 GiB copy or an approved production write)",
+    "OWNER: whether to verify the three dropbox_stock sample bytes, given that reading a cloud placeholder HYDRATES it (a side effect on the owner's own files)",
+    "OWNER: whether the two product boundaries R3 measured should be fixed - F-BAR-10 (no activation snapshot => a v1 walk indexes .source.json sidecars as documents) and F-BAR-11 (a reusable_for_filing: false root is refused by the resolver's DECISION but its bytes are still served by read_verified_bytes, which gates on containment only)",
+    "OWNER: whether to spend the cost of strengthening the zero-write claim beyond metadata observation (a full-file sha256 of the 46.3 GiB production DB, or OS-level write auditing) - see risk-and-stop-rules.md section 7 (R6)",
     "OPERATOR: reviewer assignment records remain process evidence only (gate G6); the operator-held record is still outstanding",
     "NO OWNER RULING IS OUTSTANDING for phase B's code: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12, the G8 two-level decision and the read-only manifest were approved on 2026-09-13, and the adjudication of the A05 overreach was delegated to the authoring session on 2026-09-16"
   ],
   "gate_status": {
     "B.DR": "rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 implementation record (no design change); the ratchet table stays frozen (S-7)",
     "B.VR": "rev1 = rejected (2xP1/2xP2/3xP3); rev2/rev3/rev4 = accepted_with_findings and each round falsified one of the author's justification sentences, now single-sourced; B02 closed by the author's documented decision (no fifth prose-only round); B04 = accepted_with_findings (all six findings addressed); B05 = rejected (2xP1/5xP2/3xP3) with the P1s and P2s fixed and the residuals registered, then a verification round = rejected with a LIVE P0 in the author's own fix (the SQL filter ran before the Python guard), disposed of; B01/B03/B06/B07 = accepted_with_findings, all disposed of; B08 = accepted_with_findings (7 findings, disposed of) after a byte-identical probe re-run and an audit-hook tripwire; B10 = four rounds: accepted_with_findings (increment 1), REJECT (batches 1-2: a P0 that was the author's own misfiled crash path plus a false declaration the author's test had PINNED), REJECT (r2 dispositions: one live P2 of the same family), and finally APPROVE_WITH_FINDINGS (r3 dispositions) - all findings disposed of",
-    "B.AR": "EXECUTED and reviewed: the read-only manifest run (10 commands / 102 invocations) plus an independent identity/hash re-derivation from the originals (6/6 digests, 18/18 derived artifacts, 8/12 documents confirmed against the exchange registry snapshots). Its review returned APPROVE_WITH_FINDINGS with authorization OVERREACH: the executed set was not the manifest as written (an extra command, --limit 100 against <=50, 102 invocations against budget 25, 85 retries against the stop rule, and approval.by = null). The owner delegated the adjudication to the authoring session, which ratified the read-only reading, kept the overreach on the record, and turned the bounds into mechanical refusals (5/5 selftest) plus a machine-checkable compliance read. Unfinished by AUTHORIZATION, not by choice: a fifth root registration and a cross-repo end-to-end call both need writes; the cloud-synced sample was deliberately not hashed (reading a placeholder hydrates it)",
+    "R3": "DELIVERED 2026-09-18 (revenue-forecast 3825db2) and independently reviewed: the fifth root joins by CONFIG ONLY inside an isolated catalog (r4_fifth_root, kind directory + the registered sidecar_filing_v1 adapter + read_only + reusable_for_filing, priority 50; the scanner's own INSERT wrote the roots row with no product-code change). Measured: query 2 documents, resolve(mode=exact) reused_exact twice with capture_ready [true], read_verified_bytes verified twice (59 B, sha256 = the file on disk), query_filing_candidates 2 rows; unregistered adapter CFG-01 fail-closed, unknown root id refused on both branches, deny -> missing. Invariants 7/7, --verify 4/4, mutation 5/5 KILLED, local CI unit 799 / contract 1905 passed + 8 skipped. Review B.VR-r3 = approve_with_findings (0xP0/0xP1/3xP2/3xP3), all six disposed of. It is NOT a production registration: the production catalog was never written (49,677,344,768 B and its mtime_ns unchanged), so the four-real-roots-plus-fifth coexistence remains unverified. The two boundaries it measured are registered, not fixed: F-BAR-10 and F-BAR-11",
+    "B.AR": "EXECUTED and reviewed: the read-only manifest run (10 commands / 102 invocations) plus an independent identity/hash re-derivation from the originals (6/6 digests, 18/18 derived artifacts, 8/12 documents confirmed against the exchange registry snapshots). Its review returned APPROVE_WITH_FINDINGS with authorization OVERREACH: the executed set was not the manifest as written (an extra command, --limit 100 against <=50, 102 invocations against budget 25, 85 retries against the stop rule, and approval.by = null). The owner delegated the adjudication to the authoring session, which ratified the read-only reading, kept the overreach on the record, and turned the bounds into mechanical refusals (5/5 selftest) plus a machine-checkable compliance read. Unfinished by AUTHORIZATION, not by choice: the fifth-root half was later DELIVERED inside an isolated catalog (see R3 below, owner's choice of 2026-09-18); a cross-repo end-to-end call still needs an approved command; the cloud-synced sample was deliberately not hashed (reading a placeholder hydrates it)",
     "G7": "read-only manifest commands: APPROVED by the owner's in-session instruction, executed, and the over-budget/extra-command part ADJUDICATED (ratified with the violation on the record) after the independent review refused to treat it as compliant",
     "G8": "two levels, both EXERCISED: level 1 = a temp isolated catalog; level 2 = an isolated root referencing a REAL filing directory read-only, with 4,172,424 verified bytes, a tamper probe returning zero bytes, and before/after evidence that the real files and the production catalog metadata did not move. Residual risk stated by the review: a size- and mtime-preserving write to the production catalog would be invisible to a metadata-only rule",
     "B01": "implemented as 0e28d99 and REVIEWED (accepted_with_findings); dispositions in be2e4ed. The resolver calls policy._effective_reusable instead of keeping a kind-only copy, candidate selection requires membership (no empty-set escape), config admission refuses quoted booleans (CFG-08) and the declaration test normalises document_kind the way the classifier does. Production blast radius is none (every shipped root was already effectively reusable). Residual: the policy_2x copy of the rule cannot be removed (S-3 freezes the export path), so agreement is asserted by a case instead of guaranteed by one implementation - and the consumer-side hash that filing-fetch pins is now frozen in addition to the resolver-side one",
@@ -341,28 +360,31 @@
     "G5/G6/G7/G8 remain owner/operator items",
     "revenue-forecast dirty=0 is incomplete: three .tmp-zr408-unit* directories are unreadable (permission denied), so git cannot enumerate them",
     "test_dbx05_symlink_escape_rejected skips on this host (symlinks not supported), so the symlink-escape control did not run here",
-    "the current acceptance cases run on tmp fixtures; the real four-root and cloud-placeholder behaviour still needs the isolated copy (G8)"
+    "the current acceptance cases run on tmp fixtures; the real four-root and cloud-placeholder behaviour still needs the isolated copy (G8)",
+    "R3's product boundaries, registered and NOT fixed: F-BAR-10 (with no runtime_policy.json a root declared with the sidecar adapter is walked by the v1 path, which indexes .source.json sidecars as documents - measured in mutant M5; it does NOT establish the cause of the three .pdf.source documents in the production catalog, whose snapshot has v2_scan_shadow on) and F-BAR-11 (a reusable_for_filing: false root is refused by the resolver's decision - missing - but SourceResolver.read_verified_bytes still serves that root's bytes because it gates on containment only, resolver.py:2016-2041; measured, and consumer-side containment lives in filing-fetch validate_handle)",
+    "R3 does NOT cover the coexistence of the four production roots with a fifth root in the production catalog: the isolated catalog is empty by construction, so the four-root legs still rest on the earlier B.AR evidence, not on this run",
+    "R6 (registered 2026-09-18, risk-and-stop-rules.md section 7): every zero-write claim in this run is bounded to METADATA observation (size, mtime_ns, -wal/-shm, repo worktree, src tree fingerprint) - a write that preserves size and mtime is invisible to it, and this host offers no OS-level write observer"
   ],
-  "next_step": "Nothing in phase B is waiting on the authoring session. The registered follow-ups that need the OWNER's decision before any code moves: (1) the whole-run abort paths a missing file or a damaged row can still reach (the unsupported handler's IngestService.ingest, _atomic_write's mkdir, the success-path ingest / transaction block / two fetchall calls, and four in-package unguarded column parses in activation.py, assertion_service.py, remediation.py and scanner.py) - each would make a single bad row a per-document failure; (2) the two scripts/ readers of the shared column that no ratchet covers (legacy_observer.py, wu904_remediation_restore.py); (3) the B.AR halves that need writes (registering a fifth root, and a cross-repo end-to-end call); (4) whether the gate's syntactic ratchets should become a dataflow check, given the four measured bypass shapes recorded in GATE_BOUNDARIES. A further B10 increment requires no owner input but also no further value: the chain is single, declared and gated",
+  "next_step": "R3 is closed (fifth root inside an isolated catalog; revenue-forecast 3825db2). The registered follow-ups that need the OWNER's decision before anything moves: (1) the whole-run abort paths a missing file or a damaged row can still reach (the unsupported handler's IngestService.ingest, _atomic_write's mkdir, the success-path ingest / transaction block / two fetchall calls, and four in-package unguarded column parses in activation.py, assertion_service.py, remediation.py and scanner.py) - each would make a single bad row a per-document failure; (2) the two scripts/ readers of the shared column that no ratchet covers (legacy_observer.py, wu904_remediation_restore.py); (3) R4, the cross-repo end-to-end call (needs the exact read-only command(s) named); (4) R5, whether the three dropbox_stock sample bytes may be verified given that reading a placeholder hydrates it; (5) whether the two boundaries R3 measured (F-BAR-10, F-BAR-11) should be fixed; (6) whether the gate's syntactic ratchets should become a dataflow check, given the four measured bypass shapes recorded in GATE_BOUNDARIES; (7) R6, whether to strengthen the zero-write claim beyond metadata observation. A further B10 increment requires no owner input but also no further value: the chain is single, declared and gated",
   "inputs": {
     "note": "per-file versions matter: root-contract is v0.4.2 while operation-contract and identity-contract are v0.4.1, and owner-rulings was corrected in place; the A-side checkpoint records the per-file digests",
     "company-wiki": {
-      "head": "c4f5b8a7b727e3944da36b7e96b47f440ee787df",
+      "head": "8665c8c47c020cde7dcf683ee8e6389ead77f282",
       "dirty": 0
     },
     "revenue-forecast": {
-      "head": "11419b6fe80cc25a0b02e3fef8276c5df7d32d3a",
-      "dirty": 0
+      "head": "11402a862dc41f3d01153d4da4948dce1eca5889",
+      "dirty": 43
     },
     "filing-fetch": {
       "head": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
       "dirty": 0
     }
   },
-  "reviewed_commit": "11419b6fe80cc25a0b02e3fef8276c5df7d32d3a",
+  "reviewed_commit": "3825db2e5d5f911eb23bca7f21fc0d0f015afa84",
   "commit_anchor": {
-    "head": "11419b6fe80cc25a0b02e3fef8276c5df7d32d3a",
-    "index_tree": "e62cb165ec440b69f878caa53014274f626c156a",
+    "head": "11402a862dc41f3d01153d4da4948dce1eca5889",
+    "index_tree": "458dee5def0ffdf5328cbb70740c994509ac4bc0",
     "note": "anchor for the tree this checkpoint was generated from; the commit that publishes this file does not exist yet (that is what reviewed_commit names)"
   },
   "produced_files": {
@@ -371,8 +393,8 @@
       "size": 907
     },
     "b-ar-record.md": {
-      "sha256": "ec33059b216a3a65863c28c59948ab371c017f4f03af52975e61f19940bdb37d",
-      "size": 23033
+      "sha256": "930f323ce8f33339ff2be18e3fcc71141e91128baf204b20bc0d7e1b3e0d9ca2",
+      "size": 23615
     },
     "b-design.md": {
       "sha256": "c871ab0687d354771a9668cf0955569d0cf219b48925f64d30c0ddbe7dc92f41",
@@ -434,6 +456,18 @@
       "sha256": "75b028c851e73b3f6af497665b824a815ccc925185f6796cd7ca77757bc46953",
       "size": 8112
     },
+    "evidence/b-ar-fifth-root-isolated.json": {
+      "sha256": "8b35a30ae7b9c18c9fa15f8557e3c052af7dd55f44310a7c4bbfcb9fe81cba38",
+      "size": 76531
+    },
+    "evidence/b-ar-fifth-root-isolated.md": {
+      "sha256": "fa3d5d6bfd187bc671441abe6e73490b17f4cf195671098c41fedff7befd0d0c",
+      "size": 14265
+    },
+    "evidence/b-ar-fifth-root-mutations.json": {
+      "sha256": "5e2d7b7987541c978aa192e7cd7d6227ad6c6631ae62d96d88367a03cda87578",
+      "size": 6634
+    },
     "evidence/b-ar-identity-crosscheck.json": {
       "sha256": "23ffab67a1c0b1bcb757d1e480df7ef692842f1c07faeb272c7ec9a8b89360c6",
       "size": 12391
@@ -461,6 +495,10 @@
     "evidence/b-vr-fc1301-disposition.md": {
       "sha256": "9a81c26a49d3fbafc345ebda610716ecec9d2c62288ae9092f793311b492410a",
       "size": 6176
+    },
+    "evidence/b-vr-r3-disposition.md": {
+      "sha256": "b2999cc7ffec77b5a8a668baab41abbcfa45ef08e3ed62ad18169f814cfe30f8",
+      "size": 5954
     },
     "evidence/b01-fc1001-probe.json": {
       "sha256": "9deeb5256f8e7448676efa25435fef283795c39c48f166f361b9386874c4dd3e",
@@ -843,8 +881,8 @@
       "size": 43646
     },
     "evidence/b10-mutations.json": {
-      "sha256": "0ecb50cf67e52ca2264db24111d19190946ba898630c89d395cbd37802e63091",
-      "size": 7583
+      "sha256": "1a6621d0913c38cd660833be8c9a0b63e0c9bc61f9066ee2e54dc72f7be9f39e",
+      "size": 8274
     },
     "evidence/b10-p0-probe.txt": {
       "sha256": "ec8255b96ff22076f6b45b88a7e04beb1a3a1e8ada684a1dbaecd6c007b7c85d",
@@ -855,8 +893,8 @@
       "size": 16903
     },
     "evidence/b10_mutations.py": {
-      "sha256": "f86237ef6e9f75e01253d6f725703a67426caea79763ee24402fab68d3249616",
-      "size": 17580
+      "sha256": "4d2f8cbb01464f124974481a4f69d63a6a1ee22c85caa688fe540a2a8fe85713",
+      "size": 18811
     },
     "evidence/b10_p0_probe.py": {
       "sha256": "fd3b5d7795e9b33c6d6d997f6efc6cf9ddd26f486e16a2dff9b49a127d3b6aee",
@@ -923,8 +961,8 @@
       "size": 14273
     },
     "evidence/build_checkpoint.py": {
-      "sha256": "7a5cf80c45ab5d02d399f788a7dde487fcac7768782988130bec800860b9ca34",
-      "size": 51553
+      "sha256": "019aebe4539290b22807f9e90b106b3b00148edbde5f65779f7707878e4050ed",
+      "size": 59890
     },
     "evidence/choose_resolved_real_root.py": {
       "sha256": "3e27d6ebfda82e1594f872c602de854cd2ff4f5d5d6439b680a641a927ebc38b",
@@ -1010,9 +1048,29 @@
       "sha256": "e0ff7ecef7b57ecc966bf13cb797c38deb85ba68c0afbb6d26d52d0c3120bda2",
       "size": 3044
     },
+    "evidence/r2-ci-step1-unit.txt": {
+      "sha256": "d4204f6f414eb93d27e9042a3da8acd2899469d25af0e348a6b7afe990c2a27f",
+      "size": 5912
+    },
+    "evidence/r2-ci-step2-contract.txt": {
+      "sha256": "b72c083592eb36da56219828af6cfa7a397e71ce5fcaf8f9dd1b54ccb0fa7eb0",
+      "size": 17739
+    },
+    "evidence/r3-ci-step1-unit.txt": {
+      "sha256": "888ba257c715d3959242320e1c8a96b600385c90b99d5d8d8a9a6f3cb115cf2f",
+      "size": 6136
+    },
+    "evidence/r3-ci-step2-contract.txt": {
+      "sha256": "d1ac3c19636ed140775d10a8c9c3c23b04dd22338a53e62ff674a07006568613",
+      "size": 17936
+    },
     "evidence/run_a05_readonly_manifest.py": {
       "sha256": "77c0d67a95c7fff76e340be96ba7a53427bb0333ed39557661a1d1c8b111ac40",
       "size": 18949
+    },
+    "evidence/run_bar_fifth_root_isolated.py": {
+      "sha256": "ff7ed294bc96c9300d387d28f17520ee815401e402963c2a2429cd56d2361b6a",
+      "size": 54074
     },
     "evidence/show_fc1301_unregistered.py": {
       "sha256": "b1bf0768be8eb63e2e04a9ccb2c8ba1ea41fc61f0f567600609e175e5fbf36e7",
@@ -1043,8 +1101,8 @@
       "size": 12565
     },
     "findings.md": {
-      "sha256": "c657b4e4bb9bfc2e0cd3b48d3ee220d362ff02c46d88a03f3c432b2de05004fa",
-      "size": 134274
+      "sha256": "80fba4496be1fd6747e4b4cdd571d210e8e98d93096ebce42a8775d24da2b950",
+      "size": 138403
     },
     "operator-reviewer-assignment.md": {
       "sha256": "a9ce18a780bbafc7f0c897ea2abf1207176847bf2be6f2bc3bac51b4c3d86513",
@@ -1066,6 +1124,10 @@
       "sha256": "4d1b06e3deb26695cf4b85fb0b7aac4a5be0589c221ecdeb7a75269d2b9f0362",
       "size": 3558
     },
+    "owner-scope-decisions-2026-09-18.md": {
+      "sha256": "2e12c761ba1eb6aa1baf18ddcc23a8ebbb5253bcd44cd8b465e0df25b9ae575d",
+      "size": 4095
+    },
     "packages/b05-read-side-malformed-columns.md": {
       "sha256": "53ae92dd7f166bd92262128a8e0bcf44fdae4e55cccd8fe5d27023f8847546c4",
       "size": 8468
@@ -1083,12 +1145,12 @@
       "size": 4819
     },
     "progress.md": {
-      "sha256": "5a2df14fc82666d2bcaa6a063bc0a89a57782f848ddb7fe5e9e7003ef705cdec",
-      "size": 51155
+      "sha256": "bf03b73c825c560d49d8adb903c17cd7a36073dff2232d7ab4b45b8ccdcb08ed",
+      "size": 55470
     },
     "r4-final-status.md": {
-      "sha256": "34fb1f15fc2ff0faed525bc2125a9a987a421cd723dd6ecc56a93bd1ec67413f",
-      "size": 7593
+      "sha256": "21a6c0ee385da94082be58e594179513bc980b2018ac9b7bd2af7cd004502c7b",
+      "size": 8089
     },
     "reviews/B.DR-rev2.json": {
       "sha256": "a18a02500ac12d55cc019af69e000b01e47dd762fb966edc677eee02a6e2de9b",
@@ -1194,6 +1256,10 @@
       "sha256": "e2914b6b07ed90cf158745e9623a8f39197807f59ef975c51de36fd1b835e5b3",
       "size": 36256
     },
+    "reviews/B.VR-r3.json": {
+      "sha256": "96966b3cc45853f319dedecdea36fc5bc8a42b7ef7f020810cc56d8748a5806e",
+      "size": 27447
+    },
     "reviews/B.VR-zr903.json": {
       "sha256": "8d0b5c66f98f0db3f262bc814687f8fde6b4008df45b370a0ed9801f915bb809",
       "size": 47057
@@ -1203,8 +1269,8 @@
       "size": 46832
     },
     "risk-and-stop-rules.md": {
-      "sha256": "c6aab0d76c8c0ff946de655c9da09901d3cc898c1e2cdf2fac21c967cd6ab24c",
-      "size": 7165
+      "sha256": "4b1bea86eabb8eca8177f146662abf76d673a08fc4fb7ececd3942179c3d51c5",
+      "size": 9349
     },
     "task_plan.md": {
       "sha256": "e95978748b88ac16766df411c3d499f2c4907d4f9fc978900258d3ac4137cfa9",
@@ -1216,11 +1282,11 @@
     }
   },
   "produced_files_verification": {
-    "checked": 212,
+    "checked": 223,
     "source": "index",
-    "compared_revision": "e62cb165ec440b69f878caa53014274f626c156a",
-    "head_revision": "11419b6fe80cc25a0b02e3fef8276c5df7d32d3a",
-    "index_tree": "e62cb165ec440b69f878caa53014274f626c156a",
+    "compared_revision": "458dee5def0ffdf5328cbb70740c994509ac4bc0",
+    "head_revision": "11402a862dc41f3d01153d4da4948dce1eca5889",
+    "index_tree": "458dee5def0ffdf5328cbb70740c994509ac4bc0",
     "blob_mismatches": [],
     "all_match": true,
     "proves": "recorded digest == stored blob at the reported revision",
@@ -1230,8 +1296,8 @@
     ]
   },
   "produced_files_completeness": {
-    "files_on_disk": 212,
-    "files_listed": 212,
+    "files_on_disk": 223,
+    "files_listed": 223,
     "unlisted": [],
     "phantom": [],
     "excluded_by_design": [
@@ -1240,5 +1306,5 @@
     "note": "files_on_disk counts manifest-eligible files; checkpoint.json is excluded because a file cannot hash itself. This is a same-process comparison, so it cannot detect a file created after generation - --verify-only re-runs it, and that is where a late file shows up as `unlisted` (exactly what happened when B.DR-rev3 wrote its record).",
     "complete": true
   },
-  "generated_at_utc": "2026-09-17T23:01:06.526303+00:00"
+  "generated_at_utc": "2026-09-18T18:46:59.434942+00:00"
 }
