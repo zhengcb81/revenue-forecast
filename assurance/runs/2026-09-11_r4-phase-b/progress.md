@@ -1,5 +1,18 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-18（第二批）— **产品侧修复批次**（owner「1 修 / 4 修」）：F-BAR-10 / F-BAR-11 / F-BAR-12 / F-BAR-14 + `F-B10R2` 家族站点 1–4 + `scripts/` 两处读取者
+
+- **F-BAR-10**：`scanner._scan_catalog_impl` 改为 `use_adapter = v2_scan_shadow or root.adapter_id is not None`（**声明即指令**；快照只继续管**没声明 adapter** 的根），并在 `ScanReport` 新增 `strategy`（root_id → `adapter`/`legacy`）让分派**可观察**。
+- **F-BAR-11**：`SourceResolver.read_verified_bytes` 在包含性检查之后加**复用根判定**——用**同一个** `policy._effective_reusable`（决定路径与跨仓 policy export 用的那个），拒绝用**已注册**的 `policy_denied`（`observability.py:51`）；新增 `_owning_root()`（包含性最长匹配）。**不新增词表项、不 bump 版本**。
+- **F-BAR-12**：envelope **加性**新增 `bundle_valid_handle_count` / `bundle_invalid_roles` / `bundle_usable`（由 bundle 内容派生）；`envelope_schema_version` 仍 **1.0** ⇒ N-1 消费者不受影响。
+- **F-BAR-14（本批发现的新缺陷）**：适配器 `_normalized_from_sidecar` 改为**声明键透传 + 规范化键覆盖**，修掉 `form_type` / `company_name` / `source_title` / 旧拼写 `filing_date` 丢失与 `fiscal_year` 被 `str()`（后者会让 `query_filing_candidates(fiscal_year=…)` 的 SQL 比类型失败而**查不到**）；同时**排除 legacy 容器键** `acquisition`/`dayu_meta`（FC-502 契约：适配器不得复述 legacy 容器）。
+- **`scripts/` 两处读取者**：`legacy_observer.py:96`、`wu904_remediation_restore.py:65` 收敛到 `store.metadata_object`；棘轮**从"钉住 2 个"升级为硬零**（`test_b10_scripts_have_no_direct_reader`），`GATE_BOUNDARIES` 的对应登记改写为"已收口"。
+- **`F-B10R2` 家族站点 1–4**：`activation.rollback_activation`（`assertion_ids_json` 不可读 ⇒ 具名 `ActivationError`）、`assertion_service.verify_assertion`（`evidence_json` ⇒ 具名 `ValueError`）、`remediation.approve_proposal`（`proposal_json` ⇒ 具名 `RemediationError`）、`scanner._observe_file`（size+mtime 捷径上的 `manifest_json` ⇒ **降级为重新哈希、批次不停、坏行自愈**）。
+- **变异 8/8 KILLED**（`evidence/barfix-mutations.json`；`scripts` 另有 3 个变异见 `evidence/barfix-scripts-readers.json`）。**两处我自己的变异写作错误已登记**：`FB10R2-scanner`/`FB10R2-activation` 第一版是**等价变异**（`metadata_object` 同样永不抛；另一处只禁用了别的检查）⇒ 存活；改成**忠实回退被修那一行**后被杀。**教训：变异必须忠实回退，存活≠测试有洞。**
+- **两处既有用例的期望更新（不是放宽）**：① `test_r4b02_rejected_copy_stays_reclaimable_next_to_healthy_copies`：`groups 2→1`、`reclaimable 3→2`——旧"第二组"是**侧车自己被当文档**形成的（正是 F-BAR-10 修掉的假象；同一夹具两种配置实测得出），意图断言原样保留并**新增**"侧车不得再是文档"；② `test_gp002_scan_v2_wiring` 的两处"stay v1"改用**无 adapter 的根**（快照现在只管这类根），并**新增**一例钉住"声明 adapter 的根在 flag=false 时仍走适配器"。
+- **本地 CI 抓到的三处红，全部修掉**：FC-502（我的透传把 legacy 容器键也带出来了 ⇒ 加排除）、FC-1307 宿主假设门（我在新用例里硬写了 `C:\nowhere\…` ⇒ 改成 `tmp_path`）、以及我自己用 PowerShell 写文件带进 **BOM** 导致"无法解析"（已清）。
+- **剩余（未做）**：`F-B10R2` 家族的 **normalize 侧**站点（unsupported handler 里的 `IngestService.ingest`、成功路径 ingest/事务块/两处 `fetchall`、`_atomic_write` 的 `mkdir`）——属**行为改动**，需行为级探针 + 变异 + 独立复审。记录 [evidence/barfix-product-fixes.md](evidence/barfix-product-fixes.md)。
+
 ## 2026-09-18 — **R4 交付：跨仓端到端只读（filing-fetch 真实入口）；R5 交付：`dropbox_stock` 3 份字节核验（自纠一处仪器缺陷）**
 
 - **owner 的选择**（同一次会话，[owner-scope-decisions-2026-09-18.md](owner-scope-decisions-2026-09-18.md) §6）：R4 = **先读码报告写面，再跑 `fetch_filing.py --no-pause-worker`**；R5 = **接受水合**，直接核验 3 份字节。

@@ -1,0 +1,251 @@
+{
+  "artifact": "barfix-mutations",
+  "purpose": "prove each fix is load-bearing: reverting it in a TEMP COPY must fail the test that claims to cover it",
+  "mutants": [
+    {
+      "id": "F-BAR-10",
+      "reverts": "an adapter-declared root is scanned through its adapter regardless of the activation snapshot",
+      "file": "src/company_wiki/source_catalog/scanner.py",
+      "test": "tests/contract/test_r4bar10_adapter_declared_root.py",
+      "baseline": {
+        "exit_code": 0,
+        "passed": true,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "",
+          "tests\\contract\\test_r4bar10_adapter_declared_root.py ..                  [100%]",
+          "",
+          "============================== 2 passed in 0.62s =============================="
+        ]
+      },
+      "mutated": {
+        "exit_code": 1,
+        "passed": false,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\barfix-mutations\\F-BAR-10\\tests\\contract\\test_r4bar10_adapter_declared_root.py:101: AssertionError: (('r4bar10_root', 'legacy'),)",
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_r4bar10_adapter_declared_root.py::test_adapter_declared_root_dispatches_without_a_snapshot",
+          "========================= 1 failed, 1 passed in 0.65s ========================="
+        ]
+      },
+      "killed": true,
+      "killed_by": "pytest assertion"
+    },
+    {
+      "id": "F-BAR-11",
+      "reverts": "the byte entry point refuses a root whose policy does not authorize reuse (F-BAR-11)",
+      "file": "src/company_wiki/source_catalog/resolver.py",
+      "test": "tests/contract/test_r4bar11_deny_binds_the_byte_entry.py",
+      "baseline": {
+        "exit_code": 0,
+        "passed": true,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "",
+          "tests\\contract\\test_r4bar11_deny_binds_the_byte_entry.py ....            [100%]",
+          "",
+          "============================== 4 passed in 0.73s =============================="
+        ]
+      },
+      "mutated": {
+        "exit_code": 1,
+        "passed": false,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\barfix-mutations\\F-BAR-11\\tests\\contract\\test_r4bar11_deny_binds_the_byte_entry.py:128: AssertionError: assert True is False",
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_r4bar11_deny_binds_the_byte_entry.py::test_denied_root_bytes_are_refused",
+          "========================= 1 failed, 3 passed in 0.81s ========================="
+        ]
+      },
+      "killed": true,
+      "killed_by": "pytest assertion"
+    },
+    {
+      "id": "F-BAR-12",
+      "reverts": "the envelope derives `bundle_usable` from the bundle's own valid handles (F-BAR-12)",
+      "file": "src/company_wiki/source_catalog/resolver.py",
+      "test": "tests/contract/test_r4bar12_bundle_usability.py",
+      "baseline": {
+        "exit_code": 0,
+        "passed": true,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "",
+          "tests\\contract\\test_r4bar12_bundle_usability.py ....                     [100%]",
+          "",
+          "============================== 4 passed in 0.42s =============================="
+        ]
+      },
+      "mutated": {
+        "exit_code": 1,
+        "passed": false,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\barfix-mutations\\F-BAR-12\\tests\\contract\\test_r4bar12_bundle_usability.py:106: assert True is False",
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_r4bar12_bundle_usability.py::test_all_invalid_artifacts_are_reported_as_not_usable",
+          "========================= 1 failed, 3 passed in 0.42s ========================="
+        ]
+      },
+      "killed": true,
+      "killed_by": "pytest assertion"
+    },
+    {
+      "id": "F-BAR-14",
+      "reverts": "declared sidecar keys pass through into the acquisition block (F-BAR-14)",
+      "file": "src/company_wiki/source_catalog/adapters/sidecar.py",
+      "test": "tests/contract/test_r4bar14_adapter_metadata_contract.py",
+      "baseline": {
+        "exit_code": 0,
+        "passed": true,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "",
+          "tests\\contract\\test_r4bar14_adapter_metadata_contract.py ..              [100%]",
+          "",
+          "============================== 2 passed in 0.58s =============================="
+        ]
+      },
+      "mutated": {
+        "exit_code": 1,
+        "passed": false,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\barfix-mutations\\F-BAR-14\\tests\\contract\\test_r4bar14_adapter_metadata_contract.py:90: AssertionError: ('source_title', None)",
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_r4bar14_adapter_metadata_contract.py::test_declared_keys_survive_in_the_acquisition_block",
+          "========================= 1 failed, 1 passed in 0.60s ========================="
+        ]
+      },
+      "killed": true,
+      "killed_by": "pytest assertion"
+    },
+    {
+      "id": "FB10R2-scanner",
+      "reverts": "the scan's size+mtime shortcut treats an UNREADABLE manifest as 'not a reuse candidate' instead of letting the bare parse abort the scan (F-B10R2 family, site 4)",
+      "file": "src/company_wiki/source_catalog/scanner.py",
+      "test": "tests/contract/test_fb10r2_unguarded_column_parses.py",
+      "baseline": {
+        "exit_code": 0,
+        "passed": true,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "",
+          "tests\\contract\\test_fb10r2_unguarded_column_parses.py ....               [100%]",
+          "",
+          "============================== 4 passed in 0.62s =============================="
+        ]
+      },
+      "mutated": {
+        "exit_code": 1,
+        "passed": false,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "C:\\Miniconda\\Lib\\json\\decoder.py:361: json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 23 (char 22)",
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_fb10r2_unguarded_column_parses.py::test_scan_survives_a_damaged_manifest_and_repairs_it",
+          "========================= 1 failed, 3 passed in 0.63s ========================="
+        ]
+      },
+      "killed": true,
+      "killed_by": "pytest assertion"
+    },
+    {
+      "id": "FB10R2-activation",
+      "reverts": "an unreadable assertion list refuses the rollback BY NAME instead of letting the parse error escape (F-B10R2 family, site 1)",
+      "file": "src/company_wiki/source_catalog/activation.py",
+      "test": "tests/contract/test_fb10r2_unguarded_column_parses.py",
+      "baseline": {
+        "exit_code": 0,
+        "passed": true,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "",
+          "tests\\contract\\test_fb10r2_unguarded_column_parses.py ....               [100%]",
+          "",
+          "============================== 4 passed in 0.68s =============================="
+        ]
+      },
+      "mutated": {
+        "exit_code": 1,
+        "passed": false,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "C:\\Miniconda\\Lib\\json\\decoder.py:361: json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 23 (char 22)",
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_fb10r2_unguarded_column_parses.py::test_rollback_refuses_by_name_on_an_unreadable_assertion_list",
+          "========================= 1 failed, 3 passed in 0.66s ========================="
+        ]
+      },
+      "killed": true,
+      "killed_by": "pytest assertion"
+    },
+    {
+      "id": "FB10R2-remediation",
+      "reverts": "an unreadable proposal refuses the approval BY NAME instead of a bare JSONDecodeError (F-B10R2 family, site 3)",
+      "file": "src/company_wiki/source_catalog/remediation.py",
+      "test": "tests/contract/test_fb10r2_unguarded_column_parses.py",
+      "baseline": {
+        "exit_code": 0,
+        "passed": true,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "",
+          "tests\\contract\\test_fb10r2_unguarded_column_parses.py ....               [100%]",
+          "",
+          "============================== 4 passed in 0.64s =============================="
+        ]
+      },
+      "mutated": {
+        "exit_code": 1,
+        "passed": false,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\barfix-mutations\\FB10R2-remediation\\src\\company_wiki\\source_catalog\\remediation.py:154: NameError: name 'metadata_object' is not defined",
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_fb10r2_unguarded_column_parses.py::test_approve_proposal_refuses_by_name_on_an_unreadable_proposal",
+          "========================= 1 failed, 3 passed in 0.68s ========================="
+        ]
+      },
+      "killed": true,
+      "killed_by": "pytest assertion"
+    },
+    {
+      "id": "FB10R2-assertion",
+      "reverts": "unreadable evidence refuses by name instead of a bare JSONDecodeError (F-B10R2 family, site 2)",
+      "file": "src/company_wiki/source_catalog/assertion_service.py",
+      "test": "tests/contract/test_fb10r2_unguarded_column_parses.py",
+      "baseline": {
+        "exit_code": 0,
+        "passed": true,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "",
+          "tests\\contract\\test_fb10r2_unguarded_column_parses.py ....               [100%]",
+          "",
+          "============================== 4 passed in 0.64s =============================="
+        ]
+      },
+      "mutated": {
+        "exit_code": 1,
+        "passed": false,
+        "invalid_mutant_syntax": false,
+        "tail": [
+          "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\barfix-mutations\\FB10R2-assertion\\tests\\contract\\test_fb10r2_unguarded_column_parses.py:163: AssertionError: Expecting ',' delimiter: line 1 column 23 (char 22)",
+          "=========================== short test summary info ===========================",
+          "FAILED tests/contract/test_fb10r2_unguarded_column_parses.py::test_verify_refuses_by_name_on_unreadable_evidence",
+          "========================= 1 failed, 3 passed in 0.63s ========================="
+        ]
+      },
+      "killed": true,
+      "killed_by": "pytest assertion"
+    }
+  ],
+  "repository_untouched": {
+    "src_fingerprint_identical": true,
+    "git_status_identical": true
+  },
+  "ran_at_utc": "2026-09-18T20:30:54.071503+00:00"
+}

@@ -23,6 +23,25 @@
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
+## 产品侧修复批次（owner 2026-09-18 指令「1 修 / 4 修」，**进行中**）
+
+- **已交付五项 + 一项新缺陷**（记录 [evidence/barfix-product-fixes.md](evidence/barfix-product-fixes.md)，变异 **8/8 KILLED**，`barfix-mutations.json`）：
+  **F-BAR-10**（声明 adapter 的根不再被 v1 遍历；`use_adapter = v2_scan_shadow or root.adapter_id is not None`；
+  `ScanReport.strategy` 让分派**可观察**）、**F-BAR-11**（字节入口按**同一个** `_effective_reusable` 复用策略放行/拒绝，
+  拒绝用**已注册**的 `policy_denied`）、**F-BAR-12**（加性 `bundle_valid_handle_count`/`bundle_invalid_roles`/`bundle_usable`，
+  schema 仍 1.0）、**`scripts/` 两处读取者收敛 + 棘轮升级为硬零**、**`F-B10R2` 家族站点 1–4**
+  （activation / assertion_service / remediation 三处**具名拒绝**，scanner 的 size+mtime 捷径**降级为重新哈希、自愈且不中止批次**）。
+- **`F-BAR-14`（本批发现的新缺陷，已修）**：适配器 `_normalized_from_sidecar` 只映射固定子集，而旧 v1 路径把侧车**整块**写进
+  `acquisition` ⇒ 走适配器的根**丢字段**：`form_type`、`company_name`、`source_title`、旧拼写 `filing_date`，
+  且 `fiscal_year` 被 `str()` 化（**SQL `json_extract(...) = <int>` 比类型 ⇒ 过滤查不到**）。改为**声明键透传 + 规范化键覆盖**。
+  **暴露路径**：正是 F-BAR-10 让更多根走适配器路径时被既有 7 个契约用例逼出来的 —— 顺序不能反。
+- **两处我自己的变异写作错误（登记）**：`FB10R2-scanner`/`FB10R2-activation` 的第一版是**等价变异**
+  （`metadata_object` 同样永不抛；另一处只禁用了"不是 list"的检查），因此**存活**；改成**忠实回退被修那一行**后被杀。
+  **教训**：变异必须忠实回退，存活≠测试有洞。
+- **`F-B10R2` 剩余站点（未做）**：`normalize_catalog` 的 unsupported handler 里的 `IngestService.ingest`（主文件缺失 ⇒
+  `SourceManifestMismatchError` 逃出、**饿死后面的文档**）、成功路径的 `ingest`/事务块/两处 `fetchall`、
+  `_atomic_write` 的 `mkdir`。这些是**行为改动**，需行为级探针 + 变异 + 独立复审。
+
 ## R4：跨仓端到端只读（filing-fetch 真实入口）+ R5：`dropbox_stock` 3 份字节核验（2026-09-18）
 
 - **R4 达成**（[evidence/b-ar-cross-repo-reuse.md](evidence/b-ar-cross-repo-reuse.md)）：走**真实消费者入口** `filing-fetch/scripts/fetch_filing.py --no-pause-worker`（**无** `--allow-download` ⇒ `action=resolve`）。L1/L2：exit 0、`capture_ready`、canonical = `companies\阿里巴巴－Ｗ\…\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf`、`content_sha256 = e39fbf9c…`（= B08 第②级从真实字节核出的那一份）、`4,172,424 B`；Wiki 侧 `outcome = reused_existing`、`qualification.label = verified_input`、`policy_hash = c773099b…`（与 A06-2 同一值）、`downloads = 0`、`download_events = 0`。控制组：FY2019 → exit 2 `not_found`；未知公司 → exit 2 `identity_error`（**在解析之前** fail-closed）。**8/8 不变量**：生产主库 `49,677,344,768 B`/mtime 未变、`-wal` 未变、无 `filing_fetch_pause.*`、`companies` 33,122 文件摘要未变、三仓与 `src` 未变。catalog 目录 12,476 条目里**恰好 1 条**变化（`catalog.sqlite3-shm` 同大小的 mtime 推进）——**只登记不归因**。
