@@ -100,9 +100,10 @@ manifest 文件自身的状态字段写的是 `NOT APPROVED - awaiting owner con
 | 从**原文**重核 **hash** | **达成**（有界样本）：6/6 摘要相符（catalog / 派生产物 / `document_id` 内嵌 sha 三处一致），另 8 个未哈希候选的产物**未**核验 | 样本扩大 + 覆盖提前 return 的那一批（工具缺陷，见 §3） |
 | 从原文重核**身份** | **未达成**：sidecar 与 catalog 的 acquisition **同源**（`B-VR-BAR-04`）；dayu 3 份没做 | 需要**非 catalog 来源**的身份基准（如 SEC/HKEX 侧或 `security_master` 独立档） |
 | **不改用户原文件** | **达成**：全部动作只读；未执行写/网络命令；A05-3 的实现虽可写但实测未写（主库/`-wal` 未变） | — |
-| 真实**四 root** | **部分**：4 个 root 各有候选（39/19/4/4），其中 dropbox 的 4 份是 **sidecar 文档**；核验只在 `company_raw` + `dayu_portfolio` 上完成 | `dropbox_stock` 未核验（F-BAR-4） |
+| 真实**四 root** | **部分（2026-09-18 起 dropbox 部分核验）**：4 个 root 各有候选（39/19/4/4），其中 dropbox 的 4 份是 **sidecar 文档**；`company_raw` + `dayu_portfolio` 已核验；`dropbox_stock` 的 3 份抽样**已核验 3/3**（水合副作用由 owner 接受；路径取自 A05 已批准输出，**不新读生产**） | dropbox 的真实年报 PDF（非侧车）未核验；F-BAR-1 的影响面未量化（F-BAR-4 的能力边界已解除，见 [evidence/b-ar-dropbox-bytes.md](evidence/b-ar-dropbox-bytes.md)） |
 | **第五 root** | **达成（隔离副本内，2026-09-18）**：新 id `r4_fifth_root`（`directory` + `sidecar_filing_v1` + 只读 + 可复用，priority 50）**只靠配置**加入隔离 catalog；`roots` 行由未改动的 scanner 写出；`query` 2 份、`resolve` 两次 `reused_exact`、`read_verified_bytes` 两次 `verified`、`query_filing_candidates` 2 行；未知适配器 CFG-01、未注册 root id 两分支被拒、deny → `missing`；**7/7 不变量** + 变异 **5/5 KILLED** | **生产 catalog 内的第五根注册仍未做**（= 写 46.3 GiB 生产库，未授权）："生产四根 + 第五根**共存**"这一层因此仍未验证。见 [evidence/b-ar-fifth-root-isolated.md](evidence/b-ar-fifth-root-isolated.md) |
-| 端到端（filing/revenue 真实入口） | **未做**（属 L11/B10 范围） | 跨仓入口调用 |
+| 端到端（filing/revenue 真实入口） | **达成（消费者链路，只读，2026-09-18）**：`filing-fetch/scripts/fetch_filing.py --no-pause-worker`（无 `--allow-download`）→ `identify` + `resolve` 两次子进程调用、**0 次下载**；L1/L2 `capture_ready`、canonical = 阿里年报、摘要 = B08 第②级独立核出的 `e39fbf9c…`、`4,172,424 B`；控制组 FY2019 `not_found`、未知公司 `identity_error` | **revenue-forecast 侧的真实入口未调用**（其 skill 入口不属于"复用读取"链路）；见 [evidence/b-ar-cross-repo-reuse.md](evidence/b-ar-cross-repo-reuse.md) |
+| `dropbox_stock` 的 3 份抽样 | **已核验（3/3，2026-09-18）**：3 份都是 `*.source.json` 侧车被当 `annual_report` 文档，字节 543/567/567，**摘要与大小全相符**。⚠️ **数据局部性不可判定**：3 份读取前后**都仍是云文件**（`fsutil` 标签 `0x9000601a`），故只主张"字节与摘要相符"，不主张水合发生或未发生 | 未量化 F-BAR-1 影响面；见 [evidence/b-ar-dropbox-bytes.md](evidence/b-ar-dropbox-bytes.md) |
 | **授权合规** | **未达成**：`B.VR-bar` 判 `OVERREACH`（§0.1） | **owner 表态**（§8） |
 
 **结论**：hash 腿的独立性**已交付**；**身份腿的独立性未交付**；"四 root + 第五 root 端到端"只到部分；**且本次执行越出 manifest 自身边界**。因此 **B.AR 目前不能记为"通过"**。

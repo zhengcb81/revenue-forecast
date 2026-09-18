@@ -63,3 +63,14 @@
   **我写错了一天**，已更正为 `2026-09-18`。
 - 复跑：`evidence/run_bar_fifth_root_isolated.py`（主跑 / `--mutations` / `--verify`），
   命令与输出见 [evidence/b-ar-fifth-root-isolated.md](evidence/b-ar-fifth-root-isolated.md) §1。
+
+## 6. R4 与 R5 的选择（同一次会话，同日）
+
+| 问题 | owner 的选择 | 我的落地 |
+|---|---|---|
+| **R4**：跨仓端到端（只读）怎么做？ | **A. 跑 `fetch_filing.py --no-pause-worker`**，但**先把该路径的写面逐条查清并报告** | 先读码出 §2 的写面表（worker 暂停文件 / binding 临时文件 / 下载网络 / 身份缓存写 / journal 追加**都不在复用路径上**；只有产品 store 打开时的进程级副作用会触及，与已批的只读 manifest 同类），再跑四条腿 → [evidence/b-ar-cross-repo-reuse.md](evidence/b-ar-cross-repo-reuse.md) |
+| **R5**：`dropbox_stock` 3 份怎么核？ | **B. 接受水合，直接核验字节** | 用三仪器（Python / PowerShell / `fsutil`）核了 3/3 摘要，并**自纠**了我自己 harness 的仪器缺陷 → [evidence/b-ar-dropbox-bytes.md](evidence/b-ar-dropbox-bytes.md) |
+
+**这两项授权仍然不含**：任何生产 catalog 写入、任何下载/网络、worker 的启停、以及把隔离副本扩成
+46.3 GiB 的生产副本。"水合"这一项**只针对 R5 的这 3 个文件**，不构成对 `dropbox_stock` 其余内容
+（例如它们的真实年报 PDF）的读取授权。

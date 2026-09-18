@@ -37,11 +37,11 @@
 
 ## 4. 边界与残留（不得含糊）
 
-1. **未获授权的写动作**：B.AR 的第五 root **生产**注册（= 写 46.3 GiB 生产 catalog）、跨仓端到端入口调用、`dropbox_stock` 3 份字节核验（读云目录可能水合）、扩大抽样 —— **一律未做**。**其中第五 root 已在 2026-09-18 以"隔离副本"方式交付**（owner 选择；[owner-scope-decisions-2026-09-18.md](owner-scope-decisions-2026-09-18.md)、[evidence/b-ar-fifth-root-isolated.md](evidence/b-ar-fifth-root-isolated.md)）：配置注册 + `query→open→consumer` 最小读取全部跑通、7/7 不变量、变异 5/5 KILLED、独立复审 `B.VR-r3` = `approve_with_findings`（6 条全处置）；**生产四根与第五根共存**仍未验证。
+1. **未获授权的写动作**：B.AR 的第五 root **生产**注册（= 写 46.3 GiB 生产 catalog）、跨仓端到端入口调用、`dropbox_stock` 3 份字节核验（读云目录可能水合）、扩大抽样 —— **原样未做**。**其中三项已在 2026-09-18 按 owner 的逐项选择交付**（[owner-scope-decisions-2026-09-18.md](owner-scope-decisions-2026-09-18.md)）：第五 root 以**隔离副本**方式交付、跨仓端到端以 `filing-fetch` 真实入口**只读**跑通、`dropbox_stock` 3 份在水合被接受的前提下**核验 3/3**；**生产四根与第五根共存**仍未验证，**扩大抽样**仍未做。
 2. **`F-B10R2-MISSINGFILE`**：主文件缺失仍会中止整轮 normalize（**既有**、非本次引起）；影响面**未量化**；需 owner 决定是否立项。
 3. **`scripts/` 两处直读**（`legacy_observer.py:96`、`wu904_remediation_restore.py:65`）不受任何棘轮覆盖。
 4. **零副作用主张的残余风险**（复审明示）：生产 catalog 只能 `stat`，故"大小+mtime 不变的内容写入"对工具与复审**都不可见**。
-5. **B.AR 抽样仅 12 份**、`dropbox_stock` 3 份未核验。
+5. **B.AR 抽样仅 12 份**（0.28%）；`dropbox_stock` 的 3 份抽样**已核验（3/3，2026-09-18）**，但其**真实年报 PDF 未核验**，且云文件的**数据局部性在本机不可判定**（[evidence/b-ar-dropbox-bytes.md](evidence/b-ar-dropbox-bytes.md)）。
 
 ## 5. 定稿结论
 

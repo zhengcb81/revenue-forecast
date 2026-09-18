@@ -153,71 +153,121 @@ def commit_anchor() -> dict:
 LEDGER = {
     "run_id": "2026-09-11_r4-phase-b",
     "phase": ("B (position-transparent index and read-only access) - B01-B10 IMPLEMENTED, PUSHED, "
-              "REVIEWED AND DISPOSED OF, plus the first of the registered residuals (R3, the fifth "
-              "root, delivered 2026-09-18 inside an isolated catalog). B05, B08 (G8 level 2), "
-              "B09/B.AR, B10 and R3 all closed; the only open items are registered follow-ups that "
-              "need the owner's go-ahead (see failed_or_unknown)"),
-    "step": ("R3 (fifth root by CONFIG ONLY, in an isolated catalog) closed on 2026-09-18; the "
-             "preceding step B10 (single read chain) closed on 2026-09-17 after four review rounds: "
-             "increment 1 (registry + v1 adapters + gate) = accepted_with_findings; batches 1-2 "
-             "(seven readers converged, metadata_state added) = REJECT then disposed; the r2 "
-             "dispositions = REJECT then disposed; and the final verification = APPROVE_WITH_FINDINGS, "
-             "whose one live P2 (the MAIN-path manifest parse) and four evidence problems are disposed "
-             "of in company-wiki c4f5b8a / revenue-forecast 65cc18d. The chain now has ONE parse "
-             "implementation (store.metadata_state / metadata_object), one declared non-chain reader "
-             "(section_query, whose contract is a named error), two count-based ratchets "
-             "(CONFIRMED_DIRECT_READERS = 1 entry; COLUMN_VALUE_HANDOFFS = 12 scopes / 15 sites) plus "
-             "a hard zero for the rest of the product package, and measured gate boundaries written "
-             "into the product"),
+              "REVIEWED AND DISPOSED OF, plus all four registered residuals R3 (fifth root inside "
+              "an isolated catalog), R4 (cross-repo reuse through the filing-fetch entry point, "
+              "read-only), R5 (the three dropbox_stock bytes) and R6 (the residual-risk register "
+              "entry). B05, B08 (G8 level 2), B09/B.AR, B10, R3, R4, R5 and R6 are all closed; the "
+              "only open items need the owner's go-ahead (see failed_or_unknown)"),
+    "step": ("R4 (cross-repo end-to-end reuse, read-only) and R5 (dropbox_stock byte "
+             "verification) closed on 2026-09-18, after R3 (fifth root by CONFIG ONLY inside an "
+             "isolated catalog) earlier the same day; the preceding step B10 (single read chain) "
+             "closed on 2026-09-17 after four review rounds: increment 1 (registry + v1 adapters "
+             "+ gate) = accepted_with_findings; batches 1-2 (seven readers converged, "
+             "metadata_state added) = REJECT then disposed; the r2 dispositions = REJECT then "
+             "disposed; and the final verification = APPROVE_WITH_FINDINGS, whose one live P2 "
+             "(the MAIN-path manifest parse) and four evidence problems are disposed of in "
+             "company-wiki c4f5b8a / revenue-forecast 65cc18d. The chain now has ONE parse "
+             "implementation (store.metadata_state / metadata_object), one declared non-chain "
+             "reader (section_query, whose contract is a named error), two count-based ratchets "
+             "(CONFIRMED_DIRECT_READERS = 1 entry; COLUMN_VALUE_HANDOFFS = 12 scopes / 15 sites) "
+             "plus a hard zero for the rest of the product package, and measured gate boundaries "
+             "written into the product"),
     "last_completed_step": (
-        "R3 (revenue-forecast 3825db2, 2026-09-18) - the B.AR residual 'register a fifth root' is "
-        "delivered INSIDE an isolated catalog (design gate G8), which is what the owner chose on "
-        "2026-09-18 (owner-scope-decisions-2026-09-18.md: option A = isolated copy, and the fifth "
-        "root takes the future_lake placeholder SHAPE). The fifth root is NOT future_lake: that id is "
-        "already the FOURTH root (ZR-409/EX-08 fixture, future_lake/README.md:1), so the new root is "
-        "r4_fifth_root (kind directory + registered sidecar_filing_v1 + read_only + "
-        "reusable_for_filing, priority 50). Measured: the scanner's own INSERT wrote the roots row "
-        "(scanner.py:847-854) with no product-code change (company-wiki/src tree fingerprint of 143 "
-        "files unchanged; all three repo HEADs unchanged); query listed the two fixture documents; "
-        "resolve(mode=exact) returned reused_exact twice with capture_ready=[true]; "
-        "read_verified_bytes returned verified twice (59 B, sha256 equal to the file on disk); "
-        "query_filing_candidates returned 2 rows. Refusals: an unregistered adapter_id fails closed "
-        "at config load (CatalogConfigError CFG-01); an unknown root id is refused on BOTH branches "
-        "(empty selection, and the dedicated unknown-root_ids branch reached with a mixed --root-id "
-        "set, with scan_runs still 1 so the valid root was not scanned as a side effect); a root "
-        "declared reusable_for_filing: false resolves to missing. Invariants 7/7 (production catalog "
-        "49,677,344,768 B and its mtime_ns, -wal and -shm unchanged; three repos unchanged; product "
-        "source unchanged) and --verify 4/4; mutation matrix 5/5 KILLED; local CI unit 799 passed and "
-        "contract 1905 passed / 8 skipped. Independent review B.VR-r3 = approve_with_findings "
-        "(0xP0/0xP1/3xP2/3xP3), all six disposed of in evidence/b-vr-r3-disposition.md; it re-ran all "
-        "three harness modes, reproduced every recorded number and re-hashed the files on disk. Two "
-        "product boundaries registered rather than fixed: F-BAR-10 (without an activation snapshot a "
-        "v1 walk indexes .source.json sidecars as documents) and F-BAR-11 (the deny a root can carry "
-        "binds the resolver DECISION; the byte primitive gates on containment only and still serves "
-        "that root's bytes - now measured, not implied). Earlier: B10 dispositions (c4f5b8a / "
-        "65cc18d) routed the main-path manifest parse in normalize_catalog AND "
-        "backfill_text_fingerprints through a new never-raising _manifest_from_column(), so a damaged "
-        "manifest column is a per-document failure instead of a dead run - pinned by "
-        "tests/unit/test_b10_manifest_abort_paths.py and mutants M11/M12, gate 15 cases, mutation "
-        "12/12 KILLED. B05 closed with two review rounds (a live P0 in the author's own fix), B08 "
-        "level 2 closed with a byte-identical probe re-run plus an audit-hook tripwire (production "
-        "catalog open count 0), and B09/B.AR closed with the read-only manifest run plus an "
-        "independently reproduced identity/hash re-derivation - carrying an adjudicated OVERREACH on "
-        "the manifest's own bounds"
+        "R4 + R5 (2026-09-18; revenue-forecast 3825db2 onwards) - the last two B.AR residuals, "
+        "both read-only against the production catalog.  R4 ran the REAL consumer entry point "
+        "(filing-fetch/scripts/fetch_filing.py --no-pause-worker, WITHOUT --allow-download, so "
+        "the wiki action is resolve): L1/L2 exit 0 with status capture_ready, canonical path "
+        "under companies\\阿里巴巴－Ｗ\\...\\2026-06-18_hkexnews_12207997_2026財務年度報告.pdf, "
+        "content_sha256 e39fbf9c80866759b20cf005f8b1b54301e6ae2ec092aed1d774d954e44fb350 (the "
+        "digest B08 level 2 derived from the real bytes) and 4,172,424 bytes; the wiki side "
+        "reported outcome reused_existing, qualification.label verified_input and policy_hash "
+        "c773099b... (the same value runtime-policy show reported in A06-2); controls FY2019 -> "
+        "exit 2 not_found and an unknown company -> exit 2 identity_error.  The write surface was "
+        "read out of the code BEFORE running and then corrected by the review: the resolve path "
+        "hands the resolver the READ-ONLY reader (cli.py:1193; reader.py:165/188 mode=ro + "
+        "PRAGMA query_only=ON), so no mkdir, WAL switch, additive migration or commit happens, "
+        "and the worker-pause machinery is never constructed on the reuse branch (so "
+        "--no-pause-worker is inert and the run is not weaker than the skill default).  11/11 "
+        "invariants hold (production DB 49,677,344,768 B and its mtime_ns, -wal, no pause files, "
+        "no new file under companies, three repos, product source, pyc caches, zero downloads per "
+        "leg, --allow-download never passed) and the only catalog-directory change out of 12,476 "
+        "entries is catalog.sqlite3-shm's mtime at the same 32,768 bytes (recorded, not "
+        "attributed: a read-only WAL reader is a sufficient cause).  R5 verified the three "
+        "dropbox_stock documents B.AR skipped, using paths from the already-ratified A05 output: "
+        "3/3 digests and sizes match, and all three are *.source.json SIDECARS indexed as "
+        "annual_report documents (the F-BAR-1 family).  The owner accepted hydration; measurement "
+        "then showed no hydration took place (each file's AllocationSize was already 4096 before "
+        "the read while EndOfFile is 543/567), so that authorisation was not actually used.  Two "
+        "instrument defects were found and corrected inside the step: Python's st_file_attributes "
+        "cannot see the cloud state inside the Dropbox tree (0x20 while PowerShell reads 0x420 "
+        "and fsutil proves the reparse tag 0x9000601a), and the author's own 'locality is "
+        "undeterminable' was an UNDER-claim that GetFileInformationByHandleEx answers.  Both "
+        "reviews (B.VR-r4 = approve_with_findings 0xP0/0xP1/4xP2/4xP3; B.VR-r5 = "
+        "approve_with_findings 0xP0/1xP1/1xP2/3xP3) were disposed of in full and everything was "
+        "re-run afterwards.  Earlier: R3 and the B10 dispositions (c4f5b8a / 65cc18d), which "
+        "routed the main-path manifest parse in normalize_catalog AND backfill_text_fingerprints "
+        "through a new never-raising _manifest_from_column() - pinned by "
+        "tests/unit/test_b10_manifest_abort_paths.py and mutants M11/M12.  B05 closed with two "
+        "review rounds (a live P0 in the author's own fix), B08 level 2 closed with a "
+        "byte-identical probe re-run plus an audit-hook tripwire (production catalog open count "
+        "0), and B09/B.AR closed with the read-only manifest run plus an independently reproduced "
+        "identity/hash re-derivation - carrying an adjudicated OVERREACH on the manifest's own "
+        "bounds"
     ),
     "current_gate": (
-        "No author-owned gate remains open for phase B, and R3 is closed inside the isolated catalog. "
-        "Every step is implemented, pushed, independently reviewed and disposed of. What remains is "
-        "OUTSIDE this session's authority and is listed in failed_or_unknown: the whole-run abort "
-        "paths that a missing file or a damaged row can still reach (registered, not fixed), the two "
-        "scripts/ readers that no ratchet covers, the B.AR halves that still need writes (a "
-        "cross-repo end-to-end call) or a cloud-side effect (hashing the dropbox sample), the "
-        "coexistence of the four production roots WITH a fifth root in the production catalog (not "
-        "verifiable without a 46.3 GiB copy or an approved production write), the two product "
-        "boundaries R3 measured (F-BAR-10, F-BAR-11), and the residual risk that a size- and "
-        "mtime-preserving write to the production catalog is invisible to a metadata-only observation"
+        "No author-owned gate remains open: B01-B10 plus R3, R4, R5 and R6 are all delivered, "
+        "independently reviewed and disposed of. What remains needs the OWNER and is listed in "
+        "failed_or_unknown: the whole-run abort paths a missing file or a damaged row can still "
+        "reach, the two scripts/ readers no ratchet covers, the registered product boundaries "
+        "R3/R4/R5 measured (F-BAR-10, F-BAR-11, F-BAR-12), the coexistence of the four "
+        "production roots WITH a fifth root in the production catalog (not verifiable without a "
+        "46.3 GiB copy or an approved production write), and whether the zero-write claim should "
+        "be strengthened beyond metadata observation (R6)"
     ),
     "pending_review": [
+        {
+            "gate": "B.VR-r5 (R5)",
+            "scope": ("revenue-forecast: the three dropbox_stock documents B.AR skipped, verified "
+                      "with the owner's accepted hydration"),
+            "status": "closed",
+            "verdict": "approve_with_findings",
+            "findings": {"P0": 0, "P1": 1, "P2": 1, "P3": 3},
+            "note": ("the fifth independent session confirmed the target set (ids, paths and "
+                     "digests against the ratified A05 evidence), walked 5,000 files of the "
+                     "Dropbox tree to show the author's Python blindness is CONDITIONAL (both "
+                     "instruments agree outside it), and refuted one claim of the author's own: "
+                     "'data locality is undeterminable' was an UNDER-claim - it read "
+                     "AllocationSize via a zero-access handle and measured that the bytes were "
+                     "already locally resident, so the accepted hydration never happened. It "
+                     "also caught a missing NTFS ChangeTime in the state fingerprint, a stale "
+                     "git head in three documents, and two stale wording/field references. All "
+                     "five disposed of in evidence/b-vr-r5-disposition.md, with the harness "
+                     "re-run afterwards (8/8 invariants, --verify 3/3)"),
+            "record": "reviews/B.VR-r5.json",
+            "reviewer_self_reported_id": "independent read-only subagent (no id self-reported)",
+        },
+        {
+            "gate": "B.VR-r4 (R4)",
+            "scope": ("revenue-forecast: the cross-repo reuse call through the REAL consumer entry "
+                      "point (filing-fetch), read-only"),
+            "status": "closed",
+            "verdict": "approve_with_findings",
+            "findings": {"P0": 0, "P1": 0, "P2": 4, "P3": 4},
+            "note": ("the fourth independent session re-ran all four legs with BYTE-IDENTICAL "
+                     "stdout, re-hashed the canonical PDF itself (4,172,424 B / e39fbf9c...), and "
+                     "found that three supporting legs were defective: the write-surface table's "
+                     "only 'REACHED' row was false (the resolve path uses the READ-ONLY reader, "
+                     "mode=ro + PRAGMA query_only=ON, so no writable store is ever constructed - "
+                     "the A05/A06 analogy was wrong), no_download_requested was VACUOUS (it read a "
+                     "key summarise() never emits), the pause-file row's reason was wrong "
+                     "(--no-pause-worker is inert because the scope is only built under "
+                     "allow_download), plus a stale ran_at/-shm pair, a stale head, and three "
+                     "over-wide 'unchanged' claims. All eight disposed of in "
+                     "evidence/b-vr-r4-disposition.md; the harness now carries 11/11 invariants "
+                     "including pyc-cache and per-leg download checks"),
+            "record": "reviews/B.VR-r4.json",
+            "reviewer_self_reported_id": "independent read-only subagent (no id self-reported)",
+        },
         {
             "gate": "B.VR-r3 (R3)",
             "scope": ("revenue-forecast 3825db2: the fifth root registered by CONFIG ONLY inside an "
@@ -541,12 +591,11 @@ LEDGER = {
     "authorization_needed": [
         "OWNER: whether to fix the registered whole-run abort paths (a missing file or a damaged row can still abort a whole normalization batch) - see findings F-B10R2-MISSINGFILE",
         "OWNER: whether the two scripts/ readers of the shared column should be converged, since no ratchet covers them",
-        "OWNER: the remaining B.AR half that needs WRITES (a cross-repo end-to-end call: which exact read-only command(s) count) - the fifth-root half was DELIVERED on 2026-09-18 inside an isolated catalog after the owner chose that option, so no production write is needed for it; what is still unverifiable is the coexistence of the four production roots WITH a fifth root in the production catalog (needs a 46.3 GiB copy or an approved production write)",
-        "OWNER: whether to verify the three dropbox_stock sample bytes, given that reading a cloud placeholder HYDRATES it (a side effect on the owner's own files)",
-        "OWNER: whether the two product boundaries R3 measured should be fixed - F-BAR-10 (no activation snapshot => a v1 walk indexes .source.json sidecars as documents) and F-BAR-11 (a reusable_for_filing: false root is refused by the resolver's DECISION but its bytes are still served by read_verified_bytes, which gates on containment only)",
+        "OWNER: the remaining B.AR half that needs a WRITE is now only the PRODUCTION-CATALOG one: the fifth root is delivered inside an isolated catalog (R3) and the cross-repo call is delivered read-only (R4), so what is still unverifiable is the coexistence of the four production roots WITH a fifth root in the production catalog (needs a 46.3 GiB copy or an approved production write)",
+        "OWNER: whether the three product boundaries the residuals measured should be fixed - F-BAR-10 (no activation snapshot => a v1 walk indexes .source.json sidecars as documents), F-BAR-11 (a reusable_for_filing: false root is refused by the resolver's DECISION but its bytes are still served by read_verified_bytes, which gates on containment only) and F-BAR-12 (a reused document's derived artifacts are not reusable: bundle_status available while valid_handles is empty)",
         "OWNER: whether to spend the cost of strengthening the zero-write claim beyond metadata observation (a full-file sha256 of the 46.3 GiB production DB, or OS-level write auditing) - see risk-and-stop-rules.md section 7 (R6)",
         "OPERATOR: reviewer assignment records remain process evidence only (gate G6); the operator-held record is still outstanding",
-        "NO OWNER RULING IS OUTSTANDING for phase B's code: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12, the G8 two-level decision and the read-only manifest were approved on 2026-09-13, and the adjudication of the A05 overreach was delegated to the authoring session on 2026-09-16",
+        "NO OWNER RULING IS OUTSTANDING for phase B's code: S-10/S-11/S-12/S-13 were approved as recommended on 2026-09-12, the G8 two-level decision and the read-only manifest were approved on 2026-09-13, the adjudication of the A05 overreach was delegated to the authoring session on 2026-09-16, and the residual work packages R3/R4/R5 were chosen by the owner on 2026-09-18",
     ],
     "gate_status": {
         "B.DR": ("rev1-rev6 all rejected; v0.1.6 was the correction pass and v0.1.7 only back-fills the B02 "
@@ -563,6 +612,39 @@ LEDGER = {
                  "author's own misfiled crash path plus a false declaration the author's test had PINNED), "
                  "REJECT (r2 dispositions: one live P2 of the same family), and finally "
                  "APPROVE_WITH_FINDINGS (r3 dispositions) - all findings disposed of"),
+        "R4": ("DELIVERED 2026-09-18 and independently reviewed (B.VR-r4 = approve_with_findings "
+               "0xP0/0xP1/4xP2/4xP3, all eight disposed of). The REAL consumer entry point was run "
+               "read-only: filing-fetch/scripts/fetch_filing.py --no-pause-worker without "
+               "--allow-download, so the wiki action is `resolve`. L1/L2 exit 0 capture_ready with "
+               "the canonical path of the Alibaba annual, content_sha256 e39fbf9c... (the digest "
+               "B08 level 2 derived from the real bytes) and 4,172,424 bytes; the wiki side said "
+               "outcome reused_existing, qualification.label verified_input and policy_hash "
+               "c773099b... (same as runtime-policy show in A06-2). Controls: FY2019 -> not_found, "
+               "unknown company -> identity_error. 11/11 invariants; out of 12,476 catalog-dir "
+               "entries exactly one changed (catalog.sqlite3-shm mtime at the same 32,768 bytes, "
+               "recorded and NOT attributed). The write surface was read out of the code first and "
+               "then CORRECTED by the review: the resolve path passes the READ-ONLY reader "
+               "(cli.py:1193; reader.py:165/188), so no mkdir/WAL/migration/commit occurs, and the "
+               "worker-pause scope is never built on the reuse branch (--no-pause-worker is inert). "
+               "Product boundary registered: F-BAR-12 (a reused document's derived artifacts are "
+               "not reusable)"),
+        "R5": ("DELIVERED 2026-09-18 and independently reviewed (B.VR-r5 = approve_with_findings "
+               "0xP0/1xP1/1xP2/3xP3, all five disposed of). The three dropbox_stock documents B.AR "
+               "skipped were located through the ratified A05 output (no new production read) and "
+               "their bytes verify 3/3 (543/567/567) - all three are *.source.json SIDECARS indexed "
+               "as annual_report documents, i.e. the F-BAR-1 family. The owner accepted hydration; "
+               "measurement then showed NONE took place (AllocationSize 4096 before the read while "
+               "EndOfFile is 543/567), so the authorisation was not used. Two instrument defects "
+               "were found and corrected inside the step: Python's st_file_attributes cannot see "
+               "the cloud state inside the Dropbox tree (0x20 vs PowerShell 0x420 and fsutil's "
+               "reparse tag 0x9000601a), and the author's 'locality is undeterminable' was an "
+               "UNDER-claim that GetFileInformationByHandleEx answers"),
+        "R6": ("REGISTERED 2026-09-18 in risk-and-stop-rules.md section 7: every zero-write claim in "
+               "this run is bounded to METADATA observation (size, mtime_ns, -wal/-shm, repo "
+               "worktree, src tree fingerprint) - a write that preserves size and mtime is "
+               "invisible to it, and this host offers no OS-level write observer. The two candidate "
+               "strengthenings (a full-file sha256 of the 46.3 GiB production DB; USN/ETW write "
+               "auditing) are registered with their costs and limits and were NOT performed"),
         "R3": ("DELIVERED 2026-09-18 (revenue-forecast 3825db2) and independently reviewed: the fifth root "
                "joins by CONFIG ONLY inside an isolated catalog (r4_fifth_root, kind directory + the "
                "registered sidecar_filing_v1 adapter + read_only + reusable_for_filing, priority 50; the "
@@ -697,22 +779,26 @@ LEDGER = {
         "R3's product boundaries, registered and NOT fixed: F-BAR-10 (with no runtime_policy.json a root declared with the sidecar adapter is walked by the v1 path, which indexes .source.json sidecars as documents - measured in mutant M5; it does NOT establish the cause of the three .pdf.source documents in the production catalog, whose snapshot has v2_scan_shadow on) and F-BAR-11 (a reusable_for_filing: false root is refused by the resolver's decision - missing - but SourceResolver.read_verified_bytes still serves that root's bytes because it gates on containment only, resolver.py:2016-2041; measured, and consumer-side containment lives in filing-fetch validate_handle)",
         "R3 does NOT cover the coexistence of the four production roots with a fifth root in the production catalog: the isolated catalog is empty by construction, so the four-root legs still rest on the earlier B.AR evidence, not on this run",
         "R6 (registered 2026-09-18, risk-and-stop-rules.md section 7): every zero-write claim in this run is bounded to METADATA observation (size, mtime_ns, -wal/-shm, repo worktree, src tree fingerprint) - a write that preserves size and mtime is invisible to it, and this host offers no OS-level write observer",
+        "R4/R5's own narrower claims, now scoped in the prose rather than left to read wider: the `companies` digest is relative path + size for files only (a same-size overwrite or a new empty directory would not appear); `repos_unchanged_during_run` compares `git status --porcelain` (the harness's own five evidence files are untracked, so a content rewrite of one would not appear - the pyc caches are digested separately and the wiki children now run with PYTHONDONTWRITEBYTECODE=1); the catalog-dir -shm movement is recorded and NOT attributed",
+        "two instrument defects were found inside R5 and corrected there (Python's st_file_attributes is blind to the cloud state inside the Dropbox tree; the author's 'locality is undeterminable' was an under-claim). Both are now measured facts in the record, but a reviewer should treat any EARLIER statement of those two as withdrawn",
+        "F-BAR-12 (registered, not fixed): a document reused through the cross-repo path reports bundle_status available while valid_handles is empty, because its derived artifacts are unusable (normalized: artifact_status_not_completed; summary: artifact_source_sha_missing). The share of the production catalog in that state is NOT quantified",
     ],
     "next_step": (
-        "R3 is closed (fifth root inside an isolated catalog; revenue-forecast 3825db2). The registered "
-        "follow-ups that need the OWNER's decision before anything moves: (1) the whole-run abort paths "
-        "a missing file or a damaged row can still reach (the unsupported handler's IngestService.ingest, "
-        "_atomic_write's mkdir, the success-path ingest / transaction block / two fetchall calls, and "
-        "four in-package unguarded column parses in activation.py, assertion_service.py, remediation.py "
-        "and scanner.py) - each would make a single bad row a per-document failure; (2) the two scripts/ "
-        "readers of the shared column that no ratchet covers (legacy_observer.py, "
-        "wu904_remediation_restore.py); (3) R4, the cross-repo end-to-end call (needs the exact read-only "
-        "command(s) named); (4) R5, whether the three dropbox_stock sample bytes may be verified given "
-        "that reading a placeholder hydrates it; (5) whether the two boundaries R3 measured (F-BAR-10, "
-        "F-BAR-11) should be fixed; (6) whether the gate's syntactic ratchets should become a dataflow "
-        "check, given the four measured bypass shapes recorded in GATE_BOUNDARIES; (7) R6, whether to "
-        "strengthen the zero-write claim beyond metadata observation. A further B10 increment requires no "
-        "owner input but also no further value: the chain is single, declared and gated"
+        "The residual work packages R3, R4, R5 and R6 are closed (2026-09-18). The registered "
+        "follow-ups that need the OWNER's decision before anything moves: (1) the whole-run abort "
+        "paths a missing file or a damaged row can still reach (the unsupported handler's "
+        "IngestService.ingest, _atomic_write's mkdir, the success-path ingest / transaction block / "
+        "two fetchall calls, and four in-package unguarded column parses in activation.py, "
+        "assertion_service.py, remediation.py and scanner.py) - each would make a single bad row a "
+        "per-document failure; (2) the two scripts/ readers of the shared column that no ratchet "
+        "covers (legacy_observer.py, wu904_remediation_restore.py); (3) whether the three measured "
+        "product boundaries (F-BAR-10, F-BAR-11, F-BAR-12) should be fixed; (4) whether a fifth "
+        "root must also coexist with the four production roots in the PRODUCTION catalog (needs a "
+        "46.3 GiB copy or an approved production write); (5) whether the gate's syntactic ratchets "
+        "should become a dataflow check, given the four measured bypass shapes recorded in "
+        "GATE_BOUNDARIES; (6) R6, whether to strengthen the zero-write claim beyond metadata "
+        "observation. A further B10 increment requires no owner input but also no further value: "
+        "the chain is single, declared and gated"
     ),
     "inputs": {
         "note": ("phase A froze the product inputs at wiki 7d4852f; the phase-A run directory "

@@ -1,5 +1,15 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-18 — **R4 交付：跨仓端到端只读（filing-fetch 真实入口）；R5 交付：`dropbox_stock` 3 份字节核验（自纠一处仪器缺陷）**
+
+- **owner 的选择**（同一次会话，[owner-scope-decisions-2026-09-18.md](owner-scope-decisions-2026-09-18.md) §6）：R4 = **先读码报告写面，再跑 `fetch_filing.py --no-pause-worker`**；R5 = **接受水合**，直接核验 3 份字节。
+- **R4**（[evidence/b-ar-cross-repo-reuse.md](evidence/b-ar-cross-repo-reuse.md)、证据 `.json` + 4 个 stdout 侧文件）：真实消费者入口、**无** `--allow-download` ⇒ `action=resolve`。**L1/L2 exit 0、`capture_ready`**：canonical = 阿里年报、`content_sha256 = e39fbf9c…`（= B08 第②级独立核出的那份）、`4,172,424 B`；Wiki 侧 `outcome=reused_existing`、`qualification=verified_input`、`policy_hash=c773099b…`（同 A06-2）、`downloads=0`。控制组 FY2019 → `not_found`、未知公司 → `identity_error`（解析前 fail-closed）。**11/11 不变量**；catalog 目录 12,476 条里**恰好 1 条**变化（`catalog.sqlite3-shm` 同大小 mtime）——只登记不归因。写面先读码逐条列出（暂停文件/binding/下载/身份缓存/journal **均不在复用路径**；**更正**：resolve 传的是只读 reader，**没有** mkdir/WAL/迁移/commit）。
+- **R5**（[evidence/b-ar-dropbox-bytes.md](evidence/b-ar-dropbox-bytes.md)）：3 份（**都是 `*.source.json` 侧车被当文档**，= F-BAR-1 那一族）**3/3 摘要与大小相符**；路径取自已批准的 A05 证据，**本步不新读生产**；**8/8 不变量**。
+- **我自己发现、复审加强的两处仪器缺陷（F-BAR-13 / F-R5-01，均已修并撤回主张）**：① harness 第一版用 Python `st_file_attributes` 判云占位 ⇒ 读到 `0x20`，而 PowerShell 读 `0x420`、`fsutil` 给出决定性标签 **`0x9000601a`** ⇒ **Python 的属性读数在 Dropbox 树内看不见云状态**（出树一致 ⇒ 有条件盲区）；② 我随后写"数据局部性不可判定"是**低报**——`GetFileInformationByHandleEx(FileStandardInfo)` 即可回答：三份读取前 `AllocationSize=4096 > 0` ⇒ **数据本就在本地，本次读取没有水合任何一份**（`hydration_by_this_run: 0`）。状态指纹并补上 NTFS **ChangeTime**。
+- **登记**：**F-BAR-12**（被复用文档的派生产物不可复用：`bundle_status=available` 但 `valid_handles` 空，`normalized → artifact_status_not_completed`、`summary → artifact_source_sha_missing`；影响面未量化）。
+- **本地两个 CI 步骤**（wiki 树零改动，回归门）：unit **799 passed**（74.34s，[evidence/r45-ci-step1-unit.txt](evidence/r45-ci-step1-unit.txt)）、contract **1905 passed / 8 skipped**（1,014.77s，[evidence/r45-ci-step2-contract.txt](evidence/r45-ci-step2-contract.txt)）。
+- **独立复审两份，逐条处置**：`B.VR-r4` = **`approve_with_findings`（0×P0/0×P1/4×P2/4×P3）**→ [evidence/b-vr-r4-disposition.md](evidence/b-vr-r4-disposition.md)（它重跑四条腿 stdout **逐字节相同**、自己哈希年报 `e39fbf9c…`；抓到我**写面表唯一那行 "REACHED" 是错的**、`no_download_requested` 是空断言、暂停文件理由写错、正文描述的是另一次执行的 `ran_at`/`-shm`、HEAD 陈旧、"未变"口径偏宽）；`B.VR-r5` = **`approve_with_findings`（0×P0/1×P1/1×P2/3×P3）**→ [evidence/b-vr-r5-disposition.md](evidence/b-vr-r5-disposition.md)（它验证 id 集合/路径/摘要来源、在树上走 5,000 个文件证明 Python 盲区**有条件**，并抓到我"局部性不可判定"是**低报**）。两份复审的发现**全部处置**并重跑。
+
 ## 2026-09-18 — **R3 交付：第五 root 在隔离副本内按配置注册 + `query→open→consumer` 最小读取**（生产 catalog 零写入）
 
 - **owner 的两项选择**（原文答案记在 [owner-scope-decisions-2026-09-18.md](owner-scope-decisions-2026-09-18.md)）：**(A) 隔离副本** + 第五根**沿用 `future_lake` 占位的形状**。我据答案做了**一处更正**并留痕：`future_lake` **已经是第四根**（生产 config 四条 root 之一，`future_lake/README.md:1` = "ZR-409 **fourth-root** fixture"），所以第五根**用新 id `r4_fifth_root`**、沿用它的形状。另更正我自己写错的一天：选择发生在 **2026-09-18**，不是 09-17。

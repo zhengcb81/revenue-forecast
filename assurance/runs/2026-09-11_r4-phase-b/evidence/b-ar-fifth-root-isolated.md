@@ -94,7 +94,7 @@ C:\Miniconda\python.exe "$E\run_bar_fifth_root_isolated.py" --verify
 | `production_catalog_unchanged` | true（size + mtime_ns + `-wal` + `-shm` 全等） |
 | `production_wal_untouched` | true |
 | `repos_unchanged_during_run` | true（三仓 `git status --porcelain` pre = post） |
-| `heads_unchanged` | true（company-wiki `8665c8c`、revenue-forecast `801d5de`、filing-fetch `d35b6f5`） |
+| `heads_unchanged` | true（**该次运行当时**：company-wiki `8665c8c`、revenue-forecast `801d5de`、filing-fetch `d35b6f5`；本步提交后 revenue-forecast 前进到 `51f1e05`，`B.VR-r5` 的 F-R5-03 指出过这处陈旧串） |
 | `product_source_unchanged` | true（`company-wiki/src` **143** 个 `.py`，树指纹 `d201140eabd226e44fb5895aceed10c9ace1088eda12754b2d8082db81c8b716`） |
 | `fifth_root_registered` | true |
 | `four_stand_in_roots_absent_from_roots_table` | true |
