@@ -101,7 +101,7 @@ manifest 文件自身的状态字段写的是 `NOT APPROVED - awaiting owner con
 | 从原文重核**身份** | **未达成**：sidecar 与 catalog 的 acquisition **同源**（`B-VR-BAR-04`）；dayu 3 份没做 | 需要**非 catalog 来源**的身份基准（如 SEC/HKEX 侧或 `security_master` 独立档） |
 | **不改用户原文件** | **达成**：全部动作只读；未执行写/网络命令；A05-3 的实现虽可写但实测未写（主库/`-wal` 未变） | — |
 | 真实**四 root** | **部分**：4 个 root 各有候选（39/19/4/4），其中 dropbox 的 4 份是 **sidecar 文档**；核验只在 `company_raw` + `dayu_portfolio` 上完成 | `dropbox_stock` 未核验（F-BAR-4） |
-| **第五 root** | **未做**：只读既有 catalog，**未注册任何新 root**（注册 = 写 catalog） | 需 owner 指定第五 root 的路径/类别 |
+| **第五 root** | **达成（隔离副本内，2026-09-18）**：新 id `r4_fifth_root`（`directory` + `sidecar_filing_v1` + 只读 + 可复用，priority 50）**只靠配置**加入隔离 catalog；`roots` 行由未改动的 scanner 写出；`query` 2 份、`resolve` 两次 `reused_exact`、`read_verified_bytes` 两次 `verified`、`query_filing_candidates` 2 行；未知适配器 CFG-01、未注册 root id 两分支被拒、deny → `missing`；**7/7 不变量** + 变异 **5/5 KILLED** | **生产 catalog 内的第五根注册仍未做**（= 写 46.3 GiB 生产库，未授权）："生产四根 + 第五根**共存**"这一层因此仍未验证。见 [evidence/b-ar-fifth-root-isolated.md](evidence/b-ar-fifth-root-isolated.md) |
 | 端到端（filing/revenue 真实入口） | **未做**（属 L11/B10 范围） | 跨仓入口调用 |
 | **授权合规** | **未达成**：`B.VR-bar` 判 `OVERREACH`（§0.1） | **owner 表态**（§8） |
 

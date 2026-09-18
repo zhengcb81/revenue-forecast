@@ -37,7 +37,7 @@
 
 ## 4. 边界与残留（不得含糊）
 
-1. **未获授权的写动作**：B.AR 的第五 root 注册（= 写 catalog）、跨仓端到端入口调用、`dropbox_stock` 3 份字节核验（读云目录可能水合）、扩大抽样 —— **一律未做**。
+1. **未获授权的写动作**：B.AR 的第五 root **生产**注册（= 写 46.3 GiB 生产 catalog）、跨仓端到端入口调用、`dropbox_stock` 3 份字节核验（读云目录可能水合）、扩大抽样 —— **一律未做**。**其中第五 root 已在 2026-09-18 以"隔离副本"方式交付**（owner 选择；[owner-scope-decisions-2026-09-18.md](owner-scope-decisions-2026-09-18.md)、[evidence/b-ar-fifth-root-isolated.md](evidence/b-ar-fifth-root-isolated.md)）：配置注册 + `query→open→consumer` 最小读取全部跑通、7/7 不变量、变异 5/5 KILLED、独立复审 `B.VR-r3` = `approve_with_findings`（6 条全处置）；**生产四根与第五根共存**仍未验证。
 2. **`F-B10R2-MISSINGFILE`**：主文件缺失仍会中止整轮 normalize（**既有**、非本次引起）；影响面**未量化**；需 owner 决定是否立项。
 3. **`scripts/` 两处直读**（`legacy_observer.py:96`、`wu904_remediation_restore.py:65`）不受任何棘轮覆盖。
 4. **零副作用主张的残余风险**（复审明示）：生产 catalog 只能 `stat`，故"大小+mtime 不变的内容写入"对工具与复审**都不可见**。

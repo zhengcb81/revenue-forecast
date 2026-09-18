@@ -1,5 +1,17 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-18 — **R3 交付：第五 root 在隔离副本内按配置注册 + `query→open→consumer` 最小读取**（生产 catalog 零写入）
+
+- **owner 的两项选择**（原文答案记在 [owner-scope-decisions-2026-09-18.md](owner-scope-decisions-2026-09-18.md)）：**(A) 隔离副本** + 第五根**沿用 `future_lake` 占位的形状**。我据答案做了**一处更正**并留痕：`future_lake` **已经是第四根**（生产 config 四条 root 之一，`future_lake/README.md:1` = "ZR-409 **fourth-root** fixture"），所以第五根**用新 id `r4_fifth_root`**、沿用它的形状。另更正我自己写错的一天：选择发生在 **2026-09-18**，不是 09-17。
+- **隔离设计**：`%TEMP%\r4-bar-fifth-root`（不在任何仓库内）；四条 stand-in 根（空目录，从不扫描）+ 第五根真样例；`guard_paths_are_isolated()` 读**已加载的 config** 并拒绝任何越出工作根的路径或 `catalog_dir`（返回值由同一条比较**派生**）；隔离 catalog 的 `runtime_policy.json` 由**产品自己的** `build_snapshot` 生成（`v2_scan_shadow=true` ⇒ 走适配器派发）。
+- **结果**：`scan --root-id r4_fifth_root` 写出 roots 行（`directory` / priority 50）⇒ `documents 2 / locations 2`；`query` 见到 2 份；`resolve(mode=exact)` 两次 **`reused_exact`**（`capture_ready=[true]`，理由 `one_existing_source_matches_provider_identity`）；`read_verified_bytes` 两次 **`verified`**（59 B，sha256 = 磁盘）；`query_filing_candidates` 2 行；未知适配器 **CFG-01 fail-closed**；未注册 root id **两种分支**都被拒（空选择 / 混合打到专属 `unknown root_ids:`，`scan_runs` 仍 1 ⇒ 合法根未被顺带扫描）；deny → `missing`。
+- **证据**：[evidence/b-ar-fifth-root-isolated.md](evidence/b-ar-fifth-root-isolated.md)（记录，含 §3bis 的 deny 分层表）、[evidence/b-ar-fifth-root-isolated.json](evidence/b-ar-fifth-root-isolated.json)、[evidence/b-ar-fifth-root-mutations.json](evidence/b-ar-fifth-root-mutations.json)；**7/7 不变量**（生产 catalog `49,677,344,768 B`/mtime_ns 未变、`-wal` 未动、三仓 HEAD 与 worktree 未动、`src` **143** 文件树指纹不变）+ `--verify` **4/4**。
+- **变异 5/5 KILLED**（harness 是被测物；每棵变异树扫描前都过隔离守卫）：M1 路径移出工作根→守卫拒绝、M2 deny 翻回 true→`reused_exact`（证明 deny 的 `missing` 有区分力）、M3 去 `published_at`→`ambiguous`、M4 摘要与磁盘不符→`missing`、M5 删激活快照→v1 遍历把侧车当文档。
+- **两条产品边界（登记，未修）**：**`F-BAR-10`** 无快照时 sidecar 侧车被当独立文档入库（M5 实测；**不**声称是生产那 3 份 `.pdf.source` 的已证成因）；**`F-BAR-11`** deny 只覆盖 resolver **决定**，字节入口 `read_verified_bytes` 只查根包含性、**仍放行**（已实测入证 `deny.byte_entry_point`）。
+- **独立复审 `B.VR-r3`（第四个独立会话）= `approve_with_findings`（0×P0 / 0×P1 / 3×P2 / 3×P3）**，6 条**全部处置**（[evidence/b-vr-r3-disposition.md](evidence/b-vr-r3-disposition.md)）：它重跑主跑/变异/`--verify`、逐个复现数字、并**重算磁盘摘要**确认 `open` 返回的是磁盘字节。三条 P2 全是我自己的问题：① deny 覆盖面被我写宽（已实测+收窄）；② 授权依据只在被授权的产物里（已落盘 owner 文件）；③ 证据文件用完成时宣布了尚未做的账本改动（三处账本现已真的改掉）。
+- **本地两个 CI 步骤**（照 `.github/workflows/ci.yml` 的两条命令，wiki 树**零改动**故为回归门）：unit **799 passed**（120.28s，[evidence/r3-ci-step1-unit.txt](evidence/r3-ci-step1-unit.txt)）、contract **1905 passed / 8 skipped**（762.79s，[evidence/r3-ci-step2-contract.txt](evidence/r3-ci-step2-contract.txt)）。
+- **R6 残余风险登记落盘**：[risk-and-stop-rules.md](risk-and-stop-rules.md) §7——"零写入"只被证明到**元数据观察口径**（size/mtime/`-wal`/`-shm`/worktree/树指纹），**同时保持大小与 mtime 的写入不可见**；两个可选消解方向（生产主库全文件 sha256、USN/ETW 写审计）连同各自的代价与限制一并登记，**均未做**。
+
 ## 2026-09-17 — **B10 主体交付：批次 1/2 收敛 + 计数棘轮 + r2 的 P0/P1 处置 + B10-5 收口**（wiki `f92fc71`、revenue `473444f`；远端 CI 全绿）
 
 - **增量 1**（`b829b03`/`c4a69e0`/`d92bb33`）：`read_chain.py` 注册表（单一链 `store.metadata_object`、3 条 legacy adapter 带 `reads_files`/移除条件、机器导出棘轮基线）+ `service._read_shared_metadata` 收敛为委托 + 门；复审 `B.VR-b10` 8 条**全部处置**（其中 P1：`reader.bundle` **不是**无文件访问——它经 `validate_artifact` 读 artifact 字节）。
