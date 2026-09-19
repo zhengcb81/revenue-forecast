@@ -1,0 +1,58 @@
+{
+ "card_id": "I-04-A",
+ "attempt_id": "a20260919-01",
+ "status": "accepted_scoped",
+ "scope": "design-only: decision.md v2 + oracle.md v2 inside this attempt dir; NO product implementation right granted",
+ "reviewer_status": "round1 changes_required (1P1/2P2/5P3) -> author revised -> round2 accepted_scoped with one carried P3 condition (F-BA2A-R2-residual)",
+ "reviewer_agent_id": "e136877d-1b5f-4e71-841c-0491393a1117",
+ "completed_steps": [
+  "1 领取 (card bound, attempt reused)",
+  "2 绑定 (binding.json: source anchor sha256 re-verified 046cc7dc...088; iso venv python; allowed write root = this attempt dir)",
+  "3 读证据 (fetch_filing.py regions: 40-60, 200-244, 282-345, 412-471, 487-611, 676-810, 944-1023, 1050-1115; pure_probes.json read-only)",
+  "4 冻结预期 (oracle.md v2 incl. reviewer's pre-registered variation case)",
+  "设计测量 (math_oracle_sim.py --assert -> design_measurements/math_oracle.json, ALL PASS; measure_epsilon.py -> design_measurements/epsilon_raw.json, epsilon 0.4 interim)",
+  "5-9 交审/接续 (two review rounds; v2 re-signed accepted_scoped)"
+ ],
+ "next_step_number": "I-04-B card step 1",
+ "next_action": "I-04-B (修复退避旧预算和 worker 最小10秒越界): FIRST re-verify fetch_filing.py sha256 == 046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088 and the I-00-B binding; then implement exactly decision.md v2 D3 (recompute remaining after each subcall return and before the backoff wait; remove the max(10.0,...) floor for request stages), TimeoutExpired stays terminal (fix only the stale L227-228 comment), R-P pid-probe budget/counting rows, C = max(30, 2*resume_wait + graceful), cleanup acceptance per-subcall (resume <= C+epsilon; each probe <= min(20, .)), epsilon re-measurement precondition per D4 before any real-process acceptance",
+ "input_hashes": {
+  "card": "execution_v2/card_I-04-A.md",
+  "deps": "execution_runs/I-00-A/a20260919-01/, execution_runs/I-00-B/a20260919-01/binding.json",
+  "probe_input_readonly": "reviews/filing/tests/pure_probes.json (deadline 10/elapsed 14/worker_remaining 10.0)"
+ },
+ "current_source_hashes": {
+  "FF/scripts/fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+  "FF_HEAD": "d35b6f5"
+ },
+ "changed_paths": [
+  "execution_runs/I-04-A/a20260919-01/binding.json",
+  "execution_runs/I-04-A/a20260919-01/decision.md",
+  "execution_runs/I-04-A/a20260919-01/oracle.md",
+  "execution_runs/I-04-A/a20260919-01/commands.json",
+  "execution_runs/I-04-A/a20260919-01/measure_epsilon.py",
+  "execution_runs/I-04-A/a20260919-01/math_oracle_sim.py",
+  "execution_runs/I-04-A/a20260919-01/design_measurements/math_oracle.json",
+  "execution_runs/I-04-A/a20260919-01/design_measurements/epsilon_raw.json",
+  "execution_runs/I-04-A/a20260919-01/review.md",
+  "execution_runs/I-04-A/a20260919-01/handoff.json"
+ ],
+ "product_changed_paths": [],
+ "commands_executed": ["I04A-math-oracle", "I04A-epsilon-measurement"],
+ "raw_exit_codes": [0, 0],
+ "expected_exit_codes": [0, 0],
+ "open_questions": [
+  "O-1 (kept, real adjudication): no post-deadline exemption for pure worker-status queries; reopen this card if I-04-B hits a repair-cost conflict",
+  "F-BA2A-R2-residual (P3, carried into I-04-B as a MANDATORY wording condition): cleanup acceptance is per-subcall (resume <= C+epsilon; each pid probe <= min(20, .)); phase wall-clock reported separately without an acceptance cap",
+  "epsilon 0.4 is INTERIM and scope-limited; the pre-committed re-measurement program (real CLI import chain + concurrent load + kill/reap latency; n>=50/case; >=2 separated sessions; 2*max(p95) capped 2s) must run before I-04-B/E use the real-process oracle for acceptance"
+ ],
+ "blocked_by": [],
+ "evidence_paths": [
+  "execution_runs/I-04-A/a20260919-01/decision.md",
+  "execution_runs/I-04-A/a20260919-01/oracle.md",
+  "execution_runs/I-04-A/a20260919-01/commands.json",
+  "execution_runs/I-04-A/a20260919-01/binding.json",
+  "execution_runs/I-04-A/a20260919-01/design_measurements/math_oracle.json",
+  "execution_runs/I-04-A/a20260919-01/design_measurements/epsilon_raw.json",
+  "execution_runs/I-04-A/a20260919-01/review.md"
+ ]
+}

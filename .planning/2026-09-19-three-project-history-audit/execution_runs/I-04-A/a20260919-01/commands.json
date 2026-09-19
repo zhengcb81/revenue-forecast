@@ -1,0 +1,41 @@
+{
+ "card": "I-04-A",
+ "attempt": "a20260919-01",
+ "note": "design card - no product execution commands (card: 本卡无产品执行命令；仅设计与独立审查). The two bound commands below are design-time measurements inside the attempt dir; they import nothing from the product.",
+ "commands": [
+  {
+   "id": "I04A-math-oracle",
+   "purpose": "independent arithmetic recomputation of the F-D1/D2/D3 expectations (oracle.md)",
+   "class": "design_measurement",
+   "binding_status": "bound",
+   "cwd": "execution_runs/I-04-A/a20260919-01",
+   "argv": ["<attempt iso venv>\\python.exe", "math_oracle_sim.py", "--assert"],
+   "network": "disabled",
+   "timeout_seconds": 60,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "output": "design_measurements/math_oracle.json",
+   "verification": "console tail: math oracle assertions: ALL PASS"
+  },
+  {
+   "id": "I04A-epsilon-measurement",
+   "purpose": "measure this host's process scheduling boundary to justify epsilon (decision.md D4)",
+   "class": "design_measurement",
+   "binding_status": "bound",
+   "cwd": "execution_runs/I-04-A/a20260919-01",
+   "argv": ["<attempt iso venv>\\python.exe", "measure_epsilon.py"],
+   "network": "disabled",
+   "timeout_seconds": 300,
+   "expected_returncode": 0,
+   "raw_returncode": 0,
+   "output": "design_measurements/epsilon_raw.json",
+   "verification": "startup p95=0.105s, sleep-overshoot p95=0.202s -> epsilon proposal 0.4s"
+  }
+ ],
+ "product_commands": [],
+ "na_items": {
+  "before_after": "NA - no product file is modified by this design card",
+  "recovery": "NA - pure design; no state changed (recovery boundary: revert to the pre-decision draft only)",
+  "changes_diff": "NA - no product change; the only new files live in this attempt dir"
+ }
+}

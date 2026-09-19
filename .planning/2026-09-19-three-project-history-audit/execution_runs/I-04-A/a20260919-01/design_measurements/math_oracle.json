@@ -1,0 +1,62 @@
+{
+  "artifact": "I-04-A model-clock math oracle (independent recomputation)",
+  "rules_source": "oracle.md (frozen before this run; no import of fetch_filing)",
+  "constants": {
+    "backoff": 5.0,
+    "jitter_fd1": 0.0,
+    "cleanup_budget": 30.0
+  },
+  "cases": [
+    {
+      "case": "F-D1",
+      "deadline": 10.0,
+      "events": {
+        "calls": [
+          {
+            "action": "identify",
+            "start": 0.0,
+            "end": 9.0,
+            "timeout_granted": 10.0,
+            "result": "catalog_busy"
+          }
+        ],
+        "sleeps": [
+          {
+            "start": 9.0,
+            "end": 10.0,
+            "requested": 5.0,
+            "wait": 1.0
+          }
+        ]
+      },
+      "request_end": 10.0,
+      "finished_within_deadline": true,
+      "retry_subcalls_after_backoff": 0,
+      "raised_upstream_error": true,
+      "terminal_reason": "remaining<=0 before any further call"
+    },
+    {
+      "case": "F-D2",
+      "remaining_at_decision": -10.0,
+      "request_stage_worker_status_calls": 0,
+      "budget_a_regranted_floor_would_give": 10.0,
+      "expected_budget_for_requests": 0.0,
+      "violation_if_floor_kept": true,
+      "expected_outcome": "request stage is skipped/raises deadline-exceeded; no new 10 s request budget may be minted after the deadline"
+    },
+    {
+      "case": "F-D3",
+      "request_status": "failed (deadline exhausted before completion)",
+      "cleanup_allowed_after_deadline": true,
+      "cleanup_budget": 30.0,
+      "cleanup_start": 25.0,
+      "cleanup_end": 30.5,
+      "cleanup_elapsed": 5.5,
+      "cleanup_counted_into_request_deadline": false,
+      "resume_wait_arg": 5.0,
+      "on_cleanup_failure": "record cleanup_status=failed + stderr warning; the request's own exit code/outcome must not be rewritten by the cleanup failure",
+      "ownership_restored_attempted": true
+    }
+  ],
+  "ran_at_utc": "2026-09-19T22:28:29Z"
+}

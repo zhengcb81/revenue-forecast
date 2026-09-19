@@ -1,0 +1,53 @@
+{
+ "card": "I-04-A",
+ "attempt": "a20260919-01",
+ "date": "2026-09-19",
+ "title": "先定请求 deadline、清理预算和计时 oracle（设计卡，不实施产品）",
+ "implementer": "authoring session (this session)",
+ "independent_reviewer": "fresh read-only subagent (id recorded in review.md)",
+ "dependency_receipts": {
+  "I-00-A": "execution_runs/I-00-A/a20260919-01/",
+  "I-00-B": "execution_runs/I-00-B/a20260919-01/binding.json (source_anchors_sha256 reused here)"
+ },
+ "source_anchors_verified": {
+  "FF/scripts/fetch_filing.py": {
+   "sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+   "matches_card_and_I00B": true,
+   "bytes": 48392,
+   "anchors": {
+    "_run_company_wiki_json_retry": 282,
+    "PausedWorkerScope._remaining": 509,
+    "PausedWorkerScope.__exit__": 592,
+    "deadline_created": 679,
+    "identify_stage": 694,
+    "ensure_or_resolve_stage": 751,
+    "close_gap_stage": 1000,
+    "worker_status_call": 520,
+    "worker_pause_call": 541,
+    "worker_resume_cleanup_call": 598,
+    "backoff_constants": [49, 50, 51, 52],
+    "argparse_timeout_default_900": 1055,
+    "worker_graceful_default_5": 1069,
+    "worker_resume_wait_default_5": 1075
+   }
+  }
+ },
+ "repo_state": {
+  "filing_fetch_HEAD": "d35b6f5",
+  "filing_fetch_dirty": ["git_filing-fetch.txt (untracked, NOT ours; left untouched)"],
+  "production_side_effects": "none; read-only source reading + design measurements inside the attempt dir"
+ },
+ "interpreter": "attempt iso venv python (execution_runs/I-04-A/a20260919-01/iso/venv/Scripts/python.exe)",
+ "allowed_write_roots": ["execution_runs/I-04-A/a20260919-01/"],
+ "forbidden": [
+  "production timeout/worker changes (card: 仅决策与计时 fixture)",
+  "running historical probe scripts (pure_probes.py etc.)",
+  "editing anything under reviews/",
+  "worker pause/resume against a real worker",
+  "unbound command execution"
+ ],
+ "design_measurements": {
+  "math_oracle": "design_measurements/math_oracle.json (pure arithmetic; does NOT import fetch_filing)",
+  "epsilon": "design_measurements/epsilon_raw.json (30x interpreter startup + 30x controlled sleep overshoot on this host)"
+ }
+}

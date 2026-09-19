@@ -1,5 +1,12 @@
 # Progress
 
+## 2026-09-19 — 实施段续：I-04-A（deadline/清理预算/计时 oracle **设计卡**，两轮复审后 accepted_scoped）
+
+- **产出**（execution_runs/I-04-A/a20260919-01/）：binding.json（锚点 sha256 `046cc7dc…` 复验一致）、decision.md **v2**、oracle.md **v2**、commands.json（仅 2 条设计测量，无产品命令）、两份设计测量、review.md（两轮全文）、handoff.json。生产零改动；FF 树未动。
+- **设计要点**：D0 三缺陷=过期预算（`max(10,…)`，F-D2）、陈旧剩余（L304/L326 ⇒ wait=5、t=14，pure_probes 实证，F-D1）、清理与请求不分账（F-D3）；阶段预算表含**新增 R-P 行**（tasklist pid 探测 L418-432：请求段 `min(20,请求剩余)`/清理段 `min(20,C)`，计 `liveness_calls`）；`_cleanup_timeout()=C`、**C=max(30, 2×resume_wait+graceful)**（默认 30）；TimeoutExpired=**终态**（否决改重试集）；清理义务=最后参与者（joined 含在内）；ε=0.4 **临时签署**+范围限定+预先承诺重测程序；B=20 仅请求段；新 stats 字段含 `liveness_calls`/`liveness_probe_failed`。
+- **两轮独立复审**（同一只读子代理，零写入）：r1 **changes_required**（1P1/2P2/5P3，核心是 D3 未落实父项"返回后重算剩余"——按 v1 字面实现会复现 t=14 历史事故）→ 全部处置 → r2 **accepted_scoped**；预注册变化案例（deadline=30 三连争用）被 v2 规则逐数值复现。**随签携带 1 条 P3 强制口径**给 I-04-B：清理验收按**子调用**（resume ≤ C+ε；每探测 ≤ min(20,·)），相位总墙钟单列；另 ε 重测程序是 I-04-B/E 真实进程验收的前置。
+- **资格**：accepted_scoped=仅本 attempt 的设计文本；不授予产品实施权。**15/86 卡完成**；下一卡 I-04-B（开工前重验源码 hash 并携带上述两项强制条件）。
+
 ## 2026-09-19 — 实施段：I-00..I-02 六卡（产品实施开始）
 
 - I-00-A a20260919-01：三仓 HEAD/dirty/锚点/baseline.json/paths.json 快照说明齐备；47G catalog WAL=0、全量快照延后、backup proven；iso venv fallback_free=true；全局 Miniconda python 判不安全（editable dayu-agent 钩子）；独立reviewer发现两份 git 证据误捕获，已重采并 errata 关闭。
