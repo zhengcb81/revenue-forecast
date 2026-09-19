@@ -16,10 +16,26 @@
 - **② 主路径的 `manifest_json` 解析**（`B-VR-B10R4-01`，P2 **活**，**不需要解析失败即可触发**）：`normalize_catalog` 与 `backfill_text_fingerprints` 两处改为 `_manifest_from_column()`（**永不抛**），坏行变成**逐文档失败**（`manifest_column_unreadable` / `manifest_column_not_object` / `manifest_invalid`）并 `continue`；**pytest 钉住**：`tests/unit/test_b10_manifest_abort_paths.py`（坏 manifest + 后面健康文档仍被归一化），变异 **M11**（调用点）与 **M12**（助手体）均 KILLED by assertion。
 
 **仍未修（登记，需 owner 决定）**：
+- （**2026-09-19 更新**：③④⑤ 三条**已按 owner 2026-09-18「4，修」全部落地**，见下方"本族已收口"条目；
+  本清单保留为当时状态，不再代表现状。）
 - **③ `IngestService.ingest`（unsupported handler）**：主文件缺失 ⇒ `SourceManifestMismatchError` 逃出，**饿死队列里后面的文档**（r3 实测 S1/S4；r4 用真实 `.docx`/`.xls`/坏 `.pdf` 复现 S7/S8/S12 的真解析失败分支）。
 - **④ `_atomic_write` 的 `mkdir`**：r4 用**人造 FS 阻塞**驱动成功（S10）；r3 当时只是阅读发现。
 - **⑤ 阅读发现（未驱动）**：`normalize_catalog` 成功路径的 `IngestService.ingest`、其后的 transaction 块、两处 `fetchall`；包内另有 **4 处**未守卫的同名列解析（`activation.py:215`、`assertion_service.py:405`、`remediation.py:149`、`scanner.py:668`）——r4 只做到 AST 阅读级，**不得**写成已复现。
 - **按设计保留**：`section_query.py:109`（显式非链、具名报错）。
+
+**本族已收口（2026-09-19）**：③ unsupported handler 的 `ingest`、成功路径的 `ingest` + 事务块、
+**两处 `fetchall`**、`_atomic_write`（mkdir/写盘）、包内 **4 处**同名列解析**全部**改为**具名逐文档失败**；
+`scripts/` 两处读取者另有记录。其中**第二处 `fetchall`**（`backfill_text_fingerprints` 内）是 2026-09-19
+补修的——上一批只覆盖了第一处，而 owner 指令原文点名的是"**两处**"；它按**读失败与文档无关**的语义
+落 **`retryable_failed` + 退避**，耗尽 `retry_limit` 才 `retry_exhausted:<code>`。
+用例 `tests/contract/test_fbar_b10r2_normalize_guards.py`（**7 条**：handler 的 ingest 助手 / 坏行不饿死健康行 /
+`normalize_catalog` 的 locations 读取 / 记录事务 / 写盘 / 回填的 locations 读取终态 / 回填的读取退避），
+变异 `FB10R2N-backfill-read` 副本内**先红后绿**。**更正**：本族"第四个守卫"
+（记录事务）此前只有"与其它守卫同形"这句**阅读**，本步补上**无歧义故障注入**（harness 播种后武装，
+`normalize_catalog` 每份文档只开一次 `store.transaction()`）与变异 `FB10R2N-record`；
+`barfix_normalize_probe.py` 驱动的是**通用 handler 的 ingest**，**不得**再被引作这处的证据。
+**登记的限制**：`record_fingerprint_outcome` 调用本身不加守卫（连结果行都写不进去的库是硬停，吞掉=静默丢记录）；
+`select_fingerprint_batch` / `fingerprint_status` 在循环**之外**（批级读取，无法归因到某一份文档），仍是整批失败。
 
 > 本文件在 B 设计阶段只记录**从阶段 A 继承的事实**与**设计期发现**；产品实测结果一律留待 B08/B.VR。
 
@@ -42,6 +58,17 @@
 - **`scripts/` 两处**：已收敛 + 棘轮升级为硬零（见上）。
 - **本批的独立复审 `B.VR-ba1` = `approve_with_findings`（1×P1 / 5×P2 / 2×P3），8 条全部处置**，见 [evidence/b-vr-ba1-disposition.md](evidence/b-vr-ba1-disposition.md)。其中：**P1 是我的账目错误**（F-BAR-14 的变异锚点早已失效 ⇒ "8/8 KILLED"不可复现；并发现上一轮编辑误删了 `FB10R2-assertion` 整条变异）；**F-BA1-03** 让字节门改用**与决定路径同一个键**（location 的 `root_id`）；**F-BA1-04** 把"已注册未实现适配器"的根从"整轮中止"改为**逐根 fail-closed**；**F-BA1-06** 修掉 resolver 里两处同形部分守卫；**F-BA1-07** 移除被跟踪的陈旧构建副本 `build/`。
 - **处置中我自己新引入、并被门抓到的两处（登记）**：四处守卫把 `normalizer.py` 最大复杂度从**冻结的 47**抬到 **52** ⇒ 按 S-7 **未改表**，改为拆分既有嵌套块；第一次拆分把 `metadata_state(列)` 也搬进 helper ⇒ **交接点被搬家而非消除**，B10 门"失效条目"与"新交接点"两条同时红 ⇒ 解析留在原调用点、helper 改收已解析映射。
+
+## 2026-09-19 — 第二处 `fetchall` + 记录事务守卫（**被驱动**）；两处记录缺陷更正；一条既有用例的宿主敏感性（实测归因）
+
+- **收口的是 owner 第 (4) 条「修」的余项**：指令原文点名"**两处** `fetchall`"，2026-09-18 那批只覆盖了第一处。
+  `backfill_text_fingerprints` 里的 `locations` 读取**仍是裸的** ⇒ 一条失败语句（库被锁、索引损坏）会**逃出整个回填批次**并饿死其后的每一份文档。现在与第一处**同形**：`locations_read_failed:<Exc>`，**读失败与文档无关** ⇒ 先 `retryable_failed` + 退避，耗尽 `retry_limit` 才 `retry_exhausted:<code>`（wiki `f39bd5a`）。
+- **"第四个守卫"从阅读变成证明**：`normalize_catalog` 的记录事务（`artifact_record_failed`）此前只有"与其它守卫同形"这句**阅读**。现在有**无歧义**故障注入（harness 播种完成后才**武装**开关；该函数每份文档**只开一次** `store.transaction()`）⇒ 第一次抛错、第二次仍必须提交。变异 `FB10R2N-record` 先红后绿。
+- **更正一处我自己的旧主张**：本文件与用例 docstring 曾写"记录事务由探针覆盖"——`barfix_normalize_probe.py` 驱动的是**通用 handler 的 `IngestService.ingest`**（另一处站点），**不能**引作记录事务的证据。
+- **变异 17/17 KILLED**（`barfix-mutations.json`；`src_fingerprint_identical` 与 `git_status_identical` 均为真），逐条**副本内先红后绿**。
+- **我自己两处 harness 账目缺陷（已修 + 已入自检）**：① 一个变异 id 被**声明两次**（重复字典键**静默**丢掉前一份定义，条数看着仍对）；② 锚点在目标文件里**不唯一**时 `replace(..., 1)` 会改到**第一处**（陈旧变异照样报 KILLED）。`barfix_mutations.py` 的 `_self_check()` 现在跑前先拒绝这两种矩阵，并加了第三条：**替换文本已存在 = 什么都没改**（本 run 已登记过两次"没有变异的变异"）。为此写的一次性审计脚本**已删除**（检查已并入自检，不在录里留两份会漂移的副本），`barfix-mutations.json` 由**加了自检之后**的同一份 harness 重跑生成。
+- **`F-COV-01`（记录缺陷，我的，已更正）**：2026-09-18 那批锚定的是 `coverage.json` 的**raw sha256**（`8cf4a793…`，1,138,137 B）——但该工作树文件**没有留存**（仓里跟踪的那份是 1,014,394 B 的旧产物），且报告含 `meta.timestamp`/`meta.version` ⇒ 那个锚**不可复现**（`B.VR-ba1` F-BA1-05 的处置本身不够）。现在**双锚**：raw sha256（`ae00af2e…`，1,138,400 B，95 文件）+ **内容锚** `measurement_sha256 = e223dab3…`（只对 `files`+`totals` 规范化求 sha256，跨运行可复算），**测量文件本身**存进证据 `barfix6-coverage.json`，复算脚本 `coverage_anchor.py`，被改模块的棘轮数值在 `barfix6-coverage-numbers.txt`（normalizer 60.5 vs 冻结 53）。
+- **`F-ZR409-01`（既有用例的宿主敏感性，**实测归因**，已登记未改）**：全量 `tests/` 这次 **1 failed / 2870 passed / 8 skipped**，唯一失败是 `test_zr409_fourth_root_real_journeys.py::test_c2_journey_dayu_only_real_sample`（**CI 的 contract 步显式 `--ignore` 这个文件**，覆盖率步带 `|| true`）。它的"零写入 oracle"把**真实根目录顶层子项的 `st_size`** 也算进指纹，而 240 秒**只读**观测（`zr409_live_root_watch.py`，49 采样）抓到 5 个子目录**自己从 4096 翻到 0 且 `mtime_ns` 一个没动**（云/占位目录在本机的签名，与 R5 的 `F-BAR-13` 同族）；同一棵树上该用例**单独复跑即绿**；生产库 size+mtime_ns 全程未变。⇒ **不是我这次改动**（本次改动只在回填路径，该用例不经过它），是**既有 oracle 对宿主状态过敏**；修它不在授权范围内。
 
 ## R4：跨仓端到端只读（filing-fetch 真实入口）+ R5：`dropbox_stock` 3 份字节核验（2026-09-18）
 

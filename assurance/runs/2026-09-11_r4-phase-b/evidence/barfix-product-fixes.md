@@ -57,10 +57,52 @@
 - **没有**改 `envelope_schema_version`、**没有**新增 reason 词表项、**没有** bump taxonomy 版本。
 - **没有**改 `future_lake`/`dropbox_stock` 的**声明**（只改"声明了 adapter 的根怎么被扫"）。
 
-## 6. `F-B10R2` 家族**剩余**站点（未做，需继续）
+## 6. `F-B10R2` 家族 normalize 侧站点（**2026-09-19 全部收口**）
 
-| 站点 | 现状 |
+owner 2026-09-18 的第四条指令（「4，修」）覆盖 `F-B10R2-MISSINGFILE` 家族与 `scripts/` 两处读取者；
+下表是**该指令下已交付**的处置（原文的"剩余/未做"状态由本表取代）：
+
+| 站点 | 现状（2026-09-19） |
 |---|---|
-| `normalizer.normalize_catalog` 的 **unsupported handler 里的 `IngestService.ingest`** | 主文件缺失 ⇒ `SourceManifestMismatchError` 逃出、**饿死队列里后面的文档**（r3/r4 已实测 S1/S4/S7/S8/S12）。修法需与"逐文档失败"语义对齐（**行为改动**，要有行为级探针 + 变异 + 复审） |
-| 成功路径的 `IngestService.ingest`、其后的 transaction 块、**两处 `fetchall`** | 同为"单文档问题可能中止整轮"，需同类处置 |
-| `_atomic_write` 的 `mkdir` | r4 已用人造 FS 阻塞驱动过（S10），但**修法未落地** |
+| `normalizer.normalize_catalog` 的 **unsupported handler 里的 `IngestService.ingest`** | **已修**：改走 `_ingest_without_raising`（永不抛），不可读/不匹配的 manifest 变成**具名**逐文档失败 `ingest_failed:<Exc>`（r3/r4 实测的 S1/S4/S7/S8/S12 形状现在都落在这一条上） |
+| 成功路径的 `IngestService.ingest`、其后的 transaction 块 | **已修**：`ingest_failed:<Exc>` 与 `artifact_record_failed:<Exc>`，均 `continue` |
+| **第一处 `fetchall`**（循环内取该文档的 locations） | **已修**：`locations_read_failed:<Exc>`（**可重试**，耗尽预算后 `retry_exhausted:<code>`） |
+| **第二处 `fetchall`**（`backfill_text_fingerprints` 里取 locations） | **已修**（2026-09-19，本文件 §7）：同形守卫 + 退避 + `retry_exhausted:` 终态；变异 `FB10R2N-backfill-read` KILLED |
+| `_atomic_write` 的 `mkdir` / 写盘 | **已修**：`artifact_write_failed:<Exc>` + 记录 `artifact_byte_size` |
+| 包内 4 处未守卫的同名列解析 | **已修**：`activation.py`（`ActivationError`）、`assertion_service.py`（`ValueError`）、`remediation.py`（`RemediationError`）、`scanner.py`（size+mtime 捷径**降级为重新哈希**，批次不停、坏行自愈） |
+| `scripts/legacy_observer.py` / `scripts/wu904_remediation_restore.py` | **已修**：收敛到 `store.metadata_object`；棘轮升级为**硬零** |
+
+## 7. 第二处 `fetchall` 的补修（2026-09-19）
+
+- **为什么还有一处**：2026-09-18 那批把 normalize 侧的四处守卫做完后，`backfill_text_fingerprints`
+  里的 `locations` 读取**仍是裸的**——一条失败的语句（库被锁、索引损坏）会**逃出整个回填批次**，
+  饿死它后面的每一份文档。owner 指令原文点名的是"**两处** `fetchall`"，这就是第二处。
+- **处置**：与第一处**同形**——`except sqlite3.Error` ⇒ `locations_read_failed:<Exc>`；**读失败与文档无关**，
+  所以先记 **`retryable_failed` + 退避**，`attempt_count` 达到 `retry_limit` 才落 `failed_terminal`
+  （`retry_exhausted:<code>`），随后 `failed += 1; continue`。
+  **登记的限制**：`record_fingerprint_outcome` 调用本身**不**加守卫——连结果行都写不进去的库是硬停，
+  吞掉它只会**静默丢掉记录**；另两条批级读取（`select_fingerprint_batch`、`fingerprint_status`）在循环
+  **之外**，失败**无法归因到某一份文档**，因此仍是整批失败（未改）。
+- **用例**（`tests/contract/test_fbar_b10r2_normalize_guards.py`，2 条）：`retry_limit=1` ⇒ 终态 + 具名原因
+  + 其后两份健康文档 `completed`；`retry_limit=3` ⇒ `retryable_failed` / `attempt_count=1` /
+  `last_error_code=locations_read_failed:OperationalError` / `next_retry_at=2027-01-15T08:15:00Z`。
+  第二条是**必要的**：没有它，一个无条件写终态的守卫也能骗过第一条。
+- **变异 `FB10R2N-backfill-read`**（忠实回退：`except sqlite3.Error` → `except ()`）：
+  **副本内先红**（`2 failed, 4 passed`，红的那两条正是新增的两条）⇒ **修后绿**（6 passed）；
+  全矩阵 **17/17 KILLED**（`src_fingerprint_identical` 与 `git_status_identical` 均为真）。
+- **顺带把第四个守卫也变成"被驱动"**：`normalize_catalog` 的**记录事务**（`artifact_record_failed`）
+  此前只有"与其它守卫同形"这句话撑着——那是**阅读**不是**证明**。现在有独立故障注入
+  （`test_a_failing_record_transaction_is_a_per_document_failure`）：harness 播种完成后才**武装**开关，
+  而 `normalize_catalog` 每份文档**只开一次** `store.transaction()`（span 删除 / span 插入 / artifact
+  upsert / fingerprint 更新共用），所以"第一次调用抛错"是**无歧义**的——第一次抛，第二次仍必须提交。
+  变异 `FB10R2N-record` 副本内先红（`1 failed, 6 passed`，红的那条正是新用例）⇒ 修后绿（7 passed）。
+  **更正**：本文件旧版与用例 docstring 曾写"记录事务由探针覆盖"——`barfix_normalize_probe.py` 驱动的是
+  **通用 handler 的 `_ingest_without_raising`**（另一处站点），**不能**拿来当这处的证据。
+- **同时修掉的两处 harness 缺陷**（都是我自己的账目问题，已入 `barfix_mutations.py` 的自检）：
+  ① `FB10R2N-read` 在矩阵里被**声明了两次**（重复字典键会**静默**丢掉前一份定义，"16 条"看着仍对）；
+  ② 变异锚点若在目标文件里出现多次，`replace(..., 1)` 会改到**第一处**——一个陈旧变异照样报 KILLED。
+  现在 `_self_check()` 在跑之前先拒绝这两种矩阵，并**加了第三条**：替换文本若**已存在**，该变异
+  **什么都没改**（本 run 已登记过两次"没有变异的变异"）。三条检查覆盖了 17 条变异；
+  我为此写的一次性审计脚本已删除（其检查已并入自检，避免录里留两份会漂移的副本），
+  `barfix-mutations.json` 由**加了自检之后**的同一份 harness 重跑生成。
+

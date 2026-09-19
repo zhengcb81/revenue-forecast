@@ -140,13 +140,14 @@ MUTANTS: dict[str, dict] = {
         "reverts": ("a failing per-document locations read is a per-document failure "
                     "(F-B10R2 family, normalize side)"),
     },
-    "FB10R2N-read": {
+    "FB10R2N-backfill-read": {
         "file": "src/company_wiki/source_catalog/normalizer.py",
-        "old": "        except sqlite3.Error as exc:\n            failed += 1\n            last_failure_code = f\"locations_read_failed:{type(exc).__name__}\"\n",
-        "new": "        except ():\n            failed += 1\n            last_failure_code = f\"locations_read_failed:{type(exc).__name__}\"\n",
+        "old": "        except sqlite3.Error as exc:\n            next_attempt = attempt_count + 1\n            error_code = f\"locations_read_failed:{type(exc).__name__}\"\n",
+        "new": "        except ():\n            next_attempt = attempt_count + 1\n            error_code = f\"locations_read_failed:{type(exc).__name__}\"\n",
         "test": "tests/contract/test_fbar_b10r2_normalize_guards.py",
-        "reverts": ("a failing per-document locations read is a per-document failure "
-                    "(F-B10R2 family, normalize side)"),
+        "reverts": ("the SECOND per-document locations read (in `backfill_text_fingerprints`) is "
+                    "a per-document outcome, not a dead batch - owner instruction item (4), "
+                    "\"the two fetchall calls\""),
     },
     "FB10R2N-write": {
         "file": "src/company_wiki/source_catalog/normalizer.py",
@@ -155,6 +156,14 @@ MUTANTS: dict[str, dict] = {
         "test": "tests/contract/test_fbar_b10r2_normalize_guards.py",
         "reverts": ("an unwritable derived artifact is a per-document failure "
                     "(F-B10R2 family, normalize side)"),
+    },
+    "FB10R2N-record": {
+        "file": "src/company_wiki/source_catalog/normalizer.py",
+        "old": "        except sqlite3.Error as exc:\n            failed += 1\n            last_failure_code = f\"artifact_record_failed:{type(exc).__name__}\"\n",
+        "new": "        except ():\n            failed += 1\n            last_failure_code = f\"artifact_record_failed:{type(exc).__name__}\"\n",
+        "test": "tests/contract/test_fbar_b10r2_normalize_guards.py",
+        "reverts": ("the record transaction is a per-document step: a failing statement there "
+                    "must not abort the run (the fourth guard of the F-B10R2 normalize family)"),
     },
     "FBA1-03": {
         "file": "src/company_wiki/source_catalog/resolver.py",
@@ -238,12 +247,48 @@ def _run_pytest(work: Path, test_file: str) -> dict:
             "tail": out.strip().splitlines()[-4:]}
 
 
+def _self_check() -> None:
+    """Refuse to run when the matrix itself is unsound (measured 2026-09-20, both were real).
+
+    * a DUPLICATED dict key silently drops the earlier definition, so a declared mutant would
+      never run while the count still looked right;
+    * an AMBIGUOUS anchor (present more than once in the target file) makes `replace(..., 1)`
+      mutate whichever copy comes first - a stale mutant that still reports "killed";
+    * a mutant whose REPLACEMENT text is already present mutates nothing at all.  This run has
+      already recorded two "a mutation that does not mutate" defects (a `rpartition` that kept
+      the last occurrence, and an equivalent rewrite), so it is checked, not assumed.
+    """
+    import re
+
+    source = Path(__file__).read_text(encoding="utf-8")
+    declared = re.findall(r'^    "([A-Za-z0-9_-]+)": \{', source, re.M)
+    duplicates = sorted({key for key in declared if declared.count(key) > 1})
+    if duplicates:
+        raise SystemExit(f"duplicated mutant id(s) in the matrix: {duplicates}")
+    if len(declared) != len(MUTANTS):
+        raise SystemExit(
+            f"declared {len(declared)} mutant ids but built {len(MUTANTS)}: a key is not parsed")
+    problems: list[str] = []
+    for mutant_id, spec in MUTANTS.items():
+        body = (WIKI / spec["file"]).read_text(encoding="utf-8")
+        occurrences = body.count(spec["old"])
+        if occurrences != 1:
+            problems.append(f"{mutant_id}: anchor occurs {occurrences}x in {spec['file']}")
+        if spec["new"] in body:
+            problems.append(f"{mutant_id}: the mutated text is ALREADY present (no-op mutant)")
+    if problems:
+        raise SystemExit("unsound mutation matrix:\n  " + "\n  ".join(problems))
+    print(f"self-check ok: {len(declared)} mutants, every anchor unique and load-bearing")
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--only", help="run a single mutant id")
     args = parser.parse_args(argv)
+
+    _self_check()
 
     repo_before = _fingerprint_tree(WIKI / "src")
     status_before = subprocess.run(["git", "-C", str(WIKI), "status", "--porcelain"],
