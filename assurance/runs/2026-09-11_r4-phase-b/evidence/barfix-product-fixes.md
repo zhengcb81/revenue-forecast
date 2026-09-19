@@ -88,7 +88,10 @@ owner 2026-09-18 的第四条指令（「4，修」）覆盖 `F-B10R2-MISSINGFIL
   `last_error_code=locations_read_failed:OperationalError` / `next_retry_at=2027-01-15T08:15:00Z`。
   第二条是**必要的**：没有它，一个无条件写终态的守卫也能骗过第一条。
 - **变异 `FB10R2N-backfill-read`**（忠实回退：`except sqlite3.Error` → `except ()`）：
-  **副本内先红**（`2 failed, 4 passed`，红的那两条正是新增的两条）⇒ **修后绿**（6 passed）；
+  **副本内基线 7 passed ⇒ 回退后 `2 failed, 5 passed`**（红的那两条正是新增的两条回填用例），
+  即先红后绿；数字取自 `barfix-mutations.json` 的 `baseline` / `mutated`。
+  （**更正 F-IR-10**：本节旧版写的是 `2 failed, 4 passed` / `6 passed`——那是**第三条用例尚未加入**时的
+  旧计数，与同节下面的"7 passed"自相矛盾。）
   全矩阵 **17/17 KILLED**（`src_fingerprint_identical` 与 `git_status_identical` 均为真）。
 - **顺带把第四个守卫也变成"被驱动"**：`normalize_catalog` 的**记录事务**（`artifact_record_failed`）
   此前只有"与其它守卫同形"这句话撑着——那是**阅读**不是**证明**。现在有独立故障注入

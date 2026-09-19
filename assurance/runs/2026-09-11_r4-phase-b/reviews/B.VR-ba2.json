@@ -1,0 +1,129 @@
+{
+  "review_id": "B.VR-ba2",
+  "reviewer": "independent read-only subagent (df04021d-b515-4526-a3b5-13dd772b27c9)",
+  "reviewed_at_utc": "2026-09-19T09:55:00Z",
+  "scope": "the 2026-09-19 BAR increment: company-wiki f39bd5a (backfill_text_fingerprints' locations read guarded; record-transaction guard driven; 3 new tests; barfix_mutations.py _self_check + 2 new mutants) and revenue-forecast 2c5384b (the record and barfix6-* evidence)",
+  "verdict": "approve_with_findings",
+  "verdict_note": "所有实质断言（第二处 fetchall 守卫承载且不可替代、记录事务守卫真被驱动、17/17 变异、覆盖率双锚、F-ZR409-01 归因）均由复审在 %TEMP% 副本内独立重跑复现；只有三处记录账目缺陷（P3）。",
+  "transcription_note": "复审通过会话消息返回报告，本文件由作者会话逐字转录（未改写数字与结论）；复审的临时工作物在 %TEMP%\\vf_r4\\，两仓零改动。",
+  "findings": [
+    {
+      "id": "F-IR-01",
+      "claim_under_test": "C1 第二处 fetchall 守卫承载",
+      "severity": "none",
+      "statement": "claim reproduced（\"只回退它 ⇒ 只有这两条红\"成立）",
+      "evidence": "%TEMP%\\vf_r4\\rev_second_read（仅回退第二处 fetchall 守卫）内 python -m pytest tests/contract/test_fbar_b10r2_normalize_guards.py -p no:cacheprovider：同副本基线 7 passed；回退后 2 failed, 5 passed，红的正是两条新回填测试，异常为逃逸的 sqlite3.OperationalError: database is locked (injected)"
+    },
+    {
+      "id": "F-IR-02",
+      "claim_under_test": "C2 语义 / off-by-one / 可重选",
+      "severity": "none",
+      "statement": "claim reproduced；next_attempt>=retry_limit 与 store.py 的 next_retry_at <= now 谓词、以及既有 parser 分支逐行同形",
+      "evidence": "python probe_tx.py（retry_limit=2 阶梯 + 读 store.py:1357-1450）：t0→retryable_failed/attempt_count=1/next_retry_at=2027-01-15T08:15:00Z；t0+899→未被重选（failed=0）；t0+900→重选并 failed_terminal/attempt_count=2/retry_exhausted:locations_read_failed:OperationalError，同批 completed=2"
+    },
+    {
+      "id": "F-IR-03",
+      "claim_under_test": "C3 记录事务用例无歧义",
+      "severity": "none",
+      "statement": "claim reproduced（3 文档中坏行 ingest 早退，健康 2 份各恰好一次）",
+      "evidence": "python probe_tx.py + rev_record_tx 单测：{\"normalize_catalog_completed\":2,\"transaction_calls\":2,\"callsites\":[[\"normalize_catalog\",1934]]}；回退该守卫 → 1 failed，异常在 normalizer.py:1933 逃逸"
+    },
+    {
+      "id": "F-IR-04",
+      "claim_under_test": "C4 JSON 与树内 harness 一致",
+      "severity": "none",
+      "statement": "claim reproduced（killed_by 由 pytest 退出码导出，语法串只作否决）",
+      "evidence": "python barfix_mutations.py --out %TEMP%\\vf_r4\\barfix-mutations-rerun.json → self-check ok: 17 mutants；17/17 KILLED；exit 0；与已提交 JSON 逐字段（id 顺序/killed/killed_by/file/test/baseline+mutated 的 passed·exit_code·syntax）差异 []"
+    },
+    {
+      "id": "F-IR-05",
+      "claim_under_test": "C4 _self_check() 三条自检真会拒绝",
+      "severity": "none",
+      "statement": "claim reproduced",
+      "evidence": "python c4_selfcheck.py（TEMP 内三份注入副本）：重复 id→duplicated mutant id(s) ... ['FB10R2N-read']；锚点不唯一→FBA1-04: anchor occurs 278x；替换已存在→the mutated text is ALREADY present；干净矩阵 self-check ok"
+    },
+    {
+      "id": "F-IR-06",
+      "claim_under_test": "C4 17 条全 KILLED",
+      "severity": "none",
+      "statement": "claim reproduced",
+      "evidence": "all_killed True、killed_by_set ['pytest assertion']、exit_codes [1]、syntax_flags [False]、notes []、git_status_added/removed []、src_fingerprint_identical 与 git_status_identical 均 true"
+    },
+    {
+      "id": "F-IR-07",
+      "claim_under_test": "C6 新锚可复算",
+      "severity": "none",
+      "statement": "claim reproduced",
+      "evidence": "python coverage_anchor.py barfix6-coverage.json --expect e223dab3... → measurement_sha256 e223dab3fd91…f306、raw ae00af2e…、raw_byte_size 1138400、files 95，退出 0；另从留存 JSON 重算 7 个模块 60.5/97.0/82.5/89.2/92.2/85.8/78.8 与 totals 83.11077057793345，与 barfix6-coverage-numbers.txt 全等；冻结值 53/95/82 在 test_fc1204_coverage_ratchet.py:94/34/54"
+    },
+    {
+      "id": "F-IR-08",
+      "claim_under_test": "C6 旧锚不可复现",
+      "severity": "none",
+      "statement": "claim reproduced（报告内嵌 timestamp ⇒ raw 哈希不可复现）",
+      "evidence": "python c6_anchor2.py（两仓全对象 + 工作树扫描）：尺寸 1,138,137 的 blob = 0；sha256 8cf4a793… 命中 = 0；wiki 唯一 coverage.json blob = 1,014,394 B / 8f9f5093…，meta.timestamp 2026-08-17T20:58:29"
+    },
+    {
+      "id": "F-IR-09",
+      "claim_under_test": "C7 只读性与归因",
+      "severity": "none",
+      "statement": "claim reproduced（失败断言正是 assert portfolio_before == _shallow_fingerprint( ）",
+      "evidence": "读 zr409_live_root_watch.py + zr409-live-root-watch.json + os.stat(生产库) + 单跑该用例：脚本仅 iterdir/stat/git status（load_catalog_config 为纯 YAML 解析，无 mkdir/写）；JSON 240 s / 49 采样 / 5 个子目录 4096→0 且 mtime_ns 逐一未变 / production_db_unchanged=true；现库 49,677,344,768 B @ mtime_ns 1789799495406919100 与前后值相同；单跑 1 passed in 3.72s；ci.yml:55 显式 --ignore、:63 带 || true"
+    },
+    {
+      "id": "F-IR-10",
+      "claim_under_test": "C5 §7 变异计数",
+      "severity": "P3",
+      "statement": "barfix-product-fixes.md 写\"先红（2 failed, 4 passed）⇒ 修后绿（6 passed）\"，但已提交 JSON 与树内测试文件都是 7 条：baseline 7 passed、mutated 2 failed, 5 passed（复审重跑同值）",
+      "evidence": "比对 barfix-product-fixes.md:91 ↔ 已提交 barfix-mutations.json ↔ 树内测试文件；该数字取自\"第三条用例尚未加入\"的旧版本，且与同文件后面的\"7 passed\"自相矛盾",
+      "required_fix": "改为与 barfix-mutations.json 一致的 7 条计数，或注明版本"
+    },
+    {
+      "id": "F-IR-11",
+      "claim_under_test": "C5 checkpoint 一致性",
+      "severity": "P3",
+      "statement": "reviewed commit 2c5384b 里的 checkpoint.json 是增量前的快照：generated_at_utc 2026-09-19T00:21:00Z、reviewed_commit 9e0271f、全文不含 f39bd5a/17/17/2870/1939，却仍写 \"ratchets 4 passed (anchored to coverage.json sha256 8cf4a793...)\"",
+      "evidence": "git show 2c5384b:assurance/runs/2026-09-11_r4-phase-b/checkpoint.json；该文件被 excluded_by_design 排除在自身 manifest 外，完整性检查抓不到；读者单看 checkpoint 会以为已作废的锚有效",
+      "required_fix": "本批内重建（reviewed_commit=2c5384b），或明写\"待重建\""
+    },
+    {
+      "id": "F-IR-12",
+      "claim_under_test": "C5 登记口径一致",
+      "severity": "P3",
+      "statement": "同一 flake 用例两个登记号且互不引用：F-ZR409-1 的机理是 OSError→b\"inaccessible\"（自述\"未被证明\"），F-ZR409-01 是实测 st_size 4096→0、mtime_ns 不动",
+      "evidence": "findings.md:71（F-ZR409-01）↔ findings.md:131-138（F-ZR409-1）；两条均\"已登记未改\"，读者无法判定现行口径",
+      "required_fix": "在 F-ZR409-1 加一行指向 F-ZR409-01，或合并两号"
+    }
+  ],
+  "passing_checks_not_listed_as_findings": [
+    "第二处 fetchall 已修、记录事务守卫被驱动、select_fingerprint_batch/fingerprint_status 确在循环外且无守卫、record_fingerprint_outcome 调用确实未加守卫（均为代码直读）",
+    "_self_check 声明数为 17、FB10R2N-read 重复声明确实在父修订 06533ef 的 harness 中存在（16 行声明 / 15 个键）",
+    "barfix_normalize_probe.py 驱动的确实是通用 handler 的 ingest（其变异点在 _ingest_without_raising 调用处），作者对旧主张的更正成立"
+  ],
+  "reproduction": [
+    {"number": "测试条数", "result": "7 collected / 7 passed", "command": "python -m pytest tests/contract/test_fbar_b10r2_normalize_guards.py -q（%TEMP%\\vf_r4\\base）"},
+    {"number": "仅回退第二处守卫", "result": "2 failed / 5 passed", "command": "同上，cwd=%TEMP%\\vf_r4\\rev_second_read"},
+    {"number": "回退记录事务守卫", "result": "1 failed @ normalizer.py:1933", "command": "同上单测，cwd=%TEMP%\\vf_r4\\rev_record_tx"},
+    {"number": "transaction 调用点", "result": "3 文档 → 2 次，均 normalize_catalog:1934", "command": "python probe_tx.py"},
+    {"number": "退避时间戳", "result": "1_800_000_900 → 2027-01-15T08:15:00Z", "command": "python probe_tx.py"},
+    {"number": "变异矩阵", "result": "17/17 KILLED，exit 0，semantic diff = []", "command": "python barfix_mutations.py --out %TEMP%\\vf_r4\\barfix-mutations-rerun.json"},
+    {"number": "自检拒绝", "result": "3/3 拒绝 + clean ok", "command": "python c4_selfcheck.py"},
+    {"number": "measurement_sha256", "result": "e223dab3…f306", "command": "python coverage_anchor.py barfix6-coverage.json --expect e223dab3…"},
+    {"number": "raw 锚 / 大小 / 文件数", "result": "ae00af2e… / 1,138,400 B / 95", "command": "同上"},
+    {"number": "totals", "result": "83.11077057793345", "command": "读 barfix6-coverage.json 重算"},
+    {"number": "旧锚存在性", "result": "0 命中 / 7225+4045 blob", "command": "python c6_anchor2.py"},
+    {"number": "生产库", "result": "49,677,344,768 B @ mtime_ns 1789799495406919100（与 watch 前后一致）", "command": "os.stat"},
+    {"number": "ZR409 单跑", "result": "1 passed in 3.72s", "command": "python -m pytest tests/contract/test_zr409_fourth_root_real_journeys.py::test_c2_journey_dayu_only_real_sample -q"},
+    {"number": "全量尾部", "result": "1 failed, 2870 passed, 8 skipped, 1032.44s", "command": "证据文件 barfix6-coverage-run.txt 尾部"},
+    {"number": "本地 CI", "result": "unit 799/70.03s；contract 1939+8 skipped/1072.78s；棘轮 2 passed（上批 1936 ⇒ +3）", "command": "证据文件尾部"},
+    {"number": "commit 范围", "result": "f39bd5a=2 文件；2c5384b=18 项、无删除；wiki 树 git status 为空", "command": "git show --name-status --format=\"\""}
+  ],
+  "not_covered": [
+    "远端 CI run 35430114632：复审会话禁止联网，无法核对 run id 与结论（作者会话另行用 API 核对，见 b-vr-ba2-disposition.md）",
+    "\"为此写的一次性审计脚本已删\"：删前是否存在不可证明；证据目录现存 audit_manifest_compliance.py/ci_audit.py/claim_fact_audit.py 属更早的具名工作包，未见变异矩阵审计残留",
+    "全量 2870 passed / contract 1939 / unit 799：复审只核对了证据文件汇总行，未重跑（17 分钟超预算且 brief 明确禁止）",
+    "覆盖率\"跨运行可复算\"：复审只证明了留存文件自洽，未重跑一次测量去验证 e223dab3 能否由新测量复现（作者会话随后补做，见 barfix6-coverage-repro-*）",
+    "F-PROD-01（额外项）：复审独立核到 runtime_policy.json mtime 2026-09-02T18:34:03Z 且 flags.v2_scan_shadow=true、company_raw 无 adapter_id、7cf5957(2026-08-10) 引入 \"v2 scanner unavailable (fail closed)\"；但 files_seen 46600/0 只来自该 JSON（未打开 49 GB 生产库），\"改前代码会整轮中止\"是反事实、不可核"
+  ],
+  "temporary_artifacts": "%TEMP%\\vf_r4\\ setup.py, probe_tx.py, c4_check.py, c4_selfcheck.py, c6_anchor2.py, barfix-mutations-rerun.json（两仓零改动）"
+}
