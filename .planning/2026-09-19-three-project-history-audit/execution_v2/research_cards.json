@@ -1,0 +1,952 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "2026-09-19-three-project-history-audit",
+  "prepared_at": "2026-09-19",
+  "status": "planned",
+  "scope": "I-10-A先行披露适配、I-11定性量化、I-12评估设计、I-13买方交付；仅执行设计，未实施。",
+  "qualitative_template": {
+    "hypothesis_id": "H-<entity>-<segment>-<sequence>",
+    "claim": "可证伪的经营机制陈述",
+    "source": {
+      "doc_id": null,
+      "sha256": null,
+      "page_span": null,
+      "published_at": null,
+      "available_at": null,
+      "as_of": null,
+      "source_type": "company_disclosure/independent_observation/management_target/analyst_assumption",
+      "independence_group": null
+    },
+    "observation": {
+      "raw_value": null,
+      "raw_unit": null,
+      "period": null,
+      "scope": null
+    },
+    "mechanism_chain": [
+      "事件或事实",
+      "经营驱动",
+      "模型参数",
+      "收入确认"
+    ],
+    "parameter_mapping": {
+      "model_id": null,
+      "driver_name": null,
+      "parameter_id": null,
+      "unit": null,
+      "original_value": null,
+      "low": null,
+      "base": null,
+      "high": null,
+      "effective_period": null,
+      "conversion_formula": null
+    },
+    "calibration": {
+      "method": "contract arithmetic/historical relationship/external comparable/expert assumption",
+      "sample_ids": [],
+      "selection_rule": null,
+      "management_target_is_not_independent": true
+    },
+    "dependency_control": {
+      "shared_driver_ids": [],
+      "double_count_check": null,
+      "correlated_scenarios": [],
+      "scenario_joint_logic": null
+    },
+    "falsifier": {
+      "observable": null,
+      "threshold": null,
+      "observation_date": null,
+      "source_route": null,
+      "revert_rule": null
+    },
+    "decision": {
+      "professional_reviewer": null,
+      "decision": "pending",
+      "reason": null,
+      "decision_sha256": null
+    }
+  },
+  "qualitative_synthetic_example": {
+    "synthetic": true,
+    "not_real_disclosure": true,
+    "hypothesis_id": "H-SYNTH-RENEWABLE-01",
+    "claim": "更多发电量按固定合同结算，改变电价组合；不改变发电量。",
+    "source": {
+      "doc_id": "SYNTHETIC-CONTRACT-EXAMPLE",
+      "source_type": "synthetic",
+      "available_at": "2026-12-31",
+      "warning": "真实运行必须替换为可核验合同/披露；本例不授予披露资格。"
+    },
+    "model_id": "renewable_generation",
+    "parameter_id": "SYNTH_contract_share_2027",
+    "driver": "contracted_share",
+    "original_value": 0.5,
+    "low": 0.5,
+    "base": 0.6,
+    "high": 0.7,
+    "unit": "合同覆盖的预计交付MWh/全部预计交付MWh",
+    "effective_period": "FY2027",
+    "fixed_inputs": {
+      "average_commissioned_mw": 2,
+      "period_hours": 8760,
+      "pre_curtailment_capacity_factor": 0.5,
+      "curtailment_rate": 0,
+      "contract_price_per_mwh": 40,
+      "merchant_price_per_mwh": 20,
+      "other_revenue": 1200
+    },
+    "hand_work": "电量=2×8760×0.5=8760MWh；low电价30、base32、high34；收入分别264000、281520、299040。base相对原值增17520。只变contracted_share，不能再加一项所谓定性溢价收入。",
+    "expected_revenue": {
+      "low": 264000,
+      "base": 281520,
+      "high": 299040
+    },
+    "required_real_fields": [
+      "合同覆盖MWh或可转换的容量/负荷曲线",
+      "生效日期",
+      "固定电价及结算边界",
+      "已锁定与拟签约区分",
+      "合同与市场价格关联"
+    ],
+    "falsifier": "约定观察日仍无已生效合同证据，或预计交付覆盖比例低于审定下界：保持/恢复上一已证实比例；禁止悄悄修改历史快照。",
+    "professional_decision": "低基高比例只是合成教学数值，真实比例及阈值须按证据另行审定。"
+  },
+  "evaluation_design_fields": [
+    "评估问题：绝对收入/增速/驱动/条件收入何者为主要目标；唯一primary endpoint。",
+    "样本单位：entity×segment×origin×horizon×model_version；合并/分部关系与重复权重。",
+    "公司池及抽样：A/H/US、行业、生命周期、可得披露条件；退市/失败/并购公司纳入及排除理由。",
+    "信息截点：origin时刻与时区；available_at<=origin；发布日期缺失的处理；真实历史vintage和事后重建分开。",
+    "训练/调参/验证/最终测试的时间划分；滚动窗口/扩展窗口；同一集团不可跨集合泄漏；重叠horizon关联。",
+    "实际值定义：首次披露还是最终重述；币种/汇率、分部重组、财政年度、gross/net统一；并购中断规则。",
+    "预测horizon按财年或距origin月数；按horizon和生命周期分层，不能混成单一平均。",
+    "朴素baseline：最后可得同口径年度收入不变；上一可得同比延续；适用时季节性同季；不可得则标not_applicable。",
+    "指标/权重/零分母与缺失规则；low/high是否情景还是具有名义覆盖率的统计区间。",
+    "最小公司数/每层样本数、统计功效或可接受CI宽度；不足只描述，不宣称准确性优势。",
+    "比较设计：成对同样本、cluster/block单位、时间相关性、置信水平、重复抽样次数与随机种子；多模型检验校正方法。",
+    "成功/失败阈值：经济显著改善幅度、可接受偏差/覆盖/区间宽度，由统计与行业reviewer签字；禁止看到结果后补阈值。",
+    "中止、重跑及版本修订规则；注册冻结manifest SHA256后才解封测试实际值。"
+  ],
+  "metric_definitions": [
+    {
+      "id": "MAE",
+      "formula": "MAE = sum(|forecast_i-actual_i|)/n",
+      "boundary": "同币种尺度内；跨公司不得不经权重设计直接混合绝对误差。"
+    },
+    {
+      "id": "WAPE",
+      "formula": "WAPE = sum(|forecast_i-actual_i|)/sum(|actual_i|)",
+      "boundary": "分母0→undefined并计数，不加任意epsilon；大公司占权重，须同时报每公司等权指标。"
+    },
+    {
+      "id": "signed_bias",
+      "formula": "Bias_U = mean(forecast_i-actual_i); NormalizedBias = sum(forecast_i-actual_i)/sum(|actual_i|)",
+      "boundary": "正值代表高估；分母0→undefined；相互抵销需另报正/负误差分布。"
+    },
+    {
+      "id": "sMAPE_optional",
+      "formula": "mean(2*|forecast_i-actual_i|/(|forecast_i|+|actual_i|))",
+      "boundary": "两者都0按冻结设计明确记0或排除并报告；接近0不稳定，不能事后改用它获得漂亮结果。"
+    },
+    {
+      "id": "MASE_optional",
+      "formula": "MASE_i = |forecast_i-actual_i| / mean_train(|y_t-y_(t-m)|)",
+      "boundary": "m按期间季节性冻结；分母只用训练段；分母0→undefined；短序列不得虚构尺度。"
+    },
+    {
+      "id": "skill_vs_baseline",
+      "formula": "Skill = 1 - Loss_model/Loss_baseline（同样本、同损失、同权重）",
+      "boundary": "baseline loss=0→undefined；不把负skill删掉；CI或显著性方法按冻结设计。"
+    },
+    {
+      "id": "scenario_containment",
+      "formula": "count(low_i <= actual_i <= high_i)/n",
+      "boundary": "无名义概率的低/高情景只能叫情景包含率，不得叫80%或90%置信覆盖；同时报区间宽度。"
+    },
+    {
+      "id": "interval_width",
+      "formula": "mean(high_i-low_i); normalized width=sum(high_i-low_i)/sum(|actual_i|)",
+      "boundary": "high<low直接数据错误；归一分母0→undefined。极宽范围的包含率高不代表质量高。"
+    },
+    {
+      "id": "interval_score_if_probabilistic",
+      "formula": "IS_alpha=(u-l)+(2/alpha)*(l-y)*1[y<l]+(2/alpha)*(y-u)*1[y>u]",
+      "boundary": "仅用于事前明确为1-alpha名义覆盖率的统计区间，0<alpha<1；情景带禁用。"
+    },
+    {
+      "id": "pinball_if_quantiles",
+      "formula": "rho_tau(y-q)=(tau-1[y<q])*(y-q)",
+      "boundary": "仅用于事前声明的tau分位预测且0<tau<1；不可把base擅自称中位数。"
+    },
+    {
+      "id": "CAGR",
+      "formula": "CAGR=(R_end/R_start)^(1/h)-1",
+      "boundary": "R_start>0且h>0才可算；零基期记undefined，报告绝对增量，不伪造无限增长或0%。"
+    },
+    {
+      "id": "driver_reconciliation",
+      "formula": "revenue_residual = independently_reported_revenue - rebuilt_revenue",
+      "boundary": "按数量/价格/时间/币种/范围解释残差；不是用收入反推一个参数后再声称独立验证。"
+    }
+  ],
+  "buy_side_dimensions": [
+    {
+      "id": "B01",
+      "title": "证据与信息日",
+      "score0": "重大事实无来源、未来信息泄漏或原文无法读。",
+      "score1": "来源可定位但至少一处重大结论未完成原文核查/版本对齐。",
+      "score2": "全部重大事实有原文/页码/hash/available_at且核查记录可复核。"
+    },
+    {
+      "id": "B02",
+      "title": "收入定义与历史桥",
+      "score0": "币种/尺度/总净额/期间/并表范围错，或实质性未解释差额。",
+      "score1": "定义已知但重述/分部历史对账有待review。",
+      "score2": "历史收入、经营量价与分部合计可对账；差额及范围获审定。"
+    },
+    {
+      "id": "B03",
+      "title": "因果驱动与参数",
+      "score0": "只有目标增速，或参数无依据/重复计数。",
+      "score1": "驱动明确但校准、时点或双计审查未完成。",
+      "score2": "主要驱动逐参数有证据或明确假设、幅度校准、时间和反方审查。"
+    },
+    {
+      "id": "B04",
+      "title": "模型经济约束",
+      "score0": "单位/存量桥/产销/供需/收入确认存在矛盾。",
+      "score1": "公式通过但至少一项专业适配待签。",
+      "score2": "适用模型、存量锚点、单位、会计和生命周期约束均签署。"
+    },
+    {
+      "id": "B05",
+      "title": "情景和敏感性",
+      "score0": "低高次序/依赖不合理、相关driver独立乱调或情景冒充概率。",
+      "score1": "有三情景但关键约束或敏感性未走查。",
+      "score2": "联合情景、关键约束、方向/幅度敏感性和非线性交互解释完整。"
+    },
+    {
+      "id": "B06",
+      "title": "投资者决策信息",
+      "score0": "无法解释收入增长来源、时点、主要风险和可证伪条件。",
+      "score1": "能回答主体问题但贡献分解/预期差口径未完整说明。",
+      "score2": "增长贡献、路径、预期差或不可得说明、催化/反证及更新触发器清晰可追溯。"
+    },
+    {
+      "id": "B07",
+      "title": "资格与准确性诚实",
+      "score0": "把合成测试/拟合/情景范围宣传为实际准确性证明。",
+      "score1": "局限写明但公式/适配/准确性三栏混在一起。",
+      "score2": "三栏独立；I-12已完成则准确转述，未完成清楚写unproven及覆盖缺口。"
+    },
+    {
+      "id": "B08",
+      "title": "复现与交付完整",
+      "score0": "关键输入/输出/版本缺失，或伪造运行/发布回执。",
+      "score1": "可复算主体但证据链/独立签署/接续项未齐。",
+      "score2": "版本hash、命令日志、引用、独立审阅与接续项齐全；发布资格另行真实验证。"
+    }
+  ],
+  "hard_blocks": [
+    "实质性单位/币种/尺度/期间/总净额或并表范围错误。",
+    "重要事实无可核原文、hash错、源实际读取未证实或信息泄漏。",
+    "存量桥、收入对账、产销/供需约束失败且未获明确适用性裁决。",
+    "参数冒充披露、管理层目标冒充独立证据、同一驱动双计。",
+    "伪造模型运行、生产接线、下载/索引/发布回执或以文件名替代实际行为。",
+    "未通过适用模型公式与披露资格，却以正式预测交付。",
+    "把未验证概率、回测提升或准确性作为已经成立的结论。"
+  ],
+  "buy_side_classification": "任一硬阻断或任一维度0→blocked；没有0但存在1→research_draft_needs_review；全部八维2且独立签署→buy_side_review_ready。总分0–16只展示，不能抵消阻断；该标签不是投资回报保证或准确性认证。",
+  "cards": [
+    {
+      "id": "I-10-A",
+      "parent": "I-10",
+      "title": "先行完成实际采用模型的专业披露适配",
+      "status": "planned",
+      "owner_role": "行业/会计reviewer主责；独立验证者核对原文和历史收入",
+      "depends_on": [
+        "I-07-B",
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05",
+        "M06",
+        "M07",
+        "M08",
+        "M09",
+        "M10",
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "M15",
+        "M16",
+        "M17",
+        "M18",
+        "M19",
+        "M20",
+        "M21",
+        "M22",
+        "M23",
+        "M24",
+        "M25",
+        "M26",
+        "M27",
+        "M28",
+        "M29",
+        "M30",
+        "M31"
+      ],
+      "preconditions": [
+        "I-07-B已提供实际公司、信息日及可读取来源；M01–M31的A–C公式资格已独立验收。",
+        "先冻结本次实际采用的公司/分部/模型清单；只要求这些模型完成企业披露适配，不要求未使用模型全部适配。",
+        "执行位置由I-00-B绑定隔离checkout；所有证据相对本轮新attempt_root，禁止覆盖旧审计或生产数据。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "从I-07-B公司材料建立selected_model_manifest：逐公司/分部列model_id、对应M卡、生命周期、会计口径、采用原因及适配范围。未使用模型标not_selected，不宣称企业适配通过。"
+        },
+        {
+          "step": 2,
+          "action": "逐个实际采用模型执行M卡D：逐字段原文/页码/hash/available_at/单位转换/参数ID映射，明确可选默认的经济依据、期初锚点和special_review。行业/会计reviewer对口径及约束签署；保险复杂口径加入精算reviewer。"
+        },
+        {
+          "step": 3,
+          "action": "执行M卡E的历史段对账：使用独立披露的已结束期间经营数据复建收入，与同口径已披露收入核对，先冻结容差，再解释量/价/汇率/范围/确认时间残差。不能用收入倒推参数后称独立验证。"
+        },
+        {
+          "step": 4,
+          "action": "通过calculate_model_path验证字段→参数→模型→输出的接线。此阶段可用已披露历史参数在low/base/high三个键上保持同值以验证映射，无需等待I-11的定性参数校准；必须标historical_mapping_probe，不称三情景预测。"
+        },
+        {
+          "step": 5,
+          "action": "逐公司/模型签署disclosure_adaptation资格，附对应M卡D/E产物及独立review。先行适配完成后，I-11-B可在已审定口径内校准参数值，I-07-E消费该资格进行最终公司预测；本卡不依赖I-11或I-07-E。"
+        },
+        {
+          "step": 6,
+          "action": "若后续仅改变同一口径下假设值，保留适配引用并记录参数delta；若改模型、单位、会计、分部范围或收入确认逻辑，则创建新适配版本，使依赖旧口径的下游结果失效并按顺序重跑，不能以旧资格覆盖新口径。"
+        }
+      ],
+      "stop_conditions": [
+        "实际采用清单不明确或来源不可读取→STOP_SELECTION_OR_EVIDENCE。",
+        "任一实际采用模型公式资格未通过→STOP_FORMULA_DEPENDENCY。",
+        "单位/会计/期初锚点/收入历史桥未解决→STOP_DISCLOSURE_ADAPTATION；允许其他已合格分部保留局部结果，但不放行整个公司正式预测。",
+        "只有历史映射probe却声称真实三情景/准确性通过→STOP_QUALIFICATION_SCOPE。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-10-A/selected_model_manifest.json",
+        "evidence/I-10-A/disclosure_mapping.json",
+        "evidence/I-10-A/accounting_decision.md",
+        "evidence/I-10-A/historical_reconciliation.json",
+        "evidence/I-10-A/historical_mapping_probe.json",
+        "evidence/I-10-A/model_DE_evidence_manifest.json",
+        "evidence/I-10-A/disclosure_qualification.json",
+        "evidence/I-10-A/independent_adaptation_review.md"
+      ],
+      "acceptance": "每个实际采用的公司/分部/模型完成M卡D/E专业适配与独立签署，证据可复核，口径范围明确；未使用模型只标not_selected。该卡不授予准确性，不要求I-11或I-07-E产物。"
+    },
+    {
+      "id": "I-11-A",
+      "parent": "I-11",
+      "title": "冻结定性到参数的可证伪命题",
+      "status": "planned",
+      "owner_role": "行业reviewer主责，弱模型可整理证据",
+      "depends_on": [
+        "I-00-B",
+        "I-00-C"
+      ],
+      "preconditions": [
+        "基期公司/分部/信息日确定；只用可核验来源。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "逐个命题填qualitative_template，禁止空着source、driver或单位。"
+        },
+        {
+          "step": 2,
+          "action": "把管理层目标单列source_type，按原始来源归并independence_group；十篇转述同一电话会算一个来源。"
+        },
+        {
+          "step": 3,
+          "action": "写完整机制链，指定唯一或显式多个parameter_id；‘品牌好’等不能量化的判断保留叙述，不强行加百分点。"
+        },
+        {
+          "step": 4,
+          "action": "行业reviewer审定可观测性、时间滞后及是否已在基期/其他driver反映。"
+        }
+      ],
+      "stop_conditions": [
+        "无法定位模型driver/收入确认环节→仅保留定性未量化。",
+        "来源晚于as_of或原文无法核查→STOP_EVIDENCE。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-11-A/hypotheses.json",
+        "evidence/I-11-A/source_map.json",
+        "evidence/I-11-A/mechanism_review.md"
+      ],
+      "acceptance": "每命题有可追溯来源、机制、driver、时点、双计排除和明确unquantified/approved状态；不要求全部强行量化。"
+    },
+    {
+      "id": "I-11-B",
+      "parent": "I-11",
+      "title": "校准参数幅度和联合情景",
+      "status": "planned",
+      "owner_role": "行业/会计reviewer决策，弱模型执行已签规则",
+      "depends_on": [
+        "I-11-A",
+        "I-10-A"
+      ],
+      "preconditions": [
+        "I-11-A命题已批准；I-10-A已为实际采用的公司/分部/模型签署披露适配口径。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "按contract arithmetic、历史经验或外部可比选择校准方法，保存选择依据与样本；缺数据就标expert_assumption。"
+        },
+        {
+          "step": 2,
+          "action": "明确low/base/high值、单位、起止年份、原值→新值、转换公式；管理层目标不得用作独立准确性证据。"
+        },
+        {
+          "step": 3,
+          "action": "用dependency_control列共享驱动及约束，检查同一事件是否同时在销量、价格、额外收入重复出现。"
+        },
+        {
+          "step": 4,
+          "action": "按qualitative_synthetic_example手算复核实施机制，再执行真实已审定映射；不复制示例数字到真实公司。"
+        }
+      ],
+      "stop_conditions": [
+        "幅度无来源又未明确分析师假设→STOP_CALIBRATION。",
+        "独立调高多个有关联driver导致不可能的联合情景→STOP_SCENARIO。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-11-B/parameter_changes.json",
+        "evidence/I-11-B/calibration_samples.json",
+        "evidence/I-11-B/joint_scenarios.json",
+        "evidence/I-11-B/hand_oracle.json",
+        "evidence/I-11-B/professional_decision.md"
+      ],
+      "acceptance": "参数幅度、相关性及收入增量能够复核；专业reviewer签署后方可进入forecast，不等同准确性通过。"
+    },
+    {
+      "id": "I-11-C",
+      "parent": "I-11",
+      "title": "独立反方审查与触发更新",
+      "status": "planned",
+      "owner_role": "未参与参数设定的独立研究reviewer",
+      "depends_on": [
+        "I-11-B"
+      ],
+      "preconditions": [
+        "冻结参数版本，reviewer先读原始证据再读结论。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "逐命题提出一个可证伪替代解释，并搜集已有证据中的反例，不允许只复述结论。"
+        },
+        {
+          "step": 2,
+          "action": "填写falsifier的观测量、阈值、日期、来源路线和恢复规则；阈值必须专业审定。"
+        },
+        {
+          "step": 3,
+          "action": "分别检查事实错、机制错、幅度错、时点错四种失败；在收益预测中逐项标风险，而非统一降低一个信心分。"
+        },
+        {
+          "step": 4,
+          "action": "变更触发时创建新版本与delta，不覆盖旧快照；保留旧预测供I-12评分。"
+        }
+      ],
+      "stop_conditions": [
+        "无独立reviewer或反证只有空泛风险词→STOP_REVIEW。",
+        "触发更新会改写旧预测而非新增版本→STOP_LINEAGE。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-11-C/challenge_review.md",
+        "evidence/I-11-C/falsifiers.json",
+        "evidence/I-11-C/change_policy.json",
+        "evidence/I-11-C/qualitative_decision.json"
+      ],
+      "acceptance": "每个量化命题都有可执行触发器、反方判断和保留历史的更新规则。"
+    },
+    {
+      "id": "I-12-A",
+      "parent": "I-12",
+      "title": "专业冻结评估设计",
+      "status": "planned",
+      "owner_role": "统计reviewer和行业reviewer共同签字",
+      "depends_on": [
+        "I-07-E"
+      ],
+      "preconditions": [
+        "上游证据资格/版本边界可用；无需等待完整I-07或I-10准确性结果。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "逐项填写evaluation_design_fields，未定项标PENDING，不由弱模型选择方便通过的阈值。"
+        },
+        {
+          "step": 2,
+          "action": "选择primary endpoint、baseline、权重、样本最小数量/功效、成对比较、cluster/block方法、CI和多重比较校正。"
+        },
+        {
+          "step": 3,
+          "action": "严格区分真实历史vintage与重建实验；低/高情景没有概率标签就只评情景包含率。"
+        },
+        {
+          "step": 4,
+          "action": "将设计、reviewer身份、签署、版本和SHA256冻结；测试集结果在此之前保持封存。"
+        }
+      ],
+      "stop_conditions": [
+        "任何关键统计选项/阈值未签署→BLOCKED_PROFESSIONAL_DECISION。",
+        "已看测试结果后变更设计→新探索版本，旧结果不得追认确认性成功。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-12-A/evaluation_design.json",
+        "evidence/I-12-A/professional_approval.json",
+        "evidence/I-12-A/design_manifest.json"
+      ],
+      "acceptance": "evaluation_design_fields全部完成或有获批not_applicable；SHA256冻结在结果解封前。"
+    },
+    {
+      "id": "I-12-B",
+      "parent": "I-12",
+      "title": "建立无未来信息的样本与实际值",
+      "status": "planned",
+      "owner_role": "数据整理执行者；独立证据reviewer验收",
+      "depends_on": [
+        "I-12-A"
+      ],
+      "preconditions": [
+        "冻结设计可读；仅按已批准数据来源获取方式执行。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "按entity/segment/origin/horizon生成唯一sample_id，记录筛选与排除全量表。"
+        },
+        {
+          "step": 2,
+          "action": "每个输入保留source版本/hash/available_at，逐条验证available_at<=origin；有疑义隔离，不能事后补当时不可得数据。"
+        },
+        {
+          "step": 3,
+          "action": "真实vintage保留原预测；重建实验单独标reconstructed并记录全部假设，不可合并进真实vintage成绩。"
+        },
+        {
+          "step": 4,
+          "action": "按冻结实际值政策处理重述、并购和分部重组；训练、调参、最终测试分组和时间切分必须可审计。"
+        },
+        {
+          "step": 5,
+          "action": "实际值内容由独立reviewer收集并封存；预测执行者此阶段只见sample_id、封存hash及政策，不见数值。若同人已见实际值，显式记录暴露并将实验降为exploratory，不能伪装盲测。"
+        },
+        {
+          "step": 6,
+          "action": "重建资料若含未来信息且无法排除，保留exploratory标签、来源和局限，不进入真实vintage或确认性测试集。"
+        }
+      ],
+      "stop_conditions": [
+        "future leakage、重复sample或缺origin→STOP_DATASET。",
+        "分层样本不足→记录limited，不补选表现更好的公司。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-12-B/sample_manifest.jsonl",
+        "evidence/I-12-B/exclusions.jsonl",
+        "evidence/I-12-B/source_vintages.jsonl",
+        "evidence/I-12-B/actuals_policy_application.json",
+        "evidence/I-12-B/split_manifest.json"
+      ],
+      "acceptance": "独立reviewer可从每个样本追到信息时点与实际值；缺失/排除计数守恒。"
+    },
+    {
+      "id": "I-12-C",
+      "parent": "I-12",
+      "title": "冻结预测与基线后解封实际值",
+      "status": "planned",
+      "owner_role": "执行者按设计运行；独立reviewer保管实际值",
+      "depends_on": [
+        "I-12-B"
+      ],
+      "preconditions": [
+        "样本和设计已冻结，对应模型至少公式资格通过，所用真实映射有披露资格。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "同一sample只使用origin以前资料构造驱动；保存模型、配置、参数、source manifest hash及运行日志。"
+        },
+        {
+          "step": 2,
+          "action": "按冻结规则产生各baseline；baseline缺必需历史期就标not_applicable，不用未来资料补齐。"
+        },
+        {
+          "step": 3,
+          "action": "在读取实际值前冻结forecast、low/base/high语义、预测时间、版本和hash；重跑必须有原因且保留旧版本。"
+        },
+        {
+          "step": 4,
+          "action": "解封实际值后只做评分，不再调参；需调参进入新训练轮并使用未见过的测试集。"
+        },
+        {
+          "step": 5,
+          "action": "独立reviewer核验设计与预测manifest已冻结后才出具unblind_receipt并提供实际值；如发现资料未来信息无法排除，降为exploratory，保留原日志。"
+        }
+      ],
+      "stop_conditions": [
+        "预测冻结晚于读取实际值→该样本只能exploratory。",
+        "模型披露映射未通过→STOP_MODEL_ADAPTATION；不阻止其他已合格模型继续。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-12-C/forecast_vintages.jsonl",
+        "evidence/I-12-C/baseline_vintages.jsonl",
+        "evidence/I-12-C/forecast_manifest.json",
+        "evidence/I-12-C/run_logs.json",
+        "evidence/I-12-C/unblind_receipt.json"
+      ],
+      "acceptance": "每个可评分样本有冻结预测和公平基线；没有真实历史vintage的样本清晰分组。"
+    },
+    {
+      "id": "I-12-D",
+      "parent": "I-12",
+      "title": "按冻结公式计算指标与不确定性",
+      "status": "planned",
+      "owner_role": "执行者；统计reviewer独立复算",
+      "depends_on": [
+        "I-12-C"
+      ],
+      "preconditions": [
+        "设计规定的指标、权重、cluster/block、种子、阈值已知。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "先执行metric_numeric_oracle的确定性合成用例；独立手算核对MAE/WAPE/Bias/Skill/包含率/宽度及条件统计区间得分，再执行零分母和sample_id错位负例。该n=3仅测指标程序，不能记作准确性实证。"
+        },
+        {
+          "step": 2,
+          "action": "逐样本算signed_error和abs_error，按metric_definitions处理零分母、缺失、异常及边界，保存明细不得只留平均数。"
+        },
+        {
+          "step": 3,
+          "action": "用同一可比样本成对评model与baseline；分行业/阶段/市场/horizon报告n_companies和n_origins。"
+        },
+        {
+          "step": 4,
+          "action": "按已批准方法给成对误差差值或skill的不确定性区间；重复年度不是独立公司，使用冻结cluster/block单位。"
+        },
+        {
+          "step": 5,
+          "action": "同时报告误差、偏差、情景包含率与宽度；没有概率声明禁用统计区间得分。"
+        }
+      ],
+      "stop_conditions": [
+        "发现零分母被任意epsilon替代、样本不对齐或结果挑选→STOP_METRICS。",
+        "样本未达设计要求→descriptive_only，不宣称显著更准确。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-12-D/sample_errors.csv",
+        "evidence/I-12-D/metrics_by_stratum.json",
+        "evidence/I-12-D/paired_comparison.json",
+        "evidence/I-12-D/interval_diagnostics.json",
+        "evidence/I-12-D/metric_reproduction.md",
+        "evidence/I-12-D/metric_oracle_result.json",
+        "evidence/I-12-D/metric_negative_results.json"
+      ],
+      "acceptance": "独立抽核手算样本和聚合权重；公式/排除计数一致；未经批准不得换指标。"
+    },
+    {
+      "id": "I-12-E",
+      "parent": "I-12",
+      "title": "分范围判定准确性并保留失败",
+      "status": "planned",
+      "owner_role": "统计与行业reviewer",
+      "depends_on": [
+        "I-12-D"
+      ],
+      "preconditions": [
+        "冻结阈值已在结果前批准；全量结果可见。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "对每个预注册主要比较按冻结阈值判supported/unsupported/inconclusive，保留负skill和失败层。"
+        },
+        {
+          "step": 2,
+          "action": "把结果限定到数据集、模型版本、行业、生命周期、披露质量与horizon；未覆盖分层标unproven。"
+        },
+        {
+          "step": 3,
+          "action": "把公式资格、披露适配和准确性三栏合并呈现，但禁止一栏PASS覆盖另一栏不足。"
+        },
+        {
+          "step": 4,
+          "action": "记录误差来源为数据/定义/驱动/时点/结构/随机，生成后续研究问题；不在本轮评分中修预测。"
+        }
+      ],
+      "stop_conditions": [
+        "把31公式通过或少数公司拟合直接称准确率提升→STOP_CLAIM。",
+        "没有达到统计判定条件却宣称普遍有效→STOP_RELEASE_WORDING。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-12-E/accuracy_qualification.json",
+        "evidence/I-12-E/limitations.md",
+        "evidence/I-12-E/error_taxonomy.json",
+        "evidence/I-12-E/independent_statistical_review.md"
+      ],
+      "acceptance": "结论与预先规则一致；无覆盖领域、负结果和不确定性显式保留。"
+    },
+    {
+      "id": "I-13-A",
+      "parent": "I-13",
+      "title": "买方交付逐项评分",
+      "status": "planned",
+      "owner_role": "独立买方reviewer，不参与该预测设定",
+      "depends_on": [
+        "I-07-E",
+        "I-11-C"
+      ],
+      "preconditions": [
+        "预测包及证据可读；可以没有I-12准确性优势，但必须诚实标未证实。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "按buy_side_dimensions逐维打0/1/2并引用产物页/字段；缺失不靠总分补偿。"
+        },
+        {
+          "step": 2,
+          "action": "先核hard_blocks，再看评分；每个blocking issue写可复现样例、影响收入/场景/决策和所需修正。"
+        },
+        {
+          "step": 3,
+          "action": "全2才给buy_side_review_ready；任何0为blocked，只有1没有0则research_draft_needs_review。总分仅展示，不作自动放行阈值。"
+        }
+      ],
+      "stop_conditions": [
+        "任一hard_block成立→blocked，禁止以总分或文字解释豁免。",
+        "未证明准确性只能写unproven，不因这一事实自动否定可审阅的研究草案。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-13-A/buy_side_scorecard.json",
+        "evidence/I-13-A/blocking_issues.json",
+        "evidence/I-13-A/artifact_references.json"
+      ],
+      "acceptance": "每个分值可由明确证据复核；不把分值或ready标签解释为投资建议正确率。"
+    },
+    {
+      "id": "I-13-B",
+      "parent": "I-13",
+      "title": "情景与投资者问题走查",
+      "status": "planned",
+      "owner_role": "独立买方reviewer与行业reviewer",
+      "depends_on": [
+        "I-13-A"
+      ],
+      "preconditions": [
+        "完整输出已评分，可区分事实、假设、未知。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "让reviewer只用最终报告回答：增长从何而来、何时确认、最大三项驱动贡献、哪些约束会使高情景失败、哪条证据推翻基情景。"
+        },
+        {
+          "step": 2,
+          "action": "复核收入年路径、增量、CAGR边界、驱动贡献和敏感性；非线性分解方法若未冻结，禁止把交互项随意分配。"
+        },
+        {
+          "step": 3,
+          "action": "对照独立预期来源；若无可靠consensus/market-implied数据明确写不可得，不编数字。检查可预期差异是否来自口径不同。"
+        },
+        {
+          "step": 4,
+          "action": "将答案逐条链到source→parameter→calculation→output；点开至少一个重要原文来源确认真实内容，摘要或manifest名不代替实际读取。"
+        }
+      ],
+      "stop_conditions": [
+        "报告只能给目标数，无法回答驱动/时点/约束→STOP_INVESTOR_USE。",
+        "把低高情景当概率、混淆产量/销量或总净额→STOP_ACCOUNTING。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-13-B/investor_walkthrough.md",
+        "evidence/I-13-B/source_read_receipts.json",
+        "evidence/I-13-B/scenario_constraints.json",
+        "evidence/I-13-B/expectation_comparison.json"
+      ],
+      "acceptance": "具体问题可用最终交付独立回答；缺失需回到对应卡，不能在总结里虚报补齐。"
+    },
+    {
+      "id": "I-13-C",
+      "parent": "I-13",
+      "title": "冻结交付资格与接续清单",
+      "status": "planned",
+      "owner_role": "主审和独立买方reviewer",
+      "depends_on": [
+        "I-13-B"
+      ],
+      "preconditions": [
+        "全部阻断项已逐项判定；资格状态不相互替代。"
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "按评分规则确定blocked/research_draft_needs_review/buy_side_review_ready。"
+        },
+        {
+          "step": 2,
+          "action": "逐模型列公式、披露、准确性三栏；准确性未证实也必须明写，禁止改成已验证预测。"
+        },
+        {
+          "step": 3,
+          "action": "保留source及模型hash、as_of、当前限制、触发更新条件、下次需执行卡和owner。"
+        },
+        {
+          "step": 4,
+          "action": "仅在上游真实发布/回执流程合格时走其既定发布卡；本卡只审阅资格，不自行补写host_receipt或改索引。"
+        }
+      ],
+      "stop_conditions": [
+        "任何未解决blocking issue或缺独立签名→不得正式标ready。",
+        "无真实运行/消费/发布证据却只凭receipt文件存在→STOP_PROVENANCE。"
+      ],
+      "evidence_outputs": [
+        "evidence/I-13-C/delivery_qualification.json",
+        "evidence/I-13-C/open_items.json",
+        "evidence/I-13-C/handoff_manifest.json",
+        "evidence/I-13-C/independent_buy_side_signoff.md"
+      ],
+      "acceptance": "明确区分研究可审阅、部署可用、预测准确性；保留所有未证实事项。"
+    }
+  ],
+  "common_protocol": {
+    "evidence_path_rule": "所有evidence/<card_id>/路径相对于本轮新attempt_root；attempt_root由I-00-B绑定，不是本次历史审计目录或产品目录。每次尝试独立，禁止覆盖旧证据。",
+    "execution_cwd": "由I-00-B绑定的isolated checkout；源码绝对路径只是只读参考，禁止直接在生产checkout跑新执行卡。",
+    "model_qualification_rule": "M卡accepted只指A–C公式资格；D–E由先行I-10-A对实际采用模型独立完成，供I-11-B及I-07-E消费；F归I-12，不反向阻塞M或I-10-A。"
+  },
+  "metric_numeric_oracle": {
+    "synthetic": true,
+    "qualification": "metric_implementation_only_not_accuracy_evidence",
+    "sample_ids": [
+      "S1",
+      "S2",
+      "S3"
+    ],
+    "actual": [
+      100,
+      0,
+      200
+    ],
+    "forecast": [
+      110,
+      10,
+      180
+    ],
+    "baseline": [
+      100,
+      0,
+      150
+    ],
+    "low": [
+      90,
+      0,
+      170
+    ],
+    "high": [
+      120,
+      20,
+      190
+    ],
+    "expected": {
+      "signed_errors": [
+        10,
+        10,
+        -20
+      ],
+      "absolute_errors": [
+        10,
+        10,
+        20
+      ],
+      "absolute_error_sum": 40,
+      "MAE": "40/3",
+      "WAPE": "40/300",
+      "Bias_U": 0,
+      "NormalizedBias": 0,
+      "baseline_absolute_errors": [
+        0,
+        0,
+        50
+      ],
+      "baseline_absolute_error_sum": 50,
+      "skill_vs_baseline": "1-40/50=0.2",
+      "contained": [
+        true,
+        true,
+        false
+      ],
+      "scenario_containment": "2/3",
+      "widths": [
+        30,
+        20,
+        20
+      ],
+      "mean_width": "70/3",
+      "normalized_width": "70/300"
+    },
+    "hand_work": "误差和=10+10−20=0；绝对误差和10+10+20=40；实际值分母100+0+200=300；baseline绝对误差和0+0+50=50；宽度30+20+20=70。",
+    "probabilistic_interval_subcase": {
+      "precondition": "只有在预测前声明名义覆盖率1-alpha=0.8的统计区间，才计算此子用例；普通low/high情景禁称统计区间。",
+      "alpha": 0.2,
+      "expected_interval_scores": [
+        30,
+        20,
+        120
+      ],
+      "hand_work": "S1在[90,120]内，得分30；S2在[0,20]内，得分20；S3为200>190，得分20+(2/0.2)×10=120。"
+    },
+    "negative_cases": [
+      {
+        "input_patch": {
+          "actual": [
+            0,
+            0,
+            0
+          ]
+        },
+        "expected": "WAPE、NormalizedBias、normalized_width=undefined；记录zero_denominator；MAE仍可定义。不得添加epsilon。"
+      },
+      {
+        "input_patch": {
+          "forecast_sample_ids": [
+            "S1",
+            "S3",
+            "S2"
+          ]
+        },
+        "expected": "位置评分必须拒绝sample_id错位；若设计允许按ID合并，先保存一一对应的显式alignment表，核对同一origin/horizon/model后才评分，禁止直接按数组位置。"
+      },
+      {
+        "input_patch": {
+          "baseline": [
+            100,
+            0,
+            200
+          ]
+        },
+        "expected": "baseline loss=0，skill=undefined；不能记100% improvement。"
+      }
+    ],
+    "comparison": "有理数按分子/分母独立求期望，比较abs(error)<=1e-12；布尔、sample_id与undefined原因精确比较。",
+    "limitation": "n=3只验证指标实现，不能证明模型准确性改善、覆盖校准或统计显著性。"
+  }
+}

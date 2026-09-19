@@ -1,0 +1,73 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/README.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/README.md
+@@ -13,8 +13,12 @@
+ 1. normalize queue SQL 从 2026-08-12 起发生的灾难性性能退化；
+ 2. scan checkpoint、heartbeat、watchdog、restart reset 共同形成的无限慢循环；
+ 3. 扫描器、LLM、容量和运维方面在主故障修复后会显现的后续瓶颈；
+ 4. 在恢复生产运行及登录自启动前所需的安全、证据与人工授权链。
++
++最终激活的唯一授权序列是
++`D12C-RT→runtime-template用户批准→G12C-RT→D12C→final-activation用户批准→G12C-PRE→OP12C→G12C`；
++两份用户批准用途、ID、hash与subject不可复用，且任何自动rollback都不得删除Run值。
+ 
+ 本目录本身不是修复提交。创建本目录不表示批准修改代码、生产数据库、生产配置、
+ 自启动项或任何源文件。
+ 
+@@ -35,18 +39,31 @@
+ | `implementation_agent_prompts.md` | 给实施/测试/审查 agent 的封闭式任务模板 | 每次派工时复制并填满占位符 |
+ | `gate_dag.v4.json` | v4 唯一机器 DAG、前驱表达式、分支与 reviewer 人数 | 计算任何合法下一节点前 |
+ | `gate_dag.schema.json` | 机器 DAG instance 的严格 shape schema | 接受 DAG 前 |
+ | `gate_ledger.schema.json` | 动态 Gate 台账单记录的机器 schema；规范性、随计划 revision 冻结 | 创建/校验任何 ledger record 前 |
++| `gate_ledger_transcript.schema.json` | 有序 ledger record 包装；只用于验证输入与复合 fixture，不替代生产 JSONL | T00L 构造 transcript 场景及 validator 读入前 |
++| `validator_request.schema.json` | validator 调用的 canonical 请求；next eligible 必须由 validator 计算 | 每次 hermetic validator 调用与 E018 负例前 |
+ | `review_result.schema.json` | 独立 reviewer 的机器可读 payload 合同 | 派审与接收 verdict 前 |
+ | `review_confirmation.schema.json` | reviewer 对已保存 JSON/Markdown 的 detached 回读确认 | 把 review 写入 ledger 前 |
+ | `operation_contracts.v4.json` | 每个 OP/family 的静态授权、状态、写入、registry 与 egress 策略 | 冻结动态操作合同前 |
+ | `operation_contracts.schema.json` | 静态 operation catalog instance schema | 接受 catalog 前 |
+-| `operation_contract.schema.json` | 每次真实 OP/cycle/reset 的 sealed 动态合同 schema | D Gate 和 OP 前后 |
++| `operation_contract.schema.json` | 每次真实 OP/cycle/reset 的 sealed 事前动态合同 schema；不含未来actual | D Gate 后、OP 副作用前 |
+ | `operation_intent_manifest.schema.json` | D Gate 先冻结的 exact action/registry bytes/generation/contract digest | 用户授权前及每个 OP/cycle 前 |
+-| `authorization_manifest.schema.json` | stage-bound 用户授权、范围、cap、expiry/revocation schema | 任何 REQUIRED OP 前 |
+-| `journal_manifest.schema.json` | protected intent/finalize journal 的路径、ACL、head 与恢复合同 | OP11J、每个 mutating OP/cycle/reset 前 |
++| `operation_intent_template.schema.json` | 长期 runtime cycle 的有限权限模板；每轮 exact intent 只能严格收窄 | 冻结 runtime template、最终授权及每轮 cycle 前 |
++| `authorization_manifest.schema.json` | stage-bound authorization proposal/policy、范围、cap、expiry/revocation schema；不反向引用未来用户receipt | 任何 REQUIRED OP 前 |
++| `authorization_revalidation_receipt.schema.json` | 执行前对授权来源、expiry、revocation anchor/freshness 的外部重验收据 | 每个 REQUIRED/BOUND_COMPENSATION OP 与 runtime cycle 前 |
++| `user_approval_receipt.schema.json` | runtime-template 与最终 autostart activation 两种不可复用 purpose 的外部用户批准收据 | G12C-RT 与 G12C-PRE 前分别生成、回读与重验 |
++| `journal_manifest.schema.json` | protected journal 的不可变身份、genesis、lease/durability/capability 合同；不嵌入 mutable live head | OP11J、每个 mutating OP/cycle/reset 前 |
++| `journal_record.schema.json` | INTENT/FINALIZE/RECONCILE record 的严格形状、单向 hash 链与 crash reconciliation 合同 | 写入或验证任一 journal record 前 |
++| `ledger_head_anchor.schema.json` | ledger/journal 的受保护外部 current-head anchor 与 generation/CAS 证据 | validator append、OP journal pre/post 检查前 |
++| `operation_execution_receipt.schema.json` | OP 后实际 intent/finalize/reconcile/head/budget 结果的不可变收据 | mutating OP/cycle 完成、恢复或提交 evidence 前 |
++| `budget_reservation_bundle.schema.json` | provider 日/月请求与成本四计数的单一原子 reservation bundle | 任一允许 provider egress 的 cycle 前 |
++| `budget_settlement_receipt.schema.json` | consumed/released/retained 守恒、unknown 最大保留与幂等 settlement 收据 | 每个 provider request 结束或恢复时 |
+ | `evidence_manifest.schema.json` | machine-readable evidence 清单、artifact hash/HMAC、ACL/TTL 与敏感性合同 | 每个 terminal record 和 reviewer 前 |
+ | `validator_fixture_manifest.schema.json` | validator canonical fixture、typed mutation 和唯一 primary rule 清单 | T00L/D00L/I00L/G00L |
++| `validator_scenario_fixture.schema.json` | ledger/auth/operation/journal/budget 等多工件复合场景与 mutation closure | 构建或执行任一 validator vector 前 |
++| `bootstrap_verifier_manifest.schema.json` | Python 入口前由 OS launcher 验证的 interpreter/DLL/stdlib/vendor/ACL/identity 闭包 | T00L/D00L bootstrap 与每次 validator 启动前 |
++| `schema_registry.schema.json` | 全部规范 schema 的唯一 `$id`、精确 hash/size 与禁止 ambient retrieval 的闭包 | validator release、fixture/vector 和 instance validation 前 |
+ | `validator_release_manifest.schema.json` | validator 解释器、隔离 venv、依赖树、入口和测试 exact hash | I00L 生成、G00L 回读 |
+ | `parser_route_manifest.schema.json` | 当前 parser route 与实际展开测试 ID 的冻结合同 | parser 测试与 release join 前 |
+ | `ledger_validator_contract.md` | 隔离且依赖逐 hash 冻结的 validator、hash-chain、错误码、bootstrap 与 fail-closed 合同 | 创建首条 ledger 前；每次 append/next 前 |
+ | `gate_ledger_validator_vectors.v4.json` | validator 正负测试向量规格 | 实现 validator 与每次 self-test 时 |
+@@ -83,9 +100,10 @@
+ 
+ 1. 用户在实施当时给出的明确指令；
+ 2. 仓库根 `AGENTS.md` 与安全/权限规则；
+ 3. 活动 `plan_manifest.vN.json` 所冻结的机器合同：machine DAG/instance schema、ledger/review/
+-   confirmation schema、operation catalog/dynamic contract、intent/authorization/journal/evidence、
++   confirmation schema、operation catalog/dynamic contract、intent/authorization/user approval/
++   journal/evidence、
+    validator release/fixture、test registry、vectors 与 `ledger_validator_contract.md`；
+ 4. `task_plan.md` 的范围、不变量和强制 Gate；
+ 5. `gate_state_machine.md` 对机器 DAG 的人类可读解释；
+ 6. `agent_review_gates.md` 的独立审查与阻断规则；
+@@ -106,9 +124,9 @@
+ 1. 完整读取 `task_plan.md`、`findings.md`、`progress.md` 和当前 Work Package；先用操作系统
+    原生 SHA-256 验证活动 `plan_manifest.vN.json` 自身 hash 及其列出的每个核心文件/source
+    report hash。
+ 2. 若尚未完成 `T00L→D00L→I00L→G00L`，只能执行 validator bootstrap；不得创建正式
+-   `D00` ledger。完成后，每次 append/next 都必须由 validator 校验整链、external expected-head、
++   `D00` ledger。完成后，每次 append/next 都必须由 validator校验整链和受保护head anchor、
+    review payload 与 DAG，不得信任 ledger 自报下一边或手抄 verdict。
+ 3. 验证 ledger 记录的 `plan_revision/plan_manifest_sha256`、上一个 Gate 签字与证据 hash 匹配，
+    且没有开放 P0/P1。
+ 4. 记录 Git HEAD、分支/worktree、`git status --short`、时间和 worker 隔离状态。

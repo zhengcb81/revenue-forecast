@@ -1,0 +1,71 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/plan_review_revision.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/history/plan_review_revision.v4.md
+@@ -88,20 +88,60 @@
+ v3最终状态：**REVIEW_COMPLETE_FAIL / HISTORICAL_ONLY**。三类reviewer均逐项验证manifest、
+ 13个core hash与来源报告hash后返回FAIL；开放项见`plan_review_findings.md`的PR-054–066。
+ 因此v3永久禁止作为实施授权；其manifest仅供审计，不得覆盖、追加或“修好后复用”。
+ 
+-## Revision v4 — 2026-08-22
++## Revision v4 — 2026-09-03
+ 
+ v4针对v3三路FAIL与后续草稿反例，新增/重写严格instance schema、唯一机器DAG、逐ID测试
+ registry、operation policy/dynamic contract、stage-bound authorization、detached review confirmation、
+ 显式12B/12C compensation、write-intent journal迁移、物理state与lifecycle outcome分离、精确reset
+ 返回边，以及只读`plan_consistency_check.py`。
+ 
+-当前状态：**DRAFT_NOT_FROZEN**。当前不存在可供实施或正式审查采信的
+-`plan_manifest.v4.json`；只有所有核心字节稳定、只读一致性检查通过，并通过预冻结检查后，
+-才可用新文件名生成一次性v4 machine manifest。冻结时须在本节记录该manifest的外部字节hash、
+-core/source逐项核验结果和Git HEAD。冻结后任何core字节变化均使v4 verdict失效，必须创建v5，
+-不得覆盖v4 manifest。
++冻结时状态（后续已失效，见本节末记录）：**FROZEN_FOR_INDEPENDENT_REVIEW / NOT_IMPLEMENTATION_AUTHORIZED**。
++一次性machine manifest已经生成：`plan_manifest.v4.json`；该文件从生成时起不可覆盖、追加或
++“就地修正”。manifest外部字节信息为：
++
++```text
++c34b849475f1efeb0a3237af2d4a748a6e36c276f7c91b6ad07cae8ea3004711  plan_manifest.v4.json
++size=9598 bytes
++```
++
++冻结集合包含48份normative文件；覆盖115个固定DAG节点、29个schema、315个稳定测试ID、
++18个vector group（140个case）、60个requirement、44个risk和105个计划审查finding。
++来源报告及48份文件的路径、大小和SHA-256逐项保存在manifest内。冻结时Git HEAD仅作漂移线索：
++`16ef042f40cc85375d0de5196c654a9c027a6ef2`，不是未来实施基线。
++
++冻结前保存的只读检查输出为`plan_freeze_check.v4.txt`：
++
++```text
++ca47be86a15d94c68787c637d08567cdf57b2be51e27ee67f2cdff84b9137af7  plan_freeze_check.v4.txt
++PASS: 7696 checks; {"fixed_nodes": 115, "schemas": 29, "tests": 315, "vectors": 18}
++READ_ONLY: no production database, registry, process, source, config, or network access
++```
++
++manifest生成后已再次运行同一检查器，得到同样的7696项PASS；同时重算历史
++`plan_manifest.v3.json`，其SHA-256仍为
++`9ee84acdbe65a294925de004125f37b62b9e4b1c95655a04cd2344bc6bd270cc`。
+ 
+ v4计划审查必须由SQL/性能、生命周期/安全、测试/DAG可实施性三类彼此独立的只读agent，
+-针对同一个冻结manifest重新从零完成。草稿预检、作者自检和`plan_consistency_check.py`的PASS
+-都不能替代正式verdict。三份正式结论全部PASS且无开放P0/P1前，v4不得作为未来实施输入。
++针对上述同一个冻结manifest重新从零完成。草稿预检、作者自检和一致性检查PASS都不能替代
++正式verdict。三份正式结论全部PASS且无开放P0/P1前，v4不得作为未来实施输入；任何normative
++字节变化都会使v4失效并要求创建不可覆盖的新`plan_manifest.v5.json`。
++
++正式独立审查状态：三路均为**INCOMPLETE_USAGE_LIMIT**，没有可采信的最终verdict。
++
++### v4 后续失效记录 — 2026-09-03 22:17–22:22 UTC
++
++当前有效状态覆盖上方历史冻结时状态：**INVALIDATED_FROZEN_BYTES / HISTORICAL_ONLY /
++NOT_IMPLEMENTATION_AUTHORIZED**。manifest本身仍保持上述hash，但重新检查当前工作树得到
++`FAIL: 27 error(s) after 7696 checks`，全部为`MANIFEST-BYTES`。27个normative文件的写入时间均
++集中于`2026-09-03T21:29:17.252–266Z`。其中16个当前文件在只读内存中CRLF→LF后精确匹配原hash，
++另11个不匹配，尚不能证明仅为换行差异。无论语义是否变化，当前字节都不再等于v4冻结输入。
++
++禁止覆盖v4 manifest、按当前字节重算v4 hash或继续声称v4可供正式审查。所有原文件保留；任何
++后续修订/重新冻结必须使用新v5 revision，并重新进行三路独立审查。中止的三名agent不算PASS，
++也不构成对v4技术内容的FAIL结论；本次失效依据是可复现的字节完整性检查失败。
++
++后续独立forensic预审已完成：`/root/v4_test_dag_review`独立验证同一27项漂移、16项LF等价与
++27项patch重建结果，高度支持pre_commit整仓暂存/恢复加autocrlf的因果解释，但不计正式PASS。
++详细证据、逐文件原/现hash、不确定性、独立结论与安全续接方案见
++`reviews/v4-freeze-integrity-incident-2026-09-03.md`。当前未创建v5，未更改Git属性或任何规范文件。

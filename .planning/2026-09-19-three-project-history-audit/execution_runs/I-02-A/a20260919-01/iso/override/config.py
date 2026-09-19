@@ -1,0 +1,493 @@
+"""Versioned YAML configuration for the source catalog."""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+import re
+from typing import Any
+
+import yaml
+
+from .adapters.registry import ADMISSION_PROFILES, admission_profile, registered_adapter
+from .models import CatalogConfig, RootSpec, RouteSpec
+
+
+_TOKEN_RE = re.compile(r"\$\{([A-Z_]+)\}")
+
+
+class CatalogConfigError(ValueError):
+    """Raised when source-catalog configuration is invalid."""
+
+
+#: D-W01: the frozen independent effective-config error codes shared by the
+#: config doctor and the real scan (see ``effective_root_profile``).
+EFFECTIVE_ERROR_CODES = (
+    "unknown_adapter",
+    "no_scanner_impl",
+    "version_unsupported",
+    "unknown_profile",
+    "readonly_with_write_target",
+    "half_activated",
+)
+
+#: adapter ids with a scanner factory (adapter_dispatch._ADAPTER_FACTORIES).
+#: Declared as a literal to keep config.py free of a scanner import cycle;
+#: the scan-side wiring asserts the identity of this table at runtime.
+_SCANNER_CAPABLE = frozenset({"sidecar_filing_v1", "company_raw_v1", "dayu_filing_v1"})
+
+
+def _version_parts(version: str) -> tuple[int, ...]:
+    parts: list[int] = []
+    for chunk in version.strip().split("."):
+        if not chunk.isdigit():
+            return ()
+        parts.append(int(chunk))
+    return tuple(parts)
+
+
+def _version_in_range(version: str, rng: Any) -> bool:
+    """Version-range gate for ``adapter_version_range``.
+
+    Supported clause syntax (comma-separated, all must hold):
+    ``>=X``, ``>X``, ``==X``, ``!=X``, ``<X``, ``<=X``.  Missing range = any
+    version.  Any syntactically unsupported clause fails CLOSED ("no" to
+    the more permissive reading of a version a human meant but the
+    grammar cannot parse).
+    """
+    if rng is None:
+        return True
+    text = str(rng).strip()
+    if not text:
+        return True
+    target = _version_parts(version)
+    if not target:
+        return False
+    for clause in text.split(","):
+        clause = clause.strip()
+        if not clause:
+            continue
+        match = re.fullmatch(r"(>=|<=|==|!=|>|<)\s*(\d+(?:\.\d+)*)", clause)
+        if match is None:
+            return False
+        bound = _version_parts(match.group(2))
+        operator = match.group(1)
+        comparison = (target > bound) - (target < bound)
+        if comparison == 0:
+            ok = operator in (">=", "<=", "==")
+        elif comparison > 0:
+            ok = operator in (">", ">=", "!=")
+        else:
+            ok = operator in ("<", "<=", "!=")
+        if not ok:
+            return False
+    return True
+
+
+def effective_root_profile(root: RootSpec, *, scan_shadow_active: bool) -> dict:
+    """D-W01 single effective-config judgment for one root.
+
+    This is the ONE function both the config doctor and the real scan call;
+    it never needs scanner imports (the scanner passes its own
+    snapshot-derived ``scan_shadow_active`` in, exactly the flag GP-002
+    resolves).
+    """
+    errors: list[dict[str, str]] = []
+    adapter = None
+    scanner_impl = False
+    version = ""
+    if root.adapter_id is not None:
+        adapter = registered_adapter(root.adapter_id)
+        if adapter is None:
+            errors.append(
+                {
+                    "code": "unknown_adapter",
+                    "detail": f"adapter_id {root.adapter_id!r} is not registered",
+                }
+            )
+        else:
+            scanner_impl = root.adapter_id in _SCANNER_CAPABLE
+            version = str(adapter.get("version", ""))
+            if not _version_in_range(version, root.adapter_version_range):
+                errors.append(
+                    {
+                        "code": "version_unsupported",
+                        "detail": (
+                            f"adapter {root.adapter_id!r} version {version!r} outside "
+                            f"declared range {root.adapter_version_range!r}"
+                        ),
+                    }
+                )
+            registry_profile = adapter.get("admission_profile_id")
+            if not scanner_impl:
+                errors.append(
+                    {
+                        "code": "no_scanner_impl",
+                        "detail": (
+                            f"adapter {root.adapter_id!r} is registered but has no "
+                            f"scanner adapter implementation"
+                        ),
+                    }
+                )
+            declared = root.admission_profile_id
+            if declared is not None:
+                if ADMISSION_PROFILES.get(declared) is None:
+                    errors.append(
+                        {
+                            "code": "unknown_profile",
+                            "detail": f"admission_profile_id {declared!r} unknown",
+                        }
+                    )
+                elif declared != registry_profile:
+                    errors.append(
+                        {
+                            "code": "half_activated",
+                            "detail": (
+                                f"declared admission profile {declared!r} does not match "
+                                f"the registry profile {registry_profile!r} for "
+                                f"adapter {root.adapter_id!r} (unapproved activation combo)"
+                            ),
+                        }
+                    )
+    elif scan_shadow_active:
+        errors.append(
+            {
+                "code": "half_activated",
+                "detail": (
+                    "root declares no adapter_id while the runtime policy snapshot "
+                    "resolves v2 (v2_scan_shadow active) - the legacy walk is not an "
+                    "approved reader for this combination"
+                ),
+            }
+        )
+    if root.read_only and root.canonical_write_target:
+        errors.append(
+            {
+                "code": "readonly_with_write_target",
+                "detail": (
+                    f"read_only=true root declares canonical_write_target "
+                    f"{root.canonical_write_target!r}"
+                ),
+            }
+        )
+    strategy = (
+        "adapter"
+        if (bool(scan_shadow_active) or root.adapter_id is not None)
+        else "legacy"
+    )
+    return {
+        "root_id": root.root_id,
+        "kind": root.kind,
+        "read_only": root.read_only,
+        "adapter_id": root.adapter_id,
+        "adapter_version": version,
+        "adapter_version_range": root.adapter_version_range,
+        "scanner_impl": scanner_impl,
+        "admission_profile_id": root.admission_profile_id,
+        "canonical_write_target": root.canonical_write_target,
+        "strategy": strategy,
+        "errors": errors,
+    }
+
+
+def effective_policy_profile(flags: Any) -> list[dict[str, str]]:
+    """D-W01 policy-level activation rules (doctor-facing bridge check)."""
+    if not isinstance(flags, dict):
+        return []
+    errors: list[dict[str, str]] = []
+    bridge = flags.get("legacy_bridge_enabled") is True
+    v2_active = any(
+        flags.get(flag) is True
+        for flag in (
+            "v2_scan_shadow",
+            "v2_resolve_shadow",
+            "v2_resolve_active",
+            "v2_persist_assertions",
+            "v2_bundle_active",
+        )
+    )
+    if bridge and v2_active:
+        errors.append(
+            {
+                "code": "half_activated",
+                "detail": (
+                    "legacy_bridge_enabled=true while a v2 flag is active "
+                    "(unapproved half-activated flag combination)"
+                ),
+            }
+        )
+    return errors
+
+
+def _mapping(value: Any, field_name: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise CatalogConfigError(f"{field_name} must be an object")
+    return value
+
+
+def _expand_path(value: Any, *, project_root: Path) -> Path:
+    if not isinstance(value, str) or not value.strip():
+        raise CatalogConfigError("path must be non-empty text")
+    tokens = {
+        "PROJECT_ROOT": str(project_root),
+        "USER_PROFILE": os.environ.get("USERPROFILE", str(Path.home())),
+    }
+
+    def replace(match: re.Match[str]) -> str:
+        name = match.group(1)
+        if name not in tokens:
+            raise CatalogConfigError(f"unsupported path token: {name}")
+        return tokens[name]
+
+    expanded = _TOKEN_RE.sub(replace, value.strip())
+    if _TOKEN_RE.search(expanded):
+        raise CatalogConfigError("unresolved path token")
+    path = Path(expanded).expanduser()
+    if not path.is_absolute():
+        path = project_root / path
+    return path.resolve(strict=False)
+
+
+def _require_boolean(
+    index: int, item: dict[str, Any], *, nullable: tuple[str, ...] = ()
+) -> None:
+    """CFG-08 (B01 review B-VR01-04): the root's BOOLEAN fields must really be
+    booleans.  A quoted literal is a silent trap in both directions:
+    ``bool("false")`` is True, so a declared ``false`` would still be reused
+    (fail-open), while ``"true" is not True`` makes the CFG-05/CFG-07 checks
+    skip the root entirely.  YAML quoting is a common slip, and this is the only
+    place that can refuse it.  Kept as its own function because the frozen
+    complexity table for this module may not grow.
+
+    ``nullable`` names the fields where an explicit ``null`` carries MEANING
+    (``reusable_for_filing: bool | None`` - None means "follow the kind list").
+    ``read_only`` is annotated plain ``bool``, so a present-but-empty value is
+    refused instead of being stored as None - which is falsy, while the absent
+    field's default is True.
+    """
+    for field_name in ("read_only", "reusable_for_filing"):
+        if field_name not in item:
+            continue  # absent: the field's own default applies
+        value = item[field_name]
+        if value is None and field_name in nullable:
+            continue
+        if not isinstance(value, bool):
+            raise CatalogConfigError(
+                f"roots[{index}] {field_name} must be a boolean"
+                f"{' or null' if field_name in nullable else ''}, got "
+                f"{type(value).__name__} {value!r} (CFG-08)"
+            )
+
+
+def load_catalog_config(
+    path: Path, *, project_root: Path | None = None
+) -> CatalogConfig:
+    if not isinstance(path, Path):
+        raise TypeError("path must be pathlib.Path")
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data = _mapping(payload, "config")
+    required = {"schema_version", "catalog_dir", "roots"}
+    allowed = required | {"reusable_root_kinds"}
+    if not set(data) <= allowed or not required <= set(data):
+        raise CatalogConfigError(
+            "config must contain schema_version/catalog_dir/roots fields "
+            "(optional: reusable_root_kinds)"
+        )
+    if str(data["schema_version"]) != "1.0":
+        raise CatalogConfigError("schema_version must be 1.0")
+    resolved_project = (project_root or path.resolve().parents[1]).resolve(strict=False)
+    raw_roots = data["roots"]
+    if not isinstance(raw_roots, list) or not raw_roots:
+        raise CatalogConfigError("roots must be a non-empty list")
+    roots: list[RootSpec] = []
+    seen_root_ids: set[str] = set()
+    for index, raw in enumerate(raw_roots):
+        item = _mapping(raw, f"roots[{index}]")
+        # WU-301: v2 additive fields; v1 configs (no v2 keys) load unchanged.
+        allowed_root_fields = {
+            "root_id",
+            "path",
+            "kind",
+            "priority",
+            "adapter_id",
+            "adapter_version_range",
+            "admission_profile_id",
+            "read_only",
+            "reusable_for_filing",
+            "routes",
+            "allowed_document_kinds",
+            "allowed_statuses",
+            "symlink_policy",
+            "max_file_size",
+            "sidecar_suffixes",
+            "encoding",
+            "privacy_class",
+            # FC-301 pass-through (freeze D-W01): the doctor needs to be able to
+            # READ a write-target to classify readonly_with_write_target.
+            "canonical_write_target",
+        }
+        unknown = set(item) - allowed_root_fields
+        if unknown:
+            raise CatalogConfigError(
+                f"roots[{index}] unknown fields: {sorted(unknown)}"
+            )
+        root_id = str(item.get("root_id", ""))
+        if root_id in seen_root_ids:
+            raise CatalogConfigError(f"duplicate root_id: {root_id} (CFG-03)")
+        seen_root_ids.add(root_id)
+        raw_path = item.get("path", "")
+        unresolved = _unresolved_variables(raw_path)
+        if unresolved:
+            raise CatalogConfigError(
+                f"roots[{index}] path contains unresolved variable(s) "
+                f"{sorted(unresolved)} (CFG-04)"
+            )
+        adapter_id = item.get("adapter_id")
+        if adapter_id is not None and registered_adapter(str(adapter_id)) is None:
+            raise CatalogConfigError(
+                f"roots[{index}] adapter_id {adapter_id!r} not registered (CFG-01)"
+            )
+        profile_id = item.get("admission_profile_id")
+        if profile_id is not None and admission_profile(str(profile_id)) is None:
+            raise CatalogConfigError(
+                f"roots[{index}] admission_profile_id {profile_id!r} unknown (CFG-02)"
+            )
+        read_only = item.get("read_only", True)
+        reusable_for_filing = item.get("reusable_for_filing")
+        # CFG-08 (B01 review B-VR01-04): these two are BOOLEAN fields, and a
+        # quoted literal is a silent trap in BOTH directions - `bool("false")`
+        # is True (the declared `false` would be reused, fail-open) and
+        # `"true" is not True` skips the CFG-05/CFG-07 checks below.  The
+        # admission point is the only place that can refuse it.  The check lives
+        # in its own function so the frozen complexity table stays untouched.
+        _require_boolean(index, item, nullable=("reusable_for_filing",))
+        if reusable_for_filing is True and read_only is not True:
+            raise CatalogConfigError(
+                f"roots[{index}] reusable external root must be read_only (CFG-05)"
+            )
+        if reusable_for_filing is True and adapter_id is not None:
+            adapter = registered_adapter(str(adapter_id))
+            if adapter and "filing" not in adapter.get("capabilities", ()):
+                raise CatalogConfigError(
+                    f"roots[{index}] adapter {adapter_id!r} cannot serve filing "
+                    "(CFG-07)"
+                )
+        routes = tuple(
+            _parse_route(raw_route, index, route_index)
+            for route_index, raw_route in enumerate(item.get("routes", []) or [])
+        )
+        _check_route_overlap(routes, index)
+        roots.append(
+            RootSpec(
+                root_id=root_id,
+                path=_expand_path(raw_path, project_root=resolved_project),
+                kind=str(item.get("kind", "")),
+                priority=int(item.get("priority", 100)),
+                adapter_id=str(adapter_id) if adapter_id is not None else None,
+                adapter_version_range=item.get("adapter_version_range"),
+                admission_profile_id=(
+                    str(profile_id) if profile_id is not None else None
+                ),
+                read_only=read_only,
+                reusable_for_filing=reusable_for_filing,
+                routes=routes,
+                allowed_document_kinds=tuple(
+                    item.get("allowed_document_kinds", []) or []
+                ),
+                allowed_statuses=tuple(item.get("allowed_statuses", []) or []),
+                symlink_policy=str(item.get("symlink_policy", "reject")),
+                max_file_size=item.get("max_file_size"),
+                sidecar_suffixes=tuple(item.get("sidecar_suffixes", []) or []),
+                encoding=str(item.get("encoding", "utf-8")),
+                privacy_class=str(item.get("privacy_class", "public")),
+                canonical_write_target=item.get("canonical_write_target"),
+            )
+        )
+    raw_kinds = data.get("reusable_root_kinds", ["company_raw"])
+    if (
+        not isinstance(raw_kinds, list)
+        or not raw_kinds
+        or not all(isinstance(kind, str) and kind.strip() for kind in raw_kinds)
+    ):
+        raise CatalogConfigError(
+            "reusable_root_kinds must be a non-empty list of non-empty strings"
+        )
+    return CatalogConfig(
+        project_root=resolved_project,
+        catalog_dir=_expand_path(data["catalog_dir"], project_root=resolved_project),
+        roots=tuple(roots),
+        reusable_root_kinds=tuple(raw_kinds),
+    )
+
+
+_CONTROLLED_PATH_TOKENS = {"PROJECT_ROOT", "USER_PROFILE"}
+
+
+def _unresolved_variables(raw_path) -> set[str]:
+    """Variables inside ${...} that are not controlled tokens (CFG-04)."""
+    if not isinstance(raw_path, str):
+        return {"<non-string-path>"}
+    used = set(re.findall(r"\$\{([^}]+)\}", raw_path))
+    return used - _CONTROLLED_PATH_TOKENS
+
+
+def _parse_route(raw, root_index: int, route_index: int) -> RouteSpec:
+    item = _mapping(raw, f"roots[{root_index}].routes[{route_index}]")
+    unknown = set(item) - {"include", "exclude", "adapter_id", "admission_profile_id"}
+    if unknown:
+        raise CatalogConfigError(
+            f"roots[{root_index}].routes[{route_index}] unknown fields: {sorted(unknown)}"
+        )
+    adapter_id = item.get("adapter_id")
+    if adapter_id is not None and registered_adapter(str(adapter_id)) is None:
+        raise CatalogConfigError(
+            f"routes[{route_index}] adapter_id {adapter_id!r} not registered (CFG-01)"
+        )
+    return RouteSpec(
+        include=tuple(item.get("include", []) or []),
+        exclude=tuple(item.get("exclude", []) or []),
+        adapter_id=str(adapter_id) if adapter_id is not None else None,
+        admission_profile_id=item.get("admission_profile_id"),
+    )
+
+
+_OVERLAP_SAMPLES = (
+    "x.pdf",
+    "a/b/c.pdf",
+    "annual/2025.pdf",
+    "financial_reports/x.pdf",
+    "report.md",
+    "2025.pdf",
+    "dir/x.pdf",
+    "dir/annual/2025.pdf",
+    "互联网/哔哩哔哩/2025年报.pdf",
+)
+
+
+def _glob_overlap(a: tuple[str, ...], b: tuple[str, ...]) -> bool:
+    """Two route include sets overlap when some plausible relative path is
+    matched by both (CFG-06/08).  fnmatch on a fixed sample set keeps the
+    check deterministic and testable."""
+    import fnmatch
+
+    for sample in _OVERLAP_SAMPLES:
+        matches_a = any(fnmatch.fnmatch(sample, pattern) for pattern in a)
+        matches_b = any(fnmatch.fnmatch(sample, pattern) for pattern in b)
+        if matches_a and matches_b:
+            return True
+    return False
+
+
+def _check_route_overlap(routes: tuple[RouteSpec, ...], root_index: int) -> None:
+    """CFG-06/08: overlapping routes with no unique order would admit the
+    same physical file twice — reject at load time."""
+    for i in range(len(routes)):
+        for j in range(i + 1, len(routes)):
+            if _glob_overlap(routes[i].include, routes[j].include):
+                raise CatalogConfigError(
+                    f"roots[{root_index}] routes[{i}] and routes[{j}] overlap "
+                    f"(CFG-06/08)"
+                )
+
+
+__all__ = ["CatalogConfigError", "load_catalog_config"]

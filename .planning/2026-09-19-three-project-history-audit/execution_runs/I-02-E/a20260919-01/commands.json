@@ -1,0 +1,53 @@
+[
+  {
+    "id": "w02e-exp-oracle",
+    "purpose": "W02E-P1 no-interruption oracle: single ensure(download) succeeds; source/tools identity frozen from constants, not writer output.",
+    "cwd": "execution_runs/I-02-E/a20260919-01",
+    "argv": ["execution_runs/I-02-E/a20260919-01/iso/venv/Scripts/python.exe", "-X", "utf8", "scripts/w02e_cases.py", "--case", "EXP"],
+    "config_paths": ["samples/real_roots/hk/HK_FILENAME.source.json"],
+    "allowed_write_roots": ["%TEMP%/w02e/a20260919-01_case_scratch/EXP", "after/"],
+    "network": "disabled",
+    "timeout_seconds": 300,
+    "expected_returncode": 0,
+    "expected_business_result": "status=imported; sources/documents/locations active == 1/1/1; exactly one discover+fetch; source_id=urn:company-wiki:source:sha256:ffd733...dc; canonical path under companies/小米集團－Ｗ/raw/financial_reports/annual/",
+    "before_after_evidence": ["after/crash-boundary-matrix.json EXP", "after/before-restart/EXP_no_interrupt/", "raw-cli-logs/EXP/"],
+    "binding_status": "bound"
+  },
+  {
+    "id": "w02e-p1-raise-cases",
+    "purpose": "W02E-P1 controlled injection first: staged_verified / raw_saved / provenance_saved / qualified raise then restart; resume picks the first unfinished durable stage.",
+    "cwd": "execution_runs/I-02-E/a20260919-01",
+    "argv_template": ["execution_runs/I-02-E/a20260919-01/iso/venv/Scripts/python.exe", "-X", "utf8", "scripts/w02e_cases.py", "--case", "P1_raise_staged_verified", "--case", "P1_raise_raw_saved", "--case", "P1_raise_provenance_saved", "--case", "P1_raise_qualified"],
+    "allowed_write_roots": ["%TEMP%/w02e/**", "after/**"],
+    "network": "disabled",
+    "timeout_seconds": 900,
+    "expected_returncode": 0,
+    "expected_business_result": "resume = imported; resume provider counts 0; logical 1/1/1; identity == oracle; sidecar rebuilt == durable S1 payload bytes",
+    "before_after_evidence": ["after/crash-boundary-matrix.json", "after/before-restart/P1_raise_*/", "raw-cli-logs/P1_raise_*/"],
+    "binding_status": "bound"
+  },
+  {
+    "id": "w02e-p1-kill-cases",
+    "purpose": "W02E-P1 true Popen hard kill at staged_verified / provenance_saved / qualified / scan_partial; before-restart snapshots taken post-kill; recovery consumes durable evidence only.",
+    "cwd": "execution_runs/I-02-E/a20260919-01",
+    "argv_template": ["execution_runs/I-02-E/a20260919-01/iso/venv/Scripts/python.exe", "-X", "utf8", "scripts/w02e_cases.py", "--case", "P1_kill_staged_verified", "--case", "P1_kill_provenance_saved", "--case", "P1_kill_qualified", "--case", "P1_kill_scan_partial"],
+    "allowed_write_roots": ["%TEMP%/w02e/a20260919-01_case_scratch/**", "after/**"],
+    "network": "disabled",
+    "timeout_seconds": 1200,
+    "expected_returncode": 0,
+    "expected_business_result": "checkpoint_confirmed=true; resume imported with provider 0; final exact resolve == no-interruption oracle; K4 scan_runs show interrupted row followed by fresh completed run",
+    "before_after_evidence": ["after/before-restart/P1_kill_*/", "after/after-restart/P1_kill_*/post_kill.json", "after/recovery-and-paused-proof.json"],
+    "binding_status": "bound"
+  },
+  {
+    "id": "w02e-negative-cases",
+    "purpose": "W02E-N1(a,b) / N2a(db lock) / N2b(torn journal tail + documented manual repair) / N2c(stale lease takeover) / N2d(identity conflict) / N3a(raw drift) / N3b(policy epoch) — blocked is a legitimate non-auto-recovery state, never counted as success.",
+    "cwd": "execution_runs/I-02-E/a20260919-01",
+    "argv_template": ["execution_runs/I-02-E/a20260919-01/iso/venv/Scripts/python.exe", "-X", "utf8", "scripts/w02e_cases.py", "--case", "N1a_missing_sidecar", "--case", "N1b_raw_gone_no_staging", "--case", "N2a_db_lock", "--case", "N2b_journal_torn_tail", "--case", "N2c_stale_lease", "--case", "N2d_identity_conflict", "--case", "N3a_raw_drift_after_crash", "--case", "N3b_policy_epoch"],
+    "allowed_write_roots": ["%TEMP%/w02e/a20260919-01_case_scratch/**", "after/**"],
+    "network": "disabled",
+    "timeout_seconds": 1800,
+    "expected_returncode": 0,
+    "expected_business_result": "each blocked case reports blocked=exception + expected phrase + raw retained + provider 0; N2a/N2b/N3b recover to oracle identity after holder release / documented manual repair / policy-epoch back respectively; K4 scan_partial shows interrupted scan_run row (I-02-A semantics preserved); no blanket catch-continue; no lock deletion"
+  }
+]

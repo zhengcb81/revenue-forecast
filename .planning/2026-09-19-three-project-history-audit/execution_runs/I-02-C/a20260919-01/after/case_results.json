@@ -1,0 +1,62 @@
+{
+  "P1_hk": {
+    "name": "P1_hk",
+    "failures": []
+  },
+  "P1_us": {
+    "name": "P1_us",
+    "failures": []
+  },
+  "P2": {
+    "name": "P2_second_exact_reuse",
+    "failures": []
+  },
+  "N1a_delete_sidecar": {
+    "name": "N1a_delete_sidecar",
+    "writer_error": "CanonicalImportError: existing_raw_missing_sidecar: the immutable provenance sidecar (<raw>.source.json beside the raw file) is absent; without it there is no durable receipt chain",
+    "failures": []
+  },
+  "N1b_tamper_one_byte": {
+    "name": "N1b_tamper_one_byte",
+    "writer_error": "CanonicalImportError: existing_raw_bytes_mismatch: content_sha256 is ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c but the on-disk bytes hash/size differ (raw_path=C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w02c\\a20260919-01_case_scratch\\N1b_tamper_one_byte\\project\\companies\\小米集團－Ｗ\\raw\\financial_reports\\annual\\2026-04-28_hkexnews_12127452_2025年度報告.pdf)",
+    "failures": []
+  },
+  "N1c_forged_provider_id": {
+    "name": "N1c_forged_provider_id",
+    "writer_error": "CanonicalImportError: existing_raw_identity_contract: the caller-supplied request identity does not match the sidecar's durable provider/entity/kind/year bindings",
+    "failures": [],
+    "call_note": {
+      "forged_provider": "sec",
+      "forged_provider_document_id": "12127452"
+    }
+  },
+  "N1c_missing_provider": {
+    "name": "N1c_missing_provider",
+    "writer_error": "CanonicalImportError: existing_raw_identity_contract: request.provider / request.provider_document_id must be supplied explicitly for register-existing; inferring provider/fiscal_year from the filename is forbidden",
+    "failures": [],
+    "call_note": {
+      "forged_provider": null,
+      "forged_provider_document_id": null
+    }
+  },
+  "N1d_missing_download_receipt_chain": {
+    "name": "N1d_missing_download_receipt_chain",
+    "writer_error": "CanonicalImportError: existing_raw_provenance_incomplete: sidecar lacks durable receipt/identity fields ['receipt']; auto-filling (including from the filename) is forbidden",
+    "failures": []
+  },
+  "N2a_retired": {
+    "name": "N2a_retired",
+    "writer_error": "CanonicalImportError: existing_raw_status_not_active: identical bytes are retired; register-existing may not reactivate them and returns no qualified handle",
+    "failures": []
+  },
+  "N2a2_quarantined": {
+    "name": "N2a2_quarantined",
+    "writer_error": "CanonicalImportError: existing_raw_status_not_active: identical bytes are quarantined; register-existing may not reactivate them and returns no qualified handle",
+    "failures": []
+  },
+  "N2b_root_not_reusable": {
+    "name": "N2b_root_not_reusable",
+    "writer_error": "CanonicalImportError: existing_raw_root_not_reusable: the target company_raw root is not reusable for filing; registering cannot lift the root-level reuse ban",
+    "failures": []
+  }
+}

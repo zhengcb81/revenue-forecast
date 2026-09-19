@@ -1,0 +1,32 @@
+{
+  "template": "HK-annual",
+  "market": "HK",
+  "entity": "HKCO",
+  "period_rule_note": "该样本不陈述或验证任何市场披露制度、期限义务或真实 provider 行为。",
+  "field_source_simulation": {
+    "kind": "模拟自 HK 披露文种 '年报'，映射 document_kind=annual_report（请求级默认 + 候选级一致）",
+    "period_start/period_end": "模拟自 HK 非日历财政年 2025-04-01→2026-03-31（跨日历年，正是 fiscal_year 单键失效的形态）",
+    "filed_at": "模拟 filing_date（canonical）",
+    "accepted_at": "模拟 accepted_at",
+    "fiscal_year": "模拟 fiscal_year=2026（输入值）；Dt1（period_end 年）派生标签同为 2026"
+  },
+  "provider": "fake-hk",
+  "scenarios": [
+    {
+      "name": "cross_fy_period_key_not_merged",
+      "remote": [
+        {"kind": "annual_report", "period_start": "2025-04-01", "period_end": "2026-03-31", "accession": "hk-fy26-old", "filed_at": "2026-06-28", "accepted_at": "2026-06-28", "fiscal_year": 2026, "url": "https://example.org/hk/old.pdf"},
+        {"kind": "annual_report", "period_start": "2025-04-01", "period_end": "2026-03-31", "accession": "hk-fy26-new", "filed_at": "2026-06-30", "accepted_at": "2026-06-30", "fiscal_year": 2026, "url": "https://example.org/hk/new.pdf"}
+      ],
+      "local": [
+        {"kind": "annual_report", "period_start": "2025-04-01", "period_end": "2026-03-31", "accession": "hk-fy26-old", "filed_at": "2026-06-28", "accepted_at": "2026-06-28", "fiscal_year": 2026}
+      ],
+      "expect": {
+        "missing_ids": [],
+        "newer_revision_ids": ["hk-fy26-new"],
+        "reuse_ids": ["hk-fy26-old"],
+        "latest_status": "newer_remote_available"
+      }
+    }
+  ]
+}

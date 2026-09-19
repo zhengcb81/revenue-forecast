@@ -1,0 +1,266 @@
+{
+  "G-B1": {
+    "overall": "pass",
+    "checks": [
+      {
+        "field": "newer_revision_ids",
+        "expected": [
+          "a-new"
+        ],
+        "actual": [
+          "a-new"
+        ],
+        "status": "pass"
+      },
+      {
+        "field": "reuse_ids",
+        "expected": [
+          "z-old"
+        ],
+        "actual": [
+          "z-old"
+        ],
+        "status": "pass"
+      },
+      {
+        "field": "missing_ids",
+        "expected": [],
+        "actual": [],
+        "status": "pass"
+      },
+      {
+        "field": "latest_status",
+        "expected": "newer_remote_available",
+        "actual": "newer_remote_available",
+        "status": "pass"
+      },
+      {
+        "field": "not_published",
+        "expected": false,
+        "actual": false,
+        "status": "pass"
+      }
+    ],
+    "rationale": "I-03-A C01: filed_at 2026-04-01 > 2026-03-01 decides; ID order has no say. Old code max(accession lexicographic) picks z-old -> false gap closure."
+  },
+  "G-B2": {
+    "overall": "pass",
+    "checks": [
+      {
+        "field": "newer_revision_ids",
+        "expected": [],
+        "actual": [],
+        "status": "pass"
+      },
+      {
+        "field": "reuse_ids",
+        "expected": [
+          "a-new"
+        ],
+        "actual": [
+          "a-new"
+        ],
+        "status": "pass"
+      },
+      {
+        "field": "missing_ids",
+        "expected": [],
+        "actual": [],
+        "status": "pass"
+      },
+      {
+        "field": "latest_status",
+        "expected": "unknown_if_remote_confirmed_newer",
+        "actual": "unknown_if_remote_confirmed_newer",
+        "status": "pass"
+      },
+      {
+        "field": "not_published",
+        "expected": false,
+        "actual": false,
+        "status": "pass"
+      }
+    ],
+    "rationale": "I-03-A C02: remote shows nothing >= local; local must not be demoted; z-old (earlier filed) can never be a newer revision."
+  },
+  "G-B3": {
+    "overall": "pass",
+    "checks": [
+      {
+        "field": "missing_ids",
+        "expected": [
+          "a-new"
+        ],
+        "actual": [
+          "a-new"
+        ],
+        "status": "pass"
+      },
+      {
+        "field": "newer_revision_ids",
+        "expected": [],
+        "actual": [],
+        "status": "pass"
+      },
+      {
+        "field": "latest_status",
+        "expected": "newer_remote_available",
+        "actual": "newer_remote_available",
+        "status": "pass"
+      },
+      {
+        "field": "order_invariance",
+        "expected": true,
+        "actual": true,
+        "status": "pass"
+      }
+    ],
+    "rationale": "Only the newest revision enters missing (single gap); reversed remote input order must produce identical output (date decides, not order/ID)."
+  },
+  "G-B4": {
+    "overall": "pass",
+    "checks": [
+      {
+        "field": "future_ids",
+        "expected": [
+          "a-future"
+        ],
+        "actual": [
+          "a-future"
+        ],
+        "status": "pass"
+      },
+      {
+        "field": "missing_ids",
+        "expected": [],
+        "actual": [],
+        "status": "pass"
+      },
+      {
+        "field": "newer_revision_ids",
+        "expected": [],
+        "actual": [],
+        "status": "pass"
+      },
+      {
+        "field": "not_published",
+        "expected": false,
+        "actual": false,
+        "status": "pass"
+      },
+      {
+        "field": "latest_status",
+        "expected": "unknown_empty_success",
+        "actual": "unknown_empty_success",
+        "status": "pass"
+      }
+    ],
+    "rationale": "I-03-A C13: filed_at > as_of goes to explicit future bucket; never downloadable/current; not_published stays false (no exhaustiveness claim)."
+  },
+  "G-B5a": {
+    "overall": "pass",
+    "checks": [
+      {
+        "field": "reuse_ids",
+        "expected": [],
+        "actual": [],
+        "status": "pass"
+      },
+      {
+        "field": "provider_unavailable",
+        "expected": true,
+        "actual": true,
+        "status": "pass"
+      },
+      {
+        "field": "latest_status",
+        "expected": "unknown_provider_failed",
+        "actual": "unknown_provider_failed",
+        "status": "pass"
+      },
+      {
+        "field": "not_published",
+        "expected": false,
+        "actual": false,
+        "status": "pass"
+      }
+    ],
+    "rationale": "ZR-406: capture-incomplete handle is never reusable evidence; provider failure => unknown_provider_failed, never up-to-date."
+  },
+  "G-B5b": {
+    "overall": "pass",
+    "checks": [
+      {
+        "field": "reuse_ids",
+        "expected": [
+          "z-old",
+          "z-old"
+        ],
+        "actual": [
+          "z-old",
+          "z-old"
+        ],
+        "status": "pass"
+      },
+      {
+        "field": "reuse_dedup_accessions",
+        "expected": [
+          "z-old"
+        ],
+        "actual": [
+          "z-old"
+        ],
+        "status": "pass"
+      },
+      {
+        "field": "latest_status",
+        "expected": "local_is_latest_confirmed",
+        "actual": "local_is_latest_confirmed",
+        "status": "pass"
+      }
+    ],
+    "rationale": "Multi-root same-bytes reuse: no duplicate download plan; accession hit confirms local is latest (C12)."
+  },
+  "G-B5c": {
+    "overall": "pass",
+    "checks": [
+      {
+        "field": "missing_ids",
+        "expected": [
+          "r-annual",
+          "r-interim"
+        ],
+        "actual": [
+          "r-annual",
+          "r-interim"
+        ],
+        "status": "pass"
+      },
+      {
+        "field": "missing_period_keys",
+        "expected": [
+          "annual_report|2024-07-01|2025-06-30",
+          "interim_report|2024-07-01|2024-12-31"
+        ],
+        "actual": [
+          "annual_report|2024-07-01|2025-06-30",
+          "interim_report|2024-07-01|2024-12-31"
+        ],
+        "status": "pass"
+      },
+      {
+        "field": "merged_single_bucket",
+        "expected": false,
+        "actual": false,
+        "status": "pass"
+      },
+      {
+        "field": "order_invariance",
+        "expected": true,
+        "actual": true,
+        "status": "pass"
+      }
+    ],
+    "rationale": "I-03-A C05/D1: (kind, period_start, period_end) triple key; same FY different periods are independent gaps; D5 deterministic ordering, reversed remote input order must not change output."
+  }
+}

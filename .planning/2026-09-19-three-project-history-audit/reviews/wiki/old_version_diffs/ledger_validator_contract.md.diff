@@ -1,0 +1,170 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/ledger_validator_contract.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/ledger_validator_contract.md
+@@ -6,20 +6,24 @@
+ ## 1. 信任边界与文件
+ 
+ 未来实施白名单：
+ 
+-- `scripts/validate_gate_ledger.py`：除下述冻结的 JSON Schema 运行时外只使用 Python 标准库；
+-  无网络、插件、动态 import、项目业务 import；
+-- 独立 validator venv 中只允许固定版本的 `jsonschema`、`referencing` 及其闭包依赖；解释器绝对路径、
+-  Python 版本、每个 wheel/安装文件 SHA-256、导入模块实际路径、`sys.path` 精确集合与依赖树都写入
+-  `validator_release_manifest.v1.json`。启动时发现多一个路径、包、版本或 hash 漂移即失败；
++- `scripts/validate_gate_ledger.py`：使用已冻结的 Python stdlib 与vendored JSON Schema运行时；
++  无网络、插件、ambient/dynamic import、项目业务 import；
++- OS pre-entry verifier先用固定Windows/.NET primitives核验解释器/DLL/stdlib、validator入口、
++  vendored `jsonschema`/`referencing`及完整闭包、schema registry、fixture/vector/release manifest、
++  ACL/file identity/reparse状态，并把句柄保持到child创建。解释器绝对路径、Python版本、每个wheel/
++  安装树SHA-256、导入模块实际路径、`sys.path`精确集合与依赖树写入
++  `validator_release_manifest.v2.json`。启动时发现多一个路径、包、版本或hash漂移即失败；
+ - `tests/test_gate_ledger_validator.py`：只用 tmp ledger/review/evidence；
+ - 本计划冻结的 `gate_ledger.schema.json`、`review_result.schema.json`、
+   `review_confirmation.schema.json`、`gate_dag.v4.json`、`operation_contracts.v4.json`、
+   `operation_contract.schema.json`、`authorization_manifest.schema.json`、
+   `operation_intent_manifest.schema.json`、`journal_manifest.schema.json`、
+   `evidence_manifest.schema.json`、`validator_fixture_manifest.schema.json`、
+-  `validator_release_manifest.schema.json`、
++  `validator_scenario_fixture.schema.json`、`gate_ledger_transcript.schema.json`、
++  `validator_request.schema.json`、`schema_registry.schema.json`、
++  `bootstrap_verifier_manifest.schema.json`、`validator_release_manifest.schema.json`、
+   `parser_route_manifest.schema.json`、`test_id_registry.v4.json`、
+   `gate_ledger_validator_vectors.v4.json` 及每个 instance schema；
+ - 动态 `gate_ledger.jsonl`、`reviews/`、`evidence/` 只在实施开始后按权限合同创建。
+ 
+@@ -28,14 +32,15 @@
+ ```text
+ B0 使用 OS/stdlib SHA-256 核对 plan_manifest.v4.json 的外部预期 hash
+ B1 逐项核对计划 manifest 中的 schema、DAG、catalog、registry、vectors 与 prose contract hash；
+    v4 manifest 不得声称冻结尚未实现的 validator 文件
+-B2 I00L 完成后生成独立 `validator_release_manifest.v1.json`，由 OS/stdlib SHA-256 冻结
++B2 I00L 完成后生成独立 `validator_release_manifest.v2.json`，由 pre-entry OS verifier 冻结
+    validator、其 tests、运行时和依赖；G00L reviewer 把该 manifest 的 actual hash 作为输入
+-B3 <冻结venv-python绝对路径> -I scripts/validate_gate_ledger.py self-test ...；只对tmp ledger执行；
+-   禁止 `-S`（它会移除已冻结的 schema runtime）；入口先核对解释器、sys.path、依赖文件和模块来源
++B3 pre-entry verifier先核验并保持所有文件identity，再从空的非reparse cwd创建：
++   <冻结python绝对路径> -I -S -B scripts/validate_gate_ledger.py self-test ...；只对tmp ledger执行；
++   已验证入口只可显式插入已验证vendor路径，禁止site/.pth/sitecustomize/usercustomize与bytecode fallback
+ B4 tmp init只允许创建T00L genesis READY；所有其他genesis负例必须失败
+-B5 在tmp证明append使用expected-head + exclusive lock + 全链校验 + atomic append + flush/fsync + 回读
++B5 在tmp证明append使用protected head anchor + exclusive lock + 全链校验 + atomic append + flush/fsync + 回读
+ B6 生成到 I00L terminal 为止的 canonical bootstrap transcript 候选并预计算 external head；
+    G00L两名reviewer各自重算全部vectors、至少一个额外负例、该head及validator release hash
+ B7 两人PASS并完成detached read-back confirmation后，才把“同一候选 transcript + G00L terminal
+    record”一次性初始化为正式ledger；全链、payload/report/confirmation回读后再开放D00
+@@ -54,45 +59,38 @@
+ - canonical bytes：`json.dumps(obj, sort_keys=True, separators=(",", ":"),
+   ensure_ascii=False)` 的 UTF-8；拒绝 float、NaN、Infinity、重复 key。
+ - `record_sha256 = SHA256(canonical bytes)`，不包含 LF。
+ - seq=1 的 `prev_record_sha256=null`；之后 seq 严格 +1，prev 等于前一 canonical hash。
+-- append 调用必须带外部保存的 `--expected-head`；整链被重写即使内部自洽，只要 head 不符即失败。
++- 每个命令必须带`--head-anchor`指向受保护anchor；validator从anchor读取generation/expected head并以
++  CAS更新。禁止调用者用裸`--expected-head`自报链头；整链被重写即使内部自洽，只要anchor不符即失败。
+ - `supersedes_seq` 只能引用同 revision、更早、存在的 record；不删除/覆盖原记录。下游失效按
+   DAG 传递，直到相关 T/D/I/G/authorization 重新完成。
+ - 正式 ledger 的 genesis 是 T00L READY；任何别的首节点或多个 genesis 都失败。
+ 
+ ## 3. 命令接口
+ 
++每次调用都由已验证bootstrap创建冻结Python `-I -S -B` child，并显式传入完整公共参数；不得从CWD、
++环境变量或网络补找任一输入：
++
+ ```text
+-<validator-venv-python> -I scripts/validate_gate_ledger.py self-test
+-  --manifest <plan_manifest.v4.json> --dag <gate_dag.v4.json>
++<frozen-python> -I -S -B <verified-validator-entrypoint> <self-test|init|validate|append|next>
++  --ledger <gate_ledger.jsonl-or-tmp-candidate>
+   --ledger-schema <gate_ledger.schema.json>
+-  --review-schema <review_result.schema.json>
+-  --review-confirmation-schema <review_confirmation.schema.json>
++  --dag <gate_dag.v4.json>
+   --operation-catalog <operation_contracts.v4.json>
+-  --operation-contract-schema <operation_contract.schema.json>
+-  --operation-intent-schema <operation_intent_manifest.schema.json>
+-  --authorization-schema <authorization_manifest.schema.json>
+-  --journal-manifest-schema <journal_manifest.schema.json>
+-  --evidence-manifest-schema <evidence_manifest.schema.json>
+-  --validator-fixture-manifest-schema <validator_fixture_manifest.schema.json>
+-  --parser-route-manifest-schema <parser_route_manifest.schema.json>
+-  --test-registry <test_id_registry.v4.json>
++  --schema-registry <schema_registry.v1.json>
++  --release-manifest <validator_release_manifest.v2.json>
++  --fixture-manifest <validator_fixture_manifest.v2.json>
++  --scenario <validator_scenario_fixture.json-or-approved-NONE-sentinel>
+   --vectors <gate_ledger_validator_vectors.v4.json>
+-
+-<validator-venv-python> -I scripts/validate_gate_ledger.py init
+-  --candidate <record.json> --expected-head NONE ...
+-
+-<validator-venv-python> -I scripts/validate_gate_ledger.py validate
+-  --ledger <gate_ledger.jsonl> --expected-head <sha> ...
+-
+-<validator-venv-python> -I scripts/validate_gate_ledger.py append
+-  --ledger <gate_ledger.jsonl> --candidate <record.json>
+-  --expected-head <sha|NONE> ...
+-
+-<validator-venv-python> -I scripts/validate_gate_ledger.py next
+-  --ledger <gate_ledger.jsonl> --expected-head <sha> ...
++  --vector-schema <gate_ledger_validator_vectors.schema.json>
++  --head-anchor <ledger_head_anchor.json>
++  --clock <explicit-UTC-fixture-or-protected-system-clock>
+ ```
++
++`init`与`append`另要求`--candidate <record.json>`；`validate`/`next`禁止candidate；`self-test`只能
++使用tmp ledger/anchor/fixture。公共参数的精确顺序、path ID与hash由release manifest的
++`cli_contract`及closed schema registry冻结；缺失、多余、重复或ambient替换均fail closed。
+ 
+ `next` 只向 stdout 输出 validator 计算的 eligible node IDs、缺失条件和 reason；不得写回 ledger。
+ ledger schema 使用 `additionalProperties=false`，因此任何 authored `next_eligible_nodes` 或同义
+ 字段直接失败。
+@@ -189,30 +187,38 @@
+ - 授权时间只能是严格 UTC `Z`；使用已启用 FormatChecker 后再语义检查
+   `issued_at <= checked_at <= now < expires_at`。allowed/excluded scope 必须不相交，provider/scope
+   标识不得重复。
+ - 12B 的 Run value/12B 用户授权在 D12B-ARM 前完成；D12B-RB 必须在任何 ARM 写入前独立审查并
+-  冻结可执行 compensation。12C 则由 D12C 先冻结“拟执行 action + intent hash”，用户只批准该
+-  hash，G12C-PRE 再核对 TTL/revocation/drift，不能先取得模糊批准再补合同。
++  冻结可执行 compensation。12C使用两条不可复用的purpose-bound授权：D12C-RT先冻结runtime
++  template/auth proposal/subject，外部用户runtime receipt后由G12C-RT重验；D12C再冻结exact final
++  intent/contract/compensation/final auth proposal/subject，外部用户final receipt后由G12C-PRE同时
++  fresh-revalidate两条链。两份receipt/approval/evidence ID与hash必须不同，不能先取得模糊批准再补合同。
+ - validator 对每个 OP 先在 `operation_contracts.v4.json` 做唯一 exact/pattern match，再核对
+   dynamic contract path/hash。`REQUIRED` 必须有同 stage、未过期/撤销且字段全绑定的 authorization
+   manifest；`N_A_ALLOWED` 只接受 catalog 枚举 reason；`BOUND_COMPENSATION` 必须复用 parent D
+   已封存的 compensation/auth hash。任何自由文本 `NOT_APPLICABLE:*` 均失败。每个 mutating OP
+-  还必须绑定受保护 journal manifest、head-before、intent record、expected finalize/head-after；
+-  crash 后先 reconcile 半提交记录，不能静默重跑。
++  还必须绑定受保护 journal manifest、head-before、intent record与FINALIZE template commitment；
++  actual FINALIZE/RECONCILE records、head-after、touched rows/files与execution receipt只能在OP后生成并
++  进入terminal evidence，不能倒填pre-op D/contract。crash 后先 reconcile 半提交记录，不能静默重跑。
+ - registry contract 必须列出 HKCU、current-user SID、32/64-bit view、exact key/value/name/type、
+   expected prior absence/value hash、desired REG_SZ exact bytes/hash/length、CAS primitive implementation/
+   proof hash、run ownership nonce、max touched count 与 post-read。发现 existing-same-bytes 也不是
+-  “创建成功”；只有精确 owner nonce 可条件删除。若无法在两个竞争进程和第三方替换测试中证明
+-  CAS 线性化，G12B-PRE 必须 BLOCKED，禁止退化成普通 read-then-write。
++  “创建成功”。自动rollback只允许`VERIFY_ABSENT`、`VERIFY_OWNED_PRESERVE`、
++  `VERIFY_CONFLICT_PRESERVE`，三者均不得删除；若无法在两个竞争进程和第三方删除/替换测试中证明
++  create-if-absent线性化与zero-delete补偿，G12B-PRE 必须 BLOCKED，禁止退化成普通 read-then-write。
+ - OP12B-ARM/G12B-ARM/D12B-CAS 及其后直到 G12B-POST 的失败、token/lease expiry 或用户取消都只能
+-  走 `OP12B-RB→G12B-RB`；OP12C 或 G12C 失败只能走 `OP12C-RB→G12C-RB`。若第三方替换 Run 值，
+-  compensation 必须保留第三方值并进入 `PAUSED/REGISTRY_CONFLICT`。rollback G 只读，并从 OP 合同
+-  继承 exact terminal state，不得自报固定状态。
+-- G12B-POST 后 D12C 可以只读冻结拟执行 intent；缺 final activation 用户批准时在 D12C 后保持
+-  `SAFE_PAUSED_WAITING_USER`，`next` 返回等待原因和空 eligible set，不能写 BLOCKED/前进。新批准
+-  必须逐 hash 绑定 D12C intent，再由 G12C-PRE 重验。
++  走 `OP12B-RB→G12B-RB`；OP12C 或 G12C 失败只能走 `OP12C-RB→G12C-RB`。12B rollback的
++  absent/exact-owned/conflict终态分别是`PAUSED/OFF`、`PAUSED/ON`、
++  `PAUSED/REGISTRY_CONFLICT`；12C分别是`PAUSED/OFF`、`LOGIN_VALIDATED_PAUSED/ON`、
++  `PAUSED/REGISTRY_CONFLICT`。所有分支保留registry事实、不删除Run；rollback G只读，并从OP合同
++  继承exact terminal state，不得自报固定状态。
++- G12B-POST 后D12C-RT/D12C可依次只读冻结各自template/commitment；缺任一purpose-specific用户
++  receipt时保持`SAFE_PAUSED_WAITING_USER`，`next`返回等待原因和空eligible set，不能写BLOCKED/
++  前进。runtime receipt必须先经G12C-RT；final receipt必须绑定D12C与prior runtime chain，再由
++  G12C-PRE同时重验。
+ - G12C 后每个普通 autostart cycle 都必须在任何 DB/file/network side effect 前封存新的 cycle
+-  intent + dynamic operation contract，绑定 process/control generation、release/config/routing/data、
++  intent + dynamic operation contract，绑定runtime-template receipt/G12C-RT evidence/fresh
++  revalidation、process/control generation、release/config/routing/data、
+   exact candidate source→source identity、DB/file/egress、journal head 与 durable daily/monthly budget；
+   每 cycle 重验授权 expiry/revocation 和 caps。失败必须 circuit+pause、process=0，preflight 失败时
+   registry/config/source/catalog/normalized write count 全为 0；第三方 Run 漂移进入 REGISTRY_CONFLICT。
+ 

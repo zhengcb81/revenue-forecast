@@ -1,0 +1,262 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/progress.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/history/progress.v4.md
+@@ -1,5 +1,153 @@
+ # Source Catalog Worker 恢复计划 — 进度日志
++
++## 2026-09-03 22:17–22:22 UTC（续接：v4 字节漂移阻断）
++
++- 三名正式reviewer（SQL/性能、生命周期/安全、测试/DAG）均因账户用量限制中止，没有任何
++  完整verdict；全部记为`INCOMPLETE_USAGE_LIMIT`，绝不计PASS。提示重置时点过后准备复审前，
++  主agent重新执行冻结检查，发现新的独立阻断项，因此尚未重新派审。
++- `plan_manifest.v4.json`自身SHA-256仍是
++  `c34b849475f1efeb0a3237af2d4a748a6e36c276f7c91b6ad07cae8ea3004711`，但当前检查器输出
++  `FAIL: 27 error(s) after 7696 checks`，27项均为`MANIFEST-BYTES`。
++- 27个不匹配文件的LastWriteTimeUtc集中在`2026-09-03T21:29:17.252–266Z`；本任务冻结后只编辑
++  excluded进度/审查日志，未执行这些normative文件的写入。当前Git HEAD已从冻结时变为
++  `a0c7629`；工作树另有其他任务文件变化，未读取、恢复或改写它们。
++- 只读字节诊断发现：16个文件将当前CRLF转换为LF后可精确复现冻结SHA-256；另外11个文件
++  既不能用统一LF、也不能用统一CRLF复现冻结hash，可能与原先混合换行有关，但当前证据不足
++  以断言它们只有换行变化。所有原文件、原manifest都保持原样，没有为求PASS重算覆盖hash。
++- 当前v4状态改为**INVALIDATED_FROZEN_BYTES / NOT_IMPLEMENTATION_AUTHORIZED**；无论是否只有
++  换行变化，v4都不能以当前工作树作为正式审查输入。后续必须保留v4历史，查清漂移后另建v5。
++- 先继续只读调查变更来源和原字节可恢复性；未启动worker，未实施修复，未改注册表/配置/数据库。
++- 本轮诊断已完成并新增`reviews/v4-freeze-integrity-incident-2026-09-03.md`：保存27文件完整原/现hash、
++  delta、16项LF复现、11项剩余不确定性、pre_commit源码定位/校验值、4份相同patch证据和v5续接步骤。
++- 真实安装的pre_commit使用整仓checkout再apply未提交patch；最新patch与27文件写入仅相差约1秒。
++  四份最近patch均552211 bytes、同一SHA-256；内存重建证明现状规范化内容匹配保存的patch。
++- 独立forensic reviewer `/root/v4_test_dag_review`已完整返回并确认上述因果链证据与限制；该结论
++  不是v4/v5正式PASS。它另指出前后hash相同不能排除阅读期间checkout又恢复，故.gitattributes
++  单独不足以保护并发审查；新冻结必须使用不受共享hook影响的稳定快照或先协调暂停并行提交。
++- 当前没有添加.gitattributes、转换EOL、恢复旧文件或生成v5；仅新增上述诊断记录并更新两个excluded
++  日志。采用当前11份尚未证明等价内容作为新基线前，需明确新快照边界并从零独立审查。
++- 本轮末重新只读核验：control=paused；精确HKCU Run值absent；覆盖Python module调用形式后的目标
++  进程、计划任务、服务、StartupCommand均NONE。查询成功，不把权限错误误报为NONE。
++- forensic reviewer已回读保存的诊断报告并返回`FAITHFUL`，无需纠正；它实际确认的报告SHA-256为
++  `ede40ac40f7afa35fbc27d00fd7aff6441cc54a9875b041dd6b1d82dd3306a6d`。该回读只确认摘要忠实性，
++  不是正式Gate detached confirmation。报告在此确认后不再修改。
++- 续接需要明确选择稳定的新基线/快照边界：建议保留当前共享目录不动，在另一个新的隔离子目录
++  建立不会被当前tracked-file hook触及的v5快照，并把11份尚未证明等价内容当新基线从零审查；
++  不自行把它们宣布为v4恢复，不影响另一个任务的源码/主线计划或Git配置。
++
++## 2026-09-03（v4 已冻结，正式独立审查待完成）
++
++- v4 的48份normative文件已经停止修改，并生成不可变`plan_manifest.v4.json`；manifest外部
++  SHA-256为`c34b849475f1efeb0a3237af2d4a748a6e36c276f7c91b6ad07cae8ea3004711`，大小9598 bytes。
++- 冻结覆盖为115个固定DAG节点、29个schema、315个稳定测试ID、18组/140个vector case、
++  60个requirement、44个risk、105个计划审查finding；冻结时Git HEAD仅记录为漂移线索
++  `16ef042f40cc85375d0de5196c654a9c027a6ef2`。
++- 冻结前输出保存为`plan_freeze_check.v4.txt`，SHA-256为
++  `ca47be86a15d94c68787c637d08567cdf57b2be51e27ee67f2cdff84b9137af7`；manifest生成后再次运行
++  checker，仍为`PASS: 7696 checks; {"fixed_nodes": 115, "schemas": 29, "tests": 315,
++  "vectors": 18}`，且明确不访问生产数据库、注册表、进程、source、配置或网络。
++- 历史`plan_manifest.v3.json`重算SHA-256仍为
++  `9ee84acdbe65a294925de004125f37b62b9e4b1c95655a04cd2344bc6bd270cc`，没有被覆盖或追加。
++- 当前状态为**FROZEN_FOR_INDEPENDENT_REVIEW / NOT_IMPLEMENTATION_AUTHORIZED**；后续只允许
++  更新排除在冻结集合之外的`progress.md`、`plan_review_revision.md`和未来review记录。若任何正式
++  reviewer发现需要修改normative字节，必须把v4永久记为FAIL并另建v5，禁止原地修补。
++- 下一步是让SQL/性能、生命周期/安全、测试/DAG可实施性三类独立agent分别重算同一manifest
++  和冻结文件哈希并给出PASS/FAIL。所有agent明确PASS且无开放P0/P1前，不得开始任何实现。
++- 本轮仍只写本隔离计划子目录；没有改动项目实现、生产配置、数据库、既有主线计划或其他线程
++  文件，也没有恢复worker或自启动。
++
++## 2026-09-03（继续 v4 冻结前加固）
++
++- 继续使用 `planning-with-files`，仍只修改本隔离目录；worker/registry/生产数据/主线项目均不动。
++- checker 已新增 exact filename→`$id` 映射、禁止 `$dynamicRef/$recursiveRef`、对 662 个 `$ref`
++  执行真实 resolver lookup 并拒绝 scalar target，以及固定核验不可变 v3 manifest SHA-256。
++- 修复 scenario fixture 的 UTC `20–23` 小时误拒和 `GLV-E###` 错误码格式后，当前机械检查为
++  `PASS: 6711 checks; 113 fixed nodes; 26 schemas; 286 tests; 18 vector groups`。该 PASS 仍不含
++  materialized scenario 正例，不能作为冻结或实施许可。
++- 一个最终授权审查 agent 因账户用量限制中断，已按失败记录且不计 verdict；本日重新派出只读
++  auth-DAG、vector mapping、prose 三路审计，等待结果时主 agent 继续修正 checker/合同。
++- 复核不可变 `plan_manifest.v3.json`：它是旧 schema_version 1 格式，不应套用 v4 manifest 的
++  `normative_files` 语义；只固定原字节 hash。未来 `plan_manifest.v4.json` 生成后必须走 v4 schema
++  和独立的 count/path/hash/reparse 语义校验。
++- 已把 vector fixture contract 升级为 composite scenario/materialized mutation v2，并修正 F04-G/H
++  到 `/base_scenarios/*`。首次加 checker 断言时误写局部变量名 `vectors_doc`（实际为
++  `vectors_document`），运行立即以 `NameError` fail closed；已按 traceback 精确修正，不掩盖错误。
++- 修正后机械检查为 `PASS: 6712`。已从当前 schemas 提取准确字段图用于迁移 stale vectors：
++  operation 使用 `db_writes.expected_prior_state/before_invariants/after_invariants/max_actual_touched_rows`、
++  `path_supplement_policy`、外部 head anchor/commitment；auth/process/registry 均使用新 generation/
++  ownership/branch tuple 字段。下一批不再沿用旧 pointer 名称。
++- 已提取 bootstrap/registry/auth-revalidation/journal record/head/execution receipt/budget/scenario 的
++  当前 root/def 字段，用于新增 GLV-E035+ 负例。读取 test registry 尾部时误把实际字段 `id` 写成
++  `test_id`，只读脚本在输出首项后 `KeyError` 退出；未写文件。该次输出再次确认 G11A、G11J 的
++  due test 均为 0，后续改用真实 `id` 字段补齐。
++- vectors 已新增 materialization、bootstrap closure、schema registry、auth revalidation、journal
++  record/head/execution receipt、atomic budget/settlement、process generation 的明确 reason codes/cases；
++  当前 checker 为 `PASS: 6752`。这些是 T00L 必须物化的测试蓝图，不是伪造的现成 PASS fixture。
++- 已核对当前 reset/provider/evidence 结构：reset 使用 `active_latch`、四类 provider
++  `budget_states` 与 `history_state`，provider/data scope 为结构化数组，evidence secret 只能是
++  `secret_scan_result=PASS_NO_SECRETS`。后续将据此替换旧 reset/scope/secret pointers。
++- stale-case 替换表已落到当前字段：`db_writes`/typed `canonical_value`、registry
++  `subject_user_sid/expected_prior_state/conflict_outcome/ownership_record_*`、journal
++  `head_anchor_before_sha256/terminal_payload_template_commitment_sha256`、evidence
++  `storage_kind/acl_snapshot_sha256/contains_secret`、reset nested latch/budget/history，以及 runtime
++  cycle 直接使用 operation-contract root。exact-owned rollback 仍明确为 preserve，绝不恢复 delete。
++- 已迁移上述 stale vectors，并按独立审计再修 primary-key tuple 层级、journal manifest 字段、held
++  head anchor、bootstrap anchor、compensation receipt、schema-valid auth/cap mismatch；机械检查仍为
++  `PASS: 6752`。两路审计随后因账户用量限制未返回正式 verdict，已保留其已发证据但不计 PASS。
++- 双授权 DAG 的现有 reviewer override 已核对：D12C/G12C-PRE/G12C 角色明确，可无歧义插入
++  `D12C-RT(2: llm_data_governance,runtime_operations)` 与
++  `G12C-RT(3: llm_data_governance,control_security,release_security)`，并声明相邻 Gate reviewer
++  disjointness。下一步同步 DAG、ledger node regex、证据与 dual-binding schema。
++- 首次同时新增 approval schema/checker/README 的多文件 patch 因 hunk 分隔写法错误被
++  `apply_patch` 整体拒绝，未产生部分写入；改为先单独新增文件、再精确更新映射与 README。
++- 已新增严格 `user_approval_receipt.schema.json`：两种 purpose 条件互斥，runtime receipt 绑定
++  D12C-RT/template/runtime auth/scope-cap，final receipt 绑定 D12C exact intent/contract/compensation、
++  G12C-RT evidence 与前一 receipt，并要求 distinct approval IDs。尚待 DAG/OP/evidence 接线。
++- 新 schema 纳入 exact-ID/README closure 后 checker 为 `PASS: 6805; schemas=27`。首次修改 DAG
++  reviewer override 时按 pretty-printed 审计输出猜测多行格式，实际源文件该区是单行对象，patch
++  上下文不匹配而整体拒绝；已读取真实字节，改用精确单行上下文，不重复同一失败方式。
++- `gate_dag.v4.json` 已插入 `D12C-RT/G12C-RT`、两份不同 external approval prerequisite、精确
++  reviewer roles/disjointness 和三条 dual-approval global invariants；D12C 现在只在 G12C-RT 通过后
++  冻结 final exact intent。checker 的旧单授权断言尚未同步，下一次运行应先红。
++- checker 同步后如预期先红，仅报 ledger node regex 拒绝两个新节点；已扩展 node/cardinality 规则，
++  将 G12C-RT 固定为 3 reviewers、D12C-RT 固定为 2 reviewers，并增加相邻状态不变约束。
++- 同时关闭独立 prose 审计发现的机器冲突：rollback Gate 不再共用错误枚举；G12B-RB 允许
++  `PAUSED/OFF|PAUSED/ON|PAUSED/REGISTRY_CONFLICT`，G12C-RB 允许
++  `LOGIN_VALIDATED_PAUSED/ON|PAUSED/OFF|PAUSED/REGISTRY_CONFLICT`。当前 checker 为
++  `PASS: 6828; fixed_nodes=115; schemas=27`，但 evidence/OP dual binding 尚未接完。
++- JSON 全域搜索确认剩余机器漂移集中在 evidence node regex、intent-template 的旧“D12C冻结”说明、
++  authorization/operation/evidence 的 dual binding，而不是 DAG 本身。`evidence_manifest` 当前 artifact
++  enum 也缺 `USER_APPROVAL_RECEIPT` 与 `OPERATION_INTENT_TEMPLATE`；下一步将它们变成显式路径/hash
++  对并按 D12C-RT/G12C-RT/D12C/G12C-PRE/OP12C 条件收紧。
++- evidence schema 已接入两个新 node ID、两个 artifact 类型和 `activation_authority_chain`，可分别
++  承载 runtime template/auth/revalidation/approval、G12C-RT evidence、final exact intent/contract/
++  auth/revalidation/approval 及 distinctness。当前 meta/closure checker 为 `PASS: 6852`；仍需把各节点
++  的 null/present 阶段矩阵变成机器条件，并让 intent/contract 复述同一链。
++
++## 2026-09-02（续接：v4 冻结前闭环继续）
++
++- 已按 `planning-with-files` 重新完整读取技能说明，并重读 `task_plan.md`、`progress.md`、
++  `findings.md`；当前仍是 **DRAFT_NOT_FROZEN / NOT_IMPLEMENTABLE**，没有开始项目实现。
++- 本轮继续只修改本隔离计划目录；不接触并行线程的项目文件、现有主线计划、生产配置或数据。
++- worker 继续维持上次已核验的暂停/禁自启动目标状态；本轮不执行 resume、registry 写入、任务/
++  服务变更或任何实现动作。
++- 当前优先闭环：真实 `$ref` registry 的 validator、规范文件闭包、复合 fixture/vector、双层最终授权、
++  新增测试 ID 与 prose 同步；这些通过后才允许生成候选 v4 manifest 并启动固定字节独立审查。
++- 已记录错误：首次追加本段时误用通用标题 `# 进度日志` 作为 patch 上下文，实际文件标题不同，
++  `apply_patch` 因上下文不匹配而拒绝；随后读取实际标题并改用精确上下文，未产生部分写入。
++- 闭包复核：目录现有 26 个 schema，旧 checker 只登记 16 个；另确认三个相对 external `$ref`。
++  本机 `jsonschema 4.26.0` 与 `referencing.Registry/Resource/DRAFT202012` API 可用，下一步将以同一
++  内存 registry 执行 meta/ref/instance 验证，不再用文件名模拟 URN 解析。
++- 首次运行升级后的 checker 得到预期的先红结果：`5359 checks / 2 errors`；真实 registry 本身成功，
++  暴露的是 `operation_contracts.schema.json` 仍要求旧 `JOURNAL_HEAD_BEFORE/EXACT_EGRESS/
++  FOUR_DURABLE_BUDGET_RESERVATIONS`，而 instance 已使用 head anchor、exact request plan 和原子四计数
++  bundle。已把 schema 常量同步到新的单向 journal/预算合同，待复跑确认。
++- 同步后 checker 为 `PASS: 5360`（26 schemas）；已把 README schema 表扩为同一 26 项并加入集合
++  相等断言。该 PASS 仍明确标为预冻结机械检查，不代表 vectors 或 prose 审查通过。
++- vector 盘点得到 18 组、122 cases；其中大量 case 仍指向旧 intent/auth/registry/journal/runtime 字段，
++  fixture contract 还写不存在的 `validator_fixture_manifest.v1.json`。已记录为 finding 58；下一步先
++  升级 fixture/vector 的消费合同和基础错误码/时间格式，再按当前 schema 修复或替换 stale cases。
+ 
+ ## 2026-08-22 — 计划编制启动
+ 
+ - 完成：读取用户明确指定的 `planning-with-files` 技能全文。
+@@ -224,8 +372,61 @@
+   通过原始 JSON 解析；尚未完成 meta-schema、跨文件 checker、vector/prose 同步，不能视为通过。
+ - 继续补入 typed specialization receipt（避免 final-contract 自哈希循环）与 action projection hash；
+   预审还确认 rollback 缺写前 no-op 和失败窗口 discriminator，已登记发现43，下一步补 static/
+   dynamic branch machine contract。
++- 2026-09-02 从保存点恢复：补入 `compensation_details` 的七个显式分支、registry
++  `VERIFY_CONFLICT_PRESERVE`/`EXACT_OBSERVED_CONFLICT` DSL 与 bound-compensation 的副作用约束；
++  当前22个 JSON 文件全部通过原始 JSON 解析。此结果只证明语法有效，不代表 schema、跨文件
++  语义或安全性通过。
++- 冻结前 prose/test 预审 agent 在额度中止前交付了三项可用发现：D12C 缺第二份 runtime-template
++  用户授权 Gate、OP12B-ARM 的 prose post-state 与 catalog 不一致、G11A/G11J 测试绑定为空。
++  该 agent 未形成完整最终审查，故这些仅作为待修订输入，绝不计作 PASS。
++- 2026-09-02 启动三名新的只读独立预审 agent；启动/evidence 与授权/补偿两路已先报 P0。
++  已将 bootstrap deadlock、入口前 `site` 执行、复合 fixture/journal schema 缺口、evidence/release
++  closure、grant 笛卡尔积、budget reset、process generation、revocation freshness 等登记为发现44–47。
++- 当前机器修订已为 OP12B/OP12C rollback 增加 pre-effect no-op static state、0/1 generation 选择、
++  parent grant binding 和 branch discriminator；dynamic contract 增加 branch-selection receipt、
++  forward-effect status、parent grant ID/hash、逐分支 trigger/state/generation/registry/control 约束；
++  authorization 草稿增加 typed compensation grant 与 derived child source。三份已编辑 JSON 均再次
++  通过原始 JSON 解析，但 grant 仍需从平行数组改为逐分支 tuple，不能视为安全闭环。
++- 已把 static 多分支状态改为显式 `state_transition_options` tuple，修复 schema 重复 `oneOf`；旧
++  checker 从 15 个 state/delta 错误回到 `PASS 5251`。该 PASS 仍是已知假绿，因为 schema closure、
++  composite fixtures 与 stale vectors 尚未修复。
++- compensation grant 已改为“一份 grant 只授权一个 branch contract”，不再把 trigger/branch/
++  state 做非法笛卡尔积；新增第三方删除 Run value 后的 12B/12C absent-safe-off 分支。下一步必须
++  取消或证明 atomic compare-and-delete，并把同一 grant 定义由 intent/auth 共享完整 URN ref。
++- 三路预审新增的 journal hash cycle、budget atomic bundle、vector pointer 漂移、evidence auth/
++  journal 缺口和 external head anchor 问题已登记为发现48–52；v4 仍是 `NOT_IMPLEMENTABLE`。
++- 完成第一批 P0 机器合同重构：新增 bootstrap verifier、schema registry、authorization revalidation
++  receipt、journal record、ledger head anchor、operation execution receipt、budget reservation bundle、
++  budget settlement receipt、composite scenario fixture 共9份 schema；validator release/evidence/
++  journal manifest/fixture manifest 升级为闭合版本。
++- operation contract 已拆除 future journal hash 环、改用原子预算 bundle、修正 RESET provider budget
++  守恒、为 read-only 强制 journal N/A，并取消不安全的 compare-then-delete。12B exact-owned rollback
++  现在保留 Run value、禁用 control、终态 `PAUSED/ON` 等待显式人工 cleanup。
++- 当前31个 JSON 文件全部通过原始解析；26个 schema 全部通过 Draft 2020-12 meta-schema 与 duplicate-key
++  检查。外部 URN registry 实际解析、跨文件语义、vectors、prose 和 test registry 尚未同步，故仍
++  不能冻结。
++
++- 继续 v4 冻结前 P0 加固：把 evidence activation chain 改成四个机器可判定 phase，逐节点强制
++  present/null 矩阵；D12C-RT/G12C-RT/D12C/G12C-PRE/OP12C/G12C 无法跳级或用未来工件填充。
++- user approval receipt 已补 final authorization ID/path/hash 与 final subject digest；operation intent、
++  authorization proposal、receipt、dynamic contract、evidence 和 post-operation receipt 形成单向、无环
++  hash dependency。authorization manifest 明确不保存未来 user receipt hash。
++- operation catalog/contract/runtime cycle 已要求 runtime-template approval、G12C-RT evidence 与 OP12C
++  两份 purpose-bound receipt；ordinary autostart provenance 也必须含 dual chain。
++- 新增 `gate_ledger_transcript.schema.json` 与 `validator_request.schema.json`，修复 `/records` 与 authored
++  next-eligible 的无类型/不可物化问题；scenario roles 可区分双授权六类工件。
++- vectors 保持 18 个固定 group，但新增 GLV-E044、2 个正例与5个双授权负例；修复 `/reviewers/-`、
++  `/reviewers/0` 和 `/next_eligible_nodes` 失效 pointer，独立 reviewer reuse 覆盖 G12C-RT。
++- test registry 从286增至315：新增 bootstrap/schema/fixture/auth-revalidation/journal/budget/process/
++  dual-activation/startup 16项，逐函数纳入 ZR1005/1006 共13项；允许既有基线明确
++  `expected_red_at=[]`，并为 G11A/G11J 建立 due obligations。
++- 本批最终机械检查：`PASS: 7455 checks; {"fixed_nodes": 115, "schemas": 29, "tests": 315,
++  "vectors": 18}`；仍是 `DRAFT_NOT_FROZEN / NOT_IMPLEMENTABLE`，因为 active prose 尚未全部同步、
++  materialized fixtures 仍须由 T00L 生成、正式固定字节独立复审尚未开始。
++- 双授权 schema 独立复核 agent 在重审时触发账户额度而中止；中止前发现并促成无环 proposal→receipt
++  模型，但不记为 completed/PASS，冻结前必须另行完成正式固定字节审查。
+ 
+ ## 文件变更记录
+ 
+ | 文件 | 操作 | 原因 |
+@@ -263,8 +464,14 @@
+ | `docs/plans/source-catalog-worker-recovery-2026-08-22/test_id_registry.v4.json` | 新增 | 283个逐ID lifecycle映射、parser template与引用语法 |
+ | `docs/plans/source-catalog-worker-recovery-2026-08-22/test_id_registry.schema.json` | 新增 | test registry instance schema |
+ | `docs/plans/source-catalog-worker-recovery-2026-08-22/parser_route_manifest.schema.json` | 新增 | 实际parser route/profile hash与展开ID合同 |
+ | `docs/plans/source-catalog-worker-recovery-2026-08-22/plan_consistency_check.py` | 新增 | 无副作用的预冻结跨文件一致性检查器 |
++| `docs/plans/source-catalog-worker-recovery-2026-08-22/gate_ledger_transcript.schema.json` | 新增 | 固定可物化ledger transcript instance合同 |
++| `docs/plans/source-catalog-worker-recovery-2026-08-22/validator_request.schema.json` | 新增 | 固定validator入口请求、双授权与head-anchor参数合同 |
++| `docs/plans/source-catalog-worker-recovery-2026-08-22/plan_freeze_check.v4.txt` | 新增 | 保存冻结前只读检查器的精确UTF-8/LF标准输出 |
++| `docs/plans/source-catalog-worker-recovery-2026-08-22/plan_manifest.v4.json` | 新增 | 冻结48份normative文件及覆盖计数的一次性machine manifest |
++| `docs/plans/source-catalog-worker-recovery-2026-08-22/plan_review_revision.md` | 更新 | 记录v4 manifest外部hash、冻结后复核与正式审查状态 |
++| `docs/plans/source-catalog-worker-recovery-2026-08-22/progress.md` | 更新 | 记录v4冻结事实与后续只读正式审查进度 |
+ 
+ ## 测试/检查结果
+ 
+ | 检查 | 结果 |
+@@ -274,16 +481,16 @@
+ | 实施代码变更 | 无 |
+ | 生产配置变更 | 无 |
+ | worker 恢复运行 | 未执行，应继续保持暂停 |
+ | 现有项目/主线计划被修改 | 否；所有写入均位于新隔离目录 |
+-| 逐关键节点独立 agent Gate 覆盖 | v4草稿113个固定节点；每个D/G及两个family实例均有exact role/cardinality，等待冻结版正式复审 |
+-| 稳定Test ID→活动引用完整性 | 283/283唯一；5个template；活动来源无未解析ID或范围缩写 |
+-| JSON Schema/instance | 10/10 meta+shape PASS；4/4 instance PASS |
+-| 只读跨文件一致性 | PASS 3901 checks；脚本声明且实测不访问生产资源 |
+-| 必需计划文件存在性 | 当前31个文件；`plan_manifest.v4.json`按合同在冻结前故意不存在；动态ledger同样不应创建 |
++| 逐关键节点独立 agent Gate 覆盖 | v4冻结版115个固定节点；每个D/G及两个family实例均有exact role/cardinality，等待正式独立复审 |
++| 稳定Test ID→活动引用完整性 | 315/315唯一；5个template；活动来源无未解析ID或范围缩写 |
++| JSON Schema/instance | 29个 schema 全部 Draft 2020-12 meta PASS、`$id`/real `$ref` registry 闭合；4/4 static instance PASS |
++| 只读跨文件一致性 | 冻结时7696 PASS；本轮末7696项中27个MANIFEST-BYTES失败，v4已失效 |
++| 必需计划文件存在性 | v4 manifest精确冻结48份normative文件；动态ledger/evidence/reviews/decisions尚不应创建 |
+ | v3 core/source manifest核验 | 13/13 MATCH；source MATCH；manifest SHA已写入revision记录 |
+ | v3独立复审 verdict | SQL/性能 FAIL；生命周期/安全 FAIL；测试/可实施性 FAIL；v3禁止实施 |
+-| v4修订状态 | 进行中；只改本隔离计划目录，尚未冻结或送正式复审 |
++| v4修订状态 | INVALIDATED_FROZEN_BYTES / HISTORICAL_ONLY；三路正式审查均额度中止，forensic预审完成但不计正式PASS |
+ | 当前工作树仅含本任务变更 | 否；有明确不属于本计划的既有/并行变更，未触碰 |
+ 
+ ## Errors Encountered
+ 
+@@ -315,4 +522,5 @@
+ | 2026-09-01 合并读取三份跨会话planning文件超过工具输出上限 | 1 | 只读输出被截断、文件未受影响；改为按固定行段逐份读至EOF，不重复整包读取 |
+ | `git -c core.excludesFile=NUL status --short` 在 Windows 拒绝 NUL | 1 | 未写文件；后续使用普通 `git status --short` 并单独解释用户级 ignore 权限警告 |
+ | 受限会话读取 Win32 Process/Scheduled Task/Service 被拒绝，空变量误显示 NONE | 1 | 明确把三项状态记为 UNKNOWN；改用只读授权查询，禁止引用该 NONE 行作证据 |
+ | 2026-09-01 一次性加入 registry/compensation branch 的大补丁末段上下文错误 | 1 | `apply_patch` 整包未应用、JSON 未半改；改为 registry DSL、compensation def、node conditions 三个小补丁并逐次解析 |
++| 2026-09-01 冻结前 prose/test 预审 agent 因账户额度中止 | 1 | 保留其中止前已返回的三项具体发现；不把该 agent 计为完成或通过，修订后重新派独立 agent 全量审查 |

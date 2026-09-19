@@ -1,0 +1,82 @@
+--- "/c/Users/é\203\221æ\233¾æ³¢/Projects/revenue-forecast/assurance/unified_completion/uc/scenarios.py"	2026-08-14 01:40:07.901584800 +0100
++++ iso/_pkgdir/uc/scenarios.py	2026-09-19 11:16:47.968051100 +0100
+@@ -140,17 +140,73 @@
+     return problems
+ 
+ 
++SATISFYING_STATUSES = ("passed", "expected_failure_pass")
++
++
++def scenario_gate(scenario_id: str, info: dict[str, Any]) -> list[str]:
++    """Per-scenario completion gate (CA-105 original-obligation linkage).
++
++    A satisfying status alone is never sufficient.  A scenario counts as
++    completed only when ALL of these hold:
++
++    - status is ``passed``/``expected_failure_pass``;
++    - tier is explicitly extracted (``matrix_defined`` never satisfies);
++    - an evidence path is recorded;
++    - a recorded input/oracle or fixture binding exists (``fixture_hash``
++      or ``oracle`` non-null) â€” bare labels are insufficient;
++    - when a ``required_capability`` is declared, the evidence file's
++      ``covered_capabilities`` must include it (prevents wrong-test
++      evidence mapping such as READ10 pointing at an artifact test that
++      never measures a deadline).
++
++    Returns the list of unmet requirements (empty = completed, scoped).
++    """
++    reasons: list[str] = []
++    status = info.get("status")
++    if status not in SATISFYING_STATUSES:
++        if status in (None, "pending"):
++            return ["pending"]
++        return [f"status {status!r}"]
++    tier = info.get("tier")
++    if not tier or tier == "matrix_defined":
++        reasons.append("tier_unknown_not_equivalent_to_explicit")
++    evidence_path = info.get("evidence_path")
++    if not evidence_path:
++        reasons.append("passed_without_evidence")
++    else:
++        binding = info.get("fixture_hash") or info.get("oracle")
++        if not binding:
++            reasons.append("evidence_without_fixture_or_oracle_binding")
++        oracle = info.get("oracle")
++        if isinstance(oracle, dict):
++            commands = oracle.get("validated_commands")
++            invariants = oracle.get("invariants")
++            if commands == [] and invariants == []:
++                reasons.append("empty_commands_and_invariants")
++        capability = info.get("required_capability")
++        if capability:
++            covered = info.get("covered_capabilities") or []
++            if capability not in covered:
++                reasons.append(
++                    f"evidence_does_not_cover_required_capability:{capability}"
++                )
++    return reasons
++
++
+ def closure_report(payload: dict[str, Any]) -> dict[str, Any]:
+     """Machine summary: how many required cells are unsatisfied (closure red
+-    while any scenario status is pending/blocked)."""
+-    unsatisfied = [
+-        scenario_id
+-        for scenario_id, info in payload.get("scenarios", {}).items()
+-        if info.get("status") not in ("passed", "expected_failure_pass")
+-    ]
++    while any scenario is unmet; a bare passed label cannot satisfy)."""
++    unsatisfied: list[str] = []
++    reasons: dict[str, list[str]] = {}
++    for scenario_id, info in payload.get("scenarios", {}).items():
++        unmet = scenario_gate(scenario_id, info)
++        if unmet:
++            unsatisfied.append(scenario_id)
++            reasons[scenario_id] = unmet
+     return {
+         "total_scenarios": payload.get("counts", {}).get("unique_total"),
+         "unsatisfied": len(unsatisfied),
+         "unsatisfied_ids": unsatisfied[:10],
++        "unsatisfied_reasons": reasons,
+         "closure_ready": not unsatisfied,
+     }

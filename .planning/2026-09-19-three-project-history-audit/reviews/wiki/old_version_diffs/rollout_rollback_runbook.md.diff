@@ -1,0 +1,117 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/rollout_rollback_runbook.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/rollout_rollback_runbook.md
+@@ -26,17 +26,19 @@
+                 →G12B-PRE→D12B-ARM→D12B-RB→OP12B-ARM→G12B-ARM
+                 →D12B-CAS→OP12B-CAS→ARMED_ON_PRELOGIN/ON→G12B-CAS
+                 →D12B-LOGIN→用户最终登录批准→OP12B-LOGIN
+                 →自动pause→LOGIN_VALIDATED_PAUSED/ON→G12B-POST
+-                →D12C冻结action/intent→用户最终长期激活批准该hash→G12C-PRE→OP12C→ENABLED_IDLE/ON→G12C
++                →D12C-RT冻结runtime template/auth→用户runtime批准→G12C-RT
++                →D12C冻结final intent/contract/auth→用户最终激活批准→G12C-PRE→OP12C→ENABLED_IDLE/ON→G12C
+                 →physical ENABLED_IDLE/ON + lifecycle RECOVERED（当前session仍process0）
+ 
+-ARM/CAS/登录/lease失败→OP12B-RB→G12B-RB→PAUSED/OFF或PAUSED/REGISTRY_CONFLICT
+-OP12C/G12C失败→OP12C-RB→G12C-RB→LOGIN_VALIDATED_PAUSED/ON或PAUSED/REGISTRY_CONFLICT
++ARM/CAS/登录/lease失败→OP12B-RB→G12B-RB→PAUSED/OFF、PAUSED/ON或PAUSED/REGISTRY_CONFLICT
++OP12C/G12C失败→OP12C-RB→G12C-RB→PAUSED/OFF、LOGIN_VALIDATED_PAUSED/ON或PAUSED/REGISTRY_CONFLICT
+ ```
+ 
+ 任何失败都回到“持久暂停”，而不是自动进入下一状态。G12B-POST只证明一次登录验证完成且
+-重新暂停；只有另行完整通过D12C→G12C-PRE→OP12C→G12C，才允许下次正常登录启动。
++重新暂停；只有另行完整通过
++`D12C-RT→runtime批准→G12C-RT→D12C→final批准→G12C-PRE→OP12C→G12C`，才允许下次正常登录启动。
+ Gates只读，失败写操作只能由图中的显式compensation OP执行。OP12C不得启动
+ 当前session。所有前驱和下一边以`gate_dag.v4.json`及validator计算为准；未选分支不创建
+ ledger record，不写假PASS或假跳过状态。
+ 
+@@ -384,11 +386,12 @@
+ `LOGIN_COMMITTED`时，launcher必须在加载release、启动supervisor/worker/parser、打开DB/source
+ 或建网前退出；child/DB/config/source/registry额外写/LLM请求全部为0，只允许最小脱敏安全审计。
+ 意外logoff/reboot/login不能改变为运行态。ARM token在CAS前过期或CAS后的dormant lease到期
+ 都不得原地延长；从OP12B-ARM起任一failure/crash partial只能产生预授权OP12B-RB trigger。
+-OP按journal intent/finalize与ownership nonce reconcile，执行exact conditional delete并回
+-`PAUSED/OFF`；CAS遇到任意既有同名值（即使同bytes）或之后第三方替换都不得接管/删除，
+-并进`PAUSED/REGISTRY_CONFLICT`。G12B-CAS由两名满足DAG角色/基数/disjoint规则的reviewer核验exact bytes、token、
++OP按journal intent/finalize与ownership nonce reconcile、停用control/tokens，但自动补偿绝不删除
++Run：absent→`PAUSED/OFF`；exact-owned保留→`PAUSED/ON`并生成需另行授权的manual cleanup item；
++conflict保留→`PAUSED/REGISTRY_CONFLICT`。CAS遇到任意既有同名值（即使同bytes）也不得接管。
++G12B-CAS由两名满足DAG角色/基数/disjoint规则的reviewer核验exact bytes、token、
+ 20组双进程竞争恰一胜、loser未覆盖、START-S01、START-S02、START-S03、START-S04、START-S05、
+ START-S06、START-S07、START-S08、START-S09、START-S10与仍无child。
+ 
+ ### 10.4 D12B-LOGIN 与一次登录验证
+@@ -413,44 +416,55 @@
+ 
+ 若出现任何失败，只能执行已由D12B-RB预审的`OP12B-RB→G12B-RB`：
+ 
+ 1. 先 persistent pause；
+-2. OP invalidate arm/commit/lease tokens；只有提交点current key/name/type/value exact bytes仍匹配本次值才
+-   conditional delete；若第三方值不同则不碰并报告；
++2. OP invalidate arm/commit/lease tokens，并只读选择`VERIFY_ABSENT`、
++   `VERIFY_OWNED_PRESERVE`或`VERIFY_CONFLICT_PRESERVE`；三种分支都不删除Run；
+ 3. 验证 worker/supervisor/parser 为 0；
+-4. 不删除其他 Run values，不创建替代启动项；
++4. 不删除任何 Run value，不创建替代启动项；exact-owned清理只生成需另行授权的工单；
+ 5. G12B-RB由两名未参与OP的reviewer只读核对后归档事件、PID、runtime、日志、DB/source sentinel；
+ 6. CAS conflict/异常、用户取消、token过期/login timeout、意外登录或launcher crash同样执行
+    以上流程；不自动重试；
+ 7. 回到对应WP/Gate，不在同次登录反复尝试。
+ 
+ G12B-RB必须逐字继承OP terminal state；它不能把`REGISTRY_CONFLICT`重新标为`OFF`。跨registry/
+ control/token/journal的任何partial state只能按本次ownership nonce和journal head恢复，禁止猜测性覆盖。
+ 
+-## 11. D12C → G12C-PRE → OP12C → G12C：最终长期激活
+-
+-G12B-POST成功后仍是`LOGIN_VALIDATED_PAUSED/ON`、Run存在、process0。D12C先由两名满足DAG
+-exact角色/基数/disjoint规则的reviewer核对所有P0/P1为零、circuit closed、Run/release/auth/config/
+-routing/data/control generation未漂移，并冻结默认15分钟/硬30分钟的一次性final-activation
+-token、OP12C/OP12C-RB sealed contract及唯一proposed action/intent hash。D12C不得审查尚未产生
+-的final授权。用户查看POST摘要后必须单独批准该exact intent hash/action ID下的
+-`G12C_FINAL_AUTOSTART_ACTIVATION`；登录批准不能复用。拒绝/沉默时保持
+-`SAFE_PAUSED_WAITING_USER`，不是BLOCKED。G12C-PRE由恰好三名与D12C disjoint的不同角色
+-reviewer重验actual授权、contract、release与ledger head；只有全PASS才开放OP12C。
+-
+-OP12C唯一允许的动作是`activate-autostart-final`：CAS把状态改为`ENABLED_IDLE/ON`、generation
++## 11. 双授权链 → OP12C → G12C：最终长期激活
++
++G12B-POST成功后仍是`LOGIN_VALIDATED_PAUSED/ON`、Run存在、process0。先由D12C-RT两名满足
++DAG exact规则的reviewer冻结无候选具体副作用的runtime-cycle template、scope/caps/TTL/revocation、
++runtime authorization proposal与用户可见subject digest。外部用户随后生成purpose为
++`RUNTIME_TEMPLATE_AUTHORIZATION`的receipt，单向绑定D12C-RT evidence/template/auth；G12C-RT由
++恰好三名不同角色reviewer核验receipt、fresh revalidation、无副作用与disjointness，通过后唯一开放D12C。
++
++D12C再由两名满足DAG规则的reviewer核对所有P0/P1为零、circuit closed、Run/release/config/routing/
++data/control generation未漂移，并冻结默认15分钟/硬30分钟的一次性final-activation token、exact
++final intent、OP12C contract template、OP12C-RB compensation、final authorization proposal和final
++subject digest，同时绑定G12C-RT evidence/runtime receipt。D12C不得引用尚未产生的final receipt，
++也不得记录事后actual。用户查看摘要后必须生成另一份purpose为`FINAL_AUTOSTART_ACTIVATION`的
++receipt，绑定D12C evidence、exact intent/contract/final auth与prior runtime chain；两份批准的ID/
++hash/purpose/subject必须不同且不可交换。拒绝/沉默时保持`SAFE_PAUSED_WAITING_USER`，不是BLOCKED。
++G12C-PRE由恰好三名与D12C disjoint的不同角色reviewer fresh-revalidate两份批准/auth、G12C-RT
++evidence、contract、release与ledger head；只有全PASS才开放OP12C。
++
++OP12C唯一允许的动作是`activate-autostart-final`：actual operation contract必须同时绑定runtime与
++final两条authorization/approval/revalidation链；CAS把状态改为`ENABLED_IDLE/ON`、generation
+ 恰好+1并消费token。token/control跨资源写前必须向protected journal写入绑定intent/auth/
+-generation/expected state/ownership nonce的intent，完成后finalize，crash只由OP12C-RB按journal
++generation/expected state/ownership nonce的intent；完成后才生成terminal record、head-after、
++evidence与operation execution receipt，不能倒填D节点。crash只由OP12C-RB按journal
+ reconcile。它不得启动当前session worker，不得调用reset/resume/arm，不得写registry/
+ config/DB/source或改变LLM profile/auth。执行后观察至少20秒，相关进程、DB/config/source/
+ registry/egress均零变化。
+ 
+ G12C由control/circuit、release/auth/security、runtime operations三名独立reviewer检查ACT-S01、
+ ACT-S02、ACT-S03、ACT-S04、ACT-S05、ACT-S06、ACT-S07及全部sentinel。三者PASS后物理state前后仍为`ENABLED_IDLE/ON`，只记录
+-`lifecycle_outcome=RECOVERED`。以后下次正常登录仍须重验release/auth/config/routing/data/Run、
++`lifecycle_outcome=RECOVERED`。以后下次正常登录及每个cycle仍须重验runtime-template receipt/
++G12C-RT evidence/fresh revalidation、release/auth/config/routing/data/Run、
+ SID、circuit、Job Object与单实例；失败零child并PAUSED/ON。OP12C或G12C失败只能触发
+-`OP12C-RB→G12C-RB`。owned Run未漂移时OP回`LOGIN_VALIDATED_PAUSED/ON`；第三方Run冲突时
+-不删除registry并进`PAUSED/REGISTRY_CONFLICT`。两名按DAG与OP执行者disjoint的reviewer继承并
++`OP12C-RB→G12C-RB`。Run absent时OP回`PAUSED/OFF`；owned Run未漂移时只回退control、保留Run并
++回`LOGIN_VALIDATED_PAUSED/ON`；第三方Run冲突时不碰registry并进`PAUSED/REGISTRY_CONFLICT`。
++自动rollback绝不删除Run。两名按DAG与OP执行者disjoint的reviewer继承并
+ 核对OP exact终态；G自身不执行CAS。若用户要当前session立即运行，必须创建另一条新的
+ D→OP(resume-session)→G；本计划不授权。
+ 
+ G12C通过不等于以后无限运行获得空白授权。每个普通登录与每个后续cycle在DB/file/network前

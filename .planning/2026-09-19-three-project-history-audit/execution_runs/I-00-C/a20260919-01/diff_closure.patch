@@ -1,0 +1,59 @@
+--- "/c/Users/é\203\221æ\233¾æ³¢/Projects/revenue-forecast/assurance/unified_completion/uc/closure.py"	2026-08-14 02:10:40.232891700 +0100
++++ iso/_pkgdir/uc/closure.py	2026-09-19 11:13:09.854703300 +0100
+@@ -14,6 +14,7 @@
+ 
+ from uc.receipt import validate as receipt_validate
+ from uc.revision import select as revision_select
++from uc.scenarios import scenario_gate
+ 
+ RECEIPT_DIRS: dict[str, list[Path]] = {
+     "revenue": [
+@@ -105,11 +106,26 @@
+     unsatisfied_scenarios = [
+         sid
+         for sid, info in scenarios.get("scenarios", {}).items()
+-        if info.get("status") not in ("passed", "expected_failure_pass")
+-    ]
+-    fc_pending = [
+-        row["fc_id"] for row in legacy.get("fc_entries", []) if row["class"] == "P"
++        if scenario_gate(sid, info)
+     ]
++
++    # Eighteen-vintage narrowing guard: a successor entry can only retire a
++    # pending original obligation when it links back to the original id.
++    # A "narrowed successor" recorded without that linkage never clears
++    # the original (CA-206/301/302 form).
++    pending_originals: list[str] = []
++    narrowed_only: list[str] = []
++    for row in legacy.get("fc_entries", []):
++        cls = row.get("class")
++        fc_id = str(row.get("fc_id", ""))
++        if cls != "P":
++            continue
++        target = row.get("obligation_target")
++        linked = row.get("covered_by") or row.get("successor")
++        if target and target != fc_id and not linked:
++            narrowed_only.append(fc_id)
++        pending_originals.append(fc_id)
++    fc_pending = pending_originals
+     fc_contradicted = len(
+         [row for row in legacy.get("fc_entries", []) if row["class"] == "C"]
+     )
+@@ -128,9 +144,16 @@
+             f"{len(machine_invalid)} unit(s) with incomplete machine evidence: "
+             f"{machine_invalid}"
+         )
++    if narrowed_only:
++        reasons.append(
++            f"{len(narrowed_only)} original obligation(s) carried only by a "
++            f"narrowed successor without linkage: {narrowed_only}"
++        )
+     return {
+         "schema_version": 1,
+-        "old_plan_verdict": "incomplete",
++        "old_plan_verdict": "incomplete"
++        if (unsatisfied_scenarios or fc_pending or machine_invalid)
++        else "complete_scoped",
+         "reasons": reasons,
+         "units": units,
+         "unit_summary": {

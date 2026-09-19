@@ -1,0 +1,51 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/implementation_agent_prompts.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/implementation_agent_prompts.md
+@@ -317,29 +317,38 @@
+ 
+ ```text
+ PRE：确认profile-specific Gate/P0/P1=0、外部trust anchor/不可写完整release/interpreter、exact
+ Run bytes、12B profile与G12A相同、新12B authorization hash、arm schema、真实atomic registry
+-create/delete；此时只批准value/auth，logout须稍后重新批准。
++create-if-absent与zero-delete verify-preserve rollback；此时只批准value/auth，logout须稍后重新批准。
+ D12B-ARM先冻结arm action；任何ARM state/token写前，D12B-RB两名满足DAG rollback/startup角色与
+ disjoint规则的reviewer只seal compensation contract。未PASS不得执行OP12B-ARM。OP先向protected
+ journal写intent（expected registry absence、desired bytes hash、ownership/run nonce、generation、
+ 补偿目标）再写arm state并finalize；G审不启动/reset/写registry、ARM token默认15min硬30min及exact binding。
+ D12B-CAS/G：审ARM token在CAS消费、exact REG_SZ与两进程竞争；CAS后ARMED_ON_PRELOGIN/ON且
+ dormant lease默认24h硬72h，无LOGIN_COMMITTED时任何login/reboot child/egress=0，第三方值不覆盖。
+ 从OP12B-ARM起任何失败/过期/crash partial只触发OP12B-RB→G12B-RB，按journal+ownership nonce
+-reconcile；同名既有值即使bytes相同也冲突，第三方值不接管，终态PAUSED/REGISTRY_CONFLICT；
++reconcile但绝不删除Run；absent→PAUSED/OFF，exact-owned保留→PAUSED/ON，第三方值保留→
++PAUSED/REGISTRY_CONFLICT；同名既有值即使bytes相同也冲突，不接管；
+ G继承OP终态，Gate/launcher不得写registry。
+ D12B-LOGIN：审5min默认/10min硬上限commit token、review/user/SID/machine+boot generation/
+ previous session/下一次新logon关系/generation绑定，不预知future session；
+ 随后用户确认保存工作才可OP。POST：审首cycle后LOGIN_VALIDATED_PAUSED/ON、process0；不得RECOVERED。
+-D12C/G12C-PRE/OP/G：D12C先seal final+rollback合同及唯一proposed action/intent hash，用户随后
+-只授权该hash/action ID；未批准是safe waiting。G12C-PRE恰好三名按DAG与D12C disjoint的reviewer
+-预审actual授权，OP只变ENABLED_IDLE/ON且process0，G12C恰好三人通过后物理state
+-仍不变、只记lifecycle_outcome=RECOVERED。token/control写前必须有protected journal intent、
+-写后finalize，crash只由RB reconcile。失败只走OP12C-RB→G12C-RB。不要自行改registry、
+-logout、Gate state或启动当前session。Run被第三方替换时RB不碰registry，终态必须
+-PAUSED/REGISTRY_CONFLICT。G12C后每个cycle仍先密封runtime contract并重验auth/cap/journal/
+-write/egress；亲验ACT-S08、ACT-S09、ACT-S10，失败circuit open+pause且registry/config/source零写。
++D12C-RT/runtime批准/G12C-RT/D12C/final批准/G12C-PRE/OP/G：D12C-RT两名reviewer冻结无候选
++具体副作用的runtime template/auth proposal/scope/caps/TTL/revocation/subject；外部runtime receipt
++单向绑定其evidence/template/auth。G12C-RT恰好三名核验receipt、fresh revalidation与无副作用。
++D12C再由两名seal exact final intent、OP12C contract template、OP12C-RB compensation、final auth
++proposal/subject并绑定G12C-RT evidence/runtime receipt；外部final receipt绑定D12C evidence/exact
++intent/contract/final auth/prior runtime chain。两份批准ID/hash/purpose/subject必须不同且不可交换。
++未批准是safe waiting。G12C-PRE恰好三名按DAG与D12C disjoint的reviewer fresh-revalidate双链。
++OP actual contract绑定双链，只变ENABLED_IDLE/ON且process0；terminal journal/head-after/evidence/
++execution receipt只能在OP后产生，D节点只含commitment/template。G12C恰好三人通过后物理state
++仍不变、只记lifecycle_outcome=RECOVERED。token/control写前必须有protected journal intent，
++写后finalize，crash只由RB reconcile。失败只走OP12C-RB→G12C-RB。不要自行改registry、logout、
++Gate state或启动当前session。Run absent为PAUSED/OFF；exact-owned保留且只回退control为
++LOGIN_VALIDATED_PAUSED/ON；第三方值保留且为PAUSED/REGISTRY_CONFLICT；自动rollback零删除。
++G12C后每个cycle仍先密封runtime contract并重验runtime receipt/G12C-RT evidence/fresh revalidation/
++auth/cap/journal/write/egress；亲验ACT-S08至ACT-S15与START-S11，失败circuit open+pause且
++registry/config/source零写。
+ ```
+ 
+ ### 7.5 D05Rnn / G05Rnn Reviewer
+ 

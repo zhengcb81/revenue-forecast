@@ -1,0 +1,1965 @@
+--- company-wiki/src/company_wiki/source_catalog/error_taxonomy.py	2026-08-14 11:51:57.863697500 +0100
++++ revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-B/a20260919-01/iso/override/error_taxonomy.py	2026-09-19 14:09:55.887640200 +0100
+@@ -1,122 +1,366 @@
+-"""ZR-204: unified DB busy/locked / operation-lock / timeout / paused
+-error taxonomy with the non-lock-never-retryable rule.
+-
+-The counterexample (ZR102-F2, replayed fresh): a raw SQLite
+-``OperationalError("database is locked")`` emitted by the wiki CLI was
+-classified ``fatal``/non-retryable by filing-fetch, while only the
+-structured ``CatalogOperationLockedError`` mapped to ``catalog_locked``.
+-This module is the single classification truth: every raw form maps to a
+-canonical ``(code, retryable)`` pair, unknown forms fail closed to
+-``fatal`` (never retryable), and the CLI emits the structured shape.
+-
+-Versioned: ``ERROR_TAXONOMY_VERSION``/``ERROR_TAXONOMY_SCHEMA``; consumers
+-treat unknown codes as fatal (N/N-1).
+-"""
+-
+-from __future__ import annotations
+-
+-import sqlite3
+-from typing import Any
+-
+-ERROR_TAXONOMY_VERSION = "1.0"
+-ERROR_TAXONOMY_SCHEMA = "error-taxonomy-1.0"
+-
+-# Canonical codes.  Retryable codes are bounded by the consumer's deadline
+-# (ZR-205); everything else is fatal and must never be retried.
+-CATALOG_BUSY = "catalog_busy"  # raw SQLite busy/locked
+-CATALOG_LOCKED = "catalog_locked"  # operation lock (exclusive writer)
+-DB_TIMEOUT = "db_timeout"  # sqlite timeout / deadline
+-WORKER_PAUSED = "worker_paused"  # persistent worker pause
+-FATAL = "fatal"  # everything else (fail closed)
+-
+-RETRYABLE_CODES = frozenset({CATALOG_BUSY, CATALOG_LOCKED, DB_TIMEOUT, WORKER_PAUSED})
+-
+-# Table-driven: (code, marker substrings) per raw text family.  The first
+-# matching family wins; order encodes precedence (lock > timeout > paused).
+-_TEXT_FAMILIES: tuple[tuple[str, tuple[str, ...]], ...] = (
+-    (
+-        CATALOG_BUSY,
+-        ("database is locked", "database is busy", "database table is locked"),
+-    ),
+-    (DB_TIMEOUT, ("timeout", "timed out", "deadline exceeded")),
+-    (WORKER_PAUSED, ("paused", "worker paused", "persistent_pause")),
+-)
+-
+-# Exact serialized-type → canonical code (N-1 structured forms).
+-_STRUCTURED_TYPES: dict[str, str] = {
+-    "CatalogOperationLockedError": CATALOG_LOCKED,
+-    "TimeoutError": DB_TIMEOUT,
+-    "ProgrammingError": DB_TIMEOUT,
+-}
+-
+-
+-def _code_for_text(text: str) -> str | None:
+-    lowered = text.lower()
+-    for code, markers in _TEXT_FAMILIES:
+-        if any(marker in lowered for marker in markers):
+-            return code
+-    return None
+-
+-
+-def classify_exception(exc: BaseException) -> tuple[str, bool]:
+-    """Classify a raised exception into ``(code, retryable)``."""
+-    exact = _STRUCTURED_TYPES.get(type(exc).__name__)
+-    if exact is not None:
+-        return exact, True
+-    if isinstance(exc, (TimeoutError, sqlite3.ProgrammingError)):
+-        return DB_TIMEOUT, True
+-    if isinstance(exc, sqlite3.OperationalError):
+-        code = _code_for_text(str(exc))
+-        return (code, True) if code is not None else (FATAL, False)
+-    code = _code_for_text(str(exc))
+-    if code == WORKER_PAUSED:
+-        return code, True
+-    return FATAL, False
+-
+-
+-def classify_error_type(error_type: str, error_text: str = "") -> tuple[str, bool]:
+-    """Classify a serialized ``error_type`` (+ optional error text) —
+-    the N-1/raw form: unknown types fail closed to fatal."""
+-    exact = _STRUCTURED_TYPES.get(error_type)
+-    if exact is not None:
+-        return exact, True
+-    if error_type == "OperationalError":
+-        code = _code_for_text(error_text)
+-        return (code, True) if code is not None else (FATAL, False)
+-    if error_type == "RuntimeError":
+-        code = _code_for_text(error_text)
+-        if code == WORKER_PAUSED:
+-            return code, True
+-    # N/N-1: unknown / arbitrary error types are fatal, never retryable.
+-    return FATAL, False
+-
+-
+-def is_retryable(code: str) -> bool:
+-    return code in RETRYABLE_CODES
+-
+-
+-def structured_error(exc: BaseException) -> dict[str, Any]:
+-    """The CLI emission shape: {status, error_type, error, retryable}."""
+-    code, retryable = classify_exception(exc)
+-    return {
+-        "status": "failed",
+-        "error_type": code,
+-        "error": str(exc),
+-        "retryable": retryable,
+-    }
+-
+-
+-__all__ = [
+-    "ERROR_TAXONOMY_VERSION",
+-    "ERROR_TAXONOMY_SCHEMA",
+-    "CATALOG_BUSY",
+-    "CATALOG_LOCKED",
+-    "DB_TIMEOUT",
+-    "WORKER_PAUSED",
+-    "FATAL",
+-    "RETRYABLE_CODES",
+-    "classify_exception",
+-    "classify_error_type",
+-    "is_retryable",
+-    "structured_error",
+-]
++"""ZR-204: unified DB busy/locked / operation-lock / timeout / paused
++error taxonomy with the non-lock-never-retryable rule.
++
++The counterexample (ZR102-F2, replayed fresh): a raw SQLite
++``OperationalError("database is locked")`` emitted by the wiki CLI was
++classified ``fatal``/non-retryable by filing-fetch, while only the
++structured ``CatalogOperationLockedError`` mapped to ``catalog_locked``.
++This module is the single classification truth: every raw form maps to a
++canonical ``(code, retryable)`` pair, unknown forms fail closed to
++``fatal`` (never retryable), and the CLI emits the structured shape.
++
++Versioned: ``ERROR_TAXONOMY_VERSION``/``ERROR_TAXONOMY_SCHEMA``; consumers
++treat unknown codes as fatal (N/N-1).
++"""
++
++from __future__ import annotations
++
++import json
++import sqlite3
++from typing import Any
++
++ERROR_TAXONOMY_VERSION = "1.0"
++ERROR_TAXONOMY_SCHEMA = "error-taxonomy-1.0"
++
++CATALOG_BUSY = "catalog_busy"  # raw SQLite busy/locked
++CATALOG_LOCKED = "catalog_locked"  # operation lock (exclusive writer)
++DB_TIMEOUT = "db_timeout"  # sqlite timeout / deadline
++WORKER_PAUSED = "worker_paused"  # persistent worker pause
++FATAL = "fatal"  # everything else (fail closed)
++# Canonical codes.  Retryable codes are bounded by the consumer's deadline
++# (ZR-205); everything else is fatal and must never be retried.
++
++RETRYABLE_CODES = frozenset({CATALOG_BUSY, CATALOG_LOCKED, DB_TIMEOUT, WORKER_PAUSED})
++# I-02-B (D-W02 supplement): the cross-CLI structured error envelope.  Every
++# layer keeps the nested structures; consumers may reject unknown codes but
++# must NOT stringify the provider payload before this point (the original
++# CN-403 failure wrapped a retryable provider error into two outer layers'
++# message strings, so the outermost saw ``retryable: false``).
++ERROR_ENVELOPE_SCHEMA = "cross-cli-error-envelope/1.0"
++
++ENVELOPE_CODES = frozenset(
++    {
++        "upstream_unavailable",
++        CATALOG_BUSY,
++        CATALOG_LOCKED,
++        DB_TIMEOUT,
++        WORKER_PAUSED,
++        "bad_request",
++        "identity_contract",
++        FATAL,
++    }
++)
++
++ENVELOPE_STAGES = frozenset(
++    {
++        "provider",  # remote discovery/API boundary
++        "provider_download",  # remote fetch/bytes boundary
++        "adapter_process",  # adapter subprocess contract layer
++        "staging",  # local staging/identity binding
++        "canonical_import",  # writer/import (post-download scan failure)
++        "scan",  # catalog scan stage
++        "catalog_db",  # SQLite DB busy/locked/deadline
++        "envelope_normalization",  # this envelope's own normalization
++        "envelope_validation",  # this envelope's own validation
++        "invalid",
++    }
++)
++
++
++# Table-driven: (code, marker substrings) per raw text family.  The first
++# matching family wins; order encodes precedence (lock > timeout > paused).
++_TEXT_FAMILIES: tuple[tuple[str, tuple[str, ...]], ...] = (
++    (
++        CATALOG_BUSY,
++        ("database is locked", "database is busy", "database table is locked"),
++    ),
++    (DB_TIMEOUT, ("timeout", "timed out", "deadline exceeded")),
++    (WORKER_PAUSED, ("paused", "worker paused", "persistent_pause")),
++)
++
++# Exact serialized-type → canonical code (N-1 structured forms).
++_STRUCTURED_TYPES: dict[str, str] = {
++    "CatalogOperationLockedError": CATALOG_LOCKED,
++    "TimeoutError": DB_TIMEOUT,
++    "ProgrammingError": DB_TIMEOUT,
++}
++
++
++def _code_for_text(text: str) -> str | None:
++    lowered = text.lower()
++    for code, markers in _TEXT_FAMILIES:
++        if any(marker in lowered for marker in markers):
++            return code
++    return None
++
++
++def classify_exception(exc: BaseException) -> tuple[str, bool]:
++    """Classify a raised exception into ``(code, retryable)``."""
++    exact = _STRUCTURED_TYPES.get(type(exc).__name__)
++    if exact is not None:
++        return exact, True
++    if isinstance(exc, (TimeoutError, sqlite3.ProgrammingError)):
++        return DB_TIMEOUT, True
++    if isinstance(exc, sqlite3.OperationalError):
++        code = _code_for_text(str(exc))
++        return (code, True) if code is not None else (FATAL, False)
++    code = _code_for_text(str(exc))
++    if code == WORKER_PAUSED:
++        return code, True
++    return FATAL, False
++
++
++def classify_error_type(error_type: str, error_text: str = "") -> tuple[str, bool]:
++    """Classify a serialized ``error_type`` (+ optional error text) —
++    the N-1/raw form: unknown types fail closed to fatal."""
++    exact = _STRUCTURED_TYPES.get(error_type)
++    if exact is not None:
++        return exact, True
++    if error_type == "OperationalError":
++        code = _code_for_text(error_text)
++        return (code, True) if code is not None else (FATAL, False)
++    if error_type == "RuntimeError":
++        code = _code_for_text(error_text)
++        if code == WORKER_PAUSED:
++            return code, True
++    # N/N-1: unknown / arbitrary error types are fatal, never retryable.
++    return FATAL, False
++
++
++def is_retryable(code: str) -> bool:
++    return code in RETRYABLE_CODES
++
++
++def structured_error(
++    exc: BaseException,
++    *,
++    request_id: str | None = None,
++    stage: str | None = None,
++    cause_chain: list[Any] | None = None,
++    side_effects: dict[str, Any] | None = None,
++    local_diag_ref: str | None = None,
++) -> dict[str, Any]:
++    """The CLI emission shape: {status, error_type, error, retryable}.
++
++    I-02-B: optional envelope fields (request_id/stage/cause_chain/
++    side_effects/local_diag_ref) ride alongside the legacy keys and keep the
++    nested structures verbatim — never stringified/joined.
++    """
++    code, retryable = classify_exception(exc)
++    payload: dict[str, Any] = {
++        "status": "failed",
++        "error_type": code,
++        "code": code,
++        "error": str(exc),
++        "retryable": retryable,
++        "error_envelope_schema_version": ERROR_ENVELOPE_SCHEMA,
++    }
++    if getattr(exc, "error_code", None):
++        code_override = str(getattr(exc, "error_code"))
++        if code_override in ENVELOPE_CODES:
++            payload["error_type"] = payload["code"] = code_override
++            raw_retryable = getattr(exc, "retryable", None)
++            payload["retryable"] = (
++                raw_retryable
++                if isinstance(raw_retryable, bool)
++                else is_retryable(code_override)
++            )
++    envelope = getattr(exc, "error_envelope", None) or getattr(
++        exc, "envelope_fields", None
++    )
++    if isinstance(envelope, dict):
++        request_id = envelope.get("request_id", request_id)
++        stage = envelope.get("stage", stage)
++        chain = envelope.get("cause_chain")
++        if isinstance(chain, list):
++            cause_chain = [*chain, *(cause_chain or [])]
++        raw_effects = envelope.get("side_effects")
++        if isinstance(raw_effects, dict) and side_effects is None:
++            side_effects = raw_effects
++        local_diag_ref = envelope.get("local_diag_ref", local_diag_ref)
++    payload["request_id"] = str(request_id) if request_id else None
++    payload["stage"] = str(stage) if stage else None
++    payload["cause_chain"] = list(cause_chain) if cause_chain else []
++    payload["side_effects"] = side_effects if isinstance(side_effects, dict) else None
++    payload["local_diag_ref"] = local_diag_ref
++    return payload
++
++
++def normalize_upstream_payload(
++    payload: Any,
++    *,
++    request_id: str | None = None,
++    default_stage: str | None = None,
++) -> dict[str, Any] | None:
++    """Validate/normalize a candidate upstream error document into the frozen
++    envelope.
++
++    Accepted shapes (additive within ``cross-cli-error-envelope/1.0``):
++    - the adapter 1.0 worker contract: ``{"schema_version":"1.0","status":
++      "failed","adapter":{...},"error":{"code","message","retryable",...}}``
++    - a flat envelope: ``{"code","retryable","request_id","stage",
++      "cause_chain",...}``
++
++    Returns ``None`` when the payload is not one structured error document
++    (broken/garbage bytes are NOT guessed into fields; the caller archives
++    the raw text under local_diag_ref instead).  Guarantees:
++    - ``code`` is canonicalized; unknown values fail closed to ``fatal`` with
++      the raw value preserved in cause_chain (N/N-1).
++    - ``retryable`` is boolean-or-false; string ``'true'``/other non-bool
++      values fail closed with a validation finding (n2b).
++    """
++    if not isinstance(payload, dict):
++        return None
++    findings: list[Any] = []
++    candidate = None
++    if payload.get("schema_version") == "1.0" and payload.get("status") == "failed":
++        error_obj = payload.get("error")
++        if not isinstance(error_obj, dict):
++            return None
++        candidate = dict(error_obj)
++        adapter_obj = payload.get("adapter")
++        if isinstance(adapter_obj, dict):
++            findings.append({"stage": "adapter_process", "adapter": adapter_obj})
++    elif isinstance(payload.get("code"), str):
++        candidate = dict(payload)
++    if candidate is None:
++        return None
++    raw_code = candidate.get("code")
++    if not isinstance(raw_code, str) or not raw_code:
++        return None
++    findings.append(
++        {
++            "stage": "provider",
++            "message": candidate.get("message"),
++            "type": candidate.get("type"),
++        }
++    )
++    if raw_code in ENVELOPE_CODES:
++        code = raw_code
++    else:
++        code = FATAL
++        findings.append(
++            {
++                "stage": "envelope_normalization",
++                "unknown_code": raw_code,
++                "rule": "N/N-1 unknown code fails closed to fatal, never retried",
++            }
++        )
++    raw_retryable = candidate.get("retryable")
++    if isinstance(raw_retryable, bool):
++        # Passthrough contract (P1): a legitimately declared provider code
++        # keeps its declared retryability; catalog/db codes stay taxonomy-
++        # bound; unknown codes already fail closed above (fatal, False).
++        retryable = raw_retryable
++    else:
++        retryable = False
++        if raw_retryable is not None:
++            # 'true' string etc: fail closed, never open the retry gate
++            findings.append(
++                {
++                    "stage": "envelope_validation",
++                    "issue": "retryable_not_bool",
++                    "raw": raw_retryable,
++                }
++            )
++    if code == FATAL:
++        retryable = False  # n2a: unknown code NEVER opens the retry door
++    elif code not in {"upstream_unavailable"}:
++        retryable = retryable and is_retryable(code)
++        if raw_retryable is not None:
++            findings.append(
++                {
++                    "stage": "envelope_validation",
++                    "issue": "retryable_not_bool",
++                    "raw": raw_retryable,
++                }
++            )
++    envelope: dict[str, Any] = {
++        "error_envelope_schema_version": ERROR_ENVELOPE_SCHEMA,
++        "status": "failed",
++        "code": code,
++        "error_type": code,
++        "error": str(candidate.get("message", "")),
++        "retryable": retryable,
++        "request_id": (
++            str(candidate.get("request_id") or request_id)
++            if (candidate.get("request_id") or request_id)
++            else None
++        ),
++        "stage": (
++            str(candidate.get("stage"))
++            if str(candidate.get("stage") or "") in ENVELOPE_STAGES
++            else (str(default_stage) if default_stage in ENVELOPE_STAGES else None)
++        ),
++        "cause_chain": [
++            *findings,
++            *(
++                list(candidate.get("cause_chain"))
++                if isinstance(candidate.get("cause_chain"), list)
++                else []
++            ),
++        ],
++        "side_effects": (
++            candidate["side_effects"]
++            if isinstance(candidate.get("side_effects"), dict)
++            else {"download_events": 0, "raw_bytes_saved": None, "staged_path": None}
++        ),
++        "local_diag_ref": candidate.get("local_diag_ref"),
++    }
++    return envelope
++
++
++def attach_error_envelope(
++    exc: BaseException,
++    *,
++    code: str | None = None,
++    retryable: bool | None = None,
++    stage: str | None = None,
++    request_id: str | None = None,
++    cause_chain: list[Any] | None = None,
++    side_effects: dict[str, Any] | None = None,
++    local_diag_ref: str | None = None,
++) -> BaseException:
++    """Best-effort: attach envelope fields to the raised exception so the CLI
++    exit can preserve them structurally (classification still N/N-1)."""
++    envelope_fields: dict[str, Any] = {}
++    if code is not None:
++        envelope_fields["code"] = code if code in ENVELOPE_CODES else FATAL
++        envelope_fields["error_code"] = envelope_fields["code"]
++        envelope_fields["retryable"] = bool(retryable) and is_retryable(
++            envelope_fields["code"]
++        )
++    if stage is not None and stage in ENVELOPE_STAGES:
++        envelope_fields["stage"] = stage
++    if request_id is not None:
++        envelope_fields["request_id"] = request_id
++    if cause_chain is not None:
++        envelope_fields["cause_chain"] = list(cause_chain)
++    if side_effects is not None:
++        envelope_fields["side_effects"] = side_effects
++    if local_diag_ref is not None:
++        envelope_fields["local_diag_ref"] = local_diag_ref
++    if envelope_fields:
++        setattr(exc, "error_envelope", envelope_fields)
++        if "error_code" not in envelope_fields and code in ENVELOPE_CODES:
++            exc.error_code = envelope_fields.get("code", code)  # type: ignore[attr-defined]
++    return exc
++
++
++__all__ = [
++    "ERROR_TAXONOMY_VERSION",
++    "ERROR_TAXONOMY_SCHEMA",
++    "ERROR_ENVELOPE_SCHEMA",
++    "CATALOG_BUSY",
++    "CATALOG_LOCKED",
++    "DB_TIMEOUT",
++    "WORKER_PAUSED",
++    "FATAL",
++    "RETRYABLE_CODES",
++    "classify_exception",
++    "classify_error_type",
++    "is_retryable",
++    "structured_error",
++    "normalize_upstream_payload",
++    "attach_error_envelope",
++]
+--- company-wiki/src/company_wiki/source_catalog/acquisition_service.py	2026-08-08 19:42:26.109366000 +0100
++++ revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-B/a20260919-01/iso/override/acquisition_service.py	2026-09-19 13:43:58.792442200 +0100
+@@ -1,201 +1,310 @@
+-"""End-to-end query-first ensure service over adapters, writer, and journal."""
+-
+-from __future__ import annotations
+-
+-from dataclasses import dataclass
+-from enum import Enum
+-from typing import Any
+-
+-from .acquisition import (
+-    AcquisitionCoordinator,
+-    AcquisitionResult,
+-    AcquisitionStatus,
+-)
+-from .acquisition_journal import AcquisitionAttempt, AcquisitionJournal
+-from .canonical_writer import (
+-    CanonicalImportResult,
+-    CanonicalImportStatus,
+-    CanonicalSourceWriter,
+-)
+-from .resolver import ResolutionResult, SourceRequest
+-
+-
+-SOURCE_ENSURE_SCHEMA_VERSION = "1.0"
+-
+-
+-class SourceEnsureStatus(str, Enum):
+-    REUSED = "reused"
+-    IMPORTED = "imported"
+-    DEDUPLICATED = "deduplicated"
+-    MISSING = "missing"
+-    AMBIGUOUS = "ambiguous"
+-    GAP = "gap"  # WU-4.2: metadata-only plan returned, nothing downloaded
+-
+-
+-@dataclass(frozen=True)
+-class SourceEnsureResult:
+-    schema_version: str
+-    status: SourceEnsureStatus
+-    acquisition: AcquisitionResult
+-    resolution: ResolutionResult
+-    attempt: AcquisitionAttempt
+-    canonical_import: CanonicalImportResult | None = None
+-
+-    def to_dict(self) -> dict[str, Any]:
+-        return {
+-            "schema_version": self.schema_version,
+-            "status": self.status.value,
+-            "acquisition": self.acquisition.to_dict(),
+-            "resolution": self.resolution.to_dict(),
+-            "attempt": self.attempt.to_dict(),
+-            "canonical_import": (
+-                self.canonical_import.to_dict() if self.canonical_import else None
+-            ),
+-        }
+-
+-
+-class SourceAcquisitionService:
+-    """Resolve first, stage only when required, then commit through the sole writer."""
+-
+-    def __init__(
+-        self,
+-        *,
+-        coordinator: AcquisitionCoordinator,
+-        writer: CanonicalSourceWriter,
+-        journal: AcquisitionJournal,
+-    ):
+-        if not isinstance(coordinator, AcquisitionCoordinator):
+-            raise TypeError("coordinator must be AcquisitionCoordinator")
+-        if not isinstance(writer, CanonicalSourceWriter):
+-            raise TypeError("writer must be CanonicalSourceWriter")
+-        if not isinstance(journal, AcquisitionJournal):
+-            raise TypeError("journal must be AcquisitionJournal")
+-        self.coordinator = coordinator
+-        self.writer = writer
+-        self.journal = journal
+-
+-    def ensure(self, request: SourceRequest) -> SourceEnsureResult:
+-        if not isinstance(request, SourceRequest):
+-            raise TypeError("request must be SourceRequest")
+-        try:
+-            acquisition = self.coordinator.resolve_or_stage(request)
+-        except Exception as exc:
+-            self.journal.record(
+-                request_id=request.request_id,
+-                outcome="failed",
+-                reason="adapter_or_staging_failed",
+-                error_type=type(exc).__name__,
+-                error=str(exc),
+-            )
+-            raise
+-
+-        candidate = acquisition.candidate
+-        common = {
+-            "request_id": request.request_id,
+-            "adapter_name": acquisition.adapter_name,
+-            "candidate_id": candidate.candidate_id if candidate else None,
+-            "provider": candidate.provider if candidate else None,
+-            "provider_document_id": (
+-                candidate.provider_document_id if candidate else None
+-            ),
+-            "source_url": candidate.source_url if candidate else None,
+-            "reason": acquisition.reason,
+-        }
+-        if acquisition.status is AcquisitionStatus.REUSED:
+-            outcome = (
+-                "reused_after_discovery"
+-                if acquisition.candidate is not None
+-                else "reused_before_download"
+-            )
+-            attempt = self.journal.record(outcome=outcome, **common)
+-            return SourceEnsureResult(
+-                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
+-                status=SourceEnsureStatus.REUSED,
+-                acquisition=acquisition,
+-                resolution=acquisition.resolution,
+-                attempt=attempt,
+-            )
+-        if acquisition.status is AcquisitionStatus.MISSING:
+-            attempt = self.journal.record(outcome="missing", **common)
+-            return SourceEnsureResult(
+-                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
+-                status=SourceEnsureStatus.MISSING,
+-                acquisition=acquisition,
+-                resolution=acquisition.resolution,
+-                attempt=attempt,
+-            )
+-        if acquisition.status is AcquisitionStatus.AMBIGUOUS:
+-            attempt = self.journal.record(outcome="ambiguous", **common)
+-            return SourceEnsureResult(
+-                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
+-                status=SourceEnsureStatus.AMBIGUOUS,
+-                acquisition=acquisition,
+-                resolution=acquisition.resolution,
+-                attempt=attempt,
+-            )
+-        if acquisition.status is AcquisitionStatus.GAP:
+-            # WU-4.2: metadata-only plan surfaced to the caller; nothing was
+-            # downloaded and nothing was written. The plan hash is the basis
+-            # for any later authorized fetch (WU-4.3).
+-            plan = acquisition.gap_plan
+-            attempt = self.journal.record(
+-                outcome=(
+-                    "gap_plan_provider_unavailable"
+-                    if plan is not None and plan.provider_unavailable
+-                    else "gap_plan"
+-                ),
+-                **common,
+-            )
+-            return SourceEnsureResult(
+-                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
+-                status=SourceEnsureStatus.GAP,
+-                acquisition=acquisition,
+-                resolution=acquisition.resolution,
+-                attempt=attempt,
+-            )
+-        if candidate is None or acquisition.receipt is None:
+-            raise RuntimeError("staged acquisition is missing candidate or receipt")
+-        try:
+-            imported = self.writer.import_staged(
+-                request,
+-                candidate,
+-                acquisition.receipt,
+-            )
+-        except Exception as exc:
+-            self.journal.record(
+-                outcome="failed",
+-                content_sha256=acquisition.receipt.content_sha256,
+-                reason="canonical_import_failed",
+-                error_type=type(exc).__name__,
+-                error=str(exc),
+-                **{key: value for key, value in common.items() if key != "reason"},
+-            )
+-            raise
+-        if imported.status is CanonicalImportStatus.IMPORTED_NEW:
+-            status = SourceEnsureStatus.IMPORTED
+-            outcome = "downloaded_new"
+-        else:
+-            status = SourceEnsureStatus.DEDUPLICATED
+-            outcome = "deduplicated_after_download"
+-        attempt = self.journal.record(
+-            outcome=outcome,
+-            content_sha256=imported.content_sha256,
+-            canonical_path=imported.canonical_path,
+-            **common,
+-        )
+-        return SourceEnsureResult(
+-            schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
+-            status=status,
+-            acquisition=acquisition,
+-            resolution=imported.resolution,
+-            attempt=attempt,
+-            canonical_import=imported,
+-        )
+-
+-
+-__all__ = [
+-    "SOURCE_ENSURE_SCHEMA_VERSION",
+-    "SourceAcquisitionService",
+-    "SourceEnsureResult",
+-    "SourceEnsureStatus",
+-]
++"""End-to-end query-first ensure service over adapters, writer, and journal."""
++
++from __future__ import annotations
++
++from dataclasses import dataclass
++from enum import Enum
++import json
++from pathlib import Path
++from typing import Any
++
++from .acquisition import (
++    AcquisitionCoordinator,
++    AcquisitionResult,
++    AcquisitionStatus,
++)
++from .acquisition_journal import AcquisitionAttempt, AcquisitionJournal
++from .canonical_writer import (
++    CanonicalImportResult,
++    CanonicalImportStatus,
++    CanonicalSourceWriter,
++)
++from .resolver import ResolutionResult, SourceRequest
++
++
++SOURCE_ENSURE_SCHEMA_VERSION = "1.0"
++
++
++class SourceEnsureStatus(str, Enum):
++    REUSED = "reused"
++    IMPORTED = "imported"
++    DEDUPLICATED = "deduplicated"
++    MISSING = "missing"
++    AMBIGUOUS = "ambiguous"
++    GAP = "gap"  # WU-4.2: metadata-only plan returned, nothing downloaded
++
++
++@dataclass(frozen=True)
++class SourceEnsureResult:
++    schema_version: str
++    status: SourceEnsureStatus
++    acquisition: AcquisitionResult
++    resolution: ResolutionResult
++    attempt: AcquisitionAttempt
++    canonical_import: CanonicalImportResult | None = None
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "schema_version": self.schema_version,
++            "status": self.status.value,
++            "acquisition": self.acquisition.to_dict(),
++            "resolution": self.resolution.to_dict(),
++            "attempt": self.attempt.to_dict(),
++            "canonical_import": (
++                self.canonical_import.to_dict() if self.canonical_import else None
++            ),
++        }
++
++
++class SourceAcquisitionService:
++    """Resolve first, stage only when required, then commit through the sole writer."""
++
++    def __init__(
++        self,
++        *,
++        coordinator: AcquisitionCoordinator,
++        writer: CanonicalSourceWriter,
++        journal: AcquisitionJournal,
++    ):
++        if not isinstance(coordinator, AcquisitionCoordinator):
++            raise TypeError("coordinator must be AcquisitionCoordinator")
++        if not isinstance(writer, CanonicalSourceWriter):
++            raise TypeError("writer must be CanonicalSourceWriter")
++        if not isinstance(journal, AcquisitionJournal):
++            raise TypeError("journal must be AcquisitionJournal")
++        self.coordinator = coordinator
++        self.writer = writer
++        self.journal = journal
++
++    def _record_failure(
++        self,
++        request: SourceRequest,
++        reason: str,
++        content_sha256: str | None,
++        exc: Exception,
++        side_effects: dict[str, Any],
++    ) -> None:
++        """I-02-B: classify the failure through the single taxonomy, journal
++        the structured fields (code/retryable/side_effects) and attach the
++        envelope onto the exception that will pass through the CLI exit."""
++        from .error_taxonomy import (
++            classify_exception,
++            attach_error_envelope,
++            ENVELOPE_CODES,
++        )
++
++        code, retryable = classify_exception(exc)
++        raw_code = getattr(exc, "error_code", None)
++        raw_retryable = getattr(exc, "retryable", None)
++        if isinstance(raw_code, str) and raw_code in ENVELOPE_CODES:
++            # Adapter/harness-declared provider code (e.g. upstream_unavailable,
++            # identity_contract): the provider-declared retryability is passed
++            # through VERBATIM when it is a bool (passthrough contract, P1);
++            # a non-bool declared value fails closed to False.
++            code = raw_code
++            retryable = raw_retryable if isinstance(raw_retryable, bool) else False
++        self.journal.record(
++            request_id=request.request_id,
++            outcome="failed",
++            reason=reason,
++            content_sha256=(
++                content_sha256
++                or (
++                    side_effects.get("content_sha256")
++                    if isinstance(side_effects.get("content_sha256"), str)
++                    else None
++                )
++            ),
++            error_type=type(exc).__name__,
++            error=str(exc),
++            error_code=code,
++            retryable=retryable if isinstance(retryable, bool) else None,
++            side_effects_json=json.dumps(side_effects, sort_keys=True),
++        )
++        attach_error_envelope(
++            exc,
++            code=code,
++            retryable=bool(retryable),
++            stage=(
++                "catalog_db"
++                if code in ("catalog_busy", "catalog_locked", "db_timeout")
++                else "staging"
++                if reason == "canonical_import_failed" or code == "identity_contract"
++                else "provider"
++                if code == "upstream_unavailable"
++                else "adapter_process"
++            ),
++            request_id=request.request_id,
++            cause_chain=[{"reason": reason, "error_class": type(exc).__name__}],
++            side_effects=side_effects,
++        )
++
++    def ensure(self, request: SourceRequest) -> SourceEnsureResult:
++        if not isinstance(request, SourceRequest):
++            raise TypeError("request must be SourceRequest")
++        staging_root = getattr(self.coordinator, "staging_root", None)
++        snapshot_before = _staging_snapshot(staging_root)
++        try:
++            acquisition = self.coordinator.resolve_or_stage(request)
++        except Exception as exc:
++            # I-02-B (D-W02 supplement): the journal carries the STAGED error
++            # object (code/retryable/cause as structured fields) plus the REAL
++            # side effects that already happened — a partially completed
++            # staging window is never reported as zero downloads.
++            after = _staging_snapshot(staging_root)
++            effects = _diff_side_effects(snapshot_before, after)
++            self._record_failure(
++                request, "adapter_or_staging_failed", None, exc, effects
++            )
++            raise
++
++        candidate = acquisition.candidate
++        common = {
++            "request_id": request.request_id,
++            "adapter_name": acquisition.adapter_name,
++            "candidate_id": candidate.candidate_id if candidate else None,
++            "provider": candidate.provider if candidate else None,
++            "provider_document_id": (
++                candidate.provider_document_id if candidate else None
++            ),
++            "source_url": candidate.source_url if candidate else None,
++            "reason": acquisition.reason,
++        }
++        if acquisition.status is AcquisitionStatus.REUSED:
++            outcome = (
++                "reused_after_discovery"
++                if acquisition.candidate is not None
++                else "reused_before_download"
++            )
++            attempt = self.journal.record(outcome=outcome, **common)
++            return SourceEnsureResult(
++                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
++                status=SourceEnsureStatus.REUSED,
++                acquisition=acquisition,
++                resolution=acquisition.resolution,
++                attempt=attempt,
++            )
++        if acquisition.status is AcquisitionStatus.MISSING:
++            attempt = self.journal.record(outcome="missing", **common)
++            return SourceEnsureResult(
++                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
++                status=SourceEnsureStatus.MISSING,
++                acquisition=acquisition,
++                resolution=acquisition.resolution,
++                attempt=attempt,
++            )
++        if acquisition.status is AcquisitionStatus.AMBIGUOUS:
++            attempt = self.journal.record(outcome="ambiguous", **common)
++            return SourceEnsureResult(
++                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
++                status=SourceEnsureStatus.AMBIGUOUS,
++                acquisition=acquisition,
++                resolution=acquisition.resolution,
++                attempt=attempt,
++            )
++        if acquisition.status is AcquisitionStatus.GAP:
++            # WU-4.2: metadata-only plan surfaced to the caller; nothing was
++            # downloaded and nothing was written. The plan hash is the basis
++            # for any later authorized fetch (WU-4.3).
++            plan = acquisition.gap_plan
++            attempt = self.journal.record(
++                outcome=(
++                    "gap_plan_provider_unavailable"
++                    if plan is not None and plan.provider_unavailable
++                    else "gap_plan"
++                ),
++                **common,
++            )
++            return SourceEnsureResult(
++                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
++                status=SourceEnsureStatus.GAP,
++                acquisition=acquisition,
++                resolution=acquisition.resolution,
++                attempt=attempt,
++            )
++        if candidate is None or acquisition.receipt is None:
++            raise RuntimeError("staged acquisition is missing candidate or receipt")
++        try:
++            imported = self.writer.import_staged(
++                request,
++                candidate,
++                acquisition.receipt,
++            )
++        except Exception as exc:
++            # I-02-B: the download already happened and raw is staged — the
++            # failure stage is canonical_import and the REAL side effects
++            # (download_events=1 + staged bytes) must survive in the journal
++            # and the envelope.
++            effects = {
++                "download_events": 1,
++                "raw_bytes_saved": acquisition.receipt.byte_size,
++                "staged_path": acquisition.receipt.staged_path,
++                "content_sha256": acquisition.receipt.content_sha256,
++            }
++            self._record_failure(
++                request,
++                "canonical_import_failed",
++                acquisition.receipt.content_sha256,
++                exc,
++                effects,
++            )
++            raise
++        if imported.status is CanonicalImportStatus.IMPORTED_NEW:
++            status = SourceEnsureStatus.IMPORTED
++            outcome = "downloaded_new"
++        else:
++            status = SourceEnsureStatus.DEDUPLICATED
++            outcome = "deduplicated_after_download"
++        attempt = self.journal.record(
++            outcome=outcome,
++            content_sha256=imported.content_sha256,
++            canonical_path=imported.canonical_path,
++            **common,
++        )
++        return SourceEnsureResult(
++            schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
++            status=status,
++            acquisition=acquisition,
++            resolution=imported.resolution,
++            attempt=attempt,
++            canonical_import=imported,
++        )
++
++
++__all__ = [
++    "SOURCE_ENSURE_SCHEMA_VERSION",
++    "SourceAcquisitionService",
++    "SourceEnsureResult",
++    "SourceEnsureStatus",
++]
++
++
++def _staging_snapshot(staging_root: Any) -> dict[str, int]:
++    """Bytes per file currently staged (None → empty; never fabricates)."""
++    files: dict[str, int] = {}
++    if staging_root is None:
++        return files
++    root = Path(staging_root)
++    if not root.is_dir():
++        return files
++    for item in root.rglob("*"):
++        if item.is_file():
++            files[str(item.relative_to(root))] = item.stat().st_size
++    return files
++
++
++def _diff_side_effects(
++    before: dict[str, int],
++    after: dict[str, int],
++) -> dict[str, Any]:
++    """Real side effects observed by comparing the staging tree across the
++    degenerate window: files ADDED during the failed call count as one real
++    download event (raw_bytes_saved = their total bytes); pre-existing or
++    removed files are NOT counted as new events."""
++    added = [name for name in after if name not in before]
++    events = min(len(added), 1)
++    return {
++        "download_events": events,
++        "raw_bytes_saved": sum(after[name] for name in added) if added else None,
++        "staged_path": sorted(added)[0] if added else None,
++    }
+--- company-wiki/src/company_wiki/source_catalog/acquisition_journal.py	2026-08-08 19:50:37.691250000 +0100
++++ revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-B/a20260919-01/iso/override/acquisition_journal.py	2026-09-19 13:24:57.551429400 +0100
+@@ -43,6 +43,38 @@
+     return value
+ 
+ 
++def _side_effects(value: str | None) -> str | None:
++    """I-02-B: validate the side-effects JSON payload for the journal.
++
++    Applies only to failure/receipt rows that carry real event counters;
++    ``None`` stays ``None`` (strictly BEFORE any download window — never a
++    silently-zero placeholder)."""
++    if value is None:
++        return None
++    if not isinstance(value, str) or not value.strip():
++        raise ValueError("side_effects_json must be null or valid JSON text")
++    try:
++        effects = json.loads(value)
++    except json.JSONDecodeError as exc:
++        raise ValueError("side_effects_json must be valid JSON") from exc
++    if not isinstance(effects, dict):
++        raise ValueError("side_effects_json must contain a JSON object")
++    download_events = effects.get("download_events")
++    if download_events is not None:
++        if isinstance(download_events, bool) or not isinstance(download_events, int):
++            raise ValueError("side_effects download_events must be an integer or null")
++        if download_events not in (0, 1):
++            raise ValueError(
++                "side_effects download_events must be 0 (no download window) or 1"
++            )
++    raw_bytes = effects.get("raw_bytes_saved")
++    if raw_bytes is not None and (
++        isinstance(raw_bytes, bool) or not isinstance(raw_bytes, int) or raw_bytes < 0
++    ):
++        raise ValueError("side_effects raw_bytes_saved must be a non-negative integer")
++    return canonical_json(effects)
++
++
+ @dataclass(frozen=True)
+ class AcquisitionAttempt:
+     schema_version: str
+@@ -60,6 +92,12 @@
+     reason: str | None = None
+     error_type: str | None = None
+     error: str | None = None
++    # I-02-B (D-W02 supplement, additive): structured failure fields.  Legacy
++    # journal lines (schema 1.0) simply omit them; defaults keep read_all
++    # compatible.
++    error_code: str | None = None
++    retryable: bool | None = None
++    side_effects_json: str | None = None
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return dict(self.__dict__)
+@@ -89,6 +127,9 @@
+         reason: str | None = None,
+         error_type: str | None = None,
+         error: str | None = None,
++        error_code: str | None = None,
++        retryable: bool | None = None,
++        side_effects_json: str | None = None,
+     ) -> AcquisitionAttempt:
+         if not isinstance(request_id, str) or not request_id.strip():
+             raise ValueError("request_id must be non-empty text")
+@@ -107,6 +148,15 @@
+             "reason": _optional(reason),
+             "error_type": _optional(error_type),
+             "error": _optional(error),
++            "error_code": _optional(error_code),
++            # I-02-B: retryability is a BOOL or absent in the journal (never a
++            # rented string from the provider payload).
++            "retryable": (
++                retryable if retryable is None or isinstance(retryable, bool) else False
++            ),
++            # side_effects_json: canonical JSON text of the real side-effects
++            # counters ({download_events, raw_bytes_saved, ...}); validated.
++            "side_effects_json": _side_effects(side_effects_json),
+         }
+         attempt_hash = hashlib.sha256(
+             canonical_json(values).encode("utf-8")
+--- company-wiki/src/company_wiki/source_catalog/cli.py	2026-08-18 22:57:07.566398400 +0100
++++ revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-B/a20260919-01/iso/override/cli.py	2026-09-19 13:27:34.918418700 +0100
+@@ -30,7 +30,7 @@
+     promote_from_portfolio,
+ )
+ from .service import SourceCatalog
+-from .resolver import ResolutionResult, ResolutionStatus, SourceRequest, SourceResolver
++from .resolver import ResolutionResult, ResolutionStatus, SourceRequest, SourceResolver
+ from .security_identity import (
+     IdentityResult,
+     IdentityStatus,
+@@ -683,7 +683,7 @@
+     return parser
+ 
+ 
+-def _plain(value: Any) -> Any:
++def _plain(value: Any) -> Any:
+     if isinstance(value, Path):
+         return str(value)
+     if hasattr(value, "to_dict"):
+@@ -692,136 +692,136 @@
+         return {str(key): _plain(item) for key, item in value.items()}
+     if isinstance(value, (list, tuple)):
+         return [_plain(item) for item in value]
+-    return value
+-
+-
+-def _read_only_ensure_result(resolution: ResolutionResult) -> dict[str, Any]:
+-    """Render an ``ensure``-compatible envelope without a write attempt.
+-
+-    An exact request without ``--allow-download`` cannot stage, import, or
+-    journal anything. Keeping it on the reader avoids forcing a writable
+-    catalog merely to report a reusable or missing source.
+-    """
+-    if resolution.status in {
+-        ResolutionStatus.REUSED_EXACT,
+-        ResolutionStatus.REUSED_EQUIVALENT,
+-    }:
+-        status = "reused"
+-        reason = "existing_catalog_source_reused_before_adapter"
+-    elif resolution.status is ResolutionStatus.AMBIGUOUS:
+-        status = "ambiguous"
+-        reason = resolution.reason
+-    else:
+-        status = "missing"
+-        reason = (
+-            "identity_conflict_no_download"
+-            if resolution.status is ResolutionStatus.IDENTITY_CONFLICT
+-            else "download_required_but_not_allowed"
+-        )
+-    resolution_dict = resolution.to_dict()
+-    acquisition = {
+-        "schema_version": "1.0",
+-        "status": status,
+-        "resolution": resolution_dict,
+-        "adapter_name": None,
+-        "candidate": None,
+-        "receipt": None,
+-        "reason": reason,
+-        "gap_plan": None,
+-    }
+-    return {
+-        "schema_version": "1.0",
+-        "status": status,
+-        "acquisition": acquisition,
+-        "resolution": resolution_dict,
+-        "attempt": None,
+-        "canonical_import": None,
+-    }
+-
+-
+-def _run_ensure_command(
+-    args: argparse.Namespace,
+-    config: Any,
+-    project_root: Path,
+-    get_catalog: Any,
+-    worker_controller: Any,
+-    source_request: Any,
+-) -> dict[str, Any]:
+-    """Execute the read-only or acquisition-capable ``ensure`` command."""
+-    request, identity = source_request(allow_download=args.allow_download)
+-    if not args.allow_download and request.mode != "latest_as_of":
+-        result = _read_only_ensure_result(SourceResolver(get_catalog()).resolve(request))
+-        return (
+-            {"identity": identity.to_dict(), "source_ensure": result}
+-            if identity
+-            else result
+-        )
+-
+-    # Download-capable and latest-as-of ensure remain write flows: the writer
+-    # initializer may create the catalog before staging.
+-    _ = get_catalog().store
+-    desired_state = worker_controller().status()["desired_state"]
+-    if (
+-        args.allow_download
+-        and desired_state == "paused"
+-        and not args.allow_acquisition_while_paused
+-    ):
+-        raise RuntimeError(
+-            "source acquisition is paused; run worker-resume before allowing downloads"
+-        )
+-    if args.allow_download and desired_state == "paused":
+-        _append_paused_acquisition_audit(
+-            config.catalog_dir,
+-            entity=request.entity,
+-            document_kind=request.document_kind,
+-            pid=os.getpid(),
+-        )
+-    acquisition_config_path = args.acquisition_config
+-    if not acquisition_config_path.is_absolute():
+-        acquisition_config_path = project_root / acquisition_config_path
+-    acquisition_config = load_acquisition_config(
+-        acquisition_config_path.resolve(strict=True), project_root=project_root
+-    )
+-    from .acquisition_journal import AcquisitionJournal
+-    from .resolver import build_resolution_envelope
+-    from .runtime_policy import RuntimePolicyError, load_runtime_policy
+-
+-    ensured = _retry_on_catalog_lock(
+-        lambda: SourceAcquisitionService(
+-            coordinator=AcquisitionCoordinator(
+-                catalog=get_catalog(),
+-                adapters=acquisition_config.build_registry(),
+-                staging_root=acquisition_config.staging_root,
+-            ),
+-            writer=CanonicalSourceWriter(
+-                get_catalog(), staging_root=acquisition_config.staging_root
+-            ),
+-            journal=AcquisitionJournal(config.catalog_dir),
+-        ).ensure(request),
+-        action="ensure",
+-    )
+-
+-    try:
+-        ensure_policy = load_runtime_policy(config.catalog_dir / "runtime_policy.json")
+-    except RuntimePolicyError:
+-        ensure_policy = None
+-    ensure_dict = _plain(ensured)
+-    resolution_dict = ensure_dict.get("resolution")
+-    if isinstance(resolution_dict, dict):
+-        resolution_dict["policy_export"] = _policy_export_payload(config)
+-        resolution_dict["resolution_envelope"] = build_resolution_envelope(
+-            ensured.resolution,
+-            policy_snapshot=ensure_policy,
+-            journal=AcquisitionJournal(config.catalog_dir),
+-            bundle=get_catalog().bundle_for_resolution(ensured.resolution),
+-            store=get_catalog().store,
+-            project_root=project_root,
+-        ).to_dict()
+-    return (
+-        {"identity": identity.to_dict(), "source_ensure": ensure_dict}
+-        if identity
+-        else ensure_dict
+-    )
++    return value
++
++
++def _read_only_ensure_result(resolution: ResolutionResult) -> dict[str, Any]:
++    """Render an ``ensure``-compatible envelope without a write attempt.
++
++    An exact request without ``--allow-download`` cannot stage, import, or
++    journal anything. Keeping it on the reader avoids forcing a writable
++    catalog merely to report a reusable or missing source.
++    """
++    if resolution.status in {
++        ResolutionStatus.REUSED_EXACT,
++        ResolutionStatus.REUSED_EQUIVALENT,
++    }:
++        status = "reused"
++        reason = "existing_catalog_source_reused_before_adapter"
++    elif resolution.status is ResolutionStatus.AMBIGUOUS:
++        status = "ambiguous"
++        reason = resolution.reason
++    else:
++        status = "missing"
++        reason = (
++            "identity_conflict_no_download"
++            if resolution.status is ResolutionStatus.IDENTITY_CONFLICT
++            else "download_required_but_not_allowed"
++        )
++    resolution_dict = resolution.to_dict()
++    acquisition = {
++        "schema_version": "1.0",
++        "status": status,
++        "resolution": resolution_dict,
++        "adapter_name": None,
++        "candidate": None,
++        "receipt": None,
++        "reason": reason,
++        "gap_plan": None,
++    }
++    return {
++        "schema_version": "1.0",
++        "status": status,
++        "acquisition": acquisition,
++        "resolution": resolution_dict,
++        "attempt": None,
++        "canonical_import": None,
++    }
++
++
++def _run_ensure_command(
++    args: argparse.Namespace,
++    config: Any,
++    project_root: Path,
++    get_catalog: Any,
++    worker_controller: Any,
++    source_request: Any,
++) -> dict[str, Any]:
++    """Execute the read-only or acquisition-capable ``ensure`` command."""
++    request, identity = source_request(allow_download=args.allow_download)
++    if not args.allow_download and request.mode != "latest_as_of":
++        result = _read_only_ensure_result(SourceResolver(get_catalog()).resolve(request))
++        return (
++            {"identity": identity.to_dict(), "source_ensure": result}
++            if identity
++            else result
++        )
++
++    # Download-capable and latest-as-of ensure remain write flows: the writer
++    # initializer may create the catalog before staging.
++    _ = get_catalog().store
++    desired_state = worker_controller().status()["desired_state"]
++    if (
++        args.allow_download
++        and desired_state == "paused"
++        and not args.allow_acquisition_while_paused
++    ):
++        raise RuntimeError(
++            "source acquisition is paused; run worker-resume before allowing downloads"
++        )
++    if args.allow_download and desired_state == "paused":
++        _append_paused_acquisition_audit(
++            config.catalog_dir,
++            entity=request.entity,
++            document_kind=request.document_kind,
++            pid=os.getpid(),
++        )
++    acquisition_config_path = args.acquisition_config
++    if not acquisition_config_path.is_absolute():
++        acquisition_config_path = project_root / acquisition_config_path
++    acquisition_config = load_acquisition_config(
++        acquisition_config_path.resolve(strict=True), project_root=project_root
++    )
++    from .acquisition_journal import AcquisitionJournal
++    from .resolver import build_resolution_envelope
++    from .runtime_policy import RuntimePolicyError, load_runtime_policy
++
++    ensured = _retry_on_catalog_lock(
++        lambda: SourceAcquisitionService(
++            coordinator=AcquisitionCoordinator(
++                catalog=get_catalog(),
++                adapters=acquisition_config.build_registry(),
++                staging_root=acquisition_config.staging_root,
++            ),
++            writer=CanonicalSourceWriter(
++                get_catalog(), staging_root=acquisition_config.staging_root
++            ),
++            journal=AcquisitionJournal(config.catalog_dir),
++        ).ensure(request),
++        action="ensure",
++    )
++
++    try:
++        ensure_policy = load_runtime_policy(config.catalog_dir / "runtime_policy.json")
++    except RuntimePolicyError:
++        ensure_policy = None
++    ensure_dict = _plain(ensured)
++    resolution_dict = ensure_dict.get("resolution")
++    if isinstance(resolution_dict, dict):
++        resolution_dict["policy_export"] = _policy_export_payload(config)
++        resolution_dict["resolution_envelope"] = build_resolution_envelope(
++            ensured.resolution,
++            policy_snapshot=ensure_policy,
++            journal=AcquisitionJournal(config.catalog_dir),
++            bundle=get_catalog().bundle_for_resolution(ensured.resolution),
++            store=get_catalog().store,
++            project_root=project_root,
++        ).to_dict()
++    return (
++        {"identity": identity.to_dict(), "source_ensure": ensure_dict}
++        if identity
++        else ensure_dict
++    )
+ 
+ 
+ def _run_export_command(command: str, config, get_catalog) -> dict[str, Any]:
+@@ -1198,15 +1198,15 @@
+                 if identity
+                 else source_resolution
+             )
+-        elif args.command == "ensure":
+-            result = _run_ensure_command(
+-                args,
+-                config,
+-                project_root,
+-                get_catalog,
+-                worker_controller,
+-                source_request,
+-            )
++        elif args.command == "ensure":
++            result = _run_ensure_command(
++                args,
++                config,
++                project_root,
++                get_catalog,
++                worker_controller,
++                source_request,
++            )
+         elif args.command == "close-gap":
+             from .acquisition_journal import AcquisitionJournal
+             from .close_gap import CloseGapBinding, CloseGapTransaction
+@@ -1550,10 +1550,45 @@
+             }
+     except Exception as exc:
+         # ZR-204: unified error taxonomy — canonical code + retryable flag.
+-        from .error_taxonomy import structured_error
+-
++        # I-02-B (D-W02 supplement): the envelope-safe exit emits the
++        # exception's structured fields VERBATIM (the nested dict is passed
++        # through, never joined into the message string) so downstream CLIs
++        # can keep code/retryable/request_id/stage/cause_chain/side_effects.
++        from .error_taxonomy import structured_error, normalize_upstream_payload
++
++        envelope = structured_error(
++            exc,
++            request_id=getattr(exc, "request_id", None),
++            stage=getattr(exc, "stage", None),
++            cause_chain=(
++                list(getattr(exc, "cause_chain", None) or [])
++                if isinstance(getattr(exc, "cause_chain", None), (list, tuple))
++                else []
++            ),
++            side_effects=(
++                getattr(exc, "side_effects", None)
++                if isinstance(getattr(exc, "side_effects", None), dict)
++                else None
++            ),
++            local_diag_ref=getattr(exc, "local_diag_ref", None),
++        )
++        raw_upstream = getattr(exc, "provider_payload", None)
++        if isinstance(raw_upstream, dict):
++            upstream_envelope = normalize_upstream_payload(
++                raw_upstream,
++                request_id=envelope.get("request_id"),
++                default_stage="provider",
++            )
++            if upstream_envelope is not None and envelope.get("cause_chain") == []:
++                upstream_envelope["structured_exception"] = {
++                    "error_type": envelope["error_type"],
++                    "error": envelope["error"],
++                }
++                envelope = upstream_envelope
++            elif upstream_envelope is not None:
++                envelope["cause_chain"].append(upstream_envelope)
+         print(
+-            json.dumps(structured_error(exc), ensure_ascii=False, sort_keys=True),
++            json.dumps(envelope, ensure_ascii=False, sort_keys=True),
+             file=sys.stderr,
+         )
+         return 1
+--- revenue-forecast/scripts/source_preparation.py	2026-08-19 23:02:26.146210800 +0100
++++ revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-B/a20260919-01/iso/override/source_preparation.py	2026-09-19 13:57:18.618929400 +0100
+@@ -19,9 +19,16 @@
+ import sys
+ from pathlib import Path
+ 
+-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+-sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+-FILING_FETCH_CLIENT = PROJECT_ROOT / "scripts" / "filing_fetch_client.py"
++# I-02-B isolated-copy note: FILING_FETCH_CLIENT stays LOCAL to the
++# override tree (the modified sibling copy), while helper modules that
++# are NOT in this card allowlist (company_wiki_source /
++# processing_demand) keep loading READ-ONLY from the RF scripts dir.
++_ATTEMPT_ROOT = Path(__file__).resolve().parents[2]
++_OVERRIDE_DIR = Path(__file__).resolve().parent
++_RF_ROOT = Path("C:/Users/郑曾波/Projects/revenue-forecast")
++sys.path.insert(0, str(_RF_ROOT / "scripts"))
++sys.path.insert(0, str(_ATTEMPT_ROOT / "scripts"))
++FILING_FETCH_CLIENT = _OVERRIDE_DIR / "filing_fetch_client.py"
+ 
+ import company_wiki_source  # noqa: E402
+ from processing_demand import DemandQueue  # noqa: E402
+@@ -74,6 +81,70 @@
+     return _SOURCE_TYPE_BY_KIND.get(kind, "regulatory_filing")
+ 
+ 
++class UpstreamEnvelopeError(RuntimeError):
++    """I-02-B: carries the parsed upstream cross-CLI error envelope so the
++    outer CLI re-emits the structured fields instead of joining them into a
++    message string."""
++
++    def __init__(self, message: str, envelope: dict) -> None:
++        super().__init__(message)
++        self.error_envelope = envelope
++
++
++def _archive_full_output(proc, diag_dir: Path | None, layer: str) -> str | None:
++    """I-02-B: archive the FULL non-zero-child output (never truncated);
++    returns the local_diag_ref value or None when no diag dir is configured."""
++    if diag_dir is None:
++        return None
++    try:
++        import time
++
++        diag_dir = Path(diag_dir)
++        diag_dir.mkdir(parents=True, exist_ok=True)
++        stamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
++        path = diag_dir / f"upstream_raw_{layer}_{stamp}.txt"
++        path.write_text(
++            f"--- stdout ---\n{proc.stdout}\n--- stderr ---\n{proc.stderr}"
++            f"\n--- exit code: {proc.returncode} ---\n",
++            encoding="utf-8",
++        )
++        return str(path)
++    except OSError:
++        return None
++
++
++def normalize_envelope(envelope: dict, *, request_id: str):
++    """Load the frozen error taxonomy from the isolated CW override tree
++    and normalize a RAW upstream document into the frozen envelope."""
++    from company_wiki.source_catalog.error_taxonomy import (
++        normalize_upstream_payload,
++    )
++
++    return normalize_upstream_payload(envelope, request_id=request_id)
++
++
++def _ensure_cw_taxonomy_importable() -> None:
++    """I-02-B: isolated-chain wiring.  The CW override copies register
++    under the true module names via w02b_bootstrap (synthetic package
++    shim over the READ-ONLY CW repo src); idempotent."""
++    try:
++        import company_wiki.source_catalog.error_taxonomy  # noqa: F401
++    except Exception:
++        import w02b_bootstrap
++
++        w02b_bootstrap.setup()
++
++
++def _loads_maybe(text: str):
++    """Parse text as JSON, None when empty/invalid (never guessed)."""
++    if not text or not text.strip():
++        return None
++    try:
++        return json.loads(text)
++    except json.JSONDecodeError:
++        return None
++
++
+ def prepare_source(
+     request: dict,
+     *,
+@@ -82,6 +153,7 @@
+     python: tuple[str, ...] = (sys.executable,),
+     company_wiki_config: Path | None = None,
+     filing_fetch_root: Path | None = None,
++    diag_dir: Path | None = None,
+ ) -> dict:
+     """Orchestrate the real chain and return the RevenueSourceRecord."""
+     # no --request-file: the client reads the request from stdin (C1 fix)
+@@ -102,15 +174,63 @@
+         text=True,
+         encoding="utf-8",
+         capture_output=True,
+-        cwd=str(PROJECT_ROOT),
++        cwd=str(_ATTEMPT_ROOT),
+         timeout=timeout_seconds + 30,
+         check=False,
+     )
+     if proc.returncode != 0:
+-        raise RuntimeError(
+-            f"filing-fetch client exited {proc.returncode}: "
+-            f"{proc.stderr.strip()[-800:]}"
+-        )
++        # I-02-B (W02B-N1/N2): the pre-change behaviour truncated stderr to
++        # its last 800 characters and wrapped it in a RuntimeError string,
++        # destroying the structured envelope.  Now: 1) a VALID upstream JSON
++        # envelope is parsed and forwarded structurally; 2) an opaque
++        # failure is archived in FULL (local_diag_ref) with a short summary
++        # line only.
++        for raw_text in (proc.stdout, proc.stderr):
++            parsed = _loads_maybe(raw_text)
++            if not isinstance(parsed, dict):
++                continue
++            envelope = parsed.get("error_envelope")
++            if not isinstance(envelope, dict):
++                continue
++            if isinstance(envelope.get("error_envelope_schema_version"), str):
++                # Already a validated cross-CLI envelope (CW/FF side):
++                # forward structurally, no re-classification.
++                pass
++            else:
++                normalized = normalize_envelope(
++                    envelope,
++                    request_id="execv2-w02b",
++                )
++                envelope = (
++                    normalized
++                    if normalized is not None
++                    else {
++                        "error_envelope_schema_version": "cross-cli-error-envelope/1.0",
++                        "code": "fatal",
++                        "error_type": "fatal",
++                        "retryable": False,
++                        "cause_chain": [
++                            {
++                                "stage": "envelope_normalization",
++                                "opaque_upstream_document": True,
++                            }
++                        ],
++                        "side_effects": None,
++                    }
++                )
++            diag_ref = _archive_full_output(proc, diag_dir, "l1")
++            if envelope.get("local_diag_ref") is None and diag_ref:
++                envelope["local_diag_ref"] = diag_ref
++            raise UpstreamEnvelopeError(
++                f"upstream chain failed at exit {proc.returncode} (see error_envelope)",
++                envelope,
++            )
++        diag_ref = _archive_full_output(proc, diag_dir, "l1")
++        stderr_text = proc.stderr.strip() or proc.stdout.strip() or "no output"
++        summary = stderr_text.splitlines()[-1][:160]
++        exc = RuntimeError(f"filing-fetch client exited {proc.returncode}: {summary}")
++        exc.local_diag_ref = diag_ref
++        raise exc
+     payload = json.loads(proc.stdout)
+     # the client prints the handle dict directly (no wrapper); FC-704: the
+     # handle carries the deep-validated resolution envelope (journal-derived
+@@ -136,8 +256,7 @@
+     # payload.get("selected_artifacts") path is removed.  artifact_read =
+     # roles with a verified artifact (producers do not run); producer_events =
+     # the DAG closure of the non-reusable roles (never a blind full recompute).
+-    artifact_read, producer_events = (
+-        company_wiki_source.select_artifact_roles(handle))
++    artifact_read, producer_events = company_wiki_source.select_artifact_roles(handle)
+     # FC-905-b: capture/safety evidence comes from the envelope — never
+     # hardcoded.  An unreviewed source is blocked per policy; absent parser/
+     # llm counts fail closed (never fabricated as 0).
+@@ -147,13 +266,15 @@
+     if prompt_injection_status == "not_reviewed":
+         raise RuntimeError(
+             "prompt injection not reviewed — source preparation blocked "
+-            "per policy (prompt_injection_status=not_reviewed)")
++            "per policy (prompt_injection_status=not_reviewed)"
++        )
+     parser_calls = envelope.get("parser_calls")
+     llm_calls = envelope.get("llm_calls")
+     if parser_calls is None or llm_calls is None:
+         raise RuntimeError(
+             "parser/llm counts absent from the resolution envelope — fail "
+-            "closed instead of fabricating 0")
++            "closed instead of fabricating 0"
++        )
+     record = company_wiki_source.build_revenue_source_record(
+         handle,
+         as_of_date=str(request.get("as_of_date", "")),
+@@ -186,11 +307,26 @@
+     )
+     parser.add_argument("--request-file", help="request JSON file (else stdin)")
+     parser.add_argument("--allow-download", action="store_true")
++    parser.add_argument(
++        "--diag-dir",
++        type=Path,
++        default=None,
++        help="Where to archive FULL raw upstream output on opaque failures "
++        "(I-02-B; no truncation).",
++    )
+     parser.add_argument("--timeout-seconds", type=float, default=900.0)
+-    parser.add_argument("--company-wiki-config", type=Path, default=None,
+-                        help="override company-wiki config for the chain (E2E)")
+-    parser.add_argument("--filing-fetch-root", type=Path, default=None,
+-                        help="override the filing-fetch skill root for the chain (E2E)")
++    parser.add_argument(
++        "--company-wiki-config",
++        type=Path,
++        default=None,
++        help="override company-wiki config for the chain (E2E)",
++    )
++    parser.add_argument(
++        "--filing-fetch-root",
++        type=Path,
++        default=None,
++        help="override the filing-fetch skill root for the chain (E2E)",
++    )
+     args = parser.parse_args(argv)
+ 
+     for stream in (sys.stdin, sys.stdout, sys.stderr):
+@@ -198,6 +334,7 @@
+             stream.reconfigure(encoding="utf-8")
+ 
+     try:
++        _ensure_cw_taxonomy_importable()
+         request = _read_request(args.request_file)
+         record = prepare_source(
+             request,
+@@ -205,13 +342,45 @@
+             timeout_seconds=args.timeout_seconds,
+             company_wiki_config=args.company_wiki_config,
+             filing_fetch_root=args.filing_fetch_root,
++            diag_dir=args.diag_dir,
+         )
+     except (json.JSONDecodeError, ValueError) as exc:
+         sys.stderr.write(json.dumps({"error_code": "bad_request", "error": str(exc)}))
+         sys.stderr.write("\n")
+         return 2
+     except RuntimeError as exc:
+-        sys.stderr.write(json.dumps({"error_code": "upstream", "error": str(exc)}))
++        # I-02-B: when an upstream envelope rode on the exception, re-emit its
++        # structured fields verbatim (code/retryable/request_id/stage/
++        # cause_chain/side_effects) instead of joining the dict into a string.
++        envelope = getattr(exc, "error_envelope", None)
++        if isinstance(envelope, dict):
++            payload = {
++                "error_code": envelope.get("code")
++                or envelope.get("error_type")
++                or "upstream",
++                "error": str(exc),
++                "retryable": bool(envelope.get("retryable")),
++                "error_envelope": envelope,
++            }
++            for key in (
++                "request_id",
++                "stage",
++                "cause_chain",
++                "side_effects",
++                "local_diag_ref",
++            ):
++                if key in envelope:
++                    payload[key] = envelope[key]
++        else:
++            payload = {
++                "error_code": "upstream",
++                "error": str(exc),
++                "retryable": False,
++            }
++            diag_ref = getattr(exc, "local_diag_ref", None)
++            if diag_ref:
++                payload["local_diag_ref"] = diag_ref
++        sys.stderr.write(json.dumps(payload, ensure_ascii=False))
+         sys.stderr.write("\n")
+         return 3
+     sys.stdout.write(json.dumps(record, ensure_ascii=False, indent=2))
+--- revenue-forecast/scripts/filing_fetch_client.py	2026-09-01 20:41:17.281157500 +0100
++++ revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-B/a20260919-01/iso/override/filing_fetch_client.py	2026-09-19 13:47:40.500503300 +0100
+@@ -34,7 +34,10 @@
+     Carries the structured upstream error fields (``status`` / ``error_code`` /
+     ``retryable`` / ``candidates``) when filing-fetch emitted a JSON error
+     document, so callers and the CLI surface diagnostics instead of a bare
+-    ``"no stderr"`` string.
++    ``"no stderr"`` string.  I-02-B: also carries the frozen cross-CLI
++    envelope dict when one parsed successfully (request_id/stage/cause_chain/
++    side_effects/local_diag_ref) AND archives malformed upstream output via
++    ``local_diag_dir`` instead of truncating it.
+     """
+ 
+     def __init__(
+@@ -45,12 +48,18 @@
+         error_code: str | None = None,
+         retryable: bool | None = None,
+         candidates: list | None = None,
++        error_envelope: dict | None = None,
++        local_diag_ref: str | None = None,
+     ) -> None:
+         super().__init__(message)
+         self.status = status
+         self.error_code = error_code
+-        self.retryable = retryable
++        self.retryable = (
++            retryable if isinstance(retryable, bool) else False
++        )  # I-02-B: a string 'true' must never open the retry door
+         self.candidates = candidates
++        self.error_envelope = error_envelope
++        self.local_diag_ref = local_diag_ref
+ 
+ 
+ # The location of the standalone filing-fetch canonical repo comes from an
+@@ -164,8 +173,7 @@
+         )
+     if not (resolved / "scripts" / "fetch_filing.py").is_file():
+         raise _ClientError(
+-            f"configured filing_fetch_root lacks scripts/fetch_filing.py: "
+-            f"{resolved}",
++            f"configured filing_fetch_root lacks scripts/fetch_filing.py: {resolved}",
+             error_code="config_error",
+             retryable=False,
+         )
+@@ -182,6 +190,30 @@
+         return None
+ 
+ 
++def _archive_raw_output(
++    completed: subprocess.CompletedProcess,
++    local_diag_dir: Path | None,
++) -> Path | None:
++    """I-02-B: archive the FULL upstream stdout/stderr for an opaque failure
++    (never truncated); returns the archive path or None when disabled."""
++    if local_diag_dir is None:
++        return None
++    try:
++        import time
++
++        stamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
++        local_diag_dir.mkdir(parents=True, exist_ok=True)
++        path = local_diag_dir / f"upstream_raw_{stamp}.txt"
++        path.write_text(
++            f"--- stdout ---\n{completed.stdout}\n--- stderr ---\n"
++            f"{completed.stderr}\n--- exit code: {completed.returncode} ---\n",
++            encoding="utf-8",
++        )
++        return path
++    except OSError:
++        return None
++
++
+ def resolve_filing(
+     request: dict[str, Any],
+     *,
+@@ -189,6 +221,7 @@
+     timeout_seconds: float = 900.0,
+     filing_fetch_root: Path | None = None,
+     company_wiki_config: Path | None = None,
++    local_diag_dir: Path | None = None,
+ ) -> dict[str, Any]:
+     """Resolve (or, when authorized, ensure) a filing via filing-fetch.
+ 
+@@ -236,16 +269,66 @@
+         # when stdout is not a JSON object.
+         payload = _try_loads(completed.stdout)
+         if isinstance(payload, dict):
++            # Flat cross-CLI envelope (already validated upstream): passthrough
++            # code/retryable/request_id/stage/cause_chain verbatim.
++            if isinstance(
++                payload.get("error_envelope_schema_version"), str
++            ) and payload.get("error_envelope_schema_version").startswith(
++                "cross-cli-error-envelope"
++            ):
++                raise _ClientError(
++                    f"filing-fetch exited {completed.returncode}: "
++                    f"{payload.get('error') or 'unknown error'}",
++                    status=payload.get("status"),
++                    error_code=payload.get("code") or payload.get("error_type"),
++                    retryable=(
++                        payload.get("retryable")
++                        if isinstance(payload.get("retryable"), bool)
++                        else False
++                    ),
++                    error_envelope=payload,
++                )
++            # Adapter-1.0 worker shape nests the error fields under "error";
++            # a flat envelope carries them at the top level.  Either way the
++            # code/retryable/request_id stay structurally readable - never
++            # reduced to the outer status string.  The fail-closed mirror of
++            # the frozen retryable set (decision.md): a provider-declared
++            # code may carry its declared retryability ONLY for
++            # upstream_unavailable; unknown codes never open the retry door.
++            error_obj = payload.get("error")
++            if not isinstance(error_obj, dict):
++                error_obj = {}
++            declared_code = payload.get("error_code") or error_obj.get("code")
++            declared_retryable = payload.get("retryable")
++            if not isinstance(declared_retryable, bool):
++                declared_retryable = error_obj.get("retryable")
++            if declared_code == "upstream_unavailable":
++                retryable = (
++                    declared_retryable
++                    if isinstance(declared_retryable, bool)
++                    else False
++                )
++            else:
++                retryable = False
+             raise _ClientError(
+                 f"filing-fetch exited {completed.returncode}: "
+                 f"{payload.get('error') or payload.get('status') or 'unknown error'}",
+                 status=payload.get("status"),
+-                error_code=payload.get("error_code"),
+-                retryable=payload.get("retryable"),
++                error_code=declared_code,
++                retryable=retryable,
+                 candidates=payload.get("candidates"),
++                error_envelope=payload,
+             )
+-        detail = completed.stderr.strip() or "no stderr"
+-        raise _ClientError(f"filing-fetch exited {completed.returncode}: {detail}")
++        # I-02-B: malformed/absent JSON is never guessed into fields and never
++        # truncated - archive the FULL raw output and point local_diag_ref at
++        # it, emitting only a short summary in the message.
++        detail = completed.stderr.strip() or completed.stdout.strip() or "no output"
++        diag_ref = _archive_raw_output(completed, local_diag_dir)
++        summary = detail.splitlines()[-1][:160] if detail else "no output"
++        raise _ClientError(
++            f"filing-fetch exited {completed.returncode}: {summary}",
++            local_diag_ref=str(diag_ref) if diag_ref else None,
++        )
+     try:
+         response = json.loads(completed.stdout)
+     except json.JSONDecodeError:
+@@ -273,8 +356,13 @@
+     *,
+     retryable: bool | None = False,
+     candidates: list | None = None,
++    error_envelope: dict | None = None,
+ ) -> None:
+-    """Write a structured error document to stderr (success stream on stdout)."""
++    """Write a structured error document to stderr (success stream on stdout).
++
++    I-02-B: when an upstream envelope was parsed, its structured fields ride
++    forward verbatim (code/retryable/request_id/stage/cause_chain/
++    side_effects/local_diag_ref) - never joined back into the message."""
+     payload: dict[str, Any] = {
+         "error_code": error_code,
+         "error": message,
+@@ -282,6 +370,17 @@
+     }
+     if candidates:
+         payload["candidates"] = candidates
++    if isinstance(error_envelope, dict):
++        payload["error_envelope"] = error_envelope
++        for key in (
++            "request_id",
++            "stage",
++            "cause_chain",
++            "side_effects",
++            "local_diag_ref",
++        ):
++            if key in error_envelope:
++                payload[key] = error_envelope[key]
+     sys.stderr.write(json.dumps(payload, ensure_ascii=False))
+     sys.stderr.write("\n")
+ 
+@@ -324,13 +423,22 @@
+         default=None,
+         help="Override the company-wiki config passed to filing-fetch (E2E fixtures).",
+     )
++    parser.add_argument(
++        "--diag-dir",
++        type=Path,
++        default=None,
++        help="Where to archive FULL raw upstream output on opaque failures "
++        "(I-02-B; no truncation).",
++    )
+     args = parser.parse_args(argv)
+ 
+     if args.request_file:
+         try:
+             request_text = Path(args.request_file).read_text(encoding="utf-8")
+         except OSError as exc:
+-            _emit_error("config_error", f"cannot read request file: {exc}", retryable=False)
++            _emit_error(
++                "config_error", f"cannot read request file: {exc}", retryable=False
++            )
+             return 1
+     else:
+         request_text = sys.stdin.read()
+@@ -340,6 +448,7 @@
+         _emit_error("config_error", "request must be a JSON object", retryable=False)
+         return 1
+ 
++    diag_dir = args.diag_dir if args.diag_dir else None
+     root = Path(args.filing_fetch_root) if args.filing_fetch_root else None
+     try:
+         handle = resolve_filing(
+@@ -348,6 +457,7 @@
+             timeout_seconds=args.timeout_seconds,
+             filing_fetch_root=root,
+             company_wiki_config=args.company_wiki_config,
++            local_diag_dir=diag_dir,
+         )
+     except _ClientError as exc:
+         _emit_error(
+@@ -355,6 +465,7 @@
+             str(exc),
+             retryable=exc.retryable,
+             candidates=exc.candidates,
++            error_envelope=exc.error_envelope,
+         )
+         return 2
+ 

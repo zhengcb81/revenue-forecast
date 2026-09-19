@@ -1,0 +1,79 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/plan_review_findings.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/plan_review_findings.md
+@@ -113,9 +113,9 @@
+ | PR-056 | P1 | JSON Schema 接受 reviewer FAIL/open P1 的伪 `PASSED`、非法 next edge、`G10C=NOT_SELECTED`、`BF00`，也拒绝合法未审 READY | 移除 `NOT_SELECTED`；增加跨字段 schema；新增 `T00L→D00L→I00L→G00L` deterministic semantic validator bootstrap；DAG 决定下一边，ledger 只能声明并由 validator 比对 | addressed in v4, pending independent re-review |
+ | PR-057 | P1 | Canary B 与 12A 没有逐 provider/逐 cycle 冻结 exact write set、RPO/RTO 与 precommit | BP/BF 每阶段新增不可变 `CanaryWriteContract`；12A 每周期先物化并 hash 绑定 `CycleWriteContract`；机器合同统一走 `operation_contract.schema.json`，首写前另建 `D11J→OP11J→G11J` protected journal | addressed in v4, pending independent re-review |
+ | PR-058 | P1 | Registry CAS 后、用户最终确认保存工作前存在意外重启即启动窗口 | CAS 后状态改为 `ARMED_ON_PRELOGIN/ON`；ARM token 在CAS消费，之后dormant lease；无短 TTL、generation/release/auth/user/next-logon绑定且一次性消费的 `LOGIN_COMMITTED` 时 launcher 零启动；另设LOGIN链与显式RB | addressed in v4, pending independent re-review |
+ | PR-059 | P1 | 生产 `reset-circuit` 可在 DAG 外清 latch，绕过独立授权/审计 | 每次生产 reset 只允许唯一 `D05Rnn→OP05Rnn→G05Rnn`；合同绑定failure generation、exact ancestor D return与全部失效；reset-only、保持 PAUSED且不产生resume/arm/registry/LLM权限 | addressed in v4, pending independent re-review |
+-| PR-060 | P1 | `G12B-POST→RECOVERED` 与“每个 canary OP 后暂停”冲突，且没有长期激活的独立授权链 | `G12B-POST` 只到 `LOGIN_VALIDATED_PAUSED/ON`；另走 `D12C→G12C-PRE→OP12C→G12C`。G12C只记录`lifecycle_outcome=RECOVERED`且物理state不变；失败走`OP12C-RB→G12C-RB`，当前session process0 | addressed in v4, pending independent re-review |
++| PR-060 | P1 | `G12B-POST→RECOVERED` 与“每个 canary OP 后暂停”冲突，且没有长期激活的独立授权链 | `G12B-POST` 只到 `LOGIN_VALIDATED_PAUSED/ON`；另走双授权链`D12C-RT→runtime批准→G12C-RT→D12C→final批准→G12C-PRE→OP12C→G12C`。G12C只记录`lifecycle_outcome=RECOVERED`且物理state不变；失败走`OP12C-RB→G12C-RB`，当前session process0 | addressed in v4, pending independent re-review |
+ | PR-061 | P1 | G10C/G10R 共用 prompt 要求 G10C 检查其下游 Canary/Hardening，形成伪循环 | 拆成 Core/SQL/安全三份 G10C 模板与 Release/性能/生命周期三份 G10R 模板；各自只读其合法前置 | addressed in v4, pending independent re-review |
+ | PR-062 | P2 | NI 分支没有 fresh-empty 显式 bootstrap/普通 open 零 DDL 合同 | 两分支共享 `M-COM-S01–S06/M-COM-F01–F02`：ordinary `mode=rw`、missing/old schema fail closed、显式 init/upgrade、幂等及 crash/ENOSPC；NI 与 IDX 都先满足该基线 | addressed in v4, pending independent re-review |
+ | PR-063 | P2 | `callback_count × progress_n` 被写成精确 VM step 区间，但 SQLite progress callback 只提供近似进度 | 全部改称 `vm_work_proxy` 近似可比指标；同环境/同 n 重复统计，不再推断 true steps 或严格区间 | addressed in v4, pending independent re-review |
+ | PR-064 | P2 | parser 格式 ID 漏掉实际启用的 MHT/DOC/XLS/JSON/XML/XSD 等，且 HTML/text 合桶、无中型或硬上限 | D06P 先冻结运行时代码实际 dispatch 清单；按 PDF、TXT/MD/CSV、HTML/HTM、MHT、DOCX、DOC、XLSX、XLS、PPTX、JSON/XML/XSD 分族；每族 S 样本，支持 M 的族测 M，否则验证显式硬上限 | addressed in v4, pending independent re-review |
+@@ -131,39 +131,57 @@
+ |---|---|---|---|---|
+ | PR-067 | P1 | DAG/vectors/test registry 把instance data伪装成JSON Schema，因而可接受任意值 | 新增三个专用instance schema；data只写`schema_id`；T00L加empty/array/scalar shape负例 | addressed in v4 draft, pending frozen review |
+ | PR-068 | P1 | Schema先失败导致vector声明的领域primary code不可达，且一例多code无确定性 | 每个subcase独立`case_id/expected_primary_code`；冻结schema-pointer重分类规则，未知形状才E002 | addressed in v4 draft, pending frozen review |
+ | PR-069 | P1 | 主agent可合成fake reviewer PASS/确认；role/cardinality/disjoint不足 | exact role overrides/disjoint进入DAG；新增`review_confirmation.schema.json`；reviewer原样JSON+MD并亲自回读 | addressed in v4 draft, pending frozen review |
+-| PR-070 | P1 | group-level owner×due映射产生错误测试笛卡尔积 | `test_id_registry.v4.json`改为283个逐ID生命周期映射，加`G10-PROMPT-S01`与冻结引用提取语法 | addressed in v4 draft, pending frozen review |
++| PR-070 | P1 | group-level owner×due映射产生错误测试笛卡尔积 | `test_id_registry.v4.json`改为315个逐ID生命周期映射，加`G10-PROMPT-S01`与冻结引用提取语法 | addressed in v4 draft, pending frozen review |
+ | PR-071 | P1 | OP状态/写入/授权只在prose，任意`NOT_APPLICABLE:*`可绕过 | 新增静态operation catalog、动态operation contract与authorization schema；每OP唯一匹配，N/A仅枚举安全reason | addressed in v4 draft, pending frozen review |
+ | PR-072 | P1 | plan manifest不可能预先冻结I00L未来validator，bootstrap review head又不闭合 | v4只冻结实施合同；I00L生成独立validator release manifest；G00L绑定I00L-terminal candidate head，仅D00L可null | addressed in v4 draft, pending frozen review |
+ | PR-073 | P1 | 12B/12C失败要求rollback但DAG无合法写节点，迫使只读Gate改状态 | CAS前D12B-RB seal；失败走OP12B-RB→G12B-RB；final失败走OP12C-RB→G12C-RB | addressed in v4 draft, pending frozen review |
+ | PR-074 | P1 | G12C被建模成改变物理状态，且下次正常登录无重验转换 | OP12C完成ENABLED_IDLE；G12C前后物理state相同，仅写RECOVERED outcome；普通登录另有全hash/circuit/Job/single-instance重验 | addressed in v4 draft, pending frozen review |
+ | PR-075 | P1 | reset return是不可计算占位符且允许返回G | 动态reset contract绑定failure generation、exact ancestor D、全部下游失效和expiry；validator E028 | addressed in v4 draft, pending frozen review |
+-| PR-076 | P1 | “最终Gate前Run必须不存在”与12B CAS正面冲突 | 改为分阶段Run不变量；只有OP12B-CAS创建exact dormant value、OP12B-RB条件删除 | addressed in v4 draft, pending frozen review |
++| PR-076 | P1 | “最终Gate前Run必须不存在”与12B CAS正面冲突 | 改为分阶段Run不变量；只有OP12B-CAS创建exact dormant value，OP12B-RB按absent/exact-owned/conflict三分支verify-preserve且绝不删除Run | addressed in v4 draft, pending frozen review |
+ | PR-077 | P1 | 12A intent/finalize journal无存储/迁移/ACL/fsync合同 | 首个写canary前新增D11J→OP11J→G11J；独立protected file journal，ordinary open zero DDL | addressed in v4 draft, pending frozen review |
+ | PR-078 | P2 | parser expansion、Test-ID提取与若干prose/vector映射不精确 | parser route manifest schema绑定实际expanded IDs；active-section grammar；matrix按GL vector当前语义重排 | addressed in v4 draft, pending frozen review |
+ | PR-079 | P1 | D12B-RB 在 ARM 写入后才审，且 ARM/G/D-CAS 早期失败无 compensation edge | 改为 D12B-ARM→D12B-RB→OP12B-ARM；从首个写入点起每个失败边进入统一 OP12B-RB，G 继承 exact terminal state | addressed in v4 draft, pending frozen review |
+ | PR-080 | P1 | dynamic contract 可接受错误 typedValue、PK arity/hash/null 组合及 document/source 错绑 | typedValue 条件化；候选改为原子 `candidate_sources`；write 反向引用 document；跨字段语义进 validator vectors | addressed in v4 draft, pending frozen review |
+ | PR-081 | P1 | OP12B-CAS 可在 registry 细节为空时通过，且误把 read-then-write/same bytes 当 CAS | registry_operations 冻结 hive/SID/view/key/name/type/bytes/prior/CAS proof/nonce/post-read；双进程和第三方负例；无法证明即 BLOCKED | addressed in v4 draft, pending frozen review |
+ | PR-082 | P1 | auth kind/action/stage/generation 无 exact 绑定；compensation 可缺 parent auth | 新 operation intent schema；D先冻结 intent，用户批准 hash，contract 三方绑定；compensation parent id/hash；严格 UTC/scope 语义 | addressed in v4 draft, pending frozen review |
+-| PR-083 | P1 | write journal identity 是自由文本，无法证明跨 DB/file/registry/control crash recovery | journal manifest + head-before/intent/finalize/head-after；每个 mutating OP/cycle/reset 必绑；半提交先 reconcile | addressed in v4 draft, pending frozen review |
++| PR-083 | P1 | write journal identity 是自由文本，无法证明跨 DB/file/registry/control crash recovery | immutable journal identity + protected head anchor + typed INTENT/FINALIZE/RECONCILE；事前contract只绑定head-before/intent/finalize-template，actual terminal/head-after进入事后execution receipt；每个 mutating OP/cycle/reset 必绑 | addressed in v4 draft, pending frozen review |
+ | PR-084 | P1 | reset 只列 generation/return/descendants/expiry，不能证明 latch/budget/history 未被扩大或删除 | reset contract 增加 latch/budget/history exact before/after hash、reset token 与禁止组合动作；typed negative vectors | addressed in v4 draft, pending frozen review |
+-| PR-085 | P1 | G12C 后第二次及以后普通 cycle 无 exact write/auth/cap/journal 合同 | static runtime_cycle_policy；每 cycle 副作用前 seal、重验 auth/daily/monthly caps、绑定 source/write/egress/journal/generation，失败 circuit+pause | addressed in v4 draft, pending frozen review |
++| PR-085 | P1 | G12C 后第二次及以后普通 cycle 无 exact write/auth/cap/journal 合同 | static runtime_cycle_policy；每 cycle 副作用前 seal、重验runtime-template receipt/G12C-RT evidence/fresh revalidation及daily/monthly caps，绑定 source/write/egress/journal/generation，失败 circuit+pause | addressed in v4 draft, pending frozen review |
+ | PR-086 | P1 | parser route array 可重复同一路由并遗漏其余 route，enabled 样本数还可为零 | routes 改 exactly-14 keyed object；各 bucket 下限；expanded IDs 必须由 route policy 精确推导且唯一 | addressed in v4 draft, pending frozen review |
+ | PR-087 | P1 | test registry 的自由文本 condition 使互斥 NI/IDX 与 LLM profile lifecycle 可被“all/any”错误解释 | condition_definitions 闭集 + condition_id；每分支列 exact lifecycle case；checker 验证 union/选择语义 | addressed in v4 draft, pending frozen review |
+-| PR-088 | P1 | validator vector 没有冻结 base fixture/mutation DSL/reason mapping，部分 mutation 实际复制 null | validator fixture manifest、typed mutation、stage/pointer/reason_rule；每 base 必须 OK，每 mutation 只触发唯一 primary rule | addressed in v4 draft, pending frozen review |
++| PR-088 | P1 | validator vector 没有冻结 base fixture/mutation DSL/reason mapping，部分 mutation 实际复制 null | validator fixture manifest、typed composite scenario、typed ledger transcript/request、typed mutation、stage/pointer/reason_rule；每 base 必须 OK，每 mutation 只触发唯一 primary rule | addressed in v4 draft, pending frozen review |
+ | PR-089 | P1 | `manifest.md` 无法机器证明 E014 的 artifact/ACL/TTL/敏感信息约束 | `manifest.json` schema + `report.md` 分别 hash；artifact 明确 repo/sink、SHA/HMAC、size/type/classification/ACL/encryption/reparse/TTL | addressed in v4 draft, pending frozen review |
+-| PR-090 | P1 | “stdlib-only + python -I -S”无法执行 Draft 2020-12 schema，信任合同自相矛盾 | 独立 venv；冻结解释器、jsonschema/referencing 闭包、wheel/tree/module/sys.path hash；用 -I 不用 -S；tamper负例 | addressed in v4 draft, pending frozen review |
++| PR-090 | P1 | “stdlib-only + python -I -S”无法执行 Draft 2020-12 schema，信任合同自相矛盾 | OS pre-entry verifier先冻结并核验解释器/DLL/stdlib/vendored jsonschema/referencing闭包与held identity，再由已验证入口以`-I -S -B`显式注入唯一vendor路径；site/.pth/ambient retrieval均禁用；tamper/TOCTOU负例 | addressed in v4 draft, pending frozen review |
+ | PR-091 | P1 | INDEX 分支若 G11A 迁移前强制10秒则 D11M 永远不可达 | G11A/INDEX 允许受界只读 INDEX_REQUIRED + semantic oracle/plan；NO_INDEX 当场10秒；G11M后必须10秒 | addressed in v4 draft, pending frozen review |
+ | PR-092 | P1 | machine G10R 需要 G09P/G09，但多份 prompt/join prose 遗漏，可让弱模型早签 release | 所有 G10R join/prompt 补 exact G09P/G09；G10-PROMPT-S01 校验 machine/prose 同集 | addressed in v4 draft, pending frozen review |
+ | PR-093 | P1 | 新增 ZR1002/1003 测试依赖 missing DB eager init，未来 reader-first 会被误判回归 | Phase0 纳入；T02B fixture 先显式 init/upgrade 再 reader open；产品 ordinary open 仍 zero DDL；映射 M-COM-S05/S06 | addressed in v4 draft, pending frozen review |
+ | PR-094 | P1 | checker token regex 漏 `P-FMT00-ROUTE`，反引号范围与 R01–R99 缩写可漏检 | 扩展 token grammar；按相邻 token/generic backtick range 检出；GL/F与reset ID全部展开为 exact IDs | addressed in v4 draft, pending frozen review |
+-| PR-095 | P2 | prose 的“new reviewer”比 DAG disjoint 更强且不可执行；final approval 顺序与 DAG 不同 | 统一为 exact DAG-disjoint/min_not_in；D12C 先冻结 proposed intent、用户后批准 hash、G12C-PRE 再验 | addressed in v4 draft, pending frozen review |
++| PR-095 | P2 | prose 的“new reviewer”比 DAG disjoint 更强且不可执行；final approval 顺序与 DAG 不同 | 统一为 exact DAG-disjoint/min_not_in；最终激活采用两条purpose-bound批准链，D12C-RT/G12C-RT处理runtime template，D12C/G12C-PRE处理exact final activation | addressed in v4 draft, pending frozen review |
++
++## 6.2 v4 第二轮冻结前加固（非正式 verdict）
++
++本轮包含独立agent已返回的具体反例与作者逐文件复核；部分agent因账户用量限制未能返回最终
++verdict，因此一律不计PASS。下表只说明候选已处置，仍须对冻结字节集进行三路正式独立复审：
++
++| ID | 级别 | 草稿反例 | v4 草稿处置 | 状态 |
++|---|---|---|---|---|
++| PR-096 | P0 | Python入口自己验证解释器/vendor会在检查前执行site/.pth或被TOCTOU换包，bootstrap信任顺序倒置 | 新增OS pre-entry verifier manifest；用Windows/.NET primitive先验完整闭包、ACL/file identity/reparse并持有identity到child创建，再以`-I -S -B`启动 | addressed in v4 draft, pending frozen review |
++| PR-097 | P0 | pre-op contract若绑定未来FINALIZE/head-after/actual execution receipt，会形成不可构造hash环 | journal identity与live head拆分；事前只绑定INTENT与FINALIZE template commitment，actual terminal/head-after/touched/receipt只在OP后产生 | addressed in v4 draft, pending frozen review |
++| PR-098 | P0 | Windows常规API不能证明atomic compare-and-delete；exact read后仍可能删掉第三方替换值 | 所有自动12B/12C rollback改为zero-delete：VERIFY_ABSENT、VERIFY_OWNED_PRESERVE、VERIFY_CONFLICT_PRESERVE；清理Run另需未来授权 | addressed in v4 draft, pending frozen review |
++| PR-099 | P1 | evidence对bootstrap/release authority、journal阶段、OP后receipt和runtime-cycle wrapper表达不足 | evidence manifest加入阶段化validation authority、journal NOT_APPLICABLE/INITIALIZE/REQUIRED、runtime cycle和actual execution receipt绑定 | addressed in v4 draft, pending frozen review |
++| PR-100 | P1 | checker只登记部分schema并把URN当本地文件，新增规范可完全绕过meta/closure检查 | 动态枚举29个schema、精确filename→`$id`、内存URN registry、真实transitive `$ref` closure、README表与v3 immutable hash校验 | addressed in v4 draft, pending frozen review |
++| PR-101 | P0 | vector对`/reviewers/-`、不存在的`/next_eligible_nodes`等pointer不可物化，且无typed ledger transcript/request承载mutation | 新增typed transcript/request schema；修复array/pointer operator；scenario role区分双授权六类工件；新增GLV-E044与双授权正负例 | addressed in v4 draft, pending frozen review |
++| PR-102 | P1 | 既有ZR1005/1006基线从未应“先红”，但registry强制expected_red_at非空；G11A/G11J没有稳定测试义务 | `expected_red_at`允许显式空数组；逐函数登记13个never-red基线并只在G11A受控只读执行；新增BOOT/SCH/ARV/JRN/BUD/PROC/FIX/ACT/START稳定ID，共315项 | addressed in v4 draft, pending frozen review |
++| PR-103 | P0 | 单一final approval被同时解释为长期runtime权限与本次激活权限，无法证明用户分别同意两种风险 | 插入`D12C-RT→RUNTIME_TEMPLATE_AUTHORIZATION receipt→G12C-RT`，再走`D12C→FINAL_AUTOSTART_ACTIVATION receipt→G12C-PRE`；两份ID/hash/purpose/subject不可复用 | addressed in v4 draft, pending frozen review |
++| PR-104 | P0 | authorization manifest引用未来approval receipt，同时receipt又绑定authorization hash，形成双向hash循环 | authorization只冻结approval requirement/subject digest/receipt schema；receipt单向绑定既有authorization；OP contract再绑定proposal、receipt、revalidation与Gate evidence | addressed in v4 draft, pending frozen review |
++| PR-105 | P1 | 机器合同已改为dual auth/zero-delete/-I-S-B/post-op actual，但活动Markdown仍保留旧单授权、conditional delete和v1 bootstrap叙事 | 总计划、状态机、实施/测试/审查/阈值/回滚/追溯/validator合同逐项同步，并由checker加入关键禁用词与结构断言 | addressed in v4 draft, pending frozen review |
+ 
+ ## 7. v4 复审关闭条件
+ 
+ 1. 生成全新、不可覆盖的 `plan_manifest.v4.json`，冻结全部 v4 核心文件、
+    `gate_dag.v4.json`、`gate_ledger.schema.json` 与来源报告 hash；
+ 2. 三名原领域 reviewer 分别从 v4 manifest 零信任重读并回报逐项 hash；结论只对该 hash 有效；
+-3. PR-001–095 中任一 P0/P1 未被对应 reviewer 明确标记 `CLOSED`，v4 不得实施；
++3. PR-001–105 中任一 P0/P1 未被对应 reviewer 明确标记 `CLOSED`，v4 不得实施；
+ 4. P2 必须关闭，或由 reviewer 明确接受 owner、due node、隔离理由；不得由修订者自批；
+ 5. 任一 reviewer `FAIL` 后冻结该 revision 为失败历史，修复必须生成 v5 或更高的新 manifest。

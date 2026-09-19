@@ -1,0 +1,47 @@
+{
+  "case": "N3-readonly_write_target",
+  "code": "override",
+  "sample": "n3_readonly_write_target",
+  "doctor": {
+    "ok": true,
+    "problems": [
+      "root 'archive_quick' adapter_id='sidecar_filing_v1' effective-config: readonly_with_write_target, read_only=true root declares canonical_write_target '${PROJECT_ROOT}/.scratch/write_target'"
+    ]
+  },
+  "scan_stage": {
+    "v2_scan_shadow_from_snapshot": false
+  },
+  "scan": {
+    "ok": true,
+    "report": {
+      "files_seen": 0,
+      "files_hashed": 0,
+      "files_reused": 0,
+      "files_excluded": 0,
+      "policy_excluded": 0,
+      "locations_active": 0,
+      "locations_missing": 0,
+      "errors": 1,
+      "new_errors": 1,
+      "known_quarantined": 0,
+      "error_details": [
+        {
+          "root_id": "archive_quick",
+          "relative_path": "",
+          "error": "effective-config: readonly_with_write_target, read_only=true root declares canonical_write_target '${PROJECT_ROOT}/.scratch/write_target'",
+          "unchanged": false
+        }
+      ],
+      "dry_run": false,
+      "strategy": {
+        "archive_quick": "adapter"
+      }
+    }
+  },
+  "per_root_persisted": {
+    "archive_quick": {
+      "locations": [],
+      "documents": []
+    }
+  }
+}

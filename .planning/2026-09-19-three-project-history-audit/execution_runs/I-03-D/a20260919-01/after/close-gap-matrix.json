@@ -1,0 +1,428 @@
+{
+  "all_checks": [
+    {
+      "case": "CANON-P0-sha",
+      "independent_expected": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+      "actual_observed": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+      "status": "pass"
+    },
+    {
+      "case": "gd5_url:plan_before_hash==P0",
+      "independent_expected": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+      "actual_observed": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+      "status": "pass"
+    },
+    {
+      "case": "gd5_url:stale",
+      "independent_expected": [
+        "rejected",
+        "stale_gap_hash",
+        0,
+        0,
+        0,
+        0,
+        true,
+        true
+      ],
+      "actual_observed": [
+        "rejected",
+        "stale_gap_hash",
+        0,
+        0,
+        0,
+        0,
+        true,
+        true
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd5_url:auth_probe_true",
+      "independent_expected": true,
+      "actual_observed": true,
+      "status": "pass"
+    },
+    {
+      "case": "gd5_filed:plan_before_hash==P0",
+      "independent_expected": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+      "actual_observed": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+      "status": "pass"
+    },
+    {
+      "case": "gd5_filed:stale",
+      "independent_expected": [
+        "rejected",
+        "stale_gap_hash",
+        0,
+        0,
+        0,
+        0,
+        true,
+        true
+      ],
+      "actual_observed": [
+        "rejected",
+        "stale_gap_hash",
+        0,
+        0,
+        0,
+        0,
+        true,
+        true
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd5_filed:auth_probe_true",
+      "independent_expected": true,
+      "actual_observed": true,
+      "status": "pass"
+    },
+    {
+      "case": "gd5_policy:plan_before_hash==P0",
+      "independent_expected": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+      "actual_observed": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+      "status": "pass"
+    },
+    {
+      "case": "gd5_policy:stale",
+      "independent_expected": [
+        "rejected",
+        "stale_gap_hash",
+        0,
+        0,
+        0,
+        0,
+        true,
+        true
+      ],
+      "actual_observed": [
+        "rejected",
+        "stale_gap_hash",
+        0,
+        0,
+        0,
+        0,
+        true,
+        true
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd5_policy:auth_probe_true",
+      "independent_expected": true,
+      "actual_observed": true,
+      "status": "pass"
+    },
+    {
+      "case": "gd6_two_gaps_max_items_1:plan_hash(short64)",
+      "independent_expected": [
+        "a-pA",
+        "a-pB"
+      ],
+      "actual_observed": [
+        "a-pA",
+        "a-pB"
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd6_two_gaps_max_items_1:MAX_BATCH_SIZE_constant",
+      "independent_expected": 8,
+      "actual_observed": 8,
+      "status": "pass"
+    },
+    {
+      "case": "gd6_two_gaps_max_items_1:scenario_cap_is_min(1,8)=1",
+      "independent_expected": 1,
+      "actual_observed": 1,
+      "status": "pass"
+    },
+    {
+      "case": "gd6_two_gaps_max_items_1:bounded_batch",
+      "independent_expected": [
+        "completed_partial",
+        1,
+        1,
+        [
+          "a-pB"
+        ],
+        {
+          "a-pA": "completed",
+          "a-pB": "pending_next_batch"
+        },
+        {
+          "provider_fetch_attempt": 1,
+          "bytes_received": 2,
+          "raw_saved": 1,
+          "registration_succeeded": 1
+        }
+      ],
+      "actual_observed": [
+        "completed_partial",
+        1,
+        1,
+        [
+          "a-pB"
+        ],
+        {
+          "a-pB": "pending_next_batch",
+          "a-pA": "completed"
+        },
+        {
+          "provider_fetch_attempt": 1,
+          "bytes_received": 2,
+          "raw_saved": 1,
+          "registration_succeeded": 1
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_null:plan_level_validate_allows_mutation",
+      "independent_expected": null,
+      "actual_observed": null,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_null:bytes_received_events_2",
+      "independent_expected": 2,
+      "actual_observed": 2,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_null:cumulative_progression",
+      "independent_expected": [
+        60,
+        120
+      ],
+      "actual_observed": [
+        60,
+        120
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_null:last_chunk_over_cap_true",
+      "independent_expected": true,
+      "actual_observed": true,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_null:stream_stopped_on_over_chunk",
+      "independent_expected": true,
+      "actual_observed": true,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_null:provider_yielded_exactly_2",
+      "independent_expected": 2,
+      "actual_observed": 2,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_null:no_qualified_handle_or_commit",
+      "independent_expected": [
+        0,
+        0,
+        "failed",
+        "byte_cap_exceeded_in_stream",
+        [
+          "a-cap"
+        ]
+      ],
+      "actual_observed": [
+        0,
+        0,
+        "failed",
+        "byte_cap_exceeded_in_stream",
+        [
+          "a-cap"
+        ]
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_lies_80:plan_level_validate_allows_mutation",
+      "independent_expected": null,
+      "actual_observed": null,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_lies_80:bytes_received_events_2",
+      "independent_expected": 2,
+      "actual_observed": 2,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_lies_80:cumulative_progression",
+      "independent_expected": [
+        60,
+        120
+      ],
+      "actual_observed": [
+        60,
+        120
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_lies_80:last_chunk_over_cap_true",
+      "independent_expected": true,
+      "actual_observed": true,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_lies_80:stream_stopped_on_over_chunk",
+      "independent_expected": true,
+      "actual_observed": true,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_lies_80:provider_yielded_exactly_2",
+      "independent_expected": 2,
+      "actual_observed": 2,
+      "status": "pass"
+    },
+    {
+      "case": "gd7_remote_size_lies_80:no_qualified_handle_or_commit",
+      "independent_expected": [
+        0,
+        0,
+        "failed",
+        "byte_cap_exceeded_in_stream",
+        [
+          "a-cap"
+        ]
+      ],
+      "actual_observed": [
+        0,
+        0,
+        "failed",
+        "byte_cap_exceeded_in_stream",
+        [
+          "a-cap"
+        ]
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd8_raw_saved_then_retry_registration:run1",
+      "independent_expected": [
+        1,
+        1,
+        1,
+        0,
+        "failed",
+        1,
+        1
+      ],
+      "actual_observed": [
+        1,
+        1,
+        1,
+        0,
+        "failed",
+        1,
+        1
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd8_raw_saved_then_retry_registration:run1_state",
+      "independent_expected": "raw_saved_registration_pending",
+      "actual_observed": "raw_saved_registration_pending",
+      "status": "pass"
+    },
+    {
+      "case": "gd8_raw_saved_then_retry_registration:run2",
+      "independent_expected": [
+        "completed",
+        0,
+        1
+      ],
+      "actual_observed": [
+        "completed",
+        0,
+        1
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd9_provider_error_local_reuse:completions",
+      "independent_expected": [
+        "completed",
+        0,
+        [
+          1
+        ],
+        "unknown_provider_failed",
+        false
+      ],
+      "actual_observed": [
+        "completed",
+        0,
+        [
+          1
+        ],
+        "unknown_provider_failed",
+        false
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd9_empty_success:empty_latest_status",
+      "independent_expected": "unknown_empty_success",
+      "actual_observed": "unknown_empty_success",
+      "status": "pass"
+    },
+    {
+      "case": "gd9_empty_success:no_fetch_no_notpublished",
+      "independent_expected": [
+        "completed",
+        0,
+        false
+      ],
+      "actual_observed": [
+        "completed",
+        0,
+        false
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd9_local_reusable_no_unauthorized_download:local_not_demoted_reuse_only_actions",
+      "independent_expected": [
+        [],
+        []
+      ],
+      "actual_observed": [
+        [],
+        []
+      ],
+      "status": "pass"
+    },
+    {
+      "case": "gd9_local_reusable_no_unauthorized_download:reuse_no_unauthorized_fetch",
+      "independent_expected": [
+        "completed",
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "actual_observed": [
+        "completed",
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "status": "pass"
+    }
+  ],
+  "pass": 36,
+  "fail": 0
+}

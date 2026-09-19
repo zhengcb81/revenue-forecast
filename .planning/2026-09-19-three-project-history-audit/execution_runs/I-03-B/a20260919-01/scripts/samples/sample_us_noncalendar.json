@@ -1,0 +1,41 @@
+{
+  "template": "US-noncalendar-FY",
+  "market": "US",
+  "entity": "ACME",
+  "period_rule_note": "该样本不陈述或验证任何市场披露制度、 fica 义务、期限规则或真实 provider 行为。",
+  "field_source_simulation": {
+    "kind": "模拟自 US 年报文种，映射 document_kind=annual_report（10-K 概念映射不外推真实 SEC 验收）",
+    "period_start/period_end": "模拟非日历财政年 2024-07-01→2025-06-30（FY2025 跨 2024/2025 日历年）",
+    "filed_at": "模拟 filing_date（canonical）",
+    "accepted_at": "模拟 accepted_at",
+    "fiscal_year": "缺失 fiscal_year → 键完全由三元组+period_end 年派生标签（D1/C06）"
+  },
+  "provider": "fake-us",
+  "scenarios": [
+    {
+      "name": "fy2025_key_without_fiscal_year_field",
+      "remote": [
+        {"kind": "annual_report", "period_start": "2024-07-01", "period_end": "2025-06-30", "accession": "us-fy25", "filed_at": "2025-08-29", "accepted_at": "2025-08-29", "fiscal_year": null, "url": "https://example.org/us/fy25.pdf"}
+      ],
+      "local": [],
+      "expect": {
+        "missing_ids": ["us-fy25"],
+        "latest_status": "newer_remote_available"
+      }
+    },
+    {
+      "name": "reverse_order_not_demoted",
+      "remote": [
+        {"kind": "annual_report", "period_start": "2025-07-01", "period_end": "2026-06-30", "accession": "us-fy26-old", "filed_at": "2026-07-01", "accepted_at": "2026-07-01", "fiscal_year": 2026, "url": "https://example.org/us/fy26-old.pdf"}
+      ],
+      "local": [
+        {"kind": "annual_report", "period_start": "2025-07-01", "period_end": "2026-06-30", "accession": "us-fy26-new", "filed_at": "2026-07-15", "accepted_at": "2026-07-15", "fiscal_year": 2026}
+      ],
+      "expect": {
+        "newer_revision_ids": [],
+        "reuse_ids": ["us-fy26-new"],
+        "latest_status": "unknown_if_remote_confirmed_newer"
+      }
+    }
+  ]
+}

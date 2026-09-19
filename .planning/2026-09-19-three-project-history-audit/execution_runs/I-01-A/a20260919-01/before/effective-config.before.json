@@ -1,0 +1,166 @@
+{
+  "note": "BEFORE: two entrypoints' effective-config predication under PRODUCTION source (read-only import). Frozen in oracle.md.",
+  "cases": {
+    "CFG-REAL(N1)": {
+      "doctor": {
+        "ok": true,
+        "problems": [
+          "dropbox_stock path does not point at Dropbox/Stock: C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-01-A\\a20260919-01\\before\\run_N1\\project\\.scratch\\dropbox_stock"
+        ]
+      },
+      "doctor_effective_config_view": "none (production doctor does not read runtime policy nor adapter registry beyond load-time CFG-01/02; no per-root adapter/profile/version/read-write judgment)",
+      "scan": {
+        "v2_scan_shadow_from_snapshot": true,
+        "strategy": {
+          "company_raw": "adapter",
+          "dayu_portfolio": "adapter",
+          "dropbox_stock": "adapter",
+          "future_lake": "adapter"
+        },
+        "per_root_fail_closed": [
+          {
+            "root_id": "company_raw",
+            "relative_path": "",
+            "error": "scan_root_strategy: v2 scanner unavailable (fail closed): root 'company_raw' has no adapter_id (2.x policy required)",
+            "unchanged": false
+          },
+          {
+            "root_id": "dayu_portfolio",
+            "relative_path": "",
+            "error": "scan_root_strategy: v2 scanner unavailable (fail closed): root 'dayu_portfolio' has no adapter_id (2.x policy required)",
+            "unchanged": false
+          },
+          {
+            "root_id": "dropbox_stock",
+            "relative_path": "",
+            "error": "scan_root_strategy: v2 scanner unavailable (fail closed): root 'dropbox_stock' has no adapter_id (2.x policy required)",
+            "unchanged": false
+          }
+        ]
+      }
+    },
+    "CFG-GOOD(P1)": {
+      "doctor": {
+        "ok": true,
+        "problems": [
+          "dropbox_stock path does not point at Dropbox/Stock: C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-01-A\\a20260919-01\\before\\run_p1\\project\\.scratch\\dropbox_stock"
+        ]
+      },
+      "scan_strategy": {
+        "company_raw": "adapter",
+        "dayu_portfolio": "adapter",
+        "dropbox_stock": "legacy",
+        "future_lake": "adapter"
+      },
+      "effective_config_agreement": "doctor has no adapter/effective view; scan explicitly routed"
+    },
+    "CFG-FIFTH(P2)": {
+      "doctor": {
+        "ok": true,
+        "problems": [
+          "kind=directory roots must be a subset of {'dropbox_stock', 'future_lake'}, got ['archive_extra', 'dropbox_stock', 'future_lake']",
+          "dropbox_stock path does not point at Dropbox/Stock: C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-01-A\\a20260919-01\\before\\run_P2\\project\\.scratch\\dropbox_stock"
+        ]
+      },
+      "scan_strategy": {
+        "company_raw": "adapter",
+        "dayu_portfolio": "adapter",
+        "dropbox_stock": "legacy",
+        "future_lake": "adapter",
+        "archive_extra": "adapter"
+      },
+      "archive_extra_locations": [
+        {
+          "relative_path": "a.txt",
+          "role": "original_primary",
+          "document_id": "urn:company-wiki:document:sha256:ecd4eeb0e269d12dfda7989ef8621eec507e70032526198c0c09db2d40c46a57",
+          "location_status": "active",
+          "error": null
+        },
+        {
+          "relative_path": "b.txt",
+          "role": "original_primary",
+          "document_id": "urn:company-wiki:document:sha256:6879ff2c3188c869c87166cc9a000c7ec9b9f971ced481efdc7e0597a3aeb706",
+          "location_status": "active",
+          "error": null
+        }
+      ],
+      "archive_extra_documents": [
+        {
+          "document_id": "urn:company-wiki:document:sha256:ecd4eeb0e269d12dfda7989ef8621eec507e70032526198c0c09db2d40c46a57",
+          "title": "a",
+          "document_kind": "annual_report"
+        },
+        {
+          "document_id": "urn:company-wiki:document:sha256:6879ff2c3188c869c87166cc9a000c7ec9b9f971ced481efdc7e0597a3aeb706",
+          "title": "b",
+          "document_kind": "broker_research"
+        }
+      ]
+    },
+    "n2_no_scanner_impl": {
+      "doctor": {
+        "ok": true,
+        "problems": []
+      },
+      "errors": 1,
+      "error_details": [
+        {
+          "root_id": "company_raw",
+          "relative_path": "",
+          "error": "scan_root_strategy: v2 scanner unavailable (fail closed): root 'company_raw' adapter 'generic_document_v1' has no scanner adapter implementation",
+          "unchanged": false
+        }
+      ]
+    },
+    "n2_version_unsupported": {
+      "doctor": {
+        "ok": true,
+        "problems": []
+      },
+      "errors": 0,
+      "error_details": []
+    },
+    "n2_unknown_adapter": {
+      "doctor": {
+        "ok": true,
+        "problems": [
+          "config failed to load: roots[0] adapter_id 'nonexistent_adapter_9f' not registered (CFG-01)"
+        ]
+      }
+    },
+    "n2_unknown_profile": {
+      "doctor": {
+        "ok": true,
+        "problems": [
+          "config failed to load: roots[0] admission_profile_id 'no_profile_zz' unknown (CFG-02)"
+        ]
+      }
+    },
+    "n3_readonly_write_target": {
+      "doctor": {
+        "ok": true,
+        "problems": [
+          "config failed to load: roots[0] unknown fields: ['canonical_write_target']"
+        ]
+      },
+      "scan_config_load_error": "CatalogConfigError: roots[0] unknown fields: ['canonical_write_target']"
+    },
+    "n3_profile_mismatch": {
+      "doctor": {
+        "ok": true,
+        "problems": [
+          "kind=directory roots must be a subset of {'dropbox_stock', 'future_lake'}, got ['archive_quick']"
+        ]
+      },
+      "scan_error_details": [
+        {
+          "root_id": "archive_quick",
+          "relative_path": "",
+          "error": "root directory is unavailable",
+          "unchanged": false
+        }
+      ]
+    }
+  }
+}

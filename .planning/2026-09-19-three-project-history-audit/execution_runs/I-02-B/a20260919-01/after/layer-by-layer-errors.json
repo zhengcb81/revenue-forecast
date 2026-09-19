@@ -1,0 +1,669 @@
+{
+  "p1_cw": {
+    "case": "p1_cw",
+    "layers": {
+      "l1": {
+        "exit": 3,
+        "expected": 3,
+        "stdout_head": "",
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ],
+        "request_id": "urn:company-wiki:source-request:sha256:e5b85155c394a2eb51bffce103f0162bbe1b72d3e1269d06aa80dedbc4163ecb"
+      },
+      "l2": {
+        "exit": 2,
+        "expected": 2,
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ]
+      },
+      "l3": {
+        "exit": 1,
+        "expected": 1,
+        "stdout_is_valid_json": true
+      }
+    },
+    "expectations_checked": [
+      {
+        "name": "exit_l1_3eq3",
+        "ok": true
+      },
+      {
+        "name": "exit_l2_2eq2",
+        "ok": true
+      },
+      {
+        "name": "exit_l3_1eq1",
+        "ok": true
+      },
+      {
+        "name": "l1_envelope_is_json_dict",
+        "ok": true
+      },
+      {
+        "name": "l1_code_passthrough",
+        "ok": true
+      },
+      {
+        "name": "l1_retryable_bool_true",
+        "ok": true
+      },
+      {
+        "name": "request_id_present",
+        "ok": true
+      },
+      {
+        "name": "no_download_window_not_faked",
+        "ok": true
+      },
+      {
+        "name": "cause_chain_structural",
+        "ok": true
+      },
+      {
+        "name": "no_fabricated_content",
+        "ok": true
+      }
+    ],
+    "passed": true,
+    "business_verdict": "passed_structure_preserved",
+    "exit_code_note": "外层 runner 退出码与业务失败档分开；业务失败不因外层 exit 0 掩盖"
+  },
+  "n1_long": {
+    "case": "n1_long",
+    "layers": {
+      "l1": {
+        "exit": 3,
+        "expected": 3,
+        "stdout_head": "",
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ],
+        "request_id": "execv2-w02b"
+      },
+      "l2": {
+        "exit": 2,
+        "expected": 2,
+        "stderr_json_keys": [
+          "error",
+          "error_code",
+          "error_envelope",
+          "request_id",
+          "retryable"
+        ]
+      },
+      "l3": {
+        "exit": 1,
+        "expected": 1,
+        "stdout_is_valid_json": true
+      }
+    },
+    "expectations_checked": [
+      {
+        "name": "exit_l1_3eq3",
+        "ok": true
+      },
+      {
+        "name": "exit_l2_2eq2",
+        "ok": true
+      },
+      {
+        "name": "exit_l3_1eq1",
+        "ok": true
+      },
+      {
+        "name": "long_document_preserved_over_800",
+        "ok": true
+      },
+      {
+        "name": "code_passthrough",
+        "ok": true
+      },
+      {
+        "name": "retryable_true_passthrough",
+        "ok": true
+      },
+      {
+        "name": "nested_cause_keys_preserved",
+        "ok": true
+      },
+      {
+        "name": "l1_diag_ref_present",
+        "ok": true
+      },
+      {
+        "name": "l1_diag_file_exists",
+        "ok": true
+      },
+      {
+        "name": "l1_diag_full_content",
+        "ok": true
+      }
+    ],
+    "passed": true,
+    "business_verdict": "passed_structure_preserved",
+    "exit_code_note": "外层 runner 退出码与业务失败档分开；业务失败不因外层 exit 0 掩盖"
+  },
+  "n2_unknown": {
+    "case": "n2_unknown",
+    "layers": {
+      "l1": {
+        "exit": 3,
+        "expected": 3,
+        "stdout_head": "",
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ],
+        "request_id": "execv2-w02b"
+      },
+      "l2": {
+        "exit": 2,
+        "expected": 2,
+        "stderr_json_keys": [
+          "error",
+          "error_code",
+          "error_envelope",
+          "request_id",
+          "retryable"
+        ]
+      },
+      "l3": {
+        "exit": 1,
+        "expected": 1,
+        "stdout_is_valid_json": true
+      }
+    },
+    "expectations_checked": [
+      {
+        "name": "exit_l1_3eq3",
+        "ok": true
+      },
+      {
+        "name": "exit_l2_2eq2",
+        "ok": true
+      },
+      {
+        "name": "exit_l3_1eq1",
+        "ok": true
+      },
+      {
+        "name": "unknown_code_fails_closed",
+        "ok": true
+      },
+      {
+        "name": "unknown_code_not_retryable",
+        "ok": true
+      },
+      {
+        "name": "raw_code_preserved_in_chain",
+        "ok": true
+      }
+    ],
+    "passed": true,
+    "business_verdict": "passed_structure_preserved",
+    "exit_code_note": "外层 runner 退出码与业务失败档分开；业务失败不因外层 exit 0 掩盖"
+  },
+  "n2_string": {
+    "case": "n2_string",
+    "layers": {
+      "l1": {
+        "exit": 3,
+        "expected": 3,
+        "stdout_head": "",
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ],
+        "request_id": "execv2-w02b"
+      },
+      "l2": {
+        "exit": 2,
+        "expected": 2,
+        "stderr_json_keys": [
+          "error",
+          "error_code",
+          "error_envelope",
+          "request_id",
+          "retryable"
+        ]
+      },
+      "l3": {
+        "exit": 1,
+        "expected": 1,
+        "stdout_is_valid_json": true
+      }
+    },
+    "expectations_checked": [
+      {
+        "name": "exit_l1_3eq3",
+        "ok": true
+      },
+      {
+        "name": "exit_l2_2eq2",
+        "ok": true
+      },
+      {
+        "name": "exit_l3_1eq1",
+        "ok": true
+      },
+      {
+        "name": "valid_code_kept",
+        "ok": true
+      },
+      {
+        "name": "string_retryable_fails_closed",
+        "ok": true
+      },
+      {
+        "name": "validation_finding_recorded",
+        "ok": true
+      },
+      {
+        "name": "raw_value_preserved",
+        "ok": true
+      }
+    ],
+    "passed": true,
+    "business_verdict": "passed_structure_preserved",
+    "exit_code_note": "外层 runner 退出码与业务失败档分开；业务失败不因外层 exit 0 掩盖"
+  },
+  "n2_malformed": {
+    "case": "n2_malformed",
+    "layers": {
+      "l1": {
+        "exit": 3,
+        "expected": 3,
+        "stdout_head": "",
+        "stderr_json_keys": [
+          "error",
+          "error_code",
+          "local_diag_ref",
+          "retryable"
+        ],
+        "request_id": null
+      },
+      "l2": {
+        "exit": 2,
+        "expected": 2,
+        "stderr_json_keys": [
+          "error",
+          "error_code",
+          "retryable"
+        ]
+      },
+      "l3": {
+        "exit": 2,
+        "expected": 2,
+        "stdout_is_valid_json": false
+      }
+    },
+    "expectations_checked": [
+      {
+        "name": "exit_l1_3eq3",
+        "ok": true
+      },
+      {
+        "name": "exit_l2_2eq2",
+        "ok": true
+      },
+      {
+        "name": "exit_l3_2eq2",
+        "ok": true
+      },
+      {
+        "name": "l1_marked_upstream",
+        "ok": true
+      },
+      {
+        "name": "no_envelope_parsed_from_garbage",
+        "ok": true
+      },
+      {
+        "name": "l2_full_output_archived",
+        "ok": true
+      },
+      {
+        "name": "full_stderr_preserved",
+        "ok": true
+      },
+      {
+        "name": "opaque_short_summary_no_truncation_flow",
+        "ok": true
+      }
+    ],
+    "passed": true,
+    "business_verdict": "passed_structure_preserved",
+    "exit_code_note": "外层 runner 退出码与业务失败档分开；业务失败不因外层 exit 0 掩盖"
+  },
+  "n3": {
+    "case": "n3",
+    "layers": {
+      "l1": {
+        "exit": 3,
+        "expected": 3,
+        "stdout_head": "",
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ],
+        "request_id": "urn:company-wiki:source-request:sha256:e5b85155c394a2eb51bffce103f0162bbe1b72d3e1269d06aa80dedbc4163ecb"
+      },
+      "l2": {
+        "exit": 2,
+        "expected": 2,
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ]
+      },
+      "l3": {
+        "exit": 1,
+        "expected": 1,
+        "stdout_is_valid_json": true
+      }
+    },
+    "expectations_checked": [
+      {
+        "name": "exit_l1_3eq3",
+        "ok": true
+      },
+      {
+        "name": "exit_l2_2eq2",
+        "ok": true
+      },
+      {
+        "name": "exit_l3_1eq1",
+        "ok": true
+      },
+      {
+        "name": "journal_row_download_events_one",
+        "ok": true
+      },
+      {
+        "name": "raw_bytes_saved_real",
+        "ok": true
+      },
+      {
+        "name": "journal_row_has_real_side_effects",
+        "ok": true
+      },
+      {
+        "name": "seed_raw_retained_in_scratch",
+        "ok": true
+      },
+      {
+        "name": "raw_saved_scan_failure_not_retry_flag_assigned",
+        "ok": true
+      }
+    ],
+    "passed": true,
+    "business_verdict": "passed_structure_preserved",
+    "exit_code_note": "外层 runner 退出码与业务失败档分开；业务失败不因外层 exit 0 掩盖"
+  },
+  "n4a": {
+    "case": "n4a",
+    "layers": {
+      "l1": {
+        "exit": 3,
+        "expected": 3,
+        "stdout_head": "",
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ],
+        "request_id": "urn:company-wiki:source-request:sha256:e5b85155c394a2eb51bffce103f0162bbe1b72d3e1269d06aa80dedbc4163ecb"
+      },
+      "l2": {
+        "exit": 2,
+        "expected": 2,
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ]
+      },
+      "l3": {
+        "exit": 1,
+        "expected": 1,
+        "stdout_is_valid_json": true
+      }
+    },
+    "expectations_checked": [
+      {
+        "name": "exit_l1_3eq3",
+        "ok": true
+      },
+      {
+        "name": "exit_l2_2eq2",
+        "ok": true
+      },
+      {
+        "name": "exit_l3_1eq1",
+        "ok": true
+      },
+      {
+        "name": "db_busy_canonical_code",
+        "ok": true
+      },
+      {
+        "name": "db_busy_declared_retryable",
+        "ok": true
+      },
+      {
+        "name": "exactly_one_attempt_row",
+        "ok": true
+      },
+      {
+        "name": "journal_db_busy_retryable_true",
+        "ok": true
+      },
+      {
+        "name": "no_sideeffect_conflated_into_db_busy",
+        "ok": true
+      }
+    ],
+    "passed": true,
+    "business_verdict": "passed_structure_preserved",
+    "exit_code_note": "外层 runner 退出码与业务失败档分开；业务失败不因外层 exit 0 掩盖"
+  },
+  "n4b": {
+    "case": "n4b",
+    "layers": {
+      "l1": {
+        "exit": 3,
+        "expected": 3,
+        "stdout_head": "",
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ],
+        "request_id": "urn:company-wiki:source-request:sha256:e5b85155c394a2eb51bffce103f0162bbe1b72d3e1269d06aa80dedbc4163ecb"
+      },
+      "l2": {
+        "exit": 2,
+        "expected": 2,
+        "stderr_json_keys": [
+          "cause_chain",
+          "error",
+          "error_code",
+          "error_envelope",
+          "local_diag_ref",
+          "request_id",
+          "retryable",
+          "side_effects",
+          "stage"
+        ]
+      },
+      "l3": {
+        "exit": 1,
+        "expected": 1,
+        "stdout_is_valid_json": true
+      }
+    },
+    "expectations_checked": [
+      {
+        "name": "exit_l1_3eq3",
+        "ok": true
+      },
+      {
+        "name": "exit_l2_2eq2",
+        "ok": true
+      },
+      {
+        "name": "exit_l3_1eq1",
+        "ok": true
+      },
+      {
+        "name": "identity_contract_code",
+        "ok": true
+      },
+      {
+        "name": "identity_not_retryable",
+        "ok": true
+      },
+      {
+        "name": "journal_identity_not_retryable",
+        "ok": true
+      },
+      {
+        "name": "attempt_ids_distinct",
+        "ok": true
+      },
+      {
+        "name": "request_ids_identical_urn",
+        "ok": true
+      }
+    ],
+    "passed": true,
+    "business_verdict": "passed_structure_preserved",
+    "exit_code_note": "外层 runner 退出码与业务失败档分开；业务失败不因外层 exit 0 掩盖"
+  },
+  "exit_probe": {
+    "case": "exit_probe",
+    "layers": {
+      "l1_cli_exit_real": {
+        "exit": 1,
+        "expected": 1
+      }
+    },
+    "expectations_checked": [
+      {
+        "name": "real_cli_exit_code_1",
+        "ok": true
+      },
+      {
+        "name": "exit_stderr_is_one_json_object",
+        "ok": true
+      },
+      {
+        "name": "exit_envelope_code_declared",
+        "ok": true
+      },
+      {
+        "name": "exit_retryable_bool_true",
+        "ok": true
+      },
+      {
+        "name": "exit_request_id_preserved",
+        "ok": true
+      },
+      {
+        "name": "exit_stage_set",
+        "ok": true
+      },
+      {
+        "name": "exit_schema_version",
+        "ok": true
+      },
+      {
+        "name": "exit_nested_dict_kept_structural",
+        "ok": true
+      },
+      {
+        "name": "exit_side_effects_present",
+        "ok": true
+      },
+      {
+        "name": "exit_no_stdout_garbage",
+        "ok": true
+      }
+    ],
+    "passed": true,
+    "business_verdict": "passed_structure_preserved",
+    "exit_code_note": "外层 runner 退出码与业务失败档分开"
+  }
+}

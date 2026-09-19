@@ -1,0 +1,155 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/execution_playbook.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/execution_playbook.md
+@@ -17,9 +17,9 @@
+ - 本 WP 允许修改的文件白名单；
+ - 本 WP 禁止修改的文件和生产路径；
+ - 失败测试、预期实现、回归测试、性能预算和 reviewer 角色。
+ - 活动`plan_manifest.v4.json`外部预期hash、machine DAG/operation catalog/test registry hashes、
+-  G00L validator release manifest/version、ledger expected-head与validator计算的eligible node。
++  G00L validator release manifest/version、protected ledger head-anchor与validator计算的eligible node。
+ 
+ 如果任务描述缺少任一项，实施 agent 只能补充计划证据，不能修改实现。
+ 
+ ### 0.2 通用文件边界
+@@ -29,9 +29,9 @@
+ - 测试写入 `config/source_catalog.yaml`；
+ - 测试打开生产 `.source_catalog/catalog.sqlite3` 的可写连接；
+ - 写入真实`companies/`、已登记的外部portfolio/cloud-sync source roots或StockWiki；
+ - 删除 remediation 备份、WAL/SHM、lock 或历史日志；
+-- 在 OP12B-CAS 之外创建/覆盖 HKCU Run，或在 OP12B-RB 之外删除它；创建计划任务/服务或
++- 在 OP12B-CAS 之外创建/覆盖 HKCU Run；由任何自动rollback删除Run；创建计划任务/服务或
+   启动无限 supervisor；
+ - 把非线程安全 `LLMClient` 放到线程池；
+ - 大范围格式化、重命名或重构不属于当前 WP 的代码。
+ 
+@@ -83,12 +83,15 @@
+ 1. T00L先用专用instance schema验证DAG/vectors/test-registry/operation-catalog，证明空object、
+    array和scalar均被拒绝；再实现`gate_ledger_validator_vectors.v4.json`中GL-S01、GL-S02、GL-S03、GL-S04、GL-S05、
+    GL-S06、GL-F01、GL-F02、GL-F03、GL-F04、GL-F05、GL-F06、GL-F07、GL-F08、GL-F09、
+    GL-F10、GL-F11、GL-F12及TESTID-S01，先红；
+-2. D00L一名独立reviewer审schema、DAG、负例归因、stdlib/全tmp边界；D后vector/assertion不变；
+-3. I00L实现canonical JSON、seq/prev/expected-head、exclusive atomic append、review+confirmation
+-   actual hash、branch/join/cardinality/role/invalidation/auth/operation/state/test-ID与只读`next`；
+-   不信任record自报字段；另生成冻结未来脚本/tests/runtime的`validator_release_manifest.v1.json`；
++2. D00L一名独立reviewer审schema、DAG、负例归因、OS pre-entry/全tmp边界；D后vector/assertion不变；
++3. I00L实现canonical JSON、seq/prev/protected head-anchor、exclusive atomic append、review+
++   confirmation actual hash、branch/join/cardinality/role/invalidation/auth/operation/state/test-ID与
++   只读`next`；OS verifier先验证解释器/DLL/stdlib/vendor/schema/fixture/release/ACL/file identity
++   闭包并保持句柄，再从空的非reparse cwd以Python `-I -S -B`启动。入口只可插入已验证vendor
++   路径，不信任record自报字段；另生成冻结未来脚本/tests/runtime的
++   `validator_release_manifest.v2.json`；
+ 4. G00L两名满足DAG角色/基数/disjoint规则且未参与T00L/I00L的reviewer各跑全量vectors和至少一个新反例；property sequence≥200、mutant
+    survivor=0、production/network调用0；
+ 5. I00L后先生成到I00L terminal的canonical bootstrap transcript候选和external head；只有D00L
+    review可null head，G00L两份payload必须绑定该候选head与validator release hash。两人完成
+@@ -763,10 +766,11 @@
+   arm不启动/reset/写registry；CAS后ARMED_ON_PRELOGIN且无LOGIN_COMMITTED时任何login零child；
+ - ARM token默认15min硬30min且CAS时消费；CAS后dormant lease默认24h硬72h；login commit默认
+   5min硬10min，绑定review/user/SID/machine+boot generation/previous session/下一次新logon关系/
+   generation/nonce、一次消费；final activation只ENABLED_IDLE/ON且不启动当前session；
+-- 用disposable test hive验证真实atomic create-if-absent与exact conditional delete，两进程barrier
+-  竞争只能一个成功；third-party replace/取消/异常回PAUSED且不覆盖；mutex单独不合格；
++- 用disposable test hive验证真实atomic create-if-absent及三分支verify-preserve rollback；两进程
++  barrier竞争只能一个成功。rollback对absent、exact-owned、third-party replace均不得删除，分别
++  到`PAUSED/OFF`、`PAUSED/ON`、`PAUSED/REGISTRY_CONFLICT`；mutex单独不合格；
+ - evidence先脱敏并执行approved sink/ACL/加密/TTL；mutant/ENOSPC不污染真实卷或候选源码。
+ 
+ ### 实现与 Gate
+ 
+@@ -1079,24 +1083,25 @@
+    reviewer预审并seal exact OP12B-RB compensation contract；失败则OP12B-ARM不可eligible；
+ 4. OP12B-ARM先向G11J protected journal追加intent，绑定plan/review/Run/trust/release/config/
+    routing/data/auth、circuit+control generation、expected registry absence、desired bytes hash、
+    ownership/run nonce、SID/expiry与预期补偿，再写arm state并finalize；不启动/reset/写registry；
+-5. G12B-ARM由2名按DAG与OP执行者disjoint的reviewer确认PAUSED/OFF、process0、counter/registry
++5. G12B-ARM由2名按DAG与OP执行者disjoint的reviewer确认`ARMED_PRELOGIN/OFF`、process0、counter/registry
+    不变和journal head一致。
+ 
+ ### 12B.2 CAS 后必须 dormant
+ 
+-1. D12B-CAS由2名reviewer审目标API、两进程barrier、exact conditional rollback与power-loss；
++1. D12B-CAS由2名reviewer审目标API、两进程barrier、exact zero-delete verify-preserve rollback与power-loss；
+ 2. OP12B-CAS使用真实atomic create-if-absent写exact REG_SZ并在提交点一次性消费ARM token，
+    禁止check-then-force；mutex只辅助；成功后创建默认24h/硬72h dormant lease；
+ 3. 成功状态只能`ARMED_ON_PRELOGIN/ON`。trust launcher可以被Windows Run调用，但在加载release
+    前若无有效LOGIN_COMMITTED必须退出：child/DB/config/source/额外registry写/egress均0；
+ 4. G12B-CAS由2名满足DAG角色/基数/disjoint规则的reviewer亲验START-S01、START-S02、
+    START-S03、START-S08、START-S09、START-S10。从OP12B-ARM起的任一ARM/CAS/post-review/
+    login失败、crash partial、ARM/lease到期或用户取消只能触发已预审的OP12B-RB→G12B-RB；
+-   Gate/launcher不写registry。OP按journal intent/finalize与ownership nonce reconcile，仅在current
+-   bytes exact match时conditional delete；CAS遇到任意既有同名值（即使同bytes）或之后第三方
+-   替换都不接管/不碰并进入PAUSED/REGISTRY_CONFLICT，不自动重试；G继承OP exact终态。
++   Gate/launcher不写registry。OP按journal intent/finalize与ownership nonce reconcile、停用control/
++   tokens但绝不删除Run：absent→`PAUSED/OFF`，exact-owned保留→`PAUSED/ON`并创建需另行授权的
++   manual cleanup item，conflict保留→`PAUSED/REGISTRY_CONFLICT`；CAS遇到任意既有同名值（即使
++   同bytes）也不接管，不自动重试；G继承OP exact终态。
+ 
+ ### 12B.3 最终登录批准与 bounded login-validation
+ 
+ 1. D12B-LOGIN由2名满足DAG角色/基数/disjoint规则的reviewer核对G12B-CAS、Run/trust/release/auth/generation无漂移，冻结
+@@ -1112,36 +1117,46 @@
+    成功终态只为`LOGIN_VALIDATED_PAUSED/ON`且process0；不得标记RECOVERED。
+ 
+ ---
+ 
+-## WP-12C：独立最终启用下次登录
+-
+-1. 用户阅读G12B-POST摘要后先进入D12C；2名满足DAG exact role/cardinality/disjoint规则的
+-   reviewer核对circuit closed、process0、无drift/P0/P1，并seal OP12C/OP12C-RB同一final/
+-   compensation contract与唯一proposed action/intent hash；此时不存在可供其审查的final授权；
+-2. 用户再另行批准`G12C_FINAL_AUTOSTART_ACTIVATION`，授权逐字绑定上述intent hash、action ID、
+-   exact Run/release/auth/control generation/expiry；拒绝或不回应时保持
+-   `SAFE_PAUSED_WAITING_USER`，不是BLOCKED；
+-3. G12C-PRE由恰好3名不同角色且按DAG与D12C disjoint的reviewer重读actual user authorization、contract、
+-   release与ledger head；只有全PASS才唯一开放OP12C；
+-4. OP12C唯一action为`activate-autostart-final`：generation CAS到ENABLED_IDLE/ON、只增1、消费
++## WP-12C：双授权后独立最终启用下次登录
++
++1. 用户阅读G12B-POST摘要后先进入D12C-RT；2名满足DAG exact role/cardinality/disjoint规则的
++   reviewer冻结无候选具体副作用的runtime-cycle template、scope/caps/TTL/revocation、runtime
++   authorization proposal和用户可见subject digest；
++2. 外部用户生成purpose=`RUNTIME_TEMPLATE_AUTHORIZATION`的receipt，单向绑定D12C-RT evidence、
++   template与runtime auth；G12C-RT由恰好3名不同角色reviewer核验receipt、fresh revalidation、
++   无副作用与disjointness，通过后唯一开放D12C；
++3. D12C的2名reviewer再核对circuit closed、process0、无drift/P0/P1，并seal exact final activation
++   intent、OP12C contract template、OP12C-RB compensation、final authorization proposal与final
++   subject digest，同时绑定G12C-RT evidence/runtime receipt；不得引用未来final receipt或事后actual；
++4. 外部用户再生成purpose=`FINAL_AUTOSTART_ACTIVATION`的独立receipt，绑定D12C evidence、exact
++   intent/contract/final auth与prior runtime chain。两份approval/receipt/evidence ID、hash、purpose/
++   subject必须不同且不可交换；拒绝或不回应时保持`SAFE_PAUSED_WAITING_USER`，不是BLOCKED；
++5. G12C-PRE由恰好3名不同角色且按DAG与D12C disjoint的reviewer fresh-revalidate两份批准/
++   authorization、G12C-RT evidence、contract、release与ledger head；只有全PASS才唯一开放OP12C；
++6. OP12C唯一action为`activate-autostart-final`：actual operation contract必须绑定双授权链，
++   generation CAS到ENABLED_IDLE/ON、只增1、消费
+    token；在token/control跨资源写前向protected journal追加绑定intent/auth/generation/expected
+-   state/ownership nonce的intent，完成后finalize，crash只由OP12C-RB reconcile；不启动当前
++   state/ownership nonce的intent；完成后才生成terminal journal record、head-after、evidence与
++   `operation_execution_receipt`，不得把这些actual倒填D节点。crash只由OP12C-RB reconcile；不启动当前
+    session、不reset/resume/arm、不写registry/config/DB/source、不改LLM；
+-5. G12C由恰好3名满足DAG exact角色/基数/disjoint规则的reviewer分别审control/circuit、release/auth/security、operations，
++7. G12C由恰好3名满足DAG exact角色/基数/disjoint规则的reviewer分别审control/circuit、release/auth/security、operations，
+    观察至少20s process0与sentinel零变化；ACT-S01、ACT-S02、ACT-S03、ACT-S04、ACT-S05、
+    ACT-S06、ACT-S07全部通过时物理state前后均为`ENABLED_IDLE/ON`，只记录
+-   `lifecycle_outcome=RECOVERED`；OP/G失败只能触发`OP12C-RB→G12C-RB`。owned Run未漂移时回
+-   `LOGIN_VALIDATED_PAUSED/ON`；第三方Run冲突时不碰registry并进`PAUSED/REGISTRY_CONFLICT`；
++   `lifecycle_outcome=RECOVERED`；OP/G失败只能触发`OP12C-RB→G12C-RB`。Run absent时回
++   `PAUSED/OFF`；owned Run未漂移时只回退control并保留Run，回`LOGIN_VALIDATED_PAUSED/ON`；
++   第三方Run冲突时不碰registry并进`PAUSED/REGISTRY_CONFLICT`；自动rollback绝不删除Run；
+    G继承OP exact终态且自己不写状态；
+-6. 以后普通新登录还必须重验G12C outcome、release/auth/config/routing/data/Run、SID、circuit、
++8. 以后普通新登录还必须重验G12C outcome、release/auth/config/routing/data/Run、SID、circuit、
+    Job Object与单实例才可`RUNNING_AUTOSTART/ON`；失败零child并PAUSED/ON；
+-7. 每个后续cycle在任何DB/file/network前都依`runtime_cycle_policy`密封独立operation contract，
+-   绑定action-intent/auth、generation/process、journal head、exact document/source tuples、DB/file
++9. 每个后续cycle在任何DB/file/network前都依`runtime_cycle_policy`密封独立operation contract，
++   绑定runtime-template receipt/G12C-RT evidence/fresh revalidation、action-intent/auth、generation/
++   process、journal head、exact document/source tuples、DB/file
+    write set、egress和持久daily/monthly caps，并重验expiry/revocation。ACT-S08、ACT-S09、
+    ACT-S10分别覆盖第二/后续cycle、授权/cap失效和wrong PK/file/journal head；任一失败circuit
+    open+persistent pause，registry/config/source零写；
+-8. 若用户还要当前session立刻运行，必须另建新的D→OP(resume-session)→G任务，不得顺带执行。
++10. 若用户还要当前session立刻运行，必须另建新的D→OP(resume-session)→G任务，不得顺带执行。
+ 
+ ---
+ 
+ ## Production circuit reset side lane

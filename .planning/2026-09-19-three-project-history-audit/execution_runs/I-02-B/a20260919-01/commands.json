@@ -1,0 +1,36 @@
+{
+  "card_id": "I-02-B",
+  "attempt_id": "a20260919-01",
+  "commands": [
+    {
+      "id": "w02b-cases-harness",
+      "purpose": "I-02-B oracle W02B-P1/N1/N2/N3/N4 + real cli.main() exit probe: local REAL cross-process chain (L1 source_preparation -> L2 filing_fetch_client -> L3 hermetic upstream shim -> L4 CW ensure runner), per-layer stdout/stderr/rc retained",
+      "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-B/a20260919-01",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<attempt>/scripts/w02b_cases.py"],
+      "config_paths": ["samples/samples_manifest.json", "binding.json"],
+      "allowed_write_roots": [
+        "execution_runs/I-02-B/a20260919-01/**",
+        "C:/Users/郑曾波/AppData/Local/Temp/w02b/**"
+      ],
+      "network": "disabled",
+      "timeout_seconds": null,
+      "expected_returncode": 0,
+      "expected_business_result": "每 case 的失败信封保持结构化（code 为布尔 retryable/request_id/stage/cause_chain/side_effects 完整），逐层 stdout/stderr/exit 码留档；n3 副作用 download_events=1/raw_bytes_saved=1280 且种子文件保留；n4b 身份错 retryable=false；exit_probe 真实 modified cli.main() exit 组装信封且嵌套 dict 不被拼接；业务失败判定独立于外层 exit 0",
+      "before_after_evidence": [
+        "after/layer-by-layer-errors.json",
+        "after/side-effects-ledger.json",
+        "after/case_results.json",
+        "after/case_scratch_retained/<case>/**",
+        "raw-cli-logs/<case>/**"
+      ],
+      "binding_status": "bound",
+      "raw_exit_code": 0,
+      "business_verdict": "all 9 cases passed_structure_preserved"
+    }
+  ],
+  "notes": [
+    "No real provider request was re-sent; the original CN-403 document was replayed read-only from audit evidence (runs/12_zijin_h1_download_authorized/stderr.txt) via the hermetic shim (deep case p1_cw).",
+    "No CLI command was invented; chain layers are the allowlisted override files executed as scripts plus the card-mandated hermetic shim.",
+    "pytest nodeids for CMD-W04 remain a harness-level subprocess case here (the override chain IS the test); I-00-B binding for deeper integration stays with the scheduling step."
+  ]
+}

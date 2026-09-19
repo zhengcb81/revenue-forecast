@@ -1,0 +1,67 @@
+{
+  "phase": "pre-fix",
+  "baseline": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-03-C\\a20260919-01\\iso\\baseline",
+  "cases": [
+    {
+      "case": "PRE-C1a",
+      "description": "URL /a->/b only",
+      "independent_expected": "gap_hash differs",
+      "actual_observed": {
+        "p0_hash": "69180c57a0c57f0f9c49fed2346e6e5f1887b2a34ccf236109eb7dcdce748d39",
+        "p1_url_changed_hash": "69180c57a0c57f0f9c49fed2346e6e5f1887b2a34ccf236109eb7dcdce748d39",
+        "equal": true
+      },
+      "status": "fail"
+    },
+    {
+      "case": "PRE-C1b",
+      "description": "filing_date 2026-04-01->2026-04-02",
+      "independent_expected": "gap_hash differs",
+      "actual_observed": {
+        "p1_date_changed_hash": "69180c57a0c57f0f9c49fed2346e6e5f1887b2a34ccf236109eb7dcdce748d39",
+        "equal": true
+      },
+      "status": "fail"
+    },
+    {
+      "case": "PRE-C1c",
+      "description": "A0(old receipt) vs URL-changed P1 candidate",
+      "independent_expected": "refused (stale plan)",
+      "actual_observed": "AUTHORIZED",
+      "status": "fail"
+    },
+    {
+      "case": "PRE-C4a",
+      "description": "candidate with MISSING provider attr",
+      "independent_expected": "refused",
+      "actual_observed": "AUTHORIZED",
+      "status": "fail"
+    },
+    {
+      "case": "PRE-C4b",
+      "description": "legacy receipt (schema_version=1.0, no hash_schema_version)",
+      "independent_expected": "explicitly refused / re-authorization required",
+      "actual_observed": "AUTHORIZED",
+      "status": "fail"
+    },
+    {
+      "case": "PRE-C4c",
+      "description": "expired authorization",
+      "independent_expected": "refused",
+      "actual_observed": "authorization expired",
+      "status": "not_applicable"
+    },
+    {
+      "case": "PRE-C4d",
+      "description": "caps: used 1/1 items; used 90+20 bytes / 100",
+      "independent_expected": "refused",
+      "actual_observed": "item cap reached",
+      "status": "not_applicable"
+    }
+  ],
+  "summary": {
+    "fail": 5,
+    "pass": 0,
+    "not_applicable": 2
+  }
+}

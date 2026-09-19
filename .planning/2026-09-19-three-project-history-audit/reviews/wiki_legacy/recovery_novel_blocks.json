@@ -1,0 +1,690 @@
+[
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 1,
+    "line_end": 1,
+    "original_text": "# Task Plan: 上市公司知识库系统改进",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 9,
+    "line_end": 9,
+    "original_text": "Phase 9 (Data Quality) in progress. Scheduler running (PDF extraction 501/4333).",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 94,
+    "line_end": 94,
+    "original_text": "- [ ] 提交 Phase 9 变更到 git",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 132,
+    "line_end": 132,
+    "original_text": "- **Status:** in_progress",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 149,
+    "line_end": 149,
+    "original_text": "- [ ] 异常退出审计：worker 进程异常退出后，下一次 `worker-status` 必须能看到 stale PID、last heartbeat age、launcher event、最后一条 worker log 摘要，避免再次出现“停了但没有证据”的状态。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 150,
+    "line_end": 150,
+    "original_text": "- [ ] 自愈/看门狗：增加安全 healthcheck 路径，只在 `desired_state=enabled` 且 runtime stale/进程不存在时清 stale lease 并重启；`desired_state=paused` 或用户手动 stop 后不得自动重启。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 151,
+    "line_end": 151,
+    "original_text": "- [ ] Export 节流：把 “每处理 1 个文档就全量 export” 改为 dirty counter / dirty interval 策略，例如累计 N 个文档或 M 分钟再 export；保留 scan due、定时 export、优雅停止前 final export。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 152,
+    "line_end": 152,
+    "original_text": "- [ ] 批量策略：在 export 节流落地并验证后，再小步提高 `normalize_batch_size` 到 3-5；`llm_summary_batch_size` 先保守保持 1，待 JSON 修复和 source-only prompt 稳定后再评估。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 153,
+    "line_end": 153,
+    "original_text": "- [ ] LLM 失败降噪：为 JSON 非法增加一次 source-only 安全修复重试；对 forbidden investment conclusion 保持拒绝，但达到阈值后进入冷却或人工审查队列，不在短时间内反复消耗 worker cycle。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 154,
+    "line_end": 154,
+    "original_text": "- [ ] Scan 优化：先记录 scan duration、files_seen、files_reused、files_hashed，再评估 root mtime 快照/manifest short-circuit，避免未变化根目录重复全量 walk。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 155,
+    "line_end": 155,
+    "original_text": "- [ ] Blocked 文档清理：建立 67 个 blocked/incomplete/quarantined 文档的 source_id/locator 专项检查清单，按 source identity、manifest、空文件 quarantine 分类修复，不把它们混同为 worker hang。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 156,
+    "line_end": 156,
+    "original_text": "- [ ] UI 审查：控制面板必须同时显示 live/stale、last heartbeat age、current stage、next wake、pending/blocked/failed 分解；所有状态文案必须来自 `worker-status` 的当前语义，不能直接信 stale runtime。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 162,
+    "line_end": 162,
+    "original_text": "- [ ] Checkpoint D: 自愈验证：enabled + stale 时只启动一个 worker；paused/manual stop 时不重启；重复运行不会产生双 worker。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 163,
+    "line_end": 163,
+    "original_text": "- [ ] Checkpoint E: Export 节流验证：单文档成功或 document-scoped failure 不再每轮触发全量 export；达到 dirty threshold 或时间阈值才 export。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 164,
+    "line_end": 164,
+    "original_text": "- [ ] Checkpoint F: 小流量试跑：在真实 catalog 上运行 30-60 分钟，记录 docs/hour、export 次数、cycle median/p90、LLM failures/hour、scan duration。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 165,
+    "line_end": 165,
+    "original_text": "- [ ] Checkpoint G: 放量前审查：确认没有 raw 文件破坏性改写、没有 StockWiki 写入、没有投资结论落盘、所有 source/export 仍可追溯到 source_id + locator。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 171,
+    "line_end": 171,
+    "original_text": "- [ ] Unit test: export throttle 下 productive single-doc cycle 不立即全量 export，dirty threshold 到达后才 export。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 172,
+    "line_end": 172,
+    "original_text": "- [x] Unit test: document-scoped LLM failure 继续处理下一文档，但不会导致全局 retry block。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 173,
+    "line_end": 173,
+    "original_text": "- [x] Unit test: provider/global LLM failure 进入全局 backoff，不 quarantine 文档。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 174,
+    "line_end": 174,
+    "original_text": "- [ ] Unit test: JSON repair retry 只允许 source-only schema 修复，修复后仍执行 forbidden investment conclusion guard。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 175,
+    "line_end": 175,
+    "original_text": "- [x] Smoke test: `worker-status`、PowerShell `-Action status`、控制面板 live progress 输出一致。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 176,
+    "line_end": 176,
+    "original_text": "- [ ] Pilot test: 30-60 分钟真实运行后，吞吐统计写入 progress，若 p90 cycle 仍接近 export 时间，继续调 export/index 增量化。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 178,
+    "line_end": 178,
+    "original_text": "#### 10.5 审查门槛",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 179,
+    "line_end": 179,
+    "original_text": "- [ ] 所有 Source Catalog 改动必须保留上游职责边界：SourceRecord、manifest、EvidenceSpan、extraction quality、source-oriented export；不得新增研究型 writer。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 180,
+    "line_end": 180,
+    "original_text": "- [ ] 所有 worker 生命周期改动必须有可重复测试，不能只靠手工观察控制台。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 181,
+    "line_end": 181,
+    "original_text": "- [ ] 所有吞吐优化先在测试 catalog 验证，再在真实 catalog 小流量试跑。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 182,
+    "line_end": 182,
+    "original_text": "- [ ] 每次真实启动 worker 前先运行 status smoke，确认没有已有 live worker，避免双进程。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-before-cw-merge-20260725-115819.md",
+    "relative": ".recover-task_plan-before-cw-merge-20260725-115819.md",
+    "line_start": 183,
+    "line_end": 183,
+    "original_text": "- [ ] 每次修复后至少运行 targeted contract tests；放量前再运行 source_catalog 相关测试集合。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 1,
+    "line_end": 1,
+    "original_text": "# Task Plan: 上市公司知识库系统改进",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 9,
+    "line_end": 9,
+    "original_text": "Phase 9 (Data Quality) in progress. Scheduler running (PDF extraction 501/4333).",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 94,
+    "line_end": 94,
+    "original_text": "- [ ] 提交 Phase 9 变更到 git",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 132,
+    "line_end": 132,
+    "original_text": "- **Status:** in_progress",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 149,
+    "line_end": 149,
+    "original_text": "- [ ] 异常退出审计：worker 进程异常退出后，下一次 `worker-status` 必须能看到 stale PID、last heartbeat age、launcher event、最后一条 worker log 摘要，避免再次出现“停了但没有证据”的状态。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 150,
+    "line_end": 150,
+    "original_text": "- [ ] 自愈/看门狗：增加安全 healthcheck 路径，只在 `desired_state=enabled` 且 runtime stale/进程不存在时清 stale lease 并重启；`desired_state=paused` 或用户手动 stop 后不得自动重启。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 151,
+    "line_end": 151,
+    "original_text": "- [ ] Export 节流：把 “每处理 1 个文档就全量 export” 改为 dirty counter / dirty interval 策略，例如累计 N 个文档或 M 分钟再 export；保留 scan due、定时 export、优雅停止前 final export。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 152,
+    "line_end": 152,
+    "original_text": "- [ ] 批量策略：在 export 节流落地并验证后，再小步提高 `normalize_batch_size` 到 3-5；`llm_summary_batch_size` 先保守保持 1，待 JSON 修复和 source-only prompt 稳定后再评估。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 153,
+    "line_end": 153,
+    "original_text": "- [ ] LLM 失败降噪：为 JSON 非法增加一次 source-only 安全修复重试；对 forbidden investment conclusion 保持拒绝，但达到阈值后进入冷却或人工审查队列，不在短时间内反复消耗 worker cycle。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 154,
+    "line_end": 154,
+    "original_text": "- [ ] Scan 优化：先记录 scan duration、files_seen、files_reused、files_hashed，再评估 root mtime 快照/manifest short-circuit，避免未变化根目录重复全量 walk。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 155,
+    "line_end": 155,
+    "original_text": "- [ ] Blocked 文档清理：建立 67 个 blocked/incomplete/quarantined 文档的 source_id/locator 专项检查清单，按 source identity、manifest、空文件 quarantine 分类修复，不把它们混同为 worker hang。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 156,
+    "line_end": 156,
+    "original_text": "- [ ] UI 审查：控制面板必须同时显示 live/stale、last heartbeat age、current stage、next wake、pending/blocked/failed 分解；所有状态文案必须来自 `worker-status` 的当前语义，不能直接信 stale runtime。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 162,
+    "line_end": 162,
+    "original_text": "- [ ] Checkpoint D: 自愈验证：enabled + stale 时只启动一个 worker；paused/manual stop 时不重启；重复运行不会产生双 worker。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 163,
+    "line_end": 163,
+    "original_text": "- [ ] Checkpoint E: Export 节流验证：单文档成功或 document-scoped failure 不再每轮触发全量 export；达到 dirty threshold 或时间阈值才 export。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 164,
+    "line_end": 164,
+    "original_text": "- [ ] Checkpoint F: 小流量试跑：在真实 catalog 上运行 30-60 分钟，记录 docs/hour、export 次数、cycle median/p90、LLM failures/hour、scan duration。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 165,
+    "line_end": 165,
+    "original_text": "- [ ] Checkpoint G: 放量前审查：确认没有 raw 文件破坏性改写、没有 StockWiki 写入、没有投资结论落盘、所有 source/export 仍可追溯到 source_id + locator。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 171,
+    "line_end": 171,
+    "original_text": "- [ ] Unit test: export throttle 下 productive single-doc cycle 不立即全量 export，dirty threshold 到达后才 export。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 172,
+    "line_end": 172,
+    "original_text": "- [x] Unit test: document-scoped LLM failure 继续处理下一文档，但不会导致全局 retry block。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 173,
+    "line_end": 173,
+    "original_text": "- [x] Unit test: provider/global LLM failure 进入全局 backoff，不 quarantine 文档。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 174,
+    "line_end": 174,
+    "original_text": "- [ ] Unit test: JSON repair retry 只允许 source-only schema 修复，修复后仍执行 forbidden investment conclusion guard。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 175,
+    "line_end": 175,
+    "original_text": "- [x] Smoke test: `worker-status`、PowerShell `-Action status`、控制面板 live progress 输出一致。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 176,
+    "line_end": 176,
+    "original_text": "- [ ] Pilot test: 30-60 分钟真实运行后，吞吐统计写入 progress，若 p90 cycle 仍接近 export 时间，继续调 export/index 增量化。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 178,
+    "line_end": 178,
+    "original_text": "#### 10.5 审查门槛",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 179,
+    "line_end": 179,
+    "original_text": "- [ ] 所有 Source Catalog 改动必须保留上游职责边界：SourceRecord、manifest、EvidenceSpan、extraction quality、source-oriented export；不得新增研究型 writer。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 180,
+    "line_end": 180,
+    "original_text": "- [ ] 所有 worker 生命周期改动必须有可重复测试，不能只靠手工观察控制台。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 181,
+    "line_end": 181,
+    "original_text": "- [ ] 所有吞吐优化先在测试 catalog 验证，再在真实 catalog 小流量试跑。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 182,
+    "line_end": 182,
+    "original_text": "- [ ] 每次真实启动 worker 前先运行 status smoke，确认没有已有 live worker，避免双进程。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.recover-task_plan-current-20260725-114504.md",
+    "relative": ".recover-task_plan-current-20260725-114504.md",
+    "line_start": 183,
+    "line_end": 183,
+    "original_text": "- [ ] 每次修复后至少运行 targeted contract tests；放量前再运行 source_catalog 相关测试集合。",
+    "file_sha256": "bc73a980ac565a603bd7d2d8f95aafd54e4db5c34c9551b0c7219bafee9bbf76"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 1,
+    "line_end": 1,
+    "original_text": "# task_plan.md CW Recovery Draft (2026-07-25)",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 3,
+    "line_end": 3,
+    "original_text": "> **2026-08-09 状态覆盖：`archived_reference`。** 这是恢复被覆盖文本的证据草稿，不是活动路线图。已恢复且仍有效的历史事实保留；文中 19 个未勾恢复/旧范围条目不进入当前 backlog，当前六目标统一由 FCAP r2 重新验证。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 46,
+    "line_end": 46,
+    "original_text": "## CW-1（版本化 Source Contract）— 状态：pending",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 50,
+    "line_end": 50,
+    "original_text": "- [ ] 发布 `source_manifest` schema：稳定 `source_id`、entity ID、original path、SHA-256、source type、published date、retrieved_at、collector/version、mime/size 和 immutable 状态。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 51,
+    "line_end": 51,
+    "original_text": "- [ ] 发布 `evidence_span` schema：`source_id`、稳定 locator、页/段/表格坐标、原文/结构化值、parser/version、output hash、parse status 和 quality flags。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 52,
+    "line_end": 52,
+    "original_text": "- [ ] 提供只读、可增量、可重放的 export CLI；相同输入产生相同 ID/hash，删除或改写 raw 必须失败。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 53,
+    "line_end": 53,
+    "original_text": "- [ ] 明确 schema version、兼容窗口、弃用通知和 consumer contract tests。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 57,
+    "line_end": 57,
+    "original_text": "- [ ] 北方华创、中微公司、中芯国际真实资料通过 manifest/evidence-span 导出，覆盖公告、财报、新闻、表格四类输入。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 58,
+    "line_end": 58,
+    "original_text": "- [ ] export 不写 StockWiki，不包含投资评级/估值/accepted investment conclusion。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 59,
+    "line_end": 59,
+    "original_text": "- [ ] clean clone、重复执行、崩溃恢复与增量更新结果可复验。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 61,
+    "line_end": 61,
+    "original_text": "## CW-2（Canonical Ingest 与解析质量收敛）— 状态：pending",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 63,
+    "line_end": 63,
+    "original_text": "- [ ] legacy ingest 全部接入唯一 `IngestService`；source identity、raw write 和 parser result 分层。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 64,
+    "line_end": 64,
+    "original_text": "- [ ] 把 canonical ledger 的状态限定为 source/extraction quality，建立 orphan span、locator drift、hash mismatch、parser regression 门禁。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 65,
+    "line_end": 65,
+    "original_text": "- [ ] 将全文检索和资料型问答改为消费 canonical manifest/span；回答必须返回 source ID 与 locator。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 66,
+    "line_end": 66,
+    "original_text": "- [ ] production scheduler 只调度 collect→normalize→parse→index→export，不调度估值或研究报告。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 68,
+    "line_end": 68,
+    "original_text": "## CW-3（Legacy 下游能力退役）— 状态：pending",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 70,
+    "line_end": 70,
+    "original_text": "- [ ] 建立 valuation、综合评估、研究 Wiki direct writer 和重复 scheduler 的完整调用清单。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 71,
+    "line_end": 71,
+    "original_text": "- [ ] 先禁用新入口并提供明确迁移提示，再验证 production caller=0；保留只读历史内容，不覆盖或伪造迁移结果。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 72,
+    "line_end": 72,
+    "original_text": "- [ ] 将 single writer 限定为 source-oriented projection；任何研究结论写入请求都必须拒绝并指向 StockWiki。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 73,
+    "line_end": 73,
+    "original_text": "- [ ] `architecture_gate.py` 新增职责边界检查：禁止生产入口导入估值链、投资报告 writer 或跨仓写入代码。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 75,
+    "line_end": 75,
+    "original_text": "## CW-4（与 StockWiki 联合验收）— 状态：pending",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 77,
+    "line_end": 77,
+    "original_text": "- [ ] 提供固定三家公司、四类来源的不可变 contract fixtures 与真实工作区 receipt。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 78,
+    "line_end": 78,
+    "original_text": "- [ ] StockWiki 能只凭 manifest/span 构造自己的 evidence candidates，并独立执行 review/state/report；company-wiki 不参与裁决。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 79,
+    "line_end": 79,
+    "original_text": "- [ ] source hash 或 locator 变化能使 StockWiki 下游标记 stale；StockWiki 的 review/报告变化不得反向改写上游 raw。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 80,
+    "line_end": 80,
+    "original_text": "- [ ] company-wiki full pytest、architecture gate、source-contract tests 全绿，且 legacy 研究/估值 production caller=0。",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 81,
+    "line_end": 81,
+    "original_text": "## 2026-07-13 INV-MOD-1 — 状态：archived_candidate（停止生产化，职责已移交 StockWiki）",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 82,
+    "line_end": 82,
+    "original_text": "## Phase 15（来源/解析账本、Delivery Outbox 与唯一来源投影器）— 状态：pending（范围被 BOUNDARY-0 收窄）",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 83,
+    "line_end": 83,
+    "original_text": "## Phase 16（问题驱动、研究认识论与三类实体传播）— 状态：superseded_by_BOUNDARY-0（不再实施投资研究语义）",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 279,
+    "line_end": 279,
+    "original_text": "**状态：** `pending`（2026-07-24 仅完成计划；未授权本轮实施。Phase 0–3 可离线实施，Phase 4 及以后必须等待巨潮网络预检通过。）",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  },
+  {
+    "source_file": "C:\\Users\\郑曾波\\Projects\\company-wiki\\task_plan_cw_recovery_20260725.md",
+    "relative": "task_plan_cw_recovery_20260725.md",
+    "line_start": 822,
+    "line_end": 822,
+    "original_text": "**状态：** `in_progress`（2026-07-24 用户已授权实施 E2E 恢复；本轮只激活 CW-2.27A/B。目标仓解释为 company-wiki 当前调用的 `StockInfoDLSimple\\v2-clean-rewrite`；Phase 2+ 仍 pending，Phase 4+ 仍受巨潮网络门禁阻塞。）",
+    "file_sha256": "962a8d0a78b1fafdb2b6a529a21a03da5daf49c7725433bf8cb8126adafe168d"
+  }
+]

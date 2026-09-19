@@ -1,0 +1,201 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/test_acceptance_plan.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/test_acceptance_plan.md
+@@ -82,10 +82,12 @@
+ - `GL-S01`、`GL-S02`、`GL-S03`、`GL-S04`、`GL-S05`、`GL-S06`、`GL-F01`、
+   `GL-F02`、`GL-F03`、`GL-F04`、`GL-F05`、`GL-F06`、`GL-F07`、`GL-F08`、
+   `GL-F09`、`GL-F10`、`GL-F11`、`GL-F12`，逐项定义见
+   `ledger_validator_contract.md`/`gate_ledger_validator_vectors.v4.json`；
+-- DAG/vectors/test-registry/operation-catalog 各自专用 instance schema 的shape正/负例；canonical
+-  JSON、seq/prev/expected-head、review payload+detached confirmation actual hash、reviewer exact
++- DAG/vectors/test-registry/operation-catalog 各自专用 instance schema 的shape正/负例；OS pre-entry
++  闭包验证后冻结Python `-I -S -B`启动，完整CLI显式提供schema registry/release/fixture/scenario/
++  vector schema/head anchor/clock；canonical JSON、seq/prev/protected head anchor、review payload+
++  detached confirmation actual hash、reviewer exact
+   role/cardinality/disjoint、branch/join、production state、OP catalog/dynamic contract/auth/evidence/generation；
+ - mutation/property 序列≥200，存活 mutant=0；全 tmp、网络0、生产 DB/registry/config/source调用0；
+ - `TESTID-S01`：`test_id_registry.v4.json` 中每个 concrete ID 定义恰好一次，逐ID具有
+   `introduced_at/variant_at/expected_red_at/required_green_at/revalidate_at/condition`；所有活动章节
+@@ -93,11 +95,11 @@
+   笛卡尔推导、template未按 frozen parser route manifest 展开均失败。
+ - `G10-PROMPT-S01`：六份G10C/G10R prompt的输入闭包、exact role/head/hash、禁止未来依赖、
+   唯一successor和review JSON+Markdown+confirmation输出逐份通过；G10C不读取G06/G07/G08/A/B，
+   G10R exact join必须含still-valid G09P/G09且不读取12A/12B，任何缺前驱、共享模板或伪循环失败。
+-- 冻结计划 revision 前先只读运行 `plan_consistency_check.py`；它必须验证10个schema的meta/shape、
+-  4组instance、固定DAG无环/无悬空、reviewer exact role/cardinality/disjoint、每个固定OP唯一catalog
+-  匹配、283个concrete test ID及活动引用闭包、18组vector及错误优先级。该预检PASS不豁免
++- 冻结计划 revision 前先只读运行 `plan_consistency_check.py`；它必须验证29个schema的meta/shape、
++  4组instance、115个固定DAG节点无环/无悬空、reviewer exact role/cardinality/disjoint、每个固定OP
++  唯一catalog匹配、315个concrete test ID及活动引用闭包、18组vector及错误优先级。该预检PASS不豁免
+   T00L的真实validator/property/mutation实现，也不替代独立agent审查。
+ 
+ ## 3. 确定性数据夹具
+ 
+@@ -460,17 +462,17 @@
+ | PX-S05 | operation/write contract基础层 | OP须唯一匹配静态catalog并绑定sealed动态contract；未列operation/PK/column/file/DDL写入被拒绝并触发rollback+pause |
+ | PX-S06 | source guard | 写操作由OS/sandbox permission拒绝，source sentinel仍不变 |
+ | PX-S07 | network deny | LLM off时主/备provider均无法egress |
+ | PX-S08 | circuit/reset/resume/arm | open circuit时arm失败；成功arm不启动/清counter/写registry；三动作正交 |
+-| PX-S09 | registry条件语义 | 真实API在提交点create-if-absent/conditional-delete；不能只测facade或mutex |
++| PX-S09 | registry条件语义 | 真实API在提交点create-if-absent；rollback只做absent/exact-owned/conflict三分支verify-preserve且从不删除；不能只测facade或mutex |
+ | PX-S10 | evidence redaction | repo内无用户名、完整命令行、外部path/portfolio名 |
+ | PX-S11 | safe mutant/ENOSPC | throwaway worktree/fault facade后candidate hash/磁盘状态恢复 |
+ | PX-S12 | exact DB mutation | allowed table内wrong-PK、无WHERE、错误列UPDATE在commit前失败 |
+ | PX-S13 | net-zero/file mutation | DELETE+INSERT净零、历史文件覆盖、reparse escape均失败；actual touched可重算 |
+ | PX-S14 | verifier/start-chain tamper | verifier、VBS、PowerShell、lazy module任一篡改均fail closed |
+ | PX-S15 | check-load TOCTOU | junction/reparse替换、check后换module、restart漂移均不能执行candidate |
+ | PX-S16 | registry create race | disposable key中两真实进程barrier竞争，只一个成功，loser不覆盖 |
+-| PX-S17 | registry rollback race | 第三方替换、CAS异常、取消/ARM或lease过期只经OP12B-RB；exact值删除，第三方值保留并PAUSED/REGISTRY_CONFLICT |
++| PX-S17 | registry rollback race | 第三方删除/替换、CAS异常、取消/ARM或lease过期只经OP12B-RB；absent→PAUSED/OFF，exact-owned保留→PAUSED/ON，冲突保留→PAUSED/REGISTRY_CONFLICT，三者均零删除 |
+ | PX-S18 | 12B authorization arm binding | 只接受G12B-PRE后用户批准的exact auth hash/release/value；任一drift零LLM启动 |
+ | PX-S19 | Canary B legal edge | 缺G07E/G11B-A3/条件migration/一次性auth/one-shot任一项时BP/BF命令拒绝 |
+ 
+ 写入、prelogin、reset 与 activation 稳定 ID：
+@@ -502,14 +504,14 @@
+ | RST-S06 | reset后20s进程仍0 |
+ | RST-S07 | history/audit完整，active budget精确清理，generation只+1 |
+ | RST-S08 | reset return只接受失败节点合法祖先中的exact D并失效全部下游；G/OP/占位符或G05Rnn失败时return/resume均不eligible |
+ | RST-S09 | reset后另行resume仍需其独立生产D/OP/G授权 |
+-| ACT-S01 | D12C未先冻结action/intent或缺G12B-POST/user auth/G12C-PRE或有P0/P1时OP12C拒绝；用户未批准冻结intent时保持SAFE_PAUSED_WAITING_USER而非BLOCKED |
++| ACT-S01 | 缺`D12C-RT→runtime receipt→G12C-RT→D12C→final receipt→G12C-PRE`任一环、两份批准不独立或有P0/P1时OP12C拒绝；任一用户批准未产生时保持SAFE_PAUSED_WAITING_USER而非BLOCKED |
+ | ACT-S02 | release/auth/Run/generation drift时拒绝 |
+ | ACT-S03 | final token replay/expiry拒绝 |
+ | ACT-S04 | OP12C token/control跨资源写有journal intent/finalize/crash reconcile；完成后20s process=0，DB/config/source/registry/egress零变化 |
+ | ACT-S05 | OP12C不得调用reset/resume/arm或启动当前session |
+-| ACT-S06 | OP12C/G12C失败只经OP12C-RB→G12C-RB；owned Run未漂移回LOGIN_VALIDATED_PAUSED/ON，第三方Run冲突不动registry且为PAUSED/REGISTRY_CONFLICT；Gate继承OP终态且不写状态 |
++| ACT-S06 | OP12C/G12C失败只经OP12C-RB→G12C-RB；Run absent→PAUSED/OFF，owned Run保留且只回退control→LOGIN_VALIDATED_PAUSED/ON，第三方Run保留→PAUSED/REGISTRY_CONFLICT；自动rollback零删除，Gate继承OP终态且不写状态 |
+ | ACT-S07 | 下一正常login重验G12C outcome/circuit/release/auth/config/routing/data/Run/SID/Job/single-instance；失败零child并PAUSED/ON |
+ | ACT-S08 | G12C后的第二及每个后续cycle在DB/file/network前各自密封新runtime operation contract，不能复用首cycle或前一cycle合同 |
+ | ACT-S09 | 任一cycle的authorization expiry/revocation或持久daily/monthly document/character/token/cost cap不足时，egress/DB/file前拒绝、circuit open并persistent pause |
+ | ACT-S10 | runtime contract的journal head、document/source tuple、DB typed PK/column或exact file任一错误时precommit失败；registry/config/source零写且不自动扩大合同 |
+@@ -649,9 +651,9 @@
+ ### G12B-PRE → D/ARM → D/RB → OP/ARM/G → D/CAS/G → D/LOGIN/G12B-POST：dormant 登录验证
+ 
+ - 用户单独批准；
+ - G12B-PRE审外部trust anchor、不可写完整release、12B exact profile/auth/value与真实registry
+-  conditional create/delete；
++  atomic create-if-absent与三分支verify-preserve rollback；
+ - D12B-ARM后、任何ARM state/token写之前，D12B-RB两名满足DAG rollback/startup角色与
+   disjoint规则的reviewer先seal补偿合同；未PASS时OP12B-ARM不可执行。OP12B-ARM先向protected
+   journal写expected registry absence/desired bytes hash/ownership nonce/generation/补偿intent，再
+   写arm state并finalize，之后G12B-ARM；
+@@ -660,37 +662,84 @@
+   CAS后必须ARMED_ON_PRELOGIN/ON，无LOGIN_COMMITTED时任何登录child/egress/DB写=0；
+ - D12B-LOGIN两名reviewer后，用户再次批准exact注销且确认已保存工作；
+ - OP12B-LOGIN后trust/release/auth hash、单实例、首周期、pause、无storm/未授权egress；
+ - 从OP12B-ARM起的ARM/CAS/post-review/login失败、crash partial、取消或lease到期只允许
+-  OP12B-RB→G12B-RB；按journal+ownership nonce reconcile，exact current bytes才删除；CAS遇到
+-  任意同名既有值（即使同bytes）或第三方替换都不接管，并进入PAUSED/REGISTRY_CONFLICT。
++  OP12B-RB→G12B-RB；按journal+ownership nonce reconcile，但自动补偿绝不删除Run：absent→
++  PAUSED/OFF，exact-owned保留→PAUSED/ON，第三方值保留→PAUSED/REGISTRY_CONFLICT。CAS遇到
++  任意同名既有值（即使同bytes）都不接管。
+   Gate/launcher不写registry，G12B-RB继承OP exact终态；
+ - START-S01、START-S02、START-S03、START-S04、START-S05、START-S06、START-S07、
+   START-S08、START-S09、START-S10全部通过；12B profile等于G12A profile；
+ - G12B-POST唯一成功状态为LOGIN_VALIDATED_PAUSED/ON、process0，不得宣称RECOVERED。
+ 
+-### D12C → 用户授权冻结intent → G12C-PRE → OP12C → G12C：最终启用下次登录
+-
+-- 用户看到G12B-POST摘要后先由D12C两名满足DAG规则的reviewer seal final/rollback contract与
+-  唯一proposed action/intent hash；随后用户单独批准`G12C_FINAL_AUTOSTART_ACTIVATION`并绑定
+-  exact intent hash/action ID，未批准为安全等待。G12C-PRE恰好三名按DAG与D12C disjoint、不同角色reviewer核对exact
+-  Run/release/auth/generation/circuit/ledger head并唯一开放OP12C；
+-- OP12C只CAS为ENABLED_IDLE/ON，generation+1、process0；不得启动当前session或调用reset/
+-  resume/arm，不写registry/config/DB/source，不改LLM profile；token/control写前journal intent、
+-  写后finalize，crash只由OP12C-RB reconcile；
+-- ACT-S01、ACT-S02、ACT-S03、ACT-S04、ACT-S05、ACT-S06、ACT-S07、ACT-S08、ACT-S09、
+-  ACT-S10全部通过；
++### D12C-RT → runtime批准 → G12C-RT → D12C → final批准 → G12C-PRE → OP12C → G12C
++
++- 用户看到G12B-POST摘要后先由D12C-RT两名满足DAG规则的reviewer冻结无候选具体副作用的
++  runtime template/auth proposal/scope/caps/TTL/revocation/subject；用户生成purpose-specific runtime
++  receipt，G12C-RT恰好三名reviewer核验receipt/fresh revalidation/无副作用后唯一开放D12C；
++- D12C两名reviewer再冻结exact final intent、OP12C contract template、OP12C-RB compensation、
++  final auth proposal/subject并绑定G12C-RT evidence/runtime receipt；用户生成另一份final receipt，
++  绑定D12C evidence/exact intent/contract/final auth/prior runtime chain。两份批准ID/hash/purpose/subject
++  必须不同且不可交换；任一未批准为安全等待。G12C-PRE恰好三名按DAG与D12C disjoint、不同角色
++  reviewer fresh-revalidate两份批准/auth、G12C-RT evidence、exact Run/release/generation/circuit/
++  ledger head并唯一开放OP12C；
++- OP12C actual contract同时绑定双授权链，只CAS为ENABLED_IDLE/ON，generation+1、process0；不得
++  启动当前session或调用reset/resume/arm，不写registry/config/DB/source，不改LLM profile；token/
++  control写前journal intent，完成后才有terminal record/head-after/evidence/execution receipt，crash只由
++  OP12C-RB reconcile；D节点不含这些事后actual；
++- ACT-S01至ACT-S15及START-S11全部通过；
+ - G12C由恰好三名满足DAG exact角色/基数/disjoint规则的reviewer全PASS后，物理state仍为ENABLED_IDLE/ON，只记
+   `lifecycle_outcome=RECOVERED`。失败走OP12C-RB→G12C-RB并由两名按DAG与OP执行者disjoint的
+-  reviewer核对exact OP终态；第三方Run冲突时必须PAUSED/REGISTRY_CONFLICT。G12C后每个cycle
+-  必须密封runtime contract、重验auth/cap/journal/write/egress；若需当前
++  reviewer核对exact OP终态；Run absent时为PAUSED/OFF，owned Run必须保留并回
++  LOGIN_VALIDATED_PAUSED/ON，第三方Run冲突时必须PAUSED/REGISTRY_CONFLICT；自动rollback零删除。
++  G12C后每个cycle必须密封runtime contract、重验runtime receipt/G12C-RT evidence/fresh
++  revalidation/auth/cap/journal/write/egress；若需当前
+   session运行，另建新D/OP/G，不属于本计划的隐含步骤。
++
++### v4 新增的不可省略稳定测试
++
++| ID | 必须验证的唯一职责 | 首次/复验 Gate |
++|---|---|---|
++| BOOT-S01 | OS pre-entry verifier 先验证 interpreter/DLL/stdlib/vendor/ACL/identity 闭包，随后仅以 `-I -S -B` 启动；任一 byte/path/ACL 漂移必须在 Python import 前拒绝 | G00L；D00L、G10R |
++| SCH-S01 | schema registry 与目录内全部 `$id`/path/hash/size 精确闭合，禁止 ambient/network retrieval、未知或重复 `$id` | G00L；D00L、G10R |
++| FIX-S01 | 每个 base scenario 先为 OK；每个 mutation 的 member/pointer/pre-type 与完整重算闭包都可物化，并只产生声明的唯一 primary error | G00L；D00L、G10R |
++| ARV-S01 | authorization proposal 的 purpose/subject、protected revocation anchor、freshness 和 later receipt 单向绑定全部一致；offline/stale/revoked/mismatch 零副作用 | G09；G12C-RT、G12C-PRE、G12C |
++| JRN-S01 | pre-op 只密封 intent/commitments，terminal record 只在效果已知后保存 actuals；中断可确定性 reconcile | G11J；G10R、G12C |
++| JRN-S02 | protected head anchor 的 generation/hash/CAS 与 record chain 一致；调用者不得提供裸 `--expected-head` 绕过 anchor | G11J；G10R、G12C |
++| JRN-S03 | post-op execution receipt 在 terminal record/head durable 后生成，绑定真实效果而不形成未来哈希环 | G11J；G10R、G12C |
++| BUD-S01 | 四个 provider 日/月请求/成本计数以单一 CAS bundle 在 egress 前原子预留，少一项或拆分提交即拒绝 | G09；G12A、G12B-POST、G12C |
++| BUD-S02 | settlement 满足 consumed+released+retained 守恒、幂等；outcome unknown 必须最大保留且打开 circuit | G09；G12A、G12B-POST、G12C |
++| PROC-S01 | authorization、intent、lease、contract、journal 与 execution receipt 的 process generation 一致；重启/漂移使旧 capability 失效 | G09；G12A、G12B-POST、G12C |
++| ACT-S11 | D12C-RT 只能冻结无候选具体副作用的 runtime template/authorization proposal，不能启动、写 Run、写 DB/source 或最终激活 | G09；G12C-RT、G12C-PRE、G12C |
++| ACT-S12 | runtime-template approval 与 final-activation approval 的 purpose、approval/receipt/evidence ID 与 hash 全部不同且顺序固定 | G09；G12C-RT、G12C-PRE、G12C |
++| ACT-S13 | receipt reuse、purpose swap、artifact alias、hash/subject mismatch、reviewer reuse 的负例全部在副作用前以 GLV-E044/GLV-E020 失败 | G09；G12C-RT、G12C-PRE、G12C |
++| ACT-S14 | 任一 approval/auth/revalidation 过期、撤销、offline 或超过 freshness 窗口时保持 `LOGIN_VALIDATED_PAUSED/ON`、process0、Run 不变 | G09；G12C-RT、G12C-PRE、G12C |
++| ACT-S15 | OP12C contract、evidence、journal terminal 与 execution receipt 同时绑定两条授权链；pre-op commitment 与 post-op actual 不混写 | G09；G12C-RT、G12C-PRE、G12C |
++| START-S11 | 新登录启动必须继承 G12C 的 dual-approval provenance，并逐 cycle 重验 runtime-template receipt/G12C-RT evidence；不能把最终批准当长期 cycle 授权 | G09；G12C |
++
++既有基线测试按“持续为绿”登记，`expected_red_at=[]` 是明确语义，不是遗漏。含生产 catalog 或外部 golden-corpus 绝对路径的 case 只能在 G11A 的受控只读窗口执行，不能进入 T00L hermetic bootstrap：
++
++| 稳定 ID | 现有测试函数 |
++|---|---|
++| ZR1005-C1 | `test_zr1005_artifact_backfill.py::test_c1_dry_run_real_catalog` |
++| ZR1005-C2 | `test_zr1005_artifact_backfill.py::test_c2_apply_shadow_bindings` |
++| ZR1005-C3 | `test_zr1005_artifact_backfill.py::test_c3_idempotent_reapply` |
++| ZR1005-C4 | `test_zr1005_artifact_backfill.py::test_c4_only_bindable_get_bindings` |
++| ZR1006-C1 | `test_zr1006_broker_cohort.py::test_c1_seven_zijin_brokers_active_zero_artifacts` |
++| ZR1006-C2A | `test_zr1006_broker_cohort.py::test_c2_ramp_1_to_3_to_7` |
++| ZR1006-C2B | `test_zr1006_broker_cohort.py::test_c2_completed_demand_is_terminal` |
++| ZR1006-C3 | `test_zr1006_broker_cohort.py::test_c3_only_bindable_broker_writes_artifact` |
++| ZR1006-C4A | `test_zr1006_broker_cohort.py::test_c4_llm_budget_pauses_then_reset_restores` |
++| ZR1006-C4B | `test_zr1006_broker_cohort.py::test_c4_deadline_urgency_raises_broker_priority` |
++| ZR1006-C4C | `test_zr1006_broker_cohort.py::test_c4_aging_prevents_broker_starvation` |
++| ZR1006-C5A | `test_zr1006_broker_cohort.py::test_c5_failed_demand_does_not_touch_old_artifacts` |
++| ZR1006-C5B | `test_zr1006_broker_cohort.py::test_c5_retried_demand_writes_only_its_own_artifact` |
+ 
+ ## 13. 每个 WP 的 Red→Design→Implementation→Gate 映射
+ 
+ | WP | Test-only commit 先红 | Design | Implementation后转绿 | Exit |
+ |---|---|---|---|---|
+-| 00L | T00L: GL-S01、GL-S02、GL-S03、GL-S04、GL-S05、GL-S06、GL-F01、GL-F02、GL-F03、GL-F04、GL-F05、GL-F06、GL-F07、GL-F08、GL-F09、GL-F10、GL-F11、GL-F12、TESTID-S01、G10-PROMPT-S01 | D00L | I00L deterministic validator | G00L（2人） |
++| 00L | T00L: GL-S01、GL-S02、GL-S03、GL-S04、GL-S05、GL-S06、GL-F01、GL-F02、GL-F03、GL-F04、GL-F05、GL-F06、GL-F07、GL-F08、GL-F09、GL-F10、GL-F11、GL-F12、TESTID-S01、G10-PROMPT-S01、BOOT-S01、SCH-S01、FIX-S01 | D00L | I00L deterministic validator | G00L（2人） |
+ | 01 | T01: `test_id_registry.v4.json` 中 `introduced_at=T01` 且condition成立的全部 concrete Q IDs | D01 | 无I01；旧产品红灯仍在 | G01 |
+ | 02A | T02A: Q-S02、Q-S03、Q-S11、Q-S12、Q-S14、Q-S15、Q-S16、Q-S17、Q-P01、Q-P02、Q-P03、Q-P04、Q-P05、Q-P06（exact模式另Q-P07） | D02A | I02A含必要production seam；MUT-Q02A-01、MUT-Q02A-02、MUT-Q02A-03、MUT-Q02A-04、MUT-Q02A-05均被列明Q测试杀死 | G02A |
+ | 02B ADR | 无测试/代码改动；只读G02A evidence | G02B-ADR两人冻结ADR-02 | 无 | 只有选中分支T节点eligible |
+ | 02B-NI | T02B-NI: M-COM-S01、M-COM-S02、M-COM-S03、M-COM-S04、M-COM-S05、M-COM-S06、M-COM-F01、M-COM-F02、M-NI-S01、M-NI-S02、M-NI-P01 | D02B-NI | I02B-NI verify-only/no index | G02B-NI |
+@@ -702,15 +751,16 @@
+ | 06P | T06P: P-FMT00-ROUTE；每个候选enabled route实例化S/M或DIS/LIMIT/ERR/NA/PAUSE模板ID | D06P | I06P或逐route fail-closed | G06P |
+ | 07E | T07E: L-S01、L-S02、L-S03、L-S04、L-S05、L-S06、L-S07、L-S08、L-S09、L-S10、L-S11、L-S12、L-S13、L-S14、L-S15、L-S16、L-S17、L-S18、L-S19、L-S20、L-S21 | D07E | I07E | G07E |
+ | 07O | T07O: L-S09、L-S15、L-S17、PX-S07 | D07O | I07O | G07O（另需G09P） |
+ | 08 | T08: R-S01、R-S02、R-S03、R-S04、R-S05、R-S06、R-S07、R-S08、R-S10、R-S11、R-S12、R-S14、EV-S01、EV-S02、EV-S03 | D08 | I08 | G08 |
+-| 09P | T09P: `test_id_registry.v4.json` 中 `introduced_at=T09P` 且condition成立的全部 concrete IDs | D09P | I09P | G09P |
++| 09P | T09P: `test_id_registry.v4.json` 中 `introduced_at=T09P` 且condition成立的全部 concrete IDs，至少含 ARV-S01、BUD-S01、BUD-S02、PROC-S01、ACT-S11、ACT-S12、ACT-S13、ACT-S14、ACT-S15、START-S11 | D09P | I09P | G09P |
+ | 09 | T09: E2E-S01、E2E-F01、E2E-F02、E2E-M01 | D09 | I09仅集成修复 | G09 |
+ 
+ 生产节点没有implementation commit，但必须使用独立pre-review→OP→post-review：
+-D11A/OP11A/G11A、条件D11M/OP11M/G11M、D11J/OP11J/G11J、每个A1/A2/A3与BP/BFnn、
++D11A/OP11A/G11A（含只读既有基线 ZR1005-C1、ZR1005-C2、ZR1005-C3、ZR1005-C4、ZR1006-C1、ZR1006-C2A、ZR1006-C2B、ZR1006-C3、ZR1006-C4A、ZR1006-C4B、ZR1006-C4C、ZR1006-C5A、ZR1006-C5B）、条件D11M/OP11M/G11M、D11J/OP11J/G11J（JRN-S01、JRN-S02、JRN-S03）、每个A1/A2/A3与BP/BFnn、
+ D12A/OP12A/G12A、G12B-PRE→D12B-ARM→D12B-RB→OP12B-ARM/G→D12B-CAS/OP/G→D12B-LOGIN/OP/
+-G12B-POST及OP12B-RB/G12B-RB、D12C/G12C-PRE/OP12C/G12C及OP12C-RB/G12C-RB，
++G12B-POST及OP12B-RB/G12B-RB、D12C-RT/runtime用户receipt/G12C-RT、D12C/final用户receipt/
++G12C-PRE/OP12C/G12C及OP12C-RB/G12C-RB，
+ 以及每次唯一D05Rnn/OP05Rnn/G05Rnn。每个D/G按DAG重新派独立agent，禁止合并补签。
+ 
+ D后任何test/fixture assertion变化自动使D失效。G10C/G10R后production wrapper/contract/trust/
+ authorization变化会使G09P/G09和相应审计/生产节点失效。

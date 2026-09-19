@@ -1,0 +1,42 @@
+{
+  "template": "CN-interim",
+  "market": "CN",
+  "entity": "CNCO",
+  "period_rule_note": "该样本不陈述或验证任何市场披露义务、合规截止或真实 provider 行为。",
+  "field_source_simulation": {
+    "kind": "模拟自 CN 披露文种 '半年度报告'，映射 document_kind=interim_report",
+    "period_start/period_end": "模拟自结构化披露元数据会计区间 2025-01-01→2025-06-30",
+    "filed_at": "模拟 filing_date（canonical）",
+    "accepted_at": "模拟 accepted_at，早于 filed_at 1 天 → 按冻结 D2 必须 conflicting"
+  },
+  "provider": "fake-cn",
+  "scenarios": [
+    {
+      "name": "accepted_before_filed_conflicting",
+      "remote": [
+        {"kind": "interim_report", "period_start": "2025-01-01", "period_end": "2025-06-30", "accession": "cn-2025-h1", "filed_at": "2026-08-20", "accepted_at": "2026-08-19", "fiscal_year": 2025, "url": "https://example.org/cn/2025-h1.pdf"}
+      ],
+      "local": [],
+      "expect": {
+        "missing_ids": [],
+        "conflicting_ids": ["cn-2025-h1"],
+        "newer_revision_ids": []
+      }
+    },
+    {
+      "name": "interim_independent_from_annual",
+      "remote": [
+        {"kind": "interim_report", "period_start": "2025-01-01", "period_end": "2025-06-30", "accession": "cn-2025-h1", "filed_at": "2025-08-20", "accepted_at": "2025-08-20", "fiscal_year": 2025, "url": "https://example.org/cn/2025-h1.pdf"}
+      ],
+      "local": [
+        {"kind": "annual_report", "period_start": "2025-01-01", "period_end": "2025-12-31", "accession": "cn-2025-a", "filed_at": "2026-03-28", "accepted_at": "2026-03-28", "fiscal_year": 2025}
+      ],
+      "expect": {
+        "missing_ids": ["cn-2025-h1"],
+        "newer_revision_ids": [],
+        "reuse_ids": ["cn-2025-a"],
+        "latest_status": "newer_remote_available"
+      }
+    }
+  ]
+}

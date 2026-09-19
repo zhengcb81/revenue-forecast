@@ -1,0 +1,68 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/acceptance_thresholds.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/acceptance_thresholds.md
+@@ -256,14 +256,16 @@
+ - check后必须从同一不可写快照加载；每次child restart重验。tamper/TOCTOU/drift→不启动、
+   persistent pause、按exact value条件回退。无法建立该边界则G12B-PRE必须FAIL，主流程
+   记BLOCKED。
+ 
+-### 10.2 Registry conditional create/delete
++### 10.2 Registry atomic create 与 verify-preserve rollback
+ 
+ - 禁止`Get/Test -> New-ItemProperty -Force`；named mutex只能辅助，不能冒充原子CAS。
+ - 条件创建在提交点仅当目标name缺失才写exact key/name/REG_SZ/value/arm digest；并发 loser
+-  不覆盖。任何既有同名值（即使bytes相同）都是ownership conflict，不得接管。条件删除仅当
+-  提交点exact bytes与ownership/run nonce仍匹配本次值。
++  不覆盖。任何既有同名值（即使bytes相同）都是ownership conflict，不得接管。自动rollback
++  绝不删除Run：`VERIFY_ABSENT`保持absent并到`PAUSED/OFF`；`VERIFY_OWNED_PRESERVE`保留本次
++  exact-owned值并到`PAUSED/ON`；`VERIFY_CONFLICT_PRESERVE`保留第三方值并到
++  `PAUSED/REGISTRY_CONFLICT`。清理owned Run必须另开未来D/OP/G与用户授权。
+ - ARM token绑定release/data root/LLM profile/authorization hash/value/generation/user SID/expiry/
+   nonce；默认15min、硬上限30min，并在CAS提交点一次性消费。CAS后建立默认24h/硬72h的
+   dormant lease，状态必须是`ARMED_ON_PRELOGIN/ON`：没有另一个有效
+   LOGIN_COMMITTED token时，任何boot/login只能让trust launcher零child、零DB/config/source/
+@@ -272,10 +274,10 @@
+   硬上限10min，绑定review hashes、final approval、expected SID、machine/boot generation、
+   previous session与该SID“下一次新logon”关系，不预知future session/LUID；一次原子消费。重放/
+   漂移/过期100% fail closed。
+ - conflict、异常、用户取消、ARM/lease过期、login timeout：只能进入预审的
+-  `OP12B-RB→G12B-RB`；OP pause/invalidate token，本次值仍精确匹配才删，第三方值不同则
+-  不碰并进入`PAUSED/REGISTRY_CONFLICT`；Gate/launcher不写registry，禁止自动重试。
++  `OP12B-RB→G12B-RB`；OP pause/invalidate token并按上述三分支只读验证、保留registry事实；
++  Gate/launcher不写registry，禁止自动重试。
+ - D12B-RB必须在任何ARM state/token写前PASS。OP12B-ARM先向G11J journal写入action intent、
+   expected absence、desired bytes hash、ownership/run nonce、generation与补偿目标，再写arm state
+   并finalize；从该点起任一失败/crash partial均按journal reconcile后走OP12B-RB，G12B-RB继承
+   OP exact terminal state，不得事后把REGISTRY_CONFLICT重写成OFF。
+@@ -310,19 +312,24 @@
+   latch/budget，generation恰好+1，历史保留，进程0，状态仍PAUSED；reset后20s仍进程0。
+ - Dormant prelogin、LOGIN_COMMITTED drift/replay/expiry、unexpected login 各进行至少20个真实
+   双进程/状态 interleaving；成功消费者恰好1，其余全部零启动。
+ - G12B-POST成功终态只为`LOGIN_VALIDATED_PAUSED/ON`、process0，不是RECOVERED。
+-- Final activation先由D12C两名reviewer冻结exact proposed action/intent hash及final/rollback
+-  contracts，再由用户授权该hash/action ID，最后由G12C-PRE恰好三名pre-reviewer核对actual
+-  authorization；顺序不可颠倒。OP12C是唯一operator动作且不接review verdict，G12C恰好三名
++- Final activation必须按固定双授权顺序：D12C-RT两名reviewer冻结runtime template/auth proposal/
++  subject→外部用户`RUNTIME_TEMPLATE_AUTHORIZATION` receipt→G12C-RT恰好三名reviewer核对receipt与
++  fresh revalidation→D12C两名reviewer冻结exact final intent/contract/compensation/final auth proposal/
++  subject并绑定前链→外部用户另一份`FINAL_AUTOSTART_ACTIVATION` receipt→G12C-PRE恰好三名
++  pre-reviewer fresh-revalidate两条链。两份receipt/approval/evidence ID、hash、purpose、subject必须
++  不同且不可交换；顺序不可颠倒。OP12C是唯一operator动作且不接review verdict，G12C恰好三名
+   post-reviewer；OP12C只CAS为
+   `ENABLED_IDLE/ON`，20s内进程始终0、generation仅+1、除control state外sentinel零变化。
+   token/control跨资源写必须有protected journal intent/finalize和ownership nonce，crash只按journal
+-  reconcile。G12C前后物理state不变，只把`lifecycle_outcome`记为`RECOVERED`；失败走
+-  `OP12C-RB→G12C-RB`。owned Run未漂移时回
+-  `LOGIN_VALIDATED_PAUSED/ON`；第三方Run冲突不碰registry并进`PAUSED/REGISTRY_CONFLICT`，G继承
+-  OP exact终态。当前session运行需另建D/OP/G。
+-- 下一普通登录只有重新验证G12C outcome、release/auth/config/routing/data/Run、SID、circuit、
++  reconcile。D阶段只冻结commitment/template；terminal journal、head-after、evidence与operation
++  execution receipt只能在OP后产生。G12C前后物理state不变，只把`lifecycle_outcome`记为
++  `RECOVERED`；失败走`OP12C-RB→G12C-RB`。Run absent时为`PAUSED/OFF`；owned Run未漂移时只
++  回退control、保留Run并回`LOGIN_VALIDATED_PAUSED/ON`；第三方Run冲突不碰registry并进
++  `PAUSED/REGISTRY_CONFLICT`，G继承OP exact终态。自动rollback不删除Run；当前session运行需另建D/OP/G。
++- 下一普通登录只有重新验证G12C outcome、runtime-template receipt/G12C-RT evidence及fresh
++  revalidation、release/auth/config/routing/data/Run、SID、circuit、
+   Job Object和单实例后才可`RUNNING_AUTOSTART/ON`；任一失败零child并`PAUSED/ON`。
+ - `ACT-S08`要求第二及每个后续cycle有新runtime contract；`ACT-S09`要求authorization过期/
+   撤销或持久daily/monthly cap不足在egress/write前失败；`ACT-S10`要求错误journal head、
+   document/source、typed PK/column/file在precommit失败。三者任一失败都circuit open+persistent

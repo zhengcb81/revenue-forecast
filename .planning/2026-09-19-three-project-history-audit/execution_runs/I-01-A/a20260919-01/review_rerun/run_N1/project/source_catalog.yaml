@@ -1,0 +1,27 @@
+schema_version: "1.0"
+catalog_dir: "${PROJECT_ROOT}/.scratch/.source_catalog"
+reusable_root_kinds: [company_raw, dayu_portfolio, directory]
+roots:
+  - root_id: company_raw
+    kind: company_raw
+    path: "${PROJECT_ROOT}/.scratch/companies"
+    priority: 10
+    privacy_class: public
+  - root_id: dayu_portfolio
+    kind: dayu_portfolio
+    path: "${PROJECT_ROOT}/.scratch/portfolio"
+    priority: 20
+    privacy_class: public
+  - root_id: dropbox_stock
+    kind: directory
+    path: "${PROJECT_ROOT}/.scratch/dropbox_stock"
+    priority: 30
+    privacy_class: public
+  - root_id: future_lake
+    kind: directory
+    path: "${PROJECT_ROOT}/.scratch/future_lake"
+    adapter_id: sidecar_filing_v1
+    read_only: true
+    reusable_for_filing: true
+    priority: 40
+    privacy_class: public

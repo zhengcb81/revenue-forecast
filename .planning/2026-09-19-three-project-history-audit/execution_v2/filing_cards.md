@@ -1,0 +1,1084 @@
+# I-03 / I-04 / I-08 / I-09 逐卡执行说明
+
+**状态：全部 planned，实施未执行。Markdown 为执行权威正文；JSON 供 dispatch/校验。**
+
+仅 I-03/I-04/I-08/I-09 的未来执行卡。本次未实施、未运行产品/测试、未下载、未写生产DB/worker/registry；仅此JSON与同名Markdown新增。
+
+先CodeGraph定位定义/调用，再读已定位源文件并用Python AST只读核准精确行号/hash。CodeGraph部分行号落后，以下锚点以现行字节为准。
+
+## 共用前置与边界
+
+- 每卡先读取I-00-A/B/C及自己的依赖验收收据；planned不是可执行授权或完成。高级决策卡仅写设计收据，未签署不得实施。跨分区parent依赖由主审dispatch映射到实际卡，不由弱模型猜字母。
+- 使用I-00冻结的隔离checkout/解释器/依赖；不覆盖用户dirty文件，不reset/stash主树；所有新增输入、日志、临时catalog、keys、registry、worker模拟文件放在新的new_run_root内。先检查绝对路径前缀，禁止生产公司根/正式registry/旧审计reviews路径。
+- 逐个比较本卡源锚点sha256与当前待实施版本；不同即读差异和后继修复，让reviewer确认新基线，不能按旧漏洞重复修已修代码。这里只冻结规划时版本，不要求长期字节不变。
+- 卡内“先重现修前失败”“确认修前错标”等动作，仅在当前冻结版本仍存在该缺陷时适用。若后继修复已关闭缺陷，则走无代码变更的原反例复验，记录修复版本与证据；禁止回退有效修复、改坏输入/实现、放宽或篡改断言来人为制造 RED。复验已通过且范围完整时可按无代码变更关闭该实现步骤，未覆盖范围仍保留待验。
+- 执行命令模板前由I-00-B把占位解释器、cwd、argv、环境、输入hash与测试节点绑定到新run；复制原probe前先移除其固定旧证据写路径，不执行原脚本覆盖历史。
+- 测试分级明确：pure fixture、真实代码本地跨进程、生产配置副本、真实只读数据、真实provider、生产写入。此分区最多前三类且本卡说明更窄；真实provider/安装态用户旅程归I-07/I-16。
+- 凡跨项目公共schema、canonical writer、registry或worker API，只有指定owner写；发现scope外必要改动先记录阻断并交owner补卡，不能为绿灯建立平行框架。
+
+### 每卡共同证据
+
+- 新run唯一目录；卡ID、依赖收据hash、原义务及历史反例链接、源码/配置/解释器/实际导入路径hash、dirty清单。
+- 输入实际字节/来源、手工独立expected和推导、完整stdout/stderr、raw_returncode、expected_returncode、判定分别记录；测试tier、collected/selected/passed/failed/skipped/deselected分别记录。
+- 按本卡要求保存事件/调用/读写/elapsed/状态前后证据；断言不可仅为fileexists、计数或receipt.status=pass。
+- 实现者与独立reviewer分别署名；未验和scope外项单列；失败保存原始输入和输出，不能换fixture/公司/口径以保持PASS。
+
+### 禁止事项
+
+- 本轮不执行卡、不改产品代码、不访问真实provider、不改变worker暂停状态、不迁移或清理公司数据湖。
+- 未来实现卡不能把测试私钥、fake provider、模拟时钟、模拟PID或fixture-only PASS写成生产/真实市场验收。
+- 不修改reviews/下任何历史产物；不运行会固定写入旧scratch/log的pure_probes.py、probe_publication.py或current_recheck.py。只读原脚本和结果。
+- 保留已修F01/F02、capture_ready拒绝、有效Ed25519验签、单文件atomic replace等窄正确性；不重开已退役旧研究writer。
+
+## 命令模板（本轮未执行）
+
+占位符必须由 I-00-B 解析为审核过的绝对路径与 argv；不能把模板当现成新 CLI。每个模板的 expected_returncode=0，只对应测试框架成功退出；新增案例仍须逐项验收。不要为了通过而直接运行原历史探针，它们会写回自己的旧 scratch/log。
+
+### T-GAP
+
+已存在wiki contract测试的最小回归入口；不包括未来尚未创建用例的命令
+
+cwd: `<isolated_company_wiki_checkout>`
+
+argv（结构化，不拼接 shell）：
+
+```json
+[
+  "<I-00-B核定的python>",
+  "-X",
+  "utf8",
+  "-B",
+  "-m",
+  "pytest",
+  "tests/contract/test_source_catalog_gap_plan.py",
+  "-q",
+  "-p",
+  "no:cacheprovider",
+  "--basetemp=<new_run_root>/gap-pytest"
+]
+```
+
+- 已读该版本conftest/测试，确认fake adapter/temp catalog且无生产默认根
+- new_run_root是新建绝对路径，不等于旧审计目录
+- 新增测试node由I-00-B在创建后绑定；本模板通过不等于新增反例已覆盖
+
+### T-FILING
+
+已存在filing测试文件中排除实际生产wiki依赖的用例
+
+cwd: `<isolated_filing_fetch_checkout>`
+
+argv（结构化，不拼接 shell）：
+
+```json
+[
+  "<I-00-B核定的python>",
+  "-X",
+  "utf8",
+  "-B",
+  "-m",
+  "pytest",
+  "tests/test_fetch_filing.py",
+  "-q",
+  "-p",
+  "no:cacheprovider",
+  "-k",
+  "not test_cli_stdin_accepts_utf8_chinese_query",
+  "--basetemp=<new_run_root>/filing-pytest"
+]
+```
+
+- 源tests/test_fetch_filing.py:1438的中文stdin用例直接连接PRODUCTION_WIKI且无显式config，必须排除（历史继承会收集两次）；不能依赖它自动skip
+- 逐版检查其余测试与conftest无新增live路径；实际deselected数量记录不硬套旧数
+- 未来本地CLI模拟harness需先独立审路径隔离，禁止拿此live用例改公司名运行
+
+### T-PUB
+
+已存在revenue发布/签名/registry/单文件事务测试
+
+cwd: `<isolated_revenue_forecast_checkout>`
+
+argv（结构化，不拼接 shell）：
+
+```json
+[
+  "<I-00-B核定的python>",
+  "-X",
+  "utf8",
+  "-B",
+  "-m",
+  "pytest",
+  "tests/test_publication_pipeline.py",
+  "tests/test_publication_registry.py",
+  "tests/test_attestation.py",
+  "tests/test_zr710_publication_txn.py",
+  "-q",
+  "-p",
+  "no:cacheprovider",
+  "--basetemp=<new_run_root>/publication-pytest"
+]
+```
+
+环境约束：
+
+```json
+{
+  "REVENUE_PUBLICATION_REGISTRY": "<new_run_root>/registry",
+  "REVENUE_ATTESTATION_PROVIDER": "只在已批准fixture中设置；不得继承真实provider",
+  "REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS": "<new_run_root>/测试公钥名单（若该用例需要）"
+}
+```
+
+- 已读tests/conftest.py，会把registry重定向到tmp_path_factory；必须记录实际最终路径，不能只看外层env
+- 原test_attestation.py:71把sys.executable当provider；真正调用协议前必须改为已批准有界fake provider，避免裸解释器挂起
+- 旧ZR710仅证明单文件写/registry先失败，不可用其数量宣称整体提交已完成
+- 所有测试新增hook/kill限已登记测试进程，不能操作真实worker
+
+## 卡片索引
+
+| ID | 标题 | 类型 | 依赖 | 状态 |
+|---|---|---|---|---|
+| I-03-A | 冻结期间、修订、最新性与授权绑定契约 | senior_decision | I-00-A, I-00-B | planned |
+| I-03-B | 按冻结期间和修订规则修复纯 GapPlan 选择 | implementation | I-03-A, I-00-C | planned |
+| I-03-C | 把下载对象、资格与策略完整绑定到计划及授权 | implementation | I-03-A, I-00-C | planned |
+| I-03-D | 验证 close-gap 重检、完整候选范围及实际额度 | implementation | I-03-B, I-03-C, I-02 | planned |
+| I-04-A | 先定请求 deadline、清理预算和计时 oracle | senior_decision | I-00-A, I-00-B | planned |
+| I-04-B | 修复退避旧预算和 worker 最小10秒越界 | implementation | I-04-A, I-00-C | planned |
+| I-04-C | 先冻结跨进程 lease、所有权与恢复协议 | senior_decision | I-00-A, I-00-B, I-04-A | planned |
+| I-04-D | 实施原子lease更新并验证进程交错 | implementation | I-04-C, I-04-B | planned |
+| I-04-E | 保留嵌套错误与失败前真实副作用计数 | implementation | I-04-B, I-04-D, I-02, I-03-D | planned |
+| I-08-A | 先定签名信任域、提供者协议及旧版本边界 | senior_decision | I-00-A, I-00-B | planned |
+| I-08-B | 实际调用受信提供者并验证签名后才声明host_signed | implementation | I-08-A, I-00-C | planned |
+| I-08-C | 验证消费者拒绝伪造、跨载荷重放和未签结果 | verification | I-08-B | planned |
+| I-09-A | 先定结果包提交、读可见性与幂等协议 | senior_decision | I-00-A, I-00-B, I-08-A | planned |
+| I-09-B | 实现完整包提交并让读者验证commit资格 | implementation | I-09-A, I-08-B, I-00-C | planned |
+| I-09-C | 逐边界故障注入、并发与重启恢复独立验收 | verification | I-09-B, I-08-C | planned |
+
+## I-03-A — 冻结期间、修订、最新性与授权绑定契约
+
+父项：I-03。状态：planned；实施结果：未执行。角色：company-wiki 来源负责人（filing 为消费者 reviewer）。
+
+依赖：I-00-A、I-00-B。
+
+执行门：高级 reviewer 先定案；本卡不实施产品
+
+### 现行源码锚点
+
+- [src/company_wiki/source_catalog/gap_plan.py:95](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/gap_plan.py:95) — `build_gap_plan`；SHA-256 `d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f`。
+- [src/company_wiki/source_catalog/gap_plan.py:214](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/gap_plan.py:214) — `_hash_gap`；SHA-256 `d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f`。
+- [src/company_wiki/source_catalog/authorization.py:23](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/authorization.py:23) — `DownloadAuthorization`；SHA-256 `f858a369ed556d1b110be5ba7be7fa25ae3519fda94296cfe1c4f9e367d55f43`。
+- [src/company_wiki/source_catalog/close_gap.py:55](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/close_gap.py:55) — `CloseGapBinding`；SHA-256 `117c8166a6c26f3462574b787e0db79c419e00c8b18287f25738948032f475c3`。
+
+### 允许改动
+
+- 仅本次新 run 的决策文档、输入表和 oracle；不改产品 schema/代码/配置
+
+### 输入与独立预期
+
+- 原始反例：reviews/cross_history/current_recheck.json；阅读四个 current_gap_probes，不把候选集当已下载失败。
+- 手工输入表使用抽象列 entity/market/kind/period_start/period_end/fiscal_year/provider/id/filed_at/accepted_at/amended/url；这些是待映射的语义列，不冒充现有 Python 参数。
+- 固定 ACME/US、annual_report、FY2025、as_of=2026-07-31；本地 z-old/2026-03-01、远端 a-new/2026-04-01，均为受信同期间同文件族。独立预期 a-new 比 z-old 新；反向本地 a-new、远端 z-old 不得降级。
+
+### 按序动作
+
+1. 读取四个源锚点和 acquisition 的实际调用关系，列当前字段、来源与缺失值处理，不以 provider ID 字典序推断披露时间。
+2. 高级 reviewer 决定：annual/interim/quarter 的期间键；非日历财政年；日期与精确时间及时区；filed/accepted/修订链冲突优先规则；已知更正版如何覆盖原件；缺期/缺可信日期/同日冲突的显式未知状态。
+3. 决定 exact 与 latest_as_of 的输出契约、latest provider 故障时可否仅返回本地但必须声明最新性未知；明确 not_published、already_covered、no_gap 的区别，禁止同一布尔值代替三者。
+4. 决定多期 gap 每次单候选还是有界批次；未完成候选如何保留，不能仅取第一个却宣称全 gap 关闭。
+5. 决定哈希的规范序列化、schema 版本、候选排序、资格字段及 policy 绑定位置；确认 URL/date/period/revision/provider/entity/kind/market 变化的旧授权失效规则。不要自创第二策略源。
+6. 写旧版本兼容和授权失效迁移表；高级 reviewer 为每个下面的输入给唯一输出/拒绝理由/消费行为，未决格必须阻断 I-03-B/C/D。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| G-D1 | 上述受信日期正向/反向，provider ID 与日期顺序相反 | 正向选择 a-new；反向不选择 z-old；不使用字符串 ID 排序 |
+| G-D2 | annual FY2025 与 interim FY2025；非日历 FY2025 期间 2024-07-01 至 2025-06-30 | 不得因为 fiscal_year 相同合并不同期间/文种；具体 period key 由本卡签署 |
+| G-D3 | 缺 period、无可信日期、同日不同文档且无修订关系、日期互相冲突 | 不得默选或把缺失 metadata 视为已覆盖；签署明确 ambiguous/unknown 类契约 |
+| G-D4 | provider 空成功、provider 异常、本地完整覆盖、未来披露 2026-08-01 | 四类不得合并；未来文件不作截至日可用文件；空成功不等于证明公司尚未发布 |
+
+### 本卡追加证据
+
+- 逐字段映射与真实性来源；期/修订/最新性状态表；哈希字段表；兼容矩阵；高级 reviewer 签署的 oracle（值与理由，不能只写通过）
+
+命令： 本卡无产品执行命令；仅设计与独立审查。
+
+### 失败停止条件
+
+- 任何状态或 schema 迁移仍有 TBD；日期可信性来源未明；想用新增 provider 网络请求填本卡输入时停止
+
+### 恢复边界
+
+- 仅修改本次决策文档；保留未决项；不得回写旧 PASS 或重算旧授权使之继续有效
+
+### 关闭标准
+
+- 决策表无未决项；独立 reviewer 复算 G-D1—D4；后继卡引用决策文件 hash
+
+## I-03-B — 按冻结期间和修订规则修复纯 GapPlan 选择
+
+父项：I-03。状态：planned；实施结果：未执行。角色：company-wiki 来源负责人（filing 为消费者 reviewer）。
+
+依赖：I-03-A、I-00-C。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [src/company_wiki/source_catalog/gap_plan.py:32](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/gap_plan.py:32) — `GapPlan`；SHA-256 `d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f`。
+- [src/company_wiki/source_catalog/gap_plan.py:95](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/gap_plan.py:95) — `build_gap_plan`；SHA-256 `d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f`。
+
+### 允许改动
+
+- 隔离 wiki checkout 的 gap_plan.py；确需的既有 candidate/handle 字段映射须按 I-03-A 决策逐文件批准；tests/contract/test_source_catalog_gap_plan.py 及同目录新增隔离用例
+
+### 输入与独立预期
+
+- I-03-A 已签署 oracle；历史四反例中的前三例。
+- 基本样本本地 L=z-old/FY2025/2026-03-01；远端 R=a-new/FY2025/2026-04-01；capture_ready=True；其他身份/期间相同。测试包装映射必须在输入工件中可见。
+
+### 按序动作
+
+1. 先添加独立断言并在修前隔离运行，保存失败；断言写固定 ID/类别，不从被测 planner 的排序函数计算 expected。
+2. 只改 canonical planner 的分期与修订选择，删除 accession 字典序作为新旧依据；调用者继续消费该唯一输出。
+3. 处理缺期、缺日期、同日冲突和未来披露，明确返回未知/冲突而非静默忽略；不得以增加默认日期修 fixture。
+4. 测试远端输入顺序逆序与本地多根同 bytes 复用；允许的重排不改变语义输出；保留 capture_ready=False 不可复用。
+5. 用 CN 年报/半年报、HK 年报、美股非日历年三个手工 metadata 样本执行同一冻结规则，保存字段来源模拟声明。
+6. 运行 T-GAP 及新增用例；原正确复用/零下载行为保持。命中 I-03-A 未定义情况先补高级裁决，不扩范围自行推断。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| G-B1 | L=z-old，remote=[a-new]，日期同上述 | newer_revision 精确为 [a-new]；不把 z-old 当已最新 |
+| G-B2 | L=a-new/2026-04-01，remote=[z-old/2026-03-01] | newer_revision=[]；本地可复用且不降级；最新性置信按决策表 |
+| G-B3 | local=[]，remote=[z-old,a-new]，同一受信期间 | missing 仅一个 a-new；顺序反转结果相同 |
+| G-B4 | a-new filing=2026-08-01；as_of=2026-07-31 | 不进入可下载/可复用当期候选；future 集或等价明确状态包含该候选 |
+| G-B5 | capture_ready=False 的本地 + provider_error；两个根同 hash 的合格本地；不同期间相同 FY | 不合格本地不可复用；合格多根零重复下载；不同期间分别处理，不靠 fixture 公司名 |
+
+### 本卡追加证据
+
+- 每个输入 JSON/语义映射、固定 expected 与实际完整 GapPlan；修前失败和修后结果；调用图差异；T-GAP stdout/stderr/exit/选择与跳过数
+
+命令： T-GAP；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- 为得到绿灯而删除 unknown/conflict；需要改 provider/network/raw writer；新 schema 未获 I-03-A 批准
+
+### 恢复边界
+
+- 恢复本卡隔离代码变更；保留原反例与失败输出；不得修改生产 raw/catalog 或旧 gap 授权
+
+### 关闭标准
+
+- G-B1—B5 与冻结未知矩阵均满足；四类市场期间模板不外推为真实 provider 验收；由非实施者验收
+
+## I-03-C — 把下载对象、资格与策略完整绑定到计划及授权
+
+父项：I-03。状态：planned；实施结果：未执行。角色：company-wiki 来源负责人（filing 为消费者 reviewer）。
+
+依赖：I-03-A、I-00-C。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [src/company_wiki/source_catalog/gap_plan.py:214](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/gap_plan.py:214) — `_hash_gap`；SHA-256 `d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f`。
+- [src/company_wiki/source_catalog/authorization.py:52](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/authorization.py:52) — `build_download_authorization`；SHA-256 `f858a369ed556d1b110be5ba7be7fa25ae3519fda94296cfe1c4f9e367d55f43`。
+- [src/company_wiki/source_catalog/authorization.py:99](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/authorization.py:99) — `validate_download_authorization`；SHA-256 `f858a369ed556d1b110be5ba7be7fa25ae3519fda94296cfe1c4f9e367d55f43`。
+- [src/company_wiki/source_catalog/close_gap.py:55](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/close_gap.py:55) — `CloseGapBinding`；SHA-256 `117c8166a6c26f3462574b787e0db79c419e00c8b18287f25738948032f475c3`。
+
+### 允许改动
+
+- 隔离 wiki gap_plan.py、authorization.py、close_gap.py 中绑定校验边界及对应 contract 测试；共享 schema 的变更严格限 I-03-A 签署字段
+
+### 输入与独立预期
+
+- I-03-A 的规范化字节定义和旧版本拒绝规则；计划 P0（ACME/US/annual/FY2025、a-new、https://fixture.invalid/a、2026-04-01、policy P）。URL 仅作为字符串，绝不访问。
+- 一份授权 A0 指向 P0 哈希，provider=test、allowed_accessions=[a-new]、max_items=1、max_bytes=100、expires_at 为冻结测试时钟以后。字段值映射到实际 schema，不杜撰可执行 CLI。
+
+### 按序动作
+
+1. 在测试中按签署规范独立序列化固定 P0，固定预期 canonical bytes 与 SHA；生产函数和测试 expected 禁止共享同一个待测 hash helper。
+2. 实现包含类别边界的规范 hash，避免字段拼接歧义；schema/policy/entity/market/kind/period/provider/id/url/日期/修订/资格字段按签署表绑定。
+3. 为每个安全相关字段做单变量变异，保持 A0 不变，先验证计划 hash 变化，再验证授权拒绝；不只断言 hash 不同。
+4. 验证无关 dict 顺序与获准候选重排不改变 canonical bytes；不能为去抖而丢掉影响资格的字段。
+5. 校验授权 schema、hash 十六进制、provider、accession、过期时点和额度；缺失 provider/未知大小的政策严格取 I-03-A，不默认为已授权或无限额度。
+6. 传到 close-gap 的 binding 校验同一值和版本；旧授权不自动补字段升级；运行 T-GAP 及对应新增授权用例。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| G-C1 | 只把 URL /a 改 /b，或 filing_date 2026-04-01 改 2026-04-02 | P1.hash != P0.hash；A0 授权 P1 被拒；provider fetch 次数=0 |
+| G-C2 | 依次变 entity/market/kind/period/provider/id/amended/policy/资格字段，每次仅一项 | 每个安全变异触发对应绑定拒绝；不得借相同 accession 跨对象复用 A0 |
+| G-C3 | 等价字段顺序/获准集合重排；request/状态分区改变 | 前者按规范同 hash；后者是否变 hash 由 I-03-A 固定，类别变更不得隐形 |
+| G-C4 | 已用1件；已用90 bytes 加候选20 bytes；旧版本授权；过期1秒；缺provider | 前两者拒绝且fetch=0；旧版/过期/缺provider按签署规则拒绝或显式重新授权，不能默认通过 |
+
+### 本卡追加证据
+
+- 固定 canonical bytes 与独立 SHA；逐字段变异表；授权拒绝原因与 fetch spy=0；schema 迁移差异和 reviewer 收据
+
+命令： T-GAP；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- hash 仅变而授权仍通过；默认补关键字段；引用未批准 canonical 化；将迁移变成重新签发旧授权
+
+### 恢复边界
+
+- 回退隔离代码；旧授权保留原 hash 不改写；若旧授权不兼容则明确失效，不能降级验证
+
+### 关闭标准
+
+- 历史 URL/date 同 hash 反例关闭；每个安全字段既有 hash 断言又有授权拒绝断言；正例授权仍通过
+
+## I-03-D — 验证 close-gap 重检、完整候选范围及实际额度
+
+父项：I-03。状态：planned；实施结果：未执行。角色：company-wiki 来源负责人（filing 为消费者 reviewer）。
+
+依赖：I-03-B、I-03-C、I-02。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [src/company_wiki/source_catalog/close_gap.py:174](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/close_gap.py:174) — `CloseGapTransaction.execute`；SHA-256 `117c8166a6c26f3462574b787e0db79c419e00c8b18287f25738948032f475c3`。
+- [src/company_wiki/source_catalog/close_gap.py:326](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/close_gap.py:326) — `CloseGapTransaction._fetch_and_commit`；SHA-256 `117c8166a6c26f3462574b787e0db79c419e00c8b18287f25738948032f475c3`。
+- [src/company_wiki/source_catalog/authorization.py:99](C:/Users/郑曾波/Projects/company-wiki/src/company_wiki/source_catalog/authorization.py:99) — `validate_download_authorization`；SHA-256 `f858a369ed556d1b110be5ba7be7fa25ae3519fda94296cfe1c4f9e367d55f43`。
+
+### 允许改动
+
+- 隔离 wiki close_gap.py、authorization.py 的计划/额度边界与 contract 测试；canonical 原件保存/注册实现归 I-02 owner，禁止另造 writer
+
+### 输入与独立预期
+
+- 冻结计划、授权、runtime policy 副本；fake provider 按脚本返回 metadata 与内存 bytes；临时 catalog 由 tmp_path 创建。
+- 先定义事件类型：provider_fetch_attempt、bytes_received、raw_saved、registration_succeeded，不能拿 fetch_events 一个数字替代全部；字段实现与 I-02 共享。
+
+### 按序动作
+
+1. 构造可运行的隔离 close-gap 调用，读取现有测试中的 fake adapters/staging 布局，不借用生产 config；测试先断言所有解析路径在 new_run_root 内。
+2. 在首次 rediscover 后、锁内 rediscover 前插入确定性 barrier；变 URL/date/policy，验证旧 binding 在真实校验出口拒绝且未 fetch。
+3. 依据 I-03-A 的单候选/有界批次选择落实 remaining_gap 语义；两个不同缺期必须可区分已完成与待补，不能选择 actionable[0] 后对全计划报完成。
+4. 在 fake stream 每个 chunk 处记累计 bytes；未知远端大小按批准政策处理，收到超额度 chunk 必须停止、不得 commit 合格 handle，保留真实已收到字节计数。
+5. 在返回 provider_error、空成功、scan/注册失败处观察最终结构；保持本地有效 raw 可恢复，具体重试注册由 I-02 实现。
+6. 运行 isolated contract 用例并由 filing 消费者复核 envelope；真实 provider/生产写入留给 I-07，不用本卡 fake 通过覆盖。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| G-D5 | A0 绑定 P0；第一次发现后 URL/date/policy 变成 P1 | 锁内拒绝 stale binding；fetch_attempts=0；无新增 raw/注册 |
+| G-D6 | 两个不同期间缺口，授权 max_items=1 | 最多发起1个获准对象下载；另一个仍为显式待补；不得宣称全部无 gap |
+| G-D7 | max_bytes=100；fake chunks 60+60；remote_size 未知或谎报80 | 累计收到120须如实记录；到发现超额即停止，合格 handle=0/commit=0；不得声称物理从未收到>100，另记可能单chunk超额 |
+| G-D8 | 下载1次并存 raw 成功，注册注入失败；随后重试 | 第一次失败保留 fetch=1/raw_saved=1/registered=0；第二次只恢复缺失注册，新增fetch=0（依赖 I-02） |
+| G-D9 | provider异常 vs 空列表成功；本地有可复用旧件 | 前者最新性未知且保留原错误；后者按冻结语义，无虚假已发布/未发布断言；均不触发无授权下载 |
+
+### 本卡追加证据
+
+- 锁前/锁内两个计划及绑定 hash；fake provider 精确事件和收发字节；前后目录/catalog 快照；remaining_gap；I-02 恢复证据链接
+
+命令： T-GAP；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- 未授权流量；生产路径；为防重复写另建文件 registry；未批准选择多候选策略；要求修改 I-02 owner 文件而未协调
+
+### 恢复边界
+
+- 仅清理本次临时资源且保留失败证据；真实资产不触碰；隔离 raw 在失败时先保留后由恢复用例验证
+
+### 关闭标准
+
+- 单次与多缺口语义明确；重检/额度/部分失败均可观测；I-02 对应恢复项未完成时本卡不得关闭
+
+## I-04-A — 先定请求 deadline、清理预算和计时 oracle
+
+父项：I-04。状态：planned；实施结果：未执行。角色：filing-fetch 负责人（wiki 并发 reviewer）。
+
+依赖：I-00-A、I-00-B。
+
+执行门：高级 reviewer 先定案；本卡不实施产品
+
+### 现行源码锚点
+
+- [scripts/fetch_filing.py:282](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:282) — `_run_company_wiki_json_retry`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:509](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:509) — `PausedWorkerScope._remaining`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:592](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:592) — `PausedWorkerScope.__exit__`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+
+### 允许改动
+
+- 仅本次决策和计时 fixture；不改生产 timeout 默认值/worker 状态
+
+### 输入与独立预期
+
+- reviews/filing/tests/pure_probes.json：deadline 10；模拟子调用消耗9并抛 catalog_busy；旧代码退避5，模型时钟到14。这不是第二次5秒调用或14秒墙钟。
+- 独立数学 oracle：t0=0，deadline=10，首次返回t=9，则剩余=1；下一退避<=1；t>=10 不可新发请求。
+
+### 按序动作
+
+1. 高级 reviewer 列请求阶段（resolve/close-gap/status/pause 等）及每阶段是否计入同一 deadline；不用各段独立重置预算。
+2. 确定必要恢复动作的单独 cleanup_budget 上限、何时可使用、总 elapsed 怎样分别报告；deadline 已过不等于放弃所有权恢复。
+3. 确定 TimeoutExpired/取消/锁等待/退避/worker状态未知的错误语义；截止后不能通过 max(10,...) 新给请求预算。
+4. 冻结真实时延测试预算 B、清理上限 C 和平台测量容差 epsilon；epsilon 来自运行环境测量/调度边界并独立批准，不因修后失败临时放宽。
+5. 签署模型时钟和真实进程两套 oracle，包含原始 monotonic timestamps；每次子调用传入 timeout<=当时剩余预算，清理使用独立标签。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| F-D1 | clock 0→9，deadline10，jitter=0，catalog_busy | 最多再消耗1的退避；再调用数=0；模型请求结束时间<=10 |
+| F-D2 | now100，deadline90，需要发 worker-status | 请求调用数=0；不得返回10秒请求预算 |
+| F-D3 | 已由本scope暂停worker，期限耗尽 | 仍按独立清理预算处理所有权；不把清理耗时伪装为请求满足deadline，恢复失败明确记录 |
+
+### 本卡追加证据
+
+- 阶段预算表、C与epsilon选值及理由、超时/取消/恢复状态表、独立 reviewer 签署
+
+命令： 本卡无产品执行命令；仅设计与独立审查。
+
+### 失败停止条件
+
+- cleanup上限/超时分类/实际容差尚未定；通过无限timeout规避失败
+
+### 恢复边界
+
+- 只退回本次决策版本；不暂停/恢复实际worker
+
+### 关闭标准
+
+- 每个阶段有唯一预算来源和记录规则；F-D1—D3 可在无服务环境模拟
+
+## I-04-B — 修复退避旧预算和 worker 最小10秒越界
+
+父项：I-04。状态：planned；实施结果：未执行。角色：filing-fetch 负责人（wiki 并发 reviewer）。
+
+依赖：I-04-A、I-00-C。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [scripts/fetch_filing.py:282](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:282) — `_run_company_wiki_json_retry`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:509](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:509) — `PausedWorkerScope._remaining`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:515](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:515) — `PausedWorkerScope.__enter__`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:592](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:592) — `PausedWorkerScope.__exit__`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+
+### 允许改动
+
+- 隔离 filing scripts/fetch_filing.py 中时间预算与对应 tests/test_fetch_filing.py；新计时测试仅新 run 临时服务脚本
+
+### 输入与独立预期
+
+- I-04-A 签署的 B/C/epsilon；旧 pure_probes.py 仅阅读并提取等价 fixture，绝不原地运行覆盖 reviews/filing/tests。
+- 受控本地子进程只延迟与输出指定 JSON，没有任何 wiki/provider 连接；真实计时参数依 I-04-A 固定。
+
+### 按序动作
+
+1. 先在新用例重建 F-D1/F-D2 并保存当前失败；明确 mock time 是数学验证。
+2. 在子调用返回/抛错后重新计算 remaining，再选择退避；请求预算耗尽立即返回已批准错误，不发后续调用。
+3. 替换 _remaining 的请求最小10秒逻辑，按决策区分 request 与 cleanup；status/pause/resume 的日志均带阶段/预算类型。
+4. 覆盖 success、catalog contention、nonretryable、取消与 timeout 路径；每次真实 subprocess timeout 与调用前 monotonic 剩余一致。
+5. 运行本地延迟子进程用例，保存 start/end/call/sleep/cleanup timestamp；按签署 epsilon 核对请求和总 elapsed。
+6. 运行 T-FILING，检查 deselected 的 live 中文用例确实未执行；测试命令若指向生产目录立刻中止，不靠 skip 的环境猜测。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| F-B1 | F-D1原反例 | 首次调用1次、退避<=1、无第二调用，模拟elapsed<=10；异常可含已耗尽的最后 catalog_busy 原因 |
+| F-B2 | now100 deadline90；或只余0.2秒 | 前者请求调用0；后者传入timeout<=0.2，不强行10秒 |
+| F-B3 | fatal/worker_paused，仍有充足预算 | 不自动重试；calls=1；保留原分类 |
+| F-B4 | 受控真实进程耗时接近B，再busy；清理分支耗时<=C | request_elapsed<=B+epsilon；cleanup_elapsed<=C+epsilon；total分别报告，不能混作10→14模拟复现 |
+| F-B5 | 首次立即成功，worker未运行/用户已暂停两种 | 无多余重试；按现有意图不启动或恢复用户worker |
+
+### 本卡追加证据
+
+- 修前/修后模型时钟轨迹；真实受控延迟轨迹；原始stdout/stderr/exit；每次timeout参数；请求/清理分项elapsed；deselection记录
+
+命令： T-FILING；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- 引入新最小timeout/偷偷加总B；真实时延容差未提前签署；发现依赖真实生产wiki
+
+### 恢复边界
+
+- 只回退隔离预算代码；所有模拟worker资源局限临时路径；不得以实际worker-resume收尾
+
+### 关闭标准
+
+- F-B1—B5和既有非live单测通过；模型测试与真实受控进程测试分别签收，不外推真实provider
+
+## I-04-C — 先冻结跨进程 lease、所有权与恢复协议
+
+父项：I-04。状态：planned；实施结果：未执行。角色：filing-fetch 负责人（wiki 并发 reviewer）。
+
+依赖：I-00-A、I-00-B、I-04-A。
+
+执行门：高级 reviewer 先定案；本卡不实施产品
+
+### 现行源码锚点
+
+- [scripts/fetch_filing.py:465](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:465) — `PausedWorkerScope`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:565](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:565) — `PausedWorkerScope._register`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:579](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:579) — `PausedWorkerScope._unregister`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:592](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:592) — `PausedWorkerScope.__exit__`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+
+### 允许改动
+
+- 仅本次状态图、锁协议和调度表；不得弱模型自选文件锁库、数据库锁或重写worker
+
+### 输入与独立预期
+
+- 历史两线程强制read-before-write，各自 first=True，最后仅一个条目；只是逻辑RMW反例，未验证真实跨进程或OS tmp碰撞。
+- 签署前统一词义：lease_id 与进程ID不同；owner generation 与 worker incarnation 不同；用户暂停意图优先于本请求自动恢复。
+
+### 按序动作
+
+1. 高级 reviewer 选择适合已支持 OS 的跨进程互斥实现、锁路径/顺序/超时，以及在原目录读写权限不足时的安全失败；不得仅使用 threading.Lock。
+2. 定义 acquire/register/pause-confirm/join/release/resume-confirm 全状态和原子边界，特别是最后release与新acquire同时到达。禁止删除所有权证据后无条件resume。
+3. 定义唯一 lease ID、同PID嵌套、PID复用检测、stale判断来源；进程探测异常不能等同已死亡；owner文件与entry文件兼容升级如何处理。
+4. 定义崩溃窗口：登记后未pause、pause后未确认、最后释放后resume失败、损坏JSON；有歧义的用户意图和未知worker状态应 fail closed，不能自动当空列表。
+5. 保留当前显式调用可在用户paused时获授权下载但绝不代用户resume的语义；外部用户在scope中再次pause必须能阻止旧owner恢复，若现有API无法识别则记录依赖并先协调。
+6. 写固定调度脚本和每步expected lease集合/owner/action计数。锁内是否可等待CLI、如何避死锁需高级 reviewer 签署，弱模型只实现已选方案。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| F-L1 | A acquire、B acquire、A release、B release；初始running | 有效lease计数1→2→1→0；pause动作1；A退出resume0；B最后退出resume1 |
+| F-L2 | 同PID的A/B嵌套；同PID但不同进程创建时间；锁竞争 | 不同lease可独立释放；不得按PID全删；不能复用失效owner资格 |
+| F-L3 | 初始由用户paused、无本工具owner；执行获授权下载 | 不自动resume；与允许显式下载相容；不能把该允许路径误报成自动pause绕过 |
+| F-L4 | 用户在scope中新增pause；owner JSON损坏；resume失败 | 不自动覆盖用户意图；损坏不能按无owner处理；失败保留可恢复诊断，不伪称已恢复 |
+
+### 本卡追加证据
+
+- 锁选择ADR、状态转移表、线性化点、锁顺序、损坏/过期恢复规则、4个调度精确oracle、支持平台范围
+
+命令： 本卡无产品执行命令；仅设计与独立审查。
+
+### 失败停止条件
+
+- 跨进程锁/用户意图token尚未有方案；试图启用生产worker验证；另造wiki调度系统
+
+### 恢复边界
+
+- 不迁移生产lease文件；决策不成立则保留旧问题未关闭
+
+### 关闭标准
+
+- 高级并发reviewer批准所有故障窗口；需要wiki API变更时由该owner补依赖后才进入I-04-D
+
+## I-04-D — 实施原子lease更新并验证进程交错
+
+父项：I-04。状态：planned；实施结果：未执行。角色：filing-fetch 负责人（wiki 并发 reviewer）。
+
+依赖：I-04-C、I-04-B。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [scripts/fetch_filing.py:565](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:565) — `PausedWorkerScope._register`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:579](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:579) — `PausedWorkerScope._unregister`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:515](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:515) — `PausedWorkerScope.__enter__`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:592](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:592) — `PausedWorkerScope.__exit__`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+
+### 允许改动
+
+- 隔离 filing fetch_filing.py 的 lease/owner 边界及必要现有依赖声明（锁实现仅限已签方案）；相应测试；不修改生产workercontrol
+
+### 输入与独立预期
+
+- I-04-C 签署状态表；新 run 内的临时 catalog/lease目录；仅记录pause/resume而不控制真实worker的 fake command process。
+- 两进程 A/B 通过显式barrier控制顺序；不是在同一Python解释器里patch os.getpid 就声称跨进程通过。
+
+### 按序动作
+
+1. 先写顺序和同PID嵌套测试，再按协议实现锁内读-改-写与唯一lease释放，固定临时文件名称冲突也要在协议内处理。
+2. 实现owner generation与pause/resume确认间的可恢复状态；进程退出不得吞掉写失败后仍报告拥有首租约。
+3. 实现计划中的stale/损坏处理并保护用户原暂停意图；最后释放不跨越新acquire，也不无条件删除所有权证据。
+4. 运行两真实本地子进程在临时目录内的barrier调度：同时acquire、先后release、last-release与new-acquire竞态、同PID嵌套（单进程两scope）。
+5. 在每个签署崩溃窗口只杀本测试已记录PID的子进程；保存剩余磁盘状态，再以独立新进程执行批准恢复。
+6. 运行T-FILING；对照各事件恰好一次/禁止事件要求。不能仅用循环100次无碰撞作为并发正确性证明。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| F-L5 | A/B在read前barrier同时acquire | 首个owner只有1；两个lease都保留；pause确认后参与者进入；无提前resume |
+| F-L6 | A最后release前B开始acquire | 符合冻结线性化顺序；B持有有效lease期间不得被A恢复worker |
+| F-L7 | 同PID两个scope，内层退出 | 仅移除内层lease，外层仍有效；resume=0直到最后退出 |
+| F-L8 | 在登记/暂停确认/释放/恢复窗口中止；JSON损坏；锁超时 | 每点恢复结果与签署状态表一致；不得自动丢弃未知owner；明确失败和资源状态 |
+| F-L9 | 初始user_paused或中途user_pause | 工具不会解除该暂停意图；显式下载允许与否按既有授权契约 |
+
+### 本卡追加证据
+
+- 每个调度的进程ID/leaseID/generation/monotonic事件；每步目录文件内容/hash；pause/resume spy日志；崩溃前后与恢复新进程证据
+
+命令： T-FILING；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- 锁协议变更或死锁；需kill未知PID；任何路径指向生产catalog；无法证明用户意图时停止自动恢复
+
+### 恢复边界
+
+- 只终止本卡登记的测试进程；保留临时owner状态供分析；回退代码不能删除生产所有权文件或主动resume
+
+### 关闭标准
+
+- 顺序、同PID、真实两进程、崩溃恢复与用户暂停五类均满足；高级并发reviewer独立读轨迹签收
+
+## I-04-E — 保留嵌套错误与失败前真实副作用计数
+
+父项：I-04。状态：planned；实施结果：未执行。角色：filing-fetch 负责人（wiki 并发 reviewer）。
+
+依赖：I-04-B、I-04-D、I-02、I-03-D。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [scripts/fetch_filing.py:199](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:199) — `_run_company_wiki_json`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:251](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:251) — `_classify_wiki_error`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:622](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:622) — `_record_download_events`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/fetch_filing.py:938](C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py:938) — `_close_gap_and_return_handle`；SHA-256 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`。
+- [scripts/filing_contracts.py:44](C:/Users/郑曾波/Projects/filing-fetch/scripts/filing_contracts.py:44) — `FilingFetchError`；SHA-256 `2d1b2e3374f1d0c255f94303d208f8657f54c9c32b3428e424f43e6a81ddc457`。
+
+### 允许改动
+
+- 隔离 filing fetch_filing.py、filing_contracts.py 的信封/计数及测试；wiki canonical error/event实现由I-02/I-03-D单owner提交
+
+### 输入与独立预期
+
+- 从I-02取得已签署错误taxonomy与真实阶段事件，输入样例至少含 code/retryable/request_id/stage/attempts/cause 及准确字段映射。
+- fixture一：DB lock可重试；二：HTTP403，上游 retryable=true 必须原样结构化保留，是否自动重试另由冻结策略与 deadline 决定；三：本地请求schema错误；四：fetch=1/raw=1/register=0的部分失败。原始日志与结构体分别保存。
+
+### 按序动作
+
+1. 先固定stderr/stdout的机器信封契约；完整结构先解析再限长人类消息，日志前缀/大于2000字符不能将已知错误压成另一种fatal。
+2. 改 close-gap 非completed 出口保留原cause/status/retryability/阶段而非只包装gap_not_closed；未知/损坏payload继续明确不可信，不伪造可重试。
+3. 在每次子调用尝试和每个可信上游事件落账；失败返回也更新统计，不能只在合格handle返回后_record_download_events。
+4. 定义累计与本次增量的去重键，避免重试读取同一envelope重复加数；不得把未知下载次数写0，应按I-02契约标未知并保留证据。
+5. 用fake upstream的实际本地CLI协议测试 existing/missing/provider失败/注册失败/retry；配置显式指向新临时目录。不要直接运行当前 live 中文用例。
+6. 运行T-FILING并与I-02事件对账；跨项目共享字段改变须由双方reviewer签收，再移交I-07真实CN403复核。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| F-E1 | 嵌套 db_timeout,retryable=true,request_id=R1；cause消息>2000字符 | machine code/retryability/R1/stage不丢；是否重试与预算一致；只展示文本可截断 |
+| F-E2 | provider HTTP403（上游 retryable=true，本例冻结策略禁止本次自动重试，预算尚充足）与本地 invalid schema 两种 | 403 的原代码、stage、request_id、retryable=true 原样结构化保留；本例自动重试=0、上游调用=1，不能改写 retryable=false。schema 错误保持其独立代码与阶段；两者均不冒充 catalog 锁。另行获准的重试仍受冻结策略和 deadline 约束 |
+| F-E3 | fetch1、raw_saved1、registration0后失败；同事件envelope再读一次 | 失败结果报告已发生副作用；累计不翻倍；不返回capture_ready |
+| F-E4 | 上述失败后重试，仅注册成功；已有合格文件重复请求 | 两者本次新增fetch=0；部分失败恢复保留同raw hash；调用数与进程spy逐条对账 |
+| F-E5 | 非JSON/未知错误或事件计数缺失 | 明确协议失败/计数未知，不伪造结构或0，不自动宽松重试 |
+
+### 本卡追加证据
+
+- 完整原始信封与人类日志；每attempt spy；上游事件ID与增量/累计对照；两次请求raw hash；隔离CLI stdout/stderr/exit
+
+命令： T-FILING；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- 上游尚无可靠事件字段；不能对账；需要把全部错误设retryable才能通过；发生生产provider调用
+
+### 恢复边界
+
+- 保留现有raw和原失败日志；回退信封变更但不以清零统计掩盖副作用；不重复下载替代注册恢复
+
+### 关闭标准
+
+- 5类正反例及I-02对账一致；真实provider未测必须继续未测，不能用本地CLI测试量代替
+
+## I-08-A — 先定签名信任域、提供者协议及旧版本边界
+
+父项：I-08。状态：planned；实施结果：未执行。角色：revenue 发布负责人（独立签名/事务 reviewer）。
+
+依赖：I-00-A、I-00-B。
+
+执行门：高级 reviewer 先定案；本卡不实施产品
+
+### 现行源码锚点
+
+- [scripts/revenue_core.py:113](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_core.py:113) — `attestation_capability`；SHA-256 `1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae`。
+- [scripts/revenue_core.py:128](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_core.py:128) — `run_forecast`；SHA-256 `1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae`。
+- [scripts/revenue_publication.py:120](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_publication.py:120) — `build_publication_receipt`；SHA-256 `183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba`。
+- [scripts/revenue_publication.py:185](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_publication.py:185) — `validate_publication_receipt`；SHA-256 `183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba`。
+- [scripts/contracts/evidence.py:270](C:/Users/郑曾波/Projects/revenue-forecast/scripts/contracts/evidence.py:270) — `_validate_host_signature`；SHA-256 `bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e`。
+
+### 允许改动
+
+- 仅本次协议/信任域决策；不生成生产密钥、不改受信名单、不开放新网络服务
+
+### 输入与独立预期
+
+- 历史普通存在.py文件被判capability=true且unsigned被标host_signed：reviews/revenue/logs/publication_probe.stdout.txt；脚本只读。
+- 现有 _validate_host_signature 已对提供的Ed25519签名做whitelist验证，缺口是publication标签/调用链，不得声称现有密码验证全不存在。
+
+### 按序动作
+
+1. 高级 reviewer 区分原始capture事件签名、host receipt签名、forecast publication签名；列每层证明的事实。后加出版签名不能凭空证明旧raw曾由可信工具取得。
+2. 在现有证据schema上选择最小协议：请求/响应传输、canonical payload字段、issuer/key ID/版本、input/result/receipt绑定、domain separator、nonce/request ID/重放边界。
+3. 明确可重复验证历史签名与跨payload重放的区别；同一immutable artifact重复读取不应因签名曾使用过而失效；新请求能否复用签名按已签字段判。
+4. 选择受信key/issuer来源、只读权限、轮换与撤销规则、provider身份约束、超时和输出大小限制；弱模型不得自行实现自签自信任或引入网络钥匙服务。
+5. 决定无provider、普通文件、provider失败、缺私钥、旧unsigned formal/draft的行为；既有unattested可以保留研究结果，但不得升级host_signed或穿过要求签名的消费者门。
+6. 固定F01/F02回归：验证先于签发/登记，当前input_document绑定走强验证；列消费者签名验收入口与最小修改范围，scope外入口由owner补卡。
+7. 签署协议文档、测试key fixture使用范围、旧版本可读/可信分类与错误表，之后I-08-B/C才能实现。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| A-D1 | provider环境变量指向任意存在.py或sys.executable，无协议响应 | 不得host_signed；失败或明确unattested按签署决策，不靠存在性判断 |
+| A-D2 | 合法受信key签名正确payload；同签名复制到不同input/result/schema/issuer | 原件verify通过，变异全部拒绝；历史同artifact重复验证允许 |
+| A-D3 | unsigned旧source receipt + 新publication签名 | 不得声称原capture具备先前不存在的可信签名；信任范围明确受限 |
+| A-D4 | invalid输入或篡改input_document | provider调用0、registry新增0；保留F01/F02已修顺序 |
+
+### 本卡追加证据
+
+- 签名payload的精确字节规范、key/issuer信任域表、协议与限额、兼容及重放表、F01/F02定位、独立安全reviewer签署
+
+命令： 本卡无产品执行命令；仅设计与独立审查。
+
+### 失败停止条件
+
+- 签名范围/旧包兼容/密钥来源未定；只有文件存在探测；测试私钥被当生产信任
+
+### 恢复边界
+
+- 不修改生产密钥/名单/结果；旧unsigned档案保留原标签，不重签伪造历史事件
+
+### 关闭标准
+
+- A-D1—D4都有固定消费者预期；provider协议和信任域无未决；新schema不绕过强验证
+
+## I-08-B — 实际调用受信提供者并验证签名后才声明host_signed
+
+父项：I-08。状态：planned；实施结果：未执行。角色：revenue 发布负责人（独立签名/事务 reviewer）。
+
+依赖：I-08-A、I-00-C。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [scripts/revenue_core.py:113](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_core.py:113) — `attestation_capability`；SHA-256 `1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae`。
+- [scripts/revenue_core.py:128](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_core.py:128) — `run_forecast`；SHA-256 `1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae`。
+- [scripts/revenue_publication.py:120](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_publication.py:120) — `build_publication_receipt`；SHA-256 `183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba`。
+- [scripts/revenue_publication.py:185](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_publication.py:185) — `validate_publication_receipt`；SHA-256 `183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba`。
+- [scripts/contracts/evidence.py:270](C:/Users/郑曾波/Projects/revenue-forecast/scripts/contracts/evidence.py:270) — `_validate_host_signature`；SHA-256 `bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e`。
+- [scripts/contracts/evidence.py:311](C:/Users/郑曾波/Projects/revenue-forecast/scripts/contracts/evidence.py:311) — `validate_host_receipt`；SHA-256 `bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e`。
+
+### 允许改动
+
+- 隔离 revenue_core.py、revenue_publication.py、contracts/evidence.py 及对应签名测试；仅按已定协议增加最小provider适配；禁止通用新签名框架
+
+### 输入与独立预期
+
+- I-08-A 固定协议；只用于新run临时目录的Ed25519测试密钥、受信名单、受控provider子进程；不读取实际私钥。
+- fixture forecast_document()明确是合成fixture，不能因测试签名称真实capture；真实provider资格留后续I-16/I-17。
+
+### 按序动作
+
+1. 先加入任意存在文件的回归反例，确认修前错标host_signed；不用原probe_publication.py原地运行。
+2. 将能力/签发拆清：文件可执行只可作为预检查，正式host_signed必须来自一次成功的协议调用及对所需证据链的有效验证。
+3. 强验证成功后构造签署payload，按协议调用受控provider，验证响应schema/key/issuer/hash/domain/版本和签名；失败保持不受信或拒绝，依决策错误表。
+4. 避免签名自引用：canonical payload排除哪些签名字段、result_sha如何绑定须严格依I-08-A；不能为了签名通过放弃现有receipt/hash门。
+5. 更新旧test_configured_provider_means_host_signed_publication，改为明确协议fixture；不得在新实际调用逻辑下裸执行sys.executable等待输入。
+6. 测试provider超时、非0、截断JSON、超长响应及合法签名；输出完整验证轨迹而不记录私钥。使用新scratch registry运行T-PUB。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| A-B1 | 普通.py存在，无可用协议；裸解释器路径 | 不会host_signed；受控超时/拒绝，无挂起，不以isfile通过 |
+| A-B2 | 合法临时受信provider返回正确签名 | host_signed且验签成功；真实provider_invocations=1；payload、key、issuer、版本均对应 |
+| A-B3 | 签名改1位；不受信key；错误issuer；payload改1字段 | 每个变异拒绝可信声明；正式可信登记=0 |
+| A-B4 | provider timeout/nonzero/invalidJSON/oversize | 按冻结错误表失败关闭；不悄悄改成host_signed；时间/大小受限 |
+| A-B5 | invalid input_document或强验证失败 | 签发调用0；registry新增0；F01/F02不回归 |
+
+### 本卡追加证据
+
+- 公钥fixture/指纹（不含私钥）、精确被签payload/响应/验签日志、进程调用计数、修前反例、T-PUB原始结果、全量数据/代码hash
+
+命令： T-PUB；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- 信任名单来自同一响应且无外部锚；签名证明被扩大到历史capture；为通过而删F01/F02；普通解释器成为无界provider
+
+### 恢复边界
+
+- 仅回退隔离代码和测试配置；保留旧结果不改签名；失败输出不得被可信consumer接收；临时私钥按测试范围管理
+
+### 关闭标准
+
+- A-B1—B5通过；crypto正例和publication链共同验收；实现者不能自签真实provider已可用
+
+## I-08-C — 验证消费者拒绝伪造、跨载荷重放和未签结果
+
+父项：I-08。状态：planned；实施结果：未执行。角色：revenue 发布负责人（独立签名/事务 reviewer）。
+
+依赖：I-08-B。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [scripts/revenue_publication.py:185](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_publication.py:185) — `validate_publication_receipt`；SHA-256 `183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba`。
+- [scripts/revenue_report.py:1196](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_report.py:1196) — `validate_published_forecast`；SHA-256 `a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f`。
+- [scripts/revenue_report.py:1239](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_report.py:1239) — `validate_forecast_output`；SHA-256 `a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f`。
+- [scripts/publication_registry.py:188](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:188) — `is_registered`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+
+### 允许改动
+
+- 隔离 revenue 对应publication/attestation/pipeline测试；发现消费者门缺失时仅修改I-08-A已批准入口，scope外invest-*由其owner接卡
+
+### 输入与独立预期
+
+- 同一合成forecast的合法签名包S、明确unattested U、draft D；从S克隆变异，不能重新签名或调用生产helper重算expected。
+- 通过CodeGraph在I-00-B记录实际消费路径，具体argv由调用点核定；本卡不凭空列invest命令。
+
+### 按序动作
+
+1. 冻结消费者集合及各入口的信任需求；分别记录能否展示、能否正式投资模块使用，不把普通只读查看和可信消费混在一起。
+2. 经真实验证dispatcher调用 S/U/D；重放矩阵逐个变更input/result/schema/issuer/key/source事件或请求域，保持原签名。
+3. 将伪造host_signed字符串与registry中存在同input anchor的组合送入消费者；检查不能仅凭label或is_registered(input)通过。
+4. 保留合法历史S重复读取正例；只拒绝跨被签域滥用，不把历史签名验证改成一次性开销。
+5. 检查F01/F02：输入不一致须在签发/发布前拒绝；输出校验使用embedded input强验证。运行T-PUB，附consumer调用轨迹。
+6. 逐消费者签收；scope外消费者未测列出明确未完成依赖，不写全生态通过。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| A-C1 | S合法且所有哈希/受信域一致 | 要求签名的消费者通过；重复读取S仍通过 |
+| A-C2 | U或D；或U仅改attestation_status=host_signed | 要求可信formal的消费者拒绝；普通查看按既定兼容规则，不伪造签名 |
+| A-C3 | S跨input/result/schema/issuer/source-event重放 | 每个被签域变异拒绝；只重算非秘密hash不修复签名 |
+| A-C4 | registry有同input的旧不同result；当前包缺合法绑定 | 不能因is_registered(input)=true接收当前伪包 |
+| A-C5 | 合法S配不同input_document；或修改后保留旧verification context | 强验证拒绝；不触发新签发或登记 |
+
+### 本卡追加证据
+
+- 消费者清单/调用图、每入口的期望与实际、变异前后差异、S/U/D资格表、独立reviewer结论与scope外未验证项
+
+命令： T-PUB；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- 找不到某消费者真实入口；只测试验签helper却宣称消费者已接通；需改scope外仓库而无owner协调
+
+### 恢复边界
+
+- 保留旧可读文档；可信消费在不确定时拒绝并注明缺口，不通过关闭门恢复
+
+### 关闭标准
+
+- 所有已批准消费者入口实跑矩阵；无未验入口被标完成；F01/F02仍正确
+
+## I-09-A — 先定结果包提交、读可见性与幂等协议
+
+父项：I-09。状态：planned；实施结果：未执行。角色：revenue 发布负责人（独立签名/事务 reviewer）。
+
+依赖：I-00-A、I-00-B、I-08-A。
+
+执行门：高级 reviewer 先定案；本卡不实施产品
+
+### 现行源码锚点
+
+- [scripts/revenue_core.py:128](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_core.py:128) — `run_forecast`；SHA-256 `1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae`。
+- [scripts/revenue_forecast.py:38](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_forecast.py:38) — `prepare_forecast`；SHA-256 `6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc`。
+- [scripts/revenue_forecast.py:55](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_forecast.py:55) — `main`；SHA-256 `6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc`。
+- [scripts/publication_registry.py:95](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:95) — `_append`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:127](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:127) — `register_publication`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:162](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:162) — `register_snapshot`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:188](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:188) — `is_registered`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+
+### 允许改动
+
+- 仅本次事务协议/迁移/故障矩阵；不改正式registry，不删除历史记录
+
+### 输入与独立预期
+
+- 历史反例：run_forecast先登记，随后_atomic_write_text失败，CLI rc=2但registry已增加1行且无输出：reviews/revenue/logs/publication_probe.stdout.txt。
+- 现有每文件temp+fsync+replace仍是有效窄修复；现有同输入两运行=两条审计历史不是必然重复发布bug。
+
+### 按序动作
+
+1. 高级 reviewer 决定一个publication的身份：input/result/engine/schema/artifact_type与包目标怎样参与；逻辑幂等重试与允许重复审计行分别定义。
+2. 定义必需结果成员：JSON、可选Markdown、receipt/manifest；输出参数缺省(stdout)与直接run_forecast库调用没有文件路径时的提交语义。不可偷偷把library行为改成未登记还称正式。
+3. 在现有实现上选择最小prepare/commit/recovery或等效协议；明确唯一commit点、崩溃一致性假设、文件与registry跨卷限制、Windows rename/fsync可保证范围。弱模型不得自选SQLite/manifest/新数据库架构。
+4. 明确读者只消费committed且各成员hash一致的版本；哪些现有lookup/is_registered/audit/backtest入口需更新、旧append行如何解读但不伪造commit资格。
+5. 选择跨进程提交串行化/锁与链尾更新方式，列同一/不同publication并发；_append读链尾再append的原子性必须包含在协议。
+6. 签署故障点表：prepare前后、JSON持久化、Markdown持久化、registry append/flush、commit可见前后、回执返回前、恢复再崩溃；每点给可见版本/返回码/恢复动作。
+7. 定义旧包保留和撤销策略；no-output/stdout输送失败的可达保证单列，不能承诺对终端stdout和磁盘做不可能的共同回滚。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| P-D1 | 新包输出失败，初始无已提交包 | 消费者可见新正式包数=0；registry即便有prepare事件也不被is_registered等当committed |
+| P-D2 | 已有P0；写P1第一或第二文件失败 | 消费者继续见完整P0或明确不可用，绝不见P0/P1混包；恢复可验证，不覆盖历史 |
+| P-D3 | P1 commit后返回前崩溃，再以同幂等身份重试 | 逻辑committed P1=1；审计行数可>1但含义由签署协议限定 |
+| P-D4 | 库API无输出路径、stdout-only、snapshot与forecast共registry | 分别有明确语义/兼容规则；不得误把snapshot或draft当已提交formal包 |
+
+### 本卡追加证据
+
+- 状态图/唯一commit点/reader契约/幂等键、平台持久性假设、API兼容矩阵、逐故障点固定oracle、独立事务reviewer签署
+
+命令： 本卡无产品执行命令；仅设计与独立审查。
+
+### 失败停止条件
+
+- stdout/API语义未定；试图一次rename跨卷实现假原子；欲删旧registry造绿；锁/恢复尚未定
+
+### 恢复边界
+
+- 仅修改本次设计文档；旧包/registry只读；不预先迁移生产历史
+
+### 关闭标准
+
+- P-D1—D4和全部故障点无未决；I-08信任状态与提交状态独立且一致；后继卡绑定决策hash
+
+## I-09-B — 实现完整包提交并让读者验证commit资格
+
+父项：I-09。状态：planned；实施结果：未执行。角色：revenue 发布负责人（独立签名/事务 reviewer）。
+
+依赖：I-09-A、I-08-B、I-00-C。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [scripts/revenue_core.py:128](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_core.py:128) — `run_forecast`；SHA-256 `1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae`。
+- [scripts/revenue_forecast.py:22](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_forecast.py:22) — `_atomic_write_text`；SHA-256 `6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc`。
+- [scripts/revenue_forecast.py:38](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_forecast.py:38) — `prepare_forecast`；SHA-256 `6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc`。
+- [scripts/revenue_forecast.py:55](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_forecast.py:55) — `main`；SHA-256 `6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc`。
+- [scripts/publication_registry.py:53](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:53) — `_read_entries`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:95](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:95) — `_append`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:188](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:188) — `is_registered`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:193](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:193) — `audit`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+
+### 允许改动
+
+- 隔离 revenue_core.py、revenue_forecast.py、publication_registry.py 及I-09-A明确列出的现有读者/测试；公共receipt改动仅I-08 owner协作；禁止另造第四发布框架
+
+### 输入与独立预期
+
+- 固定fixture forecast_document()及I-08临时签名提供者；新run私有registry与包目录；初始P0完整已提交，P1与P0不同可见内容/hash。
+- 将旧单文件atomic helper正例保留；新的独立oracle是consumer所见成员hash与commit状态，不是调用了os.replace。
+
+### 按序动作
+
+1. 先添加输出写失败registry不应成为可消费正式发布的反例；保存修前rc=2/新增1历史事实，不把旧测试改写成从未失败。
+2. 按I-09-A划分prepare与commit：完成强验证/签名、生成全部成员与hash，在唯一commit点之前保持不可消费；不得简单把register移到最后却忽略第二文件/并发/崩溃。
+3. 在批准锁内原子更新链尾/提交状态；保持现有hash链验证、generation区分、draft/forecast/snapshot差异，不将所有历史重复行视冲突。
+4. 修改批准的reader，让prepare/abort/不完整包不能通过正式资格；旧格式按兼容表处理，不靠input_sha存在即接受任意result。
+5. 实现幂等恢复所需最小持久记录；恢复前验证文件/hash/身份，不能补造缺失正式结果或重签改变历史。
+6. 执行T-PUB与本卡正反例；I-09-C的kill恢复尚未验收前只标实施就绪，不宣称事务完成。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| P-B1 | 正常发布P1，包括JSON和请求的Markdown | commit完成后两个成员均完整并与manifest/registry绑定；reader只见一致P1 |
+| P-B2 | JSON写入失败；或JSON完成而Markdown写失败 | 本次不形成可消费正式P1；existing P0仍按协议可用；rc与错误表一致（现CLI错误通常2） |
+| P-B3 | registry写/flush失败 | 不会有可消费无registry资格的新包；残留prepare按协议可恢复，不报成功 |
+| P-B4 | 同input不同result/generation、snapshot或draft条目；仅prepare条目 | 正式资格按完整身份/commit验证；保留合法不同generation历史；不能仅is_registered(input)通过 |
+| P-B5 | 同一逻辑publication成功后重试 | 逻辑commit仍1；允许审计多行按协议计数；输出未篡改；不要求随时间签名字段必字节相同，按协议比较稳定载荷 |
+
+### 本卡追加证据
+
+- prepare/commit各状态原始记录、成员hash、reader输出、故障前后registry链验证、旧schema兼容、API调用结果、T-PUB日志
+
+命令： T-PUB；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- 读者可见半包；只顺序移动register没有恢复协议；绕过强验证/签名；I-09-A遗漏API语义
+
+### 恢复边界
+
+- 保留失败prepare与上个完整P0；隔离恢复按批准协议运行；禁止编辑历史hash链或清空registry回退
+
+### 关闭标准
+
+- P-B1—B5与原单文件安全测试通过；所有批准reader门生效；进入I-09-C但不提前给整体PASS
+
+## I-09-C — 逐边界故障注入、并发与重启恢复独立验收
+
+父项：I-09。状态：planned；实施结果：未执行。角色：revenue 发布负责人（独立签名/事务 reviewer）。
+
+依赖：I-09-B、I-08-C。
+
+执行门：前置卡的独立验收全部通过后方可执行；未定协议不得自行补选
+
+### 现行源码锚点
+
+- [scripts/revenue_forecast.py:55](C:/Users/郑曾波/Projects/revenue-forecast/scripts/revenue_forecast.py:55) — `main`；SHA-256 `6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc`。
+- [scripts/publication_registry.py:95](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:95) — `_append`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:53](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:53) — `_read_entries`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:127](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:127) — `register_publication`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:188](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:188) — `is_registered`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+- [scripts/publication_registry.py:193](C:/Users/郑曾波/Projects/revenue-forecast/scripts/publication_registry.py:193) — `audit`；SHA-256 `446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa`。
+
+### 允许改动
+
+- 仅隔离的publication transaction测试/本次故障harness；发现产品问题退回I-09-B修，不能测试者绕过产品入口
+
+### 输入与独立预期
+
+- 每个故障点独立新目录与同一P0/P1输入；I-09-A冻结故障点与返回码oracle；两真实本地进程与只读consumer进程。
+- 测试必须包括真正进程中止，Python finally不会运行；patch OSError仅证明异常路径，不代替崩溃持久性。
+
+### 按序动作
+
+1. 为签署故障表逐点建立barrier/故障注入hook，只在测试构建启用；在代码中定位hook后由独立reviewer检查不改变正常提交顺序。
+2. 分别注入OSError（写/flush/fsync/replace/registry）、到点终止发布子进程、恢复中再终止；只能终止new_run manifest记录的测试PID。
+3. 每个点由全新reader进程读取并记录可见包成员/hash/commit资格；不得仅看写者返回值，不能只确认无tmp文件。
+4. 由新的恢复进程重复两次恢复，检查幂等、hash链、未误删P0、未凭空生成P1；保留孤儿prepare的明确不可消费状态。
+5. 并发两个相同publication与两个不同publication；消费者持续观测，核对锁、链尾、逻辑commit数量和允许的审计历史行。
+6. 运行真实CLI的JSON+Markdown、stdout-only、直接库API及snapshot兼容测试，全部在隔离registry；冻结语义不支持的组合明确拒绝。
+7. 独立reviewer按原用户完整包要求签收；只在本卡scratch验证的结果不能签成生产部署资格。
+
+### 正反例与故障注入
+
+| Case | 输入/注入点 | 独立预期 |
+|---|---|---|
+| P-C1 | prepare前后、JSON完成、Markdown完成、registry持久化前后、commit前后、返回前逐点kill | 按冻结表仅P0或完整P1可消费；无混包；未commit的P1资格为false |
+| P-C2 | P1已commit后响应丢失，再重试同幂等请求 | 逻辑P1=1；返回/恢复可定位同发布；允许历史行数不误报重复bug |
+| P-C3 | 两进程同时从同链尾提交；另一个reader连续读 | 链无分叉/断裂；无丢失提交；reader不会接受半行/未commit为正式包；允许短暂忙/重试按契约 |
+| P-C4 | 恢复中再次kill；损坏prepare或成员hash；完整P0存在 | 再次恢复幂等；损坏项fail closed且保留诊断；P0不被删除或改写 |
+| P-C5 | stdout pipe失败、直接API、validate-only、snapshot历史 | 各按冻结兼容矩阵；validate-only无发布写；stdout失败不伪称跨终端事务回滚 |
+
+### 本卡追加证据
+
+- 每故障点独立run_id/输入/代码hash、hook位置与触发轨迹、PID证据、原始returncode及expected分离、reader观测、两次恢复结果、registry链全检与提交计数
+
+命令： T-PUB；执行前遵守上方预检，新增测试节点另绑定。
+
+### 失败停止条件
+
+- 测试kill涉及未登记PID；底层持久性不满足已宣称平台保证；需要删历史行；只测异常不测真正退出
+
+### 恢复边界
+
+- 只停止测试进程并保留scratch证据；恢复上一个完整测试包；真实registry/用户包绝不触碰；失败退回I-09-B并保留反例
+
+### 关闭标准
+
+- 故障表逐行签收无缺格；两进程并发与全新reader/recovery成立；旧功能兼容与签名链通过；生产I-16/I-17仍单列待验
+
+## 只读历史证据入口
+
+- [reviews/cross_history/current_recheck.json](C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/reviews/cross_history/current_recheck.json)
+- [filing/tests/pure_probes.json](C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/reviews/filing/tests/pure_probes.json)
+- [revenue/logs/publication_probe.stdout.txt](C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/reviews/revenue/logs/publication_probe.stdout.txt)
+- [reviews/revenue/probe_publication.py](C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/reviews/revenue/probe_publication.py)
+
+每卡完成需其completion_criteria、共用证据包及独立reviewer收据同时具备。本文全部status=planned/execution_result=null；测试命令是经绑定后才可用的参数数组模板，不是本轮已执行结果。

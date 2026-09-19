@@ -1,0 +1,2156 @@
+"""Read-only scanners for company raw trees, generic directories, and dayu portfolios."""
+
+from __future__ import annotations
+
+from collections import defaultdict
+from dataclasses import dataclass
+from datetime import UTC, datetime
+import hashlib
+import json
+import mimetypes
+import os
+from pathlib import Path
+import re
+import unicodedata
+import uuid
+from typing import Any, Callable
+
+from company_wiki.source_contract import SourceManifest, SourceType
+
+from .admission import (
+    AdmissionDecision,
+    FOCUS_RELATIVE_PREFIX,
+    FOCUS_ROOT_ID,
+    evaluate_admission,
+)
+from .adapters.dayu import (
+    construct_edgar_url as _construct_edgar_url,
+    enrich_dayu_metadata as _enrich_dayu_portfolio_metadata,
+)
+from .adapters.common import (
+    _ACQUISITION_SIDECAR_SUFFIX,
+    _SKIP_DIRS,
+    _load_acquisition_metadata,
+    _relative,
+    _walk_files,
+)
+from .models import (
+    CatalogConfig,
+    DOCUMENT_EXTENSIONS,
+    SCANNER_VERSION,
+    RootSpec,
+    ScanReport,
+)
+from .store import CatalogStore, canonical_json, metadata_object, metadata_state
+
+
+_DATE_RE = re.compile(
+    r"(?<!\d)(20\d{2})[-_.年](0[1-9]|1[0-2]|[1-9])[-_.月](0[1-9]|[12]\d|3[01]|[1-9])"
+)
+
+
+@dataclass(frozen=True)
+class _Candidate:
+    root: RootSpec
+    path: Path
+    relative_path: str
+    group_key: str
+    role: str
+    entity_name: str | None
+    group_metadata: dict[str, Any]
+    source_status: str
+    admission: AdmissionDecision | None = None
+
+
+@dataclass(frozen=True)
+class _ObservedFile:
+    candidate: _Candidate
+    source_id: str | None
+    content_sha256: str | None
+    size: int
+    mtime_ns: int
+    mime_type: str
+    manifest_json: str | None
+    reused: bool
+    error: str | None
+    known_error: bool = False
+
+
+def _utc_now() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _location_id(root_id: str, relative_path: str) -> str:
+    return "urn:company-wiki:location:sha256:" + _sha256_text(
+        root_id + "\0" + relative_path
+    )
+
+
+def _document_id_for_source(source_id: str) -> str:
+    return "urn:company-wiki:document:sha256:" + source_id.rsplit(":", 1)[-1]
+
+
+def _logical_document_id(root_id: str, group_key: str) -> str:
+    return "urn:company-wiki:document-logical:sha256:" + _sha256_text(
+        root_id + "\0" + group_key
+    )
+
+
+def _mime_type(path: Path) -> str:
+    extension = path.suffix.lower()
+    overrides = {
+        ".md": "text/markdown",
+        ".mht": "multipart/related",
+        ".xsd": "application/xml",
+        ".xml": "application/xml",
+        ".json": "application/json",
+    }
+    if extension in overrides:
+        return overrides[extension]
+    guessed = mimetypes.guess_type(path.name)[0]
+    return (guessed or "application/octet-stream").lower()
+
+
+def _published_date(text: str) -> str | None:
+    match = _DATE_RE.search(text)
+    if not match:
+        return None
+    try:
+        return (
+            datetime(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+            .date()
+            .isoformat()
+        )
+    except ValueError:
+        return None
+
+
+def _classification(
+    path: Path, *, root_kind: str, metadata: dict[str, Any]
+) -> tuple[str, SourceType]:
+    form = str(metadata.get("form_type") or "").casefold()
+    text = re.sub(
+        r"[_-]+",
+        " ",
+        path.stem + " " + str(metadata.get("source_title") or "") + " " + form,
+    ).casefold()
+    # --- trust order: sidecar > form_type > precise keywords > weak keywords ---
+    # 1. explicit sidecar document_kind (highest trust)
+    sidecar_kind = str(metadata.get("document_kind") or "").strip().lower()
+    if sidecar_kind:
+        _SIDECAR_MAP = {
+            "annual_report": (SourceType.REGULATORY_FILING, "annual_report"),
+            "semi_annual_report": (SourceType.REGULATORY_FILING, "semi_annual_report"),
+            "quarterly_report": (SourceType.REGULATORY_FILING, "quarterly_report"),
+            "regulatory_filing": (SourceType.REGULATORY_FILING, "regulatory_filing"),
+            "broker_research": (SourceType.BROKER_RESEARCH, "broker_research"),
+            "investor_relations": (SourceType.INVESTOR_RELATIONS, "investor_relations"),
+            "investor_call_transcript": (
+                SourceType.INVESTOR_RELATIONS,
+                "investor_call_transcript",
+            ),
+            "prospectus": (SourceType.PROSPECTUS, "prospectus"),
+            "news": (SourceType.ORIGINAL_NEWS, "news"),
+        }
+        if sidecar_kind in _SIDECAR_MAP:
+            st, kind = _SIDECAR_MAP[sidecar_kind]
+            return kind, st
+    # 2. broker research commentary must precede annual/semi/quarterly checks
+    if any(token in text for token in ("点评", "深度报告", "调研报告")):
+        return "broker_research", SourceType.BROKER_RESEARCH
+    # 3. explicit form_type (regulatory filing)
+    if (
+        form in {"10-k", "20-f", "40-f"}
+        or "20f" in text
+        or "10k" in text
+        or "40f" in text
+    ):
+        return "annual_report", SourceType.REGULATORY_FILING
+    # 3b. dayu portfolio form_type codes (FY/H1/Q1-Q3) — the portfolio
+    # meta.json carries these; titles are Traditional Chinese (年報 etc.).
+    if form in {"fy", "10k"}:
+        return "annual_report", SourceType.REGULATORY_FILING
+    if form in {"h1", "h2"}:
+        return "semi_annual_report", SourceType.REGULATORY_FILING
+    if form in {"q1", "q2", "q3", "q4"}:
+        return "quarterly_report", SourceType.REGULATORY_FILING
+    # 4. semi-annual BEFORE annual (半年度 contains 年度)
+    if any(
+        token in text
+        for token in ("半年度", "半年报", "中期報告", "中期报告", "interim report")
+    ):
+        return "semi_annual_report", SourceType.REGULATORY_FILING
+    # 5. quarterly
+    if any(
+        token in text
+        for token in ("季度报告", "季度報告", "一季报", "三季报", "quarterly report")
+    ):
+        return "quarterly_report", SourceType.REGULATORY_FILING
+    # 6. annual report (after semi/quarterly exclusion)
+    if any(token in text for token in ("年度报告", "年报", "年報", "annual report")):
+        return "annual_report", SourceType.REGULATORY_FILING
+    if root_kind == "dayu_portfolio":
+        return "regulatory_filing", SourceType.REGULATORY_FILING
+    if any(
+        token in text
+        for token in ("电话会议纪要", "业绩电话会", "earnings call transcript")
+    ):
+        return "investor_call_transcript", SourceType.INVESTOR_RELATIONS
+    if any(
+        token in text
+        for token in ("投资者关系", "调研", "路演", "业绩说明会", "investor relation")
+    ):
+        return "investor_relations", SourceType.INVESTOR_RELATIONS
+    if any(token in text for token in ("招股", "prospectus")):
+        return "prospectus", SourceType.PROSPECTUS
+    if root_kind == "directory":
+        return "broker_research", SourceType.BROKER_RESEARCH
+    if path.suffix.lower() == ".md" and "news" in {
+        part.casefold() for part in path.parts
+    }:
+        return "news", SourceType.ORIGINAL_NEWS
+    return "other", SourceType.OTHER
+
+
+def _entity(entity_name: str | None, root_id: str) -> tuple[str, str, str, float, str]:
+    if entity_name:
+        if re.fullmatch(r"[A-Za-z0-9._-]+", entity_name):
+            return (
+                f"ticker:{entity_name.upper()}",
+                entity_name,
+                "ticker",
+                1.0,
+                "path_ticker",
+            )
+        return (
+            f"company-name:{entity_name}",
+            entity_name,
+            "company",
+            1.0,
+            "company_raw_path",
+        )
+    return (
+        f"unresolved:{root_id}",
+        f"Unresolved ({root_id})",
+        "unresolved",
+        0.0,
+        "unresolved",
+    )
+
+
+def _company_names(config: CatalogConfig) -> tuple[str, ...]:
+    names: set[str] = set()
+    for root in config.roots:
+        if root.kind != "company_raw" or not root.path.is_dir():
+            continue
+        for child in root.path.iterdir():
+            if child.is_dir() and (child / "raw").is_dir():
+                names.add(unicodedata.normalize("NFC", child.name))
+    return tuple(sorted(names, key=lambda value: (-len(value), value.casefold())))
+
+
+def _infer_company(relative_path: str, names: tuple[str, ...]) -> str | None:
+    folded = relative_path.casefold()
+    matches = [name for name in names if name.casefold() in folded]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _load_dayu_portfolio_urls(config: CatalogConfig) -> dict[str, str]:
+    """Build company_name -> source_url from dayu portfolio meta.json files,
+    so company_raw documents whose sidecar lacks a URL can be enriched
+    (Phase 16.1).  Only entries that carry a source_url are indexed."""
+    mapping: dict[str, str] = {}
+    for root in config.roots:
+        if root.kind != "dayu_portfolio" or not root.path.is_dir():
+            continue
+        for meta_path in root.path.rglob("meta.json"):
+            try:
+                payload = json.loads(meta_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                continue
+            if not isinstance(payload, dict):
+                continue
+            url = str(payload.get("source_url") or "").strip()
+            if not url:
+                continue
+            company_name = str(payload.get("company_name") or "").strip()
+            if company_name:
+                mapping.setdefault(company_name, url)
+    return mapping
+
+
+def _load_security_master_identity(catalog_dir: Path) -> dict[str, tuple[str, str]]:
+    """Build provider org id → (market, security_id) from the security-master
+    snapshots, so a dayu meta.json's provider_company_id can propagate
+    identity into ingested documents (Phase 15.4)."""
+    mapping: dict[str, tuple[str, str]] = {}
+    master_dir = catalog_dir / "security_master"
+    if not master_dir.is_dir():
+        return mapping
+    for market in ("cn", "hk", "us"):
+        master_file = master_dir / f"{market}.json"
+        if not master_file.is_file():
+            continue
+        try:
+            payload = json.loads(master_file.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+        records = payload.get("records") if isinstance(payload, dict) else None
+        if not isinstance(records, list):
+            continue
+        for record in records:
+            if not isinstance(record, dict):
+                continue
+            identifiers = record.get("identifiers")
+            if not isinstance(identifiers, dict):
+                identifiers = {}
+            org = str(
+                record.get("source_record_id") or identifiers.get("org_id") or ""
+            ).strip()
+            market_value = str(record.get("market") or "").strip().upper()
+            security_id = str(record.get("security_id") or "").strip()
+            if org and market_value and security_id:
+                mapping.setdefault(org, (market_value, security_id))
+    return mapping
+
+
+def _scan_root_v1(
+    root: RootSpec,
+    company_names: tuple[str, ...],
+    *,
+    progress: Callable[..., None] | None = None,
+    master_identity: dict[str, tuple[str, str]] | None = None,
+    portfolio_urls: dict[str, str] | None = None,
+) -> tuple[list[_Candidate], int, int]:
+    candidates: list[_Candidate] = []
+    excluded = 0
+    policy_excluded = 0
+    if root.kind == "company_raw":
+        companies = sorted(
+            (item for item in root.path.iterdir() if item.is_dir()),
+            key=lambda item: item.name,
+        )
+        for company_index, company in enumerate(companies, start=1):
+            raw = company / "raw"
+            if not raw.is_dir():
+                continue
+            if progress is not None:
+                progress(
+                    current_path=str(raw.resolve(strict=False)),
+                    current=company_index,
+                    total=len(companies),
+                    detail=f"enumerating root {root.root_id}",
+                )
+            paths = sorted(_walk_files(raw))
+            sidecars = {
+                str(path)[: -len(_ACQUISITION_SIDECAR_SUFFIX)]: path
+                for path in paths
+                if path.name.endswith(_ACQUISITION_SIDECAR_SUFFIX)
+            }
+            primary_paths = [
+                path
+                for path in paths
+                if not path.name.endswith(_ACQUISITION_SIDECAR_SUFFIX)
+            ]
+            for path in primary_paths:
+                relative = _relative(path, root.path)
+                sidecar = sidecars.get(str(path))
+                metadata = _load_acquisition_metadata(sidecar) if sidecar else {}
+                # Phase 16.1: a sidecar without any source URL is enriched
+                # from the matching dayu portfolio meta.json (by company name).
+                if not metadata.get("source_url") and not metadata.get("https_url"):
+                    portfolio_url = (portfolio_urls or {}).get(company.name)
+                    if portfolio_url:
+                        metadata = dict(metadata)
+                        metadata["source_url"] = portfolio_url
+                # Phase 18.4: SEC company_raw documents are deterministically
+                # US-listed (same rule as the dayu portfolio pilot): backfill
+                # market/security identity when the sidecar omits it, so
+                # capture-ready handles resolve by market.
+                form_type = str(metadata.get("form_type") or "").upper()
+                is_sec = bool(
+                    metadata.get("accession_number")
+                    or str(metadata.get("provider") or "").strip().lower() == "sec"
+                    or form_type.startswith(("10-", "20-", "6-"))
+                )
+                if not metadata.get("market") and is_sec:
+                    metadata = dict(metadata)
+                    metadata["market"] = "US"
+                if not metadata.get("security_id") and metadata.get("ticker"):
+                    metadata = dict(metadata)
+                    metadata["security_id"] = str(metadata["ticker"])
+                candidates.append(
+                    _Candidate(
+                        root,
+                        path,
+                        relative,
+                        relative,
+                        "original_primary",
+                        company.name,
+                        metadata,
+                        "active",
+                    )
+                )
+                if sidecar is not None:
+                    candidates.append(
+                        _Candidate(
+                            root,
+                            sidecar,
+                            _relative(sidecar, root.path),
+                            relative,
+                            "metadata",
+                            company.name,
+                            metadata,
+                            "active",
+                        )
+                    )
+            primary_names = {str(path) for path in primary_paths}
+            for target, sidecar in sorted(sidecars.items()):
+                if target in primary_names:
+                    continue
+                relative = _relative(sidecar, root.path)
+                candidates.append(
+                    _Candidate(
+                        root,
+                        sidecar,
+                        relative,
+                        relative[: -len(_ACQUISITION_SIDECAR_SUFFIX)],
+                        "metadata",
+                        company.name,
+                        _load_acquisition_metadata(sidecar),
+                        "incomplete",
+                    )
+                )
+    elif root.kind == "directory":
+        for directory_index, (current, directories, files) in enumerate(
+            os.walk(root.path),
+            start=1,
+        ):
+            directories[:] = [name for name in directories if name not in _SKIP_DIRS]
+            current_path = Path(current)
+            if progress is not None:
+                progress(
+                    current_path=str(current_path.resolve(strict=False)),
+                    current=directory_index,
+                    total=0,
+                    detail=f"enumerating root {root.root_id}",
+                )
+            supported: list[Path] = []
+            for name in files:
+                path = current_path / name
+                if path.suffix.lower() not in DOCUMENT_EXTENSIONS:
+                    excluded += 1
+                    continue
+                supported.append(path)
+            relative_dir = _relative(current_path, root.path)
+            # WU-702: route-configured focus scope; legacy FOCUS constants
+            # remain only for v1 configs without routes
+            if root.routes:
+                focus_scope = root.route_matches(relative_dir)
+            else:
+                focus_scope = root.root_id == FOCUS_ROOT_ID and (
+                    relative_dir == FOCUS_RELATIVE_PREFIX
+                    or relative_dir.startswith(FOCUS_RELATIVE_PREFIX + "/")
+                )
+            if not focus_scope:
+                # Legacy behavior for every directory outside the exact
+                # 重点关注 subtree: each supported file (including .source.json)
+                # is a standalone primary document.  A primary with a sibling
+                # .source.json sidecar carries the sidecar metadata (FC-501
+                # sidecar contract; FC-505: the Dropbox root must never be
+                # resolvable-MISSING when the sidecar evidence exists).
+                for path in supported:
+                    relative = _relative(path, root.path)
+                    metadata: dict[str, Any] = {}
+                    if not path.name.endswith(_ACQUISITION_SIDECAR_SUFFIX):
+                        sidecar = path.with_name(
+                            path.name + _ACQUISITION_SIDECAR_SUFFIX
+                        )
+                        if sidecar.is_file():
+                            metadata = _load_acquisition_metadata(sidecar)
+                    candidates.append(
+                        _Candidate(
+                            root,
+                            path,
+                            relative,
+                            relative,
+                            "original_primary",
+                            _infer_company(relative, company_names),
+                            metadata,
+                            "active",
+                            None,
+                        )
+                    )
+                continue
+            sidecars = {
+                str(path)[: -len(_ACQUISITION_SIDECAR_SUFFIX)]: path
+                for path in supported
+                if path.name.endswith(_ACQUISITION_SIDECAR_SUFFIX)
+            }
+            primary_paths = [
+                path
+                for path in supported
+                if not path.name.endswith(_ACQUISITION_SIDECAR_SUFFIX)
+            ]
+            for path in primary_paths:
+                relative = _relative(path, root.path)
+                sidecar = sidecars.get(str(path))
+                metadata = _load_acquisition_metadata(sidecar) if sidecar else {}
+                if root.kind == "dayu_portfolio":
+                    metadata = _enrich_dayu_portfolio_metadata(path, metadata)
+                admission = evaluate_admission(
+                    root_id=root.root_id,
+                    relative_path=relative,
+                    metadata=metadata,
+                )
+                if admission is not None and not admission.admitted:
+                    policy_excluded += 1
+                    excluded += 1
+                    if sidecar is not None:
+                        policy_excluded += 1
+                        excluded += 1
+                    continue
+                entity_name = _infer_company(relative, company_names)
+                candidates.append(
+                    _Candidate(
+                        root,
+                        path,
+                        relative,
+                        relative,
+                        "original_primary",
+                        entity_name,
+                        metadata,
+                        "active",
+                        admission,
+                    )
+                )
+                if sidecar is not None:
+                    candidates.append(
+                        _Candidate(
+                            root,
+                            sidecar,
+                            _relative(sidecar, root.path),
+                            relative,
+                            "metadata",
+                            entity_name,
+                            metadata,
+                            "active",
+                            admission,
+                        )
+                    )
+            primary_names = {str(path) for path in primary_paths}
+            for target, sidecar in sidecars.items():
+                if target in primary_names:
+                    continue
+                excluded += 1
+                orphan_decision = evaluate_admission(
+                    root_id=root.root_id,
+                    relative_path=_relative(sidecar, root.path),
+                    metadata=_load_acquisition_metadata(sidecar),
+                )
+                if orphan_decision is not None:
+                    policy_excluded += 1
+    else:
+        raw_groups: dict[str, list[Path]] = defaultdict(list)
+        for file_index, path in enumerate(_walk_files(root.path), start=1):
+            if progress is not None and file_index % 100 == 1:
+                progress(
+                    current_path=str(path.resolve(strict=False)),
+                    current=file_index,
+                    total=0,
+                    detail=f"enumerating root {root.root_id}",
+                )
+            relative = _relative(path, root.path)
+            parts = Path(relative).parts
+            if len(parts) >= 3 and parts[1] == "filings":
+                if len(parts) >= 4 and parts[2] == ".rejections":
+                    group_key = Path(*parts[:4]).as_posix()
+                else:
+                    group_key = Path(*parts[:3]).as_posix()
+            else:
+                group_key = relative
+            raw_groups[group_key].append(path)
+        for group_key, paths in sorted(raw_groups.items()):
+            parts = Path(group_key).parts
+            ticker = parts[0] if parts else None
+            group_dir = (
+                root.path.joinpath(*parts)
+                if len(paths) > 1 or Path(group_key).suffix == ""
+                else paths[0].parent
+            )
+            meta_path = group_dir / "meta.json"
+            metadata: dict[str, Any] = {}
+            if meta_path.is_file():
+                try:
+                    loaded = json.loads(meta_path.read_text(encoding="utf-8"))
+                    if isinstance(loaded, dict):
+                        metadata = loaded
+                except (OSError, UnicodeError, json.JSONDecodeError):
+                    metadata = {"meta_parse_error": True}
+            # Phase 15.4: propagate identity that exists upstream but is not
+            # carried in the dayu meta.json (provider_company_id ↔ security
+            # master org id), so ingested documents are not identity-less.
+            if master_identity and (
+                not metadata.get("market") or not metadata.get("security_id")
+            ):
+                org = str(metadata.get("provider_company_id") or "").strip()
+                org = org.rsplit(":", 1)[-1] if org else ""
+                resolved = master_identity.get(org) if org else None
+                if resolved is not None:
+                    market_value, security_id = resolved
+                    metadata.setdefault("market", market_value)
+                    metadata.setdefault("security_id", security_id)
+            # Phase 16.1: SEC documents without a source URL get a
+            # deterministically constructed EDGAR URL (accession_number).
+            if not metadata.get("source_url") and not metadata.get("https_url"):
+                edgar_url = _construct_edgar_url(metadata)
+                if edgar_url is not None:
+                    metadata.setdefault("source_url", edgar_url)
+            # Phase 17 pilot: SEC dayu documents are deterministically
+            # US-listed; carry market/security identity when the upstream
+            # meta.json omits it, so capture-ready handles can resolve
+            # (Alphabet 10-K capture_ready deadlock).
+            if not metadata.get("market") and metadata.get("accession_number"):
+                metadata["market"] = "US"
+            if not metadata.get("security_id") and metadata.get("ticker"):
+                metadata["security_id"] = str(metadata["ticker"])
+            # ADR-008 Strategy B: HK/CN dayu documents carry the bare ticker
+            # only; backfill market from the entity-level meta.json
+            # (portfolio/<ticker>/meta.json) and security_id from the ticker.
+            # The resolver normalizes leading zeros ("02020" == "2020").
+            if not metadata.get("security_id") and metadata.get("ticker"):
+                metadata["security_id"] = str(metadata["ticker"])
+            if not metadata.get("market") and ticker:
+                entity_meta_path = root.path / ticker / "meta.json"
+                if entity_meta_path.is_file():
+                    try:
+                        entity_payload = json.loads(
+                            entity_meta_path.read_text(encoding="utf-8")
+                        )
+                    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+                        entity_payload = {}
+                    if isinstance(entity_payload, dict):
+                        market_value = str(entity_payload.get("market") or "").strip()
+                        if market_value:
+                            metadata["market"] = market_value
+            names = {path.name: path for path in paths}
+            selected = str(metadata.get("selected_primary_document") or "")
+            primary = str(metadata.get("primary_document") or "")
+            preferred: Path | None = None
+            for name in (selected, primary):
+                if name and name in names and not name.endswith("_docling.json"):
+                    preferred = names[name]
+                    break
+            if preferred is None:
+                preferred = next(
+                    (path for path in paths if path.suffix.lower() == ".pdf"), None
+                )
+            if preferred is None:
+                preferred = next(
+                    (
+                        path
+                        for path in paths
+                        if path.suffix.lower() in {".htm", ".html"}
+                        and path.name != "meta.json"
+                    ),
+                    None,
+                )
+            if preferred is None:
+                preferred = next(
+                    (
+                        path
+                        for path in paths
+                        if path.name != "meta.json"
+                        and not path.name.endswith("manifest.json")
+                        and not path.name.endswith("_docling.json")
+                    ),
+                    None,
+                )
+            if preferred is None:
+                # Metadata-only group (no preferred file): do not ingest a
+                # document (Phase 15.4).  dayu stages meta.json before bytes
+                # exist; byte-less placeholder documents polluted the catalog
+                # with identity-less records that blocked reuse and download.
+                # The group is re-evaluated on the next scan once a preferred
+                # file appears.
+                continue
+            rejected = ".rejections" in parts
+            complete = metadata.get("ingest_complete") is True
+            if rejected:
+                source_status = "upstream_rejected"
+            elif preferred is None:
+                source_status = "incomplete"
+            else:
+                source_status = (
+                    "active" if complete or len(paths) == 1 else "incomplete"
+                )
+            for path in sorted(paths):
+                if path.name == "meta.json" or path.name.endswith("manifest.json"):
+                    role = "metadata"
+                elif path.name.endswith("_docling.json"):
+                    role = "processed_docling"
+                elif preferred is not None and path == preferred:
+                    role = "original_primary"
+                else:
+                    role = "original_attachment"
+                candidates.append(
+                    _Candidate(
+                        root,
+                        path,
+                        _relative(path, root.path),
+                        group_key,
+                        role,
+                        ticker,
+                        metadata,
+                        source_status,
+                    )
+                )
+    return candidates, excluded, policy_excluded
+
+
+def _observe_file(
+    candidate: _Candidate,
+    *,
+    existing: Any,
+    scan_time: str,
+    document_kind: str,
+    source_type: SourceType,
+    entity_id: str,
+) -> _ObservedFile:
+    stat = candidate.path.stat()
+    if (
+        existing is not None
+        and existing["source_id"]
+        and existing["manifest_json"]
+        and existing["observed_size"] == stat.st_size
+        and existing["observed_mtime_ns"] == stat.st_mtime_ns
+    ):
+        # F-B10R2-MISSINGFILE family, site 4 (scanner, owner instruction 2026-09-18): the
+        # size+mtime shortcut used to parse the stored manifest UNGUARDED, so ONE damaged
+        # manifest column aborted the whole scan.  A manifest that cannot be read is simply
+        # not a reuse candidate: fall through and re-hash the file, which rewrites a fresh
+        # manifest and leaves the scan running.  Both failure shapes are covered - a value
+        # that is not a JSON object (`metadata_state` reports why) and an object that is
+        # missing a required field (`SourceManifest.from_dict` raises).
+        manifest_payload, manifest_state = metadata_state(existing["manifest_json"])
+        if manifest_state is None:
+            try:
+                manifest = SourceManifest.from_dict(manifest_payload)
+            except (KeyError, TypeError, ValueError):
+                manifest = None
+            if manifest is not None:
+                return _ObservedFile(
+                    candidate,
+                    manifest.source_id,
+                    manifest.content_sha256,
+                    stat.st_size,
+                    stat.st_mtime_ns,
+                    manifest.mime_type,
+                    manifest.canonical_json(),
+                    True,
+                    None,
+                    False,
+                )
+    mime_type = _mime_type(candidate.path)
+    try:
+        collector_name = f"filesystem-catalog-{candidate.root.root_id}"
+        collector_version = SCANNER_VERSION
+        retrieved_at = scan_time
+        if candidate.role == "original_primary" and candidate.group_metadata:
+            collector_name = str(
+                candidate.group_metadata.get("adapter_name") or collector_name
+            )
+            collector_version = str(
+                candidate.group_metadata.get("adapter_version") or collector_version
+            )
+            retrieved_at = str(
+                candidate.group_metadata.get("retrieved_at") or retrieved_at
+            )
+        manifest = SourceManifest.from_file(
+            root=candidate.root.path,
+            file_path=candidate.path,
+            entity_ids=(entity_id,),
+            source_type=source_type
+            if candidate.role == "original_primary"
+            else SourceType.OTHER,
+            published_date=(
+                str(candidate.group_metadata.get("filing_date"))
+                if candidate.group_metadata.get("filing_date")
+                else _published_date(candidate.path.name)
+            ),
+            retrieved_at=retrieved_at,
+            collector_name=collector_name,
+            collector_version=collector_version,
+            mime_type=mime_type,
+        )
+        expected_sha256 = candidate.group_metadata.get("content_sha256")
+        if (
+            candidate.role == "original_primary"
+            and expected_sha256
+            and manifest.content_sha256 != expected_sha256
+        ):
+            raise ValueError("acquisition sidecar SHA-256 does not match source bytes")
+    except Exception as exc:
+        error = f"{type(exc).__name__}: {exc}"
+        known_error = bool(
+            existing is not None
+            and existing["location_status"] == "quarantined"
+            and existing["observed_size"] == stat.st_size
+            and existing["observed_mtime_ns"] == stat.st_mtime_ns
+            and existing["error"] == error
+        )
+        return _ObservedFile(
+            candidate,
+            None,
+            None,
+            stat.st_size,
+            stat.st_mtime_ns,
+            mime_type,
+            None,
+            False,
+            error,
+            known_error,
+        )
+    return _ObservedFile(
+        candidate,
+        manifest.source_id,
+        manifest.content_sha256,
+        stat.st_size,
+        stat.st_mtime_ns,
+        manifest.mime_type,
+        manifest.canonical_json(),
+        False,
+        None,
+        False,
+    )
+
+
+def _select_roots(
+    config: CatalogConfig,
+    root_ids: set[str] | None,
+) -> tuple[RootSpec, ...]:
+    selected_roots = tuple(
+        root for root in config.roots if root_ids is None or root.root_id in root_ids
+    )
+    if not selected_roots:
+        raise ValueError("no configured roots matched root_ids")
+    if root_ids is not None:
+        unknown = root_ids - {root.root_id for root in config.roots}
+        if unknown:
+            raise ValueError(f"unknown root_ids: {sorted(unknown)}")
+    return selected_roots
+
+
+def _begin_scan_run(store: CatalogStore, run_id: str, scan_time: str) -> None:
+    with store.transaction() as connection:
+        connection.execute(
+            "UPDATE scan_runs SET completed_at=?,status='interrupted' WHERE status='running'",
+            (scan_time,),
+        )
+        connection.execute(
+            "INSERT INTO scan_runs(run_id,started_at,status) VALUES(?,?,?)",
+            (run_id, scan_time, "running"),
+        )
+
+
+def _interrupt_scan_run(store: CatalogStore, run_id: str) -> None:
+    with store.transaction() as connection:
+        connection.execute(
+            """UPDATE scan_runs SET completed_at=?,status='interrupted'
+            WHERE run_id=? AND status='running'""",
+            (_utc_now(), run_id),
+        )
+
+
+def _scan_catalog_impl(
+    config: CatalogConfig,
+    store: CatalogStore | None,
+    *,
+    dry_run: bool = False,
+    root_ids: set[str] | None = None,
+    progress: Callable[..., None] | None = None,
+    v2_scan_shadow: bool = False,
+    run_id: str | None = None,
+    scan_time: str | None = None,
+    selected_roots: tuple[RootSpec, ...] | None = None,
+    scan_run_started: bool = False,
+) -> ScanReport:
+    run_id = run_id or "scan-" + uuid.uuid4().hex
+    scan_time = scan_time or _utc_now()
+    names = _company_names(config)
+    files_seen = files_hashed = files_reused = files_excluded = errors = 0
+    policy_excluded = 0
+    new_errors = known_quarantined = 0
+    error_details: list[dict[str, Any]] = []
+    if selected_roots is None:
+        selected_roots = _select_roots(config, root_ids)
+    if not dry_run:
+        if store is None:
+            raise TypeError("store is required for a non-dry-run scan")
+        if not scan_run_started:
+            _begin_scan_run(store, run_id, scan_time)
+
+    master_identity = _load_security_master_identity(config.catalog_dir)
+    portfolio_urls = _load_dayu_portfolio_urls(config)
+    strategies: list[tuple[str, str]] = []
+    for root in selected_roots:
+        if not root.path.is_dir():
+            errors += 1
+            new_errors += 1
+            if len(error_details) < 5:
+                error_details.append(
+                    {
+                        "root_id": root.root_id,
+                        "relative_path": "",
+                        "error": "root directory is unavailable",
+                        "unchanged": False,
+                    }
+                )
+            continue
+        # F-BAR-10 fix (owner instruction 2026-09-18): a root that DECLARES an adapter is
+        # scanned THROUGH it, snapshot or not.  The declaration is the instruction - "a future
+        # root joins by CONFIG ONLY: kind directory + registered sidecar adapter" - and the
+        # legacy directory walk is simply the wrong reader for such a root: measured, it
+        # indexed `.source.json` sidecars as documents of their own.  The activation snapshot
+        # keeps controlling the roots that declare NO adapter (company_raw / dayu_portfolio /
+        # the plain directory roots), so the v1/v2 cutover for those is unchanged.
+        use_adapter = v2_scan_shadow or root.adapter_id is not None
+        strategies.append((root.root_id, "adapter" if use_adapter else "legacy"))
+        # D-W01: BOTH the config doctor and this scan use the SAME
+        # effective_root_profile judgment; a root with any effective-config
+        # error contributes nothing and the batch continues (per-root fail
+        # closed, no legacy fallback - same shape as the dispatch-error arm
+        # below, only with a stable error CLASS instead of an unclassifiable
+        # message; the roots that scan fine before scan identically after).
+        from .config import EFFECTIVE_ERROR_CODES, effective_root_profile
+
+        profile = effective_root_profile(root, scan_shadow_active=v2_scan_shadow)
+        if profile["errors"]:
+            for profile_error in profile["errors"]:
+                assert profile_error["code"] in EFFECTIVE_ERROR_CODES
+                errors += 1
+                new_errors += 1
+                if len(error_details) < 5:
+                    error_details.append(
+                        {
+                            "root_id": root.root_id,
+                            "relative_path": "",
+                            "error": "effective-config: {}, {}".format(
+                                profile_error["code"], profile_error["detail"]
+                            ),
+                            "unchanged": False,
+                        }
+                    )
+            continue
+        try:
+            candidates, excluded, policy_count = scan_root_strategy(
+                root,
+                names,
+                progress=progress,
+                master_identity=master_identity,
+                portfolio_urls=portfolio_urls,
+                v2_scan_shadow=use_adapter,
+            )
+        except ScannerFacadeError as exc:
+            # B.VR-ba1 F-BA1-04 (P2): now that an adapter-declared root ALWAYS dispatches
+            # (F-BAR-10), a root whose adapter is registered but unimplemented would abort the
+            # WHOLE scan and starve every healthy root behind it.  Fail-closed stays per ROOT:
+            # this root contributes nothing, the reason is recorded, and the batch continues.
+            # No silent v1 fallback - the root declared an adapter and does not get a different
+            # reader behind its back (FC-303 EX-08).
+            errors += 1
+            new_errors += 1
+            if len(error_details) < 5:
+                error_details.append(
+                    {
+                        "root_id": root.root_id,
+                        "relative_path": "",
+                        "error": f"scan_root_strategy: {exc}",
+                        "unchanged": False,
+                    }
+                )
+            continue
+        files_seen += len(candidates)
+        files_excluded += excluded
+        policy_excluded += policy_count
+        if dry_run:
+            continue
+        with store.transaction() as connection:
+            connection.execute(
+                """INSERT INTO roots(root_id,path,kind,priority,last_scan_run,last_scanned_at)
+                VALUES(?,?,?,?,?,?) ON CONFLICT(root_id) DO UPDATE SET
+                path=excluded.path,kind=excluded.kind,priority=excluded.priority,
+                last_scan_run=excluded.last_scan_run,last_scanned_at=excluded.last_scanned_at""",
+                (
+                    root.root_id,
+                    str(root.path.resolve()),
+                    root.kind,
+                    root.priority,
+                    run_id,
+                    scan_time,
+                ),
+            )
+        groups: dict[str, list[_Candidate]] = defaultdict(list)
+        for candidate in candidates:
+            groups[candidate.group_key].append(candidate)
+        existing_locations = {
+            row["relative_path"]: row
+            for row in store.fetchall(
+                """SELECT relative_path,source_id,document_id,observed_size,observed_mtime_ns,
+                manifest_json,location_status,error
+                FROM locations WHERE root_id=?""",
+                (root.root_id,),
+            )
+        }
+        group_items = sorted(
+            groups.items(),
+            key=lambda item: (
+                min(
+                    (
+                        candidate.admission.priority
+                        for candidate in item[1]
+                        if candidate.admission is not None
+                    ),
+                    default=1000,
+                ),
+                item[0],
+            ),
+        )
+        for group_index, (group_key, group) in enumerate(group_items, start=1):
+            primary_candidate = next(
+                (item for item in group if item.role == "original_primary"), None
+            )
+            classification_path = (
+                primary_candidate.path if primary_candidate else group[0].path
+            )
+            if progress is not None:
+                progress(
+                    current_path=str(classification_path.resolve(strict=False)),
+                    current=group_index,
+                    total=len(group_items),
+                    detail=f"scanning root {root.root_id}",
+                )
+            metadata = (
+                primary_candidate.group_metadata
+                if primary_candidate
+                else group[0].group_metadata
+            )
+            admission = (
+                primary_candidate.admission
+                if primary_candidate is not None
+                else group[0].admission
+            )
+            if admission is not None and admission.admitted:
+                if admission.document_kind is None or admission.source_type is None:
+                    raise RuntimeError("admitted source is missing classification")
+                document_kind, source_type = (
+                    admission.document_kind,
+                    admission.source_type,
+                )
+            else:
+                document_kind, source_type = _classification(
+                    classification_path, root_kind=root.kind, metadata=metadata
+                )
+            entity_name = (primary_candidate or group[0]).entity_name
+            entity_id, entity_label, entity_kind, confidence, method = _entity(
+                entity_name, root.root_id
+            )
+            observed: list[_ObservedFile] = []
+            for candidate in group:
+                try:
+                    item = _observe_file(
+                        candidate,
+                        existing=existing_locations.get(candidate.relative_path),
+                        scan_time=scan_time,
+                        document_kind=document_kind,
+                        source_type=source_type,
+                        entity_id=entity_id,
+                    )
+                except OSError as exc:
+                    errors += 1
+                    new_errors += 1
+                    if len(error_details) < 5:
+                        error_details.append(
+                            {
+                                "root_id": root.root_id,
+                                "relative_path": candidate.relative_path,
+                                "error": f"{type(exc).__name__}: {exc}",
+                                "unchanged": False,
+                            }
+                        )
+                    continue
+                observed.append(item)
+                if item.reused:
+                    files_reused += 1
+                elif item.source_id:
+                    files_hashed += 1
+                if item.error:
+                    errors += 1
+                    if item.known_error:
+                        known_quarantined += 1
+                    else:
+                        new_errors += 1
+                    if len(error_details) < 5:
+                        error_details.append(
+                            {
+                                "root_id": root.root_id,
+                                "relative_path": candidate.relative_path,
+                                "error": item.error,
+                                "unchanged": item.known_error,
+                            }
+                        )
+            primary = next(
+                (
+                    item
+                    for item in observed
+                    if item.candidate.role == "original_primary" and item.source_id
+                ),
+                None,
+            )
+            document_id = (
+                _document_id_for_source(primary.source_id)
+                if primary and primary.source_id
+                else _logical_document_id(root.root_id, group_key)
+            )
+            obsolete_document_ids = {
+                str(existing["document_id"])
+                for candidate in group
+                if (existing := existing_locations.get(candidate.relative_path))
+                and existing["document_id"]
+                and existing["document_id"] != document_id
+            }
+            title = (
+                str(metadata.get("source_title") or "").strip()
+                or classification_path.stem
+            )
+            published = (
+                str(
+                    metadata.get("filing_date") or metadata.get("published_date") or ""
+                ).strip()
+                or _published_date(classification_path.name)
+                or None
+            )
+            source_status = (primary_candidate or group[0]).source_status
+            if primary is None:
+                source_status = (
+                    "quarantined"
+                    if any(item.error for item in observed)
+                    else "incomplete"
+                )
+            document_metadata = {
+                "root_id": root.root_id,
+                "group_key": group_key,
+                "scanner_version": SCANNER_VERSION,
+                "dayu_meta": metadata if root.kind == "dayu_portfolio" else None,
+                "acquisition": (
+                    metadata
+                    if root.kind in ("company_raw", "directory") and metadata
+                    else None
+                ),
+                "admission": (
+                    {
+                        "reason": admission.reason,
+                        "evidence": list(admission.evidence),
+                        "processing_priority": admission.priority,
+                    }
+                    if admission is not None
+                    else None
+                ),
+            }
+            with store.transaction() as connection:
+                for item in observed:
+                    if item.source_id:
+                        connection.execute(
+                            "INSERT OR IGNORE INTO sources(source_id,content_sha256,byte_size,mime_type,first_seen_at) VALUES(?,?,?,?,?)",
+                            (
+                                item.source_id,
+                                item.content_sha256,
+                                item.size,
+                                item.mime_type,
+                                scan_time,
+                            ),
+                        )
+                existing_document = connection.execute(
+                    "SELECT metadata_priority, source_status, metadata_json, title, source_type,"
+                    " document_kind, published_date, primary_source_id"
+                    " FROM documents WHERE document_id=?",
+                    (document_id,),
+                ).fetchone()
+                _merge_document_row(
+                    connection,
+                    document_id=document_id,
+                    existing_document=existing_document,
+                    primary=primary,
+                    title=title,
+                    source_type=source_type.value,
+                    document_kind=document_kind,
+                    published=published,
+                    source_status=source_status,
+                    priority=root.priority,
+                    document_metadata=document_metadata,
+                    scan_time=scan_time,
+                )
+                connection.execute(
+                    "INSERT OR IGNORE INTO entities(entity_id,name,entity_kind) VALUES(?,?,?)",
+                    (entity_id, entity_label, entity_kind),
+                )
+                connection.execute(
+                    """INSERT INTO document_entities(document_id,entity_id,confidence,method) VALUES(?,?,?,?)
+                    ON CONFLICT(document_id,entity_id) DO UPDATE SET confidence=MAX(confidence,excluded.confidence),method=excluded.method""",
+                    (document_id, entity_id, confidence, method),
+                )
+                retired_group = (
+                    existing_document is not None
+                    and existing_document["source_status"] == "retired"
+                )
+                for item in observed:
+                    candidate = item.candidate
+                    location_status = (
+                        "retired"
+                        if retired_group
+                        else ("active" if item.source_id else "quarantined")
+                    )
+                    connection.execute(
+                        """INSERT INTO locations(location_id,root_id,relative_path,absolute_path,source_id,document_id,
+                        role,location_status,observed_size,observed_mtime_ns,last_seen_run,manifest_json,metadata_json,error)
+                        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(root_id,relative_path) DO UPDATE SET
+                        absolute_path=excluded.absolute_path,source_id=excluded.source_id,document_id=excluded.document_id,
+                        role=excluded.role,
+                        location_status=CASE WHEN locations.location_status='retired'
+                                             THEN locations.location_status
+                                             ELSE excluded.location_status END,
+                        observed_size=excluded.observed_size,
+                        observed_mtime_ns=excluded.observed_mtime_ns,last_seen_run=excluded.last_seen_run,
+                        manifest_json=excluded.manifest_json,metadata_json=excluded.metadata_json,error=excluded.error""",
+                        (
+                            _location_id(root.root_id, candidate.relative_path),
+                            root.root_id,
+                            candidate.relative_path,
+                            str(candidate.path.resolve()),
+                            item.source_id,
+                            document_id,
+                            candidate.role,
+                            location_status,
+                            item.size,
+                            item.mtime_ns,
+                            run_id,
+                            item.manifest_json,
+                            canonical_json(
+                                {"group_key": group_key, "source_status": source_status}
+                            ),
+                            item.error,
+                        ),
+                    )
+                for obsolete_document_id in sorted(obsolete_document_ids):
+                    if not obsolete_document_id.startswith(
+                        "urn:company-wiki:document-logical:sha256:"
+                    ):
+                        continue
+                    removable = connection.execute(
+                        """SELECT 1 FROM documents d
+                        WHERE d.document_id=?
+                        AND d.primary_source_id IS NULL
+                        AND d.source_status IN ('quarantined','incomplete')
+                        AND NOT EXISTS (
+                            SELECT 1 FROM locations l WHERE l.document_id=d.document_id
+                        )
+                        AND NOT EXISTS (
+                            SELECT 1 FROM artifacts a WHERE a.document_id=d.document_id
+                        )
+                        AND NOT EXISTS (
+                            SELECT 1 FROM llm_summary_failures f
+                            WHERE f.document_id=d.document_id
+                        )
+                        AND NOT EXISTS (
+                            SELECT 1 FROM evidence_spans e
+                            WHERE e.document_id=d.document_id
+                        )
+                        AND NOT EXISTS (
+                            SELECT 1 FROM document_fingerprint_state s
+                            WHERE s.document_id=d.document_id
+                        )
+                        AND NOT EXISTS (
+                            SELECT 1 FROM source_metadata_assertions a
+                            WHERE a.document_id=d.document_id
+                        )
+                        AND NOT EXISTS (
+                            SELECT 1 FROM document_retire_audit a
+                            WHERE a.document_id=d.document_id
+                        )
+                        AND NOT EXISTS (
+                            SELECT 1 FROM document_restore_audit a
+                            WHERE a.document_id=d.document_id
+                        )""",
+                        (obsolete_document_id,),
+                    ).fetchone()
+                    if removable is None:
+                        continue
+                    connection.execute(
+                        "DELETE FROM document_entities WHERE document_id=?",
+                        (obsolete_document_id,),
+                    )
+                    connection.execute(
+                        "DELETE FROM documents WHERE document_id=?",
+                        (obsolete_document_id,),
+                    )
+        with store.transaction() as connection:
+            connection.execute(
+                "UPDATE locations SET location_status='missing' WHERE root_id=? AND last_seen_run<>? AND location_status<>'missing'",
+                (root.root_id, run_id),
+            )
+
+    if dry_run:
+        return ScanReport(
+            run_id=run_id,
+            files_seen=files_seen,
+            files_excluded=files_excluded,
+            policy_excluded=policy_excluded,
+            dry_run=True,
+            errors=errors,
+            new_errors=new_errors,
+            known_quarantined=known_quarantined,
+            error_details=tuple(error_details),
+            strategy=tuple(strategies),
+        )
+    active = store.fetchone(
+        "SELECT COUNT(*) AS count FROM locations WHERE location_status='active'"
+    )["count"]
+    missing = store.fetchone(
+        "SELECT COUNT(*) AS count FROM locations WHERE location_status='missing'"
+    )["count"]
+    report = ScanReport(
+        run_id=run_id,
+        files_seen=files_seen,
+        files_hashed=files_hashed,
+        files_reused=files_reused,
+        files_excluded=files_excluded,
+        policy_excluded=policy_excluded,
+        locations_active=int(active),
+        locations_missing=int(missing),
+        errors=errors,
+        new_errors=new_errors,
+        known_quarantined=known_quarantined,
+        error_details=tuple(error_details),
+        strategy=tuple(strategies),
+    )
+    with store.transaction() as connection:
+        completed_at = _utc_now()
+        connection.execute(
+            "UPDATE scan_runs SET completed_at=?,status=?,report_json=? WHERE run_id=?",
+            (
+                completed_at,
+                "completed_with_errors" if errors else "completed",
+                canonical_json(report.to_dict()),
+                run_id,
+            ),
+        )
+    return report
+
+
+class CutoverGateError(RuntimeError):
+    """FC-305: the two-round zero-diff gate has not passed — production
+    dry shadow with v2 is refused."""
+
+
+def cutover_decision(snapshot: dict[str, Any]) -> str:
+    """FC-305: per-cohort v2 enablement — v2 when the snapshot's
+    v2_scan_shadow flag is on, v1 otherwise (v1 stays the read-only
+    fallback until the gate passes)."""
+    flags = snapshot.get("flags", {}) if isinstance(snapshot, dict) else {}
+    return "v2" if flags.get("v2_scan_shadow") else "v1"
+
+
+def v2_scan_shadow_from_snapshot(catalog_dir: Path | str) -> bool:
+    """GP-002: resolve the physical scan mode from the activation snapshot
+    (``catalog_dir/runtime_policy.json``) for every scan entry that writes
+    the catalog.
+
+    No snapshot file = v1 (the legacy default — temp projects and tooling
+    never activated a snapshot).  A present-but-invalid snapshot degrades
+    to v1 rather than crashing the scan: scanning is a read-heavy catalog
+    operation with no external data exposure, so silent v1 is safe.  (The
+    LLM exit gate in GP-003 applies stricter fail-closed semantics when
+    data leaves the catalog to an external model.)
+    """
+    from .runtime_policy import RuntimePolicyError, load_runtime_policy
+
+    snapshot_path = Path(catalog_dir) / "runtime_policy.json"
+    if not snapshot_path.is_file():
+        return False
+    try:
+        return cutover_decision(load_runtime_policy(snapshot_path)) == "v2"
+    except (RuntimePolicyError, KeyError, TypeError):
+        return False
+
+
+def gate_production_dry_shadow(
+    round_diffs: list[list[Any]], *, rounds_required: int = 2
+) -> bool:
+    """FC-305: production dry shadow requires the last ``rounds_required``
+    consecutive shadow rounds to each have zero unexplained diffs.
+
+    ``round_diffs`` is one entry per recorded shadow round (the diff list
+    of that round; empty = zero diffs).  Fewer rounds than required, or a
+    diff in any required round, fails the gate."""
+    if rounds_required < 2:
+        return False
+    if len(round_diffs) < rounds_required:
+        return False
+    return all(len(round) == 0 for round in round_diffs[-rounds_required:])
+
+
+def root_fingerprint(candidates: list[Any]) -> dict[str, Any]:
+    """FC-305: stable root identity across the cutover — the set of
+    (relative_path, size, content hash) for the candidate files.  v1 and
+    v2 must produce the same fingerprint on the same root."""
+    files: list[tuple[str, int, str]] = []
+    for candidate in candidates:
+        path = getattr(candidate, "path", None)
+        if not isinstance(path, Path) or not path.is_file():
+            continue
+        data = path.read_bytes()
+        files.append(
+            (
+                getattr(candidate, "relative_path", ""),
+                len(data),
+                hashlib.sha256(data).hexdigest(),
+            )
+        )
+    return {"files": sorted(files)}
+
+
+R4_PROVENANCE_KEY = "r4_provenance"
+R4_PROVENANCE_SCHEMA_VERSION = "1.0"
+
+
+def _short_value_hash(value: Any) -> str:
+    """12-hex digest of a value's canonical JSON — provenance records the fact
+    that a value was written, never the value's text (B-DR5-05)."""
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
+
+
+# Which metadata key DECLARES a column (design §B05: "take the value that
+# declares the column and whose source is traceable").  A value the scanner had
+# to derive from a file name is not a declaration, so a derived value never wins
+# against a declared one — and a disagreement between two declared values is the
+# "real conflict" the design wants preserved instead of resolved by priority.
+_DECLARING_KEYS: dict[str, tuple[str, ...]] = {
+    "title": ("source_title",),
+    "document_kind": ("document_kind",),
+    "source_type": ("source_type",),
+    "published_date": ("filing_date", "published_date"),
+}
+
+
+def _declared_columns(
+    container: Any, values: dict[str, Any] | None = None
+) -> dict[str, bool]:
+    """Which of the merged columns this capture DECLARES (rather than derives).
+
+    A key alone is not a declaration (B-VR05-04): the capture declares a column
+    only when the value the scanner actually USED for that column is the value
+    that key carries.  A sidecar saying ``document_kind: "10-K"`` - which the
+    classifier ignores - therefore counts as derived, not as a declaration.
+
+    The comparison is per column (B-VR01-03): the classifier itself casefolds
+    the sidecar's ``document_kind`` before mapping it to its canonical name
+    (``:125``), so ``"Annual_Report"`` IS that declaration and must not be
+    downgraded to derived - doing so would drop "declared beats derived" and
+    manufacture a conflict.  Free-text and date columns are compared exactly:
+    the scanner stores those declaring values verbatim, and a case-insensitive
+    match there would let a file-name-derived value pass as declared.
+    """
+    payload = container if isinstance(container, dict) else {}
+    used_values = values or {}
+    declared: dict[str, bool] = {}
+    for column, keys in _DECLARING_KEYS.items():
+        used = used_values.get(column)
+        hit = False
+        for key in keys:
+            raw = payload.get(key)
+            if raw in (None, "") or used in (None, ""):
+                continue
+            if _declaration_matches(column, raw, used):
+                hit = True
+                break
+        declared[column] = hit
+    return declared
+
+
+# Columns whose producer normalises the declaring key before using it.  Only
+# `document_kind` is listed: `_classification` lower-cases exactly that key.
+_DECLARATION_CASEFOLDED = frozenset({"document_kind"})
+
+
+def _declaration_matches(column: str, raw: Any, used: Any) -> bool:
+    left, right = str(raw).strip(), str(used).strip()
+    if column in _DECLARATION_CASEFOLDED:
+        return left.casefold() == right.casefold()
+    return left == right
+
+
+def _merge_metadata_json(
+    stored_json: Any,
+    incoming: dict[str, Any],
+    *,
+    prefer_new: bool,
+    provenance_fields: dict[str, Any],
+    aligned_columns: dict[str, Any] | None = None,
+) -> str:
+    """Read-modify-write the ``documents.metadata_json`` column (B05).
+
+    Never replaces the column wholesale: keys written by other modules (for
+    example the ``prompt_injection_review`` receipt that ``resolver`` exposes as
+    ``prompt_injection_status``) survive every merge, and the reserved
+    ``r4_provenance`` block records, per field, the hash of the stored value,
+    the sources that agreed on it and — where they disagreed — every candidate.
+
+    The business values follow the pre-B05 ``prefer_new`` rule; ``priority`` is
+    no longer consulted here (it only ranks candidates, see ``_merge_columns``).
+    """
+    try:
+        stored = json.loads(stored_json or "{}")
+        if not isinstance(stored, dict):
+            stored = {}
+    except (json.JSONDecodeError, TypeError, RecursionError):
+        # B-VR05M-02/-04: RecursionError (deeply nested JSON) is a RuntimeError and
+        # escaped the original guard, so a re-scan could still die on a malformed column.
+        stored = {}
+    merged = dict(stored)
+    if prefer_new:
+        merged.update(incoming)
+    # Keep each container's DECLARING keys consistent with the merged columns
+    # (B-VR05-01): otherwise a later scan reads a container value the merge
+    # already refused to adopt, the next capture is judged against the wrong
+    # "stored declaration", and the outcome depends on scan order.  Only keys
+    # the container already has are aligned - B05 never invents a declaration.
+    if aligned_columns:
+        for container in ("acquisition", "dayu_meta"):
+            payload = merged.get(container)
+            if not isinstance(payload, dict):
+                continue
+            for column, keys in _DECLARING_KEYS.items():
+                value = aligned_columns.get(column)
+                if value in (None, ""):
+                    continue
+                for key in keys:
+                    if key in payload:
+                        payload[key] = value
+    previous = stored.get(R4_PROVENANCE_KEY)
+    fields: dict[str, Any] = {}
+    if isinstance(previous, dict) and isinstance(previous.get("fields"), dict):
+        fields.update(previous["fields"])
+    # Field-wise merge (B-VR05-01): progress already recorded must survive a
+    # later capture.  A capture that AGREES adds its source to the agreeing
+    # list; a capture that disagrees adds a candidate — neither erases a
+    # recorded conflict, so the outcome no longer depends on scan order.
+    for name, record in provenance_fields.items():
+        old = fields.get(name) if isinstance(fields.get(name), dict) else {}
+        sources = [dict(item) for item in (old.get("sources") or [])]
+        for source in record.get("sources") or []:
+            if source not in sources:
+                sources.append(dict(source))
+        conflicts = [dict(item) for item in (old.get("conflicts") or [])]
+        for candidate in record.get("conflicts") or []:
+            if candidate not in conflicts:
+                conflicts.append(dict(candidate))
+        fields[name] = {
+            "value": record.get("value"),
+            "sources": sources,
+            "conflicts": conflicts,
+        }
+    merged[R4_PROVENANCE_KEY] = {
+        "schema_version": R4_PROVENANCE_SCHEMA_VERSION,
+        "fields": fields,
+    }
+    return canonical_json(merged)
+
+
+def _provenance_record(
+    *,
+    value_hash: str,
+    sources: list[dict[str, Any]],
+    conflicts: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """One field's provenance entry (design §B05): the hash of the value that is
+    actually stored, the candidate sources that agreed on it, and — when they
+    did not agree — every candidate with its own hash.  Values themselves are
+    never stored here."""
+    return {"value": value_hash, "sources": sources, "conflicts": conflicts}
+
+
+def _previous_provenance_fields(stored_json: Any) -> dict[str, Any]:
+    """The reserved block's ``fields`` from a stored column (empty when the row
+    predates B05, which is the only case that falls back to reading the
+    container).
+
+    B10-3: the parse is the single chain's (store.metadata_object); a malformed
+    column has no previous provenance to report (B-VR05M-04/-02 history)."""
+    stored = metadata_object(stored_json)
+    reserved = stored.get(R4_PROVENANCE_KEY)
+    if isinstance(reserved, dict) and isinstance(reserved.get("fields"), dict):
+        return reserved["fields"]
+    return {}
+
+
+def _source_record(
+    *,
+    source_id: str | None,
+    observed_at: str | None,
+    role: str,
+    declared: bool,
+) -> dict[str, Any]:
+    """One candidate source of a field's value.  ``declared`` records that the
+    capture explicitly declared the column (rather than the scanner deriving it
+    from a file name) so a later scan can judge the STORED value from what was
+    recorded about it instead of from whatever container happens to be stored
+    now (B-VR05-02)."""
+    return {
+        "source_id": source_id,
+        "observed_at": observed_at,
+        "role": role,
+        "declared": bool(declared),
+    }
+
+
+def _recorded_source(
+    previous_fields: dict[str, Any] | None, column: str
+) -> dict[str, Any]:
+    """The source recorded for the stored value, if any (else unknown = null)."""
+    record = (previous_fields or {}).get(column)
+    if isinstance(record, dict):
+        for source in record.get("sources") or []:
+            if isinstance(source, dict) and source.get("source_id"):
+                return _source_record(
+                    source_id=source.get("source_id"),
+                    observed_at=source.get("observed_at"),
+                    role="stored",
+                    declared=bool(source.get("declared")),
+                )
+    return _source_record(
+        source_id=None, observed_at=None, role="stored", declared=False
+    )
+
+
+def _merge_columns(
+    stored: dict[str, Any],
+    *,
+    incoming: dict[str, Any],
+    source_id: str | None,
+    observed_at: str,
+    fields: dict[str, Any],
+    incoming_declared: dict[str, bool] | None = None,
+    stored_declared: dict[str, bool] | None = None,
+    previous_fields: dict[str, Any] | None = None,
+    always_incoming: tuple[str, ...] = ("source_status", "primary_source_id"),
+    fill_requires_declared: tuple[str, ...] = ("published_date",),
+) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+    """Per-column merge rules (design §B05), replacing the old "winner takes the
+    whole row" UPDATE.
+
+    Rules, per the reviewed table:
+
+    * a column that is empty in the stored row and declared by this capture is
+      FILLED (this is the capture_ready recovery path that must survive);
+    * a column the stored row already has is KEPT, even when this capture
+      disagrees — ``priority`` no longer decides truth, it only ranks;
+    * a real disagreement (both sides non-empty and different) is recorded as a
+      field-level CONFLICT holding every candidate, never silently resolved;
+    * ``source_status`` follows the latest real observation (this capture);
+    * ``primary_source_id`` only fills a gap (the scan already elected the
+      group's first copy by the B02 ordering).
+
+    Returns ``(merged_columns, provenance_fields, conflicted_fields)``.
+    """
+    merged: dict[str, Any] = {}
+    conflicted: list[str] = []
+    for column, new_value in incoming.items():
+        stored_value = stored.get(column)
+        has_stored = stored_value not in (None, "")
+        has_new = new_value not in (None, "")
+        new_declares = bool((incoming_declared or {}).get(column))
+        stored_declares = bool((stored_declared or {}).get(column))
+        stored_source = _recorded_source(previous_fields, column)
+        provided_sources = [stored_source]
+        if column in always_incoming:
+            # `source_status` follows the latest real observation and
+            # `primary_source_id` is re-elected by every scan (the group's first
+            # copy by the B02 ordering) — the design allows ordering here only.
+            winner = new_value if has_new else stored_value
+            fields[column] = _provenance_record(
+                value_hash=_short_value_hash(winner),
+                sources=[
+                    _source_record(
+                        source_id=source_id if has_new else stored_source["source_id"],
+                        observed_at=observed_at
+                        if has_new
+                        else stored_source["observed_at"],
+                        role="incoming" if has_new else "stored",
+                        declared=new_declares if has_new else stored_source["declared"],
+                    )
+                ],
+                conflicts=[],
+            )
+            merged[column] = winner
+            continue
+        if (
+            not has_stored
+            and has_new
+            and column in fill_requires_declared
+            and not new_declares
+        ):
+            # The design lets only a DECLARING source write these columns, even
+            # when filling a gap: a file-name-derived guess never becomes the
+            # stored value (B-VR05-07).
+            fields[column] = _provenance_record(
+                value_hash=_short_value_hash(stored_value),
+                sources=[stored_source],
+                conflicts=[],
+            )
+            merged[column] = stored_value
+            continue
+        if has_stored and has_new and stored_value != new_value:
+            if new_declares and not stored_declares:
+                # A declared value replaces one the scanner had only derived
+                # (for example a file-name-derived document_kind).  Not a
+                # conflict: the derived value never was a declaration.
+                fields[column] = _provenance_record(
+                    value_hash=_short_value_hash(new_value),
+                    sources=[
+                        _source_record(
+                            source_id=source_id,
+                            observed_at=observed_at,
+                            role="incoming",
+                            declared=True,
+                        )
+                    ],
+                    conflicts=[],
+                )
+                merged[column] = new_value
+                continue
+            if stored_declares and not new_declares:
+                # The mirror rule: a declared value is never overwritten by a
+                # derived one.
+                fields[column] = _provenance_record(
+                    value_hash=_short_value_hash(stored_value),
+                    sources=[stored_source],
+                    conflicts=[],
+                )
+                merged[column] = stored_value
+                continue
+            conflicted.append(column)
+            fields[column] = _provenance_record(
+                value_hash=_short_value_hash(stored_value),
+                sources=[stored_source],
+                conflicts=[
+                    {
+                        "source_id": stored_source["source_id"],
+                        "observed_at": stored_source["observed_at"],
+                        "value_hash": _short_value_hash(stored_value),
+                    },
+                    {
+                        "source_id": source_id,
+                        "observed_at": observed_at,
+                        "value_hash": _short_value_hash(new_value),
+                    },
+                ],
+            )
+            merged[column] = stored_value
+            continue
+        winner = stored_value if has_stored else new_value
+        if has_stored:
+            agreeing = list(provided_sources)
+            if has_new and new_value == stored_value:
+                # An agreeing capture is evidence the value is not disputed:
+                # record it alongside the source that wrote the value
+                # (B-VR05-05).
+                agreeing.append(
+                    _source_record(
+                        source_id=source_id,
+                        observed_at=observed_at,
+                        role="incoming",
+                        declared=new_declares,
+                    )
+                )
+            fields[column] = _provenance_record(
+                value_hash=_short_value_hash(winner),
+                sources=agreeing,
+                conflicts=[],
+            )
+        else:
+            fields[column] = _provenance_record(
+                value_hash=_short_value_hash(winner),
+                sources=[
+                    _source_record(
+                        source_id=source_id,
+                        observed_at=observed_at,
+                        role="incoming",
+                        declared=new_declares,
+                    )
+                ],
+                conflicts=[],
+            )
+        merged[column] = winner
+    return merged, fields, conflicted
+
+
+def _merge_document_row(
+    connection: Any,
+    *,
+    document_id: str,
+    existing_document: Any,
+    primary: Any,
+    title: str,
+    source_type: str,
+    document_kind: str,
+    published: str | None,
+    source_status: str,
+    priority: int,
+    document_metadata: dict[str, Any],
+    scan_time: str,
+) -> None:
+    """Write ONE document row: insert, retirement, winner merge or touch.
+
+    Extracted from ``scan_catalog`` (step B05) so the metadata merge can grow
+    and be tested on its own.  The decision table is unchanged from the inline
+    version except for the merge itself: ``metadata_json`` is now produced by
+    ``_merge_metadata_json`` (read-modify-write with the reserved provenance
+    block) instead of being replaced wholesale on ``prefer_new``.
+    """
+    if existing_document is None:
+        # A brand-new row records its provenance too (B-VR05-02): without it the
+        # FIRST capture's declarations are never written down, so a later
+        # capture that replaces the metadata container without declaring the
+        # column would silently turn a declared value into an apparently
+        # derived one — and the capture after that could overwrite it unseen.
+        new_inner = (
+            document_metadata.get("dayu_meta")
+            or document_metadata.get("acquisition")
+            or {}
+        )
+        source_id = primary.source_id if primary else None
+        insert_columns = {
+            "title": title,
+            "source_type": source_type,
+            "document_kind": document_kind,
+            "published_date": published,
+            "source_status": source_status,
+            "primary_source_id": source_id,
+        }
+        provenance_fields: dict[str, Any] = {}
+        declared_columns = _declared_columns(new_inner, insert_columns)
+        for column, value in insert_columns.items():
+            provenance_fields[column] = _provenance_record(
+                value_hash=_short_value_hash(value),
+                sources=[
+                    _source_record(
+                        source_id=source_id,
+                        observed_at=scan_time,
+                        role="incoming",
+                        declared=bool(declared_columns.get(column)),
+                    )
+                ],
+                conflicts=[],
+            )
+        container_name = (
+            "dayu_meta" if document_metadata.get("dayu_meta") else "acquisition"
+        )
+        if isinstance(new_inner, dict):
+            for key, value in new_inner.items():
+                provenance_fields[f"{container_name}.{key}"] = _provenance_record(
+                    value_hash=_short_value_hash(value),
+                    sources=[
+                        _source_record(
+                            source_id=source_id,
+                            observed_at=scan_time,
+                            role="incoming",
+                            declared=True,
+                        )
+                    ],
+                    conflicts=[],
+                )
+        insert_metadata = _merge_metadata_json(
+            "{}",
+            document_metadata,
+            prefer_new=True,
+            provenance_fields=provenance_fields,
+            aligned_columns=insert_columns,
+        )
+        connection.execute(
+            """INSERT INTO documents(document_id,primary_source_id,title,source_type,document_kind,
+            published_date,source_status,metadata_priority,metadata_json,first_seen_at,last_seen_at)
+            VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                document_id,
+                source_id,
+                title,
+                source_type,
+                document_kind,
+                published,
+                source_status,
+                priority,
+                insert_metadata,
+                scan_time,
+                scan_time,
+            ),
+        )
+        return
+    if existing_document["source_status"] == "retired":
+        # Retirement is terminal: a rescan must never revive a
+        # retired document even while its files remain on disk
+        # (Phase 15.6 batch governance).  Its locations stay
+        # retired as well, so a partially-active location can
+        # never exist (see the location_status computation below).
+        connection.execute(
+            "UPDATE documents SET last_seen_at=? WHERE document_id=?",
+            (scan_time, document_id),
+        )
+        return
+    if priority <= existing_document["metadata_priority"]:
+        # B10-3: the parse is the single chain's (store.metadata_object).  Malformed means
+        # "no mergeable metadata", never a crash in the ingest path (B-VR05M-04 history:
+        # only JSONDecodeError was caught here, so a valid-JSON non-object payload fell
+        # through and `.get(...)` raised AttributeError during a re-scan).
+        existing_meta = metadata_object(existing_document["metadata_json"])
+        existing_inner = (
+            existing_meta.get("dayu_meta") or existing_meta.get("acquisition") or {}
+        )
+        new_inner = (
+            document_metadata.get("dayu_meta")
+            or document_metadata.get("acquisition")
+            or {}
+        )
+        # Phase 16.5: when the same content-addressed document is
+        # re-ingested from another path, prefer the metadata that
+        # carries a source URL (an old bare sidecar must not
+        # overwrite a complete one).
+        # Phase 17 pilot: likewise prefer metadata that carries
+        # market/security identity when the stored copy predates
+        # the identity backfill (Alphabet 10-K capture_ready
+        # deadlock).
+        # ADR-008 Strategy B: and prefer metadata that carries a
+        # provider document id when the stored copy lacks one —
+        # otherwise the scanner's ticker identity backfill would
+        # block the promotion's acquisition metadata (whose
+        # provider identity the REUSED_EXACT assert requires).
+        prefer_new = (
+            (
+                not (
+                    existing_inner.get("source_url") or existing_inner.get("https_url")
+                )
+                and (new_inner.get("source_url") or new_inner.get("https_url"))
+            )
+            or (
+                not (existing_inner.get("market") and existing_inner.get("security_id"))
+                and (new_inner.get("market") and new_inner.get("security_id"))
+            )
+            or (
+                not existing_inner.get("provider_document_id")
+                and bool(new_inner.get("provider_document_id"))
+            )
+        )
+        source_id = primary.source_id if primary else None
+        # Per-column merge (design §B05): priority only ranks candidates now, it
+        # no longer decides which truth is written, and a real disagreement is
+        # recorded instead of silently resolved.
+        previous_fields = _previous_provenance_fields(
+            existing_document["metadata_json"]
+        )
+        stored_columns = {
+            "title": existing_document["title"],
+            "source_type": existing_document["source_type"],
+            "document_kind": existing_document["document_kind"],
+            "published_date": existing_document["published_date"],
+            "source_status": existing_document["source_status"],
+            "primary_source_id": existing_document["primary_source_id"],
+        }
+        container_declared = _declared_columns(existing_inner, stored_columns)
+        stored_declared: dict[str, bool] = {}
+        for column in _DECLARING_KEYS:
+            record = previous_fields.get(column)
+            bound: bool | None = None
+            if isinstance(record, dict):
+                sources = [
+                    s for s in (record.get("sources") or []) if isinstance(s, dict)
+                ]
+                if sources:
+                    bound = any(bool(source.get("declared")) for source in sources)
+            # A recorded declaration is authoritative; only a row written before
+            # B05 falls back to reading the stored container (B-VR05-02).
+            stored_declared[column] = (
+                container_declared.get(column, False) if bound is None else bound
+            )
+        incoming_columns = {
+            "title": title,
+            "source_type": source_type,
+            "document_kind": document_kind,
+            "published_date": published,
+            "source_status": source_status,
+            "primary_source_id": source_id,
+        }
+        merged_columns, provenance_fields, _conflicted = _merge_columns(
+            stored_columns,
+            incoming=incoming_columns,
+            source_id=source_id,
+            observed_at=scan_time,
+            fields={},
+            incoming_declared=_declared_columns(new_inner, incoming_columns),
+            stored_declared=stored_declared,
+            previous_fields=previous_fields,
+        )
+        # The business container follows the pre-B05 `prefer_new` rule; every
+        # key it holds is recorded with the same per-field provenance shape.
+        winning_inner = (
+            (document_metadata if prefer_new else existing_meta).get("dayu_meta")
+            or (document_metadata if prefer_new else existing_meta).get("acquisition")
+            or {}
+        )
+        if isinstance(winning_inner, dict):
+            container_name = (
+                "dayu_meta" if document_metadata.get("dayu_meta") else "acquisition"
+            )
+            for key, value in winning_inner.items():
+                provenance_fields[f"{container_name}.{key}"] = _provenance_record(
+                    value_hash=_short_value_hash(value),
+                    sources=[
+                        _source_record(
+                            source_id=source_id if prefer_new else None,
+                            observed_at=scan_time if prefer_new else None,
+                            role="incoming" if prefer_new else "stored",
+                            declared=prefer_new,
+                        )
+                    ],
+                    conflicts=[],
+                )
+        update_metadata = _merge_metadata_json(
+            existing_document["metadata_json"],
+            document_metadata,
+            prefer_new=prefer_new,
+            provenance_fields=provenance_fields,
+            aligned_columns=merged_columns,
+        )
+        connection.execute(
+            """UPDATE documents SET primary_source_id=?,title=?,source_type=?,
+            document_kind=?,published_date=?,source_status=?,metadata_priority=?,
+            metadata_json=?,last_seen_at=? WHERE document_id=?""",
+            (
+                merged_columns["primary_source_id"],
+                merged_columns["title"],
+                merged_columns["source_type"],
+                merged_columns["document_kind"],
+                merged_columns["published_date"],
+                merged_columns["source_status"],
+                priority,
+                update_metadata,
+                scan_time,
+                document_id,
+            ),
+        )
+        return
+    connection.execute(
+        "UPDATE documents SET last_seen_at=? WHERE document_id=?",
+        (scan_time, document_id),
+    )
+
+
+def scan_catalog(
+    config: CatalogConfig,
+    store: CatalogStore | None,
+    *,
+    dry_run: bool = False,
+    root_ids: set[str] | None = None,
+    progress: Callable[..., None] | None = None,
+    v2_scan_shadow: bool = False,
+    zero_diff_rounds: int | None = None,
+) -> ScanReport:
+    if dry_run and v2_scan_shadow:
+        # FC-305: production dry shadow with v2 requires the two-round
+        # zero-diff gate.  The caller records one entry per shadow round;
+        # the gate checks the last two consecutive rounds are zero-diff.
+        recorded = [[] for _ in range(zero_diff_rounds or 0)]
+        if not gate_production_dry_shadow(recorded, rounds_required=2):
+            raise CutoverGateError(
+                "production dry shadow with v2 refused: two consecutive "
+                "shadow diff=0 rounds required (FC-305 gate)"
+            )
+    if dry_run:
+        return _scan_catalog_impl(
+            config,
+            store,
+            dry_run=True,
+            root_ids=root_ids,
+            progress=progress,
+            v2_scan_shadow=v2_scan_shadow,
+        )
+    if store is None:
+        raise TypeError("store is required for a non-dry-run scan")
+    selected_roots = _select_roots(config, root_ids)
+    run_id = "scan-" + uuid.uuid4().hex
+    scan_time = _utc_now()
+    _begin_scan_run(store, run_id, scan_time)
+    try:
+        with store.coalesced_transactions(max_operations=250):
+            return _scan_catalog_impl(
+                config,
+                store,
+                dry_run=False,
+                root_ids=root_ids,
+                progress=progress,
+                v2_scan_shadow=v2_scan_shadow,
+                run_id=run_id,
+                scan_time=scan_time,
+                selected_roots=selected_roots,
+                scan_run_started=True,
+            )
+    except Exception:
+        _interrupt_scan_run(store, run_id)
+        raise
+
+
+__all__ = ["scan_catalog"]
+
+
+class ScannerFacadeError(RuntimeError):
+    """WU-500: the scanner seam failed closed."""
+
+
+def scan_root_strategy(
+    root: RootSpec,
+    company_names: tuple[str, ...],
+    *,
+    progress: Callable[..., None] | None = None,
+    master_identity: dict[str, tuple[str, str]] | None = None,
+    portfolio_urls: dict[str, str] | None = None,
+    v2_scan_shadow: bool = False,
+) -> tuple[list[_Candidate], int, int]:
+    """WU-500 + FC-302: scanner facade seam.  Default = v1 with identical
+    behavior; v2 shadow dispatches through the registered adapter
+    (adapter_dispatch) and fails closed on unresolvable routes or any
+    adapter runtime failure (FC-303 EX-08: never fall back to v1)."""
+    if v2_scan_shadow:
+        from .adapter_dispatch import AdapterDispatchError, scan_root_via_adapter
+
+        try:
+            candidates = scan_root_via_adapter(root, company_names, progress=progress)
+        except AdapterDispatchError as exc:
+            raise ScannerFacadeError(f"v2 scanner unavailable (fail closed): {exc}")
+        except (
+            Exception
+        ) as exc:  # adapter runtime failure -> fail closed, no v1 fallback
+            raise ScannerFacadeError(
+                f"v2 scanner failed (fail closed, no legacy fallback): "
+                f"{type(exc).__name__}: {exc}"
+            )
+        return candidates, 0, 0
+    return _scan_root_v1(
+        root,
+        company_names,
+        progress=progress,
+        master_identity=master_identity,
+        portfolio_urls=portfolio_urls,
+    )

@@ -1,0 +1,23 @@
+{
+  "samples_manifest": {
+    "description": "Fixed sample seeds for card I-02-A. All layouts are generated deterministically by scripts/w02a_cases.py per case into a short-commented scratch base; bytes are the frozen contract payload.",
+    "PAYLOAD_A_target_bytes": {
+      "value": "%PDF-1.7\\nw02a target annual report bytes\\n",
+      "sha256": "cd1d3707396bb777ed5a47d204a733af6bf937996b41103de7cfc8dca2dcc074",
+      "byte_size": 47
+    },
+    "PAYLOAD_B_unrelated_bytes": {
+      "value": "%PDF-1.7\\nw02a unrelated broker note bytes\\n",
+      "sha256": "b97e4fd7ff738c481254edd1444e9b41ae40b3b73b2a7679f5fa99e618e7c821"
+    },
+    "layouts": {
+      "p1": "company_raw root (company_raw_v1) + archive_extra root (sidecar_filing_v1, healthy unrelated .txt+.source.json); target staged under catalog staging",
+      "n1": "company_raw only; scanner-level seam failure injected (errors=1, files_seen=0)",
+      "n2": "company_raw with an unrelated healthy company (别家公司, PAYLOAD_B+sidecar) and harness filtering hides the target from the scan (errors=0, files_seen>0)",
+      "n3a": "company_raw only; scan_root_strategy raises RuntimeError mid-writer-rescan (interrupted)",
+      "n3b": "company_raw healthy + archive_extra failing via injection; direct scanner scan over both roots",
+      "n3c": "company_raw only; real scan registers the target; fabricated resolver returns reused_exact on an unrelated handle"
+    },
+    "isolation": "each case: fresh rmtree + mkdir; isolated sqlite (catalog.sqlite3), staging dir, no network, no production DB"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "scope": "isolated synthetic probes; no live provider or natural-time observations",
+  "results": [
+    {
+      "id": "RF-P01",
+      "surface": "historical_test_local_calculator_only",
+      "input": "seven distinct IDs at same future timestamp; report hashes blank",
+      "actual": {
+        "complete": true,
+        "count": 7,
+        "pending": false
+      },
+      "claim": "trusted natural-time 7 daily runs",
+      "production_inference": "none: tested function defined inside test_ca206_soak_window.py"
+    },
+    {
+      "id": "RF-P02",
+      "surface": "product_helper",
+      "input": {
+        "volume": 1000.0,
+        "grade": 2.0,
+        "recovery": 1.0,
+        "payable": 1.0,
+        "product": "copper",
+        "period": "FY2026",
+        "scenario": "base"
+      },
+      "actual": 2000.0,
+      "claim": "units and percent basis explicit",
+      "limitation": "No unit or grade-basis field: 2 percent and fraction 0.02 cannot be distinguished; no investment recommendation"
+    },
+    {
+      "id": "RF-P03",
+      "surface": "product_helper",
+      "actual": "inf",
+      "claim": "finite numeric mine inputs",
+      "result": "infinite grade accepted"
+    },
+    {
+      "id": "RF-P04",
+      "surface": "product_helper",
+      "input": {
+        "saleable_volume": 100,
+        "price": 10,
+        "tc_per_unit_documented": 2,
+        "payability": 0.5
+      },
+      "actual": {
+        "gross": 1000.0,
+        "deductions": 2.0,
+        "additions": 0.0,
+        "net": 998.0
+      },
+      "expected_if_tc_per_unit": 800,
+      "claim": "documented per-unit TC applied, commercial payability consumed",
+      "result": "tc subtracted once; payability ignored"
+    },
+    {
+      "id": "RF-P05",
+      "surface": "product_helper",
+      "input": {
+        "backtest_id": "audit",
+        "year": 2026,
+        "source_id": "s",
+        "value": 123,
+        "record_sha256": "not-a-sha",
+        "observations": 2,
+        "wape": 0.1
+      },
+      "actual": {
+        "rejected": [],
+        "disclosures": []
+      },
+      "claim": "wrong-record hash recomputation rejected",
+      "limitation": "Main engine separately validates historical records; this proves helper claim false, not successful attack on current formal publication"
+    },
+    {
+      "id": "RF-P06",
+      "surface": "product_helper",
+      "actual": {
+        "accepted_x_weight": "inf"
+      },
+      "claim": "usable finite confidence policy",
+      "result": "infinite arbitrary component accepted"
+    }
+  ]
+}

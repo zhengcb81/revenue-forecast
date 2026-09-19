@@ -1,0 +1,17 @@
+[
+ {
+  "id": "I00-B-neg-binding-test",
+  "purpose": "validation rule: cwd/config pointing at production catalog or invented flag => command refused",
+  "binding_status": "bound",
+  "network": "disabled",
+  "expected": "refusal (not execution)"
+ },
+ {
+  "id": "I00-B-collect-tests",
+  "purpose": "collect existing real test nodeids before run (later cards bind exact nodeids)",
+  "binding_status": "bound",
+  "network": "disabled",
+  "argv_constraint": "iso venv python -m pytest --collect-only -q <target test file>",
+  "expected": "0 exit, collects without import side effects; collect failure recorded not treated as no-tests"
+ }
+]

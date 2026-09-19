@@ -1,0 +1,52 @@
+{
+  "card_id": "I-03-C",
+  "attempt_id": "a20260919-01",
+  "commands": [
+    {
+      "id": "w03c-canonical-ref",
+      "purpose": "步骤1：独立规范序列化冻结 P0 canonical bytes/SHA（不调用被测 _hash_gap，自带 walker + stdlib canonical 形式逐字节自校验）",
+      "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01",
+      "argv": [
+        "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01/iso/venv/Scripts/python.exe",
+        "-X", "utf8", "-B",
+        "scripts/canonical_p0_ref.py"
+      ],
+      "network": "disabled",
+      "expected_business_result": "canonical/p0.expected.json 冻结：786 bytes，SHA=b9c18479…，policy epoch P",
+      "status": "bound",
+      "result": {"exit": 0, "summary": "POLICY_HASH_P=7b94b34c…；786 bytes；P0 SHA=b9c18479…（先于实施冻结）"}
+    },
+    {
+      "id": "w03c-prefix-baseline",
+      "purpose": "修前独立断言（对生产锚点副本）：PRE-C1a/b hash 不变缺陷、PRE-C1c 授权仍通过缺陷、PRE-C4a 缺provider放行、PRE-C4b 旧版收据放行；PRE-C4c/d 已正确面如实记录",
+      "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "iso/pre/pre_fix_assertions.py", "iso/baseline", "before/pre_fix_assertions.json"],
+      "network": "disabled",
+      "expected_business_result": "5 fail（真实缺陷 RED）/ 2 not_applicable；G-C1 hash反例域=current_recheck url_and_date_changed_same_gap_hash",
+      "status": "bound",
+      "result": {"exit": 0, "summary": "fail=5, pass=0, not_applicable=2（URL/date 同 hash + 授权放行 + 缺provider放行 + 旧版放行 全部真实复现）"}
+    },
+    {
+      "id": "w03c-after-harness",
+      "purpose": "修后验证（override 三副本）：CANON-P0 独立SHA比对、A0-POS 正例、G-C1a/b、G-C2 十四变异（hash变+拒+fetch0）、G-C3a/b 重排不变、G-C3c 分区变更、G-C4a/b/d/e 拒因与fetch0、RECEIPT-TAMPER、G-C4c 旧版显式失效、BINDING-OK/MISMATCH；输出 after 三 JSON",
+      "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "scripts/w03c_cases.py", "iso/override", "after"],
+      "network": "disabled",
+      "expected_business_result": "29/29 pass",
+      "status": "bound",
+      "result": {"exit": 0, "summary": "pass=28, fail=1（G-C4d 预期构造缺陷，修正 fixture 后复跑）→ 复跑 pass=29, fail=0"}
+    },
+    {
+      "id": "w03c-changes-diff",
+      "purpose": "changes.diff = iso/baseline 三文件 vs iso/override 三文件（仅允许面的副本差异；1689 行 +/-）",
+      "argv": "(diff -u baseline/override × 3 files > changes.diff)",
+      "network": "disabled",
+      "status": "bound",
+      "result": {"exit": 0, "summary": "1689 行差异数（gap_plan 小改 + authorization 重写绑定面 + close_gap 绑定壳）"}
+    }
+  ],
+  "notes": [
+    "T-GAP 生产 pytest 未运行（控制器约束：生产文件零改动；运行其测试只能复验生产旧行为）。等价断言已在本 attempt isolate 中全量复现：pre_fix_assertions.py（PRE-C1/C4 修前 RED）+ w03c_cases.py（修后 29 例）。",
+    "对 iso/baseline 运行 w03c_cases.py 即 TypeError（旧 build_gap_plan 无 policy_hash 形参）——该崩溃本身即修前红域的源级表现，未对该路径写 after 结果。",
+    "修复期间一次同因失败（G-C4d 第一次 fail）：原因是 oracle 侧 fixture 构造错误（用了晚于 now 的 expires），非产品缺陷；按两次同错换方案原则改用 expires_at=NOW0 的专用收据后 pass。",
+    "所有用例 pure fixture 层级，无 pytest/basetemp 需求；fetch spy 全程 0（无任何下载执行）。"
+  ]
+}

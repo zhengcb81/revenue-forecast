@@ -1,0 +1,49 @@
+{
+  "commands": [
+    {
+      "id": "w02c-after-suite",
+      "purpose": "I-02-C oracle: P1(hk/us)/P2/N1a/N1b/N1c(x2)/N1d/N2a/N2a2/N2b 全部正反例（真实 scanner/resolver/writer/journal，providers deny-on-call）",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-02-C\\a20260919-01",
+      "argv": [
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-02-C\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "scripts/w02c_cases.py"
+      ],
+      "expected_returncode": 0,
+      "actual_returncode": 0,
+      "binding_status": "bound",
+      "evidence": "after/case_results.json, after/zero-provider-events.json, after/registration-stages.json, after/exact-resolve.before-after.json"
+    },
+    {
+      "id": "w02c-cli-probe",
+      "purpose": "真实 cli.main(argv) 恢复入口 ensure --register-existing --recovery-manifest 正例接线（rc=0、status=registered_existing、raw bytes 不变）",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-02-C\\a20260919-01",
+      "argv": [
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-02-C\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "scripts/w02c_cli_probe.py"
+      ],
+      "expected_returncode": 0,
+      "actual_returncode": 0,
+      "binding_status": "bound",
+      "evidence": "after/cli-register-existing.json"
+    },
+    {
+      "id": "w02c-sample-verify",
+      "purpose": "修改前样本核对：生产 raw sha256+size == 卡固定值；byte-identical 复制到 samples/real_roots",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-02-C\\a20260919-01",
+      "argv": [
+        "interpreter",
+        "-X",
+        "utf8",
+        "-c",
+        "inline verification (see after/sample-copy-manifest.json)"
+      ],
+      "expected_returncode": 0,
+      "actual_returncode": 0,
+      "binding_status": "bound"
+    }
+  ]
+}

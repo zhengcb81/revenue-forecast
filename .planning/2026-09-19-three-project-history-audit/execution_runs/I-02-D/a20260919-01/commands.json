@@ -1,0 +1,38 @@
+{
+  "commands": [
+    {
+      "id": "w02d-after-suite",
+      "purpose": "I-02-D oracle：P1(同request三次重入×4调用)/N1(同bytes异identity dedup不伪报成功+staging保留)/N2a/b/c(换hash/identity/policy)/N3a/b(dayu同bytes、retired拒绝) 全部正反例（真实 scanner/resolver/writer/journal，providers deny-on-call，独立 sqlite SQL oracle）",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-02-D\\a20260919-01",
+      "argv": [
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-02-D\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "scripts/w02d_cases.py"
+      ],
+      "expected_returncode": 0,
+      "actual_returncode": 0,
+      "binding_status": "bound",
+      "evidence": "after/idempotency-matrix.json, after/logical-rows-vs-attempts.json, after/case_results.json, after/case_scratch_retained/, after/hashes.json"
+    },
+    {
+      "id": "w02d-two-process-barrier",
+      "purpose": "W02D-P2：两真实进程（subprocess 隔离）文件轮询 barrier 并发对同一 catalog 注册同一已存 raw；单有效登记；返回一致或明确可重试锁竞争；journal 不丢",
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-02-D\\a20260919-01",
+      "argv": [
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-02-D\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "scripts/w02d_worker.py",
+        "<scratch_project=%TEMP%/w02d/a20260919-01_case_scratch/P2_shared/project>",
+        "<barrier_dir=.../P2_shared/barrier>",
+        "<result_json=.../P2_shared/worker<N>.result.json>"
+      ],
+      "binding_status": "bound",
+      "note": "由 w02d-after-suite 的 P2 case 以 subprocess.Popen 两次真实调用（见 after/two-process-trace.json 与 raw-cli-logs/worker*.log）",
+      "expected_returncode": "0 或 2（2=明确锁竞争可重试；两进程均不得伪报新登记）",
+      "actual_returncode": "worker1=0 (reused 幂等成功), worker2=2 (CatalogOperationLockedError 可重试竞争)",
+      "evidence": "after/two-process-trace.json, raw-cli-logs/worker1.log, raw-cli-logs/worker2.log, raw-cli-logs/worker1.result.json, raw-cli-logs/worker2.result.json"
+    }
+  ]
+}

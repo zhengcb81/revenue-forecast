@@ -1,0 +1,1757 @@
+--- "C:/Users/�\203\221�\233�波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01/iso/baseline/gap_plan.py"	2026-09-19 18:29:34.687583300 +0100
++++ "C:/Users/�\203\221�\233�波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01/iso/override/gap_plan.py"	2026-09-19 18:32:36.122668000 +0100
+@@ -1,246 +1,686 @@
+-"""WU-4.2: metadata-only discovery alignment and GapPlan.
+-
+-``build_gap_plan`` is a pure function aligning local reusable handles with
+-remote provider metadata (DownloadCandidates from ``adapter.discover`` —
+-metadata only, nothing is fetched here). It answers: what can be reused,
+-what is genuinely missing, which revisions are stale, and whether the
+-provider state is even known.
+-
+-Rules (task_plan WU-4.2):
+-
+-- local is latest for a period → reuse (download=0);
+-- provider published a NEWER period (filing_date ≤ as_of) local lacks →
+-  missing;
+-- same period, provider accession newer → newer_revision (replacement);
+-- provider knows nothing beyond local latest → not_published, gap=0;
+-- provider offline/rate-limited → provider_unavailable, keep local,
+-  NEVER claim up-to-date;
+-- remote metadata filed after as_of → future (excluded from gap).
+-"""
+-
+-from __future__ import annotations
+-
+-import hashlib
+-from dataclasses import dataclass
+-from typing import Any
+-
+-
+-GAP_PLAN_SCHEMA_VERSION = "1.0"
+-
+-
+-@dataclass(frozen=True)
+-class GapPlan:
+-    schema_version: str
+-    request_id: str
+-    as_of_date: str
+-    document_kind: str
+-    entity: str
+-    market: str
+-    reuse: tuple[Any, ...] = ()
+-    missing: tuple[Any, ...] = ()
+-    newer_revision: tuple[Any, ...] = ()
+-    not_published: bool = False
+-    provider_unavailable: bool = False
+-    provider_reason: str | None = None
+-    future: tuple[Any, ...] = ()
+-    gap_hash: str = ""
+-
+-    def to_dict(self) -> dict[str, Any]:
+-        return {
+-            "schema_version": self.schema_version,
+-            "request_id": self.request_id,
+-            "as_of_date": self.as_of_date,
+-            "document_kind": self.document_kind,
+-            "entity": self.entity,
+-            "market": self.market,
+-            "reuse": [h.to_dict() if hasattr(h, "to_dict") else h for h in self.reuse],
+-            "missing": [
+-                c.to_dict() if hasattr(c, "to_dict") else c for c in self.missing
+-            ],
+-            "newer_revision": [
+-                c.to_dict() if hasattr(c, "to_dict") else c for c in self.newer_revision
+-            ],
+-            "not_published": self.not_published,
+-            "provider_unavailable": self.provider_unavailable,
+-            "provider_reason": self.provider_reason,
+-            "future": [
+-                c.to_dict() if hasattr(c, "to_dict") else c for c in self.future
+-            ],
+-            "gap_hash": self.gap_hash,
+-        }
+-
+-
+-def _candidate_year(candidate: Any) -> int | None:
+-    return getattr(candidate, "fiscal_year", None)
+-
+-
+-def _candidate_filed(candidate: Any) -> str | None:
+-    return getattr(candidate, "filing_date", None)
+-
+-
+-def _candidate_accession(candidate: Any) -> str:
+-    return str(getattr(candidate, "provider_document_id", "") or "")
+-
+-
+-def _candidate_amended(candidate: Any) -> bool:
+-    return bool(getattr(candidate, "amended", False))
+-
+-
+-def _usable_handles(handles: list[Any]) -> list[Any]:
+-    """ZR-406: keep only capture-ready (reusable) local handles — a
+-    capture-incomplete handle is never reusable evidence."""
+-    return [h for h in handles if getattr(h, "capture_ready", True) is not False]
+-
+-
+-def build_gap_plan(
+-    *,
+-    request_id: str,
+-    as_of_date: str,
+-    document_kind: str,
+-    entity: str,
+-    market: str,
+-    local_handles: list[Any],
+-    remote_candidates: list[Any],
+-    provider_error: str | None = None,
+-) -> GapPlan:
+-    """Align local reusable handles with remote provider metadata."""
+-    # ZR-406 (defense-in-depth): a capture-incomplete local handle is NOT
+-    # reusable evidence — it is never offered as reuse and never flips
+-    # not_published, in EVERY outcome branch (including provider_error).
+-    # The resolver already gates capture_ready upstream; this keeps the
+-    # pure planner safe even for direct callers.
+-    local_handles = _usable_handles(local_handles)
+-    if provider_error:
+-        return GapPlan(
+-            schema_version=GAP_PLAN_SCHEMA_VERSION,
+-            request_id=request_id,
+-            as_of_date=as_of_date,
+-            document_kind=document_kind,
+-            entity=entity,
+-            market=market,
+-            reuse=tuple(local_handles),
+-            provider_unavailable=True,
+-            provider_reason=provider_error,
+-            gap_hash=_hash_gap(
+-                request_id=request_id,
+-                as_of_date=as_of_date,
+-                reuse=local_handles,
+-                missing=[],
+-                newer_revision=[],
+-                provider_unavailable=True,
+-                provider_reason=provider_error,
+-            ),
+-        )
+-
+-    # Remote metadata filed after as_of is excluded from the gap.
+-    eligible_remote = [
+-        c
+-        for c in remote_candidates
+-        if not _candidate_filed(c) or _candidate_filed(c) <= as_of_date
+-    ]
+-    future = [c for c in remote_candidates if c not in eligible_remote]
+-
+-    local_by_year: dict[int, list[Any]] = {}
+-    for handle in local_handles:
+-        year = getattr(handle, "fiscal_year", None)
+-        if year is not None:
+-            local_by_year.setdefault(year, []).append(handle)
+-
+-    missing: list[Any] = []
+-    newer_revision: list[Any] = []
+-    reuse: list[Any] = []
+-    remote_by_year: dict[int, list[Any]] = {}
+-    for candidate in eligible_remote:
+-        year = _candidate_year(candidate)
+-        if year is None:
+-            continue
+-        remote_by_year.setdefault(year, []).append(candidate)
+-
+-    for year, locals_here in local_by_year.items():
+-        remotes_here = remote_by_year.get(year, [])
+-        if not remotes_here:
+-            # provider has nothing for this period; local stays reusable
+-            reuse.extend(locals_here)
+-            continue
+-        # same period: prefer the newest accession (amended revisions sort
+-        # after their base filing)
+-        newest_remote = max(
+-            remotes_here,
+-            key=lambda c: (_candidate_accession(c), _candidate_amended(c)),
+-        )
+-        local_accessions = {
+-            str(getattr(h, "provider_document_id", "") or "") for h in locals_here
+-        }
+-        if _candidate_accession(newest_remote) in local_accessions:
+-            reuse.extend(locals_here)  # local is current
+-        else:
+-            newer_revision.append(newest_remote)
+-            reuse.extend(locals_here)  # old revision stays in provenance
+-
+-    for year, remotes_here in remote_by_year.items():
+-        if year not in local_by_year:
+-            missing.extend(remotes_here)
+-
+-    # "not_published": as of the as_of_date, the provider has nothing
+-    # eligible beyond the local latest. A future-dated candidate is excluded
+-    # from the gap (not yet published by as_of) and does not negate
+-    # not_published — the local latest IS the latest as of as_of.
+-    not_published = not missing and not newer_revision
+-
+-    return GapPlan(
+-        schema_version=GAP_PLAN_SCHEMA_VERSION,
+-        request_id=request_id,
+-        as_of_date=as_of_date,
+-        document_kind=document_kind,
+-        entity=entity,
+-        market=market,
+-        reuse=tuple(reuse),
+-        missing=tuple(missing),
+-        newer_revision=tuple(newer_revision),
+-        not_published=not_published,
+-        future=tuple(future),
+-        gap_hash=_hash_gap(
+-            request_id=request_id,
+-            as_of_date=as_of_date,
+-            reuse=reuse,
+-            missing=missing,
+-            newer_revision=newer_revision,
+-            provider_unavailable=False,
+-            provider_reason=None,
+-        ),
+-    )
+-
+-
+-def _hash_gap(
+-    *,
+-    request_id: str,
+-    as_of_date: str,
+-    reuse: list[Any],
+-    missing: list[Any],
+-    newer_revision: list[Any],
+-    provider_unavailable: bool,
+-    provider_reason: str | None,
+-) -> str:
+-    """Deterministic gap hash binding request + local/remote alignment."""
+-    digest = hashlib.sha256()
+-    digest.update(request_id.encode())
+-    digest.update(as_of_date.encode())
+-    for handle in sorted(
+-        reuse,
+-        key=lambda h: (
+-            str(getattr(h, "fiscal_year", "")),
+-            str(getattr(h, "provider_document_id", "")),
+-        ),
+-    ):
+-        digest.update(str(getattr(handle, "fiscal_year", "")).encode())
+-        digest.update(str(getattr(handle, "provider_document_id", "")).encode())
+-    for candidate in sorted(
+-        missing + newer_revision,
+-        key=lambda c: (str(getattr(c, "fiscal_year", "")), _candidate_accession(c)),
+-    ):
+-        digest.update(str(getattr(candidate, "fiscal_year", "")).encode())
+-        digest.update(_candidate_accession(candidate).encode())
+-    digest.update(b"unavailable" if provider_unavailable else b"ok")
+-    if provider_reason:
+-        digest.update(provider_reason.encode())
+-    return digest.hexdigest()
++"""Source-revision GapPlan (isolated implementation card I-03-B).
++
++I-03-A-frozen rewrite of the pure planner: recency is decided by
++(filed_at, accepted_at validation, revision chains) on the frozen period
++key ``(kind, period_start, period_end)`` — NEVER by provider-document-ID
++lexicographic order (persisting defect at old L167-170 / L228-242, rule
++``max(accession lexicographic, amended)``, is deleted).
++
++Frozen semantics implemented (I-03-A D1-D6, oracle C01-C15):
++
++- D1  period key = (kind, period_start, period_end); fiscal_year is a
++      derived display label (period_end year); missing period =>
++      explicit unknown bucket; same FY different periods never merge;
++- D2  filed_at is the sole recency primary; accepted_at validates
++      (accepted_at < filed_at => conflicting) or substitutes with a
++      degraded date_basis; four explicit states: ordered /
++      ambiguous_same_day / conflicting / unknown_missing_date;
++- D3  remote with later filed_at => newer_revision; remote only older =>
++      local NOT demoted, latest_status=unknown_if_remote_confirmed_newer;
++- D4  already_covered / not_published / no_gap are independent fields;
++      latest_status five-value enum; future (filed_at > as_of) into an
++      explicit future bucket, never blocking the as_of view;
++      empty provider success != not_published (conservative false while
++      no adapter exhaustiveness declaration exists — I-03-A open note);
++- D5  planner-facing ordering only: actionable candidates sorted
++      (period_start DESC, filed_at DESC, provider_document_id); batch
++      execution/completed_partial stay I-03-C;
++- D6  gap_hash = SHA-256 over canonical JSON of every qualification
++      field, hash_schema_version=1; authorization epoch binding stays
++      I-03-C; the provider id appears in the hash only inside the frozen
++      determinism sort key, never as a recency signal.
++
++Caller contract unchanged: same keyword interface; prior GapPlan fields
++untouched; new fields additive with defaults; callers keep consuming
++this single output without modification.
++"""
++
++from __future__ import annotations
++
++import hashlib
++import json
++from dataclasses import dataclass
++from typing import Any
++
++
++GAP_PLAN_SCHEMA_VERSION = "1.0"
++HASH_SCHEMA_VERSION = 1
++
++LATEST_LOCAL_CONFIRMED = "local_is_latest_confirmed"
++LATEST_NEWER_REMOTE = "newer_remote_available"
++LATEST_UNKNOWN_REMOTE_NEWER = "unknown_if_remote_confirmed_newer"
++LATEST_UNKNOWN_PROVIDER = "unknown_provider_failed"
++LATEST_UNKNOWN_EMPTY = "unknown_empty_success"
++
++STATE_ORDERED = "ordered"
++STATE_AMBIGUOUS = "ambiguous_same_day"
++STATE_CONFLICTING = "conflicting"
++STATE_UNKNOWN_DATE = "unknown_missing_date"
++
++_OK = "ok"
++_UNKEYED = "explicit_unknown"
++
++
++@dataclass(frozen=True)
++class GapPlan:
++    schema_version: str
++    request_id: str
++    as_of_date: str
++    document_kind: str
++    entity: str
++    market: str
++    reuse: tuple[Any, ...] = ()
++    missing: tuple[Any, ...] = ()
++    newer_revision: tuple[Any, ...] = ()
++    not_published: bool = False
++    provider_unavailable: bool = False
++    provider_reason: str | None = None
++    future: tuple[Any, ...] = ()
++    gap_hash: str = ""
++    # --- I-03-A additive frozen fields (D1-D6) ---
++    latest_status: str = ""
++    already_covered: bool = False
++    no_gap: bool = True
++    hash_schema_version: int = HASH_SCHEMA_VERSION
++    ambiguous_candidates: tuple[Any, ...] = ()
++    conflicting_candidates: tuple[Any, ...] = ()
++    unknown_candidates: tuple[Any, ...] = ()
++    superseded_remote: tuple[Any, ...] = ()
++    unusable_local: tuple[Any, ...] = ()
++    period_reports: tuple[Any, ...] = ()
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "schema_version": self.schema_version,
++            "request_id": self.request_id,
++            "as_of_date": self.as_of_date,
++            "document_kind": self.document_kind,
++            "entity": self.entity,
++            "market": self.market,
++            "reuse": [h.to_dict() if hasattr(h, "to_dict") else h for h in self.reuse],
++            "missing": [
++                c.to_dict() if hasattr(c, "to_dict") else c for c in self.missing
++            ],
++            "newer_revision": [
++                c.to_dict() if hasattr(c, "to_dict") else c for c in self.newer_revision
++            ],
++            "not_published": self.not_published,
++            "provider_unavailable": self.provider_unavailable,
++            "provider_reason": self.provider_reason,
++            "future": [
++                c.to_dict() if hasattr(c, "to_dict") else c for c in self.future
++            ],
++            "gap_hash": self.gap_hash,
++            "latest_status": self.latest_status,
++            "already_covered": self.already_covered,
++            "no_gap": self.no_gap,
++            "hash_schema_version": self.hash_schema_version,
++            "ambiguous_candidates": _raw(self.ambiguous_candidates),
++            "conflicting_candidates": _raw(self.conflicting_candidates),
++            "unknown_candidates": _raw(self.unknown_candidates),
++            "superseded_remote": _raw(self.superseded_remote),
++            "unusable_local": _raw(self.unusable_local),
++            "period_reports": _raw(self.period_reports),
++        }
++
++
++def _raw(items: tuple[Any, ...]) -> list[Any]:
++    out = []
++    for i in items:
++        if isinstance(i, dict):
++            out.append({k: v for k, v in i.items() if k != "object"})
++        else:
++            out.append(i.to_dict() if hasattr(i, "to_dict") else i)
++    return out
++
++
++def _candidate_id(candidate: Any) -> str:
++    return str(getattr(candidate, "provider_document_id", "") or "")
++
++
++def _candidate_kind(candidate: Any, default: str) -> str:
++    return str(
++        getattr(candidate, "document_kind", None)
++        or getattr(candidate, "kind", None)
++        or default
++    )
++
++
++def _candidate_dates(candidate: Any) -> tuple[str | None, str | None]:
++    """Local handles expose filed_at/published_date; remote candidates
++    filing_date (mapping declared and approved in iso_patching.md)."""
++    filed = (
++        getattr(candidate, "filed_at", None)
++        or getattr(candidate, "filing_date", None)
++        or getattr(candidate, "published_date", None)
++    )
++    accepted = getattr(candidate, "accepted_at", None)
++    return (str(filed) if filed else None, str(accepted) if accepted else None)
++
++
++def _date_state(candidate: Any) -> tuple[str, str | None]:
++    """D2 four-state, never a boolean. Returns (state, effective_date)."""
++    filed, accepted = _candidate_dates(candidate)
++    if not filed and not accepted:
++        return STATE_UNKNOWN_DATE, None
++    if filed and accepted and accepted < filed:
++        return STATE_CONFLICTING, None
++    if not filed and accepted:
++        return STATE_ORDERED, accepted  # degraded: date_basis=accepted_at
++    return STATE_ORDERED, filed
++
++
++def _period_key(candidate: Any, default_kind: str) -> tuple[str, str]:
++    kind = _candidate_kind(candidate, default_kind)
++    ps = getattr(candidate, "period_start", None)
++    pe = getattr(candidate, "period_end", None)
++    if not ps or not pe:
++        return f"{kind}|unknown|unknown", _UNKEYED
++    return f"{kind}|{ps}|{pe}", _OK
++
++
++def _candidate_amended(candidate: Any) -> bool:
++    return bool(getattr(candidate, "amended", False))
++
++
++def _usable_handles_split(handles: list[Any]) -> tuple[list[Any], list[Any]]:
++    """ZR-406: capture-incomplete handles are never reusable evidence."""
++    usable, unusable = [], []
++    for h in handles:
++        if getattr(h, "capture_ready", True) is False:
++            unusable.append(h)
++        else:
++            usable.append(h)
++    return usable, unusable
++
++
++def _families(items: list[Any], default_kind: str) -> dict[str, dict[str, list[Any]]]:
++    """Group by frozen period key; missing period and bad dates go to
++    explicit non-actionable buckets — never silently dropped (D1/D2)."""
++    groups: dict[str, dict[str, list[Any]]] = {}
++    for item in items:
++        key, confidence = _period_key(item, default_kind)
++        state, _eff = _date_state(item)
++        bucket = groups.setdefault(key, {_OK: [], _UNKEYED: []})
++        if confidence != _OK:
++            bucket[_UNKEYED].append(item)
++        elif state == STATE_UNKNOWN_DATE:
++            bucket.setdefault(STATE_UNKNOWN_DATE, []).append(item)
++        elif state == STATE_CONFLICTING:
++            bucket.setdefault(STATE_CONFLICTING, []).append(item)
++        else:
++            bucket[_OK].append(item)
++    return groups
++
++
++def _sort_key(candidate: Any, default_kind: str = "") -> tuple:
++    """D6 deterministic sort key (recency-neutral; accession only here)."""
++    filed, accepted = _candidate_dates(candidate)
++    return (
++        _candidate_kind(candidate, default_kind),
++        str(getattr(candidate, "period_start", "") or ""),
++        str(getattr(candidate, "period_end", "") or ""),
++        filed or "",
++        accepted or "",
++        str(getattr(candidate, "provider", "") or ""),
++        _candidate_id(candidate),
++        str(getattr(candidate, "revision", "") or ""),
++        str(getattr(candidate, "source_url", getattr(candidate, "url", "")) or ""),
++    )
++
++
++def _batch_key(candidate: Any) -> tuple[str, str, str]:
++    """D5 batch order: period_start DESC, filed_at DESC, provider_document_id.
++    DESC over ISO strings via inverted codepoints (total order, pure)."""
++    filed, _accepted = _candidate_dates(candidate)
++    return (
++        _invert(str(getattr(candidate, "period_start", "") or "")),
++        _invert(filed or ""),
++        _candidate_id(candidate),
++    )
++
++
++def _invert(s: str) -> str:
++    return "".join(chr(0x10FFFF - ord(ch)) for ch in s)
++
++
++def _same_day_state(day_members: list[Any]) -> tuple[str, Any]:
++    """D2: one amended sub-document over amended=false bases => ordered;
++    otherwise ambiguous_same_day (no silent pick, no ID pick)."""
++    if len(day_members) == 1:
++        return STATE_ORDERED, day_members[0]
++    amended = [c for c in day_members if _candidate_amended(c)]
++    bases = [c for c in day_members if not _candidate_amended(c)]
++    if len(amended) == 1 and bases:
++        return STATE_ORDERED, amended[0]
++    return STATE_AMBIGUOUS, None
++
++
++def _newest_remote(remotes: list[Any]) -> tuple[str, Any, list[Any]]:
++    """Recency purely by effective filed date (order of the input list is
++    irrelevant: bins by date, takes max date, resolves same-day chains)."""
++    by_date: dict[str, list[Any]] = {}
++    for c in remotes:
++        by_date.setdefault(_date_state(c)[1] or "", []).append(c)
++    latest_date = max(by_date)
++    latest_day = by_date[latest_date]
++    superseded = [c for d, cs in by_date.items() if d != latest_date for c in cs]
++    state, newest = _same_day_state(latest_day)
++    if state == STATE_ORDERED and newest is not None:
++        superseded.extend(c for c in latest_day if c is not newest)
++    return state, newest, superseded
++
++
++def _candidate_note(candidate: Any, reason: str) -> dict[str, Any]:
++    filed, accepted = _candidate_dates(candidate)
++    return {
++        "reason": reason,
++        "id": _candidate_id(candidate),
++        "kind": _candidate_kind(candidate, ""),
++        "period_start": str(getattr(candidate, "period_start", "") or ""),
++        "period_end": str(getattr(candidate, "period_end", "") or ""),
++        "filed_at": filed or "",
++        "accepted_at": accepted or "",
++        "url": str(
++            getattr(candidate, "source_url", getattr(candidate, "url", "")) or ""
++        ),
++        "object": candidate,
++    }
++
++
++def _qualification(candidate: Any, entity: str, market: str) -> dict[str, Any]:
++    filed, accepted = _candidate_dates(candidate)
++    return {
++        "entity": entity,
++        "market": market,
++        "kind": _candidate_kind(candidate, ""),
++        "period_start": str(getattr(candidate, "period_start", "") or ""),
++        "period_end": str(getattr(candidate, "period_end", "") or ""),
++        "fiscal_year": getattr(candidate, "fiscal_year", None),
++        "provider": str(getattr(candidate, "provider", "") or ""),
++        "id": _candidate_id(candidate),
++        "filed_at": filed or "",
++        "accepted_at": accepted or "",
++        "revision": str(getattr(candidate, "revision", "") or ""),
++        "amended": _candidate_amended(candidate),
++        "url": str(
++            getattr(candidate, "source_url", getattr(candidate, "url", "")) or ""
++        ),
++    }
++
++
++def _notes_payload(notes: list[dict[str, Any]]) -> list[dict[str, Any]]:
++    stripped = [{k: v for k, v in n.items() if k != "object"} for n in notes]
++    return sorted(
++        stripped, key=lambda n: json.dumps(n, sort_keys=True, ensure_ascii=False)
++    )
++
++
++def _hash_gap(
++    *,
++    request_id: str,
++    as_of_date: str,
++    document_kind: str,
++    entity: str,
++    market: str,
++    reuse: list[Any],
++    missing: list[Any],
++    newer_revision: list[Any],
++    future: list[Any],
++    superseded_remote: list[Any],
++    ambiguous: list[dict[str, Any]],
++    conflicting: list[dict[str, Any]],
++    unknown: list[dict[str, Any]],
++    unusable_local: list[Any],
++    provider_unavailable: bool,
++    provider_reason: str | None,
++    latest_status: str,
++    not_published: bool,
++    no_gap: bool,
++    policy_hash: str = "",
++) -> str:
++    """D6: canonical JSON SHA-256 over every qualification field
++    (hash_schema_version=1) PLUS the policy epoch binding (I-03-C: the
++    plan-level D6 field ``policy_hash`` — I-03-B's deferred placeholder —
++    joins the hash, so a policy-epoch change invalidates the plan hash).
++    Any qualification change => different hash (old authorization
++    fail-closed at the I-03-C validate step)."""
++    payload: dict[str, Any] = {
++        "hash_schema_version": HASH_SCHEMA_VERSION,
++        "request_id": request_id,
++        "as_of_date": as_of_date,
++        "document_kind": document_kind,
++        "entity": entity,
++        "market": market,
++        "policy_hash": policy_hash,
++        "latest_status": latest_status,
++        "not_published": not_published,
++        "provider_unavailable": provider_unavailable,
++        "provider_reason": provider_reason,
++        "no_gap": no_gap,
++        "reuse": [_qualification(h, entity, market) for h in reuse],
++        "missing": [_qualification(c, entity, market) for c in missing],
++        "newer_revision": [_qualification(c, entity, market) for c in newer_revision],
++        "future": [_qualification(c, entity, market) for c in future],
++        "superseded_remote": [
++            _qualification(c, entity, market) for c in superseded_remote
++        ],
++        "unusable_local": [_qualification(h, entity, market) for h in unusable_local],
++        "ambiguous_candidates": _notes_payload(ambiguous),
++        "conflicting_candidates": _notes_payload(conflicting),
++        "unknown_candidates": _notes_payload(unknown),
++    }
++    blob = json.dumps(
++        payload, sort_keys=True, ensure_ascii=False, separators=(",", ":")
++    )
++    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
++
++
++def build_gap_plan(
++    *,
++    request_id: str,
++    as_of_date: str,
++    document_kind: str,
++    entity: str,
++    market: str,
++    local_handles: list[Any],
++    remote_candidates: list[Any],
++    provider_error: str | None = None,
++    policy_hash: str = "",
++) -> GapPlan:
++    """Align local reusable handles with remote provider metadata under the
++    frozen (kind, period_start, period_end) period key and filed_at
++    recency (I-03-A D1-D6). Pure function: metadata only, no network.
++    ``policy_hash`` binds the policy epoch into the gap hash (I-03-C)."""
++    usable, unusable = _usable_handles_split(local_handles)
++
++    unknown_candidates: list[dict[str, Any]] = []
++    conflicting_candidates: list[dict[str, Any]] = []
++    ambiguous_candidates: list[dict[str, Any]] = []
++    future: list[Any] = []
++    reuse: list[Any] = []
++    missing: list[Any] = []
++    newer_revision: list[Any] = []
++    superseded_remote: list[Any] = []
++    period_reports: list[dict[str, Any]] = []
++    fk = document_kind
++
++    def side_note(obj: Any, is_local: bool) -> dict[str, Any] | None:
++        key, confidence = _period_key(obj, fk)
++        state, _eff = _date_state(obj)
++        if confidence != _OK:
++            what = "period_missing_local" if is_local else "period_missing_metadata"
++            return _candidate_note(obj, what)
++        if state == STATE_CONFLICTING:
++            return _candidate_note(obj, "accepted_at_before_filed_at")
++        if state == STATE_UNKNOWN_DATE:
++            return _candidate_note(obj, STATE_UNKNOWN_DATE)
++        return None
++
++    if provider_error:
++        # Provider failure: keep local reusable evidence, never claim
++        # up-to-date; locals with bad/missing metadata stay explicit.
++        for h in usable:
++            note = side_note(h, is_local=True)
++            if note:
++                if note["reason"] == "accepted_at_before_filed_at":
++                    conflicting_candidates.append(note)
++                else:
++                    unknown_candidates.append(note)
++        ordered_reuse = sorted(usable, key=lambda h: _sort_key(h, fk))
++        return GapPlan(
++            schema_version=GAP_PLAN_SCHEMA_VERSION,
++            request_id=request_id,
++            as_of_date=as_of_date,
++            document_kind=document_kind,
++            entity=entity,
++            market=market,
++            reuse=tuple(ordered_reuse),
++            not_published=False,
++            provider_unavailable=True,
++            provider_reason=provider_error,
++            latest_status=LATEST_UNKNOWN_PROVIDER,
++            already_covered=bool(usable),
++            no_gap=True,
++            conflicting_candidates=tuple(conflicting_candidates),
++            unknown_candidates=tuple(unknown_candidates),
++            unusable_local=tuple(
++                _candidate_note(h, "capture_ready_false") for h in unusable
++            ),
++            gap_hash=_hash_gap(
++                request_id=request_id,
++                as_of_date=as_of_date,
++                document_kind=document_kind,
++                entity=entity,
++                market=market,
++                reuse=ordered_reuse,
++                missing=[],
++                newer_revision=[],
++                future=[],
++                superseded_remote=[],
++                ambiguous=[],
++                conflicting=conflicting_candidates,
++                unknown=unknown_candidates,
++                unusable_local=unusable,
++                provider_unavailable=True,
++                provider_reason=provider_error,
++                latest_status=LATEST_UNKNOWN_PROVIDER,
++                not_published=False,
++                no_gap=True,
++                policy_hash=policy_hash,
++            ),
++        )
++
++    local_families = _families(usable, fk)
++    remote_families = _families(remote_candidates, fk)
++    period_keys = sorted(set(local_families) | set(remote_families))
++
++    local_groups_total = 0
++    local_groups_confirmed = 0
++    local_groups_unconfirmed = 0
++    any_eligible_remote = False
++    any_local_seen = False
++
++    for key in period_keys:
++        lgrp = local_families.get(key, {_OK: [], _UNKEYED: []})
++        rgrp = remote_families.get(key, {_OK: [], _UNKEYED: []})
++        locals_ok = list(lgrp[_OK])
++        locals_unkeyed = list(lgrp[_UNKEYED])
++        remotes_ok = list(rgrp[_OK])
++        remotes_unknown = list(rgrp.get(STATE_UNKNOWN_DATE, []))
++        remotes_conflicting = list(rgrp.get(STATE_CONFLICTING, []))
++        remotes_unkeyed = list(rgrp[_UNKEYED])
++
++        unknown_candidates.extend(
++            _candidate_note(c, "period_missing_local") for c in locals_unkeyed
++        )
++        unknown_candidates.extend(
++            _candidate_note(c, "period_missing_metadata") for c in remotes_unkeyed
++        )
++        conflicting_candidates.extend(
++            _candidate_note(c, "accepted_at_before_filed_at")
++            for c in remotes_conflicting
++        )
++        unknown_candidates.extend(
++            _candidate_note(c, STATE_UNKNOWN_DATE) for c in remotes_unknown
++        )
++
++        eligible: list[Any] = []
++        for c in remotes_ok:
++            _state, eff = _date_state(c)
++            if eff is not None and eff > as_of_date:
++                future.append(c)
++            else:
++                eligible.append(c)
++        if eligible:
++            any_eligible_remote = True
++        if locals_ok or locals_unkeyed:
++            any_local_seen = True
++
++        local_max = max(
++            (_date_state(h)[1] for h in locals_ok if _date_state(h)[1]), default=None
++        )
++        local_ids = {_candidate_id(h) for h in locals_ok}
++        group_state = STATE_ORDERED
++        resolution = None
++
++        if locals_ok:
++            reuse.extend(locals_ok)
++
++        derived_fy = None
++        for member in locals_ok + eligible:
++            pe = str(getattr(member, "period_end", "") or "")
++            if pe[:4].isdigit():
++                derived_fy = int(pe[:4])
++                break
++
++        if eligible:
++            sel_state, newest, older = _newest_remote(eligible)
++            superseded_remote.extend(older)
++            group_state = sel_state
++            if sel_state == STATE_AMBIGUOUS:
++                by_date: dict[str, list[Any]] = {}
++                for c in eligible:
++                    by_date.setdefault(_date_state(c)[1] or "", []).append(c)
++                day_members = sorted(
++                    by_date[max(by_date)], key=lambda c: _sort_key(c, fk)
++                )
++                for c in day_members:
++                    ambiguous_candidates.append(_candidate_note(c, STATE_AMBIGUOUS))
++                resolution = STATE_AMBIGUOUS
++                local_groups_unconfirmed += 1 if locals_ok else 0
++            elif _candidate_id(newest) in local_ids:
++                local_groups_total += 1
++                local_groups_confirmed += 1
++                resolution = LATEST_LOCAL_CONFIRMED
++            elif locals_ok:
++                local_groups_total += 1
++                local_groups_unconfirmed += 1
++                if local_max is None:
++                    unknown_candidates.append(
++                        _candidate_note(newest, "local_date_missing")
++                    )
++                    resolution = "unknown_local_date_missing"
++                elif _date_state(newest)[1] > local_max:
++                    newer_revision.append(newest)
++                    resolution = LATEST_NEWER_REMOTE
++                elif _date_state(newest)[1] < local_max:
++                    superseded_remote.append(newest)  # reverse: local not demoted (D3)
++                    resolution = LATEST_UNKNOWN_REMOTE_NEWER
++                else:
++                    is_chain = _candidate_amended(newest) and any(
++                        not _candidate_amended(h)
++                        and _date_state(h)[1] == _date_state(newest)[1]
++                        for h in locals_ok
++                    )
++                    if is_chain:
++                        newer_revision.append(newest)
++                        resolution = LATEST_NEWER_REMOTE
++                    else:
++                        ambiguous_candidates.append(
++                            _candidate_note(newest, "cross_local_same_day")
++                        )
++                        for h in locals_ok:
++                            if _date_state(h)[1] == _date_state(newest)[1]:
++                                ambiguous_candidates.append(
++                                    _candidate_note(h, "cross_local_same_day")
++                                )
++                        group_state = STATE_AMBIGUOUS
++                        resolution = STATE_AMBIGUOUS
++            else:
++                missing.append(newest)
++                resolution = "missing_newest_only"
++        elif locals_ok:
++            if (
++                remotes_ok
++                or future
++                or remotes_unknown
++                or remotes_conflicting
++                or remotes_unkeyed
++            ):
++                local_groups_total += 1
++                local_groups_unconfirmed += 1
++                resolution = LATEST_UNKNOWN_REMOTE_NEWER
++            else:
++                resolution = LATEST_UNKNOWN_REMOTE_NEWER
++
++        pe_part = key.split("|")[2] if key.count("|") == 2 else ""
++        derived_fy = derived_fy or (
++            int(pe_prefix) if (pe_prefix := pe_part[:4]).isdigit() else None
++        )
++        period_reports.append(
++            {
++                "period_key": key,
++                "fiscal_year_label": derived_fy,
++                "state": group_state,
++                "resolution": resolution,
++                "local_ids": sorted(_candidate_id(h) for h in locals_ok),
++            }
++        )
++
++    reuse_sorted = sorted(reuse, key=lambda c: _sort_key(c, fk))
++    missing_sorted = sorted(missing, key=_batch_key)
++    newer_sorted = sorted(newer_revision, key=_batch_key)
++    future_sorted = sorted(future, key=lambda c: _sort_key(c, fk))
++    superseded_sorted = sorted(superseded_remote, key=lambda c: _sort_key(c, fk))
++
++    no_gap = not missing_sorted and not newer_sorted
++
++    # D4 decision table for latest_status (five-value enum, always set):
++    if missing_sorted or newer_sorted:
++        latest_status = LATEST_NEWER_REMOTE
++    elif not any_local_seen and not any_eligible_remote:
++        latest_status = LATEST_UNKNOWN_EMPTY
++    elif any_local_seen and local_groups_total > 0 and local_groups_unconfirmed == 0:
++        latest_status = LATEST_LOCAL_CONFIRMED
++    else:
++        latest_status = LATEST_UNKNOWN_REMOTE_NEWER
++
++    return GapPlan(
++        schema_version=GAP_PLAN_SCHEMA_VERSION,
++        request_id=request_id,
++        as_of_date=as_of_date,
++        document_kind=document_kind,
++        entity=entity,
++        market=market,
++        reuse=tuple(reuse_sorted),
++        missing=tuple(missing_sorted),
++        newer_revision=tuple(newer_sorted),
++        not_published=False,  # conservative: no exhaustive-knowledge field exists
++        provider_unavailable=False,
++        provider_reason=None,
++        future=tuple(future_sorted),
++        latest_status=latest_status,
++        already_covered=bool(reuse_sorted),
++        no_gap=no_gap,
++        ambiguous_candidates=tuple(ambiguous_candidates),
++        conflicting_candidates=tuple(conflicting_candidates),
++        unknown_candidates=tuple(unknown_candidates),
++        superseded_remote=tuple(superseded_sorted),
++        unusable_local=tuple(
++            _candidate_note(h, "capture_ready_false") for h in unusable
++        ),
++        period_reports=tuple(period_reports),
++        gap_hash=_hash_gap(
++            request_id=request_id,
++            as_of_date=as_of_date,
++            document_kind=document_kind,
++            entity=entity,
++            market=market,
++            reuse=reuse_sorted,
++            missing=missing_sorted,
++            newer_revision=newer_sorted,
++            future=future_sorted,
++            superseded_remote=superseded_sorted,
++            ambiguous=ambiguous_candidates,
++            conflicting=conflicting_candidates,
++            unknown=unknown_candidates,
++            unusable_local=unusable,
++            provider_unavailable=False,
++            provider_reason=None,
++            latest_status=latest_status,
++            not_published=False,
++            no_gap=no_gap,
++            policy_hash=policy_hash,
++        ),
++    )
+--- "C:/Users/�\203\221�\233�波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01/iso/baseline/authorization.py"	2026-09-19 18:29:34.716106300 +0100
++++ "C:/Users/�\203\221�\233�波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01/iso/override/authorization.py"	2026-09-19 18:33:16.065894000 +0100
+@@ -1,22 +1,45 @@
+-"""WU-4.3 + FC-801: authorization-bound minimal download.
++"""WU-4.3 + FC-801: authorization-bound minimal download (isolated
++implementation card I-03-C).
+ 
+-A ``DownloadAuthorization`` receipt binds the download decision to the
+-exact GapPlan (via its hash), the RuntimePolicySnapshot (via its hash),
+-the exact provider + accessions, item/byte caps, and an expiry. The
+-downloader validates every candidate against the receipt before fetching;
+-anything not in the plan, under a stale policy, or not allowed by the
+-receipt is rejected (DL-03: fetch=0). The receipt hash is deterministic so
+-the same authorization is reproducible for audit.
++I-03-A D6-frozen binding face for a DownloadAuthorization (schema 1.1):
++
++- the receipt binds the exact GapPlan hash (which, from I-03-B/C, carries
++  every qualification field + the policy epoch, so any URL / date /
++  period / provider / revision / policy change yields a NEW plan hash);
++- the receipt hash is a canonical-JSON SHA-256 over a nested payload —
++  no field concatenation ambiguity; the allowed accession set is sorted
++  INSIDE the hash, so an approved-set reorder does not change the receipt;
++- ``validate_download_authorization`` is fail-closed and ordered:
++  schema version gate (legacy receipts are EXPLICITLY invalidated — no
++  auto-upgrade, no field back-fill), receipt-hash self-check, stale plan
++  hash, expiry (a 1-second-late clock is expired), provider REQUIRED
++  (a missing provider no longer default-passes), accession membership,
++  item/byte caps. Every refusal happens with fetch=0 downstream.
++
++The clock is injected as a string parameter (frozen test clock); no
++production code is modified: this file is an iso attempt copy.
+ """
+ 
+ from __future__ import annotations
+ 
+ import hashlib
++import json
++import re
+ from dataclasses import dataclass
+ from typing import Any
+ 
+ 
+-AUTHORIZATION_SCHEMA_VERSION = "1.0"
++AUTHORIZATION_SCHEMA_VERSION = "1.1"
++HASH_SCHEMA_VERSION = 1
++_ISO_Z = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
++
++
++def _is_sha256_hex(value: str) -> bool:
++    return (
++        isinstance(value, str)
++        and len(value) == 64
++        and all(c in "0123456789abcdef" for c in value)
++    )
+ 
+ 
+ @dataclass(frozen=True)
+@@ -33,6 +56,9 @@
+     max_bytes: int
+     expires_at: str
+     receipt_hash: str
++    # I-03-C: binding version — legacy receipts carry no version and are
++    # explicitly refused (never auto-upgraded).
++    hash_schema_version: int = 1
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return {
+@@ -46,9 +72,31 @@
+             "max_bytes": self.max_bytes,
+             "expires_at": self.expires_at,
+             "receipt_hash": self.receipt_hash,
++            "hash_schema_version": self.hash_schema_version,
++        }
++
++    def receipt_payload(self) -> dict[str, Any]:
++        return {
++            "hash_schema_version": self.hash_schema_version,
++            "schema_version": self.schema_version,
++            "request_id": self.request_id,
++            "gap_plan_hash": self.gap_plan_hash,
++            "policy_hash": self.policy_hash,
++            "provider": self.provider,
++            "allowed_accessions": sorted(self.allowed_accessions),
++            "max_items": self.max_items,
++            "max_bytes": self.max_bytes,
++            "expires_at": self.expires_at,
+         }
+ 
+ 
++def _receipt_hash(payload: dict[str, Any]) -> str:
++    blob = json.dumps(
++        payload, sort_keys=True, ensure_ascii=False, separators=(",", ":")
++    )
++    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
++
++
+ def build_download_authorization(
+     *,
+     request_id: str,
+@@ -60,28 +108,40 @@
+     max_bytes: int,
+     expires_at: str,
+ ) -> DownloadAuthorization:
+-    """Create a deterministic download authorization receipt."""
++    """Create a deterministic download authorization receipt.
++
++    Fail-closed at build time: no implicit defaults (I-03-A D6 — a
++    missing provider is NOT authorized, caps must be real caps, the
++    expiry must be a canonical UTC instant)."""
+     if not request_id or not gap_plan_hash or not policy_hash or not provider:
+         raise ValueError("request_id/gap_plan_hash/policy_hash/provider required")
+-    if len(gap_plan_hash) != 64:
++    if not _is_sha256_hex(gap_plan_hash):
+         raise ValueError("gap_plan_hash must be a SHA-256 hex digest")
+-    if len(policy_hash) != 64:
++    if not _is_sha256_hex(policy_hash):
+         raise ValueError("policy_hash must be a SHA-256 hex digest")
+-    if max_items <= 0 or max_bytes <= 0:
+-        raise ValueError("max_items/max_bytes must be positive")
+-    if not allowed_accessions or not all(a for a in allowed_accessions):
++    if _ISO_Z.match(expires_at) is None:
++        raise ValueError("expires_at must be canonical YYYY-MM-DDTHH:MM:SSZ")
++    if not isinstance(max_items, int) or isinstance(max_items, bool) or max_items <= 0:
++        raise ValueError("max_items must be a positive integer")
++    if not isinstance(max_bytes, int) or isinstance(max_bytes, bool) or max_bytes <= 0:
++        raise ValueError("max_bytes must be a positive integer")
++    if not allowed_accessions or any(
++        not isinstance(a, str) or not a for a in allowed_accessions
++    ):
+         raise ValueError("allowed_accessions must be a non-empty list of accessions")
+-    digest = hashlib.sha256()
+-    digest.update(AUTHORIZATION_SCHEMA_VERSION.encode())
+-    digest.update(request_id.encode())
+-    digest.update(gap_plan_hash.encode())
+-    digest.update(policy_hash.encode())
+-    digest.update(provider.encode())
+-    for accession in sorted(allowed_accessions):
+-        digest.update(accession.encode())
+-    digest.update(str(max_items).encode())
+-    digest.update(str(max_bytes).encode())
+-    digest.update(expires_at.encode())
++    receipt = DownloadAuthorization(
++        schema_version=AUTHORIZATION_SCHEMA_VERSION,
++        request_id=request_id,
++        gap_plan_hash=gap_plan_hash,
++        policy_hash=policy_hash,
++        provider=provider,
++        allowed_accessions=tuple(allowed_accessions),
++        max_items=max_items,
++        max_bytes=max_bytes,
++        expires_at=expires_at,
++        receipt_hash="",
++    )
++    receipt_hash = _receipt_hash(receipt.receipt_payload())
+     return DownloadAuthorization(
+         schema_version=AUTHORIZATION_SCHEMA_VERSION,
+         request_id=request_id,
+@@ -92,7 +152,8 @@
+         max_items=max_items,
+         max_bytes=max_bytes,
+         expires_at=expires_at,
+-        receipt_hash=digest.hexdigest(),
++        receipt_hash=receipt_hash,
++        hash_schema_version=1,
+     )
+ 
+ 
+@@ -106,21 +167,42 @@
+     bytes_already_fetched: int = 0,
+ ) -> str | None:
+     """Return an error string if the candidate may NOT be fetched under the
+-    receipt, else None. ``candidate`` exposes provider_document_id, fiscal_year
+-    and remote_size (DownloadCandidate-compatible)."""
++    receipt, else None (fetch=0 on every refusal). Fail-closed order:
++    version gate -> receipt self-check -> plan hash -> expiry -> provider
++    (required) -> accession -> caps."""
++    if authorization.schema_version != AUTHORIZATION_SCHEMA_VERSION:
++        return (
++            "unsupported authorization schema_version "
++            f"{authorization.schema_version!r}: legacy receipt requires "
++            "explicit re-authorization (no auto-upgrade)"
++        )
++    if authorization.hash_schema_version != HASH_SCHEMA_VERSION:
++        return (
++            "unsupported hash_schema_version "
++            f"{authorization.hash_schema_version!r}: legacy receipt requires "
++            "explicit re-authorization"
++        )
++    if _receipt_hash(authorization.receipt_payload()) != authorization.receipt_hash:
++        return "authorization receipt hash mismatch"
+     if authorization.gap_plan_hash != plan_hash:
+-        return "authorization is bound to a different gap plan"
++        return "authorization is bound to a different gap plan (stale_gap_hash)"
++    if not _ISO_Z.match(now):
++        return "validate clock not a canonical UTC instant"
+     if now > authorization.expires_at:
+         return "authorization expired"
+-    provider = str(getattr(candidate, "provider", "") or "").lower()
+-    if provider and authorization.provider != provider:
+-        return f"provider not authorized: {provider}"
++    provider = str(getattr(candidate, "provider", "") or "")
++    if not provider:
++        return "provider not authorized: (missing provider on candidate)"
++    if provider.lower() != authorization.provider:
++        return f"provider not authorized: {provider.lower()}"
+     accession = str(getattr(candidate, "provider_document_id", "") or "")
+     if accession not in authorization.allowed_accessions:
+         return f"accession not authorized: {accession}"
+     if items_already_fetched >= authorization.max_items:
+         return "item cap reached"
+     size = int(getattr(candidate, "remote_size", 0) or 0)
++    if size < 0:
++        return "candidate reports a negative size (unknown-sized candidate refused)"
+     if bytes_already_fetched + size > authorization.max_bytes:
+         return "byte cap exceeded"
+     return None
+--- "C:/Users/�\203\221�\233�波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01/iso/baseline/close_gap.py"	2026-09-19 18:29:34.743875900 +0100
++++ "C:/Users/�\203\221�\233�波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01/iso/override/close_gap.py"	2026-09-19 18:33:34.067879400 +0100
+@@ -1,503 +1,100 @@
+-"""FC-801: CloseGap transaction — the fixed close-gap step sequence.
+-
+-A ``CloseGapTransaction`` executes the authorized download of a gap plan
+-as ONE contract with journaled state:
+-
+-1. policy binding check (DL-03): the RuntimePolicySnapshot hash must match
+-   the binding — a download authorized under a different policy is never
+-   reusable (fetch=0);
+-2. gap revalidation (DL-03): rediscover provider metadata (metadata only,
+-   nothing fetched) and rebuild the current GapPlan; if the plan still has
+-   missing items but its hash differs from the binding, the authorization
+-   is stale (fetch=0); if the gap is already closed (no missing), the
+-   transaction completes as reused (fetch=0);
+-3. authorize + fetch staging (DL-02): the coordinator stages only what the
+-   receipt allows (accessions/caps/expiry); any authorization failure is
+-   rejected with the precise reason and fetch=0;
+-4. validate (DL-07): receipt bytes/hash/magic must match — invalid staging
+-   is never committed; the staging directory is cleaned up (auditable) and
+-   the catalog is unchanged;
+-5. canonical commit (DL-09): ``import_staged`` is idempotent by
+-   content_sha256 — a re-run after interruption deduplicates;
+-6. re-resolve: the final resolver pass returns the FC-704 envelope so the
+-   caller sees the real outcome (journal-reconciled).
+-
+-Partial failure (LT-10) never reports ``completed``: the journal records
+-``failed`` with the txn id and the reason; re-running the same binding is
+-safe.
+-"""
+-
+-from __future__ import annotations
+-
+-import hashlib
+-import json
+-import shutil
+-from dataclasses import dataclass
+-from datetime import UTC, datetime
+-from typing import Any
+-
+-from .acquisition import AcquisitionStatus
+-from .acquisition_journal import AcquisitionJournal
+-from .authorization import build_download_authorization
+-from .canonical_writer import CanonicalSourceWriter
+-from .resolver import (
+-    SourceRequest,
+-    SourceResolver,
+-    build_resolution_envelope,
+-)
+-from .runtime_policy import RuntimePolicyError, load_runtime_policy
+-
+-
+-CLOSE_GAP_SCHEMA_VERSION = "1.0"
+-
+-
+-@dataclass(frozen=True)
+-class CloseGapBinding:
+-    """FC-801: the input binding of one authorized close-gap download."""
+-
+-    request_id: str
+-    gap_plan_hash: str
+-    policy_hash: str
+-    provider: str
+-    allowed_accessions: tuple[str, ...]
+-    max_items: int
+-    max_bytes: int
+-    expires_at: str
+-
+-    def to_dict(self) -> dict[str, Any]:
+-        return {
+-            "request_id": self.request_id,
+-            "gap_plan_hash": self.gap_plan_hash,
+-            "policy_hash": self.policy_hash,
+-            "provider": self.provider,
+-            "allowed_accessions": list(self.allowed_accessions),
+-            "max_items": self.max_items,
+-            "max_bytes": self.max_bytes,
+-            "expires_at": self.expires_at,
+-        }
+-
+-
+-@dataclass(frozen=True)
+-class CloseGapResult:
+-    schema_version: str
+-    txn_id: str
+-    status: str  # completed | rejected | failed
+-    reason: str
+-    fetch_events: int
+-    outcome: str | None
+-    resolution: dict[str, Any] | None
+-    envelope: dict[str, Any] | None
+-
+-    def to_dict(self) -> dict[str, Any]:
+-        return {
+-            "schema_version": self.schema_version,
+-            "txn_id": self.txn_id,
+-            "status": self.status,
+-            "reason": self.reason,
+-            "fetch_events": self.fetch_events,
+-            "outcome": self.outcome,
+-            "resolution": self.resolution,
+-            "envelope": self.envelope,
+-        }
+-
+-
+-def _txn_id(binding: CloseGapBinding) -> str:
+-    payload = json.dumps(binding.to_dict(), sort_keys=True, ensure_ascii=False)
+-    return (
+-        "urn:company-wiki:close-gap:sha256:"
+-        + hashlib.sha256(payload.encode("utf-8")).hexdigest()
+-    )
+-
+-
+-def _reject_result(txn: str, reason: str) -> CloseGapResult:
+-    return CloseGapResult(
+-        schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-        txn_id=txn,
+-        status="rejected",
+-        reason=reason,
+-        fetch_events=0,
+-        outcome=None,
+-        resolution=None,
+-        envelope=None,
+-    )
+-
+-
+-def _is_retryable_staging_error(exc: Exception) -> bool:
+-    """FC-804 OPS-02: a staging error is retryable when the adapter said so
+-    (AdapterProcessError.retryable) or the plan reported the provider
+-    unavailable.  Everything else fails immediately."""
+-    from .adapter_process import AdapterProcessError
+-
+-    if isinstance(exc, AdapterProcessError):
+-        return bool(exc.retryable)
+-    if isinstance(exc, RuntimeError) and str(exc).startswith(
+-        ("provider unavailable", "download not authorized")
+-    ):
+-        return False
+-    return False
+-
+-
+-def _utc_now() -> str:
+-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+-
+-
+-def _actionable_candidates(gap_plan: Any) -> tuple[Any, ...]:
+-    """Return the exact remote candidates an authorized close-gap may fetch.
+-
+-    A same-period amendment is a real freshness gap even when a local filing
+-    already exists, so ``newer_revision`` is actionable alongside ``missing``.
+-    The plan hash binds this ordered set; the acquisition coordinator still
+-    validates provider, accession, caps, and expiry before it fetches bytes.
+-    """
+-    return tuple(gap_plan.missing) + tuple(gap_plan.newer_revision)
+-
+-
+-class CloseGapTransaction:
+-    """FC-801: execute one authorized close-gap download, journaled."""
+-
+-    def __init__(
+-        self,
+-        *,
+-        catalog: Any,
+-        coordinator: Any,
+-        writer: CanonicalSourceWriter,
+-        journal: AcquisitionJournal,
+-    ) -> None:
+-        self.catalog = catalog
+-        self.coordinator = coordinator
+-        self.writer = writer
+-        self.journal = journal
+-        # ZR-203: close-gap is a WRITE flow — the writer initializer may
+-        # create the catalog before the read-only resolver reads it.
+-        _ = getattr(self.catalog, "store", None)
+-
+-    def execute(
+-        self,
+-        binding: CloseGapBinding,
+-        request: SourceRequest,
+-    ) -> CloseGapResult:
+-        if not isinstance(binding, CloseGapBinding):
+-            raise TypeError("binding must be a CloseGapBinding")
+-        if not isinstance(request, SourceRequest):
+-            raise TypeError("request must be a SourceRequest")
+-        txn = _txn_id(binding)
+-
+-        def _fail(
+-            reason: str, *, error: str | None = None, error_type: str | None = None
+-        ) -> CloseGapResult:
+-            self.journal.record(
+-                request_id=binding.request_id,
+-                outcome="failed",
+-                reason=reason,
+-                error_type=error_type,
+-                error=error,
+-            )
+-            return CloseGapResult(
+-                schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-                txn_id=txn,
+-                status="failed",
+-                reason=reason,
+-                fetch_events=0,
+-                outcome=None,
+-                resolution=None,
+-                envelope=None,
+-            )
+-
+-        def _reject(reason: str) -> CloseGapResult:
+-            return CloseGapResult(
+-                schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-                txn_id=txn,
+-                status="rejected",
+-                reason=reason,
+-                fetch_events=0,
+-                outcome=None,
+-                resolution=None,
+-                envelope=None,
+-            )
+-
+-        # Step 1: policy binding (DL-03) — fail closed without a snapshot.
+-        try:
+-            snapshot = load_runtime_policy(
+-                self.catalog.config.catalog_dir / "runtime_policy.json"
+-            )
+-        except RuntimePolicyError:
+-            return _reject("no_runtime_policy")
+-        if snapshot.get("policy_hash") != binding.policy_hash:
+-            return _reject("stale_policy_hash")
+-
+-        # Step 2: gap revalidation (DL-03) — metadata only, nothing fetched.
+-        rediscovered = self.coordinator.resolve_or_stage(
+-            SourceRequest(
+-                entity=request.entity,
+-                market=request.market,
+-                security_id=request.security_id,
+-                document_kind=request.document_kind,
+-                form_type=request.form_type,
+-                fiscal_year=request.fiscal_year,
+-                fiscal_period=request.fiscal_period,
+-                language=request.language,
+-                provider=request.provider,
+-                provider_document_id=request.provider_document_id,
+-                as_of_date=request.as_of_date,
+-                mode="latest_as_of",
+-            )
+-        )
+-        if rediscovered.status is not AcquisitionStatus.GAP:
+-            return _reject(f"gap_revalidated_status:{rediscovered.status.value}")
+-        current_plan = rediscovered.gap_plan
+-        actionable = _actionable_candidates(current_plan)
+-        if not actionable:
+-            # The gap is already closed (local is latest): complete as
+-            # reused with zero fetches — idempotent recovery (DL-09).
+-            return self._complete_reused(
+-                request, txn, binding, reason="gap_already_closed"
+-            )
+-        if current_plan.gap_hash != binding.gap_plan_hash:
+-            return _reject("stale_gap_hash")
+-
+-        # Step 3: authorize + fetch staging (DL-02).
+-        # The staging request is built per exact actionable candidate: an
+-        # exact request without its fiscal_year would re-resolve an older
+-        # local document as reused and never stage a missing period or a
+-        # same-period newer revision.
+-        missing_candidate = actionable[0]
+-        missing_year = getattr(missing_candidate, "fiscal_year", None)
+-        missing_pdoc = getattr(missing_candidate, "provider_document_id", None)
+-        authorization = build_download_authorization(
+-            request_id=binding.request_id,
+-            gap_plan_hash=binding.gap_plan_hash,
+-            policy_hash=binding.policy_hash,
+-            provider=binding.provider,
+-            allowed_accessions=binding.allowed_accessions,
+-            max_items=binding.max_items,
+-            max_bytes=binding.max_bytes,
+-            expires_at=binding.expires_at,
+-        )
+-        staged_request = SourceRequest(
+-            entity=request.entity,
+-            market=request.market,
+-            security_id=request.security_id,
+-            document_kind=request.document_kind,
+-            form_type=request.form_type
+-            or getattr(missing_candidate, "form_type", None),
+-            fiscal_year=missing_year or request.fiscal_year,
+-            fiscal_period=request.fiscal_period,
+-            language=request.language,
+-            provider=getattr(missing_candidate, "provider", None) or request.provider,
+-            provider_document_id=missing_pdoc or request.provider_document_id,
+-            as_of_date=request.as_of_date,
+-            mode="exact",
+-            allow_download=True,
+-        )
+-        # Step 3 (FC-804 DL-08): single-flight — the fetch+commit phase is
+-        # serialized per transaction across processes.  INSIDE the lock the
+-        # gap is re-checked: the first caller may have just closed it, in
+-        # which case this caller completes as reused with fetch=0 (at most
+-        # one provider fetch + one canonical commit for the same request).
+-        from .lock import CatalogOperationLockedError, _acquisition_mutex
+-
+-        lock_dir = self.catalog.config.catalog_dir / "close_gap_locks"
+-        lock_dir.mkdir(parents=True, exist_ok=True)
+-        lock_path = lock_dir / (txn.rsplit(":", 1)[-1] + ".lock")
+-        lock_timeout = self._lock_timeout_seconds()
+-        try:
+-            with _acquisition_mutex(lock_path, timeout_seconds=lock_timeout):
+-                return self._fetch_and_commit(
+-                    request,
+-                    staged_request,
+-                    authorization,
+-                    txn,
+-                    binding,
+-                    missing_candidate,
+-                )
+-        except CatalogOperationLockedError as exc:
+-            return _fail(
+-                f"close_gap_lock_timeout: {exc}",
+-                error_type="CatalogOperationLockedError",
+-            )
+-
+-    def _lock_timeout_seconds(self) -> float:
+-        """Lock wait bound: the adapter timeout plus a small grace."""
+-        timeout = getattr(self.coordinator, "timeout_seconds", None)
+-        if isinstance(timeout, (int, float)) and timeout > 0:
+-            return float(timeout) + 30.0
+-        return 600.0
+-
+-    def _fetch_and_commit(
+-        self,
+-        request,
+-        staged_request,
+-        authorization,
+-        txn: str,
+-        binding,
+-        missing_candidate,
+-    ) -> CloseGapResult:
+-        def _fail(reason, *, error=None, error_type=None):
+-            self.journal.record(
+-                request_id=binding.request_id,
+-                outcome="failed",
+-                reason=reason,
+-                error_type=error_type,
+-                error=error,
+-            )
+-            return CloseGapResult(
+-                schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-                txn_id=txn,
+-                status="failed",
+-                reason=reason,
+-                fetch_events=0,
+-                outcome=None,
+-                resolution=None,
+-                envelope=None,
+-            )
+-
+-        # Re-check the gap INSIDE the lock (FC-804 DL-08): the first caller
+-        # may have closed it while we waited.
+-        rediscovered = self.coordinator.resolve_or_stage(
+-            SourceRequest(
+-                entity=request.entity,
+-                market=request.market,
+-                security_id=request.security_id,
+-                document_kind=request.document_kind,
+-                form_type=request.form_type,
+-                fiscal_year=request.fiscal_year,
+-                fiscal_period=request.fiscal_period,
+-                language=request.language,
+-                provider=request.provider,
+-                provider_document_id=request.provider_document_id,
+-                as_of_date=request.as_of_date,
+-                mode="latest_as_of",
+-            )
+-        )
+-        if rediscovered.status is AcquisitionStatus.GAP:
+-            current = rediscovered.gap_plan
+-            if not _actionable_candidates(current):
+-                # single-flight win: the other caller downloaded it
+-                return self._complete_reused(
+-                    request, txn, binding, reason="gap_closed_by_concurrent"
+-                )
+-            if current.gap_hash != binding.gap_plan_hash:
+-                return _reject_result(txn, "stale_gap_hash")
+-
+-        # FC-804 OPS-02: bounded retry for retryable staging failures.
+-        attempts = 0
+-        backoff = 1.0
+-        while True:
+-            attempts += 1
+-            try:
+-                staged = self.coordinator.resolve_or_stage(
+-                    staged_request, authorization=authorization
+-                )
+-                break
+-            except Exception as exc:
+-                if str(exc).startswith("download not authorized"):
+-                    # DL-02: authorization failures are REJECTIONS.
+-                    return _reject_result(txn, str(exc))
+-                retryable = _is_retryable_staging_error(exc)
+-                if attempts >= 3 or not retryable:
+-                    # DL-07 / LT-10: never committed, staging cleaned.  The
+-                    # staging dir is named by the STAGING request's id.
+-                    self._cleanup_staging(staged_request.request_id)
+-                    return _fail(str(exc), error_type=type(exc).__name__)
+-                import time
+-
+-                time.sleep(backoff)
+-                backoff *= 2.0
+-
+-        if staged.status is AcquisitionStatus.REUSED:
+-            return self._complete_reused(
+-                request, txn, binding, reason="reused_after_discovery"
+-            )
+-        if staged.status is not AcquisitionStatus.STAGED:
+-            return _reject_result(txn, f"stage_status:{staged.status.value}")
+-
+-        # Step 4: canonical commit (DL-09 — idempotent by content hash).
+-        try:
+-            imported = self.writer.import_staged(
+-                request, staged.candidate, staged.receipt
+-            )
+-        except Exception as exc:
+-            return _fail(
+-                f"canonical_import_failed: {type(exc).__name__}: {exc}",
+-                error_type=type(exc).__name__,
+-            )
+-        outcome = (
+-            "downloaded_new"
+-            if imported.status.value == "imported_new"
+-            else "deduplicated_after_download"
+-        )
+-        self.journal.record(
+-            request_id=binding.request_id,
+-            outcome=outcome,
+-            adapter_name=staged.adapter_name,
+-            candidate_id=staged.candidate.candidate_id,
+-            provider=staged.candidate.provider,
+-            provider_document_id=staged.candidate.provider_document_id,
+-            source_url=staged.candidate.source_url,
+-            content_sha256=staged.receipt.content_sha256,
+-            reason=staged.reason,
+-        )
+-        return self._finalize(request, txn, outcome, fetch_events=1)
+-
+-    # -- helpers ---------------------------------------------------------------
+-
+-    def _complete_reused(self, request, txn, binding, *, reason: str):
+-        self.journal.record(
+-            request_id=binding.request_id,
+-            outcome="reused_before_download",
+-            reason=reason,
+-        )
+-        return self._finalize(request, txn, "reused_before_download", fetch_events=0)
+-
+-    def _finalize(self, request, txn, outcome: str, *, fetch_events: int):
+-        """Step 5: re-resolve and attach the FC-704 envelope (+ FC-902 bundle).
+-
+-        LT-10: ``completed`` is only claimed when the document actually
+-        resolves — a re-resolve that misses means the close did NOT happen.
+-        """
+-        from .resolver import ResolutionStatus
+-
+-        resolution = SourceResolver(self.catalog).resolve(request)
+-        if resolution.status not in (
+-            ResolutionStatus.REUSED_EXACT,
+-            ResolutionStatus.REUSED_EQUIVALENT,
+-        ):
+-            return CloseGapResult(
+-                schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-                txn_id=txn,
+-                status="failed",
+-                reason=f"re_resolve_did_not_reuse:{resolution.status.value}",
+-                fetch_events=fetch_events,
+-                outcome=None,
+-                resolution=resolution.to_dict(),
+-                envelope=None,
+-            )
+-        envelope = build_resolution_envelope(
+-            resolution,
+-            journal=self.journal,
+-            bundle=self.catalog.bundle_for_resolution(resolution),
+-            store=self.catalog.store,
+-            project_root=self.catalog.config.project_root,
+-        )
+-        return CloseGapResult(
+-            schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-            txn_id=txn,
+-            status="completed",
+-            reason=(
+-                "gap_closed_downloaded"
+-                if fetch_events
+-                else "gap_already_closed_or_reused"
+-            ),
+-            fetch_events=fetch_events,
+-            outcome=outcome,
+-            resolution=resolution.to_dict(),
+-            envelope=envelope.to_dict(),
+-        )
+-
+-    def _cleanup_staging(self, request_id: str) -> None:
+-        """Auditable staging cleanup (DL-07): remove the request's staging
+-        directory so invalid bytes never linger."""
+-        staging_root = self.coordinator.staging_root
+-        request_dir = staging_root / request_id.rsplit(":", 1)[-1]
+-        if request_dir.is_dir():
+-            shutil.rmtree(request_dir, ignore_errors=True)
++"""FC-801: CloseGap binding — same-value + same-version validation
++(isolated implementation card I-03-C).
++
++This iso copy carries ONLY the binding-validation boundary of
++``close_gap.py`` (the card's allowed surface: "close_gap.py 中绑定校验
++边界"). The full transaction's resolver/journal/lock execution face
++(C15 batch truncation / completed_partial) stays with the production
++module and is recorded as out of scope in handoff.json.
++
++- ``CloseGapBinding`` additionally carries ``hash_schema_version`` —
++  the binding is version-locked to the authorization (legacy bindings
++  without an explicit version are refused, never auto-upgraded);
++- ``validate_close_gap_binding(binding, authorization)`` is a pure
++  fail-closed check that the binding and the authorization are the
++  SAME values on every shared field (request_id, gap_plan_hash,
++  policy_hash, provider, allowed_accessions as a set, max_items,
++  max_bytes, expires_at) and the SAME binding version. Any difference
++  returns a precise reason (DL-03: fetch=0 downstream); nothing is
++  back-filled.
++"""
++
++from __future__ import annotations
++
++import hashlib
++import json
++from dataclasses import dataclass
++from typing import Any
++
++
++CLOSE_GAP_SCHEMA_VERSION = "1.0"
++HASH_SCHEMA_VERSION = 1
++
++
++@dataclass(frozen=True)
++class CloseGapBinding:
++    """FC-801: the input binding of one authorized close-gap download."""
++
++    request_id: str
++    gap_plan_hash: str
++    policy_hash: str
++    provider: str
++    allowed_accessions: tuple[str, ...]
++    max_items: int
++    max_bytes: int
++    expires_at: str
++    # I-03-C: version-locked to the authorization (same-value, same-version
++    # binding). Legacy bindings (missing / non-1 version) are refused.
++    hash_schema_version: int = 1
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "request_id": self.request_id,
++            "gap_plan_hash": self.gap_plan_hash,
++            "policy_hash": self.policy_hash,
++            "provider": self.provider,
++            "allowed_accessions": list(self.allowed_accessions),
++            "max_items": self.max_items,
++            "max_bytes": self.max_bytes,
++            "expires_at": self.expires_at,
++            "hash_schema_version": self.hash_schema_version,
++        }
++
++
++def _set(xs: tuple[str, ...]) -> set[str]:
++    return set(xs)
++
++
++def validate_close_gap_binding(binding: Any, authorization: Any) -> str | None:
++    """Return an error string when the binding does NOT match the
++    authorization exactly (same value + same version), else None."""
++    if getattr(binding, "hash_schema_version", 0) != getattr(
++        authorization, "hash_schema_version", None
++    ):
++        return (
++            "binding version mismatch: binding and authorization must carry "
++            "the same hash_schema_version (legacy binding refused)"
++        )
++    checks: tuple[tuple[str, Any, Any], ...] = (
++        ("request_id", binding.request_id, authorization.request_id),
++        ("gap_plan_hash", binding.gap_plan_hash, authorization.gap_plan_hash),
++        ("policy_hash", binding.policy_hash, authorization.policy_hash),
++        ("provider", binding.provider, authorization.provider),
++        ("max_items", binding.max_items, authorization.max_items),
++        ("max_bytes", binding.max_bytes, authorization.max_bytes),
++        ("expires_at", binding.expires_at, authorization.expires_at),
++    )
++    for name, b_val, a_val in checks:
++        if b_val != a_val:
++            return f"binding mismatch on {name}"
++    if _set(binding.allowed_accessions) != _set(authorization.allowed_accessions):
++        return "binding mismatch on allowed_accessions"
++    return None
++
++
++def _txn_id(binding: CloseGapBinding) -> str:
++    payload = json.dumps(binding.to_dict(), sort_keys=True, ensure_ascii=False)
++    return (
++        "urn:company-wiki:close-gap:sha256:"
++        + hashlib.sha256(payload.encode("utf-8")).hexdigest()
++    )

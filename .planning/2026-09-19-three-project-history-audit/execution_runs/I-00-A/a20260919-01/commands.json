@@ -1,0 +1,32 @@
+[
+ {
+  "id": "I00-A-s1-git-capture",
+  "purpose": "capture three repos HEAD/dirty (read-only)",
+  "cwd": "<repo>",
+  "network": "disabled",
+  "binding_status": "bound",
+  "evidence": "git_*.txt"
+ },
+ {
+  "id": "I00-A-s2-config-hash",
+  "purpose": "sha256 of 8 config/policy files",
+  "network": "disabled",
+  "binding_status": "bound",
+  "expected": "hashes in baseline.json"
+ },
+ {
+  "id": "I00-A-s5-sqlite-capability",
+  "purpose": "RO open prod db header + backup API probe on 188KB old db, integrity ok",
+  "network": "disabled",
+  "binding_status": "bound",
+  "evidence": "capability_probe_small.sqlite3, baseline.json"
+ },
+ {
+  "id": "I00-A-s6-isolation",
+  "purpose": "iso venv python -I probe: no editable finders, cwd+writes only in attempt dir",
+  "network": "disabled",
+  "binding_status": "bound",
+  "expected": "fallback_free=true",
+  "evidence": "isolation_check.json"
+ }
+]

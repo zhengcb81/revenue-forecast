@@ -1,0 +1,28 @@
+{
+  "commands": [
+    {
+      "id": "w02a-baseline-prod",
+      "purpose": "BEFORE baseline: run identical fixed cases against production sources (no overrides) to reproduce the original failure shape: scan report discarded by the writer; identity-only error text; unclassified interrupted RuntimeError; no per-root receipt; fabricated reused_exact accepted.",
+      "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-A/a20260919-01",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "scripts/w02a_cases.py", "prod"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "before/case_results.json records the documented before-divergences (recording-only); no crash of the runner itself.",
+      "binding_status": "bound"
+    },
+    {
+      "id": "w02a-after-override",
+      "purpose": "AFTER: enforce the frozen oracle (oracle.md) in override mode across W02A-P1, N1, N2, N3a, N3b, N3c; emit scan-return-contract.json, target-registration.sql-results.json, raw-before-after.json, case_results.json into after/.",
+      "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-A/a20260919-01",
+      "argv": ["<attempt>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "scripts/w02a_cases.py", "override"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "failed_cases == [] (all frozen expectations satisfied; P1 positive passes, all negatives rejected with frozen reasons).",
+      "binding_status": "bound"
+    }
+  ],
+  "not_command_claims": [
+    "No pytest was run (pytest is not part of this attempt's venv; isolated contract test nodeids for CMD-W03 stay plannable for I-00-B).",
+    "No production catalog (.source_catalog) was read or written; no worker started; no network calls; no real company downloads."
+  ]
+}

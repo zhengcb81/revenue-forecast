@@ -1,0 +1,74 @@
+{
+  "card_id": "I-02-B",
+  "attempt_id": "a20260919-01",
+  "status": "review_pending",
+  "reviewer_status": "pending (independent reviewer must verify per review_and_handoff.md; implementer does not self-accept)",
+  "completed_steps": [
+    "D-W02 supplement frozen in decision.md: cross-cli error envelope cross-cli-error-envelope/1.0 (code/retryable(bool)/request_id/stage/cause_chain/side_effects/local_diag_ref) + I-04 compatibility convention + rejected alternatives",
+    "Isolated override copies of CW 4 files (error_taxonomy/acquisition_service/acquisition_journal/cli) and RF 2 files (source_preparation/filing_fetch_client) with pre-edit hashes bound; iso_patching.md records missing deps (yaml/requests et al offline-copied from I-02-A venv)",
+    "oracle.md frozen pre-implementation with hand-derived per-case field expectations (+ logged amendment on the derived SourceRequest.request_id urn at the CW deep layer)",
+    "Implemented: structured_error keeps provider structure (dict cause_chain, string form back-compat); acquisition_service.ensure journals staged error object + REAL side effects (download window diff of staging bytes; reasons adapter_or_staging_failed/canonical_import_failed); cli exit assembles the envelope dict and never joins dicts into the message; source_preparation parses the upstream JSON envelope on non-zero child (normalized via the frozen taxonomy; opaque failures archived IN FULL via local_diag_ref, 800-char truncation removed); filing_fetch_client keeps code/retryable readable and fail-closes string retryable/unknown codes, with flat cross-CLI envelope passthrough",
+    "Harness scripts/w02b_cases.py ran the REAL cross-process chain for 9 cases; all passed (harness exit 0; per-case business verdicts independent of the outer exit codes)",
+    "Evidence produced: after/layer-by-layer-errors.json, after/side-effects-ledger.json, after/case_results.json, after/case_scratch_retained/<case>, raw-cli-logs/<case>/** (every layer's original stdout/stderr/rc + full opaque-failure archives)"
+  ],
+  "next_step_number": 1,
+  "next_action": "Independent reviewer: (1) verify pre/post hashes in binding.json + changes.diff scope against the allowlist; (2) re-run commands.json (w02b-cases-harness) and recompute at least one oracle item per P1/N1/N2/N3/N4 by reading raw-cli-logs and the journal rows; (3) take the frozen envelope contract to the I-04 owner for the FF-side forwarding confirmation; register new nodeids for the harness cases with I-00-B if pytest-based perma-tests are wanted.",
+  "input_hashes": {
+    "prod_error_taxonomy.py": "14e09c3d41c8584cb59c05ac47ef31c5d4a1e34103c70fb8f4e95e83588c5183",
+    "prod_acquisition_service.py": "017ca75c1efec6986af058c068db86bbf9fed5edd2bd8ede94fd96a1a8e7f8c7",
+    "prod_acquisition_journal.py": "104d73fdf68e7253d54258dd98fcc1e5bff09343b949e376ad1e199ccc9c6736",
+    "prod_cli.py": "2f5c5740343697078d1e69b3a6a9ef9b0809277799c2d9c28a2d3e4048c4d512",
+    "prod_source_preparation.py": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46",
+    "prod_filing_fetch_client.py": "9329f331d9f5071ba6c75726c9b381d6a16a1ec16d5d014e09d67a1b434d0173"
+  },
+  "current_source_hashes": {
+    "iso/override/*": "see binding.json attempt_override_post_edit_hashes"
+  },
+  "changed_paths": [
+    "iso/override/error_taxonomy.py",
+    "iso/override/acquisition_service.py",
+    "iso/override/acquisition_journal.py",
+    "iso/override/cli.py",
+    "iso/override/source_preparation.py",
+    "iso/override/filing_fetch_client.py",
+    "scripts/w02b_bootstrap.py",
+    "scripts/w02b_cw_ensure_runner.py",
+    "scripts/w02b_cases.py",
+    "samples/fake_upstream_cli.py",
+    "samples/samples_manifest.json",
+    "changes.diff",
+    "after/{layer-by-layer-errors.json,side-effects-ledger.json,case_results.json}",
+    "after/case_scratch_retained/**",
+    "raw-cli-logs/<case>/**"
+  ],
+  "commands_executed": [
+    "w02b-cases-harness (exit 0, expected 0; 9/9 cases passed_structure_preserved)"
+  ],
+  "raw_exit_codes": [
+    0
+  ],
+  "expected_exit_codes": [
+    0
+  ],
+  "open_questions": [
+    "I-04 owner must ratify the envelope field names and the structured-forwarding posture for the real filing-fetch client (decision.md 'I-04 兼容约定' section); the fail-closed mirror constants in the RF client copy must then be kept aligned or replaced by a shared contract import.",
+    "SourceRequest.request_id is a derived urn at the CW layer; whether FF/I-04 wants the client-supplied request_id echoed deeper is an I-04 decision (oracle amendment documents the current passthrough posture).",
+    "pytest-bound permanent nodeids for these chain cases remain with I-00-B (venv has no pytest; a source-level runner was used per START_HERE policy).",
+    "D-W02 remainder items (journal persistence/transaction boundary, corrupted-tail handling, recovery keys, receipt for raw without sidecar) stay with I-02-C/D owners per common_wiki_cards."
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "decision.md",
+    "oracle.md",
+    "binding.json",
+    "commands.json",
+    "iso_patching.md",
+    "changes.diff",
+    "samples/samples_manifest.json",
+    "after/layer-by-layer-errors.json",
+    "after/side-effects-ledger.json",
+    "after/case_results.json",
+    "after/case_scratch_retained/",
+    "raw-cli-logs/"
+  ]
+}

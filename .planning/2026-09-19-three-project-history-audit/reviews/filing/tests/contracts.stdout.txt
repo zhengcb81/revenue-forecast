@@ -1,0 +1,435 @@
+.................................................. [ 17%]
+......................................................... [ 38%]
+................................................ [ 55%]
+................................................................ [ 77%]
+.......................................s......................  [100%]
+=================================== PASSES ====================================
+_________________ FilingFetchTests.test_backoff_capped_at_max _________________
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 2); retrying in 10.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 3); retrying in 20.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 4); retrying in 40.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 5); retrying in 60.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 6); retrying in 60.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+__________ FilingFetchTests.test_backoff_jitter_stays_within_bounds ___________
+---------------------------- Captured stdout call -----------------------------
+uu
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 6.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 4.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+_________ FilingFetchTests.test_blank_company_query_is_request_error __________
+---------------------------- Captured stdout call -----------------------------
+uu
+____ FilingFetchTests.test_catalog_busy_retries_with_backoff_then_succeeds ____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_busy", "error": "database is locked"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 2); retrying in 10.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_busy", "error": "database is locked"}
+______ FilingFetchTests.test_catalog_lock_error_is_classified_retryable _______
+---------------------------- Captured stdout call -----------------------------
+uuuuuuuu
+____ FilingFetchTests.test_catalog_lock_retries_with_backoff_then_succeeds ____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 2); retrying in 10.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+____ FilingFetchTests.test_catalog_locked_until_deadline_is_upstream_error ____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] identify blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki identify exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] identify blocked by a running catalog operation (attempt 2); retrying in 3.0s: company-wiki identify exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+_ FilingFetchTests.test_classify_wiki_error_fails_closed_on_malformed_stderr __
+---------------------------- Captured stdout call -----------------------------
+uuuu
+_ FilingFetchTests.test_company_query_rejects_preselected_entity_or_security_id _
+---------------------------- Captured stdout call -----------------------------
+uu
+_________ FilingFetchTests.test_config_errors_carry_config_error_code _________
+---------------------------- Captured stdout call -----------------------------
+uuuu
+_____ FilingFetchTests.test_db_timeout_retries_with_backoff_then_succeeds _____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "db_timeout", "error": "database is locked"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 2); retrying in 10.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "db_timeout", "error": "database is locked"}
+_ FilingFetchTests.test_failure_envelope_preserves_stage_attempts_calls_downloads _
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] identify blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki identify exited 1: {"status": "failed", "error_type": "db_timeout", "error": "database is locked"}
+[filing-fetch] identify blocked by a running catalog operation (attempt 2); retrying in 3.0s: company-wiki identify exited 1: {"status": "failed", "error_type": "db_timeout", "error": "database is locked"}
+______ FilingFetchTests.test_identity_failures_carry_identity_error_code ______
+---------------------------- Captured stdout call -----------------------------
+uuuuu
+__________ FilingFetchTests.test_main_bad_timeout_is_rejected_by_cli __________
+---------------------------- Captured stderr call -----------------------------
+error: timeout-seconds must be positive and finite
+_________ FilingFetchTests.test_missing_source_carries_not_found_code _________
+---------------------------- Captured stdout call -----------------------------
+uuu
+____ FilingFetchTests.test_success_envelope_preserves_calls_and_downloads _____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_busy", "error": "database is locked"}
+____________ FilingFetchTests.test_timeout_seconds_must_be_finite _____________
+---------------------------- Captured stdout call -----------------------------
+uu
+_ FilingFetchTests.test_unknown_conflicting_or_low_confidence_query_never_reaches_ensure _
+---------------------------- Captured stdout call -----------------------------
+uuu
+_ FilingFetchTests.test_unverified_or_inactive_identity_stops_before_source_resolution _
+---------------------------- Captured stdout call -----------------------------
+uu
+_ FilingFetchTests.test_verified_cn_and_hk_queries_build_canonical_source_requests _
+---------------------------- Captured stdout call -----------------------------
+uu
+_________________ FilingFetchTests.test_backoff_capped_at_max _________________
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 2); retrying in 10.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 3); retrying in 20.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 4); retrying in 40.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 5); retrying in 60.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 6); retrying in 60.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+__________ FilingFetchTests.test_backoff_jitter_stays_within_bounds ___________
+---------------------------- Captured stdout call -----------------------------
+uu
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 6.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 4.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+_________ FilingFetchTests.test_blank_company_query_is_request_error __________
+---------------------------- Captured stdout call -----------------------------
+uu
+____ FilingFetchTests.test_catalog_busy_retries_with_backoff_then_succeeds ____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_busy", "error": "database is locked"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 2); retrying in 10.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_busy", "error": "database is locked"}
+______ FilingFetchTests.test_catalog_lock_error_is_classified_retryable _______
+---------------------------- Captured stdout call -----------------------------
+uuuuuuuu
+____ FilingFetchTests.test_catalog_lock_retries_with_backoff_then_succeeds ____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 2); retrying in 10.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+____ FilingFetchTests.test_catalog_locked_until_deadline_is_upstream_error ____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] identify blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki identify exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+[filing-fetch] identify blocked by a running catalog operation (attempt 2); retrying in 3.0s: company-wiki identify exited 1: {"status": "failed", "error_type": "catalog_locked", "error": "catalog operation already running: pid=15536"}
+_ FilingFetchTests.test_classify_wiki_error_fails_closed_on_malformed_stderr __
+---------------------------- Captured stdout call -----------------------------
+uuuu
+_ FilingFetchTests.test_company_query_rejects_preselected_entity_or_security_id _
+---------------------------- Captured stdout call -----------------------------
+uu
+_________ FilingFetchTests.test_config_errors_carry_config_error_code _________
+---------------------------- Captured stdout call -----------------------------
+uuuu
+_____ FilingFetchTests.test_db_timeout_retries_with_backoff_then_succeeds _____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "db_timeout", "error": "database is locked"}
+[filing-fetch] resolve blocked by a running catalog operation (attempt 2); retrying in 10.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "db_timeout", "error": "database is locked"}
+_ FilingFetchTests.test_failure_envelope_preserves_stage_attempts_calls_downloads _
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] identify blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki identify exited 1: {"status": "failed", "error_type": "db_timeout", "error": "database is locked"}
+[filing-fetch] identify blocked by a running catalog operation (attempt 2); retrying in 3.0s: company-wiki identify exited 1: {"status": "failed", "error_type": "db_timeout", "error": "database is locked"}
+______ FilingFetchTests.test_identity_failures_carry_identity_error_code ______
+---------------------------- Captured stdout call -----------------------------
+uuuuu
+__________ FilingFetchTests.test_main_bad_timeout_is_rejected_by_cli __________
+---------------------------- Captured stderr call -----------------------------
+error: timeout-seconds must be positive and finite
+_________ FilingFetchTests.test_missing_source_carries_not_found_code _________
+---------------------------- Captured stdout call -----------------------------
+uuu
+____ FilingFetchTests.test_success_envelope_preserves_calls_and_downloads _____
+---------------------------- Captured stderr call -----------------------------
+[filing-fetch] resolve blocked by a running catalog operation (attempt 1); retrying in 5.0s: company-wiki resolve exited 1: {"status": "failed", "error_type": "catalog_busy", "error": "database is locked"}
+____________ FilingFetchTests.test_timeout_seconds_must_be_finite _____________
+---------------------------- Captured stdout call -----------------------------
+uu
+_ FilingFetchTests.test_unknown_conflicting_or_low_confidence_query_never_reaches_ensure _
+---------------------------- Captured stdout call -----------------------------
+uuu
+_ FilingFetchTests.test_unverified_or_inactive_identity_stops_before_source_resolution _
+---------------------------- Captured stdout call -----------------------------
+uu
+_ FilingFetchTests.test_verified_cn_and_hk_queries_build_canonical_source_requests _
+---------------------------- Captured stdout call -----------------------------
+uu
+=========================== short test summary info ===========================
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_allow_download_pauses_and_resumes_running_worker
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_ambiguous_company_query_stops_before_source_resolution
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_ambiguous_identity_surfaces_candidates_on_exception
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_backoff_capped_at_max
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_backoff_jitter_stays_within_bounds
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_bad_as_of_date_format_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_bad_request_schema_version_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_blank_company_query_is_request_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_bool_byte_size_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_capture_not_ready_carries_not_found_code
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_capture_ready_without_required_fields_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_catalog_busy_retries_with_backoff_then_succeeds
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_catalog_lock_error_is_classified_retryable
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_catalog_lock_retries_with_backoff_then_succeeds
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_catalog_locked_until_deadline_is_upstream_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_classify_wiki_error_fails_closed_on_malformed_stderr
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_cli_main_guard_runs_and_resolves
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_company_query_builds_an_explicit_canonical_ensure_request
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_company_query_is_identified_before_read_only_resolve
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_company_query_rejects_preselected_entity_or_security_id
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_bad_schema_version_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_empty_root_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_errors_carry_config_error_code
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_file_not_found_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_invalid_json_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_missing_catalog_yaml_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_non_object_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_root_not_directory_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_root_not_exist_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_config_wrong_fields_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_db_timeout_retries_with_backoff_then_succeeds
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_deadline_exhausted_before_resolve_is_upstream_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_default_config_resolves_an_existing_company_wiki_root
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_editing_config_moves_root_without_code_changes
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_ensure_failure_still_resumes_worker
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_ensure_missing_carries_not_found_code
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_ensure_resolution_schema_version_mismatch_is_upstream_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_ensure_response_missing_resolution_key_fails
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_ensure_status_not_reusable_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_envelope_failure_includes_resolution_trace_in_output
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_explicit_download_requires_market_and_security_id
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_explicit_root_is_compatible_but_cannot_conflict_with_config
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_failure_envelope_preserves_stage_attempts_calls_downloads
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_float_fiscal_year_is_request_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_bad_published_date_format_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_byte_size_mismatch_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_extra_fields_are_tolerated
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_future_published_date_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_hash_mismatch_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_invalid_sha256_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_missing_file_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_non_https_url_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_path_outside_wiki_root_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_resolve_error_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_handle_validation_failure_carries_resolution_trace
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_identity_failures_carry_identity_error_code
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_identity_response_bad_schema_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_identity_response_missing_resolved_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_invalid_fiscal_year_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_invalid_market_hint_is_request_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_legacy_explicit_identity_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_allow_download_flag_builds_ensure_command
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_bad_request_non_dict
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_bad_timeout_is_rejected_by_cli
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_cli_accepts_fractional_timeout
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_debug_flag_emits_debug_trace
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_emits_candidates_and_hint_on_ambiguous_identity
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_empty_stdin_is_request_error_exit_2
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_fatal_path_catches_unexpected_errors
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_request_file_happy_path
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_main_request_file_invalid_json_is_request_error_exit_2
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_missing_as_of_date_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_missing_company_query_is_request_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_missing_request_id_in_resolution_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_missing_source_carries_not_found_code
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_multi_match_carries_upstream_error_code
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_no_pause_worker_restores_legacy_command
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_non_padded_as_of_date_is_request_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_not_found_error_carries_resolution_trace
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_out_of_range_fiscal_year_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_published_date_equal_as_of_date_is_accepted
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_relative_canonical_path_is_resolved_against_wiki_root
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_relative_company_wiki_root_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolution_trace_extracts_request_status_reason
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolution_trace_returns_none_for_none_resolution
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolve_forwards_validated_resolution_envelope
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolve_multi_match_with_different_hashes_fails
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolve_non_dict_response_fails
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolve_not_found_carries_debug_trace_on_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolve_rejects_invalid_resolution_envelope
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolve_schema_version_mismatch_is_upstream_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolve_uses_configured_root_when_root_is_omitted
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_resolve_without_envelope_is_n_minus_one_compatible
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_single_non_dict_match_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_source_not_reusable_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_stopped_worker_skips_pause_and_resume
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_subprocess_receives_remaining_deadline
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_success_envelope_preserves_calls_and_downloads
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_timeout_seconds_must_be_finite
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_timeout_seconds_must_be_positive
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_unknown_config_token_fails_closed
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_unknown_conflicting_or_low_confidence_query_never_reaches_ensure
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_unknown_request_field_is_rejected
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_unverified_or_inactive_identity_stops_before_source_resolution
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_upstream_invalid_json_is_contract_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_upstream_non_object_json_is_contract_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_upstream_subprocess_nonzero_is_contract_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_upstream_subprocess_oserror_fails
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_upstream_subprocess_timeout_is_upstream_error
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_user_paused_worker_is_respected_and_never_resumed
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_validate_handle_accepts_configured_allowed_root
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_validate_handle_rejects_outside_configured_allowance
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_verified_cn_and_hk_queries_build_canonical_source_requests
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_worker_paused_is_not_auto_retried
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_worker_paused_legacy_runtime_error_still_maps
+PASSED tests/test_fetch_filing.py::FilingFetchTests::test_worker_paused_maps_to_retryable_worker_paused
+PASSED tests/test_latest_mode.py::test_exact_mode_requires_fiscal_year
+PASSED tests/test_latest_mode.py::test_latest_as_of_mode_forbids_fiscal_year
+PASSED tests/test_latest_mode.py::test_latest_as_of_mode_requires_as_of_date
+PASSED tests/test_latest_mode.py::test_exact_mode_valid
+PASSED tests/test_latest_mode.py::test_latest_as_of_mode_valid
+PASSED tests/test_latest_mode.py::test_unknown_mode_rejected
+PASSED tests/test_latest_mode.py::test_legacy_11_without_mode_keeps_legacy_behavior
+PASSED tests/test_latest_mode.py::test_legacy_11_with_fiscal_year_still_valid
+PASSED tests/test_latest_mode.py::test_schema_12_without_mode_requires_fiscal_year
+PASSED tests/test_policy_containment_fc501.py::test_validate_handle_requires_policy_hash
+PASSED tests/test_policy_containment_fc501.py::test_validate_handle_accepts_matching_policy_hash
+PASSED tests/test_policy_containment_fc501.py::test_handle_inside_reusable_root_accepted
+PASSED tests/test_policy_containment_fc501.py::test_handle_outside_any_reusable_root_rejected
+PASSED tests/test_policy_containment_fc501.py::test_handle_inside_non_reusable_root_rejected
+PASSED tests/test_policy_containment_fc501.py::test_no_independent_allowlist_in_config_schema
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_allow_download_pauses_and_resumes_running_worker
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_ambiguous_company_query_stops_before_source_resolution
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_ambiguous_identity_surfaces_candidates_on_exception
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_backoff_capped_at_max
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_backoff_jitter_stays_within_bounds
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_bad_as_of_date_format_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_bad_request_schema_version_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_blank_company_query_is_request_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_bool_byte_size_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_capture_not_ready_carries_not_found_code
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_capture_ready_without_required_fields_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_catalog_busy_retries_with_backoff_then_succeeds
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_catalog_lock_error_is_classified_retryable
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_catalog_lock_retries_with_backoff_then_succeeds
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_catalog_locked_until_deadline_is_upstream_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_classify_wiki_error_fails_closed_on_malformed_stderr
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_cli_main_guard_runs_and_resolves
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_company_query_builds_an_explicit_canonical_ensure_request
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_company_query_is_identified_before_read_only_resolve
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_company_query_rejects_preselected_entity_or_security_id
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_bad_schema_version_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_empty_root_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_errors_carry_config_error_code
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_file_not_found_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_invalid_json_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_missing_catalog_yaml_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_non_object_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_root_not_directory_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_root_not_exist_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_config_wrong_fields_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_db_timeout_retries_with_backoff_then_succeeds
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_deadline_exhausted_before_resolve_is_upstream_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_default_config_resolves_an_existing_company_wiki_root
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_editing_config_moves_root_without_code_changes
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_ensure_failure_still_resumes_worker
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_ensure_missing_carries_not_found_code
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_ensure_resolution_schema_version_mismatch_is_upstream_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_ensure_response_missing_resolution_key_fails
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_ensure_status_not_reusable_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_envelope_failure_includes_resolution_trace_in_output
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_explicit_download_requires_market_and_security_id
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_explicit_root_is_compatible_but_cannot_conflict_with_config
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_failure_envelope_preserves_stage_attempts_calls_downloads
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_float_fiscal_year_is_request_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_bad_published_date_format_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_byte_size_mismatch_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_extra_fields_are_tolerated
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_future_published_date_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_hash_mismatch_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_invalid_sha256_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_missing_file_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_non_https_url_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_path_outside_wiki_root_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_resolve_error_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_handle_validation_failure_carries_resolution_trace
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_identity_failures_carry_identity_error_code
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_identity_response_bad_schema_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_identity_response_missing_resolved_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_invalid_fiscal_year_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_invalid_market_hint_is_request_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_legacy_explicit_identity_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_allow_download_flag_builds_ensure_command
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_bad_request_non_dict
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_bad_timeout_is_rejected_by_cli
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_cli_accepts_fractional_timeout
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_debug_flag_emits_debug_trace
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_emits_candidates_and_hint_on_ambiguous_identity
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_empty_stdin_is_request_error_exit_2
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_fatal_path_catches_unexpected_errors
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_request_file_happy_path
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_main_request_file_invalid_json_is_request_error_exit_2
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_missing_as_of_date_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_missing_company_query_is_request_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_missing_request_id_in_resolution_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_missing_source_carries_not_found_code
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_multi_match_carries_upstream_error_code
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_no_pause_worker_restores_legacy_command
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_non_padded_as_of_date_is_request_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_not_found_error_carries_resolution_trace
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_out_of_range_fiscal_year_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_published_date_equal_as_of_date_is_accepted
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_relative_canonical_path_is_resolved_against_wiki_root
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_relative_company_wiki_root_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolution_trace_extracts_request_status_reason
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolution_trace_returns_none_for_none_resolution
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolve_forwards_validated_resolution_envelope
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolve_multi_match_with_different_hashes_fails
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolve_non_dict_response_fails
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolve_not_found_carries_debug_trace_on_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolve_rejects_invalid_resolution_envelope
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolve_schema_version_mismatch_is_upstream_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolve_uses_configured_root_when_root_is_omitted
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_resolve_without_envelope_is_n_minus_one_compatible
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_single_non_dict_match_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_source_not_reusable_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_stopped_worker_skips_pause_and_resume
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_subprocess_receives_remaining_deadline
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_success_envelope_preserves_calls_and_downloads
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_timeout_seconds_must_be_finite
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_timeout_seconds_must_be_positive
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_unknown_config_token_fails_closed
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_unknown_conflicting_or_low_confidence_query_never_reaches_ensure
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_unknown_request_field_is_rejected
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_unverified_or_inactive_identity_stops_before_source_resolution
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_upstream_invalid_json_is_contract_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_upstream_non_object_json_is_contract_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_upstream_subprocess_nonzero_is_contract_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_upstream_subprocess_oserror_fails
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_upstream_subprocess_timeout_is_upstream_error
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_user_paused_worker_is_respected_and_never_resumed
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_validate_handle_accepts_configured_allowed_root
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_validate_handle_rejects_outside_configured_allowance
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_verified_cn_and_hk_queries_build_canonical_source_requests
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_worker_paused_is_not_auto_retried
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_worker_paused_legacy_runtime_error_still_maps
+PASSED tests/test_fc802_gap_orchestration.py::FilingFetchTests::test_worker_paused_maps_to_retryable_worker_paused
+PASSED tests/test_fc802_gap_orchestration.py::Fc802GapTests::test_allow_download_without_authorization_stays_gap
+PASSED tests/test_fc802_gap_orchestration.py::Fc802GapTests::test_authorized_close_gap_returns_handle
+PASSED tests/test_fc802_gap_orchestration.py::Fc802GapTests::test_authorized_newer_revision_closes_gap
+PASSED tests/test_fc802_gap_orchestration.py::Fc802GapTests::test_exact_mode_missing_still_not_found
+PASSED tests/test_fc802_gap_orchestration.py::Fc802GapTests::test_gap_structured_without_download
+PASSED tests/test_fc802_gap_orchestration.py::Fc802GapTests::test_invalid_authorization_block_is_request_error
+PASSED tests/test_fc802_gap_orchestration.py::Fc802GapTests::test_main_passes_gap_through_unwrapped
+PASSED tests/test_bundle_compat.py::test_handle_with_bundle_validates
+PASSED tests/test_bundle_compat.py::test_handle_without_bundle_validates
+PASSED tests/test_bundle_compat.py::test_bundle_is_optional_never_required
+PASSED tests/test_bundle_compat.py::test_forged_bundle_does_not_relax_deep_checks
+PASSED tests/test_bundle_compat.py::test_e2e_f04_plain_outside_path_rejected
+PASSED tests/test_bundle_fidelity.py::test_round_trip_byte_identical
+PASSED tests/test_bundle_fidelity.py::test_round_trip_hash_stable
+PASSED tests/test_bundle_fidelity.py::test_forwarding_never_drops_fields
+PASSED tests/test_bundle_fidelity.py::test_forwarding_never_recomputes_hashes
+PASSED tests/test_bundle_fidelity.py::test_unknown_artifact_role_fails_closed
+PASSED tests/test_fc903_bundle_contract.py::test_fc903_01_n1_envelope_without_bundle_status_normalized
+PASSED tests/test_fc903_bundle_contract.py::test_fc903_02_n1_without_bundle_status_never_faked_available
+PASSED tests/test_fc903_bundle_contract.py::test_fc903_03_n_available_envelope_passes_verbatim
+PASSED tests/test_fc903_bundle_contract.py::test_fc903_04_available_without_bundle_hash_rejected
+PASSED tests/test_fc903_bundle_contract.py::test_fc903_05_available_with_malformed_bundle_hash_rejected
+PASSED tests/test_fc903_bundle_contract.py::test_fc903_06_available_without_bundle_dict_rejected
+PASSED tests/test_fc903_bundle_contract.py::test_fc903_07_available_with_mismatched_bundle_hash_rejected
+PASSED tests/test_fc903_bundle_contract.py::test_fc903_08_unavailable_without_bundle_fields_ok
+PASSED tests/test_fc903_bundle_contract.py::test_fc903_09_artifact_validity_not_redecided
+PASSED tests/test_fc905b_envelope_fields.py::test_b1_n1_missing_status_normalizes_not_reviewed
+PASSED tests/test_fc905b_envelope_fields.py::test_b2_n1_missing_counts_normalize_none
+PASSED tests/test_fc905b_envelope_fields.py::test_b3_valid_envelope_passes_verbatim
+PASSED tests/test_fc905b_envelope_fields.py::test_b4_null_counts_accepted
+PASSED tests/test_fc905b_envelope_fields.py::test_b5_bad_status_rejected
+PASSED tests/test_fc905b_envelope_fields.py::test_b6_negative_counts_rejected
+PASSED tests/test_fc905b_envelope_fields.py::test_b7_boolean_counts_rejected
+SKIPPED [1] tests\test_bundle_compat.py:156: symlink unsupported on this platform
+280 passed, 1 skipped, 2 deselected, 78 subtests passed in 31.97s

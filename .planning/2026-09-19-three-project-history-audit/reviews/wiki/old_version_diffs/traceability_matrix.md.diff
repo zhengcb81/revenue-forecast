@@ -1,0 +1,54 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/traceability_matrix.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/traceability_matrix.md
+@@ -88,13 +88,13 @@
+ | RQ-039 | 120s delay每login/supervisor session只支付一次 | E07 | 05 | S-S13 | G05 |
+ | RQ-040 | 观察≥2h且连续5成功，失败清窗口 | E07 | 12A | OBS-S01,OBS-S02,OBS-S03,OBS-S04,OBS-S05,OBS-S06 | D12A,G12A |
+ | RQ-041 | 12A每cycle先密封exact write contract；新文档延后 | E25 | 12A | OBS-W01,OBS-W02,OBS-W03,WRITE-F01,WRITE-F02,WRITE-F03,WRITE-F04 | D12A,G12A |
+ | RQ-042 | 12B使用全新stage-bound operation/provider/data/cap授权；LLM-off也不是整OP N/A | E13,E21,E29 | 12B | L-S19,PX-S18,GL-F09 | G12B-PRE,D12B-ARM,G12B-ARM,G12B-POST |
+-| RQ-043 | registry是真atomic create-if-absent与exact conditional delete；ARM前先审补偿，跨资源intent/journal恢复，补偿仅显式OP执行 | E18,E26,E29 | 09P,12B | PX-S09,PX-S16,PX-S17,START-S03,START-S08,START-S09,START-S10 | G09P,D12B-ARM,D12B-RB,G12B-ARM,D12B-CAS,G12B-CAS,G12B-RB |
++| RQ-043 | registry是真atomic create-if-absent；自动补偿只做absent/exact-owned/conflict三分支verify-preserve且绝不删除Run；ARM前先审补偿，跨资源intent/journal恢复，补偿仅显式OP执行 | E18,E26,E29 | 09P,12B | PX-S09,PX-S16,PX-S17,START-S03,START-S08,START-S09,START-S10 | G09P,D12B-ARM,D12B-RB,G12B-ARM,D12B-CAS,G12B-CAS,G12B-RB |
+ | RQ-044 | CAS后dormant；ARM/lease分层，无LOGIN_COMMITTED时任何登录零child/egress/write | E26,E29 | 12B | START-S01,START-S02,START-S03,START-S04,START-S05,START-S10 | G12B-CAS,D12B-LOGIN,G12B-RB |
+ | RQ-045 | login token single-use，取消/崩溃/竞态fail closed | E26 | 12B | START-S04,START-S06,START-S07,START-S08 | D12B-LOGIN,G12B-POST |
+ | RQ-046 | G12B-POST只到LOGIN_VALIDATED_PAUSED/ON且process0 | E27 | 12B | START-S05,START-S07,ACT-S01 | G12B-POST |
+-| RQ-047 | D12C先冻结action intent、用户再授权该hash、三人pre/post审；token/control journal恢复，当前session idle，失败显式补偿且保留第三方Run | E27,E29 | 12C | ACT-S01,ACT-S02,ACT-S03,ACT-S04,ACT-S05,ACT-S06,ACT-S07 | D12C,G12C-PRE,G12C,G12C-RB |
++| RQ-047 | D12C-RT/runtime用户receipt/G12C-RT与D12C/final用户receipt/G12C-PRE形成两条purpose-bound不可复用授权链；OP12C同时绑定两链，当前session idle，失败显式补偿且任何分支均不删除Run | E27,E29 | 12C | ACT-S01,ACT-S02,ACT-S03,ACT-S04,ACT-S05,ACT-S06,ACT-S07,ACT-S11,ACT-S12,ACT-S13,ACT-S14,ACT-S15,START-S11 | D12C-RT,G12C-RT,D12C,G12C-PRE,G12C,G12C-RB |
+ | RQ-048 | 每个关键D/G有exact人数/角色/disjoint、机器payload与detached confirmation | 用户澄清,E21,E22,E29 | 全部 | GL-S02,GL-F01,GL-F03,GL-F10,SAFE-S06 | 每个D/G；exact规则见DAG |
+ | RQ-049 | ledger/schema拒绝伪status/verdict/findings/evidence/node/review | E22,E29 | 00L | GL-S01,GL-S03,GL-F01,GL-F02,GL-F04,GL-F05,GL-F10 | D00L,G00L |
+ | RQ-050 | validator校验hash-chain/head/DAG/branch/auth/OP/state/rollback/等待 | E22,E23,E29 | 00L | GL-S04,GL-S05,GL-S06,GL-F06,GL-F07,GL-F08,GL-F09,GL-F11,GL-F12 | D00L,G00L |
+ | RQ-051 | validator在正式ledger前bootstrap并自测；失败不可手改台账 | E22,E29 | 00L | GL-S05,GL-F10,GL-F11,TESTID-S01 | D00L,G00L,D00 |
+@@ -138,16 +138,16 @@
+ | RK-24 | 12A周期中扩展文档或漏合同 | OBS-W01,OBS-W02,OBS-W03 | 整个G12A FAIL | G12A |
+ | RK-25 | source只有事后sentinel | SAFE-S02,PX-S06 | 无OS deny则BLOCKED | G09P、A Gates |
+ | RK-26 | verifier自验/可写或check-load TOCTOU | PX-S03,PX-S14,PX-S15 | immutable trust or BLOCKED | G09P,G12B-PRE |
+ | RK-27 | registry check-then-set或隐式Gate rollback覆盖第三方值 | PX-S16,PX-S17,START-S09 | atomic conflict/显式OP/不碰第三方 | G12B-CAS,G12B-RB |
+-| RK-28 | CAS后意外登录绕过最终用户批准 | START-S01,START-S02,START-S04 | dormant零启动、conditional rollback | G12B-CAS,D12B-LOGIN |
++| RK-28 | CAS后意外登录绕过最终用户批准 | START-S01,START-S02,START-S04 | dormant零启动、zero-delete verify-preserve rollback | G12B-CAS,D12B-LOGIN |
+ | RK-29 | token replay/两进程竞争双启动 | START-S07,START-S08 | single-use atomic consume | G12B-POST |
+ | RK-30 | 12B复用短期LLM授权跑无限backlog | L-S19,PX-S18 | 新12B manifest | G12B-PRE |
+ | RK-31 | OP12C顺带启动当前session或G12C暗中写回状态 | ACT-S04,ACT-S05,ACT-S06 | OP12C-RB、G12C FAIL | G12C,G12C-RB |
+ | RK-32 | ledger伪PASSED开放下一边 | GL-F01,GL-F02,GL-F03,GL-F07 | validator非零、BLOCKED | G00L及每次append |
+ | RK-33 | authored next/错误前驱/分支被信任 | GL-F06,GL-F07,GL-F08 | 只用validator next | G00L |
+ | RK-34 | reviewer自审、人数/角色不足、payload/confirmation被改 | GL-F03,GL-F10 | gate不成立 | 每个D/G |
+-| RK-35 | ledger整链被自洽重写 | GL-S05,GL-F11 | external expected-head mismatch | 每次append/next |
++| RK-35 | ledger整链被自洽重写 | GL-S05,GL-F11 | protected head-anchor generation/hash mismatch | 每次append/next |
+ | RK-36 | G10 prompt要求未来节点形成伪循环 | G10-PROMPT-S01 | 六prompt输入集合fail closed | G10C,G10R |
+ | RK-37 | 核心文档在审后变化 | SAFE-S06,GL-F10,GL-F11 | 新manifest/re-review | 每个G |
+ | RK-39 | 任意N/A或无sealed contract执行生产OP | GL-F09,GL-F12,PX-S05 | validator拒绝、保持PAUSED | G09P、每个生产D/G |
+ | RK-40 | 12B/12C失败后没有合法写执行者 | GL-F08,GL-F12,ACT-S06,START-S03 | 显式compensation OP→独立G | G12B-RB,G12C-RB |
+@@ -193,13 +193,13 @@
+ | 每个D11B-BFnn→OP11B-BFnn→G11B-BFnn | RQ-026,034,035；nn从01连续 | 每个D=2、G=2 |
+ | G10R | exact release join显式含still-valid G09P/G09；只授权D12A | 3（SQL/control/testops） |
+ | D12A→OP12A→G12A | RQ-040,041 | D=2，G=2 |
+ | G12B-PRE | RQ-032,042；只开放D12B-ARM | 2 |
+-| D12B-ARM→D12B-RB→OP12B-ARM→G12B-ARM | ARM写前seal补偿；journal intent/finalize；仍PAUSED/OFF | D12B-ARM=2，D12B-RB=2，G=2 |
+-| OP12B-RB→G12B-RB | ARM后任一失败/lease到期显式回退；G继承OFF或REGISTRY_CONFLICT | G=2 |
++| D12B-ARM→D12B-RB→OP12B-ARM→G12B-ARM | ARM写前seal补偿；journal intent/finalize；到ARMED_PRELOGIN/OFF | D12B-ARM=2，D12B-RB=2，G=2 |
++| OP12B-RB→G12B-RB | ARM后任一失败/lease到期显式回退；zero-delete verify-preserve；G继承OFF、ON或REGISTRY_CONFLICT | G=2 |
+ | D12B-CAS→OP12B-CAS→G12B-CAS | atomic registry；dormant ARMED_ON_PRELOGIN/ON | D=2，G=2 |
+ | D12B-LOGIN→OP12B-LOGIN→G12B-POST | fresh用户登录批准；验证后自动pause | D=2，G=2 |
+-| D12C→用户授权intent hash→G12C-PRE→OP12C→G12C；OP12C-RB→G12C-RB | fresh长期激活、exact pre/post审；失败补偿/冲突终态 | D=2，PRE=3，G=3，RB G=2 |
++| D12C-RT→runtime receipt→G12C-RT→D12C→final receipt→G12C-PRE→OP12C→G12C；OP12C-RB→G12C-RB | 双purpose授权、双fresh revalidation、exact pre/post审；失败zero-delete补偿/三分支终态 | D-RT=2，G-RT=3，D=2，PRE=3，G=3，RB G=2 |
+ | G12C后每个runtime cycle | RQ-058；逐cycle contract/auth/cap/journal/write/egress | 依runtime_cycle_policy，不复用G12C报告 |
+ | 每个D05Rnn→OP05Rnn→G05Rnn | RQ-016；reset-only side lane | 每个D=2，G=2 |
+ 
+ ## 5. 机器分支与设计决策

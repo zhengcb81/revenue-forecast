@@ -1,0 +1,58 @@
+{
+  "card_id": "I-03-C",
+  "attempt_id": "a20260919-01",
+  "parent": "I-03",
+  "executor_role": "company-wiki 来源负责人（隔离实施，filing 为消费者 reviewer）",
+  "binding_status": "bound",
+  "repositories": {
+    "company_wiki_readonly": "C:/Users/郑曾波/Projects/company-wiki",
+    "planning_root": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit"
+  },
+  "interpreter": {
+    "path": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01/iso/venv/Scripts/python.exe",
+    "version": "3.13.9",
+    "flags": ["-X", "utf8", "-B"]
+  },
+  "allowed_write_roots": [
+    "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-C/a20260919-01/"
+  ],
+  "forbidden": [
+    "三仓源码/测试/配置修改（执行前后锚点 sha256 逐一重验一致：d18391b7… / f858a369… / 117c8166…）",
+    "网络访问（URL 仅字符串：https://fixture.invalid/a|/b|/c 未见真实网络请求）",
+    "生产 raw/catalog 写入",
+    "reviews/ 历史产物修改"
+  ],
+  "inheritance": {
+    "I-03-A": {
+      "decision.md": "963229846b06ed3b4f48d0d3192b444101b5e16e5a4989d53abdbd1a983e910d",
+      "oracle.md": "dd5a57692a74f8bb664ef4b83b5a97dafad94cb519698037c4578a3cf8ec6358",
+      "compat-matrix.md": "09040e469efd870bee12c436228536db9bb523af03a907bd4932c093a2161d2a"
+    },
+    "I-03-B": {
+      "handoff.json": "attempt a20260919-01（review_pending；入口/边界继承）",
+      "override_gap_plan_base": "f0452bea4a5ca9701947582c6bdf7cd76ffd6501bbaef1f2ca3bcbf642076547",
+      "outcome_selection_diff.md": "read"
+    },
+    "current_recheck.json": "183352a226ee8c903258ebc78b314cf5e33c59f4dbd9d24f6f43de028ae8aec4"
+  },
+  "baseline_copies": {
+    "iso/baseline/gap_plan.py": "d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f",
+    "iso/baseline/authorization.py": "f858a369ed556d1b110be5ba7be7fa25ae3519fda94296cfe1c4f9e367d55f43",
+    "iso/baseline/close_gap.py": "117c8166a6c26f3462574b787e0db79c419e00c8b18287f25738948032f475c3"
+  },
+  "override_copies": {
+    "iso/override/gap_plan.py": "见 changes.diff（唯一改动 = policy epoch 接入 _hash_gap/build_gap_plan）",
+    "iso/override/authorization.py": "见 changes.diff（schema 1.1 + canonical receipt + fail-closed validate）",
+    "iso/override/close_gap.py": "见 changes.diff（绑定校验边界 + validate_close_gap_binding）"
+  },
+  "frozen_oracle_inputs": {
+    "canonical/p0.expected.json": "84268f4ae1bf998cdae1219abb4c6060f2a02c20585b3ee8ae10a8aad1787420",
+    "P0_sha256": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+    "canonical_bytes_len": 786,
+    "policy_epoch": "P",
+    "policy_hash_P": "7b94b34cbb0596ed87c97f06ff1a337ea55d56fce839a19ee805f91cd58f3ea0"
+  },
+  "network": "disabled",
+  "test_tier": "pure fixture（纯函数 + 固定 metadata 合成候选，无 provider、无生产写入、无网络）",
+  "test_clock": "注入 now 参数（NOW0=2026-07-01T00:00:00Z；过期例 +1s）；无 time 依赖、零生产修改"
+}

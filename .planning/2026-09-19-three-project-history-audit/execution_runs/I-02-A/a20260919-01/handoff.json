@@ -1,0 +1,71 @@
+{
+  "card_id": "I-02-A",
+  "attempt_id": "a20260919-01",
+  "status": "review_pending",
+  "reviewer_status": "pending (independent reviewer must verify against review_and_handoff.md; implementer does not self-accept)",
+  "completed_steps": [
+    "D-W02 design freeze in decision.md (ScanReport completion_status / per_root_results / target_files + frozen enums + compatibility + recovery rules + rejected alternatives B/C/D/E/F/G)",
+    "Isolated override tree built (models.py / scanner.py / canonical_writer.py modified; config/adapter_dispatch/config_doctor reused unchanged from I-01-A; service.py zero-diff — forwarding passthrough verified)",
+    "Before baseline run in prod mode reproduced the original failure shape (scan report discarded; identity-only error text; unclassified RuntimeError on interruption; no per-root receipt; fabricated reused_exact accepted)",
+    "Freeze oracle.md (W02A-P1/N1/N2/N3a/N3b/N3c) with hand-derived expectations",
+    "Implemented scanner receipt generation (completion status, per-root results, target registration receipt keyed by content_sha256 with last_seen_run=run_id strictness)",
+    "Implemented writer consumption with four gates (interrupt->scan-stage failure, completion, per-root, target_not_registered, exact-resolve identity + canonical-path match)",
+    "Harness-only fault injection (scanner seam raise/candidate filtering, fabricated resolver) with real-positive correspondent",
+    "Final override run: all frozen expectations satisfied (failed_cases == [])"
+  ],
+  "next_step_number": 1,
+  "next_action": "Independent reviewer: re-run commands.json (prod then override), verify before/after divergence and at least one oracle item by reading the sqlite snapshots; then register the frozen enums in wiki_cards and unblock I-02-B/C/D with the D-W02 remainder (journal persistence / recovery key / error envelope) as separate owner decisions.",
+  "input_hashes": {
+    "prod_models.py": "65230572d355031d9634c9355939034d1dd8cb386bb98d1555e05184d4eb5087",
+    "prod_scanner.py": "f039d5f8d1360bd0e87898c059b7cce68d7ec5d0fad31c9a0196a57a6425e45e",
+    "prod_canonical_writer.py": "c23a935852cce71a9f1cc2454337cb714ec185b0823c33ddcc50407b7687c258",
+    "prod_service.py": "32b76e6d7f9879a2c7280f20180a8584c61ec11d706dbd70e3d019fd8cb48fa5"
+  },
+  "current_source_hashes": {
+    "iso/override/models.py": "f5ac11fe2b8a228dfcc9124664bb41cc01209a4a68ffcf6536f09f7afe4fc9ff",
+    "iso/override/scanner.py": "a0f0a72597581a275d2853aebb07ed54dfe798fcefcac4f8f169334713f97d3b",
+    "iso/override/canonical_writer.py": "64edd01668c03f16859617797248dcf6cc752a77cb6532a40d0bf59a9ce742cc",
+    "iso/override/service.py": "32b76e6d7f9879a2c7280f20180a8584c61ec11d706dbd70e3d019fd8cb48fa5"
+  },
+  "changed_paths": [
+    "iso/override/models.py",
+    "iso/override/scanner.py",
+    "iso/override/canonical_writer.py",
+    "iso/override/service.py (no diff; passthrough presence recorded)",
+    "scripts/w02a_bootstrap.py",
+    "scripts/w02a_cases.py",
+    "changes.diff",
+    "after/scan-return-contract.json",
+    "after/target-registration.sql-results.json",
+    "after/raw-before-after.json",
+    "after/case_results.json",
+    "after/before/* (prod baseline evidence)"
+  ],
+  "commands_executed": [
+    "w02a-baseline-prod (exit 0, expected 0)",
+    "w02a-after-override (exit 0, expected 0; failed_cases==[])"
+  ],
+  "raw_exit_codes": [0, 0, 0, 0],
+  "expected_exit_codes": [0, 0, 0, 0],
+  "open_questions": [
+    "D-W02 remainder (journal persistence/transaction boundary, recovery key fields beyond content hash, error envelope version and N/N-1 mapping, receipt for raw without sidecar, ensure-entry for already-existing raw registration) stays for I-02-B/C/D owners per common_wiki_cards",
+    "Isolated contract pytest nodeids for CMD-W03 remain to be bound by I-00-B (this attempt used a source-level runner; pytest is not installed in the isolated venv)",
+    "sample scratch root lives on %TEMP% (short-path Windows MAX_PATH workaround) with retained snapshots copied into after/case_scratch_retained at run end"
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "decision.md",
+    "oracle.md",
+    "binding.json",
+    "commands.json",
+    "iso_patching.md",
+    "changes.diff",
+    "samples/samples_manifest.json",
+    "after/scan-return-contract.json",
+    "after/target-registration.sql-results.json",
+    "after/raw-before-after.json",
+    "after/case_results.json",
+    "after/before/case_results.json"
+  ],
+  "reviewer_status": "review_pending"
+}

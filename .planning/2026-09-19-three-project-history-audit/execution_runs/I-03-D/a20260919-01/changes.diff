@@ -1,0 +1,2480 @@
+# changes.diff — I-03-D attempt a20260919-01
+# 副本 vs 原件。原件=生产锚点 company-wiki/src/company_wiki/source_catalog/
+#   close_gap.py sha 117c8166…、authorization.py sha f858a369…（执行前后 hash 复验一致）。
+# 层级：生产原件 -[I-03-C override 绑定校验面]-> 本卡 iso/baseline -[I-03-D 改动]-> iso/override
+# 另注：gap_plan.py 本卡零改动（I-03-C override 原样继承）。
+
+## §1 authorization.py: 本卡 baseline -> override
+```diff
+--- iso/baseline/authorization.py	2026-09-19 18:57:19.847176600 +0100
++++ iso/override/authorization.py	2026-09-19 19:04:13.249954200 +0100
+@@ -18,6 +18,15 @@
+ 
+ The clock is injected as a string parameter (frozen test clock); no
+ production code is modified: this file is an iso attempt copy.
++
++I-03-D adds ONLY the in-stream budget boundary (plan/quota edge): a
++candidate with an UNKNOWN remote_size (``None``) is not pre-refused at
++plan level per frozen policy (the "+size <= cap" receipt check counts
++it as 0); the actual byte budget is enforced inside the stream via
++``validate_stream_budget`` — cumulative RECEIVED bytes (faithfully
++recorded, including the chunk that pushes past the cap) drive the stop;
++no qualified handle / commit is produced on over-receipt, and a single
++oversized chunk is recorded separately via ``over_cap``.
+ """
+ 
+ from __future__ import annotations
+@@ -206,3 +215,23 @@
+     if bytes_already_fetched + size > authorization.max_bytes:
+         return "byte cap exceeded"
+     return None
++
++
++def validate_stream_budget(
++    *,
++    cumulative_bytes: int,
++    chunk_bytes: int,
++    max_bytes: int,
++) -> tuple[bool, int]:
++    """I-03-D in-stream budget edge. Returns ``(over_cap, cumulative)``.
++
++    The chunk that pushes the cumulative RECEIVED bytes past the cap IS
++    recorded first (the physical received byte count is truth: never
++    claim "more than max_bytes was never physically received"); the
++    caller must stop the stream after this chunk and refuse the commit.
++    A chunk that singly exceeds the cap is visible via over_cap on the
++    >max_bytes chunk record."""
++    if chunk_bytes < 0 or cumulative_bytes < 0 or max_bytes <= 0:
++        raise ValueError("stream budget inputs must be non-negative / positive cap")
++    cumulative = cumulative_bytes + chunk_bytes
++    return cumulative > max_bytes, cumulative
+```
+
+## §1 close_gap.py: 本卡 baseline -> override
+```diff
+--- iso/baseline/close_gap.py	2026-09-19 18:57:19.870888900 +0100
++++ iso/override/close_gap.py	2026-09-19 19:22:01.043975900 +0100
+@@ -1,100 +1,825 @@
+-"""FC-801: CloseGap binding — same-value + same-version validation
+-(isolated implementation card I-03-C).
+-
+-This iso copy carries ONLY the binding-validation boundary of
+-``close_gap.py`` (the card's allowed surface: "close_gap.py 中绑定校验
+-边界"). The full transaction's resolver/journal/lock execution face
+-(C15 batch truncation / completed_partial) stays with the production
+-module and is recorded as out of scope in handoff.json.
+-
+-- ``CloseGapBinding`` additionally carries ``hash_schema_version`` —
+-  the binding is version-locked to the authorization (legacy bindings
+-  without an explicit version are refused, never auto-upgraded);
+-- ``validate_close_gap_binding(binding, authorization)`` is a pure
+-  fail-closed check that the binding and the authorization are the
+-  SAME values on every shared field (request_id, gap_plan_hash,
+-  policy_hash, provider, allowed_accessions as a set, max_items,
+-  max_bytes, expires_at) and the SAME binding version. Any difference
+-  returns a precise reason (DL-03: fetch=0 downstream); nothing is
+-  back-filled.
+-"""
+-
+-from __future__ import annotations
+-
+-import hashlib
+-import json
+-from dataclasses import dataclass
+-from typing import Any
+-
+-
+-CLOSE_GAP_SCHEMA_VERSION = "1.0"
+-HASH_SCHEMA_VERSION = 1
+-
+-
+-@dataclass(frozen=True)
+-class CloseGapBinding:
+-    """FC-801: the input binding of one authorized close-gap download."""
+-
+-    request_id: str
+-    gap_plan_hash: str
+-    policy_hash: str
+-    provider: str
+-    allowed_accessions: tuple[str, ...]
+-    max_items: int
+-    max_bytes: int
+-    expires_at: str
+-    # I-03-C: version-locked to the authorization (same-value, same-version
+-    # binding). Legacy bindings (missing / non-1 version) are refused.
+-    hash_schema_version: int = 1
+-
+-    def to_dict(self) -> dict[str, Any]:
+-        return {
+-            "request_id": self.request_id,
+-            "gap_plan_hash": self.gap_plan_hash,
+-            "policy_hash": self.policy_hash,
+-            "provider": self.provider,
+-            "allowed_accessions": list(self.allowed_accessions),
+-            "max_items": self.max_items,
+-            "max_bytes": self.max_bytes,
+-            "expires_at": self.expires_at,
+-            "hash_schema_version": self.hash_schema_version,
+-        }
+-
+-
+-def _set(xs: tuple[str, ...]) -> set[str]:
+-    return set(xs)
+-
+-
+-def validate_close_gap_binding(binding: Any, authorization: Any) -> str | None:
+-    """Return an error string when the binding does NOT match the
+-    authorization exactly (same value + same version), else None."""
+-    if getattr(binding, "hash_schema_version", 0) != getattr(
+-        authorization, "hash_schema_version", None
+-    ):
+-        return (
+-            "binding version mismatch: binding and authorization must carry "
+-            "the same hash_schema_version (legacy binding refused)"
+-        )
+-    checks: tuple[tuple[str, Any, Any], ...] = (
+-        ("request_id", binding.request_id, authorization.request_id),
+-        ("gap_plan_hash", binding.gap_plan_hash, authorization.gap_plan_hash),
+-        ("policy_hash", binding.policy_hash, authorization.policy_hash),
+-        ("provider", binding.provider, authorization.provider),
+-        ("max_items", binding.max_items, authorization.max_items),
+-        ("max_bytes", binding.max_bytes, authorization.max_bytes),
+-        ("expires_at", binding.expires_at, authorization.expires_at),
+-    )
+-    for name, b_val, a_val in checks:
+-        if b_val != a_val:
+-            return f"binding mismatch on {name}"
+-    if _set(binding.allowed_accessions) != _set(authorization.allowed_accessions):
+-        return "binding mismatch on allowed_accessions"
+-    return None
+-
+-
+-def _txn_id(binding: CloseGapBinding) -> str:
+-    payload = json.dumps(binding.to_dict(), sort_keys=True, ensure_ascii=False)
+-    return (
+-        "urn:company-wiki:close-gap:sha256:"
+-        + hashlib.sha256(payload.encode("utf-8")).hexdigest()
+-    )
++"""FC-801: CloseGap binding + isolated bounded-batch execution face
++(isolated implementation card I-03-D).
++
++Base = the I-03-C override copy (binding-validation face). This attempt
++adds the plan/quota edge demanded by I-03-D, WITHOUT touching any
++production module:
++
++- ``validate_close_gap_binding`` / ``CloseGapBinding`` unchanged (same
++  value + same version gate, I-03-C);
++- ``MAX_BATCH_SIZE = 8`` (I-03-A D5); the per-scenario actual batch cap
++  is ``min(binding.max_items, MAX_BATCH_SIZE)`` — documented, not
++  silently assumed;
++- ``run_close_gap_transaction`` — the isolated close-gap call:
++  pre-lock rediscover (metadata only) -> deterministic BARRIER seam ->
++  in-lock rediscover -> stale-binding refusal at the REAL validation
++  exits (``validate_close_gap_binding`` + ``validate_download_authorization``
++  + the D6 stale hash gate) -> bounded batch with explicit per-candidate
++  remaining-gap states -> in-stream byte budget -> save raw + sidecar ->
++  registration through the R1-R7 gate order (referencing I-02-C's
++  register_existing_raw gates; production wiring stays with the I-02
++  owner) -> four frozen event types emitted.
++
++Events (decision.md §1) share the I-02 journal envelope fields; the
++legacy ``fetch_events`` integer is NOT an event substitute.
++
++``_BARRIER_HOOK`` is a module-level test seam (default no-op): the
++harness sets it to a callable receiving ``txn_id`` so the world mutates
++between the two rediscover points. No production code is modified.
++"""
++
++from __future__ import annotations
++
++import hashlib
++import json
++import sqlite3
++from dataclasses import dataclass, replace
++from datetime import UTC, datetime
++from pathlib import Path
++from typing import Any
++
++
++CLOSE_GAP_SCHEMA_VERSION = "1.0"
++HASH_SCHEMA_VERSION = 1
++MAX_BATCH_SIZE = 8  # I-03-A D5 frozen bound
++
++_BARRIER_HOOK = None  # test-only harness seam (decision.md §3)
++
++
++@dataclass(frozen=True)
++class CloseGapBinding:
++    """FC-801: the input binding of one authorized close-gap download."""
++
++    request_id: str
++    gap_plan_hash: str
++    policy_hash: str
++    provider: str
++    allowed_accessions: tuple[str, ...]
++    max_items: int
++    max_bytes: int
++    expires_at: str
++    hash_schema_version: int = 1
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "request_id": self.request_id,
++            "gap_plan_hash": self.gap_plan_hash,
++            "policy_hash": self.policy_hash,
++            "provider": self.provider,
++            "allowed_accessions": list(self.allowed_accessions),
++            "max_items": self.max_items,
++            "max_bytes": self.max_bytes,
++            "expires_at": self.expires_at,
++            "hash_schema_version": self.hash_schema_version,
++        }
++
++
++def _set(xs: tuple[str, ...]) -> set[str]:
++    return set(xs)
++
++
++def validate_close_gap_binding(binding: Any, authorization: Any) -> str | None:
++    """Return an error string when the binding does NOT match the
++    authorization exactly (same value + same version), else None."""
++    if getattr(binding, "hash_schema_version", 0) != getattr(
++        authorization, "hash_schema_version", None
++    ):
++        return (
++            "binding version mismatch: binding and authorization must carry "
++            "the same hash_schema_version (legacy binding refused)"
++        )
++    checks: tuple[tuple[str, Any, Any], ...] = (
++        ("request_id", binding.request_id, authorization.request_id),
++        ("gap_plan_hash", binding.gap_plan_hash, authorization.gap_plan_hash),
++        ("policy_hash", binding.policy_hash, authorization.policy_hash),
++        ("provider", binding.provider, authorization.provider),
++        ("max_items", binding.max_items, authorization.max_items),
++        ("max_bytes", binding.max_bytes, authorization.max_bytes),
++        ("expires_at", binding.expires_at, authorization.expires_at),
++    )
++    for name, b_val, a_val in checks:
++        if b_val != a_val:
++            return f"binding mismatch on {name}"
++    if _set(binding.allowed_accessions) != _set(authorization.allowed_accessions):
++        return "binding mismatch on allowed_accessions"
++    return None
++
++
++def _txn_id(binding: CloseGapBinding) -> str:
++    payload = json.dumps(binding.to_dict(), sort_keys=True, ensure_ascii=False)
++    return (
++        "urn:company-wiki:close-gap:sha256:"
++        + hashlib.sha256(payload.encode("utf-8")).hexdigest()
++    )
++
++
++def _utc_now() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
++
++
++class EventLedger:
++    """The four frozen event types with I-02-shared envelope fields.
++
++    Four separate structural event streams; ``fetch_events``-style
++    counters are legacy compatibility numbers, never a substitute."""
++
++    def __init__(self) -> None:
++        self.events: list[dict[str, Any]] = []
++
++    def record(self, outcome: str, envelope: dict[str, Any]) -> dict[str, Any]:
++        row = {
++            "schema_version": "1.0",
++            "recorded_at": _utc_now(),
++            "outcome": outcome,
++            **envelope,
++        }
++        self.events.append(row)
++        return row
++
++    def counts(self) -> dict[str, int]:
++        base = {
++            "provider_fetch_attempt": 0,
++            "bytes_received": 0,
++            "raw_saved": 0,
++            "registration_succeeded": 0,
++        }
++        for e in self.events:
++            base[e["outcome"]] = base.get(e["outcome"], 0) + 1
++        return base
++
++    def total_bytes_received(self) -> int:
++        return sum(
++            e["chunk_bytes"] for e in self.events if e["outcome"] == "bytes_received"
++        )
++
++
++def _reason_result(
++    *,
++    txn: str,
++    status: str,
++    reason: str,
++    gap_items: dict[str, Any] | None = None,
++    processed: int = 0,
++    remaining: int = 0,
++    fetch_events: int = 0,
++    plan_before_hash: str | None = None,
++    plan_in_lock_hash: str | None = None,
++    **extra: Any,
++) -> dict[str, Any]:
++    out: dict[str, Any] = {
++        "schema_version": CLOSE_GAP_SCHEMA_VERSION,
++        "txn_id": txn,
++        "status": status,
++        "reason": reason,
++        "fetch_events": fetch_events,
++        "gap_items": gap_items or {},
++        "processed_count": processed
++        or sum(
++            1 for st in (gap_items or {}).values() if st.get("state") in ("completed",)
++        ),
++        "remaining_count": remaining
++        or sum(
++            1
++            for st in (gap_items or {}).values()
++            if st.get("state")
++            in (
++                "pending_next_batch",
++                "pending_authorized_not_fetched",
++                "raw_saved_registration_pending",
++            )
++        ),
++        "pending_accessions": sorted(
++            cid
++            for cid, st in (gap_items or {}).items()
++            if st.get("state") not in ("completed", "completed_reused")
++        ),
++        "plan_before_lock_hash": plan_before_hash,
++        "plan_in_lock_hash": plan_in_lock_hash,
++    }
++    out.update(extra)
++    return out
++
++
++def _candidate_id(cand: Any) -> str:
++    return str(getattr(cand, "provider_document_id", "") or "")
++
++
++def _candidate_url(cand: Any) -> str:
++    return str(getattr(cand, "source_url", getattr(cand, "url", "")) or "")
++
++
++def _ids(seq) -> list[str]:
++    return [_candidate_id(c) for c in seq]
++
++
++def _actionable(plan: Any) -> tuple[Any, ...]:
++    """D5: missing + newer_revision, already in the D5 batch order."""
++    return tuple(plan.missing) + tuple(plan.newer_revision)
++
++
++def _plan(spec: dict[str, Any], planner: Any, request: Any) -> Any:
++    return planner.build_gap_plan(
++        request_id=request.request_id,
++        as_of_date=request.as_of_date,
++        document_kind=request.document_kind,
++        entity=request.entity,
++        market=request.market,
++        local_handles=list(spec.get("local_handles", [])),
++        remote_candidates=list(spec.get("remote_candidates", [])),
++        provider_error=spec.get("provider_error"),
++        policy_hash=spec.get("policy_hash", ""),
++    )
++
++
++def _blocking_states(plan: Any) -> dict[str, str]:
++    """Explicit per-candidate blocked states (never silently dropped)."""
++    out: dict[str, str] = {}
++    for note in getattr(plan, "ambiguous_candidates", ()):
++        out[str(note.get("id"))] = "blocked_ambiguous"
++    for note in getattr(plan, "conflicting_candidates", ()):
++        out[str(note.get("id"))] = "blocked_conflicting"
++    for note in getattr(plan, "unknown_candidates", ()):
++        out[str(note.get("id"))] = "blocked_unknown_metadata"
++    return out
++
++
++@dataclass
++class _Saved:
++    received_bytes: int = 0
++    failed_reason: str | None = None
++    raw_path: str | None = None
++    sidecar_path: str | None = None
++
++
++def stream_budget_over(
++    *, cumulative_bytes: int, chunk_bytes: int, max_bytes: int
++) -> tuple[bool, int]:
++    """Fail-safe local re-check mirroring validate_stream_budget."""
++    cum = cumulative_bytes + chunk_bytes
++    return cum > max_bytes, cum
++
++
++def run_close_gap_transaction(
++    *,
++    binding: CloseGapBinding,
++    authorization: Any,
++    planner: Any,
++    request: Any,
++    rediscover: Any,
++    stream: Any,
++    registrar: Any,
++    auth_module: Any,
++    ledger: EventLedger,
++    now: str = "2026-07-01T00:00:00Z",
++) -> dict[str, Any]:
++    txn = _txn_id(binding)
++
++    # Step 1: same-value + same-version binding gate (I-03-C face).
++    err = validate_close_gap_binding(binding, authorization)
++    if err is not None:
++        return _reason_result(txn=txn, status="rejected", reason=err)
++
++    # Step 2: pre-lock rediscover (metadata only, nothing fetched).
++    pre = rediscover()
++    plan_before = _plan(pre, planner, request)
++
++    # Deterministic BARRIER seam: fires between the two rediscover
++    # points; default no-op; the harness injects world mutations (G-D5).
++    if _BARRIER_HOOK is not None:
++        _BARRIER_HOOK(txn)
++
++    # Step 3: in-lock rediscover + re-check.
++    inlock = rediscover()
++    if inlock is None:
++        return _reason_result(
++            txn=txn,
++            status="rejected",
++            reason="provider_error:discover_failed",
++            plan_before_hash=plan_before.gap_hash,
++        )
++    plan_in = _plan(inlock, planner, request)
++
++    gap_items: dict[str, Any] = {
++        cid: {"state": st, "reason": "not actionable (explicit)"}
++        for cid, st in _blocking_states(plan_in).items()
++    }
++    actionable = _actionable(plan_in)
++
++    if not actionable:
++        for h in getattr(plan_in, "reuse", ()):
++            hid = str(getattr(h, "provider_document_id", "") or "")
++            gap_items.setdefault(
++                hid, {"state": "completed_reused", "reason": "local reusable handle"}
++            )
++        return _reason_result(
++            txn=txn,
++            status="completed",
++            reason="gap_already_closed_or_reused",
++            gap_items=gap_items,
++            processed=len(
++                [st for st in gap_items.values() if st["state"] == "completed_reused"]
++            ),
++            remaining=0,
++            fetch_events=0,
++            plan_before_hash=plan_before.gap_hash,
++            plan_in_lock_hash=plan_in.gap_hash,
++            latest_status=plan_in.latest_status,
++            not_published_plan=plan_in.not_published,
++            provider_unavailable_plan=plan_in.provider_unavailable,
++        )
++
++    if plan_in.gap_hash != binding.gap_plan_hash:
++        # REAL validation exit #1: the receipt is bound to the OLD plan
++        # hash; every candidate of the current plan fails validation.
++        probe = actionable[0]
++        auth_probe = auth_module.validate_download_authorization(
++            authorization,
++            probe,
++            plan_hash=plan_in.gap_hash,
++            now=now,
++            items_already_fetched=0,
++            bytes_already_fetched=0,
++        )
++        gap_items = dict(gap_items)
++        for c in actionable:
++            gap_items[_candidate_id(c)] = {
++                "state": "pending_next_batch",
++                "reason": "stale binding rejected (stale_gap_hash)",
++            }
++        return _reason_result(
++            txn=txn,
++            status="rejected",
++            reason="stale_gap_hash",
++            gap_items=gap_items,
++            fetched=0,
++            processed=0,
++            remaining=len(actionable),
++            fetch_events=0,
++            plan_before_hash=plan_before.gap_hash,
++            plan_in_lock_hash=plan_in.gap_hash,
++            authorization_probe=auth_probe,
++        )
++
++    # Step 4: bounded batch (D5): actual cap = min(max_items, MAX_BATCH_SIZE).
++    batch_cap = min(int(binding.max_items), MAX_BATCH_SIZE)
++    batch = list(actionable[:batch_cap])
++    later = list(actionable[batch_cap:])
++    for cid in _ids(later):
++        gap_items.setdefault(
++            cid, {"state": "pending_next_batch", "reason": "beyond this batch cap"}
++        )
++
++    bytes_used = 0
++    fetch_attempt = 0
++    abort_reason: str | None = None
++    for cand in batch:
++        cid = _candidate_id(cand)
++        if abort_reason is not None:
++            gap_items[cid] = {
++                "state": "pending_authorized_not_fetched",
++                "reason": f"txn aborted earlier: {abort_reason}",
++            }
++            continue
++
++        # REAL validation exit #2: per-candidate authorization.
++        auth_err = auth_module.validate_download_authorization(
++            authorization,
++            cand,
++            plan_hash=plan_in.gap_hash,
++            now=now,
++            items_already_fetched=0,
++            bytes_already_fetched=bytes_used,
++        )
++        if auth_err is not None:
++            gap_items[cid] = {
++                "state": "pending_authorized_not_fetched",
++                "reason": auth_err,
++            }
++            abort_reason = auth_err
++            continue
++
++        fetch_attempt += 1
++        ledger.record(
++            "provider_fetch_attempt",
++            {
++                "txn_id": txn,
++                "request_id": binding.request_id,
++                "provider": getattr(cand, "provider", ""),
++                "provider_document_id": cid,
++                "source_url": _candidate_url(cand),
++                "authorization_receipt_hash": authorization.receipt_hash,
++                "binding_plan_hash": plan_in.gap_hash,
++                "declared_remote_size": getattr(cand, "remote_size", None),
++            },
++        )
++
++        cand_request = replace(request, provider_document_id=cid)
++        saved = _stream_and_save(
++            txn,
++            cand,
++            binding,
++            ledger,
++            registrar,
++            stream,
++            cand_request,
++            bytes_used=bytes_used,
++        )
++        bytes_used += saved.received_bytes
++        if saved.failed_reason is None:
++            reg = registrar.register(
++                raw_path=Path(saved.raw_path),
++                sidecar_path=Path(saved.sidecar_path),
++                request=cand_request,
++            )
++            if reg.get("ok"):
++                ledger.record(
++                    "registration_succeeded",
++                    {
++                        "txn_id": txn,
++                        "request_id": binding.request_id,
++                        "provider": getattr(cand, "provider", ""),
++                        "provider_document_id": cid,
++                        "canonical_path": saved.raw_path,
++                        "content_sha256": reg["content_sha256"],
++                        "gates": reg["gates"],
++                        "idempotent": bool(reg.get("idempotent")),
++                    },
++                )
++                gap_items[cid] = {"state": "completed", "reason": "saved+registered"}
++            else:
++                gap_items[cid] = {
++                    "state": "raw_saved_registration_pending",
++                    "reason": f"registration: {reg['reason']}",
++                }
++        elif (
++            saved.failed_reason == "byte_cap_exceeded_in_stream"
++            or saved.failed_reason.startswith("provider_error")
++        ):
++            gap_items[cid] = {
++                "state": "pending_authorized_not_fetched",
++                "reason": saved.failed_reason,
++            }
++            abort_reason = saved.failed_reason
++            idx = batch.index(cand)
++            for rest in batch[idx + 1 :]:
++                gap_items.setdefault(
++                    _candidate_id(rest),
++                    {
++                        "state": "pending_authorized_not_fetched",
++                        "reason": "txn aborted earlier (cap/provided failure)",
++                    },
++                )
++                break
++        else:  # defensive: unknown failure face -> keep explicit
++            gap_items[cid] = {
++                "state": "pending_authorized_not_fetched",
++                "reason": saved.failed_reason,
++            }
++            abort_reason = saved.failed_reason
++
++    completed = sum(
++        1
++        for st in gap_items.values()
++        if st.get("state") in ("completed", "completed_reused")
++    )
++    pending = sum(
++        1
++        for st in gap_items.values()
++        if st.get("state")
++        in (
++            "pending_next_batch",
++            "pending_authorized_not_fetched",
++            "raw_saved_registration_pending",
++        )
++    )
++    if pending == 0 and completed == len(actionable) + len(
++        [st for st in gap_items.values() if st.get("state") == "completed_reused"]
++    ):
++        status, reason = "completed", "gap_closed_downloaded"
++    else:
++        status = "completed_partial" if completed else "failed"
++        reason = abort_reason or "remaining_gap > 0 (explicit pending retained)"
++    return _reason_result(
++        txn=txn,
++        status=status,
++        reason=reason,
++        gap_items=gap_items,
++        processed=completed,
++        remaining=pending,
++        fetch_events=fetch_attempt,
++        plan_before_hash=plan_before.gap_hash,
++        plan_in_lock_hash=plan_in.gap_hash,
++    )
++
++
++def _stream_and_save(
++    txn: str,
++    cand: Any,
++    binding: CloseGapBinding,
++    ledger: EventLedger,
++    registrar: Any,
++    stream: Any,
++    request: Any,
++    *,
++    bytes_used: int = 0,
++) -> _Saved:
++    """Stream chunks; EVERY received chunk recorded (including the one
++    that pushes the cumulative past the cap); raw+sidecar saved only
++    with no over-cap; over_cap chunk stops the stream."""
++    saved = _Saved()
++    buf = bytearray()
++    cum = bytes_used
++    base = Path(registrar.raw_root)
++    try:
++        for chunk_index, chunk in enumerate(stream(cand)):
++            over, cum = stream_budget_over(
++                cumulative_bytes=cum,
++                chunk_bytes=len(chunk),
++                max_bytes=binding.max_bytes,
++            )
++            row = {
++                "txn_id": txn,
++                "request_id": binding.request_id,
++                "provider": getattr(cand, "provider", ""),
++                "provider_document_id": _candidate_id(cand),
++                "source_url": _candidate_url(cand),
++                "chunk_index": chunk_index,
++                "chunk_bytes": len(chunk),
++                "cumulative_bytes": cum,
++                "max_bytes": binding.max_bytes,
++                "over_cap": over,
++                "stream_stopped": over,
++            }
++            ledger.record("bytes_received", row)
++            buf.extend(chunk)
++            if over:
++                saved.received_bytes = cum
++                saved.failed_reason = "byte_cap_exceeded_in_stream"
++                return saved
++    except Exception as exc:  # provider stream failure, truthfully kept
++        saved.received_bytes = cum
++        saved.failed_reason = f"provider_error:{type(exc).__name__}:{exc}"
++        return saved
++    content = bytes(buf)
++    sha = hashlib.sha256(content).hexdigest()
++    raw = base / f"{_candidate_id(cand)}_{sha[:12]}.pdf"
++    sidecar = base / (raw.name + ".source.json")
++    receipt = {
++        "schema_version": "1.0",
++        "retrieved_at": _utc_now(),
++        "provider": getattr(cand, "provider", ""),
++        "provider_document_id": _candidate_id(cand),
++        "source_url": _candidate_url(cand),
++        "content_sha256": sha,
++        "byte_size": len(content),
++    }
++    raw.parent.mkdir(parents=True, exist_ok=True)
++    raw.write_bytes(content)
++    sidecar.write_text(
++        json.dumps({"receipt": receipt}, ensure_ascii=False, sort_keys=True, indent=2)
++        + "\n",
++        encoding="utf-8",
++    )
++    saved.received_bytes = len(content)
++    saved.raw_path = str(raw)
++    saved.sidecar_path = str(sidecar)
++    ledger.record(
++        "raw_saved",
++        {
++            "txn_id": txn,
++            "request_id": binding.request_id,
++            "provider": getattr(cand, "provider", ""),
++            "provider_document_id": _candidate_id(cand),
++            "source_url": _candidate_url(cand),
++            "canonical_path": str(raw),
++            "content_sha256": sha,
++            "byte_size": len(content),
++            "over_cap_received": False,
++        },
++    )
++    return saved
++
++
++# ---------------------------------------------------------------------------
++# Registration face: a minimal store shell implementing the R1-R7 gate
++# order that I-02-C froze for register_existing_raw (REFERENCE, not a
++# second production registry):
++#   R1 root policy reusable; R2 root containment; R3 adjacent sidecar at
++#   <raw>.source.json; R4 provenance completeness (no filename infer);
++#   R5 bytes recompute (sha256+size vs sidecar receipt); R6 explicit
++#   request identity agreement; R7 registered docs must be active
++#   (retired/quarantined refused; idempotent success when already active).
++# ---------------------------------------------------------------------------
++
++
++class MinimalRegistrar:
++    """tmp-isolated sqlite store shell (NOT a production registry; feeds
++    only the attempt's case increments; fakes stay inside A)."""
++
++    REGISTERED = "registered"
++
++    def __init__(
++        self, raw_root: Path, *, root_policy: dict[str, Any], store_path: Path
++    ) -> None:
++        self.raw_root = Path(raw_root)
++        self.root_policy = dict(root_policy)
++        self.store_path = Path(store_path)
++        conn = sqlite3.connect(self.store_path)
++        conn.execute(
++            "CREATE TABLE IF NOT EXISTS documents ("
++            "content_sha256 TEXT PRIMARY KEY, status TEXT NOT NULL)"
++        )
++        conn.commit()
++        conn.close()
++
++    def _conn(self) -> sqlite3.Connection:
++        conn = sqlite3.connect(self.store_path)
++        conn.execute(
++            "CREATE TABLE IF NOT EXISTS documents ("
++            "content_sha256 TEXT PRIMARY KEY, status TEXT NOT NULL)"
++        )
++        return conn
++
++    def register(
++        self, *, raw_path: Path, sidecar_path: Path, request: Any
++    ) -> dict[str, Any]:
++        gates: dict[str, bool] = {}
++
++        def gate(name: str, ok: bool, reason: str) -> dict[str, Any] | None:
++            gates[name] = bool(ok)
++            if not ok:
++                return {
++                    "ok": False,
++                    "reason": f"registration: {reason}",
++                    "gates": gates,
++                }
++            return None
++
++        # R1 root policy
++        if (
++            stop := gate(
++                "R1_root_policy_reusable",
++                bool(self.root_policy.get("reusable_for_filing")),
++                "root_not_reusable",
++            )
++        ) is not None:
++            return stop
++        # R2 containment
++        try:
++            rp = Path(raw_path).resolve()
++            in_root = str(rp).startswith(str(Path(self.raw_root).resolve()))
++        except OSError:
++            in_root = False
++        if (
++            stop := gate("R2_root_containment", in_root, "raw_out_of_root")
++        ) is not None:
++            return stop
++        raw_path = Path(raw_path)
++        # R3 adjacent sidecar
++        sp = Path(sidecar_path)
++        if (
++            stop := gate(
++                "R3_sidecar_adjacent",
++                sp.exists() and sp.name == raw_path.name + ".source.json",
++                "missing_sidecar",
++            )
++        ) is not None:
++            return stop
++        # R4 provenance completeness (never inferred from the filename)
++        try:
++            data = json.loads(sp.read_text(encoding="utf-8"))
++            receipt = data["receipt"]
++            need = (
++                "provider",
++                "provider_document_id",
++                "content_sha256",
++                "byte_size",
++                "source_url",
++            )
++            complete = all(receipt.get(k) for k in need)
++        except Exception:
++            complete = False
++            receipt = {}
++        if (
++            stop := gate("R4_provenance_complete", complete, "provenance_incomplete")
++        ) is not None:
++            return stop
++        # R5 bytes recompute against CURRENT bytes
++        blob = raw_path.read_bytes()
++        sha = hashlib.sha256(blob).hexdigest()
++        ok = sha == receipt.get("content_sha256") and len(blob) == int(
++            receipt.get("byte_size", -2)
++        )
++        if (stop := gate("R5_bytes_recompute", ok, "bytes_mismatch")) is not None:
++            return stop
++        # R6 explicit request identity (never inferred)
++        same = str(request.provider or "") == receipt.get("provider") and str(
++            request.provider_document_id or ""
++        ) == receipt.get("provider_document_id")
++        if (
++            stop := gate("R6_identity_contract", same, "identity_contract")
++        ) is not None:
++            return stop
++        # R7 registered status
++        conn = self._conn()
++        try:
++            row = conn.execute(
++                "SELECT status FROM documents WHERE content_sha256=?",
++                (sha,),
++            ).fetchone()
++            if row is not None and row[0] != self.REGISTERED:
++                return {
++                    "ok": False,
++                    "reason": f"registration: status_not_active ({row[0]})",
++                    "gates": gates,
++                }
++            idempotent = row is not None
++            if row is None:
++                conn.execute(
++                    "INSERT INTO documents(content_sha256, status) VALUES(?,?)",
++                    (sha, self.REGISTERED),
++                )
++            conn.commit()
++        finally:
++            conn.close()
++        return {
++            "ok": True,
++            "reason": None,
++            "gates": gates,
++            "content_sha256": sha,
++            "idempotent": idempotent,
++        }
++
++
++def resume_registration(
++    *,
++    binding: CloseGapBinding,
++    authorization: Any,
++    registrar: Any,
++    request: Any,
++    auth_module: Any,
++    ledger: EventLedger,
++    recovery_raw_path: str,
++    recovery_sidecar_path: str,
++    now: str = "2026-07-01T00:00:00Z",
++) -> dict[str, Any]:
++    """G-D8 retry face: ONLY the missing registration is restored.
++
++    A prior ``raw_saved`` event for this binding is required; the
++    provider stream is NEVER called (fetch stays 0); the R1-R7 gates
++    re-verify CURRENT bytes against the durable sidecar; success emits
++    registration_succeeded with gates R1..R7. The recovery location is
++    given EXPLICITLY by the caller's manifest (I-02-C D-W02: never
++    re-derived from file/dir names)."""
++    txn = _txn_id(binding)
++    err = validate_close_gap_binding(binding, authorization)
++    if err is not None:
++        return _reason_result(txn=txn, status="rejected", reason=err)
++    prior_raw_saved = [e for e in ledger.events if e["outcome"] == "raw_saved"]
++    if not prior_raw_saved:
++        return _reason_result(
++            txn=txn,
++            status="failed",
++            reason=(
++                "resume_refused: no prior raw_saved evidence; re-download "
++                "requires a NEW authorization, never a silent one"
++            ),
++        )
++    reg = registrar.register(
++        raw_path=Path(recovery_raw_path),
++        sidecar_path=Path(recovery_sidecar_path),
++        request=request,
++    )
++    if reg.get("ok"):
++        entry = prior_raw_saved[-1]
++        ledger.record(
++            "registration_succeeded",
++            {
++                "txn_id": txn,
++                "request_id": binding.request_id,
++                "provider": entry.get("provider", ""),
++                "provider_document_id": entry.get("provider_document_id", ""),
++                "canonical_path": recovery_raw_path,
++                "content_sha256": reg["content_sha256"],
++                "gates": reg["gates"],
++                "idempotent": bool(reg.get("idempotent")),
++            },
++        )
++        return _reason_result(
++            txn=txn,
++            status="completed",
++            reason="registration_recovered_fetch0",
++            gap_items={
++                entry.get("provider_document_id", ""): {
++                    "state": "completed",
++                    "reason": "registered (recovered, fetch=0)",
++                }
++            },
++            processed=1,
++            remaining=0,
++            fetch_events=0,
++            seed_gap_hash=binding.gap_plan_hash,
++        )
++    return _reason_result(
++        txn=txn, status="failed", reason=reg["reason"], fetch_events=0
++    )
+```
+
+## §2 authorization.py: 生产原件 -> 本卡 override
+```diff
+--- "C:/Users/�\203\221�\233�波/Projects/company-wiki/src/company_wiki/source_catalog/authorization.py"	2026-08-11 04:24:39.219114000 +0100
++++ iso/override/authorization.py	2026-09-19 19:04:13.249954200 +0100
+@@ -1,22 +1,54 @@
+-"""WU-4.3 + FC-801: authorization-bound minimal download.
++"""WU-4.3 + FC-801: authorization-bound minimal download (isolated
++implementation card I-03-C).
+ 
+-A ``DownloadAuthorization`` receipt binds the download decision to the
+-exact GapPlan (via its hash), the RuntimePolicySnapshot (via its hash),
+-the exact provider + accessions, item/byte caps, and an expiry. The
+-downloader validates every candidate against the receipt before fetching;
+-anything not in the plan, under a stale policy, or not allowed by the
+-receipt is rejected (DL-03: fetch=0). The receipt hash is deterministic so
+-the same authorization is reproducible for audit.
++I-03-A D6-frozen binding face for a DownloadAuthorization (schema 1.1):
++
++- the receipt binds the exact GapPlan hash (which, from I-03-B/C, carries
++  every qualification field + the policy epoch, so any URL / date /
++  period / provider / revision / policy change yields a NEW plan hash);
++- the receipt hash is a canonical-JSON SHA-256 over a nested payload —
++  no field concatenation ambiguity; the allowed accession set is sorted
++  INSIDE the hash, so an approved-set reorder does not change the receipt;
++- ``validate_download_authorization`` is fail-closed and ordered:
++  schema version gate (legacy receipts are EXPLICITLY invalidated — no
++  auto-upgrade, no field back-fill), receipt-hash self-check, stale plan
++  hash, expiry (a 1-second-late clock is expired), provider REQUIRED
++  (a missing provider no longer default-passes), accession membership,
++  item/byte caps. Every refusal happens with fetch=0 downstream.
++
++The clock is injected as a string parameter (frozen test clock); no
++production code is modified: this file is an iso attempt copy.
++
++I-03-D adds ONLY the in-stream budget boundary (plan/quota edge): a
++candidate with an UNKNOWN remote_size (``None``) is not pre-refused at
++plan level per frozen policy (the "+size <= cap" receipt check counts
++it as 0); the actual byte budget is enforced inside the stream via
++``validate_stream_budget`` — cumulative RECEIVED bytes (faithfully
++recorded, including the chunk that pushes past the cap) drive the stop;
++no qualified handle / commit is produced on over-receipt, and a single
++oversized chunk is recorded separately via ``over_cap``.
+ """
+ 
+ from __future__ import annotations
+ 
+ import hashlib
++import json
++import re
+ from dataclasses import dataclass
+ from typing import Any
+ 
+ 
+-AUTHORIZATION_SCHEMA_VERSION = "1.0"
++AUTHORIZATION_SCHEMA_VERSION = "1.1"
++HASH_SCHEMA_VERSION = 1
++_ISO_Z = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
++
++
++def _is_sha256_hex(value: str) -> bool:
++    return (
++        isinstance(value, str)
++        and len(value) == 64
++        and all(c in "0123456789abcdef" for c in value)
++    )
+ 
+ 
+ @dataclass(frozen=True)
+@@ -33,6 +65,9 @@
+     max_bytes: int
+     expires_at: str
+     receipt_hash: str
++    # I-03-C: binding version — legacy receipts carry no version and are
++    # explicitly refused (never auto-upgraded).
++    hash_schema_version: int = 1
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return {
+@@ -46,8 +81,30 @@
+             "max_bytes": self.max_bytes,
+             "expires_at": self.expires_at,
+             "receipt_hash": self.receipt_hash,
++            "hash_schema_version": self.hash_schema_version,
+         }
+ 
++    def receipt_payload(self) -> dict[str, Any]:
++        return {
++            "hash_schema_version": self.hash_schema_version,
++            "schema_version": self.schema_version,
++            "request_id": self.request_id,
++            "gap_plan_hash": self.gap_plan_hash,
++            "policy_hash": self.policy_hash,
++            "provider": self.provider,
++            "allowed_accessions": sorted(self.allowed_accessions),
++            "max_items": self.max_items,
++            "max_bytes": self.max_bytes,
++            "expires_at": self.expires_at,
++        }
++
++
++def _receipt_hash(payload: dict[str, Any]) -> str:
++    blob = json.dumps(
++        payload, sort_keys=True, ensure_ascii=False, separators=(",", ":")
++    )
++    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
++
+ 
+ def build_download_authorization(
+     *,
+@@ -60,28 +117,40 @@
+     max_bytes: int,
+     expires_at: str,
+ ) -> DownloadAuthorization:
+-    """Create a deterministic download authorization receipt."""
++    """Create a deterministic download authorization receipt.
++
++    Fail-closed at build time: no implicit defaults (I-03-A D6 — a
++    missing provider is NOT authorized, caps must be real caps, the
++    expiry must be a canonical UTC instant)."""
+     if not request_id or not gap_plan_hash or not policy_hash or not provider:
+         raise ValueError("request_id/gap_plan_hash/policy_hash/provider required")
+-    if len(gap_plan_hash) != 64:
++    if not _is_sha256_hex(gap_plan_hash):
+         raise ValueError("gap_plan_hash must be a SHA-256 hex digest")
+-    if len(policy_hash) != 64:
++    if not _is_sha256_hex(policy_hash):
+         raise ValueError("policy_hash must be a SHA-256 hex digest")
+-    if max_items <= 0 or max_bytes <= 0:
+-        raise ValueError("max_items/max_bytes must be positive")
+-    if not allowed_accessions or not all(a for a in allowed_accessions):
++    if _ISO_Z.match(expires_at) is None:
++        raise ValueError("expires_at must be canonical YYYY-MM-DDTHH:MM:SSZ")
++    if not isinstance(max_items, int) or isinstance(max_items, bool) or max_items <= 0:
++        raise ValueError("max_items must be a positive integer")
++    if not isinstance(max_bytes, int) or isinstance(max_bytes, bool) or max_bytes <= 0:
++        raise ValueError("max_bytes must be a positive integer")
++    if not allowed_accessions or any(
++        not isinstance(a, str) or not a for a in allowed_accessions
++    ):
+         raise ValueError("allowed_accessions must be a non-empty list of accessions")
+-    digest = hashlib.sha256()
+-    digest.update(AUTHORIZATION_SCHEMA_VERSION.encode())
+-    digest.update(request_id.encode())
+-    digest.update(gap_plan_hash.encode())
+-    digest.update(policy_hash.encode())
+-    digest.update(provider.encode())
+-    for accession in sorted(allowed_accessions):
+-        digest.update(accession.encode())
+-    digest.update(str(max_items).encode())
+-    digest.update(str(max_bytes).encode())
+-    digest.update(expires_at.encode())
++    receipt = DownloadAuthorization(
++        schema_version=AUTHORIZATION_SCHEMA_VERSION,
++        request_id=request_id,
++        gap_plan_hash=gap_plan_hash,
++        policy_hash=policy_hash,
++        provider=provider,
++        allowed_accessions=tuple(allowed_accessions),
++        max_items=max_items,
++        max_bytes=max_bytes,
++        expires_at=expires_at,
++        receipt_hash="",
++    )
++    receipt_hash = _receipt_hash(receipt.receipt_payload())
+     return DownloadAuthorization(
+         schema_version=AUTHORIZATION_SCHEMA_VERSION,
+         request_id=request_id,
+@@ -92,7 +161,8 @@
+         max_items=max_items,
+         max_bytes=max_bytes,
+         expires_at=expires_at,
+-        receipt_hash=digest.hexdigest(),
++        receipt_hash=receipt_hash,
++        hash_schema_version=1,
+     )
+ 
+ 
+@@ -106,21 +176,62 @@
+     bytes_already_fetched: int = 0,
+ ) -> str | None:
+     """Return an error string if the candidate may NOT be fetched under the
+-    receipt, else None. ``candidate`` exposes provider_document_id, fiscal_year
+-    and remote_size (DownloadCandidate-compatible)."""
++    receipt, else None (fetch=0 on every refusal). Fail-closed order:
++    version gate -> receipt self-check -> plan hash -> expiry -> provider
++    (required) -> accession -> caps."""
++    if authorization.schema_version != AUTHORIZATION_SCHEMA_VERSION:
++        return (
++            "unsupported authorization schema_version "
++            f"{authorization.schema_version!r}: legacy receipt requires "
++            "explicit re-authorization (no auto-upgrade)"
++        )
++    if authorization.hash_schema_version != HASH_SCHEMA_VERSION:
++        return (
++            "unsupported hash_schema_version "
++            f"{authorization.hash_schema_version!r}: legacy receipt requires "
++            "explicit re-authorization"
++        )
++    if _receipt_hash(authorization.receipt_payload()) != authorization.receipt_hash:
++        return "authorization receipt hash mismatch"
+     if authorization.gap_plan_hash != plan_hash:
+-        return "authorization is bound to a different gap plan"
++        return "authorization is bound to a different gap plan (stale_gap_hash)"
++    if not _ISO_Z.match(now):
++        return "validate clock not a canonical UTC instant"
+     if now > authorization.expires_at:
+         return "authorization expired"
+-    provider = str(getattr(candidate, "provider", "") or "").lower()
+-    if provider and authorization.provider != provider:
+-        return f"provider not authorized: {provider}"
++    provider = str(getattr(candidate, "provider", "") or "")
++    if not provider:
++        return "provider not authorized: (missing provider on candidate)"
++    if provider.lower() != authorization.provider:
++        return f"provider not authorized: {provider.lower()}"
+     accession = str(getattr(candidate, "provider_document_id", "") or "")
+     if accession not in authorization.allowed_accessions:
+         return f"accession not authorized: {accession}"
+     if items_already_fetched >= authorization.max_items:
+         return "item cap reached"
+     size = int(getattr(candidate, "remote_size", 0) or 0)
++    if size < 0:
++        return "candidate reports a negative size (unknown-sized candidate refused)"
+     if bytes_already_fetched + size > authorization.max_bytes:
+         return "byte cap exceeded"
+     return None
++
++
++def validate_stream_budget(
++    *,
++    cumulative_bytes: int,
++    chunk_bytes: int,
++    max_bytes: int,
++) -> tuple[bool, int]:
++    """I-03-D in-stream budget edge. Returns ``(over_cap, cumulative)``.
++
++    The chunk that pushes the cumulative RECEIVED bytes past the cap IS
++    recorded first (the physical received byte count is truth: never
++    claim "more than max_bytes was never physically received"); the
++    caller must stop the stream after this chunk and refuse the commit.
++    A chunk that singly exceeds the cap is visible via over_cap on the
++    >max_bytes chunk record."""
++    if chunk_bytes < 0 or cumulative_bytes < 0 or max_bytes <= 0:
++        raise ValueError("stream budget inputs must be non-negative / positive cap")
++    cumulative = cumulative_bytes + chunk_bytes
++    return cumulative > max_bytes, cumulative
+```
+
+## §2 close_gap.py: 生产原件 -> 本卡 override
+```diff
+--- "C:/Users/�\203\221�\233�波/Projects/company-wiki/src/company_wiki/source_catalog/close_gap.py"	2026-09-16 19:02:14.259488000 +0100
++++ iso/override/close_gap.py	2026-09-19 19:22:01.043975900 +0100
+@@ -1,54 +1,49 @@
+-"""FC-801: CloseGap transaction — the fixed close-gap step sequence.
++"""FC-801: CloseGap binding + isolated bounded-batch execution face
++(isolated implementation card I-03-D).
+ 
+-A ``CloseGapTransaction`` executes the authorized download of a gap plan
+-as ONE contract with journaled state:
+-
+-1. policy binding check (DL-03): the RuntimePolicySnapshot hash must match
+-   the binding — a download authorized under a different policy is never
+-   reusable (fetch=0);
+-2. gap revalidation (DL-03): rediscover provider metadata (metadata only,
+-   nothing fetched) and rebuild the current GapPlan; if the plan still has
+-   missing items but its hash differs from the binding, the authorization
+-   is stale (fetch=0); if the gap is already closed (no missing), the
+-   transaction completes as reused (fetch=0);
+-3. authorize + fetch staging (DL-02): the coordinator stages only what the
+-   receipt allows (accessions/caps/expiry); any authorization failure is
+-   rejected with the precise reason and fetch=0;
+-4. validate (DL-07): receipt bytes/hash/magic must match — invalid staging
+-   is never committed; the staging directory is cleaned up (auditable) and
+-   the catalog is unchanged;
+-5. canonical commit (DL-09): ``import_staged`` is idempotent by
+-   content_sha256 — a re-run after interruption deduplicates;
+-6. re-resolve: the final resolver pass returns the FC-704 envelope so the
+-   caller sees the real outcome (journal-reconciled).
+-
+-Partial failure (LT-10) never reports ``completed``: the journal records
+-``failed`` with the txn id and the reason; re-running the same binding is
+-safe.
++Base = the I-03-C override copy (binding-validation face). This attempt
++adds the plan/quota edge demanded by I-03-D, WITHOUT touching any
++production module:
++
++- ``validate_close_gap_binding`` / ``CloseGapBinding`` unchanged (same
++  value + same version gate, I-03-C);
++- ``MAX_BATCH_SIZE = 8`` (I-03-A D5); the per-scenario actual batch cap
++  is ``min(binding.max_items, MAX_BATCH_SIZE)`` — documented, not
++  silently assumed;
++- ``run_close_gap_transaction`` — the isolated close-gap call:
++  pre-lock rediscover (metadata only) -> deterministic BARRIER seam ->
++  in-lock rediscover -> stale-binding refusal at the REAL validation
++  exits (``validate_close_gap_binding`` + ``validate_download_authorization``
++  + the D6 stale hash gate) -> bounded batch with explicit per-candidate
++  remaining-gap states -> in-stream byte budget -> save raw + sidecar ->
++  registration through the R1-R7 gate order (referencing I-02-C's
++  register_existing_raw gates; production wiring stays with the I-02
++  owner) -> four frozen event types emitted.
++
++Events (decision.md §1) share the I-02 journal envelope fields; the
++legacy ``fetch_events`` integer is NOT an event substitute.
++
++``_BARRIER_HOOK`` is a module-level test seam (default no-op): the
++harness sets it to a callable receiving ``txn_id`` so the world mutates
++between the two rediscover points. No production code is modified.
+ """
+ 
+ from __future__ import annotations
+ 
+ import hashlib
+ import json
+-import shutil
+-from dataclasses import dataclass
++import sqlite3
++from dataclasses import dataclass, replace
+ from datetime import UTC, datetime
++from pathlib import Path
+ from typing import Any
+ 
+-from .acquisition import AcquisitionStatus
+-from .acquisition_journal import AcquisitionJournal
+-from .authorization import build_download_authorization
+-from .canonical_writer import CanonicalSourceWriter
+-from .resolver import (
+-    SourceRequest,
+-    SourceResolver,
+-    build_resolution_envelope,
+-)
+-from .runtime_policy import RuntimePolicyError, load_runtime_policy
+-
+ 
+ CLOSE_GAP_SCHEMA_VERSION = "1.0"
++HASH_SCHEMA_VERSION = 1
++MAX_BATCH_SIZE = 8  # I-03-A D5 frozen bound
++
++_BARRIER_HOOK = None  # test-only harness seam (decision.md §3)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -63,6 +58,7 @@
+     max_items: int
+     max_bytes: int
+     expires_at: str
++    hash_schema_version: int = 1
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return {
+@@ -74,31 +70,39 @@
+             "max_items": self.max_items,
+             "max_bytes": self.max_bytes,
+             "expires_at": self.expires_at,
++            "hash_schema_version": self.hash_schema_version,
+         }
+ 
+ 
+-@dataclass(frozen=True)
+-class CloseGapResult:
+-    schema_version: str
+-    txn_id: str
+-    status: str  # completed | rejected | failed
+-    reason: str
+-    fetch_events: int
+-    outcome: str | None
+-    resolution: dict[str, Any] | None
+-    envelope: dict[str, Any] | None
++def _set(xs: tuple[str, ...]) -> set[str]:
++    return set(xs)
+ 
+-    def to_dict(self) -> dict[str, Any]:
+-        return {
+-            "schema_version": self.schema_version,
+-            "txn_id": self.txn_id,
+-            "status": self.status,
+-            "reason": self.reason,
+-            "fetch_events": self.fetch_events,
+-            "outcome": self.outcome,
+-            "resolution": self.resolution,
+-            "envelope": self.envelope,
+-        }
++
++def validate_close_gap_binding(binding: Any, authorization: Any) -> str | None:
++    """Return an error string when the binding does NOT match the
++    authorization exactly (same value + same version), else None."""
++    if getattr(binding, "hash_schema_version", 0) != getattr(
++        authorization, "hash_schema_version", None
++    ):
++        return (
++            "binding version mismatch: binding and authorization must carry "
++            "the same hash_schema_version (legacy binding refused)"
++        )
++    checks: tuple[tuple[str, Any, Any], ...] = (
++        ("request_id", binding.request_id, authorization.request_id),
++        ("gap_plan_hash", binding.gap_plan_hash, authorization.gap_plan_hash),
++        ("policy_hash", binding.policy_hash, authorization.policy_hash),
++        ("provider", binding.provider, authorization.provider),
++        ("max_items", binding.max_items, authorization.max_items),
++        ("max_bytes", binding.max_bytes, authorization.max_bytes),
++        ("expires_at", binding.expires_at, authorization.expires_at),
++    )
++    for name, b_val, a_val in checks:
++        if b_val != a_val:
++            return f"binding mismatch on {name}"
++    if _set(binding.allowed_accessions) != _set(authorization.allowed_accessions):
++        return "binding mismatch on allowed_accessions"
++    return None
+ 
+ 
+ def _txn_id(binding: CloseGapBinding) -> str:
+@@ -109,395 +113,713 @@
+     )
+ 
+ 
+-def _reject_result(txn: str, reason: str) -> CloseGapResult:
+-    return CloseGapResult(
+-        schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-        txn_id=txn,
+-        status="rejected",
+-        reason=reason,
+-        fetch_events=0,
+-        outcome=None,
+-        resolution=None,
+-        envelope=None,
+-    )
++def _utc_now() -> str:
++    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+ 
+ 
+-def _is_retryable_staging_error(exc: Exception) -> bool:
+-    """FC-804 OPS-02: a staging error is retryable when the adapter said so
+-    (AdapterProcessError.retryable) or the plan reported the provider
+-    unavailable.  Everything else fails immediately."""
+-    from .adapter_process import AdapterProcessError
+-
+-    if isinstance(exc, AdapterProcessError):
+-        return bool(exc.retryable)
+-    if isinstance(exc, RuntimeError) and str(exc).startswith(
+-        ("provider unavailable", "download not authorized")
+-    ):
+-        return False
+-    return False
++class EventLedger:
++    """The four frozen event types with I-02-shared envelope fields.
+ 
++    Four separate structural event streams; ``fetch_events``-style
++    counters are legacy compatibility numbers, never a substitute."""
+ 
+-def _utc_now() -> str:
+-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+-
+-
+-def _actionable_candidates(gap_plan: Any) -> tuple[Any, ...]:
+-    """Return the exact remote candidates an authorized close-gap may fetch.
+-
+-    A same-period amendment is a real freshness gap even when a local filing
+-    already exists, so ``newer_revision`` is actionable alongside ``missing``.
+-    The plan hash binds this ordered set; the acquisition coordinator still
+-    validates provider, accession, caps, and expiry before it fetches bytes.
+-    """
+-    return tuple(gap_plan.missing) + tuple(gap_plan.newer_revision)
+-
+-
+-class CloseGapTransaction:
+-    """FC-801: execute one authorized close-gap download, journaled."""
++    def __init__(self) -> None:
++        self.events: list[dict[str, Any]] = []
+ 
+-    def __init__(
+-        self,
+-        *,
+-        catalog: Any,
+-        coordinator: Any,
+-        writer: CanonicalSourceWriter,
+-        journal: AcquisitionJournal,
+-    ) -> None:
+-        self.catalog = catalog
+-        self.coordinator = coordinator
+-        self.writer = writer
+-        self.journal = journal
+-        # ZR-203: close-gap is a WRITE flow — the writer initializer may
+-        # create the catalog before the read-only resolver reads it.
+-        _ = getattr(self.catalog, "store", None)
+-
+-    def execute(
+-        self,
+-        binding: CloseGapBinding,
+-        request: SourceRequest,
+-    ) -> CloseGapResult:
+-        if not isinstance(binding, CloseGapBinding):
+-            raise TypeError("binding must be a CloseGapBinding")
+-        if not isinstance(request, SourceRequest):
+-            raise TypeError("request must be a SourceRequest")
+-        txn = _txn_id(binding)
+-
+-        def _fail(
+-            reason: str, *, error: str | None = None, error_type: str | None = None
+-        ) -> CloseGapResult:
+-            self.journal.record(
+-                request_id=binding.request_id,
+-                outcome="failed",
+-                reason=reason,
+-                error_type=error_type,
+-                error=error,
+-            )
+-            return CloseGapResult(
+-                schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-                txn_id=txn,
+-                status="failed",
+-                reason=reason,
+-                fetch_events=0,
+-                outcome=None,
+-                resolution=None,
+-                envelope=None,
+-            )
++    def record(self, outcome: str, envelope: dict[str, Any]) -> dict[str, Any]:
++        row = {
++            "schema_version": "1.0",
++            "recorded_at": _utc_now(),
++            "outcome": outcome,
++            **envelope,
++        }
++        self.events.append(row)
++        return row
+ 
+-        def _reject(reason: str) -> CloseGapResult:
+-            return CloseGapResult(
+-                schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-                txn_id=txn,
+-                status="rejected",
+-                reason=reason,
+-                fetch_events=0,
+-                outcome=None,
+-                resolution=None,
+-                envelope=None,
+-            )
++    def counts(self) -> dict[str, int]:
++        base = {
++            "provider_fetch_attempt": 0,
++            "bytes_received": 0,
++            "raw_saved": 0,
++            "registration_succeeded": 0,
++        }
++        for e in self.events:
++            base[e["outcome"]] = base.get(e["outcome"], 0) + 1
++        return base
++
++    def total_bytes_received(self) -> int:
++        return sum(
++            e["chunk_bytes"] for e in self.events if e["outcome"] == "bytes_received"
++        )
+ 
+-        # Step 1: policy binding (DL-03) — fail closed without a snapshot.
+-        try:
+-            snapshot = load_runtime_policy(
+-                self.catalog.config.catalog_dir / "runtime_policy.json"
+-            )
+-        except RuntimePolicyError:
+-            return _reject("no_runtime_policy")
+-        if snapshot.get("policy_hash") != binding.policy_hash:
+-            return _reject("stale_policy_hash")
+-
+-        # Step 2: gap revalidation (DL-03) — metadata only, nothing fetched.
+-        rediscovered = self.coordinator.resolve_or_stage(
+-            SourceRequest(
+-                entity=request.entity,
+-                market=request.market,
+-                security_id=request.security_id,
+-                document_kind=request.document_kind,
+-                form_type=request.form_type,
+-                fiscal_year=request.fiscal_year,
+-                fiscal_period=request.fiscal_period,
+-                language=request.language,
+-                provider=request.provider,
+-                provider_document_id=request.provider_document_id,
+-                as_of_date=request.as_of_date,
+-                mode="latest_as_of",
+-            )
++
++def _reason_result(
++    *,
++    txn: str,
++    status: str,
++    reason: str,
++    gap_items: dict[str, Any] | None = None,
++    processed: int = 0,
++    remaining: int = 0,
++    fetch_events: int = 0,
++    plan_before_hash: str | None = None,
++    plan_in_lock_hash: str | None = None,
++    **extra: Any,
++) -> dict[str, Any]:
++    out: dict[str, Any] = {
++        "schema_version": CLOSE_GAP_SCHEMA_VERSION,
++        "txn_id": txn,
++        "status": status,
++        "reason": reason,
++        "fetch_events": fetch_events,
++        "gap_items": gap_items or {},
++        "processed_count": processed
++        or sum(
++            1 for st in (gap_items or {}).values() if st.get("state") in ("completed",)
++        ),
++        "remaining_count": remaining
++        or sum(
++            1
++            for st in (gap_items or {}).values()
++            if st.get("state")
++            in (
++                "pending_next_batch",
++                "pending_authorized_not_fetched",
++                "raw_saved_registration_pending",
++            )
++        ),
++        "pending_accessions": sorted(
++            cid
++            for cid, st in (gap_items or {}).items()
++            if st.get("state") not in ("completed", "completed_reused")
++        ),
++        "plan_before_lock_hash": plan_before_hash,
++        "plan_in_lock_hash": plan_in_lock_hash,
++    }
++    out.update(extra)
++    return out
++
++
++def _candidate_id(cand: Any) -> str:
++    return str(getattr(cand, "provider_document_id", "") or "")
++
++
++def _candidate_url(cand: Any) -> str:
++    return str(getattr(cand, "source_url", getattr(cand, "url", "")) or "")
++
++
++def _ids(seq) -> list[str]:
++    return [_candidate_id(c) for c in seq]
++
++
++def _actionable(plan: Any) -> tuple[Any, ...]:
++    """D5: missing + newer_revision, already in the D5 batch order."""
++    return tuple(plan.missing) + tuple(plan.newer_revision)
++
++
++def _plan(spec: dict[str, Any], planner: Any, request: Any) -> Any:
++    return planner.build_gap_plan(
++        request_id=request.request_id,
++        as_of_date=request.as_of_date,
++        document_kind=request.document_kind,
++        entity=request.entity,
++        market=request.market,
++        local_handles=list(spec.get("local_handles", [])),
++        remote_candidates=list(spec.get("remote_candidates", [])),
++        provider_error=spec.get("provider_error"),
++        policy_hash=spec.get("policy_hash", ""),
++    )
++
++
++def _blocking_states(plan: Any) -> dict[str, str]:
++    """Explicit per-candidate blocked states (never silently dropped)."""
++    out: dict[str, str] = {}
++    for note in getattr(plan, "ambiguous_candidates", ()):
++        out[str(note.get("id"))] = "blocked_ambiguous"
++    for note in getattr(plan, "conflicting_candidates", ()):
++        out[str(note.get("id"))] = "blocked_conflicting"
++    for note in getattr(plan, "unknown_candidates", ()):
++        out[str(note.get("id"))] = "blocked_unknown_metadata"
++    return out
++
++
++@dataclass
++class _Saved:
++    received_bytes: int = 0
++    failed_reason: str | None = None
++    raw_path: str | None = None
++    sidecar_path: str | None = None
++
++
++def stream_budget_over(
++    *, cumulative_bytes: int, chunk_bytes: int, max_bytes: int
++) -> tuple[bool, int]:
++    """Fail-safe local re-check mirroring validate_stream_budget."""
++    cum = cumulative_bytes + chunk_bytes
++    return cum > max_bytes, cum
++
++
++def run_close_gap_transaction(
++    *,
++    binding: CloseGapBinding,
++    authorization: Any,
++    planner: Any,
++    request: Any,
++    rediscover: Any,
++    stream: Any,
++    registrar: Any,
++    auth_module: Any,
++    ledger: EventLedger,
++    now: str = "2026-07-01T00:00:00Z",
++) -> dict[str, Any]:
++    txn = _txn_id(binding)
++
++    # Step 1: same-value + same-version binding gate (I-03-C face).
++    err = validate_close_gap_binding(binding, authorization)
++    if err is not None:
++        return _reason_result(txn=txn, status="rejected", reason=err)
++
++    # Step 2: pre-lock rediscover (metadata only, nothing fetched).
++    pre = rediscover()
++    plan_before = _plan(pre, planner, request)
++
++    # Deterministic BARRIER seam: fires between the two rediscover
++    # points; default no-op; the harness injects world mutations (G-D5).
++    if _BARRIER_HOOK is not None:
++        _BARRIER_HOOK(txn)
++
++    # Step 3: in-lock rediscover + re-check.
++    inlock = rediscover()
++    if inlock is None:
++        return _reason_result(
++            txn=txn,
++            status="rejected",
++            reason="provider_error:discover_failed",
++            plan_before_hash=plan_before.gap_hash,
+         )
+-        if rediscovered.status is not AcquisitionStatus.GAP:
+-            return _reject(f"gap_revalidated_status:{rediscovered.status.value}")
+-        current_plan = rediscovered.gap_plan
+-        actionable = _actionable_candidates(current_plan)
+-        if not actionable:
+-            # The gap is already closed (local is latest): complete as
+-            # reused with zero fetches — idempotent recovery (DL-09).
+-            return self._complete_reused(
+-                request, txn, binding, reason="gap_already_closed"
+-            )
+-        if current_plan.gap_hash != binding.gap_plan_hash:
+-            return _reject("stale_gap_hash")
++    plan_in = _plan(inlock, planner, request)
+ 
+-        # Step 3: authorize + fetch staging (DL-02).
+-        # The staging request is built per exact actionable candidate: an
+-        # exact request without its fiscal_year would re-resolve an older
+-        # local document as reused and never stage a missing period or a
+-        # same-period newer revision.
+-        missing_candidate = actionable[0]
+-        missing_year = getattr(missing_candidate, "fiscal_year", None)
+-        missing_pdoc = getattr(missing_candidate, "provider_document_id", None)
+-        authorization = build_download_authorization(
+-            request_id=binding.request_id,
+-            gap_plan_hash=binding.gap_plan_hash,
+-            policy_hash=binding.policy_hash,
+-            provider=binding.provider,
+-            allowed_accessions=binding.allowed_accessions,
+-            max_items=binding.max_items,
+-            max_bytes=binding.max_bytes,
+-            expires_at=binding.expires_at,
+-        )
+-        staged_request = SourceRequest(
+-            entity=request.entity,
+-            market=request.market,
+-            security_id=request.security_id,
+-            document_kind=request.document_kind,
+-            form_type=request.form_type
+-            or getattr(missing_candidate, "form_type", None),
+-            fiscal_year=missing_year or request.fiscal_year,
+-            fiscal_period=request.fiscal_period,
+-            language=request.language,
+-            provider=getattr(missing_candidate, "provider", None) or request.provider,
+-            provider_document_id=missing_pdoc or request.provider_document_id,
+-            as_of_date=request.as_of_date,
+-            mode="exact",
+-            allow_download=True,
+-        )
+-        # Step 3 (FC-804 DL-08): single-flight — the fetch+commit phase is
+-        # serialized per transaction across processes.  INSIDE the lock the
+-        # gap is re-checked: the first caller may have just closed it, in
+-        # which case this caller completes as reused with fetch=0 (at most
+-        # one provider fetch + one canonical commit for the same request).
+-        from .lock import CatalogOperationLockedError, _acquisition_mutex
+-
+-        lock_dir = self.catalog.config.catalog_dir / "close_gap_locks"
+-        lock_dir.mkdir(parents=True, exist_ok=True)
+-        lock_path = lock_dir / (txn.rsplit(":", 1)[-1] + ".lock")
+-        lock_timeout = self._lock_timeout_seconds()
+-        try:
+-            with _acquisition_mutex(lock_path, timeout_seconds=lock_timeout):
+-                return self._fetch_and_commit(
+-                    request,
+-                    staged_request,
+-                    authorization,
+-                    txn,
+-                    binding,
+-                    missing_candidate,
+-                )
+-        except CatalogOperationLockedError as exc:
+-            return _fail(
+-                f"close_gap_lock_timeout: {exc}",
+-                error_type="CatalogOperationLockedError",
++    gap_items: dict[str, Any] = {
++        cid: {"state": st, "reason": "not actionable (explicit)"}
++        for cid, st in _blocking_states(plan_in).items()
++    }
++    actionable = _actionable(plan_in)
++
++    if not actionable:
++        for h in getattr(plan_in, "reuse", ()):
++            hid = str(getattr(h, "provider_document_id", "") or "")
++            gap_items.setdefault(
++                hid, {"state": "completed_reused", "reason": "local reusable handle"}
+             )
++        return _reason_result(
++            txn=txn,
++            status="completed",
++            reason="gap_already_closed_or_reused",
++            gap_items=gap_items,
++            processed=len(
++                [st for st in gap_items.values() if st["state"] == "completed_reused"]
++            ),
++            remaining=0,
++            fetch_events=0,
++            plan_before_hash=plan_before.gap_hash,
++            plan_in_lock_hash=plan_in.gap_hash,
++            latest_status=plan_in.latest_status,
++            not_published_plan=plan_in.not_published,
++            provider_unavailable_plan=plan_in.provider_unavailable,
++        )
+ 
+-    def _lock_timeout_seconds(self) -> float:
+-        """Lock wait bound: the adapter timeout plus a small grace."""
+-        timeout = getattr(self.coordinator, "timeout_seconds", None)
+-        if isinstance(timeout, (int, float)) and timeout > 0:
+-            return float(timeout) + 30.0
+-        return 600.0
+-
+-    def _fetch_and_commit(
+-        self,
+-        request,
+-        staged_request,
+-        authorization,
+-        txn: str,
+-        binding,
+-        missing_candidate,
+-    ) -> CloseGapResult:
+-        def _fail(reason, *, error=None, error_type=None):
+-            self.journal.record(
+-                request_id=binding.request_id,
+-                outcome="failed",
+-                reason=reason,
+-                error_type=error_type,
+-                error=error,
+-            )
+-            return CloseGapResult(
+-                schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-                txn_id=txn,
+-                status="failed",
+-                reason=reason,
+-                fetch_events=0,
+-                outcome=None,
+-                resolution=None,
+-                envelope=None,
+-            )
++    if plan_in.gap_hash != binding.gap_plan_hash:
++        # REAL validation exit #1: the receipt is bound to the OLD plan
++        # hash; every candidate of the current plan fails validation.
++        probe = actionable[0]
++        auth_probe = auth_module.validate_download_authorization(
++            authorization,
++            probe,
++            plan_hash=plan_in.gap_hash,
++            now=now,
++            items_already_fetched=0,
++            bytes_already_fetched=0,
++        )
++        gap_items = dict(gap_items)
++        for c in actionable:
++            gap_items[_candidate_id(c)] = {
++                "state": "pending_next_batch",
++                "reason": "stale binding rejected (stale_gap_hash)",
++            }
++        return _reason_result(
++            txn=txn,
++            status="rejected",
++            reason="stale_gap_hash",
++            gap_items=gap_items,
++            fetched=0,
++            processed=0,
++            remaining=len(actionable),
++            fetch_events=0,
++            plan_before_hash=plan_before.gap_hash,
++            plan_in_lock_hash=plan_in.gap_hash,
++            authorization_probe=auth_probe,
++        )
+ 
+-        # Re-check the gap INSIDE the lock (FC-804 DL-08): the first caller
+-        # may have closed it while we waited.
+-        rediscovered = self.coordinator.resolve_or_stage(
+-            SourceRequest(
+-                entity=request.entity,
+-                market=request.market,
+-                security_id=request.security_id,
+-                document_kind=request.document_kind,
+-                form_type=request.form_type,
+-                fiscal_year=request.fiscal_year,
+-                fiscal_period=request.fiscal_period,
+-                language=request.language,
+-                provider=request.provider,
+-                provider_document_id=request.provider_document_id,
+-                as_of_date=request.as_of_date,
+-                mode="latest_as_of",
+-            )
++    # Step 4: bounded batch (D5): actual cap = min(max_items, MAX_BATCH_SIZE).
++    batch_cap = min(int(binding.max_items), MAX_BATCH_SIZE)
++    batch = list(actionable[:batch_cap])
++    later = list(actionable[batch_cap:])
++    for cid in _ids(later):
++        gap_items.setdefault(
++            cid, {"state": "pending_next_batch", "reason": "beyond this batch cap"}
++        )
++
++    bytes_used = 0
++    fetch_attempt = 0
++    abort_reason: str | None = None
++    for cand in batch:
++        cid = _candidate_id(cand)
++        if abort_reason is not None:
++            gap_items[cid] = {
++                "state": "pending_authorized_not_fetched",
++                "reason": f"txn aborted earlier: {abort_reason}",
++            }
++            continue
++
++        # REAL validation exit #2: per-candidate authorization.
++        auth_err = auth_module.validate_download_authorization(
++            authorization,
++            cand,
++            plan_hash=plan_in.gap_hash,
++            now=now,
++            items_already_fetched=0,
++            bytes_already_fetched=bytes_used,
++        )
++        if auth_err is not None:
++            gap_items[cid] = {
++                "state": "pending_authorized_not_fetched",
++                "reason": auth_err,
++            }
++            abort_reason = auth_err
++            continue
++
++        fetch_attempt += 1
++        ledger.record(
++            "provider_fetch_attempt",
++            {
++                "txn_id": txn,
++                "request_id": binding.request_id,
++                "provider": getattr(cand, "provider", ""),
++                "provider_document_id": cid,
++                "source_url": _candidate_url(cand),
++                "authorization_receipt_hash": authorization.receipt_hash,
++                "binding_plan_hash": plan_in.gap_hash,
++                "declared_remote_size": getattr(cand, "remote_size", None),
++            },
+         )
+-        if rediscovered.status is AcquisitionStatus.GAP:
+-            current = rediscovered.gap_plan
+-            if not _actionable_candidates(current):
+-                # single-flight win: the other caller downloaded it
+-                return self._complete_reused(
+-                    request, txn, binding, reason="gap_closed_by_concurrent"
+-                )
+-            if current.gap_hash != binding.gap_plan_hash:
+-                return _reject_result(txn, "stale_gap_hash")
+ 
+-        # FC-804 OPS-02: bounded retry for retryable staging failures.
+-        attempts = 0
+-        backoff = 1.0
+-        while True:
+-            attempts += 1
+-            try:
+-                staged = self.coordinator.resolve_or_stage(
+-                    staged_request, authorization=authorization
++        cand_request = replace(request, provider_document_id=cid)
++        saved = _stream_and_save(
++            txn,
++            cand,
++            binding,
++            ledger,
++            registrar,
++            stream,
++            cand_request,
++            bytes_used=bytes_used,
++        )
++        bytes_used += saved.received_bytes
++        if saved.failed_reason is None:
++            reg = registrar.register(
++                raw_path=Path(saved.raw_path),
++                sidecar_path=Path(saved.sidecar_path),
++                request=cand_request,
++            )
++            if reg.get("ok"):
++                ledger.record(
++                    "registration_succeeded",
++                    {
++                        "txn_id": txn,
++                        "request_id": binding.request_id,
++                        "provider": getattr(cand, "provider", ""),
++                        "provider_document_id": cid,
++                        "canonical_path": saved.raw_path,
++                        "content_sha256": reg["content_sha256"],
++                        "gates": reg["gates"],
++                        "idempotent": bool(reg.get("idempotent")),
++                    },
++                )
++                gap_items[cid] = {"state": "completed", "reason": "saved+registered"}
++            else:
++                gap_items[cid] = {
++                    "state": "raw_saved_registration_pending",
++                    "reason": f"registration: {reg['reason']}",
++                }
++        elif (
++            saved.failed_reason == "byte_cap_exceeded_in_stream"
++            or saved.failed_reason.startswith("provider_error")
++        ):
++            gap_items[cid] = {
++                "state": "pending_authorized_not_fetched",
++                "reason": saved.failed_reason,
++            }
++            abort_reason = saved.failed_reason
++            idx = batch.index(cand)
++            for rest in batch[idx + 1 :]:
++                gap_items.setdefault(
++                    _candidate_id(rest),
++                    {
++                        "state": "pending_authorized_not_fetched",
++                        "reason": "txn aborted earlier (cap/provided failure)",
++                    },
+                 )
+                 break
+-            except Exception as exc:
+-                if str(exc).startswith("download not authorized"):
+-                    # DL-02: authorization failures are REJECTIONS.
+-                    return _reject_result(txn, str(exc))
+-                retryable = _is_retryable_staging_error(exc)
+-                if attempts >= 3 or not retryable:
+-                    # DL-07 / LT-10: never committed, staging cleaned.  The
+-                    # staging dir is named by the STAGING request's id.
+-                    self._cleanup_staging(staged_request.request_id)
+-                    return _fail(str(exc), error_type=type(exc).__name__)
+-                import time
+-
+-                time.sleep(backoff)
+-                backoff *= 2.0
+-
+-        if staged.status is AcquisitionStatus.REUSED:
+-            return self._complete_reused(
+-                request, txn, binding, reason="reused_after_discovery"
+-            )
+-        if staged.status is not AcquisitionStatus.STAGED:
+-            return _reject_result(txn, f"stage_status:{staged.status.value}")
++        else:  # defensive: unknown failure face -> keep explicit
++            gap_items[cid] = {
++                "state": "pending_authorized_not_fetched",
++                "reason": saved.failed_reason,
++            }
++            abort_reason = saved.failed_reason
++
++    completed = sum(
++        1
++        for st in gap_items.values()
++        if st.get("state") in ("completed", "completed_reused")
++    )
++    pending = sum(
++        1
++        for st in gap_items.values()
++        if st.get("state")
++        in (
++            "pending_next_batch",
++            "pending_authorized_not_fetched",
++            "raw_saved_registration_pending",
++        )
++    )
++    if pending == 0 and completed == len(actionable) + len(
++        [st for st in gap_items.values() if st.get("state") == "completed_reused"]
++    ):
++        status, reason = "completed", "gap_closed_downloaded"
++    else:
++        status = "completed_partial" if completed else "failed"
++        reason = abort_reason or "remaining_gap > 0 (explicit pending retained)"
++    return _reason_result(
++        txn=txn,
++        status=status,
++        reason=reason,
++        gap_items=gap_items,
++        processed=completed,
++        remaining=pending,
++        fetch_events=fetch_attempt,
++        plan_before_hash=plan_before.gap_hash,
++        plan_in_lock_hash=plan_in.gap_hash,
++    )
++
++
++def _stream_and_save(
++    txn: str,
++    cand: Any,
++    binding: CloseGapBinding,
++    ledger: EventLedger,
++    registrar: Any,
++    stream: Any,
++    request: Any,
++    *,
++    bytes_used: int = 0,
++) -> _Saved:
++    """Stream chunks; EVERY received chunk recorded (including the one
++    that pushes the cumulative past the cap); raw+sidecar saved only
++    with no over-cap; over_cap chunk stops the stream."""
++    saved = _Saved()
++    buf = bytearray()
++    cum = bytes_used
++    base = Path(registrar.raw_root)
++    try:
++        for chunk_index, chunk in enumerate(stream(cand)):
++            over, cum = stream_budget_over(
++                cumulative_bytes=cum,
++                chunk_bytes=len(chunk),
++                max_bytes=binding.max_bytes,
++            )
++            row = {
++                "txn_id": txn,
++                "request_id": binding.request_id,
++                "provider": getattr(cand, "provider", ""),
++                "provider_document_id": _candidate_id(cand),
++                "source_url": _candidate_url(cand),
++                "chunk_index": chunk_index,
++                "chunk_bytes": len(chunk),
++                "cumulative_bytes": cum,
++                "max_bytes": binding.max_bytes,
++                "over_cap": over,
++                "stream_stopped": over,
++            }
++            ledger.record("bytes_received", row)
++            buf.extend(chunk)
++            if over:
++                saved.received_bytes = cum
++                saved.failed_reason = "byte_cap_exceeded_in_stream"
++                return saved
++    except Exception as exc:  # provider stream failure, truthfully kept
++        saved.received_bytes = cum
++        saved.failed_reason = f"provider_error:{type(exc).__name__}:{exc}"
++        return saved
++    content = bytes(buf)
++    sha = hashlib.sha256(content).hexdigest()
++    raw = base / f"{_candidate_id(cand)}_{sha[:12]}.pdf"
++    sidecar = base / (raw.name + ".source.json")
++    receipt = {
++        "schema_version": "1.0",
++        "retrieved_at": _utc_now(),
++        "provider": getattr(cand, "provider", ""),
++        "provider_document_id": _candidate_id(cand),
++        "source_url": _candidate_url(cand),
++        "content_sha256": sha,
++        "byte_size": len(content),
++    }
++    raw.parent.mkdir(parents=True, exist_ok=True)
++    raw.write_bytes(content)
++    sidecar.write_text(
++        json.dumps({"receipt": receipt}, ensure_ascii=False, sort_keys=True, indent=2)
++        + "\n",
++        encoding="utf-8",
++    )
++    saved.received_bytes = len(content)
++    saved.raw_path = str(raw)
++    saved.sidecar_path = str(sidecar)
++    ledger.record(
++        "raw_saved",
++        {
++            "txn_id": txn,
++            "request_id": binding.request_id,
++            "provider": getattr(cand, "provider", ""),
++            "provider_document_id": _candidate_id(cand),
++            "source_url": _candidate_url(cand),
++            "canonical_path": str(raw),
++            "content_sha256": sha,
++            "byte_size": len(content),
++            "over_cap_received": False,
++        },
++    )
++    return saved
++
++
++# ---------------------------------------------------------------------------
++# Registration face: a minimal store shell implementing the R1-R7 gate
++# order that I-02-C froze for register_existing_raw (REFERENCE, not a
++# second production registry):
++#   R1 root policy reusable; R2 root containment; R3 adjacent sidecar at
++#   <raw>.source.json; R4 provenance completeness (no filename infer);
++#   R5 bytes recompute (sha256+size vs sidecar receipt); R6 explicit
++#   request identity agreement; R7 registered docs must be active
++#   (retired/quarantined refused; idempotent success when already active).
++# ---------------------------------------------------------------------------
++
++
++class MinimalRegistrar:
++    """tmp-isolated sqlite store shell (NOT a production registry; feeds
++    only the attempt's case increments; fakes stay inside A)."""
++
++    REGISTERED = "registered"
++
++    def __init__(
++        self, raw_root: Path, *, root_policy: dict[str, Any], store_path: Path
++    ) -> None:
++        self.raw_root = Path(raw_root)
++        self.root_policy = dict(root_policy)
++        self.store_path = Path(store_path)
++        conn = sqlite3.connect(self.store_path)
++        conn.execute(
++            "CREATE TABLE IF NOT EXISTS documents ("
++            "content_sha256 TEXT PRIMARY KEY, status TEXT NOT NULL)"
++        )
++        conn.commit()
++        conn.close()
+ 
+-        # Step 4: canonical commit (DL-09 — idempotent by content hash).
++    def _conn(self) -> sqlite3.Connection:
++        conn = sqlite3.connect(self.store_path)
++        conn.execute(
++            "CREATE TABLE IF NOT EXISTS documents ("
++            "content_sha256 TEXT PRIMARY KEY, status TEXT NOT NULL)"
++        )
++        return conn
++
++    def register(
++        self, *, raw_path: Path, sidecar_path: Path, request: Any
++    ) -> dict[str, Any]:
++        gates: dict[str, bool] = {}
++
++        def gate(name: str, ok: bool, reason: str) -> dict[str, Any] | None:
++            gates[name] = bool(ok)
++            if not ok:
++                return {
++                    "ok": False,
++                    "reason": f"registration: {reason}",
++                    "gates": gates,
++                }
++            return None
++
++        # R1 root policy
++        if (
++            stop := gate(
++                "R1_root_policy_reusable",
++                bool(self.root_policy.get("reusable_for_filing")),
++                "root_not_reusable",
++            )
++        ) is not None:
++            return stop
++        # R2 containment
+         try:
+-            imported = self.writer.import_staged(
+-                request, staged.candidate, staged.receipt
+-            )
+-        except Exception as exc:
+-            return _fail(
+-                f"canonical_import_failed: {type(exc).__name__}: {exc}",
+-                error_type=type(exc).__name__,
+-            )
+-        outcome = (
+-            "downloaded_new"
+-            if imported.status.value == "imported_new"
+-            else "deduplicated_after_download"
+-        )
+-        self.journal.record(
+-            request_id=binding.request_id,
+-            outcome=outcome,
+-            adapter_name=staged.adapter_name,
+-            candidate_id=staged.candidate.candidate_id,
+-            provider=staged.candidate.provider,
+-            provider_document_id=staged.candidate.provider_document_id,
+-            source_url=staged.candidate.source_url,
+-            content_sha256=staged.receipt.content_sha256,
+-            reason=staged.reason,
+-        )
+-        return self._finalize(request, txn, outcome, fetch_events=1)
+-
+-    # -- helpers ---------------------------------------------------------------
+-
+-    def _complete_reused(self, request, txn, binding, *, reason: str):
+-        self.journal.record(
+-            request_id=binding.request_id,
+-            outcome="reused_before_download",
+-            reason=reason,
+-        )
+-        return self._finalize(request, txn, "reused_before_download", fetch_events=0)
+-
+-    def _finalize(self, request, txn, outcome: str, *, fetch_events: int):
+-        """Step 5: re-resolve and attach the FC-704 envelope (+ FC-902 bundle).
+-
+-        LT-10: ``completed`` is only claimed when the document actually
+-        resolves — a re-resolve that misses means the close did NOT happen.
+-        """
+-        from .resolver import ResolutionStatus
+-
+-        resolution = SourceResolver(self.catalog).resolve(request)
+-        if resolution.status not in (
+-            ResolutionStatus.REUSED_EXACT,
+-            ResolutionStatus.REUSED_EQUIVALENT,
+-        ):
+-            return CloseGapResult(
+-                schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-                txn_id=txn,
+-                status="failed",
+-                reason=f"re_resolve_did_not_reuse:{resolution.status.value}",
+-                fetch_events=fetch_events,
+-                outcome=None,
+-                resolution=resolution.to_dict(),
+-                envelope=None,
+-            )
+-        envelope = build_resolution_envelope(
+-            resolution,
+-            journal=self.journal,
+-            bundle=self.catalog.bundle_for_resolution(resolution),
+-            store=self.catalog.store,
+-            project_root=self.catalog.config.project_root,
+-        )
+-        return CloseGapResult(
+-            schema_version=CLOSE_GAP_SCHEMA_VERSION,
+-            txn_id=txn,
+-            status="completed",
++            rp = Path(raw_path).resolve()
++            in_root = str(rp).startswith(str(Path(self.raw_root).resolve()))
++        except OSError:
++            in_root = False
++        if (
++            stop := gate("R2_root_containment", in_root, "raw_out_of_root")
++        ) is not None:
++            return stop
++        raw_path = Path(raw_path)
++        # R3 adjacent sidecar
++        sp = Path(sidecar_path)
++        if (
++            stop := gate(
++                "R3_sidecar_adjacent",
++                sp.exists() and sp.name == raw_path.name + ".source.json",
++                "missing_sidecar",
++            )
++        ) is not None:
++            return stop
++        # R4 provenance completeness (never inferred from the filename)
++        try:
++            data = json.loads(sp.read_text(encoding="utf-8"))
++            receipt = data["receipt"]
++            need = (
++                "provider",
++                "provider_document_id",
++                "content_sha256",
++                "byte_size",
++                "source_url",
++            )
++            complete = all(receipt.get(k) for k in need)
++        except Exception:
++            complete = False
++            receipt = {}
++        if (
++            stop := gate("R4_provenance_complete", complete, "provenance_incomplete")
++        ) is not None:
++            return stop
++        # R5 bytes recompute against CURRENT bytes
++        blob = raw_path.read_bytes()
++        sha = hashlib.sha256(blob).hexdigest()
++        ok = sha == receipt.get("content_sha256") and len(blob) == int(
++            receipt.get("byte_size", -2)
++        )
++        if (stop := gate("R5_bytes_recompute", ok, "bytes_mismatch")) is not None:
++            return stop
++        # R6 explicit request identity (never inferred)
++        same = str(request.provider or "") == receipt.get("provider") and str(
++            request.provider_document_id or ""
++        ) == receipt.get("provider_document_id")
++        if (
++            stop := gate("R6_identity_contract", same, "identity_contract")
++        ) is not None:
++            return stop
++        # R7 registered status
++        conn = self._conn()
++        try:
++            row = conn.execute(
++                "SELECT status FROM documents WHERE content_sha256=?",
++                (sha,),
++            ).fetchone()
++            if row is not None and row[0] != self.REGISTERED:
++                return {
++                    "ok": False,
++                    "reason": f"registration: status_not_active ({row[0]})",
++                    "gates": gates,
++                }
++            idempotent = row is not None
++            if row is None:
++                conn.execute(
++                    "INSERT INTO documents(content_sha256, status) VALUES(?,?)",
++                    (sha, self.REGISTERED),
++                )
++            conn.commit()
++        finally:
++            conn.close()
++        return {
++            "ok": True,
++            "reason": None,
++            "gates": gates,
++            "content_sha256": sha,
++            "idempotent": idempotent,
++        }
++
++
++def resume_registration(
++    *,
++    binding: CloseGapBinding,
++    authorization: Any,
++    registrar: Any,
++    request: Any,
++    auth_module: Any,
++    ledger: EventLedger,
++    recovery_raw_path: str,
++    recovery_sidecar_path: str,
++    now: str = "2026-07-01T00:00:00Z",
++) -> dict[str, Any]:
++    """G-D8 retry face: ONLY the missing registration is restored.
++
++    A prior ``raw_saved`` event for this binding is required; the
++    provider stream is NEVER called (fetch stays 0); the R1-R7 gates
++    re-verify CURRENT bytes against the durable sidecar; success emits
++    registration_succeeded with gates R1..R7. The recovery location is
++    given EXPLICITLY by the caller's manifest (I-02-C D-W02: never
++    re-derived from file/dir names)."""
++    txn = _txn_id(binding)
++    err = validate_close_gap_binding(binding, authorization)
++    if err is not None:
++        return _reason_result(txn=txn, status="rejected", reason=err)
++    prior_raw_saved = [e for e in ledger.events if e["outcome"] == "raw_saved"]
++    if not prior_raw_saved:
++        return _reason_result(
++            txn=txn,
++            status="failed",
+             reason=(
+-                "gap_closed_downloaded"
+-                if fetch_events
+-                else "gap_already_closed_or_reused"
++                "resume_refused: no prior raw_saved evidence; re-download "
++                "requires a NEW authorization, never a silent one"
+             ),
+-            fetch_events=fetch_events,
+-            outcome=outcome,
+-            resolution=resolution.to_dict(),
+-            envelope=envelope.to_dict(),
+         )
+-
+-    def _cleanup_staging(self, request_id: str) -> None:
+-        """Auditable staging cleanup (DL-07): remove the request's staging
+-        directory so invalid bytes never linger."""
+-        staging_root = self.coordinator.staging_root
+-        request_dir = staging_root / request_id.rsplit(":", 1)[-1]
+-        if request_dir.is_dir():
+-            shutil.rmtree(request_dir, ignore_errors=True)
++    reg = registrar.register(
++        raw_path=Path(recovery_raw_path),
++        sidecar_path=Path(recovery_sidecar_path),
++        request=request,
++    )
++    if reg.get("ok"):
++        entry = prior_raw_saved[-1]
++        ledger.record(
++            "registration_succeeded",
++            {
++                "txn_id": txn,
++                "request_id": binding.request_id,
++                "provider": entry.get("provider", ""),
++                "provider_document_id": entry.get("provider_document_id", ""),
++                "canonical_path": recovery_raw_path,
++                "content_sha256": reg["content_sha256"],
++                "gates": reg["gates"],
++                "idempotent": bool(reg.get("idempotent")),
++            },
++        )
++        return _reason_result(
++            txn=txn,
++            status="completed",
++            reason="registration_recovered_fetch0",
++            gap_items={
++                entry.get("provider_document_id", ""): {
++                    "state": "completed",
++                    "reason": "registered (recovered, fetch=0)",
++                }
++            },
++            processed=1,
++            remaining=0,
++            fetch_events=0,
++            seed_gap_hash=binding.gap_plan_hash,
++        )
++    return _reason_result(
++        txn=txn, status="failed", reason=reg["reason"], fetch_events=0
++    )
+```

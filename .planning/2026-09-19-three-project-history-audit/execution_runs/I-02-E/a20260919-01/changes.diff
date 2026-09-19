@@ -1,0 +1,2516 @@
+# I-02-E changes.diff — iso/override (CW4) vs prod originals
+
+## canonical_writer.py
+```diff
+--- prod/canonical_writer.py
++++ attempt/iso/override/canonical_writer.py
+@@ -4,25 +4,69 @@
+ 
+ from dataclasses import dataclass
+ from enum import Enum
++import base64
+ import hashlib
++import json
+ import os
+ from pathlib import Path
+ import re
+ import shutil
++import time
+ import unicodedata
+ from typing import Any
+ 
+ from company_wiki.source_contract import source_id_for_sha256
+ 
+ from .acquisition import DownloadCandidate, DownloadReceipt
++from .acquisition_journal import AcquisitionJournal
+ from .lock import CatalogOperationLock
++from .policy import _effective_reusable
+ from .resolver import ResolutionResult, ResolutionStatus, SourceRequest, SourceResolver
+ from .scanner import scan_catalog, v2_scan_shadow_from_snapshot
+ from .service import SourceCatalog
+ from .store import canonical_json
+ 
+ 
++def _w02e_inject(point: str, payload: dict) -> None:
++    """I-02-E fault-injection seam (W02E-P1 five durable boundaries).
++
++    W02E_INJECT must be ``<point>:<mode>``:
++    - ``raise``  — controlled exception raised AFTER the stage row is fsynced
++      (the resume logic is verified against a genuine persisted boundary).
++    - ``pause``  — a checkpoint marker is written to W02E_CHECKPOINT_DIR and
++      the process freezes in a sleep loop, so the case driver can snapshot
++      the durable state and hard-kill the recorded child PID (true crash).
++    Unset env -> strict no-op (production semantics untouched)."""
++    spec = os.environ.get("W02E_INJECT")
++    if not spec:
++        return
++    point_name, _, mode = spec.partition(":")
++    if point_name != point:
++        return
++    marker = dict(payload)
++    marker["point"] = point
++    base = os.environ.get("W02E_CHECKPOINT_DIR")
++    if base:
++        Path(base).mkdir(parents=True, exist_ok=True)
++        (Path(base) / ("checkpoint." + point + ".json")).write_text(
++            canonical_json(marker), encoding="utf-8"
++        )
++    if mode == "pause":
++        stop = Path(base or ".") / "w02e_release"
++        while True:
++            if stop.is_file():
++                raise RuntimeError(f"W02E released after checkpoint at {point}")
++            time.sleep(0.02)
++    if mode != "raise":
++        raise ValueError(f"W02E_INJECT unsupported mode: {mode!r}")
++    raise RuntimeError(f"W02E injected failure at stage boundary {point}")
++
++
+ CANONICAL_IMPORT_SCHEMA_VERSION = "1.0"
++# I-02-C (D-W02 supplement): recovery-source marker carried on
++# register_existing_raw results so callers can tell an on-disk
++# registration from a download import without re-parsing errors.
++EXISTING_RAW_RECOVERY_SOURCE = "existing_raw"
+ _INVALID_WINDOWS_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
+ _SAFE_EXTENSION = re.compile(r"^\.[a-z0-9]{1,10}$")
+ _RESERVED_WINDOWS_NAMES = {
+@@ -42,6 +86,9 @@
+ class CanonicalImportStatus(str, Enum):
+     IMPORTED_NEW = "imported_new"
+     DEDUPLICATED_AFTER_DOWNLOAD = "deduplicated_after_download"
++    # I-02-C: bytes recovered from an already-on-disk canonical raw with a
++    # verified durable sidecar receipt (no download was performed).
++    REGISTERED_EXISTING_RAW = "registered_existing_raw"
+ 
+ 
+ @dataclass(frozen=True)
+@@ -54,6 +101,7 @@
+     canonical_path: str
+     provenance_path: str | None
+     resolution: ResolutionResult
++    recovery_source: str | None = None  # I-02-C: "existing_raw" on recovery
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return {
+@@ -64,6 +112,7 @@
+             "content_sha256": self.content_sha256,
+             "canonical_path": self.canonical_path,
+             "provenance_path": self.provenance_path,
++            "recovery_source": self.recovery_source,
+             "resolution": self.resolution.to_dict(),
+         }
+ 
+@@ -114,14 +163,44 @@
+     return by_mime.get(receipt.mime_type, ".bin")
+ 
+ 
++def dedup_exact_request(
++    request: SourceRequest, candidate: DownloadCandidate
++) -> SourceRequest:
++    """Exact-identity resolve request: the DOWNLOAD's own provider identity."""
++    return SourceRequest(
++        entity=request.entity,
++        market=request.market,
++        security_id=request.security_id,
++        document_kind=request.document_kind,
++        form_type=request.form_type or candidate.form_type,
++        fiscal_year=request.fiscal_year or candidate.fiscal_year,
++        fiscal_period=request.fiscal_period or candidate.fiscal_period,
++        language=request.language or candidate.language,
++        provider=candidate.provider,
++        provider_document_id=candidate.provider_document_id,
++        as_of_date=request.as_of_date,
++        allow_download=request.allow_download,
++    )
++
++
+ class CanonicalSourceWriter:
+     """Own canonical paths, immutable provenance, hash reuse, and catalog registration."""
+ 
+-    def __init__(self, catalog: SourceCatalog, *, staging_root: Path | None = None):
++    def __init__(
++        self,
++        catalog: SourceCatalog,
++        *,
++        staging_root: Path | None = None,
++        stage_journal: AcquisitionJournal | None = None,
++    ):
+         if not isinstance(catalog, SourceCatalog):
+             raise TypeError("catalog must be SourceCatalog")
+         if staging_root is not None and not isinstance(staging_root, Path):
+             raise TypeError("staging_root must be pathlib.Path or null")
++        if stage_journal is not None and not isinstance(
++            stage_journal, AcquisitionJournal
++        ):
++            raise TypeError("stage_journal must be AcquisitionJournal or null")
+         company_roots = tuple(
+             root for root in catalog.config.roots if root.kind == "company_raw"
+         )
+@@ -132,12 +211,57 @@
+         self.staging_root = (
+             staging_root or catalog.config.catalog_dir / "staging"
+         ).resolve(strict=False)
++        # I-02-E: optional durable per-stage commit journal (fsync BEFORE the
++        # next stage mutates anything).  Null = I-02-D semantics, byte-identical.
++        self.stage_journal = stage_journal
++
++    # ------------------------------------------------------------------
++    # I-02-E: durable stage evidence + restart selection helpers.
++    # ------------------------------------------------------------------
++    def _sidecar_bytes(
++        self,
++        request: SourceRequest,
++        candidate: DownloadCandidate,
++        receipt: DownloadReceipt,
++    ) -> bytes:
++        """The EXACT bytes ``_write_provenance`` will persist — persisted in
++        the stage_staged_verified journal row so a crash anywhere before the
++        sidecar write can rebuild the sidecar WITHOUT guessing any field
++        (capture time included: it comes from the durable receipt)."""
++        payload = self._provenance_payload(request, candidate, receipt)
++        return (canonical_json(payload) + "\n").encode("utf-8")
++
++    def _stage(
++        self,
++        outcome: str,
++        payload: dict[str, Any],
++        *,
++        request: SourceRequest,
++        candidate: DownloadCandidate,
++        receipt: DownloadReceipt,
++        canonical_path: str | None = None,
++    ) -> None:
++        if self.stage_journal is None:
++            return
++        self.stage_journal.record(
++            request_id=request.request_id,
++            provider=candidate.provider,
++            provider_document_id=candidate.provider_document_id,
++            source_url=candidate.source_url,
++            content_sha256=receipt.content_sha256,
++            canonical_path=canonical_path,
++            outcome=outcome,
++            reason="w02e_durable_stage_evidence",
++            payload=payload,
++        )
+ 
+     def import_staged(
+         self,
+         request: SourceRequest,
+         candidate: DownloadCandidate,
+         receipt: DownloadReceipt,
++        *,
++        resume: dict[str, Any] | None = None,
+     ) -> CanonicalImportResult:
+         if not isinstance(request, SourceRequest):
+             raise TypeError("request must be SourceRequest")
+@@ -145,28 +269,217 @@
+             raise TypeError("candidate must be DownloadCandidate")
+         if not isinstance(receipt, DownloadReceipt):
+             raise TypeError("receipt must be DownloadReceipt")
+-        staged = self._validate_staged(request, candidate, receipt)
+         with CatalogOperationLock(
+             self.catalog.config.catalog_dir,
+             operation="canonical_import",
+         ):
++            if resume is not None:
++                return self._import_staged_resumed(request, candidate, receipt, resume)
++            return self._import_staged_fresh(request, candidate, receipt)
++
++    def _import_staged_fresh(
++        self,
++        request: SourceRequest,
++        candidate: DownloadCandidate,
++        receipt: DownloadReceipt,
++    ) -> CanonicalImportResult:
++        staged = self._validate_staged(request, candidate, receipt)
++        # I-02-E S1 (B1): the durable sidecar bytes are committed (fsync)
++        # BEFORE the raw rename, so a crash after this row can rebuild the
++        # sidecar WITHOUT guessing any field (capture time rides the
++        # durable receipt).
++        sidecar_bytes = self._sidecar_bytes(request, candidate, receipt)
++        sidecar_b64 = base64.b64encode(sidecar_bytes).decode("ascii")
++        self._stage(
++            "stage_staged_verified",
++            {
++                "staged_path": str(staged.resolve()),
++                "byte_size": receipt.byte_size,
++                "sidecar_bytes_b64": sidecar_b64,
++                "receipt_json": canonical_json(receipt.to_dict()),
++                "candidate_json": canonical_json(candidate.to_dict()),
++                "sidecar_path": None,
++            },
++            request=request,
++            candidate=candidate,
++            receipt=receipt,
++        )
++        _w02e_inject(
++            "staged_verified",
++            {"staged_path": str(staged), "content_sha256": receipt.content_sha256},
++        )
++        self._reactivate_if_retired(receipt.content_sha256)
++        existing = self._existing_original(receipt.content_sha256)
++        if existing is not None:
++            # I-02-D (bytes-for-bytes carried over): dedup success is only
++            # reportable after the exact resolve PROVES the DOWNLOAD's own
++            # provider identity at the same canonical path.  The staging
++            # file is removed only AFTER that proof succeeds.
++            exact_request = dedup_exact_request(request, candidate)
++            resolution = SourceResolver(self.catalog).resolve(exact_request)
++            if resolution.status is not ResolutionStatus.REUSED_EXACT:
++                raise CanonicalImportError(
++                    "canonical file was written but exact provider identity did not resolve"
++                )
++            match = resolution.matches[0] if resolution.matches else None
++            if (
++                match is None
++                or getattr(match, "content_sha256", None) != receipt.content_sha256
++                or Path(match.canonical_path) != Path(existing).resolve()
++            ):
++                raise CanonicalImportError(
++                    "exact resolve returned a different identity than the "
++                    "deduplicated target (exact_resolve_identity_mismatch)"
++                )
++            self._stage(
++                "stage_qualified",
++                {
++                    "import_status": "deduplicated_after_download",
++                    "source_id": source_id_for_sha256(receipt.content_sha256),
++                    "canonical_path": str(Path(existing).resolve()),
++                },
++                request=request,
++                candidate=candidate,
++                receipt=receipt,
++                canonical_path=str(Path(existing).resolve()),
++            )
++            _w02e_inject(
++                "qualified",
++                {
++                    "import_status": "deduplicated_after_download",
++                    "source_id": source_id_for_sha256(receipt.content_sha256),
++                    "canonical_path": str(Path(existing).resolve()),
++                },
++            )
++            self._remove_staged(staged)
++            return CanonicalImportResult(
++                schema_version=CANONICAL_IMPORT_SCHEMA_VERSION,
++                status=CanonicalImportStatus.DEDUPLICATED_AFTER_DOWNLOAD,
++                request_id=request.request_id,
++                source_id=source_id_for_sha256(receipt.content_sha256),
++                content_sha256=receipt.content_sha256,
++                canonical_path=str(existing),
++                provenance_path=None,
++                resolution=resolution,
++            )
++
++        destination = self._destination(request, candidate, receipt)
++        destination.parent.mkdir(parents=True, exist_ok=True)
++        if destination.exists():
++            if _hash_file(destination) != receipt.content_sha256:
++                destination = destination.with_name(
++                    destination.stem
++                    + "__"
++                    + receipt.content_sha256[:12]
++                    + destination.suffix
++                )
++            if (
++                destination.exists()
++                and _hash_file(destination) != receipt.content_sha256
++            ):
++                raise CanonicalImportError(
++                    "canonical filename collision after hash suffix"
++                )
++        if not destination.exists():
++            self._atomic_copy(staged, destination, receipt)
++        # I-02-E S2 (B2 window): the canonical raw rename is durable; the
++        # row is fsynced BEFORE the sidecar write.  sidecar bytes ride the
++        # row so a later missing sidecar is rebuildable without guessing.
++        self._stage(
++            "stage_raw_saved",
++            {
++                "canonical_path": str(destination.resolve()),
++                "byte_size": receipt.byte_size,
++                "sidecar_bytes_b64": sidecar_b64,
++            },
++            request=request,
++            candidate=candidate,
++            receipt=receipt,
++            canonical_path=str(destination.resolve()),
++        )
++        _w02e_inject(
++            "raw_saved",
++            {
++                "canonical_path": str(destination),
++                "content_sha256": receipt.content_sha256,
++            },
++        )
++        provenance = destination.with_name(destination.name + ".source.json")
++        self._write_provenance(provenance, request, candidate, receipt)
++        self._stage(
++            "stage_provenance_saved",
++            {
++                "sidecar_path": str(provenance.resolve()),
++                "sidecar_sha256": _hash_file(provenance),
++                "content_sha256": receipt.content_sha256,
++            },
++            request=request,
++            candidate=candidate,
++            receipt=receipt,
++            canonical_path=str(destination.resolve()),
++        )
++        _w02e_inject(
++            "provenance_saved",
++            {"canonical_path": str(destination), "sidecar_path": str(provenance)},
++        )
++        return self._scan_gates_and_qualified(
++            request,
++            candidate,
++            receipt,
++            destination,
++            provenance,
++            staged,
++            skip_scan=False,
++        )
++
++    def _import_staged_resumed(
++        self,
++        request: SourceRequest,
++        candidate: DownloadCandidate,
++        receipt: DownloadReceipt,
++        resume: dict[str, Any],
++    ) -> CanonicalImportResult:
++        """I-02-E: restart consumes ONLY durable stage evidence; the first
++        UNfinished stage is run again, completed stages' bytes untouched."""
++        payload_b64 = resume.get("sidecar_payload_b64")
++        raw_saved = bool(resume.get("raw_saved"))
++        # N3 policy epoch: resume re-qualifies against the CURRENT root
++        # policy — never against the old receipt's era.
++        if not _effective_reusable(self.company_root, self.catalog.config):
++            raise CanonicalImportError(
++                "resume_policy_epoch_refused: the target company_raw root is "
++                "not reusable_for_filing anymore; resume re-qualifies and "
++                "does not reuse the interrupted attempt's receipt"
++            )
++        staged = None
++        canonical_path = None
++        if not raw_saved:
++            if not resume.get("staged_file_present"):
++                # N1b: durable S2 row exists but the canonical raw is gone and
++                # no staged file remains -> cannot resume without either a
++                # re-download (forbidden) or guessing a capture; block.
++                raise CanonicalImportError(
++                    "resume_raw_file_missing: stage_raw_saved names a canonical "
++                    "raw that is gone and no staged file remains; recovery is "
++                    "refused, no re-download, evidence preserved"
++                )
++            staged = self._validate_staged(request, candidate, receipt)
+             self._reactivate_if_retired(receipt.content_sha256)
+             existing = self._existing_original(receipt.content_sha256)
+             if existing is not None:
+-                self._remove_staged(staged)
+-                resolution = SourceResolver(self.catalog).resolve(request)
+-                return CanonicalImportResult(
+-                    schema_version=CANONICAL_IMPORT_SCHEMA_VERSION,
+-                    status=CanonicalImportStatus.DEDUPLICATED_AFTER_DOWNLOAD,
+-                    request_id=request.request_id,
+-                    source_id=source_id_for_sha256(receipt.content_sha256),
+-                    content_sha256=receipt.content_sha256,
+-                    canonical_path=str(existing),
+-                    provenance_path=None,
+-                    resolution=resolution,
+-                )
+-
++                raise CanonicalImportError(
++                    "resume planner selected pre-raw stages but a dedup "
++                    "target appeared in catalog; planner evidence disagrees"
++                )
+             destination = self._destination(request, candidate, receipt)
++            if destination.exists() and _hash_file(destination) != receipt.content_sha256:
++                # N3a: canonical raw drifted after the crash while the durable
++                # S1/S2 rows still bind the attempt's bytes; never overwrite.
++                raise CanonicalImportError(
++                    "resume_raw_bytes_mismatch: canonical bytes/size at the "
++                    "destination differ from the journaled receipt; drift is "
++                    "preserved, no rewrite, no re-download"
++                )
+             destination.parent.mkdir(parents=True, exist_ok=True)
+             if destination.exists():
+                 if _hash_file(destination) != receipt.content_sha256:
+@@ -176,13 +489,545 @@
+                         + receipt.content_sha256[:12]
+                         + destination.suffix
+                     )
+-                if destination.exists() and _hash_file(destination) != receipt.content_sha256:
+-                    raise CanonicalImportError("canonical filename collision after hash suffix")
++                if (
++                    destination.exists()
++                    and _hash_file(destination) != receipt.content_sha256
++                ):
++                    raise CanonicalImportError(
++                        "canonical filename collision after hash suffix"
++                    )
+             if not destination.exists():
+                 self._atomic_copy(staged, destination, receipt)
+-            provenance = destination.with_name(destination.name + ".source.json")
+-            self._write_provenance(provenance, request, candidate, receipt)
+-            scan_catalog(
++            canonical_path = destination.resolve()
++            self._stage(
++                "stage_raw_saved",
++                {
++                    "canonical_path": str(canonical_path),
++                    "byte_size": receipt.byte_size,
++                    "sidecar_bytes_b64": payload_b64,
++                },
++                request=request,
++                candidate=candidate,
++                receipt=receipt,
++                canonical_path=str(canonical_path),
++            )
++            _w02e_inject(
++                "raw_saved",
++                {
++                    "canonical_path": str(canonical_path),
++                    "content_sha256": receipt.content_sha256,
++                },
++            )
++        else:
++            try:
++                canonical_path = Path(resume["raw_path"]).resolve(strict=True)
++            except FileNotFoundError as exc:
++                raise CanonicalImportError(
++                    f"resume_raw_file_missing: stage_raw_saved names "
++                    f"{resume['raw_path']} but the file is gone and no usable "
++                    "staging file remains (N1b - blocked, evidence kept)"
++                ) from exc
++            if (
++                not canonical_path.is_file()
++                or canonical_path.stat().st_size != receipt.byte_size
++                or _hash_file(canonical_path) != receipt.content_sha256
++            ):
++                # N3a: the raw drifted after the crash.  Never a silent
++                # reuse of the old receipt; raw is preserved, not deleted.
++                raise CanonicalImportError(
++                    f"resume_raw_bytes_mismatch: stage_raw_saved claims "
++                    f"{receipt.content_sha256} (size {receipt.byte_size}) but "
++                    f"the canonical bytes at {canonical_path} differ now; "
++                    "raw preserved, no rewrite, no re-download"
++                )
++        provenance = canonical_path.with_name(canonical_path.name + ".source.json")
++        self._ensure_sidecar_durable(provenance, payload_b64)
++        self._stage(
++            "stage_provenance_saved",
++            {
++                "sidecar_path": str(provenance.resolve()),
++                "sidecar_sha256": _hash_file(provenance),
++                "content_sha256": receipt.content_sha256,
++            },
++            request=request,
++            candidate=candidate,
++            receipt=receipt,
++            canonical_path=str(canonical_path),
++        )
++        _w02e_inject(
++            "provenance_saved",
++            {"canonical_path": str(canonical_path), "sidecar_path": str(provenance)},
++        )
++        return self._scan_gates_and_qualified(
++            request,
++            candidate,
++            receipt,
++            canonical_path,
++            provenance,
++            staged,
++            skip_scan=bool(resume.get("registration_durable"))
++            and bool(resume.get("sidecar_saved")),
++        )
++
++    def _ensure_sidecar_durable(
++        self, provenance: Path, payload_b64: str | None
++    ) -> None:
++        if provenance.exists():
++            if payload_b64 is None:
++                raise CanonicalImportError(
++                    "resume_sidecar_state_mismatch: provenance sidecar exists "
++                    "but no durable sidecar payload row is recorded; recovery "
++                    "keeps raw + sidecar and refuses to guess contents"
++                )
++            expected = base64.b64decode(payload_b64)
++            if provenance.read_bytes() != expected:
++                raise CanonicalImportError(
++                    f"resume_sidecar_mismatch: sidecar at {provenance} does "
++                    "not match the durable S1/S2 payload bytes; immutable "
++                    "provenance is never rewritten to different content"
++                )
++            return
++        if payload_b64 is None:
++            raise CanonicalImportError(
++                "resume_requires_sidecar_payload: sidecar is missing and no "
++                "durable sidecar payload row exists; recovery refuses without "
++                "a reliable receipt (raw preserved)"
++            )
++        encoded = base64.b64decode(payload_b64)
++        temporary = provenance.with_name(provenance.name + f".{os.getpid()}.w02echk")
++        try:
++            temporary.write_bytes(encoded)
++            provenance.parent.mkdir(parents=True, exist_ok=True)
++            os.replace(temporary, provenance)
++        finally:
++            if temporary.exists():
++                temporary.unlink()
++
++    def _scan_gates_and_qualified(
++        self,
++        request: SourceRequest,
++        candidate: DownloadCandidate,
++        receipt: DownloadReceipt,
++        destination: Path,
++        provenance: Path,
++        staged: Path | None,
++        *,
++        skip_scan: bool,
++    ) -> CanonicalImportResult:
++        if not skip_scan:
++            try:
++                report = scan_catalog(
++                    self.catalog.config,
++                    self.catalog.store,
++                    dry_run=False,
++                    root_ids={self.company_root.root_id},
++                    v2_scan_shadow=v2_scan_shadow_from_snapshot(
++                        self.catalog.config.catalog_dir
++                    ),
++                    # I-02-A: the rescan must return a RECEIPT for this import's
++                    # own bytes — completion state, per-root state, and whether
++                    # the target was registered BY THIS RUN.  It is never
++                    # discarded.
++                    target_content_sha256s=(receipt.content_sha256,),
++                )
++            except Exception as exc:
++                # D-W02 gate 0
++                raise CanonicalImportError(
++                    f"post-import scan failed (scan did not complete): "
++                    f"{type(exc).__name__}: {exc}"
++                ) from exc
++            completion_status = report.completion_status
++            if completion_status != "completed":
++                raise CanonicalImportError(
++                    "post-import scan failed: completion_status="
++                    f"{completion_status!r} for run {report.run_id}"
++                )
++            degraded = [
++                result
++                for result in report.per_root_results
++                if result.get("status") != "completed"
++            ]
++            if degraded:
++                raise CanonicalImportError(
++                    "post-import scan failed: roots not completed "
++                    + repr(
++                        [
++                            (
++                                root_result["root_id"],
++                                root_result["status"],
++                                root_result.get("error_class"),
++                            )
++                            for root_result in degraded
++                        ]
++                    )
++                )
++            target_entry = next(
++                (
++                    item
++                    for item in report.target_files
++                    if item.get("content_sha256") == receipt.content_sha256
++                ),
++                None,
++            )
++            if target_entry is None or not target_entry.get("registered"):
++                raise CanonicalImportError(
++                    "post-import scan completed but the target file was not "
++                    "registered (target_not_registered); report run "
++                    f"{report.run_id}"
++                )
++            self._stage(
++                "stage_scan_registered",
++                {
++                    "run_id": report.run_id,
++                    "content_sha256": receipt.content_sha256,
++                },
++                request=request,
++                candidate=candidate,
++                receipt=receipt,
++                canonical_path=str(destination.resolve()),
++            )
++        # D-W02 gate 4: final identity resolve — ALWAYS reruns, including on
++        # resume (no old receipt reuse, N3).
++        exact_request = dedup_exact_request(request, candidate)
++        resolution = SourceResolver(self.catalog).resolve(exact_request)
++        if resolution.status is not ResolutionStatus.REUSED_EXACT:
++            raise CanonicalImportError(
++                "canonical file was written but exact provider identity did not resolve"
++            )
++        match = resolution.matches[0] if resolution.matches else None
++        if (
++            match is None
++            or getattr(match, "content_sha256", None) != receipt.content_sha256
++            or Path(match.canonical_path) != destination.resolve()
++        ):
++            raise CanonicalImportError(
++                "exact resolve returned a different identity than the "
++                "imported target (exact_resolve_identity_mismatch)"
++            )
++        # I-02-E S5: durable BEFORE any cleanup (B5 window).
++        self._stage(
++            "stage_qualified",
++            {
++                "import_status": "imported_new",
++                "source_id": source_id_for_sha256(receipt.content_sha256),
++                "match_source_id": match.source_id,
++                "canonical_path": str(destination.resolve()),
++            },
++            request=request,
++            candidate=candidate,
++            receipt=receipt,
++            canonical_path=str(destination.resolve()),
++        )
++        _w02e_inject(
++            "qualified",
++            {
++                "import_status": "imported_new",
++                "source_id": source_id_for_sha256(receipt.content_sha256),
++                "canonical_path": str(destination),
++            },
++        )
++        if staged is not None:
++            self._remove_staged(staged)
++        return CanonicalImportResult(
++            schema_version=CANONICAL_IMPORT_SCHEMA_VERSION,
++            status=CanonicalImportStatus.IMPORTED_NEW,
++            request_id=request.request_id,
++            source_id=source_id_for_sha256(receipt.content_sha256),
++            content_sha256=receipt.content_sha256,
++            canonical_path=str(destination.resolve()),
++            provenance_path=str(provenance.resolve()),
++            resolution=resolution,
++        )
++
++    def register_existing_raw(
++        self,
++        request: SourceRequest,
++        *,
++        raw_path: Path,
++        sidecar_path: Path,
++    ) -> CanonicalImportResult:
++        """I-02-C (D-W02 supplement): register an already-on-disk canonical
++        raw that owns its immutable provenance sidecar.
++
++        Recovery consumes ONLY proven persistence stages: the durable
++        download receipt embedded in the sidecar (written by
++        ``_write_provenance`` at capture time) plus a fresh re-hash of the
++        actual bytes.  Nothing is downloaded, no receipt is fabricated, no
++        identity is inferred from filenames, and retired/quarantined
++        documents are never reactivated on this path (N2).  The sidecar
++        bytes are never rewritten; the historical ``receipt.staged_path``
++        stays as provenance even when the historical staging directory no
++        longer exists."""
++        if not isinstance(request, SourceRequest):
++            raise TypeError("request must be SourceRequest")
++        with CatalogOperationLock(
++            self.catalog.config.catalog_dir,
++            operation="canonical_import",
++        ):
++            return self._register_existing_locked(
++                request,
++                raw_path=raw_path,
++                sidecar_path=sidecar_path,
++            )
++
++    def _register_existing_locked(
++        self,
++        request: SourceRequest,
++        *,
++        raw_path: Path,
++        sidecar_path: Path,
++    ) -> CanonicalImportResult:
++        # Gate R1 (root policy, fail-early): a root that is not reusable
++        # for filing can never be the recovery target — register may not
++        # grant reusability that the root policy withholds (N2b).
++        if not _effective_reusable(self.company_root, self.catalog.config):
++            raise CanonicalImportError(
++                "existing_raw_root_not_reusable: the target company_raw root "
++                "is not reusable for filing; registering cannot lift the "
++                "root-level reuse ban"
++            )
++        # Gate R2 (target-root binding + raw presence): the recovery bytes
++        # must live inside the bound company_raw root — no out-of-tree raw
++        # and no path-derived identity substitution.
++        try:
++            raw_abs = Path(raw_path).resolve(strict=True)
++        except FileNotFoundError as exc:
++            raise CanonicalImportError(
++                "existing_raw_bytes_mismatch: raw_path does not exist; "
++                "recovery requires the already-on-disk raw"
++            ) from exc
++        try:
++            raw_abs.relative_to(self.company_root.path.resolve(strict=True))
++        except ValueError as exc:
++            raise CanonicalImportError(
++                "existing_raw_identity_contract: raw_path is outside the "
++                "bound company_raw root; the recovery target root is part "
++                "of the recovery key"
++            ) from exc
++        if not raw_abs.is_file():
++            raise CanonicalImportError(
++                "existing_raw_bytes_mismatch: raw_path is not a regular file"
++            )
++        # Gate R3 (sidecar adjacency, N1a): the provenance sidecar must be
++        # THE raw file's adjacent immutable sidecar — a sidecar from
++        # elsewhere cannot certify these bytes.
++        adjacent = raw_abs.with_name(raw_abs.name + ".source.json")
++        try:
++            sidecar_abs = Path(sidecar_path).resolve(strict=True)
++        except FileNotFoundError as exc:
++            raise CanonicalImportError(
++                "existing_raw_missing_sidecar: the immutable provenance "
++                "sidecar (<raw>.source.json beside the raw file) is absent; "
++                "without it there is no durable receipt chain"
++            ) from exc
++        if sidecar_abs != adjacent.resolve(strict=False):
++            raise CanonicalImportError(
++                "existing_raw_missing_sidecar: sidecar_path is not the "
++                "raw file's adjacent provenance (<raw>.source.json)"
++            )
++        try:
++            payload = json.loads(sidecar_abs.read_text(encoding="utf-8"))
++        except (OSError, json.JSONDecodeError) as exc:
++            raise CanonicalImportError(
++                f"existing_raw_provenance_incomplete: sidecar is unreadable "
++                f"({type(exc).__name__}: {exc})"
++            ) from exc
++        if not isinstance(payload, dict):
++            raise CanonicalImportError(
++                "existing_raw_provenance_incomplete: sidecar payload is not "
++                "a JSON object"
++            )
++        # Gate R4 (provenance completeness, N1d): every identity field and
++        # the durable download receipt must be present.  Absent fields are
++        # NEVER auto-filled — least of all from the filename.
++        required_identity = {
++            "content_sha256",
++            "byte_size",
++            "company_name",
++            "provider",
++            "provider_document_id",
++            "source_url",
++            "document_kind",
++            "filing_date",
++            "fiscal_year",
++            "market",
++            "security_id",
++            "mime_type",
++        }
++        present_empty = sorted(
++            key
++            for key in required_identity
++            if key not in payload or payload[key] in (None, "")
++        )
++        absent_sections = [
++            key
++            for key in ("candidate", "request", "receipt")
++            if not isinstance(payload.get(key), dict)
++        ]
++        if present_empty or absent_sections:
++            raise CanonicalImportError(
++                "existing_raw_provenance_incomplete: sidecar lacks durable "
++                f"receipt/identity fields {absent_sections + present_empty!r}; "
++                "auto-filling (including from the filename) is forbidden"
++            )
++        required_receipt = {
++            "content_sha256",
++            "byte_size",
++            "provider",
++            "provider_document_id",
++            "candidate_id",
++            "source_url",
++            "http_status",
++            "retrieved_at",
++            "mime_type",
++        }
++        receipt_payload = payload["receipt"]
++        missing_receipt = sorted(
++            key
++            for key in required_receipt
++            if key not in receipt_payload or receipt_payload[key] in (None, "")
++        )
++        if missing_receipt:
++            raise CanonicalImportError(
++                "existing_raw_provenance_incomplete: sidecar receipt lacks "
++                f"{missing_receipt!r}; no reliable download receipt -> "
++                "recovery refused"
++            )
++        content_sha256 = str(payload["content_sha256"])
++        byte_size = int(payload["byte_size"])
++        # Gate R5 (bytes identity vs the durable receipt, N1b / fake
++        # receipt): rebuild candidate+receipt ONLY from sidecar fields,
++        # then verify against the CURRENT bytes; a single flipped byte or
++        # any hash/size drift is rejected.
++        try:
++            candidate = DownloadCandidate(**payload["candidate"])
++            receipt = DownloadReceipt(
++                **{**receipt_payload, "staged_path": str(raw_abs)}
++            )
++        except (TypeError, ValueError) as exc:
++            raise CanonicalImportError(
++                "existing_raw_provenance_incomplete: sidecar receipt/loose "
++                f"identity fields do not satisfy the acquisition contract "
++                f"({type(exc).__name__}: {exc})"
++            ) from exc
++        if (
++            candidate.candidate_id != receipt.candidate_id
++            or candidate.provider != receipt.provider
++            or candidate.provider_document_id != receipt.provider_document_id
++            or candidate.source_url != receipt.source_url
++            or payload["provider"] != receipt.provider
++            or payload["provider_document_id"] != receipt.provider_document_id
++            or int(payload["byte_size"]) != receipt.byte_size
++        ):
++            raise CanonicalImportError(
++                "existing_raw_provenance_incomplete: sidecar top-level "
++                "identity does not agree with the embedded durable "
++                "receipt/candidate"
++            )
++        if (
++            raw_abs.stat().st_size != receipt.byte_size
++            or _hash_file(raw_abs) != receipt.content_sha256
++        ):
++            raise CanonicalImportError(
++                f"existing_raw_bytes_mismatch: content_sha256 is "
++                f"{receipt.content_sha256} but the on-disk bytes hash/size "
++                f"differ (raw_path={raw_abs})"
++            )
++        # Gate R6 (identity contract, N1c): the caller must have supplied
++        # the source identity EXPLICITLY; it must match the durable
++        # sidecar identity.  No auto-fill from the filename, ever.
++        for text, kind in (
++            (request.provider, "provider"),
++            (request.provider_document_id, "provider_document_id"),
++        ):
++            if not text:
++                raise CanonicalImportError(
++                    "existing_raw_identity_contract: request.provider / "
++                    "request.provider_document_id must be supplied "
++                    "explicitly for register-existing; inferring provider/"
++                    "fiscal_year from the filename is forbidden"
++                )
++        if (
++            request.provider != receipt.provider
++            or request.provider_document_id != receipt.provider_document_id
++            or request.entity != payload["company_name"]
++            or request.document_kind != payload["document_kind"]
++            or (
++                request.fiscal_year is not None
++                and request.fiscal_year != payload["fiscal_year"]
++            )
++            or (request.market is not None and request.market != payload.get("market"))
++        ):
++            raise CanonicalImportError(
++                "existing_raw_identity_contract: the caller-supplied request "
++                "identity does not match the sidecar's durable provider/"
++                "entity/kind/year bindings"
++            )
++        # Gate R7 (retired/quarantined, N2): identical bytes whose document
++        # is retired or quarantined must NOT be reactivated by recovery —
++        # never via _reactivate_if_retired, never restored to active, and
++        # never handed back as a qualified handle.  A user-approved
++        # re-acquisition or the documents restore CLI are the only revival
++        # paths; both are outside this entry point.
++        document_id = source_id_for_sha256(content_sha256).replace(
++            "urn:company-wiki:source:", "urn:company-wiki:document:"
++        )
++        state = self.catalog.store.fetchone(
++            "SELECT source_status FROM documents WHERE document_id=?",
++            (document_id,),
++        )
++        if state is not None and state["source_status"] in (
++            "retired",
++            "quarantined",
++        ):
++            raise CanonicalImportError(
++                "existing_raw_status_not_active: identical bytes are "
++                f"{state['source_status']}; register-existing may not "
++                "reactivate them and returns no qualified handle"
++            )
++        existing = self._existing_original(content_sha256)
++        if existing is not None:
++            # Idempotent re-entry: the same bytes are already registered.
++            # No new rows, no rewritten sidecar; just resolve and return
++            # the same identity.
++            resolution = self._exact_resolve(request, receipt, raw_abs)
++            return CanonicalImportResult(
++                schema_version=CANONICAL_IMPORT_SCHEMA_VERSION,
++                status=CanonicalImportStatus.REGISTERED_EXISTING_RAW,
++                request_id=request.request_id,
++                source_id=source_id_for_sha256(content_sha256),
++                content_sha256=content_sha256,
++                canonical_path=str(existing),
++                provenance_path=None,
++                resolution=resolution,
++            )
++        # I-02-E register path: durable S3 marker + B3 injection window.
++        self._stage(
++            "stage_provenance_saved",
++            {
++                "sidecar_path": str(sidecar_abs),
++                "sidecar_sha256": _hash_file(sidecar_abs),
++                "content_sha256": content_sha256,
++            },
++            request=request,
++            candidate=candidate,
++            receipt=receipt,
++            canonical_path=str(raw_abs),
++        )
++        _w02e_inject(
++            "register_gates",
++            {
++                "raw_path": str(raw_abs),
++                "sidecar_path": str(sidecar_abs),
++                "content_sha256": content_sha256,
++            },
++        )
++        # Registration stage: the raw + sidecar are already canonical — the
++        # only missing stage is the catalog registration.  The scan must
++        # prove completion and register THESE bytes itself (gates 0-3,
++        # identical to import_staged).
++        try:
++            report = scan_catalog(
+                 self.catalog.config,
+                 self.catalog.store,
+                 dry_run=False,
+@@ -190,37 +1035,132 @@
+                 v2_scan_shadow=v2_scan_shadow_from_snapshot(
+                     self.catalog.config.catalog_dir
+                 ),
+-            )
+-            exact_request = SourceRequest(
+-                entity=request.entity,
+-                market=request.market,
+-                security_id=request.security_id,
+-                document_kind=request.document_kind,
+-                form_type=request.form_type or candidate.form_type,
+-                fiscal_year=request.fiscal_year or candidate.fiscal_year,
+-                fiscal_period=request.fiscal_period or candidate.fiscal_period,
+-                language=request.language or candidate.language,
+-                provider=candidate.provider,
+-                provider_document_id=candidate.provider_document_id,
+-                as_of_date=request.as_of_date,
+-                allow_download=request.allow_download,
+-            )
+-            resolution = SourceResolver(self.catalog).resolve(exact_request)
+-            if resolution.status is not ResolutionStatus.REUSED_EXACT:
+-                raise CanonicalImportError(
+-                    "canonical file was written but exact provider identity did not resolve"
+-                )
+-            self._remove_staged(staged)
+-            return CanonicalImportResult(
+-                schema_version=CANONICAL_IMPORT_SCHEMA_VERSION,
+-                status=CanonicalImportStatus.IMPORTED_NEW,
+-                request_id=request.request_id,
+-                source_id=source_id_for_sha256(receipt.content_sha256),
+-                content_sha256=receipt.content_sha256,
+-                canonical_path=str(destination.resolve()),
+-                provenance_path=str(provenance.resolve()),
+-                resolution=resolution,
+-            )
++                target_content_sha256s=(content_sha256,),
++            )
++        except Exception as exc:
++            raise CanonicalImportError(
++                f"post-import scan failed (scan did not complete): "
++                f"{type(exc).__name__}: {exc}"
++            ) from exc
++        completion_status = report.completion_status
++        if completion_status != "completed":
++            raise CanonicalImportError(
++                "post-import scan failed: completion_status="
++                f"{completion_status!r} for run {report.run_id}"
++            )
++        degraded = [
++            result
++            for result in report.per_root_results
++            if result.get("status") != "completed"
++        ]
++        if degraded:
++            raise CanonicalImportError(
++                "post-import scan failed: roots not completed "
++                + repr(
++                    [
++                        (
++                            root_result["root_id"],
++                            root_result["status"],
++                            root_result.get("error_class"),
++                        )
++                        for root_result in degraded
++                    ]
++                )
++            )
++        target_entry = next(
++            (
++                item
++                for item in report.target_files
++                if item.get("content_sha256") == content_sha256
++            ),
++            None,
++        )
++        if target_entry is None or not target_entry.get("registered"):
++            raise CanonicalImportError(
++                "post-import scan completed but the target file was not "
++                "registered (target_not_registered); report run "
++                f"{report.run_id}"
++            )
++        self._stage(
++            "stage_scan_registered",
++            {"run_id": report.run_id, "content_sha256": content_sha256},
++            request=request,
++            candidate=candidate,
++            receipt=receipt,
++            canonical_path=str(raw_abs),
++        )
++        resolution = self._exact_resolve(request, receipt, raw_abs)
++        self._stage(
++            "stage_qualified",
++            {
++                "import_status": "registered_existing_raw",
++                "source_id": source_id_for_sha256(content_sha256),
++                "match_source_id": (
++                    resolution.matches[0].source_id if resolution.matches else None
++                ),
++                "canonical_path": str(raw_abs),
++            },
++            request=request,
++            candidate=candidate,
++            receipt=receipt,
++            canonical_path=str(raw_abs),
++        )
++        _w02e_inject(
++            "qualified",
++            {
++                "import_status": "registered_existing_raw",
++                "source_id": source_id_for_sha256(content_sha256),
++                "canonical_path": str(raw_abs),
++            },
++        )
++        return CanonicalImportResult(
++            schema_version=CANONICAL_IMPORT_SCHEMA_VERSION,
++            status=CanonicalImportStatus.REGISTERED_EXISTING_RAW,
++            request_id=request.request_id,
++            source_id=source_id_for_sha256(content_sha256),
++            content_sha256=content_sha256,
++            canonical_path=str(raw_abs),
++            provenance_path=str(sidecar_abs),
++            resolution=resolution,
++            recovery_source=EXISTING_RAW_RECOVERY_SOURCE,
++        )
++
++    def _exact_resolve(
++        self,
++        request: SourceRequest,
++        receipt: DownloadReceipt,
++        raw_abs: Path,
++    ) -> ResolutionResult:
++        exact_request = SourceRequest(
++            entity=request.entity,
++            market=request.market,
++            security_id=request.security_id,
++            document_kind=request.document_kind,
++            form_type=request.form_type,
++            fiscal_year=request.fiscal_year,
++            fiscal_period=request.fiscal_period,
++            language=request.language,
++            provider=receipt.provider,
++            provider_document_id=receipt.provider_document_id,
++            as_of_date=request.as_of_date,
++            allow_download=request.allow_download,
++        )
++        resolution = SourceResolver(self.catalog).resolve(exact_request)
++        if resolution.status is not ResolutionStatus.REUSED_EXACT:
++            raise CanonicalImportError(
++                "canonical file was written but exact provider identity did not resolve"
++            )
++        match = resolution.matches[0] if resolution.matches else None
++        if (
++            match is None
++            or getattr(match, "content_sha256", None) != receipt.content_sha256
++            or Path(match.canonical_path) != raw_abs.resolve()
++        ):
++            raise CanonicalImportError(
++                "exact resolve returned a different identity than the "
++                "registered target (exact_resolve_identity_mismatch)"
++            )
++        return resolution
+ 
+     def _validate_staged(
+         self,
+@@ -235,7 +1175,9 @@
+         if candidate.provider != receipt.provider:
+             raise CanonicalImportError("receipt provider does not match candidate")
+         if candidate.provider_document_id != receipt.provider_document_id:
+-            raise CanonicalImportError("receipt provider identity does not match candidate")
++            raise CanonicalImportError(
++                "receipt provider identity does not match candidate"
++            )
+         if candidate.source_url != receipt.source_url:
+             raise CanonicalImportError("receipt source URL does not match candidate")
+         staged = Path(receipt.staged_path).resolve(strict=True)
+@@ -243,7 +1185,9 @@
+         try:
+             staged.relative_to(staging_root)
+         except ValueError as exc:
+-            raise CanonicalImportError("staged file is outside configured staging root") from exc
++            raise CanonicalImportError(
++                "staged file is outside configured staging root"
++            ) from exc
+         if not staged.is_file():
+             raise CanonicalImportError("staged path is not a regular file")
+         if staged.stat().st_size != receipt.byte_size:
+@@ -337,13 +1281,16 @@
+                 temporary.unlink()
+ 
+     @staticmethod
+-    def _write_provenance(
+-        path: Path,
++    def _provenance_payload(
+         request: SourceRequest,
+         candidate: DownloadCandidate,
+         receipt: DownloadReceipt,
+-    ) -> None:
+-        payload = {
++    ) -> dict:
++        """The canonical sidecar payload (I-02-E: persisted verbatim in the
++        stage rows so crash recovery can rebuild the sidecar byte-identically
++        without guessing any field).  _write_provenance encodes this
++        unchanged."""
++        return {
+             "schema_version": CANONICAL_IMPORT_SCHEMA_VERSION,
+             "request_id": request.request_id,
+             "company_name": request.entity,
+@@ -375,6 +1322,15 @@
+             "candidate": candidate.to_dict(),
+             "receipt": receipt.to_dict(),
+         }
++
++    @staticmethod
++    def _write_provenance(
++        path: Path,
++        request: SourceRequest,
++        candidate: DownloadCandidate,
++        receipt: DownloadReceipt,
++    ) -> None:
++        payload = CanonicalSourceWriter._provenance_payload(request, candidate, receipt)
+         encoded = (canonical_json(payload) + "\n").encode("utf-8")
+         if path.exists():
+             if path.read_bytes() != encoded:
+@@ -390,9 +1346,13 @@
+ 
+     def _remove_staged(self, staged: Path) -> None:
+         try:
+-            staged.resolve(strict=True).relative_to(self.staging_root.resolve(strict=True))
++            staged.resolve(strict=True).relative_to(
++                self.staging_root.resolve(strict=True)
++            )
+         except (FileNotFoundError, ValueError) as exc:
+-            raise CanonicalImportError("refusing to remove file outside staging") from exc
++            raise CanonicalImportError(
++                "refusing to remove file outside staging"
++            ) from exc
+         staged.unlink()
+ 
+ 
+```
+
+## acquisition_service.py
+```diff
+--- prod/acquisition_service.py
++++ attempt/iso/override/acquisition_service.py
+@@ -4,12 +4,18 @@
+ 
+ from dataclasses import dataclass
+ from enum import Enum
++import base64
++import hashlib
++import json
++from pathlib import Path
+ from typing import Any
+ 
+ from .acquisition import (
+     AcquisitionCoordinator,
+     AcquisitionResult,
+     AcquisitionStatus,
++    DownloadCandidate,
++    DownloadReceipt,
+ )
+ from .acquisition_journal import AcquisitionAttempt, AcquisitionJournal
+ from .canonical_writer import (
+@@ -21,22 +27,61 @@
+ 
+ 
+ SOURCE_ENSURE_SCHEMA_VERSION = "1.0"
++# I-02-C (D-W02 supplement): approved register-existing recovery callers.
++RECOVERY_AUTHORIZED_CALLERS = frozenset(
++    {
++        "register-existing-manifest",
++        "I-02-C sample-copy-manifest",
++    }
++)
+ 
+ 
+ class SourceEnsureStatus(str, Enum):
+     REUSED = "reused"
+     IMPORTED = "imported"
+     DEDUPLICATED = "deduplicated"
++    REGISTERED_EXISTING = "registered_existing"  # I-02-C recovery
+     MISSING = "missing"
+     AMBIGUOUS = "ambiguous"
+     GAP = "gap"  # WU-4.2: metadata-only plan returned, nothing downloaded
++
++
++@dataclass(frozen=True)
++class SourceRecoveryInput:
++    """I-02-C: caller-supplied binding for an already-on-disk canonical raw.
++
++    Recovery is explicit and location-bound: the caller must name the raw
++    file and its adjacent immutable sidecar.  The journal is only used for
++    corroboration, never for file-system discovery, and nothing is
++    inferred from filenames."""
++
++    raw_path: str
++    sidecar_path: str
++    authorized_caller: str = "register-existing-manifest"
++
++    def __post_init__(self) -> None:
++        for name in ("raw_path", "sidecar_path", "authorized_caller"):
++            value = getattr(self, name)
++            if not isinstance(value, str) or not value.strip():
++                raise ValueError(f"recovery {name} must be non-empty text")
++        if self.authorized_caller not in RECOVERY_AUTHORIZED_CALLERS:
++            raise ValueError(
++                "recovery authorized_caller is not on the approved caller list"
++            )
++        raw = Path(self.raw_path)
++        sidecar = Path(self.sidecar_path)
++        if sidecar.name != raw.name + ".source.json":
++            raise ValueError(
++                "recovery sidecar_path must be the raw file's adjacent "
++                "provenance (<raw>.source.json)"
++            )
+ 
+ 
+ @dataclass(frozen=True)
+ class SourceEnsureResult:
+     schema_version: str
+     status: SourceEnsureStatus
+-    acquisition: AcquisitionResult
++    acquisition: AcquisitionResult | None
+     resolution: ResolutionResult
+     attempt: AcquisitionAttempt
+     canonical_import: CanonicalImportResult | None = None
+@@ -45,13 +90,23 @@
+         return {
+             "schema_version": self.schema_version,
+             "status": self.status.value,
+-            "acquisition": self.acquisition.to_dict(),
++            "acquisition": (
++                self.acquisition.to_dict() if self.acquisition is not None else None
++            ),
+             "resolution": self.resolution.to_dict(),
+             "attempt": self.attempt.to_dict(),
+             "canonical_import": (
+                 self.canonical_import.to_dict() if self.canonical_import else None
+             ),
+         }
++
++
++def _sha256_file(path: Path) -> str:
++    digest = hashlib.sha256()
++    with Path(path).open("rb") as stream:
++        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
+ 
+ 
+ class SourceAcquisitionService:
+@@ -74,9 +129,168 @@
+         self.writer = writer
+         self.journal = journal
+ 
+-    def ensure(self, request: SourceRequest) -> SourceEnsureResult:
++    # ------------------------------------------------------------------
++    # I-02-E: restart selection — the first unfinished stage per durable
++    # evidence.  Recovery never invents intermediates, never re-downloads
++    # (the coordinator is bypassed when stage rows bind this recovery key)
++    # and never verifies cheaply (files are re-hashed each time).
++    # ------------------------------------------------------------------
++    def _resume_plan(self, request: SourceRequest) -> dict[str, Any] | None:
++        rows = [
++            item
++            for item in self.journal.read_all()
++            if item.request_id == request.request_id
++            and item.provider == request.provider
++            and item.provider_document_id == request.provider_document_id
++            and item.content_sha256
++            and item.outcome.startswith("stage_")
++        ]
++        if not rows:
++            return None
++        staged_rows = [r for r in rows if r.outcome == "stage_staged_verified"]
++        if not staged_rows:
++            raise RuntimeError(
++                "resume stage rows exist without stage_staged_verified; "
++                "journal/order is inconsistent for "
++                f"{request.request_id} - recovery refuses to guess"
++            )
++        s1 = max(staged_rows, key=lambda r: r.recorded_at)
++        payload = json.loads(s1.payload_json or "{}")
++        receipt_dict = json.loads(payload.get("receipt_json", "{}"))
++        candidate_dict = json.loads(payload.get("candidate_json", "{}"))
++        content_sha256 = s1.content_sha256
++        byte_size = int(receipt_dict.get("byte_size", 0))
++        staged_path = payload.get("staged_path")
++        sidecar_b64 = payload.get("sidecar_bytes_b64")
++        raw_saved = False
++        raw_path = None
++        raw_rows = [r for r in rows if r.outcome == "stage_raw_saved"]
++        raw_row = max(raw_rows, key=lambda r: r.recorded_at) if raw_rows else None
++        if raw_row is not None and raw_row.canonical_path:
++            candidate_raw = Path(raw_row.canonical_path)
++            raw_saved = bool(
++                candidate_raw.is_file()
++                and candidate_raw.stat().st_size == byte_size
++                and _sha256_file(candidate_raw) == content_sha256
++            )
++            raw_path = str(candidate_raw) if candidate_raw.is_file() else None
++        sidecar_saved = False
++        prov_rows = [r for r in rows if r.outcome == "stage_provenance_saved"]
++        prov_row = max(prov_rows, key=lambda r: r.recorded_at) if prov_rows else None
++        if prov_row is not None and prov_row.canonical_path:
++            prov_payload = json.loads(prov_row.payload_json or "{}")
++            candidate_side = Path(prov_row.canonical_path).with_name(
++                Path(prov_row.canonical_path).name + ".source.json"
++            )
++            expected_side = prov_payload.get("sidecar_sha256")
++            sidecar_saved = bool(
++                candidate_side.is_file()
++                and expected_side
++                and _sha256_file(candidate_side) == expected_side
++            )
++        qualified = any(r.outcome == "stage_qualified" for r in rows)
++        registered_durable = self._registration_durable(content_sha256)
++        return {
++            "kind": "import_staged",
++            "staged_file_present": bool(staged_path and Path(staged_path).is_file()),
++            "receipt": receipt_dict,
++            "candidate": candidate_dict,
++            "sidecar_payload_b64": sidecar_b64,
++            "raw_saved": raw_saved,
++            "raw_path": raw_path,
++            "sidecar_saved": sidecar_saved,
++            "qualified": qualified,
++            "registration_durable": registered_durable,
++        }
++
++    def _registration_durable(self, content_sha256: str) -> bool:
++        """Independent durable-evidence check (D-W02): active original_primary
++        location + active document on one source, AND the latest scan run is
++        'completed' (an interrupted/running row means the registration rows
++        came from a scan that never finished — a FRESH scan must prove the
++        target again, the B4 resume action)."""
++        store = self.writer.catalog.store
++        row = store.fetchone(
++            "SELECT source_id FROM sources WHERE content_sha256=?",
++            (content_sha256,),
++        )
++        if row is None:
++            return False
++        document_row = store.fetchone(
++            "SELECT 1 FROM documents WHERE primary_source_id=? AND source_status='active'",
++            (row["source_id"],),
++        )
++        location_row = store.fetchone(
++            "SELECT 1 FROM locations l JOIN roots r ON r.root_id=l.root_id "
++            "WHERE l.source_id=? AND l.location_status='active' "
++            "AND l.role='original_primary' AND r.kind='company_raw'",
++            (row["source_id"],),
++        )
++        if document_row is None or location_row is None:
++            return False
++        latest_run = store.fetchone(
++            "SELECT status FROM scan_runs ORDER BY started_at DESC LIMIT 1"
++        )
++        return bool(latest_run is not None and latest_run["status"] == "completed")
++
++    def ensure(
++        self,
++        request: SourceRequest,
++        *,
++        recovery: SourceRecoveryInput | None = None,
++    ) -> SourceEnsureResult:
+         if not isinstance(request, SourceRequest):
+             raise TypeError("request must be SourceRequest")
++        # I-02-E: a durable stage plan binds this exact recovery key — the
++        # coordinator (and any network/adapter fetch) is NOT run again.
++        resume_plan = self._resume_plan(request)
++        if resume_plan is not None and resume_plan.get("kind") == "import_staged":
++            candidate = DownloadCandidate(**resume_plan["candidate"])
++            receipt_dict = dict(resume_plan["receipt"])
++            if resume_plan.get("raw_saved") and resume_plan.get("raw_path"):
++                receipt_dict["staged_path"] = resume_plan["raw_path"]
++            try:
++                receipt = DownloadReceipt(**receipt_dict)
++                imported = self.writer.import_staged(
++                    request,
++                    candidate,
++                    receipt,
++                    resume=resume_plan,
++                )
++            except Exception as exc:
++                self.journal.record(
++                    outcome="failed",
++                    request_id=request.request_id,
++                    provider=request.provider,
++                    provider_document_id=request.provider_document_id,
++                    reason="canonical_resume_failed",
++                    error_type=type(exc).__name__,
++                    error=str(exc),
++                )
++                raise
++            if imported.status is not CanonicalImportStatus.IMPORTED_NEW:
++                raise RuntimeError(
++                    "resume returned a non-import status; only Imported is expected"
++                )
++            attempt = self.journal.record(
++                outcome="downloaded_new",
++                request_id=request.request_id,
++                provider=request.provider,
++                provider_document_id=request.provider_document_id,
++                content_sha256=imported.content_sha256,
++                canonical_path=imported.canonical_path,
++                reason="w02e_resume_completed_missing_stages",
++            )
++            return SourceEnsureResult(
++                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
++                status=SourceEnsureStatus.IMPORTED,
++                # acquisition stays honestly None on resume: the coordinator
++                # never ran (no download event happened to fabricate).
++                acquisition=None,
++                resolution=imported.resolution,
++                attempt=attempt,
++                canonical_import=imported,
++            )
+         try:
+             acquisition = self.coordinator.resolve_or_stage(request)
+         except Exception as exc:
+@@ -115,6 +329,48 @@
+                 resolution=acquisition.resolution,
+                 attempt=attempt,
+             )
++        if recovery is not None and acquisition.status is AcquisitionStatus.MISSING:
++            # I-02-C register-existing recovery: the catalog has no reusable
++            # source and NO download is attempted.  The already-on-disk raw
++            # is registered through the sole writer, which re-verifies the
++            # durable sidecar receipt against the actual bytes.
++            try:
++                imported = self.writer.register_existing_raw(
++                    request,
++                    raw_path=Path(recovery.raw_path),
++                    sidecar_path=Path(recovery.sidecar_path),
++                )
++            except Exception as exc:
++                self.journal.record(
++                    request_id=request.request_id,
++                    provider=request.provider,
++                    provider_document_id=request.provider_document_id,
++                    outcome="failed",
++                    reason="existing_raw_register_failed",
++                    error_type=type(exc).__name__,
++                    error=str(exc),
++                )
++                raise
++            attempt = self.journal.record(
++                request_id=request.request_id,
++                provider=request.provider,
++                provider_document_id=request.provider_document_id,
++                content_sha256=imported.content_sha256,
++                canonical_path=imported.canonical_path,
++                outcome="registered_existing_raw",
++                reason="existing_raw_recovery_no_download",
++            )
++            return SourceEnsureResult(
++                schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
++                status=SourceEnsureStatus.REGISTERED_EXISTING,
++                # acquisition stays honestly None: no discovery happened;
++                # fabricating an AcquisitionResult would fake an event that
++                # never occurred.
++                acquisition=None,
++                resolution=imported.resolution,
++                attempt=attempt,
++                canonical_import=imported,
++            )
+         if acquisition.status is AcquisitionStatus.MISSING:
+             attempt = self.journal.record(outcome="missing", **common)
+             return SourceEnsureResult(
+```
+
+## acquisition_journal.py
+```diff
+--- prod/acquisition_journal.py
++++ attempt/iso/override/acquisition_journal.py
+@@ -27,6 +27,17 @@
+         # WU-4.2: metadata-only outcomes (nothing downloaded).
+         "gap_plan",
+         "gap_plan_provider_unavailable",
++        # I-02-C (D-W02 supplement): already-on-disk raw registered through
++        # the approved recovery entry — nothing was downloaded.
++        "registered_existing_raw",
++        # I-02-E (D-W02): durable per-stage commit markers. Each marker is
++        # fsynced BEFORE the next stage mutates anything, so a re-entry can
++        # resume from the first stage whose persistent evidence is intact.
++        "stage_staged_verified",
++        "stage_raw_saved",
++        "stage_provenance_saved",
++        "stage_scan_registered",
++        "stage_qualified",
+     }
+ )
+ 
+@@ -60,6 +71,10 @@
+     reason: str | None = None
+     error_type: str | None = None
+     error: str | None = None
++    # I-02-E: canonical JSON of stage-specific durable evidence (sidecar
++    # payload bytes, canonical path, run_id, resolved identity). Additive:
++    # older journal lines simply omit the key and read back as null.
++    payload_json: str | None = None
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return dict(self.__dict__)
+@@ -89,6 +104,7 @@
+         reason: str | None = None,
+         error_type: str | None = None,
+         error: str | None = None,
++        payload: dict[str, Any] | None = None,
+     ) -> AcquisitionAttempt:
+         if not isinstance(request_id, str) or not request_id.strip():
+             raise ValueError("request_id must be non-empty text")
+@@ -107,6 +123,10 @@
+             "reason": _optional(reason),
+             "error_type": _optional(error_type),
+             "error": _optional(error),
++            # I-02-E: stage payload rides INSIDE the content hash so a
++            # re-logged stage with different evidence gets a different
++            # attempt row (audit never compresses).
++            "payload_json": (canonical_json(payload) if payload is not None else None),
+         }
+         attempt_hash = hashlib.sha256(
+             canonical_json(values).encode("utf-8")
+```
+
+## scanner.py
+```diff
+--- prod/scanner.py
++++ attempt/iso/override/scanner.py
+@@ -34,11 +34,19 @@
+     _relative,
+     _walk_files,
+ )
+-from .models import CatalogConfig, DOCUMENT_EXTENSIONS, SCANNER_VERSION, RootSpec, ScanReport
++from .models import (
++    CatalogConfig,
++    DOCUMENT_EXTENSIONS,
++    SCANNER_VERSION,
++    RootSpec,
++    ScanReport,
++)
+ from .store import CatalogStore, canonical_json, metadata_object, metadata_state
+ 
+ 
+-_DATE_RE = re.compile(r"(?<!\d)(20\d{2})[-_.年](0[1-9]|1[0-2]|[1-9])[-_.月](0[1-9]|[12]\d|3[01]|[1-9])")
++_DATE_RE = re.compile(
++    r"(?<!\d)(20\d{2})[-_.年](0[1-9]|1[0-2]|[1-9])[-_.月](0[1-9]|[12]\d|3[01]|[1-9])"
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -77,7 +85,9 @@
+ 
+ 
+ def _location_id(root_id: str, relative_path: str) -> str:
+-    return "urn:company-wiki:location:sha256:" + _sha256_text(root_id + "\0" + relative_path)
++    return "urn:company-wiki:location:sha256:" + _sha256_text(
++        root_id + "\0" + relative_path
++    )
+ 
+ 
+ def _document_id_for_source(source_id: str) -> str:
+@@ -85,7 +95,9 @@
+ 
+ 
+ def _logical_document_id(root_id: str, group_key: str) -> str:
+-    return "urn:company-wiki:document-logical:sha256:" + _sha256_text(root_id + "\0" + group_key)
++    return "urn:company-wiki:document-logical:sha256:" + _sha256_text(
++        root_id + "\0" + group_key
++    )
+ 
+ 
+ def _mime_type(path: Path) -> str:
+@@ -108,12 +120,18 @@
+     if not match:
+         return None
+     try:
+-        return datetime(int(match.group(1)), int(match.group(2)), int(match.group(3))).date().isoformat()
++        return (
++            datetime(int(match.group(1)), int(match.group(2)), int(match.group(3)))
++            .date()
++            .isoformat()
++        )
+     except ValueError:
+         return None
+ 
+ 
+-def _classification(path: Path, *, root_kind: str, metadata: dict[str, Any]) -> tuple[str, SourceType]:
++def _classification(
++    path: Path, *, root_kind: str, metadata: dict[str, Any]
++) -> tuple[str, SourceType]:
+     form = str(metadata.get("form_type") or "").casefold()
+     text = re.sub(
+         r"[_-]+",
+@@ -145,7 +163,12 @@
+     if any(token in text for token in ("点评", "深度报告", "调研报告")):
+         return "broker_research", SourceType.BROKER_RESEARCH
+     # 3. explicit form_type (regulatory filing)
+-    if form in {"10-k", "20-f", "40-f"} or "20f" in text or "10k" in text or "40f" in text:
++    if (
++        form in {"10-k", "20-f", "40-f"}
++        or "20f" in text
++        or "10k" in text
++        or "40f" in text
++    ):
+         return "annual_report", SourceType.REGULATORY_FILING
+     # 3b. dayu portfolio form_type codes (FY/H1/Q1-Q3) — the portfolio
+     # meta.json carries these; titles are Traditional Chinese (年報 etc.).
+@@ -156,7 +179,10 @@
+     if form in {"q1", "q2", "q3", "q4"}:
+         return "quarterly_report", SourceType.REGULATORY_FILING
+     # 4. semi-annual BEFORE annual (半年度 contains 年度)
+-    if any(token in text for token in ("半年度", "半年报", "中期報告", "中期报告", "interim report")):
++    if any(
++        token in text
++        for token in ("半年度", "半年报", "中期報告", "中期报告", "interim report")
++    ):
+         return "semi_annual_report", SourceType.REGULATORY_FILING
+     # 5. quarterly
+     if any(
+@@ -174,13 +200,18 @@
+         for token in ("电话会议纪要", "业绩电话会", "earnings call transcript")
+     ):
+         return "investor_call_transcript", SourceType.INVESTOR_RELATIONS
+-    if any(token in text for token in ("投资者关系", "调研", "路演", "业绩说明会", "investor relation")):
++    if any(
++        token in text
++        for token in ("投资者关系", "调研", "路演", "业绩说明会", "investor relation")
++    ):
+         return "investor_relations", SourceType.INVESTOR_RELATIONS
+     if any(token in text for token in ("招股", "prospectus")):
+         return "prospectus", SourceType.PROSPECTUS
+     if root_kind == "directory":
+         return "broker_research", SourceType.BROKER_RESEARCH
+-    if path.suffix.lower() == ".md" and "news" in {part.casefold() for part in path.parts}:
++    if path.suffix.lower() == ".md" and "news" in {
++        part.casefold() for part in path.parts
++    }:
+         return "news", SourceType.ORIGINAL_NEWS
+     return "other", SourceType.OTHER
+ 
+@@ -188,9 +219,27 @@
+ def _entity(entity_name: str | None, root_id: str) -> tuple[str, str, str, float, str]:
+     if entity_name:
+         if re.fullmatch(r"[A-Za-z0-9._-]+", entity_name):
+-            return f"ticker:{entity_name.upper()}", entity_name, "ticker", 1.0, "path_ticker"
+-        return f"company-name:{entity_name}", entity_name, "company", 1.0, "company_raw_path"
+-    return f"unresolved:{root_id}", f"Unresolved ({root_id})", "unresolved", 0.0, "unresolved"
++            return (
++                f"ticker:{entity_name.upper()}",
++                entity_name,
++                "ticker",
++                1.0,
++                "path_ticker",
++            )
++        return (
++            f"company-name:{entity_name}",
++            entity_name,
++            "company",
++            1.0,
++            "company_raw_path",
++        )
++    return (
++        f"unresolved:{root_id}",
++        f"Unresolved ({root_id})",
++        "unresolved",
++        0.0,
++        "unresolved",
++    )
+ 
+ 
+ def _company_names(config: CatalogConfig) -> tuple[str, ...]:
+@@ -303,7 +352,9 @@
+                 if path.name.endswith(_ACQUISITION_SIDECAR_SUFFIX)
+             }
+             primary_paths = [
+-                path for path in paths if not path.name.endswith(_ACQUISITION_SIDECAR_SUFFIX)
++                path
++                for path in paths
++                if not path.name.endswith(_ACQUISITION_SIDECAR_SUFFIX)
+             ]
+             for path in primary_paths:
+                 relative = _relative(path, root.path)
+@@ -526,7 +577,11 @@
+         for group_key, paths in sorted(raw_groups.items()):
+             parts = Path(group_key).parts
+             ticker = parts[0] if parts else None
+-            group_dir = root.path.joinpath(*parts) if len(paths) > 1 or Path(group_key).suffix == "" else paths[0].parent
++            group_dir = (
++                root.path.joinpath(*parts)
++                if len(paths) > 1 or Path(group_key).suffix == ""
++                else paths[0].parent
++            )
+             meta_path = group_dir / "meta.json"
+             metadata: dict[str, Any] = {}
+             if meta_path.is_file():
+@@ -591,10 +646,17 @@
+                     preferred = names[name]
+                     break
+             if preferred is None:
+-                preferred = next((path for path in paths if path.suffix.lower() == ".pdf"), None)
++                preferred = next(
++                    (path for path in paths if path.suffix.lower() == ".pdf"), None
++                )
+             if preferred is None:
+                 preferred = next(
+-                    (path for path in paths if path.suffix.lower() in {".htm", ".html"} and path.name != "meta.json"),
++                    (
++                        path
++                        for path in paths
++                        if path.suffix.lower() in {".htm", ".html"}
++                        and path.name != "meta.json"
++                    ),
+                     None,
+                 )
+             if preferred is None:
+@@ -623,7 +685,9 @@
+             elif preferred is None:
+                 source_status = "incomplete"
+             else:
+-                source_status = "active" if complete or len(paths) == 1 else "incomplete"
++                source_status = (
++                    "active" if complete or len(paths) == 1 else "incomplete"
++                )
+             for path in sorted(paths):
+                 if path.name == "meta.json" or path.name.endswith("manifest.json"):
+                     role = "metadata"
+@@ -710,7 +774,9 @@
+             root=candidate.root.path,
+             file_path=candidate.path,
+             entity_ids=(entity_id,),
+-            source_type=source_type if candidate.role == "original_primary" else SourceType.OTHER,
++            source_type=source_type
++            if candidate.role == "original_primary"
++            else SourceType.OTHER,
+             published_date=(
+                 str(candidate.group_metadata.get("filing_date"))
+                 if candidate.group_metadata.get("filing_date")
+@@ -812,6 +878,7 @@
+     scan_time: str | None = None,
+     selected_roots: tuple[RootSpec, ...] | None = None,
+     scan_run_started: bool = False,
++    target_content_sha256s: tuple[str, ...] | None = None,
+ ) -> ScanReport:
+     run_id = run_id or "scan-" + uuid.uuid4().hex
+     scan_time = scan_time or _utc_now()
+@@ -820,6 +887,27 @@
+     policy_excluded = 0
+     new_errors = known_quarantined = 0
+     error_details: list[dict[str, Any]] = []
++    target_hashes_pattern: tuple[str, ...] = tuple(target_content_sha256s or ())
++    root_states: list[dict[str, Any]] = []
++
++    def _record_root(
++        root_id: str,
++        status: str,
++        *,
++        error_class: str | None = None,
++        error: str | None = None,
++        files_seen_root: int = 0,
++    ) -> None:
++        root_states.append(
++            {
++                "root_id": root_id,
++                "status": status,
++                "error_class": error_class,
++                "error": error,
++                "files_seen_root": files_seen_root,
++            }
++        )
++
+     if selected_roots is None:
+         selected_roots = _select_roots(config, root_ids)
+     if not dry_run:
+@@ -844,6 +932,12 @@
+                         "unchanged": False,
+                     }
+                 )
++            _record_root(
++                root.root_id,
++                "failed",
++                error_class="root_unavailable",
++                error="root directory is unavailable",
++            )
+             continue
+         # F-BAR-10 fix (owner instruction 2026-09-18): a root that DECLARES an adapter is
+         # scanned THROUGH it, snapshot or not.  The declaration is the instruction - "a future
+@@ -854,6 +948,41 @@
+         # the plain directory roots), so the v1/v2 cutover for those is unchanged.
+         use_adapter = v2_scan_shadow or root.adapter_id is not None
+         strategies.append((root.root_id, "adapter" if use_adapter else "legacy"))
++        # D-W01: BOTH the config doctor and this scan use the SAME
++        # effective_root_profile judgment; a root with any effective-config
++        # error contributes nothing and the batch continues (per-root fail
++        # closed, no legacy fallback - same shape as the dispatch-error arm
++        # below, only with a stable error CLASS instead of an unclassifiable
++        # message; the roots that scan fine before scan identically after).
++        from .config import EFFECTIVE_ERROR_CODES, effective_root_profile
++
++        profile = effective_root_profile(root, scan_shadow_active=v2_scan_shadow)
++        if profile["errors"]:
++            for profile_error in profile["errors"]:
++                assert profile_error["code"] in EFFECTIVE_ERROR_CODES
++                errors += 1
++                new_errors += 1
++                if len(error_details) < 5:
++                    error_details.append(
++                        {
++                            "root_id": root.root_id,
++                            "relative_path": "",
++                            "error": "effective-config: {}, {}".format(
++                                profile_error["code"], profile_error["detail"]
++                            ),
++                            "unchanged": False,
++                        }
++                    )
++            _record_root(
++                root.root_id,
++                "failed",
++                error_class="effective_config",
++                error="; ".join(
++                    "{}: {}".format(item["code"], item["detail"])
++                    for item in profile["errors"]
++                ),
++            )
++            continue
+         try:
+             candidates, excluded, policy_count = scan_root_strategy(
+                 root,
+@@ -881,11 +1010,19 @@
+                         "unchanged": False,
+                     }
+                 )
++            _record_root(
++                root.root_id,
++                "failed",
++                error_class="scan_strategy_error",
++                error=f"scan_root_strategy: {exc}",
++            )
+             continue
+         files_seen += len(candidates)
++        files_seen_root = len(candidates)
+         files_excluded += excluded
+         policy_excluded += policy_count
+         if dry_run:
++            _record_root(root.root_id, "completed", files_seen_root=files_seen_root)
+             continue
+         with store.transaction() as connection:
+             connection.execute(
+@@ -893,7 +1030,14 @@
+                 VALUES(?,?,?,?,?,?) ON CONFLICT(root_id) DO UPDATE SET
+                 path=excluded.path,kind=excluded.kind,priority=excluded.priority,
+                 last_scan_run=excluded.last_scan_run,last_scanned_at=excluded.last_scanned_at""",
+-                (root.root_id, str(root.path.resolve()), root.kind, root.priority, run_id, scan_time),
++                (
++                    root.root_id,
++                    str(root.path.resolve()),
++                    root.kind,
++                    root.priority,
++                    run_id,
++                    scan_time,
++                ),
+             )
+         groups: dict[str, list[_Candidate]] = defaultdict(list)
+         for candidate in candidates:
+@@ -922,8 +1066,12 @@
+             ),
+         )
+         for group_index, (group_key, group) in enumerate(group_items, start=1):
+-            primary_candidate = next((item for item in group if item.role == "original_primary"), None)
+-            classification_path = primary_candidate.path if primary_candidate else group[0].path
++            primary_candidate = next(
++                (item for item in group if item.role == "original_primary"), None
++            )
++            classification_path = (
++                primary_candidate.path if primary_candidate else group[0].path
++            )
+             if progress is not None:
+                 progress(
+                     current_path=str(classification_path.resolve(strict=False)),
+@@ -931,7 +1079,11 @@
+                     total=len(group_items),
+                     detail=f"scanning root {root.root_id}",
+                 )
+-            metadata = primary_candidate.group_metadata if primary_candidate else group[0].group_metadata
++            metadata = (
++                primary_candidate.group_metadata
++                if primary_candidate
++                else group[0].group_metadata
++            )
+             admission = (
+                 primary_candidate.admission
+                 if primary_candidate is not None
+@@ -949,7 +1101,9 @@
+                     classification_path, root_kind=root.kind, metadata=metadata
+                 )
+             entity_name = (primary_candidate or group[0]).entity_name
+-            entity_id, entity_label, entity_kind, confidence, method = _entity(entity_name, root.root_id)
++            entity_id, entity_label, entity_kind, confidence, method = _entity(
++                entity_name, root.root_id
++            )
+             observed: list[_ObservedFile] = []
+             for candidate in group:
+                 try:
+@@ -994,7 +1148,14 @@
+                                 "unchanged": item.known_error,
+                             }
+                         )
+-            primary = next((item for item in observed if item.candidate.role == "original_primary" and item.source_id), None)
++            primary = next(
++                (
++                    item
++                    for item in observed
++                    if item.candidate.role == "original_primary" and item.source_id
++                ),
++                None,
++            )
+             document_id = (
+                 _document_id_for_source(primary.source_id)
+                 if primary and primary.source_id
+@@ -1007,17 +1168,23 @@
+                 and existing["document_id"]
+                 and existing["document_id"] != document_id
+             }
+-            title = str(metadata.get("source_title") or "").strip() or classification_path.stem
++            title = (
++                str(metadata.get("source_title") or "").strip()
++                or classification_path.stem
++            )
+             published = (
+-                str(metadata.get("filing_date") or metadata.get("published_date") or "")
+-                .strip()
++                str(
++                    metadata.get("filing_date") or metadata.get("published_date") or ""
++                ).strip()
+                 or _published_date(classification_path.name)
+                 or None
+             )
+             source_status = (primary_candidate or group[0]).source_status
+             if primary is None:
+                 source_status = (
+-                    "quarantined" if any(item.error for item in observed) else "incomplete"
++                    "quarantined"
++                    if any(item.error for item in observed)
++                    else "incomplete"
+                 )
+             document_metadata = {
+                 "root_id": root.root_id,
+@@ -1044,12 +1211,19 @@
+                     if item.source_id:
+                         connection.execute(
+                             "INSERT OR IGNORE INTO sources(source_id,content_sha256,byte_size,mime_type,first_seen_at) VALUES(?,?,?,?,?)",
+-                            (item.source_id, item.content_sha256, item.size, item.mime_type, scan_time),
++                            (
++                                item.source_id,
++                                item.content_sha256,
++                                item.size,
++                                item.mime_type,
++                                scan_time,
++                            ),
+                         )
+                 existing_document = connection.execute(
+                     "SELECT metadata_priority, source_status, metadata_json, title, source_type,"
+                     " document_kind, published_date, primary_source_id"
+-                    " FROM documents WHERE document_id=?", (document_id,)
++                    " FROM documents WHERE document_id=?",
++                    (document_id,),
+                 ).fetchone()
+                 _merge_document_row(
+                     connection,
+@@ -1110,10 +1284,38 @@
+                             item.mtime_ns,
+                             run_id,
+                             item.manifest_json,
+-                            canonical_json({"group_key": group_key, "source_status": source_status}),
++                            canonical_json(
++                                {"group_key": group_key, "source_status": source_status}
++                            ),
+                             item.error,
+                         ),
+                     )
++                # I-02-E (W02E-P1.B4): the scan-partial-commit crash window.
++                # Only when the case harness configures W02E_SCAN_PAUSE_DOC
++                # does this hook write a checkpoint marker and freeze the
++                # process so the driver can hard-kill it; sqlite then rolls
++                # back to the last committed transaction on restart.  Env
++                # unset -> strict no-op.
++                if _w02e_target_document() == document_id:
++                    base = os.environ.get("W02E_CHECKPOINT_DIR") or "."
++                    marker_path = Path(base) / "checkpoint.scan_partial.json"
++                    marker_path.parent.mkdir(parents=True, exist_ok=True)
++                    marker_path.write_text(
++                        json.dumps(
++                            {"point": "scan_partial", "run_id": run_id, "document_id": document_id},
++                            sort_keys=True,
++                        ),
++                        encoding="utf-8",
++                    )
++                    import time as _time
++
++                    while True:
++                        if (Path(base) / "w02e_release").is_file():
++                            raise RuntimeError(
++                                "W02E released after scan_partial checkpoint"
++                            )
++                        _time.sleep(0.02)
++
+                 for obsolete_document_id in sorted(obsolete_document_ids):
+                     if not obsolete_document_id.startswith(
+                         "urn:company-wiki:document-logical:sha256:"
+@@ -1171,6 +1373,10 @@
+                 "UPDATE locations SET location_status='missing' WHERE root_id=? AND last_seen_run<>? AND location_status<>'missing'",
+                 (root.root_id, run_id),
+             )
++            # D-W02 (I-02-A): the root's pass is complete only after its
++            # locations/mark rows committed; readers below this line can trust
++            # per_root_results for exactly this set of roots.
++            _record_root(root.root_id, "completed", files_seen_root=files_seen_root)
+ 
+     if dry_run:
+         return ScanReport(
+@@ -1184,9 +1390,17 @@
+             known_quarantined=known_quarantined,
+             error_details=tuple(error_details),
+             strategy=tuple(strategies),
+-        )
+-    active = store.fetchone("SELECT COUNT(*) AS count FROM locations WHERE location_status='active'")["count"]
+-    missing = store.fetchone("SELECT COUNT(*) AS count FROM locations WHERE location_status='missing'")["count"]
++            completion_status="completed_with_errors" if errors else "completed",
++            per_root_results=tuple(root_states),
++            target_files=(),
++        )
++    active = store.fetchone(
++        "SELECT COUNT(*) AS count FROM locations WHERE location_status='active'"
++    )["count"]
++    missing = store.fetchone(
++        "SELECT COUNT(*) AS count FROM locations WHERE location_status='missing'"
++    )["count"]
++    target_files = _target_registration_results(store, target_hashes_pattern, run_id)
+     report = ScanReport(
+         run_id=run_id,
+         files_seen=files_seen,
+@@ -1201,14 +1415,76 @@
+         known_quarantined=known_quarantined,
+         error_details=tuple(error_details),
+         strategy=tuple(strategies),
++        completion_status="completed_with_errors" if errors else "completed",
++        per_root_results=tuple(root_states),
++        target_files=tuple(target_files),
+     )
+     with store.transaction() as connection:
+         completed_at = _utc_now()
+         connection.execute(
+             "UPDATE scan_runs SET completed_at=?,status=?,report_json=? WHERE run_id=?",
+-            (completed_at, "completed_with_errors" if errors else "completed", canonical_json(report.to_dict()), run_id),
++            (
++                completed_at,
++                "completed_with_errors" if errors else "completed",
++                canonical_json(report.to_dict()),
++                run_id,
++            ),
+         )
+     return report
++
++
++def _target_registration_results(
++    store: CatalogStore,
++    target_hashes: tuple[str, ...],
++    run_id: str,
++) -> list[dict[str, Any]]:
++    """D-W02 (I-02-A): target-registration receipt.
++
++    A target counts as registered ONLY when THIS scan run observed an ACTIVE
++    location row whose ``source.content_sha256`` equals the target hash
++    (``locations.last_seen_run = run_id``).  Older committed rows for the same
++    bytes are evidence of the PAST, not of THIS scan; they never satisfy the
++    receipt (no inference from prior state).
++    """
++    results: list[dict[str, Any]] = []
++    for content_sha256 in target_hashes:
++        row = store.fetchone(
++            """SELECT l.location_id,l.root_id,l.relative_path,l.document_id,
++            l.role,l.location_status,s.source_id,s.content_sha256
++            FROM sources s JOIN locations l ON l.source_id=s.source_id
++            WHERE s.content_sha256=? AND l.last_seen_run=? AND l.location_status='active'
++            ORDER BY l.location_id LIMIT 1""",
++            (content_sha256, run_id),
++        )
++        if row is not None:
++            results.append(
++                {
++                    "content_sha256": row["content_sha256"],
++                    "registered": True,
++                    "reason": "registered",
++                    "source_id": row["source_id"],
++                    "document_id": row["document_id"],
++                    "location_id": row["location_id"],
++                    "root_id": row["root_id"],
++                    "relative_path": row["relative_path"],
++                    "role": row["role"],
++                }
++            )
++        else:
++            results.append(
++                {
++                    "content_sha256": content_sha256,
++                    "registered": False,
++                    "reason": "target_not_registered",
++                    "source_id": None,
++                    "document_id": None,
++                    "location_id": None,
++                    "root_id": None,
++                    "relative_path": None,
++                    "role": None,
++                }
++            )
++    return results
+ 
+ 
+ class CutoverGateError(RuntimeError):
+@@ -1273,11 +1549,13 @@
+         if not isinstance(path, Path) or not path.is_file():
+             continue
+         data = path.read_bytes()
+-        files.append((
+-            getattr(candidate, "relative_path", ""),
+-            len(data),
+-            hashlib.sha256(data).hexdigest(),
+-        ))
++        files.append(
++            (
++                getattr(candidate, "relative_path", ""),
++                len(data),
++                hashlib.sha256(data).hexdigest(),
++            )
++        )
+     return {"files": sorted(files)}
+ 
+ 
+@@ -1542,17 +1820,26 @@
+             winner = new_value if has_new else stored_value
+             fields[column] = _provenance_record(
+                 value_hash=_short_value_hash(winner),
+-                sources=[_source_record(
+-                    source_id=source_id if has_new else stored_source["source_id"],
+-                    observed_at=observed_at if has_new else stored_source["observed_at"],
+-                    role="incoming" if has_new else "stored",
+-                    declared=new_declares if has_new else stored_source["declared"],
+-                )],
++                sources=[
++                    _source_record(
++                        source_id=source_id if has_new else stored_source["source_id"],
++                        observed_at=observed_at
++                        if has_new
++                        else stored_source["observed_at"],
++                        role="incoming" if has_new else "stored",
++                        declared=new_declares if has_new else stored_source["declared"],
++                    )
++                ],
+                 conflicts=[],
+             )
+             merged[column] = winner
+             continue
+-        if not has_stored and has_new and column in fill_requires_declared and not new_declares:
++        if (
++            not has_stored
++            and has_new
++            and column in fill_requires_declared
++            and not new_declares
++        ):
+             # The design lets only a DECLARING source write these columns, even
+             # when filling a gap: a file-name-derived guess never becomes the
+             # stored value (B-VR05-07).
+@@ -1570,10 +1857,14 @@
+                 # conflict: the derived value never was a declaration.
+                 fields[column] = _provenance_record(
+                     value_hash=_short_value_hash(new_value),
+-                    sources=[_source_record(
+-                        source_id=source_id, observed_at=observed_at,
+-                        role="incoming", declared=True,
+-                    )],
++                    sources=[
++                        _source_record(
++                            source_id=source_id,
++                            observed_at=observed_at,
++                            role="incoming",
++                            declared=True,
++                        )
++                    ],
+                     conflicts=[],
+                 )
+                 merged[column] = new_value
+@@ -1593,11 +1884,16 @@
+                 value_hash=_short_value_hash(stored_value),
+                 sources=[stored_source],
+                 conflicts=[
+-                    {"source_id": stored_source["source_id"],
+-                     "observed_at": stored_source["observed_at"],
+-                     "value_hash": _short_value_hash(stored_value)},
+-                    {"source_id": source_id, "observed_at": observed_at,
+-                     "value_hash": _short_value_hash(new_value)},
++                    {
++                        "source_id": stored_source["source_id"],
++                        "observed_at": stored_source["observed_at"],
++                        "value_hash": _short_value_hash(stored_value),
++                    },
++                    {
++                        "source_id": source_id,
++                        "observed_at": observed_at,
++                        "value_hash": _short_value_hash(new_value),
++                    },
+                 ],
+             )
+             merged[column] = stored_value
+@@ -1609,10 +1905,14 @@
+                 # An agreeing capture is evidence the value is not disputed:
+                 # record it alongside the source that wrote the value
+                 # (B-VR05-05).
+-                agreeing.append(_source_record(
+-                    source_id=source_id, observed_at=observed_at,
+-                    role="incoming", declared=new_declares,
+-                ))
++                agreeing.append(
++                    _source_record(
++                        source_id=source_id,
++                        observed_at=observed_at,
++                        role="incoming",
++                        declared=new_declares,
++                    )
++                )
+             fields[column] = _provenance_record(
+                 value_hash=_short_value_hash(winner),
+                 sources=agreeing,
+@@ -1621,10 +1921,14 @@
+         else:
+             fields[column] = _provenance_record(
+                 value_hash=_short_value_hash(winner),
+-                sources=[_source_record(
+-                    source_id=source_id, observed_at=observed_at,
+-                    role="incoming", declared=new_declares,
+-                )],
++                sources=[
++                    _source_record(
++                        source_id=source_id,
++                        observed_at=observed_at,
++                        role="incoming",
++                        declared=new_declares,
++                    )
++                ],
+                 conflicts=[],
+             )
+         merged[column] = winner
+@@ -1660,7 +1964,11 @@
+         # capture that replaces the metadata container without declaring the
+         # column would silently turn a declared value into an apparently
+         # derived one — and the capture after that could overwrite it unseen.
+-        new_inner = document_metadata.get("dayu_meta") or document_metadata.get("acquisition") or {}
++        new_inner = (
++            document_metadata.get("dayu_meta")
++            or document_metadata.get("acquisition")
++            or {}
++        )
+         source_id = primary.source_id if primary else None
+         insert_columns = {
+             "title": title,
+@@ -1675,23 +1983,31 @@
+         for column, value in insert_columns.items():
+             provenance_fields[column] = _provenance_record(
+                 value_hash=_short_value_hash(value),
+-                sources=[_source_record(
+-                    source_id=source_id,
+-                    observed_at=scan_time,
+-                    role="incoming",
+-                    declared=bool(declared_columns.get(column)),
+-                )],
++                sources=[
++                    _source_record(
++                        source_id=source_id,
++                        observed_at=scan_time,
++                        role="incoming",
++                        declared=bool(declared_columns.get(column)),
++                    )
++                ],
+                 conflicts=[],
+             )
+-        container_name = "dayu_meta" if document_metadata.get("dayu_meta") else "acquisition"
++        container_name = (
++            "dayu_meta" if document_metadata.get("dayu_meta") else "acquisition"
++        )
+         if isinstance(new_inner, dict):
+             for key, value in new_inner.items():
+                 provenance_fields[f"{container_name}.{key}"] = _provenance_record(
+                     value_hash=_short_value_hash(value),
+-                    sources=[_source_record(
+-                        source_id=source_id, observed_at=scan_time,
+-                        role="incoming", declared=True,
+-                    )],
++                    sources=[
++                        _source_record(
++                            source_id=source_id,
++                            observed_at=scan_time,
++                            role="incoming",
++                            declared=True,
++                        )
++                    ],
+                     conflicts=[],
+                 )
+         insert_metadata = _merge_metadata_json(
+@@ -1737,8 +2053,14 @@
+         # only JSONDecodeError was caught here, so a valid-JSON non-object payload fell
+         # through and `.get(...)` raised AttributeError during a re-scan).
+         existing_meta = metadata_object(existing_document["metadata_json"])
+-        existing_inner = existing_meta.get("dayu_meta") or existing_meta.get("acquisition") or {}
+-        new_inner = document_metadata.get("dayu_meta") or document_metadata.get("acquisition") or {}
++        existing_inner = (
++            existing_meta.get("dayu_meta") or existing_meta.get("acquisition") or {}
++        )
++        new_inner = (
++            document_metadata.get("dayu_meta")
++            or document_metadata.get("acquisition")
++            or {}
++        )
+         # Phase 16.5: when the same content-addressed document is
+         # re-ingested from another path, prefer the metadata that
+         # carries a source URL (an old bare sidecar must not
+@@ -1754,7 +2076,9 @@
+         # provider identity the REUSED_EXACT assert requires).
+         prefer_new = (
+             (
+-                not (existing_inner.get("source_url") or existing_inner.get("https_url"))
++                not (
++                    existing_inner.get("source_url") or existing_inner.get("https_url")
++                )
+                 and (new_inner.get("source_url") or new_inner.get("https_url"))
+             )
+             or (
+@@ -1770,7 +2094,9 @@
+         # Per-column merge (design §B05): priority only ranks candidates now, it
+         # no longer decides which truth is written, and a real disagreement is
+         # recorded instead of silently resolved.
+-        previous_fields = _previous_provenance_fields(existing_document["metadata_json"])
++        previous_fields = _previous_provenance_fields(
++            existing_document["metadata_json"]
++        )
+         stored_columns = {
+             "title": existing_document["title"],
+             "source_type": existing_document["source_type"],
+@@ -1785,7 +2111,9 @@
+             record = previous_fields.get(column)
+             bound: bool | None = None
+             if isinstance(record, dict):
+-                sources = [s for s in (record.get("sources") or []) if isinstance(s, dict)]
++                sources = [
++                    s for s in (record.get("sources") or []) if isinstance(s, dict)
++                ]
+                 if sources:
+                     bound = any(bool(source.get("declared")) for source in sources)
+             # A recorded declaration is authoritative; only a row written before
+@@ -1825,12 +2153,14 @@
+             for key, value in winning_inner.items():
+                 provenance_fields[f"{container_name}.{key}"] = _provenance_record(
+                     value_hash=_short_value_hash(value),
+-                    sources=[_source_record(
+-                        source_id=source_id if prefer_new else None,
+-                        observed_at=scan_time if prefer_new else None,
+-                        role="incoming" if prefer_new else "stored",
+-                        declared=prefer_new,
+-                    )],
++                    sources=[
++                        _source_record(
++                            source_id=source_id if prefer_new else None,
++                            observed_at=scan_time if prefer_new else None,
++                            role="incoming" if prefer_new else "stored",
++                            declared=prefer_new,
++                        )
++                    ],
+                     conflicts=[],
+                 )
+         update_metadata = _merge_metadata_json(
+@@ -1873,6 +2203,7 @@
+     progress: Callable[..., None] | None = None,
+     v2_scan_shadow: bool = False,
+     zero_diff_rounds: int | None = None,
++    target_content_sha256s: tuple[str, ...] | None = None,
+ ) -> ScanReport:
+     if dry_run and v2_scan_shadow:
+         # FC-305: production dry shadow with v2 requires the two-round
+@@ -1892,6 +2223,7 @@
+             root_ids=root_ids,
+             progress=progress,
+             v2_scan_shadow=v2_scan_shadow,
++            target_content_sha256s=target_content_sha256s,
+         )
+     if store is None:
+         raise TypeError("store is required for a non-dry-run scan")
+@@ -1912,11 +2244,17 @@
+                 scan_time=scan_time,
+                 selected_roots=selected_roots,
+                 scan_run_started=True,
++                target_content_sha256s=target_content_sha256s,
+             )
+     except Exception:
+         _interrupt_scan_run(store, run_id)
+         raise
+ 
++
++
++
++def _w02e_target_document() -> str | None:
++    return os.environ.get("W02E_SCAN_PAUSE_DOC") or None
+ 
+ __all__ = ["scan_catalog"]
+ 
+@@ -1945,7 +2283,9 @@
+             candidates = scan_root_via_adapter(root, company_names, progress=progress)
+         except AdapterDispatchError as exc:
+             raise ScannerFacadeError(f"v2 scanner unavailable (fail closed): {exc}")
+-        except Exception as exc:  # adapter runtime failure -> fail closed, no v1 fallback
++        except (
++            Exception
++        ) as exc:  # adapter runtime failure -> fail closed, no v1 fallback
+             raise ScannerFacadeError(
+                 f"v2 scanner failed (fail closed, no legacy fallback): "
+                 f"{type(exc).__name__}: {exc}"
+```

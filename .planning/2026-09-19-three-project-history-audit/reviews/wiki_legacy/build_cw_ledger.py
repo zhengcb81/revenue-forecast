@@ -1,0 +1,90 @@
+"""Line-anchored manual review of root CW recovery/implementation history."""
+from pathlib import Path
+import collections,csv,json,re
+HERE=Path(__file__).resolve().parent
+blocks=json.loads((HERE/'scope.json').read_text(encoding='utf-8'))['blocks'];rules=[]
+H='historical_only';U='insufficient_evidence';X='contradicted';S='supported_scoped';D='superseded'
+def r(a,b,v,why,ev):rules.append((a,b,v,why,ev))
+receipt='artifacts/gates/cw-2.28/*attempt-0001.json；cw228_receipt_check.json（11/11索引hash匹配，验证器报5错误）'
+r(1595,1604,H,'恢复正文的来源/恢复可信度说明，仅说明文字如何找回，不证明实施或验收已发生。','task_plan_cw_recovery_20260725.md原恢复版本；本轮不读取私有session记录')
+r(1605,1641,S,'明确source-only边界及旧投资writer退役，当前AGENTS最高边界一致；旧研究/估值目标主动取消不能作为当前漏实现。','AGENTS.md BOUNDARY-0；当前source_catalog和source_contract机制；旧v2为archived_reference')
+r(1642,1655,U,'schema/export局部能力存在，但3公司92/108/43文件与118测试不能单独证明四类来源定位质量、clean clone/崩溃/增量及StockWiki实消费；缺逐项可重放当前收据。','source_contract/source_export.py；根task:1671；当前真实RF运行source readiness仍被review状态挡住')
+r(1657,1669,U,'源码包内禁止import/9个writer名单是架构静态范围，非所有CLI/legacy入口均不可生产调用；未见每条旧入口到IngestService及真实Q&A locator验收绑定。','本轮CodeGraph source_catalog/legacy_research_ingest/IngestService；CW-2.28 phase9 failed_tests仍含every_direct_writer_guard')
+r(1671,1676,U,'StockWiki联合验收含下游evidence candidates/review/stale传播；现有摘要是上游文件数+单仓测试，不能替代consumer运行及双向不变性证明。','原文1671及1673–1675；root RF消费审查；BOUNDARY-0只划职责不提供验收')
+r(1677,1680,D,'旧INV-MOD和投研认识论被明确退役；15/16完成只限定基础设施部分，不把取消目标算已实现。','BOUNDARY-0；同句completed_in_scope排除Outbox等')
+r(1682,1700,U,'原CW2.25计划正文无法完整重建；代码+12合同可覆盖功能存在，但2735/23564只部分backfill，不等于全量功能完成/原需求一一闭合。','原文1695–1699；core-section/progress:34–36仍pending20705；CW28 Phase4 receipt978/23789')
+r(1701,1789,H,'逐项是7/24诊断、错误纠偏和真实网络A/B叙述；保留3-case official与5-case rewrite区别，不能用旧网络成功保证当前provider。','原文6.11E/F；当前三市场审计有新scanner/config失败，错误相同不等于原根因回归')
+r(1731,1735,U,'旧发现明确指出日期fixture不含真实datetime、0links假成功和E2E不走adapter；当前是否全部治愈需要具体provider版本，不能凭4focused绿关闭。','同段raw链接/诊断；CW27后续计划及此轮filing mock/production差异')
+r(1782,1785,S,'独立区分原始三case/mixed与后续五case/allfalse设计非常必要；旧纠偏说明当时已发现验收对象漂移。','原文漂移commit链；后续CW27验收仍有report覆盖手工绕过')
+r(1790,1793,H,'旧工具错误与缩小搜索范围的处置记录，非产品当前缺陷。','原文错误表')
+r(1795,1845,H,'CW26抽取、RF接线、junction、浏览器/安全主表计数、备份、13/132旧测试均是当日交付边界，当前版本/安装方式已演化。','reviews/filing/review.md当前34文件三安装一致；本轮不重跑旧live')
+r(1846,1858,U,'三市场实测阶段completed与“至少每市场一未下载公司”原目标不一致：US/HK成功，阿里FY不匹配且CN失败；应保留局部成功并单列未闭合目标。','原文1852–1858五行结果；1799目标')
+r(1860,1876,H,'Windows路径/Docling退出等待/支持表单及旧回归修复为历史实施，不能因后续真实链失败倒推这些修复无效。','当前filing route/reuse合同支持基础链；旧provider行为需绑定版本')
+r(1878,2420,U,'CW27此原文是明确可执行的规划合同；不能把某些focused tests/单BYD成功作为本条所需场景全部已验收。逐条最终实际范围见2433–2455。','task_plan:1893–1901,2391–2406；2433–2455实际完成与遗留')
+r(1881,1881,H,'这里completed明确限定“仅完成计划”，并非宣称产品已完成；不可据此直接判实现失败或启动旧授权。','本句括号及后续2424实施状态')
+r(1924,2005,H,'授权/allowlist/执行顺序/receipt格式是历史施工约束，不是本轮权限或已执行事实；当前审计不运行示例命令。','原文计划性质；本轮只读边界')
+r(2037,2037,H,'无写入回滚只限当时Phase0设计，未在本轮实施。','原文Phase0')
+r(2378,2389,H,'scoped代码回滚、raw保留及candidate/reviewer规则是当时设计边界；完成与审查分离仍应保留，不能将实施者自己签名替代。','下文CW28候选升总绿反证；当前本轮无代码写')
+r(2408,2418,H,'旧预置停手表只是风险设计，后续是否执行需操作收据，不能视为当前事故或已运行。','原文预置标题')
+r(2422,2432,H,'7/24只完成offline original E2E恢复且保留baseline例外，状态candidate/partial本身诚实；不能把后来的总完成倒灌到当天。','原文2428–2430')
+r(2433,2448,U,'完成表只列BYD canonical import和三家公司discover，不满足1893/2395三家导入复用；合同实现局部成果不否定，但总完成需拆分。','同文件2451中微identity_conflict/bypass；2452未跑11e2e；2453report手工cp')
+r(2450,2455,S,'遗留明示identity mapping未修、runner覆盖未改、部分E2E未跑；应保持开放条目，不能被“全部完成”吞没。','同段原文与2433完成表对照；当前不声称这些旧缺陷尚未修复')
+r(2457,2462,H,'历史无越界/原件保留声明需要当时before/after；本轮未获取全量旧manifest，不提升为完整独立证明。','原文历史范围')
+r(2464,2477,U,'CW24成果可分局部实现，但完成态与后文未交付adapter/未发生下载canary矛盾；40/618绿不是生产全目标闭合。','task_plan:2672,2678,2707–2725,2744')
+r(2479,2571,U,'原目标含任意已配置外根原地复用、身份严校验和三市场canonical；后来的公司raw-only+复制提升设计未显式保留目标差额。','同文件2520；portfolio-reuse-fix目标/策略/后来automatic根因')
+r(2494,2501,H,'旧激活marker/外部权限规则按其历史上下文保留，非本轮授权。','同段时间与CW3.5旧marker')
+r(2505,2516,H,'分类、元数据、untracked、回归计数为施工前基线，不应作为当前仍有同缺陷的断言。','后续Phase1/2/StockInfo修复；本轮当前新证据另列')
+r(2540,2571,H,'允许/禁止文件清单是历史范围，路径仅作证据引用；未执行其中写入。','当前审计only-docs')
+r(2574,2605,H,'Phase0实际基线含预存失败/dirty，记载清楚；仅基线读取完成并不要求产品已绿。','task_plan原结果表')
+r(2607,2670,U,'分类/identity/dedup/reuse断言设计具体；旧局部合同尚不能证明任意root、真实provider和生产配置，现v2scanner错配暴露组合覆盖不足。','旧Phase1dry filenames/spy adapters；wiki GP002当前config独立证据；filing当前隔离280绿')
+r(2672,2680,X,'同节header称completed但明确adapter未跟踪；2678自己的交付规则最高candidate，属于完成状态超范围而非候选实现无价值。','task_plan:2672,2678；CW28后续仍delivery FAIL/dirty')
+r(2682,2705,H,'RFpreflight与回归的当时设计/测试结果，后来拆FF再自包含再接线演化；此处不能当今天调用入口保证。','CW26/CW29；root RF owner current实际调用审查')
+r(2707,2725,U,'canary执行完成与canary通过不同：CNidentity_conflict/HKmissing、真正download0；被挡住正确但用户缺件获取目标未验收。','原文8A/B/C结果；2744明确门禁')
+r(2727,2751,U,'三市场真实请求、每类10样本/7类分层、独立reviewer是明文要求；现结果仅500混合sample且semi1/prospectus1，不能证明逐类10样本或全路径。','原文2711分布；2730每类10；2722零下载')
+r(2753,2770,U,'A1–A14验收表仍Expected/Evidence设计，不是已填写实际运行receipt；相应局部tests可信范围不扩为生产闭环。','原文表头与当前filing/wiki实际反例')
+r(2772,2794,H,'回滚/冷启动/错误表属于历史操作要求与记录；原件保留应保留，旧marker不再执行。','原文；SOURCE-ONLY边界')
+r(2796,2799,X,'汇总全PASS/completed被其当前索引receipt反证：Phase10只是candidate、9有skip/xfail/failed字段、4只978/23789、7未完成交付。',receipt)
+r(2800,2840,H,'承接与7/26基线准确承认此前CN/宁德/reviewer/交付未闭合，旧数字仅当时观察。','同文件2806；后续独立reviewer矩阵')
+r(2808,2822,U,'最终全量backfill、五公司capture-ready、可重放交付/独立review是严格原目标；最终receipt未满足，不以样本或receipt数量代替。',receipt+'；CW28原计划3132–3154/3799–3821')
+r(2842,3074,H,'逐项是历史授权/allowlist/receipt/RED设计以及旧失败尝试记录；旧invalidated事实仅历史引用，不能解锁后续阶段。','CW28 §12优先级规则；receipt实际检查另列')
+r(3055,3068,U,'fingerprint/terminal/pause设计需要持久DB与真实worker组合断言；纯state fixture为局部证据，未证明原生产全量完成。',receipt+'；root worker独立review')
+r(3076,3095,U,'11离线tests可以支持局部semantic实现；生产状态恢复/控制UI与格式全集并不由数字11证明。','CW28 Phase2 receipt；后续Phase4 partial')
+r(3097,3154,U,'3R计划limit10/100/同批重跑/中断恢复；receipt实际limit3且缺location注入，以A/B第二store冒充worker restart。4R计划pending0实际仍大多数pending。',receipt+'；phase3 injections_note；phase4 catalog_after/worker-restore')
+r(3156,3279,U,'assertion/跨进程/模型内runtime/delivery逐条验收须独立绑定request与repo版本；其历史6/11/14/127测试和伪argv不能证明全部。',receipt+'；最新filing tests只局部；旧技术架构多次改变')
+r(3281,3384,H,'review_failed/not_accepted及旧2/5、Ruff等失败被明示保留，不据其断言当前仍失败；失败证明了实施者PASS不能直接信任。','原文8.1 independent reviewer矩阵；当前cw228 validator仍拒绝最终9/10')
+r(3288,3332,U,'每家公司需完整identity/provider/date/capture_fields/hash和零副作用JSON；最终8R只摘要sha/byte_size判ready，信息不足。','phase8 invariant capture_ready_all；task:3948–3959；receipt command stdout hashes全null')
+r(3386,3413,U,'独立review要求无修代码且复跑全Gate、抽数据/日志；最终10只有同实施者evidence-collection，明说无reviewer，不能完成封板。','phase10 status/blocker/executor；最新indexed中无独立PASS attempt')
+r(3415,3441,X,'旧implementer PASS矩阵已被后置review明确推翻；保留原行级关系，不让后续总状态恢复这些未满足原断言。','同文件3443–3471 reviewer逐R反证')
+r(3443,3471,H,'独立旧审查明确区分离线/路由/局部PASS与业务FAIL，此种范围表达保留；仍不得推断当时运行细节本轮已重新发生。','当时phase10-independent-review.json；本轮只独立现核receipt/关键机制')
+r(3473,3504,H,'旧回滚/冷启动/错误约束，不触发当前worker/raw/DB/git操作。','本轮无生产变更')
+r(3506,3666,U,'返工计划比实现更严格；schema可允许空hash/nullstdout，test只验证构造fixture，未与真实attempt集合形成发布门。',receipt+'；tests/contract/test_cw_228_receipt.py全synthetic；helper validate_chain只helper无真实gate接线')
+r(3510,3513,H,'planned_ready是返工计划编写时态，不能因后来总完成而改写为实施成功；历史优先级解释有价值。','该段状态明确“仅计划”')
+r(3667,3739,U,'15个RED/固定命令及具体状态合同是要求，不等于每条已完成；当前原始stdout缺失且scoped范围/validator不验phase-specific行为。',receipt+'；phase2 command summaries/hashes')
+r(3741,3821,X,'3R/4R明确承诺固定批次、注入、worker接管、pending0；实际3只limit3+单元替代注入，4仅978fingerprints+将于下次登录启动仍PASS，不符合合同。',receipt+'；phase3/4全文；不否定已完成的小批结果')
+r(3823,3900,U,'legacy认证与RF隔离/三市场路线设计合理但不同架构版本不可合并；需要逐消费入口重新证明，不沿用旧14tests和错误弱ready条件。','phase5/6/8 receipts；sourcehandle正式字段；当前RF owner检查')
+r(3902,3922,X,'7R明确未获Git交付最高candidate/不得PASS，实际7receipt将dirty/uncommitted作为passed=true，再解除下一步。','phase7 git_delivery_note；task_plan:3918–3920')
+r(3924,3983,U,'5/5需要machine JSON十项断言；receipt只reused/sha前缀/size，没有完整provider/provenance/asof/日期/field验证输出，缺独立复跑。','phase8 receipt capture_ready_all逻辑不足；task_plan:3954–3959')
+r(3985,4057,X,'全回归零skip/xfail且独立review PASS硬门与phase9/10当前原始文件相反；candidate本身并非失败，错误是总汇completed越过独立门。',receipt)
+r(4059,4138,H,'输出模板、追踪矩阵和计划设计PASS明确只验计划文档；不升级为产品已完成。追踪需未来实际证据逐行绑定。','4138显式声明；本轮counterexample证明文档规则存在但无强制执行')
+r(4140,4321,U,'CW29自包含runtime是当时另一架构的具体离线验收；复制两个temp根/mock路由不证明数据湖catalog索引和现RF默认FF入口一致。需沿版本明确supersedes，不回写旧状态。','CW26→CW29→后续FF结构；root RF current审查；同计划无真实下载目标，因此不按缺live判失败')
+r(4144,4144,D,'顶部in_progress仅Phase0与下文0–8completed不同步，历史状态路由有冲突；不作当前待办。','同节各phase状态及CW30 completed')
+r(4323,4411,H,'RF同步/Git交付是历史特定manifest/version/commit范围；本轮不重新push或用旧junction断言现安装。现代三安装一致由各owner新hash检查负责。','CW30 3.10.0；CW31 d5f1188；当前filing三安装34file独立check与root RF部署核验')
+r(4413,4417,U,'跨模型文档升级目标合理，但当前根仍含互相冲突completed/candidate/PASS和旧marker，说明正文大量规则不能保证状态唯一。','本轮cw228_receipt_check；CW24/27/28逐项对照')
+
+r(1794,1794,H,'纯恢复章节标签，无独立事实承诺。','结构标签')
+r(2572,2572,H,'纯阶段标签，无独立事实承诺。','结构标签')
+rows=[];struct=[];pending=[]
+for b in blocks:
+ if b['relative']!='task_plan.md' or b['line_start']<1595:continue
+ match=[x for x in rules if x[0]<=b['line_start']<=x[1]]
+ if not match:pending.append(b);continue
+ rule=match[-1]
+ if re.fullmatch(r'#+\s+[^\n]+',b['original_text']) and not any(x in b['original_text'] for x in ['状态','完成','验收','目标','PASS','FAIL']):struct.append(b);continue
+ rows.append(dict(b,item_id=f'WIKI-LEGACY-CW-{len(rows)+1:04d}',reviewer='history_filing',verdict=rule[2],historical_claim=b['original_text'],historical_evidence_scope='本原文对应日期/版本/样本，已PASS亦重新评估',current_evidence=rule[4],reason=rule[3],recommendation='依原需求保留未闭合范围，生产/部署/消费/独立验收分层；不修改旧收据',manual_semantic_range=f'task_plan.md:{rule[0]}-{rule[1]}'))
+(HERE/'cw_item_ledger.jsonl').write_text(''.join(json.dumps(x,ensure_ascii=False)+'\n' for x in rows),encoding='utf-8')
+with (HERE/'cw_item_ledger.csv').open('w',encoding='utf-8-sig',newline='') as fp:
+ w=csv.DictWriter(fp,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
+(HERE/'cw_structural_exclusions.json').write_text(json.dumps(struct,ensure_ascii=False,indent=2),encoding='utf-8')
+(HERE/'cw_pending.json').write_text(json.dumps(pending,ensure_ascii=False,indent=2),encoding='utf-8')
+report={'claims':len(rows),'structural':len(struct),'pending':len(pending),'verdicts':dict(collections.Counter(x['verdict'] for x in rows))}
+(HERE/'cw_coverage.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(report,ensure_ascii=False))

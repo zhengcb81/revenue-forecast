@@ -1,0 +1,44 @@
+{
+  "request_id": "execv2-w02b",
+  "fake_upstream_cli": {
+    "path": "samples/fake_upstream_cli.py",
+    "sha256": "7639cfd4201200215578e18cc6b7b9568c5c55c592906531810989aebe23aa0f",
+    "bound_as": "samples/upstream_root/scripts/fetch_filing.py (bind copy created by scripts/w02b_cases.py setup() at run start)",
+    "cases": {
+      "p1_cw": "deep passthrough: original CN-403 document shape replay (code=upstream_unavailable retryable=true), no download",
+      "n1_long": ">800 chars UTF-8 message + nested cause_chain (provider_http/provider_retry), exit 1",
+      "n2_unknown": "unknown provider code weird_provider_code declared retryable=true, exit 1",
+      "n2_string": "valid code upstream_unavailable but retryable='true' (string), exit 1",
+      "n2_malformed": "malformed JSON stdout + GBK-mojibake stderr, exit 2",
+      "n3": "deep: seed 1280 bytes staged by stub coordinator, writer stage fails (canonical_import_failed)",
+      "n4a": "coordinator raises sqlite3.OperationalError('database is locked')",
+      "n4b": "identity/contract error (error_code=identity_contract, retryable=False)",
+      "exit_probe": "single-layer: real modified cli.main() exit path in a real subprocess"
+    }
+  },
+  "request_shape": [
+    {
+      "entity": "测试实体星际矿业"
+    },
+    {
+      "market": "CN"
+    },
+    {
+      "document_kind": "annual_report"
+    },
+    {
+      "fiscal_year": 2025
+    },
+    {
+      "fiscal_period": "FY"
+    },
+    {
+      "as_of_date": "2026-04-28"
+    },
+    {
+      "request_id": "execv2-w02b"
+    }
+  ],
+  "network": "disabled; no provider calls; service stubs live only in scripts/w02b_cw_ensure_runner.py and samples (shim-declared, not product code)",
+  "scratch_workaround": "%TEMP%/w02b/a20260919-01 short path (Windows MAX_PATH); snapshots retained in after/case_scratch_retained/<case>"
+}

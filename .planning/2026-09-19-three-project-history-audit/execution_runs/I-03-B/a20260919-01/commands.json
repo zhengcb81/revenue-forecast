@@ -1,0 +1,62 @@
+{
+  "card_id": "I-03-B",
+  "attempt_id": "a20260919-01",
+  "commands": [
+    {
+      "id": "w03b-prefix-baseline",
+      "purpose": "修前独立断言：对生产冻结锚点副本运行 G-B1..B5 固定 expected，捕获失败输出（RED）",
+      "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-B/a20260919-01",
+      "argv": [
+        "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-03-B/a20260919-01/iso/venv/Scripts/python.exe",
+        "-X", "utf8", "-B",
+        "iso/pre/pre_fix_assertions.py",
+        "iso/baseline/gap_plan.py",
+        "before/pre_fix_assertions.json"
+      ],
+      "network": "disabled",
+      "expected_business_result": "G-B1..G-B5c 全部 fail（字典序缺陷 RED 满覆盖）",
+      "status": "bound",
+      "result": {"exit": 0, "summary": "G-B1..B5c 全 fail（B5a/B5b 仅缺新增审计字段部分，其余 RED）"}
+    },
+    {
+      "id": "w03b-postfix-override",
+      "purpose": "修后复验：同一断言组对 override 副本运行",
+      "cwd": "同上",
+      "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "iso/pre/pre_fix_assertions.py", "iso/override/gap_plan.py", "after/post_fix_assertions.json"],
+      "network": "disabled",
+      "expected_business_result": "G-B1..G-B5c 全部 pass",
+      "status": "bound",
+      "result": {"exit": 0, "summary": "G-B1..B5c 全 pass"}
+    },
+    {
+      "id": "w03b-before-harness",
+      "purpose": "验证脚本修前运行（baseline）：G-B1..B5 + C01-C14 纯选择子集 + 三市场样本 + D6 hash 面，产出 before 全量",
+      "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "scripts/w03b_cases.py", "iso/baseline/gap_plan.py", "after/w03b-before.json"],
+      "network": "disabled",
+      "expected_business_result": "修前全量 RED（C05 集合撞中等价如实记录）",
+      "status": "bound",
+      "result": {"exit": 0, "summary": "21 例：20 fail / 1 pass(C05 巧合等价)"}
+    },
+    {
+      "id": "w03b-after-harness",
+      "purpose": "验证脚本修后运行（override）：同输入同断言",
+      "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "scripts/w03b_cases.py", "iso/override/gap_plan.py", "after/w03b-after.json"],
+      "network": "disabled",
+      "expected_business_result": "21/21 pass",
+      "status": "bound",
+      "result": {"exit": 0, "summary": "21/21 pass"}
+    },
+    {
+      "id": "w03b-merge-diff",
+      "purpose": "合并修前/修后对比（after/gapbefore-after-results.json）与 changes.diff（副本 vs 生产锚点）",
+      "argv": "(python 内联合并；diff -u iso/baseline/gap_plan.py iso/override/gap_plan.py > changes.diff)",
+      "network": "disabled",
+      "status": "bound",
+      "result": {"exit": 0, "summary": "diff 926 行；before 20 fail/after 0 fail"}
+    }
+  ],
+  "notes": [
+    "T-GAP（生产 checkout pytest tests/contract/test_source_catalog_gap_plan.py）未在本 attempt 运行：本卡被控制器约束为只写 attempt 隔离副本、禁止修改三仓源码/测试/配置，生产文件保持 d18391b7… 不变；T-GAP 绑定（basetemp/隔离 checkout）仍属 I-00-B 范围，其结果只覆盖生产旧行为，不构成对 override 的验收。已用同断言组在 isolate 中等价复现全部纯选择用例。",
+    "未运行 pytest --basetemp：所有用例为 pure fixture 层级，无临时目录需求。"
+  ]
+}

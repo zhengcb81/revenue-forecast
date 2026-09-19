@@ -1,0 +1,170 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/task_plan.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/task_plan.md
+@@ -49,12 +49,13 @@
+ - [ ] canary 对源目录的写操作由 OS/sandbox 权限主动拒绝，不能只靠事后 hash 发现。
+ - [ ] worker 保持单实例，pause/stop/resume/backoff/circuit-breaker 行为有测试覆盖。
+ - [ ] **每个关键节点**均完成独立 agent 审查；实施者不得批准自己的阶段。
+ - [ ] SQL、supervisor、端到端、生产 canary、恢复自启动等高风险节点至少由 2 名
+-  不同视角的独立 agent 审查；G10C、G10R、G12C-PRE 与 G12C 各恰好 3 名。
++  不同视角的独立 agent 审查；G10C、G10R、G12C-RT、G12C-PRE 与 G12C 各恰好 3 名。
+ - [ ] Registry安装后先保持`ARMED_ON_PRELOGIN/ON` dormant；登录验证后保持
+-  `LOGIN_VALIDATED_PAUSED/ON`；只有独立D12C/G12C-PRE/OP12C/G12C与新用户授权才启用下次登录，且
+-  最终仍process0，不顺带启动当前session。
++  `LOGIN_VALIDATED_PAUSED/ON`；只有完整
++  `D12C-RT→runtime-template用户批准→G12C-RT→D12C→final-activation用户批准→G12C-PRE→OP12C→G12C`
++  双授权链才启用下次登录，且最终仍process0，不顺带启动当前session。
+ - [ ] 未经单独数据授权时，LLM 与所有 fallback provider 均保持 disabled，并有进程级
+   network deny 证据；“运行/观察 worker”的授权不自动包含外发授权。
+ - [ ] 生产运行加载固定、受审的 release/worktree identity，而不是可被另一个任务实时
+   修改的工作树；code root 与 config/catalog/runtime roots 明确分离。
+@@ -82,9 +83,10 @@
+ 
+ - [ ] `worker_control.json.desired_state` 在 canary 前保持 `paused`。
+ - [ ] `CompanyWikiSourceCatalog` HKCU Run 使用分阶段不变量：OP12B-CAS 前必须不存在；只有该
+   节点可 atomic create exact dormant value；此后 launcher 在无有效 LOGIN_COMMITTED 或未取得
+-  G12C `RECOVERED` outcome 时零启动。除 OP12B-CAS 与显式 OP12B-RB 外禁止 registry 写。
++  G12C `RECOVERED` outcome 时零启动。自动补偿只读验证并保留 absent/exact-owned/conflict 三种
++  registry 事实；删除或清理 Run 必须另立未来授权节点，不能伪装成 rollback。
+ - [ ] 测试不得写生产 `.source_catalog/catalog.sqlite3`。
+ - [ ] 不运行会修改生产配置的测试或调试命令。
+ - [ ] 对任何 lock 的处理必须核验 PID、creation time 和 executable，禁止按 PID 数字盲删。
+ - [ ] 所有迁移必须具备空间预算、失败回滚与幂等性证明。
+@@ -105,9 +107,10 @@
+ 以下规则适用于 Phase 0–12，优先级高于各 Phase 中较简略的 Gate 描述：
+ 
+ - [ ] “关键节点”以 `gate_dag.v4.json` 的每个T/D/I/OP/G为准，包括ledger bootstrap、三个
+   ADR Gate、G09P、G10C、G10R、条件G11M/G11M-L、D11J/OP11J/G11J、A1/A2/A3、每个BP/BF
+-  provider、12B每个ARM/CAS/LOGIN及预审/执行rollback节点、D12C/G12C-PRE/OP12C/G12C与
++  provider、12B每个ARM/CAS/LOGIN及预审/执行rollback节点、D12C-RT/G12C-RT、
++  D12C/G12C-PRE/OP12C/G12C与
+   OP12C-RB/G12C-RB，以及每次D05Rnn/OP05Rnn/G05Rnn；
+   不能只按Phase出口粗略合并。
+ - [ ] 实施 agent 在提交 Gate 前必须先生成不可变证据包：基线、diff、测试命令、完整
+   测试结果、性能数据、失败注入结果、风险说明、回滚点和当前 Git commit/worktree。
+@@ -124,9 +127,9 @@
+   role/agent/独立性、input ledger head、plan/DAG/evidence hashes、反例、findings、verdict；保存后
+   同一 reviewer 必须另发 `review_confirmation.schema.json` detached 回读确认，主 agent 无权代填。
+ - [ ] 精确人数由`gate_dag.v4.json`决定：每个D/G至少1名；G00L、G02A/G02B-ADR/两个02B
+   分支、D05/G05、G07-ADR、D07E/G07E、D09P/G09P、D09/G09、所有生产D/G、每次reset D/G
+-  至少2名；G10C/G10R/G12C-PRE/G12C各恰好3名。任何节点的实际人数与 role set 必须恰好
++  至少2名；G10C/G10R/G12C-RT/G12C-PRE/G12C各恰好3名。任何节点的实际人数与 role set 必须恰好
+   等于 machine DAG，不能把“至少”解释为可多派 reviewer。
+ - [ ] 未来实施时，非敏感脱敏证据与审查记录只能写入本隔离计划目录下预留的
+   `evidence/` 与 `reviews/`；含用户名、完整外部路径/portfolio名、命令行、正文的 raw
+   evidence 仅在用户另行批准时进入 D Gate 冻结的 repo外 approved sink，并满足 SID ACL、
+@@ -158,12 +161,14 @@
+   operation-catalog 并证明 `{}`、`[]`、scalar失败，再按`gate_ledger_validator_vectors.v4.json`逐项实现GL-S01、
+   GL-S02、GL-S03、GL-S04、GL-S05、GL-S06、GL-F01、GL-F02、GL-F03、GL-F04、GL-F05、
+   GL-F06、GL-F07、GL-F08、GL-F09、GL-F10、GL-F11、GL-F12与TESTID-S01；禁止生产读写。
+ - [ ] D00L一名独立agent审负例、canonical/hash/branch/reviewer语义；通过前不改validator实现。
+-- [ ] I00L实现stdlib-only deterministic validator、review JSON+detached confirmation核对、
+-  operation/auth/test-ID contract核对、expected-head exclusive append与只读`next`；不联网、
+-  不import业务代码、不执行节点。I00L另生成`validator_release_manifest.v1.json`；v4 plan
+-  manifest不得预先声称冻结未来脚本。
++- [ ] I00L实现deterministic validator、review JSON+detached confirmation核对、operation/auth/
++  test-ID contract核对、protected head-anchor exclusive append与只读`next`；OS pre-entry verifier
++  必须先核验解释器/DLL/stdlib/vendor/schema/fixture/release闭包与ACL/file identity，再以冻结的
++  Python `-I -S -B`启动；已验证入口只能显式注入已验证vendor路径。不联网、不import业务代码、
++  不执行节点。I00L另生成`validator_release_manifest.v2.json`；v4 plan manifest不得预先声称冻结
++  未来脚本。
+ - [ ] G00L两名独立agent分别审hash-chain/schema与DAG/adversarial vectors；property序列≥200、
+   mutant survivor=0、生产DB/registry/network调用0。
+ - [ ] 到I00L terminal为止先生成canonical bootstrap transcript候选与external head；只有D00L
+   review可用null head，G00L两份review必须绑定同一候选head和validator release hash。G00L
+@@ -177,9 +182,10 @@
+ - [ ] 先验证`plan_review_revision.md`指定的活动`plan_manifest.vN.json`自身SHA-256，再用该
+   machine manifest逐项核验全部核心计划文件与来源报告；随后读取`progress.md`。禁止只读
+   早期三份planning文件或用当前文件重新生成hash来冒充冻结值。
+ - [ ] 只有G00L有效后才允许ledger；使用validator核对schema、review payload actual hash、
+-  seq/prev/expected-head、manifest/DAG、branch/join与全部失效传播；不相信record自报next。
++  seq/prev/protected head-anchor generation/hash、manifest/DAG、branch/join与全部失效传播；禁止
++  裸`--expected-head`，不相信record自报next。
+ - [ ] 核对 worker 是否仍为 `PAUSED / STOPPED`。
+ - [ ] 核对 supervisor、worker、parser 相关进程为 0。
+ - [ ] 核对 HKCU Run、计划任务、服务没有自动启动入口。
+ - [ ] 核对关键 worker 文件当前 hash、Git HEAD 与报告基线差异。
+@@ -531,10 +537,12 @@
+   flush/fsync、hash-chain、crash reconcile和retention；ordinary worker/canary打开为zero DDL。
+ - [ ] source写由OS/sandbox拒绝；LLM-off主/备provider network deny；RPO/RTO不能替代写前拒绝。
+ - [ ] 提供正交reset/resume-session/arm/LOGIN_COMMITTED/final activation；CAS后dormant launcher
+   无commit token零启动，final activation不启动当前session。
+-- [ ] Registry实现真实atomic create-if-absent与exact conditional delete；普通check-then-set或
+-  mutex单独都不合格。两个真实进程竞争、第三方替换和取消注销必须测试；无法证明则
++- [ ] Registry实现真实atomic create-if-absent；自动rollback不得删除任何Run值，只能在提交点
++  把事实分类为`VERIFY_ABSENT`、`VERIFY_OWNED_PRESERVE`或`VERIFY_CONFLICT_PRESERVE`，再停用
++  control/token并保留registry。普通check-then-set或mutex单独都不合格。两个真实进程竞争、
++  第三方替换、第三方删除和取消注销必须测试；无法证明create-if-absent则
+   G12B-PRE必须FAIL，主流程记BLOCKED。
+ - [ ] T09P必须从`test_id_registry.v4.json`逐ID解析`introduced_at=T09P`及其condition，执行该节点
+   全部concrete IDs；后续 Gate 按每ID的`required_green_at/revalidate_at`选择。禁止owner×due
+   笛卡尔推导或手写prefix范围替代test selection。
+@@ -725,10 +733,11 @@
+   REG_SZ。CAS后必须`ARMED_ON_PRELOGIN/ON`；没有有效LOGIN_COMMITTED时任何意外login/reboot
+   child/DB/config/source/egress为0。mutex或check-then-set单独不合格。
+ - [ ] ARM token在CAS提交点一次性消费；CAS后使用默认24h/硬72h dormant lease。从OP12B-ARM
+   起，ARM/lease过期、ARM/CAS/post-review/login异常、crash partial或用户取消都只触发已预审的
+-  `OP12B-RB→G12B-RB`：按journal intent/finalize与ownership nonce reconcile、pause+invalidate token，且仅
+-  current exact bytes匹配本次值才conditional delete；第三方值不碰并进入
++  `OP12B-RB→G12B-RB`：按journal intent/finalize与ownership nonce reconcile、pause+invalidate token，
++  但绝不删除Run。`VERIFY_ABSENT`终态为`PAUSED/OFF`；`VERIFY_OWNED_PRESERVE`保留本次exact-owned
++  Run并终止于`PAUSED/ON`，另开未来清理工单；`VERIFY_CONFLICT_PRESERVE`保留第三方值并进入
+   `PAUSED/REGISTRY_CONFLICT`。CAS时同名值即使bytes相同也算冲突，不得接管。只读Gate和launcher
+   不得自行rollback，禁止自动重试；G12B-RB必须继承OP exact terminal state。
+ - [ ] 不新增计划任务或服务。G12B-CAS通过后先D12B-LOGIN两人审LOGIN_COMMITTED默认5min/
+   硬10min、review hashes/final approval/SID/machine+boot generation/previous session/“该SID下一次
+@@ -736,30 +745,42 @@
+   确认已保存工作并批准立即注销，才允许OP12B-LOGIN。
+ - [ ] login validation仅一冻结周期后自动persistent pause；两名post reviewer审G12B-POST。
+   成功状态只为LOGIN_VALIDATED_PAUSED/ON、process0；失败只触发OP12B-RB→G12B-RB；不得RECOVERED。
+ 
+-### 12.3 D12C → 用户授权冻结intent → G12C-PRE → OP12C → G12C 最终启用下一登录
+-
+-- [ ] 用户看到G12B-POST摘要后先进入D12C；两名满足DAG role/cardinality/disjoint规则的reviewer
+-  核验只读前置并冻结OP12C/OP12C-RB sealed contract与唯一proposed action/intent hash，不能审查
+-  尚不存在的授权。之后用户另行批准`G12C_FINAL_AUTOSTART_ACTIVATION`，授权逐字绑定该intent
+-  hash、action ID、generation/Run/release/auth/expiry。未批准时保持`SAFE_PAUSED_WAITING_USER`，
+-  不是BLOCKED。G12C-PRE由恰好3名DAG-disjoint、不同角色reviewer重验actual授权/ledger head，
+-  无P0/P1且circuit closed才唯一开放OP12C。
+-- [ ] OP12C只CAS control state为ENABLED_IDLE/ON并generation+1、消费一次性token；process0，
++### 12.3 双授权链 → OP12C → G12C 最终启用下一登录
++
++- [ ] `G12B-POST`后先进入`D12C-RT`：两名满足DAG exact role/cardinality/disjoint规则的reviewer只
++  冻结无具体候选副作用的runtime-cycle template、scope/caps/TTL/revocation、runtime authorization
++  proposal及其用户可见subject digest；随后外部用户生成purpose为
++  `RUNTIME_TEMPLATE_AUTHORIZATION`的receipt，单向绑定D12C-RT evidence/template/auth。`G12C-RT`
++  由恰好3名不同角色reviewer核验receipt、fresh revalidation与无副作用，且其唯一后继是D12C。
++- [ ] `D12C`再由2名满足DAG规则的reviewer冻结exact final activation intent、OP12C contract template、
++  OP12C-RB compensation、final authorization proposal及final subject digest，并绑定已通过的
++  G12C-RT evidence/runtime receipt；D节点不得写入未来receipt，也不得声称拥有事后actual。
++  外部用户随后生成purpose为`FINAL_AUTOSTART_ACTIVATION`的第二份receipt，绑定D12C evidence、
++  exact intent/contract/final auth和prior runtime chain。两份approval/receipt/evidence ID、hash、purpose
++  必须成对不同且不可交换；任一未批准时保持`SAFE_PAUSED_WAITING_USER`，不是BLOCKED。
++- [ ] `G12C-PRE`由恰好3名DAG-disjoint、不同角色reviewer fresh-revalidate两份receipt、两个
++  authorization proposal、G12C-RT evidence、exact contract/ledger head；无P0/P1且circuit closed才
++  唯一开放OP12C。
++- [ ] OP12C只CAS control state为ENABLED_IDLE/ON并generation+1、消费一次性token；process0。
++  actual operation contract必须同时绑定runtime与final两条authorization/approval/revalidation链。
+   token/control写前先向protected journal写action-intent/auth/generation/expected state/ownership
+-  nonce，完成后finalize，crash只由OP12C-RB reconcile；不启动当前session、不reset/resume/arm、
++  nonce，完成后才生成terminal record、head-after、evidence与`operation_execution_receipt`；这些
++  事后actual不得倒填D12C。crash只由OP12C-RB reconcile；不启动当前session、不reset/resume/arm、
+   不写registry/config/DB/source、不改LLM。
+ - [ ] G12C由恰好3名满足DAG exact角色/基数/disjoint规则的reviewer审control/circuit、release/auth/security、operations；
+   ACT-S01、ACT-S02、ACT-S03、ACT-S04、ACT-S05、ACT-S06、ACT-S07全通过时物理state前后均为`ENABLED_IDLE/ON`，只新增
+   `lifecycle_outcome=RECOVERED`。OP12C或G12C失败只能走`OP12C-RB→G12C-RB`，两名按DAG与
+-  OP执行者disjoint的reviewer继承并核对OP终态：owned Run未漂移时回
+-  `LOGIN_VALIDATED_PAUSED/ON`；第三方Run冲突时不碰registry并进`PAUSED/REGISTRY_CONFLICT`。
++  OP执行者disjoint的reviewer继承并核对OP终态：Run absent时为`PAUSED/OFF`；owned Run未漂移时
++  只回退control并保留Run，终态`LOGIN_VALIDATED_PAUSED/ON`；第三方Run冲突时不碰registry并进
++  `PAUSED/REGISTRY_CONFLICT`。任何自动12C rollback都不得删除Run。
+   当前session运行需未来另建D/OP/G。
+ - [ ] 此后普通下次登录只有在重新验证G12C outcome、release/auth/config/routing/data/Run、SID、
+   circuit、Job Object和单实例后才能`ENABLED_IDLE→RUNNING_AUTOSTART`；任一失败零child并PAUSED/ON。
+ - [ ] G12C以后每个cycle在任何DB/file/network前都按`runtime_cycle_policy`密封新的operation
+-  contract：绑定action-intent/auth、generation/process、journal head、exact document/source tuples、
++  contract：绑定runtime-template receipt/G12C-RT evidence及fresh revalidation、action-intent/auth、
++  generation/process、journal head、exact document/source tuples、
+   DB/file write set、egress与持久daily/monthly caps，并重验expiry/revocation。`ACT-S08`验证第二/
+   后续cycle不复用旧合同，`ACT-S09`验证过期/撤销/超cap拒绝，`ACT-S10`验证wrong PK/file/
+   journal head在commit/egress前失败。任一失败circuit open+persistent pause，且registry/config/
+   source零写；G12C的历史PASS不能豁免逐cycle合同。

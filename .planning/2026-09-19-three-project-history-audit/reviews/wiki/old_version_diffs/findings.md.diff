@@ -1,0 +1,316 @@
+--- docs/plans/source-catalog-worker-recovery-2026-08-22/findings.md
++++ docs/plans/source-catalog-worker-recovery-v5-2026-09-03/baseline/plan/findings.md
+@@ -449,8 +449,313 @@
+   pre-CAS absence verify、post-CAS exact-owned delete、third-party conflict preserve，以及 12C
+   pre-control-write no-op/post-control-write rollback。每个分支唯一映射 source state、registry
+   operation、允许 touched count、token/control effect 和 exact terminal state；不匹配即 fail closed。
+ 
++## 发现 44：补偿授权不能只是一个裸 rollback action，也不能授权分支的笛卡尔积
++
++- 冻结前安全预审确认，父授权若只携带一个裸 `authorizedAction`，子 `BOUND_COMPENSATION` 无法
++  证明触发节点、失败窗口、允许的源状态/终态和有效期；反过来把 trigger/branch/state 分别做成
++  独立数组，又会授权非法笛卡尔积（例如 `OP12B-ARM` 触发 post-CAS delete）。
++- 草稿已开始把 `preauthorized_compensations` 升级为有 ID/hash/action/trigger/branch/state/TTL 的
++  `compensationGrant`，并把 child authorization source 改为
++  `PARENT_PREAUTHORIZED_COMPENSATION`。但当前 grant 仍需进一步改成**逐分支 tuple**，避免数组
++  交叉组合；`operation_intent_manifest` 的裸 action 结构也必须同步，否则 byte-for-byte binding
++  不可实现。
++- 动态 rollback contract 已增加 branch-selection receipt、forward-effect status、parent grant
++  ID/hash、source/terminal state、generation delta 和唯一 registry/control effect；static catalog
++  也补了两个 pre-effect no-op 状态。只有 grant tuple、intent、authorization、contract 四者完全
++  相等且在 side effect 前封存，补偿才可执行。
++
++## 发现 45：当前 validator 存在 bootstrap 死锁和入口前代码执行的信任倒置
++
++- `D00L` 的 review contract 要求 validator release 为 null，而旧 evidence schema 无条件要求非空
++  release/version；release 又只能在 `I00L` 产生。于是 T00L/D00L 的 evidence→review→I00L 链在
++  机器上不可满足，这是 P0 bootstrap deadlock。
++- 仅用 `python -I` 且明确禁止 `-S` 仍会在 validator 入口自校验前执行 `site`、`.pth` 和
++  `sitecustomize`。由随后才运行的 Python 代码去证明先前加载的 Python 代码可信，是信任顺序倒置。
++- 修订必须拆成 OS/PowerShell 最小 bootstrap verifier 与 `python -I -S` validator 两层：前者先
++  校验解释器、DLL/stdlib、bootstrap launcher、validator entry、vendored dependencies、ACL、
++  file identity/reparse point、cwd/env allowlist 和 release manifest，再由已验证入口显式注入已验证
++  vendored path。T00L/D00L evidence 用 bootstrap identity，I00L 后节点才绑定正式 release。
++
++## 发现 46：单工件 fixture 与无 schema journal 不能承载现有复合故障向量
++
++- 当前 fixture manifest 一次只能选择单个 artifact，无法表达 ledger transcript、bootstrap
++  transcript、operation+intent+authorization+journal bundle、journal crash recovery、runtime cycle
++  等复合场景；mutation 后也没有规定哪些派生 hash/head/receipt 必须重算或必须故意保留 stale。
++- `journal_manifest.schema.json` 只描述 journal 身份/头部，INTENT、FINALIZE、RECONCILE record 没有
++  独立机器 schema；因此无法证明 intent-before-effect、finalize-after-effect、crash reconciliation
++  和 hash-chain 的实际记录形状。
++- 必须新增严格的 `validator_scenario_fixture.schema.json` 与 `journal_record.schema.json`，让每个
++  vector 指向一个完整 scenario bundle、明确 mutation closure/recompute policy，并以实际 schema
++  验证 primary/secondary error precedence。旧 stale JSON pointers 和 relative external refs 也必须
++  一并消除。
++
++## 发现 47：证据、release closure、预算 reset 与 revocation 仍有可绕过边界
++
++- OP evidence 旧条件未强制 authorization，且 evidence 未绑定 journal manifest/head/INTENT/
++  FINALIZE actual records；可提交“有 operation contract、无授权/无 journal”的表面证据。
++- release manifest 未闭合入口前 runtime、schema registry、fixture tree、vector schema/instance 和
++  validator 实际 CLI 输入；external ledger head 也没有独立、可信 anchor schema。
++- provider 四类 budget 的 reset 守恒条件被误放在 `active_latch` 子对象且引用不存在字段，实际
++  `budget_states.items` 可逃过约束；`BOUND_COMPENSATION` 也尚未禁止任意 `file_writes`。
++- `process_generation` 尚未贯穿 intent/action/auth/template；revocation receipt 未绑定授权中冻结的
++  authoritative source、max freshness 与排除自哈希的 canonical projection。这些均是冻结前 P0，
++  必须有先红后绿的负测试，不能只写 semantic prose。
++
++## 发现 48：operation contract 与 journal INTENT 的相互 hash 形成不可计算环
++
++- 旧动态合同在预先 sealed contract 中包含 actual `intent_record_sha256`、expected FINALIZE hash 和
++  head-after hash；journal INTENT prose 又要求包含 operation-contract hash。于是
++  `contract_hash = H(...intent_hash...)` 与 `intent_hash = H(...contract_hash...)` 相互依赖，正常实现
++  无法按顺序构造。
++- 正确单向 DAG 应为：sealed pre-operation contract 只绑定 journal identity/head-before、expected
++  sequence、INTENT payload commitment 和 FINALIZE template commitment；先得到 contract hash，再写
++  INTENT；actual INTENT/FINALIZE/RECONCILE/head-after 只进入独立 execution receipt/evidence。
++- 冻结 checker 必须显式构建 hash-dependency DAG，并以 `JRN-F01` 拒绝任何环；不能只靠人工阅读。
++
++## 发现 49：回滚还必须覆盖“第三方删除 Run 值”，且 compare-then-delete 本身不是原子 CAS
++
++- CAS/activation 后若第三方删除 Run value，现有 EXACT_OWNED 与 THIRD_PARTY 两分支都不成立；12C
++  尤其不能继续声称 `LOGIN_VALIDATED_PAUSED/ON`。已开始增加
++  `12B_POST_CAS_ABSENT_SAFE_OFF` 与 `12C_REGISTRY_ABSENT_SAFE_OFF`：只 VERIFY_ABSENT、不写 registry、
++  禁用 control/tokens，终态 `PAUSED/OFF`。
++- 更严重的是旧 `DELETE_IF_EXACT_AND_OWNED` 把 delete primitive 设为 null，实际只能“先读再删”。
++  不协作 writer 可在检查和删除之间替换 value，导致删除第三方数据。若 Windows 平台不能提供并经
++  第三方竞争测试证明的原子 compare-and-delete，则计划必须取消自动 delete：仅禁用 control、
++  保留 Run value、进入安全人工清理状态，绝不能把 read-then-delete 称为 CAS。
++- 必测 identical-bytes ABA、different-bytes swap-at-delete barrier、delete/recreate interleaving；
++  ownership nonce 还必须绑定受保护 durable record/path/head，不能只是自报 hash。
++
++## 发现 50：预算需要四计数原子 bundle，而不是四个可独立提交的对象
++
++- `uniqueItems` 不能保证四个 reservation 恰好分别是 daily/monthly request/cost；也没有受保护
++  budget store/head、原子 CAS generation、currency/provider/request plan、outstanding reservation、
++  settlement receipt 与幂等键。并发 cycle 可部分提交或超卖。
++- 修订应使用一个原子 bundle，内含四个 typed counters、唯一 kind 集、共同 store/head/generation、
++  exact network request plan、reservation record 和 settlement equation：
++  `reserved = consumed_delta + released + retained`。unknown cost 保留最大额；request 是否消费取决于
++  已冻结的 attempt policy。RESET 必须 preserve outstanding/unknown reservations，不能清零规避 cap。
++- compensation 需要同时重验 child、parent 和 grant；revocation receipt 也必须绑定授权中冻结的
++  authority/anchor/max-age，不能由调用者自行选择 source 或任意延长 valid_until。
++
++## 发现 51：现有 validator vectors 大量引用旧 schema 路径，当前 checker 会假绿
++
++- 已确认 intent 的 `/action_ids/0`、auth 的 `/allowed_scopes`、runtime 的 `/runtime_cycle/...`、
++  operation 的 `/database_writes`/nested prior state、registry 的旧 SID/view/prior、journal 的旧
++  manifest/head/finalize 字段，以及把 operation array 当 object 的 `/operations/OP00` 都已失效。
++- 当前 fixture/checker 不验证 JSON pointer 是否存在于目标 base artifact、类型是否与 mutation 匹配，
++  因此这些向量即使永远打不到声明规则也能进入“18组完整”统计。
++- 不应逐个字符串打补丁。先建立 composite scenario + pointer/type/derived-hash closure，然后从当前
++  schemas 重建 OP/auth/journal/evidence/runtime vectors；每个 base scenario 原样必须 OK，每个 mutation
++  必须实际得到 exact primary code/stage/pointer，任何更早错误都使 fixture build 失败。
++
++## 发现 52：static 多分支状态必须把 generation delta 放进同一 tuple
++
++- 新增 no-op 后，旧 `state_sequence_options` 与共享 `generation_deltas` 无法表达不同分支的 0/1；
++  checker 正确报出 15 个机械错误。
++- 草稿已改为 `state_transition_options[{from,to,generation_delta}]`，覆盖 OP12B-RB、OP12C-RB 和
++  RESET family，并修复 schema 中重复 `oneOf` key。更新后的旧 checker暂回绿，但它仍遗漏新增 schema
++  和已知语义，因此只算局部结构回归，不是冻结 PASS。
++
++## 发现 53：安全的 12B rollback 不能承诺自动删除已拥有的 Run 值
++
++- Windows Run value 的常规 API 没有本计划可证明的原子 compare-and-delete；先读 exact bytes/nonce
++  再调用 delete 存在不可封闭的替换窗口。即使 nonce 在本地匹配，第三方仍可在 delete barrier 前
++  替换或做 identical-bytes ABA。
++- v4 采用保守终态：若 post-CAS 仍为 exact-owned，rollback 只验证受保护 ownership record、使
++  control/tokens 进入 paused、保留 Run value，终态为 `PAUSED/ON`，并生成显式人工清理事项；若已
++  absent，终态 `PAUSED/OFF`；若第三方/漂移，终态 `PAUSED/REGISTRY_CONFLICT`。自动化永不删除值。
++- ownership nonce 现在必须绑定 durable ownership record path/hash/head anchor；未来只有另一个经
++  单独用户授权、重新观测当前值的人工 cleanup operation 才能删除，而该 operation 不属于本恢复
++  计划的自动 rollback scope。
++
++## 发现 54：冻结 validator 必须由外部 pre-entry launcher 建立完整闭包
++
++- 已新增 bootstrap verifier、closed schema registry 和 validator release v2 schema。T00L/D00L 用
++  `BOOTSTRAP_REVIEW_QUORUM` 且正式 release 为 null；I00L/G00L 及以后才用
++  `VALIDATOR_RELEASE`。两种 authority 都绑定 bootstrap manifest/receipt，消除前向引用死锁。
++- launcher 先用固定 Windows/PowerShell primitives 校验 exe、DLL、stdlib/encodings、entrypoint、
++  vendor tree、lock、schema registry、fixture/vector tree、ACL/file ID/no-reparse，并保持身份到 child
++  launch；随后只能以 `python -I -S -B` 和空 tmp CWD 启动。
++- release 现在要求实际 runtime/self-test/import/handle report artifacts 与完整 CLI 输入，不再接受
++  `site_enabled=true` 或一组自报布尔值作为 hermetic 证明。
++
++## 发现 55：journal、预算和 evidence 的实际结果必须放在 post-operation receipt
++
++- 已把 journal manifest 改成 immutable identity/genesis；live head 移到 protected head anchor。
++  新增 strict INTENT/FINALIZE/RECONCILE record 与 operation execution receipt schema，并从 sealed
++  contract 移除未来 actual record/head hashes，形成单向 hash DAG。
++- provider budget 改为一个四 counter 原子 reservation bundle 和 exactly-once settlement receipt；
++  request plan、store/head/CAS/outstanding reservation/unknown outcome 都有机器字段。RESET schema
++  明确保留四项 provider budget 的 consumed、outstanding 与 unknown-set 状态。
++- evidence 现在区分 bootstrap/release authority，OP 强制 intent/auth/revalidation/contract，journal
++  分为 NOT_APPLICABLE/INITIALIZE/REQUIRED，并能表示 repeatable `OP-RUNTIME-CYCLE`、budget settlement
++  与 actual execution receipt。复合场景由新 scenario schema 承载，不再假装单 JSON 即完整证据。
++
++## 发现 56：当前 checker 只登记 16/26 个 schema，并把 URN 当成本地文件名
++
++- 2026-09-02 续接后重新枚举得到 26 个 `*.schema.json`，而 `plan_consistency_check.py` 的
++  `SCHEMA_FILES` 仍硬编码 16 个；新增的 bootstrap、schema registry、authorization revalidation、
++  journal record/head/execution receipt、budget bundle/settlement、scenario fixture 等 10 个规范不会
++  进入 meta-schema、shape 或 `$ref` 检查。
++- `resolve_ref()` 对任意非 `#` 引用执行 `load_json(file_part)`；因此合法的
++  `urn:company-wiki:...` 被误当成本地文件名。instance validation 又没有传入真实 registry，当前
++  external `$ref` 只要被实际遍历就会抛 `Unresolvable`，而不是证明 closure 正确。
++- 尚有三个相对 external ref：`review_result.schema.json` 的 `node_id`/`due_node` 与
++  `review_confirmation.schema.json` 的 `node_id` 都引用 `gate_ledger.schema.json#/$defs/nodeId`。
++  冻结合同应统一使用目标 `$id` URN，并拒绝相对 external ref，避免 CWD/base URI 改变解析结果。
++- 修复标准：动态发现全部 schema；要求 `$id` 存在且唯一；构建内存 Draft 2020-12 registry；所有
++  external URN 必须命中闭包且 fragment 可解析；所有 instance 使用同一 registry 实际验证；另以
++  必需 schema 集和 README/manifest normative set 的集合相等检查防止“删掉文件后自动变绿”。
++
++## 发现 57：真实 registry 已转绿，但 README 与冻结物清单仍只描述旧 16-schema 世界
++
++- 升级 checker 后先红暴露并修复 `runtime_cycle_policy.required_bindings` 的旧 journal/预算常量；
++  复跑得到 `PASS: 5359 checks; fixed_nodes=113, schemas=26, tests=286, vectors=18`。该结果只表示
++  当前机械规则通过，仍不是 v4 冻结结论。
++- `README.md` 规范文件表仍遗漏 `bootstrap_verifier_manifest`、`schema_registry`、
++  `authorization_revalidation_receipt`、`journal_record`、`ledger_head_anchor`、
++  `operation_execution_receipt`、`budget_reservation_bundle`、`budget_settlement_receipt`、
++  `validator_scenario_fixture` 与 `operation_intent_template`，且仍把 journal manifest 描述成包含
++  live head/record 的旧模型。
++- checker 目前通过内置 `REQUIRED_SCHEMA_FILES` 阻止无声删/增 schema，但冻结前还必须让 README
++  normative table、release roles、schema registry instance 与最终 plan manifest 的集合/hash 完全相等；
++  只做“文件名在 README 任意文本中出现”不足以防注释或历史段落误命中。
++
++## 发现 58：vector catalog 仍绑定不存在的 v1 fixture，且新 scenario 自身有时间/错误码不一致
++
++- `gate_ledger_validator_vectors.schema.json` 仍把 `fixture_contract.manifest_instance_path` 固定为
++  `validator_fixture_manifest.v1.json`，case 只携带单一 `base_fixture` 和旧 inline mutation；新 v5
++  manifest 则要求 materialized composite scenario/mutation case。当前 18 组 vectors 即使 schema-valid，
++  也没有真正消费新 scenario closure。
++- 旧 vector validation stage enum 缺 `BOOTSTRAP_POLICY/HASH_DEPENDENCY/JOURNAL_POLICY/BUDGET_POLICY`，
++  新 scenario mutation 又把错误码限制为 `E[0-9]{3}`，与 checker/vector 的 `GLV-E[0-9]{3}` 不一致。
++- `validator_scenario_fixture.schema.json` 的 UTC regex 只允许小时 `00–19`，错误排除了合法 `20–23`；
++  这类 schema 边界错误会让固定 clock fixture 在晚间随机失败。
++- 冻结前必须把 vector instance 改为引用 `base_scenario_id + mutation_id`（正例 mutation 为 null），
++  从 v5 fixture manifest 解析 materialized bytes；构建阶段先验证 pointer 存在/类型/recompute closure，
++  执行阶段再验证 exact primary code/stage/pointer。旧 inline pointer 字符串不能继续被统计为覆盖。
++
++## 发现 59：26-schema PASS 仍需抵抗 ID 交换、scalar target 与历史 manifest 漂移
++
++- 独立 checker 审计在当前快照对 26 个 schema、662 个 `$ref` 用真实 resolver lookup，全部可解析，
++  8 个 external ref 均为绝对 URN；但当前 checker 仅要求 namespace/唯一性，尚未要求“具体文件名→
++  具体 `$id`”一一固定，交换两个未外引 schema 的 ID 仍可能通过。
++- 手工 fragment lookup 只证明 pointer 存在，不证明 target 是合法 schema；指向 `/title` 等 scalar
++  不应被接受。还必须明确拒绝本合同未授权的 `$dynamicRef`/`$recursiveRef`，避免普通 `$ref` 闭包
++  之外出现第二种解析路径。
++- 只有四个静态 instance pair；其余 schema 需由 composite witness/fixture 在 T00L 提供正例，防止
++  “schema 合法但拒绝所有实际实例”。冻结 checker 至少要校验 witness manifest 的 schema 覆盖集合。
++- 不可变 `plan_manifest.v3.json` 的既有 SHA-256 是
++  `9ee84acdbe65a294925de004125f37b62b9e4b1c95655a04cd2344bc6bd270cc`；预冻结检查应固定核验，
++  不能只靠约定“不覆盖”。未来 v4 manifest 生成后还需实际验证 count、casefold unique、hash/size、
++  beneath-dir/no-reparse，不可把这些停留在 `x-semantic-rules`。
++
++## 发现 60：现有 122 个 vector case 与关键 prose/test coverage 存在系统性旧模型漂移
++
++- 独立 vector/prose 审计确认典型 stale pointer：`/database_writes`（现为 `/db_writes`）、顶层
++  `/invariants`/`/maximum_rows_touched`、`/allowed_path_supplement`、auth 顶层
++  `/control_generation`/`/excluded_scopes`、registry 的 `current_user_sid`/`expected_prior/mode`/
++  `concurrent_loser_outcome`/delete 字段、journal 的 `head_before_sha256`/`expected_finalize`、全部
++  `/runtime_cycle/*` wrapper，以及 reset 的 active-latch/budget/history/combined-actions 旧字段。
++- prose 仍在若干位置描述 conditional delete；当前安全决策是 exact-owned rollback 保留 Run 值并
++  终止于 `PAUSED/ON`，第三方值保留并进入 `PAUSED/REGISTRY_CONFLICT`，absent 才是 `PAUSED/OFF`。
++  `OP12B-ARM` 叙事终态也仍有 `PAUSED/OFF` 与机器合同 `ARMED_PRELOGIN/OFF` 的冲突。
++- test registry 目前 286 IDs，但 G11A/G11J due/revalidate 都为 0；bootstrap、auth revalidation、
++  journal record/anchor/receipt、atomic budget/settlement、schema registry、scenario fixture、process
++  generation、ZR1005、ZR1006 都没有独立稳定测试 ID。不能用旧 GL-F09/12 的失效 pointer 冒充覆盖。
++
++## 发现 61：v4 manifest 需要“生成前证据”与“生成后语义复核”两阶段，不能自指
++
++- 不可变 v3 manifest 是 schema_version 1/`core_files` 旧格式，只能按固定原字节 SHA-256 保护，
++  不应强行套用 v4 的 `normative_files`。v4 当前不存在，符合 `DRAFT_NOT_FROZEN` 状态。
++- v4 `pre_freeze_check.stdout_sha256` 必须绑定“manifest 尚不存在时”的最终 checker stdout；manifest
++  创建后 checker 会多执行 v4 schema/hash/path 检查，输出/计数自然变化。若要求两个 stdout 相等，
++  会形成另一个自指环。
++- 正确流程是：固定候选字节→运行 pre-freeze checker并保存 stdout/hash→一次性生成 v4 manifest
++  （排除自身）→独立 post-freeze verifier 校验 manifest schema、count、casefold paths、每项 hash/size、
++  beneath-dir/no-reparse、coverage counts 与先前 stdout artifact hash；随后 v4 manifest 自身外部 hash
++  才进入 revision/review anchor。任何 core 变化都新建 v5，绝不重写 v4。
++
++## 发现 62：runtime-template 与最终 autostart activation 必须是两条独立授权/审查链
++
++- 独立 auth-DAG 审计确认当前 `G12B-POST→D12C→USER_APPROVAL_FINAL...→G12C-PRE` 把 runtime
++  template 冻结和最终 control activation 混在同一 D Gate；`operation_intent_template.schema.json`
++  又声称 template 由 D12C 冻结，机器上无法证明用户分别批准了“未来周期允许做什么”和“现在允许
++  开启下次登录”。这是恢复前 P0，不得靠一份 approval 解释成两种 purpose。
++- 采用最小新增链：`G12B-POST→D12C-RT(2 reviewers)→
++  USER_APPROVAL_RUNTIME_TEMPLATE_AUTHORIZATION→G12C-RT(3 reviewers)→D12C(2 reviewers)→
++  USER_APPROVAL_FINAL_AUTOSTART_ACTIVATION→G12C-PRE(3)→OP12C→G12C(3)`。`D12C-RT/G12C-RT`
++  是独立关键节点，必须各自满足 reviewer role/cardinality/disjointness，不能只写成 D12C 子步骤。
++- 两份 approval receipt 的 ID/hash/purpose/subject 必须不同且不可交换：template approval 绑定 template/
++  runtime policy/scope/caps/TTL/revocation；activation approval 绑定 D12C exact intent、OP12C contract、
++  compensation 和已通过 G12C-RT 的 runtime authorization。OP12C preflight 同时 fresh-revalidate 两份。
++- 因此需新增严格 `user_approval_receipt.schema.json`，并在 operation intent/contract/auth/evidence/static
++  catalog/checker/vectors/prose 中实现 dual binding。DAG fixed nodes 从 113 增至 115；对应至少加入
++  ACT-S11–S15、START-S11 及双授权 DAG 正负例，不能在保持旧 113/286 计数时声称已关闭。
++
++## 发现 63：授权与批准必须使用单向哈希链；双向引用会让真实工件不可构造
++
++- `D12C-RT` 与 `D12C` 都发生在各自用户批准之前，因此 authorization manifest 不能保存未来
++  approval receipt hash；而 approval receipt 又必须绑定 authorization manifest hash。若两边互指，
++  无论 canonicalization 如何定义都会形成不可求值的哈希环。
++- 采用的无环顺序是：D Gate 冻结 template/exact intent、authorization proposal、purpose 与
++  approval-subject digest；外部用户 receipt 单向绑定这些既有 hash；G Gate 保存 receipt/evidence；
++  OP 前动态 contract 再同时绑定 proposal、receipt、fresh revalidation 与上游 Gate evidence；实际效果
++  只进入 terminal journal/evidence/execution receipt。
++- `approval_evidence_id/hash` 因此明确表示 pre-approval proposal/policy evidence，不等于用户 receipt。
++  最终 receipt 还必须绑定 final authorization ID/hash、exact intent、contract/compensation template、
++  G12C-RT evidence 与 runtime approval；仅绑定 intent 不足以排除授权替换。
++
++## 发现 64：vector 蓝图原先含不可物化 pointer，且缺少 ledger transcript/request 的真实类型
++
++- `/reviewers/-` 与空数组的 `/reviewers/0` 在“mutation 前 pointer 必须存在”的合同下不可成立；已将
++  reviewer duplication 改为对现存 `/reviewers` 数组的 typed duplicate/append。
++- 多条 DAG/hash-chain 用例以 `/records` 为目标，但 `gate_ledger.schema.json` 只定义单记录；没有 typed
++  transcript wrapper 时，scenario member 无法既 schema-valid 又提供 `/records`。因此新增只用于 validator
++  输入/fixture 的 `gate_ledger_transcript.schema.json`，生产仍是 JSONL+protected head anchor，不引入第二套
++  mutable ledger。
++- `NEXT_ELIGIBLE_NODE_POLICY` 原先往不存在的 `/next_eligible_nodes` 添加字段，既违反 fixture pointer
++  合同，又会先触发 generic schema error。新增 canonical `validator_request.schema.json`，base 中
++  `/authored_next_eligible_nodes` 为 null；负例只把它替换为数组，保持 shape-valid 后由 validator 以
++  GLV-E018 拒绝。
++- 双授权场景需要明确区分两份 authorization、两份 revalidation、两份 user approval，而不是重复使用
++  泛化 `AUTHORIZATION` role；scenario role vocabulary 已扩展，vectors 新增 GLV-E044 的 ID/hash/subject/
++  gate-evidence 复用、交换和漂移攻击。
++
++## 发现 65：既有持续绿色基线不能被强迫伪造 expected-red 历史
++
++- 原 test registry schema 强制 `expected_red_at` 非空，无法诚实登记已经存在且本计划不应先破坏的
++  ZR1005/ZR1006 基线。它们的 C1 读取生产 catalog 或外部 golden corpus 绝对路径，不能放进 T00L
++  hermetic bootstrap；但可在 G11A 的受控只读窗口逐 test 执行。
++- 已把 `expected_red_at=[]` 定义为“既有基线必须持续为绿”，并逐函数登记 ZR1005-C1..C4、
++  ZR1006-C1/C2A/C2B/C3/C4A/C4B/C4C/C5A/C5B。其余新增合同测试仍保留真实 red→green 生命周期。
++- G11A 与 G11J 原先无任何 due test；新增基线映射与 JRN-S01/S02/S03 后，两个生产前检查点都有明确、
++  可机器抽取的稳定测试义务。
++
++## 发现 66：机器合同修正后，活动 prose 仍可能把弱模型带回已否决的危险路径
++
++- schema/DAG已使用zero-delete rollback、双purpose批准和pre-op/post-op单向工件链，但总计划、状态机、
++  手册、测试、审查prompt和追溯矩阵仍残留`conditional delete`、单一D12C授权、v1 validator release、
++  `stdlib-only`及错误`PAUSED/OFF` ARM终态。机器检查转绿不能证明这些人类执行入口安全。
++- 活动prose现统一为：12B absent/exact-owned/conflict分别到`PAUSED/OFF`、`PAUSED/ON`、
++  `PAUSED/REGISTRY_CONFLICT`且均不删除Run；12C还保留`LOGIN_VALIDATED_PAUSED/ON`语义；最终激活
++  只能走D12C-RT/runtime receipt/G12C-RT再到D12C/final receipt/G12C-PRE。
++- checker新增活动文档禁用词、双授权节点、完整validator CLI和rollback三分支断言。历史findings保留
++  原错误叙事用于审计，不进入活动prose扫描，避免把“曾经错过什么”伪装成当前合同。
++
++## 发现 67：冻结 manifest 必须能在创建后逐字节自证，且预冻结输出本身也是规范输入
++
++- 只生成hash清单但不由同一只读检查器验证，会允许漏文件、大小写路径碰撞、目录逃逸/reparse、
++  size/hash漂移、覆盖计数伪报或manifest把自身列入形成循环。
++- v4固定48个normative文件：活动prose、findings/review findings、29个schema、4个machine instance、
++  checker与预冻结stdout；manifest自身、v3历史、revision/progress、动态ledger/evidence/reviews/
++  decisions明确排除。来源报告另以固定外部hash绑定。
++- `plan_consistency_check.py`现在在manifest不存在时允许安全预冻结，在manifest出现后用同一固定检查
++  计数验证schema、exact文件集、case-fold唯一、beneath-directory/no-reparse、每个size/hash、覆盖数、
++  source hash及预冻结stdout hash/count。manifest创建后任何normative字节变化都会立即报错。
++
+ ## 待重新验证的假设
+ 
+ - [ ] 另一个任务是否已修改根因 SQL或相关控制代码。
+ - [ ] 当前数据库规模、location 分布和 backlog 是否变化。

@@ -1,0 +1,52 @@
+{
+  "card_id": "I-02-D",
+  "parent": "I-02",
+  "attempt_id": "a20260919-01",
+  "binding_status": "bound",
+  "source_readonly_repos": {
+    "CW": "C:/Users/郑曾波/Projects/company-wiki",
+    "RF": "C:/Users/郑曾波/Projects/revenue-forecast"
+  },
+  "prod_source_hashes_pre_edit": {
+    "src/company_wiki/source_catalog/canonical_writer.py": "c23a935852cce71a9f1cc2454337cb714ec185b0823c33ddcc50407b7687c258",
+    "src/company_wiki/source_catalog/acquisition_service.py": "017ca75c1efec6986af058c068db86bbf9fed5edd2bd8ede94fd96a1a8e7f8c7",
+    "src/company_wiki/source_catalog/acquisition_journal.py": "104d73fdf68e7253d54258dd98fcc1e5bff09343b949e376ad1e199ccc9c6736"
+  },
+  "attempt_override_hashes_post_run": "after/hashes.json (post_run_hashes; script hashes re-verified after final run)",
+  "interpreter": "execution_runs/I-02-D/a20260919-01/iso/venv/Scripts/python.exe",
+  "python_flags": [
+    "-X",
+    "utf8"
+  ],
+  "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-02-D/a20260919-01",
+  "module_loading": "synthetic package shim (scripts/w02d_bootstrap.py): modified/contract copies registered from iso/override; unmodified modules lazy-load from read-only CW src; D-W02 contract chain inherited from accepted I-02-A (models/scanner/service/config/adapter_dispatch/config_doctor) and I-02-C (canonical_writer R1-R7 gates / acquisition_service recovery / acquisition_journal / cli) override copies",
+  "allowed_write_roots": [
+    "execution_runs/I-02-D/a20260919-01/**",
+    "C:/Users/郑曾波/AppData/Local/Temp/w02d/** (case scratch; snapshots copied into after/case_scratch_retained, deep raw subtrees omitted for MAX_PATH)"
+  ],
+  "network": "disabled (providers deny-on-call stubs; no adapter/company/worker touched)",
+  "providers": "none",
+  "input_dependencies": {
+    "I-02-A_decision": "execution_runs/I-02-A/a20260919-01/decision.md (ScanReport/四道门契约)",
+    "I-02-C_decision": "execution_runs/I-02-C/a20260919-01/decision.md (register-existing R1-R7 门)",
+    "I-02-C_changes": "execution_runs/I-02-C/a20260919-01/changes.diff",
+    "D-W02_common": "execution_v2/common_wiki_cards.md D-W02 节"
+  },
+  "fixed_samples": {
+    "HK": {
+      "sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+      "size": 4405561,
+      "sidecar_sha256": "8228741d299164380bde36a83df1267b59e9b46721bea7d8efee857aeeb8da71",
+      "candidate_id": "hkexnews:12127452",
+      "fiscal_year": 2025,
+      "request_id_fixed": "同一 SourceRequest 四次调用（call1 register + call2/call3 recovery 重入 + call4 catalog-first reuse）"
+    },
+    "US_identity_only": {
+      "sha256": "e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecfff",
+      "size": 8585615,
+      "note": "N1 用其 provider identity（sec/0001193125-26-323660）配 HK bytes 构造同 bytes 异身份；文件本身在 N1 不使用"
+    }
+  },
+  "production_raw_readonly_check": "生产文件全程未触碰；samples/real_roots 修改前重算 sha256+size 与卡固定值一致（见本 binding fixed_samples）",
+  "case_scratch_layout": "%TEMP%/w02d/a20260919-01_case_scratch/<case>（Windows MAX_PATH 短路径；P2 用 P2_shared 同一 case 树两真实进程）"
+}

@@ -1,0 +1,735 @@
+# I-02-D changes.diff — iso copies vs read-only repo originals AND vs I-02-C accepted baseline (--strip-trailing-cr)
+
+## Part 1: iso/override vs prod originals (context: D-W02 chain incl. I-02-C register_existing_raw)
+
+==== canonical_writer.py (prod vs attempt) ====
+7a8
+> import json
+18a20
+> from .policy import _effective_reusable
+25a28,31
+> # I-02-C (D-W02 supplement): recovery-source marker carried on
+> # register_existing_raw results so callers can tell an on-disk
+> # registration from a download import without re-parsing errors.
+> EXISTING_RAW_RECOVERY_SOURCE = "existing_raw"
+44a51,53
+>     # I-02-C: bytes recovered from an already-on-disk canonical raw with a
+>     # verified durable sidecar receipt (no download was performed).
+>     REGISTERED_EXISTING_RAW = "registered_existing_raw"
+56a66
+>     recovery_source: str | None = None  # I-02-C: "existing_raw" on recovery
+66a77
+>             "recovery_source": self.recovery_source,
+155a167,205
+>                 # I-02-D: dedup success is only reportable after the exact
+>                 # resolve PROVES the DOWNLOAD's own provider identity
+>                 # (receipt/candidate identity, exactly as the import success
+>                 # path would resolve) at the same canonical path.  Resolving
+>                 # the caller's request instead would let a different provider
+>                 # identity ride an existing row (same bytes, wrong identity
+>                 # -> fake DEDUPLICATED success).  The staging file is removed
+>                 # only AFTER that proof succeeds (recoverable evidence
+>                 # first); a failed identity resolve keeps the staging file
+>                 # and raises instead.
+>                 exact_request = SourceRequest(
+>                     entity=request.entity,
+>                     market=request.market,
+>                     security_id=request.security_id,
+>                     document_kind=request.document_kind,
+>                     form_type=request.form_type or candidate.form_type,
+>                     fiscal_year=request.fiscal_year or candidate.fiscal_year,
+>                     fiscal_period=request.fiscal_period or candidate.fiscal_period,
+>                     language=request.language or candidate.language,
+>                     provider=candidate.provider,
+>                     provider_document_id=candidate.provider_document_id,
+>                     as_of_date=request.as_of_date,
+>                     allow_download=request.allow_download,
+>                 )
+>                 resolution = SourceResolver(self.catalog).resolve(exact_request)
+>                 if resolution.status is not ResolutionStatus.REUSED_EXACT:
+>                     raise CanonicalImportError(
+>                         "canonical file was written but exact provider identity did not resolve"
+>                     )
+>                 match = resolution.matches[0] if resolution.matches else None
+>                 if (
+>                     match is None
+>                     or getattr(match, "content_sha256", None) != receipt.content_sha256
+>                     or Path(match.canonical_path) != Path(existing).resolve()
+>                 ):
+>                     raise CanonicalImportError(
+>                         "exact resolve returned a different identity than the "
+>                         "deduplicated target (exact_resolve_identity_mismatch)"
+>                     )
+157d206
+<                 resolution = SourceResolver(self.catalog).resolve(request)
+179,180c228,234
+<                 if destination.exists() and _hash_file(destination) != receipt.content_sha256:
+<                     raise CanonicalImportError("canonical filename collision after hash suffix")
+---
+>                 if (
+>                     destination.exists()
+>                     and _hash_file(destination) != receipt.content_sha256
+>                 ):
+>                     raise CanonicalImportError(
+>                         "canonical filename collision after hash suffix"
+>                     )
+185,191c239,304
+<             scan_catalog(
+<                 self.catalog.config,
+<                 self.catalog.store,
+<                 dry_run=False,
+<                 root_ids={self.company_root.root_id},
+<                 v2_scan_shadow=v2_scan_shadow_from_snapshot(
+<                     self.catalog.config.catalog_dir
+---
+>             try:
+>                 report = scan_catalog(
+>                     self.catalog.config,
+>                     self.catalog.store,
+>                     dry_run=False,
+>                     root_ids={self.company_root.root_id},
+>                     v2_scan_shadow=v2_scan_shadow_from_snapshot(
+>                         self.catalog.config.catalog_dir
+>                     ),
+>                     # I-02-A: the rescan must return a RECEIPT for this import's
+>                     # own bytes — completion state, per-root state, and whether
+>                     # the target was registered BY THIS RUN.  The result is never
+>                     # discarded again.
+>                     target_content_sha256s=(receipt.content_sha256,),
+>                 )
+>             except Exception as exc:
+>                 # D-W02 gate 0: a scan that cannot finish does not give this
+>                 # import a green light; the durable scan_runs row stays
+>                 # ``interrupted`` and the raw + sidecar bytes are kept.
+>                 raise CanonicalImportError(
+>                     f"post-import scan failed (scan did not complete): "
+>                     f"{type(exc).__name__}: {exc}"
+>                 ) from exc
+>             # D-W02 gate 1: the scan must report completion.  ``errors =>
+>             # completed_with_errors`` is already a failure here too (fail
+>             # closed on any root-level degradation, no partial-success
+>             # green); ``failed``/``interrupted`` can never appear on a
+>             # normally-returned report but are rejected identically if a
+>             # future code path ever produced them.
+>             completion_status = report.completion_status
+>             if completion_status != "completed":
+>                 raise CanonicalImportError(
+>                     "post-import scan failed: completion_status="
+>                     f"{completion_status!r} for run {report.run_id}"
+>                 )
+>             # D-W02 gate 2: every root that ran inside this scan must be
+>             # completed; a failed/degraded root blocks the import even when
+>             # other rows committed (the committed rows are kept, never
+>             # cleaned up here to re-earn green).
+>             degraded = [
+>                 result
+>                 for result in report.per_root_results
+>                 if result.get("status") != "completed"
+>             ]
+>             if degraded:
+>                 raise CanonicalImportError(
+>                     "post-import scan failed: roots not completed "
+>                     + repr(
+>                         [
+>                             (
+>                                 root_result["root_id"],
+>                                 root_result["status"],
+>                                 root_result.get("error_class"),
+>                             )
+>                             for root_result in degraded
+>                         ]
+>                     )
+>                 )
+>             # D-W02 gate 3: the target bytes must be registered BY THIS
+>             # scan run — a healthy file count never stands in for the
+>             # target's own registration (target_not_registered).
+>             target_entry = next(
+>                 (
+>                     item
+>                     for item in report.target_files
+>                     if item.get("content_sha256") == receipt.content_sha256
+192a306
+>                 None,
+193a308,317
+>             if target_entry is None or not target_entry.get("registered"):
+>                 raise CanonicalImportError(
+>                     "post-import scan completed but the target file was not "
+>                     "registered (target_not_registered); report run "
+>                     f"{report.run_id}"
+>                 )
+>             # D-W02 gate 4: consume the exact resolve with an IDENTITY
+>             # check — the resolver must report the target's own bytes at the
+>             # writer's own canonical path before any success/confident
+>             # handle leaves this import (no proxy match acceptance).
+212a337,346
+>             match = resolution.matches[0] if resolution.matches else None
+>             if (
+>                 match is None
+>                 or getattr(match, "content_sha256", None) != receipt.content_sha256
+>                 or Path(match.canonical_path) != destination.resolve()
+>             ):
+>                 raise CanonicalImportError(
+>                     "exact resolve returned a different identity than the "
+>                     "imported target (exact_resolve_identity_mismatch)"
+>                 )
+224a359,729
+>     def register_existing_raw(
+>         self,
+>         request: SourceRequest,
+>         *,
+>         raw_path: Path,
+>         sidecar_path: Path,
+>     ) -> CanonicalImportResult:
+>         """I-02-C (D-W02 supplement): register an already-on-disk canonical
+>         raw that owns its immutable provenance sidecar.
+> 
+>         Recovery consumes ONLY proven persistence stages: the durable
+>         download receipt embedded in the sidecar (written by
+>         ``_write_provenance`` at capture time) plus a fresh re-hash of the
+>         actual bytes.  Nothing is downloaded, no receipt is fabricated, no
+>         identity is inferred from filenames, and retired/quarantined
+>         documents are never reactivated on this path (N2).  The sidecar
+>         bytes are never rewritten; the historical ``receipt.staged_path``
+>         stays as provenance even when the historical staging directory no
+>         longer exists."""
+>         if not isinstance(request, SourceRequest):
+>             raise TypeError("request must be SourceRequest")
+>         with CatalogOperationLock(
+>             self.catalog.config.catalog_dir,
+>             operation="canonical_import",
+>         ):
+>             return self._register_existing_locked(
+>                 request,
+>                 raw_path=raw_path,
+>                 sidecar_path=sidecar_path,
+>             )
+> 
+>     def _register_existing_locked(
+>         self,
+>         request: SourceRequest,
+>         *,
+>         raw_path: Path,
+>         sidecar_path: Path,
+>     ) -> CanonicalImportResult:
+>         # Gate R1 (root policy, fail-early): a root that is not reusable
+>         # for filing can never be the recovery target — register may not
+>         # grant reusability that the root policy withholds (N2b).
+>         if not _effective_reusable(self.company_root, self.catalog.config):
+>             raise CanonicalImportError(
+>                 "existing_raw_root_not_reusable: the target company_raw root "
+>                 "is not reusable for filing; registering cannot lift the "
+>                 "root-level reuse ban"
+>             )
+>         # Gate R2 (target-root binding + raw presence): the recovery bytes
+>         # must live inside the bound company_raw root — no out-of-tree raw
+>         # and no path-derived identity substitution.
+>         try:
+>             raw_abs = Path(raw_path).resolve(strict=True)
+>         except FileNotFoundError as exc:
+>             raise CanonicalImportError(
+>                 "existing_raw_bytes_mismatch: raw_path does not exist; "
+>                 "recovery requires the already-on-disk raw"
+>             ) from exc
+>         try:
+>             raw_abs.relative_to(self.company_root.path.resolve(strict=True))
+>         except ValueError as exc:
+>             raise CanonicalImportError(
+>                 "existing_raw_identity_contract: raw_path is outside the "
+>                 "bound company_raw root; the recovery target root is part "
+>                 "of the recovery key"
+>             ) from exc
+>         if not raw_abs.is_file():
+>             raise CanonicalImportError(
+>                 "existing_raw_bytes_mismatch: raw_path is not a regular file"
+>             )
+>         # Gate R3 (sidecar adjacency, N1a): the provenance sidecar must be
+>         # THE raw file's adjacent immutable sidecar — a sidecar from
+>         # elsewhere cannot certify these bytes.
+>         adjacent = raw_abs.with_name(raw_abs.name + ".source.json")
+>         try:
+>             sidecar_abs = Path(sidecar_path).resolve(strict=True)
+>         except FileNotFoundError as exc:
+>             raise CanonicalImportError(
+>                 "existing_raw_missing_sidecar: the immutable provenance "
+>                 "sidecar (<raw>.source.json beside the raw file) is absent; "
+>                 "without it there is no durable receipt chain"
+>             ) from exc
+>         if sidecar_abs != adjacent.resolve(strict=False):
+>             raise CanonicalImportError(
+>                 "existing_raw_missing_sidecar: sidecar_path is not the "
+>                 "raw file's adjacent provenance (<raw>.source.json)"
+>             )
+>         try:
+>             payload = json.loads(sidecar_abs.read_text(encoding="utf-8"))
+>         except (OSError, json.JSONDecodeError) as exc:
+>             raise CanonicalImportError(
+>                 f"existing_raw_provenance_incomplete: sidecar is unreadable "
+>                 f"({type(exc).__name__}: {exc})"
+>             ) from exc
+>         if not isinstance(payload, dict):
+>             raise CanonicalImportError(
+>                 "existing_raw_provenance_incomplete: sidecar payload is not "
+>                 "a JSON object"
+>             )
+>         # Gate R4 (provenance completeness, N1d): every identity field and
+>         # the durable download receipt must be present.  Absent fields are
+>         # NEVER auto-filled — least of all from the filename.
+>         required_identity = {
+>             "content_sha256",
+>             "byte_size",
+>             "company_name",
+>             "provider",
+>             "provider_document_id",
+>             "source_url",
+>             "document_kind",
+>             "filing_date",
+>             "fiscal_year",
+>             "market",
+>             "security_id",
+>             "mime_type",
+>         }
+>         present_empty = sorted(
+>             key
+>             for key in required_identity
+>             if key not in payload or payload[key] in (None, "")
+>         )
+>         absent_sections = [
+>             key
+>             for key in ("candidate", "request", "receipt")
+>             if not isinstance(payload.get(key), dict)
+>         ]
+>         if present_empty or absent_sections:
+>             raise CanonicalImportError(
+>                 "existing_raw_provenance_incomplete: sidecar lacks durable "
+>                 f"receipt/identity fields {absent_sections + present_empty!r}; "
+>                 "auto-filling (including from the filename) is forbidden"
+>             )
+>         required_receipt = {
+>             "content_sha256",
+>             "byte_size",
+>             "provider",
+>             "provider_document_id",
+>             "candidate_id",
+>             "source_url",
+>             "http_status",
+>             "retrieved_at",
+>             "mime_type",
+>         }
+>         receipt_payload = payload["receipt"]
+>         missing_receipt = sorted(
+>             key
+>             for key in required_receipt
+>             if key not in receipt_payload or receipt_payload[key] in (None, "")
+>         )
+>         if missing_receipt:
+>             raise CanonicalImportError(
+>                 "existing_raw_provenance_incomplete: sidecar receipt lacks "
+>                 f"{missing_receipt!r}; no reliable download receipt -> "
+>                 "recovery refused"
+>             )
+>         content_sha256 = str(payload["content_sha256"])
+>         byte_size = int(payload["byte_size"])
+>         # Gate R5 (bytes identity vs the durable receipt, N1b / fake
+>         # receipt): rebuild candidate+receipt ONLY from sidecar fields,
+>         # then verify against the CURRENT bytes; a single flipped byte or
+>         # any hash/size drift is rejected.
+>         try:
+>             candidate = DownloadCandidate(**payload["candidate"])
+>             receipt = DownloadReceipt(
+>                 **{**receipt_payload, "staged_path": str(raw_abs)}
+>             )
+>         except (TypeError, ValueError) as exc:
+>             raise CanonicalImportError(
+>                 "existing_raw_provenance_incomplete: sidecar receipt/loose "
+>                 f"identity fields do not satisfy the acquisition contract "
+>                 f"({type(exc).__name__}: {exc})"
+>             ) from exc
+>         if (
+>             candidate.candidate_id != receipt.candidate_id
+>             or candidate.provider != receipt.provider
+>             or candidate.provider_document_id != receipt.provider_document_id
+>             or candidate.source_url != receipt.source_url
+>             or payload["provider"] != receipt.provider
+>             or payload["provider_document_id"] != receipt.provider_document_id
+>             or int(payload["byte_size"]) != receipt.byte_size
+>         ):
+>             raise CanonicalImportError(
+>                 "existing_raw_provenance_incomplete: sidecar top-level "
+>                 "identity does not agree with the embedded durable "
+>                 "receipt/candidate"
+>             )
+>         if (
+>             raw_abs.stat().st_size != receipt.byte_size
+>             or _hash_file(raw_abs) != receipt.content_sha256
+>         ):
+>             raise CanonicalImportError(
+>                 f"existing_raw_bytes_mismatch: content_sha256 is "
+>                 f"{receipt.content_sha256} but the on-disk bytes hash/size "
+>                 f"differ (raw_path={raw_abs})"
+>             )
+>         # Gate R6 (identity contract, N1c): the caller must have supplied
+>         # the source identity EXPLICITLY; it must match the durable
+>         # sidecar identity.  No auto-fill from the filename, ever.
+>         for text, kind in (
+>             (request.provider, "provider"),
+>             (request.provider_document_id, "provider_document_id"),
+>         ):
+>             if not text:
+>                 raise CanonicalImportError(
+>                     "existing_raw_identity_contract: request.provider / "
+>                     "request.provider_document_id must be supplied "
+>                     "explicitly for register-existing; inferring provider/"
+>                     "fiscal_year from the filename is forbidden"
+>                 )
+>         if (
+>             request.provider != receipt.provider
+>             or request.provider_document_id != receipt.provider_document_id
+>             or request.entity != payload["company_name"]
+>             or request.document_kind != payload["document_kind"]
+>             or (
+>                 request.fiscal_year is not None
+>                 and request.fiscal_year != payload["fiscal_year"]
+>             )
+>             or (request.market is not None and request.market != payload.get("market"))
+>         ):
+>             raise CanonicalImportError(
+>                 "existing_raw_identity_contract: the caller-supplied request "
+>                 "identity does not match the sidecar's durable provider/"
+>                 "entity/kind/year bindings"
+>             )
+>         # Gate R7 (retired/quarantined, N2): identical bytes whose document
+>         # is retired or quarantined must NOT be reactivated by recovery —
+>         # never via _reactivate_if_retired, never restored to active, and
+>         # never handed back as a qualified handle.  A user-approved
+>         # re-acquisition or the documents restore CLI are the only revival
+>         # paths; both are outside this entry point.
+>         document_id = source_id_for_sha256(content_sha256).replace(
+>             "urn:company-wiki:source:", "urn:company-wiki:document:"
+>         )
+>         state = self.catalog.store.fetchone(
+>             "SELECT source_status FROM documents WHERE document_id=?",
+>             (document_id,),
+>         )
+>         if state is not None and state["source_status"] in (
+>             "retired",
+>             "quarantined",
+>         ):
+>             raise CanonicalImportError(
+>                 "existing_raw_status_not_active: identical bytes are "
+>                 f"{state['source_status']}; register-existing may not "
+>                 "reactivate them and returns no qualified handle"
+>             )
+>         existing = self._existing_original(content_sha256)
+>         if existing is not None:
+>             # Idempotent re-entry: the same bytes are already registered.
+>             # No new rows, no rewritten sidecar; just resolve and return
+>             # the same identity.
+>             resolution = self._exact_resolve(request, receipt, raw_abs)
+>             return CanonicalImportResult(
+>                 schema_version=CANONICAL_IMPORT_SCHEMA_VERSION,
+>                 status=CanonicalImportStatus.REGISTERED_EXISTING_RAW,
+>                 request_id=request.request_id,
+>                 source_id=source_id_for_sha256(content_sha256),
+>                 content_sha256=content_sha256,
+>                 canonical_path=str(existing),
+>                 provenance_path=None,
+>                 resolution=resolution,
+>             )
+>         # Registration stage: the raw + sidecar are already canonical — the
+>         # only missing stage is the catalog registration.  The scan must
+>         # prove completion and register THESE bytes itself (gates 0-3,
+>         # identical to import_staged).
+>         try:
+>             report = scan_catalog(
+>                 self.catalog.config,
+>                 self.catalog.store,
+>                 dry_run=False,
+>                 root_ids={self.company_root.root_id},
+>                 v2_scan_shadow=v2_scan_shadow_from_snapshot(
+>                     self.catalog.config.catalog_dir
+>                 ),
+>                 target_content_sha256s=(content_sha256,),
+>             )
+>         except Exception as exc:
+>             raise CanonicalImportError(
+>                 f"post-import scan failed (scan did not complete): "
+>                 f"{type(exc).__name__}: {exc}"
+>             ) from exc
+>         completion_status = report.completion_status
+>         if completion_status != "completed":
+>             raise CanonicalImportError(
+>                 "post-import scan failed: completion_status="
+>                 f"{completion_status!r} for run {report.run_id}"
+>             )
+>         degraded = [
+>             result
+>             for result in report.per_root_results
+>             if result.get("status") != "completed"
+>         ]
+>         if degraded:
+>             raise CanonicalImportError(
+>                 "post-import scan failed: roots not completed "
+>                 + repr(
+>                     [
+>                         (
+>                             root_result["root_id"],
+>                             root_result["status"],
+>                             root_result.get("error_class"),
+>                         )
+>                         for root_result in degraded
+>                     ]
+>                 )
+>             )
+>         target_entry = next(
+>             (
+>                 item
+>                 for item in report.target_files
+>                 if item.get("content_sha256") == content_sha256
+>             ),
+>             None,
+>         )
+>         if target_entry is None or not target_entry.get("registered"):
+>             raise CanonicalImportError(
+>                 "post-import scan completed but the target file was not "
+>                 "registered (target_not_registered); report run "
+>                 f"{report.run_id}"
+>             )
+>         resolution = self._exact_resolve(request, receipt, raw_abs)
+>         return CanonicalImportResult(
+>             schema_version=CANONICAL_IMPORT_SCHEMA_VERSION,
+>             status=CanonicalImportStatus.REGISTERED_EXISTING_RAW,
+>             request_id=request.request_id,
+>             source_id=source_id_for_sha256(content_sha256),
+>             content_sha256=content_sha256,
+>             canonical_path=str(raw_abs),
+>             provenance_path=str(sidecar_abs),
+>             resolution=resolution,
+>             recovery_source=EXISTING_RAW_RECOVERY_SOURCE,
+>         )
+> 
+>     def _exact_resolve(
+>         self,
+>         request: SourceRequest,
+>         receipt: DownloadReceipt,
+>         raw_abs: Path,
+>     ) -> ResolutionResult:
+>         exact_request = SourceRequest(
+>             entity=request.entity,
+>             market=request.market,
+>             security_id=request.security_id,
+>             document_kind=request.document_kind,
+>             form_type=request.form_type,
+>             fiscal_year=request.fiscal_year,
+>             fiscal_period=request.fiscal_period,
+>             language=request.language,
+>             provider=receipt.provider,
+>             provider_document_id=receipt.provider_document_id,
+>             as_of_date=request.as_of_date,
+>             allow_download=request.allow_download,
+>         )
+>         resolution = SourceResolver(self.catalog).resolve(exact_request)
+>         if resolution.status is not ResolutionStatus.REUSED_EXACT:
+>             raise CanonicalImportError(
+>                 "canonical file was written but exact provider identity did not resolve"
+>             )
+>         match = resolution.matches[0] if resolution.matches else None
+>         if (
+>             match is None
+>             or getattr(match, "content_sha256", None) != receipt.content_sha256
+>             or Path(match.canonical_path) != raw_abs.resolve()
+>         ):
+>             raise CanonicalImportError(
+>                 "exact resolve returned a different identity than the "
+>                 "registered target (exact_resolve_identity_mismatch)"
+>             )
+>         return resolution
+> 
+238c743,745
+<             raise CanonicalImportError("receipt provider identity does not match candidate")
+---
+>             raise CanonicalImportError(
+>                 "receipt provider identity does not match candidate"
+>             )
+246c753,755
+<             raise CanonicalImportError("staged file is outside configured staging root") from exc
+---
+>             raise CanonicalImportError(
+>                 "staged file is outside configured staging root"
+>             ) from exc
+393c902,904
+<             staged.resolve(strict=True).relative_to(self.staging_root.resolve(strict=True))
+---
+>             staged.resolve(strict=True).relative_to(
+>                 self.staging_root.resolve(strict=True)
+>             )
+395c906,908
+<             raise CanonicalImportError("refusing to remove file outside staging") from exc
+---
+>             raise CanonicalImportError(
+>                 "refusing to remove file outside staging"
+>             ) from exc
+
+==== acquisition_service.py (prod vs attempt) ====
+6a7
+> from pathlib import Path
+23a25,31
+> # I-02-C (D-W02 supplement): approved register-existing recovery callers.
+> RECOVERY_AUTHORIZED_CALLERS = frozenset(
+>     {
+>         "register-existing-manifest",
+>         "I-02-C sample-copy-manifest",
+>     }
+> )
+29a38
+>     REGISTERED_EXISTING = "registered_existing"  # I-02-C recovery
+35a45,75
+> class SourceRecoveryInput:
+>     """I-02-C: caller-supplied binding for an already-on-disk canonical raw.
+> 
+>     Recovery is explicit and location-bound: the caller must name the raw
+>     file and its adjacent immutable sidecar.  The journal is only used for
+>     corroboration, never for file-system discovery, and nothing is
+>     inferred from filenames."""
+> 
+>     raw_path: str
+>     sidecar_path: str
+>     authorized_caller: str = "register-existing-manifest"
+> 
+>     def __post_init__(self) -> None:
+>         for name in ("raw_path", "sidecar_path", "authorized_caller"):
+>             value = getattr(self, name)
+>             if not isinstance(value, str) or not value.strip():
+>                 raise ValueError(f"recovery {name} must be non-empty text")
+>         if self.authorized_caller not in RECOVERY_AUTHORIZED_CALLERS:
+>             raise ValueError(
+>                 "recovery authorized_caller is not on the approved caller list"
+>             )
+>         raw = Path(self.raw_path)
+>         sidecar = Path(self.sidecar_path)
+>         if sidecar.name != raw.name + ".source.json":
+>             raise ValueError(
+>                 "recovery sidecar_path must be the raw file's adjacent "
+>                 "provenance (<raw>.source.json)"
+>             )
+> 
+> 
+> @dataclass(frozen=True)
+39c79
+<     acquisition: AcquisitionResult
+---
+>     acquisition: AcquisitionResult | None
+48c88,90
+<             "acquisition": self.acquisition.to_dict(),
+---
+>             "acquisition": (
+>                 self.acquisition.to_dict() if self.acquisition is not None else None
+>             ),
+77c119,124
+<     def ensure(self, request: SourceRequest) -> SourceEnsureResult:
+---
+>     def ensure(
+>         self,
+>         request: SourceRequest,
+>         *,
+>         recovery: SourceRecoveryInput | None = None,
+>     ) -> SourceEnsureResult:
+116a164,205
+>             )
+>         if recovery is not None and acquisition.status is AcquisitionStatus.MISSING:
+>             # I-02-C register-existing recovery: the catalog has no reusable
+>             # source and NO download is attempted.  The already-on-disk raw
+>             # is registered through the sole writer, which re-verifies the
+>             # durable sidecar receipt against the actual bytes.
+>             try:
+>                 imported = self.writer.register_existing_raw(
+>                     request,
+>                     raw_path=Path(recovery.raw_path),
+>                     sidecar_path=Path(recovery.sidecar_path),
+>                 )
+>             except Exception as exc:
+>                 self.journal.record(
+>                     request_id=request.request_id,
+>                     provider=request.provider,
+>                     provider_document_id=request.provider_document_id,
+>                     outcome="failed",
+>                     reason="existing_raw_register_failed",
+>                     error_type=type(exc).__name__,
+>                     error=str(exc),
+>                 )
+>                 raise
+>             attempt = self.journal.record(
+>                 request_id=request.request_id,
+>                 provider=request.provider,
+>                 provider_document_id=request.provider_document_id,
+>                 content_sha256=imported.content_sha256,
+>                 canonical_path=imported.canonical_path,
+>                 outcome="registered_existing_raw",
+>                 reason="existing_raw_recovery_no_download",
+>             )
+>             return SourceEnsureResult(
+>                 schema_version=SOURCE_ENSURE_SCHEMA_VERSION,
+>                 status=SourceEnsureStatus.REGISTERED_EXISTING,
+>                 # acquisition stays honestly None: no discovery happened;
+>                 # fabricating an AcquisitionResult would fake an event that
+>                 # never occurred.
+>                 acquisition=None,
+>                 resolution=imported.resolution,
+>                 attempt=attempt,
+>                 canonical_import=imported,
+
+==== acquisition_journal.py (prod vs attempt) ====
+29a30,32
+>         # I-02-C (D-W02 supplement): already-on-disk raw registered through
+>         # the approved recovery entry — nothing was downloaded.
+>         "registered_existing_raw",
+
+## Part 2: I-02-C accepted baseline vs attempt (delta of THIS card only)
+
+==== canonical_writer.py (I-02-C vs attempt) ====
+166a167,205
+>                 # I-02-D: dedup success is only reportable after the exact
+>                 # resolve PROVES the DOWNLOAD's own provider identity
+>                 # (receipt/candidate identity, exactly as the import success
+>                 # path would resolve) at the same canonical path.  Resolving
+>                 # the caller's request instead would let a different provider
+>                 # identity ride an existing row (same bytes, wrong identity
+>                 # -> fake DEDUPLICATED success).  The staging file is removed
+>                 # only AFTER that proof succeeds (recoverable evidence
+>                 # first); a failed identity resolve keeps the staging file
+>                 # and raises instead.
+>                 exact_request = SourceRequest(
+>                     entity=request.entity,
+>                     market=request.market,
+>                     security_id=request.security_id,
+>                     document_kind=request.document_kind,
+>                     form_type=request.form_type or candidate.form_type,
+>                     fiscal_year=request.fiscal_year or candidate.fiscal_year,
+>                     fiscal_period=request.fiscal_period or candidate.fiscal_period,
+>                     language=request.language or candidate.language,
+>                     provider=candidate.provider,
+>                     provider_document_id=candidate.provider_document_id,
+>                     as_of_date=request.as_of_date,
+>                     allow_download=request.allow_download,
+>                 )
+>                 resolution = SourceResolver(self.catalog).resolve(exact_request)
+>                 if resolution.status is not ResolutionStatus.REUSED_EXACT:
+>                     raise CanonicalImportError(
+>                         "canonical file was written but exact provider identity did not resolve"
+>                     )
+>                 match = resolution.matches[0] if resolution.matches else None
+>                 if (
+>                     match is None
+>                     or getattr(match, "content_sha256", None) != receipt.content_sha256
+>                     or Path(match.canonical_path) != Path(existing).resolve()
+>                 ):
+>                     raise CanonicalImportError(
+>                         "exact resolve returned a different identity than the "
+>                         "deduplicated target (exact_resolve_identity_mismatch)"
+>                     )
+168d206
+<                 resolution = SourceResolver(self.catalog).resolve(request)
+
+==== acquisition_service.py (I-02-C vs attempt) ====
+
+==== acquisition_journal.py (I-02-C vs attempt) ====
+

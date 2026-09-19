@@ -1,0 +1,32 @@
+{
+  "template": "CN-annual",
+  "market": "CN",
+  "entity": "CNCO",
+  "period_rule_note": "该样本不陈述或验证任何市场公告/披露义务、合规截止、中文维基百科内容或任何被排除的内容。",
+  "field_source_simulation": {
+    "kind": "模拟自 CN 披露文种 '年度报告'，映射 document_kind=annual_report（请求级与候选级一致）",
+    "period_start/period_end": "模拟自 CN 结构化披露元数据中的会计区间字段：日历财政年 2025-01-01→2025-12-31（仅装机模拟，不外推为真实 provider 验收）",
+    "filed_at": "模拟自披露元数据 filing_date（强制 canonical ISO 日期，继承 acquisition._date 语义）",
+    "accepted_at": "模拟自披露元数据 accepted_at，同日",
+    "fiscal_year": "模拟 fiscal_year=2025；同时验证 period_end 年派生标签一致性"
+  },
+  "provider": "fake-cn",
+  "scenarios": [
+    {
+      "name": "newer_revision_same_period",
+      "remote": [
+        {"kind": "annual_report", "period_start": "2025-01-01", "period_end": "2025-12-31", "accession": "cn-2025-a-old", "filed_at": "2026-01-20", "accepted_at": "2026-01-20", "fiscal_year": 2025, "url": "https://example.org/cn/2025-a-old.pdf"},
+        {"kind": "annual_report", "period_start": "2025-01-01", "period_end": "2025-12-31", "accession": "cn-2025-a-new", "filed_at": "2026-03-28", "accepted_at": "2026-03-28", "fiscal_year": 2025, "url": "https://example.org/cn/2025-a-new.pdf"}
+      ],
+      "local": [
+        {"kind": "annual_report", "period_start": "2025-01-01", "period_end": "2025-12-31", "accession": "cn-2025-a-old", "filed_at": "2026-01-20", "accepted_at": "2026-01-20", "fiscal_year": 2025}
+      ],
+      "expect": {
+        "newer_revision_ids": ["cn-2025-a-new"],
+        "reuse_ids": ["cn-2025-a-old"],
+        "missing_ids": [],
+        "latest_status": "newer_remote_available"
+      }
+    }
+  ]
+}
