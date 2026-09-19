@@ -6,6 +6,7 @@
 - **设计要点**：D0 三缺陷=过期预算（`max(10,…)`，F-D2）、陈旧剩余（L304/L326 ⇒ wait=5、t=14，pure_probes 实证，F-D1）、清理与请求不分账（F-D3）；阶段预算表含**新增 R-P 行**（tasklist pid 探测 L418-432：请求段 `min(20,请求剩余)`/清理段 `min(20,C)`，计 `liveness_calls`）；`_cleanup_timeout()=C`、**C=max(30, 2×resume_wait+graceful)**（默认 30）；TimeoutExpired=**终态**（否决改重试集）；清理义务=最后参与者（joined 含在内）；ε=0.4 **临时签署**+范围限定+预先承诺重测程序；B=20 仅请求段；新 stats 字段含 `liveness_calls`/`liveness_probe_failed`。
 - **两轮独立复审**（同一只读子代理，零写入）：r1 **changes_required**（1P1/2P2/5P3，核心是 D3 未落实父项"返回后重算剩余"——按 v1 字面实现会复现 t=14 历史事故）→ 全部处置 → r2 **accepted_scoped**；预注册变化案例（deadline=30 三连争用）被 v2 规则逐数值复现。**随签携带 1 条 P3 强制口径**给 I-04-B：清理验收按**子调用**（resume ≤ C+ε；每探测 ≤ min(20,·)），相位总墙钟单列；另 ε 重测程序是 I-04-B/E 真实进程验收的前置。
 - **资格**：accepted_scoped=仅本 attempt 的设计文本；不授予产品实施权。**15/86 卡完成**；下一卡 I-04-B（开工前重验源码 hash 并携带上述两项强制条件）。
+- **交付时的门偶发（登记，未归因到具体步骤）**：本卡提交后**第一次** `git push` 被 pre-push 门拦下（rc≠0），可见的 stderr 只有两行 `UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd4 in position 17`（子进程侧 traceback 尾部）与 "PUSH BLOCKED"；**我没有留存该次的完整子进程输出**（当时的输出被我自己 `Select-String` 过滤后丢弃），因此**不指认**是哪一步失败。事实：树在两次推送之间**未改动**；随后直接重跑 `tools/pre_push_gate.py` 与再次 `git push` **均绿**，提交已推送（`2028576`）。**未绕过任何门**（是重跑通过，不是跳过）。可核事实：本次提交的 12 个文件经字节级检查**均为干净 UTF-8、无 BOM**；门自身的子进程解码已是 `errors="replace"`（其注释记录了 2026-09-08 同类事故），故那次报错来自某个**子步骤的子进程**而非门本体；`0xd4` 是 GBK 首字节（"曾"），提示消息里带 `C:\Users\郑曾波\…` 路径。**建议**（未做）：下次复现时保留门的完整 stderr 并在 `_run` 里打印失败步骤标签，以定位那条仍会把中文路径写成 GBK 的子进程。
 
 ## 2026-09-19 — 实施段：I-00..I-02 六卡（产品实施开始）
 
