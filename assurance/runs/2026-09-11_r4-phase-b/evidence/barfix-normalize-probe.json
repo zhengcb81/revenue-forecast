@@ -1,0 +1,55 @@
+{
+  "artifact": "barfix-normalize-probe",
+  "wiki_src": "C:\\Users\\郑曾波\\Projects\\company-wiki\\src",
+  "cases": [
+    {
+      "label": "changed-bytes-in-the-handler",
+      "wiki_src": "C:\\Users\\郑曾波\\Projects\\company-wiki\\src",
+      "escaped": false,
+      "completed": 1,
+      "failed": 1,
+      "skipped": 0,
+      "unsupported": 0,
+      "failure_reasons": {
+        "SourceManifestMismatchError": 1,
+        "ingest_failed:SourceManifestMismatchError": 1
+      },
+      "normalized_on_disk": [
+        "eca4fbe9f0650974711010675ea5b8b7afd56432f9fc78212f0879a0dadc1cb0"
+      ],
+      "healthy_row_normalized": true,
+      "artifact_rows": [
+        {
+          "document_id": "urn:company-wiki:document:sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "artifact_role": "normalized",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "label": "pre-fix copy (handler guard reverted)",
+      "wiki_src": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\barfix-normalize-probe\\_prefix_copy\\src",
+      "escaped": true,
+      "error": "SourceManifestMismatchError: source byte_size no longer matches manifest",
+      "raised_from": "normalizer.py:1859 bundle = IngestService(root=Path(primary[\"root_path\"])).ingest(",
+      "normalized_on_disk": [],
+      "healthy_row_normalized": false,
+      "artifact_rows": [],
+      "expectation": "escaped=true and healthy_row_normalized=false",
+      "expectation_met": true
+    }
+  ],
+  "ran_at_utc": "2026-09-18T22:38:24.883479+00:00",
+  "verdict": {
+    "escaped": false,
+    "healthy_row_normalized": true,
+    "failure_reasons": {
+      "SourceManifestMismatchError": 1,
+      "ingest_failed:SourceManifestMismatchError": 1
+    },
+    "passes_the_fix": true,
+    "pre_fix_expected": "a mutated copy (revert the handler guard) must show escaped=true and healthy_row_normalized=false",
+    "pre_fix_copy_escaped": true,
+    "pre_fix_copy_expectation_met": true
+  }
+}
