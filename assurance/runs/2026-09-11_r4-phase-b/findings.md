@@ -38,9 +38,10 @@
 - **两处我自己的变异写作错误（登记）**：`FB10R2-scanner`/`FB10R2-activation` 的第一版是**等价变异**
   （`metadata_object` 同样永不抛；另一处只禁用了"不是 list"的检查），因此**存活**；改成**忠实回退被修那一行**后被杀。
   **教训**：变异必须忠实回退，存活≠测试有洞。
-- **`F-B10R2` 剩余站点（未做）**：`normalize_catalog` 的 unsupported handler 里的 `IngestService.ingest`（主文件缺失 ⇒
-  `SourceManifestMismatchError` 逃出、**饿死后面的文档**）、成功路径的 `ingest`/事务块/两处 `fetchall`、
-  `_atomic_write` 的 `mkdir`。这些是**行为改动**，需行为级探针 + 变异 + 独立复审。
+- **`F-B10R2` 家族：normalize 侧也已修（本批第二轮）**：① unsupported handler 与通用 handler 里的 `IngestService.ingest` 改走 `_ingest_without_raising`（**永不抛**，不可读/不匹配的 manifest 变成**具名**逐文档失败）；② 循环内的 `locations` 读取、③ 派生产物写盘、④ 记录事务三处各自加具名守卫（`locations_read_failed` / `artifact_write_failed` / `artifact_record_failed`）。**行为级证据**（`barfix_normalize_probe.py`）：坏行（字节在扫描后被替换）+ 其后的健康行 ⇒ **pre-fix 副本在 `normalizer.py:1859` 逃逸（`SourceManifestMismatchError`，健康行零产物）**，post-fix **不逃逸、健康行被归一化**。
+- **`scripts/` 两处**：已收敛 + 棘轮升级为硬零（见上）。
+- **本批的独立复审 `B.VR-ba1` = `approve_with_findings`（1×P1 / 5×P2 / 2×P3），8 条全部处置**，见 [evidence/b-vr-ba1-disposition.md](evidence/b-vr-ba1-disposition.md)。其中：**P1 是我的账目错误**（F-BAR-14 的变异锚点早已失效 ⇒ "8/8 KILLED"不可复现；并发现上一轮编辑误删了 `FB10R2-assertion` 整条变异）；**F-BA1-03** 让字节门改用**与决定路径同一个键**（location 的 `root_id`）；**F-BA1-04** 把"已注册未实现适配器"的根从"整轮中止"改为**逐根 fail-closed**；**F-BA1-06** 修掉 resolver 里两处同形部分守卫；**F-BA1-07** 移除被跟踪的陈旧构建副本 `build/`。
+- **处置中我自己新引入、并被门抓到的两处（登记）**：四处守卫把 `normalizer.py` 最大复杂度从**冻结的 47**抬到 **52** ⇒ 按 S-7 **未改表**，改为拆分既有嵌套块；第一次拆分把 `metadata_state(列)` 也搬进 helper ⇒ **交接点被搬家而非消除**，B10 门"失效条目"与"新交接点"两条同时红 ⇒ 解析留在原调用点、helper 改收已解析映射。
 
 ## R4：跨仓端到端只读（filing-fetch 真实入口）+ R5：`dropbox_stock` 3 份字节核验（2026-09-18）
 

@@ -1,5 +1,13 @@
 # R4 Phase B 进度（progress）
 
+## 2026-09-18（第三批）— **`F-B10R2` normalize 侧收口 + `B.VR-ba1` 复审 8 条全部处置**（wiki `24e1c2f`、revenue `eab6328`，远端 CI 双绿）
+
+- **normalize 侧四处守卫**：handler 的 `ingest`（`_ingest_without_raising`，永不抛）、循环内 `locations` 读取、派生产物写盘、记录事务——各出错即**具名逐文档失败**。**行为级 pre/post**（[evidence/barfix-normalize-probe.json](evidence/barfix-normalize-probe.json)）：pre-fix 副本在 `normalizer.py:1859` **逃逸**且健康行零产物；post-fix 不逃逸、健康行归一化。用例 4 条（[tests/contract/test_fbar_b10r2_normalize_guards.py]）。
+- **`B.VR-ba1`（第五个独立会话）= `approve_with_findings`（1×P1 / 5×P2 / 2×P3）**，逐条处置见 [evidence/b-vr-ba1-disposition.md](evidence/b-vr-ba1-disposition.md)：F-BA1-01（P1，我的账目错误：F-BAR-14 变异锚点失效、"8/8"不可复现，且我误删了一条变异）、F-BA1-02（变异非忠实回退）、F-BA1-03（字节门改用**同一个键**：location 的 `root_id`）、F-BA1-04（未实现适配器的根改为**逐根** fail-closed，不再整轮中止）、F-BA1-05（覆盖率记录不可复现 ⇒ 安静树重测并**锚定** `coverage.json` sha256）、F-BA1-06（resolver 两处同形部分守卫）、F-BA1-07（移除被跟踪的 `build/` 陈旧副本）、F-BA1-08（陈旧说明）。
+- **变异 15/15 KILLED**（`barfix-mutations.json`，`src_fingerprint_identical` 与 `git_status_identical` 均为真）；新增 4 个针对复审处置的变异。
+- **全量 `tests/`：2868 passed / 8 skipped / 0 failed**；覆盖率+复杂度棘轮 **4 passed**（**锚定** `coverage.json` sha256 `8cf4a79333019bc0747b328f214575484c19262b5bc9324f66e3768494e8d947`，1,138,137 B）。⚠️ **我自己造出的两个门红，登记**：① 四处守卫把 `normalizer.py` 复杂度从冻结 47 抬到 52 ⇒ 按 S-7 **不改表**，拆分既有嵌套块；② 第一次拆分**把交接点搬了家**（`metadata_state(列)` 进了 helper）⇒ B10 门两条同时红 ⇒ 解析留在原调用点。另：一次全量跑里 `test_m14_concurrent_init_produces_one_v1_schema` 在高负载下红、单独复跑即绿（**判定 flake，登记**）。
+- **本地 CI**：unit **799 passed**、contract **1936 passed + 8 skipped**（[evidence/barfix3-ci-step1-unit.txt](evidence/barfix3-ci-step1-unit.txt)、[…step2](evidence/barfix3-ci-step2-contract.txt)）。**远端 CI**：wiki **`24e1c2f`** run **`35408350167`** = success、revenue **`eab6328`** run **`35408584197`** = success。
+
 ## 2026-09-18（第二批）— **产品侧修复批次**（owner「1 修 / 4 修」）：F-BAR-10 / F-BAR-11 / F-BAR-12 / F-BAR-14 + `F-B10R2` 家族站点 1–4 + `scripts/` 两处读取者
 
 - **F-BAR-10**：`scanner._scan_catalog_impl` 改为 `use_adapter = v2_scan_shadow or root.adapter_id is not None`（**声明即指令**；快照只继续管**没声明 adapter** 的根），并在 `ScanReport` 新增 `strategy`（root_id → `adapter`/`legacy`）让分派**可观察**。
