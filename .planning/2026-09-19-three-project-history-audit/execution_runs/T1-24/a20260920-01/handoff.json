@@ -1,0 +1,62 @@
+{
+  "card": "T1-24",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_ruling_and_verification",
+  "date": "2026-09-20",
+  "authority": {
+    "source": "OWNER_DECISIONS.md section 13 T1-24",
+    "tier": "TIER-1",
+    "ruling": "interpretation confirmation: the stronger claim 'oracle.md text is pre-run frozen evidence' is NOT adopted; formula qualification rests on (1) byte-for-byte regenerable oracle.json, (2) the generator code's pre-run hash already on disk, (3) oracle.json mtime earlier than the product stdout. No re-run.",
+    "owner_text": "口径确认：不采纳『文本事前冻结』这一更强主张；formula 资格以可逐字节重生成的 oracle.json + 生成器代码运行前 hash 已落盘 + oracle.json mtime 早于产品 stdout 为准。不重跑。"
+  },
+  "origin": {
+    "section": "OWNER_DECISIONS.md section 7 item 6 -- OQ-05 (M29-M31)",
+    "reviewer_ruling": "oracle.md's present mtime is a POST-HOC value and is not offered as pre-run evidence in either direction; what was anchored before the generator ran is the generator code scripts/oracle_M29.py (sha256 3177247f...), and oracle.md is outside the anchor scope and carries no gating expectation",
+    "reviewer_boundary": "if the owner wants oracle.md treated as pre-run frozen evidence, this attempt is NOT sufficient and a re-run is required",
+    "option_taken": "accept the reviewer's boundary: decline the stronger claim, so no re-run is needed"
+  },
+  "deliverable": {
+    "conclusion": "all three accepted legs hold on disk across M29-M31, and the declined stronger claim is asserted nowhere; no re-run was performed",
+    "accepted_basis": [
+      "leg 1: byte-for-byte regenerability of the frozen oracle files from the independent generator",
+      "leg 2: the generator code hash landed on disk before the run",
+      "leg 3: oracle.json mtime precedes the product stdout"
+    ],
+    "why_three_legs_are_jointly_necessary": "the three legs together close the same hole -- a hand-edited expectation cannot hide. Leg 1 says the file is reproducible from code; leg 2 says the code was fixed before the run; leg 3 says the expectation existed before the product output. Drop any one and a class of fabrication path reopens.",
+    "artifacts": [
+      {"path": "decision.md", "bytes": 6141, "sha256": "ba059fcf68325c2260e7aac96ab3f6512d47bc11eb75337196686daae311486c"},
+      {"path": "t24_oracle_pre_frozen_scope.json", "bytes": 3515, "sha256": "89a8be9189db2ff0192c034a53dbd025467be7ee0e65caf0d82809b450d0209a"},
+      {"path": "scripts/verify_t24.py", "bytes": 10439, "sha256": "695749a63110a9c756b3ba3e08f0d10ab091ac38c47b06b979f3ba1c09f6e6bd"}
+    ]
+  },
+  "verification_summary": {
+    "overall": "PASS",
+    "exit_code": 0,
+    "propositions": {
+      "Q-1": {"claim": "leg 1 holds: the frozen oracle files are regenerable byte-for-byte", "holds": true, "evidence": "M29/M30/M31 all_byte_identical = true, raw_returncode = 0, frozen files untouched by the generation step"},
+      "Q-2": {"claim": "leg 2 holds: the generator code hash landed on disk before the run", "holds": true, "evidence": "all three cards record oracle_md_sha256 = 3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e with oracle_md_existed_before_generation = true; recorded_utc 02:59:07/02:59:11/02:59:15Z"},
+      "Q-3": {"claim": "leg 3 holds: oracle.json mtime precedes the product stdout", "holds": true, "evidence": "M29 oracle.json 1789873147.96 < stdout 1789916251.35 (~11.98 h earlier); M30 and M31 likewise; oracle_md_precedes_oracle_json true on all three"},
+      "Q-4": {"claim": "the declined stronger claim is absent", "holds": true, "evidence": "zero positive unqualified assertions that oracle.md text is pre-run frozen; 9 explicit denials found"}
+    }
+  },
+  "error_made_and_corrected_in_this_card": {
+    "what_happened": "the first run of Q-4 reported FAIL, listing M29/M30/M31 handoff.json as asserting the stronger claim.",
+    "root_cause": "criterion/object form mismatch. The initial substring pattern `oracle\\.md[^\"]{0,80}pre-run frozen` matched two kinds of text that are not assertions: (a) the boundary conditional 'if the owner wants oracle.md treated as pre-run frozen evidence, this attempt is NOT sufficient'; (b) the explicit denial 'oracle.md is NOT described anywhere in this attempt as pre-run frozen'.",
+    "fix": "require a POSITIVE and UNQUALIFIED assertion: exclude matches whose window contains an 'if ... want(s)' conditional or a NOT/never/is-not negation.",
+    "significance": "the 10th instance of this project's same-class lesson (cf. I-10-B's terminal-value criterion, T1-6's prefix/suffix criterion for a composite edit, task_plan.md Round 44's pure-insertion criterion for an in-line append): the criterion must match the form of the object being judged. A criterion that cannot tell asserting from conditioning or denying reports a violation that does not exist -- as harmful as missing one."
+  },
+  "boundaries": {
+    "re_runs_performed": 0,
+    "new_evidence_generations_created": 0,
+    "ruled_on_carriers_written": 0,
+    "oracle_md_modified": false,
+    "oracle_json_modified": false,
+    "handoff_json_modified": false,
+    "oq05_status_change": "none",
+    "status_transitions_performed": 0,
+    "signatures_forged": false,
+    "product_files_changed": [],
+    "all_json_parseable": true
+  },
+  "next_action": "commit this card; no re-run and no carrier write"
+}

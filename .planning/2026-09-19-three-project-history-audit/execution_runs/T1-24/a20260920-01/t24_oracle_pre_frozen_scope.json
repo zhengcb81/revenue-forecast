@@ -1,0 +1,86 @@
+{
+  "card": "T1-24",
+  "attempt": "a20260920-01",
+  "authority": "OWNER_DECISIONS.md section 13 T1-24 (TIER-1)",
+  "ruling": "adopt the interpretation confirmation: the stronger claim 'oracle.md text is pre-run frozen evidence' is NOT adopted; formula qualification rests on (1) byte-for-byte regenerable oracle.json, (2) the generator code's hash already on disk before the run, (3) oracle.json mtime earlier than the product stdout. No re-run.",
+  "origin": "OQ-05 (M29-M31); the reviewer's own ruling already drew the same boundary",
+  "accepted_basis": [
+    "leg 1: byte-for-byte regenerability of the frozen oracle files from the independent generator",
+    "leg 2: the generator code hash landed on disk before the run",
+    "leg 3: oracle.json mtime precedes the product stdout"
+  ],
+  "declined_claim": "oracle.md TEXT treated as pre-run frozen evidence",
+  "propositions": {
+    "Q-1": {
+      "detail": {
+        "M29": {
+          "all_byte_identical": true,
+          "raw_returncode": 0,
+          "frozen_files_untouched_by_this_step": true
+        },
+        "M30": {
+          "all_byte_identical": true,
+          "raw_returncode": 0,
+          "frozen_files_untouched_by_this_step": true
+        },
+        "M31": {
+          "all_byte_identical": true,
+          "raw_returncode": 0,
+          "frozen_files_untouched_by_this_step": true
+        }
+      },
+      "holds": true
+    },
+    "Q-2": {
+      "expected_generator_sha256": "3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e",
+      "detail": {
+        "M29": {
+          "generator_sha256": "3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e",
+          "existed_before_generation": true,
+          "recorded_utc": "2026-09-20T02:59:07.858051+00:00"
+        },
+        "M30": {
+          "generator_sha256": "3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e",
+          "existed_before_generation": true,
+          "recorded_utc": "2026-09-20T02:59:11.623872+00:00"
+        },
+        "M31": {
+          "generator_sha256": "3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e",
+          "existed_before_generation": true,
+          "recorded_utc": "2026-09-20T02:59:15.848916+00:00"
+        }
+      },
+      "holds": true
+    },
+    "Q-3": {
+      "detail": {
+        "M29": {
+          "oracle_json_mtime_in_record": 1789873147.9633102,
+          "oracle_md_precedes_oracle_json": true,
+          "stdout_txt_mtime": 1789916251.350536,
+          "oracle_json_mtime_precedes_stdout": true
+        },
+        "M30": {
+          "oracle_json_mtime_in_record": 1789873151.714732,
+          "oracle_md_precedes_oracle_json": true,
+          "stdout_txt_mtime": 1789916274.2014737,
+          "oracle_json_mtime_precedes_stdout": true
+        },
+        "M31": {
+          "oracle_json_mtime_in_record": 1789873155.998223,
+          "oracle_md_precedes_oracle_json": true,
+          "stdout_txt_mtime": 1789916294.9437203,
+          "oracle_json_mtime_precedes_stdout": true
+        }
+      },
+      "holds": true
+    },
+    "Q-4": {
+      "files_asserting_oracle_md_text_is_pre_run_frozen": [],
+      "files_denying_it": 9,
+      "criterion_note": "positive-and-unqualified assertions only; boundary conditionals and explicit denials are excluded by construction, because a substring match cannot tell asserting from conditioning or denying",
+      "holds": true
+    }
+  },
+  "overall": "PASS"
+}

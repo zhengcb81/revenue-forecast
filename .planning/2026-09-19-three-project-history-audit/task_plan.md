@@ -349,3 +349,26 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
 **移交编排层的提示（本卡不做）**：`governance_status` 仍写 `OWNER DECISION REQUIRED`，**按本口径不构成缺陷**（它是当时状态），但下游可能误以为未裁。若需消除歧义，**正确做法是按 T1-12 ① 追加一条登记**（写明已由 §13 T1-21 裁定），**不回改原字段** —— 本卡不执行，因触及 I-08-B 冻结件、**超出 T1-21 授权范围**（该条授权的是**确立口径**，不是**改写 I-08-B**）。
 
 **产物**：`decision.md`（5780 B / `f8a2b1b2…`）、`t21_oracle_edit_policy_verification.json`（1469 B / `f76d0040…`）、`handoff.json`（`879be104…`）、`scripts/verify_t21.py`（8436 B / `084cb04a…`）。**边界**：**被裁定对象写入 0 次**（`oracle.md` / `binding.json` / `handoff.json` 均未改；`governance_status` 未动）；未做 `status` 转移；未代签；产品文件 **0 条**；全部 JSON 可解析且登记哈希**零失配**。
+
+**Round 50（2026-09-20）新增：T1-24 卡内完成 —— `oracle.md` 文本是否算「事前冻结证据」的**口径**，**结论为「已核查、所采纳口径的规定形态已在盘上由三条腿承载」**（**未重跑、未修改任何被裁定对象**）。落点 `execution_runs/T1-24/a20260920-01/`：
+
+**裁定**（`OWNER_DECISIONS.md` §13 **T1-24**，TIER-1）：**口径确认** —— **不采纳**「`oracle.md` 文本事前冻结」这一更强主张；formula 资格改以**三条腿**为准：①**`oracle.json` 可逐字节重生成**；②**生成器代码运行前 hash 已落盘**；③**`oracle.json` mtime 早于产品 stdout**。**不重跑**。
+
+**起因（OQ-05，M29–M31）**：复核者裁定原文 —— `oracle.md` 的 present mtime 是 **POST-HOC** 值、**不提供为**任何方向的 pre-run 证据；生成器运行前被锚定的是**生成器代码** `scripts/oracle_M29.py`（`3177247f…`）；**边界**：若 owner 要求把 `oracle.md` 当 pre-run 冻结证据，**则本 attempt 不充分、须重跑**。
+
+**为何选「接受边界、不重跑」这一侧**：那条更强的主张**会要求重做三张已封盘 attempt**（新证据世代 + 既有哈希登记失效），而它要额外买到的保证**已被一条严格等价、且可逐字节复算的替代证据链充分承载**。**为纯文书更强的措辞重跑已验收证据，是用高风险手段解决低风险问题。**
+
+**四条命题全成立（`scripts/verify_t24.py`，`overall = PASS` / exit 0）**：
+
+| # | 命题 | 结果 | 证据 |
+|---|---|---|---|
+| **Q-1** | **腿 1**：`oracle.json` 可由生成器**逐字节重生成** | **holds** | M29 / M30 / M31 三卡 `all_byte_identical = true`，`raw_returncode = 0` |
+| **Q-2** | **腿 2**：**生成器代码**在运行前已锚定（含 hash 落盘） | **holds** | 三卡 `oracle_md_sha256 = 3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e`、`existed_before_generation = true` |
+| **Q-3** | **腿 3**：`oracle.json` mtime **早于**产品 stdout | **holds** | M29 `oracle.json` mtime `1789873147.96` < stdout `1789916251.35`（早 ≈11.98 h）；M30 / M31 同样 |
+| **Q-4** | 被拒主张**不在场**：「`oracle.md` 是事前冻结证据」这一正面主张**没有任何一张卡作出** | **holds** | `asserted = []`、`denied = 9` |
+
+⇒ **三条腿合起来堵住的是同一件事**：**手改的期望值无法藏身** —— 腿 1 证明**文件能从代码复现**、腿 2 证明**代码在运行前已固定**、腿 3 证明**期望值先于产品输出存在**。**三者缺一，期望值就可以是「看完产品输出再回去编的」。**
+
+**本卡自行犯下并已修正的判据错误（如实登记）**：`verify_t24.py` 首跑 **Q-4 FAIL** —— 子串判据 `oracle\.md[^"]{0,80}pre-run frozen` **同时命中两类并非「主张」的文本**：①**边界条件句** *"if the owner wants oracle.md treated as pre-run frozen evidence…"*；②**明确否认句** *"oracle.md is NOT described anywhere… as pre-run frozen"*。**一个分不清「主张 / 假设 / 否认」的判据，会报出一处并不存在的违规** —— 与漏报同样有害。**修正**：改为**只认「正面且无条件」的主张**（命中窗口内含 `if … want(s)` 或 `NOT` / `never` / `is not` 即排除），修正后 `asserted = []` / `denied = 9`。该错误与修正已登记于 `decision.md` §4 与 `handoff.json.error_made_and_corrected_in_this_card`。⇒ **本项目第 10 次同源教训：判据必须匹配被判定对象的形态。**
+
+**产物**：`decision.md`（6141 B / `ba059fcf…`）、`t24_oracle_pre_frozen_scope.json`（3515 B / `89a8be91…`）、`handoff.json`（`2797575b…`）、`scripts/verify_t24.py`（10439 B / `695749a6…`）。**边界**：**被裁定对象写入 0 次**（M29–M31 三卡的 `oracle.md` / `oracle.json` / `binding.json` / 生成器代码均未改）；**未重跑任何已封盘 attempt**；未做 `status` 转移；未代签；产品文件 **0 条**；生产锚点 `scripts/model_registry.py` = `9ec6529550f189a4…` **一致**；全部 JSON 可解析且登记哈希**零失配**。
