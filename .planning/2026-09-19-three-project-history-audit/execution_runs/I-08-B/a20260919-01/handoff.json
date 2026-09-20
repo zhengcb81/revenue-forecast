@@ -4,7 +4,7 @@
   "plan": "2026-09-19-three-project-history-audit",
   "attempt_id": "a20260919-01",
   "attempt_path": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-B\\a20260919-01",
-  "status": "review_pending",
+  "status": "accepted_scoped",
   "implementer_self_acceptance": false,
   "implementer_note": "the implementer does NOT declare this card accepted; two architectural conflicts and the OPEN-D1..D7 items are handed to the reviewer/owner",
   "completed_steps": [
@@ -25,7 +25,7 @@
     }
   ],
   "next_step_number": 9,
-  "next_action": "Second independent review of the revised attempt. Priority: (1) re-verify that E29 and E30 are now reachable AND that their failure cases genuinely fail without the fix; (2) construct independent mutations against the widened projection (e.g. confidence, theme_analysis, historical_accuracy_records) and confirm E16 fires; (3) confirm the E30 compatibility claim (AttestationError subclasses ForecastInputError and the historical message text is verbatim); (4) rule whether the empty-commitment acceptance condition (P2-2 fixed) is now satisfied; (5) decide whether require_legacy_exemption() in-repo is an acceptable landing for E29 while OPEN-D6 keeps the cross-repo wiring open. E31 and OPEN-D1..D7 must stay open; the status stays review_pending.",
+  "next_action": "HANDOVER to plan/owner: the round-4 independent verdict is accepted_scoped on the technical and delivery surfaces. Apply the SAME 14 files (9 edited + 5 added) to the product repo from a card authorised to write it, and carry the 8 OPEN items (E31, OPEN-D1/D2/D3/D5/D6/D7 and the UNRESOLVED-BY-DESIGN registry anchor field names) plus the three P3 items (R4-1/R4-2/R4-3) forward. The three fixed declarations in review_verdict.declarations stay TRUE.",
   "design_inputs": {
     "execution_runs/I-08-A/a20260919-01/decision.md": "a26776b079a48e6b1b8644aa93b5599a45624f63dffcbfb83ce34805ac54272b",
     "execution_runs/I-08-A/a20260919-01/oracle.md": "08281f2d80ac83c1ef23f801e097b5089fd096af23d372dd7f4d2852b576047a",
@@ -97,7 +97,8 @@
       "the SAME 14 files (9 edited + 5 added) must be applied to the product repo by a card/owner authorised to write it",
       "tests/golden_behavior_hashes.json requires the same reviewed refresh that this attempt performed"
     ],
-    "counts_note": "14 differing files = 9 pre-existing files edited + 5 new files, and that is now exactly what changes.diff contains (verified by the generator's completeness check, which fails when a differing file is absent from the diff)."
+    "counts_note": "14 differing files = 9 pre-existing files edited + 5 new files, and that is now exactly what changes.diff contains (verified by the generator's completeness check, which fails when a differing file is absent from the diff).",
+    "round4_note": "round 4 touched NO file under iso/rf: the 14/9/5 counts (7 product files unaffected, 0 production writes) still hold; the round-4 writes are the attempt's own documents and evidence"
   },
   "commands_executed": [
     "I08B-c1-red-pytest",
@@ -266,50 +267,62 @@
   ],
   "blocked_by": [],
   "evidence_paths": [
-    "binding.json",
-    "oracle.md",
-    "decision.md",
-    "commands.json",
-    "review.md",
-    "handoff.json",
-    "changes.diff",
-    "after/product_hashes.txt",
-    "after/c12_command_summary.json",
-    "after/c12_command_summary.txt",
-    "after/c12_run_all.stdout.txt",
+    "after/I08B-c10-hash-inventory.stdout.txt",
+    "after/I08B-c11-git-status.stdout.txt",
     "after/I08B-c3-provider-protocol.stdout.txt",
     "after/I08B-c4-attestation.stdout.txt",
     "after/I08B-c5-legacy-classify.stdout.txt",
     "after/I08B-c6-adversarial-receipts.stdout.txt",
     "after/I08B-c7-tpub.stdout.txt",
     "after/I08B-c9-independent-recompute.stdout.txt",
-    "after/I08B-c10-hash-inventory.stdout.txt",
-    "after/I08B-c11-git-status.stdout.txt",
+    "after/c12_command_summary.json",
+    "after/c12_command_summary.txt",
+    "after/c12_run_all.stdout.txt",
     "after/c13_changes_diff.stdout.txt",
-    "after/c8_full_suite.stdout.txt",
+    "after/c45_r42_block_reconciliation.json",
+    "after/c45_r42_block_reconciliation.stdout.txt",
+    "after/c46_round4_transcription.stdout.txt",
+    "after/c46_round4_verdict_transcription.json",
+    "after/c47_round4_reextract.stdout.txt",
+    "after/c47_round4_verdict_reextract.json",
+    "after/c48_round4_bookkeeping.stdout.txt",
     "after/c8_failure_diff.txt",
-    "after/c8_new_failures.txt",
     "after/c8_fixed_failures.txt",
-    "after/git_status_revenue-forecast.txt",
-    "after/git_status_filing-fetch.txt",
+    "after/c8_full_suite.stdout.txt",
+    "after/c8_new_failures.txt",
     "after/git_status_company-wiki.txt",
-    "before/source_hashes.txt",
-    "before/cmd-run-red1-pytest.stdout.txt",
-    "before/cmd-run-red1-pytest.rc.txt",
-    "before/cmd-run-red2-probe.stdout.txt",
-    "before/cmd-run-red2-probe.rc.txt",
-    "before/git_status_revenue-forecast.txt",
-    "before/git_status_filing-fetch.txt",
-    "before/git_status_company-wiki.txt",
+    "after/git_status_filing-fetch.txt",
+    "after/git_status_revenue-forecast.txt",
+    "after/product_hashes.txt",
     "before/c8_baseline_suite.stdout.txt",
+    "before/cmd-run-red1-pytest.rc.txt",
+    "before/cmd-run-red1-pytest.stdout.txt",
+    "before/cmd-run-red2-probe.rc.txt",
+    "before/cmd-run-red2-probe.stdout.txt",
+    "before/git_status_company-wiki.txt",
+    "before/git_status_filing-fetch.txt",
+    "before/git_status_revenue-forecast.txt",
     "before/golden_behavior_hashes.json",
-    "iso/probe_red_baseline.py",
+    "before/source_hashes.txt",
+    "binding.json",
+    "changes.diff",
+    "commands.json",
+    "decision.md",
+    "evidence/I-08-B/qualification.json",
+    "handoff.json",
+    "iso/analyze_r4_2.py",
     "iso/check_independent.py",
-    "iso/hash_inventory.py",
     "iso/git_status_capture.py",
+    "iso/hash_inventory.py",
     "iso/make_diff.py",
+    "iso/probe_red_baseline.py",
     "iso/product_hashes.py",
-    "iso/run_bound_commands.py"
+    "iso/round4_bookkeeping.py",
+    "iso/run_bound_commands.py",
+    "iso/transcribe_verdict_r4.py",
+    "iso/verify_transcription_r4.py",
+    "oracle.md",
+    "review.md"
   ],
   "recovery": {
     "status": "not_applicable_with_reason",
@@ -324,7 +337,7 @@
     "sha256": "92637c099e6b9bd56d7438fe4036786a52930211b10324855371d55fd1374a82",
     "note": "production-tree -> isolated-edited-copy; NOT applied to the product tree by this attempt. Round 3 shipped only 13 files: tests/test_publication_attestation_contract.py (the round-2 regression test) was missing while the header still claimed completeness (review R3-1). The header now lists every differing file AND the generator fails if one is missing."
   },
-  "reviewer_status": "pending",
+  "reviewer_status": "accepted_scoped (round 4, technical + delivery surface) - nothing further is requested from the implementer",
   "reviewer_must_do": "review.md sections 5, 7 and 8, plus the round-2/round-3 items: re-verify that the attestation commitment is actually CONSUMED on a real artifact (the round-2 finding), recompute the code table from the design, add one undisclosed variant, re-run the bound commands (15 entries in commands.json), and decide the remaining OPEN items. The reviewer may only return accepted_scoped / changes_required / blocked / not_applicable_with_reason, and must state which qualifications were and were not earned.",
   "commands_executed_note": "commands.json holds 15 BOUND entries. commands_executed lists 18 ids because it also names the packaging/measurement steps recorded under after/ (edit ledger, line-endings check, golden delta, RED proofs, final packaging) that are not part of the bound command set. Both numbers are stated so the two files cannot contradict each other.",
   "projection_change": {
@@ -361,7 +374,15 @@
     "runtime verification happened only in iso/rf and before/baseline_tree/rf; the product tree was only hash/existence checked",
     "the cause of the mtime batch observed in P3-2 could not be determined",
     "whether the 5 refreshed golden values still represent 'behaviour' was only shown to be self-consistent and attributable to the shape change, not independently recomputed per scenario",
-    "the reviewer disclosed that its own pytest left 10 .pyc files inside the attempt; the implementer removed all 57 such files and stated the non-__pycache__ audit scope"
+    "the reviewer disclosed that its own pytest left 10 .pyc files inside the attempt; the implementer removed all 57 such files and stated the non-__pycache__ audit scope",
+    "cross-repo consumers of verify_publication_attestation, of the new top-level payload_sha256 and of the E30 first segment were NOT inspected",
+    "the R3-5 root cause (`git checkout -- .` returning 255) is RELAYED from the parent agent's investigation and was NOT independently reproduced by the reviewer",
+    "the 26 uncollectable modules were still only compared under the SAME --ignore list; no both-trees collection comparison without --ignore",
+    "the nature of the 128 pre-existing failures was still not analysed individually",
+    "which run wrote iso/rf/artifacts/registry/publications.jsonl was not traced through scratch/**",
+    "the governance ruling on post-run oracle edits remains OWNER DECISION REQUIRED (the reviewer does not rule either)",
+    "portability of the contract tests off Windows / without the REVENUE_ATTESTATION_PROVIDER_ARGV route was not verified",
+    "the AST guard's bypass surface was not exhaustively enumerated (functional cases back it up)"
   ],
   "closed_by_this_card": [],
   "still_open_and_not_closed": [
@@ -427,5 +448,127 @@
       "REQUIRED_TIME_QUALIFIER": "Inside the window 04:35:31-04:40:53, ANY observation of production_hashes_unchanged=false is a CORRECT WARNING, not a tool bug and not evidence of this card writing to the product tree. A reviewer re-running a hash check must therefore either (a) run outside that window, or (b) expect and explain a false reading inside it. This qualifier is part of the record and must not be dropped when citing the window.",
       "not_this_card": "this card issued no git write command of any kind (no add/commit/checkout/reset/stash/restore); the rollback came from the orchestrator's commit job"
     }
-  ]
+  ],
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_note": "The status value was CARRIED from the independent reviewer's round-4 verdict by the implementer; it is not an implementer acceptance. See review_verdict.declarations.",
+  "review_verdict": {
+    "verdict": "accepted_scoped",
+    "written_by": "independent reviewer session (round 4, 2026-09-20)",
+    "scope": "technical surface + delivery surface (the card's own scope); cross-repo consumers, deployment, formula and accuracy are explicitly NOT granted",
+    "carrier_file": "review.md",
+    "carrier_section": "## 11. \u72ec\u7acb\u590d\u6838\u88c1\u51b3\u6b63\u6587\uff08\u7b2c\u56db\u8f6e\uff0c\u9010\u5b57\u8282\u8f6c\u5f55\uff09",
+    "carrier_line_range": "L386 .. L337",
+    "source_report": "C:\\Users\\\u90d1\u66fe\u6ce2\\AppData\\Local\\Temp\\i08b-r4review-20260920-051434\\REPORT-ROUND4.md",
+    "source_report_sha256": "cac7835f09ca28410102799270c9400c6c4a2009e803def43862efa7df2e56dc",
+    "block_bytes": 4296,
+    "block_sha256": "137f6644a4b302725650cd6b225596f0940267553e5e2b00e01a0777fc0386d7",
+    "review_md_bytes_before_append": 40662,
+    "review_md_sha256_before_append": "cf58a969e74b7ffc0d89494eaabad3f18b7615f26e356de8867a8ada1688766c",
+    "review_md_bytes_after_append": 51985,
+    "review_md_sha256_after_append": "2edc49136964e76163e9d35dad1e47d65e41f590d64364f9cd7e07511e0cb383",
+    "prefix_unchanged": true,
+    "transcription_proof": "after/c46_round4_verdict_transcription.json",
+    "transcription_recheck": "after/c47_round4_verdict_reextract.json (both rounds byte-identical)",
+    "declarations": {
+      "implementer_signed": false,
+      "implementer_never_signs_acceptance": true,
+      "authority": "acceptance was written by an independent reviewer, not by the implementer"
+    },
+    "carried_not_authored": "SCOPE COPIED FROM THE REVIEWER (technical + delivery surface). This block transcribes; it closes none of the 8 OPEN items (closed_by_this_card = [])."
+  },
+  "next_action_before_bookkeeping_fix": "Second independent review of the revised attempt. Priority: (1) re-verify that E29 and E30 are now reachable AND that their failure cases genuinely fail without the fix; (2) construct independent mutations against the widened projection (e.g. confidence, theme_analysis, historical_accuracy_records) and confirm E16 fires; (3) confirm the E30 compatibility claim (AttestationError subclasses ForecastInputError and the historical message text is verbatim); (4) rule whether the empty-commitment acceptance condition (P2-2 fixed) is now satisfied; (5) decide whether require_legacy_exemption() in-repo is an acceptable landing for E29 while OPEN-D6 keeps the cross-repo wiring open. E31 and OPEN-D1..D7 must stay open; the status stays review_pending.",
+  "round4_packaging_steps": {
+    "note": "NOT bound entries: commands.json still holds 15 bound entries and bound_entry_count is unchanged. These are the round-4 packaging/verification steps whose raw output lives under after/.",
+    "steps": [
+      {
+        "id": "c45-r42-block-reconciliation",
+        "script": "iso/analyze_r4_2.py",
+        "rc": 0,
+        "evidence": "after/c45_r42_block_reconciliation.json / after/c45_r42_block_reconciliation.stdout.txt"
+      },
+      {
+        "id": "c46-round4-transcription",
+        "script": "iso/transcribe_verdict_r4.py",
+        "rc": 0,
+        "evidence": "after/c46_round4_verdict_transcription.json / after/c46_round4_transcription.stdout.txt"
+      },
+      {
+        "id": "c47-round4-reextract",
+        "script": "iso/verify_transcription_r4.py",
+        "rc": 0,
+        "evidence": "after/c47_round4_verdict_reextract.json / after/c47_round4_reextract.stdout.txt"
+      },
+      {
+        "id": "c48-round4-bookkeeping",
+        "script": "iso/round4_bookkeeping.py",
+        "rc": 0,
+        "evidence": "after/c48_round4_bookkeeping.stdout.txt"
+      },
+      {
+        "id": "c38-finalize-all-r4",
+        "script": "iso/finalize_all.py",
+        "rc": 0,
+        "evidence": "after/c38_finalize_all.stdout.txt + after/c24|c14|c37|c20 *.stdout.txt"
+      }
+    ]
+  },
+  "artifact_top_level_payload_sha256_contract": {
+    "registered_for": "R4-1 (P3, carried from the round-4 review)",
+    "fact": "for a signed publication run_forecast exports the top-level key `payload_sha256` (the record's own commitment), and that key is EXCLUDED from the commitment projection - it must be, otherwise the commitment would depend on itself.",
+    "downstream_rule": "a consumer that canonical-hashes the WHOLE artifact will NOT reproduce `validated_payload_sha256`. To reproduce it, exclude exactly: result_sha256, publication_receipt, publication_attestation, payload_sha256 and publication_attestation_outcome.",
+    "unchanged": "this card did not move or rename the key and did not change its semantics; only the contract is registered."
+  },
+  "round4_stale_text_corrections": {
+    "policy": "the old narrative text was NOT rewritten (it is part of what was reviewed); the corrected value is appended here with the raw evidence it must match, so no reader has to choose between two texts.",
+    "items": [
+      {
+        "where": "handoff.json.raw_vs_expected_note",
+        "old_text_excerpt": "the passed count rising 819 -> 910",
+        "corrected_value": "819 -> 932 passed",
+        "raw_evidence": "after/c8_full_suite.stdout.txt ('128 failed, 932 passed, 3 skipped, 1 xfailed, 349 subtests passed')",
+        "cause": "the census transcript was overwritten by a later full-suite run; the narrative sentence was not re-typed"
+      },
+      {
+        "where": "commands.json I08B-c8-full-suite.actual_business_result",
+        "old_text_excerpt": "after 128 failed / 921 passed / 337 subtests",
+        "corrected_value": "after 128 failed / 932 passed / 349 subtests",
+        "raw_evidence": "after/c8_full_suite.stdout.txt",
+        "cause": "same: the row recorded an earlier run of the same bound command; the frozen EXPECTED values are untouched"
+      },
+      {
+        "where": "commands.json I08B-c13-changes-diff.actual_business_result",
+        "old_text_excerpt": "13 files (9 edited + 4 added); changes.diff 216023 bytes",
+        "corrected_value": "14 files (9 edited + 5 added); changes.diff 232931 bytes",
+        "raw_evidence": "after/c13_changes_diff.stdout.txt ('differing files included: 14' / 'changes.diff bytes: 232931')",
+        "cause": "the round-3 regeneration added tests/test_publication_attestation_contract.py (R3-1); the row text was not updated"
+      }
+    ],
+    "not_a_weakening": "no expected value, no assertion and no check was changed; only transcribed results are reconciled with their raw output."
+  },
+  "sealed": {
+    "sealed": true,
+    "sealed_at": "2026-09-20T05:23:51",
+    "sealed_after": "iso/finalize_all.py (c24 -> c14 -> c37 -> c20); after/product_hashes.txt is the inventory of the sealed state",
+    "rule": "NO FURTHER WRITES to this attempt directory. Any later write invalidates this sealing and requires a fresh independent review before the card may be treated as accepted_scoped.",
+    "self_referential_inventory_rows": [
+      "after/product_hashes.txt (hashed before its own final flush)",
+      "after/c38_finalize_all.stdout.txt (written by the last step, so the inventory lists its pre-run content)"
+    ]
+  },
+  "round4_bookkeeping": {
+    "trigger": "independent review round 4 verdict accepted_scoped (report at C:\\Users\\\u90d1\u66fe\u6ce2\\AppData\\Local\\Temp\\i08b-r4review-20260920-051434\\REPORT-ROUND4.md)",
+    "dispositions": "review.md section 10 maps R4-1, R4-2 and R4-3 to code/evidence, and states the boundary rule for the transcribed verdict",
+    "changed_this_round": [
+      "review.md: section 10 (dispositions) + section 11 (byte-identical round-4 verdict) appended; the round-3 block was NOT edited",
+      "evidence/I-08-B/qualification.json: created (status marker field carried; disclosure_adaptation/accuracy still NOT granted)",
+      "handoff.json: status carried, review_verdict block, R4-1 contract note, stale-text corrections, seal",
+      "decision.md: section 6 (R4-1 downstream contract + R4-2/R4-3 registration)",
+      "commands.json: additive correction fields on the c8/c13 rows (no expected value touched, bound_entry_count stays 15)",
+      "iso/add_edit_ledger.py: round-3/round-4 ledger fields appended (existing fields byte-identical)",
+      "iso/product_hashes.py: the inventory header note now states accurately that the file lists its own pre-write content and that handoff.json/binding.json ARE listed (the old note claimed handoff.json was excluded; it never was)",
+      "iso/transcribe_verdict_r4.py / iso/verify_transcription_r4.py / iso/analyze_r4_2.py: new packaging scripts"
+    ],
+    "not_changed_this_round": "iso/rf/** (0 bytes), changes.diff, oracle.md, the round-3 verdict block, all product repos",
+    "implementer_self_acceptance": false
+  }
 }

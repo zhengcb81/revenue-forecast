@@ -1,0 +1,121 @@
+{
+  "card_id": "I-08-B",
+  "parent_card": "I-08",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260919-01",
+  "attempt_path": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-B\\a20260919-01",
+  "implementer_is_not_the_reviewer": true,
+  "status_marker_field_note": "This card has NO forecast formula. The instruction was to carry the card's design/contract status in the 'formula' marker field; that is what the field below holds. It is a STATUS MARKER ONLY and grants no formula qualification. Forecast formula qualification belongs to the I-10 / M01-M31 cards.",
+  "formula": {
+    "status": "accepted_scoped",
+    "status_before_bookkeeping_fix": "review_pending",
+    "marker_field_semantics": "For I-08-B this field carries the card-level design/contract status (signed I-08-A design r3 implemented, verified and reviewed), not a formula status.",
+    "implementer_claim": "none - the implementer signed nothing",
+    "basis": "independent reviewer verdict (round 4) transcribed BYTE-IDENTICALLY into review.md section 11 (line 386 onward); source REPORT-ROUND4.md section 12 onward, 4296 B / 137f6644...; prefix of review.md proven unchanged by the append",
+    "not_yet_independently_reviewed": false,
+    "independent_review": {
+      "reviewer": "independent adversarial reviewer session (four rounds: R1 changes_required, R2 changes_required, R3 changes_required on the delivery surface only, R4 accepted_scoped)",
+      "reviewed_at": "2026-09-20",
+      "scope": "technical surface + delivery surface (the card's own scope); NOT cross-repo consumers, NOT deployment, NOT forecast accuracy",
+      "verdict": "accepted_scoped",
+      "rounds": [
+        {
+          "round": 1,
+          "verdict": "changes_required",
+          "findings": "P1-1 E29 unreachable + inflated 32/32 claim, P2-1 E30 never raised its code, P2-2 verifier weaker than its name, P3-1..P3-5"
+        },
+        {
+          "round": 2,
+          "verdict": "changes_required",
+          "findings": "P2-2 only half closed (phantom key on real artifacts), N2 oracle post-run edit, N3/N4 stale counts, N5 E30 leading segment, N6 .pyc scope"
+        },
+        {
+          "round": 3,
+          "verdict": "changes_required",
+          "findings": "delivery surface only: R3-1 changes.diff missing the contract test, R3-2 unregistered iso registry write, R3-3/R3-4 count drift, R3-5 production rollback attribution"
+        },
+        {
+          "round": 4,
+          "verdict": "accepted_scoped",
+          "findings": "all six round-3 items verified closed; review.md body edits accepted; verdict block untouched byte-wise; 8 OPEN items still open; three P3 carried (R4-1/R4-2/R4-3)"
+        }
+      ],
+      "basis": "the reviewer recomputed on its own: 15 differing files (14 in changes.diff + 1 registered non-deliverable), named_but_not_differing=[], all POSIX headers, git apply rc=0, 14/14 content-level identical; product_hashes.txt two sections; commands.json bound=15; 10 product anchors equal to the I-00-A baseline; before/source_hashes.txt 26/26 drift=0; both transcription blocks byte-identical; c3 68 / c4 18 / c5 22+22 / c6 6 / c7 48 / contract 10+12 / guard 5 / golden 1 all rc=0; census before 128F/819P/315 -> after 128F/932P/349 with new=[] gone=[]; .pyc 0 in both trees; production registry bc3256bb.../60 lines; default trust domain ABSENT"
+    }
+  },
+  "carrier": {
+    "note": "This file TRANSCRIBES the reviewer's verdict. It is not a signature; the implementer never signs acceptance.",
+    "carrier_file": "review.md",
+    "section": "## 11. \u72ec\u7acb\u590d\u6838\u88c1\u51b3\u6b63\u6587\uff08\u7b2c\u56db\u8f6e\uff0c\u9010\u5b57\u8282\u8f6c\u5f55\uff09",
+    "line_range": "L386 .. L337 (file total 422 lines / 51985 B)",
+    "reviewer_append_proof": {
+      "pre_bytes": 40662,
+      "pre_sha256": "cf58a969e74b7ffc0d89494eaabad3f18b7615f26e356de8867a8ada1688766c",
+      "append_bytes": 4296,
+      "append_sha256": "137f6644a4b302725650cd6b225596f0940267553e5e2b00e01a0777fc0386d7",
+      "post_bytes": 51985,
+      "post_sha256": "2edc49136964e76163e9d35dad1e47d65e41f590d64364f9cd7e07511e0cb383",
+      "prefix_unchanged": true,
+      "implementer_independent_recheck": {
+        "command": "iso/verify_transcription_r4.py",
+        "evidence": "after/c47_round4_verdict_reextract.json",
+        "result": "round-4 block 4296 B source == embedded, byte_identical=true; round-3 block 4300 B source == embedded, byte_identical=true; all 15 probe strings present; the R4-2 boundary reconciliation (4300/4302/4299) reproduced from scratch"
+      },
+      "reviewer_report_paths": [
+        "C:\\Users\\\u90d1\u66fe\u6ce2\\AppData\\Local\\Temp\\i08b-r4review-20260920-051434\\REPORT-ROUND4.md"
+      ],
+      "reviewer_report_sha256": "cac7835f09ca28410102799270c9400c6c4a2009e803def43862efa7df2e56dc",
+      "round_3_report_path": "C:\\Users\\\u90d1\u66fe\u6ce2\\AppData\\Local\\Temp\\i08b-r3review-20260920-043327\\REPORT-ROUND3.md",
+      "round_3_prefix_proof": "after/c43_verdict_transcription.json"
+    }
+  },
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer"
+  },
+  "scope": {
+    "granted": "TECHNICAL SURFACE: the one-shot provider protocol, the verify-before-host_signed gate, the L1/L2/L3 proof domains, the trust-domain tuple, the canonical payload/projection, replay/expiry separation, the E01-E32 fail-closed table (E31 excluded by design) and the G1/G2/G3a/G3b/G4 legacy classification. DELIVERY SURFACE: changes.diff completeness, product_hashes.txt sections, command/diff/handoff counts, both verdict transcriptions and the isolation statements.",
+    "not_granted": [
+      "cross-repo consumers (invest-core) and the schema 3.8 consumer gate (OPEN-D6)",
+      "a real/trusted provider, a real key service, real publication, deployment (I-16/I-17)",
+      "the E31 publication-rollback transaction (I-09-A)",
+      "forecast formula qualification",
+      "forecast accuracy",
+      "product-tree implementation: this card wrote 0 bytes to the product repos"
+    ],
+    "disclosure_adaptation": {
+      "status": "unmapped",
+      "why_not_granted": "this card maps no company disclosure and produces no model output; disclosure adaptation belongs to the I-10 / M01-M31 cards"
+    },
+    "accuracy": {
+      "status": "unproven",
+      "why_not_granted": "no out-of-sample evaluation exists (I-12 scope); a signing-protocol acceptance can never be escalated into forecast accuracy"
+    }
+  },
+  "known_gaps": [
+    "R4-1 (P3, carried): the top-level payload_sha256 is EXCLUDED from the commitment projection, so a downstream consumer that canonical-hashes the whole artifact will NOT reproduce validated_payload_sha256. Contract note registered in decision.md section 6 and handoff.artifact_top_level_payload_sha256_contract.",
+    "R4-2 (P3, carried): the round-3 transcription block has three byte-boundary readings (4300 true block / 4302 marker-text reading / 4299 core). Reconciliation registered in after/c45_r42_block_reconciliation.json; the wording is narrowed to 'content byte-identical, boundary newlines counted differently'.",
+    "R4-3 (P3, carried): c43.prefix_unchanged only covered the state before that append. From this round every write re-takes the prefix hash (after/c46_round4_verdict_transcription.json).",
+    "oracle governance: whether post-hoc editing of a frozen oracle is acceptable remains OWNER DECISION REQUIRED; the implementer does not rule on it.",
+    "OPEN (not closed by this card): E31 publication rollback (I-09-A)",
+    "OPEN (not closed by this card): OPEN-D1 authoritative trust root",
+    "OPEN (not closed by this card): OPEN-D2 private-key custody / operator identity",
+    "OPEN (not closed by this card): OPEN-D3 revocation retroactivity",
+    "OPEN (not closed by this card): OPEN-D5 consumer downgrade switch",
+    "OPEN (not closed by this card): OPEN-D6 consumer gate for schema 3.8 (the same-repo entry point exists; the cross-repo wiring does NOT)",
+    "OPEN (not closed by this card): OPEN-D7 W/T/L numeric values",
+    "OPEN (not closed by this card): UNRESOLVED-BY-DESIGN registry attestation anchor field names"
+  ],
+  "reviewer_unverified_items_carried_forward": [
+    "cross-repo consumers of verify_publication_attestation, of the new top-level payload_sha256 and of the E30 first segment were NOT inspected",
+    "the R3-5 root cause (`git checkout -- .` returning 255) is RELAYED from the parent agent's investigation and was NOT independently reproduced by the reviewer",
+    "the 26 uncollectable modules were still only compared under the SAME --ignore list; no both-trees collection comparison without --ignore",
+    "the nature of the 128 pre-existing failures was still not analysed individually",
+    "which run wrote iso/rf/artifacts/registry/publications.jsonl was not traced through scratch/**",
+    "the governance ruling on post-run oracle edits remains OWNER DECISION REQUIRED (the reviewer does not rule either)",
+    "portability of the contract tests off Windows / without the REVENUE_ATTESTATION_PROVIDER_ARGV route was not verified",
+    "the AST guard's bypass surface was not exhaustively enumerated (functional cases back it up)"
+  ],
+  "raw_exit_codes": "8/8 bound commands matched their frozen expectation (c8's expectation is failure-SET equality, raw rc=1); round-4 packaging c45/c46/c47 rc=0"
+}

@@ -204,3 +204,37 @@ provider 协议、信任域三元组、规范载荷/验签、重放-过期分离
 - `E31`（发布回滚）属 I-09-A，本卡只登记（`after/I08B-c7-tpub` 只覆盖既有单文件事务用例）。
 - 隔离副本无法收集的 26 个测试模块（依赖不在产品树中的文件）在 before/after 两次普查中**同样**无法收集，
   因此不构成本卡回归；它们被逐名列出（`scratch/c8_ignore.txt`）而不是静默丢弃。
+
+---
+
+## 6. 第四轮复核保留项（P3）的登记
+
+> 本轮（第四轮）独立复核的 verdict 为 `accepted_scoped`（技术面 + 交付面），保留 3 项 P3。
+> **本节只做登记与口径收窄，不关闭任何 OPEN 项**（`closed_by_this_card = []`）。
+
+### D-08B-09 artifact 顶层 `payload_sha256` 的**对外契约**（R4-1）
+
+- **事实**：签名发布时 `run_forecast` 在 result 顶层导出 `payload_sha256`，而该键**被排除出承诺投影**——
+  必须排除，否则承诺会依赖自身。它是 P2-2 得以在**真实产物**上被观测的条件（见 D-08B-04c）。
+- **面向下游的契约（本条即 R4-1 要求的落地说明）**：
+  - "对**整份 artifact** 做规范哈希"**不会**等于 `validated_payload_sha256`；
+  - 要与 `validated_payload_sha256` 对齐，必须**恰好排除**：`result_sha256`、`publication_receipt`、
+    `publication_attestation`、`payload_sha256`、`publication_attestation_outcome`；
+  - 该键**不是**可信声明：可信性只由 `result['publication_attestation']` + 信任域校验 + receipt 的
+    `attestation_status` 承载（与 D-08B-04 的附录禁令一致）。
+- **本卡不动它**：不移动、不改名、不改语义；只登记契约。`handoff.json.artifact_top_level_payload_sha256_contract` 同款登记。
+
+### R4-2 / R4-3 的口径登记（不改任何结论）
+
+- **R4-2**：第三轮转录块存在三组**同源**字节读数——4300 B/`d6388028…`（marker **行**边界的真块，与源块逐字节相同）、
+  4302 B/`cca2ae29…`（marker **文本**边界，多带首尾各一个边界换行）、4299 B/`421e73a8…`（再去掉块尾换行）。
+  口径收窄为"**内容逐字节相同、边界换行计法不同**"。证据 `after/c45_r42_block_reconciliation.json`，
+  独立复算 `after/c47_round4_verdict_reextract.json`。**§9 已登记字节一个字节未改**。
+- **R4-3**：`c43.prefix_unchanged` 只覆盖"**该次追加之前**"的状态（此前 §5/§7 各有一处复核要求的编辑）。
+  自本轮起**每次写入重取前缀哈希**：本轮证据为 `after/c46_round4_verdict_transcription.json` 的 `prefix_unchanged=true`。
+
+### 未因本轮裁决而关闭
+
+`E31`、`OPEN-D1`、`OPEN-D2`、`OPEN-D3`、`OPEN-D5`、`OPEN-D6`、`OPEN-D7` 与 registry attestation 锚字段名
+**共 8 项仍 OPEN/UNRESOLVED**。`accepted_scoped` 的范围**照抄 reviewer**：技术面 + 交付面；
+跨仓消费者、部署、预测公式与准确性**均未授予**。

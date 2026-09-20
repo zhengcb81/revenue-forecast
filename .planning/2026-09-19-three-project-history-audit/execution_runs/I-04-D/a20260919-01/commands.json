@@ -1,131 +1,235 @@
 {
- "card_id": "I-04-D",
  "attempt_id": "a20260919-01",
- "note": "Every command below was actually executed in this attempt. cwd is always the attempt's iso copy unless stated. <A> = C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-D/a20260919-01 . basetemp directories are transient pytest scratch; the durable outputs are the files named under output.",
- "interpreter": "<A>/iso/venv/Scripts/python.exe (3.13.9, venv created from the I-00-A template; pytest 9.1.1 installed OFFLINE by copying modules from the signed I-04-C venv - no wheelhouse exists under PLAN and no network was used)",
+ "card_id": "I-04-D",
  "commands": [
   {
-   "id": "I04D-01-baseline-capture",
-   "purpose": "capture the three repo HEADs, porcelain, the read-only anchor hashes and the production catalog invariant BEFORE any edit",
+   "argv": [
+    "powershell",
+    "-File",
+    "<A>/scratch/00-capture-baseline.ps1"
+   ],
+   "binding_status": "bound",
    "class": "read_only",
-   "binding_status": "bound",
    "cwd": "<A>",
-   "argv": ["powershell", "-File", "<A>/scratch/00-capture-baseline.ps1"],
-   "network": "disabled",
-   "timeout_seconds": 300,
    "expected_returncode": 0,
-   "raw_returncode": 0,
+   "id": "I04D-01-baseline-capture",
+   "network": "disabled",
    "observed": "wrote before/00-git-heads.txt, before/01-anchor-hashes.txt, before/02-catalog-invariant.txt, before/03-reviews-mtime.txt, evidence/anchor-relocation.txt",
-   "output": ["before/00-git-heads.txt", "before/01-anchor-hashes.txt", "before/02-catalog-invariant.txt", "before/03-reviews-mtime.txt", "evidence/anchor-relocation.txt"]
+   "output": [
+    "before/00-git-heads.txt",
+    "before/01-anchor-hashes.txt",
+    "before/02-catalog-invariant.txt",
+    "before/03-reviews-mtime.txt",
+    "evidence/anchor-relocation.txt"
+   ],
+   "purpose": "capture the three repo HEADs, porcelain, the read-only anchor hashes and the production catalog invariant BEFORE any edit",
+   "raw_returncode": 0,
+   "timeout_seconds": 300
   },
   {
+   "argv": [
+    "<A>/iso/venv/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "<A>/scratch/patch_i04d.py",
+    "--check"
+   ],
+   "binding_status": "bound",
+   "class": "implementation",
+   "cwd": "<A>",
+   "expected_returncode": 0,
    "id": "I04D-02-patch-dry-run",
+   "network": "disabled",
+   "observed": "sha256 before = dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c; 5 edits listed; nothing written",
    "purpose": "prove the patcher matches the iso baseline verbatim and list the edits it would make, without writing",
-   "class": "implementation",
-   "binding_status": "bound",
-   "cwd": "<A>",
-   "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "<A>/scratch/patch_i04d.py", "--check"],
-   "network": "disabled",
-   "timeout_seconds": 120,
-   "expected_returncode": 0,
    "raw_returncode": 0,
-   "observed": "sha256 before = dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c; 5 edits listed; nothing written"
+   "timeout_seconds": 120
   },
   {
-   "id": "I04D-03-t-filing-red",
-   "purpose": "RED: run the frozen lease contract suite against the UNMODIFIED baseline (the I-04-B accepted output)",
-   "class": "product_test_isolated",
+   "argv": [
+    "<A>/iso/venv/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "-m",
+    "pytest",
+    "tests/test_fetch_filing_lease.py",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp=<A>/before/lease-pytest"
+   ],
+   "before_after_evidence": [
+    "before/i04d-red.txt"
+   ],
    "binding_status": "bound",
+   "class": "product_test_isolated",
    "cwd": "<A>/iso/filing-fetch",
-   "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "-m", "pytest", "tests/test_fetch_filing_lease.py", "-q", "-p", "no:cacheprovider", "--basetemp=<A>/before/lease-pytest"],
-   "network": "disabled",
-   "timeout_seconds": 900,
-   "expected_returncode": 1,
    "expected_business_result": "the new protocol's contract must FAIL on the code that does not implement it",
-   "raw_returncode": 1,
+   "expected_returncode": 1,
+   "id": "I04D-03-t-filing-red",
+   "network": "disabled",
    "observed": "17 failed, 2 passed, 2 skipped in 14.59s; the 2 passes are the two F-LK cases the legacy code also satisfies; the 2 skips are the journal-dependent checks (the legacy code writes no lease journal)",
-   "before_after_evidence": ["before/i04d-red.txt"],
-   "output": ["before/i04d-red.txt"]
-  },
-  {
-   "id": "I04D-04-apply",
-   "purpose": "install the I-04-C protocol into the iso copy (the only place this card edits code)",
-   "class": "implementation",
-   "binding_status": "bound",
-   "cwd": "<A>",
-   "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "<A>/scratch/patch_i04d.py", "--apply"],
-   "network": "disabled",
-   "timeout_seconds": 120,
-   "expected_returncode": 0,
-   "expected_business_result": "scripts/fetch_filing.py becomes the protocol implementation; the patcher refuses to run unless the baseline hash matches",
-   "raw_returncode": 0,
-   "observed": "sha256 after = a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198, 126274 bytes",
-   "output": ["iso/filing-fetch/scripts/fetch_filing.py"]
-  },
-  {
-   "id": "I04D-05-scheduler-all-cases",
-   "purpose": "run all 19 barrier-scheduled REAL multi-process cases (the primary evidence)",
-   "class": "product_cli_isolated",
-   "binding_status": "bound",
-   "cwd": "<A>",
-   "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<A>/iso/filing-fetch/scripts/i04d_schedule.py", "run", "I04D-CASE-F-L5", "I04D-CASE-F-L6", "I04D-CASE-F-L6b", "I04D-CASE-F-L7", "I04D-CASE-F-L7b", "I04D-CASE-F-L7c", "I04D-CASE-F-L9a", "I04D-CASE-F-L9c", "I04D-CASE-F-L8d", "I04D-CASE-F-L8a-W1", "I04D-CASE-F-L8a-W1b", "I04D-CASE-F-L8b-W2", "I04D-CASE-F-L8c-W4", "I04D-CASE-F-L8g-UNKNOWN", "I04D-CASE-F-L8h-WRITEFAIL", "I04D-CASE-F-LK-TIMEOUT", "I04D-CASE-F-LK-TIMEOUT-ZERO", "I04D-CASE-F-LK-HOLDER-CRASH", "I04D-CASE-F-LK-NEVER-UNLINK", "--out", "<A>/evidence/run"],
-   "network": "disabled",
-   "timeout_seconds": 900,
-   "expected_returncode": 0,
-   "expected_business_result": "every case matches its frozen oracle row; real pids, real OS lock, real subprocess pause/resume counters",
-   "raw_returncode": 0,
-   "observed": "19/19 case summaries written; see evidence/run/<case>/summary.json (measured values in handoff.json.measured_results)",
-   "output": ["evidence/run/"]
-  },
-  {
-   "id": "I04D-06-t-filing-green",
-   "purpose": "GREEN: re-run the SAME frozen suite against the implementation",
-   "class": "product_test_isolated",
-   "binding_status": "bound",
-   "cwd": "<A>/iso/filing-fetch",
-   "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "-m", "pytest", "tests/test_fetch_filing_lease.py", "-q", "-p", "no:cacheprovider", "--basetemp=<A>/after/lease-basetemp"],
-   "network": "disabled",
-   "timeout_seconds": 900,
-   "expected_returncode": 0,
-   "expected_business_result": "the suite that was 17-failed RED becomes green",
+   "output": [
+    "before/i04d-red.txt"
+   ],
+   "purpose": "RED: run the frozen lease contract suite against the UNMODIFIED baseline (the I-04-B accepted output)",
    "raw_returncode": 1,
+   "timeout_seconds": 900
+  },
+  {
+   "argv": [
+    "<A>/iso/venv/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "<A>/scratch/patch_i04d.py",
+    "--apply"
+   ],
+   "binding_status": "bound",
+   "class": "implementation",
+   "cwd": "<A>",
+   "expected_business_result": "scripts/fetch_filing.py becomes the protocol implementation; the patcher refuses to run unless the baseline hash matches",
+   "expected_returncode": 0,
+   "id": "I04D-04-apply",
+   "network": "disabled",
+   "observed": "sha256 after = a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198, 126274 bytes",
+   "output": [
+    "iso/filing-fetch/scripts/fetch_filing.py"
+   ],
+   "purpose": "install the I-04-C protocol into the iso copy (the only place this card edits code)",
+   "raw_returncode": 0,
+   "timeout_seconds": 120
+  },
+  {
+   "argv": [
+    "<A>/iso/venv/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "<A>/iso/filing-fetch/scripts/i04d_schedule.py",
+    "run",
+    "I04D-CASE-F-L5",
+    "I04D-CASE-F-L6",
+    "I04D-CASE-F-L6b",
+    "I04D-CASE-F-L7",
+    "I04D-CASE-F-L7b",
+    "I04D-CASE-F-L7c",
+    "I04D-CASE-F-L9a",
+    "I04D-CASE-F-L9c",
+    "I04D-CASE-F-L8d",
+    "I04D-CASE-F-L8a-W1",
+    "I04D-CASE-F-L8a-W1b",
+    "I04D-CASE-F-L8b-W2",
+    "I04D-CASE-F-L8c-W4",
+    "I04D-CASE-F-L8g-UNKNOWN",
+    "I04D-CASE-F-L8h-WRITEFAIL",
+    "I04D-CASE-F-LK-TIMEOUT",
+    "I04D-CASE-F-LK-TIMEOUT-ZERO",
+    "I04D-CASE-F-LK-HOLDER-CRASH",
+    "I04D-CASE-F-LK-NEVER-UNLINK",
+    "--out",
+    "<A>/evidence/run"
+   ],
+   "binding_status": "bound",
+   "class": "product_cli_isolated",
+   "cwd": "<A>",
+   "expected_business_result": "every case matches its frozen oracle row; real pids, real OS lock, real subprocess pause/resume counters",
+   "expected_returncode": 0,
+   "id": "I04D-05-scheduler-all-cases",
+   "network": "disabled",
+   "observed": "19/19 case summaries written; see evidence/run/<case>/summary.json (measured values in handoff.json.measured_results)",
+   "output": [
+    "evidence/run/"
+   ],
+   "purpose": "run all 19 barrier-scheduled REAL multi-process cases (the primary evidence)",
+   "raw_returncode": 0,
+   "timeout_seconds": 900
+  },
+  {
+   "argv": [
+    "<A>/iso/venv/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "-m",
+    "pytest",
+    "tests/test_fetch_filing_lease.py",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp=<A>/after/lease-basetemp"
+   ],
+   "before_after_evidence": [
+    "before/i04d-red.txt",
+    "after/i04d-green.txt"
+   ],
+   "binding_status": "bound",
+   "class": "product_test_isolated",
+   "cwd": "<A>/iso/filing-fetch",
+   "expected_business_result": "the suite that was 17-failed RED becomes green",
+   "expected_returncode": 0,
+   "id": "I04D-06-t-filing-green",
+   "network": "disabled",
    "observed": "18 passed, 3 failed. The 3 failures are order-sensitive snapshot assertions in the harness, NOT protocol failures: the same cases pass at the scheduler level (evidence/run/<case>/summary.json). Disclosed in review.md section 5 and handoff.json.honest_status.",
-   "before_after_evidence": ["before/i04d-red.txt", "after/i04d-green.txt"],
-   "output": ["after/i04d-green.txt"]
+   "output": [
+    "after/i04d-green.txt"
+   ],
+   "purpose": "GREEN: re-run the SAME frozen suite against the implementation",
+   "raw_returncode": 1,
+   "timeout_seconds": 900
   },
   {
+   "argv": [
+    "<A>/iso/venv/Scripts/python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "<A>/scratch/make_diff.py"
+   ],
+   "binding_status": "bound",
+   "class": "evidence",
+   "cwd": "<A>",
+   "expected_returncode": 0,
    "id": "I04D-07-changes-diff",
-   "purpose": "produce the complete delta of iso/ against its I-04-B baseline, with POSIX-relative paths",
-   "class": "evidence",
-   "binding_status": "bound",
-   "cwd": "<A>",
-   "argv": ["<A>/iso/venv/Scripts/python.exe", "-X", "utf8", "-B", "<A>/scratch/make_diff.py"],
    "network": "disabled",
-   "timeout_seconds": 120,
-   "expected_returncode": 0,
-   "observed": "changes.diff 180917 bytes; added=4 removed=0 modified=1",
-   "output": ["changes.diff"]
+   "observed": "changes.diff 180917 bytes, sha256 2197bce4221d5d59dba0dc64fa8f26d356de5bd9b95fac5d3a4b9226cec7d44d; added=4 removed=0 modified=1",
+   "output": [
+    "changes.diff"
+   ],
+   "purpose": "produce the complete delta of iso/ against its I-04-B baseline, with POSIX-relative paths",
+   "raw_returncode": 0,
+   "timeout_seconds": 120
   },
   {
-   "id": "I04D-08-hashes",
-   "purpose": "sha256 of every deliverable plus the read-only production anchors, at delivery time",
-   "class": "evidence",
+   "argv": [
+    "powershell",
+    "-Command",
+    "Get-FileHash <targets> -Algorithm SHA256"
+   ],
    "binding_status": "bound",
+   "class": "evidence",
    "cwd": "<A>",
-   "argv": ["powershell", "-Command", "Get-FileHash <targets> -Algorithm SHA256"],
-   "network": "disabled",
-   "timeout_seconds": 300,
    "expected_returncode": 0,
+   "id": "I04D-08-hashes",
+   "network": "disabled",
    "observed": "evidence/hashes.txt; production filing-fetch/scripts/fetch_filing.py still 046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
-   "output": ["evidence/hashes.txt"]
+   "output": [
+    "evidence/hashes.txt"
+   ],
+   "purpose": "sha256 of every deliverable plus the read-only production anchors, at delivery time",
+   "raw_returncode": 0,
+   "timeout_seconds": 300
   }
  ],
+ "interpreter": "<A>/iso/venv/Scripts/python.exe (3.13.9, venv created from the I-00-A template; pytest 9.1.1 installed OFFLINE by copying modules from the signed I-04-C venv - no wheelhouse exists under PLAN and no network was used)",
  "not_run": [
   {
+   "binding_status": "unbound",
    "id": "I04D-09-mutation-proof",
    "purpose": "revert each new predicate in a scratch copy and show the matching negative case turns red again",
-   "binding_status": "unbound",
    "reason": "NOT RUN in this attempt (budget). The 11 mutation candidates and the exact recipe are in oracle.md section 7 and review.md section 6/7; this is the first item for the next attempt."
   }
- ]
+ ],
+ "note": "Every command below was actually executed in this attempt. cwd is always the attempt's iso copy unless stated. <A> = C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-D/a20260919-01 . basetemp directories are transient pytest scratch; the durable outputs are the files named under output.",
+ "r3_note": "I04D-07/08 的 raw/expected rc 已补齐；所有 sha256 由 scratch/rework_r3.py 现算并断言。"
 }

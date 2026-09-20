@@ -1,0 +1,25 @@
+﻿import json, hashlib, sys
+from pathlib import Path
+A = Path(sys.argv[1])
+h = json.loads((A/"handoff.json").read_text("utf-8"))
+q = json.loads((A/"evidence"/"I-08-B"/"qualification.json").read_text("utf-8"))
+c = json.loads((A/"commands.json").read_text("utf-8"))
+print("handoff.status                :", h["status"], "| before:", h["status_before_bookkeeping_fix"])
+print("handoff.declarations          :", json.dumps(h["review_verdict"]["declarations"], ensure_ascii=False))
+print("qual.declarations             :", json.dumps(q["declarations"], ensure_ascii=False))
+print("qual.formula.status           :", q["formula"]["status"], "| before:", q["formula"]["status_before_bookkeeping_fix"])
+print("qual.disclosure/accuracy      :", q["scope"]["disclosure_adaptation"]["status"], "/", q["scope"]["accuracy"]["status"])
+print("open items (handoff/qual)     :", len(h["still_open_and_not_closed"]), "/", len([g for g in q["known_gaps"] if g.startswith("OPEN")]))
+print("closed_by_this_card           :", h["closed_by_this_card"])
+print("carrier line_range            :", q["carrier"]["line_range"])
+print("review_verdict range          :", h["review_verdict"]["carrier_line_range"])
+print("block bytes/sha               :", h["review_verdict"]["block_bytes"], h["review_verdict"]["block_sha256"][:12])
+print("pre  bytes/sha                :", h["review_verdict"]["review_md_bytes_before_append"], h["review_verdict"]["review_md_sha256_before_append"][:12])
+print("post bytes/sha                :", h["review_verdict"]["review_md_bytes_after_append"], h["review_verdict"]["review_md_sha256_after_append"][:12])
+print("sealed                        :", h["sealed"]["sealed"], h["sealed"]["sealed_at"])
+print("bound_entry_count             :", c["bound_entry_count"], "| entries:", len(c["commands"]))
+print("c8 correction                 :", [e.get("actual_business_result_corrected_round4") for e in c["commands"] if e["id"].endswith("c8-full-suite")])
+print("c13 correction                :", [e.get("actual_business_result_corrected_round4") for e in c["commands"] if e["id"].endswith("c13-changes-diff")])
+for rel in ("handoff.json","commands.json","decision.md","review.md","evidence/I-08-B/qualification.json"):
+    p = A/rel
+    print(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.stat().st_size:>7}  {rel}")

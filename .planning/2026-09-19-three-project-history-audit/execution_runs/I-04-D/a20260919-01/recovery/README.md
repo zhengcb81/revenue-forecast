@@ -71,8 +71,8 @@ powershell -NoProfile -Command "(Get-FileHash -LiteralPath '<A>\iso\filing-fetch
 <A>\iso\venv\Scripts\python.exe -X utf8 -B -m pytest tests/test_fetch_filing_lease.py -q -p no:cacheprovider --basetemp=<A>\recovery\basetemp-<新编号>
 ```
 
-- 在**基线**（回滚后、未 patch）上跑：期望 `rc = 1`，`17 failed, 2 passed, 2 skipped in 14.59s`（原始日志 `before/i04d-red.txt`，sha256 `ff6e526fd260b343dd8af24ff777a80c2b2f4f56665c4bd98f9499dd67b0e92f`；那次调用的 basetemp 是 `before/lease-pytest`）。
-- 在**本卡输出**（patch 后）上跑：`rc = 1`，`18 passed, 3 failed`（原始日志 `after/i04d-green.txt`，sha256 `f8220c7d29c8a35d12967cadee52ca33493fa8efedbb31e15b928bed25e56127`；那次调用的 basetemp 是 `after/lease-basetemp` —— `after/` 下另有 `lease-pytest-green/`、`lease-basetemp2/3/4/` 等同名旧 basetemp，**不要**用目录名推断是哪一次运行，以 `commands.json` 的 `I04D-06-t-filing-green` 与日志内容为准）。**这 3 个失败是已知的 harness 顺序敏感断言，不是全绿**；性质与处置见 `review.md` §3 与 §5(a)。
+- 在**基线**（回滚后、未 patch）上跑：期望 `rc = 1`，`17 failed, 2 passed, 2 skipped in 14.59s`（原始日志 `before/i04d-red.txt`，sha256 `c632a3a8d260b343dd8af24ff777a80c2b2f4f56665c4bd98f9499dd67b0e92f`；那次调用的 basetemp 是 `before/lease-pytest`）。
+- 在**本卡输出**（patch 后）上跑：`rc = 1`，`18 passed, 3 failed`（原始日志 `after/i04d-green.txt`，sha256 `f8220c7d29c82cde12ff44e267523c12698dc64ab58e2d6f45fc7afddf2a3115`；那次调用的 basetemp 是 `after/lease-basetemp` —— `after/` 下另有 `lease-pytest-green/`、`lease-basetemp2/3/4/` 等同名旧 basetemp，**不要**用目录名推断是哪一次运行，以 `commands.json` 的 `I04D-06-t-filing-green` 与日志内容为准）。**这 3 个失败是已知的 harness 顺序敏感断言，不是全绿**；性质与处置见 `review.md` §3 与 §5(a)。
 - `--basetemp` 必须指向**本次新建的空目录**（临时目录或 `<A>\recovery\` 下的新目录）。**绝不能**指向 attempt 根、`evidence/` 根、`before/`、`after/` 或上一次的 basetemp：pytest 会清理 basetemp 目标（本卡构建期就踩过一次 case 根被 basetemp 清掉的坑）。
 - 失败案例的测试节点名（供 `-k` 单点复现，取自 basetemp 目录名，前 30 字符）：`test_f_l5_ownership_transfer_i0`、`test_f_l5_two_processes_one_pa0`、`test_f_l6_sequential_cycles_ea0`、`test_f_l6b_exactly_one_resume_0`、`test_f_l7_inner_release_remove0`、`test_f_l7b_and_l7c_nesting_var0`、`test_f_l8d_owner_evidence_chan0`、`test_f_l9a_user_pause_is_respe0`、`test_f_l9c_user_pause_during_o0`、`test_l8a_w1_no_owner_marker_is0`、`test_l8b_w2_takeover_resumes_b0`。单点复现示例：
 
@@ -166,4 +166,4 @@ powershell -NoProfile -Command "(Get-FileHash -LiteralPath '<A>\iso\filing-fetch
 
 ## 8. 一句话恢复顺序
 
-回滚（§1 校验 hash `dc593a75…af1c`）→ patch（§2，hash 校验通过才跑）→ 复算 `5ac2a50a…a436` → 跑 §3(a) 与 §3(b) → 只在 `recovery/` 或下一 attempt 写新证据 → 全程不碰生产、不删生产所有权文件、不 resume 真实 worker、不写 PLAN/reviews。
+回滚（§1 校验 hash `dc593a75…af1c`）→ patch（§2，hash 校验通过才跑）→ 复算 `a72546c5…a436` → 跑 §3(a) 与 §3(b) → 只在 `recovery/` 或下一 attempt 写新证据 → 全程不碰生产、不删生产所有权文件、不 resume 真实 worker、不写 PLAN/reviews。

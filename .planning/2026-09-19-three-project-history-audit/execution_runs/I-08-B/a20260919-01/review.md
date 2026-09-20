@@ -335,3 +335,87 @@
 > **签收结论**：**不签收**。按 §11 完成 1–3（建议连带 4–5）后，本卡达到 `accepted_scoped` 条件；技术面我已无未闭合项。
 
 <<<END REVIEWER VERDICT (verbatim, round 3)>>>
+
+---
+
+## 10. 第四轮定点复评（verdict `accepted_scoped`）的逐条处置
+
+> **边界声明（实现者自述，非裁决）**：本节不是裁决。本卡 `status` 的变更只是把**独立 reviewer 已经写下的**
+> `accepted_scoped` **搬运**进 `handoff.json` 与 `evidence/I-08-B/qualification.json`；实现者**没有**、
+> 也**不会**自签验收：`implementer_signed: false`、`implementer_never_signs_acceptance: true`、
+> `authority = "acceptance was written by an independent reviewer, not by the implementer"`。
+
+| 条目 | 处置 | 证据 |
+|---|---|---|
+| **R4-1（P3）** artifact 顶层 `payload_sha256` 的对外契约 | 补上**面向下游**的契约说明（`decision.md` §6 D-08B-09 + `handoff.json.artifact_top_level_payload_sha256_contract`）：该键**被排除出承诺投影**（否则自指），因此"对整份 artifact 做规范哈希"**不会**等于 `validated_payload_sha256`；下游若要与 `validated_payload_sha256` 对齐，必须先剔除 `result_sha256`/`publication_receipt`/`publication_attestation`/`payload_sha256`/`publication_attestation_outcome`。**本卡不改动该键的位置或语义**（其存在是 P2-2 收口的必要条件），只登记契约 | `decision.md` §6、`handoff.json` |
+| **R4-2（P3）** 转录块哈希口径 | **三组数字已复算，全部同源，不存在内容差异**（`iso/analyze_r4_2.py` → `after/c45_r42_block_reconciliation.json`）：①以 **marker 行**为边界：库内块 = **4300 B / `d6388028…`**，与源块**逐字节相同**（`iso/verify_transcription.py` 的 `byte_identical=true`）；②以 marker **文本**为边界（复核的取法）会多带**首尾各一个边界换行** ⇒ **4302 B / `cca2ae29…`**（与复核读数**逐字节吻合**）；③再去掉块尾换行 ⇒ **4299 B / `421e73a8…`**。故口径按复核建议(a)**收窄为"内容逐字节相同、边界换行计法不同"**；建议(b) 本就满足——`verify_transcription.py` 直接对**库内块**取哈希（`embedded_block_sha256`），本轮再把 ①③ 两组对照哈希一并登记 | `after/c45_r42_block_reconciliation.json`、`after/c43_verdict_transcription.json`、`after/c44_verdict_reextract.json` |
+| **R4-3（P3）** `c43.prefix_unchanged` 的覆盖范围 | **接受该限定并补强**：`c43.prefix_unchanged=true` 只证明"**追加动作前**的前缀未被改动"；该次追加之前 §5/§7 各有一处复核要求的编辑，所以它的前缀哈希与本轮追加前的 `review.md` 哈希**本就不同**——这不是矛盾，是覆盖范围。本轮起**每次写入都重取前缀哈希**：`after/c46_round4_verdict_transcription.json` 记录**本轮追加前**的 `review.md` sha256/字节数，并断言追加后前 N 字节哈希不变（"只增不改"） | `after/c46_round4_verdict_transcription.json`、`after/c47_round4_reextract.json` |
+
+**为何不就地改写 §9 的那句话（实现者判断，可被复核/owner 推翻）**：§9 的转录说明属于**已登记证据块**的组成部分
+（c43/c44 记录了它的前后哈希）。R4-2 指出的是"**口径不够精确**"，而不是"库内内容与源块不符"。
+因此实现者选择**不原地改写**，改为在本节给出**权威口径**（上表 R4-2 行）并登记三组对照哈希。
+若复核/owner 认为必须就地改写 §9 措辞，那是一次一行级编辑，可在下一轮按指令执行并登记。
+
+### 10.1 本轮搬运的记账（是搬运，不是验收）
+
+- `handoff.json.status`：`review_pending` → **`accepted_scoped`**；旧值保留在 `status_before_bookkeeping_fix`。
+- `evidence/I-08-B/qualification.json`：**新建**（沿用 I-09-A 的同款结构）；"formula"标记位搬运 `accepted_scoped`
+  并注明"I-08-B 无预测公式，此字段只承载**卡级设计/契约状态**"；`disclosure_adaptation` / `accuracy` **保持未授予**（`unmapped` / `unproven`）。
+- **裁决正文位置**：本轮裁决块 = 本文件 **§11**（逐字节转录，来源 `REPORT-ROUND4.md` §12 起至文件末）。
+- **范围照抄 reviewer**：`technical + delivery surface`（技术面 + 交付面）；不扩张到跨仓消费者/部署/预测准确性。
+- **8 项 OPEN 一项未关**：`closed_by_this_card = []`；`still_open_and_not_closed` 仍为 **8 项**：
+  E31(I-09-A)、OPEN-D1、OPEN-D2、OPEN-D3、OPEN-D5、OPEN-D6、OPEN-D7、registry attestation 锚字段名（UNRESOLVED-BY-DESIGN）。
+- **陈旧叙述文本不予粉饰**：`handoff.raw_vs_expected_note` 的 "819 -> 910"、`commands.json` c8/c13 行旧文本
+  （`921 passed / 337 subtests` 与 `13 files ... 216023 bytes`）与现存**原始证据**不符（原始证据为 `932 passed / 349 subtests`、
+  `14 differing files / 232931 bytes`）。处置：**不改写旧文本**，改为**追加更正字段**并在
+  `handoff.json.round4_stale_text_corrections` 逐条登记旧值→原始值。
+- **`documentation_edit_ledger` 追加**：`iso/add_edit_ledger.py` 增加 round-3/round-4 字段（**原有字段一字节未改，纯追加**）
+  并新增本轮时间线条目；本轮改动的四个文档（`review.md` / `decision.md` / `handoff.json` / `commands.json`）各有一条
+  round-4 条目；**新建**的 `evidence/I-08-B/qualification.json` 单独登记（它不是被编辑的冻结文档）。
+
+### 10.2 封存
+
+自本轮打包步骤（`iso/finalize_all.py`：`c24` → `c14` → `c37` → `c20`）完成之时起，本 attempt 目录**即行封存**：
+**不再有任何写入**；此后的任何写入都会**使本次封存失效并要求重新独立复核**。
+排序披露（既有怪癖，非本轮引入）：`after/product_hashes.txt` 与 `after/c38_finalize_all.stdout.txt` 两行
+记录的是**各自写入前**的内容哈希（自指/末位写入），故这两行不能与其自身当前内容比对。
+
+
+---
+
+## 11. 独立复核裁决正文（第四轮，逐字节转录）
+
+> **转录说明（实现者撰写，非裁决内容）**：以下裁决正文由**独立 reviewer session** 撰写，经父 agent 转达并授权逐字节转录。**未做任何改写、删减、摘要或重排**；仅追加本说明与下方起止标记。上一轮（第三轮）的转录边界口径见 §10 的 R4-2 行。
+>
+来源：`C:\Users\郑曾波\AppData\Local\Temp\i08b-r4review-20260920-051434\REPORT-ROUND4.md`
+来源文件 sha256：`cac7835f09ca28410102799270c9400c6c4a2009e803def43862efa7df2e56dc`
+转录区间：自 `## 12.` 标题行起至文件末（含）
+转录块 sha256：`137f6644a4b302725650cd6b225596f0940267553e5e2b00e01a0777fc0386d7`
+追加前 `review.md` sha256：`cf58a969e74b7ffc0d89494eaabad3f18b7615f26e356de8867a8ada1688766c`
+追加前 `review.md` 字节数：40662（行数 337）
+本轮转录 `review.md` 前缀**未被改写**：追加前后前 N 字节哈希相同（见 `after/c46_round4_verdict_transcription.json`；R4-3：每次写入重取前缀哈希）
+<<<BEGIN REVIEWER VERDICT (verbatim, round 4)>>>
+## 12. 可直接粘贴进 `review.md` 的裁决正文（第四轮）
+
+> ### I-08-B 第四轮独立复核裁决（独立 reviewer session，2026-09-20）
+>
+> **verdict：`accepted_scoped`**（范围＝本卡既有口径：技术面 + 交付面）。`E31`、`OPEN-D1`、`OPEN-D2`、`OPEN-D3`、`OPEN-D5`、`OPEN-D6`、`OPEN-D7` 与 registry attestation 锚字段名**共 8 项仍 OPEN/UNRESOLVED，本裁决不关闭任何一项**。
+>
+> **逐条复核（我自跑，不采信实现者结论）**
+> 1. **①R3-1 已闭合**：我自行枚举两树差异 = 15 个文件（14 在 diff 内 + 1 个已登记的非交付物）；`named_but_not_differing = []`（无多余）；全部 POSIX 头；`git apply` rc=0；14/14 **内容级**一致（3 raw + 11 仅 CRLF/LF）。`make_diff.py` 已加"差异文件必须进 diff 或列入 `NON_DELIVERABLE_ISO_PATHS`，否则 rc=1"的防复发门。
+> 2. **②R3-2 已闭合**：`product_hashes.txt` 分两段，`iso/rf/artifacts/registry/publications.jsonl`（`519c0500…`）**只在 SECTION 2**（RUNTIME ARTEFACTS — NOT deliverables, NOT in changes.diff），SECTION 1 未混入。
+> 3. **③R3-3/R3-4 已闭合**：自算 `commands.json` bound = **15**（与 `bound_entry_count` 一致）；`handoff.commands_executed` = 18 并在 note 中解释差异；`reviewer_must_do` = 15；`"14 entries"` 残留 = false；"eight bound commands"/"12 条" 仅存于历史叙述中，无现行矛盾。
+> 4. **④R3-5 记录准确**：我第三轮采样（04:33–04:40）确实观测到 5 文件偏离且 `git status` 为空；本轮复算 10 个产品锚点**全部等于 I-00-A 基线值**（5 个恢复文件 mtime 05:14:36），`before/source_hashes.txt` **26/26 drift=0**。**时点限定被正确保留**：窗口 04:35:31–04:40:53 内任何 `production_hashes_unchanged=false` 是**正确告警**，不构成本卡写生产仓的证据；本卡未执行任何 git 写命令。
+> 5. **⑤转录**：内容**逐字节成立**——去掉块首/块尾各一个空行后，库内块与源块完全相同（4299 B / `421e73a8…`），探针齐全（`**verdict：changes_required**`、`**签收结论**：**不签收**` 等）。**但**库内实际块为 4302 B / `cca2ae29…`，与自报的 `block_sha256 d6388028…`(4300 B) 不同（差边界空行），故"byte-identical"措辞需收窄（记 R4-2，P3）。
+> 6. **⑥review.md 本体两处编辑（§5 第 9 条、§7 P3-3 行）：接受。** 二者正是复核要求更正的文本，未新增裁决内容、未降低结论强度；**§9 转录块未被动过一个字节**（逐字节比对通过），且追加位于两处编辑之后。**边界重申**：裁决块内零改动是硬约束；块外自述正文可在"复核明确要求更正"范围内改写，但须登记、不得自相矛盾、不得删除或弱化已登记的偏离与未验证项。
+> 7. **⑦8 项 OPEN 一项未关**：`still_open_and_not_closed` 恰为 8 项、`closed_by_this_card = []`、`decision.md §3` D1–D3/D5–D7 仍为 OPEN。
+> 8. **最终校验**：c3 68 / c4 18 / c5 **22+22 subtests** / c6 6 / c7 48 / 契约 **10+12** / 守卫 5 / golden 1，rc 全 0；普查 before `128F/819P/315` → after `128F/932P/349`，`new=[] gone=[]`；`.pyc` 两树 0；本卡 7 个产品文件 = 修前绑定；生产 registry `bc3256bb…`/60 行；默认信任域 ABSENT。
+> 9. **隔离复述（按时点限定）**：本卡对三仓**内容级零写入**；`PLAN\...\reviews` mtime 仍 **2026-09-19 09:14:20**、无增删。窗口 04:35:31–04:40:53 内的生产树偏离由编排层提交作业造成、已恢复，本卡归因 0。
+>
+> **未验证（不得视为已证）**：跨仓消费者面；R3-5 根因（转述，未独立复现）；26 个 ignore 模块在 before 的收集行为；128 个既有失败的性质；iso registry 的写入来源；oracle 事后编辑的治理裁定（owner）；契约测试在非 Windows/无 argv 路由环境的可移植性；AST 守卫判据的绕过面。
+>
+> **保留的 P3（不阻断）**：R4-1 artifact 顶层 `payload_sha256` 的对外契约说明；R4-2 转录块哈希口径；R4-3 前缀哈希的覆盖范围。
+>
+> **签收结论**：**`accepted_scoped`** —— 技术面与交付面均无未闭合项；上列 8 项 OPEN 与 3 项 P3 保留项一并移交 plan/owner。
+
+<<<END REVIEWER VERDICT (verbatim, round 4)>>>
