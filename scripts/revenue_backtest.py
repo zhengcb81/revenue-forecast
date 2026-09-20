@@ -216,6 +216,10 @@ def validate_actuals(
         for claim_id in record["claim_ids"]:
             source = source_index[claim_index[claim_id]["source_id"]]
             require(
+                parse_iso_date(source["published_date"], "actual published_date") > snapshot_as_of,
+                f"actual was already published at forecast origin: {year_text}",
+            )
+            require(
                 parse_iso_date(
                     source["published_date"], f"{source['source_id']}.published_date"
                 )
@@ -254,6 +258,10 @@ def validate_actuals(
             )
             for claim_id in record["claim_ids"]:
                 source = source_index[claim_index[claim_id]["source_id"]]
+                require(
+                    parse_iso_date(source["published_date"], "actual published_date") > snapshot_as_of,
+                    f"actual was already published at forecast origin: {segment_name}/{year_text}",
+                )
                 require(
                     parse_iso_date(
                         source["published_date"],
@@ -402,6 +410,8 @@ def _error_record(
         "forecast": forecast,
         "actual": actual,
         "absolute_error": absolute_error,
+        "signed_error_amount": forecast - actual,
+        "squared_error": (forecast - actual) ** 2,
         "signed_error": signed_error,
         "absolute_percentage_error": None
         if signed_error is None
@@ -415,6 +425,7 @@ def _error_record(
         "within_interval": lower <= actual <= upper,
         "low_case": lower,
         "high_case": upper,
+        "scenario_width": upper - lower,
     }
 
 
@@ -438,6 +449,18 @@ def _summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
     ]
     return {
         "observations": len(records),
+        "sum_absolute_error": sum(absolute_errors),
+        "sum_absolute_actual": actual_denominator,
+        "bias_amount": None if not records else sum(
+            float(record["forecast"]) - float(record["actual"]) for record in records
+        ) / len(records),
+        "rmse": None if not records else math.sqrt(sum(
+            (float(record["forecast"]) - float(record["actual"])) ** 2
+            for record in records
+        ) / len(records)),
+        "mean_scenario_width": None if not records else sum(
+            float(record["high_case"]) - float(record["low_case"]) for record in records
+        ) / len(records),
         "mae": None if not records else sum(absolute_errors) / len(records),
         "wape": None
         if actual_denominator == 0
@@ -458,16 +481,65 @@ def _summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
 
 def _accuracy_record(evaluation: dict[str, Any]) -> dict[str, Any]:
     payload = {
-        "record_schema_version": "1.0",
+        "record_schema_version": "1.1",
+        **{key: evaluation[key] for key in (
+            "company_name", "currency", "unit", "fiscal_year_end",
+            "forecast_as_of_date", "actuals_as_of_date",
+        )},
         "backtest_id": evaluation["backtest_id"],
         "snapshot_id": evaluation["snapshot_id"],
         "observations": evaluation["summary"]["observations"],
         "wape": evaluation["summary"]["wape"],
         "mae": evaluation["summary"]["mae"],
         "mean_smape": evaluation["summary"]["mean_smape"],
+        "sum_absolute_error": evaluation["summary"]["sum_absolute_error"],
+        "sum_absolute_actual": evaluation["summary"]["sum_absolute_actual"],
         "evaluation_sha256": evaluation["evaluation_sha256"],
     }
     return {**payload, "record_sha256": canonical_sha256(payload)}
+
+
+def _benchmark_diagnostics(forecast: dict[str, Any], records: dict[str, Any]) -> dict[str, Any]:
+    """Use only frozen training history; scenario bounds are not quantiles."""
+    history = forecast["historical_revenue"]
+    values = [float(row["value"]) for row in history]
+    differences = [right - left for left, right in zip(values, values[1:])]
+    absolute_scale = None if not differences else sum(map(abs, differences)) / len(differences)
+    square_scale = None if not differences else sum(d * d for d in differences) / len(differences)
+    base = float(forecast["base_revenue"])
+    growth = None
+    if len(history) >= 2 and values[0] > 0:
+        growth = calculate_cagr(values[0], values[-1], history[-1]["year"] - history[0]["year"])
+    flat_errors = []
+    growth_errors = []
+    for record in records.values():
+        record["mase"] = None if not absolute_scale else record["absolute_error"] / absolute_scale
+        record["squared_scaled_error"] = None if not square_scale else record["squared_error"] / square_scale
+        record["flat_base_forecast"] = base
+        record["flat_base_absolute_error"] = abs(base - record["actual"])
+        flat_errors.append(record["flat_base_absolute_error"])
+        if growth is not None:
+            benchmark = base * (1 + growth) ** record["horizon_years"]
+            record["historical_cagr_forecast"] = benchmark
+            record["historical_cagr_absolute_error"] = abs(benchmark - record["actual"])
+            growth_errors.append(record["historical_cagr_absolute_error"])
+    model_error = sum(row["absolute_error"] for row in records.values())
+    count = len(records)
+    return {
+        "training_observations": len(history),
+        "naive_training_mae": absolute_scale,
+        "naive_training_mse": square_scale,
+        "mase": None if not absolute_scale else model_error / count / absolute_scale,
+        "rmsse": None if not square_scale else math.sqrt(
+            sum(row["squared_error"] for row in records.values()) / count / square_scale
+        ),
+        "flat_base_mae": sum(flat_errors) / count,
+        "mae_skill_vs_flat_base": None if sum(flat_errors) == 0 else 1 - model_error / sum(flat_errors),
+        "historical_cagr_mae": None if not growth_errors else sum(growth_errors) / count,
+        "mae_skill_vs_historical_cagr": None if not growth_errors or sum(growth_errors) == 0
+        else 1 - model_error / sum(growth_errors),
+        "scenario_coverage_interpretation": "descriptive low/high scenario coverage; no nominal probability",
+    }
 
 
 def evaluate_snapshot(
@@ -568,6 +640,7 @@ def evaluate_snapshot(
         segment_results[segment_name] = result_by_year
 
     company_records = list(year_results.values())
+    benchmark_diagnostics = _benchmark_diagnostics(forecast, year_results)
     summary = _summarize_records(company_records)
     summary.update(
         {
@@ -598,6 +671,9 @@ def evaluate_snapshot(
         "snapshot_id": snapshot["snapshot_id"],
         "forecast_version": snapshot["forecast_version"],
         "company_name": snapshot["company_name"],
+        "currency": forecast["currency"],
+        "unit": forecast["unit"],
+        "fiscal_year_end": forecast["fiscal_year_end"],
         "forecast_as_of_date": snapshot["as_of_date"],
         "actuals_as_of_date": actuals["actuals_as_of_date"],
         "actuals_sha256": actuals_hash,
@@ -612,6 +688,7 @@ def evaluate_snapshot(
         "segment_summaries": segment_summaries,
         "horizon_summaries": horizon_summaries,
         "summary": summary,
+        "benchmark_diagnostics": benchmark_diagnostics,
     }
     evaluation["evaluation_sha256"] = canonical_sha256(evaluation)
     evaluation["accuracy_record"] = _accuracy_record(evaluation)

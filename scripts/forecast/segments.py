@@ -29,6 +29,7 @@ from forecast.calc import (
     resolve_driver_series,
 )
 from model_registry import MODEL_DRIVER_DIMENSIONS, MODEL_SPECS, ModelRegistryError, calculate_registered_model
+from model_extensions import EXTENSION_OPENING_BALANCES
 from revenue_constraints import RevenueConstraintError, apply_revenue_constraints
 
 
@@ -158,6 +159,7 @@ def calculate_segment_forecasts(
                 "quantity",
             ),
         }
+        opening_checks.update(EXTENSION_OPENING_BALANCES)
         if model in opening_checks:
             base_field, opening_driver, expected_dimension = opening_checks[model]
             opening_base_id = segment.get(base_field)

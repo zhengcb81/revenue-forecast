@@ -28,7 +28,10 @@ from revenue_core import (  # noqa: E402
     FORECAST_SCHEMA_VERSION,
     MANAGEMENT_COMMUNICATION_CATEGORIES,
     RESEARCH_DIMENSIONS,
+    MONETARY_DIMENSIONS,
 )
+from model_registry import MODEL_REGISTRY
+from model_extensions import EXTENSION_OPENING_BALANCES
 
 PLACEHOLDER_HASH = "0" * 64
 
@@ -40,11 +43,17 @@ def build_template(
     currency: str,
     unit: str,
     segment_names: list[str],
+    segment_models: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Build a schema skeleton with FIXME placeholders and consistent references."""
     base_year = int(base_year)
     forecast_years = sorted({int(year) for year in forecast_years})
-    as_of = f"{base_year}-06-30"
+    segment_models = segment_models or {}
+    if set(segment_models) - set(segment_names):
+        raise ValueError("segment_models contains an unknown segment")
+    if any(model not in MODEL_REGISTRY for model in segment_models.values()):
+        raise ValueError("segment_models contains an unknown revenue model")
+    as_of = f"{base_year + 1}-06-30"
     source_id = "src_primary_filing"
     monetary_unit = f"{currency} {unit}"
 
@@ -54,7 +63,7 @@ def build_template(
         "title": "FIXME: filing title",
         "publisher": "FIXME: filing publisher or exchange",
         "url": "https://FIXME.invalid/replace-with-real-filing-url",
-        "published_date": f"{base_year}-01-15",
+        "published_date": f"{base_year + 1}-03-01",
         "accessed_date": as_of,
         "page_or_section": "FIXME: revenue note page or section",
         "capture": {
@@ -97,7 +106,8 @@ def build_template(
                 "parameter_id": parameter_id,
                 "kind": kind,
                 "value": value,
-                "unit": monetary_unit if dimension == "revenue" else "ratio",
+                "unit": monetary_unit if dimension in {"revenue", "backlog", "monetary_balance"}
+                else "ratio" if dimension == "ratio" else f"FIXME: {dimension} unit",
                 "period": period,
                 "definition": f"FIXME: define {parameter_id}",
                 "dimension": dimension,
@@ -108,6 +118,8 @@ def build_template(
                 "claim_ids": [f"claim_{parameter_id}"],
             }
         )
+        if dimension in MONETARY_DIMENSIONS:
+            parameters[-1].update(currency=currency, scale=unit)
         claims.append(
             {
                 "claim_id": f"claim_{parameter_id}",
@@ -152,23 +164,25 @@ def build_template(
     segments: list[dict[str, Any]] = []
     for segment, base_pid in zip(segment_names, segment_base_ids):
         slug = segment.lower().replace(" ", "_")
+        model = segment_models.get(segment, "direct_revenue")
+        spec = MODEL_REGISTRY[model]
         scenarios: dict[str, Any] = {}
         for scenario in ("low", "base", "high"):
-            driver_ids = [
+            driver_ids = {driver: [
                 add_parameter(
-                    f"{slug}_{scenario}_{year}",
+                    f"{slug}_{driver}_{scenario}_{year}",
                     "analyst_assumption",
-                    0.1,
+                    0.0,
                     f"FY{year}",
-                    dimension="ratio",
+                    dimension=spec.dimensions[driver],
                     scenario=scenario,
-                    rationale=f"FIXME: {segment} {scenario} growth rate for FY{year}",
+                    rationale=f"FIXME: {segment} {scenario} {driver} for FY{year}",
                 )
                 for year in forecast_years
-            ]
+            ] for driver in spec.required}
             scenarios[scenario] = {
-                "model": "direct_revenue",
-                "driver_parameter_ids": {"revenue": driver_ids},
+                "model": model,
+                "driver_parameter_ids": driver_ids,
                 "rationale": f"FIXME: {segment} {scenario} revenue path rationale",
             }
         segments.append(
@@ -184,9 +198,21 @@ def build_template(
                 "scenarios": scenarios,
             }
         )
+        opening = dict(EXTENSION_OPENING_BALANCES)
+        opening.update({
+            "project_backlog": ("base_backlog_parameter_id", "opening_backlog", "backlog"),
+            "delivery_pipeline": ("base_orders_parameter_id", "opening_orders", "quantity"),
+        })
+        if model in opening:
+            field, driver, dimension = opening[model]
+            segments[-1][field] = add_parameter(
+                f"{slug}_base_{driver}", "reported_fact", 0.0,
+                f"FY{base_year}", dimension=dimension,
+                rationale=f"FIXME: source-linked opening {driver}",
+            )
 
     historical: list[dict[str, Any]] = []
-    for year in (base_year, base_year - 1):
+    for year in (base_year - 1, base_year):
         claim_id = f"claim_history_{year}"
         claims.append(
             {
@@ -290,8 +316,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--output", type=Path, help="write skeleton here (default stdout)"
     )
+    parser.add_argument("--segment-model", action="append", default=[], metavar="SEGMENT=MODEL",
+                        help="select a registered revenue model for a segment; repeat for multiple segments")
     args = parser.parse_args(argv)
 
+    model_map = {}
+    for selection in args.segment_model:
+        segment, separator, model = selection.partition("=")
+        if not separator or segment not in args.segments or model not in MODEL_REGISTRY or segment in model_map:
+            parser.error("--segment-model requires a unique declared SEGMENT=registered_model")
+        model_map[segment] = model
     data = build_template(
         args.name,
         args.base_year,
@@ -299,6 +333,7 @@ def main(argv: list[str] | None = None) -> int:
         args.currency,
         args.unit,
         args.segments,
+        model_map,
     )
     rendered = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
     if args.output:

@@ -10,7 +10,7 @@ from __future__ import annotations
 SCENARIOS = ("low", "base", "high")
 
 
-SKILL_VERSION = "4.0.0"
+SKILL_VERSION = "4.1.0"
 
 
 FORECAST_SCHEMA_VERSION = "3.7"
@@ -191,6 +191,7 @@ MANAGEMENT_COMMUNICATION_STATUSES = {"checked", "not_available", "not_applicable
 MANAGEMENT_TARGET_TREATMENTS = {
     "modeled_scenario",
     "scenario_boundary",
+    "independent_benchmark",
     "sensitivity_only",
     "unmodeled_data_gap",
     "out_of_horizon",

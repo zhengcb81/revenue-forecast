@@ -32,7 +32,7 @@ from revenue_core import ENGINE_VERSION, FORECAST_SCHEMA_VERSION, OPT_IN_SCHEMA_
 #   schema 3.4 — engines 3.5.0..3.10.0    (introduced v3.5.0, current through v3.10.0)
 #   schema 3.5 — engine 3.10.0            (Unreleased, pre-3.6)
 #   schema 3.6 — engines 3.10.0/4.0.0     (v3.10.0, legacy read-only from v4.0.0)
-#   schema 3.7 — current engine only      (v4.0.0)
+#   schema 3.7 — current engine only      (v4.1.0; older snapshots need their pinned runtime)
 # ---------------------------------------------------------------------------
 SCHEMA_EMIT_ENGINES: dict[str, frozenset[str]] = {
     "3.0": frozenset({"3.0.0"}),

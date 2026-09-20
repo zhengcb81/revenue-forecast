@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from revenue_core import ForecastInputError, MODEL_DRIVER_DIMENSIONS, MODEL_SPECS, calculate_model_path  # noqa: E402
+from test_model_extensions import EXTENSION_CASES  # noqa: E402
 
 
 YEARS = [2026, 2027]
@@ -39,6 +40,7 @@ def make_parameters(model: str, driver_values: dict[str, list[float]], scenario:
 
 
 CASES = {
+    **EXTENSION_CASES,
     "direct_growth": ({"growth_rate": [0.1, 0.1]}, [110.0, 121.0]),
     "direct_revenue": ({"revenue": [90, 95]}, [90, 95]),
     "unit_sales": ({"units": [10, 12], "unit_revenue": [5, 5]}, [50, 60]),
@@ -81,7 +83,7 @@ class ModelTests(unittest.TestCase):
 
     def test_rejects_ratio_above_one(self) -> None:
         parameters, ids = make_parameters("capacity_utilization", {"capacity": [100, 100], "utilization": [1.1, 1], "yield": [1, 1], "unit_revenue": [1, 1]})
-        with self.assertRaisesRegex(ForecastInputError, "between 0 and 1"):
+        with self.assertRaisesRegex(ForecastInputError, "permitted bounds"):
             calculate_model_path("capacity_utilization", 100, ids, parameters, YEARS, "base")
 
     def test_rejects_scenario_mismatch(self) -> None:

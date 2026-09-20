@@ -242,6 +242,7 @@ class BacktestTests(unittest.TestCase):
             create_snapshot(forecast_document(), "v1"), actuals_document()
         )
         data = forecast_document()
+        data["as_of_date"] = "2028-03-01"  # Only usable after these actuals are known.
         data["historical_accuracy_records"] = [evaluation["accuracy_record"]]
         result = run_forecast(data)
         self.assertAlmostEqual(

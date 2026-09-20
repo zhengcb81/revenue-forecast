@@ -138,6 +138,12 @@ def prepare_source(
     # the DAG closure of the non-reusable roles (never a blind full recompute).
     artifact_read, producer_events = (
         company_wiki_source.select_artifact_roles(handle))
+    # W05-B: verify the ACTUAL artifact reads.  artifact_read is the PLAN;
+    # artifact_read_events is the IO PROOF.  Without verified events, the
+    # selection alone cannot prove bytes were consumed.
+    io_evidence = company_wiki_source.verify_artifact_reads(handle, artifact_read)
+    artifact_read_events = io_evidence["verified_read_events"]
+    artifact_failed_events = io_evidence["failed_read_events"]
     # FC-905-b: capture/safety evidence comes from the envelope — never
     # hardcoded.  An unreviewed source is blocked per policy; absent parser/
     # llm counts fail closed (never fabricated as 0).
@@ -173,6 +179,8 @@ def prepare_source(
         "prompt_injection_status": prompt_injection_status,
         "artifact_read": artifact_read,
         "producer_events": producer_events,
+        "artifact_read_events": artifact_read_events,
+        "artifact_failed_events": artifact_failed_events,
     }
     # ZR-701: submit one processing demand per prepared source; a repeated
     # preparation of the same source dedupes to the existing demand.

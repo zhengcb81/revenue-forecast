@@ -1,13 +1,16 @@
-# Revenue forecast v3 input schema
+# Revenue forecast input schema (engine 4.1.0)
 
 ## 1. Identity
 
-Require `schema_version="3.6"`, company, `as_of_date`, currency, scale in
+Require canonical `schema_version="3.7"` (or the supported opt-in 3.8 extension), company, `as_of_date`, currency, scale in
 `unit`, fiscal-year end, base year, consecutive forecast years, sources,
 evidence claims, parameters, history, segments, reported-total parameter ID,
 nine-dimension research coverage, a causal growth-driver tree,
-management-communication coverage, and a management-target ledger. Schema 3.5
-is accepted as legacy read-only.
+management-communication coverage, and a management-target ledger. Earlier
+schemas are legacy read-only within their documented compatibility pairs.
+Engine 4.1.0 changes calculations and validation without changing the canonical
+schema number; use the pinned emitting runtime for old snapshots when required,
+and create a new input/forecast version for the upgraded methodology.
 
 Use `pre_revenue=true` only when reported and segment base revenue are zero.
 A genuinely pre-revenue company may use an empty history.
@@ -22,8 +25,9 @@ accepted by both the input and output validators. Each custom dimension must
 be a non-empty, unique string; null, empty, or duplicate names are rejected.
 
 **Management communication search receipts.** Each of the six categories must
-be checked. A `not_available` declaration carries an optional `search_event`
-with `query_scope`, `query_time`, and `event_ids`. A `not_applicable`
+be checked or explicitly marked unavailable/inapplicable. A `not_available`
+declaration requires a `search_event` with `query_scope`, `query_time`,
+`event_ids`, `generated_by`, and `event_sha256`. A `not_applicable`
 declaration carries a `reason_code`. Without a host-signed search receipt the
 declaration is an honour-system assertion.
 
@@ -34,6 +38,20 @@ with `reason` and `rationale`.
 
 **Filing acquisition.** Use the standalone `filing-fetch` skill
 (`filing_fetch_client.resolve_filing`) to obtain a capture-ready handle.
+
+**Model-aware skeleton.** `generate_input_template.py` accepts repeatable
+`--segment-model SEGMENT=MODEL` selections. Each segment name must appear in
+`--segments`, each model must be registered, and a segment cannot be selected
+twice. For example:
+
+```powershell
+python scripts/generate_input_template.py --name "Example Company" --base-year 2025 --forecast-years 2026 2027 --segments Software Equipment --segment-model Software=subscription_arr_bridge --segment-model Equipment=installed_base_aftermarket --output input.json
+```
+
+Unselected segments retain the helper's default model. Generated values,
+excerpts, metadata and hashes are placeholders, not usable forecast evidence.
+Fill and reconcile them, then run linting, hash synchronization and full
+validation as described in [input-construction.md](input-construction.md).
 
 ## 2. Evidence claims
 
@@ -52,6 +70,7 @@ Every claim requires:
   "excerpt": "Short passage opened and checked by the research agent.",
   "excerpt_sha256": "<sha256 of trimmed excerpt>",
   "content_sha256": "<sha256 of retrieved source artifact>",
+  "capture_receipt_sha256": "<sha256 of source capture receipt>",
   "verification_status": "opened_and_checked",
   "verified_by": "research-agent-id",
   "verified_date": "2026-07-12"
@@ -103,6 +122,14 @@ Each segment contains the same model in low/base/high and one parameter-ID serie
 - Over-time: supply `progress_measure` and low/base/high annual `progress_parameter_ids`; recognized revenue equals modeled revenue times progress.
 
 `project_backlog` also requires `base_backlog_parameter_id`; `delivery_pipeline` requires `base_orders_parameter_id`. First forecast-year opening balances must match these base facts.
+
+Six extensions require model-specific base anchors: `base_arr_parameter_id`,
+`base_installed_units_parameter_id`, `base_stores_parameter_id`,
+`base_aum_parameter_id`, `base_unserved_market_parameter_id`, or
+`base_inventory_parameter_id`, as appropriate. Use the exact mapping and
+driver dimensions in [extended-models.md](extended-models.md). The model-aware
+template emits these fields; do not substitute the segment's base revenue
+for an operating stock.
 
 ## 6. Adjustments
 
@@ -213,7 +240,7 @@ Each root requires a stable ID, concise title/thesis, two-to-eight-step causal c
 }
 ```
 
-Within each root, a segment may appear once. Across all roots, weights for every segment must sum to one. Weights may be negative: a negative weight represents a quantified revenue headwind (for example contra-revenue merchant subsidies), and negative roots are reported separately as headwinds rather than as positive drivers. A weight of zero is rejected, and each weight must lie in `[-1, 1]`. Every mapped parameter must actually enter the Base forecast and be Base/shared. See `growth-driver-tree.md` for research and inference rules.
+Within each root, a segment may appear once. Across all roots, weights for every segment must sum to one. A weight of zero is rejected, and each weight must lie in `[-1, 1]`. The sign of the computed allocation (segment increment × weight), not the weight alone, determines whether it is reported as a positive driver or headwind. This is analyst allocation, not identified causal effect; zero net segment growth can conceal offsetting mechanisms. Every mapped parameter must actually enter the Base forecast and be Base/shared. See `growth-driver-tree.md` for research and inference rules.
 
 ## 8. Scenario probabilities
 
@@ -230,7 +257,9 @@ The output records requested values, effective bounded values, and clamp flags. 
 
 ## 10. Theme and historical accuracy
 
-Theme counterfactual IDs must be non-negative terminal-year revenue assumptions for low/base/high. Historical accuracy accepts only `historical_accuracy_records` emitted by backtesting; the engine verifies each record hash and imports WAPE automatically.
+Theme counterfactual IDs must be non-negative terminal-year revenue assumptions for low/base/high. Historical accuracy uses only complete `historical_accuracy_records` emitted by backtesting. Version 1.1 requires matching company/currency/unit/fiscal-year end, forecast and actuals information dates, snapshot/evaluation/backtest links, positive observation count and error/actual totals; the record must be available by the current forecast's `as_of_date`, and duplicate forecast origins are rejected. WAPE is pooled from absolute-error and absolute-actual totals, not averaged across percentages. Version 1.0 remains readable and hash-checked but receives no historical-accuracy credit.
+
+The record hash proves payload integrity, not source authenticity or that an evaluation was actually performed. Retain the underlying immutable snapshot, sourced actuals and evaluation for reproduction. See [backtesting.md](backtesting.md) for exact fields, metrics, small-sample scoring and frozen A/B accuracy evaluation. The overall confidence score is an evidence/workflow indicator, not a probability of prediction success.
 
 ## 11. Management communication and targets
 
@@ -243,3 +272,31 @@ Every target also requires `measurement_basis`, `measurement_periods`, and `meas
 - `annual_period` or `run_rate_at_period_end`: exactly one `FYyyyy` model period;
 - `cumulative_periods`: at least two ordered, contiguous `FYyyyy` periods;
 - `ambiguous`: no model periods, no comparison value or scenario mapping, and treatment `unmodeled_data_gap`.
+
+Material comparable in-horizon targets require `modeled_scenario`,
+`scenario_boundary`, or `independent_benchmark`. The independent treatment
+requires all three mapped scenarios, used forecast parameter IDs,
+`benchmark_rationale`, and `benchmark_claim_ids` carrying checked
+`rationale_support` claims for the same `management_target` / `target_id`.
+It reports all three attainment outcomes without requiring any to reach the
+target. The optional output count `targets_independent_benchmarks` is present
+when this treatment exists and these comparisons are not counted as unmodeled.
+
+For a `run_rate_at_period_end` target to be comparable with annual revenue,
+require `comparison_basis="annual_recognized_revenue"`,
+`normalization_formula`, `normalization_parameter_ids`, and the existing
+`normalization_rationale`. The restricted arithmetic formula receives the raw
+target as `x0` and the verified registered parameters in list order as
+`x1`, `x2`, etc. It must syntactically reference the raw target and every listed input, include
+at least one evidence-backed conversion/timing parameter, and recompute to
+`comparison_value`. A literal constant or a formula omitting `x0` fails the
+syntax requirement; this does not prove algebraic dependence or economic
+validity. The analyst must reject cancellations or ineffective factors and
+verify the substantive role of every input. Preserve the original raw target
+and measurement basis; the conversion changes the comparison amount only.
+
+If no supported conversion is available, a run-rate target may honestly use
+`unmodeled_data_gap` with `comparison_value=null` and no mapped parameters or
+scenarios. Do not manufacture a conversion or force ARR into annual revenue
+to pass a target gate. See [management-targets.md](management-targets.md) for
+the complete treatment contract and research interpretation.

@@ -39,7 +39,7 @@ from revenue_constraints import (  # noqa: E402  re-export
 )
 
 
-SKILL_VERSION = "4.0.0"
+from contracts.constants import SKILL_VERSION
 # Compatibility name retained in serialized forecasts and snapshots.
 ENGINE_VERSION = SKILL_VERSION
 
@@ -284,7 +284,6 @@ from contracts.constants import (  # noqa: E402  re-export
     RESEARCH_COVERAGE_STATUSES,
     RESEARCH_DIMENSIONS,
     SCENARIOS,
-    SKILL_VERSION,
     SOURCE_RANKS,
     SUPPORTED_FORECAST_SCHEMA_VERSIONS,
     TIME_BASES,

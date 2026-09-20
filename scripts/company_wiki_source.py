@@ -172,7 +172,15 @@ def select_artifact_roles(
     if not isinstance(bundle, dict):
         raise CompanyWikiSourceError("bundle must be an object (fail closed)")
     reusable: set[str] = set()
-    for role in roles:
+    # W05-C fix: check ALL roles in the request closure (requested roles AND
+    # their transitive ancestors), not just the directly requested roles.
+    # Without this, a valid ancestor (normalized) is never evaluated when its
+    # dependent (sections) is missing from the bundle — causing artifact_read
+    # to be empty even though the ancestor is perfectly reusable.
+    all_roles_to_check = sorted({
+        r for role in roles for r in ([role] + _dag_ancestors(role))
+    })
+    for role in all_roles_to_check:
         if not _artifact_reusable(bundle, role):
             continue
         if role == "consumer_analysis" and expected_provenance is not None:
@@ -182,14 +190,132 @@ def select_artifact_roles(
         reusable.add(role)
     # DAG gate (AR-03): a role is READ only when its whole ancestor chain is
     # reusable — a dependent derived from an invalidated input is not trusted.
+    # W05-C: include valid ancestors in artifact_read too — the caller needs
+    # to know they're available for consumption, even if not explicitly requested.
     artifact_read = sorted(
-        role for role in roles
+        role for role in all_roles_to_check
         if role in reusable
         and all(ancestor in reusable for ancestor in _dag_ancestors(role))
     )
-    missing = [role for role in roles if role not in artifact_read]
-    producer_events = sorted({r for role in missing for r in _dag_closure(role)})
+    # W05-C fix: producer_events must contain ONLY what's needed to produce
+    # the requested missing roles — the missing role itself plus any ancestors
+    # that are not reusable. NOT the full downstream closure of unrequested
+    # dependents (which was the old bug).
+    missing_requested = [role for role in roles if role not in artifact_read]
+    needed_for_production: set[str] = set()
+    for role in missing_requested:
+        needed_for_production.add(role)
+        for ancestor in _dag_ancestors(role):
+            if ancestor not in reusable:
+                needed_for_production.add(ancestor)
+    producer_events = sorted(needed_for_production)
     return artifact_read, producer_events
+
+
+def verify_artifact_reads(
+    handle: dict[str, Any],
+    selected_roles: list[str],
+) -> dict[str, Any]:
+    """W05-B: verified artifact read — actual IO with hash proof.
+
+    ``selected_roles`` is the PLAN from ``select_artifact_roles``; this
+    function performs the ACTUAL file read and returns evidence.
+
+    Returns ``{"verified_read_events": [...], "failed_read_events": [...]}``:
+
+    - ``verified_read_events``: each event has role, artifact_path,
+      content_sha256_actual, content_sha256_declared, bytes_read,
+      source_sha256, read_status="verified", read_at.
+    - ``failed_read_events``: events for roles whose read failed, with
+      reason and detail.
+
+    The plan (``selected_roles``) proves intent; these events prove IO.
+    Without verified events, the card fails validation.
+    """
+    bundle = _bundle_from_handle(handle)
+    if bundle is None:
+        return {"verified_read_events": [], "failed_read_events": []}
+    valid_handles = bundle.get("valid_handles")
+    if not isinstance(valid_handles, dict):
+        return {"verified_read_events": [], "failed_read_events": []}
+    source = bundle.get("source", {})
+    source_sha256 = str(source.get("source_sha256") or "")
+    verified: list[dict[str, Any]] = []
+    failed: list[dict[str, Any]] = []
+    from datetime import datetime, UTC
+    read_at = datetime.now(UTC).isoformat()
+    for role in selected_roles:
+        artifact = valid_handles.get(role)
+        if not isinstance(artifact, dict):
+            failed.append({
+                "role": role,
+                "artifact_path": None,
+                "read_status": "failed",
+                "reason": "artifact_not_in_bundle",
+                "detail": f"role {role!r} not in valid_handles",
+                "read_at": read_at,
+            })
+            continue
+        declared_sha = str(artifact.get("content_sha256") or "")
+        artifact_path = str(artifact.get("path") or "")
+        if not artifact_path:
+            failed.append({
+                "role": role,
+                "artifact_path": None,
+                "read_status": "failed",
+                "reason": "artifact_path_missing",
+                "detail": "artifact has no path",
+                "read_at": read_at,
+            })
+            continue
+        path = Path(artifact_path)
+        if not path.is_file():
+            failed.append({
+                "role": role,
+                "artifact_path": artifact_path,
+                "read_status": "failed",
+                "reason": "artifact_file_missing",
+                "detail": f"file not found: {artifact_path}",
+                "read_at": read_at,
+            })
+            continue
+        try:
+            actual_bytes = path.read_bytes()
+        except OSError as exc:
+            failed.append({
+                "role": role,
+                "artifact_path": artifact_path,
+                "read_status": "failed",
+                "reason": "read_failed",
+                "detail": str(exc),
+                "read_at": read_at,
+            })
+            continue
+        actual_sha = hashlib.sha256(actual_bytes).hexdigest()
+        if declared_sha and actual_sha != declared_sha:
+            failed.append({
+                "role": role,
+                "artifact_path": artifact_path,
+                "read_status": "failed",
+                "reason": "content_sha256_mismatch",
+                "detail": f"declared={declared_sha[:12]} actual={actual_sha[:12]}",
+                "bytes_read": len(actual_bytes),
+                "content_sha256_actual": actual_sha,
+                "content_sha256_declared": declared_sha,
+                "read_at": read_at,
+            })
+            continue
+        verified.append({
+            "role": role,
+            "artifact_path": artifact_path,
+            "read_status": "verified",
+            "content_sha256_actual": actual_sha,
+            "content_sha256_declared": declared_sha,
+            "bytes_read": len(actual_bytes),
+            "source_sha256": source_sha256,
+            "read_at": read_at,
+        })
+    return {"verified_read_events": verified, "failed_read_events": failed}
 
 
 def select_reusable_artifacts(
@@ -363,4 +489,5 @@ __all__ = [
     "build_revenue_source_record",
     "select_artifact_roles",
     "select_reusable_artifacts",
+    "verify_artifact_reads",
 ]

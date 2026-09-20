@@ -1,12 +1,14 @@
-"""Golden behavior lock (R9 step 1) — R1-R8 outputs must stay byte-identical.
+"""Golden behavior lock, refreshed for the reviewed 4.1.0 methodology changes.
 
 Five model families (volume / capacity / subscriber / backlog / bank) each
 get a full run through ``run_forecast``; the canonical hash of the entire
-result is pinned here.  The R9 split must not change any of these hashes
-(except version fields) — a change means the split altered behavior.
+result is pinned here. The 2026-09-18 refresh compared the original HEAD runtime
+in isolation: recognized/consolidated revenue and score components were unchanged;
+version/receipt hashes, disclosed limitations and optional zero stock adjustments
+changed intentionally. Future changes still require an explained baseline review.
 
 To refresh the baseline after a *deliberate, versioned* change:
-    python -m pytest tests/test_golden_behavior_lock.py --update-golden
+    python tests/test_golden_behavior_lock.py --update-golden
 """
 
 from __future__ import annotations

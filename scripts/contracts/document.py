@@ -737,15 +737,18 @@ def validate_historical_accuracy_records(
 ) -> tuple[float | None, int]:
     records = data.get("historical_accuracy_records", [])
     require(isinstance(records, list), "historical_accuracy_records must be a list")
-    weighted_error = 0.0
+    total_error = 0.0
+    total_actual = 0.0
     observations = 0
     ids: set[str] = set()
+    origins: set[str] = set()
+    snapshots: set[str] = set()
     for record in records:
         require(
             isinstance(record, dict), "historical accuracy record must be an object"
         )
         require(
-            record.get("record_schema_version") == "1.0",
+            record.get("record_schema_version") in {"1.0", "1.1"},
             "unsupported historical accuracy record schema",
         )
         backtest_id = record.get("backtest_id")
@@ -764,7 +767,7 @@ def validate_historical_accuracy_records(
         )
         count = record.get("observations")
         require(
-            isinstance(count, int) and count > 0,
+            isinstance(count, int) and not isinstance(count, bool) and count > 0,
             f"historical accuracy observations must be positive: {backtest_id}",
         )
         wape = record.get("wape")
@@ -774,9 +777,47 @@ def validate_historical_accuracy_records(
                 value >= 0,
                 f"historical accuracy WAPE cannot be negative: {backtest_id}",
             )
-            weighted_error += value * count
-            observations += count
-    return (None if observations == 0 else weighted_error / observations, observations)
+        # Legacy summaries have no identity, availability date or WAPE denominator.
+        # They remain readable but cannot establish point-in-time forecast skill.
+        if record["record_schema_version"] == "1.0":
+            continue
+        for field in ("backtest_id", "snapshot_id", "evaluation_sha256"):
+            identifier = record.get(field)
+            require(
+                isinstance(identifier, str) and re.fullmatch(r"[0-9a-f]{64}", identifier) is not None,
+                f"historical accuracy {field} must be a 64-character lowercase hex identifier: {backtest_id}",
+            )
+        for field in ("company_name", "currency", "unit", "fiscal_year_end"):
+            require(record.get(field) == data.get(field) and field in data,
+                    f"historical accuracy {field} mismatch: {backtest_id}")
+        origin = parse_iso_date(record.get("forecast_as_of_date"), "historical forecast_as_of_date")
+        available = parse_iso_date(record.get("actuals_as_of_date"), "historical actuals_as_of_date")
+        cutoff = parse_iso_date(data.get("as_of_date"), "as_of_date")
+        require(origin < available <= cutoff,
+                f"historical accuracy future information leak: {backtest_id}")
+        origin_key = origin.isoformat()
+        require(origin_key not in origins,
+                f"duplicate historical forecast origin: {origin_key}")
+        origins.add(origin_key)
+        snapshot_id = record["snapshot_id"]
+        require(snapshot_id not in snapshots,
+                f"duplicate historical forecast snapshot: {snapshot_id}")
+        snapshots.add(snapshot_id)
+        numerator = finite_number(record.get("sum_absolute_error"), "sum_absolute_error")
+        denominator = finite_number(record.get("sum_absolute_actual"), "sum_absolute_actual")
+        require(numerator >= 0 and denominator >= 0, "historical error totals must be non-negative")
+        expected = None if denominator == 0 else numerator / denominator
+        require((expected is None and wape is None) or (
+            expected is not None and wape is not None
+            and math.isclose(float(wape), expected, rel_tol=1e-9, abs_tol=1e-12)
+        ), f"historical accuracy WAPE totals mismatch: {backtest_id}")
+        mae = finite_number(record.get("mae"), "historical accuracy MAE")
+        require(math.isclose(mae * count, numerator, rel_tol=1e-9, abs_tol=1e-9),
+                f"historical accuracy MAE totals mismatch: {backtest_id}")
+        total_error += numerator
+        total_actual += denominator
+        observations += count
+    return (None if total_actual == 0 else total_error / total_actual, observations)
 
 
 def validate_source_coverage(

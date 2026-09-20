@@ -4,7 +4,7 @@
 
 The forecast formulas answer **how much revenue** each segment produces. The growth-driver tree answers **why the Base path could happen, what evidence supports it, and what would disprove it**.
 
-Keep the first view short: normally three to five positive drivers, ranked by terminal revenue increment. Keep the underlying tree complete and auditable. If only one or two material drivers are supportable, show one or two; never manufacture entries to reach a display count.
+Keep the first view short: normally three to five positive drivers, ranked by allocated terminal revenue increment. Keep the underlying tree complete and auditable. If only one or two material drivers are supportable, show one or two; never manufacture entries to reach a display count. A causal thesis is a testable economic explanation; the allocation formula below does not statistically identify its causal effect.
 
 ## Universal causal structure
 
@@ -75,7 +75,11 @@ driver terminal increment(d)
 = Σ [Base terminal segment increment(s) × attribution weight(d,s)]
 ```
 
-Across all roots, weights for each segment sum to one. This permits several causal mechanisms to share one segment without double counting. Each attribution weight lies in `[-1, 1]` and must be non-zero. A negative weight denotes a quantified revenue headwind (for example contra-revenue subsidies); it enters the segment increment sum with its sign and is reported in the headwinds list rather than ranked as a positive driver. Positive roots are ranked by computed increment; negative roots are reported as headwinds. Company-level forecast adjustments remain separately visible because the existing company bridge may not assign a base adjustment to an individual operating root.
+Across all roots, weights for each segment sum to one. This permits several explanations to share one segment's net increment without duplicating that increment. Each attribution weight lies in `[-1, 1]` and must be non-zero. The **computed revenue increment**, not the weight's sign, determines positive ranking versus the headwinds list: a negative weight on a declining segment produces a positive allocation. Company-level forecast adjustments remain separately visible because the existing company bridge may not assign a base adjustment to an individual operating root.
+
+These are analyst-selected allocations, not measured causal contributions, estimated driver elasticities or counterfactual model reruns. Report them as such. Sum-to-one proves reconciliation only. A zero net segment increment makes every allocated increment zero even if large gains and losses offset; the bounded weights also cannot generally represent gross positive and negative effects much larger than the net change. Do not distort weights to imply those effects have been identified.
+
+Use operating volume/price/recognition bridges and independently specified sensitivity or theme counterfactual calculations to investigate mechanisms. Interaction terms require an explicit allocation convention; one-at-a-time sensitivities cannot simply be added together. Generic Shapley attribution, statistical causal estimation and a separate gross-effect bridge are not implemented by this tree. See [buy-side-methodology.md](buy-side-methodology.md) for the methodological distinction.
 
 ## Output shape
 

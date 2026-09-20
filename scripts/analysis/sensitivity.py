@@ -15,13 +15,19 @@ from contracts.evidence import (
 )
 from forecast.calc import parameter_driver_roles, referenced_parameter_ids
 from forecast.segments import _run_forecast_core
+from model_registry import MODEL_REGISTRY, driver_value_bounds
 
 
 def _sensitivity_bounds(
     parameter: dict[str, Any], roles: set[tuple[str, str]]
 ) -> tuple[float, float]:
-    if any(driver == "growth_rate" for _, driver in roles):
-        return (-0.999999999, math.inf)
+    model_bounds = [driver_value_bounds(model, driver) for model, driver in roles
+                    if model in MODEL_REGISTRY]
+    if model_bounds:
+        lower = max(bound[0] for bound in model_bounds)
+        upper = min(bound[1] for bound in model_bounds)
+        require(lower <= upper, "sensitivity parameter has incompatible driver bounds")
+        return lower, upper
     if parameter["dimension"] == "ratio":
         return (0.0, 1.0)
     if parameter["dimension"] in {
@@ -69,7 +75,8 @@ def _requested_sensitivity_values(
             original != 0,
             f"percent sensitivity cannot be applied to zero parameter: {test.get('parameter_id')}",
         )
-        return original * (1 - shock), original * (1 + shock), shock
+        delta = abs(original) * shock
+        return original - delta, original + delta, shock
     if shock_type == "percentage_point":
         require(
             dimension == "ratio",

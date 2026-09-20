@@ -7,6 +7,8 @@ description: Build auditable company revenue forecasts by segment from source-li
 
 Forecast recognized revenue from explicit, source-traceable operating drivers. Treat a company as a portfolio of segment revenue curves rather than assigning one company-wide business-model label.
 
+Judge quality by supported assumptions and frozen out-of-sample performance, not by formula complexity or research length. Keep independent operating forecasts, management targets, explanatory allocations and probability claims distinct.
+
 ## Scope boundary
 
 Produce historical revenue, a concise ranked list of future revenue drivers, an auditable causal/evidence tree, segment revenue, recognized company revenue, annual growth, CAGR, incremental revenue, revenue mix, theme elasticity, scenario ranges, sensitivities, confidence, sources, and forecast errors.
@@ -22,6 +24,8 @@ output validation, and growth-driver attribution may include negative
 (headwind) roots with weights in `[-1, 1]`. Schema 3.6 is supported as
 **legacy read-only** (emit matrix `schema_compatibility.py`).
 See [CHANGELOG.md](CHANGELOG.md) for release history.
+
+**Methodology upgrade (4.1.0):** the runtime adds eight operating/lifecycle models, explicit timing and non-performance stock revisions, independent management-target comparisons, and better protected historical accuracy scoring and benchmark metrics. Canonical schema 3.7 and opt-in 3.8 remain unchanged; a schema number alone is not an engine-compatibility guarantee. Preserve old forecast/snapshot bytes and hashes. Older artifacts that require their original calculation behavior must be verified with the pinned emitting runtime; do not rewrite their engine version or recalculate them in place. Adopt the new methodology through a new input/forecast version and a newly validated publication. These changes improve modeling discipline and coverage; realized forecast accuracy still requires matched out-of-sample evidence.
 
 **Attestation (4.0.0, R2):** every formal publication receipt carries
 `attestation_status` — `host_signed` only when `REVENUE_ATTESTATION_PROVIDER`
@@ -45,11 +49,14 @@ Read only what the task needs:
 - Read [references/data-governance.md](references/data-governance.md) before collecting or accepting data.
 - Read [references/compliance-contract.md](references/compliance-contract.md) before creating a formal JSON or Markdown result.
 - Read [references/research-coverage.md](references/research-coverage.md) before deciding which research conclusions enter the model.
+- Read [references/buy-side-methodology.md](references/buy-side-methodology.md) for independent benchmarks, alternative explanations, qualitative-to-parameter mapping and model-risk review.
+- Read [references/industry-lifecycle-routing.md](references/industry-lifecycle-routing.md) before selecting models for pre-revenue, commercializing, mature, cyclical, declining, transforming or mixed businesses.
 - Read [references/growth-driver-tree.md](references/growth-driver-tree.md) before selecting, evidencing, and ranking the main future revenue drivers.
 - Read [references/management-targets.md](references/management-targets.md) before accepting that official communications and forward revenue targets are complete.
 - Read [references/accounting-boundaries.md](references/accounting-boundaries.md) when contracts, projects, platforms, banks, or insurers require accounting judgment.
 - Read [references/model-library.md](references/model-library.md) before assigning segment driver models.
-- Read [references/resource-business-guidance.md](references/resource-business-guidance.md) when modeling mining, pharma, real estate, or manufacturing segments with physical or logical reserve stocks.
+- Read [references/extended-models.md](references/extended-models.md) for ARR, installed-base services, store cohorts, renewable generation, AUM flows, commercial launches, finite adoption and inventory sell-through.
+- Read [references/resource-business-guidance.md](references/resource-business-guidance.md) when evaluating physical reserves, inventory or productive capacity; do not equate drug expiry, equipment retirement or land development with revenue-producing depletion.
 - Read [references/input-schema.md](references/input-schema.md) when building a calculation input.
 - Read [references/output-schema.md](references/output-schema.md) before delivering JSON or Markdown.
 - Read [references/backtesting.md](references/backtesting.md) when freezing or evaluating forecasts.
@@ -71,6 +78,8 @@ Review company foundation, growth curve, industry market, competition, capacity,
 
 Use this gate to prevent omissions. Never add a research dimension directly to CAGR or confidence and never require nine separate narrative reports.
 
+Apply the research-depth and lifecycle review in the linked methodology before considering coverage sufficient. These analyst checks are distinct from runtime field-validation gates; do not claim that a complete nine-row table proves the forecast economically sound.
+
 ### 1. Freeze the information set
 
 Record company identity, `as_of_date`, currency, unit, fiscal-year end, base year, forecast years, forecast version, and reported-revenue definition. Exclude every source published after `as_of_date`.
@@ -79,9 +88,15 @@ Record company identity, `as_of_date`, currency, unit, fiscal-year end, base yea
 
 Open and record the latest annual filing, results release, earnings call, investor presentation, strategy communication, and material announcements since the last filing. Mark an unavailable or inapplicable category explicitly; never infer that silence means no target.
 
-Register every material dated revenue target with its exact source wording, commitment strength, raw currency/unit, source period, measurement basis, explicit model periods, metric perimeter, normalized comparison value, and treatment. Distinguish a single-year amount, period-end run-rate, multi-period cumulative amount, and ambiguous wording. A comparable in-horizon target must enter at least one low/base/high scenario or the forecast fails. A perimeter mismatch, ambiguous measurement basis, or out-of-horizon target must remain a prominent data gap. Do not silently treat an aspiration as base-case guidance.
+Register every material dated revenue target with its exact source wording, commitment strength, raw currency/unit, source period, measurement basis, explicit model periods, metric perimeter, normalized comparison value, and treatment. Distinguish a single-year amount, period-end run-rate, multi-period cumulative amount, and ambiguous wording. A comparable in-horizon target must receive a modeled scenario treatment or an evidenced `independent_benchmark` comparison against all three scenarios. The latter reports attainment without forcing the operating forecast to meet management's target. A perimeter mismatch, ambiguous measurement basis, or out-of-horizon target must remain a prominent data gap. Do not silently treat an aspiration as base-case guidance.
 
 Determine measurement semantics from the complete evidence hierarchy: original management remarks and Q&A, official presentation or transcript, official cross-language wording, and explicit current-to-target arithmetic. Do not infer cumulative versus annual/run-rate from an isolated English preposition such as “over the next five years.” If sources conflict, preserve the conflict and use `ambiguous` until reconciled.
+
+For a run-rate target, preserve the raw target and require `comparison_basis="annual_recognized_revenue"`, a recomputable `normalization_formula`, evidenced `normalization_parameter_ids`, and a normalization rationale before comparing to annual revenue. The runtime requires syntactic references to `x0` (raw target) and every conversion input and recomputes `comparison_value`; it does not prove algebraic dependence or economic validity. Independently review the real role of each factor and reject artificial cancellations. Without a supported conversion, retain `unmodeled_data_gap`, `comparison_value=null` and no mapped parameters or scenarios. For `independent_benchmark`, provide all three mapped scenarios, used forecast parameters, `benchmark_rationale`, and checked `benchmark_claim_ids` as specified in [references/management-targets.md](references/management-targets.md). These independent comparisons are disclosed separately and do not count as unmodeled targets.
+
+### 1B. Establish an independent reference case
+
+Build the operating view and a comparable outside benchmark before choosing which management target to incorporate. Check historical execution, failed or delayed peers, customer behavior and supply limits. Write alternative explanations and observable falsifiers for material assumptions. Translate each supported qualitative conclusion into a driver, period and range; do not add narrative conviction directly to growth.
 
 ### 2. Verify history and the base
 
@@ -94,6 +109,8 @@ reported company revenue
 ```
 
 Stop numerical forecasting if the base year, unit, fiscal period, or reconciliation cannot be verified.
+
+Two observations are a minimum input contract, not enough evidence for a cycle, seasonality or trend estimate. Seek a relevant history and explicit comparable-perimeter bridge; use simpler models and disclose the limitation when history is short. Preserve zero-revenue launch years and report CAGR as undefined when its base is zero.
 
 ### 3. Register sources and parameters
 
@@ -134,6 +151,8 @@ Create one segment for each economically distinct revenue stream. A company may 
 
 Use `direct_growth` or `direct_revenue` only as transparent fallbacks. Their use lowers forecast confidence because they do not explain operating causality.
 
+Select lifecycle at segment/product level. Separate new and mature cohorts, installed-base service from new equipment, legacy decline from new-business growth, and migration/cannibalization from external expansion. Use available registered extensions where evidence supports their extra parameters. Do not invent granular assumptions merely to obtain a higher explicit-model score. The template helper supports `--segment-model SEGMENT=MODEL` to construct the appropriate driver skeleton.
+
 ### 5. Define recognized revenue
 
 For every segment, document:
@@ -153,13 +172,15 @@ Construct low, base, and high cases from parameter-level drivers. Require the sa
 
 Do not create scenario probabilities by default. If probabilities are used, document their calibration rationale and source IDs.
 
+Construct economically consistent joint conditions: lower volume, price, funding cost or churn do not all imply the same scenario direction. Test discrete delays, lost customers, approvals and stock/capacity constraints where material. Low/high are conditional scenario bounds, not calibrated probability intervals. Preserve the existing non-crossing annual-path contract; analyze genuine crossing event paths in separately versioned research rather than silently sorting yearly values.
+
 ### 6A. Build the causal revenue-driver tree
 
 Identify the smallest set of causal mechanisms that explains the complete Base segment path. For each root driver, write a short thesis, a two-to-eight-step causal chain, its forecast horizon and persistence, the actual Base parameter IDs it informs, leading indicators, falsifiers, and the result of an explicit counterevidence search.
 
 Attach checked evidence nodes by evidence type and inference distance. Keep evidence categories open-ended so the same contract works across industries. Treat product reviews, weather, peer sales, channel stock-outs, and search snippets as indirect leads unless a checked causal bridge connects them to the company's modeled volume, price, mix, customers, utilization, backlog conversion, or recognized revenue.
 
-Allocate each segment across root drivers with explicit weights that sum to one. Rank the positive roots by Base terminal segment-revenue increment, not narrative conviction or growth rate. Show at most five main drivers and allow fewer when evidence is insufficient. Preserve negative roots as revenue headwinds and disclose company-level forecast adjustments separately.
+Allocate each segment across root drivers with explicit weights that sum to one. Rank positive computed allocations by Base terminal segment-revenue increment, not narrative conviction or growth rate. Disclose that these weights are analyst allocations, not identified causal contributions. A weight's sign alone does not determine impact when the segment is declining, and zero net increment can conceal offsetting effects. Show at most five main drivers and allow fewer when evidence is insufficient. Preserve negative computed allocations as headwinds and disclose company-level forecast adjustments separately.
 
 ### 7. Aggregate and bridge
 
@@ -173,9 +194,13 @@ Calculate company CAGR only from aggregated base and terminal company revenue. N
 
 Shock each base parameter at most once and rerun the model. Choose percent, percentage-point/bp, absolute, range, or discrete shocks according to driver semantics; disclose requested/effective values and clamping. For theme analysis, use explicit terminal-year revenue counterfactual assumptions.
 
+Respect stock-flow and derived-parameter dependencies; an infeasible shock is not a valid sensitivity result. Single-parameter effects do not sum to a joint effect when drivers interact. Joint stresses and counterfactuals require complete, consistent assumptions and must not be presented as an automatically implemented causal attribution method.
+
 ### 9. Assess confidence
 
 Use revenue-weighted verified-claim quality/coverage, freshness, explicit-model coverage, immutable historical backtests, and sensitivity coverage. Keep base reconciliation, recognition, scenarios, and research completeness as pass/fail gates rather than constant score components. Never use growth magnitude.
+
+The score measures evidence and workflow quality; it is not the probability of achieving Base, a prediction interval, or an investment success rate. Current historical scoring uses eligible identity/date-linked accuracy records, pooled error totals and a conservative sample/origin adjustment. Legacy 1.0 accuracy records remain readable but do not earn accuracy credit. Disclose small samples, correlated forecasts and unresolved economic model risk.
 
 ### 10. Validate and deliver
 
@@ -192,7 +217,7 @@ Deliver:
 1. base revenue and information date;
 2. low/base/high annual revenue and CAGR;
 3. three-to-five concise main future revenue drivers, or fewer rather than fabricated entries;
-4. the causal/evidence tree, quantified driver attribution, leading indicators, and falsifiers;
+4. the causal/evidence tree, explicitly labeled driver allocations, leading indicators, and falsifiers;
 5. segment contribution to incremental revenue;
 6. operating-driver trace and recognition assumptions;
 7. sensitivities and confidence limitations;
@@ -213,7 +238,7 @@ Evaluate later without modifying the snapshot:
 python scripts/revenue_backtest.py evaluate snapshot.json actuals.json --output backtest.json
 ```
 
-Track absolute error, MAE, signed error, APE, sMAPE, base-scaled error, WAPE, direction accuracy, interval coverage, and CAGR error by company, segment, and horizon. Reuse only hash-linked accuracy records generated by backtesting.
+Track absolute error, MAE, signed bias, RMSE, APE, sMAPE, base-scaled error, WAPE, MASE/RMSSE when their history-based denominators exist, direction accuracy, scenario-bound coverage/width, and CAGR error by company, segment, and horizon. Compare against the available `flat_base` and `historical_cagr` baselines using the same frozen information set; a benchmark is not evidence of statistical significance. Reuse only eligible hash-linked accuracy records generated by backtesting and available as of the current forecast date. Scenario coverage alone does not establish a nominal prediction probability.
 
 ## Formal output gate
 
@@ -233,7 +258,9 @@ Block output when any of these is true:
 - any of the nine research dimensions is missing, maps to an unused parameter, or lacks the required gap/immaterial rationale;
 - any required official communication category is neither checked nor explicitly unavailable/inapplicable;
 - a material revenue target found in official communications is absent from the target ledger;
-- an in-horizon comparable material target does not enter a scenario, or its mapped scenario does not numerically satisfy the target;
+- an in-horizon comparable material target has neither valid scenario treatment nor a fully evidenced `independent_benchmark`, or a `modeled_scenario` / `scenario_boundary` mapping fails to satisfy the target;
+- an `independent_benchmark` lacks all three mapped scenarios, used parameters, rationale or checked benchmark claims;
+- a period-end run-rate target is compared to annual recognized revenue without the required comparison basis, evidenced conversion inputs and a valid recomputable normalization formula;
 - a target's external/internal, segment, currency, unit, period, gross/net, recurring/run-rate, or recognized-revenue perimeter is unresolved but modeled as if matched;
 - cumulative, annual, and run-rate target language is not explicitly classified, or an ambiguous measurement basis is modeled directly;
 - historical base revenue does not equal reported base revenue;

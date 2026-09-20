@@ -776,10 +776,13 @@ def _validate_forecast_output(
                 for target in targets
             ),
             "targets_unmodeled": sum(
-                target.get("treatment") not in {"modeled_scenario", "scenario_boundary"}
+                target.get("treatment") not in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}
                 for target in targets
             ),
         }
+        benchmark_count = sum(target.get("treatment") == "independent_benchmark" for target in targets)
+        if benchmark_count:
+            recomputed_target_counts["targets_independent_benchmarks"] = benchmark_count
         require(
             counts == recomputed_target_counts,
             "management target coverage counts mismatch",
@@ -805,7 +808,7 @@ def _validate_forecast_output(
                     isinstance(target.get("measurement_periods"), list),
                     f"invalid management target measurement periods: {target_id}",
                 )
-            if target["treatment"] in {"modeled_scenario", "scenario_boundary"}:
+            if target["treatment"] in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
                 require(
                     set(comparisons) == set(target.get("mapped_scenarios", [])),
                     f"management target scenario comparison mismatch: {target_id}",
@@ -884,19 +887,13 @@ def _validate_forecast_output(
                     comparison_op = target.get("comparison", "at_least")
                     tolerance_val = float(target.get("comparison_tolerance", 0.01))
                     if comparison_op == "at_least":
-                        expected_meets = (
-                            expected_ratio is not None
-                            and expected_ratio >= 1.0 - tolerance_val
-                        )
+                        expected_meets = modeled_value >= target_value * (1 - tolerance_val)
                     elif comparison_op == "at_most":
-                        expected_meets = (
-                            expected_ratio is not None
-                            and expected_ratio <= 1.0 + tolerance_val
-                        )
+                        expected_meets = modeled_value <= target_value * (1 + tolerance_val)
                     else:
-                        expected_meets = expected_ratio is not None and math.isclose(
-                            expected_ratio,
-                            1.0,
+                        expected_meets = math.isclose(
+                            modeled_value,
+                            target_value,
                             rel_tol=tolerance_val,
                             abs_tol=max(1.0, abs(target_value)) * tolerance_val,
                         )
@@ -1054,6 +1051,11 @@ def _validate_forecast_output(
             }
         )
     reconstructed_data = {
+        "company_name": result["company_name"],
+        "currency": result["currency"],
+        "unit": result["unit"],
+        "fiscal_year_end": result["fiscal_year_end"],
+        "as_of_date": result["as_of_date"],
         "schema_version": result["schema_version"],
         "segments": reconstructed_segments,
         "forecast_adjustments": reconstructed_adjustments,
@@ -1367,7 +1369,7 @@ def render_markdown(result: dict[str, Any]) -> str:
                 "",
                 "## 管理层沟通与营收目标覆盖",
                 "",
-                f"- 已检查官方沟通类别：{target_counts['communications_checked']}/{len(MANAGEMENT_COMMUNICATION_CATEGORIES)}；重大/相关目标：{target_counts['targets_total']}；已进入情景：{target_counts['targets_modeled']}；未建模：{target_counts['targets_unmodeled']}。",
+                f"- 已检查官方沟通类别：{target_counts['communications_checked']}/{len(MANAGEMENT_COMMUNICATION_CATEGORIES)}；重大/相关目标：{target_counts['targets_total']}；已进入情景：{target_counts['targets_modeled']}；独立基准比较：{target_counts.get('targets_independent_benchmarks', 0)}；未建模：{target_counts['targets_unmodeled']}。",
                 "",
                 "| 沟通类别 | 状态 | 结论 | 目标ID | 来源ID |",
                 "|---|---|---|---|---|",
@@ -1400,6 +1402,11 @@ def render_markdown(result: dict[str, Any]) -> str:
                 f"{_escape(target['perimeter_status'])}: {_escape(target['perimeter_notes'])} | {_escape(target['treatment'])} | "
                 f"{_escape(', '.join(target['mapped_scenarios']) or '—')} | {_escape(attainment)} |"
             )
+        for target in target_coverage["targets"]:
+            if target["treatment"] == "independent_benchmark":
+                lines.extend(["", f"- {_escape(target['target_id'])} 独立判断：{_escape(target['benchmark_rationale'])}；证据：{_escape(', '.join(target['benchmark_claim_ids']))}。"])
+            if target.get("normalization_formula"):
+                lines.extend(["", f"- {_escape(target['target_id'])} 年化运行率转换：{_escape(target['normalization_formula'])}；x0 为原始目标，其余输入依次为 {_escape(', '.join(target['normalization_parameter_ids']))}；比较收入 {_num(target['comparison_value'])}；{_escape(target['normalization_rationale'])}。"])
 
     lines.extend(
         [

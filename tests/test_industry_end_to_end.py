@@ -16,9 +16,12 @@ from revenue_core import ForecastInputError, MODEL_DRIVER_DIMENSIONS, MODEL_SPEC
 from revenue_report import validate_forecast_output  # noqa: E402
 from test_data_contract import apply_parameter_contract, finalize_contract, research_coverage  # noqa: E402
 from test_models import CASES  # noqa: E402
+from test_model_extensions import EXTENSION_SCALABLE_DRIVER  # noqa: E402
+from model_extensions import EXTENSION_OPENING_BALANCES  # noqa: E402
 
 
 SCALABLE_DRIVER = {
+    **EXTENSION_SCALABLE_DRIVER,
     "direct_revenue": "revenue",
     "unit_sales": "units",
     "capacity_utilization": "capacity",
@@ -152,6 +155,16 @@ def model_document(model: str) -> dict:
         segment["base_backlog_parameter_id"] = "base_backlog"
     if model == "delivery_pipeline":
         segment["base_orders_parameter_id"] = "base_orders"
+    if model in EXTENSION_OPENING_BALANCES:
+        base_field, opening_driver, dimension = EXTENSION_OPENING_BALANCES[model]
+        anchor_id = f"{model}_base_opening"
+        parameter = {"parameter_id": anchor_id, "kind": "reported_fact",
+                     "value": base_drivers[opening_driver][0], "unit": "model-specific",
+                     "period": "FY2025", "definition": "reported opening stock",
+                     "source_ids": ["filing"]}
+        apply_parameter_contract({"currency": "USD", "unit": "million"}, parameter, dimension)
+        parameters.append(parameter)
+        segment[base_field] = anchor_id
     data = {
         "company_name": f"{model} Test Co",
         "as_of_date": "2026-07-12",

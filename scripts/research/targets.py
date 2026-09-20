@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import ast
 from typing import Any
 
 import copy
@@ -24,7 +25,7 @@ from contracts.evidence import (
     require,
     validate_claim_ids,
 )
-from forecast.calc import collect_parameter_roles
+from forecast.calc import collect_parameter_roles, evaluate_derived_formula
 
 
 def validate_management_target_coverage(
@@ -352,8 +353,43 @@ def validate_management_target_coverage(
             and perimeter_status in {"matched", "reconciled"}
             and scope["type"] in {"company", "segment"}
         )
+        if measurement_basis == "run_rate_at_period_end":
+            conversion_ids = target.get("normalization_parameter_ids", [])
+            conversion_formula = target.get("normalization_formula")
+            has_conversion = (
+                target.get("comparison_basis") == "annual_recognized_revenue"
+                and isinstance(conversion_ids, list) and bool(conversion_ids)
+                and isinstance(conversion_formula, str) and bool(conversion_formula.strip())
+            )
+            if treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
+                require(has_conversion,
+                        f"run-rate target requires explicit annual recognized revenue conversion: {target_id}")
+            comparable = comparable and has_conversion
+            if not has_conversion:
+                require(not mapped_ids and not mapped_scenarios,
+                        f"unconverted run-rate target cannot claim scenario mapping: {target_id}")
         comparison_value = target.get("comparison_value")
         if comparable:
+            if measurement_basis == "run_rate_at_period_end":
+                require(len(conversion_ids) == len(set(conversion_ids)),
+                        f"run-rate conversion parameters must be unique: {target_id}")
+                for parameter_id in conversion_ids:
+                    require(parameter_id in parameter_index,
+                            f"unknown run-rate conversion parameter: {target_id}/{parameter_id}")
+                    require(bool(parameter_index[parameter_id].get("claim_ids")),
+                            f"run-rate conversion parameter requires checked evidence: {parameter_id}")
+                    source_ids.extend(parameter_index[parameter_id].get("source_ids", []))
+                converted = evaluate_derived_formula(conversion_formula, [raw_value] + [
+                    float(parameter_index[pid]["value"]) for pid in conversion_ids
+                ])
+                formula_names = {node.id for node in ast.walk(ast.parse(conversion_formula, mode="eval"))
+                                 if isinstance(node, ast.Name)}
+                require(
+                    formula_names == {f"x{index}" for index in range(len(conversion_ids) + 1)},
+                    f"run-rate conversion must use raw target x0 and every registered input: {target_id}",
+                )
+                require(math.isclose(converted, finite_number(comparison_value, "comparison_value"), rel_tol=1e-9, abs_tol=1e-9),
+                        f"run-rate normalization recomputation mismatch: {target_id}")
             comparison_value = finite_number(
                 comparison_value, f"{target_id}.comparison_value"
             )
@@ -403,6 +439,25 @@ def validate_management_target_coverage(
                 bool(mapped_ids) and bool(mapped_scenarios),
                 f"modeled management target requires mapped parameters and scenarios: {target_id}",
             )
+        elif treatment == "independent_benchmark":
+            require(
+                within_horizon and comparable,
+                f"independent benchmark requires comparable in-horizon target: {target_id}",
+            )
+            require(
+                bool(mapped_ids) and set(mapped_scenarios) == set(SCENARIOS),
+                f"independent benchmark requires parameters and all three scenarios: {target_id}",
+            )
+            require(
+                isinstance(target.get("benchmark_rationale"), str)
+                and target["benchmark_rationale"].strip(),
+                f"independent benchmark requires benchmark_rationale: {target_id}",
+            )
+            benchmark_claims = validate_claim_ids(
+                target.get("benchmark_claim_ids"), claim_index,
+                "management_target", target_id, target_id, "rationale_support",
+            )
+            source_ids.extend(claim["source_id"] for claim in benchmark_claims)
         elif treatment == "out_of_horizon":
             require(
                 bool(measurement_years)
@@ -425,7 +480,7 @@ def validate_management_target_coverage(
 
         if materiality == "material" and within_horizon and comparable:
             require(
-                treatment in {"modeled_scenario", "scenario_boundary"},
+                treatment in {"modeled_scenario", "scenario_boundary", "independent_benchmark"},
                 f"material in-horizon comparable target must enter a scenario: {target_id}",
             )
         if perimeter_status == "mismatch":
@@ -451,6 +506,7 @@ def validate_management_target_coverage(
         for category in MANAGEMENT_COMMUNICATION_CATEGORIES
     ]
     target_records = [normalized_targets[target["target_id"]] for target in targets]
+    benchmark_count = sum(record["treatment"] == "independent_benchmark" for record in target_records)
     return {
         "communications": records,
         "targets": target_records,
@@ -464,9 +520,10 @@ def validate_management_target_coverage(
                 for record in target_records
             ),
             "targets_unmodeled": sum(
-                record["treatment"] not in {"modeled_scenario", "scenario_boundary"}
+                record["treatment"] not in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}
                 for record in target_records
             ),
+            **({"targets_independent_benchmarks": benchmark_count} if benchmark_count else {}),
         },
         "gap_messages": gap_messages,
     }
@@ -481,7 +538,7 @@ def add_management_target_analysis(
     for target in validated["management_target_coverage"]["targets"]:
         item = copy.deepcopy(target)
         comparisons: dict[str, Any] = {}
-        if target["treatment"] in {"modeled_scenario", "scenario_boundary"}:
+        if target["treatment"] in {"modeled_scenario", "scenario_boundary", "independent_benchmark"}:
             measurement_periods = list(target["measurement_periods"])
             target_value = float(target["comparison_value"])
             tolerance = finite_number(
@@ -524,7 +581,7 @@ def add_management_target_analysis(
                         abs_tol=max(1.0, abs(target_value)) * tolerance,
                     )
                 require(
-                    meets,
+                    meets or target["treatment"] == "independent_benchmark",
                     f"mapped scenario does not satisfy management target: {target['target_id']}/{scenario}",
                 )
                 comparisons[scenario] = {

@@ -12,7 +12,8 @@ from contracts.evidence import (
     period_year,
     require,
 )
-from model_registry import MODEL_DRIVER_DIMENSIONS
+from model_registry import MODEL_DRIVER_DIMENSIONS, driver_value_bounds
+from model_extensions import EXTENSION_OPENING_BALANCES
 from revenue_constraints import constraint_parameter_ids
 
 
@@ -115,26 +116,9 @@ def resolve_driver_series(
             f"dimension mismatch: {parameter_id} must be {expected_dimension} for {model}.{driver}",
         )
         value = float(parameter["value"])
-        if parameter["dimension"] == "ratio" and driver != "growth_rate":
-            require(
-                0 <= value <= 1,
-                f"ratio driver {driver} must be between 0 and 1: {parameter_id}",
-            )
-        elif driver not in {
-            "growth_rate",
-            "contract_changes",
-            "other_revenue",
-            "fixed_revenue",
-            "ancillary_revenue",
-            "milestone_revenue",
-            "royalty_revenue",
-            "service_revenue",
-            "performance_fee_revenue",
-            "fee_revenue",
-        }:
-            require(value >= 0, f"driver {driver} cannot be negative: {parameter_id}")
-        if driver == "growth_rate":
-            require(value > -1, f"growth_rate must be greater than -1: {parameter_id}")
+        lower, upper = driver_value_bounds(model, driver)
+        require(lower <= value <= upper,
+                f"driver {driver} outside permitted bounds [{lower}, {upper}]: {parameter_id}")
         values.append(value)
     return values
 
@@ -268,7 +252,8 @@ def collect_parameter_roles(
         base_id = segment.get("base_revenue_parameter_id")
         if isinstance(base_id, str):
             foundation.add(base_id)
-        for base_field in ("base_backlog_parameter_id", "base_orders_parameter_id"):
+        for base_field in ("base_backlog_parameter_id", "base_orders_parameter_id",
+                           *(entry[0] for entry in EXTENSION_OPENING_BALANCES.values())):
             if isinstance(segment.get(base_field), str):
                 foundation.add(segment[base_field])
         scenarios = segment.get("scenarios", {})

@@ -20,6 +20,33 @@ STRUCTURAL = {"top_level_shape", "capture_shape", "claim_shape", "parameter_shap
 
 
 class TemplateTests(unittest.TestCase):
+    def test_selected_models_have_dimension_correct_driver_paths_and_opening_anchors(self) -> None:
+        from model_extensions import EXTENSION_OPENING_BALANCES
+        from model_registry import MODEL_REGISTRY
+
+        for model, spec in MODEL_REGISTRY.items():
+            with self.subTest(model=model):
+                data = gen.build_template("X", 2025, [2026, 2027], "USD", "million", ["Core"], {"Core": model})
+                index = {parameter["parameter_id"]: parameter for parameter in data["parameters"]}
+                segment = data["segments"][0]
+                for scenario in ("low", "base", "high"):
+                    drivers = segment["scenarios"][scenario]["driver_parameter_ids"]
+                    self.assertEqual(set(drivers), set(spec.required))
+                    for driver, ids in drivers.items():
+                        self.assertEqual([index[pid]["dimension"] for pid in ids], [spec.dimensions[driver]] * 2)
+                if model in EXTENSION_OPENING_BALANCES:
+                    field, _, dimension = EXTENSION_OPENING_BALANCES[model]
+                    self.assertEqual(index[segment[field]]["period"], "FY2025")
+                    self.assertEqual(index[segment[field]]["dimension"], dimension)
+
+    def test_default_template_history_and_revenue_dimension_are_consistent(self) -> None:
+        data = self._skeleton()
+        self.assertEqual([row["year"] for row in data["historical_revenue"]], [2024, 2025])
+        self.assertGreater(data["as_of_date"], "2025-12-31")
+        index = {parameter["parameter_id"]: parameter for parameter in data["parameters"]}
+        for pid in data["segments"][0]["scenarios"]["base"]["driver_parameter_ids"]["revenue"]:
+            self.assertEqual(index[pid]["dimension"], "revenue")
+
     def _skeleton(self) -> dict:
         return gen.build_template(
             name="Smoke Co", base_year=2025, forecast_years=[2026, 2027],

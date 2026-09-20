@@ -2,6 +2,16 @@
 
 This project follows Semantic Versioning. The runtime release source of truth is `SKILL_VERSION` in `scripts/revenue_core.py`; forecast schema versions are managed separately.
 
+## 4.1.0 (2026-09-18) — buy-side methodology and model review
+
+- Reviewed all 23 existing models; added 8 registered, executable business models with stock-flow and timing constraints (31 total). Added cohort timing weights, non-revenue backlog remeasurements and reserve revisions without changing the default revenue paths.
+- Centralized driver bounds across calculation and sensitivity, including negative bank rates and complete revenue shutdown. Validated pure calculator inputs and outputs against non-finite values and invalid paths.
+- Added evidence-backed `independent_benchmark` management targets: all scenarios may disagree with guidance while comparisons remain visible. Period-end run-rates require explicit conversion to annual recognized revenue. Fixed zero/approximate target recomputation.
+- Backtests now include bias, RMSE, training-history MASE/RMSSE, flat-base and historical-CAGR benchmarks, and scenario width. Accuracy record 1.1 binds company, currency, unit, fiscal year end, forecast origin and availability date; pools WAPE numerators/denominators and rejects duplicate origins and future information. Readable 1.0 summaries receive no accuracy credit. Sparse history receives a disclosed conservative score discount; scores and low/high ranges are not calibrated probabilities.
+- Template generation accepts per-segment registered models and opening anchors. Corrected default revenue dimension, history ordering and post-year-end information dates.
+- Expanded qualitative-to-quantitative research guidance, lifecycle routing and industry boundaries; corrected misuse of reserves for patents/retired capacity and clarified that weighted increment allocation is not causal identification.
+- Forecast schema remains 3.7 (3.8 opt-in). Runtime/output hashes change intentionally. Keep all existing snapshots and use their pinned original runtime for historical validation; do not rehash or overwrite old publications to claim 4.1.0 validation. Generate new forecast versions for revised assumptions and records. Installation synchronization and downstream package releases are separate from this workspace change.
+
 ## 4.0.0 (2026-08-08) — audit-driven hardening (R1-R7)
 
 - Input-anchor binding invariant (R1.1): `input_sha256` must equal the canonical hash of the actually-validated input (embedded or explicit); snapshot validation reuses the shared rule. Closes the N-01 attack family (embedded-input swap, anchored inflation, cross-repo forgery).
