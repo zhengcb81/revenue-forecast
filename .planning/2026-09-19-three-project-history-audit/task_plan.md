@@ -974,3 +974,42 @@ M25…M28 /recovery/selfcheck/cases/F1/evidence/M25/cases.json  {'ValueError': 1
 **边界**：**未建**四张卡；**未编辑** `review.md`/`oracle.md`/`decision.md`/`handoff.json`（**写入 0 字节**，五件哈希复核**全部 MATCH**：`f4dc6166…`/`edbd0a93…`/`b0dd2c5d…`/`818c620b…`/`a5e8ca12…`）；**未新增任何依赖**；**未改任何产品测试或生产文件**；**未做任何 `status` 转移**（T1-7 保持 `planned`，**不自我升格**）；**未代签**；**删除 0**。生产锚点 `scripts/model_registry.py` = `9ec6529550f189a4…` **一致**；`git diff HEAD --name-only -- . ':(exclude).planning'` **0 条产品文件**。
 
 **产物**：`scripts/verify_t17.py`（**18748 B** / `d5949c6a383ca9a9ae3def27b7b1b1d3818332339c6396e4d3428f7458c424aa`）、`t17_ruling_landing.json`（**8468 B** / `a6353411b4fddb6571b4260bdac975bfdc45c8a1ad76242ed8bd7fd2b955b677`）、`decision.md`（**12346 B** / `45b094061fdd99f785875c7fa5f0fcb3a50ada7172fee1703c9f3bd491afaf36`）、`handoff.json`（**不登记自身哈希，自指**）。**幂等**：`t17_ruling_landing.json` 与回填脚本均连跑同哈希。
+
+---
+
+## Round 61 — T1-7 提交后核验 + Round 60 追加式的**独立证明**（含两处**自伤**）
+
+**核验（T1-7 提交 `e430656d` 之后）**：`git log` 顶端即 `e430656d`；`git diff HEAD --name-only -- . ':(exclude).planning'` **0 条产品文件**；`task_plan.md` 的 **HEAD blob == 磁盘 blob**（`8f9bc696…`，**155127 B**）；生产锚点 `scripts/model_registry.py` = `9ec6529550f189a4…` **一致**；`.tmp-r41-mutation/` 与 `.git/COMMIT_MSG_R58/R59/R59b/T17.txt` **仍在**，**删除 0**。
+
+**(a) 先说一处我差点写进记录的错误结论 —— 单位错配被误读成「自相矛盾」**
+
+盘上已有一份 `T1-8/a20260920-01/append_only_proof_round60_section.json`，记录 `pre_image_bytes = 148530` 而 `inserted_chars = 3907`。按 3907 字符推出后像应为 `152437`，但同一文件记录 `post_image_bytes = 155127` —— 差 **6597 字节**，**看起来像自相矛盾**。
+
+**它不是矛盾，是两条路线量纲不同**：证明脚本 route 2 走**字节**、route 1 走**字符**（`difflib` 作用于已解码文本）。
+
+| 路线 | 前像 | 增量 | 后像 |
+|---|---|---|---|
+| route 2（**字节**） | 148530 B | **6597 B** | 155127 B |
+| route 1（**字符**） | 89753 ch | **3907 ch** | 93660 ch |
+
+增量 6597 B = 3907 ch，因追加的是中文（多为 3 字节/字符）。两路线**各自独立**确认前像为后像前缀（route 2：`common_prefix_bytes == 148530 == len(pre)`；route 1：opcodes `['equal','insert']`、`deleted_chars = 0`）⇒ **该证明本身成立**。
+
+⇒ **一般式（本项目第 21 次同源）**：**「量纲不一致」与「数值矛盾」外观相同 —— 不换算就分辨不出。** 判据跨单位比较时，**必须把单位写进字段名**（`*_bytes` / `*_chars`），否则下游读者（包括下一轮的我）会把一次单位换算读成一次数据篡改。**已写入 skill 陷阱 25。**
+
+**(b) 判据里我自己踩了同一个坑（第 22 次同源）**：本轮的核验闸 `byte_arithmetic_consistent` 写成 `len(pre_bytes) + inserted == len(post_bytes)` —— **字节 + 字符 == 字节**，**量纲错的等式**。**它红了**（`148530 + 3907 = 152437 ≠ 155127`、`OVERALL = FAIL`、`exit=1`）。
+
+**关键处置**：**闸红不是数据错，是闸错**。我**没有**为了让它变绿而删掉这项判据，而是**把单位命名、两个量纲各检一次**（`byte_arithmetic_consistent` 对 **byte delta**、`char_arithmetic_consistent` 对 **char delta**），并**额外断言两个量纲确实不同**（`units_are_declared_and_differ`）—— 若哪天中英文混排使二者相等，这条会提醒我「单位不再有区分度」。**修正后十项全过、`OVERALL = PASS`。**
+
+⇒ **与陷阱 19 配套**：19 说「**无法失败的测试不是测试**」；本条给出**另一半** —— **一次「红了但数据没错」的失败，也不能靠改判据抹掉**。正确动作是**问「红，是数据错还是闸错」**，把闸修对，**并留下证据说明是哪一种**。
+
+**(c) `HEAD~1` 的两种含义（本轮实际绊了一下）**：`task_plan.md` 的 Round 60 前像取 **`HEAD~1:<path>` 的 blob**（`fd63ee80…`、148530 B）。但按**提交祖先**算是 `HEAD~2`（`9d569747`），按**该文件自己的历史**算才是 `HEAD~1`（`a6f56484`）—— 因为两者之间的 `f9703fda` **没有碰过 `task_plan.md`**。
+
+**独立复核**（不依赖记忆）：`git log -1 --format=%h HEAD~1 -- <task_plan>` → **`a6f56484`**；而 `a6f56484` 正是写入 Round 59 收口补记的那次提交（`145338 → 148530`，见 `append_only_proof_round59_closure2.json`）⇒ **Round 59 的后像即 Round 60 的前像，只有一个边界，不是两个。** 证明脚本取 `HEAD:<path>`，走的正是**文件历史**这条 —— 对这个用途是对的。
+
+**(d) 证明落点为何在 T1-7 卡内、且**未动** T1-8**：本轮是 T1-7 的工作。`fd63ee80` 全程**只作前像被读**，**从未**被用作脚本的 `git rev-parse HEAD:<path>`（真正喂给测量的那个值）⇒ 它在本轮的角色是**簿记知识，不是写入**，故**不应落在 T1-8 的产物里**。把输出写进 `T1-7/a20260920-01/` 同时使 **T1-8/a20260920-01 的已提交字节一分未动**。
+
+**新增产物**：`.planning/_pwf_tmp/run_round60_final_proof.py`（核验闸）；`execution_runs/T1-7/a20260920-01/append_only_proof_round60_final.json`（**1550 B** / `398d63d8bb426756a3a2b3a37d468b44f8909e1cfea7a8b5b70aa6bbfa0b5f05`，**连跑同哈希**）。
+
+**Round 60 追加式结论**：`task_plan.md` **148530 B → 155127 B**，增量 **6597 B / 3907 字符**，**整段为 Round 60 小节**；**`APPEND_ONLY = true`（两路线）**、`deleted_chars = 0`、`common_prefix_bytes = 148530 = len(pre)`、前像常量 `148530 / 036af305…` **复现为 `true`**。
+
+**边界**：**删除 0**（`_pre60_tail.bin` 为**仓内**临时前像文件，**保留不删**；`.tmp-r41-mutation/`、`.git/COMMIT_MSG_*` 保留）；未编辑任何冻结件；**产品文件 0 条**；`status` 转移 0；代签 0。生产锚点 `9ec6529550f189a4…` **一致**。
