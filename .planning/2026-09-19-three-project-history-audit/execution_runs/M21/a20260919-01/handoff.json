@@ -3,7 +3,7 @@
  "attempt_id": "a20260919-01",
  "model_id": "delivery_pipeline",
  "title": "M21 · delivery_pipeline · 实物订单交付桥",
- "status": "review_pending",
+ "status": "accepted_scoped",
  "implementer_is_not_the_reviewer": true,
  "completed_steps": {
   "A_binding": "done (binding.json: read-only production hashes + attempt-local isolated snapshot)",
@@ -267,5 +267,63 @@
   "honest_note": "the transient False reading is not preserved as its own file, because every later rebuild of final_verify.txt and integrity.json happened after the restoration and legitimately reads True; the diverted hash survives in recovery/production_drift.json",
   "batch_wide": "the same event affected every attempt whose acceptance chain cites the production hash 9ec65295...; this attempt reports only its own four cards"
  },
- "lesson_registered": "When a card's acceptance chain depends on a PRODUCTION FILE HASH, that hash must be treated as a quantity an external git operation can change underneath the attempt. On a mismatch: first record the drift and its time window, then let the orchestration layer decide whether to restore or re-anchor - NEVER adapt by editing an expectation, a tolerance, a case or a frozen artifact. This attempt followed that rule: it recorded the drift, kept running against its own byte-identical isolated snapshot, and changed nothing frozen."
+ "lesson_registered": "When a card's acceptance chain depends on a PRODUCTION FILE HASH, that hash must be treated as a quantity an external git operation can change underneath the attempt. On a mismatch: first record the drift and its time window, then let the orchestration layer decide whether to restore or re-anchor - NEVER adapt by editing an expectation, a tolerance, a case or a frozen artifact. This attempt followed that rule: it recorded the drift, kept running against its own byte-identical isolated snapshot, and changed nothing frozen.",
+ "status_before_bookkeeping_fix": "review_pending",
+ "status_authority": {
+  "verdict": "accepted_scoped",
+  "verdict_round_used": "round 3 (bounded final review) - the latest of the transcribed rounds; round 2 is preserved earlier in the file",
+  "verdict_written_by": "an independent reviewer session (never by the implementer)",
+  "carrier": {
+   "file": "review.md",
+   "path_inside_attempt": "review.md",
+   "section_heading": "<!-- BEGIN independent-review verdict (round 3, transcribed verbatim) -->",
+   "section_heading_line": 132,
+   "line_range_inclusive_1_based": [
+    132,
+    140
+   ],
+   "byte_offsets": {
+    "start": 9853,
+    "end_inclusive": 11043,
+    "end_exclusive": 11044
+   },
+   "region_bytes": 1191,
+   "region_sha256": "106e23bc7d6fe808f1597aedec8c3f8d0d899e1568bb9ce63fa3f56a1d98782b",
+   "first_line_of_region": "<!-- BEGIN independent-review verdict (round 3, transcribed verbatim) -->",
+   "verdict_line": 134,
+   "first_line_of_verdict": "> **独立复核裁决（round 3 终裁）：`accepted_scoped`（仅 formula）。**",
+   "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT a trailing newline; line numbers and byte offsets are 1-based / 0-based respectively, against the file as it stands at the recorded sha256",
+   "carrier_file_sha256": "5b21385c90eb2d474a616178941747ccfa08de2ebb773a5b067a3a85f895ddbd",
+   "carrier_file_bytes": 11045
+  },
+  "reviewer_report": {
+   "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\m21m24-review-20260920-035233\\REPORT_R3.md",
+   "exists": true,
+   "sha256": "5e5b0d15d3a2e14ffa71ffad49e18be2e49ed60af1313b51fc5f2a0d61f23677",
+   "bytes": 20052,
+   "sha256_recorded_in_handoff_or_report": "5e5b0d15d3a2e14ffa71ffad49e18be2e49ed60af1313b51fc5f2a0d61f23677",
+   "sha256_matches_recorded": true
+  },
+  "scope": {
+   "granted": [
+    "formula only - reviewer wording: '独立复核裁决（round 3 终裁）：`accepted_scoped`（仅 formula）。' (accepted_scoped, formula only)"
+   ],
+   "not_granted": [
+    "disclosure_adaptation (stays `unmapped`)",
+    "accuracy (stays `unproven`)",
+    "round 2 of these cards is preserved verbatim in the same file and is NOT the round used"
+   ]
+  },
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer, not by the implementer"
+ },
+ "bookkeeping": {
+  "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-20",
+  "what_this_pass_did": "landed the carrier fields for an already-written independent verdict; appended nothing to review.md",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer, not by the implementer",
+  "review_md_bytes_written": 0
+ }
 }

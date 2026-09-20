@@ -2,11 +2,10 @@
   "card_id": "I-14-B",
   "attempt_id": "a20260919-01",
   "revision": "r2",
-  "status": "review_pending",
+  "status": "accepted_scoped",
   "reviewer_status": "r1 review returned changes_required (independent reviewer report sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e, verdict section 1). The r2 fix pass has NOT been reviewed yet: a THIRD independent review round is required because the fix corrected a frozen oracle expectation. Nothing here is accepted_scoped; the implementer did not self-sign.",
   "objective": "把自然时间字段分列并证明重叠窗口不相加；用合成时间输入证明 observation 29 min != command total 37 min；按 reviewer 冻结的容差实现 30/60/120 判据（真实窗口仍 blocked）；把自然日/周/月需求ID映射到 I-17 待运行日历并保持 pending；修复 reviewer 的阻断项 P1（basis 枚举）与 P2（quick_check 计入自然观察时长）。",
   "one_observable_result": "同一冻结命令：r1 修订（reviewer 已复核 495a4411…）对 r2 oracle rc 1、accepted_ineligible 8；r2 修订 rc 0、mismatch 0、34/34 与运行前手写期望一致。",
-
   "completed_steps": [
     "1 领取（r1）: card_I-14-B + parent I-14 + I-14-A receipt + 必读三件全部读到关键行",
     "2 绑定（r1/r2）: binding.json（三仓路径与 HEAD、解释器、写入白名单、frozen_now、依赖 receipt、I-14-A 结论按原文消费；r2 追加 review 结论与 P3-f porcelain 事实）",
@@ -28,7 +27,6 @@
   ],
   "next_step_number": 18,
   "next_action": "Third independent review of the r2 fix pass, then the owner/I-17 hand-off. In order: (1) an independent reviewer (not the implementer of this attempt) re-reads harness/cases.r2.json, harness/frozen_expectations.r2.json (including expected_superseded and errata[0].diff_from_r1_expected_map), changes.r2.diff, before/cmd-CASES-r2-r1sut, after/cmd-CASES-r2, evidence/mutations.r2.json, and independently recomputes at least the W1 1740/480/2220 triple, the X8 480 s overlap and the X14 daily_count 6 / dropped 1; (2) that reviewer decides whether the append-only correction of W1.computed.union_seconds (2220 -> 1740) is acceptable and whether J15/J4b/J10c exceed the P1/P2 mandate (J10c in particular is a deliberate behaviour change from 'reset the chain' to 'ignore and report'); (3) if accepted, the reviewer records accepted_scoped and the promotion question (D-6) stays closed; (4) separately the owner must still decide D-2 (whether to build a UI capture path) and I-17-A's reviewer must sign which original natural windows are retained -- the real 30/60/120 window stays blocked and all 17 calendar rows stay pending regardless of this review.",
-
   "r2_deliverables": {
     "harness/cases.r2.json": "c00a3a00ffe8b88352df48b4e242bc98e81af45362c4001fb6107aee5efbdcb6",
     "harness/frozen_expectations.r2.json": "6f814d0af6a8ffd006dd12751463740a5e6aa151c9d1b5ebe885c96caa9328d3",
@@ -62,7 +60,6 @@
     "harness/archive/calendar_mapping.r1.json": "6f3ebd998a0cbcc7460d501befbbde5aeff055f90382817b7b3155e1d00aea8e",
     "harness/archive/run_cases.r1.py": "f2a07d0b85c5dcb3a233d9010ad9deead70b22535ab82a61414d2ef7f54f7c23"
   },
-
   "input_hashes": {
     "I-14-B r1 reviewer report": "C:\\i14b-rev-20260920T030800Z\\REPORT.md sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e (40152 B); ASCII mirror also at %TEMP%\\i14b-review-20260920T030800Z\\REPORT.md",
     "PLAN/execution_v2/card_I-14-B.md": "read-only card text",
@@ -86,7 +83,6 @@
     "changes.diff (r0->r1)": "89556ac05de87ebe37962f6ecb3861a63261b98f778c9beb49604417e26dcaf1 (UNCHANGED in r2)",
     "binding.json / commands.json / handoff.json": "updated for r2; handoff.json's own hash is deliberately NOT cited here (any value written into this file is invalidated by the write itself). Recompute with Get-FileHash; evidence/file_manifest.json carries capture-time values for every other artifact."
   },
-
   "changed_paths": [
     "iso/natural_window.py (r1 -> r2: J16 basis enumeration, P2 observation-only intervals, J15, J4b, J10c; sha256 495a4411… -> 7fff6f0c…)",
     "oracle.md (section 11 appended; prefix untouched)",
@@ -105,40 +101,76 @@
     "harness/scratch/mutants-r2/** (r2 mutant scratch copies)"
   ],
   "changed_paths_outside_allowlist_reported": [],
-
   "commands_executed": [
     "r1: CMD-I14B-CASES-before-r0, -before, -SUITE-before, -CA206REPRO, -CASES-after, -SUITE-after, -REPEAT-1..3, -MUTATE, -TOLERANCE-SWEEP, -UI-CAPABILITY, -CALENDAR-MAP, -CLI-CONTRACT, -SNAPSHOT-before, -SNAPSHOT-after, -MAKE-DIFF",
     "r2: CMD-I14B-R2-ARCHIVE, -FREEZE, -CASES-before-r1sut, -CASES-before-baseline, -CASES-after, -SUITE-before, -SUITE-after, -SUITE-r1suite-vs-r2sut, -REPEAT-1..3, -MUTATE, -TOLERANCE-SWEEP, -CALENDAR-MAP, -MAKE-DIFF, -SNAPSHOT"
   ],
   "raw_exit_codes": {
-    "CMD-I14B-CASES-before-r0": 1, "CMD-I14B-CASES-before": 1, "CMD-I14B-SUITE-before": 1,
-    "CMD-I14B-CA206REPRO": 0, "CMD-I14B-CASES-after": 0, "CMD-I14B-SUITE-after": 0,
-    "CMD-I14B-REPEAT-1": 0, "CMD-I14B-REPEAT-2": 0, "CMD-I14B-REPEAT-3": 0,
-    "CMD-I14B-MUTATE": 0, "CMD-I14B-TOLERANCE-SWEEP": 0, "CMD-I14B-UI-CAPABILITY": 0,
-    "CMD-I14B-CALENDAR-MAP": 0, "CMD-I14B-CLI-CONTRACT": 2,
-    "CMD-I14B-SNAPSHOT-before": 0, "CMD-I14B-SNAPSHOT-after": 0, "CMD-I14B-MAKE-DIFF": 0,
-    "CMD-I14B-R2-ARCHIVE": 0, "CMD-I14B-R2-FREEZE": 0,
-    "CMD-I14B-R2-CASES-before-r1sut": 1, "CMD-I14B-R2-CASES-before-baseline": 1,
-    "CMD-I14B-R2-CASES-after": 0, "CMD-I14B-R2-SUITE-before": 1, "CMD-I14B-R2-SUITE-after": 0,
-    "CMD-I14B-R2-SUITE-r1suite-vs-r2sut": 0, "CMD-I14B-R2-REPEAT-1": 0, "CMD-I14B-R2-REPEAT-2": 0,
-    "CMD-I14B-R2-REPEAT-3": 0, "CMD-I14B-R2-MUTATE": 0, "CMD-I14B-R2-TOLERANCE-SWEEP": 0,
-    "CMD-I14B-R2-CALENDAR-MAP": 0, "CMD-I14B-R2-MAKE-DIFF": 0, "CMD-I14B-R2-SNAPSHOT": 0
+    "CMD-I14B-CASES-before-r0": 1,
+    "CMD-I14B-CASES-before": 1,
+    "CMD-I14B-SUITE-before": 1,
+    "CMD-I14B-CA206REPRO": 0,
+    "CMD-I14B-CASES-after": 0,
+    "CMD-I14B-SUITE-after": 0,
+    "CMD-I14B-REPEAT-1": 0,
+    "CMD-I14B-REPEAT-2": 0,
+    "CMD-I14B-REPEAT-3": 0,
+    "CMD-I14B-MUTATE": 0,
+    "CMD-I14B-TOLERANCE-SWEEP": 0,
+    "CMD-I14B-UI-CAPABILITY": 0,
+    "CMD-I14B-CALENDAR-MAP": 0,
+    "CMD-I14B-CLI-CONTRACT": 2,
+    "CMD-I14B-SNAPSHOT-before": 0,
+    "CMD-I14B-SNAPSHOT-after": 0,
+    "CMD-I14B-MAKE-DIFF": 0,
+    "CMD-I14B-R2-ARCHIVE": 0,
+    "CMD-I14B-R2-FREEZE": 0,
+    "CMD-I14B-R2-CASES-before-r1sut": 1,
+    "CMD-I14B-R2-CASES-before-baseline": 1,
+    "CMD-I14B-R2-CASES-after": 0,
+    "CMD-I14B-R2-SUITE-before": 1,
+    "CMD-I14B-R2-SUITE-after": 0,
+    "CMD-I14B-R2-SUITE-r1suite-vs-r2sut": 0,
+    "CMD-I14B-R2-REPEAT-1": 0,
+    "CMD-I14B-R2-REPEAT-2": 0,
+    "CMD-I14B-R2-REPEAT-3": 0,
+    "CMD-I14B-R2-MUTATE": 0,
+    "CMD-I14B-R2-TOLERANCE-SWEEP": 0,
+    "CMD-I14B-R2-CALENDAR-MAP": 0,
+    "CMD-I14B-R2-MAKE-DIFF": 0,
+    "CMD-I14B-R2-SNAPSHOT": 0
   },
   "expected_exit_codes": {
-    "CMD-I14B-CASES-before-r0": 1, "CMD-I14B-CASES-before": 1, "CMD-I14B-SUITE-before": 1,
-    "CMD-I14B-CA206REPRO": 0, "CMD-I14B-CASES-after": 0, "CMD-I14B-SUITE-after": 0,
-    "CMD-I14B-REPEAT-1..3": 0, "CMD-I14B-MUTATE": 0, "CMD-I14B-TOLERANCE-SWEEP": 0,
-    "CMD-I14B-UI-CAPABILITY": 0, "CMD-I14B-CALENDAR-MAP": 0, "CMD-I14B-CLI-CONTRACT": 2,
-    "CMD-I14B-SNAPSHOT-before / -after": 0, "CMD-I14B-MAKE-DIFF": 0,
-    "CMD-I14B-R2-ARCHIVE": 0, "CMD-I14B-R2-FREEZE": 0,
-    "CMD-I14B-R2-CASES-before-r1sut": 1, "CMD-I14B-R2-CASES-before-baseline": 1,
-    "CMD-I14B-R2-CASES-after": 0, "CMD-I14B-R2-SUITE-before": 1, "CMD-I14B-R2-SUITE-after": 0,
-    "CMD-I14B-R2-SUITE-r1suite-vs-r2sut": 0, "CMD-I14B-R2-REPEAT-1..3": 0,
-    "CMD-I14B-R2-MUTATE": 0, "CMD-I14B-R2-TOLERANCE-SWEEP": 0, "CMD-I14B-R2-CALENDAR-MAP": 0,
-    "CMD-I14B-R2-MAKE-DIFF": 0, "CMD-I14B-R2-SNAPSHOT": 0
+    "CMD-I14B-CASES-before-r0": 1,
+    "CMD-I14B-CASES-before": 1,
+    "CMD-I14B-SUITE-before": 1,
+    "CMD-I14B-CA206REPRO": 0,
+    "CMD-I14B-CASES-after": 0,
+    "CMD-I14B-SUITE-after": 0,
+    "CMD-I14B-REPEAT-1..3": 0,
+    "CMD-I14B-MUTATE": 0,
+    "CMD-I14B-TOLERANCE-SWEEP": 0,
+    "CMD-I14B-UI-CAPABILITY": 0,
+    "CMD-I14B-CALENDAR-MAP": 0,
+    "CMD-I14B-CLI-CONTRACT": 2,
+    "CMD-I14B-SNAPSHOT-before / -after": 0,
+    "CMD-I14B-MAKE-DIFF": 0,
+    "CMD-I14B-R2-ARCHIVE": 0,
+    "CMD-I14B-R2-FREEZE": 0,
+    "CMD-I14B-R2-CASES-before-r1sut": 1,
+    "CMD-I14B-R2-CASES-before-baseline": 1,
+    "CMD-I14B-R2-CASES-after": 0,
+    "CMD-I14B-R2-SUITE-before": 1,
+    "CMD-I14B-R2-SUITE-after": 0,
+    "CMD-I14B-R2-SUITE-r1suite-vs-r2sut": 0,
+    "CMD-I14B-R2-REPEAT-1..3": 0,
+    "CMD-I14B-R2-MUTATE": 0,
+    "CMD-I14B-R2-TOLERANCE-SWEEP": 0,
+    "CMD-I14B-R2-CALENDAR-MAP": 0,
+    "CMD-I14B-R2-MAKE-DIFF": 0,
+    "CMD-I14B-R2-SNAPSHOT": 0
   },
   "raw_vs_expected_note": "every command above matched its expected return code (r1 and r2). Business verdicts are recorded per case in the referenced reports; a runner rc 0 is NOT by itself a business pass.",
-
   "open_questions": [
     "THIRD REVIEW REQUIRED: the r2 fix corrected a frozen oracle expectation (W1.computed.union_seconds 2220 -> 1740). The reviewer explicitly required a further review round after any expectation change. The append-only provenance is in harness/frozen_expectations.r2.json (expected_superseded + errata[0].diff_from_r1_expected_map); the pre-image is archived.",
     "J10c is a deliberate behaviour change beyond P1/P2: a second run on the same UTC day is now IGNORED AND REPORTED (daily_same_day_runs_dropped) instead of silently RESETTING the chain (r1: X14 daily_count 4 -> r2: 6). A reviewer may reject this and ask for the r1 reset semantics; it would then be another append-only erratum.",
@@ -155,13 +187,11 @@
     "Every natural day/week/month window: PENDING by construction (17/17 rows; I-17-A owns the clock).",
     "Third review of the r2 fix: PENDING (no reviewer assigned for the r2 pass yet)."
   ],
-
   "porcelain_and_footprint_facts": {
     "reviewer_p3f": "The owner's second commit (2026-09-20T04:09:31+01:00, containing 120 I-14-B attempt paths) absorbed this attempt's `??` porcelain entry. Querying that path in `git status --porcelain` NOW returns nothing. Later readers must NOT conclude there was no footprint: at r1 binding the footprint was `?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-B/` (1 line).",
     "r2_snapshot": "evidence/baseline_repos.r2-after.json: RF HEAD 66bd75f1250d310cee8157daa5c4a85ef41f6a36 (the owner committed again during the r2 pass), product-tree porcelain (non-.planning) still 45 lines, company-wiki still ` M CLAUDE.md` + ` M README.md`, filing-fetch clean; 20 I-14-B-related porcelain lines exist for the new r2 files.",
     "authority": "This attempt ran no git add/commit/restore/stash and only --no-optional-locks read commands; every HEAD change is explained by the owner's own commits visible in `git log`."
   },
-
   "eligibility_statement": {
     "formula_classification": "本卡只支持计时/分类算法（含证据分类）在冻结输入上的正确性；不涉及收入预测公式。",
     "disclosure_adaptation": "NOT ADDRESSED by this card.",
@@ -170,7 +200,6 @@
     "real_ui_immediacy": "NOT GRANTED -> blocked.",
     "review_state": "r1 review = changes_required; r2 fix = unreviewed."
   },
-
   "evidence_paths": [
     "execution_runs/I-14-B/a20260919-01/binding.json",
     "execution_runs/I-14-B/a20260919-01/oracle.md",
@@ -202,5 +231,67 @@
     "execution_runs/I-14-B/a20260919-01/evidence/ui_capability_probe.json",
     "execution_runs/I-14-B/a20260919-01/harness/reproduce_ca206_acceptance.py",
     "execution_runs/I-14-B/a20260919-01/harness/calendar_map.py"
-  ]
+  ],
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority": {
+    "verdict": "accepted_scoped",
+    "verdict_round_used": "round 3 (third independent review, verifying the r2 fix pass) - the latest round; round 1 was changes_required and is preserved earlier in the file, r2 was the implementer's fix record",
+    "verdict_written_by": "an independent reviewer session (never by the implementer)",
+    "carrier": {
+      "file": "review.md",
+      "path_inside_attempt": "review.md",
+      "section_heading": "# §5-b 第三轮独立 reviewer 裁决（r2 修复验证，独立 reviewer session）",
+      "section_heading_line": 315,
+      "line_range_inclusive_1_based": [
+        315,
+        375
+      ],
+      "byte_offsets": {
+        "start": 31058,
+        "end_inclusive": 41847,
+        "end_exclusive": 41848
+      },
+      "region_bytes": 10790,
+      "region_sha256": "0d5028a9a0db097feb9b6db8e6ea20151037347663a6a92190bba3630dcf1e34",
+      "first_line_of_region": "# §5-b 第三轮独立 reviewer 裁决（r2 修复验证，独立 reviewer session）",
+      "verdict_line": 322,
+      "first_line_of_verdict": "## 结论：`accepted_scoped`",
+      "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT a trailing newline; line numbers and byte offsets are 1-based / 0-based respectively, against the file as it stands at the recorded sha256",
+      "carrier_file_sha256": "ab93734d430bd2814d55ae8be5f22297c4a3888c8ac83f0c43192fa0576142ed",
+      "carrier_file_bytes": 41849
+    },
+    "reviewer_report": {
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i14b-review-20260920T030800Z\\REPORT-r3.md",
+      "exists": true,
+      "sha256": "6db5b2f5a9d47dfd0fb7082fbc66c4c6407beed7f53c9f06022712aa2f7ea297",
+      "bytes": 18016
+    },
+    "scope": {
+      "granted": [
+        "timing/time-field split and 'overlaps are unioned, never summed'; J16 closed basis enumeration; the P2 first option plus J15; J4b; J10c (behaviour change accepted); the synthetic cases 1740/480/2220; R-SUM-OVERLAP / R-NO-SAMPLES / R-SAMPLE-OUTSIDE; tolerance behaviour within tol in [1 s, 86 s]; the 17-row calendar mapping; D-4/D-5/D-6; production untouched, freeze ordering, 20/20 single-line mutation revert, 17/17 byte-identical archive, oracle/review append-only",
+        "reviewer wording: the '授予（范围）：' list of the round-3 verdict"
+      ],
+      "not_granted": [
+        "real natural-observation qualification (no natural cycle was observed; all 17 rows pending)",
+        "real UI-immediacy qualification - stays `blocked` (frozen tolerance != permission to run)",
+        "SLO / performance qualification (I-14-A / I-16 scope)",
+        "disclosure_adaptation / accuracy (NOT ADDRESSED as originally registered)",
+        "any production-tree write permission (D-6)",
+        "I-17-A scope"
+      ]
+    },
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "reviewer_status_note": "handoff.reviewer_status still records 'r1 review returned changes_required ... a THIRD independent review round is required'. That is now stale: the third independent review was performed and returned accepted_scoped (review.md section 5-b). This pass did not rewrite reviewer_status (it is the implementer's field); the implementer should bring it into line.",
+    "reviewer_status_left_untouched": true
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-20",
+    "what_this_pass_did": "landed the carrier fields for an already-written independent verdict; appended nothing to review.md",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "review_md_bytes_written": 0
+  }
 }

@@ -1,7 +1,7 @@
 {
  "card_id": "M07",
  "attempt_id": "a20260919-01",
- "status": "review_pending",
+ "status": "accepted_scoped",
  "implementer_is_not_the_reviewer": true,
  "completed_steps": {
   "A_binding": "done (binding.json: read-only production hashes + attempt-local isolated snapshot)",
@@ -438,5 +438,68 @@
    "sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a"
   }
  },
- "revision_note": "r3 = document/evidence consistency pass (F-M08-06 dedup, F-M08-07 counts and attribution, F-M08-08 qualified repack ledger, F-M08-09 DEC-M08-1 correction). No expectation, tolerance, negative case, disclosure figure or product file changed."
+ "revision_note": "r3 = document/evidence consistency pass (F-M08-06 dedup, F-M08-07 counts and attribution, F-M08-08 qualified repack ledger, F-M08-09 DEC-M08-1 correction). No expectation, tolerance, negative case, disclosure figure or product file changed.",
+ "status_before_bookkeeping_fix": "review_pending",
+ "status_authority": {
+  "verdict": "accepted_scoped",
+  "verdict_round_used": "r1 independent review (transcribed at review.md:119); NO later verdict is on disk - revision r2 was submitted for point review and review.md:133 still records 'Status after r2: `formula` = review_pending (point review of r2)'",
+  "verdict_written_by": "an independent reviewer session (never by the implementer)",
+  "carrier": {
+   "file": "review.md",
+   "path_inside_attempt": "review.md",
+   "section_heading": "## revision r2 - response to the independent review",
+   "section_heading_line": 117,
+   "line_range_inclusive_1_based": [
+    119,
+    119
+   ],
+   "byte_offsets": {
+    "start": 8694,
+    "end_inclusive": 8769,
+    "end_exclusive": 8770
+   },
+   "region_bytes": 76,
+   "region_sha256": "ef59e272bb3c717554c572c0a6a0744aacc9d8230154a0925d284612d0080672",
+   "first_line_of_region": "Independent review of r1: **accepted_scoped (formula qualification only)**.\r",
+   "verdict_line": 119,
+   "first_line_of_verdict": "Independent review of r1: **accepted_scoped (formula qualification only)**.\r",
+   "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT a trailing newline; line numbers and byte offsets are 1-based / 0-based respectively, against the file as it stands at the recorded sha256",
+   "carrier_file_sha256": "d8b9ec92c3d7f91c476c98785a4c34cd93a250bf343dee3c749060d502dd1130",
+   "carrier_file_bytes": 9520,
+   "corroborating_carrier": {
+    "file": "oracle.md",
+    "line": 146,
+    "text": "复审结论（独立 session 给出）：**M07 = accepted_scoped（仅 formula 资格）**\r",
+    "file_sha256": "c4233dd71bb7f81bfbe0a0bfe2fecee4240733e17b531880a43af2cbf31c1bd8",
+    "role": "second on-disk occurrence of the same reviewer conclusion; NOT modified by this pass"
+   }
+  },
+  "reviewer_report": {
+   "path": null,
+   "exists": false,
+   "note": "no reviewer-authored report file is recorded inside this card; the verdict is carried by the transcribed region inside review.md"
+  },
+  "scope": {
+   "granted": [
+    "formula only - reviewer wording in the carrier: 'Independent review of r1: **accepted_scoped (formula qualification only)**.'"
+   ],
+   "not_granted": [
+    "disclosure_adaptation (stays `unmapped`)",
+    "accuracy (stays `unproven`)"
+   ]
+  },
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer, not by the implementer",
+  "reviewer_status_note": "handoff.reviewer_status correctly records that the r1 verdict was accepted_scoped (formula only) and that revision r2 was returned for point review; it is left untouched. Note that the latest verdict on disk is the r1 verdict, not a verdict on the r2 revision.",
+  "reviewer_status_left_untouched": true
+ },
+ "bookkeeping": {
+  "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-20",
+  "what_this_pass_did": "landed the carrier fields for an already-written independent verdict; appended nothing to review.md",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer, not by the implementer",
+  "review_md_bytes_written": 0
+ }
 }

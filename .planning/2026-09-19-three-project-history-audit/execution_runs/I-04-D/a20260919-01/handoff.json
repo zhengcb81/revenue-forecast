@@ -311,6 +311,7 @@
   "production_unchanged_after_attempt": true
  },
  "defect_ledger_count": 10,
+ "defect_ledger_note": "台账为 10 条：9 条由失败用例发现，第 10 条（释放路径 R5 兜底格把存活的第三方 owner 当成可 resume）由决定文档作者读码发现，见 oracle.md R1-9。",
  "evidence_paths": [
   "execution_runs/I-04-D/a20260919-01/oracle.md",
   "execution_runs/I-04-D/a20260919-01/evidence/oracle-freeze.txt",
@@ -648,6 +649,22 @@
   "3 个失败断言的修法（把快照取进 gate handshake 内部）会改动 scheduler/harness，属于本卡 allowlist 边缘：需要 reviewer 判定是实现缺陷修复还是新卡范围。",
   "本 attempt 的三个文档（handoff.json / review.md / recovery/README.md）与 commands.json、changes.diff、oracle.md 追加 R1 是由并行工作的多个 agent 分别写入的：本实现者撰写前三者时 commands.json / changes.diff / oracle.md 追加区尚未落盘，故前三者中对它们的描述是在落盘后核对并追加的（handoff 的 commands_executed 已按 commands.json 逐条对齐）。请 reviewer 以盘上文件为准，并注意 documents 之间可能仍存在未对齐的措辞。"
  ],
+ "oracle_frozen_region_in_place_edits": [
+  {
+   "disclosure": "该处是**对已写入追加区的就地编辑**，不是纯追加。它在 r2 复核时被认证为『内容上只追加』，r3 起不再成立；此处按已发生的就地编辑 + 追加披露处理，不回改。冻结的 §0–§4 期望值未受影响（该值在追加区内，不在冻结正文）",
+   "front_image_sha256": "7fc47a3d656540e8ec45c86a21cb4610c86a95b3ca4c824b197a0e5b2573c8b2",
+   "what": "交付哈希 7fc47a3d…/125934 -> a72546c5…/126274",
+   "where": "oracle.md R1 追加区（R1-9 段内）",
+   "why": "R1-9 之后又修了 gate 匹配缺陷，交付字节已变；留着旧值会让读者核对到错的哈希"
+  },
+  {
+   "disclosure": "同为追加区内的就地更正，已在此登记",
+   "front_image_sha256": "e50380d6e99f... (r2 世代的 oracle.md)",
+   "what": "F-L5 行的说明改为『共存性在 r1 也已测到』；W1b 的 lock_acq 3-4 -> 5",
+   "where": "oracle.md R2-2 表（F-L5 行与 W1b 行）",
+   "why": "reviewer 指出原表述不准确"
+  }
+ ],
  "produces": [
   "在隔离副本 iso/filing-fetch/scripts/fetch_filing.py 上按 I-04-C 冻结协议实现 pause/lease 层（hash a72546c5…a436，126274 bytes）",
   "三份 harness 脚本（fake worker / participant / scheduler）与一份 18 项 lease 测试文件（hash 见 current_source_hashes）",
@@ -936,6 +953,141 @@
   "rule": "hashes in this file are generated, never hand-edited; a hand edit is a defect.",
   "why": "r2 repaired stale hashes by string replacement, which fabricated chimeric values (an r2 prefix with an r1 suffix) that never existed on disk. This block is produced by scratch/rework_r3.py, which recomputes every value with hashlib and asserts recomputed == written."
  },
+ "r4_final_evidence_run": {
+  "cases": 19,
+  "harness_errors": [],
+  "impl_sha256": "a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198",
+  "previous_generation_kept": "evidence/run-r2-stale/ and after/i04d-green-r2-stale.txt",
+  "scheduler_raw_rc": 0,
+  "scheduler_sha256": "fd163a2702866ce0fe4988e962179c3f67c8adc9d2d01480f04f7f4439044ae2",
+  "scheduler_stdout": "after/scheduler-run-final.txt",
+  "suite_raw_rc": 0,
+  "suite_result": "21 passed",
+  "suite_sha256": "27f492b15e33031300e8ecd7946919258f4ff24df16eb72e6dfc895578a4056d",
+  "suite_stdout": "after/i04d-suite-final.txt",
+  "why": "r3 edited iso/.../i04d_schedule.py after the evidence was produced, so the delivered harness had never been run by the delivered evidence. This block records the rerun."
+ },
+ "r4_generated_hashes": {
+  "files": {
+   "after/all_json_parse_check.txt": {
+    "bytes": 489,
+    "sha256": "6cbe67281060cf115c9c1973008eb00286938957d75a6907a60681e899f1d1f0"
+   },
+   "after/handoff_json_revalidation.txt": {
+    "bytes": 720,
+    "sha256": "94733cf8ebb3fb79d82123b9af9f8eb8afe75cd059bbfb06ff06fdd1f62ff2af"
+   },
+   "after/hash_regeneration.txt": {
+    "bytes": 2354,
+    "sha256": "6e551d2da7e1892d5df2fc578415bebd47fc74f76252c45bdce1f851f4fe70d9"
+   },
+   "after/i04d-green-r2-stale.txt": {
+    "bytes": 206,
+    "sha256": "f8220c7d29c82cde12ff44e267523c12698dc64ab58e2d6f45fc7afddf2a3115"
+   },
+   "after/i04d-green.txt": {
+    "bytes": 206,
+    "sha256": "f8220c7d29c82cde12ff44e267523c12698dc64ab58e2d6f45fc7afddf2a3115"
+   },
+   "after/i04d-suite-final.txt": {
+    "bytes": 206,
+    "sha256": "6503819d16fe609fd08f1e0541a70fe4353ffd3cb80fffb809ed7c4503e129a0"
+   },
+   "after/p3_literal_check.txt": {
+    "bytes": 375,
+    "sha256": "277873d4c30e95b4ff14fb5ad98ac12c7c7cf97e13425bf9dd0c2df853c89957"
+   },
+   "after/scheduler-run-final.txt": {
+    "bytes": 5002,
+    "sha256": "3df2bcc376737ec401c0cabbf3e521939477ca26d94290452b7dc9d783fcebea"
+   },
+   "before/i04d-red.txt": {
+    "bytes": 41466,
+    "sha256": "c632a3a8c7c9ea96772363231dec301078f55f993f54fbab261f219dd04e0224"
+   },
+   "before/test_fetch_filing_lease.delivered.py": {
+    "bytes": 30422,
+    "sha256": "27f492b15e33031300e8ecd7946919258f4ff24df16eb72e6dfc895578a4056d"
+   },
+   "binding.json": {
+    "bytes": 9626,
+    "sha256": "fc8778eebb9f2a6061e27b9716de47c89e6291bd1f663b8a5d8cc454de0db7a8"
+   },
+   "changes.diff": {
+    "bytes": 180917,
+    "sha256": "2197bce4221d5d59dba0dc64fa8f26d356de5bd9b95fac5d3a4b9226cec7d44d"
+   },
+   "commands.json": {
+    "bytes": 8335,
+    "sha256": "738ac85ac6474301ea48cb383e6f0650e90b6ef844d58c2da4540de68b498c38"
+   },
+   "decision.md": {
+    "bytes": 31532,
+    "sha256": "855b038c7095f31635dea390adf09273872bd9d55d53992ebd41560964be5d1f"
+   },
+   "evidence/i04d_schedule.delivered.py": {
+    "bytes": 35243,
+    "sha256": "f2edc3071bf4e9b4b29e3489cd5d339e0f8f5ed0afdf45f06133b26a7b0c069a"
+   },
+   "evidence/negative-case-detail.txt": {
+    "bytes": 2948,
+    "sha256": "b7775d4e827f6362287fa3fd4538419033729e736c3fb60fec357cdcf2832e59"
+   },
+   "evidence/negative-case-ledger.txt": {
+    "bytes": 2762,
+    "sha256": "fa4a39a1b2f216dfba8461829a2141d5d6a7125ca3003e13aaf3f0482bfac828"
+   },
+   "evidence/phase-wall.txt": {
+    "bytes": 2216,
+    "sha256": "a1f45cc64ac60886beb6da6a7eb4b2bb27d660b3c1041a7b1999a9d943aafed4"
+   },
+   "handoff.json": {
+    "bytes": 49429,
+    "sha256": "f30618b01afaf7d32baefefd3577e79805d34d75eae9fa08c61051e8b1d3e0c4"
+   },
+   "iso/filing-fetch/scripts/fetch_filing.py": {
+    "bytes": 126274,
+    "sha256": "a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198"
+   },
+   "iso/filing-fetch/scripts/i04d_fake_worker.py": {
+    "bytes": 4552,
+    "sha256": "5f16f0fe9ea2bad97c1193b530ae4ab13a7eb4a924361069c90b7c322e3aa902"
+   },
+   "iso/filing-fetch/scripts/i04d_participant.py": {
+    "bytes": 12783,
+    "sha256": "eabd39612d38bdde56d26d2e66d8017d9a35f762ed0a54825cedc125b3d5e889"
+   },
+   "iso/filing-fetch/scripts/i04d_schedule.py": {
+    "bytes": 35388,
+    "sha256": "fd163a2702866ce0fe4988e962179c3f67c8adc9d2d01480f04f7f4439044ae2"
+   },
+   "iso/filing-fetch/tests/test_fetch_filing_lease.py": {
+    "bytes": 30422,
+    "sha256": "27f492b15e33031300e8ecd7946919258f4ff24df16eb72e6dfc895578a4056d"
+   },
+   "oracle.md": {
+    "bytes": 42257,
+    "sha256": "428a0a96a4faf12c4cff9aa625ed9c731d9e2e86ff43e5e2afe84cdbaa623f1d"
+   },
+   "recovery/README.md": {
+    "bytes": 13608,
+    "sha256": "d5ab82a29d441272d895c234bf055f652241e04685f797022942f7e7dd76b328"
+   },
+   "recovery/r2_corrections.md": {
+    "bytes": 1401,
+    "sha256": "7d080f684138f6eea705a35059e6ce93e245e6cbcd934377ea4fee2d780e7ead"
+   },
+   "review.md": {
+    "bytes": 36996,
+    "sha256": "990af47fd903a2591725576826c0da2aeea87a03b69cbecc052722777815db96"
+   },
+   "scratch/patch_i04d.py": {
+    "bytes": 87261,
+    "sha256": "a730362caa3f7d136a4a074cefd120da557157b4ace5e561b1f1a4929191d46b"
+   }
+  },
+  "note": "recomputed with hashlib immediately before sealing; hand edits are a defect"
+ },
  "raw_exit_codes": [
   0,
   0,
@@ -946,7 +1098,8 @@
   0,
   0
  ],
- "ready_for_r3_review": true,
+ "ready_for_r3_review": false,
+ "ready_for_stable_seal": true,
  "reviewer_status": "PENDING（实现者未写任何判决；review.md §9 判决栏留空）",
  "revision": "v1（首次交付，mutation proof 未跑，见 review.md §6）",
  "scope": "在隔离副本 iso/filing-fetch 上实施 I-04-C 冻结的 pause/lease 协议（ADR-1..ADR-12、R1-R5、lock_budget_for(x)=min(x,60)），并用真实多进程 barrier 调度 case 验证。生产仓只读；本卡不写任何生产文件。",

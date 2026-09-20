@@ -153,7 +153,7 @@
   "card": "execution_v2/card_I-04-C.md",
   "dependency_I-04-A": "execution_runs/I-04-A/a20260919-01/{decision.md,oracle.md} (v2 SIGNED)",
   "dependency_I-04-B": "execution_runs/I-04-B/a20260919-01/{review.md,handoff.json,iso_patching.md,changes.diff}",
-  "ground_truth": "C:/Users/\u90d1\u66fe\u6ce2/Projects/filing-fetch/scripts/fetch_filing.py @ 046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088"
+  "ground_truth": "C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py @ 046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088"
  },
  "next_action": "Round-3 confirmation by the reviewer (three still-required items disposed, see review.md section 6). Then I-04-D ports the protocol and MUST carry: (1) O-9 real-probe or lifetime rerun of every concurrent case; (2) the R5 terminal state manual-release guidance (doctor/stderr + the raw owner record it must print); (3) the ADR-10e invariant 'a transferred owner must remain provably dead-able'; (4) O-2 pause-origin signal from company-wiki if user pauses are to be protected; (5) the OPEN-3 decision (60 s waiting cap naming, and whether worker-pause may stay inside the lock). Also rebind any downstream card pinned to revenue-forecast 4753fda: HEAD is now 7d7ea1e. ROUND 4 (2026-09-20, append-only correction): C1 is CLOSED -- the stale F-LK2 numbers in decision.md section 13.5 and review.md section 1/P3-4 were corrected additively against the recomputed truth (finals [16,35,10,56,18] => lost [184,165,190,144,182]; see evidence/flk2-recompute.txt). C2 (OPEN-3) is registered as an owner gate (review_carry_conditions.C2_OPEN3_owner_gate, owner_gates[0], decision.md sections 8 O-3 and 12) and does NOT block the accepted_scoped sign-off.",
  "next_step_number": "independent review round 2 of decision.md v1.2 + oracle.md R2 + evidence, then I-04-D",
@@ -331,12 +331,75 @@
  "reviewer_status": "Round 1 = changes_required -> r2 revision -> Round 2 = ACCEPTED_SCOPED with 3 still-required items (error-code/timeout case; queue-crosses-budget boundary + queue cost; stale text and F-LK2 numbers) -> r3 revision (this package). The implementer wrote no verdict; review.md section 5 stays empty for the reviewer. Round 4 is an implementer text/evidence correction round only: it reopens no verdict and claims none (review.md section 5 stays empty for the reviewer); C1 is closed and C2 is registered as an owner gate. The closeout review verdict is now in review.md section 5: the reviewer's verbatim text was pasted there by sim/patch_r5_docs.py (52 lines read out of evidence/r5-reviewer-closeout-report.md, sha256 9dafd6cf566418cf...); the implementer wrote no verdict and claims none. status stays review_pending: sign-off is not the implementer's call.",
  "revision": "v1.3 (r3: the round-2 review returned accepted_scoped with 3 still-required items; all three are disposed) + round 4 append-only correction (C1 closed with a recomputed F-LK2 truth; C2/OPEN-3 registered as an owner gate; no design, assertion or oracle change)",
  "scope": "DESIGN card: freeze the cross-process lease / ownership / recovery protocol for the pause refcount and prove the frozen rules with simulations. No product code was changed anywhere; the protocol exists only as the simulated kernel sim/kernel.py plus decision.md.",
- "status": "review_pending",
+ "status": "accepted_scoped",
  "true_counts": {
   "F_LK2": "5 runs, finals [16, 35, 10, 56, 18], lost [184, 165, 190, 144, 182] (final evidence round); reviewer rerun 34/200; an earlier round even produced 261/200 because the unlocked write is itself non-atomic -- QUALITATIVE only",
   "lock_and_legacy_suite": "cases_in_log=7 pass=7 fail=0 harness_error=0 failing_checks=0 (evidence/lock-and-legacy-failures.txt)",
   "protocol_suite": "cases_in_log=28 pass=28 fail=0 harness_error=0 failing_checks=0 (evidence/failures.txt)",
   "static_adr11": "S1-S4 all PASS (evidence/static-adr11.txt)",
   "superseded_counts": "v1 '10 PASS / 6 failing' and the v1.2 '24 PASS' figures are superseded by the r3 counts above; review.md section 2(a) keeps the original wrong sentence with its correction"
+ },
+ "status_before_bookkeeping_fix": "review_pending",
+ "status_authority": {
+  "verdict": "accepted_scoped",
+  "verdict_round_used": "the independent reviewer's own section 5 (closeout review, 2026-09-20) recording the round-2 accepted_scoped; the same reviewer's r3 targeted re-review (2026-09-20) also returned accepted_scoped; no later verdict exists",
+  "verdict_written_by": "an independent reviewer session (never by the implementer)",
+  "carrier": {
+   "file": "review.md",
+   "path_inside_attempt": "review.md",
+   "section_heading": "## 5. reviewer 结论（独立 reviewer session，2026-09-20）",
+   "section_heading_line": 139,
+   "line_range_inclusive_1_based": [
+    139,
+    190
+   ],
+   "byte_offsets": {
+    "start": 17898,
+    "end_inclusive": 23071,
+    "end_exclusive": 23072
+   },
+   "region_bytes": 5174,
+   "region_sha256": "0fc48b80ef01cb78fd37ec53a40b1af8a659dfe49621bbfc94195ab5952990d3",
+   "first_line_of_region": "## 5. reviewer 结论（独立 reviewer session，2026-09-20）",
+   "verdict_line": 141,
+   "first_line_of_verdict": "- 第二轮结论：`accepted_scoped`（**限定：仅本 attempt 的设计文本与模拟结果**；不含任何产品实现/部署资格）",
+   "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT a trailing newline; line numbers and byte offsets are 1-based / 0-based respectively, against the file as it stands at the recorded sha256",
+   "carrier_file_sha256": "48ace290b39f850f88f2e6da41ee875930354656ad62ac1ea9bf1509e16f2fd8",
+   "carrier_file_bytes": 23073
+  },
+  "reviewer_report": {
+   "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i04c_r3\\I-04-C_r3_independent_review.md",
+   "exists": true,
+   "sha256": "d72128a0cf7aa79cbc7ebafffd1d2f036529af0d7cec990f37799ec7a1f6cefa",
+   "bytes": 6636,
+   "in_plan_tree_copy": {
+    "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-04-C\\a20260919-01\\evidence\\r5-reviewer-closeout-report.md",
+    "exists": true,
+    "sha256": "9dafd6cf566418cf4b5e1e9c21cb9147902fbe83dccd47147a5d66c20ef678d0"
+   }
+  },
+  "scope": {
+   "granted": [
+    "this attempt's design text and simulation results only - reviewer wording: '第二轮结论：`accepted_scoped`（**限定：仅本 attempt 的设计文本与模拟结果**；不含任何产品实现/部署资格）'"
+   ],
+   "not_granted": [
+    "'任何产品实现/合并/部署资格' (any product implementation / merge / deployment qualification)",
+    "real concurrency, real lock semantics and real liveness-probe equivalence",
+    "any write to the production pause refcount",
+    "I-04-D/E and later implementation qualification",
+    "C2 = OPEN-3 remains an owner ruling item (recorded as not blocking the sign-off)"
+   ]
+  },
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer, not by the implementer"
+ },
+ "bookkeeping": {
+  "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-20",
+  "what_this_pass_did": "landed the carrier fields for an already-written independent verdict; appended nothing to review.md",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer, not by the implementer",
+  "review_md_bytes_written": 0
  }
 }

@@ -1,7 +1,7 @@
 {
   "card_id": "I-15-A",
   "attempt_id": "a20260919-01",
-  "status": "review_pending",
+  "status": "accepted_scoped",
   "review_r2_outcome": "independent review returned accepted_scoped for the EVIDENCE / DIAGNOSTIC scope only; product implementation remains BLOCKED on the unsigned D-W15 (five decisions). accepted_scoped is NOT a release to implement and must not be read as authorising any production prune.",
   "r2_corrections": [
     "F-I15A-01: the delivered archive gzip hash cited as 85d2f08e... had no matching artifact; corrected to 4798b9719528223b8614d2ff6e22939cd60bd1427ce9c22da5d576317e1b9556 (= p1-verify scratch source = delivered manifest archive_sha256). 85d2f08e... was the p2-restore archive at the earlier cmd-C6 iteration; gzip embeds an mtime so bytes change per run.",
@@ -41,19 +41,78 @@
     "CMD-I15A-C1..C6 pytest frozen suite (build-up iterations) -> rc 1 each",
     "CMD-I15A-C7 pytest frozen suite final -> rc 1 (6 failed / 5 passed)"
   ],
-  "raw_exit_codes": {"CMD-I15A-C1..C6": 1, "CMD-I15A-C7": 1},
-  "expected_exit_codes": {"CMD-I15A-C1..C6": 1, "CMD-I15A-C7": 1},
+  "raw_exit_codes": {
+    "CMD-I15A-C1..C6": 1,
+    "CMD-I15A-C7": 1
+  },
+  "expected_exit_codes": {
+    "CMD-I15A-C1..C6": 1,
+    "CMD-I15A-C7": 1
+  },
   "frozen_vs_measured": {
-    "W15-P1_delete_exactly_verified_set": {"expected": ["a1", "a2"], "measured": ["a1", "a2", "a3", "b1"], "verdict": "counterexample"},
-    "W15-P2_second_apply_idempotent": {"expected": "0 deleted and {a3,b1,c1} retained", "measured": "second apply 0 deleted but a3/b1 already destroyed by the first", "verdict": "counterexample"},
-    "W15-P2_restore": {"expected": "row-identical restore of a1,a2; refuse c1", "measured": "identical digests; c1 refused", "verdict": "PASS"},
-    "W15-N1_empty_old_directory": {"expected": "0 deleted", "measured": ["a1", "a2", "a3", "b1"], "verdict": "counterexample"},
-    "W15-N1_corrupt_archive": {"expected": "verification fails closed", "measured": "ok=false with recorded problem", "verdict": "PASS (attempt-side verifier only)"},
-    "W15-N1_manifest_conflict": {"expected": "count/digest conflict refused", "measured": "detectable by the verifier; product has no manifest", "verdict": "PASS (attempt-side verifier only)"},
-    "W15-N1_same_day_overwrite": {"expected": "manifest pins sha256+size", "measured": "snapshot replaced, both runs ok=true", "verdict": "PASS as detection, risk confirmed"},
-    "W15-N2_retention_clock": {"expected": "0 deleted from verified completion time", "measured": "['a1','a2','a3','b1'] deleted from the directory name", "verdict": "counterexample"},
-    "W15-N3_toctou": {"expected": "refuse whole plan", "measured": "['a1','a2','a3','b1'] deleted with no re-check", "verdict": "counterexample"},
-    "W15-N4_crash_recovery": {"expected": "exact deleted ids recoverable", "measured": "4 deleted, receipt_files=[]", "verdict": "counterexample"}
+    "W15-P1_delete_exactly_verified_set": {
+      "expected": [
+        "a1",
+        "a2"
+      ],
+      "measured": [
+        "a1",
+        "a2",
+        "a3",
+        "b1"
+      ],
+      "verdict": "counterexample"
+    },
+    "W15-P2_second_apply_idempotent": {
+      "expected": "0 deleted and {a3,b1,c1} retained",
+      "measured": "second apply 0 deleted but a3/b1 already destroyed by the first",
+      "verdict": "counterexample"
+    },
+    "W15-P2_restore": {
+      "expected": "row-identical restore of a1,a2; refuse c1",
+      "measured": "identical digests; c1 refused",
+      "verdict": "PASS"
+    },
+    "W15-N1_empty_old_directory": {
+      "expected": "0 deleted",
+      "measured": [
+        "a1",
+        "a2",
+        "a3",
+        "b1"
+      ],
+      "verdict": "counterexample"
+    },
+    "W15-N1_corrupt_archive": {
+      "expected": "verification fails closed",
+      "measured": "ok=false with recorded problem",
+      "verdict": "PASS (attempt-side verifier only)"
+    },
+    "W15-N1_manifest_conflict": {
+      "expected": "count/digest conflict refused",
+      "measured": "detectable by the verifier; product has no manifest",
+      "verdict": "PASS (attempt-side verifier only)"
+    },
+    "W15-N1_same_day_overwrite": {
+      "expected": "manifest pins sha256+size",
+      "measured": "snapshot replaced, both runs ok=true",
+      "verdict": "PASS as detection, risk confirmed"
+    },
+    "W15-N2_retention_clock": {
+      "expected": "0 deleted from verified completion time",
+      "measured": "['a1','a2','a3','b1'] deleted from the directory name",
+      "verdict": "counterexample"
+    },
+    "W15-N3_toctou": {
+      "expected": "refuse whole plan",
+      "measured": "['a1','a2','a3','b1'] deleted with no re-check",
+      "verdict": "counterexample"
+    },
+    "W15-N4_crash_recovery": {
+      "expected": "exact deleted ids recoverable",
+      "measured": "4 deleted, receipt_files=[]",
+      "verdict": "counterexample"
+    }
   },
   "open_questions": [
     "D-W15 schema/clock/TOCTOU/receipt/restore decisions are proposed but NOT signed",
@@ -65,7 +124,9 @@
     "archive_retired_evidence.py:65 opens the snapshot with mode 'wt' (same-day truncation)",
     "no product-side evidence-span restore entry point exists"
   ],
-  "blocked_by": ["D-W15 specialist decision (schema/transaction/recovery) is unsigned; implementation must not start before it - re-affirmed after the r2 review returned accepted_scoped for the evidence scope only"],
+  "blocked_by": [
+    "D-W15 specialist decision (schema/transaction/recovery) is unsigned; implementation must not start before it - re-affirmed after the r2 review returned accepted_scoped for the evidence scope only"
+  ],
   "evidence_paths": [
     "execution_runs/I-15-A/a20260919-01/binding.json",
     "execution_runs/I-15-A/a20260919-01/oracle.md",
@@ -77,5 +138,74 @@
     "execution_runs/I-15-A/a20260919-01/harness/archive_verifier.py",
     "execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py"
   ],
-  "reviewer_status": "PENDING independent review (implementer did not self-accept; no product code was written)"
+  "reviewer_status": "PENDING independent review (implementer did not self-accept; no product code was written)",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority": {
+    "verdict": "accepted_scoped",
+    "verdict_round_used": "r2 independent review, as issued in the independent reviewer's closeout report (card two: I-15-A, evidence/diagnostic scope)",
+    "verdict_written_by": "an independent reviewer session (never by the implementer)",
+    "carrier": {
+      "file": "%TEMP%\\closeout-review-20260920-035508\\REPORT.md",
+      "path_inside_attempt": null,
+      "section_heading": "### ▶ 可原样粘贴进 `review.md` 的裁决正文",
+      "section_heading_line": 289,
+      "line_range_inclusive_1_based": [
+        292,
+        331
+      ],
+      "byte_offsets": {
+        "start": 20881,
+        "end_inclusive": 24822,
+        "end_exclusive": 24823
+      },
+      "region_bytes": 3942,
+      "region_sha256": "0b729a4dfbd0274fda7fe4ad9f935b9e9411a8353afe8988441738eb91e215f0",
+      "first_line_of_region": "## 独立 reviewer 裁决（2026-09-20，独立 session；范围：冻结证据/诊断）",
+      "verdict_line": 294,
+      "first_line_of_verdict": "**裁决：`accepted_scoped` —— 仅限\"冻结证据 + 诊断反例\"范围；不授予产品实施资格；产品实施仍 blocked。**",
+      "region_definition": "the raw bytes of the listed lines joined by LF, WITHOUT a trailing newline; line numbers and byte offsets are 1-based / 0-based respectively, against the file as it stands at the recorded sha256",
+      "carrier_file_sha256": "9dafd6cf566418cf4b5e1e9c21cb9147902fbe83dccd47147a5d66c20ef678d0",
+      "carrier_file_bytes": 39479,
+      "note": "CARRIER DEVIATION: review.md for this card contains no reviewer verdict section - only the implementer's own banner line 9-12 repeating the reviewer's return. The independent reviewer itself designated the cited report block as the carrier: '此前的 r2 结论在盘上没有任何独立载体；本段即为该结论的落盘载体' (the earlier r2 conclusion had no independent carrier on disk; this block IS that conclusion's on-disk carrier)."
+    },
+    "reviewer_report": {
+      "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\closeout-review-20260920-035508\\REPORT.md",
+      "exists": true,
+      "sha256": "9dafd6cf566418cf4b5e1e9c21cb9147902fbe83dccd47147a5d66c20ef678d0",
+      "bytes": 39479,
+      "is_the_carrier": true,
+      "in_plan_tree_copy": {
+        "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-04-C\\a20260919-01\\evidence\\r5-reviewer-closeout-report.md",
+        "exists": true,
+        "sha256": "9dafd6cf566418cf4b5e1e9c21cb9147902fbe83dccd47147a5d66c20ef678d0"
+      }
+    },
+    "scope": {
+      "granted": [
+        "frozen evidence + diagnostic counterexamples ONLY - reviewer wording: '裁决：`accepted_scoped` —— 仅限\"冻结证据 + 诊断反例\"范围；不授予产品实施资格；产品实施仍 blocked。'",
+        "the reviewer states this verdict 'is NOT a release to implement, and nothing in this attempt may be used to start a production prune'"
+      ],
+      "not_granted": [
+        "product-implementation qualification ('不授予产品实施资格')",
+        "any production prune",
+        "schema / transaction / recovery mechanism selection",
+        "real 25.7M-row / 49.7GB scale correctness",
+        "fixed-clock injectability, old-archive upgrade, product-side restore entry point",
+        "PRODUCT IMPLEMENTATION REMAINS BLOCKED on the unsigned D-W15 (handoff.blocked_by is left untouched by this pass)"
+      ]
+    },
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "reviewer_status_note": "handoff.reviewer_status still reads 'PENDING independent review (implementer did not self-accept; no product code was written)' while the same file's review_r2_outcome records the accepted_scoped return. This pass did not rewrite reviewer_status (it is the implementer's field); the implementer should resolve the contradiction.",
+    "reviewer_status_left_untouched": true
+  },
+  "bookkeeping": {
+    "recorded_by": "carrier-landing bookkeeping executor (delegated subagent), 2026-09-20",
+    "what_this_pass_did": "landed the carrier fields for an already-written independent verdict; appended nothing to review.md",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "review_md_bytes_written": 0
+  }
 }

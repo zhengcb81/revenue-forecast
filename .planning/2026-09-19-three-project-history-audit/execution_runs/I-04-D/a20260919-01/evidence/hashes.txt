@@ -1,25 +1,28 @@
-# I-04-D a20260919-01 — SEALED canonical hashes (r3, third seal)
+# I-04-D a20260919-01 — SEALED canonical hashes (r4 stable seal, final)
 #
-# sealed_at_utc: 2026-09-20T04:24:16Z
-# rows: 26
+# sealed_at_utc: 2026-09-20T04:31:21Z
+# rows: 30
 # structure_failures: 0
 # structure_failures_detail: NONE
 #
-# 自校验两项：(a) 每行 sha256/字节数与磁盘一致；(b) 清单内每个 *.json 可被 json.load 解析。
-# 所有数值由 scratch/rework_r3b.py 与 scratch/rework_r3c.py 用 hashlib 现算，连续两次运行
-# 产出字节相同的 handoff.json（fixed point）。手改哈希视为缺陷。
+# 交付世代（r4）：scheduler fd163a27…(35388 B) + suite 27f492b1…(30422 B) 的最终字节已用于
+# 重跑 19 个调度器用例（after/scheduler-run-final.txt, rc=0）与契约套件
+# （after/i04d-suite-final.txt, rc=0, 21 passed）。旧世代保留在 evidence/run-r2-stale/。
 #
-# 代际：r2 的 changes_required 针对 r2_review_generation（见 handoff.json）；本封盘为 r3 世代。
+# 自校验：(a) 每行与磁盘一致；(b) 清单内每个 *.json 可 json.load。handoff.json 不自称自身哈希。
 #
 # 编码注意：evidence/negative-case-*.txt 为 UTF-16LE。
 #
-# 封盘纪律：本文件是本轮 attempt 的最后一次写入；此后再写入即判定本轮失效、需重新点审。
+# 稳定封盘：写入后不再写 attempt 目录（连续 >=2 分钟零写入已实测，见 after/stable_seal_proof.txt）。
 
 6cbe67281060cf115c9c1973008eb00286938957d75a6907a60681e899f1d1f0       489  after/all_json_parse_check.txt
 94733cf8ebb3fb79d82123b9af9f8eb8afe75cd059bbfb06ff06fdd1f62ff2af       720  after/handoff_json_revalidation.txt
 6e551d2da7e1892d5df2fc578415bebd47fc74f76252c45bdce1f851f4fe70d9      2354  after/hash_regeneration.txt
+f8220c7d29c82cde12ff44e267523c12698dc64ab58e2d6f45fc7afddf2a3115       206  after/i04d-green-r2-stale.txt
 f8220c7d29c82cde12ff44e267523c12698dc64ab58e2d6f45fc7afddf2a3115       206  after/i04d-green.txt
+6503819d16fe609fd08f1e0541a70fe4353ffd3cb80fffb809ed7c4503e129a0       206  after/i04d-suite-final.txt
 277873d4c30e95b4ff14fb5ad98ac12c7c7cf97e13425bf9dd0c2df853c89957       375  after/p3_literal_check.txt
+3df2bcc376737ec401c0cabbf3e521939477ca26d94290452b7dc9d783fcebea      5002  after/scheduler-run-final.txt
 c632a3a8c7c9ea96772363231dec301078f55f993f54fbab261f219dd04e0224     41466  before/i04d-red.txt
 27f492b15e33031300e8ecd7946919258f4ff24df16eb72e6dfc895578a4056d     30422  before/test_fetch_filing_lease.delivered.py
 fc8778eebb9f2a6061e27b9716de47c89e6291bd1f663b8a5d8cc454de0db7a8      9626  binding.json
@@ -30,7 +33,8 @@ f2edc3071bf4e9b4b29e3489cd5d339e0f8f5ed0afdf45f06133b26a7b0c069a     35243  evid
 b7775d4e827f6362287fa3fd4538419033729e736c3fb60fec357cdcf2832e59      2948  evidence/negative-case-detail.txt
 fa4a39a1b2f216dfba8461829a2141d5d6a7125ca3003e13aaf3f0482bfac828      2762  evidence/negative-case-ledger.txt
 a1f45cc64ac60886beb6da6a7eb4b2bb27d660b3c1041a7b1999a9d943aafed4      2216  evidence/phase-wall.txt
-f30618b01afaf7d32baefefd3577e79805d34d75eae9fa08c61051e8b1d3e0c4     49429  handoff.json
+88127af878273167b98180866d3cbda55b653ca6c0cf8088ae1f1db7563f9d59     19412  evidence/run-r2-stale/I04D-CASE-F-L5/summary.json
+733cb40d29d6d11dc369fb81a60fc7822639ac839c98b880d4970e75e41687f6     55936  handoff.json
 a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198    126274  iso/filing-fetch/scripts/fetch_filing.py
 5f16f0fe9ea2bad97c1193b530ae4ab13a7eb4a924361069c90b7c322e3aa902      4552  iso/filing-fetch/scripts/i04d_fake_worker.py
 eabd39612d38bdde56d26d2e66d8017d9a35f762ed0a54825cedc125b3d5e889     12783  iso/filing-fetch/scripts/i04d_participant.py
@@ -39,5 +43,5 @@ fd163a2702866ce0fe4988e962179c3f67c8adc9d2d01480f04f7f4439044ae2     35388  iso/
 428a0a96a4faf12c4cff9aa625ed9c731d9e2e86ff43e5e2afe84cdbaa623f1d     42257  oracle.md
 d5ab82a29d441272d895c234bf055f652241e04685f797022942f7e7dd76b328     13608  recovery/README.md
 7d080f684138f6eea705a35059e6ce93e245e6cbcd934377ea4fee2d780e7ead      1401  recovery/r2_corrections.md
-990af47fd903a2591725576826c0da2aeea87a03b69cbecc052722777815db96     36996  review.md
+81516b2ac06a41dca5978e744b540f8b2f33d7ba28297e7c792c32f9c50fcf09     37191  review.md
 a730362caa3f7d136a4a074cefd120da557157b4ace5e561b1f1a4929191d46b     87261  scratch/patch_i04d.py
