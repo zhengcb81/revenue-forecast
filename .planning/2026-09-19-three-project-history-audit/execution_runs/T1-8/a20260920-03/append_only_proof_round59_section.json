@@ -1,0 +1,53 @@
+{
+ "DO_NOT_READ_AS_A_PROOF": true,
+ "what_this_file_is": "a GUARD TEST RECORD, not an append-only proof of task_plan.md",
+ "why_it_exists": [
+  "While hardening the proof script (.planning/_pwf_tmp/verify_append_only.py) I added two guards and set out to prove each one FIRES, because a guard that never fires and a guard that always fires are indistinguishable if you only ever run the happy path.",
+  "The test for the round/stage guard needed the working tree to carry a NON-EMPTY delta (otherwise the empty-delta guard fires first and the stage guard is never reached). I therefore appended a temporary 58-byte HTML comment to task_plan.md, ran the script against an --out path owned by a DIFFERENT stage, and reverted the comment immediately afterwards.",
+  "The run SUCCEEDED instead of being refused: the target path did not yet exist, so the guard's 'existing file' branch was never entered and there was nothing to compare against. The guard was therefore NOT exercised by this run, and this file is its by-product.",
+  "Content honesty: the temporary probe line has been reverted, so task_plan.md currently equals its own HEAD. The 58 inserted bytes below therefore no longer describe anything on disk."
+ ],
+ "measured_values_at_the_time_of_the_probe": {
+  "pre_image_bytes": 145338,
+  "pre_image_sha256": "c28e35da8b401cec9135dd3c2562aa1aaba3441cffa344746969effe207c6453",
+  "post_image_bytes": 145396,
+  "post_image_sha256": "69ff4452c0616cfdec8fed9567d06095bdce1cf471ed89f70f5f8b86c8a000f4",
+  "inserted_chars": 58,
+  "deleted_chars": 0,
+  "note": "the 58 inserted bytes are the temporary probe comment, since reverted"
+ },
+ "the_real_round_59_proof_is": {
+  "path": "append_only_proof_round59.json",
+  "scope": "the round-59 section itself: task_plan.md 133308 -> 141422 bytes",
+  "APPEND_ONLY": true
+ },
+ "guard_test_results": {
+  "empty_delta_guard": {
+   "verdict": "EXERCISED AND FIRED",
+   "how": "re-ran the proof with the default --attempt path AFTER committing, so HEAD already contained the text being proved and the measured delta was empty",
+   "observed": "FATAL: refusing to write ... the measured delta is EMPTY (pre-image == post-image); exit=1",
+   "why_it_matters": "without this guard the run would have written a file claiming APPEND_ONLY true while asserting that the document gained 0 bytes -- silence presented as evidence"
+  },
+  "round_and_stage_guard": {
+   "verdict": "EXERCISED IN BOTH DIRECTIONS -- CLOSED",
+   "what_was_established": "the guard reads the parsed `round` / `stage` / `target` fields rather than searching the raw text for a spelling of them; an earlier version searched for 'round59' and rejected its own output, which spells the fact as `\"round\": 59`",
+   "first_attempt_failed_TO_EXERCISE_IT": "this probe originally placed --out at a path that did not yet exist, so the 'existing file' branch was never entered, the run SUCCEEDED, and no test had actually been performed. Recorded here rather than quietly fixed, because a test that cannot fail is not a test.",
+   "how_it_was_closed": {
+    "wrong_stage_refused": {
+     "setup": "wrote a parseable file recording `stage: section` at the target path, appended a temporary non-empty delta to the working tree, then ran with `--stage closure`",
+     "observed": "FATAL: refusing to overwrite ... it records stage 'section', not 'closure'; exit=1",
+     "side_effect_checked": "the target file was byte-identical afterwards, and task_plan.md was reverted to a clean tree"
+    },
+    "matching_stage_allowed": {
+     "setup": "same file at the target path, same temporary delta, then ran with the MATCHING `--stage section`",
+     "observed": "the run proceeded and wrote its proof; exit=0",
+     "why_this_matters": "without this direction the guard would be indistinguishable from one that refuses everything"
+    }
+   },
+   "residual_files_left_by_these_probes": [
+    "append_only_proof_round59_guardprobe.json -- the file the probe wrote once the matching stage was supplied. Its delta was the temporary probe comment, since reverted, so it too must NOT be read as a proof of task_plan.md."
+   ],
+   "status": "CLOSED"
+  }
+ }
+}
