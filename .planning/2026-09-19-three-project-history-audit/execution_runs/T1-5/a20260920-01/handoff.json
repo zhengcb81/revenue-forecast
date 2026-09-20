@@ -1,0 +1,78 @@
+{
+  "card": "T1-5",
+  "attempt": "a20260920-01",
+  "kind": "authorised_implementation",
+  "date": "2026-09-20",
+  "authority": {
+    "source": "OWNER_DECISIONS.md section 13 (TIER-1 owner ruling)",
+    "tier": 1,
+    "ruling_verbatim": "授权实施（owner 职权内，属验收基准加固）；交由模型卡批次执行，新增回归须独立 oracle、不得回改既有冻结件。",
+    "nature": "an AUTHORISED IMPLEMENTATION (owner 职权内，属验收基准加固) -- unlike the interpretation cards, this one must actually write code"
+  },
+  "what_was_actually_missing": "The task list marked this item complete on the strength of a working-tree file that had never been committed and was never recorded in task_plan.md. Verified by: `git log -- tests/test_model_extensions_anchor.py` returned nothing, and grep for T1-5 in task_plan.md returned nothing, while the file existed on disk (7378 B). So the deliverable was real but UNLANDED -- an artefact with no history. This attempt lands it.",
+  "deliverable": {
+    "conclusion": "tests/test_model_extensions_anchor.py is a new, independent, minimal regression that anchors the eight extension models to the product registry. It is now committed.",
+    "why_this_is_the_right_regression": "tests/test_model_extensions.py already proves the FORMULAS and their economic invariants. What it does not prove -- and what the 20260920 production-tree rollback destroyed -- is that the extension layer is ANCHORED: that the eight specs are actually mounted on the registry the product builds, that model_extensions.py exists as real version-controlled content, and that the driver_bounds mechanism survives. A formula suite cannot detect a lost mount, because the formulas still pass in isolation.",
+    "independent_oracle": "The eight model names are the card pack's frozen identity list, not values read back from the registry under test; the bounds assertions are derived from the card text. No expected value is produced by calling the code under test.",
+    "checks": [
+      "exactly the eight named archetypes are registered (identity list, not a read-back)",
+      "the product registry (MODEL_REGISTRY) contains all eight -- this is what the rollback removed",
+      "the registry is a strict superset of the 24 core models (nothing was replaced)",
+      "every extension spec declares the opening-balance bridge that makes stock/flow validation possible",
+      "driver_bounds survives for the three specs that declare non-default domains",
+      "model_extensions.py exists as non-empty content, and model_registry.py still names the mount point"
+    ],
+    "artifacts": [
+      {
+        "path": "tests/test_model_extensions_anchor.py",
+        "bytes": 7378,
+        "sha256": "954e08ac4ea19a6953da3c435f9028956d073acad06a5db4f253660c180524f9"
+      }
+    ],
+    "supporting_hashes": {
+      "scripts/model_extensions.py": {
+        "bytes": 14475,
+        "sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+      },
+      "scripts/model_registry.py": {
+        "bytes": 26446,
+        "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+        "note": "the frozen production anchor -- unchanged by this card"
+      }
+    }
+  },
+  "mutation_arm": {
+    "why": "T1-5 requires that the new regression has an independent oracle. A suite that cannot fail protects nothing, so the response is demonstrated, not asserted.",
+    "mutation": "on a COPY (.tmp-t15-mutation, since deleted), restore the exact rollback: replace `] + list(build_extension_specs(ModelSpec, ModelRegistryError)))` with `])` so MODEL_REGISTRY loses the extension mount.",
+    "result": "FAILED (failures=8), exit 1 -- every one of the eight models reported not found in MODEL_REGISTRY.",
+    "second_mutation": "renaming the mount-point symbol made the suite fail at import (ImportError, exit 1), confirming the mount-point reference is load-bearing.",
+    "conclusion": "the regression is responsive to precisely the failure mode the card names."
+  },
+  "results": {
+    "new_suite": {
+      "command": "python -m unittest tests.test_model_extensions_anchor",
+      "result": "Ran 6 tests -- OK",
+      "exit_code": 0
+    },
+    "pre_existing_suite_unchanged": {
+      "command": "python -m unittest tests.test_model_extensions",
+      "result": "Ran 26 tests -- OK",
+      "exit_code": 0,
+      "note": "the new file adds a suite; it does not modify the existing one"
+    }
+  },
+  "boundaries": {
+    "existing_frozen_artifacts_modified": 0,
+    "existing_tests_modified": 0,
+    "production_source_modified": 0,
+    "production_anchor": {
+      "path": "scripts/model_registry.py",
+      "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "unchanged_by_this_card": true
+    },
+    "expected_values_read_back_from_code_under_test": false,
+    "status_transitions_performed": 0
+  },
+  "lesson": "A task marked complete is not the same as a deliverable that LANDED. A working-tree file has no history: `git log -- <path>` empty + an on-disk file = an unlanded artefact. When closing a card, verify the deliverable is COMMITTED, not merely present.",
+  "next_action": "No follow-up required for T1-5. The regression is committed and green."
+}
