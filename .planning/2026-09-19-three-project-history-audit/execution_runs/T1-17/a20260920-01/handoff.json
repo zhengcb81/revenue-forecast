@@ -1,0 +1,139 @@
+{
+  "card": "T1-17",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_confirmation",
+  "date": "2026-09-20",
+  "authority": {
+    "source": "OWNER_DECISIONS.md section 13 (TIER-1 owner ruling)",
+    "tier": 1,
+    "ruling_verbatim": "T1-17 | section 4: I-04-C C2 (OPEN-3) | ADOPTED: the naming/boundary acceptance of `lock_budget_for(x)=min(x,60)` is frozen per the current formulation, and `worker-pause` STAYS INSIDE the lock (the card does not block sign-off).",
+    "nature": "the ruling orders no write; it adopts a reading (the 60 s waiting cap is a pathological-wait ceiling, not a new budget) and decides the one genuinely open item (worker-pause stays inside the lock)"
+  },
+  "origin": {
+    "gate": "C2 = OPEN-3",
+    "card_under_ruling": "I-04-C",
+    "attempt_under_ruling": "a20260919-01",
+    "registered_carriers": [
+      "decision.md section 8 O-3 (including the 2026-09-20 appended registration)",
+      "decision.md section 12 ADR-2 (lock budget v1.2 and OPEN-3)",
+      "decision.md section 14 (OPEN-3 review advice)",
+      "review.md section 6 (OPEN-3 row)",
+      "review.md line 167 (C2 status)",
+      "handoff.json.owner_gates[0]",
+      "handoff.json.review_carry_conditions.C2_OPEN3_owner_gate"
+    ],
+    "the_two_open_items_as_registered": [
+      "(a) name/boundary acceptance of the 60 s waiting cap (lock_budget_for(x)=min(x,60))",
+      "(b) whether worker-pause may stay inside the lock"
+    ]
+  },
+  "deliverable": {
+    "conclusion": "both halves of the ruling are already realised on disk (the presence leg holds and no contradicting form survives as governing text), and every registered carrier is internally consistent about the gate's status; no write was needed and none was made",
+    "why_confirmation_not_write": "the ruling's adopted form is present and governing on disk, and the superseded form is retained only as declared history per T1-12 form (1). A ruling that freezes the current formulation does not require editing the very text it freezes.",
+    "artifacts": [
+      {
+        "path": "scripts/verify_t17.py",
+        "kind": "verifier"
+      },
+      {
+        "path": "t17_i04c_c2_open3_scope.json",
+        "kind": "structured_result"
+      },
+      {
+        "path": "decision.md",
+        "kind": "ruling_record"
+      }
+    ]
+  },
+  "verification_summary": {
+    "overall": "PASS",
+    "exit_code": 0,
+    "propositions": {
+      "R-1": {
+        "claim": "presence leg: both halves of the ruling have a home in the frozen text, and min(x,60) is the single governing formula",
+        "holds": true,
+        "evidence": [
+          "oracle.md: governing formula is lock_budget_for(phase_budget) = min(phase_budget, 60)",
+          "decision.md: lock_budget_for(x)=min(x,60) present",
+          "decision.md: min(phase_budget, 60) present",
+          "decision.md ADR-11: worker-pause is now an action taken AFTER entering the critical section (i.e. it stays inside the lock -- exactly the half the ruling decided)"
+        ],
+        "un_disowned_min10_sites": []
+      },
+      "R-2": {
+        "claim": "absence leg: no governing text places worker-pause outside the lock, and no governing text still carries the superseded 10 cap",
+        "holds": true,
+        "evidence": {
+          "forbidden_live_assertions": [],
+          "superseded_10_cap_still_live": false,
+          "history_sites_not_counted": [
+            "decision.md lines 500, 501 within the F-I04C-13 cleanup table (old-text column)",
+            "decision.md line 505 within the same table"
+          ],
+          "note": "the sequence `min(10` DOES occur on disk, but only inside the F-I04C-13 'old text (already changed)' column, whose header declares the column's semantics; per T1-12 form (1) that history must be preserved, so it is deliberately not counted as governing text"
+        }
+      },
+      "R-3": {
+        "claim": "gate leg: every registered C2/OPEN-3 carrier is consistent -- it is an owner ruling item that does not block sign-off, and the implementer did not self-rule",
+        "holds": true,
+        "evidence": {
+          "owner_gates[OPEN-3] registered": true,
+          "owner_action_required true": true,
+          "does NOT block sign-off": true,
+          "carry_condition C2": true,
+          "fallback_until_ruled records the frozen 60": true,
+          "blocked_by is empty": true,
+          "review.md records 'does not block this sign-off'": true,
+          "review.md records 'owner has not ruled; implementation keeps 60'": true,
+          "the card ASKS the owner, it does not self-rule": true
+        },
+        "sub_checks_passed": "9/9"
+      },
+      "R-4": {
+        "claim": "additivity: the C1/OPEN-3 text corrections landed append-only (pre-change bytes survive as prefixes)",
+        "holds": true,
+        "evidence": {
+          "decision.md": {"pre_bytes": 63448, "now_bytes": 63448, "delta_bytes": 0, "prefix_preserved": true},
+          "oracle.md": {"pre_bytes": 22112, "now_bytes": 22112, "delta_bytes": 0, "prefix_preserved": true},
+          "review.md": {"pre_bytes": 23073, "now_bytes": 23073, "delta_bytes": 0, "prefix_preserved": true}
+        },
+        "shape_note": "handoff.json is JSON; byte-append is not its coherence criterion. R-3 covers its registration instead."
+      }
+    }
+  },
+  "why_four_legs_and_not_fewer": "R-1 alone would let a contradiction survive (presence without absence). R-2 alone would let a deletion masquerade as a resolution (absence without presence). R-3 is a distinct claim: the gate's registered STATUS is coherent and the implementer did not self-rule. R-4 is again distinct: it asks not 'is the right text there' but 'did it get there without destroying earlier bytes'. Four separable claims, four separable failure modes.",
+  "error_made_and_corrected_in_this_card": [
+    {
+      "error": "path-depth off-by-one: REPO = EXEC.parents[6] resolved to <audit dir>, not the repo root (correct is EXEC.parents[4])",
+      "how_caught": "the path-sanity guard (git rev-parse --show-toplevel must equal REPO) reported FATAL: REPO != git toplevel",
+      "why_it_matters": "without the guard, `git show HEAD:<wrong path>` returns EMPTY stdout, and the emptiness is then misreported as a CONTENT DEFECT -- the T1-13 failure mode. This is the SECOND time this same root cause has been hit in this batch (T1-13 was the first), and the guard converted it from a silent false positive into an explicit fatal.",
+      "lesson": "a guard is valuable not because it prevents mistakes but because it makes them surface as FATAL rather than as FALSE REPORT",
+      "fixed_in": "scripts/verify_t17.py (depth comment written from EXEC, not from __file__)"
+    },
+    {
+      "error": "anchor criterion compared incompatible hash functions: `git hash-object` returns a git BLOB hash (SHA-1 over 'blob <len>\\0' + content) while the registered anchor is a SHA-256 of the on-disk bytes",
+      "symptom": "[anchor] FAIL with 20bca1626a015ce3... while sha256sum still read 9ec65295...",
+      "how_caught": "the reported value did not match the anchor, and the anchor had been independently reconfirmed as 9ec65295... via sha256sum",
+      "fixed_by": "hashing the file with the same function the anchor was made with: hashlib.sha256(path.read_bytes())",
+      "lesson": "a criterion must match not only the object's FORM but the TYPE of the quantities being compared; two things both called 'hash' can be incomparable"
+    }
+  ],
+  "boundaries": {
+    "ruled_on_carriers_written": 0,
+    "ruled_on_carrier_files": [
+      "decision.md", "oracle.md", "review.md", "handoff.json", "binding.json", "commands.json"
+    ],
+    "status_transitions_performed": 0,
+    "card_status_preserved": "I-04-C remains accepted_scoped",
+    "signatures_forged": false,
+    "i04c_frozen_carriers_modified": false,
+    "product_files_changed": [],
+    "production_anchor": {
+      "path": "scripts/model_registry.py",
+      "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "matches": true
+    },
+    "all_json_parseable": true
+  },
+  "next_action": "No follow-up is required for T1-17 itself. If downstream readers find the still-present 'pending owner ruling' markers on the C2 carriers ambiguous, the CORRECT remedy is an appended registration note per T1-12 form (1) recording that section 13 T1-17 has now ruled -- NOT an in-place edit of those fields, which would rewrite the historical record of what was believed at the time and is outside T1-17's authority (this ruling establishes the interpretation; it does not authorise rewriting I-04-C)."
+}

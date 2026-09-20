@@ -1,0 +1,82 @@
+{
+  "card": "T1-17",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_confirmation",
+  "ruling": "OWNER_DECISIONS.md section 13 T1-17: ADOPTED -- the naming/scope acceptance of lock_budget_for(x)=min(x,60) is frozen per the current formulation, and worker-pause STAYS INSIDE the lock (does not block sign-off)",
+  "propositions": {
+    "R-1": {
+      "claim": "the ruling's two halves are present, and min(x,60) is the single governing formula",
+      "holds": true,
+      "evidence": [
+        "oracle.md: the governing formula is min(phase_budget, 60)",
+        "decision.md: lock_budget_for(x)=min(x,60) present",
+        "decision.md: min(phase_budget, 60) present",
+        "decision.md ADR-11: worker-pause is an action AFTER entering the critical section"
+      ],
+      "un_disowned_min10_sites": []
+    },
+    "R-2": {
+      "claim": "the forbidden forms are absent: no live text puts worker-pause outside the lock, and no live text still carries the superseded 10 cap",
+      "holds": true,
+      "evidence": {
+        "forbidden_live_assertions": [],
+        "superseded_10_cap_still_live": false,
+        "note": "the sequence `min(10` DOES occur inside correction notes; those are history per T1-12 form (1) and are deliberately not counted"
+      }
+    },
+    "R-3": {
+      "claim": "every registered C2/OPEN-3 carrier is consistent: it is an owner ruling item that does not block sign-off, and the implementer did not self-rule",
+      "holds": true,
+      "evidence": {
+        "owner_gates[OPEN-3] registered": true,
+        "owner_action_required true": true,
+        "does NOT block sign-off": true,
+        "carry_condition C2": true,
+        "fallback_until_ruled records the frozen 60": true,
+        "blocked_by is empty": true,
+        "review.md records 'does not block this sign-off'": true,
+        "review.md records 'owner has not ruled; implementation keeps 60'": true,
+        "the card ASKS the owner, it does not self-rule": true
+      }
+    },
+    "R-4": {
+      "claim": "the C1/OPEN-3 text corrections landed append-only (pre-change bytes survive as prefixes)",
+      "holds": true,
+      "evidence": {
+        "decision.md": {
+          "pre_bytes": 63448,
+          "now_bytes": 63448,
+          "delta_bytes": 0,
+          "prefix_preserved": true,
+          "pre_sha256": "7f29023b462d2a27f84f27f60e61e6cb49019a69067c73a28004f8fdd97377fa",
+          "now_sha256": "7f29023b462d2a27f84f27f60e61e6cb49019a69067c73a28004f8fdd97377fa"
+        },
+        "oracle.md": {
+          "pre_bytes": 22112,
+          "now_bytes": 22112,
+          "delta_bytes": 0,
+          "prefix_preserved": true,
+          "pre_sha256": "b4a0cd97a02164ed531edbf553a81826f89f2f8c960d9bcd157f9d5b3c1494cc",
+          "now_sha256": "b4a0cd97a02164ed531edbf553a81826f89f2f8c960d9bcd157f9d5b3c1494cc"
+        },
+        "review.md": {
+          "pre_bytes": 23073,
+          "now_bytes": 23073,
+          "delta_bytes": 0,
+          "prefix_preserved": true,
+          "pre_sha256": "48ace290b39f850f88f2e6da41ee875930354656ad62ac1ea9bf1509e16f2fd8",
+          "now_sha256": "48ace290b39f850f88f2e6da41ee875930354656ad62ac1ea9bf1509e16f2fd8"
+        }
+      },
+      "shape_note": "handoff.json is JSON; append-only is not its coherence criterion -- R-3 covers its registration instead"
+    }
+  },
+  "production_anchor": {
+    "path": "scripts/model_registry.py",
+    "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "expected": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "matches": true
+  },
+  "product_files_changed": [],
+  "overall": "PASS"
+}
