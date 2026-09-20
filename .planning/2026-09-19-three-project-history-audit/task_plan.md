@@ -655,3 +655,106 @@ M13 PRE-FIX shape-violated          -> rc = 0     <- 修复前：完全看不见
 **Round 57 补记（**追加**，不改上文）**：上述证据在落笔后**新增一个交付件**并**重生成了 `handoff.json`**（因原 handoff 未登记该件），故**两个哈希以上文为准需更正**：`handoff.json` 现为 **12934 → 13086 B**、sha256 **`cb18c036e85af238abf30cf682a7b94173172752c489f6fbd339ea6f595515ec` → `ed206347b00b86d96629e917a2c33f8054f9e323accc40f2d2d2ab0934501306`**。新增件 `append_only_proof_round57.json`（**676 B** / `fb7bf6a0a8e9e602…`，**完整 sha256 见 `handoff.json` 的 `artefacts` 表**）是本次 `task_plan.md` 追加的**机械证明**：以 HEAD blob（`e76138cb…`，与登记的**前像常量一致**）为基准，`prefix_bytes_preserved = True`、opcodes = `['equal','insert']`、**`deleted_chars = 0`**、`inserted_chars = 6436` ⇒ **`APPEND_ONLY = True`**。`verify_t1_10.py` / `t1_10_defect_verification.json` / `decision.md` 三者哈希**未变**（与上文一致）。**handoff.json 自身哈希仍不登记（自指）**。
 
 **Round 57 再补记（**追加**，上文补记里的两个**字节数**我写错了，以此处为准）**：`handoff.json` 实测 **13153 B**（不是 13086 B），sha256 `ed206347b00b86d96629e917a2c33f8054f9e323accc40f2d2d2ab0934501306`（**该值上文写对了**）。`append_only_proof_round57.json` 实测 **676 B**（上文写对），sha256 **`fb7bf6a0a8e9e602d89abbffa8d2116e4f2391cdaa82c18c3b02345dcb9918a4`**。**记录哈希一律以 `handoff.json` 的 `artefacts` 表为权威**（该表在写盘后逐条回读复算，**4/4 MATCH**）；本文件的散文数字仅为提示，**不得用作比对依据**。⇒ 又一次同族提醒：**字节数这类"我顺手写下的数字"必须先量再写**（本项目第 13/14 次同源教训的轻量变体）。
+
+---
+
+## Round 58 — T1-8 前置 ① / ④：把「不退回 `isinstance`」变成一个**可判定谓词**，并逐代按 sha256 登记
+
+**卡**：`execution_runs/T1-8/a20260920-02`（承接 `a20260920-01` 的前置③）。**权限**：`OWNER_DECISIONS.md` §13 **T1-8**（TIER-1）。**性质**：**核验 + 事实登记**，**不执行推广**。
+
+### 前置①的问题：「不退回 `isinstance`」**字面上没说它禁止什么**
+
+一条禁令只有在其**被禁止的属性可被检出**时才有约束力。本卡先把它变成可判定的谓词：
+
+> **`PASS_rejected` 是由 `isinstance(exc, ModelRegistryError)` 单独决定的，还是受「异常**精确类型名**」等式约束的？**
+
+**判据不是「有没有调用 `isinstance`」** —— 八代全部调用它（用于 `FAIL_wrong_exception_type` vs `FAIL_import_or_file_error` 的分流）。**禁用形态**的精确文本是那个三元式：`"PASS_rejected" if is_target else (...)`，即 **`PASS_rejected ⟺ is_target`**。
+
+### 结论：**八代中五代是禁用形态**（八代**八个不同 sha256** ⇒ 正合前置④的登记形态）
+
+| 批次族 | runner sha256（前 12） | 类型**名**等式 | `PASS_rejected` 由 `isinstance` **单独**决定 |
+|---|---|---|---|
+| **M01-M04** | `b5fcc68563f5` | — | **是（禁用）** |
+| **M05-M08** | `fd3a11c9226a` | — | **是（禁用）** |
+| M09-M12 | `997c553b0b9e` | `raised_matches_expected_name` | 否 |
+| **M13-M16** | `9e4a6450d6ab` | — | **是（禁用）** |
+| M17-M20 | `94619a98f576` | `declared_ok = raised_name == declared` | 否 |
+| M21-M24 | `a5ee7599c37e` | `expected_type_matches_raised` | 否 |
+| **M25-M28** | `eab0116220df` | — | **是（禁用）** |
+| **M29-M31** | `9ea69c72dced` | — | **是（禁用）** |
+
+⇒ **①经本卡核验后是「可判定」而非「已满足」**：**五代仍处禁用形态**，故**推广仍不得先行**。**④的登记表**（上表）已由本卡给出；`rc_namespace.json` 的**写入属编排层**。
+
+### 谓词分叉的**方向** —— 本卡必须先纠正我自己的一个错误判据
+
+**首版 MRO 探针结论是「无分叉」，而那个结论是错的。** 它按**声明名**构造异常（对 `ValueError`/`TypeError`/`KeyError` 各自取其**自身**），再比较两谓词 —— 而那是一个**两谓词必然一致**的域。**分叉是单侧的，且落在目标的「子孙」一侧**：
+
+| 形态 | 精确类型名 | `isinstance` | 名等式 | 分叉 |
+|---|---|---|---|---|
+| 目标自身 | `ModelRegistryError` | True | True | 否 |
+| **目标的子类** | `SubclassOfTarget` | **True** | **False** | **是** |
+| 目标基类下的兄弟 | `SiblingUnderBase` | False | False | 否 |
+| 目标基类自身 | `ValueError` | False | False | 否 |
+
+目标 MRO = `ModelRegistryError → ValueError → Exception → BaseException → object`。⇒ **`isinstance` 向「目标的子孙」放宽，不向 `ValueError` 放宽**。**直接后果**：那 4 个 declared=`ValueError` 在 `isinstance` 判据下**也会被正确拒绝** ⇒ **「声明的 `ValueError` 会假过」这个直觉说法不成立**；真正会假过的是**类型名不是目标名、但它是目标子类**的异常。
+
+⇒ **本项目第 16 次同源教训**：**判据的「方向」也要匹配对象** —— 本次错不在量、不在面、不在域，而在**我把「放宽的方向」搞反了**。已写入 skill 陷阱 16。
+
+### 冻结证据**已经实例化过**这个区分（关键发现）
+
+全域 **147** 个 `cases.json` 中，仅 **8 个异构**（`expected` 取值分布：`ModelRegistryError:1620 / None:20 / TypeError:4 / ValueError:4`）：
+
+```
+M09…M12 /recovery/selfcheck/B/evidence/M09/cases.json     {'TypeError': 1, 'ModelRegistryError': 10}
+M25…M28 /recovery/selfcheck/cases/F1/evidence/M25/cases.json  {'ValueError': 1, 'ModelRegistryError': 10}
+```
+
+`M09` 的**五臂是一套完整变异对照**（**五臂全部**由 `997c553b` 执行）：
+
+| 臂 | `NEG-CARD.expected` | 变异 | 实测 rc |
+|---|---|---|---|
+| A | `ModelRegistryError` | oracle 正例期望值 → `[999.0]` | **2**（no_verdict_fidelity） |
+| **B** | **`TypeError`** | **声明改写为非目标名** | **3**（`FAIL_wrong_exception_type`） |
+| C | `ModelRegistryError` | 变异值 → `0`（不再被拒） | **3**（`FAIL_not_rejected`） |
+| D | `ModelRegistryError` | 正例期望缺失 | **2** |
+| **E** | `ModelRegistryError` | **无变异（对照）** | **0**（`pass`） |
+
+**B 臂的关键三元组**（`run_result.json` 实读）：`expected='TypeError'` / `raised='ModelRegistryError'` / **`is_target_type=True` 而 `raised_matches_expected_name=False`** ⇒ **两谓词在一次真实冻结运行上分叉，且只有名等式能把它判负**。`E` 为**未变异对照** ⇒ 差异**归因于声明改写**，非环境。
+
+> **该臂独立于 T1-8 的价值**：B 是一次真实运行，其中**冻结声明与被拒异常不一致**，而**产品确实被该 case 所指的护栏正确拒绝**。**一个 `isinstance`-only 的 runner 会把同一次运行记为 PASS** —— 这正是前置①要防的盲区。
+
+### 推广要求与实测**直接冲突**（移交裁定层，本卡不解决）
+
+裁定要求「**每批补「改 `expected` ⇒ rc=3」变异臂**」。但 `M25-M28` 是**唯一**带 `case_contract` 的一代：
+
+```
+"declared_expected_exception": "ModelRegistryError",
+"rule": "every case's `expected` must equal declared_expected_exception ... otherwise
+         the harness refuses to issue a verdict (rc=1)"
+```
+
+**F1 臂实测**：把 `expected` 改成 `'ValueError'` ⇒ **`raw_rc = 1`**（`harness_error=True`，`frozen case contract violated`），**不是 rc=3**。⇒ **该字面要求在装了契约闸门的批次上不可满足**；照抄进 `M25-M28` 会写下**与实测相反的期望值**（把 rc=1 记成 rc=3），即在推广里**植入一个假期望**。**须由裁定方出具澄清**（T1-24/T1-21 纪律）。这也**再次印证前置④**：**「声明被改写」在各代映射到的 rc 并不唯一，不得按整数跨批聚合**。
+
+### 移交编排层（本卡不做）
+
+1. **`task_plan.md` 的 T1-8 段需一条追加式更正**：此前记「前置 ①④ 仍未落实」；**更精确的形态**是「**④ 的登记表已由本卡 §3 给出（8 代 / 8 个 sha256）**；**① 的判定结果是「五代禁用、三代合规」**」。按 **T1-12 ①** 追加，**不回改正文**。
+2. **裁定层须澄清变异臂的字面要求**（见上），建议改为「**每批补一条『声明被改写 ⇒ 失败』的臂，其具体 rc 按该代契约为准**」（M25-M28 → 1，M09-M12 → 3）。
+3. **`rc_namespace.json` 建议按 T1-12 ① 追加两列**（不回改原值）：`pass_rejected_predicate`（`isinstance-only` / `name-equality`）与 `case_contract_present`（`yes` / `no`）。
+4. **前置②的语义可能与 `M25-M28` 的契约重叠**：契约要求 `expected` **必须等于** `declared_expected_exception`，比「只是裸类型名」**更强** ⇒ 前置②的登记形态或需与之对齐（**属裁定层**）。
+
+### 产物
+
+| 产物 | 字节 | sha256 |
+|---|---|---|
+| `scripts/verify_t8_pre1.py` | **26146** | `23213d948047c80dc349d3624d84bb8c49bb42c575fa42f33ae2cd64e9c80ddf` |
+| `t8_pre1_pre4_verification.json` | **16057** | `5fb6e414b57a649b9a7754e56d035dc324f67986b5ce3f413d48fe1933a51697` |
+| `decision.md` | **14660** | `f6153120cf0caf0eb2c42a397542aec7a454a4f580ff99d09b0804363fb65f68` |
+| `handoff.json` | **12221** | `4933d892a28a9da4986fb0f47d4b53eb3675c2b01e3765b322055cd82ddeeb34`（**不登记自身哈希，自指**） |
+
+**幂等性**：证据 JSON **连跑 4 次同哈希**；内含**无环境取值**（无 temp 路径 / 时间戳 / 随机名），全为常量、哈希或**从冻结证据读出**的值。
+
+**边界**：runner 编辑 **0**；**回改历史 rc 0**；冻结证据写入 **0**；`START_HERE.md` 写入 **0**；`rc_namespace.json` 写入 **0**；**产品文件 0 条**；生产锚点 `scripts/model_registry.py` = `9ec6529550f189a4…` **一致**；`status` 转移 **0**；**代签 0**；**删除 0**。**六命题全 `holds`，`overall = PASS`**；登记哈希 **3/3 MATCH**。
+
+**本卡自身的过程披露（如实）**：①`verify_t8_pre1.py` **首跑被自己的 FATAL 护栏拦下** —— `FATAL: wrong plan dir: …\.planning`（我把 `PLAN` 少算了一层：card 的 parent 才是 `execution_runs`）。**这正是陷阱 13「护栏要致命不要误报」的正面案例**，**未污染任何证据**。②MRO 探针首版**在同谓词域上比较**，得出错误的「无分叉」，已在 §4 如实登记并改在**目标子类**上重测。③未跟踪的 `.tmp-r41-mutation/` 系**本轮之前** T1-5 遗留（mtime Sep 20 18:31，`git log --all` 为空），**本轮未触碰、未删除**，已在 handoff 中登记以免被误认为本卡产物。
+
+> **⚠️ 关于 `handoff.json` 的字节数与哈希**：以 `task_plan.md` 上文与 `handoff.json` 的 `artefacts` 表为准（写盘后逐条回读复算）。本段任何数字均为提示，**不得用作比对依据**。
