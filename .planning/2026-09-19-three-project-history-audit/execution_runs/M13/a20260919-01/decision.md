@@ -71,3 +71,27 @@ payability 归属、不可识别模型参数、样本与统计阈值、部署迁
 - OQ-03 (signed driver vs the non-negative revenue check): the reviewer AGREES to register and OPPOSES fixing it in this batch. The reviewer adds that the check is PER ROW, so a single negative year during a clawback refuses the whole row, while the correct accounting treatment depends on the presentation convention (net presentation vs separate lines) - an accounting reviewer's remit. Both sides were measured (recovery/probes/signed_driver_probe.json: performance_fee_revenue = -100 -> refused by the non-negative-revenue check).
 - OQ-04 (invalid frozen observation OBS-SIGNED-PERF-FEE): the reviewer judged the handling ACCEPTABLE - do not repack the frozen fixture, keep the invalid observation and answer the factual question with a labelled post-hoc probe - and asked for the invalid observation to be marked inside cases.json, which revision r3 did with an append-only annotation whose only difference is proven by evidence/M13/cases_annotation_repack.json.
 - OQ-05 (pytest / historical suite): the reviewer AGREES that this card does not need it: the batch's evidence chain is a single standard-library-only runner plus frozen JSON, and the historical 97 tests / 216 subtests are not part of it. If the owner requires a re-run it should be registered as a SEPARATE regression gate, not folded into the formula sign-off conditions.
+
+## r3 bookkeeping addendum (appended, not rewritten)
+
+> 本节由 r3 记账/转录执行者于 2026-09-20 **追加**（append-only）：上文既有字节未被改写；`decision.md` 的
+> 前像字节经 `sha256(new[:len(old)]) == sha256(old)` 逐字节校验。本节**不是自签**，验收文字由独立复核者写出。
+
+1. **r3 独立复核判定**：本卡 `formula` 资格 = `accepted_scoped`，**范围仅限 `formula`**；`disclosure_adaptation`
+   与 `accuracy` 不在本次裁定内。
+2. **载体**：`review.md` 中的复核者裁决原文（**`review.md` 第 208–326 行**）；其**逐字节**转录证明见
+   `evidence/M13/verdict_transcription_r3.json`（旧字节是新字节的前缀、追加区 sha256 = reviewer 源文件
+   sha256 = `46d52996d4df1039c14c69da8eb5b434f3f088aea049aa3a744f98704c5050d3`、源文件 9108 B、`byte_identical: true`）。同一裁定已记入
+   `handoff.json.status` 与 `evidence/M13/qualification.json` 的 `formula.state`，两处旧值
+   `review_pending` 均保留在 `*_before_bookkeeping_fix` 键下。（本节自身位于本文件第 75–97 行。）
+3. **历史值声明**：本文件此前若出现任何"待复核 / 未签收 / pending"口径的表述，一律视为**历史值**，以本节为准。
+   事实核对（记账执行者）：本卡 `decision.md` 原文并未出现 `review_pending` 字样（该字样出现在 M17–M20 的
+   decision 记录中），故此声明用于**消除口径歧义**，而非订正某一行原文。
+4. **范围未扩大**：`disclosure_adaptation` 仍为 `unmapped`，`accuracy` 仍为 `unproven`；D（披露映射）、
+   E（历史映射探针）、F（准确性）三阶段**未执行**，不在本裁定覆盖范围内。
+5. **非自签声明**：`implementer_signed: false`；`implementer_never_signs_acceptance: true`；
+   authority = "acceptance was written by an independent reviewer, not by the implementer"。
+
+相关记录：`recovery/production_drift_note.json`（F-r3-02 时间窗内的生产漂移声明）、
+`evidence/M13/cases_annotation_repack.json`（F-r3-01 口径更正）、`recovery/bookkeeping_r3/summary.json`
+（本次记账的改前→改后 sha256 台账）。

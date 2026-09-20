@@ -299,6 +299,51 @@ def main() -> int:
           and drift["window"]["utc_start"] == "2026-09-20 03:35:31"
           and drift["window"]["utc_end"] == "2026-09-20 03:40:53")
 
+    # ---- J. decision.md r3 addendum + summary limit/note registration -----------------------
+    bk = os.path.join(ATTEMPT, "recovery", "bookkeeping_r3")
+    add = json.loads(rb(os.path.join(bk, "decision_addendum_r3.json")).decode("utf-8"))
+    dm = rb(os.path.join(ATTEMPT, "decision.md"))
+    check("J1 decision.md sha256_after matches disk", sha256b(dm) == add["sha256_after"])
+    check("J2 append-only: the pre-pass bytes are untouched (prefix hash == recorded before-hash)",
+          sha256b(dm[:add["bytes_before"]]) == add["sha256_before"],
+          "%d B prefix of %d B" % (add["bytes_before"], len(dm)))
+    region = dm[add["addendum"]["offset_start"]:add["addendum"]["offset_end"]]
+    check("J3 the addendum region hashes and byte-counts as recorded",
+          sha256b(region) == add["addendum"]["sha256"]
+          and len(region) + add["separator_bytes_added"]
+          == add["bytes_after"] - add["bytes_before"])
+    dtext = dm.decode("utf-8")
+    dlines = dtext.split("\n")
+    blk = ("\n".join(dlines[add["addendum_block"]["line_start"] - 1:
+                            add["addendum_block"]["line_end"]]) + "\n")
+    check("J4 the recorded line range holds exactly the addendum",
+          blk.encode("utf-8") == region,
+          "decision.md lines %d-%d" % (add["addendum_block"]["line_start"],
+                                       add["addendum_block"]["line_end"]))
+    check("J5 the addendum appears exactly once (idempotent re-run)",
+          dtext.count("## r3 bookkeeping addendum (appended, not rewritten)") == 1)
+    check("J6 addendum carries the five required items and the non-signature statements",
+          all(s in blk for s in (
+              "accepted_scoped", "byte_identical: true", "历史值", "`unmapped`", "`unproven`",
+              "implementer_signed: false", "implementer_never_signs_acceptance: true",
+              "acceptance was written by an independent reviewer, not by the implementer")))
+    check("J7 addendum quotes the review.md verdict-block range, not its own range",
+          ("`review.md` 第 %d–%d 行" % (proof["verdict_block_in_review_md"]["line_start"],
+                                        proof["verdict_block_in_review_md"]["line_end"])) in blk
+          and add["carrier_reference"]["review_md_verdict_block"]
+          == proof["verdict_block_in_review_md"])
+    lim = summary.get("limits", {})
+    lim_key = ("doc_pointer_audit_is_pre_r3_and_does_not_cover_the_appended_verdict_text_or_the_"
+               "new_recovery_files")
+    check("J8 summary registers the doc_pointer_audit limitation (re-running needs separate "
+          "authorisation)",
+          lim_key in lim and "requires separate authorisation" in lim[lim_key])
+    notes = summary.get("notes", {})
+    check("J9 summary notes record the idempotent re-run and the timezone self-correction",
+          "already_present_verified_not_duplicated" in notes.get("idempotent_re_run", "")
+          and "GMT Standard Time" in notes.get("timezone_self_correction", "")
+          and "decision.md" in notes.get("decision_addendum", ""))
+
     failed = [c for c in CHECKS if not c["ok"]]
     print("--- %d checks, %d failed ---" % (len(CHECKS), len(failed)))
     return 8 if failed else 0

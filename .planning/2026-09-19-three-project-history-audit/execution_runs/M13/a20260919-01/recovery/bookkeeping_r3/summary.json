@@ -181,5 +181,13 @@
   "script": "recovery/bookkeeping_r3/fix_drift_note_timezone_r3.py",
   "effect_on_the_drift_claim": "none: the ordering claim holds either way, and is now stated in UTC as well (ledger fields written 03:28-03:30 UTC = 04:28-04:30 local, about five minutes before the rollback)",
   "expectations_tolerances_frozen_artifacts_touched": false
+ },
+ "limits": {
+  "doc_pointer_audit_is_pre_r3_and_does_not_cover_the_appended_verdict_text_or_the_new_recovery_files": "evidence/M13/doc_pointer_audit.json was produced by the r3 pipeline BEFORE this bookkeeping pass appended the reviewer's verdict to review.md and before recovery/production_drift_note.json and recovery/bookkeeping_r3/** existed, so it does not cover them. It was deliberately NOT re-run: re-running it would rewrite an evidence file and is outside this pass's authorised write set - re-running requires separate authorisation. Every pointer it does contain still resolves; no dangling pointer was introduced."
+ },
+ "notes": {
+  "idempotent_re_run": "re-running recovery/bookkeeping_r3/transcribe_r3_verdict.py is safe and is the recommended template for later bookkeeping executors: it detects that the verdict bytes are already in review.md and reports 'already_present_verified_not_duplicated' (rc=0, zero writes) instead of duplicating the block, and every carrier edit is guarded the same way (status/formula edits are skipped once the '_before_bookkeeping_fix' keys exist, the repack wording and the oq_rulings provenance line are likewise one-shot). Verified after the fact on all four cards.",
+  "timezone_self_correction": "the first revision of recovery/production_drift_note.json described the drift window's timezone as 'Asia/Shanghai'. A clock check (Get-Date local vs UTC, [System.TimeZoneInfo]::Local.Id = GMT Standard Time, offset +01:00) showed the machine is on GMT Standard Time, so the declared window 2026-09-20 04:35:31-04:40:53 local is 2026-09-20 03:35:31-03:40:53 UTC. The correction was applied to all four notes AND to the source templates (fix_drift_note_timezone_r3.py), and the bookkeeping table was updated so no row went stale. Template lesson: state a timezone only after measuring it, and correct the generator, not just the generated file.",
+  "decision_addendum": "an r3 addendum was appended to decision.md at lines 75-97; proof: recovery/bookkeeping_r3/decision_addendum_r3.json"
  }
 }

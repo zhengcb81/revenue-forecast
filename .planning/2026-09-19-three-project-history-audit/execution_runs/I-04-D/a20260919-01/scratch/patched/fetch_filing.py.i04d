@@ -939,8 +939,11 @@ class _Hooks:
     Production never sets it, so this reduces to a module-level ``None`` check.
     Recognised directives, comma separated:
 
-      ``gate:<name>[@<tag>][@<timeout>]``  publish ``gate.<name>[@<tag>].reached``
-                                           and wait for ``gate.<name>.fence``
+      ``gate:<point>[@<tag>][@<timeout>]``  at the hook POINT called ``<point>``,
+                                           publish ``gate.<point>[@<tag>].reached`` and
+                                           wait for ``gate.<point>.fence``
+      ``arrive:<point>[@<tag>]``            at that point, publish
+                                           ``arrive.<point>.<tag>`` and continue
       ``crash:<point>:<code>``             ``os._exit(<code>)`` at ``<point>``
 
     The gates are file fences, never sleeps: a schedule can therefore pin an
@@ -993,28 +996,26 @@ class _Hooks:
             sys.stderr.flush()
             os._exit(code)
         for name, arrive_tag in self.arrivals:
+            if name != point:
+                continue  # same rule as the gates: an arrival marker names one point
             if not self._applies(arrive_tag):
                 continue
             marker = self.dir / f"arrive.{name}.{arrive_tag or 'all'}"
             if not marker.exists():
                 marker.write_text("arrived", encoding="utf-8")
         for (name, gate_tag), timeout in self.gates.items():
+            if name != point:
+                # A gate is armed at ONE named point.  Without this comparison the gate
+                # fires at the participant's FIRST hook instead (enter-acquired), which
+                # parks the participant at the wrong place and silently destroys the
+                # interleaving the schedule was written to pin.
+                continue
             if not self._applies(gate_tag):
                 continue
             base = self._fence_name(name, gate_tag)
             reached = self.dir / f"{base}.reached"
             if not reached.exists():
                 reached.write_text("reached", encoding="utf-8")
-                try:
-                    import traceback as _tb
-
-                    sys.stderr.write(
-                        f"[i04d] gate {base} published by pid {os.getpid()} at {point}\n"
-                        + "".join(_tb.format_stack()[-6:])
-                    )
-                    sys.stderr.flush()
-                except Exception:  # noqa: BLE001
-                    pass
             fence = self.dir / f"{base}.fence"
             limit = time.monotonic() + timeout
             while not fence.exists():

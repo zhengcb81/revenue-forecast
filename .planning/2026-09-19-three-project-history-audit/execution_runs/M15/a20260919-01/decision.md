@@ -58,3 +58,27 @@ owner 需要据此自行裁定（复核者对 OQ-02 / OQ-03 明确表示「同�
 `open_questions` 列出的 OQ-01…OQ-05（共 5 条）即本节升级给 owner 的事项；`blocked_by` 为空（本卡无被
 阻断项），`stop_conditions_hit` 记录 `STOP_DISCLOSURE_ADAPTATION` 与 `STOP_ACCURACY`（均按卡片要求停在
 该资格，不改成整体 PASS）。
+
+## r3 bookkeeping addendum (appended, not rewritten)
+
+> 本节由 r3 记账/转录执行者于 2026-09-20 **追加**（append-only）：上文既有字节未被改写；`decision.md` 的
+> 前像字节经 `sha256(new[:len(old)]) == sha256(old)` 逐字节校验。本节**不是自签**，验收文字由独立复核者写出。
+
+1. **r3 独立复核判定**：本卡 `formula` 资格 = `accepted_scoped`，**范围仅限 `formula`**；`disclosure_adaptation`
+   与 `accuracy` 不在本次裁定内。
+2. **载体**：`review.md` 中的复核者裁决原文（**`review.md` 第 194–312 行**）；其**逐字节**转录证明见
+   `evidence/M15/verdict_transcription_r3.json`（旧字节是新字节的前缀、追加区 sha256 = reviewer 源文件
+   sha256 = `7086050574f42583ea430d912df91f928e091082ffdb213e1b1e6544a6eb0c92`、源文件 9123 B、`byte_identical: true`）。同一裁定已记入
+   `handoff.json.status` 与 `evidence/M15/qualification.json` 的 `formula.state`，两处旧值
+   `review_pending` 均保留在 `*_before_bookkeeping_fix` 键下。（本节自身位于本文件第 62–84 行。）
+3. **历史值声明**：本文件此前若出现任何"待复核 / 未签收 / pending"口径的表述，一律视为**历史值**，以本节为准。
+   事实核对（记账执行者）：本卡 `decision.md` 原文并未出现 `review_pending` 字样（该字样出现在 M17–M20 的
+   decision 记录中），故此声明用于**消除口径歧义**，而非订正某一行原文。
+4. **范围未扩大**：`disclosure_adaptation` 仍为 `unmapped`，`accuracy` 仍为 `unproven`；D（披露映射）、
+   E（历史映射探针）、F（准确性）三阶段**未执行**，不在本裁定覆盖范围内。
+5. **非自签声明**：`implementer_signed: false`；`implementer_never_signs_acceptance: true`；
+   authority = "acceptance was written by an independent reviewer, not by the implementer"。
+
+相关记录：`recovery/production_drift_note.json`（F-r3-02 时间窗内的生产漂移声明）、
+`evidence/M15/cases_annotation_repack.json`（F-r3-01 口径更正）、`recovery/bookkeeping_r3/summary.json`
+（本次记账的改前→改后 sha256 台账）。
