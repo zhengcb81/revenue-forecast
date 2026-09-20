@@ -1,0 +1,44 @@
+changed top-level keys: ['required_message_ids', 'cases']
+
+pre cases ids : ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK']
+post cases ids: ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK', 'CONT-BREAK-OWNBALANCE']
+
+--- cases_pre.json
++++ cases_t16.json
+@@ -5,7 +5,8 @@
+  "continuity_first_positive": "continuity_positive",
+  "required_message_ids": [
+   "NEG-CARD",
+-  "CONT-BREAK"
++  "CONT-BREAK",
++  "CONT-BREAK-OWNBALANCE"
+  ],
+  "required_message_ids_rule": "the runner asserts, before running any negative, that each of these ids exists in `cases` and carries a non-empty `expect_message_contains`; a missing id or an empty requirement makes the run red (rc=3). This closes the hole where DELETING a message requirement silently disabled the check (independent review round 2, item 3).",
+  "cases": [
+@@ -134,6 +135,26 @@
+     ],
+     "closing_arr": [
+      250,
++     251
++    ]
++   }
++  },
++  {
++   "id": "CONT-BREAK-OWNBALANCE",
++   "kind": "set_driver_multi",
++   "expected": "ModelRegistryError",
++   "base_input": "continuity_positive",
++   "why": "T1-6 (OWNER_DECISIONS.md §13): the card's own negative_patch makes BOTH years balance and breaks only the CROSS-YEAR anchor, so it exercises the FY2028 anchoring guard. This case is its complement and uses a DIFFERENT input: FY2027 itself fails its own bridge by 1, which exercises the FY2027 OWN-BALANCE guard. Reaches the guard the reviewer recorded as reachable in oracle.json hand_notes.continuity_negative_note.",
++   "driver": null,
++   "expect_message_contains": "stock-flow balance failed: FY2027",
++   "expect_message_basis": "the type-only assertion is too weak for this case: a length/lookup guard could raise the same exception class for the wrong reason, so the refusal MESSAGE is frozen too and the runner fails the case if the message does not contain this substring. The substring is deliberately the one named by OWNER_DECISIONS.md §13 T1-6; the measured message carries the `opening_arr ` prefix BEFORE it, so a substring test holds.",
++   "value": {
++    "opening_arr": [
++     200,
++     250
++    ],
++    "closing_arr": [
++     251,
+      251
+     ]
+    }

@@ -1,0 +1,145 @@
+{
+ "card": "T1-6",
+ "attempt": "a20260920-01",
+ "title": "M24 cases.json 加回一个输入不同的跨年用例",
+ "status": "planned",
+ "status_note": "候选已产出并通过冻结 runner 验证；未写入冻结件、未自我升格。是否落地由编排层/owner 决定。",
+
+ "authority": {
+  "source": "OWNER_DECISIONS.md §13 T1-6（TIER-1 可裁，owner 已裁定）",
+  "ruling_text": "选 (c)：在 cases.json 重新加回一个输入不同的跨年用例（reviewer 已给可达值 {\"opening_arr\":[200,250],\"closing_arr\":[251,251]} ⇒ stock-flow balance failed: FY2027），无需改正文。",
+  "stated_rationale": "不动冻结正文、不消耗「一次受控重冻」额度、且能恢复用例集与正文的一致性",
+  "tier": "TIER-1（确属 owner 职权：授权实施/口径）"
+ },
+
+ "pre_image": {
+  "path": "execution_runs/M24/a20260919-01/evidence/M24/cases.json",
+  "bytes": 6185,
+  "sha256": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f",
+  "case_ids": ["NEG-CARD", "N01a", "N01b", "N01c", "N01d", "N02", "N03", "N04", "N05a", "N05b", "CONT-BREAK"],
+  "case_count": 11,
+  "required_message_ids": ["NEG-CARD", "CONT-BREAK"],
+  "unchanged_by_this_attempt": true
+ },
+
+ "post_image": {
+  "path": "attempt-local iso/cases_t16.json（未写入冻结件）",
+  "bytes": 7440,
+  "sha256": "29933fe23e13e03dd77b7a69c5238ab239b913baed2d6d511a973b781634b1c7",
+  "case_ids": ["NEG-CARD", "N01a", "N01b", "N01c", "N01d", "N02", "N03", "N04", "N05a", "N05b", "CONT-BREAK", "CONT-BREAK-OWNBALANCE"],
+  "case_count": 12,
+  "required_message_ids": ["NEG-CARD", "CONT-BREAK", "CONT-BREAK-OWNBALANCE"],
+  "delta_bytes": 1255
+ },
+
+ "edit_shape": {
+  "kind": "PURE APPEND to the `cases` array + one in-place field edit",
+  "added": ["one case object CONT-BREAK-OWNBALANCE appended at the end of `cases`",
+            "its id appended to `required_message_ids`"],
+  "changed_top_level_fields": ["cases", "required_message_ids"],
+  "changed_fields_are_exactly_intended": true,
+  "pre_existing_cases_unmodified": true,
+  "existing_cases_rendered_identically": true,
+  "renderer_is_faithful": true,
+  "removed_case_ids": [],
+  "why_not_prefix_or_suffix_judgement": "the change is an in-place field edit PLUS an append, so neither a pure-prefix nor a pure-suffix byte argument covers it. The structural claim is therefore proven directly: (i) renderer round-trips the pre-image faithfully, (ii) the first 11 cases render byte-identically after the append, (iii) exactly one id is added and none removed. Same discipline as the I-10-B lesson: the criterion must match the edit's shape."
+ },
+
+ "reachability_evidence": {
+  "script": "execution_runs/I-10-B/a20260919-01/scripts/t16_reachability_probe.py",
+  "result_file": "execution_runs/I-10-B/a20260919-01/t16_reachability_probe.json",
+  "measured": {
+   "control_unbroken_positive": "ok [215.0, 250.0]",
+   "current_CONT_BREAK (opening[200,251]/closing[250,251])": "ModelRegistryError: opening_arr continuity failed: FY2028",
+   "T1-6_value (opening[200,250]/closing[251,251])": "ModelRegistryError: opening_arr stock-flow balance failed: FY2027",
+   "card_M24_md_negative_patch": "逐字节等于现行 CONT-BREAK 值"
+  },
+  "classification": {
+   "control_is_ok": true,
+   "current_reaches_continuity_FY2028": true,
+   "t16_reaches_balance_FY2027": true,
+   "card_patch_equals_current": true,
+   "t16_input_differs_from_current": true
+  },
+  "message_prefix_note": "T1-6 裁定的期望串为 `stock-flow balance failed: FY2027`；实测完整消息为 `opening_arr stock-flow balance failed: FY2027`（带 `opening_arr ` 前缀）。子串判定成立，故冻结的是**子串**而非全串。此点如实登记，不改裁定文本。"
+ },
+
+ "missing_half_explained": {
+  "observation": "T1-6 所述『卡文与 cases.json 不一致』的实体表现，经实测为：卡文 negative_patch 与现行 CONT-BREAK 的输入**逐字节相同**（不是数字不同），真正的缺口是另一个守卫的用例缺失。",
+  "reviewer_prescription": {
+   "carrier": "execution_runs/M24/a20260919-01/review.md L128-L129",
+   "quote": "最小修法（无需编辑正文，只改 cases.json）：CONT-BREAK 保持卡片 L117-L122 的原文 patch 不动（opening_arr=[200,251]、closing_arr=[250,251]），只补上 expect_message_contains = \"stock-flow balance failed: FY2027\"；CONT-BREAK-CROSSYEAR.value 改为 {\"opening_arr\": [200, 250], \"closing_arr\": [250, 251]}，消息要求保持 continuity failed: FY2028。"
+  },
+  "what_actually_landed": "最终 cases.json 只保留单一 CONT-BREAK（卡文原值 + CROSSYEAR 消息 `continuity failed: FY2028`），reviewer 处方中的另一半（own-balance 用例）在最终冻结件中缺失；revision_r2.json 的 card_specific 仍声称 CONT-BREAK 的消息被冻为 `stock-flow balance failed: FY2027`，而盘上并非如此。",
+  "consequence": "第二个守卫（FY2027 own-balance）在冻结用例集中不可达；oracle.md 同时展示两行，读者会读出矛盾（reviewer 已指出这一点）。",
+  "t16_closes_this": "T1-6 选 (c) 即补回缺失的这一半：新增 CONT-BREAK-OWNBALANCE，消息要求指向 own-balance 守卫，且与 CONT-BREAK 输入不同。"
+ },
+
+ "frozen_runner_verification": {
+  "runner": "execution_runs/M24/a20260919-01/scripts/run_card.py（冻结 runner，非重实现）",
+  "invocation_source": "evidence/M24/command_manifest.json 的 B-run 单元；仅 --cases/--out 指向本 attempt",
+  "pre_run_rc": 0,
+  "post_run_rc": 0,
+  "pre_existing_case_verdicts_unchanged": true,
+  "positives_unchanged": true,
+  "new_case_entry": {
+   "id": "CONT-BREAK-OWNBALANCE",
+   "verdict": "PASS_rejected",
+   "raised": "ModelRegistryError",
+   "expected_type_checked": true,
+   "message_requirement_met": true,
+   "message": "opening_arr stock-flow balance failed: FY2027"
+  },
+  "post_negative_summary": {"total": 12, "passed": 12, "failed": []},
+  "required_message_ids_ok": true,
+  "overall": "PASS",
+  "checks": {
+   "pre_rc_zero": true,
+   "post_rc_zero": true,
+   "input_distinct": true,
+   "shared_cases_unchanged": true,
+   "new_case_guard_reached": true,
+   "positives_unchanged": true,
+   "gate_holds": true
+  }
+ },
+
+ "drift_registered": {
+  "note": "本 attempt 在核查前像时发现 M24 attempt 内**已存在**的登记漂移，与 T1-6 无关、非本次造成。如实登记，不回改。",
+  "items": [
+   {"id": "D-1", "what": "handoff.json 的 input_hashes.evidence/M24/cases.json = df12c66a…，盘上实测 = 263b78b3…（不一致）"},
+   {"id": "D-2", "what": "evidence/M24/source_manifest.json 的 evidence_input_hashes 同上，仍为 df12c66a…"},
+   {"id": "D-3", "what": "handoff.json / binding.json / source_manifest.json 的 input.json = ccfc2f8e…，盘上实测 = 7f60e7d8…"},
+   {"id": "D-4", "what": "handoff.json / binding.json / source_manifest.json 的 oracle.json = bab13806…，盘上实测 = 3da88501…"},
+   {"id": "D-5", "what": "after/rerun_sha256.json 的全套 evidence_files 哈希（cases/oracle/input/formula_result/negative_results/…）与盘上实测均不一致"},
+   {"id": "D-6", "what": "recovery/selfcheck/selfcheck_result.json 记 263b78b3…（与盘上一致），且自带 frozen_hashes_unchanged=true ⇒ 该文件与其**同一目录内**声称的『冻结哈希未变』在跨文件层面不自洽"},
+   {"id": "D-7", "what": "revision_r2.json 的 card_specific 声称『CONT-BREAK 的拒绝消息被冻为 stock-flow balance failed: FY2027』，而盘上 CONT-BREAK 的 expect_message_contains = `continuity failed: FY2028`"},
+   {"id": "D-8", "what": "handoff.json 的 qualifications.formula = review_pending，而同文件 status = accepted_scoped"}
+  ],
+  "interpretation": "至少两个世代并存：早期世代（binding.json / after/rerun_sha256.json / regen_proof.json）记 df12c66a… / ccfc2f8e… / bab13806…；后期世代（recovery/selfcheck、盘上实体）记 263b78b3… / 7f60e7d8… / 3da88501…。handoff.json 与 source_manifest.json 未随世代推进同步。",
+  "disposition": "仅登记、不回改。建议由编排层按 T1-12 ① 形态追加更正或另立卡；**不属于 T1-6 的授权范围**，故本卡不处置。",
+  "relevance_to_T1_6": "间接相关：D-7 正是 T1-6『不一致』的书面表现之一。"
+ },
+
+ "boundaries": {
+  "frozen_artifacts_written": 0,
+  "product_files_written": 0,
+  "status_transitions_made": 0,
+  "live_frozen_file_not_written": true,
+  "production_anchor_recomputed": true,
+  "production_anchor_unchanged": "scripts/model_registry.py = 26446 B / 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f"
+ },
+
+ "artifacts": {
+  "iso/cases_pre.json": {"bytes": 6185, "sha256": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f"},
+  "iso/cases_t16.json": {"bytes": 7440, "sha256": "29933fe23e13e03dd77b7a69c5238ab239b913baed2d6d511a973b781634b1c7"},
+  "t16_landing_report.json": {"bytes": 1309, "sha256": "4533fc594d7c3ff44ace1b97b13b4b49aa10a630c61528bcc1f48ead809dd75f"},
+  "t16_verification.json": {"bytes": 6701, "sha256": "2cd7efa92d9ea4e4951fdc9178e9e132a6493fd0f3e62d1a3c0b095945e1a0cd"},
+  "run_result_pre.json": {"bytes": 36297, "sha256": "8f25db2416116735a67743764560b3ba5a3872ad76e9a33c68f1bf55723d8c61"},
+  "run_result_post.json": {"bytes": 40346, "sha256": "0be7258e234316e444f8036133a51131595080f095e615593dcac8706f077da4"},
+  "scripts/land_t16.py": {"bytes": 7652, "sha256": "85f019594d3f8649a1f6489527f08e9e1303ac957ab226f97950576092127f2d"},
+  "scripts/verify_t16.py": {"bytes": 7378, "sha256": "e274b46d8c4feb6dc13e6f848a03acb9d0cd34a9dce45c18b85ecf91fea27e8f"}
+ },
+
+ "next_action": "编排层：①决定是否把 iso/cases_t16.json 落地到 M24 evidence/M24/cases.json（落地将使该冻结件哈希失效，须同时按 T1-12 ① 形态追加更正 handoff.json / source_manifest.json 的登记，并处置 §drift_registered 的 D-1…D-8）；②本卡状态保持 planned，独立验收属 TIER-2。"
+}

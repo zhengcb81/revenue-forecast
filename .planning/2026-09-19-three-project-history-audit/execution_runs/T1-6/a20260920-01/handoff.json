@@ -1,0 +1,135 @@
+{
+  "card": "T1-6",
+  "attempt": "a20260920-01",
+  "kind": "handoff",
+  "title": "M24 cases.json：追加一个输入不同的跨年用例（补回 own-balance 守卫覆盖）",
+  "status": "planned",
+  "status_note": "本 attempt 交付的是**候选落地**：候选已产出并通过冻结 runner 双相位验证，但**未写入任何冻结件**、**未做任何状态转移**、**未自我升格**。是否落地到 M24 冻结目录，由编排层决定并须经独立 reviewer。",
+
+  "authority": {
+    "source": "OWNER_DECISIONS.md §13 T1-6",
+    "tier": "TIER-1（owner 职权内：授权实施 / 口径裁定）",
+    "ruling": "选 (c)：在 cases.json 重新加回一个输入不同的跨年用例（可达值 {\"opening_arr\":[200,250],\"closing_arr\":[251,251]} ⇒ stock-flow balance failed: FY2027），无需改正文。",
+    "scope_read_as": [
+      "仅 cases.json；不动正文、不动 oracle、不动 status",
+      "必须是『输入不同』的用例（重复既有用例不满足）",
+      "『无需改正文』⇒ 编辑必须是加法的"
+    ]
+  },
+
+  "deliverable": {
+    "candidate_file": "iso/cases_t16.json",
+    "bytes": 7440,
+    "sha256": "29933fe23e13e03dd77b7a69c5238ab239b913baed2d6d511a973b781634b1c7",
+    "pre_image": {
+      "path": "execution_runs/M24/a20260919-01/evidence/M24/cases.json",
+      "bytes": 6185,
+      "sha256": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f",
+      "unchanged_by_this_attempt": true
+    },
+    "edit": {
+      "shape": "pure append (+ one in-place list append)",
+      "added_case_id": "CONT-BREAK-OWNBALANCE",
+      "added_case_value": {"opening_arr": [200, 250], "closing_arr": [251, 251]},
+      "added_case_message_requirement": "stock-flow balance failed: FY2027",
+      "required_message_ids_added": "CONT-BREAK-OWNBALANCE",
+      "delta_bytes": 1255,
+      "case_count": "11 -> 12",
+      "removed_anything": false
+    }
+  },
+
+  "verification_summary": {
+    "method": "frozen runner, two phases (pre-image then post-image)",
+    "runner": "execution_runs/M24/a20260919-01/scripts/run_card.py（冻结 runner，未重实现）",
+    "pre_rc": 0,
+    "post_rc": 0,
+    "negative_summary": {"total": 12, "passed": 12, "failed": []},
+    "new_case": "PASS_rejected — ModelRegistryError, message_requirement_met=true",
+    "shared_cases_unchanged": true,
+    "positives_unchanged": true,
+    "required_message_ids_ok": true,
+    "overall": "PASS",
+    "checks_passed": "7 / 7"
+  },
+
+  "key_findings": [
+    {
+      "id": "F-T16-1",
+      "severity": "info",
+      "finding": "所谓『卡文与 cases.json 不一致』并非数字不同。实测 card_patch_equals_current = True —— 卡文 negative_patch 与盘上 CONT-BREAK 的输入**逐字节相同**。",
+      "evidence": "scripts/t16_reachability_probe.py 第 4 项判定"
+    },
+    {
+      "id": "F-T16-2",
+      "severity": "high",
+      "finding": "reviewer 最小修法（review.md:128-129）的两半只落地了一半的『一半』：最终冻结件只保留单一 CONT-BREAK（卡文原值 + CROSSYEAR 消息 continuity failed: FY2028），reviewer 要求的 own-balance 用例缺失，且 item-1 的消息要求也未施加。",
+      "evidence": "iso/cases_pre.json 的 case_ids 中不存在 CONT-BREAK-CROSSYEAR；CONT-BREAK.expect_message_contains = 'continuity failed: FY2028'"
+    },
+    {
+      "id": "F-T16-3",
+      "severity": "high",
+      "finding": "revision_r2.json 有两处声称与盘上实体不符：P2-3 称『implemented as CONT-BREAK-CROSSYEAR』（无此 id）；card_specific 称『CONT-BREAK 的拒绝消息被冻为 stock-flow balance failed: FY2027』（实际为 continuity failed: FY2028）。",
+      "evidence": "与 iso/cases_pre.json 直接对照；登记为漂移 D-7"
+    },
+    {
+      "id": "F-T16-4",
+      "severity": "info",
+      "finding": "T1-6 裁定文本给的期望串是子串：实测完整消息带 `opening_arr ` 前缀。子串判定成立，故冻结子串而非全串；如实登记，不改裁定文本。",
+      "evidence": "run_result_post.json 中新用例的 message 字段"
+    },
+    {
+      "id": "F-T16-5",
+      "severity": "medium",
+      "finding": "M24 attempt 内已存在 8 项登记漂移（D-1…D-8），至少两个世代并存：早期（binding.json / after/rerun_sha256.json）记 df12c66a… / ccfc2f8e… / bab13806…；后期（recovery/selfcheck + 盘上实体）记 263b78b3… / 7f60e7d8… / 3da88501…。handoff.json 与 source_manifest.json 未随世代推进同步。",
+      "evidence": "binding.json > drift_registered",
+      "disposition": "仅登记、不回改。不属 T1-6 授权范围。"
+    }
+  ],
+
+  "boundaries": {
+    "frozen_artifacts_written": 0,
+    "product_files_written": 0,
+    "status_transitions_made": 0,
+    "signatures_made_on_behalf_of_others": 0,
+    "production_anchor": "scripts/model_registry.py = 26446 B / 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f（未变）",
+    "live_frozen_cases_json": "263b78b3… / 6185 B（保持前像，本 attempt 从未以写模式打开）",
+    "git_diff": "全部位于 .planning/ 内；产品文件 0 条",
+    "json_validity": "8/8 可解析",
+    "confusable_char_scan": "0 命中"
+  },
+
+  "artifacts": {
+    "decision.md": "决策记录：权限、不一致的真实形态、选项比较、可达性实测、边界",
+    "commands.json": "可复现命令日志（6 步，含实际观测值与哈希）",
+    "changes.diff": {"bytes": 2276, "sha256": "48817b3784749377b70da0b4e391b5d0dd3c75313f08f7715b3995d735fa3a1b"},
+    "binding.json": {"bytes": 9990},
+    "iso/cases_pre.json": {"bytes": 6185, "sha256": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f"},
+    "iso/cases_t16.json": {"bytes": 7440, "sha256": "29933fe23e13e03dd77b7a69c5238ab239b913baed2d6d511a973b781634b1c7"},
+    "t16_landing_report.json": {"bytes": 1309, "sha256": "4533fc594d7c3ff44ace1b97b13b4b49aa10a630c61528bcc1f48ead809dd75f"},
+    "t16_verification.json": {"bytes": 6701, "sha256": "2cd7efa92d9ea4e4951fdc9178e9e132a6493fd0f3e62d1a3c0b095945e1a0cd"},
+    "run_result_pre.json": {"bytes": 36297, "sha256": "8f25db2416116735a67743764560b3ba5a3872ad76e9a33c68f1bf55723d8c61"},
+    "run_result_post.json": {"bytes": 40346, "sha256": "0be7258e234316e444f8036133a51131595080f095e615593dcac8706f077da4"},
+    "scripts/land_t16.py": {"bytes": 7652, "sha256": "85f019594d3f8649a1f6489527f08e9e1303ac957ab226f97950576092127f2d"},
+    "scripts/verify_t16.py": {"bytes": 7378, "sha256": "e274b46d8c4feb6dc13e6f848a03acb9d0cd34a9dce45c18b85ecf91fea27e8f"}
+  },
+
+  "qualifications": {
+    "card_status": "planned",
+    "acceptance": "NOT granted — acceptance is TIER-2, not the owner's to grant",
+    "candidate_verified_in_isolation_only": true,
+    "landed_into_frozen_evidence": false,
+    "drift_repaired": false,
+    "self_upgrade": false
+  },
+
+  "next_action": {
+    "owner": "编排层 / 独立 reviewer",
+    "steps": [
+      "① 独立 reviewer 复核本 attempt（尤其 F-T16-2 / F-T16-3 与 D-7 的关系）。",
+      "② 若通过，决定是否把 iso/cases_t16.json 落地到 execution_runs/M24/a20260919-01/evidence/M24/cases.json。落地会使该冻结件的哈希失效，须**同时**按 T1-12 ① 形态追加更正 handoff.json / source_manifest.json 的登记，并处置 D-1…D-8。",
+      "③ 本卡 status 保持 planned；任何状态转移属 TIER-2。",
+      "④ M24 在 ②之前**不得**被描述为已关闭。"
+    ]
+  }
+}

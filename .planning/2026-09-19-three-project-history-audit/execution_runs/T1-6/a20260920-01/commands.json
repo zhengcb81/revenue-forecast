@@ -1,0 +1,199 @@
+{
+  "card": "T1-6",
+  "attempt": "a20260920-01",
+  "purpose": "reproducible command log — every step below was actually executed in this order; nothing here is aspirational",
+  "cwd": ".planning/2026-09-19-three-project-history-audit/execution_runs/T1-6/a20260920-01",
+  "interpreter": {
+    "path": "C:/Users/郑曾波/.workbuddy-ai/binaries/python/versions/3.13.12/python.exe",
+    "flags": ["-X", "utf8", "-B"],
+    "why_flags": "-X utf8 forces UTF-8 stdio/FS encoding (the tree carries CJK paths); -B suppresses .pyc writes so no __pycache__ appears inside the frozen audit tree."
+  },
+
+  "steps": [
+    {
+      "n": 1,
+      "id": "pre-image-capture",
+      "role": "establish the BEFORE state as an immutable local copy",
+      "command": "cp execution_runs/M24/a20260919-01/evidence/M24/cases.json iso/cases_pre.json",
+      "expected": {
+        "bytes": 6185,
+        "sha256": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f"
+      },
+      "observed": {
+        "bytes": 6185,
+        "sha256": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f"
+      },
+      "note": "The copy — not the frozen file — is what gets mutated. The frozen file is never opened for write by this attempt."
+    },
+
+    {
+      "n": 2,
+      "id": "reachability-probe",
+      "role": "measure, BEFORE landing anything, that the adjudicated input reaches a guard the existing case cannot",
+      "script": "execution_runs/I-10-B/a20260919-01/scripts/t16_reachability_probe.py",
+      "command": "<interp> -X utf8 -B scripts/t16_reachability_probe.py",
+      "purpose_of_script": "drive calculate_registered_model('subscription_arr_bridge', ...) through four inputs and record the exact exception message for each",
+      "expected": {
+        "control_unbroken_positive": "ok [215.0, 250.0]",
+        "current_CONT_BREAK": "ModelRegistryError: opening_arr continuity failed: FY2028",
+        "T1_6_value": "ModelRegistryError: opening_arr stock-flow balance failed: FY2027",
+        "card_M24_md_negative_patch_equals_current": true,
+        "t16_input_differs_from_current": true
+      },
+      "observed": "all four predicates true",
+      "why_before_landing": "If the adjudicated value did NOT reach a distinct guard, option (c) would be landing a duplicate and the card would be mis-specified. Measuring first is what turns this from an assumption into evidence."
+    },
+
+    {
+      "n": 3,
+      "id": "land",
+      "role": "produce the candidate post-image as a PURE APPEND",
+      "script": "scripts/land_t16.py",
+      "command": "<interp> -X utf8 -B scripts/land_t16.py",
+      "inputs": {
+        "iso/cases_pre.json": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f"
+      },
+      "outputs": {
+        "iso/cases_t16.json": {
+          "bytes": 7440,
+          "sha256": "29933fe23e13e03dd77b7a69c5238ab239b913baed2d6d511a973b781634b1c7"
+        },
+        "t16_landing_report.json": {
+          "bytes": 1309,
+          "sha256": "4533fc594d7c3ff44ace1b97b13b4b49aa10a630c61528bcc1f48ead809dd75f"
+        }
+      },
+      "edit": {
+        "added_case": {
+          "id": "CONT-BREAK-OWNBALANCE",
+          "kind": "set_driver_multi",
+          "expected": "ModelRegistryError",
+          "base_input": "continuity_positive",
+          "driver": null,
+          "value": {"opening_arr": [200, 250], "closing_arr": [251, 251]},
+          "expect_message_contains": "stock-flow balance failed: FY2027"
+        },
+        "required_message_ids": {
+          "before": ["NEG-CARD", "CONT-BREAK"],
+          "after": ["NEG-CARD", "CONT-BREAK", "CONT-BREAK-OWNBALANCE"]
+        },
+        "delta_bytes": 1255,
+        "case_count": {"before": 11, "after": 12}
+      },
+      "integrity_predicates": {
+        "pre_existing_cases_unmodified": true,
+        "renderer_is_faithful": true,
+        "existing_cases_rendered_identically": true,
+        "changed_fields_are_exactly_intended": true,
+        "changed_top_level_fields": ["cases", "required_message_ids"],
+        "removed_case_ids": []
+      },
+      "why_render_roundtrip_and_not_byte_offset": "The edit is an in-place field edit PLUS an append, so neither a pure-prefix nor a pure-suffix byte argument covers its shape. The structural claim is proven directly instead: (i) the renderer round-trips the pre-image byte-identically, (ii) after the append the first 11 cases render byte-identically, (iii) exactly one id is added and none removed, (iv) no other top-level key changed. This is the I-10-B lesson applied: the criterion must match the shape of the edit."
+    },
+
+    {
+      "n": 4,
+      "id": "verify",
+      "role": "two-phase verification via the FROZEN runner (not a re-implementation)",
+      "script": "scripts/verify_t16.py",
+      "command": "<interp> -X utf8 -B scripts/verify_t16.py",
+      "runner_used": "execution_runs/M24/a20260919-01/scripts/run_card.py",
+      "invocation": [
+        "<interp>", "-X", "utf8", "-B", "execution_runs/M24/a20260919-01/scripts/run_card.py",
+        "--card", "M24",
+        "--attempt", "execution_runs/M24/a20260919-01",
+        "--code-root", "scripts",
+        "--out", "<attempt>/run_result_<phase>.json",
+        "--run-result-out", "<attempt>/run_result_<phase>.json",
+        "--cases", "<attempt>/iso/cases_<phase>.json"
+      ],
+      "invocation_note": "Only --cases and the two output paths were redirected at this attempt. Everything else is the frozen attempt's own B-run invocation as recorded in its evidence/M24/command_manifest.json — the runner was NOT re-implemented or patched.",
+      "phases": [
+        {
+          "phase": "pre",
+          "cases": "iso/cases_pre.json",
+          "out": "run_result_pre.json",
+          "bytes": 36297,
+          "sha256": "8f25db2416116735a67743764560b3ba5a3872ad76e9a33c68f1bf55723d8c61",
+          "rc": 0
+        },
+        {
+          "phase": "post",
+          "cases": "iso/cases_t16.json",
+          "out": "run_result_post.json",
+          "bytes": 40346,
+          "sha256": "0be7258e234316e444f8036133a51131595080f095e615593dcac8706f077da4",
+          "rc": 0
+        }
+      ],
+      "observed": {
+        "verdict": "pass",
+        "exit_code": 0,
+        "negative_summary": {"total": 12, "passed": 12, "failed": []},
+        "new_case": {
+          "id": "CONT-BREAK-OWNBALANCE",
+          "verdict": "PASS_rejected",
+          "raised": "ModelRegistryError",
+          "message_requirement_met": true,
+          "message": "opening_arr stock-flow balance failed: FY2027"
+        },
+        "existing_CONT_BREAK": {
+          "verdict": "PASS_rejected",
+          "message": "opening_arr continuity failed: FY2028",
+          "unchanged_between_phases": true
+        },
+        "required_message_ids": {
+          "ids": ["NEG-CARD", "CONT-BREAK", "CONT-BREAK-OWNBALANCE"],
+          "ok": true
+        },
+        "shared_cases_unchanged": true,
+        "positives_unchanged": true
+      },
+      "gate_explanation": "required_message_ids is a hard gate: before executing ANY negative the runner asserts each listed id exists in `cases` and carries a non-empty `expect_message_contains`; a missing id or empty requirement forces rc=3. That is precisely why the new case's id had to be appended — a case that exists but is ungated can be deleted without the run ever turning red.",
+      "artifacts": {
+        "t16_verification.json": {
+          "bytes": 6701,
+          "sha256": "2cd7efa92d9ea4e4951fdc9178e9e132a6493fd0f3e62d1a3c0b095945e1a0cd"
+        }
+      }
+    },
+
+    {
+      "n": 5,
+      "id": "diff",
+      "role": "record the exact textual delta between pre and post images",
+      "command": "<interp> -X utf8 -c \"<difflib.unified_diff over iso/cases_pre.json and iso/cases_t16.json>\"",
+      "output": "changes.diff",
+      "bytes": 2276,
+      "sha256": "48817b3784749377b70da0b4e391b5d0dd3c75313f08f7715b3995d735fa3a1b",
+      "diff_shape_observed": [
+        "hunk @@ -5,7 +5,8 @@ — required_message_ids gains exactly one element",
+        "hunk @@ -134,6 +135,26 @@ — one case object appended at the end of `cases`",
+        "no deletion hunk anywhere",
+        "no removal line anywhere"
+      ]
+    },
+
+    {
+      "n": 6,
+      "id": "boundary-check",
+      "role": "confirm nothing outside the authorised scope moved",
+      "commands": [
+        {"cmd": "sha256sum scripts/model_registry.py", "why": "production anchor must be unchanged", "observed": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f", "expected": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f", "verdict": "match"},
+        {"cmd": "sha256sum execution_runs/M24/a20260919-01/evidence/M24/cases.json", "why": "frozen evidence must keep its pre-image hash", "observed": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f", "expected": "263b78b3e27d687f074bc20db109ff50e5915681c571224a564001863cf4750f", "verdict": "match"},
+        {"cmd": "git diff HEAD --name-only", "why": "no product file may appear", "observed": "all entries under .planning/", "product_file_count": 0, "verdict": "clean"},
+        {"cmd": "<interp> -c \"json.load each of the 8 emitted JSON files\"", "why": "every artifact must parse", "observed": "8/8 ok", "verdict": "pass"},
+        {"cmd": "<interp> -c \"scan for Cyrillic / homoglyph characters\"", "why": "confusable-character contamination check", "observed": "0 hits", "verdict": "clean"}
+      ]
+    }
+  ],
+
+  "not_executed": [
+    {"action": "write iso/cases_t16.json into execution_runs/M24/a20260919-01/evidence/M24/cases.json", "why": "frozen evidence; the write requires an independent reviewer's authorisation, which is TIER-2 and not the owner's to grant"},
+    {"action": "edit M24 card.md prose", "why": "T1-6 states 无需改正文; card clause 5 additionally forbids widening this card's allowlist to touch the 31 M-cards"},
+    {"action": "any status transition", "why": "acceptance is not severable by the owner"},
+    {"action": "repair drift items D-1…D-8", "why": "outside T1-6's authority; registered only"}
+  ],
+
+  "rerun_recipe": "From a clean checkout, replay steps 1→6 in order. Steps 3 and 4 are deterministic (no timestamps, no randomness, sorted iteration); their output hashes above should reproduce exactly. If step 3 or 4 produces a different hash, treat it as a finding and STOP — do not adjust the recorded hash."
+}

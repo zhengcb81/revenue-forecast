@@ -13,6 +13,91 @@ Owner: root。所有代理加入同一计划，只写各自reviews子目录。�
 
 **下一步唯一动作**：①**I-05-C 可实现** —— owner 已于 2026-09-20 16:45 批准 `D-W05` producer entry，`produce_for_demand` 可从 mock-only 转真实实现（接 CW `service.py` 现有 producer，不新增重复 parser，调用事件记在实际调用边界）；但 **GAP-2 仍阻塞 `consumer_analysis` 角色**（producer 不存在、真实 LLM 能力未验证）⇒ 须 RF `consumer_analysis` owner 提供入口，**不得造绿色样例补全**；**GAP-3** 待 reviewer 批准事件 schema。②等 owner 签 `D-W06` 六项（**OPEN-2 幂等键是否含请求身份为决定性**）解锁 I-06-A。③I-08-A 收口方式待单独商定（reviewer 明文禁止写入「已接受」）。④派实现者对 6 张卡的陈旧 `reviewer_status` 字段对齐（**只改该字段、不动裁决字节**）。
 
+**Round 41（2026-09-20）新增：TIER-2 三封对外请求函已起草完毕（TIER-2 唯一真正解锁的动作）**。落点 `.planning/2026-09-19-three-project-history-audit/outward_requests/`，**纯新增、未改任何既有载体**：
+
+| 函 | 文件 | 字节 | sha256（前 16） | 覆盖 TIER-2 项 | 收件方 |
+|---|---|---|---|---|---|
+| **A** | `A_DW06_OPEN-4-5-6.md` | 9120 | `87d4431611d24f95` | **T2-1** OPEN-4 · **T2-2** OPEN-6 · **T2-3** OPEN-5 | wiki 来源审核 owner + 安全 reviewer + RF 消费 owner |
+| **B** | `B_signature_trust_domain.md` | 12509 | `84a7988da2a70388` | **T2-8** D7 · **T2-9** D1/D2/D3 · **T2-10** D6 · **T2-11** D5 · **T2-13** I09A-1…6 · **T2-15** | 跨仓双方 + 安全域 + revenue publication owner + invest-core 消费 owner |
+| **C** | `C_I-05-C_gap2_gap3.md` | 8724 | `b0ef5fda63ebfdc5` | **T2-14**（部分）· I-05-C GAP-2 / GAP-3 | RF `consumer_analysis` owner + 独立 reviewer |
+| 索 | `README.md` | 3134 | `8d0a66516aa3d04c` | 索引 + 共同约束 | — |
+
+**四封函的共同纪律（已逐条写入正文）**：不得代签；不得以「按最佳实践」代替决定；每项须给**选择·理由·反例·兼容影响·恢复规则·被拒绝的替代方案**；不得编造证据（缺样本则维持 `blocked`、不造绿色样例）；**裁决前不得把具体秒数/字节数写成规范值**（函 B 对 `W`/`T`/`L` **刻意留空**）；回执一律落各卡自己的载体，**不在函上签字**。**自证**：西里尔/异体字符扫描 0 命中；四文件 UTF-8 全部可解析；`_provenance.json`（3775 B）JSON 合法。**本动作不产生任何裁定、签名或 `status` 变化**。
+
+**第十四节已登记（R-1/R-2 清除事实 + M31 勘误，T1-23 / T1-25）**：`OWNER_DECISIONS.md` 45616 → **50052 B**（+4436），`prefix_bytes_preserved = True`（后缀追加、前像逐字节保留），新 sha256 `62827d230f4d5a6c…`。核实结论：**R-1 已清除**（三卡 live `OQ-04.title` 已改，旧标题完整保留于 `live_record_corrections.R-1.superseded_title`）；**R-2 已清除**（`write_binding.py` 四副本 M31 常量已更正为七驱动 / `True` / `divergence_note = None`，文件头有 F-02 撤回 banner，旧值保留于 `evidence/M31/binding.json` 的 `errata.superseded_values`）；清除时间 `2026-09-20T03:38:5x` **早于**第四批记账 ⇒ §8-10 / T1-25 的「R-1/R-2 清除前不得关闭」为**事实滞后**，其**前提已达成**；**M31 勘误经实测验明为误读**（`card_M31.md:9` 与 `model_cards.md:2818` 七项含 `net_revenue_per_unit`、`byte-identical = True`）。**只登记、不改冻结证据、不做 `status` 转移**；M31 是否正式关闭仍归其 reviewer。
+
+**I-06-A 候选已按两条 owner 裁定修订为 rev2（仍为 UNRATIFIED）**。落点 `execution_runs/I-06-A/a20260919-01/`：
+
+| 产物 | 字节 | sha256（前 16） | 说明 |
+|---|---|---|---|
+| `iso/candidate/processing_demand_store_rev2.py` | 21290 | `b3eafcfaaf529bdb` | rev2 候选，**UNRATIFIED** |
+| `oracle_rev2_open2_optionA.json` | 4911 | — | **运行前冻结**的独立预期（期望值由裁定文本手推，非调用被测函数生成） |
+| `scripts/verify_rev2_open2_optionA.py` | — | — | 独立验证器（纯 scratch，不动生产） |
+| `rev2_verification_result.json` | 5660 | — | **28/28 passed，raw rc = 0** |
+| `evidence_rev2_mutant_key_dropped.py` | 21726 | `fe6acfd43147e963` | 变异体（键退回 v1 三元组） |
+| `rev2_provenance.json` | 4099 | — | 全程 provenance |
+
+**两条裁定的落地**：①**OPEN-2 选项 A** —— 幂等键改为六元 `{key_version, source_sha256, review_policy, role_set, request_identity}`，其中 `request_identity = {as_of_date, target{document_kind,entity}, payload_sha256(其余字段)}`；`key_version` 升 `2.0.0`（v1 行与 v2 行**不得**视为同一需求）。②**OPEN-1 选项 A** —— store 形状改写为 CW `store.py` 的 `_apply_additive_migrations` 风格（`CREATE TABLE IF NOT EXISTS` + 具名索引，可原样抬进 `store.py`），**弃用** v1 自建独立 SQLite 文件形状。
+
+**被测缺陷（c8/c9/c10 实测）**：三个**不同**请求全部返回同一 `demand_id=demand-84179f79057143d4`，且行内 `request_sha256` 保持**第一个**请求的 `d8afcf31…`（第二个请求实际哈希 `4bddf9e6…`）⇒ 静默合并。**rev2 后**：三个不同请求产生**三行**（`rows for this source == 3`），同一请求重提仍复用同一行（`created=False`）。
+
+**变异证明（关键）**：把 `demand_key()` 退回 v1 三元组 ⇒ **28 项中 10 项变红**（`raw rc = 3`），其中 `rows for this source` 实测退回 **1**，**精确复现** v1 缺陷。⇒ 这道门**确实在测这条裁定**，不是「碰巧通过」。
+
+**未做（边界）**：未把候选提升为产品实现（`UNRATIFIED` 保持）；**未关闭 OPEN-4/5/6**（仍待函 A 三方）；**未改任何 `status`**（I-06-A 仍 `blocked`）；未改 v1 候选、未改任何冻结证据/门/产品源码；未声称真实 LLM 能力（`consumer_analysis` 仍 GAP-2 阻塞）。**生产锚点复算**：`scripts/model_registry.py` = `9ec6529550f189a4…` **一致**；HEAD 树 `scripts/` **0 条**；工作树 `git diff HEAD --name-only` **11 条全部在 `.planning/` 内**。
+
+**Round 42（2026-09-20）新增：I-10-B（T1-22）卡内完成 —— 含一项 high 级兼容性发现**。落点 `execution_runs/I-10-B/a20260919-01/`，**纯新增、未改任何既有载体**：
+
+| 产物 | 字节 | 说明 |
+|---|---|---|
+| `changes.diff` | 6098 | 隔离副本 vs 生产前像的统一 diff，两处修复各一个 hunk |
+| `compatibility_impact.md` | 14457 | 卡文第 3 点硬要求：5 个变化 cell + 双路径判定 + 126 个未变 driver + E-1…E-7 清单 |
+| `decision.md` | 8384 | DEC-I10B-1…5 |
+| `binding.json` / `commands.json` / `handoff.json` | 9446 / 5324 / 5948 | 锚点、隔离、缺陷、兼容性声明、10 条命令（0 条触产品树） |
+| `compatibility_cells.json` | 6070 | 165 cell 全量 BEFORE/AFTER 差分 |
+| `frozen_impact_scan.json` | 25287 | 1579 个 JSON 分类（CASE_TARGET 17 / 负值 1 / REFERENCE_ONLY 47） |
+| `frozen_regression_rerun.json` | 4580 | 四卡三相位实跑对照 |
+| `scripts/`（4 个验证器） | — | `verify_i10b.py` / `compute_compat.py` / `scan_frozen_impact.py` / `frozen_regression_rerun.py` |
+
+**两处修复（隔离副本内，`iso/rf/scripts/model_registry.py` 30116 B / `62f864b9ab3f144e`）**：①**省缺即抛** —— `drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))` 改为「无显式 default 时抛 `ModelRegistryError`」；**刻意不补显式 0**（仍无法区分「没找到」）。②**语义角色符号** —— 新增 `_REVERSAL_CAPABLE_DIMENSIONS ∩ _REVERSAL_CAPABLE_DRIVERS` + `_is_reversal_capable()`；`_SIGNED_DRIVERS` 降为**仅供导入的废弃别名**；符号须**同时**满足 dimension 闸门与角色位，故数量/比率型 driver 不可能被误改。**验证**：before 6/6（缺陷可见）→ after **7/7 raw rc = 0**，本轮重跑复现一致；含 R-B1-N1（省缺必抛）、R-B1-N3（**显式 0.0 仍被接受** ⇒ 区分了省略与显式）、R-B2-N1（`franchise_system_sales` 负值**必须被接受**）、R-B2-N2（无名 driver **不得**凭名字获得符号）。
+
+**边界变更全清单**：165 个 `(model, driver)` 单元中**恰好 5 个**变化，**全部为下界放宽、上界不变**：`cohort_subscription.usage_revenue`、`retail_franchise.franchise_system_sales`、`retail_franchise.supply_revenue`、`subscription.usage_revenue`、`subscription_arr_bridge.usage_revenue`，均 `[0.0, inf)` ⇒ `[-inf, inf)`；**126 个 driver 未变**。**判据修正（第 6 次同源教训）**：首版把「最终下界是否为 `-inf`」当变更集是**错的** —— 修复前**就已有 37 个 cell** 在 `[-inf, inf)`（`other_revenue` 14 个、`bank_revenue.asset_yield`/`funding_cost`、`aum_fee_bridge.market_change` 等），该判据**同时**夸大波及面并**掩盖**真实变更集；改为对 `(lo, hi)` **对**做 BEFORE/AFTER **差分**。⇒ **判据必须匹配被判定对象的形态：值域变更用差分、不用终态**。
+
+**⚠️ high 级发现 F-I10B-1（兼容性，必须随卡移交给编排层）**：**省缺即抛使 M05 / M14 / M20 / M24 四张卡的 `defaults` 相位全部从 `ok` 翻转为 `ModelRegistryError`**（实跑对照）：M05 `[600.0]`、M14 `[50.0]`、M20 `[220.0]`、M24 `[210.0]` **皆抛**。**根因**：四卡的 `defaults` 输入块**都省略了**至少一个「optional 且无显式默认」的 driver（M05/M20/M24 为 `usage_revenue`；M14 为 `franchise_system_sales`/`recognized_fee_rate`/`supply_revenue` 三者），其冻结期望成立**恰恰依赖缺陷①的静默补 0** —— 最直白的书面自证是 `M24 evidence/M24/oracle.json > hand_notes.defaults` 明写「**usage_revenue omitted -> 0**; 200 - 15 + 15 + 10 + 0 = 210」。**四卡的 `positive` 与 `continuity_positive` 相位全部未变**。**处置**：非缺陷、是**修复的预期后果**（缺陷①的定义就是「把『不存在』与『没找到』编码成同一输入」）；依 **T1-12 ① 形态**（追加新节 + 行级「第 X 行已过时，以本节为准」标注）**追加式勘误、不回改**；**卡文第 5 点禁止本卡扩大 allowlist 改 31 张 M 卡的正文/证据** ⇒ 本卡**只产出待登记清单 E-1…E-7**、**未执行任何编辑**。
+
+**值域放宽路径（缺陷②）零冻结判定受影响**：全 M01–M31 证据树 **1579** 个 JSON 扫描；`CASE_TARGET` 17 个其 `value` 全为**正数**或**类型/长度类负例**（`__bool__`/`nan`/`inf`/`-inf`/空数组/未知 driver），**无一**依赖「负的实数值应被 `[0, inf)` 拒绝」；唯一负值命中件 `M14/recovery/probes/signed_driver_probe.json` **自述** `"purpose": "post-hoc design probe (NOT a frozen case, NOT the oracle)"`；M14 另两处把旧行为记为契约边界（`cases.json > extra_observations[OBS-SUPPLY-BOUND]`、`oq_rulings.json > open_questions_mirroring_handoff[OQ-03]`），**均自带「不门禁 / 属未决 D/E 决策」声明** ⇒ 不是 pass condition。**缺陷②的名字硬编码任意性有实测证据**：`recognized_performance_fees` / `reserve_revisions` / `backlog_remeasurements` **均不在** `_SIGNED_DRIVERS`，却**早已**经 `driver_bounds` 元数据到达 `(-inf, inf)` —— 同一语义角色、两种名字待遇。
+
+**基线实测与卡文数字吻合**：31 个模型 / **31** 个 `optional-without-default` 槽位 / **24** 个受影响模型，与 `card_I-10-B.md:14` 所述完全一致。
+
+**未做（边界）**：**未落地生产**（`scripts/model_registry.py` 仍为前像 **26446 B / `9ec6529550f189a4…`**，与绑定值一致、无漂移）；**未改任何冻结件**（0 个）；**未做任何 `status` 转移**（I-10-B 保持 `planned`，**不自我升格**）；**未代签** —— M14 `OQ-03` 原文自述**属 D/E 决策**、本卡独立验收**属 TIER-2 须他方出具**，均未记为已裁。**新增忽略**：`execution_runs/.gitignore` 增 `*/a*/_scratch_import/`（导入暂存，可由 `compute_compat.py` 确定性重建）。**自证**：8 个 JSON 全部 `json.load` OK；西里尔/异体字符扫描 **0 命中**。
+
+**Round 43（2026-09-20）新增：T1-6 卡内完成 —— 「不一致」的真实形态查清 + 补回缺失的守卫用例（含一项 medium 级漂移发现 D-1…D-8）**。落点 `execution_runs/T1-6/a20260920-01/`，**纯新增、未改任何既有载体**：
+
+| 产物 | 字节 | 说明 |
+|---|---|---|
+| `iso/cases_pre.json` | 6185 | 前像本地副本（`263b78b3…`，与冻结件逐字节相同） |
+| `iso/cases_t16.json` | 7440 | **候选后像**（`29933fe2…`，**未写入冻结件**） |
+| `changes.diff` | 2276 | 两个 hunk，**零删除行** |
+| `decision.md` | — | 权限、不一致真实形态、选项比较、可达性实测、边界 |
+| `commands.json` | 10382 | 6 步可复现命令日志（含实际观测值与哈希） |
+| `binding.json` / `handoff.json` | 9990 / 7508 | 锚点、双相位验证、漂移登记、边界 |
+| `t16_landing_report.json` / `t16_verification.json` | 1309 / 6701 | 落地自检 4 判据 + 冻结 runner 验证 |
+| `run_result_pre.json` / `run_result_post.json` | 36297 / 40346 | 冻结 runner 双相位原始输出 |
+| `scripts/land_t16.py` / `verify_t16.py` | 7652 / 7378 | 落地器 / 验证器 |
+
+**裁定与范围**（`OWNER_DECISIONS.md` §13 **T1-6**，TIER-1）：选 (c) —— 「在 `cases.json` 重新加回一个**输入不同**的跨年用例（可达值 `{"opening_arr":[200,250],"closing_arr":[251,251]}` ⇒ `stock-flow balance failed: FY2027`），**无需改正文**」。三点范围读出：①仅 `cases.json`；②必须**输入不同**；③**编辑必须是加法的**。
+
+**⚠️ 「不一致」的真实形态查清（实测，非推断）**：T1-6 所述「卡文与 `cases.json` 不一致」**不是数字不同** —— 实测 **`card_patch_equals_current = True`**，卡文 `negative_patch` 与盘上 `CONT-BREAK` 的输入**逐字节相同**。真正的缺口是**另一个守卫的用例缺失**：`review.md:128-129` 的 reviewer 最小修法有**两半** —— ①保留 `CONT-BREAK` 原值并补上 `expect_message_contains = "stock-flow balance failed: FY2027"`；②新增 `CONT-BREAK-CROSSYEAR`（值 `[200,250]/[250,251]`）。**实际只落地了「一半的一半」**：最终冻结件只保留单一 `CONT-BREAK`（**卡文原值 + CROSSYEAR 消息 `continuity failed: FY2028`**），reviewer 处方中的 own-balance 用例**缺失**、item-1 的消息要求**未施加**。**盘上的书面佐证且与实体不符**：`revision_r2.json` 的 `P2-3` 称「implemented as `CONT-BREAK-CROSSYEAR`」（**无此 id**）、`card_specific` 称「`CONT-BREAK` 的拒绝消息被冻为 `'stock-flow balance failed: FY2027'`」（**实际是 `continuity failed: FY2028`**）。⇒ 现存用例只行使**跨年锚定**守卫（FY2027 关 ≠ FY2028 开），**FY2027 自身平衡**守卫**不可达**。
+
+**可达性实测（落地前先测，`t16_reachability_probe.py`，四判据全 True）**：对照组 `continuity_positive` → `ok [215.0, 250.0]`；现行 `CONT-BREAK`（`[200,251]/[250,251]`）→ `opening_arr continuity failed: FY2028`（**跨年守卫**）；**T1-6 裁定值（`[200,250]/[251,251]`）→ `opening_arr stock-flow balance failed: FY2027`**（**FY2027 自身平衡守卫**）；卡文 `negative_patch` **逐字节等于**现行值。两类负例**抛同一异常类但消息不同** —— 这正是「类型断言不足、必须冻消息」的理由。**⚠️ 消息前缀差异如实登记**：T1-6 写的期望串是 `stock-flow balance failed: FY2027`，**实测完整消息**为 `opening_arr stock-flow balance failed: FY2027`（带 `opening_arr ` 前缀）；子串判定成立，故冻结的是**子串**，**不改裁定文本**。
+
+**落地（纯追加，`iso/cases_t16.json`）**：新增 `CONT-BREAK-OWNBALANCE`（`kind=set_driver_multi`、`expected=ModelRegistryError`、`base_input=continuity_positive`、值 `{"opening_arr":[200,250],"closing_arr":[251,251]}`、`expect_message_contains="stock-flow balance failed: FY2027"`）+ 其 id 追加进 `required_message_ids`（2 → 3 项）。`delta_bytes = +1255`、用例 11 → 12、**零删除**。**四条完整性判据全绿**：`pre_existing_cases_unmodified` / `renderer_is_faithful` / `existing_cases_rendered_identically` / `changed_fields_are_exactly_intended`（**变化顶层字段恰为 `cases` 与 `required_message_ids`**）。**为何不用前后缀字节判据**：本次是「就地字段编辑 **+** 追加」的复合形态，纯前缀/纯后缀都不覆盖其形状 ⇒ 改为**直接证明**结构主张：(i) 渲染器对前像逐字节往返成立；(ii) 追加后前 11 个用例渲染逐字节相同；(iii) 恰增 1 个 id、**零删除**；(iv) 无其他顶层键变化。**同 I-10-B 教训：判据必须匹配编辑形态。**
+
+**冻结 runner 双相位验证 OVERALL = PASS（7/7）**：`pre rc = 0` / `post rc = 0`；`negative summary {'total': 12, 'passed': 12, 'failed': []}`；新用例 `PASS_rejected ... message_requirement_met= True - opening_arr stock-flow balance failed: FY2027`；现行 `CONT-BREAK` 两相位判定**未变**（`opening_arr continuity failed: FY2028`）；`required_message_ids` 三项 `ok= True`；`shared_cases_unchanged = True`；`positives_unchanged = True`。**runner 为冻结件本身**（`M24/a20260919-01/scripts/run_card.py`），**非重实现**，仅重定向 `--cases`/`--out`。**闸门说明**：`required_message_ids` 是**硬门** —— runner 在执行**任何**负例前先断言每个 id 存在于 `cases` 且 `expect_message_contains` 非空，缺失即 **rc=3**；故新用例的 id **必须**入列（否则「存在但无门」的用例可被删除而运行仍绿）。
+
+**⚠️ medium 级发现 F-T16-5：M24 attempt 内已存在 8 项登记漂移（D-1…D-8），非本轮造成**：D-1 `handoff.json` 的 `cases.json` 记 `df12c66a…`（盘上 `263b78b3…`）；D-2 `source_manifest.json` 同上；D-3 `input.json` 记 `ccfc2f8e…`（盘上 `7f60e7d8…`）；D-4 `oracle.json` 记 `bab13806…`（盘上 `3da88501…`）；D-5 `after/rerun_sha256.json` 全套哈希与盘上**均**不一致；D-6 `recovery/selfcheck/selfcheck_result.json` 记 `263b78b3…` **且** `frozen_hashes_unchanged=true` ⇒ 与同目录世代在**跨文件层面不自洽**；D-7 `revision_r2.json` 的声称与盘上不符（**正是 T1-6「不一致」的书面表现之一**）；D-8 `handoff.json` 的 `qualifications.formula = review_pending` 而同文件 `status = accepted_scoped`。**解释**（非结论）：**至少两个世代并存** —— 早期世代（`binding.json` / `after/rerun_sha256.json`）记 `df12c66a…`/`ccfc2f8e…`/`bab13806…`；后期世代（`recovery/selfcheck` + 盘上实体）记 `263b78b3…`/`7f60e7d8…`/`3da88501…`；`handoff.json` 与 `source_manifest.json` **未随世代推进同步**。**处置：仅登记、不回改**（**不属 T1-6 授权范围**）。
+
+**未做（边界）**：**未写入冻结件**（`M24 .../evidence/M24/cases.json` 仍为 **6185 B / `263b78b3…`**，本 attempt **从未以写模式打开**该文件）；**未落地生产**（`scripts/model_registry.py` = **26446 B / `9ec6529550f189a4…`**，与绑定值一致、无漂移）；**未做任何 `status` 转移**（T1-6 保持 `planned`，**不自我升格**）；**未代签**（独立验收属 TIER-2，未记为已裁）；**未处置 D-1…D-8**；**未改卡文正文**（T1-6 明示 `无需改正文`，且卡文第 5 点禁止本卡扩大 allowlist 去改 31 张 M 卡的正文或证据）。**自证**：`git diff HEAD --name-only` **全部在 `.planning/` 内、0 条产品文件**；9 个 JSON 全部 `json.load` OK 且与 `handoff.json` 登记哈希**零失配**；西里尔/异体字符与弯引号扫描 **0 命中**。
+
 **Worktree 状态（2026-09-20 round 36 已修复，读盘前必看）**：本工作树曾发生**分支误切事故** —— 一次后台 `git checkout` 实际执行了 `checkout main`（`git reflog`：`15:05:08 checkout: moving from fcap to main`），使 fcap 独有的 **1758 个 tracked 文件**在工作树中消失（`git status` 曾报 1699 条 `' D'`），另有 **62 个文件**残留 `main` 内容。已用 blob 直读法（`git ls-tree -r -z` + `git cat-file --batch`，绕过 index）三趟恢复完毕，终态 **`' D'` = 0、`git diff HEAD` 仅剩 5 条**（3 条本轮记账 + 2 条已登记的内嵌 `.git` scratch 目录）。**两条读取纪律**：①`git status --porcelain` 的 `' M'` **不是**内容差异的证据（本次 146 条 `' M'` 中 79 条即 54% 为 index 陈旧伪差异），判据必须用 `git diff HEAD --name-only`；②本仓库 `core.autocrlf = true`，**不得用「on-disk 字节 == blob」作恢复判据**，须用 `git diff <ref> -- <path>` 是否为空（本次裸字节比对曾误报 62 例假失败）。详见 findings.md Round 36 节。
 
 ## Current Phase
@@ -117,6 +202,8 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
 |---|---|
 | 初次bootstrap把不存在的计划目录作为cwd，CreateProcess267 | 先在现存workspace创建目录再调用init，成功；未修改历史文件 |
 | company-wiki .pytest_cache只读枚举拒绝 | 属临时测试缓存；清单记录排除，不据此认定历史文档缺失 |
+| I-10-B：首版边界判据把「最终下界是否为 `-inf`」当变更集 | **判据错误**：修复前已有 37 个 cell 在 `[-inf, inf)`，该判据同时夸大波及面、掩盖真实变更集。改为对 `(lo, hi)` 对做 BEFORE/AFTER **差分**。⇒ **判定值域变更必须用差分，不能用终态**（本项目第 6 次同源教训：判据必须匹配被判定对象的形态） |
+| I-10-B：`frozen_regression_rerun.py` 导入 `model_registry` 报 `ModuleNotFoundError: model_extensions` | `model_registry.py` 顶部 `from model_extensions import build_extension_specs`；改为在 `exec_module` 期间把 `path.parent` 临时插入 `sys.path` 并在 `finally` 移除 |
 
 ## 完成标准与范围说明
 

@@ -1,0 +1,125 @@
+{
+ "card": "T1-6",
+ "attempt": "a20260920-01",
+ "runner": "M24\\a20260919-01\\scripts\\run_card.py",
+ "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+ "code_root": "M24\\a20260919-01\\iso\\checkout_scripts",
+ "runner_exists": true,
+ "structural": {
+  "cont_break_value": {
+   "opening_arr": [
+    200,
+    251
+   ],
+   "closing_arr": [
+    250,
+    251
+   ]
+  },
+  "new_case_value": {
+   "opening_arr": [
+    200,
+    250
+   ],
+   "closing_arr": [
+    251,
+    251
+   ]
+  },
+  "input_distinct": true,
+  "new_case_expected": "ModelRegistryError",
+  "new_case_substring": "stock-flow balance failed: FY2027",
+  "required_message_ids": [
+   "NEG-CARD",
+   "CONT-BREAK",
+   "CONT-BREAK-OWNBALANCE"
+  ],
+  "all_required_ids_present": true,
+  "pre_case_count": 11,
+  "post_case_count": 12
+ },
+ "pre_run_rc": 0,
+ "post_run_rc": 0,
+ "shared_case_verdicts_pre": {
+  "NEG-CARD": "PASS_rejected",
+  "N01a": "PASS_rejected",
+  "N01b": "PASS_rejected",
+  "N01c": "PASS_rejected",
+  "N01d": "PASS_rejected",
+  "N02": "PASS_rejected",
+  "N03": "PASS_rejected",
+  "N04": "PASS_rejected",
+  "N05a": "PASS_rejected",
+  "N05b": "PASS_rejected",
+  "CONT-BREAK": "PASS_rejected"
+ },
+ "shared_case_verdicts_post": {
+  "NEG-CARD": "PASS_rejected",
+  "N01a": "PASS_rejected",
+  "N01b": "PASS_rejected",
+  "N01c": "PASS_rejected",
+  "N01d": "PASS_rejected",
+  "N02": "PASS_rejected",
+  "N03": "PASS_rejected",
+  "N04": "PASS_rejected",
+  "N05a": "PASS_rejected",
+  "N05b": "PASS_rejected",
+  "CONT-BREAK": "PASS_rejected"
+ },
+ "shared_cases_unchanged": true,
+ "new_case_entry": {
+  "id": "CONT-BREAK-OWNBALANCE",
+  "kind": "set_driver_multi",
+  "why": "T1-6 (OWNER_DECISIONS.md §13): the card's own negative_patch makes BOTH years balance and breaks only the CROSS-YEAR anchor, so it exercises the FY2028 anchoring guard. This case is its complement and uses a DIFFERENT input: FY2027 itself fails its own bridge by 1, which exercises the FY2027 OWN-BALANCE guard. Reaches the guard the reviewer recorded as reachable in oracle.json hand_notes.continuity_negative_note.",
+  "expected": "ModelRegistryError",
+  "base_input": "continuity_positive",
+  "expect_message_contains": "stock-flow balance failed: FY2027",
+  "mutated_input_repr": "{'opening_arr': [200, 250], 'gross_retention_rate': [0.9, 1], 'expansion_arr': [30, 0], 'new_arr': [40, 0], 'closing_arr': [251, 251], 'lost_arr_revenue_fraction': [0.75, 0.75], 'expansion_revenue_fraction': [0.5, 0.5], 'new_arr_revenue_fraction': [0.25, 0.25], 'usage_revenue': [5, 0]} years=[2027, 2028] base=0",
+  "raised": "ModelRegistryError",
+  "message": "opening_arr stock-flow balance failed: FY2027",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\scripts\\run_card.py\", line 292, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\scripts\\run_card.py\", line 96, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 346, in calculate_registered_model\n    result = spec.calculator(base, normalized, years)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 156, in calculate\n    output = calculator(rows, years, error)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 47, in _arr\n    _bridge(rows, index, year, \"opening_arr\", \"closing_arr\",\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            d[\"opening_arr\"] - lost + d[\"expansion_arr\"] + d[\"new_arr\"], error)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 34, in _bridge\n    _equal(rows[index][closing], expected_closing,\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n           f\"{opening} stock-flow balance failed: FY{year}\", error)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 29, in _equal\n    raise error(message)\nmodel_registry.ModelRegistryError: opening_arr stock-flow balance failed: FY2027\n",
+  "is_target_type": true,
+  "is_import_or_file_error": false,
+  "expected_type_matches_raised": true,
+  "message_requirement_met": true,
+  "verdict": "PASS_rejected"
+ },
+ "new_case_present": true,
+ "new_case_verdict": "PASS_rejected",
+ "new_case_message": "opening_arr stock-flow balance failed: FY2027",
+ "new_case_reaches_own_balance_guard": true,
+ "positive_unchanged": true,
+ "post_negative_summary": {
+  "total": 12,
+  "passed": 12,
+  "failed": [],
+  "message_requirements_checked": [
+   "CONT-BREAK",
+   "CONT-BREAK-OWNBALANCE",
+   "NEG-CARD"
+  ],
+  "required_message_ids_ok": true
+ },
+ "post_exit_code_semantics": {
+  "harness_incomplete": false,
+  "positive_ok": true,
+  "continuity_ok": true,
+  "negatives_ok": true,
+  "required_message_ids_ok": true,
+  "defaults_ok_not_gating": true,
+  "verdict": "pass",
+  "exit_code": 0
+ },
+ "OVERALL": {
+  "verdict": "PASS",
+  "checks": {
+   "pre_rc_zero": true,
+   "post_rc_zero": true,
+   "input_distinct": true,
+   "shared_cases_unchanged": true,
+   "new_case_guard_reached": true,
+   "positives_unchanged": true,
+   "gate_holds": true
+  }
+ }
+}
