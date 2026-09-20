@@ -14,6 +14,18 @@
     "3": "negative verdict: a judgement was possible and did not hold (positive raised/out of tolerance, continuity mismatch, a negative case raised nothing, or a negative case raised an exception whose exact type name is not the declared one)"
    },
    "declared_expectation_enforcement": "yes, by EXACT exception type name (never isinstance: ModelRegistryError is a ValueError subclass)",
+   "cases_json_schema_constraint": {
+    "rule": "cases.json's per-case `expected` must be a BARE exception type name (e.g. 'ModelRegistryError'); composite reasons belong in `why`",
+    "why": "the runner compares the raised exception's exact type name with `expected`, so a composite declaration such as 'ModelRegistryError/continuity' (the phrasing a card's own expected_negative uses) compares unequal and would produce a FALSE RED",
+    "current_batch_state": "all four cards declare exactly 'ModelRegistryError', so the strict comparison is correct here; the constraint is a FORWARD risk for cards that copy a card's composite wording",
+    "status": "DOCUMENTED, not loosened: run_card.py was deliberately NOT edited (not even its docstring) so that the reviewer-verified runner sha256 stays byte-identical; if the owner prefers the constraint inside the runner itself, that is a one-line comment change requiring re-verification of the new sha",
+    "reviewer_finding": "r3 review, item P3-C / cross-batch precondition (2)"
+   },
+   "counting_semantics": {
+    "declared_expectation_not_met": "UNION counter = not_rejected ∪ declared_expectation_mismatch (arm B: 1/0; arm F: 1/1); it is NOT an alias of declared_expectation_mismatch",
+    "triage_rule": "use the two EXCLUSIVE counters: not_rejected and declared_expectation_mismatch",
+    "reviewer_finding": "r3 review, item P3-D"
+   },
    "case_verdict_taxonomy": "PASS_rejected | FAIL_not_rejected | FAIL_wrong_exception_type | FAIL_import_or_file_error | FAIL_declared_expectation_mismatch | NOT_JUDGED_declaration_unusable (mutually exclusive)",
    "reason_namespace": "negatives_not_rejected:<ids> = nothing was raised; declared_expectation_mismatch:<ids> = an exception was raised whose exact type name is not the declared one; cases_json_declared_expectation_missing:<ids> = the declaration is unusable, so the case is NOT JUDGED and the runner refuses a verdict (rc=2)",
    "precedence": "1 > 2 > 3 > 0"
@@ -54,7 +66,7 @@
   }
  },
  "written_by": "scripts/batch_tools.py write-rc-namespace (batch-level tooling)",
- "generated_utc": "2026-09-20T03:38:44.238808+00:00",
+ "generated_utc": "2026-09-20T03:55:37.286811+00:00",
  "self_check": "re-read with json.load immediately after writing (see stdout)",
  "adjudicated_by": "PENDING - owner/dispatcher; this table states facts about artefacts, it does not rule on how other batches must be re-run"
 }

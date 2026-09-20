@@ -214,8 +214,26 @@ def run_finalize() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--ledger-pass-only", action="store_true",
+                        help="skip the F-r3-04 patch and the report; run ONE final regeneration "
+                             "pass so the ledger covers every file written after the report "
+                             "(this is the 'final pass' the report points at)")
     args = parser.parse_args()
     apply = bool(args.apply)
+
+    if args.ledger_pass_only:
+        print("=== final ledger consistency pass - card %s ===" % CARD)
+        rc = run_finalize()
+        ledger = json.loads(rb(os.path.join(ATTEMPT, *LEDGER_REL.split("/"))).decode("utf-8"))
+        verify = verify_ledger(ATTEMPT, ledger)
+        print("rc=%d files=%d digest=%s reproducible=%s pycache=%d missing=%d mismatched=%d"
+              % (rc, verify["file_count_in_map"], verify["combined_digest_declared"],
+                 verify["combined_digest_reproducible"], len(verify["pycache_entries_listed"]),
+                 len(verify["files_missing_on_disk"]), len(verify["files_with_mismatched_hash"])))
+        print("self_check mismatches=%d rehashed=%d"
+              % (len(ledger.get("inventory_self_check", {}).get("mismatches", [])),
+                 ledger.get("inventory_self_check", {}).get("files_rehashed_from_disk", 0)))
+        return 0 if rc == 0 and verify["combined_digest_reproducible"] else 10
 
     print("=== F-r3-04 + ledger regeneration - card %s ===" % CARD)
     ledger_path = os.path.join(ATTEMPT, *LEDGER_REL.split("/"))

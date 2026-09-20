@@ -224,8 +224,13 @@ def r2_analysis(oracle_md, scratch_dir, addendum_record_path):
         appended = handle.read()
     marker = b"## revision r2 (mechanism demonstration, scratch copy only)"
     marker_offset = appended.index(marker)
-    prefix = appended[:marker_offset]
-    prefix_hash = hashlib.sha256(prefix).hexdigest()
+    # P3-B (r3 review): the reproducibility rule is about truncating at the length of the
+    # PRE-APPEND file (a real line boundary), NOT at the marker offset (which is base length + 1
+    # because of the separating newline).  Comparing at the marker offset produced a vacuous
+    # `false` next to `line_boundary_is_real: true`, which reads as self-contradictory on the
+    # three cards that have no addendum at all.
+    prefix_at_base_length = appended[:len(open(demo_base, "rb").read())]
+    prefix_hash = hashlib.sha256(prefix_at_base_length).hexdigest()
     return {
         "rule": rule,
         "r2_sections_in_oracle_md": len(offsets),
@@ -237,8 +242,14 @@ def r2_analysis(oracle_md, scratch_dir, addendum_record_path):
             "scratch_appended": demo_appended,
             "base_sha256": base_hash,
             "marker_byte_offset_in_appended_file": marker_offset,
+            "truncation_offset_used": len(open(demo_base, "rb").read()),
             "truncated_prefix_sha256": prefix_hash,
             "prefix_hash_equals_base_hash": prefix_hash == base_hash,
+            "applicable": True,
+            "applicability_note": ("this branch is a SYNTHETIC demonstration for cards that have "
+                                  "no r2 addendum; the real, live re-verification runs only in the "
+                                  "addendum branch. `prefix_hash_equals_base_hash` is computed at the "
+                                  "base length, where truncation must reproduce the base hash"),
             "line_boundary_is_real": appended[marker_offset:marker_offset + 2] == b"##",
             "note": ("the demonstration runs on a scratch copy under recovery/; the frozen oracle.md "
                      "was not modified"),
@@ -436,7 +447,14 @@ def main() -> int:
 
     # ---- qualification: only formula is touched ----
     exit_code = run_result.get("exit_code")
-    if exit_code == 0:
+    # The acceptance is written by an INDEPENDENT REVIEWER, never by this attempt: it is read from
+    # evidence/<card>/review_decision.json (produced after the reviewer verdict was transcribed
+    # byte-for-byte).  Absent that file the state stays review_pending.
+    decision_path = os.path.join(evidence, "review_decision.json")
+    decision = load_json(decision_path) if os.path.isfile(decision_path) else None
+    if decision and decision.get("formula_state"):
+        formula_state = decision["formula_state"]
+    elif exit_code == 0:
         formula_state = "review_pending"
     elif exit_code == 2:
         formula_state = "blocked_no_verdict"
@@ -469,7 +487,12 @@ def main() -> int:
                                         if exit_code == 0 else
                                         "A-C not all met; see run_result.json verdict_reasons: %s"
                                         % run_result.get("verdict_reasons")),
-            "granted_by": "a separate independent reviewer only; the implementer never writes 'accepted'",
+            "granted_by": ("a separate independent reviewer only; the implementer never writes "
+                           "'accepted'"),
+            "acceptance_authority": (decision.get("authority") if decision else None),
+            "implementer_signed": False,
+            "implementer_never_signs_acceptance": True,
+            "acceptance_carrier": (decision.get("carrier") if decision else None),
             "historical_97_tests_216_subtests": ("not used as a substitute for this card's new "
                                                  "results"),
         },
@@ -500,7 +523,11 @@ def main() -> int:
                                      "formula qualification and is not evidence of the other two"),
         "review": {
             "independent_review_performed": True,
-            "verdict_received": "accepted_scoped (formula qualification only)",
+            "verdict_received": ("accepted_scoped (formula qualification only)" if decision
+                                 else "accepted_scoped (formula qualification only) - r1 headline; "
+                                      "see r2/r3 fields below"),
+            "final_verdict": (decision.get("verdict") if decision else None),
+            "final_verdict_record": (decision.get("carrier") if decision else None),
             "implementer_signature": None,
             "formula_state_reason": ("the reviewer accepted r1 scoped, but the post-review r2 fixes "
                                      "(declared-expectation enforcement in the runner, OQ-05 "

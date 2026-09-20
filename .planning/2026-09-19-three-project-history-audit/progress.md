@@ -1,5 +1,16 @@
 # Progress
 
+## 2026-09-20 — M17–M20 落定（+4 卡）与 I-14-C r5 复核通过
+
+- **M17–M20 = 四卡 `accepted_scoped`（仅 formula）**，r3 终判已**转录落定并封盘**：源裁决正文用**显式行区间** `287:402`（10355 B，`e383f5e8…`）提取（因裁决正文自身含行内 ```` ```markdown ```` 字样，按围栏扫描会截短），落点 M17 `review.md` 380–495 / M18 292–407 / M19 284–399 / M20 302–417，批次段 `408:427`（1855 B）→ `batch_handoff.md` 258–277，均有 `transcription_proof_r3.json` / `_batch_r3.json` 的 `byte_equal: true`。
+  - **判定世代边界**：只适用于 **`2026-09-20T03:44:34Z–03:44:43Z`**；判定世代值已在**任何判决后写入之前**只读快照到 `evidence/<CARD>/generation_20260920T034434Z/`（`SNAPSHOT.json` 记 10 文件路径+sha256，复制时校验相等；四卡 `SNAPSHOT.json` hash `ee6c2bd7…`/`e3834865…`/`7380b38a…`/`9de4c39b…`）。登记**流程要求**：“宣布完成后不再写入 attempt 目录，再写入即判定失效、需重新点审”；`batch_handoff.md §10.4` 已封盘。
+  - **载体（非自签）**：新脚本 `apply_review_decision.py` → `evidence/<卡>/review_decision.json`（`pack_card.py`/`write_handoff.py` **读取**它，故重跑收尾不会退回 `review_pending`），四卡 `handoff.status` 与 `qualification.formula.state` = `accepted_scoped`，`disclosure_adaptation`/`accuracy` 未动。
+  - **P3-A…P3-D 全部落地**：A `run_closing.py` `6d2f8256…→28460157…`（同一命令内 `closing → verifier`，`closing_run.phases == ["closing","verifier"]`）；B `pack_card.py` `376a3d7b…→974e798e…`（无追加节演示改在 **base 长度**截断 + `applicable`，M18/19/20 `prefix_hash_equals_base_hash` false→**true**）；C/D `rc_namespace.json` `591eff2c…→85b5a816…`（**“`cases.json.expected` 只能是裸异常类型名”**约束 + `declared_expectation_not_met` 并集语义）——**`run_card.py` 逐字节未改为 `94619a98…`**、**`oracle.md`(M17) 仍 `c9971428…`**；E 世代覆盖事实登记。最终验证 `final_validation_after_r3_accepted.txt`（`e48bda3a…`）：**PROBLEMS: 0**（20 秒后复查仍 0）、两表 drift 0、331 个 JSON 0 failures、生产锚点 = 任务锚点、`generation_manifest` 判定**测量类产物两代之间逐字节未变**。
+- **I-14-C r5 = `accepted_scoped`**（范围＝**证据与判据成立**；**不含产品化授权**）：reviewer 独立复现十次表调用（T3 标本 rc=3 **0 泄漏 + 27 保真**、T4 0/0）、以**1 字符注入**证明保真判据逐条目生效、`r5-changes.diff` 在**无任何本地 git 配置覆盖**下 `--check`/`-p1` 均 rc=0 且**字节复原 T4**、`counts.json` 44/30/28/82 逐项相符、**82 passed 三次**（其中一次完全不设 `I14C_RUN_ROOT`）、抖动 48 行重算**翻转成立**（6/24 vs 6/24）、guard 8/8 + 反证（声明 scratch 根仍拒生产路径、未声明 root → rc=97）、hash 87 项 0 失配、r4 六项整改逐条关闭。**三项发现**（均不阻塞）：F-I14C-R5-01 `oracle.md` 本轮**非纯追加**（r2/r3/r4 历史 hash 均不再是前缀、净增 **3 字节**，语义逐行未变但**未披露**）⇒ 追加一句事实披露；F-I14C-R5-02 `handoff.json` 的 short-basetemp 分数引用了**已被取代的 ad-hoc 观测**且与 `review.md` 叙述不一致；F-I14C-R5-03 频率证据 48 行**未存逐次 stdout**。**C12 仍是促销硬前置**（产品侧超时包装不存在；reviewer 再次观测 F-07 用例挂起 >90 s）。
+- **入库**：`5471d1d1`（527 文件，只含 `.planning`）已提交并推送（`b6cc90f8..5471d1d1`，门 **GREEN**，hook 打印 `[INFO] Restored changes from …`），post-push 锚点完好。期间一次 `git commit` 因**陈旧 `.git/index.lock`** 失败（`staged=0`），重试时锁已消失、按新纪律核对 hook restore 行后成功。
+- **仍开**：I-04-D 独立复核（已派，含“缺变异证明是否阻断”的决定性裁定；其实现者已自曝更正三处：负例实为 **10 条有调度器证据 + 3 条仅 pytest 级（证据缺口）**、`decision.md` 实为存在（31332 B `c3b86336…`）、R5 兜底格缺陷已在交付前修复 `7fc47a3d…`）、I-11-A R2 复验、M21–M24/M25–M28/M29–M31 的收尾复核。
+
+
 ## 2026-09-20 — M13–M16 转录落定并经父代理独立验证：+4 卡 `accepted_scoped`（仅 formula）
 
 - **四卡判定**：`M13 asset_management` / `M14 retail_franchise` / `M15 transport` / `M16 real_estate_rental` = **`accepted_scoped`（仅 formula）**（r3 定点再复核，六项整改 F-01…F-05 + 观察项(c) + 计数单位全部经 reviewer 独立复算通过；`disclosure_adaptation = unmapped`、`accuracy = unproven` 不变；D/E/F 未做）。

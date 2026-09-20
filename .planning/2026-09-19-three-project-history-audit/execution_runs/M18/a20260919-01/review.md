@@ -286,3 +286,146 @@ r1 的 11 条未验证项全部保留，另加：
 ③§5.6 的 r1 正文写"2 趟"是 r1 当时的口径，与 `process_history.json` 的"声明 3 趟测量执行"并存，
 两者口径已在 r2 节与 `process_history.json.forensic_explanation` 中显式说明（**交叉引用，不改写 r1 正文**）；
 ④`disclosure_adaptation = unmapped`（零产出）；`accuracy = unproven`。
+
+---
+
+## revision r3 review — 独立 reviewer 的最终判定（原文转录，不得改写）
+
+判定：**accepted_scoped（仅 formula 资格）** —— M17 / M18 / M19 / M20 四卡同判。
+
+**授予范围严格限定为 formula。**
+未授予 `disclosure_adaptation`（保持 `unmapped`，含义是**零产出**：四卡证据树中不存在
+`disclosure_mapping.json`、`accounting_decision.md`、`historical_reconciliation.json`、
+`forecast_integration.json`，不是"部分完成"）；未授予 `accuracy`（保持 `unproven`，一次评估都没做，
+I-12 冻结设计不存在）。本判定不构成、也不得被用于推导任何披露适配或准确性结论。
+实现者未自签：`formula.state` 仍为 `review_pending`、`handoff.json.status = review_pending`。
+
+**P1 = 0，P2 = 0。** 指定的六项验证全部通过，逐项证据如下。
+
+### ① 两张 hash 表真的 drift=0，且由 V 单元在收尾之后实测 —— 通过
+- 我全量复算冻结世代 8 张表：M17 evidence 108 / final 167、M18–M20 evidence 94 / final 153，
+  **逐条 drift=0、missing=0**；两表自述 `drift_count/missing_count/verified_utc/drifted_paths` 齐备，
+  `hash_table_selfcheck.json` 与之一致。
+- V 在 Z 之后：四卡 `H → Z → V` 时间戳依次递增（V 于 03:44:36.236 / 38.628 / 40.746 / 42.651 开始，
+  Z 分别于 03:44:36.082 / 38.463 / 40.572 / 42.513 结束），V 的权威 rc.json 四卡 `raw_returncode=0`。
+- 我自造污染并做了四段测试（我自己临时副本、真实 argv）：
+  干净副本 **rc=0 drift=0** → 污染 `qualification.json` **rc=3 drift=1+1** →
+  再污染 `oracle.md` **rc=3 drift=2+2** → 两文件逐字节还原 **rc=0 drift=0**。
+  ⇒ "drift=0" 是被测量的输出，该单元在污染时变红、还原后恢复绿。
+- 上一轮"修后两表逐条复算 drift=0"的主张**已按实现者自述撤回**，改述为"表内 drift_count + V 单元在
+  verified_utc 的实测"——本 reviewer 认可该改述，并确认撤回是必要的（上轮我测到 24–25 条漂移）。
+
+### ② `rc_namespace.json` 合法 + 280 个 JSON 全量可解析 —— 通过
+我独立扫描同一范围：**scanned=280，unparseable=0**；`rc_namespace.json` 可被 `json.load` 解析，
+含四个命名空间（M17–M20 修复前后、M05–M08、以及显式的 "other batches … NOT VERIFIED BY THIS BATCH"），
+M17–M20 修复后 runner sha256 = `94619a98…`，rc=2 语义已把"任何用例声明的 `expected` 不可用"纳入。
+
+### ③ P2-C 两处根因已修且两文件一致；`oracle.md` 确未变 —— 通过
+`revision_r2.json.mechanism_proof.line_boundary_is_real = true`、
+`oracle_addendum_record.json.added_section_header_line_number = 186`，两者
+`boundary_byte_offset = 11768`、`added_section_header_byte_offset = 11770`，且两文件各自**追加**了
+`boundary_metadata_correction`（保留旧值 false / 184 与更正后值）。
+`oracle.md` 实测 `sha256 = c9971428…`、14234 B、214 行、r2 节数 = 1（标题在第 186 行），
+截断到 11768 字节复现追加前 hash `9c8021ee…` ⇒ **未再追加、未再截断**。
+`--repair-restore --dry-run`（R2b）与 `--rebuild-record-only`（R2c）各有独立 rc 留档，
+原始 `--repair-restore` 已按我的 P3-1 以 `declared_unrecorded_commands` 登记 argv 与 `captured=false`。
+
+### ④ 互斥分类与 rc=2 语义 —— 通过
+我自造臂复现（新 runner `94619a98…`）：
+臂 B（N04 不抛）→ **rc=3**、`reasons=['negatives_not_rejected:N04']`、`not_rejected=1`、`mismatch=0`；
+臂 F（N02 声明篡改为 `ValueError`）→ **rc=3**、`reasons=['declared_expectation_mismatch:N02']`、
+`mismatch=1`、`not_rejected=0`；
+臂 G（删除 N02 的 `expected`）→ **rc=2**、`verdict=no_verdict`、
+`reasons=['cases_json_declared_expectation_missing:N02']`、该例 `NOT_JUDGED_declaration_unusable`。
+交付件 `mutation_selfcheck.json` 含七臂 `A=3 B=3 C=2 D=1 F=3 G=2 E=0`，`frozen_evidence_unchanged=True`。
+
+### ⑤ 转录逐字节 —— 通过
+我从自己 r2 报告的 ```markdown 围栏按字节重抽：verdict 块 **11463 B**、batch 块 **1318 B**，
+sha256 分别为 `6cc56b43c8f28a2f…` / `d7ee0baabeb14a09…`，与 `transcription_proof.json` 记录一致；
+四卡 `review.md` 与 `batch_handoff.md` 中**各恰好出现 1 次**且逐字节相同，我的正文之后紧跟
+`### 实现者附注（非 reviewer 文字，另起一段以便区分）` ⇒ 转录忠实、作者分离清晰。
+
+### ⑥ 新 runner 的跨批复用前置 —— 满足 3/4
+(1) 精确类型名语义保持：我重放"声明正确但实际异常被替换为 `ModelRegistryError` 的**子类**"
+（isinstance 仍为 True）→ **rc=3**、`FAIL_declared_expectation_mismatch` ⇒ 退回 isinstance 会漏过，故语义正确；
+(3) P3-2/P3-3 已修（见 ④）；
+(4) 命名空间表按 runner sha 逐批登记；
+**(2) 未闭合**：`cases.json.expected` 必须为"裸异常类型名"这一约束**仍未文档化**。我重放
+复合声明注入（`"ModelRegistryError/continuity"`，即 M20 卡片 L123 自己的写法）→ **rc=3 假红**。
+今天 31 张卡的声明集合**无一例外**恰为 `'ModelRegistryError'`（我重新全量扫描确认），
+故不构成现存缺陷，属**前向风险**：任何未来卡若照抄卡片原文的 `expected_negative` 就会红。
+⇒ 复用该 runner 前，请在 runner docstring、`rc_namespace.json` 与批次交接各加一句
+"`expected` 只能是裸异常类型名；复合原因写进 `why`"，或让比较接受 `declared.split('/')[0].strip()`。
+
+### r3 遗留（全部 P3，不阻断本判定；修法只许追加或重算记录，`oracle.md` 禁止再改）
+- **P3-A**：`card_units.verifier_units()`（含 V）**没有任何 driver 执行**——`run_closing.py` 只调用
+  `closing_units`，而 `verifier_units` 仅被 `write_commands.py` / `write_process_history.py` 用于罗列；
+  `recovery/closing_run.json` 的 units 也不含 V。V 的 argv/rc/stdout 已完整留档且我已用该 argv 手工复现，
+  但"最后一步"不可由单一命令复现。修法：`run_closing.py` 先跑 `closing_units` 再跑 `verifier_units`
+  （一行），或新增 `run_verify.py` 驱动并在 `review.md`/`handoff.json` 写明 V 的执行方式。
+- **P3-B**（M18/19/20）：`revision_r2.json.mechanism_proof.prefix_hash_equals_base_hash = false` 是
+  scratch 演示把截断点放在 marker 偏移（= base 长度 + 1）所致；我实测在 **base 长度**处截断即可复现
+  base hash（`d8be42a9…` / `a55fa54d…` / `b43abd8d…`，均 True）。该字段对无追加节的三卡是**空泛值**
+  （`r2_sections_in_oracle_md=0`、`frozen_body_reproducible_by_truncation=null`），但与相邻的
+  `line_boundary_is_real: true` 并排会被读成自相矛盾。修法（记录级，`oracle.md` 不动）：
+  演示分支改在 base 长度处截断，或加 `"applicable": false`。
+- **P3-C**：见 ⑥(2)。
+- **P3-D**：`declared_expectation_not_met` 是 `not_rejected` ∪ `declared_expectation_mismatch` 的**并集**计数
+  （我的臂 B 得 1/0、臂 F 得 1/1），建议在 `exit_code_semantics.reason_namespace` 里明写这一点，
+  以免被当成 `declared_expectation_mismatch` 的别名。
+- **P3-E（环境）**：父 agent 简报里的表 hash（`d19d4180…`/`7b717ac9…`/`7ca8db2c…` 等）与
+  "evidence 条目 109/94/94/94"属**已被 03:44 收尾覆盖的 03:40 世代**；冻结世代实测为
+  M17 final `d71860ae…` / evidence `19fe0c7a…`、M18 `05fbeba7…`/`ba7eeeb7…`、
+  M19 `7057b921…`/`29892747…`、M20 `fc14f74c…`/`c76d14e3…`，证据表条目为 **108**/94/94/94。
+  核验请以上列值为准。
+
+### 环境事实与本 reviewer 的读数为准范围
+1. **卡目录在本次复核期间仍在被写入（moving target）**：我 03:42:53Z 开始抓取 hash 后，实测到
+   `scripts/card_units.py` 03:43:20、`scripts/pack_card.py` 03:43:31、`scripts/write_process_history.py` 03:43:52
+   被改写，随后两表、`commands.json`、`handoff.json`、`process_history.json`、V 输出与四卡 V rc.json
+   在 03:44:34–03:44:43 被改写。因此我最初的临时副本曾把 **03:40 世代的表**与 **03:43 世代的脚本**
+   混在一起（表现为 3 条 pseudo-drift），我已废弃该副本并改在**稳定的 03:44:43 世代**上重做全部测量
+   （稳定性以 03:45:31Z 与 03:46:46Z 两次采样 mtime 完全一致证明）。**本判定只对该世代有效。**
+2. **编排层 pre-commit 事故**（`execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md`）：
+   pre-commit 门导出未暂存补丁后执行 `git checkout -- .`，因 3 个并发占用的 `.planning/.../I-04-D/.../scratch/*/stderr.A.txt`
+   返回 255，补丁未回放，生产工作树被重置到 HEAD；窗口 **04:35:31–04:5x（本地）= 03:35:31–03:5x（UTC）**。
+   我在该窗口内的三次生产测量均为**锚定值**（`model_registry.py = 9ec65295…`、
+   `model_extensions.py = 9939480b…`），**未观测到 `production_hashes_unchanged=false`**；
+   我首次测量（03:42:53Z）之前的状态我未测、不作归因。
+   对本批复核的实质影响：**不存在**——四卡只用 `--code-root <attempt>/iso/checkout_scripts`，
+   且我三次核对四卡 iso 副本两文件均 = 锚定值，故生产工作树的回滚不可能影响任何公式结论。
+3. `PLAN\reviews` 未被本批写入（307 个可读条目，最新 mtime 2026-09-19T09:05:32Z）；
+   `company-wiki` porcelain 2 行（既有用户改动）、`filing-fetch` 空。
+
+### 仍未验证（不得当已证）
+r1/r2 的未验证项全部保留，另加：M17 `measurement_pipeline_executions_declared=3` 与
+`closing_executions_declared=7` 不可独立证实（已正确标注为 declared）；03:17:53Z 那一代写入的触发者
+仍不可归因（`process_history.json` 以 `additional_unnamed_generations: 1` 的 honest_gap 登记）；
+更早一次 V 执行曾返回 rc=3 的原因在最终交付件中已不可考；M13–M16/M25–M28 的声明一致性机制未评估等价性；
+M01–M04/M09–M12/M21–M24/M29–M31 的 runner 未重读。
+
+—— 独立 reviewer，2026-09-20T03:52Z，零写入模式（写入仅限 %TEMP%\m17m20-review-r3-20260920-044253\）
+
+
+### 实现者附注（非 reviewer 文字，另起一段以便区分）
+
+本段由 M17-M20 attempt 的实现 session 追加，**不是** reviewer 的原文。
+
+**世代边界（重要）**：上方法庭级判定由独立 reviewer 针对**冻结世代
+`2026-09-20T03:44:34Z–03:44:43Z`**（四卡最后一次收尾 + V 单元）作出，只对该世代有效。本转录以及
+r3 遗留项 P3-A…P3-D 的处置都发生在该世代**之后**，故本卡目录此后存在更新的记录；判定所依据的世代值
+已用**只读快照**保存于 `evidence/M18/generation_20260920T034434Z/`（含当时的
+`evidence_hashes.json`、`after/final_deliverable_hashes.json`、`after/hash_table_verification.json`、
+`handoff.json`、`commands.json`、`process_history.json`、`qualification.json`、`revision_r2.json`、
+`source_manifest.json` 及各自 sha256），可据此逐条比对"哪些文件在判定世代之后被改写"。
+
+**流程要求（reviewer 明示并登记为约束）**：宣布本卡完成后**不得再写入 attempt 目录**；任何后续写入都会
+使本判定失效、必须重新点审。若确需写入，应先保存世代快照，写入后重跑 `run_closing.py`
+（其内含 V 单元）并重新登记世代。
+
+**r3 遗留项处置（只涉及脚本与记录文件；`oracle.md` 未再改动）**：P3-A 已让 `run_closing.py` 在收尾单元
+之后**同一命令内**执行 `verifier_units()`（含 `V-verify-hash-tables`），并在 `recovery/closing_run.json`
+记录两阶段单元清单与 raw rc；P3-B 已把无追加节分支的演示截断点改到 **base 长度**处（并加 `applicable`
+标记）；P3-C/P3-D 以**文档**形式落在 `rc_namespace.json` 与批次交接（**不改 `run_card.py` 一个字节**，
+以保持 reviewer 已验证的 runner sha `94619a98…` 不变）；P3-E 的世代覆盖事实登记在批次交接与
+`generation_manifest.json`。`disclosure_adaptation` 与 `accuracy` **未动**。

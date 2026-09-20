@@ -85,6 +85,7 @@ P3-C/P3-D `rc_namespace.json` 的 `cases_json_schema_constraint` 与 `counting_s
 先记录并上报、**永不**改期望或冻结件适配、引用时写明被测副本 hash。
 """
 
+NOTE_BATCH = """
 
 ### 实现者附注（非 reviewer 文字，另起一段以便区分）
 

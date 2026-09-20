@@ -21,7 +21,7 @@
   "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
  },
  "anchored_hash_claim_is_time_scoped": {
-  "observed_at_pack_utc": "2026-09-20T03:44:34.409300+00:00",
+  "observed_at_pack_utc": "2026-09-20T03:55:18.787812+00:00",
   "rule": "A production file hash is an EXTERNALLY CHANGEABLE quantity, not a constant of this attempt: git operations run by other sessions/agents (stash, checkout, pre-commit patch export/replay) can change the working tree between the binding and any later check. Therefore: (1) every claim about a production hash is time-scoped and carries its observation time; (2) an observed mismatch is recorded as drift with its timestamp and escalated to the orchestration layer - it is a CORRECT warning and is never suppressed; (3) expectations, frozen oracle files and rejection criteria are NEVER adjusted to accommodate a drifted production tree; a drifted tree means new runs must re-bind, not that the oracle must move.",
   "incident_reference": "execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md",
   "known_external_risk": "the repository's own pre-commit/pre-push gate exports unstaged changes to a patch, runs `git checkout -- .`, and replays the patch afterwards; if the replay step is skipped (observed once: `git checkout -- .` returned 255 on files held by concurrent writers) the production working tree is left reset to HEAD, so a hash check taken inside that window legitimately reads a different revision",
@@ -38,5 +38,5 @@
   ".planning/reviews was never written to",
   "this attempt wrote only inside its own attempt directory; no other attempt directory was created or overwritten"
  ],
- "packed_utc": "2026-09-20T03:44:34.409300+00:00"
+ "packed_utc": "2026-09-20T03:55:18.787812+00:00"
 }

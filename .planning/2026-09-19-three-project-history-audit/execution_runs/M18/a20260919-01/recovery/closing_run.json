@@ -6,7 +6,60 @@
   "P-write-process-history",
   "T-transcribe-review-verdict",
   "H-write-handoff",
-  "Z-close-attempt"
+  "Z-close-attempt",
+  "V-verify-hash-tables"
  ],
- "failed_units": []
+ "phases": [
+  {
+   "phase": "closing",
+   "units": [
+    "P-write-process-history",
+    "T-transcribe-review-verdict",
+    "H-write-handoff",
+    "Z-close-attempt"
+   ]
+  },
+  {
+   "phase": "verifier",
+   "units": [
+    "V-verify-hash-tables"
+   ]
+  }
+ ],
+ "unit_results": [
+  {
+   "phase": "closing",
+   "unit_id": "P-write-process-history",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "phase": "closing",
+   "unit_id": "T-transcribe-review-verdict",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "phase": "closing",
+   "unit_id": "H-write-handoff",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "phase": "closing",
+   "unit_id": "Z-close-attempt",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "phase": "verifier",
+   "unit_id": "V-verify-hash-tables",
+   "raw_rc": 0,
+   "expected_rc": 0
+  }
+ ],
+ "failed_units": [],
+ "driver": "scripts/run_closing.py",
+ "p3_a_note": "the verifier unit runs inside this same driver, after the closing units, so 'the last step' is reproducible with one command (r3 review P3-A)",
+ "executed_utc": "2026-09-20T03:55:22.827751+00:00"
 }

@@ -185,7 +185,14 @@ def task1_verdict(verdicts_dir: str, apply: bool) -> dict:
             "equals_source_bytes": appended == src,
             "separator_bytes_added": 0,
         },
-        "byte_counts_match": len(after) - len(before) == len(src),
+        "review_md_grew_by_bytes": len(after) - len(before),
+        "byte_counts_match": (
+            (len(after) == len(before)) if already
+            else (len(after) - len(before) == len(src))),
+        "byte_counts_rule": "when this pass appended, len(after) - len(before) must equal "
+                            "len(source); when the block was already present, after must equal "
+                            "before (nothing appended) and the located region must still equal the "
+                            "source bytes",
         "verdict_block_in_review_md": {
             "line_start": start_line,
             "line_end": end_line,
@@ -209,6 +216,7 @@ def task1_verdict(verdicts_dir: str, apply: bool) -> dict:
 
     proof_path = os.path.join(ATTEMPT, *proof_rel.split("/"))
     proof_bytes = jdump(proof).encode("utf-8")
+    track(rv, before, after, "verdict block appended byte-exact (review.md is append-only)")
     record(proof_path, proof_bytes, "verdict transcription proof (new)", apply)
 
     log("[1] %s verdict: %s source=%d B sha256=%s" % (CARD, action, len(src), sha256b(src)))
@@ -355,11 +363,13 @@ def task2_carriers(verdict_info: dict, model_id: str, apply: bool) -> None:
     qbefore = rb(qual_path)
     qtext = qbefore.decode("utf-8")
     q_old = '  "state": "review_pending",'
-    if qtext.count(q_old) != 1:
-        raise AssertionError("qualification.formula.state is not unique")
-    qtext = qtext.replace(q_old,
-                          '  "state": "accepted_scoped",\n'
-                          '  "state_before_bookkeeping_fix": "review_pending",')
+    if qtext.count(q_old) == 1:
+        qtext = qtext.replace(q_old,
+                              '  "state": "accepted_scoped",\n'
+                              '  "state_before_bookkeeping_fix": "review_pending",')
+    elif '  "state": "accepted_scoped",' not in qtext:
+        raise AssertionError("qualification.formula.state is neither review_pending nor "
+                             "accepted_scoped")
     qbook = {
         "recorded_by": "the r3 bookkeeping/transcription executor session (delegated subagent)",
         "implementer_signed": False,

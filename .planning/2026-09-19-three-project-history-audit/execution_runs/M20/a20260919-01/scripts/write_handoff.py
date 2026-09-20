@@ -107,7 +107,9 @@ def main() -> int:
         "attempt_id": "a20260919-01",
         "model_id": info["model_id"],
         "card_title": info["title"],
-        "status": "review_pending",
+        "status": (load(os.path.join(evidence, "review_decision.json"))["status"]
+                   if os.path.isfile(os.path.join(evidence, "review_decision.json"))
+                   else "review_pending"),
         "implementer_is_not_the_reviewer": True,
         "generated_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "completed_steps": {
@@ -238,6 +240,11 @@ def main() -> int:
                             "Post-review P2/P3 dispositions are recorded in review.md (r2 section) and "
                             "the batches' rc/qualification semantics in the batch handoff. formula "
                             "remains review_pending until the reviewer confirms the r2 fixes."),
+        "acceptance": (load(os.path.join(evidence, "review_decision.json"))
+                       if os.path.isfile(os.path.join(evidence, "review_decision.json"))
+                       else {"formula_state": "review_pending",
+                             "authority": "no reviewer verdict transcribed yet",
+                             "implementer_signed": False}),
         "process_history_pointer": "process_history.json",
         "discipline": {
             "production_hash_is_externally_changeable": True,

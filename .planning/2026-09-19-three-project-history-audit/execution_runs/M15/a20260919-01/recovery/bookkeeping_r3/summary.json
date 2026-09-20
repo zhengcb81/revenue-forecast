@@ -30,6 +30,15 @@
  },
  "changes": [
   {
+   "path": "review.md",
+   "sha256_before": "2bd1bf8d7be99f5b7630d25d9359285d4927a1910147e0ca0ac00f934fceb368",
+   "bytes_before": 15307,
+   "sha256_after": "5d87e768947fb04c9ae16d3a79efe42c4fb140142b5735bfd89ca3e92da9dcaa",
+   "bytes_after": 24430,
+   "changed": true,
+   "note": "verdict block appended byte-exact (review.md is append-only)"
+  },
+  {
    "path": "evidence/M15/verdict_transcription_r3.json",
    "sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "bytes_before": 0,
@@ -169,5 +178,6 @@
   "files_missing_on_disk_after": [],
   "historical_values_preserved": true,
   "note": "a final regeneration pass runs after this summary is updated, so the ledger also covers these final bytes"
- }
+ },
+ "changes_backfill_note": "recovery/bookkeeping_r3/finalize_summary_r3.py added the review.md row: the first run of transcribe_r3_verdict.py proved the append in evidence/M15/verdict_transcription_r3.json but omitted review.md from this table. The values come from that proof file (before) and from disk (after); no other row was touched."
 }

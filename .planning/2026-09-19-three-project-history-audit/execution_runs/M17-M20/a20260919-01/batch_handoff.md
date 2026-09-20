@@ -252,3 +252,94 @@ tests/test_backtest.py d0972e23…   SKILL.md 45e4e343…（与 I-00-A 基线一
 而 03:40Z 那几次 pack 记录的观察值恰是 HEAD 版 `1f2639e1…`（即字段会与自身内容矛盾）。现已改为
 **由观察值与任务锚点比较得出**，并新增 `observed_matches_task_anchor_by_file`、
 `anchored_hashes_match_rule`、`anchored_hash_claim_is_time_scoped`；重跑后四卡该字段为 True 且观察值 = 锚点。
+
+---
+
+## 9. r3 复核终判（独立 reviewer，原文转录）
+
+四卡 **accepted_scoped（仅 formula）**。授予范围严格限定为 formula；
+`disclosure_adaptation = unmapped`（**零产出**，非部分完成）、`accuracy = unproven`（一次评估都没做）。
+P1=0、P2=0；r1 的 2 项 P2 与 r2 的 3 项 P2（P2-A 两张 hash 表、P2-B rc_namespace 非法 JSON、P2-C 追加记录两值矛盾）
+已由本 reviewer 独立复算确认闭合，方式为：
+①两表全量复算 drift=0（M17 108/167、M18–M20 94/153），并由 V 单元在 Z 之后实测，
+且我用"干净副本 rc=0 → 污染 rc=3 → 还原 rc=0"三段自测确认该机制会变红；
+②批次目录 + 四卡 attempt 共 **280 个 `.json` 全部可解析**（failures 0）；
+③M17 `oracle.md` 保持 `c9971428…`、r2 节数 1、第 186 行为 `## 13.`，截断 11768 复现追加前 `9c8021ee…`；
+④新 runner `94619a98…` 的臂 B/F/G 实测 rc=3/3/2 且分类互斥；
+⑤我 r2 报告的裁决正文与批次追加段在目标文件中**各恰好逐字节出现 1 次**，实现者附注已明确分离。
+本表第 1 节的 rc 命名空间规则继续有效；`rc_namespace.json` 现为合法 JSON（sha256 `591eff2c…`）。
+遗留 **P3-A…P3-E**（V 无 driver 执行、"裸类型名"约束未文档化、M18/19/20 的空泛
+`prefix_hash_equals_base_hash=false`、`declared_expectation_not_met` 并集计数、简报 hash 属旧世代）
+均不阻断签收，修法见各卡 `review.md` 的 r3 节；其中 **`oracle.md` 禁止再改**，
+`review.md` / `revision_r2.json` / 本文件只许追加。
+
+**世代边界**：本判定只适用于 **2026-09-20T03:44:34Z–03:44:43Z** 的冻结世代。本次复核期间该 attempt
+目录仍被写入过（03:43:20–03:44:43），此后已稳定；若再次写入，本判定失效，需重新点审。
+
+
+### 实现者附注（非 reviewer 文字，另起一段以便区分）
+
+本段由 M17-M20 attempt 的实现 session 追加，**不是** reviewer 的原文。
+
+**世代边界**：第 9 节的终判针对冻结世代 **`2026-09-20T03:44:34Z–03:44:43Z`**，只对该世代有效；
+本次转录与 r3 遗留项处置在其后发生。各卡目录内已保存只读世代快照
+`evidence/<CARD>/generation_20260920T034434Z/`，批次层面另见 `generation_manifest.json`。
+
+**流程要求（登记为约束）**：宣布完成后**不再写入 attempt 目录**；再写入即判定失效、需重新点审。
+
+**r3 遗留项 P3-A…P3-E 的落点**：P3-A `scripts/run_closing.py`（收尾后同一命令内跑 V，`recovery/closing_run.json`
+记录两阶段 rc）；P3-B `scripts/pack_card.py` 的无追加节演示分支（截断点改到 base 长度 + `applicable`）；
+P3-C/P3-D `rc_namespace.json` 的 `cases_json_schema_constraint` 与 `counting_semantics`（**未改
+`run_card.py`**，以保持 reviewer 已验证的 runner sha `94619a98…` 逐字节不变）；P3-E 见本节与
+`generation_manifest.json` 的"世代覆盖"记录。**`oracle.md` 未再改动**。
+
+**本批最后一次写入之后的纪律**：生产 hash 是可被外部 git 操作改变的量（见 §9.2 与
+`_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md`）：时点限定、发现不一致
+先记录并上报、**永不**改期望或冻结件适配、引用时写明被测副本 hash。
+
+---
+
+## 10. 实现者附注之三：r3 遗留项落点、世代登记与"封盘"（append-only）
+
+本段由 M17-M20 attempt 的实现 session 追加，**不是** reviewer 的原文，也不构成任何 acceptance。
+§9 的终判正文由本 session **逐字节转录**（见 `transcription_proof_batch_r3.json`：源行 408–427、
+1855 字节、`byte_equal: true`、落点 `batch_handoff.md` 第 258–277 行；各卡裁决块同样逐字节转录，
+落点与证明见 `evidence/<CARD>/transcription_proof_r3.json`）。
+
+### 10.1 授权落 status（**非自签**）
+四卡 `handoff.json.status` 与 `qualification.json.formula.state` 现为 **`accepted_scoped`**，
+载体写在各卡 `evidence/<CARD>/review_decision.json`，其 `carrier` 记录：
+reviewer 裁决块在 `review.md` 的**行号区间**（M17 380–495、M18 292–407、M19 284–399、M20 302–417）、
+该块的 sha256 `e383f5e89bd6737f…`（10355 字节）、字节相等证明文件与其 sha256、**世代边界
+`2026-09-20T03:44:34Z–03:44:43Z`**、以及 `generation_snapshot` 路径。同时固定：
+`implementer_signed: false`、`implementer_never_signs_acceptance: true`、
+`authority: "acceptance was written by an independent reviewer, not by the implementer"`。
+`disclosure_adaptation` 保持 `unmapped`（**零产出**）、`accuracy` 保持 `unproven`（一次评估都没做）。
+
+### 10.2 r3 遗留项落点（只涉及脚本与记录文件；**`oracle.md` 未再改动**）
+| 项 | 落点 | 改前 → 改后 |
+|---|---|---|
+| P3-A | `scripts/run_closing.py`：`closing_units` 之后**同一命令内**执行 `verifier_units`（V），`recovery/closing_run.json` 现含 `phases` 与 `unit_results`（两阶段 raw rc） | 旧 `run_closing.py` 只跑 closing（V 无 driver） → 新文件 sha256 `见 §10.4`；四卡实测 `[verifier] V-verify-hash-tables rc=0` |
+| P3-B | `scripts/pack_card.py` 无追加节演示分支：截断点改到 **base 长度**并新增 `applicable`/`applicability_note`/`truncation_offset_used` | M18/M19/M20 `prefix_hash_equals_base_hash` **false → true**、`applicable: true`（M17 走真实追加分支，无该演示） |
+| P3-C | `rc_namespace.json.cases_json_schema_constraint`（+ 本文件 §10.3） | 该约束**未文档化** → 已文档化；**rule：`cases.json.expected` 只能是裸异常类型名**，复合原因写进 `why`；**未改 `run_card.py`**（保持 reviewer 已验证的 runner sha `94619a98…` 逐字节不变） |
+| P3-D | `rc_namespace.json.counting_semantics` | `declared_expectation_not_met` 是 `not_rejected ∪ declared_expectation_mismatch` 的**并集**计数（臂 B 1/0、臂 F 1/1），**不是** mismatch 的别名；triage 用两个互斥计数器 |
+| P3-E | 本节 + `generation_manifest.json` | 登记"世代覆盖"事实：我此前简报引用的表 hash（`d19d4180…`/`7b717ac9…`/`7ca8db2c…`）与"evidence 条目 109"属**03:40 世代**，已被 03:44 收尾覆盖；**冻结世代实测值以 reviewer 的清单为准**（M17 `19fe0c7a…`/`d71860ae…`、M18 `ba7eeeb7…`/`05fbeba7…`、M19 `29892747…`/`7057b921…`、M20 `c76d14e3…`/`fc14f74c…`，证据表条目 **108**/94/94/94） |
+
+### 10.3 跨批复用前必须满足（reviewer 的 ⑥ 前置，本批登记）
+1. 精确类型名语义保持，**不得退回 `isinstance`**；
+2. **`cases.json.expected` 只能是裸异常类型名**（复合写法如 `"ModelRegistryError/continuity"` 会假红；
+   31 张卡现状**无一例外**恰为 `'ModelRegistryError'`，故属**前向风险 + 文档缺口**，已在 P3-C 落点文档化）；
+3. 先修 P3-2/P3-3（本批已修：分类互斥、缺声明 rc=2）；
+4. 逐批按 runner sha256 登记命名空间（`rc_namespace.json` 含四个命名空间，含显式的
+   "other batches … NOT VERIFIED BY THIS BATCH"）。
+
+### 10.4 封盘声明
+本节写入后，本 session **不再写入四卡 attempt 目录**（reviewer 的流程要求，已登记为约束）。
+**11 个文件的 sha256 见 `generation_manifest.json`（post-fix 世代）**；判定世代值保存在
+`evidence/<CARD>/generation_20260920T034434Z/SNAPSHOT.json`。两代之间的差异已测得：**测量类产物
+逐字节未变**（产品 `stdout.txt`、`run_result.json`、`formula_result.json`、`negative_results.json`、
+`mutation_selfcheck.json`、`extra_probes.json`、`registry_enumeration.json`、`input/oracle/cases.json`、
+`oracle.md`、`oracle_regen_proof.json`），变化的只有 `review.md`（追加转录）、`handoff.json` /
+`qualification.json`（授权 status）、`commands.json` / `process_history.json` / 各卡的 pack 记录表
+以及少数**单元捕获记录**（`runs/G-pack-evidence/stdout.txt`、`runs/H-write-handoff/stdout.txt`）。
+— 任何再次写入都会使 r3 判定失效，必须重新点审。
