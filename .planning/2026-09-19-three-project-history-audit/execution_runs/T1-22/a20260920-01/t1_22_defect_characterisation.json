@@ -1,0 +1,140 @@
+{
+ "attempt": "a20260920-01",
+ "card": "T1-22",
+ "defect_1": {
+  "behaviour": "an omitted driver is silently substituted with spec.defaults.get(driver, 0.0) repeated over the horizon; omission and an explicit 0.0 are indistinguishable in the result",
+  "blast_radius_ruling_scope": {
+   "models": 24,
+   "optional_slots": 31
+  },
+  "blast_radius_whole_registry": {
+   "models": 31,
+   "slots": 156
+  },
+  "models_total": 31,
+  "required_behaviour": "raise ModelRegistryError on omission (省缺即抛)",
+  "site": "scripts/model_registry.py:335"
+ },
+ "defect_2": {
+  "behaviour": "unbounded sign is granted by driver NAME membership in a hardcoded frozenset, not by the driver's semantic role",
+  "dimensions_involved": {
+   "backlog": 1,
+   "revenue": 22
+  },
+  "name_granted_slots": 23,
+  "note": "one model (renewable_generation) narrows its own 'other_revenue' via explicit metadata; explicit metadata takes precedence, so the name list is a default, not an override",
+  "required_behaviour": "a semantic-role based sign rule",
+  "site": "scripts/model_registry.py:265-269 (_SIGNED_DRIVERS), consulted at :289"
+ },
+ "nature": "characterisation of the two product defects the ruling authorises carding; NOT the fix",
+ "order": [
+  "P-1_ruling_names_both_defects_and_the_count",
+  "P-2_the_defect_site_is_line_335",
+  "P-3_the_31_24_count_reproduces_for_optional_slots",
+  "P-4_omission_is_live_and_indistinguishable_from_zero",
+  "P-5_sign_permission_is_decided_by_driver_name",
+  "P-6_nothing_was_modified"
+ ],
+ "overall": "pass",
+ "propositions": {
+  "P-1_ruling_names_both_defects_and_the_count": {
+   "authorises_carding": true,
+   "holds": true,
+   "names_line_335": true,
+   "names_signed_drivers": true,
+   "names_silent_zero": true,
+   "quotes_the_count_31_24": true,
+   "requires_ModelRegistryError": true,
+   "requires_semantic_role_rule": true,
+   "says_both_in_one_card": true,
+   "t1_22_named": true
+  },
+  "P-2_the_defect_site_is_line_335": {
+   "holds": true,
+   "line_335_contains_silent_default": true,
+   "line_335_in_range": true,
+   "line_335_text": "values = drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+   "no_raise_on_that_line": true,
+   "the_default_appears_once_in_the_file": true,
+   "the_default_is_0.0": true
+  },
+  "P-3_the_31_24_count_reproduces_for_optional_slots": {
+   "holds": true,
+   "models_total": 31,
+   "models_with_such_a_slot": 24,
+   "optional_slots_without_default": 31,
+   "ruling_count_reproduced": true,
+   "scope_note": "the ruling's 31/24 counts OPTIONAL slots lacking a declared default; the whole registry has more (required slots too). Both are the same defect seen at different scope; the ruling's number is reproduced exactly and is not an error.",
+   "whole_registry_models_affected": 31,
+   "whole_registry_slots_without_default": 156
+  },
+  "P-4_omission_is_live_and_indistinguishable_from_zero": {
+   "explicit_zero_result": [
+    1000.0,
+    1100.0
+   ],
+   "holds": true,
+   "no_error_raised_for_omission": true,
+   "omission_is_indistinguishable_from_explicit_zero": true,
+   "omitted_result": [
+    1000.0,
+    1100.0
+   ],
+   "ruling_requires_error_instead": true
+  },
+  "P-5_sign_permission_is_decided_by_driver_name": {
+   "dimensions_involved": {
+    "backlog": 1,
+    "revenue": 22
+   },
+   "holds": true,
+   "name_listed_driver_admits_negative_values": true,
+   "other_revenue_bounds": [
+    -Infinity,
+    Infinity
+   ],
+   "other_revenue_is_name_listed": true,
+   "premise_is_derived_from_observations_not_a_literal": true,
+   "rule_order_in_source": "explicit metadata > _SIGNED_DRIVERS name > ratio > (0, inf)",
+   "rule_read_at_line_289": true,
+   "signed_drivers_is_a_name_frozenset": true,
+   "signed_drivers_members": [
+    "ancillary_revenue",
+    "contract_changes",
+    "fee_revenue",
+    "fixed_revenue",
+    "milestone_revenue",
+    "other_revenue",
+    "performance_fee_revenue",
+    "royalty_revenue",
+    "service_revenue"
+   ],
+   "the_two_domains_differ": true,
+   "unbounded_sign_granted_by_name_alone": 23,
+   "units_bounds": [
+    0.0,
+    Infinity
+   ],
+   "units_is_not_name_listed": true,
+   "unlisted_driver_forbids_negative_values": true
+  },
+  "P-6_nothing_was_modified": {
+   "holds": true,
+   "matches_recorded_anchor": true,
+   "registry_sha_unchanged_after_all_calls": true,
+   "t1_22_row_authorises_carding": true,
+   "t1_22_row_does_not_authorise_the_fix": true,
+   "t1_22_row_isolated": true,
+   "t1_22_row_text": "**第五节第 1/2 项：产品级缺陷新立卡** **授权立卡**：①`model_registry.py:335` 静默补 0（31 槽位 / 24 模型）改为省缺即抛 `ModelRegistryError`；②`_SIGNED_DRIVERS` 改**基于语义角色**的符号规则。两项同卡处理。",
+   "therefore_a_whole_file_scan_is_not_a_test": true,
+   "this_card_is_characterisation_not_fix": true,
+   "whole_file_contains_授权实施_but_at_other_tiers": 2
+  },
+  "SCOPE": {
+   "registry_exists": true,
+   "registry_matches_anchor": true,
+   "registry_sha": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "scope_guard_not_vacuous": true
+  }
+ }
+}

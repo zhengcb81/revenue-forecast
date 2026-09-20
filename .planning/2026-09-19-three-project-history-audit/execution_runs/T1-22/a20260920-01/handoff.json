@@ -1,0 +1,264 @@
+{
+ "card": "T1-22",
+ "attempt": "a20260920-01",
+ "ruling_ref": "OWNER_DECISIONS.md T1-22 (section 5 items 1/2)",
+ "card_nature": "characterisation_of_two_product_defects_plus_card_content",
+ "is_a_fix": false,
+ "why_not_a_fix": "the ruling authorises carding (authorise-carding); it authorises no fix. A card that edits model_registry.py would perform the fix and would be signing for the fixer.",
+ "overall": "pass",
+ "overall_means": "verification_passed -- NOT an acceptance, NOT a status change, NOT a promotion",
+ "status_transition": 0,
+ "artifacts": {
+  "verifier": {
+   "path": "scripts/verify_t1_22.py",
+   "bytes": 15992,
+   "sha256": "cca9026a410897fa08482dbe42d36c489bf7b5893bfadfe7370dd9ba70f76c52"
+  },
+  "result": {
+   "path": "t1_22_defect_characterisation.json",
+   "bytes": 5228,
+   "sha256": "21fbab3da6263b7c6edcd4e27829767b966bd5e3d970b13305abab9ebf7ada1c",
+   "hash_stable_across_two_runs": true
+  },
+  "decision": {
+   "path": "decision.md",
+   "bytes": 15447,
+   "sha256": "6c360104077a2fb46cefdb7397a537c5896bdaddd078d0529a7b61b5006fe17b"
+  }
+ },
+ "scope_guard": {
+  "anchor_file": "scripts/model_registry.py",
+  "anchor_sha256_expected": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "anchor_sha256_observed": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "anchor_unchanged": true,
+  "product_files_changed": 0,
+  "product_files_changed_evidence": "git diff HEAD --name-only -- scripts/ returned empty"
+ },
+ "defects_confirmed": {
+  "defect_1": {
+   "site": "scripts/model_registry.py:335",
+   "source_line": "values = drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+   "line_contains_raise": false,
+   "default_expression_occurs_in_file": 1,
+   "behaviour": "an omitted driver with no declared default is silently filled with 0.0 over the horizon",
+   "live_reproduction": {
+    "model": "unit_sales",
+    "years": [
+     2026,
+     2027
+    ],
+    "base_revenue": 1000.0,
+    "omitted_other_revenue": [
+     1000.0,
+     1100.0
+    ],
+    "explicit_zero_other_revenue": [
+     1000.0,
+     1100.0
+    ],
+    "indistinguishable": true
+   },
+   "ruling_count": {
+    "optional_slots_without_default": 31,
+    "models": 24,
+    "reproduced": true
+   },
+   "other_scope_same_defect": {
+    "required_plus_optional_slots_without_default": 156,
+    "models": 31
+   },
+   "models_total": 31,
+   "required_behaviour": "raise ModelRegistryError on omission",
+   "card_boundary_case": "declared defaults must still be honoured and must NOT raise. _spec validation already constrains defaults to be a subset of optional, so a blanket raise would regress the declared-default slots (e.g. timing_factor=1.0). The fix must branch on whether a declared default exists."
+  },
+  "defect_2": {
+   "site_definition": "scripts/model_registry.py:265-269",
+   "site_consultation": "scripts/model_registry.py:289",
+   "symbol": "_SIGNED_DRIVERS",
+   "kind": "frozenset of driver-name literals",
+   "members_count": 9,
+   "rule_order_in_source": "explicit metadata > growth_rate special-case > _SIGNED_DRIVERS name > ratio > (0, inf)",
+   "behaviour": "whether a driver admits negative values is decided by its NAME being in a hardcoded set, not by its semantic role",
+   "slots_granted_unbounded_sign_by_name_alone": 23,
+   "dimensions_involved": {
+    "revenue": 22,
+    "backlog": 1
+   },
+   "discrimination_evidence": {
+    "same_model": "unit_sales",
+    "name_listed_driver": {
+     "name": "other_revenue",
+     "bounds": [
+      "-inf",
+      "inf"
+     ]
+    },
+    "not_listed_driver": {
+     "name": "units",
+     "bounds": [
+      0.0,
+      "inf"
+     ]
+    },
+    "different_domains": true
+   },
+   "explicit_metadata_takes_precedence": true,
+   "only_self_narrowing_model": "renewable_generation (narrows its own other_revenue via driver_bounds)",
+   "required_behaviour": "a semantic-role based sign rule"
+  }
+ },
+ "propositions_all_hold": true,
+ "propositions": [
+  "P-1 the ruling names both defects, line 335, the 31/24 count, ModelRegistryError, _SIGNED_DRIVERS, a role-based rule, and 'both in one card'",
+  "P-2 the defect site is line 335 and that line has no raise",
+  "P-3 the ruling's 31/24 reproduces exactly, for OPTIONAL slots lacking a declared default",
+  "P-4 omission is live and indistinguishable from an explicit 0.0",
+  "P-5 sign permission is decided by driver name, not role",
+  "P-6 nothing was modified"
+ ],
+ "negative_controls": {
+  "principle": "a verifier that cannot go red is not a verifier",
+  "method": "mutate a COPY under .planning/_pwf_tmp/t122_negctl/ -- the real file is never touched",
+  "controls": [
+   {
+    "id": "NC-1",
+    "pretence": "the omission defect does not exist",
+    "expect_red": [
+     "P-4"
+    ],
+    "observed_red": [
+     "P-4"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-2",
+    "pretence": "the two count scopes agree",
+    "expect_red": [
+     "P-3"
+    ],
+    "observed_red": [
+     "P-3"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-5",
+    "pretence": "the two arms genuinely diverge",
+    "expect_red": [
+     "P-4"
+    ],
+    "observed_red": [
+     "P-4"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-4",
+    "pretence": "P-6 reverted to a whole-file scan",
+    "expect_red": [
+     "P-6"
+    ],
+    "observed_red": [
+     "P-6"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-3r",
+    "pretence": "the name list is irrelevant to the sign",
+    "expect_red": [
+     "P-5"
+    ],
+    "observed_red": [
+     "P-5"
+    ],
+    "rc": 3
+   },
+   {
+    "id": "NC-3r2",
+    "pretence": "swap the two arms in the discrimination test",
+    "expect_red": [
+     "P-5"
+    ],
+    "observed_red": [
+     "P-5"
+    ],
+    "rc": 3
+   }
+  ],
+  "a_control_that_initially_failed_to_fail": {
+   "id": "NC-3 (first version)",
+   "what_it_did": "overwrote p5 name_decides_not_role with a literal True",
+   "expected": "P-5 red",
+   "observed": "rc=0, P-5 still green",
+   "diagnosis": "P-5 had a redundant leg -- an assertion that was effectively a constant",
+   "fix": "the discrimination criterion was rebuilt to derive both legs from the OBSERVED bounds rather than from a literal, so a bare-True overwrite can no longer keep it green",
+   "after_fix": "both NC-3r and NC-3r2 go red as required"
+  }
+ },
+ "errors_i_made_this_round": [
+  {
+   "error": "guessed an API from memory instead of reading the source",
+   "symptom": "AttributeError: module 'model_registry' has no attribute 'calculate_model'",
+   "correction": "read the source; real signature is calculate_registered_model(model_id, base_revenue, drivers, years)",
+   "note": "this is the SAME trap I wrote into the skill as lesson #27 one round earlier. Writing a lesson down is not the same as applying it."
+  },
+  {
+   "error": "P-6's criterion had the wrong SCOPE, and was of the kind that can NEVER pass",
+   "bad_criterion": "not re.search(forbidden, flat) where flat = the WHOLE decisions file",
+   "symptom": "P-6 red",
+   "classification": "gate error, not data error",
+   "why": "the phrase is present in the file but at OTHER tiers (T1-26, T2-1). A whole-file scan folds other tiers' authorisations into T1-22's criterion, so it could never come back green -- a mirror image of 'a test that cannot fail': a test that cannot pass.",
+   "correction": "isolate T1-22's own table row and judge only that row's text",
+   "verified": "NC-4 (reverting to the whole-file scan) correctly goes red, so the fix is real",
+   "lesson": "the SCOPE of a criterion matters as much as the object it judges; rulings are per-TIER"
+  },
+  {
+   "error": "nearly reported a false defect against the ruling",
+   "what": "my own count came out 156 slots / 31 models, not the ruling's 31 / 24",
+   "nearly_concluded": "the ruling's number is wrong",
+   "truth": "both are right, counting different things: the ruling counts OPTIONAL slots lacking a declared default; mine counted required+optional. The ruling's number is the better one for this defect, since required slots cannot be silently zeroed.",
+   "avoided_by": "suspecting the scope before suspecting the data"
+  }
+ ],
+ "carding_content": {
+  "how_many_cards": "ONE card, two defects -- the ruling says both are handled in the same card",
+  "card_id_suggested": "I-22-A",
+  "in_scope": [
+   "the silent-zero path at model_registry.py:335",
+   "the sign rule at model_registry.py:265-269 / consulted at :289"
+  ],
+  "out_of_scope": [
+   "semantics of existing explicit driver_bounds metadata",
+   "the model formulas in their _spec(...) declarations",
+   "the ratio and growth_rate branches (unless restated by the role rule)"
+  ],
+  "hard_constraint": "explicit metadata must keep precedence; the role rule is a DEFAULT, not an override",
+  "acceptance_criteria": {
+   "defect_1": [
+    "omitting an optional driver with NO declared default raises ModelRegistryError",
+    "omitting an optional driver WITH a declared default still yields the declared value and does NOT raise",
+    "omitting a required driver keeps its existing error behaviour",
+    "the new tests must be shown to FAIL against the old implementation"
+   ],
+   "defect_2": [
+    "a role-driven sign rule exists and agrees with _SIGNED_DRIVERS on every member (equivalence)",
+    "a driver whose name was not in the old set but whose role should admit a sign gains a signed domain -- this is the criterion that the rule really changed",
+    "drivers that should not be negative keep a domain excluding negatives",
+    "renewable_generation's explicit narrowing of other_revenue still wins"
+   ]
+  },
+  "new_oracle_each_card_must_bring": {
+   "defect_1": "a driver x has-declared-default x is-omitted truth table, frozen before the run",
+   "defect_2": "a name x role x expected-domain table including at least one positive case whose name was absent from the old set"
+  },
+  "dispatch": "belongs to the orchestration layer; this card does not claim the fix"
+ },
+ "new_ruling_needs_arising_from_this_card": [],
+ "changes_to_other_rulings": [],
+ "status_transitions": [],
+ "tier2_signatures": [],
+ "deletions": 0,
+ "handoff_to": "orchestration layer (to dispatch the new card) -- no TIER-2 signature is created or implied"
+}
