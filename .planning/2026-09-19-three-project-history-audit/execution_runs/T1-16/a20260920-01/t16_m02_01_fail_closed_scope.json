@@ -1,0 +1,99 @@
+{
+  "card": "T1-16",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_confirmation",
+  "ruling": "OWNER_DECISIONS.md section 13 T1-16: CHOSE A (keep fail-closed). Rationale: base=-5 is still rejected in measurement, so the current behaviour is already fail-closed; switching to B (ignore unused fields) would loosen the validation surface and the risk outweighs the benefit.",
+  "why_execution_not_citation": "choose-A rests on a factual premise about the PRODUCT (current behaviour already rejects a negative base). Reproducing it from the card's own recorded observation would be citing the thing under test; the probe below runs the production module directly.",
+  "propositions": {
+    "S-1": {
+      "claim": "the validator performs a UNIFORM pre-dispatch negative check on base_revenue, independent of whether the selected model uses the field",
+      "holds": true,
+      "evidence": {
+        "source_check_present": true,
+        "check_precedes_dispatch": true,
+        "execution_probe": {
+          "direct_revenue": {
+            "raised": true,
+            "message": "ModelRegistryError: direct_revenue.base_revenue cannot be negative",
+            "message_names_the_model": true,
+            "consumes_the_field": false,
+            "ignores_the_field": true
+          },
+          "direct_growth": {
+            "raised": true,
+            "message": "ModelRegistryError: direct_growth.base_revenue cannot be negative",
+            "message_names_the_model": true,
+            "consumes_the_field": true,
+            "ignores_the_field": false
+          }
+        },
+        "note": "two models chosen on purpose: one `del`s the field, one consumes it; the negative check fires for both, so it cannot be model-conditional"
+      }
+    },
+    "S-2": {
+      "claim": "for direct_revenue the field is genuinely ignored: a large positive base does not change the output",
+      "holds": true,
+      "evidence": {
+        "base_1": [
+          10.0,
+          12.0
+        ],
+        "base_999": [
+          10.0,
+          12.0
+        ],
+        "identical": true,
+        "source": "_direct_revenue begins with `del base_revenue, years` (model_registry.py line ~98)",
+        "cross_check_card_observation": {
+          "id": "BASE-INDEPENDENCE",
+          "expectation": "output identical to positive; NOT a rejection case",
+          "kind": "input_replay",
+          "raised": null,
+          "actual": [
+            80.0,
+            0.0,
+            120.0
+          ],
+          "matches_positive": true
+        }
+      }
+    },
+    "S-3": {
+      "claim": "the rejection is a real ModelRegistryError with the recorded message shape",
+      "holds": true,
+      "evidence": {
+        "raised": true,
+        "message": "ModelRegistryError: direct_revenue.base_revenue cannot be negative",
+        "card_recorded": "direct_revenue.base_revenue cannot be negative",
+        "matches_card_record": true
+      }
+    },
+    "S-4": {
+      "claim": "the rejected option B is not in force: a negative base is never silently ignored, and the guard is unconditional",
+      "holds": true,
+      "evidence": {
+        "negative_base_still_raises_for_ignoring_model": true,
+        "guard_is_unconditional": true,
+        "guard_text": "if base < 0: raise ModelRegistryError(f\"{model_id}.base_revenue cannot be negative\")",
+        "note": "under option B this call would have returned a value; it raises"
+      }
+    },
+    "S-5": {
+      "claim": "the ruling orders no write; frozen evidence is untouched and the gate is still recorded as owner-reserved (not self-decided)",
+      "holds": true,
+      "evidence": {
+        "product_files_changed": [],
+        "m02_card_files_changed": [],
+        "gate_still_owner_reserved": true,
+        "reviewer_did_not_self_decide": true
+      }
+    }
+  },
+  "production_anchor": {
+    "path": "scripts/model_registry.py",
+    "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "expected": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "matches": true
+  },
+  "overall": "PASS"
+}

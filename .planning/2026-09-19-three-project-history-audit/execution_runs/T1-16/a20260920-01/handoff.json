@@ -1,0 +1,114 @@
+{
+  "card": "T1-16",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_confirmation",
+  "date": "2026-09-20",
+  "authority": {
+    "source": "OWNER_DECISIONS.md section 13 (TIER-1 owner ruling)",
+    "tier": 1,
+    "ruling_verbatim": "T1-16 | section 4: whether an ignored field (M02-01) is still domain constrained | CHOSE A (keep fail-closed). Rationale: `base=-5` is still rejected in measurement, so the current behaviour is already fail-closed; switching to B (ignore unused fields) would loosen the validation surface, and the risk outweighs the benefit.",
+    "nature": "the ruling SELECTS option A, whose stated rationale is a factual premise about the PRODUCT (the current behaviour already rejects a negative base)"
+  },
+  "why_this_card_is_stronger_than_t1_17_or_t1_24": {
+    "t1_17_and_t1_24": "confirmed that a ruling's adopted TEXTUAL form is present on disk",
+    "t1_16": "confirms a premise about the PRODUCT. If the premise were false -- if the product had stopped rejecting a negative base_revenue -- then 'choose A' would be choosing nothing, or would be choosing A while the product had already drifted to B.",
+    "consequence": "the premise must be reproduced by EXECUTION. Citing the card's own recorded observation would be citing the very thing under test (circular)."
+  },
+  "origin": {
+    "item": "F-M02-01 / DEC-M02-3",
+    "card_under_ruling": "M02",
+    "attempt_under_ruling": "a20260919-01",
+    "registered_carriers": [
+      "handoff.json.open_questions[1] (DEC-M02-3)",
+      "handoff.json.open_questions[3] (F-M02-01 requires_owner_or_specialist_ruling)",
+      "evidence/M02/accounting_decision.md (DEC-M02-3 section)",
+      "review.md (F-M02-01 reserved-for-adjudication section; CLOSED-AS-RESERVED summary line)",
+      "evidence/M02/run_result.json observations BASE-INDEPENDENCE and OBS-NEG-BASE"
+    ],
+    "the_question": "should an IGNORED input field still have to satisfy its domain? Options A (keep fail-closed) / B (ignore unused fields)."
+  },
+  "deliverable": {
+    "conclusion": "the factual premise of the ruling holds on the current build: the product rejects base_revenue < 0 uniformly before dispatch, for models that ignore the field as well as models that consume it; the field really is ignored by direct_revenue; the guard is unconditional; and option B is demonstrably NOT in force. No write was needed and none was made.",
+    "why_no_write": "the ruling chooses A = keep the CURRENT behaviour. This card fulfils it precisely by NOT writing: any edit would move away from the behaviour the ruling chose.",
+    "artifacts": [
+      {"path": "scripts/verify_t16.py", "kind": "verifier"},
+      {"path": "t16_m02_01_fail_closed_scope.json", "kind": "structured_result"},
+      {"path": "decision.md", "kind": "ruling_record"}
+    ]
+  },
+  "verification_summary": {
+    "overall": "PASS",
+    "exit_code": 0,
+    "propositions": {
+      "S-1": {
+        "claim": "the validator performs a UNIFORM pre-dispatch negative check on base_revenue, independent of whether the selected model uses the field",
+        "holds": true,
+        "evidence": {
+          "source_check_present": true,
+          "check_precedes_dispatch": true,
+          "execution_probe": {
+            "direct_revenue": {"raised": true, "message": "ModelRegistryError: direct_revenue.base_revenue cannot be negative", "ignores_the_field": true},
+            "direct_growth": {"raised": true, "message": "ModelRegistryError: direct_growth.base_revenue cannot be negative", "consumes_the_field": true}
+          }
+        }
+      },
+      "S-2": {
+        "claim": "for direct_revenue the field is genuinely ignored: a large positive base does not change the output",
+        "holds": true,
+        "evidence": {"base_1": [10.0, 12.0], "base_999": [10.0, 12.0], "identical": true,
+                     "source": "model_registry.py:98 `del base_revenue, years`"}
+      },
+      "S-3": {
+        "claim": "the rejection is a real ModelRegistryError with the recorded message shape",
+        "holds": true,
+        "evidence": {"message": "ModelRegistryError: direct_revenue.base_revenue cannot be negative",
+                     "matches_card_record": true}
+      },
+      "S-4": {
+        "claim": "the rejected option B is not in force: a negative base is never silently ignored, and the guard is unconditional",
+        "holds": true,
+        "evidence": {"negative_base_still_raises_for_ignoring_model": true, "guard_is_unconditional": true}
+      },
+      "S-5": {
+        "claim": "the ruling orders no write; frozen evidence is untouched and the gate is still recorded as owner-reserved (not self-decided)",
+        "holds": true,
+        "evidence": {"product_files_changed": [], "m02_card_files_changed": [],
+                     "gate_still_owner_reserved": true, "reviewer_did_not_self_decide": true}
+      }
+    }
+  },
+  "why_s1_uses_two_models_and_not_just_the_source": "reading the source (`if base < 0` before dispatch) is not sufficient for a UNIFORMITY claim: the source could be overridden elsewhere, bypassed downstream, or simply not be the executed path. The probe therefore picks one model that DELETES the field and one that CONSUMES it; if the check were model-conditional (which is one form of option B), the two would differ. Both raise, so the check is structurally model-independent. A universality claim can only be supported by the SAME observation on multiple instances that ought to agree; a single observation cannot support it in principle.",
+  "error_made_and_corrected_in_this_card": [
+    {
+      "error": "harness: exec_module without registering the module in sys.modules first, causing `AttributeError: 'NoneType' object has no attribute '__dict__'` inside @dataclass (it resolves annotations via sys.modules[cls.__module__])",
+      "fixed_by": "sys.modules[spec.name] = mod BEFORE exec_module (popping it again on failure)",
+      "nature": "HARNESS defect, not a product defect. Misreading it as a product defect would have yielded the false conclusion 'the product cannot be imported'."
+    },
+    {
+      "error": "harness: probed ModelSpec with dict API (`spec.get('drivers')`), but ModelSpec is a frozen dataclass",
+      "symptom": "'ModelSpec' object has no attribute 'get'",
+      "fixed_by": "building the driver mapping from declared fields (required + optional; ratio_drivers fed dimensionless values, others unit-scaled)",
+      "lesson": "the same shape-matching rule as elsewhere in this project -- except here even the object's TYPE (dict vs dataclass) had been assumed wrongly"
+    }
+  ],
+  "boundaries": {
+    "product_code_changes": 0,
+    "ruled_on_carriers_written": 0,
+    "ruled_on_carrier_files": ["M02 review.md", "oracle.md", "handoff.json", "decision.md", "evidence/M02/*"],
+    "status_transitions_performed": 0,
+    "signatures_forged": false,
+    "product_files_changed": [],
+    "production_anchor": {
+      "path": "scripts/model_registry.py",
+      "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "matches": true,
+      "why_it_matters": "the ruling's premise concerns THIS build; a drifted anchor would make the premise unassessable"
+    },
+    "all_json_parseable": true
+  },
+  "what_this_card_does_NOT_claim": {
+    "steps_D_E_of_M02": "decision.md records that step E belongs to I-10-A and step F requires the I-12 frozen design. This card answers M02-01 only and does not claim E/F are resolved.",
+    "reviewer_signoff": "M02-01 remains an owner/specialist item; this card records the ruling, it does not supply the specialist signature for any other open item."
+  },
+  "next_action": "No follow-up is required for T1-16 itself. The M02-01 marker on the card's carriers stays as-is: the ruling ANSWERS the question but does not make it false that the card once registered it as owner-reserved. If downstream readers find the still-present 'requires owner ruling' marker ambiguous, the correct remedy is an appended registration note per T1-12 form (1) -- NOT an in-place edit, which would rewrite the historical record and is outside T1-16's authority."
+}

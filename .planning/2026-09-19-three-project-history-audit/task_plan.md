@@ -401,3 +401,31 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
 **为何本卡不改任何载体**：裁定的**两半都已在盘上成立**（R-1 证在场、R-2 证无矛盾）⇒ **无写入需求**；为「已经是对的」状态写一行字，只会**增加**下游需重新核对的东西。且 C2 的三载体登记**本身就是「待裁」的历史记录**，裁定后回写为「已裁」**正是 T1-21 自己禁止的那类「回改历史记录」** —— 该字段记录的是「**当时**该卡认为这是待裁问题」，**今天的裁定不改变当时那个判断为真**。⇒ **口径文书的正确载体是本卡的记录**（与 T1-14、T1-20、T1-21 同理）。
 
 **产物**：`scripts/verify_t17.py`（17468 B / `76a5776b…`）、`decision.md`（9020 B / `254d8b41…`）、`t17_i04c_c2_open3_scope.json`（3708 B / `c085fad4…`）、`handoff.json`（8592 B / `2eb3194a…`）。**边界**：**被裁定对象写入 0 次**（`decision.md`/`oracle.md`/`review.md`/`handoff.json`/`binding.json`/`commands.json` 均未改）；未做 `status` 转移（I-04-C 保持 `accepted_scoped`）；未代签；产品文件 **0 条**；生产锚点 `scripts/model_registry.py` = `9ec6529550f189a4…` **一致**；全部 JSON 可解析且登记哈希**零失配**。
+
+**Round 52（2026-09-20）新增：T1-16 卡内完成 —— M02-01「被忽略字段是否仍受域约束」的**口径确认**，**结论为「已核查、裁定的事实前提在当前构建上经**执行复现**成立」**（**未改任何产品代码、未改任何被裁定载体**）。落点 `execution_runs/T1-16/a20260920-01/`：
+
+**裁定**（`OWNER_DECISIONS.md` §13 **T1-16**，TIER-1）：**选 A（保持 fail-closed）**。理由：`base=-5` 实测仍被拒 ⇒ **现行为已是 fail-closed**；改 B（忽略未用字段）会放松校验面，风险大于收益。
+
+**本卡比 T1-17 / T1-24 更强一档**：T1-17 / T1-24 核验的是「裁定的**采纳形态**已在**文书**中成立」；**T1-16 核验的是关于产品的事实前提**。裁定**选 A = 「保持现行为」**，其理由是一条**关于产品、而非文书**的断言。**若该前提为假**（产品已不再拒绝负 base），「选 A」就是**在选一个不存在的东西**，甚至是在**产品已漂移到 B 的情况下宣称选了 A**。⇒ 必须**以执行复现该前提，而不是引证** —— 引证该卡**自己记录的观测**等于**引证被检验的东西本身**（循环论证）。与 T1-13 的方向性信任同一纪律。
+
+**五条命题全成立（`scripts/verify_t16.py`，`overall = PASS` / exit 0）**：
+
+| # | 命题 | 结果 | 证据 |
+|---|---|---|---|
+| **S-1** | 校验器对 `base_revenue` 执行的是**统一的、dispatch 前的**负数检查，**与该模型是否真的用到该字段无关** | **holds** | ①源码：检查在 `calculate_registered_model` 内、**先于** dispatch；②**执行探针**：对 `direct_revenue`（`del base_revenue`，**不用**）与 `direct_growth`（`current = base_revenue`，**真用**）**双双抛错** ⇒ 该检查**不可能**是模型条件性的 |
+| **S-2** | 对 `direct_revenue`，该字段**确实被忽略**：`base=999` 与 `base=1` 输出**完全相同** | **holds** | 实测 `base_1 = base_999 = [10.0, 12.0]`；源码 `model_registry.py:98` `del base_revenue, years` |
+| **S-3** | 拒绝是**真实的** `ModelRegistryError`，消息形态**与记录一致** | **holds** | 实测 `ModelRegistryError: direct_revenue.base_revenue cannot be negative`；与 `evidence/M02/run_result.json > observations[OBS-NEG-BASE].message` **一致** |
+| **S-4** | 被否的**选项 B 不在生效** —— 负 base **绝不被静默忽略**，守卫**无条件** | **holds** | 负 base 对该「忽略字段」模型**仍抛错**（**若为 B 本应返回值**）；守卫为裸 `if base < 0: raise …`，**无模型成员测试** |
+| **S-5** | 裁定**不命令写**：冻结证据**未被触碰**，门**仍登记为 owner 保留**（**未自裁**） | **holds** | 产品文件改动 `[]`；`M02` 卡目录改动 `[]`；`open_questions` 仍载 `requires_owner_or_specialist_ruling`；`review.md` 载 `CLOSED-AS-RESERVED` |
+
+**为何 S-1 要用两个模型而不只看源码**：只看源码**不足以**支撑「**统一性**」这一普遍命题 —— 源码可能被别处覆写、被下游绕过、或根本不是被执行路径。探针**刻意挑两个模型**（一个 `del`s 字段、一个**消费**它）；**若检查是模型条件性的**（正是选项 B 的某种形态），**二者必然不同**。**实测二者都抛错 ⇒ 结构性不依赖模型。** ⇒ **普遍性主张只能靠「在应当相同的多个实例上实测相同」来支持；单点观测在原理上无法支持它。**
+
+**为何**不写入**即是执行**：裁定选 A = **保持现行为** ⇒ **任何编辑都会偏离裁定所选的行为**。本卡正是**通过不写入来完成它**。且 M02-01 仍为 owner 保留项（S-5 已证）—— 裁定**给出了答案**，但**不改变**「该卡当时把它登记为 `requires_owner_or_specialist_ruling`」这一历史事实为真 ⇒ **回写为「已裁」正是 T1-21 禁止的那类回改**。
+
+**本卡自行犯下并已修正的两项错误（均为 harness 缺陷，非产品缺陷；如实登记）**：
+1. **`@dataclass` 加载期 `AttributeError: 'NoneType' object has no attribute '__dict__'`** —— 根因：`importlib` 加载时**未先把模块注册进 `sys.modules`**，而 `@dataclass` 经 `sys.modules[cls.__module__]` 解析注解 ⇒ 模块缺席即崩。修正：`exec_module` **之前**先 `sys.modules[spec.name] = mod`。**若误判为产品缺陷，会得出「产品不可导入」的错误结论。**
+2. **`ModelSpec.get` 不存在** —— 根因：按 **dict** 写探针，而 `ModelSpec` 是 **frozen dataclass**。修正：按声明字段（`required + optional`，`ratio_drivers` 给无量纲值）构造驱动。⇒ **又是「判据/假设必须匹配对象形态」，这次连对象的**类型**都假设错了。**
+
+**⚠️ 本卡**不**声称 M02 的 D/E 步骤已解决**（`decision.md` 载 E 属 I-10-A、F 需 I-12 冻结设计）；**只**回答 M02-01 这一项。
+
+**产物**：`scripts/verify_t16.py`（17518 B / `2c31cfa5…`）、`decision.md`（7508 B / `c100d8e4…`）、`t16_m02_01_fail_closed_scope.json`（4197 B / `70ade848…`）、`handoff.json`（8104 B / `c6944fd6…`）。**边界**：产品代码改动 **0 处**；被裁定对象写入 **0 次**；未做 `status` 转移（M02 保持 `accepted_scoped`）；未代签；产品文件 **0 条**；生产锚点 `scripts/model_registry.py` = `9ec6529550f189a4…` **一致**（**必要**：裁定的前提是关于**这个**构建的）；全部 JSON 可解析且登记哈希**零失配**。
