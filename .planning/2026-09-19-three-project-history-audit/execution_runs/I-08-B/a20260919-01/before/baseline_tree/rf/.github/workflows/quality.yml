@@ -1,0 +1,150 @@
+name: quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependency
+        run: python -m pip install pytest cryptography "ruff==0.15.18" pytest-cov pyyaml requests "mypy==1.19.0"
+      - name: Validate compatibility manifest (FC-1101)
+        run: |
+          python -c "import json,sys; d=json.load(open('compatibility/current.json',encoding='utf-8')); assert d['schema_version']=='1.0'; assert len(d['current_triplet'])==3; print('manifest OK', d['current_triplet']['revenue'][:12])"
+      - name: "Fetch sibling repos (FC-1101: manifest-driven current triplet)"
+        run: |
+          SIBLING_DIR="$(dirname "$GITHUB_WORKSPACE")"
+          python tools/ci_checkout_siblings.py --manifest compatibility/current.json --sibling-root "$SIBLING_DIR" --skip revenue
+          echo "PYTHONPATH=$SIBLING_DIR/company-wiki/src" >> "$GITHUB_ENV"
+      - name: Strict type check on public contracts (FC-1204-c)
+        run: python -m mypy scripts/contracts/ scripts/schema_compatibility.py scripts/filing_fetch_client.py scripts/trust_anchor.py
+      - name: Ruff + compileall + unique test symbols (WU-1.2)
+        run: |
+          ruff check scripts tests tools e2e
+          python -m compileall -q scripts tests tools e2e
+          python tools/check_unique_test_symbols.py
+      - name: Run test suite
+        run: |
+          python -m pytest tests tools/tests -q \
+            --ignore=tests/test_zr806_real_t2_samples.py \
+            --ignore=tests/test_zr1004_small_cohort.py \
+            --ignore=tests/test_zr902_daily_schedule.py \
+            --ignore=tests/test_zr905_audit_self_test.py \
+            --ignore=tests/test_zr803_chaos_recovery.py \
+            --ignore=tests/test_zr1103_journey_reverify.py \
+            --ignore=tests/test_ca203_weekly_t3.py \
+            --ignore=tests/test_fc1003_uj.py \
+            --ignore=tests/test_fc1004_platform.py \
+            --ignore=tests/test_fc1105_fault_injection.py \
+            --ignore=tests/test_preparation_e2e_success.py \
+            --ignore=tests/test_zr709_zijin_journey.py \
+            --ignore=tests/test_zr1001_release_readiness.py \
+            --ignore=tests/test_fc1101_ci_manifest.py \
+            --ignore=tests/test_zr907_drift_patrol.py \
+            --ignore=tests/test_ca202_daily_t2_runner.py \
+            --ignore=tests/test_ca303_arch_quality.py \
+            --ignore=tests/test_ca305_six_problems.py \
+            --ignore=tests/test_ca306_terminal_closure.py \
+            --ignore=tests/test_compatibility_manifest.py \
+            --ignore=tests/test_fc1002_three_process_e2e.py \
+            --ignore=tests/test_ca302_three_journeys.py \
+            --ignore=tests/test_fc1001_isolated_lake.py
+      - name: Coverage gates (WU-7.1)
+        env:
+          PYTEST_COVERAGE_EXTRA_ARGS: >-
+            --ignore=tests/test_zr806_real_t2_samples.py
+            --ignore=tests/test_zr1004_small_cohort.py
+            --ignore=tests/test_zr902_daily_schedule.py
+            --ignore=tests/test_zr905_audit_self_test.py
+            --ignore=tests/test_zr803_chaos_recovery.py
+            --ignore=tests/test_zr1103_journey_reverify.py
+            --ignore=tests/test_ca203_weekly_t3.py
+            --ignore=tests/test_fc1003_uj.py
+            --ignore=tests/test_fc1004_platform.py
+            --ignore=tests/test_fc1105_fault_injection.py
+            --ignore=tests/test_preparation_e2e_success.py
+            --ignore=tests/test_zr709_zijin_journey.py
+            --ignore=tests/test_zr1001_release_readiness.py
+            --ignore=tests/test_fc1101_ci_manifest.py
+            --ignore=tests/test_zr907_drift_patrol.py
+            --ignore=tests/test_ca202_daily_t2_runner.py
+            --ignore=tests/test_ca303_arch_quality.py
+            --ignore=tests/test_ca305_six_problems.py
+            --ignore=tests/test_ca306_terminal_closure.py
+            --ignore=tests/test_compatibility_manifest.py
+            --ignore=tests/test_fc1002_three_process_e2e.py
+            --ignore=tests/test_ca302_three_journeys.py
+            --ignore=tests/test_fc1001_isolated_lake.py
+        run: python tools/run_coverage_gates.py
+      - name: Run engine E2E
+        run: python e2e/run_revenue_forecast_e2e.py
+      - name: Installation sync check
+        run: python tools/sync_installations.py
+      - name: Mutation patrol
+        run: python tools/mutation_patrol.py --samples 5
+      - name: Publication registry audit
+        run: python scripts/publication_registry.py audit
+      - name: Planning claim verifier (WU-8.3)
+        run: python tools/verify_plan_claims.py --plan-dir .
+
+  # GP-006: sibling-repo E2E tests on windows-latest (blocking).
+  # Tests that need sibling repos (company-wiki, filing-fetch) but run on
+  # temp data.  REAL_DATA tests (zr806/zr1004/fc1001/fc1003/fc1004/fc1105/
+  # preparation_e2e/zr709/zr907/ca202) require the production catalog and run
+  # in the local pre-push gate on the machine that owns it; a self-hosted
+  # runner would be needed to move them into CI.
+  real-roots:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pyyaml requests
+      - name: Fetch sibling repos (FC-1101)
+        shell: bash
+        run: |
+          SIBLING_DIR="$(dirname "$GITHUB_WORKSPACE")"
+          python tools/ci_checkout_siblings.py --manifest compatibility/current.json --sibling-root "$SIBLING_DIR" --skip revenue
+          echo "PYTHONPATH=$SIBLING_DIR/company-wiki/src" >> "$GITHUB_ENV"
+      - name: "Mirror the local sibling layout (GP-006/FC-1202)"
+        shell: pwsh
+        run: |
+          # revenue's config/filing_fetch.json resolves to
+          # ${USER_PROFILE}/Projects/filing-fetch, and filing-fetch's
+          # IsolatedWiki resolves PRODUCTION_WIKI as ~/Projects/company-wiki.
+          # CI clones the siblings next to the checkout, so mirror the local
+          # dev layout with junctions instead of letting those lookups fail.
+          $homeProjects = Join-Path $env:USERPROFILE 'Projects'
+          New-Item -ItemType Directory -Path $homeProjects -Force | Out-Null
+          $siblingRoot = Split-Path $env:GITHUB_WORKSPACE -Parent
+          foreach ($name in 'filing-fetch', 'company-wiki') {
+            $link = Join-Path $homeProjects $name
+            $target = Join-Path $siblingRoot $name
+            if (Test-Path $link) { Remove-Item $link -Recurse -Force }
+            New-Item -ItemType Junction -Path $link -Target $target | Out-Null
+            Write-Host "junction $link -> $target"
+          }
+      - name: Sibling-dependent E2E tests
+        run: |
+          python -m pytest -q --tb=short `
+            tests/test_zr803_chaos_recovery.py `
+            tests/test_zr1103_journey_reverify.py `
+            tests/test_ca203_weekly_t3.py `
+            tests/test_fc1101_ci_manifest.py `
+            tests/test_compatibility_manifest.py `
+            tests/test_fc1002_three_process_e2e.py `
+            tests/test_ca302_three_journeys.py

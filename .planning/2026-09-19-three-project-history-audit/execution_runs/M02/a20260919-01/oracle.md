@@ -121,3 +121,31 @@ Card: M02（`execution_v2/card_M02.md`），Parent I-10。Attempt `execution_run
 - 披露缺出处/单位/期间/总净额不明 → `STOP_DISCLOSURE_ADAPTATION`（本卡来源齐备）。
 - 存量桥 → **not_applicable**（第 5 节理由）。
 - 准确性 → `STOP_ACCURACY`（无 I-12 设计，不作准确性主张）。
+
+---
+
+## 修订 r2 索引（独立复审后追加，非重写）
+
+**本节为事后补记：r2 轮曾声称已追加本节但实际未落盘。**
+
+- 事实（盘上可核）：r2 稿件在 `review.md` 的 `### Frozen expectations were NOT rewritten` 段逐字声称
+  "`oracle.md` was **appended to**, never rewritten: the r2 section sits below the frozen body"，
+  但盘上 `oracle.md` 当时**没有任何 r2 段**，也从未被追加过。
+- 根因（点复审定位）：共享脚本 `scripts/apply_r2_patches.py` 把 `oracle.md` 的追加**写死在
+  `if card == "M03":` 分支内**；M01 的 r2 段由仅存在于 M01 的 `scripts/finalize_r2.py` 写入。
+  本卡两者都不适用，因此 r2 的处置只落在 `review.md`、`evidence/<card>/revision_r2.json`
+  与 `handoff.json`，**oracle 层无载体**。
+- 后果与取舍：`source_manifest.json` 对本卡显示 MATCH，**恰恰因为从未追加**，
+  **不得**读成"账目更规范"，也不得读成"已响应复审"。
+- 本卡追加前状态（点复审实测，本 attempt 复算一致）：**7838 B**，sha256 `77dce63db21fe391f0dea0b8fb90ea71d37b2da7d3557bfa2c33fb9283031ad0`。
+  下方补记的其他小节亦为 r4 追加，属同一性质。
+- 三点状态索引（本卡适用者）：
+  - `F-M01-02`（退出码承载裁决）：CLOSED。`run_card.py` 现为 rc=0 仅在正例在容差内、
+    连续性正例通过且全部负例被 `ModelRegistryError` 拒绝时给出；rc=2 = positive 输入损坏致无裁决；
+    rc=3 = 裁决为负；rc=1 = guard 之外的 harness 缺陷。本卡自检见
+    `recovery/r2_exit_code_selfcheck/selfcheck_result.json`（A=3/B=1/C=0/D=2）。
+  - `F-M01-03`（交付目录/编码）：CLOSED。`changes.diff`、`after/`、`recovery/README.md` 已补，
+    日志统一 UTF-8。
+  - `F-M02-01`（被忽略字段是否仍须满足域约束）：**保留待 owner 裁定**，未自决、未改产品；
+    见 `decision.md` DEC-M02-3 与 `handoff.json.open_questions`。
+- **本节不改变任何数值结论**：正例/负例预期、容差、披露映射数值、拒绝条件与三种资格均未改动。

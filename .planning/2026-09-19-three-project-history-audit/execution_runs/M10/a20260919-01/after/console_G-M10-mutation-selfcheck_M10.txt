@@ -1,0 +1,19 @@
+﻿card M10
+case A mutation: positive.expected_float [490.0] -> [999.0]
+   raw_exit_code 2 expected 2 ok True
+    verdict: no_verdict_fidelity exit_code: 2
+case B mutation: cases.json NEG-CARD expected -> TypeError
+   raw_exit_code 3 expected 3 ok True
+    verdict: negative_failed exit_code: 3
+case C mutation: cases.json NEG-CARD neutralised to a no-op (base_revenue = 0)
+   raw_exit_code 3 expected 3 ok True
+    verdict: negative_failed exit_code: 3
+case D mutation: oracle.json positive.expected_float deleted (expectation missing)
+   raw_exit_code 2 expected 2 ok True
+    verdict: no_verdict_fidelity exit_code: 2
+case E mutation: none (uncorrupted control copy)
+   raw_exit_code 0 expected 0 ok True
+    verdict: pass exit_code: 0
+frozen_evidence_not_modified True
+product_sha256_unchanged True 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f
+all_cases_as_expected True

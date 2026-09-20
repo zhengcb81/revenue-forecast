@@ -157,4 +157,22 @@
 - 未验证跨进程**提交锁**的实现（本卡只测「无锁会怎样」，不实现锁）。
 - 未验证 Windows 掉电/真实 kill 语义（I-09-C 的范围）。
 - 未验证跨仓消费者（invest-core）如何读取 `commit_status`。
-- 未裁决 OPEN-D1—D7（I-08-A）与 OPEN-I09A-1—5（本卡）。
+- 未裁决 OPEN-D1—D7（I-08-A）与 OPEN-I09A-1—6（本卡）。
+
+---
+
+## 10. 勘误指针（**本节为独立对抗式复核后追加，冻结正文一字未改**）
+
+本节**不修改、不删除、不移动**上文任何冻结行；它的作用是让读者知道**哪几行的期望是错的**，以及正确值在哪。完整勘误见 `errata.md`。
+
+| 位置 | 冻结正文的问题 | 正确值 / 处置 |
+|---|---|---|
+| §3 表 `artifact_id` 非空行数 | 写「**1**」 | **3 行**（全部 `artifact_type=snapshot`、全部同值 `47a46003e300d4972db50d36f65f94525ee470fcd4742b1c61921b42b8626788`）；`null` = **57**；`1+57=58≠60` 即为「把去重计数当行数」的痕迹。**判据方向不变且更强**：57 行 forecast 无任何身份。（复核 F E-1） |
+| §4 表 `c02 output_fault` | 写「`out.json` **不存在**」 | 该路径上**存在注入用的目录**（这正是故障来源）；其余（rc=**2**、registry 行数=**1**、`is_registered=true`、`commit_qualified=1`）**冻结原文与实测完全一致**。（复核 F E-2） |
+| §4 表 `c03 markdown_fault` | 写「`report.md` **不存在**」 | 同上，该路径上是注入目录；其余一致。 |
+| §4 表 `c04 registry_fault` | 预期「rc=**2**；registry 不是文件；`out.json` 不存在」 | **不成立**：`registry_file()` 把目录型 env 值当**目录根**，真 registry 解析为 `<env>\publications.jsonl\publications.jsonl` 并**写入成功**（rc=0）→ 新发现 **fail-open**；真实的 registry 不可达由 `after/probe_registry_fault.stdout.txt` 的 `b_registry_acl_denied`（c04b：rc=2、无输出、0 行，ACL 已复原）证明。 |
+| §7 表 A6 的交叉引用 | 指向「OPEN-I09A-1」/「OPEN-I09A-2」 | 两项的问题陈述**都不覆盖次序修正** → 已新增 **`OPEN-I09A-6`**（见 `open_items.md`）。 |
+| §5 表 C-01 | 未写"锚不得进身份、历史行身份不重算" | 增补**强制附注**（见 `decision.md` C-01 附注）。 |
+| §5.1 表 | 未含"声称 host_signed 而无 attestation 记录"的形状 | 见 `decision.md` §5.5 的 **追加提案**（编号落在 §5 的 C-12 之后，本卡不在此重述其编号）；依据是复核的自造反证：该形状当前 `validator_accepts_host_signed_without_record=true`、`register_rc=0`、`validation_status=["validated","validated"]`。 |
+
+**未验证声明（承接复核清单，原样保留）**：`oracle.md` 的"只追加"**无法逐行核验**——PLAN 内没有实现前的 `oracle.md` 副本，本 attempt 的 `before/baseline_hashes.txt` 也没有对它取 hash。因此「冻结正文一字未改」这一声明本身**不具独立可核验性**，只能由本节的**自我声明**承担。

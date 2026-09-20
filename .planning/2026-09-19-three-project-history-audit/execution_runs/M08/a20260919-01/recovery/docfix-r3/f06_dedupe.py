@@ -32,6 +32,8 @@ import shutil
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import r3_render  # noqa: E402
 BASE = (
     "C:/Users/\u90d1\u66fe\u6ce2/Projects/revenue-forecast/.planning/"
     "2026-09-19-three-project-history-audit/execution_runs"
@@ -129,19 +131,25 @@ def main() -> int:
             )
 
         prefix = txt[:start2]                       # kept segment, byte-identical
-        r3_text = template.replace("\r\n", "\n").format(
-            card=card,
-            before_sha=before_sha,
-            before_bytes=len(raw),
-            kept_end=gap_off,
-            prefix_bytes=len(txt[:start2].encode("utf-8")),
-            v1_claim=v1_claim,
-            v1_offset=v1_off,
-            v1_bytes=v1_bytes,
-            gap_claim=gap_claim,
-            gap_offset=gap_off,
-            gap_bytes=gap_bytes,
-        ).replace("\n", "\r\n")
+        k_bytes = len(prefix.encode("utf-8"))
+        r3_text, r3_size = r3_render.render_block(
+            template,
+            {
+                "card": card,
+                "before_sha": before_sha,
+                "before_bytes": len(raw),
+                "kept_end": gap_off,
+                "prefix_bytes": k_bytes,
+                "removed_bytes": len(txt[start2:].encode("utf-8")),
+                "v1_claim": v1_claim,
+                "v1_offset": v1_off,
+                "v1_bytes": v1_bytes,
+                "gap_claim": gap_claim,
+                "gap_offset": gap_off,
+                "gap_bytes": gap_bytes,
+            },
+            size_dependent=lambda s: {"after_bytes": k_bytes + s},
+        )
         merged = prefix + r3_text
         merged_bytes = merged.encode("utf-8")
 

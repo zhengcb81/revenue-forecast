@@ -20,6 +20,10 @@ BASE = (
     "2026-09-19-three-project-history-audit/execution_runs"
 )
 CARDS = ("M05", "M06", "M07", "M08")
+# files produced BY the verification step itself: excluding them keeps the closure
+# check independent of when the acceptance run happens to execute
+REPORT_FILES = {"manifest_sha256.txt", "tree_pre.txt", "tree_post.txt",
+                "f11_verify_all.json", "f11_verify_all.out.txt"}
 
 
 def sha256_file(path: str) -> str:
@@ -41,6 +45,8 @@ def main(argv: list[str]) -> int:
         for dirpath, dirnames, filenames in os.walk(root):
             dirnames[:] = [d for d in dirnames if d not in ("venv", "__pycache__")]
             for name in filenames:
+                if name in REPORT_FILES:
+                    continue
                 full = os.path.join(dirpath, name)
                 rel = os.path.relpath(full, root).replace("\\", "/")
                 rows.append(f"{card}/{rel}\t{sha256_file(full)}\t{os.path.getsize(full)}")

@@ -1,0 +1,213 @@
+{
+  "card_id": "I-14-A",
+  "attempt_id": "a20260919-01",
+  "status": "review_pending",
+  "review_outcome_r3": "accepted_scoped CONFIRMED again by the r3 re-read: P4 (stale hash citations) and P5 (a 40-char prefix mislabelled as sha256) are both CLOSED, and the reviewer withdrew its own mid-course P4 misjudgement (it had read this host's local clock as stale). Residue N2 — after/summary.json:r2_new_hashes.captured_at_utc was a NAIVE local time carrying a hand-written '+00:00' — is now fixed and the old value is retained as a correction record. D1/D2/D3 remain unsigned and the promotion prohibition stands.",
+  "head_pointer_note": {
+    "what_changed": "revenue-forecast HEAD was advanced by the ORCHESTRATION LAYER (parent-agent commit) from 7d7ea1edc5e0371ffefee0d2ab3c4a34643199d5 to 1ac01f029c16b90adba92dd0f1bc3a1825ff9552 at 2026-09-20 03:41:55 +0100.",
+    "why_it_does_not_affect_this_card": "that commit touches only .planning/; tools/ is untouched and tools/slo_probe.py carries the SAME blob id 413aad5f788732520ace76acbaebcf06633f34d5 at both HEADs and in the worktree, which is the fact this card's RED baseline rests on. 7d7ea1ed is an ancestor of 1ac01f0.",
+    "effect_on_this_attempt": "after/snapshot.json still records 7d7ea1ed and is CORRECT FOR ITS CAPTURE TIME. It was not rewritten (rewriting a captured observation is forbidden); read it as 'HEAD at capture', not 'HEAD now'.",
+    "action_for_successor": "run `git -C <RF> rev-parse HEAD` before citing any head value."
+  },
+  "porcelain_correction": {
+    "reviewer_claim": "the re-reads reported company-wiki porcelain as completely empty, including ' M CLAUDE.md' and ' M README.md'.",
+    "measured": "`git -C company-wiki status --porcelain` still returns EXACTLY two lines: ' M CLAUDE.md' and ' M README.md' (on-disk sha256 963869fa08... / 302bd10b38..., mtime 2026-09-19 11:20, both differing from their HEAD blobs). The user's pre-existing edits are still present and were NOT reverted.",
+    "scope": "no conclusion changes: neither file is in this card's anchor set, and the material scope check (`-- src config scripts tests`) IS empty.",
+    "record_correction": "any record quoting 'completely empty' is wrong; the correct statement is 'only the two pre-existing  M entries'."
+  },
+  "review_outcome_r2": "accepted_scoped CONFIRMED by the r2 re-read for the isolated measurement fix: the reviewer verified that all five corrections are registered as limits / contract changes / new evidence and that none was written up as 'fixed'; implementation code unchanged; D1/D2/D3 none closed by the implementer. Two document-only defects (P4 stale hashes, P5 a 40-char prefix mislabelled as sha256) were raised and are fixed in this revision. The card stays review_pending: accepted_scoped is the reviewer's qualification, not a promotion.",
+  "review_outcome_r1": "accepted_scoped for the ISOLATED MEASUREMENT FIX ONLY, with 5 non-blocking corrections. The review independently re-ran --all (per-case raw rc identical), the pytest suite (patched 12P/1S; unmodified 10F/2P/1S), and confirmed changes.diff regenerates identically and that RF/tools/slo_probe.py is unmodified (hash-object == HEAD blob, 413aad5f788732520ace76acbaebcf06633f34d5).",
+  "promotion_blocked": {
+    "statement": "PROMOTION IS FORBIDDEN until D1 is signed. iso/slo_probe_patched.py must NOT be copied into RF/tools/ (nor its test into RF/tools/tests/) before that signature exists.",
+    "reason": "D1 (RSS peak method, 50 ms interval, measurement-error rule) is unsigned, and review finding F-I14A-01 makes the DEFAULT invocation exit 2 — a contract change the signer must accept explicitly.",
+    "signers": {
+      "D1": "ops reviewer — MUST NOT be the author of this probe",
+      "D2": "production SLO / probe owner",
+      "D3": "I-16 (because it changes the default exit semantics)"
+    }
+  },
+  "objective": "Freeze the measurement rules, then EXERCISE the failure branches as falsifiable counterexamples on an isolated copy of the meter: non-zero subprocess rc is not success, rc 0 with a failed business status is not success, RSS is sampled while the child is alive, no sample is null and not zero, sampling window is separate from command duration and from quick_check, catalog/config mismatch is refused, and a copied exact latency cannot grant bundle eligibility.",
+  "reviewer_status": "r1 accepted_scoped for the isolated fix; the r2 correction pass itself (new E5b evidence, oracle section 9 and review.md r2 errata) is un-reviewed and needs a spot-check; D1/D2/D3 remain unsigned",
+
+  "completed_steps": [
+    "1 领取: card + parent I-14 + audit row 60 + dependency receipts (I-00-C, I-00-B, I-00-A) read",
+    "2 绑定: binding.json with tool/test hashes, iso interpreter, allowed write roots, forbidden list, ground-truth anchors (including the argparse gap)",
+    "3 读证据: RF/tools/slo_probe.py (all anchors re-verified at HEAD), RF/tools/tests/test_slo_probe.py, RF/tools/release_readiness.py quick_check note, CW cli.py resolve parser (--as-of-date required)",
+    "4 冻结预期: oracle.md written before any run (M1-M9, F1-F4, E1a-E7b, exit codes) plus a recorded errata section",
+    "5 修改前检查: unmodified tool reproduced the audit finding (rc ignored, bundle aliased, RSS from its own process); the frozen suite is 10F/2P on it",
+    "6 最小修改: iso/slo_probe_patched.py only (rc+business status captured; live tree RSS sampler; three windows; binding refusal; explicit bundle measurement; exit codes 3/4)",
+    "7 修改后检查: all frozen cases green with raw rc recorded per case; 3 repeat sweeps stable; budgets byte-identical",
+    "8 交审: this handoff + review.md + decision.md D1 (unsigned) / D2 / D3",
+    "9 复审: independent review returned accepted_scoped for the isolated fix; 5 corrections dispositioned in review.md (r2) and oracle.md section 9; tool left byte-identical",
+    "10 接续: promotion stays forbidden until D1 is signed by an ops reviewer who is not this probe's author"
+  ],
+  "next_step_number": 6,
+  "next_action": "In order: (1) the ops reviewer signs or replaces D1 — accepting, explicitly, the 50 ms interval + error rule, the tree-sum overestimate, and the fact that every invocation without --bundle-measurement now exits 2; (2) the production SLO / probe owner confirms D2 including the parser's fail-closed limits; (3) I-16 decides D3 (required bundle measurement, and therefore the default exit semantics); (4) ONLY THEN may a separate change-window card promote iso/slo_probe_patched.py into RF/tools/slo_probe.py and its acceptance test into RF/tools/tests/ — until that signature exists, promotion is forbidden and the tool stays in iso/; (5) separately, spot-check the r2 correction pass (before/cmd-E5b evidence, oracle.md section 9, review.md r2 table, and the new after/r2_review_evidence.md).",
+
+  "frozen_rules": {
+    "M1_command_total": "windows.command_total_seconds",
+    "M2_business_latency": "windows.slo_window_seconds + per-call latencies of SUCCESSFUL calls only",
+    "M3_rss_sampling_window": "windows.rss_sample_window_seconds_max + rss_sample_count/rss_sampled_pids/peak_tree_pids per call. AMENDED per F-I14A-03: the peak is the SUM across the sampled process tree, so it is a conservative overestimate (≈11 MB launcher overhead measured: 0.267 GB tree sum vs 256 MB declared). peak_pid is null whenever a sample covered more than one pid (6/6 E1c calls); peak_tree_pids carries the full set",
+    "M4_quick_check": "windows.quick_check_seconds, separately labelled, measured outside the SLO window, with its own raw_returncode",
+    "M5_failure_accounting": "calls.succeeded / calls.failed / calls.failed_kinds reported separately",
+    "M6_unmeasured_is_not_zero": "peak_rss_gb null with peak_rss_source 'uncollected:…' cannot be green",
+    "M7_synthetic_memory_is_not_an_rss_oracle": "256MB allocated vs 0.267GB summed tree peak is an order-of-magnitude check only, and the M3 overestimate is part of that comparison",
+    "M8_budgets_frozen": "exact/latest/bundle p95 5.0s, peak_rss_gb 2.0 — byte-identical to production",
+    "M9_scope": "this card proves the meter; production SLO qualification needs I-16 and I-14-B"
+  },
+
+  "changed_paths": [
+    "iso/slo_probe_patched.py (attempt-local fix; the product tree is NOT edited; sha256 unchanged by the r2 pass: 14932c744839c89f8af126b8d7eba11bafe9192dd73c3b5277a41ef6aaa3540e)",
+    "harness/*.py (attempt-local runner, verifier, fixture spec, pytest suite, snapshot tool)",
+    "iso/fixtures/*.py (attempt-local fixture processes)",
+    "iso/tool_prod/slo_probe.py, iso/tool_prod/test_slo_probe.py (byte-identical copies for the RED baseline)",
+    "after/r2_review_evidence.md (r2: evidence for the five review corrections)",
+    "before/cmd-E5b/{report.json,stderr.txt,stdout.json} (r2: the reproducible E5 baseline showing the reader-thread UnicodeDecodeError)"
+  ],
+  "changed_paths_outside_allowlist_reported": [],
+
+  "commands_executed": [
+    "CMD-I14A-E5-baseline-oldtool",
+    "CMD-I14A-SUITE-before",
+    "CMD-I14A-CASES-all",
+    "CMD-I14A-BIND-mismatch-and-ok",
+    "CMD-I14A-BUNDLE-control",
+    "CMD-I14A-SUITE-after",
+    "CMD-I14A-REPEAT-1..3",
+    "CMD-I14A-PIDREL",
+    "CMD-I14A-SNAPSHOT"
+  ],
+  "raw_exit_codes": {
+    "CMD-I14A-E5-baseline-oldtool": 0,
+    "CMD-I14A-SUITE-before": 1,
+    "CMD-I14A-CASES-all": 0,
+    "CMD-I14A-BIND-mismatch-and-ok": 0,
+    "CMD-I14A-BUNDLE-control": 0,
+    "CMD-I14A-SUITE-after": 0,
+    "CMD-I14A-REPEAT-1": 0,
+    "CMD-I14A-REPEAT-2": 0,
+    "CMD-I14A-REPEAT-3": 0,
+    "CMD-I14A-PIDREL": 0,
+    "CMD-I14A-SNAPSHOT": 0
+  },
+  "expected_exit_codes": {
+    "CMD-I14A-E5-baseline-oldtool": 0,
+    "CMD-I14A-SUITE-before": 1,
+    "CMD-I14A-CASES-all": 0,
+    "CMD-I14A-BIND-mismatch-and-ok": 0,
+    "CMD-I14A-BUNDLE-control": 0,
+    "CMD-I14A-SUITE-after": 0,
+    "CMD-I14A-REPEAT-1..3": 0,
+    "CMD-I14A-PIDREL": 0,
+    "CMD-I14A-SNAPSHOT": 0
+  },
+  "probe_returncodes_under_test": {
+    "E1a-F1-exit7-success-stdout": 4,
+    "E1b-F2-exit0-business-failure": 4,
+    "E1c-F3-alive-allocate": 2,
+    "E2-F3-sampler-disabled": 2,
+    "E3-F4-instant-exit": 2,
+    "E7-F4-no-bundle-measurement": 2,
+    "E4-binding-mismatch": 3,
+    "E4b-binding-consistent": 2
+  },
+  "child_process_returncodes_observed": {
+    "F1": 7,
+    "F2": 0,
+    "F3": 0,
+    "F4": 0
+  },
+
+  "input_hashes": {
+    "PLAN/execution_v2/card_I-14-A.md": "read-only card text",
+    "PLAN/audit_report.md": "read-only; line 60 is the falsified row",
+    "PLAN/implementation_plan.md": "read-only; item I-14",
+    "I-00-C/a20260919-01/handoff.json": "read-only dependency receipt",
+    "I-00-B/a20260919-01/binding.json": "read-only dependency receipt"
+  },
+  "current_source_hashes": {
+    "PRODUCTION_RF/tools/slo_probe.py": "f051feec00658bb5fefee8d22c2c7630e0bd348b5384ae80f0c882c822f48059 (== HEAD; NOT this card's fix)",
+    "PRODUCTION_RF/tools/tests/test_slo_probe.py": "c02d796e59390cfbef52e24ce64a6311c97f6be155c7f147dac24c0a3603fdad (== HEAD, untouched)",
+    "ISO_iso/tool_prod/slo_probe.py": "f051feec00658bb5fefee8d22c2c7630e0bd348b5384ae80f0c882c822f48059",
+    "ISO_iso/slo_probe_patched.py": "14932c744839c89f8af126b8d7eba11bafe9192dd73c3b5277a41ef6aaa3540e",
+    "oracle.md": "sha256 87775f2f4ff025e4d104fd1dfe23d7f7bfc75a20520f8859732133e96ec84bb7 (r1 frozen text + append-only section 9 errata)",
+    "review.md": "sha256 a0787d9d94ea67980f796481525f2d35a37676b3fa7d87fdbb0c3b4f968c5dfe (r1 review + r2 disposition table)",
+    "decision.md": "sha256 a1a9d37478ffb42f15877ac29b9ecb044b8f402f4d77f532d1a25f1646bfda24 (adds the D1/D2/D3 ownership table and the F-I14A-01 contract term)",
+    "binding.json": "sha256 d713c6c385318ef60a8786690ef3533615af359743d3844fc46f7a892d64808c (ground-truth facts corrected for F-I14A-02)",
+    "commands.json": "sha256 59624971ec0bd926d16c580963cb6ed92e2f07778b100faf6beb4f6e6181867e (adds CMD-I14A-E5b; no expected return code changed)",
+    "handoff.json": "this file. Its hash is deliberately NOT cited here: any value written into this file is invalidated by the write itself (review finding P4). Recompute with Get-FileHash when you need it; after/summary.json:r2_new_hashes carries a capture-time-stamped value.",
+    "after/r2_review_evidence.md": "sha256 3aeb8536f4bc614c349967295ef21ed0564c4f75dece55a53187c943d194db97 (r2 revision corrects the tool_prod hash citation, F-I14A-05/P5; recompute after reading)",
+    "before/cmd-E5b/report.json": "sha256 15f522deb4214257aea053d8eb1801449e77669661c0e034998f9aca8a4bf440",
+    "before/cmd-E5b/stderr.txt": "sha256 10ada408f59f7c478a445ef50e41129e78f860ab287f873fe09c811872a9c8e3",
+    "changes.diff": "fcb9ae658c9c261bf4dc06c1f9523dad5fdefccae0b4161a50909870d01a7aee (unchanged; the reviewer regenerated it identically)"
+  },
+
+  "budgets_untouched": {"exact_p95": 5.0, "latest_p95": 5.0, "bundle_p95": 5.0, "peak_rss_gb": 2.0},
+
+  "open_questions": [
+    "D1 UNSIGNED and owned by an ops reviewer who must not be this probe's author: RSS peak method (live rss max over the tree), 50 ms interval, measurement-error rule, AND the three explicit terms in decision.md D1 (the tree-sum overestimate, the always-exit-2 default invocation, and the downgraded E5 conclusion).",
+    "D2 owned by the production SLO / probe owner: the acceptance rule (file inside the configured dir, named catalog.sqlite3 or catalog.db) plus the parser's known limits — no block scalars, inline maps, anchors or escapes; residual '${' raises ValueError and refuses with exit 3 (fail-closed).",
+    "D3 owned by I-16: bundle eligibility now requires an explicit measurement file, which is also what makes the default invocation exit 2. A real bundle-consumption latency is production measurement. The copied_from_exact refusal path is only reachable via the literal alias — recorded, not hidden.",
+    "The patched tool is NOT installed into RF/tools/ and must not be until D1 is signed.",
+    "A resolver that prints no JSON envelope first line is recorded as business_unparseable (fail closed); confirm this matches the real CLI stdout contract before production use.",
+    "quick_check is measured on a tiny fixture catalog only; its production minutes-scale cost is documented, not exercised.",
+    "F-I14A-02 residue: the old tool's per-child rc is UNOBSERVABLE (no per_call field, result discarded at iso/tool_prod/slo_probe.py:57), so no baseline can prove a child-failure count. The reproducible witness is the reader-thread UnicodeDecodeError in before/cmd-E5b/stderr.txt.",
+    "The r2 correction pass (new E5b evidence + oracle section 9 + review.md r2 errata) has not been independently reviewed; the tool itself is byte-identical, so the r1 re-runs remain valid.",
+    "Review findings P4 and P5 (document-consistency only) are fixed: after/summary.json:r2_new_hashes was recomputed with a capture-time stamp and now marks self-invalidating entries; after/r2_review_evidence.md now cites the full sha256 for iso/tool_prod/slo_probe.py."
+  ],
+  "reviewer_unverified_list_carried_forward": {
+    "note": "Reproduced from the r2 review verbatim in substance. NONE of these may be cited as established.",
+    "items": [
+      "the per-root location counts were not recomputed row by row by the reviewer",
+      "only the first row of the r2 census top-5 was checked",
+      "the US-MSFT raw artifact was not re-hashed by the reviewer",
+      "the resolve path remains unmeasurable in isolation (no live resolve was run)",
+      "the state.json sub-fields were not checked field by field",
+      "the r2-produced evidence cannot be externally anchored (it is this attempt's own output)",
+      "the substantive merits of D1 are outside the reviewer's scope",
+      "the r1 re-run conclusions remain valid only because the tool's bytes did not change"
+    ]
+  },
+  "accepted_limited_reservation": {
+    "subject": "after/snapshot.json porcelain for filing-fetch",
+    "detail": "captured 2026-09-20T02:14:43Z, before the parent agent deleted the leaked git_filing-fetch.txt, so its porcelain['filing-fetch'] lists '?? git_filing-fetch.txt' while porcelain_product_only['filing-fetch'] is correctly empty. Stale but CONSERVATIVE, not fabricated. Not refreshed: a re-run would be a new command and the recorded value is already the stricter one.",
+    "status": "accepted as non-blocking by the reviewer"
+  },
+  "blocked_by": [
+    "D1 unsigned by the ops reviewer (must not be the probe's author) — blocks promotion into RF/tools/",
+    "D2 awaiting the production SLO / probe owner's confirmation",
+    "D3 awaiting I-16's decision on the required-bundle-measurement contract and therefore the changed default exit semantics",
+    "no real bundle-consumption measurement exists yet (I-16 scope)"
+  ],
+
+  "evidence_paths": [
+    "execution_runs/I-14-A/a20260919-01/binding.json",
+    "execution_runs/I-14-A/a20260919-01/oracle.md",
+    "execution_runs/I-14-A/a20260919-01/commands.json",
+    "execution_runs/I-14-A/a20260919-01/decision.md",
+    "execution_runs/I-14-A/a20260919-01/review.md",
+    "execution_runs/I-14-A/a20260919-01/changes.diff",
+    "execution_runs/I-14-A/a20260919-01/after/summary.json",
+    "execution_runs/I-14-A/a20260919-01/after/snapshot.json",
+    "execution_runs/I-14-A/a20260919-01/after/cmd-E1/stdout.json",
+    "execution_runs/I-14-A/a20260919-01/after/cmd-E4/stdout.json",
+    "execution_runs/I-14-A/a20260919-01/after/cmd-E7b/stdout.json",
+    "execution_runs/I-14-A/a20260919-01/after/cmd-SUITE/stdout.txt",
+    "execution_runs/I-14-A/a20260919-01/after/E1a-F1-exit7-success-stdout/report.json",
+    "execution_runs/I-14-A/a20260919-01/after/E1b-F2-exit0-business-failure/report.json",
+    "execution_runs/I-14-A/a20260919-01/after/E1c-F3-alive-allocate/report.json",
+    "execution_runs/I-14-A/a20260919-01/after/E2-F3-sampler-disabled/report.json",
+    "execution_runs/I-14-A/a20260919-01/after/E7-F4-no-bundle-measurement/report.json",
+    "execution_runs/I-14-A/a20260919-01/after/E7b/verdict.json",
+    "execution_runs/I-14-A/a20260919-01/after/cmd-E1c/pid-relationship.json",
+    "execution_runs/I-14-A/a20260919-01/before/cmd-E5/report.json",
+    "execution_runs/I-14-A/a20260919-01/before/cmd-E5b/report.json",
+    "execution_runs/I-14-A/a20260919-01/before/cmd-E5b/stderr.txt",
+    "execution_runs/I-14-A/a20260919-01/after/r2_review_evidence.md",
+    "execution_runs/I-14-A/a20260919-01/before/cmd-SUITE/stdout.txt",
+    "execution_runs/I-14-A/a20260919-01/harness/run_probe_cases.py",
+    "execution_runs/I-14-A/a20260919-01/harness/run_bundle_control.py",
+    "execution_runs/I-14-A/a20260919-01/harness/fixture_spec.py",
+    "execution_runs/I-14-A/a20260919-01/harness/tests/test_i14a_failure_branches.py"
+  ]
+}

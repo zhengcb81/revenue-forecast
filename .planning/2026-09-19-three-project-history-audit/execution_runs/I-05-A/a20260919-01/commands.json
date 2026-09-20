@@ -1,0 +1,481 @@
+{
+  "card_id": "I-05-A",
+  "attempt_id": "a20260919-01",
+  "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-05-A\\a20260919-01",
+  "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-05-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "env": {
+    "PYTHONPATH": "<attempt>/iso/cw/src",
+    "W05A_CW_SRC": "<attempt>/iso/cw/src",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "W05A_SCRATCH": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w05a (default; per-case catalog root)"
+  },
+  "binding_status": "bound",
+  "network": "disabled",
+  "commands": [
+    {
+      "id": "CMD-I05A-C1",
+      "purpose": "freeze the fixed sample bytes (definitions / main business / MD&A blocks) and record their hashes",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_make_sample.py"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "samples/annual_normalized.md sha256=f878cb59...1dcf (1233 B), samples/annual_source.txt sha256=b70346ce...4513",
+      "raw_returncode": 0,
+      "evidence": [
+        "samples/annual_normalized.md",
+        "samples/annual_source.txt",
+        "samples/sample.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C2",
+      "purpose": "BEFORE: run the full case matrix (c0..c8, n2a/n2b/n2c, p2, n3) against the PRISTINE product bytes via the real producers",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_cases.py",
+        "before"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "c0/P2/n2c PASS; c1..c8 + n2a + n3 are counterexamples (usable content returned despite invalid state); n2b observation",
+      "raw_returncode": 0,
+      "evidence": [
+        "before/harness.stdout.txt",
+        "before/case_results.json",
+        "before/artifact-mutation-matrix.json",
+        "before/default-producer-artifacts.json",
+        "before/section-index-span-checks.json",
+        "before/case-catalog-snapshots.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C3",
+      "purpose": "BEFORE: independent slice/offset/hash check on the default producer output (no company_wiki import)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_independent_check.py",
+        "c0"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "PASS: offsets 108..207 / 207..339 match the hand-computed values; index sha256 141f176b...fe3c equals the artifact row",
+      "raw_returncode": 0,
+      "evidence": [
+        "before/independent-slice-check.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C4",
+      "purpose": "BEFORE: historical section_probe re-bound to this attempt (isolated source path + isolated output)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_section_probe_bound.py",
+        "before"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "both historical cases return an ordinary usable result (failed row + nonexistent index/span accepted)",
+      "raw_returncode": 0,
+      "evidence": [
+        "before/legacy-section-probe.json",
+        "before/legacy-probe.stdout.txt"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C5",
+      "purpose": "AFTER: same case matrix against the attempt's fixed module copies",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_cases.py",
+        "after"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "c0..c8 PASS with the frozen reason codes; n2a PASS (recompute happens); n2c PASS (control still skipped); p2 PASS; n3 PASS (stale row not served); n2b observation",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/harness.stdout.txt",
+        "after/case_results.json",
+        "after/artifact-mutation-matrix.json",
+        "after/default-producer-artifacts.json",
+        "after/section-index-span-checks.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C6",
+      "purpose": "AFTER: same independent slice/offset/hash check",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_independent_check.py",
+        "c0"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "PASS, identical facts to C3 (the fix must not change what a valid artifact yields)",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/independent-slice-check.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C7",
+      "purpose": "AFTER: historical probe against the fixed module",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_section_probe_bound.py",
+        "after"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "both cases report blocked_by_fixture_schema (the minimal historical schema cannot express the shared gates; positive coverage comes from the real-catalog cases)",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/legacy-section-probe.json",
+        "after/legacy-probe.stdout.txt"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C8",
+      "purpose": "isolated product contract regression on the fixed copy (sections extractor, B10 read chain, complexity ratchet, artifact handle, source bundle)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "<attempt>/after/cmd-tests/pytest",
+        "--deselect",
+        "tests/contract/test_source_catalog_section_extractor.py::test_extract_sections_writes_artifact_and_is_idempotent",
+        "tests/contract/test_source_catalog_section_extractor.py",
+        "tests/contract/test_b10_read_chain.py",
+        "tests/contract/test_fc1204_complexity_ratchet.py",
+        "tests/contract/test_source_catalog_artifact_handle.py",
+        "tests/contract/test_source_catalog_source_bundle.py"
+      ],
+      "cwd": "<attempt>/iso/cw",
+      "expected_returncode": 0,
+      "expected_business_result": "63 passed, 1 deselected",
+      "raw_returncode": 0,
+      "deselected_reason": "test_extract_sections_writes_artifact_and_is_idempotent needs the real PDF parser (catalog.normalize); it fails IDENTICALLY on the pristine bytes in this venv (recorded in before/cmd-tests-pristine.stdout.txt), so it is an environment limitation, not a regression",
+      "evidence": [
+        "after/cmd-tests.stdout.txt",
+        "before/cmd-tests-pristine.stdout.txt"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C9",
+      "purpose": "AFTER: confirm the fixed module passes the read-chain ratchet that governs the file it changed",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "<attempt>/after/cmd-tests/pytest-b10",
+        "tests/contract/test_b10_read_chain.py"
+      ],
+      "cwd": "<attempt>/iso/cw",
+      "expected_returncode": 0,
+      "expected_business_result": "all read-chain ratchet tests pass",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/cmd-b10.stdout.txt"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C10",
+      "purpose": "r2 BEFORE: regenerate the before baseline (case matrix) on the PRISTINE product bytes with the r2 harness",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_cases.py",
+        "before"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "c1..c8 + n2a + n3 counterexamples (unchanged from r1)",
+      "raw_returncode": 0,
+      "evidence": [
+        "before/harness.stdout.txt",
+        "before/case_results.json",
+        "before/artifact-mutation-matrix.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C11",
+      "purpose": "r2 BEFORE: F-I05A-01/02/03/05/06 attack probes on the PRISTINE product bytes",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_attack_probes.py",
+        "before"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "m1/m2/m3/m6 return usable content (bypasses reproduced); m5 completed=0 (version deadlock)",
+      "raw_returncode": 0,
+      "evidence": [
+        "before/review-attack-probes.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C12",
+      "purpose": "r2 AFTER: same case matrix on the r2 fix",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_cases.py",
+        "after"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "c0..c8 PASS; n2a/n2c PASS; n2b observation; p2 PASS; n3 PASS",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/harness.stdout.txt",
+        "after/case_results.json",
+        "after/artifact-mutation-matrix.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C13",
+      "purpose": "r2 AFTER: attack probes on the r2 fix",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_attack_probes.py",
+        "after"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "m1 sections_metadata_index_mismatch; m2 sections_hash_mismatch; m3 sections_path_outside_allowed_root; m6 serves the older VALID row; m5 unchanged (OPEN-1 evidence)",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/review-attack-probes.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C14",
+      "purpose": "r2: added regression tests for F-I05A-01..03/06 (18 cases, incl. the reviewer's span-of-another-document variant)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "%TEMP%/w05a/pt/i05a",
+        "tests/contract/test_i05a_section_qualification.py"
+      ],
+      "cwd": "<attempt>/iso/cw",
+      "expected_returncode": 0,
+      "expected_business_result": "18 passed",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/cmd-tests-i05a.stdout.txt"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C15",
+      "purpose": "r2: full isolated product contract regression incl. the added file and both ratchets (b10 read chain + complexity)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "%TEMP%/w05a/pt/full",
+        "--deselect",
+        "tests/contract/test_source_catalog_section_extractor.py::test_extract_sections_writes_artifact_and_is_idempotent",
+        "tests/contract/test_source_catalog_section_extractor.py",
+        "tests/contract/test_b10_read_chain.py",
+        "tests/contract/test_fc1204_complexity_ratchet.py",
+        "tests/contract/test_source_catalog_artifact_handle.py",
+        "tests/contract/test_source_catalog_source_bundle.py",
+        "tests/contract/test_i05a_section_qualification.py"
+      ],
+      "cwd": "<attempt>/iso/cw",
+      "expected_returncode": 0,
+      "expected_business_result": "81 passed, 1 deselected; section_query.py max function complexity measured 10 (frozen 12)",
+      "raw_returncode": 0,
+      "basetemp_note": "must be a SHORT path (%TEMP%): the per-test derived/<2>/<64>/sections path under the attempt directory exceeds the Windows 259-character limit",
+      "evidence": [
+        "after/cmd-tests.stdout.txt"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C16",
+      "purpose": "r2: independent slice/offset/hash check (now also reports the recorded slice hash)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_independent_check.py",
+        "c0"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "PASS with slice_hash_bound=true for both slices",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/independent-slice-check.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C17",
+      "purpose": "r3 (A2): re-run the added regression file on the FINAL r3 bytes and OVERWRITE the stale r2 evidence file",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "%TEMP%/w05a/pt/i05a-r3n",
+        "tests/contract/test_i05a_section_qualification.py"
+      ],
+      "cwd": "<attempt>/iso/cw",
+      "expected_returncode": 0,
+      "expected_business_result": "25 passed (the r2 file recorded a stale 3 failed/15 passed RED run; overwritten)",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/cmd-tests-i05a.stdout.txt"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C18",
+      "purpose": "r3: full isolated product contract regression (7 files incl. both ratchets) on the FINAL r3 bytes",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "%TEMP%/w05a/pt/full-r3e",
+        "--deselect",
+        "tests/contract/test_source_catalog_section_extractor.py::test_extract_sections_writes_artifact_and_is_idempotent",
+        "tests/contract/test_source_catalog_section_extractor.py",
+        "tests/contract/test_b10_read_chain.py",
+        "tests/contract/test_fc1204_complexity_ratchet.py",
+        "tests/contract/test_source_catalog_artifact_handle.py",
+        "tests/contract/test_source_catalog_source_bundle.py",
+        "tests/contract/test_i05a_section_qualification.py"
+      ],
+      "cwd": "<attempt>/iso/cw",
+      "expected_returncode": 0,
+      "expected_business_result": "88 passed, 1 deselected",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/cmd-tests.stdout.txt"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C19",
+      "purpose": "r3 (A1/P3): before/after attack-probe runs incl. m2b/m2c/m3b/m4/m4b/m7",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_attack_probes.py",
+        "before|after"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "before: 11 probes return usable content (m5 completed=0); after: 10 refusals + m6 falls back to the older VALID row",
+      "raw_returncode": 0,
+      "evidence": [
+        "before/review-attack-probes.json",
+        "after/review-attack-probes.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C20",
+      "purpose": "r3: regenerate the before/after case matrix, the independent slice check and the legacy probe on the final bytes",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_cases.py",
+        "before|after"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "before: c1..c8 + n2a + n3 counterexamples; after: c0..c8 PASS, n2a/n2c PASS, n2b observation, p2/n3 PASS",
+      "raw_returncode": 0,
+      "evidence": [
+        "before/case_results.json",
+        "after/case_results.json",
+        "after/independent-slice-check.json",
+        "after/legacy-section-probe.json"
+      ]
+    }
+  ],
+  "notes": [
+    "Every command ran inside the attempt's iso environment; no command targeted a product repo path.",
+    "raw_returncode is the OUTER process exit code; the per-case business verdicts live in the JSON evidence, never folded into the exit code.",
+    "The failed-state ('before') commands must NOT be weakened to pass: the counterexamples ARE the evidence.",
+    "r3: the r2 evidence file after/cmd-tests-i05a.stdout.txt recorded a STALE RED run (3 failed/15 passed, 03:13:56) while commands.json claimed 18 passed; C17 re-ran and overwrote it on the final bytes. See review_r3_disposition.md §r3.2."
+  ]
+}

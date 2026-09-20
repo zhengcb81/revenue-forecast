@@ -114,7 +114,7 @@
 | E30 | `input_binding_mismatch` | `input_document` 与 `input_sha256` 不符（A-D4 下半段） | L1 前置 | 拒绝；provider 调用 = 0，registry 新增 = 0 | 现状消息 `input binding mismatch: embedded input_document does not hash to input_sha256`（保留原文，本码为其规范名） |
 | E31 | `publication_rollback_required` | output 写失败但 registry 已有行 | 事务 | 必须回滚注册，不得留可消费半发布 | 属 I-09-A；现状实测 `registry_entries_added=1, output_exists=false` |
 
-**两个参数、一个未决**：`W`（发布窗长度）、`T`（provider 超时上限）、`L`（provider stdout 上限）取值同属 **OPEN-D7**；本表只冻结它们的**语义与失败码**（E18/E07/E06），不冻结数值。**本设计不自行确定 `L`**：初稿的 65536 bytes 与任何其它数值一样缺少证据支撑（复审 N-R2-04），在 OPEN-D7 裁决前**不得**把某个具体字节数写成硬性上限（r3 已从 §2.4 与 §4.2 撤下该数值）。
+**三个参数、一个未决（r4 用词更正：原文误作「两个参数」，该项由独立裁决列为必修文本项）**：`W`（发布窗长度）、`T`（provider 超时上限）、`L`（provider stdout 上限）取值同属 **OPEN-D7**；本表只冻结它们的**语义与失败码**（E18/E07/E06），不冻结数值。**本设计不自行确定 `L`**：初稿的 65536 bytes 与任何其它数值一样缺少证据支撑（复审 N-R2-04），在 OPEN-D7 裁决前**不得**把某个具体字节数写成硬性上限（r3 已从 §2.4 与 §4.2 撤下该数值）。
 
 **一致性规则（码值唯一来源）**：`oracle.md` §2 的 NEG-* 表第 4 列**只引用**本节的码值；两份冻结文本之间**不得**存在同名不同义、或一处有另一处无的码。reviewer 的一致性判据：对任一 NEG 行取第 4 列的 `E` 编号，必须能在本节精确命中同一字符串（r2 已用 `check_r2_consistency.py` 机器校验：31 个码、0 未定义、0 未被引用）。
 

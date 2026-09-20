@@ -1,0 +1,768 @@
+"""I-11-A: build evidence/I-11-A/hypotheses.json and source_map.json from ONE frozen
+in-code data table, so no count is ever transcribed by hand.
+
+Every cited raw value is bound to (document, page-or-table, extraction path) and is
+verified to exist in the archived extraction output before it is written.
+
+Usage:
+  python -X utf8 -B tools/build_hypotheses.py <attempt_root>
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import re
+import sys
+from fractions import Fraction
+
+CITED = {
+    "CN-ZIJIN-AR2025": [
+        {"key": "zijin_seg_mineral_2025", "raw": "109,977,556,345", "page": 327,
+         "raw_label": "对外销售收入-矿产品分部（2025年）"},
+        {"key": "zijin_seg_smelt_2025", "raw": "165,858,644,874", "page": 327,
+         "raw_label": "对外销售收入-冶炼产品分部（2025年）"},
+        {"key": "zijin_seg_trade_2025", "raw": "29,212,610,830", "page": 327,
+         "raw_label": "对外销售收入-贸易分部（2025年）"},
+        {"key": "zijin_seg_other_2025", "raw": "44,030,270,803", "page": 327,
+         "raw_label": "对外销售收入-其他分部（2025年）"},
+        {"key": "zijin_seg_total_2025", "raw": "349,079,082,852", "page": 327,
+         "raw_label": "对外销售收入-合计（2025年）"},
+        {"key": "zijin_seg_elim_2025", "raw": "234,970,146,412", "page": 327,
+         "raw_label": "内部销售收入-抵销列（2025年）"},
+        {"key": "zijin_seg_gross_total_2025", "raw": "138,271,672,956", "page": 327,
+         "raw_label": "分部总计（含内部销售，矿产品，2025年）"},
+        {"key": "zijin_seg_mineral_2024", "raw": "74,089,365,354", "page": 328,
+         "raw_label": "对外销售收入-矿产品分部（2024年）"},
+        {"key": "zijin_seg_smelt_2024", "raw": "181,141,823,725", "page": 328,
+         "raw_label": "对外销售收入-冶炼产品分部（2024年）"},
+        {"key": "zijin_seg_trade_2024", "raw": "29,386,475,085", "page": 328,
+         "raw_label": "对外销售收入-贸易分部（2024年）"},
+        {"key": "zijin_seg_other_2024", "raw": "19,022,292,989", "page": 328,
+         "raw_label": "对外销售收入-其他分部（2024年）"},
+        {"key": "zijin_seg_total_2024", "raw": "303,639,957,153", "page": 328,
+         "raw_label": "对外销售收入-合计（2024年）"},
+        {"key": "zijin_gold_prod_2025", "raw": "82,743", "page": 44,
+         "raw_label": "矿山产金-生产量（千克）"},
+        {"key": "zijin_gold_sales_2025", "raw": "83,161", "page": 44,
+         "raw_label": "矿山产金-销售量（千克）"},
+        {"key": "zijin_copper_prod_2025", "raw": "878,180", "page": 44,
+         "raw_label": "矿山产铜-生产量（吨）"},
+        {"key": "zijin_copper_sales_2025", "raw": "884,943", "page": 44,
+         "raw_label": "矿山产铜-销售量（吨）"},
+        {"key": "zijin_zinc_prod_2025", "raw": "348,556", "page": 44,
+         "raw_label": "矿山产锌-生产量（吨）"},
+        {"key": "zijin_zinc_sales_2025", "raw": "352,470", "page": 44,
+         "raw_label": "矿山产锌-销售量（吨）"},
+        {"key": "zijin_silver_prod_2025", "raw": "429,382", "page": 44,
+         "raw_label": "矿山产银-生产量（千克）"},
+        {"key": "zijin_silver_sales_2025", "raw": "430,254", "page": 44,
+         "raw_label": "矿山产银-销售量（千克）"},
+        {"key": "zijin_gold_inventory_2025", "raw": "1,470", "page": 44,
+         "raw_label": "矿山产金-库存量（千克）"},
+        {"key": "zijin_copper_inventory_2025", "raw": "11,343", "page": 44,
+         "raw_label": "矿山产铜-库存量（吨）"},
+        {"key": "zijin_plan_statement", "raw": "矿产金105吨，矿产铜120万吨", "page": 56,
+         "raw_label": "2026年公司主要矿产品产量计划（原文串）"},
+        {"key": "zijin_revenue_2025", "raw": "349,079,082,852", "page": 43,
+         "raw_label": "营业收入-本期数（2025年，元）"},
+        {"key": "zijin_revenue_2024", "raw": "303,639,957,153", "page": 43,
+         "raw_label": "营业收入-上年同期数（2024年，元）"},
+    ],
+    "CN-ZIJIN-AR2025-TXT": [
+        {"key": "zijin_seg_note_anchor", "raw": "对外销售收入", "page": 327,
+         "raw_label": "分部报告-对外销售收入行标签"},
+        {"key": "zijin_prodsales_anchor", "raw": "产销量情况分析表", "page": 44,
+         "raw_label": "产销量情况分析表标题"},
+        {"key": "zijin_plan_anchor", "raw": "2026年公司主要矿产品产量计划", "page": 56,
+         "raw_label": "经营计划-2026年主要矿产品产量计划标题"},
+        {"key": "zijin_plan_caveat", "raw": "本计划为指导性指标，存在不确定性，不构成对产量实现的承诺",
+         "page": 56, "raw_label": "经营计划-指导性指标声明"},
+        {"key": "zijin_mgmt_growth_2026", "raw": "14.96", "page": 43,
+         "raw_label": "营业收入变动比例（%，2025 vs 2024）"},
+    ],
+    "US-MSFT-10K-FY2026": [
+        {"key": "msft_pbp_fy2026", "raw": "139,996", "table": 74, "raw_label": "Productivity and Business Processes Revenue FY2026"},
+        {"key": "msft_ic_fy2026", "raw": "137,791", "table": 74, "raw_label": "Intelligent Cloud Revenue FY2026"},
+        {"key": "msft_mpc_fy2026", "raw": "54,052", "table": 74, "raw_label": "More Personal Computing Revenue FY2026"},
+        {"key": "msft_total_fy2026", "raw": "331,839", "table": 74, "raw_label": "Total Revenue FY2026"},
+        {"key": "msft_pbp_fy2025", "raw": "120,810", "table": 74, "raw_label": "Productivity and Business Processes Revenue FY2025"},
+        {"key": "msft_ic_fy2025", "raw": "106,265", "table": 74, "raw_label": "Intelligent Cloud Revenue FY2025"},
+        {"key": "msft_mpc_fy2025", "raw": "54,649", "table": 74, "raw_label": "More Personal Computing Revenue FY2025"},
+        {"key": "msft_total_fy2025", "raw": "281,724", "table": 74, "raw_label": "Total Revenue FY2025"},
+        {"key": "msft_pbp_growth_fy2026", "raw": "16", "table": 14, "raw_label": "PBP revenue percentage change"},
+        {"key": "msft_ic_growth_fy2026", "raw": "30", "table": 14, "raw_label": "IC revenue percentage change"},
+        {"key": "msft_mpc_growth_fy2026", "raw": "(1)%", "table": 14, "raw_label": "MPC revenue percentage change (negative, parenthesised)"},
+        {"key": "msft_srv_cloud_fy2026", "raw": "129,425", "table": 76, "raw_label": "Server products and cloud services FY2026"},
+        {"key": "msft_m365c_fy2026", "raw": "101,997", "table": 76, "raw_label": "Microsoft 365 Commercial products and cloud services FY2026"},
+        {"key": "msft_cloud_rev_statement", "raw": "Microsoft Cloud revenue increased 27% to $214.4 billion",
+         "table": "mdda", "raw_label": "MD&A highlights, fiscal year 2026"},
+        {"key": "msft_rpo_statement", "raw": "Commercial remaining performance obligation increased 84% to $678 billion",
+         "table": "mdda", "raw_label": "MD&A highlights, fiscal year 2026 (context for the cloud aggregate)"},
+        {"key": "msft_m365cc_growth_statement", "raw": "Microsoft 365 Commercial cloud revenue increased 17%",
+         "table": "mdda", "raw_label": "MD&A highlights, fiscal year 2026"},
+    ],
+}
+
+DERIVED = {
+    # derived quantities are computed here with exact rationals and reported as
+    # numerator/denominator so the reviewer can recompute without trusting a float
+    "zijin_implied_unit_revenue_per_copper_tonne_equivalent_2025": (
+        "349079082852" , "2808843"),
+    "zijin_mineral_unit_revenue_per_copper_tonne_equivalent_2025": (
+        "109977556345", "885141"),
+    "zijin_implied_unit_revenue_per_gold_kg_equivalent_2025": (
+        "349079082852", "2808843"),
+}
+
+PARAM_IDS = {
+    "H-CN-ZIJIN-SEG-01:mineral_products": "ZIJIN_SEG_MINERAL_EXTERNAL_REVENUE_FY2027",
+    "H-CN-ZIJIN-SEG-01:smelting_products": "ZIJIN_SEG_SMELT_EXTERNAL_REVENUE_FY2027",
+    "H-CN-ZIJIN-SEG-01:trading": "ZIJIN_SEG_TRADE_EXTERNAL_REVENUE_FY2027",
+    "H-CN-ZIJIN-SEG-01:other": "ZIJIN_SEG_OTHER_EXTERNAL_REVENUE_FY2027",
+    "H-CN-ZIJIN-SEG-02:realized_price": "ZIJIN_MINERAL_REALIZED_UNIT_REVENUE_FY2027",
+    "H-CN-ZIJIN-VOL-03:copper_volume": "ZIJIN_MINERAL_COPPER_SALEABLE_VOLUME_FY2027",
+    "H-CN-ZIJIN-VOL-03:gold_volume": "ZIJIN_MINERAL_GOLD_SALEABLE_VOLUME_FY2027",
+    "H-CN-ZIJIN-PLAN-04:gold_volume": "ZIJIN_PLAN_GOLD_VOLUME_FY2026_PLACEHOLDER",
+    "H-CN-ZIJIN-PLAN-04:copper_volume": "ZIJIN_PLAN_COPPER_VOLUME_FY2026_PLACEHOLDER",
+    "H-CN-ZIJIN-ELIM-05:segment_reconciliation": "ZIJIN_SEGMENT_RECONCILIATION_FY2027",
+    "H-US-MSFT-SEG-01:pbp": "MSFT_PBP_REVENUE_FY2027",
+    "H-US-MSFT-SEG-01:ic": "MSFT_IC_REVENUE_FY2027",
+    "H-US-MSFT-SEG-01:mpc": "MSFT_MPC_REVENUE_FY2027",
+    "H-US-MSFT-SEG-02:cloud": "MSFT_MICROSOFT_CLOUD_REVENUE_FY2027_PLACEHOLDER",
+    "H-US-MSFT-SEG-03:licensing_vs_cloud": "MSFT_LICENSING_VS_CLOUD_COMPOSITION_FY2027",
+}
+
+ZIJIN_SOURCE_DOC = {
+    "doc_id": "CN-ZIJIN-AR2025",
+    "doc_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+    "strategy": "page_text",
+    "page_index_basis": "pdf_leaf_1based",
+    "caveat": ("page numbers are PDF physical leaves (pdf_leaf_1based); the printed page footer of a "
+               "cited leaf is stated in anchor_text_note where it differs"),
+}
+MSFT_SOURCE_DOC = {
+    "doc_id": "US-MSFT-10K-FY2026",
+    "doc_sha256": "e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecff",
+    "strategy": "xml_table",
+    "page_index_basis": "table_index_0based",
+}
+
+
+def src(doc, key, page_span, anchor, source_type, independence_group, published_at, available_at,
+        as_of, extra=None):
+    entry = {
+        "doc_id": doc["doc_id"],
+        "doc_sha256": doc["doc_sha256"],
+        "strategy": doc["strategy"],
+        "page_index_basis": doc["page_index_basis"],
+        "page_span": page_span,
+        "anchor_text": anchor,
+        "published_at": published_at,
+        "available_at": available_at,
+        "as_of": as_of,
+        "source_type": source_type,
+        "independence_group": independence_group,
+        "cited_value_key": key,
+    }
+    if extra:
+        entry.update(extra)
+    return entry
+
+
+def hyp(hid, claim, source, observation, mechanism_chain, model_id, driver_name, param_key,
+        unit, original_value, effective_period, conversion_formula, calibration,
+        double_count_exclusion, falsifier, refuted_by, state, state_reason, reviewer,
+        machine_verifiable, falsifier_candidates, alternatives, extra_parameters=None):
+    entry = {
+        "hypothesis_id": hid,
+        "claim": claim,
+        "state": state,
+        "state_reason": state_reason,
+        "source": source,
+        "observation": observation,
+        "mechanism_chain": mechanism_chain,
+        "parameter_mapping": {
+            "model_id": model_id,
+            "driver_name": driver_name,
+            "parameter_id": PARAM_IDS[param_key],
+            "unit": unit,
+            "original_value": original_value,
+            "low": None,
+            "base": None,
+            "high": None,
+            "effective_period": effective_period,
+            "conversion_formula": conversion_formula,
+        },
+        "additional_parameters": extra_parameters or [],
+        "calibration": calibration,
+        "dependency_control": {
+            "shared_driver_ids": [],
+            "double_count_check": double_count_exclusion,
+            "correlated_scenarios": [],
+            "scenario_joint_logic": None,
+        },
+        "double_count_exclusion": double_count_exclusion,
+        "falsifier": falsifier,
+        "falsifier_candidates": falsifier_candidates,
+        "refuted_by": refuted_by,
+        "alternative_explanations": alternatives,
+        "independent_contract_claims": [],
+        "machine_verifiable": machine_verifiable,
+        "decision": {
+            "professional_reviewer": reviewer,
+            "decision": "pending",
+            "reason": state_reason,
+            "decision_sha256": None,
+        },
+        "reviewer": reviewer,
+        "three_qualifications": {
+            "formula": "not_applicable_here",
+            "disclosure_adaptation": "not_granted",
+            "accuracy": "not_granted",
+        },
+    }
+    return entry
+
+
+def build_hypotheses():
+    hs = []
+
+    hs.append(hyp(
+        "H-CN-ZIJIN-SEG-01",
+        ("紫金矿业合并营业收入的构成由四个报告分部的**对外**销售收入相加得到；分部收入口径为对外销售收入，"
+         "不得把含内部交易的分部总计直接相加。"),
+        src(ZIJIN_SOURCE_DOC, "zijin_seg_mineral_2025", "327-328",
+            "对外销售收入", "company_disclosure", "ZIJIN-AR2025", "2026-03-20", "2026-03-20",
+            "2026-09-18"),
+        {"raw_value": "109,977,556,345; 165,858,644,874; 29,212,610,830; 44,030,270,803",
+         "raw_unit": "人民币元", "period": "FY2025", "scope": "合并范围，分部对外销售收入"},
+        ["四类分部经营业务互不重叠地构成集团对外收入来源",
+         "各分部对外销售量与实现价格决定分部对外收入",
+         "分部对外收入按分部直接汇总，无需再扣内部抵销（抵销已在分部对外口径内完成）",
+         "合并利润表按同一会计期间确认营业收入，分部对外收入合计应与合并数一致"],
+        "direct_revenue", "revenue", "H-CN-ZIJIN-SEG-01:mineral_products", "人民币元",
+        "349,079,082,852", "FY2025（基期）",
+        "分部对外销售收入直接作为该分部的收入路径输入；合计数由四分部相加得到，不再做第二次抵销",
+        {"method": "contract arithmetic", "sample_ids": ["CN-ZIJIN-AR2025:p327", "CN-ZIJIN-AR2025:p328"],
+         "selection_rule": "取分部报告附注中'对外销售收入'行的四个分部值与合计值",
+         "management_target_is_not_independent": True},
+        ("同一集团收入不得同时以'分部对外收入合计'与'含内部交易分部总计'两种口径计入；"
+         "本命题只允许前者。内部销售收入 234,970,146,412 元（2025年）只能出现在抵销桥中，"
+         "不得作为任何参数的收入基期。"),
+        {"observable": "下一期年报分部报告附注中四分部'对外销售收入'之和与该年合并利润表营业收入之差",
+         "threshold": "0（算术恒等式，允许披露四舍五入引入的 |差| ≤ 1 元）",
+         "threshold_basis": "arithmetic_identity",
+         "observation_date": "2027年年度报告披露日（预计2027-03前后）",
+         "source_route": "CN-ZIJIN-AR2025 → 财务报表附注-续 → 十六、其他重要事项 → 1.分部报告 → 对外销售收入行；同一报告期合并利润表营业收入行",
+         "revert_rule": ("若恒等式不再成立，停止把四分部对外收入直接相加作为合并收入路径；"
+                         "回到上一已证实口径并把差异登记为口径桥缺口，不改历史快照。")},
+        ["若下一年度出现第五个报告分部或分部重组，四分部加总不再等于合并数（须重建分部映射）",
+         "若'对外销售收入'行的定义被改为含内部交易，则恒等式失效（须改用抵销桥）",
+         "若年报把分部合计改为税后或扣除非经常项目口径，则与合并营业收入不同源"],
+        "pending_professional_decision",
+        "算术恒等式已在 A1/A2/A3 用有理数精确复算（差=0），但'四个分部是否为 FY2027 仍适用的最小建模块'需行业 reviewer 裁定",
+        "行业 reviewer（紫金覆盖）",
+        ["A1", "A2", "A3"],
+        [{"candidate": "分部数量或范围变化", "why_it_refutes": "四加数不再是完整划分"},
+         {"candidate": "分部收入口径改为含内部交易", "why_it_refutes": "加总后重复计算内部交易"}],
+        ["四类分部的经济性质不同（矿产品受金属价格与产量驱动、冶炼受加工费驱动、贸易为低毛利周转、其他含并购一次性范围），"
+         "把它们当成同一增长率外推会掩盖结构差异"],
+        extra_parameters=[
+            {"driver_name": "revenue", "parameter_id": PARAM_IDS["H-CN-ZIJIN-SEG-01:smelting_products"],
+             "unit": "人民币元", "effective_period": "FY2027", "original_value": "165,858,644,874"},
+            {"driver_name": "revenue", "parameter_id": PARAM_IDS["H-CN-ZIJIN-SEG-01:trading"],
+             "unit": "人民币元", "effective_period": "FY2027", "original_value": "29,212,610,830"},
+            {"driver_name": "revenue", "parameter_id": PARAM_IDS["H-CN-ZIJIN-SEG-01:other"],
+             "unit": "人民币元", "effective_period": "FY2027", "original_value": "44,030,270,803"},
+        ]))
+
+    hs.append(hyp(
+        "H-CN-ZIJIN-SEG-02",
+        ("矿产品分部的单位实现收入由'已售可结算数量 × 单位实现价格'驱动；该单位实现价格可由同一披露的"
+         "分部对外收入与产销量表中的销售量共同约束（两者必须相容），不得由外生价格假设单独决定收入。"),
+        src(ZIJIN_SOURCE_DOC, "zijin_seg_mineral_2025", "44,327",
+            "产销量情况分析表", "company_disclosure", "ZIJIN-AR2025",
+            "2026-03-20", "2026-03-20", "2026-09-18"),
+        {"raw_value": "销售量：铜 884,943 吨；金 83,161 千克；矿产品分部对外收入 109,977,556,345 元",
+         "raw_unit": "吨/千克/人民币元", "period": "FY2025",
+         "scope": "产销量表不含非控股企业；分部对外收入为对外销售收入"},
+        ["产销量表披露的销售量决定可结算数量（不含非控股企业）",
+         "金属价格与产品结构决定单位实现价格（相对市场价还受结算净价/应付比例/库存时点影响）",
+         "数量 × 单位实现价格 = 分部对外收入（同一披露口径下的恒等关系）",
+         "收入在金属交付并转移控制权时确认，销量表与分部收入属同一报告期"],
+        "resource", "realized_price", "H-CN-ZIJIN-SEG-02:realized_price", "人民币元/吨铜当量",
+        ("109977556345/885141（FY2025 精确有理数，约 124,248.6 元/吨铜当量；"
+         "= 分部对外收入 109,977,556,345 元 ÷ (铜销量 884,943 吨 + 金销量 83,161 千克 × 24 吨/千克)），"
+         "该值由本 attempt 从两项原始披露推导，不是披露原文数字"),
+        "FY2027（待 I-11-B 校准幅度）",
+        ("隐含单位实现收入 = 分部对外收入 ÷ 铜当量销售量；FY2025 用精确有理数复算："
+         "109,977,556,345 ÷ (884,943 + 83,161 × 24) = 109977556345/885141。"
+         "口径暴露一：公司未披露铜当量换算系数，本式假定 1 千克金 = 24 吨铜当量（示意值，不是披露值）；"
+         "该系数每变动 1 吨/千克，分母变动 83,161，单位收入移动约 10,670.9 元/吨铜当量"
+         "（由 109977556345/885141 − 109977556345/968302 精确计算），"
+         "即结论对该假设**高度敏感**，故整条式的可用性进入 STOP_DISCLOSURE_ADAPTATION，"
+         "须由会计/行业 reviewer 裁定系数来源后才可用于幅度校准。"
+         "口径暴露二：该单位收入含金/银/锌等全部矿产品，不能当作'铜价'使用"),
+        {"method": "historical relationship",
+         "sample_ids": ["CN-ZIJIN-AR2025:p44 产销量表", "CN-ZIJIN-AR2025:p327 分部报告"],
+         "selection_rule": "只用同一份年报同一报告期的销量与分部对外收入；不引入外部价格序列（本 attempt 无网络与外部来源）",
+         "management_target_is_not_independent": True},
+        ("单位实现价格与销售量必须分别落参数：价格变化不得再单独作为'额外收入'叠加；"
+         "铜当量折算系数只允许出现一次（在量的口径转换中），不得在价格里再折算一次。"
+         "金/银/锌的贡献不得同时以'矿产品分部总收入'与'分产品收入'两套口径重复计入。"),
+        {"observable": "下一年度年报：分部报告矿产品对外收入 ÷ 产销量表铜当量销售量，与本期校准的单位实现收入之比",
+         "threshold": "相对偏离 ±5%（阈值依据：professional_judgement_required，须由行业 reviewer 在 I-11-B 前确认或替换）",
+         "threshold_basis": "professional_judgement_required",
+         "observation_date": "2027年年度报告披露日（预计2027-03前后）；季度报告只用于方向核对",
+         "source_route": "CN-ZIJIN-AR2025 → 管理层讨论与分析 → 报告期内主要经营情况 → ②产销量情况分析表；财务报表附注-续 → 分部报告 → 对外销售收入行",
+         "revert_rule": ("超出阈值时不得直接改价格参数：先区分是价格、产品结构、铜当量折算还是库存时点造成；"
+                         "无法区分则回退到分部对外收入全额并标 unquantified，保留旧快照不变。")},
+        ["若铜当量折算系数与实际产品结构显著偏离，'数量×价格'无法复现分部收入（须改按分产品建模）",
+         "若公司改变产销量表口径（例如纳入非控股企业），数量基数变化使隐含价格失效",
+         "若结算净价/应付比例（TC/RC、payability）被单独列出，隐含价格需再拆一层，否则价格与加工费会双计"],
+        "pending_professional_decision",
+        "机制链与 driver 已落到 M09 的 realized_price/saleable_volume，但铜当量折算系数与 ±5% 阈值属专业裁定范围",
+        "行业 reviewer + 会计 reviewer（金属量口径）",
+        ["A4"],
+        [{"candidate": "金属价格外生假设", "why_it_refutes": "若单位实现收入长期与市场价脱钩（长协/冶炼加工费结构），价格假设不能解释收入"},
+         {"candidate": "产品结构变化", "why_it_refutes": "同样的铜价下金/银占比变化会改变隐含单位收入，数量×单一价格失真"}],
+        ["另一种解释：分部对外收入的增长主要来自并表范围变化（2025年新增并购项目）而非量价，"
+         "该解释若成立，H-CN-ZIJIN-SEG-02 的'量×价'链条需要先做范围桥"]))
+
+    hs.append(hyp(
+        "H-CN-ZIJIN-VOL-03",
+        ("矿山产铜与矿山产金的可售量不能在中期内超过披露的生产量所隐含的产能上限；"
+         "销量与产量的差额受库存变动约束，不能把'产量计划'直接当成'可售量计划'。"),
+        src(ZIJIN_SOURCE_DOC, "zijin_copper_sales_2025", "44",
+            "矿山产铜吨878,180884,94311,343", "company_disclosure", "ZIJIN-AR2025",
+            "2026-03-20", "2026-03-20", "2026-09-18"),
+        {"raw_value": "2025年 矿山产铜 生产 878,180 吨 / 销售 884,943 吨 / 库存 11,343 吨；"
+                      "矿山产金 生产 82,743 千克 / 销售 83,161 千克 / 库存 1,470 千克；"
+                      "产销量表说明：本表不含非控股企业相关数据",
+         "raw_unit": "吨/千克", "period": "FY2025", "scope": "控股并表矿山，不含非控股企业"},
+        ["控股矿山的选矿/冶炼产能与品位决定生产量",
+         "生产量先进入库存，销售由库存释放与销售组织决定（本期四产品销量均略高于产量）",
+         "可售量 = 生产量 + 库存变动（库存还受并购范围与在产品影响）",
+         "销量按交付确认收入；库存未交付不确认收入"],
+        "resource", "saleable_volume", "H-CN-ZIJIN-VOL-03:copper_volume", "吨（铜）；千克（金）",
+        "铜 884,943 吨 / 金 83,161 千克（FY2025 销售量）", "FY2027（待 I-11-B 校准幅度）",
+        ("可售量参数直接取产销量表销售量；产量作为上限约束：saleable_volume_t ≤ production_t + "
+         "inventory_change_t。FY2025 实际：铜 884,943 − 878,180 = +6,763 吨；金 83,161 − 82,743 = +418 千克，"
+         "均由库存下降/在途释放实现，不得外推为常态"),
+        {"method": "contract arithmetic",
+         "sample_ids": ["CN-ZIJIN-AR2025:p44 产销量情况分析表"],
+         "selection_rule": "使用同一张表的四产品生产量、销售量、库存量及其同比变动；不使用摘要中的权益产量（口径不同）",
+         "management_target_is_not_independent": True},
+        ("产量、销量、库存三者只允许各自出现一次：不得同时用'产量增长'与'销量增长'解释同一收入增量；"
+         "权益产量（摘要口径，含联营/合营）不得与产销量表的控股口径量相加，也不得对已全额并表的控股矿山再乘少数股权比例。"),
+        {"observable": "下一年度年报产销量表中铜/金销售量与生产量之差，以及库存量方向",
+         "threshold": "销售量 ≤ 生产量 + 期初库存（即不得出现无库存来源的销售量）；且库存不得为负",
+         "threshold_basis": "arithmetic_identity",
+         "observation_date": "2027年年度报告披露日（预计2027-03前后）",
+         "source_route": "CN-ZIJIN-AR2025 → 管理层讨论与分析 → 报告期内主要经营情况 → ②产销量情况分析表",
+         "revert_rule": ("若销售量超过 生产量+期初库存，判定为口径不一致（可能产销量表口径变化），"
+                         "该参数退回 unquantified 并保留旧快照，不得用差额继续外推。")},
+        ["若产销量表改为含非控股企业，数量基数与并表收入不再匹配",
+         "若公司披露的'产量'改为含权益产量，销量与产量之差不再等于库存变动",
+         "若发生大规模在途/寄售库存，库存量口径可能不覆盖实际可售量"],
+        "pending_professional_decision",
+        "存货桥是否闭合需要看存货明细（在产品/在途/寄售），本 attempt 只核到产销量表的三个数；是否可用产量作可售量上限需行业 reviewer 裁定",
+        "行业 reviewer（矿业）",
+        ["A4"],
+        [{"candidate": "并购范围变化", "why_it_refutes": "新增并表矿山的产量与销量不可比，库存差不再是同一资产集"},
+         {"candidate": "在途/寄售库存", "why_it_refutes": "已发货未确认收入的量会打破 销量-产量=库存变动 的解释"}],
+        ["另一种解释：本期销量高于产量主要来自并购标的的期初库存，而非在产矿山增产；"
+         "若成立，则不能把 FY2025 的量价关系直接外推为 FY2027 的产能约束"],
+        extra_parameters=[
+            {"driver_name": "saleable_volume", "parameter_id": PARAM_IDS["H-CN-ZIJIN-VOL-03:gold_volume"],
+             "unit": "千克（金）", "effective_period": "FY2027", "original_value": "83,161"},
+        ]))
+
+    hs.append(hyp(
+        "H-CN-ZIJIN-PLAN-04",
+        ("管理层披露的 2026 年主要矿产品产量计划（矿产金 105 吨、矿产铜 120 万吨）属于"
+         "**管理层目标**类来源：可作为情景的对照，但不得作为独立准确性证据，也不得被当作已实现产量。"),
+        src(ZIJIN_SOURCE_DOC, "zijin_plan_gold_2026", "56",
+            "2026年公司主要矿产品产量计划", "management_target", "ZIJIN-MGMT-PLAN-2026",
+            "2026-03-20", "2026-03-20", "2026-09-18"),
+        {"raw_value": "矿产金 105 吨；矿产铜 120 万吨；矿产银 520 吨；当量碳酸锂 12 万吨；"
+                      "矿产锌（铅）40 万吨；矿产钼 1.5 万吨",
+         "raw_unit": "吨/万吨", "period": "FY2026（计划年度）",
+         "scope": "公司主要矿产品产量（非销售量、非收入）"},
+        ["管理层基于在产矿山与在建项目的投产节奏给出产量计划",
+         "计划产量需要经过库存与销售组织才能转为销售量（计划年度内可能不等于销量）",
+         "销售量 × 单位实现价格才进入收入路径",
+         "产量计划本身不构成收入确认；且原文声明为指导性指标、不构成承诺"],
+        "resource", "saleable_volume", "H-CN-ZIJIN-PLAN-04:gold_volume", "吨（金）；万吨（铜）",
+        "矿产金 105 吨、矿产铜 120 万吨（FY2026 计划值，原文明确为指导性指标）",
+        "FY2026（计划年度，不是基期）",
+        ("管理层目标进入情景的方式：作为 base 情景的对照上界之一，必须以 "
+         "saleable_volume_FY2026 = 计划产量 − 计划年内存货变动 的方式转换；"
+         "FY2025 实际矿产金 82,743 千克、矿产铜 878,180 吨，计划/实际比为 105,000/82,743 与 1,200,000/878,180"),
+        {"method": "expert assumption",
+         "sample_ids": ["CN-ZIJIN-AR2025:p56 经营计划"],
+         "selection_rule": "只登记原文计划值与原文风险声明；不把计划值与独立预测混合",
+         "management_target_is_not_independent": True},
+        ("管理层目标与公司披露必须落在不同 independence_group，且管理层目标不得作为独立证据；"
+         "不得把'计划产量'同时当作产能上限与收入预测基数。计划值是产量口径，收入侧只允许出现一次转换。"),
+        {"observable": "FY2026 实际披露：年报产销量表矿产金/矿产铜的实际产量与销售量，对照计划值 105 吨/120 万吨",
+         "threshold": "实际产量 ÷ 计划产量 落在 [0.9, 1.1] 之外即视为计划显著偏离（阈值依据：professional_judgement_required）",
+         "threshold_basis": "professional_judgement_required",
+         "observation_date": "FY2026 年报披露日（预计2027-03前后）；半年报可用于方向核对但不得替代年度口径",
+         "source_route": "CN-ZIJIN-AR2025 → 管理层讨论与分析 → 2026年计划及展望 → 经营计划；"
+                         "实现值取自同一发行人 FY2026 年报产销量情况分析表",
+         "revert_rule": ("计划偏离时不得回改本期命题：在新版本中下调计划权重并保留旧快照；"
+                         "把计划值从 base 情景移出，直到出现第二个可观测年度。")},
+        ["原文自身声明'本计划为指导性指标，存在不确定性，不构成对产量实现的承诺'——该声明使计划不能作为承诺型证据",
+         "管理层目标与公司披露若被放在同一 independence_group，十篇转述同一发布会仍只算一个来源",
+         "若计划口径从'产量'改为'销量'或'权益产量'，数值不可直接比较"],
+        "pending_professional_decision",
+        "计划值已定位到原文，但其在情景中的权重（作为上界还是中心）需行业 reviewer 裁定；本卡不设幅度",
+        "行业 reviewer（矿业）+ 研究负责人（管理层目标权重）",
+        [],
+        [{"candidate": "计划未达成", "why_it_refutes": "计划值不能作为 base 情景的中心"},
+         {"candidate": "计划口径变化", "why_it_refutes": "计划与实际不可比，比较结果无效"}],
+        ["另一种解释：计划增长主要来自并购标的（阿基姆、瑞果多等）而非在产矿山增产；"
+         "若成立，计划值不能作为有机增长证据，须拆出并购贡献"]))
+
+    hs.append(hyp(
+        "H-CN-ZIJIN-ELIM-05",
+        ("含内部交易的分部收入总计与抵销数必须成对使用：任何以'分部总计'为基期的模型都必须显式扣除"
+         "内部抵销 234,970,146,412 元（2025年），否则会高估收入约 67%。"),
+        src(ZIJIN_SOURCE_DOC, "zijin_seg_total_2025", "327-328",
+            "138,271,672,956189,683,879,295170,521,025,77785,572,651,236",
+            "company_disclosure",
+            "ZIJIN-AR2025", "2026-03-20", "2026-03-20", "2026-09-18"),
+        {"raw_value": "分部总计（含内部销售）：138,271,672,956；189,683,879,295；170,521,025,777；"
+                      "85,572,651,236；抵销 −234,970,146,412；对外合计 349,079,082,852",
+         "raw_unit": "人民币元", "period": "FY2025", "scope": "合并范围"},
+        ["集团内贸易/冶炼与矿山之间存在大量内部交易",
+         "分部总计按内部转移价计入各分部，合并时需要抵销",
+         "抵销后的净额才是合并营业收入",
+         "同一笔内部交易不得在收入侧与成本侧各计一次，也不得在分部总计与对外收入之间重复"],
+        "direct_revenue", "revenue", "H-CN-ZIJIN-ELIM-05:segment_reconciliation", "人民币元",
+        "584,049,229,264（四分部总计）− 234,970,146,412（抵销）= 349,079,082,852（合并营业收入）",
+        "FY2027（待 I-11-B 校准幅度）",
+        "合并收入 = Σ(分部总计) − 抵销；或等价地 Σ(分部对外收入)。两式必须给出同一数（A2 已精确复算差=0）",
+        {"method": "contract arithmetic",
+         "sample_ids": ["CN-ZIJIN-AR2025:p327 分部报告（2025）", "CN-ZIJIN-AR2025:p328 分部报告（2024）"],
+         "selection_rule": "取分部报告的'总计'行与'抵销'列，以及同一附注的对外销售收入合计",
+         "management_target_is_not_independent": True},
+        ("内部销售收入与对外销售收入是互斥的两套加总：禁止把 584,049,229,264 与 349,079,082,852 同时作为"
+         "收入基期；禁止在已使用对外口径的模型里再扣一次抵销。"),
+        {"observable": "下一期年报分部报告：Σ(分部总计) − 抵销 与 对外销售收入合计 是否相等",
+         "threshold": "0（算术恒等式，允许 |差| ≤ 1 元）",
+         "threshold_basis": "arithmetic_identity",
+         "observation_date": "2027年年度报告披露日（预计2027-03前后）",
+         "source_route": "CN-ZIJIN-AR2025 → 财务报表附注-续 → 分部报告 → 2025年/2024年两张表",
+         "revert_rule": ("恒等式失效时立即停用'分部总计−抵销'路径，改用对外销售收入路径，并登记口径桥缺口；"
+                         "不得修改历史快照。")},
+        ["若抵销数改为分部内逐项披露，单一抵销列不再存在",
+         "若内部交易定价政策改变，抵销比例可能变化但不影响恒等式本身",
+         "若把内部销售收入误读为对外收入，合计将高估约 67%（本命题存在的主要风险）"],
+        "unquantified",
+        "该命题在'是否已在基期反映'上明确：基期已含抵销，属已反映；但把它落到某个 driver 会与 H-CN-ZIJIN-SEG-01 的 revenue 参数冲突，故保留为叙述性约束而不单设可量化 driver",
+        "行业 reviewer（确认不需要单独 driver）/ 会计 reviewer（抵销口径）",
+        ["A1", "A2", "A3"],
+        [{"candidate": "抵销列缺失或被合并", "why_it_refutes": "无法再从披露复算合并收入"},
+         {"candidate": "口径混用", "why_it_refutes": "含内部交易的加总被当作对外收入，收入被系统性高估"}],
+        ["另一种解释：分部总计与对外收入的差额并非全部来自内部抵销（可能含分部间未实现利润）；"
+         "若成立，抵销桥需要更细的分解"]))
+
+    hs.append(hyp(
+        "H-US-MSFT-SEG-01",
+        ("微软 FY2026 合并收入等于三个报告分部（PBP / Intelligent Cloud / More Personal Computing）"
+         "收入之和；分部收入是建模的最小单位，且分部增长差异（16% / 30% / −1%）必须分别建模，"
+         "不得用单一集团增长率代替。"),
+        src(MSFT_SOURCE_DOC, "msft_total_fy2026", "table 74",
+            "Productivity and Business Processes", "company_disclosure", "MSFT-10K-FY2026",
+            "2026-07-29", "2026-07-29", "2026-09-18"),
+        {"raw_value": "PBP 139,996；IC 137,791；MPC 54,052；合计 331,839（USD million，FY2026）",
+         "raw_unit": "USD million", "period": "FY2026（截至2026-06-30）", "scope": "合并报表分部口径"},
+        ["三个报告分部覆盖公司全部收入来源，分部间无重叠",
+         "各分部内产品/服务的量价结构不同（云消费、订阅席位、广告、设备与许可）",
+         "分部收入按 ASC 606 在履约义务满足时确认",
+         "分部收入相加得到合并收入；分部增速差异必须分别建模"],
+        "direct_growth", "growth_rate", "H-US-MSFT-SEG-01:pbp", "小数（年度增长率）",
+        "FY2026：PBP 139,996（+16%）；IC 137,791（+30%）；MPC 54,052（−1%）（USD million）",
+        "FY2027（基线年为 FY2026）",
+        ("分部收入 = 基期分部收入 × (1 + growth_rate_segment)；集团收入 = 三分部之和。"
+         "FY2026 校验：139,996 + 137,791 + 54,052 = 331,839（A5 已精确复算差=0）"),
+        {"method": "historical relationship",
+         "sample_ids": ["US-MSFT-10K-FY2026:table74", "US-MSFT-10K-FY2026:table14"],
+         "selection_rule": "只取 10-K 中三个报告分部的收入行与变动百分比行；不使用未经核验的 2026-09-02 8-K 八线口径",
+         "management_target_is_not_independent": True},
+        ("三个分部互斥且合计等于合并数：MPC 的 −1% 不得被集团 18% 的增长掩盖；"
+         "不得同时以'集团增长率'与'三分部增长率'计入同一收入路径。"),
+        {"observable": "FY2027 10-K：三分部收入之和与合并收入之差，以及各分部实际增速",
+         "threshold": "0（分部加总恒等式，允许 ±1 USD million 舍入）；对 FY2027 分部增速本卡不设幅度阈值",
+         "threshold_basis": "arithmetic_identity",
+         "observation_date": "FY2027 10-K 提交日（预计2027-07底至8月初）",
+         "source_route": "US-MSFT-10K-FY2026 → Item 7 MD&A → Segment results（table 74）；年度比较表（table 14）",
+         "revert_rule": ("若分部数或口径变化（例如按 2026-09-02 8-K 的重分类），本命题回到 "
+                         "'rebuild required'：以新分部的历史对照表重建基期，不改旧快照。")},
+        ["公司在 FY2026 年报之后（2026-09-02 8-K）披露了将调整报告分部与产品线口径的重分类；"
+         "as_of=2026-09-18 时该 8-K 尚未进入本地可核来源，故 FY2027 起可能不再是这三个分部",
+         "分部间成本分摊或产品线重新归属会改变分部收入而不改变合并收入",
+         "若某分部被拆分或合并，单一 growth_rate 参数的语义失效"],
+        "pending_professional_decision",
+        "分部加总恒等式已精确复算（A5），但'FY2027 是否继续以这三个分部建模'取决于 as_of 之后披露的重分类，需行业/会计 reviewer 裁定",
+        "行业 reviewer（软件与云）+ 会计 reviewer（分部与重分类）",
+        ["A5", "A7"],
+        [{"candidate": "分部重分类", "why_it_refutes": "基期分部与预测期分部不同源，增长率不可比"},
+         {"candidate": "折旧年限变化", "why_it_refutes": "会计估计变更会改变分部利润但不改变收入（本命题只涉及收入，风险较低）"}],
+        ["另一种解释：IC 的 30% 增长主要由一次性容量上线与并购贡献；若成立，单一增长率会把一次性因素外推"],
+        extra_parameters=[
+            {"driver_name": "growth_rate", "parameter_id": PARAM_IDS["H-US-MSFT-SEG-01:ic"],
+             "unit": "小数", "effective_period": "FY2027", "original_value": "0.30（FY2026 已披露增速，仅作对照）"},
+            {"driver_name": "growth_rate", "parameter_id": PARAM_IDS["H-US-MSFT-SEG-01:mpc"],
+             "unit": "小数", "effective_period": "FY2027", "original_value": "-0.01（FY2026 已披露增速，仅作对照）"},
+        ]))
+
+    hs.append(hyp(
+        "H-US-MSFT-SEG-02",
+        ("'Microsoft Cloud' 是公司自定义的聚合口径（FY2026 收入 214.4 billion USD，同比 +27%），"
+         "它与分部收入、与按产品/服务分解的 'Server products and cloud services' 行均不等价；"
+         "把三者混用会把同一收入计两次。"),
+        src(MSFT_SOURCE_DOC, "msft_cloud_rev_statement", "table 10 (KPI definition) / MD&A narrative",
+            "Microsoft Cloud revenue and revenue growth", "company_disclosure",
+            "MSFT-10K-FY2026", "2026-07-29", "2026-07-29", "2026-09-18"),
+        {"raw_value": "Microsoft Cloud revenue increased 27% to $214.4 billion（FY2026）",
+         "raw_unit": "USD billion（原文叙述，非表格精确值）", "period": "FY2026",
+         "scope": "公司自定义聚合：M365 Commercial cloud + Azure and other cloud services + "
+                  "commercial LinkedIn + Dynamics 365"},
+        ["Microsoft Cloud 是跨分部的聚合口径（含 PBP 与 IC 的部分产品线）",
+         "该口径既不是报告分部，也不是产品/服务分解行",
+         "它无法与分部收入或 table 76 的产品行建立一对一映射",
+         "因此不能作为收入路径的加数；只能作为方向性对照"],
+        "direct_revenue", "revenue", "H-US-MSFT-SEG-02:cloud", "USD million（口径未闭合前不设幅度）",
+        "214,400（原文为叙述值 $214.4 billion，未在表格中给出精确数）",
+        "FY2027（在口径闭合前保持 unquantified）",
+        "无可用的换算公式：缺少 Microsoft Cloud 到分部/产品行的完备映射表；本卡只登记该口径的存在与风险",
+        {"method": "expert assumption",
+         "sample_ids": ["US-MSFT-10K-FY2026:MD&A highlights"],
+         "selection_rule": "只登记原文叙述；不把 $214.4 billion 与 table 76 的行相加或相减",
+         "management_target_is_not_independent": True},
+        ("Microsoft Cloud 与 IC 分部收入高度重叠（Azure and other cloud services 在 IC 内）："
+         "禁止把 Microsoft Cloud 总额与 IC 收入并列作为两条收入路径；"
+         "禁止把叙述中的 $214.4 billion 与表格精确值混用。"),
+        {"observable": "FY2027 10-K 是否给出 Microsoft Cloud 到报告分部/产品行的可复算映射",
+         "threshold": "口径闭合判定：能构造出 Microsoft Cloud = Σ(明确定义的组成行) 且各组成行互不重叠，"
+                      "否则保持 unquantified（阈值依据：professional_judgement_required）",
+         "threshold_basis": "professional_judgement_required",
+         "observation_date": "FY2027 10-K 提交日（预计2027-07底至8月初）",
+         "source_route": "US-MSFT-10K-FY2026 → Item 7 MD&A → Overview highlights；Item 7 MD&A 产品/服务分解（table 76）",
+         "revert_rule": ("未闭合前不得把 Microsoft Cloud 作为参数；若下游已使用，回退到分部或产品行口径并新建版本，"
+                         "不改旧快照。")},
+        ["原文只给增长百分比与十亿美元级叙述值，缺少与产品行的对账表",
+         "若公司改变 Microsoft Cloud 的定义（历史上曾调整），历史对照失效",
+         "ex-TAC/非 GAAP 类 KPI 与 GAAP 收入不可直接相加"],
+        "unquantified",
+        "该口径在 10-K 中无法与产品行形成可复算映射，按卡正文'无法定位模型driver/收入确认环节→仅保留定性未量化'处理",
+        "行业 reviewer（云与订阅口径）+ 会计 reviewer（非 GAAP 与聚合口径）",
+        [],
+        [{"candidate": "口径重叠", "why_it_refutes": "Microsoft Cloud 与 IC 收入并列会双计 Azure"},
+         {"candidate": "叙述值精度不足", "why_it_refutes": "$214.4 billion 无法支撑子项加总校验"}],
+        ["另一种解释：Microsoft Cloud 的 27% 增长主要来自 Azure 单一产品线；若成立，"
+         "应以 IC/Azure 的机制链为主，而不是把聚合口径当作独立驱动"]))
+
+    hs.append(hyp(
+        "H-US-MSFT-SEG-03",
+        ("'Microsoft 365 Commercial products and cloud services'（table 76 行，FY2026 = 101,997 USD million）"
+         "与 'Server products and cloud services'（129,425）是**产品/服务分解行**，"
+         "其加总等于合并收入但与分部收入交叉；许可迁移与云增长在同一行内混合，"
+         "需要许可证与云的拆分表才能落 subscription 类模型。"),
+        src(MSFT_SOURCE_DOC, "msft_m365c_fy2026", "table 76",
+            "Microsoft 365 Commercial products and cloud services", "company_disclosure",
+            "MSFT-10K-FY2026", "2026-07-29", "2026-07-29", "2026-09-18"),
+        {"raw_value": "Server products and cloud services 129,425；Microsoft 365 Commercial products and cloud "
+                      "services 101,997；…；Other 109；Total 331,839（USD million，FY2026）",
+         "raw_unit": "USD million", "period": "FY2026", "scope": "按产品/服务分解的合并收入"},
+        ["同一履约义务群（云服务/许可/支持）按产品线披露收入",
+         "产品线跨越多个报告分部（例如 M365 Commercial 同时含云与本地许可）",
+         "订阅类收入按时段确认，许可类按交付时点或时段确认",
+         "因此产品行不能直接映射到单一分部，也不能与 Microsoft Cloud 聚合口径互换"],
+        "subscription", "revenue_per_customer", "H-US-MSFT-SEG-03:licensing_vs_cloud", "USD million（单位经济学参数缺披露）",
+        "101,997（FY2026 产品行合计口径）", "FY2027（在许可证/云拆分可得前保持 pending）",
+        ("缺少行内拆分：无 FY2026 M365 Commercial 云与许可的分项收入、无平均付费席位、无净 ARPU，"
+         "故本卡不写换算公式；M05 的 revenue_per_customer 仅作为候选 driver 登记"),
+        {"method": "external comparable",
+         "sample_ids": ["US-MSFT-10K-FY2026:table76"],
+         "selection_rule": "只取 10-K 按产品/服务分解表的 FY2026/FY2025/FY2024 三列；三列加总均等于同列合计（A6/A7 已复算）",
+         "management_target_is_not_independent": True},
+        ("产品行与分部行是同一收入的两套切分：禁止把 table 76 的行与 table 74 的分部相加；"
+         "禁止把 Microsoft Cloud 聚合与 M365 Commercial 行并列；"
+         "行内许可与云不得同时按'云增长'与'许可迁移'两个故事解释同一收入增量。"),
+        {"observable": "FY2027 10-K（或 8-K 附件）是否披露 M365 Commercial 的云/许可拆分、平均付费席位与净 ARPU",
+         "threshold": "拆分层级判定：披露 云/许可拆分 与 单位量（席位）+ 每单位收入 → pending 解除；"
+                      "仅披露其中一项 → 保持 pending（阈值依据：professional_judgement_required）",
+         "threshold_basis": "professional_judgement_required",
+         "observation_date": "FY2027 10-K 提交日（预计2027-07底至8月初）",
+         "source_route": "US-MSFT-10K-FY2026 → Item 8 附注 → Revenue recognition → 按产品/服务分解表（table 76）；"
+                         "Item 7 MD&A 分部讨论",
+         "revert_rule": ("拆分不可得时不得用'云增长'按比例外推该行；该参数保持 pending_professional_decision，"
+                         "不得在 I-11-B 校准幅度。")},
+        ["公司按'cloud'与'on-premises'的口径调整过历史对照，跨期不可比",
+         "席位与 ARPU 属非 GAAP 运营指标，可能只在业绩发布而非 10-K 中披露",
+         "同一行的许可收入在一次性的合同确认时点变化会造成大幅波动（不反映客户数变化）"],
+        "pending_professional_decision",
+        "机制链与产品行已定位并可复算，但单位经济学参数（席位/ARPU）在 10-K 中缺失，是否改用 direct_growth 需行业 reviewer 裁定",
+        "行业 reviewer（软件订阅）+ 会计 reviewer（ASC 606 时段/时点）",
+        ["A6", "A7"],
+        [{"candidate": "缺单位经济学", "why_it_refutes": "无法把收入拆成 客户数 × 每客户收入，subscription 模型不可校准"},
+         {"candidate": "许可收入时点确认", "why_it_refutes": "单期跳变使历史关系不稳定，不能作为增长参数依据"}],
+        ["另一种解释：该行的增长主要来自价格/捆绑（Copilot 等附加）而非席位增长；"
+         "若成立，模型应以 ARPU 而非客户数为主轴"]))
+
+    return hs
+
+
+def sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+MSFT_HTM = (r"C:\Users\郑曾波\Projects\company-wiki\companies\MICROSOFT CORP\raw\financial_reports"
+            r"\annual\2026-07-29_sec_0001193125-26-323660_MICROSOFT CORP 10-K 2026-06-30.htm")
+
+
+def build_narrative_text():
+    """Extract the narrative fragments cited from the raw HTM (raw bytes, ASCII-safe)."""
+    out = os.path.join(ATTEMPT_DIR, "evidence", "I-11-A", "extract", "P1_msft_narrative.txt")
+    raw = open(MSFT_HTM, "rb").read().decode("utf-8", "replace")
+    frags = []
+    for needle in ["Microsoft Cloud revenue increased", "Commercial remaining performance obligation increased"]:
+        i = raw.find(needle)
+        if i == -1:
+            continue
+        seg = raw[max(0, i - 900):i + 1500]
+        seg = re.sub(r"<[^>]+>", " ", seg)
+        seg = seg.replace("&nbsp;", " ").replace("&#8226;", "-").replace("&#8220;", '"')
+        seg = seg.replace("&#8221;", '"').replace("&#8217;", "'")
+        seg = re.sub(r"[^\x20-\x7e]", " ", seg)
+        seg = re.sub(r"\s+", " ", seg)
+        frags.append(seg)
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(frags) + "\n")
+    return out
+
+
+def main() -> int:
+    attempt = sys.argv[1]
+    global ATTEMPT_DIR
+    ATTEMPT_DIR = attempt
+    ev_out = os.path.join(attempt, "evidence", "I-11-A")
+    extract = os.path.join(ev_out, "extract")
+    os.makedirs(ev_out, exist_ok=True)
+    narrative_path = build_narrative_text()
+
+    # --- extraction outputs form the "evidence_path" binding ---
+    paths = {
+        "CN-ZIJIN-AR2025": os.path.join(extract, "P1_zijin_pages.json"),
+        "US-MSFT-10K-FY2026": os.path.join(extract, "P1_msft_tables.json"),
+    }
+    hashes = {k: sha256_file(v) for k, v in paths.items()}
+
+    # --- source map: every cited value with raw string, location, evidence path ---
+    documents = []
+    counts = {}
+    for doc_id, values in CITED.items():
+        base = doc_id.split("-TXT")[0]
+        doc_entry = {
+            "doc_id": base,
+            "cited_in_hypotheses_as": doc_id,
+            "doc_sha256": ("01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d"
+                           if base == "CN-ZIJIN-AR2025" else
+                           "e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecff"),
+            "strategy": "page_text" if base == "CN-ZIJIN-AR2025" else "xml_table",
+            "page_index_basis": ("pdf_leaf_1based" if base == "CN-ZIJIN-AR2025" else "table_index_0based"),
+            "extraction_output_path": os.path.relpath(paths[base], attempt).replace("\\", "/"),
+            "extraction_output_sha256": hashes[base],
+            "independent_prior_extraction_crosscheck": (
+                "prior artifact PRIOR-EXTRACT-ZIJIN (sha256 cbda5abb248d9c5f032a681befbd2bc4012896c8bdfef2192490995c358c07eb): "
+                "under the offset selected by tools/page_offset_match.py, every cited numeric string of the "
+                "cited pages also occurs on the offset page; see P1_vs_prior_offset.json"
+                if base == "CN-ZIJIN-AR2025" else "not_applicable (HTML table parse; no prior independent extract)"),
+            "cited_values": [v for v in values if v.get("table") != "mdda"],
+            "narrative_facts": [v for v in values if v.get("table") == "mdda"],
+            "narrative_text_path": ("evidence/I-11-A/extract/P1_msft_narrative.txt"
+                                    if base == "US-MSFT-10K-FY2026" else None),
+            "cited_value_count": len(values),
+        }
+        counts[doc_id] = len(values)
+        documents.append(doc_entry)
+
+    hs = build_hypotheses()
+    for h in hs:
+        h["evidence_path"] = ("evidence/I-11-A/extract/P1_zijin_pages.json"
+                              if h["source"]["doc_id"] == "CN-ZIJIN-AR2025"
+                              else "evidence/I-11-A/extract/P1_msft_tables.json")
+        h["source"]["extraction_output_sha256"] = hashes[h["source"]["doc_id"]]
+        # top-level anchor/basis fields (oracle REQUIRED_TOP) mirror the source block
+        h["page_index_basis"] = h["source"]["page_index_basis"]
+        h["anchor_text"] = h["source"]["anchor_text"]
+
+    source_map = {
+        "attempt_id": "a20260919-01",
+        "generated_by": "tools/build_hypotheses.py",
+        "page_index_basis_policy": ("pdf_leaf_1based for CN PDF; table_index_0based for the US HTML parse. "
+                                    "The data-governance schema enumerates 'page' and 'table/span' as location "
+                                    "enumerations; 'pdf_leaf_1based' is this attempt's explicit basis name and is "
+                                    "registered as OPEN-4 because it needs the owner or schema review to become a "
+                                    "canonical enumeration value."),
+        "independent_extraction_paths": [
+            {"id": "P1", "tool": "tools/pdf_text.py", "implementation": "pure standard library (re,zlib)",
+             "outputs": ["evidence/I-11-A/extract/P1_zijin_pages.json",
+                         "evidence/I-11-A/extract/P1_msft_tables.json"]},
+            {"id": "P2", "tool": "pdftotext.exe (Xpdf 4.00, Git for Windows)",
+             "sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
+             "outputs": ["evidence/I-11-A/extract/P2_zijin_44_48.txt",
+                         "evidence/I-11-A/extract/P2_xiaomi_probe.txt"]},
+        ],
+        "not_readable_in_this_attempt": [
+            {"doc_id": "HK-XIAOMI-AR2025",
+             "doc_sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+             "reason": ("object-stream PDF (423 /ObjStm, 0 classic page objects): the standard-library path "
+                        "reports 352→0 classic pages for this file and extracted 0 characters; the independent "
+                        "pdftotext path exits 0 but emits mojibake for the Chinese text, so no original string can "
+                        "be read reliably. Per oracle O-7 the source is marked not_readable_in_this_attempt and no "
+                        "value from it is cited."),
+             "evidence": ["evidence/I-11-A/extract/P1_xiaomi.stdout.txt",
+                          "evidence/I-11-A/extract/P1_xiaomi_probe.json",
+                          "evidence/I-11-A/extract/P2_xiaomi_probe.txt"],
+             "state": "STOP_EVIDENCE"},
+        ],
+        "documents": documents,
+        "counts": {
+            "documents": len(documents),
+            "cited_values_per_document": counts,
+            "cited_values_total": sum(counts.values()),
+            "narrative_facts_total": sum(len(d["narrative_facts"]) for d in documents),
+            "hypotheses": len(hs),
+            "sources_not_readable": 1,
+        },
+    }
+
+    with open(os.path.join(ev_out, "hypotheses.json"), "w", encoding="utf-8") as fh:
+        json.dump(hs, fh, ensure_ascii=False, indent=1)
+        fh.write("\n")
+    with open(os.path.join(ev_out, "source_map.json"), "w", encoding="utf-8") as fh:
+        json.dump(source_map, fh, ensure_ascii=False, indent=1)
+        fh.write("\n")
+    print("hypotheses:", len(hs))
+    print("state distribution:", json.dumps(
+        {s: sum(1 for h in hs if h["state"] == s) for s in sorted({h["state"] for h in hs})},
+        sort_keys=True))
+    print("cited values total:", sum(counts.values()), counts)
+    print("wrote", os.path.join(ev_out, "hypotheses.json"))
+    print("wrote", os.path.join(ev_out, "source_map.json"))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

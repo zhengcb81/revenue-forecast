@@ -1,0 +1,51 @@
+﻿card M12 target model bank_revenue
+registry file C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M12\a20260919-01\iso\checkout_scripts\model_registry.py
+registry file sha256 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f
+registry model count 31
+M09 resource required=['saleable_volume', 'realized_price'] optional=['other_revenue'] declared_defaults={}
+M09 optional_drivers_without_declared_default=['other_revenue']
+   saleable_volume dimension=quantity role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   realized_price dimension=revenue_per_unit role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   other_revenue dimension=revenue role=optional default=None bounds=[-inf, inf] source=implicit: signed driver list
+M10 reserve_depletion required=['opening_reserves', 'additions', 'depletion', 'closing_reserves', 'recovery_rate', 'realized_price'] optional=['other_revenue', 'reserve_revisions'] declared_defaults={}
+M10 optional_drivers_without_declared_default=['other_revenue', 'reserve_revisions']
+   opening_reserves dimension=reserve_volume role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   additions dimension=reserve_volume role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   depletion dimension=reserve_volume role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   closing_reserves dimension=reserve_volume role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   recovery_rate dimension=ratio role=required default=None bounds=[0.0, 1.0] source=implicit: dimension default
+   realized_price dimension=revenue_per_unit role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   other_revenue dimension=revenue role=optional default=None bounds=[-inf, inf] source=implicit: signed driver list
+   reserve_revisions dimension=reserve_volume role=optional default=None bounds=[-inf, inf] source=explicit driver_bounds
+M11 infrastructure required=['billable_volume', 'tariff'] optional=['other_revenue'] declared_defaults={}
+M11 optional_drivers_without_declared_default=['other_revenue']
+   billable_volume dimension=activity role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   tariff dimension=revenue_per_activity role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   other_revenue dimension=revenue role=optional default=None bounds=[-inf, inf] source=implicit: signed driver list
+M12 bank_revenue required=['average_earning_assets', 'asset_yield', 'average_interest_bearing_liabilities', 'funding_cost', 'fee_revenue'] optional=['other_revenue'] declared_defaults={}
+M12 optional_drivers_without_declared_default=['other_revenue']
+   average_earning_assets dimension=monetary_balance role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   asset_yield dimension=ratio role=required default=None bounds=[-inf, inf] source=explicit driver_bounds
+   average_interest_bearing_liabilities dimension=monetary_balance role=required default=None bounds=[0.0, inf] source=implicit: dimension default
+   funding_cost dimension=ratio role=required default=None bounds=[-inf, inf] source=explicit driver_bounds
+   fee_revenue dimension=revenue role=required default=None bounds=[-inf, inf] source=implicit: signed driver list
+   other_revenue dimension=revenue role=optional default=None bounds=[-inf, inf] source=implicit: signed driver list
+batch optional driver count 5
+batch optional drivers without a declared default {'M09': ['other_revenue'], 'M10': ['other_revenue', 'reserve_revisions'], 'M11': ['other_revenue'], 'M12': ['other_revenue']}
+batch optional drivers without a declared default total 5
+registry optional drivers without a declared default total 31
+ratio drivers whose effective bounds are not [0,1] count 4
+   ratio_non_default bank_revenue.asset_yield [-inf, inf] explicit driver_bounds
+   ratio_non_default bank_revenue.funding_cost [-inf, inf] explicit driver_bounds
+   ratio_non_default direct_growth.growth_rate [-1.0, inf] implicit
+   ratio_non_default store_cohorts.new_store_productivity [0.0, inf] explicit driver_bounds
+revenue_per_unit / revenue_per_activity observed default bounds [[-inf, inf], [0.0, inf]]
+revenue_per_unit / revenue_per_activity driver count 23
+revenue_per_unit / revenue_per_activity negative-capable drivers ['renewable_generation.contract_price_per_mwh', 'renewable_generation.merchant_price_per_mwh']
+reserve_volume drivers 5 non_negative 4 signed 1
+   reserve_volume reserve_depletion.additions [0.0, inf] implicit
+   reserve_volume reserve_depletion.closing_reserves [0.0, inf] implicit
+   reserve_volume reserve_depletion.depletion [0.0, inf] implicit
+   reserve_volume reserve_depletion.opening_reserves [0.0, inf] implicit
+   reserve_volume reserve_depletion.reserve_revisions [-inf, inf] explicit driver_bounds
+wrote C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M12\a20260919-01\evidence\M12\registry_enumeration.json

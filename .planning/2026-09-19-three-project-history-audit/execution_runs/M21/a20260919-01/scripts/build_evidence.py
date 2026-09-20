@@ -166,6 +166,15 @@ def main() -> int:
             e.get("is_target_type") is True for e in run["negatives"]),
         "no_negative_is_import_or_file_error": not any(
             e.get("is_import_or_file_error") for e in run["negatives"]),
+        # revision r2, review item P2-1: the frozen `expected` field is CHECKED, not copied
+        "every_negative_expected_type_checked": all(
+            e.get("expected_type_matches_raised") is True for e in run["negatives"]),
+        "no_negative_failed_on_expected_type": not run["negative_summary"][
+            "expected_type_mismatch_cases"],
+        # revision r2, review items P2-2 / P2-3: the frozen refusal MESSAGE is checked too
+        "no_negative_failed_on_message": not run["negative_summary"]["message_mismatch_cases"],
+        "message_requirements_met": all(
+            e.get("message_requirement_met") is not False for e in run["negatives"]),
     }
 
     # ---- formula_result.json (already the run result) gets the structure block ----
@@ -183,6 +192,30 @@ def main() -> int:
             "each_case_is_built_in_memory": "no JSON round-trip for the mutated input",
             "pass_requires_isinstance_ModelRegistryError": True,
             "import_or_file_error_counts_as_fail": True,
+            "expected_field_is_checked_not_copied": (
+                "the raised exception type NAME is compared with cases.json `expected`; an "
+                "edited `expected` yields FAIL_expected_type_mismatch (review item P2-1)"),
+            "message_requirement_enforced": (
+                "cases carrying `expect_message_contains` must have that substring in the "
+                "refusal message, so a length/lookup guard cannot stand in for the "
+                "value-domain / bridge / cross-year guard (review items P2-2, P2-3)"),
+            "message_requirements_checked_for": run["negative_summary"][
+                "message_requirements_checked"],
+        },
+    }
+    run["negative_assertion_contract"] = {
+        "rule": run["negative_summary"]["verdict_rule"],
+        "expected_type_checked_for_every_case": all(
+            e.get("expected_type_matches_raised") is True for e in run["negatives"]),
+        "message_requirements_checked": run["negative_summary"]["message_requirements_checked"],
+        "introduced_by": "revision r2, independent review items P2-1 (type check), P2-2 "
+                         "(M22/M23 value-domain negatives) and P2-3 (M24 cross-year anchoring)",
+        "mutation_probes": {
+            "F_corrupted_expected_type": "editing a case's `expected` to 'ValueError' now yields "
+                                         "rc=3 (FAIL_expected_type_mismatch)",
+            "G_corrupted_message_requirement": "an impossible message requirement yields rc=3",
+            "H_message_requirement_points_at_another_guard": "demanding the length-guard wording "
+                                                             "from a value-domain case yields rc=3",
         },
     }
     run["harness"] = {
@@ -346,6 +379,15 @@ def main() -> int:
     })
 
     # ---- integrity.json ----
+    reviews_dir = ("C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning"
+                   "\\2026-09-19-three-project-history-audit\\reviews")
+    reviews_dir_mtime = os.path.getmtime(reviews_dir)
+    newest_name, newest_mtime = None, None
+    for root, _dirs, files in os.walk(reviews_dir):
+        for name in files:
+            m = os.path.getmtime(os.path.join(root, name))
+            if newest_mtime is None or m > newest_mtime:
+                newest_name, newest_mtime = os.path.join(root, name), m
     dump(os.path.join(ev, "integrity.json"), {
         "card_id": card,
         "production_repos_untouched": True,
@@ -367,6 +409,23 @@ def main() -> int:
                              "read-only snapshot); the production scripts directory was never on "
                              "sys.path for any card run",
         "network_calls": "none",
+        "reviews_directory_untouched": {
+            "path": reviews_dir,
+            "directory_mtime_epoch": reviews_dir_mtime,
+            "directory_mtime_note": "this is the mtime of the DIRECTORY entry itself; it changes "
+                                    "when an entry is added or removed directly in that folder",
+            "newest_file_inside_epoch": newest_mtime,
+            "newest_file_inside": newest_name,
+            "newest_file_note": "this is the mtime of the newest file anywhere under reviews/, "
+                                "recursively; it changes when that file is rewritten",
+            "task_statement_value": "the task statement quoted 2026-09-19 10:05 for this "
+                                    "directory; that value corresponds to the NEWEST-FILE "
+                                    "convention (reviews/second_wave/final_review_checks.json), "
+                                    "while the DIRECTORY mtime is 2026-09-19 09:14:20. Both are "
+                                    "recorded here because the two conventions measure different "
+                                    "things (review item P3-3).",
+            "written_by_this_attempt": False,
+        },
         "notes": [
             "revenue-forecast has many pre-existing dirty files; git status --porcelain was "
             "captured in before/ and after/ so the pre-existing dirt is attributable to its owner",

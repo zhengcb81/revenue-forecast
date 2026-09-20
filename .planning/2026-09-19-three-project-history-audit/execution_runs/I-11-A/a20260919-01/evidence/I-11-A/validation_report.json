@@ -1,0 +1,170 @@
+{
+ "attempt_id": "a20260919-01",
+ "generated_by": "tools/validate_hypotheses.py",
+ "oracle_sections": [
+  "3.1 O-8",
+  "3.2 O-9",
+  "3.3 O-10/O-11",
+  "3.4 O-12/O-13",
+  "3.5 O-14",
+  "4 O-15/O-16",
+  "7 counterexamples"
+ ],
+ "counts": {
+  "hypotheses": 8,
+  "states": {
+   "pending_professional_decision": 6,
+   "unquantified": 2
+  },
+  "source_types": {
+   "company_disclosure": 7,
+   "management_target": 1
+  },
+  "independence_groups": {
+   "ZIJIN-AR2025": 4,
+   "ZIJIN-MGMT-PLAN-2026": 1,
+   "MSFT-10K-FY2026": 3
+  },
+  "threshold_bases": {
+   "arithmetic_identity": 4,
+   "professional_judgement_required": 4
+  },
+  "refuted_by_total": 24,
+  "falsifier_candidates_total": 16,
+  "parameters": 14,
+  "cited_values_total": 46,
+  "documents": 3,
+  "sources_not_readable": 1
+ },
+ "positive_case": {
+  "propositions_checked": 8,
+  "errors": [],
+  "verdict": "pass"
+ },
+ "counterexamples": [
+  {
+   "expected_code": "E_EMPTY_FIELD",
+   "note": "empty claim",
+   "observed_codes": [
+    "E_EMPTY_FIELD"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_SOURCE_TYPE_CLOSED",
+   "note": "synthetic source type",
+   "observed_codes": [
+    "E_SOURCE_TYPE_CLOSED"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_BAD_PAGE_BASIS",
+   "note": "printed page basis instead of pdf leaf",
+   "observed_codes": [
+    "E_BAD_PAGE_BASIS"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_MGMT_TARGET_INDEPENDENT",
+   "note": "management target shares the disclosure group",
+   "observed_codes": [
+    "E_MGMT_TARGET_INDEPENDENT"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_UNKNOWN_MODEL",
+   "note": "unregistered model_id",
+   "observed_codes": [
+    "E_UNKNOWN_MODEL"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_UNKNOWN_DRIVER",
+   "note": "driver not in the model card",
+   "observed_codes": [
+    "E_UNKNOWN_DRIVER"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_MISSING_FALSIFIER",
+   "note": "falsifier threshold removed",
+   "observed_codes": [
+    "E_MISSING_FALSIFIER"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_MISSING_REFUTED_BY",
+   "note": "refuted_by removed",
+   "observed_codes": [
+    "E_MISSING_REFUTED_BY"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_NO_DOUBLE_COUNT_RULE",
+   "note": "double count rule removed",
+   "observed_codes": [
+    "E_NO_DOUBLE_COUNT_RULE"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_SOURCE_HASH_MISMATCH",
+   "note": "wrong document hash",
+   "observed_codes": [
+    "E_SOURCE_HASH_MISMATCH"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_ANCHOR_NOT_FOUND",
+   "note": "anchor text absent from the filing",
+   "observed_codes": [
+    "E_ANCHOR_NOT_FOUND"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_STATE_APPROVED_BY_IMPLEMENTER",
+   "note": "implementer tries to self-approve",
+   "observed_codes": [
+    "E_STATE_APPROVED_BY_IMPLEMENTER"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_DUPLICATE_PARAMETER",
+   "note": "same parameter_id, different driver",
+   "observed_codes": [
+    "E_DUPLICATE_PARAMETER",
+    "E_UNKNOWN_DRIVER"
+   ],
+   "rejected": true
+  },
+  {
+   "expected_code": "E_LISTED_VALUE_NOT_IN_EVIDENCE",
+   "note": "cited value absent from evidence",
+   "observed_codes": [
+    "E_ANCHOR_NOT_FOUND",
+    "E_LISTED_VALUE_NOT_IN_EVIDENCE"
+   ],
+   "rejected": true
+  }
+ ],
+ "counterexample_summary": {
+  "cases": 14,
+  "rejected_as_expected": 14,
+  "accepted_by_mistake": 0
+ },
+ "qualification_boundary": {
+  "formula": "not_applicable_here (no model is executed by this card)",
+  "disclosure_adaptation": "not_granted by this card (I-10-A owns it)",
+  "accuracy": "not_granted by this card (I-12 owns it)"
+ }
+}

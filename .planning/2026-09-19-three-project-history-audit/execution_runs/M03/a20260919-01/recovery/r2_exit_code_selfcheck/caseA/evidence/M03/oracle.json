@@ -1,0 +1,108 @@
+{
+ "card_id": "M03",
+ "model_id": "unit_sales",
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "positive": {
+  "expected": [
+   "305.0"
+  ],
+  "expected_float": [
+   999.0
+  ],
+  "length": 1,
+  "years": [
+   2027
+  ],
+  "tolerances": [
+   3.05e-07
+  ],
+  "hand_arithmetic": [
+   "120 * 2.5 = 300",
+   "300 * 1 = 300",
+   "300 + 5 = 305"
+  ]
+ },
+ "continuity_positive": {
+  "expected": [
+   "200",
+   "220"
+  ],
+  "expected_float": [
+   200.0,
+   220.0
+  ],
+  "years": [
+   2027,
+   2028
+  ]
+ },
+ "defaults_case": {
+  "expected": [
+   "30"
+  ],
+  "expected_float": [
+   30.0
+  ],
+  "why": "optional timing_factor defaults to 1.0 and other_revenue to 0.0; the default is NOT an authorisation to fill 1/0 when the disclosure is missing"
+ },
+ "zero_units_with_other": {
+  "expected": [
+   "5"
+  ],
+  "expected_float": [
+   5.0
+  ],
+  "why": "zero confirmed volume must not be treated as 'missing'; other_revenue still applies"
+ },
+ "disclosure_arithmetic": {
+  "source": "BYD FY2024 annual report (cninfo:1222881496), pages 23/24/25",
+  "mapping_1_same_table": {
+   "units_pv": "4250370",
+   "revenue_pv_cny": "525989680000.00",
+   "unit_revenue_pv_cny_derived": "123751.503987",
+   "timing_factor": "1 (already full-year exposed volume; must not be scaled again)",
+   "other_revenue": "0 (not disclosed in that table; not assumed)",
+   "rebuild_cny": "525989680000.00000000000000000000000000000000000001",
+   "disclosed_cny": "525989680000.00",
+   "residual_cny": "-1E-38",
+   "residual_pct": "0.000000",
+   "constructive_note": "unit_revenue is derived by dividing the SAME disclosed revenue cell by the SAME disclosed volume cell, so the zero residual is an identity, not evidence. It proves dimensional wiring only."
+  },
+  "mapping_1b_commercial_vehicle": {
+   "units_cv": "21775",
+   "revenue_cv_cny": "7340435000.00",
+   "unit_revenue_cv_cny_derived": "337103.788749",
+   "rebuild_cny": "7340434999.9999999999999999999999999999999999999999",
+   "residual_cny": "1E-40"
+  },
+  "mapping_2_scope_residual": {
+   "auto_segment_revenue_cny": "617381935000.00",
+   "vehicle_units_total": "4272145",
+   "rebuild_using_vehicle_total_at_pv_unit_price_cny": "528684368999.31",
+   "gap_cny": "88697566000.69",
+   "gap_pct_of_segment": "14.3667",
+   "other_auto_revenue_not_in_the_vehicle_production_sales_table_cny": "84051820000.00",
+   "why": "The automobile segment revenue line also contains secondary rechargeable batteries, vehicle parts and other products, which unit_sales cannot identify. The gap must NOT be silently treated as residual revenue."
+  },
+  "mapping_3_mix": {
+   "pv_units_2023": "3024417",
+   "auto_segment_revenue_2023_cny": "483453318000.00",
+   "implied_pv_unit_price_2023_cny": "159850.086149",
+   "note": "single unit price hides the sedan/SUV/MPV mix (p23 lines: 2,370,709 / 1,805,441 / 104,934)"
+  },
+  "not_a_forecast": "FY2024 is a closed, already-disclosed period; this is a historical mapping probe only"
+ },
+ "observation_expected": {
+  "DEFAULTS-CASE": {
+   "expected_float": [
+    30.0
+   ]
+  },
+  "ZERO-UNITS": {
+   "expected_float": [
+    5.0
+   ]
+  }
+ },
+ "not_from_product_code": true
+}

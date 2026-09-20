@@ -17,6 +17,29 @@ import os
 
 import card_units
 
+# Per-card, accurate pass history (see process_history.json for the full record and the gaps).
+PROCESS = {
+    "M17": {
+        "measurement_executions": 3,
+        "closing_executions": 6,
+        "c2_origin": ("a unit ADDED during this attempt after measurement pass 1 (it did not exist in "
+                      "the first pass)"),
+        "detail": ("pass 1 = 13 units before C2 existed; pass 2 = 14 units with the probe constant "
+                   "still 105.0; pass 3 = 14 units after it was corrected to 90.0. The post-review "
+                   "fixes re-executed B, C2, E and the pack for this card once more."),
+    },
+    "M18": {
+        "measurement_executions": 1,
+        "closing_executions": 6,
+        "c2_origin": ("an EXISTING unit of this attempt's unit list, delivered byte-identically from "
+                      "the M17 attempt (it was not added after a first pass)"),
+        "detail": ("the single measurement pass ran 14 units; the post-review fixes re-executed B, C2, "
+                   "E and the pack for this card once more."),
+    },
+}
+PROCESS["M19"] = {**PROCESS["M18"]}
+PROCESS["M20"] = {**PROCESS["M18"]}
+
 
 def sha256(path):
     with open(path, "rb") as handle:
@@ -59,11 +82,17 @@ def main() -> int:
                               % (ruling["id"], ruling["title"], ruling.get("finding",
                                  ruling.get("observation", "")), ruling["status"],
                                  ruling["requires_ruling_from"]))
-    open_questions.append(
-        "OQ-05 (process, this batch): the attempt pipeline was executed more than once for this "
-        "card while a non-gating probe unit was added (C2) and one probe constant was corrected; the "
-        "frozen oracle.md was never modified between passes and oracle.json is byte-identical across "
-        "them (evidence/%s/oracle_regen_proof.json). review.md records this explicitly." % card)
+    process_note = (
+        "OQ-05 (process, per card, parameterised after independent review P2-2): THIS card's "
+        "measurement pipeline was executed %s time(s) and the closing sequence was executed %s times. "
+        "The C2 extra-boundary-probe unit is %s. Superseded executions rewrote the same files, so the "
+        "byte-level records only prove the LAST execution of each unit; the declared pass structure "
+        "and the honest gaps are in process_history.json, and review.md states the same facts for this "
+        "card. The frozen oracle expectations were never modified by any later pass"
+        % (PROCESS[card]["measurement_executions"],
+           PROCESS[card]["closing_executions"],
+           PROCESS[card]["c2_origin"]))
+    open_questions.append(process_note)
 
     doc = {
         "card_id": card,
@@ -160,6 +189,19 @@ def main() -> int:
             "red_then_green": mutation["all_mutations_produced_the_expected_exit_code"],
         },
         "oracle_regeneration_byte_identical": regen["all_byte_identical"],
+        "negative_declared_expectation_enforcement": {
+            "declared_expectations_in_cases_json": run["negative_summary"].get(
+                "declared_expectations_in_cases_json"),
+            "comparison": run["negative_summary"].get("declared_expectation_comparison"),
+            "declared_expectation_mismatches": run["negative_counts"].get(
+                "declared_expectation_mismatch"),
+            "runner_sha256": sha256(os.path.join(attempt, "scripts", "run_card.py")),
+            "independent_review_basis": ("independent review P2-1: the previous runner did not compare "
+                                         "cases.json's per-case 'expected'; this runner compares the "
+                                         "raised exception's exact type name and refuses the case on "
+                                         "mismatch (never by isinstance, because ModelRegistryError "
+                                         "is a ValueError subclass)"),
+        },
         "open_questions": open_questions,
         "blocked_by": [],
         "stop_conditions_hit": [
@@ -171,12 +213,36 @@ def main() -> int:
             "disclosure_adaptation": qualification["disclosure_adaptation"]["state"],
             "accuracy": qualification["accuracy"]["state"],
         },
+        "qualification_semantics": {
+            "disclosure_adaptation_unmapped_means": ("ZERO output, not partial progress: no "
+                                                     "disclosure_mapping.json, no accounting_decision.md, "
+                                                     "no historical_reconciliation.json and no "
+                                                     "forecast_integration.json exist for this card"),
+            "accuracy_unproven_means": ("no I-12 frozen design exists, so no out-of-sample evaluation "
+                                        "was run at all; the formula pass must never be read as "
+                                        "accuracy evidence"),
+        },
         "evidence_paths": sorted(
             os.path.relpath(os.path.join(root, name), attempt).replace("\\", "/")
             for root, _dirs, files in os.walk(evidence) for name in files),
-        "reviewer_status": ("r1 awaiting independent review; the implementer has NOT signed anything "
-                            "as accepted and must not"),
-        "revision": "r1",
+        "reviewer_status": ("r1 reviewed by an independent session; verdict accepted_scoped (formula "
+                            "qualification only). The implementer has NOT signed anything as accepted. "
+                            "Post-review P2/P3 dispositions are recorded in review.md (r2 section) and "
+                            "the batches' rc/qualification semantics in the batch handoff. formula "
+                            "remains review_pending until the reviewer confirms the r2 fixes."),
+        "process_history_pointer": "process_history.json",
+        "process_history_summary": {
+            "measurement_pipeline_executions_declared": PROCESS[card]["measurement_executions"],
+            "closing_executions_declared": PROCESS[card]["closing_executions"],
+            "c2_unit_origin": PROCESS[card]["c2_origin"],
+            "detail": PROCESS[card]["detail"],
+            "observed_records_prove": "only the LAST execution of each unit (see process_history.json)",
+        },
+        "batch_handoff_pointer": ("../M17-M20/a20260919-01/batch_handoff.md and "
+                                  "../M17-M20/a20260919-01/rc_namespace.json (dedicated batch-level "
+                                  "documentation; contains no card artefacts)"),
+        "revision": ("r2" if load(os.path.join(evidence, "revision_r2.json")).get("r2_append_performed")
+                     else "r1"),
     }
     out = os.path.join(attempt, "handoff.json")
     with open(out, "w", encoding="utf-8") as handle:

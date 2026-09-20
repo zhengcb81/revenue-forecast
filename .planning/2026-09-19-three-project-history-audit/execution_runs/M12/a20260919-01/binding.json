@@ -1,0 +1,117 @@
+{
+ "card_id": "M12",
+ "attempt_id": "a20260919-01",
+ "model_id": "bank_revenue",
+ "binding_status": "bound",
+ "binding_record_written_at": "after the frozen inputs existed and after the card run; every field below is a pre-run fact (paths, interpreter, frozen input hashes, allowed writes) and none of them depends on a run outcome. The pre-run anchors are after/console_A2-M12-isolated-snapshot_M12.txt (written before the product run, containing the MATCH of both file hashes) and the mtime ordering in evidence/M12/mtime_ordering.json.",
+ "binding_sources": {
+  "I-00-B": {
+   "path": "execution_runs/I-00-B/a20260919-01/binding.json",
+   "rule_read": "run cwd must be a per-attempt isolation directory, never the repo root; the global Miniconda python is FORBIDDEN for card runs",
+   "note": "I-00-B does not materialise a checkout tree; it binds the isolation plan and the two-stage command rule. This attempt therefore materialises its own read-only snapshot (iso/checkout_scripts) and records the production hashes it was copied from (OQ-6)."
+  },
+  "I-00-C": {
+   "path": "execution_runs/I-00-C/a20260919-01/",
+   "role": "dependency receipt: source/config fingerprint rehash for the three repos",
+   "status_as_read": "present, used as a receipt reference only (this attempt re-hashed the files it actually used rather than trusting the receipt)"
+  },
+  "I-00-A": {
+   "path": "execution_runs/I-00-A/a20260919-01/baseline.json",
+   "role": "template interpreter and isolation finding (global python loads an editable dayu-agent finder, so isolated venvs are mandatory)"
+  }
+ },
+ "three_repo_paths": {
+  "revenue-forecast": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "company-wiki": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+  "filing-fetch": "C:\\Users\\郑曾波\\Projects\\filing-fetch"
+ },
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M12\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "created_from_template": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "isolation": "attempt-local venv created with `python -m venv` from the I-00-A template venv; the offline pytest install is recorded as failed (no local wheel) and no card result depends on it",
+  "global_python_used_for": "nothing in this attempt"
+ },
+ "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M12\\a20260919-01",
+ "python_path": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M12\\a20260919-01\\iso\\checkout_scripts"
+ ],
+ "run_code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M12\\a20260919-01\\iso\\checkout_scripts",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "model_contract_as_read_from_the_isolated_copy": {
+  "model_id": "bank_revenue",
+  "required": [
+   "average_earning_assets",
+   "asset_yield",
+   "average_interest_bearing_liabilities",
+   "funding_cost",
+   "fee_revenue"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "declared_defaults": {},
+  "dimensions": {
+   "average_earning_assets": "monetary_balance",
+   "asset_yield": "ratio",
+   "average_interest_bearing_liabilities": "monetary_balance",
+   "funding_cost": "ratio",
+   "fee_revenue": "revenue",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "asset_yield",
+   "funding_cost"
+  ],
+  "explicit_driver_bounds": {
+   "asset_yield": [
+    null,
+    null
+   ],
+   "funding_cost": [
+    null,
+    null
+   ]
+  },
+  "formula": "revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue"
+ },
+ "module_paths": {
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M12\\a20260919-01\\iso\\checkout_scripts",
+  "imports_used": [
+   "model_registry"
+  ]
+ },
+ "config_paths": [],
+ "allowed_write_roots": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M12\\a20260919-01"
+ ],
+ "forbidden": [
+  "writing anywhere outside the attempt directory",
+  "writing under Projects/revenue-forecast outside .planning",
+  "writing under Projects/company-wiki or Projects/filing-fetch",
+  "editing .planning/reviews (frozen audit evidence)",
+  "git add/commit/restore/stash in any of the three repos",
+  "network calls, real providers, LLM calls, publication",
+  "calling any product function other than calculate_registered_model for the formula oracle"
+ ],
+ "network": "disabled",
+ "input_hashes": {
+  "evidence/M12/input.json": "1b3d549166fc4418125e9364edf31c5043be5fd415a7f1c889c6a54dcd4965ec",
+  "evidence/M12/oracle.json": "ff33442b07a1061f38afd7182b7f81d76e8d7bbad3e78983f9d0a19337f43266",
+  "evidence/M12/cases.json": "9470b64332b0b520c31b1dd0c39faf8d410688f7d7e8659f7b31559ee56f096d"
+ },
+ "evidence_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M12\\a20260919-01\\evidence\\M12",
+ "created_before_runs": "frozen inputs: yes (see binding_record_written_at); this JSON record: written after the run by scripts/pack_evidence.py"
+}

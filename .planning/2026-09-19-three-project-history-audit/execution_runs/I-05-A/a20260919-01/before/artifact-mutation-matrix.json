@@ -1,0 +1,116 @@
+{
+  "c0": {
+    "expectation": "usable; roles/titles/count as frozen; index hash == row hash",
+    "mutation": null,
+    "mutation_verified": null,
+    "outcome": "returned",
+    "reason_reported": null,
+    "expected_reason": "(pass)",
+    "verdict": "PASS"
+  },
+  "c1": {
+    "expectation": "sections_status_not_completed",
+    "mutation": "UPDATE artifacts SET status='failed' WHERE artifact_role='sections'",
+    "mutation_verified": "failed",
+    "outcome": "returned",
+    "reason_reported": null,
+    "expected_reason": "sections_status_not_completed",
+    "verdict": "counterexample"
+  },
+  "c2": {
+    "expectation": "sections_binding_error",
+    "mutation": "drop schema_version from the sections row (column NULL + metadata)",
+    "mutation_verified": null,
+    "outcome": "returned",
+    "reason_reported": null,
+    "expected_reason": "sections_binding_error",
+    "verdict": "counterexample"
+  },
+  "c3": {
+    "expectation": "sections_binding_error",
+    "mutation": "UPDATE artifacts SET source_sha256='0'*64",
+    "mutation_verified": "0000000000000000000000000000000000000000000000000000000000000000",
+    "outcome": "returned",
+    "reason_reported": null,
+    "expected_reason": "sections_binding_error",
+    "verdict": "counterexample"
+  },
+  "c4": {
+    "expectation": "sections_file_missing",
+    "mutation": "delete the sections index.json from disk (row untouched)",
+    "mutation_verified": {
+      "index_exists": false
+    },
+    "outcome": "returned",
+    "reason_reported": null,
+    "expected_reason": "sections_file_missing",
+    "verdict": "counterexample"
+  },
+  "c5": {
+    "expectation": "sections_binding_error",
+    "mutation": "rewrite index.json content without updating the row hash",
+    "mutation_verified": {
+      "index_sha_now": "757914ea5e22c5eb950c0c36b3b102032f8e63111569b2c215a4d09d5b16aa08",
+      "row_sha": "55e6dfb9763d8281e02103697df1ae4489829383f0893f7d6944990c788fd578"
+    },
+    "outcome": "returned",
+    "reason_reported": null,
+    "expected_reason": "sections_binding_error",
+    "verdict": "counterexample"
+  },
+  "c6": {
+    "expectation": "sections_binding_error",
+    "mutation": "UPDATE artifacts SET created_at='2099-01-01T00:00:00Z'",
+    "mutation_verified": "2099-01-01T00:00:00Z",
+    "outcome": "returned",
+    "reason_reported": null,
+    "expected_reason": "sections_binding_error",
+    "verdict": "counterexample"
+  },
+  "c7": {
+    "expectation": "sections_span_unbound",
+    "mutation": "replace the index with span_ids=['span-not-in-catalog'] and update the row hash so every validator gate still passes",
+    "mutation_verified": {
+      "attack": "consistent value replacement",
+      "old_index_sha256": "c54adc4aaa990582a98fbaafb8b1e964f69b42f03efed3a1194bf8d9275dd0c2",
+      "new_index_sha256": "b5dc2e1061f6d345fb43a421c0a9aec97df0faad5b5c1ce49e796270f8978c2b",
+      "row_hash_updated": true,
+      "metadata_kept_consistent": true,
+      "old_entry_count": 2,
+      "new_entry_count": 2,
+      "old_span_ids": [
+        [
+          "span-emerald-1",
+          "span-emerald-2"
+        ],
+        [
+          "span-emerald-1",
+          "span-emerald-2"
+        ]
+      ],
+      "new_span_ids": [
+        [
+          "span-not-in-catalog"
+        ],
+        [
+          "span-not-in-catalog"
+        ]
+      ]
+    },
+    "outcome": "returned",
+    "reason_reported": null,
+    "expected_reason": "sections_span_unbound",
+    "verdict": "counterexample"
+  },
+  "c8": {
+    "expectation": "sections_span_unbound",
+    "mutation": "DELETE FROM evidence_spans (index still names the spans)",
+    "mutation_verified": {
+      "span_rows_left": 0
+    },
+    "outcome": "returned",
+    "reason_reported": null,
+    "expected_reason": "sections_span_unbound",
+    "verdict": "counterexample"
+  }
+}

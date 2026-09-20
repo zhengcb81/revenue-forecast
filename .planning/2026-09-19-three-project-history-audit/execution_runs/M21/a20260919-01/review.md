@@ -30,8 +30,8 @@ expected / 1=harness error). stderr is 0 bytes.
   `hashlib`, `json`, `os`, `sys` and `decimal` - see the `import_lines` list inside
   `evidence/M21/oracle_selfcheck.json`; `product_import_present` is `false`.
 - The oracle document `oracle.md` (sections 0-11) was written **before** any product run. Its
-  frozen body is 11454 bytes, sha256
-  `9b9f51dff6f8f9e29352c407f19b9f405fd12344ca15e4e6a7b0aadbb2d4c80a`; the exact reconstruction identity
+  frozen body is 12234 bytes, sha256
+  `0a1b9a2b4a6ff900ef2dacce662768a350fbaf3f83ccc3e1124c75a148e059e0`; the exact reconstruction identity
   `oracle.md == frozen_body + b"\n---\n\n" + run_section` is verified by
   `scripts/verify_prefix_chain.py` in all four attempts of this batch.
 - `evidence/M21/oracle.json` is **byte-identical when regenerated** (re-run performed).
@@ -43,7 +43,7 @@ expected / 1=harness error). stderr is 0 bytes.
   (N01a uses a real `bool`, N01b-d use real `float('nan'/'inf'/'-inf')`).
 - `PASS_rejected` requires `isinstance(exc, ModelRegistryError)`. `ImportError`,
   `ModuleNotFoundError` and `FileNotFoundError` are recorded as **FAIL**, never as pass.
-- The same `run_card.py` (sha256 `fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a`) was used for
+- The same `run_card.py` (sha256 `d02057debe8d34df8a472e83aa3771f5c90fb77d58b3c0eee2237e35593b2953`) was used for
   M05-M08 and for all four attempts of this batch; there is no card-specific runner to drift.
 
 ## 3. Results in detail
@@ -109,6 +109,9 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 | A_corrupted_positive_expectation | 3 | 3 |
 | B_corrupted_negative_assertion | 3 | 3 |
 | C_corrupted_positive_input | 2 | 2 |
+| F_corrupted_expected_type | 3 | 3 |
+| G_corrupted_message_requirement | 3 | 3 |
+| H_message_requirement_points_at_another_guard | 3 | 3 |
 | D_restored_uncorrupted | 0 | 0 |
 
 `frozen_hashes_unchanged` = `True`. Full record:

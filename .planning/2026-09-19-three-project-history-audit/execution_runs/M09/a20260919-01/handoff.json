@@ -1,0 +1,192 @@
+{
+ "card_id": "M09",
+ "card_title": "资源销售量与实售价",
+ "model_id": "resource",
+ "attempt_id": "a20260919-01",
+ "status": "review_pending",
+ "implementer_is_not_the_reviewer": true,
+ "completed_steps": {
+  "A_binding": "done (binding.json: read-only production hashes + attempt-local isolated snapshot)",
+  "B_positive_run": "done (positive [122.0], continuity [122.0, 225.0], defaults [120.0]; all inside 1e-9*max(1,|e|))",
+  "C_negative_run": "done (11/11 negatives rejected with the frozen expected exception type)",
+  "D_disclosure_mapping": "NOT claimed: source survey + all-missing mapping skeleton; professional decisions PROPOSED and unsigned",
+  "E_historical_mapping_probe": "NOT done - owned by I-10-A after D; no scenario or accuracy meaning attached",
+  "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist"
+ },
+ "completed_steps_list": [
+  "A",
+  "B",
+  "C",
+  "D-skeleton"
+ ],
+ "next_step_number": 4,
+ "next_action": "Independent reviewer: re-run scripts/oracle_cards_M09_M12.py in a scratch tree and diff against the frozen oracle.json, re-run scripts/run_card.py against iso/checkout_scripts and confirm rc 0 with positive [122.0], continuity [122.0, 225.0] and 11/11 rejections, adjudicate the DEC items in evidence/M09/accounting_decision.md and the OQ items in evidence/M09/oq_rulings.json, then record a verdict.",
+ "input_hashes": {
+  "evidence/M09/input.json": "8d3bed650f26b39ffb7c2031f11576339eb87d9b0ef498d8eb8f6e4a0d245325",
+  "evidence/M09/oracle.json": "55fbc73fe25048a89afd8754426d2c37992046acb5b20908f8ad09489050dcb6",
+  "evidence/M09/cases.json": "d0613d34d089354cb9a416dfb044c77d64b3f8c2c1d40cd6f4f06ad4b7813597",
+  "oracle.md": "b485b85a8b1241ef7529384abf66cdcee4302317959daa43e90d60e2b1372580",
+  "scripts/oracle_cards_M09_M12.py": "54f3cdb1cfbd3d0cd7bb4b4fce0891288555cf6ae30dfdab32a87fdc8088e635",
+  "scripts/run_card.py": "997c553b0b9e6452e9edfeb8bfec3a40ff55d10f2646e562456913feb9332fce"
+ },
+ "current_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "scripts/forecast/segments.py": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd"
+ },
+ "changed_paths": {
+  "production_repos": [],
+  "note": "no production file was created, modified, added, committed, restored or stashed by this attempt; the pre-existing dirty state is captured in before/ and after/. An external writer touched production files with identical content; see integrity.json.",
+  "attempt_paths_created": [
+   "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M09\\a20260919-01"
+  ]
+ },
+ "commands_executed": [
+  "M09-A0",
+  "M09-A1",
+  "M09-A2",
+  "M09-A3",
+  "M09-A4",
+  "M09-B",
+  "M09-C",
+  "M09-G",
+  "M09-F",
+  "M09-E"
+ ],
+ "raw_exit_codes": {
+  "A0": 0,
+  "A1": 1,
+  "A2": 0,
+  "A3": 0,
+  "A4": 0,
+  "B": 0,
+  "C": 0,
+  "G": 0,
+  "N": 0,
+  "E": 0,
+  "O": 0,
+  "F": 0,
+  "N2": 0,
+  "Z1": 0,
+  "Z2": 0,
+  "Z5": 0,
+  "Z6": 0,
+  "note": "every value is read from after/rc_ledger.txt (unit<TAB>raw_rc) at narrative time; a null means that unit had not been recorded when this file was last written"
+ },
+ "expected_exit_codes": {
+  "A0": 0,
+  "A1": 0,
+  "A2": 0,
+  "A3": 0,
+  "A4": 0,
+  "B": 0,
+  "C": 0,
+  "G": 0,
+  "F": 0,
+  "E": 0
+ },
+ "exit_code_notes": {
+  "A1": "the offline pytest install fails because no pytest wheel exists in the local cache; no A-C card result depends on pytest, and this row is NOT a pass",
+  "B": "verdict-carrying: 0 pass / 2 no-verdict or fidelity mismatch / 3 unrejected negative / 1 harness error",
+  "G": "the self-check returns 0 when all five mutation cases behaved as expected"
+ },
+ "positive_actual": [
+  122.0
+ ],
+ "positive_expected": [
+  122.0
+ ],
+ "continuity_actual": [
+  122.0,
+  225.0
+ ],
+ "defaults_actual": [
+  120.0
+ ],
+ "negative_case_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": [],
+  "import_or_file_errors": []
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "raised": null,
+   "actual": [
+    122.0
+   ],
+   "matches_expected": true,
+   "gating": false
+  },
+  {
+   "id": "OBS-PRICE-NEG",
+   "raised": "ModelRegistryError",
+   "actual": null,
+   "matches_expected": true,
+   "gating": false
+  }
+ ],
+ "open_questions": [
+  "OQ-1 (batch): scripts/model_registry.py:335 silently zero-fills an omitted optional driver that has no declared default. All 5 optional drivers of M09-M12 are in that class (31 registry-wide). Named risk for this card: see evidence/M09/oq_rulings.json.",
+  "OQ-2 (M12, cross-card reference): see M12's oq_rulings.json - the bank negative is a totals refusal, not a rate refusal.",
+  "OQ-3 (M09/M11): revenue_per_unit / revenue_per_activity default to [0, inf), so a negative realised price or rebate-style tariff cannot be expressed (2 of 23 such drivers admit negatives registry-wide).",
+  "OQ-4 (M10): additions is non-negative while reserve_revisions is signed, so downward reserve movements must be routed through reserve_revisions (5 reserve_volume drivers: 4 non-negative, 1 signed).",
+  "OQ-5 (provenance): production files under scripts/ were rewritten by an external writer with byte-identical content inside this attempt's window; mtime is therefore not an untouched-proof here. Needs a binding ruling on how to treat concurrent writers.",
+  "OQ-6 (binding provenance): I-00-B binds the isolation plan and the two-stage command rule but materialises no checkout tree, so this attempt materialised its own read-only snapshot (iso/checkout_scripts, hashes equal to production). If the intended binding is a checkout materialised by I-00-B, that is a scope deviation to record; the code under test is byte-identical either way."
+ ],
+ "blocked_by": [],
+ "stop_conditions_hit": [
+  "STOP_ACCURACY (no I-12 frozen design)",
+  "STOP_DISCLOSURE_ADAPTATION (required drivers still missing / reviewer unsigned)"
+ ],
+ "qualifications": {
+  "formula": "review_pending",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "evidence_paths": [
+  "after/",
+  "before/",
+  "binding.json",
+  "changes.diff",
+  "commands.json",
+  "decision.md",
+  "handoff.json",
+  "oracle.md",
+  "review.md",
+  "recovery/",
+  "scripts/",
+  "iso/checkout_scripts/",
+  "evidence/M09/accounting_decision.md",
+  "evidence/M09/artifact_hashes.txt",
+  "evidence/M09/cases.json",
+  "evidence/M09/command_manifest.json",
+  "evidence/M09/consistency_check.json",
+  "evidence/M09/deferred_work.json",
+  "evidence/M09/disclosure_mapping.json",
+  "evidence/M09/disclosure_source_survey.json",
+  "evidence/M09/evidence_hashes.json",
+  "evidence/M09/formula_result.json",
+  "evidence/M09/input.json",
+  "evidence/M09/integrity.json",
+  "evidence/M09/mtime_ordering.json",
+  "evidence/M09/negative_results.json",
+  "evidence/M09/observation_expected.json",
+  "evidence/M09/oq_rulings.json",
+  "evidence/M09/oracle.json",
+  "evidence/M09/oracle_selfcheck.json",
+  "evidence/M09/qualification.json",
+  "evidence/M09/regeneration_check.json",
+  "evidence/M09/registry_enumeration.json",
+  "evidence/M09/revision_r2.json",
+  "evidence/M09/run_result.json",
+  "evidence/M09/source_manifest.json",
+  "evidence/M09/stderr.txt",
+  "evidence/M09/stdout.txt"
+ ],
+ "reviewer_status": "r1 submitted for independent review; no verdict received yet",
+ "revision": "r1"
+}

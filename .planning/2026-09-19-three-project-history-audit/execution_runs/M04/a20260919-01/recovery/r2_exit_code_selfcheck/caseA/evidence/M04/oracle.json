@@ -1,0 +1,92 @@
+{
+ "card_id": "M04",
+ "model_id": "capacity_utilization",
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "positive": {
+  "expected": [
+   "730.000"
+  ],
+  "expected_float": [
+   999.0
+  ],
+  "length": 1,
+  "years": [
+   2027
+  ],
+  "tolerances": [
+   7.3e-07
+  ],
+  "hand_arithmetic": [
+   "1000 * 0.8 = 800",
+   "800 * 0.9 = 720",
+   "720 * 2 = 1440",
+   "1440 * 0.5 = 720",
+   "720 + 10 = 730"
+  ]
+ },
+ "continuity_positive": {
+  "expected": [
+   "144.00",
+   "172.80"
+  ],
+  "expected_float": [
+   144.0,
+   172.8
+  ],
+  "years": [
+   2027,
+   2028
+  ]
+ },
+ "defaults_case": {
+  "expected": [
+   "1440"
+  ],
+  "expected_float": [
+   1440.0
+  ],
+  "why": "timing_factor defaults to 1.0 and other_revenue to 0.0; the default is NOT an authorisation to fill 1/0 when the disclosure is missing"
+ },
+ "disclosure_arithmetic": {
+  "source": "SMIC FY2024 annual report, pages 6 / 8 / 84",
+  "capacity_annualized_from_year_end_monthly": "11376000",
+  "utilization": "0.856",
+  "yield_used": "1 (SMIC discloses no numeric yield; the disclosed utilisation is an effective-output/available-capacity ratio, so yield must not be applied twice)",
+  "timing_factor": "1 (capacity is a full-year figure)",
+  "good_output_year_end_basis": "9737856.000",
+  "unit_revenue_cny_per_wafer_derived": "5935.143218",
+  "rebuild_cny": "57795570000.000000000000000000000000000000000000000",
+  "disclosed_revenue_2024_cny": "57795570000",
+  "residual_cny": "0E-39",
+  "constructive_note": "unit_revenue is derived from the same disclosed revenue divided by the model's own output, so the zero residual is an identity. The informative check is the wafer-count reconciliation below.",
+  "wafer_count_reconciliation": {
+   "model_output_wafers_year_end_basis": "9737856.000",
+   "disclosed_wafers_sold": "8021000",
+   "gap_wafers": "1716856.000",
+   "gap_pct_of_disclosed": "21.4045",
+   "frozen_tolerance_pct": "0.5",
+   "verdict": "FAILS the frozen 0.5% tolerance by a wide margin",
+   "diagnosis": "year-end monthly capacity annualised is not the year-average available capacity; SMIC was expanding all year, so year-end capacity exceeds the full-year average",
+   "implied_available_capacity_diagnostic_only": "9370327.10",
+   "implied_monthly_capacity_diagnostic_only": "780860.59",
+   "implied_share_of_year_end_annualised_pct": "82.3693",
+   "warning": "the implied figures are back-solved from disclosed volume and must NOT be presented as disclosed parameters"
+  },
+  "revenue_yoy_check": {
+   "revenue_2024_cny": "57795570000",
+   "revenue_2023_cny": "45250425000",
+   "recomputed_pct": "27.7238",
+   "disclosed_pct": "27.7"
+  },
+  "yield_disclosure_probe": "full-text search for 良率 returned 2 hits (pages 13 and 34), both qualitative",
+  "not_a_forecast": "FY2024 is closed and already disclosed; this is a historical mapping probe only"
+ },
+ "observation_expected": {
+  "DEFAULTS-CASE": {
+   "expected_float": [
+    1440.0
+   ]
+  }
+ },
+ "not_from_product_code": true
+}

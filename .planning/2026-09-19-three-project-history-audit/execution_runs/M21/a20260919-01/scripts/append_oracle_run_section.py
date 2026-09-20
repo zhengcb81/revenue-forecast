@@ -29,6 +29,94 @@ import sys
 RUN_SECTION_MARK = "## 运行后对账（追加节，不改动上方任何期望值）"
 MARK_BYTES = RUN_SECTION_MARK.encode("utf-8")
 
+# Disposition of the six items the independent review required. Card-specific where the
+# review's own wording was card-specific; the harness item (P2-1/P3-4) is batch-wide.
+_REVIEW_ITEMS_COMMON = {
+    "P2-1": {
+        "requirement": "run_card.py must CHECK cases.json `expected`, not merely copy it; add a "
+                       "mutation probe that turns red when `expected` is tampered with",
+        "disposition": "implemented in scripts/run_card.py (FAIL_expected_type_mismatch) plus "
+                       "probe F_corrupted_expected_type, which now yields rc=3",
+        "scope_note": "the same defect exists in the byte-identical runner held by the M05-M20 "
+                      "and M25-M31 attempts; this batch fixed ONLY its own copies and did not "
+                      "touch any other card's frozen runner. Registered as a cross-batch harness "
+                      "gap for the parent agent.",
+    },
+    "P2-2": {
+        "requirement": "M22/M23 NEG-CARD must be the card's literal 1-element LIST replacement "
+                       "so the value-domain guard is what refuses it",
+        "disposition": "implemented; cases.json NEG-CARD value is now a 1-element list and the "
+                       "refusal message requirement is frozen as "
+                       "'must be between 0.0 and 1.0: FY2027'",
+    },
+    "P2-3": {
+        "requirement": "M24 must add a 2-year case whose failure is the CROSS-YEAR anchoring "
+                       "guard (message must contain 'continuity failed: FY2028')",
+        "disposition": "implemented as CONT-BREAK-CROSSYEAR on the continuity_positive base with "
+                       "only FY2028 opening/closing moved to 251",
+    },
+    "P3-1": {
+        "requirement": "handoff.json.revision contradicted revision_r2.json",
+        "disposition": "handoff.json now records r2 and states that the review verdict for the "
+                       "revised attempt has not yet been received",
+    },
+    "P3-3": {
+        "requirement": "state which `reviews` mtime convention is used",
+        "disposition": "after/reviews_mtime.txt and handoff.json now record BOTH the directory "
+                       "mtime (2026-09-19 09:14:20) and the newest file inside it, and name the "
+                       "two conventions",
+    },
+}
+
+REVIEW_ITEMS = {
+    "M21": dict(_REVIEW_ITEMS_COMMON, **{
+        "review_verdict_r1": "accepted_scoped (formula qualification only)",
+        "card_specific": "the review's P2-2/P2-3 wording did not require a change on M21; the "
+                         "reviewer explicitly accepted the M21 value-domain NEG-CARD on its "
+                         "2-year `card_neg` base, which is retained unchanged",
+        "P3-2": {
+            "requirement": "state the effective resolution of the bridge balance comparison",
+            "disposition": "new frozen sub-section 12 added (math.isclose rel_tol=1e-9 / "
+                           "abs_tol=1e-9); M21 records that its compared magnitude is ~35 and "
+                           "that no numeric probe was run on this card",
+        },
+    }),
+    "M22": dict(_REVIEW_ITEMS_COMMON, **{
+        "review_verdict_r1": "changes_required",
+        "card_specific": "P2-2 changed M22's NEG-CARD from a scalar to the card's literal "
+                         "1-element list, which now reaches the value-domain guard",
+        "P3-2": {
+            "requirement": "state the effective resolution of the bridge balance comparison",
+            "disposition": "new frozen sub-section 12 added; M22 is not a stock bridge, so the "
+                           "section states not_applicable_with_reason for that comparison",
+        },
+    }),
+    "M23": dict(_REVIEW_ITEMS_COMMON, **{
+        "review_verdict_r1": "changes_required",
+        "card_specific": "P2-2 changed M23's NEG-CARD from a scalar to the card's literal "
+                         "1-element list; the value-domain guard is now the GATING case and "
+                         "OBS-TIMING-BOUND-11 remains as a non-gating cross-check",
+        "P3-2": {
+            "requirement": "state the effective resolution of the bridge balance comparison",
+            "disposition": "new frozen sub-section 12 added; M23 is not a stock bridge, so the "
+                           "section states not_applicable_with_reason for that comparison",
+        },
+    }),
+    "M24": dict(_REVIEW_ITEMS_COMMON, **{
+        "review_verdict_r1": "changes_required",
+        "card_specific": "P2-3 added CONT-BREAK-CROSSYEAR; the card's literal CONT-BREAK is "
+                         "retained unchanged and its observed refusal is now itself frozen as a "
+                         "message requirement ('stock-flow balance failed: FY2027'), which "
+                         "documents that the card's prose and its patch numbers disagree",
+        "P3-2": {
+            "requirement": "state the effective resolution of the bridge balance comparison",
+            "disposition": "new frozen sub-section 12 added AND measured: two non-gating probes "
+                           "show +1e-7 inside the ~2.5e-7 effective tolerance and +1e-6 outside "
+                           "it",
+        },
+    }),
+}
+
 
 def sha(path: str) -> str:
     with open(path, "rb") as fh:
@@ -155,6 +243,14 @@ def main() -> int:
                                            "负例断言被篡改会变红"),
         "C_corrupted_positive_input": ("`input.json` 正例删除首个必填 driver",
                                        "rc=2 可达：确实无法产生判定"),
+        "F_corrupted_expected_type": ("`cases.json` 某负例 `expected` 改成 `ValueError`",
+                                      "**复核 P2-1**：`expected` 字段被真正校验，不再只是抄写"),
+        "G_corrupted_message_requirement": ("`cases.json` 的 `expect_message_contains` 改成不可能"
+                                            "出现的子串",
+                                            "**复核 P2-2/P2-3**：消息要求被真正校验"),
+        "H_message_requirement_points_at_another_guard": (
+            "把 `expect_message_contains` 指向长度守卫的措辞",
+            "消息控制具有区分度：别的守卫的措辞不能冒充值域/连续守卫"),
         "D_restored_uncorrupted": ("恢复 scratch 副本", "修复后退出码回到 0"),
     }
     for r in probe["runs"]:
@@ -299,6 +395,23 @@ recovery/
     rev["oracle_md_frozen_body_bytes"] = body_bytes
     rev["oracle_md_full_sha256_now"] = full_sha
     rev["hashes_are_over_raw_bytes"] = True
+    # keep the r2 splice record's "final file" hash honest: that record is written before this
+    # append step runs, so its placeholder-footer hash is superseded here.
+    splice_path = os.path.join(attempt, "recovery", "oracle_md_r2_splice.json")
+    if os.path.isfile(splice_path):
+        with open(splice_path, "rb") as fh:
+            splice = json.loads(fh.read().decode("utf-8"))
+        splice["final_oracle_md_sha256_with_placeholder_footer"] = splice.get(
+            "final_oracle_md_sha256")
+        splice["final_oracle_md_sha256"] = full_sha
+        splice["final_oracle_md_bytes"] = os.path.getsize(oracle_md)
+        splice["final_oracle_md_sha256_note"] = (
+            "the value written by the splice step described the file while it still carried the "
+            "placeholder footer; this field is the hash of the FINAL file including the "
+            "appended run-reconciliation section")
+        with open(splice_path, "w", encoding="utf-8") as fh:
+            json.dump(splice, fh, ensure_ascii=False, indent=1)
+        print("updated recovery/oracle_md_r2_splice.json final hash ->", full_sha)
     rev["self_corrections"] = {
         "SC-1": {
             "what_was_wrong": "the first revision of scripts/append_oracle_run_section.py "
@@ -328,6 +441,7 @@ recovery/
                                  "only the file encoding changed",
         },
     }
+    rev["review_items_r2"] = REVIEW_ITEMS[card]
     with open(os.path.join(ev, "revision_r2.json"), "w", encoding="utf-8") as fh:
         json.dump(rev, fh, ensure_ascii=False, indent=1)
     print("updated evidence/%s/revision_r2.json" % card)

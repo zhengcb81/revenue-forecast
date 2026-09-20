@@ -132,22 +132,4 @@ re-hashed; see `evidence/M07/evidence_hashes.json` and `after/rerun_sha256.json`
 
 Status after r2: `formula` = review_pending (point review of r2), `disclosure_adaptation` = unmapped, `accuracy` = unproven.
 
----
-
-## revision r2 - response to the independent review
-
-Independent review of r1: **accepted_scoped (formula qualification only)**.
-
-The nine r1 findings were handled as follows (nothing frozen was rewritten, no product file was touched):
-
-- F-M07-01 (source_manifest wording)
-- F-M07-02 (mapped vs derived driver count)
-- OQ-02 ruling
-
-Details per finding (file:line) are in `evidence/M07/revision_r2.json`; the OQ-02 / OQ-04 rulings are in
-`evidence/M07/oq_rulings.json`; the owner's three-step index remediation for M08 is in `handoff.json`.
-
-New hashes after r2: `oracle.md`, `commands.json`, `after/rerun_sha256.json` and `evidence/M07/*` were all
-re-hashed; see `evidence/M07/evidence_hashes.json` and `after/rerun_sha256.json`.
-
-Status after r2: `formula` = review_pending (point review of r2), `disclosure_adaptation` = unmapped, `accuracy` = unproven.
+---

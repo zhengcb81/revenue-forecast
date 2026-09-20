@@ -22,7 +22,7 @@
     }
   ],
   "next_step_number": 9,
-  "next_action": "An INDEPENDENT transaction reviewer must (1) rule on the C-01..C-12 contract proposal and the I09-E01..E10 code namespace, (2) rule on OPEN-I09A-1..5 (open_items.md), and (3) resolve the dependency-acceptance conflict C-A. Until then I-09-B must not bind a command or write product code. Concretely: read after/probe_commit_report.json (raw, not the summary), independently recompute one publication_id from the frozen identity payload, re-run iso/probe_commit.py into a fresh --work dir, and construct one variant this attempt did not use (review.md section 7 item 4 lists three candidates). If the verdict is changes_required, the highest-value fix is OPEN-I09A-1 (package_target semantics + the OPEN-D4 coupling), because it is the one item that prevents freezing any production identity value.",
+  "next_action": "ROUND 2 (targeted re-check only; the evidence layer must NOT be re-run). The independent adversarial review round 1 returned changes_required at the documentation/errata level and endorsed the contract body (C-01..C-12, I09-E01..E10, F-IDEM, E31 point, c02/c03/c05/c06/c07/c08/c11/c12). The implementer has now landed the errata pass (see errata.md for E-1..E-9 and the spec additions). The reviewer's next action is: (1) verify each errata disposition against errata.md, (2) decide the two recommended rulings already accepted as conditions - approve the I-08-A section 7 reorder WITH the orphan-member rule and the restated E31 semantics (OPEN-I09A-6, upstream text to be written by the I-08-A owner), and accept the single registry-row schema bump WITH the constraint that the attestation anchor never enters identity_payload (OPEN-I09A-3) adjudicated in the same batch as OPEN-D4, (3) adjudicate OPEN-I09A-1/-2/-4/-5, and (4) re-freeze the deliverable hashes from after/product_hashes.txt (regenerated last). Do NOT accept anything until I-08-A is genuinely independently accepted (OPEN-I09A-5 / conflict C-A). If the verdict is again changes_required, the highest-value remaining item is OPEN-I09A-1 (package_target semantics + the OPEN-D4 coupling), because it is the one item that prevents freezing any production identity value.",
 
   "input_hashes": {
     "note": "full receipt in before/baseline_hashes.txt (67 lines, 1 legitimately ABSENT); key values repeated here",
@@ -61,30 +61,33 @@
 
   "changed_paths": [],
   "product_hashes": {
-    "note": "sha256 of this attempt's own deliverables; full list in after/product_hashes.txt",
-    "binding.json": "9213948accdaf15cc91701a2fc70a2f70c888c9dc827161a09e79a56e8c3dd61",
-    "oracle.md": "237eab025a3a6d99b3f844467a76338e9116a28f77aa73419518d3080b36efbc",
-    "oracle_addendum.md": "1d411dcd9930f00bcaedd03cea8d84f858a9a43c829cada901419898916d0422",
-    "decision.md": "8af31d2af48e0412989bc7dc75d6f0d5a0c7e8a2b176231b1a313d22ff11d4a7",
-    "commands.json": "60aa3a99a5db0392e2b6c4164dbd5e284da6baf07a2c951d842d3ddbdc8b5644",
-    "open_items.md": "4982b9134dec93071df3a06c6efd3b2003675006500b95b1ac1c4f57863bb8ef",
-    "review.md": "7190c3fe45a39af7a5c6ec6bbcd7a6d1d9c7c255bd3d040ff4cae02ced96064f",
-    "handoff.json": "SELF-REFERENCE: this file's hash cannot be declared inside itself. After the last edit it hashed to 67b131bf139951a427eb9c971ed238d6a3baf0b41501ec0a8d5c3b384595f679; the authoritative value is the one in after/product_hashes.txt, which is regenerated last.",
-    "changes.diff": "ce43c6a69fdde410455eef8772aac8994ab0bff6febf91da63056bbcc00d039c",
-    "recovery/README.md": "f94f3b9a9922f954bee4ad03644704ba6271ea5d00708b1a2cd57e8eee618a87",
-    "iso/probe_commit.py": "4e74e7ad1b5c89b3b934fca25d095984a18623011160ee26e323ccf1a9ab8b51",
-    "iso/probe_registry_fault.py": "335cb24cd4090e39fbd5ef5ff1715893977de6955b0ab3ae90d23461ef17cb98",
-    "iso/capture_baseline.py": "bc40178855e44185649863a97895b6f5e4f4a5160ba4de86fef5aa75db944fdb",
-    "iso/smoke_publish.py": "5a21c0988c3f3843665a5da385ae0e479c748a74db61edc21d65e1e5ca2cd2d3",
-    "iso/summarize.py": "dced4f0ddc1636c94a136ee0bc1be1547a5ee842bd6d5aa703e92a85f7c18d4a",
-    "after/probe_commit.stdout.txt": "ffda57b5060ffda2d828ed0c48ad8f4391327d2c771637662225ff0b606b76b5",
-    "after/probe_commit_report.json": "3071c4741f6042aece8f10e93201bf4a82129c3baf7654be4fae9e6bb446957b",
-    "after/probe_summary.stdout.txt": "0929122cfe86db052cc17d8bf6e46f72099cb212399db8054a08d2d69d4a17f9",
-    "after/probe_registry_fault.stdout.txt": "5c822859c83baafb95ce131b99dab6713043d84c840bee72e228cb0e1d475c4d",
-    "before/baseline_hashes.txt": "88d7de6e9d9f060ffc8e051e1f11ab8c373abf86d16c41a0a683cf6958b73fdf",
-    "before/git_status_before.txt": "2cca22c4047e0a121607ef15dc23f44ed2c5fb5fa8450b53def99e9b36a08e45",
-    "after/git_status_after.txt": "7afc49a86e04d549a83c4ea486526cca00cbcc603e1cea288b2eef4780bf9933"
+    "note": "sha256 of this attempt's own deliverables. REFRESHED AFTER THE ERRATA PASS (errata.md); the authoritative list is after/product_hashes.txt, which is regenerated LAST. Three files cannot declare their own hash and are marked self-reference.",
+    "errata.md": "SEE after/product_hashes.txt (regenerated last)",
+    "binding.json": "SEE after/product_hashes.txt (regenerated last)",
+    "oracle.md": "SEE after/product_hashes.txt (regenerated last; errata pointer appended as section 10)",
+    "oracle_addendum.md": "SEE after/product_hashes.txt (regenerated last)",
+    "decision.md": "SEE after/product_hashes.txt (regenerated last)",
+    "commands.json": "SEE after/product_hashes.txt (regenerated last)",
+    "open_items.md": "SEE after/product_hashes.txt (regenerated last)",
+    "review.md": "SEE after/product_hashes.txt (regenerated last)",
+    "handoff.json": "SELF-REFERENCE: a file cannot declare its own hash. The authoritative value is in after/product_hashes.txt, regenerated last.",
+    "changes.diff": "SELF-REFERENCE: changes.diff declares the other files, so its own hash can only live in after/product_hashes.txt, regenerated last.",
+    "after/product_hashes.txt": "SELF-REFERENCE: it is the regenerated-last inventory and cannot contain its own hash.",
+    "recovery/README.md": "SEE after/product_hashes.txt (regenerated last)",
+    "iso/probe_commit.py": "4e74e7ad1b5c89b3b934fca25d095984a18623011160ee26e323ccf1a9ab8b51 (unchanged by the errata pass: no probe was re-run)",
+    "iso/probe_registry_fault.py": "335cb24cd4090e39fbd5ef5ff1715893977de6955b0ab3ae90d23461ef17cb98 (unchanged)",
+    "iso/capture_baseline.py": "bc40178855e44185649863a97895b6f5e4f4a5160ba4de86fef5aa75db944fdb (unchanged)",
+    "iso/smoke_publish.py": "5a21c0988c3f3843665a5da385ae0e479c748a74db61edc21d65e1e5ca2cd2d3 (unchanged)",
+    "iso/summarize.py": "dced4f0ddc1636c94a136ee0bc1be1547a5ee842bd6d5aa703e92a85f7c18d4a (unchanged)",
+    "after/probe_commit.stdout.txt": "ffda57b5060ffda2d828ed0c48ad8f4391327d2c771637662225ff0b606b76b5 (unchanged: raw evidence is never rewritten)",
+    "after/probe_commit_report.json": "3071c4741f6042aece8f10e93201bf4a82129c3baf7654be4fae9e6bb446957b (unchanged)",
+    "after/probe_summary.stdout.txt": "0929122cfe86db052cc17d8bf6e46f72099cb212399db8054a08d2d69d4a17f9 (unchanged)",
+    "after/probe_registry_fault.stdout.txt": "5c822859c83baafb95ce131b99dab6713043d84c840bee72e228cb0e1d475c4d (unchanged)",
+    "before/baseline_hashes.txt": "88d7de6e9d9f060ffc8e051e1f11ab8c373abf86d16c41a0a683cf6958b73fdf (unchanged)",
+    "before/git_status_before.txt": "2cca22c4047e0a121607ef15dc23f44ed2c5fb5fa8450b53def99e9b36a08e45 (unchanged)",
+    "after/git_status_after.txt": "STALE VALUE WITHDRAWN (errata E-5): the earlier declaration of 7afc49a8... (9159 B) no longer matched after the file was re-captured at 03:46. The authoritative current value is in after/product_hashes.txt."
   },
+  "hash_discipline_note": "errata E-5: three declarations were stale or self-referential. They are now either withdrawn (after/git_status_after.txt) or explicitly marked SELF-REFERENCE (handoff.json, changes.diff, after/product_hashes.txt). No raw evidence file was rewritten; only the DECLARATIONS were refreshed. GENERATED-LAST RULE: after/product_hashes.txt and changes.diff are regenerated after every edit to any other declared file, so the per-file hex values live ONLY there; this JSON deliberately declares no per-file hex for the edited documents to avoid re-introducing stale hashes on each pass.",
 
   "commands_executed": [
     "I09A-c1-venv",
@@ -142,17 +145,57 @@
   },
 
   "open_questions": [
-    "OPEN-I09A-1 package_target semantics (logical name vs path) and the OPEN-D4 coupling that decides whether a receipt-schema bump changes historical identities. ADJUDICATOR: revenue publication owner. BLOCKS I-09-B.",
-    "OPEN-I09A-2 does the same request published to two different targets count as one publication or two? ADJUDICATOR: project owner (business semantics). BLOCKS I-09-B.",
-    "OPEN-I09A-3 who fixes the member role-name list, and how the attestation anchor I-08-B must add merges into a single registry-row schema bump. ADJUDICATOR: revenue publication owner jointly with the I-08-B implementer. BLOCKS I-09-B.",
-    "OPEN-I09A-4 REVENUE_PUBLICATION_REGISTRY pointing at a DIRECTORY is silently reinterpreted as a directory root and the append SUCCEEDS into a nested same-named file (measured, fail-open). Same shape as I-08-A's E25 'illegal config must be loud'. ADJUDICATOR: plan owner decides whether to open a card or fold it into I-09-B. Does not block.",
-    "OPEN-I09A-5 DEPENDENCY-ACCEPTANCE CONFLICT: the dispatch statement says I-00-A, I-00-B and I-08-A are accepted_scoped, but their own artifacts record review_pending with reviewer_status accepted_scoped_pending_errata_confirm (and review.md verdict changes_required) / pending / pending, and I-08-A section 11 states its independent review has not been issued. The implementer did NOT edit any index document and did NOT treat these as accepted. ADJUDICATOR: plan owner. BLOCKS I-09-B until I-08-A is genuinely independently accepted.",
+    "OPEN-I09A-1 package_target semantics (logical name vs path) and the OPEN-D4 coupling that decides whether a receipt-schema bump changes historical identities. Per the review's ruling 2, 'historical identities are never recomputed' is now a MANDATORY clause (decision.md section 2.7), not a preference. ADJUDICATOR: revenue publication owner. BLOCKS I-09-B.",
+    "OPEN-I09A-2 (DERIVED FROM OPEN-I09A-1) does the same request published to two different DIRECTORIES count as one publication or two? Disposition is now consistent with -1: if package_target is a logical name, two directories under the same logical target are ONE publication (member_paths does not participate in identity); two different logical targets (forecast vs snapshot) are two publications. The earlier contradictory phrasing was withdrawn. ADJUDICATOR: project owner (business semantics). BLOCKS I-09-B.",
+    "OPEN-I09A-3 who fixes the member role-name list, and how the attestation anchor I-08-B must add merges into a single registry-row schema bump. Constraint accepted from the review: the anchor MUST NOT enter identity_payload (a re-sign would otherwise change the publication identity and break C-08 idempotency); the key-by-key split ('which keys are added / which participate in identity') is recorded in decision.md section 2.7 and must be adjudicated in the SAME batch as I-08-A OPEN-D4. ADJUDICATOR: revenue publication owner jointly with the I-08-B implementer. BLOCKS I-09-B.",
+    "OPEN-I09A-4 REVENUE_PUBLICATION_REGISTRY pointing at a DIRECTORY is silently reinterpreted as a directory root and the append SUCCEEDS into a nested same-named file (measured by this attempt and independently reproduced by the reviewer). Same shape as I-08-A's E25 'illegal config must be loud'. REQUIRED FIX: fail closed with RegistryError plus a negative test; now written into the I-09-B allowlist. ADJUDICATOR: plan owner confirms it folds into I-09-B. Does not block, but is part of I-09-B's scope.",
+    "OPEN-I09A-5 DEPENDENCY-ACCEPTANCE CONFLICT: the dispatch statement says I-00-A, I-00-B and I-08-A are accepted_scoped, but their own artifacts record review_pending with reviewer_status accepted_scoped_pending_errata_confirm (and review.md verdict changes_required) / pending / pending, and I-08-A section 11 states its independent review has not been issued. The implementer did NOT edit any index document and did NOT treat these as accepted. NOT VERIFIED: whether the plan owner knows. ADJUDICATOR: plan owner. BLOCKS I-09-B until I-08-A is genuinely independently accepted.",
+    "OPEN-I09A-6 (NEW, raised by the review finding E-3) I-08-A section 7's ORDER must change: the frozen upstream order is 'validate -> sign -> registry append -> write output (+ roll back the registration if the write fails)', while this protocol requires 'validate -> sign -> members durably written (prepare) -> single append (commit)'. The two cross-references in oracle.md and decision.md pointed at OPEN items whose problem statements did not cover ordering, so the dispatch would have dropped the item. The review recommends APPROVING the reorder WITH conditions: an orphan-member rule must be defined at the same time (a P5 success followed by a C3 failure leaves durably written members with no committed row), the E31 trigger semantics must be restated, and the change must be written into the UPSTREAM text by the I-08-A owner. The implementer's conditional rules are in decision.md section 5.6b. ADJUDICATOR: I-08-A owner (writes upstream) plus revenue publication owner (countersigns). BLOCKS I-09-B.",
     "OBSERVATION (not an OPEN item): PLAN/reviews directory mtime measured 2026-09-19 09:14:20 while the dispatch stated it must stay 2026-09-19 10:05. The directory was read only; nothing under reviews was written."
   ],
   "blocked_by": [
-    "OPEN-I09A-1, OPEN-I09A-2, OPEN-I09A-3 and OPEN-I09A-5 block I-09-B's binding (not this card's delivery)",
+    "OPEN-I09A-1, OPEN-I09A-2, OPEN-I09A-3, OPEN-I09A-5 and OPEN-I09A-6 block I-09-B's binding (not this card's delivery); OPEN-I09A-4 is a required fix inside I-09-B's allowlist",
     "I-09-C cannot start before I-09-B; the fault-point table F1-F12 is frozen but unimplemented"
   ],
+  "review_round_1": {
+    "verdict": "changes_required (narrow: documentation/errata only; the evidence layer does NOT need a re-run)",
+    "endorsed_by_reviewer": [
+      "the C-01..C-12 proposal itself and the I09-E01..E10 namespace",
+      "the F-IDEM falsifier: the reviewer rewrote the canonical/identity algorithm and independently reproduced all six values; publication_id was recomputed a third time",
+      "the E31 determination point",
+      "the measured conclusions of c02/c03/c05/c06/c07/c08/c11/c12",
+      "the 12/12 case invariants (re-run over the REAL long path, not via C:\\i09a): ALL_CASE_INVARIANTS_IDENTICAL=True"
+    ],
+    "findings": {
+      "E-1": "FIXED: non-empty artifact_id rows are 3 (all snapshot, one identical value 47a46003...), null = 57; the earlier '1 row' confused the DISTINCT count with a row count and contradicted 1+57=58!=60. The false pass in oracle_addendum.md was RETRACTED. 4 places corrected.",
+      "E-2": "FIXED BY RETRACTION: oracle.md line 76 already recorded registry rows = 1 and is_registered/commit_qualified = true, i.e. it MATCHED the measurement; the only error was rendering 'no FILE at that path' as 'the path does not exist'. The implementer's earlier self-incrimination ('the frozen expectation was inverted') was an inverse misstatement and is withdrawn. No pre-freeze copy of oracle.md exists, so the claim cannot be disproved either way; registered as unverifiable.",
+      "E-3": "FIXED: OPEN-I09A-6 added with a full problem statement + adjudicator + blocking column; cross-references corrected by an appended errata pointer.",
+      "E-4": "FIXED: decision.md now says 4 OPEN items block I-09-B (-1/-2/-3/-5, plus -6), aligned with open_items.md and this file.",
+      "E-5": "FIXED: stale/self-referential hash declarations withdrawn or marked SELF-REFERENCE; only declarations refreshed, no raw evidence rewritten.",
+      "E-6": "FIXED: git-status line counts standardised to the retained snapshot files (before 148/142, after 132/126); the unretained first after snapshot (124) is explicitly excluded as evidence.",
+      "E-7": "FIXED: the identity 5/5 is now qualified as a self-consistency check over harness LITERALS; package_target/members are not yet bound to production facts (OPEN-I09A-1/-3).",
+      "E-8": "FIXED: 'single atomic append' narrowed to 'single append, no anti-tearing promise; tearing is detected fail-closed by the chain check (F7)'; the c04b producer_rc vs CLI rc distinction documented.",
+      "E-9": "FIXED: changes.diff now declares BOTH classes explicitly - 87 deliverables plus the 86 iso/scratch working artifacts (raw case bytes) with sha256+size."
+    },
+    "spec_additions": {
+      "C-13": "ADDED (C-01..C-12 untouched): a receipt claiming host_signed WITHOUT any attestation record must be rejected before commit once the attestation gate lands; the error code belongs to I-08-B's gate, not to this card. Until then the gap must be reported as OPEN and the reviewer's counterexample preserved. Rationale: the reviewer measured validator_accepts_host_signed_without_record=true, register_rc=0, validation_status=['validated','validated'], and source reading shows revenue_publication.py:222-226 only checks the VALUE is legal while a product-wide grep for publication_attestation|attestation_record returns 0 hits - so I-08-A's G3b/G4 branch has NO implementation site.",
+      "G4_downgrade": "decision.md section 5.5's 'G4 impossible' cell is downgraded: it holds only inside this protocol's own rules; for I-08-A's classify() the branch is UNFULFILLED and must not be claimed closed before I-08-B lands.",
+      "C-01_mandatory_note": "ADDED: the attestation anchor must never enter identity_payload, and 'historical rows are never recomputed on a schema bump' is now MANDATORY (was a preference)."
+    },
+    "reviewer_could_not_verify": [
+      "oracle.md's append-only nature cannot be verified line by line (no pre-implementation copy exists in PLAN, and this attempt did not hash oracle.md at baseline time)",
+      "whether C:\\i09a was ever used for writing (confirmed as a Junction pointing only at this attempt)",
+      "cross-volume I09-E09 (this machine only has C:/Recovery)",
+      "I-08-A's classify() semantics were referenced, not re-verified (production has no classify/G3a/R-LEGACY site)",
+      "the attempt1 argv defect was not replayed",
+      "whether the plan owner is aware of OPEN-I09A-5",
+      "the full history of the 14 dirty paths (I-09-A provably did not change them; who did is unknown)",
+      "G2 x committed combination untested",
+      "opt-in schema 3.8 consumer side untested",
+      "the E31 compensation-line mechanism untested"
+    ],
+    "status_after_errata": "review_pending (unchanged); this errata pass is NOT a re-acceptance and the reviewer section stays empty"
+  },
 
   "evidence_paths": [
     "binding.json",
@@ -215,8 +258,18 @@
       "add commit_status(); keep is_registered() as a history-existence query only",
       "stop run_forecast's implicit register_publication for library callers; require an explicit commit API with a member table",
       "reject stdout-only formal publication (I09-E08) and cross-volume targets (I09-E09)",
-      "implement E31 as an append-only compensation line (never edit history)"
+      "implement E31 as an append-only compensation line (never edit history)",
+      "ALLOWLIST ADDITION (from the review, OPEN-I09A-4): make a DIRECTORY-valued REVENUE_PUBLICATION_REGISTRY FAIL CLOSED with RegistryError instead of silently reinterpreting it as a directory root, and add a NEGATIVE TEST for it (env points at a directory => must error and must not write any nested file)"
     ],
+    "I-09-B_acceptance_cases_from_I-09-A": {
+      "note": "the 'half-package visible' measurements are EVIDENCE of the current defect, not proof that anything is fixed; each case must fail before the change and pass after it",
+      "cases": [
+        "c02 (P-D1): output write fails => a consumer must NOT see a consumable committed package; measured current behaviour: rc=2 but is_registered=true, commit_qualified=1, zero real member files",
+        "c03 (P-D2): the second member (Markdown) fails => the consumer must NOT see a half package; measured current behaviour: commit_qualified=1 with report.md missing",
+        "c05 (P-D4): stdout-only => must NOT count as a committed formal package; measured current behaviour: rc=0, 1 registry row, zero members on disk",
+        "V2 (single-member package): only --output is ever given, --markdown is NEVER requested => the package MUST commit successfully, and its identity must be distinguishable from the multi-member cases above; this case does not exist in the current probe set and must be added"
+      ]
+    },
     "I-09-C": [
       "real kill / torn-write / repeated-recovery matrix over the frozen fault table F1-F12",
       "true two-process lock stress (the single burst in this card is NOT a lock test)",

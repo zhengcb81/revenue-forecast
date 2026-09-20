@@ -11,15 +11,32 @@
  "findings": {
   "F-M08-06": {
    "what": "oracle.md carried two duplicated 'revision r2' sections and two mutually exclusive pre-append hashes in the same ledger",
-   "action": "merged into ONE r2 section; the reproducible v1 hash is kept; the unreproducible value is kept verbatim, labelled as a provenance gap and barred from use as a baseline",
+   "action": "FOLDED the two r2 sections into one and INSERTED a provenance-gap note at the folded duplicate's former position. The insert point coincides with EOF of the new file, but the mechanism is an INSERTION into the pre image's content, not a trailing append: live = pre[:kept_prefix_bytes] + note, so live[:kept_prefix_bytes] == pre[:kept_prefix_bytes] byte for byte (equivalently, live carries pre's complete r2 body as a prefix). F-R3-01: the earlier 'deleted + appended' phrasing was correct arithmetic but the wrong mental model, and is replaced here. The reproducible v1 hash is kept; the unreproducible value is kept verbatim, labelled a provenance gap and barred from use as a baseline",
+   "byte_account": "10912 (pre whole file) - 1706 (folded duplicate = pre[K:]) + 4147 (inserted r3 note) = 13353 (live whole file)",
+   "kept_prefix_taken_from_the_preserved_pre_image": true,
+   "only_the_r3_block_changed_in_F_R3_01": true,
+   "r3_block_versions": {
+    "v1_original": {
+     "block_bytes": 3709,
+     "block_sha256": "56a448b39c2be5c909a43c87fb46ecac9f76ca607b8859ceda191ce5eef910ca",
+     "whole_file_sha256": "206b27b3d8897f77d40007386fc932f114e8cf9c436ebcabe942db5b11615cc3",
+     "note": "the reviewer's verified arithmetic (12592-1900+3711=14403 / 10912-1706+3709=12915 / 11469-1903+3709=13275 / 19745-3585+3714=19874) refers to this version"
+    },
+    "v2_after_F_R3_01": {
+     "block_bytes": 4147,
+     "block_sha256": "26812be4577d06cb242a86ce87071a72032db2bfcd1994b9ecda0d44b1e1f086",
+     "whole_file_sha256": "7a4c585eca511b5ba86375077e7d6528413d2ca84292471d8c460b5e0b77494b",
+     "note": "same kept prefix, same frozen text; only the block's prose and its self-consistent byte account changed"
+    }
+   },
    "oracle_md_sha256_before": "c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb",
    "oracle_md_bytes_before": 10912,
-   "oracle_md_sha256_after": "206b27b3d8897f77d40007386fc932f114e8cf9c436ebcabe942db5b11615cc3",
-   "oracle_md_bytes_after": 12915,
+   "oracle_md_sha256_after": "7a4c585eca511b5ba86375077e7d6528413d2ca84292471d8c460b5e0b77494b",
+   "oracle_md_bytes_after": 13353,
    "removed_duplicate_bytes": 1706,
    "removed_duplicate_sha256": "a4d12cd09b0a9d95a7ce4a6f7c5d0417a01d47ca00cde44d7c6dffb3961d72c8",
-   "added_r3_note_bytes": 3709,
-   "added_r3_note_sha256": "56a448b39c2be5c909a43c87fb46ecac9f76ca607b8859ceda191ce5eef910ca",
+   "added_r3_note_bytes": 4147,
+   "added_r3_note_sha256": "26812be4577d06cb242a86ce87071a72032db2bfcd1994b9ecda0d44b1e1f086",
    "kept_prefix_bytes": 9206,
    "kept_prefix_sha256_before": "b4c7b4acdd7b324bd7da8530a879c2279e281e2c8af8e3dd94438fa21f3a81c0",
    "kept_prefix_sha256_after": "b4c7b4acdd7b324bd7da8530a879c2279e281e2c8af8e3dd94438fa21f3a81c0",
@@ -89,7 +106,7 @@
    "what": "M08 decision.md DEC-M08-1 still carried the r1 wording and did not point at the handoff's three owner steps",
    "action": "appended a superseding DEC-M08-1 section that points explicitly at handoff.json.owner_action_required (all three steps, including the explicit prohibition on re-picking the example); the r1 wording is preserved verbatim above it",
    "decision_md_sha256_before": "c950fc851f9fb797b32992e454699e5bead11e029e10b49ed536614300d0685b",
-   "decision_md_sha256_after": "fcacd5c70db7c3df0134452ce5147bb373ac1484e6de87c71ec57c5dd3108b63",
+   "decision_md_sha256_after": "aec8f19db79dc47814dd278c2cceec4b70888b9b14a4001c6daf21ae5a045b0d",
    "points_at": "handoff.json.owner_action_required (id F-M08-02-remediation)",
    "forbidden_constraint_restated": "re-picking the example so that only the convenient reading passes",
    "m08_only": false
@@ -98,7 +115,7 @@
  "r3_changed_files_in_this_attempt": {
   "oracle.md": {
    "sha256_before": "c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb",
-   "sha256_after": "206b27b3d8897f77d40007386fc932f114e8cf9c436ebcabe942db5b11615cc3"
+   "sha256_after": "7a4c585eca511b5ba86375077e7d6528413d2ca84292471d8c460b5e0b77494b"
   },
   "evidence/": {
    "evidence/M06/oq_rulings.json": {
@@ -107,24 +124,24 @@
    },
    "evidence/M06/source_manifest.json": {
     "sha256_before": "0eb7e1c2c1d6abded2753ae4099bd351325bdd06872d3eef2b1885a967743ded",
-    "sha256_after": "cd5fdc4119f2dd8a5976c40b745923abd4e5560a4b4b26e40757c6b59a6126d5"
+    "sha256_after": "a76ee24ed024c5aa30f77272bb8f586a655392e5557f35469c43bc1c0b4cf08c"
    }
   },
   "binding.json": {
    "sha256_before": "6b2d3a48a34239962161eb666e5b78134cbcd946249beb4d1dddb909a018c04b",
-   "sha256_after": "e860d7fe5069630e708d321e5e06c5144721dd7a84248f9b31e4758c6cce540c"
+   "sha256_after": "a928a534f379a6ea1083159114ff543eb3026467107043ebab6cae6fdf56568f"
   },
   "handoff.json": {
    "sha256_before": "f9fc17473cf9f2c875ae22f3d9b569f5c7d706434431f60337840c404caffdf4",
-   "sha256_after": "3fd3e52bce718b003672e647a3fdf58e16d8195eaec872cc03b2597236fa6781"
+   "sha256_after": "9bfb05ef5891dccb266847ceddc46c0a464ca84b785e1dbd3633e7b6fdbc6aeb"
   },
   "decision.md": {
    "sha256_before": "c950fc851f9fb797b32992e454699e5bead11e029e10b49ed536614300d0685b",
-   "sha256_after": "fcacd5c70db7c3df0134452ce5147bb373ac1484e6de87c71ec57c5dd3108b63"
+   "sha256_after": "aec8f19db79dc47814dd278c2cceec4b70888b9b14a4001c6daf21ae5a045b0d"
   },
   "after/rerun_sha256.json": {
    "sha256_before": "291be9e8cd9bc7454335bebc8c38e8ed2adf8e1931f676f172bb2da2da071ed5",
-   "sha256_after": "535c2e6c2b089e2f81aa18e15a84354b1fff0d703abbc90445db91b75834ae27"
+   "sha256_after": "82dec5f207c25b762ce59e79529e647ae94dcd2ace6f06e3e1c23e09c7d99942"
   },
   "new_files": [
    "evidence/M06/oq_rulings_enumeration.json",

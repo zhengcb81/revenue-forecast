@@ -61,11 +61,16 @@ byte-identical mirror so that {card} can re-run its own proof locally.
 
 ## What this pass changed for {card}
 
-1. oracle.md -- merged the two duplicated "revision r2" sections into ONE and appended a
-   provenance-gap note (F-M08-06). The duplicate was byte-identical to the kept section
-   except for the hash line, so nothing but the duplicate was removed.
+1. oracle.md -- FOLDED the two duplicated "revision r2" sections into ONE and INSERTED a
+   provenance-gap note at the folded duplicate's former position (F-M08-06; wording
+   corrected under F-R3-01). The insert point coincides with EOF, but the mechanism is an
+   insertion, not a trailing append: live = pre[:kept_prefix_bytes] + note, so
+   live[:kept_prefix_bytes] is byte-identical to pre[:kept_prefix_bytes] (equivalently,
+   live carries pre's complete r2 body as a prefix). The folded duplicate was
+   byte-identical to the kept section except for the hash line.
    sha256 {dedupe[card]['oracle_md_sha256_before']} -> {dedupe[card]['oracle_md_sha256_after']}
    ({dedupe[card]['oracle_md_bytes_before']} -> {dedupe[card]['oracle_md_bytes_after']} bytes)
+   byte account: {dedupe[card]['oracle_md_bytes_before']} (pre) - {verify[card]['P2_deleted_bytes']} (folded duplicate) + {verify[card]['P2_inserted_bytes']} (inserted r3 note) = {dedupe[card]['oracle_md_bytes_after']} (live)
    kept prefix [{verify[card]['P1_kept_region_bytes']} bytes] sha256
    {verify[card]['P1_kept_region_sha256_before']} (before) ==
    {verify[card]['P1_kept_region_sha256_after']} (after)
@@ -110,6 +115,16 @@ Notes:
   therefore not destroyed.
 - No expectation, tolerance, negative case, disclosure figure or product file was changed.
 - M08 remains BLOCKED: the owner three-step remediation is still outstanding.
+
+## Provenance
+
+The first r3 pass (before F-R3-01/F-R3-02) was committed and pushed by the orchestration
+queue as commit `e954449`, which took M05-M08's 434 files (254 of them under
+recovery/docfix-r3/) into the repository. `iso/` and `__pycache__/` are gitignored, so no
+`.pyc` entered the repository. The F-R3-01 wording fix and the F-R3-02
+input_hashes_current addition in this directory are NOT part of `e954449`; they supersede
+it and will need a follow-up commit. Working-tree state, not `e954449`, is authoritative
+for the current hashes.
 """
         open(os.path.join(dst, "README.md"), "w", encoding="utf-8",
              newline="\n").write(readme)

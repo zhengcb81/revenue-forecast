@@ -1,0 +1,132 @@
+{
+ "card_id": "M12",
+ "model_id": "bank_revenue",
+ "generated_by": "scripts/oracle_cards_M09_M12.py --card M12 (stdlib only, no product import)",
+ "contract": {
+  "formula": "revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue",
+  "required": [
+   "asset_yield",
+   "average_earning_assets",
+   "average_interest_bearing_liabilities",
+   "fee_revenue",
+   "funding_cost"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "dimensions": {
+   "average_earning_assets": "monetary_balance",
+   "asset_yield": "ratio",
+   "average_interest_bearing_liabilities": "monetary_balance",
+   "funding_cost": "ratio",
+   "fee_revenue": "revenue",
+   "other_revenue": "revenue"
+  },
+  "effective_defaults_expected": {
+   "other_revenue": 0.0
+  },
+  "declared_defaults_expected": {},
+  "declared_defaults_note": "the card states the optional default, but the registry declares no default for these drivers; the stated behaviour is realised by the implicit zero-fill at scripts/model_registry.py:335. The gating check is the behavioural defaults case, not the declared defaults mapping (oracle.md section 7; OQ-1).",
+  "output_container": "list",
+  "output_element_types": [
+   "float"
+  ]
+ },
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "34.00"
+  ],
+  "tolerances": [
+   3.4e-08
+  ],
+  "hand_work": [
+   "1000 x 0.04 - 800 x 0.02 + 8 + 2"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "34.00",
+   "38.000"
+  ],
+  "expected_float": [
+   34.0,
+   38.0
+  ],
+  "tolerances": [
+   3.4e-08,
+   3.8e-08
+  ],
+  "hand_work": [
+   "1000 x 0.04 - 800 x 0.02 + 8 + 2",
+   "1200 x 0.045 - 1000 x 0.025 + 9 + 0"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "32.00"
+  ],
+  "expected_float": [
+   32.0
+  ],
+  "tolerances": [
+   3.2e-08
+  ],
+  "hand_work": [
+   "1000 x 0.04 - 800 x 0.02 + 8 + 0"
+  ]
+ },
+ "defaults_expected_float": [
+  32.0
+ ],
+ "observation_expected": {
+  "OBS-BASE-IGNORED": {
+   "expected_float": [
+    34.0
+   ]
+  },
+  "OBS-NEG-RATE-ACCEPTED": {
+   "expected_float": [
+    0.0
+   ]
+  },
+  "OBS-NEG-RATE-TOTAL-NEG": {
+   "expected_raised": "ModelRegistryError"
+  },
+  "OBS-FEE-SIGNED": {
+   "expected_float": [
+    21.0
+   ]
+  },
+  "OBS-RATE-GT1": {
+   "expected_float": [
+    494.0
+   ]
+  }
+ },
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "structure_rule": "positive output must be a builtin list whose length equals len(years), whose elements are all float instances and all finite, and the registry contract (formula string, required set, optional set, dimensions) must equal oracle.contract"
+}

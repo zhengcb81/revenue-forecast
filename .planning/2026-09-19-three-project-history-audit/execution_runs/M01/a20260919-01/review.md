@@ -163,3 +163,59 @@ artefact is the POSITIVE INPUT, so the product raises and no verdict exists (cas
 Case B is a defect **outside** the guarded block, so it still raises and exits **1** rather than 2;
 that remains fail-loud but is a different code path. The earlier r2 wording ("rc=2 is not yet
 reachable in practice") was wrong and is corrected here.
+
+---
+
+## 独立 reviewer session 点复审（裁决）
+
+**结论：`accepted_scoped`（仅 formula 资格）。**
+**授予范围：仅 `formula`，且仅限本 attempt（`execution_runs/M01/a20260919-01`）盘上版本、仅限 `iso/checkout_scripts` 副本。**
+
+**未授予项（明示）**：
+- `disclosure_adaptation` = **未授予**，保持 `unmapped`。最小披露映射（紫金矿业 FY2024/FY2025）只构成 D 的素材，未获行业/会计签署。
+- `accuracy` = **未授予**，保持 `unproven`。`STOP_ACCURACY` 命中（无 I-12 冻结设计）。§7 的 FY2024→FY2025 单率残差（CNY 14,588,108.91，0.0042%）是否证性证据，**不是**准确性证据。
+- 未授予任何跨公司/跨行业/跨期间外推；未授予 D/E/F 完成；未授予 `calculate_model_path` 生产入口已核。
+- `formula` 通过**不**提升 `disclosure_adaptation` 或 `accuracy`。
+
+**独立复算（reviewer 自造输入，未照抄卡片）**：16 例（6 正例 + 6 自造负例 + 连续性正例 + 断裂 patch + 边界）全部通过。
+- `base=175, g=[0.08,0.08,0.08]` → `[189.0, 204.12, 220.44960000000003]`（max_abs_diff 2.84e-14）
+- `base=37.5, g=[0,0], years=[1999,2000]` → `[37.5, 37.5]`
+- `base=500, g=[-1.0]`（域下界）→ `[0.0]`（精确 0，非负非 NaN）
+- 保真：输出全长 = `len(years)`，全部 `float` 且有限。
+- 自造负例（均不在卡片清单内）全部以 `ModelRegistryError` 被拒：`g=[-1.0000001]` / `years=[10000]` / `years=[0]` / `g` 长度超出 / `years=[2027.0]` / `g=[]`。
+- 连续断裂 `years=[2027,2029]` → `direct_growth.years must be consecutive and increasing`。
+- 注册串读回：`revenue[t] = revenue[t-1] * (1 + growth_rate[t])`，与 `oracle.md` §1 冻结串逐字相同。
+
+**冻结与追加**：
+- `oracle.md` **只追加、无重复章节**。追加边界**字节级复现**：总 12,310 B，前 9,889 B 的 sha256 = `88635eb46df3c3d13f6ac0bc9af884d1b8d92aac50c6f7703c2f29a7a227d99f`，与本卡自述一致。
+- `oracle.json` 可由 `scripts/oracle_M01.py` **逐字节重生成**（reviewer 在 `%TEMP%` 复跑：`input.json` `22910b38da8558…`、`oracle.json` `cb60e60d07c75a05…`、`cases.json` `0e1f55af5d4b946a…` 三件 IDENTICAL）。
+- 预注册值未被改动：`card_M01.md` 的 `期望输出 [220,110,0]` = `oracle.json.expected_float [220.0,110.0,0.0]`；容差规则未放宽；`oracle.json` mtime 01:18:24 早于 r2/r3 两轮修订。
+
+**九条复审项关闭情况**：`F-M01-01` CLOSED（如实降级为永久缺口 + RECONSTRUCTED v1）；`F-M01-02` CLOSED（reviewer 自建 selfcheck 复现 rc=0/1/2/3 四例全对）；`F-M01-03` CLOSED；`F-M02-01` CLOSED-AS-RESERVED（仍为 owner 裁定项，见 `handoff.json.open_questions`，不阻塞 formula）；`F-M03-01`/`F-M04-01` = not applicable to this card；`NEW-1` not_applicable（M03 only）；`NEW-2` CLOSED（rc=2 可达，已复现）；`NEW-3` CLOSED；`NEW-4` CLOSED。
+
+**未授予之外，本复审提出的记账/交付发现（不改变上述公式结论）**：
+- **P1**：`handoff.json.revision_history` 把 4 条真实轮次记成 6 条（r2 与 r3 各逐字重复一次）——四卡同缺陷。
+- **P2**：`handoff.json.status="review_pending"` 与 `qualifications.formula="accepted_scoped …"` 自相矛盾；`evidence/M01/qualification.json.formula.status` 仍为 `review_pending` 且 `not_yet_independently_reviewed=true`。
+- **P2**：`source_manifest.json.oracle_versions.oracle_md_versions[0].sha256`（`73e1e587…`）为中间写入态，非当前盘上值（`90bce2fa…`）。
+- **P3**：`revision_r3.json` 的自我 sha256 声明不可复现（其余 32 条 hash 声明四卡全部相符）。
+- **P3**：`source_manifest.json.revision_r2.review_items` 把 `F-M03-01`/`F-M04-01` 列为本卡已处置项（模板扫入）。
+- **P3**：`before/git_status_revenue-forecast.txt`、`before/pytest_version.txt`、`after/rerun_stderr.txt` 与其余三卡为同一份拷贝。
+
+**订正要求（由实现者执行；见 §11）**：`status` → `accepted_scoped`；`reviewer_status` → `point_review_returned`；`revision_history` 去重为 4 条并追加第 5 条 r4 裁决记录；`qualification.json.formula` 补独立复核块；`source_manifest.json` 的 oracle 版本 hash 更新为当前盘上值；`review_items` 去掉非本卡条目。`disclosure_adaptation` 与 `accuracy` 两栏**不得**改动。
+
+---
+
+## 点复审未予验证的事项（原样承接，不得当作已证）
+
+以下为独立点复审明确列为"未能验证"的事项，本 attempt 原样承接，**不**声称已解决：
+
+1. `revision_r3.json` 自称的自我 sha256 不可核验（r4 已改为显式 non-claim 并把真实值外置）。
+2. 首跑 stderr 的原始字节**客观已不存在**（被成功重跑覆盖）；"首跑确实发生 `KeyError: 'continuity'`"
+   **无法独立证实**，只有会话转录捕获与 mtime 序列。
+3. `oracle.md` **首冻版的运行前 hash 四卡均未记录**（`F-M01-01` 的实质缺口，不可回填）。
+4. M03 冻结正文的改动**发生在哪一轮**无法独立复算（盘上无该中间态副本，只有实现者自述的前后 hash）。
+5. `<PLAN>\reviews` 的 4 个子目录对当前用户拒绝访问，**无法遍历排除内部被写**；
+   整树最新 mtime 仍是 09-19 10:05:32，本 session 亦未写入该目录。
+6. `scripts/model_registry.py` 的 mtime 变更**无法归因**（内容 hash 未变，不影响本卡）。
+7. 本卡的 D/E/F **会计/行业实质**未获审阅（需签署方）；本裁决仅覆盖 A–C（formula）+ 记账。
+8. 并发卡 M05–M31 的任何陈述均为**时点观察**，其后可能已被其他 session 改变。

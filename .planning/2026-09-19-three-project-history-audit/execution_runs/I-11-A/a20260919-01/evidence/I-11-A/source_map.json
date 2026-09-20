@@ -1,0 +1,374 @@
+{
+ "attempt_id": "a20260919-01",
+ "generated_by": "tools/build_hypotheses.py",
+ "page_index_basis_policy": "pdf_leaf_1based for CN PDF; table_index_0based for the US HTML parse. The data-governance schema enumerates 'page' and 'table/span' as location enumerations; 'pdf_leaf_1based' is this attempt's explicit basis name and is registered as OPEN-4 because it needs the owner or schema review to become a canonical enumeration value.",
+ "independent_extraction_paths": [
+  {
+   "id": "P1",
+   "tool": "tools/pdf_text.py",
+   "implementation": "pure standard library (re,zlib)",
+   "outputs": [
+    "evidence/I-11-A/extract/P1_zijin_pages.json",
+    "evidence/I-11-A/extract/P1_msft_tables.json"
+   ]
+  },
+  {
+   "id": "P2",
+   "tool": "pdftotext.exe (Xpdf 4.00, Git for Windows)",
+   "sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
+   "outputs": [
+    "evidence/I-11-A/extract/P2_zijin_44_48.txt",
+    "evidence/I-11-A/extract/P2_xiaomi_probe.txt"
+   ]
+  }
+ ],
+ "not_readable_in_this_attempt": [
+  {
+   "doc_id": "HK-XIAOMI-AR2025",
+   "doc_sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+   "reason": "object-stream PDF (423 /ObjStm, 0 classic page objects): the standard-library path reports 352→0 classic pages for this file and extracted 0 characters; the independent pdftotext path exits 0 but emits mojibake for the Chinese text, so no original string can be read reliably. Per oracle O-7 the source is marked not_readable_in_this_attempt and no value from it is cited.",
+   "evidence": [
+    "evidence/I-11-A/extract/P1_xiaomi.stdout.txt",
+    "evidence/I-11-A/extract/P1_xiaomi_probe.json",
+    "evidence/I-11-A/extract/P2_xiaomi_probe.txt"
+   ],
+   "state": "STOP_EVIDENCE"
+  }
+ ],
+ "documents": [
+  {
+   "doc_id": "CN-ZIJIN-AR2025",
+   "cited_in_hypotheses_as": "CN-ZIJIN-AR2025",
+   "doc_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+   "strategy": "page_text",
+   "page_index_basis": "pdf_leaf_1based",
+   "extraction_output_path": "evidence/I-11-A/extract/P1_zijin_pages.json",
+   "extraction_output_sha256": "f1c08642e11bdc780b530fa7bcc8434030919cd9ea5907cbc58909af356c44be",
+   "independent_prior_extraction_crosscheck": "prior artifact PRIOR-EXTRACT-ZIJIN (sha256 cbda5abb248d9c5f032a681befbd2bc4012896c8bdfef2192490995c358c07eb): under the offset selected by tools/page_offset_match.py, every cited numeric string of the cited pages also occurs on the offset page; see P1_vs_prior_offset.json",
+   "cited_values": [
+    {
+     "key": "zijin_seg_mineral_2025",
+     "raw": "109,977,556,345",
+     "page": 327,
+     "raw_label": "对外销售收入-矿产品分部（2025年）"
+    },
+    {
+     "key": "zijin_seg_smelt_2025",
+     "raw": "165,858,644,874",
+     "page": 327,
+     "raw_label": "对外销售收入-冶炼产品分部（2025年）"
+    },
+    {
+     "key": "zijin_seg_trade_2025",
+     "raw": "29,212,610,830",
+     "page": 327,
+     "raw_label": "对外销售收入-贸易分部（2025年）"
+    },
+    {
+     "key": "zijin_seg_other_2025",
+     "raw": "44,030,270,803",
+     "page": 327,
+     "raw_label": "对外销售收入-其他分部（2025年）"
+    },
+    {
+     "key": "zijin_seg_total_2025",
+     "raw": "349,079,082,852",
+     "page": 327,
+     "raw_label": "对外销售收入-合计（2025年）"
+    },
+    {
+     "key": "zijin_seg_elim_2025",
+     "raw": "234,970,146,412",
+     "page": 327,
+     "raw_label": "内部销售收入-抵销列（2025年）"
+    },
+    {
+     "key": "zijin_seg_gross_total_2025",
+     "raw": "138,271,672,956",
+     "page": 327,
+     "raw_label": "分部总计（含内部销售，矿产品，2025年）"
+    },
+    {
+     "key": "zijin_seg_mineral_2024",
+     "raw": "74,089,365,354",
+     "page": 328,
+     "raw_label": "对外销售收入-矿产品分部（2024年）"
+    },
+    {
+     "key": "zijin_seg_smelt_2024",
+     "raw": "181,141,823,725",
+     "page": 328,
+     "raw_label": "对外销售收入-冶炼产品分部（2024年）"
+    },
+    {
+     "key": "zijin_seg_trade_2024",
+     "raw": "29,386,475,085",
+     "page": 328,
+     "raw_label": "对外销售收入-贸易分部（2024年）"
+    },
+    {
+     "key": "zijin_seg_other_2024",
+     "raw": "19,022,292,989",
+     "page": 328,
+     "raw_label": "对外销售收入-其他分部（2024年）"
+    },
+    {
+     "key": "zijin_seg_total_2024",
+     "raw": "303,639,957,153",
+     "page": 328,
+     "raw_label": "对外销售收入-合计（2024年）"
+    },
+    {
+     "key": "zijin_gold_prod_2025",
+     "raw": "82,743",
+     "page": 44,
+     "raw_label": "矿山产金-生产量（千克）"
+    },
+    {
+     "key": "zijin_gold_sales_2025",
+     "raw": "83,161",
+     "page": 44,
+     "raw_label": "矿山产金-销售量（千克）"
+    },
+    {
+     "key": "zijin_copper_prod_2025",
+     "raw": "878,180",
+     "page": 44,
+     "raw_label": "矿山产铜-生产量（吨）"
+    },
+    {
+     "key": "zijin_copper_sales_2025",
+     "raw": "884,943",
+     "page": 44,
+     "raw_label": "矿山产铜-销售量（吨）"
+    },
+    {
+     "key": "zijin_zinc_prod_2025",
+     "raw": "348,556",
+     "page": 44,
+     "raw_label": "矿山产锌-生产量（吨）"
+    },
+    {
+     "key": "zijin_zinc_sales_2025",
+     "raw": "352,470",
+     "page": 44,
+     "raw_label": "矿山产锌-销售量（吨）"
+    },
+    {
+     "key": "zijin_silver_prod_2025",
+     "raw": "429,382",
+     "page": 44,
+     "raw_label": "矿山产银-生产量（千克）"
+    },
+    {
+     "key": "zijin_silver_sales_2025",
+     "raw": "430,254",
+     "page": 44,
+     "raw_label": "矿山产银-销售量（千克）"
+    },
+    {
+     "key": "zijin_gold_inventory_2025",
+     "raw": "1,470",
+     "page": 44,
+     "raw_label": "矿山产金-库存量（千克）"
+    },
+    {
+     "key": "zijin_copper_inventory_2025",
+     "raw": "11,343",
+     "page": 44,
+     "raw_label": "矿山产铜-库存量（吨）"
+    },
+    {
+     "key": "zijin_plan_statement",
+     "raw": "矿产金105吨，矿产铜120万吨",
+     "page": 56,
+     "raw_label": "2026年公司主要矿产品产量计划（原文串）"
+    },
+    {
+     "key": "zijin_revenue_2025",
+     "raw": "349,079,082,852",
+     "page": 43,
+     "raw_label": "营业收入-本期数（2025年，元）"
+    },
+    {
+     "key": "zijin_revenue_2024",
+     "raw": "303,639,957,153",
+     "page": 43,
+     "raw_label": "营业收入-上年同期数（2024年，元）"
+    }
+   ],
+   "narrative_facts": [],
+   "narrative_text_path": null,
+   "cited_value_count": 25
+  },
+  {
+   "doc_id": "CN-ZIJIN-AR2025",
+   "cited_in_hypotheses_as": "CN-ZIJIN-AR2025-TXT",
+   "doc_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+   "strategy": "page_text",
+   "page_index_basis": "pdf_leaf_1based",
+   "extraction_output_path": "evidence/I-11-A/extract/P1_zijin_pages.json",
+   "extraction_output_sha256": "f1c08642e11bdc780b530fa7bcc8434030919cd9ea5907cbc58909af356c44be",
+   "independent_prior_extraction_crosscheck": "prior artifact PRIOR-EXTRACT-ZIJIN (sha256 cbda5abb248d9c5f032a681befbd2bc4012896c8bdfef2192490995c358c07eb): under the offset selected by tools/page_offset_match.py, every cited numeric string of the cited pages also occurs on the offset page; see P1_vs_prior_offset.json",
+   "cited_values": [
+    {
+     "key": "zijin_seg_note_anchor",
+     "raw": "对外销售收入",
+     "page": 327,
+     "raw_label": "分部报告-对外销售收入行标签"
+    },
+    {
+     "key": "zijin_prodsales_anchor",
+     "raw": "产销量情况分析表",
+     "page": 44,
+     "raw_label": "产销量情况分析表标题"
+    },
+    {
+     "key": "zijin_plan_anchor",
+     "raw": "2026年公司主要矿产品产量计划",
+     "page": 56,
+     "raw_label": "经营计划-2026年主要矿产品产量计划标题"
+    },
+    {
+     "key": "zijin_plan_caveat",
+     "raw": "本计划为指导性指标，存在不确定性，不构成对产量实现的承诺",
+     "page": 56,
+     "raw_label": "经营计划-指导性指标声明"
+    },
+    {
+     "key": "zijin_mgmt_growth_2026",
+     "raw": "14.96",
+     "page": 43,
+     "raw_label": "营业收入变动比例（%，2025 vs 2024）"
+    }
+   ],
+   "narrative_facts": [],
+   "narrative_text_path": null,
+   "cited_value_count": 5
+  },
+  {
+   "doc_id": "US-MSFT-10K-FY2026",
+   "cited_in_hypotheses_as": "US-MSFT-10K-FY2026",
+   "doc_sha256": "e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecff",
+   "strategy": "xml_table",
+   "page_index_basis": "table_index_0based",
+   "extraction_output_path": "evidence/I-11-A/extract/P1_msft_tables.json",
+   "extraction_output_sha256": "1cc3ccd9fab81c401fed2089495e55455b04cfdb8d2cc5ffb6b516759f3439ad",
+   "independent_prior_extraction_crosscheck": "not_applicable (HTML table parse; no prior independent extract)",
+   "cited_values": [
+    {
+     "key": "msft_pbp_fy2026",
+     "raw": "139,996",
+     "table": 74,
+     "raw_label": "Productivity and Business Processes Revenue FY2026"
+    },
+    {
+     "key": "msft_ic_fy2026",
+     "raw": "137,791",
+     "table": 74,
+     "raw_label": "Intelligent Cloud Revenue FY2026"
+    },
+    {
+     "key": "msft_mpc_fy2026",
+     "raw": "54,052",
+     "table": 74,
+     "raw_label": "More Personal Computing Revenue FY2026"
+    },
+    {
+     "key": "msft_total_fy2026",
+     "raw": "331,839",
+     "table": 74,
+     "raw_label": "Total Revenue FY2026"
+    },
+    {
+     "key": "msft_pbp_fy2025",
+     "raw": "120,810",
+     "table": 74,
+     "raw_label": "Productivity and Business Processes Revenue FY2025"
+    },
+    {
+     "key": "msft_ic_fy2025",
+     "raw": "106,265",
+     "table": 74,
+     "raw_label": "Intelligent Cloud Revenue FY2025"
+    },
+    {
+     "key": "msft_mpc_fy2025",
+     "raw": "54,649",
+     "table": 74,
+     "raw_label": "More Personal Computing Revenue FY2025"
+    },
+    {
+     "key": "msft_total_fy2025",
+     "raw": "281,724",
+     "table": 74,
+     "raw_label": "Total Revenue FY2025"
+    },
+    {
+     "key": "msft_pbp_growth_fy2026",
+     "raw": "16",
+     "table": 14,
+     "raw_label": "PBP revenue percentage change"
+    },
+    {
+     "key": "msft_ic_growth_fy2026",
+     "raw": "30",
+     "table": 14,
+     "raw_label": "IC revenue percentage change"
+    },
+    {
+     "key": "msft_mpc_growth_fy2026",
+     "raw": "(1)%",
+     "table": 14,
+     "raw_label": "MPC revenue percentage change (negative, parenthesised)"
+    },
+    {
+     "key": "msft_srv_cloud_fy2026",
+     "raw": "129,425",
+     "table": 76,
+     "raw_label": "Server products and cloud services FY2026"
+    },
+    {
+     "key": "msft_m365c_fy2026",
+     "raw": "101,997",
+     "table": 76,
+     "raw_label": "Microsoft 365 Commercial products and cloud services FY2026"
+    }
+   ],
+   "narrative_facts": [
+    {
+     "key": "msft_cloud_rev_statement",
+     "raw": "Microsoft Cloud revenue increased 27% to $214.4 billion",
+     "table": "mdda",
+     "raw_label": "MD&A highlights, fiscal year 2026"
+    },
+    {
+     "key": "msft_rpo_statement",
+     "raw": "Commercial remaining performance obligation increased 84% to $678 billion",
+     "table": "mdda",
+     "raw_label": "MD&A highlights, fiscal year 2026 (context for the cloud aggregate)"
+    },
+    {
+     "key": "msft_m365cc_growth_statement",
+     "raw": "Microsoft 365 Commercial cloud revenue increased 17%",
+     "table": "mdda",
+     "raw_label": "MD&A highlights, fiscal year 2026"
+    }
+   ],
+   "narrative_text_path": "evidence/I-11-A/extract/P1_msft_narrative.txt",
+   "cited_value_count": 16
+  }
+ ],
+ "counts": {
+  "documents": 3,
+  "cited_values_per_document": {
+   "CN-ZIJIN-AR2025": 25,
+   "CN-ZIJIN-AR2025-TXT": 5,
+   "US-MSFT-10K-FY2026": 16
+  },
+  "cited_values_total": 46,
+  "narrative_facts_total": 3,
+  "hypotheses": 8,
+  "sources_not_readable": 1
+ }
+}

@@ -1,0 +1,44 @@
+# Local pre-commit gate mirroring the CI quality workflow's fast checks.
+# Pins match CI exactly (ruff 0.15.18, mypy 1.19.0 via the local system).
+# Full regression stays manual: run the affected pytest suites before push.
+#
+#   pre-commit install   # once per clone (installs .git/hooks/pre-commit)
+#   pre-commit run --all-files   # full gate on demand
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff check (WU-1.2, mirrors CI)
+        entry: ruff check
+        language: system
+        types: [python]
+        # CI scope: ruff check scripts tests tools e2e
+        files: ^(scripts/|tests/|tools/|e2e/).*\.py$
+
+      - id: mypy-contract
+        name: mypy public contracts (FC-1204-c, mirrors CI)
+        entry: >-
+          python -m mypy
+          scripts/contracts/
+          scripts/schema_compatibility.py
+          scripts/filing_fetch_client.py
+          scripts/trust_anchor.py
+        language: system
+        pass_filenames: false
+        # Run only when one of the checked modules is staged.
+        files: >-
+          ^scripts/(contracts/|schema_compatibility\.py|filing_fetch_client\.py|
+          trust_anchor\.py)
+
+      # FC-1307-a, vendored from company-wiki/scripts/host_assumption_guard.py
+      # (byte-identical; tests/test_fc1307a_host_assumption_gate.py checks the drift
+      # when the sibling checkouts are present).  It catches the class that broke CI
+      # on 2026-09-13: a test path/value that is host-dependent, green on Windows and
+      # red on Linux.  Rule 1/2 judge files under tests/ only - product code is
+      # allowed to branch on the host.
+      - id: host-assumption-guard
+        name: host assumption guard (FC-1307-a, mirrors the CI contract test)
+        entry: python tools/host_assumption_guard.py --roots tests tools scripts e2e
+        language: system
+        pass_filenames: false
+        files: ^(tests/|tools/|scripts/|e2e/).*\.py$

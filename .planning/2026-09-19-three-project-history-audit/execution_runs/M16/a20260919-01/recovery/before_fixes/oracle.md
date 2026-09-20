@@ -1,0 +1,189 @@
+# M16 · real_estate_rental — 冻结 oracle（运行前写定）
+
+Card: M16（`execution_v2/card_M16.md`），Parent I-10，状态 planned，调度依赖 I-00-B、I-00-C。
+Attempt: `execution_runs/M16/a20260919-01`。
+本文在**任何产品代码运行之前**写定；正文写入后不为贴合结果而修改（修订只允许在文件末尾**追加**一节
+「修订 r2」，且追加前正文的 sha256 必须在**真实行边界**可复现，见文末标记行）。
+
+## 0. 独立性声明（最重要）
+
+- 第 1–5 节的**全部数值预期来自手算（十进制）**，并由本 attempt 内独立脚本
+  `scripts/oracle_M16.py` 用 Python 标准库（`decimal`/`json`/`hashlib`）复算。
+  该脚本**不 import** 产品任何模块；自检证据：`evidence/M16/oracle_selfcheck.json`。
+- **绝不**通过调用被测函数 `calculate_registered_model` 或任何产品 helper 生成 expected。
+- 公式来源：`card_M16.md` L8「单位/口径：年度平均已租m²×U/m²年；已租面积不能再乘出租率」
+  与 L33「手算：1000×0.03+2=32」。实现入口 `scripts/model_registry.py:308`
+  （注册 `scripts/model_registry.py:236`）仅在冻结之后用于定位调用点。
+
+## 1. 公式 / 单位 / 口径
+
+| 项 | 冻结内容 | 出处 |
+|---|---|---|
+| 公式（卡片文字） | `revenue = 年度平均已租面积 × U/m²年 + 其他收入` | `card_M16.md` L8、L33 |
+| 必填 driver | `average_occupied_area`、`rent_per_area` | `card_M16.md` L9 |
+| 可选 driver / 默认 | `other_revenue` 默认 0 | `card_M16.md` L9 |
+| 单位 | 面积 = m²（**已租**、年度平均）；`rent_per_area` = U/m²年（**年化**）；其他收入 = U | `card_M16.md` L8 |
+| 量纲 | m² × (U/m²年) = U/年；加其他收入仍为 U | 量纲自检 |
+| 允许范围 | 已租面积 ≥ 0（含端点 0）；`rent_per_area` ≥ 0；其他收入带符号 | 通用契约 + `evidence/M16/oq_enumeration.json` |
+| 双重计数禁忌 | **已租面积不能再乘出租率**（没有再乘一次占用比例） | `card_M16.md` L8、L39 |
+| 月租/年租 | 月租转年租必须**显式**换算，不得隐含 | `card_M16.md` L39 业务负例 |
+| 会计口径 | 现金租金与直线法会计租金不同；免租期处理属披露适配阶段 | `card_M16.md` L37、L39 |
+| 硬约束 | 输出长度 = `len(years)`；逐年独立；输出每个元素为有限 float | 通用契约 + `common_model_cards.md` L20 |
+
+## 2. 合成正例（positive）
+
+输入（=`card_M16.md` L12–31 原文）：
+
+```json
+{"model_id": "real_estate_rental", "base_revenue": 0,
+ "drivers": {"average_occupied_area": [1000], "rent_per_area": [0.03],
+             "other_revenue": [2]},
+ "years": [2027]}
+```
+
+手算（逐步，未取整）：
+
+1000 × 0.03 = **30**；30 + 2 = **32**。
+
+**期望输出 = `[32]`**（与卡片 L33 原文一致）。
+- 保真期望：容器 `list`、长度 1、元素类型 `float`、全部有限、年度 `[2027]`。
+- 容差：`abs(actual - expected) <= 1e-9 × max(1, abs(expected))` = 3.2e-8。
+
+## 3. 默认值案例（defaults，非 gating）
+
+```json
+{"model_id": "real_estate_rental", "base_revenue": 0,
+ "drivers": {"average_occupied_area": [1000], "rent_per_area": [0.03]},
+ "years": [2027]}
+```
+
+手算：1000 × 0.03 + **0（默认）** = **30**。**期望输出 = `[30]`**。
+
+## 4. 连续性案例（continuity）
+
+`real_estate_rental` 是**逐年独立的流量模型**（把已租面积与租金直接映射为收入），
+"存量断裂"不适用（STOP_BRIDGE → **not_applicable_with_reason**）。
+适用的是**跨年财年连续性**：
+
+- Continuity positive：`years=[2027, 2028]`，`average_occupied_area=[1000, 1200]`，
+  `rent_per_area=[0.03, 0.032]`，`other_revenue=[2, 3]`。
+  手算：FY2027 = 1000×0.03 + 2 = 30 + 2 = **32**；
+  FY2028 = 1200×0.032 + 3 = 38.4 + 3 = **41.4**。期望 = `[32, 41.4]`。
+- Continuity 断裂 patch：`years=[2027, 2029]` → 预期 `ModelRegistryError`。
+
+## 5. 负例（card-specific + N01–N05）
+
+首个必填 driver = `average_occupied_area`。每个负例使用**新的 deepcopy 独立输入**，不经 JSON 解析器。
+card-specific 负例用 `set_driver_element`，命中**下界守卫**而非数组长度守卫。
+
+| 例 | 变换（在指定 base 输入上只改这一处） | 冻结预期 |
+|---|---|---|
+| NEG-CARD | `average_occupied_area[0] = -1`（base=positive） | `ModelRegistryError`（下界 0.0） |
+| N01a | `average_occupied_area[0] = True` | `ModelRegistryError` |
+| N01b | `average_occupied_area[0] = float('nan')` | `ModelRegistryError` |
+| N01c | `average_occupied_area[0] = float('inf')` | `ModelRegistryError` |
+| N01d | `average_occupied_area[0] = float('-inf')` | `ModelRegistryError` |
+| N02 | `average_occupied_area = []` | `ModelRegistryError`（长度 ≠ `len(years)`） |
+| N03 | 删除 `average_occupied_area` | `ModelRegistryError`（缺必填） |
+| N04 | 增加 `unknown_driver = [1]` | `ModelRegistryError`（未知字段） |
+| N05a | `years = []` | `ModelRegistryError` |
+| N05b | `years = [True]` | `ModelRegistryError` |
+| CONT-BREAK | `years = [2027, 2029]`（base=continuity_positive） | `ModelRegistryError` |
+
+合计 **11 个负例**。通过判据：目标异常类型必须是 `ModelRegistryError`；导入/文件错误不得算通过。
+
+## 6. 观察项（非 pass/fail 设计观察，不参与退出码）
+
+| ID | 变换 | 冻结预期 | 说明 |
+|---|---|---|---|
+| OBS-BASE-IGNORED | `base_revenue = 999`（base=positive） | 与正例**相同** = `[32]` | `_rowwise` 丢弃 `base_revenue` |
+| OBS-BOUND-INCLUSIVE | `average_occupied_area[0] = 0` | `[2]`（手算 0×0.03 + 2） | 面积域下端**含端点**：0 接受、−1 拒绝（NEG-CARD） |
+| OBS-SIGNED-OTHER | `other_revenue[0] = -1` | `[29]`（手算 30 − 1） | 其他收入是带符号 driver，负值被接受且总收入仍非负 |
+
+## 7. 卡片文字 vs 实现公式串
+
+运行后从隔离副本读取 `MODEL_REGISTRY["real_estate_rental"].formula`（预期
+`revenue = average_occupied_area * rent_per_area + other_revenue`）并逐项比对；
+不一致时**记录差异**，不改期望值。特别核对：注册的 driver 集合里**没有**出租率/占用率 driver，
+即"已租面积不能再乘出租率"在契约层面成立（卡片 L8）。
+
+## 8. 拒绝条件（本卡记录并执行）
+
+| ID | 拒绝条件 | 冻结预期 | 运行时可否执行 |
+|---|---|---|---|
+| R1 | `average_occupied_area` 为负 | `ModelRegistryError` | 是（NEG-CARD + OBS-BOUND-INCLUSIVE 对照） |
+| R2 | 必填 driver 长度 ≠ `len(years)`（含 `[]`） | `ModelRegistryError` | 是（N02） |
+| R3 | 缺必填 driver | `ModelRegistryError` | 是（N03） |
+| R4 | 未注册 driver（例如把出租率当 driver 传入） | `ModelRegistryError` | 是（N04 的同类机制） |
+| R5 | `years` 为空 / 非连续 / 非整数财年 | `ModelRegistryError` | 是（N05a/N05b、CONT-BREAK） |
+| R6 | 非有限值（nan/inf/-inf，含 bool 冒充数值） | `ModelRegistryError` | 是（N01a–d） |
+| R7 | 已租面积再乘出租率（双重折扣） | **业务拒绝**：卡片 L8 明确禁止；契约没有该 driver | 间接（不存在该 driver，无法传入） |
+| R8 | 月租当成年租直接使用 | **业务拒绝**：须显式换算（`card_M16.md` L39） | 否（披露适配阶段） |
+| R9 | 现金租金与直线法会计租金混用 | **业务拒绝**：需会计审定（L37） | 否 |
+| R10 | `other_revenue` 为负 | 契约事实：带符号、接受（OBS-SIGNED-OTHER） | 是（观察项记录事实） |
+
+## 9. 三种资格（本卡只填 formula）
+
+- `formula`：由 A–C 结果决定（`evidence/M16/qualification.json`）；实现者**不自签**，状态 `review_pending`。
+- `disclosure_adaptation`：保持 **unmapped**（本 attempt 纯合成）。
+- `accuracy`：保持 **unproven**（无 I-12 冻结设计）。
+
+## 10. 停止条件自检（`card_M16.md` L50–55）
+
+- positive 不等 / 保真不符 / 应拒绝负例未拒绝 → `STOP_FORMULA`。
+- 披露缺出处、单位/期间/总净额不明或 special_review 未决 → `STOP_DISCLOSURE_ADAPTATION`。
+- 存量桥：**not_applicable_with_reason**（第 4 节）。
+- 准确性：`STOP_ACCURACY`。
+
+## 11. runner 退出码口径（本卡适用）
+
+`scripts/run_card.py`：`0=pass`、`1=harness error`、`2=no-verdict（期望缺失或保真不符）`、
+`3=negative-case 未按期望拒绝`；优先级 `1 > 2 > 3`。`observations` 与 `defaults` 不参与退出码。
+<!-- R2-APPEND-BOUNDARY: everything above this line is the frozen oracle body (v1) -->
+
+## 修订 r2（追加处置，非重写）
+
+本节由修订 r2 **追加**，是 `oracle.md` 中**唯一**的一节「修订 r2」。
+上方正文（v1 冻结版）逐字未改：正例/连续性/默认值预期、容差、负例清单、拒绝条件**一律未改**；
+产品仓库一行未动。本节追加前 `oracle.md` 的 sha256 记录在 `before/oracle_md_v1.json`，
+并可由 `scripts/verify_r2_boundary.py` 在**真实行边界**（本标记行处）重新复现：
+上方字节的 sha256 必须仍等于该记录值。本文件只有一个基准，不存在第二个互斥的"追加前 hash"。
+
+### r2 记录的事项
+
+- **R2-01（口径登记，非重写）**：本卡 runner 的退出码口径为
+  `0=pass / 1=harness error / 2=no-verdict(期望缺失或保真不符) / 3=negative-case 未按期望拒绝`，
+  优先级 `1 > 2 > 3`；`run_card.py` 的模块 docstring 与 `evidence/M16/qualification.json`
+  记录同一口径。此登记不改变任何期望值。
+- **R2-02（变异自检结果，先红后绿）**：对**副本**注入变异后 runner 确实变红，随后恢复；
+  冻结的 `input.json` / `cases.json` / `oracle.json` 在自检前后 hash 不变，且仍等于冻结时的 hash。
+
+  | 场景 | 实测 rc | 期望 rc | 结果 |
+  |---|---|---|---|
+| C-control | 0 | 0 | ok |
+| A-corrupt-value | 2 | 2 | ok |
+| F-corrupt-shape | 2 | 2 | ok |
+| D-missing-expectation | 2 | 2 | ok |
+| B-corrupt-negative-case | 3 | 3 | ok |
+| E-harness-error | 1 | 1 | ok |
+
+  证据：`recovery/selfcheck_result.json`、`recovery/selfcheck/**`（标准库脚本
+  `scripts/selfcheck_mutation.py`，副本位于 `recovery/selfcheck/evidence/M16/`）。
+- **R2-03（保真口径）**：正例不只看数值，还比对输出**结构/长度/元素类型/有限性/年度**；
+  变异场景 F 把冻结形状的 `length` 改成 99，runner 因保真不符返回 2 而不是 0。
+- **R2-04（打印与证据一致）**：`evidence/M16/stdout.txt` 是进程 stdout 的原始抓取，
+  `scripts/verify_card.py` 断言其逐行等于 `run_result.json` 的 `printed_lines` 并复现
+  `printed_sha256`，因此"打印值"不可能与证据文件不一致。
+- R2-05：冻结的观察项全部按规格构造成功，没有需要在事后补探针的观察项。
+
+事后探针 `recovery/probes/signed_driver_probe.json`：对 driver `other_revenue` 取值 `-100.0`，实测 raised=`ModelRegistryError` actual=`None`，判定为 the signed driver passed the guard and the row was refused later by the non-negative-revenue check。
+
+### 未改动的内容（防止误读为"为过审而改"）
+
+- 正例/连续性/默认值预期、容差、11 个负例及其期望错误、拒绝条件、停止条件**一律未改**；
+  唯一失效的观察项如实记录，**没有**为了让证据好看而重打包 `input.json`/`cases.json`/`oracle.json`。
+- 冻结的三个证据文件在冻结时的 sha256：
+  `input.json`=641b938b767bd22318572db0e1dc11e964fa106ba5d5419760b8288f71670e07、`cases.json`=fffb558223238091b4920e29d194f3c4b04f030d491cba8552ea8065873b2a70、`oracle.json`=2f300c78acd0035a09f1005957a5a97a7698d15fb8ee0b660bcaa6acfb228c92
+- 产品仓零改动；`changes.diff` 为 NO PRODUCT CHANGE 声明。
+- `formula` 状态仍为 `review_pending`（实现者不自签），`disclosure_adaptation` 仍为 `unmapped`，
+  `accuracy` 仍为 `unproven`。

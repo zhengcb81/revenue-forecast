@@ -10,10 +10,11 @@
 
 | 项 | 状态 |
 |---|---|
-| 本 attempt 的协议条目 C-01…C-12 | **提案已冻结**（`oracle.md` §5，写于任何运行之前）；**待独立 transaction reviewer 裁定** |
-| 新增错误码 `I09-E01…E10` | 提案；与 I-08-A 的 E01–E32 **不共用命名空间**（隔离声明见 `oracle.md` §5.1） |
+| 本 attempt 的协议条目 C-01…C-13 | **提案已冻结**（`oracle.md` §5，写于任何运行之前；`C-13` 为独立对抗式复核后**追加**，见 `errata.md`）；**待独立 transaction reviewer 裁定** |
+| 新增错误码 `I09-E01…E10` | 提案；与 I-08-A 的 E01–E32 **不共用命名空间**（隔离声明见 `oracle.md` §5.1）。**不得**因勘误而改动 |
 | 实现者是否签署 accepted | **否**。本文件不含任何 accepted/passed 自签 |
-| 是否需要 owner 裁定 | **是**：OPEN-I09A-1…5（§7）；其中 2 项阻塞 I-09-B 的绑定 |
+| 是否需要 owner 裁定 | **是**：OPEN-I09A-1…6（§7 与 `open_items.md`）；其中 **4 项**（-1/-2/-3/-5）阻塞 I-09-B 的绑定 |
+| 勘误 | 独立复核 verdict = `changes_required`（文档/勘误层，证据层不需重跑）；逐条处置见 `errata.md`。**勘误不构成重新验收** |
 
 **本卡不实施产品**（卡执行门 + `START_HERE.md` 第 5 行「先写 decision.md…之后再实施」）。产品仓改动 = **0**。
 
@@ -25,7 +26,7 @@
 
 | # | 事实 | 证据 |
 |---|---|---|
-| **N-1** | 生产 registry 60 行、链自洽、**57 行无任何身份字段的 `artifact_id=null`**、非空 `artifact_id` 只有 1 行 | `before/baseline_hashes.txt`（sha256 `bc3256bb…`）+ PowerShell 独立复算 |
+| **N-1** | 生产 registry 60 行、链自洽；**57 行 forecast 的 `artifact_id` 全为 `null`**；非空 `artifact_id` 共 **3 行**（全部 `snapshot`、**同值** `47a46003e300d4972db50d36f65f94525ee470fcd4742b1c61921b42b8626788`）——即**没有任何一行 forecast 携带可寻址身份**。（原写"只有 1 行"是把去重值数当行数，已勘误：`errata.md` E-1） | `before/baseline_hashes.txt`（sha256 `bc3256bb…`）+ PowerShell 独立复算（本次复核重数：非空 3 / null 57 / distinct 1） |
 | **N-2** | 同一 `(input,result,engine,schema,artifact_type)` 组最多出现 **6** 次，31 组里 21 组 >1；`audit()` 对此**不报冲突**（设计如此） | 同上 |
 | **N-3** | **提交先于产物**：输出写失败时 rc=2，但 registry 已有 1 行、`is_registered=true`、消费者可见 `commit_qualified=1`，而磁盘上**零个真实成员** | c02（`out.json` 位置为目录，真实 WinError 5） |
 | **N-4** | **第二成员缺失仍算已提交**：JSON 已落盘（94614 B）、Markdown 写失败（rc=2），registry 1 行、读者 `commit_qualified=1` | c03 |
@@ -96,6 +97,12 @@
 | 用 `uuid4()` 当身份 | 同上；且幂等重试会产生新身份，直接破坏 C-08 |
 | 把 `result_sha256` 也放进身份（「更保险」） | 见 C-03：会让幂等重试变成新身份，与 I-08-A §5「同输入重跑 = 新行 + 旧行保留」的审计意图冲突 |
 
+### 2.7 C-01 的强制附注（独立复核后**追加**，C-01 正文一字未改）
+
+> **C-01-附注（强制）**：`identity_payload` 的字段集**封闭**；I-08-B 的 attestation 锚（以及任何未来行内键）**不得**进入 `identity_payload`——否则一次**重签**就会改变发布身份，直接破坏 C-08 的幂等语义。当 `receipt_schema_version`（I-08-A **OPEN-D4**）或行 schema 升版时，**历史行的身份一律不重算**：旧行保留其原 `publication_id`，新行使用新版本。
+> **「历史行身份不重算」由倾向提升为强制条款**（复核裁定意见②），并与 I-08-A OPEN-D4 **同批裁决**。
+> 字段分工必须显式列出：**参与身份** = `identity_payload` 的九个字段（C-01 点名）；**不参与身份但随行持久化** = `members` 的路径映射（`member_paths`）、`member_sha256`、`attempt_seq`、`state`、`supersedes`、attestation 锚。归属：`OPEN-I09A-3`。
+
 ---
 
 ## 3. 决策 D-2：幂等（重复提交 / 重放如何判定与去重）
@@ -141,6 +148,8 @@
 | `artifact_type` forecast→snapshot | 身份必须不同 | `32a65cd1041e6f1cdedcc8925740eb58b8b97b06db93039d91973fee10d1ba7c` ✅ |
 
 **推翻条件**：出现一次实测，其中两个请求仅 `as_of_date` 不同而得到**同一** `publication_id`（或同一幂等键）且**未**报 `I09-E03`。则 C-02/C-09 作废，必须重新裁定「请求身份是否参与身份」。
+
+**适用范围限定（复核 E-7，必须随上表一并阅读）**：上表的 8 个检验是对 **harness 字面量载荷**的自洽性检验——`proposed_identity()` 里 `package_target="out.json"`、`members=["out.json"]` 是**硬编码字面量**，且 `members` 用的是**文件名**而非 C-04 要求的**相对角色名**。因此该表只证明「同一算法两次实现一致 + `as_of_date`/`company_name`/`engine_version`/`artifact_type` 四个维度都改变身份」，**不**证明 `package_target`/`members` 已与生产事实绑定（分别属 `OPEN-I09A-1` 与 `OPEN-I09A-3`）。**不得**据此宣称身份契约已可用于生产落地。
 
 **F-IDEM-LIB（现状即可证伪的更强版本）**：c11 已实测——`register_publication` 接受「anchor 属 A、载荷属 B」的 result 并 rc=0 落行。故**当前实现不满足** F-IDEM 的判据（它连身份都没有）。
 
@@ -251,7 +260,7 @@ visible
   V1 返回成功；CLI 可选打印 stdout（不承诺）
 ```
 
-**为何唯一 commit 点选在 C3**：它是现有系统里**唯一**既有「单次原子追加」又有「链式 hash 校验」的持久化动作（`_append` 的 `open("a")` + `flush` + `fsync`，且 `_read_entries` 每次全量校验链）。两个替代位置都不成立：
+**为何唯一 commit 点选在 C3**：它是现有系统里**唯一**既有「**单次追加**」又有「链式 hash 校验」的持久化动作（`_append` 的 `open("a")` + `flush` + `fsync`，且 `_read_entries` 每次全量校验链）。**注意措辞（复核 E-8）**：这里是「单次追加」，**不承诺抗撕裂**——一次追加若被中途打断而产生半行，由**链校验 fail-closed 检出**（故障点 **F7**），而不是被阻止。两个替代位置都不成立：
 
 - 选「成员写盘全部完成」：多文件之间无原子边界（P5-a 成功、P5-b 失败 = N-4 的半包）。
 - 选「回报调用者成功」：回报不是持久动作，P-D3 的崩溃点就在这里。
@@ -310,7 +319,18 @@ commit_status(publication_id, member_paths) == "committed"
 | **G2 验签通过** | 可能（正常正式发布） | 可能（**prepared 但未提交**：签名已有、成员未齐） |
 | **G3a 无签名声明（含 3.7/3.8）** | 可能（发布成功但 `unattested`，N-1 的 57 行就是此类） | 可能 |
 | **G1（3.0–3.6）** | **不可能**（G1 不得重签/不得新建下游；本协议不给 G1 任何提交路径） | 是（旧行 = `identity_unknown`） |
-| **G4 无效** | **不可能** | 是 |
+| **G4 无效** | **`identity_payload` 层面不可能**；但**「声称 `host_signed` 却无 attestation 记录」的形状当前可被接受并注册** —— 见下方降级说明 | 是 |
+
+**G4 格的降级说明（复核 P2-3 的实测反证，必须一并阅读）**：复核人用自造边界输入实测到
+`validator_accepts_host_signed_without_record=true`、`register_rc=0`、`rows=2`、`validation_status=["validated","validated"]`；
+源码依据 `revenue_publication.py:222-226` **只校验 `attestation_status` 的取值合法性**，全产品 grep `publication_attestation|attestation_record` **0 命中**。
+因此：
+
+> 上表「G4 不可能」**只在本协议自身的身份/提交规则内成立**；对 I-08-A `classify()` 的 G3b/G4 而言，**该分支在生产里没有实现落点**，属**未兑现的断言**，**由 I-08-B 的 attestation 门实现；落地前不得声称已闭**。
+
+**新增 C-13（只新增，不改 C-01…C-12）**：
+
+> **C-13**：「receipt 声称 `host_signed` 但**无任何 attestation 记录**」的形状，在 attestation 门落地后**必须于提交前拒绝**，且**不得**被算作 committed。错误码**归属 I-08-B 的 attestation 门**定义（本卡**不**占用、**不**新造 I-08-A 的错误码号）。在 I-08-B 落地前，该形状**必须**被显式标为「兼容缺口未闭」，并在交付说明中保留上述实测反证。
 
 **两个状态相互独立**：`committed` 只说「成员齐备且被登记」，**不**说「可信」；`G2` 只说「签名可复验」，**不**说「提交完成」。二者**不得**互相推导。R-LEGACY-1/E29 的「3.8 不获得自动旁路」在本协议里表现为：**3.8 不因为 schema 版本而获得任何提交便利**，仍须走 C1–C3 与 attestation 门。
 
@@ -320,6 +340,23 @@ commit_status(publication_id, member_paths) == "committed"
 2. **撤销**：追加补偿行 `state="revoked"`、`supersedes=<被撤销行 line_sha256>`；读者按 5.3 判为不可消费。对应 `E31 publication_rollback_required`（I-08-A §2.5 明确「属 I-09-A」）。
 3. **E31 的判定点**（本卡冻结）：**已 append 的 committed 行所声明的任一必需成员不存在或 hash 不符** → 必须回滚注册（补偿行），**不得**留可消费半发布。
 4. **恢复再崩溃**：恢复本身是「追加一条补偿行」，因此**天然可重入**；重复执行只会产生多条补偿行（幂等：同一 `supersedes` 的补偿行第二次应被 `I09-E06` 拒绝 → 恢复必须先在锁内检查是否已补偿）。
+
+### 5.6b 孤儿成员规则 + E31 触发语义重述（**批准 §7 改序的附带条件**；复核裁定意见①）
+
+改序（P5 成员落盘 → C3 唯一 append）引入一个新的失败形状：**成员已落盘、但 C3 从未成功** → 磁盘上存在**孤儿成员**（无任何 committed 行声明它们）。冻结规则：
+
+1. **孤儿成员一律不可消费**：`commit_status` 找不到 committed 行 ⇒ 消费者必须报不可消费；**禁止**「文件存在即可读」。
+2. **孤儿不是资产也不是垃圾**：**不得**自动删除（可能是另一个 publication 的成员，或一次待重试的 prepare）；删除必须由显式恢复动作在锁内执行，并留痕。
+3. **重试即复用**：重试同一 `idempotency_key` 时**必须**复用同一 `package_target` 与同一成员角色名，重写成员字节后再次走 C1–C3；**不得**旁路出第二套命名。
+4. **孤儿判定必须可复算**：`orphan_members(package_target) = 目标目录内的成员文件 − 被 committed 行引用的成员`。审计入口（`audit`）**应当**报告孤儿数量，但**不得**在只有孤儿时把发布算成成功。
+5. **不进 registry 的 prepare 状态**：孤儿**不写行**（写 prepare 行会让旧读者把它读成已提交，即 P-D1 形状，明确禁止）。
+
+**E31（`publication_rollback_required`，I-08-A §2.5 归属本卡）触发语义重述**：
+
+> **E31 的触发条件** = 「一条**已 append** 的 committed 行所声明的**任一必需成员**不存在、或实际 hash ≠ 行内 hash」。
+> **不是**触发条件：仅有孤儿成员（无 committed 行）；仅有 prepare 失败；仅有成员写盘失败但 C3 未发生。
+> **恢复动作** = 在锁内**追加**一条补偿行（`state="revoked"`、`supersedes=<被撤销行 line_sha256>`），**绝不**改写/删除历史行（hash 链不可变）；补偿后再重写成员并由新的 committed 行接管。
+> **归属**：改序本身**必须由 I-08-A 的 owner 写进上游文本**（本卡只登记条件，不改 I-08-A 文档）。
 
 ### 5.7 被拒绝的替代方案
 
@@ -400,7 +437,7 @@ commit_status(publication_id, member_paths) == "committed"
 | A3 | `host_signed` 只能由 L3 验签产出（R-PROV-1） | 提交动作**不产生** `host_signed`；`attestation_status` 仍由 L3 决定 | 无 |
 | A4 | 信任域键名 `public_keys` | 不触碰信任域加载 | 无 |
 | A5 | R-LEGACY-1 / E29（3.8 属 G3a，无自动旁路） | 3.8 **不获得**任何提交便利；G1 集合无提交路径 | 无 |
-| A6 | §7 顺序「验证→签名→注册→写 output」+ 第 8 步补偿 | 本卡要求改为「验证→签名→**成员落盘**→**唯一 append**」；§7 第 7 步「写 output」在 append 之后 | ⚠️ **次序修正**，需 reviewer 明示确认 → **OPEN-I09A-1** |
+| A6 | §7 顺序「验证→签名→注册→写 output」+ 第 8 步补偿 | 本卡要求改为「验证→签名→**成员落盘**→**唯一 append**」；§7 第 7 步「写 output」在 append 之后 | ⚠️ **次序修正**，需 reviewer 明示确认 → **`OPEN-I09A-6`**（原误指 `-1`/`-2`，两项问题陈述均不覆盖次序；勘误见 `errata.md` E-3） |
 | A7 | §6.4（registry 行不含签名/attestation 字段）+ §10 第 6 项（I-08-B 要加 attestation 锚） | 本卡新增 `publication_id`/`state`/`members`/`member_sha256`/`attempt_seq`/`supersedes`；I-08-B 的 attestation 锚需与之**合并字段集**、一次升版 | ⚠️ 需字段集合并，否则两次追加会打架 → **OPEN-I09A-3** |
 | A8 | §5「同输入重跑 → 新行 + 旧行保留」 | C-08 沿用，并加 `publication_id` 使「重试 vs 新发布」可区分 | 无 |
 | A9 | OPEN-D4（receipt schema 是否升 2.0） | 身份含 `receipt_schema_version` | ⚠️ **未决依赖**：D4 未裁前不得冻结生产身份值 → **OPEN-I09A-1** |

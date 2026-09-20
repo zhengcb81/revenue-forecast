@@ -1,0 +1,13 @@
+# oracle.md frozen-body delta, revision r2 (M21)
+# pre-r2 body sha256 9b9f51dff6f8f9e29352c407f19b9f405fd12344ca15e4e6a7b0aadbb2d4c80a (11454 bytes)
+# post-r2 body sha256 0a1b9a2b4a6ff900ef2dacce662768a350fbaf3f83ccc3e1124c75a148e059e0 (12234 bytes)
+# every '+'/'-' line below must contain a review-mandated token; the whitelist is enforced by scripts/splice_oracle_md_r2.py
+# changed lines: 8; lines outside the whitelist: 0
++## 12. 桥平衡的有效分辨率（独立复核要求补记；见文末追加节的来源说明）
++
++存量桥的平衡与跨年锚定不是精确等号比较，而是 `math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-9)`（`model_registry.py:154-157`：桥平衡 + 跨年 continuity）。
++
++- **有效绝对容差 = `max(abs_tol, rel_tol × max(|a|, |b|))` = `max(1e-9, 1e-9 × max(|closing|, |expected_closing|))`**；相对项非负，故下界为 1e-9。
++- 本卡合成例的被比较量级 |ending_orders| ≈ 35，故有效绝对容差由 1e-9 的绝对项决定（相对项 3.5e-8 更大时以相对项为准）。
++- 本卡未对该分辨率做数值探针；M24 同源比较的探针结果（1e-7 通过 / 1e-6 拒绝）在 M24 attempt 内记录，本卡不复制其结论。
++

@@ -26,7 +26,14 @@ Exit codes (verdict-carrying; a bookkeeping-only rc=0 is not allowed)
   3 = negative verdict the comparison was possible and did not hold: the positive
                       path raised or fell outside tolerance, the continuity
                       positive did not match, or at least one negative case was NOT
-                      rejected as expected
+                      rejected as its DECLARED expectation requires.  "Rejected"
+                      means: the raised exception's exact type name equals the
+                      per-case ``expected`` string in the frozen cases.json AND
+                      the exception is a model_registry.ModelRegistryError.  The
+                      declared name is compared exactly (NOT with isinstance),
+                      because ModelRegistryError is a ValueError subclass, so an
+                      isinstance comparison would silently accept a declared
+                      expectation of "ValueError".
 
 Precedence when several conditions hold at once: 1 > 2 > 3 > 0 (a harness failure
 dominates; "no verdict could be issued" dominates "the verdict is negative").
@@ -205,9 +212,16 @@ def main() -> int:
             "2": "no verdict (missing expectation or fidelity mismatch)",
             "3": "negative verdict (mismatch or unrejected negative)",
             "precedence": "1 > 2 > 3 > 0",
-            "delta_vs_M05_M08_runner": ("M05-M08 used 2=harness failure and 3=negative verdict; "
-                                        "this runner moves harness failure to 1 and reserves 2 "
-                                        "for 'no verdict could be issued'"),
+            "declared_expectation_comparison": ("each negative case must raise the exact exception "
+                                                "type name declared in the frozen cases.json "
+                                                "(compared by type name, never by isinstance)"),
+            "delta_vs_M05_M08_runner": ("M05-M08 used 2=harness failure and 3=negative verdict, and "
+                                        "did NOT enforce the per-case declared expectation; this "
+                                        "runner moves harness failure to 1, reserves 2 for 'no "
+                                        "verdict could be issued', and enforces the declared "
+                                        "expectation by exact type name. rc values are therefore "
+                                        "NOT comparable across runner versions without naming the "
+                                        "runner sha256"),
         },
     }
 
@@ -372,11 +386,17 @@ def main() -> int:
         result["observations"].append(entry)
 
     # ---------------- negatives ----------------
+    # Each case carries a DECLARED expectation in cases.json (frozen, written by the independent
+    # oracle script).  The runner must enforce that declaration, not merely "some ModelRegistryError
+    # was raised": the declared name is compared against the exception's EXACT type name.
+    # isinstance() must NOT be used for this comparison, because ModelRegistryError is a subclass of
+    # ValueError and a declared expectation of "ValueError" would then silently pass.
     for case in cases_doc["cases"]:
         base_key = case.get("base_input", "positive")
         base = copy.deepcopy(input_doc[base_key])
+        declared = case.get("expected")
         entry = {"id": case["id"], "kind": case["kind"], "why": case["why"],
-                 "expected": case["expected"], "base_input": base_key}
+                 "expected": declared, "base_input": base_key}
         try:
             mutated = apply_case(base, case)
             entry["mutated_input_repr"] = (repr(mutated["drivers"])[:400]
@@ -384,18 +404,31 @@ def main() -> int:
                                            + " base=" + repr(mutated["base_revenue"]))
             call_product(model_registry, mutated)
             entry["raised"] = None
+            entry["declared_expectation_ok"] = False
+            entry["declared_expectation_mismatch"] = True
             entry["verdict"] = "FAIL_not_rejected"
         except Exception as exc:  # noqa: BLE001
-            entry["raised"] = type(exc).__name__
+            raised_name = type(exc).__name__
+            entry["raised"] = raised_name
             entry["message"] = str(exc)
             entry["traceback"] = traceback.format_exc()
             is_target = isinstance(exc, model_registry.ModelRegistryError)
             is_import_or_file = isinstance(exc, (ImportError, ModuleNotFoundError, FileNotFoundError))
+            declared_ok = isinstance(declared, str) and raised_name == declared
             entry["is_target_type"] = is_target
             entry["is_import_or_file_error"] = is_import_or_file
-            entry["verdict"] = ("PASS_rejected" if is_target
-                                else ("FAIL_wrong_exception_type" if not is_import_or_file
-                                      else "FAIL_import_or_file_error"))
+            entry["declared_expectation_ok"] = declared_ok
+            entry["declared_expectation_mismatch"] = not declared_ok
+            entry["declared_expectation_comparison"] = (
+                "raised exact type name %r vs declared %r (exact-name comparison, not isinstance)"
+                % (raised_name, declared))
+            if not is_target:
+                entry["verdict"] = ("FAIL_wrong_exception_type" if not is_import_or_file
+                                    else "FAIL_import_or_file_error")
+            elif not declared_ok:
+                entry["verdict"] = "FAIL_declared_expectation_mismatch"
+            else:
+                entry["verdict"] = "PASS_rejected"
         result["negatives"].append(entry)
 
     result["negative_summary"] = {
@@ -403,6 +436,11 @@ def main() -> int:
         "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
         "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
         "target_exception": "model_registry.ModelRegistryError",
+        "declared_expectations_in_cases_json": sorted(
+            {str(c.get("expected")) for c in cases_doc["cases"]}),
+        "declared_expectation_comparison": ("exact exception type name == cases.json's per-case "
+                                            "'expected' string (NOT isinstance)"),
+        "declared_expectations_enforced": True,
         "import_or_file_errors_never_pass": True,
     }
     result["negative_counts"] = {
@@ -414,6 +452,8 @@ def main() -> int:
                                     if e.get("raised") is not None and not e.get("is_target_type")
                                     and not e.get("is_import_or_file_error")),
         "import_or_file_error": sum(1 for e in result["negatives"] if e.get("is_import_or_file_error")),
+        "declared_expectation_mismatch": sum(
+            1 for e in result["negatives"] if e.get("declared_expectation_mismatch")),
     }
 
     # ---------------- verdict ----------------
@@ -436,6 +476,9 @@ def main() -> int:
         reasons.append("continuity_positive_not_matched")
     if not negatives_ok:
         reasons.append("negatives_not_rejected:" + ",".join(result["negative_summary"]["failed"]))
+    if result["negative_counts"]["declared_expectation_mismatch"]:
+        reasons.append("declared_expectation_mismatch:%d"
+                       % result["negative_counts"]["declared_expectation_mismatch"])
 
     if not expectations_present or (expectations_present and not positive_raised and not fidelity_ok):
         exit_code = EXIT_NO_VERDICT
@@ -473,7 +516,12 @@ def main() -> int:
             "independence": ("each case is built from a NEW deepcopy of the frozen base input, in "
                              "memory; no case is round-tripped through a JSON parser"),
             "first_required_driver": cases_doc.get("first_required_driver"),
-            "frozen_expectation": "ModelRegistryError for every case",
+            "frozen_expectation": ("per-case declared expectation from the frozen cases.json: %s"
+                                   % ", ".join(result["negative_summary"][
+                                       "declared_expectations_in_cases_json"])),
+            "declared_expectations_enforced": True,
+            "declared_expectation_comparison": result["negative_summary"][
+                "declared_expectation_comparison"],
             "continuity_first_positive": cases_doc.get("continuity_first_positive"),
             "summary": {"total": result["negative_summary"]["total"],
                         "passed": result["negative_summary"]["passed"],
@@ -515,6 +563,10 @@ def main() -> int:
     for entry in result["negatives"]:
         emit("negative: %s %s %s - %s" % (entry["id"], entry["verdict"], entry.get("raised"),
                                           entry.get("message", "")))
+    emit("negative declared-expectation comparison: %s"
+         % result["negative_summary"]["declared_expectation_comparison"])
+    emit("negative declared-expectation mismatches: %d"
+         % result["negative_counts"]["declared_expectation_mismatch"])
     emit("negative summary: %s" % result["negative_summary"])
     emit("verdict: %s exit_code: %d" % (verdict, exit_code))
 

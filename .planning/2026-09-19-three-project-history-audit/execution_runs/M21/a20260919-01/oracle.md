@@ -202,6 +202,14 @@ R8-BIZ–R10-BIZ 是**业务拒绝**条件（卡片「专业决策/业务负例�
 - 存量桥：本卡适用，落地为第 4/5 节。
 - 准确性：`STOP_ACCURACY`（无 I-12 冻结设计）。
 
+## 12. 桥平衡的有效分辨率（独立复核要求补记；见文末追加节的来源说明）
+
+存量桥的平衡与跨年锚定不是精确等号比较，而是 `math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-9)`（`model_registry.py:154-157`：桥平衡 + 跨年 continuity）。
+
+- **有效绝对容差 = `max(abs_tol, rel_tol × max(|a|, |b|))` = `max(1e-9, 1e-9 × max(|closing|, |expected_closing|))`**；相对项非负，故下界为 1e-9。
+- 本卡合成例的被比较量级 |ending_orders| ≈ 35，故有效绝对容差由 1e-9 的绝对项决定（相对项 3.5e-8 更大时以相对项为准）。
+- 本卡未对该分辨率做数值探针；M24 同源比较的探针结果（1e-7 通过 / 1e-6 拒绝）在 M24 attempt 内记录，本卡不复制其结论。
+
 ---
 
 （以下为运行后追记节，由 `scripts/append_oracle_run_section.py` 追加；
@@ -224,7 +232,7 @@ R8-BIZ–R10-BIZ 是**业务拒绝**条件（卡片「专业决策/业务负例�
 | 负例 | 11 个全部 `ModelRegistryError` | 11/11 rejected | ok |
 
 原始退出码 = **0**（0=pass / 2=no-verdict / 3=negative 未按期望拒绝 / 1=harness error）。
-stdout / stderr 原文：`evidence/M21/stdout.txt`（2669 字节）、`evidence/M21/stderr.txt`（0 字节）。
+stdout / stderr 原文：`evidence/M21/stdout.txt`（3777 字节）、`evidence/M21/stderr.txt`（0 字节）。
 
 ### 2. 卡片文字 vs 实现公式串（第 7 节的核对结论）
 
@@ -265,13 +273,16 @@ stdout / stderr 原文：`evidence/M21/stdout.txt`（2669 字节）、`evidence/
 | A_corrupted_positive_expectation | `oracle.json` 正例 `expected_float += 999` | 3 | 3 | 被篡改的期望不能藏在 rc=0 后面 |
 | B_corrupted_negative_assertion | `cases.json` 追加一个产品**不会**拒绝的负例 | 3 | 3 | 负例断言被篡改会变红 |
 | C_corrupted_positive_input | `input.json` 正例删除首个必填 driver | 2 | 2 | rc=2 可达：确实无法产生判定 |
+| F_corrupted_expected_type | `cases.json` 某负例 `expected` 改成 `ValueError` | 3 | 3 | **复核 P2-1**：`expected` 字段被真正校验，不再只是抄写 |
+| G_corrupted_message_requirement | `cases.json` 的 `expect_message_contains` 改成不可能出现的子串 | 3 | 3 | **复核 P2-2/P2-3**：消息要求被真正校验 |
+| H_message_requirement_points_at_another_guard | 把 `expect_message_contains` 指向长度守卫的措辞 | 3 | 3 | 消息控制具有区分度：别的守卫的措辞不能冒充值域/连续守卫 |
 | D_restored_uncorrupted | 恢复 scratch 副本 | 0 | 0 | 修复后退出码回到 0 |
 
 冻结证据在探针前后 **hash 未变**：`True`。完整记录见 `recovery/selfcheck/selfcheck_result.json`。
 
 ### 6. 本节追加前后的 hash 账（可复现）
 
-- 追加前 `oracle.md`（= 运行前冻结的完整正文，只归一化末尾的换行/`-` 分隔字符）**字节数** = 11454，sha256 = `9b9f51dff6f8f9e29352c407f19b9f405fd12344ca15e4e6a7b0aadbb2d4c80a`
+- 追加前 `oracle.md`（= 运行前冻结的完整正文，只归一化末尾的换行/`-` 分隔字符）**字节数** = 12234，sha256 = `0a1b9a2b4a6ff900ef2dacce662768a350fbaf3f83ccc3e1124c75a148e059e0`
 - 该值由**二进制读**取得（`open(path, 'rb')`），且 `frozen_body` 是真字节前缀：`oracle.md == frozen_body + b"\n---\n\n" + run_section`。复核方式：取 `oracle.md` 中第一次出现本节标题 `## 运行后对账（追加节，不改动上方任何期望值）` 之前的全部字节、去掉末尾换行后求 sha256。
 - 追加时是否归一化了末尾分隔块：`True`（归一化后 `frozen_body` 是真字节前缀）。
 - 追加后完整文件 sha256 见 `evidence/M21/source_manifest.json` 的 `oracle_document.sha256_full_file_now` 与 `after/rerun_sha256.json`。

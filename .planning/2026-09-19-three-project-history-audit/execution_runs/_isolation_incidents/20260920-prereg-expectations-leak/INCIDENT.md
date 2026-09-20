@@ -72,8 +72,10 @@
   | `references/model-library.md` | `be45db0758f38d788839716477b14ec9cdd238c6160327b44a23fe01188920fa` |
   | `references/resource-business-guidance.md` | `93ebdadcc77a7f1fcc60dd64e7ece640b238b53e28fa93c793d84eddba7f27ba` |
   | `assurance/runs/daily_alert.jsonl` | `3d1f50fe7035df12d28fdb692314875ce0e6f1e2d971ca1605463b0d79ece559` |
-- 归因：**未确定**（`.githooks` 与 `.git/hooks` 中均无 `stash`；`git stash list` 为空；工作区内容未被回退）。
+- 归因：**未确定**（`.githooks` 与 `.git/hooks` 中均无 `stash`；`git stash list` 为空；工作区内容未被回退；`tools/pre_push_gate.py` 正文亦无 stash/checkout；其第 8 步 install-sync 的写目标是 `~/.agents`、`~/.codex` 安装根，其中 `~/.claude/skills/revenue-forecast` 只是指向 `~/.agents/...` 的 Junction，**都不是本仓库**）。
   登记为 provenance gap，不声称已解释。
+- **第二次同类现象（登记，未解释）**：`2026-09-20 03:41:57` 同一批文件（`CHANGELOG.md`、`SKILL.md`、`references/*`、`e2e/expected/*.json`、`assurance/runs/daily_alert.jsonl`）mtime 再次被批量刷新，时点与本计划的第二次 `git push`（pre-push 门运行，`.mypy_cache`/`.ruff_cache` 于 03:42 更新）重合。两次现象都紧邻 git 提交/推送时点，且都**只触及既有的脏文件**、内容不变 —— 与"恢复后再写回"的形态一致，但**未找到执行该操作的具体步骤**，故仍按 provenance gap 登记，不推断机制。
+- **内容不变的旁证（独立第三方复核）**：I-08-B 的独立 reviewer 对 02:24:00 批次的 61 个非 `.planning` 产品文件做了 `before/source_hashes.txt` 全量重算，**24/24 路径 drift=0**，并据此判定"内容零变化，mtime 不可作为零写入判据"。该结论与本记录一致，且**不依赖**本记录的解释。
 
 ## 生产不可变复核（同一轮巡检）
 

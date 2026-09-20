@@ -1,25 +1,32 @@
 {
- "purpose": "F-M01-02 self-check: does the exit code carry the verdict?",
+ "card_id": "M01",
+ "purpose": "exit-code self-check for this card: does the exit code carry the verdict?",
+ "origin": "generalised from the M01-only self-check after the point review found that handoff.json.evidence_paths on M02/M03/M04 pointed at a file that exists only in M01",
+ "harness_under_test": {
+  "path": "scripts/run_card.py",
+  "sha256": "b5fcc68563f563924529e06e2aeeba06938dcf51bd48b14f553f580191601816",
+  "shared_with": "the same run_card.py file is present in all four attempts"
+ },
  "scratch": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\recovery\\r2_exit_code_selfcheck",
  "frozen_evidence_touched": false,
  "cases": [
   {
    "id": "A_corrupted_oracle_expectation",
-   "mutation": "oracle.json positive.expected_float replaced with [999,999,999]",
+   "mutation": "oracle.json positive.expected_float -> [999.0] x 3 (true values [220.0, 110.0, 0.0])",
    "raw_returncode": 3,
    "expected_returncode": 3,
    "verdict_field": "fail",
-   "negative_summary": {
-    "total": 11,
-    "passed": 11,
-    "failed": []
-   },
    "product_positive_actual": [
     220.00000000000003,
     110.00000000000001,
     0.0
    ],
-   "interpretation": "the product still returns the correct path, but the harness now exits 3 instead of claiming success"
+   "negative_summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": []
+   },
+   "interpretation": "the product still returns the correct path, but the harness exits 3 instead of claiming success; a corrupted expectation cannot hide behind a bookkeeping-only rc=0"
   },
   {
    "id": "B_corrupted_case_plan",
@@ -31,7 +38,7 @@
     "                         ~~~~~~~~~^^^^^^^^^^",
     "KeyError: 'no_such_block'"
    ],
-   "interpretation": "a harness defect cannot masquerade as a pass: it raises and exits non-zero"
+   "interpretation": "a defect outside the guarded block cannot masquerade as a pass; it raises and exits 1 rather than 0"
   },
   {
    "id": "C_uncorrupted_card",
@@ -71,6 +78,7 @@
   "rc_1": "a defect outside the guarded block, e.g. a corrupted case plan (case B)",
   "rc_2": "REACHABLE: a corrupted positive input makes the product raise, so no verdict exists (case D)",
   "rc_3": "a corrupted oracle expectation produces a negative verdict (case A)",
-  "corrected_claim": "the r2 note said rc=2 was 'not yet reachable in practice'. The point review disproved that by deleting growth_rate from the positive input; the claim is corrected in revision r3 and the D case now records the rc=2 path."
- }
+  "verified_by_point_review": "the independent point review reproduced rc=0/1/2/3 on this harness"
+ },
+ "all_cases_as_expected": true
 }

@@ -29,7 +29,7 @@
  },
  "oracle_document": {
   "path": "oracle.md",
-  "sha256_now": "b418885668bf8d972287a001c92d259c70045a9cfe6eda17006dfb0394697cfe",
+  "sha256_now": "c4233dd71bb7f81bfbe0a0bfe2fecee4240733e17b531880a43af2cbf31c1bd8",
   "sha256_now_note": "whole-file hash AFTER the r3 merge; this is the value that tracks the file on disk",
   "sha256_before_r3_dedup": "ca4543b16aabb2963694f1c34fa6e5a56021de5db80cacde68eee7246d01d646",
   "sha256_at_oracle_generation": null,
@@ -37,7 +37,7 @@
   "v1_frozen_body_prefix_bytes": 7645,
   "v1_frozen_body_still_reproducible": true,
   "honest_gap": "the oracle DOCUMENT was written before any product run and its frozen body was not modified afterwards. commands.json records argv and raw exit codes ONLY and does NOT carry an oracle.md hash (F-M05-01/02, F-M06-01, F-M07-01, F-M08-03); revision r1's wording claimed otherwise and is corrected here. The verifiable chain is the mtime ordering below plus evidence/<card>/oracle.json (written by the independent oracle script, standard library only) whose mtime precedes the product run's stdout.txt. Revision r2 APPENDED a response section to oracle.md, which is why oracle.md's own mtime is now later than the run: the append is after the run by construction and the frozen body above it is byte-unchanged.",
-  "honest_gap_r3_dedup_addendum": "Revision r3 MERGED the two duplicated 'revision r2' sections into ONE and appended a provenance-gap note (finding F-M08-06). The merge deleted only the byte-identical duplicate section; the kept prefix is byte-for-byte unchanged (proved in recovery/docfix-r3/f06_verify.out.txt), so the v1 frozen body and every frozen expectation are still byte-identical to what the product ran against.",
+  "honest_gap_r3_dedup_addendum": "Revision r3 FOLDED the two duplicated 'revision r2' sections into ONE and INSERTED a provenance-gap note at the folded duplicate's former position (finding F-M08-06; wording corrected under F-R3-01). The fold removed only the byte-identical duplicate section and the note went in at that position, so live = pre[:kept_prefix_bytes] + note: the kept prefix is byte-for-byte unchanged (proved in recovery/docfix-r3/f06_verify.out.txt), and therefore the v1 frozen body and every frozen expectation are still byte-identical to what the product ran against.",
   "mtime_ordering": {
    "oracle_json_mtime": 1789868287.6770754,
    "input_json_mtime": 1789868287.6760733,

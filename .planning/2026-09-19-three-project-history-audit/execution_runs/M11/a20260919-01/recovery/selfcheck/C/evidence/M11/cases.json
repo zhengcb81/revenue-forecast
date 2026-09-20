@@ -1,0 +1,161 @@
+{
+ "card_id": "M11",
+ "model_id": "infrastructure",
+ "first_required_driver": "billable_volume",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "continuity_then_break_order": [
+  "run continuity_positive and check it against oracle.continuity_positive",
+  "only then apply the CONT-BREAK patch to a fresh deepcopy of continuity_positive"
+ ],
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_base_revenue",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "card-specific negative named in the card body",
+   "guard_hint": "driver value-domain guard: activity default bound [0, inf)",
+   "value": 0
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "driver": "billable_volume",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "guard_hint": "",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   }
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "driver": "billable_volume",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01b: non-finite value nan",
+   "guard_hint": "",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   }
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "driver": "billable_volume",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01c: non-finite value inf",
+   "guard_hint": "",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   }
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "driver": "billable_volume",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01d: non-finite value -inf",
+   "guard_hint": "",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   }
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "driver": "billable_volume",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "guard_hint": "",
+   "value": []
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "driver": "billable_volume",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "guard_hint": ""
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "driver": "unknown_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "guard_hint": "",
+   "value": [
+    1
+   ]
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "driver": null,
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "guard_hint": "",
+   "value": []
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "driver": null,
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "guard_hint": "",
+   "value": {
+    "__bool__first__": true
+   }
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "driver": null,
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "guard_hint": "fiscal-year consecutiveness guard",
+   "value": [
+    2027,
+    2029
+   ]
+  }
+ ],
+ "extra_observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "value": 999,
+   "base_input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "why": "the rowwise calculator discards base_revenue; design observation only"
+  },
+  {
+   "id": "OBS-TARIFF-NEG",
+   "kind": "set_driver",
+   "driver": "tariff",
+   "value": [
+    -1
+   ],
+   "base_input": "positive",
+   "why": "records whether a negative tariff is expressible; the driver-domain guard runs before the calculator, so the recorded message shows which guard fires first (a negative total would also be refused)"
+  }
+ ]
+}

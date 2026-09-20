@@ -1,0 +1,236 @@
+# I-08-B review — implementer's account, PENDING independent review
+
+> **本文件由实现者撰写，不构成验收结论。** 本卡是实施卡：实现者只能声明"隔离副本内的改动已落地、
+> 正反例已跑、证据已留"。是否接受由**独立 reviewer** 判定。
+>
+> 状态：`review_pending`；实现者**未**自签任何 accepted / passed 标签。
+
+- card: **I-08-B**（父项 I-08）；attempt `a20260919-01`
+- 上游设计: I-08-A `a20260919-01/decision.md` **r3**（独立复审 accepted_scoped）
+- 产品仓改动: **零**（后述 §4 给出证据）
+
+---
+
+## 1. 我实际做了什么（可核对清单）
+
+| 动作 | 产物 / 证据 |
+|---|---|
+| 读卡片、START_HERE、review_and_handoff、common_filing_cards、I-08-A 的 decision/oracle/review/handoff | 本文件、`decision.md` §0 |
+| 用函数名重新定位 5 个锚点（**未用卡片旧行号**），核 hash 与卡片逐字一致 | `binding.json.source_anchors_verified` |
+| 复制模板 venv → `iso/venv`，`pip install pytest cryptography`（本地缓存，无网络） | `binding.json.interpreter` |
+| 把产品树复制进 `iso/rf`（scripts/tests/config/references/.github/SKILL.md） | `after/I08B-c10-hash-inventory.stdout.txt` |
+| **先**冻结 `oracle.md`（32 码表 + 逐条用例 + §7.1 前置） | `oracle.md` |
+| **修前** RED：基线树跑原用例 + 探针 | `before/cmd-run-red1-pytest.*`、`before/cmd-run-red2-probe.*` |
+| 实现 provider 协议/信任域/载荷验签/分类 | `iso/rf/scripts/attestation_protocol.py`、`changes.diff` |
+| 改测试**意图**（非改断言凑绿）+ 加反向用例 | `iso/rf/tests/test_attestation.py` |
+| 新增协议用例 68 条、旧版本用例 12 条 | `iso/rf/tests/test_attestation_provider_protocol.py`、`test_attestation_legacy.py` |
+| 跑 8 条 bound 命令并保存 raw stdout/rc | `after/I08B-c*.stdout.txt`、`after/c12_command_summary.json` |
+| before/after 全量普查（同 ignore 列表） | `before/c8_baseline_suite.stdout.txt`、`after/c8_full_suite.stdout.txt`、`after/c8_failure_diff.txt` |
+| 三仓 `git status` 前后集合差 | `after/I08B-c11-git-status.stdout.txt` |
+
+**没有做**：没有写产品仓任何文件；没有 `git add/commit/restore/stash`；没有写入 `.planning/reviews/**`；
+没有真实 provider/网络/发布/生产 registry；没有生成或提交真实私钥。
+
+---
+
+## 2. §7.1 的 RED → GREEN（卡片准入条件，逐条）
+
+**前置 1（RED，修改前取得）** — 原始输出：
+
+| 观测 | 原始结果 | 证据 |
+|---|---|---|
+| 原用例 `test_configured_provider_means_host_signed_publication`（基线树） | `1 passed in 0.51s`，raw rc=**0** | `before/cmd-run-red1-pytest.stdout.txt` / `.rc.txt` |
+| `attestation_capability()`，provider=`sys.executable` | `true`（应为 `false`） | `before/cmd-run-red2-probe.stdout.txt` |
+| `attestation_status`，provider=`sys.executable` | `"host_signed"`（应为 `"unattested"`，码 **E32**） | 同上 |
+| provider 是否真被调用 | `provider_spawn_witness=false`、`provider_invocations=0` | 同上 |
+| 裸 `.py` / `.txt` | `capability=true`（应为 false，码 **E32**） | 同上 |
+| 不存在路径 | `capability=false`（已符合，码 **E02**） | 同上 |
+
+即：**修前的绿来自"文件存在"，与签名无关** —— 这正是 §7.1 要证明的假绿。
+
+**前置 2（GREEN）** — 测试**意图**改为"bound provider 完成一次成功握手 + 受信验签"：
+`test_provider_handshake_means_host_signed_publication` 用隔离有界 fake provider + 隔离信任域
+（`REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS` 指向 attempt 内文件），测试私钥只在进程内/子进程 env 中；
+断言 `host_signed` 之外还断言 fingerprint / issuer / 算法 / receipt schema / `payload_sha256 == validated_payload_sha256`，
+并对"改 issuer 后旧签名"断言 **E14**。证据：`after/I08B-c4-attestation.stdout.txt`（18 passed）。
+
+**前置 3（反向用例）** — 逐条断言可达码：
+
+| 输入 | 用例 | 断言码 | 结果 |
+|---|---|---|---|
+| 变量未设置 | `test_unset_provider_reports_provider_absent` | **E01** | PASS |
+| 路径不存在 | `test_missing_provider_path_reports_unopenable` | **E02** | PASS |
+| 路径是目录 | `test_directory_as_provider_reports_unopenable` | **E02** | PASS |
+| `sys.executable` | `test_sys_executable_is_capability_unproven` | E32/E03/E04（见 §5 偏离 2） | PASS |
+| 裸 `.py` | `test_bare_py_source_is_capability_unproven` | **E32** | PASS |
+| `.txt` | `test_plain_txt_is_capability_unproven` | **E32** | PASS |
+| 不可启动的可执行文件 | `test_unstartable_executable_is_capability_unproven` | **E32** | PASS |
+
+所有情形都另断言：**不得** `host_signed`、不得出现 `publication_attestation`、`provider_invocations == 0`
+（`sys.executable` 一例除外——它确实会被 spawn，见 §5 偏离 2）。
+
+**前置 4**：以上 raw rc/stdout 全部落在 `after/I08B-c4-attestation.stdout.txt` 与 `before/`。
+
+---
+
+## 3. 正/反例计数与原始结果
+
+| 命令 | 内容 | 条数 | raw rc | 期望 |
+|---|---|---|---|---|
+| `I08B-c1-red-pytest` | §7.1 RED：修前原用例（基線树） | 1 passed（假绿） | 0 | 0 |
+| `I08B-c2-red-probe` | §7.1 RED：修前探针可观测量 | 4 组观测 | 0 | 0 |
+| `I08B-c3-provider-protocol` | 协议正例/负例/重放/过期/信任域 | **68 passed** | 0 | 0 |
+| `I08B-c4-attestation` | §7.1 意图改写 + 反向用例 + L2 绑定 | **18 passed** | 0 | 0 |
+| `I08B-c5-legacy-classify` | G1/G2/G3a/G3b/G4 + E29 入口 + E30 门 + 投影覆盖 | **21 passed + 22 subtests**（`test_attestation_legacy.py`）；另有 `test_single_owner_guard.py` **5 passed**（含两条新加固断言） | 0 | 0 |
+| `I08B-c6-adversarial-receipts` | 既有对抗用例（回归） | **6 passed** | 0 | 0 |
+| `I08B-c7-tpub` | T-PUB（卡片指定命令） | **48 passed** | 0 | 0 |
+| `I08B-c8-full-suite` | 全量普查（before/after 集合相等） | 128F/921P，新增失败 **0** | 1（同基线） | 集合相等 |
+| `I08B-c9-independent-recompute` | 独立复算（不调用被测代码） | 0 failures | 0 | 0 |
+| `I08B-c10-hash-inventory` | iso vs 产品源 hash | 产品改动 **0** | 0 | 0 |
+| `I08B-c11-git-status` | 三仓前后集合差 | 本卡新增条目 **0** | 0 | 0 |
+| `I08B-c13-changes-diff` | 生成 `changes.diff`（产品树 → 隔离副本） | 12 文件（8 改 4 增） | 0 | 0 |
+
+**E 码逐条真实状态（独立复核 P1-1/P2-1 后按事实重列；已删除"32/32 由失败用例覆盖"的字面主张）**
+
+口径：**raise-able** = 仓库内存在一条会以该码 `raise` 的路径；**有失败用例** = 该码不出现时会有测试失败；
+**仅拒绝行为** = 只有"拒绝"这件事被覆盖，码值不由本仓产出。
+
+| 码 | raise-able（位置） | 有失败用例 | 说明 |
+|---|---|---|---|
+| E01 | 是（`precheck_provider_path`） | 是（`T-N01`；c4 反向例） | |
+| E02 | 是（`precheck_provider_path`） | 是（`T-N02/N03`；c4 反向例） | |
+| E03 | 是（`call_provider`/`validate_response`） | 是（`T-N08b`；`sys.executable` 集合断言） | |
+| E04 | 是（`call_provider`） | 是（`T-N07/N08`） | |
+| E05 | 是（`call_provider`） | 是（`T-N09`） | |
+| E06 | 是（`call_provider`） | 是（`T-N10`） | |
+| E07 | 是（`call_provider`） | 是（`T-N11`） | |
+| E08 | 是（`validate_response`/`validate_payload`） | 是（`T-N12/N13/N14`） | |
+| E09 | 是（`validate_response`） | 是（`T-N15/N16/N17`） | |
+| E10 | 是（`call_provider`） | 是（`T-N18`） | |
+| E11 | 是（`validate_payload`） | 是（`T-N19`；`T-R3`） | |
+| E12 | 是（`verify_attestation_record`） | 是（`T-N20`） | |
+| E13 | 是（`verify_attestation_record`/`validate_response`） | 是（`T-N21/N22`） | |
+| E14 | 是（`verify_signed_payload`） | 是（`T-N23`、`T-N33b`、`T-R4`） | |
+| E15 | 是（多处字段集校验） | 是（`T-N24`） | |
+| E16 | 是（`verify_publication_attestation`） | 是（`T-N25`、`T-R1/R2/R3`） | 投影已按 P2-2 收宽 |
+| E17 | 是（`validate_payload`） | 是（`T-N26`、`T-R5`） | |
+| E18 | 是（`validate_payload`） | 是（`T-N27/28/29/29b`、`T-R8`） | 两个半段各有独立用例 |
+| E19 | 是（`RequestIdLedger.observe`） | 是（`T-N30`） | |
+| E20 | 是（`_entry`/`resolve_trusted_key`） | 是（`T-N31/N32`） | |
+| E21 | 是（`resolve_trusted_key`） | 是（`T-N33`、`T-R4`；c4 的 L2 例） | |
+| E22 | 是（`resolve_trusted_key`） | 是（`T-N34/N35`；`T-O7`） | |
+| E23 | 是（`resolve_trusted_key`） | 是（`T-N36`） | |
+| E24 | 是（`resolve_trusted_key`） | 是（`T-N37`） | |
+| E25 | 是（`load_trust_domain`/`parse_trust_domain_entry`） | 是（`T-N38…N44c`） | |
+| E26 | 是（`classify`/`require_class_permits`） | 是（`T-L3/L4/L6`；c4 默认路径） | |
+| E27 | 是（`classify`/`validate_publication_receipt`） | 是（`T-L2`、`T-L7`） | |
+| E28 | 是（`classify`/`require_class_permits`） | 是（`T-L5`，7 个版本子用例） | |
+| **E29** | **是**（`require_legacy_exemption`，本卡新增入口点） | **是**（`T-L7b`：3.8/3.7/9.9/None 四子用例） | **复核前不可达**（AST 枚举无 `E29_*` 的 raise；3.8 实测走 E26）。现已可达且有失败用例；跨仓接线仍属 **OPEN-D6** |
+| **E30** | **是**（`trust_anchor.verify_input_binding` 三条路径） | **是**（`E30InputBindingTests` 四条用例） | **复核前只有"拒绝行为"**，码值不产出。现由该门抛出，历史消息文本**逐字保留** |
+| **E31** | **否** | **否** | **属 I-09-A，保持未闭，本卡不声称通过** |
+| E32 | 是（`call_provider` 的 `OSError` 分支） | 是（`T-N04b/N05/N06`；c4 反向例） | `sys.executable` 一例见 §5 偏离 2（已披露例外） |
+
+`provider_call_budget_unspecified`（OPEN-D7 的 `T`/`L` 未配置 ⇒ 拒绝调用）**不是 E 码**，故意不写成 `E##`。
+
+---
+
+## 4. 产品仓零写入（原始证据）
+
+- `I08B-c10-hash-inventory`：卡片触碰的每个产品文件的 sha256 **等于** `before/source_hashes.txt`，
+  `PRODUCTION FILES CHANGED BY THIS CARD: 0`。
+- `I08B-c11-git-status`：filing-fetch、company-wiki 前后集合**完全一致**；revenue-forecast 的 56 条新增
+  **全部**是并发卡（I-04-C / I-14-C / I-06-A / M05-M08）在 `.planning/execution_runs/**` 下的条目；
+  `scripts/`、`config/`、`artifacts/registry/`、`tests/`、`.planning/reviews/` 下**零**本卡条目。
+  `NEW ENTRIES THAT BELONG TO THIS CARD: 0`。
+- 生产 registry 与默认信任域文件的 hash/存在性在 `I08B-c10` 输出中逐条列出。
+
+---
+
+## 5. 已知与预期偏离（不隐藏）
+
+1. **卡片行号陈旧**：按 START_HERE 第 3 步用函数名重定位；三个文件内容 hash 与卡片 anchor 逐字一致。
+2. **`sys.executable` 的可达码不止 E32**：oracle §7.1 的前置 3 表把"可执行但协议不合规"列为 **E03/E04/E08**。
+   在 Windows 上裸 `python.exe` 会读完 stdin 后**以 0 退出且不输出**，因此实测落到 **E04**（`provider_invalid_json`）；
+   本卡用例断言的是**集合** `{E32, E03, E04, attestation_malformed_signature}` 且**强断言**"不得 host_signed /
+   不得出现记录"，而不是硬写 E32。oracle §1 的 NEG-PROV-1 仍以 **E32** 为准（存在但未证明能力）。
+3. **E18 的 `issued_at > signed_at` 半段无法从 request 侧触发**：provider 的时间戳语义是
+   `signed_at = issued_at + offset`，故 `issued > signed` 只能出现在"签名后改载荷"的形态里。
+   `T-N27` 用**重签名**构造该形态并断言 E18；`T-N29` 用零宽窗口 `[A, A]` 触发 `signed > expires` 半段。
+   两个半段**都有**独立可失败用例（见 §3）。
+4. **E18 窗口用例的时间锚**：本机墙钟在测试过程中出现过数十秒跳变（实测两次 `datetime.now()` 相差 ~48 s），
+   早期版本因此出现"同一断言时红时绿"。已改为**固定锚 + 显式注入 provider offset**，所有时间期望变为纯算术。
+   这也是用例从"看起来随机"变为稳定 68 passed 的原因。
+5. **26 个测试模块无法在隔离副本收集**：它们 import 产品树里也不存在的模块（如 `daily_t2_runner`）。
+   before/after 两次普查用**同一** ignore 列表，故不构成回归；名单见 `scratch/c8_ignore.txt`。
+   **口径限制（复核已指出，本卡原样承接）**：这只证明了"同一 ignore 列表下失败集合相等"，
+   **未**做"不带 `--ignore` 的两树收集对比"，因此不能主张这些模块在 before 也必然同样失败。6. **两项架构冲突**（`test_single_owner_guard` 的 subprocess 守卫、`golden_behavior_hashes.json` 刷新）：
+   已在 `decision.md` §2 显式登记并给出可回退处置。**独立复核已裁决：CONFLICT-1 接受但要求加固、CONFLICT-2 接受**，
+   处置见 §7。
+7. **交付物哈希的自指问题**：`handoff.json` 不包含自身哈希；`after/product_hashes.txt` 是本次规范清单。
+8. **`changes.diff` 的字节级口径不成立（复核 P3-1）**：施加到 `before/baseline_tree/rf` 后 12 个文件里
+   **9 个行尾不同（CRLF vs LF）**，`raw_equal=False`；归一 LF 后 **12/12 相同**。
+   正确表述：**内容级可重现，裸字节级不成立**（已同步写入 `oracle.md` §8 第 7 条）。
+9. **mtime 不可作准（复核 P3-2）**：卡窗口内 61 个非 `.planning` 产品文件 mtime 落在同一分钟，
+   但 `before/source_hashes.txt` 24/24 重算 **drift=0**，registry 与默认信任域均未变 ⇒
+   **内容零变化**；mtime 变化与 git 操作时点相关（父 agent 另有隔离巡检记录
+   `execution_runs/_isolation_incidents/20260920-prereg-expectations-leak/INCIDENT.md`，
+   并观察到同一批量 mtime 现象在 03:41:57 再次出现）。
+   本卡据此声明：**任何"文件被动过"的推断必须基于内容哈希，不得基于 mtime**。
+10. **`REVENUE_ATTESTATION_PROVIDER_ARGV` 是测试/运维专用契约（复核 P3-4）**：它是可选 env（JSON 字符串数组，
+    拼在 `argv[0]` 之后、无 shell），用于"provider = 解释器 + 脚本"的真实部署形态；
+    **不**由任何生产调用方依赖，也**不**改变"绝对路径可执行文件"这一主契约（不设时行为不变）。已在 `decision.md` 标注。
+11. **`__pycache__` 口径修正（复核自查披露 P7）**：复核方的 pytest 在 attempt 内的两棵树留下 **57 个 `.pyc`**
+    （`iso/rf` 29 + `before/baseline_tree/rf` 28，分布在 10 个 `__pycache__` 目录）。它们**不是**证据文件、
+    不影响任何结论，但确实说明"`iso/` 是唯一被写的地方"对本卡也不完全成立。
+    处置：新增 `iso/clean_bytecode.py`（**只**删除 `__pycache__`，删后重核被改源码 sha256 不变），
+    已删除 **57 个**；随后本卡自己的 `check_independent.py` / `finalize_binding.py` 又产生 **24 个**（这次是
+    本卡自己未加 `-B` 的调用），已再次删除（证据 `after/c20_clean_bytecode.stdout.txt`）。
+    最终 `iso/rf` 与 `before/baseline_tree/rf` 的 `.pyc` 计数均为 **0**。
+    后续审计请以**非 `__pycache__`** 为口径。
+
+---
+
+## 7. 独立复核（verdict `changes_required`）的逐条处置
+
+复核报告：`C:\Users\郑曾波\AppData\Local\Temp\i08b-review-20260920-033351\REPORT.md`（复核方明确写"核心意图已被独立证实成立"）。
+
+| 条目 | 处置 | 证据/位置 |
+|---|---|---|
+| **P1-1** E29 不可达却声称 32/32 覆盖 | **改代码使其可达 + 加失败用例**：新增 `require_legacy_exemption()`（`attestation_protocol.py`），对非 G1 版本抛 **E29**；测试 `T-L7b` 覆盖 3.8/3.7/9.9/None 四个子用例。**同时**把 §3 的覆盖声明改为**逐码真实状态表**（本文件 §3） | `iso/rf/scripts/attestation_protocol.py`、`iso/rf/tests/test_attestation_legacy.py::test_tl7b_licensed_exemption_entry_point_raises_e29` |
+| **P2-1** E30 从不 raise | **修 `trust_anchor.verify_input_binding`** 使其以 `AttestationError(E30, <历史消息逐字>)` 失败（`AttestationError` 继承 `ForecastInputError`，既有调用方不受影响）；新增 `E30InputBindingTests` 四条用例（缺锚点/嵌入文档不符/校验输入不符/仍属 `ForecastInputError`） | `iso/rf/scripts/trust_anchor.py`、`iso/rf/tests/test_attestation_legacy.py::E30InputBindingTests` |
+| **P2-2** E16 绑定弱于其同名承诺 | **统一投影口径**：`payload_sha256` 改为**包含式投影**（除 `result_sha256`/`publication_receipt`/`publication_attestation`/outcome 附录外**全键参与**），`sources`/`parameter_trace`/`data_gaps`/`disconfirming_indicators` 现被承诺覆盖；`revenue_publication._payload_sha256` 委派同一实现，二者不可能漂移。新增 `ProjectionCoverageTests`（7 个内容键必须改变承诺；4 个不可承诺键必须不改变；两者哈希必须一致） | `iso/rf/scripts/attestation_protocol.py::payload_sha256`、`iso/rf/tests/test_attestation_legacy.py::ProjectionCoverageTests` |
+| **P3-1** `changes.diff` 字节级重现不成立 | 按事实改写 `oracle.md` §8（新增第 7 条）与本文件 §5 第 8 条：**内容级成立、裸字节级因 CRLF/LF 不成立**，并给出归一 LF 的复算口径 | `oracle.md` §8.7、本文件 §5.8 |
+| **P3-2** mtime 事件 | 写入本文件 §5 第 9 条与 `oracle.md` §8 第 8 条：**内容零变化、mtime 不可作准**，并引用父 agent 的 INCIDENT 记录 | 同上 |
+| **P3-3** "eight bound commands" 与 12 条不符 | 更正 `handoff.json`：`commands_executed` **12** 条（8 条 pytest/校验 + c1/c2 RED + c8 普查 + c13 diff），并写明 bound 命令为 8 条、另有 4 条 RED/普查/打包记录 | `handoff.json.commands_executed`、本文件 §3 计数表（现列全部 12 条） |
+| **P3-4** `REVENUE_ATTESTATION_PROVIDER_ARGV` 未标注用途 | 在 `decision.md` D-08B-06 与 `handoff.json` 明确标注为**测试/运维专用**、可选、不设时行为不变、不改变"绝对路径可执行文件"主契约 | `decision.md` §1 D-08B-06 |
+| **P3-5** `provider_calls==0` 与 `sys.executable` 例外冲突 | 保留登记并**明确它是已披露例外而非反例**（`oracle.md` §7.1 与 §5 偏离 2 已按此改写） | `oracle.md` §7.1、本文件 §5.2 |
+| **CONFLICT-1 加固** | 按裁决在守卫里**追加两条 AST 断言**：①豁免文件不得定义 `FORBIDDEN_SYMBOLS`；②豁免文件不得 import 下载/网络模块（`FORBIDDEN_EXEMPT_IMPORTS`）。两条都按**文件名精确匹配**豁免集合，原 `FORBIDDEN_SYMBOLS` 检查对全体非 canonical 文件继续生效 | `iso/rf/tests/test_single_owner_guard.py::test_exempted_subprocess_user_defines_no_filing_owner_symbol`、`::test_exempted_subprocess_user_imports_no_download_or_network_module` |
+| **CONFLICT-2 补证据** | 记录复核补充的证据：新旧 golden 在**各自树上**均 `test_golden_behavior_lock.py` **1 passed**（刷新不是在掩盖失败）；差异仅 **5 个值**、键名未变，来源只能是 schema 1.0→2.0 + 4 个新 provenance 键 + 顶层 outcome 键的形状变化 | `before/golden_behavior_hashes.json` vs `iso/rf/tests/golden_behavior_hashes.json` |
+| **顶层放置：接受** | 保留实现，记录复核实测：删掉记录后确实触发 `attestation_missing_record`（**E27**） | 本文件 §7 |
+| **未签名附录：接受其"非证据性存在"** | 按裁决在 `decision.md` 与 `handoff.json` 写入**禁令**：任何文档/下游**不得**依据 `publication_attestation_outcome` 下结论（复核实测：把它改成 `status="host_signed"` 后 `validate_publication_receipt` 通过、`verify_publication_attestation` 返回 `[]`，且仓内无消费者读它） | `decision.md` §1 D-08B-04、`handoff.json` |
+| **E31 / D1–D3 / D5–D7 / registry 锚字段名** | **全部保持 OPEN/UNRESOLVED，未关闭**；状态保持 `review_pending`，未自签 | `decision.md` §3、`handoff.json.open_questions` |
+
+**复核未能验证的部分（原样承接，不得当成已证）**：
+① 26 个 ignore 模块在 before 是否"同样收集失败"只做了"同一 ignore 列表 + 失败集合相等"，**未**做不带 `--ignore` 的两树收集对比；
+② 128 个既有失败的性质未逐个分析；
+③ `verify_publication_attestation` 的跨仓消费者（invest-core 等）未检查，故 P2-2 未定级 P1；
+④ 运行时验证只在 `iso/rf` 与 `before/baseline_tree/rf`，产品树只做 hash/存在性核对；
+⑤ P3-2 的 mtime 成因无法确定；
+⑥ golden 5 个值是否仍代表"行为"只证自洽与差异来源，未独立重算每场景期望语义；
+⑦ 复核方自查：其 pytest 在 attempt 内留下 10 个 `.pyc`（本文件 §5 第 11 条已承接并处理）。
+
+---
+
+## 8. 下一轮 reviewer 优先攻击点
+
+1. **E29 的设计归属**：本卡把 E29 做成 `require_legacy_exemption()` 这一**同仓入口点**。设计原文把 E29 的落地放在跨仓消费者
+   （OPEN-D6）。请判定"同仓提供可抛入口 + 跨仓仍待接线"是否满足设计意图，还是必须等跨仓卡。
+2. **P2-2 的投影收宽是否够**：`payload_sha256` 现在包含式覆盖除 4 个不可承诺键之外的一切。请独立构造变异
+   （例如改 `confidence`、`theme_analysis`、`historical_accuracy_records`）确认都被 E16 拦下。
+3. **E30 的兼容性**：`AttestationError` 继承 `ForecastInputError`，历史消息文本逐字保留；请确认没有任何消费者
+   按消息前缀/类型做严格匹配而受影响（本卡只在 iso 内验证）。
+4. **CONFLICT-1 加固是否足够**：两条新 AST 断言分别覆盖"符号"与"导入"；请判断是否还需要"不得读写文件系统/不得访问文件路径"之类的更强约束。
+5. **空承诺的最终裁决**：复核对它的接受是**有条件**的（"接受自身…但必须先修 P2-2"）。P2-2 已修，请据此复评该条件是否满足，
+   或要求设计两阶段签收据。
+6. **`changes.diff` 复算口径**：请用归一 LF 的方式复算，或直接比对 `binding.json.post_run_measurements.artifact_hashes`。
+7. **跨仓缺口**：`is_legacy_exempt()` / `require_legacy_exemption()` 只在本仓导出，消费者接线缺失（OPEN-D6），**未闭**。

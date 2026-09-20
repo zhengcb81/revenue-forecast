@@ -61,11 +61,18 @@
   "revision": "r2",
   "oracle_md_versions": [
    {
-    "version": "v1_frozen_then_appended",
+    "version": "v1_frozen_unamended_until_r4",
     "path": "oracle.md",
     "sha256": "77dce63db21fe391f0dea0b8fb90ea71d37b2da7d3557bfa2c33fb9283031ad0",
-    "sha256_before_r2_append": "NOT CAPTURED before the r2 append (same legacy gap as M01; the frozen body was not rewritten, only appended to)",
-    "note": "r2 APPENDED a revision section; the frozen body was not rewritten"
+    "bytes": 7838,
+    "note": "the file was NEVER appended to during r2/r3; r4 appended an honest r2 index section together with the word that r2 had claimed an append that never landed"
+   },
+   {
+    "version": "current_on_disk_at_r4",
+    "path": "oracle.md",
+    "sha256": "897b9a978914e9364e45d4c6a6b83d0d35b8da6e9a4f9c67e0d22a22e1dadba9",
+    "bytes": 9975,
+    "note": "this field is the r4 close-out state; the authoritative pin is revision_r3.json.authoritative_hashes_at_r3_closeout (pre-r4) plus revision_r4.json (post-r4)"
    }
   ],
   "oracle_script_versions": [
@@ -87,11 +94,8 @@
  "revision_r2": {
   "applied": true,
   "review_items": [
-   "F-M01-01",
    "F-M01-02",
    "F-M01-03",
-   "F-M03-01",
-   "F-M04-01",
    "F-M02-01(pending ruling)"
   ],
   "product_source_hashes_rechecked_at_r2": {
@@ -101,6 +105,7 @@
   "product_source_hashes_now": {
    "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
    "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
-  }
+  },
+  "review_items_note": "scoped to this card in r4; the previous list was a shared template that also named other cards' items (point review P3-2)"
  }
 }

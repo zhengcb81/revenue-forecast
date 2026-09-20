@@ -1,0 +1,82 @@
+{
+ "card_id": "M03",
+ "purpose": "exit-code self-check for this card: does the exit code carry the verdict?",
+ "origin": "generalised from the M01-only self-check after the point review found that handoff.json.evidence_paths on M02/M03/M04 pointed at a file that exists only in M01",
+ "harness_under_test": {
+  "path": "scripts/run_card.py",
+  "sha256": "b5fcc68563f563924529e06e2aeeba06938dcf51bd48b14f553f580191601816",
+  "shared_with": "the same run_card.py file is present in all four attempts"
+ },
+ "scratch": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M03\\a20260919-01\\recovery\\r2_exit_code_selfcheck",
+ "frozen_evidence_touched": false,
+ "cases": [
+  {
+   "id": "A_corrupted_oracle_expectation",
+   "mutation": "oracle.json positive.expected_float -> [999.0] x 1 (true values [305.0])",
+   "raw_returncode": 3,
+   "expected_returncode": 3,
+   "verdict_field": "fail",
+   "product_positive_actual": [
+    305.0
+   ],
+   "negative_summary": {
+    "total": 13,
+    "passed": 13,
+    "failed": []
+   },
+   "interpretation": "the product still returns the correct path, but the harness exits 3 instead of claiming success; a corrupted expectation cannot hide behind a bookkeeping-only rc=0"
+  },
+  {
+   "id": "B_corrupted_case_plan",
+   "mutation": "cases.json first case base_input -> 'no_such_block'",
+   "raw_returncode": 1,
+   "expected_returncode": "non-zero (the harness raises before any verdict)",
+   "traceback_excerpt": [
+    "    base = copy.deepcopy(input_doc[base_key])",
+    "                         ~~~~~~~~~^^^^^^^^^^",
+    "KeyError: 'no_such_block'"
+   ],
+   "interpretation": "a defect outside the guarded block cannot masquerade as a pass; it raises and exits 1 rather than 0"
+  },
+  {
+   "id": "C_uncorrupted_card",
+   "mutation": "none",
+   "raw_returncode": 0,
+   "expected_returncode": 0,
+   "verdict_field": {
+    "harness_incomplete": false,
+    "positive_ok": true,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "verdict": "pass",
+    "exit_code": 0
+   },
+   "interpretation": "the repaired exit code stays 0 for a genuinely passing card"
+  },
+  {
+   "id": "D_corrupted_positive_input",
+   "mutation": "input.json positive.drivers.units deleted (required driver missing)",
+   "raw_returncode": 2,
+   "expected_returncode": 2,
+   "positive_raised": "ModelRegistryError",
+   "positive_message": "missing drivers for unit_sales: units",
+   "verdict_field": {
+    "harness_incomplete": true,
+    "positive_ok": false,
+    "continuity_ok": true,
+    "negatives_ok": false,
+    "verdict": "fail",
+    "exit_code": 2
+   },
+   "interpretation": "a corrupted POSITIVE INPUT makes the product raise, so no verdict exists; the harness reports rc=2 ('harness incomplete') instead of a bookkeeping-only rc=0. This is the reachable rc=2 path, distinct from case B (a case-plan defect outside the guard, which raises and exits 1)."
+  }
+ ],
+ "reachability_summary": {
+  "rc_0": "the uncorrupted card (case C)",
+  "rc_1": "a defect outside the guarded block, e.g. a corrupted case plan (case B)",
+  "rc_2": "REACHABLE: a corrupted positive input makes the product raise, so no verdict exists (case D)",
+  "rc_3": "a corrupted oracle expectation produces a negative verdict (case A)",
+  "verified_by_point_review": "the independent point review reproduced rc=0/1/2/3 on this harness"
+ },
+ "all_cases_as_expected": true
+}

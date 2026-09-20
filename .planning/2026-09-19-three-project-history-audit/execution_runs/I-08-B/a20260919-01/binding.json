@@ -1,0 +1,216 @@
+{
+  "card": "I-08-B",
+  "parent_card": "I-08",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt": "a20260919-01",
+  "attempt_path": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-B\\a20260919-01",
+  "date": "2026-09-19",
+  "title": "actually call the trusted provider and verify the signature before declaring host_signed",
+  "implementer": "authoring session (implementer role; does NOT self-sign accepted)",
+  "independent_reviewer": "separate session (PENDING; see review.md)",
+  "execution_gate": {
+    "card_requires": "I-08-A + I-00-C independently accepted before execution; no self-selected protocol",
+    "I-08-A": "execution_runs/I-08-A/a20260919-01/ decision.md r3 = SIGNED design (accepted_scoped); design sha256 recorded below; the granted list is implemented verbatim (provider protocol, L1/L2/L3, trust-domain tuple, canonical payload, replay/expiry split, G1/G2/G3a/G3b/G4 classify(), E01-E32 single source)",
+    "I-00-C": "execution_runs/I-00-C/a20260919-01/ (isolation environment discipline: venv from the frozen template interpreter, iso/ copies, --basetemp inside the attempt)",
+    "status": "satisfied"
+  },
+  "design_inputs": {
+    "execution_runs/I-08-A/a20260919-01/decision.md": "a26776b079a48e6b1b8644aa93b5599a45624f63dffcbfb83ce34805ac54272b",
+    "execution_runs/I-08-A/a20260919-01/oracle.md": "08281f2d80ac83c1ef23f801e097b5089fd096af23d372dd7f4d2852b576047a",
+    "note": "the design hash is the r3 revision hash recorded by the I-08-A handoff (product_file_hashes.decision.md). The reviewer must recompute it; a mismatch means the design drifted and this attempt must stop."
+  },
+  "interpreter": {
+    "path": "execution_runs/I-08-B/a20260919-01/iso/venv/Scripts/python.exe",
+    "created_from_template": "execution_runs/I-00-A/a20260919-01/iso/venv/Scripts/python.exe (copied, not the global Miniconda interpreter)",
+    "version": "3.13.9 (Anaconda packaging, MSC v.1929 64 bit AMD64)",
+    "installed_into_venv": [
+      "pytest 9.1.1",
+      "pluggy 1.6.0",
+      "iniconfig 2.3.0",
+      "packaging 26.3",
+      "colorama 0.4.6",
+      "pygments 2.21.0",
+      "cryptography 50.0.1",
+      "cffi 2.1.1",
+      "pycparser 3.0"
+    ],
+    "install_command": "<attempt>/iso/venv/Scripts/python.exe -m pip install pytest cryptography  (wheels resolved from the local pip cache; no network)",
+    "network": "disabled for every bound command"
+  },
+  "code_roots": {
+    "iso_working_copy": "execution_runs/I-08-B/a20260919-01/iso/rf",
+    "iso_working_copy_contents": [
+      "scripts/",
+      "tests/",
+      "config/",
+      "references/",
+      "SKILL.md"
+    ],
+    "iso_working_copy_note": "config/ contains NO trusted_signer_public_keys.json, exactly like the production tree -> the default trust domain is legally absent (zero trusted signers).",
+    "baseline_tree_RED_only": "execution_runs/I-08-B/a20260919-01/before/baseline_tree/rf (pre-edit copy used ONLY for the section 7.1 RED demonstration; the baseline pytest run happens here)",
+    "production_repos": {
+      "revenue-forecast": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast",
+      "filing-fetch": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\filing-fetch",
+      "company-wiki": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\company-wiki"
+    },
+    "production_write_policy": "ZERO writes. No file in any of the three product repos is created, modified or deleted by this card. No git add/commit/restore/stash anywhere. No write under .planning/reviews/**."
+  },
+  "allowed_write_roots": [
+    "execution_runs/I-08-B/a20260919-01/ (all artifacts, evidence, scratch)",
+    "execution_runs/I-08-B/a20260919-01/iso/rf/scripts/** (isolated copy only)",
+    "execution_runs/I-08-B/a20260919-01/iso/rf/tests/** (isolated copy only)"
+  ],
+  "forbidden": [
+    "any write to C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast (production)",
+    "any write to C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\filing-fetch or C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\company-wiki",
+    "writing .planning/reviews/**",
+    "writing a test private key into any trust-domain file, into the repo config/, or into any schema-validated document",
+    "running the historical probe_publication.py in place (read-only reference only)",
+    "network access, real key service, real publication, real registry write",
+    "editing production registry artifacts/registry/publications.jsonl or historical artifacts",
+    "hardcoding a normative value for W / T / L (they stay parameters; see oracle.md section 0)"
+  ],
+  "input_hashes_pre_edit": {
+    "note": "measured at binding time from the PRODUCTION tree and re-verified identical in iso/rf before any edit; full list in before/source_hashes.txt",
+    "scripts/revenue_core.py": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae",
+    "scripts/revenue_publication.py": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
+    "scripts/contracts/evidence.py": "bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e",
+    "scripts/contracts/constants.py": "278e3e02df15e556f4851b46711a2f36aac5b7e6a9820c27e0ca31b02858d0ae",
+    "scripts/publication_registry.py": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa",
+    "scripts/revenue_report.py": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+    "scripts/revenue_forecast.py": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc",
+    "tests/test_attestation.py": "d1b7cf036b22867d62e235002e1d1736586ec45a2f888e84896504b7b7915404",
+    "tests/test_recognition_bridge.py": "187ea01e45d144031d34b11e3a76c551b2029556c4d26b0b34983f7d59bcc1a5",
+    "tests/adversarial/test_receipt_attacks.py": "11cb9bd294a8f766e6d6a591777702cbe866c1df37d1bd6704b817b27a7d8998",
+    "tests/adversarial/test_anchor_attacks.py": "ef28b2a21e0e37934cdd58a50fa0ecbbb86da4e28de8c00c9823497b96e0c8d6",
+    "tools/host_signer/keygen.py": "05f3e4302d2c9fa93ce4f6dd8643473946aed42602cd3cc9677eb67f8b0648fd",
+    "artifacts/registry/publications.jsonl": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
+    "config/trusted_signer_public_keys.json": "ABSENT (default trust domain absent -> legal zero trusted signers)"
+  },
+  "fixture_dependencies": {
+    "tests/test_recognition_bridge.py": {
+      "sha256": "187ea01e45d144031d34b11e3a76c551b2029556c4d26b0b34983f7d59bcc1a5",
+      "symbol": "forecast_document",
+      "synthetic": true,
+      "declaration": "SYNTHETIC fixture. A successful signature over it proves ONLY that the L3 protocol and verification chain work. It MUST NOT be reported as signing a real capture, a real filing, or a real company document; real-provider qualification belongs to I-16/I-17.",
+      "bound": true,
+      "lesson_applied": "I-08-A review F-I08A-07: never inherit an unbound fixture dependency implicitly."
+    }
+  },
+  "budgets": {
+    "W_publication_window": "PARAMETER (OPEN-D7) -> REVENUE_ATTESTATION_MAX_WINDOW_SECONDS; unset = no upper bound enforced, W_enforced=false recorded. No normative value invented.",
+    "T_provider_timeout": "PARAMETER (OPEN-D7) -> REVENUE_ATTESTATION_TIMEOUT_SECONDS; unset = provider call REFUSED (code provider_call_budget_unspecified). No normative value invented.",
+    "L_provider_stdout_cap": "PARAMETER (OPEN-D7) -> REVENUE_ATTESTATION_STDOUT_LIMIT_BYTES; unset = provider call REFUSED (same refusal code). No normative value invented.",
+    "test_values_are_not_normative": "Every T/L/W value that appears in tests or in this binding is an explicitly injected TEST value, not a specification value."
+  },
+  "isolation_env": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "REVENUE_PUBLICATION_REGISTRY": "<attempt>/scratch/<run-id>/registry (never a production path)",
+    "REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS": "<attempt>/scratch/<run-id>/trust_domain.json (isolated trust domain; never the repo config/)",
+    "REVENUE_ATTESTATION_PROVIDER": "only ever set to the bounded fake provider inside the attempt, or to a negative-case path",
+    "note": "tests/conftest.py redirects REVENUE_PUBLICATION_REGISTRY to pytest's tmp_path_factory (which itself lives under --basetemp); --basetemp is always inside this attempt."
+  },
+  "test_private_key_policy": {
+    "generation": "one ephemeral Ed25519 key pair generated INSIDE the attempt at run time",
+    "custody": "in-process only, or passed to the isolated fake-provider child via its environment; never written to a trust-domain file, never into config/, never into any receipt/receipt-like document, never committed",
+    "trust_domain_entry": "contains the PUBLIC key only, environment=test, but the composition test path declares environment=production ONLY for the isolated production-style entry whose key is still an attempt-local test key; such a key is never a production key and never signs a production registry row",
+    "evidence": "the fake provider logs the request/response and the verification trace; the private key material is not logged"
+  },
+  "source_anchors_verified": {
+    "card_anchor_note": "the card's line numbers are stale (card: revenue_core.py:113/128, revenue_publication.py:120/185, contracts/evidence.py:270/311). Functions were re-located by NAME (START_HERE step 3) and the content hashes match the card anchors character for character, so the anchors are correct even though the line numbers drifted.",
+    "attestation_capability": "scripts/revenue_core.py (function attestation_capability) sha256 1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae",
+    "run_forecast": "scripts/revenue_core.py (function run_forecast) same file hash",
+    "build_publication_receipt": "scripts/revenue_publication.py sha256 183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
+    "validate_publication_receipt": "scripts/revenue_publication.py same file hash",
+    "_validate_host_signature": "scripts/contracts/evidence.py sha256 bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e",
+    "validate_host_receipt": "scripts/contracts/evidence.py same file hash"
+  },
+  "git_baseline": {
+    "captured_at": "before any run of this card",
+    "revenue-forecast": {
+      "porcelain_lines_nonempty": 76,
+      "evidence": "before/git_status_revenue-forecast.txt",
+      "sha256": "76900641af4645f1af3c3c6119b113d8546eeabb21adf505baa4c9cddca8d731"
+    },
+    "filing-fetch": {
+      "porcelain_lines_nonempty": 1,
+      "evidence": "before/git_status_filing-fetch.txt",
+      "sha256": "b132c31dc9713ef2db7856407229d4dfc85051b89beddb506ec16eeef0a2f593"
+    },
+    "company-wiki": {
+      "porcelain_lines_nonempty": 2,
+      "evidence": "before/git_status_company-wiki.txt",
+      "sha256": "ead4604404260388addc6029f9b210f06e9465b63a15797bdd494d8b0c147f81"
+    },
+    "note": "other cards of this plan run concurrently in the same workspace; the comparison rule is therefore the SET of ' M ' and '??' entries under scripts/, config/, artifacts/registry/, tests/ and the absence of any new entry caused by this card - not a line count."
+  },
+  "frozen_before_implementation": true,
+  "frozen_before_run": true,
+  "binding_status": "bound",
+  "binding_status_after_run": "bound",
+  "post_run_measurements": {
+    "note": "measured after every bound command; the production tree is byte-identical to input_hashes_pre_edit (see after/I08B-c10-hash-inventory.stdout.txt)",
+    "artifact_hashes": {
+      "oracle.md": "bd67211f2b2b273df41161cc935192c267a3a3bafd6598f7eb9518bee9d1f73a",
+      "decision.md": "5d7a9669da3d4026f74d6aa07b4379a9fad3d33b9db1953f2f5f44b2f629591f",
+      "review.md": "9f397969dd7d7d415df1fd12d2bf6c5542d668f3d4a6cb2a9faa14a6f9334347",
+      "changes.diff": "44f742bcaf1ff8389647a2ac87440a6a10cfb2a3267035aa73c3abf489dd4e7c",
+      "commands.json": "42613244eab481f10839ce4b09d3126b401f8e9affa8d8a4a0be7042a8cac80c",
+      "iso/rf/scripts/attestation_protocol.py": "fa9a29045e03e4fdeafb684170c5ea4d61b09469704914b98812fec30695e71e",
+      "iso/rf/scripts/revenue_core.py": "e6c3280c0c71315f5ed3d60899b3fc4ab5c019c02baffc48b96d8352f2831759",
+      "iso/rf/scripts/revenue_publication.py": "e311b2bb5079e1a211c8ae7e35ad716fce0b0c8c6208f5e0a24cdfdf3da50aba",
+      "iso/rf/scripts/publication_registry.py": "172092e067f0e830e2e9c887b274b4560c7c4b300c5ac5088e7ff98920cda003",
+      "iso/rf/scripts/trust_anchor.py": "a6049b580182ee99b6e02cb501562af2239c89ffa115a0aca6b1cd332bf9151f",
+      "iso/rf/scripts/contracts/constants.py": "a299e95055f22f3d97967e2fdab0522120a9011d6bd9fda213b000904a7f2564",
+      "iso/rf/scripts/contracts/evidence.py": "4b422cd431c117047b7452cce9c756e9f8719c99c65b2b395c021f3da54af807",
+      "iso/rf/tests/test_attestation.py": "17934e28a894ff1d3d95cb14d1665fb3ba27f7e6c587d916f2cdd4d2f547f5c4",
+      "iso/rf/tests/test_attestation_provider_protocol.py": "43fcffaead09b6e910d4282e7580ad251b4d10cfd86aa8cc0a3a405f75fd24a3",
+      "iso/rf/tests/test_attestation_legacy.py": "73da07fb2b7cb929d73d7ba8852ce25cf4f8801120a34ad9c27b81517ab56a9a",
+      "iso/rf/tests/test_single_owner_guard.py": "b5969ba6397fbe2d37f3000bf0ca301f505bfd056ee7cbbe9ba9b8f691774a65",
+      "iso/rf/tests/golden_behavior_hashes.json": "c6b13adabefac751e3f494cb229041f828f92ef59d782744b3b555ef8fda0c54",
+      "iso/rf/tests/e2e_support/i08b_fake_provider.py": "e715ca8a34c3fc817a1a06cf9f961118a6f515afe35bdaaff94ea0548bd6d92a",
+      "iso/check_independent.py": "b483cc4609642e7418c7d8c6923daf66ce1bf39d8e9881b60bcbba4bdcdfcc81",
+      "iso/check_golden_delta.py": "d2ac5a452de63da39280008aef7d35c4524a70214de946ae9cf2e181258c3e7c",
+      "iso/check_line_endings.py": "7eaaf6cc5b15900fbac162516cba38321d8606929f5862a0f16a7ecaaee434d4",
+      "iso/hash_inventory.py": "95dc8973c8f78ed3422a0222c15f3e31eca122309f177a61ce1c84e6994346c7",
+      "iso/git_status_capture.py": "63d6d040e07c3658c4fd187017e4ea02bf21c09d2d6e23124a34e979eeb8f777",
+      "iso/make_diff.py": "aa69fb5518e9686306aa5717a64e38ae1e5769fb9d939e85f9a605994c28eb44",
+      "iso/product_hashes.py": "a5564512bdd34dbf48e928e4bd37a54707d077ecd97506a6901af8b484013942",
+      "iso/probe_red_baseline.py": "5251d236f08e1103900533e345080f62f54608eba5db943f33d2173740139157",
+      "iso/run_bound_commands.py": "a6820f553f80684a852e12a65e1c112647261a10a1cd341b63b45a34fa2de6b4"
+    },
+    "self_referential_files_excluded": [
+      "binding.json",
+      "handoff.json",
+      "after/product_hashes.txt"
+    ],
+    "production_write_count": 0,
+    "production_registry_sha256": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
+    "production_registry_lines": 60,
+    "production_default_trust_domain_present": false,
+    "regression_census": {
+      "before": {
+        "parsed": true,
+        "failed": 128,
+        "passed": 819,
+        "skipped": 3,
+        "xfailed": 1,
+        "subtests_passed": 315,
+        "transcript": "c8_baseline_suite.stdout.txt"
+      },
+      "after": {
+        "parsed": true,
+        "failed": 128,
+        "passed": 921,
+        "skipped": 3,
+        "xfailed": 1,
+        "subtests_passed": 337,
+        "transcript": "c8_full_suite.stdout.txt"
+      },
+      "new_failures": 0,
+      "disappeared_failures": 0,
+      "note": "the numbers are PARSED from the two transcripts rather than typed in, so they cannot drift from the runs; the nodeid-level comparison lives in after/c8_failure_diff.txt"
+    }
+  }
+}

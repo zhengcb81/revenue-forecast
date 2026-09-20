@@ -24,8 +24,15 @@
         "permission_warning_lines": 6
       },
       "concurrent_activity_caveat": {
-        "observed": "revenue-forecast's dirty set CHANGED during this attempt without any action by this card: the before snapshot has 142 real entries, the first after snapshot 118, the final after snapshot 132",
-        "attributed_to": "other plan cards running concurrently in the same tree (I-04-C files went from ' M ' to clean between the two snapshots; several M09-M28 / I-11-A / _m2931_build attempt directories appeared)",
+        "observed": "revenue-forecast's dirty set CHANGED during this attempt without any action by this card",
+        "standardised_counts_errata_e6": {
+          "before_snapshot_file": "before/git_status_before.txt = 148 porcelain lines, of which 142 are real entries (63 ' M ' + 79 '??') and 6 are permission warnings",
+          "after_snapshot_file": "after/git_status_after.txt = 132 porcelain lines, of which 126 are real entries and 6 are permission warnings (re-captured during this attempt)",
+          "not_usable": "a first after snapshot (124 lines) was overwritten and NOT retained; it is explicitly excluded as evidence",
+          "snapshot_only_disclaimer": "these two numbers are POINT-IN-TIME readings, not a final tree state: the tree kept changing from concurrently running cards. A final re-capture during the errata pass measured 270 porcelain lines, none of them attributable to this card",
+          "note": "an earlier revision of this field quoted 142/118/132 and review.md quoted 148/124/132; both are withdrawn in favour of the two retained snapshot files"
+        },
+        "attributed_to": "other plan cards running concurrently in the same tree (I-04-C files went from ' M ' to clean between snapshots; several M09-M28 / I-11-A / _m2931_build attempt directories appeared)",
         "consequence": "the revenue-forecast before/after git-status diff is NOT attributable to this card and must not be used as the no-change proof",
         "stronger_evidence_used_instead": "production anchor re-hash (8/8 SAME including the production registry) plus iso-copy identity (43/43 .py SAME); see current_source_hashes in handoff.json",
         "company_wiki_and_filing_fetch": "unchanged across before/after (company-wiki 2 entries identical, filing-fetch 1 entry identical)"

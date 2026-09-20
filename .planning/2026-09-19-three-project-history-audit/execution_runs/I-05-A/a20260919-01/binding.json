@@ -1,0 +1,128 @@
+{
+  "card_id": "I-05-A",
+  "parent": "I-05",
+  "attempt_id": "a20260919-01",
+  "binding_status": "bound",
+  "date": "2026-09-19",
+  "card_title": "默认产物与验证器共用契约，sections 不能绕过资格",
+  "owner": "wiki producer 实施者（本 attempt）",
+  "reviewer": "RF reviewer 独立验收（不由本 attempt 自签）",
+  "design_gate": {
+    "decision": "D-W05",
+    "status": "UNSIGNED",
+    "effect": "只有在 decision.md 中标记为 FROZEN-BY-EXISTING-CONTRACT 的两项（sections 资格门、bundle 角色适用性）在本 attempt 实施了隔离候选修复；D-W05 的五项未签决策保持 OPEN，未实施。",
+    "reference": "execution_runs/I-05-A/a20260919-01/decision.md"
+  },
+  "source_readonly_repos": {
+    "CW": "C:/Users/郑曾波/Projects/company-wiki",
+    "RF": "C:/Users/郑曾波/Projects/revenue-forecast"
+  },
+  "prod_git_baselines": {
+    "CW": {
+      "HEAD": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
+      "porcelain": [" M CLAUDE.md", " M README.md"],
+      "note": "两个 pre-existing user-modified 文件；本 attempt 未触碰"
+    },
+    "RF": {
+      "HEAD": "7d7ea1edc5e0371ffefee0d2ab3c4a34643199d5",
+      "porcelain_captured_in": "after/prod-porcelain-after.json",
+      "note": "RF 的既有 dirty 集合在本 attempt 前后必须逐行一致"
+    }
+  },
+  "prod_source_hashes_pre_edit": {
+    "CW/src/company_wiki/source_catalog/artifact_handle.py": "3cc8fbf4f65380d17e2f0140390ef346f7cc17504854ff04b3ddf46498317b99",
+    "CW/src/company_wiki/source_catalog/artifact_read_model.py": "ee2792312947bc694084b059384d7a30376a29293a57e3f69534a4d37bc55711",
+    "CW/src/company_wiki/source_catalog/artifact_dag.py": "13e02211ca9f6eef251acd33c1be75db3112d1e4a7acf0b3739b23c955fbf505",
+    "CW/src/company_wiki/source_catalog/section_query.py": "a40d54a36fe14fd0e76b322477885777ad2b3fa8b5263a2d8e726a2c63214f49",
+    "CW/src/company_wiki/source_catalog/section_extractor.py": "b59ce324d3481e790acd92d96b2b662d94d5ab7ddf60e896658dfa8bb055406b",
+    "CW/src/company_wiki/source_catalog/source_bundle.py": "fe64912172d3004b137ebf415a01b8b3e75eb41ea785edf254644258f0c2261c",
+    "CW/src/company_wiki/source_catalog/service.py": "32b76e6d7f9879a2c7280f20180a8584c61ec11d706dbd70e3d019fd8cb48fa5",
+    "CW/src/company_wiki/source_catalog/store.py": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615",
+    "CW/src/company_wiki/source_catalog/normalizer.py": "772075ed0d1c540aeb2a0feea17d7735a28c0aba981edfbdefa7297a57a06cff",
+    "CW/src/company_wiki/source_catalog/llm_summarizer.py": "a930a42e04d52a47e8469be346c92eb58dfe604332d6a7708edaf94ad9fa4ade",
+    "CW/src/company_wiki/source_catalog/read_chain.py": "read-only contract anchor (EXPLICIT_NON_CHAIN_READERS names list_sections)",
+    "CW/src/company_wiki/source_catalog/cli.py": "sections-list consumer of list_sections",
+    "CW/tests/contract/test_source_catalog_section_extractor.py": "existing section_query regression",
+    "CW/tests/contract/test_fc1204_complexity_ratchet.py": "section_query.py frozen max complexity 12",
+    "CW/tests/contract/test_fc1204_coverage_ratchet.py": "section_query.py frozen coverage floor 87"
+  },
+  "prod_source_hashes_post_run": {
+    "CW/src/company_wiki/source_catalog/section_query.py": "a40d54a36fe14fd0e76b322477885777ad2b3fa8b5263a2d8e726a2c63214f49 (UNCHANGED - see after/prod-anchor-hashes-after.json)",
+    "note": "所有生产锚点在 attempt 结束后重算；与 pre_edit 逐项一致即证明生产仓未被写入"
+  },
+  "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-05-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "interpreter_provenance": {
+    "built_from": "PLAN/execution_runs/I-00-A/a20260919-01/iso/venv (template interpreter, sha256 0e818a1f9a0b8fbd4e7cc458a07cb7de2ea02ea326e387699a33b92f151242cd)",
+    "method": "directory copy of the I-15-A venv (itself created from the I-00-A template) + site-packages (pytest 9.1.1, pyyaml 6.0.3)",
+    "pyvenv.cfg_note": "pyvenv.cfg still records the template's 'executable'/'command' text; sys.prefix and Scripts/python.exe both resolve to THIS attempt's iso/venv (verified: python -c 'import sys;print(sys.prefix)')",
+    "python_version": "3.13.9 (Anaconda/Miniconda base C:\\Miniconda)"
+  },
+  "python_flags": ["-X", "utf8", "-B"],
+  "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-05-A\\a20260919-01",
+  "module_loading": {
+    "isolated_product_copy": "iso/cw/src (full copy of company-wiki src/, read-write inside the attempt)",
+    "import_path": "PYTHONPATH=<attempt>/iso/cw/src  (no files installed into the venv, no editable install: the ISO copy is the only importable company_wiki)",
+    "module_under_test": "loaded by explicit file path (importlib.util.spec_from_file_location) so a before/after run cannot share a stale bytecode cache",
+    "isolated_tests": "iso/cw/tests (copy of the product contract suite) with iso/cw/pytest.ini"
+  },
+  "allowed_write_roots": [
+    "PLAN/execution_runs/I-05-A/a20260919-01/**",
+    "C:/Users/郑曾波/AppData/Local/Temp/w05a/** (per-case scratch catalogs)"
+  ],
+  "scratch_layout_note": {
+    "why": "the real derived-artifact layout derived/<2>/<64>/sections/<role>.md inside the attempt path is 261 characters -> measured FileNotFoundError on Windows with LongPathsEnabled=0 (250-char path succeeded, 261 failed).  MAX_PATH compromise identical in kind to I-02-E.",
+    "scratch_root": "C:/Users/郑曾波/AppData/Local/Temp/w05a/a20260919-01/<case>",
+    "attempt_evidence": "the raw facts (rows, hashes, verdicts) are copied into before/ and after/ inside the attempt"
+  },
+  "network": "disabled (no provider, no LLM client constructed, no worker started)",
+  "forbidden": [
+    "any write to C:/Users/郑曾波/Projects/company-wiki or .../revenue-forecast outside .planning/.../execution_runs/I-05-A/**",
+    "git add/commit/restore/stash/checkout in any product repo",
+    "editing PLAN/reviews/**",
+    "touching the production .source_catalog DB (49.7 GB) - only per-case scratch catalogs",
+    "starting or resuming any worker; changing worker_control / runtime_policy"
+  ],
+  "fixed_samples": {
+    "annual_normalized.md": {
+      "path": "samples/annual_normalized.md",
+      "sha256": "f878cb595c4905a5df1e81a0c50d436a7e8a56475d6d2291c3215a6e2e321dcf",
+      "byte_size": 1233,
+      "role": "the verified annual text handed to the REAL sections producer"
+    },
+    "annual_source.txt": {
+      "path": "samples/annual_source.txt",
+      "sha256": "b70346ce67b17b5f3d7a0f65b51c2b48ab19c3adcca365cc0258b69af9674513",
+      "byte_size": 46,
+      "role": "the original bytes whose sha256 is the artifacts.source_sha256 binding"
+    },
+    "sample.json": {
+      "path": "samples/sample.json",
+      "sha256_recorded_in": "before/case_results.json"
+    }
+  },
+  "harness": {
+    "sample_generator": "scripts/w05a_make_sample.py",
+    "cases": "scripts/w05a_cases.py (tag before|after)",
+    "logical_cases": ["c0 valid control", "c1 status failed", "c2 schema missing", "c3 source_sha mismatch", "c4 index deleted", "c5 index bytes tampered", "c6 created_at future", "c7 span_id nonexistent", "c8 span row deleted", "n2 stale failed row blocks recompute", "n3 two generator versions", "p2 summary absent"],
+    "per_case_isolation": "every case gets a fresh scratch catalog built by the REAL producers; exactly one mutation per case"
+  },
+  "input_dependencies": {
+    "I-02-E": {
+      "verdict": "accepted_scoped",
+      "review": "execution_runs/I-02-E/a20260919-01/review.md",
+      "scope_used": "persistence-boundary recovery; NOT re-done here",
+      "fingerprint_compatible": true
+    },
+    "I-02-A": {
+      "verdict": "accepted_scoped",
+      "review": "execution_runs/I-02-A/a20260919-01/review.md",
+      "scope_used": "ScanReport completion contract; only referenced, not modified"
+    },
+    "D-W05_common": "execution_v2/common_wiki_cards.md D-W05 (five fields; UNSIGNED)"
+  },
+  "external_references": [
+    "audit_review/2026-09-18_real_company_skill_audit/runs/03_zijin_fetch_reuse/stdout.txt",
+    "PLAN/reviews/wiki_legacy/section_probe.py (copied to scripts/w05a_section_probe_bound.py, source re-bound, output re-bound)",
+    "PLAN/reviews/wiki_legacy/section_probe.json (historical result; NOT overwritten)"
+  ]
+}

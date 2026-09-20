@@ -38,6 +38,7 @@ verify = json.load(open(os.path.join(HERE, "f06_verify.json"), encoding="utf-8")
 oqs = json.load(open(os.path.join(HERE, "f07_fix_oq.json"), encoding="utf-8"))
 named = json.load(open(os.path.join(HERE, "f08_named_files.json"), encoding="utf-8"))
 repack = json.load(open(os.path.join(HERE, "f08_repack_diff.json"), encoding="utf-8"))
+fold = json.load(open(os.path.join(HERE, "f13_fold_wording.json"), encoding="utf-8"))
 
 DEC_TEMPLATE = open(os.path.join(HERE, "decision_r3_template.md"), encoding="utf-8").read()
 DEC1_TEMPLATE = open(os.path.join(HERE, "decision_m08_dec1_template.md"),
@@ -110,6 +111,47 @@ def load(path: str):
     return json.load(open(path, encoding="utf-8"))
 
 
+STALE_REASON = {
+    "oracle.md": (
+        "binding-time (r1) value = the v1 frozen-body digest. oracle.md has since gained the "
+        "appended r2 response section and the inserted r3 note, so the whole-file digest "
+        "differs by construction; the v1 value is still reproducible as "
+        "sha256(oracle.md[:v1_frozen_body_prefix_bytes])"
+    ),
+    "evidence/M08/cases.json": (
+        "pre-run (r1) value. The r2 annotation repack added four annotation keys and changed "
+        "no existing leaf value (proven annotation-only), so the current digest differs"
+    ),
+}
+
+
+def current_of(record: dict, at: str) -> dict:
+    """CURRENT digest of every file named in an input_hashes record."""
+    out = {}
+    for rel in record:
+        p = os.path.join(at, rel.replace("/", os.sep))
+        out[rel] = sha_file(p) if os.path.exists(p) else "FILE_ABSENT"
+    return out
+
+
+def compare_hashes(record: dict, current: dict, at: str) -> dict:
+    """Per-key verdict so a naive re-validator does not stop on a historical value."""
+    out = {}
+    for rel, old in record.items():
+        now = current.get(rel)
+        if now == old:
+            out[rel] = {"verdict": "unchanged", "sha256": now}
+        else:
+            out[rel] = {
+                "verdict": "stale_by_design",
+                "sha256_recorded_r1": old,
+                "sha256_current": now,
+                "reason": STALE_REASON.get(
+                    rel, "historical pre-run value; see docfix_r3_hash_ledger"),
+            }
+    return out
+
+
 def dump(obj) -> bytes:
     return (json.dumps(obj, indent=1, ensure_ascii=False) + "\n").encode("utf-8")
 
@@ -179,8 +221,11 @@ def main() -> int:
                 "defaults / negatives / tolerances / rejection conditions / disclosure "
                 "figures) are byte-unchanged, and no product file was touched. What DID "
                 "change is (a) oracle.md as a whole, because revision r2 appended a response "
-                "section and r3 merged a duplicated r2 section into one and appended a "
-                "provenance-gap note, and (b) the evidence files listed under repack_scope, "
+                "section and r3 FOLDED the duplicated r2 section into one and INSERTED a "
+                "provenance-gap note at that duplicate's former position -- live = "
+                "pre[:kept_prefix_bytes] + note, an INSERTION into the pre image's content "
+                "rather than a trailing append (the insert point happens to coincide with EOF "
+                "of the new file) -- and (b) the evidence files listed under repack_scope, "
                 "which were repacked in r2 to carry new annotations. Every one of those byte "
                 "differences is accounted for below."
             ),
@@ -212,9 +257,14 @@ def main() -> int:
                 "binding.json.input_hashes and handoff.json.input_hashes are the PRE-RUN (r1) "
                 "input hashes captured before the product run (binding.json: "
                 "created_before_runs = true). They are historical by design and are NOT "
-                "claimed to equal the current bytes. For M08 the entry for "
-                "evidence/M08/cases.json is affected: the r2 repack added four annotation keys "
-                "and nothing else, which is proven below and in "
+                "claimed to equal the current bytes. F-R3-02: a reader who follows "
+                "review_and_handoff.md ('re-verify the current file hashes first; continue "
+                "from next_step only if they agree') would otherwise stop here, so the same "
+                "keys are repeated under input_hashes_current with their CURRENT digest, and "
+                "input_hashes_current_vs_input_hashes states per key whether it still agrees "
+                "(unchanged) or is a historical value (stale_by_design), with the reason. For "
+                "M08 the entry for evidence/M08/cases.json is the affected evidence file: the "
+                "r2 repack added four annotation keys and nothing else, which is proven in "
                 "recovery/docfix-r3/f08_named_files.out.txt."
             ),
             "repack_scope_r1_to_r2": {
@@ -255,6 +305,35 @@ def main() -> int:
                            "(domain (-1, inf)) was missing from the list of exceptions",
                 },
             ],
+            "r3_block_versions": {
+                "v1_original": {
+                    "note": "the reviewer's verified arithmetic (pre - duplicate + block = "
+                            "14403 / 12915 / 13275 / 19874) refers to this version; the only "
+                            "difference in v2 is the block's own prose, which now states the "
+                            "fold/insert mechanism and the byte account explicitly",
+                    "block_bytes": fold[card]["r3_block_bytes_before"],
+                    "block_sha256": fold[card]["r3_block_sha256_before"],
+                    "whole_file_sha256": fold[card]["oracle_md_sha256_before_wording_fix"],
+                    "whole_file_bytes": dedupe[card]["oracle_md_bytes_after"],
+                },
+                "v2_after_F_R3_01": {
+                    "note": "same kept prefix, same frozen text; only the r3 block prose and "
+                            "its self-consistent byte account changed",
+                    "block_bytes": fold[card]["r3_block_bytes_after"],
+                    "block_sha256": fold[card]["r3_block_sha256_after"],
+                    "whole_file_sha256": fold[card]["oracle_md_sha256_after_wording_fix"],
+                    "whole_file_bytes": fold[card]["oracle_md_bytes"],
+                    "byte_account": (
+                        f"{dedupe[card]['oracle_md_bytes_before']} (pre) - "
+                        f"{verify[card]['P2_deleted_bytes']} (folded duplicate) + "
+                        f"{verify[card]['P2_inserted_bytes']} (inserted r3 note) = "
+                        f"{fold[card]['oracle_md_bytes']} (live)"
+                    ),
+                    "kept_prefix_byte_identical_to_pre":
+                        fold[card]["kept_prefix_byte_identical"],
+                    "only_the_r3_block_changed": fold[card]["only_r3_block_changed"],
+                },
+            },
         }
         if card != "M08":
             ledger["named_by_F_M08_08"].append({
@@ -265,9 +344,15 @@ def main() -> int:
         # ---- binding.json ----
         b = load(bpath)
         b["docfix_r3_hash_ledger"] = ledger
+        b["input_hashes_current"] = current_of(b.get("input_hashes", {}), at)
+        b["input_hashes_current_vs_input_hashes"] = compare_hashes(
+            b.get("input_hashes", {}), b["input_hashes_current"], at)
         # ---- handoff.json ----
         h = load(hpath)
         h["docfix_r3_hash_ledger"] = ledger
+        h["input_hashes_current"] = current_of(h.get("input_hashes", {}), at)
+        h["input_hashes_current_vs_input_hashes"] = compare_hashes(
+            h.get("input_hashes", {}), h["input_hashes_current"], at)
         h["revision"] = "r3"
         h["revision_note"] = (
             "r3 = document/evidence consistency pass (F-M08-06 dedup, F-M08-07 counts and "

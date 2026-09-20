@@ -1,7 +1,7 @@
 {
  "card_id": "M04",
  "attempt_id": "a20260919-01",
- "status": "review_pending",
+ "status": "accepted_scoped",
  "implementer_is_not_the_reviewer": true,
  "completed_steps": {
   "A_binding": "done (binding.json: read-only production hashes + attempt-local isolated snapshot)",
@@ -52,12 +52,11 @@
   "C-pytest-sanity",
   "D-pdf-probe",
   "R2-B-rerun",
-  "R2-pack-evidence",
   "R2-exit-code-selfcheck",
-  "R3-selfcheck-with-case-D",
+  "R2-pack-evidence",
   "R3-product-rerun",
   "R3-selfcheck-with-case-D",
-  "R3-product-rerun"
+  "R4-selfcheck-card"
  ],
  "raw_exit_codes": {
   "A": 0,
@@ -70,7 +69,11 @@
   "R2_selfcheck_B_corrupted_case_plan": 1,
   "R2_selfcheck_C_uncorrupted": 0,
   "R3_selfcheck_D_corrupted_positive_input": 2,
-  "R3_product_rerun": 0
+  "R3_product_rerun": 0,
+  "R4_selfcheck_A_corrupted_oracle": 3,
+  "R4_selfcheck_B_corrupted_case_plan": 1,
+  "R4_selfcheck_C_uncorrupted": 0,
+  "R4_selfcheck_D_corrupted_positive_input": 2
  },
  "expected_exit_codes": {
   "A": 0,
@@ -82,7 +85,11 @@
   "R2_selfcheck_B_corrupted_case_plan": "non-zero",
   "R2_selfcheck_C_uncorrupted": 0,
   "R3_selfcheck_D_corrupted_positive_input": 2,
-  "R3_product_rerun": 0
+  "R3_product_rerun": 0,
+  "R4_selfcheck_A_corrupted_oracle": 3,
+  "R4_selfcheck_B_corrupted_case_plan": "non-zero",
+  "R4_selfcheck_C_uncorrupted": 0,
+  "R4_selfcheck_D_corrupted_positive_input": 2
  },
  "negative_case_summary": {
   "total": 15,
@@ -102,7 +109,7 @@
   "SR-M04-B: this PDF's sidecar is a stub with no provider receipt or URL, so the document identity cannot be cross-checked against a publisher hash. Acceptable as disclosure evidence?",
   "SR-M04-C: should the model's capacity contract require 'average available capacity' explicitly?",
   "F-M02-01 requires_owner_or_specialist_ruling: should an IGNORED input field still have to satisfy its domain? Measured on M02: `calculate_registered_model` rejects base_revenue < 0 uniformly before dispatch for every model, while `_direct_revenue` deletes base_revenue and `_direct_growth` consumes it. base=999 leaves the output identical; base=-5 raises ModelRegistryError. Options A (keep fail-closed) / B (ignore unused fields). No product change was made and no position is asserted; the ruling is reserved for the owner/specialist.",
-  "F-M01-01 residual gap: the pre-run frozen hash of oracle.md was never captured, so the frozen version cannot be hash-proven to predate the run; only the mtime sequence and the unmodified frozen body support it. Recorded in evidence/<card>/first_run_forensics.json (M01) and the review.md r2 section.",
+  "F-M01-01 residual gap: the pre-run frozen hash of oracle.md was never captured, so the frozen version cannot be hash-proven to predate the run; only the mtime sequence and the unmodified frozen body support it. Recorded in M01's evidence/M01/first_run_forensics.json (this card has no such file; the gap is M01-specific) and the review.md r2 section.",
   "F-M04-01 was a prose typo only (781,861 -> 780,860.59 wafers/month); the ACTIVE STOP_DISCLOSURE_ADAPTATION conclusion is unchanged and still needs adjudication.",
   "F-M01-02 residual (corrected in r3): rc=2 IS reachable - a corrupted positive input makes the product raise, so no verdict exists (case D, raw rc 2). Case B (a case-plan defect outside the guard) still exits 1; that is a different, still fail-loud path. No product change was needed."
  ],
@@ -138,6 +145,7 @@
   "evidence/M04/qualification.json",
   "evidence/M04/revision_r2.json",
   "evidence/M04/revision_r3.json",
+  "evidence/M04/revision_r4.json",
   "evidence/M04/run_result.json",
   "evidence/M04/source_manifest.json",
   "evidence/M04/stderr.txt",
@@ -150,7 +158,7 @@
   "review.md",
   "scripts/"
  ],
- "reviewer_status": "pending_spot_check",
+ "reviewer_status": "point_review_returned",
  "revision": "r3",
  "revision_history": [
   {
@@ -172,12 +180,27 @@
    "review_outcome": "point-review follow-up: 2 low required fixes (NEW-1, NEW-2) + 2 info annotations (NEW-3, NEW-4); pending spot check"
   },
   {
-   "revision": "r2",
-   "review_outcome": "five required fixes reproduced as landed; point review returned final accepted_scoped (formula only)"
-  },
-  {
-   "revision": "r3",
-   "review_outcome": "point-review follow-up: 2 low required fixes (NEW-1, NEW-2) + 2 info annotations (NEW-3, NEW-4); pending spot check"
+   "revision": "r4",
+   "review_outcome": "point review returned: accepted_scoped (formula qualification only); 4 P1 bookkeeping findings open",
+   "reviewer": "independent reviewer session (point review)",
+   "reviewed_at": "2026-09-20",
+   "scope": "formula only"
   }
- ]
+ ],
+ "reviewer_scope": "formula only",
+ "reviewer_finding": "independent reviewer session (point review), 2026-09-20; 4 P1 bookkeeping/delivery findings raised; none changes the formula conclusion",
+ "shared_copy_registration": {
+  "note": "F-M01-03 asked for complete directories and UTF-8, not for per-card independence; the following files are nevertheless byte-identical across the four attempts because they record the SAME repository/tooling fact. They are not, and are not claimed to be, per-card independent observations.",
+  "identical_across_cards": {
+   "before/git_status_revenue-forecast.txt": "1ab2e3c3f6cd4d2f68ef6c895313affbd42ae020243108d52e9c9c1945eff6b9",
+   "before/pytest_version.txt": "3b92440fa547fe6bfad4e7cd0fea48c83e1d7853e87e11354b5b48ab1596187d",
+   "after/rerun_stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "per_card_distinct_evidence": {
+   "after/rerun_stdout.txt": "5a10330e3639f8a426adf84939e07bef04da3826c12503043a2be16891aad08b",
+   "recovery/README.md": "cf0060f492e911a443f964a338e335716d28113aae62d0754868da30150829d1",
+   "recovery/r2_exit_code_selfcheck/selfcheck_result.json": "bb1f22fc06e03789bc24e23f67cb93cbbcd7d16103d1701b205e1230ebc415c3",
+   "comment": "these differ per card and therefore carry this card's own re-run evidence"
+  }
+ }
 }

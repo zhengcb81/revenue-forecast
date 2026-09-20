@@ -1,0 +1,812 @@
+--- a/src/company_wiki/source_catalog/section_query.py
++++ b/src/company_wiki/source_catalog/section_query.py
+@@ -1,7 +1,38 @@
+-"""Read-only lookup of extracted sections artifacts over an existing catalog."""
++"""Read-only lookup of extracted sections artifacts over an existing catalog.
++
++I-05-A: this lookup is a CONSUMER, so it goes through the SAME fail-closed
++qualification the default bundle uses (``artifact_handle.validate_artifact``)
++instead of trusting "a row with role=sections exists".
++
++What the artifact validator cannot see, and this module therefore checks:
++
++- the index bytes that are SERVED are the bytes that were HASHED (the entries
++  come from the file the validator validated, never from
++  ``artifacts.metadata_json``), and the row metadata may not contradict them on
++  ANY key the index carries (F-I05A-01, P3-3);
++- every slice is bound to the SOURCE: the window ``[char_start, char_end)`` of
++  the document's own ``normalized`` artifact must equal the slice file, modulo
++  the frozen newline trim of oracle.md §3.1.1.  The per-slice
++  ``content_sha256`` recorded in the index is *self-attesting* data - it lives
++  inside the same file as the path and the offsets - so it is defence in depth,
++  never the binding (A1/P1-1);
++- every entry ``path`` gets the SAME containment gate as the artifact path,
++  against the catalog's ``derived`` tree, checked BEFORE the file is opened so
++  a refusal is not an existence oracle (F-I05A-03, P3-1, P3-2);
++- every ``span_ids`` entry must still exist in ``evidence_spans`` for THIS
++  document;
++- when several sections rows exist, the newest VALID row wins (F-I05A-06),
++  mirroring ``build_source_bundle``'s same-role contract, and the result says
++  explicitly when it is serving a row it had to fall back to (P3-4).
++
++Any failure raises a named reason plus a recovery action; a caller never
++receives unusable section content as an ordinary result.
++"""
+ 
+ from __future__ import annotations
+ 
++import datetime as _dt
++import hashlib
+ import json
+ import sqlite3
+ from contextlib import contextmanager
+@@ -9,8 +40,30 @@
+ from pathlib import Path
+ from typing import Any, Iterator
+ 
++from .artifact_handle import validate_artifact
++from .section_extractor import SECTION_EXTRACTOR_NAME
++from .source_bundle import GENERATOR_REGISTRY
++
+ 
+ SECTION_QUERY_SCHEMA_VERSION = "1.0.0"
++
++SECTIONS_ROLE = "sections"
++NORMALIZED_ROLE = "normalized"
++NORMALIZER_NAME = "source_catalog_normalizer"
++
++#: recovery action carried by a refusal: a rejection without the next step
++#: leaves the caller at a dead end, which is exactly the "audit found the
++#: chain stops here" failure mode this card closes.
++NEXT_ACTION_BY_REASON = {
++    "sections_status_not_completed": "reproduce the sections artifact for this document",
++    "sections_file_missing": "reproduce the sections artifact (the index or a slice is gone)",
++    "sections_span_unbound": "reparse evidence spans, then reproduce the sections artifact",
++    "sections_hash_mismatch": "reproduce the sections artifact (a slice no longer matches its recorded hash)",
++    "sections_path_outside_allowed_root": "reproduce the sections artifact (an entry path points outside derived/)",
++    "sections_binding_error": "reproduce the sections artifact (its content is not a window of the document source)",
++    "sections_metadata_index_mismatch": "reproduce the sections artifact (its row metadata disagrees with the index)",
++}
++NEXT_ACTION_DEFAULT = "run the sections producer for this document, then retry"
+ 
+ 
+ class SectionQueryError(ValueError):
+@@ -23,6 +76,19 @@
+ 
+ class SectionQueryNotFoundError(SectionQueryError):
+     """Raised when no sections artifact matches the document_id."""
++
++
++class SectionQueryQualificationError(SectionQueryError):
++    """Raised when a sections artifact exists but is not consumable.
++
++    The message always carries the stable reason code AND the recovery
++    action, so a refusal is actionable rather than a bare failure.
++    """
++
++    def __init__(self, reason: str, next_action: str):
++        super().__init__(f"sections unusable: {reason} (next_action: {next_action})")
++        self.reason = reason
++        self.next_action = next_action
+ 
+ 
+ @dataclass(frozen=True)
+@@ -36,6 +102,9 @@
+     page_start: int | None = None
+     page_end: int | None = None
+     span_ids: tuple[str, ...] = ()
++    content_sha256: str | None = None
++    window_match: str = "source_window"
++    window_positions: tuple[int, ...] = ()
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return {
+@@ -48,6 +117,9 @@
+             "page_start": self.page_start,
+             "page_end": self.page_end,
+             "span_ids": list(self.span_ids),
++            "content_sha256": self.content_sha256,
++            "window_match": self.window_match,
++            "window_positions": list(self.window_positions),
+         }
+ 
+ 
+@@ -58,6 +130,10 @@
+     title: str
+     index_path: str
+     sections: tuple[SectionEntry, ...]
++    selected_artifact_id: str = ""
++    selected_created_at: str = ""
++    superseded_by_newer_valid: bool = False
++    selection_rule: str = "newest_valid"
+ 
+     def to_dict(self) -> dict[str, Any]:
+         return {
+@@ -66,15 +142,519 @@
+             "title": self.title,
+             "index_path": self.index_path,
+             "count": len(self.sections),
++            "selected_artifact_id": self.selected_artifact_id,
++            "selected_created_at": self.selected_created_at,
++            "superseded_by_newer_valid": self.superseded_by_newer_valid,
++            "selection_rule": self.selection_rule,
+             "sections": [entry.to_dict() for entry in self.sections],
+         }
+ 
+ 
++def _sections_reason(handle_reason: str | None) -> str:
++    """Map the shared validator's reason onto the sections-facing reason."""
++    if handle_reason == "artifact_file_missing":
++        return "sections_file_missing"
++    if handle_reason == "artifact_status_not_completed":
++        return "sections_status_not_completed"
++    return "sections_binding_error"
++
++
++def _next_action(reason: str, detail: str = "") -> str:
++    action = NEXT_ACTION_BY_REASON.get(reason, NEXT_ACTION_DEFAULT)
++    return f"{action} [{detail}]" if detail else action
++
++
++def _utc_now() -> str:
++    return _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
++
++
++def _catalog_derived_paths(database_path: Path | str) -> tuple[Path, tuple[Path, ...]]:
++    """Allowed roots for this catalog, derived from the DATABASE location.
++
++    F-I05A-04: the first version took the root from the artifact path's own
++    ``parents[3]``, which made ``artifact_path_outside_allowed_root``
++    unreachable (a path is always inside a root computed from itself).  The
++    catalog directory is the parent of ``catalog.sqlite3``, so the roots are
++    known independently of the path being validated.
++    """
++    catalog_dir = Path(str(database_path)).resolve(strict=False).parent
++    derived = catalog_dir / "derived"
++    return derived, (derived, catalog_dir)
++
++
++def _inside_roots(path: Path, allowed_roots: tuple[Path, ...]) -> bool:
++    """Containment gate, evaluated BEFORE any read (P3-2: no existence oracle)."""
++    resolved = path.resolve(strict=False)
++    for root in allowed_roots:
++        base = root.resolve(strict=False)
++        if resolved == base or base in resolved.parents:
++            return True
++    return False
++
++
++def _frontmatter_body_start(text: str) -> int:
++    """Where the extractor's ``_strip_frontmatter`` leaves the body.
++
++    Mirrors ``section_extractor._strip_frontmatter``: a leading ``---`` block is
++    dropped up to and including the next newline-plus-``---``, and the remainder
++    starts at the character after it (usually a newline).
++    """
++    if text.startswith("---"):
++        end = text.find("\n---", 3)
++        if end != -1:
++            return end + 4
++    return 0
++
++
++def _candidate_bodies(text: str) -> list[str]:
++    """The plausible transformed texts the producer may have sliced.
++
++    The producer slices the body returned by ``_strip_frontmatter``; whether the
++    parser that wrote this markdown already dropped the ``# title`` line (a real
++    layout difference between parsers) decides what that body starts with.
++    Enumerating both forms anchors the check on the CONTENT rather than on
++    layout details, which is what makes it independent of the file LENGTH and
++    therefore able to catch a same-length rewrite (A1/P1-1).
++    """
++    body = text[_frontmatter_body_start(text):]
++    stripped = body.lstrip()
++    bodies = [body]
++    if stripped != body:
++        bodies.append(stripped)
++    first_line_end = stripped.find("\n")
++    if first_line_end != -1:
++        after_title = stripped[first_line_end + 1:].lstrip()
++        if after_title and after_title not in bodies:
++            bodies.append(after_title)
++    return bodies
++
++
++def _window_starts(body: str) -> list[int]:
++    """Every newline boundary in a body's header region (bounded).
++
++    The producer's body starts at a newline boundary at or before the first
++    section heading, so the enumeration has to reach a few positions past any
++    leading page marker - 10 was too few ("## Page 1\\n\\n" alone consumes the
++    page boundary plus the two blank-line boundaries).  The scan stops after
++    the first 64 boundaries, which bounds the work on a pathological body.
++    """
++    starts = [0]
++    for index, char in enumerate(body):
++        if char == "\n":
++            starts.append(index + 1)
++        if len(starts) >= 64:
++            break
++    return starts
++
++
++def _span_of(entry: dict) -> int | None:
++    try:
++        span = int(entry["char_end"]) - int(entry["char_start"])
++    except (KeyError, TypeError, ValueError):
++        return None
++    return span if span > 0 else None
++
++
++def _slice_hash_failure(entry: dict, body: bytes) -> str | None:
++    """Secondary check on the index's own recorded slice hash.
++
++    A1/P1-1: this hash lives INSIDE index.json, i.e. in the same file as
++    ``path``/``char_start``/``char_end``, and index.json is anchored only by
++    ``artifacts.content_sha256`` - so an attacker who rewrites the slice, the
++    index and the row hash together can make this check agree with itself.  It
++    stays as defence in depth; the BINDING is the source window below.
++    """
++    recorded = str(entry.get("content_sha256") or "")
++    if not recorded:
++        return None
++    if len(recorded) != 64:
++        return "sections_binding_error"
++    allowed = "0123456789abcdef"
++    if not all(char in allowed for char in recorded):
++        return "sections_binding_error"
++    if hashlib.sha256(body).hexdigest() != recorded:
++        return "sections_hash_mismatch"
++    return None
++
++
++def _fragment_in_bodies(fragment: str, bodies: list[str]) -> bool:
++    needle = fragment.strip("\n")
++    return bool(needle) and any(needle in body for body in bodies)
++
++
++def _windows_match_or_block(bodies: list[str], entry: dict, body: bytes) -> str | None:
++    """Return None when the slice IS the document's own text, else a reason.
++
++    A1/P1-1: there is NO length-only escape hatch any more.  The first version
++    returned None ("length only") whenever the layout could not be mapped, and a
++    fabricated slice was exactly the case that could not be mapped - i.e. the
++    fallback was the bypass.  The softening that remains is only for artifacts
++    whose text cannot be anchored anywhere: when the source body cannot be read
++    at all the entry is reported as ``no_source`` by the caller.
++    """
++    if not bodies:
++        return None  # legacy: the caller reports substring_only / no_source
++    span = _span_of(entry)
++    if span is None:
++        return "sections_binding_error"
++    try:
++        fragment = body.decode("utf-8")
++    except UnicodeDecodeError:
++        # Binary content can never be a window of the normalized text.
++        return "sections_binding_error"
++    char_start = int(entry.get("char_start") or 0)
++    if _window_matches(fragment, bodies, char_start) is not None:
++        return None
++    # The offset claim could not be mapped: anchor on the CONTENT, never on the
++    # length.
++    return None if _fragment_in_bodies(fragment, bodies) else "sections_binding_error"
++
++
++def _slice_failure(
++    entry: Any,
++    *,
++    bodies: list[str],
++    allowed_roots: tuple[Path, ...],
++) -> str | None:
++    """One index entry vs. its file on disk and vs. the SOURCE window."""
++    if not isinstance(entry, dict):
++        return "sections_binding_error"
++    section_path = Path(str(entry.get("path") or ""))
++    if not _inside_roots(section_path, allowed_roots):
++        # P3-2: containment runs FIRST, so a refusal cannot be used to probe
++        # whether an arbitrary host path exists.
++        return "sections_path_outside_allowed_root"
++    try:
++        body = section_path.read_bytes()
++    except (OSError, UnicodeError):
++        return "sections_file_missing"
++    failure = _slice_hash_failure(entry, body)
++    if failure is not None:
++        return failure
++    return _windows_match_or_block(bodies, entry, body)
++
++
++def _span_failure(
++    connection: sqlite3.Connection, document_id: str, declared: list[str]
++) -> str | None:
++    """Every declared span must still belong to THIS document."""
++    if not declared:
++        return None
++    unique = sorted(set(declared))
++    placeholders = ",".join("?" for _ in unique)
++    found = connection.execute(
++        f"SELECT span_id FROM evidence_spans WHERE document_id=? "
++        f"AND span_id IN ({placeholders})",
++        (document_id, *unique),
++    ).fetchall()
++    return None if len(found) == len(unique) else "sections_span_unbound"
++
++
++def _span_failure_for(
++    connection: sqlite3.Connection, document_id: str, entries: list[dict]
++) -> str | None:
++    declared: list[str] = []
++    for entry in entries:
++        declared.extend(str(item) for item in (entry.get("span_ids") or []))
++    return _span_failure(connection, document_id, declared)
++
++
++def _raw_index_entries(index_path: str) -> list[dict] | None:
++    """The index's entries without any per-slice work (for the F-I05A-01 check)."""
++    try:
++        entries = json.loads(Path(index_path).read_text(encoding="utf-8"))
++    except (OSError, UnicodeError, json.JSONDecodeError):
++        return None
++    return entries if isinstance(entries, list) else None
++
++
++def _index_entries(
++    index_path: str,
++    *,
++    bodies: list[str],
++    allowed_roots: tuple[Path, ...],
++) -> tuple[list[dict], str | None]:
++    """The VERIFIED index's entries, or ([], reason).
++
++    The bytes that are served are the bytes that were hashed: this reads the
++    file the validator just validated, never the artifact row's metadata.
++    A malformed index is a binding failure; an unusable one is not a crash.
++    """
++    entries = _raw_index_entries(index_path)
++    if entries is None:
++        return [], "sections_binding_error"
++    for entry in entries:
++        failure = _slice_failure(entry, bodies=bodies, allowed_roots=allowed_roots)
++        if failure is not None:
++            return [], failure
++    return entries, None
++
++
++def _metadata_disagreement(metadata: dict, entries: list[dict]) -> bool:
++    """F-I05A-01: the artifact row's metadata must not contradict the index.
++
++    The index is hash-bound to the artifact row; ``artifacts.metadata_json`` is
++    not covered by that hash, so serving the metadata let a one-column UPDATE
++    steer the answer to another file.  P3-3: every key the index carries is
++    compared (role/title/ordinal/char range/path/pages/spans/slice hash), not
++    only the five needed to close the original attack.
++    """
++    declared = metadata.get("sections")
++    if not isinstance(declared, list):
++        return False
++    if len(declared) != len(entries):
++        return True
++    keys = (
++        "role", "title", "ordinal", "char_start", "char_end", "path",
++        "page_start", "page_end", "span_ids", "content_sha256",
++    )
++    for metadata_entry, index_entry in zip(declared, entries):
++        if not isinstance(metadata_entry, dict):
++            return True
++        for key in keys:
++            if metadata_entry.get(key) != index_entry.get(key):
++                return True
++    return False
++
++
++def _candidate_rows(
++    connection: sqlite3.Connection, document_id: str
++) -> tuple[sqlite3.Row, ...]:
++    """Every sections row for this document, newest first (F-I05A-06).
++
++    ``build_source_bundle`` defines the same-role contract as "the newest VALID
++    artifact wins"; a plain newest-row LIMIT 1 refused a document whose newest
++    attempt failed while an older artifact is still usable.
++    """
++    return tuple(
++        connection.execute(
++            """SELECT a.artifact_id, a.document_id, a.source_id, a.artifact_role,
++                      a.path, a.content_sha256, a.source_sha256, a.generator_name,
++                      a.generator_version, a.status, a.metadata_json, a.created_at,
++                      d.document_kind, d.title
++               FROM artifacts a
++               JOIN documents d ON d.document_id = a.document_id
++               WHERE a.artifact_role = ?
++                 AND a.generator_name = ?
++                 AND a.document_id = ?
++               ORDER BY a.created_at DESC, a.artifact_id DESC""",
++            (SECTIONS_ROLE, SECTION_EXTRACTOR_NAME, document_id),
++        ).fetchall()
++    )
++
++
++def _bodies_for(connection: sqlite3.Connection, document_id: str) -> list[str]:
++    """The document's own normalized markdown, as candidate bodies."""
++    row = connection.execute(
++        "SELECT path FROM artifacts WHERE document_id=? AND artifact_role=? "
++        "AND generator_name=? AND status='completed' "
++        "ORDER BY created_at DESC, artifact_id DESC LIMIT 1",
++        (document_id, NORMALIZED_ROLE, NORMALIZER_NAME),
++    ).fetchone()
++    if row is None:
++        return []
++    try:
++        text = Path(row["path"]).read_text(encoding="utf-8")
++    except (OSError, UnicodeError):
++        return []
++    return _candidate_bodies(text)
++
++
++def _window_matches(fragment: str, bodies: list[str], char_start: int) -> int | None:
++    """The offset where the fragment IS the window at ``char_start``, else None.
++
++    The index records CHARACTER offsets in the producer's body coordinate
++    system; the body here is the same text prefixed by an unknown, small number
++    of header characters (frontmatter / title / leading newlines).  Rather than
++    guessing that prefix, this locates the fragment in the header region and
++    then verifies it also occurs ``char_start`` characters later - i.e. that the
++    slice really is the text at the offset the index claims.
++
++    Trim semantics are the frozen r1 ones (oracle.md §3.1.1):
++    ``fragment.strip("\\n") == window.strip("\\n")``.
++    """
++    needle = fragment.strip("\n")
++    if not needle:
++        return False
++    for body in bodies:
++        found = body.find(needle)
++        if found == -1:
++            continue
++        for offset in _window_starts(body):
++            start = found + char_start - offset
++            if start < 0 or start + len(fragment) > len(body):
++                continue
++            if body[start:start + len(fragment)].strip("\n") == needle:
++                return start
++    return None
++
++
++def _window_label(
++    offsets: list[int], bodies: list[str], fragment: bytes
++) -> str:
++    """How the served slice is bound to the source (A1/P1-1 reporting)."""
++    if offsets:
++        return "source_window"
++    if not bodies or not fragment:
++        return "no_source"
++    try:
++        text = fragment.decode("utf-8")
++    except UnicodeDecodeError:
++        return "no_source"
++    return "substring_only" if _fragment_in_bodies(text, bodies) else "no_source"
++
++
++def _fragment_text(path: Any) -> str | None:
++    """The slice's text, or None when it cannot be read as UTF-8."""
++    try:
++        return Path(str(path or "")).read_bytes().decode("utf-8")
++    except (OSError, UnicodeError):
++        return None
++
++
++def _entry_view(entry: dict, bodies: list[str]) -> tuple[list[int], str]:
++    """(the matched boundary offset, binding label) for one index entry."""
++    char_start = int(entry.get("char_start") or 0)
++    text = _fragment_text(entry.get("path"))
++    if not bodies or text is None:
++        return [], "no_source"
++    start = _window_matches(text, bodies, char_start)
++    if start is not None:
++        return [start], "source_window"
++    return [], _window_label([], bodies, text.encode("utf-8"))
++
++
++def _to_entries(entries: list[dict], bodies: list[str]) -> tuple[SectionEntry, ...]:
++    """The served entries; built from the HASHED index, never from metadata."""
++    result = []
++    for entry in entries:
++        offsets, window_match = _entry_view(entry, bodies)
++        result.append(
++            SectionEntry(
++                role=entry["role"],
++                title=entry["title"],
++                ordinal=entry["ordinal"],
++                char_start=entry["char_start"],
++                char_end=entry["char_end"],
++                path=entry["path"],
++                page_start=entry.get("page_start"),
++                page_end=entry.get("page_end"),
++                span_ids=tuple(entry.get("span_ids") or ()),
++                content_sha256=entry.get("content_sha256"),
++                window_match=window_match,
++                window_positions=tuple(offsets),
++            )
++        )
++    return tuple(result)
++
++
++def _meta_of(meta: Any, row: sqlite3.Row) -> dict:
++    """Shape-check the ALREADY parsed shared metadata value.
++
++    Parsing stays at the ratcheted call site (``list_sections``); ``row`` is
++    passed only for the error message, so no second column access exists.
++    """
++    if not isinstance(meta, dict) or not isinstance(meta.get("sections"), list):
++        raise SectionQueryError(
++            f"sections artifact metadata is not valid JSON "
++            f"(artifact {row['artifact_id']})"
++        )
++    return meta
++
++
++def _row_valid_alone(
++    connection: sqlite3.Connection,
++    row: sqlite3.Row,
++    bodies: list[str],
++    slice_roots: tuple[Path, ...],
++) -> bool:
++    """P3-4: is this row independently usable?  (index + window only)"""
++    entries, reason = _index_entries(row["path"], bodies=bodies, allowed_roots=slice_roots)
++    if reason is not None:
++        return False
++    return bool(entries) or row["status"] == "completed"
++
++
++def _qualification_failure(
++    connection: sqlite3.Connection,
++    row: sqlite3.Row,
++    metadata: dict,
++    *,
++    bodies: list[str],
++    allowed_roots: tuple[Path, ...],
++    slice_roots: tuple[Path, ...],
++) -> str | None:
++    """Return None when the row is consumable, else the refusal reason.
++
++    ``metadata`` is the already-parsed artifact metadata handed in by the
++    caller: the shared metadata column is parsed at exactly ONE site
++    (``SectionQueryService._qualify_row``, reached only from ``list_sections``),
++    and this helper stays a pure decision function.
++    """
++    artifact = {
++        "artifact_id": row["artifact_id"],
++        "document_id": row["document_id"],
++        "source_id": row["source_id"] or "",
++        "artifact_role": row["artifact_role"],
++        "path": row["path"],
++        "content_sha256": row["content_sha256"],
++        "source_sha256": row["source_sha256"],
++        "generator_name": row["generator_name"],
++        "generator_version": row["generator_version"],
++        "status": row["status"],
++        "created_at": row["created_at"],
++        "schema_version": metadata.get("schema_version"),
++    }
++    source_row = connection.execute(
++        "SELECT s.content_sha256 AS source_sha256 FROM sources s WHERE s.source_id = ?",
++        (row["source_id"],),
++    ).fetchone()
++    handle = validate_artifact(
++        artifact,
++        source={
++            "document_id": row["document_id"],
++            "primary_source_id": row["source_id"] or "",
++            "source_sha256": (
++                source_row["source_sha256"] if source_row is not None else ""
++            ),
++            # F-I05A-07: this passes "" while service.query_source_bundle passes
++            # the document's published_date, so the two call sites are NOT
++            # literally the same parameter set today.  "" disables the as-of
++            # gate for this path and keeps the byte-identity gate above, which
++            # is the binding that matters.  Aligning the two (or changing the
++            # gate) is part of D-W05 OPEN-7 and is NOT decided here.
++            "as_of_date": "",
++        },
++        registry=GENERATOR_REGISTRY,
++        allowed_roots=allowed_roots,
++        now=_utc_now(),
++    )
++    if not handle.reusable:
++        return _sections_reason(handle.reason)
++    # F-I05A-01 first: the row metadata must not contradict the index.  It is
++    # the cheapest and most specific explanation, so it is reported before the
++    # per-slice window work (which would otherwise mask it).
++    raw_entries = _raw_index_entries(handle.path)
++    if raw_entries is None:
++        return "sections_binding_error"
++    if _metadata_disagreement(metadata, raw_entries):
++        return "sections_metadata_index_mismatch"
++    entries, reason = _index_entries(
++        handle.path, bodies=bodies, allowed_roots=slice_roots
++    )
++    if reason is None:
++        reason = _span_failure_for(connection, row["document_id"], entries)
++    return reason
++
++
+ class SectionQueryService:
+     """Read-only access to ``sections`` artifacts (no transaction, no lock)."""
+ 
+     def __init__(self, database_path: Path | str):
+         self._database_path = str(database_path)
++        self._derived_dir, self._allowed_roots = _catalog_derived_paths(database_path)
++        # P3-1: slices must live under derived/, not anywhere in the catalog.
++        self._slice_roots: tuple[Path, ...] = (self._derived_dir,)
+ 
+     @contextmanager
+     def _connection(self) -> Iterator[sqlite3.Connection]:
+@@ -87,50 +667,78 @@
+         finally:
+             connection.close()
+ 
++    def _qualify_row(
++        self,
++        connection: sqlite3.Connection,
++        row: sqlite3.Row,
++        bodies: list[str],
++        meta: dict,
++    ) -> str | None:
++        return _qualification_failure(
++            connection,
++            row,
++            meta,
++            bodies=bodies,
++            allowed_roots=self._allowed_roots,
++            slice_roots=self._slice_roots,
++        )
++
+     def list_sections(self, *, document_id: str) -> SectionQueryResult:
+         if not document_id or not document_id.strip():
+             raise SectionQueryInputError("document_id is required")
+         with self._connection() as connection:
+-            row = connection.execute(
+-                """SELECT a.document_id, a.path, a.metadata_json,
+-                          d.document_kind, d.title
+-                   FROM artifacts a
+-                   JOIN documents d ON d.document_id = a.document_id
+-                   WHERE a.artifact_role = 'sections'
+-                     AND a.generator_name = 'source_catalog_section_extractor'
+-                     AND a.document_id = ?""",
+-                (document_id,),
+-            ).fetchone()
+-            if row is None:
++            rows = _candidate_rows(connection, document_id)
++            if not rows:
+                 raise SectionQueryNotFoundError(
+                     "no sections artifact for document_id"
+                 )
+-            try:
+-                meta = json.loads(row["metadata_json"] or "{}")
+-            except json.JSONDecodeError as exc:
+-                raise SectionQueryError(
+-                    "sections artifact metadata is not valid JSON"
+-                ) from exc
+-            entries = tuple(
+-                SectionEntry(
+-                    role=e["role"],
+-                    title=e["title"],
+-                    ordinal=e["ordinal"],
+-                    char_start=e["char_start"],
+-                    char_end=e["char_end"],
+-                    path=e["path"],
+-                    page_start=e.get("page_start"),
+-                    page_end=e.get("page_end"),
+-                    span_ids=tuple(e.get("span_ids") or ()),
++            bodies = _bodies_for(connection, document_id)
++            chosen: sqlite3.Row | None = None
++            newest_reason: str | None = None
++            older_valid_served = False
++            for row in rows:
++                # The shared metadata column is parsed HERE, once per candidate,
++                # in the scope the B10 read-chain ratchet baselines
++                # (`list_sections`): exactly one direct-read site and exactly one
++                # column-value handoff, and the caller that must REPORT
++                # unreadable content is this one.
++                try:
++                    meta = json.loads(row["metadata_json"] or "{}")
++                except json.JSONDecodeError as exc:
++                    raise SectionQueryError(
++                        "sections artifact metadata is not valid JSON"
++                    ) from exc
++                meta = _meta_of(meta, row)
++                reason = self._qualify_row(connection, row, bodies, meta)
++                newest_reason = reason if newest_reason is None else newest_reason
++                if reason is None:
++                    chosen = row
++                    break
++                if _row_valid_alone(connection, row, bodies, self._slice_roots):
++                    older_valid_served = True
++            if chosen is None:
++                reason = newest_reason or "sections_binding_error"
++                raise SectionQueryQualificationError(
++                    reason, _next_action(reason, f"hidden_gate={reason}")
+                 )
+-                for e in meta.get("sections", [])
++            entries, reason = _index_entries(
++                chosen["path"], bodies=bodies, allowed_roots=self._slice_roots
+             )
++            if reason is not None:
++                raise SectionQueryQualificationError(
++                    reason, _next_action(reason, f"hidden_gate={reason}")
++                )
+             return SectionQueryResult(
+-                document_id=row["document_id"],
+-                document_kind=row["document_kind"],
+-                title=row["title"],
+-                index_path=row["path"],
+-                sections=entries,
++                document_id=chosen["document_id"],
++                document_kind=chosen["document_kind"],
++                title=chosen["title"],
++                index_path=chosen["path"],
++                sections=_to_entries(entries, bodies),
++                selected_artifact_id=chosen["artifact_id"],
++                selected_created_at=chosen["created_at"],
++                superseded_by_newer_valid=bool(
++                    chosen is not rows[0] and older_valid_served
++                ),
+             )
+ 
+ 
+@@ -140,6 +748,7 @@
+     "SectionQueryError",
+     "SectionQueryInputError",
+     "SectionQueryNotFoundError",
++    "SectionQueryQualificationError",
+     "SectionQueryResult",
+     "SectionQueryService",
+ ]
+--- a/src/company_wiki/source_catalog/section_extractor.py
++++ b/src/company_wiki/source_catalog/section_extractor.py
+@@ -315,6 +315,16 @@
+         where_clauses.append(f"d.document_kind IN ({placeholders})")
+         params.extend(kinds)
+     if not force:
++        # I-05-A (card step 4): "already done" means a sections artifact whose
++        # status is COMPLETED.  The version-agnostic NULL test this replaces
++        # counted a failed/stale row as sufficient, so a document whose only
++        # sections row had failed was skipped forever.
++        #
++        # Scope note: this deliberately does NOT add a generator-version
++        # comparison.  Which versions count as "mine" is part of the unsigned
++        # D-W05 role/applicability decision (decision.md OPEN-1), and adding
++        # one here would silently change recompute eligibility for a store
++        # whose writers do not all use one shared version constant.
+         where_clauses.append("sec.artifact_id IS NULL")
+ 
+     sql = (
+@@ -328,6 +338,7 @@
+         "JOIN sources s ON s.source_id=d.primary_source_id "
+         "LEFT JOIN artifacts sec ON sec.document_id=d.document_id "
+         "AND sec.artifact_role=? AND sec.generator_name=? "
++        "AND sec.status='completed' "
+         "WHERE " + " AND ".join(where_clauses)
+         + f" ORDER BY {processing_priority_sql('d')}, d.document_id"
+     )
+@@ -372,6 +383,7 @@
+         for sl in slices:
+             section_path = sections_dir / f"{sl.role}.md"
+             _atomic_write(section_path, sl.body)
++            section_bytes = section_path.read_bytes()
+             page_range = chapter_page_range(body, sl.char_start, sl.char_end)
+             span_ids = [
+                 row["span_id"]
+@@ -390,6 +402,11 @@
+                     "page_start": page_range[0] if page_range else None,
+                     "page_end": page_range[1] if page_range else None,
+                     "span_ids": span_ids,
++                    # I-05-A (F-I05A-02): bind the slice BYTES, not just its
++                    # length.  Additive field; readers use .get(), so artifacts
++                    # written before it stay readable and are length-checked
++                    # only (section_query enforces the hash when present).
++                    "content_sha256": hashlib.sha256(section_bytes).hexdigest(),
+                 }
+             )
+         index_json = json.dumps(index_entries, ensure_ascii=False, indent=2)

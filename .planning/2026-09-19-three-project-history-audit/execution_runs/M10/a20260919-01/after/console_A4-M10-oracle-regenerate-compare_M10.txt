@@ -1,0 +1,20 @@
+﻿card M10 model reserve_depletion
+positive expected ['490.0'] tolerances [4.9e-07]
+continuity expected ['490.0', '0.0']
+defaults expected ['600.0']
+contract formula revenue = depletion * recovery_rate * realized_price + other_revenue
+contract required ['additions', 'closing_reserves', 'depletion', 'opening_reserves', 'realized_price', 'recovery_rate']
+contract optional ['other_revenue', 'reserve_revisions']
+negative cases 11 ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK']
+observation_expected ['OBS-BASE-IGNORED', 'OBS-DEFAULT-EQUIV', 'OBS-RECOVERY-GT1', 'OBS-REVISION-POS']
+oracle_selfcheck product_import_present = False
+wrote input.json sha256 9dd7c60df6eb716ad955207aeb009d9d2ffe9ef4563d1331ac78872f30990694
+wrote oracle.json sha256 cd23e942ae11c2733cfc77ccaf15c83aa88684f1f5d900ca04b3c7e5c93a26cc
+wrote cases.json sha256 b3dd392ac3e75a74c272e5e20437e5c8d482191046f74a82039a2e1d824b09b6
+wrote observation_expected.json sha256 5599300dec55e60d2691bd0257e6a161f0e4878c7c8ebea1762c86c185899887
+wrote oracle_selfcheck.json sha256 677c5ece8b60f772c115ff42b84fef5dacc5c994f4600b971681dcaec4dc9764
+BYTE-IDENTICAL input.json frozen=9dd7c60df6eb716ad955207aeb009d9d2ffe9ef4563d1331ac78872f30990694 regenerated=9dd7c60df6eb716ad955207aeb009d9d2ffe9ef4563d1331ac78872f30990694
+BYTE-IDENTICAL oracle.json frozen=cd23e942ae11c2733cfc77ccaf15c83aa88684f1f5d900ca04b3c7e5c93a26cc regenerated=cd23e942ae11c2733cfc77ccaf15c83aa88684f1f5d900ca04b3c7e5c93a26cc
+BYTE-IDENTICAL cases.json frozen=b3dd392ac3e75a74c272e5e20437e5c8d482191046f74a82039a2e1d824b09b6 regenerated=b3dd392ac3e75a74c272e5e20437e5c8d482191046f74a82039a2e1d824b09b6
+BYTE-IDENTICAL observation_expected.json frozen=5599300dec55e60d2691bd0257e6a161f0e4878c7c8ebea1762c86c185899887 regenerated=5599300dec55e60d2691bd0257e6a161f0e4878c7c8ebea1762c86c185899887
+BYTE-IDENTICAL oracle_selfcheck.json frozen=677c5ece8b60f772c115ff42b84fef5dacc5c994f4600b971681dcaec4dc9764 regenerated=677c5ece8b60f772c115ff42b84fef5dacc5c994f4600b971681dcaec4dc9764

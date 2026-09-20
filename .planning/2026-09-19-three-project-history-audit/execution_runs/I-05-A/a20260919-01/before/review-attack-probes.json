@@ -1,0 +1,113 @@
+{
+  "tag": "before",
+  "section_query_source": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-05-A\\a20260919-01\\iso\\cw\\src\\company_wiki\\source_catalog\\section_query.py",
+  "section_query_source_sha256": "a40d54a36fe14fd0e76b322477885777ad2b3fa8b5263a2d8e726a2c63214f49",
+  "probes": {
+    "m1_metadata_json_injection": {
+      "probe": "m1_metadata_json_injection",
+      "mutation": "UPDATE artifacts SET metadata_json=<entries pointing outside the catalog>",
+      "index_bytes_untouched": true,
+      "row_hash_untouched": true,
+      "index_sha256_still_matches_row": true,
+      "outcome": "returned",
+      "reason": null,
+      "served_entries": [
+        {
+          "title": "INJECTED-TITLE",
+          "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w05a\\a20260919-01\\m1_poison.md",
+          "char_start": 0,
+          "char_end": 42,
+          "file_reads_outside_catalog": true
+        }
+      ],
+      "expectation": "must refuse (the index that was validated must be the index that is served)"
+    },
+    "m2_length_preserving_slice": {
+      "probe": "m2_length_preserving_slice_replacement",
+      "mutation": "overwrite business_overview.md with 99 'Z' characters",
+      "original_length": 99,
+      "replacement_length": 99,
+      "index_row_hash_untouched": true,
+      "outcome": "returned",
+      "reason": null,
+      "served_first_title": "公司业务概要",
+      "expectation": "must refuse: the slice bytes are not bound to the source window"
+    },
+    "m3_entry_path_outside_catalog": {
+      "probe": "m3_entry_path_outside_catalog",
+      "mutation": "point every index entry path at a byte-identical copy outside the catalog and update the row hash so every validator gate passes",
+      "row_hash_updated": true,
+      "outcome": "returned",
+      "reason": null,
+      "served_paths": [
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w05a\\a20260919-01\\m3\\catalog\\derived\\f8\\f878cb595c4905a5df1e81a0c50d436a7e8a56475d6d2291c3215a6e2e321dcf\\sections\\business_overview.md",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w05a\\a20260919-01\\m3\\catalog\\derived\\f8\\f878cb595c4905a5df1e81a0c50d436a7e8a56475d6d2291c3215a6e2e321dcf\\sections\\mda.md"
+      ],
+      "served_paths_outside_catalog": false,
+      "expectation": "must refuse (entry paths get the same containment gate)"
+    },
+    "m5_old_version_deadlock": {
+      "probe": "m5_old_version_deadlock",
+      "state": "the only sections row is 0.9.0/completed",
+      "producer_completed": 0,
+      "producer_eligible": 0,
+      "consumer_outcome": "returned",
+      "consumer_reason": null,
+      "expectation": "the recompute filter and the qualification gate must agree on which generator versions count, otherwise the pipeline deadlocks"
+    },
+    "m6_newest_invalid_shadows_older_valid": {
+      "probe": "m6_newest_invalid_shadows_older_valid",
+      "state": "newer row failed (created_at 2030), older row completed and qualified",
+      "outcome": "returned",
+      "reason": null,
+      "served_titles": [
+        "公司业务概要",
+        "经营情况讨论与分析"
+      ],
+      "expectation": "build_source_bundle serves the newest VALID row; the query must either match that contract (serve the older usable row) or the divergence must be a signed D-W05 decision"
+    },
+    "m2b_slice_hash_recomputed": {
+      "probe": "m2b_slice_hash_recomputed",
+      "mutation": "rewrite the slice with equal-length text AND recompute the index hash",
+      "outcome": "returned",
+      "reason": null,
+      "served_first_chars": "改改改改改改",
+      "expectation": "must refuse (the slice is not a window of the document source)"
+    },
+    "m2c_hash_field_omitted": {
+      "probe": "m2c_hash_field_omitted",
+      "mutation": "equal-length rewrite with the index content_sha256 keys removed",
+      "outcome": "returned",
+      "reason": null,
+      "expectation": "must refuse (no self-recorded hash may disable the binding)"
+    },
+    "m3b_inside_catalog_outside_derived": {
+      "probe": "m3b_inside_catalog_outside_derived",
+      "mutation": "entry paths point at <catalog>/planted/* (inside the catalog, outside derived/), row hash updated",
+      "outcome": "returned",
+      "reason": null,
+      "expectation": "must refuse: slices live under derived/"
+    },
+    "m4_outside_existing": {
+      "probe": "m4_outside_existing",
+      "mutation": "entry paths outside the roots pointing at files that EXIST",
+      "outcome": "returned",
+      "reason": null,
+      "expectation": "containment code"
+    },
+    "m4b_outside_and_missing": {
+      "probe": "m4b_outside_and_missing",
+      "mutation": "entry paths outside the roots pointing at a NON-existent file",
+      "outcome": "returned",
+      "reason": null,
+      "expectation": "must return the containment code, never sections_file_missing (otherwise the refusal is an existence oracle)"
+    },
+    "m7_metadata_uncompared_keys": {
+      "probe": "m7_metadata_uncompared_keys",
+      "mutation": "metadata ordinal/page_start/span_ids changed (index untouched)",
+      "outcome": "returned",
+      "reason": null,
+      "expectation": "must refuse (metadata must not contradict the index on ANY key)"
+    }
+  }
+}

@@ -23,20 +23,20 @@ accounting/disclosure-adapter decisions and are recorded as PROPOSED (unsigned) 
 
 ## Hash ledger · document/evidence consistency revision r3 (findings F-M08-06 / -07 / -08 / -09)
 
-本节由 r3 **追加**（追加式更正，未删除任何原文）。它只处置独立 reviewer 定点复核提出的文档/证据一致性缺陷。**冻结期望、容差、拒绝条件、披露数值、实现与产品一律未改。**
+本节由 r3 **插入**（位置 = 被折叠的第二段 r2 节的原起点，也就是保留段末尾；该位置同时也是文件末尾。只增不删既有正文）。它只处置独立 reviewer 定点复核提出的文档/证据一致性缺陷。**冻结期望、容差、拒绝条件、披露数值、实现与产品一律未改。**
 
-### 1) `oracle.md`：重复 r2 节合并去重（F-M08-06）
+### 1) `oracle.md`：重复 r2 节折叠去重（F-M08-06）
 
 | 项 | 值 |
 |---|---|
 | 改前 sha256（整文件） | `c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb`（10912 字节） |
-| 改后 sha256（整文件） | `206b27b3d8897f77d40007386fc932f114e8cf9c436ebcabe942db5b11615cc3`（12915 字节） |
-| 唯一改动 | 删除**第二段重复 r2 节**（1706 字节，sha256 `a4d12cd09b0a9d95a7ce4a6f7c5d0417a01d47ca00cde44d7c6dffb3961d72c8`；与第一段除「本节追加前 sha256」一行外逐字节相同）+ 追加 r3 provenance-gap 说明（3709 字节，sha256 `56a448b39c2be5c909a43c87fb46ecac9f76ca607b8859ceda191ce5eef910ca`） |
+| 改后 sha256（整文件） | `7a4c585eca511b5ba86375077e7d6528413d2ca84292471d8c460b5e0b77494b`（13353 字节） |
+| 唯一改动 | **折叠**第二段重复 r2 节（1706 字节，sha256 `a4d12cd09b0a9d95a7ce4a6f7c5d0417a01d47ca00cde44d7c6dffb3961d72c8`；与第一段除「本节追加前 sha256」一行外逐字节相同），并在**该段原起点插入** r3 provenance-gap 说明（4147 字节，sha256 `26812be4577d06cb242a86ce87071a72032db2bfcd1994b9ecda0d44b1e1f086`）。**字节账：`pre 10912 − 1706 + 4147 = live 13353`；`live[:9206] == pre[:9206]` 逐字节成立**（即 live 以 pre 的完整 r2 正文为前缀，r3 说明紧接其后；这是**插入**，不是尾部追加） |
 | 冻结期望文本 | **逐字节未动**：保留段 `[0,9206)` 改前/改后 sha256 同为 `b4c7b4acdd7b324bd7da8530a879c2279e281e2c8af8e3dd94438fa21f3a81c0`；第 0–10 节与第一段 r2 节全在该段内 |
 | 权威 v1 基准（保留） | `d335f5ec2a699bef008686249d77f2f9af6e2b6306510e57a83446f92df7e3eb`，可在改后文件的前 `5152` 字符（7482 字节）处复现，等于 reviewer r1 记录的 v1 值 |
 | provenance gap（原值照录） | `c07da2412b2e27faa33405878383001336ef1d8ce88c7c9ffd70a8209ffaea7b` —— 穷举全部字节切点后它只能复现为「v1 冻结体 + 第一段 r2 正文」这一中间写缓冲，**不是**任何「追加前」的文档状态，故标注为来源不可考、不得用作 hash 基准 |
 
-一条命令即可证明冻结期望部分字节相同（P1 保留段逐字节相同 / P2 增量记账精确 / P3 全部冻结节逐字节相同 / P4 r2 节恰好剩 1 段 / P5 两个基准值均可复现）：
+一条命令即可证明冻结期望部分字节相同（P1 保留段逐字节相同 / P2 增量记账精确，即 live = pre[:K] + 插入段 / P3 全部冻结节逐字节相同 / P4 r2 节恰好剩 1 段 / P5 两个基准值均可复现）：
 
 ```
 <iso venv python> -X utf8 -B recovery/docfix-r3/f06_verify.py > recovery/docfix-r3/f06_verify.out.txt
@@ -64,15 +64,15 @@ accounting/disclosure-adapter decisions and are recorded as PROPOSED (unsigned) 
 | file | sha256 r1 | sha256 now (read from disk) | verdict |
 |---|---|---|---|
 | `evidence/M06/negative_results.json` | `5d2793c2d8c5d1ea…` | `5d2793c2d8c5d1ea…` | UNCHANGED (byte-identical to r1) |
-| `after/rerun_sha256.json` | `02363d139200ce8c…` | `051ff48ee9e5f70b…` | r2 response edit, kinds=['ADDED_KEY', 'ANNOTATION', 'VALUE'] |
+| `after/rerun_sha256.json` | `02363d139200ce8c…` | `535c2e6c2b089e2f…` | r2 response edit, kinds=['ADDED_KEY', 'ANNOTATION', 'VALUE'] |
 | `commands.json` | `46ff6bc5c046d3be…` | `92875088938cf0b4…` | r2 response edit, kinds=['ADDED_KEY', 'ANNOTATION'] |
-| `evidence/M06/evidence_hashes.json` | `8fbe99ea71b20b2a…` | `88443257e3f5f23c…` | r2 response edit, kinds=['ADDED_KEY', 'ANNOTATION'] |
+| `evidence/M06/evidence_hashes.json` | `8fbe99ea71b20b2a…` | `12064120ed97f4a6…` | r2 response edit, kinds=['ADDED_KEY', 'ANNOTATION'] |
 | `evidence/M06/source_manifest.json` | `32aa3beffc5afff7…` | `cd5fdc4119f2dd8a…` | r2 response edit, kinds=['ADDED_KEY', 'ANNOTATION', 'VALUE'] |
 | `handoff.json` | `991fc034fb27f274…` | `f9fc17473cf9f2c8…` | r2 response edit, kinds=['ADDED_KEY', 'ANNOTATION'] |
 
 - 变化文件全表（含旧/新 sha256）见 `binding.json` / `handoff.json` 的 `docfix_r3_hash_ledger.repack_scope`，以及 `evidence/M06/docfix_r3.json`。
 - 「差异仅为注释」的证明：剥离新增注释键后与 r1 对象**深度相等**（逐字节比较既有叶子值：M08 `cases.json` 117/117 相等、`run_result.json` 220/220 相等、`negative_results.json` 189/189 相等）。原始输出：`recovery/docfix-r3/f08_named_files.out.txt`、`f08_repack_diff.out.txt`。
 - r1 基线本身经校验：`copy/`（reviewer r1 快照）的四份 `oracle.md` 均等于各卡自载的权威 v1 hash，故该快照确为 r1 态。
-- `binding.json` / `handoff.json` 的 `input_hashes` 是**运行前（r1）**的输入 hash，按设计属历史值，**不主张**等于当前字节；其与当前值的差异同样仅为上述注释。
+- `binding.json` / `handoff.json` 的 `input_hashes` 是**运行前（r1）**的输入 hash，按设计属历史值，**不主张**等于当前字节；其与当前值的差异同样仅为上述注释。**为避免接手者按 `review_and_handoff.md` 的「先重算当前 hash」步骤误停，同一处并排给出 `input_hashes_current`（同名键的当前摘要）与 `input_hashes_current_vs_input_hashes`（逐键列出哪些相等、哪些是历史值）**。
 - `after/rerun_sha256.json` 是 r2 时点的清单（其 `generated_after` 自述如此），其中 `oracle.md` 条目为 r2 值；r3 值见上表与 `evidence/M06/docfix_r3.json`。
 

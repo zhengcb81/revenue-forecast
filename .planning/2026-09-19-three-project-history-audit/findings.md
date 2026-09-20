@@ -51,6 +51,13 @@
 - 计划细化必须区分case资格：31模型公式验收不能依赖后继准确性，否则与正式预测/评估形成循环；实际采用模型的披露适配是公司case前置，未用模型不阻塞该case。
 - 当前SLO脚本的catalog参数只检存在、实际入口依config；bundle是exact延迟副本。I14新增实际目标一致性与真实bundle测量要求，不把代理计时写作真实消费SLO。
 
+## 跨批复核发现的共享缺陷（2026-09-20，父代理登记）
+
+- **共享 harness 缺口（P2-1，影响 M05–M20、M25–M31 各 attempt 的同字节 runner）**：`scripts/run_card.py` **从不校验 `cases.json` 的 `expected` 字段** —— M21–M24 的复核者把 `NEG-CARD.expected` 由 `ModelRegistryError` 改为 `ValueError` 后重跑仍 **rc=0 / verdict=pass**（`run_card.py:233` 只把该字段抄进结果，`:246-252` 仅做 `isinstance(exc, ModelRegistryError)`）。后果：44 条负例的 `expected` 目前是**无约束文本**，"负例断言被篡改会变红"这一变异证明只在**输入**被篡改时成立。**处置口径**：只在**仍在返工**的批次内修（M21–M24 已派），并补"期望类型被篡改 → rc=3"的变异探针；**不**回改其它已冻结 attempt 的 runner（冻结件不动），本缺口按"已知共享 harness 限制"登记。
+- **枚举口径差异（解释 40/3 与 41/4 之争，非错计）**：`direct_growth.growth_rate` 的 `dimensions` 是 `"ratio"`，但注册时**未声明 `ratio_drivers`**（`model_registry.py:221` 的 `_spec(...)` 未传该参数），其定义域 `(-1, inf)` 由 `driver_value_bounds` 的特例分支给出。按 `spec.dimensions[driver]=="ratio"` 归类 → **ratio=41、越界=4**（M05–M08 r3 更正后、M17–M24、M25–M28 的口径）；按 `spec.ratio_drivers` 归类 → **40/3**（M13–M16 的口径）。两者都是"脚本按自己读的字段如实产出"，**差异源于产品侧一处不一致**（31 个模型中唯一 ratio 维度未登记进 `ratio_drivers`，`MODEL_RATIO_DRIVERS` 兼容视图因而看不到 `growth_rate`）。→ 作为**产品侧待裁定项**上报，不按错计处理。
+- **"optional 无显式默认"的计数单位差异**：M13–M16 与 M17–M24 报**槽位数**（31），M25–M28 报**模型数**（24/31）。两者单位不同、可并存；引用时必须写明单位（父 agent 已在各批复核中要求点名）。
+- **`.pyc` 副作用来自仓库自带门而非卡**：`revenue-forecast\scripts\__pycache__\*.pyc`（mtime 2026-09-20 03:42:17 与 03:54:04）由 pre-push 门的 `compileall` 步骤与并发 session 的导入产生；`iso/` 与 `__pycache__/` 均被 `execution_runs/.gitignore` 忽略，**不污染提交**（`git ls-files` 下 `.pyc` = 0）。多批复核者主动删除自己产生的 `.pyc` 并披露。
+
 ## 隔离巡检（2026-09-20 父代理，逐条附证据）
 
 - **越界写 1（我方，已处置）**：`revenue-forecast\prereg_expectations.json`（M05–M08 复核脚本以相对路径写、进程 cwd 恰为生产仓库根；sha256 `35fbc83ded27…a03a9f`，mtime `2026-09-20 02:59:55`）。先保全副本于 `execution_runs/_isolation_incidents/20260920-prereg-expectations-leak/`，再从生产树删除；删除后 porcelain 不再出现该条目。

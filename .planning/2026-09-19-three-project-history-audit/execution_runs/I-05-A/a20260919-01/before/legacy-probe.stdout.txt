@@ -1,0 +1,46 @@
+﻿{
+  "source": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-05-A\\a20260919-01\\iso\\cw\\src\\company_wiki\\source_catalog\\section_query.py",
+  "source_sha256": "a40d54a36fe14fd0e76b322477885777ad2b3fa8b5263a2d8e726a2c63214f49",
+  "production_access": false,
+  "rebound_from": "reviews/wiki_legacy/section_probe.py (original source path pointed at the production tree and wrote its JSON next to itself)",
+  "cases": [
+    {
+      "id": "missing_failed_unbound_accepted",
+      "result": {
+        "outcome": "returned",
+        "returned": {
+          "document_id": "doc",
+          "document_kind": "annual_report",
+          "title": "fixture only",
+          "index_path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w05a\\a20260919-01\\legacy_probe\\before\\isolated_sections_1cfwbnel\\does-not-exist-old\\index.json",
+          "count": 1,
+          "sections": [
+            {
+              "role": "mda",
+              "title": "fixture",
+              "ordinal": "one",
+              "char_start": 0,
+              "char_end": 5,
+              "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w05a\\a20260919-01\\legacy_probe\\before\\isolated_sections_1cfwbnel\\does-not-exist-old",
+              "page_start": null,
+              "page_end": null,
+              "span_ids": [
+                "nonexistent-span"
+              ]
+            }
+          ]
+        }
+      },
+      "index_exists": false,
+      "expectation": "should fail closed or report invalid/stale rather than an ordinary usable result"
+    },
+    {
+      "id": "multiple_versions_no_selection_contract",
+      "result": {
+        "outcome": "returned",
+        "returned_index": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w05a\\a20260919-01\\legacy_probe\\before\\isolated_sections_1cfwbnel\\does-not-exist-old\\index.json"
+      },
+      "expectation": "a failed/unusable older row must never be the served row; selection must be an explicit rule, not SQLite row order"
+    }
+  ]
+}

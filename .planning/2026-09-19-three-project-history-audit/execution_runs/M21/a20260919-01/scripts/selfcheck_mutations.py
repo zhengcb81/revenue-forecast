@@ -132,6 +132,71 @@ def main() -> int:
                            "raw_exit_code": rc, "expected_exit_code": 2,
                            "stdout": stdout, "stderr": stderr, "result": out})
 
+    # --- restore the input before the cases.json probes ---------------------
+    # Probe C mutates input.json; F/G/H mutate only cases.json, so the input must be
+    # restored first or those probes would fail for the wrong reason (rc=2 instead of 3).
+    shutil.copyfile(os.path.join(evidence, "input.json"), input_path)
+
+    # --- G-F corrupt the frozen `expected` TYPE of a negative case ----------
+    # Review item P2-1: the first revision of the runner only copied cases.json
+    # `expected` into the result and never compared it, so editing it to "ValueError"
+    # still produced rc=0/verdict=pass. Probe F must now go red.
+    with open(cases_path, "r", encoding="utf-8") as fh:
+        cases = json.load(fh)
+    original_expected = cases["cases"][0]["expected"]
+    cases["cases"][0]["expected"] = "ValueError"
+    with open(cases_path, "w", encoding="utf-8") as fh:
+        json.dump(cases, fh, ensure_ascii=False, indent=1)
+    rc, stdout, stderr, out, argv = run_runner(python, card, scratch, code_root, "F_corrupt_expected")
+    report["runs"].append({"tag": "F_corrupted_expected_type", "argv": argv,
+                           "mutation": "cases.json cases[0].expected %r -> 'ValueError'" % original_expected,
+                           "raw_exit_code": rc, "expected_exit_code": 3,
+                           "stdout": stdout, "stderr": stderr, "result": out})
+    with open(os.path.join(evidence, "cases.json"), "rb") as fh:
+        frozen_cases_bytes = fh.read()
+    with open(cases_path, "wb") as fh:
+        fh.write(frozen_cases_bytes)
+
+    # --- G-G corrupt a frozen MESSAGE requirement --------------------------
+    # The message requirement exists so that a length/lookup guard cannot stand in
+    # for the value-domain or bridge guard the case is meant to exercise. Editing the
+    # requirement to an impossible string must go red.
+    with open(cases_path, "r", encoding="utf-8") as fh:
+        cases = json.load(fh)
+    target_case = cases["cases"][0]
+    original_requirement = target_case.get("expect_message_contains")
+    target_case["expect_message_contains"] = "THIS_SUBSTRING_CANNOT_APPEAR"
+    with open(cases_path, "w", encoding="utf-8") as fh:
+        json.dump(cases, fh, ensure_ascii=False, indent=1)
+    rc, stdout, stderr, out, argv = run_runner(python, card, scratch, code_root, "G_corrupt_message")
+    report["runs"].append({"tag": "G_corrupted_message_requirement", "argv": argv,
+                           "mutation": "cases.json cases[0].expect_message_contains %r -> "
+                                       "'THIS_SUBSTRING_CANNOT_APPEAR'" % original_requirement,
+                           "raw_exit_code": rc, "expected_exit_code": 3,
+                           "stdout": stdout, "stderr": stderr, "result": out})
+    with open(cases_path, "wb") as fh:
+        fh.write(frozen_cases_bytes)
+
+    # --- G-H point the message requirement at the length-guard message ------
+    # Shows the control is discriminating rather than merely non-empty: demanding the
+    # LENGTH-guard wording from a case that must fail in the VALUE-domain guard has to
+    # go red as well.
+    with open(cases_path, "r", encoding="utf-8") as fh:
+        cases = json.load(fh)
+    target_case = cases["cases"][0]
+    target_case["expect_message_contains"] = "must contain one value per forecast year"
+    with open(cases_path, "w", encoding="utf-8") as fh:
+        json.dump(cases, fh, ensure_ascii=False, indent=1)
+    rc, stdout, stderr, out, argv = run_runner(python, card, scratch, code_root, "H_message_from_other_guard")
+    report["runs"].append({"tag": "H_message_requirement_points_at_another_guard", "argv": argv,
+                           "mutation": "cases.json cases[0].expect_message_contains -> the "
+                                       "LENGTH-guard wording 'must contain one value per "
+                                       "forecast year'",
+                           "raw_exit_code": rc, "expected_exit_code": 3,
+                           "stdout": stdout, "stderr": stderr, "result": out})
+    with open(cases_path, "wb") as fh:
+        fh.write(frozen_cases_bytes)
+
     # --- restore and re-verify ---------------------------------------------
     for name in ("input.json", "oracle.json", "cases.json"):
         shutil.copyfile(os.path.join(evidence, name), os.path.join(s_ev, name))
@@ -153,6 +218,11 @@ def main() -> int:
         "G-A shows a corrupted positive expectation yields rc=3 instead of rc=0; "
         "G-B shows a negative assertion that the product does not satisfy yields rc=3; "
         "G-C shows a harness that cannot produce a verdict yields rc=2; "
+        "G-F shows that editing a case's frozen `expected` TYPE now yields rc=3 "
+        "(FAIL_expected_type_mismatch) instead of silently passing; "
+        "G-G shows that an impossible frozen MESSAGE requirement yields rc=3; "
+        "G-H shows the message control is discriminating: demanding the LENGTH-guard wording "
+        "from a case that must fail in the VALUE-domain guard also yields rc=3; "
         "G-D shows the same runner returns rc=0 on the uncorrupted scratch copy and "
         "the frozen evidence hashes are byte-identical before and after every probe.")
     target = os.path.join(scratch, "selfcheck_result.json")

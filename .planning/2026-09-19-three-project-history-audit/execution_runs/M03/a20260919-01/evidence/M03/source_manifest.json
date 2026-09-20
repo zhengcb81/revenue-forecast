@@ -66,11 +66,17 @@
   "revision": "r2",
   "oracle_md_versions": [
    {
-    "version": "v1_frozen_then_appended",
+    "version": "v1_frozen_then_body_edited_in_r3",
     "path": "oracle.md",
-    "sha256": "5597507c6a0eaee885c2e1085ee8fc77bcea1594815d28eb29879ebf26c7cacb",
-    "sha256_before_r2_append": "NOT CAPTURED before the r2 append (same legacy gap as M01; the frozen body was not rewritten, only appended to)",
-    "note": "r2 APPENDED a revision section; the frozen body was not rewritten"
+    "sha256": "d0bed79bd868cda3dd2a0a7f3fcd45fca738f7a0f3fdd5c4abe16cb52a208764",
+    "note": "state accepted by the r2 review; the r3 NEW-1 fix then edited the FROZEN BODY (printed unit price), which is registered as a permanent provenance event in recovery/README.md. Unlike M01 this is an in-body edit, NOT an append, so there is no clean byte boundary for it and the only evidence is the stated before/after hash."
+   },
+   {
+    "version": "current_on_disk_at_r4",
+    "path": "oracle.md",
+    "sha256": "b4881eeea7c16dd1df01345627e72529466a98f466f2ff06d678e643b04eae58",
+    "bytes": 12905,
+    "note": "this field is the r4 close-out state; the authoritative pin is revision_r3.json.authoritative_hashes_at_r3_closeout (pre-r4) plus revision_r4.json (post-r4)"
    }
   ],
   "oracle_script_versions": [
@@ -92,11 +98,9 @@
  "revision_r2": {
   "applied": true,
   "review_items": [
-   "F-M01-01",
    "F-M01-02",
    "F-M01-03",
    "F-M03-01",
-   "F-M04-01",
    "F-M02-01(pending ruling)"
   ],
   "product_source_hashes_rechecked_at_r2": {
@@ -106,6 +110,7 @@
   "product_source_hashes_now": {
    "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
    "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
-  }
+  },
+  "review_items_note": "scoped to this card in r4; the previous list was a shared template that also named other cards' items (point review P3-2)"
  }
 }

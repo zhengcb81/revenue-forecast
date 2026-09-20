@@ -1,0 +1,109 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-05-A\a20260919-01\iso\cw
+configfile: pytest.ini
+collected 1 item
+
+tests\contract\test_source_catalog_section_extractor.py F                [100%]
+
+================================== FAILURES ===================================
+___________ test_extract_sections_writes_artifact_and_is_idempotent ___________
+tests\contract\test_source_catalog_section_extractor.py:160: in test_extract_sections_writes_artifact_and_is_idempotent
+    assert report.completed == 1
+E   AssertionError: assert 0 == 1
+E    +  where 0 = ProcessingReport(operation='extract_sections', completed=0, skipped=0, partial=0, unsupported=0, failed=0, eligible=0,...nal_reasons=None, due_retry=0, terminal=0, last_failure_code=None, last_failed_document_id=None, last_failed_path=None).completed
+---------------------------- Captured stderr call -----------------------------
+Process source-catalog-document-parser:
+
+Traceback (most recent call last):
+
+  File "C:\Miniconda\Lib\multiprocessing\process.py", line 313, in _bootstrap
+
+    self.run()
+
+    ~~~~~~~~^^
+
+  File "C:\Miniconda\Lib\multiprocessing\process.py", line 108, in run
+
+    self._target(*self._args, **self._kwargs)
+
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-05-A\a20260919-01\iso\cw\src\company_wiki\source_catalog\normalizer.py", line 392, in _parser_process_entry
+
+    _write_parser_envelope(result_path, envelope, result_max_bytes=result_max_bytes)
+
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-05-A\a20260919-01\iso\cw\src\company_wiki\source_catalog\normalizer.py", line 308, in _write_parser_envelope
+
+    temporary.write_bytes(encoded)
+
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+
+  File "C:\Miniconda\Lib\pathlib\_abc.py", line 641, in write_bytes
+
+    with self.open(mode='wb') as f:
+
+         ~~~~~~~~~^^^^^^^^^^^
+
+  File "C:\Miniconda\Lib\pathlib\_local.py", line 537, in open
+
+    return io.open(self, mode, buffering, encoding, errors, newline)
+
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-05-A\\a20260919-01\\before\\cmd-tests-pristine\\pytest\\test_extract_sections_writes_a0\\project\\.source_catalog\\parser_tmp\\.parser-result-ykwee7de.json.21232.tmp'
+
+Process source-catalog-document-parser:
+
+Traceback (most recent call last):
+
+  File "C:\Miniconda\Lib\multiprocessing\process.py", line 313, in _bootstrap
+
+    self.run()
+
+    ~~~~~~~~^^
+
+  File "C:\Miniconda\Lib\multiprocessing\process.py", line 108, in run
+
+    self._target(*self._args, **self._kwargs)
+
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-05-A\a20260919-01\iso\cw\src\company_wiki\source_catalog\normalizer.py", line 392, in _parser_process_entry
+
+    _write_parser_envelope(result_path, envelope, result_max_bytes=result_max_bytes)
+
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-05-A\a20260919-01\iso\cw\src\company_wiki\source_catalog\normalizer.py", line 308, in _write_parser_envelope
+
+    temporary.write_bytes(encoded)
+
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+
+  File "C:\Miniconda\Lib\pathlib\_abc.py", line 641, in write_bytes
+
+    with self.open(mode='wb') as f:
+
+         ~~~~~~~~~^^^^^^^^^^^
+
+  File "C:\Miniconda\Lib\pathlib\_local.py", line 537, in open
+
+    return io.open(self, mode, buffering, encoding, errors, newline)
+
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-05-A\\a20260919-01\\before\\cmd-tests-pristine\\pytest\\test_extract_sections_writes_a0\\project\\.source_catalog\\parser_tmp\\.parser-result-67p19al6.json.27472.tmp'
+
+============================== warnings summary ===============================
+..\venv\Lib\site-packages\_pytest\config\__init__.py:1464
+  C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-05-A\a20260919-01\iso\venv\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/contract/test_source_catalog_section_extractor.py::test_extract_sections_writes_artifact_and_is_idempotent
+======================== 1 failed, 1 warning in 1.60s =========================

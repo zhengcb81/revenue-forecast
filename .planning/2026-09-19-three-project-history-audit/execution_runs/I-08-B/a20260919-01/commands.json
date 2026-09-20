@@ -1,0 +1,519 @@
+{
+  "card": "I-08-B",
+  "attempt": "a20260919-01",
+  "frozen_before_run": true,
+  "frozen_before_implementation": true,
+  "notes": [
+    "Every entry is a bound command: absolute interpreter, absolute cwd, argv array (never a shell string), explicit timeout, explicit raw+expected returncode.",
+    "--basetemp always points inside this attempt (a freshly created empty directory).",
+    "PYTHONDONTWRITEBYTECODE=1 keeps __pycache__ out of the copied trees; PYTHONIOENCODING=utf-8 keeps evidence readable.",
+    "The RED commands (c1/c2) ran against before/baseline_tree/rf (pre-edit code). Everything from c3 on ran against iso/rf (edited code).",
+    "All eight bound commands were executed after the edit and every raw return code matched its frozen expectation (0/0).",
+    "TEST VALUES ARE NOT NORMATIVE: 20 s (T), 65536 B (L) and 3600 s (W) appear only in tests/bindings and are injected explicitly. OPEN-D7 is not adjudicated.",
+    "A previous revision of handoff.json said 'eight bound commands'; commands.json has 12 bound entries and this revision added two more (c15, c16). The count was wrong in the handoff text, not in this file."
+  ],
+  "commands": [
+    {
+      "id": "I08B-c1-red-pytest",
+      "purpose": "section 7.1 precondition 1 RED: the untouched test node passes on the pre-edit code, i.e. it is a FALSE GREEN because the provider is sys.executable and no signature exists",
+      "phase": "red",
+      "cwd": "execution_runs/I-08-B/a20260919-01/before/baseline_tree/rf",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "tests/test_attestation.py::AttestationTests::test_configured_provider_means_host_signed_publication",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp=<attempt>/before/cmd-run-red1-pytest/scratch"
+      ],
+      "config_paths": [
+        "<attempt>/before/baseline_tree/rf/tests/conftest.py"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/before/cmd-run-red1-pytest"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "the pre-edit node PASSES (1 passed) with provider=sys.executable -> the assertion is a false green under the new capability semantics",
+      "actual_business_result": "1 passed in 0.51s (raw stdout kept verbatim)",
+      "before_after_evidence": [
+        "before/cmd-run-red1-pytest.stdout.txt",
+        "before/cmd-run-red1-pytest.rc.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c2-red-probe",
+      "purpose": "section 7.1 precondition 1 RED: raw observables of the pre-fix capability semantics (capability flag, host_signed label, spawn witness, read bytes)",
+      "phase": "red",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/probe_red_baseline.py",
+        "<attempt>/before/baseline_tree/rf",
+        "<attempt>/before/cmd-run-red2-probe/scratch"
+      ],
+      "config_paths": [
+        "<attempt>/before/baseline_tree/rf/scripts",
+        "<attempt>/before/baseline_tree/rf/tests"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/before/cmd-run-red2-probe/scratch"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 120,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "capability=true and attestation_status=host_signed with provider=sys.executable while the provider is never invoked; bare .py and .txt also yield capability=true; a missing path yields false",
+      "actual_business_result": "capability=true / host_signed / provider_spawn_witness=false / provider_invocations=0 for sys.executable, bare .py and .txt; false for the missing path",
+      "before_after_evidence": [
+        "before/cmd-run-red2-probe.stdout.txt",
+        "before/cmd-run-red2-probe.rc.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c3-provider-protocol",
+      "purpose": "positive + negative provider-protocol cases (T-O1..T-O10, T-N01..T-N44, T-R1..T-R9), each asserting its exact frozen error code",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso/rf",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "tests/test_attestation_provider_protocol.py",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp=<attempt>/scratch/c3-pytest"
+      ],
+      "config_paths": [
+        "<attempt>/iso/rf/scripts",
+        "<attempt>/iso/rf/tests",
+        "<attempt>/scratch/c3-pytest/**"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/scratch/c3-pytest"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 540,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "every positive case passes and every negative case fails closed with EXACTLY its frozen code string; no case silently returns host_signed",
+      "actual_business_result": "68 passed",
+      "before_after_evidence": [
+        "after/I08B-c3-provider-protocol.stdout.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c4-attestation",
+      "purpose": "section 7.1 preconditions 2+3 GREEN: re-intended host_signed test (isolated bounded fake provider + isolated trust domain) plus the E01/E02/E32 reverse cases and the L2 issuer-binding case",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso/rf",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "tests/test_attestation.py",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp=<attempt>/scratch/c4-pytest"
+      ],
+      "config_paths": [
+        "<attempt>/iso/rf/scripts",
+        "<attempt>/iso/rf/tests",
+        "<attempt>/scratch/c4-pytest/**"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/scratch/c4-pytest"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 540,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "host_signed only via a completed handshake plus a trusted signature; the reverse cases report E01/E02/E32; no test spawns a bare interpreter",
+      "actual_business_result": "18 passed",
+      "before_after_evidence": [
+        "after/I08B-c4-attestation.stdout.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c5-legacy-classify",
+      "purpose": "legacy classification T-L1..T-L11, the E29 entry point, the E30 input-binding gate and the attestation-projection coverage",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso/rf",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "tests/test_attestation_legacy.py",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp=<attempt>/scratch/c5-pytest"
+      ],
+      "config_paths": [
+        "<attempt>/iso/rf/scripts",
+        "<attempt>/iso/rf/tests"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/scratch/c5-pytest"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 540,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "G3b lands in G4 (never silently downgraded), 3.0..3.6 are G1 read-only, 3.7/3.8 without a claim are G3a, only the explicit G1 set is exempt, E29 is raised by require_legacy_exemption, E30 is raised by verify_input_binding, and every content key is inside the commitment",
+      "actual_business_result": "21 passed, 22 subtests passed",
+      "before_after_evidence": [
+        "after/I08B-c5-legacy-classify.stdout.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c6-adversarial-receipts",
+      "purpose": "regression: the pre-existing adversarial receipt/anchor attacks still fail closed after the receipt schema bump",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso/rf",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "tests/adversarial",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp=<attempt>/scratch/c6-pytest"
+      ],
+      "config_paths": [
+        "<attempt>/iso/rf/scripts",
+        "<attempt>/iso/rf/tests"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/scratch/c6-pytest"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 540,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "all adversarial receipt/anchor attacks still raise ForecastInputError; no attack becomes accepted",
+      "actual_business_result": "6 passed",
+      "before_after_evidence": [
+        "after/I08B-c6-adversarial-receipts.stdout.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c7-tpub",
+      "purpose": "T-PUB (the card's named command): existing revenue publication/signature/registry/single-file-transaction tests on the edited code",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso/rf",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "tests/test_publication_pipeline.py",
+        "tests/test_publication_registry.py",
+        "tests/test_attestation.py",
+        "tests/test_zr710_publication_txn.py",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp=<attempt>/scratch/c7-pytest"
+      ],
+      "config_paths": [
+        "<attempt>/iso/rf/tests/conftest.py (redirects REVENUE_PUBLICATION_REGISTRY to tmp_path_factory under --basetemp)"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/scratch/c7-pytest"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 540,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "publication pipeline, registry, attestation and single-file transaction tests all pass; no production registry row is created",
+      "actual_business_result": "48 passed; the registry written by the tests lives under --basetemp (conftest redirect)",
+      "before_after_evidence": [
+        "after/I08B-c7-tpub.stdout.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c8-full-suite",
+      "purpose": "regression census: the whole isolatable suite, before and after, compared nodeid by nodeid",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso/rf (baseline tree for the before run)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/scratch/run_full_suite.py",
+        "<attempt>"
+      ],
+      "config_paths": [
+        "<attempt>/scratch/c8_ignore.txt (the 26 modules that cannot be collected in either tree)"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/scratch/c8-pytest",
+        "<attempt>/after",
+        "<attempt>/before"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 540,
+      "expected_returncode": null,
+      "raw_returncode": 1,
+      "expected_business_result": "the AFTER failure set must not contain any nodeid absent from the BEFORE failure set",
+      "actual_business_result": "before 128 failed / 819 passed / 315 subtests; after 128 failed / 921 passed / 337 subtests; NEW failures introduced by this card: 0; failures that disappeared: 0",
+      "before_after_evidence": [
+        "before/c8_baseline_suite.stdout.txt",
+        "after/c8_full_suite.stdout.txt",
+        "after/c8_failure_diff.txt",
+        "scratch/c8_ignore.txt"
+      ],
+      "binding_status": "bound",
+      "expected_returncode_note": "pytest exits 1 whenever the pre-existing 128 failures are present; the frozen expectation is therefore expressed as an equality of FAILURE SETS, not as rc=0. The runner itself returns the pytest code verbatim and the comparison script returns 0.",
+      "capability_limit": "the comparison is over the SAME --ignore list; a both-trees collection comparison WITHOUT --ignore was not performed, so the uncollectable modules' behaviour in the baseline tree is not established. A green comparison also proves no regression in the copied tree only."
+    },
+    {
+      "id": "I08B-c9-independent-recompute",
+      "purpose": "independent recomputation that does NOT call the code under test: error-code table read as text and compared with the signed design, canonical signed bytes recomputed from the design's stated rule, trust-domain tuple arithmetic re-implemented",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/check_independent.py"
+      ],
+      "config_paths": [
+        "<attempt>/iso/rf/scripts/attestation_protocol.py (read as text)",
+        "<plan>/execution_runs/I-08-A/a20260919-01/decision.md (read as text)"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/scratch/c9"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "32 canonical codes, all matching decision.md section 2.5 verbatim, 0 undefined, 0 unreferenced; the independently computed canonical hash equals the implementation's; the tuple arithmetic agrees on all seven boundary cases",
+      "actual_business_result": "all checks PASS; FAILURES: 0 (the checker itself was corrected twice during development -- a multi-line constant pattern and a missing NFC rule -- and both corrections are recorded in review.md)",
+      "before_after_evidence": [
+        "after/I08B-c9-independent-recompute.stdout.txt"
+      ],
+      "binding_status": "bound",
+      "capability_limit": "text-level code-table comparison plus an independent re-implementation of the canonical hash; it does NOT prove the runtime behaves as the text says (that is c3/c4/c5)"
+    },
+    {
+      "id": "I08B-c10-hash-inventory",
+      "purpose": "recompute sha256 of the edited files, the iso copies and the production sources; prove the production sources are byte-identical to the pre-edit binding",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/hash_inventory.py",
+        "<attempt>",
+        "C:/Users/<user>/Projects/revenue-forecast"
+      ],
+      "config_paths": [
+        "<attempt>/before/source_hashes.txt"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/after"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "every production source this card edited in isolation is UNCHANGED in the product repo while the iso copy hashes differ exactly for the intended files",
+      "actual_business_result": "PRODUCTION FILES CHANGED BY THIS CARD: 0; iso copies differ exactly for the 12 touched files",
+      "before_after_evidence": [
+        "after/I08B-c10-hash-inventory.stdout.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c11-git-status",
+      "purpose": "prove zero product-repo writes: capture git status --porcelain of the three product repos after all runs and diff the entry SET against before/",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/git_status_capture.py",
+        "<attempt>"
+      ],
+      "config_paths": [
+        "<attempt>/before/git_status_revenue-forecast.txt",
+        "<attempt>/before/git_status_filing-fetch.txt",
+        "<attempt>/before/git_status_company-wiki.txt"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/after"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "no entry mentioning this card's paths appears under scripts/, config/, artifacts/registry/, tests/ or .planning/reviews/ in any product repo",
+      "actual_business_result": "NEW ENTRIES THAT BELONG TO THIS CARD: 0; filing-fetch and company-wiki identical; revenue-forecast's 56 new entries are all other concurrent cards' .planning/execution_runs/** files (I-04-C, I-14-C, I-06-A, M05-M08) plus one concurrent prereg_expectations.json",
+      "before_after_evidence": [
+        "after/I08B-c11-git-status.stdout.txt",
+        "after/git_status_revenue-forecast.txt",
+        "after/git_status_filing-fetch.txt",
+        "after/git_status_company-wiki.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c13-changes-diff",
+      "purpose": "produce changes.diff (production tree -> isolated edited copy) and the packaged hash inventory",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/make_diff.py",
+        "<attempt>"
+      ],
+      "config_paths": [
+        "production tree (read-only)"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/changes.diff",
+        "<attempt>/after"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "a unified diff covering exactly the 12 touched files (8 edited, 4 added)",
+      "actual_business_result": "12 files; changes.diff 193558 bytes",
+      "before_after_evidence": [
+        "changes.diff",
+        "after/c13_changes_diff.stdout.txt"
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I08B-c15-line-endings",
+      "purpose": "independent-review P3-1 closure: quantify whether changes.diff reproduces the edited tree at the byte level or only at the content level",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/check_line_endings.py",
+        "<attempt>"
+      ],
+      "config_paths": [
+        "<attempt>/iso/rf",
+        "<attempt>/before/baseline_tree/rf"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/after"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "report the raw-identical / line-endings-only / genuinely-different split so the oracle states the reproduction precision honestly",
+      "actual_business_result": "13 files compared; 0 raw byte-identical; 4 differ only by line endings; 9 genuinely different (they are the intentionally edited files)",
+      "before_after_evidence": [
+        "after/c15_line_endings.stdout.txt"
+      ],
+      "binding_status": "bound",
+      "capability_limit": "this measures the ISOLATED trees; it does not apply the patch to the baseline tree the way the reviewer did"
+    },
+    {
+      "id": "I08B-c16-golden-delta",
+      "purpose": "independent-review CONFLICT-2 closure: show the golden refresh changed values only, with the key set unchanged",
+      "phase": "after",
+      "cwd": "execution_runs/I-08-B/a20260919-01/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/check_golden_delta.py",
+        "<attempt>"
+      ],
+      "config_paths": [
+        "<attempt>/before/golden_behavior_hashes.json",
+        "<attempt>/iso/rf/tests/golden_behavior_hashes.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/after"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "the same 5 keys in both files, all 5 values changed",
+      "actual_business_result": "keys identical: True; values changed: 5 of 5",
+      "before_after_evidence": [
+        "after/c16_golden_delta.stdout.txt",
+        "before/golden_behavior_hashes.json"
+      ],
+      "binding_status": "bound",
+      "capability_limit": "it proves the key set and the count of changed values, not that each refreshed value still represents the intended behaviour"
+    }
+  ],
+  "not_run_commands": [
+    {
+      "id": "I08B-n1-rollback-txn",
+      "purpose": "T-N51 / E31 publication_rollback_required",
+      "reason": "NOT this card: the design section 7 assigns the registry/output transaction boundary to I-09-A. Recorded so the gap cannot be reported as closed."
+    },
+    {
+      "id": "I08B-n2-cross-repo-consumer",
+      "purpose": "T-N52 / E29 consumer-side gate for opt-in schema 3.8",
+      "reason": "NOT this card: the consumer lives in invest-core (cross-repo) and stays OPEN-D6. This card only exports the same-repo predicate is_legacy_exempt() and records that it is NOT yet wired into the consumer."
+    },
+    {
+      "id": "I08B-n3-real-provider",
+      "purpose": "live provider qualification",
+      "reason": "No real provider exists and no network is used. Live qualification belongs to I-16/I-17. The implementation fails closed when no provider is configured."
+    }
+  ],
+  "binding_status": "bound"
+}

@@ -6,11 +6,16 @@ byte-identical mirror so that M06 can re-run its own proof locally.
 
 ## What this pass changed for M06
 
-1. oracle.md -- merged the two duplicated "revision r2" sections into ONE and appended a
-   provenance-gap note (F-M08-06). The duplicate was byte-identical to the kept section
-   except for the hash line, so nothing but the duplicate was removed.
-   sha256 c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb -> 206b27b3d8897f77d40007386fc932f114e8cf9c436ebcabe942db5b11615cc3
-   (10912 -> 12915 bytes)
+1. oracle.md -- FOLDED the two duplicated "revision r2" sections into ONE and INSERTED a
+   provenance-gap note at the folded duplicate's former position (F-M08-06; wording
+   corrected under F-R3-01). The insert point coincides with EOF, but the mechanism is an
+   insertion, not a trailing append: live = pre[:kept_prefix_bytes] + note, so
+   live[:kept_prefix_bytes] is byte-identical to pre[:kept_prefix_bytes] (equivalently,
+   live carries pre's complete r2 body as a prefix). The folded duplicate was
+   byte-identical to the kept section except for the hash line.
+   sha256 c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb -> 7a4c585eca511b5ba86375077e7d6528413d2ca84292471d8c460b5e0b77494b
+   (10912 -> 13353 bytes)
+   byte account: 10912 (pre) - 1706 (folded duplicate) + 4147 (inserted r3 note) = 13353 (live)
    kept prefix [9206 bytes] sha256
    b4c7b4acdd7b324bd7da8530a879c2279e281e2c8af8e3dd94438fa21f3a81c0 (before) ==
    b4c7b4acdd7b324bd7da8530a879c2279e281e2c8af8e3dd94438fa21f3a81c0 (after)
@@ -21,15 +26,15 @@ byte-identical mirror so that M06 can re-run its own proof locally.
    sha256 ced1c6075b01b1404e56ed8d767cd0fc406d7b65a2e89c2647b94383e151567f -> e73b23779cec8a78e680d84d66786a926c53bc9130c0ac905b31a747a3cba831
 3. binding.json / handoff.json got a docfix_r3_hash_ledger that declares the r1->r2 repack
    scope with old/new hashes and the annotation-only proof (F-M08-08).
-   sha256 6b2d3a48a34239962161eb666e5b78134cbcd946249beb4d1dddb909a018c04b -> e860d7fe5069630e708d321e5e06c5144721dd7a84248f9b31e4758c6cce540c
-   sha256 f9fc17473cf9f2c875ae22f3d9b569f5c7d706434431f60337840c404caffdf4 -> 3fd3e52bce718b003672e647a3fdf58e16d8195eaec872cc03b2597236fa6781
+   sha256 6b2d3a48a34239962161eb666e5b78134cbcd946249beb4d1dddb909a018c04b -> a928a534f379a6ea1083159114ff543eb3026467107043ebab6cae6fdf56568f
+   sha256 f9fc17473cf9f2c875ae22f3d9b569f5c7d706434431f60337840c404caffdf4 -> 9bfb05ef5891dccb266847ceddc46c0a464ca84b785e1dbd3633e7b6fdbc6aeb
 4. decision.md got an appended hash-ledger section; M08 additionally got the DEC-M08-1
    correction pointing at handoff.json.owner_action_required (F-M08-09).
-   sha256 c950fc851f9fb797b32992e454699e5bead11e029e10b49ed536614300d0685b -> fcacd5c70db7c3df0134452ce5147bb373ac1484e6de87c71ec57c5dd3108b63
+   sha256 c950fc851f9fb797b32992e454699e5bead11e029e10b49ed536614300d0685b -> aec8f19db79dc47814dd278c2cceec4b70888b9b14a4001c6daf21ae5a045b0d
 5. downstream ledgers refreshed: evidence/M06/source_manifest.json (oracle sha256_now),
    evidence/M06/evidence_hashes.json (revision r3), after/rerun_sha256.json (all entries
    == disk again, the F-M08-01 property), and the new evidence/M06/docfix_r3.json
-   sha256 5941411b01286f785c3f69a88694b577b196fdc58fd872ce31c41e3ba302ae3e.
+   sha256 468c0a870deec052f773d87051befe1f4c3d360b9960a32578697af04af17160.
 
 ## Reproduce (run from this directory)
 
@@ -55,3 +60,13 @@ Notes:
   therefore not destroyed.
 - No expectation, tolerance, negative case, disclosure figure or product file was changed.
 - M08 remains BLOCKED: the owner three-step remediation is still outstanding.
+
+## Provenance
+
+The first r3 pass (before F-R3-01/F-R3-02) was committed and pushed by the orchestration
+queue as commit `e954449`, which took M05-M08's 434 files (254 of them under
+recovery/docfix-r3/) into the repository. `iso/` and `__pycache__/` are gitignored, so no
+`.pyc` entered the repository. The F-R3-01 wording fix and the F-R3-02
+input_hashes_current addition in this directory are NOT part of `e954449`; they supersede
+it and will need a follow-up commit. Working-tree state, not `e954449`, is authoritative
+for the current hashes.

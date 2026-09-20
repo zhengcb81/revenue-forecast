@@ -37,6 +37,7 @@ oqs = json.load(open(os.path.join(HERE, "f07_fix_oq.json"), encoding="utf-8"))
 named = json.load(open(os.path.join(HERE, "f08_named_files.json"), encoding="utf-8"))
 docs = json.load(open(os.path.join(HERE, "f089_patch_docs.json"), encoding="utf-8"))
 repack = json.load(open(os.path.join(HERE, "f08_repack_diff.json"), encoding="utf-8"))
+fold = json.load(open(os.path.join(HERE, "f13_fold_wording.json"), encoding="utf-8"))
 
 
 def sha_file(p: str) -> str:
@@ -132,12 +133,14 @@ def main() -> int:
                 verify[card]["P5_v1_claim_reproduces"],
             "honest_gap": od["honest_gap"],
             "honest_gap_r3_dedup_addendum": (
-                "Revision r3 MERGED the two duplicated 'revision r2' sections into ONE and "
-                "appended a provenance-gap note (finding F-M08-06). The merge deleted only "
-                "the byte-identical duplicate section; the kept prefix is byte-for-byte "
-                "unchanged (proved in recovery/docfix-r3/f06_verify.out.txt), so the v1 "
-                "frozen body and every frozen expectation are still byte-identical to what "
-                "the product ran against."
+                "Revision r3 FOLDED the two duplicated 'revision r2' sections into ONE and "
+                "INSERTED a provenance-gap note at the folded duplicate's former position "
+                "(finding F-M08-06; wording corrected under F-R3-01). The fold removed only "
+                "the byte-identical duplicate section and the note went in at that position, "
+                "so live = pre[:kept_prefix_bytes] + note: the kept prefix is byte-for-byte "
+                "unchanged (proved in recovery/docfix-r3/f06_verify.out.txt), and therefore "
+                "the v1 frozen body and every frozen expectation are still byte-identical to "
+                "what the product ran against."
             ),
             "mtime_ordering": od["mtime_ordering"],
             "oracle_script_selfcheck": od["oracle_script_selfcheck"],
@@ -197,9 +200,47 @@ def main() -> int:
                 "F-M08-06": {
                     "what": "oracle.md carried two duplicated 'revision r2' sections and two "
                             "mutually exclusive pre-append hashes in the same ledger",
-                    "action": "merged into ONE r2 section; the reproducible v1 hash is kept; "
-                              "the unreproducible value is kept verbatim, labelled as a "
-                              "provenance gap and barred from use as a baseline",
+                    "action": "FOLDED the two r2 sections into one and INSERTED a "
+                              "provenance-gap note at the folded duplicate's former position. "
+                              "The insert point coincides with EOF of the new file, but the "
+                              "mechanism is an INSERTION into the pre image's content, not a "
+                              "trailing append: live = pre[:kept_prefix_bytes] + note, so "
+                              "live[:kept_prefix_bytes] == pre[:kept_prefix_bytes] byte for "
+                              "byte (equivalently, live carries pre's complete r2 body as a "
+                              "prefix). F-R3-01: the earlier 'deleted + appended' phrasing was "
+                              "correct arithmetic but the wrong mental model, and is replaced "
+                              "here. The reproducible v1 hash is kept; the unreproducible value "
+                              "is kept verbatim, labelled a provenance gap and barred from use "
+                              "as a baseline",
+                    "byte_account": (
+                        f"{dedupe[card]['oracle_md_bytes_before']} (pre whole file) - "
+                        f"{verify[card]['P2_deleted_bytes']} (folded duplicate = pre[K:]) + "
+                        f"{verify[card]['P2_inserted_bytes']} (inserted r3 note) = "
+                        f"{verify[card]['oracle_md_bytes_after']} (live whole file)"
+                    ),
+                    "kept_prefix_taken_from_the_preserved_pre_image": True,
+                    "only_the_r3_block_changed_in_F_R3_01":
+                        fold[card]["only_r3_block_changed"],
+                    "r3_block_versions": {
+                        "v1_original": {
+                            "block_bytes": fold[card]["r3_block_bytes_before"],
+                            "block_sha256": fold[card]["r3_block_sha256_before"],
+                            "whole_file_sha256":
+                                fold[card]["oracle_md_sha256_before_wording_fix"],
+                            "note": "the reviewer's verified arithmetic "
+                                    "(12592-1900+3711=14403 / 10912-1706+3709=12915 / "
+                                    "11469-1903+3709=13275 / 19745-3585+3714=19874) refers "
+                                    "to this version",
+                        },
+                        "v2_after_F_R3_01": {
+                            "block_bytes": fold[card]["r3_block_bytes_after"],
+                            "block_sha256": fold[card]["r3_block_sha256_after"],
+                            "whole_file_sha256":
+                                fold[card]["oracle_md_sha256_after_wording_fix"],
+                            "note": "same kept prefix, same frozen text; only the block's prose "
+                                    "and its self-consistent byte account changed",
+                        },
+                    },
                     "oracle_md_sha256_before": dedupe[card]["oracle_md_sha256_before"],
                     "oracle_md_bytes_before": dedupe[card]["oracle_md_bytes_before"],
                     "oracle_md_sha256_after": dedupe[card]["oracle_md_sha256_after"],

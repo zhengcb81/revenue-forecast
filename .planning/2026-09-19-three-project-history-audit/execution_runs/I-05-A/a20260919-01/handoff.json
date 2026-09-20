@@ -1,0 +1,346 @@
+{
+  "card_id": "I-05-A",
+  "parent": "I-05",
+  "attempt_id": "a20260919-01",
+  "card_title": "默认产物与验证器共用契约，sections 不能绕过资格",
+  "status": "review_pending",
+  "r2_status": "复审返回 changes_required（F-I05A-01..09）；r2 已逐条处置（F-I05A-09 被复审判为合法更正）并复验。实现者未自签；accepted_scoped 的登记权在 reviewer。",
+  "owner": "wiki producer 实施者（本 attempt）",
+  "reviewer_status": "PENDING independent review — 实现者未自签，未使用 accepted/passed 标签；r2 disposition 见 review_r2_disposition.md",
+  "objective": "让 sections 消费者与默认 bundle 共用同一把资格门，并让被验证的字节就是被服务的字节；无效 section 无旁路。",
+  "completed_steps": [
+    "1 领取: card_I-05-A + parent I-05 原文 + audit_report 第 55 行 + D-W05 共用规则 + 已接受依赖 I-02-E/I-02-A 的 review/handoff 已读",
+    "2 绑定: binding.json（生产锚点 hash、iso 解释器/副本/允许写根/禁用项、样本 hash、MAX_PATH 说明）",
+    "3 读证据: section_query/section_extractor/artifact_handle/source_bundle/artifact_dag/service/store/artifact_read_model/read_chain/cli 现行字节；两张既有合同测试；历史 section_probe.py/.json",
+    "4 冻结预期: oracle.md（原因码表 + c0..c8 + n2a/n2b/n2c + p2 + n3，含 §3.1.2 对一次错误常数的自我披露）",
+    "5 修改前检查: 真实 producer 产出后逐项独立变异，8/8 变异仍返回可用内容（counterexample）",
+    "6 最小修改: iso/cw/src 内仅 section_query.py 与 section_extractor.py 两文件（FROZEN-1/2；D-W05 的 5 项 OPEN 未实施）",
+    "7 修改后检查: 同一 harness 全绿（c1..c8 按冻结原因码拒绝、n2a 重算、n3 不返回旧内容、p2 不伪造 summary）；隔离合同回归 63 passed / 1 deselected",
+    "8 交审: changes.diff + before/after 证据 + decision.md（OPEN 决策）+ 本 handoff",
+    "9 接续: 待独立 reviewer 出结论，且 D-W05 五项签名后才能进入 I-05-B/C",
+    "r2-1 复现复审旁路: scripts/w05a_attack_probes.py 在原始字节上 m1/m2/m3/m6 全部 returned、m5 completed=0",
+    "r2-2 逐条修 F-I05A-01/02/03/04/06/07/08；F-I05A-05 升级为 D-W05 OPEN-1 必答依据；F-I05A-09 如实标注时序",
+    "r2-3 新增 18 例隔离回归 tests/contract/test_i05a_section_qualification.py（含 span-属于另一 document 变体）",
+    "r2-4 oracle.md 追加附录 A（不改冻结正文）；decision.md 更正 OPEN-3 误述、OPEN-1 增必答依据、新增 OPEN-7",
+    "r2-5 全量隔离回归 81 passed / 1 deselected；section_query.py 最高函数复杂度实测 10（上限 12）",
+    "r3-1 A1: 新增源窗口绑定（_bodies_for/_candidate_bodies/_window_starts/_window_matches/_fragment_in_bodies），删除 r2 的 length_only 放行；per-slice 哈希降级为纵深防御",
+    "r3-2 A2: 用 r3 字节重跑 25 例并覆盖 after/cmd-tests-i05a.stdout.txt；commands/handoff/disposition 校准",
+    "r3-3 A3: handoff.frozen_rules.r2-2 改写为'哈希为自证数据、绑定是源窗口'；补记 m1 的承重改动是'服务来源改为被哈希的 index 字节'",
+    "r3-4 P3-1: 切片允许根收紧为 derived/；P3-2: containment 前置于 read，越界统一返回越界码；P3-3: metadata 对账扩展至 index 全部键；P3-4: 结果显式给出选择与 superseded 事实",
+    "r3-5 收尾：删除重复的 _window_matches 定义、新增 _fragment_text、window_positions 改为报告真正命中的边界；最终证据在去重后的字节上重跑"
+  ],
+  "next_step_number": 9,
+  "next_action": "独立 reviewer 复核 r2 处置：优先攻击 review_r2_disposition.md §r2.4 的 5 项遗留（F-I05A-05 版本死锁归 D-W05 OPEN-1、新增原因码跨仓影响、历史 index 无切片哈希、F-I05A-09 时序、MAX_PATH）；随后由 wiki producer owner + revenue 消费 reviewer 签署或替换 decision.md 的 D-W05 OPEN-1..OPEN-7。",
+  "frozen_rules": {
+    "FROZEN-1": "sections 消费者复用 artifact_handle.validate_artifact（既有通用门），不新写一套",
+    "FROZEN-2": "重算过滤要求 status='completed'（原为任意行）",
+    "reason_codes": {
+      "artifact_status_not_completed": "sections_status_not_completed",
+      "artifact_file_missing": "sections_file_missing",
+      "other validator rejects": "sections_binding_error",
+      "span missing or not owned by the document": "sections_span_unbound",
+      "row metadata disagrees with the verified index": "sections_metadata_index_mismatch",
+      "slice bytes do not match the recorded slice hash": "sections_hash_mismatch",
+      "an index entry path is outside the allowed roots": "sections_path_outside_allowed_root"
+    },
+    "refusal_shape": "SectionQueryQualificationError(reason, next_action) — 拒绝必须带恢复动作",
+    "r2-1": "服务内容一律由被哈希验证过的 index.json 构建；metadata_json 与 index 不一致即拒",
+    "r2-2": "index 每条携带切片字节 sha256；该哈希为**自证数据**，不抵抗同时改写 index 与行 hash 的攻击者。真正的绑定是 r3 的**源窗口校验**（切片必须是该 document normalized 文本在 char_start 处的窗口）",
+    "r2-3": "index 条目 path 受与 artifact path 相同的 containment 校验",
+    "r2-4": "允许根由 DB 位置推出（<catalog>/catalog.sqlite3 的父目录 + derived）",
+    "r2-5": "same-role 选择与 build_source_bundle 对齐：最新 VALID 胜出",
+    "r2-1-note": "m1_meta 的承重改动是'服务来源改为被哈希的 index 字节'（_index_entries 从已验证 index 读取）；_metadata_disagreement 属纵深防御（复审回退实验：只回退它时 served 仍是 catalog 内合法文件）",
+    "r3-1": "切片绑定 = normalized 源窗口（trim 语义见 oracle §3.1.1）；无 length-only 通过路径",
+    "r3-2": "window_match ∈ {source_window, substring_only, no_source}，如实标注，不静默",
+    "r3-3": "同一构建内切片允许根 = <catalog>/derived（更窄）；artifact 路径仍用 (derived, catalog)",
+    "r3-4": "containment 在读取之前判定，越界一律返回 sections_path_outside_allowed_root"
+  },
+  "input_hashes": {
+    "note": "见 binding.json prod_source_hashes_pre_edit；样本 hash 见 samples/sample.json 与 before/case_results.json"
+  },
+  "current_source_hashes": {
+    "iso/fixed/section_query.py": "5fbbe49ad1a36149581bb1ef6447f4d3dfa29c25113db1797b66ebafa3c2cac1",
+    "iso/fixed/section_extractor.py": "0f201c6865cfbfc168df9069e141d4b874a991c9155668241c2ffb7c1a39f3f0",
+    "max_function_complexity_section_query": "9 (frozen cap 12)",
+    "prod_repos": "UNCHANGED — 13/13 anchors match the card; CW porcelain = [' M CLAUDE.md',' M README.md']"
+  },
+  "changed_paths": [
+    "execution_runs/I-05-A/a20260919-01/iso/fixed/section_query.py",
+    "execution_runs/I-05-A/a20260919-01/iso/fixed/section_extractor.py",
+    "execution_runs/I-05-A/a20260919-01/iso/cw/tests/contract/test_i05a_section_qualification.py (added)",
+    "execution_runs/I-05-A/a20260919-01/scripts/* (harness + attack probes)",
+    "execution_runs/I-05-A/a20260919-01/samples/* (frozen sample)",
+    "execution_runs/I-05-A/a20260919-01/recovery/README.md (added, NA)"
+  ],
+  "prod_repos_modified": "NONE (CW porcelain = [' M CLAUDE.md',' M README.md'] pre-existing; RF porcelain adds only this attempt directory)",
+  "commands_executed": "见 commands.json（CMD-I05A-C1..C20）",
+  "raw_exit_codes": {
+    "CMD-I05A-C1": 0,
+    "CMD-I05A-C2": 0,
+    "CMD-I05A-C3": 0,
+    "CMD-I05A-C4": 0,
+    "CMD-I05A-C5": 0,
+    "CMD-I05A-C6": 0,
+    "CMD-I05A-C7": 0,
+    "CMD-I05A-C8": 0,
+    "CMD-I05A-C9": 0,
+    "CMD-I05A-C10": 0,
+    "CMD-I05A-C11": 0,
+    "CMD-I05A-C12": 0,
+    "CMD-I05A-C13": 0,
+    "CMD-I05A-C14": 0,
+    "CMD-I05A-C15": 0,
+    "CMD-I05A-C16": 0,
+    "CMD-I05A-C17": 0,
+    "CMD-I05A-C18": 0,
+    "CMD-I05A-C19": 0,
+    "CMD-I05A-C20": 0,
+    "pristine_env_baseline_for_deselected_test": 1,
+    "r2_first_attempt_at_long_basetemp": 1
+  },
+  "expected_exit_codes": {
+    "CMD-I05A-C1": 0,
+    "CMD-I05A-C2": 0,
+    "CMD-I05A-C3": 0,
+    "CMD-I05A-C4": 0,
+    "CMD-I05A-C5": 0,
+    "CMD-I05A-C6": 0,
+    "CMD-I05A-C7": 0,
+    "CMD-I05A-C8": 0,
+    "CMD-I05A-C9": 0,
+    "CMD-I05A-C10": 0,
+    "CMD-I05A-C11": 0,
+    "CMD-I05A-C12": 0,
+    "CMD-I05A-C13": 0,
+    "CMD-I05A-C14": 0,
+    "CMD-I05A-C15": 0,
+    "CMD-I05A-C16": 0,
+    "CMD-I05A-C17": 0,
+    "CMD-I05A-C18": 0,
+    "CMD-I05A-C19": 0,
+    "CMD-I05A-C20": 0,
+    "pristine_env_baseline_for_deselected_test": 1,
+    "r2_first_attempt_at_long_basetemp": 1
+  },
+  "frozen_vs_measured": {
+    "c0": {
+      "expected": "usable, 2 slices, titles [公司业务概要,经营情况讨论与分析]",
+      "measured_before": "usable (PASS)",
+      "measured_after": "usable (PASS)"
+    },
+    "c1": {
+      "expected": "sections_status_not_completed",
+      "measured_before": "returned usable content",
+      "measured_after": "sections_status_not_completed"
+    },
+    "c2": {
+      "expected": "sections_binding_error",
+      "measured_before": "returned usable content",
+      "measured_after": "sections_binding_error"
+    },
+    "c3": {
+      "expected": "sections_binding_error",
+      "measured_before": "returned usable content",
+      "measured_after": "sections_binding_error"
+    },
+    "c4": {
+      "expected": "sections_file_missing",
+      "measured_before": "returned usable content",
+      "measured_after": "sections_file_missing"
+    },
+    "c5": {
+      "expected": "sections_binding_error",
+      "measured_before": "returned usable content",
+      "measured_after": "sections_binding_error"
+    },
+    "c6": {
+      "expected": "sections_binding_error",
+      "measured_before": "returned usable content",
+      "measured_after": "sections_binding_error"
+    },
+    "c7": {
+      "expected": "sections_span_unbound",
+      "measured_before": "returned usable content",
+      "measured_after": "sections_span_unbound"
+    },
+    "c8": {
+      "expected": "sections_span_unbound",
+      "measured_before": "returned usable content",
+      "measured_after": "sections_span_unbound"
+    },
+    "n2a": {
+      "expected": "recompute runs (completed>=1), fresh row served",
+      "measured_before": "completed=0 (skipped)",
+      "measured_after": "completed=1, consumer reads the fresh row"
+    },
+    "n2b": {
+      "expected": "observation (no version rule implemented)",
+      "measured_before": "completed=0, older completed row still counts as done",
+      "measured_after": "unchanged (observation)"
+    },
+    "n2c": {
+      "expected": "control: completed==0 and still readable",
+      "measured_before": "completed=0, readable",
+      "measured_after": "completed=0, readable"
+    },
+    "p2": {
+      "expected": "sections usable; summary absent (never fabricated)",
+      "measured_before": "PASS",
+      "measured_after": "PASS"
+    },
+    "n3": {
+      "expected": "stale older row content never served",
+      "measured_before": "served STALE-OLD-VERSION",
+      "measured_after": "serves the current row"
+    }
+  },
+  "open_questions": [
+    "D-W05 OPEN-1 未签：历史 sections 工件无 per-slice 哈希、提取器对已有 completed 行不重算 ⇒只享受源窗口绑定；回填/重算与'哪些版本算我的产物'必须由签名者决定",
+    "D-W05 OPEN-7 未签：as_of_date 本卡传 '' 而 service.query_source_bundle 传 published_date",
+    "新增 index 字段 content_sha256 与 3 个新原因码的跨仓消费者影响未穷尽",
+    "未跑真实跨仓消费入口 sections-list CLI 到业务后果；artifact_read 是角色选择还是实际读取属 I-05-B",
+    "未测生产规模（25.7M 行/49.7 GB）与并发/锁",
+    "normalized 步骤输入字节仍为按 normalizer 形状构造的固定样本（本机无 PDF parser 依赖）",
+    "MAX_PATH：新回归必须在 %TEMP% 短 basetemp 下运行"
+  ],
+  "blocked_by": [
+    "D-W05 七项专业决策未签：I-05-B/I-05-C 在签名前不得开工"
+  ],
+  "evidence_paths": [
+    "execution_runs/I-05-A/a20260919-01/after/artifact-mutation-matrix.json",
+    "execution_runs/I-05-A/a20260919-01/after/case_results.json",
+    "execution_runs/I-05-A/a20260919-01/after/cmd-b10.stdout.txt",
+    "execution_runs/I-05-A/a20260919-01/after/cmd-tests-i05a.stdout.txt",
+    "execution_runs/I-05-A/a20260919-01/after/cmd-tests.stdout.txt",
+    "execution_runs/I-05-A/a20260919-01/after/default-producer-artifacts.json",
+    "execution_runs/I-05-A/a20260919-01/after/independent-slice-check.json",
+    "execution_runs/I-05-A/a20260919-01/after/legacy-section-probe.json",
+    "execution_runs/I-05-A/a20260919-01/after/prod-anchor-hashes-after.json",
+    "execution_runs/I-05-A/a20260919-01/after/prod-porcelain-after.json",
+    "execution_runs/I-05-A/a20260919-01/after/review-attack-probes.json",
+    "execution_runs/I-05-A/a20260919-01/after/section-index-span-checks.json",
+    "execution_runs/I-05-A/a20260919-01/before/artifact-mutation-matrix.json",
+    "execution_runs/I-05-A/a20260919-01/before/case_results.json",
+    "execution_runs/I-05-A/a20260919-01/before/cmd-tests-pristine.stdout.txt",
+    "execution_runs/I-05-A/a20260919-01/before/default-producer-artifacts.json",
+    "execution_runs/I-05-A/a20260919-01/before/independent-slice-check.json",
+    "execution_runs/I-05-A/a20260919-01/before/legacy-section-probe.json",
+    "execution_runs/I-05-A/a20260919-01/before/review-attack-probes.json",
+    "execution_runs/I-05-A/a20260919-01/before/section-index-span-checks.json",
+    "execution_runs/I-05-A/a20260919-01/binding.json",
+    "execution_runs/I-05-A/a20260919-01/changes.diff",
+    "execution_runs/I-05-A/a20260919-01/commands.json",
+    "execution_runs/I-05-A/a20260919-01/decision.md",
+    "execution_runs/I-05-A/a20260919-01/oracle.md",
+    "execution_runs/I-05-A/a20260919-01/recovery/README.md",
+    "execution_runs/I-05-A/a20260919-01/review.md",
+    "execution_runs/I-05-A/a20260919-01/review_r2_disposition.md",
+    "execution_runs/I-05-A/a20260919-01/review_r3_disposition.md"
+  ],
+  "START_HERE_fields": {
+    "recorded_status_transition": "planned -> implementing -> review_pending",
+    "cannot_replace": "独立 reviewer 复核；D-W05 签名；I-05-B/C 不得据此开工",
+    "九步执行法位置": "第 8 步交审完成；第 9 步待 reviewer 结论"
+  },
+  "frozen_vs_measured_r2": {
+    "m1_metadata_json_injection": {
+      "expected": "sections_metadata_index_mismatch",
+      "before": "returned (bypass)",
+      "after": "sections_metadata_index_mismatch"
+    },
+    "m2_length_preserving_slice": {
+      "expected": "sections_hash_mismatch",
+      "before": "returned (bypass)",
+      "after": "sections_hash_mismatch"
+    },
+    "m3_entry_path_outside_catalog": {
+      "expected": "sections_path_outside_allowed_root",
+      "before": "returned (bypass)",
+      "after": "sections_path_outside_allowed_root"
+    },
+    "m5_old_version_deadlock": {
+      "expected": "OPEN-1 evidence, not closed by code",
+      "before": "producer completed=0 + consumer sections_binding_error",
+      "after": "unchanged"
+    },
+    "m6_newest_invalid_shadows_older_valid": {
+      "expected": "serve the older VALID row",
+      "before": "served the newest failed row",
+      "after": "serves the older VALID row"
+    }
+  },
+  "r2_rerun_final": {
+    "note": "r2 处理后重跑 before/after；证据内的 section_query_source_sha256 与 iso/fixed 文件一致",
+    "case_results_section_query_sha256": "b3ffc6c53085d496efba7602d65c06f80575db8d6298d5b83f7b91339de1bce8",
+    "attack_probes_section_query_sha256": "b3ffc6c53085d496efba7602d65c06f80575db8d6298d5b83f7b91339de1bce8",
+    "verdicts_after": {
+      "c0": "PASS",
+      "c1": "PASS",
+      "c2": "PASS",
+      "c3": "PASS",
+      "c4": "PASS",
+      "c5": "PASS",
+      "c6": "PASS",
+      "c7": "PASS",
+      "c8": "PASS"
+    },
+    "n2_after": {
+      "n2a": "PASS",
+      "n2b": "observation",
+      "n2c": "PASS"
+    },
+    "p2_after": "PASS",
+    "n3_after": "PASS",
+    "probes_after": {
+      "m1_metadata_json_injection": "error",
+      "m2_length_preserving_slice": "error",
+      "m3_entry_path_outside_catalog": "error",
+      "m5_old_version_deadlock": null,
+      "m6_newest_invalid_shadows_older_valid": "returned"
+    },
+    "F_I05A_09_note": "首次（常数 3）运行的原始输出未落盘，无法补留；oracle 附录 A.3 已如实标注"
+  },
+  "r3_status": "第二次复审仍为 changes_required（P1-1 未关闭 + P2-1 记录不符）。r3 已修 A1（切片绑定改为源窗口校验，删除 length_only 逃生口）、A2（重跑并校准 C14 证据）、A3（更正 r2-2 与 m1 承重改动表述）与 P3-1..P3-4。",
+  "frozen_vs_measured_r3": {
+    "m2b_slice_hash_recomputed": {
+      "expected": "sections_binding_error",
+      "before": "returned",
+      "after": "sections_binding_error"
+    },
+    "m2c_hash_field_omitted": {
+      "expected": "sections_binding_error",
+      "before": "returned",
+      "after": "sections_binding_error"
+    },
+    "m3b_inside_catalog_outside_derived": {
+      "expected": "sections_path_outside_allowed_root",
+      "before": "returned (served PLANTED file)",
+      "after": "sections_path_outside_allowed_root"
+    },
+    "m4_outside_existing": {
+      "expected": "containment code",
+      "before": "returned",
+      "after": "sections_path_outside_allowed_root"
+    },
+    "m4b_outside_and_missing": {
+      "expected": "containment code (no existence oracle)",
+      "before": "returned",
+      "after": "sections_path_outside_allowed_root"
+    },
+    "m7_metadata_uncompared_keys": {
+      "expected": "sections_metadata_index_mismatch",
+      "before": "returned",
+      "after": "sections_metadata_index_mismatch"
+    },
+    "c0_positive": {
+      "expected": "usable with window_match=source_window and the MATCHED boundary reported",
+      "before": "usable (no window binding at all)",
+      "after": "usable; both slices window_match=source_window, window_positions=[[109],[208]]"
+    },
+    "A2_evidence": {
+      "expected": "the evidence file must be a GREEN run of the FINAL bytes",
+      "before": "stale RED (3 failed/15 passed)",
+      "after": "25 passed, rc=0"
+    }
+  }
+}

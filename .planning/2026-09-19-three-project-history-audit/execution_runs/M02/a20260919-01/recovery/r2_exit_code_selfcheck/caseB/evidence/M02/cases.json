@@ -1,0 +1,131 @@
+{
+ "card_id": "M02",
+ "first_required_driver": "revenue",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "extra_observations": [
+  {
+   "id": "BASE-INDEPENDENCE",
+   "input": "base_independence",
+   "expectation": "output identical to positive; NOT a rejection case"
+  },
+  {
+   "id": "OBS-NEG-BASE",
+   "kind": "set_base_revenue",
+   "value": -5,
+   "expectation": "observed and recorded as a design observation only; NOT counted as pass/fail because direct_revenue never uses base_revenue"
+  }
+ ],
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "driver": "revenue",
+   "index": 1,
+   "value": {
+    "__float__": -1
+   },
+   "expected": "ModelRegistryError",
+   "why": "negative recognised revenue is outside the [0, inf) revenue domain (card line 33)",
+   "base_input": "no_such_block"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "driver": "revenue",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "bool is not numeric"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "driver": "revenue",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "driver": "revenue",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "driver": "revenue",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   },
+   "expected": "ModelRegistryError",
+   "why": "non-finite"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "driver": "revenue",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "path length 0 != len(years)=3"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "driver": "revenue",
+   "expected": "ModelRegistryError",
+   "why": "required driver missing"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "driver": "unknown_driver",
+   "value": [
+    1,
+    1,
+    1
+   ],
+   "expected": "ModelRegistryError",
+   "why": "unknown driver"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "value": [],
+   "expected": "ModelRegistryError",
+   "why": "empty fiscal-year list"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "value": {
+    "__bool__first__": true
+   },
+   "expected": "ModelRegistryError",
+   "why": "True is not a fiscal year"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "value": [
+    2027,
+    2029
+   ],
+   "base_input": "continuity_positive",
+   "expected": "ModelRegistryError",
+   "why": "fiscal years must be consecutive"
+  }
+ ]
+}

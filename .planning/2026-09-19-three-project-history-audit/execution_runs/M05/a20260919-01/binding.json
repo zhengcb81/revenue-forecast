@@ -103,7 +103,7 @@
  "created_before_runs": true,
  "docfix_r3_hash_ledger": {
   "generated_by": "implementer, document/evidence consistency pass r3 (findings F-M08-06 / F-M08-07 / F-M08-08 / F-M08-09)",
-  "qualification": "'the frozen artefacts were not changed' is hereby QUALIFIED: the v1 frozen body of oracle.md and every frozen expectation (positive / continuity / defaults / negatives / tolerances / rejection conditions / disclosure figures) are byte-unchanged, and no product file was touched. What DID change is (a) oracle.md as a whole, because revision r2 appended a response section and r3 merged a duplicated r2 section into one and appended a provenance-gap note, and (b) the evidence files listed under repack_scope, which were repacked in r2 to carry new annotations. Every one of those byte differences is accounted for below.",
+  "qualification": "'the frozen artefacts were not changed' is hereby QUALIFIED: the v1 frozen body of oracle.md and every frozen expectation (positive / continuity / defaults / negatives / tolerances / rejection conditions / disclosure figures) are byte-unchanged, and no product file was touched. What DID change is (a) oracle.md as a whole, because revision r2 appended a response section and r3 FOLDED the duplicated r2 section into one and INSERTED a provenance-gap note at that duplicate's former position -- live = pre[:kept_prefix_bytes] + note, an INSERTION into the pre image's content rather than a trailing append (the insert point happens to coincide with EOF of the new file) -- and (b) the evidence files listed under repack_scope, which were repacked in r2 to carry new annotations. Every one of those byte differences is accounted for below.",
   "reference_states": {
    "r1": "reviewer snapshot copy/ -- verified r1: each card's copy/oracle.md hashes to the authoritative v1 claim carried inside oracle.md",
    "r2": "reviewer snapshot copy_r2/ -- verified r2: each card's copy_r2/oracle.md hashes to the pre-r3 whole-file hash",
@@ -116,10 +116,10 @@
    "v1_still_reproducible_from_current_file": true,
    "whole_file_sha256_r1": "ae1986f61c03daa6ac633ffcc9eaf36060de08f1f39bf8f8c90e5315fe4e943a",
    "whole_file_sha256_r2": "fb8213ff988878b31f0bec31231f1542ab34089860cbc3a23fcc94e3eec6612f",
-   "whole_file_sha256_r3": "b06d0d13929ce4147dd061ed54e3d3df10f48239a85f0a4d4d2ba3ed2b63ac56",
+   "whole_file_sha256_r3": "7fda03b153fd9a3707fba3a1057c9eb2ed6d2f772cdd79b6c1a33de9bb639320",
    "note": "handoff.json.input_hashes['oracle.md'] is the BINDING-TIME value = the v1 frozen body hash. It is historical by design and does not equal the whole-file hash of any later revision; it remains reproducible from the current file as sha256(oracle.md[:prefix_bytes])."
   },
-  "input_hashes_note": "binding.json.input_hashes and handoff.json.input_hashes are the PRE-RUN (r1) input hashes captured before the product run (binding.json: created_before_runs = true). They are historical by design and are NOT claimed to equal the current bytes. For M08 the entry for evidence/M08/cases.json is affected: the r2 repack added four annotation keys and nothing else, which is proven below and in recovery/docfix-r3/f08_named_files.out.txt.",
+  "input_hashes_note": "binding.json.input_hashes and handoff.json.input_hashes are the PRE-RUN (r1) input hashes captured before the product run (binding.json: created_before_runs = true). They are historical by design and are NOT claimed to equal the current bytes. F-R3-02: a reader who follows review_and_handoff.md ('re-verify the current file hashes first; continue from next_step only if they agree') would otherwise stop here, so the same keys are repeated under input_hashes_current with their CURRENT digest, and input_hashes_current_vs_input_hashes states per key whether it still agrees (unchanged) or is a historical value (stale_by_design), with the reason. For M08 the entry for evidence/M08/cases.json is the affected evidence file: the r2 repack added four annotation keys and nothing else, which is proven in recovery/docfix-r3/f08_named_files.out.txt.",
   "repack_scope_r1_to_r2": {
    "changed": [
     {
@@ -223,14 +223,14 @@
     {
      "path": "after/rerun_sha256.json",
      "sha256_before": "58282b894e3182dfe86949629bb156a6ef7e28b0b660f4de5eada10bef770806",
-     "sha256_after": "30fb650edd96a4159bae0d7d75ba60232c6fec8edf6a0656e4a7db336ae14d6c",
+     "sha256_after": "5a5f5df4123c780c60df37421fae7746a2318f93b8ea6b0eb023d42b7b872c3c",
      "bytes_before": 4304,
      "bytes_after": 6645
     },
     {
      "path": "evidence/M05/evidence_hashes.json",
      "sha256_before": "6693028c7d6c8061f315b6ce2e00a179347018c8131048327b9988a5fbc86117",
-     "sha256_after": "ce187398720cbed8da842e70ad021a8c644f17ef9f1952e5336bfd7855dc1da8",
+     "sha256_after": "ca955f4c011497add5226d86cdc44595358ada6023bb81dd8484e14a3425dd6e",
      "bytes_before": 2289,
      "bytes_after": 3645
     },
@@ -251,15 +251,15 @@
     {
      "path": "oracle.md",
      "sha256_before": "fb8213ff988878b31f0bec31231f1542ab34089860cbc3a23fcc94e3eec6612f",
-     "sha256_after": "b06d0d13929ce4147dd061ed54e3d3df10f48239a85f0a4d4d2ba3ed2b63ac56",
+     "sha256_after": "7fda03b153fd9a3707fba3a1057c9eb2ed6d2f772cdd79b6c1a33de9bb639320",
      "bytes_before": 12592,
-     "bytes_after": 14403
+     "bytes_after": 14844
     }
    ],
    "added": [
     {
      "path": "evidence/M05/docfix_r3.json",
-     "sha256_after": "916af95369505d1268f9bc447ed2e69eb6814a69a5505d17914cc0a4ff4f678e",
+     "sha256_after": "f62616d27b53f31bf769911cd3b8eb086481e03aec52a5fcccf58fc5bc73dda5",
      "bytes_after": 9014
     },
     {
@@ -285,6 +285,44 @@
     "now": "only the ratio dimension defaults to [0,1] (41 drivers, 4 outside [0,1], plus 2 priced-volume exceptions in the per-activity family)",
     "why": "the registry has 41 ratio drivers; direct_growth.growth_rate (domain (-1, inf)) was missing from the list of exceptions"
    }
-  ]
+  ],
+  "r3_block_versions": {
+   "v1_original": {
+    "note": "the reviewer's verified arithmetic (pre - duplicate + block = 14403 / 12915 / 13275 / 19874) refers to this version; the only difference in v2 is the block's own prose, which now states the fold/insert mechanism and the byte account explicitly",
+    "block_bytes": 3711,
+    "block_sha256": "e4c33aff4a3475b8b493a6688b36d3aecbe90152de52d89214ec5a9ff10bcf83",
+    "whole_file_sha256": "b06d0d13929ce4147dd061ed54e3d3df10f48239a85f0a4d4d2ba3ed2b63ac56",
+    "whole_file_bytes": 14844
+   },
+   "v2_after_F_R3_01": {
+    "note": "same kept prefix, same frozen text; only the r3 block prose and its self-consistent byte account changed",
+    "block_bytes": 4152,
+    "block_sha256": "46f4385605a64ae4f32957c1bcc3af2f44ad0b878f083a743e660bfd2dd56627",
+    "whole_file_sha256": "7fda03b153fd9a3707fba3a1057c9eb2ed6d2f772cdd79b6c1a33de9bb639320",
+    "whole_file_bytes": 14844,
+    "byte_account": "12592 (pre) - 1900 (folded duplicate) + 4152 (inserted r3 note) = 14844 (live)",
+    "kept_prefix_byte_identical_to_pre": true,
+    "only_the_r3_block_changed": true
+   }
+  }
+ },
+ "input_hashes_current": {
+  "evidence/M05/input.json": "5c153bbdd22d2330eb9b98080ad5ec0a4e2e66f24b8346f202ff1c109523b5f0",
+  "evidence/M05/oracle.json": "3965e92d5e9ce196a9b120efa63207c21dddd1a81b3e081c837cdbf2d23cfb9c",
+  "evidence/M05/cases.json": "7e1f2edd118b987461dec8c7950221f3e7ecc93adb750326e6c73ca0011bbe07"
+ },
+ "input_hashes_current_vs_input_hashes": {
+  "evidence/M05/input.json": {
+   "verdict": "unchanged",
+   "sha256": "5c153bbdd22d2330eb9b98080ad5ec0a4e2e66f24b8346f202ff1c109523b5f0"
+  },
+  "evidence/M05/oracle.json": {
+   "verdict": "unchanged",
+   "sha256": "3965e92d5e9ce196a9b120efa63207c21dddd1a81b3e081c837cdbf2d23cfb9c"
+  },
+  "evidence/M05/cases.json": {
+   "verdict": "unchanged",
+   "sha256": "7e1f2edd118b987461dec8c7950221f3e7ecc93adb750326e6c73ca0011bbe07"
+  }
  }
 }

@@ -1,4 +1,4 @@
-﻿"""Final acceptance re-verification after the r3 document/evidence pass.
+"""Final acceptance re-verification after the r3 document/evidence pass.
 
 Checks (all recomputed from disk, nothing trusted from the earlier logs):
   A  frozen expectations: evidence/<card>/oracle.json vs the reviewer's pre-registration
@@ -36,6 +36,7 @@ CARDS = ("M05", "M06", "M07", "M08")
 MARKER = "## \u4fee\u8ba2 r2"
 PREREG = json.load(open(os.path.join(REVIEW, "prereg_expectations.json"), encoding="utf-8"))
 dedupe = json.load(open(os.path.join(HERE, "f06_dedupe.json"), encoding="utf-8"))
+verify = json.load(open(os.path.join(HERE, "f06_verify.json"), encoding="utf-8"))
 checks: list[tuple[str, bool, str]] = []
 
 
@@ -199,6 +200,52 @@ def main() -> int:
            sha_file(os.path.join(at, "oracle.md")) == d["oracle_md_sha256_after"],
            f"disk={sha_file(os.path.join(at, 'oracle.md'))[:16]}")
         del kept_r2
+
+        # F-R3-01: the r3 note is an INSERTION after the kept prefix, not a trailing append
+        pre_img = open(os.path.join(HERE, f"oracle_pre_{card}.md"), "rb").read()
+        kb = verify[card]["P1_kept_region_bytes"]
+        r3_note = raw[kb:]
+        r301 = (
+            raw[:kb] == pre_img[:kb]
+            and len(pre_img) - verify[card]["P2_deleted_bytes"] + len(r3_note) == len(raw)
+            and "\u63d2\u5165" in r3_note.decode("utf-8")
+            and "\u672c\u8282\u7531\u4fee\u8ba2 r3 \u8ffd\u52a0" not in r3_note.decode("utf-8")
+        )
+        ok(f"F-R3-01 {card} r3 note is an insertion (live = pre[:K] + note)",
+           r301,
+           f"live={len(raw)} pre={len(pre_img)} folded={verify[card]['P2_deleted_bytes']} "
+           f"note={len(r3_note)}: {len(pre_img)}-{verify[card]['P2_deleted_bytes']}"
+           f"+{len(r3_note)}={len(raw)}")
+
+        # F-R3-02: input_hashes_current carries the CURRENT digest of every input_hashes key
+        b_doc = json.load(open(os.path.join(at, "binding.json"), encoding="utf-8"))
+        h_doc = json.load(open(os.path.join(at, "handoff.json"), encoding="utf-8"))
+        f302, detail302, stale302 = True, [], []
+        for doc, name in ((b_doc, "binding"), (h_doc, "handoff")):
+            cur = doc.get("input_hashes_current") or {}
+            verdicts = doc.get("input_hashes_current_vs_input_hashes") or {}
+            if set(cur) != set(doc.get("input_hashes", {})) or set(verdicts) != set(cur):
+                f302 = False
+                detail302.append(f"{name}: key sets differ")
+                continue
+            for rel, val in cur.items():
+                if val != sha_file(os.path.join(at, rel.replace("/", os.sep))):
+                    f302 = False
+                    detail302.append(f"{name}.{rel}: current != disk")
+            for rel, v in verdicts.items():
+                expect = ("unchanged" if doc["input_hashes"][rel] == cur[rel]
+                          else "stale_by_design")
+                if v.get("verdict") != expect:
+                    f302 = False
+                    detail302.append(f"{name}.{rel}: verdict {v.get('verdict')} != {expect}")
+                if expect == "stale_by_design":
+                    stale302.append(f"{name}.{rel}")
+                    if v.get("sha256_current") != cur[rel]:
+                        f302 = False
+                        detail302.append(f"{name}.{rel}: stale verdict lacks current digest")
+        ok(f"F-R3-02 {card} input_hashes_current == disk, verdicts exact", f302,
+           "; ".join(detail302) if detail302 else f"stale_by_design={stale302}")
+        del r3_note, b_doc, h_doc
 
         # G) qualification states
         want_formula = "blocked" if card == "M08" else "review_pending"

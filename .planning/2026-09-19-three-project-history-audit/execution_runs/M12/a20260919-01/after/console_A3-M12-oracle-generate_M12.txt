@@ -1,0 +1,15 @@
+﻿card M12 model bank_revenue
+positive expected ['34.00'] tolerances [3.4e-08]
+continuity expected ['34.00', '38.000']
+defaults expected ['32.00']
+contract formula revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue
+contract required ['asset_yield', 'average_earning_assets', 'average_interest_bearing_liabilities', 'fee_revenue', 'funding_cost']
+contract optional ['other_revenue']
+negative cases 11 ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK']
+observation_expected ['OBS-BASE-IGNORED', 'OBS-FEE-SIGNED', 'OBS-NEG-RATE-ACCEPTED', 'OBS-NEG-RATE-TOTAL-NEG', 'OBS-RATE-GT1']
+oracle_selfcheck product_import_present = False
+wrote input.json sha256 1b3d549166fc4418125e9364edf31c5043be5fd415a7f1c889c6a54dcd4965ec
+wrote oracle.json sha256 ff33442b07a1061f38afd7182b7f81d76e8d7bbad3e78983f9d0a19337f43266
+wrote cases.json sha256 9470b64332b0b520c31b1dd0c39faf8d410688f7d7e8659f7b31559ee56f096d
+wrote observation_expected.json sha256 4394568a70ea42ffea1671d2135fa4b8e2333ae4a4e4790625203ebfe26d9071
+wrote oracle_selfcheck.json sha256 a8da0e41d14a6c342de0e149daef6ff2c130b8d99f72e0849ecbecaaefe5ca83
