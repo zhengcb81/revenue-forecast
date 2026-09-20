@@ -1,0 +1,203 @@
+{
+  "card_id": "I-07-A",
+  "attempt_id": "a20260919-01",
+  "status": "review_pending",
+  "review_outcome_r1": "accepted_scoped (independent review) with 6 non-blocking corrections. The implementer did not self-accept and changed no product file; all six corrections are dispositioned in review.md (r2 sections) and oracle.md sections 7-8.",
+  "review_outcome_r2": "changes_required for DOCUMENT CONSISTENCY ONLY — the matrix, the evidence and all four accepted corrections PASSED. The reviewer independently reproduced the census 3440 with its own SQL, confirmed the '172x' figure survives undiminished in all four places that state it, confirmed the iso-catalog prohibition is recorded in both places, and conceded that the r1 claim 'future_lake has 0 location rows' was its OWN query/read defect (the catalog has exactly 1: future_lake/README.md, 545 B, document_kind broker_research). P1-P3 FIXED and CLOSED by the r2 re-read, which also recomputed this attempt's declared hashes and confirmed: decision.md lines 1-46 byte-identical, oracle.md sections 1-7 byte-identical with section 8 purely additive, review.md:144 consistent with dimension_alignment (7 rows / 8 families / 29 cells), the 'OVERRULED' wording in place, D1/D2/D3 all unsigned, promotion prohibition intact. Residue N1 (the word 'six' at oracle.md:211 and review.md:133 counts FINDINGS, not dimensions) is now covered by a third row in oracle.md section 8.",
+  "head_pointer_note": {
+    "what_changed": "revenue-forecast HEAD was advanced by the ORCHESTRATION LAYER (parent-agent commit) from 7d7ea1edc5e0371ffefee0d2ab3c4a34643199d5 to 1ac01f029c16b90adba92dd0f1bc3a1825ff9552 at 2026-09-20 03:41:55 +0100.",
+    "why_it_does_not_affect_this_card": "that commit touches only .planning/ (49 files); tools/ is untouched, and tools/slo_probe.py carries the SAME blob id 413aad5f788732520ace76acbaebcf06633f34d5 at both HEADs and in the worktree. 7d7ea1ed is an ancestor of 1ac01f0, and the five frozen anchors recompute identically.",
+    "effect_on_this_attempt": "before/snapshot.json and after/snapshot.json still record 7d7ea1ed. They are CORRECT FOR THEIR CAPTURE TIME and were deliberately NOT rewritten (rewriting a captured observation is forbidden); read them as 'HEAD at capture', not 'HEAD now'.",
+    "action_for_successor": "run `git -C <RF> rev-parse HEAD` and compare against the anchor table before citing any head value."
+  },
+  "porcelain_correction": {
+    "reviewer_claim": "the r2 re-read reported company-wiki porcelain as completely empty, including ' M CLAUDE.md' and ' M README.md'.",
+    "measured": "`git -C company-wiki status --porcelain` still returns EXACTLY two lines: ' M CLAUDE.md' and ' M README.md' (on-disk sha256 963869fa08... / 302bd10b38..., mtime 2026-09-19 11:20, both differing from their HEAD blobs). The user's pre-existing edits are still present and were NOT reverted.",
+    "scope": "this changes no conclusion: both files are product-repo documentation, neither is in this card's allowlist or anchor set, and the material scope check (`-- src config scripts tests`) IS empty.",
+    "record_correction": "any record of this attempt quoting the reviewer's 'completely empty' phrasing is wrong; the correct statement is 'only the two pre-existing  M entries'."
+  },
+  "review_pending_note": "This file records the r2 state. The accepted_scoped qualification covers the frozen sample matrix and the precondition-state archive only: it grants no resolve behaviour, no download, no artifact recomputation, no prediction, and says nothing about production catalog health.",
+  "objective": "Freeze the sample matrix (dimension -> cells -> bound/planned/blocked with a concrete reason each) and archive the precondition states for the three already-recorded samples, using real hashes, a read-only production catalog observation and an isolated catalog for the manufactured states. No download, no production mutation, no prediction claim.",
+  "reviewer_status": "r1 accepted_scoped; r2 returned changes_required on document consistency only; P1-P3 plus residue N1 are now closed and the r2 re-read recomputed this attempt's declared hashes and confirmed them. Status remains review_pending by instruction: an acceptance is the reviewer's qualification, not this file's promotion.",
+
+  "completed_steps": [
+    "1 领取: card_I-07-A + parent I-07 (implementation_plan.md:129-143) + audit rows read; one observable result chosen (the frozen matrix plus the three labelled precondition states)",
+    "2 绑定: binding.json with the three repo paths/heads, the interpreter, the anchor table location, the allowed write root, the production-access declaration and the forbidden list",
+    "3 读证据: sample_manifest.json identities; I-00-B sample_rehash receipt; CW store.py schema + read-only path (551,556); CW config.py catalog_dir resolution; CW config/source_catalog.yaml roots; RF/tools/release_readiness.py quick_check note",
+    "4 冻结预期: oracle.md written before any run — identity rule, R2-R8, the seven dimensions with per-cell expectations, command table V0-V5, falsifiable V-checks 1-7",
+    "5 修改前检查: V0 before-snapshot (heads, porcelain, catalog identity, 12 anchor hashes)",
+    "6 最小修改: no product change; V1 rehash, V2 read-only observation, V3/V4 isolated states + rebinding config, V6 matrix derivation",
+    "7 修改后检查: V5 post-snapshot byte-identical to V0; state_matrix.json with counts bound 10 / planned 14 / blocked 5 / NA 0",
+    "8 交审: this handoff + review.md (PENDING) + decision.md (specialist NA + J1-J4 judgment calls)",
+    "9 接续: next action is the independent review; I-07-B consumes case-01 and case-02 unchanged"
+  ],
+  "next_step_number": 7,
+  "next_action": "Re-read the three document fixes (P1 decision.md r2 append marking §J2 OVERRULED; P2 review.md F-I07A-06 now 'seven rows plus the line-141 generality obligation'; P3 review.md F-I07A-01 now states the corrected count of 1), then hand the frozen states to I-07-B. Specifically for I-07-B: (a) confirm after/r2_review_facts.json:roots_table is real SQL output (4 rows incl. future_lake) and that the per-root location counts match a query of your own; (b) confirm the multi-root total 3440 is untruncated and reproduce it; (c) confirm counts read bound 9 / planned 15 / blocked 5 / NA 0; (d) confirm case-02 is labelled an OBSERVATION RECORD and case-03 simulated_in_isolation; (e) I-07-B MUST NOT reuse iso/catalog/catalog.sqlite3 (5 tables vs production 18) — binding a production-isomorphic or table-filtered catalog is its first action.",
+
+  "frozen_matrix_counts": {"bound": 9, "planned": 15, "blocked": 5, "not_applicable": 0},
+  "frozen_matrix_counts_superseded": {"bound": 10, "planned": 14, "blocked": 5, "not_applicable": 0,
+                                      "why": "config.legal_fifth_root bound -> planned after F-I07A-01 / J2"},
+  "blocked_cells": [
+    {"cell": "file_state.genuinely_missing", "reason": "no live missing identity is bound; every plan sample exists on disk; only an isolated simulation exists", "origin": "simulated_in_isolation"},
+    {"cell": "source.companies_only", "reason": "CN uniqueness empirically DISPROVED: the same content hash is an original_primary location under company_raw AND dropbox_stock, each observed_size 79925886 (SQL in after/r2_review_facts.json)", "origin": "live_production_observation"},
+    {"cell": "source.dayu_only", "reason": "no plan sample is bound to the dayu_portfolio root (root has 3660 location rows but no frozen identity)", "origin": "live_production_observation"},
+    {"cell": "source.external_dir_only", "reason": "EXTERNAL-ONLY is unbound; deleting other copies to create exclusivity is forbidden", "origin": "n/a"},
+    {"cell": "generality.company_not_in_fixture_names", "reason": "implementation_plan.md:141 requires it; no such sample is frozen and this card may not download — handed to I-07-C", "origin": "n/a"}
+  ],
+
+  "known_limitations_for_downstream": {
+    "isolated_catalog_not_isomorphic": {
+      "iso_tables": ["roots", "sources", "documents", "locations", "artifacts"],
+      "production_unique_tables": 18,
+      "prohibition": "iso/catalog/catalog.sqlite3 CANNOT carry a resolve or a registration and MUST NOT be reused by I-07-B or any later card. I-07-B must bind a production-isomorphic catalog or a table-filtered copy built with the SQLite backup API (I-00-B isolated_binding_plan).",
+      "evidence": "after/state_matrix.json:isolated_catalog_prohibition"
+    },
+    "case02_is_observation_only": "case-02-present-unregistered is an OBSERVATION RECORD with 0 isolated catalog rows; it is defined by the ABSENCE of registration rows, so none were fabricated.",
+    "fifth_root_ingest_unproven": "future_lake is declared by config and its directory exists; the only location under it is future_lake/README.md (545 bytes, document_kind broker_research), i.e. a placeholder. Ingest feasibility is I-07-C.",
+    "provider_document_id_cn_from_filename": "CN provider_document_id 1225023658 comes from the file name only.",
+    "artifact_partial_is_producer_declared": "the normalized artifact is producer-declared 'partial' with quality_flags [empty_output] while hashing exactly as recorded; whether that forces a recompute is I-02/I-05."
+  },
+
+  "changed_paths": [
+    "harness/i07a_helpers.py (attempt-local snapshot/rehash/observe/iso-build tool)",
+    "harness/i07a_matrix.py (attempt-local matrix derivation)",
+    "harness/i07a_r2_review_facts.py (r2 correction pass: roots SQL + untruncated census + CN uniqueness SQL)",
+    "iso/catalog/catalog.sqlite3 (attempt-owned minimal schema: 1/1/1/1/1 rows)",
+    "iso/catalog_root/** (copies of the three raw files + sidecars in production layout)",
+    "iso/config/source_catalog.yaml (production config copy, exactly one line rebound)",
+    "iso/cases/case-0{1,2,3}-*/{case.json,state.json}",
+    "before/, after/ (evidence, incl. after/r2_review_facts.json and after/r2_review_evidence.md for I-14-A)"
+  ],
+  "changed_paths_outside_allowlist_reported": [],
+
+  "commands_executed": [
+    "CMD-I07A-V0-snapshot-before",
+    "CMD-I07A-V1-rehash",
+    "CMD-I07A-V2-observe-readonly",
+    "CMD-I07A-V3-iso-build",
+    "CMD-I07A-V5-snapshot-after",
+    "CMD-I07A-V5b-v5-integrity",
+    "CMD-I07A-V6-matrix",
+    "CMD-I07A-V7-r2-review-facts",
+    "CMD-I07A-V5-prime-snapshot-after-r2"
+  ],
+  "raw_exit_codes": {
+    "CMD-I07A-V0-snapshot-before": 0,
+    "CMD-I07A-V1-rehash": 0,
+    "CMD-I07A-V2-observe-readonly": 0,
+    "CMD-I07A-V3-iso-build": 0,
+    "CMD-I07A-V5-snapshot-after": 0,
+    "CMD-I07A-V5b-v5-integrity": 0,
+    "CMD-I07A-V6-matrix": 0,
+    "CMD-I07A-V7-r2-review-facts": 0,
+    "CMD-I07A-V5-prime-snapshot-after-r2": 0
+  },
+  "expected_exit_codes": {
+    "CMD-I07A-V0-snapshot-before": 0,
+    "CMD-I07A-V1-rehash": 0,
+    "CMD-I07A-V2-observe-readonly": 0,
+    "CMD-I07A-V3-iso-build": 0,
+    "CMD-I07A-V5-snapshot-after": 0,
+    "CMD-I07A-V5b-v5-integrity": 0,
+    "CMD-I07A-V6-matrix": 0,
+    "CMD-I07A-V7-r2-review-facts": 0,
+    "CMD-I07A-V5-prime-snapshot-after-r2": 0
+  },
+
+  "input_hashes": {
+    "PLAN/execution_v2/card_I-07-A.md": "read-only card text",
+    "PLAN/execution_v2/sample_manifest.json": "read-only identity source",
+    "PLAN/implementation_plan.md": "read-only; item I-07 lines 129-143",
+    "I-00-B/a20260919-01/sample_rehash.json": "read-only dependency receipt (3/3 match reproduced here)",
+    "samples.CN-ZIJIN-2025.raw_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+    "samples.HK-XIAOMI-2025.raw_sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+    "samples.US-MSFT-2026.raw_sha256": "e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecfff"
+  },
+  "current_source_hashes": {
+    "before/snapshot.json": "authoritative V0 anchor table (12 anchors + catalog identity + repo heads)",
+    "after/snapshot.json": "authoritative V5' anchor table (identical values; re-taken after the r2 pass)",
+    "after/rehash.json": "3/3 raw + sidecar + request match with request identity",
+    "after/observe_readonly.json": "read-only catalog observation + multi-root census (first pass, LIMIT 20)",
+    "after/r2_review_facts.json": "sha256 1d6b5ad7b19544236ce5219ab21c0a08b0d71c87dd73ac6e860630d62db74b58 — roots SQL, per-root location counts, CN location SQL, untruncated census (3440/3436)",
+    "after/state_matrix.json": "sha256 dc72776f6c6324ae627b601e8734cb809b9d0680091833afd7eca23c01032253 — the frozen matrix as measured, with the V-checks and the r2 corrections",
+    "after/state_matrix.md": "sha256 ece5485a41cab7095b25ce974510e657b4d4db5fe332458c381bd3f867917211",
+    "after/v5_integrity.json": "sha256 55d649577b527c4e81546f6d1e7566cda52d3ebe98f38e65771db6ef2a89e3a5 — the no-production-mutation witness",
+    "oracle.md": "sha256 7b57621286e319586131576d008413ca455f54cc35adc63c006b0448bd9ffaf2 (r1 frozen text + append-only section 7 errata)",
+    "review.md": "sha256 5b6eabb1890ebbc3c4222914e52632e8b81c82b4d990710996ccf315ae737129 (r1 review + r2 disposition table)",
+    "decision.md": "sha256 eb122eb11fbe09bb38ffb6f5c918197b09132f2149681da8e3038c4fc77f34ed",
+    "handoff.json": "sha256 a071915985576b829c4e7ca2a76f4e282fa4477fbd1561aa163d733fcc05641c",
+    "commands.json": "sha256 ceefb70dbb54f90c731453d8f659e0eea00d30c89e9e609cfba3e310edbcba69 (adds V7 and V5′) ",
+    "changes.diff": "sha256 5dfcc9e3454d13710c9d645db605423571163bd4c414dd9dce8591d307213909 (unchanged in substance: still no product change)",
+    "harness/i07a_matrix.py": "sha256 5dcf5fe8e8b988c68510bfc123be068a4f4c9c82429cb12382815bb1eac35bd1",
+    "harness/i07a_r2_review_facts.py": "sha256 b2948b1c0e3f9af75cb4ad2395608ab9049ce7aa844d95a6c443c4bed4c72a6e",
+    "harness/i07a_v5_patch.py": "sha256 c8f24b212abb25920a69df7681061443d4e2c82622090dd55322d27ff6eb2e43 (re-applies the V5 witness after a matrix re-derivation)",
+    "harness/i07a_helpers.py": "sha256 dd3c4fc7c0d15af2b35a3c1f5256488f6996e7ac5da19dbab313f9b916b6b3cf",
+    "iso/isolated_state.json": "sha256 d18eb56264ac06c769f02fc25aa3fc814f13fea56f1abf2d282caf6b70e5a365 — isolated copies and their hashes",
+    "iso/config_rebind.json": "sha256 684628699e78272a9407ffba6e5de0ca67dad2664f2f29f4d776a6484e7832cb — the single changed config line and both config hashes"
+  },
+
+  "open_questions": [
+    "J1: settled by the review — the isolated catalog is accepted as scoped-usable, with an explicit prohibition on reuse for resolve/registration; I-07-B must bind a production-isomorphic or table-filtered catalog.",
+    "J2: settled — config.legal_fifth_root is planned. decision.md now carries an append-only r2 section marking its original 'bound' position OVERRULED, so a successor reading only decision.md cannot act on the withdrawn claim. The r1 future_lake count claim ('0 location rows') was the REVIEWER's defect, conceded in r2; the catalog has exactly 1 (future_lake/README.md, 545 B, document_kind broker_research — not broker_repository).",
+    "J4 (not challenged): the indexed sample's normalized artifact is producer-declared 'partial' with quality_flags [empty_output] while hashing exactly as recorded; whether that forces a recompute is I-02/I-05 scope.",
+    "The CN provider_document_id (1225023658) comes from the file name only, unlike HK/US which have provider document ids in the manifest.",
+    "No live genuinely-missing sample exists for CN/HK/US and no EXTERNAL-ONLY/dayu-only/companies-only sample is frozen: all four cells are blocked and must not be re-labelled NA.",
+    "The r2 correction pass itself (V7, the regenerated matrix, and the P1-P3 document fixes) has not been independently reviewed; only the r1 matrix was.",
+    "Dimension-count wording: implementation_plan.md:131-139 has SEVEN table rows; line 141 adds an eighth family (generality). Any 'six dimensions' phrasing in earlier notes or in the frozen oracle header/oracle section 7 is corrected by oracle.md section 8 and state_matrix.json:dimension_alignment."
+  ],
+  "reviewer_unverified_list_carried_forward": {
+    "note": "Reproduced from the r2 review verbatim in substance. NONE of these may be cited as established.",
+    "items": [
+      "the per-root location counts were not recomputed row by row by the reviewer",
+      "only the first row of the r2 census top-5 was checked",
+      "the US-MSFT raw artifact was not re-hashed by the reviewer",
+      "the resolve path remains unmeasurable in isolation (no live resolve was run)",
+      "the state.json sub-fields were not checked field by field",
+      "the r2-produced evidence cannot be externally anchored (it is this attempt's own output)",
+      "the substantive merits of D1 are outside the reviewer's scope",
+      "the r1 re-run conclusions remain valid only because the tool's bytes did not change"
+    ]
+  },
+  "accepted_limited_reservation": {
+    "subject": "after/snapshot.json porcelain for filing-fetch",
+    "detail": "captured 2026-09-20T02:14:43Z, before the parent agent deleted the leaked git_filing-fetch.txt, so its porcelain['filing-fetch'] lists '?? git_filing-fetch.txt' while porcelain_product_only['filing-fetch'] is correctly empty. Stale but CONSERVATIVE, not fabricated. Not refreshed: a re-run would be a new command and the recorded value is already the stricter one.",
+    "status": "accepted as non-blocking by the reviewer"
+  },
+  "blocked_by": [
+    "live genuinely-missing sample (CN/HK/US-NEW-MISSING unbound in sample_manifest.json)",
+    "external-only unique qualified sample (EXTERNAL-ONLY unbound; exclusivity must not be manufactured)",
+    "dayu-only sample (no identity frozen for the dayu_portfolio root)",
+    "companies-only sample (CN uniqueness empirically disproved — two original_primary roots)",
+    "a company/file outside the fixture names for the generality cell (no download authority)",
+    "I-07-B precondition: a production-isomorphic or table-filtered catalog (iso/catalog is 5 tables vs production 18 and must not be reused)"
+  ],
+
+  "evidence_paths": [
+    "execution_runs/I-07-A/a20260919-01/binding.json",
+    "execution_runs/I-07-A/a20260919-01/oracle.md",
+    "execution_runs/I-07-A/a20260919-01/commands.json",
+    "execution_runs/I-07-A/a20260919-01/decision.md",
+    "execution_runs/I-07-A/a20260919-01/review.md",
+    "execution_runs/I-07-A/a20260919-01/changes.diff",
+    "execution_runs/I-07-A/a20260919-01/before/snapshot.json",
+    "execution_runs/I-07-A/a20260919-01/after/snapshot.json",
+    "execution_runs/I-07-A/a20260919-01/after/rehash.json",
+    "execution_runs/I-07-A/a20260919-01/after/observe_readonly.json",
+    "execution_runs/I-07-A/a20260919-01/after/state_matrix.json",
+    "execution_runs/I-07-A/a20260919-01/after/state_matrix.md",
+    "execution_runs/I-07-A/a20260919-01/after/v5_integrity.json",
+    "execution_runs/I-07-A/a20260919-01/iso/isolated_state.json",
+    "execution_runs/I-07-A/a20260919-01/iso/config_rebind.json",
+    "execution_runs/I-07-A/a20260919-01/iso/cases/case-01-indexed-quality/state.json",
+    "execution_runs/I-07-A/a20260919-01/iso/cases/case-02-present-unregistered/state.json",
+    "execution_runs/I-07-A/a20260919-01/iso/cases/case-03-simulated-missing/state.json",
+    "execution_runs/I-07-A/a20260919-01/after/cmd-V1/stdout.json",
+    "execution_runs/I-07-A/a20260919-01/after/cmd-V2/stdout.json",
+    "execution_runs/I-07-A/a20260919-01/after/cmd-V3/stdout.json",
+    "execution_runs/I-07-A/a20260919-01/after/cmd-V5/stdout.json",
+    "execution_runs/I-07-A/a20260919-01/after/cmd-V6/stdout.json",
+    "execution_runs/I-07-A/a20260919-01/after/r2_review_facts.json",
+    "execution_runs/I-07-A/a20260919-01/after/cmd-V7/stdout.json",
+    "execution_runs/I-07-A/a20260919-01/harness/i07a_r2_review_facts.py"
+  ]
+}

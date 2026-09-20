@@ -1,0 +1,49 @@
+{
+ "card_id": "M25",
+ "revision": "r2",
+ "trigger": "correction of a generator defect found by the first product run, applied BEFORE oracle.md was written and BEFORE the definitive product run",
+ "frozen_expectations_final": {
+  "positive_expected_float": [
+   300.0
+  ],
+  "continuity_positive_expected_float": [
+   300.0,
+   330.0
+  ],
+  "defaults_expected_float": [
+   0.0
+  ]
+ },
+ "frozen_expectations_unchanged_after_that_point": true,
+ "product_files_changed": [],
+ "correction": "the FIRST oracle generation set the defaults expectation to the positive value (300) while the frozen defaults INPUT was the all-zero identity case, whose hand value is 0; the generator was corrected and the defaults expectation is now 0",
+ "hash_ledger": {
+  "oracle_json_sha256_before_correction": "bbe21218bd97f8891d60c35cc1eca024b4c2b8f0c07c25ae0bafdb3b5ae69986",
+  "oracle_json_sha256_after_correction": "bbaf00ea5c3015e5c6b99e1ae682b6cef3a6f4c568d19eabde83a05fd7805c92",
+  "oracle_md_sha256_before_correction": "null",
+  "oracle_md_sha256_before_the_definitive_product_run": "3dd36a33f599bfe83e99a83dcccb32494dbcdf3f2cf9ad27ea22792cb8a65ef1",
+  "oracle_md_sha256_now": "3dd36a33f599bfe83e99a83dcccb32494dbcdf3f2cf9ad27ea22792cb8a65ef1",
+  "generator_sha256_first": "d443b5d5bcf5f49f8f442df71b99f774a74422d393f038b9dca14bbe9a6a6e5e",
+  "generator_sha256_final": "1dd52eb9e0a3a3416e809965b6e2b0c52289912d0ec9233f3fdcda74d691b5f9",
+  "commands_json_contains_oracle_md_hash": false,
+  "honest_note": "oracle.md did not exist before the correction, so oracle_md_sha256_before_correction is null for every card; the pre-correction oracle.json is preserved under recovery/precorrection/ and is NOT used as a baseline anywhere",
+  "mtime_ordering_proof": {
+   "oracle_json_mtime": 1789872222.35758,
+   "first_ever_product_stdout_mtime": 1789872191.932641,
+   "definitive_product_stdout_mtime": 1789872615.621962,
+   "oracle_json_precedes_the_first_ever_product_run": false,
+   "oracle_json_precedes_the_definitive_product_run": true,
+   "caveat": "HONEST STATEMENT: the oracle.json mtime is LATER than the very first product run of this attempt, because that first run exposed the generator defect and the generator was then re-run to correct it. The requirement that matters is satisfied for the DEFINITIVE run: oracle.json (and oracle.md) were written before the definitive product run that produced evidence/<card>/stdout.txt, and their frozen sha256 values were unchanged between that run and this pack (verified by re-hashing at pack time). The pre-correction stdout is preserved under recovery/precorrection/stdout.txt together with the pre-correction oracle.json, so the ordering claim can be checked by the reviewer directly. This card therefore reports oracle_json_precedes_the_first_ever_product_run = false rather than claiming otherwise."
+  }
+ },
+ "precorrection_preserved_at": "recovery/precorrection/",
+ "first_product_run_preserved_at": "recovery/precorrection/stdout.txt",
+ "stdout_reencoding": {
+  "what_happened": "the very first capture of evidence/<card>/stdout.txt used PowerShell redirection, which wrote UTF-16LE on Windows PowerShell 5.1. It was re-captured as UTF-8 (BOM) by re-running the SAME bound argv, so the stdout.txt in evidence/ is the definitive run's output in the same encoding as the rest of the evidence set.",
+  "frozen_numbers_unchanged": true,
+  "proof": "the re-run produced a byte-identical run_result.json (recovery/rerun_check/rerun_check.json: byte_identical = true) and the printed values in stdout.txt match the evidence files (printed_value_checks all true)",
+  "raw_rc_of_the_reencoding_run": 0,
+  "rerun_check": "recovery/rerun_check/rerun_check.json",
+  "rerun_check_unit": "R-M25-independent-rerun-check"
+ }
+}

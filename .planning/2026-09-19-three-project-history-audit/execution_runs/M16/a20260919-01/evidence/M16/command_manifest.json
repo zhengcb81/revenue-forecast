@@ -1,0 +1,289 @@
+{
+ "card_id": "M16",
+ "attempt_id": "a20260919-01",
+ "cwd": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01",
+ "rules": [
+  "every product invocation used --code-root <attempt>/iso/checkout_scripts",
+  "raw exit codes are recorded as returned; expected codes are separate fields",
+  "skip / timeout / not-collected is never recorded as pass",
+  "every argv path in commands.json exists inside this attempt (or is the fixed I-00-A template interpreter) and covers this card only",
+  "the runner exit code is verdict-carrying: 0 pass, 1 harness error, 2 no verdict, 3 negative case not refused"
+ ],
+ "units": [
+  {
+   "unit_id": "A0-iso-venv-create",
+   "purpose": "create the attempt-local isolated interpreter from the I-00-A template venv",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "venv",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "A0b-setup-isolation",
+   "purpose": "materialise iso/checkout_scripts (byte-identical read-only snapshot), verify the hashes and capture the pre-existing dirty state of the three repos into before/",
+   "argv": [
+    "powershell",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\setup_isolation.ps1",
+    "-AttemptRoot",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01",
+    "-Card",
+    "M16"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "A1-oracle-document-freeze",
+   "purpose": "record the sha256 of the frozen oracle.md body BEFORE any product call (single baseline)",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\freeze_oracle_md.py",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "A2-oracle-generate",
+   "purpose": "generate the frozen independent oracle (input.json / cases.json / oracle.json / oracle_selfcheck.json) BEFORE any product run",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\oracle_M16.py",
+    "--out-root",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "B-product-run",
+   "purpose": "run the ONLY product entry point against the isolated snapshot: positive, continuity positive, defaults case, 11 negatives and the non-gating observations",
+   "argv": [
+    "powershell",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\run_product.ps1",
+    "-AttemptRoot",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01",
+    "-Card",
+    "M16"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "C1-selfcheck-mutation",
+   "purpose": "prove the runner goes red: corrupt a SCRATCH copy of the frozen oracle/cases and observe rc 2/2/2/3/1, then re-hash the frozen files",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\selfcheck_mutation.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01",
+    "--venv-python",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "--code-root",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\checkout_scripts"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "C2-enumerate-driver-bounds",
+   "purpose": "read-only metadata enumeration backing the counts quoted in oq_rulings.json (NOT the oracle, NOT a calculation)",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\enumerate_driver_bounds.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\checkout_scripts"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "C3-probe-signed-driver",
+   "purpose": "labelled post-hoc design probe (NOT a frozen case): what the contract does with a negative optional driver",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\probe_signed_driver.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\checkout_scripts"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "C4-build-oq-rulings",
+   "purpose": "build evidence/{card}/oq_rulings.json from the raw enumeration (no hand-typed counts; third-person attribution)",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\build_oq_rulings.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "D1-append-r2",
+   "purpose": "append the SINGLE r2 section to oracle.md below a boundary marker and write revision_r2.json",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\append_r2.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "D2-verify-r2-boundary",
+   "purpose": "independently re-derive the boundary from oracle.md itself (one marker, one r2 heading, prefix hash == recorded frozen body)",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\verify_r2_boundary.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "E1-pack-evidence",
+   "purpose": "pack negative_results(+derivation), source_manifest, command_manifest, qualification and integrity from the run results",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\pack_evidence.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01",
+    "--commands-json",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\commands.json"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "F1-verify-card",
+   "purpose": "independent internal consistency verification (printed values vs evidence file, declared projection of negative_results, frozen hashes, mtime ordering, isolated snapshot vs production, required file set)",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\verify_card.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01",
+    "--production-root",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "G1-finalize-hashes",
+   "purpose": "final inventory: per-file sha256 of the whole attempt, re-checked production/isolated hashes, frozen-hash equality, PLAN/reviews mtime",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\finalize_hashes.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  },
+  {
+   "unit_id": "H1-validate-json-tree",
+   "purpose": "parse every JSON artefact of the attempt and re-check that the three qualifications are still distinct and that the runner verdict was pass",
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01\\scripts\\validate_json_tree.py",
+    "--card",
+    "M16",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M16\\a20260919-01"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "covers": "this card's attempt only"
+  }
+ ]
+}

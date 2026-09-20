@@ -1,0 +1,123 @@
+{
+ "purpose": "prove that the runner's exit code carries the verdict (a bookkeeping-only rc=0 is impossible) and that the frozen oracle is reproducible",
+ "scratch_tree": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M26\\a20260919-01\\recovery\\selfcheck",
+ "frozen_evidence_untouched": {
+  "evidence/M26/input.json": "317a452c49adfb452536efc68cfa9f88fd880668bcc6c527accde6d782efd38d",
+  "evidence/M26/oracle.json": "1d6fad18c38734fc1f85ecbf766abba11f754c5f5e52055c0eaa32a05e7183d4",
+  "evidence/M26/cases.json": "5bc6666d1f34255c557b17347c50f2be838b5712c44b87272c68cf03b34d3173",
+  "evidence/M26/run_result.json": "d36b22a510273d9dce4a480c5e62a8387e933d1265a01da0f4b8436543fcbb97"
+ },
+ "cases": [
+  {
+   "case": "A",
+   "mutation": "oracle.json positive.expected_float -> [999.0] (scratch copy only)",
+   "raw_rc": 3,
+   "expected_rc": 3,
+   "verdict": {
+    "harness_incomplete": false,
+    "positive_ok": false,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "defaults_ok_not_gating": true,
+    "defaults_declared_check_not_gating": null,
+    "verdict": "fail",
+    "exit_code": 3
+   },
+   "negative_summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": []
+   },
+   "proves": "a corrupted expectation is no longer hidden behind a bookkeeping-only rc=0; the product itself still returned the correct value"
+  },
+  {
+   "case": "B",
+   "mutation": "oracle.json positive.expected_float -> my own deliberately wrong hand value (scratch copy only)",
+   "raw_rc": 3,
+   "expected_rc": 3,
+   "verdict": {
+    "harness_incomplete": false,
+    "positive_ok": false,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "defaults_ok_not_gating": true,
+    "defaults_declared_check_not_gating": null,
+    "verdict": "fail",
+    "exit_code": 3
+   },
+   "negative_summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": []
+   },
+   "proves": "a wrong hand computation is also caught; the frozen value is load-bearing"
+  },
+  {
+   "case": "C",
+   "mutation": "none: the frozen values are used again in the same scratch tree",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "verdict": {
+    "harness_incomplete": false,
+    "positive_ok": true,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "defaults_ok_not_gating": true,
+    "defaults_declared_check_not_gating": null,
+    "verdict": "pass",
+    "exit_code": 0
+   },
+   "negative_summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": []
+   },
+   "proves": "the repaired exit code still returns 0 for a genuinely passing card"
+  },
+  {
+   "case": "D",
+   "mutation": "NEG-CARD's mutation replaced in memory by the identity value via --case-override",
+   "raw_rc": 3,
+   "expected_rc": 3,
+   "verdict": {
+    "harness_incomplete": false,
+    "positive_ok": true,
+    "continuity_ok": true,
+    "negatives_ok": false,
+    "defaults_ok_not_gating": true,
+    "defaults_declared_check_not_gating": null,
+    "verdict": "fail",
+    "exit_code": 3
+   },
+   "negative_summary": {
+    "total": 11,
+    "passed": 10,
+    "failed": [
+     "NEG-CARD"
+    ]
+   },
+   "proves": "an unrejected negative really turns the verdict red (FAIL_not_rejected)"
+  },
+  {
+   "case": "E",
+   "mutation": "none: re-run the SAME oracle generator with --out-root pointed at a scratch tree",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "verdict": {
+    "regenerated": true
+   },
+   "byte_identical": {
+    "input.json": true,
+    "cases.json": true,
+    "oracle.json": true
+   },
+   "proves": "the frozen expected values are reproducible from the generator alone, and the scratch regeneration did not write to the frozen evidence directory"
+  }
+ ],
+ "exit_code_map": {
+  "0": "positive within the frozen tolerance AND continuity positive ok AND all negatives rejected",
+  "1": "an unguarded harness defect raised (fail loud)",
+  "2": "no verdict could be produced (for example the positive input itself is broken)",
+  "3": "the verdict is negative (positive mismatch, continuity failure, or an unrejected negative)"
+ }
+}

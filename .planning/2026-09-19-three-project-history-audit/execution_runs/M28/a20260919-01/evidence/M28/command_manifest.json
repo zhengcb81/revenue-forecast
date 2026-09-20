@@ -1,0 +1,237 @@
+{
+ "card_id": "M28",
+ "attempt_id": "a20260919-01",
+ "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+ "rules": [
+  "every product invocation used --code-root <attempt>/iso/checkout_scripts",
+  "raw exit codes are recorded as returned; expected codes are separate fields",
+  "skip / timeout / not-collected is never recorded as pass",
+  "every scratch (G) unit reads and writes only under recovery/selfcheck/"
+ ],
+ "units": [
+  {
+   "unit_id": "A0-M28-iso-venv-create",
+   "purpose": "create the attempt-local isolated interpreter from the I-00-A template venv",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "venv",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "the global Miniconda python is forbidden for card runs; the template interpreter is the I-00-A venv"
+  },
+  {
+   "unit_id": "A1-M28-pytest-offline-install",
+   "purpose": "install pytest into the isolated venv from the local pip cache (no index)",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "pip",
+    "install",
+    "--no-index",
+    "--find-links",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\_wheels",
+    "pytest"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "wheels were first obtained with `pip download pytest -d iso/_wheels` from the local pip cache; pytest 9.1.1 installed. No card case uses pytest: the formula oracle is a direct call to the single bound entry point"
+  },
+  {
+   "unit_id": "A2-M28-isolated-snapshot",
+   "purpose": "materialise the read-only isolated code snapshot and confirm it is byte-identical to production",
+   "argv": [
+    "powershell",
+    "Copy-Item",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts\\model_registry.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\checkout_scripts\\model_registry.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "hashes": {
+    "production_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "production_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+   },
+   "note": "also copied model_extensions.py; both isolated copies hash-equal to production"
+  },
+  {
+   "unit_id": "A3-M28-oracle-generate",
+   "purpose": "generate the frozen independent oracle (input.json / oracle.json / cases.json) BEFORE any product run",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\scripts\\oracle_M25_M28.py",
+    "--card",
+    "M28",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "stdlib only; this file never imports the product (product_import_present=false in evidence/M28/oracle_selfcheck.json); the first generation had a defect that was corrected BEFORE the definitive product run (see revision_r2.json)"
+  },
+  {
+   "unit_id": "B-M28-product-positive-defaults-continuity-negatives",
+   "purpose": "run the ONLY product entry point against the isolated snapshot: positive, continuity positive, defaults case, 11 negatives and the non-gating observations",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M28",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\evidence\\M28\\run_result.json",
+    "--run-result-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\evidence\\M28\\formula_result.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "expected_business_result": "verdict pass = positive within 1e-9*max(1,|e|), continuity positive ok, and all 11 negatives rejected with ModelRegistryError",
+   "stdout": "evidence/M28/stdout.txt",
+   "stderr": "evidence/M28/stderr.txt"
+  },
+  {
+   "unit_id": "G1-M28-selfcheck-case-A-corrupt-positive-expectation",
+   "purpose": "mutation proof: plant 999.0 as the positive expectation in a SCRATCH copy and show the runner goes red (rc=3)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M28",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+    "--attempt-dir",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\cases\\A",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\run_result_A.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 3,
+   "expected_rc": 3,
+   "note": "the mutated oracle.json lives only under recovery/selfcheck/cases/A/"
+  },
+  {
+   "unit_id": "G2-M28-selfcheck-case-B-naive-hand-expectation",
+   "purpose": "mutation proof: plant MY OWN deliberately wrong hand value as the positive expectation in a SCRATCH copy and show the runner goes red (rc=3)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M28",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+    "--attempt-dir",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\cases\\B",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\run_result_B.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 3,
+   "expected_rc": 3,
+   "note": "the planted value comes from recovery/selfcheck/naive_oracle.py, never from the product"
+  },
+  {
+   "unit_id": "G3-M28-selfcheck-case-C-restored-green-control",
+   "purpose": "green control: the same scratch tree with the frozen expectation restored (rc=0)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M28",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+    "--attempt-dir",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\cases\\C",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\run_result_C.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "proves the repair is possible and the frozen hash is what makes it green"
+  },
+  {
+   "unit_id": "G4-M28-selfcheck-case-D-unrejected-negative",
+   "purpose": "mutation proof: replace NEG-CARD's mutation with the identity value through --case-override (in memory) so the model must ACCEPT it; the runner must go red with FAIL_not_rejected (rc=3)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M28",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+    "--attempt-dir",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\cases\\D",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\checkout_scripts",
+    "--case-override",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\case_D_override.json",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\run_result_D.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 3,
+   "expected_rc": 3,
+   "note": "the frozen cases.json is untouched; the patch happens in memory only"
+  },
+  {
+   "unit_id": "G5-M28-selfcheck-case-E-regenerate-frozen-oracle",
+   "purpose": "reproducibility proof: re-run the SAME oracle generator with --out-root pointed at a scratch tree and diff the three artefacts against the frozen ones",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\scripts\\oracle_M25_M28.py",
+    "--card",
+    "M28",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck\\generated"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "byte-identical for input.json, cases.json and oracle.json; the frozen evidence directory is never written to"
+  }
+ ]
+}

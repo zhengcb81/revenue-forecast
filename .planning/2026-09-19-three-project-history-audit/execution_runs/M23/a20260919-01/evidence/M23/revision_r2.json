@@ -1,0 +1,31 @@
+{
+ "card_id": "M23",
+ "revision": "r2",
+ "state": "not_started",
+ "trigger": "an independent review of attempt a20260919-01 has not yet been received",
+ "review_verdict_received": null,
+ "frozen_expectations_unchanged": true,
+ "product_files_changed": [],
+ "single_revision_section_rule": "this file carries at most ONE revision-r2 section; any later addendum must be merged into that section rather than appended as a second one",
+ "oracle_md_sha256": "937756f93b355d274778e39d704bc555a2562f1924696575c28d028b6bb90959",
+ "oracle_md_frozen_body_sha256": "d27cfbda9d748987b887b33393533daa39fafe75fbb5410e899ccab3ede1486b",
+ "oracle_md_frozen_body_bytes": 10075,
+ "oracle_md_full_sha256_now": "937756f93b355d274778e39d704bc555a2562f1924696575c28d028b6bb90959",
+ "hashes_are_over_raw_bytes": true,
+ "self_corrections": {
+  "SC-1": {
+   "what_was_wrong": "the first revision of scripts/append_oracle_run_section.py computed the frozen-body sha256 from text read with universal-newline translation (io.open without newline=''), so the recorded digest did not correspond to any byte prefix of oracle.md, and the recorded byte count was a character count",
+   "how_it_was_found": "scripts/verify_prefix_chain.py recomputed the prefix digest independently and reported prefix_sha==record False for all four cards",
+   "fix": "all hashing in that script is now done on bytes read with open(path,'rb'), and the frozen body is defined as the byte prefix before the append marker with all trailing newline and '-' characters removed, so that oracle.md == frozen_body + b'\\n---\\n\\n' + run_section holds exactly",
+   "what_this_did_NOT_change": "no expectation, tolerance, negative case, rejection condition or frozen sentence was touched; the frozen body content is byte-identical to what was written before the product run - only the digest recipe changed",
+   "verification": "scripts/verify_prefix_chain.py reports ALL-OK for all four cards"
+  },
+  "SC-2": {
+   "what_was_wrong": "the product run stdout/stderr were first captured through PowerShell redirection, which wrote UTF-16LE with a BOM",
+   "fix": "re-ran the same card run with the same frozen evidence, capturing the process byte stream directly (scripts/recapture_streams.py)",
+   "effect_on_results": "none - the exit code and every printed value were identical; only the file encoding changed"
+  }
+ },
+ "items": {},
+ "note": "the frozen body of oracle.md (sections 0-11) is byte-unchanged since it was written before the product run; the run-reconciliation section was APPENDED afterwards"
+}

@@ -1,0 +1,87 @@
+{
+ "card_id": "M26",
+ "model_id": "store_cohorts",
+ "generated_by": "scripts/oracle_M25_M28.py --card M26 (stdlib only, no product import)",
+ "continuity_case": true,
+ "continuity_note": "two-year continuity example taken verbatim from card_M26.md; the negative_patch keeps both years individually balanced (20+5-2=23 and 24+0-0=24) and breaks only the year-over-year opening=prior closing identity.",
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "999.0"
+  ],
+  "expected_float": [
+   999.0
+  ],
+  "tolerances": [
+   9.99e-07
+  ],
+  "hand_work": [
+   "(20 - 2*0.5 + 5*0.4*0.75) * 10"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "205",
+   "230"
+  ],
+  "expected_float": [
+   205.0,
+   230.0
+  ],
+  "tolerances": [
+   2.05e-07,
+   2.3e-07
+  ],
+  "hand_work": [
+   "(20 - 2*0.5 + 5*0.4*0.75) * 10",
+   "(23 - 0*0.5 + 0*0.4*0.75) * 10"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "0"
+  ],
+  "expected_float": [
+   0.0
+  ],
+  "tolerances": [
+   1e-09
+  ],
+  "hand_work": [
+   "(0 - 0*0 + 0*0*0) * 0"
+  ]
+ },
+ "defaults_expected_float": [
+  0.0
+ ],
+ "defaults_declared_expectation": {
+  "driver": null,
+  "declared_default_present": null,
+  "why": "M26 has optional = () and defaults = {}, so there is no declared optional default to check"
+ },
+ "observation_expected": {},
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))"
+}

@@ -1,0 +1,157 @@
+{
+ "card_id": "M28",
+ "attribution": {
+  "enumerated_by": "the implementer of attempt M28/a20260919-01 (this attempt)",
+  "enumerated_with": "scripts/pack_evidence.py enumerate_registry() against iso/checkout_scripts (read-only; the registry is never called)",
+  "ruling_authority": "NOT the implementer: the rulings below are questions for the independent reviewer / owner. The implementer records the enumeration and asserts no ruling.",
+  "third_person_note": "no first-person voice and no reviewer is credited as the author of this enumeration; the reviewer's own conclusions, when they exist, will be recorded by the reviewer in review.md"
+ },
+ "enumeration_command": "iso venv python -X utf8 -B scripts/pack_evidence.py --card M28 --attempt-root <attempt> --interpreter <py> ...",
+ "enumeration_evidence": "evidence/M28/oq_rulings_enumeration.json",
+ "enumeration_evidence_sha256": "f875413fbb67def7d418ae31a73b77a64990861d6eb06b11622523541b24b81e",
+ "enumeration_summary": {
+  "models_total": 31,
+  "drivers_total": 165,
+  "ratio_drivers_total": 41,
+  "ratio_drivers_taking_the_0_1_default": 37,
+  "ratio_drivers_not_in_0_1_total": 4,
+  "ratio_drivers_not_in_0_1": [
+   {
+    "driver": "bank_revenue.asset_yield",
+    "bounds": [
+     null,
+     null
+    ],
+    "declared_bounds": [
+     null,
+     null
+    ],
+    "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
+   },
+   {
+    "driver": "bank_revenue.funding_cost",
+    "bounds": [
+     null,
+     null
+    ],
+    "declared_bounds": [
+     null,
+     null
+    ],
+    "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
+   },
+   {
+    "driver": "direct_growth.growth_rate",
+    "bounds": [
+     -1.0,
+     null
+    ],
+    "declared_bounds": null,
+    "reason": "hard-coded domain inside driver_value_bounds"
+   },
+   {
+    "driver": "store_cohorts.new_store_productivity",
+    "bounds": [
+     0.0,
+     null
+    ],
+    "declared_bounds": [
+     0.0,
+     null
+    ],
+    "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
+   }
+  ],
+  "models_with_an_optional_driver_that_has_no_declared_default": [
+   "advertising",
+   "asset_management",
+   "aum_fee_bridge",
+   "bank_revenue",
+   "capacity_utilization",
+   "cohort_subscription",
+   "delivery_pipeline",
+   "gaming",
+   "infrastructure",
+   "insurance_service",
+   "licensing_commercial",
+   "milestone_royalty",
+   "project_backlog",
+   "real_estate_rental",
+   "renewable_generation",
+   "reserve_depletion",
+   "resource",
+   "retail_franchise",
+   "services",
+   "subscription",
+   "subscription_arr_bridge",
+   "transport",
+   "unit_sales",
+   "usage_platform"
+  ],
+  "models_with_an_optional_driver_that_has_no_declared_default_total": 24
+ },
+ "OQ-M25M28-01": {
+  "question": "model_registry.py:335 fills an omitted optional driver with spec.defaults.get(driver, 0.0). For a card that DECLARES an optional default in its text but is registered with defaults = {}, the library silently substitutes 0.0 and 'no such revenue' becomes indistinguishable from 'we did not find it'.",
+  "observed_for_this_card": {
+   "driver": "recognized_performance_fees",
+   "registry_declared_defaults": {},
+   "declared_default_present": false,
+   "declared_default_value": null,
+   "expected_declared_default_present": false,
+   "matches_expected": true,
+   "why": "card_M28.md L9 declares recognized_performance_fees default 0; the registry keeps the driver optional with defaults = {}, so the library zero-fills it. Recorded to keep the omission visible; the probe is non-gating.",
+   "gating": false
+  },
+  "this_card_is_affected": true,
+  "status_for_this_card": "affected: the card declares a default for recognized_performance_fees, the registry declares none, and the omission is zero-filled",
+  "implementer_position": "recorded, NOT fixed; no product change was made",
+  "for_the_reviewer": "decide whether the card text or the registry is authoritative, and whether the zero-fill must become an explicit input"
+ },
+ "OQ-M25M28-02": {
+  "question": "do the ratio-dimensioned drivers of these four models carry the intended semantic domain? enumerate the actual bounds and compare them with the card text",
+  "enumeration_for_this_card": {
+   "model_id": "aum_fee_bridge",
+   "ratio_drivers": [
+    "inflow_revenue_fraction",
+    "management_fee_rate",
+    "market_change_revenue_fraction",
+    "outflow_lost_fraction"
+   ],
+   "ratio_driver_bounds": {
+    "inflow_revenue_fraction": [
+     0.0,
+     1.0
+    ],
+    "outflow_lost_fraction": [
+     0.0,
+     1.0
+    ],
+    "market_change_revenue_fraction": [
+     0.0,
+     1.0
+    ],
+    "management_fee_rate": [
+     0.0,
+     1.0
+    ]
+   },
+   "explicit_driver_bounds": {
+    "market_change": [
+     null,
+     null
+    ],
+    "recognized_performance_fees": [
+     null,
+     null
+    ]
+   }
+  },
+  "observed": "store_cohorts.new_store_productivity is (0.0, inf) as the card requires (new-store productivity may exceed one), while every other ratio driver of these four models takes the conservative [0,1] default",
+  "implementer_position": "recorded, NOT fixed; no product change was made"
+ },
+ "OQ-M25M28-03": {
+  "question": "may market_change be negative? (card_M28.md L8 says a signed market move does not equal net inflows)",
+  "observed": "aum_fee_bridge declares driver_bounds market_change = (None, None) and the frozen positive case uses market_change = -50 successfully",
+  "implementer_position": "recorded as satisfied by the frozen positive case"
+ }
+}

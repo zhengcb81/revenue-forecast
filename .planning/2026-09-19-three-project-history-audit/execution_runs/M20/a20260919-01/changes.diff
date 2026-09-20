@@ -1,0 +1,44 @@
+# changes.diff — M20 · cohort_subscription · attempt a20260919-01
+
+```
+NO PRODUCT CHANGE.
+```
+
+This attempt modified nothing under any production repository. The file is a statement rather than a diff
+because there is no diff to show: the whole card is a read-only formula qualification plus evidence.
+
+Verified before and after the card run:
+
+```
+scripts/model_registry.py    sha256 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f
+scripts/model_extensions.py  sha256 9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911
+```
+
+The isolated code under test is a byte-identical copy held inside this attempt:
+
+```
+iso/checkout_scripts/model_registry.py    (same sha256 as production)
+iso/checkout_scripts/model_extensions.py  (same sha256 as production)
+```
+
+Nothing was added, committed, restored or stashed in any production repo. `revenue-forecast` already had
+pre-existing dirty files (including user-owned `SKILL.md`, `references/*`, `CHANGELOG.md`, `assurance/*`
+and `e2e/expected/*`, plus `scripts/model_registry.py` itself in the working tree); those belong to their
+owner. The pre-existing status is captured verbatim in `before/git_status_*.txt` and
+`after/git_status_*.txt` so it cannot be attributed to this attempt.
+
+Files this attempt DID create, all inside this attempt directory
+(`execution_runs/M20/a20260919-01/`):
+
+```
+binding.json, oracle.md, commands.json, decision.md, review.md, handoff.json, changes.diff
+pipeline_run.json
+scripts/*.py                     (19 files, see evidence/M20/source_manifest.json card_script_hashes)
+iso/checkout_scripts/*.py        (2 files, byte-identical read-only copies)
+evidence/M20/*                   (frozen oracle, run results, manifests, rulings, integrity, hashes)
+evidence/M20/runs/*              (per-unit raw stdout/stderr/rc)
+before/, after/, recovery/
+```
+
+No other attempt directory was created or overwritten: `execution_runs/M20/a20260919-01/` did not exist
+before this attempt (verified at binding time; see `binding.json` → `written_before_any_product_run`).

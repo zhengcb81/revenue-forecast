@@ -1,0 +1,133 @@
+{
+ "card_id": "M13",
+ "model_id": "asset_management",
+ "purpose": "raw enumeration backing the counts quoted in oq_rulings.json; read-only product metadata, no calculation, no expected value",
+ "code_root": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts",
+ "model_registry_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+ "model_extensions_sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+ "registry_totals": {
+  "models": 31,
+  "drivers": 165,
+  "ratio_drivers": 40,
+  "ratio_drivers_whose_bounds_are_not_0_1": 3
+ },
+ "ratio_drivers_whose_bounds_are_not_0_1": [
+  {
+   "driver": "bank_revenue.asset_yield",
+   "bounds": [
+    "-inf",
+    "inf"
+   ],
+   "explicit_bound_tuple": [
+    null,
+    null
+   ]
+  },
+  {
+   "driver": "bank_revenue.funding_cost",
+   "bounds": [
+    "-inf",
+    "inf"
+   ],
+   "explicit_bound_tuple": [
+    null,
+    null
+   ]
+  },
+  {
+   "driver": "store_cohorts.new_store_productivity",
+   "bounds": [
+    0.0,
+    "inf"
+   ],
+   "explicit_bound_tuple": [
+    0.0,
+    null
+   ]
+  }
+ ],
+ "signed_driver_names_in_the_module": [
+  "ancillary_revenue",
+  "contract_changes",
+  "fee_revenue",
+  "fixed_revenue",
+  "milestone_revenue",
+  "other_revenue",
+  "performance_fee_revenue",
+  "royalty_revenue",
+  "service_revenue"
+ ],
+ "card_model": {
+  "required": [
+   "average_aum",
+   "management_fee_rate"
+  ],
+  "optional": [
+   "performance_fee_revenue",
+   "other_revenue"
+  ],
+  "defaults": {},
+  "explicit_driver_bounds": {},
+  "ratio_drivers": [
+   "management_fee_rate"
+  ],
+  "dimensions": {
+   "average_aum": "monetary_balance",
+   "management_fee_rate": "ratio",
+   "performance_fee_revenue": "revenue",
+   "other_revenue": "revenue"
+  },
+  "effective_bounds": {
+   "average_aum": [
+    0.0,
+    "inf"
+   ],
+   "management_fee_rate": [
+    0.0,
+    1.0
+   ],
+   "performance_fee_revenue": [
+    "-inf",
+    "inf"
+   ],
+   "other_revenue": [
+    "-inf",
+    "inf"
+   ]
+  },
+  "formula": "revenue = average_aum * management_fee_rate + performance_fee_revenue + other_revenue"
+ },
+ "counts": {
+  "card_required_drivers": 2,
+  "card_optional_drivers": 2,
+  "card_optional_drivers_without_an_explicit_default": 2,
+  "card_optional_drivers_without_an_explicit_default_names": [
+   "performance_fee_revenue",
+   "other_revenue"
+  ],
+  "card_optional_drivers_with_an_explicit_default": {},
+  "card_drivers_signed_and_unbounded": 2,
+  "card_drivers_signed_and_unbounded_names": [
+   "performance_fee_revenue",
+   "other_revenue"
+  ],
+  "card_drivers_in_the_module_signed_set": 2,
+  "card_drivers_in_the_module_signed_set_names": [
+   "performance_fee_revenue",
+   "other_revenue"
+  ],
+  "card_drivers_with_lower_bound_exactly_zero": 2,
+  "card_drivers_with_lower_bound_exactly_zero_names": [
+   "average_aum",
+   "management_fee_rate"
+  ],
+  "card_drivers_with_inclusive_upper_bound_one": 1,
+  "card_drivers_with_inclusive_upper_bound_one_names": [
+   "management_fee_rate"
+  ]
+ },
+ "fill_mechanism_line": "scripts/model_registry.py:335 drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+ "generated_at_unix": 1789872682.4479284,
+ "generated_at_utc": "2026-09-20T02:51:22Z",
+ "number_format_note": "non-finite bounds are written as the strings 'inf'/'-inf' because JSON has no infinity literal; finite bounds stay numbers"
+}

@@ -1,0 +1,530 @@
+{
+ "batch_id": "M05-M08",
+ "attempt_id": "a20260919-01",
+ "cards": [
+  "M05",
+  "M06",
+  "M07",
+  "M08"
+ ],
+ "isolation": {
+  "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "code_root_per_card": "<attempt>/iso/checkout_scripts",
+  "never_used": [
+   "C:/Miniconda/python.exe for any card run",
+   "the production scripts directory on sys.path",
+   "network",
+   "provider",
+   "LLM"
+  ]
+ },
+ "units": [
+  {
+   "unit_id": "A0-iso-venv-create",
+   "purpose": "create the attempt-local isolated interpreter from the I-00-A template venv",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "venv",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "the global Miniconda python is forbidden for card runs and was used for read-only PDF extraction only"
+  },
+  {
+   "unit_id": "A1-pytest-offline-install",
+   "purpose": "install pytest into the isolated venv from the local pip cache (no index)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "pip",
+    "install",
+    "--no-index",
+    "--find-links",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\_wheels",
+    "pytest"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "wheels were first obtained with `pip download pytest -d iso/_wheels` from the local cache; the temporary wheel directory was deleted after the install"
+  },
+  {
+   "unit_id": "A2-M05-isolated-snapshot",
+   "purpose": "materialise the read-only isolated code snapshot and confirm it is byte-identical to production",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01",
+   "argv": [
+    "powershell",
+    "Copy-Item",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts\\model_registry.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\checkout_scripts\\model_registry.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "hashes": {
+    "production_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "production_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+   },
+   "note": "also copied model_extensions.py; both isolated copies hash-equal to production"
+  },
+  {
+   "unit_id": "A3-M05-oracle-generate",
+   "purpose": "generate the frozen independent oracle (input.json / oracle.json / cases.json) BEFORE any product run",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\oracle_card.py",
+    "--card",
+    "M05",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01",
+    "--emit-script",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\scripts\\oracle_M05.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "stdlib only; the emitted per-card script is byte-identical to the generator (sha256 3a76365b38d5833536624f9150a0b00b4ddbb1effbb181b60b31ad508fa51a38) and never imports the product"
+  },
+  {
+   "unit_id": "B-M05-product-positive-defaults-continuity-negatives",
+   "purpose": "run the ONLY product entry point against the isolated snapshot: positive, continuity positive, defaults case, 11 negatives and the non-gating observations",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M05",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\evidence\\M05\\run_result.json",
+    "--run-result-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\evidence\\M05\\formula_result.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "expected_business_result": "verdict pass = positive within 1e-9*max(1,|e|), continuity positive ok, and all 11 negatives rejected with ModelRegistryError",
+   "stdout": "evidence/M05/stdout.txt",
+   "stderr": "evidence/M05/stderr.txt"
+  },
+  {
+   "unit_id": "D-M05-disclosure-page-capture",
+   "purpose": "read-only capture of the exact text of the disclosure pages used by the mapping",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\capture_disclosure_pages.py",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "PyMuPDF text extraction only; no download, no provider, no LLM"
+  },
+  {
+   "unit_id": "E-M05-evidence-pack",
+   "purpose": "pack source_manifest / command_manifest / negative_results / qualification / integrity",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\pack_evidence.py",
+    "--card",
+    "M05",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "A2-M06-isolated-snapshot",
+   "purpose": "materialise the read-only isolated code snapshot and confirm it is byte-identical to production",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01",
+   "argv": [
+    "powershell",
+    "Copy-Item",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts\\model_registry.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01\\iso\\checkout_scripts\\model_registry.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "hashes": {
+    "production_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "production_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+   },
+   "note": "also copied model_extensions.py; both isolated copies hash-equal to production"
+  },
+  {
+   "unit_id": "A3-M06-oracle-generate",
+   "purpose": "generate the frozen independent oracle (input.json / oracle.json / cases.json) BEFORE any product run",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\oracle_card.py",
+    "--card",
+    "M06",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01",
+    "--emit-script",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01\\scripts\\oracle_M06.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "stdlib only; the emitted per-card script is byte-identical to the generator (sha256 3a76365b38d5833536624f9150a0b00b4ddbb1effbb181b60b31ad508fa51a38) and never imports the product"
+  },
+  {
+   "unit_id": "B-M06-product-positive-defaults-continuity-negatives",
+   "purpose": "run the ONLY product entry point against the isolated snapshot: positive, continuity positive, defaults case, 11 negatives and the non-gating observations",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M06",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01\\evidence\\M06\\run_result.json",
+    "--run-result-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01\\evidence\\M06\\formula_result.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "expected_business_result": "verdict pass = positive within 1e-9*max(1,|e|), continuity positive ok, and all 11 negatives rejected with ModelRegistryError",
+   "stdout": "evidence/M06/stdout.txt",
+   "stderr": "evidence/M06/stderr.txt"
+  },
+  {
+   "unit_id": "D-M06-disclosure-page-capture",
+   "purpose": "read-only capture of the exact text of the disclosure pages used by the mapping",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\capture_disclosure_pages.py",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "PyMuPDF text extraction only; no download, no provider, no LLM"
+  },
+  {
+   "unit_id": "E-M06-evidence-pack",
+   "purpose": "pack source_manifest / command_manifest / negative_results / qualification / integrity",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\pack_evidence.py",
+    "--card",
+    "M06",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "A2-M07-isolated-snapshot",
+   "purpose": "materialise the read-only isolated code snapshot and confirm it is byte-identical to production",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01",
+   "argv": [
+    "powershell",
+    "Copy-Item",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts\\model_registry.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01\\iso\\checkout_scripts\\model_registry.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "hashes": {
+    "production_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "production_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+   },
+   "note": "also copied model_extensions.py; both isolated copies hash-equal to production"
+  },
+  {
+   "unit_id": "A3-M07-oracle-generate",
+   "purpose": "generate the frozen independent oracle (input.json / oracle.json / cases.json) BEFORE any product run",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\oracle_card.py",
+    "--card",
+    "M07",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01",
+    "--emit-script",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01\\scripts\\oracle_M07.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "stdlib only; the emitted per-card script is byte-identical to the generator (sha256 3a76365b38d5833536624f9150a0b00b4ddbb1effbb181b60b31ad508fa51a38) and never imports the product"
+  },
+  {
+   "unit_id": "B-M07-product-positive-defaults-continuity-negatives",
+   "purpose": "run the ONLY product entry point against the isolated snapshot: positive, continuity positive, defaults case, 11 negatives and the non-gating observations",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M07",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01\\evidence\\M07\\run_result.json",
+    "--run-result-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01\\evidence\\M07\\formula_result.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "expected_business_result": "verdict pass = positive within 1e-9*max(1,|e|), continuity positive ok, and all 11 negatives rejected with ModelRegistryError",
+   "stdout": "evidence/M07/stdout.txt",
+   "stderr": "evidence/M07/stderr.txt"
+  },
+  {
+   "unit_id": "D-M07-disclosure-page-capture",
+   "purpose": "read-only capture of the exact text of the disclosure pages used by the mapping",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\capture_disclosure_pages.py",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "PyMuPDF text extraction only; no download, no provider, no LLM"
+  },
+  {
+   "unit_id": "E-M07-evidence-pack",
+   "purpose": "pack source_manifest / command_manifest / negative_results / qualification / integrity",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\pack_evidence.py",
+    "--card",
+    "M07",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M07\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "A2-M08-isolated-snapshot",
+   "purpose": "materialise the read-only isolated code snapshot and confirm it is byte-identical to production",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01",
+   "argv": [
+    "powershell",
+    "Copy-Item",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts\\model_registry.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01\\iso\\checkout_scripts\\model_registry.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "hashes": {
+    "production_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "production_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+   },
+   "note": "also copied model_extensions.py; both isolated copies hash-equal to production"
+  },
+  {
+   "unit_id": "A3-M08-oracle-generate",
+   "purpose": "generate the frozen independent oracle (input.json / oracle.json / cases.json) BEFORE any product run",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\oracle_card.py",
+    "--card",
+    "M08",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01",
+    "--emit-script",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01\\scripts\\oracle_M08.py"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "stdlib only; the emitted per-card script is byte-identical to the generator (sha256 3a76365b38d5833536624f9150a0b00b4ddbb1effbb181b60b31ad508fa51a38) and never imports the product"
+  },
+  {
+   "unit_id": "B-M08-product-positive-defaults-continuity-negatives",
+   "purpose": "run the ONLY product entry point against the isolated snapshot: positive, continuity positive, defaults case, 11 negatives and the non-gating observations",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M08",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01\\evidence\\M08\\run_result.json",
+    "--run-result-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01\\evidence\\M08\\formula_result.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "expected_business_result": "verdict pass = positive within 1e-9*max(1,|e|), continuity positive ok, and all 11 negatives rejected with ModelRegistryError",
+   "stdout": "evidence/M08/stdout.txt",
+   "stderr": "evidence/M08/stderr.txt"
+  },
+  {
+   "unit_id": "D-M08-disclosure-page-capture",
+   "purpose": "read-only capture of the exact text of the disclosure pages used by the mapping",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\capture_disclosure_pages.py",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "PyMuPDF text extraction only; no download, no provider, no LLM"
+  },
+  {
+   "unit_id": "E-M08-evidence-pack",
+   "purpose": "pack source_manifest / command_manifest / negative_results / qualification / integrity",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\pack_evidence.py",
+    "--card",
+    "M08",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M08\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0
+  },
+  {
+   "unit_id": "D0-batch-probe-readonly",
+   "purpose": "read-only PDF probes that located the disclosure candidates (planning aid, not evidence of adaptation)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01",
+   "argv": [
+    "python",
+    "-X",
+    "utf8",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01\\iso\\probe_pdf.py",
+    "...",
+    "--out",
+    "iso/probe01.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "artifacts": [
+    "iso/probe01.json",
+    "iso/probe02.json",
+    "iso/probe_smic.json",
+    "iso/scan01.json",
+    "iso/scan02.json",
+    "iso/scan_tencent.json",
+    "iso/scan_mango.json"
+   ]
+  },
+  {
+   "unit_id": "G-selfcheck-corrupt-oracle-copy",
+   "purpose": "prove the runner's exit code is verdict-carrying: run the patched runner against a deliberately corrupted COPY of oracle.json in a scratch tree, leaving the frozen evidence untouched",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05-M08\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py",
+    "--card",
+    "M05",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\recovery\\selfcheck",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\recovery\\selfcheck\\run_result_A.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 3,
+   "expected_rc": 3,
+   "note": "the self-check was executed ONLY on M05; its scratch tree lives at M05/a20260919-01/recovery/selfcheck/. M06/M07/M08 share the byte-identical runner (sha256 fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a, verified equal across all four attempts), so the exit-code semantics carry over without a second copy of the scratch tree. The corrupted inputs are copies; the frozen evidence was hash-verified untouched afterwards.",
+   "scope": "M05 only; runner shared by all four cards"
+  }
+ ],
+ "created_before_card_runs": true,
+ "revision_note": "revision r2 rewrote the G unit's argv to the real scratch-tree path and recorded its scope; no other unit changed. commands.json holds argv/rc only and deliberately does NOT carry oracle.md hashes (see F-M05-01 in the attempt source_manifest)."
+}

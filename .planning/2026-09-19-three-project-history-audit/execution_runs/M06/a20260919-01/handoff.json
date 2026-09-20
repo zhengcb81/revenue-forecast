@@ -1,0 +1,372 @@
+{
+ "card_id": "M06",
+ "attempt_id": "a20260919-01",
+ "status": "review_pending",
+ "implementer_is_not_the_reviewer": true,
+ "completed_steps": {
+  "A_binding": "done (binding.json: read-only production hashes + attempt-local isolated snapshot)",
+  "B_positive_run": "done (positive [23.0], continuity [23.0, 44.0], defaults [20.0]; all within 1e-9*max(1,|e|))",
+  "C_negative_run": "done (11/11 negatives rejected with ModelRegistryError; card-specific negative + N01-N05 + continuity break)",
+  "D_disclosure_mapping": "minimum real-disclosure mapping delivered with pages/spans/hashes; professional decisions written as PROPOSED only, not signed",
+  "E_historical_mapping_probe": "recorded as blocked with the concrete reason; NOT a scenario set and NOT accuracy evidence",
+  "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist"
+ },
+ "completed_steps_list": [
+  "A",
+  "B",
+  "C",
+  "D-minimum",
+  "E-blocked"
+ ],
+ "next_step_number": 4,
+ "next_action": "Independent reviewer: same re-run for M06 (positive [23], continuity [23,44], defaults [20], 11/11 negatives), then adjudicate DEC-M06-1/2 and OQ-02 (the monetization_rate range asymmetry).",
+ "input_hashes": {
+  "evidence/M06/input.json": "44a5b5987e0ecd33c4baa5a2d73e229033d9968cb3d8244662b2fdbfabdfaefb",
+  "evidence/M06/oracle.json": "de91a939767f4dba890596cc5d60e33868d7d6e97b420062649227701f73d167",
+  "evidence/M06/cases.json": "a635939117af6cacb7defda2b695fc521283276b4354b579655eb5679aa47890",
+  "oracle.md": "d335f5ec2a699bef008686249d77f2f9af6e2b6306510e57a83446f92df7e3eb",
+  "scripts/oracle_M06.py": "3a76365b38d5833536624f9150a0b00b4ddbb1effbb181b60b31ad508fa51a38",
+  "scripts/run_card.py": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a"
+ },
+ "current_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "scripts/forecast/segments.py": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd"
+ },
+ "changed_paths": {
+  "production_repos": [],
+  "note": "no production file was created, modified, added, committed, restored or stashed in any of the three repos; the pre-existing dirty state is captured in before/ and after/",
+  "attempt_paths_created": [
+   "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M06\\a20260919-01"
+  ]
+ },
+ "commands_executed": [
+  "A0-iso-venv-create",
+  "A1-pytest-offline-install",
+  "A2-isolated-snapshot",
+  "A3-oracle-generate",
+  "B-product-run",
+  "D-disclosure-page-capture",
+  "E-evidence-pack",
+  "D0-batch-probe-readonly (M05 attempt only)",
+  "G-selfcheck-corrupt-oracle-copy (M05 attempt only)"
+ ],
+ "raw_exit_codes": {
+  "A0": 0,
+  "A1": 0,
+  "A2": 0,
+  "A3": 0,
+  "B": 0,
+  "D": 0,
+  "E": 0,
+  "D0": 0,
+  "G_selfcheck_A_corrupted_oracle": 3,
+  "G_selfcheck_B_corrupted_input": 2,
+  "G_selfcheck_C_uncorrupted": 0
+ },
+ "expected_exit_codes": {
+  "A0": 0,
+  "A1": 0,
+  "A2": 0,
+  "A3": 0,
+  "B": 0,
+  "D": 0,
+  "E": 0,
+  "D0": 0,
+  "G_selfcheck_A_corrupted_oracle": 3,
+  "G_selfcheck_B_corrupted_input": 2,
+  "G_selfcheck_C_uncorrupted": 0
+ },
+ "positive_actual": [
+  23.0
+ ],
+ "positive_expected": [
+  23.0
+ ],
+ "continuity_actual": [
+  23.0,
+  44.0
+ ],
+ "defaults_actual": [
+  20.0
+ ],
+ "negative_case_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": []
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "actual": [
+    23.0
+   ],
+   "matches_compared": true,
+   "expect_equal": null,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-RATE-GT1",
+   "actual": [
+    753.0
+   ],
+   "matches_compared": null,
+   "expect_equal": null,
+   "matches_expected_relation": null
+  }
+ ],
+ "open_questions": [
+  "OQ-01 (both cards, steering): the cards say the run cwd must come from I-00-B, but I-00-B binds only the isolation plan and the two-stage command rule, not a materialised checkout tree. This batch therefore materialised its own read-only snapshot (iso/checkout_scripts, hashes equal to production). If the intended binding is an I-00-B-materialised checkout, the provenance chain differs; the code under test is byte-identical either way. Needs a binding ruling.",
+  "OQ-02 (M06) - RESOLVED BY INDEPENDENT REVIEW (counts corrected in r3 per F-M08-07): not a contract gap. Every revenue_per_activity / revenue_per_unit driver carries the default (0, inf) bound (23 of them), and only the ratio dimension defaults to [0,1] (41 ratio drivers, 4 of which do not take it, plus 2 priced-volume exceptions); usage_platform.monetization_rate = (0.0, inf) is therefore correct contract, and the residual issue is NAME ambiguity only. If anything changes it should be the attribute name, not the bound. The r2 wording of this entry said '40 drivers, 3 explicit and documented exceptions' and is preserved in docfix_r3_hash_ledger.corrections. See evidence/M06/oq_rulings.json and evidence/M06/oq_rulings_enumeration.json.",
+  "OQ-03 (M08): DEC-M08-1 - which reading of contract_changes is authoritative. Until answered, this card's formula qualification is blocked.",
+  "OQ-04 (all four) - UPHELD BY INDEPENDENT REVIEW: scripts/model_registry.py:335 silently zero-fills an omitted optional driver that is absent from spec.defaults. Named instances: subscription.usage_revenue, usage_platform.fixed_revenue, services.other_revenue, and - the dangerous one - project_backlog.backlog_remeasurements, where 'there was no remeasurement' and 'we did not find the remeasurement' become indistinguishable and the bridge silently turns the unknown into recognised revenue. Registered, NOT fixed; no product change was made.",
+  "OQ-05 (disclosure strength): the company-wiki sidecars for all four source PDFs carry no publisher content hash, so local_hash_matches_publisher_receipt is NOT_VERIFIABLE - weaker than the cninfo receipts M01 used."
+ ],
+ "blocked_by": [],
+ "stop_conditions_hit": [
+  "STOP_ACCURACY (no I-12 frozen design)",
+  "STOP_DISCLOSURE_ADAPTATION (required drivers still missing / reviewer unsigned)"
+ ],
+ "qualifications": {
+  "formula": "review_pending",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "evidence_paths": [
+  "after/",
+  "before/",
+  "binding.json",
+  "changes.diff",
+  "commands.json",
+  "decision.md",
+  "handoff.json",
+  "oracle.md",
+  "review.md",
+  "recovery/",
+  "scripts/",
+  "iso/checkout_scripts/",
+  "evidence/M06/accounting_decision.md",
+  "evidence/M06/cases.json",
+  "evidence/M06/command_manifest.json",
+  "evidence/M06/disclosure_mapping.json",
+  "evidence/M06/disclosure_pages.json",
+  "evidence/M06/evidence_hashes.json",
+  "evidence/M06/forecast_integration.json",
+  "evidence/M06/formula_result.json",
+  "evidence/M06/historical_mapping_probe.json",
+  "evidence/M06/historical_reconciliation.json",
+  "evidence/M06/input.json",
+  "evidence/M06/integrity.json",
+  "evidence/M06/negative_results.json",
+  "evidence/M06/oracle.json",
+  "evidence/M06/oracle_selfcheck.json",
+  "evidence/M06/qualification.json",
+  "evidence/M06/run_result.json",
+  "evidence/M06/source_manifest.json",
+  "evidence/M06/stderr.txt",
+  "evidence/M06/stdout.txt"
+ ],
+ "reviewer_status": "r1 reviewed: M05/M06/M07 accepted_scoped (formula only), M08 blocked;  nine r1 findings addressed in revision r2 and returned for point review",
+ "revision": "r3",
+ "disclosure_impact_note": "not applicable to this card",
+ "docfix_r3_hash_ledger": {
+  "generated_by": "implementer, document/evidence consistency pass r3 (findings F-M08-06 / F-M08-07 / F-M08-08 / F-M08-09)",
+  "qualification": "'the frozen artefacts were not changed' is hereby QUALIFIED: the v1 frozen body of oracle.md and every frozen expectation (positive / continuity / defaults / negatives / tolerances / rejection conditions / disclosure figures) are byte-unchanged, and no product file was touched. What DID change is (a) oracle.md as a whole, because revision r2 appended a response section and r3 merged a duplicated r2 section into one and appended a provenance-gap note, and (b) the evidence files listed under repack_scope, which were repacked in r2 to carry new annotations. Every one of those byte differences is accounted for below.",
+  "reference_states": {
+   "r1": "reviewer snapshot copy/ -- verified r1: each card's copy/oracle.md hashes to the authoritative v1 claim carried inside oracle.md",
+   "r2": "reviewer snapshot copy_r2/ -- verified r2: each card's copy_r2/oracle.md hashes to the pre-r3 whole-file hash",
+   "r3": "the attempt directory on disk after this pass"
+  },
+  "oracle_md_hash_ledger": {
+   "v1_frozen_body_sha256": "d335f5ec2a699bef008686249d77f2f9af6e2b6306510e57a83446f92df7e3eb",
+   "v1_frozen_body_prefix_bytes": 7482,
+   "v1_frozen_body_prefix_chars": 5152,
+   "v1_still_reproducible_from_current_file": true,
+   "whole_file_sha256_r1": "d335f5ec2a699bef008686249d77f2f9af6e2b6306510e57a83446f92df7e3eb",
+   "whole_file_sha256_r2": "c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb",
+   "whole_file_sha256_r3": "206b27b3d8897f77d40007386fc932f114e8cf9c436ebcabe942db5b11615cc3",
+   "note": "handoff.json.input_hashes['oracle.md'] is the BINDING-TIME value = the v1 frozen body hash. It is historical by design and does not equal the whole-file hash of any later revision; it remains reproducible from the current file as sha256(oracle.md[:prefix_bytes])."
+  },
+  "input_hashes_note": "binding.json.input_hashes and handoff.json.input_hashes are the PRE-RUN (r1) input hashes captured before the product run (binding.json: created_before_runs = true). They are historical by design and are NOT claimed to equal the current bytes. For M08 the entry for evidence/M08/cases.json is affected: the r2 repack added four annotation keys and nothing else, which is proven below and in recovery/docfix-r3/f08_named_files.out.txt.",
+  "repack_scope_r1_to_r2": {
+   "changed": [
+    {
+     "path": "after/rerun_sha256.json",
+     "sha256_before": "02363d139200ce8ce337189857bf91866f58e774d14aefaab296bba2b5bbc1a4",
+     "sha256_after": "291be9e8cd9bc7454335bebc8c38e8ed2adf8e1931f676f172bb2da2da071ed5",
+     "bytes_before": 2364,
+     "bytes_after": 4304,
+     "diff_kinds": [
+      "ADDED_KEY",
+      "ANNOTATION",
+      "VALUE"
+     ],
+     "annotation_only": false
+    },
+    {
+     "path": "commands.json",
+     "sha256_before": "46ff6bc5c046d3be24fe8a1287223b2ed7b6b2d15363b58e3009bd7b6170eb8d",
+     "sha256_after": "92875088938cf0b4621e14914ac0c567a60477a9171e0f0a46cf35917c1be762",
+     "bytes_before": 28426,
+     "bytes_after": 29397,
+     "diff_kinds": [
+      "ADDED_KEY",
+      "ANNOTATION"
+     ],
+     "annotation_only": false
+    },
+    {
+     "path": "evidence/M06/evidence_hashes.json",
+     "sha256_before": "8fbe99ea71b20b2a01abfadc72a69c8c632159d5de167058948900c40a5b0bf9",
+     "sha256_after": "49fbe96e92dc2ce41a61ea8eb64b04aa57e9fa8730e0672878566a45b0d4341d",
+     "bytes_before": 2062,
+     "bytes_after": 2289,
+     "diff_kinds": [
+      "ADDED_KEY",
+      "ANNOTATION"
+     ],
+     "annotation_only": false
+    },
+    {
+     "path": "evidence/M06/source_manifest.json",
+     "sha256_before": "32aa3beffc5afff7b1ba809773e397823af9b0d598dc82be938021f7eb0753d6",
+     "sha256_after": "0eb7e1c2c1d6abded2753ae4099bd351325bdd06872d3eef2b1885a967743ded",
+     "bytes_before": 2962,
+     "bytes_after": 3819,
+     "diff_kinds": [
+      "ADDED_KEY",
+      "ANNOTATION",
+      "VALUE"
+     ],
+     "annotation_only": false
+    },
+    {
+     "path": "handoff.json",
+     "sha256_before": "991fc034fb27f2744b8d11cd4fcaf44bece231137325ca22e173cc6d6d64baa4",
+     "sha256_after": "f9fc17473cf9f2c875ae22f3d9b569f5c7d706434431f60337840c404caffdf4",
+     "bytes_before": 6923,
+     "bytes_after": 7658,
+     "diff_kinds": [
+      "ADDED_KEY",
+      "ANNOTATION"
+     ],
+     "annotation_only": false
+    },
+    {
+     "path": "oracle.md",
+     "sha256_before": "d335f5ec2a699bef008686249d77f2f9af6e2b6306510e57a83446f92df7e3eb",
+     "sha256_after": "c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb",
+     "bytes_before": 7482,
+     "bytes_after": 10912
+    },
+    {
+     "path": "review.md",
+     "sha256_before": "d98b80b6fb9da6bdfe99250cc6c3c0bdd745d9aafe707732834d9dbbff345fa4",
+     "sha256_after": "832dd44673cb848a47139b125a465ac90f91486fd596ae4b45dba66ced72c6bb",
+     "bytes_before": 8355,
+     "bytes_after": 10115
+    }
+   ],
+   "added": [
+    {
+     "path": "evidence/M06/oq_rulings.json",
+     "sha256_after": "ced1c6075b01b1404e56ed8d767cd0fc406d7b65a2e89c2647b94383e151567f",
+     "bytes_after": 3019
+    },
+    {
+     "path": "evidence/M06/revision_r2.json",
+     "sha256_after": "ab3fa86dcc699b9f9f000f0ea5e51a34d247e30fed8ad806e6953a0fdcbf5835",
+     "bytes_after": 818
+    }
+   ],
+   "removed": []
+  },
+  "named_by_F_M08_08": [
+   {
+    "path": "evidence/M06/negative_results.json",
+    "sha256_r1": "5d2793c2d8c5d1ea80b742842b6fb24ae92eccf867f3791889a36a15bdf7acb7",
+    "sha256_now": "5d2793c2d8c5d1ea80b742842b6fb24ae92eccf867f3791889a36a15bdf7acb7",
+    "changed": false,
+    "annotation_only_proof": null,
+    "added_keys": [],
+    "removed_keys": [],
+    "changed_pre_existing_leaves": {},
+    "pre_existing_leaves": null
+   },
+   {
+    "note": "this card has no evidence file named by F-M08-08; its r1->r2 changes are documentation only (see repack_scope_r1_to_r2)"
+   }
+  ],
+  "r3_pass_scope_r2_to_r3": {
+   "changed": [
+    {
+     "path": "after/rerun_sha256.json",
+     "sha256_before": "291be9e8cd9bc7454335bebc8c38e8ed2adf8e1931f676f172bb2da2da071ed5",
+     "sha256_after": "051ff48ee9e5f70bb20bd857ebeb26934ebc409a1f127d38f24ee6aba1a9930f",
+     "bytes_before": 4304,
+     "bytes_after": 6645
+    },
+    {
+     "path": "evidence/M06/evidence_hashes.json",
+     "sha256_before": "49fbe96e92dc2ce41a61ea8eb64b04aa57e9fa8730e0672878566a45b0d4341d",
+     "sha256_after": "88443257e3f5f23c6b2d2cc38cba7719292aea6d8e26fbdbcd7e7e0bc25c9b52",
+     "bytes_before": 2289,
+     "bytes_after": 3645
+    },
+    {
+     "path": "evidence/M06/oq_rulings.json",
+     "sha256_before": "ced1c6075b01b1404e56ed8d767cd0fc406d7b65a2e89c2647b94383e151567f",
+     "sha256_after": "e73b23779cec8a78e680d84d66786a926c53bc9130c0ac905b31a747a3cba831",
+     "bytes_before": 3019,
+     "bytes_after": 7197
+    },
+    {
+     "path": "evidence/M06/source_manifest.json",
+     "sha256_before": "0eb7e1c2c1d6abded2753ae4099bd351325bdd06872d3eef2b1885a967743ded",
+     "sha256_after": "cd5fdc4119f2dd8a5976c40b745923abd4e5560a4b4b26e40757c6b59a6126d5",
+     "bytes_before": 3819,
+     "bytes_after": 4788
+    },
+    {
+     "path": "oracle.md",
+     "sha256_before": "c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb",
+     "sha256_after": "206b27b3d8897f77d40007386fc932f114e8cf9c436ebcabe942db5b11615cc3",
+     "bytes_before": 10912,
+     "bytes_after": 12915
+    }
+   ],
+   "added": [
+    {
+     "path": "evidence/M06/docfix_r3.json",
+     "sha256_after": "be9f58d9030f39b378b587fa9d2c22381ed8bb47abbe4eae3627e102956c0c87",
+     "bytes_after": 9452
+    },
+    {
+     "path": "evidence/M06/oq_rulings_enumeration.json",
+     "sha256_after": "95ed73fbce1d26d9084c4db0cdf7b822b6bc2ecc01269344630c7668da6e6e6d",
+     "bytes_after": 16789
+    }
+   ],
+   "removed": []
+  },
+  "proofs": {
+   "annotation_only": "recovery/docfix-r3/f08_named_files.out.txt (strip the added keys -> deep-equal to the r1 object)",
+   "structural_diff": "recovery/docfix-r3/f08_repack_diff.out.txt",
+   "oracle_dedup": "recovery/docfix-r3/f06_verify.out.txt",
+   "enumeration": "recovery/docfix-r3/f07_enumerate.out.txt",
+   "machine_readable": "evidence/M06/docfix_r3.json"
+  },
+  "corrections": [
+   {
+    "finding": "F-M08-07",
+    "field": "handoff.json.open_questions[1] (OQ-02)",
+    "was_original_r2": "only the ratio dimension defaults to [0,1] (40 drivers, 3 explicit and documented exceptions)",
+    "now": "only the ratio dimension defaults to [0,1] (41 drivers, 4 outside [0,1], plus 2 priced-volume exceptions in the per-activity family)",
+    "why": "the registry has 41 ratio drivers; direct_growth.growth_rate (domain (-1, inf)) was missing from the list of exceptions"
+   }
+  ]
+ },
+ "revision_note": "r3 = document/evidence consistency pass (F-M08-06 dedup, F-M08-07 counts and attribution, F-M08-08 qualified repack ledger, F-M08-09 DEC-M08-1 correction). No expectation, tolerance, negative case, disclosure figure or product file changed."
+}

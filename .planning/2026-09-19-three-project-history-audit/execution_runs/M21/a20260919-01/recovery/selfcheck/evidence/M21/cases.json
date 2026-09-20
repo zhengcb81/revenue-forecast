@@ -1,0 +1,175 @@
+{
+ "card_id": "M21",
+ "first_required_driver": "opening_orders",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "card_neg",
+   "why": "card-specific negative (oracle.md section 5)",
+   "driver": "timing_factor",
+   "index": 1,
+   "value": {
+    "__float__": 1.5
+   }
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "driver": "opening_orders",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   }
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01b: non-finite value nan",
+   "driver": "opening_orders",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   }
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01c: non-finite value inf",
+   "driver": "opening_orders",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   }
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01d: non-finite value -inf",
+   "driver": "opening_orders",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   }
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "driver": "opening_orders",
+   "value": []
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "driver": "opening_orders"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ]
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "driver": null,
+   "value": []
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "driver": null,
+   "value": {
+    "__bool__first__": true
+   }
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_driver_multi",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "driver": null,
+   "value": {
+    "opening_orders": [
+     50,
+     36
+    ],
+    "ending_orders": [
+     35,
+     36
+    ]
+   }
+  }
+ ],
+ "extra_observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "value": 999,
+   "base_input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "why": "the delivery bridge ignores base_revenue at this entry point; design observation only, not a pass condition"
+  },
+  {
+   "id": "OBS-DEFAULT-EQUIV",
+   "kind": "set_driver_multi",
+   "value": {
+    "timing_factor": [
+     1
+    ],
+    "other_revenue": [
+     0
+    ]
+   },
+   "base_input": "defaults",
+   "compare_to": "defaults",
+   "expect_equal": true,
+   "why": "explicit 1/0 equals the omitted default; makes the documented default falsifiable"
+  },
+  {
+   "id": "OBS-CARD-NEG-ENDING",
+   "kind": "set_driver",
+   "driver": "ending_orders",
+   "value": [
+    36
+   ],
+   "base_input": "positive",
+   "expect_equal": null,
+   "why": "card-listed negative, kept as a NON-GATING observation on the 1-year path; the frozen gating cases are NEG-CARD (value domain) and CONT-BREAK (bridge/continuity)"
+  }
+ ],
+ "probe_expected": {
+  "OBS-CARD-NEG-ENDING": "ModelRegistryError (bridge: 35 + 30 - 5 - 40 != 36)"
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "card_id": "M17",
+ "model_id": "licensing_commercial",
+ "gating": false,
+ "purpose": "measured boundary observations of the documented domains; they are NOT part of the frozen oracle and NOT part of the runner's exit code",
+ "expectation_rule": "each expectation is computed by plain arithmetic in this file before the call and never taken from the product",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+ "probes": [
+  {
+   "id": "PROBE-NEG-MILESTONE",
+   "why": "the enumeration reports milestone_revenue's effective bounds as (-inf, inf) because it is a signed driver, while card_M17.md L8 calls the other licensing items 'confirmed amounts'; this probe measures whether a small NEGATIVE confirmed amount is accepted. The patch REPLACES milestone_revenue, so the arithmetic is 40 x 2 + (-5) + 5 + 10 = 90",
+   "expectation_source": "signed-driver bounds from the enumeration",
+   "expected_if_signed": 90.0,
+   "expected_if_non_negative": "ModelRegistryError",
+   "base_input": "positive",
+   "patch": {
+    "milestone_revenue": [
+     -5
+    ]
+   },
+   "mutated_input_repr": "{'treated_units': [40], 'net_revenue_per_unit': [2], 'milestone_revenue': [-5], 'royalty_revenue': [5], 'service_revenue': [10]} years=[2027]",
+   "raised": null,
+   "actual": [
+    90.0
+   ],
+   "matches_expected_if_signed": true
+  },
+  {
+   "id": "PROBE-NEG-TOTAL-REVENUE",
+   "why": "probes the only negative guard in calculate_registered_model: the TOTAL revenue must not be negative, even though individual components may be",
+   "expectation_source": "calculated revenue cannot be negative",
+   "expected_if_signed": "ModelRegistryError",
+   "expected_if_non_negative": "ModelRegistryError",
+   "base_input": "positive",
+   "patch": {
+    "milestone_revenue": [
+     -200
+    ]
+   },
+   "mutated_input_repr": "{'treated_units': [40], 'net_revenue_per_unit': [2], 'milestone_revenue': [-200], 'royalty_revenue': [5], 'service_revenue': [10]} years=[2027]",
+   "raised": "ModelRegistryError",
+   "message": "calculated revenue cannot be negative: licensing_commercial",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\probe_extra.py\", line 118, in main\n    value = model_registry.calculate_registered_model(\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 353, in calculate_registered_model\n    raise ModelRegistryError(f\"calculated revenue cannot be negative: {model_id}\")\nmodel_registry.ModelRegistryError: calculated revenue cannot be negative: licensing_commercial\n"
+  }
+ ]
+}

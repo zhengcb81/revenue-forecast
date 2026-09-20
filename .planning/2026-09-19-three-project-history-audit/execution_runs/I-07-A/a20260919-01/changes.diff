@@ -1,0 +1,55 @@
+# I-07-A / a20260919-01 — changes.diff
+
+## Product code changed: NONE
+
+This card produces evidence, not code. No file inside `revenue-forecast`, `company-wiki` or
+`filing-fetch` was created, modified, moved or deleted by this attempt.
+
+Witnesses (recorded before **and** after every command):
+
+| witness | value | file |
+|---|---|---|
+| revenue-forecast HEAD | `7d7ea1edc5e0371ffefee0d2ab3c4a34643199d5` (unchanged) | `before/snapshot.json`, `after/snapshot.json` |
+| company-wiki HEAD | `f39bd5a64224cd0c7aa098f23f64bf3811fa8939` (unchanged) | idem |
+| filing-fetch HEAD | `d35b6f5b09f1a7dad37d226504bf998802a852d7` (unchanged) | idem |
+| revenue-forecast `git status --porcelain -- tools` | empty | idem |
+| company-wiki `git status --porcelain -- src config scripts tests` | empty | idem |
+| filing-fetch `git status --porcelain -- scripts src tests` | empty | idem |
+| company-wiki `git status --porcelain` (whole tree) | ` M CLAUDE.md`, ` M README.md` — **pre-existing user edits, untouched** | idem |
+| production catalog `(bytes, mtime, -wal size)` | `49677344768`, `2026-09-19T07:31:35.406919`, `0` — identical before/after | `after/v5_integrity.json` |
+| 12 anchor files (sha256) | all unchanged | `before/snapshot.json`, `after/snapshot.json` |
+
+## What this attempt did write (all under the attempt directory, which is git-ignored for `iso/`)
+
+```text
+execution_runs/I-07-A/a20260919-01/
+  binding.json  oracle.md  commands.json  decision.md  review.md  handoff.json  changes.diff
+  harness/i07a_helpers.py      (snapshot / rehash / observe / iso-build)
+  harness/i07a_matrix.py       (matrix derivation from the evidence above)
+  before/                      (V0 snapshot + per-command stdout)
+  after/                       (V1 rehash, V2 observation, V3/V4 build, V5 snapshots + integrity,
+                                V6 matrix, per-command stdout)
+  iso/catalog/catalog.sqlite3  (attempt-owned minimal schema)
+  iso/catalog_root/**          (COPIES of the three raw files + sidecars, production layout)
+  iso/config/source_catalog.yaml (production config copy, exactly one line rebound)
+  iso/cases/case-0{1,2,3}-*/   (case.json + state.json per precondition state)
+```
+
+## The only content difference between production and this attempt's copy
+
+`iso/config_rebind.json` records it verbatim: exactly **one** line differs between
+`CW/config/source_catalog.yaml` and `iso/config/source_catalog.yaml`:
+
+```diff
+-catalog_dir: "${PROJECT_ROOT}/.source_catalog"
++catalog_dir: "<attempt>/iso/catalog"
+```
+
+Production config sha256 before == after ==
+`f9eb72a6c37c2dfeacf18a10df9b983dac104276efaf55b0a55b2c5c15f655df`.
+
+## No unified diff is possible or meaningful
+
+There is no `-`/`+` hunk to show for product files because no product file changed. Any diff against a
+product path in this attempt would be a fabricated change. The product-side evidence for that claim is
+the porcelain/blob table above plus `after/v5_integrity.json`.

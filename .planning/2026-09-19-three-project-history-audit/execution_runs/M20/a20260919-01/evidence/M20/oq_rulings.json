@@ -1,0 +1,189 @@
+{
+ "card_id": "M20",
+ "model_id": "cohort_subscription",
+ "document_author": "the implementing session of attempt a20260919-01, which also wrote oracle.md, run_card.py and this record",
+ "adjudicated_by": "PENDING - no entry below has been ruled on by the independent reviewer; the reviewer is a separate party who may accept, amend or reject each entry",
+ "no_first_person_authorship_claim": true,
+ "enumerated_by": "scripts/enumerate_registry.py",
+ "enumeration_raw_output": {
+  "path": "evidence/M20/registry_enumeration.json",
+  "sha256": "bb8a5eeef662cb33c29e922f9804647fb3f8560e7b99a1933f535259b145b873",
+  "script_sha256": "8e91ad06d80f8b51fabe9a5dd27e9370658b14834cfa039165d525a63f5e36e5",
+  "raw_stdout": "evidence/M20/runs/C-registry-enumeration/stdout.txt",
+  "raw_stdout_sha256": "4acd96e5866adb52b45e7a79817ae936fc0d0c5c6db223384e4aa39fcafe13e2",
+  "raw_returncode": 0,
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M20\\a20260919-01\\iso\\checkout_scripts"
+ },
+ "enumeration_counts": {
+  "models": 31,
+  "required_drivers": 125,
+  "optional_drivers": 40,
+  "ratio_drivers": 41,
+  "revenue_per_activity_and_per_unit_drivers": 23,
+  "optional_drivers_absent_from_declared_defaults": 31
+ },
+ "card_registry_facts": {
+  "model_id": "cohort_subscription",
+  "required": [
+   "opening_customers",
+   "new_customers",
+   "churned_customers",
+   "ending_customers",
+   "revenue_per_customer"
+  ],
+  "optional": [
+   "timing_factor",
+   "usage_revenue",
+   "new_customer_revenue_fraction",
+   "churned_customer_lost_fraction"
+  ],
+  "defaults": {
+   "timing_factor": 1.0,
+   "new_customer_revenue_fraction": 0.5,
+   "churned_customer_lost_fraction": 0.5
+  },
+  "ratio_drivers": [
+   "churned_customer_lost_fraction",
+   "new_customer_revenue_fraction",
+   "timing_factor"
+  ],
+  "driver_effective_bounds": {
+   "opening_customers": [
+    0.0,
+    "inf"
+   ],
+   "new_customers": [
+    0.0,
+    "inf"
+   ],
+   "churned_customers": [
+    0.0,
+    "inf"
+   ],
+   "ending_customers": [
+    0.0,
+    "inf"
+   ],
+   "revenue_per_customer": [
+    0.0,
+    "inf"
+   ],
+   "timing_factor": [
+    0.0,
+    1.0
+   ],
+   "usage_revenue": [
+    0.0,
+    "inf"
+   ],
+   "new_customer_revenue_fraction": [
+    0.0,
+    1.0
+   ],
+   "churned_customer_lost_fraction": [
+    0.0,
+    1.0
+   ]
+  }
+ },
+ "rulings": [
+  {
+   "id": "OQ-01",
+   "scope": "shared by all four cards of this batch (M17-M20)",
+   "title": "isolation binding provenance",
+   "status": "registered_not_fixed",
+   "observation": "the cards require the run cwd to come from I-00-B, while I-00-B binds the isolation plan and the two-stage command rule rather than materialising a checkout tree",
+   "what_this_attempt_did": "materialised its own read-only snapshot at iso/checkout_scripts and recorded that its two files hash equal to the production files",
+   "consequence": "if the intended binding is an I-00-B-materialised checkout, the provenance chain differs; the code under test is byte-identical either way",
+   "requires_ruling_from": "owner (dispatch/binding)"
+  },
+  {
+   "id": "OQ-02",
+   "scope": "shared by all four cards of this batch (M17-M20)",
+   "title": "an omitted optional driver that has no declared default is silently 0.0",
+   "status": "registered_not_fixed",
+   "mechanism": "calculate_registered_model resolves a missing driver as drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+   "enumerated_registry_wide_count": 31,
+   "enumerated_for_this_model": [
+    "cohort_subscription.usage_revenue"
+   ],
+   "enumerated_registry_wide_list": [
+    "advertising.other_revenue",
+    "asset_management.performance_fee_revenue",
+    "asset_management.other_revenue",
+    "aum_fee_bridge.recognized_performance_fees",
+    "bank_revenue.other_revenue",
+    "capacity_utilization.other_revenue",
+    "cohort_subscription.usage_revenue",
+    "delivery_pipeline.other_revenue",
+    "gaming.other_revenue",
+    "infrastructure.other_revenue",
+    "insurance_service.other_revenue",
+    "licensing_commercial.milestone_revenue",
+    "licensing_commercial.royalty_revenue",
+    "licensing_commercial.service_revenue",
+    "milestone_royalty.milestone_revenue",
+    "milestone_royalty.service_revenue",
+    "project_backlog.backlog_remeasurements",
+    "real_estate_rental.other_revenue",
+    "renewable_generation.other_revenue",
+    "reserve_depletion.other_revenue",
+    "reserve_depletion.reserve_revisions",
+    "resource.other_revenue",
+    "retail_franchise.franchise_system_sales",
+    "retail_franchise.recognized_fee_rate",
+    "retail_franchise.supply_revenue",
+    "services.other_revenue",
+    "subscription.usage_revenue",
+    "subscription_arr_bridge.usage_revenue",
+    "transport.ancillary_revenue",
+    "unit_sales.other_revenue",
+    "usage_platform.fixed_revenue"
+   ],
+   "why_it_matters_here": "'the item does not exist' and 'the item was not found' become the same input, so an unknown is turned into recognised revenue",
+   "cross_check": "OBS-DEFAULT-EQUIV in evidence/M20/run_result.json records that writing the omitted optional drivers explicitly as 0 reproduces the omitted-input result, which is what makes the documented default of 0 falsifiable",
+   "action_this_attempt": "registered, NOT fixed; no product file was modified",
+   "requires_ruling_from": "owner (product change would need its own card)"
+  },
+  {
+   "id": "OQ-03",
+   "title": "card business negative that the calculator cannot enforce",
+   "status": "registered_not_fixed",
+   "card_text": "card_M20.md L57: mid-year timing may not be defaulted without evidence, and different prices or same-year churn cohorts need a professional split",
+   "finding": "NOT runtime-enforceable: the registry default for timing_factor is 1.0 (not a mid-year 0.5), and cohort splitting is a disclosure/adaptation question",
+   "consequence": "STOP_DISCLOSURE_ADAPTATION remains in force; a number is not an adaptation",
+   "requires_ruling_from": "industry/accounting reviewer (I-10-A / D)"
+  },
+  {
+   "id": "OQ-04",
+   "title": "numerical domain / boundary observations of this model",
+   "status": "registered_not_fixed",
+   "finding": " the customer bridge IS enforced: the intra-year balance (opening + new - churned == ending) and the cross-year continuity (opening == prior ending) are both checked with math.isclose(rel_tol=1e-9, abs_tol=1e-9); the frozen CONT-BREAK case (opening 121 vs prior closing 120) is rejected, and the exposure guard is 'exposure < 0', so exposure of exactly 0 is accepted (OBS-ZERO-CUSTOMERS expects 7)",
+   "derived_from": "the effective bounds enumerated by scripts/enumerate_registry.py (evidence/M20/registry_enumeration.json)",
+   "measured_probes": [
+    {
+     "id": "PROBE-TIMING-ZERO",
+     "raised": null,
+     "actual": [
+      5.0
+     ],
+     "measured_matches": {
+      "matches_expected_if_inclusive": true
+     }
+    },
+    {
+     "id": "PROBE-CONTINUITY-TOLERANCE",
+     "raised": null,
+     "actual": [
+      195.0,
+      240.000000000002
+     ],
+     "measured_matches": {}
+    }
+   ],
+   "probe_provenance": "evidence/M20/extra_probes.json; the probes are NON-GATING and sit outside oracle.json and outside the runner's exit code",
+   "requires_ruling_from": "independent reviewer (accept / amend / reject)"
+  }
+ ],
+ "counts_provenance_rule": "every number in enumeration_counts comes from the raw output of scripts/enumerate_registry.py; none is transcribed from prose"
+}

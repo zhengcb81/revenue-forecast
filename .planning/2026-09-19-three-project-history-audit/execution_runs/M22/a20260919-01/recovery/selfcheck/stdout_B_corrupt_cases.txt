@@ -1,0 +1,29 @@
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M22\a20260919-01\iso\checkout_scripts
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M22\a20260919-01\iso\checkout_scripts\model_registry.py
+registry formula: revenue = eligible_sales * royalty_rate + milestone_revenue + service_revenue
+registry required: ['eligible_sales', 'royalty_rate']
+registry optional: ['milestone_revenue', 'service_revenue']
+registry defaults: {}
+registry driver_bounds: {}
+positive raised: None
+positive actual: [55.0]
+positive expected: [55.0]
+tolerances_ok: True
+continuity_positive ok: True
+defaults ok: True actual: [40.0] expected: [40.0]
+observation: OBS-BASE-IGNORED raised= None actual= [55.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+observation: OBS-DEFAULT-EQUIV raised= None actual= [40.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+negative: NEG-CARD PASS_rejected ModelRegistryError - driver milestone_royalty.royalty_rate must contain one value per forecast year
+negative: N01a PASS_rejected ModelRegistryError - milestone_royalty.eligible_sales.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - milestone_royalty.eligible_sales.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - milestone_royalty.eligible_sales.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - milestone_royalty.eligible_sales.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver milestone_royalty.eligible_sales must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for milestone_royalty: eligible_sales
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for milestone_royalty: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - milestone_royalty.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - milestone_royalty.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - milestone_royalty.years must be consecutive and increasing
+negative: G-B-BOGUS FAIL_not_rejected None - 
+negative summary: {'total': 12, 'passed': 11, 'failed': ['G-B-BOGUS']}
+verdict: fail exit_code: 3

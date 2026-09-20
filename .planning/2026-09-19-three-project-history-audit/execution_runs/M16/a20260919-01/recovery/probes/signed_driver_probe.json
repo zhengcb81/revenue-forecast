@@ -1,0 +1,30 @@
+{
+ "card_id": "M16",
+ "model_id": "real_estate_rental",
+ "purpose": "post-hoc design probe (NOT a frozen case, NOT the oracle): records the contract behaviour for a negative optional driver",
+ "base_input": "evidence/M16/input.json:positive (deepcopy)",
+ "driver_probed": "other_revenue",
+ "why_this_driver": "optional driver whose effective bounds are (-inf, inf): a legitimate negative (reversal/clawback) is admitted by the driver guard",
+ "probe_value": -100.0,
+ "probe_input_drivers": {
+  "average_occupied_area": [
+   1000
+  ],
+  "rent_per_area": [
+   0.03
+  ],
+  "other_revenue": [
+   -100.0
+  ]
+ },
+ "outcome": {
+  "raised": "ModelRegistryError",
+  "actual": null,
+  "message": "calculated revenue cannot be negative: real_estate_rental"
+ },
+ "interpretation": "the signed driver passed the guard and the row was refused later by the non-negative-revenue check",
+ "enumeration_source": "evidence/M16/oq_enumeration.json",
+ "product_call": "model_registry.calculate_registered_model(model_id, base_revenue, drivers, years) - the same single entry point as the runner",
+ "written_at_unix": 1789872711.8154764,
+ "written_at_utc": "2026-09-20T02:51:51Z"
+}

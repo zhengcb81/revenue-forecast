@@ -1,0 +1,295 @@
+{
+ "card_id": "M25",
+ "model_id": "installed_base_aftermarket",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts",
+ "model_registry_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "registry_metadata": {
+  "model_id": "installed_base_aftermarket",
+  "required": [
+   "opening_installed_units",
+   "new_installed_units",
+   "retired_units",
+   "closing_installed_units",
+   "new_unit_revenue_fraction",
+   "retirement_lost_fraction",
+   "attach_rate",
+   "annual_revenue_per_attached_unit"
+  ],
+  "optional": [],
+  "defaults": {},
+  "dimensions": {
+   "opening_installed_units": "quantity",
+   "new_installed_units": "quantity",
+   "retired_units": "quantity",
+   "closing_installed_units": "quantity",
+   "new_unit_revenue_fraction": "ratio",
+   "retirement_lost_fraction": "ratio",
+   "attach_rate": "ratio",
+   "annual_revenue_per_attached_unit": "revenue_per_unit"
+  },
+  "ratio_drivers": [
+   "attach_rate",
+   "new_unit_revenue_fraction",
+   "retirement_lost_fraction"
+  ],
+  "driver_bounds": {},
+  "formula": "revenue = (opening_installed_units + new_installed_units*new_unit_revenue_fraction - retired_units*retirement_lost_fraction) * attach_rate * annual_revenue_per_attached_unit"
+ },
+ "positive": {
+  "raised": null,
+  "actual": [
+   300.0
+  ],
+  "actual_repr": [
+   "300.0"
+  ],
+  "length": 1
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   300.0,
+   330.0
+  ],
+  "expected": [
+   300.0,
+   330.0
+  ],
+  "length_ok": true,
+  "ok": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   0.0
+  ],
+  "expected": [
+   0.0
+  ],
+  "ok": true
+ },
+ "defaults_declared_check": {
+  "driver": null,
+  "registry_declared_defaults": {},
+  "declared_default_present": null,
+  "declared_default_value": null,
+  "expected_declared_default_present": null,
+  "matches_expected": null,
+  "why": "M25 has optional = () and defaults = {}, so there is no declared optional default to check",
+  "gating": false
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "expectation": null,
+   "kind": "set_base_revenue",
+   "why": "rowwise calculator discards base_revenue; design observation only, not a pass condition",
+   "raised": null,
+   "actual": [
+    300.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    300.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-DEFAULT-ZERO",
+   "expectation": null,
+   "kind": "input_replay",
+   "why": "all eight required drivers explicitly zero, no optional driver exists; the mechanism is the rowwise calculator, which starts from zero for every year",
+   "raised": null,
+   "actual": [
+    0.0
+   ]
+  }
+ ],
+ "negatives": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_installed_units': [200], 'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3]} years=[2027] base=0",
+   "raised": null,
+   "verdict": "FAIL_not_rejected"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_installed_units': [True], 'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "installed_base_aftermarket.opening_installed_units.FY2027 must be numeric",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: installed_base_aftermarket.opening_installed_units.FY2027 must be numeric\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "why": "common negative N01b: non-finite value nan",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_installed_units': [nan], 'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "installed_base_aftermarket.opening_installed_units.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: installed_base_aftermarket.opening_installed_units.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "why": "common negative N01c: non-finite value inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_installed_units': [inf], 'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "installed_base_aftermarket.opening_installed_units.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: installed_base_aftermarket.opening_installed_units.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "why": "common negative N01d: non-finite value -inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_installed_units': [-inf], 'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "installed_base_aftermarket.opening_installed_units.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: installed_base_aftermarket.opening_installed_units.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_installed_units': [], 'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver installed_base_aftermarket.opening_installed_units must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver installed_base_aftermarket.opening_installed_units must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for installed_base_aftermarket: opening_installed_units",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for installed_base_aftermarket: opening_installed_units\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_installed_units': [200], 'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3], 'unknown_driver': [1]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "unsupported drivers for installed_base_aftermarket: unknown_driver",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for installed_base_aftermarket: unknown_driver\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_installed_units': [200], 'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3]} years=[] base=0",
+   "raised": "ModelRegistryError",
+   "message": "installed_base_aftermarket.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: installed_base_aftermarket.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_installed_units': [200], 'new_installed_units': [40], 'retired_units': [20], 'closing_installed_units': [220], 'new_unit_revenue_fraction': [0.25], 'retirement_lost_fraction': [0.5], 'attach_rate': [0.5], 'annual_revenue_per_attached_unit': [3]} years=[True] base=0",
+   "raised": "ModelRegistryError",
+   "message": "installed_base_aftermarket.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: installed_base_aftermarket.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_driver_multi",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "mutated_input_repr": "{'opening_installed_units': [200, 221], 'new_installed_units': [40, 0], 'retired_units': [20, 0], 'closing_installed_units': [220, 221], 'new_unit_revenue_fraction': [0.25, 0.25], 'retirement_lost_fraction': [0.5, 0.5], 'attach_rate': [0.5, 0.5], 'annual_revenue_per_attached_unit': [3, 3]} years=[2027, 2028] base=0",
+   "raised": "ModelRegistryError",
+   "message": "opening_installed_units continuity failed: FY2028",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 275, in run\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\scripts\\run_card.py\", line 84, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 346, in calculate_registered_model\n    result = spec.calculator(base, normalized, years)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 156, in calculate\n    output = calculator(rows, years, error)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 60, in _installed\n    _bridge(rows, index, year, \"opening_installed_units\", \"closing_installed_units\",\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            d[\"opening_installed_units\"] + d[\"new_installed_units\"] - d[\"retired_units\"], error)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 37, in _bridge\n    _equal(rows[index][opening], rows[index - 1][closing],\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n           f\"{opening} continuity failed: FY{year}\", error)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M25\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 29, in _equal\n    raise error(message)\nmodel_registry.ModelRegistryError: opening_installed_units continuity failed: FY2028\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  }
+ ],
+ "tolerances_ok": true,
+ "defaults_ok": true,
+ "harness_incomplete": false,
+ "length_ok": true,
+ "per_value_checks": [
+  {
+   "index": 0,
+   "year": 2027,
+   "actual": 300.0,
+   "expected": 300.0,
+   "tolerance": 3e-07,
+   "abs_diff": 0.0,
+   "ok": true
+  }
+ ],
+ "negative_summary": {
+  "total": 11,
+  "passed": 10,
+  "failed": [
+   "NEG-CARD"
+  ]
+ },
+ "exit_code_semantics": {
+  "harness_incomplete": false,
+  "positive_ok": true,
+  "continuity_ok": true,
+  "negatives_ok": false,
+  "defaults_ok_not_gating": true,
+  "defaults_declared_check_not_gating": null,
+  "verdict": "fail",
+  "exit_code": 3
+ }
+}

@@ -1,0 +1,34 @@
+{
+ "card": "M16",
+ "model_id": "real_estate_rental",
+ "card_title": "M16 · real_estate_rental · 已出租面积租金",
+ "entry_line": "scripts/model_registry.py:308",
+ "register_line": "scripts/model_registry.py:236",
+ "card_line_refs": {
+  "formula": "L8",
+  "hand_calc": "L33",
+  "negative": "L35",
+  "disclosure": "L37",
+  "professional": "L39",
+  "actions": "L43-48",
+  "stop": "L50-55",
+  "qualifications": "L57-61",
+  "evidence": "L63"
+ },
+ "decision_judgements": "- `D-M16-1`：card-specific 负例用 `set_driver_element` 把 `average_occupied_area[0]` 置为 -1，\n  使拒绝发生在**下界守卫**上（实测消息 `driver real_estate_rental.average_occupied_area must be between 0.0 and inf: FY2027`）。\n- `D-M16-2`：把\"面积域下端含端点\"作为非 gating 观察（OBS-BOUND-INCLUSIVE，取 0 → 实测 2.0），\n  与 NEG-CARD（取 -1 → 拒绝）配对。\n- `D-M16-3`：注册的 driver 集合中**没有**出租率/占用率 driver，这从契约层面确认了卡片 L8\n  \"已租面积不能再乘出租率\"；尝试传入 `unknown_driver` 会被 N04 机制拒绝（`unsupported drivers`）。\n- `D-M16-4`：`other_revenue` 是带符号无下界 driver（实测 29.0 于 -1），而 `rent_per_area` 与\n  `average_occupied_area` 非负；\"现金租金 vs 直线法会计租金\"\"月租转年租\"（卡片 L37/L39）不在本卡裁定范围。",
+ "hand_work": {
+  "positive": "1000 × 0.03 = 30；30 + 2 = 32",
+  "continuity": "FY2027 = 1000×0.03 + 2 = 30 + 2 = 32；FY2028 = 1200×0.032 + 3 = 38.4 + 3 = 41.4",
+  "defaults": "1000 × 0.03 + 0 = 30（other_revenue 回落到 0.0）"
+ },
+ "attack_points": "1. **`defaults` 与 `observations` 不参与退出码。** 有人会主张失败的观察项至少应触发 rc=2；\n   本 runner 的契约是显式的，且 `triggered` 会列出全部条件——但这是有意的范围选择。\n2. **rc=2 会遮蔽 rc=3。** 优先级 `1 > 2 > 3`；同时成立时返回 2 但 `triggered` 仍列出\n   `negative_case_not_rejected`。是否需要与顺序无关的判定码由 reviewer 决定。\n3. **`rent_per_area` 的量纲（月 vs 年）没有任何契约约束。** 实现只知道它是\"每面积收入\"；\n   月租误当年租不会被计算器发现（卡片 L39 明确要求显式换算），必须由披露适配阶段绑定。\n4. **`other_revenue` 带符号**：负值被接受（实测 29.0），因此\"其他收入\"既可能掩盖费用，\n   也可能在总额非负时静默吸收错误。reviewer 应确认该 driver 在披露阶段的口径。\n5. **\"已租面积不能再乘出租率\"只靠 driver 集合保证。** 契约里没有 occupancy driver，\n   所以双重折扣需要人为构造 `unknown_driver`（被拒绝）；这一点已在 `D-M16-3` 说明。\n6. **免租期/直线法**：实现没有免租期参数，卡片 L37 的直线法确认属 D 阶段；\n   本卡不声称已处理。\n7. **隔离 checkout 的 provenance（OQ-01）** 与 **未安装 pytest（OQ-05）**：同 M13/M14/M15。",
+ "not_claimed": "- 不声称模型准确，也不声称任何映射可泛化。\n- 不声称 `disclosure_adaptation`（本 attempt 没有任何真实公司披露映射，保持 `unmapped`）。\n- 不改写公式：在没有独立反例、也没有经审定规格的情况下保留既有实现。\n- 不声称\"已租面积 0 被接受\"等价于\"空置无需建模\"；那属业务判断。",
+ "next_action": "Independent reviewer: (1) re-run scripts/oracle_M16.py into a scratch attempt root and diff input/cases/oracle against the frozen copies; (2) re-run scripts/run_card.py against iso/checkout_scripts and confirm [32.0] / [32.0, 41.4] / [30.0] with 11/11 negatives rejected and rc=0; (3) run scripts/verify_card.py and scripts/verify_r2_boundary.py (both must exit 0); (4) adjudicate OQ-01..OQ-05 and the monthly-vs-annual rent gap. After that the D/E stage belongs to I-10-A and the accuracy stage to I-12.",
+ "open_questions": [
+  "OQ-01 (binding): the cards say the run cwd must come from I-00-B, but I-00-B binds the isolation plan and the two-stage command rule, not a materialised checkout tree. This attempt materialised its own read-only snapshot (iso/checkout_scripts, hashes equal to production). Needs a binding ruling; the code under test is byte-identical either way.",
+  "OQ-02 (silent zero-fill): model_registry.py:335 fills an omitted optional driver that has no explicit default with 0.0. This model has 1 such driver (other_revenue); omitting it asserts 'no other revenue' and is indistinguishable from 'the disclosure was not found'. Registered, NOT fixed.",
+  "OQ-03 (signed other revenue): other_revenue is signed and unbounded (the probe records -1 being accepted as 29.0), so 'other revenue' can silently absorb a negative amount while the row stays non-negative. Whether such items belong in this driver at all is a D/E decision.",
+  "OQ-04 (monthly vs annual rent): rent_per_area carries no unit metadata beyond 'revenue_per_area', so a monthly rent used as an annual one cannot be detected by the contract; card_M16.md L39 requires an explicit conversion. The disclosure stage must bind this.",
+  "OQ-05 (pytest): pytest was not installed in the attempt venv (no offline wheel in the local pip cache, network forbidden) and the historical suite was not re-run. If a reviewer requires the historical suite for this card, that must be stated explicitly because it changes the attempt scope."
+ ]
+}

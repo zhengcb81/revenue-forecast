@@ -1,0 +1,36 @@
+{
+ "card_id": "M14",
+ "model_id": "retail_franchise",
+ "purpose": "post-hoc design probe (NOT a frozen case, NOT the oracle): records the contract behaviour for a negative optional driver",
+ "base_input": "evidence/M14/input.json:positive (deepcopy)",
+ "driver_probed": "franchise_system_sales",
+ "why_this_driver": "no optional driver of this model is signed/unbounded, so the first optional driver is probed instead; a negative value is then expected to be refused by the driver bound itself",
+ "probe_value": -100.0,
+ "probe_input_drivers": {
+  "average_owned_stores": [
+   10
+  ],
+  "revenue_per_owned_store": [
+   5
+  ],
+  "franchise_system_sales": [
+   -100.0
+  ],
+  "recognized_fee_rate": [
+   0.04
+  ],
+  "supply_revenue": [
+   7
+  ]
+ },
+ "outcome": {
+  "raised": "ModelRegistryError",
+  "actual": null,
+  "message": "driver retail_franchise.franchise_system_sales must be between 0.0 and inf: FY2027"
+ },
+ "interpretation": "the driver guard refused the negative value outright",
+ "enumeration_source": "evidence/M14/oq_enumeration.json",
+ "product_call": "model_registry.calculate_registered_model(model_id, base_revenue, drivers, years) - the same single entry point as the runner",
+ "written_at_unix": 1789872707.2167995,
+ "written_at_utc": "2026-09-20T02:51:47Z"
+}

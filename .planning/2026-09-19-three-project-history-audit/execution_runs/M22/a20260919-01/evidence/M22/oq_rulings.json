@@ -1,0 +1,526 @@
+{
+ "card_id": "M22",
+ "enumeration_provenance": {
+  "enumeration_script": "scripts/enumerate_oq_rulings.py",
+  "enumeration_script_sha256": "da3d920fd2d30a853e9848b8c1553a9d809d291bf4073f4ced7ab5d0e761cb71",
+  "raw_output_json": "evidence/M22/oq_rulings_enumeration.json",
+  "raw_output_json_sha256": "861c5efa85f932e23bd40c91687b9ec5c93deaa1263b82914acb48de3a105070",
+  "raw_stdout": "recovery/oq_enum_stdout.txt",
+  "raw_stderr": "recovery/oq_enum_stderr.txt (0 bytes)",
+  "read_from": "the isolated snapshot iso/checkout_scripts (hashes equal to production), never the production directory",
+  "statement": "every count in this file was produced by the enumeration script; none was typed by hand"
+ },
+ "scope_of_this_file": "This file records what the registry enumeration SUPPORTS. It deliberately does NOT adjudicate the open questions; the verdict on every ruling below belongs to the independent reviewer of this attempt.",
+ "OQ-ENUM-01": {
+  "question": "Is a driver whose dimension is `ratio` always confined to [0,1]?",
+  "enumeration_counts": {
+   "registered_model_count": 31,
+   "total_driver_slots": 165,
+   "ratio_drivers_total": 41,
+   "ratio_drivers_effective_domain_0_1": 37,
+   "ratio_drivers_outside_0_1": 4,
+   "non_ratio_drivers_total": 124,
+   "non_ratio_drivers_with_finite_upper_bound": 0
+  },
+  "what_the_enumeration_shows": "the ratio dimension defaults to [0,1] for 37 of 41 ratio drivers; the 4 exceptions are either declared with explicit driver_bounds or are `growth_rate`, which carries its own (-1, +inf) rule",
+  "consequence_for_this_card": "the gating negative NEG-CARD of this card is a value-domain rejection inside that contract; it is NOT evidence that the value is economically impossible",
+  "ruling": "left to the independent reviewer; no product change was made"
+ },
+ "OQ-ENUM-02": {
+  "question": "Does an omitted optional driver that has no explicit default become 0.0 silently?",
+  "mechanism": "scripts/model_registry.py:335 drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+  "enumeration_count": 31,
+  "affected_slots": [
+   {
+    "model_id": "advertising",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "asset_management",
+    "driver": "performance_fee_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "asset_management",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "aum_fee_bridge",
+    "driver": "recognized_performance_fees",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "bank_revenue",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "capacity_utilization",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "cohort_subscription",
+    "driver": "usage_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     0.0,
+     null
+    ]
+   },
+   {
+    "model_id": "delivery_pipeline",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "gaming",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "infrastructure",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "insurance_service",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "licensing_commercial",
+    "driver": "milestone_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "licensing_commercial",
+    "driver": "royalty_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "licensing_commercial",
+    "driver": "service_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "milestone_royalty",
+    "driver": "milestone_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "milestone_royalty",
+    "driver": "service_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "project_backlog",
+    "driver": "backlog_remeasurements",
+    "dimension": "backlog",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "real_estate_rental",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "renewable_generation",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "reserve_depletion",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "reserve_depletion",
+    "driver": "reserve_revisions",
+    "dimension": "reserve_volume",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "resource",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "retail_franchise",
+    "driver": "franchise_system_sales",
+    "dimension": "revenue",
+    "effective_domain": [
+     0.0,
+     null
+    ]
+   },
+   {
+    "model_id": "retail_franchise",
+    "driver": "recognized_fee_rate",
+    "dimension": "ratio",
+    "effective_domain": [
+     0.0,
+     1.0
+    ]
+   },
+   {
+    "model_id": "retail_franchise",
+    "driver": "supply_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     0.0,
+     null
+    ]
+   },
+   {
+    "model_id": "services",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "subscription",
+    "driver": "usage_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     0.0,
+     null
+    ]
+   },
+   {
+    "model_id": "subscription_arr_bridge",
+    "driver": "usage_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     0.0,
+     null
+    ]
+   },
+   {
+    "model_id": "transport",
+    "driver": "ancillary_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "unit_sales",
+    "driver": "other_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   },
+   {
+    "model_id": "usage_platform",
+    "driver": "fixed_revenue",
+    "dimension": "revenue",
+    "effective_domain": [
+     null,
+     null
+    ]
+   }
+  ],
+  "affected_slots_for_this_card": {
+   "delivery_pipeline": [
+    "other_revenue"
+   ],
+   "milestone_royalty": [
+    "milestone_revenue",
+    "service_revenue"
+   ],
+   "insurance_service": [
+    "other_revenue"
+   ],
+   "subscription_arr_bridge": [
+    "usage_revenue"
+   ]
+  },
+  "what_the_enumeration_shows": "the mechanism at scripts/model_registry.py:335 applies to all 31 optional drivers that are absent from spec.defaults",
+  "ruling": "left to the independent reviewer; registered, NOT fixed, no product change was made"
+ },
+ "OQ-ENUM-03": {
+  "question": "Do any money/quantity drivers carry a finite upper bound that could silently cap a legitimate disclosure?",
+  "enumeration_counts": {
+   "non_ratio_drivers_total": 124,
+   "non_ratio_drivers_with_finite_upper_bound": 0
+  },
+  "what_the_enumeration_shows": "no non-ratio driver has a finite upper bound",
+  "ruling": "left to the independent reviewer"
+ },
+ "card_model_contracts_as_enumerated": {
+  "delivery_pipeline": {
+   "required": [
+    "opening_orders",
+    "new_orders",
+    "cancellations",
+    "deliveries",
+    "ending_orders",
+    "unit_revenue"
+   ],
+   "optional": [
+    "timing_factor",
+    "other_revenue"
+   ],
+   "defaults": {
+    "timing_factor": 1.0
+   },
+   "effective_domains": {
+    "opening_orders": [
+     0.0,
+     null
+    ],
+    "new_orders": [
+     0.0,
+     null
+    ],
+    "cancellations": [
+     0.0,
+     null
+    ],
+    "deliveries": [
+     0.0,
+     null
+    ],
+    "ending_orders": [
+     0.0,
+     null
+    ],
+    "unit_revenue": [
+     0.0,
+     null
+    ],
+    "timing_factor": [
+     0.0,
+     1.0
+    ],
+    "other_revenue": [
+     null,
+     null
+    ]
+   },
+   "silent_zero_fill_applies_to": [
+    "other_revenue"
+   ]
+  },
+  "milestone_royalty": {
+   "required": [
+    "eligible_sales",
+    "royalty_rate"
+   ],
+   "optional": [
+    "milestone_revenue",
+    "service_revenue"
+   ],
+   "defaults": {},
+   "effective_domains": {
+    "eligible_sales": [
+     0.0,
+     null
+    ],
+    "royalty_rate": [
+     0.0,
+     1.0
+    ],
+    "milestone_revenue": [
+     null,
+     null
+    ],
+    "service_revenue": [
+     null,
+     null
+    ]
+   },
+   "silent_zero_fill_applies_to": [
+    "milestone_revenue",
+    "service_revenue"
+   ]
+  },
+  "insurance_service": {
+   "required": [
+    "coverage_units",
+    "revenue_per_coverage_unit"
+   ],
+   "optional": [
+    "timing_factor",
+    "other_revenue"
+   ],
+   "defaults": {
+    "timing_factor": 1.0
+   },
+   "effective_domains": {
+    "coverage_units": [
+     0.0,
+     null
+    ],
+    "revenue_per_coverage_unit": [
+     0.0,
+     null
+    ],
+    "timing_factor": [
+     0.0,
+     1.0
+    ],
+    "other_revenue": [
+     null,
+     null
+    ]
+   },
+   "silent_zero_fill_applies_to": [
+    "other_revenue"
+   ]
+  },
+  "subscription_arr_bridge": {
+   "required": [
+    "opening_arr",
+    "expansion_arr",
+    "new_arr",
+    "closing_arr",
+    "gross_retention_rate",
+    "lost_arr_revenue_fraction",
+    "expansion_revenue_fraction",
+    "new_arr_revenue_fraction"
+   ],
+   "optional": [
+    "usage_revenue"
+   ],
+   "defaults": {},
+   "effective_domains": {
+    "opening_arr": [
+     0.0,
+     null
+    ],
+    "expansion_arr": [
+     0.0,
+     null
+    ],
+    "new_arr": [
+     0.0,
+     null
+    ],
+    "closing_arr": [
+     0.0,
+     null
+    ],
+    "gross_retention_rate": [
+     0.0,
+     1.0
+    ],
+    "lost_arr_revenue_fraction": [
+     0.0,
+     1.0
+    ],
+    "expansion_revenue_fraction": [
+     0.0,
+     1.0
+    ],
+    "new_arr_revenue_fraction": [
+     0.0,
+     1.0
+    ],
+    "usage_revenue": [
+     0.0,
+     null
+    ]
+   },
+   "silent_zero_fill_applies_to": [
+    "usage_revenue"
+   ]
+  }
+ },
+ "not_adjudicated_here": [
+  "whether the four ratio exceptions are the right set",
+  "whether silent zero-fill should be an error for any named driver",
+  "any disclosure-adaptation or accuracy question (those stay unmapped / unproven)"
+ ]
+}

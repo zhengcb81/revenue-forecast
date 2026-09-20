@@ -1,0 +1,141 @@
+{
+  "card": "I-14-A",
+  "card_title": "性能测量先验证失败分支",
+  "attempt_id": "a20260919-01",
+  "date_local": "2026-09-20",
+  "parent_obligation": "PLAN/implementation_plan.md item I-14 (line 204): 校验 SLO 子进程返回码与业务输出；在进程存活时采 RSS/峰值。将采样窗口与命令总耗时、quick_check 耗时分开。",
+  "audit_row_falsified": "PLAN/audit_report.md line 60 — 忽略子进程 rc，进程退出后才采子进程 RSS",
+  "objective": "Freeze the RSS/rc/timing measurement rules, then EXERCISE the failure branches as falsifiable counterexamples on an isolated copy of the meter. Prove the meter, not production SLO.",
+
+  "dependencies": {
+    "I-00-C": {
+      "receipt": "../../I-00-C/a20260919-01/",
+      "used_for": "isolation pattern (attempt-level iso interpreter, per-command dirs), report-back format",
+      "status_at_read": "handoff.json says status=review_pending; review.md records accepted_scoped. Both are recorded here; NO conclusion of this attempt depends on which holds — the dependency is used only as an isolation/receipt precedent, and its own subject (gate/closure determinism) is disjoint from the SLO probe."
+    },
+    "I-00-B": {
+      "receipt": "../../I-00-B/a20260919-01/binding.json",
+      "used_for": "two-stage command binding rule, forbidden list, 'no invented CLI' rule, per-command evidence dirs"
+    },
+    "I-00-A": {
+      "receipt": "../../I-00-A/a20260919-01/iso/venv/Scripts/python.exe",
+      "used_for": "template interpreter for this attempt's iso venv"
+    }
+  },
+
+  "interpreter": {
+    "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "created_from_template": "I-00-A/a20260919-01/iso/venv/Scripts/python.exe",
+    "version": "3.13.9 (Anaconda packaging)",
+    "installed_into_venv": ["pytest==9.1.1", "psutil==7.2.2", "pluggy==1.6.0", "iniconfig==2.3.0", "packaging==26.3", "colorama==0.4.6", "pygments==2.21.0"],
+    "install_command": "I-00-A template python -m pip --python <attempt>/iso/venv/Scripts/python.exe install pytest psutil",
+    "network": "pip install used the machine's package index once at setup; NO provider/worker/network call was made by any card command",
+    "global_miniconda_python": "FORBIDDEN for card runs (I-00-A: editable dayu-agent finder hook)"
+  },
+
+  "run_cwd_rule": "every card command runs with cwd = this attempt dir; NEVER the company-wiki repo root and NEVER the production catalog",
+  "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-A\\a20260919-01\\"
+  ],
+  "allowed_product_edits": [
+    "NONE. The card allows editing RF/tools/slo_probe.py and its test; this attempt deliberately does NOT touch the product repo. The fix exists only as iso/slo_probe_patched.py + changes.diff, so the independent reviewer can judge it before it lands."
+  ],
+
+  "source_anchors_sha256_verified_this_attempt": {
+    "RF/tools/slo_probe.py": {
+      "sha256_worktree": "f051feec00658bb5fefee8d22c2c7630e0bd348b5384ae80f0c882c822f48059",
+      "bytes": 5822,
+      "git_blob_at_HEAD": "413aad5f788732520ace76acbaebcf06633f34d5",
+      "git_blob_of_worktree": "413aad5f788732520ace76acbaebcf06633f34d5",
+      "verdict": "unmodified at HEAD — the audit finding is a CURRENT-source defect, not a stale citation",
+      "iso_copy": "iso/tool_prod/slo_probe.py (byte-identical)"
+    },
+    "RF/tools/tests/test_slo_probe.py": {
+      "sha256": "c02d796e59390cfbef52e24ce64a6311c97f6be155c7f147dac24c0a3603fdad",
+      "bytes": 1915,
+      "note": "the existing independent contract test; its frozen BUDGETS and percentile assertions are the source of the oracle's budget section",
+      "iso_copy": "iso/tool_prod/test_slo_probe.py (byte-identical)"
+    },
+    "RF/tools/release_readiness.py": {
+      "sha256": "SEE after/snapshot.json -> anchors_sha256['RF/tools/release_readiness.py'] (authoritative; V0 and V5 both recorded it unchanged)",
+      "note": "read-only context: its docstring at lines 61-65 records that integrity_check/quick_check take minutes on the production catalog and were deliberately replaced by a fast gate — the basis for oracle rule M4 (quick_check must be a separately labelled window)."
+    },
+    "CW/src/company_wiki/source_catalog/cli.py": {
+      "sha256": "fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b",
+      "bytes": 65694,
+      "anchors": {"resolve_parser": "cli.py:403-422 — argparse requires --as-of-date and a mutually exclusive --entity/--company-query, neither of which the unmodified probe passes"},
+      "note": "read-only; not edited"
+    },
+    "PLAN/execution_v2/card_I-14-A.md": "read-only card text",
+    "PLAN/audit_report.md": "read-only; line 60 is the row this card falsifies",
+    "PLAN/implementation_plan.md": "read-only; item I-14"
+  },
+
+  "artifacts": {
+    "prod_copy": {"path": "iso/tool_prod/slo_probe.py", "sha256": "f051feec00658bb5fefee8d22c2c7630e0bd348b5384ae80f0c882c822f48059"},
+    "patched": {"path": "iso/slo_probe_patched.py", "sha256": "14932c744839c89f8af126b8d7eba11bafe9192dd73c3b5277a41ef6aaa3540e"},
+    "changes_diff": {"path": "changes.diff", "sha256": "fcb9ae658c9c261bf4dc06c1f9523dad5fdefccae0b4161a50909870d01a7aee", "form": "unified diff, iso/tool_prod/slo_probe.py -> iso/slo_probe_patched.py"},
+    "fixtures": {
+      "F1": "iso/fixtures/exit7_success_stdout.py",
+      "F2": "iso/fixtures/exit0_business_failure.py",
+      "F3": "iso/fixtures/alive_allocate_then_exit.py",
+      "F4": "iso/fixtures/instant_exit_no_sample.py"
+    },
+    "fixture_root": {
+      "catalog": "iso/fixture_root/catalog/catalog.sqlite3 (tiny synthetic sqlite, attempts-owned)",
+      "config": "iso/fixture_root/config/source_catalog.yaml (catalog_dir points at the fixture catalog)",
+      "mismatch_config": "iso/fixture_root/config/mismatch_source_catalog.yaml (catalog_dir points at other_catalog)",
+      "production_catalog_used": false
+    }
+  },
+
+  "isolated_binding_plan": {
+    "cwd": "per-command dirs under before/ and after/",
+    "catalog": "attempt-owned sqlite only; the 49.7 GB production catalog was NEVER opened by this card",
+    "workers": "no worker started, stopped or signalled",
+    "network": "no network call from any card command",
+    "tmp": "pytest --basetemp under <attempt>/harness/scratch/ only"
+  },
+
+  "ground_truth_facts_the_oracle_used": {
+    "resolve_argv_in_production_tool": "<sys.executable> -m company_wiki.source_catalog.cli --config <config> resolve --entity 紫金矿业 --market CN --document-kind annual_report [--fiscal-year 2025 | --mode latest_as_of]",
+    "missing_required_flag": "--as-of-date (cli.py:411) is required and is never passed by the unmodified probe. CORRECTED per review finding F-I14A-02: the child's return code is UNOBSERVABLE to that tool (its _resolve discards the subprocess result and records no per-call rc), so no baseline may state a child exit code. What IS reproducible (before/cmd-E5b/stderr.txt) is that the probe's own reader thread dies with UnicodeDecodeError while decoding the child's GBK stderr on this host — six times — while the probe still exits 0 with breaches=[]; the tool therefore cannot attribute a child failure to its own verdict even in principle.",
+    "rss_after_exit": {"file": "RF/tools/slo_probe.py", "line": 114, "note": "psutil children are enumerated at line 83 AFTER all children have exited at line 107"},
+    "bundle_alias": {"file": "RF/tools/slo_probe.py", "line": 112, "note": "bundle = exact[:]"},
+    "catalog_only_is_file": {"file": "RF/tools/slo_probe.py", "line": 100, "note": "if not args.catalog.is_file() — resolve then uses --config regardless"},
+    "reader_thread_encoding": {"file": "RF/tools/slo_probe.py", "line": 57, "note": "subprocess.run(capture_output=True, text=True) with no encoding, so the reader thread decodes the child's stderr with utf-8 and dies on this host's GBK output (before/cmd-E5b/stderr.txt)"}
+  },
+
+  "r2_corrections_applied": {
+    "F-I14A-01": "default invocation always exits 2 when no bundle measurement is given; recorded as a term the D1/D3 signers must accept (decision.md D1 term 3, D3)",
+    "F-I14A-02": "the E5 conclusion is downgraded to rc unobservable/unobserved; the reader-thread UnicodeDecodeError is the new evidence",
+    "F-I14A-03": "the peak is a tree sum and therefore a fixed overestimate; added to oracle.md section 9.4 as M3/M7 amendments",
+    "F-I14A-04": "oracle section 4 said calls.failed == 1; corrected to 6 (3 exact + 3 latest) in oracle.md section 9.2",
+    "F-I14A-05": "the catalog_dir parser's boundaries are documented in oracle.md section 9.3 and decision.md D2",
+    "promotion": "FORBIDDEN until D1 is signed by an ops reviewer who is not this probe's author"
+  },
+
+  "negative_binding_test": {
+    "id": "I14A-neg-bind-1",
+    "purpose": "a run whose --config names a different catalog directory than --catalog must be refused",
+    "expected": "exit code 3 with error=catalog_config_mismatch and no resolve call spawned",
+    "measured": "after/E4-binding-mismatch/raw_returncode.txt = 3; verdict.json all_ok = true"
+  },
+
+  "production_repos_read_only": {
+    "revenue-forecast": {"head": "7d7ea1edc5e0371ffefee0d2ab3c4a34643199d5", "branch": "fcap"},
+    "company-wiki": {"head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939", "branch": "fcap", "porcelain": [" M CLAUDE.md", " M README.md"]},
+    "filing-fetch": {"head": "d35b6f5b09f1a7dad37d226504bf998802a852d7", "branch": "fcap"},
+    "note": "company-wiki CLAUDE.md/README.md were already user-modified before this attempt and were left untouched. No git add/commit/restore/stash was run in any product repo. Exact before/after porcelain is in after/snapshot.json and before/snapshot.json (V0/V5)."
+  },
+
+  "forbidden": [
+    "editing RF/tools/slo_probe.py or RF/tools/tests/**",
+    "opening the production catalog",
+    "starting/stopping the production worker or scheduler",
+    "network or provider calls",
+    "git add/commit/restore/stash in any product repo",
+    "editing PLAN/reviews/**, PLAN/audit_report.md, PLAN/implementation_plan.md",
+    "relaxing any BUDGETS value"
+  ]
+}

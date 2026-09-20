@@ -1,0 +1,489 @@
+{
+ "batch_id": "M21-M24",
+ "attempt_id": "a20260919-01",
+ "cards": [
+  "M21",
+  "M22",
+  "M23",
+  "M24"
+ ],
+ "card_id": "M22",
+ "created_before_card_runs": true,
+ "scope_note": "every unit below belongs to this card's own attempt directory; no unit of this file is borrowed from another card's attempt",
+ "isolation": {
+  "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "created_from_template": "<PLAN>\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\checkout_scripts",
+  "never_used": [
+   "C:/Miniconda python for any card run",
+   "the production scripts directory on sys.path",
+   "network",
+   "provider",
+   "LLM",
+   "pytest (no third-party package is required by this card)"
+  ]
+ },
+ "oracle_md_sha256": "7d47fc6ed9d4f5b19c2efd1a7259a3d6de55eacaed9e44327af3e61adb7d390e",
+ "oracle_md_note": "oracle.md is NOT embedded here; only its sha256 is recorded. The verifiable ordering chain is the mtime pair in evidence/M22/source_manifest.json (oracle.json mtime < stdout.txt mtime) plus the byte-identical regeneration of oracle.json.",
+ "units": [
+  {
+   "unit_id": "A0-M22-iso-venv-create",
+   "scope": "M22",
+   "purpose": "create the attempt-local isolated interpreter from the I-00-A template venv",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "venv",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "the global Miniconda python is forbidden for card runs and was not used at all in this attempt"
+  },
+  {
+   "unit_id": "A1-M22-runner-copy",
+   "scope": "M22",
+   "purpose": "copy the shared, card-agnostic runner into this attempt",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "powershell",
+    "Copy-Item",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\scripts\\run_card.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\run_card.py"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "the runner is byte-identical across M05-M08 and M21-M24; its sha256 is recorded in evidence/M22/source_manifest.json and handoff.json"
+  },
+  {
+   "unit_id": "A2-M22-isolated-snapshot",
+   "scope": "M22",
+   "purpose": "materialise the read-only isolated code snapshot and confirm it is byte-identical to production",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "powershell",
+    "Copy-Item",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts\\model_registry.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\checkout_scripts\\model_registry.py"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "model_extensions.py was copied the same way; both hashes equal production",
+   "hashes": {
+    "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+    "production scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "production scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+   }
+  },
+  {
+   "unit_id": "A3-M22-oracle-generate",
+   "scope": "M22",
+   "purpose": "generate the frozen expectations with a stdlib-only generator that never imports the product",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\oracle_M22.py",
+    "--card",
+    "M22",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "writes evidence/M22/input.json, cases.json, oracle.json, oracle_selfcheck.json"
+  },
+  {
+   "unit_id": "A4-M22-oracle-md-freeze",
+   "scope": "M22",
+   "purpose": "render the frozen oracle document BEFORE any product run",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\write_oracle_md.py",
+    "--card",
+    "M22",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "oracle.md mtime precedes evidence/M22/stdout.txt; the mtime pair is recorded in evidence/M22/source_manifest.json",
+   "oracle_md_sha256": "7d47fc6ed9d4f5b19c2efd1a7259a3d6de55eacaed9e44327af3e61adb7d390e"
+  },
+  {
+   "unit_id": "A5-M22-oracle-regeneration-check",
+   "scope": "M22",
+   "purpose": "re-run the oracle generator and prove oracle.json is byte-identical",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\oracle_M22.py",
+    "--card",
+    "M22",
+    "--out-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "no timestamp, no randomness and no dict-ordering dependence in the generator",
+   "oracle_json_sha256_after_regeneration": "247fa3dc31b9bd0b57161ceb9bb9d73fffca9fe87fd5f2e2b5350a41d12fad87"
+  },
+  {
+   "unit_id": "B-M22-product-run",
+   "scope": "M22",
+   "purpose": "run positive + continuity positive + defaults + all negatives through the single product entry point calculate_registered_model",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M22",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\evidence\\M22\\run_result.json",
+    "--run-result-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\evidence\\M22\\run_result.json"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "stdout/stderr captured to evidence/M22/stdout.txt and stderr.txt; verdict=pass",
+   "product_entry_point": "model_registry.calculate_registered_model(**input)",
+   "positive_actual": [
+    55.0
+   ],
+   "positive_expected": [
+    55.0
+   ],
+   "continuity_actual": [
+    55.0,
+    4.0
+   ],
+   "defaults_actual": [
+    40.0
+   ],
+   "negative_summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": []
+   }
+  },
+  {
+   "unit_id": "C-M22-evidence-pack",
+   "scope": "M22",
+   "purpose": "read the run result back into the derived evidence documents",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\build_evidence.py",
+    "--card",
+    "M22",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "writes formula_result.json, negative_results.json, qualification.json, source_manifest.json, integrity.json, revision_r2.json, command_manifest.json"
+  },
+  {
+   "unit_id": "G0-M22-selfcheck-prepare",
+   "scope": "M22",
+   "purpose": "copy the runner and the frozen evidence into a scratch tree (the frozen evidence itself is never mutated)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "powershell",
+    "Copy-Item",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\run_card.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "scratch evidence copy = evidence/M22/{input,oracle,cases}.json"
+  },
+  {
+   "unit_id": "G1-M22-selfcheck-mutations",
+   "scope": "M22",
+   "purpose": "red-then-green exit-code mutation probe: corrupt the expectation, corrupt a negative assertion, corrupt the input, then restore",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\selfcheck_mutations.py",
+    "--card",
+    "M22",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "G-A corrupted positive expectation -> rc 3; G-B corrupted negative assertion -> rc 3; G-C corrupted positive input -> rc 2; G-D restored -> rc 0; frozen hashes unchanged=True",
+   "raw_rc_by_tag": {
+    "D_pristine_uncorrupted": 0,
+    "A_corrupted_positive_expectation": 3,
+    "B_corrupted_negative_assertion": 3,
+    "C_corrupted_positive_input": 2,
+    "D_restored_uncorrupted": 0
+   },
+   "expected_rc_by_tag": {
+    "D_pristine_uncorrupted": 0,
+    "A_corrupted_positive_expectation": 3,
+    "B_corrupted_negative_assertion": 3,
+    "C_corrupted_positive_input": 2,
+    "D_restored_uncorrupted": 0
+   }
+  },
+  {
+   "unit_id": "H1-M22-oq-enumeration",
+   "scope": "M22",
+   "purpose": "read-only enumeration of every registered driver domain behind oq_rulings.json",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\enumerate_oq_rulings.py",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\checkout_scripts",
+    "--card",
+    "M22",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\evidence\\M22\\oq_rulings_enumeration.json"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "raw stdout kept in recovery/oq_enum_stdout.txt; writes no value by hand"
+  },
+  {
+   "unit_id": "H2-M22-oq-rulings-build",
+   "scope": "M22",
+   "purpose": "derive oq_rulings.json from the raw enumeration output",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\build_oq_rulings.py",
+    "--card",
+    "M22",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "all counts are copies of the enumeration output; the ruling itself is left to the independent reviewer"
+  },
+  {
+   "unit_id": "H3-M22-commands-build",
+   "scope": "M22",
+   "purpose": "write this commands.json from the artefacts actually produced",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01\\scripts\\build_commands.py",
+    "--card",
+    "M22",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "self-recording unit: it lists itself so the argv chain is complete"
+  },
+  {
+   "unit_id": "I1-M22-integrity-recheck",
+   "scope": "M22",
+   "purpose": "re-hash the production scripts after all runs and re-capture git status",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01",
+   "argv": [
+    "powershell",
+    "Get-FileHash",
+    "-Algorithm",
+    "SHA256",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts\\model_registry.py"
+   ],
+   "config_paths": [],
+   "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M22\\a20260919-01"
+   ],
+   "network": "disabled",
+   "timeout_seconds": null,
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "before_after_evidence": [
+    "before/",
+    "after/"
+   ],
+   "binding_status": "bound",
+   "note": "recorded in after/source_hashes.txt and after/git_status_revenue-forecast.txt; the two anchored hashes still match"
+  }
+ ]
+}

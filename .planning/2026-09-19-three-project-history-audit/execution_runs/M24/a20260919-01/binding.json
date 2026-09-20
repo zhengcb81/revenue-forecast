@@ -1,0 +1,125 @@
+{
+ "card_id": "M24",
+ "attempt_id": "a20260919-01",
+ "model_id": "subscription_arr_bridge",
+ "title": "M24 · subscription_arr_bridge · ARR 存量与收入时点",
+ "binding_status": "bound",
+ "binding_sources": {
+  "I-00-B": {
+   "path": "execution_runs/I-00-B/a20260919-01/binding.json",
+   "rule_read": "run cwd must be a per-attempt isolation directory, never the repo root; the global Miniconda python is FORBIDDEN for card runs",
+   "note": "I-00-B does not materialise a checkout tree; it binds the isolation plan and the two-stage command rule. This attempt therefore materialises its own read-only snapshot (iso/checkout_scripts) and records the production hashes it was copied from."
+  },
+  "I-00-C": {
+   "path": "execution_runs/I-00-C/a20260919-01/",
+   "role": "dependency receipt: source/config fingerprint rehash for the three repos",
+   "status_as_read": "present, used as a receipt reference only (this attempt re-hashed the files it actually used rather than trusting the receipt)"
+  },
+  "I-00-A": {
+   "path": "execution_runs/I-00-A/a20260919-01/baseline.json",
+   "role": "template interpreter and isolation finding (the global python loads an editable dayu-agent finder, so isolated venvs are mandatory)"
+  }
+ },
+ "three_repo_paths": {
+  "revenue-forecast": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "company-wiki": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+  "filing-fetch": "C:\\Users\\郑曾波\\Projects\\filing-fetch"
+ },
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "created_from_template": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "isolation": "attempt-local venv created with `python -m venv` from the I-00-A template venv; no third-party package is required by this card",
+  "global_python_used_for": "nothing in this attempt"
+ },
+ "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01",
+ "python_path": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\checkout_scripts"
+ ],
+ "run_code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\checkout_scripts",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "model_contract_as_read_from_the_isolated_copy": {
+  "model_id": "subscription_arr_bridge",
+  "required": [
+   "opening_arr",
+   "expansion_arr",
+   "new_arr",
+   "closing_arr",
+   "gross_retention_rate",
+   "lost_arr_revenue_fraction",
+   "expansion_revenue_fraction",
+   "new_arr_revenue_fraction"
+  ],
+  "optional": [
+   "usage_revenue"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "opening_arr": "revenue",
+   "expansion_arr": "revenue",
+   "new_arr": "revenue",
+   "closing_arr": "revenue",
+   "usage_revenue": "revenue",
+   "gross_retention_rate": "ratio",
+   "lost_arr_revenue_fraction": "ratio",
+   "expansion_revenue_fraction": "ratio",
+   "new_arr_revenue_fraction": "ratio"
+  },
+  "ratio_drivers": [
+   "expansion_revenue_fraction",
+   "gross_retention_rate",
+   "lost_arr_revenue_fraction",
+   "new_arr_revenue_fraction"
+  ],
+  "driver_bounds": {},
+  "formula": "revenue = opening_arr - opening_arr*(1-gross_retention_rate)*lost_arr_revenue_fraction + expansion_arr*expansion_revenue_fraction + new_arr*new_arr_revenue_fraction + usage_revenue"
+ },
+ "entry_point": "scripts/model_registry.py:308 calculate_registered_model(model_id, base_revenue, drivers, years)",
+ "registration": "scripts/model_extensions.py:180",
+ "module_paths": {
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\iso\\checkout_scripts",
+  "imports_used": [
+   "model_registry"
+  ]
+ },
+ "config_paths": [],
+ "allowed_write_roots": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01"
+ ],
+ "forbidden": [
+  "writing anywhere outside the attempt directory",
+  "writing under Projects/revenue-forecast outside .planning",
+  "writing under Projects/company-wiki or Projects/filing-fetch",
+  "editing .planning/reviews (frozen audit evidence)",
+  "git add/commit/restore/stash in any of the three repos",
+  "network calls, real providers, LLM calls, publication",
+  "calling any product function other than calculate_registered_model for the formula oracle"
+ ],
+ "network": "disabled",
+ "input_hashes": {
+  "evidence/M24/input.json": "ccfc2f8ef8215e15565d5e3ad463a3fda270b2aa3f9c9ee7e75ef8b16981e881",
+  "evidence/M24/oracle.json": "870a9a6da1a0a89a1cad5b14aeaa1a74d67c74bdf4065ab1d4ae2ac24491a04f",
+  "evidence/M24/cases.json": "24e5aa6210200e430cb3576fef52bee6b77204a58fc61b5d87305e1f8aead673"
+ },
+ "evidence_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M24\\a20260919-01\\evidence\\M24",
+ "created_before_runs": true,
+ "oracle_document": {
+  "path": "oracle.md",
+  "frozen_body_sha256": "fbef9d5493d56e96e9a14808f1570ffcec4871ab6296c9ca9ff000038f88693c",
+  "frozen_body_bytes": 11525,
+  "full_file_sha256_now": "5a35f4df031a2996e9cf9fce9f9905d6dcd0cd1ee40810dcfba64f5b2e8fccf5",
+  "note": "the frozen body was written before any product run; the run-reconciliation section was appended afterwards"
+ }
+}

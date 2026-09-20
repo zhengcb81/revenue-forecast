@@ -1,0 +1,149 @@
+{
+  "card_id": "I-09-A",
+  "attempt_id": "a20260919-01",
+  "binding_rule": "two-stage: pre-freeze purpose/expected -> implement -> fill the real argv/cwd/interpreter -> bound. Every command below is bound with the real argv it was run with; raw return codes are recorded in runs[].raw_returncode.",
+  "interpreter": "<attempt>\\iso\\venv\\Scripts\\python.exe  (CPython 3.13.9, Anaconda-packaged; iso/venv is the ONLY interpreter allowed)",
+  "cwd_convention": "<attempt> unless stated; product code is imported only from <attempt>\\iso\\rf\\scripts (isolated copy)",
+  "network": "disabled for every command",
+  "card_commands": "the card states: 命令： 本卡无产品执行命令；仅设计与独立审查。 The commands below are this attempt's own read-only probes, not product commands.",
+
+  "commands": [
+    {
+      "id": "I09A-c1-venv",
+      "purpose": "create this attempt's isolated interpreter from the I-00-A template venv (no packages are added; the probes are stdlib-only)",
+      "argv": ["<PLAN>\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe", "-m", "venv", "<attempt>\\iso\\venv"],
+      "cwd": "<attempt>",
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "iso/venv created; python -c 'import sys;print(sys.version)' reports CPython 3.13.9 with prefix inside the attempt",
+      "raw_returncode": 0,
+      "binding_status": "bound"
+    },
+    {
+      "id": "I09A-c2-baseline-hashes",
+      "purpose": "read-only capture of every bound input hash (PLAN docs, I-08-A contract, production source, fixtures, production registry) plus the isolated-copy identity check",
+      "argv": ["<attempt>\\iso\\venv\\Scripts\\python.exe", "-X", "utf8", "-B", "<attempt>\\iso\\capture_baseline.py", "<attempt>\\before\\baseline_hashes.txt"],
+      "cwd": "<attempt>",
+      "config_paths": [],
+      "allowed_write_roots": ["<attempt>\\before"],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "expected_business_result": "before/baseline_hashes.txt written; 7/7 named anchor files SAME between iso copy and production; the 3 card anchors equal the values printed in card_I-09-A.md",
+      "before_after_evidence": ["before/baseline_hashes.txt"],
+      "raw_returncode": 0,
+      "runs": [
+        {"run": 1, "raw_returncode": 0, "note": "first run wrote 59 lines / 2 absent because the I-00-A binding.json path in the target list did not exist; the list was corrected to the files I-00-A actually produced (paths.json/baseline.json/isolation_check.json/commands.json/oracle.md/review.md)"},
+        {"run": 2, "raw_returncode": 0, "note": "final receipt: 67 lines / 1 absent (RF/config/trusted_signer_public_keys.json is legitimately ABSENT)"}
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I09A-c3-smoke-feasibility",
+      "purpose": "FEASIBILITY smoke only (ran BEFORE the oracle was frozen; disclosed in binding.json.oracle_freeze_disclosure): confirm the isolated copy can publish one formal package end to end with the registry redirected into iso/scratch, and that no third-party import is needed",
+      "argv": ["<attempt>\\iso\\venv\\Scripts\\python.exe", "-X", "utf8", "-B", "<attempt>\\iso\\smoke_publish.py", "<attempt>\\iso\\scratch\\smoke"],
+      "cwd": "<attempt>",
+      "allowed_write_roots": ["<attempt>\\iso\\scratch"],
+      "network": "disabled",
+      "env": {"REVENUE_PUBLICATION_REGISTRY": "<attempt>\\iso\\scratch\\smoke\\publications.jsonl"},
+      "expected_returncode": 0,
+      "expected_business_result": "SMOKE_OK; attestation_status=unattested; one registry line with artifact_type=forecast, validation_status=validated, artifact_id=None",
+      "capability_limit": "feasibility only; it measures nothing about the P-D cases and freezes no expectation",
+      "raw_returncode": 0,
+      "binding_status": "bound"
+    },
+    {
+      "id": "I09A-c4-probe-commit",
+      "purpose": "the formal evidence run: 12 cases (P-D1 output fault, P-D2 markdown fault, registry fault attempt, stdout-only, validate-only, same-request x2, as_of-only-differs x2, two mutants, snapshot) driven through the REAL CLI as a real child process per publication, each read back by a SEPARATE reader process; plus the proposed-identity falsifier and a two-process concurrency burst",
+      "argv": ["<attempt>\\iso\\venv\\Scripts\\python.exe", "-X", "utf8", "-B", "<attempt>\\iso\\probe_commit.py"],
+      "cwd": "<attempt>",
+      "allowed_write_roots": ["<attempt>\\iso\\scratch"],
+      "network": "disabled",
+      "timeout_seconds": 600,
+      "env_per_child": {"REVENUE_PUBLICATION_REGISTRY": "<case-private registry under iso/scratch/probe>", "TEMP": "<attempt>\\iso\\scratch\\tmp", "REVENUE_ATTESTATION_PROVIDER": "unset"},
+      "expected_returncode": 0,
+      "expected_business_result": "PROBE_OK; all 12 cases recorded with producer rc, registry line counts, member existence and the reader's consumer-visible state; identity falsifier reports publication_id_differ=true for the as_of-only pair",
+      "fault_injection_method": "REAL filesystem faults only (a directory placed where a file must be written -> real WinError 5); the production modules are never monkeypatched",
+      "before_after_evidence": ["after/probe_commit.stdout.txt", "after/probe_commit.stderr.txt", "iso/scratch/probe_report.json"],
+      "raw_returncode": 0,
+      "runs": [
+        {"run": 1, "raw_returncode": 1, "note": "HARNESS DEFECT: the producer snippet did not pass the positional input-file argument, so cases c01-c10 all exited 2 with an argparse usage message and measured nothing. Preserved as after/probe_commit.attempt1_argv_bug.*"},
+        {"run": 2, "raw_returncode": 0, "note": "argv fixed; 12 cases ran. Case c04's registry-fault injection turned out to be a fail-open (registry_file() treats a directory env value as a root) - see I09A-c5"}
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I09A-c5-registry-fault-addendum",
+      "purpose": "close the c04 gap with a GENUINE unreachable-registry fault, and explain the path-as-directory artefact",
+      "argv": ["<attempt>\\iso\\venv\\Scripts\\python.exe", "-X", "utf8", "-B", "<attempt>\\iso\\probe_registry_fault.py"],
+      "cwd": "<attempt>",
+      "allowed_write_roots": ["<attempt>\\iso\\scratch"],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "expected_business_result": "case a: registry_file() resolves the directory env value to a NESTED publications.jsonl and the append SUCCEEDS (producer rc=0) -> fail-open; case b: with a real ACL deny (icacls /deny <user>:(WD,AD)) on the registry directory the producer exits 2, no output file is written and the registry has 0 lines -> fail-closed",
+      "recovery_performed": "the ACL deny was removed in the child's finally block and independently re-checked with icacls (no DENY lines remain)",
+      "before_after_evidence": ["after/probe_registry_fault.stdout.txt", "iso/scratch/addendum_report.json"],
+      "raw_returncode": 0,
+      "runs": [
+        {"run": 1, "raw_returncode": 0, "note": "HARNESS DEFECTS: ASDIR_CODE missed `import json`; the icacls output contains non-UTF-8 bytes so a text decode raised, and because that happened before the try block the ACL deny was NOT auto-reverted. Fixed by (a) importing json, (b) errors='replace' on the subprocess decodes; the leftover DENY was removed manually with icacls /remove:d and verified"},
+        {"run": 2, "raw_returncode": 0, "note": "both cases measured; ACL verified clean afterwards"}
+      ],
+      "binding_status": "bound"
+    },
+    {
+      "id": "I09A-c6-summarize",
+      "purpose": "produce the human-readable case table and identity/concurrency section from the raw report (no measurement of its own)",
+      "argv": ["<attempt>\\iso\\venv\\Scripts\\python.exe", "-X", "utf8", "-B", "<attempt>\\iso\\summarize.py", "<attempt>\\iso\\scratch\\probe_report.json", "<attempt>"],
+      "cwd": "<attempt>",
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "after/probe_summary.stdout.txt with one block per case, the identity contract block, the concurrency block and the read-only production registry fingerprint",
+      "raw_returncode": 0,
+      "binding_status": "bound"
+    },
+    {
+      "id": "I09A-c7-independent-registry-arithmetic",
+      "purpose": "INDEPENDENT channel (PowerShell, not the Python code path) re-computation of the production registry facts the oracle freezes: line count, validation_status presence, artifact_type distribution, artifact_id nulls, the full line+chain hash verification, and the multiplicity of the (input,result,engine,schema,artifact_type) groups",
+      "argv": ["pwsh-free: Get-Content -Encoding UTF8 | ConvertFrom-Json + System.Security.Cryptography.SHA256 over json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(',',':'))"],
+      "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "60 entries; 57 with validation_status / 3 without; forecast 57 / snapshot 3; 1 non-null artifact_id / 57 null; hash_or_chain_problems=0; 31 groups, 21 with count>1, max 6; last line_sha256=61fbec623b2a641b9b69555c3eae4e5b64b63697a05877ed95510d73d87ce67f",
+      "before_after_evidence": ["before/baseline_hashes.txt (production registry sha256 before and after: identical)"],
+      "raw_returncode": 0,
+      "capability_limit": "this channel performs ARITHMETIC on bytes (parse/count/hash); it does not validate the semantics of the commit protocol, and it is not a substitute for the reader-process evidence",
+      "binding_status": "bound"
+    },
+    {
+      "id": "I09A-c8-git-before",
+      "purpose": "capture the three repos' dirty state before any work (read-only)",
+      "argv": ["git", "status", "--porcelain"],
+      "cwd": ["C:\\Users\\郑曾波\\Projects\\revenue-forecast", "C:\\Users\\郑曾波\\Projects\\company-wiki", "C:\\Users\\郑曾波\\Projects\\filing-fetch"],
+      "network": "disabled",
+      "expected_returncode": 0,
+      "expected_business_result": "before/git_status_before.txt (63 M + 79 ?? = 142 real entries), before/git_status_cw_before.txt (2), before/git_status_ff_before.txt (1)",
+      "raw_returncode": 0,
+      "binding_status": "bound"
+    }
+  ],
+
+  "commands_not_executed": [
+    {
+      "id": "T-PUB",
+      "reason": "the card states it has no product command (命令： 本卡无产品执行命令；仅设计与独立审查). T-PUB belongs to I-09-B/C, whose test nodeids do not exist yet, so no nodeid may be guessed here."
+    },
+    {
+      "id": "I09A-c9-real-kill-restart",
+      "reason": "real process termination / power-loss / repeated-recovery semantics are card I-09-C scope; this card must not claim them."
+    },
+    {
+      "id": "I09A-c10-commit-lock",
+      "reason": "the protocol selects a registry commit lock, but implementing and stress-testing it is I-09-B scope; the single concurrency burst recorded here (2 workers, one run) is NOT a lock test."
+    }
+  ],
+
+  "raw_vs_expected_note": "every bound command matched its frozen expected return code on its final recorded run. Two non-zero raw codes exist and both belong to preserved superseded harness attempts (I09A-c4 run 1 = 1, I09A-c5 run 1 = 0 with an internal defect); their causes and fixes are recorded above and in oracle_addendum.md section 6. No expectation was changed to accommodate a failure, and no probe was re-run in order to hide one.",
+
+  "skipped_timeout_uncollected": "none: no command was skipped, timed out or left uncollected."
+}

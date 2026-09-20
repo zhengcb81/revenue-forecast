@@ -1,0 +1,286 @@
+{
+ "card_id": "M19",
+ "attempt_id": "a20260919-01",
+ "model_id": "gaming",
+ "card_title": "active-user payer monetisation",
+ "status": "review_pending",
+ "implementer_is_not_the_reviewer": true,
+ "generated_utc": "2026-09-20T02:49:26.767225+00:00",
+ "completed_steps": {
+  "A_binding": "done - binding.json binds the attempt-local interpreter, the read-only isolated snapshot, the model contract read back from that snapshot and the write allowlist",
+  "B_positive_run": "done - positive [1010.0] vs independent oracle [1010.0]; continuity [1010.0, 1584.0] vs [1010.0, 1584.0]; defaults [1000.0] vs [1000.0] (defaults are recorded, not gating)",
+  "C_negative_run": "done - 11/11 negatives rejected with ModelRegistryError; each case ran on a fresh in-memory deepcopy",
+  "D_disclosure_mapping": "NOT done - the card marks D [professional_decision_required]; no disclosure mapping, accounting_decision.md, historical_reconciliation.json or forecast_integration.json was produced. The card states these do not block the A-C formula dispatch and must not be filled in speculatively",
+  "E_historical_mapping_probe": "NOT done - E is [executable_after_D] and belongs to the I-10-A先行 work; inventing a probe here would be a fabricated scenario set",
+  "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist"
+ },
+ "completed_steps_list": [
+  "A",
+  "B",
+  "C"
+ ],
+ "next_step_number": 4,
+ "next_action": "Independent reviewer: re-run scripts/run_card.py against the isolated snapshot and compare with evidence/M19/run_result.json (positive [1010.0], continuity [1010.0, 1584.0], negatives 11/11, raw rc 0), then adjudicate the entries in evidence/M19/oq_rulings.json. After that, the FIRST unfinished card action is step D, which needs a professional (industry/accounting) decision before any mapping may be written; step E then depends on I-10-A.",
+ "input_hashes": {
+  "evidence/M19/input.json": "d11e3391e04fce907c28b2bfe0244c614347633669b3b9e42a75a53d9fbc3328",
+  "evidence/M19/oracle.json": "5100627ea7ddbfeb6b14a344a033544e2a3911104e0d96a908f17b4f4e415b5f",
+  "evidence/M19/cases.json": "96401bec8cedf4406e319ec899a613755224b0362da07bdcebd346e7bebb4983",
+  "oracle.md": "a55fa54d440493c84133e504082db4c96e2a0c3ee139817f80c17c4accee3331",
+  "scripts/oracle_M19.py": "495573f90fa85907e8c27639684c5e2538573afe9bdfe24ea355bee7197b271a",
+  "scripts/run_card.py": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd"
+ },
+ "current_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "changed_paths": {
+  "production_repos": [],
+  "note": "no production file was created, modified, added, committed, restored or stashed in any of the three repos; the pre-existing dirty state is captured in before/ and after/",
+  "attempt_paths_created": [
+   "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M19\\a20260919-01"
+  ],
+  "other_attempts_created_or_overwritten": []
+ },
+ "commands_executed": [
+  "A0-iso-venv-create",
+  "A0b-pytest-offline-availability",
+  "A1-isolated-snapshot",
+  "G0-state-before",
+  "A2-oracle-generate",
+  "A3-write-binding",
+  "B-product-run",
+  "C-registry-enumeration",
+  "C2-extra-boundary-probes",
+  "D-oracle-regen-verify",
+  "E-mutation-selfcheck",
+  "G1-state-after",
+  "F-write-commands",
+  "G-pack-evidence",
+  "H-write-handoff",
+  "Z-close-attempt"
+ ],
+ "raw_exit_codes": {
+  "A0-iso-venv-create": 0,
+  "A0b-pytest-offline-availability": 1,
+  "A1-isolated-snapshot": 0,
+  "G0-state-before": 0,
+  "A2-oracle-generate": 0,
+  "A3-write-binding": 0,
+  "B-product-run": 0,
+  "C-registry-enumeration": 0,
+  "C2-extra-boundary-probes": 0,
+  "D-oracle-regen-verify": 0,
+  "E-mutation-selfcheck": 0,
+  "G1-state-after": 0,
+  "F-write-commands": 0,
+  "G-pack-evidence": 0,
+  "H-write-handoff": 0,
+  "Z-close-attempt": 0
+ },
+ "expected_exit_codes": {
+  "A0-iso-venv-create": 0,
+  "A0b-pytest-offline-availability": 1,
+  "A1-isolated-snapshot": 0,
+  "G0-state-before": 0,
+  "A2-oracle-generate": 0,
+  "A3-write-binding": 0,
+  "B-product-run": 0,
+  "C-registry-enumeration": 0,
+  "C2-extra-boundary-probes": 0,
+  "D-oracle-regen-verify": 0,
+  "E-mutation-selfcheck": 0,
+  "G1-state-after": 0,
+  "F-write-commands": 0,
+  "G-pack-evidence": 0,
+  "H-write-handoff": 0,
+  "Z-close-attempt": 0
+ },
+ "product_run_returncode": 0,
+ "positive_actual": [
+  1010.0
+ ],
+ "positive_expected": [
+  1010.0
+ ],
+ "continuity_actual": [
+  1010.0,
+  1584.0
+ ],
+ "defaults_actual": [
+  1000.0
+ ],
+ "negative_case_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": [],
+  "target_exception": "model_registry.ModelRegistryError",
+  "import_or_file_errors_never_pass": true
+ },
+ "observation_summary": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "raised": null,
+   "actual": [
+    1010.0
+   ],
+   "matches_expected": null,
+   "matches_compared": true
+  },
+  {
+   "id": "OBS-DEFAULT-EQUIV",
+   "raised": null,
+   "actual": [
+    1000.0
+   ],
+   "matches_expected": null,
+   "matches_compared": true
+  },
+  {
+   "id": "OBS-PAYER-BOUNDARY",
+   "raised": null,
+   "actual": [
+    20010.0
+   ],
+   "matches_expected": true,
+   "matches_compared": null
+  }
+ ],
+ "extra_boundary_probes": [
+  {
+   "id": "PROBE-ACTIVE-ZERO",
+   "raised": null,
+   "actual": [
+    10.0
+   ],
+   "gating": false
+  }
+ ],
+ "mutation_selfcheck": {
+  "runs": [
+   {
+    "label": "A_corrupted_positive_expectation",
+    "raw_rc": 3,
+    "expected_rc": 3,
+    "verdict": "fail"
+   },
+   {
+    "label": "B_neutered_negative_case",
+    "raw_rc": 3,
+    "expected_rc": 3,
+    "verdict": "fail"
+   },
+   {
+    "label": "C_corrupted_expectation_length",
+    "raw_rc": 2,
+    "expected_rc": 2,
+    "verdict": "no_verdict"
+   },
+   {
+    "label": "D_missing_cases_file",
+    "raw_rc": 1,
+    "expected_rc": 1,
+    "verdict": "harness_error"
+   },
+   {
+    "label": "E_uncorrupted_copy",
+    "raw_rc": 0,
+    "expected_rc": 0,
+    "verdict": "pass"
+   }
+  ],
+  "frozen_evidence_unchanged": true,
+  "red_then_green": true
+ },
+ "oracle_regeneration_byte_identical": true,
+ "open_questions": [
+  "OQ-01 (isolation binding provenance) - the cards require the run cwd to come from I-00-B, while I-00-B binds the isolation plan and the two-stage command rule rather than materialising a checkout tree; status=registered_not_fixed; requires_ruling_from=owner (dispatch/binding)",
+  "OQ-02 (an omitted optional driver that has no declared default is silently 0.0) - ; status=registered_not_fixed; requires_ruling_from=owner (product change would need its own card)",
+  "OQ-03 (card business negative that the calculator cannot enforce) - NOT runtime-enforceable: active_users, payer_conversion and revenue_per_payer are checked only for domain and finiteness; the period of each driver is a disclosure question, not a calculator question; status=registered_not_fixed; requires_ruling_from=industry/accounting reviewer (I-10-A / D)",
+  "OQ-04 (numerical domain / boundary observations of this model) - payer_conversion carries the ratio domain [0,1]; 1.1 is rejected (card-specific negative) and the upper edge 1.0 is accepted, with the numeric consequence recorded by OBS-PAYER-BOUNDARY (20010); status=registered_not_fixed; requires_ruling_from=independent reviewer (accept / amend / reject)",
+  "OQ-05 (process, this batch): the attempt pipeline was executed more than once for this card while a non-gating probe unit was added (C2) and one probe constant was corrected; the frozen oracle.md was never modified between passes and oracle.json is byte-identical across them (evidence/M19/oracle_regen_proof.json). review.md records this explicitly."
+ ],
+ "blocked_by": [],
+ "stop_conditions_hit": [
+  "STOP_DISCLOSURE_ADAPTATION (no disclosure mapping; professional decision not taken)",
+  "STOP_ACCURACY (no I-12 frozen design)"
+ ],
+ "qualifications": {
+  "formula": "review_pending",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "evidence_paths": [
+  "evidence/M19/cases.json",
+  "evidence/M19/command_manifest.json",
+  "evidence/M19/evidence_hashes.json",
+  "evidence/M19/extra_probes.json",
+  "evidence/M19/formula_result.json",
+  "evidence/M19/input.json",
+  "evidence/M19/integrity.json",
+  "evidence/M19/mutation_selfcheck.json",
+  "evidence/M19/negative_results.json",
+  "evidence/M19/oq_rulings.json",
+  "evidence/M19/oracle.json",
+  "evidence/M19/oracle_document_freeze.json",
+  "evidence/M19/oracle_regen_proof.json",
+  "evidence/M19/oracle_selfcheck.json",
+  "evidence/M19/qualification.json",
+  "evidence/M19/registry_enumeration.json",
+  "evidence/M19/revision_r2.json",
+  "evidence/M19/run_result.json",
+  "evidence/M19/runs/A0-iso-venv-create/rc.json",
+  "evidence/M19/runs/A0-iso-venv-create/stderr.txt",
+  "evidence/M19/runs/A0-iso-venv-create/stdout.txt",
+  "evidence/M19/runs/A0b-pytest-offline-availability/rc.json",
+  "evidence/M19/runs/A0b-pytest-offline-availability/stderr.txt",
+  "evidence/M19/runs/A0b-pytest-offline-availability/stdout.txt",
+  "evidence/M19/runs/A1-isolated-snapshot/rc.json",
+  "evidence/M19/runs/A1-isolated-snapshot/snapshot.json",
+  "evidence/M19/runs/A1-isolated-snapshot/stderr.txt",
+  "evidence/M19/runs/A1-isolated-snapshot/stdout.txt",
+  "evidence/M19/runs/A2-oracle-generate/rc.json",
+  "evidence/M19/runs/A2-oracle-generate/stderr.txt",
+  "evidence/M19/runs/A2-oracle-generate/stdout.txt",
+  "evidence/M19/runs/A3-write-binding/rc.json",
+  "evidence/M19/runs/A3-write-binding/stderr.txt",
+  "evidence/M19/runs/A3-write-binding/stdout.txt",
+  "evidence/M19/runs/B-product-run/rc.json",
+  "evidence/M19/runs/C-registry-enumeration/rc.json",
+  "evidence/M19/runs/C-registry-enumeration/stderr.txt",
+  "evidence/M19/runs/C-registry-enumeration/stdout.txt",
+  "evidence/M19/runs/C2-extra-boundary-probes/rc.json",
+  "evidence/M19/runs/C2-extra-boundary-probes/stderr.txt",
+  "evidence/M19/runs/C2-extra-boundary-probes/stdout.txt",
+  "evidence/M19/runs/D-oracle-regen-verify/rc.json",
+  "evidence/M19/runs/D-oracle-regen-verify/stderr.txt",
+  "evidence/M19/runs/D-oracle-regen-verify/stdout.txt",
+  "evidence/M19/runs/E-mutation-selfcheck/rc.json",
+  "evidence/M19/runs/E-mutation-selfcheck/stderr.txt",
+  "evidence/M19/runs/E-mutation-selfcheck/stdout.txt",
+  "evidence/M19/runs/F-write-commands/rc.json",
+  "evidence/M19/runs/F-write-commands/stderr.txt",
+  "evidence/M19/runs/F-write-commands/stdout.txt",
+  "evidence/M19/runs/G-pack-evidence/rc.json",
+  "evidence/M19/runs/G-pack-evidence/stderr.txt",
+  "evidence/M19/runs/G-pack-evidence/stdout.txt",
+  "evidence/M19/runs/G0-state-before/rc.json",
+  "evidence/M19/runs/G0-state-before/stderr.txt",
+  "evidence/M19/runs/G0-state-before/stdout.txt",
+  "evidence/M19/runs/G1-state-after/rc.json",
+  "evidence/M19/runs/G1-state-after/stderr.txt",
+  "evidence/M19/runs/G1-state-after/stdout.txt",
+  "evidence/M19/runs/H-write-handoff/rc.json",
+  "evidence/M19/runs/H-write-handoff/stderr.txt",
+  "evidence/M19/runs/H-write-handoff/stdout.txt",
+  "evidence/M19/runs/Z-close-attempt/rc.json",
+  "evidence/M19/runs/Z-close-attempt/stderr.txt",
+  "evidence/M19/runs/Z-close-attempt/stdout.txt",
+  "evidence/M19/source_manifest.json",
+  "evidence/M19/stderr.txt",
+  "evidence/M19/stdout.txt"
+ ],
+ "reviewer_status": "r1 awaiting independent review; the implementer has NOT signed anything as accepted and must not",
+ "revision": "r1"
+}

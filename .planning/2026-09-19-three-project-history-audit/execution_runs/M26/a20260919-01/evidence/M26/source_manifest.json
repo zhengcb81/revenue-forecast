@@ -1,0 +1,95 @@
+{
+ "card_id": "M26",
+ "attempt_id": "a20260919-01",
+ "model_id": "store_cohorts",
+ "card_title": "M26 · store_cohorts · 开闭店与新店成熟度",
+ "entry_point": "scripts/model_registry.py calculate_registered_model(model_id, base_revenue, drivers, years)",
+ "registration_site": "scripts/model_extensions.py build_extension_specs(...)",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes_at_binding_and_after_run": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_equals_production": true,
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M26\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "note": "attempt-local venv created with `python -m venv` from the I-00-A template venv; pytest installed offline from the local pip cache",
+  "global_python_used_for": "nothing in this card (no PDF extraction was needed)"
+ },
+ "card_script_hashes": {
+  "scripts/run_card.py": "93d88d4e49c214fdc3bcfcd0afb3b3296c4c2efdb5b549d6c94d4541e3173e4b",
+  "scripts/oracle_M25_M28.py": "1dd52eb9e0a3a3416e809965b6e2b0c52289912d0ec9233f3fdcda74d691b5f9",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "recovery/selfcheck/make_mutations.py": "8180ead2833c4c3edf0850680c44f6b86058acbb6b9746e90bd4a473bcc2d199",
+  "recovery/selfcheck/naive_oracle.py": "c81b682f9091850d52c954e1abf03c32badaad8d05b8d44c5898544f9e43f1fa"
+ },
+ "oracle_document": {
+  "path": "oracle.md",
+  "sha256_now": "03b7d4d8fdf66b690033ab27c3bfed74d066ce8489f0103067bbcebc42b3f4cb",
+  "sha256_before_any_product_run": "03b7d4d8fdf66b690033ab27c3bfed74d066ce8489f0103067bbcebc42b3f4cb",
+  "honest_gap": "oracle.md was written before any product run and its frozen body (sections 0-11) was NOT modified afterwards. The expected values were frozen in evidence/<card>/oracle.json by the independent stdlib generator BEFORE the first product invocation; the generator is reproducible byte-for-byte (proved by the case-E regeneration in evidence/<card>/oracle_selfcheck.json). NOTE: the FIRST generation had a defect (a wrong defaults expectation for M25 and a crash on M27) which was corrected BEFORE the oracle.md was written and before the definitive product run; the pre-correction files are preserved under recovery/precorrection/ and the whole ledger is in evidence/<card>/revision_r2.json. commands.json records argv and raw exit codes ONLY and does NOT carry an oracle.md hash.",
+  "mtime_ordering": {
+   "oracle_json_mtime": 1789872222.546088,
+   "input_json_mtime": 1789872222.545087,
+   "oracle_md_mtime": 1789872157.566919,
+   "product_stdout_mtime": 1789872615.972979,
+   "oracle_json_precedes_run": true,
+   "oracle_md_precedes_run": true
+  },
+  "oracle_script_selfcheck": "evidence/M26/oracle_selfcheck.json records the generator's import list, product_import_present=false and the byte-identical regeneration hashes"
+ },
+ "evidence_input_hashes": {
+  "evidence/M26/input.json": "317a452c49adfb452536efc68cfa9f88fd880668bcc6c527accde6d782efd38d",
+  "evidence/M26/oracle.json": "1d6fad18c38734fc1f85ecbf766abba11f754c5f5e52055c0eaa32a05e7183d4",
+  "evidence/M26/cases.json": "5bc6666d1f34255c557b17347c50f2be838b5712c44b87272c68cf03b34d3173"
+ },
+ "registry_metadata_observed_from_the_isolated_copy": {
+  "model_id": "store_cohorts",
+  "required": [
+   "opening_stores",
+   "new_stores",
+   "closed_stores",
+   "closing_stores",
+   "new_store_revenue_fraction",
+   "closure_lost_fraction",
+   "new_store_productivity",
+   "annual_revenue_per_mature_store"
+  ],
+  "optional": [],
+  "defaults": {},
+  "dimensions": {
+   "opening_stores": "quantity",
+   "new_stores": "quantity",
+   "closed_stores": "quantity",
+   "closing_stores": "quantity",
+   "new_store_revenue_fraction": "ratio",
+   "closure_lost_fraction": "ratio",
+   "new_store_productivity": "ratio",
+   "annual_revenue_per_mature_store": "revenue_per_unit"
+  },
+  "ratio_drivers": [
+   "closure_lost_fraction",
+   "new_store_productivity",
+   "new_store_revenue_fraction"
+  ],
+  "driver_bounds": {
+   "new_store_productivity": [
+    0.0,
+    null
+   ]
+  },
+  "formula": "revenue = (opening_stores - closed_stores*closure_lost_fraction + new_stores*new_store_revenue_fraction*new_store_productivity) * annual_revenue_per_mature_store"
+ },
+ "network_calls": "none",
+ "llm_or_provider_calls": "none"
+}

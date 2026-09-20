@@ -1,0 +1,149 @@
+{
+ "card_id": "M18",
+ "model_id": "advertising",
+ "document_author": "the implementing session of attempt a20260919-01, which also wrote oracle.md, run_card.py and this record",
+ "adjudicated_by": "PENDING - no entry below has been ruled on by the independent reviewer; the reviewer is a separate party who may accept, amend or reject each entry",
+ "no_first_person_authorship_claim": true,
+ "enumerated_by": "scripts/enumerate_registry.py",
+ "enumeration_raw_output": {
+  "path": "evidence/M18/registry_enumeration.json",
+  "sha256": "e3cfbd366b6f96ce58e87d251f38743b80d960aae602228859a5b3607ee98218",
+  "script_sha256": "8e91ad06d80f8b51fabe9a5dd27e9370658b14834cfa039165d525a63f5e36e5",
+  "raw_stdout": "evidence/M18/runs/C-registry-enumeration/stdout.txt",
+  "raw_stdout_sha256": "49825f75d8bad47beedce16c83f229ebe5ab4d34dead145f2bb4b2fb93a6d2b7",
+  "raw_returncode": 0,
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M18\\a20260919-01\\iso\\checkout_scripts"
+ },
+ "enumeration_counts": {
+  "models": 31,
+  "required_drivers": 125,
+  "optional_drivers": 40,
+  "ratio_drivers": 41,
+  "revenue_per_activity_and_per_unit_drivers": 23,
+  "optional_drivers_absent_from_declared_defaults": 31
+ },
+ "card_registry_facts": {
+  "model_id": "advertising",
+  "required": [
+   "eligible_impressions",
+   "fill_rate",
+   "revenue_per_thousand_impressions"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "defaults": {},
+  "ratio_drivers": [
+   "fill_rate"
+  ],
+  "driver_effective_bounds": {
+   "eligible_impressions": [
+    0.0,
+    "inf"
+   ],
+   "fill_rate": [
+    0.0,
+    1.0
+   ],
+   "revenue_per_thousand_impressions": [
+    0.0,
+    "inf"
+   ],
+   "other_revenue": [
+    "-inf",
+    "inf"
+   ]
+  }
+ },
+ "rulings": [
+  {
+   "id": "OQ-01",
+   "scope": "shared by all four cards of this batch (M17-M20)",
+   "title": "isolation binding provenance",
+   "status": "registered_not_fixed",
+   "observation": "the cards require the run cwd to come from I-00-B, while I-00-B binds the isolation plan and the two-stage command rule rather than materialising a checkout tree",
+   "what_this_attempt_did": "materialised its own read-only snapshot at iso/checkout_scripts and recorded that its two files hash equal to the production files",
+   "consequence": "if the intended binding is an I-00-B-materialised checkout, the provenance chain differs; the code under test is byte-identical either way",
+   "requires_ruling_from": "owner (dispatch/binding)"
+  },
+  {
+   "id": "OQ-02",
+   "scope": "shared by all four cards of this batch (M17-M20)",
+   "title": "an omitted optional driver that has no declared default is silently 0.0",
+   "status": "registered_not_fixed",
+   "mechanism": "calculate_registered_model resolves a missing driver as drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+   "enumerated_registry_wide_count": 31,
+   "enumerated_for_this_model": [
+    "advertising.other_revenue"
+   ],
+   "enumerated_registry_wide_list": [
+    "advertising.other_revenue",
+    "asset_management.performance_fee_revenue",
+    "asset_management.other_revenue",
+    "aum_fee_bridge.recognized_performance_fees",
+    "bank_revenue.other_revenue",
+    "capacity_utilization.other_revenue",
+    "cohort_subscription.usage_revenue",
+    "delivery_pipeline.other_revenue",
+    "gaming.other_revenue",
+    "infrastructure.other_revenue",
+    "insurance_service.other_revenue",
+    "licensing_commercial.milestone_revenue",
+    "licensing_commercial.royalty_revenue",
+    "licensing_commercial.service_revenue",
+    "milestone_royalty.milestone_revenue",
+    "milestone_royalty.service_revenue",
+    "project_backlog.backlog_remeasurements",
+    "real_estate_rental.other_revenue",
+    "renewable_generation.other_revenue",
+    "reserve_depletion.other_revenue",
+    "reserve_depletion.reserve_revisions",
+    "resource.other_revenue",
+    "retail_franchise.franchise_system_sales",
+    "retail_franchise.recognized_fee_rate",
+    "retail_franchise.supply_revenue",
+    "services.other_revenue",
+    "subscription.usage_revenue",
+    "subscription_arr_bridge.usage_revenue",
+    "transport.ancillary_revenue",
+    "unit_sales.other_revenue",
+    "usage_platform.fixed_revenue"
+   ],
+   "why_it_matters_here": "'the item does not exist' and 'the item was not found' become the same input, so an unknown is turned into recognised revenue",
+   "cross_check": "OBS-DEFAULT-EQUIV in evidence/M18/run_result.json records that writing the omitted optional drivers explicitly as 0 reproduces the omitted-input result, which is what makes the documented default of 0 falsifiable",
+   "action_this_attempt": "registered, NOT fixed; no product file was modified",
+   "requires_ruling_from": "owner (product change would need its own card)"
+  },
+  {
+   "id": "OQ-03",
+   "title": "card business negative that the calculator cannot enforce",
+   "status": "registered_not_fixed",
+   "card_text": "card_M18.md L42: already-filled impressions must not be multiplied by the fill rate again, and the thousand-impression conversion must happen exactly once",
+   "finding": "the thousand-impression half IS observable and was probed (OBS-THOUSAND-ONCE expects 16100 for a doubled impression count); the 'already filled' half is NOT runtime-enforceable, because the calculator cannot tell whether eligible_impressions were pre-fill opportunities",
+   "consequence": "STOP_DISCLOSURE_ADAPTATION remains in force; a number is not an adaptation",
+   "requires_ruling_from": "industry/accounting reviewer (I-10-A / D)"
+  },
+  {
+   "id": "OQ-04",
+   "title": "numerical domain / boundary observations of this model",
+   "status": "registered_not_fixed",
+   "finding": "fill_rate carries the ratio domain [0,1]; 1.2 is rejected (card-specific negative) and 1.0 is admissible by the same domain, so a fill rate of exactly 100% is not refused",
+   "derived_from": "the effective bounds enumerated by scripts/enumerate_registry.py (evidence/M18/registry_enumeration.json)",
+   "measured_probes": [
+    {
+     "id": "PROBE-FILL-EXACT-1",
+     "raised": null,
+     "actual": [
+      10100.0
+     ],
+     "measured_matches": {
+      "matches_expected_if_inclusive": true
+     }
+    }
+   ],
+   "probe_provenance": "evidence/M18/extra_probes.json; the probes are NON-GATING and sit outside oracle.json and outside the runner's exit code",
+   "requires_ruling_from": "independent reviewer (accept / amend / reject)"
+  }
+ ],
+ "counts_provenance_rule": "every number in enumeration_counts comes from the raw output of scripts/enumerate_registry.py; none is transcribed from prose"
+}

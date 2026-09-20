@@ -1,0 +1,19 @@
+card M20 registry models 31
+ratio_drivers 41 ratio_drivers_not_in_0_1 4
+revenue_per_activity_and_per_unit_drivers 23 exceptions 2
+optional_drivers_silently_defaulted_to_zero 31
+models_with_explicit_driver_bounds ['aum_fee_bridge', 'bank_revenue', 'project_backlog', 'renewable_generation', 'reserve_depletion', 'store_cohorts']
+card_focus model cohort_subscription
+card_focus required ['opening_customers', 'new_customers', 'churned_customers', 'ending_customers', 'revenue_per_customer']
+card_focus optional ['timing_factor', 'usage_revenue', 'new_customer_revenue_fraction', 'churned_customer_lost_fraction']
+card_focus defaults {'timing_factor': 1.0, 'new_customer_revenue_fraction': 0.5, 'churned_customer_lost_fraction': 0.5}
+  driver opening_customers quantity effective [0.0, 'inf'] in_defaults False
+  driver new_customers quantity effective [0.0, 'inf'] in_defaults False
+  driver churned_customers quantity effective [0.0, 'inf'] in_defaults False
+  driver ending_customers quantity effective [0.0, 'inf'] in_defaults False
+  driver revenue_per_customer revenue_per_unit effective [0.0, 'inf'] in_defaults False
+  driver timing_factor ratio effective [0.0, 1.0] in_defaults True
+  driver usage_revenue revenue effective [0.0, 'inf'] in_defaults False
+  driver new_customer_revenue_fraction ratio effective [0.0, 1.0] in_defaults True
+  driver churned_customer_lost_fraction ratio effective [0.0, 1.0] in_defaults True
+written C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M20\a20260919-01\evidence\M20\registry_enumeration.json

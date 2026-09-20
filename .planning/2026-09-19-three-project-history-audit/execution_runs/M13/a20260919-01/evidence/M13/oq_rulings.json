@@ -1,0 +1,71 @@
+{
+ "card_id": "M13",
+ "model_id": "asset_management",
+ "generated_by_script": "scripts/build_oq_rulings.py",
+ "raw_enumeration": {
+  "file": "evidence/M13/oq_enumeration.json",
+  "sha256": "093f9657d5d934f59fa1665927883e4dbc0fb489f2934f7be553b0e5f51c6f2d",
+  "produced_by": "scripts/enumerate_driver_bounds.py",
+  "command": "<attempt>/iso/venv/Scripts/python.exe -X utf8 -B <attempt>/scripts/enumerate_driver_bounds.py --card M13 --attempt <attempt> --code-root <attempt>/iso/checkout_scripts"
+ },
+ "attribution": {
+  "enumerated_by": "the implementer session of attempt a20260919-01, by executing the enumeration script above against the isolated read-only copy (automated; no human counting, no reviewer involved)",
+  "reviewed_by": "NOT REVIEWED YET - an independent reviewer has not examined this enumeration or these rulings at the time of writing",
+  "author_of_this_file": "the implementer session (scripts/build_oq_rulings.py); no reviewer is named as an author",
+  "counting_rule": "every number below is read from the raw enumeration file; the script does not accept hand-typed counts"
+ },
+ "enumerated_counts_as_read_from_the_raw_file": {
+  "registry_models": 31,
+  "registry_drivers": 165,
+  "registry_ratio_drivers": 40,
+  "registry_ratio_drivers_whose_bounds_are_not_0_1": 3,
+  "card_required_drivers": 2,
+  "card_optional_drivers": 2,
+  "card_optional_drivers_without_an_explicit_default": 2,
+  "card_drivers_signed_and_unbounded": 2,
+  "card_drivers_with_lower_bound_exactly_zero": 2,
+  "card_drivers_with_inclusive_upper_bound_one": 1
+ },
+ "OQ-01": {
+  "question": "the cards say the run cwd must come from I-00-B, but I-00-B binds the isolation plan and the two-stage command rule rather than materialising a checkout tree",
+  "handling": "this attempt materialised its own read-only snapshot at iso/checkout_scripts and proved it byte-identical to production",
+  "status": "open - needs a binding ruling from the owner; the code under test is byte-identical either way"
+ },
+ "OQ-02": {
+  "question": "an omitted optional driver that has no explicit default is silently filled with 0.0",
+  "mechanism": "scripts/model_registry.py:335 drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+  "enumerated_instances_for_this_model": [
+   "performance_fee_revenue",
+   "other_revenue"
+  ],
+  "enumerated_count": 2,
+  "why_it_matters_for_this_card": "for asset_management the filled drivers are performance_fee_revenue, other_revenue: omitting them asserts 'there is no such revenue', which is indistinguishable from 'the disclosure was not found'. No product change was made.",
+  "status": "registered, NOT fixed"
+ },
+ "OQ-03": {
+  "question": "which drivers of this model are signed/unbounded, and what happens when a negative signed driver drives total revenue below zero",
+  "enumerated_signed_and_unbounded_drivers": [
+   "performance_fee_revenue",
+   "other_revenue"
+  ],
+  "enumerated_count": 2,
+  "mechanism": "scripts/model_registry.py:352-353 rejects a negative calculated revenue (ModelRegistryError 'calculated revenue cannot be negative')",
+  "why_it_matters_for_this_card": "a signed driver can legitimately be negative (clawback / reversal); the contract then refuses the whole row instead of presenting a negative revenue. Recorded as a contract fact for the disclosure-adaptation stage; no product change.",
+  "status": "registered, NOT fixed"
+ },
+ "OQ-04": {
+  "question": "is the refusal edge of the card-specific negative inclusive or exclusive",
+  "enumerated_drivers_with_lower_bound_exactly_zero": [
+   "average_aum",
+   "management_fee_rate"
+  ],
+  "enumerated_drivers_with_inclusive_upper_bound_one": [
+   "management_fee_rate"
+  ],
+  "handling": "the boundary is exercised by the non-gating observation OBS-BOUND-INCLUSIVE and by the card-specific negative case; the negative case is built with set_driver_element so it fails the VALUE-domain guard rather than the array-length guard",
+  "status": "closed for this card by observation; no product change"
+ },
+ "no_product_change_made": true,
+ "written_at_unix": 1789872682.942238,
+ "written_at_utc": "2026-09-20T02:51:22Z"
+}

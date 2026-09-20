@@ -1,0 +1,67 @@
+{
+ "purpose": "prove that the runner's exit code carries the verdict (a bookkeeping-only rc=0 is impossible)",
+ "scratch_tree": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M05\\a20260919-01\\recovery\\selfcheck",
+ "frozen_evidence_untouched": {
+  "evidence/M05/input.json": "5c153bbdd22d2330eb9b98080ad5ec0a4e2e66f24b8346f202ff1c109523b5f0",
+  "evidence/M05/oracle.json": "3965e92d5e9ce196a9b120efa63207c21dddd1a81b3e081c837cdbf2d23cfb9c",
+  "evidence/M05/cases.json": "7e1f2edd118b987461dec8c7950221f3e7ecc93adb750326e6c73ca0011bbe07",
+  "evidence/M05/run_result.json": "0fd91322fabd6f5675298d5851bd9ed2bf84259dce3169bacebd2d77bc72cd2c"
+ },
+ "cases": [
+  {
+   "case": "A",
+   "mutation": "oracle.json positive.expected_float -> [999.0] (in the scratch COPY only)",
+   "raw_rc": 3,
+   "expected_rc": 3,
+   "verdict": {
+    "harness_incomplete": false,
+    "positive_ok": false,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "defaults_ok_not_gating": true,
+    "verdict": "fail",
+    "exit_code": 3
+   },
+   "proves": "a corrupted expectation is no longer hidden behind a bookkeeping-only rc=0; the product itself still returned the correct [620.0]"
+  },
+  {
+   "case": "B",
+   "mutation": "input.json positive.drivers.average_customers deleted (in the scratch COPY only)",
+   "raw_rc": 2,
+   "expected_rc": 2,
+   "verdict": {
+    "harness_incomplete": true,
+    "positive_ok": false,
+    "continuity_ok": true,
+    "negatives_ok": false,
+    "defaults_ok_not_gating": true,
+    "verdict": "fail",
+    "exit_code": 2
+   },
+   "proves": "rc=2 is reachable: the positive input is broken, so the harness has no verdict to give",
+   "note": "the negative summary in this run is distorted by the same broken input (6/11 rejected) - that is expected and is exactly why rc=2 means 'no verdict'"
+  },
+  {
+   "case": "C",
+   "mutation": "none: the uncorrupted files were restored in the scratch tree",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "verdict": {
+    "harness_incomplete": false,
+    "positive_ok": true,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "defaults_ok_not_gating": true,
+    "verdict": "pass",
+    "exit_code": 0
+   },
+   "proves": "the repaired exit code still returns 0 for a genuinely passing card"
+  }
+ ],
+ "exit_code_map": {
+  "0": "positive within the frozen tolerance AND continuity positive ok AND all negatives rejected",
+  "1": "an unguarded harness defect raised (fail-loud)",
+  "2": "no verdict could be produced (for example the positive input itself is broken)",
+  "3": "the verdict is negative (positive mismatch, continuity failure, or an unrejected negative)"
+ }
+}

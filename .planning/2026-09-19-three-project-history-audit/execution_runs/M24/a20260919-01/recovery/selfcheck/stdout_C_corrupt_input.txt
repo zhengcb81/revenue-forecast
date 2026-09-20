@@ -1,0 +1,29 @@
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M24\a20260919-01\iso\checkout_scripts
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M24\a20260919-01\iso\checkout_scripts\model_registry.py
+registry formula: revenue = opening_arr - opening_arr*(1-gross_retention_rate)*lost_arr_revenue_fraction + expansion_arr*expansion_revenue_fraction + new_arr*new_arr_revenue_fraction + usage_revenue
+registry required: ['opening_arr', 'expansion_arr', 'new_arr', 'closing_arr', 'gross_retention_rate', 'lost_arr_revenue_fraction', 'expansion_revenue_fraction', 'new_arr_revenue_fraction']
+registry optional: ['usage_revenue']
+registry defaults: {}
+registry driver_bounds: {}
+positive raised: ModelRegistryError
+positive actual: None
+positive expected: [215.0]
+tolerances_ok: None
+continuity_positive ok: True
+defaults ok: True actual: [210.0] expected: [210.0]
+observation: OBS-BASE-IGNORED raised= ModelRegistryError actual= None matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None missing drivers for subscription_arr_bridge: opening_arr
+observation: OBS-DEFAULT-EQUIV raised= None actual= [210.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+observation: OBS-GRR-ONE-SECOND-YEAR raised= None actual= [215.0, 250.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+negative: NEG-CARD PASS_rejected ModelRegistryError - missing drivers for subscription_arr_bridge: opening_arr
+negative: N01a FAIL_wrong_exception_type KeyError - 'opening_arr'
+negative: N01b FAIL_wrong_exception_type KeyError - 'opening_arr'
+negative: N01c FAIL_wrong_exception_type KeyError - 'opening_arr'
+negative: N01d FAIL_wrong_exception_type KeyError - 'opening_arr'
+negative: N02 PASS_rejected ModelRegistryError - driver subscription_arr_bridge.opening_arr must contain one value per forecast year
+negative: N03 FAIL_wrong_exception_type KeyError - 'opening_arr'
+negative: N04 PASS_rejected ModelRegistryError - missing drivers for subscription_arr_bridge: opening_arr
+negative: N05a PASS_rejected ModelRegistryError - subscription_arr_bridge.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - subscription_arr_bridge.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - opening_arr continuity failed: FY2028
+negative summary: {'total': 11, 'passed': 6, 'failed': ['N01a', 'N01b', 'N01c', 'N01d', 'N03']}
+verdict: fail exit_code: 2

@@ -1,0 +1,261 @@
+{
+  "card_id": "I-09-A",
+  "parent_card": "I-09",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260919-01",
+  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-A\\a20260919-01",
+  "activity": "read + design + read-only probes (no product edit, no product command)",
+  "role": "revenue publication owner (independent signature/transaction reviewer card); implementer must NOT self-accept",
+  "status": "review_pending",
+  "date": "2026-09-19",
+
+  "workspace_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "plan_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+  "three_repos": {
+    "revenue-forecast": {
+      "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+      "git_head": "7d7ea1edc5e0371ffefee0d2ab3c4a34643199d5",
+      "access": "READ-ONLY",
+      "dirty_baseline": {
+        "file": "before/git_status_before.txt",
+        "entries_M": 63,
+        "entries_untracked": 79,
+        "real_entries": 142,
+        "permission_warning_lines": 6
+      },
+      "concurrent_activity_caveat": {
+        "observed": "revenue-forecast's dirty set CHANGED during this attempt without any action by this card: the before snapshot has 142 real entries, the first after snapshot 118, the final after snapshot 132",
+        "attributed_to": "other plan cards running concurrently in the same tree (I-04-C files went from ' M ' to clean between the two snapshots; several M09-M28 / I-11-A / _m2931_build attempt directories appeared)",
+        "consequence": "the revenue-forecast before/after git-status diff is NOT attributable to this card and must not be used as the no-change proof",
+        "stronger_evidence_used_instead": "production anchor re-hash (8/8 SAME including the production registry) plus iso-copy identity (43/43 .py SAME); see current_source_hashes in handoff.json",
+        "company_wiki_and_filing_fetch": "unchanged across before/after (company-wiki 2 entries identical, filing-fetch 1 entry identical)"
+      }
+    },
+    "company-wiki": {
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+      "access": "READ-ONLY",
+      "dirty_baseline": {
+        "file": "before/git_status_cw_before.txt",
+        "entries": [" M CLAUDE.md", " M README.md"]
+      }
+    },
+    "filing-fetch": {
+      "path": "C:\\Users\\郑曾波\\Projects\\filing-fetch",
+      "access": "READ-ONLY",
+      "dirty_baseline": {
+        "file": "before/git_status_ff_before.txt",
+        "entries": ["?? git_filing-fetch.txt"]
+      }
+    }
+  },
+
+  "dependency_receipts": {
+    "I-00-A": {
+      "path": "execution_runs\\I-00-A\\a20260919-01",
+      "files_read": ["paths.json", "baseline.json", "isolation_check.json", "commands.json", "oracle.md", "review.md", "handoff.json", "errata_fix_note.md"],
+      "interpreter_receipt": "iso\\venv\\Scripts\\python.exe (CPython 3.13.9, Anaconda-packaged, base prefix C:\\Miniconda)",
+      "used_as": "template interpreter for this attempt's own venv",
+      "observed_status": "handoff.json status=review_pending, reviewer_status=accepted_scoped_pending_errata_confirm; review.md verdict was changes_required with ONE blocker (the git_filing-fetch.txt / git_company-wiki.txt wrong-capture errata), and errata_fix_note.md records the re-capture"
+    },
+    "I-00-B": {
+      "path": "execution_runs\\I-00-B\\a20260919-01",
+      "files_read": ["binding.json", "handoff.json", "oracle.md", "review.md", "commands.json"],
+      "binding_rules_inherited": [
+        "two-stage command binding (pre-freeze expected -> implement -> real argv -> bound)",
+        "cwd must be a per-attempt iso dir; never the repo root for run commands",
+        "network disabled by default",
+        "global Miniconda python is FORBIDDEN for card runs"
+      ],
+      "observed_status": "handoff.json status=review_pending, reviewer_status=pending (no independent verdict recorded in that attempt)"
+    },
+    "I-08-A": {
+      "path": "execution_runs\\I-08-A\\a20260919-01",
+      "files_read": ["binding.json", "decision.md", "oracle.md", "commands.json", "handoff.json", "review.md"],
+      "authoritative_as": "signature trust domain, provider protocol, E01-E32 single-source error table, public_keys key name, G1/G2/G3a/G3b/G4 + classify(), R-LEGACY-1/E29, parameters W/T/L, E31 ownership",
+      "observed_status": "handoff.json status=review_pending, reviewer_status=pending; decision.md section 11 states the card's own review is not yet issued by an independent reviewer",
+      "CONFLICT_REGISTERED": "the dispatch instruction for this attempt stated I-08-A is accepted_scoped; the artifact itself records review_pending/pending. See OPEN-I09A-5 in decision.md section 7 and review.md section 5."
+    }
+  },
+
+  "interpreter": {
+    "path": "<attempt>\\iso\\venv\\Scripts\\python.exe",
+    "created_with": "& \"<PLAN>\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe\" -m venv <attempt>\\iso\\venv",
+    "version": "3.13.9 (Anaconda-packaged, base prefix C:\\Miniconda)",
+    "installed_for_this_attempt": {
+      "packages_added": "NONE - this card runs stdlib-only probes (no pytest, no cryptography)",
+      "why": "the probed paths do not exercise Ed25519 verification (no attestation provider is configured, attestation_status=unattested), so no third-party import is needed"
+    },
+    "forbidden": [
+      "C:\\Miniconda\\python.exe (global)",
+      "any interpreter outside <attempt>\\iso\\venv"
+    ]
+  },
+
+  "cwd_binding": {
+    "probe_cwd": "<attempt>\\iso\\rf\\scripts (producer/reader children inherit it via the harness)",
+    "harness_cwd": "<attempt> (this card's own scripts live here)",
+    "repo_root_used_as_run_cwd": false,
+    "note": "this card executes NO product CLI as a card command; the only product executions are inside the isolated copy driven by iso/probe_commit.py"
+  },
+
+  "allowed_write_roots": [
+    "<attempt>\\iso\\venv",
+    "<attempt>\\iso\\scratch",
+    "<attempt>\\before",
+    "<attempt>\\after",
+    "<attempt>\\recovery",
+    "<attempt>\\*.md / *.json"
+  ],
+
+  "forbidden": [
+    "any edit under revenue-forecast\\scripts, \\tests, \\config, \\artifacts (production code/data)",
+    "any write to the production registry artifacts/registry/publications.jsonl",
+    "any edit under <PLAN>\\reviews (read-only audit evidence; mtime must not change)",
+    "git add / commit / restore / stash / checkout in any of the three production repos",
+    "network access; running a real attestation provider; publishing any artifact",
+    "generating production keys or modifying any trusted-signer list",
+    "using the global Miniconda interpreter",
+    "implementing product code (the card's execution gate: the senior reviewer rules first)"
+  ],
+
+  "input_hashes": {
+    "note": "all hashes measured read-only by iso/capture_baseline.py; full receipt in before/baseline_hashes.txt",
+    "PLAN/execution_v2/START_HERE.md": "4efb7d9e3293d39a7d474a1c3300ef759ff4b02ecdb8d3e9e7a82f942faed2d4",
+    "PLAN/execution_v2/card_I-09-A.md": "3a4ba999a58e93ccff216fa39b67c0b08958bd8672851b8dfb85eb70b57e672e",
+    "PLAN/execution_v2/card_I-09-B.md": "c9cbc4ebaee19158e8646be9823b3fe588da6abed5fcbdb673e3c82dab3d3ee3",
+    "PLAN/execution_v2/card_I-09-C.md": "59e9d71df2100c226e4b37880105e85df37681f6592db16856ee8a117baf23c3",
+    "PLAN/execution_v2/card_I-08-A.md": "26ecf0cfe4a5b4624744e7f72c423a147c97abd62eb6b59b7140020aaf71b7e2",
+    "PLAN/execution_v2/dispatch.md": "0c2c8702722bb99a83c59b97aa77e5feb030e895d8a0e4c514853606bd741027",
+    "PLAN/execution_v2/dispatch.json": "7c81f8ec193bdc62a7aee0d2ea22c515bc64cd62baf3f703b6b5b91611373da9",
+    "PLAN/execution_v2/review_and_handoff.md": "602cce399cace78abb8b369ed36ed6e12540361393d636979a12df51e6ff12b9",
+    "PLAN/execution_v2/common_filing_cards.md": "c54f583976519c66b1b9425fc03a18ec5620bc4d662d5f2f2e0ed184006b325b",
+    "PLAN/execution_v2/filing_cards.md": "5e250b4a15b941b06140c3d0c215461b7eb620a469f9001e59284caed8b217e6",
+    "PLAN/implementation_plan.md": "be4c9bddb777bec5f204bf9ac892d599a77c7a180b5dd2f6e7f5ac9397c96d8a",
+    "I-08-A/binding.json": "9b19b93b957ae6f605d7bb521b307eca35f63b07b0bee5d35b3cbf6c0eb2255b",
+    "I-08-A/decision.md": "a26776b079a48e6b1b8644aa93b5599a45624f63dffcbfb83ce34805ac54272b",
+    "I-08-A/oracle.md": "08281f2d80ac83c1ef23f801e097b5089fd096af23d372dd7f4d2852b576047a",
+    "I-08-A/commands.json": "feacd2bc5159485bea7766c7806214a0b34fca4b9d06a256fb0a334b584cca9b",
+    "I-08-A/handoff.json": "b48d395477958c614a67f4dd5007ca98e4e3abfe282a7c835826e3608c4a10ec",
+    "I-08-A/review.md": "dcdefb45dba242b1fd34c083306a2e617efc739b276b288aef88ba36d9452983",
+    "I-00-A/paths.json": "8ce5ed5f4934c7a5a4fcec6d22aa5677fff63f5521cba9f37a3cb962f751e493",
+    "I-00-A/baseline.json": "b01dfc6038b1fc760b877a754e109049d71fb6c17ac9220e70fb7ae3f286ee80",
+    "I-00-A/isolation_check.json": "fa16d1ac4d2fff5a374d766025fb30e42967198621263ad7ccf839554aaaabe6",
+    "I-00-A/commands.json": "dd98402eb37eebd9b286864fe9d327ddf1d52ed2f40c108d78f72652744e992b",
+    "I-00-A/oracle.md": "73a221bb90ec9c75af583e5b5be1ac0f845d959be16fe1b8d021f06e32375150",
+    "I-00-A/review.md": "1397dc47c526224d4b70e7bc521cd6ec4937a5f0e89c418e6ef9a8c7cb4b45e5",
+    "I-00-A/handoff.json": "ec54ae42f95a9c15606221ae3ec65d8b4738904db1cf3025a1f5ff52e275a28d",
+    "I-00-B/binding.json": "059c4616bc30fe6fff0b27b98a53b49a56d5224068c5a98fc7c1ad21b9d0fc20",
+    "I-00-B/commands.json": "sha256 recorded in before/baseline_hashes.txt",
+    "I-00-B/oracle.md": "a2eb547d54f78698b27277c8a69e47d79a320fbf0097206ab114f24ea39a42f8",
+    "I-00-B/handoff.json": "2f444453d32c436095dc6a24063974033384f164cdd6df0258794f4912c686ba",
+    "I-06-A/decision.md": "c0f46f157bf60a3bdaa518de70f70cba5488898cccbbb42bd3f4a3988af21649",
+    "I-06-A/handoff.json": "71d6c17ef62defeb46f201c317c03e5bc838f0ff575cd3ebb115d9c2e2cada3b",
+    "PLAN/reviews/revenue/logs/publication_probe.stdout.txt": "ca5234399057308f95f576cf295fc098375d34b13d19bb6aac976b60358b6bb8",
+    "RF/scripts/revenue_core.py": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae",
+    "RF/scripts/revenue_forecast.py": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc",
+    "RF/scripts/publication_registry.py": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa",
+    "RF/scripts/revenue_publication.py": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
+    "RF/scripts/revenue_report.py": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+    "RF/scripts/revenue_backtest.py": "4af7609f14ae27137b384df17e1f7a92bce616ea1634d1c087a6eb8ff8dd739b",
+    "RF/scripts/trust_anchor.py": "9abdcec55a524574b55e0111f513338f79a486f536985d036b94b4a71ba1310c",
+    "RF/scripts/contracts/evidence.py": "bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e",
+    "RF/scripts/contracts/constants.py": "278e3e02df15e556f4851b46711a2f36aac5b7e6a9820c27e0ca31b02858d0ae",
+    "RF/tests/test_zr710_publication_txn.py": "9cc1f80a483f2d2141b29286e62781c21b50aa58821802ac5c8f95e632bcaa8e",
+    "RF/tests/test_publication_registry.py": "b31cace60f1822ab763c2318324207415261c78f4b98038bed7bb52361e7b5ad",
+    "RF/tests/conftest.py": "6da47830e3490fead2787505b2c9d177f75a644cb217ea7b9a859704f1632ee4",
+    "RF/tests/test_recognition_bridge.py": "187ea01e45d144031d34b11e3a76c551b2029556c4d26b0b34983f7d59bcc1a5",
+    "RF/artifacts/registry/publications.jsonl": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
+    "RF/config/trusted_signer_public_keys.json": "ABSENT (no default trust domain; zero trusted signers)"
+  },
+
+  "synthetic_fixture_binding": {
+    "warning": "the probe publishes a SYNTHETIC test fixture, never real company data",
+    "file": "RF/tests/test_recognition_bridge.py",
+    "sha256": "187ea01e45d144031d34b11e3a76c551b2029556c4d26b0b34983f7d59bcc1a5",
+    "symbol": "forecast_document (defined at line 32)",
+    "kind": "SYNTHETIC test fixture, not a real company disclosure",
+    "factory_output": {"company_name": "Test Co", "as_of_date": "2026-07-12", "top_level_keys": 21},
+    "variants_used": [
+      {"as_of_date": "2026-09-19", "request_sha256": "4df1ec74ea2924d86686bcb2eaccccaabb6e89c284c5a8896d9377bc2374cead"},
+      {"as_of_date": "2027-03-31", "request_sha256": "6ebc0c5b74001b133c182ec7d97d1e380ce8779f32527a8766ce7b8daa0b08df"},
+      {"company_name": "Test Co B", "request_sha256": "b3bd04ca795bfa22d847ee577db6965f6fbb82c459ff3990a3c5b3aa3e739fee"}
+    ],
+    "carry_forward_rule": "I-09-B/C MUST bind their own fixture hash in their own binding.json and MUST NOT inherit this card's fixture dependency implicitly"
+  },
+
+  "isolated_copy": {
+    "path": "<attempt>\\iso\\rf\\scripts",
+    "method": "Copy-Item -Recurse of the production scripts/ tree into the attempt; every probe imports only from this copy",
+    "identity_check": "7/7 named anchor files SAME, mismatches=0; full Python-file comparison 43/43 SAME, 0 DIFF, 0 EXTRA",
+    "identity_check_evidence": "before/baseline_hashes.txt section [isolated_copy iso/rf/scripts vs production scripts]",
+    "note": "production scripts/ also contains non-.py assets (schemas/config) copied verbatim; the comparison above covers every .py file"
+  },
+
+  "card_anchor_verification": {
+    "method": "re-hash the named file, compare with the sha256 printed in card_I-09-A.md",
+    "scripts/revenue_core.py": {"card": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae", "measured": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae", "match": true},
+    "scripts/revenue_forecast.py": {"card": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc", "measured": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc", "match": true},
+    "scripts/publication_registry.py": {"card": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa", "measured": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa", "match": true},
+    "line_numbers_respected": true,
+    "line_number_note": "unlike I-08-A (where the card's line numbers were stale), all seven anchors named by card_I-09-A.md land exactly on the frozen revision when re-located independently with a regex search: revenue_forecast.py prepare_forecast=38, main=55; revenue_core.py run_forecast=128; publication_registry.py _append=95, register_publication=127, register_snapshot=162, is_registered=188 (re-measured: _read_entries=53, audit=193). The hashes, not the line numbers, remain the binding gate."
+  },
+
+  "reference_facts_from_source_reading": {
+    "registry_entry_keys_forecast": ["artifact_id", "artifact_type", "engine_version", "input_sha256", "input_summary_sha256", "line_sha256", "note", "prev_line_sha256", "publisher", "receipt_sha256", "registered_at", "result_sha256", "schema_version", "validation_status"],
+    "registry_entry_has_no": ["publication_id", "commit_state", "members", "member_sha256", "attestation anchor"],
+    "engine_version": "4.1.0",
+    "forecast_schema_version": "3.7",
+    "opt_in_schema_version": "3.8",
+    "publication_receipt_schema_version": "1.0",
+    "receipt_keys": ["attestation_status", "engine_version", "formal_output_mode", "freeform_override_allowed", "gate_ids", "receipt_schema_version", "receipt_sha256", "schema_version", "validated_input_sha256", "validated_payload_sha256", "validator_version", "verification_context_sha256"],
+    "smoke_run_attestation_status": "unattested (REVENUE_ATTESTATION_PROVIDER unset; host_signed requires a verified L3 handshake per I-08-A R-PROV-1)"
+  },
+
+  "oracle_freeze_disclosure": {
+    "frozen_before_probe": "oracle.md (section 4 case table + section 5 contract C-01..C-12 + section 6 falsifier F-IDEM) was written at T3, BEFORE iso/probe_commit.py existed (T4) and before any formal probe run (T5)",
+    "disclosed_exception": "iso/smoke_publish.py was run ONCE at T2 for feasibility, i.e. BEFORE the oracle was frozen. Its nine measurements (ENGINE_VERSION, FORECAST_SCHEMA_VERSION, PUBLICATION_RECEIPT_SCHEMA_VERSION, OPT_IN_SCHEMA_VERSION, fixture company_name/as_of_date, request_sha256 f5a8413e..., result_sha256 7d450589..., receipt_sha256 d0f9c5c0...) are therefore measured-before-frozen, NOT frozen-before-measured. They are used only as (a) evidence the isolated pipeline is reachable and (b) a cross-check that the T5 run agrees with T2. No oracle expectation in section 4 depends on them.",
+    "post_freeze_deviations": "oracle_addendum.md records all deviations between the frozen expectations and the measurements; neither oracle.md nor the probe was edited afterwards to fit results",
+    "harness_defects_preserved": [
+      "after/probe_commit.attempt1_argv_bug.stdout.txt",
+      "after/probe_commit.attempt1_argv_bug.stderr.txt",
+      "after/probe_commit.attempt1_argv_bug.report.json"
+    ]
+  },
+
+  "read_only_constraints_observed": [
+    "PLAN/reviews: opened read-only. Observed directory mtime = 2026-09-19 09:14:20 (the dispatch note expected 2026-09-19 10:05). This was OBSERVED, not changed; no file under reviews/ was written.",
+    "production registry read twice (PowerShell channel and Python channel); sha256 identical before and after every run: bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
+    "no git add/commit/restore/stash/checkout in any production repo",
+    "no network access; no real attestation provider; no production publication"
+  ],
+
+  "one_outside_attempt_side_effect": {
+    "what": "an NTFS directory junction C:\\i09a -> <attempt> was created with `cmd /c mklink /J`",
+    "why": "the console is GBK and the attempt path contains non-ASCII characters; an ASCII alias was needed for exploratory command-line work",
+    "current_state": "the final harness does NOT depend on the junction (all paths are computed inside Python from __file__); the junction is inert and can be deleted with `cmd /c rmdir C:\\i09a`",
+    "registered_as": "disclosed side effect, not a production repo change"
+  },
+
+  "evidence_paths": {
+    "binding": "binding.json",
+    "oracle_frozen_before_run": "oracle.md",
+    "oracle_post_freeze_addendum": "oracle_addendum.md",
+    "design": "decision.md",
+    "commands": "commands.json",
+    "baseline_hashes": "before/baseline_hashes.txt",
+    "git_before": "before/git_status_before.txt",
+    "smoke_feasibility": "after/smoke_publish.stdout.txt",
+    "probe_stdout": "after/probe_commit.stdout.txt",
+    "probe_stderr": "after/probe_commit.stderr.txt (empty)",
+    "probe_summary": "after/probe_summary.stdout.txt",
+    "probe_raw_report": "iso/scratch/probe_report.json",
+    "registry_fault_addendum": "after/probe_registry_fault.stdout.txt",
+    "harness_defect_preserved": "after/probe_commit.attempt1_argv_bug.report.json",
+    "recovery_notes": "recovery/README.md",
+    "changes_diff": "changes.diff",
+    "review": "review.md"
+  },
+
+  "binding_status": "bound",
+  "binding_note": "this card runs no product card-command; every executed command is a stdlib-only read-only probe over an isolated copy, bound with real argv/cwd/interpreter in commands.json and with raw return codes recorded there"
+}

@@ -1,0 +1,49 @@
+card_id: M15
+model_id: transport
+code_root: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M15\a20260919-01\iso\checkout_scripts
+model_registry_file: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M15\a20260919-01\iso\checkout_scripts\model_registry.py
+imported_module_sha256: {'model_registry.py': '9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f', 'model_extensions.py': '9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911'}
+frozen_input_sha256: {'input.json': 'd403335d4f22fa583e688c196f45bd66c794004156b0c0ddf5f2f856f25c1c41', 'oracle.json': 'f742ea3afaef8cb1f97ff38d15e4e401ade016942717740cb7ce0b306352d070', 'cases.json': '4371f2eeb729de6329dbafdd35aecb123e3f99d68586ae69f1de1eee23dd3b90'}
+registry formula: revenue = capacity * utilization * yield + ancillary_revenue
+registry required: ['capacity', 'utilization', 'yield']
+registry optional: ['ancillary_revenue']
+registry defaults: {}
+registry ratio_drivers: ['utilization']
+registry driver_bounds: {}
+positive raised: None
+positive actual: [160.0]
+positive expected: []
+positive tolerances: []
+positive value_ok: False
+positive fidelity_ok: True
+positive fidelity_problems: []
+positive years_match_frozen: True
+continuity_positive raised: None
+continuity_positive actual: [160.0, 196.8]
+continuity_positive expected: [160.0, 196.8]
+continuity_positive tolerances: [1.6e-07, 1.968e-07]
+continuity_positive value_ok: True
+continuity_positive fidelity_ok: True
+continuity_positive fidelity_problems: []
+continuity_positive years_match_frozen: True
+defaults actual: [150.0]
+defaults expected: [150.0]
+defaults ok (not gating): True
+observation: OBS-BASE-IGNORED raised=None actual=[160.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None 
+observation: OBS-BOUND-INCLUSIVE raised=None actual=[210.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
+observation: OBS-YIELD-GT1 raised=None actual=[1135.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
+observation: OBS-SIGNED-ANCILLARY raised=None actual=[130.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
+negative: NEG-CARD PASS_rejected ModelRegistryError - driver transport.utilization must be between 0.0 and 1.0: FY2027
+negative: N01a PASS_rejected ModelRegistryError - transport.capacity.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - transport.capacity.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - transport.capacity.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - transport.capacity.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver transport.capacity must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for transport: capacity
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for transport: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - transport.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - transport.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - transport.years must be consecutive and increasing
+negative summary: total=11 passed=11 failed=[]
+exit_code triggered: ['expectation_missing', 'value_out_of_tolerance']
+verdict: fail exit_code: 2

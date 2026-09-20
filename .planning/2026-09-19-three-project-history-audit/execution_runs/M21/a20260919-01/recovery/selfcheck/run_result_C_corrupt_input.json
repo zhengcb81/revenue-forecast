@@ -1,0 +1,277 @@
+{
+ "card_id": "M21",
+ "model_id": "delivery_pipeline",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts",
+ "model_registry_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "registry_metadata": {
+  "model_id": "delivery_pipeline",
+  "required": [
+   "opening_orders",
+   "new_orders",
+   "cancellations",
+   "deliveries",
+   "ending_orders",
+   "unit_revenue"
+  ],
+  "optional": [
+   "timing_factor",
+   "other_revenue"
+  ],
+  "defaults": {
+   "timing_factor": 1.0
+  },
+  "dimensions": {
+   "opening_orders": "quantity",
+   "new_orders": "quantity",
+   "cancellations": "quantity",
+   "deliveries": "quantity",
+   "ending_orders": "quantity",
+   "unit_revenue": "revenue_per_unit",
+   "timing_factor": "ratio",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "timing_factor"
+  ],
+  "driver_bounds": {},
+  "formula": "revenue = deliveries * unit_revenue * timing_factor + other_revenue"
+ },
+ "positive": {
+  "raised": "ModelRegistryError",
+  "message": "missing drivers for delivery_pipeline: opening_orders",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 146, in main\n    actual = call_product(model_registry, spec_in)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 82, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for delivery_pipeline: opening_orders\n"
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   122.0,
+   0.0
+  ],
+  "expected": [
+   122.0,
+   0.0
+  ],
+  "ok": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   120.0
+  ],
+  "expected": [
+   120.0
+  ],
+  "ok": true
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "expectation": null,
+   "kind": "set_base_revenue",
+   "why": "the delivery bridge ignores base_revenue at this entry point; design observation only, not a pass condition",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for delivery_pipeline: opening_orders",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 208, in main\n    value = call_product(model_registry, mutated)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 82, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for delivery_pipeline: opening_orders\n"
+  },
+  {
+   "id": "OBS-DEFAULT-EQUIV",
+   "expectation": null,
+   "kind": "set_driver_multi",
+   "why": "explicit 1/0 equals the omitted default; makes the documented default falsifiable",
+   "raised": null,
+   "actual": [
+    120.0
+   ],
+   "compared_to": "defaults",
+   "compared_actual": [
+    120.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-CARD-NEG-ENDING",
+   "expectation": null,
+   "kind": "set_driver",
+   "why": "card-listed negative, kept as a NON-GATING observation on the 1-year path; the frozen gating cases are NEG-CARD (value domain) and CONT-BREAK (bridge/continuity)",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for delivery_pipeline: opening_orders",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 208, in main\n    value = call_product(model_registry, mutated)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 82, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for delivery_pipeline: opening_orders\n"
+  }
+ ],
+ "negatives": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "why": "card-specific negative (oracle.md section 5)",
+   "expected": "ModelRegistryError",
+   "base_input": "card_neg",
+   "mutated_input_repr": "{'opening_orders': [50, 35], 'new_orders': [30, 0], 'cancellations': [5, 0], 'deliveries': [40, 0], 'ending_orders': [35, 35], 'unit_revenue': [3, 3], 'timing_factor': [1, 1.5], 'other_revenue': [2, 0]} years=[2027, 2028] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver delivery_pipeline.timing_factor must be between 0.0 and 1.0: FY2028",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 239, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 82, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver delivery_pipeline.timing_factor must be between 0.0 and 1.0: FY2028\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "raised": "KeyError",
+   "message": "'opening_orders'",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 235, in main\n    mutated = apply_case(base, case)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 56, in apply_case\n    base[\"drivers\"][case[\"driver\"]][case[\"index\"]] = build_mutation_value(case[\"value\"])\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\nKeyError: 'opening_orders'\n",
+   "is_target_type": false,
+   "is_import_or_file_error": false,
+   "verdict": "FAIL_wrong_exception_type"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "why": "common negative N01b: non-finite value nan",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "raised": "KeyError",
+   "message": "'opening_orders'",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 235, in main\n    mutated = apply_case(base, case)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 56, in apply_case\n    base[\"drivers\"][case[\"driver\"]][case[\"index\"]] = build_mutation_value(case[\"value\"])\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\nKeyError: 'opening_orders'\n",
+   "is_target_type": false,
+   "is_import_or_file_error": false,
+   "verdict": "FAIL_wrong_exception_type"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "why": "common negative N01c: non-finite value inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "raised": "KeyError",
+   "message": "'opening_orders'",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 235, in main\n    mutated = apply_case(base, case)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 56, in apply_case\n    base[\"drivers\"][case[\"driver\"]][case[\"index\"]] = build_mutation_value(case[\"value\"])\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\nKeyError: 'opening_orders'\n",
+   "is_target_type": false,
+   "is_import_or_file_error": false,
+   "verdict": "FAIL_wrong_exception_type"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "why": "common negative N01d: non-finite value -inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "raised": "KeyError",
+   "message": "'opening_orders'",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 235, in main\n    mutated = apply_case(base, case)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 56, in apply_case\n    base[\"drivers\"][case[\"driver\"]][case[\"index\"]] = build_mutation_value(case[\"value\"])\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\nKeyError: 'opening_orders'\n",
+   "is_target_type": false,
+   "is_import_or_file_error": false,
+   "verdict": "FAIL_wrong_exception_type"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'new_orders': [30], 'cancellations': [5], 'deliveries': [40], 'ending_orders': [35], 'unit_revenue': [3], 'timing_factor': [1], 'other_revenue': [2], 'opening_orders': []} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver delivery_pipeline.opening_orders must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 239, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 82, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver delivery_pipeline.opening_orders must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "raised": "KeyError",
+   "message": "'opening_orders'",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 235, in main\n    mutated = apply_case(base, case)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 60, in apply_case\n    del base[\"drivers\"][case[\"driver\"]]\n        ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\nKeyError: 'opening_orders'\n",
+   "is_target_type": false,
+   "is_import_or_file_error": false,
+   "verdict": "FAIL_wrong_exception_type"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'new_orders': [30], 'cancellations': [5], 'deliveries': [40], 'ending_orders': [35], 'unit_revenue': [3], 'timing_factor': [1], 'other_revenue': [2], 'unknown_driver': [1]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for delivery_pipeline: opening_orders",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 239, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 82, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for delivery_pipeline: opening_orders\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'new_orders': [30], 'cancellations': [5], 'deliveries': [40], 'ending_orders': [35], 'unit_revenue': [3], 'timing_factor': [1], 'other_revenue': [2]} years=[] base=0",
+   "raised": "ModelRegistryError",
+   "message": "delivery_pipeline.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 239, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 82, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: delivery_pipeline.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'new_orders': [30], 'cancellations': [5], 'deliveries': [40], 'ending_orders': [35], 'unit_revenue': [3], 'timing_factor': [1], 'other_revenue': [2]} years=[True] base=0",
+   "raised": "ModelRegistryError",
+   "message": "delivery_pipeline.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 239, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 82, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: delivery_pipeline.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_driver_multi",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "mutated_input_repr": "{'opening_orders': [50, 36], 'new_orders': [30, 0], 'cancellations': [5, 0], 'deliveries': [40, 0], 'ending_orders': [35, 36], 'unit_revenue': [3, 3], 'timing_factor': [1, 1], 'other_revenue': [2, 0]} years=[2027, 2028] base=0",
+   "raised": "ModelRegistryError",
+   "message": "delivery order continuity failed: FY2028",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 239, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 82, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 346, in calculate_registered_model\n    result = spec.calculator(base, normalized, years)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M21\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 157, in _delivery_pipeline\n    raise ModelRegistryError(f\"delivery order continuity failed: FY{year}\")\nmodel_registry.ModelRegistryError: delivery order continuity failed: FY2028\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  }
+ ],
+ "tolerances_ok": null,
+ "defaults_ok": true,
+ "negative_summary": {
+  "total": 11,
+  "passed": 6,
+  "failed": [
+   "N01a",
+   "N01b",
+   "N01c",
+   "N01d",
+   "N03"
+  ]
+ },
+ "exit_code_semantics": {
+  "harness_incomplete": true,
+  "positive_ok": false,
+  "continuity_ok": true,
+  "negatives_ok": false,
+  "defaults_ok_not_gating": true,
+  "verdict": "fail",
+  "exit_code": 2
+ }
+}

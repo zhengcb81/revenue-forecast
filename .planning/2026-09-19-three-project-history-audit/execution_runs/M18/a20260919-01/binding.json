@@ -1,0 +1,126 @@
+{
+ "card_id": "M18",
+ "attempt_id": "a20260919-01",
+ "model_id": "advertising",
+ "card_title": "impression fill and CPM",
+ "binding_status": "bound",
+ "written_utc": "2026-09-20T02:41:11.269205+00:00",
+ "written_before_any_product_run": true,
+ "binding_sources": {
+  "I-00-B": {
+   "path": "execution_runs/I-00-B/a20260919-01/binding.json",
+   "rule_read": "run cwd must be a per-attempt isolation directory, never the repo root; the global Miniconda python is FORBIDDEN for card runs",
+   "note": "I-00-B binds the isolation plan and the two-stage command rule; it does not materialise a checkout tree, so this attempt materialises its own read-only snapshot (iso/checkout_scripts) and records the production hashes it was copied from"
+  },
+  "I-00-C": {
+   "path": "execution_runs/I-00-C/a20260919-01/",
+   "role": "dependency receipt: source/config fingerprint rehash for the three repos",
+   "status_as_read": "present, used as a receipt reference only; this attempt re-hashed the files it actually used instead of trusting it"
+  },
+  "I-00-A": {
+   "path": "execution_runs/I-00-A/a20260919-01/baseline.json",
+   "role": "template interpreter and isolation finding (the global python loads an editable dayu-agent finder, so isolated venvs are mandatory)"
+  }
+ },
+ "three_repo_paths": {
+  "revenue-forecast": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "company-wiki": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+  "filing-fetch": "C:\\Users\\郑曾波\\Projects\\filing-fetch"
+ },
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M18\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "created_from_template": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "isolation": "attempt-local venv created with `python -m venv` from the I-00-A template venv",
+  "global_python_used_for": "nothing in this card; the global Miniconda interpreter was never invoked (no PDF extraction happens in this card)",
+  "binding_written_by_interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M18\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "pipeline_orchestrator_interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "pipeline_orchestrator_note": "the orchestrator only creates the attempt venv and starts each unit as a subprocess; every card command, including the product run, names the bound attempt-venv interpreter in its own argv"
+ },
+ "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M18\\a20260919-01",
+ "python_path": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M18\\a20260919-01\\iso\\checkout_scripts"
+ ],
+ "run_code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M18\\a20260919-01\\iso\\checkout_scripts",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "model_contract_as_read_from_the_isolated_copy": {
+  "model_id": "advertising",
+  "required": [
+   "eligible_impressions",
+   "fill_rate",
+   "revenue_per_thousand_impressions"
+  ],
+  "optional": [
+   "other_revenue"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "eligible_impressions": "activity",
+   "fill_rate": "ratio",
+   "revenue_per_thousand_impressions": "revenue_per_activity",
+   "other_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "fill_rate"
+  ],
+  "declared_driver_bounds": {},
+  "effective_bounds": {
+   "eligible_impressions": [
+    0.0,
+    "inf"
+   ],
+   "fill_rate": [
+    0.0,
+    1.0
+   ],
+   "revenue_per_thousand_impressions": [
+    0.0,
+    "inf"
+   ],
+   "other_revenue": [
+    "-inf",
+    "inf"
+   ]
+  },
+  "formula": "revenue = eligible_impressions / 1000 * fill_rate * revenue_per_thousand_impressions + other_revenue"
+ },
+ "module_paths": {
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M18\\a20260919-01\\iso\\checkout_scripts",
+  "imports_used": [
+   "model_registry"
+  ]
+ },
+ "config_paths": [],
+ "allowed_write_roots": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M18\\a20260919-01"
+ ],
+ "forbidden": [
+  "writing anywhere outside the attempt directory",
+  "writing under Projects/revenue-forecast outside .planning",
+  "writing under Projects/company-wiki or Projects/filing-fetch",
+  "editing .planning/reviews (frozen audit evidence)",
+  "git add/commit/restore/stash in any of the three repos",
+  "network calls, real providers, LLM calls, publication",
+  "calling any product function other than calculate_registered_model for the formula oracle"
+ ],
+ "network": "disabled",
+ "input_hashes": {
+  "evidence/M18/input.json": "ebf9ec885c8ccdbc286c86b4067d2d9e8c5496329110fe6eab8109eaf3c4caba",
+  "evidence/M18/oracle.json": "d54a78b52c0ec53913fa55e790bf5c45be522f18b791c621089e7fd981a8de1a",
+  "evidence/M18/cases.json": "3ed12fcc92267d30e93be8263c8eae138fdb495682946a435cd5fdc95c51ec70"
+ },
+ "evidence_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M18\\a20260919-01\\evidence\\M18",
+ "created_before_runs": true
+}

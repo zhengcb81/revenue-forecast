@@ -1,0 +1,215 @@
+{
+ "card_id": "M27",
+ "attempt_id": "a20260919-01",
+ "status": "review_pending",
+ "implementer_is_not_the_reviewer": true,
+ "card_title": "M27 · renewable_generation · 发电量与电价",
+ "model_id": "renewable_generation",
+ "completed_steps": {
+  "A_binding": "done (binding.json: read-only production hashes + attempt-local isolated snapshot; both hash-equal to production)",
+  "B_positive_run": "done (positive [264000.0], continuity [264000.0, 564100.2000000001], defaults [262800.0]; all within 1e-9*max(1,|e|))",
+  "C_negative_run": "done (11/11 negatives rejected with ModelRegistryError; card-specific negative + N01a-d + N02-N05b + continuity break)",
+  "D_disclosure_mapping": "NOT delivered - recorded as unmapped: the per-driver mapping is explicitly missing and the professional decisions are PROPOSED (unsigned); D belongs to I-10-A",
+  "E_historical_mapping_probe": "not_applicable_with_reason - no real disclosure was adapted, so there is no disclosed history to hold equal across low/base/high; NOT a scenario set and NOT accuracy evidence",
+  "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist"
+ },
+ "completed_steps_list": [
+  "A",
+  "B",
+  "C",
+  "selfcheck-mutation-proof",
+  "evidence-pack"
+ ],
+ "next_step_number": 4,
+ "next_action": "Independent reviewer: re-run scripts/oracle_M25_M28.py --card M27 in a scratch tree and diff against the frozen oracle.json; re-run scripts/run_card.py against iso/checkout_scripts and confirm [264000.0] / [264000.0, 564100.2] / [262800.0] with 11/11 negatives rejected; then adjudicate DEC-M27-* in evidence/M27/accounting_decision.md and OQ-M25M28-* in evidence/M27/oq_rulings.json, and rule on OQ-01 (binding scope). After that I-10-A owns D/E.",
+ "input_hashes": {
+  "evidence/M27/input.json": "52196b3866f58c56d4f1438ae37ca41f08bf6b5e1a71b7eaba5a412a37b992b2",
+  "evidence/M27/oracle.json": "09f603aa87ab89575a008d9b1d721ce44883af6558f32e470f004f455b3c9c18",
+  "evidence/M27/cases.json": "a94e5e8e07f26987aa562125550ccbd8c337be5b2f5f15cfe3c2bb641e148aee",
+  "oracle.md": "0f0ff55faf104b449136857504d37989b26a1dd1ee15dd0051b3c993d185b8e4",
+  "scripts/oracle_M25_M28.py": "1dd52eb9e0a3a3416e809965b6e2b0c52289912d0ec9233f3fdcda74d691b5f9",
+  "scripts/run_card.py": "93d88d4e49c214fdc3bcfcd0afb3b3296c4c2efdb5b549d6c94d4541e3173e4b",
+  "scripts/pack_evidence.py": "ab8597c1164864a30322b56a28d3cdab59787db191f014df91c2f3a227bb7d60"
+ },
+ "current_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "changed_paths": {
+  "production_repos": [],
+  "note": "no production file was created, modified, added, committed, restored or stashed in any of the three repos; the pre-existing dirty state is captured in before/ and after/",
+  "attempt_paths_created": [
+   "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01"
+  ]
+ },
+ "commands_executed": [
+  "A0-iso-venv-create",
+  "A1-pytest-offline-install",
+  "A2-isolated-snapshot",
+  "A3-oracle-generate",
+  "B-product-run",
+  "G1-selfcheck-case-A",
+  "G2-selfcheck-case-B",
+  "G3-selfcheck-case-C",
+  "G4-selfcheck-case-D",
+  "G5-selfcheck-case-E",
+  "E-evidence-pack",
+  "R-independent-rerun-check"
+ ],
+ "raw_exit_codes": {
+  "A0": 0,
+  "A1": 0,
+  "A2": 0,
+  "A3": 0,
+  "B": 0,
+  "G1": 3,
+  "G2": 3,
+  "G3": 0,
+  "G4": 3,
+  "G5": 0,
+  "E": 0,
+  "R": 0,
+  "B_first_run_before_the_oracle_correction": 0
+ },
+ "expected_exit_codes": {
+  "A0": 0,
+  "A1": 0,
+  "A2": 0,
+  "A3": 0,
+  "B": 0,
+  "G1": 3,
+  "G2": 3,
+  "G3": 0,
+  "G4": 3,
+  "G5": 0,
+  "E": 0,
+  "R": 0,
+  "B_first_run_before_the_oracle_correction": 0
+ },
+ "rerun_check": {
+  "unit": "R-independent-rerun-check",
+  "raw_rc": 0,
+  "run_result_json_byte_identical_to_frozen": true,
+  "evidence": "recovery/rerun_check/rerun_check.json",
+  "proves": "the frozen evidence is reproducible: re-running the bound argv in a throwaway tree returns rc=0, produces a byte-identical run_result.json and prints exactly the values stored in the evidence files"
+ },
+ "first_run_vs_definitive_run": {
+  "first_run_raw_rc": 0,
+  "first_run_expected_rc": 0,
+  "first_run_exit_code_semantics": {
+   "harness_incomplete": false,
+   "positive_ok": true,
+   "continuity_ok": true,
+   "negatives_ok": true,
+   "defaults_ok_not_gating": true,
+   "defaults_declared_check_not_gating": true,
+   "verdict": "pass",
+   "exit_code": 0
+  },
+  "first_run_defaults_case": [
+   262800.0
+  ],
+  "definitive_run_defaults_case": [
+   262800.0
+  ],
+  "note": "the first product run happened BEFORE the generator correction; its stdout and run_result are preserved verbatim under recovery/precorrection/"
+ },
+ "positive_actual": [
+  264000.0
+ ],
+ "positive_expected": [
+  264000.0
+ ],
+ "continuity_actual": [
+  264000.0,
+  564100.2000000001
+ ],
+ "defaults_actual": [
+  262800.0
+ ],
+ "negative_case_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": []
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "actual": [
+    264000.0
+   ],
+   "matches_compared": true,
+   "expect_equal": null,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-NEG-PRICE",
+   "actual": [
+    88800.0
+   ],
+   "matches_compared": null,
+   "expect_equal": null,
+   "matches_expected_relation": null
+  }
+ ],
+ "open_questions": [
+  "OQ-01 (all four cards, steering): the cards say the run cwd must come from I-00-B, but I-00-B binds only the isolation plan and the two-stage command rule, not a materialised checkout tree. This batch therefore materialised its own read-only snapshot (iso/checkout_scripts, hashes equal to production). If the intended binding is an I-00-B-materialised checkout, the provenance chain differs; the code under test is byte-identical either way. Needs a binding ruling.",
+  "OQ-M25M28-01 (all four cards): scripts/model_registry.py:335 silently zero-fills an omitted optional driver that is absent from spec.defaults; 24 of the 31 models have such a driver. For this card the affected driver is other_revenue. Registered, NOT fixed; no product change was made. Enumeration: evidence/M27/oq_rulings.json.",
+  "OQ-M25M28-02: the ratio-dimensioned drivers of these four models were enumerated: 41 ratio drivers in total, 4 of them outside [0,1]. store_cohorts.new_store_productivity is (0, inf) as the card requires; the other three exceptions are bank_revenue.asset_yield, bank_revenue.funding_cost and direct_growth.growth_rate.",
+  "OQ-02 (oracle provenance, all four cards): the FIRST oracle generation had a defect (wrong M25 defaults expectation; M27 crashed with a Decimal JSON TypeError and wrote no oracle.json). It was corrected BEFORE oracle.md was written and BEFORE the definitive product run. Consequence: oracle.json's mtime is later than the first ever product run, so the strict mtime-ordering claim fails against that first run; the claim holds against the definitive run. Pre-correction artefacts are preserved under recovery/precorrection/ and the ledger is in evidence/M27/revision_r2.json."
+ ],
+ "blocked_by": [],
+ "stop_conditions_hit": [
+  "STOP_ACCURACY (no I-12 frozen design)",
+  "STOP_DISCLOSURE_ADAPTATION (no signed per-driver mapping / no adapted disclosure)",
+  "STOP_BRIDGE: not_applicable_with_reason (per-year flow model, no opening/closing stock)"
+ ],
+ "qualifications": {
+  "formula": "review_pending",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "evidence_paths": [
+  "after/",
+  "before/",
+  "binding.json",
+  "changes.diff",
+  "commands.json",
+  "decision.md",
+  "evidence/M27/accounting_decision.md",
+  "evidence/M27/cases.json",
+  "evidence/M27/command_manifest.json",
+  "evidence/M27/disclosure_mapping.json",
+  "evidence/M27/evidence_hashes.json",
+  "evidence/M27/forecast_integration.json",
+  "evidence/M27/formula_result.json",
+  "evidence/M27/historical_mapping_probe.json",
+  "evidence/M27/historical_reconciliation.json",
+  "evidence/M27/input.json",
+  "evidence/M27/integrity.json",
+  "evidence/M27/negative_results.json",
+  "evidence/M27/oq_rulings.json",
+  "evidence/M27/oq_rulings_enumeration.json",
+  "evidence/M27/oracle.json",
+  "evidence/M27/oracle_selfcheck.json",
+  "evidence/M27/qualification.json",
+  "evidence/M27/revision_r2.json",
+  "evidence/M27/run_result.json",
+  "evidence/M27/source_manifest.json",
+  "evidence/M27/stderr.txt",
+  "evidence/M27/stdout.txt",
+  "handoff.json",
+  "iso/checkout_scripts/",
+  "oracle.md",
+  "recovery/",
+  "recovery/precorrection/",
+  "recovery/selfcheck/",
+  "review.md",
+  "scripts/"
+ ],
+ "reviewer_status": "PENDING - no independent review has been performed; the implementer does not sign accepted",
+ "revision": "r2 (single revision section; see evidence/M27/revision_r2.json)",
+ "disclosure_impact_note": "not applicable: no real-company disclosure was adapted by this attempt"
+}

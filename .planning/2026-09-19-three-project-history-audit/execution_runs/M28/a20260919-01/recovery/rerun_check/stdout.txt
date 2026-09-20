@@ -1,0 +1,29 @@
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M28\a20260919-01\iso\checkout_scripts
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M28\a20260919-01\iso\checkout_scripts\model_registry.py
+registry formula: revenue = (opening_aum + inflows*inflow_revenue_fraction - outflows*outflow_lost_fraction + market_change*market_change_revenue_fraction) * management_fee_rate + recognized_performance_fees
+registry required: ['opening_aum', 'inflows', 'outflows', 'market_change', 'closing_aum', 'inflow_revenue_fraction', 'outflow_lost_fraction', 'market_change_revenue_fraction', 'management_fee_rate']
+registry optional: ['recognized_performance_fees']
+registry defaults: {}
+registry driver_bounds: {'market_change': [None, None], 'recognized_performance_fees': [None, None]}
+positive raised: None
+positive actual: [11.5]
+positive expected: [11.5]
+tolerances_ok: True
+continuity_positive ok: True
+defaults ok: True actual: [9.5] expected: [9.5]
+defaults declared check: recognized_performance_fees declared= False expected= False matches= True registry_defaults= {}
+observation: OBS-BASE-IGNORED raised= None actual= [11.5] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+observation: OBS-PERF-OMITTED raised= None actual= [9.5] matches_compared= False expect_equal= None matches_expected_relation= True matches_expected= None 
+negative: NEG-CARD PASS_rejected ModelRegistryError - driver aum_fee_bridge.closing_aum must contain one value per forecast year
+negative: N01a PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver aum_fee_bridge.opening_aum must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for aum_fee_bridge: opening_aum
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for aum_fee_bridge: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - aum_fee_bridge.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - aum_fee_bridge.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - opening_aum continuity failed: FY2028
+negative summary: {'total': 11, 'passed': 11, 'failed': []}
+verdict: pass exit_code: 0

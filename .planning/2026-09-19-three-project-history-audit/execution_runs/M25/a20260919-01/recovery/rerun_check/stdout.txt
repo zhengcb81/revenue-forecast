@@ -1,0 +1,29 @@
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M25\a20260919-01\iso\checkout_scripts
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M25\a20260919-01\iso\checkout_scripts\model_registry.py
+registry formula: revenue = (opening_installed_units + new_installed_units*new_unit_revenue_fraction - retired_units*retirement_lost_fraction) * attach_rate * annual_revenue_per_attached_unit
+registry required: ['opening_installed_units', 'new_installed_units', 'retired_units', 'closing_installed_units', 'new_unit_revenue_fraction', 'retirement_lost_fraction', 'attach_rate', 'annual_revenue_per_attached_unit']
+registry optional: []
+registry defaults: {}
+registry driver_bounds: {}
+positive raised: None
+positive actual: [300.0]
+positive expected: [300.0]
+tolerances_ok: True
+continuity_positive ok: True
+defaults ok: True actual: [0.0] expected: [0.0]
+defaults declared check: None declared= None expected= None matches= None registry_defaults= {}
+observation: OBS-BASE-IGNORED raised= None actual= [300.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
+observation: OBS-DEFAULT-ZERO raised= None actual= [0.0] matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None 
+negative: NEG-CARD PASS_rejected ModelRegistryError - retired_units exceeds opening installed cohort: FY2027
+negative: N01a PASS_rejected ModelRegistryError - installed_base_aftermarket.opening_installed_units.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - installed_base_aftermarket.opening_installed_units.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - installed_base_aftermarket.opening_installed_units.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - installed_base_aftermarket.opening_installed_units.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver installed_base_aftermarket.opening_installed_units must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for installed_base_aftermarket: opening_installed_units
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for installed_base_aftermarket: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - installed_base_aftermarket.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - installed_base_aftermarket.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - opening_installed_units continuity failed: FY2028
+negative summary: {'total': 11, 'passed': 11, 'failed': []}
+verdict: pass exit_code: 0

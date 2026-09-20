@@ -1,0 +1,652 @@
+{
+  "card": "I-07-A",
+  "attempt_id": "a20260919-01",
+  "as_of_frozen": "2026-09-18",
+  "counts": {
+    "bound": 9,
+    "planned": 15,
+    "blocked": 5,
+    "not_applicable": 0
+  },
+  "not_applicable_justified": [],
+  "dimensions": [
+    {
+      "dimension": "market",
+      "cells": {
+        "A_share_CN": {
+          "status": "bound",
+          "reason": "real raw rehash + identity match on CN-ZIJIN-2025",
+          "evidence": "after/rehash.json"
+        },
+        "HK": {
+          "status": "bound",
+          "reason": "real raw rehash + identity match on HK-XIAOMI-2025",
+          "evidence": "after/rehash.json"
+        },
+        "US": {
+          "status": "bound",
+          "reason": "real raw rehash + identity match on US-MSFT-2026",
+          "evidence": "after/rehash.json"
+        }
+      }
+    },
+    {
+      "dimension": "file_state",
+      "cells": {
+        "downloaded_and_indexed": {
+          "status": "bound",
+          "reason": "CN-ZIJIN-2025 has a documents row (source_status active), 1 source, 3 locations and 2 artifacts",
+          "evidence": "after/observe_readonly.json",
+          "state_origin": "live_production_observation"
+        },
+        "downloaded_not_indexed": {
+          "status": "bound",
+          "reason": "HK-XIAOMI-2025 and US-MSFT-2026 have 0 rows in documents/sources/locations/artifacts while their bytes exist and hash-match",
+          "evidence": "after/observe_readonly.json",
+          "state_origin": "live_production_observation"
+        },
+        "genuinely_missing": {
+          "status": "blocked",
+          "reason": "no live missing identity is bound (sample_manifest.json lists CN/HK/US-NEW-MISSING as unbound) and every plan sample exists on disk; only the isolated simulation case-03 exists and it is labelled simulated_in_isolation",
+          "evidence": "iso/cases/case-03-simulated-missing/state.json"
+        }
+      }
+    },
+    {
+      "dimension": "source",
+      "cells": {
+        "companies_only": {
+          "status": "blocked",
+          "reason": "CN-ZIJIN-2025 is registered under BOTH company_raw and dropbox_stock, so it is a real multi-root same-bytes case; CN uniqueness is empirically DISPROVED (two original_primary location rows, observed_size 79925886 each, SQL in after/r2_review_facts.json); no plan sample is single-root companies-only, and exclusivity must not be manufactured by deleting the other copy",
+          "evidence": "after/r2_review_facts.json:cn_sample_locations"
+        },
+        "dayu_only": {
+          "status": "blocked",
+          "reason": "no sample in the plan manifest is bound to the dayu_portfolio root (root exists at C:/Users/.../dayu-agent/workspace/portfolio and is registered with 3660 location rows, but no identity is frozen for it)",
+          "evidence": "after/r2_review_facts.json:root_location_counts"
+        },
+        "external_dir_only": {
+          "status": "blocked",
+          "reason": "sample_manifest.json unbound_live_samples[EXTERNAL-ONLY] is unbound; card clause 5 forbids deleting other copies to create exclusivity",
+          "evidence": "sample_manifest.json:unbound_live_samples"
+        },
+        "multi_root_same_bytes": {
+          "status": "bound",
+          "reason": "CN-ZIJIN-2025 has location rows under company_raw (two: original_primary + metadata) and dropbox_stock (one). The production census, reported UNTRUNCATED, has 3440 content hashes with >=2 distinct roots (the first pass carried LIMIT 20 and reported '20', which was an undercount by ~172x — corrected per F-I07A-02); top row spans company_raw + dayu_portfolio + dropbox_stock",
+          "evidence": "after/r2_review_facts.json:multi_root_same_bytes_total"
+        }
+      }
+    },
+    {
+      "dimension": "artifact",
+      "cells": {
+        "valid": {
+          "status": "bound",
+          "reason": "artifact_role=summary status=completed, content_sha256 matches the bytes on disk",
+          "evidence": "after/observe_readonly.json + after/cmd-V2/stdout.json"
+        },
+        "missing": {
+          "status": "planned",
+          "reason": "no required artifact role is absent for the indexed sample; the cell is frozen and will bind when a sample with a missing role is observed",
+          "evidence": "after/observe_readonly.json"
+        },
+        "stale": {
+          "status": "bound",
+          "reason": "artifact_role=normalized status=partial with quality_flags [empty_output] declared in its own front matter (parser pdf_page_aware_core 1.26.7)",
+          "evidence": "after/cmd-V2/stdout.json + after/observe_readonly.json"
+        },
+        "tampered": {
+          "status": "planned",
+          "reason": "no tampered artifact was observed; the detection is a hash comparison and was performed on both roles of the indexed sample (all matched)",
+          "evidence": "after/cmd-V2/stdout.json"
+        },
+        "not_applicable": {
+          "status": "planned",
+          "reason": "no artifact role is NA for the indexed sample; the cell remains frozen, and if it ever binds it must carry a justification string",
+          "evidence": "after/observe_readonly.json"
+        }
+      }
+    },
+    {
+      "dimension": "request",
+      "cells": {
+        "exact": {
+          "status": "planned",
+          "reason": "the request artifact is frozen and hash-verified; executing the exact resolve is I-07-B",
+          "evidence": "after/rehash.json"
+        },
+        "latest": {
+          "status": "planned",
+          "reason": "same frozen request carries as_of_date 2026-09-18 for the latest_as_of path; execution is I-07-B",
+          "evidence": "after/rehash.json"
+        },
+        "new_revision": {
+          "status": "planned",
+          "reason": "no revision pair is frozen in this card",
+          "evidence": "PLAN/execution_v2/card_I-07-B.md"
+        },
+        "mixed_period": {
+          "status": "planned",
+          "reason": "period-ambiguity handling is a resolve-time behaviour, executed in I-07-B",
+          "evidence": "PLAN/execution_v2/card_I-07-B.md"
+        },
+        "duplicate": {
+          "status": "planned",
+          "reason": "idempotence of a repeated request is I-07-B",
+          "evidence": "PLAN/execution_v2/card_I-07-B.md"
+        },
+        "concurrent": {
+          "status": "planned",
+          "reason": "concurrency is I-07-B/I-07-D",
+          "evidence": "PLAN/execution_v2/card_I-07-B.md"
+        }
+      }
+    },
+    {
+      "dimension": "config",
+      "cells": {
+        "installed_entry": {
+          "status": "planned",
+          "reason": "the installed entry is bound and exercised by I-16-A",
+          "evidence": "PLAN/execution_v2/card_I-16-A.md"
+        },
+        "production_config_copy": {
+          "status": "bound",
+          "reason": "an isolated copy of CW/config/source_catalog.yaml with exactly one line changed (catalog_dir rebound to the isolated catalog); the production config hash is unchanged before and after",
+          "evidence": "iso/config_rebind.json, iso/config/source_catalog.yaml",
+          "state_origin": "simulated_in_isolation"
+        },
+        "legal_fifth_root": {
+          "status": "planned",
+          "reason": "root_id future_lake IS declared by config only (kind directory, adapter_id sidecar_filing_v1, read_only true, reusable_for_filing true) at ${PROJECT_ROOT}/future_lake and the directory exists, and the production roots table has exactly 4 rows including future_lake (SQL in after/r2_review_facts.json). It is NOT bound because ingestion is unproven: the only future_lake location is future_lake/README.md (545 bytes, document_kind broker_research, title 'README', active) — a placeholder, not a filing. Ingest feasibility stays with I-07-C (F-I07A-01)",
+          "evidence": "after/r2_review_facts.json:roots_table + root_location_counts + iso/config/source_catalog.yaml"
+        }
+      }
+    },
+    {
+      "dimension": "fault",
+      "cells": {
+        "provider_failure": {
+          "status": "planned",
+          "reason": "needs a live provider; fault injection is I-07-D",
+          "evidence": "PLAN/execution_v2/card_I-07-D.md"
+        },
+        "scan_failure": {
+          "status": "planned",
+          "reason": "fault injection is I-07-D",
+          "evidence": "PLAN/execution_v2/card_I-07-D.md"
+        },
+        "db_lock": {
+          "status": "planned",
+          "reason": "fault injection is I-07-D",
+          "evidence": "PLAN/execution_v2/card_I-07-D.md"
+        },
+        "process_interruption": {
+          "status": "planned",
+          "reason": "fault injection is I-07-D",
+          "evidence": "PLAN/execution_v2/card_I-07-D.md"
+        }
+      }
+    },
+    {
+      "dimension": "generality",
+      "cells": {
+        "company_not_in_fixture_names": {
+          "status": "blocked",
+          "reason": "implementation_plan.md:141 requires a company/file outside the fixture names; no such sample is frozen and this card may not download, so the cell stays blocked and is handed to I-07-C",
+          "evidence": "PLAN/implementation_plan.md:141 + PLAN/execution_v2/card_I-07-C.md"
+        }
+      }
+    }
+  ],
+  "not_applicable_count": 0,
+  "not_applicable_justified_count": 0,
+  "blocked_cells": [
+    "file_state.genuinely_missing",
+    "source.companies_only",
+    "source.dayu_only",
+    "source.external_dir_only",
+    "generality.company_not_in_fixture_names"
+  ],
+  "r2_corrections": {
+    "F-I07A-01": {
+      "what": "config.legal_fifth_root was bound on a program structure rather than SQL output, and its reason claimed 'the production roots table registers all four root ids'",
+      "disposition": "cell downgraded to planned; the roots table is now shown as SQL with 4 rows and the per-root location counts are recorded",
+      "sql": "SELECT root_id, path, kind, priority, last_scanned_at FROM roots ORDER BY priority",
+      "root_location_counts": [
+        {
+          "root_id": "company_raw",
+          "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\companies",
+          "kind": "company_raw",
+          "locations": 33092
+        },
+        {
+          "root_id": "dayu_portfolio",
+          "path": "C:\\Users\\郑曾波\\Projects\\dayu-agent\\workspace\\portfolio",
+          "kind": "dayu_portfolio",
+          "locations": 3660
+        },
+        {
+          "root_id": "dropbox_stock",
+          "path": "C:\\Users\\郑曾波\\Dropbox\\Stock",
+          "kind": "directory",
+          "locations": 9853
+        },
+        {
+          "root_id": "future_lake",
+          "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\future_lake",
+          "kind": "directory",
+          "locations": 1
+        }
+      ],
+      "reviewer_claim_check": {
+        "reviewer_said": "future_lake has 0 location rows",
+        "measured": "future_lake has exactly 1 location row: future_lake/README.md (545 bytes, document_kind broker_research, title 'README', location_status active, document_id NOT NULL)",
+        "consequence": "the reviewer's stated mechanism does not match the catalog, but the recommended disposition is still correct and is adopted: a placeholder README is not ingest capability, so the cell is planned either way"
+      }
+    },
+    "F-I07A-02": {
+      "what": "the census query carried LIMIT 20 and the write-up presented 20 as a total",
+      "disposition": "reported untruncated; the first pass is relabelled top-20-of-many",
+      "first_pass_query_had_limit": 20,
+      "first_pass_truncated": true,
+      "true_total_content_hashes_with_multiple_roots": 3440,
+      "true_total_documents_with_multiple_roots": 3436,
+      "undercount_factor": 172.0,
+      "top5": [
+        {
+          "content_sha256": "8ab1234844b56a2be8b90d92301d0a46123c8770610e87f9462bb27b0e2b7182",
+          "root_count": 3,
+          "roots": "company_raw,dayu_portfolio,dropbox_stock",
+          "loc_count": 3
+        },
+        {
+          "content_sha256": "26f27a9ce7b131288c983391327f9ad5707e58a7beab304db0ee2056e3810797",
+          "root_count": 2,
+          "roots": "company_raw,dropbox_stock",
+          "loc_count": 4
+        },
+        {
+          "content_sha256": "866b14c6e78891082ace537f92abf79062fe8de62764f67558deb71948bf1f6e",
+          "root_count": 2,
+          "roots": "company_raw,dropbox_stock",
+          "loc_count": 4
+        },
+        {
+          "content_sha256": "8f8aeb98de0dbdbd8135588588c2d909ef10a186f63b569af9909590f95a2f5e",
+          "root_count": 2,
+          "roots": "company_raw,dropbox_stock",
+          "loc_count": 4
+        },
+        {
+          "content_sha256": "0079e394b4f441249b995c086303cc581891abdac0e9a2875a8224812bdbd9d5",
+          "root_count": 2,
+          "roots": "company_raw,dropbox_stock",
+          "loc_count": 3
+        }
+      ]
+    },
+    "F-I07A-03": {
+      "what": "the isolated catalog is NOT production-isomorphic",
+      "disposition": "accepted as scoped-usable with an explicit prohibition recorded below"
+    },
+    "F-I07A-04": {
+      "what": "case-02 has no isolated build of its own",
+      "disposition": "relabelled an OBSERVATION RECORD; no fabricated rows were added"
+    },
+    "F-I07A-05": {
+      "what": "CN uniqueness disproved",
+      "disposition": "recorded with SQL: two original_primary rows, observed_size 79925886 each"
+    },
+    "F-I07A-06": {
+      "what": "the write-up treated the plan's dimension list as six where its own oracle.md section 3 had already said 'six' while the plan table at implementation_plan.md:131-139 actually has SEVEN rows",
+      "disposition": "kept as a separate family; the alignment note below records the authoritative row count (7), the extra family (generality, from implementation_plan.md:141) and the corrected phrasing"
+    }
+  },
+  "isolated_catalog_prohibition": {
+    "statement": "iso/catalog/catalog.sqlite3 is an attempt-owned MINIMAL schema (5 tables: roots, sources, documents, locations, artifacts) created only to carry the three state labels. It is NOT production-isomorphic (production has 18 tables; 5/5 CREATE statements differ). It therefore CANNOT carry a resolve or a registration, and MUST NOT be reused by I-07-B or any later card.",
+    "required_for_i07b": "a production-isomorphic catalog, or a table-filtered copy of the production catalog built with the SQLite backup API as I-00-B's isolated_binding_plan describes",
+    "iso_tables": [
+      "roots",
+      "sources",
+      "documents",
+      "locations",
+      "artifacts"
+    ],
+    "production_table_count": 18
+  },
+  "dimension_alignment": {
+    "plan_source": "PLAN/implementation_plan.md:131-139",
+    "plan_table_rows": {
+      "count": 7,
+      "names": [
+        "市场",
+        "文件状态",
+        "来源",
+        "工件",
+        "请求",
+        "配置",
+        "故障"
+      ],
+      "note": "the review's phrasing 'six dimensions' was loose: the plan's table at lines 131-139 has SEVEN rows (市场/文件状态/来源/工件/请求/配置/故障). The implementer's own oracle.md section 3 also said '六个维度' in prose once; that phrasing is corrected here and the rows are the authority."
+    },
+    "implemented_dimensions": [
+      "market",
+      "file_state",
+      "source",
+      "artifact",
+      "request",
+      "config",
+      "fault",
+      "generality"
+    ],
+    "implemented_dimension_count": 8,
+    "extra": "generality",
+    "why": "the plan names seven rows in its table but its prose (line 141) adds an obligation that belongs to none of them: '另选未在 fixture 名称中出现的公司和文件做独立泛化'. Folding it into another dimension would hide it, so it is an eighth cell family. The cell count is what matters, not the row count."
+  },
+  "v_checks": {
+    "V1_rehash": {
+      "pass": true,
+      "detail": {
+        "CN-ZIJIN-2025": true,
+        "HK-XIAOMI-2025": true,
+        "US-MSFT-2026": true
+      }
+    },
+    "V2_state_observation": {
+      "pass": true,
+      "derived": {
+        "CN-ZIJIN-2025": {
+          "documents_rows": 1,
+          "sources_rows": 1,
+          "locations_rows": 3,
+          "artifacts_rows": 2,
+          "location_roots": [
+            "company_raw",
+            "dropbox_stock"
+          ],
+          "document_status": [
+            "active"
+          ],
+          "artifact_status": [
+            "partial",
+            "completed"
+          ],
+          "multi_root_same_bytes": true
+        },
+        "HK-XIAOMI-2025": {
+          "documents_rows": 0,
+          "sources_rows": 0,
+          "locations_rows": 0,
+          "artifacts_rows": 0,
+          "location_roots": [],
+          "document_status": [],
+          "artifact_status": [],
+          "multi_root_same_bytes": false
+        },
+        "US-MSFT-2026": {
+          "documents_rows": 0,
+          "sources_rows": 0,
+          "locations_rows": 0,
+          "artifacts_rows": 0,
+          "location_roots": [],
+          "document_status": [],
+          "artifact_status": [],
+          "multi_root_same_bytes": false
+        }
+      }
+    },
+    "V3_isolated_states": {
+      "pass": true,
+      "table_counts": {
+        "roots": 1,
+        "sources": 1,
+        "documents": 1,
+        "locations": 1,
+        "artifacts": 1
+      },
+      "copies_hash_match": true,
+      "sources_still_present": true
+    },
+    "V4_config_rebind": {
+      "pass": true,
+      "changed_lines": [
+        [
+          "catalog_dir: \"${PROJECT_ROOT}/.source_catalog\"",
+          "catalog_dir: \"C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-07-A/a20260919-01/iso/catalog\""
+        ]
+      ]
+    },
+    "V5_no_production_mutation": {
+      "pass": true,
+      "detail": {
+        "catalog_bytes_before": 49677344768,
+        "catalog_mtime_before": "2026-09-19T07:31:35.406919",
+        "catalog_bytes_after": 49677344768,
+        "catalog_mtime_after": "2026-09-19T07:31:35.406919",
+        "catalog_identity_unchanged": true,
+        "catalog_read_only_observation": true,
+        "catalog_read_only_basis": "SQLite mode=ro URI + PRAGMA query_only=ON (the product's own read-only path, CW/store.py:551,556)",
+        "catalog_quick_check": "NOT RUN BY DESIGN: a full-file scan on a 49.7 GB catalog is out of scope for this card",
+        "wal_bytes_before": 0,
+        "wal_bytes_after": 0,
+        "anchors_unchanged": {
+          "RF/tools/slo_probe.py": true,
+          "RF/tools/tests/test_slo_probe.py": true,
+          "RF/tools/release_readiness.py": true,
+          "CW/src/company_wiki/source_catalog/store.py": true,
+          "CW/src/company_wiki/source_catalog/cli.py": true,
+          "CW/src/company_wiki/source_catalog/config.py": true,
+          "CW/config/source_catalog.yaml": true,
+          "PLAN/execution_v2/card_I-07-A.md": true,
+          "PLAN/execution_v2/card_I-14-A.md": true,
+          "PLAN/execution_v2/sample_manifest.json": true,
+          "PLAN/audit_report.md": true,
+          "PLAN/implementation_plan.md": true
+        },
+        "heads_unchanged": {
+          "revenue-forecast": true,
+          "company-wiki": true,
+          "filing-fetch": true
+        },
+        "porcelain_product_only_unchanged": true,
+        "porcelain_product_only": {
+          "revenue-forecast": [
+            "M CHANGELOG.md",
+            " M SKILL.md",
+            " M assurance/runs/daily_alert.jsonl",
+            " M e2e/expected/expected-0e1cc8d4c73d.json",
+            " M references/backtesting.md",
+            " M references/growth-driver-tree.md",
+            " M references/input-schema.md",
+            " M references/management-targets.md",
+            " M references/model-library.md",
+            " M references/research-coverage.md",
+            " M references/resource-business-guidance.md",
+            " M scripts/analysis/confidence.py",
+            " M scripts/analysis/sensitivity.py",
+            " M scripts/contracts/constants.py",
+            " M scripts/contracts/document.py",
+            " M scripts/forecast/calc.py",
+            " M scripts/forecast/segments.py",
+            " M scripts/generate_input_template.py",
+            " M scripts/model_registry.py",
+            " M scripts/research/targets.py",
+            " M scripts/revenue_backtest.py",
+            " M scripts/revenue_core.py",
+            " M scripts/revenue_report.py",
+            " M scripts/schema_compatibility.py",
+            " M tests/golden_behavior_hashes.json",
+            " M tests/test_backtest.py",
+            " M tests/test_data_contract.py",
+            " M tests/test_generate_input_template.py",
+            " M tests/test_golden_behavior_lock.py",
+            " M tests/test_industry_end_to_end.py",
+            " M tests/test_models.py",
+            "?? references/buy-side-methodology.md",
+            "?? references/extended-models.md",
+            "?? references/industry-lifecycle-routing.md",
+            "?? scripts/model_extensions.py",
+            "?? tests/test_buy_side_accuracy.py",
+            "?? tests/test_independent_targets.py",
+            "?? tests/test_lifecycle_forecasts.py",
+            "?? tests/test_model_economic_guardrails.py",
+            "?? tests/test_model_extensions.py",
+            "?? tests/test_model_integration_bounds.py"
+          ],
+          "company-wiki": [],
+          "filing-fetch": []
+        },
+        "porcelain_whole_tree": {
+          "revenue-forecast": [
+            "M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/commands.json",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/decision.md",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/failures.txt",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/hashes.txt",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/lock-and-legacy-failures.txt",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/lock-and-legacy.txt",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/run-all.txt",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/run-summary.json",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/handoff.json",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/oracle.md",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/review.md",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/cases_core.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/cases_legacy.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/cases_ownership.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/freeze_evidence.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/kernel.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/nesting_probe.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/parse_run.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/participant.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/scheduler.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/stress.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/commands.json",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/decision.md",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/handoff.json",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/harness/bench_redact.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/harness/tests/test_i14c_real_exit_redaction.py",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/oracle.md",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/bench_T1-r1.json",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/bench_T1-r1.stdout.txt",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/bench_T2-r2-regressed.stdout.txt",
+            " M .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/review.md",
+            " M CHANGELOG.md",
+            " M SKILL.md",
+            " M assurance/runs/daily_alert.jsonl",
+            " M e2e/expected/expected-0e1cc8d4c73d.json",
+            " M references/backtesting.md",
+            " M references/growth-driver-tree.md",
+            " M references/input-schema.md",
+            " M references/management-targets.md",
+            " M references/model-library.md",
+            " M references/research-coverage.md",
+            " M references/resource-business-guidance.md",
+            " M scripts/analysis/confidence.py",
+            " M scripts/analysis/sensitivity.py",
+            " M scripts/contracts/constants.py",
+            " M scripts/contracts/document.py",
+            " M scripts/forecast/calc.py",
+            " M scripts/forecast/segments.py",
+            " M scripts/generate_input_template.py",
+            " M scripts/model_registry.py",
+            " M scripts/research/targets.py",
+            " M scripts/revenue_backtest.py",
+            " M scripts/revenue_core.py",
+            " M scripts/revenue_report.py",
+            " M scripts/schema_compatibility.py",
+            " M tests/golden_behavior_hashes.json",
+            " M tests/test_backtest.py",
+            " M tests/test_data_contract.py",
+            " M tests/test_generate_input_template.py",
+            " M tests/test_golden_behavior_lock.py",
+            " M tests/test_industry_end_to_end.py",
+            " M tests/test_models.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/phase-wall-console.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/phase-wall-report.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/phase-wall.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/evidence/static-adr11.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/cases_review.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/cases_timeout.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/hold_lock.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/patch_r2_docs.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/patch_r3_commands.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/patch_r3_docs.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/patch_r3_handoff.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/phase_wall.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/sim/static_check.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-05-A/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-06-A/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-07-A/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-08-B/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-A/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/harness/redact_variants.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/harness/run_diagnostic_table.py",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3-changes.diff",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/bench_T2-r2-regressed.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/bench_T2-r3-scanner.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/bench_T2-r3-scanner.stdout.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/cli-r3-E5a/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/cli-r3-E5b/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/cli-r3-E5c/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/cmd-compat/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/cmd-f07-vs-r2/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/cmd-r3-suite/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/diagnostics_product_fixed.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/diagnostics_product_fixed.stdout.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/diagnostics_product_r1.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/diagnostics_product_r1.stdout.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/diagnostics_product_r2.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/diagnostics_product_r2.stdout.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/final_hashes.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/probe-r3-after.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/probe_results_r3-after.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/rule_table_T2-r3.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/rule_table_T2-r3.stdout.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/runs-r3-after/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/timing_three_way.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/variants.json",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-C/a20260919-01/r3/variants.stdout.txt",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/M05-M08/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/M05/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/M06/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/M07/",
+            "?? .planning/2026-09-19-three-project-history-audit/execution_runs/M08/",
+            "?? audit_review/2026-09-18_real_company_skill_audit/",
+            "?? docs/buy_side_model_audit_2026-09-18.md",
+            "?? docs/buy_side_review_2026-09-18.md",
+            "?? docs/buy_side_validation_2026-09-18.json",
+            "?? prereg_expectations.json",
+            "?? references/buy-side-methodology.md",
+            "?? references/extended-models.md",
+            "?? references/industry-lifecycle-routing.md",
+            "?? scripts/model_extensions.py",
+            "?? tests/test_buy_side_accuracy.py",
+            "?? tests/test_independent_targets.py",
+            "?? tests/test_lifecycle_forecasts.py",
+            "?? tests/test_model_economic_guardrails.py",
+            "?? tests/test_model_extensions.py",
+            "?? tests/test_model_integration_bounds.py"
+          ],
+          "company-wiki": [
+            "M CLAUDE.md",
+            " M README.md"
+          ],
+          "filing-fetch": [
+            "?? git_filing-fetch.txt"
+          ]
+        },
+        "slo_probe_blob_at_head": "413aad5f788732520ace76acbaebcf06633f34d5",
+        "slo_probe_blob_worktree": "413aad5f788732520ace76acbaebcf06633f34d5"
+      }
+    },
+    "V6_generality_cell": {
+      "pass": false,
+      "status": "blocked",
+      "reason": "no unbound-in-fixture sample and no download authority"
+    },
+    "V7_no_silent_NA": {
+      "pass": true,
+      "not_applicable_count": 0
+    }
+  }
+}

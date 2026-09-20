@@ -1,0 +1,159 @@
+{
+  "card": "I-07-A",
+  "attempt_id": "a20260919-01",
+  "python": "<attempt>/iso/venv/Scripts/python.exe (3.13.9)",
+  "network": "disabled for every command",
+  "binding_status": "bound",
+  "product_code_changed": false,
+  "note": "All five commands are read-only with respect to production. V0/V5 read file metadata and hashes; V1 hashes the frozen samples; V2 issues SELECT-only queries against the production catalog through a mode=ro URI; V3 writes only under the attempt's iso/ (copies + an attempt-owned sqlite); V4 copies the production config into iso/ and rebinds one line. No command executes a resolve, touches a provider, or starts/stops a worker.",
+
+  "commands": [
+    {
+      "id": "CMD-I07A-V0-snapshot-before",
+      "purpose": "V0: before-state — three repo heads/porcelain, production catalog (bytes, mtime, -wal/-shm), the sha256 of every anchor file",
+      "cwd": "<attempt>",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/i07a_helpers.py", "snapshot", "--out", "<attempt>/before"],
+      "config_paths": [],
+      "allowed_write_roots": ["<attempt>/before"],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "before/snapshot.json written; catalog bytes 49677344768, mtime 2026-09-19T07:31:35",
+      "evidence": "before/snapshot.json, before/cmd-V0/"
+    },
+    {
+      "id": "CMD-I07A-V1-rehash",
+      "purpose": "V1: re-derive the three sample identities by hash (raw + sidecar + request) and compare against the frozen manifest constants; identity is never taken from a filename",
+      "cwd": "<attempt>",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/i07a_helpers.py", "rehash", "--out", "<attempt>/after"],
+      "allowed_write_roots": ["<attempt>/after"],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "all_match=true with all three samples true",
+      "observed_business_result": "all_match=true; CN/HK/US all true; request identity (market/fiscal_year/document_kind/company_query/as_of_date=2026-09-18/schema_version=1.1) matches for all three",
+      "evidence": "after/rehash.json, after/cmd-V1/stdout.json"
+    },
+    {
+      "id": "CMD-I07A-V2-observe-readonly",
+      "purpose": "V2: read-only observation of the production catalog for the three frozen document ids (documents/sources/locations/artifacts/evidence_spans/document_entities) plus the multi-root same-bytes census and the roots table",
+      "cwd": "<attempt>",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/i07a_helpers.py", "observe", "--out", "<attempt>/after"],
+      "allowed_write_roots": ["<attempt>/after"],
+      "timeout_seconds": 540,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "catalog identity unchanged; per-sample row counts that decide the indexed vs unregistered cells",
+      "observed_business_result": "catalog_identity_unchanged=true; CN 1/1/3/2 rows, HK 0/0/0/0, US 0/0/0/0; 20 content hashes reachable from more than one root; 4 registered roots",
+      "evidence": "after/observe_readonly.json, after/cmd-V2/stdout.json"
+    },
+    {
+      "id": "CMD-I07A-V3-iso-build",
+      "purpose": "V3/V4: build the isolated root (copies in production layout) and an attempt-owned catalog with the three state labels, then copy the production config with exactly one line rebound",
+      "cwd": "<attempt>",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/i07a_helpers.py", "iso-build", "--out", "<attempt>"],
+      "allowed_write_roots": ["<attempt>/iso"],
+      "timeout_seconds": 420,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "3 raw + 3 sidecar copies hash-identical to their sources, sources still present, isolated catalog counts 1/1/1/1/1, exactly 1 changed config line, production config hash unchanged",
+      "evidence": "iso/isolated_state.json, iso/config_rebind.json, iso/cases/*/case.json, after/cmd-V3/stdout.json"
+    },
+    {
+      "id": "CMD-I07A-V5-snapshot-after",
+      "purpose": "V5: post-observation integrity — re-hash the samples, sidecars, config and anchors, re-read the catalog identity and the three repos' porcelain",
+      "cwd": "<attempt>",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/i07a_helpers.py", "snapshot", "--out", "<attempt>/after"],
+      "allowed_write_roots": ["<attempt>/after"],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "byte-identical to V0",
+      "observed_business_result": "catalog identity unchanged; all 12 anchors unchanged; all three heads unchanged; product-only porcelain unchanged; slo_probe blob == HEAD",
+      "evidence": "after/snapshot.json, after/v5_integrity.json, after/cmd-V5/stdout.json"
+    },
+    {
+      "id": "CMD-I07A-V6-matrix",
+      "purpose": "V6: derive the frozen state matrix and the per-case state records from the evidence above (pure derivation, no production access)",
+      "cwd": "<attempt>",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/i07a_matrix.py"],
+      "allowed_write_roots": ["<attempt>/after", "<attempt>/iso/cases"],
+      "timeout_seconds": 180,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "bound/planned/blocked counts with not_applicable == 0 and every blocked cell naming a concrete reason",
+      "observed_business_result": "first pass: bound 10 / planned 14 / blocked 5 / not_applicable 0. After the r2 correction pass (F-I07A-01): bound 9 / planned 15 / blocked 5 / not_applicable 0; V1-V5 pass true, V6 generality cell blocked, V7 no-silent-NA true",
+      "evidence": "after/state_matrix.json, after/state_matrix.md, after/cmd-V6/stdout.json"
+    },
+    {
+      "id": "CMD-I07A-V7-r2-review-facts",
+      "purpose": "r2 correction pass (F-I07A-01 / F-I07A-02 / F-I07A-05): re-observe the roots table as SQL output, report the multi-root census UNTRUNCATED, and record the CN-uniqueness SQL",
+      "cwd": "<attempt>",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/i07a_r2_review_facts.py", "<attempt>/after/r2_review_facts.json", "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d"],
+      "config_paths": [],
+      "allowed_write_roots": ["<attempt>/after"],
+      "timeout_seconds": 540,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "roots table as SQL (4 rows incl. future_lake), per-root location counts, CN location SQL, untruncated census totals; catalog identity unchanged",
+      "observed_business_result": "roots rows=4 (company_raw, dayu_portfolio, dropbox_stock, future_lake); locations per root 33092/3660/9853/1; CN locations=3 (two original_primary, observed_size 79925886 each); census totals 3440 content hashes / 3436 documents; catalog identity unchanged",
+      "evidence": "after/r2_review_facts.json, after/cmd-V7/stdout.json, after/cmd-V7/stderr.txt"
+    },
+    {
+      "id": "CMD-I07A-V5-prime-snapshot-after-r2",
+      "purpose": "re-run the V5 integrity snapshot after the r2 correction pass so the no-production-mutation witness covers V7 as well",
+      "cwd": "<attempt>",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/i07a_helpers.py", "snapshot", "--out", "<attempt>/after"],
+      "allowed_write_roots": ["<attempt>/after"],
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "byte-identical to V0",
+      "observed_business_result": "catalog identity unchanged; 12 anchors unchanged; three heads unchanged; product-only porcelain unchanged",
+      "evidence": "after/snapshot.json, after/v5_integrity.json, after/cmd-V5/stdout.json"
+    }
+  ],
+
+  "raw_exit_codes": {
+    "CMD-I07A-V0-snapshot-before": 0,
+    "CMD-I07A-V1-rehash": 0,
+    "CMD-I07A-V2-observe-readonly": 0,
+    "CMD-I07A-V3-iso-build": 0,
+    "CMD-I07A-V5-snapshot-after": 0,
+    "CMD-I07A-V5b-v5-integrity": 0,
+    "CMD-I07A-V6-matrix": 0,
+    "CMD-I07A-V7-r2-review-facts": 0,
+    "CMD-I07A-V5-prime-snapshot-after-r2": 0
+  },
+  "expected_exit_codes": {
+    "CMD-I07A-V0-snapshot-before": 0,
+    "CMD-I07A-V1-rehash": 0,
+    "CMD-I07A-V2-observe-readonly": 0,
+    "CMD-I07A-V3-iso-build": 0,
+    "CMD-I07A-V5-snapshot-after": 0,
+    "CMD-I07A-V5b-v5-integrity": 0,
+    "CMD-I07A-V6-matrix": 0,
+    "CMD-I07A-V7-r2-review-facts": 0,
+    "CMD-I07A-V5-prime-snapshot-after-r2": 0
+  },
+  "expected_vs_raw_note": "every command is expected 0 because every command is read-only or writes only inside the attempt directory. A non-zero code would have been reported as a raw finding, not folded into a summary.",
+
+  "matrix_summary": {
+    "bound": 9,
+    "planned": 15,
+    "blocked": 5,
+    "not_applicable": 0,
+    "not_applicable_justified_count": 0,
+    "superseded_first_pass_counts": {
+      "bound": 10, "planned": 14, "blocked": 5, "not_applicable": 0,
+      "why": "config.legal_fifth_root moved bound -> planned after review finding F-I07A-01 / ruling J2"
+    },
+    "blocked_cells": [
+      "file_state.genuinely_missing",
+      "source.companies_only",
+      "source.dayu_only",
+      "source.external_dir_only",
+      "generality.company_not_in_fixture_names"
+    ]
+  }
+}

@@ -1,0 +1,108 @@
+{
+ "card_id": "M27",
+ "model_id": "renewable_generation",
+ "generated_by": "scripts/oracle_M25_M28.py --card M27 (stdlib only, no product import)",
+ "continuity_case": false,
+ "continuity_note": "card_M27.md gives no two-year continuity example, and renewable_generation is a per-year flow model with no opening/closing stock to bridge (no EXTENSION_OPENING_BALANCES entry), so the applicable continuity check is the cross-year fiscal-year continuity used for M05: a gap in years must be refused.",
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "999.0"
+  ],
+  "expected_float": [
+   999.0
+  ],
+  "tolerances": [
+   9.99e-07
+  ],
+  "hand_work": [
+   "(2*8760*0.5*(1-0)) * (0.5*40 + (1-0.5)*20) + 1200"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "264000",
+   "564100.2"
+  ],
+  "expected_float": [
+   264000.0,
+   564100.2
+  ],
+  "tolerances": [
+   0.000264,
+   0.0005641002
+  ],
+  "hand_work": [
+   "(2*8760*0.5*(1-0)) * (0.5*40 + (1-0.5)*20) + 1200",
+   "(5*8760*0.45*(1-0.1)) * (0.4*42 + (1-0.4)*25) + 0"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "262800"
+  ],
+  "expected_float": [
+   262800.0
+  ],
+  "tolerances": [
+   0.0002628
+  ],
+  "hand_work": [
+   "(2*8760*0.5*(1-0)) * (0.5*40 + (1-0.5)*20) + 0"
+  ]
+ },
+ "defaults_expected_float": [
+  262800.0
+ ],
+ "defaults_declared_expectation": {
+  "driver": "other_revenue",
+  "declared_default_present": false,
+  "why": "card_M27.md L9 declares other_revenue default 0, but the registry implementation declares defaults = {} while keeping other_revenue optional; the library therefore zero-fills it silently. This is the same silent-zero-fill class recorded as OQ-04 in the accepted M05-M08 attempts, and it is checked here to keep the omission visible."
+ },
+ "observation_expected": {
+  "OBS-EQUIV-DEFAULT": {
+   "years": [
+    2027
+   ],
+   "expected": [
+    "262800"
+   ],
+   "expected_float": [
+    262800.0
+   ],
+   "tolerances": [
+    0.0002628
+   ],
+   "hand_work": [
+    "(2*8760*0.5*(1-0)) * (0.5*40 + (1-0.5)*20) + 0"
+   ]
+  }
+ },
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "extra_expected": {
+  "OBS-EQUIV-DEFAULT": 264000.0
+ }
+}

@@ -1,0 +1,198 @@
+{
+ "card_id": "M14",
+ "attempt_id": "a20260919-01",
+ "model_id": "retail_franchise",
+ "card_title": "M14 · retail_franchise · 直营加盟与供应收入",
+ "status": "review_pending",
+ "implementer_is_not_the_reviewer": true,
+ "completed_steps": {
+  "A_binding": "done (binding.json + before/setup_receipt.json: read-only production hashes, attempt-local isolated snapshot, interpreter hash)",
+  "B_positive_run": "done (positive [65.0], continuity [65.0, 84.8], defaults [50.0]; value + structure/length/type/finiteness faithful)",
+  "C_negative_run": "done (11/11 rejected with ModelRegistryError; card-specific negative + N01-N05 + continuity break)",
+  "C_mutation_proof": "done (scratch copies corrupted -> rc 2/2/2/3/1, control rc 0; frozen evidence hashes unchanged)",
+  "D_disclosure_mapping": "NOT done - the A-C scope of this card is the synthetic formula oracle only; nothing is claimed",
+  "E_historical_mapping_probe": "NOT done - requires D and the I-10-A mapping stage",
+  "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist"
+ },
+ "completed_steps_list": [
+  "A",
+  "B",
+  "C",
+  "C-mutation-proof"
+ ],
+ "next_step_number": 4,
+ "next_action": "Independent reviewer: (1) re-run scripts/oracle_M14.py into a scratch attempt root and diff input/cases/oracle against the frozen copies; (2) re-run scripts/run_card.py against iso/checkout_scripts and confirm [65.0] / [65.0, 84.8] / [50.0] with 11/11 negatives rejected and rc=0; (3) run scripts/verify_card.py and scripts/verify_r2_boundary.py (both must exit 0); (4) adjudicate OQ-01..OQ-05. After that the D/E stage belongs to I-10-A and the accuracy stage to I-12.",
+ "input_hashes": {
+  "evidence/M14/input.json": "8cba525c5fabff447ce7f0d81027028281c60c2abea9464d653e6f8f54f3c551",
+  "evidence/M14/oracle.json": "bb3807c461b1d21857885b92b075554080f2903ee896e9541e8899aa80d1dac5",
+  "evidence/M14/cases.json": "ba998e44e0b7e8ca2f7789f748a5c59149e7c93d02e97e0cf6e81af308dcb28b",
+  "oracle.md:frozen_body_sha256": "8d74e94fb4771123b5de49fde34d0501d9cfe41e3f6fdf7b824754ca4809bf8f",
+  "before/oracle_md_v1.json": "recorded in before/ (single baseline, byte offset 9367)"
+ },
+ "current_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "changed_paths": {
+  "production_repos": [],
+  "note": "no production file was created, modified, added, committed, restored or stashed in any of the three repos; the pre-existing dirty state is captured in before/ and after/",
+  "attempt_paths_created": [
+   "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01"
+  ]
+ },
+ "commands_executed": [
+  "A0-iso-venv-create",
+  "A0b-setup-isolation",
+  "A1-oracle-document-freeze",
+  "A2-oracle-generate",
+  "B-product-run",
+  "C1-selfcheck-mutation",
+  "C2-enumerate-driver-bounds",
+  "C3-probe-signed-driver",
+  "C4-build-oq-rulings",
+  "D1-append-r2",
+  "D2-verify-r2-boundary",
+  "E1-pack-evidence",
+  "F1-verify-card",
+  "G1-finalize-hashes",
+  "H1-validate-json-tree"
+ ],
+ "raw_exit_codes": {
+  "A0-iso-venv-create": 0,
+  "A0b-setup-isolation": 0,
+  "A1-oracle-document-freeze": 0,
+  "A2-oracle-generate": 0,
+  "B-product-run": 0,
+  "C1-selfcheck-mutation": 0,
+  "C2-enumerate-driver-bounds": 0,
+  "C3-probe-signed-driver": 0,
+  "C4-build-oq-rulings": 0,
+  "D1-append-r2": 0,
+  "D2-verify-r2-boundary": 0,
+  "E1-pack-evidence": 0,
+  "F1-verify-card": 0,
+  "G1-finalize-hashes": 0,
+  "H1-validate-json-tree": 0
+ },
+ "expected_exit_codes": {
+  "A0-iso-venv-create": 0,
+  "A0b-setup-isolation": 0,
+  "A1-oracle-document-freeze": 0,
+  "A2-oracle-generate": 0,
+  "B-product-run": 0,
+  "C1-selfcheck-mutation": 0,
+  "C2-enumerate-driver-bounds": 0,
+  "C3-probe-signed-driver": 0,
+  "C4-build-oq-rulings": 0,
+  "D1-append-r2": 0,
+  "D2-verify-r2-boundary": 0,
+  "E1-pack-evidence": 0,
+  "F1-verify-card": 0,
+  "G1-finalize-hashes": 0,
+  "H1-validate-json-tree": 0
+ },
+ "positive_actual": [
+  65.0
+ ],
+ "positive_expected": [
+  65.0
+ ],
+ "continuity_actual": [
+  65.0,
+  84.8
+ ],
+ "defaults_actual": [
+  50.0
+ ],
+ "negative_case_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": []
+ },
+ "runner_verdict": {
+  "verdict": "pass",
+  "exit_code": 0,
+  "triggered_conditions": []
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "actual": [
+    65.0
+   ],
+   "raised": null,
+   "matches_expected": null
+  },
+  {
+   "id": "OBS-BOUND-INCLUSIVE",
+   "actual": [
+    257.0
+   ],
+   "raised": null,
+   "matches_expected": true
+  },
+  {
+   "id": "OBS-SUPPLY-BOUND",
+   "actual": null,
+   "raised": "ModelRegistryError",
+   "matches_expected": null
+  }
+ ],
+ "open_questions": [
+  "OQ-01 (binding): the cards say the run cwd must come from I-00-B, but I-00-B binds the isolation plan and the two-stage command rule, not a materialised checkout tree. This attempt materialised its own read-only snapshot (iso/checkout_scripts, hashes equal to production). Needs a binding ruling; the code under test is byte-identical either way.",
+  "OQ-02 (silent zero-fill): model_registry.py:335 fills an omitted optional driver that has no explicit default with 0.0. This model has 3 such drivers (franchise_system_sales, recognized_fee_rate, supply_revenue); omitting franchise_system_sales asserts 'no franchise system sales' and omitting supply_revenue asserts 'no supply revenue', both indistinguishable from 'the disclosure was not found'. Registered, NOT fixed.",
+  "OQ-03 (signed vs bounded optional drivers): this model has NO signed/unbounded driver, so a negative supply revenue or franchise system sale is refused by the driver bound (0.0) rather than by an accounting judgement. Recorded by OBS-SUPPLY-BOUND and recovery/probes/signed_driver_probe.json; whether internal eliminations need a signed convention is a D/E decision.",
+  "OQ-04 (gross vs net for franchise system sales): the implementation multiplies franchise_system_sales by recognized_fee_rate, i.e. only the recognised fee share enters revenue. card_M14.md L45 refuses full consolidation; the disclosure-adaptation stage must decide how the system-sales figure is sourced and whether one-off franchise fees are deferred.",
+  "OQ-05 (pytest): pytest was not installed in the attempt venv (no offline wheel in the local pip cache, network forbidden) and the historical suite was not re-run. If a reviewer requires the historical suite for this card, that must be stated explicitly because it changes the attempt scope."
+ ],
+ "blocked_by": [],
+ "stop_conditions_hit": [
+  "STOP_DISCLOSURE_ADAPTATION (no real-company disclosure mapping; D not started, reviewer unsigned)",
+  "STOP_ACCURACY (no I-12 frozen design)",
+  "STOP_BRIDGE not applicable with reason (flow model, no opening/closing reconciliation)"
+ ],
+ "qualifications": {
+  "formula": "review_pending",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "evidence_paths": [
+  "after/",
+  "before/",
+  "binding.json",
+  "changes.diff",
+  "commands.json",
+  "decision.md",
+  "handoff.json",
+  "oracle.md",
+  "review.md",
+  "recovery/",
+  "scripts/",
+  "iso/checkout_scripts/",
+  "evidence/M14/cases.json",
+  "evidence/M14/command_manifest.json",
+  "evidence/M14/formula_result.json",
+  "evidence/M14/input.json",
+  "evidence/M14/integrity.json",
+  "evidence/M14/negative_results.json",
+  "evidence/M14/negative_results_derivation.json",
+  "evidence/M14/oq_enumeration.json",
+  "evidence/M14/oq_rulings.json",
+  "evidence/M14/oracle.json",
+  "evidence/M14/oracle_selfcheck.json",
+  "evidence/M14/qualification.json",
+  "evidence/M14/r2_boundary_check.json",
+  "evidence/M14/revision_r2.json",
+  "evidence/M14/run_result.json",
+  "evidence/M14/source_manifest.json",
+  "evidence/M14/stderr.txt",
+  "evidence/M14/stdout.txt",
+  "evidence/M14/verify_report.json",
+  "recovery/selfcheck_result.json",
+  "recovery/probes/signed_driver_probe.json"
+ ],
+ "reviewer_status": "not reviewed yet; formula = review_pending, implemented by this attempt and handed to an independent reviewer",
+ "revision": "r2 (exactly one r2 section in oracle.md, single reproducible baseline at byte offset 9367)"
+}

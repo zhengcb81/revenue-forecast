@@ -1,0 +1,63 @@
+{
+ "card_id": "M27",
+ "production_repos_untouched": true,
+ "statement": "no file under any production repository was created, modified, added, committed, restored or stashed by this attempt",
+ "production_hashes_rechecked_after_the_run": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "anchored_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "anchored_hashes_as_given_by_the_task": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "anchored_hashes_match": true,
+ "product_runs_used": "--code-root <attempt>/iso/checkout_scripts (byte-identical read-only snapshot); the production scripts directory was never on sys.path for any card run",
+ "network_calls": "none",
+ "notes": [
+  "revenue-forecast has pre-existing dirty files; git status --porcelain was captured into before/ and after/ so the pre-existing dirt is attributable to its owner",
+  "PLAN/reviews was never written to",
+  "no relative-path write was performed from a production cwd (see _isolation_incidents/20260920-prereg-expectations-leak)"
+ ],
+ "production_source_reverified_at_the_end_of_the_attempt": {
+  "scripts/model_registry.py": {
+   "anchored_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "observed_sha256_at_the_end_of_the_attempt": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "matches": true,
+   "mtime_at_the_end_of_the_attempt": 1789872117.892444
+  },
+  "scripts/model_extensions.py": {
+   "anchored_sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+   "observed_sha256_at_the_end_of_the_attempt": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+   "matches": true,
+   "mtime_at_the_end_of_the_attempt": 1789716473.4493406
+  }
+ },
+ "anchored_hashes_still_match_at_the_end_of_the_attempt": true,
+ "production_tree_observation": {
+  "method": "git -C <production-root> status --porcelain compared with the I-00-A baseline, after dropping every .planning/ entry (this audit's own working tree) and the .tmp-* permission warnings",
+  "unattributable_entry_observed": {
+   "path": "assurance/runs/daily_alert.jsonl",
+   "status": " M",
+   "attribution": "NOT this attempt: it is the repository's own daily alert job output (already recorded in execution_runs/_isolation_incidents/20260920-prereg-expectations-leak/INCIDENT.md event I-3). This attempt never writes under assurance/."
+  },
+  "entries_that_disappeared_from_the_diff": {
+   "note": "assurance/runs/2026-09-11_r4-phase-b/* entries present in the I-00-A baseline no longer appear because the plan owner COMMITTED them (parent commits 7d7ea1e / 1ac01f0, not this attempt)"
+  },
+  "same_second_rewrite_observation": {
+   "observed_mtime": "2026-09-20 03:41:57",
+   "files": [
+    "scripts/revenue_core.py",
+    "scripts/forecast/segments.py",
+    "CHANGELOG.md",
+    "SKILL.md",
+    "references/*.md",
+    "assurance/runs/daily_alert.jsonl"
+   ],
+   "statement": "these files share one mtime that coincides with the plan owner's commit 1ac01f0 (2026-09-20 03:41:55). For the two modules this attempt actually binds, the sha256 is unchanged from the anchored value, so the rewrite did not change the bytes under test. For the others this attempt has no baseline hash and does not claim byte-equality."
+  }
+ }
+}

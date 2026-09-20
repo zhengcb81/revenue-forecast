@@ -1,0 +1,142 @@
+{
+  "card": "I-07-A",
+  "card_title": "固定样本与前置状态建档",
+  "attempt_id": "a20260919-01",
+  "date_local": "2026-09-20",
+  "run_started_local": "2026-09-20T02:29+01:00",
+  "parent_obligation": "PLAN/implementation_plan.md item I-07 (line 129-143): 固定矩阵 + 新样本轮换, the six verification dimensions at lines 131-139, and line 141 '首批沿用紫金、小米、微软…没有真实外部唯一合格样本就记该格未完成，不能删除其它副本制造排他性'",
+  "objective": "Freeze the sample matrix (dimension -> cells -> bound/planned/blocked) and archive the precondition states for the three already-recorded samples, using their real hashes, a read-only production catalog observation and an isolated catalog for the manufactured states. No download, no production mutation, no prediction claim.",
+
+  "dependencies": {
+    "I-00-B": {
+      "receipt": "../../I-00-B/a20260919-01/{binding.json,review.md,sample_rehash.json}",
+      "used_for": "sample identities and hashes (re-derived independently here, not trusted), two-stage command binding, forbidden list, per-command evidence dirs",
+      "result": "3/3 raw + 3/3 sidecar + 3/3 request hashes reproduce the values recorded in I-00-B and in PLAN/execution_v2/sample_manifest.json"
+    }
+  },
+
+  "interpreter": {
+    "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-07-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "created_from_template": "I-00-A/a20260919-01/iso/venv/Scripts/python.exe",
+    "version": "3.13.9 (Anaconda packaging)",
+    "installed_into_venv": ["pytest==9.1.1", "psutil==7.2.2", "pluggy==1.6.0", "iniconfig==2.3.0", "packaging==26.3", "colorama==0.4.6", "pygments==2.21.0"],
+    "note": "no third-party dependency is needed by the I-07-A commands; the venv exists for isolation and for the shared attempt layout"
+  },
+
+  "run_cwd_rule": "every card command runs with cwd = this attempt dir; the company-wiki repo root is NEVER a run cwd",
+  "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-07-A\\a20260919-01\\"
+  ],
+  "allowed_product_edits": [
+    "NONE. company-wiki is read-only for this card; material was COPIED into iso/catalog_root, never moved."
+  ],
+
+  "production_access_declaration": {
+    "production_catalog": {
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\.source_catalog\\catalog.sqlite3",
+      "bytes": 49677344768,
+      "mtime_before": "2026-09-19T07:31:35.406919",
+      "mtime_after": "2026-09-19T07:31:35.406919",
+      "wal_bytes_before": 0,
+      "wal_bytes_after": 0,
+      "access": "READ-ONLY, as the card requires: opened with a SQLite mode=ro URI and PRAGMA query_only=ON (the product's own read-only path, CW/store.py:551,556); only indexed SELECTs were issued; zero INSERT/UPDATE/DELETE",
+      "no_write_witness": "(bytes, mtime, -wal size) identical before and after",
+      "not_done": "PRAGMA quick_check was deliberately NOT run: it is a full-file scan on a 49.7 GB catalog (see RF/tools/release_readiness.py:61-65, which replaces it for exactly that reason)"
+    },
+    "production_config": {
+      "path": "C:\\Users\\郑曾波\\Projects\\company-wiki\\config\\source_catalog.yaml",
+      "sha256": "f9eb72a6c37c2dfeacf18a10df9b983dac104276efaf55b0a55b2c5c15f655df",
+      "changed": false,
+      "isolated_copy": "iso/config/source_catalog.yaml with exactly one line changed (catalog_dir rebound)"
+    },
+    "production_raw_files": "copied (not moved) into iso/catalog_root; each original was re-hashed after the copy and still matches the manifest"
+  },
+
+  "source_anchors_sha256_verified_this_attempt": {
+    "see": "before/snapshot.json -> anchors_sha256 (authoritative, captured before and re-verified after; all unchanged)",
+    "anchor_list": [
+      "RF/tools/slo_probe.py",
+      "RF/tools/tests/test_slo_probe.py",
+      "RF/tools/release_readiness.py",
+      "CW/src/company_wiki/source_catalog/store.py",
+      "CW/src/company_wiki/source_catalog/cli.py",
+      "CW/src/company_wiki/source_catalog/config.py",
+      "CW/config/source_catalog.yaml",
+      "PLAN/execution_v2/card_I-07-A.md",
+      "PLAN/execution_v2/card_I-14-A.md",
+      "PLAN/execution_v2/sample_manifest.json",
+      "PLAN/audit_report.md",
+      "PLAN/implementation_plan.md"
+    ],
+    "note": "the anchor table is NOT duplicated here on purpose: a second copy is how transcription errors enter a receipt. Read before/snapshot.json (V0) and after/snapshot.json (V5)."
+  },
+
+  "frozen_samples": {
+    "CN-ZIJIN-2025": {
+      "document_id": "urn:company-wiki:document:sha256:01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+      "raw_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+      "raw_bytes": 79925886,
+      "sidecar_sha256": "7f7570fe6565698f1962a9301b5e47dbe76fb3a5e8dfa5663a48fc3793bf20b5",
+      "request_sha256": "08fb9a92ca65b4a2386db6e4ac35a51d7fc15ac24532d8ee74489cae32f31799",
+      "request_identity": {"market": "CN", "fiscal_year": 2025, "document_kind": "annual_report", "company_query": "601899", "as_of_date": "2026-09-18", "schema_version": "1.1"},
+      "provider": "cninfo",
+      "provider_document_id": "1225023658 (from the file name only; not independently confirmed in this card)",
+      "state_observed": "indexed (documents row, source_status active) AND multi-root (company_raw + dropbox_stock)"
+    },
+    "HK-XIAOMI-2025": {
+      "document_id": "urn:company-wiki:document:sha256:ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+      "raw_sha256": "ffd733761633f464d90f6829e9b2d3e089f2dee7054b8ebfe91ef617f222da7c",
+      "raw_bytes": 4405561,
+      "sidecar_sha256": "8228741d299164380bde36a83df1267b59e9b46721bea7d8efee857aeeb8da71",
+      "request_sha256": "891b3261c18137bcbd0a6d2ac4bf27b34703fdd7ab348cdc8c118599ce07655c",
+      "request_identity": {"market": "HK", "fiscal_year": 2025, "document_kind": "annual_report", "company_query": "1810", "as_of_date": "2026-09-18", "schema_version": "1.1"},
+      "provider": "hkexnews",
+      "provider_document_id": "12127452",
+      "state_observed": "present but completely unregistered (0 rows in documents/sources/locations/artifacts)"
+    },
+    "US-MSFT-2026": {
+      "document_id": "urn:company-wiki:document:sha256:e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecfff",
+      "raw_sha256": "e3de0053021c02b033272b55551e383b31dba288c86cc12da2e32375e40ecfff",
+      "raw_bytes": 8585615,
+      "sidecar_sha256": "1cbfb1a2ed055fa199806a5d01b96f325396506c472ebfabb80474ec712abb6a",
+      "request_sha256": "369f4682efdbe6e96d38cb724a240040d1b46dcf2b29e10a027bd20b077bf64d",
+      "request_identity": {"market": "US", "fiscal_year": 2026, "document_kind": "annual_report", "company_query": "MSFT", "as_of_date": "2026-09-18", "schema_version": "1.1"},
+      "provider": "sec",
+      "provider_document_id": "0001193125-26-323660",
+      "state_observed": "present but completely unregistered (0 rows in documents/sources/locations/artifacts)"
+    }
+  },
+
+  "isolated_cases": {
+    "case-01-indexed-quality": "iso/cases/case-01-indexed-quality/state.json (state_origin live_production_observation)",
+    "case-02-present-unregistered": "iso/cases/case-02-present-unregistered/state.json (state_origin live_production_observation)",
+    "case-03-simulated-missing": "iso/cases/case-03-simulated-missing/state.json (state_origin simulated_in_isolation — NOT a live sample)",
+    "isolated_catalog": "iso/catalog/catalog.sqlite3 (attempt-owned; 1 root, 1 source, 1 document, 1 location, 1 artifact — the minimum needed for the three state labels)",
+    "isolated_root": "iso/catalog_root (copies of the three raw files + sidecars, production layout mirrored)"
+  },
+
+  "negative_binding_test": {
+    "id": "I07A-neg-bind-1",
+    "purpose": "a run that would touch the production catalog must be visible as such",
+    "expected": "production catalog (bytes, mtime, -wal) identical before and after every command; no write statement in the helper module",
+    "measured": "V5 pass = true (after/v5_integrity.json)"
+  },
+
+  "production_repos_read_only": {
+    "revenue-forecast": {"head": "7d7ea1edc5e0371ffefee0d2ab3c4a34643199d5", "branch": "fcap", "porcelain_tools": []},
+    "company-wiki": {"head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939", "branch": "fcap", "porcelain": [" M CLAUDE.md", " M README.md"], "porcelain_src_config_scripts_tests": []},
+    "filing-fetch": {"head": "d35b6f5b09f1a7dad37d226504bf998802a852d7", "branch": "fcap", "porcelain": []},
+    "note": "company-wiki CLAUDE.md/README.md were already user-modified before this attempt and were left untouched. No git add/commit/restore/stash in any product repo."
+  },
+
+  "forbidden": [
+    "downloading or re-downloading any sample",
+    "deleting or moving any production copy",
+    "UPDATE on production review rows or any other production write",
+    "executing a resolve (that is I-07-B)",
+    "editing any product file",
+    "git add/commit/restore/stash in any product repo",
+    "editing PLAN/reviews/**, PLAN/audit_report.md, PLAN/implementation_plan.md",
+    "marking an absent sample as not_applicable"
+  ]
+}

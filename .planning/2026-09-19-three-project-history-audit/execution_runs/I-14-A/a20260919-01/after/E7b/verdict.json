@@ -1,0 +1,89 @@
+{
+  "case": "E7b-bundle-copy-control",
+  "checks": {
+    "production_tool_aliases_bundle_to_exact": {
+      "ok": true,
+      "detail": {
+        "has_bundle_eq_exact": true,
+        "has_bundle_measurement_loader": false
+      }
+    },
+    "patched_tool_has_no_bundle_alias": {
+      "ok": true,
+      "detail": {
+        "tool_under_test": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-A\\a20260919-01\\iso\\slo_probe_patched.py",
+        "has_bundle_eq_exact": false,
+        "has_bundle_measurement_loader": true
+      }
+    },
+    "pass1_bundle_unmeasured": {
+      "ok": true,
+      "detail": {
+        "bundle": {
+          "percentiles": null,
+          "measured": false,
+          "basis": "unmeasured",
+          "identity_check": null
+        },
+        "breaches": [
+          "bundle: basis=unmeasured — bundle SLO is NOT qualified"
+        ]
+      }
+    },
+    "pass1_not_green": {
+      "ok": true,
+      "detail": 2
+    },
+    "pass2a_copy_input_measured_on_own_values": {
+      "ok": true,
+      "detail": {
+        "bundle": {
+          "percentiles": {
+            "p50": 0.057036500000000004,
+            "p95": 0.097131,
+            "p99": 0.097131
+          },
+          "measured": true,
+          "basis": "measured",
+          "identity_check": {
+            "same_list_object_as_exact": false,
+            "numerically_identical_to_exact": false,
+            "verdict": "independent"
+          }
+        },
+        "raw_returncode": 0
+      }
+    },
+    "pass2b_independent_accepted": {
+      "ok": true,
+      "detail": {
+        "bundle": {
+          "percentiles": {
+            "p50": 0.095555,
+            "p95": 0.155697,
+            "p99": 0.155697
+          },
+          "measured": true,
+          "basis": "measured",
+          "identity_check": {
+            "same_list_object_as_exact": false,
+            "numerically_identical_to_exact": false,
+            "verdict": "independent"
+          }
+        },
+        "breaches": []
+      }
+    },
+    "pass2b_green": {
+      "ok": true,
+      "detail": 0
+    }
+  },
+  "all_ok": true,
+  "failed_checks": [],
+  "raw_returncodes": {
+    "pass1": 2,
+    "pass2a-copied": 0,
+    "pass2b-independent": 0
+  }
+}

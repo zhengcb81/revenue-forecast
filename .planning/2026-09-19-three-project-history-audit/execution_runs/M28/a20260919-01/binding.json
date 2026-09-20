@@ -1,0 +1,135 @@
+{
+ "card_id": "M28",
+ "attempt_id": "a20260919-01",
+ "model_id": "aum_fee_bridge",
+ "card_title": "M28 · aum_fee_bridge · AUM流量与收费桥",
+ "binding_status": "bound",
+ "binding_sources": {
+  "I-00-B": {
+   "path": "execution_runs/I-00-B/a20260919-01/binding.json",
+   "rule_read": "run cwd must be a per-attempt isolation directory, never the repo root; the global Miniconda python is FORBIDDEN for card runs",
+   "note": "I-00-B binds the isolation plan and the two-stage command rule; it does not materialise a checkout tree. This attempt therefore materialises its own read-only snapshot (iso/checkout_scripts) and records the production hashes it was copied from. See OQ-01 in handoff.json: this is the same scope question the accepted M05-M08 attempts raised."
+  },
+  "I-00-C": {
+   "path": "execution_runs/I-00-C/a20260919-01/",
+   "role": "dependency receipt: source/config fingerprint rehash for the three repos",
+   "status_as_read": "present, used as a receipt reference only (this attempt re-hashed the files it actually used rather than trusting the receipt)"
+  },
+  "I-00-A": {
+   "path": "execution_runs/I-00-A/a20260919-01/baseline.json",
+   "role": "template interpreter and isolation finding (the global python loads an editable dayu-agent finder, so isolated venvs are mandatory)"
+  }
+ },
+ "three_repo_paths": {
+  "revenue-forecast": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "company-wiki": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+  "filing-fetch": "C:\\Users\\郑曾波\\Projects\\filing-fetch"
+ },
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "created_from_template": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "isolation": "attempt-local venv created with `python -m venv` from the I-00-A template venv; pytest 9.1.1 installed offline from the local pip cache",
+  "global_python_used_for": "nothing in this card (no PDF extraction was needed)"
+ },
+ "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01",
+ "python_path": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\checkout_scripts"
+ ],
+ "run_code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\checkout_scripts",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "model_contract_as_read_from_the_isolated_copy": {
+  "model_id": "aum_fee_bridge",
+  "required": [
+   "opening_aum",
+   "inflows",
+   "outflows",
+   "market_change",
+   "closing_aum",
+   "inflow_revenue_fraction",
+   "outflow_lost_fraction",
+   "market_change_revenue_fraction",
+   "management_fee_rate"
+  ],
+  "optional": [
+   "recognized_performance_fees"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "opening_aum": "monetary_balance",
+   "inflows": "monetary_balance",
+   "outflows": "monetary_balance",
+   "market_change": "monetary_balance",
+   "closing_aum": "monetary_balance",
+   "inflow_revenue_fraction": "ratio",
+   "outflow_lost_fraction": "ratio",
+   "market_change_revenue_fraction": "ratio",
+   "management_fee_rate": "ratio",
+   "recognized_performance_fees": "revenue"
+  },
+  "ratio_drivers": [
+   "inflow_revenue_fraction",
+   "management_fee_rate",
+   "market_change_revenue_fraction",
+   "outflow_lost_fraction"
+  ],
+  "driver_bounds": {
+   "market_change": [
+    null,
+    null
+   ],
+   "recognized_performance_fees": [
+    null,
+    null
+   ]
+  },
+  "formula": "revenue = (opening_aum + inflows*inflow_revenue_fraction - outflows*outflow_lost_fraction + market_change*market_change_revenue_fraction) * management_fee_rate + recognized_performance_fees"
+ },
+ "module_paths": {
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\iso\\checkout_scripts",
+  "imports_used": [
+   "model_registry"
+  ]
+ },
+ "config_paths": [],
+ "allowed_write_roots": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01"
+ ],
+ "forbidden": [
+  "writing anywhere outside the attempt directory",
+  "writing under Projects/revenue-forecast outside .planning",
+  "writing under Projects/company-wiki or Projects/filing-fetch",
+  "editing .planning/reviews (frozen audit evidence)",
+  "git add/commit/restore/stash in any of the three repos",
+  "network calls, real providers, LLM calls, publication",
+  "calling any product function other than calculate_registered_model for the formula oracle"
+ ],
+ "network": "disabled",
+ "input_hashes": {
+  "evidence/M28/input.json": "3c89b4b5d5f19ab6f20f973e2edee6a7e442b418101e12aa5b8a8cb2a917566f",
+  "evidence/M28/oracle.json": "141136a07e2c95e9f8e474df2756a679cfbb14a68a8236db18fe0cf9897332f0",
+  "evidence/M28/cases.json": "e76e2df6b021e62a2e8ccbc5dace308d5bd71f4144e6fd0ae77328f2e8f4cee7"
+ },
+ "script_hashes": {
+  "scripts/run_card.py": "93d88d4e49c214fdc3bcfcd0afb3b3296c4c2efdb5b549d6c94d4541e3173e4b",
+  "scripts/oracle_M25_M28.py": "1dd52eb9e0a3a3416e809965b6e2b0c52289912d0ec9233f3fdcda74d691b5f9",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "recovery/selfcheck/make_mutations.py": "8180ead2833c4c3edf0850680c44f6b86058acbb6b9746e90bd4a473bcc2d199",
+  "recovery/selfcheck/naive_oracle.py": "c81b682f9091850d52c954e1abf03c32badaad8d05b8d44c5898544f9e43f1fa"
+ },
+ "evidence_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\evidence\\M28",
+ "created_before_runs": true
+}

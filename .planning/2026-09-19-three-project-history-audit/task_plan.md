@@ -70,7 +70,7 @@ Phase 1–6 complete。历史审查和面向较弱模型的执行计划细化完
 - [x] I-04-C 设计卡（跨进程 lease/所有权/恢复协议；三轮复审：r1 changes_required（ADR-10"最后退出者非 owner 且无义务"分支会留永久 paused、认领周期缺 owner 证据校验、计数/报告不符 9/16）→ r2 修 → r3 **accepted_scoped**；随签 **C1**（§13.5 与 review §1 P3-4 的 F-LK2 过时值 `[12,19,7,26,43]`）**已关闭**（真值 `[16,35,10,56,18] ⇒ lost [184,165,190,144,182]`，`verify_flk2.py` 13/13，父代理复核 hash 与只追加证明），**C2**=OPEN-3（60 s 上限命名/边界 + `worker-pause` 是否留在锁内）登记为 **owner 裁定项**，明写不阻塞签收）
 - [x] I-07-A（accepted_scoped；更正：`config.legal_fifth_root` planned 计数、census 真值 3440 组、`future_lake` 实为 1 行 `README.md`）
 - [x] I-14-A（accepted_scoped，仅隔离测量修复；D1 未签 ⇒ 不提升进 `RF/tools/`；bundle 未测量恒 exit 2 属契约变更）
-- [x] M05–M07（**仅 formula 资格**，accepted_scoped）；M08 **blocked**（owner 三步：裁定读法 C 权威 → owner 更正 `card_M08.md` L42 与 `model_cards.md`/`dispatch.md` → 同 `code_root` 复跑留档）
+- [x] M05–M07（**仅 formula 资格**，accepted_scoped）；M08 **blocked**（owner 三步：裁定读法 C 权威 → owner 更正 `card_M08.md` L42 与 `model_cards.md`/`dispatch.md` → 同 `code_root` 复跑留档）。**更正目标须按实测**：四文件印的是 `手算：100+40−5−10−15−60=50；−15重估必须剔除。`（各 1 处），并非早先流传的 `100+40−5−10+−15−60`；读法 C 的带符号呈现应为 `100+40−5+−10+−15−60`，期望 `[50]` 不变
 - [ ] I-14-C r4 独立复核中（r3 新 P1 F-I14C-08 重复 key 已修：`iso/product_fixed/observability.py 049f5d5b…`；保真判据已进 runner，rc=2；C12 硬前置、C13 冻结）
 - [ ] I-08-B 独立复核中（CONFLICT-1 subprocess 豁免集、CONFLICT-2 golden 刷新待裁）
 - [ ] I-05-A r2 复评中；I-06-A blocked（D-W06 五问未签，OPEN-2 幂等键缺请求身份为决定性）

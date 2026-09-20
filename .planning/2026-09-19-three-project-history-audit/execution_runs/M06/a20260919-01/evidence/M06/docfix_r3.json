@@ -1,0 +1,147 @@
+{
+ "card_id": "M06",
+ "pass": "r3 document/evidence consistency revision",
+ "findings_addressed": [
+  "F-M08-06",
+  "F-M08-07",
+  "F-M08-08",
+  "F-M08-09"
+ ],
+ "no_frozen_value_changed": "no pre-registered expectation, tolerance, rejection condition, negative case or disclosure figure was changed; no product file was touched",
+ "findings": {
+  "F-M08-06": {
+   "what": "oracle.md carried two duplicated 'revision r2' sections and two mutually exclusive pre-append hashes in the same ledger",
+   "action": "merged into ONE r2 section; the reproducible v1 hash is kept; the unreproducible value is kept verbatim, labelled as a provenance gap and barred from use as a baseline",
+   "oracle_md_sha256_before": "c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb",
+   "oracle_md_bytes_before": 10912,
+   "oracle_md_sha256_after": "206b27b3d8897f77d40007386fc932f114e8cf9c436ebcabe942db5b11615cc3",
+   "oracle_md_bytes_after": 12915,
+   "removed_duplicate_bytes": 1706,
+   "removed_duplicate_sha256": "a4d12cd09b0a9d95a7ce4a6f7c5d0417a01d47ca00cde44d7c6dffb3961d72c8",
+   "added_r3_note_bytes": 3709,
+   "added_r3_note_sha256": "56a448b39c2be5c909a43c87fb46ecac9f76ca607b8859ceda191ce5eef910ca",
+   "kept_prefix_bytes": 9206,
+   "kept_prefix_sha256_before": "b4c7b4acdd7b324bd7da8530a879c2279e281e2c8af8e3dd94438fa21f3a81c0",
+   "kept_prefix_sha256_after": "b4c7b4acdd7b324bd7da8530a879c2279e281e2c8af8e3dd94438fa21f3a81c0",
+   "kept_prefix_byte_identical": true,
+   "sections_byte_unequal": [],
+   "r2_section_occurrences_after": 1,
+   "authoritative_v1_claim": "d335f5ec2a699bef008686249d77f2f9af6e2b6306510e57a83446f92df7e3eb",
+   "authoritative_v1_cut": {
+    "char_offset": 5152,
+    "variant": "as-is",
+    "payload_bytes": 7482
+   },
+   "provenance_gap_claim": "c07da2412b2e27faa33405878383001336ef1d8ce88c7c9ffd70a8209ffaea7b",
+   "provenance_gap_cut": {
+    "char_offset": 6275,
+    "variant": "as-is",
+    "payload_bytes": 9197
+   },
+   "provenance_gap_total_matches_over_all_byte_cuts": 1,
+   "provenance_gap_meaning": "the value reproduces ONLY as the sha256 of the intermediate write buffer 'v1 frozen body + first r2 section body' (a byte prefix of the file, not any document state before an append). It therefore cannot serve as a hash-ledger baseline; the reviewer's statement that no line-boundary cut reproduces it is upheld (the usual line-boundary scan uses rstrip, which eats the CR of this file's CRLF append region), and this pass adds the byte-exact provenance.",
+   "reproduce": "<iso venv python> -X utf8 -B recovery/docfix-r3/f06_brute.py > recovery/docfix-r3/f06_brute.out.txt ; <iso venv python> -X utf8 -B recovery/docfix-r3/f06_classify.py > recovery/docfix-r3/f06_classify.out.txt",
+   "proof": "<iso venv python> -X utf8 -B recovery/docfix-r3/f06_verify.py > recovery/docfix-r3/f06_verify.out.txt",
+   "pre_image": "recovery/docfix-r3/oracle_pre_M06.md",
+   "merged_image": "recovery/docfix-r3/oracle_merged_M06.md"
+  },
+  "F-M08-07": {
+   "what": "oq_rulings.json miscounted the enumeration and credited the enumeration to the reviewer in the first person",
+   "action": "re-enumerated from the code; counts corrected; attribution rewritten in the third person with the originals preserved",
+   "sha256_before": "ced1c6075b01b1404e56ed8d767cd0fc406d7b65a2e89c2647b94383e151567f",
+   "sha256_after": "e73b23779cec8a78e680d84d66786a926c53bc9130c0ac905b31a747a3cba831",
+   "ratio_drivers_total_was": 40,
+   "ratio_drivers_total_now": 41,
+   "ratio_drivers_not_in_0_1_was": 3,
+   "ratio_drivers_not_in_0_1_now": 4,
+   "missing_driver_added": "direct_growth.growth_rate, domain (-1, inf)",
+   "enumeration_evidence": "evidence/M06/oq_rulings_enumeration.json",
+   "enumeration_evidence_sha256": "95ed73fbce1d26d9084c4db0cdf7b822b6bc2ecc01269344630c7668da6e6e6d",
+   "reproduce": "<iso venv python> -X utf8 -B recovery/docfix-r3/f07_enumerate.py > recovery/docfix-r3/f07_enumerate.out.txt ; <iso venv python> -X utf8 -B recovery/docfix-r3/f07_fix_oq.py > recovery/docfix-r3/f07_fix_oq.out.txt"
+  },
+  "F-M08-08": {
+   "what": "'the frozen artefacts were not changed' needed qualification because the r2 annotation repack changed bytes",
+   "action": "declared the repack scope with old/new hashes and proved the difference is annotation-only",
+   "qualified_statement": "the oracle.md v1 frozen body and every frozen expectation are byte-unchanged and no product file was touched; oracle.md as a whole and the files listed in repack_scope changed for documentation reasons only",
+   "r1_r2_r3_reference_states": {
+    "r1": "reviewer snapshot copy/ (verified: copy/oracle.md == the authoritative v1 claim for every card)",
+    "r2": "reviewer snapshot copy_r2/ (verified: copy_r2/oracle.md == the pre-r3 whole-file hash for every card)",
+    "r3": "attempt tree on disk after this pass"
+   },
+   "named_by_F_M08_08": [
+    {
+     "path": "evidence/M06/negative_results.json",
+     "sha256_r1": "5d2793c2d8c5d1ea80b742842b6fb24ae92eccf867f3791889a36a15bdf7acb7",
+     "sha256_r3": "5d2793c2d8c5d1ea80b742842b6fb24ae92eccf867f3791889a36a15bdf7acb7",
+     "changed_r1_to_r3": false,
+     "annotation_only": null,
+     "added_keys": [],
+     "removed_keys": [],
+     "pre_existing_leaf_values_compared": null,
+     "pre_existing_leaf_values_changed": 0
+    }
+   ],
+   "measured_correction": "MEASURED, and it refines the finding: against the verified r1 snapshot only THREE of the five named files actually changed (M08 cases.json, M08 run_result.json, M08 negative_results.json). M07 run_result.json, M07 negative_results.json and M06 negative_results.json are BYTE-IDENTICAL to the r1 snapshot, so they need no qualification. The three that did change carry only added annotation keys: stripping them makes the document deep-equal to r1, and 0 of 117 / 0 of 220 / 0 of 189 pre-existing leaf values changed.",
+   "repack_scope_r1_to_r2_from_binding_and_handoff": "see binding.json / handoff.json -> docfix_r3_hash_ledger.repack_scope_r1_to_r2",
+   "reproduce": "<iso venv python> -X utf8 -B recovery/docfix-r3/f08_named_files.py > recovery/docfix-r3/f08_named_files.out.txt ; <iso venv python> -X utf8 -B recovery/docfix-r3/f08_repack_diff.py > recovery/docfix-r3/f08_repack_diff.out.txt"
+  },
+  "F-M08-09": {
+   "what": "M08 decision.md DEC-M08-1 still carried the r1 wording and did not point at the handoff's three owner steps",
+   "action": "appended a superseding DEC-M08-1 section that points explicitly at handoff.json.owner_action_required (all three steps, including the explicit prohibition on re-picking the example); the r1 wording is preserved verbatim above it",
+   "decision_md_sha256_before": "c950fc851f9fb797b32992e454699e5bead11e029e10b49ed536614300d0685b",
+   "decision_md_sha256_after": "fcacd5c70db7c3df0134452ce5147bb373ac1484e6de87c71ec57c5dd3108b63",
+   "points_at": "handoff.json.owner_action_required (id F-M08-02-remediation)",
+   "forbidden_constraint_restated": "re-picking the example so that only the convenient reading passes",
+   "m08_only": false
+  }
+ },
+ "r3_changed_files_in_this_attempt": {
+  "oracle.md": {
+   "sha256_before": "c9c4aa7e9fd207ff188b27f5e2a51a02975606e949f7d8ab66bf9de00a4618fb",
+   "sha256_after": "206b27b3d8897f77d40007386fc932f114e8cf9c436ebcabe942db5b11615cc3"
+  },
+  "evidence/": {
+   "evidence/M06/oq_rulings.json": {
+    "sha256_before": "ced1c6075b01b1404e56ed8d767cd0fc406d7b65a2e89c2647b94383e151567f",
+    "sha256_after": "e73b23779cec8a78e680d84d66786a926c53bc9130c0ac905b31a747a3cba831"
+   },
+   "evidence/M06/source_manifest.json": {
+    "sha256_before": "0eb7e1c2c1d6abded2753ae4099bd351325bdd06872d3eef2b1885a967743ded",
+    "sha256_after": "cd5fdc4119f2dd8a5976c40b745923abd4e5560a4b4b26e40757c6b59a6126d5"
+   }
+  },
+  "binding.json": {
+   "sha256_before": "6b2d3a48a34239962161eb666e5b78134cbcd946249beb4d1dddb909a018c04b",
+   "sha256_after": "e860d7fe5069630e708d321e5e06c5144721dd7a84248f9b31e4758c6cce540c"
+  },
+  "handoff.json": {
+   "sha256_before": "f9fc17473cf9f2c875ae22f3d9b569f5c7d706434431f60337840c404caffdf4",
+   "sha256_after": "3fd3e52bce718b003672e647a3fdf58e16d8195eaec872cc03b2597236fa6781"
+  },
+  "decision.md": {
+   "sha256_before": "c950fc851f9fb797b32992e454699e5bead11e029e10b49ed536614300d0685b",
+   "sha256_after": "fcacd5c70db7c3df0134452ce5147bb373ac1484e6de87c71ec57c5dd3108b63"
+  },
+  "after/rerun_sha256.json": {
+   "sha256_before": "291be9e8cd9bc7454335bebc8c38e8ed2adf8e1931f676f172bb2da2da071ed5",
+   "sha256_after": "535c2e6c2b089e2f81aa18e15a84354b1fff0d703abbc90445db91b75834ae27"
+  },
+  "new_files": [
+   "evidence/M06/oq_rulings_enumeration.json",
+   "evidence/M06/docfix_r3.json"
+  ],
+  "evidence_hashes.json": {
+   "note": "written last; its own hash after this pass is discoverable from the file itself and from recovery/docfix-r3/tree_post.txt"
+  }
+ },
+ "downstream_ledgers_updated": {
+  "evidence/<card>/source_manifest.json": "oracle_document.sha256_now -> r3, with the r2 value preserved as sha256_before_r3_dedup",
+  "after/rerun_sha256.json": "all entries refreshed from disk so the manifest still equals the bytes on disk (F-M08-01 property); r2 values of changed entries preserved in docfix_r3_changed_entries",
+  "evidence/<card>/evidence_hashes.json": "revision r3, hashes refreshed, docfix_r3.json and oq_rulings_enumeration.json added"
+ },
+ "product_repos": {
+  "revenue-forecast": "read-only; no write",
+  "company-wiki": "read-only; no write",
+  "filing-fetch": "read-only; no write"
+ }
+}

@@ -1,0 +1,429 @@
+{
+ "card_id": "M14",
+ "model_id": "retail_franchise",
+ "code_root": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts",
+ "entry_point": "model_registry.calculate_registered_model(model_id, base_revenue, drivers, years)",
+ "attempt": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\recovery\\selfcheck",
+ "python_version": "3.13.9",
+ "python_executable": "C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+ "registry_metadata": {
+  "model_id": "retail_franchise",
+  "required": [
+   "average_owned_stores",
+   "revenue_per_owned_store"
+  ],
+  "optional": [
+   "franchise_system_sales",
+   "recognized_fee_rate",
+   "supply_revenue"
+  ],
+  "defaults": {},
+  "dimensions": {
+   "average_owned_stores": "quantity",
+   "revenue_per_owned_store": "revenue_per_unit",
+   "franchise_system_sales": "revenue",
+   "recognized_fee_rate": "ratio",
+   "supply_revenue": "revenue"
+  },
+  "ratio_drivers": [
+   "recognized_fee_rate"
+  ],
+  "driver_bounds": {},
+  "formula": "revenue = average_owned_stores * revenue_per_owned_store + franchise_system_sales * recognized_fee_rate + supply_revenue"
+ },
+ "positive": {
+  "block": "positive",
+  "years": [
+   2027
+  ],
+  "raised": null,
+  "actual": [
+   65.0
+  ],
+  "actual_repr": "[65.0]",
+  "fidelity": {
+   "ok": true,
+   "problems": [],
+   "facts": {
+    "container": "list",
+    "length": 1,
+    "element_types": [
+     "float"
+    ]
+   }
+  },
+  "value_checks": {
+   "label": "positive",
+   "ok": true,
+   "expectation_present": true,
+   "length_ok": true,
+   "per_value": [
+    {
+     "index": 0,
+     "actual": 65.0,
+     "expected": 65.0,
+     "tolerance": 6.5e-08,
+     "abs_diff": 0.0,
+     "ok": true
+    }
+   ],
+   "problems": []
+  },
+  "years_match_frozen": true,
+  "ok": true
+ },
+ "continuity_positive": {
+  "block": "continuity_positive",
+  "years": [
+   2027,
+   2028
+  ],
+  "raised": null,
+  "actual": [
+   65.0,
+   84.8
+  ],
+  "actual_repr": "[65.0, 84.8]",
+  "fidelity": {
+   "ok": true,
+   "problems": [],
+   "facts": {
+    "container": "list",
+    "length": 2,
+    "element_types": [
+     "float",
+     "float"
+    ]
+   }
+  },
+  "value_checks": {
+   "label": "continuity_positive",
+   "ok": true,
+   "expectation_present": true,
+   "length_ok": true,
+   "per_value": [
+    {
+     "index": 0,
+     "actual": 65.0,
+     "expected": 65.0,
+     "tolerance": 6.5e-08,
+     "abs_diff": 0.0,
+     "ok": true
+    },
+    {
+     "index": 1,
+     "actual": 84.8,
+     "expected": 84.8,
+     "tolerance": 8.48e-08,
+     "abs_diff": 0.0,
+     "ok": true
+    }
+   ],
+   "problems": []
+  },
+  "years_match_frozen": true,
+  "ok": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   50.0
+  ],
+  "expected": [
+   50.0
+  ],
+  "ok": true,
+  "gating": false,
+  "why": "documents the documented zero default for the optional drivers; non-gating"
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "expectation": null,
+   "kind": "set_base_revenue",
+   "why": "the rowwise calculator discards base_revenue; design observation only, not a pass condition",
+   "gating": false,
+   "raised": null,
+   "actual": [
+    65.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    65.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-BOUND-INCLUSIVE",
+   "expectation": null,
+   "kind": "set_driver_element",
+   "why": "the ratio domain is INCLUSIVE at the upper edge: 1.0 is accepted while NEG-CARD's 1.1 is refused; records the edge, does not gate",
+   "gating": false,
+   "raised": null,
+   "actual": [
+    257.0
+   ],
+   "expected": [
+    257.0
+   ],
+   "matches_expected": true
+  },
+  {
+   "id": "OBS-SUPPLY-BOUND",
+   "expectation": null,
+   "kind": "set_driver_element",
+   "why": "supply_revenue is NOT a signed driver in this registry, so a negative supply sale is refused by the driver bound (lower bound 0.0) rather than by the non-negative-revenue check; records the contract boundary, does not gate",
+   "gating": false,
+   "raised": "ModelRegistryError",
+   "message": "driver retail_franchise.supply_revenue must be between 0.0 and inf: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 314, in run_all\n    value = call_product(model_registry, mutated)\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver retail_franchise.supply_revenue must be between 0.0 and inf: FY2027\n"
+  }
+ ],
+ "negatives": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "why": "card-specific negative (card_M14.md L41): the recognised franchise fee rate leaves the ratio domain",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_owned_stores': [10], 'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [1.1], 'supply_revenue': [7]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver retail_franchise.recognized_fee_rate must be between 0.0 and 1.0: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver retail_franchise.recognized_fee_rate must be between 0.0 and 1.0: FY2027\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_owned_stores': [True], 'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [0.04], 'supply_revenue': [7]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "retail_franchise.average_owned_stores.FY2027 must be numeric",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: retail_franchise.average_owned_stores.FY2027 must be numeric\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "why": "common negative N01b: non-finite value nan",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_owned_stores': [nan], 'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [0.04], 'supply_revenue': [7]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "retail_franchise.average_owned_stores.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: retail_franchise.average_owned_stores.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "why": "common negative N01c: non-finite value inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_owned_stores': [inf], 'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [0.04], 'supply_revenue': [7]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "retail_franchise.average_owned_stores.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: retail_franchise.average_owned_stores.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "why": "common negative N01d: non-finite value -inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_owned_stores': [-inf], 'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [0.04], 'supply_revenue': [7]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "retail_franchise.average_owned_stores.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: retail_franchise.average_owned_stores.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_owned_stores': [], 'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [0.04], 'supply_revenue': [7]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver retail_franchise.average_owned_stores must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver retail_franchise.average_owned_stores must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [0.04], 'supply_revenue': [7]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for retail_franchise: average_owned_stores",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for retail_franchise: average_owned_stores\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_owned_stores': [10], 'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [0.04], 'supply_revenue': [7], 'unknown_driver': [1]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "unsupported drivers for retail_franchise: unknown_driver",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for retail_franchise: unknown_driver\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_owned_stores': [10], 'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [0.04], 'supply_revenue': [7]} years=[] base=0",
+   "raised": "ModelRegistryError",
+   "message": "retail_franchise.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: retail_franchise.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'average_owned_stores': [10], 'revenue_per_owned_store': [5], 'franchise_system_sales': [200], 'recognized_fee_rate': [0.04], 'supply_revenue': [7]} years=[True] base=0",
+   "raised": "ModelRegistryError",
+   "message": "retail_franchise.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: retail_franchise.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "why": "continuity break for this card: FY2028 is missing, so the years are not consecutive (the two-year positive is run first)",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "mutated_input_repr": "{'average_owned_stores': [10, 12], 'revenue_per_owned_store': [5, 5.5], 'franchise_system_sales': [200, 240], 'recognized_fee_rate': [0.04, 0.045], 'supply_revenue': [7, 8]} years=[2027, 2029] base=0",
+   "raised": "ModelRegistryError",
+   "message": "retail_franchise.years must be consecutive and increasing",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 324, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must be consecutive and increasing\")\nmodel_registry.ModelRegistryError: retail_franchise.years must be consecutive and increasing\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  }
+ ],
+ "harness_error": null,
+ "evidence_dir": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\recovery\\selfcheck\\evidence\\M14",
+ "frozen_input_sha256": {
+  "input.json": "8cba525c5fabff447ce7f0d81027028281c60c2abea9464d653e6f8f54f3c551",
+  "oracle.json": "bb3807c461b1d21857885b92b075554080f2903ee896e9541e8899aa80d1dac5",
+  "cases.json": "ba998e44e0b7e8ca2f7789f748a5c59149e7c93d02e97e0cf6e81af308dcb28b"
+ },
+ "model_registry_file": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "imported_module_sha256": {
+  "model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "code_root_on_sys_path": true,
+ "negative_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": [],
+  "target_exception": "ModelRegistryError",
+  "counting_rule": "only isinstance(exc, ModelRegistryError) counts as PASS; ImportError/ModuleNotFoundError/FileNotFoundError are recorded as FAIL"
+ },
+ "verdict": {
+  "verdict": "pass",
+  "exit_code": 0
+ },
+ "exit_code": 0,
+ "exit_code_semantics": {
+  "0": "pass: faithful positive + continuity and every negative rejected with the target exception",
+  "1": "harness error: no observation could be set up; never a pass",
+  "2": "no verdict: expectation missing or the output is not faithful to the frozen oracle",
+  "3": "verdict negative: at least one negative case was not rejected with the target exception",
+  "precedence": "1 > 2 > 3",
+  "triggered": [],
+  "expectation_missing": [],
+  "fidelity_problems": [],
+  "value_problems": [],
+  "negative_failures": []
+ },
+ "printed_lines": [
+  "card_id: M14",
+  "model_id: retail_franchise",
+  "code_root: C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts",
+  "model_registry_file: C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M14\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+  "imported_module_sha256: {'model_registry.py': '9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f', 'model_extensions.py': '9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911'}",
+  "frozen_input_sha256: {'input.json': '8cba525c5fabff447ce7f0d81027028281c60c2abea9464d653e6f8f54f3c551', 'oracle.json': 'bb3807c461b1d21857885b92b075554080f2903ee896e9541e8899aa80d1dac5', 'cases.json': 'ba998e44e0b7e8ca2f7789f748a5c59149e7c93d02e97e0cf6e81af308dcb28b'}",
+  "registry formula: revenue = average_owned_stores * revenue_per_owned_store + franchise_system_sales * recognized_fee_rate + supply_revenue",
+  "registry required: ['average_owned_stores', 'revenue_per_owned_store']",
+  "registry optional: ['franchise_system_sales', 'recognized_fee_rate', 'supply_revenue']",
+  "registry defaults: {}",
+  "registry ratio_drivers: ['recognized_fee_rate']",
+  "registry driver_bounds: {}",
+  "positive raised: None",
+  "positive actual: [65.0]",
+  "positive expected: [65.0]",
+  "positive tolerances: [6.5e-08]",
+  "positive value_ok: True",
+  "positive fidelity_ok: True",
+  "positive fidelity_problems: []",
+  "positive years_match_frozen: True",
+  "continuity_positive raised: None",
+  "continuity_positive actual: [65.0, 84.8]",
+  "continuity_positive expected: [65.0, 84.8]",
+  "continuity_positive tolerances: [6.5e-08, 8.48e-08]",
+  "continuity_positive value_ok: True",
+  "continuity_positive fidelity_ok: True",
+  "continuity_positive fidelity_problems: []",
+  "continuity_positive years_match_frozen: True",
+  "defaults actual: [50.0]",
+  "defaults expected: [50.0]",
+  "defaults ok (not gating): True",
+  "observation: OBS-BASE-IGNORED raised=None actual=[65.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None ",
+  "observation: OBS-BOUND-INCLUSIVE raised=None actual=[257.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True ",
+  "observation: OBS-SUPPLY-BOUND raised=ModelRegistryError actual=None matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=None driver retail_franchise.supply_revenue must be between 0.0 and inf: FY2027",
+  "negative: NEG-CARD PASS_rejected ModelRegistryError - driver retail_franchise.recognized_fee_rate must be between 0.0 and 1.0: FY2027",
+  "negative: N01a PASS_rejected ModelRegistryError - retail_franchise.average_owned_stores.FY2027 must be numeric",
+  "negative: N01b PASS_rejected ModelRegistryError - retail_franchise.average_owned_stores.FY2027 must be finite",
+  "negative: N01c PASS_rejected ModelRegistryError - retail_franchise.average_owned_stores.FY2027 must be finite",
+  "negative: N01d PASS_rejected ModelRegistryError - retail_franchise.average_owned_stores.FY2027 must be finite",
+  "negative: N02 PASS_rejected ModelRegistryError - driver retail_franchise.average_owned_stores must contain one value per forecast year",
+  "negative: N03 PASS_rejected ModelRegistryError - missing drivers for retail_franchise: average_owned_stores",
+  "negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for retail_franchise: unknown_driver",
+  "negative: N05a PASS_rejected ModelRegistryError - retail_franchise.years must contain fiscal years",
+  "negative: N05b PASS_rejected ModelRegistryError - retail_franchise.years must contain fiscal years",
+  "negative: CONT-BREAK PASS_rejected ModelRegistryError - retail_franchise.years must be consecutive and increasing",
+  "negative summary: total=11 passed=11 failed=[]",
+  "exit_code triggered: []",
+  "verdict: pass exit_code: 0"
+ ],
+ "printed_sha256": "8eadb44f661e6a7f5920c116956ea01d2df93e19fdc9d53cde2391951dd9b645",
+ "print_vs_file_rule": "stdout.txt is the raw OS-level capture of this process's stdout; scripts/verify_card.py re-reads this file and asserts that its lines equal printed_lines and that printed_sha256 matches, so a printed number can never disagree with the recorded evidence."
+}
