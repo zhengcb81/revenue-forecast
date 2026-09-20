@@ -132,3 +132,19 @@ F-07（redactor 阻塞）用例在无 timeout 包装时**挂起 >90 s**（不是
 
 **执行纪律（不变）**：未列出的项（含 **M24 三选一（第 17 项）**、**I-14-C 其余三项**、**M25–M28 再重冻授权**、**I-14-B D-2/D-3/D-4**、**I-11-A OPEN-1/7/8/9/10**、I-08-A OPEN-D7/D1/D2/D3/D4/D5、I-09-A OPEN-I09A-1…6、D-W15 五项、M02-01、I-04-C C2）**保持未决、维持原状**，实现者与编排层均不得代裁。
 
+---
+
+## 十一、【已裁定·第二批】Owner 签字（2026-09-20 09:0x，原话逐字）
+
+> **原话**：「1，新的subagent，2，subagent，3，授权，4，c，其他需要我授权的我都给你授权」
+
+| # | 项 | 裁定 | 执行 |
+|---|---|---|---|
+| 1 | I-14-A D1/D2 | **派新 subagent** 当独立运维/SLO reviewer | 编排层创建独立 reviewer subagent（D1 必须非本探针作者） |
+| 2 | I-11-A OPEN-2/3/5/6 | **派新 subagent** 当行业 reviewer | 编排层创建独立行业 reviewer subagent |
+| 3 | I-14-B D-2 | **授权**建 UI 捕获路径 | I-14-B 或新卡按授权执行；须交付"阻塞 ⇒ FAILS"实测 |
+| 4 | M24 三选一 | **选 c**：加回一个输入不同的跨年用例 | `cases.json` 新增 `{"opening_arr":[200,250],"closing_arr":[251,251]}` → `stock-flow balance failed: FY2027`；**不改正文**；重冻后交 reviewer 复签 |
+| 5 | **其余全部授权** | C12 用子进程硬超时／C13 立卡／~25% 抖动立卡／WinError 206 改短 basetemp／I-08-A OPEN-D7 追认 W=30 T=65536 L=3600／I-09-A OPEN-I09A-1…6 照 reviewer 建议采纳／I-09-A `review.md:80` 出处可改／M25–M28 再重冻授权／I-14-B D-3 归 I-17-A／D-W15 五项**不签**（生产 prune 仍 blocked）／M02-01 选 A 保持 fail-closed／I-04-C C2 维持锁内／I-11-A OPEN-1 允许 pdftotext 降级为交叉核对／OPEN-7 分部集合维持／OPEN-8 接受择优规则／OPEN-9 升级超集／OPEN-10 采用最新文件 mtime | 逐项登记 |
+
+**执行纪律更新**：除 **D-W15 五项（生产 prune 仍 blocked，未签）** 外，**所有 owner 门均已裁定**。剩余 ≈26 张未开工卡从此可按九步协议开工。
+
