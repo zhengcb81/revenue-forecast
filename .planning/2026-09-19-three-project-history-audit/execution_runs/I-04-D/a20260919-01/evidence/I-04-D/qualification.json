@@ -1,0 +1,64 @@
+{
+ "accuracy": "not_assessed",
+ "attempt_id": "a20260919-01",
+ "card_id": "I-04-D",
+ "disclosure_adaptation": "not_assessed",
+ "formula": "accepted_scoped",
+ "grants": [
+  "gate 修复经 reviewer 自造探针独立验证（`gate:NO-SUCH-POINT@A` 未创建 .reached、rc=0、stderr 0 字节）",
+  "GREEN 21 passed / rc=0，且 READ 对交付版套件自跑 18 failed / 1 passed / 2 skipped / rc=1",
+  "主证据与最终 harness 字节同源复核（19 个 summary mtime 全晚于 scheduler；同字节重跑 rc=0、19/19 harness_error 空、18/19 可观测量逐一相同）",
+  "F-L5 共存性（pause=1/resume=1、B.after_enter 两条同代 gen=1）",
+  "M5 单点反例证明不变量可红（mutant 82b4fdc4… ⇒ test_fetch_filing_lease.py:103 assert 0 == 1）—— 本卡唯一的变异证据",
+  "封盘 30 数据行逐行对盘、无自指行；零写入谓词 ZW(s,E) 成立（三次采样 + 171.8 分钟后复采仍为 0）",
+  "handoff.json 合法 JSON（52 键）、不自称自身哈希、defect_ledger_count=10",
+  "生产三仓零写入与 <PLAN>\\reviews 未写（两次采样）",
+  "recovery/r2_corrections.md 的 sha256 恰等于移动时记录的 appendix sha256（7d080f68…），15/15 非空行逐行一致"
+ ],
+ "p3_notes": [
+  "r3 对 oracle.md 追加区做过两处就地编辑（已在 handoff.oracle_frozen_region_in_place_edits 登记并附前像）⇒ r2 认证的“内容上只追加”自 r3 起不再成立；冻结 §0–§4 正文未受影响。",
+  "after/all_json_parse_check.txt 的计数（763）是 r4 新增约 62 个 case JSON 之前的旧快照；reviewer 自跑为 825 个、0 失败 —— 事实成立但计数陈旧，如实登记。",
+  "零写入谓词的精确定义：ZW(s,E) ≡ 「<A> 下除 E 之外没有文件 mtime > s」，s = 封盘文件 mtime 05:31:21.623，E = {after/stable_seal_proof.txt}；证明文件自身写在 04:33:37Z，比其记录的 checked_at_utc 晚 1 秒。"
+ ],
+ "reserved_not_closed": [
+  "无实现者侧变异证明（M1–M11 未跑；仅有 reviewer 的 M5 反例）",
+  "N5/N6/N7 无调度器级原始记录（仅 pytest 断言）",
+  "无“存活第三方 owner”专用用例",
+  "无“A 释放与 B 获取并发”的确定性用例",
+  "POSIX/SMB 与真实 worker/catalog/provider/联网 未执行",
+  "oracle.md R2-3 的 owner 裁定项原样移交，未自裁"
+ ],
+ "reviewer_frozen_revision": {
+  "after/i04d-suite-final.txt": "6503819d…",
+  "after/scheduler-run-final.txt": "3df2bcc3…",
+  "after/stable_seal_proof.txt": "def44bf2…",
+  "evidence/hashes.txt": "3977 B / 9f6810bb…",
+  "handoff.json": "55936 B / 733cb40d…",
+  "impl": "a72546c5… / 126274 B",
+  "oracle.md": "42257 B / 428a0a96…",
+  "recovery/r2_corrections.md": "7d080f68…",
+  "review.md": "37191 B / 81516b2ac06a41dca5978e744b540f8b2f33d7ba28297e7c792c32f9c50fcf09 (before the append)",
+  "scheduler": "fd163a27… / 35388 B",
+  "suite": "27f492b1… / 30422 B"
+ },
+ "status": "accepted_scoped",
+ "status_before_bookkeeping_fix": "review_pending",
+ "status_note": "本裁决由 reviewer 撰写、实现者按字节转录（transcription，非自签）。实现者未写 verdict、未关闭任何保留范围、未自裁 R2-3。三条固定声明（不改变生产仓字节 / 不删除临时 owner 状态 / reviewer 未写 PLAN\\reviews 且未跑 git 写命令）逐字保留在转录块内。",
+ "verdict_author": "independent reviewer (r4 final point review)",
+ "verdict_carrier": {
+  "block": "## §10 独立验收最终裁决 ... ### 恢复规则",
+  "file": "review.md",
+  "old_bytes_are_exact_prefix": true,
+  "report_copy_bytes": 15036,
+  "report_copy_path": "evidence/I-04-D/reviewer_report_r4.md",
+  "report_copy_sha256": "487d4ad4070ed0ae07284747754390512dd459dd1abd378c62665e856067f228",
+  "review_md_bytes_after": 42962,
+  "review_md_bytes_before": 37191,
+  "review_md_sha256_after": "5133aff6f0805186f963dd7f36893938771c2fb9739814b2966f4e89386a60cd",
+  "review_md_sha256_before": "81516b2ac06a41dca5978e744b540f8b2f33d7ba28297e7c792c32f9c50fcf09",
+  "transcription_deviation": {
+   "absent_from_report": "08:23:08",
+   "explanation": "the parent's instruction listed the resample time 08:23:08 as a marker; that string appears in the parent's summary, not in the reviewer's report file. The report carries the sample-time information in its own words. Recorded instead of silently dropping it."
+  }
+ }
+}

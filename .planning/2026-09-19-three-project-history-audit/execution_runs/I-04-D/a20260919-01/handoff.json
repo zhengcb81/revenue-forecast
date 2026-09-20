@@ -1,4 +1,5 @@
 {
+ "attempt_closed": true,
  "attempt_id": "a20260919-01",
  "blocked_by": [],
  "card_id": "I-04-D",
@@ -347,6 +348,7 @@
   0,
   0
  ],
+ "final_writes": "本次为 attempt 的最后一次写入：review.md 追加裁决块（字节前缀已证）、qualification.json、handoff.json 记账、evidence/hashes.txt 重新封盘。此后不再写入本 attempt 目录。",
  "generation_note": "r2 的 changes_required 针对的是 r2_review_generation 那一批字节；r3 的修复（嵌合哈希、handoff JSON 合法性、P3 事实更正）改写了 oracle.md / review.md / commands.json / handoff.json，构成新世代，**需 r3 点审**。",
  "implementation_defects_found_and_fixed": [
   {
@@ -1100,7 +1102,33 @@
  ],
  "ready_for_r3_review": false,
  "ready_for_stable_seal": true,
- "reviewer_status": "PENDING（实现者未写任何判决；review.md §9 判决栏留空）",
+ "review_carrier": {
+  "grants": [
+   "gate 修复经 reviewer 自造探针独立验证（`gate:NO-SUCH-POINT@A` 未创建 .reached、rc=0、stderr 0 字节）",
+   "GREEN 21 passed / rc=0，且 READ 对交付版套件自跑 18 failed / 1 passed / 2 skipped / rc=1",
+   "主证据与最终 harness 字节同源复核（19 个 summary mtime 全晚于 scheduler；同字节重跑 rc=0、19/19 harness_error 空、18/19 可观测量逐一相同）",
+   "F-L5 共存性（pause=1/resume=1、B.after_enter 两条同代 gen=1）",
+   "M5 单点反例证明不变量可红（mutant 82b4fdc4… ⇒ test_fetch_filing_lease.py:103 assert 0 == 1）—— 本卡唯一的变异证据",
+   "封盘 30 数据行逐行对盘、无自指行；零写入谓词 ZW(s,E) 成立（三次采样 + 171.8 分钟后复采仍为 0）",
+   "handoff.json 合法 JSON（52 键）、不自称自身哈希、defect_ledger_count=10",
+   "生产三仓零写入与 <PLAN>\\reviews 未写（两次采样）",
+   "recovery/r2_corrections.md 的 sha256 恰等于移动时记录的 appendix sha256（7d080f68…），15/15 非空行逐行一致"
+  ],
+  "qualification": "evidence/I-04-D/qualification.json",
+  "report_copy": "evidence/I-04-D/reviewer_report_r4.md",
+  "report_copy_sha256": "487d4ad4070ed0ae07284747754390512dd459dd1abd378c62665e856067f228",
+  "reserved_not_closed": [
+   "无实现者侧变异证明（M1–M11 未跑；仅有 reviewer 的 M5 反例）",
+   "N5/N6/N7 无调度器级原始记录（仅 pytest 断言）",
+   "无“存活第三方 owner”专用用例",
+   "无“A 释放与 B 获取并发”的确定性用例",
+   "POSIX/SMB 与真实 worker/catalog/provider/联网 未执行",
+   "oracle.md R2-3 的 owner 裁定项原样移交，未自裁"
+  ],
+  "reserved_note": "六项保留范围一项未关闭、未弱化；oracle.md R2-3 原样移交 owner。",
+  "verdict_in": "review.md (transcribed block)"
+ },
+ "reviewer_status": "r4 stable-seal final point review = accepted_scoped (supersedes the r1 and r2 changes_required). Transcribed by the implementer; the verdict text lives in review.md and its frozen source copy is evidence/I-04-D/reviewer_report_r4.md.",
  "revision": "v1（首次交付，mutation proof 未跑，见 review.md §6）",
  "scope": "在隔离副本 iso/filing-fetch 上实施 I-04-C 冻结的 pause/lease 协议（ADR-1..ADR-12、R1-R5、lock_budget_for(x)=min(x,60)），并用真实多进程 barrier 调度 case 验证。生产仓只读；本卡不写任何生产文件。",
  "seal_discipline_conflict": "封盘后不再写入 attempt 目录的纪律在本轮被违反两次（为修 handoff.json 的 JSON 合法性、以及为把拼接哈希换成现算值）。两次都已在 seal_timeline 登记；当前封盘以下一个 evidence/hashes.txt 的 sealed_at_utc 为准。",
@@ -1126,5 +1154,6 @@
    "note": "after the r3 hash regeneration; the seal-after-seal conflict is recorded here"
   }
  ],
- "status": "review_pending"
+ "status": "accepted_scoped",
+ "status_before_bookkeeping_fix": "review_pending"
 }

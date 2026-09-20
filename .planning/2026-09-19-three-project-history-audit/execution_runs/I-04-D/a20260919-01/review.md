@@ -190,3 +190,73 @@ reserved_cases:               (empty)
 ```
 
 实现者未在本文件内主张任何通过结论；§3 的 RED→GREEN 是过程描述，§4 的"green"仅指 `evidence/run/` 里案例的运行结果，均不构成验收。
+
+
+---
+
+## §10 独立验收最终裁决（reviewer；本裁决**取代** 04:5x 的 r1 `changes_required` 与我随后的 r2 `changes_required`）
+
+verdict:            accepted_scoped
+reviewer:           independent reviewer (delegated subagent；scratch %TEMP%\i04d-review-20260920-045256)
+reviewed_revision:  review.md 81516b2a…(37191B) / handoff.json 733cb40d…(55936B) / oracle.md 428a0a96…(42257B)
+                    / evidence/hashes.txt 9f6810bb…(3977B, 30 data rows) / iso impl a72546c5…(126274B)
+                    / iso scheduler fd163a27…(35388B) / suite 27f492b1…(30422B)
+                    / after/scheduler-run-final.txt 3df2bcc3… / after/i04d-suite-final.txt 6503819d…
+                    / after/stable_seal_proof.txt def44bf2… / recovery/r2_corrections.md 7d080f68…
+sealed_at:          2026-09-20T04:31:21Z（= 本地 05:31:21；与 hashes.txt mtime 一致）
+sampled_at:         2026-09-20 05:34:15–05:35:11 local
+
+### 授予的资格（全部由 reviewer 独立复算）
+1. 隔离实现可复现：dc593a75…(56405B) + patch_i04d.py(a730362c…) → a72546c5…(126274B)，逐字节相同；
+   基线 hash 不符时 patcher 拒写；changes.diff 4 added/0 removed/1 modified、POSIX 相对路径、
+   reviewer 重算内容一致（归一化 dd769819…）。
+2. gate 缺陷已修并被我独立证明：`fetch_filing.py:999-1000/:1007-1012` 要求 `name == point`；
+   reviewer 自造探针（`gate:NO-SUCH-POINT@A`，fence 预置）不产生 `.reached`、rc=0、stderr 0 字节。
+3. 契约套件 **21 passed / 0 failed, rc=0**（reviewer 在最终字节上自跑）；RED 是对**交付版套件**所出：
+   同字节基线 dc593a75… → **18 failed / 1 passed / 2 skipped, rc=1**（reviewer 自跑，与
+   before/i04d-red.txt 一致；当次套件已存档 before/test_fetch_filing_lease.delivered.py）。
+4. 主证据由**最终 harness 字节**产生：19 例 summary mtime 05:27:53–05:28:08 全晚于
+   scheduler fd163a27…(05:23:26)；reviewer 用相同字节重跑 **rc=0**，19/19 harness_error 为空，
+   18/19 全部协议可观测量逐一相同，第 19 例（F-L8g-UNKNOWN）仅"调度器自身 pid 写入合成账本"
+   导致 pid/sha 不同；旧世代保留在 evidence/run-r2-stale/，未被覆盖。
+5. F-L5 共存性：pause=1/resume=1、A=released_last、B=released_joined、
+   B.after_enter.lease_set 两条同代(gen=1)租约。
+6. 只断言不变量的 F-L6b/W1b 断言**非平凡**：reviewer 单点 M5 变异体（去掉 ADR-10e owner 移交，
+   sha256 82b4fdc48f60…）令套件变红（`test_fetch_filing_lease.py:103`，`assert 0 == 1`）。该反例属
+   reviewer 侧，不计入交付的变异证明。
+7. 封盘稳定且自洽：清单 30 数据行 = 47 行文件 − 16 表头行 − 1 空行，**30/30 与磁盘一致**、
+   无自指行；谓词 ZW = "除 after/stable_seal_proof.txt 外，<A> 下无文件 mtime > 封盘时刻" ⇒ 0，
+   在 04:34:15Z/04:34:24Z/04:35:11Z 三次采样均成立（字面计数为 1，即证明文件自身，
+   其写入 04:33:37Z 晚于其记录的 checked_at 04:33:36Z）。
+8. handoff.json 合法 JSON（52 键）、**不自称自身哈希**、defect_ledger_count=10、
+   ready_for_stable_seal=true / ready_for_r3_review=false；被移出的更正文本与追加原文
+   **15/15 非空行逐行一致**（字节级不同，已在文档中收窄为"内容一致"），
+   recovery/r2_corrections.md 的 sha256 与移动时记录的 appendix sha256 相同。
+9. 生产三仓零写入与 `<PLAN>\reviews` 未写（reviewer 采样 2026-09-20 05:35:00 local）：
+   filing-fetch 046cc7dc…、wiki 553a3560…/1a783240…/fad88c60…/2303d3e5…、
+   catalog 49,677,344,768 B @ 2026-09-19T06:31:35Z、-wal 0 B；reviews 目录 mtime 09:14:20.083、
+   递归最新 final_review_checks.json @ 10:05:32.273。reviewer 全程只用只读 git。
+
+### 未授予 / 保留范围（照旧，未删未弱化）
+- **无实现者侧变异证明**（M1–M11 未跑）：交付本身**没有证明任何断言可证伪**；唯一变异证据是
+  reviewer 侧 M5 单点反例，最小清单 M2/M5/M8/M10/M4 仍待跑。
+- N5/N6/N7 无调度器级原始记录（仅单元断言）。
+- 无"存活第三方 owner"专用用例；无"A 释放与 B 获取并发"的确定性用例。
+- POSIX(fcntl.flock)/SMB/NFS、真实 worker/catalog/provider/联网 未执行。
+- `oracle.md` R2-3 的 owner 裁定项**原样移交**，不作为本卡签收条件。
+- P3 记账：after/all_json_parse_check.txt 的 checked_ok=763 是 05:24:16 的旧快照
+  （reviewer 在封盘树上实测 825 个 *.json、0 失败）；封盘证明文件自身写入晚于其 checked_at
+  （故"零写入"必须按谓词 ZW 表述）；r3 对 oracle 追加区做过两处就地编辑（已在 handoff 登记并附前像，
+  故 r2 时认证的"内容上只追加"自 r3 起不再成立；冻结 §0–§4 正文未受影响）。
+
+### 关于 r2 裁决块未追加
+r2 的 §11 块以 review.md = 36996 B / c47770ea… 为前提，r3 重写后该前提失效，
+`handoff.r2_verdict_append_blocked` 已如实登记（appended=false）。本文件确实有 reviewer 裁决区
+（§9 判决栏，此前一直为空），但**此前从未有 reviewer 裁决被追加进本文件**；本块是该文件中的
+第一份 reviewer 裁决。
+
+### 恢复规则
+本裁决不改变生产仓任何字节，不删除任何临时 owner 状态，reviewer 未写 `<PLAN>\reviews`、
+未运行任何 git 写命令；reviewer 的全部实验只在 `%TEMP%\i04d-review-20260920-045256\`。
+后续接手者：先按 evidence/hashes.txt（30 数据行）逐行校 hash，再读 handoff.json
+（ready_for_stable_seal=true / ready_for_r3_review=false）与 oracle.md R2-3（待 owner 裁定）。
