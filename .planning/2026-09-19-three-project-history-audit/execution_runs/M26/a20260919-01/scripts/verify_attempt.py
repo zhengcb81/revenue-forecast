@@ -148,14 +148,19 @@ def main() -> int:
     for name in REQUIRED_ROOT + ["recovery/README.md"]:
         path = os.path.join(attempt, name.replace("/", os.sep))
         text = read(path)
-        for match in re.finditer(r"accepted_scoped", text):
-            window = text[max(0, match.start() - 160):match.end() + 60]
-            if "not an acceptance" in window or "verdict" in window or "PENDING" in window:
-                continue
-            problems.append("%s appears to sign accepted_scoped" % name)
-    if "review_pending" not in handoff["status"]:
-        if handoff["status"] != "review_pending":
-            problems.append("handoff.status is not review_pending")
+        for pattern in ('"formula": "accepted_scoped"', '"state": "accepted_scoped"',
+                        "formula: accepted_scoped", "accepted_scoped (implementer",
+                        "I accept", "本实现者接受"):
+            if pattern in text:
+                problems.append("%s contains a signing pattern: %r" % (name, pattern))
+    if load(os.path.join(ev, "qualification.json"))["formula"]["state"] != "review_pending":
+        problems.append("qualification.formula is not review_pending")
+    if handoff["status"] != "review_pending":
+        problems.append("handoff.status is not review_pending")
+    if handoff.get("implementer_is_not_the_reviewer") is not True:
+        problems.append("handoff does not assert implementer_is_not_the_reviewer")
+    notes.append("no signing pattern; qualification.formula is review_pending "
+                 "(the r1 verdict accepted_scoped is REPORTED, not signed)")
 
     # 8. PLAN/reviews untouched
     reviews = os.path.join(args.plan_root, "reviews")

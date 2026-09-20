@@ -1,9 +1,14 @@
 {
  "card_id": "M15",
  "attempt_id": "a20260919-01",
- "purpose": "prove that the verdict-carrying runner really turns red under a corrupted expectation or a negative case that is no longer refused, and that the frozen oracle was not touched while doing so",
+ "purpose": "prove that the verdict-carrying runner really turns red under a corrupted expectation, a corrupted expectation DECLARATION (F-01) or a negative case that is no longer refused, and that the frozen oracle was not touched while doing so",
  "runner": "scripts/run_card.py",
- "runner_sha256": "e709408f7f6518be63fc00d5c4c444c8738dbf1ba7a53383c3821882c9054c9e",
+ "runner_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
+ "pre_fix_runner_revision": {
+  "path": "recovery/runner_before_F01_fix.py",
+  "sha256": "e709408f7f6518be63fc00d5c4c444c8738dbf1ba7a53383c3821882c9054c9e",
+  "kept_because": "the F-01 defect (a case's declared expected type, or a whole missing negative case, did not affect the verdict) is demonstrated by running this pre-fix revision on the same corrupted scratch copy"
+ },
  "scratch_root": "recovery/selfcheck",
  "frozen_evidence_never_modified_by_this_script": true,
  "frozen_hashes_before_selfcheck": {
@@ -27,6 +32,9 @@
   {
    "scenario": "C-control",
    "purpose": "frozen copies verbatim",
+   "runner_revision": "current",
+   "runner_path": "scripts/run_card.py",
+   "runner_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
    "mutations_applied_to_the_scratch_copy": [],
    "argv": [
     "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
@@ -54,6 +62,9 @@
   {
    "scenario": "A-corrupt-value",
    "purpose": "corrupted positive expected value must not be able to hide behind a passing rc",
+   "runner_revision": "current",
+   "runner_path": "scripts/run_card.py",
+   "runner_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
    "mutations_applied_to_the_scratch_copy": [
     "oracle.json:positive.expected_float -> [999.0]"
    ],
@@ -85,6 +96,9 @@
   {
    "scenario": "F-corrupt-shape",
    "purpose": "corrupted expected output length must be caught by the fidelity check",
+   "runner_revision": "current",
+   "runner_path": "scripts/run_card.py",
+   "runner_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
    "mutations_applied_to_the_scratch_copy": [
     "oracle.json:expected_output_shape.positive.length -> 99"
    ],
@@ -116,6 +130,9 @@
   {
    "scenario": "D-missing-expectation",
    "purpose": "a missing expectation yields no verdict, never a pass",
+   "runner_revision": "current",
+   "runner_path": "scripts/run_card.py",
+   "runner_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
    "mutations_applied_to_the_scratch_copy": [
     "oracle.json:positive.expected_float deleted"
    ],
@@ -148,6 +165,9 @@
   {
    "scenario": "B-corrupt-negative-case",
    "purpose": "a negative case that is no longer refused must produce rc=3",
+   "runner_revision": "current",
+   "runner_path": "scripts/run_card.py",
+   "runner_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
    "mutations_applied_to_the_scratch_copy": [
     "cases.json:NEG-CARD value {\"__float__\": 1.1} -> {\"__float__\": 0.5} (now inside the driver domain)"
    ],
@@ -179,6 +199,9 @@
   {
    "scenario": "E-harness-error",
    "purpose": "an unusable --code-root is a harness error, not a case failure",
+   "runner_revision": "current",
+   "runner_path": "scripts/run_card.py",
+   "runner_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
    "mutations_applied_to_the_scratch_copy": [],
    "argv": [
     "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
@@ -205,7 +228,166 @@
    "stdout": "recovery/selfcheck/stdout_E-harness-error.txt",
    "stderr": "recovery/selfcheck/stderr_E-harness-error.txt",
    "run_result": "recovery/selfcheck/run_result_E-harness-error.json"
+  },
+  {
+   "scenario": "G-corrupt-case-expected",
+   "purpose": "F-01: a case whose declared expected type is renamed must yield rc=2, never a silent rc=0 pass",
+   "runner_revision": "current",
+   "runner_path": "scripts/run_card.py",
+   "runner_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
+   "mutations_applied_to_the_scratch_copy": [
+    "cases.json:NEG-CARD expected 'ModelRegistryError' -> 'PythonBuiltinValueError' (a type this runner never counts as a refusal verdict)"
+   ],
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M15",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\selfcheck",
+    "--code-root",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\selfcheck\\run_result_G-corrupt-case-expected.json"
+   ],
+   "raw_rc": 2,
+   "expected_rc": 2,
+   "rc_as_expected": true,
+   "triggered_conditions": [
+    "expectation_declaration_inconsistent"
+   ],
+   "stdout": "recovery/selfcheck/stdout_G-corrupt-case-expected.txt",
+   "stderr": "recovery/selfcheck/stderr_G-corrupt-case-expected.txt",
+   "run_result": "recovery/selfcheck/run_result_G-corrupt-case-expected.json"
+  },
+  {
+   "scenario": "H-drop-negative-case",
+   "purpose": "F-01: dropping a whole negative case (11 -> 10 against a frozen oracle that still declares 11) must yield rc=2, never a silent rc=0 pass",
+   "runner_revision": "current",
+   "runner_path": "scripts/run_card.py",
+   "runner_sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
+   "mutations_applied_to_the_scratch_copy": [
+    "cases.json: dropped case CONT-BREAK (case count 11 -> 10 while oracle.json still declares 11)"
+   ],
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M15",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\selfcheck",
+    "--code-root",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\selfcheck\\run_result_H-drop-negative-case.json"
+   ],
+   "raw_rc": 2,
+   "expected_rc": 2,
+   "rc_as_expected": true,
+   "triggered_conditions": [
+    "expectation_declaration_inconsistent"
+   ],
+   "stdout": "recovery/selfcheck/stdout_H-drop-negative-case.txt",
+   "stderr": "recovery/selfcheck/stderr_H-drop-negative-case.txt",
+   "run_result": "recovery/selfcheck/run_result_H-drop-negative-case.json"
+  },
+  {
+   "scenario": "G-pre-fix-runner-corrupt-case-expected",
+   "purpose": "F-01 defect demonstration: the pre-fix runner revision (sha256 e709408f...) returned rc=0 on the same corrupted scratch copy, which is exactly the defect the independent review reported",
+   "runner_revision": "before_f01",
+   "runner_path": "recovery/runner_before_F01_fix.py",
+   "runner_sha256": "e709408f7f6518be63fc00d5c4c444c8738dbf1ba7a53383c3821882c9054c9e",
+   "mutations_applied_to_the_scratch_copy": [
+    "cases.json:NEG-CARD expected 'ModelRegistryError' -> 'PythonBuiltinValueError' (a type this runner never counts as a refusal verdict)"
+   ],
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\runner_before_F01_fix.py",
+    "--card",
+    "M15",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\selfcheck",
+    "--code-root",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\selfcheck\\run_result_G-pre-fix-runner-corrupt-case-expected.json"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "rc_as_expected": true,
+   "triggered_conditions": [],
+   "stdout": "recovery/selfcheck/stdout_G-pre-fix-runner-corrupt-case-expected.txt",
+   "stderr": "recovery/selfcheck/stderr_G-pre-fix-runner-corrupt-case-expected.txt",
+   "run_result": "recovery/selfcheck/run_result_G-pre-fix-runner-corrupt-case-expected.json"
+  },
+  {
+   "scenario": "H-pre-fix-runner-drop-negative-case",
+   "purpose": "F-01 defect demonstration: the pre-fix runner revision returned rc=0 with a negative case deleted",
+   "runner_revision": "before_f01",
+   "runner_path": "recovery/runner_before_F01_fix.py",
+   "runner_sha256": "e709408f7f6518be63fc00d5c4c444c8738dbf1ba7a53383c3821882c9054c9e",
+   "mutations_applied_to_the_scratch_copy": [
+    "cases.json: dropped case CONT-BREAK (case count 11 -> 10 while oracle.json still declares 11)"
+   ],
+   "argv": [
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\runner_before_F01_fix.py",
+    "--card",
+    "M15",
+    "--attempt",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\selfcheck",
+    "--code-root",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M15\\a20260919-01\\recovery\\selfcheck\\run_result_H-pre-fix-runner-drop-negative-case.json"
+   ],
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "rc_as_expected": true,
+   "triggered_conditions": [],
+   "stdout": "recovery/selfcheck/stdout_H-pre-fix-runner-drop-negative-case.txt",
+   "stderr": "recovery/selfcheck/stderr_H-pre-fix-runner-drop-negative-case.txt",
+   "run_result": "recovery/selfcheck/run_result_H-pre-fix-runner-drop-negative-case.json"
   }
+ ],
+ "exit_code_matrix": {
+  "0": [
+   "C-control",
+   "G-pre-fix-runner-corrupt-case-expected",
+   "H-pre-fix-runner-drop-negative-case"
+  ],
+  "2": [
+   "A-corrupt-value",
+   "F-corrupt-shape",
+   "D-missing-expectation",
+   "G-corrupt-case-expected",
+   "H-drop-negative-case"
+  ],
+  "3": [
+   "B-corrupt-negative-case"
+  ],
+  "1": [
+   "E-harness-error"
+  ]
+ },
+ "exit_code_matrix_scope": "all scenarios, including the two pre-fix-runner defect demonstrations whose expected rc is 0",
+ "current_runner_observed_rc_set": [
+  0,
+  1,
+  2,
+  3
  ],
  "all_expected_rcs_observed": true,
  "observed_rc_set": [
@@ -214,6 +396,6 @@
   2,
   3
  ],
- "completed_at_unix": 1789872364.6913507,
- "completed_at_utc": "2026-09-20T02:46:04Z"
+ "completed_at_unix": 1789874411.7907648,
+ "completed_at_utc": "2026-09-20T03:20:11Z"
 }

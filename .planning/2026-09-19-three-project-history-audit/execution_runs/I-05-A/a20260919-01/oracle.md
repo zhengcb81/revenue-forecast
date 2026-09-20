@@ -305,3 +305,53 @@ trim 语义沿用 §3.1.1（`published_equals_independent_slice_trimmed` 的那�
 历史 sections 工件没有 per-slice 哈希，且提取器对"已有 completed 行"的文档永不重算：
 它们只享受源窗口绑定。是否回填/重算、以及"哪些 generator 版本算我的产物"仍未签；
 本 attempt **未**做批量迁移或回填。
+
+---
+
+# 附录 C（追加式，2026-09-19 第三次复审后；**不修改正文、附录 A、附录 B**）
+
+第三次复审判定 `changes_required`：P1-A/B/C 同一根因 —— 偏移从未与内容强制比对。
+本附录冻结这组攻击面与其预期。**过时说明**：附录 A.2 的 `sections_span_unbound` 原因码表
+与 A.4 的 C7 判据仍然有效；但**附录 B.1/B.2 中"substring_only 是降级标注、源窗口命中即可通过"
+的表述已过时**（B.1 表内 P1-1 那一行与 B.2 的降级路径段），以本节 C.1/C.2 为准。
+前像：`oracle.md` 在 r3 结尾时为 14924 B（含附录 A、B），本附录只在其后追加。
+
+## C.1 冻结判据（P1-A/B/C）
+
+| id | 攻击构造 | 冻结预期（修复后） |
+|---|---|---|
+| P1-A | 造一个"落在 body 范围内"但内容对不上的 `char_start/char_end` | 必须**拒绝**（`sections_binding_error`）；不得标 `source_window` |
+| P1-B | 偏移改坏（内容不变，文本仍在文档别处） | 必须**拒绝**；`substring_only` 是**拒绝原因**，不是通过标签 |
+| P1-C | 候选集为空（所有 `normalized` 行 `status='failed'`） | 必须**拒绝**，原因码 `sections_no_normalized_source`；不得当作"无来源"放过 |
+
+## C.2 绑定的精确定义（权威）
+
+对**每一个候选 origin**（候选 body 的行边界）断言：
+
+```
+body[origin + char_start : origin + char_end].strip("\n") == fragment.strip("\n")
+```
+
+- 任一 origin 通过 ⇒ 该条目的 `window_match = source_window`，`window_positions` 列出命中的 origin；
+- 所有 origin 都不通过 ⇒ **拒绝**；
+- 窗口必须与文档自身的**行边界对齐**（`start == 0` 或 `body[start-1] == "\n"`，且
+  `stop` 落在行尾/文末）。没有这条约束时，一个差一的 origin 可以吸收被伪造的偏移
+  （实测：+2 偏移伪造在只有"逐个 origin 比较"时仍能命中），因此对齐是判据的一部分，不是优化。
+- `substring_only` 只表示"文本仍在文档中但偏移不能复现它"，**且它必须仍然拒绝**；
+  `no_source` 只表示"没有可读的 normalized 正文"，同样**必须拒绝**。
+
+## C.3 新增原因码
+
+| 原因码 | 含义 | 恢复动作 |
+|---|---|---|
+| `sections_no_normalized_source` | 该 document 没有 `status='completed'` 的 `normalized` 工件，切片无法与源比对 | 先生成 normalized，再重产 sections |
+
+## C.4 遗留缺口（如实登记，不得补造）
+
+- **A2 更正时被覆盖的 RED 字节**：`after/cmd-tests-i05a.stdout.txt` 在 r2 阶段曾是
+  03:13:56 的 `3 failed / 15 passed` 运行输出；A2 处置时以最终字节的 GREEN 运行**整体覆盖**了它，
+  **原字节未另行留档，已丢失**。丢失时点 = A2 处置（本次 r3/r4 之间）；原因 = 直接重跑覆盖。
+  该 RED 运行的**事实内容**仍可引用第四次复审报告中的原文与栈（`E AttributeError: 'list' object
+  has no attribute 'get'` @ `section_query.py:190`），但**原始文件不可复算**，登记为证据缺口。
+- **历史 sections 工件无 per-slice 哈希**且提取器不重算 ⇒ 只享受源窗口绑定。是否回填/重算
+  交 D-W05 OPEN-1，未做批量迁移。

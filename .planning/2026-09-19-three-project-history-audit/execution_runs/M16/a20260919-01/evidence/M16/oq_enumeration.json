@@ -8,8 +8,30 @@
  "registry_totals": {
   "models": 31,
   "drivers": 165,
-  "ratio_drivers": 40,
-  "ratio_drivers_whose_bounds_are_not_0_1": 3
+  "ratio_drivers_by_dimension": 41,
+  "ratio_drivers_by_registry_ratio_set": 40,
+  "ratio_drivers_whose_bounds_are_not_0_1": 4,
+  "optional_drivers_without_an_explicit_default_slots_total": 31,
+  "optional_drivers_without_an_explicit_default_models_total": 24
+ },
+ "ratio_driver_predicate": {
+  "authoritative": "spec.dimensions[driver] == 'ratio'",
+  "also_counted": "driver in spec.ratio_drivers (the narrower declared set)",
+  "why": "the two predicates disagree for at least one driver; the dimension predicate is the one used by driver_value_bounds' default ratio domain",
+  "authoritative_source": "M05-M08 r3 correction (docfix_r3.json: ratio_drivers_total 40 -> 41, missing_driver_added direct_growth.growth_rate with domain (-1, inf)); f07_enumerate.py:60 uses spec.dimensions",
+  "disagreements": [
+   {
+    "driver": "direct_growth.growth_rate",
+    "dimension": "ratio",
+    "in_registry_ratio_drivers_set": false,
+    "bounds": [
+     -1.0,
+     "inf"
+    ],
+    "note": "counted as a ratio driver by the dimension predicate"
+   }
+  ],
+  "disagreement_count": 1
  },
  "ratio_drivers_whose_bounds_are_not_0_1": [
   {
@@ -21,7 +43,8 @@
    "explicit_bound_tuple": [
     null,
     null
-   ]
+   ],
+   "domain_is_hard_coded_in_the_module": false
   },
   {
    "driver": "bank_revenue.funding_cost",
@@ -32,7 +55,17 @@
    "explicit_bound_tuple": [
     null,
     null
-   ]
+   ],
+   "domain_is_hard_coded_in_the_module": false
+  },
+  {
+   "driver": "direct_growth.growth_rate",
+   "bounds": [
+    -1.0,
+    "inf"
+   ],
+   "explicit_bound_tuple": null,
+   "domain_is_hard_coded_in_the_module": true
   },
   {
    "driver": "store_cohorts.new_store_productivity",
@@ -43,7 +76,8 @@
    "explicit_bound_tuple": [
     0.0,
     null
-   ]
+   ],
+   "domain_is_hard_coded_in_the_module": false
   }
  ],
  "signed_driver_names_in_the_module": [
@@ -114,7 +148,7 @@
   "card_drivers_with_inclusive_upper_bound_one_names": []
  },
  "fill_mechanism_line": "scripts/model_registry.py:335 drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
- "generated_at_unix": 1789872685.7882316,
- "generated_at_utc": "2026-09-20T02:51:25Z",
+ "generated_at_unix": 1789874429.225825,
+ "generated_at_utc": "2026-09-20T03:20:29Z",
  "number_format_note": "non-finite bounds are written as the strings 'inf'/'-inf' because JSON has no infinity literal; finite bounds stay numbers"
 }

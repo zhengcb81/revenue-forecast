@@ -3,6 +3,11 @@
  "first_required_driver": "opening_arr",
  "independent_deepcopy_per_case": true,
  "continuity_first_positive": "continuity_positive",
+ "required_message_ids": [
+  "NEG-CARD",
+  "CONT-BREAK"
+ ],
+ "required_message_ids_rule": "the runner asserts, before running any negative, that each of these ids exists in `cases` and carries a non-empty `expect_message_contains`; a missing id or an empty requirement makes the run red (rc=3). This closes the hole where DELETING a message requirement silently disabled the check (independent review round 2, item 3).",
  "cases": [
   {
    "id": "NEG-CARD",
@@ -119,24 +124,6 @@
    "expected": "ModelRegistryError",
    "base_input": "continuity_positive",
    "why": "continuity break for this card (oracle.md section 4)",
-   "driver": null,
-   "value": {
-    "opening_arr": [
-     200,
-     251
-    ],
-    "closing_arr": [
-     250,
-     251
-    ]
-   }
-  },
-  {
-   "id": "CONT-BREAK-CROSSYEAR",
-   "kind": "set_driver_multi",
-   "expected": "ModelRegistryError",
-   "base_input": "continuity_positive",
-   "why": "cross-year anchoring break added at the request of the independent review: only the FY2028 opening/closing ARR move, so FY2027 still balances and the continuity guard must fire",
    "driver": null,
    "expect_message_contains": "continuity failed: FY2028",
    "expect_message_basis": "the type-only assertion is too weak for this case: a length/lookup guard could raise the same exception class for the wrong reason, so the refusal MESSAGE is frozen too and the runner fails the case if the message does not contain this substring",

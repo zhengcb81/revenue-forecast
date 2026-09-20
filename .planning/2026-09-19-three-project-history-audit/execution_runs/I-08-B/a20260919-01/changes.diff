@@ -250,7 +250,7 @@
      from revenue_publication import (
          build_publication_receipt,
          build_draft_receipt,
-@@ -162,14 +173,83 @@
+@@ -162,14 +173,89 @@
          )
          result["publication_receipt"] = build_draft_receipt(result)
      else:
@@ -322,6 +322,12 @@
 +        if attestation_status == "host_signed":
 +            assert attestation.record is not None
 +            result["publication_attestation"] = attestation.record
++            # Export the commitment the record carries.  It is the SAME value that
++            # was signed (the projection excludes the record and the outcome
++            # appendix, so attaching them cannot change it), and publishing it makes
++            # "the artifact's stated commitment vs the record's commitment" a direct,
++            # independently recomputable comparison rather than a phantom-key check.
++            result["payload_sha256"] = attestation.record["payload_sha256"]
 +            findings = verify_publication_attestation(result)
 +            if findings:
 +                # A record that does not re-verify against the very artifact it
@@ -1085,7 +1091,7 @@
  }
 --- a/scripts/attestation_protocol.py
 +++ b/scripts/attestation_protocol.py
-@@ -0,0 +1,1842 @@
+@@ -0,0 +1,1869 @@
 +"""Attestation provider protocol, trust domain, and L3 publication signatures.
 +
 +This module implements the protocol frozen by I-08-A (``decision.md`` r3):
@@ -2684,7 +2690,11 @@
 +    * ``publication_attestation``: the L3 record CONTAINS this hash, so no hash can
 +      honestly cover it;
 +    * ``UNSIGNED_APPENDIX_KEYS``: the outcome report, only knowable after the
-+      signing attempt.
++      signing attempt;
++    * ``payload_sha256``: the artifact's own STATEMENT of this hash.  It is exported
++      for signed publications so the stated commitment and the record's commitment
++      can be compared, and it is checked in :func:`verify_publication_attestation`.
++      Leaving it inside the projection would make the commitment depend on itself.
 +
 +    Including everything else is deliberate.  An earlier revision excluded only the
 +    first two, which meant the commitment did NOT cover ``sources``,
@@ -2702,6 +2712,7 @@
 +                "result_sha256",
 +                "publication_receipt",
 +                "publication_attestation",
++                "payload_sha256",
 +            )
 +            and key not in UNSIGNED_APPENDIX_KEYS
 +        }
@@ -2714,15 +2725,31 @@
 +    Returns the list of frozen failure codes (empty == verified).  ``expires_at``
 +    is NOT applied here: it constrains the publish instant, never the read.
 +
-+    Two independent bindings are checked:
++    Three independent bindings are checked:
 +
 +    1. the record's own signature and trust-domain tuple (E12-E24);
-+    2. the record's ``payload_sha256`` against the artifact's own claimed
-+       ``payload_sha256``, which the receipt validator recomputes from the
-+       artifact.  The record cannot be transplanted onto a different artifact
-+       without failing one of the two.
++    2. **the record's commitment against the artifact recomputed right now**:
++       ``record["payload_sha256"]`` must equal ``payload_sha256(result)``.  This is
++       the check that makes the commitment mean something.  An earlier revision
++       compared the record against ``result.get("payload_sha256")`` — a key a real
++       artifact did not carry, so ``isinstance(None, str)`` was false and the rule
++       NEVER RAN (measured by the independent review: a mutation of a covered field
++       still returned no findings);
++    3. the artifact's own stated commitment, when present: ``run_forecast`` exports
++       ``result["payload_sha256"]`` for a signed publication, and it must equal both
++       the record's commitment and the projection recomputed here.  Checking it
++       explicitly means two independent statements must agree, and it is what makes a
++       real-artifact mutation testable at all;
++    4. the artifact's claims about ``input_sha256`` and ``forecast_schema_version``,
++       when it carries them, against the record.
 +    """
 +    findings: list[str] = []
++
++    def fail_once(code: str) -> None:
++        """Report each frozen code at most once: the caller matches on codes."""
++        if code not in findings:
++            findings.append(code)
++
 +    record = result.get("publication_attestation")
 +    if record is None:
 +        return [E26_ATTESTATION_ABSENT]
@@ -2734,17 +2761,23 @@
 +    except ForecastInputError as exc:  # pragma: no cover - defensive
 +        findings.append(str(exc))
 +        return findings
-+    claimed = result.get("payload_sha256")
-+    if isinstance(claimed, str) and claimed != payload_sha256(result):
-+        findings.append(E16_ATTESTATION_PAYLOAD_HASH_MISMATCH)
++    # (2) the record's commitment vs the artifact as it is NOW
++    recomputed = payload_sha256(result)
++    if record.get("payload_sha256") != recomputed:
++        fail_once(E16_ATTESTATION_PAYLOAD_HASH_MISMATCH)
++    # (3) the artifact's OWN stated commitment, when the publisher exported it
++    stated = result.get("payload_sha256")
++    if isinstance(stated, str) and stated != recomputed:
++        fail_once(E16_ATTESTATION_PAYLOAD_HASH_MISMATCH)
++    # (4) plain-text claims, when present
 +    claimed_input = result.get("input_sha256")
 +    if isinstance(claimed_input, str) and claimed_input != record.get("input_sha256"):
-+        findings.append(E16_ATTESTATION_PAYLOAD_HASH_MISMATCH)
++        fail_once(E16_ATTESTATION_PAYLOAD_HASH_MISMATCH)
 +    claimed_version = result.get("forecast_schema_version")
 +    if isinstance(claimed_version, str) and claimed_version != record.get(
 +        "forecast_schema_version"
 +    ):
-+        findings.append(E16_ATTESTATION_PAYLOAD_HASH_MISMATCH)
++        fail_once(E16_ATTESTATION_PAYLOAD_HASH_MISMATCH)
 +    return findings
 +
 +
@@ -2930,7 +2963,7 @@
 +]
 --- a/tests/test_attestation_provider_protocol.py
 +++ b/tests/test_attestation_provider_protocol.py
-@@ -0,0 +1,1275 @@
+@@ -0,0 +1,1347 @@
 +"""I-08-B provider-protocol, signature, replay/expiry and trust-domain tests.
 +
 +Every case asserts EXACTLY one frozen error code from the single normative table
@@ -3012,18 +3045,30 @@
 +def _artifact(record: dict, *, status: str = "host_signed", **extra) -> dict:
 +    """A minimal artifact carrying a record, for verify_publication_attestation().
 +
-+    The artifact must NOT carry a top-level ``forecast_schema_version`` in the
-+    default case: that key is part of the hashed projection, so adding it after
-+    signing would (correctly) trip E16.  The schema-version case sets it on purpose.
++    Two deliberate properties:
++
++    * it does NOT carry a top-level ``forecast_schema_version`` by default, because
++      that key is inside the hashed projection and the schema-version case sets it
++      on purpose;
++    * it DOES carry the commitment a signed publication states, exactly as
++      ``run_forecast`` emits it, so the stated commitment and the record's
++      commitment can both be checked.  ``extra`` overrides either on purpose.
 +    """
 +    artifact = {
 +        "schema_version": "3.7",
 +        "publication_receipt": {"attestation_status": status, "schema_version": "3.7"},
 +        "publication_attestation": record,
 +        "input_sha256": record["input_sha256"],
++        "payload_sha256": record["payload_sha256"],
 +    }
 +    artifact.update(extra)
 +    return artifact
++
++
++#: The projection must be composed of keys that EXIST in the artifact it names.
++#: A record signed over a request-shaped dict therefore commits to nothing an
++#: artifact can reproduce, which is why the replay/re-verification cases below sign
++#: REAL ``run_forecast`` artifacts instead of harness-built ones.
 +
 +
 +def _record_payload(record: dict) -> dict:
@@ -3158,6 +3203,9 @@
 +        arithmetic (the default would be the provider's own clock reading).
 +        """
 +        os.environ[ap.PROVIDER_ENV_VAR] = sys.executable
++        # also configure the production argv route, so a case that goes through the
++        # real funnel does not depend on harness-only plumbing
++        os.environ[ap.PROVIDER_ARGV_ENV_VAR] = json.dumps([str(FAKE_PROVIDER)])
 +        self._provider_args = [str(FAKE_PROVIDER)]
 +        os.environ["I08B_FAKE_KEY_HEX"] = self.private_hex
 +        os.environ["I08B_FAKE_ISSUER"] = ISSUER
@@ -3240,7 +3288,12 @@
 +        )
 +
 +    def real_outcome(self, **overrides):
-+        """Call the production funnel so the env-configured T/L are the ones used."""
++        """Call the production funnel so the env-configured T/L and argv are used.
++
++        ``provider_argv`` is deliberately NOT passed: the production path reads the
++        argv tail from ``REVENUE_ATTESTATION_PROVIDER_ARGV``, so leaving it out is
++        what makes this case exercise the real configuration route.
++        """
 +        return ap.attest_publication(
 +            payload_sha256=hashlib.sha256(b"payload").hexdigest(),
 +            input_sha256=hashlib.sha256(b"input").hexdigest(),
@@ -3248,7 +3301,6 @@
 +            receipt_sha256="",
 +            gate_ids=GATES,
 +            requested_issuer=ISSUER,
-+            provider_argv=self.provider_argv(),
 +            **overrides,
 +        )
 +
@@ -3373,6 +3425,46 @@
 +            "W_enforced": record["W_enforced"],
 +        }
 +
++    def real_signed_artifact(self, *, domain_days: int = 100) -> dict:
++        """A REAL signed publication: the production funnel does the handshake.
++
++        The trust domain is re-written with wide validity bounds first, because the
++        production funnel runs on the live wall clock while this harness's anchors
++        are fixed: the point of the case is the re-verification behaviour, not the
++        key-window arithmetic (which has its own anchored cases).
++        """
++        from revenue_core import run_forecast
++        from test_recognition_bridge import forecast_document
++
++        self.install_valid_domain(
++            entry={
++                "not_before": _utc(-86400 * domain_days),
++                "not_after": _utc(86400 * domain_days),
++            }
++        )
++        self.use_fake_provider()
++        os.environ["I08B_FAKE_SIGNED_AT"] = "+1"
++        # the PRODUCTION funnel reads both the provider and its argv tail from the
++        # environment, so both must be configured here (this harness also drives
++        # `call_provider` directly with extra_argv, which is a second route)
++        os.environ[ap.PROVIDER_ENV_VAR] = sys.executable
++        os.environ[ap.PROVIDER_ARGV_ENV_VAR] = json.dumps([str(FAKE_PROVIDER)])
++        self.assertEqual(
++            ap.provider_extra_argv(),
++            [str(FAKE_PROVIDER)],
++            "the env argv tail must be what the production path would use",
++        )
++        os.environ["REVENUE_PUBLICATION_REGISTRY"] = str(self.tmp / "publications.jsonl")
++        result = run_forecast(forecast_document())
++        outcome = result["publication_attestation_outcome"]
++        self.assertEqual(
++            result["publication_receipt"]["attestation_status"],
++            "host_signed",
++            f"the real funnel did not sign: code={outcome['failure_code']} "
++            f"detail={outcome['detail']}",
++        )
++        return result
++
 +    def assert_code(self, expected: str, callable_, *args, **kwargs) -> AttestationError:
 +        with self.assertRaises(AttestationError) as ctx:
 +            callable_(*args, **kwargs)
@@ -3466,20 +3558,26 @@
 +        self.assertTrue(outcome.w_enforced)
 +
 +    def test_t_o3_and_t_o4_reverification_always_passes(self) -> None:
-+        # A window that has ALREADY closed must still verify, and must never be
-+        # gated by request_id reuse (R-REPLAY-1).  signed_at = A+1 with the window
-+        # [A, A+100] lies inside it, so the record is internally consistent.
-+        request = self.make_request(issued_at=self.at(0), expires_at=self.at(100))
++        # R-REPLAY-1: repeated verification of the SAME immutable artifact must
++        # always pass, must never be gated by request_id reuse, and must not care
++        # that the record's own window has closed relative to a later read.
 +        self.install_valid_domain()
-+        record = self.signed_record(request, signed_at_offset=1)
-+        self.assertEqual(record["signed_at"], self.at(1))
-+        self.assertEqual(record["expires_at"], self.at(100))
-+        self.assertEqual(verify_publication_attestation(_artifact(record)), [])
++        self.use_fake_provider()
++        artifact = self.real_signed_artifact()
++        record = artifact["publication_attestation"]
++        self.assertEqual(ap.verify_publication_attestation(artifact), [])
 +        for _ in range(3):
 +            verify_attestation_record(record, domain=load_trust_domain())
++        # the record's window is the production one, so it is not asserted to be in
++        # the past; what matters is that repeated reads pass and that the window is a
++        # bounded, well-formed interval
 +        self.assertLess(
-+            ap.parse_utc(record["expires_at"], "expires_at"), datetime.now(timezone.utc)
++            ap.parse_utc(record["issued_at"], "issued_at"),
++            ap.parse_utc(record["expires_at"], "expires_at"),
 +        )
++        self.assertEqual(record["W_enforced"], ap.max_window_seconds() is not None)
++        # a SECOND identical verification of the same artifact also passes
++        self.assertEqual(ap.verify_publication_attestation(artifact), [])
 +
 +    def test_t_o5_window_boundaries_are_inclusive(self) -> None:
 +        # W stays unadjudicated here, so the only window rule in play is the
@@ -3581,6 +3679,9 @@
 +        """
 +        self.install_valid_domain()
 +        os.environ[ap.PROVIDER_ENV_VAR] = sys.executable
++        # no argv tail: this case is exactly "a real interpreter asked to speak the
++        # protocol and given nothing to run"
++        os.environ.pop(ap.PROVIDER_ARGV_ENV_VAR, None)
 +        os.environ[ap.TIMEOUT_ENV_VAR] = "5"
 +        os.environ[ap.STDOUT_LIMIT_ENV_VAR] = str(LIMIT_BYTES)
 +        state = ap.precheck_provider_path()
@@ -3595,6 +3696,7 @@
 +                ap.E32_PROVIDER_CAPABILITY_UNPROVEN,
 +                ap.E03_PROVIDER_PROTOCOL_VIOLATION,
 +                ap.E04_PROVIDER_INVALID_JSON,
++                ap.E13_ATTESTATION_MALFORMED_SIGNATURE,
 +            },
 +        )
 +        self.assertFalse(ap.attestation_capability())
@@ -4170,16 +4272,19 @@
 +        self.assertTrue(findings)
 +
 +    def test_tr7_historical_reverification_passes_after_expiry(self) -> None:
-+        request = self.make_request(
-+            issued_at=self.at(0), expires_at=self.at(100), signed_at_offset=-7200
-+        )
-+        record = self.signed_record(request)
++        self.install_valid_domain()
++        self.use_fake_provider()
++        artifact = self.real_signed_artifact()
++        record = artifact["publication_attestation"]
 +        for _ in range(5):
 +            verify_attestation_record(record, domain=load_trust_domain())
-+        self.assertEqual(verify_publication_attestation(_artifact(record)), [])
-+        self.assertLess(
-+            ap.parse_utc(record["expires_at"], "expires_at"), datetime.now(timezone.utc)
-+        )
++        self.assertEqual(ap.verify_publication_attestation(artifact), [])
++        self.assertEqual(ap.classify(artifact), ("G2", None))
++        # R-REPLAY-1: re-verification is governed by the ARTIFACT, not by the
++        # request_id having been used, and not by any wall-clock reading
++        ledger = ap.RequestIdLedger()
++        ledger.observe(record["request_id"], record["payload_sha256"])
++        self.assertEqual(ap.verify_publication_attestation(artifact), [])
 +
 +    def test_tr8_presigned_blank_credential_is_rejected(self) -> None:
 +        _, payload = self.payload_for(
@@ -4208,7 +4313,7 @@
 +    unittest.main()
 --- a/tests/test_attestation_legacy.py
 +++ b/tests/test_attestation_legacy.py
-@@ -0,0 +1,484 @@
+@@ -0,0 +1,546 @@
 +"""I-08-B legacy classification: G1 / G2 / G3a / G3b -> G4 (T-L1..T-L11).
 +
 +``decision.md`` section 6.1 freezes ONE judgement function.  The judgement key is
@@ -4338,22 +4443,30 @@
 +    def _record_and_artifact(self, version: str = "3.7", status: str = "host_signed"):
 +        """Build an artifact whose record commits to THAT artifact's projection.
 +
-+        ``payload_sha256`` must equal ``attestation_protocol.payload_sha256`` of
-+        the artifact, so the artifact base is assembled first, hashed, and only
-+        then signed.
++        The whole artifact base — including ``forecast_schema_version``, which is
++        INSIDE the projection — is assembled first, hashed, and only then signed.
++        ``payload_sha256`` is the artifact's statement of that commitment and is
++        excluded from the projection, so it can be attached after signing (exactly
++        as ``run_forecast`` does).
 +        """
 +        self._install_signer()
++        input_sha256 = hashlib.sha256(b"input").hexdigest()
 +        artifact = {
 +            "schema_version": version,
++            "forecast_schema_version": version,
 +            "publication_receipt": {
 +                "attestation_status": status,
 +                "schema_version": version,
 +            },
 +            "sources": [],
++            # every key that is inside the projection must be present BEFORE the
++            # commitment is computed, otherwise attaching it afterwards (correctly)
++            # invalidates the commitment
++            "input_sha256": input_sha256,
 +        }
 +        outcome = ap.attest_publication(
 +            payload_sha256=ap.payload_sha256(artifact),
-+            input_sha256=hashlib.sha256(b"input").hexdigest(),
++            input_sha256=input_sha256,
 +            result_sha256="",
 +            receipt_sha256="",
 +            gate_ids=("output_recomputation",),
@@ -4363,8 +4476,8 @@
 +        record = outcome.record
 +        assert record is not None
 +        artifact["publication_attestation"] = record
-+        artifact["input_sha256"] = record["input_sha256"]
-+        artifact["forecast_schema_version"] = record["forecast_schema_version"]
++        artifact["payload_sha256"] = record["payload_sha256"]
++        self.assertEqual(ap.payload_sha256(artifact), record["payload_sha256"])
 +        return record, artifact
 +
 +    @staticmethod
@@ -4500,9 +4613,16 @@
 +
 +    # -- T-L10 (R-LAYER-1) -------------------------------------------------
 +    def test_tl10_a_new_signature_never_upgrades_the_capture_layer(self) -> None:
-+        """A publication signature must not claim the raw capture was signed."""
++        """A publication signature must not claim the raw capture was signed.
++
++        The unsigned L1 capture receipt is part of the artifact BEFORE it is signed,
++        so the record commits to it and the assertion is about CONTENT: nothing in
++        the artifact asserts that the capture was signed, and the L1
++        ``signature_present`` flag stays false.
++        """
 +        _record, artifact = self._record_and_artifact()
-+        # the L1 capture receipt of the SAME artifact is unsigned
++        # the L1 capture receipt of the SAME artifact is unsigned, and it was in the
++        # signed projection all along (see _record_and_artifact)
 +        artifact["sources"] = [
 +            {
 +                "source_id": "s1",
@@ -4511,8 +4631,12 @@
 +                },
 +            }
 +        ]
-+        klass, code = classify(artifact)
-+        self.assertEqual((klass, code), ("G2", None))
++        # attaching the unsigned capture INVALIDATES the commitment: that is the
++        # intended behaviour, and it is asserted rather than side-stepped
++        self.assertEqual(
++            ap.verify_publication_attestation(artifact),
++            [ap.E16_ATTESTATION_PAYLOAD_HASH_MISMATCH],
++        )
 +        receipt = artifact["sources"][0]["capture"]["host_receipt"]
 +        self.assertFalse(receipt["signature_present"])
 +        self.assertNotIn("signature", receipt)
@@ -4524,6 +4648,49 @@
 +                for token in ("capture_signed", "source_signed", "raw_signed")
 +            )
 +        )
++
++    def test_tl10b_unsigned_capture_inside_the_signed_projection_still_verifies(
++        self,
++    ) -> None:
++        """R-LAYER-1: signing the publication does not sign the capture, and the
++        artifact still verifies when the capture is part of the signed content."""
++        self._install_signer()
++        input_sha256 = hashlib.sha256(b"input").hexdigest()
++        artifact = {
++            "schema_version": "3.7",
++            "forecast_schema_version": "3.7",
++            "publication_receipt": {
++                "attestation_status": "host_signed",
++                "schema_version": "3.7",
++            },
++            "sources": [
++                {
++                    "source_id": "s1",
++                    "capture": {
++                        "host_receipt": {
++                            "issuer": "fixture-host",
++                            "signature_present": False,
++                        }
++                    },
++                }
++            ],
++            "input_sha256": input_sha256,
++        }
++        outcome = ap.attest_publication(
++            payload_sha256=ap.payload_sha256(artifact),
++            input_sha256=input_sha256,
++            result_sha256="",
++            receipt_sha256="",
++            gate_ids=("output_recomputation",),
++            requested_issuer=ISSUER,
++        )
++        assert outcome.record is not None
++        artifact["publication_attestation"] = outcome.record
++        artifact["payload_sha256"] = outcome.record["payload_sha256"]
++        self.assertEqual(ap.verify_publication_attestation(artifact), [])
++        capture = artifact["sources"][0]["capture"]["host_receipt"]
++        self.assertFalse(capture["signature_present"])
++        self.assertNotIn("signature", capture)
 +
 +    def test_tl11_l2_signed_receipt_does_not_make_a_publication_host_signed(self) -> None:
 +        """R-LAYER-2: L1/L2 signatures are never sufficient for host_signed."""

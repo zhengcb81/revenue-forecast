@@ -157,3 +157,76 @@
 - 未裁决：I-08-A OPEN-D1..D7；本卡 OPEN-I09A-1..6。
 - 未实测：提交锁、真实 kill/掉电、重复恢复、跨卷、跨仓消费者读取 `commit_status`、**`E31` 补偿行机制**、**G2 × committed 组合**、**3.8 消费者侧**、**attempt1 argv 缺陷重放**。
 - **未验证（原样承接复核清单）**：`oracle.md` 的"只追加"无法逐行核验（无实现前副本）；`C:\i09a` 是否曾被用于写入；跨卷 `I09-E09`（本机仅 `C:/Recovery`）；I-08-A 的 `classify()` 语义只引用未复核（生产无 `classify`/`G3a`/`R-LEGACY` 落点）；`OPEN-I09A-5` 中"计划 owner 是否知悉"；14 条脏路径的完整历史（能证 I-09-A 未改，不能证谁改）。
+
+---
+
+## R. 独立 reviewer 最终裁决（round 3，2026-09-20）
+
+> 本节由**独立 reviewer** 追加写入 `review.md`（该文件的 reviewer 段归属方）。追加为**纯字节级拼接**，未改动上文任何字节。追加前全文 sha256 = `9faa0990d7ffd4e2504af96c6eb4fa62d3f333e41dc58117fc8460fe063e541d`（16292 B）。**追加后文件 sha256 与本节字节 sha256 记录在 reviewer 报告 `REPORT3.md` 中（避免自引用）。**
+
+### R.0 verdict（四值词表内）= **`changes_required`**
+
+窄幅，**仅 2 处文本**（R-1、R-2，均为**追加勘误即可闭合**，不需重跑、不得就地回改冻结行）。除此之外：**证据层、契约本体（C-01…C-13）、`I09-E01…E10` 命名空间、OPEN 项登记、以及 E-10…E-13 的实质处置，我全部核验通过并背书**。
+
+我在第二轮给出的预先承诺**未被违反**：那 4 条（E-10…E-13）**确以追加勘误落地**，证据层**零重跑**；R-1/R-2 是**本次闭合动作自身新引入的**文本缺陷（自我报告与实际落点不一致、以及一个重复标题），不是那 4 条的翻案。
+
+### R.1 必须闭合的 2 项（最小修法：追加勘误）
+
+- **R-1（P3，自我报告与文件不符）**：`errata.md` E-11 的处置表与 `handoff.json.review_round_2.findings.E-11` 均称 `review.md` 的 132/126 **出处**已改写为「本 attempt 期间的一次快照读数（该文件其后被重抓，现为 270 行）」。实测：该措辞落在 **`review.md:123`（§6-C）**，而 E-11 所指的 **`review.md:80`（§4 表行）仍是旧措辞**——仍标"**两个保留的快照文件**"，仍以 `after/git_status_after.txt` 作为 **132 行/126 真实条目**的出处，而该文件现已为 **270 行**，即 E-11 自称已修的那一处**未修**（该行末的"注"虽披露了 270 行的后续读数，但出处与数值依旧不可互证）。
+  - **最小修法（追加勘误）**：在 `errata.md` 增一条 note，把 E-11 的落点**逐字更正为 `review.md:123`**，并声明 `review.md:80` §4 表行的"两个保留的快照文件"与出处引用**尚未修正、保持原样**（若 owner 允许改 `review.md`，则该行出处改为"本 attempt 期间一次快照读数（其后被重抓）"即可；**不改也接受**，只要勘误说清）。
+- **R-2（P3，结构）**：`errata.md` 出现**重复的二级标题** `## §U 未验证项（原样承接复核清单）`（**L195** 与 **L236**），且 **L195 标题之下并不是未验证清单**，而是"P2-3 反证 + C-13 规格补充"的正文——该段原有的小标题在插入 E-10…E-13 时丢失，导致 C-13 的依据被挂在"未验证项"标题下。
+  - **最小修法（追加勘误）**：追加一条 note 指明 L195 标题为**误置**，该段实为「规格补充：`C-13` 与 G4 降级（复核 P2-3 反证）」；L236 才是唯一的 `§U 未验证项`。若 owner 允许改 `errata.md`，把 L195 换成正确标题最干净。
+
+**观察项（不阻塞、不要求本轮修）**：两处 `SELF-REFERENCE (not declarable here)` 行仍带**过期 size**（`after/product_hashes.txt` 记 `10843`，实测 `10940`；`changes.diff` 记 `32732`，实测 `33655`）。hex 已按要求撤除，完整性主张无损；建议下次重新生成时把 size 一并写成 `n/a`。
+
+### R.2 我本轮**亲自复算**的读数值（逐条）
+
+| 对象 | 实现者声明 | 我的实测 | 判定 |
+|---|---|---|---|
+| `oracle.md` | `d7f6b102…` | `d7f6b102ecc99a56…`，23302 B | **SAME**；且与 round 2 **逐字节相同 ⇒ 本轮未再就地改写** |
+| `review.md` | `9faa0990…` | `9faa0990d7ffd4e2…`，16292 B | **SAME** |
+| `decision.md` | `4a8cc048…` | `4a8cc048c797…`，43706 B | **SAME** |
+| `handoff.json` | `f7eece90…` | `f7eece9086e1…`，32683 B | **SAME** |
+| `binding.json` | 未变 `71995ed3…` | `71995ed3e377…`，20086 B | **UNCHANGED**（与 round 2 相同） |
+| `commands.json` | 未变 `60aa3a99…` | `60aa3a99a5db…`，11687 B | **UNCHANGED** |
+| `open_items.md` | 未变 `adfd00a6…` | `adfd00a64d5e…`，6874 B | **UNCHANGED** |
+| `oracle_addendum.md` | `de7fa1f3…` | `de7fa1f335e4…`，11550 B | **SAME** |
+| `errata.md` | `08b94980…` | `08b949803b3c…`，28630 B | **SAME** |
+| `changes.diff` | 时点 `5a7ea074…`（自引用不给 hex） | `d0524711aa6e…`，33655 B | 自引用文件，**时点读数≠最终字节属预期**；我实测最终值如上 |
+| `after/product_hashes.txt` | 时点 `17656c0f…`（自引用不给 hex） | `c2b86c1702e5…`，10940 B | 同上（亦为预期） |
+| `decision.md:16` | 5 项（-1/-2/-3/-5/-6） | 原文核验：`其中 **5 项**（-1/-2/-3/-5/**-6**）阻塞 I-09-B 的绑定。本行是本文件**唯一**的阻塞项计数表述` | **成立**；我 round-2 的 grep 结论被正确引用 |
+| `oracle.md` §9 末行 | 未回退 | L160 = `- 未裁决 OPEN-D1—D7（I-08-A）与 OPEN-I09A-1—6（本卡）。` | **未回退**，符合我的明示要求 |
+| `oracle.md` 行数 | 178 | **178** | **成立**；§10 为末尾追加 |
+| 「唯一一处就地改写」 | 成立 | **成立（以我 round-1 持有的 160 行副本为参照）**：round 2 比对显示 lines 1–159 与 §10 之外逐字相同、唯一差异为 L160；round 3 文件与 round 2 逐字节相同。**但这是复核侧副本证据，不构成独立第三方证明**（见 R.4 ①） |
+| 证据层零重跑 | 声明 | **10/10** 探针脚本与原始证据哈希与第一轮完全相同；`commands.json` 未变 | **成立** |
+| `handoff.json.unclosed_gaps` | 4 条 | `GAP-C13-attestation-record`（`status = OPEN - compatibility gap NOT closed`）+ `GAP-3.8-consumer-gate` + `GAP-e09-cross-volume` + `GAP-e31-compensation` | **成立**，满足我对 `C-13` 的第 3 条要求 |
+| 自签/范围 | 未自签 | `status=review_pending`、`reviewer_status=pending`、`implementer_self_acceptance=false`、`changed_paths=[]` | **成立** |
+| 生产不可变 / `reviews` | 零写入 | registry `bc3256bb…d1e91` 未变；`-- tools scripts config` 仍为**先于本卡**的 14 条既有脏路径；company-wiki 2 条、filing-fetch 0 条；`<PLAN>\reviews` 目录 mtime 仍 `2026-09-19 09:14:20` | **成立** |
+
+### R.3 授予范围、标注与待 owner 项
+
+- **授予范围（严格限定）＝仅"设计/契约层的记录完整性"**。**不授予**：①产品实现资格；②事务/故障恢复资格；③签名/信任资格；④跨仓消费者资格；⑤部署资格；⑥**预测 formula / 准确性相关资格——按原卡口径未授予**（本卡无产品执行命令、无 formula 交付物，该类资格不可由本裁决推导）。
+- **`disclosure_adaptation` = `unmapped`（保持）**；**`accuracy` = `unproven`（保持）**。
+- **待 owner 项：`OPEN-I09A-1…6` 全部仍未被裁决。** 我在 round 2 §5 给出的逐项意见（-1 逻辑名 + 身份封闭 + 历史身份不重算；-2 由 -1 导出；-3 一次升版且锚不入身份、与 D4 同批；-4 进 I-09-B allowlist + fail-closed + 负例；-5 维持阻塞直至 dispatch/索引更新；-6 由 I-08-A owner 落笔 + 会签）**只作建议**，不构成已生效决定。我复核确认：`errata.md:193`、`handoff.json.review_round_2.findings.owner_decision_suggestions` 与 PLAN 根 `OWNER_DECISIONS.md` 的框架一致（"待裁建议 / 未签之前保持 blocked 或 review_pending、实现者不得自决"），**未发现自裁**。
+- `C-13`：**接受**其"规格 + 兼容缺口未闭 + 保留反证"的收口形式；三项要求（错误码保持**未分配**、绑定 I-09-B **可失败负例**、"兼容缺口未闭"进入 `unclosed_gaps`）**均已落实**。
+- I-08-A §7 改序：**批准**，三条件（孤儿成员五条 / `E31` 仅在"已 append 的 committed 行成员缺失或 hash 不符"时触发 / 上游文本由 **I-08-A owner** 落笔）已按我的意见写入 `decision.md §5.6b` 与 `open_items.md`。
+
+### R.4 我**未能验证**的项（不得当作已证）
+
+1. `oracle.md` 的"只追加"**不可与实现前副本逐行核验**（PLAN 内无实现前副本；本 attempt 的 `before/baseline_hashes.txt` 未对 `oracle.md` 取 hash）。本轮"唯一一处就地改写"的结论**依赖我 round-1 持有的副本**，非独立第三方证明。
+2. `after/git_status_after.txt` 的**旧内容（132 行 / 9942 B / `c6faa500…`）已不可获得**，该值永久不可复验。
+3. `C:\i09a` **是否曾被用于写入**——未能验证（我只能证明它是只指向本 attempt 的 Junction，且我的复核全程不经它）。
+4. **跨卷 `I09-E09`** 未实测（本机仅 `C:`/`Recovery`）。
+5. I-08-A 的 **`classify()` 语义只引用未复核**（生产 grep 无 `classify`/`G3a`/`R-LEGACY` 落点）。
+6. **attempt1 的 argv 缺陷未重放**（只核验其证据被保留且自洽）。
+7. **`OPEN-I09A-5`/`-6` 的裁定人是否知悉**——无法验证。
+8. **14 条脏路径的完整历史**——只能证明"I-09-A 未改"（43/43 `.py` 隔离副本一致），不能证明是谁、何时改的。
+9. **`G2`（可复验签名）× `committed` 组合未测**（本环境无 attestation provider）。
+10. **3.8 消费者侧未测**（属 I-08-A OPEN-D6，跨仓）。
+11. **`E31` 补偿行机制未测**（本卡只冻结语义，不实现）。
+
+### R.5 结论与后续
+
+- 本裁决 = **`changes_required`（仅 R-1、R-2 两处文本，追加勘误即可）**。**R-1/R-2 落地后，我可仅凭文本核对直接改判 `accepted_scoped`，无需第四轮对抗式复核。**
+- **禁止**：就地回改任何已冻结行（本轮 `oracle.md` 未再被改，E-10 登记的 §9 末行 `-5`→`-6` **保持未回退**，符合要求）；改动任何 `C-` 条目或 `I09-E` 码；把本裁决外推到 I-09-B/C、I-08 或部署。
+- `handoff.json.status` 在 R-1/R-2 闭合前**保持 `review_pending`**；本节**不构成**对 `OPEN-I09A-1…6` 的裁决。

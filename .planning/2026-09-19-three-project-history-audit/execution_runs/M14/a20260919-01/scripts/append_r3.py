@@ -44,10 +44,11 @@ def load_json(path):
 def build_body(card, selfcheck, before_fixes, repack, current_hashes):
     matrix = selfcheck.get("exit_code_matrix", {})
     matrix_rows = "\n".join("| %s | %s |" % (rc, ", ".join(matrix[rc])) for rc in sorted(matrix))
-    repack_text = ("`evidence/%s/cases.json` 追加了一个**只增不改**的标注字段（观察项 (c)）："
-                   "旧 sha256 `%s` → 新 sha256 `%s`，差异经脚本证明**仅为该字段**；"
-                   "所有期望值/容差/拒绝条件、`input.json`、`oracle.json` 逐字节未变。"
-                   % (card, repack["cases_sha256_before"], repack["cases_sha256_after"])
+    repack_text = ("`evidence/%s/cases.json` 追加了**只增不改**的标注字段（观察项 (c)）："
+                   "旧 sha256 `%s` → 新 sha256 `%s`，差异经脚本 `build_cases_annotation_repack.py` "
+                   "证明**仅为该字段**；`input.json` / `oracle.json` 逐字节未变，所有期望值/容差/"
+                   "拒绝条件未变。"
+                   % (card, repack["old_revision"]["sha256"], repack["new_revision"]["sha256"])
                    if repack else
                    "本卡没有对 `input.json` / `cases.json` / `oracle.json` 做任何写入；三者的 "
                    "sha256 与冻结时完全一致。")

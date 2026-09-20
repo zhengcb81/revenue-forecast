@@ -118,6 +118,118 @@ REVIEW_ITEMS = {
 }
 
 
+# Round-2 (point review of revision r2) items, from the reviewer report's sections 2 and 5.
+_REVIEW_ITEMS_ROUND2_COMMON = {
+    "R2-item3 (gate hole)": {
+        "requirement": "freezing individual message requirements was not enough: DELETING the "
+                       "field silently disabled the check; freeze `required_message_ids` and "
+                       "make the runner assert it",
+        "disposition": "`cases.json` now carries `required_message_ids`; the runner asserts, "
+                       "BEFORE the negative loop, that every listed id exists and carries a "
+                       "non-empty `expect_message_contains`, and fails the whole run (rc=3) "
+                       "otherwise. Mutation probes R4 (delete the field) and R5 (empty one "
+                       "requirement) both yield rc=3; the reviewer's R4 probe now goes red.",
+    },
+    "R2-item5 (metadata)": {
+        "requirement": "revision_r2.json said 'verdict not received' while already listing the "
+                       "reviewer's conclusions",
+        "disposition": "state -> review_verdict_received; trigger and note rewritten; the "
+                       "round-2 dispositions are recorded in review_items_r2_round2",
+    },
+    "R2-item6 (wording, P3-1/P3-2)": {
+        "requirement": "state that section 12 was added after the run and that sections 0-11 "
+                       "were unchanged, and give the precise M24 call site",
+        "disposition": "written ONLY into this appended section (see section 7), because the "
+                       "reviewer's section 4 boundary forbids any further byte change to "
+                       "sections 0-12; the reviewer explicitly allowed this fallback",
+    },
+    "R2-section3.3 (splice weakness)": {
+        "requirement": "register that the splice whitelist used wide substring tokens",
+        "disposition": "registered as a follow-up improvement and recorded in "
+                       "revision_r2.json.splice_script_status; not retrofitted, and the splice "
+                       "script is retired",
+    },
+}
+
+REVIEW_ITEMS_ROUND2 = {
+    "M21": dict(_REVIEW_ITEMS_ROUND2_COMMON, **{
+        "review_verdict_r2": "accepted_scoped (formula only); maintained, not downgraded",
+        "card_specific": "no numeric or case change was required for M21; only the gate field "
+                         "(empty list, so the assertion is a no-op) and the append-only wording",
+    }),
+    "M22": dict(_REVIEW_ITEMS_ROUND2_COMMON, **{
+        "review_verdict_r2": "accepted_scoped (formula only); promoted from changes_required",
+        "card_specific": "`required_message_ids = [\"NEG-CARD\"]` added; no case value changed",
+    }),
+    "M23": dict(_REVIEW_ITEMS_ROUND2_COMMON, **{
+        "review_verdict_r2": "accepted_scoped (formula only); promoted from changes_required",
+        "card_specific": "`required_message_ids = [\"NEG-CARD\"]` added; no case value changed",
+    }),
+    "M24": dict(_REVIEW_ITEMS_ROUND2_COMMON, **{
+        "review_verdict_r2": "changes_required (blocker downgraded, still open at the time of "
+                             "this revision)",
+        "R2-item1 (CONT-BREAK message requirement)": {
+            "requirement": "keep the card's literal CONT-BREAK patch and only ADD "
+                           "`expect_message_contains = 'stock-flow balance failed: FY2027'`",
+            "disposition": "PARTIAL, with measured deviation: the literal patch is kept "
+                           "byte-unchanged, but the message it OBSERVABLY produces is "
+                           "`continuity failed: FY2028`, not the balance message. Step-by-step "
+                           "arithmetic on the frozen base (evidence/M24/input.json "
+                           "continuity_positive: opening_arr [200,250], closing_arr [250,250]): "
+                           "FY2027 closes at 200 - 200*0.1 + 30 + 40 = 250 = closing_arr[0] "
+                           "(balance holds), and FY2028 then reads opening 251 against FY2027's "
+                           "frozen closing 250, so the CROSS-YEAR ANCHORING guard fires. The "
+                           "balance message is unreachable on this input.",
+        },
+        "R2-item2 (distinct cross-year input)": {
+            "requirement": "CONT-BREAK-CROSSYEAR.value -> opening_arr [200,250], closing_arr "
+                           "[250,251], keeping the 'continuity failed: FY2028' requirement",
+            "disposition": "NOT IMPLEMENTED, with measured reason: the requested opening_arr "
+                           "[200,250] is byte-identical to the frozen base for that driver (a "
+                           "no-op), and the resulting input fails in exactly the same guard with "
+                           "exactly the same message as CONT-BREAK - i.e. it is a DUPLICATE, "
+                           "which is the very defect this item was meant to remove. The case was "
+                           "therefore REMOVED, leaving M24 with 11 distinct inputs and no "
+                           "duplicate. Separately, the FY2027 BALANCE guard is provably "
+                           "unreachable on this two-year base: substituting FY2028's continuity "
+                           "relation opening[1] = closing[0] into FY2027's bridge expectation "
+                           "opening_arr - lost + expansion + new_arr makes it identically "
+                           "closing_arr[0], and FY2027 never enters the continuity branch (index "
+                           "0 skips it). Making it reachable would require editing a FROZEN input "
+                           "definition or a frozen negative value, which the round-1 boundary "
+                           "forbids. OWNER/REVIEWER RULING NEEDED.",
+        },
+        "gate set": {
+            "requirement": "required_message_ids = ['NEG-CARD','CONT-BREAK-CROSSYEAR']",
+            "disposition": "the INTENT is met (every case that carries a message requirement is "
+                           "in the gate), but the membership is ['NEG-CARD','CONT-BREAK'] "
+                           "because CONT-BREAK is the surviving cross-year case",
+        },
+        "product_side_items_still_registered": [
+            "the ARR guard keeps an exact `== 0` comparison (model_extensions.py:45-46), so a "
+            "zero opening ARR refuses any positive expansion",
+            "retail_franchise.recognized_fee_rate is simultaneously optional-without-default "
+            "and a [0,1] ratio driver",
+        ],
+    }),
+}
+
+
+def _bridge_call_sites(card: str) -> str:
+    if card == "M24":
+        return ("`model_extensions.py:47-48` —— `_arr` 内的 `_bridge(...)` 调用，"
+                "`_bridge` 定义在 `model_extensions.py:32-38`，"
+                "其比较实现 `_equal` 在 `model_extensions.py:27-29`"
+                "（P3-2 要求的精确调用点）")
+    if card == "M21":
+        return ("`model_registry.py:154-157` —— `_delivery_pipeline` 内的 "
+                "`math.isclose(ending, expected_ending, rel_tol=1e-9, abs_tol=1e-9)` "
+                "（桥平衡）与 `math.isclose(opening, drivers[\"ending_orders\"][index - 1], ...)`"
+                "（跨年 continuity）")
+    return ("不适用：本卡不是存量桥（第 1 节 not_applicable_with_reason），"
+            "无 `_bridge`/`_equal` 调用点")
+
+
 def sha(path: str) -> str:
     with open(path, "rb") as fh:
         return hashlib.sha256(fh.read()).hexdigest()
@@ -200,6 +312,10 @@ def main() -> int:
     add("| 负例 | %d 个全部 `ModelRegistryError` | %d/%d rejected | %s |"
         % (oracle["negative_count"], neg["passed"], neg["total"],
            "ok" if not neg["failed"] else "FAIL " + str(neg["failed"])))
+    gate = run.get("required_message_ids_assertion") or {}
+    add("| `required_message_ids` 闸门 | 每个必需用例存在且要求非空 | %s | %s |"
+        % (gate.get("required_ids"),
+           "ok" if gate.get("ok") else "FAIL " + str(gate.get("problems"))))
     add("")
     add("原始退出码 = **%d**（0=pass / 2=no-verdict / 3=negative 未按期望拒绝 / 1=harness error）。"
         % sem["exit_code"])
@@ -251,6 +367,12 @@ def main() -> int:
         "H_message_requirement_points_at_another_guard": (
             "把 `expect_message_contains` 指向长度守卫的措辞",
             "消息控制具有区分度：别的守卫的措辞不能冒充值域/连续守卫"),
+        "R4_required_message_ids_gate_removed": (
+            "**删除** `cases.json` 的冻结闸门字段 `required_message_ids`",
+            "**第 2 轮复核 item 3**：闸门不能被删除绕过；缺失即 rc=3"),
+        "R5_required_message_requirement_emptied": (
+            "把某个必需用例的 `expect_message_contains` 置为空串",
+            "闸门的另一半：要求被清空同样 rc=3"),
         "D_restored_uncorrupted": ("恢复 scratch 副本", "修复后退出码回到 0"),
     }
     for r in probe["runs"]:
@@ -274,6 +396,67 @@ def main() -> int:
     add("- `evidence/%s/oracle.json` 可逐字节重生成（本 attempt 已复跑验证），因此"
         "「oracle 先冻结、后被运行」这条链不依赖 oracle.md 的 mtime。" % card)
     add("")
+    add("### 7. 措辞澄清与「正文此后冻结」的登记（第 2 轮复核 P3-1 / P3-2 与第 4 节裁决）")
+    add("")
+    add("- **第 12 节由 revision r2 于运行后加入**；**0–11 节在该轮未改动**，逐行 diff 见 "
+        "`after/oracle_md_body_delta_r2.diff`（变更行数与白名单外行数可由该文件独立复算）。")
+    add("- 为什么不把这句话写进第 12 节正文：第 2 轮复核第 4 节裁决「正文定点编辑仅此一次、"
+        "自此冻结」，并明确 0–12 节本轮**逐字节不得改动**。复核在第 5 节第 6 项为此留了出口"
+        "（「若判定任何正文写入都不可再发生，可改为只写进追加节」）——本实现者按后者执行："
+        "该澄清只存在于本追加节，正文一个字节都没动。因此第 5 节第 6 项的**前半句未做**、"
+        "后半句以本追加节满足。")
+    add("- 第 12 节的调用点：%s" % _bridge_call_sites(card))
+    add("- `scripts/splice_oracle_md_r2.py` 已标记为**一次性脚本**，本轮**未运行**，后续任何一轮"
+        "都不得再运行；`oracle.md` 第 0–12 节自此冻结，所有补记只写追加节。")
+    add("- 第 5 节印的负例表与用例计数仍然是 revision r2 时的内容；M24 的 `CONT-BREAK` 的"
+        "**消息要求**在第 2 轮被补上，且 `CONT-BREAK-CROSSYEAR` 被移除（见下条）——"
+        "**以 `evidence/%s/cases.json` 与本追加节为准**。" % card)
+    add("")
+    if card == "M24":
+        add("### 8. M24：对第 2 轮补测清单 item 1/2 的**实测偏离**（必须读）")
+        add("")
+        add("第 2 轮清单要求：`CONT-BREAK` 保持卡片原文 patch 并补 "
+            "`expect_message_contains = \"stock-flow balance failed: FY2027\"`；"
+            "`CONT-BREAK-CROSSYEAR.value` 改为 `{\"opening_arr\": [200, 250], "
+            "\"closing_arr\": [250, 251]}` 并保持 `continuity failed: FY2028`。")
+        add("")
+        add("**实测结论：这两项按字面执行会自相矛盾**，原因在冻结基座本身"
+            "（`evidence/M24/input.json` 的 `continuity_positive`："
+            "`opening_arr = [200, 250]`，`closing_arr = [250, 250]`）：")
+        add("")
+        add("1. 卡片原文 patch（`opening_arr=[200,251]`、`closing_arr=[250,251]`）在 FY2027 上"
+            "桥是**自平**的（`200 − 200×0.1 + 30 + 40 = 250 = closing_arr[0]`），"
+            "失败发生在 FY2028 的**跨年锚定**：实测 `opening_arr continuity failed: FY2028`。"
+            "所以清单要求的 `stock-flow balance failed: FY2027` 在**该输入上不可达**。")
+        add("2. 清单给的 CROSSYEAR 新值 `opening_arr: [200, 250]` 与冻结基座**逐字节相同**"
+            "（该 driver 上是空操作），而它同样只在 FY2028 触发跨年锚定 —— "
+            "于是它与 CONT-BREAK **输入完全相同**，正是第 2 轮要修掉的重复。")
+        add("3. FY2027 的**桥平衡**守卫在这个两年基座上**不可达**：桥期望值 "
+            "`opening_arr − lost + expansion + new_arr` 在 FY2027 处代入 FY2028 的连续性关系 "
+            "`opening[1] = closing[0]` 后恒等于 `closing_arr[0]`，即「连续性成立时桥平衡是恒等式，"
+            "连续性不成立时先撞 FY2028 的跨年锚定」；FY2027 自身永远不进连续性分支（index 0 跳过）。")
+        add("")
+        add("**本实现者的处置**（不改任何冻结输入/期望）：保留卡片原文 patch 于 `CONT-BREAK`，"
+            "把它的消息要求冻结为**实测可达**的 `continuity failed: FY2028`（这正是卡片 L116 散文"
+            "「两个年度各自平衡」在用例集里成为可执行事实的那条），并**移除** "
+            "`CONT-BREAK-CROSSYEAR`（它只能与 CONT-BREAK 重复）。"
+            "`required_message_ids` 因此为 `[\"NEG-CARD\", \"CONT-BREAK\"]`，"
+            "即**闸门集合的意图达成、但成员是 CONT-BREAK 而不是清单写的 CROSSYEAR**。"
+            "要让 FY2027 桥平衡守卫可达，必须改一个**冻结输入定义**（`continuity_positive`）或"
+            "某个冻结负例的取值，两者都越界；请复核者裁定。")
+        add("")
+        add("（自检证据：`evidence/M24/stdout.txt` 的 `negative: CONT-BREAK PASS_rejected … "
+            "opening_arr continuity failed: FY2028`、`required_message_ids: ['NEG-CARD', "
+            "'CONT-BREAK'] ok= True`；另见 `recovery/selfcheck/selfcheck_result.json` 的 R4/R5 探针。）")
+        add("")
+    else:
+        add("### 8. 第 2 轮补测清单的处置")
+        add("")
+        add("清单的 item 1–5 中，本卡适用的是：补冻结字段 `required_message_ids`（本卡为空列表，"
+            "断言为无操作）、runner 的闸门断言、`revision_r2.json` 元数据更正、以及本追加节的"
+            "措辞澄清。本卡**无需**改动任何用例定义，`cases.json` 的负例集合与取值与 revision r2 "
+            "一致。")
+        add("")
 
     section = "\n".join(lines).encode("utf-8")
     with open(oracle_md, "wb") as fh:
@@ -442,6 +625,35 @@ recovery/
         },
     }
     rev["review_items_r2"] = REVIEW_ITEMS[card]
+    rev["state"] = "review_verdict_received"
+    rev["trigger"] = ("r1 复核结论已收到并在本文件 `review_items_r2` 逐条处置；"
+                      "修订后版本（r2）的复核结论亦已收到并在 `review_items_r2_round2` 逐条处置；"
+                      "本文件记录的是 r2 的修订，尚无'修订后版本已接受'的主张")
+    rev["note"] = ("the frozen body of oracle.md was written before the product run. "
+                   "第 12 节由 revision r2 在**运行后**加入；**0–11 节仍未改**"
+                   "（逐行 diff 见 after/oracle_md_body_delta_r2.diff）。"
+                   "自第 2 轮复核裁决起，oracle.md 第 0–12 节整体冻结，"
+                   "一切补记只写文末追加节。")
+    rev["review_items_r2_round2"] = REVIEW_ITEMS_ROUND2[card]
+    rev["verdict_transcription"] = {
+        "path": "evidence/%s/verdict_transcription_check.txt" % card,
+        "rule": "the round-2 verdict was extracted programmatically from the reviewer report "
+                "and appended verbatim to review.md; the written block was re-extracted and "
+                "compared byte-for-byte",
+    }
+    rev["splice_script_status"] = {
+        "script": "scripts/splice_oracle_md_r2.py",
+        "status": "one-shot, retired; NOT run in round 2 and must not be run again",
+        "registered_weakness": "its whitelist used substring tokens ('NEG-CARD', 'OBS-'), so "
+                               "'0 lines outside the whitelist' was a WEAK guarantee; the "
+                               "reviewer measured 2 lines per card passing on wide tokens "
+                               "alone. A byte-per-section comparison inside the script, plus "
+                               "tokens that must contain both a case id and a change type, is "
+                               "registered as a follow-up improvement and was deliberately NOT "
+                               "retrofitted here.",
+        "hard_boundary": "oracle.md sections 0-12 are frozen; editing them again would be "
+                         "judged `blocked` by the reviewer rather than `changes_required`",
+    }
     with open(os.path.join(ev, "revision_r2.json"), "w", encoding="utf-8") as fh:
         json.dump(rev, fh, ensure_ascii=False, indent=1)
     print("updated evidence/%s/revision_r2.json" % card)

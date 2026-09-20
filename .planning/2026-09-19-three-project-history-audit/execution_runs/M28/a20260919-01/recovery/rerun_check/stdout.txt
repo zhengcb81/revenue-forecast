@@ -14,7 +14,7 @@ defaults ok: True actual: [9.5] expected: [9.5]
 defaults declared check: recognized_performance_fees declared= False expected= False matches= True registry_defaults= {}
 observation: OBS-BASE-IGNORED raised= None actual= [11.5] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
 observation: OBS-PERF-OMITTED raised= None actual= [9.5] matches_compared= False expect_equal= None matches_expected_relation= True matches_expected= None 
-negative: NEG-CARD PASS_rejected ModelRegistryError - driver aum_fee_bridge.closing_aum must contain one value per forecast year
+negative: NEG-CARD PASS_rejected ModelRegistryError - opening_aum stock-flow balance failed: FY2027
 negative: N01a PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be numeric
 negative: N01b PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be finite
 negative: N01c PASS_rejected ModelRegistryError - aum_fee_bridge.opening_aum.FY2027 must be finite
@@ -26,4 +26,5 @@ negative: N05a PASS_rejected ModelRegistryError - aum_fee_bridge.years must cont
 negative: N05b PASS_rejected ModelRegistryError - aum_fee_bridge.years must contain fiscal years
 negative: CONT-BREAK PASS_rejected ModelRegistryError - opening_aum continuity failed: FY2028
 negative summary: {'total': 11, 'passed': 11, 'failed': []}
+neg_card_mechanism matched: True expected_substring= opening_aum stock-flow balance failed: FY2027 observed= opening_aum stock-flow balance failed: FY2027
 verdict: pass exit_code: 0

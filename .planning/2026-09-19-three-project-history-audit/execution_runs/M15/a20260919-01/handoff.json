@@ -21,7 +21,7 @@
   "C-mutation-proof"
  ],
  "next_step_number": 4,
- "next_action": "Independent reviewer: (1) re-run scripts/oracle_M15.py into a scratch attempt root and diff input/cases/oracle against the frozen copies; (2) re-run scripts/run_card.py against iso/checkout_scripts and confirm [160.0] / [160.0, 196.8] / [150.0] with 11/11 negatives rejected and rc=0; (3) run scripts/verify_card.py and scripts/verify_r2_boundary.py (both must exit 0); (4) adjudicate OQ-01..OQ-05 and the yield-bound observation. After that the D/E stage belongs to I-10-A and the accuracy stage to I-12.",
+ "next_action": "Independent reviewer: (1) re-run scripts/oracle_M15.py into a scratch attempt root and diff input/cases/oracle against the frozen copies; (2) re-run scripts/run_card.py against iso/checkout_scripts and confirm [160.0] / [160.0, 196.8] / [150.0] with 11/11 negatives rejected and rc=0; (3) run scripts/verify_card.py and scripts/verify_r2_boundary.py (both must exit 0); (4) adjudicate OQ-01..OQ-05 and point-check revision r3 (F-01..F-05) and the yield-bound observation. After that the D/E stage belongs to I-10-A and the accuracy stage to I-12.",
  "input_hashes": {
   "evidence/M15/input.json": "d403335d4f22fa583e688c196f45bd66c794004156b0c0ddf5f2f856f25c1c41",
   "evidence/M15/oracle.json": "c68164edbea00bc1d98d0ffd6695e69234987ad3232fa1fa34861be1145af06e",
@@ -57,7 +57,10 @@
   "E1-pack-evidence",
   "F1-verify-card",
   "G1-finalize-hashes",
-  "H1-validate-json-tree"
+  "H1-validate-json-tree",
+  "D3-append-r3",
+  "I1-audit-doc-pointers",
+  "J1-cases-annotation-repack-check"
  ],
  "raw_exit_codes": {
   "A0-iso-venv-create": 0,
@@ -74,7 +77,10 @@
   "E1-pack-evidence": 0,
   "F1-verify-card": 0,
   "G1-finalize-hashes": 0,
-  "H1-validate-json-tree": 0
+  "H1-validate-json-tree": 0,
+  "D3-append-r3": 0,
+  "I1-audit-doc-pointers": 0,
+  "J1-cases-annotation-repack-check": 0
  },
  "expected_exit_codes": {
   "A0-iso-venv-create": 0,
@@ -91,7 +97,10 @@
   "E1-pack-evidence": 0,
   "F1-verify-card": 0,
   "G1-finalize-hashes": 0,
-  "H1-validate-json-tree": 0
+  "H1-validate-json-tree": 0,
+  "D3-append-r3": 0,
+  "I1-audit-doc-pointers": 0,
+  "J1-cases-annotation-repack-check": 0
  },
  "positive_actual": [
   160.0
@@ -157,6 +166,11 @@
   "OQ-04 (yield domain): the implementation applies NO upper bound to yield (OBS-YIELD-GT1 = 1135.0 for yield 1.5). This is correct for a transport unit price, but it means a percent-vs-amount unit error cannot be caught by the contract; the disclosure stage must bind the unit explicitly.",
   "OQ-05 (pytest): pytest was not installed in the attempt venv (no offline wheel in the local pip cache, network forbidden) and the historical suite was not re-run. If a reviewer requires the historical suite for this card, that must be stated explicitly because it changes the attempt scope."
  ],
+ "review_history": {
+  "r1_review_2026_09_20": "accepted_scoped (formula qualification only); findings F-01..F-05 plus the observation-(c) and unit-labelling notes",
+  "r3_response": "handled in oracle.md's single r3 section and evidence/M15/revision_r3.json; no frozen expectation, tolerance, case or refusal condition was changed",
+  "formula_state_after_r3": "review_pending (point review of r3 by the reviewer)"
+ },
  "blocked_by": [],
  "stop_conditions_hit": [
   "STOP_DISCLOSURE_ADAPTATION (no real-company disclosure mapping; D not started, reviewer unsigned)",
@@ -195,14 +209,19 @@
   "evidence/M15/qualification.json",
   "evidence/M15/r2_boundary_check.json",
   "evidence/M15/revision_r2.json",
+  "evidence/M15/revision_r3.json",
+  "evidence/M15/doc_pointer_audit.json",
+  "evidence/M15/cases_annotation_repack.json",
   "evidence/M15/run_result.json",
   "evidence/M15/source_manifest.json",
   "evidence/M15/stderr.txt",
   "evidence/M15/stdout.txt",
   "evidence/M15/verify_report.json",
   "recovery/selfcheck_result.json",
-  "recovery/probes/signed_driver_probe.json"
+  "recovery/probes/signed_driver_probe.json",
+  "recovery/runner_before_F01_fix.py",
+  "recovery/before_fixes/"
  ],
- "reviewer_status": "not reviewed yet; formula = review_pending, implemented by this attempt and handed to an independent reviewer",
- "revision": "r2 (exactly one r2 section in oracle.md, single reproducible baseline at byte offset 8478)"
+ "reviewer_status": "reviewed 2026-09-20: accepted_scoped (formula qualification only) with findings F-01..F-05 + two notes; handled in revision r3 and returned for a point review. formula = review_pending; the implementer never self-signs.",
+ "revision": "r3 (oracle.md carries exactly one r2 section at byte offset 8478 and exactly one r3 section; each revision has a single reproducible boundary hash, no competing baseline)"
 }

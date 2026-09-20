@@ -8,13 +8,13 @@
  },
  "enumeration_command": "iso venv python -X utf8 -B scripts/pack_evidence.py --card M28 --attempt-root <attempt> --interpreter <py> ...",
  "enumeration_evidence": "evidence/M28/oq_rulings_enumeration.json",
- "enumeration_evidence_sha256": "f875413fbb67def7d418ae31a73b77a64990861d6eb06b11622523541b24b81e",
+ "enumeration_evidence_sha256": "ddcb006a1e1a5f357234ba165b59f1e04477f96406a930b010bd6ccf9871a9ae",
  "enumeration_summary": {
   "models_total": 31,
-  "drivers_total": 165,
-  "ratio_drivers_total": 41,
-  "ratio_drivers_taking_the_0_1_default": 37,
-  "ratio_drivers_not_in_0_1_total": 4,
+  "drivers_total_slots": 165,
+  "ratio_drivers_of_drivers_total": 41,
+  "ratio_drivers_taking_the_0_1_default_of_ratio_drivers": 37,
+  "ratio_drivers_not_in_0_1_of_ratio_drivers": 4,
   "ratio_drivers_not_in_0_1": [
    {
     "driver": "bank_revenue.asset_yield",
@@ -62,7 +62,7 @@
     "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
    }
   ],
-  "models_with_an_optional_driver_that_has_no_declared_default": [
+  "models_with_an_optional_driver_without_a_declared_default_of_models": [
    "advertising",
    "asset_management",
    "aum_fee_bridge",
@@ -88,7 +88,7 @@
    "unit_sales",
    "usage_platform"
   ],
-  "models_with_an_optional_driver_that_has_no_declared_default_total": 24
+  "models_with_an_optional_driver_without_a_declared_default_of_models_total": 24
  },
  "OQ-M25M28-01": {
   "question": "model_registry.py:335 fills an omitted optional driver with spec.defaults.get(driver, 0.0). For a card that DECLARES an optional default in its text but is registered with defaults = {}, the library silently substitutes 0.0 and 'no such revenue' becomes indistinguishable from 'we did not find it'.",
@@ -147,7 +147,66 @@
    }
   },
   "observed": "store_cohorts.new_store_productivity is (0.0, inf) as the card requires (new-store productivity may exceed one), while every other ratio driver of these four models takes the conservative [0,1] default",
-  "implementer_position": "recorded, NOT fixed; no product change was made"
+  "labelled_exception_p3_6": {
+   "driver": "store_cohorts.new_store_productivity",
+   "dimension": "ratio",
+   "effective_bounds": [
+    0.0,
+    null
+   ],
+   "why_it_is_not_a_contradiction": "explicit spec.driver_bounds metadata takes precedence over the conservative ratio default in driver_value_bounds, and card_M26.md L8 explicitly allows a new-store productivity above one",
+   "all_ratio_drivers_outside_0_1": [
+    {
+     "driver": "bank_revenue.asset_yield",
+     "bounds": [
+      null,
+      null
+     ],
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
+    },
+    {
+     "driver": "bank_revenue.funding_cost",
+     "bounds": [
+      null,
+      null
+     ],
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
+    },
+    {
+     "driver": "direct_growth.growth_rate",
+     "bounds": [
+      -1.0,
+      null
+     ],
+     "declared_bounds": null,
+     "reason": "hard-coded domain inside driver_value_bounds"
+    },
+    {
+     "driver": "store_cohorts.new_store_productivity",
+     "bounds": [
+      0.0,
+      null
+     ],
+     "declared_bounds": [
+      0.0,
+      null
+     ],
+     "reason": "explicit spec.driver_bounds entry takes precedence over the conservative [0,1] ratio default"
+    }
+   ],
+   "review_finding": "P3-6 (label the exception; do not change behaviour)",
+   "action_taken": "labelled here and in evidence/M28/disclosure_mapping.json; NO product change"
+  },
+  "implementer_position": "recorded, NOT fixed; no product change was made",
+  "reviewer_opinion_recorded_not_adopted": "does NOT block; asks for the exception label (P3-6), which is applied above"
  },
  "OQ-M25M28-03": {
   "question": "may market_change be negative? (card_M28.md L8 says a signed market move does not equal net inflows)",

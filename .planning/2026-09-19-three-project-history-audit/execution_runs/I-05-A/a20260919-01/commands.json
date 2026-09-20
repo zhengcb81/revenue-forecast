@@ -314,11 +314,14 @@
       ],
       "cwd": "<attempt>/iso/cw",
       "expected_returncode": 0,
-      "expected_business_result": "18 passed",
+      "expected_business_result": "18 passed (r2, superseded)",
       "raw_returncode": 0,
       "evidence": [
-        "after/cmd-tests-i05a.stdout.txt"
-      ]
+        "after/cmd-tests-i05a.stdout.txt (overwritten by C17 on the final bytes)"
+      ],
+      "declared_r2": "18 passed / rc=0",
+      "measured_now": "25 passed / rc=0 (final bytes)",
+      "correction": "round-3 review (P2-1): the file this record pointed at was a stale RED run (3 failed / 15 passed); C17 re-ran and overwrote it on the final bytes. The count is 25, not 18 - the ORIGINAL value is kept here with this note."
     },
     {
       "id": "CMD-I05A-C15",
@@ -469,6 +472,26 @@
         "after/case_results.json",
         "after/independent-slice-check.json",
         "after/legacy-section-probe.json"
+      ]
+    },
+    {
+      "id": "CMD-I05A-C21",
+      "purpose": "round-3 P1 mutation evidence: three injections queried with the pre-fix and the fixed bytes",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w05a_p1_mutations.py",
+        "<attempt>/iso/prefix_r3/section_query.py"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "I1/I2/I3: returned -> refused (sections_binding_error x2, sections_no_normalized_source)",
+      "raw_returncode": 0,
+      "evidence": [
+        "evidence/p1-mutations.json",
+        "evidence/README.md"
       ]
     }
   ],

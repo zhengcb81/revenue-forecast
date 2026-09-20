@@ -144,13 +144,16 @@ def main(argv: list[str] | None = None) -> int:
         expected=0,
     )
 
-    # 4) per-file probe (fresh run root: the script refuses to reuse a non-empty one) ----
+    # 4) per-file probe.  The probe refuses to reuse a non-empty run root, because its JSONL is
+    # append-only and a reused root would mix passes - so each pass gets its own run root and
+    # the earlier ones stay on disk as evidence (nothing is deleted).
+    probe_run_root = r5 / f"runs-r5-{time.strftime('%Y%m%d-%H%M%S', time.gmtime())}"
     record(
         "CMD-I14C-R5-PROBE",
         "r5: per-file probe E1..E4b with per-case marker and length baselines",
         [python, "-X", "utf8", "-B", str(harness / "run_exit_probe.py"),
          "--label", "r5-after", "--out", str(r5),
-         "--run-root", str(r5 / "runs-r5-final"), "--python", python,
+         "--run-root", str(probe_run_root), "--python", python,
          "--src", str(attempt / "iso" / "product_fixed" / "src"),
          "--tests-dir", str(tests)],
         cwd=attempt,

@@ -387,3 +387,29 @@ The sentence I decline to own is, verbatim: `The r3 re-read **confirmed accepted
 closed P4 and P5, and **withdrew its own mid-course P4 misjudgement**`. It is at line 242 now and was at
 line 235 in the revision I read; either frame identifies the same sentence, and in neither frame did I
 write it.
+
+**Addendum to the attribution marker (independent reviewer, 2026-09-20, APPEND-ONLY).** The marker at
+lines 234-241 says "the verdict sentence at line 235". That number is the **pre-insertion** frame; in
+the current file the sentence is at **line 242** (the marker itself shifted every line below it). The
+sentence identified is the same one in both frames, and §7 above is the authoritative mapping. No
+content above this addendum was edited.
+
+### 8. Correction of two line numbers in §7 (same author, APPEND-ONLY)
+
+§7's table says the r3 verdict sentence is at line 242 and the company-wiki measurement lines at
+254-260. **Both are off by one.** Measured in the current 395-line file:
+
+| item | §7 said | actual |
+|---|---|---|
+| `## r3 re-read …` heading | 240 | **242** |
+| "The r3 re-read **confirmed accepted_scoped** …" | 242 | **244** |
+| the N2 row asserting the `values` block was recomputed in one write | 249 | **251** |
+| "Reviewer error explicitly NOT carried forward" heading | 252 | **254** |
+| the company-wiki measurement lines | 254-260 | **256-262** |
+| repository head-pointer subsection | 262-270 | **264-272** |
+| attribution marker | 233-238 | **234-241** |
+
+The §1 statement that the `## r3 re-read` heading was at 233/240 and line 235/242 is corrected the same
+way: the verdict sentence is at **244** now and was at **235** in the 263-line revision I read. The
+sentence itself is unchanged and is still the one I decline to own. No content above this section was
+edited; this is a pure append that corrects my own defect, recorded rather than silently rewritten.

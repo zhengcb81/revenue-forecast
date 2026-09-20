@@ -142,3 +142,39 @@ file at the byte offset where the appended section's first line begins). No r2 s
 `missing drivers for inventory_sellthrough: net_revenue_per_unit`. This divergence is recorded in
 `binding.json` (`card_text_required_list_vs_registry`) and in `oq_rulings.json` OQ-04; it was
 recorded, not silently resolved. No product file was touched.
+
+## errata r1 (appended by the implementer after independent review; APPEND-ONLY, the frozen body above is byte-unchanged)
+
+- appended_utc: 2026-09-20T03:20:49.039865+00:00
+- oracle_md_sha256_before_this_append: f89b1ad7a73f7fc2d93d722ba020328fbe6e8618d42eef3d438dd972f114c052
+- rule: nothing above this line was rewritten; where an erratum supersedes a sentence of the frozen body, this section says so explicitly.
+
+### E-1 (F-04, all three cards): what the freshness chain does and does not claim
+
+- The mtime comparison in `evidence/M31/source_manifest.json` is a **POST-HOC stat comparison**, not evidence of pre-run freezing.
+- The object anchored before the generator ran is the **generator code** `scripts/oracle_M31.py` (sha256 `3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e`), recorded through the byte-identical pointer `iso/oracle_card.md` in `evidence/M31/oracle_document_freeze.json`.
+- **This document is not part of the anchor scope and carries no gating expectation.** The pipeline never reads or validates it; every gated expectation lives in `evidence/M31/oracle.json`, which is regenerable byte-for-byte from the anchored code.
+- Independent-reviewer ruling on OQ-05: it does **not** block the formula signature and does **not** require a new attempt **provided the owner claims formula only**; if the owner wants this document treated as pre-run frozen evidence, this attempt is insufficient and a re-run is required. This document must never be described as pre-run frozen evidence.
+
+### E-2 (F-02, M31 only): section 12 is superseded by this erratum
+
+Section 12 above claims that `card_M31.md` L9 does **not** list `net_revenue_per_unit`. **That claim is false and is withdrawn.**
+
+- Byte-level check by the independent reviewer and re-run here: `card_M31.md` L9 lists all seven drivers (`opening_inventory`, `saleable_production`, `purchased_units`, `scrapped_units`, `sold_units`, `closing_inventory`, `net_revenue_per_unit`) and the master table `model_cards.md` L2818 lists the same seven; the two lines are byte-identical.
+- Therefore the card text and the registry **agree**, `binding.json:card_text_required_list_vs_registry.card_text_matches_registry` is now `true`, the divergence note is withdrawn, and the owner ruling that section 12 asked for is **not** required.
+- What section 12 got right and keeps: the seven-driver frozen input, the registry as the authority for the driver set, and the fact that omitting `net_revenue_per_unit` is refused with `missing drivers`. No numeric expectation, verdict or frozen evidence file changes.
+
+Superseded sentences of section 12 (unified diff of the frozen text against the corrected statement; the frozen text itself is left as it is):
+
+```diff
+--- oracle.md section 12 (frozen, still on disk)
++++ corrected statement (this erratum)
+@@ -1 +1 @@
+-card_M31.md L9 lists the required drivers as opening_inventory, saleable_production, purchased_units, scrapped_units, sold_units, closing_inventory and does not list net_revenue_per_unit, while the registry declares it required.
++card_M31.md L9 lists all seven drivers including net_revenue_per_unit, and the registry declares the same seven; the card text and the registry agree.
+```
+
+### E-3 (registration, not a fix): cross-batch gaps recorded in handoff.json
+
+- F-01 (`run_card.py` never compares `cases.json[*].expected`) and the P3 list F-05..F-10 are batch-level concerns; they are registered in `handoff.json.cross_batch_gaps` and were deliberately **not** fixed inside this attempt.
+- The exit-code convention of this batch (`0=pass / 1=harness / 2=no-verdict / 3=negative`) differs from the M05-M08 batch (`2=harness`); the difference is registered and no historical rc is rewritten.

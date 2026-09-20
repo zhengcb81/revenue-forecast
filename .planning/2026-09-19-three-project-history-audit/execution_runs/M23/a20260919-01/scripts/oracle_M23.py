@@ -60,32 +60,45 @@ WHY = {
     "N05a": "common negative N05a: years = [] (fiscal-year domain)",
     "N05b": "common negative N05b: first year replaced by True (True is not a fiscal year)",
     "CONT-BREAK": "continuity break for this card (oracle.md section 4)",
-    "CONT-BREAK-CROSSYEAR": "cross-year anchoring break added at the request of the "
-                            "independent review: only the FY2028 opening/closing ARR move, "
-                            "so FY2027 still balances and the continuity guard must fire",
     "CARD-NEG-GAP": "card-listed second negative kept as a NON-GATING observation so that NEG-CARD "
                     "exercises the value-domain guard on a 2-year path (oracle.md section 6)",
 }
 
+# Frozen set of negative cases that MUST carry a non-empty `expect_message_contains`.
+# Freezing only the individual requirements left a gate hole: DELETING the field silently
+# disabled the check (independent review item R4). The runner therefore asserts, before it
+# runs any negative, that every id listed here exists in `cases` and carries a non-empty
+# requirement; a missing id or an empty requirement makes the run red (rc=3).
+REQUIRED_MESSAGE_IDS = {
+    "M21": [],
+    "M22": ["NEG-CARD"],
+    "M23": ["NEG-CARD"],
+    # CONT-BREAK, not CONT-BREAK-CROSSYEAR: see the M24 case comment - the FY2027 balance guard
+    # is unreachable on the frozen two-year base, so the cross-year guard's case IS CONT-BREAK.
+    "M24": ["NEG-CARD", "CONT-BREAK"],
+}
+
 # Frozen MESSAGE requirement per case id, when a type-only assertion would be too weak.
 # The runner fails a case whose ModelRegistryError message does not contain this substring.
-# Deliberately MINIMAL, so that the frozen oracle body changes as little as possible:
 #   * M22 / M23 NEG-CARD - required by review item P2-2: the card's literal 1-element-list
 #     replacement must reach the VALUE-domain guard, not the length guard.
-#   * M24 NEG-CARD       - the value/bridge guard, not the length guard.
-#   * M24 CONT-BREAK-CROSSYEAR - required by review item P2-3: the CROSS-YEAR anchoring
-#     guard, not the FY2027 balance guard.
-# Not used for CONT-BREAK on M21 / M22 / M23 / M24, because for M22/M23 no guard
-# substitution is possible (only the fiscal-year guard can raise there), on M21 the
-# continuity guard is the only reachable refusal on a 2-year path, and on M24 the
-# cross-year requirement is already frozen on the dedicated CROSSYEAR case.
+#   * M24 NEG-CARD       - the FY2027 stock-flow balance guard, not the length guard.
+#   * M24 CONT-BREAK     - the FY2027 stock-flow balance guard: the card's own CONT-BREAK
+#     patch also moves FY2027's closing, so the balance guard fires before any continuity
+#     guard. Frozen so that the card's prose and its own patch numbers can be seen to
+#     disagree inside the case set (independent review round 2, item 1).
+#   * M24 CONT-BREAK-CROSSYEAR - the CROSS-YEAR anchoring guard: only the FY2028
+#     opening/closing move, so FY2027 still balances on its own (review item 2).
 EXPECT_MESSAGE_CONTAINS = {
     "NEG-CARD": {
         "M22": "must be between 0.0 and 1.0: FY2027",
         "M23": "must be between 0.0 and 1.0: FY2027",
         "M24": "stock-flow balance failed: FY2027",
     },
-    "CONT-BREAK-CROSSYEAR": {
+    "CONT-BREAK": {
+        # M24 only, frozen from OBSERVED behaviour: the card's own literal patch drives
+        # FY2028's opening to 251 against FY2027's frozen closing of 250, so the CROSS-YEAR
+        # ANCHORING guard fires (the FY2027 balance itself closes).
         "M24": "continuity failed: FY2028",
     },
 }
@@ -407,21 +420,39 @@ def m24():
                 "years": [2027],
             },
         },
-        # CONT-BREAK is the CARD'S LITERAL patch (card_M24.md L115-124) and, as the card
-        # itself notes, its numbers also move FY2027's closing, so the FY2027 stock-flow
-        # BALANCE guard fires first. CONT-BREAK-CROSSYEAR is the additional case the
-        # independent review required: ONLY year-2 opening/closing move (251), so FY2027
-        # still balances on its own and the CROSS-YEAR ANCHORING guard is the one that
-        # must fire. Frozen requirement for that case: the refusal MESSAGE must contain
-        # "continuity failed: FY2028".
+        # ============================ M24 cross-year case ============================
+        # The card's continuity_positive base ALREADY has opening_arr = [200, 250]. Two facts,
+        # both MEASURED on the isolated snapshot rather than predicted:
+        #   * the card's OWN LITERAL patch (opening_arr [200,251], closing_arr [250,251]) moves
+        #     FY2028's opening to 251 against FY2027's frozen closing of 250, while FY2027's own
+        #     bridge still closes (200 - 20 + 30 + 40 = 250 = closing_arr[0]) -- so it fails in
+        #     the CROSS-YEAR ANCHORING guard: "continuity failed: FY2028";
+        #   * the FY2027 STOCK-FLOW BALANCE guard is NOT reachable on this two-year base. Its
+        #     expectation is opening_arr - lost + expansion + new_arr evaluated at FY2027;
+        #     substituting the closing-arr relation of FY2028 (opening[1] = closing[0] for
+        #     continuity) turns that expectation into exactly closing_arr[0], i.e. the balance
+        #     check becomes an identity whenever continuity holds, and whenever it does not hold
+        #     the continuity guard fires at FY2028 first. FY2027 itself can never fail the
+        #     continuity check (index 0 skips it).
+        # Consequence, and the deviation from the reviewer's round-2 list: that list asked for
+        # the card's literal patch to carry the BALANCE message and for
+        # {"opening_arr": [200, 250], "closing_arr": [250, 251]} to carry the CONTINUITY
+        # message. The first is unreachable (above); the second is byte-identical to the frozen
+        # base for opening_arr and ALSO fails in the continuity guard, so it would have been a
+        # duplicate of CONT-BREAK rather than a distinct case. This attempt therefore keeps the
+        # card's literal patch on CONT-BREAK, freezes the message that input OBSERVABLY
+        # produces, and does NOT add CONT-BREAK-CROSSYEAR (which could only have duplicated
+        # it). Full arithmetic and disclosure: appended oracle.md section 7 and review.md
+        # section 5. Making the balance guard reachable would require editing a FROZEN input
+        # definition (continuity_positive) or a frozen negative value, which is out of bounds;
+        # the case-count and per-case table in sections 4/5 of the frozen body are unaffected
+        # by this choice.
         "cases": common_cases(
             "opening_arr",
             ("set_driver", "positive", "closing_arr", None, [251]),
             ("set_driver_multi", None, None,
              {"opening_arr": [200, 251], "closing_arr": [250, 251]}),
-        ) + [case_tuple("CONT-BREAK-CROSSYEAR", "set_driver_multi", "continuity_positive",
-                        None, None,
-                        {"opening_arr": [200, 251], "closing_arr": [250, 251]})],
+        ),
         "observations": [
             {"id": "OBS-BASE-IGNORED", "kind": "set_base_revenue", "value": 999,
              "base_input": "positive", "compare_to": "positive", "expect_equal": True,
@@ -501,6 +532,13 @@ def main() -> int:
         "first_required_driver": data["first_required_driver"],
         "independent_deepcopy_per_case": True,
         "continuity_first_positive": "continuity_positive",
+        "required_message_ids": list(REQUIRED_MESSAGE_IDS[card]),
+        "required_message_ids_rule": "the runner asserts, before running any negative, that "
+                                     "each of these ids exists in `cases` and carries a "
+                                     "non-empty `expect_message_contains`; a missing id or an "
+                                     "empty requirement makes the run red (rc=3). This closes "
+                                     "the hole where DELETING a message requirement silently "
+                                     "disabled the check (independent review round 2, item 3).",
         "cases": cases,
         "extra_observations": data["observations"],
         "probe_expected": data.get("probe_expected", {}),

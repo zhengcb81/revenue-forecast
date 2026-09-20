@@ -197,6 +197,46 @@ def main() -> int:
     with open(cases_path, "wb") as fh:
         fh.write(frozen_cases_bytes)
 
+    # --- G-R4 remove the frozen `required_message_ids` gate ------------------
+    # Review round 2, item 3: freezing the individual message requirements was not enough,
+    # because DELETING one silently disabled the check. The gate field closes that hole, so
+    # removing it must now go red.
+    with open(cases_path, "r", encoding="utf-8") as fh:
+        cases = json.load(fh)
+    removed_gate = cases.pop("required_message_ids", None)
+    with open(cases_path, "w", encoding="utf-8") as fh:
+        json.dump(cases, fh, ensure_ascii=False, indent=1)
+    rc, stdout, stderr, out, argv = run_runner(python, card, scratch, code_root, "R4_no_gate")
+    report["runs"].append({"tag": "R4_required_message_ids_gate_removed", "argv": argv,
+                           "mutation": "cases.json `required_message_ids` %r deleted"
+                                       % (removed_gate,),
+                           "raw_exit_code": rc, "expected_exit_code": 3,
+                           "stdout": stdout, "stderr": stderr, "result": out})
+    with open(cases_path, "wb") as fh:
+        fh.write(frozen_cases_bytes)
+
+    # --- G-R5 empty one required message requirement -------------------------
+    # The other half of the same hole: keeping the id in the gate list but blanking its
+    # `expect_message_contains` must also go red.
+    gate_ids = json.loads(frozen_cases_bytes.decode("utf-8")).get("required_message_ids") or []
+    if gate_ids:
+        with open(cases_path, "r", encoding="utf-8") as fh:
+            cases = json.load(fh)
+        victim = gate_ids[0]
+        for case in cases["cases"]:
+            if case["id"] == victim:
+                case["expect_message_contains"] = ""
+        with open(cases_path, "w", encoding="utf-8") as fh:
+            json.dump(cases, fh, ensure_ascii=False, indent=1)
+        rc, stdout, stderr, out, argv = run_runner(python, card, scratch, code_root,
+                                                   "R5_empty_requirement")
+        report["runs"].append({"tag": "R5_required_message_requirement_emptied", "argv": argv,
+                               "mutation": "cases.json %s.expect_message_contains -> ''" % victim,
+                               "raw_exit_code": rc, "expected_exit_code": 3,
+                               "stdout": stdout, "stderr": stderr, "result": out})
+        with open(cases_path, "wb") as fh:
+            fh.write(frozen_cases_bytes)
+
     # --- restore and re-verify ---------------------------------------------
     for name in ("input.json", "oracle.json", "cases.json"):
         shutil.copyfile(os.path.join(evidence, name), os.path.join(s_ev, name))

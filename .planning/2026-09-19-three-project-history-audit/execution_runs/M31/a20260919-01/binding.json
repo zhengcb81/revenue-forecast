@@ -119,7 +119,8 @@
    "purchased_units",
    "scrapped_units",
    "sold_units",
-   "closing_inventory"
+   "closing_inventory",
+   "net_revenue_per_unit"
   ],
   "registry_required": [
    "opening_inventory",
@@ -130,8 +131,37 @@
    "closing_inventory",
    "net_revenue_per_unit"
   ],
-  "card_text_matches_registry": false,
-  "divergence_note": "card_M31.md L9 lists required as opening_inventory, saleable_production, purchased_units, scrapped_units, sold_units, closing_inventory and does NOT list net_revenue_per_unit, while the registry declares it required (dimension revenue_per_unit). The formula itself is printed in the card without that driver in the parameter list, so the REGISTRY is the authority here: not supplying net_revenue_per_unit is refused with 'missing drivers'. Recorded, not silently resolved."
+  "card_text_matches_registry": true,
+  "divergence_note": null,
+  "errata": {
+   "applied_utc": "2026-09-20T03:20:49.039865+00:00",
+   "finding": "F-02 (independent reviewer, M31)",
+   "what_was_wrong": "the earlier record claimed card_M31.md L9 omits net_revenue_per_unit. That claim is FALSE: the reviewer checked byte-level that card_M31.md L9 lists all seven drivers including net_revenue_per_unit, and that model_cards.md L2818 lists the same seven.",
+   "byte_level_check": {
+    "card_document": "execution_v2/card_M31.md",
+    "line": 9,
+    "contains_net_revenue_per_unit": true,
+    "master_table": "execution_v2/model_cards.md",
+    "master_table_line": 2818,
+    "master_table_contains_net_revenue_per_unit": true,
+    "card_line_equals_master_table_line": true
+   },
+   "correction": "the card text and the registry AGREE on all seven drivers; there is no divergence and therefore no owner ruling is required for one",
+   "superseded_values": {
+    "card_text_required_list": [
+     "opening_inventory",
+     "saleable_production",
+     "purchased_units",
+     "scrapped_units",
+     "sold_units",
+     "closing_inventory"
+    ],
+    "card_text_matches_registry": false,
+    "divergence_note": "card_M31.md L9 lists required as opening_inventory, saleable_production, purchased_units, scrapped_units, sold_units, closing_inventory and does NOT list net_revenue_per_unit, while the registry declares it required (dimension revenue_per_unit). The formula itself is printed in the card without that driver in the parameter list, so the REGISTRY is the authority here: not supplying net_revenue_per_unit is refused with 'missing drivers'. Recorded, not silently resolved."
+   },
+   "effect_on_conclusions": "none: the frozen seven-driver input, the expectations and the runner verdicts are untouched; this is a text correction only",
+   "consistency_now": "binding.json, oracle.md (section 12 errata) and oq_rulings.json all record the same seven drivers as the registry"
+  }
  },
  "card_anchors_verified_before_the_run": {
   "entry_point_line_claimed_by_card": 308,

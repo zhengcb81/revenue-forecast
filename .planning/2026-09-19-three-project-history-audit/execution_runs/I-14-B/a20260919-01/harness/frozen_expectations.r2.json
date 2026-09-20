@@ -1,0 +1,690 @@
+{
+  "card": "I-14-B",
+  "authored": "r2, written AFTER the independent review and BEFORE any r2 run; values hand-derived from oracle.md sections 3-4 plus the r2 additions recorded in oracle.md section 11",
+  "frozen_now_utc": "2026-09-20T02:56:38Z",
+  "default_inputs": {
+    "label_offset_tolerance_seconds": 5,
+    "capture_latency_tolerance_seconds": 5,
+    "note": "input parameters only; oracle.md section 6 pre-registers them as a PROPOSAL awaiting reviewer freeze"
+  },
+  "expected": {
+    "W1": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "observation_span_seconds": 1740,
+        "sample_count": 30,
+        "quick_check_seconds": 480,
+        "command_total_seconds": 2220,
+        "overlap_seconds": 0,
+        "union_seconds": 1740,
+        "sum_seconds": 1740,
+        "observation_interval_count": 1,
+        "quick_check_overlap_seconds": 0,
+        "quick_check_in_observation_intervals": false
+      }
+    },
+    "W2": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-TOTAL-AS-OBS"
+      ],
+      "computed": {
+        "observation_span_seconds": 1740,
+        "command_total_seconds": 2220
+      }
+    },
+    "W3": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-QC-IN-OBS"
+      ],
+      "computed": {
+        "observation_span_seconds": 1740,
+        "quick_check_seconds": 480
+      }
+    },
+    "W4": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-SUM-OVERLAP"
+      ],
+      "computed": {
+        "union_seconds": 2400,
+        "sum_seconds": 2940,
+        "overlap_seconds": 540
+      }
+    },
+    "W5": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "union_seconds": 2400,
+        "sum_seconds": 2940,
+        "overlap_seconds": 540
+      }
+    },
+    "W6": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-NO-SAMPLES"
+      ],
+      "computed": {
+        "observation_span_seconds": null,
+        "sample_count": 1
+      }
+    },
+    "W7": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-SAMPLE-OUTSIDE"
+      ],
+      "computed": {
+        "observation_span_seconds": 1740,
+        "samples_outside_window": 1
+      }
+    },
+    "C1": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-EMPTY-EVIDENCE",
+        "R-FUTURE-CLOCK",
+        "R-SAME-INSTANT"
+      ],
+      "computed": {
+        "daily_count": 0,
+        "window_status": "pending"
+      }
+    },
+    "C2": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 5,
+        "window_status": "pending"
+      }
+    },
+    "C3": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "daily_count": 7,
+        "window_status": "complete"
+      }
+    },
+    "C4": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "daily_count": 6,
+        "window_status": "pending"
+      }
+    },
+    "C5": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-SIMULATED-CLOCK"
+      ],
+      "computed": {
+        "daily_count": 7,
+        "window_status": "complete"
+      }
+    },
+    "C6": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-DUP-RUN-ID"
+      ],
+      "computed": {
+        "daily_count": 6,
+        "window_status": "pending"
+      }
+    },
+    "C7": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-EMPTY-EVIDENCE"
+      ],
+      "computed": {
+        "daily_count": 0,
+        "window_status": "pending"
+      }
+    },
+    "L1": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ],
+        "label_offset_max_error_seconds": 0
+      }
+    },
+    "L2": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-LABEL-ANCHOR"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          29,
+          88,
+          207
+        ],
+        "label_offset_max_error_seconds": 87
+      }
+    },
+    "L2b": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-LABEL-ANCHOR",
+        "R-POSTHOC-CAPTURE"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          29,
+          88,
+          207
+        ],
+        "label_offset_max_error_seconds": 87
+      }
+    },
+    "L3": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-POSTHOC-CAPTURE"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ],
+        "label_offset_max_error_seconds": 0
+      }
+    },
+    "L4": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-LABEL-ANCHOR",
+        "R-SAME-INSTANT"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          30,
+          30
+        ],
+        "label_offset_max_error_seconds": 90
+      }
+    },
+    "L5": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-ANCHOR-NOT-SHARED"
+      ],
+      "computed": {
+        "label_offsets_seconds": [
+          30,
+          60,
+          120
+        ],
+        "label_offset_max_error_seconds": 0
+      }
+    },
+    "X1": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "observation_span_seconds": 1740,
+        "union_seconds": 1740,
+        "basis_registered": false,
+        "basis": "wall_clock"
+      }
+    },
+    "X2": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "basis_registered": false,
+        "basis": ""
+      }
+    },
+    "X3": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "basis_registered": false,
+        "basis": null
+      }
+    },
+    "X4": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-BASIS-UNKNOWN"
+      ],
+      "computed": {
+        "basis_registered": false,
+        "basis": null
+      }
+    },
+    "X5": {
+      "verdict": "accept_claim",
+      "refusals": [],
+      "computed": {
+        "union_seconds": 1740,
+        "sum_seconds": 1740,
+        "overlap_seconds": 0,
+        "quick_check_seconds": 480,
+        "command_total_seconds": 2220,
+        "quick_check_overlap_seconds": 0
+      }
+    },
+    "X6": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "union_seconds": 1740,
+        "quick_check_seconds": 480
+      }
+    },
+    "X7": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "sum_seconds": 1740,
+        "union_seconds": 1740,
+        "overlap_seconds": 0
+      }
+    },
+    "X8": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-QC-IN-OBS"
+      ],
+      "computed": {
+        "union_seconds": 2220,
+        "sum_seconds": 2220,
+        "quick_check_overlap_seconds": 480,
+        "observation_interval_count": 2
+      }
+    },
+    "X9": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS",
+        "R-QC-IN-OBS"
+      ],
+      "computed": {
+        "union_seconds": 2220,
+        "quick_check_overlap_seconds": 480
+      }
+    },
+    "X10": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-NO-INTERVAL"
+      ],
+      "computed": {
+        "observation_interval_count": 0,
+        "union_seconds": 0,
+        "sum_seconds": 0,
+        "observation_span_seconds": null
+      }
+    },
+    "X11": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-NO-INTERVAL"
+      ],
+      "computed": {
+        "observation_interval_count": 0,
+        "observation_span_seconds": null
+      }
+    },
+    "X12": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "daily_count": 7,
+        "weekly_count": 0,
+        "monthly_count": 1,
+        "alert_count": 1,
+        "window_status": "pending"
+      }
+    },
+    "X13": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "daily_count": 7,
+        "weekly_count": 2,
+        "monthly_count": 0,
+        "alert_count": 1,
+        "window_status": "pending"
+      }
+    },
+    "X14": {
+      "verdict": "reject_claim",
+      "refusals": [
+        "R-CLAIM-EXCEEDS"
+      ],
+      "computed": {
+        "daily_count": 6,
+        "daily_same_day_runs_dropped": 1,
+        "weekly_count": 2,
+        "monthly_count": 1,
+        "alert_count": 1,
+        "window_status": "pending"
+      }
+    }
+  },
+  "tolerance_sweep_expectation": {
+    "L1": "accept_claim for every tolerance in 0..90",
+    "L2": "reject_claim for tolerance <= 86; accept_claim for tolerance >= 87 (max error at label 120 is 87 s)",
+    "L2b": "reject_claim for every tolerance in the sweep (R-POSTHOC-CAPTURE is tolerance-independent)",
+    "L3": "reject_claim for every tolerance in the sweep",
+    "L4": "reject_claim for tolerance <= 89; accept_claim at tolerance >= 90 is NOT expected because R-SAME-INSTANT also fires, so reject_claim for every tolerance in the sweep"
+  },
+  "revision": "r2",
+  "r1_pre_image_sha256": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+  "expected_superseded": {
+    "W1": {
+      "computed.union_seconds": {
+        "old": 2220,
+        "new": 1740,
+        "pre_image_sha256": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+        "changed_at_utc": "2026-09-20T03:21:40.622882Z",
+        "reason": "Independent review (report sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e, section 3 P2, verdict changes_required) found that the natural observation intervals included the quick_check interval, so union_of_windows/sum_of_windows accepted 37 minutes as the observation and rejected the honest 1740 s claim. Fix option 甲 was chosen: the natural duration is taken over the observation phase only, quick_check is separated (J15 refuses a declared window that covers the quick_check interval), and W1's union_seconds expectation is corrected from 2220 to 1740. The old value is preserved here; it was never absent and is not being erased."
+      },
+      "computed.sum_seconds": {
+        "old": "<absent>",
+        "new": 1740,
+        "pre_image_sha256": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+        "changed_at_utc": "2026-09-20T03:21:40.622924Z",
+        "reason": "Independent review (report sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e, section 3 P2, verdict changes_required) found that the natural observation intervals included the quick_check interval, so union_of_windows/sum_of_windows accepted 37 minutes as the observation and rejected the honest 1740 s claim. Fix option 甲 was chosen: the natural duration is taken over the observation phase only, quick_check is separated (J15 refuses a declared window that covers the quick_check interval), and W1's union_seconds expectation is corrected from 2220 to 1740. The old value is preserved here; it was never absent and is not being erased."
+      },
+      "computed.observation_interval_count": {
+        "old": "<absent>",
+        "new": 1,
+        "pre_image_sha256": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+        "changed_at_utc": "2026-09-20T03:21:40.622931Z",
+        "reason": "Independent review (report sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e, section 3 P2, verdict changes_required) found that the natural observation intervals included the quick_check interval, so union_of_windows/sum_of_windows accepted 37 minutes as the observation and rejected the honest 1740 s claim. Fix option 甲 was chosen: the natural duration is taken over the observation phase only, quick_check is separated (J15 refuses a declared window that covers the quick_check interval), and W1's union_seconds expectation is corrected from 2220 to 1740. The old value is preserved here; it was never absent and is not being erased."
+      },
+      "computed.quick_check_overlap_seconds": {
+        "old": "<absent>",
+        "new": 0,
+        "pre_image_sha256": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+        "changed_at_utc": "2026-09-20T03:21:40.622936Z",
+        "reason": "Independent review (report sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e, section 3 P2, verdict changes_required) found that the natural observation intervals included the quick_check interval, so union_of_windows/sum_of_windows accepted 37 minutes as the observation and rejected the honest 1740 s claim. Fix option 甲 was chosen: the natural duration is taken over the observation phase only, quick_check is separated (J15 refuses a declared window that covers the quick_check interval), and W1's union_seconds expectation is corrected from 2220 to 1740. The old value is preserved here; it was never absent and is not being erased."
+      },
+      "computed.quick_check_in_observation_intervals": {
+        "old": "<absent>",
+        "new": false,
+        "pre_image_sha256": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+        "changed_at_utc": "2026-09-20T03:21:40.622940Z",
+        "reason": "Independent review (report sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e, section 3 P2, verdict changes_required) found that the natural observation intervals included the quick_check interval, so union_of_windows/sum_of_windows accepted 37 minutes as the observation and rejected the honest 1740 s claim. Fix option 甲 was chosen: the natural duration is taken over the observation phase only, quick_check is separated (J15 refuses a declared window that covers the quick_check interval), and W1's union_seconds expectation is corrected from 2220 to 1740. The old value is preserved here; it was never absent and is not being erased."
+      }
+    }
+  },
+  "errata": [
+    {
+      "id": "ERR-I14B-R2-01",
+      "what": "W1.computed.union_seconds 2220 -> 1740 (plus new pinning assertions)",
+      "why": "Independent review (report sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e, section 3 P2, verdict changes_required) found that the natural observation intervals included the quick_check interval, so union_of_windows/sum_of_windows accepted 37 minutes as the observation and rejected the honest 1740 s claim. Fix option 甲 was chosen: the natural duration is taken over the observation phase only, quick_check is separated (J15 refuses a declared window that covers the quick_check interval), and W1's union_seconds expectation is corrected from 2220 to 1740. The old value is preserved here; it was never absent and is not being erased.",
+      "pre_image": {
+        "frozen_expectations.json": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
+        "cases.json": "5d8c459277da88b8361b520bee1424f079dc1d9c08744433cae0d30cdbb67d64",
+        "archived_at": "harness/archive/frozen_expectations.r1.json, harness/archive/cases.r1.json"
+      },
+      "new_files": {
+        "harness/frozen_expectations.r2.json": "self",
+        "harness/cases.r2.json": "self"
+      },
+      "r1_value_retained_in": "expected_superseded",
+      "diff_from_r1_expected_map": [
+        "--- frozen_expectations.r1.json:expected",
+        "+++ frozen_expectations.r2.json:expected",
+        "@@ -158,9 +158,13 @@",
+        "     \"computed\": {",
+        "       \"command_total_seconds\": 2220,",
+        "+      \"observation_interval_count\": 1,",
+        "       \"observation_span_seconds\": 1740,",
+        "       \"overlap_seconds\": 0,",
+        "+      \"quick_check_in_observation_intervals\": false,",
+        "+      \"quick_check_overlap_seconds\": 0,",
+        "       \"quick_check_seconds\": 480,",
+        "       \"sample_count\": 30,",
+        "-      \"union_seconds\": 2220",
+        "+      \"sum_seconds\": 1740,",
+        "+      \"union_seconds\": 1740",
+        "     },",
+        "     \"refusals\": [],",
+        "@@ -226,4 +230,164 @@",
+        "     ],",
+        "     \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X1\": {",
+        "+    \"computed\": {",
+        "+      \"basis\": \"wall_clock\",",
+        "+      \"basis_registered\": false,",
+        "+      \"observation_span_seconds\": 1740,",
+        "+      \"union_seconds\": 1740",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-BASIS-UNKNOWN\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X10\": {",
+        "+    \"computed\": {",
+        "+      \"observation_interval_count\": 0,",
+        "+      \"observation_span_seconds\": null,",
+        "+      \"sum_seconds\": 0,",
+        "+      \"union_seconds\": 0",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-NO-INTERVAL\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X11\": {",
+        "+    \"computed\": {",
+        "+      \"observation_interval_count\": 0,",
+        "+      \"observation_span_seconds\": null",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-NO-INTERVAL\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X12\": {",
+        "+    \"computed\": {",
+        "+      \"alert_count\": 1,",
+        "+      \"daily_count\": 7,",
+        "+      \"monthly_count\": 1,",
+        "+      \"weekly_count\": 0,",
+        "+      \"window_status\": \"pending\"",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-CLAIM-EXCEEDS\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X13\": {",
+        "+    \"computed\": {",
+        "+      \"alert_count\": 1,",
+        "+      \"daily_count\": 7,",
+        "+      \"monthly_count\": 0,",
+        "+      \"weekly_count\": 2,",
+        "+      \"window_status\": \"pending\"",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-CLAIM-EXCEEDS\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X14\": {",
+        "+    \"computed\": {",
+        "+      \"alert_count\": 1,",
+        "+      \"daily_count\": 6,",
+        "+      \"daily_same_day_runs_dropped\": 1,",
+        "+      \"monthly_count\": 1,",
+        "+      \"weekly_count\": 2,",
+        "+      \"window_status\": \"pending\"",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-CLAIM-EXCEEDS\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X2\": {",
+        "+    \"computed\": {",
+        "+      \"basis\": \"\",",
+        "+      \"basis_registered\": false",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-BASIS-UNKNOWN\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X3\": {",
+        "+    \"computed\": {",
+        "+      \"basis\": null,",
+        "+      \"basis_registered\": false",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-BASIS-UNKNOWN\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X4\": {",
+        "+    \"computed\": {",
+        "+      \"basis\": null,",
+        "+      \"basis_registered\": false",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-BASIS-UNKNOWN\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X5\": {",
+        "+    \"computed\": {",
+        "+      \"command_total_seconds\": 2220,",
+        "+      \"overlap_seconds\": 0,",
+        "+      \"quick_check_overlap_seconds\": 0,",
+        "+      \"quick_check_seconds\": 480,",
+        "+      \"sum_seconds\": 1740,",
+        "+      \"union_seconds\": 1740",
+        "+    },",
+        "+    \"refusals\": [],",
+        "+    \"verdict\": \"accept_claim\"",
+        "+  },",
+        "+  \"X6\": {",
+        "+    \"computed\": {",
+        "+      \"quick_check_seconds\": 480,",
+        "+      \"union_seconds\": 1740",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-CLAIM-EXCEEDS\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X7\": {",
+        "+    \"computed\": {",
+        "+      \"overlap_seconds\": 0,",
+        "+      \"sum_seconds\": 1740,",
+        "+      \"union_seconds\": 1740",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-CLAIM-EXCEEDS\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X8\": {",
+        "+    \"computed\": {",
+        "+      \"observation_interval_count\": 2,",
+        "+      \"quick_check_overlap_seconds\": 480,",
+        "+      \"sum_seconds\": 2220,",
+        "+      \"union_seconds\": 2220",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-QC-IN-OBS\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "+  },",
+        "+  \"X9\": {",
+        "+    \"computed\": {",
+        "+      \"quick_check_overlap_seconds\": 480,",
+        "+      \"union_seconds\": 2220",
+        "+    },",
+        "+    \"refusals\": [",
+        "+      \"R-CLAIM-EXCEEDS\",",
+        "+      \"R-QC-IN-OBS\"",
+        "+    ],",
+        "+    \"verdict\": \"reject_claim\"",
+        "   }",
+        " }"
+      ],
+      "added_expectations": [
+        "X1",
+        "X10",
+        "X11",
+        "X12",
+        "X13",
+        "X14",
+        "X2",
+        "X3",
+        "X4",
+        "X5",
+        "X6",
+        "X7",
+        "X8",
+        "X9"
+      ],
+      "unchanged_r1_cases": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "L1",
+        "L2",
+        "L2b",
+        "L3",
+        "L4",
+        "L5"
+      ]
+    }
+  ]
+}

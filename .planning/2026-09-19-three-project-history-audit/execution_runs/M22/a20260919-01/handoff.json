@@ -29,10 +29,10 @@
  "input_hashes": {
   "evidence/M22/input.json": "9e3185e80f47ca9859db7a708a0bed809843d5f97001580cd1f27dba678d897b",
   "evidence/M22/oracle.json": "247fa3dc31b9bd0b57161ceb9bb9d73fffca9fe87fd5f2e2b5350a41d12fad87",
-  "evidence/M22/cases.json": "0bed0128eafcd5dd44b57c4aac9e94dcc1fa49ae10d8b07b6266dfec0224493b",
+  "evidence/M22/cases.json": "5b8ceaf9e5510fef437c350f2321e86b814591fe948f043fdbf2445e00132e05",
   "oracle.md_frozen_body": "88de6bf9b8012bac6c6e05ee836977e9b54cc08c75287af66d7e55e92275b0da",
-  "scripts/oracle_M22.py": "6326d72f64e9c6c99e0c6083a32a48a4df04c6d69570b8ad5e185cd2dbb11fd1",
-  "scripts/run_card.py": "d02057debe8d34df8a472e83aa3771f5c90fb77d58b3c0eee2237e35593b2953"
+  "scripts/oracle_M22.py": "a9981e0f0e043300e9f0f3bd243f889854f7edbb4da49896e874830d94b5cca8",
+  "scripts/run_card.py": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3"
  },
  "current_source_hashes": {
   "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
@@ -117,7 +117,8 @@
   "message_requirements_checked": [
    "NEG-CARD"
   ],
-  "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message"
+  "required_message_ids_ok": true,
+  "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message. Additionally the whole run fails if the frozen `required_message_ids` gate does not hold."
  },
  "negative_ids": [
   "NEG-CARD",
@@ -187,6 +188,7 @@
   "evidence/M22/source_manifest.json",
   "evidence/M22/stderr.txt",
   "evidence/M22/stdout.txt",
+  "evidence/M22/verdict_transcription_check.txt",
   "handoff.json",
   "iso/checkout_scripts/",
   "oracle.md",
@@ -194,7 +196,7 @@
   "review.md",
   "scripts/"
  ],
- "reviewer_status": "r1 reviewed: M21 accepted_scoped; M22/M23/M24 changes_required (all six required items implemented in revision r2 and returned for point review); implementer never writes 'accepted'",
+ "reviewer_status": "round 1: M21 accepted_scoped; M22/M23/M24 changes_required. round 2 (point review of revision r2): M21 accepted_scoped (maintained); M22 accepted_scoped (promoted); M23 accepted_scoped (promoted); M24 changes_required (blocker downgraded, one item still open). The round-2 verdict is transcribed VERBATIM into this attempt's review.md at lines 119-129; the byte-equality proof is evidence/M22/verdict_transcription_check.txt. The implementer never writes 'accepted'.",
  "reviews_mtime_conventions": {
   "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\reviews",
   "directory_mtime_epoch": 1789805660.0835266,
@@ -205,7 +207,20 @@
   "task_statement_value": "the task statement quoted 2026-09-19 10:05 for this directory; that value corresponds to the NEWEST-FILE convention (reviews/second_wave/final_review_checks.json), while the DIRECTORY mtime is 2026-09-19 09:14:20. Both are recorded here because the two conventions measure different things (review item P3-3).",
   "written_by_this_attempt": false
  },
- "revision": "r2 (independent review: M21 accepted_scoped, M22/M23/M24 changes_required. This revision implements review items P2-1, P2-2, P2-3, P3-1, P3-2, P3-3. The verdict for the REVISED attempt has NOT yet been received, so every qualification stays review_pending / unmapped / unproven.)",
+ "revision": "r2 + round-2 close-out (independent review round 2: M21 accepted_scoped maintained, M22/M23 promoted to accepted_scoped, M24 still changes_required). Round-2 items implemented: required_message_ids gate + R4/R5 probes, metadata correction, append-only wording. The M24 cross-year item could NOT be implemented as literally specified (see revision_r2.json review_items_r2_round2 and the appended oracle.md section 8); it is disclosed and needs an owner ruling.",
  "revision_r2_detail": "evidence/M22/revision_r2.json",
- "disclosure_impact_note": "not applicable to this card"
+ "disclosure_impact_note": "not applicable to this card",
+ "review_verdict_transcription": {
+  "review_md_begin_marker_line": 119,
+  "review_md_end_marker_line": 129,
+  "review_md_sha256": "74dd051b46cb6d260d193389378ea6045aafe02507b9356e50e3dba28b0f5d77",
+  "check_file": "evidence/M22/verdict_transcription_check.txt",
+  "source_block_sha256": "ff5763a16a9af09b294e8690db89f7d7916a574516f6c7213fd12511cf2e5235",
+  "written_block_sha256": "ff5763a16a9af09b294e8690db89f7d7916a574516f6c7213fd12511cf2e5235",
+  "byte_identical": true,
+  "reviewer_report_sha256": "04be4064812e159103b63d3c4c12ae8fd621239729d6eef0d1b27646cd212da8",
+  "reviewer_report_sha256_quoted_by_the_parent_agent": "043b1bb0bc604ef4e0e08e2b27aa55711675be908af3f4797a5109aa23a84ecc",
+  "reviewer_report_sha256_matches_the_parent_quotation": false,
+  "note": "the verdict is appended, not rewritten; nothing in it was reworded, and the four values / the scope / the remaining items are exactly as written"
+ }
 }

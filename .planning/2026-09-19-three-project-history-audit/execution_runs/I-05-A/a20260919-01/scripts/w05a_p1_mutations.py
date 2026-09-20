@@ -183,7 +183,13 @@ def main() -> int:
         "injections": {},
     }
     injections = [
-        ("I1_offsets_plus_one", lambda db: mutate_offsets(db, 1)),
+        # NOTE on deltas: the frozen trim semantics (oracle.md §3.1.1) compare
+        # `fragment.strip("\n")` with `window.strip("\n")`, so a +1 shift of
+        # BOTH offsets can still reproduce the same trimmed text when the
+        # boundary characters are newlines (measured: +1 stayed a source_window
+        # hit on the real producer catalog).  +2 moves a content character out
+        # of the window and is therefore the decisive forgery.
+        ("I1_offsets_plus_one", lambda db: mutate_offsets(db, 2)),
         ("I2_offsets_way_off", lambda db: mutate_offsets(db, 5)),
         ("I3_no_normalized_source", drop_normalized),
     ]

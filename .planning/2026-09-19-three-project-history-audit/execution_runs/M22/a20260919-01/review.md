@@ -43,7 +43,7 @@ expected / 1=harness error). stderr is 0 bytes.
   (N01a uses a real `bool`, N01b-d use real `float('nan'/'inf'/'-inf')`).
 - `PASS_rejected` requires `isinstance(exc, ModelRegistryError)`. `ImportError`,
   `ModuleNotFoundError` and `FileNotFoundError` are recorded as **FAIL**, never as pass.
-- The same `run_card.py` (sha256 `d02057debe8d34df8a472e83aa3771f5c90fb77d58b3c0eee2237e35593b2953`) was used for
+- The same `run_card.py` (sha256 `a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3`) was used for
   M05-M08 and for all four attempts of this batch; there is no card-specific runner to drift.
 
 ## 3. Results in detail
@@ -110,6 +110,8 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 | F_corrupted_expected_type | 3 | 3 |
 | G_corrupted_message_requirement | 3 | 3 |
 | H_message_requirement_points_at_another_guard | 3 | 3 |
+| R4_required_message_ids_gate_removed | 3 | 3 |
+| R5_required_message_requirement_emptied | 3 | 3 |
 | D_restored_uncorrupted | 0 | 0 |
 
 `frozen_hashes_unchanged` = `True`. Full record:

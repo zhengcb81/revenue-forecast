@@ -11,10 +11,13 @@ This script answers exactly that from the captured stdout files:
 
 * per-run failing node ids,
 * the union per tree,
-* whether the two unions are equal (if they are, no node is card-specific),
+* whether T4's union is a SUBSET of T0's - the criterion that matters.  Every node that fails
+  on the fixed tree must also fail on the pristine tree; if it does, nothing is card-specific.
+  Exact union EQUALITY is reported too but is not the verdict, because the flaky nodes drop in
+  and out of individual runs and can make the T4 union a strict subset purely by chance.
 * the per-node occurrence count per tree.
 
-Exit 0 when the unions are equal, 3 otherwise.
+Exit 0 when T4's union is a subset of T0's (no T4-only node), 3 otherwise.
 
     python analyze_compat_control.py --attempt <attempt> --out <attempt>/r5/compat-control-analysis.json
 """
@@ -68,6 +71,7 @@ def main(argv: list[str] | None = None) -> int:
                for tree in ("T0", "T4")}
         for node in sorted(set(unions["T0"]) | set(unions["T4"]))
     }
+    t4_only = sorted(set(unions["T4"]) - set(unions["T0"]))
     payload = {
         "script": "harness/analyze_compat_control.py",
         "runs": list(RUNS),
@@ -76,22 +80,26 @@ def main(argv: list[str] | None = None) -> int:
         "union_T0": unions["T0"],
         "union_T4": unions["T4"],
         "unions_equal": unions["T0"] == unions["T4"],
+        "t4_union_is_subset_of_t0": not t4_only,
         "occurrences": occurrences,
-        "only_on_T4": sorted(set(unions["T4"]) - set(unions["T0"])),
+        "only_on_T4": t4_only,
         "only_on_T0": sorted(set(unions["T0"]) - set(unions["T4"])),
         "note": (
             "The failing COUNT varies run to run (3..5) and the sets differ by the timing nodes "
             "test_child_without_runtime_session_is_terminated_and_restarted and "
-            "test_stale_child_heartbeat_is_terminated_and_restarted; the UNIONS are what matter, "
-            "and an equal union means every failing node also fails on the pristine tree."
+            "test_stale_child_heartbeat_is_terminated_and_restarted; the UNIONS are what matter. "
+            "The verdict is 'no T4-only node' (T4 union is a subset of the T0 union), because "
+            "the flaky nodes can make the T4 union a strict subset by chance."
         ),
     }
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     print("per-run counts:", json.dumps(payload["per_run_counts"]))
-    print("unions equal:", payload["unions_equal"], "| only on T4:", payload["only_on_T4"])
-    return 0 if payload["unions_equal"] else 3
+    print("unions equal:", payload["unions_equal"],
+          "| T4 subset of T0:", payload["t4_union_is_subset_of_t0"],
+          "| only on T4:", t4_only)
+    return 0 if payload["t4_union_is_subset_of_t0"] else 3
 
 
 if __name__ == "__main__":

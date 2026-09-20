@@ -228,3 +228,84 @@ L2（历史累计等待 29/88/207，手算 max error 87 落在标签 120）实�
 被覆盖的第一次 AFTER 报告原文（已不存在，故无法逐字节复核 `mismatch_count = 3`）；
 `oracle.md` 之前那次写入是否"只追加"（无改动前副本，仅能证 mtime 时序自洽）；
 runner 两版之间除 `REQUIRED_KEYS` 外是否还有差异（无旧版源码；但可逻辑证明新增检查只会变严或不变）。
+
+---
+
+# 12. r2 实现者回应：`changes_required` 的修复记录（**追加节，未自签**）
+
+本节在 reviewer 裁决节之后**追加**。§1–§11 与 reviewer 节**一字未改**（可核验：原 230 行逐行 identical）。本节不含 accepted 字样；第三轮复核仍由独立 reviewer 给出。
+
+## 12.1 两个阻断项的修复与红→绿证据
+
+**P1（`claim.basis` 无枚举校验）** → 新增 **J16**：`basis` 必须属于封闭枚举 `{sample_span, command_total, observation_plus_quick_check, sum_of_windows, union_of_windows}`；未登记/空串/`null`/缺键 → **`R-BASIS-UNKNOWN`**。
+
+**P2（quick_check 计入自然观察时长）** → 采**甲**：自然观察区间只由观察阶段构成（无 `windows[]` 时 `intervals=[(started_at, observation_finished_at)]`），quick_check 永不进入并集；并另加 **J15**：任何已声明的观察窗若覆盖 quick_check 区间（reviewer 的"改名"变体）→ `R-QC-IN-OBS`。**选甲而非乙的理由**：乙式判据虽能拒 37 min，但诚实主张 1740 s 仍会被误拒（reviewer 实测的方向倒置不会消失）。
+
+| 行为 | 修复前（reviewer 复核过的 r1 修订 `495a4411…`） | 修复后（r2 `7fff6f0c…`） |
+|---|---|---|
+| X1 `basis="wall_clock"` 2220 s | **accept**（refusals=[]） | reject `/ R-BASIS-UNKNOWN` |
+| X2 `basis=""` 99999 s | **accept** | reject `/ R-BASIS-UNKNOWN` |
+| X3 `basis` 缺键 99999 s | **accept** | reject `/ R-BASIS-UNKNOWN` |
+| X4 `basis=null` 2220 s | **accept** | reject `/ R-BASIS-UNKNOWN` |
+| X5 诚实 1740 s `union_of_windows` | **reject** `/ R-CLAIM-EXCEEDS`（方向反了） | **accept** |
+| X6 2220 s `union_of_windows`（reviewer X6） | **accept** | reject `/ R-CLAIM-EXCEEDS` |
+| X7 2220 s `sum_of_windows` | **accept** | reject `/ R-CLAIM-EXCEEDS` |
+| X8 窗口 B 复制 quick_check 时段 | **accept** | reject `/ R-QC-IN-OBS`（重叠 480 s） |
+| X10/X11 无任何观察区间却主张 0 s | X10 reject(错码) / X11 **accept** | 均 reject `/ R-NO-INTERVAL` |
+
+同一条冻结命令的前后 rc（命令与原始输出全部落盘）：
+
+| 命令 | rc | 业务结果 | 证据 |
+|---|---:|---|---|
+| `run_cases.py --sut <r1 修订> --cases cases.r2.json --expectations frozen_expectations.r2.json` | **1** | mismatch 49、**accepted_ineligible 8**（X1,X2,X3,X4,X6,X7,X8,X11） | `before/cmd-CASES-r2-r1sut/cases_report.json` |
+| `run_cases.py --sut <原始 AFTER> …`（同一 r2 材料） | **1** | mismatch 452、accepted_ineligible 20 | `before/cmd-CASES-r2-baseline/cases_report.json` |
+| `run_cases.py --sut iso/natural_window.py …`（**同一命令**，修后） | **0** | mismatch 0、accepted_ineligible 0、34/34 | `after/cmd-CASES-r2/cases_report.json` |
+| `pytest harness/tests/test_i14b_natural_window_r2.py`（对 r1 修订） | **1** | **14 failed / 4 passed** | `before/cmd-SUITE-r2-r1sut/stdout.txt` |
+| 同上（对 r2 修订） | **0** | **18 passed** | `after/cmd-SUITE-r2/stdout.txt` |
+| `pytest harness/tests/test_i14b_natural_window.py`（r1 套件**未改一字**，对 r2 修订） | **0** | **32 passed** | `after/cmd-SUITE-r1suite-vs-r2sut/stdout.txt` |
+| `run_cases.py`（r2 材料）重复 3 次 | 0,0,0 | 三次一致 | `evidence/repeat-r2-1..3/cases_report.json` |
+| `mutate.r2.py` | 0 | **20/20 变异重新变红**，预期反例均在红名单 | `evidence/mutations.r2.json` |
+
+**红→绿变异证据路径**：`evidence/mutations-r2/MUT-15-J16-basis-enumeration/` → 红 X1,X2,X3,X4；`evidence/mutations-r2/MUT-16-P2-quick-check-in-union/` → 红 W1,X1,X5,X6,X7；`evidence/mutations-r2/MUT-17-J15-window-covers-quick-check/` → 红 X8,X9；`evidence/mutations-r2/MUT-18-J4b-absent-observation-interval/` → 红 X10,X11；`evidence/mutations-r2/MUT-19-J10c-same-utc-day-second-run/` → 红 X14。每条变异均是对 scratch 副本的**字面单行回退**（断言恰好命中 1 次），正式被测件未被改动。
+
+## 12.2 oracle 期望更正的追加式 provenance 落点
+
+- **文件 + 键**：`harness/frozen_expectations.r2.json` → `expected.W1.computed.union_seconds`，旧值 **2220** → 新值 **1740**（并新增 `sum_seconds=1740`、`observation_interval_count=1`、`quick_check_overlap_seconds=0`、`quick_check_in_observation_intervals=false` 作为锚定断言）。
+- **旧值保留处**：同文件 `expected_superseded["W1"]["computed.union_seconds"]`，字段含 `old=2220`、`new=1740`、`pre_image_sha256=3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b`、`changed_at_utc`、`reason`。
+- **机械 diff**：同文件 `errata[0].diff_from_r1_expected_map`（r1→r2 期望映射的 unified diff，182 行）。
+- **前像文件**：`harness/archive/frozen_expectations.r1.json`（sha256 `3ba2bb1799ae30b9…`）、`harness/archive/cases.r1.json`（`5d8c459277da88b8…`），另有 17 个 r1 文件 byte-identical 归档于 `harness/archive/MANIFEST.json`。
+- **重新冻结**：`harness/cases.r2.json`（34 case，`c00a3a00ffe8b883…`）＋ `harness/frozen_expectations.r2.json`（`6f814d0af6a8ffd0…`）；r1 两份**未被覆盖**。r2 报告的 `expectations_sha256` 一律为 `6f814d0a…`（可核验冻结时点）。
+- **oracle.md 追加节**：`## 11. r2 勘误与新增判据`（L210 起）；§1–§10 与 reviewer 冻结四行 L128–131 **逐行 identical**（`identical prefix lines = 209/209`，`differing=[]`）。`oracle.md` 新 sha256 `bdd0407ab577ed4564b8e948d8e3954b663c795dbcd7a3035485424ae753baf3`。
+- **如实声明的次序偏差**：本次**先改实现、后冻结 r2 期望**；理由是修复目标已由 reviewer 报告逐条给定，且期望值系从 reviewer 报告的原始 probe 输出与 oracle 字段定义手算。第三条支撑证据：r1 修订在 r2 oracle 下的越权行为（accepted_ineligible 8）由独立运行复现——期望不是"照着修好的实现写的"。
+
+## 12.3 改前→改后 sha256 表
+
+| 文件 | r1（reviewer 已复核） | r2（本次修复后） | 说明 |
+|---|---|---|---|
+| `iso/natural_window.py` | `495a44111a854bd5b76d39aeae91d11ab789fe48bb8bcbc9ae3af4b87d8c5b95` | `7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796` | P1/P2/J15/J4b/J10c；r1 归档于 `harness/archive/natural_window.after-r1.py` |
+| `oracle.md` | `f8082205f17d3afa5eaa3a976f87b61259f92f7679584ead88f95482a0cb01b5` | `bdd0407ab577ed4564b8e948d8e3954b663c795dbcd7a3035485424ae753baf3` | 209 → 273 行；前缀 209 行 identical |
+| `review.md` | `5d99f4dc04866da2027883b102f0f0777790af3a5e060299edcdc2c1aeac8fe3` | 见 `evidence/file_manifest.json`（本节追加后自失效，故不在此处引用自身哈希） | 230 行 → 追加本节 |
+| `harness/cases.json`（r1） | `5d8c459277da88b8361b520bee1424f079dc1d9c08744433cae0d30cdbb67d64` | 未改（新文件 `cases.r2.json` = `c00a3a00ffe8b883…`） | 旧文件不覆盖 |
+| `harness/frozen_expectations.json`（r1） | `3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b` | 未改（新文件 `frozen_expectations.r2.json` = `6f814d0af6a8ffd0…`） | 旧文件不覆盖，勘误另存 |
+| `harness/run_cases.py` | `f2a07d0b85c5dcb3a233d9010ad9deead70b22535ab82a61414d2ef7f54f7c23` | **未改**（r2 通过 `--cases/--expectations` 指向 r2 材料） | reviewer 关心的两版差异问题不再增加新版本 |
+| `harness/mutate.py` | `ff4ec9d9f07319b7f6a94a11bbbd2dd9db9f39b55aace4a29e3a9db2b1c03a36` | 未改（新增 `harness/mutate.r2.py`） | 旧文件不覆盖 |
+| `harness/tests/test_i14b_natural_window.py` | `413ff05c52e07acacf0491a0ec3f2cd1c426011995b45d7ad3edaab65a38ad4e` | **未改**，且对 r2 修订仍 32 passed | — |
+| `harness/tests/test_i14b_natural_window_r2.py` | —（新增） | 见 `evidence/file_manifest.json` | 18 tests |
+| `harness/calendar_map.py` | `4789cc9360aea4e4b1c4bbebb2412ddaf48883dbd14a32c99d1606e83e7b86fe` | 见 manifest（增加 CAL-13 `blocked_reason`） | reviewer P3⑦ 建议 |
+| `evidence/calendar_mapping.json` | `6f3ebd998a0cbcc7460d501befbbde5aeff055f90382817b7b3155e1d00aea8e` | `e3a734b3253716cb68e18483fba5fe3df8eb857ee7ad76e2961ca48ae487bf02` | r1 归档于 `harness/archive/calendar_mapping.r1.json` |
+| `evidence/mutations.json` | `61a5fe1426da03e0c0ae2234b5034f94f1ae9cf2d7d648d41db241fce2fba6f7` | 未改（新增 `evidence/mutations.r2.json`） | 旧文件不覆盖 |
+| `changes.diff` | `89556ac05de87ebe37962f6ecb3861a63261b98f778c9beb49604417e26dcaf1` | 未改（新增 `changes.r2.diff` = `660bc943187db1c083ef8f04b3c642f3917a3040a5eae376c4fcbbb7ef2c2104`，+71 −13） | r1→r2 修复 diff |
+
+## 12.4 仍存在的缺口（不掩盖）
+
+1. **真实 30/60/120 秒观察仍 blocked**：容差已被 reviewer 冻结（5 s），但 (b) 预布置记录器 0/4002 候选、(c) owner 未授权启动 worker/UI，且 reviewer 另加"先修 P1"（已完成）与"真实窗口须另开 attempt + 另开 binding"两条前置。本 attempt **不得**改写 blocked 记录。
+2. **真实自然日/周/月窗口仍全部 pending**（17/17）。本卡不授予自然观察资格。
+3. **P3 记录项**：`R-CLAIM-EXCEEDS` 跨 timer/calendar 复用未拆码（`R-NUMERIC-BASIS-MISMATCH` 留给后续卡）；weekly/monthly 的"全过期"反例已按 reviewer 建议补为 X12/X13，但**周/月边界的 ±1 天行为**仍只有 C2/C3/C4/X12/X13 覆盖。
+4. **J10c 的语义选择**：同一 UTC 日第二条 daily 条目现在"忽略且计数"（X14 → daily_count 6、dropped 1）。这是**行为变更**（r1 为静默重置链 → count 4），依据是"7 consecutive Daily runs on consecutive dates"的原文语义；reviewer 可要求改回"重置"或另定，届时按追加勘误处理。
+5. **不可外部锚定**：除生产 CA-206 纯函数复现（`before/cmd-CA206REPRO`）与只读文件哈希外，本 attempt 证据仍为自产。
+6. **本次仍未验证**：物理机真实截图能力；`catalog.sqlite3` 完整 sha256（46.3 GB 超时限，仅尺寸/mtime/`-wal`）；被覆盖的第一次 AFTER 报告原文（已不存在）。
+7. **时序偏差**：先改实现、后冻结 r2 期望（§12.2 已如实声明并给出三条可核查支撑）。
+
+## 12.5 状态
+
+仍为 **`review_pending`**；请独立 reviewer 做**第三轮复核**（重点：X1–X14 的期望是否独立于实现、J15/J4b/J10c 是否越权、W1 期望更正的前像链是否完整、`changes.r2.diff` 是否只含 P1/P2 相关改动）。实现者未自签。

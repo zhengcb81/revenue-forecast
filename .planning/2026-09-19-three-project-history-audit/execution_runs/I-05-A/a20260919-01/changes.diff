@@ -40,7 +40,7 @@
  import json
  import sqlite3
  from contextlib import contextmanager
-@@ -9,8 +40,30 @@
+@@ -9,8 +40,31 @@
  from pathlib import Path
  from typing import Any, Iterator
  
@@ -65,13 +65,14 @@
 +    "sections_hash_mismatch": "reproduce the sections artifact (a slice no longer matches its recorded hash)",
 +    "sections_path_outside_allowed_root": "reproduce the sections artifact (an entry path points outside derived/)",
 +    "sections_binding_error": "reproduce the sections artifact (its content is not a window of the document source)",
++    "sections_no_normalized_source": "produce the normalized artifact for this document first, then reproduce the sections artifact",
 +    "sections_metadata_index_mismatch": "reproduce the sections artifact (its row metadata disagrees with the index)",
 +}
 +NEXT_ACTION_DEFAULT = "run the sections producer for this document, then retry"
  
  
  class SectionQueryError(ValueError):
-@@ -23,6 +76,19 @@
+@@ -23,6 +77,19 @@
  
  class SectionQueryNotFoundError(SectionQueryError):
      """Raised when no sections artifact matches the document_id."""
@@ -91,7 +92,7 @@
  
  
  @dataclass(frozen=True)
-@@ -36,6 +102,9 @@
+@@ -36,6 +103,9 @@
      page_start: int | None = None
      page_end: int | None = None
      span_ids: tuple[str, ...] = ()
@@ -101,7 +102,7 @@
  
      def to_dict(self) -> dict[str, Any]:
          return {
-@@ -48,6 +117,9 @@
+@@ -48,6 +118,9 @@
              "page_start": self.page_start,
              "page_end": self.page_end,
              "span_ids": list(self.span_ids),
@@ -111,7 +112,7 @@
          }
  
  
-@@ -58,6 +130,10 @@
+@@ -58,6 +131,10 @@
      title: str
      index_path: str
      sections: tuple[SectionEntry, ...]
@@ -122,7 +123,7 @@
  
      def to_dict(self) -> dict[str, Any]:
          return {
-@@ -66,15 +142,519 @@
+@@ -66,15 +143,566 @@
              "title": self.title,
              "index_path": self.index_path,
              "count": len(self.sections),
@@ -267,17 +268,19 @@
 +
 +
 +def _windows_match_or_block(bodies: list[str], entry: dict, body: bytes) -> str | None:
-+    """Return None when the slice IS the document's own text, else a reason.
++    """Return None only when the slice IS the window at its recorded offsets.
 +
-+    A1/P1-1: there is NO length-only escape hatch any more.  The first version
-+    returned None ("length only") whenever the layout could not be mapped, and a
-+    fabricated slice was exactly the case that could not be mapped - i.e. the
-+    fallback was the bypass.  The softening that remains is only for artifacts
-+    whose text cannot be anchored anywhere: when the source body cannot be read
-+    at all the entry is reported as ``no_source`` by the caller.
++    Round 3 (P1-A/B/C), fail-closed at every step:
++
++    - no candidate body (the document has no readable ``normalized`` artifact)
++      => ``sections_no_normalized_source`` (was: silent pass);
++    - malformed offsets => ``sections_binding_error``;
++    - the strict per-origin equivalence fails => **refuse**
++      (``sections_binding_error``).  A text-only hit is NOT a pass: it is
++      reported as ``substring_only`` by the caller and still refuses.
 +    """
 +    if not bodies:
-+        return None  # legacy: the caller reports substring_only / no_source
++        return "sections_no_normalized_source"
 +    span = _span_of(entry)
 +    if span is None:
 +        return "sections_binding_error"
@@ -287,11 +290,10 @@
 +        # Binary content can never be a window of the normalized text.
 +        return "sections_binding_error"
 +    char_start = int(entry.get("char_start") or 0)
-+    if _window_matches(fragment, bodies, char_start) is not None:
++    char_end = int(entry.get("char_end") or 0)
++    if _window_matches(fragment, bodies, char_start, char_end):
 +        return None
-+    # The offset claim could not be mapped: anchor on the CONTENT, never on the
-+    # length.
-+    return None if _fragment_in_bodies(fragment, bodies) else "sections_binding_error"
++    return "sections_binding_error"
 +
 +
 +def _slice_failure(
@@ -444,48 +446,105 @@
 +    return _candidate_bodies(text)
 +
 +
-+def _window_matches(fragment: str, bodies: list[str], char_start: int) -> int | None:
-+    """The offset where the fragment IS the window at ``char_start``, else None.
++def _aligned(body: str, start: int, stop: int) -> bool:
++    """True when ``[start, stop)`` sits on the document's own line boundaries.
 +
-+    The index records CHARACTER offsets in the producer's body coordinate
-+    system; the body here is the same text prefixed by an unknown, small number
-+    of header characters (frontmatter / title / leading newlines).  Rather than
-+    guessing that prefix, this locates the fragment in the header region and
-+    then verifies it also occurs ``char_start`` characters later - i.e. that the
-+    slice really is the text at the offset the index claims.
++    The extractor numbers sections from line starts, so a window that begins or
++    ends strictly inside a line is not a section boundary at all.  Requiring
++    alignment is what stops an off-by-one "origin" from reproducing the slice
++    text with forged offsets (P1-A/B, measured: without it a +2 offset forgery
++    still matched a shifted origin).
++    """
++    start_ok = start == 0 or body[start - 1] == "\n"
++    stop_ok = stop >= len(body) or body[stop] == "\n" or body[stop - 1] == "\n"
++    return start_ok and stop_ok
 +
-+    Trim semantics are the frozen r1 ones (oracle.md §3.1.1):
-+    ``fragment.strip("\\n") == window.strip("\\n")``.
++
++def _window_matches(
++    fragment: str, bodies: list[str], char_start: int, char_end: int
++) -> bool:
++    """True only when the recorded offsets reproduce the slice in a candidate body.
++
++    P1-A/B (round 3): the previous version computed the window start FROM the
++    fragment's own location (``found + char_start - origin``), which made the
++    comparison tautological - any offset inside the body was reported as a source
++    hit.  The check is now the reviewer-frozen equivalence, evaluated at every
++    candidate origin:
++
++        body[origin + char_start : origin + char_end].strip("\\n")
++            == fragment.strip("\\n")
++
++    Origins are line boundaries (``_window_starts``) and the window must itself
++    be line-aligned (``_aligned``), so an off-by-one origin cannot silently
++    absorb a forged offset.  Trim semantics stay the frozen r1 ones
++    (oracle.md §3.1.1).
 +    """
 +    needle = fragment.strip("\n")
 +    if not needle:
 +        return False
 +    for body in bodies:
-+        found = body.find(needle)
-+        if found == -1:
-+            continue
-+        for offset in _window_starts(body):
-+            start = found + char_start - offset
-+            if start < 0 or start + len(fragment) > len(body):
++        for origin in _window_starts(body):
++            start = origin + char_start
++            stop = origin + char_end
++            if stop > len(body) or stop <= start:
 +                continue
-+            if body[start:start + len(fragment)].strip("\n") == needle:
-+                return start
-+    return None
++            if not _aligned(body, start, stop):
++                continue
++            if body[start:stop].strip("\n") == needle:
++                return True
++    return False
++
++
++def _matching_origins(
++    body: str, needle: str, char_start: int, char_end: int
++) -> list[int]:
++    """The line-boundary origins at which the offsets reproduce the slice."""
++    hits: list[int] = []
++    for origin in _window_starts(body):
++        start = origin + char_start
++        stop = origin + char_end
++        if stop > len(body) or stop <= start:
++            continue
++        if not _aligned(body, start, stop):
++            continue
++        if body[start:stop].strip("\n") == needle:
++            hits.append(origin)
++    return hits
++
++
++def _label_for(fragment: str | None, bodies: list[str]) -> str:
++    """``substring_only`` / ``no_source`` for a slice whose offsets did not match."""
++    if fragment is None:
++        return "no_source"
++    return "substring_only" if _fragment_in_bodies(fragment, bodies) else "no_source"
 +
 +
 +def _window_label(
-+    offsets: list[int], bodies: list[str], fragment: bytes
-+) -> str:
-+    """How the served slice is bound to the source (A1/P1-1 reporting)."""
-+    if offsets:
-+        return "source_window"
-+    if not bodies or not fragment:
-+        return "no_source"
-+    try:
-+        text = fragment.decode("utf-8")
-+    except UnicodeDecodeError:
-+        return "no_source"
-+    return "substring_only" if _fragment_in_bodies(text, bodies) else "no_source"
++    entry: dict, bodies: list[str], fragment: str | None
++) -> tuple[str, list[int]]:
++    """The binding label of one entry + the origins whose offsets matched.
++
++    P1 (round 3): ``source_window`` is only ever produced by the strict
++    per-origin equivalence.  ``substring_only`` means the text still occurs in
++    the document but the recorded offsets do NOT reproduce it; ``no_source``
++    means there is no readable normalized body.  Both of the latter are
++    refusals - the caller reports them for diagnosis and never serves them.
++    """
++    if fragment is None or not bodies:
++        return _label_for(fragment, bodies), []
++    needle = fragment.strip("\n")
++    char_start = int(entry.get("char_start") or 0)
++    char_end = int(entry.get("char_end") or 0)
++    hits = sorted(
++        {
++            origin
++            for body in bodies
++            for origin in _matching_origins(body, needle, char_start, char_end)
++        }
++    )
++    if hits:
++        return "source_window", hits
++    return _label_for(fragment, bodies), []
 +
 +
 +def _fragment_text(path: Any) -> str | None:
@@ -496,23 +555,12 @@
 +        return None
 +
 +
-+def _entry_view(entry: dict, bodies: list[str]) -> tuple[list[int], str]:
-+    """(the matched boundary offset, binding label) for one index entry."""
-+    char_start = int(entry.get("char_start") or 0)
-+    text = _fragment_text(entry.get("path"))
-+    if not bodies or text is None:
-+        return [], "no_source"
-+    start = _window_matches(text, bodies, char_start)
-+    if start is not None:
-+        return [start], "source_window"
-+    return [], _window_label([], bodies, text.encode("utf-8"))
-+
-+
 +def _to_entries(entries: list[dict], bodies: list[str]) -> tuple[SectionEntry, ...]:
 +    """The served entries; built from the HASHED index, never from metadata."""
 +    result = []
 +    for entry in entries:
-+        offsets, window_match = _entry_view(entry, bodies)
++        fragment = _fragment_text(entry.get("path"))
++        window_match, offsets = _window_label(entry, bodies, fragment)
 +        result.append(
 +            SectionEntry(
 +                role=entry["role"],
@@ -642,7 +690,7 @@
  
      @contextmanager
      def _connection(self) -> Iterator[sqlite3.Connection]:
-@@ -87,50 +667,78 @@
+@@ -87,50 +715,78 @@
          finally:
              connection.close()
  
@@ -755,7 +803,7 @@
              )
  
  
-@@ -140,6 +748,7 @@
+@@ -140,6 +796,7 @@
      "SectionQueryError",
      "SectionQueryInputError",
      "SectionQueryNotFoundError",

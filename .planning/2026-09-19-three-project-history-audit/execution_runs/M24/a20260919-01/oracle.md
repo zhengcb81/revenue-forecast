@@ -239,10 +239,11 @@ R8-BIZ–R10-BIZ 是**业务拒绝**条件（卡片「专业决策/业务负例�
 | positive | `['215.000']` | `[215.0]` | within tolerance |
 | continuity positive | `['215.000', '250.00']` | `[215.0, 250.0]` | ok |
 | defaults（非判定） | `['210.000']` | `[210.0]` | ok |
-| 负例 | 12 个全部 `ModelRegistryError` | 12/12 rejected | ok |
+| 负例 | 11 个全部 `ModelRegistryError` | 11/11 rejected | ok |
+| `required_message_ids` 闸门 | 每个必需用例存在且要求非空 | ['NEG-CARD', 'CONT-BREAK'] | ok |
 
 原始退出码 = **0**（0=pass / 2=no-verdict / 3=negative 未按期望拒绝 / 1=harness error）。
-stdout / stderr 原文：`evidence/M24/stdout.txt`（4469 字节）、`evidence/M24/stderr.txt`（0 字节）。
+stdout / stderr 原文：`evidence/M24/stdout.txt`（4492 字节）、`evidence/M24/stderr.txt`（0 字节）。
 
 ### 2. 卡片文字 vs 实现公式串（第 7 节的核对结论）
 
@@ -266,7 +267,6 @@ stdout / stderr 原文：`evidence/M24/stdout.txt`（4469 字节）、`evidence/
 | N05a | `ModelRegistryError` | `subscription_arr_bridge.years must contain fiscal years` |
 | N05b | `ModelRegistryError` | `subscription_arr_bridge.years must contain fiscal years` |
 | CONT-BREAK | `ModelRegistryError` | `opening_arr continuity failed: FY2028` |
-| CONT-BREAK-CROSSYEAR | `ModelRegistryError` | `opening_arr continuity failed: FY2028` |
 
 ### 4. 观察项实际值（非判定）
 
@@ -289,6 +289,8 @@ stdout / stderr 原文：`evidence/M24/stdout.txt`（4469 字节）、`evidence/
 | F_corrupted_expected_type | `cases.json` 某负例 `expected` 改成 `ValueError` | 3 | 3 | **复核 P2-1**：`expected` 字段被真正校验，不再只是抄写 |
 | G_corrupted_message_requirement | `cases.json` 的 `expect_message_contains` 改成不可能出现的子串 | 3 | 3 | **复核 P2-2/P2-3**：消息要求被真正校验 |
 | H_message_requirement_points_at_another_guard | 把 `expect_message_contains` 指向长度守卫的措辞 | 3 | 3 | 消息控制具有区分度：别的守卫的措辞不能冒充值域/连续守卫 |
+| R4_required_message_ids_gate_removed | **删除** `cases.json` 的冻结闸门字段 `required_message_ids` | 3 | 3 | **第 2 轮复核 item 3**：闸门不能被删除绕过；缺失即 rc=3 |
+| R5_required_message_requirement_emptied | 把某个必需用例的 `expect_message_contains` 置为空串 | 3 | 3 | 闸门的另一半：要求被清空同样 rc=3 |
 | D_restored_uncorrupted | 恢复 scratch 副本 | 0 | 0 | 修复后退出码回到 0 |
 
 冻结证据在探针前后 **hash 未变**：`True`。完整记录见 `recovery/selfcheck/selfcheck_result.json`。
@@ -300,3 +302,25 @@ stdout / stderr 原文：`evidence/M24/stdout.txt`（4469 字节）、`evidence/
 - 追加时是否归一化了末尾分隔块：`True`（归一化后 `frozen_body` 是真字节前缀）。
 - 追加后完整文件 sha256 见 `evidence/M24/source_manifest.json` 的 `oracle_document.sha256_full_file_now` 与 `after/rerun_sha256.json`。
 - `evidence/M24/oracle.json` 可逐字节重生成（本 attempt 已复跑验证），因此「oracle 先冻结、后被运行」这条链不依赖 oracle.md 的 mtime。
+
+### 7. 措辞澄清与「正文此后冻结」的登记（第 2 轮复核 P3-1 / P3-2 与第 4 节裁决）
+
+- **第 12 节由 revision r2 于运行后加入**；**0–11 节在该轮未改动**，逐行 diff 见 `after/oracle_md_body_delta_r2.diff`（变更行数与白名单外行数可由该文件独立复算）。
+- 为什么不把这句话写进第 12 节正文：第 2 轮复核第 4 节裁决「正文定点编辑仅此一次、自此冻结」，并明确 0–12 节本轮**逐字节不得改动**。复核在第 5 节第 6 项为此留了出口（「若判定任何正文写入都不可再发生，可改为只写进追加节」）——本实现者按后者执行：该澄清只存在于本追加节，正文一个字节都没动。因此第 5 节第 6 项的**前半句未做**、后半句以本追加节满足。
+- 第 12 节的调用点：`model_extensions.py:47-48` —— `_arr` 内的 `_bridge(...)` 调用，`_bridge` 定义在 `model_extensions.py:32-38`，其比较实现 `_equal` 在 `model_extensions.py:27-29`（P3-2 要求的精确调用点）
+- `scripts/splice_oracle_md_r2.py` 已标记为**一次性脚本**，本轮**未运行**，后续任何一轮都不得再运行；`oracle.md` 第 0–12 节自此冻结，所有补记只写追加节。
+- 第 5 节印的负例表与用例计数仍然是 revision r2 时的内容；M24 的 `CONT-BREAK` 的**消息要求**在第 2 轮被补上，且 `CONT-BREAK-CROSSYEAR` 被移除（见下条）——**以 `evidence/M24/cases.json` 与本追加节为准**。
+
+### 8. M24：对第 2 轮补测清单 item 1/2 的**实测偏离**（必须读）
+
+第 2 轮清单要求：`CONT-BREAK` 保持卡片原文 patch 并补 `expect_message_contains = "stock-flow balance failed: FY2027"`；`CONT-BREAK-CROSSYEAR.value` 改为 `{"opening_arr": [200, 250], "closing_arr": [250, 251]}` 并保持 `continuity failed: FY2028`。
+
+**实测结论：这两项按字面执行会自相矛盾**，原因在冻结基座本身（`evidence/M24/input.json` 的 `continuity_positive`：`opening_arr = [200, 250]`，`closing_arr = [250, 250]`）：
+
+1. 卡片原文 patch（`opening_arr=[200,251]`、`closing_arr=[250,251]`）在 FY2027 上桥是**自平**的（`200 − 200×0.1 + 30 + 40 = 250 = closing_arr[0]`），失败发生在 FY2028 的**跨年锚定**：实测 `opening_arr continuity failed: FY2028`。所以清单要求的 `stock-flow balance failed: FY2027` 在**该输入上不可达**。
+2. 清单给的 CROSSYEAR 新值 `opening_arr: [200, 250]` 与冻结基座**逐字节相同**（该 driver 上是空操作），而它同样只在 FY2028 触发跨年锚定 —— 于是它与 CONT-BREAK **输入完全相同**，正是第 2 轮要修掉的重复。
+3. FY2027 的**桥平衡**守卫在这个两年基座上**不可达**：桥期望值 `opening_arr − lost + expansion + new_arr` 在 FY2027 处代入 FY2028 的连续性关系 `opening[1] = closing[0]` 后恒等于 `closing_arr[0]`，即「连续性成立时桥平衡是恒等式，连续性不成立时先撞 FY2028 的跨年锚定」；FY2027 自身永远不进连续性分支（index 0 跳过）。
+
+**本实现者的处置**（不改任何冻结输入/期望）：保留卡片原文 patch 于 `CONT-BREAK`，把它的消息要求冻结为**实测可达**的 `continuity failed: FY2028`（这正是卡片 L116 散文「两个年度各自平衡」在用例集里成为可执行事实的那条），并**移除** `CONT-BREAK-CROSSYEAR`（它只能与 CONT-BREAK 重复）。`required_message_ids` 因此为 `["NEG-CARD", "CONT-BREAK"]`，即**闸门集合的意图达成、但成员是 CONT-BREAK 而不是清单写的 CROSSYEAR**。要让 FY2027 桥平衡守卫可达，必须改一个**冻结输入定义**（`continuity_positive`）或某个冻结负例的取值，两者都越界；请复核者裁定。
+
+（自检证据：`evidence/M24/stdout.txt` 的 `negative: CONT-BREAK PASS_rejected … opening_arr continuity failed: FY2028`、`required_message_ids: ['NEG-CARD', 'CONT-BREAK'] ok= True`；另见 `recovery/selfcheck/selfcheck_result.json` 的 R4/R5 探针。）

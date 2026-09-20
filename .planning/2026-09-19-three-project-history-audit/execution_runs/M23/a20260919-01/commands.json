@@ -23,7 +23,7 @@
    "pytest (no third-party package is required by this card)"
   ]
  },
- "oracle_md_sha256": "d88f645d587eb47cee2381016f071672167a1d37f7a99f32d97aaa3c2ff1463f",
+ "oracle_md_sha256": "79fbb0bcde05a38d7288178b8f9288b5d64021add122b690581a45c2f3b64b82",
  "oracle_md_note": "oracle.md is NOT embedded here; only its sha256 is recorded. The verifiable ordering chain is the mtime pair in evidence/M23/source_manifest.json (oracle.json mtime < stdout.txt mtime) plus the byte-identical regeneration of oracle.json.",
  "units": [
   {
@@ -171,7 +171,7 @@
    ],
    "binding_status": "bound",
    "note": "oracle.md mtime precedes evidence/M23/stdout.txt; the mtime pair is recorded in evidence/M23/source_manifest.json",
-   "oracle_md_sha256": "d88f645d587eb47cee2381016f071672167a1d37f7a99f32d97aaa3c2ff1463f"
+   "oracle_md_sha256": "79fbb0bcde05a38d7288178b8f9288b5d64021add122b690581a45c2f3b64b82"
   },
   {
    "unit_id": "A5-M23-oracle-regeneration-check",
@@ -264,7 +264,8 @@
     "message_requirements_checked": [
      "NEG-CARD"
     ],
-    "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message"
+    "required_message_ids_ok": true,
+    "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message. Additionally the whole run fails if the frozen `required_message_ids` gate does not hold."
    }
   },
   {
@@ -362,6 +363,8 @@
     "F_corrupted_expected_type": 3,
     "G_corrupted_message_requirement": 3,
     "H_message_requirement_points_at_another_guard": 3,
+    "R4_required_message_ids_gate_removed": 3,
+    "R5_required_message_requirement_emptied": 3,
     "D_restored_uncorrupted": 0
    },
    "expected_rc_by_tag": {
@@ -372,6 +375,8 @@
     "F_corrupted_expected_type": 3,
     "G_corrupted_message_requirement": 3,
     "H_message_requirement_points_at_another_guard": 3,
+    "R4_required_message_ids_gate_removed": 3,
+    "R5_required_message_requirement_emptied": 3,
     "D_restored_uncorrupted": 0
    }
   },

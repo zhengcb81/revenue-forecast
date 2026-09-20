@@ -199,6 +199,14 @@ def main() -> int:
     oq_list = "\n".join("%d. %s" % (index, question)
                         for index, question in enumerate(open_questions, start=1))
     oq_range = "OQ-01..OQ-%02d" % len(open_questions)
+    reviewer_opinions = facts.get("reviewer_opinions", [])
+    reviewer_opinions_block = (
+        "## 独立复核者对上述开放项的意见（**不是本实现者的决定**）\n\n"
+        "以下为 2026-09-20 独立复核转达的**复核者立场**，原样承接，**未由实现者采纳为决定**；\n"
+        "owner 需要据此自行裁定（复核者对 OQ-02 / OQ-03 明确表示"同意登记、反对在本批修"）：\n\n"
+        + "\n".join("- %s" % item for item in reviewer_opinions) + "\n"
+        if reviewer_opinions else
+        "## 独立复核者对上述开放项的意见\n\n复核意见未转达到本 attempt。\n")
     evidence = os.path.join(attempt, "evidence", card)
 
     run = load_json(os.path.join(evidence, "run_result.json"))
@@ -457,14 +465,17 @@ payability 归属、不可识别模型参数、样本与统计阈值、部署迁
 
 %s
 
+%s
+
 ## 与 handoff 的对应关系
 
 `handoff.json` 的 `next_step_number = 4`、`next_action` 指向"独立 reviewer 复验本卡 A–C 证据 + r3 点验"，
 `open_questions` 列出的 OQ-01…OQ-%02d（共 %d 条）即本节升级给 owner 的事项；`blocked_by` 为空（本卡无被
 阻断项），`stop_conditions_hit` 记录 `STOP_DISCLOSURE_ADAPTATION` 与 `STOP_ACCURACY`（均按卡片要求停在
 该资格，不改成整体 PASS）。
-""" % (card, card, card, model_id, card, facts["card_line_refs"]["hand_calc"],
-       facts["decision_judgements"], card, oq_list, len(oq), len(oq))
+""" % (card, card, card, model_id, card, card, facts["card_line_refs"]["hand_calc"],
+       facts["decision_judgements"], card, oq_list, reviewer_opinions_block,
+       len(open_questions), len(open_questions))
     dump_text(os.path.join(attempt, "decision.md"), decision)
 
     # ------------------------------------------------------------------ recovery/README.md
@@ -688,7 +699,7 @@ layers only - **no frozen expectation, tolerance, case or refusal condition was 
 | F-02 | ratio predicate corrected to `spec.dimensions[driver] == "ratio"`; registry totals 40/3 -> **41/4** (`direct_growth.growth_rate (-1, inf)` recovered); `oq_enumeration.json` / `oq_rulings.json` regenerated. |
 | F-03 | `oq_rulings.json` OQ list now mirrors `handoff.json:open_questions` one-to-one ({oq_range}); `decision.md` / `review.md` numbering aligned; document pointers audited by `scripts/audit_doc_pointers.py` -> `evidence/{card}/doc_pointer_audit.json` (including an explicit search for the residue tokens the reviewer listed). |
 | F-04 | `scripts/finalize_hashes.py` writes its own by-products before the inventory, excludes the manifest itself from `files`, and adds `self_reference_note`, `combined_digest_scope` and `concurrently_mutable` marks, so the inventory is now reproducible. |
-| F-05 | `recovery/README.md` states explicitly that the first failed invocation's raw bytes are not retained; from r3 on, first failed invocations are saved under `recovery/first_invocation_*.{stdout,stderr}.txt`. |
+| F-05 | `recovery/README.md` states explicitly that the first failed invocation's raw bytes are not retained; from r3 on, first failed invocations are saved verbatim as `recovery/first_invocation_*.stdout.txt` and `recovery/first_invocation_*.stderr.txt`. |
 | note (c) | not applicable to this card: every observation here is constructible as frozen (`evidence/{card}/cases_annotation_repack.json` proves `cases.json` is byte-identical to the frozen revision). |
 | note (units) | `oq_rulings.json` carries `enumerated_counts_with_units` (slots vs models). |
 
@@ -845,6 +856,10 @@ The exit-code matrix observed by the mutation self-check is in
                           "matches_expected": o.get("matches_expected")}
                          for o in run["observations"]],
         "open_questions": open_questions,
+        "reviewer_opinions_on_open_questions": reviewer_opinions,
+        "reviewer_opinions_note": "recorded from the relayed independent review of 2026-09-20; "
+                                  "these are the REVIEWER's positions and were NOT adopted as "
+                                  "decisions by the implementer",
         "review_history": {
             "r1_review_2026_09_20": "accepted_scoped (formula qualification only); findings "
                                     "F-01..F-05 plus the observation-(c) and unit-labelling notes",

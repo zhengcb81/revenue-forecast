@@ -520,7 +520,7 @@ def main() -> int:
         "byte_identical": {name: frozen[name] == regenerated[name] for name in frozen},
         "proves": ("the frozen expected values are reproducible from the generator alone; the "
                    "frozen evidence directory was not written to by the scratch regeneration"),
-        "command_unit": "G5-%s-selfcheck-case-E-regenerate-frozen-oracle" % card,
+        "command_unit": "G8-%s-selfcheck-case-G-regenerate-frozen-oracle" % card,
     }
     selfcheck_doc["frozen_evidence_untouched_after_selfcheck"] = frozen
     dump(os.path.join(ev, "oracle_selfcheck.json"), selfcheck_doc)
@@ -935,7 +935,7 @@ def main() -> int:
     print("packed evidence for", card)
     print("  positive expected:", oracle_doc["positive"]["expected_float"],
           "negatives:", run_result["negative_summary"])
-    print("  ratio drivers total:", enum["ratio_drivers_total"],
+    print("  ratio drivers total:", enum["ratio_drivers_of_drivers_total"],
           "outside [0,1]:", len(enum["ratio_drivers_not_in_0_1"]))
     print("  models with an optional driver lacking a declared default:",
           [row["model_id"] for row in silent_zero_fill])

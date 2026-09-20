@@ -5,7 +5,7 @@ configfile: pytest.ini
 collected 31 items
 
 ..\..\..\..\..\..\..\..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py . [  3%]
-.......F.....F.....F..F                                                  [ 77%]
+.......F.....F....FF..F                                                  [ 77%]
 ..\..\..\..\..\..\..\..\company-wiki\tests\contract\test_observability.py . [ 80%]
 ......                                                                   [100%]
 
@@ -26,7 +26,7 @@ C:\Miniconda\Lib\pathlib\_abc.py:651: in write_text
 C:\Miniconda\Lib\pathlib\_local.py:537: in open
     return io.open(self, mode, buffering, encoding, errors, newline)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\r5\\compat-control-product_fixed-2\\pytest\\test_read_desired_state_reads_0\\project\\.source_catalog\\worker_control.json.34668.6c2b36b4e16549929267df9ca70dcd6f.tmp'
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\r5\\compat-control-product_fixed-2\\pytest\\test_read_desired_state_reads_0\\project\\.source_catalog\\worker_control.json.27532.d3691b76ce9e461f97fd4de0325c270a.tmp'
 _______ test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8 ________
 C:\Users\郑曾波\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:787: in test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8
     raw_stderr = stderr_log.read_bytes()
@@ -37,7 +37,12 @@ C:\Miniconda\Lib\pathlib\_abc.py:625: in read_bytes
 C:\Miniconda\Lib\pathlib\_local.py:537: in open
     return io.open(self, mode, buffering, encoding, errors, newline)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\r5\\compat-control-product_fixed-2\\pytest\\test_stderr_exit_zero_does_not0\\fake-project\\.source_catalog\\worker_stderr-9d78542e18ad46a6b1ffea4711c30c82-attempt-0001.log'
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\r5\\compat-control-product_fixed-2\\pytest\\test_stderr_exit_zero_does_not0\\fake-project\\.source_catalog\\worker_stderr-ea2ba9e8813b4a7e8812f6d50e0df445-attempt-0001.log'
+_______ test_child_without_runtime_session_is_terminated_and_restarted ________
+C:\Users\郑曾波\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:917: in test_child_without_runtime_session_is_terminated_and_restarted
+    assert len([event for event in events if event["status"] == "child_started"]) == 2
+E   AssertionError: assert 3 == 2
+E    +  where 3 = len([{'schema_version': '1.1', 'recorded_at': '2026-09-20T03:25:09.8677442Z', 'status': 'child_started', 'message': '', .....'schema_version': '1.1', 'recorded_at': '2026-09-20T03:25:11.0623040Z', 'status': 'child_started', 'message': '', ...}])
 ___________ test_stale_child_heartbeat_is_terminated_and_restarted ____________
 C:\Users\郑曾波\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:952: in test_stale_child_heartbeat_is_terminated_and_restarted
     assert unresponsive["reason"] == "heartbeat_timeout"
@@ -70,6 +75,7 @@ E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'C:\\User
 =========================== short test summary info ===========================
 FAILED ..\..\..\..\..\..\..\..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory
 FAILED ..\..\..\..\..\..\..\..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8
+FAILED ..\..\..\..\..\..\..\..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_child_without_runtime_session_is_terminated_and_restarted
 FAILED ..\..\..\..\..\..\..\..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_stale_child_heartbeat_is_terminated_and_restarted
 FAILED ..\..\..\..\..\..\..\..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths
-================== 4 failed, 27 passed, 1 warning in 17.46s ===================
+================== 5 failed, 26 passed, 1 warning in 18.62s ===================

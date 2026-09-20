@@ -1,0 +1,48 @@
+card_id: M14
+model_id: retail_franchise
+code_root: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M14\a20260919-01\iso\checkout_scripts
+model_registry_file: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M14\a20260919-01\iso\checkout_scripts\model_registry.py
+imported_module_sha256: {'model_registry.py': '9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f', 'model_extensions.py': '9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911'}
+frozen_input_sha256: {'input.json': '8cba525c5fabff447ce7f0d81027028281c60c2abea9464d653e6f8f54f3c551', 'oracle.json': 'bb3807c461b1d21857885b92b075554080f2903ee896e9541e8899aa80d1dac5', 'cases.json': 'd8f3b1e6bcff9cbc6e63bc6468d828e0c79e75801e796938ee8c8c613fb8b353'}
+registry formula: revenue = average_owned_stores * revenue_per_owned_store + franchise_system_sales * recognized_fee_rate + supply_revenue
+registry required: ['average_owned_stores', 'revenue_per_owned_store']
+registry optional: ['franchise_system_sales', 'recognized_fee_rate', 'supply_revenue']
+registry defaults: {}
+registry ratio_drivers: ['recognized_fee_rate']
+registry driver_bounds: {}
+positive raised: None
+positive actual: [65.0]
+positive expected: [65.0]
+positive tolerances: [6.5e-08]
+positive value_ok: True
+positive fidelity_ok: True
+positive fidelity_problems: []
+positive years_match_frozen: True
+continuity_positive raised: None
+continuity_positive actual: [65.0, 84.8]
+continuity_positive expected: [65.0, 84.8]
+continuity_positive tolerances: [6.5e-08, 8.48e-08]
+continuity_positive value_ok: True
+continuity_positive fidelity_ok: True
+continuity_positive fidelity_problems: []
+continuity_positive years_match_frozen: True
+defaults actual: [50.0]
+defaults expected: [50.0]
+defaults ok (not gating): True
+observation: OBS-BASE-IGNORED raised=None actual=[65.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None 
+observation: OBS-BOUND-INCLUSIVE raised=None actual=[257.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
+observation: OBS-SUPPLY-BOUND raised=ModelRegistryError actual=None matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=None driver retail_franchise.supply_revenue must be between 0.0 and inf: FY2027
+negative: NEG-CARD PASS_rejected ModelRegistryError - driver retail_franchise.recognized_fee_rate must be between 0.0 and 1.0: FY2027
+negative: N01a PASS_rejected ModelRegistryError - retail_franchise.average_owned_stores.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - retail_franchise.average_owned_stores.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - retail_franchise.average_owned_stores.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - retail_franchise.average_owned_stores.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver retail_franchise.average_owned_stores must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for retail_franchise: average_owned_stores
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for retail_franchise: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - retail_franchise.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - retail_franchise.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - retail_franchise.years must be consecutive and increasing
+negative summary: total=11 passed=11 failed=[]
+exit_code triggered: []
+verdict: pass exit_code: 0

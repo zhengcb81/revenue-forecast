@@ -8,12 +8,17 @@ method: the fenced ```markdown block following that heading was extracted from t
 line_ending_normalisation: CRLF -> LF (transport only; no character of the text changed)
 extracted_block_sha256_crlf_normalised: 1dd724ba247ecef65818651aa3763ebdc0268dd32e0effd1e52687d930d157da
 extracted_block_bytes: 4049
-appended_span_sha256: f94a49616fe77c90dc52a170c6c54314a5ed996293c373c0e6b97cde750b44de
-appended_span_bytes: 4050
-byte_identical: false
+appended_block_sha256: 1dd724ba247ecef65818651aa3763ebdc0268dd32e0effd1e52687d930d157da
+appended_block_bytes: 4049
+appended_span_including_the_separator_sha256: f94a49616fe77c90dc52a170c6c54314a5ed996293c373c0e6b97cde750b44de
+appended_span_including_the_separator_bytes: 4050
+separator_blank_line_sha256: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+span_equals_separator_plus_block: true
+byte_identical: true
 review_md_sha256_before_append: 6f076185a809cfc4ca0710097ff3dae2dfb9093b235295e2fd231219a4379e03
 review_md_sha256_after_append: 5e2b46c0b4b2f3024b747b195588561c86302f49fcac087d7af92c88cfcf7e14
 appended_block_first_line_1based: 42
 appended_block_last_line_1based: 90
-assertion: appended_span_sha256 == extracted_block_sha256_crlf_normalised -> FAIL
-note: the pre-existing review.md body above the appended block was not modified; only a blank separator line and the verbatim block were appended.
+assertion: appended_block_sha256 == extracted_block_sha256_crlf_normalised -> PASS
+independent_recheck_hint: verify by extracting the same fenced block from the report and comparing it with review.md lines 42-90
+note: the pre-existing review.md body above the appended block was not modified; only one blank separator line and the verbatim block were appended.

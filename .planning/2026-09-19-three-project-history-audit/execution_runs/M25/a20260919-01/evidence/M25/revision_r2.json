@@ -23,7 +23,7 @@
  "product_files_changed": [],
  "correction": "THE ONLY CARD WITH A REAL PRE-CORRECTION DIFFERENCE. The v1 generation set the defaults expectation to the positive value 300 while the frozen defaults INPUT was the all-zero identity case whose hand value is 0. The first product run then reported `defaults ok: False actual: [0.0] expected: [300.0]` - the mismatch was caught by the run itself, NOT by a frozen gate - and the generator was re-run so the defaults expectation became 0.",
  "timeline_as_observed": {
-  "v1_generation_input_cases_oracle_mtime": null,
+  "v1_generation_input_cases_oracle_mtime": 1789872115.720444,
   "oracle_md_mtime": 1789874273.341153,
   "first_ever_product_run_stdout_mtime": 1789872191.932641,
   "v2_frozen_evidence_mtime": 1789874272.327332,
@@ -74,7 +74,7 @@
   "this_card": "REAL pre-correction content",
   "v1_vs_frozen": {
    "evidence/M25/oracle.json": {
-    "v1_sha256": null,
+    "v1_sha256": "bbe21218bd97f8891d60c35cc1eca024b4c2b8f0c07c25ae0bafdb3b5ae69986",
     "frozen_sha256": "35f1dba3ccb0a067dd16476c2a855eb6f945bf231a7111d2bbaf28d6fd9b5311",
     "identical": false
    },
@@ -109,3 +109,12 @@
  },
  "precorrection_preserved_at": "recovery/precorrection/",
  "first_product_run_preserved_at": "recovery/precorrection/stdout.txt",
+ "stdout_reencoding": {
+  "what_happened": "the very first capture of evidence/<card>/stdout.txt used PowerShell redirection, which wrote UTF-16LE on Windows PowerShell 5.1. It was re-captured as UTF-8 (BOM) by re-running the SAME bound argv, so the stdout.txt in evidence/ is the definitive run's output in the same encoding as the rest of the evidence set.",
+  "frozen_numbers_unchanged": true,
+  "proof": "the re-run produced a byte-identical run_result.json (recovery/rerun_check/rerun_check.json: byte_identical = true) and the printed values in stdout.txt match the evidence files (printed_value_checks all true)",
+  "raw_rc_of_the_reencoding_run": 0,
+  "rerun_check": "recovery/rerun_check/rerun_check.json",
+  "rerun_check_unit": "R-M25-independent-rerun-check"
+ }
+}

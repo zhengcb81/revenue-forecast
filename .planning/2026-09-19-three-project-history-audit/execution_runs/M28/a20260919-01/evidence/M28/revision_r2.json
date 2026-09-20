@@ -23,7 +23,7 @@
  "product_files_changed": [],
  "correction": "NO CHANGE AT ALL. The v1 oracle.json is byte-identical to the frozen file.",
  "timeline_as_observed": {
-  "v1_generation_input_cases_oracle_mtime": null,
+  "v1_generation_input_cases_oracle_mtime": 1789872116.4103,
   "oracle_md_mtime": 1789874273.422959,
   "first_ever_product_run_stdout_mtime": 1789872192.804392,
   "v2_frozen_evidence_mtime": 1789874272.417324,
@@ -74,7 +74,7 @@
   "this_card": "NOT a pre-correction difference: the v1 files are byte-identical to the frozen ones; they are the first-generation snapshot only",
   "v1_vs_frozen": {
    "evidence/M28/oracle.json": {
-    "v1_sha256": null,
+    "v1_sha256": "141136a07e2c95e9f8e474df2756a679cfbb14a68a8236db18fe0cf9897332f0",
     "frozen_sha256": "bd4d6875c2d2a72c475fcd534d50fde61124d1968068568dfff207e550565ccf",
     "identical": false
    },
@@ -108,5 +108,13 @@
   "stronger_mtime_rule": "reviewer explicitly does NOT adopt the stronger rule 'oracle.json must predate ANY product run'; if the owner insists on it, the owner rules on it - the reviewer does not treat it as a technical blocker"
  },
  "precorrection_preserved_at": "recovery/precorrection/",
- "first_product_run_preserved_at": "recovery/precorrection/stdout.txt"
+ "first_product_run_preserved_at": "recovery/precorrection/stdout.txt",
+ "stdout_reencoding": {
+  "what_happened": "the very first capture of evidence/<card>/stdout.txt used PowerShell redirection, which wrote UTF-16LE on Windows PowerShell 5.1. It was re-captured as UTF-8 (BOM) by re-running the SAME bound argv, so the stdout.txt in evidence/ is the definitive run's output in the same encoding as the rest of the evidence set.",
+  "frozen_numbers_unchanged": true,
+  "proof": "the re-run produced a byte-identical run_result.json (recovery/rerun_check/rerun_check.json: byte_identical = true) and the printed values in stdout.txt match the evidence files (printed_value_checks all true)",
+  "raw_rc_of_the_reencoding_run": 0,
+  "rerun_check": "recovery/rerun_check/rerun_check.json",
+  "rerun_check_unit": "R-M28-independent-rerun-check"
+ }
 }

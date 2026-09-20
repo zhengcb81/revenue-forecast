@@ -2,10 +2,10 @@
  "purpose": "prove that the runner's exit code carries the verdict (a bookkeeping-only rc=0 is impossible) and that the frozen oracle is reproducible",
  "scratch_tree": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M28\\a20260919-01\\recovery\\selfcheck",
  "frozen_evidence_untouched": {
-  "evidence/M28/input.json": "3c89b4b5d5f19ab6f20f973e2edee6a7e442b418101e12aa5b8a8cb2a917566f",
-  "evidence/M28/oracle.json": "141136a07e2c95e9f8e474df2756a679cfbb14a68a8236db18fe0cf9897332f0",
-  "evidence/M28/cases.json": "e76e2df6b021e62a2e8ccbc5dace308d5bd71f4144e6fd0ae77328f2e8f4cee7",
-  "evidence/M28/run_result.json": "9f8675db98cbd918d0049c6f0f364b1c5c787a655b540b2d8c20326b151f5f17"
+  "evidence/M28/input.json": "12d17d7090cd35e0787f8edb2f1c3e7ffc31c920f92688aef015eb257a52c810",
+  "evidence/M28/oracle.json": "bd4d6875c2d2a72c475fcd534d50fde61124d1968068568dfff207e550565ccf",
+  "evidence/M28/cases.json": "64a8a3374b7e6c72dc92f5d65c5245e01b5355de5681856ac3182d0e48ccc82f",
+  "evidence/M28/run_result.json": "33d1b9797bee0f2895c6df25cf0716a8c59b18bcb0a9a58df613fd7f14c1fd96"
  },
  "cases": [
   {
@@ -13,11 +13,13 @@
    "mutation": "oracle.json positive.expected_float -> [999.0] (scratch copy only)",
    "raw_rc": 3,
    "expected_rc": 3,
+   "proves": "a corrupted expectation is no longer hidden behind a bookkeeping-only rc=0; the product itself still returned the correct value",
    "verdict": {
     "harness_incomplete": false,
     "positive_ok": false,
     "continuity_ok": true,
     "negatives_ok": true,
+    "neg_card_mechanism_ok": true,
     "defaults_ok_not_gating": true,
     "defaults_declared_check_not_gating": true,
     "verdict": "fail",
@@ -27,19 +29,20 @@
     "total": 11,
     "passed": 11,
     "failed": []
-   },
-   "proves": "a corrupted expectation is no longer hidden behind a bookkeeping-only rc=0; the product itself still returned the correct value"
+   }
   },
   {
    "case": "B",
    "mutation": "oracle.json positive.expected_float -> my own deliberately wrong hand value (scratch copy only)",
    "raw_rc": 3,
    "expected_rc": 3,
+   "proves": "a wrong hand computation is also caught; the frozen value is load-bearing",
    "verdict": {
     "harness_incomplete": false,
     "positive_ok": false,
     "continuity_ok": true,
     "negatives_ok": true,
+    "neg_card_mechanism_ok": true,
     "defaults_ok_not_gating": true,
     "defaults_declared_check_not_gating": true,
     "verdict": "fail",
@@ -49,19 +52,20 @@
     "total": 11,
     "passed": 11,
     "failed": []
-   },
-   "proves": "a wrong hand computation is also caught; the frozen value is load-bearing"
+   }
   },
   {
    "case": "C",
    "mutation": "none: the frozen values are used again in the same scratch tree",
    "raw_rc": 0,
    "expected_rc": 0,
+   "proves": "the repaired exit code still returns 0 for a genuinely passing card",
    "verdict": {
     "harness_incomplete": false,
     "positive_ok": true,
     "continuity_ok": true,
     "negatives_ok": true,
+    "neg_card_mechanism_ok": true,
     "defaults_ok_not_gating": true,
     "defaults_declared_check_not_gating": true,
     "verdict": "pass",
@@ -71,19 +75,20 @@
     "total": 11,
     "passed": 11,
     "failed": []
-   },
-   "proves": "the repaired exit code still returns 0 for a genuinely passing card"
+   }
   },
   {
    "case": "D",
    "mutation": "NEG-CARD's mutation replaced in memory by the identity value via --case-override",
    "raw_rc": 3,
    "expected_rc": 3,
+   "proves": "an unrejected negative really turns the verdict red (FAIL_not_rejected)",
    "verdict": {
     "harness_incomplete": false,
     "positive_ok": true,
     "continuity_ok": true,
     "negatives_ok": false,
+    "neg_card_mechanism_ok": false,
     "defaults_ok_not_gating": true,
     "defaults_declared_check_not_gating": true,
     "verdict": "fail",
@@ -95,11 +100,59 @@
     "failed": [
      "NEG-CARD"
     ]
-   },
-   "proves": "an unrejected negative really turns the verdict red (FAIL_not_rejected)"
+   }
   },
   {
    "case": "E",
+   "mutation": "oracle.json positive.expected_float -> my own MIS-SIGNED / double-counted variant (scratch copy only)",
+   "raw_rc": 3,
+   "expected_rc": 3,
+   "proves": "the frozen ORACLE VALUE itself is load-bearing: a plausible-but-wrong arithmetic variant also goes red",
+   "verdict": {
+    "harness_incomplete": false,
+    "positive_ok": false,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "neg_card_mechanism_ok": true,
+    "defaults_ok_not_gating": true,
+    "defaults_declared_check_not_gating": true,
+    "verdict": "fail",
+    "exit_code": 3
+   },
+   "negative_summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": []
+   }
+  },
+  {
+   "case": "F1",
+   "mutation": "cases.json NEG-CARD `expected` declaration rewritten to 'ValueError' (scratch copy only)",
+   "raw_rc": 1,
+   "expected_rc": 1,
+   "proves": "review finding P3-2: the runner now VERIFIES cases.json[].expected against the frozen case_contract, so a rewritten declaration is a harness defect (rc=1) instead of a silent pass",
+   "verdict": {
+    "harness_error": true,
+    "exit_code": 1,
+    "reason": "frozen case contract violated"
+   },
+   "stderr_head": "��p\u0000y\u0000t\u0000h\u0000o\u0000n\u0000.\u0000e\u0000x\u0000e\u0000 \u0000:\u0000 \u0000H\u0000A\u0000R\u0000N\u0000E\u0000S\u0000S\u0000 \u0000E\u0000R\u0000R\u0000O\u0000R\u0000 \u0000(\u0000r\u0000c\u0000=\u00001\u0000)\u0000:\u0000 \u0000f\u0000r\u0000o\u0000z\u0000e\u0000n\u0000 \u0000c\u0000a\u0000s\u0000e\u0000 \u0000c\u0000o\u0000n\u0000t\u0000r\u0000a\u0000c\u0000t\u0000 \u0000v\u0000i\u0000o\u0000l\u0000a\u0000t\u0000e\u0000d\u0000:\u0000\n\u0000\n\u0000A\u0000t\u0000 \u0000l\u0000i\u0000n\u0000e\u0000:\u00001\u0000 \u0000c\u0000h\u0000a\u0000r\u0000:\u00001\u00000\u00008\u00006\u0000\n\u0000\n\u0000+\u0000 \u0000.\u0000.\u0000.\u0000 \u0000x\u0000t\u0000r\u0000a\u0000=\u0000@\u0000(\u0000)\u0000 \u0000}\u0000;\u0000 \u0000&\u0000 \u0000$\u0000p\u0000y\u0000 \u0000-\u0000X\u0000 \u0000u\u0000t\u0000f\u00008\u0000 \u0000-\u0000B\u0000 \u0000$\u0000r\u0000c\u0000 \u0000-\u0000-\u0000c\u0000a\u0000r\u0000d\u0000 \u0000$\u0000c\u0000 \u0000-\u0000-\u0000a\u0000t\u0000t\u0000e\u0000m\u0000p\u0000t\u0000 \u0000$\u0000a\u0000"
+  },
+  {
+   "case": "F2",
+   "mutation": "the N04 negative case DELETED from cases.json (10 cases left, scratch copy only)",
+   "raw_rc": 1,
+   "expected_rc": 1,
+   "proves": "review finding P3-2: the runner now VERIFIES the case count and id list against the frozen case_contract, so a missing negative cannot pass unnoticed",
+   "verdict": {
+    "harness_error": true,
+    "exit_code": 1,
+    "reason": "frozen case contract violated"
+   },
+   "stderr_head": "��p\u0000y\u0000t\u0000h\u0000o\u0000n\u0000.\u0000e\u0000x\u0000e\u0000 \u0000:\u0000 \u0000H\u0000A\u0000R\u0000N\u0000E\u0000S\u0000S\u0000 \u0000E\u0000R\u0000R\u0000O\u0000R\u0000 \u0000(\u0000r\u0000c\u0000=\u00001\u0000)\u0000:\u0000 \u0000f\u0000r\u0000o\u0000z\u0000e\u0000n\u0000 \u0000c\u0000a\u0000s\u0000e\u0000 \u0000c\u0000o\u0000n\u0000t\u0000r\u0000a\u0000c\u0000t\u0000 \u0000v\u0000i\u0000o\u0000l\u0000a\u0000t\u0000e\u0000d\u0000:\u0000\n\u0000\n\u0000A\u0000t\u0000 \u0000l\u0000i\u0000n\u0000e\u0000:\u00001\u0000 \u0000c\u0000h\u0000a\u0000r\u0000:\u00001\u00000\u00008\u00006\u0000\n\u0000\n\u0000+\u0000 \u0000.\u0000.\u0000.\u0000 \u0000x\u0000t\u0000r\u0000a\u0000=\u0000@\u0000(\u0000)\u0000 \u0000}\u0000;\u0000 \u0000&\u0000 \u0000$\u0000p\u0000y\u0000 \u0000-\u0000X\u0000 \u0000u\u0000t\u0000f\u00008\u0000 \u0000-\u0000B\u0000 \u0000$\u0000r\u0000c\u0000 \u0000-\u0000-\u0000c\u0000a\u0000r\u0000d\u0000 \u0000$\u0000c\u0000 \u0000-\u0000-\u0000a\u0000t\u0000t\u0000e\u0000m\u0000p\u0000t\u0000 \u0000$\u0000a\u0000"
+  },
+  {
+   "case": "G",
    "mutation": "none: re-run the SAME oracle generator with --out-root pointed at a scratch tree",
    "raw_rc": 0,
    "expected_rc": 0,

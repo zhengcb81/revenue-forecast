@@ -1,0 +1,178 @@
+# I-14-B changes.r2.diff -- the fix for the independent review's blocking findings
+# r1 (reviewed, preserved at harness/archive/natural_window.after-r1.py) sha256=495a44111a854bd5b76d39aeae91d11ab789fe48bb8bcbc9ae3af4b87d8c5b95
+# r2 (fixed) iso/natural_window.py sha256=7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796
+# findings fixed: P1 claim.basis closed enumeration (J16); P2 quick_check excluded from the
+# natural observation intervals + J15 for a declared window that covers quick_check;
+# sibling J4b (absent interval is unmeasured); P3-a J10c (same-UTC-day run ignored and reported)
+# regenerate: <iso-python> -X utf8 -B harness/make_diff_r2.py
+# changes.diff remains the r1 diff (BEFORE -> AFTER-r1) and is NOT overwritten.
+--- a/iso/natural_window.py (AFTER-r1, reviewed)
++++ b/iso/natural_window.py (AFTER-r2, P1/P2 fixed)
+@@ -1,30 +1,42 @@
+-"""I-14-B natural-time / observation-evidence classifier -- AFTER (fixed) revision.
++"""I-14-B natural-time / observation-evidence classifier -- AFTER revision r2.
+ 
+ Attempt-local subject under test; production trees are NOT touched.
+ 
+-Frozen judgements implemented here (oracle.md section 2); each is a single-line
+-`if` tagged with its judgement id so that a mutation harness can revert exactly
+-one judgement at a time in a scratch copy:
++r2 fixes the two blocking findings of the independent review (changes_required):
++  P1 -> J16 below;  P2 -> the natural observation intervals plus J15 below.
++r1 is preserved byte-identically at harness/archive/natural_window.after-r1.py
++(sha256 495a44111a854bd5b76d39aeae91d11ab789fe48bb8bcbc9ae3af4b87d8c5b95).
++
++Frozen judgements implemented here (oracle.md section 2 plus the r2 addition in
++oracle.md section 11); each is a single-line `if` tagged with its judgement id so
++that a mutation harness can revert exactly one judgement in a scratch copy:
+ 
+   J1  overlapping windows -> union, never the sum              (# J1)
+   J2  the command total is not the observation duration        (# J2)
+   J3  quick_check is outside the observation window            (# J3)
+   J4  fewer than two samples -> unmeasured (null), not zero    (# J4)
++  J4b no declared observation interval -> unmeasured            (# J4b)
+   J5  every sample must lie inside the window                  (# J5)
+   J6  no timestamp may be after the frozen evaluation instant  (# J6)
+   J7  only a trusted clock source may complete a window        (# J7)
+   J8  empty evidence hash does not count                       (# J8)
+   J9  a duplicated run id does not count twice                 (# J9)
+   J10 one instant is not a chain (calendar # J10a, login # J10b)
++  J10c a second run on the same UTC day is ignored, not chained (# J10c)
+   J11 a "complete" claim may not exceed the computed facts      (# J11)
+   J12 a login label must sit at its own offset from the anchor (# J12)
+   J13 all three labels must share one anchor event             (# J13)
+   J14 a post-hoc log is not an immediate capture               (# J14)
++  J15 a declared window may not cover the quick_check interval  (# J15)
++  J16 the claim's basis must belong to a closed enumeration     (# J16)
+ 
+ Deliberately separated outputs: scheduled_at / started_at / first-last sampled_at
+ / observation_finished_at / quick_check_seconds / command_total_seconds.  The
+-forbidden sum is reported only as `sum_seconds` + `sum_used_for_natural_duration`
+-= false, so no reader can mistake it for the natural duration.
++natural duration is taken over OBSERVATION intervals only; quick_check is never
++one of them and is reported separately (`quick_check_in_observation_intervals`
++=false).  The forbidden sum is reported only as `sum_seconds` +
++`sum_used_for_natural_duration` = false, so no reader can mistake it for the
++natural duration.
+ 
+ CLI:  natural_window.py --cases <in.json> --report <out.json>
+       [--tolerance-seconds N] [--capture-tolerance-seconds N] [--frozen-now ISO]
+@@ -40,8 +52,18 @@
+ from datetime import datetime, timezone
+ from pathlib import Path
+ 
+-SUT_VERSION = "i14b-after-1"
++SUT_VERSION = "i14b-after-2"
+ TRUSTED_CLOCKS = {"system_utc", "scheduler_trusted"}
++# J16 / P1: the claim's basis is a CLOSED enumeration.  A basis outside this set
++# (unknown name, empty string, null or a missing key) refuses the claim instead of
++# silently falling through and leaving every timing judgement unchecked.
++BASIS_REGISTRY = {
++    "sample_span",
++    "command_total",
++    "observation_plus_quick_check",
++    "sum_of_windows",
++    "union_of_windows",
++}
+ LIVE_KIND = "live_ui_capture"
+ DAILY_GAP_SECONDS = 25 * 3600
+ WEEKLY_GAP_SECONDS = 7 * 86400
+@@ -134,14 +156,30 @@
+         (_parse(w["started_at"]), _parse(w["finished_at"]))
+         for w in (fields.get("windows") or [])
+     ]
++    quick_check_interval = None
++    if qc_started is not None and qc_finished is not None:
++        quick_check_interval = (qc_started, qc_finished)
++
++    # J15: no declared observation window may cover any part of the quick_check
++    # interval.  A window that copies/splits the quick_check span is the same
++    # defect as adding quick_check, only renamed.
++    qc_overlap_seconds = 0.0
++    if quick_check_interval is not None:
++        for start, end in explicit or ([(started, obs_finished)] if obs_finished else []):
++            low = max(start, quick_check_interval[0])
++            high = min(end, quick_check_interval[1])
++            if high > low:
++                qc_overlap_seconds += _secs(low, high)
++
++    # J1/J3/P2: the natural observation intervals contain the OBSERVATION phase
++    # only.  quick_check is never an observation interval, whatever the claim's
++    # basis is called.
+     if explicit:
+         intervals = explicit
++    elif obs_finished is not None:
++        intervals = [(started, obs_finished)]
+     else:
+         intervals = []
+-        if obs_finished is not None:
+-            intervals.append((started, obs_finished))
+-        if qc_started is not None and qc_finished is not None:
+-            intervals.append((qc_started, qc_finished))
+ 
+     sum_seconds = sum(_secs(a, b) for a, b in intervals)
+     union = _measure_union(intervals)  # J1
+@@ -151,13 +189,19 @@
+         refusals.append("R-SAMPLE-OUTSIDE")
+     if "sampled_at" in fields and len(in_window) < 2:  # J4
+         refusals.append("R-NO-SAMPLES")
++    if not intervals and span is None:  # J4b
++        refusals.append("R-NO-INTERVAL")
++    if qc_overlap_seconds > 0:  # J15
++        refusals.append("R-QC-IN-OBS")
+     if any(stamp > frozen_now for stamp in _all_timestamps(fields)):  # J6
+         refusals.append("R-FUTURE-CLOCK")
+ 
+     basis = (fields.get("_claim") or {}).get("basis")
+     wanted = (fields.get("_claim") or {}).get("natural_observation_seconds")
+     allowed = None
+-    if basis == "sample_span":
++    if basis not in BASIS_REGISTRY:  # J16 / P1
++        refusals.append("R-BASIS-UNKNOWN")
++    elif basis == "sample_span":
+         allowed = span
+     elif basis == "union_of_windows":
+         allowed = union
+@@ -189,9 +233,18 @@
+         "quick_check_seconds": quick_check,
+         "command_total_seconds": command_total,
+         "schedule_lag_seconds": _secs(scheduled, started) if scheduled else None,
++        "observation_interval_count": len(intervals),
++        "observation_intervals": [
++            [a.isoformat().replace("+00:00", "Z"), b.isoformat().replace("+00:00", "Z")]
++            for a, b in intervals
++        ],
++        "quick_check_in_observation_intervals": False,
++        "quick_check_overlap_seconds": qc_overlap_seconds,
+         "union_seconds": union,
+         "sum_seconds": sum_seconds,
+         "overlap_seconds": overlap,
++        "basis": basis,
++        "basis_registered": basis in BASIS_REGISTRY,
+         "sum_used_for_natural_duration": False,
+     }
+     return computed, refusals
+@@ -247,10 +300,14 @@
+     chain = 0
+     prev_date = None
+     prev_dt = None
++    same_day_dropped = 0
+     for entry in daily:
+         when = _parse(entry["started_at"])
+         day = when.date()
+-        if prev_date is not None and (day == prev_date or _secs(prev_dt, when) > DAILY_GAP_SECONDS):
++        if prev_date is not None and day == prev_date:  # J10c
++            same_day_dropped += 1
++            continue
++        if prev_date is not None and _secs(prev_dt, when) > DAILY_GAP_SECONDS:
+             chain = 0
+         chain += 1
+         best = max(best, chain)
+@@ -289,6 +346,7 @@
+ 
+     computed = {
+         "daily_count": best,
++        "daily_same_day_runs_dropped": same_day_dropped,
+         "weekly_count": weekly_count,
+         "monthly_count": monthly_count,
+         "alert_count": alert_count,

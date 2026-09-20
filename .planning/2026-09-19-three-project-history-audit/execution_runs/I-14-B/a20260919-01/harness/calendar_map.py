@@ -98,6 +98,19 @@ MANIFESTS = {
     "daily_alert.jsonl": RF / "assurance" / "runs" / "daily_alert.jsonl",
 }
 
+# r2: the independent reviewer recorded that a calendar row can be both `pending`
+# (the window has not started) and `blocked` (a prerequisite is missing); the two
+# are orthogonal, so a per-row blocked_reason is carried explicitly to stop the
+# double state from being misread.
+BLOCKED_REASONS = {
+    "CAL-13": ("blocked: the real 30/60/120 s login check may not run. The tolerance IS now frozen by the "
+               "independent reviewer (oracle.md 6.1, frozen_tolerance_seconds = 5, 2026-09-20T03:15:44Z), "
+               "but (b) no pre-placed login recorder/anchor exists (0 candidates in 4002 scanned files), "
+               "(c) the owner has not authorised starting a worker/UI window, and the reviewer added two "
+               "further preconditions: P1 must be fixed first, and a real window needs a NEW attempt plus a "
+               "NEW binding."),
+}
+
 
 def sha256_file(path: Path) -> str | None:
     if not path.is_file():
@@ -135,6 +148,7 @@ def main() -> int:
             "started_at": None,
             "due_at": None,
             "status": "pending",
+            "blocked_reason": BLOCKED_REASONS.get(row_id),
             "status_reason": ("no real start recorded; I-17-A starts the clock from the actual run. "
                               "A due date must never be computed from this document's date, and a "
                               "simulated clock may not advance a window."),

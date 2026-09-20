@@ -4,6 +4,10 @@
 > **本文件由实现者撰写，不构成任何验收结论。** 实现者未自签 `accepted`、未写 `passed`。
 > 独立 reviewer 必须自己重算至少一个专属 oracle，并攻击文末列出的案例。
 >
+> **r4（2026-09-19，第三次复审后）：答案仍是 changes_required（P1-A/B/C，单根因）。**
+> 已按复审指定的最小修法修复；红→绿变异证据、复核性数字更正、旧 RED 字节缺口登记见
+> 同目录 eview_r4_disposition.md\（并见 \evidence/README.md\、\evidence/p1-mutations.json\）。
+> 产品仓仍为**零改动**，状态保持 eview_pending\，实现者未自签任何 accepted。
 > **r2（2026-09-19，复审后）：复审结论 `changes_required`（F-I05A-01..09）已逐条处置。**
 > 逐条 file:line、新 raw rc 与新哈希见同目录 `review_r2_disposition.md`；本节 §1–§5 保留
 > r1 的原始自述**不改写**，其"同一把门"等表述已在 r2 disposition 中更正与限定。

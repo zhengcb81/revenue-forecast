@@ -15,7 +15,6 @@
       "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
     ],
     "T0-2": [
-      "test_child_without_runtime_session_is_terminated_and_restarted",
       "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
       "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
       "test_stale_child_heartbeat_is_terminated_and_restarted",
@@ -28,6 +27,7 @@
       "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
     ],
     "T4-2": [
+      "test_child_without_runtime_session_is_terminated_and_restarted",
       "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
       "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
       "test_stale_child_heartbeat_is_terminated_and_restarted",
@@ -41,29 +41,30 @@
   },
   "per_run_counts": {
     "T0-1": 4,
-    "T0-2": 5,
+    "T0-2": 4,
     "T4-1": 4,
-    "T4-2": 4,
+    "T4-2": 5,
     "T4-plain": 3
   },
   "union_T0": [
-    "test_child_without_runtime_session_is_terminated_and_restarted",
     "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
     "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
     "test_stale_child_heartbeat_is_terminated_and_restarted",
     "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
   ],
   "union_T4": [
+    "test_child_without_runtime_session_is_terminated_and_restarted",
     "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
     "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
     "test_stale_child_heartbeat_is_terminated_and_restarted",
     "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
   ],
   "unions_equal": false,
+  "t4_union_is_subset_of_t0": false,
   "occurrences": {
     "test_child_without_runtime_session_is_terminated_and_restarted": {
-      "T0": 1,
-      "T4": 0
+      "T0": 0,
+      "T4": 1
     },
     "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths": {
       "T0": 2,
@@ -82,9 +83,9 @@
       "T4": 3
     }
   },
-  "only_on_T4": [],
-  "only_on_T0": [
+  "only_on_T4": [
     "test_child_without_runtime_session_is_terminated_and_restarted"
   ],
-  "note": "The failing COUNT varies run to run (3..5) and the sets differ by the timing nodes test_child_without_runtime_session_is_terminated_and_restarted and test_stale_child_heartbeat_is_terminated_and_restarted; the UNIONS are what matter, and an equal union means every failing node also fails on the pristine tree."
+  "only_on_T0": [],
+  "note": "The failing COUNT varies run to run (3..5) and the sets differ by the timing nodes test_child_without_runtime_session_is_terminated_and_restarted and test_stale_child_heartbeat_is_terminated_and_restarted; the UNIONS are what matter. The verdict is 'no T4-only node' (T4 union is a subset of the T0 union), because the flaky nodes can make the T4 union a strict subset by chance."
 }

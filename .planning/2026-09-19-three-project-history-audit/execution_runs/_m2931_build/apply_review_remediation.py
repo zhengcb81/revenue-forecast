@@ -231,12 +231,16 @@ def main() -> int:
     appended = "\n" + block
     write_text(review_path, review_text + appended)
     review_after = read_text(review_path)
-    # locate the appended span by its byte offset in the new file
+    # The appended span starts with one separator blank line; the verdict block itself follows it.
+    # Its byte offset in the new file is exactly len(pre_bytes) + 1 (the separator newline).
     pre_bytes = review_text.encode("utf-8")
-    appended_bytes = review_after.encode("utf-8")[len(pre_bytes):]
+    span_bytes = review_after.encode("utf-8")[len(pre_bytes):]
+    separator = b"\n"
+    appended_bytes = span_bytes[len(separator):] if span_bytes.startswith(separator) else span_bytes
+    appended_is_wholly_the_block = span_bytes[len(separator):] == block_bytes
     start_line = (review_text.count("\n") + 1) + 1        # 1-based line of the block's first line
     end_line = start_line + block.count("\n") - 1
-    identical = appended_bytes == block_bytes
+    identical = appended_bytes == block_bytes and appended_is_wholly_the_block
     appended_sha = hashlib.sha256(appended_bytes).hexdigest()
 
     check = [
@@ -253,21 +257,36 @@ def main() -> int:
         "line_ending_normalisation: CRLF -> LF (transport only; no character of the text changed)",
         "extracted_block_sha256_crlf_normalised: %s" % block_sha,
         "extracted_block_bytes: %d" % len(block_bytes),
-        "appended_span_sha256: %s" % appended_sha,
-        "appended_span_bytes: %d" % len(appended_bytes),
+        "appended_block_sha256: %s" % appended_sha,
+        "appended_block_bytes: %d" % len(appended_bytes),
+        "appended_span_including_the_separator_sha256: %s"
+        % hashlib.sha256(span_bytes).hexdigest(),
+        "appended_span_including_the_separator_bytes: %d" % len(span_bytes),
+        "separator_blank_line_sha256: %s" % hashlib.sha256(separator).hexdigest(),
+        "span_equals_separator_plus_block: %s"
+        % ("true" if (separator + appended_bytes) == span_bytes else "false"),
         "byte_identical: %s" % ("true" if identical else "false"),
         "review_md_sha256_before_append: %s" % review_before_hash,
         "review_md_sha256_after_append: %s" % sha256(review_path),
         "appended_block_first_line_1based: %d" % start_line,
         "appended_block_last_line_1based: %d" % end_line,
-        "assertion: appended_span_sha256 == extracted_block_sha256_crlf_normalised -> %s"
+        "assertion: appended_block_sha256 == extracted_block_sha256_crlf_normalised -> %s"
         % ("PASS" if identical else "FAIL"),
-        "note: the pre-existing review.md body above the appended block was not modified; only a "
+        "independent_recheck_hint: verify by extracting the same fenced block from the report and "
+        "comparing it with review.md lines %d-%d" % (start_line, end_line),
+        "note: the pre-existing review.md body above the appended block was not modified; only one "
         "blank separator line and the verbatim block were appended.",
     ]
     check_path = os.path.join(evidence, "verdict_transcription_check.txt")
     write_text(check_path, "\n".join(check) + "\n")
     if not identical:
+        print("DEBUG len(pre_bytes)=%d len(span)=%d len(block)=%d"
+              % (len(pre_bytes), len(span_bytes), len(block_bytes)))
+        for index in range(min(len(appended_bytes), len(block_bytes))):
+            if appended_bytes[index] != block_bytes[index]:
+                print("DEBUG first difference at byte %d: appended=%r block=%r"
+                      % (index, appended_bytes[index:index + 30], block_bytes[index:index + 30]))
+                break
         raise SystemExit("TRANSCRIPTION FAILED: appended span differs from the report block")
     print("J1 verdict appended to review.md lines %d-%d, byte-identical to the report block"
           % (start_line, end_line))

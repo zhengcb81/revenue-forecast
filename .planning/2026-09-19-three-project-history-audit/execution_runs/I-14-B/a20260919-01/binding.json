@@ -3,10 +3,11 @@
   "card_title": "自然时间与UI观察证据",
   "parent": "I-14",
   "attempt_id": "a20260919-01",
-  "implementer": "delegated implementer model (this attempt);独立 reviewer 未指定 —— 未自签",
-  "reviewer": null,
-  "objective": "把自然时间字段分列并证明重叠窗口不相加；用合成时间输入证明 observation 29 min != command total 37 min；把 30/60/120 秒检查的锚点/容差预注册为待 reviewer 冻结（能力未具备则 blocked）；把自然日/周/月需求ID映射到 I-17 待运行日历并保持 pending。",
-  "one_observable_result": "同一条冻结命令在修前 rc=1（20 个 case 中 12 个不合规主张被 accept），修后 rc=0（0 个不合规主张被 accept），且 20/20 case 与运行前手写的期望逐字段一致。",
+  "revision": "r2 (fix pass for the independent reviewer's changes_required)",
+  "implementer": "delegated implementer model (this attempt); 未自签 —— 第三轮独立复核待做",
+  "reviewer_status": "r1 review = changes_required (report sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e). The r2 fix pass is NOT reviewed yet.",
+  "objective": "把自然时间字段分列并证明重叠窗口不相加；用合成时间输入证明 observation 29 min != command total 37 min；按 reviewer 冻结的容差实现 30/60/120 判据（真实窗口仍 blocked）；把自然日/周/月需求ID映射到 I-17 待运行日历并保持 pending；修复 reviewer 的两个阻断项 P1/P2。",
+  "one_observable_result": "同一条冻结命令：r1 修订（reviewer 已复核）rc 1、8 个不合规主张被 accept；r2 修订 rc 0、34/34 与运行前手写期望一致、accepted_ineligible 0。",
 
   "plan_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
   "attempt_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-B\\a20260919-01",
@@ -16,10 +17,11 @@
   "product_repos_read_only": {
     "revenue-forecast": {
       "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
-      "head_at_binding": "1ac01f029c16b90adba92dd0f1bc3a1825ff9552",
-      "head_at_final_snapshot": "e954449561008b99f5e5b0438b0705c3ae620f74",
-      "head_change_cause": "NOT this attempt: the audit owner committed at 2026-09-20T03:54:00+01:00 (see evidence/baseline_repos.after.json git_commands and `git log -1`). This attempt ran no git add/commit/restore/stash and used only --no-optional-locks read commands.",
-      "product_porcelain_lines_non_planning": 45
+      "head_at_r1_binding": "1ac01f029c16b90adba92dd0f1bc3a1825ff9552",
+      "head_at_r1_final_snapshot": "e954449561008b99f5e5b0438b0705c3ae620f74",
+      "head_seen_by_reviewer": "ddc81ab679f9c98746182bb888e25cf9ee69708a",
+      "head_change_cause": "NOT this attempt: the audit owner committed twice during this work (2026-09-20T03:54:00+01:00 and 04:09:31+01:00; `git log` author zhengcb81). This attempt ran no git add/commit/restore/stash and used only --no-optional-locks read commands.",
+      "porcelain_note_r2": "reviewer P3-f: the owner's later commit absorbed this attempt's `??` porcelain entry, so the path NOW shows empty porcelain. That does NOT mean there was no footprint: at r1 binding the footprint was `?? .planning/2026-09-19-three-project-history-audit/execution_runs/I-14-B/` (1 line). Later readers must not cite the now-empty porcelain as evidence of no footprint."
     },
     "filing-fetch": {
       "path": "C:\\Users\\郑曾波\\Projects\\filing-fetch",
@@ -30,7 +32,7 @@
       "path": "C:\\Users\\郑曾波\\Projects\\company-wiki",
       "head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
       "porcelain_lines": [" M CLAUDE.md", " M README.md"],
-      "porcelain_change_by_this_attempt": "none (identical before/after)"
+      "porcelain_change_by_this_attempt": "none"
     }
   },
 
@@ -38,90 +40,115 @@
     "path": "<attempt>\\iso\\venv\\Scripts\\python.exe",
     "created_from_template": "<PLAN>\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe -m venv <attempt>\\iso\\venv",
     "version": "3.13.9",
-    "pytest": "9.1.1 (installed offline with --no-index --find-links <attempt>\\iso\\_wheels)",
-    "wheelhouse_copied_from": "<PLAN>\\execution_runs\\M25\\a20260919-01\\iso\\_wheels (colorama, iniconfig, packaging, pluggy, pygments, pytest)",
+    "pytest": "9.1.1 (offline: --no-index --find-links <attempt>\\iso\\_wheels)",
     "global_miniconda_python": "FORBIDDEN and not used"
   },
 
   "source_under_test": {
     "iso/natural_window.py": {
       "role": "attempt-local subject under test (classifier). NOT product code",
-      "after_sha256": "495a44111a854bd5b76d39aeae91d11ab789fe48bb8bcbc9ae3af4b87d8c5b95",
-      "before_sha256": "4225ff61a662853bc5c2fe7de2cc94ee2a850dd0d8e0edb6aff6bcb2021efadf",
-      "before_copy": "before/natural_window.baseline.py",
-      "diff": "changes.diff sha256 89556ac05de87ebe37962f6ecb3861a63261b98f778c9beb49604417e26dcaf1"
+      "r2_sha256": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
+      "r1_sha256_reviewed": "495a44111a854bd5b76d39aeae91d11ab789fe48bb8bcbc9ae3af4b87d8c5b95",
+      "r0_sha256_baseline": "4225ff61a662853bc5c2fe7de2cc94ee2a850dd0d8e0edb6aff6bcb2021efadf",
+      "archives": {
+        "r1": "harness/archive/natural_window.after-r1.py",
+        "r0": "harness/archive/natural_window.before-r0.py",
+        "before_copy": "before/natural_window.baseline.py"
+      },
+      "diffs": {
+        "changes.diff (r0 -> r1)": "89556ac05de87ebe37962f6ecb3861a63261b98f778c9beb49604417e26dcaf1",
+        "changes.r2.diff (r1 -> r2, the P1/P2 fix)": "660bc943187db1c083ef8f04b3c642f3917a3040a5eae376c4fcbbb7ef2c2104"
+      }
     }
   },
 
-  "oracle_material_hashes": {
-    "oracle.md": "093899bc871403f9544b7f2af2963d265726724f05ed1dc5a3dd6c54711ab562",
-    "harness/cases.json": "5d8c459277da88b8361b520bee1424f079dc1d9c08744433cae0d30cdbb67d64",
-    "harness/frozen_expectations.json": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b",
-    "harness/run_cases.py": "f2a07d0b85c5dcb3a233d9010ad9deead70b22535ab82a61414d2ef7f54f7c23",
-    "harness/tests/test_i14b_natural_window.py": "413ff05c52e07acacf0491a0ec3f2cd1c426011995b45d7ad3edaab65a38ad4e",
-    "harness/mutate.py": "ff4ec9d9f07319b7f6a94a11bbbd2dd9db9f39b55aace4a29e3a9db2b1c03a36",
-    "harness/tolerance_sweep.py": "571077aa4d189bf6cb7b278f15b002a57e1f0985b7eea90b6aae5df3e63d4f91",
-    "harness/probe_ui_capture.py": "bef9c8c78b0ef863f21873a78322bf55b58932dae8803d8a6c772caa07b987cc",
-    "harness/calendar_map.py": "4789cc9360aea4e4b1c4bbebb2412ddaf48883dbd14a32c99d1606e83e7b86fe",
-    "harness/reproduce_ca206_acceptance.py": "8e58589c656f1acb75c646604e6c3989ae13af4f94aba4b8bdbe46be72d1f7cc",
-    "harness/make_diff.py": "4be26ebcc0064f9954e10882a521d115d78af36ac88c390e933da375cfad6891",
-    "harness/capture_baseline.py": "99ed605a8508ebfa9e3110e5358791429e9f5494b4a9cee32d691cbbf3e3abf7",
+  "oracle_material": {
+    "r1": {
+      "oracle.md": "f8082205f17d3afa5eaa3a976f87b61259f92f7679584ead88f95482a0cb01b5 (post reviewer D-1 fill; archived at harness/archive/oracle.r1-post-reviewer-fill.md)",
+      "harness/cases.json": "5d8c459277da88b8361b520bee1424f079dc1d9c08744433cae0d30cdbb67d64 (20 cases; archived)",
+      "harness/frozen_expectations.json": "3ba2bb1799ae30b9acac064ab7a7a57338fcd3dfab3aa27052e02f8ffdac806b (archived)",
+      "note": "both r1 oracle files are UNCHANGED and still in place; r2 material is separate"
+    },
+    "r2": {
+      "harness/cases.r2.json": "c00a3a00ffe8b88352df48b4e242bc98e81af45362c4001fb6107aee5efbdcb6 (34 cases: the 20 r1 cases byte-identical + X1..X14)",
+      "harness/frozen_expectations.r2.json": "6f814d0af6a8ffd006dd12751463740a5e6aa151c9d1b5ebe885c96caa9328d3 (hand-derived; carries expected_superseded + errata with the mechanical r1->r2 diff)",
+      "oracle.md": "bdd0407ab577ed4564b8e948d8e3954b663c795dbcd7a3035485424ae753baf3 (section 11 appended; prefix 209/209 lines identical; reviewer frozen lines 128-131 untouched)",
+      "pre_image_chain": {
+        "cases": "harness/archive/cases.r1.json (sha256 5d8c459277da88b8...)",
+        "expectations": "harness/archive/frozen_expectations.r1.json (sha256 3ba2bb1799ae30b9...)",
+        "corrected_value": "expected.W1.computed.union_seconds old=2220 new=1740, retained verbatim in expected_superseded"
+      },
+      "runner_unchanged": "harness/run_cases.py sha256 f2a07d0b85c5dcb3a233d9010ad9deead70b22535ab82a61414d2ef7f54f7c23 -- r2 selects material with --cases/--expectations, so no third runner revision exists"
+    },
     "frozen_now_utc": "2026-09-20T02:56:38Z",
-    "freeze_instant_evidence": "evidence/freeze_instant.json sha256 2c9bb689ad364d8fda7234c388863dfe298d00c98e46d35a160d7a8b2e9368b8"
+    "tolerance_frozen_by_reviewer": {
+      "frozen_tolerance_seconds": 5,
+      "capture_latency_tolerance_seconds": 5,
+      "frozen_by": "independent reviewer session (DSH agent session-b0e4a430ca7d)",
+      "frozen_at_utc": "2026-09-20T03:15:44Z",
+      "legal_interval_derived_by_reviewer": "[1 s, 86 s] (lower bound: L1 passes from tol>=1; upper bound: tol>=87 lets the historical cumulative wait through)",
+      "implementer_must_not_edit": "oracle.md L128-131"
+    }
+  },
+
+  "r2_fix_summary": {
+    "P1": "J16: claim.basis is a closed enumeration; unregistered/empty/null/missing basis -> R-BASIS-UNKNOWN (X1-X4)",
+    "P2": "option 甲 chosen: the natural observation intervals contain the observation phase only (quick_check never enters union/sum); plus J15 refuses any declared window that covers the quick_check interval (X5-X9)",
+    "sibling": "J4b: no declared interval and <2 in-window samples -> R-NO-INTERVAL (X10, X11)",
+    "p3a": "J10c: a second run on the same UTC day is ignored and reported via daily_same_day_runs_dropped instead of silently resetting the chain (X14)",
+    "p3b_coverage": "X12 (weekly entirely stale) and X13 (monthly stale) added, both claiming complete",
+    "p3_calendar": "CAL-13 now carries blocked_reason in evidence/calendar_mapping.json (reviewer suggestion)"
   },
 
   "input_hashes_read_only": {
     "RF/tests/test_ca206_soak_window.py": "b8169d6432b83208e22b4bb47583f1dc5a9f0eb1e570e7646c6d65b7ab5a4fe2",
     "RF/audit_review/2026-08-09_full_completion_assurance_plan/task_plan.md": "6214a36b2321336e004301db16902d25771b1f7927bfafac270d83076cfd1a09",
     "RF/assurance/runs/daily_manifest.json": "e23bb06be00df360e0c70e98d6661c59c90d463421f2b25fa80329f5f2758792",
-    "RF/assurance/runs/weekly_manifest.json": "382605d18f6b436f30ebb092593a817a78479784d61d3642620843eabb0d4f46",
-    "RF/assurance/runs/monthly_manifest.json": "f148554181c782a96d9266ad984cb022d018f5beb65fb8811ff5b53d1d8f8190",
-    "RF/assurance/runs/legacy_periods.json": "37f070a8d4ed494bcd1fd11b2d05a0e6ece0192a706311f88aba17730fdc9236",
-    "CW/.source_catalog/catalog.sqlite3": "69f498a23895c5a693621d9ee754b20bb9d6fbc199b684dc16e950d00b8fd7b7",
-    "PLAN/reviews/wiki_legacy/review.md": "read-only; not re-hashed here (audit reviews tree must keep mtime 2026-09-19 09:14:20 local / 08:14:20Z)",
-    "PLAN/reviews/revenue/review.md": "read-only",
-    "PLAN/reviews/aug09_plans/manual_cases.json": "read-only"
+    "CW/.source_catalog/catalog.sqlite3": "69f498a23895c5a693621d9ee754b20bb9d6fbc199b684dc16e950d00b8fd7b7 (46.3 GB; reviewer and this attempt re-verified size/mtime/-wal only)",
+    "PLAN/reviews/*": "read-only; tree mtime unchanged at r1 binding; re-checked in the r2 snapshot"
   },
 
   "dependency_receipts_consumed": {
     "I-14-A/a20260919-01": {
-      "status": "accepted_scoped for the isolated measurement fix only (reviewer r1; r2 correction pass un-reviewed)",
+      "status": "accepted_scoped for the isolated measurement fix only",
       "consumed_verbatim": [
-        "bundle 未测量恒 exit 2（默认调用语义已变）",
-        "旧工具 per-child rc 不可观测（无 per_call 字段）",
-        "tree-sum peak RSS 高估 ≈ 11 MB（0.267 GB tree sum vs 256 MB declared）",
+        "bundle 未测量恒 exit 2",
+        "旧工具 per-child rc 不可观测",
+        "tree-sum peak RSS 高估 ≈ 11 MB",
         "calls.failed = 6",
-        "catalog_dir 标量解析器限制（无 block scalars/inline maps/anchors/escapes；'${' → exit 3 fail-closed）",
-        "windows 三条窗口口径 M1/M2/M4（command_total / slo_window / quick_check 分开）"
+        "catalog_dir 标量解析器限制",
+        "windows M1/M2/M4 三条口径"
       ],
       "not_reopened": true,
-      "promotion": "iso/slo_probe_patched.py 因 D1/D2/D3 未签，本卡未复制进 RF/tools/，也未运行"
+      "promotion": "iso/slo_probe_patched.py 未复制进 RF/tools/（D1/D2/D3 未签）"
     },
-    "I-00-B/a20260919-01": {"status": "read-only dependency receipt", "used_for": "两阶段绑定规则、隔离 cwd、禁止在生产上试命令"},
-    "I-00-A/a20260919-01": {"status": "read-only dependency receipt", "used_for": "三仓路径、隔离 venv 模板、worker_control.json 基线 hash、catalog 不变量"}
+    "I-14-B r1 independent review": {
+      "report": "C:\\i14b-rev-20260920T030800Z\\REPORT.md sha256 21ac638dd052f443948647eb824fc15326b8e2c974c4e781ab09616f2702cc1e",
+      "verdict": "changes_required",
+      "fixed_here": ["P1", "P2"],
+      "recorded_not_fixed": [
+        "P3-c R-CLAIM-EXCEEDS cross-class reuse (deferred to a later card)",
+        "P3-d/P3-e/P3-f factual clarifications (recorded; P3-f also written into handoff.json and binding.json)"
+      ]
+    }
   },
 
   "allowed_write_roots": [
     "<attempt>",
-    "<attempt>\\iso",
-    "<attempt>\\harness",
-    "<attempt>\\harness\\scratch",
-    "<attempt>\\before",
-    "<attempt>\\after",
-    "<attempt>\\evidence",
-    "<attempt>\\recovery"
+    "<attempt>\\iso", "<attempt>\\harness", "<attempt>\\harness\\scratch", "<attempt>\\harness\\archive",
+    "<attempt>\\before", "<attempt>\\after", "<attempt>\\evidence", "<attempt>\\recovery"
   ],
   "writes_performed_outside_attempt": false,
   "forbidden_respected": [
     "production repo writes (zero)",
-    "git add / commit / restore / stash (none; only --no-optional-locks read commands)",
-    "writing under PLAN/reviews (none; mtime unchanged 2026-09-19T08:14:20.083527Z before and after)",
+    "git add / commit / restore / stash (none)",
+    "writing under PLAN/reviews (none)",
     "network access (none)",
     "starting background / resident processes (none)",
-    "changing worker_control.json desired_state=paused (unchanged, sha256 9fcbe233…)",
-    "copying iso/slo_probe_patched.py into RF/tools/ (not done; D1/D2/D3 unsigned)"
+    "changing worker_control.json desired_state=paused (unchanged)",
+    "copying iso/slo_probe_patched.py into RF/tools/ (not done)",
+    "overwriting any r1 file the reviewer verified (all archived byte-identically instead)"
   ],
 
-  "binding_status": "bound",
-  "mutations_note": "the mutation scratch copies live under <attempt>\\harness\\scratch\\mutants and are evidence, not product code"
+  "binding_status": "bound"
 }

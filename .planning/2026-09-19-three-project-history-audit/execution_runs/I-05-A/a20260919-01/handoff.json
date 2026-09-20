@@ -27,7 +27,14 @@
     "r3-2 A2: 用 r3 字节重跑 25 例并覆盖 after/cmd-tests-i05a.stdout.txt；commands/handoff/disposition 校准",
     "r3-3 A3: handoff.frozen_rules.r2-2 改写为'哈希为自证数据、绑定是源窗口'；补记 m1 的承重改动是'服务来源改为被哈希的 index 字节'",
     "r3-4 P3-1: 切片允许根收紧为 derived/；P3-2: containment 前置于 read，越界统一返回越界码；P3-3: metadata 对账扩展至 index 全部键；P3-4: 结果显式给出选择与 superseded 事实",
-    "r3-5 收尾：删除重复的 _window_matches 定义、新增 _fragment_text、window_positions 改为报告真正命中的边界；最终证据在去重后的字节上重跑"
+    "r3-5 收尾：删除重复的 _window_matches 定义、新增 _fragment_text、window_positions 改为报告真正命中的边界；最终证据在去重后的字节上重跑",
+    "r4-1 P1: `_window_matches` 改为对每个候选 origin 断言 body[origin+char_start:origin+char_end].strip('\\n') == fragment.strip('\\n')；改写前它是从 fragment 自身位置反推 start（自证）",
+    "r4-2 P1-B: 无任何 origin 命中 ⇒ 拒绝；`substring_only` 降级为拒绝原因，不再是通过标签",
+    "r4-3 P1-C: `if not bodies:` 改为 fail-closed，新增原因码 `sections_no_normalized_source`",
+    "r4-4 新增 `_aligned()` 行边界对齐约束（实测：缺它时 +2 偏移伪造仍能命中一个差一 origin）",
+    "r4-5 清理 r3 遗留的重复顶层函数定义（`_window_matches`/`_windows_match_or_block`/`_to_entries`/`_window_label` 等一度各存两份，后者覆盖前者）；拆出 `_matching_origins`/`_label_for` 以守住复杂度上限",
+    "r4-6 变异证据 evidence/p1-mutations.json（I1/I2/I3 各自 returned → refused，含模块 sha256 断言）",
+    "r4-7 复核性数字更正：复杂度 11(自算旧值)/9(机器实测 r3)/11(最终) → 以最终机器实测 11 为准；diff 846(r3 声明)/812(r3 实测)/860(最终) → 以 860 为准；探针拒绝数 10(r3 声明)/9(r3 实测) → 以 9 为准"
   ],
   "next_step_number": 9,
   "next_action": "独立 reviewer 复核 r2 处置：优先攻击 review_r2_disposition.md §r2.4 的 5 项遗留（F-I05A-05 版本死锁归 D-W05 OPEN-1、新增原因码跨仓影响、历史 index 无切片哈希、F-I05A-09 时序、MAX_PATH）；随后由 wiki producer owner + revenue 消费 reviewer 签署或替换 decision.md 的 D-W05 OPEN-1..OPEN-7。",
@@ -53,16 +60,20 @@
     "r3-1": "切片绑定 = normalized 源窗口（trim 语义见 oracle §3.1.1）；无 length-only 通过路径",
     "r3-2": "window_match ∈ {source_window, substring_only, no_source}，如实标注，不静默",
     "r3-3": "同一构建内切片允许根 = <catalog>/derived（更窄）；artifact 路径仍用 (derived, catalog)",
-    "r3-4": "containment 在读取之前判定，越界一律返回 sections_path_outside_allowed_root"
+    "r3-4": "containment 在读取之前判定，越界一律返回 sections_path_outside_allowed_root",
+    "r4-1": "切片绑定 = 逐候选 origin 断言 window 等价（含行边界对齐），任一无命中即拒绝；`substring_only`/`no_source` 都是拒绝原因",
+    "r4-2": "normalized 候选集为空 ⇒ 拒绝（sections_no_normalized_source），fail-closed"
   },
   "input_hashes": {
     "note": "见 binding.json prod_source_hashes_pre_edit；样本 hash 见 samples/sample.json 与 before/case_results.json"
   },
   "current_source_hashes": {
-    "iso/fixed/section_query.py": "5fbbe49ad1a36149581bb1ef6447f4d3dfa29c25113db1797b66ebafa3c2cac1",
+    "iso/fixed/section_query.py": "06a1a6eade3531dab0c66e14064f29a91898a4a16d627efa7d39b69371ebceb7",
     "iso/fixed/section_extractor.py": "0f201c6865cfbfc168df9069e141d4b874a991c9155668241c2ffb7c1a39f3f0",
-    "max_function_complexity_section_query": "9 (frozen cap 12)",
-    "prod_repos": "UNCHANGED — 13/13 anchors match the card; CW porcelain = [' M CLAUDE.md',' M README.md']"
+    "iso/prefix_r3/section_query.py": "5fbbe49ad1a36149581bb1ef6447f4d3dfa29c25113db1797b66ebafa3c2cac1 (frozen pre-P1 bytes)",
+    "max_function_complexity_section_query": "11 (frozen cap 12, machine-measured)",
+    "changes_diff_lines": 860,
+    "prod_repos": "13/13 anchors match the card; CW porcelain = [' M CLAUDE.md',' M README.md']"
   },
   "changed_paths": [
     "execution_runs/I-05-A/a20260919-01/iso/fixed/section_query.py",
@@ -73,7 +84,7 @@
     "execution_runs/I-05-A/a20260919-01/recovery/README.md (added, NA)"
   ],
   "prod_repos_modified": "NONE (CW porcelain = [' M CLAUDE.md',' M README.md'] pre-existing; RF porcelain adds only this attempt directory)",
-  "commands_executed": "见 commands.json（CMD-I05A-C1..C20）",
+  "commands_executed": "见 commands.json（CMD-I05A-C1..C21）",
   "raw_exit_codes": {
     "CMD-I05A-C1": 0,
     "CMD-I05A-C2": 0,
@@ -95,8 +106,10 @@
     "CMD-I05A-C18": 0,
     "CMD-I05A-C19": 0,
     "CMD-I05A-C20": 0,
+    "CMD-I05A-C21": 0,
     "pristine_env_baseline_for_deselected_test": 1,
-    "r2_first_attempt_at_long_basetemp": 1
+    "r2_first_attempt_at_long_basetemp": 1,
+    "r3_dedup_intermediate_failures": 1
   },
   "expected_exit_codes": {
     "CMD-I05A-C1": 0,
@@ -119,8 +132,10 @@
     "CMD-I05A-C18": 0,
     "CMD-I05A-C19": 0,
     "CMD-I05A-C20": 0,
+    "CMD-I05A-C21": 0,
     "pristine_env_baseline_for_deselected_test": 1,
-    "r2_first_attempt_at_long_basetemp": 1
+    "r2_first_attempt_at_long_basetemp": 1,
+    "r3_dedup_intermediate_failures": 1
   },
   "frozen_vs_measured": {
     "c0": {
@@ -195,9 +210,10 @@
     }
   },
   "open_questions": [
-    "D-W05 OPEN-1 未签：历史 sections 工件无 per-slice 哈希、提取器对已有 completed 行不重算 ⇒只享受源窗口绑定；回填/重算与'哪些版本算我的产物'必须由签名者决定",
+    "D-W05 OPEN-1 未签：历史 sections 工件无 per-slice 哈希、提取器对已有 completed 行不重算 ⇒ 只享受源窗口绑定",
     "D-W05 OPEN-7 未签：as_of_date 本卡传 '' 而 service.query_source_bundle 传 published_date",
-    "新增 index 字段 content_sha256 与 3 个新原因码的跨仓消费者影响未穷尽",
+    "A2 更正时被覆盖的 RED 字节已丢失（原 03:13:56 运行输出），登记为证据缺口，未补造",
+    "新增原因码 sections_no_normalized_source 与 3 个既有新原因码的跨仓消费者影响未穷尽",
     "未跑真实跨仓消费入口 sections-list CLI 到业务后果；artifact_read 是角色选择还是实际读取属 I-05-B",
     "未测生产规模（25.7M 行/49.7 GB）与并发/锁",
     "normalized 步骤输入字节仍为按 normalizer 形状构造的固定样本（本机无 PDF parser 依赖）",
@@ -231,11 +247,16 @@
     "execution_runs/I-05-A/a20260919-01/changes.diff",
     "execution_runs/I-05-A/a20260919-01/commands.json",
     "execution_runs/I-05-A/a20260919-01/decision.md",
+    "execution_runs/I-05-A/a20260919-01/evidence/README.md",
+    "execution_runs/I-05-A/a20260919-01/evidence/p1-mutations.json",
+    "execution_runs/I-05-A/a20260919-01/iso/prefix_r3/section_query.py",
     "execution_runs/I-05-A/a20260919-01/oracle.md",
     "execution_runs/I-05-A/a20260919-01/recovery/README.md",
     "execution_runs/I-05-A/a20260919-01/review.md",
     "execution_runs/I-05-A/a20260919-01/review_r2_disposition.md",
-    "execution_runs/I-05-A/a20260919-01/review_r3_disposition.md"
+    "execution_runs/I-05-A/a20260919-01/review_r3_disposition.md",
+    "execution_runs/I-05-A/a20260919-01/review_r4_disposition.md",
+    "execution_runs/I-05-A/a20260919-01/scripts/w05a_p1_mutations.py"
   ],
   "START_HERE_fields": {
     "recorded_status_transition": "planned -> implementing -> review_pending",
@@ -341,6 +362,37 @@
       "expected": "the evidence file must be a GREEN run of the FINAL bytes",
       "before": "stale RED (3 failed/15 passed)",
       "after": "25 passed, rc=0"
+    }
+  },
+  "r4_status": "第三次复审 changes_required（P1-A/B/C 同一根因：偏移从未与内容强制比对）。已按复审指定的最小修法修：逐 origin 断言 window 等价、无命中即拒绝、candidates 为空 fail-closed，并新增行边界对齐约束（否则差一 origin 可吸收伪造偏移）。",
+  "DOWNSTREAM_BINDING": "revenue-forecast HEAD was 7d7ea1ed… when this attempt started and is now 66bd75f1250d310cee8157daa5c4a85ef41f6a36 (later commits by other sessions; the review noted ddc81ab, which is an ANCESTOR of the current HEAD). This card performed READ-ONLY git queries only and wrote nothing outside its own attempt directory.",
+  "frozen_vs_measured_r4": {
+    "I1_offsets_forged(+2)": {
+      "expected": "refused",
+      "pre_fix": "returned (substring_only)",
+      "post_fix": "refused sections_binding_error"
+    },
+    "I2_offsets_way_off(+5)": {
+      "expected": "refused",
+      "pre_fix": "returned (substring_only)",
+      "post_fix": "refused sections_binding_error"
+    },
+    "I3_no_normalized_source": {
+      "expected": "refused",
+      "pre_fix": "returned (no_source)",
+      "post_fix": "refused sections_no_normalized_source"
+    },
+    "c0_positive": {
+      "expected": "usable",
+      "measured": "PASS, both slices source_window, positions [[0,1],[0,1]]"
+    },
+    "contract_suite": {
+      "expected": "green",
+      "measured": "88 passed, 1 deselected"
+    },
+    "c14_evidence": {
+      "expected": "a GREEN run of the final bytes",
+      "measured": "25 passed, rc=0 (the stale 18-passed claim and the stale RED file are both corrected)"
     }
   }
 }

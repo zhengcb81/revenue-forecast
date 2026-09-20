@@ -32,17 +32,18 @@ defaults ok (not gating): True
 observation: OBS-BASE-IGNORED raised=None actual=[32.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None 
 observation: OBS-BOUND-INCLUSIVE raised=None actual=[2.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
 observation: OBS-SIGNED-OTHER raised=None actual=[29.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
-negative: NEG-CARD PASS_rejected ModelRegistryError - driver real_estate_rental.average_occupied_area must be between 0.0 and inf: FY2027
-negative: N01a PASS_rejected ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be numeric
-negative: N01b PASS_rejected ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite
-negative: N01c PASS_rejected ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite
-negative: N01d PASS_rejected ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite
-negative: N02 PASS_rejected ModelRegistryError - driver real_estate_rental.average_occupied_area must contain one value per forecast year
-negative: N03 PASS_rejected ModelRegistryError - missing drivers for real_estate_rental: average_occupied_area
-negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for real_estate_rental: unknown_driver
-negative: N05a PASS_rejected ModelRegistryError - real_estate_rental.years must contain fiscal years
-negative: N05b PASS_rejected ModelRegistryError - real_estate_rental.years must contain fiscal years
-negative: CONT-BREAK PASS_rejected ModelRegistryError - real_estate_rental.years must be consecutive and increasing
+expectation_consistency: ok=True gap_count=0 facts={'case_count': 11, 'case_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'oracle_negative_count': 11, 'oracle_negative_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'declared_expectations': ['ModelRegistryError'], 'target_exception': 'ModelRegistryError'}
+negative: NEG-CARD declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - driver real_estate_rental.average_occupied_area must be between 0.0 and inf: FY2027
+negative: N01a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be numeric
+negative: N01b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite
+negative: N01c declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite
+negative: N01d declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.average_occupied_area.FY2027 must be finite
+negative: N02 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - driver real_estate_rental.average_occupied_area must contain one value per forecast year
+negative: N03 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - missing drivers for real_estate_rental: average_occupied_area
+negative: N04 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - unsupported drivers for real_estate_rental: unknown_driver
+negative: N05a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.years must contain fiscal years
+negative: N05b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.years must contain fiscal years
+negative: CONT-BREAK declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - real_estate_rental.years must be consecutive and increasing
 negative summary: total=11 passed=11 failed=[]
 exit_code triggered: []
 verdict: pass exit_code: 0

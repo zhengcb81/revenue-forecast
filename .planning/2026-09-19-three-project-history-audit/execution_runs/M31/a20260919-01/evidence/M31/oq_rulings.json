@@ -112,7 +112,7 @@
   },
   {
    "id": "OQ-04",
-   "title": "numerical domain / boundary observations of this model",
+   "title": "numerical domain / boundary observations of this model (the card-text divergence claim was withdrawn by F-02)",
    "status": "registered_not_fixed",
    "finding": " the inventory bridge is enforced: the intra-year balance and the cross-year continuity are both checked with math.isclose(rel_tol=1e-9, abs_tol=1e-9); the frozen CONT-BREAK case (year-2 opening 86 vs year-1 closing 85) is rejected while a 1e-10 imbalance is tolerated (PROBE-CONTINUITY-TOLERANCE)",
    "derived_from": "the effective bounds enumerated by scripts/enumerate_registry.py (evidence/M31/registry_enumeration.json)",
@@ -140,8 +140,22 @@
     }
    ],
    "probe_provenance": "evidence/M31/extra_probes.json; the probes are NON-GATING and sit outside oracle.json and outside the runner's exit code",
-   "requires_ruling_from": "independent reviewer (accept / amend / reject)"
+   "requires_ruling_from": "independent reviewer (accept / amend / reject)",
+   "withdrawn_claim": {
+    "applied_utc": "2026-09-20T03:20:49.039865+00:00",
+    "finding": "F-02 (independent reviewer, M31)",
+    "superseded_title": "numerical domain / boundary observations of this model",
+    "why": "the claim that card_M31.md omits net_revenue_per_unit is false; the card lists all seven drivers and agrees with the registry, so no owner ruling about a divergence is required",
+    "byte_level_check": "card_M31.md L9 and model_cards.md L2818 both contain net_revenue_per_unit and are byte-identical lines",
+    "kept": "the seven-driver required list and the effective bounds recorded in this file were already correct and are unchanged"
+   }
   }
  ],
- "counts_provenance_rule": "every number in enumeration_counts comes from the raw output of scripts/enumerate_registry.py; none is transcribed from prose"
+ "counts_provenance_rule": "every number in enumeration_counts comes from the raw output of scripts/enumerate_registry.py; none is transcribed from prose",
+ "text_corrections": {
+  "F-04": {
+   "applied_utc": "2026-09-20T03:20:49.039865+00:00",
+   "statement": "the mtime comparison in evidence/M31/source_manifest.json is a POST-HOC stat comparison, not a pre-freeze claim; the anchored object is the generator code scripts/oracle_M31.py (sha256 3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e), and oracle.md is outside the anchor scope and carries no gating expectation"
+  }
+ }
 }

@@ -23,7 +23,7 @@
    "pytest (no third-party package is required by this card)"
   ]
  },
- "oracle_md_sha256": "78ed9c0a1a59f4b75be354bbfcc80602a0700be0285f40d5b4ff72423ef3a697",
+ "oracle_md_sha256": "4981619a1b69248ac1685485af73c9e4c4d43f6015c260984eb881ae3a4b8074",
  "oracle_md_note": "oracle.md is NOT embedded here; only its sha256 is recorded. The verifiable ordering chain is the mtime pair in evidence/M24/source_manifest.json (oracle.json mtime < stdout.txt mtime) plus the byte-identical regeneration of oracle.json.",
  "units": [
   {
@@ -171,7 +171,7 @@
    ],
    "binding_status": "bound",
    "note": "oracle.md mtime precedes evidence/M24/stdout.txt; the mtime pair is recorded in evidence/M24/source_manifest.json",
-   "oracle_md_sha256": "78ed9c0a1a59f4b75be354bbfcc80602a0700be0285f40d5b4ff72423ef3a697"
+   "oracle_md_sha256": "4981619a1b69248ac1685485af73c9e4c4d43f6015c260984eb881ae3a4b8074"
   },
   {
    "unit_id": "A5-M24-oracle-regeneration-check",
@@ -203,7 +203,7 @@
    ],
    "binding_status": "bound",
    "note": "no timestamp, no randomness and no dict-ordering dependence in the generator",
-   "oracle_json_sha256_after_regeneration": "e791ab5739aad384be08e0f21f1c15e02884acaaf33d7d7e26294acfc25229f9"
+   "oracle_json_sha256_after_regeneration": "870a9a6da1a0a89a1cad5b14aeaa1a74d67c74bdf4065ab1d4ae2ac24491a04f"
   },
   {
    "unit_id": "B-M24-product-run",
@@ -256,16 +256,17 @@
     210.0
    ],
    "negative_summary": {
-    "total": 12,
-    "passed": 12,
+    "total": 11,
+    "passed": 11,
     "failed": [],
     "expected_type_mismatch_cases": [],
     "message_mismatch_cases": [],
     "message_requirements_checked": [
-     "CONT-BREAK-CROSSYEAR",
+     "CONT-BREAK",
      "NEG-CARD"
     ],
-    "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message"
+    "required_message_ids_ok": true,
+    "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message. Additionally the whole run fails if the frozen `required_message_ids` gate does not hold."
    }
   },
   {
@@ -363,6 +364,8 @@
     "F_corrupted_expected_type": 3,
     "G_corrupted_message_requirement": 3,
     "H_message_requirement_points_at_another_guard": 3,
+    "R4_required_message_ids_gate_removed": 3,
+    "R5_required_message_requirement_emptied": 3,
     "D_restored_uncorrupted": 0
    },
    "expected_rc_by_tag": {
@@ -373,6 +376,8 @@
     "F_corrupted_expected_type": 3,
     "G_corrupted_message_requirement": 3,
     "H_message_requirement_points_at_another_guard": 3,
+    "R4_required_message_ids_gate_removed": 3,
+    "R5_required_message_requirement_emptied": 3,
     "D_restored_uncorrupted": 0
    }
   },

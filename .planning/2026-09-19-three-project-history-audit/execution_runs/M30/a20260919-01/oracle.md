@@ -129,3 +129,21 @@ file at the byte offset where the appended section's first line begins). No r2 s
 - The card's business negative is only partly enforceable: the pool identity and the cross-year
   continuity are enforced, but "the same TAM may not be adopted over and over" is enforced only to
   the extent that a re-count breaks the bridge. That is registered as an open question.
+
+## errata r1 (appended by the implementer after independent review; APPEND-ONLY, the frozen body above is byte-unchanged)
+
+- appended_utc: 2026-09-20T03:20:48.486905+00:00
+- oracle_md_sha256_before_this_append: aaa7faf7bef4d3f6a3ba4e572a7cd2e704c535f0b4d5d7d0d952852e97994f01
+- rule: nothing above this line was rewritten; where an erratum supersedes a sentence of the frozen body, this section says so explicitly.
+
+### E-1 (F-04, all three cards): what the freshness chain does and does not claim
+
+- The mtime comparison in `evidence/M30/source_manifest.json` is a **POST-HOC stat comparison**, not evidence of pre-run freezing.
+- The object anchored before the generator ran is the **generator code** `scripts/oracle_M30.py` (sha256 `3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e`), recorded through the byte-identical pointer `iso/oracle_card.md` in `evidence/M30/oracle_document_freeze.json`.
+- **This document is not part of the anchor scope and carries no gating expectation.** The pipeline never reads or validates it; every gated expectation lives in `evidence/M30/oracle.json`, which is regenerable byte-for-byte from the anchored code.
+- Independent-reviewer ruling on OQ-05: it does **not** block the formula signature and does **not** require a new attempt **provided the owner claims formula only**; if the owner wants this document treated as pre-run frozen evidence, this attempt is insufficient and a re-run is required. This document must never be described as pre-run frozen evidence.
+
+### E-3 (registration, not a fix): cross-batch gaps recorded in handoff.json
+
+- F-01 (`run_card.py` never compares `cases.json[*].expected`) and the P3 list F-05..F-10 are batch-level concerns; they are registered in `handoff.json.cross_batch_gaps` and were deliberately **not** fixed inside this attempt.
+- The exit-code convention of this batch (`0=pass / 1=harness / 2=no-verdict / 3=negative`) differs from the M05-M08 batch (`2=harness`); the difference is registered and no historical rc is rewritten.

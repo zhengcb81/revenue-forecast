@@ -569,12 +569,167 @@
   "recovery": "recovery/README.md",
   "final_hashes": "after/final_deliverable_hashes.json"
  },
- "reviewer_status": "not_reviewed (implementer cannot self-sign)",
+ "reviewer_status": {
+  "state": "accepted_scoped (formula qualification only), per the independent reviewer",
+  "verdict_transcribed_verbatim_into": "review.md",
+  "verdict_block_first_line": 43,
+  "verdict_block_last_line": 98,
+  "verdict_block_sha256": "9b878eb7b85c68eb2e8cf2a38fc73fa061b8f8c0b43d5148d8b345fd73942be3",
+  "transcription_proof": "evidence/M31/verdict_transcription_check.txt",
+  "reviewer_report": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\m2931-review-20260920-040341\\REPORT.md",
+  "implementer_signed": false,
+  "granted": [
+   "formula"
+  ],
+  "not_granted": [
+   "disclosure_adaptation (stays unmapped)",
+   "accuracy (stays unproven)"
+  ],
+  "no_extrapolation": "a formula pass for this model, or one company's mapping, is never promoted to industry-wide accuracy or disclosure adaptation"
+ },
  "qualification_state": {
   "formula": "review_pending",
   "disclosure_adaptation": "unmapped",
   "accuracy": "unproven"
  },
  "generated_utc": "2026-09-20T03:00:30.938357+00:00",
- "generated_by": "scripts/write_handoff.py, from the evidence files on disk; no field is transcribed from prose"
+ "generated_by": "scripts/write_handoff.py, from the evidence files on disk; no field is transcribed from prose",
+ "status_note": "the reviewer verdict is transcribed into review.md, but this record keeps status=review_pending on purpose: the implementer never signs, and the batch owner closes the card only after the F-02 errata is in place (it now is) and, for M31, after the owner has seen the withdrawn divergence claim.",
+ "open_questions_note": "OQ-04 for this card covers numerical domain / boundary observations only; for M31 the divergence claim was withdrawn by F-02 - the card text and the registry agree on all seven drivers.",
+ "open_questions_amendments": [
+  {
+   "id": "OQ-04",
+   "amended_utc": "2026-09-20T03:20:49.039865+00:00",
+   "amendment": "the M31 divergence sub-claim is WITHDRAWN (F-02): card_M31.md L9 lists all seven drivers including net_revenue_per_unit, so there is no divergence and no owner ruling is required for one",
+   "evidence": [
+    "binding.json card_text_required_list_vs_registry.errata",
+    "evidence/M31/oq_rulings.json rulings[OQ-04].withdrawn_claim",
+    "oracle.md errata r1 section E-2"
+   ]
+  }
+ ],
+ "reviewer_ruling_boundaries": [
+  {
+   "id": "OQ-05",
+   "ruling": "does NOT block the formula signature and does NOT require a new attempt, provided the owner claims formula only",
+   "boundary": "if the owner wants oracle.md treated as pre-run frozen evidence, this attempt is NOT sufficient and a re-run per the reviewer's minimum scope is required",
+   "recorded_now": "oracle.md is NOT described anywhere in this attempt as pre-run frozen evidence"
+  },
+  {
+   "id": "OQ-01",
+   "ruling": "still an owner item (isolation binding provenance); code under test is byte-identical"
+  },
+  {
+   "id": "F-01_and_source_manifest_wording",
+   "ruling": "batch-level runner concern (cases[*].expected is never compared) plus the source_manifest wording correction now applied",
+   "owner_action": "decide whether to fix the runner as a minimum change in a later card"
+  }
+ ],
+ "text_corrections_applied": {
+  "F-02": "binding.json / oracle.md section 12 / this file's OQ-04 claim that the card text omits net_revenue_per_unit -> withdrawn; card text and registry agree on seven drivers",
+  "F-04": "evidence/M31/source_manifest.json mtime comparison relabelled as a post-hoc stat comparison; anchor scope names the generator code and excludes oracle.md"
+ },
+ "cross_batch_gaps": [
+  {
+   "id": "F-01",
+   "severity": "P2",
+   "batch": "shared by the M-card runner batches",
+   "title": "run_card.py never compares cases.json[*].expected",
+   "measured_by_reviewer": "setting NEG-CARD expected to \"ValueError\", to 42, and all 11 expected values to \"ImportError\" still yielded rc=0 pass on all three cards; the negative verdict only checks isinstance(exc, ModelRegistryError)",
+   "impact": "the frozen per-case rejection SEMANTICS carries no weight in the automatic gate, so changing an expectation in cases.json cannot turn the runner red",
+   "control_that_still_works": "a no-op patch -> rc=3 FAIL_not_rejected; corrupting the oracle.json positive expectation -> rc=3",
+   "disposition": "REGISTERED, NOT FIXED IN THIS BATCH (batch-level runner concern)",
+   "where_the_true_values_live": {
+    "expected_values": "evidence/<CARD>/cases.json (frozen, regenerable byte-for-byte)",
+    "per_case_verdicts": "evidence/<CARD>/negative_results.json"
+   }
+  },
+  {
+   "id": "F-05",
+   "severity": "P3",
+   "batch": "M29-M31 (pack_card.r2_analysis)",
+   "title": "r2 line-boundary demonstration offset is 1 byte too large",
+   "measured_by_reviewer": "truncating at len(base) reproduces the base hash exactly, so the real line boundary is len(base), not the demonstrated offset",
+   "impact": "mechanism demonstration only; the r2 rule itself (no r2 section is present) is unaffected",
+   "disposition": "REGISTERED, not silently renumbered",
+   "where_the_true_values_live": "evidence/<CARD>/revision_r2.json mechanism_proof"
+  },
+  {
+   "id": "F-06",
+   "severity": "P3",
+   "batch": "M29-M31",
+   "title": "self-referential stale hashes",
+   "measured_by_reviewer": "commands.json Z-close-attempt.rc_record_sha256, after/final_deliverable_hashes.json 154/156 and evidence/<CARD>/evidence_hashes.json 94/97 are stale because those files are written by commands that run before other files exist; the rule text 'written after everything else' does not hold",
+   "impact": "a reader who trusts the ledger alone would see a handful of mismatches; every stale value is obtainable fresh from the file itself",
+   "disposition": "REGISTERED, not fixed in this batch",
+   "where_the_true_values_live": "recompute sha256 of any file directly; commands.json carries the final unit list and its own hash is inside after/final_deliverable_hashes.json"
+  },
+  {
+   "id": "F-07",
+   "severity": "P3",
+   "batch": "M29-M31 (run_card.py docstring)",
+   "title": "run_card.py docstring points at evidence/<CARD>/exit_code.json which does not exist",
+   "measured_by_reviewer": "the file is absent; the exit code is stored in run_result.json instead",
+   "impact": "documentation-only",
+   "disposition": "REGISTERED (the runner is reused verbatim from the M17-M20 batch, so the fix is a batch-level edit)",
+   "where_the_true_values_live": "evidence/<CARD>/run_result.json exit_code / exit_code_semantics"
+  },
+  {
+   "id": "F-08",
+   "severity": "P3",
+   "batch": "M29-M31 (bootstrap A0 record)",
+   "title": "runs/A0-iso-venv-create/rc.json creation_argv[0] is a placeholder and its stdout shows a mojibake user name",
+   "measured_by_reviewer": "creation_argv[0] is the literal string '<I-00-A template venv>\\Scripts\\python.exe' and the captured version probe stdout contains a GBK-mangled absolute path",
+   "impact": "cosmetic/record-keeping; the real interpreter path and sha256 are recorded in the same file",
+   "disposition": "REGISTERED, not fixed in this batch",
+   "where_the_true_values_live": "evidence/<CARD>/runs/A0-iso-venv-create/rc.json venv_interpreter + venv_interpreter_sha256"
+  },
+  {
+   "id": "F-09",
+   "severity": "P3",
+   "batch": "M29-M31 (pack_card.integrity)",
+   "title": "integrity.json recomputes only 2 of the 3 task-given anchors",
+   "measured_by_reviewer": "scripts/model_registry.py and scripts/model_extensions.py are re-hashed; scripts/forecast/segments.py is only present in before/after source_hashes.txt",
+   "impact": "no product conclusion depends on it; the third anchor is still captured twice in source_hashes.txt",
+   "disposition": "REGISTERED, not fixed in this batch",
+   "where_the_true_values_live": "before/source_hashes.txt and after/source_hashes.txt"
+  },
+  {
+   "id": "F-10",
+   "severity": "P3",
+   "batch": "M31 only",
+   "title": "oq_rulings.json measured_probes[*].measured_matches is an empty dict",
+   "measured_by_reviewer": "the M31 probes have no expected_if_* numeric key, so the summary dict is empty even though extra_probes.json itself is complete and honest",
+   "impact": "summary-only; the probe file carries the real measurement",
+   "disposition": "REGISTERED, not fixed in this batch",
+   "where_the_true_values_live": "evidence/M31/extra_probes.json"
+  },
+  {
+   "id": "F-11",
+   "severity": "observation",
+   "batch": "M29-M31",
+   "title": "the defaults case carries no independent evidence",
+   "measured_by_reviewer": "defaults is byte-identical to positive because these models declare no optional driver",
+   "impact": "none; it only documents the 'no default' contract fact",
+   "disposition": "REGISTERED (already disclosed in review.md section 4)",
+   "where_the_true_values_live": "evidence/<CARD>/input.json defaults block"
+  }
+ ],
+ "exit_code_convention": {
+  "this_batch": {
+   "0": "pass",
+   "1": "harness error",
+   "2": "no verdict",
+   "3": "negative verdict",
+   "precedence": "1 > 2 > 3 > 0"
+  },
+  "M05_M08_batch": {
+   "0": "pass",
+   "2": "harness/bookkeeping failure",
+   "3": "negative verdict"
+  },
+  "rule": "the difference is recorded, NOT retro-applied: no historical rc in any earlier batch is rewritten, and readers must not compare rc meaning across batches without this table"
+ },
+ "evidence_hashes_note": "evidence/M31/evidence_hashes.json was written at pack time and therefore does not cover the files changed by this remediation (review.md, handoff.json, oracle.md, binding.json, source_manifest.json, oq_rulings.json); the authoritative post-remediation ledger is after/final_deliverable_hashes.json, and this remediation's own report lists the before/after sha256 of every file it touched.",
+ "remediation_utc": "2026-09-20T03:20:49.039865+00:00"
 }

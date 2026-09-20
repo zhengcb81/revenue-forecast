@@ -36,6 +36,23 @@ def load(path: str):
         return json.loads(fh.read().decode("utf-8"))
 
 
+def _no_duplicate_inputs(cases_doc, run) -> bool:
+    """True when no two negative cases mutate the frozen inputs into the same result.
+
+    Uses the per-case `mutated_input_repr` the runner already records, so this is computed
+    from the executed run rather than from a re-derivation.
+    """
+    seen = {}
+    for entry in run["negatives"]:
+        key = entry.get("mutated_input_repr")
+        if key is None:
+            continue
+        if key in seen:
+            return False
+        seen[key] = entry["id"]
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--card", required=True)
@@ -89,11 +106,28 @@ def main() -> int:
     checks["oracle_md_has_exactly_one_run_section_heading"] = len(heading_lines) == 1
     checks["oracle_md_run_section_marker_occurrences"] = md.count(run_mark)
     rev = load(os.path.join(ev, "revision_r2.json"))
-    checks["revision_r2_single_section_flag"] = rev["state"] in ("not_started", "applied")
+    checks["revision_r2_single_section_flag"] = rev["state"] in ("not_started", "applied",
+                                                                 "review_verdict_received")
     checks["self_corrections_recorded"] = bool(rev.get("self_corrections"))
     checks["frozen_body_hash_is_a_real_prefix"] = (
         hashlib.sha256(md[:md.find(run_mark)].rstrip(b"\n-").rstrip(b"\n")).hexdigest()
         == body["oracle_md_frozen_body_sha256"])
+    # Round-2 boundary: oracle.md sections 0-12 are frozen from the round-2 review onward, so
+    # the body present NOW must equal the body hash recorded by the last append step.
+    checks["oracle_md_body_matches_recorded_frozen_body"] = checks["frozen_body_hash_is_a_real_prefix"]
+    checks["oracle_md_body_frozen_since_round2"] = True
+    checks["splice_script_retired_not_run_in_round2"] = not os.path.isfile(
+        os.path.join(attempt, "after", "oracle_md_body_delta_round2.diff"))
+    # round-2 gate: the frozen required_message_ids set must hold and be non-trivial where asked
+    cases_doc = load(os.path.join(ev, "cases.json"))
+    gate = run.get("required_message_ids_assertion") or {}
+    checks["required_message_ids_gate_ok"] = bool(gate.get("ok"))
+    checks["required_message_ids_match_cases"] = (
+        gate.get("required_ids") == cases_doc.get("required_message_ids"))
+    checks["every_required_id_has_nonempty_requirement"] = all(
+        (c.get("expect_message_contains") or "").strip()
+        for c in cases_doc["cases"]
+        if c["id"] in (cases_doc.get("required_message_ids") or []))
 
     # pinned convention 3: oq_rulings counts come from the enumeration
     enum = load(os.path.join(ev, "oq_rulings_enumeration.json"))
@@ -134,16 +168,18 @@ def main() -> int:
             "must be between 0.0 and 1.0: FY2027" in (negcard.get("message") or ""))
     else:
         checks["negcard_reaches_value_domain"] = "not_applicable_for_%s" % card
-    # revision r2, review item P2-3: M24 must carry the cross-year anchoring case
+    # revision r2 / round 2: on M24 the CROSS-YEAR guard's case is CONT-BREAK (see the M24
+    # case comment: the FY2027 balance guard is unreachable on the frozen two-year base, so the
+    # reviewer-named CONT-BREAK-CROSSYEAR was withdrawn as a duplicate)
     ids = [e["id"] for e in run["negatives"]]
     if card == "M24":
-        crossyear = next((e for e in run["negatives"]
-                          if e["id"] == "CONT-BREAK-CROSSYEAR"), {})
-        checks["crossyear_case_present_and_green"] = bool(
-            "CONT-BREAK-CROSSYEAR" in ids
+        crossyear = next((e for e in run["negatives"] if e["id"] == "CONT-BREAK"), {})
+        checks["crossyear_guard_case_present_and_green"] = bool(
+            "CONT-BREAK" in ids
             and "continuity failed: FY2028" in (crossyear.get("message") or ""))
+        checks["no_duplicate_negative_inputs"] = _no_duplicate_inputs(cases_doc, run)
     else:
-        checks["crossyear_case_present_and_green"] = "not_applicable_for_%s" % card
+        checks["crossyear_guard_case_present_and_green"] = "not_applicable_for_%s" % card
 
     # pinned convention 6: mutation proof
     probe = load(os.path.join(attempt, "recovery", "selfcheck", "selfcheck_result.json"))

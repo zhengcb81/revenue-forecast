@@ -29,23 +29,19 @@ payability 归属、不可识别模型参数、样本与统计阈值、部署迁
 
 ## 升级给 owner 的开放项（本卡不自行裁定）
 
-以下事项已写入 `handoff.json` 的 `open_questions`，并指向 owner 的接续动作，不在本卡内部决定：
+以下事项与 `handoff.json` 的 `open_questions` **逐条一一对应**（同一编号、同一顺序），并镜像到
+`evidence/M16/oq_rulings.json` 的 `open_questions_mirroring_handoff`；三者编号同源，owner 按任一处的
+编号核对都不会漏看（F-03 之后不再出现"decision 只写到 OQ-04、handoff 有 5 条"的错位）：
 
-1. **OQ-01（绑定口径）**：卡片要求"运行 cwd 由 I-00-B 绑定"，但 I-00-B 绑定的是隔离方案与两阶段
-   命令规则，并未物化 checkout 树。本 attempt 自行物化只读快照 `iso/checkout_scripts`（与生产逐字节
-   相同）。若 owner 期望 I-00-B 物化 checkout，provenance 链不同；被测代码字节相同。**需要裁定。**
-2. **OQ-02（静默补零）**：`scripts/model_registry.py:335` 对"有 optional 登记但无显式默认"的 driver
-   在省略时补 `0.0`。本模型有 1 个此类 optional driver（`other_revenue`），省略即断言"没有该项收入"，
-   与"披露里没找到"不可区分。已登记，**未改产品**。
-3. **OQ-03（带符号 driver 与负收入终检）**：本模型带符号且无下界的 driver 为 `other_revenue`；
-   事后探针（`recovery/probes/signed_driver_probe.json`）实测 `other_revenue = -100.0` → raised=`ModelRegistryError`。
-   相关会计口径属 D/E 阶段与会计 reviewer 的决定。
-4. **OQ-04（披露适配阶段尚未开始）**：`disclosure_adaptation` 保持 `unmapped`；D 的逐字段映射与
-   已结束期间对账由 I-10-A 执行，本卡不产出、也不虚填。
+1. OQ-01 (binding): the cards say the run cwd must come from I-00-B, but I-00-B binds the isolation plan and the two-stage command rule, not a materialised checkout tree. This attempt materialised its own read-only snapshot (iso/checkout_scripts, hashes equal to production). Needs a binding ruling; the code under test is byte-identical either way.
+2. OQ-02 (silent zero-fill): model_registry.py:335 fills an omitted optional driver that has no explicit default with 0.0. This model has 1 such driver (other_revenue); omitting it asserts 'no other revenue' and is indistinguishable from 'the disclosure was not found'. Registered, NOT fixed.
+3. OQ-03 (signed other revenue): other_revenue is signed and unbounded (the probe records -1 being accepted as 29.0), so 'other revenue' can silently absorb a negative amount while the row stays non-negative. Whether such items belong in this driver at all is a D/E decision.
+4. OQ-04 (monthly vs annual rent): rent_per_area carries no unit metadata beyond 'revenue_per_area', so a monthly rent used as an annual one cannot be detected by the contract; card_M16.md L39 requires an explicit conversion. The disclosure stage must bind this.
+5. OQ-05 (pytest): pytest was not installed in the attempt venv (no offline wheel in the local pip cache, network forbidden) and the historical suite was not re-run. If a reviewer requires the historical suite for this card, that must be stated explicitly because it changes the attempt scope.
 
 ## 与 handoff 的对应关系
 
-`handoff.json` 的 `next_step_number = 4`、`next_action` 指向"独立 reviewer 复验本卡 A–C 证据"，
-`open_questions` 列出的 OQ-01…OQ-04 即本节升级给 owner 的事项；`blocked_by` 为空（本卡无被阻断项），
-`stop_conditions_hit` 记录 `STOP_DISCLOSURE_ADAPTATION` 与 `STOP_ACCURACY`（均按卡片要求停在该资格，
-不改成整体 PASS）。
+`handoff.json` 的 `next_step_number = 4`、`next_action` 指向"独立 reviewer 复验本卡 A–C 证据 + r3 点验"，
+`open_questions` 列出的 OQ-01…OQ-05（共 5 条）即本节升级给 owner 的事项；`blocked_by` 为空（本卡无被
+阻断项），`stop_conditions_hit` 记录 `STOP_DISCLOSURE_ADAPTATION` 与 `STOP_ACCURACY`（均按卡片要求停在
+该资格，不改成整体 PASS）。

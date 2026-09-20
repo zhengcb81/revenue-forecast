@@ -244,6 +244,40 @@ def main():
         result["observations"].append(entry)
 
     # ---------------- negatives ----------------
+    # Gate BEFORE the loop: every id in the frozen `required_message_ids` must exist and must
+    # carry a non-empty `expect_message_contains`. Without this gate, DELETING a message
+    # requirement would silently disable the check (independent review round 2, item 3), so
+    # mutation probe R4 in scripts/selfcheck_mutations.py must go red when the field is
+    # removed. This evaluation is deliberately OUT OF BAND: it is not a case `kind`, so it
+    # does not add a verdict to the negative summary - it fails the whole run instead.
+    required_ids = cases_doc.get("required_message_ids")
+    gate_problems = []
+    if required_ids is None:
+        gate_problems.append("cases.json has no frozen `required_message_ids` field")
+    elif not isinstance(required_ids, list):
+        gate_problems.append("`required_message_ids` is not a list: %r" % (required_ids,))
+    else:
+        by_id = {c["id"]: c for c in cases_doc["cases"]}
+        for required_id in required_ids:
+            case = by_id.get(required_id)
+            if case is None:
+                gate_problems.append("required message id %r is absent from `cases`"
+                                     % required_id)
+            elif not (case.get("expect_message_contains") or "").strip():
+                gate_problems.append(
+                    "required message id %r has an empty or absent `expect_message_contains`"
+                    % required_id)
+    for obs in cases_doc.get("extra_observations", []):
+        if obs.get("expect_message_contains"):
+            gate_problems.append("observation %r carries a message requirement, which this "
+                                 "runner never evaluates" % obs["id"])
+    result["required_message_ids_assertion"] = {
+        "required_ids": required_ids,
+        "rule": cases_doc.get("required_message_ids_rule"),
+        "problems": gate_problems,
+        "ok": not gate_problems,
+    }
+
     for case in cases_doc["cases"]:
         base_key = case.get("base_input", "positive")
         base = copy.deepcopy(input_doc[base_key])
@@ -293,9 +327,12 @@ def main():
                                    if e["verdict"] == "FAIL_message_mismatch"],
         "message_requirements_checked": sorted(
             e["id"] for e in result["negatives"] if e.get("expect_message_contains")),
+        "required_message_ids_ok": bool(result["required_message_ids_assertion"]["ok"]),
         "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised "
                         "type name equal to cases.json `expected` AND, when present, "
-                        "expect_message_contains to be a substring of the message",
+                        "expect_message_contains to be a substring of the message. "
+                        "Additionally the whole run fails if the frozen `required_message_ids` "
+                        "gate does not hold.",
     }
 
     def dump(path):
@@ -333,9 +370,14 @@ def main():
               "message_requirement_met=", entry.get("message_requirement_met"),
               "-", entry.get("message", ""))
     print("negative summary:", result["negative_summary"])
+    print("required_message_ids:", result["required_message_ids_assertion"]["required_ids"],
+          "ok=", result["required_message_ids_assertion"]["ok"],
+          "problems=", result["required_message_ids_assertion"]["problems"])
 
     harness_incomplete = result["positive"].get("raised") is not None
-    negatives_ok = result["negative_summary"]["passed"] == result["negative_summary"]["total"]
+    gate_ok = bool(result["required_message_ids_assertion"]["ok"])
+    negatives_ok = (result["negative_summary"]["passed"] == result["negative_summary"]["total"]
+                    and gate_ok)
     positive_ok = bool(result.get("tolerances_ok"))
     continuity_ok = bool(result["continuity_positive"].get("ok"))
     verdict = "pass" if (positive_ok and negatives_ok and continuity_ok and not harness_incomplete) else "fail"
@@ -350,6 +392,7 @@ def main():
         "positive_ok": positive_ok,
         "continuity_ok": continuity_ok,
         "negatives_ok": negatives_ok,
+        "required_message_ids_ok": gate_ok,
         "defaults_ok_not_gating": result.get("defaults_ok"),
         "verdict": verdict,
         "exit_code": exit_code,

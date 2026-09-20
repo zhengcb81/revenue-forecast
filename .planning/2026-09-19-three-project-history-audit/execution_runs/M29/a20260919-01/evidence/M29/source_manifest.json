@@ -62,16 +62,24 @@
   "written_by": "the implementing session, before any product run; it carries the hand arithmetic, the frozen expectations, the negative list and the output shape",
   "sha256_now": "55a52c675c2edca51f71a4bec3277d508a00f2765ea3d981c4f02ab3af14dbb9",
   "oracle_md_mtime": 1789872944.8240075,
-  "frozen_before_any_product_run": true,
-  "oracle_md_mtime_note": "oracle.md's own mtime is LATER than the product stdout in this attempt: the file was re-written after the measurement chain had already run (it was created before the chain, verified absent from disk afterwards, and restored byte-for-byte in content before the pack). This is recorded instead of being hidden, and no claim is made that the file's PRESENT mtime precedes the run; see freshness_claim below",
   "freshness_claim": {
-   "claim": "the frozen expectations existed on disk before the only product call, and the oracle generator itself is anchored by a hash taken BEFORE it ran",
+   "claim": "the gating expectations existed on disk before the only product call, and the code that produced them was hash-anchored before it ran",
    "anchored_by": [
-    "evidence/M29/oracle.json mtime < evidence/M29/stdout.txt mtime",
-    "evidence/M29/oracle_document_freeze.json records the sha256 of iso/oracle_card.md taken BEFORE the generator ran",
-    "that pointer is a byte-identical copy of scripts/oracle_M29.py, i.e. of the only code that produced the expectations"
+    "evidence/M29/oracle.json mtime < evidence/M29/stdout.txt mtime (post-hoc stat comparison, reported as measured)",
+    "evidence/M29/oracle_document_freeze.json records sha256 3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e of iso/oracle_card.md, taken BEFORE the generator ran; that pointer is a byte-identical copy of scripts/oracle_M29.py",
+    "evidence/M29/oracle_regen_proof.json shows input/oracle/cases regenerate byte-for-byte"
    ],
-   "not_claimed": "oracle.md's present mtime is NOT before the product run; it is an after-the-fact restoration of the same content, so it is excluded from the freshness claim"
+   "not_claimed": [
+    "oracle.md's present mtime is NOT offered as evidence of pre-run freezing",
+    "oracle.md is NOT part of the anchor scope",
+    "oracle.md carries NO gating expectation"
+   ],
+   "reviewer_ruling": {
+    "finding": "OQ-05 (independent reviewer)",
+    "ruling": "does NOT block the formula signature and does NOT require a new attempt, provided the owner claims formula only",
+    "boundary": "if the owner wants oracle.md itself treated as pre-run frozen evidence, this attempt is NOT sufficient and a re-run per the reviewer's minimum scope is required; oracle.md must never be described as pre-run frozen evidence",
+    "reviewer_report": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\m2931-review-20260920-040341\\REPORT.md"
+   }
   },
   "oracle_script_pointer": {
    "path": "iso/oracle_card.md",
@@ -83,7 +91,25 @@
    "pointer_equals_oracle_script": true,
    "why": "A2 hashes this FILE before the generator runs, so the 'expectations were frozen before anything ran' chain rests on a file on disk rather than on a hash quoted in prose"
   },
-  "honest_gap": "oracle.md is a markdown document whose contents are not regenerable from any script, so no byte-for-byte regeneration proof is claimed for it; what IS proven byte-for-byte is evidence/M29/{input,oracle,cases}.json under oracle_regen_proof.json. No r2 addendum has been appended to this attempt, so the r2 discipline is recorded in revision_r2.json only"
+  "honest_gap": "oracle.md is a markdown document whose contents are not regenerable from any script, so no byte-for-byte regeneration proof is claimed for it; what IS proven byte-for-byte is evidence/M29/{input,oracle,cases}.json under oracle_regen_proof.json. No r2 addendum has been appended to this attempt, so the r2 discipline is recorded in revision_r2.json only",
+  "anchor_scope": {
+   "anchored_object": "the generator CODE, scripts/oracle_M29.py",
+   "anchor_evidence": "evidence/M29/oracle_document_freeze.json",
+   "anchor_pointer_file": "iso/oracle_card.md (= byte-identical copy of the generator)",
+   "anchor_sha256": "3177247f95f7554920ac43b4e076f28b5ef78250059c130de1f5e8dee2e4c09e",
+   "oracle_md_text_in_anchor_scope": false,
+   "oracle_md_carries_gating_expectations": false,
+   "statement": "what was anchored before the generator ran is the generator code, NOT the oracle.md text. oracle.md is a human-written document that is never read or validated by the pipeline (gen_oracle.py requires only the pointer file plus the script), and it carries no gating expectation: every gated expectation lives in evidence/M29/oracle.json, which is regenerable byte-for-byte from that anchored code."
+  },
+  "oracle_md_provenance": {
+   "disclosed_fact": "oracle.md was first written before the measurement chain, was later found absent from disk, and was restored with identical content before the pack; its present mtime is a POST-HOC value and is not offered as a pre-freeze claim in either direction.",
+   "post_hoc_stat_comparison": {
+    "oracle_md_mtime": 1789872944.8240075,
+    "product_stdout_mtime": 1789873148.361506,
+    "oracle_md_mtime_is_later_than_product_stdout": false
+   },
+   "consequence": "no conclusion in this attempt depends on oracle.md's mtime; see freshness_claim for what IS claimed"
+  }
  },
  "mtime_ordering": {
   "oracle_md_mtime": 1789872944.8240075,
@@ -93,9 +119,12 @@
   "binding_json_mtime": 1789873148.1641307,
   "product_stdout_mtime": 1789873148.361506,
   "product_run_started_utc": "2026-09-20T02:59:08.190404+00:00",
-  "oracle_json_precedes_product_stdout": true,
-  "oracle_md_precedes_product_stdout": true,
-  "binding_precedes_product_stdout": true
+  "semantics": "POST-HOC STAT COMPARISON ONLY. These values are stat() results taken AFTER the card ran; they are reported as measurements of what is on disk, and they are NOT a claim that any file was frozen before the run.",
+  "pre_freeze_claim": false,
+  "pre_freeze_claim_note": "no mtime in this block is offered as evidence of pre-run freezing. The pre-run anchor is a HASH OF THE GENERATOR CODE taken before the generator ran (evidence/<CARD>/oracle_document_freeze.json -> iso/oracle_card.md -> scripts/oracle_<CARD>.py), and the gating expectations live in evidence/<CARD>/oracle.json, which is regenerable byte-for-byte.",
+  "oracle_md_mtime_earlier_than_product_stdout_post_hoc": true,
+  "oracle_json_mtime_earlier_than_product_stdout_post_hoc": true,
+  "binding_json_mtime_earlier_than_product_stdout_post_hoc": true
  },
  "oracle_regeneration": {
   "proof_path": "evidence/M29/oracle_regen_proof.json",
@@ -258,5 +287,18 @@
  },
  "network_calls": "none",
  "llm_or_provider_calls": "none",
- "packed_utc": "2026-09-20T02:59:10.804180+00:00"
+ "packed_utc": "2026-09-20T02:59:10.804180+00:00",
+ "corrections": {
+  "F-04": {
+   "applied_utc": "2026-09-20T03:20:47.904704+00:00",
+   "what_was_wrong": "the file contained both 'mtime_ordering.oracle_md_precedes_product_stdout: true' and a note saying the mtime is later - a self-contradiction inside one file",
+   "resolution": "the comparison is relabelled as a post-hoc stat comparison (..._post_hoc) and no pre-freeze claim is attached to any mtime; pre_freeze_claim is now false and the anchor scope is stated explicitly",
+   "reviewer_note_upheld": "per the recorded values the flag was true (oracle_md_mtime < product_stdout_mtime); both the relabelled flag and the raw numbers are kept"
+  },
+  "F-03": {
+   "applied_utc": "2026-09-20T03:20:47.904704+00:00",
+   "what_was_wrong": "the freshness chain label implied oracle.md was anchored",
+   "resolution": "anchor_scope now names the generator code as the anchored object and declares oracle.md outside the scope"
+  }
+ }
 }

@@ -4,21 +4,25 @@
  "generated_by_script": "scripts/build_oq_rulings.py",
  "raw_enumeration": {
   "file": "evidence/M15/oq_enumeration.json",
-  "sha256": "30202c2a38ff69db59d787041e98bf425bad186cd95ee2875ce3a973af4f2268",
+  "sha256": "da968491f2c94bc1ace9810a87ac7853dadf0105feb4a483f5b3d5601f6c0e13",
   "produced_by": "scripts/enumerate_driver_bounds.py",
   "command": "<attempt>/iso/venv/Scripts/python.exe -X utf8 -B <attempt>/scripts/enumerate_driver_bounds.py --card M15 --attempt <attempt> --code-root <attempt>/iso/checkout_scripts"
  },
  "attribution": {
-  "enumerated_by": "the implementer session of attempt a20260919-01, by executing the enumeration script above against the isolated read-only copy (automated; no human counting, no reviewer involved)",
-  "reviewed_by": "NOT REVIEWED YET - an independent reviewer has not examined this enumeration or these rulings at the time of writing",
+  "enumerated_by": "the implementer session of attempt a20260919-01, by executing the enumeration script above against the isolated read-only copy (automated; no human counting)",
+  "reviewed_by": "an independent reviewer (2026-09-20): the reviewer re-implemented the enumeration independently and reported 40/3 under the declared ratio_drivers-set predicate versus 41/4 under the dimension predicate, ruling the dimension predicate authoritative and matching the M05-M08 r3 correction. The counts below follow it.",
   "author_of_this_file": "the implementer session (scripts/build_oq_rulings.py); no reviewer is named as an author",
-  "counting_rule": "every number below is read from the raw enumeration file; the script does not accept hand-typed counts"
+  "counting_rule": "every number below is read from the raw enumeration file; the script does not accept hand-typed counts",
+  "oq_numbering_source": "scripts/card_facts.json:open_questions (mirrors handoff.json 1:1)"
  },
  "enumerated_counts_as_read_from_the_raw_file": {
   "registry_models": 31,
   "registry_drivers": 165,
-  "registry_ratio_drivers": 40,
-  "registry_ratio_drivers_whose_bounds_are_not_0_1": 3,
+  "registry_ratio_drivers": 41,
+  "registry_ratio_drivers_by_registry_ratio_set": 40,
+  "registry_ratio_drivers_whose_bounds_are_not_0_1": 4,
+  "registry_optional_drivers_without_an_explicit_default_slots_total": 31,
+  "registry_optional_drivers_without_an_explicit_default_models_total": 24,
   "card_required_drivers": 3,
   "card_optional_drivers": 1,
   "card_optional_drivers_without_an_explicit_default": 1,
@@ -26,45 +30,121 @@
   "card_drivers_with_lower_bound_exactly_zero": 3,
   "card_drivers_with_inclusive_upper_bound_one": 1
  },
- "OQ-01": {
-  "question": "the cards say the run cwd must come from I-00-B, but I-00-B binds the isolation plan and the two-stage command rule rather than materialising a checkout tree",
-  "handling": "this attempt materialised its own read-only snapshot at iso/checkout_scripts and proved it byte-identical to production",
-  "status": "open - needs a binding ruling from the owner; the code under test is byte-identical either way"
+ "enumerated_counts_with_units": {
+  "models_total_registry_wide": 31,
+  "driver_slots_total_registry_wide": 165,
+  "ratio_driver_slots_total_registry_wide_by_dimension_predicate": 41,
+  "ratio_driver_slots_total_registry_wide_by_declared_set_predicate": 40,
+  "ratio_driver_slots_not_bounded_0_1_registry_wide": 4,
+  "optional_driver_slots_without_an_explicit_default_registry_wide": 31,
+  "models_owning_at_least_one_such_optional_slot_registry_wide": 24,
+  "unit_note": "a slot is a (model, driver) pair; a model-level count counts a model once however many such slots it owns. Both numbers are given because earlier batches quoted one or the other without labelling the unit."
  },
- "OQ-02": {
-  "question": "an omitted optional driver that has no explicit default is silently filled with 0.0",
-  "mechanism": "scripts/model_registry.py:335 drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
-  "enumerated_instances_for_this_model": [
-   "ancillary_revenue"
+ "enumerated_contract_facts": {
+  "ratio_driver_predicate": {
+   "authoritative": "spec.dimensions[driver] == 'ratio'",
+   "also_counted": "driver in spec.ratio_drivers (the narrower declared set)",
+   "why": "the two predicates disagree for at least one driver; the dimension predicate is the one used by driver_value_bounds' default ratio domain",
+   "authoritative_source": "M05-M08 r3 correction (docfix_r3.json: ratio_drivers_total 40 -> 41, missing_driver_added direct_growth.growth_rate with domain (-1, inf)); f07_enumerate.py:60 uses spec.dimensions",
+   "disagreements": [
+    {
+     "driver": "direct_growth.growth_rate",
+     "dimension": "ratio",
+     "in_registry_ratio_drivers_set": false,
+     "bounds": [
+      -1.0,
+      "inf"
+     ],
+     "note": "counted as a ratio driver by the dimension predicate"
+    }
+   ],
+   "disagreement_count": 1
+  },
+  "ratio_drivers_whose_bounds_are_not_0_1": [
+   {
+    "driver": "bank_revenue.asset_yield",
+    "bounds": [
+     "-inf",
+     "inf"
+    ],
+    "explicit_bound_tuple": [
+     null,
+     null
+    ],
+    "domain_is_hard_coded_in_the_module": false
+   },
+   {
+    "driver": "bank_revenue.funding_cost",
+    "bounds": [
+     "-inf",
+     "inf"
+    ],
+    "explicit_bound_tuple": [
+     null,
+     null
+    ],
+    "domain_is_hard_coded_in_the_module": false
+   },
+   {
+    "driver": "direct_growth.growth_rate",
+    "bounds": [
+     -1.0,
+     "inf"
+    ],
+    "explicit_bound_tuple": null,
+    "domain_is_hard_coded_in_the_module": true
+   },
+   {
+    "driver": "store_cohorts.new_store_productivity",
+    "bounds": [
+     0.0,
+     "inf"
+    ],
+    "explicit_bound_tuple": [
+     0.0,
+     null
+    ],
+    "domain_is_hard_coded_in_the_module": false
+   }
   ],
-  "enumerated_count": 1,
-  "why_it_matters_for_this_card": "for transport the filled drivers are ancillary_revenue: omitting them asserts 'there is no such revenue', which is indistinguishable from 'the disclosure was not found'. No product change was made.",
-  "status": "registered, NOT fixed"
+  "silent_zero_fill": {
+   "mechanism": "scripts/model_registry.py:335 drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+   "instances_for_this_model": [
+    "ancillary_revenue"
+   ],
+   "count": 1,
+   "why_it_matters_for_this_card": "for transport the filled drivers are ancillary_revenue: omitting them asserts 'there is no such revenue', which is indistinguishable from 'the disclosure was not found'. No product change was made.",
+   "status": "registered, NOT fixed"
+  },
+  "signed_and_unbounded_drivers": {
+   "names": [
+    "ancillary_revenue"
+   ],
+   "count": 1,
+   "mechanism": "scripts/model_registry.py:352-353 rejects a negative calculated revenue (ModelRegistryError 'calculated revenue cannot be negative')",
+   "status": "registered, NOT fixed"
+  },
+  "inclusive_domain_edges": {
+   "drivers_with_lower_bound_exactly_zero": [
+    "capacity",
+    "utilization",
+    "yield"
+   ],
+   "drivers_with_inclusive_upper_bound_one": [
+    "utilization"
+   ],
+   "handling": "the edges are exercised by the non-gating observation OBS-BOUND-INCLUSIVE and by the card-specific negative case, which is built with set_driver_element so it fails the VALUE-domain guard rather than the array-length guard",
+   "status": "closed for this card by observation; no product change"
+  }
  },
- "OQ-03": {
-  "question": "which drivers of this model are signed/unbounded, and what happens when a negative signed driver drives total revenue below zero",
-  "enumerated_signed_and_unbounded_drivers": [
-   "ancillary_revenue"
-  ],
-  "enumerated_count": 1,
-  "mechanism": "scripts/model_registry.py:352-353 rejects a negative calculated revenue (ModelRegistryError 'calculated revenue cannot be negative')",
-  "why_it_matters_for_this_card": "a signed driver can legitimately be negative (clawback / reversal); the contract then refuses the whole row instead of presenting a negative revenue. Recorded as a contract fact for the disclosure-adaptation stage; no product change.",
-  "status": "registered, NOT fixed"
- },
- "OQ-04": {
-  "question": "is the refusal edge of the card-specific negative inclusive or exclusive",
-  "enumerated_drivers_with_lower_bound_exactly_zero": [
-   "capacity",
-   "utilization",
-   "yield"
-  ],
-  "enumerated_drivers_with_inclusive_upper_bound_one": [
-   "utilization"
-  ],
-  "handling": "the boundary is exercised by the non-gating observation OBS-BOUND-INCLUSIVE and by the card-specific negative case; the negative case is built with set_driver_element so it fails the VALUE-domain guard rather than the array-length guard",
-  "status": "closed for this card by observation; no product change"
+ "open_questions_mirroring_handoff": {
+  "OQ-01": "OQ-01 (binding): the cards say the run cwd must come from I-00-B, but I-00-B binds the isolation plan and the two-stage command rule, not a materialised checkout tree. This attempt materialised its own read-only snapshot (iso/checkout_scripts, hashes equal to production). Needs a binding ruling; the code under test is byte-identical either way.",
+  "OQ-02": "OQ-02 (silent zero-fill): model_registry.py:335 fills an omitted optional driver that has no explicit default with 0.0. This model has 1 such driver (ancillary_revenue); omitting it asserts 'no ancillary revenue' and is indistinguishable from 'the disclosure was not found'. Registered, NOT fixed.",
+  "OQ-03": "OQ-03 (signed ancillary revenue): ancillary_revenue is signed and unbounded, but a negative total row is refused by model_registry.py:352-353. The probe records ancillary_revenue=-100 being accepted (50.0) on the positive base while a large negative would refuse the row; whether reversals need a different convention is a D/E decision.",
+  "OQ-04": "OQ-04 (yield domain): the implementation applies NO upper bound to yield (OBS-YIELD-GT1 = 1135.0 for yield 1.5). This is correct for a transport unit price, but it means a percent-vs-amount unit error cannot be caught by the contract; the disclosure stage must bind the unit explicitly.",
+  "OQ-05": "OQ-05 (pytest): pytest was not installed in the attempt venv (no offline wheel in the local pip cache, network forbidden) and the historical suite was not re-run. If a reviewer requires the historical suite for this card, that must be stated explicitly because it changes the attempt scope."
  },
  "no_product_change_made": true,
- "written_at_unix": 1789872685.1331615,
- "written_at_utc": "2026-09-20T02:51:25Z"
+ "written_at_unix": 1789874476.9030623,
+ "written_at_utc": "2026-09-20T03:21:16Z"
 }

@@ -199,9 +199,10 @@ R8-BIZ–R10-BIZ 是**业务拒绝**条件（卡片「专业决策/业务负例�
 | continuity positive | `['55.00', '4.00']` | `[55.0, 4.0]` | ok |
 | defaults（非判定） | `['40.00']` | `[40.0]` | ok |
 | 负例 | 11 个全部 `ModelRegistryError` | 11/11 rejected | ok |
+| `required_message_ids` 闸门 | 每个必需用例存在且要求非空 | ['NEG-CARD'] | ok |
 
 原始退出码 = **0**（0=pass / 2=no-verdict / 3=negative 未按期望拒绝 / 1=harness error）。
-stdout / stderr 原文：`evidence/M22/stdout.txt`（3524 字节）、`evidence/M22/stderr.txt`（0 字节）。
+stdout / stderr 原文：`evidence/M22/stdout.txt`（3706 字节）、`evidence/M22/stderr.txt`（0 字节）。
 
 ### 2. 卡片文字 vs 实现公式串（第 7 节的核对结论）
 
@@ -244,6 +245,8 @@ stdout / stderr 原文：`evidence/M22/stdout.txt`（3524 字节）、`evidence/
 | F_corrupted_expected_type | `cases.json` 某负例 `expected` 改成 `ValueError` | 3 | 3 | **复核 P2-1**：`expected` 字段被真正校验，不再只是抄写 |
 | G_corrupted_message_requirement | `cases.json` 的 `expect_message_contains` 改成不可能出现的子串 | 3 | 3 | **复核 P2-2/P2-3**：消息要求被真正校验 |
 | H_message_requirement_points_at_another_guard | 把 `expect_message_contains` 指向长度守卫的措辞 | 3 | 3 | 消息控制具有区分度：别的守卫的措辞不能冒充值域/连续守卫 |
+| R4_required_message_ids_gate_removed | **删除** `cases.json` 的冻结闸门字段 `required_message_ids` | 3 | 3 | **第 2 轮复核 item 3**：闸门不能被删除绕过；缺失即 rc=3 |
+| R5_required_message_requirement_emptied | 把某个必需用例的 `expect_message_contains` 置为空串 | 3 | 3 | 闸门的另一半：要求被清空同样 rc=3 |
 | D_restored_uncorrupted | 恢复 scratch 副本 | 0 | 0 | 修复后退出码回到 0 |
 
 冻结证据在探针前后 **hash 未变**：`True`。完整记录见 `recovery/selfcheck/selfcheck_result.json`。
@@ -255,3 +258,15 @@ stdout / stderr 原文：`evidence/M22/stdout.txt`（3524 字节）、`evidence/
 - 追加时是否归一化了末尾分隔块：`True`（归一化后 `frozen_body` 是真字节前缀）。
 - 追加后完整文件 sha256 见 `evidence/M22/source_manifest.json` 的 `oracle_document.sha256_full_file_now` 与 `after/rerun_sha256.json`。
 - `evidence/M22/oracle.json` 可逐字节重生成（本 attempt 已复跑验证），因此「oracle 先冻结、后被运行」这条链不依赖 oracle.md 的 mtime。
+
+### 7. 措辞澄清与「正文此后冻结」的登记（第 2 轮复核 P3-1 / P3-2 与第 4 节裁决）
+
+- **第 12 节由 revision r2 于运行后加入**；**0–11 节在该轮未改动**，逐行 diff 见 `after/oracle_md_body_delta_r2.diff`（变更行数与白名单外行数可由该文件独立复算）。
+- 为什么不把这句话写进第 12 节正文：第 2 轮复核第 4 节裁决「正文定点编辑仅此一次、自此冻结」，并明确 0–12 节本轮**逐字节不得改动**。复核在第 5 节第 6 项为此留了出口（「若判定任何正文写入都不可再发生，可改为只写进追加节」）——本实现者按后者执行：该澄清只存在于本追加节，正文一个字节都没动。因此第 5 节第 6 项的**前半句未做**、后半句以本追加节满足。
+- 第 12 节的调用点：不适用：本卡不是存量桥（第 1 节 not_applicable_with_reason），无 `_bridge`/`_equal` 调用点
+- `scripts/splice_oracle_md_r2.py` 已标记为**一次性脚本**，本轮**未运行**，后续任何一轮都不得再运行；`oracle.md` 第 0–12 节自此冻结，所有补记只写追加节。
+- 第 5 节印的负例表与用例计数仍然是 revision r2 时的内容；M24 的 `CONT-BREAK` 的**消息要求**在第 2 轮被补上，且 `CONT-BREAK-CROSSYEAR` 被移除（见下条）——**以 `evidence/M22/cases.json` 与本追加节为准**。
+
+### 8. 第 2 轮补测清单的处置
+
+清单的 item 1–5 中，本卡适用的是：补冻结字段 `required_message_ids`（本卡为空列表，断言为无操作）、runner 的闸门断言、`revision_r2.json` 元数据更正、以及本追加节的措辞澄清。本卡**无需**改动任何用例定义，`cases.json` 的负例集合与取值与 revision r2 一致。

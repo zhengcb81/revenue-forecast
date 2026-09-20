@@ -23,7 +23,7 @@
  "product_files_changed": [],
  "correction": "The v1 GENERATION raised `TypeError: Object of type Decimal is not JSON serializable` on the auxiliary `extra_expected` value. CORRECTION OF THE EARLIER CLAIM: a complete, valid v1 oracle.json DOES exist (2480 B, valid JSON) and is byte-identical to the frozen file; the crash therefore did NOT prevent oracle.json from being written for this card, and the earlier wording 'no oracle.json was produced at all' was WRONG and has been removed. What the crash did prevent is unknown in detail, because the v1 generator SOURCE and the traceback were never persisted (see v1_generator_source below).",
  "timeline_as_observed": {
-  "v1_generation_input_cases_oracle_mtime": null,
+  "v1_generation_input_cases_oracle_mtime": 1789872116.229384,
   "oracle_md_mtime": 1789874273.397408,
   "first_ever_product_run_stdout_mtime": 1789872192.499478,
   "v2_frozen_evidence_mtime": 1789874272.384318,
@@ -74,7 +74,7 @@
   "this_card": "NOT a pre-correction difference: the v1 files are byte-identical to the frozen ones; they are the first-generation snapshot only",
   "v1_vs_frozen": {
    "evidence/M27/oracle.json": {
-    "v1_sha256": null,
+    "v1_sha256": "09f603aa87ab89575a008d9b1d721ce44883af6558f32e470f004f455b3c9c18",
     "frozen_sha256": "00cbaab6992ad1da5e572052fbb78db1515707406bfec57d41d7c40e31fd531e",
     "identical": false
    },
@@ -108,5 +108,13 @@
   "stronger_mtime_rule": "reviewer explicitly does NOT adopt the stronger rule 'oracle.json must predate ANY product run'; if the owner insists on it, the owner rules on it - the reviewer does not treat it as a technical blocker"
  },
  "precorrection_preserved_at": "recovery/precorrection/",
- "first_product_run_preserved_at": "recovery/precorrection/stdout.txt"
+ "first_product_run_preserved_at": "recovery/precorrection/stdout.txt",
+ "stdout_reencoding": {
+  "what_happened": "the very first capture of evidence/<card>/stdout.txt used PowerShell redirection, which wrote UTF-16LE on Windows PowerShell 5.1. It was re-captured as UTF-8 (BOM) by re-running the SAME bound argv, so the stdout.txt in evidence/ is the definitive run's output in the same encoding as the rest of the evidence set.",
+  "frozen_numbers_unchanged": true,
+  "proof": "the re-run produced a byte-identical run_result.json (recovery/rerun_check/rerun_check.json: byte_identical = true) and the printed values in stdout.txt match the evidence files (printed_value_checks all true)",
+  "raw_rc_of_the_reencoding_run": 0,
+  "rerun_check": "recovery/rerun_check/rerun_check.json",
+  "rerun_check_unit": "R-M27-independent-rerun-check"
+ }
 }

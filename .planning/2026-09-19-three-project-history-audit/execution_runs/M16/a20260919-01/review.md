@@ -19,7 +19,7 @@ Attempt `execution_runs/M16/a20260919-01`.
 | defaults case | actual `[30.0]` vs oracle `[30.0]` (not gating) | `evidence/M16/run_result.json` |
 | C negatives | 11/11 rejected with `ModelRegistryError` | `evidence/M16/negative_results.json` |
 | mutation proof | scratch copies corrupted -> rc 2/2/2, rc 3, rc 1; control rc 0; frozen hashes unchanged | `recovery/selfcheck_result.json` |
-| OQ enumeration | 31 models / 165 drivers / 40 ratio drivers enumerated by script; counts quoted, not typed | `evidence/M16/oq_enumeration.json`, `oq_rulings.json` |
+| OQ enumeration | 31 models / 165 drivers / 41 ratio drivers enumerated by script; counts quoted, not typed | `evidence/M16/oq_enumeration.json`, `oq_rulings.json` |
 | D mapping | **NOT DONE** - this attempt is the synthetic formula scope only; nothing is claimed | `evidence/M16/qualification.json` |
 | E probe | **NOT DONE** (needs D and I-10-A) | - |
 | F accuracy | **NOT DONE** - needs the I-12 frozen design | `evidence/M16/qualification.json` |
@@ -33,7 +33,7 @@ Runner verdict: `pass`, exit code `0`, triggered conditions `[]`
   `json`, `os`, `time` and `decimal` (see `import_lines` in
   `evidence/M16/oracle_selfcheck.json`). It never imports `model_registry` or
   `model_extensions`; `product_import_present` is `false`.
-- `scripts/run_card.py` (sha256 `e709408f7f6518be63fc00d5c4c444c8738dbf1ba7a53383c3821882c9054c9e`) calls exactly one product function,
+- `scripts/run_card.py` (sha256 `9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194`) calls exactly one product function,
   `calculate_registered_model(model_id, base_revenue, drivers, years)`, and reads expectations only
   from `evidence/M16/oracle.json`.
 - Negative cases are built in memory from a fresh `deepcopy` each time - never round-tripped
@@ -46,7 +46,7 @@ Runner verdict: `pass`, exit code `0`, triggered conditions `[]`
   labelled post-hoc design probe (`C3-probe-signed-driver`). Neither produces an expected value.
 - The card runner, the mutation self-check, the evidence packer and the verifier are the same
   bytes as in the sibling M13/M14/M15/M16 attempts (`scripts/run_card.py` sha256
-  `e709408f7f6518be63fc00d5c4c444c8738dbf1ba7a53383c3821882c9054c9e`), so no card-specific runner can drift.
+  `9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194`), so no card-specific runner can drift.
 
 ## 3. Results in detail
 
@@ -96,6 +96,10 @@ Runner verdict: `pass`, exit code `0`, triggered conditions `[]`
 | D-missing-expectation | oracle.json:positive.expected_float deleted | 2 | 2 |
 | B-corrupt-negative-case | cases.json:NEG-CARD value {"__float__": -1} -> {"__float__": 0.5} (now inside the driver domain) | 3 | 3 |
 | E-harness-error | none | 1 | 1 |
+| G-corrupt-case-expected | cases.json:NEG-CARD expected 'ModelRegistryError' -> 'PythonBuiltinValueError' (a type this runner never counts as a refusal verdict) | 2 | 2 |
+| H-drop-negative-case | cases.json: dropped case CONT-BREAK (case count 11 -> 10 while oracle.json still declares 11) | 2 | 2 |
+| G-pre-fix-runner-corrupt-case-expected | cases.json:NEG-CARD expected 'ModelRegistryError' -> 'PythonBuiltinValueError' (a type this runner never counts as a refusal verdict) | 0 | 0 |
+| H-pre-fix-runner-drop-negative-case | cases.json: dropped case CONT-BREAK (case count 11 -> 10 while oracle.json still declares 11) | 0 | 0 |
 
 `frozen_unchanged_by_the_selfcheck = true` and
 `frozen_still_equals_freeze_time_hashes = true`, so the corruption never touched the
@@ -107,13 +111,23 @@ observed.
 `scripts/enumerate_driver_bounds.py` -> `evidence/M16/oq_enumeration.json` ->
 `scripts/build_oq_rulings.py` -> `evidence/M16/oq_rulings.json`.
 Enumerated by the implementer session by running that script against the isolated read-only copy
-(automated; no human counting); **no independent reviewer has examined it yet**, and no reviewer
-is named as an author. Counts: 31 registered models / 165 drivers / 40 ratio
-drivers / 3 ratio drivers whose bounds are not [0,1]; for this model:
-2 required, 1 optional,
+(automated; no human counting). The independent reviewer of 2026-09-20 re-implemented the
+enumeration and corrected the predicate: a driver is a ratio driver when
+`spec.dimensions[driver] == "ratio"` (the narrower `ModelSpec.ratio_drivers` set structurally
+misses `direct_growth.growth_rate`, domain `(-1, inf)`, hard-coded at
+`scripts/model_registry.py:287-288`). The authoritative registry totals are therefore
+**41/4** (41 ratio drivers, 4 of them not bounded [0,1]), consistent with the M05-M08 r3
+correction; the narrower predicate's numbers (40/3) are still recorded side by side,
+and every predicate disagreement is listed in `oq_enumeration.json`.
+Counts for this model: 2 required, 1 optional,
 **1 optional drivers without an explicit default**
 (`other_revenue`), **1 signed & unbounded drivers**
 (`other_revenue`), 2 drivers with a lower bound of exactly 0.0.
+Registry-wide, the silent-zero-fill surface is 31 optional driver slots
+across 24 models (unit labels are recorded in
+`oq_rulings.json.enumerated_counts_with_units`). The OQ list in `oq_rulings.json` mirrors
+`handoff.json:open_questions` one-to-one (OQ-01..OQ-05), so the numbering cannot diverge between the
+two files.
 
 ## 7. Judgement calls the reviewer should attack first
 
@@ -138,6 +152,27 @@ drivers / 3 ratio drivers whose bounds are not [0,1]; for this model:
 - 不改写公式：在没有独立反例、也没有经审定规格的情况下保留既有实现。
 - 不声称"已租面积 0 被接受"等价于"空置无需建模"；那属业务判断。
 
+## 10. Revision r3 - response to the independent review (2026-09-20)
+
+The independent reviewer returned **accepted_scoped (formula qualification only)** for this card
+and listed findings F-01..F-05 plus two notes. Revision r3 handles them in the tool and evidence
+layers only - **no frozen expectation, tolerance, case or refusal condition was changed**:
+
+| Finding | What r3 did |
+|---|---|
+| F-01 | `scripts/run_card.py` now cross-checks every case's declared `expected` against the type the runner actually counts, plus the case count / id set against `oracle.json`; any inconsistency is an expectation gap and yields **rc=2**. The pre-fix revision is kept at `recovery/runner_before_F01_fix.py` and demonstrated red (rc=0 -> rc=2) on the same corrupted scratch copy. |
+| F-02 | ratio predicate corrected to `spec.dimensions[driver] == "ratio"`; registry totals 40/3 -> **41/4** (`direct_growth.growth_rate (-1, inf)` recovered); `oq_enumeration.json` / `oq_rulings.json` regenerated. |
+| F-03 | `oq_rulings.json` OQ list now mirrors `handoff.json:open_questions` one-to-one (OQ-01..OQ-05); `decision.md` / `review.md` numbering aligned; document pointers audited by `scripts/audit_doc_pointers.py` -> `evidence/M16/doc_pointer_audit.json` (including an explicit search for the residue tokens the reviewer listed). |
+| F-04 | `scripts/finalize_hashes.py` writes its own by-products before the inventory, excludes the manifest itself from `files`, and adds `self_reference_note`, `combined_digest_scope` and `concurrently_mutable` marks, so the inventory is now reproducible. |
+| F-05 | `recovery/README.md` states explicitly that the first failed invocation's raw bytes are not retained; from r3 on, first failed invocations are saved verbatim as `recovery/first_invocation_*.stdout.txt` and `recovery/first_invocation_*.stderr.txt`. |
+| note (c) | not applicable to this card: every observation here is constructible as frozen (`evidence/M16/cases_annotation_repack.json` proves `cases.json` is byte-identical to the frozen revision). |
+| note (units) | `oq_rulings.json` carries `enumerated_counts_with_units` (slots vs models). |
+
+The exit-code matrix observed by the mutation self-check is in
+`recovery/selfcheck_result.json` -> `exit_code_matrix`. Status after r3: `formula` remains
+`review_pending` (the implementer never self-signs; r3 goes back for a point review),
+`disclosure_adaptation` remains `unmapped`, `accuracy` remains `unproven`.
+
 ## 9. Reviewer checklist (suggested)
 
 1. Re-run `scripts/oracle_M16.py --out-root <scratch attempt>` and diff the generated
@@ -146,8 +181,12 @@ drivers / 3 ratio drivers whose bounds are not [0,1]; for this model:
 2. Run `scripts/verify_card.py` and `scripts/verify_r2_boundary.py`; both must exit 0.
 3. Confirm the isolated copy still hashes equal to production (`evidence/M16/source_manifest.json`,
    `after/source_hashes.txt`).
-4. Confirm the frozen-body boundary: `before/oracle_md_v1.json` sha256 == sha256(oracle.md bytes
-   before the single marker) (byte offset 8495), and that exactly one r2 section exists.
-5. Read `evidence/M16/oq_rulings.json` and re-run the enumeration script to check the quoted counts.
+4. Confirm BOTH frozen-body boundaries: `before/oracle_md_v1.json` sha256 == sha256(oracle.md
+   bytes before the single r2 marker) (r2 byte offset 8495) and
+   `revision_r2.json`'s recorded post-append hash == sha256(oracle.md bytes before the single r3
+   marker); exactly one r2 and one r3 section must exist.
+5. Read `evidence/M16/oq_rulings.json` and re-run the enumeration script to check the quoted
+   counts (predicate: `spec.dimensions[driver] == "ratio"`).
 6. Pick a case the implementer did not use and freeze its expectation **before** running it.
-7. Adjudicate the OQ-01..OQ-04 items in `handoff.json` / `decision.md`.
+7. Adjudicate the OQ-01..OQ-05 items in `handoff.json` / `decision.md` (same numbering in
+   `oq_rulings.json`) and point-check revision r3.
