@@ -1,0 +1,138 @@
+{
+  "card": "T1-14",
+  "attempt": "a20260920-01",
+  "kind": "verification + disposition (verified no-op)",
+  "title": "I-11-A OPEN-1：pdftotext 交叉核对路径登记核查 —— 条件已满足，未做任何编辑",
+  "status": "planned",
+  "status_note": "本 attempt 交付的是**核查结论**：T1-14 的实质条件**盘上已成立**，故**未做任何编辑**、**未写入任何冻结件**、**未做任何状态转移**。",
+
+  "authority": {
+    "source": "OWNER_DECISIONS.md §13 T1-14",
+    "tier": "TIER-1（owner 职权内）",
+    "ruling": "均采纳：OPEN-1 允许 pdftotext.exe 作交叉核对路径、永不作为任何被引用数值的唯一来源；须把绝对路径 + sha256 252d2b34… 写进 binding.json、禁止为取文升级 Git。OPEN-8 接受以 P1_vs_prior_offset.json 择优规则为准，不回改 oracle 正文。",
+    "decomposed": [
+      {"id": "O-1", "obligation": "pdftotext.exe 仅作交叉核对路径", "kind": "policy", "disposition": "standing rule — 已反映在登记的 role 与 reviewer_opinion 字段，无需动作"},
+      {"id": "O-2", "obligation": "永不作为任何被引用数值的唯一来源", "kind": "policy", "disposition": "standing rule — 无需动作"},
+      {"id": "O-3", "obligation": "绝对路径 + sha256 须写进 binding.json", "kind": "artifact", "disposition": "SATISFIED — 已存在且经 P-1/P-2/P-3 验证为真"},
+      {"id": "O-4", "obligation": "禁止为取文升级 Git", "kind": "prohibition", "disposition": "held — P-4 实测未升级（附证据力限度声明）"},
+      {"id": "O-5", "obligation": "OPEN-8：以 P1_vs_prior_offset.json 择优，不回改 oracle 正文", "kind": "policy", "disposition": "standing instruction — 未做编辑"}
+    ]
+  },
+
+  "finding": {
+    "headline": "T1-14 的实质条件（O-3）**盘上已成立**，故本卡关闭为**已核查的 no-op**。",
+    "register_location": "execution_runs/I-11-A/a20260919-01/binding.json > external_tools.pdftotext",
+    "registered": {
+      "path": "C:/Program Files/Git/mingw64/bin/pdftotext.exe",
+      "version": "pdftotext version 4.00 (Xpdf, Copyright 1996-2017 Glyph & Cog, LLC)",
+      "sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
+      "registered_as": "OPEN-1 (owner sign-off on using a repo-external console tool)",
+      "hands_off": false
+    },
+    "why_verified_and_not_merely_read": "「字段存在」与「字段为真」是两个不同的事实。登记了一个哈希，若那个哈希不是**实际会运行的那个工具**的哈希，则登记毫无价值。故做四项独立验证。"
+  },
+
+  "verification": {
+    "script": "scripts/verify_t14.py",
+    "script_bytes": 7436,
+    "script_sha256": "245fd2986427db31e39a38c25459d897ae2111709f22073a8f8411ed018cb705",
+    "result_file": "t14_register_verification.json",
+    "result_bytes": 2148,
+    "result_sha256": "4653ca93124674e05fbb01a9261f576a24a890e17c5d205319bac41af1ac612a",
+    "propositions": [
+      {
+        "id": "P-1",
+        "claim": "binding.json 登记了**绝对**路径与 **64 位十六进制** sha256",
+        "holds": true,
+        "evidence": {"registered_path": "C:/Program Files/Git/mingw64/bin/pdftotext.exe", "path_is_absolute": true, "sha_is_64_hex": true},
+        "why_it_matters": "相对路径会静默地相对于未来某次运行的 cwd 解析 —— 正是 I-00-B 要防的那类缺陷。绝对性是实质要求，不是形式。"
+      },
+      {
+        "id": "P-2",
+        "claim": "登记的 sha256 **等于**实际位于该路径的文件之哈希",
+        "holds": true,
+        "evidence": {
+          "registered_sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
+          "disk_sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
+          "size_bytes": 1537966
+        },
+        "note": "精确相符。此命题是 O-3 的意义所在。"
+      },
+      {
+        "id": "P-3",
+        "claim": "盘上二进制就是登记所载的版本",
+        "holds": true,
+        "evidence": {"expected_prefix": "pdftotext version 4.00", "observed_first_line": "pdftotext version 4.00"},
+        "why_it_matters": "若无此检查，可在同一路径换成**另一个**工具**并同步更新登记** —— 哈希相符、而登记的版本串变成谎言。P-3 封住该缺口。"
+      },
+      {
+        "id": "P-4",
+        "claim": "Git 安装树在登记写入**之后**未被修改（⇒ 未为取文升级 Git）",
+        "holds": true,
+        "evidence": {
+          "git_install_root": "C:/Program Files/Git",
+          "git_tree_mtime_epoch": 1762599402.464173,
+          "git_tree_mtime_human": "2025-11-08 10:56:42",
+          "binding_mtime_epoch": 1789918096.503333,
+          "binding_mtime_human": "2026-09-20 15:48:16",
+          "gap_days": 316,
+          "current_git_version": "2.55.0.windows.3"
+        },
+        "caveat": "**证据，非证明**：保留 mtime 的就地补丁不会被本方法捕获。命题记为「依现有证据成立」，限度写入 JSON 而未隐去 —— 声称多于方法所能支持，正是本项目纪律所要防的越权。"
+      }
+    ],
+    "overall": "PASS",
+    "core_register_verified": true,
+    "policy_p4_verified": true
+  },
+
+  "why_no_edit": {
+    "reason_1_already_true": "字段已存在且已验证为真。重写同值只会产生一个无信息量的 diff，并无谓地使一个冻结件的哈希失效。",
+    "reason_2_frozen_pending": "binding.json 是 handoff_status = review_pending 的 attempt 的冻结件。写入它会**事后改变 reviewer 被要求审的东西**。",
+    "reason_3_authority_is_permission": "owner 在此的职权是**裁定处置**，不是**撰写一个冗余编辑**。执行 no-op 编辑会看起来像进展，而实际什么都没改变。",
+    "principle": "**授权是许可，不是义务。** T1-14 说路径与哈希**必须在** binding.json 里。它已经在那里，而且是真的。义务**已解除**。"
+  },
+
+  "boundaries": {
+    "edits_to_I_11_A_binding_json": 0,
+    "edits_to_any_I_11_A_artifact": 0,
+    "frozen_artifacts_written": 0,
+    "product_files_written": 0,
+    "git_install_or_upgrade_performed": false,
+    "status_transitions_made": 0,
+    "signatures_made_on_behalf_of_others": 0,
+    "own_attempt_writes_only": true,
+    "emitted_json_parses": true,
+    "git_diff": "全部位于 .planning/ 内；产品文件 0 条"
+  },
+
+  "artifacts": {
+    "scripts/verify_t14.py": {"bytes": 7436, "sha256": "245fd2986427db31e39a38c25459d897ae2111709f22073a8f8411ed018cb705"},
+    "decision.md": {"bytes": 8136, "sha256": "9e9ff11c0868de3bed7c08e80f15c074e39b0b9a4b07ee767b0ed94f51fe1799"},
+    "t14_register_verification.json": {"bytes": 2148, "sha256": "4653ca93124674e05fbb01a9261f576a24a890e17c5d205319bac41af1ac612a"},
+    "register_under_test": {
+      "file": "execution_runs/I-11-A/a20260919-01/binding.json",
+      "bytes": 6322,
+      "sha256": "9d9c89a7fb83e4ef99bbfe94a492ad96d21705ba62a3e499b829e669447f9e24",
+      "written_by_this_attempt": false
+    }
+  },
+
+  "qualifications": {
+    "card_status": "planned",
+    "acceptance": "NOT granted — acceptance is TIER-2, not the owner's to grant",
+    "substantive_requirement_holds": true,
+    "edit_required": false,
+    "verified_no_op": true,
+    "self_upgrade": false
+  },
+
+  "next_action": {
+    "owner": "独立 reviewer",
+    "steps": [
+      "① 独立 reviewer 确认 P-1…P-4 的读数（尤其 P-2 的相符是对**二进制实际字节**、而非缓存值）。",
+      "② 确认后可把 T1-14 标为**已核查的 no-op**：实质要求成立且无载体移动。",
+      "③ **OPEN-8（O-5）** 作为对 I-11-A 后续工作的长期指令保留：采用 `P1_vs_prior_offset.json` 择优规则、不动 oracle 正文。此处登记以免遗失，但现在**无需动作**。"
+    ]
+  }
+}

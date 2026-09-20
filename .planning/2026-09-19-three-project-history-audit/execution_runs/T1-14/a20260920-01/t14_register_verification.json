@@ -1,0 +1,45 @@
+{
+ "register_source": {
+  "file": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-11-A/a20260919-01/binding.json",
+  "bytes": 6322,
+  "sha256": "9d9c89a7fb83e4ef99bbfe94a492ad96d21705ba62a3e499b829e669447f9e24"
+ },
+ "verdicts": {
+  "P-1": {
+   "claim": "binding.json registers an absolute path and a 64-hex sha256 for pdftotext",
+   "registered_path": "C:/Program Files/Git/mingw64/bin/pdftotext.exe",
+   "registered_sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
+   "path_is_absolute": true,
+   "sha_is_64_hex": true,
+   "holds": true
+  },
+  "P-2": {
+   "claim": "the registered sha256 equals the hash of the binary actually at the registered path",
+   "path_exists": true,
+   "size_bytes": 1537966,
+   "disk_sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
+   "registered_sha256": "252d2b345662ba6d3705d79d53dad059aa8ef14f9dcf3afe015facbf1ca995e0",
+   "holds": true
+  },
+  "P-3": {
+   "claim": "the on-disk binary is the version the register names",
+   "registered_version": "pdftotext version 4.00 (Xpdf, Copyright 1996-2017 Glyph & Cog, LLC)",
+   "observed_first_line": "pdftotext version 4.00",
+   "expected_prefix": "pdftotext version 4.00",
+   "holds": true
+  },
+  "P-4": {
+   "claim": "the Git install tree was not modified after this card's register was written",
+   "git_install_root": "C:/Program Files/Git",
+   "git_tree_mtime_epoch": 1762599402.4641728,
+   "binding_mtime_epoch": 1789915696.5033329,
+   "git_tree_predates_register": true,
+   "holds": true,
+   "caveat": "mtime comparison is evidence, not proof: a silent in-place patch that preserves mtimes would not be caught.  Reported as such."
+  }
+ },
+ "overall": "PASS",
+ "core_register_verified": true,
+ "policy_p4_verified": true,
+ "conclusion": "T1-14's substantive condition already holds on disk: the absolute path and the sha256 are registered, and the registered sha256 is the sha256 of the binary actually at that path.  The card's requirement is SATISFIED, so no edit is made to I-11-A's binding.json."
+}
