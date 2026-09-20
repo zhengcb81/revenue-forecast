@@ -1,9 +1,26 @@
 {
   "card_id": "I-05-B",
   "attempt_id": "a20260919-01",
-  "status": "review_pending",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_authority": {
+    "source": "review.md",
+    "verdict_block_line_range": "183-219",
+    "body_line_range": "188-218",
+    "body_description": "Lines 188-218 of review.md (Verdict through test proof, excluding end REVIEW comment), joined by LF",
+    "review_md_sha256": "E99D7D212B9A0A89F19D453268CF54CBEFD77E98BC263AC28907446F8BE64C64",
+    "review_md_bytes": 11977,
+    "review_md_lines": 202,
+    "body_sha256": "00651AB599B44F599A24107057C8DD629A6E220A3E880F19230B4C67A70D80E2",
+    "byte_proof": "Verdict block body (lines 188-218 of review.md, joined by LF) has SHA256 first-8-hex = 00651ab5, matching the prefix-hash in the block header at line 184. Full file sha256: E99D7D21...BE64C64 (11977 bytes, 202 lines).",
+    "prefix_hash_verified": "00651ab5"
+  },
   "implementer": "subagent",
-  "reviewer_status": "not_reviewed",
+  "reviewer_status": "accepted_scoped",
+  "bookkeeping": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true
+  },
   "completed_steps": [
     "1. Read card text and START_HERE",
     "2. Clean up partial work and recreate attempt directory",
@@ -16,10 +33,12 @@
     "9. Write test_w05b_verified_artifact_read.py (20 tests)",
     "10. Run tests: 20 passed, 0 failed",
     "11. Run regression: 11 FC-904 tests still pass",
-    "12. Pack evidence: all JSON files, diff, hashes"
+    "12. Pack evidence: all JSON files, diff, hashes",
+    "13. Independent review: accepted_scoped",
+    "14. Carrier landing: transcribe verdict, update handoff.json, create qualification.json"
   ],
-  "next_step_number": 13,
-  "next_action": "Independent reviewer reads card, binding, oracle, diff, test results, and evidence files. Re-runs at least one negative case (e.g., tamper test). Writes review.md with accepted_scoped/changes_required/blocked verdict. NEVER self-sign.",
+  "next_step_number": 15,
+  "next_action": "Card I-05-B fully landed. Status accepted_scoped. No further steps.",
   "input_hashes": {
     "card_I-05-B.md": "read at runtime",
     "START_HERE.md": "read at runtime",
@@ -73,12 +92,50 @@
     "before/source_hashes.json",
     "after/source_hashes.json",
     "after/test_results.json",
-    "handoff.json"
+    "handoff.json",
+    "review.md",
+    "evidence/verdict_transcription.json",
+    "evidence/I-05-B/qualification.json"
   ],
   "rulings_applied": {
     "W05-1": "选 A: historical sections artifacts only get source-window binding, no per-slice hash depth",
     "W05-2": "选 A: as_of_date mandatory = published_date"
   },
+  "carried_findings": [
+    {
+      "id": "P2-1",
+      "severity": "P2",
+      "title": "N3 negative cases incomplete (denied root, placeholder, out-of-bounds not tested)",
+      "file": "test_w05b_verified_artifact_read.py",
+      "class": "TestW05BN3NegativeSecurity",
+      "description": "Card spec and oracle require testing denied root, offline placeholder, out-of-bounds path. Test class covers missing file, no bundle, malformed bundle, missing role, empty path but NOT the three containment cases.",
+      "minimum_fix": "Add test cases for denied root and out-of-bounds paths, or document that verify_artifact_reads delegates containment to validate_artifact with integration tests proving that delegation.",
+      "append_only": true,
+      "frozen_artifact_touched": false
+    },
+    {
+      "id": "P3-1",
+      "severity": "P3",
+      "title": "W05-2 as_of_date fallback described in decision.md but not implemented",
+      "file": "source_preparation.py",
+      "line": 165,
+      "description": "decision.md claims fallback to published_date when as_of_date is absent. Code does request.get('as_of_date', '') with no fallback.",
+      "minimum_fix": "Add fallback in code or correct decision.md to state as_of_date is required by caller.",
+      "append_only": true,
+      "frozen_artifact_touched": false
+    },
+    {
+      "id": "P3-2",
+      "severity": "P3",
+      "title": "Oracle.md ALPHA byte count wrong (says 9, actual is 8)",
+      "file": "oracle.md",
+      "line": 18,
+      "description": "Oracle states bytes_read=9 (len of b'ALPHA=17\\n') but actual sentinel is b'ALPHA=17' (8 bytes, no trailing newline).",
+      "minimum_fix": "Correct oracle.md line 18 to bytes_read=8.",
+      "append_only": true,
+      "frozen_artifact_touched": false
+    }
+  ],
   "boundaries": {
     "disclosure_adaptation": "unmapped",
     "accuracy": "unproven",

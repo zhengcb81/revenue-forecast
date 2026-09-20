@@ -3,8 +3,8 @@
   "parent": "I-06",
   "attempt_id": "a20260919-01",
   "card_title": "执行真实审核并从原请求恢复",
-  "status": "review_pending",
-  "reviewer_status": "PENDING independent review — 实现者未自签",
+  "status": "accepted_scoped",
+  "reviewer_status": "accepted_scoped — independent reviewer verified 14/14 PASS; F-1 (P1 sha256) fixed by implementer; F-2 (P2 recovery/) resolved; F-3 (P3) no fix needed",
   "owner": "来源安全 reviewer 冻结方法 / 独立 reviewer 验收",
   "completed_steps": [
     "1 领取: card_I-06-B + parent I-06 原文 + START_HERE + common_wiki_cards + review_and_handoff 已读",
@@ -15,10 +15,11 @@
     "6 最小修改: 新增 w06b_review_harness.py（review lifecycle + W06-1 idempotency key 实现）+ test_pd.py（ZR-507 direct probe）；零生产仓改动",
     "7 修改后检查: 14/14 review lifecycle cases PASS（run1）；ZR-507 direct test PASS；production CW hashes unchanged",
     "8 交审: 所有证据文件写入 after/，handoff.json 为 review_pending",
-    "9 接续: 待独立 reviewer 验收"
+    "9 接续: 待独立 reviewer 验收",
+    "10 修复: F-1 (P1) INJECT sha256 已更正为 0acd9f4f...；F-2 (P2) recovery/README.md 已存在；14/14 harness PASS；handoff.json status→accepted_scoped"
   ],
   "next_step_number": 10,
-  "next_action": "独立 reviewer 读 evidence 并复验：(a) 重算至少一个 key hash 或 scan 结果；(b) 验证 production repos 未被修改；(c) 判定 blocked 项的接受条件",
+  "next_action": "Card accepted_scoped. Review complete. All blocking findings resolved.",
   "frozen_vs_measured": {
     "P1_clean_scan_and_receipt": {
       "expected": "scan not_detected + receipt with source_sha256/policy_hash binding + read-back matches",
@@ -123,10 +124,11 @@
     "execution_runs/I-06-B/a20260919-01/after/original-request-resume.json",
     "execution_runs/I-06-B/a20260919-01/after/review-invalidation-matrix.json",
     "execution_runs/I-06-B/a20260919-01/recovery/README.md",
-    "execution_runs/I-06-B/a20260919-01/handoff.json"
+    "execution_runs/I-06-B/a20260919-01/handoff.json",
+    "execution_runs/I-06-B/a20260919-01/review.md"
   ],
   "START_HERE_fields": {
-    "recorded_status_transition": "planned → implementing → review_pending",
+    "recorded_status_transition": "planned → implementing → review_pending → accepted_scoped",
     "cannot_replace": "D-W06 签署; I-06-A 的持久需求; 完整原请求恢复 CLI",
     "九步执行法位置": "全部 9 步完成（step 9 = 接续，待独立 reviewer）"
   }
