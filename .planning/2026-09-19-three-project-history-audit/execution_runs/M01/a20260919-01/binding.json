@@ -1,0 +1,77 @@
+{
+ "card_id": "M01",
+ "attempt_id": "a20260919-01",
+ "model_id": "direct_growth",
+ "binding_status": "bound",
+ "binding_sources": {
+  "I-00-B": {
+   "path": "execution_runs/I-00-B/a20260919-01/binding.json",
+   "rule_read": "run cwd must be a per-attempt isolation directory, never the repo root; the global Miniconda python is FORBIDDEN for card runs",
+   "note": "I-00-B does not materialise a checkout tree; it binds the isolation plan and the two-stage command rule. This attempt therefore materialises its own read-only isolated snapshot (iso/checkout_scripts) and records the production hashes it was copied from."
+  },
+  "I-00-C": {
+   "path": "execution_runs/I-00-C/a20260919-01/",
+   "role": "dependency receipt: source/config fingerprint rehash for the three repos",
+   "status_as_read": "present, used as a receipt reference only (this attempt re-hashed the files it actually used rather than trusting the receipt)"
+  },
+  "I-00-A": {
+   "path": "execution_runs/I-00-A/a20260919-01/baseline.json",
+   "role": "template interpreter and isolation finding (global python loads an editable dayu-agent finder, so isolated venvs are mandatory)"
+  }
+ },
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "created_from_template": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "isolation": "attempt-local venv created with `python -m venv` from the I-00-A template venv; pytest installed offline from the local cache",
+  "global_python_used_for": "read-only PDF text extraction only (PyMuPDF), never for a card run"
+ },
+ "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01",
+ "python_path": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\iso\\checkout_scripts"
+ ],
+ "run_code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\iso\\checkout_scripts",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "model_contract_as_read_from_the_isolated_copy": {
+  "formula": "revenue[t] = revenue[t-1] * (1 + growth_rate[t])",
+  "required": [
+   "growth_rate"
+  ],
+  "optional": [],
+  "defaults": {},
+  "driver_bounds": {
+   "growth_rate": [
+    -1.0,
+    null
+   ]
+  },
+  "entry_point": "scripts/model_registry.py calculate_registered_model(model_id, base_revenue, drivers, years)"
+ },
+ "allowed_write_roots": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01"
+ ],
+ "forbidden": [
+  "writing anywhere outside the attempt directory",
+  "writing under Projects/revenue-forecast outside .planning",
+  "writing under Projects/company-wiki or Projects/filing-fetch",
+  "editing .planning/reviews (frozen audit evidence)",
+  "git add/commit/restore/stash in any of the three repos",
+  "network calls, real providers, LLM calls, publication",
+  "calling any product function other than calculate_registered_model for the formula oracle"
+ ],
+ "network": "disabled",
+ "evidence_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\evidence\\M01",
+ "created_before_runs": true
+}

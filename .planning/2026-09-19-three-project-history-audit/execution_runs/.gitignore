@@ -1,0 +1,30 @@
+# Per-attempt working state that is RECONSTRUCTIBLE and therefore not versioned.
+#
+# Policy (recorded 2026-09-20 by the integration step): every attempt keeps its
+# summary evidence (run-all.txt, failures.txt, per-case JSON summaries, hashes,
+# changes.diff, docs) in git, but NOT:
+#   * iso/            - venvs and byte-identical product copies (rebuilt from HEAD
+#                       + changes.diff; a venv must never be versioned)
+#   * cmd-*/runs-*/   - pytest/sim per-command scratch workspaces
+#   * prefix_src/     - pre-image source copies
+#   * quarantine*/    - superseded scratch retained on disk only
+#   * *-E5*/          - per-tree CLI case workspaces
+#   * evidence/run/   - per-case sim run directories (the summaries above are kept)
+#   * harness/scratch/
+# This keeps each attempt reviewable (hashes + summaries) without committing
+# hundreds of megabytes of working copies. Anything needed to reproduce a number
+# is named in the attempt's commands.json / review.md.
+*/a*/iso/
+*/a*/before/cmd-*/
+*/a*/before/prefix_src/
+*/a*/before/runs*/
+*/a*/before/quarantine*/
+*/a*/after/cmd-*/
+*/a*/after/runs*/
+*/a*/after/quarantine*/
+*/a*/r2/*-E5*/
+*/a*/r2/cmd-*/
+*/a*/r2/quarantine*/
+*/a*/r2/runs-*/
+*/a*/evidence/run/
+*/a*/harness/scratch/

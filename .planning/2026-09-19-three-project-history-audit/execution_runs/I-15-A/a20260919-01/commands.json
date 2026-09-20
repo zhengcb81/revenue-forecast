@@ -1,0 +1,71 @@
+{
+  "card": "I-15-A",
+  "attempt_id": "a20260919-01",
+  "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-15-A\\a20260919-01",
+  "python": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-15-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "network": "disabled",
+  "binding_status": "bound",
+  "product_code_changed": false,
+  "commands": [
+    {
+      "id": "CMD-I15A-C1..C6",
+      "purpose": "iterative build-up of the counterexample suite (schema/import/binding fixes only; no expectation was relaxed)",
+      "cwd": "<attempt>/before_pass/cmd-C1..cmd-C6",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
+               "--basetemp", "<attempt>/before_pass/cmd-C<n>/pytest", "-q",
+               "<attempt>/harness/tests/test_i15a_prune_verified_set.py"],
+      "raw_returncode": [1, 1, 1, 1, 1, 1],
+      "expected_returncode": 1,
+      "expected_business_result": "each iteration reached the frozen assertions; the failures were the intended counterexamples, never a relaxed check",
+      "evidence": "before_pass/cmd-C1..cmd-C6/stdout.txt"
+    },
+    {
+      "id": "CMD-I15A-C7",
+      "purpose": "final run of the frozen suite (11 cases: P1, P2 x2, N1 x4, N2, N3, N4) against the unmodified product code",
+      "cwd": "<attempt>/after_pass/cmd-C7",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
+               "--basetemp", "<attempt>/after_pass/cmd-C7/pytest", "-q",
+               "<attempt>/harness/tests/test_i15a_prune_verified_set.py"],
+      "config_paths": [],
+      "allowed_write_roots": ["<attempt>/after_pass/cmd-C7", "<attempt>/harness/scratch"],
+      "network": "disabled",
+      "timeout_seconds": 500,
+      "expected_returncode": 1,
+      "raw_returncode": 1,
+      "expected_business_result": "6 failed / 5 passed; the 6 failures are exactly W15-P1, P2-idempotence, N1-empty-dir, N2-clock, N3-TOCTOU, N4-crash; the 5 passes are archive verification, corrupt-archive refusal, manifest-conflict detection, restore proof, same-day overwrite detection",
+      "evidence": "after_pass/cmd-C7/stdout.txt, after_pass/cmd-C7/stderr.txt, after_pass/evidence/pytest_full_stdout.txt"
+    },
+    {
+      "id": "CMD-I15A-C8",
+      "purpose": "negative binding case: a prune/read aimed at the production catalog must be refused before any connection",
+      "cwd": "<attempt>/after_pass/cmd-C8",
+      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/negative_binding_check.py"],
+      "config_paths": [],
+      "allowed_write_roots": ["<attempt>/after_pass/evidence"],
+      "network": "disabled",
+      "timeout_seconds": 180,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
+      "expected_business_result": "all four paths refused with BINDING-REFUSED and opened_connections == []",
+      "evidence": "after_pass/cmd-C8/stdout.txt, after_pass/evidence/negative-binding-check.json"
+    }
+  ],
+  "required_evidence_artifacts": {
+    "archive-verified-manifest.json": "after_pass/evidence/archive-verified-manifest.json",
+    "exact-prune-plan.json": "after_pass/evidence/exact-prune-plan.json",
+    "deleted-and-retained-ids.json": "after_pass/evidence/deleted-and-retained-ids.json",
+    "restore-proof.json": "after_pass/evidence/restore-proof.json",
+    "fault-recovery.json": "after_pass/evidence/fault-recovery.json"
+  },
+  "additional_evidence_artifacts": {
+    "idempotence.json": "after_pass/evidence/idempotence.json",
+    "n1-empty-old-dir.json": "after_pass/evidence/n1-empty-old-dir.json",
+    "n1-corrupt-archive.json": "after_pass/evidence/n1-corrupt-archive.json",
+    "n1-manifest-conflict.json": "after_pass/evidence/n1-manifest-conflict.json",
+    "n1-same-day-overwrite.json": "after_pass/evidence/n1-same-day-overwrite.json",
+    "n2-clock.json": "after_pass/evidence/n2-clock.json",
+    "n4-crash-receipt-absence.json": "after_pass/evidence/n4-crash-receipt-absence.json",
+    "real-archive-retired-evidence.jsonl.gz": "after_pass/evidence/real-archive-retired-evidence.jsonl.gz (product-written archive containing a1,a2,c1; sha256 4798b9719528223b8614d2ff6e22939cd60bd1427ce9c22da5d576317e1b9556, identical to its p1-verify scratch source and to the delivered manifest's archive_sha256)",
+    "hash_correction_r2_F-I15A-01": "This entry first cited 85d2f08e05271527638f091bd395820358940e9ad0c266c723c40afc6de8a38e, which now corresponds to NO artifact in the attempt. That value was the p2-restore case's archive hash at an earlier iteration (cmd-C6); the suite re-ran at cmd-C7 and the gzip bytes changed because gzip embeds an mtime, so the stale citation can no longer be re-matched. Corrected to the delivered file's hash, which the delivered archive-verified-manifest.json also records, so the two delivered artifacts cross-check each other. Any archive hash cited from this attempt must name both its case and its run."
+  }
+}

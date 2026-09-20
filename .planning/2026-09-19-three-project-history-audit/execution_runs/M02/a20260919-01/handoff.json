@@ -1,0 +1,182 @@
+{
+ "card_id": "M02",
+ "attempt_id": "a20260919-01",
+ "status": "review_pending",
+ "implementer_is_not_the_reviewer": true,
+ "completed_steps": {
+  "A_binding": "done (binding.json: read-only production hashes + attempt-local isolated snapshot)",
+  "B_positive_run": "done (positive equals the independent oracle within 1e-9*max(1,|e|))",
+  "C_negative_run": "done (card-specific negative + N01-N05 + continuity break, all rejected with ModelRegistryError)",
+  "D_disclosure_mapping": "minimum disclosure mapping delivered; professional decisions written as PROPOSED only, not signed",
+  "E_historical_mapping_probe": "delivered as a labelled historical_mapping_probe; NOT a scenario set and NOT accuracy evidence",
+  "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist"
+ },
+ "completed_steps_list": [
+  "A",
+  "B",
+  "C",
+  "D-minimum",
+  "E-probe"
+ ],
+ "next_step_number": 4,
+ "next_action": "Independent reviewer: re-run scripts/oracle_M02.py and scripts/run_card.py, confirm positive [80,0,120], the 11 rejected negatives and the base-independence observation, then rule on DEC-M02-3 (should an ignored base_revenue still be domain-checked) and on whether a constructive zero residual can ever satisfy the card's reconciliation requirement (implementer says no). Then I-10-A owns D/E.",
+ "input_hashes": {
+  "disclosed_source_documents": [
+   {
+    "doc_id": "cninfo:1225023658",
+    "pdf_sha256": "01819e1c7daad939d1779a8aa729f50f02151192e609cb28c2c405634a8f343d",
+    "sidecar_sha256": "7f7570fe6565698f1962a9301b5e47dbe76fb3a5e8dfa5663a48fc3793bf20b5",
+    "local_hash_matches_publisher_receipt": true
+   }
+  ],
+  "evidence_input_json": "8b7d9dc86578d1f6e5f3cb480cb6a8ae9512b10f728b180d3c12cff6d18ec860",
+  "evidence_oracle_json": "258cd8e214e04fb7025916ce2d946177411440aadcefefc5b612f518c1bdd735",
+  "evidence_cases_json": "e10fb6c095bb16a84040548d0582456d4d0583470adbd78008d592974c930579"
+ },
+ "current_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "changed_paths": {
+  "production_repos": [],
+  "note": "no production file was created, modified, added, committed, restored or stashed in any of the three repos",
+  "attempt_paths_created": [
+   "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01"
+  ]
+ },
+ "commands_executed": [
+  "A-oracle",
+  "B-product-run",
+  "C-pytest-sanity",
+  "D-pdf-probe",
+  "R2-B-rerun",
+  "R2-pack-evidence",
+  "R2-exit-code-selfcheck",
+  "R3-selfcheck-with-case-D",
+  "R3-product-rerun",
+  "R3-selfcheck-with-case-D",
+  "R3-product-rerun"
+ ],
+ "raw_exit_codes": {
+  "A": 0,
+  "B": 0,
+  "C": 0,
+  "D": 0,
+  "first_B_attempt_before_harness_fix": 1,
+  "R2_B_rerun": 0,
+  "R2_selfcheck_A_corrupted_oracle": 3,
+  "R2_selfcheck_B_corrupted_case_plan": 1,
+  "R2_selfcheck_C_uncorrupted": 0,
+  "R3_selfcheck_D_corrupted_positive_input": 2,
+  "R3_product_rerun": 0
+ },
+ "expected_exit_codes": {
+  "A": 0,
+  "B": 0,
+  "C": 0,
+  "D": 0,
+  "R2_B_rerun": 0,
+  "R2_selfcheck_A_corrupted_oracle": 3,
+  "R2_selfcheck_B_corrupted_case_plan": "non-zero",
+  "R2_selfcheck_C_uncorrupted": 0,
+  "R3_selfcheck_D_corrupted_positive_input": 2,
+  "R3_product_rerun": 0
+ },
+ "negative_case_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": []
+ },
+ "positive_actual": [
+  80.0,
+  0.0,
+  120.0
+ ],
+ "positive_expected": [
+  80.0,
+  0.0,
+  120.0
+ ],
+ "open_questions": [
+  "DEC-M02-2: can direct_revenue earn a disclosure adaptation without an independent revenue estimate, given the reconciliation is an identity?",
+  "DEC-M02-3: current behaviour rejects a negative base_revenue even though the formula ignores it. Keep fail-closed (A) or ignore unused fields (B)?",
+  "SR-M02-B: for an IFRS 17 insurer, is direct_revenue admissible at all before the CSM/coverage-unit reconciliation?",
+  "F-M02-01 requires_owner_or_specialist_ruling: should an IGNORED input field still have to satisfy its domain? Measured on M02: `calculate_registered_model` rejects base_revenue < 0 uniformly before dispatch for every model, while `_direct_revenue` deletes base_revenue and `_direct_growth` consumes it. base=999 leaves the output identical; base=-5 raises ModelRegistryError. Options A (keep fail-closed) / B (ignore unused fields). No product change was made and no position is asserted; the ruling is reserved for the owner/specialist.",
+  "F-M01-01 residual gap: the pre-run frozen hash of oracle.md was never captured, so the frozen version cannot be hash-proven to predate the run; only the mtime sequence and the unmodified frozen body support it. Recorded in evidence/<card>/first_run_forensics.json (M01) and the review.md r2 section.",
+  "F-M01-02 residual (corrected in r3): rc=2 IS reachable - a corrupted positive input makes the product raise, so no verdict exists (case D, raw rc 2). Case B (a case-plan defect outside the guard) still exits 1; that is a different, still fail-loud path. No product change was needed."
+ ],
+ "blocked_by": [],
+ "stop_conditions_hit": [
+  "STOP_ACCURACY (no I-12 frozen design)"
+ ],
+ "qualifications": {
+  "formula": "accepted_scoped (this card, per the independent point review; formula qualification only)",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "evidence_paths": [
+  "after/",
+  "before/",
+  "binding.json",
+  "changes.diff",
+  "commands.json",
+  "decision.md",
+  "evidence/M02/accounting_decision.md",
+  "evidence/M02/cases.json",
+  "evidence/M02/command_manifest.json",
+  "evidence/M02/disclosure_mapping.json",
+  "evidence/M02/formula_result.json",
+  "evidence/M02/historical_mapping_probe.json",
+  "evidence/M02/historical_reconciliation.json",
+  "evidence/M02/input.json",
+  "evidence/M02/negative_results.json",
+  "evidence/M02/oracle.json",
+  "evidence/M02/oracle_stdout.txt",
+  "evidence/M02/qualification.json",
+  "evidence/M02/revision_r2.json",
+  "evidence/M02/revision_r3.json",
+  "evidence/M02/run_result.json",
+  "evidence/M02/source_manifest.json",
+  "evidence/M02/stderr.txt",
+  "evidence/M02/stdout.txt",
+  "handoff.json",
+  "iso/checkout_scripts/",
+  "oracle.md",
+  "recovery/README.md",
+  "recovery/r2_exit_code_selfcheck/selfcheck_result.json",
+  "review.md",
+  "scripts/"
+ ],
+ "reviewer_status": "pending_spot_check",
+ "revision": "r3",
+ "revision_history": [
+  {
+   "revision": "r1",
+   "review_outcome": "accepted_scoped (formula qualification only)",
+   "review_note": "negative counts, positive values, disclosure source hashes/pages and the absence of an accuracy claim were reproduced independently; five required fixes were returned"
+  },
+  {
+   "revision": "r2",
+   "review_outcome": "pending re-review of the five fixes only",
+   "generated_at": "2026-09-20T00:45:40Z"
+  },
+  {
+   "revision": "r2",
+   "review_outcome": "five required fixes reproduced as landed; point review returned final accepted_scoped (formula only)"
+  },
+  {
+   "revision": "r3",
+   "review_outcome": "point-review follow-up: 2 low required fixes (NEW-1, NEW-2) + 2 info annotations (NEW-3, NEW-4); pending spot check"
+  },
+  {
+   "revision": "r2",
+   "review_outcome": "five required fixes reproduced as landed; point review returned final accepted_scoped (formula only)"
+  },
+  {
+   "revision": "r3",
+   "review_outcome": "point-review follow-up: 2 low required fixes (NEW-1, NEW-2) + 2 info annotations (NEW-3, NEW-4); pending spot check"
+  }
+ ]
+}

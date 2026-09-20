@@ -1,0 +1,151 @@
+{
+  "card": "I-15-A",
+  "attempt_id": "a20260919-01",
+  "date_utc": "2026-09-19",
+  "objective": "Freeze the rule that prune may only delete a specific, already-verified archive set (with its evidence and hashes), that each deleted span is recoverable from that archive, and that the plan is re-verified under TOCTOU. Produce isolated counterexamples for the 'delete anything that looks expired' failure mode. No production cleanup.",
+  "parent_obligation": "PLAN/implementation_plan.md item I-15 (\"安全维护缺口\": prune must be bound to a specific verified archive set, not 'any expired directory'; no production cleanup)",
+  "design_prerequisite": "D-W15 (common_wiki_cards.md) - specialist decision recorded in decision.md; this attempt implements the ISOLATED evidence only and does not release a production prune",
+  "dependencies": {
+    "I-00-A": {
+      "receipt": "../../I-00-A/a20260919-01/baseline.json",
+      "used_for": "template interpreter, prod catalog path/size (49677344768 bytes), worker paused statement, no-production-delete rule",
+      "status_at_read": "present"
+    },
+    "I-00-B": {
+      "receipt": "../../I-00-B/a20260919-01/binding.json",
+      "used_for": "two-stage binding, 'no invented CLI', forbidden list, CMD-W10 anchor for prune/archive",
+      "status_at_read": "present"
+    },
+    "I-00-C": {
+      "receipt": "../../I-00-C/a20260919-01/handoff.json",
+      "used_for": "isolation/evidence precedent",
+      "status_at_read": "present"
+    }
+  },
+  "interpreter": {
+    "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-15-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "created_from_template": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "version": "3.13.9 (Anaconda packaging)",
+    "installed_into_venv": ["pytest==9.1.1", "pyyaml==6.0.3", "requests==2.34.2"],
+    "global_miniconda_python": "FORBIDDEN (I-00-A: editable dayu-agent finder hook)",
+    "network": "disabled"
+  },
+  "run_cwd_rule": "every run command executes with workdir inside this attempt dir; NEVER company-wiki, NEVER .source_catalog, NEVER the D: archive root",
+  "product_import": {
+    "mode": "sys.path injection of the READ-ONLY product src, no install",
+    "src": "C:\\Users\\郑曾波\\Projects\\company-wiki\\src",
+    "env": {"PYTHONDONTWRITEBYTECODE": "1"}
+  },
+  "source_anchors_sha256_verified_this_attempt": {
+    "CW/src/company_wiki/source_catalog/prune_retired_evidence.py": {
+      "sha256": "2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46",
+      "bytes": 4658,
+      "matches_card_declared_hash": true,
+      "line_drift": {
+        "card_says_DELETE_BATCH_line": 28,
+        "actual_DELETE_BATCH_line": 27,
+        "card_says_prune_fn_line": 59,
+        "actual_prune_fn_line": 59
+      }
+    },
+    "CW/src/company_wiki/source_catalog/archive_retired_evidence.py": {
+      "sha256": "143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0",
+      "bytes": 3291,
+      "matches_card_declared_hash": true,
+      "line_drift": {
+        "card_says_archive_fn_line": 40,
+        "actual_archive_fn_line": 40,
+        "note": "no drift on the function; the card's complaint about the same-day wt overwrite maps to line 65 gzip.open(out_path,'wt')"
+      }
+    },
+    "CW/src/company_wiki/source_catalog/store.py": {
+      "sha256": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615",
+      "bytes": 63563,
+      "anchors": {"evidence_spans DDL": "store.py:224", "documents DDL": "store.py:143",
+                  "retire_document": "store.py:449", "restore_document": "store.py:492",
+                  "CatalogStore.transaction": "store.py:999"}
+    },
+    "CW/src/company_wiki/source_catalog/lock.py": {
+      "sha256": "2303d3e5a4a790070b253cbf3a319b38be25d4d412da8f8e067726d0553d5b4c",
+      "bytes": 15807,
+      "anchors": {"CatalogOperationLock.__init__": "lock.py:356"}
+    },
+    "CW/src/company_wiki/source_catalog/models.py": {
+      "sha256": "65230572d355031d9634c9355939034d1dd8cb386bb98d1555e05184d4eb5087",
+      "bytes": 10798,
+      "anchors": {"CatalogConfig": "models.py:168", "CatalogConfig.database_path": "models.py:199"}
+    },
+    "CW/src/company_wiki/source_catalog/section_query.py": {
+      "sha256": "a40d54a36fe14fd0e76b322477885777ad2b3fa8b5263a2d8e726a2c63214f49",
+      "bytes": 4529,
+      "note": "read-only; used to confirm the audit's 'section query' neighbour scope, not modified"
+    },
+    "CW/src/company_wiki/source_catalog/reconcile_retire_state.py": {
+      "sha256": "b4db781af6f24f781b3ec25eaa20d7bbc7bd9da666e2356c28fd4ea4097afeb7",
+      "bytes": 7786,
+      "note": "read-only; retire-state reconciliation, not modified"
+    },
+    "CW/tests/contract/test_source_catalog_prune_retired.py": {
+      "sha256": "e0727c70414b155568a84b43245eafbb7398f702aa2c071e07c2ca998eaf6862",
+      "bytes": 3211,
+      "anchors": {"test_prune_apply_deletes_spans_when_due": "line 66",
+                  "test_prune_dry_run_reports_span_volume": "line 54",
+                  "stale_date_comment": "line 57 comment '> 90 days old' next to a directory dated 2026-05-01 which is now ~142 days old"},
+      "note": "NOT modified by this attempt; the card allows changing it, but the replacement test is proposed in harness/tests/ for reviewer inspection first"
+    },
+    "CW/tests/contract/test_source_catalog_archive_retired.py": {
+      "sha256": "0a4195b1cf5493ef1360c03c47a8e83a095207df02cd9d1c39a9a00df6a03859",
+      "bytes": 3500,
+      "note": "reused read-only as the real-archive construction reference; not deleted, not modified"
+    }
+  },
+  "evidence_from_audit_read_only": {
+    "PLAN/reviews/wiki/review.md:80": "'维护上区分每个待删除记录是否属于已验证归档集合' - the maintenance rule this card freezes",
+    "PLAN/reviews/wiki_legacy/item_ledger.jsonl WIKI-LEGACY-SPECIAL-0112": "due=false only proves the retention window had not elapsed; it does not prove archive binding",
+    "PLAN/reviews/wiki_legacy/item_ledger.jsonl WIKI-LEGACY-SPECIAL-0109": "rows_written==rows_in_catalog proves count equality only: not no-duplication, not per-PK completeness, not content hash, not recoverability",
+    "PLAN/reviews/wiki_legacy/item_ledger.jsonl WIKI-LEGACY-SPECIAL-0130..0132": "plan demands dry-run -> backup(receipt) -> apply -> reconcile, but prune only looks at directory dates",
+    "PLAN/reviews/wiki_legacy/item_ledger.jsonl WIKI-LEGACY-SPECIAL-0155..0162": "contradicted: row counts / oldest directory date cannot bind a per-document lifecycle; the delete scope exceeds the archived set"
+  },
+  "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-15-A\\a20260919-01\\"
+  ],
+  "allowed_product_edits": [
+    "CW:src/company_wiki/source_catalog/prune_retired_evidence.py (planned by D-W15, NOT edited this attempt)",
+    "CW:src/company_wiki/source_catalog/archive_retired_evidence.py (planned by D-W15, NOT edited this attempt)",
+    "corresponding isolated contract tests (proposed in this attempt's harness/, NOT written into CW/tests this attempt)",
+    "scratch archive/catalog only; any production DELETE/VACUUM/move is forbidden"
+  ],
+  "forbidden": [
+    "any production DELETE / VACUUM / file move / archive write",
+    "opening the production catalog for writing (C:\\Users\\...\\company-wiki\\.source_catalog\\catalog.sqlite3, 49,677,344,768 bytes)",
+    "starting, resuming or steering the worker; touching worker_control.json",
+    "D: drive migration or scheduling anything",
+    "network / provider calls",
+    "git add/commit/restore/stash in the three product repos",
+    "editing PLAN/reviews/**, audit_report.md, implementation_plan.md",
+    "changing retention_days to 0 or disabling verification to make a case pass"
+  ],
+  "fixed_sample_frozen_by_the_card": {
+    "now": "2026-09-19T00:00:00Z",
+    "retention_days": 90,
+    "manifest_verified_completed_at": "2026-05-01T00:00:00Z",
+    "documents": {"A": "retired (archived a1,a2)", "B": "retired, never archived (b1)", "C": "active (c1, archived)"},
+    "spans": ["a1", "a2", "a3", "b1", "c1"],
+    "total_spans": 5,
+    "expected_delete": ["a1", "a2"],
+    "expected_retain": ["a3", "b1", "c1"],
+    "note": "a3 was added to A after the archive was taken; c1 belongs to a document that is active again"
+  },
+  "production_repos_read_only": {
+    "company-wiki": {"head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939", "branch": "fcap",
+                      "porcelain_before": [" M CLAUDE.md", " M README.md"]},
+    "revenue-forecast": {"head": "2c5384bb0133c4e19c3d6049449b32469e14b09b", "branch": "fcap"},
+    "filing-fetch": {"head": "d35b6f5b09f1a7dad37d226504bf998802a852d7", "branch": "fcap"},
+    "worker_control_sha256": "9fcbe233efe76222a32316c07b9273b9c5128da3af6db27d706b1759680ac7bd (desired_state=paused, unchanged)"
+  },
+  "negative_binding_test": {
+    "id": "I15A-neg-bind-1",
+    "purpose": "a run whose catalog_dir/cwd resolves to the production .source_catalog must be refused",
+    "expected": "harness marks the command NOT RUNNABLE and exits 98 with BINDING-REFUSED; nothing is opened"
+  }
+}

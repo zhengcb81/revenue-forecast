@@ -1,0 +1,48 @@
+{
+ "cards": [
+  {
+   "card": "M01",
+   "model": "direct_growth",
+   "formula": "revenue[t] = revenue[t-1] * (1 + growth_rate[t])",
+   "required": "growth_rate",
+   "optional": "",
+   "defaults": {},
+   "driver_bounds": "growth_rate=-1.0:None",
+   "probe_keys": {"growth_rate": 0.1496},
+   "probe_note": "The single disclosed FY2024->FY2025 growth rate (14.96%) placed under low/base/high. Card_M01.md step E explicitly permits this for wiring verification. It is NOT a scenario set and NOT accuracy evidence."
+  },
+  {
+   "card": "M02",
+   "model": "direct_revenue",
+   "formula": "revenue[t] = direct_revenue[t]",
+   "required": "revenue",
+   "optional": "",
+   "defaults": {},
+   "driver_bounds": "revenue=0.0:None",
+   "probe_keys": {"revenue": 349079082852},
+   "probe_note": "The disclosed FY2025 consolidated revenue placed under low/base/high. This proves only that the copy step is exact; it is NOT a scenario set and NOT accuracy evidence."
+  },
+  {
+   "card": "M03",
+   "model": "unit_sales",
+   "formula": "revenue = units * unit_revenue * timing_factor + other_revenue",
+   "required": "units,unit_revenue",
+   "optional": "timing_factor,other_revenue",
+   "defaults": {"timing_factor": 1.0},
+   "driver_bounds": "units=0.0:None;unit_revenue=0.0:None;timing_factor=0.0:1.0;other_revenue=None:None",
+   "probe_keys": {"units": 4250370, "unit_revenue": 123751.503987229, "timing_factor": 1, "other_revenue": 0},
+   "probe_note": "The disclosed FY2024 BYD vehicle volume and the derived per-vehicle price placed under low/base/high. unit_revenue is derived from the same table, so the zero residual is an identity; NOT a scenario set and NOT accuracy evidence."
+  },
+  {
+   "card": "M04",
+   "model": "capacity_utilization",
+   "formula": "revenue = capacity * utilization * yield * unit_revenue * timing_factor + other_revenue",
+   "required": "capacity,utilization,yield,unit_revenue",
+   "optional": "timing_factor,other_revenue",
+   "defaults": {"timing_factor": 1.0},
+   "driver_bounds": "capacity=0.0:None;utilization=0.0:1.0;yield=0.0:1.0;unit_revenue=0.0:None;timing_factor=0.0:1.0;other_revenue=None:None",
+   "probe_keys": {"capacity": 11376000, "utilization": 0.856, "yield": 1, "unit_revenue": 5935.141, "timing_factor": 1, "other_revenue": 0},
+   "probe_note": "SMIC FY2024 disclosed utilisation and period-end capacity annualised, placed under low/base/high. This probe FAILED its frozen volume tolerance (21.40% gap), so it is recorded as an OPEN adaptation gap, NOT a scenario set and NOT accuracy evidence."
+  }
+ ]
+}

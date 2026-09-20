@@ -1,0 +1,87 @@
+{
+ "note": "Every command bound by this attempt. cwd is absolute; argv[0] is the attempt-local interpreter; each run writes its own raw log. expected_returncode is the TEST-FRAMEWORK expectation, raw_returncode is what actually happened; the business verdict lives in the parsed evidence file. START_HERE: a runner exit 0 never overrides a failing sub-case.",
+ "commands": [
+  {
+   "id": "I04C-01-compile-sim",
+   "purpose": "Syntax/import check of the whole simulation harness before any run",
+   "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
+   "argv": ["iso/venv/Scripts/python.exe", "-B", "-m", "py_compile", "sim/kernel.py", "sim/participant.py", "sim/stub_worker.py", "sim/harness.py", "sim/cases_core.py", "sim/cases_ownership.py", "sim/cases_legacy.py", "sim/stress.py", "sim/scheduler.py"],
+   "config_paths": [],
+   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01"],
+   "network": "disabled",
+   "timeout_seconds": 120,
+   "expected_returncode": 0,
+   "expected_business_result": "every module compiles",
+   "raw_returncode": 0
+  },
+  {
+   "id": "I04C-02-protocol-suite",
+   "purpose": "F-L1/F-L2a-d/F-L3/F-L4a-e/F-W1-W5 protocol simulations (state machine, ownership, crash windows, fail closed)",
+   "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
+   "argv": ["iso/venv/Scripts/python.exe", "-B", "sim/scheduler.py", "run", "F-L1", "F-L2a", "F-L2b", "F-L2c", "F-L2d", "F-L3", "F-L4a", "F-L4b", "F-L4c", "F-L4d", "F-L4e", "F-W1", "F-W2", "F-W4", "F-W4b", "F-W5"],
+   "config_paths": [],
+   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence/run"],
+   "network": "disabled",
+   "timeout_seconds": 900,
+   "expected_returncode": "0 when every selected case passes, 1 when any case has a failing check",
+   "expected_business_result": "see oracle.md sections 1-5 and 7",
+   "raw_returncode": 1,
+   "raw_log": "evidence/run-all.txt",
+   "parsed": "evidence/failures.txt"
+  },
+  {
+   "id": "I04C-03-lock-and-legacy",
+   "purpose": "F-LK1/LK2/LK3 lock atomicity and crash-release; F-L1-nolock deterministic lost update; F-L2a-legacy / F-Lgw1 legacy counterexamples",
+   "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
+   "argv": ["iso/venv/Scripts/python.exe", "-B", "sim/scheduler.py", "run", "F-LK1", "F-LK2", "F-LK3", "F-L1-nolock-guard", "F-L1-nolock", "F-L2a-legacy", "F-Lgw1"],
+   "config_paths": [],
+   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence/run"],
+   "network": "disabled",
+   "timeout_seconds": 900,
+   "expected_returncode": "0 when the atomicity cases and the RED counterexamples reproduce",
+   "expected_business_result": "F-LK1 final=200/200; F-LK2 final<200 (lost updates); F-LK3 parent reacquires in <0.5 s with no cleanup action; F-L1-nolock shows exactly one lease after two registrations",
+   "raw_returncode": 1,
+   "raw_log": "evidence/lock-and-legacy.txt",
+   "parsed": "evidence/lock-and-legacy-failures.txt"
+  },
+  {
+   "id": "I04C-04-parse",
+   "purpose": "Turn the raw scheduler logs into a per-case failing-check report (the logs are UTF-16 from PowerShell redirection, so encoding is detected)",
+   "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
+   "argv": ["iso/venv/Scripts/python.exe", "-B", "sim/parse_run.py", "evidence/run-all.txt", "evidence/failures.txt"],
+   "config_paths": [],
+   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence"],
+   "network": "disabled",
+   "timeout_seconds": 120,
+   "expected_returncode": 0,
+   "expected_business_result": "one report line per case with its failing checks",
+   "raw_returncode": 0
+  },
+  {
+   "id": "I04C-05-freeze",
+   "purpose": "Hash every artifact and re-verify that the production fetch_filing.py still has the card hash",
+   "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01",
+   "argv": ["iso/venv/Scripts/python.exe", "-B", "sim/freeze_evidence.py"],
+   "config_paths": [],
+   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence"],
+   "network": "disabled",
+   "timeout_seconds": 300,
+   "expected_returncode": 0,
+   "expected_business_result": "production_unchanged=true; evidence/hashes.txt written",
+   "raw_returncode": 0
+  },
+  {
+   "id": "I04C-06-iso-regression",
+   "purpose": "Frozen-file guard: the pause-around tests of the unmodified iso copy still pass, proving the design card changed no behaviour that the existing contract covers",
+   "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01/iso/filing-fetch",
+   "argv": ["../../venv/Scripts/python.exe", "-X", "utf8", "-B", "-m", "pytest", "tests/test_fetch_filing.py", "-q", "-p", "no:cacheprovider", "-k", "pause or resume", "--basetemp=../../evidence/pytest-basetemp"],
+   "config_paths": ["iso/filing-fetch/pyproject.toml"],
+   "allowed_write_roots": ["execution_runs/I-04-C/a20260919-01/evidence/pytest-basetemp"],
+   "network": "disabled",
+   "timeout_seconds": 600,
+   "expected_returncode": 0,
+   "expected_business_result": "the pause/resume contract tests still pass on the byte-identical source",
+   "binding_status": "bound"
+  }
+ ]
+}

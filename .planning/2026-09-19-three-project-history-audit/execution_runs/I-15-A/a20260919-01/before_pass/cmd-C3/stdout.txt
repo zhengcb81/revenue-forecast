@@ -1,0 +1,312 @@
+FFFFFFFFFF                                                               [100%]
+================================== FAILURES ===================================
+_______________ test_w15_p1_real_archive_verifies_independently _______________
+
+    def test_w15_p1_real_archive_verifies_independently():
+        case = fresh_case("p1-verify")
+        verdict = verify_archive(
+            case["archive_path"],
+            expected_ids=ARCHIVED_AT_TAKE,
+            expected_completed_at=VERIFIED_COMPLETED_AT,
+            write_manifest_to=case["root"] / "archive-verified-manifest.json",
+        )
+>       assert verdict["ok"], verdict["problems"]
+E       AssertionError: ["expected ids absent from archive: ['c1']"]
+E       assert False
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:108: AssertionError
+_______________ test_w15_p1_prune_deletes_only_the_verified_set _______________
+
+    def test_w15_p1_prune_deletes_only_the_verified_set():
+        """CURRENT-CODE COUNTEREXAMPLE.
+    
+        Frozen expectation of a compliant implementation: deleted == {a1, a2}.
+        The verification above authorises only a1/a2.  Whatever the current code does is
+        measured and compared against the pre-listed set - the assertion is against the
+        frozen sets, not against the function's report.
+        """
+        case = fresh_case("p1-delete")
+        verdict = verify_archive(
+            case["archive_path"],
+            expected_ids=ARCHIVED_AT_TAKE,
+            expected_completed_at=VERIFIED_COMPLETED_AT,
+            write_manifest_to=case["root"] / "archive-verified-manifest.json",
+        )
+>       assert verdict["ok"]
+E       assert False
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:132: AssertionError
+________ test_w15_p2_second_apply_is_idempotent_for_the_authorised_set ________
+
+    def test_w15_p2_second_apply_is_idempotent_for_the_authorised_set():
+        case = fresh_case("p2-idempotent")
+        verdict = verify_archive(case["archive_path"], expected_ids=ARCHIVED_AT_TAKE,
+                                 expected_completed_at=VERIFIED_COMPLETED_AT)
+>       assert verdict["ok"]
+E       assert False
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:165: AssertionError
+__________ test_w15_p2_restore_reproduces_the_archived_rows_exactly ___________
+
+    def test_w15_p2_restore_reproduces_the_archived_rows_exactly():
+        """W15-R7: recoverability is proven by row digests, not by row counts."""
+        case = fresh_case("p2-restore")
+        verdict = verify_archive(
+            case["archive_path"], expected_ids=ARCHIVED_AT_TAKE,
+            expected_completed_at=VERIFIED_COMPLETED_AT,
+            write_manifest_to=case["root"] / "archive-verified-manifest.json")
+>       assert verdict["ok"]
+E       assert False
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:190: AssertionError
+____________ test_w15_n1_empty_old_directory_is_not_authorisation _____________
+
+    def test_w15_n1_empty_old_directory_is_not_authorisation():
+        """The current code's own test builds exactly this and expects a full delete."""
+        root = guard_scratch(SCRATCH_ROOT / "n1-empty-old-dir")
+        if root.exists():
+            shutil.rmtree(root)
+        root.mkdir(parents=True)
+        db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+        manifests = root / "manifests"
+        (manifests / "archive" / "2026-05-01").mkdir(parents=True)   # empty, old, no gzip
+    
+        before = live_span_ids(db_path)
+        report = prune_retired_evidence(make_config("n1-empty-old-dir", db_path), manifests,
+                                        apply=True, retention_days=RETENTION_DAYS)
+        after = live_span_ids(db_path)
+        (root / "n1-empty-old-dir.json").write_text(json.dumps({
+            "case": "old empty directory only, no archive file at all",
+            "before": before, "after": after,
+            "deleted": sorted(set(before) - set(after)),
+            "product_report": report.to_dict(),
+            "frozen_expectation": "0 deleted; an empty old directory authorises nothing",
+        }, indent=2, ensure_ascii=False), encoding="utf-8")
+>       assert set(after) == set(before), "an empty old directory must not authorise any delete"
+E       AssertionError: an empty old directory must not authorise any delete
+E       assert {'c1'} == {'a1', 'a2', 'a3', 'b1', 'c1'}
+E         
+E         Extra items in the right set:
+E         'a2'
+E         'a3'
+E         'a1'
+E         'b1'
+E         Use -v to get more diff
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:283: AssertionError
+______________ test_w15_n1_corrupt_archive_is_not_authorisation _______________
+
+    def test_w15_n1_corrupt_archive_is_not_authorisation():
+        case = fresh_case("n1-corrupt")
+        case["archive_path"].write_bytes(b"\x1f\x8b\x08\x00 this is not a valid gzip body")
+>       verdict = verify_archive(case["archive_path"], expected_ids=ARCHIVED_AT_TAKE,
+                                 expected_completed_at=VERIFIED_COMPLETED_AT)
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:289: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:222: in verify_archive
+    rows = read_archive_rows(gz_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:190: in read_archive_rows
+    for line in fh:
+                ^^
+C:\Miniconda\Lib\gzip.py:353: in read1
+    return self._buffer.read1(size)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\_compression.py:68: in readinto
+    data = self.read(len(byte_view))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <gzip._GzipReader object at 0x000002615DDE7D30>, size = 8192
+
+    def read(self, size=-1):
+        if size < 0:
+            return self.readall()
+        # size=0 is special because decompress(max_length=0) is not supported
+        if not size:
+            return b""
+    
+        # For certain input data, a single
+        # call to decompress() may not return
+        # any data. In this case, retry until we get some data or reach EOF.
+        while True:
+            if self._decompressor.eof:
+                # Ending case: we've come to the end of a member in the file,
+                # so finish up this member, and read a new gzip header.
+                # Check the CRC and file size, and set the flag so we read
+                # a new member
+                self._read_eof()
+                self._new_member = True
+                self._decompressor = self._decomp_factory(
+                    **self._decomp_args)
+    
+            if self._new_member:
+                # If the _new_member flag is set, we have to
+                # jump to the next member, if there is one.
+                self._init_read()
+                if not self._read_gzip_header():
+                    self._size = self._pos
+                    return b""
+                self._new_member = False
+    
+            # Read a chunk of data from the file
+            if self._decompressor.needs_input:
+                buf = self._fp.read(READ_BUFFER_SIZE)
+>               uncompress = self._decompressor.decompress(buf, size)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               zlib.error: Error -3 while decompressing data: invalid stored block lengths
+
+C:\Miniconda\Lib\gzip.py:554: error
+_________ test_w15_n1_manifest_count_and_digest_conflicts_are_refused _________
+
+    def test_w15_n1_manifest_count_and_digest_conflicts_are_refused():
+        case = fresh_case("n1-manifest-conflict")
+        verdict = verify_archive(case["archive_path"], expected_ids=ARCHIVED_AT_TAKE,
+                                 expected_completed_at=VERIFIED_COMPLETED_AT)
+>       assert verdict["ok"]
+E       assert False
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:302: AssertionError
+____________ test_w15_n2_directory_name_is_not_the_retention_clock ____________
+
+    def test_w15_n2_directory_name_is_not_the_retention_clock():
+        root = guard_scratch(SCRATCH_ROOT / "n2-clock")
+        if root.exists():
+            shutil.rmtree(root)
+        root.mkdir(parents=True)
+        db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+        manifests = root / "manifests"
+        # Verified completion is RECENT (2026-09-18) although the directory name is old.
+        (manifests / "archive" / "2021-01-01").mkdir(parents=True)
+        (manifests / "archive" / "2021-01-01" / "retired-evidence.jsonl.gz").write_bytes(
+            gzip.compress(b'{"span_id": "a1"}\n'))
+        manifest = {
+            "schema_version": "archive-verified-manifest-1.0",
+            "catalog_identity": "scratch-catalog-i15a",
+            "archive_path": str(manifests / "archive" / "2021-01-01" / "retired-evidence.jsonl.gz"),
+            "verified_completed_at": "2026-09-18T00:00:00Z",
+            "retention_days": RETENTION_DAYS,
+            "row_digests": {},
+            "note": "fabricated manifest: recent completion, ancient directory name",
+        }
+        (root / "archive-verified-manifest.json").write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    
+        before = live_span_ids(db_path)
+        report = prune_retired_evidence(make_config("n2-clock", db_path), manifests,
+                                        apply=True, retention_days=RETENTION_DAYS)
+        after = live_span_ids(db_path)
+        (root / "n2-clock.json").write_text(json.dumps({
+            "directory_name": "2021-01-01",
+            "verified_completed_at": manifest["verified_completed_at"],
+            "days_since_verified_completion_from_fixed_now": (
+                __import__("datetime").date(2026, 9, 19) - __import__("datetime").date(2026, 9, 18)
+            ).days,
+            "fixed_now": NOW,
+            "before": before, "after": after,
+            "deleted": sorted(set(before) - set(after)),
+            "product_report": report.to_dict(),
+            "frozen_expectation": "0 deleted: the verified completion time is inside the window",
+        }, indent=2, ensure_ascii=False), encoding="utf-8")
+>       assert set(after) == set(before), (
+            "the retention decision came from the directory name, not the verified completion time")
+E       AssertionError: the retention decision came from the directory name, not the verified completion time
+E       assert {'c1'} == {'a1', 'a2', 'a3', 'b1', 'c1'}
+E         
+E         Extra items in the right set:
+E         'a2'
+E         'a3'
+E         'a1'
+E         'b1'
+E         Use -v to get more diff
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:365: AssertionError
+_______ test_w15_n3_mutation_after_plan_must_abort_not_silently_shrink ________
+
+    def test_w15_n3_mutation_after_plan_must_abort_not_silently_shrink():
+        case = fresh_case("n3-toctou")
+        verdict = verify_archive(case["archive_path"], expected_ids=ARCHIVED_AT_TAKE,
+                                 expected_completed_at=VERIFIED_COMPLETED_AT,
+                                 write_manifest_to=case["root"] / "archive-verified-manifest.json")
+>       assert verdict["ok"]
+E       assert False
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:379: AssertionError
+_____ test_w15_n4_interrupted_batch_leaves_a_receipt_of_what_was_deleted ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002615DE40D60>
+
+    def test_w15_n4_interrupted_batch_leaves_a_receipt_of_what_was_deleted(monkeypatch):
+        case = fresh_case("n4-crash")
+        (case["archive_root"] / "archive" / "2026-05-01").mkdir(parents=True, exist_ok=True)
+    
+        from company_wiki.source_catalog import prune_retired_evidence as module
+    
+        real_lock = module.CatalogOperationLock
+        calls = {"n": 0}
+    
+        class Boom(RuntimeError):
+            pass
+    
+        class ExplodingStore:
+            def __init__(self, database_path):
+                self._inner = sqlite3.connect(database_path)
+                self._inner.row_factory = sqlite3.Row
+    
+            def transaction(self):
+                calls["n"] += 1
+                conn = self._inner
+    
+                class _Ctx:
+                    def __enter__(self_inner):
+                        conn.execute("BEGIN IMMEDIATE")
+                        return conn
+    
+                    def __exit__(self_inner, exc_type, exc, tb):
+                        if calls["n"] >= 1:
+                            conn.commit()          # first batch commits ...
+                            raise Boom("simulated crash between batches")
+                        conn.rollback()
+                        return False
+    
+                return _Ctx()
+    
+        monkeypatch.setattr(module, "CatalogStore", ExplodingStore)
+    
+        before = live_span_ids(case["db"])
+        receipt_path = None
+        with pytest.raises(Boom):
+            prune_retired_evidence(case["config"], case["archive_root"],
+                                   apply=True, retention_days=RETENTION_DAYS)
+        after = live_span_ids(case["db"])
+        receipts = list((case["config"].catalog_dir / "artifacts" / "gates").glob(
+            "prune-retired-*.json")) if (case["config"].catalog_dir / "artifacts").exists() else []
+        (case["root"] / "n4-crash.json").write_text(json.dumps({
+            "case": "W15-N4 simulated crash after the first batch commit",
+            "batch_calls": calls["n"],
+            "before": before, "after": after,
+            "deleted": sorted(set(before) - set(after)),
+            "receipt_files": [str(p) for p in receipts],
+            "frozen_expectation": "the exact deleted ids must be recoverable from a receipt "
+                                  "even when the run dies mid-loop",
+        }, indent=2, ensure_ascii=False), encoding="utf-8")
+        # the frozen requirement: whatever was deleted must be recorded somewhere durable
+>       assert receipts, (
+            "the crash left deleted rows with no receipt at all: the exact set is unrecoverable")
+E       AssertionError: the crash left deleted rows with no receipt at all: the exact set is unrecoverable
+E       assert []
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:480: AssertionError
+=========================== short test summary info ===========================
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p1_real_archive_verifies_independently
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p1_prune_deletes_only_the_verified_set
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p2_second_apply_is_idempotent_for_the_authorised_set
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p2_restore_reproduces_the_archived_rows_exactly
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n1_empty_old_directory_is_not_authorisation
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n1_corrupt_archive_is_not_authorisation
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n1_manifest_count_and_digest_conflicts_are_refused
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n2_directory_name_is_not_the_retention_clock
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n3_mutation_after_plan_must_abort_not_silently_shrink
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n4_interrupted_batch_leaves_a_receipt_of_what_was_deleted
+10 failed in 1.18s

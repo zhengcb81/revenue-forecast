@@ -1,5 +1,16 @@
 # Progress
 
+## 2026-09-20 — 实施段：并行推进 I-08-A / M01–M04 / I-14-C / I-15-A / I-04-C（4 张接受、2 张返工）
+
+- **接受（+7 卡，累计 22/86）**：
+  - **I-08-A（设计，accepted_scoped）**：三层证明域 L1/L2/L3、`host_signed` 只能由 L3 验签产出、provider 协议（一次性子进程 + 精确字段集 + fail-closed 错误码表 **E01–E32 唯一来源**）、信任域三元组（fingerprint∈名单 ∧ issuer==声明 ∧ 时刻在窗口 ∧ active）、规范载荷（`canonical_sha256` 的 64 字符 ascii hex、排除自指字段）、重放/过期分离、旧版本 **G1/G2/G3a/G3b/G4 与 `classify()`**、**schema 3.8 → G3a 不得自动旁路 + R-LEGACY-1 + E29**、`public_keys` 键名冻结 + 非法名单**报错不静默**、参数 `W`/`T`/`L` 化并登记 OPEN-D7。三轮复审：r1 changes_required(6×P1) → r2 changes_required(R-BIND-1/2) → **r3 accepted_scoped**（复审独立写配对校验：32 码 0 mismatch；作者新 `check_r3_pairs.py` 对两类变异**均检出**）。**未授予**：provider 协议"无未决"（OPEN-D6/D7+三参数）、旧包兼容"已定案"、`tests/test_attestation.py` 可直接复用；**OPEN-D1…D7 已按裁定方入 handoff**（D1/D2/D3 建议同批）。
+  - **M01–M04（**仅 formula 资格**，accepted_scoped）**：direct_growth `[220,110,0]`+11/11 负例、direct_revenue `[80,0,120]`+11/11、unit_sales `305`+13/13、capacity_utilization `730`+15/15，连续性/默认值/单位与容差全部独立复算；披露映射用真实年报（紫金 FY2025 P15、比亚迪 FY2024 P23、中芯 FY2024 P6/P8/P84）并**明确 disclosure=unmapped、accuracy=unproven**（M04 命中 STOP：期末产能年化 vs 披露差 +21.40%）。三轮：r1 accepted_scoped(5 项必修) → r2 修 → r3 修（含**破坏"仅追加"形态的更正已自曝**）。**F-M02-01（被忽略字段仍受域约束）待 owner 裁定**。
+  - **I-15-A（**仅证据/诊断资格**，accepted_scoped；产品实施 blocked）**：冻结 W15-R1..R8 + 固定样本，反例证明现产品"空目录也删/同日覆写/时钟取目录名/TOCTOU/崩溃后不可恢复"；**D-W15 五项未签 ⇒ 不得实施、不得生产 prune**。
+- **返工中**：
+  - **I-04-C（设计）复审 changes_required**：**P1** ADR-10 未定义"最后退出者非 owner 且无义务"⇒ 实测留下**永久 paused**；**P1** 认领周期缺 owner 证据校验 ⇒ 实测对**第三方持有的 pause 执行 resume**；P2 generation 非单调、**证据/报告不符（实际 9/16 例失败、25 条失败检查，报告写"10 PASS/6 failing"，`parse_run.py` 误判）**、F-L4a 无结果（harness 缺陷）、ADR-11 未落实；授予 ADR-1/ADR-3 核心/ADR-4 lease_id 轴/fail-closed/预算组合。
+  - **I-14-C（实施）**：r1 的 3×P1 已闭合（左锚改 `(?<![A-Za-z0-9])`、真实 CLI 出口 E5a 命中 0、前像更正、E4a 变 load-bearing、记账更正），但修复**新引入正则 O(n²) 回归**（`_` 密集串 k=40000 >20 s）⇒ r3。
+- **本批的隔离事故（已处置）**：I-14-C 直接编辑了**生产工作树** 3 个文件（worker.py/observability.py/cli.py）；复审判定违反"生产零代码合并"，**父代理已 `git checkout HEAD --` 三者回退**（现 company-wiki porcelain 仅 ` M CLAUDE.md`/` M README.md`），修复内容只留 `changes.diff` + `iso/product_fixed`；并要求后续实施卡一律在 `iso/` 内做。
+
 ## 2026-09-19 — 实施段续：I-04-B（filing-fetch 预算修复**实施卡**，两轮复审后 accepted_scoped）
 
 - **产出**（execution_runs/I-04-B/a20260919-01/）：iso 副本（scripts+tests）、binding.json、oracle.md、commands.json（8 条命令全绑定）、iso_patching.md、decision.md（NA→I-04-A）、recovery/README.md、changes.diff（48 hunks）、before/after 证据、review.md（两轮）、handoff.json（accepted_scoped）。**生产零改动**（`fetch_filing.py` sha256 `046cc7dc…088`、tests `3087daf0…`、HEAD `d35b6f5` 每轮复核）。

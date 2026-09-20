@@ -1,0 +1,58 @@
+{
+ "card_id": "I-04-C",
+ "attempt_id": "a20260919-01",
+ "role": "implementer (design card; NOT the reviewer)",
+ "status": "review_pending",
+ "deliverable_type": "design decision + simulation evidence",
+ "scope": "cross-process lease / ownership / recovery protocol for the pause refcount; design frozen in decision.md v1.1 with simulations under sim/ and raw evidence under evidence/. NO product code change; production filing-fetch untouched.",
+ "source_under_test": {
+  "path": "C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py",
+  "sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+  "head": "d35b6f5b09f1a7dad37d226504bf998802a852d7",
+  "anchors": ["L409-410 pause file names", "L418 _pid_is_alive", "L442 _read_pause_entries",
+              "L453 _write_pause_entries", "L461 _prune_pause_entries", "L465 PausedWorkerScope",
+              "L509 _remaining", "L515 __enter__", "L565 _register", "L579 _unregister",
+              "L592 __exit__"],
+  "verified_hashes": {
+   "production_scripts_fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+   "production_tests_test_fetch_filing.py": "3087daf0da23df0e11675f8a5de2aaee898126d958abf725c031bb593d0688c0",
+   "iso_filing_fetch_scripts_fetch_filing.py": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+   "iso_filing_fetch_tests_test_fetch_filing.py": "3087daf0da23df0e11675f8a5de2aaee898126d958abf725c031bb593d0688c0"
+  },
+  "iso_checkout": "execution_runs/I-04-C/a20260919-01/iso/filing-fetch (copy of scripts,tests,config,references,tools,pyproject.toml,SKILL.md)"
+ },
+ "interpreter": {
+  "path": "execution_runs/I-04-C/a20260919-01/iso/venv/Scripts/python.exe",
+  "created_from_template": "execution_runs/I-00-A/a20260919-01/iso/venv/Scripts/python.exe",
+  "version": "3.13.9 (Anaconda-packaged base, venv-isolated)",
+  "pytest": "9.1.1 (installed into the attempt venv)",
+  "global_interpreter_used": false
+ },
+ "dependency_receipts": {
+  "I-00-A": "execution_runs/I-00-A/a20260919-01 (isolation template venv; used to create this attempt's venv)",
+  "I-00-B": "cwd/isolation binding rules followed: every command in commands.json carries an absolute cwd, an absolute argv[0] inside this attempt, and its own run directory",
+  "I-04-A": "execution_runs/I-04-A/a20260919-01/decision.md (v2, SIGNED) + oracle.md: phase budget table, C = max(30, 2*resume_wait + graceful), no floor after the deadline, request/cleanup accounting separation",
+  "I-04-B": "execution_runs/I-04-B/a20260919-01 (accepted_scoped): probe cap min(20, phase budget), budget read once at the call site, acceptance per subcall, cleanup PHASE wall clock reported but never bounded",
+  "carries_honoured": [
+   "probe budget <= min(20, phase budget) (kernel: PROBE_MAX_SECONDS = 5, min(20, 5, phase))",
+   "the lease lock budget is read once at the critical-section entry and passed inwards",
+   "the cleanup PHASE wall clock is only reported (journal monotonic start/end), never capped"
+  ]
+ },
+ "allowed_write_roots": [
+  "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-C/a20260919-01"
+ ],
+ "forbidden": [
+  "any edit outside PLAN (filing-fetch, company-wiki, revenue-forecast sources)",
+  "any edit under PLAN/reviews",
+  "running the historical probe scripts in place",
+  "network access, real provider/worker/wiki contact",
+  "using the global Miniconda interpreter for card runs",
+  "implementing the protocol in production in this card"
+ ],
+ "deliverables": [
+  "binding.json", "oracle.md", "decision.md", "commands.json", "review.md (PENDING)",
+  "handoff.json", "sim/**", "evidence/**"
+ ],
+ "reviewer_status": "PENDING (no verdict written by the implementer)"
+}

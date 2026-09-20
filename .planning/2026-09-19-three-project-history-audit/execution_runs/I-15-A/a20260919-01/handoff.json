@@ -1,0 +1,81 @@
+{
+  "card_id": "I-15-A",
+  "attempt_id": "a20260919-01",
+  "status": "review_pending",
+  "review_r2_outcome": "independent review returned accepted_scoped for the EVIDENCE / DIAGNOSTIC scope only; product implementation remains BLOCKED on the unsigned D-W15 (five decisions). accepted_scoped is NOT a release to implement and must not be read as authorising any production prune.",
+  "r2_corrections": [
+    "F-I15A-01: the delivered archive gzip hash cited as 85d2f08e... had no matching artifact; corrected to 4798b9719528223b8614d2ff6e22939cd60bd1427ce9c22da5d576317e1b9556 (= p1-verify scratch source = delivered manifest archive_sha256). 85d2f08e... was the p2-restore archive at the earlier cmd-C6 iteration; gzip embeds an mtime so bytes change per run.",
+    "rule adopted: any archive hash quoted from this attempt must name both its case and its run"
+  ],
+  "objective": "Freeze the rule that prune may only delete a specific, already-verified archive set and must be recoverable, and produce isolated counterexamples for the 'delete anything that looks expired' failure mode. No production cleanup.",
+  "completed_steps": [
+    "1 领取: card + parent I-15 + D-W15 text + dependency receipts I-00-A/B/C read",
+    "2 绑定: binding.json with prune/archive/store/lock/models hashes, line-drift record, iso interpreter, allowed write roots, forbidden list",
+    "3 读证据: prune_retired_evidence.py in full, archive_retired_evidence.py in full, store DDL for evidence_spans/documents/sources, lock.py, models.py, both existing contract tests, reviews/wiki/review.md:80 and the WIKI-LEGACY-SPECIAL ledger rows",
+    "4 冻结预期: oracle.md written before any run (W15-R1..R8 plus P1/P2/N1-N4 with pre-listed id sets)",
+    "5 修改前检查: no product change was needed to produce the counterexamples; the suite runs against the unmodified code (raw rc=1, 6 failed / 5 passed)",
+    "6 最小修改: NOT DONE BY DESIGN - D-W15 (schema/transaction/recovery) is a specialist decision that is not yet signed, so no product code was written",
+    "7 修改后检查: NOT APPLICABLE (no fix). The frozen expectations that PASS on current code are recorded separately from the 6 that fail",
+    "8 交审: handoff.json + review.md with a PENDING independent review section + decision.md proposing D-W15 for signature",
+    "9 接续: next action is the D-W15 signature, then an implementation card"
+  ],
+  "next_step_number": 5,
+  "next_action": "Storage-maintenance owner + independent data-recovery reviewer sign or replace D-W15 (decision.md D-W15-1..D-W15-5), then release an implementation card that (a) adds the archive-verified manifest, (b) injects a fixed clock, (c) binds apply to the exact plan hash under the lock, (d) writes per-batch receipts, (e) provides a restore path. Until then I-15-A stays planned and no production prune is authorised.",
+  "input_hashes": {
+    "CW/src/company_wiki/source_catalog/prune_retired_evidence.py": "2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46",
+    "CW/src/company_wiki/source_catalog/archive_retired_evidence.py": "143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0",
+    "CW/tests/contract/test_source_catalog_prune_retired.py": "e0727c70414b155568a84b43245eafbb7398f702aa2c071e07c2ca998eaf6862",
+    "CW/tests/contract/test_source_catalog_archive_retired.py": "0a4195b1cf5493ef1360c03c47a8e83a095207df02cd9d1c39a9a00df6a03859"
+  },
+  "current_source_hashes": {
+    "CW/src/company_wiki/source_catalog/prune_retired_evidence.py": "2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46 (UNCHANGED)",
+    "CW/src/company_wiki/source_catalog/archive_retired_evidence.py": "143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0 (UNCHANGED)",
+    "CW/src/company_wiki/source_catalog/store.py": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615 (UNCHANGED)",
+    "CW/src/company_wiki/source_catalog/lock.py": "2303d3e5a4a790070b253cbf3a319b38be25d4d412da8f8e067726d0553d5b4c (UNCHANGED)",
+    "CW/src/company_wiki/source_catalog/models.py": "65230572d355031d9634c9355939034d1dd8cb386bb98d1555e05184d4eb5087 (UNCHANGED)",
+    "CW/src/company_wiki/source_catalog/section_query.py": "a40d54a36fe14fd0e76b322477885777ad2b3fa8b5263a2d8e726a2c63214f49 (read-only)",
+    "CW/src/company_wiki/source_catalog/reconcile_retire_state.py": "b4db781af6f24f781b3ec25eaa20d7bbc7bd9da666e2356c28fd4ea4097afeb7 (read-only)"
+  },
+  "changed_paths": [],
+  "commands_executed": [
+    "CMD-I15A-C1..C6 pytest frozen suite (build-up iterations) -> rc 1 each",
+    "CMD-I15A-C7 pytest frozen suite final -> rc 1 (6 failed / 5 passed)"
+  ],
+  "raw_exit_codes": {"CMD-I15A-C1..C6": 1, "CMD-I15A-C7": 1},
+  "expected_exit_codes": {"CMD-I15A-C1..C6": 1, "CMD-I15A-C7": 1},
+  "frozen_vs_measured": {
+    "W15-P1_delete_exactly_verified_set": {"expected": ["a1", "a2"], "measured": ["a1", "a2", "a3", "b1"], "verdict": "counterexample"},
+    "W15-P2_second_apply_idempotent": {"expected": "0 deleted and {a3,b1,c1} retained", "measured": "second apply 0 deleted but a3/b1 already destroyed by the first", "verdict": "counterexample"},
+    "W15-P2_restore": {"expected": "row-identical restore of a1,a2; refuse c1", "measured": "identical digests; c1 refused", "verdict": "PASS"},
+    "W15-N1_empty_old_directory": {"expected": "0 deleted", "measured": ["a1", "a2", "a3", "b1"], "verdict": "counterexample"},
+    "W15-N1_corrupt_archive": {"expected": "verification fails closed", "measured": "ok=false with recorded problem", "verdict": "PASS (attempt-side verifier only)"},
+    "W15-N1_manifest_conflict": {"expected": "count/digest conflict refused", "measured": "detectable by the verifier; product has no manifest", "verdict": "PASS (attempt-side verifier only)"},
+    "W15-N1_same_day_overwrite": {"expected": "manifest pins sha256+size", "measured": "snapshot replaced, both runs ok=true", "verdict": "PASS as detection, risk confirmed"},
+    "W15-N2_retention_clock": {"expected": "0 deleted from verified completion time", "measured": "['a1','a2','a3','b1'] deleted from the directory name", "verdict": "counterexample"},
+    "W15-N3_toctou": {"expected": "refuse whole plan", "measured": "['a1','a2','a3','b1'] deleted with no re-check", "verdict": "counterexample"},
+    "W15-N4_crash_recovery": {"expected": "exact deleted ids recoverable", "measured": "4 deleted, receipt_files=[]", "verdict": "counterexample"}
+  },
+  "open_questions": [
+    "D-W15 schema/clock/TOCTOU/receipt/restore decisions are proposed but NOT signed",
+    "no fix implemented: the 6 counterexamples still stand on the live code",
+    "scale untested: 5-span fixtures say nothing about a 25.7M-row / 49.7 GB production prune",
+    "the retention clock is not injectable in the product today (datetime.now inside prune)",
+    "old archives without a manifest have no designed upgrade path (W15-R8 only forbids guessing)",
+    "the product's own prune test still encodes the wrong oracle and was deliberately left unmodified",
+    "archive_retired_evidence.py:65 opens the snapshot with mode 'wt' (same-day truncation)",
+    "no product-side evidence-span restore entry point exists"
+  ],
+  "blocked_by": ["D-W15 specialist decision (schema/transaction/recovery) is unsigned; implementation must not start before it - re-affirmed after the r2 review returned accepted_scoped for the evidence scope only"],
+  "evidence_paths": [
+    "execution_runs/I-15-A/a20260919-01/binding.json",
+    "execution_runs/I-15-A/a20260919-01/oracle.md",
+    "execution_runs/I-15-A/a20260919-01/commands.json",
+    "execution_runs/I-15-A/a20260919-01/decision.md",
+    "execution_runs/I-15-A/a20260919-01/review.md",
+    "execution_runs/I-15-A/a20260919-01/after_pass/evidence/",
+    "execution_runs/I-15-A/a20260919-01/after_pass/cmd-C7/stdout.txt",
+    "execution_runs/I-15-A/a20260919-01/harness/archive_verifier.py",
+    "execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py"
+  ],
+  "reviewer_status": "PENDING independent review (implementer did not self-accept; no product code was written)"
+}

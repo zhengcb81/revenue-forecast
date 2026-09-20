@@ -1,0 +1,343 @@
+FFFFFFFFFF                                                               [100%]
+================================== FAILURES ===================================
+_______________ test_w15_p1_real_archive_verifies_independently _______________
+
+    def test_w15_p1_real_archive_verifies_independently():
+>       case = fresh_case("p1-verify")
+               ^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:83: in fresh_case
+    "config": make_config(case, db_path),
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist...execution_runs/I-15-A/a20260919-01/harness/scratch/p1-verify/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+_______________ test_w15_p1_prune_deletes_only_the_verified_set _______________
+
+    def test_w15_p1_prune_deletes_only_the_verified_set():
+        """CURRENT-CODE COUNTEREXAMPLE.
+    
+        Frozen expectation of a compliant implementation: deleted == {a1, a2}.
+        The verification above authorises only a1/a2.  Whatever the current code does is
+        measured and compared against the pre-listed set - the assertion is against the
+        frozen sets, not against the function's report.
+        """
+>       case = fresh_case("p1-delete")
+               ^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:83: in fresh_case
+    "config": make_config(case, db_path),
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist...execution_runs/I-15-A/a20260919-01/harness/scratch/p1-delete/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+________ test_w15_p2_second_apply_is_idempotent_for_the_authorised_set ________
+
+    def test_w15_p2_second_apply_is_idempotent_for_the_authorised_set():
+>       case = fresh_case("p2-idempotent")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:157: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:83: in fresh_case
+    "config": make_config(case, db_path),
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist...ution_runs/I-15-A/a20260919-01/harness/scratch/p2-idempotent/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+__________ test_w15_p2_restore_reproduces_the_archived_rows_exactly ___________
+
+    def test_w15_p2_restore_reproduces_the_archived_rows_exactly():
+        """W15-R7: recoverability is proven by row digests, not by row counts."""
+>       case = fresh_case("p2-restore")
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:83: in fresh_case
+    "config": make_config(case, db_path),
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist...xecution_runs/I-15-A/a20260919-01/harness/scratch/p2-restore/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+____________ test_w15_n1_empty_old_directory_is_not_authorisation _____________
+
+    def test_w15_n1_empty_old_directory_is_not_authorisation():
+        """The current code's own test builds exactly this and expects a full delete."""
+        root = guard_scratch(SCRATCH_ROOT / "n1-empty-old-dir")
+        if root.exists():
+            shutil.rmtree(root)
+        root.mkdir(parents=True)
+        db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+        manifests = root / "manifests"
+        (manifests / "archive" / "2026-05-01").mkdir(parents=True)   # empty, old, no gzip
+    
+        before = live_span_ids(db_path)
+>       report = prune_retired_evidence(make_config("n1-empty-old-dir", db_path), manifests,
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        apply=True, retention_days=RETENTION_DAYS)
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist...on_runs/I-15-A/a20260919-01/harness/scratch/n1-empty-old-dir/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+______________ test_w15_n1_corrupt_archive_is_not_authorisation _______________
+
+    def test_w15_n1_corrupt_archive_is_not_authorisation():
+>       case = fresh_case("n1-corrupt")
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:282: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:83: in fresh_case
+    "config": make_config(case, db_path),
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist...xecution_runs/I-15-A/a20260919-01/harness/scratch/n1-corrupt/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+_________ test_w15_n1_manifest_count_and_digest_conflicts_are_refused _________
+
+    def test_w15_n1_manifest_count_and_digest_conflicts_are_refused():
+>       case = fresh_case("n1-manifest-conflict")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:294: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:83: in fresh_case
+    "config": make_config(case, db_path),
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist...uns/I-15-A/a20260919-01/harness/scratch/n1-manifest-conflict/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+____________ test_w15_n2_directory_name_is_not_the_retention_clock ____________
+
+    def test_w15_n2_directory_name_is_not_the_retention_clock():
+        root = guard_scratch(SCRATCH_ROOT / "n2-clock")
+        if root.exists():
+            shutil.rmtree(root)
+        root.mkdir(parents=True)
+        db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+        manifests = root / "manifests"
+        # Verified completion is RECENT (2026-09-18) although the directory name is old.
+        (manifests / "archive" / "2021-01-01").mkdir(parents=True)
+        (manifests / "archive" / "2021-01-01" / "retired-evidence.jsonl.gz").write_bytes(
+            gzip.compress(b'{"span_id": "a1"}\n'))
+        manifest = {
+            "schema_version": "archive-verified-manifest-1.0",
+            "catalog_identity": "scratch-catalog-i15a",
+            "archive_path": str(manifests / "archive" / "2021-01-01" / "retired-evidence.jsonl.gz"),
+            "verified_completed_at": "2026-09-18T00:00:00Z",
+            "retention_days": RETENTION_DAYS,
+            "row_digests": {},
+            "note": "fabricated manifest: recent completion, ancient directory name",
+        }
+        (root / "archive-verified-manifest.json").write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    
+        before = live_span_ids(db_path)
+>       report = prune_retired_evidence(make_config("n2-clock", db_path), manifests,
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        apply=True, retention_days=RETENTION_DAYS)
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:345: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist.../execution_runs/I-15-A/a20260919-01/harness/scratch/n2-clock/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+_______ test_w15_n3_mutation_after_plan_must_abort_not_silently_shrink ________
+
+    def test_w15_n3_mutation_after_plan_must_abort_not_silently_shrink():
+>       case = fresh_case("n3-toctou")
+               ^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:370: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:83: in fresh_case
+    "config": make_config(case, db_path),
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist...execution_runs/I-15-A/a20260919-01/harness/scratch/n3-toctou/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+_____ test_w15_n4_interrupted_batch_leaves_a_receipt_of_what_was_deleted ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000223D5B8BCE0>
+
+    def test_w15_n4_interrupted_batch_leaves_a_receipt_of_what_was_deleted(monkeypatch):
+>       case = fresh_case("n4-crash")
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:421: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:83: in fresh_case
+    "config": make_config(case, db_path),
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:63: in make_config
+    return CatalogConfig(
+<string>:7: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = CatalogConfig(project_root=WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-hist.../execution_runs/I-15-A/a20260919-01/harness/scratch/n4-crash/catalog'), roots=(), reusable_root_kinds=('company_raw',))
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.project_root, Path) or not isinstance(
+            self.catalog_dir, Path
+        ):
+            raise TypeError("project_root and catalog_dir must be pathlib.Path")
+        if not isinstance(self.roots, tuple) or not self.roots:
+>           raise ValueError("roots must be a non-empty tuple")
+E           ValueError: roots must be a non-empty tuple
+
+..\company-wiki\src\company_wiki\source_catalog\models.py:185: ValueError
+=========================== short test summary info ===========================
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p1_real_archive_verifies_independently
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p1_prune_deletes_only_the_verified_set
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p2_second_apply_is_idempotent_for_the_authorised_set
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p2_restore_reproduces_the_archived_rows_exactly
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n1_empty_old_directory_is_not_authorisation
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n1_corrupt_archive_is_not_authorisation
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n1_manifest_count_and_digest_conflicts_are_refused
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n2_directory_name_is_not_the_retention_clock
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n3_mutation_after_plan_must_abort_not_silently_shrink
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n4_interrupted_batch_leaves_a_receipt_of_what_was_deleted
+10 failed in 1.13s

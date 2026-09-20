@@ -1,0 +1,415 @@
+FFFFFFFFFF                                                               [100%]
+================================== FAILURES ===================================
+_______________ test_w15_p1_real_archive_verifies_independently _______________
+
+    def test_w15_p1_real_archive_verifies_independently():
+>       case = fresh_case("p1-verify")
+               ^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:76: in fresh_case
+    db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/p1-verify/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+_______________ test_w15_p1_prune_deletes_only_the_verified_set _______________
+
+    def test_w15_p1_prune_deletes_only_the_verified_set():
+        """CURRENT-CODE COUNTEREXAMPLE.
+    
+        Frozen expectation of a compliant implementation: deleted == {a1, a2}.
+        The verification above authorises only a1/a2.  Whatever the current code does is
+        measured and compared against the pre-listed set - the assertion is against the
+        frozen sets, not against the function's report.
+        """
+>       case = fresh_case("p1-delete")
+               ^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:76: in fresh_case
+    db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/p1-delete/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+________ test_w15_p2_second_apply_is_idempotent_for_the_authorised_set ________
+
+    def test_w15_p2_second_apply_is_idempotent_for_the_authorised_set():
+>       case = fresh_case("p2-idempotent")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:157: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:76: in fresh_case
+    db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/p2-idempotent/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+__________ test_w15_p2_restore_reproduces_the_archived_rows_exactly ___________
+
+    def test_w15_p2_restore_reproduces_the_archived_rows_exactly():
+        """W15-R7: recoverability is proven by row digests, not by row counts."""
+>       case = fresh_case("p2-restore")
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:76: in fresh_case
+    db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/p2-restore/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+____________ test_w15_n1_empty_old_directory_is_not_authorisation _____________
+
+    def test_w15_n1_empty_old_directory_is_not_authorisation():
+        """The current code's own test builds exactly this and expects a full delete."""
+        root = guard_scratch(SCRATCH_ROOT / "n1-empty-old-dir")
+        if root.exists():
+            shutil.rmtree(root)
+        root.mkdir(parents=True)
+>       db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/n1-empty-old-dir/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+______________ test_w15_n1_corrupt_archive_is_not_authorisation _______________
+
+    def test_w15_n1_corrupt_archive_is_not_authorisation():
+>       case = fresh_case("n1-corrupt")
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:282: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:76: in fresh_case
+    db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/n1-corrupt/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+_________ test_w15_n1_manifest_count_and_digest_conflicts_are_refused _________
+
+    def test_w15_n1_manifest_count_and_digest_conflicts_are_refused():
+>       case = fresh_case("n1-manifest-conflict")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:294: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:76: in fresh_case
+    db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/n1-manifest-conflict/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+____________ test_w15_n2_directory_name_is_not_the_retention_clock ____________
+
+    def test_w15_n2_directory_name_is_not_the_retention_clock():
+        root = guard_scratch(SCRATCH_ROOT / "n2-clock")
+        if root.exists():
+            shutil.rmtree(root)
+        root.mkdir(parents=True)
+>       db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/n2-clock/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+_______ test_w15_n3_mutation_after_plan_must_abort_not_silently_shrink ________
+
+    def test_w15_n3_mutation_after_plan_must_abort_not_silently_shrink():
+>       case = fresh_case("n3-toctou")
+               ^^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:370: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:76: in fresh_case
+    db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/n3-toctou/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+_____ test_w15_n4_interrupted_batch_leaves_a_receipt_of_what_was_deleted ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000258A018BE10>
+
+    def test_w15_n4_interrupted_batch_leaves_a_receipt_of_what_was_deleted(monkeypatch):
+>       case = fresh_case("n4-crash")
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:421: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\tests\test_i15a_prune_verified_set.py:76: in fresh_case
+    db_path = build_scratch_catalog(root / "catalog" / "catalog.sqlite3")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+db_path = WindowsPath('C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/scratch/n4-crash/catalog/catalog.sqlite3')
+
+    def build_scratch_catalog(db_path: Path) -> Path:
+        """Create a real scratch catalog with the product schema and the fixed 5 spans."""
+        db_path = guard_scratch(db_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        if db_path.exists():
+            db_path.unlink()
+        from company_wiki.source_catalog.store import CatalogStore
+    
+        CatalogStore(db_path)  # runs the product's own DDL/migrations
+    
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("PRAGMA foreign_keys=ON")
+            for source_id in ("src-A", "src-B", "src-C"):
+>               conn.execute(
+                    """INSERT INTO sources(source_id, root_id, relative_path, source_type,
+                           mime_type, first_seen_at) VALUES(?,?,?,?,?,?)""",
+                    (source_id, "root-scratch", f"{source_id}.txt", "filing",
+                     "text/plain", "2026-01-01T00:00:00Z"),
+                )
+E               sqlite3.OperationalError: table sources has no column named root_id
+
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-15-A\a20260919-01\harness\archive_verifier.py:98: OperationalError
+=========================== short test summary info ===========================
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p1_real_archive_verifies_independently
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p1_prune_deletes_only_the_verified_set
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p2_second_apply_is_idempotent_for_the_authorised_set
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_p2_restore_reproduces_the_archived_rows_exactly
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n1_empty_old_directory_is_not_authorisation
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n1_corrupt_archive_is_not_authorisation
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n1_manifest_count_and_digest_conflicts_are_refused
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n2_directory_name_is_not_the_retention_clock
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n3_mutation_after_plan_must_abort_not_silently_shrink
+FAILED .planning/2026-09-19-three-project-history-audit/execution_runs/I-15-A/a20260919-01/harness/tests/test_i15a_prune_verified_set.py::test_w15_n4_interrupted_batch_leaves_a_receipt_of_what_was_deleted
+10 failed in 1.10s

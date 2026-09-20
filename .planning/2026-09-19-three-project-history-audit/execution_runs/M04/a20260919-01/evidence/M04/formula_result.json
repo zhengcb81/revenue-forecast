@@ -1,0 +1,78 @@
+{
+ "card_id": "M04",
+ "model_id": "capacity_utilization",
+ "entry_point": "model_registry.calculate_registered_model(**input)",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M04\\a20260919-01\\iso\\checkout_scripts",
+ "code_file_actually_imported": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M04\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "expected_source": "evidence/M04/oracle.json (scripts/oracle_M04.py, stdlib only, no product import)",
+ "expected_was_not_generated_by_product_code": true,
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))",
+ "positive": {
+  "input": {
+   "model_id": "capacity_utilization",
+   "base_revenue": 0,
+   "drivers": {
+    "capacity": [
+     1000
+    ],
+    "utilization": [
+     0.8
+    ],
+    "yield": [
+     0.9
+    ],
+    "unit_revenue": [
+     2
+    ],
+    "timing_factor": [
+     0.5
+    ],
+    "other_revenue": [
+     10
+    ]
+   },
+   "years": [
+    2027
+   ]
+  },
+  "raised": null,
+  "actual": [
+   730.0
+  ],
+  "expected": [
+   730.0
+  ],
+  "per_value_checks": [
+   {
+    "index": 0,
+    "year": 2027,
+    "actual": 730.0,
+    "expected": 730.0,
+    "tolerance": 7.3e-07,
+    "abs_diff": 0.0,
+    "ok": true
+   }
+  ],
+  "length_ok": true,
+  "tolerances_ok": true
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   144.0,
+   172.8
+  ],
+  "expected": [
+   144.0,
+   172.8
+  ],
+  "ok": true
+ },
+ "negative_case_count": 15,
+ "negative_case_passed": 15,
+ "negative_case_failed": [],
+ "verdict": "pass",
+ "outcome_sentence": "positive [730.0] equals the independent oracle [730.0] within 1e-9*max(1,abs(e)) for all years; continuity positive passes; all 15 negatives raise ModelRegistryError (re-verified in revision r2)",
+ "not_a_disclosure_fit": true,
+ "not_an_accuracy_result": true
+}

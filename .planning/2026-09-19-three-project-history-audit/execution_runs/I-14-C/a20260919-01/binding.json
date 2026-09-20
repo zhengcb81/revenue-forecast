@@ -1,0 +1,137 @@
+{
+  "card": "I-14-C",
+  "attempt_id": "a20260919-01",
+  "date_utc": "2026-09-19",
+  "objective": "Freeze the requirement that the REAL worker exception exit must not leak synthetic credential markers, and produce isolated counterexamples showing the pre-fix leak in the real exit path (not the helper in isolation).",
+  "parent_obligation": "PLAN/implementation_plan.md item I-14 (\"测量系统先测自身\": ... redaction verified at the real exception exit)",
+  "dependencies": {
+    "I-00-A": {
+      "receipt": "../../I-00-A/a20260919-01/baseline.json",
+      "used_for": "template interpreter path, repo paths/heads, config+policy hashes, statement that the global Miniconda python is unsafe",
+      "status_at_read": "present"
+    },
+    "I-00-B": {
+      "receipt": "../../I-00-B/a20260919-01/binding.json",
+      "used_for": "two-stage command binding rule, forbidden list, 'no invented CLI' rule, source anchor hash for worker.py",
+      "status_at_read": "present"
+    },
+    "I-00-C": {
+      "receipt": "../../I-00-C/a20260919-01/handoff.json",
+      "used_for": "isolation pattern precedent (attempt-level iso venv + _pkgdir), report-back format",
+      "status_at_read": "present"
+    }
+  },
+  "interpreter": {
+    "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "created_from_template": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "version": "3.13.9 (Anaconda packaging)",
+    "sys_prefix_checked": "attempt-level iso venv (see iso/isolation_check.txt)",
+    "global_miniconda_python": "FORBIDDEN for card runs (I-00-A: editable dayu-agent finder hook)",
+    "installed_into_venv": ["pytest==9.1.1", "pyyaml==6.0.3", "requests==2.34.2"],
+    "network": "disabled for all card commands; no downloads, no provider calls"
+  },
+  "run_cwd_rule": "every run command executes with workdir = this attempt dir; NEVER the company-wiki repo root, never .source_catalog, never C:\\Miniconda",
+  "r2_isolation_rule": {
+    "product_code_copies": {
+      "iso/product": "T0 = pristine HEAD tree (module hashes == production, see r2/final_hashes.json)",
+      "iso/product_r1": "T1 = T0 + changes.diff (the code the r1 review saw); rebuilt and hash-verified by harness/apply_card_diff.py",
+      "iso/product_fixed": "T2 = T0 + r2 fixes (F-I14C-02 key rule, F-I14C-03 pre-try CLI exit); the fix under review",
+      "iso/product_swapped": "T3 = T2 with ONLY redact_and_truncate's two operations exchanged (E4a order-swap control)"
+    },
+    "production_tree": "READ-ONLY from r2 onward. No edit, no write, no run against C:\\Users\\...\\company-wiki\\src. Verified at the end of every r2 step."
+  },
+  "product_import": {
+    "mode": "sys.path injection of the READ-ONLY product src, no install, no editable install",
+    "src": "C:\\Users\\郑曾波\\Projects\\company-wiki\\src",
+    "env": {"PYTHONDONTWRITEBYTECODE": "1", "PYTHONPATH": "<attempt>/site (harness only)"},
+    "note": "PYTHONPATH points at the attempt harness helper dir only; product path is injected inside the harness via sys.path.insert so it is visible in the evidence"
+  },
+  "source_anchors_sha256_verified_this_attempt": {
+    "CW/src/company_wiki/source_catalog/worker.py": {
+      "sha256": "e83179915333eb472807b15a0580d93dcf280caadc31b0099988a3b744c469c6",
+      "bytes": 48075,
+      "anchors": {
+        "_write_unhandled_exception_event": "worker.py:1049 (card anchor line matched exactly, no drift)",
+        "call_sites_of_real_exit": ["worker.py:949", "worker.py:975", "worker.py:1042"],
+        "_write_process_event": "worker.py:1061"
+      },
+      "hash_agrees_with": ["reviews/wiki_legacy/exception_event_probe.json", "I-00-B binding.json"]
+    },
+    "CW/src/company_wiki/source_catalog/observability.py": {
+      "sha256": "a73826aa10c9c0bf09bb5dc73cb7466358497f9d9d8c66ba73bfe4b90ffebe5a",
+      "bytes": 30087,
+      "anchors": {"_PATH_PATTERN": "observability.py:184", "REDACT": "observability.py:186", "_redact_detail": "observability.py:426"}
+    },
+    "CW/src/company_wiki/source_catalog/store.py": {
+      "sha256": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615",
+      "bytes": 63563,
+      "anchors": {"_redact_message": "store.py:1480-1487 (in fact only truncate+strip, no redaction)"}
+    },
+    "CW/src/company_wiki/source_catalog/cli.py": {
+      "sha256": "fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b",
+      "bytes": 65694,
+      "newline_form": "CRLF (the working-tree form git checks out here)",
+      "head_lf_form": {"sha256": "5f182e36369b8c978e9b1126d2dd11c419cbe79ebaa9f11975fbdc91712b8fcd", "bytes": 64126},
+      "correction_F-I14C-04": {
+        "what_was_wrong": "this entry first recorded 2f5c5740343697078d1e69b3a6a9ef9b0809277799c2d9c28a2d3e4048c4d512 / 65553 bytes, and review.md then inferred from it that 'HEAD is not the pre-image'. Both were wrong. cli.py was clean at the start of the attempt (I-00-A's porcelain_before lists only CLAUDE.md and README.md), and HEAD-CRLF fad88c60... / 65694 bytes IS the correct pre-image.",
+        "provenance_of_2f5c5740": "UNEXPLAINED. It is not HEAD-LF (5f182e36.../64126), not HEAD-CRLF (fad88c60.../65694), and not the r1-fixed file. The only arithmetic observation available: 65553 = 64126 + 1427, i.e. it would be the HEAD content with exactly 1427 of its 1568 line breaks converted to CRLF (a mixed-line-ending file). That is a hypothesis, not evidence, and it is recorded as such. The value is treated as 来源不可考 (provenance untraceable).",
+        "verified_now": "Get-FileHash(cli.py) == fad88c60... / 65694 bytes, and its git blob id equals HEAD's, so the file is unmodified; the r2 runs use an iso copy of exactly these bytes.",
+        "consequence": "no r1/r2 conclusion changes: the before/after trees were always built by content splice with hash verification, never from HEAD position."
+      },
+      "anchors": {"generic_exception_exit": "cli.py:1551-1558 (prints structured_error(exc) to stderr)", "pre_try_exit": "cli.py:866 args.config.resolve(strict=True) - outside the try, see decision.md D1"}
+    },
+    "CW/src/company_wiki/source_catalog/error_taxonomy.py": {
+      "sha256": "14e09c3d41c8584cb59c05ac47ef31c5d4a1e34103c70fb8f4e95e83588c5183",
+      "bytes": 4295,
+      "hash_verification": "Get-FileHash and hashlib agree; git hash-object equals HEAD:e3bee2c7d0a0fd468335ce0d9680179727b7d284, so the file is unmodified",
+      "correction_note": "the value first written here (c0e8bd15...) was never computed in this attempt and was wrong; corrected at the end of the attempt after the final hash pass. No conclusion depends on it: the file's git object id equals HEAD's.",
+      "anchors": {"structured_error": "error_taxonomy.py:98-106 (uses str(exc) verbatim)"}
+    },
+    "CW/tests/contract/test_source_catalog_worker_bootstrap.py": {
+      "sha256": "32515aa60d5fbfbca0778ee68e778ada7ff3bcf238f91930bb621d84aec005c1",
+      "bytes": 40868,
+      "anchors": {"test_run_forever_writes_unhandled_exception_event_with_exception_type": "line 288; asserts only isinstance/0<len<=200 on message_redacted -> key-name+length check, not content"}
+    },
+    "CW/tests/contract/test_observability.py": {
+      "sha256": "05e485093ca4ff32f0f72b5f38e03a49a87d1c791851a69d289e5c1ce82806f0",
+      "bytes": 4105
+    }
+  },
+  "sample_hashes": {
+    "note": "the card declared no file hash for I-14-C, so worker.py was cross-checked against two independent prior receipts: reviews/wiki_legacy/exception_event_probe.json and I-00-B/binding.json. All three agree on e83179915333eb472807b15a0580d93dcf280caadc31b0099988a3b744c469c6."
+  },
+  "input_hashes": {
+    "reviews/wiki_legacy/exception_event_probe.json": "read-only; sha256 recorded in after/hashes.json",
+    "PLAN/execution_v2/card_I-14-C.md": "read-only source of the card text"
+  },
+  "allowed_write_roots": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\"
+  ],
+  "allowed_product_edits": [
+    "CW:src/company_wiki/source_catalog/worker.py (the real exception exit + its event fields)",
+    "CW:src/company_wiki/source_catalog/observability.py (the existing redactor; add the shared credential redaction helper)",
+    "CW:src/company_wiki/source_catalog/cli.py (the real stderr exception exit that consumes structured_error)",
+    "isolated tests: attempts-scoped tests/harness only, under the attempt dir (no write into CW/tests this attempt; the CW-side contract test is proposed, not written)",
+    "NOT edited: store.py, error_taxonomy.py, normalizer.py, any schema, any production config/policy/worker_control"
+  ],
+  "forbidden": [
+    "running the real worker (run_forever without a stub session / any real catalog)",
+    "reading or printing any real secret, .env, or environment variable value",
+    "writing to production logs / .source_catalog / raw / catalog.sqlite3",
+    "network or provider calls",
+    "git add/commit/restore/stash in company-wiki, revenue-forecast, filing-fetch",
+    "editing PLAN/reviews/**, PLAN/audit_report.md, PLAN/implementation_plan.md",
+    "claiming coverage of all unknown secret forms"
+  ],
+  "negative_binding_test": {
+    "id": "I14C-neg-bind-1",
+    "purpose": "a command whose cwd is the company-wiki repo root must be refused",
+    "expected": "harness asserts run cwd == attempt dir; a run launched with cwd=repo root is marked NOT RUNNABLE"
+  },
+  "production_repos_read_only": {
+    "company-wiki": {"head": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939", "branch": "fcap", "porcelain_before": [" M CLAUDE.md", " M README.md"]},
+    "revenue-forecast": {"head": "2c5384bb0133c4e19c3d6049449b32469e14b09b", "branch": "fcap"},
+    "filing-fetch": {"head": "d35b6f5b09f1a7dad37d226504bf998802a852d7", "branch": "fcap"},
+    "note": "company-wiki CLAUDE.md/README.md were already user-modified before this attempt; left untouched"
+  }
+}

@@ -1,0 +1,30 @@
+# I-15-A changes.diff
+
+**Empty by design.** This attempt changed no product file.
+
+Rationale: I-15-A requires D-W15 (archive-manifest schema, retention clock, plan-hash /
+TOCTOU rule, batch receipt durability, restore protocol) to be chosen and signed by the
+storage-maintenance owner and an independent data-recovery reviewer before implementation.
+`common_wiki_cards.md` states that the weak model must not select the schema/transaction/
+security mechanism itself. This attempt therefore delivers the frozen oracle, the
+independent verifier, the measured counterexamples and the proposed decision — not a fix.
+
+Verification that nothing changed:
+
+```
+prune_retired_evidence.py    2358c73b82da65e5292998e3dba71c6132eebab1ab6c88a224a736c1e5a8ae46  (unchanged, == card's declared hash)
+archive_retired_evidence.py  143fef01fade43a5e6ae5c733d86e5ea6081482547c2560fc872990a9d8f53e0  (unchanged, == card's declared hash)
+store.py                     1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615  (unchanged)
+lock.py                      2303d3e5a4a790070b253cbf3a319b38be25d4d412da8f8e067726d0553d5b4c  (unchanged)
+models.py                    65230572d355031d9634c9355939034d1dd8cb386bb98d1555e05184d4eb5087  (unchanged)
+tests/contract/test_source_catalog_prune_retired.py    e0727c70414b155568a84b43245eafbb7398f702aa2c071e07c2ca998eaf6862  (unchanged)
+tests/contract/test_source_catalog_archive_retired.py  0a4195b1cf5493ef1360c03c47a8e83a095207df02cd9d1c39a9a00df6a03859  (unchanged)
+```
+
+`git -C company-wiki status --porcelain` shows, for this card's files, nothing at all.
+The only modified entries are the two pre-existing user edits (`CLAUDE.md`, `README.md`) and
+the three files changed by the I-14-C card in this same session.
+
+The proposed change (for the *next* card, after D-W15 is signed) would touch:
+`prune_retired_evidence.py`, `archive_retired_evidence.py` and the corresponding isolated
+contract tests — the exact allowlist the card names.

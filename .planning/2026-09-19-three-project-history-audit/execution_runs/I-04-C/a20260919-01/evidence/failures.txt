@@ -1,0 +1,64 @@
+=== F-L2a FAIL (3 failing checks)
+  FAIL: one lease outlives the other's release
+        {"case": "F-L2a-nesting", "counts": {"actions": ["pause", "resume"], "desired_state": "enabled", "pause_calls": 1, "resume_calls": 1, "runtime_state": "running"}, "exit_first_action": "released_last", "first_action": "paused_by_us", "lease_view": {"entries": [], "exists": false, "generation": 0, "owner_lease": null, "resume_required": false}, "nesting_established": true, "owner_exists": false, "se
+  FAIL: a new participant joins the existing pause cycle
+        {"action": "paused_by_us", "cleanup_status": "not_needed", "code": null, "error": null, "generation": 2, "lease_id": "72ee486b548447db8a92baf7", "lease_set": ["72ee486b548447db8a92baf7", "seed-lease-0001"], "lock_status": {"desired_state": "paused", "runtime_state": "running"}, "lock_wait": 0.000128, "mode": "protocol", "owner_lease": "72ee486b548447db8a92baf7", "pause_calls": 1, "phase": "enter",
+  FAIL: joining does not pause again
+        {"pause_calls": 1, "resume_calls": 1, "actions": ["resume", "pause"], "desired_state": "paused", "runtime_state": "stopped"}
+=== F-L2b PASS
+=== F-L2c FAIL (2 failing checks)
+  FAIL: a proven-dead holder is reclaimed (fresh cycle, not a block)
+        {"action": "respect_paused", "cleanup_status": "not_needed", "code": null, "error": null, "generation": 1, "lease_id": "8920d0caaeaf42978314a9cd", "lease_set": ["dead-lease-0002"], "lock_status": {"desired_state": "paused", "runtime_state": "running"}, "lock_wait": 0.000109, "mode": "protocol", "owner_lease": "dead-lease-0002", "pause_calls": 0, "phase": "enter", "pid": 22780, "resume_calls": 0, "
+  FAIL: the dead lease is gone, ours remains
+        {"exists": true, "entries": ["dead-lease-0002"], "raw_entries": [{"boot_uuid": "x", "invocations": 1, "lease_id": "dead-lease-0002", "os_start_time": "7777", "pid": 9102}], "generation": 1, "owner_lease": "dead-lease-0002", "resume_required": false}
+=== F-L2d FAIL (3 failing checks)
+  FAIL: exactly one resume, from the last releaser
+        {"counts": {"pause_calls": 1, "resume_calls": 0, "actions": ["pause"], "desired_state": "paused", "runtime_state": "stopped"}, "exits": ["released_joined", "released_joined", "released_joined", "released_joined", "released_joined", "released_joined", "released_joined", "released_took_ownership"]}
+  FAIL: exactly one release is the resuming one
+        ["released_joined", "released_joined", "released_joined", "released_joined", "released_joined", "released_joined", "released_joined", "released_took_ownership"]
+  FAIL: state cleaned up
+        {"exists": true, "entries": [], "raw_entries": [], "generation": 1, "owner_lease": "53ea0ebbec3c48ef97cc9a1d", "resume_required": true}
+=== F-L3a PASS
+=== F-L4b PASS
+=== F-L4c PASS
+=== F-L4d FAIL (10 failing checks)
+  FAIL: B joined and recorded the window lease
+        {"action": "paused_by_us", "actions": ["takeover_resumed"], "cleanup_status": "restored", "code": null, "error": null, "generation": 2, "lease_id": "5fee8513a8da4439a90c697a", "lease_set": ["5fee8513a8da4439a90c697a"], "lock_status": {"desired_state": "paused", "runtime_state": "stopped"}, "lock_wait": 0.000289, "mode": "protocol", "owner_lease": "5fee8513a8da4439a90c697a", "pause_calls": 1, "phas
+  FAIL: B's release hands the cycle over rather than resuming
+        {"action": "released_last", "attempted_resumes": 1, "cleanup_status": "restored", "code": null, "error": null, "generation": 0, "lease_id": "5fee8513a8da4439a90c697a", "lease_set": [], "lock_wait": 0.000167, "mode": "protocol", "owner_lease": null, "pause_calls": 0, "phase": "exit", "pid": 25656, "resume_calls": 1, "resume_required": false, "writes": 2}
+  FAIL: resume failure reported
+        {"action": "released_took_ownership", "attempted_resumes": 0, "cleanup_status": "deferred:ownership_transfer", "code": null, "error": null, "generation": 0, "lease_id": "57cd19b9545b4395bcbfc64e", "lease_set": [], "lock_wait": 0.000359, "mode": "protocol", "owner_lease": "57cd19b9545b4395bcbfc64e", "pause_calls": 0, "phase": "exit", "pid": 49752, "resume_calls": 0, "resume_required": true, "writes
+  FAIL: cleanup_status names the failure
+        {"action": "released_took_ownership", "attempted_resumes": 0, "cleanup_status": "deferred:ownership_transfer", "code": null, "error": null, "generation": 0, "lease_id": "57cd19b9545b4395bcbfc64e", "lease_set": [], "lock_wait": 0.000359, "mode": "protocol", "owner_lease": "57cd19b9545b4395bcbfc64e", "pause_calls": 0, "phase": "exit", "pid": 49752, "resume_calls": 0, "resume_required": true, "writes
+  FAIL: the resume attempt is still recorded
+        {"action": "released_took_ownership", "attempted_resumes": 0, "cleanup_status": "deferred:ownership_transfer", "code": null, "error": null, "generation": 0, "lease_id": "57cd19b9545b4395bcbfc64e", "lease_set": [], "lock_wait": 0.000359, "mode": "protocol", "owner_lease": "57cd19b9545b4395bcbfc64e", "pause_calls": 0, "phase": "exit", "pid": 49752, "resume_calls": 0, "resume_required": true, "writes
+  FAIL: owner marker kept (recoverable diagnosis)
+        
+  FAIL: worker still paused (not falsely restored)
+        {"pause_calls": 2, "resume_calls": 2, "actions": ["pause", "resume", "pause", "resume"], "desired_state": "enabled", "runtime_state": "running"}
+  FAIL: takeover resumed the orphaned pause
+        {"action": "paused_by_us", "cleanup_status": "not_needed", "code": null, "error": null, "generation": 1, "lease_id": "69ad3e595fe344dbb4c7ce11", "lease_set": ["69ad3e595fe344dbb4c7ce11"], "lock_status": {"desired_state": "enabled", "runtime_state": "running"}, "lock_wait": 0.000115, "mode": "protocol", "owner_lease": "69ad3e595fe344dbb4c7ce11", "pause_calls": 1, "phase": "enter", "pid": 34328, "re
+  FAIL: takeover did the resume
+        {"pause_calls": 3, "resume_calls": 2, "actions": ["pause", "resume", "pause", "resume", "pause"], "desired_state": "paused", "runtime_state": "stopped"}
+  FAIL: second resume only from the last releaser
+        {"pause_calls": 3, "resume_calls": 3, "actions": ["pause", "resume", "pause", "resume", "pause", "resume"], "desired_state": "enabled", "runtime_state": "running"}
+=== F-L4e PASS
+=== F-W1 FAIL (4 failing checks)
+  FAIL: B does NOT mistake the missing owner for a user pause
+        {"action": "respect_paused", "cleanup_status": "not_needed", "code": null, "error": null, "generation": 1, "lease_id": "fe9c2c1941464d9dbe639faa", "lease_set": ["f01e0958ac3b4e1e81db0059"], "lock_status": {"desired_state": "paused", "runtime_state": "stopped"}, "lock_wait": 0.000242, "mode": "protocol", "owner_lease": "f01e0958ac3b4e1e81db0059", "pause_calls": 0, "phase": "enter", "pid": 48792, "r
+  FAIL: B reclaimed the dead lease (A's entry is gone, B's is present)
+        {"exists": true, "entries": ["f01e0958ac3b4e1e81db0059"], "raw_entries": [{"boot_uuid": "e69070735cfa", "invocations": 1, "lease_id": "f01e0958ac3b4e1e81db0059", "os_start_time": "", "pid": 48376}], "generation": 1, "owner_lease": "f01e0958ac3b4e1e81db0059", "resume_required": false}
+  FAIL: B's release closes the cycle with one resume
+        {"pause_calls": 1, "resume_calls": 0, "actions": ["pause"], "desired_state": "paused", "runtime_state": "stopped"}
+  FAIL: state cleaned
+        {"exists": true, "entries": ["f01e0958ac3b4e1e81db0059"], "raw_entries": [{"boot_uuid": "e69070735cfa", "invocations": 1, "lease_id": "f01e0958ac3b4e1e81db0059", "os_start_time": "", "pid": 48376}], "generation": 1, "owner_lease": "f01e0958ac3b4e1e81db0059", "resume_required": false}
+=== F-W2 FAIL (2 failing checks)
+  FAIL: next participant finds the orphaned pause and handles it (takeover resume, or join the cycle it becomes the owner of)
+        {"action": "paused_by_us", "actions": ["takeover_resumed"], "cleanup_status": "restored", "code": null, "error": null, "generation": 2, "lease_id": "c293a705b28844fbb85b296d", "lease_set": ["c293a705b28844fbb85b296d"], "lock_status": {"desired_state": "paused", "runtime_state": "stopped"}, "lock_wait": 0.000141, "mode": "protocol", "owner_lease": "c293a705b28844fbb85b296d", "pause_calls": 1, "phas
+  FAIL: no second pause was issued
+        {"pause_calls": 2, "resume_calls": 1, "actions": ["pause", "resume", "pause"], "desired_state": "paused", "runtime_state": "stopped"}
+=== F-W4 PASS
+=== F-W4b FAIL (1 failing checks)
+  FAIL: B saw a clean empty state (no orphaned obligation) and opened a NEW cycle instead of resuming again
+        {"action": "paused_by_us", "cleanup_status": "not_needed", "code": null, "error": null, "generation": 1, "lease_id": "898312f2f5734fd6af508789", "lease_set": ["898312f2f5734fd6af508789"], "lock_status": {"desired_state": "enabled", "runtime_state": "running"}, "lock_wait": 0.000223, "mode": "protocol", "owner_lease": "898312f2f5734fd6af508789", "pause_calls": 1, "phase": "enter", "pid": 48192, "re
+=== F-W5 PASS

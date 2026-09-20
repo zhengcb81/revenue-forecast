@@ -1,0 +1,75 @@
+{
+ "card_id": "M02",
+ "python": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "-X",
+  "utf8",
+  "-B"
+ ],
+ "note": "argv arrays only; no shell interpolation; expected and raw return codes recorded separately",
+ "runs": [
+  {
+   "id": "A-oracle",
+   "purpose": "independent expected values (stdlib only, no product import)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01",
+   "raw_returncode": 0,
+   "expected_returncode": 0,
+   "stdout": "evidence/M02/oracle_stdout.txt",
+   "stderr": "before/oracle_stderr.txt"
+  },
+  {
+   "id": "B-product-run",
+   "purpose": "calculate_registered_model(**input) positive + continuity + N01-N05 + card-specific negatives, all in the isolated snapshot",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01",
+   "raw_returncode": 0,
+   "expected_returncode": 0,
+   "stdout": "evidence/M02/stdout.txt",
+   "stderr": "evidence/M02/stderr.txt"
+  },
+  {
+   "id": "C-pytest-sanity",
+   "purpose": "confirm the isolated venv pytest runs (no product suite claimed)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01",
+   "raw_returncode": 0,
+   "expected_returncode": 0,
+   "stdout": "before/pytest_version.txt"
+  },
+  {
+   "id": "D-pdf-probe",
+   "purpose": "read-only extraction of the disclosed figures from the frozen raw PDFs",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M02\\a20260919-01",
+   "raw_returncode": 0,
+   "expected_returncode": 0,
+   "interpreter": "global Miniconda python (PyMuPDF) - read-only, no card run",
+   "stdout": "before/probe01_*.json, before/probe02_*.json"
+  }
+ ],
+ "expected_exit_codes": 0,
+ "raw_exit_codes": {
+  "A": 0,
+  "B": 0,
+  "C": 0,
+  "D": 0
+ },
+ "failed_then_fixed_runs": [
+  {
+   "id": "B-product-run (first attempt)",
+   "raw_returncode": 1,
+   "cause": "the first version of the case file used base_input='continuity' while input.json keys it 'continuity_positive', so the harness raised KeyError before running any case",
+   "fix": "corrected the key in the oracle script (a test-harness bug, never a product change) and re-ran",
+   "preserved_evidence": "the first attempt's stderr is superseded; the final run's stdout/stderr are the evidence of record"
+  }
+ ],
+ "historical_mapping_probe": {
+  "id": "M02-historical-mapping-probe",
+  "label": "historical_mapping_probe",
+  "purpose": "verifiable wiring check only: the same disclosed historical parameter value is placed under low/base/high so that field -> parameter -> model -> output can be traced",
+  "not_a_scenario": true,
+  "not_accuracy_evidence": true,
+  "keys": {
+   "revenue": 349079082852
+  },
+  "note": "The disclosed FY2025 consolidated revenue placed under low/base/high. This proves only that the copy step is exact; it is NOT a scenario set and NOT accuracy evidence.",
+  "production_entry_point_not_exercised": "scripts/forecast/segments.py calculate_model_path was NOT run or reviewed in this attempt (I-10-A obligation)"
+ }
+}

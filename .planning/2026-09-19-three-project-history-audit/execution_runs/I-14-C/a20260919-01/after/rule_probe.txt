@@ -1,0 +1,17 @@
+== rule probe ==
+{"in": "Authorization: Bearer SYNTHETIC_AUDIT_TOKEN rejected by provider", "out": "Authorization: <redacted>", "leaks_marker": false, "auth_match": true, "pair_match": true}
+{"in": "Authorization: Bearer SYNTHETIC_AUDIT_TOKEN", "out": "Authorization: <redacted>", "leaks_marker": false, "auth_match": true, "pair_match": true}
+{"in": "Authorization Bearer SYNTHETIC_AUDIT_TOKEN", "out": "Authorization Bearer <redacted>", "leaks_marker": false, "auth_match": true, "pair_match": false}
+{"in": "authorization: token SYNTHETIC_AUDIT_TOKEN", "out": "authorization: <redacted>", "leaks_marker": false, "auth_match": true, "pair_match": true}
+{"in": "Authorization: SYNTHETIC_AUDIT_TOKEN", "out": "Authorization: <redacted>", "leaks_marker": false, "auth_match": true, "pair_match": true}
+{"in": "Authorization: \"Bearer SYNTHETIC_AUDIT_TOKEN\"", "out": "Authorization: <redacted>", "leaks_marker": false, "auth_match": true, "pair_match": true}
+{"in": "GET /x?token=SYNTHETIC_AUDIT_TOKEN&page=2", "out": "GET /x?token=<redacted>&page=2", "leaks_marker": false, "auth_match": false, "pair_match": true}
+{"in": "token=SYNTHETIC_AUDIT_TOKEN", "out": "token=<redacted>", "leaks_marker": false, "auth_match": false, "pair_match": true}
+{"in": "api_key=SYNTHETIC_AUDIT_TOKEN", "out": "api_key=<redacted>", "leaks_marker": false, "auth_match": false, "pair_match": true}
+{"in": "password: 'SYNTHETIC_AUDIT_TOKEN'", "out": "password: <redacted>", "leaks_marker": false, "auth_match": false, "pair_match": true}
+{"in": "upload failed for digest=SYNTHETIC_AUDIT_TOKEN", "out": "upload failed for digest=SYNTHETIC_AUDIT_TOKEN", "leaks_marker": true, "auth_match": false, "pair_match": false}
+{"in": "document not in catalog: doc-1", "out": "document not in catalog: doc-1", "leaks_marker": false, "auth_match": false, "pair_match": false}
+{"in": "stage=summarize code=llm_global_failure request_id=req-SYNTH-0001", "out": "stage=summarize code=llm_global_failure request_id=req-SYNTH-0001", "leaks_marker": false, "auth_match": false, "pair_match": false}
+== leak localisation ==
+{"run": "E2b-residual", "file": "stderr.txt", "line": 1, "text": "{\"error\": \"upload failed for digest=SYNTHETIC_AUDIT_TOKEN\", \"error_type\": \"fatal\", \"retryable\": false, \"status\": \"failed\"}"}
+{"run": "E2b-residual", "file": "worker_process_events.jsonl", "line": 3, "text": "{\"event\": \"unhandled_exception\", \"pid\": 37788, \"timestamp\": \"2026-09-20T01:24:05.968780\", \"catalog_dir\": \"C:\\\\Users\\\\\\u90d1\\u66fe\\u6ce2\\\\Projects\\\\revenue-forecast\\\\.planning\\\\2026-09-19-three-project-history-audit\\\\execution_runs\\\\I-14-C\\\\a20260919-01\\\\after\\\\runs-pass2-after\\\\E2b-residual\", \"exception_type\": \"RuntimeError\", \"message_redacted\": \"upload failed for digest=SYNTHETIC_AUDIT_TOKEN\", \"cause_types\": []}"}

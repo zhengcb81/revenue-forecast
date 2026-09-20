@@ -1,0 +1,173 @@
+{
+  "card_id": "I-08-A",
+  "parent_card": "I-08",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260919-01",
+  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-A\\a20260919-01",
+  "activity": "read + design (no product edit, no run of production code paths)",
+  "role": "revenue publication owner (independent signature/transaction reviewer card); implementer must NOT self-accept",
+  "status": "review_pending",
+
+  "date": "2026-09-19",
+  "workspace_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "plan_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit",
+
+  "dependency_receipts": {
+    "I-00-A": {
+      "path": "execution_runs\\I-00-A\\a20260919-01",
+      "files_read": ["baseline.json", "paths.json", "isolation_check.json", "commands.json", "handoff.json"],
+      "interpreter_receipt": "iso\\venv\\Scripts\\python.exe (Anaconda-packaged CPython 3.13.9, base prefix C:\\Miniconda)",
+      "used_as": "source of the template interpreter for this attempt's own venv"
+    },
+    "I-00-B": {
+      "path": "execution_runs\\I-00-B\\a20260919-01",
+      "files_read": ["binding.json", "handoff.json", "oracle.md", "commands.json", "review.md", "sample_rehash.json"],
+      "binding_rules_inherited": [
+        "two-stage command binding (pre-freeze expected -> implement -> fill real argv -> bound)",
+        "cwd must be a per-attempt iso dir; never the repo root for run commands",
+        "network disabled by default",
+        "global Miniconda python is FORBIDDEN for card runs"
+      ],
+      "note": "I-00-B left next_step_number=5 with open question about --config dependency injection for other cards; I-08-A runs no product CLI, so that open question does not block this card"
+    }
+  },
+
+  "interpreter": {
+    "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "created_with": "<I-00-A template venv python> -m venv <attempt>/iso/venv",
+    "version": "3.13.9 (Anaconda-packaged, base prefix C:\\Miniconda)",
+    "sys_prefix_of_attempt_venv": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-A\\a20260919-01\\iso\\venv",
+    "installed_for_this_attempt": {
+      "command": "<attempt>/iso/venv/Scripts/python.exe -m pip install --disable-pip-version-check --no-input cryptography pytest",
+      "raw_returncode": 0,
+      "cryptography": "50.0.1",
+      "pytest": "9.1.1",
+      "why_cryptography": "the existing _validate_host_signature imports cryptography; without it the probe cannot exercise the real Ed25519 verification path",
+      "cached_wheels": true
+    },
+    "forbidden": [
+      "C:\\Miniconda\\python.exe (global; card runs must never use it)",
+      "any interpreter outside <attempt>/iso/venv"
+    ]
+  },
+
+  "cwd_binding": {
+    "probe_cwd": "<attempt>\\iso",
+    "runner_cwd": "<attempt> (hosts run_c3.py only; it sets the child cwd to <attempt>\\iso)",
+    "repo_root_used_as_run_cwd": false
+  },
+
+  "allowed_write_roots": [
+    "<attempt>\\iso\\venv",
+    "<attempt>\\iso\\scratch",
+    "<attempt>\\before",
+    "<attempt>\\after",
+    "<attempt>\\*.md / *.json / run_c3.py"
+  ],
+
+  "forbidden": [
+    "any edit under C:\\Users\\郑曾波\\Projects\\revenue-forecast\\scripts (production code)",
+    "any edit under revenue-forecast\\config or revenue-forecast\\artifacts\\registry",
+    "any edit under <PLAN>\\reviews (read-only audit evidence)",
+    "git add / commit / restore / stash / checkout in any of the three production repos",
+    "running a real attestation provider, any network call, any publication, any registry write outside <attempt>\\iso\\scratch",
+    "generating production keys or modifying the trusted-signer list",
+    "writing test keys into the repository config/trusted_signer_public_keys.json",
+    "using the global Miniconda interpreter for card runs",
+    "expanding the allowlist beyond the design card's scope (no product implementation on this card)"
+  ],
+
+  "input_hashes": {
+    "note": "sha256 measured on this attempt, read-only, before any run; the card's inline anchors match exactly for the three files the card names",
+    "RF/scripts/revenue_core.py": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae",
+    "RF/scripts/revenue_publication.py": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba",
+    "RF/scripts/contracts/evidence.py": "bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e",
+    "RF/scripts/publication_registry.py": "446627442500001e955a4c132f9c288524f3949d7cf94c1cb9b957fd6ad2d0aa",
+    "RF/scripts/revenue_report.py": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+    "RF/scripts/revenue_forecast.py": "6b3d960e63d09bff681be9823c163c303152fa15824699b650560b5e1977babc",
+    "RF/scripts/contracts/constants.py": "278e3e02df15e556f4851b46711a2f36aac5b7e6a9820c27e0ca31b02858d0ae",
+    "RF/scripts/contracts/document.py": "c2df0a229116392968152ee547818567ab40ba3813a270f68fabbfb9ea207c0d",
+    "RF/tests/test_attestation.py": "d1b7cf036b22867d62e235002e1d1736586ec45a2f888e84896504b7b7915404",
+    "RF/tests/adversarial/test_receipt_attacks.py": "11cb9bd294a8f766e6d6a591777702cbe866c1df37d1bd6704b817b27a7d8998",
+    "RF/tests/test_recognition_bridge.py": "187ea01e45d144031d34b11e3a76c551b2029556c4d26b0b34983f7d59bcc1a5",
+    "RF/config/filing_fetch.json": "1f5eb57d3e0697ae35fbc9f5d4b6e837459b56ea791508cc6ec5275b349b59b7",
+    "RF/config/company_wiki.json": "7a65a00ecc526d5503359feed6a80a7578d3dbf4c8ef133ccf899aecf9383fb9",
+    "RF/artifacts/registry/publications.jsonl": "bc3256bbc7abca8c0ae28155a614237f50860bd914578a3d48d4f74ab62d1e91",
+    "RF/config/trusted_signer_public_keys.json": "<ABSENT - no default trust domain>",
+    "consumer/invest_contracts.py": "<read-only reference; NOT hashed as an input because it lives outside the three audited repos and is not modified by this card>"
+  },
+
+  "unbound_dependency_closed_in_r2": {
+    "issue": "F-I08A-07: the probe imported a synthetic fixture from the production tests tree without that file being bound",
+    "fixture_source": "RF/tests/test_recognition_bridge.py",
+    "fixture_sha256": "187ea01e45d144031d34b11e3a76c551b2029556c4d26b0b34983f7d59bcc1a5",
+    "fixture_symbol": "test_recognition_bridge.forecast_document (defined at line 32 of that module)",
+    "fixture_kind": "SYNTHETIC test fixture, not a real company disclosure",
+    "how_the_probe_consumes_it": "iso/probe_attestation.py inserts <RF>/tests into sys.path and calls forecast_document() to build the synthetic formal-publication input",
+    "reviewer_precondition": "before re-running the probe, re-hash RF/tests/test_recognition_bridge.py; on mismatch stop the re-run and record the drift instead of substituting new evidence",
+    "carry_forward_rule": "I-08-B must bind its own fixture hash in its own binding.json and MUST NOT inherit this card's dependency implicitly"
+  },
+
+  "card_anchor_verification": {
+    "method": "re-hash the named file, compare with the sha256 printed in card_I-08-A.md",
+    "revenue_core.py": {"card": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae", "measured": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae", "match": true},
+    "revenue_publication.py": {"card": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba", "measured": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba", "match": true},
+    "contracts/evidence.py": {"card": "bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e", "measured": "bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e", "match": true},
+    "line_numbers_respected": false,
+    "line_number_note": "the card's line numbers are stale (functions drifted); every anchor was re-located by function name, not by the printed line number, per START_HERE step 3",
+    "drift_vs_git_HEAD": {
+      "revenue_core.py": {"working_tree": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae", "HEAD_blob_sha256": "7d4c248718b3528ac5a48f378930683d6c14026e82649426fda573f2b64f6d79", "identical": false},
+      "revenue_publication.py": {"working_tree": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba", "HEAD_blob_sha256": "183803bbd1f884b62c9ccefb40cdabf35cdc6b9d50e10501febb78b1eec448ba", "identical": true},
+      "contracts/evidence.py": {"working_tree": "bc5e4c5305fad22f9c028fd989536d6529ef868698fb0adfcd9363b3e096208e", "HEAD_blob_sha256": "054e364a7a5c428f43c6378f795429751b26f24af8de07e22da4b3d0ac8a4561", "identical": false},
+      "contracts/constants.py": {"working_tree": "278e3e02df15e556f4851b46711a2f36aac5b7e6a9820c27e0ca31b02858d0ae", "HEAD_blob_sha256": "4698337089156da00b4bd3df68bff79d89d488270d37e08a89c2f4f0623c237a", "identical": false},
+      "interpretation": "revenue-forecast carries pre-existing user dirty files. The measured working-tree bytes ARE the card's declared anchors, so this attempt is bound to the same revision the card was written against. The HEAD blobs differ because of uncommitted user work that predates this attempt; nothing was staged, committed, restored or stashed."
+    }
+  },
+
+  "isolated_copy": {
+    "path": "<attempt>\\iso\\rf\\scripts",
+    "method": "Copy-Item of the production scripts/ tree into the attempt; the probe imports only from this copy",
+    "identity_check_command": "I08A-c2-source-hashes",
+    "identity_check_result": "8/8 files SAME, mismatches=0",
+    "observed_by_probe": "EXP-BASE-0 identical=true; loaded_from points at the iso copy for revenue_core, revenue_publication, revenue_report"
+  },
+
+  "pre_existing_dirty_baseline": {
+    "captured": "before/git_status_before.txt",
+    "revenue-forecast": {"porcelain_and_warning_lines": 58, "warning_lines": 6, "real_entries": 52, "note": "52 real dirty entries; includes 7 untracked entries belonging to other in-flight plan cards (I-04-C, I-08-A, M01-M04, _venv_setup log)"},
+    "filing-fetch": {"porcelain_and_warning_lines": 1, "real_entries": 1},
+    "company-wiki": {"porcelain_and_warning_lines": 2, "real_entries": 2},
+    "after": "after/git_status_after.txt",
+    "diff": "only the header comment line differs; no production file changed"
+  },
+
+  "prohibited_actions_observed": [
+    "no git add/commit/restore/stash/checkout executed in any production repo",
+    "no production registry append (all registries used are under <attempt>\\iso\\scratch)",
+    "no real provider executed; no network call made",
+    "no file written outside the allowed write roots",
+    "PLAN\\reviews was opened read-only (two scratch subdirectories under reviews/revenue/ are ACL-denied to this session and were NOT entered)"
+  ],
+
+  "evidence_paths": {
+    "oracle_frozen_before_run": "oracle.md",
+    "design": "decision.md",
+    "commands": "commands.json",
+    "run_stdout": "after/c3_probe.stdout.txt",
+    "run_stderr": "after/c3_probe.stderr.txt (0 bytes)",
+    "interpreter_check": "after/c1_isexe.stdout.txt",
+    "isolated_copy_identity": "after/c2_source_hashes.stdout.txt",
+    "independent_recomputation": "after/c7_baseline_recompute.stdout.txt",
+    "stability_rerun_comparison": "after/c9_rerun_compare.stdout.txt",
+    "git_before": "before/git_status_before.txt",
+    "git_after": "after/git_status_after.txt",
+    "git_delta_attribution": "after/git_delta_analysis.md",
+    "product_hashes": "after/product_hashes.txt",
+    "hash_inventory_refresher": "refresh_hashes.py",
+    "failed_harness_attempt_preserved": "after/c3_probe.attempt1_harness_bug.stdout.txt",
+    "mojibake_harness_attempt_preserved": "after/c3_probe.attempt2_path_mojibake.stdout.txt"
+  },
+
+  "binding_status": "bound",
+  "binding_note": "This card runs no product command: the only executed commands are read-only probes over an isolated copy. All commands in commands.json are bound (real argv, real cwd, real interpreter) and their raw return codes are recorded there."
+}

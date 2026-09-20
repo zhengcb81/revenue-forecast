@@ -1,0 +1,171 @@
+{
+ "card_id": "M01",
+ "revision": "r3",
+ "scope": "point-review follow-up: 2 low required fixes + 2 info annotations; attempt-local text only",
+ "product_calls_rerun": false,
+ "production_repos_written": false,
+ "items": {
+  "NEW-1": {
+   "status": "not_applicable",
+   "reason": "M03 only"
+  },
+  "NEW-2": {
+   "status": "fixed",
+   "where": "review.md rc=2 paragraph on all four cards; M01 oracle.md r2 section; M01 review.md self-check table and residual paragraph; recovery/r2_exit_code_selfcheck/selfcheck_result.json case D",
+   "change": "\"rc=2 not reachable\" -> \"rc=2 IS reachable via a corrupted positive input\"; case D added and measured",
+   "case_D_raw_returncode": 2,
+   "exit_code_map": {
+    "0": "passing card",
+    "1": "defect outside the guard",
+    "2": "positive input corrupted, no verdict",
+    "3": "corrupted oracle expectation, negative verdict"
+   },
+   "shared_harness_note": "run_card.py is the same file on all four cards (sha256 b5fcc685...), so the correction is applied to all four"
+  },
+  "NEW-3": {
+   "status": "fixed",
+   "where": "evidence/M01/first_run_forensics.json (mtime_evidence_weight, authoritative_reconstruction)",
+   "change": "mtime demoted to indicative; byte-exact prefix hash (9889 B, 88635eb4...) recorded as the authoritative reconstruction"
+  },
+  "NEW-4": {
+   "status": "fixed",
+   "where": "before/git_status_revenue-forecast.txt header",
+   "change": "annotated that this file is an r2 re-capture (the binding-time original was UTF-16LE and no longer coexists); binding.json hashes remain the authoritative no-change record"
+  }
+ },
+ "reserved_for_owner_ruling": "F-M02-01 (unchanged, still not self-decided)",
+ "qualifications_unchanged": {
+  "formula": "accepted_scoped (this card, per point review)",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "pre_r3_sha256": {
+  "M01/review.md": "943bff2957989bfa5c8a460f751385ac5f30c774ac44f82e2640a68a4c5860d0",
+  "M01/oracle.md": "90bce2fad5a5b90ffa377ad7eb04fe7a2abf949f3e456e923bf50f881610fa25",
+  "M01/handoff.json": "bc8f1e7244fc9d978af62b3378ac0cd84a71fe7c91eb06db9929526f8aed9a57",
+  "M01/evidence/M01/first_run_forensics.json": "0568cc93b1c86892ef89a3237e9e0ef050b4c04c8f906518efbebd89ec5311c4",
+  "M01/evidence/M01/revision_r2.json": "f387a4642c254ef8b5aaf6dd66ef8645e6a8c382f908293691e03da048edca05",
+  "M01/before/git_status_revenue-forecast.txt": "1ab2e3c3f6cd4d2f68ef6c895313affbd42ae020243108d52e9c9c1945eff6b9"
+ },
+ "post_r3_sha256": {
+  "M01/review.md": "f16af85fe96e1347edc57e195b1fad0567cc6bcaa35580a79f3c5cdf6ae07420",
+  "M01/oracle.md": "90bce2fad5a5b90ffa377ad7eb04fe7a2abf949f3e456e923bf50f881610fa25",
+  "M01/handoff.json": "bc8f1e7244fc9d978af62b3378ac0cd84a71fe7c91eb06db9929526f8aed9a57",
+  "M01/evidence/M01/first_run_forensics.json": "0568cc93b1c86892ef89a3237e9e0ef050b4c04c8f906518efbebd89ec5311c4",
+  "M01/evidence/M01/revision_r2.json": "f387a4642c254ef8b5aaf6dd66ef8645e6a8c382f908293691e03da048edca05",
+  "M01/before/git_status_revenue-forecast.txt": "60eb1bf3a2c7c110bc6417e373d376181a77d28984a89a606ef2f5ff7f8e16c6"
+ },
+ "post_r3_sha256_after_dedup": {
+  "review.md": "b6caabc569105481ed792dd3f7ce45e982d7c19642c0b75fb369d5ac44b91f72",
+  "oracle.md": "90bce2fad5a5b90ffa377ad7eb04fe7a2abf949f3e456e923bf50f881610fa25",
+  "handoff.json": "e94398c9391ad71129836cb4dc5202d9305c66b37826069fd892a0a34aeb0cca",
+  "decision.md": "a434814e5e87f42ed21b983ef99e4c8b24e1835c0b530f2f5e9e617bf17dad08",
+  "changes.diff": "009159909d2d00361b4f9a8b15b9db79dc1f59aef96e674ccf5ecca44ed1064e",
+  "recovery/README.md": "e3b8d539cab18b9b1ebc0102d52806cc4f582846bf8f702fb52a80c9007e5519",
+  "evidence/M01/revision_r2.json": "f387a4642c254ef8b5aaf6dd66ef8645e6a8c382f908293691e03da048edca05",
+  "evidence/M01/revision_r3.json": "9332cdfbe7b5951bf0be81ad0c8f2dfcdcec8c78f48cc1a85b5129cdfc699e2d",
+  "evidence/M01/first_run_forensics.json": "0568cc93b1c86892ef89a3237e9e0ef050b4c04c8f906518efbebd89ec5311c4",
+  "before/git_status_revenue-forecast.txt": "1ab2e3c3f6cd4d2f68ef6c895313affbd42ae020243108d52e9c9c1945eff6b9",
+  "after/rerun_sha256.json": "f0910d0c431c1959d2513e26c379519a393ad23ccda80ec136c01f835d343d31"
+ },
+ "dedup_note": "the r3 script was applied iteratively while the idempotency guards were being added, so the appends it controls (M03 r3 note, case-D table row, git_status note) were de-duplicated afterwards; every remaining occurrence count is 1 and the hashes here are post-dedup",
+ "authoritative_hashes_at_r3_closeout": {
+  "oracle.md": {
+   "sha256": "90bce2fad5a5b90ffa377ad7eb04fe7a2abf949f3e456e923bf50f881610fa25",
+   "bytes": 12310
+  },
+  "review.md": {
+   "sha256": "b6caabc569105481ed792dd3f7ce45e982d7c19642c0b75fb369d5ac44b91f72",
+   "bytes": 12716
+  },
+  "handoff.json": {
+   "sha256": "e94398c9391ad71129836cb4dc5202d9305c66b37826069fd892a0a34aeb0cca",
+   "bytes": 8526
+  },
+  "decision.md": {
+   "sha256": "a434814e5e87f42ed21b983ef99e4c8b24e1835c0b530f2f5e9e617bf17dad08",
+   "bytes": 1870
+  },
+  "changes.diff": {
+   "sha256": "009159909d2d00361b4f9a8b15b9db79dc1f59aef96e674ccf5ecca44ed1064e",
+   "bytes": 1527
+  },
+  "recovery/README.md": {
+   "sha256": "e3b8d539cab18b9b1ebc0102d52806cc4f582846bf8f702fb52a80c9007e5519",
+   "bytes": 1023
+  },
+  "before/git_status_revenue-forecast.txt": {
+   "sha256": "1ab2e3c3f6cd4d2f68ef6c895313affbd42ae020243108d52e9c9c1945eff6b9",
+   "bytes": 2881
+  },
+  "after/rerun_sha256.json": {
+   "sha256": "f0910d0c431c1959d2513e26c379519a393ad23ccda80ec136c01f835d343d31",
+   "bytes": 971
+  },
+  "evidence/revision_r2.json": {
+   "sha256": "f387a4642c254ef8b5aaf6dd66ef8645e6a8c382f908293691e03da048edca05",
+   "bytes": 6743
+  },
+  "evidence/revision_r3.json": {
+   "sha256": "4a2bfd32b0fee11e40c2b249c5952f51ead40daf550afb68041a7553e0663e65",
+   "bytes": 8436
+  },
+  "evidence/first_run_forensics.json": {
+   "sha256": "0568cc93b1c86892ef89a3237e9e0ef050b4c04c8f906518efbebd89ec5311c4",
+   "bytes": 5588
+  },
+  "evidence/source_manifest.json": {
+   "sha256": "2989964dcf2fd9754bbd29e692deaf9902a29c1efcb6e2ea5ed12d7f7fe72420",
+   "bytes": 7422
+  },
+  "evidence/input.json": {
+   "sha256": "22910b38da8558da7a3651ea3f08a32a0f65be2cfdb516fe216495226a9e7a20",
+   "bytes": 498
+  },
+  "evidence/oracle.json": {
+   "sha256": "cb60e60d07c75a05c156d77dbdbbd5853e2b5d9165d929b40db44eaf3b392cbf",
+   "bytes": 1722
+  },
+  "evidence/cases.json": {
+   "sha256": "0e1f55af5d4b946a951dc30e30a1e15582352dca41c0e7e04220469df9e404d5",
+   "bytes": 2501
+  },
+  "evidence/run_result.json": {
+   "sha256": "cbe385ae1fd3b52f6ae904240cea5bbc3b188cf0cd99f5e9b4d50349734d6c38",
+   "bytes": 22736
+  },
+  "evidence/formula_result.json": {
+   "sha256": "d3931d4f827e02966b20b30c1167a05a6b94bad8b32193681be22d4fc6e9c613",
+   "bytes": 2372
+  },
+  "evidence/negative_results.json": {
+   "sha256": "17842be444ae0abbce385df40151c74ad3247523cb73be57576b58b845b7d97c",
+   "bytes": 20088
+  },
+  "evidence/qualification.json": {
+   "sha256": "eadc87466da84ebfd6dec193fbd30c7ded5439ce9dbd79272a91bbff045bcb4d",
+   "bytes": 1349
+  },
+  "evidence/disclosure_mapping.json": {
+   "sha256": "63e7542dd99afb97bc84ba88bc393cbebd7da1e1802c1516b092b2c147873500",
+   "bytes": 10852
+  },
+  "evidence/historical_reconciliation.json": {
+   "sha256": "e5d3f87d6f657b05ac6321d6dd9034976bdfabc18ebe574966bf45a197e8ae11",
+   "bytes": 3002
+  },
+  "evidence/historical_mapping_probe.json": {
+   "sha256": "351b4e50e2f198de794fc77981a69e02d67a354fbede695695fd7e23ed45f2e7",
+   "bytes": 997
+  },
+  "evidence/forecast_integration.json": {
+   "sha256": "96713f43dcd5da41f25238fc7877ea831d9b3d4ffc3236ae8000810049e06f03",
+   "bytes": 1960
+  },
+  "recovery/r2_exit_code_selfcheck/selfcheck_result.json": {
+   "sha256": "5f8cd8bdcfc17a76f9d7e172b26a54c2676de8a091c5db28b1bd3b0bb3b29177",
+   "bytes": 3144
+  }
+ },
+ "hash_history_note": "The r3 script was applied iteratively while its idempotency guards were still being written, so the pre/post hashes captured during those runs include intermediate states. This block is the authoritative pin, taken from the files as they stand at r3 close-out. The meaningful 'before' state for M03/oracle.md is the r2-accepted file (unchanged in r3 unless listed in items); the r2 append boundary is additionally verifiable by byte count (9889 B) and prefix hash (88635eb4)."
+}

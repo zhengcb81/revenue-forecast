@@ -1,0 +1,211 @@
+diff --git "a/product\\src/company_wiki/source_catalog/cli.py" "b/product_fixed\\src/company_wiki/source_catalog/cli.py"
+index c5038a9..bf5db0f 100644
+--- "a/product\\src/company_wiki/source_catalog/cli.py"
++++ "b/product_fixed\\src/company_wiki/source_catalog/cli.py"
+@@ -857,15 +857,36 @@ def _policy_export_payload(config) -> dict[str, Any]:
+     }
+ 
+ 
++def emit_redacted_error(exc: BaseException) -> int:
++    """Print the redacted error envelope to stderr and return exit code 1.
++
++    I-14-C: every exception exit of the CLI must go through this.  Before, the
++    config-resolution lines below sat *outside* ``main``'s try/except, so an
++    unreadable ``--config`` escaped as a bare interpreter traceback - captured by
++    the launcher into ``worker_stderr-*.log`` - instead of the redacted envelope.
++    """
++    from .error_taxonomy import structured_error
++    from .observability import redact_text
++
++    envelope = structured_error(exc)
++    envelope["error"] = redact_text(envelope["error"])
++    print(json.dumps(envelope, ensure_ascii=False, sort_keys=True), file=sys.stderr)
++    return 1
++
++
+ def main(argv: Sequence[str] | None = None) -> int:
+     if hasattr(sys.stdout, "reconfigure"):
+         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+     if hasattr(sys.stderr, "reconfigure"):
+         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+     args = _parser().parse_args(argv)
+-    config_path = args.config.resolve(strict=True)
+-    project_root = config_path.parents[1]
+-    config = load_catalog_config(config_path, project_root=project_root)
++    try:
++        config_path = args.config.resolve(strict=True)
++        project_root = config_path.parents[1]
++        config = load_catalog_config(config_path, project_root=project_root)
++    except Exception as exc:
++        # I-14-C: pre-try exits must use the same redacting handler.
++        return emit_redacted_error(exc)
+ 
+     def worker_config_path() -> Path:
+         path = args.worker_config
+@@ -1550,13 +1571,7 @@ def main(argv: Sequence[str] | None = None) -> int:
+             }
+     except Exception as exc:
+         # ZR-204: unified error taxonomy — canonical code + retryable flag.
+-        from .error_taxonomy import structured_error
+-
+-        print(
+-            json.dumps(structured_error(exc), ensure_ascii=False, sort_keys=True),
+-            file=sys.stderr,
+-        )
+-        return 1
++        return emit_redacted_error(exc)
+     print(json.dumps(_plain(result), ensure_ascii=False, sort_keys=True))
+     return 0
+ 
+diff --git "a/product\\src/company_wiki/source_catalog/observability.py" "b/product_fixed\\src/company_wiki/source_catalog/observability.py"
+index d9ce30d..7773716 100644
+--- "a/product\\src/company_wiki/source_catalog/observability.py"
++++ "b/product_fixed\\src/company_wiki/source_catalog/observability.py"
+@@ -185,6 +185,109 @@ _PATH_PATTERN = re.compile(r"[A-Za-z]:[\\/][^;,\s]+|[\\/][^;,\s]*[\\/][^;,\s]+")
+ 
+ REDACT = "<redacted>"
+ 
++# ---------------------------------------------------------------------------
++# I-14-C: credential-shaped values in free-form text (exception messages).
++#
++# Before this, the only content-aware cleaner was ``_PATH_PATTERN`` and it was
++# applied to ``StageEvent.detail`` only; ``str(exc)`` reached both
++# ``worker_process_events.jsonl`` and the CLI's stderr envelope verbatim.
++#
++# The key expression is ``<qualifier>_..._<atom>`` so env-var style names
++# (GITHUB_TOKEN, SLACK_BOT_TOKEN, AWS_SECRET_ACCESS_KEY, MY_ACCESS_TOKEN) are
++# covered, and the left anchor is ``(?<![A-Za-z0-9])`` rather than ``\b`` because
++# ``_`` IS a word character, so ``\b`` never matches inside ``my_access_token``.
++# A value is redacted only when such a key precedes it; no claim is made about a
++# secret with no credential-like key anywhere near it.
++# ---------------------------------------------------------------------------
++
++_CREDENTIAL_ATOMS = (
++    "token",
++    "secret",
++    "password",
++    "passwd",
++    "pwd",
++    "apikey",
++    r"api[_-]?key",
++    r"access[_-]?key",
++    r"private[_-]?key",
++    r"auth[_-]?token",
++    r"client[_-]?secret",
++    "credential",
++    "passphrase",
++)
++_LEFT_ANCHOR = r"(?<![A-Za-z0-9])"
++_CREDENTIAL_KEY = (
++    r"(?P<key>" + _LEFT_ANCHOR + r"(?:[A-Za-z0-9]+[_-])*(?:"
++    + "|".join(_CREDENTIAL_ATOMS) + r")(?:[_-][A-Za-z0-9]+)*\b\s*[:=]\s*)"
++)
++
++# A value is the whole rest of the field: a quoted string, or every space/tab
++# separated token up to the next punctuation delimiter.  The multi-word form is
++# required by real shapes such as ``Authorization: Bearer <secret>`` and
++# ``Authorization: token <secret>`` - a single-token rule would redact only the
++# scheme and leave the secret in place.
++_QUOTED_VALUE = r"\"[^\"\r\n]*\"|'[^'\r\n]*'"
++_BARE_VALUE = r"[^\s,;&\"'|]+(?:\s+[^\s,;&\"'|]+)*"
++_VALUE = r"(?P<value>" + _QUOTED_VALUE + r"|" + _BARE_VALUE + r")"
++
++# authorization / bearer: redact everything after the key (scheme included, so a
++# scheme-less "Authorization: <value>" cannot slip through).
++_AUTH_PATTERN = re.compile(
++    r"(?i)(?P<key>" + _LEFT_ANCHOR + r"authorization\s*[:=]\s*|"
++    + _LEFT_ANCHOR + r"bearer\s+)(?P<value>" + _QUOTED_VALUE + r"|" + _BARE_VALUE + r")"
++)
++
++# key=value / key: value, quoted or bare, in a command line or a query string.
++_CREDENTIAL_PAIR_PATTERN = re.compile(r"(?i)" + _CREDENTIAL_KEY + _VALUE)
++
++MAX_REDACTED_MESSAGE_CHARS = 200
++
++
++def redact_text(text: Any) -> Any:
++    """Replace credential-shaped values in free-form *text* with ``REDACT``.
++
++    Content-aware counterpart of ``_PATH_PATTERN`` for text that is not a path:
++    exception messages, CLI error envelopes and any future free-form field.
++    Never raises; non-strings pass through unchanged.  Redaction happens
++    *before* any truncation, so a length cut can never be the only protection.
++    """
++    if not isinstance(text, str) or not text:
++        return text
++    redacted = _AUTH_PATTERN.sub(lambda m: m.group("key") + REDACT, text)
++    redacted = _CREDENTIAL_PAIR_PATTERN.sub(
++        lambda m: m.group("key") + REDACT, redacted
++    )
++    return redacted
++
++
++def redact_and_truncate(text: Any, limit: int = MAX_REDACTED_MESSAGE_CHARS) -> Any:
++    """``redact_text`` first, then truncate to *limit* characters."""
++    redacted = redact_text(text)
++    if not isinstance(redacted, str):
++        return redacted
++    return redacted[:limit]
++
++
++def exception_cause_types(exc: BaseException) -> list[str]:
++    """Exception class names along the ``__cause__``/``__context__`` chain.
++
++    Only the *type names* are reported as diagnostics; no cause message is
++    returned, so a credential inside a nested cause cannot be persisted by
++    accident (the nested message itself is still redacted by callers that
++    choose to render it).
++    """
++    names: list[str] = []
++    seen: set[int] = set()
++    current = exc
++    while True:
++        nxt = current.__cause__ or current.__context__
++        if nxt is None or id(nxt) in seen:
++            break
++        seen.add(id(nxt))
++        names.append(type(nxt).__name__)
++        current = nxt
++    return names
++
+ 
+ def validate_reason(code: str) -> bool:
+     """Fail closed: only registered codes may be recorded."""
+diff --git "a/product\\src/company_wiki/source_catalog/worker.py" "b/product_fixed\\src/company_wiki/source_catalog/worker.py"
+index 5d70030..e55f8ce 100644
+--- "a/product\\src/company_wiki/source_catalog/worker.py"
++++ "b/product_fixed\\src/company_wiki/source_catalog/worker.py"
+@@ -16,6 +16,7 @@ import yaml
+ 
+ from .code_identity import source_bundle_fingerprint
+ from .normalizer import DOCUMENT_PARSE_TIMEOUT_CODE
++from .observability import exception_cause_types, redact_and_truncate
+ from .scheduler_policy import SourceOnlySchedulerPolicy, SourceOnlyStage
+ 
+ 
+@@ -1047,7 +1048,14 @@ class SourceCatalogWorker:
+         return {"status": "stopped", "reason": "control_request"}
+ 
+     def _write_unhandled_exception_event(self, exc: BaseException) -> None:
+-        """Record an unhandled exception without leaking full env / commands."""
++        """Record an unhandled exception without leaking full env / commands.
++
++        I-14-C: the message is passed through the shared credential redactor
++        *before* the 200-char cut, and the ``__cause__``/``__context__`` chain is
++        summarised by type name only.  Truncation alone is not redaction: a
++        credential that straddles the cut - or a quoted credential that the cut
++        leaves unterminated - would otherwise stay readable.
++        """
+         try:
+             message = str(exc) or repr(exc)
+         except Exception:  # pragma: no cover - defensive
+@@ -1055,7 +1063,8 @@ class SourceCatalogWorker:
+         self._write_process_event(
+             "unhandled_exception",
+             exception_type=type(exc).__name__,
+-            message_redacted=message[:200],
++            message_redacted=redact_and_truncate(message),
++            cause_types=exception_cause_types(exc),
+         )
+ 
+     def _write_process_event(self, event: str, **extra: Any) -> None:

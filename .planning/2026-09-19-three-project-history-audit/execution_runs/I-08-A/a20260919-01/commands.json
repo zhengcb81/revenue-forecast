@@ -1,0 +1,361 @@
+{
+  "card_id": "I-08-A",
+  "attempt_id": "a20260919-01",
+  "frozen_before_run": true,
+  "binding_note": "All argv are frozen before the first run. `raw_returncode` is filled from the observed process exit code and was never edited to match an expectation. `expected_returncode` was written first. Because this card is a design card, every executed command is a read-only observation over an isolated copy; no product command is run.",
+  "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "interpreter_note": "attempt-level venv created with `python -m venv` from the I-00-A template interpreter; global Miniconda python is FORBIDDEN for card runs and was never used",
+  "network": "disabled (no provider executed, no HTTP, no package install during the runs)",
+  "commands": [
+    {
+      "id": "I08A-c1-isexe",
+      "purpose": "Confirm the isolated interpreter is the attempt-level venv and that cryptography+pytest resolve inside it (no global Miniconda usage).",
+      "cwd": "<attempt>/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-B",
+        "-c",
+        "import sys,cryptography,pytest;print(sys.executable);print(sys.prefix);print(cryptography.__version__);print(pytest.__version__)"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [],
+      "network": "disabled",
+      "timeout_seconds": 60,
+      "expected_returncode": 0,
+      "expected_business_result": "sys.prefix is the attempt iso venv; cryptography and pytest import successfully",
+      "evidence_path": "after/c1_isexe.stdout.txt",
+      "raw_returncode": 0,
+      "raw_result": "attempt venv python; sys.prefix = <attempt>/iso/venv; cryptography 50.0.1; pytest 9.1.1",
+      "verdict": "expected == raw"
+    },
+    {
+      "id": "I08A-c2-source-hashes",
+      "purpose": "Verify that the copied tree under iso/rf/scripts is byte-identical to the production scripts (frozen provenance for every observation).",
+      "cwd": "<attempt>/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "c2_source_hashes.py"
+      ],
+      "argv_note": "the multi-statement -c form was frozen in the first draft; it was re-bound to a script file so the same command is replayable without shell quoting. No expectation changed.",
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/after (host-side redirect only)"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 120,
+      "expected_returncode": 0,
+      "expected_business_result": "every listed file reports SAME and mismatches=0",
+      "evidence_path": "after/c2_source_hashes.stdout.txt",
+      "raw_returncode": 0,
+      "raw_result": "8 SAME lines; mismatches=0",
+      "verdict": "expected == raw",
+      "runs": [
+        {
+          "attempt": 1,
+          "raw_returncode": 1,
+          "cause": "frozen -c form was executed with the default cwd instead of <attempt>/iso, so the relative path rf/scripts was not found (FileNotFoundError)",
+          "action": "re-ran the same check with the bound cwd; no expectation changed"
+        }
+      ]
+    },
+    {
+      "id": "I08A-c3-probe",
+      "purpose": "Read-only behavioural probe of the current attestation/publication surface (EXP-BASE-0..19); writes only under iso/scratch.",
+      "cwd": "<attempt>/iso",
+      "argv": "REPLACED IN r2 by argv_frozen_as + argv_as_recorded (see argv_discrepancy_note)",
+      "argv_frozen_as": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "probe_attestation.py"
+      ],
+      "argv_as_recorded": [
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-08-A\\a20260919-01\\iso\\probe_attestation.py"
+      ],
+      "argv_discrepancy_note": "F-I08A-08: the frozen form used the interpreter placeholder plus a relative script name; the recorded run used absolute paths, because PowerShell's text-pipeline redirection re-encodes non-ASCII paths to UTF-16, so the child was launched from run_c3.py with file-handle redirection instead. Semantically equivalent (same interpreter, same flags, same script, same cwd); only the path form and the redirection channel differ. Both forms must reproduce the same observation invariants listed in review.md (I08A-c9); raw bytes are NOT expected to match because the probe generates fresh random test keys.",
+      "runner": "<attempt>/run_c3.py (host-side only; sets child cwd to <attempt>/iso, clears REVENUE_ATTESTATION_PROVIDER / REVENUE_TRUSTED_SIGNER_PUBLIC_KEYS / REVENUE_PUBLICATION_REGISTRY, sets PYTHONDONTWRITEBYTECODE=1)",
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/iso/scratch",
+        "<attempt>/after (host-side redirect only)"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "expected_business_result": "one EXP: JSON line per observation, no observation with status=ERROR, and the four gaps of oracle.md section 4 reproduced (A-D1 mechanism true, provider never invoked, receipt carries no signature domain, registry shows no signed history).",
+      "evidence_path": "after/c3_probe.stdout.txt (stderr: after/c3_probe.stderr.txt)",
+      "raw_returncode": 0,
+      "raw_result": "EXP-SUMMARY observations=35 errors=0 error_ids=[]; stderr 0 bytes",
+      "verdict": "expected == raw",
+      "runs": [
+        {
+          "attempt": 1,
+          "raw_returncode": 1,
+          "evidence": "after/c3_probe.attempt1_harness_bug.stdout.txt",
+          "cause": "harness defect only: publication_registry._set_read_only chmods the scratch registry read-only after every append, so the probe's own `unlink(missing_ok=True)` of a leftover scratch registry raised PermissionError: [WinError 5] on Windows and aborted the run after EXP-BASE-17. All 29 observations recorded in that run are valid and agree with the final run.",
+          "action": "fixed the PROBE (reset_scratch_file clears the read-only bit for iso/scratch files only); no assertion, expectation or product claim was changed to accommodate the failure"
+        },
+        {
+          "attempt": 2,
+          "raw_returncode": 0,
+          "evidence": "after/c3_probe.attempt2_path_mojibake.stdout.txt",
+          "cause": "harness defect only: PowerShell text-pipeline redirection re-encoded the child output, so paths containing the non-ASCII workspace segment were recorded as mojibake in the summary line",
+          "action": "switched to file-handle redirection in run_c3.py; observations themselves were unaffected"
+        }
+      ]
+    },
+    {
+      "id": "I08A-c4-git-before",
+      "purpose": "Record production repo dirty-file counts before any probe run, to prove the production repos were untouched.",
+      "cwd": "C:\\Users\\郑曾波\\Projects",
+      "argv": [
+        "git",
+        "-C",
+        "<repo>",
+        "status",
+        "--porcelain"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [],
+      "network": "disabled",
+      "timeout_seconds": 120,
+      "expected_returncode": 0,
+      "expected_business_result": "line counts recorded for revenue-forecast, filing-fetch, company-wiki",
+      "evidence_path": "before/git_status_before.txt",
+      "raw_returncode": 0,
+      "raw_result": "revenue-forecast exit 0 / 58 lines (6 git permission warnings + 52 dirty entries); filing-fetch exit 0 / 1 line; company-wiki exit 0 / 2 lines",
+      "verdict": "expected == raw"
+    },
+    {
+      "id": "I08A-c5-git-after",
+      "purpose": "Re-record the same dirty-file counts after the probe run and diff against before/ to prove no production file changed.",
+      "cwd": "C:\\Users\\郑曾波\\Projects",
+      "argv": [
+        "git",
+        "-C",
+        "<repo>",
+        "status",
+        "--porcelain"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [],
+      "network": "disabled",
+      "timeout_seconds": 120,
+      "expected_returncode": 0,
+      "expected_business_result": "identical output to before/git_status_before.txt for all three repos",
+      "evidence_path": "after/git_status_after.txt",
+      "raw_returncode": 0,
+      "raw_result": "identical entry sets; Compare-Object difference is only the header comment line",
+      "verdict": "expected == raw"
+    },
+    {
+      "id": "I08A-c6-product-hashes",
+      "purpose": "Hash every product file of this attempt so the reviewer reads exact content, not filenames.",
+      "cwd": "<attempt>",
+      "argv": [
+        "Get-FileHash",
+        "-Algorithm",
+        "SHA256",
+        "<attempt> product + evidence files"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/after"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 120,
+      "expected_returncode": 0,
+      "expected_business_result": "sha256 listed for binding.json, oracle.md, decision.md, commands.json, review.md, handoff.json, probe and evidence artifacts",
+      "evidence_path": "after/product_hashes.txt",
+      "raw_returncode": 0,
+      "raw_result": "all product/evidence hashes listed; the first pass reported MISSING for binding.json/review.md/handoff.json because those files did not exist yet, so the listing was regenerated after they were written",
+      "verdict": "expected == raw (after the documented re-listing)"
+    },
+    {
+      "id": "I08A-c7-baseline-recompute",
+      "purpose": "Independent recomputation of the frozen signature rules: fingerprint = sha256(raw public key)[:32]; signed message = canonical_sha256(payload).encode('ascii') (64 chars); Ed25519 signature is 128 hex chars; a one-bit payload change invalidates the signature; the publication payload hash excludes result_sha256/publication_receipt; the receipt carries no signature domain.",
+      "cwd": "<attempt>/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/c7_baseline_recompute.py"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/after (host-side redirect only)"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 200,
+      "expected_returncode": 0,
+      "expected_business_result": "9 PASS lines and FAILURES=0",
+      "evidence_path": "after/c7_baseline_recompute.stdout.txt",
+      "raw_returncode": 0,
+      "raw_result": "9 PASS, FAILURES=0",
+      "verdict": "expected == raw"
+    },
+    {
+      "id": "I08A-c8-oracle-immutability",
+      "purpose": "Prove oracle.md / decision.md / commands.json were frozen before the first probe execution.",
+      "cwd": "<attempt>",
+      "argv": [
+        "Get-Item",
+        "<attempt>/oracle.md",
+        "<attempt>/decision.md",
+        "<attempt>/commands.json",
+        "<attempt>/iso/probe_attestation.py",
+        "<attempt>/after/c3_probe.*"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/after"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 60,
+      "expected_returncode": 0,
+      "expected_business_result": "oracle.md and decision.md predate the first probe output",
+      "evidence_path": "after/freeze_timestamps.txt",
+      "raw_returncode": 0,
+      "raw_result": "oracle_predates_first_run=True; decision_predates_first_run=True; commands_json_predates_first_run=True",
+      "verdict": "expected == raw"
+    },
+    {
+      "id": "I08A-c6b-refresh-inventory",
+      "purpose": "Late packaging step: after every deliverable existed, regenerate after/product_hashes.txt (the canonical inventory) and refresh handoff.json.product_file_hashes for the files that can be hashed without self-reference.",
+      "cwd": "<attempt>",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/refresh_hashes.py"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/after/product_hashes.txt",
+        "<attempt>/handoff.json"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 120,
+      "expected_returncode": 0,
+      "expected_business_result": "inventory regenerated with one hashed line per deliverable and evidence file; handoff.json still parses and its listing holds every non-self-referential deliverable",
+      "evidence_path": "after/product_hashes.txt (the artifact it writes)",
+      "raw_returncode": 0,
+      "raw_result": "final run after r2: handoff.json listing refreshed with 20 entries; product_hashes.txt regenerated with 41 lines",
+      "verdict": "expected == raw",
+      "note": "this command makes no assertion about the product; it only packages hashes. It is NOT part of the frozen oracle and is always run last (also re-run after the r2 revision)."
+    },
+    {
+      "id": "I08A-c9-probe-rerun-stability",
+      "purpose": "Stability check for the reviewer: re-run the exact same probe against the unchanged isolated copy and compare the observation set, not the raw bytes.",
+      "cwd": "<attempt>/iso",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/iso/probe_attestation.py"
+      ],
+      "runner": "<attempt>/run_c3.py",
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/iso/scratch",
+        "<attempt>/after (host-side redirect only)"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "expected_business_result": "same 35 observation ids, errors=0, the same two rows with gap=true (EXP-BASE-11, EXP-BASE-12), and no row with matches=false. Raw stdout is NOT expected to be byte-identical because the probe generates fresh random Ed25519 test keys each run, so EXP-BASE-9's fingerprint differs.",
+      "evidence_path": "after/c3_probe.stdout.txt (overwritten by the re-run) + iso/c9_compare.py output",
+      "raw_returncode": 0,
+      "raw_result": "observation_count=35, status_error_count=0, gap_true_rows=EXP-BASE-11,EXP-BASE-12, expectation_mismatch_rows=none, rows_carrying_random_fingerprints=EXP-BASE-9",
+      "verdict": "expected == raw",
+      "note": "byte-level stdout sha256 changed (8bcb92b6... -> ecfa933d...) solely because EXP-BASE-9's random test-key fingerprint changed; every invariant row is identical. after/c3_probe.stdout.txt therefore holds the re-run, and the pre-rerun bytes are preserved in after/product_hashes.txt history and in this record."
+    },
+    {
+      "id": "I08A-c10-r2-consistency",
+      "purpose": "r2 revision control: verify that every error code used in decision.md / oracle.md is defined in decision.md section 2.5 (the single source) and that no canonical code is left unreferenced. Read-only over this attempt's own text.",
+      "cwd": "<attempt>",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/check_r2_consistency.py"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/after (host-side redirect only)"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 60,
+      "expected_returncode": 0,
+      "expected_business_result": "0 undefined codes, 0 unreferenced canonical codes, 4/4 reviewer-flagged pairings true, PROBLEMS=0",
+      "evidence_path": "after/r2_consistency_check.stdout.txt",
+      "raw_returncode": 0,
+      "raw_result": "canonical_codes_defined=31; undefined_in_decision=none; undefined_in_oracle=none; defined_but_never_referenced=none; PROBLEMS=0 (re-confirmed after the final edits)",
+      "verdict": "expected == raw",
+      "note": "this command validates the frozen TEXT of the r2 revision, not the product code. It writes nothing but its own stdout; it is not part of the pre-run oracle.",
+      "runs": [
+        {
+          "attempt": 1,
+          "raw_returncode": 1,
+          "cause": "checker defect: the first version treated field names such as request_id / publication_attestation / input_sha256 as error codes, so it reported 13+7 spurious 'undefined codes'",
+          "action": "narrowed the checker to scan only error-code-shaped tokens (suffix whitelist) in the normative columns; the frozen texts themselves were not relaxed to make the check pass"
+        }
+      ],
+      "capability_limit": "REVIEWER-MEASURED LIMIT: this check proves only that the SET of E-numbers is self-consistent (every used number is defined in decision.md section 2.5 and every defined number is referenced). It does NOT check the number-to-code-string pairing, so two mutations survive it: repointing a NEG row to a different E-number, and swapping two code strings inside section 2.5 itself. The reviewer measured both as undetected (PROBLEMS=0, rc=0) while an independent pair check found mismatches=2. The pair check is I08A-c13-check-r3-pairs."
+    },
+    {
+      "id": "I08A-c13-check-r3-pairs",
+      "purpose": "r3 independent PAIR check: build the canonical number->code-string map from decision.md section 2.5, then verify every other '**E##** `string`' reference in decision.md and every NEG row's fourth cell in oracle.md agrees with it. Self-tests by generating two mutated copies in iso/scratch/r3_mutations (repoint one row; swap two canonical strings) and asserting both are detected.",
+      "cwd": "<attempt>",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/check_r3_pairs.py"
+      ],
+      "config_paths": [],
+      "allowed_write_roots": [
+        "<attempt>/iso/scratch/r3_mutations",
+        "<attempt>/after (host-side redirect only)"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 60,
+      "expected_returncode": 0,
+      "expected_business_result": "REAL pair_problems=0 AND both mutations detected",
+      "evidence_path": "after/r3_pair_check.stdout.txt",
+      "raw_returncode": 0,
+      "raw_result": "[REAL] canonical_pairs=32, pair_problems=0; [A_repoint_one_row] detected=True (1 mismatch); [B_swap_two_rows] detected=True (4 mismatches); PAIR_CHECK_RESULT=clean_and_both_mutations_detected",
+      "verdict": "expected == raw",
+      "note": "this is the check that closes the reviewer-measured gap in I08A-c10. It validates frozen TEXT only, never the product implementation. Mutation copies are confined to iso/scratch and are not part of the frozen evidence chain."
+    }
+  ],
+  "not_run_commands": [
+    {
+      "id": "I08A-c11-provider-protocol",
+      "purpose": "would exercise a bounded fake attestation provider over stdin/stdout to fix the provider protocol empirically",
+      "status": "NOT RUN",
+      "reason": "the provider protocol does not exist in the product yet. Implementing it is I-08-B, not I-08-A (the card says 本卡不实施产品). Inventing a throwaway protocol here would produce evidence about a design that is not the delivered design; the protocol is therefore frozen on paper in decision.md section 2 and must be validated by I-08-B's own attempt.",
+      "renumber_note": "N-R2-08: was I08A-c9-provider-protocol, which collided with the executed I08A-c9-probe-rerun-stability; renumbered to c11 in r3. No other file may reference the old id."
+    },
+    {
+      "id": "I08A-c12-replay-matrix",
+      "purpose": "would run the NEG-REPLAY-1..9 matrix against a real implementation",
+      "status": "NOT RUN",
+      "reason": "same as c9: no attestation record type exists yet to replay. The matrix is frozen in oracle.md section 2 and is the acceptance surface for I-08-B/C.",
+      "renumber_note": "N-R2-08: was I08A-c10-replay-matrix, which collided with the executed I08A-c10-r2-consistency; renumbered to c12 in r3 (the executed pair-check then took c13). No other file may reference the old id."
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+﻿PASS raw_public_key_len_32 :: len=32
+PASS fingerprint_len_32 :: fingerprint=ceb32d7941f97ad8fbce307269736b6c
+PASS message_is_64_ascii_hex :: message=b'a73a6d4a5a75e8a5e6ef0df983ba052c900dab756facfb5443af1e5bdc739d3b'
+PASS signature_len_128_hex :: len=128
+PASS correct_signature_verifies :: Ed25519 verify on canonical message
+PASS mutated_payload_rejected :: old signature must not cover the new payload
+PASS payload_hash_excludes_self_reference :: validated_payload_sha256 == canonical_sha256(result minus result_sha256/publication_receipt)
+PASS receipt_carries_no_signature_domain :: receipt keys: attestation_status,engine_version,formal_output_mode,freeform_override_allowed,gate_ids,receipt_schema_version,receipt_sha256,schema_version,validated_input_sha256,validated_payload_sha256,validator_version,verification_context_sha256
+PASS host_signed_is_a_bare_string :: attestation_status is self-declared in this receipt; no key/issuer/signature accompanies it
+FAILURES=0
