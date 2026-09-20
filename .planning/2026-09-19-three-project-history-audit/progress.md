@@ -1,5 +1,20 @@
 # Progress
 
+## 2026-09-20 — Owner 裁定落地：第 16 项 + M08 三步①②完成 + 第③步复核通过
+
+- **Owner 原话（逐字）**：「16 照建议；W05-1 A；W05-2 A；W06-1 A；M08 三步照办；I-04-D R2-3 选 LIMITATION；I-14-A D1/D2 指派运维与 SLO owner；I-11-A OPEN-2/3/5/6 指派会计+行业 reviewer；新立卡全部照建议开；I-08-B CONFLICT、I-00-B 追认、三条口径确认：同意。」——已逐字写入 `OWNER_DECISIONS.md §十`（含逐条执行动作表与解锁映射），未列出的项保持未决原状。
+- **第 16 项（最高优先）已执行**：生产提交 `5db4734a`（**owner-authorized**）把 `scripts/model_registry.py`（扩展版，含 `build_extension_specs` 挂载与 `driver_bounds`）+ `scripts/model_extensions.py`（原 untracked）纳入版本控制并推送到远端 main。**ruff 在 staged 文件上 Passed**（本次 hook 真正跑了检查）。提交后校验工作树 blob == `HEAD:` blob（两文件）；锚点 sha256 不变（`9ec65295…`/`9939480b…`/`45e4e343…`/`1821fd2a…`）。31 张模型卡的验收基准从此有了版本控制层锚。
+- **M08 三步 ①②已执行、③已复核通过 = `accepted_scoped`（仅 formula）**：
+  - ①读法 C 权威（owner 裁定）②索引更正已由编排层作为 owner 执行人落地——4 个文件各改 1 处（`100+40−5−10−15−60=50` → `100+40−5+−10+−15−60=50`，各 +2 B；`100+40−20=120` 另一模型**未触碰**），前像逐字节保全在 `execution_runs/M08/a20260919-01/recovery/owner_ruling_20260920_index_correction/`（4 份 pre-image + provenance.json + PROVENANCE.md 含 owner 原话）。修正后两个 JSON `json.load` OK。**期望 `[50]` 不变。** 已提交 `b07d9b95`。
+  - ③reviewer（`4acc1ab4`）独立复算全部通过：字节级 diff 确认只改了那一处（重建等式 `now_prefix + pre_region + now_suffix == pre` 四份全 True）；同 `code_root 9ec65295…` 复跑 **rc=0**、`[50.0]` 成立、负例 11/11、`tolerances_ok True`、观测 `OBS-SIGN-B=85.0 / OBS-SIGN-NEG=55.0 / OBS-REMEASURE-USED=65.0`——与 r1/r2/r3 行为完全一致；冻结件逐字节未变；owner 裁定链完整（`OWNER_DECISIONS.md §十` L116 原话 + provenance event 随 `b07d9b95` 入库）。**P1=0**。
+  - **新发现 F-M08-R1（P2）**：`execution_v2/validation.json`（交付门快照）4 条 index hash 陈旧（因索引刚被更正）⇒ 已派实现者重跑 `validate_execution_pack.py` 刷新（保留旧快照为 provenance）。**不影响 formula 资格**。
+  - **M08 载体落定已派**（转录 + `status` 从 `blocked` → `accepted_scoped` + `qualification.formula` + F-M08-R1 刷新 + F-M08-R2/R3 登记）。
+- **载体落定执行器已完成**（`d4a42f5a`）：**19 张卡落定**（M05–M07 r1、M09–M12 r1、M21–M24 r3、M25–M28 r2、I-04-C、I-11-A、I-14-B、I-15-A），**1 张按规则跳过**（I-07-A：最新一轮 r2 = `changes_required`，欠 r3 re-read），0 失败。M09–M12 的 reviewer 报告按字节固化进四卡 `evidence/<CARD>/reviewer_report_m09m12.md`（40679 B，父代理复算 **4/4 hash 一致**）；载体字段明写 `in_card_verdict_region: false` + `in_card_transcription_owed: true`（"reviewer 零写入 ⇒ 卡内无裁决区"这一类缺口已立为流程要求）。**32 份台账以"注记陈旧条目"登记、无一枚哈希被手改**（仅 I-11-A 有生成器 `tools/hash_attempt.py`，已归档前像后重跑 rc=0）。`disclosure_adaptation`/`accuracy` 19 张全部验证仍为 `unmapped`/`unproven`。
+- **I-04-D = `accepted_scoped`（attempt 已关闭）**：r4 稳定封盘 + 终审通过 + 转录（`review.md` 37191→42962 B，**精确前缀成立**）+ 载体落定 + 口径归一（`disclosure_adaptation = unmapped`、`accuracy = unproven`，原值 `not_assessed` 留档 + `vocabulary_note`）+ 重新封盘（`sealed_at_utc 2026-09-20T07:29:36Z`、32 行 `structure_failures: NONE`、ZW 135 s 违规 0）。6 项保留范围一项未关；R2-3 已由 owner 裁定为 **LIMITATION**（已派实现者登记）。
+- **I-05-A = `accepted_scoped`（转录 + 载体落定 + 封盘完成）**：报告按字节固化（`evidence/I-05-A/reviewer_report_r4.md` 15827 B/`d9567713…`）；裁决块转录（`review.md` 8843→13061 B，块在 byte 9213..13030 = 行 104–116，**字节级精确前缀**）；载体落定；**4 项 P3 以追加更正落地**（oracle **新增附录 D**：前像字节数 14924→**23204 B**；`attempt_fixed` 补回 r4 三元组；键名注记；HEAD 补记——正文与附录 A/B/C 一字未改）；封盘 `sealed_at_utc 2026-09-20T07:32:23Z`、清单 966 行、42 个 JSON 全部可解析。**provenance gap 登记**：实现者最初把 `23101 B/d64c8ce2…` 记为"父 agent 引用值"，父 agent 复核**自己的转达只给过预注册哈希 `0e884aff…`**；实现者更正归属为"派工消息层"（父代理当前上下文无法独立核实），且 `%TEMP%\planrev4` 下不存在任何 23101 B 文件 ⇒ 按"**来源未确定/不可复现的引用值**"登记，接受"八要素内容签名 + 按盘上字节落定"的处置，不追另一版本。
+- **入库**：`c09d9de7`、`00a14ddd`、`5fdf9470`、`d8975b34`、`f2427f14`、`46bd8b16`、`5db4734a`、`b07d9b95`（均只含 `.planning` 或上述两个生产文件）全部推送成功、门全 GREEN、hook restore 行逐次核对、锚点完好。
+
+
 ## 2026-09-20 — 本 session 收束（goal 30 轮用尽）：状态审计、嵌合哈希治理项、I-08-B 收口
 
 - **本 session 累计新增 `accepted_scoped` 载体**：M13–M16（+4）、M17–M20（+4）、M21–M24（+4）、M25–M28（+4）、M29–M31（+3）、I-05-A、I-08-B、I-09-A、I-11-A、I-14-A、I-14-B、I-14-C r5 —— 盘上独立 `accepted_scoped` 总数达 **≈58 张**（含限定范围者：I-08-A/I-11-A 仅设计契约、I-15-A 仅证据、I-00-A 限定只读基线、I-14-C 仅证据与判据且**明确不含促销**、I-09-A 仅设计/契约记录）。**M08 = `blocked`**、**I-06-A = `blocked`**、**I-04-D** 在 r3 稳定重封盘中；其余 **≈24 张**仍被 owner 门或依赖链卡住。

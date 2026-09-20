@@ -1,0 +1,124 @@
+{
+ "step": "step 3 of the owner-approved M08 three-step remediation",
+ "owner_ruling": "OWNER_DECISIONS.md §十 - verbatim: 「M08 三步照办」",
+ "code_root": "C:/Users/郑曾波/AppData/Local/Temp/m05m08-review-20260920-025942/m08_step3_run/iso/checkout_scripts",
+ "code_root_model_registry_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+ "code_root_model_extensions_sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+ "runner_sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+ "interpreter": "C:\\Miniconda\\python.exe",
+ "raw_exit_code": 0,
+ "expected_exit_code": 0,
+ "positive_actual": [
+  50.0
+ ],
+ "positive_expected": [
+  50.0
+ ],
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   50.0,
+   0.0
+  ],
+  "expected": [
+   50.0,
+   0.0
+  ],
+  "ok": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   65.0
+  ],
+  "expected": [
+   65.0
+  ],
+  "ok": true
+ },
+ "negative_summary": {
+  "total": 11,
+  "passed": 11,
+  "failed": []
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "expectation": null,
+   "kind": "set_base_revenue",
+   "why": "the backlog bridge ignores base_revenue at this entry point; design observation only",
+   "raised": null,
+   "actual": [
+    50.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    50.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true
+  },
+  {
+   "id": "OBS-SIGN-B",
+   "expectation": null,
+   "kind": "set_driver_element",
+   "why": "sign probe with contract_changes = +10: reading A gives 65, reading B gives 65, reading C gives 85; NO expectation and NO verdict is asserted",
+   "raised": null,
+   "actual": [
+    85.0
+   ]
+  },
+  {
+   "id": "OBS-SIGN-NEG",
+   "expectation": null,
+   "kind": "set_driver_element",
+   "why": "second sign probe with contract_changes = -20: reading A gives 55, reading B gives 95, reading C gives 55 - this probe separates reading B from A/C; NO expectation and NO verdict is asserted",
+   "raised": null,
+   "actual": [
+    55.0
+   ]
+  },
+  {
+   "id": "OBS-REMEASURE-USED",
+   "expectation": null,
+   "kind": "input_replay",
+   "why": "omitting backlog_remeasurements changes the result, so the remeasurement term is really used",
+   "raised": null,
+   "actual": [
+    65.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    50.0
+   ],
+   "matches_compared": false,
+   "expected_equal": false,
+   "matches_expected_relation": true
+  }
+ ],
+ "exit_code_semantics": {
+  "harness_incomplete": false,
+  "positive_ok": true,
+  "continuity_ok": true,
+  "negatives_ok": true,
+  "defaults_ok_not_gating": true,
+  "verdict": "pass",
+  "exit_code": 0
+ },
+ "frozen_evidence_unchanged_by_this_rerun": true,
+ "frozen_evidence_hashes_after": {
+  "evidence/M08/input.json": "5f1ab9430ed58d73a509d23ea3a846e87c71822e6294844dcd5e8da36a9e23e0",
+  "evidence/M08/oracle.json": "2264f673867f60df5a5ce6fe1c173669372d4c8c8456d33afd00f4a482389e69",
+  "evidence/M08/cases.json": "57459a8f5ea298e1bf56371175f62b298171ca07439d6d3b67ad911b829add5e",
+  "evidence/M08/run_result.json": "83015b9d96310f49b639f472c048f7525eaa5d7746d3bb94805645fb11ab9e97",
+  "evidence/M08/negative_results.json": "9bebe7337395748def29ef98295a84ffc2b9a9d14db189ca3a6f2c42a2f685ec",
+  "evidence/M08/qualification.json": "42abe40d361928db15812ac0bbc6d2406b2a728d230b5c006b6cc50046226d59",
+  "oracle.md": "2b807c4a702948b19b6178bc463536bfab2d30859f858100de24887b9e1bdd80",
+  "handoff.json": "2ea09d4f6d0b4fa616576a3d9806f9f83afa76877e73e4ba1d2d9e51f19de397",
+  "binding.json": "f376b719b1f5a95396bb7dabe45e70ed30078542be45c65d255bb92b3c1f9ab3",
+  "decision.md": "42124934c747b61bb2979d829391a830b3380cf7fd00634c1592605b3f272840",
+  "commands.json": "92875088938cf0b4621e14914ac0c567a60477a9171e0f0a46cf35917c1be762"
+ },
+ "note": "interpreter is the harness python, NOT the attempt venv; the attempt venv is excluded from this scratch copy and no card artifact depends on it. run_card.py imports only argparse/copy/json/os/sys/traceback (stdlib)."
+}
