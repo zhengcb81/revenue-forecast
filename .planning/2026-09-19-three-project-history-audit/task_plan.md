@@ -324,3 +324,28 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
 **⚠️ 如实登记的限度**：R-2/R-3/R-4 抽查**复核者点名的 10 张**，**未穷举全计划每一张卡**。追认句说「**各 attempt**」；本卡证明的是**被点名的这些成立**，**更强的「所有 attempt 皆成立」未被本方法证明**。限度写入 JSON `limits` 字段 —— **声称不得多于方法所能支持**。
 
 **产物**：`decision.md`（5906 B / `5cce4c83…`）、`t20_binding_scope_ratification.json`（3858 B / `c002d2d0…`）、`handoff.json`（`103c613e…`）、`scripts/verify_t20.py`（9298 B / `875cdb1e…`）。**边界**：**被追认载体写入 0 次**（I-00-B `binding.json`、全部 M 卡 `binding.json`、全部 `iso/` 快照均未改）；**未重跑 B/C/E**；**未产生新证据世代**；未做 `status` 转移；未代签；产品文件 **0 条**；全部 JSON 可解析且登记哈希**零失配**。
+
+**Round 49（2026-09-20）新增：T1-21 卡内完成 —— `oracle.md` 事后编辑的**口径**，**结论为「已核查、所采纳口径的规定形态已在盘上实现」**（**未修改任何被裁定对象**）。落点 `execution_runs/T1-21/a20260920-01/`：
+
+**裁定**（`OWNER_DECISIONS.md` §13 **T1-21**，TIER-1）：**采纳建议口径**：允许**追加式 provenance 登记**（写明**何时、为何、新 hash**），**禁止回改**为『**从未编辑**』。
+
+**起因（一次被正确升级的治理问题）**：§6 载 `oracle.md` 事后编辑（I-08-B N2），复核者明写「**治理裁定我无权作出**」。**关键事实：实现者也拒绝自裁** —— `binding.json:246` 原文：*"OWNER DECISION REQUIRED: whether post-hoc editing of a frozen oracle is acceptable. **The implementer registers the event and does NOT rule on it.**"*；`oracle.md:272` 亦写「本卡**无权自行裁定**，已登记为待 owner 裁决事项」。⇒ **T1-21 正是对这次升级的回答**，也是本项目纪律的**正面样本**：遇到超出职权的治理问题，**登记、升级、不自裁**。
+
+**裁定规定两种形态**：**允许**追加式登记（何时/为何/新 hash）；**禁止**回改为「从未编辑」。**为何「禁止回改」是重心**：被事后编辑过的冻结文本，其**历史**是证据力的一部分 —— 改成「从未编辑」会使**每个下游读者得出错误结论**，比编辑本身严重得多。**允许编辑 + 要求如实登记 = 承认「冻结」是过程纪律而非绝对不变；禁止回改 = 保住记录的可用性。**
+
+**四条命题全成立（`scripts/verify_t21.py`，`overall = PASS` / exit 0）**：
+
+| # | 命题 | 结果 | 证据 |
+|---|---|---|---|
+| **P-1** | **允许**的形态在场：追加式登记载明**何时/为何/新 hash** | **holds** | `oracle.md` §9「本文件的编辑 provenance」为**追加节**；`binding.json` 时间轴 `03:49:26 round-1 errata: oracle.md EDITED AFTER THE RUNS`；新 hash `60a86ef8…` |
+| **P-2** | **禁止**的形态不在场：无「从未编辑」回改 | **holds** | 三段文本合扫 **0 命中**；台账如实记 `edited_after_first_runs = true` |
+| **P-3** | 事件被**升级**、未被**自裁** | **holds** | `binding.json` 标 `OWNER DECISION REQUIRED`；`oracle.md` 声明本卡无权自行裁定；`binding.json` 明写实现者不做裁决 |
+| **P-4** | 登记是**加性**的：前像值存活 | **holds** | 编辑前哈希 `8d6dc81b` 仍存；明写「**no earlier value is lost**」；更早冻结哈希 `08281f2d…` 亦保留 |
+
+⇒ **这正是裁定「追加式」三字的落实**：**新值写入、旧值留档、一个都没覆盖。**
+
+**为何不改 `binding.json:246` 的 `governance_status`（本卡未做）**：该字段位于 **I-08-B attempt 的冻结件**，记录的是「**当时**该实现者认为这是待裁问题」—— **今天裁定不改变当时那个判断为真**。把结果回写进去，**正是 T1-21 自己禁止的那类「回改历史记录」，只是方向相反**。**口径文书的正确载体是本卡的记录**（与 T1-14、T1-20 同理）。
+
+**移交编排层的提示（本卡不做）**：`governance_status` 仍写 `OWNER DECISION REQUIRED`，**按本口径不构成缺陷**（它是当时状态），但下游可能误以为未裁。若需消除歧义，**正确做法是按 T1-12 ① 追加一条登记**（写明已由 §13 T1-21 裁定），**不回改原字段** —— 本卡不执行，因触及 I-08-B 冻结件、**超出 T1-21 授权范围**（该条授权的是**确立口径**，不是**改写 I-08-B**）。
+
+**产物**：`decision.md`（5780 B / `f8a2b1b2…`）、`t21_oracle_edit_policy_verification.json`（1469 B / `f76d0040…`）、`handoff.json`（`879be104…`）、`scripts/verify_t21.py`（8436 B / `084cb04a…`）。**边界**：**被裁定对象写入 0 次**（`oracle.md` / `binding.json` / `handoff.json` 均未改；`governance_status` 未动）；未做 `status` 转移；未代签；产品文件 **0 条**；全部 JSON 可解析且登记哈希**零失配**。

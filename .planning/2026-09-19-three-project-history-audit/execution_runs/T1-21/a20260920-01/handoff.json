@@ -1,0 +1,66 @@
+{
+  "card": "T1-21",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_ruling_and_verification",
+  "date": "2026-09-20",
+  "authority": {
+    "source": "OWNER_DECISIONS.md section 13 T1-21",
+    "tier": "TIER-1",
+    "ruling": "adopt the recommended interpretation: append-only provenance registration is allowed (stating when, why, new hash); rewriting the record to claim 'never edited' is forbidden",
+    "owner_text": "采纳建议口径：允许追加式 provenance 登记（写明何时、为何、新 hash），禁止回改为「从未编辑」。"
+  },
+  "origin": {
+    "section": "OWNER_DECISIONS.md section 6 -- governance events requiring an interpretation ruling",
+    "subject": "I-08-B N2 post-hoc oracle.md edit (8d6dc81b -> re-registered)",
+    "reviewer_stance": "the reviewer wrote 'the governance ruling is not mine to make'",
+    "implementer_stance": "binding.json:246 records governance_status = 'OWNER DECISION REQUIRED: whether post-hoc editing of a frozen oracle is acceptable. The implementer registers the event and does NOT rule on it.'",
+    "significance": "T1-21 answers that escalation. A positive sample of this project's discipline: the implementer registered the event, escalated, and did not self-rule."
+  },
+  "deliverable": {
+    "conclusion": "the prescribed form is already implemented on disk; this card issues the interpretation record and verifies both the allowed and the forbidden forms",
+    "policy": {
+      "allowed": "append-only provenance registration stating WHEN, WHY and the NEW HASH",
+      "forbidden": "rewriting the record to claim the document was never edited",
+      "why_the_prohibition_matters": "the edit history is part of a frozen text's evidentiary value. Rewriting the record to say 'never edited' would lead every downstream reader to a false conclusion -- worse than the edit itself. Allowing the edit while requiring honest registration concedes that 'frozen' is a process discipline rather than absolute immutability; forbidding the rewrite preserves the usability of the record."
+    },
+    "artifacts": [
+      {"path": "decision.md", "bytes": 5780, "sha256": "f8a2b1b25b2da12e6c9d4491d524d2dcd0512542a078c4bfe81110a28229d7d9"},
+      {"path": "t21_oracle_edit_policy_verification.json", "bytes": 1469, "sha256": "f76d0040f700f465ed1b46bf0f4d0791f6d836e07a8513ced9b590e76a79c06e"},
+      {"path": "scripts/verify_t21.py", "bytes": 8436, "sha256": "084cb04acbdbb9b88bd9f575147d836d65f02eb97468893a61e5bf8aacc3e488"}
+    ]
+  },
+  "verification_summary": {
+    "overall": "PASS",
+    "exit_code": 0,
+    "propositions": {
+      "P-1": {"claim": "the allowed form is present: an appended provenance registration stating when, why and the new hash", "holds": true, "evidence": "oracle.md section 9 is an appended provenance section; binding.json timeline carries '03:49:26 round-1 errata: oracle.md EDITED AFTER THE RUNS'; new hash 60a86ef8 recorded"},
+      "P-2": {"claim": "the prohibited form is absent: nothing rewrites the record to claim 'never edited'", "holds": true, "evidence": "zero hits for never-edited phrasing across oracle.md / binding.json / handoff.json; ledger records edited_after_first_runs = true"},
+      "P-3": {"claim": "the event was escalated rather than self-ruled", "holds": true, "evidence": "binding.json flags OWNER DECISION REQUIRED and says the implementer does NOT rule; oracle.md states the card may not self-rule"},
+      "P-4": {"claim": "the registration is additive: the pre-edit value survives", "holds": true, "evidence": "8d6dc81b survives in binding.json and handoff.json; binding.json states 'no earlier value is lost'; the earlier freeze hash 08281f2d is also kept"}
+    }
+  },
+  "key_findings": [
+    "F-T21-1: the ruling's prescribed form was already implemented before the ruling: I-08-B carries an appended provenance section (oracle.md section 9) plus a documentation_edit_ledger in binding.json.",
+    "F-T21-2: the implementer correctly escalated rather than self-ruling -- binding.json:246 says 'OWNER DECISION REQUIRED ... the implementer registers the event and does NOT rule on it.' The card's job is to answer that escalation, which is what the owner did.",
+    "F-T21-3: the registration is additive in the strict sense the ruling requires: the new hash is written, the pre-edit hash 8d6dc81b survives, the earlier freeze hash 08281f2d is also kept, and binding.json states 'no earlier value is lost'.",
+    "F-T21-4: the forbidden form (rewriting to 'never edited') is absent everywhere."
+  ],
+  "note_on_not_writing_the_governance_status": {
+    "observation": "binding.json:246 still says governance_status = 'OWNER DECISION REQUIRED'.",
+    "why_this_is_not_a_defect": "that field is the attempt's honest status at the time -- it records that the implementer then believed this was a question for the owner. The owner ruling today does not make that earlier judgement false.",
+    "why_this_card_does_not_change_it": "rewriting it would be exactly the class of historical-record rewrite T1-21 forbids, only in the opposite direction. The correct carrier of an interpretation ruling is this card's record, not the ruled-on attempt's frozen file (same reason as T1-14 and T1-20)."
+  },
+  "handed_to_orchestrator": "To remove the downstream ambiguity, the orchestrator could add a T1-12 form (1) append-only registration noting the question was ruled by OWNER_DECISIONS.md section 13 T1-21. This card does NOT do so: it touches I-08-B's frozen file, which is outside T1-21's authority (T1-21 authorises establishing the interpretation, not rewriting I-08-B).",
+  "boundaries": {
+    "ruled_on_carriers_written": 0,
+    "oracle_md_modified": false,
+    "binding_json_modified": false,
+    "handoff_json_modified": false,
+    "governance_status_field_modified": false,
+    "status_transitions_performed": 0,
+    "signatures_forged": false,
+    "product_files_changed": [],
+    "all_json_parseable": true
+  },
+  "next_action": "commit this card; no ruled-on carrier was written"
+}
