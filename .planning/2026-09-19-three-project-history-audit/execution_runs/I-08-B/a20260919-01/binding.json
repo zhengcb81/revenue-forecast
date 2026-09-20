@@ -153,10 +153,10 @@
     "note": "measured after every bound command; the production tree is byte-identical to input_hashes_pre_edit (see after/I08B-c10-hash-inventory.stdout.txt)",
     "artifact_hashes": {
       "oracle.md": "60a86ef8aabc05b8b4dc807396776d6dbe1012ce7c2e212d7441682dc069c56f",
-      "decision.md": "5d7a9669da3d4026f74d6aa07b4379a9fad3d33b9db1953f2f5f44b2f629591f",
-      "review.md": "cf58a969e74b7ffc0d89494eaabad3f18b7615f26e356de8867a8ada1688766c",
+      "decision.md": "73629bf359482e9075f056385babff707625bb310da98b1aa1401a4b22b82208",
+      "review.md": "b053fc037001bea99bfbe19bcb2a272b1e08aad59a1c72f57d804ff56a94caad",
       "changes.diff": "92637c099e6b9bd56d7438fe4036786a52930211b10324855371d55fd1374a82",
-      "commands.json": "7452e6da0cdfb1bd74e6a187ab13c605b961bcdee8a0c5fc07919a09622c6fa8",
+      "commands.json": "995e783272d89c2d594e94a67af4fc5b1e52f4fcd56fe8e652ae5e0388095678",
       "iso/rf/scripts/attestation_protocol.py": "6e58cde211bbf53557c89bcb1db31bcb77bdad5f678a1725520ebc1565b28db4",
       "iso/rf/scripts/revenue_core.py": "aec1cf69a386b779a5b339e56a106062ceffa401152839d00153d99ba3e9d12f",
       "iso/rf/scripts/revenue_publication.py": "e311b2bb5079e1a211c8ae7e35ad716fce0b0c8c6208f5e0a24cdfdf3da50aba",
@@ -178,7 +178,7 @@
       "iso/hash_inventory.py": "95dc8973c8f78ed3422a0222c15f3e31eca122309f177a61ce1c84e6994346c7",
       "iso/git_status_capture.py": "d3a23ebcf1c58480bf2d53311a34647da037f17fa33a4cd1c6826eb57a9310b5",
       "iso/make_diff.py": "61da8c0a3d2b0d45b65de2f1cd568485aa3dfdcbdcea297d62d5c18051fec8d8",
-      "iso/product_hashes.py": "bcdc8cf4ae75edf669bf975789ee613801114db0a74899ccddc89466eca9e73c",
+      "iso/product_hashes.py": "2dcdedd0c051a8426d9d8ebf93bc08c29c35ccd6e4cd4289102681fb8ccdb6ec",
       "iso/probe_red_baseline.py": "5251d236f08e1103900533e345080f62f54608eba5db943f33d2173740139157",
       "iso/run_bound_commands.py": "a6820f553f80684a852e12a65e1c112647261a10a1cd341b63b45a34fa2de6b4"
     },
@@ -243,45 +243,55 @@
         "what_changed": "round 1 errata: the sys.executable provider_calls==0 exception, the CRLF/LF precision of changes.diff reproduction, and mtime-is-not-evidence. Round 2 added: the 13-file count, this provenance note, and the E30 leading-segment note.",
         "expectations_changed": false,
         "why_not_a_weakened_oracle": "the edits changed DESCRIPTION only: no assertion's expected value moved, and the new wording is WEAKER than the old (it admits the byte-level claim does not hold)",
-        "governance_status": "OWNER DECISION REQUIRED: whether post-hoc editing of a frozen oracle is acceptable. The implementer registers the event and does NOT rule on it."
+        "governance_status": "OWNER DECISION REQUIRED: whether post-hoc editing of a frozen oracle is acceptable. The implementer registers the event and does NOT rule on it.",
+        "round_3_edit": "none",
+        "round_4_edit": "none - the oracle was not touched after round 2"
       },
       {
         "document": "decision.md",
         "frozen_before_implementation": false,
         "edited_after_first_runs": true,
-        "current_hash": "5d7a9669da3d4026f74d6aa07b4379a9fad3d33b9db1953f2f5f44b2f629591f",
-        "current_mtime": "2026-09-20T03:50:48",
+        "current_hash": "73629bf359482e9075f056385babff707625bb310da98b1aa1401a4b22b82208",
+        "current_mtime": "2026-09-20T05:23:27",
         "what_changed": "round 1: the outcome-appendix prohibition, the provider-argv scope, the widened projection, E29/E30 reachability, both conflict resolutions. Round 2: the E30 leading-segment note, and the round-2 P2-2 finding and its fix.",
         "expectations_changed": false,
-        "note": "decision.md is the implementer's own narrative; it is expected to grow after review"
+        "note": "decision.md is the implementer's own narrative; it is expected to grow after review",
+        "round_3_edit": "none",
+        "round_4_edit": "section 6 appended: D-08B-09 (the downstream contract of the top-level payload_sha256, review R4-1) plus the R4-2/R4-3 wording registrations. No earlier section was rewritten."
       },
       {
         "document": "review.md",
         "frozen_before_implementation": false,
         "edited_after_first_runs": true,
-        "current_hash": "cf58a969e74b7ffc0d89494eaabad3f18b7615f26e356de8867a8ada1688766c",
-        "current_mtime": "2026-09-20T05:09:14",
+        "current_hash": "b053fc037001bea99bfbe19bcb2a272b1e08aad59a1c72f57d804ff56a94caad",
+        "current_mtime": "2026-09-20T05:24:26",
         "what_changed": "round 1: the withdrawn 32/32 coverage claim replaced by a per-code table, section 7 dispositions. Round 2: the same table extended, and the round-2 dispositions.",
-        "expectations_changed": false
+        "expectations_changed": false,
+        "round_3_edit": "two corrections inside the implementer's OWN prose, both required by the review (section 5 item 9 and the section 7 P3-3 row). The transcribed round-3 verdict block was not touched.",
+        "round_4_edit": "section 10 (round-4 dispositions) and section 11 (byte-identical round-4 verdict) appended. The round-3 block and every earlier section were NOT touched; every write re-took the prefix hash (review R4-3), recorded in after/c46_round4_verdict_transcription.json."
       },
       {
         "document": "handoff.json",
         "frozen_before_implementation": false,
         "edited_after_first_runs": true,
-        "current_hash": "c231f45ac1855ad7093a3000c5562ce0a4fef8ad2641a6996ea287e1a4c69984",
-        "current_mtime": "2026-09-20T05:08:22",
+        "current_hash": "c934bcd36efa5d3c10aadb0083a771abf12ae4bdabd20cf7278cbed3b7932b20",
+        "current_mtime": "2026-09-20T05:24:39",
         "what_changed": "round 1 and round 2 corrections (command count, coverage, census, file counts)",
-        "expectations_changed": false
+        "expectations_changed": false,
+        "round_3_edit": "counts unified at 14/9/5 and 15 bound entries, with an 18-vs-15 explanation",
+        "round_4_edit": "status carried to accepted_scoped (old value in status_before_bookkeeping_fix), review_verdict block with the three fixed declarations, R4-1 contract note, round4_stale_text_corrections, seal"
       },
       {
         "document": "commands.json",
         "frozen_before_implementation": true,
         "edited_after_first_runs": true,
-        "current_hash": "7452e6da0cdfb1bd74e6a187ab13c605b961bcdee8a0c5fc07919a09622c6fa8",
-        "current_mtime": "2026-09-20T05:08:07",
+        "current_hash": "995e783272d89c2d594e94a67af4fc5b1e52f4fcd56fe8e652ae5e0388095678",
+        "current_mtime": "2026-09-20T05:24:39",
         "what_changed": "the bound commands and their FROZEN expected return codes were written before implementation; afterwards only the recorded raw results, the actual business results and two additional checks (c15, c16) were added. No expected value was changed to match an observation.",
         "expectations_changed": false,
-        "expected_values_frozen_before_runs": true
+        "expected_values_frozen_before_runs": true,
+        "round_3_edit": "ROUND 4 note: every command that can run product code declares <attempt>/iso/rf/artifacts/ as a write root",
+        "round_4_edit": "additive actual_business_result_corrected_round4 fields on the c8/c13 rows plus a ROUND 5 note. bound_entry_count stays 15; NO expected value, assertion or check was changed."
       },
       {
         "document": "changes.diff",
@@ -290,9 +300,40 @@
         "current_hash": "92637c099e6b9bd56d7438fe4036786a52930211b10324855371d55fd1374a82",
         "current_mtime": "2026-09-20T05:10:36",
         "what_changed": "regenerated after each source edit so it always mirrors iso/rf",
-        "expectations_changed": false
+        "expectations_changed": false,
+        "round_3_edit": "regenerated to 14 files after review R3-1 (the contract test was missing)",
+        "round_4_edit": "none - not regenerated in round 4 (iso/rf is byte-identical; no product-copy file changed)"
       }
     ],
+    "rounds_3_and_4": {
+      "note": "APPENDED in round 4. Every key in this dict that existed when round 2 reviewed it is unchanged; the round-3/round-4 facts live here and in the per-document round_3_edit / round_4_edit keys added to the entries above.",
+      "key_timeline_round_3_and_4": {
+        "2026-09-20T05:08:47": "round-3 verdict appended byte-identically to review.md (after/c43_verdict_transcription.json)",
+        "2026-09-20T05:11:05": "round-3 transcription re-extracted and verified two-way",
+        "2026-09-20T04:24:47": "round-2/3 RED proof for the consumed commitment",
+        "2026-09-20T05:11:10": "round-3 packaging: product_hashes.txt split into deliverable / runtime sections (R3-2)",
+        "2026-09-20T05:23:02": "round-4 R4-2: the three byte-boundary readings of the round-3 block reconciled",
+        "2026-09-20T05:24:26": "round-4 verdict appended byte-identically to review.md section 11",
+        "2026-09-20T05:24:29": "round-4 transcription re-extracted; both blocks byte-identical",
+        "2026-09-20T05:24:39": "round-4 bookkeeping: status carried to accepted_scoped + seal",
+        "2026-09-20T04:28:05": "final packaging of the sealed state (c24 -> c14 -> c37 -> c20)"
+      },
+      "files_created_after_round_2": [
+        "evidence/I-08-B/qualification.json (new carrier; not an edit of a frozen document)",
+        "iso/analyze_r4_2.py, iso/transcribe_verdict_r4.py, iso/verify_transcription_r4.py, iso/round4_bookkeeping.py (packaging scripts)",
+        "after/c45_* , after/c46_* , after/c47_* , after/c48_* (round-4 evidence)"
+      ],
+      "helpers_changed_after_round_2": [
+        "iso/product_hashes.py: the SECTION-header note was corrected (it wrongly claimed handoff.json was excluded from its own inventory)",
+        "iso/add_edit_ledger.py: this addendum"
+      ],
+      "documents_not_edited_in_round_4": [
+        "oracle.md",
+        "changes.diff",
+        "iso/rf/** (0 bytes)"
+      ],
+      "oracle_governance_still_open": true
+    },
     "implementer_ruling": "NOT MADE. Whether a frozen oracle may be edited after runs is an owner decision; the implementer only records that it happened, what changed, and that no expected value moved."
   },
   "isolation_incidents": [

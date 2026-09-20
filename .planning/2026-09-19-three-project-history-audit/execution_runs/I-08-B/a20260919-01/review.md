@@ -387,13 +387,14 @@
 
 > **转录说明（实现者撰写，非裁决内容）**：以下裁决正文由**独立 reviewer session** 撰写，经父 agent 转达并授权逐字节转录。**未做任何改写、删减、摘要或重排**；仅追加本说明与下方起止标记。上一轮（第三轮）的转录边界口径见 §10 的 R4-2 行。
 >
-来源：`C:\Users\郑曾波\AppData\Local\Temp\i08b-r4review-20260920-051434\REPORT-ROUND4.md`
-来源文件 sha256：`cac7835f09ca28410102799270c9400c6c4a2009e803def43862efa7df2e56dc`
-转录区间：自 `## 12.` 标题行起至文件末（含）
-转录块 sha256：`137f6644a4b302725650cd6b225596f0940267553e5e2b00e01a0777fc0386d7`
-追加前 `review.md` sha256：`cf58a969e74b7ffc0d89494eaabad3f18b7615f26e356de8867a8ada1688766c`
-追加前 `review.md` 字节数：40662（行数 337）
-本轮转录 `review.md` 前缀**未被改写**：追加前后前 N 字节哈希相同（见 `after/c46_round4_verdict_transcription.json`；R4-3：每次写入重取前缀哈希）
+> 来源：`C:\Users\郑曾波\AppData\Local\Temp\i08b-r4review-20260920-051434\REPORT-ROUND4.md`
+> - 来源文件 sha256：`cac7835f09ca28410102799270c9400c6c4a2009e803def43862efa7df2e56dc`
+> - 转录区间：自 `## 12.` 标题行起至文件末（含）
+> - 转录块 sha256：`137f6644a4b302725650cd6b225596f0940267553e5e2b00e01a0777fc0386d7`
+> - 追加前 `review.md` sha256：`cf58a969e74b7ffc0d89494eaabad3f18b7615f26e356de8867a8ada1688766c`
+> - 追加前 `review.md` 字节数：40662（行数 337）
+> - 本轮转录 `review.md` 前缀**未被改写**：追加前后前 N 字节哈希相同（见 `after/c46_round4_verdict_transcription.json`；R4-3：每次写入重取前缀哈希）
+>
 <<<BEGIN REVIEWER VERDICT (verbatim, round 4)>>>
 ## 12. 可直接粘贴进 `review.md` 的裁决正文（第四轮）
 

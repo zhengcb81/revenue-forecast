@@ -271,6 +271,36 @@
   "8 交审：本包（handoff.json、review.md、recovery/README.md），并与 commands.json、changes.diff、oracle.md 追加区 R1 对齐；review.md 的判决栏留空，实现者不自签 accepted。",
   "9 接续：下一步是独立 reviewer 按 review.md §2 的证据顺序复验（含裁定 oracle.md R1-3/R1-4 是显式化还是改设计、以及缺失的 decision.md 如何处理），并（若接受）由接手者先跑 review.md §6 的 11 条变异队列。"
  ],
+ "current_generation": {
+  "changes_diff": {
+   "bytes": 180917,
+   "sha256": "2197bce4221d5d59dba0dc64fa8f26d356de5bd9b95fac5d3a4b9226cec7d44d"
+  },
+  "commands_json": {
+   "bytes": 8335,
+   "sha256": "738ac85ac6474301ea48cb383e6f0650e90b6ef844d58c2da4540de68b498c38"
+  },
+  "decision_md": {
+   "bytes": 31532,
+   "sha256": "855b038c7095f31635dea390adf09273872bd9d55d53992ebd41560964be5d1f"
+  },
+  "handoff_json": {
+   "bytes": 45525,
+   "sha256": "0c120281ed58ed6e1bd58709374f064d6713d5d6c5d4c0af51dbffd0ec3345ef"
+  },
+  "hashes_txt": {
+   "bytes": 3437,
+   "sha256": "f3ff95da2358a1592dffd9e9d924e99203078b4ce966afa1b677c857fcb020a1"
+  },
+  "oracle_md": {
+   "bytes": 42257,
+   "sha256": "428a0a96a4faf12c4cff9aa625ed9c731d9e2e86ff43e5e2afe84cdbaa623f1d"
+  },
+  "review_md": {
+   "bytes": 36996,
+   "sha256": "990af47fd903a2591725576826c0da2aeea87a03b69cbecc052722777815db96"
+  }
+ },
  "current_source_hashes": {
   "iso_filing_fetch_scripts_fetch_filing.py": "a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198",
   "iso_filing_fetch_scripts_i04d_fake_worker.py": "5f16f0fe9ea2bad97c1193b530ae4ab13a7eb4a924361069c90b7c322e3aa902",
@@ -316,6 +346,7 @@
   0,
   0
  ],
+ "generation_note": "r2 的 changes_required 针对的是 r2_review_generation 那一批字节；r3 的修复（嵌合哈希、handoff JSON 合法性、P3 事实更正）改写了 oracle.md / review.md / commands.json / handoff.json，构成新世代，**需 r3 点审**。",
  "implementation_defects_found_and_fixed": [
   {
    "fix": "传入正确的 scope 对象",
@@ -388,6 +419,13 @@
   "production_ground_truth": "C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py @ 046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088 (48392 bytes)",
   "review_protocol": "execution_v2/review_and_handoff.md (reviewer 固定操作 + handoff 字段表)",
   "upstream_authority": "execution_runs/I-04-C/a20260919-01/decision.md v1.3 (accepted_scoped) + sim/kernel.py (REFERENCE, not the thing under test)"
+ },
+ "json_parse_self_check": {
+  "checked_ok": 763,
+  "max_path_failures": 0,
+  "non_json_named_json": 0,
+  "report": "after/all_json_parse_check.txt",
+  "unreadable": 0
  },
  "measured_results": {
   "cases": [
@@ -586,6 +624,7 @@
  },
  "next_action": "Reviewer: (1) 读 review.md §2 列出的证据文件（按序，实际内容而非文件名/hash），并把 commands.json 与 handoff.json.commands_executed 逐条对照；(2) 复算至少一个卡片专属 oracle —— 建议用 evidence/run/I04D-CASE-F-L5/summary.json 的 pause_calls/resume_calls/lock_acquisitions 与 worker.counts、以及 protocol_journal 里的 ownership_transferred / released_last 事件，独立重建 oracle.md §2 P1 的期望表（1/1/4、终态两文件不存在、worker running）；(3) 判定 after/i04d-green.txt 的 3 个失败属 harness debt 还是协议缺陷（review.md §5(a) 给出实现者的主张与可falsify的点）；(4) 裁定 oracle.md 追加区 R1-3 / R1-4 是显式化还是改设计（review.md §5(c)(d)）：R1-3 在本卡唯一改变了可观察行为（F-L8d 由“一次 resume”变为 resume=0、owner 记录字节不变），是本卡最强的语义变更点；(5) 判定缺失的 decision.md 是必须补交还是记为缺口；(6) 若接受，接手者按 review.md §6 在 scratch/mutants/<Mn>/ 逐条跑 M1-M11 并把每条 rc 落盘，其中 M9 引用的 N14 并发写案例尚不存在、M3/M4/M5/M7/M8/M10/M11 缺可运行 argv，需先补齐或标 blocked。不要重复 red/green 两步已成功写入的内容。",
  "next_step_number": "independent review of H1 (oracle.md) + H2 (identical-property pair before/i04d-red.txt vs after/i04d-green.txt) + H3 (recompute >=1 case-specific oracle from evidence/run/<case>/summary.json raw counts) + H4 (recovery/README.md rollback rehearsal in a scratch copy), then the 11-item mutation queue in review.md section 6",
+ "non_json_files_named_json": [],
  "not_granted": [
   "无 mutation proof 运行（review.md §6 给出确切队列与配方，本项目前为 open）。",
   "POSIX fcntl.flock 分支从未被执行（实现了但未实测）。",
@@ -746,6 +785,26 @@
   "moved_to": "recovery/r2_corrections.md",
   "sha256_before": "5d59fd96fe08971a845cf77efc700ea2ad237e7b14946110dab6fe222ceae69d"
  },
+ "r2_minimal_fix_status": {
+  "1_handoff_valid_json": "DONE - json.load OK, 36 top-level keys",
+  "2_hashes_recomputed": "DONE - scratch/rework_r3b.py recomputes every value with hashlib and asserts equality; two consecutive runs produce byte-identical handoff.json (fixed point).",
+  "3_stale_literals": "DONE - review.md / handoff.json / recovery/README.md / commands.json / decision.md / oracle.md",
+  "4_defect_ledger_10": "DONE - defect_ledger_count = 10",
+  "5_commands_rc": "DONE - I04D-07/08 carry expected_returncode and raw_returncode",
+  "6_p3_facts": "DONE - oracle.md R2-2 (F-L5 coexistence WAS measured in r1; W1b lock_acq=5) and R1-9 (delivered hash), plus the i04d_schedule.py docstring now says C may join OR open its own cycle"
+ },
+ "r2_review_generation": {
+  "handoff_json": "ca83f90476aabf9ba20cbf30ee63948394911705604b5eb3c01b8020dd440a7e",
+  "note": "the exact bytes the r2 reviewer sampled",
+  "oracle_md": "e50380d6e99f... (r2 append state sampled by the reviewer; 41580 B)",
+  "review_md": "c47770ea8d46506725d15796606428366523786e6239e007b0ca5dddedc06da2"
+ },
+ "r2_verdict_append_blocked": {
+  "appended": false,
+  "blocked": true,
+  "reason": "the r2 reviewer's transcribable section 11 requires review.md to still be 36996 B / c47770ea8d46506725d15796606428366523786e6239e007b0ca5dddedc06da2; the file on disk is the same size but DIFFERENT bytes, and the reviewer stated that only a byte-prefix check is decisive, so the precondition fails and the append was NOT made",
+  "rule_followed": "STOP, do not rewrite review.md to make the hash fit"
+ },
  "r3_generated_hashes": {
   "files": {
    "all_json_check": {
@@ -887,8 +946,32 @@
   0,
   0
  ],
+ "ready_for_r3_review": true,
  "reviewer_status": "PENDING（实现者未写任何判决；review.md §9 判决栏留空）",
  "revision": "v1（首次交付，mutation proof 未跑，见 review.md §6）",
  "scope": "在隔离副本 iso/filing-fetch 上实施 I-04-C 冻结的 pause/lease 协议（ADR-1..ADR-12、R1-R5、lock_budget_for(x)=min(x,60)），并用真实多进程 barrier 调度 case 验证。生产仓只读；本卡不写任何生产文件。",
+ "seal_discipline_conflict": "封盘后不再写入 attempt 目录的纪律在本轮被违反两次（为修 handoff.json 的 JSON 合法性、以及为把拼接哈希换成现算值）。两次都已在 seal_timeline 登记；当前封盘以下一个 evidence/hashes.txt 的 sealed_at_utc 为准。",
+ "seal_timeline": [
+  {
+   "at_utc": "2026-09-20T04:15:03Z",
+   "event": "first_seal",
+   "note": "after r2 rework"
+  },
+  {
+   "at_utc": "2026-09-20T04:23Z",
+   "event": "unsealed",
+   "note": "handoff.json was found to be invalid JSON; repair + re-seal required"
+  },
+  {
+   "at_utc": "2026-09-20T04:23:42Z",
+   "event": "second_seal",
+   "note": "after the JSON repair"
+  },
+  {
+   "at_utc": "2026-09-20T04:23:52Z",
+   "event": "third_seal",
+   "note": "after the r3 hash regeneration; the seal-after-seal conflict is recorded here"
+  }
+ ],
  "status": "review_pending"
 }

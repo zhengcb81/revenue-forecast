@@ -1,5 +1,9 @@
 sha256  bytes  path (relative to the attempt root)
-note: this file cannot contain its own hash; handoff.json is also excluded
+note: this file lists its OWN PRE-WRITE content (a file cannot hash its final flush)
+note: after/c38_finalize_all.stdout.txt is written by the wrapper after this inventory, so its
+note:   row is likewise the pre-run content; every other row is the file's content as of now
+note: handoff.json and binding.json ARE both listed here (an earlier revision of this note
+note:   wrongly claimed handoff.json was excluded)
 note: iso/venv and scratch/ are excluded (build products and working evidence)
 
 === SECTION 1: deliverables and evidence (reviewed; diff members where applicable) ===
@@ -7,7 +11,7 @@ note: iso/venv and scratch/ are excluded (build products and working evidence)
 244136244a8d7b56e1878269d7cf7182b8a75106509c66fefb1fd46dd44b04dd       1666  after/c12_command_summary.txt
 721134a3348a1dfa99e0d4038c4408984b3d2b51b23437983e77399de7bf0254      17718  after/c12_run_all.stdout.txt
 0b350d64bc3a13580c4f50710b492bdd1447fcb224ae8c76050be787cba313a3       1938  after/c13_changes_diff.stdout.txt
-289355e2275627090ade2e3dda85f5242c080d47fd2f0e231eec5f574910294c       2937  after/c14_finalize_binding.stdout.txt
+1a9577d2a8e110603663071dec565ab5c40d9fa218a0fbbc5b3f35bf659f5a47       2937  after/c14_finalize_binding.stdout.txt
 08ffeef81698e0538afeb0caa655ab8cf87d8c0eb30f4e95687a9cbc3e97ae51       1226  after/c15_line_endings.stdout.txt
 c8395d3920c847e026105c18de76cd9c745df82cb64b6e7d67745e75b1025fde        912  after/c16_golden_delta.stdout.txt
 7cba4a51cf76e9930225b22345e710f775bf967cd0c6871783cd5fc8ddb5a3ca         66  after/c17_patch_handoff.stdout.txt
@@ -16,12 +20,12 @@ d70e2d9c8ab96595bda5d64c43146043b20ad155add0421c5640a00162637918        120  aft
 4e1f47128c7164858fc0dd4a4fef14a043cd76882a272ad3cb0537d04b219cf2        581  after/c20_clean_bytecode.stdout.txt
 56369d748c0643cda2ca973ecbd2a1c9534e48b74fd5f4d2aa366a7cd3850ae2       1842  after/c22_red_verifier.stdout.txt
 20d15fb26e8a2e05b0f6552815b8b7c19a6215df7cb0c2b957acedcc28410a67       2732  after/c23_chronology.stdout.txt
-4ebd9eea2f09f60102ad51508c47dd3610123d2c6ad2fc0cd624561b194af111        384  after/c24_edit_ledger.stdout.txt
+80c39083fe412bc2ed23f4be2afd09d473d388e13958b5cefffb796c23eac911        384  after/c24_edit_ledger.stdout.txt
 ae0d9c6e55494402536ae4332242b5560fb32cf6431ed996ede0924ea571477f        608  after/c25_fix_stale_counts.stdout.txt
 3f2422eb63aa8d865a0792b61a12ef395cbc5a30a7bc0da3b6a1a4e785a90490       2742  after/c26_stale_audit.stdout.txt
 2c3f4216601a5fa017450fee1bf5251e6a8675f9ad5917098fea5612a3f5cfcc        220  after/c27_fix_last_stale.stdout.txt
 2b027b8a838a0f6c97f9414881e5c460889106f16c29430a6bc4ed7a357bb6df        220  after/c36_contract.stdout.txt
-88f0ea403f5005cebb4df70451ec1a9a5b87bd810f6ffe8132548a5b3c530ded        370  after/c37_product_hashes.stdout.txt
+648ff3c4632a540c1e41d2e0fedc02331b15163b3309d0f576a35efe895993c3        370  after/c37_product_hashes.stdout.txt
 9f404d5bbb0e4b0ff049b45ab9e19062cf1ea8fb22328613c36a83cd5fe9cd60       1638  after/c38_finalize_all.stdout.txt
 1d8d42713988ee1b0a654b2c9028d6c9494ad92e0281140a9a1d6ed86dca81bf        114  after/c39_sync_round3.stdout.txt
 7cfdd60015ceeaffd46293743e76f181dd8633e5c2740dc6474cc2060bcba7e2        128  after/c40_sync_counts.stdout.txt
@@ -31,6 +35,15 @@ b4d4d97288a49088c58044dc3236e6508a1aedb34fb779da2fc4ad842c13de1e        244  aft
 59761528aac4c4319de6ea075d0bdf5962e57ec66c6a531a0b61e5fa3e615c02       1196  after/c43_verdict_transcription.json
 26d60d04a398391e2eb0fe381689cf58496ddcb22cc791f84a324c7294d487cc        996  after/c44_verdict_reextract.json
 85118143af157103a1a27a17fc35bf4745f031a16ffc4d48112635fe34a6a34e       1888  after/c44_verdict_reextract.stdout.txt
+132aa430fa9912b2d7f72091560a8a47daec2123e75d3c9eef1265d31304bf46       2902  after/c45_final_hashes.stdout.txt
+c5883f95e46856ce5f99328ce60eb14698230fe408275f31bd7c13694ce020ef       3030  after/c45_r42_block_reconciliation.json
+d40abf13bea5ad5abac6642886e8c56ae389f9808f0e3b5eda74186423ec7e4d       6420  after/c45_r42_block_reconciliation.stdout.txt
+5e8eb0abe78bcf171fe31cc7bf6e97c068bb96e27b4ea0ec126c9f3737177cd1       1384  after/c46_round4_transcription.stdout.txt
+ef7bac91f6250d1fc84be00641a26b7fce83e07e00bfa24cfb26897fa872543d       1651  after/c46_round4_verdict_transcription.json
+f3a6c8f1b1a908d150beca3217c8438b44f616685d6dd73bfb37c46fe8c8bd32       5798  after/c47_round4_reextract.stdout.txt
+2776675640aacba576997a831c24fba7859e6c674b04421f13aac2647795811e       3217  after/c47_round4_verdict_reextract.json
+8479fe0fc616e45e5080cbad50f8818a34640abf6a47c54bff579ae8ea64b801       1016  after/c48_round4_bookkeeping.stdout.txt
+ec324b8011e0c8104327dfcb68a053d2a0600af49fcaaa993210143d2a4d008e        828  after/c49_restore_prefix.stdout.txt
 ba3c73328589a963ca21d91a6c17f9f145623a3ea183483b19889dce84c2b19f        244  after/c8_failure_diff.txt
 7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6          2  after/c8_fixed_failures.txt
 847026c084910c1749f8ab264f1b7f4901b11752782291a99bd6f910760920ef      28926  after/c8_full_suite.stdout.txt
@@ -46,7 +59,7 @@ f43205e3610ee6515884c691c97cb75a5ce1beed9f7768b99a48dec59af43d13        101  aft
 69524e119f663f45b55bd6d685dcef1a469d131be24ccb73ae7a994c536143b7        100  after/I08B-c6-adversarial-receipts.stdout.txt
 a896117126b45506b9112b251015d9cd2b25de53283a7aaf9e6e60a18fd1c104        101  after/I08B-c7-tpub.stdout.txt
 1b28a1d259198d4211effb2ee9a6048e76dae9bc5734d1aeb11a767a0518d2d0       2701  after/I08B-c9-independent-recompute.stdout.txt
-ddcfb4fc2fcc5514829ba9ce6bfc7bea404416a788965fc2eb7b95d679c38922      62292  after/product_hashes.txt
+9069538d92bf5f8ee72980e3400c8f850b2c7e15f04f6797254f9c1f74b56d0b      62626  after/product_hashes.txt
 8868f501ec7c535a7c8e5759e6a6687e2447668a5127f1c4ce1485b2f0c3d431       3020  before/baseline_tree/rf/.claude/scheduled_tasks.json
 904e693de8f7554f0ab33d4d102ea260c3539f9815d71cc80b372ebc83449a71        173  before/baseline_tree/rf/.codegraph/.gitignore
 0fcbe0eb76a49cdb60167059f9774c6da61cba2e6bd24615112d467d65b51bdf    8962048  before/baseline_tree/rf/.codegraph/codegraph.db
@@ -272,12 +285,14 @@ b132c31dc9713ef2db7856407229d4dfc85051b89beddb506ec16eeef0a2f593         30  bef
 76900641af4645f1af3c3c6119b113d8546eeabb21adf505baa4c9cddca8d731       4746  before/git_status_revenue-forecast.txt
 4e68b98cc16027bc370900e346f8554245e2e2155d0e22edc4beadba5f2933b5        408  before/golden_behavior_hashes.json
 fa9a4820724451af27079f87e9f7e653428ca514b842334db6a9ad7bbab81769       2642  before/source_hashes.txt
-71683410ea4f7892e32a131725f55c444510b5f08c6701316795ecc5d9f96f52      23426  binding.json
+9946b31997ce92ebe08faa16cbb457ee613fe00e18033b33f2385b607c11f5f7      27194  binding.json
 92637c099e6b9bd56d7438fe4036786a52930211b10324855371d55fd1374a82     232931  changes.diff
-7452e6da0cdfb1bd74e6a187ab13c605b961bcdee8a0c5fc07919a09622c6fa8      25286  commands.json
-5d7a9669da3d4026f74d6aa07b4379a9fad3d33b9db1953f2f5f44b2f629591f      17289  decision.md
-c231f45ac1855ad7093a3000c5562ce0a4fef8ad2641a6996ea287e1a4c69984      30508  handoff.json
-616cf3b0dabe111540aed7d31af94eea9a63d4de5a5d78a239ef082f582fc540       7101  iso/add_edit_ledger.py
+995e783272d89c2d594e94a67af4fc5b1e52f4fcd56fe8e652ae5e0388095678      28205  commands.json
+73629bf359482e9075f056385babff707625bb310da98b1aa1401a4b22b82208      19814  decision.md
+a80ca95abfdbea9db78c4b26154c4a79142f90bb2d5ed4f24d8cb0a19f759e27       9693  evidence/I-08-B/qualification.json
+c934bcd36efa5d3c10aadb0083a771abf12ae4bdabd20cf7278cbed3b7932b20      44672  handoff.json
+63cfef6f5b98ab42b06a95828db198e6e9d08d6b44ee5df3821aaa20d55ca48c      12061  iso/add_edit_ledger.py
+4e17ff4fa512bebb54dc5bc621b2be1e781da742aea8b243ea3c818b31c39f0d       4654  iso/analyze_r4_2.py
 8b48cbd1653aaae55fb475173d66f3399b8e13b620502609cc652e9dd93fb367       1556  iso/audit_stale_text.py
 d2ac5a452de63da39280008aef7d35c4524a70214de946ae9cf2e181258c3e7c        777  iso/check_golden_delta.py
 b483cc4609642e7418c7d8c6923daf66ce1bf39d8e9881b60bcbba4bdcdfcc81      11771  iso/check_independent.py
@@ -297,7 +312,8 @@ d10de5e7d474ecb24924a74bf389642e31104aa5a6c7289dad512641365d2a7c       2426  iso
 3f48453b356d689cb707a9616e85d41295c04574bb1a7d1e0dec01854080a236       4085  iso/patch_commands.py
 42445dff0e67696c23b1102c5a1765d1c0067051e135ea8a86476629fcb1dd79      11112  iso/patch_handoff.py
 5251d236f08e1103900533e345080f62f54608eba5db943f33d2173740139157       4947  iso/probe_red_baseline.py
-bcdc8cf4ae75edf669bf975789ee613801114db0a74899ccddc89466eca9e73c       2464  iso/product_hashes.py
+2dcdedd0c051a8426d9d8ebf93bc08c29c35ccd6e4cd4289102681fb8ccdb6ec       2836  iso/product_hashes.py
+d4b2aa838da014f3e6a4b4d5f745de6f835dcba908ffa599c98fd00110760087       1729  iso/restore_review_prefix.py
 f9c4f39c1a34968f86d5c4d3f5e993e0135864d14f8d87da34e255fb59d0c7dd       7552  iso/rf/.github/workflows/quality.yml
 bcba3dd50278b677ef0af63725a5d635763a40bd9f92089dfc37ff17529c0a8e      19601  iso/rf/CHANGELOG.md
 7a65a00ecc526d5503359feed6a80a7578d3dbf4c8ef133ccf899aecf9383fb9       1443  iso/rf/config/company_wiki.json
@@ -497,16 +513,20 @@ f8b575ab4a2c35e19ccea2763af58f0aa8b4cc014945bc39f6b599c7f2d9bdec       9262  iso
 c647c378daa80b102e4db05d53e7e02176a5e78b60081be75d755e4c91a20c95      10152  iso/rf/tests/test_zr905_audit_self_test.py
 ddd1719c8d815633802c7650398f9a6a7f2e31bb2ad2d5b4938b5623439818fd       5624  iso/rf/tests/test_zr906_final_ratchet.py
 85bfef73cf2b85a542a182c73f99f0904608c924b4ee4b7715eba697f3c07756       4476  iso/rf/tests/test_zr907_drift_patrol.py
+4cf7e04109fb202d0b23caeb84d5d3d0ac8c7a90b5256577996b309df56acc1a      24064  iso/round4_bookkeeping.py
 a6820f553f80684a852e12a65e1c112647261a10a1cd341b63b45a34fa2de6b4       4594  iso/run_bound_commands.py
 16a65e08a272785091f72e6df793180aca9a64f733faadbaa5b8e68482f46494       1870  iso/show_chronology.py
+b4ea607e64a1689061c4d5056c6e9cc0fdb560151f665390b1c3312d287d180d       1177  iso/show_final_hashes.py
 6ad136e7028e840b59b244efd8473a265999fe0eb4f437cb55fc1ce529716853       1689  iso/sync_counts_final.py
 2dfe0c1517fc944d56a07b9430f4c4a0074b427a7b862b56d1db8de7755b3ac7       6009  iso/sync_round3.py
 82816cf787aa3ccd41318e43d4f743e9aad8cfded196d75b5b4098e771c2efa6       4553  iso/transcribe_verdict.py
+86b474d193a43e9aa0cb70826032132fb279e216e8512334e64642a5eff94b28      11478  iso/transcribe_verdict_r4.py
 4ffeee9d845faea9426e86eaff6ec8c75e8f4a895f919c9a1614777ee5b64ab3       2288  iso/verify_transcription.py
+ccf5b97c0d3b932f9c874f197362b98fedfbbdcfa041a64a0d93a60fa547fbf7       6147  iso/verify_transcription_r4.py
 60a86ef8aabc05b8b4dc807396776d6dbe1012ce7c2e212d7441682dc069c56f      24141  oracle.md
 92637c099e6b9bd56d7438fe4036786a52930211b10324855371d55fd1374a82     232931  recovery/changes.diff
 8e779c88cb804f5a81c5778e2a77617a992b291ffdbaae0d06120e9517238df9       1885  recovery/README.md
-cf58a969e74b7ffc0d89494eaabad3f18b7615f26e356de8867a8ada1688766c      40662  review.md
+b053fc037001bea99bfbe19bcb2a272b1e08aad59a1c72f57d804ff56a94caad      52013  review.md
 
 === SECTION 2: RUNTIME ARTEFACTS -- NOT deliverables, NOT in changes.diff, must NOT
 === be applied to the product tree.  The isolated copy writes its own publication
