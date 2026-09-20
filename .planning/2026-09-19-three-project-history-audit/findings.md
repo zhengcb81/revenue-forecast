@@ -83,4 +83,297 @@
 - **provenance gap（登记不解释）**：`revenue-forecast` 既有脏文件 `CHANGELOG.md`/`SKILL.md`/`references/*`/`assurance/runs/daily_alert.jsonl` 的 mtime 在 `2026-09-20 02:24:00` 被批量刷新，恰在 `02:23:50 reset: moving to HEAD`、`02:23:58 commit 7d7ea1e` 前后。**内容未变的证据**：`SKILL.md` 磁盘 sha256 `45e4e343eba4…c47806`（26378 B）与 I-00-A 冻结基线登记值**完全相同**；其余文件无基线 hash，只能证明 porcelain 条目与基线逐条相同、`git diff` 仍只显示用户既有改动——**不声称字节未变**。已排除 `git stash`（list 为空）、`.git/hooks` 与 `.githooks` 内无 `stash` 调用，工作区未被回退。当前值已落盘于 INCIDENT.md 表格供今后比对。
 - **生产不可变量测（同轮）**：`company-wiki` porcelain 仅 ` M CLAUDE.md`/` M README.md`；三模块磁盘 sha256 `e83179915333…`/`a73826aa10c9…`/`fad88c60294a…` 与 I-14-C 收尾实测一致（CRLF 工作区，故 HEAD blob 的 `git hash-object` 天然不同：`5d700302ca4b`/`d9ce30dfeb14`/`c5038a9db4ec`）；`.source_catalog\catalog.sqlite3` 49,677,344,768 B、mtime `2026-09-19T06:31:35Z`、`-wal` 0 B；`-shm` mtime `2026-09-20T02:25:33Z`（并发卡只读触达）。
 - **I-04-C C1 父代理验收**：`verify_flk2.py` 独立复算 13/13；`decision.md`/`review.md`/`handoff.json`/`evidence/hashes.txt` 改后 hash 与实现者报告逐一相符；`verify_r4_appendonly.py` 证明"删去插入块后重建 sha256 与改前逐字相等"（原文未删）。真实 F-LK2 组 `[16,35,10,56,18] ⇒ lost [184,165,190,144,182]`；旧组 `[12,19,7,26,43]` 与 `expected=200` 自不相容（`200−finals=[188,181,193,174,157]`）。**C1 关闭由父代理验证，非 reviewer 复签**——如需 reviewer 级复签应在下次复核中补。
+## Round 35 补记账发现的缺口（2026-09-20 父代理登记，逐条附取证）
 
+- **【记账·模式二结构性缺口，已立为计划级规则】零写入 reviewer ⇒ 卡内无裁决载体**：`M09–M12` 的 `review.md` **完全没有卡内裁决区**，其中唯一的 `accepted_scoped` 命中是**第 9 行的样板裁决词表**（不是裁决），裁决只存在于 `%TEMP%\m09m12-review-20260920-035628\REPORT.md`（40679 B / `5a44fd4e1e4dca5f8ad06d17fc759154741a6a22469145a837bcdf1615d21c4c`，§1 结论汇总 L16–28）。**风险本质**：`%TEMP%` 会被清理 ⇒ 若不在落定前固化，该批裁决将**永久失去唯一载体**，而 `handoff.status` 却已写 `accepted_scoped`，形成「有结论、无出处」的不可复核状态。
+  - **处置**：报告按字节固化进四卡 `evidence/<CARD>/reviewer_report_m09m12.md`（父代理复算 **4/4 hash 一致**、read-back verified）；载体明写 `in_card_verdict_region = false` + `in_card_transcription_owed = true`。
+  - **同位缺口**：`I-15-A` 同类（其 carrier 即 reviewer 自身报告块，已置 flag `review_md_has_no_verdict_region` + `carrier_is_the_reviewers_own_report_block`）。
+  - **⇒ 计划级流程要求（强制）**：①凡 reviewer 采零写入模式，其报告**必须在任何载体落定之前**先按字节落进 attempt 并登记哈希；②**在 `review.md` 尚缺卡内裁决区时不得落任何载体**。
+- **【载体·陈旧字段待对齐】6 张卡的 `reviewer_status` 与新 `status` 相互矛盾**：`M09–M12` 仍写 "no verdict received yet"、`I-14-B` 仍写 "a THIRD independent review round is required"、`I-15-A` 仍写 "PENDING independent review" —— 而三者现已 `accepted_scoped`。执行器按权限边界**未改该字段**（属实现者字段，改它等于实现者侧改写裁决周边语义），仅在 `status_authority.reviewer_status_note` 内注记 ⇒ **欠实现者一次对齐**（只改该字段，不动裁决字节）。
+- **【读取纪律，父代理自身误判的更正】** `handoff.json` 的顶层 `status` 位于**文件末尾**，而 `"status"` 这个键在 JSON **内部子对象中大量重用**（I-04-C 内出现 5 次、I-04-D 内出现 5 次）。用 `grep -m1 '"status"'` 抽查会读到**子状态**（如 `"recorded, not re-run as an implementer command"`、`"done"`、`"closed"`），从而误判载体不合规。**实证**：`I-04-C` 顶层 `status` 在 L334 = `accepted_scoped`、`I-04-D` 在 L1157 = `accepted_scoped`，二者**均合规**。
+  - **⇒ 读取纪律**：凡以载体字段作为记账依据，**必须 `json.load` 后取顶层键**（或取最后一个匹配）；**不得用首个匹配**。凡凭 `grep` 得出的字段结论，须经 JSON 解析复核后才可写入账本。本轮的「I-04-C/I-04-D status 异常」即为该纪律缺失导致的**假警报**，已在 `progress.md` round 35 段如实更正。
+- **【记账滞后，机制性】账本追不上载体**：`progress.md` 最后写入停在 `c95f565e`（11:38），但其后 8 个提交（11:19–14:26）落地 5 张卡而无任何记录；`task_plan.md` 的计数口径同样滞后两代（「28/86」→「19+8+3」→ 实测 **61/3/1/21**）。**成因**：载体落定（`d4a42f5a` 落 19 张及后续批次）与 M08 三步转正**发生在记账动作之后**，而提交信息只写 `audit(planning): ...` 摘要、不回写计划文件。
+  - **⇒ 流程要求**：多个卡在同一批落地时，**「落载体」与「写 `progress.md`」必须在同一次提交内完成**；提交信息若声称落地了 N 张卡，须同时给出归一后的 totals（`accepted_scoped` / `review_pending` / `blocked` / 未建），**禁止只写卡号不写总数**。
+- **【口径归一，取代全部旧计数】当前唯一有效口径（2026-09-20 round 35）**：**已建 65/86；`accepted_scoped` 61 / `review_pending` 3（I-00-A、I-05-C、I-08-A）/ `blocked` 1（I-06-A）/ 未建 21**。旧口径「57/86」「19 张盘上可核 + 8 张条件性接受 + 3 张待补裁决」「28/86」**一律作废**。`disclosure_adaptation` 全卡 `unmapped`、`accuracy` 全卡 `unproven`，无一张外推；全部 iso-副本资格，不含生产部署。
+- **【本次补记账的边界声明】** 本条为**事后补记**，**未新增任何裁决、未改写任何既有字节**：`progress.md` 以纯追加写入（前像 `104618 B / 04ddae77b2e551d261e5c230b3a6c7ea8735ad3eefa6a0914efe05fcfe6ffa1d` 经「移除新条目后重建」证明为精确前缀）；`task_plan.md` 仅改 `## Next Step` / `## Current Phase` 正文段与 Phase 7 checklist 的过期条目（前像 `11048 B / 5ee4d7f8207c7e600069968441f601eb732794d5e2d878cb0aa3b0b7d1f6d574`）。所有事实均取自盘上载体（`handoff.json` 顶层 `status`、`evidence/<CARD>/qualification.json`、`review.md` 裁决区、`_bookkeeping_20260920_carriers/summary.json`），未取自会话回传。
+---
+
+## Round 36 — 分支误切事故：确诊、恢复与取证（2026-09-20 父代理，逐条附证据）
+
+> 本节取代本文件早前同一轮次的草稿表述。草稿把根因写成「`git checkout` 把工作树重置为 fcap 版本」，
+> **那是错的**；实测根因是「后台 checkout 实际切到了 `main` 分支」。以下为订正后的记录。
+
+### R36-1 事故：一次后台 `git checkout` 实际执行了 `checkout main`
+
+**取证（`git reflog --date=iso`）**：
+
+```
+70dd9f6e HEAD@{2026-09-20 15:23:03 +0100}:
+3ce9cc4d HEAD@{2026-09-20 15:05:08 +0100}: checkout: moving from fcap to main
+70dd9f6e HEAD@{2026-09-20 15:04:13 +0100}: commit: [Checkout-checkpoint] from fcap to main (15:04:12)
+8b7229c3 HEAD@{2026-09-20 14:26:05 +0100}: commit: audit(planning): I-04-E carrier landed, ...
+```
+
+**事实链**：
+1. 15:04:13，仓库自带的分支切换保护机制先落一个**出站检查点提交** `70dd9f6e`（`[Checkout-checkpoint] from fcap to main`）。
+2. `refs/heads/main` 指向 `3ce9cc4d`（`docs(audit): WU-1303 proposal — period_end as pure ISO + evidence notes`）。
+3. **15:05:08，`checkout: moving from fcap to main`** —— 工作树与 index 被整体切换到了 `main`。
+4. 15:23:03，HEAD 被改回 `refs/heads/fcap`（`git symbolic-ref`）。
+
+**净结果**：`.git/HEAD → refs/heads/fcap` 且 `refs/heads/fcap = 70dd9f6e` **都正确**，
+但 **index 与工作树的内容来自 `main`**。`git diff --stat main fcap` → **19500 files changed, 2453483 insertions(+)**，
+故 fcap 独有的文件在工作树里表现为**已删除**。
+
+### R36-2 为何被误判了一整个 round（本条是对我自己的记录，供后续 session 引以为戒）
+
+round 35 里我把「`task_plan.md` 被回退到 fcap 原版」当作 checkout 行为的解释。
+**`task_plan.md` 在 fcap 与 `main` 上内容相同**，因此「被重置为 fcap 版」与「工作树被切成 main」
+在这一个文件上**表现完全重合**，我据前者得出了错误结论，事故被掩盖一整个 round。
+
+> **纪律（新增）**：判定「文件为何变了」**不得只用「它变成了什么」**。
+> 唯一可靠判据是 **`git reflog` 里的 `checkout: moving from … to …` 行**。
+> 一个文件的回退在两种成因下都可能发生；只有当该文件两分支内容不同时，「它变成了哪个版本」才有判别力。
+
+### R36-3 精确盘点（`build_restore_list.py` → `diagnosis.json`）
+
+以 `HEAD`（= `fcap` = `70dd9f6e`）为基准：
+
+| 量 | 值 |
+|---|---|
+| `fcap` tracked 条目 | 19633 |
+| index 条目 | 19633（**条目数正确，仅内容陈旧**） |
+| 工作树缺失 | **1758** |
+| `status ' D'` | 1699 |
+| `status ' M'` | 146 |
+| `' M'` 中**真内容差异** | **67** |
+| `' M'` 中 **index 陈旧伪差异** | **79**（占 `' M'` 的 **54%**） |
+| 真差异总数 | 1766 |
+
+**读取纪律（续 round 35，升级为强判据）**：`git status --porcelain` 的 `' M'` **不是**「内容有差异」的证据。
+抽样三个伪差异文件，其 worktree blob 与 HEAD blob **逐字节相同**，且 `git diff HEAD` 输出 **0 行**：
+
+| 文件 | 两侧共同 sha1 |
+|---|---|
+| `evidence/runtime_policy.json.baseline.txt` | `1ff80c5d82fc329ba1a2316ffcea4cd91dcaa53e` |
+| `master_coverage.csv` | `0f129fd6066b6e5583b533837c7bae5a3a32fa48` |
+| `reviews/aug09_plans/item_ledger.jsonl` | `26d860e56f1938f2f845ef9e7b41df0e0185b2e7` |
+
+⇒ 分类必须以 `git diff HEAD --name-only`（或 `git hash-object` vs `git rev-parse HEAD:<p>`）为准，**不得读状态字母**。
+
+### R36-4 恢复（三趟，全部经 blob 直读，绕开 index）
+
+统一方法：`git ls-tree -r -z HEAD` 取 `path → blob sha`，`git cat-file --batch` 批量取内容写盘，
+逐文件 `read-back == blob` 校验。清单落 `restore_manifest_fcap.json` / `_pass2.json` / `_pass3.json`。
+
+| 趟 | 目标 | 结果 |
+|---|---|---|
+| 1 | 1758 个缺失文件 | `' D'` **1699 → 251**（进程被 SIGTERM 中断，非失败） |
+| 2 | 补齐缺失 | `' D'` **251 → 0**；`skipped_already_present = 1448`（守卫生效） |
+| 3 | **62 个仍持有 `main` 内容的文件** | 62/62 写入成功（校验见 R36-6） |
+
+**第 3 趟为何必要**：前两趟带「已存在即跳过」守卫（见 R36-5），
+因此**工作树里已存在、但内容来自 `main`** 的文件从未被修正。
+由 `classify_diffs.py` 对剩余 67 条真差异逐一比对 `main:<p>` 与 `HEAD:<p>` 得出：
+
+```
+genuine differences: 67
+  MAIN   : 62     <- worktree 内容 == main，!= fcap  ⇒ 必须恢复
+  FCAP   : 0
+  OTHER  : 5      <- 3 个本轮记账文件 + 2 个内嵌 .git scratch 目录
+  ABSENT : 0
+```
+
+### R36-5 守卫与边界
+
+**守卫（关键）**：恢复脚本对**任何已存在的工作树路径直接跳过**，绝不覆盖。
+正是该守卫使本轮 3 个记账文件（内容 ≠ fcap blob）在前两趟中毫发无损。
+第 3 趟为「必须覆盖」场景，故**反向**设置 `PROTECT` 白名单显式排除这 3 个文件，
+并在执行前核验 62 个候选中**无一**落在 `.planning/` 计划根目录内（实测 `inplan = 0`）。
+
+**正确性判据的修正（本轮第二个自我纠错）**：
+第 3 趟初次报告 `failed = 62, reason = "sha1 mismatch after write"`，**那是我的校验错了，不是写入错了**。
+本仓库 `core.autocrlf = true`，`.gitattributes` 另对 `*.py/*.md/*.json` 等声明 `text eol=lf`；
+`git cat-file` 给出的是 **LF blob**，而写盘后 git 依 `eol` 规则转换，**on-disk 字节本就不等于 blob**。
+
+验证（抽样）：
+
+| 文件 | worktree sha | `fcap:<p>` | `main:<p>` | `git diff HEAD` |
+|---|---|---|---|---|
+| `SKILL.md` | `197bdc7c8cfbed6d36b997b8e73ff6310a5f85eb` | **同** | `0e6a16ef…`（不同） | **0 行** |
+| `CHANGELOG.md` | `2810328f29017e12ba4a511efb7c8e5e6e55c48e` | **同** | `091f5bcb…`（不同） | **0 行** |
+
+⇒ **纪律（新增）**：**不得用「on-disk 字节 == blob」作为本仓库的恢复判据**。
+必须用 **`git diff <ref> -- <path>` 是否为空**，或 **`git status --porcelain` 是否仍报 `' M'`**，
+因为这两者会自动套用 `core.autocrlf` 与 `.gitattributes`。裸字节比对会产生**大规模假失败**——
+本次误报 62 例，若不纠正将导致对一个已经成功的恢复反复重做。
+
+### R36-6 恢复后终态（已实测）
+
+```
+.git/HEAD          : ref: refs/heads/fcap
+refs/heads/fcap    : 70dd9f6ee97a23506590e475e7cab1f64b5733f6
+refs/heads/main    : 3ce9cc4d3ea91b15aad42eff1f55b72a44834dd7
+' D' 缺失          : 0            (事故前 1699)
+' M' 总数          : 84           (其中绝大多数为 index 陈旧伪差异)
+git diff HEAD      : 5 条
+' ??' 未跟踪       : 2            (.planning/_pwf_tmp/, .workbuddy-ai/)
+```
+
+**剩余 5 条差异全部为预期**：
+- 3 条本轮记账写入：`progress.md` / `task_plan.md` / `findings.md`
+- 2 条**既有已登记**的内嵌 `.git` scratch 仓库：
+  `execution_runs/I-14-C/a20260919-01/r5/diff-apply-check/tree`、`…/r5/diff-repo`
+  （见本文件隔离巡检节：这三处内嵌 `.git` 使父仓库递归报 `fatal: bad object HEAD`，
+  已写入 `execution_runs/.gitignore` 兜底，**未删除任何文件**）
+
+**记账文件哈希（三趟恢复前后完全不变）**：
+```
+progress.md   112641 B  6958954d3eafdc2dfe53b603152dd49ba35275a2b0873781a63b28028987bede
+task_plan.md   19292 B  ff4d15e1626a9b1cc51ca641902ee13f868833f2c3da27aeb71474b05dcfca8c
+findings.md    29979 B  8c207e346d63da9ff7d18050e7cce5b6f0be03c939a000519cfd68572a86bbae
+```
+
+**planning-with-files 自检**（恢复后）：
+```
+resolve-plan-dir.sh → C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit
+check-complete.sh   → [planning-with-files] Task in progress (6/7 phases complete).
+```
+
+### R36-7 本轮踩到的四个技术坑（已全部沉淀入技能）
+
+1. **`core.quotepath`**：`git ls-tree -r` 默认把非 ASCII 路径输出为 C 风格引号 + 八进制转义
+   （`"a/\346\226\207....pdf"`），直接当路径用在 Windows 上抛 `OSError: [WinError 123]`。
+   ⇒ 必须用 **`git ls-tree -r -z`** 取 NUL 分隔的原始路径。本次 310 个首轮失败中 **59 个**源于此。
+2. **`ls-tree -r` 条目数会随 ref 变化**：首轮读到 19633，第 2/3 趟读到 19631。
+   差异来自内嵌 scratch 仓库下的条目在 checkout 后被 git 重新解释。不构成风险，但计数时勿硬编码。
+3. **`git symbolic-ref` 不回填 index 与工作树**：本轮即「HEAD 正确、内容错误」的直接成因，代价 1758 个文件。
+4. **沙箱 safe-delete 是进程级钩子**：`rm` / `Remove-Item` / `os.remove` 对 stuck `.git/index.lock` 全部失败。
+   本次全程未用 index 写，锁未构成阻碍。（本轮另测得该 hook 亦拦截部分 `open(...,'wb')` 场景的清理路径，
+   故恢复脚本一律采用「先 `os.makedirs` 再 `open` 直写」的最小写盘面。）
+
+### R36-8 边界声明（本轮未做的事）
+
+- **未提交任何 commit**。
+- **未写任何裁决字节**（`review.md` / `oracle.md` 均未触碰）：`verdicts_authored = 0`。
+- **未改任何载体字段**：`carrier_fields_changed = 0`。
+- **未动生产仓库**：`production_repos_written = 0`。
+- **未修 index**（`git read-tree` / `git update-index` 均未调用），恢复全部经文件系统写入完成。
+- **未删除任何文件**。
+---
+
+## Round 36 附注 — `reviewer_report_m09m12.md` 路径订正（父代理实测）
+
+**订正对象**：本文件 round 35 节与 `task_plan.md` 中把该报告的落点写作 `evidence/<CARD>/reviewer_report_m09m12.md`。
+该写法**有歧义**——计划根下并不存在一个统辖 M09–M12 的 `evidence/` 目录，按该路径去读会落空。
+**实际路径**（本 round 逐卡实测确认）：
+
+```
+execution_runs/<CARD>/a20260919-01/evidence/<CARD>/reviewer_report_m09m12.md
+```
+
+即 `evidence/` 位于**各自 attempt 内部**，且其下再嵌一层同名 `<CARD>/`。
+
+**四卡核验（本 round 复算）**：
+
+| 卡 | 路径 | bytes | sha256 |
+|---|---|---|---|
+| `M09` | `execution_runs/M09/a20260919-01/evidence/M09/reviewer_report_m09m12.md` | 40679 | `5a44fd4e1e4dca5f8ad06d17fc759154741a6a22469145a837bcdf1615d21c4c` |
+| `M10` | `execution_runs/M10/a20260919-01/evidence/M10/reviewer_report_m09m12.md` | 40679 | 同上 |
+| `M11` | `execution_runs/M11/a20260919-01/evidence/M11/reviewer_report_m09m12.md` | 40679 | 同上 |
+| `M12` | `execution_runs/M12/a20260919-01/evidence/M12/reviewer_report_m09m12.md` | 40679 | 同上 |
+
+**结论**：①四卡**均存在**；②字节数与 sha256 **与 round 35 登记值完全一致**（40679 B / `5a44fd4e…`），
+故 round 35 的「4/4 hash 一致」结论**成立**，订正的只是**路径写法**，不是结论。
+③这是**纯文档订正**：未触碰任何报告字节、未改变任何裁决。
+
+> **读取纪律（补充第 5 条）**：`.planning` 下写路径引用时，
+> **`evidence/` 有两个层级** —— 计划根的 `evidence/`（8 项，放 `runtime_policy.json.baseline.txt` 等基线快照）
+> 与 attempt 内的 `execution_runs/<CARD>/<attempt>/evidence/<CARD>/`（放该卡的裁决/资格文件）。
+> 引用后者时**必须写全 `execution_runs/<CARD>/<attempt>/` 前缀**，否则会与前者混淆。
+---
+
+## Round 37 — D-W05 已批准（2026-09-20 16:45，owner 原话「批准 D-W05」）
+
+**范围**：I-05-C 的 `produce_for_demand` 可从 **mock-only** 转**真实实现**，接进 CW `service.py` 现有 producer
+（`CatalogConfig`/`CatalogStore`）；**不新增重复 parser**；调用事件记录在**实际调用边界**（不从结果表倒推）。**解锁 GAP-1**。
+
+**不覆盖的范围（如实保留）**：
+- **GAP-2 仍阻塞**：`consumer_analysis` producer **不存在**、真实 LLM 能力未验证 ⇒ 须 **RF `consumer_analysis` owner 提供入口**；**不得造绿色样例补全**。
+- **GAP-3 待 reviewer**：`InvocationTracker` 事件 schema 需 reviewer 批准后方可生产持久化。
+
+> **纪律**：`D-W05` 批准 = **授权实现**，**不等于验收**。`status` 保持 `review_pending`，验收归独立 reviewer；实现者与 owner 均不得自签。
+
+**登记**：载体 `execution_runs/I-05-C/a20260919-01/handoff.json` → `rulings_applied["D-W05_producer_entry"]`
+（5689 B / `d79a0438…` → 6926 B / `46c620b3…`）；owner 裁定单新增「十二、【已裁定·第三批】」
+（28845 B / `eed9e7b5…` → 30767 B / `a40d32c8…`，追加式证明 **True**，新增 1922 B）。
+**变更边界**：只改 `rulings_applied` 与 `next_action` 两个字段；`status` 未变；未写裁决字节；未触碰证据文件。
+
+### 我自己的校验失误（如实登记，供后续引以为戒）
+
+追加脚本内联的「移除追加段重建前像」证明**算术写错了**（少减一个分隔换行），首跑报 `append_only_proof: False`。
+**但写入本身正确** —— 独立复核改用「定位追加段起点、取 `bytes[0:idx]` 算 sha256」，
+得 `head bytes = 28845`、`head sha256 = eed9e7b5…`，**与前像逐字节相同**。
+
+> **纪律（新增第 6 条）**：追加式证明**必须用「定位追加段起点」法**（`content.find(marker)` 后取前缀算 sha256），
+> **不得**用「总长度 − 追加段长度」的算术——后者对分隔符数量的假设极易出错。
+> 本轮错在算术、不在数据。
+
+---
+
+## Round 38 — 6 张卡陈旧 `reviewer_status` 已对齐（2026-09-20）
+
+**触发**：记账批次（`_bookkeeping_20260920_carriers`）在六张卡的
+`status_authority.reviewer_status_note` 内留了施工说明，明写
+"the implementer should bring it into line" / "resolve the contradiction"。
+本轮即执行该对齐。
+
+**已对齐**：`M09` / `M10` / `M11` / `M12` / `I-14-B` / `I-15-A` —— 六卡的
+`reviewer_status` 由「裁决到达前」的旧文本改为「裁决已返回且已注明载体位置」。
+
+**证据链（写前先验，不采信自述）**：
+- `M09–M12` 载体 = 独立 reviewer 报告 `5a44fd4e…`（40679 B）的 `## 1. 结论汇总`
+  表（区 755 B / `9746d014…`），四行分别为 `resource` / `reserve_depletion` /
+  `infrastructure` / `bank_revenue`，verdict 均为 `accepted_scoped`、授予「仅 `formula`」。
+- `I-14-B` 载体 = `review.md` §5-b（`ab93734d…`，41849 B；区 10790 B /
+  `0d5028a9…`；L315 标题、L322 结论）。
+- `I-15-A` 载体 = closeout 报告（`9dafd6cf…`，39479 B）L294。
+
+**边界**：只改 `reviewer_status` 一键；`status` 未动（六卡仍 `accepted_scoped`）；
+裁决字节零改动；键序保留。`reviewer_status_alignment_provenance.json` 记录 6 份
+文件的 before/after 双向哈希。
+
+**遗留（明确不在本轮范围）**：`M09`–`M12` 的 `in_card_transcription_owed = true`
+仍成立 —— 四卡 `review.md` 内仍无卡内裁决区，须 reviewer 本人或经其明确授权的
+转录补齐，且须附前缀哈希证明（追加不改既有字节）。
+
+**教训**：`status_authority` 与 `reviewer_status` 这两个字段**职责不同** ——
+前者是记账批次写的**机器可读出处**，后者是**实现者字段**。记账批次因权限边界
+刻意留空后者，属正确处置；但若**无人接续执行**，卡上就会出现「`status` 说已接受、
+`reviewer_status` 说还没收到裁决」的自相矛盾。⇒ **凡记账批次在字段内留下
+"should be brought into line" 一类的施工说明，必须同时登记为一条显式待办**
+（本轮之前它只存在于字段注释里，靠本轮扫描才发现）。
+
+
+---
+
+## Round 39 — Owner 一次性总授权「给你所有批准」（2026-09-20 17:0x）
+
+**处置原则**：待裁项约 40 条，**并非全部属于 owner 权限**。按权限归属拆为
+**TIER-1 可裁 28 项（已裁）** / **TIER-2 需他方 15 项（owner 仅授权联系与启动）** /
+**TIER-3 知悉 5 项**。逐项见 `OWNER_DECISIONS.md` 第十三节。
+
+**决定性裁定**：`D-W06` OPEN-2 选 **A —— 幂等键必须含请求身份**。否决 B 的理由是
+B 仍把「不同请求」表达为「同键异载荷」，属把业务语义错误延迟到运行时；且
+`W06A-P1` 本就要求需求「含**原请求绑定**」，键含请求身份是该卡**既有硬要求**、非新立。
+支撑证据为 c8/c9/c10 三个真实 CLI 探针（同一 `demand_id` 携带**首个请求**的
+`request_sha256`，而两个仅 `as_of_date` 不同的请求得到 `d8afcf31…dd62` 与
+`4bddf9e6…0b84` 两个不同摘要）。
+
+**归档闭合一项长期待办**：第九节第 16 项（原标「最高优先」）—— 扩展模型版纳管**已完成**，
+提交 `5db4734a owner-authorized: bring the extension model registry under version control`，
+`scripts/model_extensions.py` 已跟踪、`model_registry.py` 锚定版（`9ec65295…`）已入库，
+工作树与 HEAD 一致。**31 张模型卡的验收基准现已获得版本控制层的锚**。
+
+**新增纪律第 7 条**：「总的批准」不得膨胀为「所有的结论」。owner 的总授权解除的是
+**启动与实施许可**；凡专业裁判属他方者（TIER-2），最终结论**必须由该方出具**。
+把 TIER-2 记为「owner 已裁」等同**伪造签名**。

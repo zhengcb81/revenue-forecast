@@ -1,5 +1,306 @@
 # Progress
 
+## 2026-09-20 — 第九轮（round 39）：Owner 一次性总授权「给你所有批准」
+
+**原话**：「给你所有批准」（最简形式）。
+
+**本轮的处置原则（本轮最重要的判断）**：待裁项约 **40 条**，**并非全部属于 owner 权限**。
+若把「另一当事方的专业裁决」也记成 owner 已裁，等于**伪造签名**。故按三类拆开落地：
+
+| 类别 | 条数 | 落地方式 |
+|---|---|---|
+| **TIER-1 可裁** | **28** | 记为**已裁定**，逐项列出 |
+| **TIER-2 需他方** | **15** | owner **仅授权「启动并授权该方裁决」**；最终结论**仍待该方**出具 |
+| **TIER-3 知悉** | **5** | 记为已采纳/已知悉，**不产生裁定** |
+
+> **新增纪律第 7 条**：「总的批准」不得膨胀为「所有的结论」。owner 的总授权解除的是
+> **启动与实施许可**；凡专业裁判属他方者，最终结论**必须由该方出具**。
+
+### TIER-1 要点（全 28 项见 `OWNER_DECISIONS.md` 第十三节）
+
+- **`D-W06` OPEN-2（决定性）**：选 **A —— 幂等键必须含请求身份**（含 `as_of_date`/目标/载荷摘要）。否决 B。
+  依据：`W06A-P1` 本就要求需求「含**原请求绑定**」，c8/c9/c10 三个真实 CLI 探针已证明现键会把**不同请求静默并入同一 `demand_id`**。
+- **`D-W06` OPEN-1**：采纳**建议方案 A**（扩展 CW `source_catalog/store.py` + `_apply_additive_migrations`），**不采纳** attempt 内的 B 形状。**OPEN-3**：显式单次 `claim`，不自动恢复 worker。
+- **`D-W15`**：**暂不签**（五类缺陷：空目录也删 / 同日覆写 / 时钟取目录名 / TOCTOU / 崩溃后不可恢复）；授权按 proposed 方案改写，**改后须数据恢复 reviewer 复签**方可执行生产 prune。
+- **第九节第 16 项「最高优先」→ 已归档闭合**：`scripts/model_extensions.py` **已纳入版本控制**、`model_registry.py` 锚定版（`9ec65295…`）**已入库**，提交 `5db4734a owner-authorized: bring the extension model registry under version control`，工作树与 HEAD 一致。**不再列为待办**。
+- **第 17 项 M24**：选 **(c)** —— 在 `cases.json` 加回一个**输入不同**的跨年用例（reviewer 已给可达值），**不改冻结正文**、不消耗重冻额度。
+- **第 19 项 I-14-C 四问**：①C13 立卡；②抖动另立卡（修产品测试时序假设）；③`WinError 206` 在**产品侧**改短路径 basetemp；④C12 选**子进程硬超时包裹**（不新增 `pytest-timeout` 依赖）。
+- **跨批 runner 推广**：**授权**，按「只改各批副本 / `before/` 留旧版 / 不回改历史 rc / 每批补变异臂」形态，四项前置须先满足。
+- **`I-14-B` D-2**：**暂不授权**（隔离解释器内 `playwright` 不可导入、4002 候选中 0 个预布置记录器），维持 `blocked`，另立新卡。
+- **`natural_window.py` 两缺陷**：授权立卡修复（`claim.basis` 补枚举校验；quick_check 不得计入自然观察时长）——注意②**已烧进冻结期望**，须以**追加式 provenance** 更正。
+- **M25–M28 重冻**：**不授权**（额度已用尽，自此只许追加）。
+- **冻结正文编辑规则**：今后一律**追加新节 + 行级过时标注**，不外扩就地编辑。
+- **`I-09-A` `review.md:80` 出处列**：**授权改该行**（只改出处列，附前像 hash + diff）⇒ 该 `known_gap` 可实现闭合。
+- **`I-11-A` OPEN-1/OPEN-8**：均**采纳** reviewer 建议（`pdftotext.exe` 降级为**交叉核对路径**、永不作唯一来源；接受 `P1_vs_prior_offset.json` 择优规则、**不回改 oracle 正文**）。
+- **M08 三步**：全采纳（**读法 C 权威**；更正目标按实测四处；**期望 `[50]` 不变**）。**M02-01**：选 **A 保持 fail-closed**。
+- **rc 码表**：授权冻结一个码表写入 `START_HERE.md`、各批带自描述 `exit_code_legend`、**不回改历史 rc**。**I-00-B 绑定范围**：书面追认「物化由各 attempt 完成并记录来源 hash」。
+- **`oracle.md` 事后编辑口径**：允许**追加式 provenance 登记**，**禁止**回改为「从未编辑」。
+- **产品级缺陷立卡**：`model_registry.py:335` 静默补 0 改抛错；`_SIGNED_DRIVERS` 改基于**语义角色**。
+- **M31**：勘误为纯文字、**勘误完成前不得关闭**；**R-1/R-2 清除前不得关闭**。
+- **`oracle.md` 文本不作「事前冻结证据」**：**不采纳**更强主张、**不重跑**。
+- **I-14-A D1/D2/D3**：owner 层面放行流程启动，但**专业签字仍属他方**；未获三方签字前**仍禁止**把补丁拷进 `RF/tools/`。
+- **第九节第 18 项**：**授权编排层更频繁提交 `.planning`**，每次提交后强制核对 hook 的 `[INFO] Restored changes from <patch>` 行。
+
+### TIER-2 要点（owner 仅授权联系/启动，**最终裁定仍待该方**）
+
+15 项：`D-W06` OPEN-4/5/6（wiki 来源审核 owner + 安全 reviewer + RF 消费 owner）、`D-W15` 最终签署（数据恢复 reviewer）、`I-14-A` D1/D2/D3（运维 reviewer / SLO owner / I-16）、`I-08-A` OPEN-D1/D2/D3/D5/D6/D7（跨仓双方 + 安全域）、`I-09-A` OPEN-I09A-1…6（跨仓双方）、`I-11-A` OPEN-2/3/5/6（专业阈值归属方）、全文 `W`/`T`/`L` 具体数值。
+> **`I-08-B` CONFLICT-1/2 转为 TIER-1**：复核者已判接受 ⇒ 本批**owner 追认**。
+
+### 本轮文件终态
+
+| 文件 | before | after |
+|---|---|---|
+| `OWNER_DECISIONS.md` | 30767 B / `a40d32c8…` | 见下（追加式证明 True） |
+| `task_plan.md` | 22321 B / `7cc3b098…` | 见下 |
+## 2026-09-20 — 第八轮（round 38）：6 张卡陈旧 `reviewer_status` 对齐（实现者字段）
+
+**性质**：这是**纯字段对齐**，不产生任何新裁决。授权来自各卡自己的 `status_authority.reviewer_status_note` —— 该字段逐卡明写
+「reviewer_status still reads ... That is now stale ... the implementer should bring it into line」，即**记账批次已把施工说明留在盘上**，
+本轮的职责只是执行它。
+
+**六张卡的新值**：
+
+| 卡 | 旧值（陈旧） | 新值 |
+|---|---|---|
+| `M09`–`M12` | `r1 submitted for independent review; no verdict received yet` | `RESOLVED -- independent review round 1 returned accepted_scoped (granted: formula only)`；指向载体报告 `## 1. 结论汇总` 表的对应行（M09=L20 / M10=L21 / M11=L22 / M12=L23） |
+| `I-14-B` | `r1 review returned changes_required ... a THIRD independent review round is required` | `RESOLVED -- the third independent review round (verifying the r2 fix pass) returned accepted_scoped`；载体 `review.md` §5-b（L315，结论 L322）；并注明第 1 轮 `changes_required` 仍保留在同文件前部 |
+| `I-15-A` | `PENDING independent review (implementer did not self-accept; no product code was written)` | `RESOLVED -- the r2 independent review returned accepted_scoped, scoped to frozen evidence + diagnostic counterexamples ONLY`；载体为外部 closeout 报告 L294，且**注明无需卡内转录**（reviewer 自行指定该报告块为载体） |
+
+**硬边界（逐项自证 + 独立复核）**：
+
+- **只改一个键**：六份 `handoff.json` 的逐键重序列化比对，`changed top-level keys == ['reviewer_status']`（6/6 通过）。
+- **`status` 未动**：六卡仍为 `accepted_scoped`，`status_unchanged = True`（6/6）。**本轮不授予也不撤销任何裁决**。
+- **裁决与证据字节零改动**：`I-14-B/review.md`（`ab93734d…`，41849 B）、`I-04-C/evidence/r5-reviewer-closeout-report.md`（`9dafd6cf…`，39479 B）、四卡 `evidence/<CARD>/reviewer_report_m09m12.md`（`5a44fd4e…`，40679 B）、以及六卡 `oracle.md`/`decision.md`/`binding.json` —— **逐一复算哈希一致**。
+- **写前验载体**：脚本 STEP 0 先复算三个载体哈希，任一不匹配即 `EXIT=3` 拒绝执行。全部 `match=True`。
+- **键序保留**：`key_order_preserved = True`。
+
+**文件终态**：
+
+| 文件 | before | after |
+|---|---|---|
+| `M09/handoff.json` | 12822 B / `f4776af3…` | 14121 B / `1b46740f…` |
+| `M10/handoff.json` | 13044 B / `87806922…` | 14404 B / `b5cd3790…` |
+| `M11/handoff.json` | 12772 B / `705e5538…` | 14077 B / `29241598…` |
+| `M12/handoff.json` | 13234 B / `e1923ae0…` | 14615 B / `ffa9d29a…` |
+| `I-14-B/handoff.json` | 25643 B / `a620a6fd…` | 26082 B / `143bdfa8…` |
+| `I-15-A/handoff.json` | 13754 B / `699d8d45…` | 14768 B / `a93494f2…` |
+
+另同步 `task_plan.md`（复选框 `[ ]`→`[x]`）与 `OWNER_BRIEF_round36.md`（两张表头行改为「已对齐」），以免留下自相矛盾的对齐待办。
+
+**交叉验证收获**：`I-15-A/oracle.md` 实测 `7ad1ac77cc34e6ff…`，与载体报告第 296 行引用的 `7ad1ac77…` **一致** —— 该卡「冻结成立」的论据因此获得一条独立佐证。
+
+**遗留（本轮未动，保持原状）**：`M09`–`M12` 的 `in_card_transcription_owed = true` **仍然成立** —— 四卡 `review.md` 内至今**没有卡内裁决区**，
+裁决只在 `evidence/<CARD>/reviewer_report_m09m12.md`。该缺口须由 reviewer 本人或其明确授权的转录来完成，**不是本次字段对齐的范围**。
+
+---
+
+## Round 37 — Owner 批准 D-W05：I-05-C 的 producer entry 授权落地（2026-09-20 16:45）
+
+### 裁定
+
+> **Owner 原话**：「批准 D-W05」
+
+**范围**：I-05-C 的 `produce_for_demand` 可从 **mock-only** 转为**真实实现**，接进 CW `service.py` 的现有 producer（`CatalogConfig`/`CatalogStore`）；**不新增重复 parser**；调用事件记录在**实际调用边界**（不从结果表倒推）。
+
+**解锁**：`GAP-1` 解除 ⇒ I-05-C 可进入实现。
+
+### 本批准**不覆盖**的范围（如实保留，不得外推）
+
+| ID | 内容 | 状态 |
+|---|---|---|
+| **GAP-2** | `consumer_analysis` producer **不存在**；真实 LLM 能力未验证。测试只证明 missing/unsupported 处理 | **仍阻塞** —— 须 **RF `consumer_analysis` owner 提供入口**（另一当事方）；**不得造绿色样例补全** |
+| **GAP-3** | `InvocationTracker` 事件 schema 需 reviewer 批准后方可做生产持久化 | **待 reviewer 决定**（非 owner 项） |
+
+> **纪律**：`D-W05` 批准 = **授权实现**，**不等于验收**。`status` 保持 `review_pending`，验收仍是独立 reviewer 的职责；实现者与 owner 均不得自签。
+
+### 登记与取证
+
+| 项 | 位置 | 前后像 |
+|---|---|---|
+| 载体裁定 | `execution_runs/I-05-C/a20260919-01/handoff.json` → `rulings_applied["D-W05_producer_entry"]` | 5689 B / `d79a0438…` → 6926 B / `46c620b3…` |
+| 同上 `next_action` | 重写为「按 D-W05 批准做真实实现」 | 见上 |
+| Owner 裁定单 | `OWNER_DECISIONS.md` 新增「**十二、【已裁定·第三批】**」 | 28845 B / `eed9e7b5…` → 30767 B / `a40d32c8…` |
+| 证据 | `.planning/_pwf_tmp/d_w05_approval_provenance.json`、`owner_decisions_r36_provenance.json` | — |
+
+**`OWNER_DECISIONS.md` 追加式证明**：`bytes[0:28845]` 的 sha256 == 前像 sha256 `eed9e7b5…`（**精确前缀**），追加区起于标题 `## 十二、`，新增 **1922 B**。
+
+### 变更边界（本轮）
+
+- **只改 `rulings_applied` 与 `next_action` 两个字段**；实测 `changed top-level keys` 中 `status` **不在其中**。
+- **`status` 始终 `review_pending`**：授权不改变验收状态。
+- **未写任何裁决字节**：`review.md` / `oracle.md` 零改动。
+- **未触碰任何证据文件**；**未改 `binding.json`**；**未动生产仓库**。
+- **未提交任何 commit**。
+
+### 我自己的一个校验失误（如实登记）
+
+追加脚本内联的「移除追加段重建前像」证明**算法写错了**（少减一个分隔换行），首跑报 `append_only_proof: False`。
+**但写入本身是正确的** —— 独立复核以「找追加段起点、取 `bytes[0:idx]` 算 sha256」的方式验证，
+得 `head bytes = 28845`、`head sha256 = eed9e7b5…`，**与前像逐字节相同，证明为 True**。
+
+> **教训**：追加式证明应**用「定位追加段起点」的方式**（`content.find(marker)` 后取前缀），
+> 而**不是**用「总长度减去追加段长度」的算术——后者对分隔符数量的假设极易出错。
+> 本轮错在算术、不在数据；已把该判据写进本轮记录。
+
+### 下一步
+
+1. **I-05-C 可实现**（GAP-1 已解），但 **GAP-2 仍阻塞 `consumer_analysis` 角色**；实现须如实标注该角色为 blocked，不得伪造绿色样例。
+2. **I-06-A 仍在等 `D-W06`**（六项，OPEN-2 决定性）—— 本次批准**不涉及**。
+3. **I-08-A 收口方式**仍待单独商定 —— 本次批准**不涉及**。
+4. 6 张卡陈旧 `reviewer_status` 对齐、未建 21 张卡推进 —— 不受本次批准影响。
+
+---
+
+## 2026-09-20 — 第六轮（round 36）：分支误切事故确诊与工作树全量恢复
+
+### 起点：`git status` 里那批"非预期修改"
+
+round 35 收尾核对时发现除本轮 3 个记账 md 外，另有大量 `' M'` 条目。起初判为"很可能是行尾伪差异"，**深查后确认是一场真实事故**。
+
+### 事故确诊（`git reflog` 铁证）
+
+```
+70dd9f6e HEAD@{2026-09-20 15:23:03 +0100}:
+3ce9cc4d HEAD@{2026-09-20 15:05:08 +0100}: checkout: moving from fcap to main
+70dd9f6e HEAD@{2026-09-20 15:04:13 +0100}: commit: [Checkout-checkpoint] from fcap to main (15:04:12)
+```
+
+round 35 里我为恢复 430 个规划文档而起的**后台 `git checkout`，实际执行的是 `checkout main`**。
+`main` 比 `fcap` 少 **19500 个文件**（`git diff --stat main fcap`），故 fcap 独有文件在工作树中整体消失。
+
+**事故被误判一整个 round 的原因（最重要的教训）**：`task_plan.md` 在 fcap 与 `main` 上**内容相同**，
+因此"被重置为 fcap 版"与"工作树被切成 main"在这一个文件上**表现完全重合**。我据前者做了错误解释，
+把事故当成无害的"重置到同一分支"，掩盖了一整个 round。
+
+> **纪律**：判定"文件为何变了"**不得只用"它变成了什么"**。唯一可靠判据是 `git reflog` 的 `checkout: moving from … to …` 行。
+
+**另一确认**：`.git/HEAD → refs/heads/fcap` 且 `refs/heads/fcap = 70dd9f6e` **都正确**，
+但 index 与工作树内容来自 `main`。`git symbolic-ref` 只改 HEAD 指针，**不回填 index 与工作树**。
+
+### 精确盘点
+
+| 量 | 值 |
+|---|---|
+| fcap tracked | 19633 |
+| 工作树缺失 | **1758** |
+| `status ' D'` | 1699 |
+| `' M'` 中真内容差异 | **67** |
+| `' M'` 中 index 陈旧伪差异 | **79**（占 `' M'` 的 **54%**） |
+| 真差异总数 | 1766 |
+
+**读取纪律（新增）**：`git status --porcelain` 的 `' M'` **不是**内容差异的证据。
+抽样三个文件，worktree blob 与 HEAD blob **逐字节相同**且 `git diff HEAD` 输出 0 行：
+`evidence/runtime_policy.json.baseline.txt`（`1ff80c5d…`）、`master_coverage.csv`（`0f129fd6…`）、
+`reviews/aug09_plans/item_ledger.jsonl`（`26d860e5…`）。判据必须用 `git diff HEAD --name-only`。
+
+### 恢复（三趟，全部绕开 index）
+
+方法：`git ls-tree -r -z HEAD` 取 `path → blob sha`，`git cat-file --batch` 批量取内容写盘，逐文件 read-back 校验。
+
+| 趟 | 目标 | 结果 |
+|---|---|---|
+| 1 | 1758 个缺失文件 | `' D'` 1699 → **251**（进程被 SIGTERM 中断） |
+| 2 | 补齐缺失 | `' D'` 251 → **0**；`skipped_already_present = 1448` |
+| 3 | **62 个仍持有 `main` 内容者** | 62/62 写入成功 |
+
+**第 3 趟为何必要**：前两趟带"已存在即跳过"守卫，故工作树里**已存在但内容来自 main** 的文件从未被修正。
+由 `classify_diffs.py` 对剩余 67 条逐一比对 `main:<p>` / `HEAD:<p>` 得出：**MAIN 62 / FCAP 0 / OTHER 5 / ABSENT 0**。
+
+**第 3 趟的必要性证明（抽样）**：
+
+| 文件 | worktree sha | `fcap:<p>` | `main:<p>` | `git diff HEAD` |
+|---|---|---|---|---|
+| `SKILL.md` | `197bdc7c…` | **同** | `0e6a16ef…`（不同） | **0 行** |
+| `CHANGELOG.md` | `2810328f…` | **同** | `091f5bcb…`（不同） | **0 行** |
+
+### 第二个自我纠错：恢复判据不能用裸字节
+
+第 3 趟初次报告 `failed = 62, reason = "sha1 mismatch after write"`，**那是我的校验错了，不是写入错了**。
+本仓库 `core.autocrlf = true` 且 `.gitattributes` 声明 `*.py/*.md/*.json` 等 `text eol=lf`，
+`git cat-file` 给出 LF blob 而写盘后 git 按 `eol` 规则转换，**on-disk 字节本就不等于 blob**。
+
+> **纪律（新增）**：**不得用"on-disk 字节 == blob"作本仓库的恢复判据**，必须用 `git diff <ref> -- <path>` 是否为空。
+> 裸字节比对会产生大规模假失败（本次误报 62 例），若不纠正会导致对已成功的恢复反复重做。
+
+### 恢复后终态（已实测）
+
+```
+.git/HEAD       : ref: refs/heads/fcap
+refs/heads/fcap : 70dd9f6ee97a23506590e475e7cab1f64b5733f6
+refs/heads/main : 3ce9cc4d3ea91b15aad42eff1f55b72a44834dd7
+' D' 缺失       : 0            (事故前 1699)
+git diff HEAD   : 5 条
+' ??' 未跟踪    : 2            (.planning/_pwf_tmp/, .workbuddy-ai/)
+```
+
+**剩余 5 条差异全部为预期**：3 条本轮记账（`progress.md` / `task_plan.md` / `findings.md`）
++ 2 条**既有已登记**的内嵌 `.git` scratch 目录（`execution_runs/I-14-C/a20260919-01/r5/diff-apply-check/tree`、`…/r5/diff-repo`，
+见 findings.md 隔离巡检节）。
+
+**planning-with-files 自检**：
+```
+resolve-plan-dir.sh → …/.planning/2026-09-19-three-project-history-audit
+check-complete.sh   → [planning-with-files] Task in progress (6/7 phases complete).
+```
+
+### 本轮记账写入
+
+| 文件 | 前像 | 后像 | 方式 |
+|---|---|---|---|
+| `findings.md` | 29979 B / `8c207e34…` | **39426 B / `daf8a26d…`** | 纯追加（Round 36 节），`reconstruct == preimage: True` |
+| `task_plan.md` | 19292 B / `ff4d15e1…` | **21071 B / `965c05b1…`** | 改 Next Step / Current Phase 正文段（preamble preserved） |
+| `progress.md` | 112641 B / `6958954d…` | 本轮追加本条 | 纯追加（新条目置顶） |
+
+**三趟恢复全程，这 3 个文件哈希前后不变** —— 恢复脚本的"已存在即跳过"守卫生效。
+
+### 边界声明
+
+- **未提交任何 commit**
+- **未写任何裁决字节**：`verdicts_authored = 0`
+- **未改任何载体字段**：`carrier_fields_changed = 0`
+- **未动生产仓库**：`production_repos_written = 0`
+- **未修 index**（`git read-tree` / `git update-index` 均未调用）
+- **未删除任何文件**
+
+### 沉淀
+
+四条新纪律已补进 `git-blob-restore` 技能（v1.0.0 → v1.1.0）：
+①`git symbolic-ref` 不回填工作树；②`' M'` 约半数可能是伪差异；③恢复脚本必须带"已存在即跳过"守卫；
+④`ls-tree -r -z` 避免 `core.quotepath`（本次 310 个首轮失败中 59 个源于此）。
+并新增 `## First: diagnose, do not guess` 节，把"用 reflog 判别分支误切"写成首要步骤。
+
+## 2026-09-20 — 第五轮（round 35）：8 个未记账提交的补登 + 盘上实测状态归一
+
+> **本条为事后补记（bookkeeping backfill），不是新的实施轮次。** 触发原因：`progress.md` 最后写入停在 `c95f565e`（11:38，round 34），但其后 **8 个提交（11:19–14:26）**落地了 5 张卡却**没有任何一条 progress 记录**。补记内容一律以盘上载体（`handoff.json` 顶层 `status`、`evidence/<CARD>/qualification.json`、`review.md` 裁决区）为唯一事实来源，并逐条标注提交号；**未新增任何裁决、未改写任何既有字节**（本文件为纯追加，前像 `104618 B / 04ddae77b2e551d261e5c230b3a6c7ea8735ad3eefa6a0914efe05fcfe6ffa1d` 保持不变）。
+
+- **补记账的 8 个提交**（均为 `audit(planning)` 或 owner 授权，只含 `.planning/`，门全 GREEN）：
+  `69cad02a`（12:08）、`77a22803`（12:14）、`f6d5f347`（12:24）、`51b311f6`（12:36）、`5293eb9a`（12:47）、`8b7229c3`（14:26），以及此前已记的 `c95f565e`（11:38）、`c1338445`（11:19）。
+- **本段实际落地 5 张卡**（全部经独立 reviewer 裁决 + 载体非自签落定）：
+  - **I-04-E = `accepted_scoped`** —— round2 独立复核（`qualification.json.authority.source = "independent_reviewer_round2"`，reviewer 为独立子代理），P1/P2/P3 三项修复经复核验证；**新增变异证明** `evidence/mutation-proof.txt`（20 行）使「不变量可红」成立，补上了 r1 缺失的变异臂。`disclosure_adaptation = unmapped`、`accuracy = unproven`。
+  - **I-05-B = `accepted_scoped`** —— 3 项 carried findings（`P2-1`、`P3-1`、`P3-2`）随卡移交；裁决经 `evidence/verdict_transcription.json` 转录证明。
+  - **I-06-B = `accepted_scoped`** —— 修 F-1 后收口（`77a22803` 记录其 accepted + `qualification.json` 35 行新增）。
+  - **I-09-B = `accepted_scoped`** —— reviewer 已签（`formula.verdict_source = "independent_review"`、`reviewer_signed = true`、`implementer_signed = false`），另落 `carried_findings.md`（27 行）。
+  - **I-05-C = `review_pending`** —— 新开卡，**三项硬阻塞**须 owner 介入：①`blocked on D-W05 producer entry approval`（producer 入口未批）；②`blocked on RF consumer_analysis owner providing entry`（消费侧 owner 未提供入口）；③`pending reviewer decision`。已产出 `decision.md`(64 行)/`oracle.md`(111 行)/`commands.json`/`producer-invocations.json`/`requested-role-dag-matrix.json`/`retry-count-vs-artifact-count.json` 等完整设计与证据，**卡本身不缺工作，只缺授权**。
+- **盘上实测状态汇总（2026-09-20 15:45 逐卡读 `handoff.json` 顶层 `status` 得出）**：
+  - 已建卡 **65 / 86**（I 系列 34 + M 系列 31）。
+  - **`accepted_scoped` = 61 张**：全部 `M01–M31`（31 张）+ `I-00-B/C/D`、`I-01-A`、`I-02-A…E`、`I-03-A…D`、`I-04-A…E`、`I-05-A/B`、`I-06-B`、`I-07-A`、`I-08-B`、`I-09-A/B`、`I-11-A`、`I-14-A/B/C`、`I-15-A`（30 张）。
+  - **`review_pending` = 3 张**：**I-00-A**（限定只读基线范围，盘上最新独立结论仍为 `changes_required`）、**I-05-C**（上述三项硬阻塞）、**I-08-A**（其 reviewer **明文禁止**把「已接受」写入任何载体 ⇒ 按设计**不得**落 `accepted_scoped`，须以其它方式收口）。
+  - **`blocked` = 1 张**：**I-06-A**（`D-W06` 五问未签）。
+  - **未建卡 = 21 张**：`I-10-A`、`I-12-A…E`、`I-13-A…C`、`I-16-A/B`、`I-17-A/B`（`execution_runs/I-10-M25M28` 为占位目录，非卡）。
+  - 口径纪律：**`disclosure_adaptation` 全卡 `unmapped`、`accuracy` 全卡 `unproven`**，无一张外推；**全部为 iso-副本资格，生产零代码合并**（唯一生产写入是 owner 授权的 `5db4734a` 把 `scripts/model_registry.py` + `scripts/model_extensions.py` 纳管，属版本控制层动作，非产品行为变更）。
+- **旧口径作废声明**：round 34 的「57/86」、`task_plan.md` 的「19 张盘上可核 + 8 张条件性接受 + 3 张待补裁决」、以及更早的「28/86」，**均不再是当前口径**。以本条 round 35 的 **61 / 3 / 1 / 21** 为准。三者差异的成因：前两者是按「会话内回传」记账，而载体落定（`d4a42f5a` 落 19 张、后续批次继续落）与 M08 三步转正发生在记账之后，**盘上状态跑在了账本前面**。
+- **载体落定执行器（`_bookkeeping_20260920_carriers/summary.json`，父代理本轮复核）**：`landed = 19`、`skipped = 1`、`failed = 0`、`ledgers_annotated = 32`、`ledger_generators_rerun = 1`；`review_md_bytes_written = 0`、`oracle_md_bytes_written = 0`、`production_repos_written = 0`、`git_write_commands_run = 0`、`plan_reviews_dir_written = 0`；声明 `implementer_signed = false` / `implementer_never_signs_acceptance = true`；`validation.ok = true`、`errors = []`。跳过的 1 张是 **I-07-A**，原因码 `skipped_latest_round_is_changes_required`（当时 r2 = `changes_required`（仅文档一致性）⇒ 按规则保持 `review_pending`；**该卡已在 `c1338445` 经 r3 re-read 转正**，故此跳过项现已闭合）。
+- **本次补记发现的两项须持续跟踪的缺口（均转登 `findings.md`）**：
+  1. **【记账·模式二结构性缺口】零写入 reviewer ⇒ 卡内无裁决载体**。`M09–M12` 属此类：其 `review.md` 内**完全没有裁决区**（唯一的 `accepted_scoped` 命中是第 9 行的样板裁决词表），裁决只存在于 `%TEMP%\m09m12-review-20260920-035628\REPORT.md`（40679 B / `5a44fd4e…`）。处置：报告已按字节固化进四卡 `evidence/<CARD>/reviewer_report_m09m12.md`（父代理复算 **4/4 hash 一致**），并在载体明写 `in_card_verdict_region = false` + `in_card_transcription_owed = true`。**执行器已建议立为计划级规则**：凡 reviewer 采零写入模式，其报告**必须在任何载体落定之前**先按字节落进 attempt 并登记哈希；**在 `review.md` 尚缺卡内裁决区时不得落任何载体**。同一缺口在 `I-15-A` 亦存在（其 carrier 即 reviewer 自身报告块，`in_card_verdict_region = false`，已置 flag `review_md_has_no_verdict_region` + `carrier_is_the_reviewers_own_report_block`）。
+  2. **【载体·陈旧字段】6 张卡的 `reviewer_status` 与新 `status` 相互矛盾**：`M09–M12`（仍写 "no verdict received yet"）、`I-14-B`（仍写 "a THIRD independent review round is required"）、`I-15-A`（仍写 "PENDING independent review"）。执行器按权限边界**未改该字段**（属实现者字段），仅在 `status_authority.reviewer_status_note` 内注记，**欠实现者一次对齐**。
+- **本轮补记同时修正一处父代理自身的读取误判（须记入纪律）**：曾据 `grep -m1 '"status"'` 判定 `I-04-C` / `I-04-D` 的顶层 `status` 不合规（读到 `recorded, not re-run as an implementer command` 与 `done`）。**核实后为误判** —— 二者的顶层 `status` 实际分别是 `I-04-C:334 = accepted_scoped` 与 `I-04-D:1157 = accepted_scoped`；先前读到的是 JSON **内部子对象**的状态字段。⇒ **读取纪律**：`handoff.json` 顶层 `status` 位于文件末尾，**必须取最后一个匹配键**（或直接 `json.load`），**不得用首个匹配**；凡以 grep 抽查载体字段的结论，须以 JSON 解析复核后才可作为记账依据。
+- **下一步（继续按 owner 门与依赖链推进）**：
+  1. **I-05-C 需 owner 批 `D-W05` producer entry**（连同消费侧 entry），否则该卡只能停在 `review_pending`；
+  2. **I-06-A 需 owner 签 `D-W06` 五问**（OPEN-2 幂等键缺请求身份为决定性项）；
+  3. **I-08-A 需单独商定收口方式**（reviewer 禁止写入「已接受」，故不可走常规载体路径）；
+  4. **6 张卡的 `reviewer_status` 陈旧字段**派实现者对齐（只改该字段，不动裁决字节）；
+  5. 未建的 21 张卡按调度表推进，`I-10-A` 起。
+
 ## 2026-09-20 — 第四轮（round 34）：I-07-A 完成 + 失败子代理重启 + 当前状态
 
 - **I-07-A r3 re-read 完成**：reviewer 亲自追加亲笔 r3 段（`review.md:221-289`），三个 r2 缺陷全部关闭（P1 `decision.md` 附录、P2 F-I07A-06 "six"→"seven rows"、P3 F-I07A-01 "0 location rows"→"exactly 1"）。载体由父 agent 落定：`handoff.status=accepted_scoped`、`qualification.formula=accepted_scoped`。已提交 `c1338445` 并推送（GREEN）。**I-07-A 成为第 57 张 accepted 卡**。

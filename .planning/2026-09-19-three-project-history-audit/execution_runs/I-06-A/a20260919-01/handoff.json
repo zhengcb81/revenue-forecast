@@ -25,7 +25,7 @@
     "r2-5 F-I06A-05: 补 recovery/README.md（NA + 理由）"
   ],
   "next_step_number": 4,
-  "next_action": "由 wiki 来源审核 owner + 安全 reviewer + RF 消费 owner 签署或替换 decision.md 的 D-W06 OPEN-1..OPEN-6，其中 OPEN-2 的必答依据已由 c8/c9/c10 三个真机探针写全（键是否含请求身份 / role_set 权威来源 / c7 错误文案契约）；签署前 I-06-A 保持 blocked，候选保持 UNRATIFIED 且不得被后续卡直接提升为产品实现。",
+  "next_action": "Two tracks, in order. (1) WAITING ON OTHERS: obtain the OPEN-4/5/6 rulings from the wiki source-review owner, the security reviewer and the RF consumer owner -- the owner has authorised contacting them. Do NOT implement I-06-A or start I-06-B before those rulings land. (2) NOW UNBLOCKED FOR REVISION: OPEN-1/2/2b/3 are ruled, so the UNRATIFIED candidate may be revised to satisfy OPEN-2 option A (key must include request identity) and restructured to the OPEN-1 option-A shape (CW store.py + _apply_additive_migrations). The revision must stay inside the attempt tree and remain UNRATIFIED; re-verify with the c8/c9/c10 probes that distinct requests no longer merge.",
   "frozen_vs_measured": {
     "B1_B2_baseline": {
       "expected": "rc=3 + not_reviewed block + zero durable demand",
@@ -148,8 +148,9 @@
     "filing-fetch 为 TEST-ONLY 替身；真实 provider/路由属 I-07"
   ],
   "blocked_by": [
-    "D-W06 六项专业决策未签（decision.md OPEN-1..OPEN-6，含新增的 OPEN-2 必答依据）；签署前不得实施 I-06-A，I-06-B 亦不得开工",
-    "候选为 UNRATIFIED：不得被任何后续卡直接提升为产品实现"
+    "D-W06 OPEN-4 / OPEN-5 / OPEN-6 remain UNSIGNED and belong to OTHER parties (wiki source-review owner + security reviewer + RF consumer owner). The owner's 2026-09-20 blanket grant authorised contacting them and starting their reviews; it does NOT constitute their verdicts. Implementation of I-06-A must not begin, and I-06-B must not begin, until those parties rule.",
+    "D-W06 OPEN-1 / OPEN-2 / OPEN-2b / OPEN-3 ARE NOW RULED by the owner (see rulings_applied): the idempotency key MUST include the request identity (option A); OPEN-1 adopts the CW store.py + additive-migration path (option A); OPEN-3 keeps claim() as explicit single-shot authorisation.",
+    "The candidate implementation remains UNRATIFIED: it must not be promoted to a product implementation by any later card. Note in particular that the candidate's key does NOT satisfy the newly-ruled OPEN-2 option A, so the candidate is now known-insufficient on that point and must be revised before it can be promoted."
   ],
   "evidence_paths": [
     "execution_runs/I-06-A/a20260919-01/after/case_results_candidate.json",
@@ -187,5 +188,63 @@
     "iso/candidate/w06a_candidate_patch.py": "113e90b0855400f6563ace77ca2fb16729d1b6b06631deceeeddf1c8991fc87b",
     "iso/rf_fixed/scripts/source_preparation.py": "1a837fc0047f31a68d14d9ca1b4487d30b9dc33529cb332c905bd0affe75469e",
     "iso/rf/scripts/source_preparation.py": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46 (pristine, unchanged)"
+  },
+  "rulings_applied": {
+    "D-W06_OPEN-1": {
+      "ruled_on": "2026-09-20",
+      "ruled_by": "owner",
+      "owner_words": "给你所有批准",
+      "decision": "option A -- extend CW src/company_wiki/source_catalog/store.py (catalog.sqlite3, additional tables via the existing _apply_additive_migrations mechanism). Do NOT adopt the attempt's internal option-B shape (separate SQLite file). Rationale: reuses the existing migration discipline and matches the card's stated direction of a single CW-owned persistent demand store.",
+      "recorded_in": "OWNER_DECISIONS.md section 13 (T1-2)"
+    },
+    "D-W06_OPEN-2": {
+      "ruled_on": "2026-09-20",
+      "ruled_by": "owner",
+      "owner_words": "给你所有批准",
+      "decisive": true,
+      "decision": "option A -- the idempotency key MUST include the request identity (source_sha256 + review_policy + role_set + request identity, where request identity covers as_of_date / target / payload digest). The same request resubmitted reuses the same demand_id; a DIFFERENT request must NOT silently merge into an existing demand. Option B (keep the current key and merely fail-closed on same-key-different-payload) is REJECTED: it would still express 'different request' as 'same key, different payload', deferring a business-semantics error to runtime.",
+      "why_this_is_not_a_new_requirement": "card W06A-P1 already requires the demand to carry the 'original request binding'. A key without the request identity cannot satisfy that. The ruling therefore restores an existing card requirement rather than adding one.",
+      "evidence": "c8/c9/c10 real-CLI probes: the candidate returned the SAME demand_id for requests differing only in as_of_date, while the row's request_sha256 stayed the FIRST request's (d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62), the second request hashing to 4bddf9e6963e7d0474e754a89a1a184d8315b059410e98d34dd3e02375e10b84",
+      "recorded_in": "OWNER_DECISIONS.md section 13 (T1-1)"
+    },
+    "D-W06_OPEN-2b": {
+      "ruled_on": "2026-09-20",
+      "ruled_by": "owner",
+      "owner_words": "给你所有批准",
+      "decision": "role_set authority stays RF_W06_ROLE_SET; the normalised form is the sorted, de-duplicated comma-separated string (candidate default already unified to \"normalized,sections\"). The c7 error-text contract (security verdict + 'demand_store_error=' appended clause, per the r2 handling) is adopted as-is.",
+      "recorded_in": "OWNER_DECISIONS.md section 13 (T1-1)"
+    },
+    "D-W06_OPEN-3": {
+      "ruled_on": "2026-09-20",
+      "ruled_by": "owner",
+      "owner_words": "给你所有批准",
+      "decision": "claim(owner, lease_seconds) remains an EXPLICIT single authorisation via the CLI `claim` command. Workers are NOT auto-resumed, and lease-expiry reclamation is not automatic: it requires an explicit call. No background scheduler is started.",
+      "recorded_in": "OWNER_DECISIONS.md section 13 (T1-2)"
+    }
+  },
+  "still_awaiting_other_parties": {
+    "note": "The owner's blanket grant authorises CONTACTING these parties and starting their reviews. It does NOT constitute their verdicts. Discipline #7 (OWNER_DECISIONS section 13): a blanket approval must not be inflated into 'all conclusions'.",
+    "OPEN-4": {
+      "topic": "review method, reviewer identity binding, the source_sha256 x policy_hash double binding, and when an old receipt is invalidated by a policy change",
+      "awaiting": [
+        "wiki source-review owner",
+        "security reviewer"
+      ],
+      "blocks": "I-06-B cannot have a fail-able test written until this is ruled"
+    },
+    "OPEN-5": {
+      "topic": "consumer / recovery commands and the original-request recovery interface",
+      "awaiting": [
+        "RF consumer owner"
+      ],
+      "fact": "the interface DOES NOT EXIST today; it must not be pretended into existence"
+    },
+    "OPEN-6": {
+      "topic": "who owns the not_detected / detected_and_ignored determination",
+      "awaiting": [
+        "security reviewer"
+      ],
+      "note": "this attempt correctly recorded observed='not_reviewed' and produced zero review rows"
+    }
   }
 }

@@ -27,7 +27,7 @@
     "16. Pack evidence: all JSON files, diff, hashes"
   ],
   "next_step_number": 17,
-  "next_action": "Independent reviewer reads evidence, verifies RED→GREEN mutation, checks oracle match, writes review.md",
+  "next_action": "Implementer: apply the D-W05 producer-entry approval (approved 2026-09-20) by replacing the mock-only produce_for_demand with a real implementation wired to the existing CW producers via service.py (CatalogConfig/CatalogStore), keeping invocation events at the actual call boundary. GAP-2 stays blocked until the RF consumer_analysis owner supplies an entry -- do not fabricate a green sample. Then an independent reviewer reads evidence, verifies the RED->GREEN mutation, checks oracle match, and writes review.md.",
   "input_hashes": {
     "card_I-05-C.md": "read at runtime",
     "START_HERE.md": "read at runtime",
@@ -62,8 +62,16 @@
       "result": "11 passed in 0.85s"
     }
   ],
-  "raw_exit_codes": [0, 0, 0],
-  "expected_exit_codes": [0, 0, 0],
+  "raw_exit_codes": [
+    0,
+    0,
+    0
+  ],
+  "expected_exit_codes": [
+    0,
+    0,
+    0
+  ],
   "open_questions": [
     "service.py produce_for_demand: current implementation is test-only mock (InvocationTracker + ProduceForDemand). Production implementation needs CatalogConfig/CatalogStore integration — blocked by D-W05 producer entry approval.",
     "consumer_analysis producer: no real owner entry exists. W05C-N3 tests prove missing/unsupported handling, but real LLM capability is not verified.",
@@ -88,7 +96,8 @@
   ],
   "rulings_applied": {
     "W05-1": "选 A: historical sections only get source-window binding, no per-slice hash depth",
-    "D-W05_active_dag": "normalized→summary, normalized→sections, summary→consumer_analysis; historical markdown compatibility only"
+    "D-W05_active_dag": "normalized→summary, normalized→sections, summary→consumer_analysis; historical markdown compatibility only",
+    "D-W05_producer_entry": "APPROVED 2026-09-20 (owner): D-W05 producer entry approved. produce_for_demand may move from mock-only to a REAL implementation wired to the existing producers via CW service.py (CatalogConfig/CatalogStore); no new duplicate parser; invocation events recorded at the actual call boundary. SCOPE OF THIS APPROVAL: resolves GAP-1 only. GAP-2 (consumer_analysis producer absent / no verified real LLM capability) still requires the RF consumer_analysis owner to provide an entry and remains an explicit block for that role -- no green sample may be fabricated. GAP-3 (InvocationTracker event schema) still requires reviewer approval before production persistence. This approval does NOT set status to accepted: acceptance remains the independent reviewer's decision."
   },
   "mutation_proof": {
     "artifact_dag_summary_dependency": {
@@ -117,7 +126,7 @@
       "id": "GAP-1",
       "severity": "P2",
       "description": "produce_for_demand production implementation: mock-only in tests. Real implementation needs CW service.py integration with CatalogConfig/CatalogStore and actual producers.",
-      "status": "blocked on D-W05 producer entry approval"
+      "status": "UNBLOCKED 2026-09-20 by owner D-W05 approval -- may now be implemented (real produce_for_demand wired to existing CW producers). Not yet implemented; awaiting implementer work, then independent review."
     },
     {
       "id": "GAP-2",
