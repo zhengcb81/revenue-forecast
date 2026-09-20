@@ -110,7 +110,33 @@ Owner: root。所有代理加入同一计划，只写各自reviews子目录。�
 
 **为何未做任何编辑（三条独立理由）**：①**字段已存在且已验证为真** —— 重写同值只产生无信息量的 diff，无谓地使冻结件哈希失效；②`binding.json` 是 `handoff_status = review_pending` 的 attempt 的**冻结件**，写入它会**事后改变 reviewer 被要求审的东西**；③owner 在此的职权是**裁定处置**，不是**撰写一个冗余编辑** —— 执行 no-op 编辑会看起来像进展而实际什么都没改变。**原则：授权是许可，不是义务。** 义务**已解除**。
 
-**产物**：`decision.md`（8136 B / `9e9ff11c…`）、`handoff.json`、`t14_register_verification.json`（2148 B / `4653ca93…`）、`scripts/verify_t14.py`（7436 B / `245fd298…`）。**边界**：`binding.json` **写入 0 次**（记 `register_under_test` = `9d9c89a7…` / 6322 B，`written_by_this_attempt = false`）；未做任何 `status` 转移（T1-14 保持 `planned`）；未代签；未升级 Git；`git diff HEAD --name-only` **全部在 `.planning/` 内、0 条产品文件**；2 个 JSON 可解析且与 `handoff.json` 登记哈希**零失配**。
+**产物**：`decision.md`（8136 B / `9e9ff11c…`）、`handoff.json`、`t14_register_verification.json`（2148 B / `4653ca93…`）、`scripts/verify_t14.py`（7436 B / `245fd298…`）。**边界**：`binding.json` **写入 0 次**（记 `register_under_test` = `9d9c89a7…` / 6322 B，`written_by_this_attempt = false`）；未做任何 `status` 转移（T1-14 保持 `planned`）；未代签；未升级 Git；`git diff HEAD --name-only` **全部在 `.planning/` 内、0 条产品文件**；2 个 JSON 可解析且与 `handoff.json` 登记哈希**零失配**。**提交** `b9639b8c`。
+
+**Round 45（2026-09-20）新增：T1-27 卡内完成 —— 追加块存储脆弱性缓解审计，**结论为「已核查的长期纪律」**。落点 `execution_runs/T1-27/a20260920-01/`，**纯新增、未改任何既有载体**：
+
+**裁定**（`OWNER_DECISIONS.md` §13 **T1-27**，TIER-1）：**采纳缓解建议** —— **授权编排层更频繁地提交 `.planning`**（关键 attempt 的追加块尽早入库），并在**每次提交后强制核对** hook 的 `[INFO] Restored changes from <patch>` 行。**其所应对的风险**（同文件第 108 行，第九节第 18 项）：追加的 reviewer 裁决块**只存在于工作树** —— 一次 `git checkout -- .` 会把它退回已提交的纯基座并**丢掉追加块**；**若再次提交后 hook 失败，未提交的 attempt 追加成果同样处于风险中**。
+
+**⚠️ 该失效模式不是假设，已发生一次**：`execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md`（8505 B / `c326e38e…`）记载：pre-commit 门把未暂存改动导出为补丁（557,924 B），随后 `git checkout -- .` 因 3 个被并发占用的 scratch 文件 `unable to unlink … Invalid argument` **返回 255**，补丁**未被回放** ⇒ 生产工作树被重置到 HEAD（`scripts/model_registry.py` 由锚定 `9ec65295…`/26446 B 变为 HEAD 版 `1f2639e1…`/19703 B，四模型与 `driver_bounds` 机制整体消失）。⇒ **hook 的契约是 stash → `git checkout -- .` → replay；若 replay 失败，工作树停在重置态且补丁未被回放。**
+
+**三半缓解全查（owner 的句子只点了两件；incident 记录点了第三件、结构性的一件 —— 只查被点名的两件会把触发器留在原地）**：
+
+| # | 命题 | 结果 | 证据 |
+|---|---|---|---|
+| **H-1** | 关键 attempt 的追加块**尽早**入库 | **holds** | 触及本计划的提交 **41** 次；本轮 **2 张卡 → 2 次提交**（`3a7f9c2c` T1-6、`b9639b8c` T1-14），**不是攒到会话末批量提交** |
+| **H-2** | 每次提交后 hook 的 `[INFO] Restored changes from <patch>` 行**已被核对** | **holds** | 生产锚点 `9ec65295…` **完好**；本轮两个 stash 补丁在盘上；两次提交均打印 `Stashing …` **与** `Restored changes from …` |
+| **H-3** | 事故**根因**（内嵌 `.git` 扰乱父仓库）已被**结构性移除** | **holds** | 3 个内嵌仓库**全部被覆盖、0 个未覆盖**；`git status` **不报 `bad object`**；**内嵌仓库仍在盘上（一个文件都没删）** |
+
+**H-3 覆盖明细（每条规则精确映射到实际含 `.git` 的目录）**：`I-06-A/.../iso/ff/.git` ← `*/a*/iso/`；`I-14-C/.../r5/diff-apply-check/tree/.git` ← `*/a*/r5/diff-apply-check/`；`I-14-C/.../r5/diff-repo/.git` ← `*/a*/r5/diff-repo/`。**为何 H-3 最关键**：**H-1/H-2 是程序性的**（限制爆炸半径，触发器仍上膛）；**H-3 是结构性的**（移除触发器）—— **一个需要频繁触发的程序，严格劣于一个已被消除的病因**；owner 的两半缓解若单独施行，恰恰就是前者。
+
+**⚠️ H-2 的证据力限度如实登记（未隐去）**：**事后审计无法重新观察过去的 hook 行**。能诚实断言的是：锚点**现在**完好、本轮的 stash 补丁在盘上。逐次核对是一项**纪律**，由这两个补丁 + 完好锚点佐证，而非某段脚本可回放。限度写入 JSON。
+
+**红/绿判据**：`Stashing` **+** `Restored` = 正常；**只见 `Stashing` 不见 `Restored`**，或出现 **`Rolling back fixes`** = **红色告警**。红色告警处置：抽查生产锚点 → 用该次补丁的 `--exclude=.planning/*` 子集回放 → 复算 → **记录时点**（窗口重要，因为窗口内取的哈希是**误报、不是发现**）。
+
+**为何未做任何编辑**：T1-27 的两项指示动作**均已生效** —— 其一「授权更频繁提交」是**授权**、不是待排期任务（由按卡提交行使）；其二「每次提交后核对 hook 行」是**长期纪律**（本轮两次提交均已执行）；第三半（H-3）此前已作为 `.gitignore` 变更实现，本卡**验证**它而非重做它。**先验证；只有验证失败才编辑。**
+
+**产物**：`decision.md`（9547 B / `67a9e1e2…`）、`handoff.json`、`t27_hygiene_audit.json`（3669 B / `ce9c45ae…`）、`scripts/audit_t27.py`（8779 B / `d0a98d70…`）。**边界**：**0 外部写入**；`.gitignore` **未重编**（既有规则仅验证）；**内嵌仓库删除 0 个**；生产锚点完好；`git diff HEAD --name-only` **全部在 `.planning/` 内、0 条产品文件**；2 个 JSON 可解析且与 `handoff.json` 登记哈希**零失配**。
+
+**⚠️ 值得泛化的模式（本轮第三次命中同源教训）**：**本轮三张卡中有两张（T1-14、T1-27）以「已核查的 no-op」收口** —— 要求本就成立。**收到授权时「必须做点什么」的冲动，正是这两张卡存在所要抵制的失效模式**；执行 no-op 编辑会**看起来像进展而实际什么都没改变**，甚至无谓地使冻结件哈希失效。**授权是许可，不是义务。**
 
 **Worktree 状态（2026-09-20 round 36 已修复，读盘前必看）**：本工作树曾发生**分支误切事故** —— 一次后台 `git checkout` 实际执行了 `checkout main`（`git reflog`：`15:05:08 checkout: moving from fcap to main`），使 fcap 独有的 **1758 个 tracked 文件**在工作树中消失（`git status` 曾报 1699 条 `' D'`），另有 **62 个文件**残留 `main` 内容。已用 blob 直读法（`git ls-tree -r -z` + `git cat-file --batch`，绕过 index）三趟恢复完毕，终态 **`' D'` = 0、`git diff HEAD` 仅剩 5 条**（3 条本轮记账 + 2 条已登记的内嵌 `.git` scratch 目录）。**两条读取纪律**：①`git status --porcelain` 的 `' M'` **不是**内容差异的证据（本次 146 条 `' M'` 中 79 条即 54% 为 index 陈旧伪差异），判据必须用 `git diff HEAD --name-only`；②本仓库 `core.autocrlf = true`，**不得用「on-disk 字节 == blob」作恢复判据**，须用 `git diff <ref> -- <path>` 是否为空（本次裸字节比对曾误报 62 例假失败）。详见 findings.md Round 36 节。
 

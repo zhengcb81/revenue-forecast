@@ -1,0 +1,138 @@
+{
+  "card": "T1-27",
+  "attempt": "a20260920-01",
+  "kind": "verification + standing-discipline record (verified no-op)",
+  "title": "追加块存储脆弱性缓解审计 —— 三半缓解均已到位并验证，未做任何编辑",
+  "status": "planned",
+  "status_note": "本 attempt 交付的是**审计结论 + 长期纪律记录**：T1-27 的两项指示动作**均已生效**（其一为授权、其二为纪律），第三半（根因）此前已实现。故**未做任何编辑**、**未写入任何冻结件**、**未做任何状态转移**。",
+
+  "authority": {
+    "source": "OWNER_DECISIONS.md §13 T1-27（TIER-1 可裁）",
+    "ruling": "采纳缓解建议：授权编排层更频繁地提交 .planning（关键 attempt 的追加块尽早入库），并在每次提交后强制核对 hook 的 `[INFO] Restored changes from <patch>` 行。",
+    "underlying_risk": "OWNER_DECISIONS.md 第 108 行（第九节第 18 项）：追加的 reviewer 裁决块**只存在于工作树** —— 一次 `git checkout -- .` 会把它退回已提交的纯基座并**丢掉追加块**；同理，**若再次提交后 hook 失败，未提交的 attempt 追加成果同样处于风险中**。",
+    "not_hypothetical": "该失效模式**已发生一次**，记录于 execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md"
+  },
+
+  "hook_contract": {
+    "sequence": "stash → git checkout -- . → replay patch",
+    "failure_mode": "若 replay 失败（事故中为 `unable to unlink … Invalid argument`，exit 255），工作树停在 HEAD 重置态，补丁**未被回放** —— 仅可从 ~/.cache/pre-commit/ 的补丁文件恢复。",
+    "why_this_card_exists": "因此「更频繁提交」与「每次提交后核对 hook 行」不是形式主义，而是把暴露窗口缩到最小 + 在回放失败时立即发现。"
+  },
+
+  "audit": {
+    "script": "scripts/audit_t27.py",
+    "script_bytes": 8779,
+    "script_sha256": "d0a98d7093b91a75ca4e9d49708617480c1f8e57354243a37a088a65185b1999",
+    "result_file": "t27_hygiene_audit.json",
+    "result_bytes": 3669,
+    "result_sha256": "ce9c45aebba1ea2cebeb5b2ee8bc1a8f977a198a6bad2ec7152d210d3bd3c889",
+    "three_halves_checked": "owner 的句子只点了两件事（更频繁提交；每次提交后核对 hook 行）。incident 记录点了**第三件、结构性的一件**（根因）。只查被点名的两件会把触发器留在原地 —— 故三件全查。",
+    "verdicts": [
+      {
+        "id": "H-1",
+        "claim": "关键 attempt 的追加块**尽早**入库（暴露窗口小）",
+        "holds": true,
+        "evidence": {
+          "commits_touching_plan": 41,
+          "most_recent_commit": "b9639b8c",
+          "this_session_commits": ["3a7f9c2c (T1-6)", "b9639b8c (T1-14)"],
+          "tracked_uncommitted_files_in_plan": 11,
+          "untracked_files_in_plan": 35
+        },
+        "reading": "**两张卡 → 两次提交**，不是攒到会话末再批量提交。这正是缓解**在运行中**（而非仅仅被记录）：每张卡的追加块在卡完成时即入库，缩短了 hook 回放失败时可能丢失它的窗口。剩余 11 个未提交文件早于本轮，与 T1-6/T1-14 无关（execution_v2/* 与 OWNER_DECISIONS.md 集合在本轮之前即已在盘上可见）。"
+      },
+      {
+        "id": "H-2",
+        "claim": "每次提交后 hook 的 `[INFO] Restored changes from <patch>` 行**已被核对**",
+        "holds": true,
+        "evidence": {
+          "production_anchor": "scripts/model_registry.py",
+          "production_anchor_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+          "production_anchor_expected": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+          "production_anchor_intact": true,
+          "this_session_patches": ["patch1789930457-49332", "patch1789930650-30396"],
+          "hook_line_observed_on_both_commits": "[INFO] Restored changes from C:\\Users\\郑曾波\\.cache\\pre-commit\\patch……"
+        },
+        "reading": "两次提交均打印 `Stashing …` **与** `Restored changes from …` ⇒ 回放成功、无丢失。红色告警的判据是：只见 `Stashing` 不见 `Restored`，或出现 `Rolling back fixes`。",
+        "honest_limit": "**证据，非证明** —— 事后审计无法重新观察过去的 hook 行。能诚实断言的是：锚点**现在**完好、本轮的 stash 补丁在盘上。逐次核对是一项**纪律**，由这两个补丁 + 完好锚点佐证，而非某段脚本可回放。限度写入 JSON 而未隐去。"
+      },
+      {
+        "id": "H-3",
+        "claim": "事故**根因**（内嵌 .git 目录扰乱父仓库、使 stash/checkout 序列失稳）已被结构性移除",
+        "holds": true,
+        "evidence": {
+          "embedded_git_count": 3,
+          "covering_rules": [
+            {"embedded": "I-06-A/a20260919-01/iso/ff/.git", "rule": "*/a*/iso/"},
+            {"embedded": "I-14-C/a20260919-01/r5/diff-apply-check/tree/.git", "rule": "*/a*/r5/diff-apply-check/"},
+            {"embedded": "I-14-C/a20260919-01/r5/diff-repo/.git", "rule": "*/a*/r5/diff-repo/"}
+          ],
+          "uncovered": [],
+          "parent_repo_reports_bad_object": false,
+          "repos_deleted": 0
+        },
+        "reading": "3 个内嵌仓库**全部被覆盖、0 个未覆盖**，`git status` **不报 `bad object`**。**内嵌仓库仍在盘上 —— 一个文件都没删**：删掉 attempt 的工作状态会销毁证据；改变的是父仓库**不再遍历**它们。",
+        "why_this_matters_most": "**H-1/H-2 是程序性的**（限制爆炸半径，但触发器仍然上膛）；**H-3 是结构性的**（移除触发器）。**一个需要频繁触发的程序，严格劣于一个已被消除的病因。** owner 的两半缓解若单独施行，恰恰就是前者：为「本可删除的问题」永久保持每次提交后复查的纪律。该问题（作为遍历危害）**已被删除**。"
+      }
+    ],
+    "overall": "PASS",
+    "all_hold": true
+  },
+
+  "incident_record": {
+    "path": "execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md",
+    "bytes": 8505,
+    "sha256": "c326e38e489ff12d19d1481b7f2ef51cb26226094ebc6ad0d79dbcd34f36eb14",
+    "exists": true
+  },
+
+  "standing_discipline": [
+    "① **按卡提交**，不按会话提交。（本轮实践：2 张卡 → 2 次提交。）",
+    "② **每次提交后检查是否出现 `[INFO] Restored changes from <patch>`。** `Stashing` + `Restored` = 正常；只见 `Stashing` 不见 `Restored` = **红色告警**；出现 `Rolling back fixes` = **红色告警**。红色告警处置：抽查生产锚点 → 用该次补丁的 `--exclude=.planning/*` 子集回放 → 复算 → **记录时点**（窗口重要，因为窗口内取的哈希是误报、不是发现）。",
+    "③ **已完成卡的暴露窗口不得偏大** —— 卡的块应在下一张卡开始**之前**入库。",
+    "④ **不删除内嵌 scratch 仓库，按路径形状忽略。** 上述三条规则即范本 —— 每条精确映射到实际含 `.git` 的目录。"
+  ],
+
+  "why_no_edit": {
+    "reason": "T1-27 的两项指示动作**均已生效**：其一「授权更频繁提交」是**授权**、不是待排期任务（由按卡提交行使）；其二「每次提交后核对 hook 行」是**长期纪律**（本轮两次提交均已执行）。第三半（H-3）此前已作为 .gitignore 变更实现，本卡**验证**它而非重做它。现在写任何东西都是复写已生效的状态 —— 与 T1-14 同理。",
+    "principle": "**先验证；只有验证失败才编辑。** 本轮三张卡中有两张（T1-14、T1-27）以「已核查的 no-op」收口 —— 要求本就成立。收到授权时「必须做点什么」的冲动，正是这两张卡存在所要抵制的失效模式。"
+  },
+
+  "boundaries": {
+    "external_artifacts_written": 0,
+    "gitignore_reedited": false,
+    "embedded_repos_deleted": 0,
+    "frozen_artifacts_written": 0,
+    "product_files_written": 0,
+    "status_transitions_made": 0,
+    "signatures_made_on_behalf_of_others": 0,
+    "production_anchor_intact": true,
+    "own_attempt_writes_only": true,
+    "emitted_json_parses": true,
+    "git_diff": "全部位于 .planning/ 内；产品文件 0 条"
+  },
+
+  "artifacts": {
+    "scripts/audit_t27.py": {"bytes": 8779, "sha256": "d0a98d7093b91a75ca4e9d49708617480c1f8e57354243a37a088a65185b1999"},
+    "decision.md": {"bytes": 9547, "sha256": "67a9e1e2968144e079588e3383346c507c24c6d22882dea234f70e2f1e912110"},
+    "t27_hygiene_audit.json": {"bytes": 3669, "sha256": "ce9c45aebba1ea2cebeb5b2ee8bc1a8f977a198a6bad2ec7152d210d3bd3c889"}
+  },
+
+  "qualifications": {
+    "card_status": "planned",
+    "acceptance": "NOT granted — acceptance is TIER-2, not the owner's to grant",
+    "milestone_conditions_hold": true,
+    "edit_required": false,
+    "verified_no_op": true,
+    "self_upgrade": false
+  },
+
+  "next_action": {
+    "owner": "独立 reviewer",
+    "steps": [
+      "① 独立 reviewer 确认 H-1/H-2/H-3 的读数。",
+      "② 确认后 T1-27 关闭为**已核查的长期纪律** —— 无载体变更，纪律已记入 §standing_discipline 供后续轮次沿用。",
+      "③ **值得泛化的模式**：本轮三张卡中两张（T1-14、T1-27）以 verified no-op 收口。**先验证；只有验证失败才编辑。**"
+    ]
+  }
+}
