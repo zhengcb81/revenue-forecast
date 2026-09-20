@@ -3,7 +3,7 @@
  "model_id": "project_backlog",
  "implementer_is_not_the_reviewer": true,
  "formula": {
-  "state": "blocked",
+  "state": "accepted_scoped",
   "a_to_c_conditions": {
    "positive_within_frozen_tolerance": true,
    "continuity_positive_ok": true,
@@ -11,9 +11,27 @@
    "negatives_rejected": "11/11"
   },
   "implementer_measurement": "all A-C conditions met",
-  "granted_by": "a separate independent reviewer only; the implementer never writes 'accepted'",
+  "granted_by": "independent reviewer of attempt a20260919-01, step 3 of the owner-approved remediation (2026-09-20); transcribed into this carrier by the implementer, who never signs acceptance",
   "historical_97_tests_216_subtests": "not used as a substitute for this card's new results",
-  "blocked_reason": "card_M08.md line 42 states 'revenue = opening + bookings - cancellations - contract_changes + backlog_remeasurements - closing', while docs/buy_side_model_audit_2026-09-18.md:42 and scripts/model_registry.py:228 both use '+ contract_changes' over signed amounts. The two sign probes (contract_changes=+10 -> 85.0, contract_changes=-20 -> 55.0) identify the implementation as the '+ contract_changes' reading. Per execution_v2/README.md:20 a card/plan conflict must stop the affected card and correct the index, so no formula qualification is granted until the owner adjudicates DEC-M08-1."
+  "state_before_bookkeeping_fix": "blocked",
+  "scope": "formula qualification ONLY for card M08 on code_root 9ec65295...; it does not extend to disclosure adaptation, accuracy, other cards, or the product as a whole",
+  "reviewer_evidence": {
+   "rerun_archive": "recovery/rerun_after_owner_correction_20260920/",
+   "raw_exit_code": 0,
+   "positive_actual": [
+    50.0
+   ],
+   "positive_expected": [
+    50.0
+   ],
+   "continuity_ok": true,
+   "defaults_ok": true,
+   "negatives": "11/11 PASS_rejected",
+   "code_root_model_registry_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "owner_ruling": "OWNER_DECISIONS.md §十 'M08 三步照办' (commit b07d9b95)"
+  },
+  "blocked_reason_superseded": "card_M08.md line 42 states 'revenue = opening + bookings - cancellations - contract_changes + backlog_remeasurements - closing', while docs/buy_side_model_audit_2026-09-18.md:42 and scripts/model_registry.py:228 both use '+ contract_changes' over signed amounts. The two sign probes (contract_changes=+10 -> 85.0, contract_changes=-20 -> 55.0) identify the implementation as the '+ contract_changes' reading. Per execution_v2/README.md:20 a card/plan conflict must stop the affected card and correct the index, so no formula qualification is granted until the owner adjudicates DEC-M08-1.",
+  "verdict_block_in_review_md": "pending_transcription (see handoff.verdict_block_status)"
  },
  "disclosure_adaptation": {
   "state": "unmapped",
@@ -30,5 +48,8 @@
    "that design does not exist; no rolling out-of-sample evaluation was run",
    "a formula pass for one model, or one company's mapping, must never be promoted to industry-wide accuracy"
   ]
- }
+ },
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "acceptance_authority": "acceptance was written by an independent reviewer, not by the implementer"
 }

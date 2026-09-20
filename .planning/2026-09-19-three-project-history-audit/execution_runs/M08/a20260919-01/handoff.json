@@ -1,7 +1,7 @@
 {
  "card_id": "M08",
  "attempt_id": "a20260919-01",
- "status": "blocked",
+ "status": "accepted_scoped",
  "implementer_is_not_the_reviewer": true,
  "completed_steps": {
   "A_binding": "done (binding.json: read-only production hashes + attempt-local isolated snapshot)",
@@ -138,9 +138,11 @@
  "open_questions": [
   "OQ-01 (steering): the cards say the run cwd must come from I-00-B, but I-00-B binds only the isolation plan and the two-step command rule, not a materialised checkout tree. This batch materialised its own read-only snapshot (iso/checkout_scripts, hashes equal to production). Needs a binding ruling; if the intended binding is an I-00-B-materialised checkout, record it as a scope deviation (the code under test is byte-identical either way).",
   "OQ-02 (M06) - RESOLVED BY INDEPENDENT REVIEW (counts corrected in r3 per F-M08-07): monetization_rate having no [0,1] bound is NOT a contract gap, only a naming ambiguity. Enumeration (by the implementer, checked by the reviewer): all 23 revenue_per_activity / revenue_per_unit drivers carry the default (0, inf); only the ratio dimension defaults to [0,1] (41 ratio drivers, of which 4 do not take it: bank_revenue.asset_yield, bank_revenue.funding_cost, store_cohorts.new_store_productivity and direct_growth.growth_rate, whose domain is (-1, inf)), plus 2 priced-volume exceptions in the per-activity family; usage_platform.monetization_rate = (0.0, inf) is correct contract. If anything changes it should be the attribute NAME, not the bound. The r2 wording of this entry said '40 drivers, 3 explicit documented exceptions plus 2 priced-volume exceptions' and is preserved in docfix_r3_hash_ledger.corrections. See evidence/M08/oq_rulings.json and evidence/M08/oq_rulings_enumeration.json.",
-  "OQ-03 (M08) - REFERRED TO THE OWNER, and the reviewer confirmed blocked is the correct outcome (do NOT convert to reading C and re-run to a pass). The three-step remediation (owner rules reading C authoritative; index owner corrects card_M08.md L42 and the model_cards.md/dispatch.md index; independent reviewer re-runs on the same code_root 9ec65295...) is written verbatim in handoff.owner_action_required. Neither the implementer nor the reviewer may edit the card.",
   "OQ-04 (all four) - UPHELD BY INDEPENDENT REVIEW: scripts/model_registry.py:335 silently zero-fills an omitted optional driver absent from spec.defaults. Named instances: subscription.usage_revenue, usage_platform.fixed_revenue, services.other_revenue, and the dangerous one project_backlog.backlog_remeasurements, where there was no remeasurement and we did not find the remeasurement become indistinguishable and the bridge silently converts the unknown into recognised revenue. Registered, NOT fixed.",
-  "OQ-05 (disclosure strength): the company-wiki sidecars for all four source PDFs carry no publisher content hash, so local_hash_matches_publisher_receipt is NOT_VERIFIABLE - weaker than the cninfo receipts M01 used."
+  "OQ-05 (disclosure strength): the company-wiki sidecars for all four source PDFs carry no publisher content hash, so local_hash_matches_publisher_receipt is NOT_VERIFIABLE - weaker than the cninfo receipts M01 used.",
+  "OQ-03 (M08) - CLOSED: the owner ruled reading C authoritative and corrected the four index files (OWNER_DECISIONS.md §十, commit b07d9b95); the reviewer re-ran on the same code_root with raw rc=0 and returned accepted_scoped (formula qualification only). See handoff.reviewer_report.",
+  "OQ-06 (M08 index materialisation, owner/index owner): execution_v2/dispatch.json still records M08.source_section_sha256 = bcef9d845f7446832e128a58a69474891187d05cbbe5b98f34bfbabf2b720949, while the materialised section of the corrected model_cards.md now hashes to adfd9589e90c20db2fee167d2bb161f2453e6cfa51f8e893021f818e5b76a096; validate_execution_pack.py therefore reports 'stale extracted card source M08'. The card TEXT is unchanged (the single-card body still equals the source section); only the derived section hash is stale. One-line fix available but NOT applied by the implementer (index owner's act).",
+  "OQ-07 (I-02-B owner): validate_execution_pack.py also reports 'source binding changed or missing: company-wiki/src/company_wiki/source_catalog/cli.py' - PRE-EXISTING and unrelated to this batch (working-tree sha256 fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b vs the recorded planning-time 2f5c5740...; git status clean; last commit bdffc546 on 2026-08-18). Not re-anchored here: another card's source binding is out of this card's scope."
  ],
  "blocked_by": [
   "DEC-M08-1: card_M08.md L42 says '- contract_changes' while docs/buy_side_model_audit_2026-09-18.md:42 and scripts/model_registry.py:228 say '+ contract_changes'; execution_v2/README.md:20 requires stopping the affected card and correcting the index rather than choosing the easier document"
@@ -190,7 +192,7 @@
   "evidence/M08/stderr.txt",
   "evidence/M08/stdout.txt"
  ],
- "reviewer_status": "r1 reviewed: M05/M06/M07 accepted_scoped (formula only), M08 blocked;  nine r1 findings addressed in revision r2 and returned for point review",
+ "reviewer_status": "step-3 re-review returned accepted_scoped (formula qualification only) on 2026-09-20; verdict block transcription pending the reviewer's verbatim text",
  "revision": "r3",
  "owner_action_required": {
   "id": "F-M08-02-remediation",
@@ -606,5 +608,73 @@
    "sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a"
   }
  },
- "revision_note": "r3 = document/evidence consistency pass (F-M08-06 dedup, F-M08-07 counts and attribution, F-M08-08 qualified repack ledger, F-M08-09 DEC-M08-1 correction). No expectation, tolerance, negative case, disclosure figure or product file changed."
+ "revision_note": "r3 = document/evidence consistency pass (F-M08-06 dedup, F-M08-07 counts and attribution, F-M08-08 qualified repack ledger, F-M08-09 DEC-M08-1 correction). No expectation, tolerance, negative case, disclosure figure or product file changed.",
+ "status_before_bookkeeping_fix": "blocked",
+ "status_change_note": "blocked was lifted: the owner ruled reading C authoritative and corrected the four index files (OWNER_DECISIONS.md §十 'M08 三步照办', commit b07d9b95), and the independent reviewer re-ran the frozen card on the same code_root 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f with raw rc=0 and archived the run at recovery/rerun_after_owner_correction_20260920/. The grant is the reviewer's, transcribed here; the implementer never signs acceptance.",
+ "implementer_signed": false,
+ "implementer_never_signs_acceptance": true,
+ "acceptance_authority": "acceptance was written by an independent reviewer, not by the implementer",
+ "frozen_evidence_hashes_unmoved": {
+  "input.json": "5f1ab9430ed58d73a509d23ea3a846e87c71822e6294844dcd5e8da36a9e23e0",
+  "oracle.json": "2264f673867f60df5a5ce6fe1c173669372d4c8c8456d33afd00f4a482389e69",
+  "cases.json": "57459a8f5ea298e1bf56371175f62b298171ca07439d6d3b67ad911b829add5e",
+  "run_result.json": "83015b9d96310f49b639f472c048f7525eaa5d7746d3bb94805645fb11ab9e97",
+  "negative_results.json": "9bebe7337395748def29ef98295a84ffc2b9a9d14db189ca3a6f2c42a2f685ec",
+  "qualification.json_before_this_bookkeeping": "42abe40d361928db15812ac0bbc6d2406b2a728d230b5c006b6cc50046226d59",
+  "decision.md": "42124934c747b61bb2979d829391a830b3380cf7fd00634c1592605b3f272840",
+  "binding.json": "f376b719b1f5a95396bb7dabe45e70ed30078542be45c65d255bb92b3c1f9ab3",
+  "commands.json": "92875088938cf0b4621e14914ac0c567a60477a9171e0f0a46cf35917c1be762"
+ },
+ "reviewer_report": {
+  "verdict": "accepted_scoped (formula qualification only)",
+  "step": "step 3 of the owner-approved three-step remediation (2026-09-20)",
+  "rerun_archive": "recovery/rerun_after_owner_correction_20260920/",
+  "rerun_summary_sha256": "675d13d773f9be56e0245bed757315080f56d7ac3979e994fc733ebb94f77a56",
+  "rerun_raw_exit_code": 0,
+  "rerun_positive_actual": [
+   50.0
+  ],
+  "rerun_negatives": {
+   "total": 11,
+   "passed": 11,
+   "failed": []
+  },
+  "verdict_block_in_review_md": "PENDING - see handoff.verdict_block_status"
+ },
+ "verdict_block_status": {
+  "state": "pending_transcription",
+  "reason": "the implementer does not hold the reviewer's message; the verbatim text of the block '## M08 · project_backlog — 独立 reviewer 裁决（owner 三步第③步，2026-09-20）' never reached this session or this workspace (searched: M08 attempt tree, PLAN, and %TEMP% reviewer workspace m05m08-review-20260920-025942, which contains only the reviewer's scripts). Fabricating or paraphrasing it would violate the verbatim-only rule for a reviewer verdict.",
+  "required_input": "the reviewer's verbatim block text, pasted into the parent conversation",
+  "append_slot": "review.md end-of-file",
+  "append_pre_image_sha256": "d00331cbe001caebb6ffbb6b485357a8d79b13c2371b555f6ae10d52d09b164c",
+  "append_pre_image_bytes": 10051,
+  "staged_instructions": "recovery/verdict_transcription_staging.json",
+  "effect_on_qualification": "none - the acceptance is carried by handoff.status and qualification.formula on the strength of the archived reviewer re-run; the review.md block is the verbatim record and remains outstanding"
+ },
+ "stale_index_hash_carriers": [
+  {
+   "path": "execution_v2/../independent_dry_read.md",
+   "note": "historical dry-read record; may quote the pre-correction value 2ed06720..."
+  },
+  {
+   "path": "execution_runs/M08/a20260919-01/recovery/docfix-r3/f04_fix_quote.json",
+   "note": "records the r3 quote-fix pre/post states before the owner correction"
+  },
+  {
+   "path": "execution_runs/M08/a20260919-01/evidence/M08/card_conflict.json",
+   "note": "records the pre-correction hash 2ed06720... as the hash in force when the conflict was raised; authoritative value is now 352585e9..."
+  },
+  {
+   "path": "execution_runs/M08/a20260919-01/recovery/owner_ruling_20260920_index_correction/provenance.json",
+   "note": "its sha256_before fields are pre-images by design (that is their purpose)"
+  },
+  {
+   "path": "execution_v2/validation.json.pre_r1_backup",
+   "note": "the superseded delivery-gate snapshot, kept as provenance"
+  },
+  {
+   "path": "execution_runs/M08/a20260919-01/recovery/validation_json_pre_m08_index_correction.json",
+   "note": "the preserved copy of the same superseded snapshot"
+  }
+ ]
 }

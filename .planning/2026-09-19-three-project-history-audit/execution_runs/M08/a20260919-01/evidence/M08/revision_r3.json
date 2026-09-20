@@ -1,0 +1,104 @@
+{
+ "card_id": "M08",
+ "revision": "r3",
+ "trigger": "owner three-step remediation (OWNER_DECISIONS.md §十, commit b07d9b95) + independent reviewer step-3 re-review returning accepted_scoped (formula qualification only)",
+ "reviewer_verdict_received": "accepted_scoped (formula qualification only); the reviewer explicitly confirmed that blocked had been the correct r1/r2 outcome and that the pass follows the owner's index correction plus the same-code_root re-run",
+ "frozen_expectations_unchanged": true,
+ "product_files_changed": [],
+ "carrier_changes": {
+  "handoff.json": {
+   "status": {
+    "before": "blocked",
+    "after": "accepted_scoped"
+   },
+   "fields_added": [
+    "status_before_bookkeeping_fix",
+    "status_change_note",
+    "implementer_signed",
+    "implementer_never_signs_acceptance",
+    "acceptance_authority",
+    "frozen_evidence_hashes_unmoved",
+    "reviewer_report",
+    "verdict_block_status",
+    "stale_index_hash_carriers",
+    "docfix_r3_hash_ledger (pre-existing)"
+   ],
+   "sha256_now": "2db90b674a3e4cd572d583084cc8758602a4a3c11d2c4ca843d8a3bd1218b36b"
+  },
+  "evidence/M08/qualification.json": {
+   "formula.state": {
+    "before": "blocked",
+    "after": "accepted_scoped"
+   },
+   "disclosure_adaptation": "unmapped",
+   "accuracy": "unproven",
+   "blocked_reason_moved_to": "formula.blocked_reason_superseded",
+   "sha256_now": "ff2c964689d5f64b481f4434973c83d5cd9da4f83d1b2543275bd369e71639f9"
+  }
+ },
+ "fixed_declarations_written_verbatim": [
+  "implementer_signed: false",
+  "implementer_never_signs_acceptance: true",
+  "acceptance_authority: acceptance was written by an independent reviewer, not by the implementer"
+ ],
+ "review_md_verdict_block": {
+  "state": "pending_transcription",
+  "pre_image_sha256": "d00331cbe001caebb6ffbb6b485357a8d79b13c2371b555f6ae10d52d09b164c",
+  "pre_image_bytes": 10051,
+  "block_heading_expected": "## M08 · project_backlog — 独立 reviewer 裁决（owner 三步第③步，2026-09-20）",
+  "blocked_reason": "the implementer does not hold the reviewer's message; the verbatim text of the block '## M08 · project_backlog — 独立 reviewer 裁决（owner 三步第③步，2026-09-20）' never reached this session or this workspace (searched: M08 attempt tree, PLAN, and %TEMP% reviewer workspace m05m08-review-20260920-025942, which contains only the reviewer's scripts). Fabricating or paraphrasing it would violate the verbatim-only rule for a reviewer verdict.",
+  "staging": "recovery/verdict_transcription_staging.json"
+ },
+ "r1_validation_refresh": {
+  "old_sha256": "a0a7a55b2e3264986a6ec5391f1e7b8a9a36399fe580e15d8e23a9d38edf0fbf",
+  "new_sha256": "a2e739a5111a52836959fdb7e20e60c3c1e1b1a07a73651991e0b5abcae8e36e",
+  "preserved_copy": "recovery/validation_json_pre_m08_index_correction.json",
+  "error_count_before": 0,
+  "error_count_after": 2,
+  "errors_after": [
+   "stale extracted card source M08",
+   "source binding changed or missing: C:\\Users\\郑曾波\\Projects\\company-wiki\\src\\company_wiki\\source_catalog\\cli.py"
+  ],
+  "new_finding": {
+   "id": "OQ-06",
+   "summary": "the M08 index correction refreshed the four printed fragments and the four file hashes but left dispatch.json M08.source_section_sha256 stale",
+   "evidence": {
+    "pre_image_section_sha256": "bcef9d845f7446832e128a58a69474891187d05cbbe5b98f34bfbabf2b720949",
+    "stored_dispatch_value": "bcef9d845f7446832e128a58a69474891187d05cbbe5b98f34bfbabf2b720949",
+    "pre_image_match": true,
+    "corrected_section_sha256": "adfd9589e90c20db2fee167d2bb161f2453e6cfa51f8e893021f818e5b76a096",
+    "section_bytes": {
+     "pre_image": 5848,
+     "now": 5850
+    },
+    "card_body_still_equals_section": {
+     "pre_image": true,
+     "now": true
+    }
+   },
+   "diagnosis": "PROVEN MATERIALISATION GAP, NOT A CONTENT DIFFERENCE: the M08 block's text is unchanged (the single-card body still equals the materialised section in both trees) and it is the same cards.json entry; the +2 bytes of the '+−' correction change the section's trailing whitespace, and because the validator hashes 'section.strip() + newline', the derived hash moves even though the content does not",
+   "suggested_fix": "set dispatch.json M08.source_section_sha256 to adfd9589e90c20db2fee167d2bb161f2453e6cfa51f8e893021f818e5b76a096",
+   "not_applied_by": "the implementer (index owner's scope)"
+  }
+ },
+ "new_finding_2": {
+  "id": "OQ-07",
+  "summary": "validate_execution_pack.py also reports a pre-existing source-binding drift on company-wiki/src/company_wiki/source_catalog/cli.py (wiki_cards.json anchor, card I-02-B)",
+  "evidence": {
+   "working_tree_sha256": "fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b",
+   "records_planning_time_sha256": "2f5c5740343697078d1e69b3a6a9ef9b0809277799c2d9c28a2d3e4048c4d512",
+   "git_status_clean": true,
+   "last_commit": "bdffc5467bd6c706ed7cdbcc83bea8b39540980f 2026-08-18"
+  },
+  "caused_by_this_batch": false,
+  "not_applied_by": "the implementer (I-02-B's source binding)"
+ },
+ "r2_registration": {
+  "artifact": "evidence/M08/stale_index_hash_carriers.json",
+  "action": "registered only; no historical artefact modified"
+ },
+ "r3_registration": {
+  "artifact": "evidence/M08/r3_rerender_hash_registration.json",
+  "action": "registered the r3 re-render hashes as CURRENT; no restore attempted"
+ }
+}
