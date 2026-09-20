@@ -78,10 +78,11 @@
    "path": "recovery/production_drift_note.json",
    "sha256_before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "bytes_before": 0,
-   "sha256_after": "c9987b75076d4364f688afa07089162f5c064fdba17060c70b472f08bd9e9027",
-   "bytes_after": 9280,
+   "sha256_after": "3d853c7e61bd29a3d93cd3befd166ccd09cfde68f1598f2c4220a04790cbcfb1",
+   "bytes_after": 9464,
    "changed": true,
-   "note": "F-r3-02: time-scoped production-drift declaration"
+   "note": "F-r3-02: time-scoped production-drift declaration",
+   "corrected_after_the_first_write": "F-r3-02 timezone field corrected: Asia/Shanghai -> GMT Standard Time with the local -> UTC mapping (see drift_note_timezone_correction)"
   },
   {
    "path": "evidence/M15/oq_rulings.json",
@@ -179,5 +180,17 @@
   "historical_values_preserved": true,
   "note": "a final regeneration pass runs after this summary is updated, so the ledger also covers these final bytes"
  },
- "changes_backfill_note": "recovery/bookkeeping_r3/finalize_summary_r3.py added the review.md row: the first run of transcribe_r3_verdict.py proved the append in evidence/M15/verdict_transcription_r3.json but omitted review.md from this table. The values come from that proof file (before) and from disk (after); no other row was touched."
+ "changes_backfill_note": "recovery/bookkeeping_r3/finalize_summary_r3.py added the review.md row: the first run of transcribe_r3_verdict.py proved the append in evidence/M15/verdict_transcription_r3.json but omitted review.md from this table. The values come from that proof file (before) and from disk (after); no other row was touched.",
+ "drift_note_timezone_correction": {
+  "what": "recovery/production_drift_note.json described the drift window's timezone as \"Asia/Shanghai\"; the machine's local zone is GMT Standard Time (UTC+1 on 2026-09-20), so the declared window 2026-09-20 04:35:31-04:40:53 local is 2026-09-20 03:35:31-03:40:53 UTC",
+  "how_established": "Get-Date local 2026-09-20 04:58:19 vs UTC 03:58:19, [System.TimeZoneInfo]::Local.Id = GMT Standard Time, offset +01:00",
+  "also_corrected": [
+   "recovery/bookkeeping_r3/ledger_regeneration_r3.json",
+   "recovery/bookkeeping_r3/transcribe_r3_verdict.py (template)",
+   "recovery/bookkeeping_r3/regenerate_ledger_r3.py (template)"
+  ],
+  "script": "recovery/bookkeeping_r3/fix_drift_note_timezone_r3.py",
+  "effect_on_the_drift_claim": "none: the ordering claim holds either way, and is now stated in UTC as well (ledger fields written 03:28-03:30 UTC = 04:28-04:30 local, about five minutes before the rollback)",
+  "expectations_tolerances_frozen_artifacts_touched": false
+ }
 }

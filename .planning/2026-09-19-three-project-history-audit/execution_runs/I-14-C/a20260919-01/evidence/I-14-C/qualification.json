@@ -1,0 +1,92 @@
+{
+  "card_id": "I-14-C",
+  "attempt_id": "a20260919-01",
+  "objective": "Freeze the requirement that the REAL worker exception exit must not leak synthetic credential markers, and produce isolated counterexamples on that real exit (not on the helper in isolation).",
+  "implementer_is_not_the_reviewer": true,
+  "formula": {
+    "state": "accepted_scoped",
+    "state_before_bookkeeping_fix": "review_pending",
+    "a_to_c_conditions": {
+      "F_I14C_08_closure_verified_again_with_character_exact_criteria": true,
+      "r4_six_remediation_items_all_closed": "6/6",
+      "all_r5_numbers_mechanically_derived_and_independently_recomputed": "44/30/28/82 + 32/9/3 + 11/12/4/3 + strict 12 + unique 28, all equal",
+      "fidelity_criterion_is_per_entry_not_a_coarse_gate": "1-character mutant -> rc=3 with 32/15 failures; ';'-terminator removal -> exactly 2 entries fail",
+      "deliverable_diff_consumable_by_standard_git_apply": "rc=0 with and without local config overrides; three files byte-identical to iso/product_fixed",
+      "full_suite_independently_runnable": "82 passed x3 (22.1 / 21.4 / 22.0 s), one run with NO I14C_RUN_ROOT",
+      "flake_conclusions_backed_by_per_run_captures": "deep 12/12 and short 12/12 captured; 48 interleaved rows recomputed (T0 6/24, T4 6/24, worse tree flips)",
+      "guard_matrix": "8/8 as expected; product paths refused with 97 even with a declared scratch root",
+      "production_repos_untouched_in_the_review_window": "true"
+    },
+    "scope": "the EVIDENCE and the CRITERIA hold as of r5 - i.e. this attempt's audit result and its criteria, not the product change",
+    "scope_en": "scope = the evidence and the criteria as of r5 (F-I14C-08 closure basis, the six r4 remediations, the mechanically derived numbers, and independent re-runnability). This is NOT an authorisation to promote: not_an_authorisation_to_promote = true, because C12 is a hard precondition and the acceptance test was never promoted (C9).",
+    "scope_zh": "I-14-C 的证据与判据在这一轮成立：F-I14C-08 的关闭依据经独立复现并以逐字符精确判据再次验证；r4 的 6 项整改全部逐条对号关闭；r5 新增的全部数字来自机械推导且独立重算逐项相符；验收测试仍未产品化（C12 硬前置）。",
+    "not_an_authorisation_to_promote": true,
+    "promotion_blockers": [
+      "C12 is a hard precondition: the F-07 deadline case HANGS (>90 s, observed in two rounds) instead of failing when the redactor blocks; the promoted test needs pytest-timeout or a subprocess hard timeout plus a measured 'blocks => FAILS' result",
+      "the acceptance test was not promoted into CW/tests/contract/ (C9); no product file was written by this attempt in any round"
+    ],
+    "implementer_measurement": "all of the above were re-run by the independent reviewer in the round-5 window; the implementer claims nothing on its own behalf here",
+    "granted_by": "a separate independent reviewer only; the implementer never writes 'accepted'",
+    "reviewer_verdict_location": {
+      "path": "review.md",
+      "heading": "# r5 — INDEPENDENT REVIEW (round 5)",
+      "verdict_line": 838,
+      "verdict_text": "accepted_scoped",
+      "line_numbering": "1-based, in the post-append file"
+    }
+  },
+  "disclosure_adaptation": {
+    "state": "unmapped",
+    "reasons": [
+      "this card is a worker/redaction-contract audit card; it produces no disclosure mapping and no accounting artefact",
+      "nothing in the r5 scope addresses disclosure guidance, so this qualification was not touched by this pass"
+    ],
+    "not_granted_by_this_attempt": true,
+    "touched_by_this_pass": false
+  },
+  "accuracy": {
+    "state": "unproven",
+    "reasons": [
+      "this card audits an exception-exit redaction contract with synthetic markers; it makes no accuracy claim about any data, model or forecast",
+      "no accuracy evaluation exists in the r5 scope, so this qualification was not touched by this pass"
+    ],
+    "not_granted_by_this_attempt": true,
+    "touched_by_this_pass": false
+  },
+  "three_qualifications_are_distinct": true,
+  "carries_that_do_not_block_the_scoped_acceptance": [
+    "C12 hard precondition (blocks promotion, not this acceptance)",
+    "C9 the acceptance test is still not promoted",
+    "C1 digest= / C6 argparse argv echo / C7 non-credential bare marker / C8 space-separated flag form / C10 JSON quoted key / C11 four known over-redactions / C13 greedy value (frozen as current behaviour)",
+    "F-I14C-04 the r1-pre-recorded cli.py hash 2f5c5740.../65553 stays provenance-untraceable",
+    "F-I14C-R5-01..03 (documentation-level findings, each landed in the append-only section of review.md)"
+  ],
+  "owner_decisions_carried_verbatim_not_decided_here": [
+    "whether C13 gets its own card and is changed to single-token semantics (moves the E4b 193 baseline and the envelope width)",
+    "whether the ~25% timing flake in the product's own restart tests gets a card (not caused by this card; the only worker.py hunks are the observability import and _write_unhandled_exception_event)",
+    "whether the deep-cwd WinError 206 (166/167-char paths) becomes a short-basetemp convention on the product/test side",
+    "the concrete form of C12 (pytest-timeout dependency vs subprocess hard timeout); either form must ship a measured 'blocks => FAILS'"
+  ],
+  "bookkeeping": {
+    "recorded_by": "the r5 implementer session (delegated subagent), as a transcription/bookkeeping executor only",
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "acceptance_author": "the independent reviewer session of round 5 (2026-09-20), report at %TEMP%\\i14c-r5-review-20260920-044801\\REPORT.md",
+    "verdict_block_in_review_md": {
+      "path": "review.md",
+      "line_start": 825,
+      "line_end": 1226,
+      "line_numbering": "1-based, inclusive; the reviewer's own bytes are 827-1226, the heading is 825",
+      "appended_at_utc": "2026-09-20"
+    },
+    "transcription_proof_file": {
+      "path": "evidence/I-14-C/verdict_transcription_r5.json"
+    },
+    "scope": "evidence and criteria only; disclosure_adaptation and accuracy are untouched by this pass",
+    "oracle_frozen": "oracle.md existing bytes are frozen from the r5 disclosure onward (see the appended section 1 and handoff.json.open_questions)",
+    "production_writes": 0,
+    "git_write_commands": 0,
+    "plan_reviews_touched": false
+  }
+}

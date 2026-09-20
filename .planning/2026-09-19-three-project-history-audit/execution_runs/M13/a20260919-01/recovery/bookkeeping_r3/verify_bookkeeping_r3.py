@@ -294,6 +294,10 @@ def main() -> int:
           and drift["boundaries_respected"][
               "historical_values_of_isolated_copy_still_equals_production_not_rewritten"] is True
           and drift["boundaries_respected"]["verification_logic_changed_to_hide_an_rc_5"] is False)
+    check("I9 drift window carries the machine's real timezone and the local -> UTC mapping",
+          "GMT Standard Time" in drift["window"]["timezone"]
+          and drift["window"]["utc_start"] == "2026-09-20 03:35:31"
+          and drift["window"]["utc_end"] == "2026-09-20 03:40:53")
 
     failed = [c for c in CHECKS if not c["ok"]]
     print("--- %d checks, %d failed ---" % (len(CHECKS), len(failed)))

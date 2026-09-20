@@ -303,7 +303,9 @@ def main() -> int:
                 "production_source_hashes_now_after": after_prod,
                 "isolated_copy_still_equals_production_before": before_iso,
                 "isolated_copy_still_equals_production_after": after_iso,
-                "why_they_must_be_identical": "they were recorded at 2026-09-20T03:28-03:30Z, i.e. "
+                "why_they_must_be_identical": "they were recorded at 2026-09-20T03:28-03:30Z "
+                                              "(= 04:28-04:30 local, about five minutes "
+                                              "before the 04:35:31 local rollback), i.e. "
                                               "before the production-drift window; production is "
                                               "back on the anchored revision, so the current "
                                               "reading reproduces them",

@@ -478,7 +478,11 @@ def task3b_drift(apply: bool) -> dict:
             "local_start": "2026-09-20 04:35:31",
             "local_end": "2026-09-20 04:40:53",
             "local_window_text": DRIFT_WINDOW,
-            "timezone": "the machine's local time (Asia/Shanghai)",
+            "timezone": "the machine's local time (GMT Standard Time, UTC+1 on "
+                        "2026-09-20): the window is 2026-09-20 04:35:31-04:40:53 local = "
+                        "2026-09-20 03:35:31-03:40:53 UTC",
+            "utc_start": "2026-09-20 03:35:31",
+            "utc_end": "2026-09-20 03:40:53",
             "applies_inside_this_window_only": True,
         },
         "drift": {

@@ -1,12 +1,31 @@
 {
   "card_id": "I-14-C",
   "attempt_id": "a20260919-01",
-  "status": "review_pending",
+  "status": "accepted_scoped",
+  "acceptance": {
+    "state": "accepted_scoped",
+    "state_before": "review_pending",
+    "granted_by": "the independent reviewer of round 5 (2026-09-20), whose verdict is transcribed in review.md under '# r5 — INDEPENDENT REVIEW (round 5)'",
+    "scope_verbatim": "I-14-C 的证据与判据在这一轮成立 - (a) F-I14C-08 的关闭依据经第 4 轮独立复现并在本轮以逐字符精确判据再次验证；(b) r4 review 的 6 项整改全部逐条对号关闭；(c) r5 新增的全部数字来自机械推导，独立重算逐项相符；(d) 验收测试仍未产品化（C12 硬前置）。scope = evidence and criteria as of r5.",
+    "scope_en": "the EVIDENCE and the CRITERIA hold as of r5; this is a scoped acceptance of the audit/verification outcome, NOT of the product change",
+    "not_an_authorisation_to_promote": true,
+    "promotion_blockers": [
+      "C12 is a hard precondition: the F-07 deadline assertion fires only after the redactor returns, so the case HANGS (>90 s, observed twice by the reviewer) instead of failing when the redactor blocks; promotion needs pytest-timeout or a subprocess hard timeout, plus a measured 'blocks => FAILS' result",
+      "the acceptance test was NOT promoted into CW/tests/contract/ (C9); no product file was written by this card in any round"
+    ],
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer",
+    "implementer_role": "transcription only: the verdict block in review.md is the reviewer's own text appended verbatim; the implementer added no acceptance claim of its own",
+    "qualification_file": "evidence/I-14-C/qualification.json",
+    "transcription_proof_file": "evidence/I-14-C/verdict_transcription_r5.json",
+    "disclosure_adaptation_and_accuracy": "untouched by this pass (see qualification.json)"
+  },
   "review_r4_outcome": "changes_required for six mechanical items (F-I14C-R4-01..07), with the F-I14C-08 correctness finding itself stated as CLOSED by the reviewer (mutation proof + self-chosen marker reproduction). r5 answers all six; no production file was touched in any round.",
   "r5_disposition": {
     "F-I14C-R4-01_pair_count": "FIXED mechanically - harness/report_counts.py derives every reported count from the artefacts and writes r5/counts.json (rule_table_entries 44, diagnostics 30, fidelity_cases 28, exact_nodeids 28, total_nodeids 82); it exits 3 if the two independently derived pair counts disagree. The wrong '23' is corrected in all five places, each citing counts.json.",
     "F-I14C-R4-02_C13_magnitude": "FIXED - the consequence is corrected in oracle.md (R5 addendum), review.md, decision.md and here: the value stops only at ,;&\"'|, so an unquoted value CROSSES NEWLINES and the whole remaining block is deleted (reviewer's 24-char marker: 112 chars in -> 34 out; doc=17 / stage / code / request_id all gone). Not truncation (34 << 200) and not r3/r4-introduced (iso/product_r2 reproduces it). Registered and frozen instead of changed, because E4b's 193 baseline derives from it; the blind direction is closed with 3 multi-line FIDELITY_CASES pairs, 4 multi-line table entries and test_f08_c13_multiline_loss_is_frozen_not_hidden.",
-    "F-I14C-R4-03_flake_claims": "FIXED and the r4 claim RETRACTED (it kept no stdout). r5 captures per-run stdout+rc: deep attempt-path basetemp -> both nodes fail on BOTH trees (WinError 206 / FileNotFoundError); short basetemp -> T0 6/6 passed, T4 4/6 with assert 3 == 2 on child_started. Follow-up: harness/run_flake_frequency.py measures that node INTERLEAVED (12 runs per tree x 2 passes, short basetemp) because the first non-interleaved version gave T0 6/12/T4 5/12 and a re-run gave T0 0/12/T4 7/12 - i.e. the rate is load-dependent and must not be reported as a tree difference. See r5/flake-evidence/frequency-child_without_runtime.json for the interleaved table.",
+    "F-I14C-R4-03_flake_claims": "FIXED and the r4 claim RETRACTED (it kept no stdout). r5 captures per-run stdout+rc: deep attempt-path basetemp -> both nodes fail on BOTH trees (WinError 206 / FileNotFoundError); at a short basetemp that node is still a ~1/4 load-dependent flake on BOTH trees - see review.md's F-I14C-R4-03 narrative for the full history (an earlier ad-hoc short-basetemp observation showed it on T4 in 2 of 3 runs; that observation was noise and is superseded by the interleaved measurement). Follow-up: harness/run_flake_frequency.py measures that node INTERLEAVED (12 runs per tree x 2 passes, short basetemp) because the first non-interleaved version gave T0 6/12/T4 5/12 and a re-run gave T0 0/12/T4 7/12 - i.e. the rate is load-dependent and must not be reported as a tree difference. See r5/flake-evidence/frequency-child_without_runtime.json for the interleaved table and r5/flake-evidence/frequency-captures/ for the per-run stdout captures. [F-I14C-R5-02: this field previously quoted a score of '4/6' for the fixed tree; that number came from the superseded ad-hoc observation, disagreed with the surviving file (which shows 1 of 3), and is deliberately no longer quoted - the narrative in review.md is the record.]",
     "F-I14C-R4-04_patch_not_consumable": "FIXED - harness/make_posix_diff.py regenerates the diff the way git does (scratch repo, core.autocrlf=false): r5-changes.diff, 6 hunks, 15083 bytes, POSIX paths only. harness/verify_git_apply.py proves git apply --check/-p1 succeeds in a repository and the three files become byte-identical to iso/product_fixed (r5/git_apply_verification.json, GIT_APPLY_REPRODUCES_T4 true). Prerequisite found and fixed: iso/product_fixed observability.py was LF while T0 is CRLF, which had made the patch a whole-file rewrite; after normalisation it is 1 hunk and the suite is still 82 passed.",
     "F-I14C-R4-05_diag_no_fallback": "FIXED - run_diagnostic_table.py mirrors run_rule_table.py: a missing helper writes helper_present=false, verdict=cannot_adjudicate and exits 2 (verified on T0: rc=2, no traceback).",
     "F-I14C-R4-06_exit_code_drift": "FIXED - both tables adopt run_card.py's convention: 0 pass, 2 cannot adjudicate, 3 negative verdict (leak, fidelity failure or NEW over-redaction). Registered pre-existing over-redactions are measured, not verdicts, otherwise the corpus could never show a green baseline. Fresh rcs: T0 2/2, T1 3/3, T2 0/0, T3 specimen 3/3, T4 0/0.",
@@ -236,7 +255,12 @@
     "F-I14C-04: the r1-pre-recorded cli.py hash 2f5c5740.../65553 is provenance-untraceable (来源不可考); only a mixed-line-ending arithmetic hypothesis exists (65553 = 64126 + 1427)",
     "F-I14C-R4-03 follow-up (r5): the compat node test_child_without_runtime_session_is_terminated_and_restarted is timing-flaky in the PRODUCT's own test - interleaved measurement at a short basetemp shows double-digit failure rates on the pristine tree as well (r5/flake-evidence/frequency-child_without_runtime.json; the first non-interleaved pass gave T0 6/12 vs T4 5/12 and an immediate re-run gave T0 0/12 vs T4 7/12, which is why the reported number is the interleaved table and not either single pass). The failing assertion is assert 3 == 2 on child_started. This node is NOT on the path of the code this card changes: the only worker.py hunks in r5-changes.diff are the observability import line and _write_unhandled_exception_event.",
     "hash-form question (raised by the r4 review, resolved in r5): the reviewer's 'the live bytes are the HEAD blob, LF form' statement and this attempt's CRLF sha256 values are both correct but describe different objects. git ls-files --eol says i/lf w/crlf with core.autocrlf=true; CR count == LF count in each file; git hash-object <path> (filters applied) equals the HEAD blob while git hash-object --no-filters does not. See current_source_hashes.hash_form_note and r5/final_hashes.json. No production byte changed.",
-    "the card's clause 3 stderr requirement is fully met only for credential-shaped markers on exits reachable through main()'s handler; C6/C7 are the named residuals"
+    "the card's clause 3 stderr requirement is fully met only for credential-shaped markers on exits reachable through main()'s handler; C6/C7 are the named residuals",
+    "OWNER DECISION 1 (not decided here, carried verbatim from the r5 independent review): whether C13 gets its own card and is changed to single-token semantics - that would move E4b's 193 baseline and the envelope width, so it is a scope/risk-preference call for the owner. C13 stays as-is (current behaviour, explicitly frozen) until the owner rules otherwise.",
+    "OWNER DECISION 2: whether the ~25% timing flake in the product's own restart tests (evidence: r5/flake-evidence/frequency-child_without_runtime.json, T0 6/24 vs T4 6/24 with the 'worse' tree flipping between passes) gets a card to fix the test's timing assumptions. Not this card's to fix, and not caused by it.",
+    "OWNER DECISION 3: whether the deep-cwd WinError 206 (paths of 166/167 chars at the attempt basetemp) should be turned into a short-basetemp convention on the product/test side. Measured here as an environment limit that fails identically on both trees.",
+    "OWNER DECISION 4: the concrete form of C12 - add a pytest-timeout dependency or wrap the call in a hard-timeout subprocess. It blocks promotion (C9: the acceptance test is NOT promoted) and either form must ship a measured 'blocks => FAILS' result; the reviewer re-observed the F-07 case hanging >90 s with a blocking redactor.",
+    "DISCLOSURE F-I14C-R5-01 (raised by the r5 independent review, disclosed here and in review.md as required): the r5 edit of oracle.md was NOT a pure append - the pre-R5 part grew by 3 bytes (16462 -> 16465) and the r2/r3/r4 recorded prefix hashes no longer match, although the section structure, line numbers and the frozen r4 semantics were verified line by line to be unchanged and the new 0/2/3 convention is explicitly marked as superseding the r4 'exit 2' wording. No r4 copy was kept, so no byte-level delta can be produced. From now on oracle.md's existing bytes are frozen; the 'prefix hash' channel is no longer usable as proof of append-only discipline for this file."
   ],
   "blocked_by": [],
   "evidence_paths": [
@@ -273,5 +297,5 @@
     "execution_runs/I-14-C/a20260919-01/before/cmd-B1/stdout.txt",
     "execution_runs/I-14-C/a20260919-01/recovery/README.md"
   ],
-  "reviewer_status": "PENDING independent review (implementer did not self-accept)"
+  "reviewer_status": "accepted_scoped by the independent reviewer of round 5 (verdict transcribed verbatim in review.md, '# r5 — INDEPENDENT REVIEW (round 5)'). Scope = the evidence and criteria as of r5; NOT an authorisation to promote (C12 hard precondition, acceptance test not promoted). The implementer never signs acceptance and did not self-accept; it only transcribed the reviewer's block and recorded the bookkeeping."
 }

@@ -24,6 +24,7 @@ T0 0/12 vs T4 7/12.  Neither ordering-controlled number is safe to report as a t
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -58,6 +59,9 @@ def main(argv: list[str] | None = None) -> int:
     if base_root.exists():
         shutil.rmtree(base_root, ignore_errors=True)
     base_root.mkdir(parents=True, exist_ok=True)
+    # Per-run stdout land here (inside the attempt); the basetemp root above is only scratch.
+    capture_root = attempt / "r5" / "flake-evidence" / "frequency-captures"
+    capture_root.mkdir(parents=True, exist_ok=True)
 
     results: list[dict] = []
     # INTERLEAVED on purpose: running all T0 runs and then all T4 runs would let a change in
@@ -90,6 +94,11 @@ def main(argv: list[str] | None = None) -> int:
                         assertion = line.strip()[:200]
                         break
                 (run_dir / "stdout.txt").write_text(text, encoding="utf-8")
+                # F-I14C-R5-03: every run's FULL stdout is also written into the attempt, so the
+                # "every failure is the same assertion" claim can be checked per run instead of
+                # being taken from this JSON's `tail`.  The basetemp root itself is left in place.
+                capture_path = capture_root / f"p{pass_index}-{tree_label}-{args.node}-{run}.txt"
+                capture_path.write_text(text, encoding="utf-8")
                 results.append({
                     "pass": pass_index,
                     "tree": tree_label,
@@ -99,6 +108,9 @@ def main(argv: list[str] | None = None) -> int:
                     "verdict": verdict,
                     "assertion": assertion,
                     "tail": text.strip().splitlines()[-1] if text.strip() else "",
+                    "captured_output": str(capture_path.relative_to(attempt)),
+                    "captured_output_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+                    "captured_output_bytes": len(text.encode("utf-8")),
                 })
                 print(f"pass{pass_index} {tree_label} run{run} rc={proc.returncode} {verdict} "
                       f"{assertion}", flush=True)
