@@ -28,6 +28,27 @@ TEMPLATE_INTERPRETER = (r"C:\Users\郑曾波\Projects\revenue-forecast\.planning
                         r"\2026-09-19-three-project-history-audit\execution_runs\I-00-A"
                         r"\a20260919-01\iso\venv\Scripts\python.exe")
 ENTRY_POINT_LINE = 308
+
+# The task-given anchors for the two product modules this batch depends on.  They are CONSTANTS of
+# the task, never "whatever is on disk now": the production working tree can be changed by external
+# git operations (see the 20260920 pre-commit incident), so a run must compare what it observes
+# against these values and report a mismatch instead of adopting the observation as the anchor.
+ANCHORED_PRODUCTION_HASHES = {
+    "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+}
+PRODUCTION_HASH_DISCIPLINE = (
+    "A production file hash is an EXTERNALLY CHANGEABLE quantity, not a constant of this attempt: git "
+    "operations run by other sessions/agents (stash, checkout, pre-commit patch export/replay) can "
+    "change the working tree between the binding and any later check. Therefore: (1) every claim about "
+    "a production hash is time-scoped and carries its observation time; (2) an observed mismatch is "
+    "recorded as drift with its timestamp and escalated to the orchestration layer - it is a CORRECT "
+    "warning and is never suppressed; (3) expectations, frozen oracle files and rejection criteria are "
+    "NEVER adjusted to accommodate a drifted production tree; a drifted tree means new runs must "
+    "re-bind, not that the oracle must move."
+)
+INCIDENT_REFERENCE = ("execution_runs/_isolation_incidents/"
+                      "20260920-precommit-stash-production-rollback/INCIDENT.md")
 REVIEW_REPORT_R2 = (r"C:\Users\郑曾波\AppData\Local\Temp"
                     r"\m17m20-review-r2-20260920-041815\REPORT_r2.md")
 BATCH_ROOT = (r"C:\Users\郑曾波\Projects\revenue-forecast\.planning"

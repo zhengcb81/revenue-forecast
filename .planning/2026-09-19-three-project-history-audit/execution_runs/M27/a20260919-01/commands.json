@@ -310,6 +310,51 @@
    "expected_rc": 0,
    "expected_business_result": "RERUN CHECK: PASS",
    "note": "the throwaway tree is recovery/rerun_check/; the frozen evidence directory is read but never written"
+  },
+  {
+   "unit_id": "D-M27-drift-and-restoration-record",
+   "purpose": "record the production drift window and its restoration side by side in a NEW file (recovery/production_drift_and_restoration_r3.json) and verify that the isolated snapshot equals production again and that the frozen four-piece is byte-unchanged",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\scripts\\record_drift_restoration.py",
+    "--card",
+    "M27",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01",
+    "--repo",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "read-only with respect to production: it hashes the production files and the isolated snapshot, and writes only its own record file"
+  },
+  {
+   "unit_id": "V-M27-post-restoration-verify",
+   "purpose": "post-restoration re-check written to NEW filenames: final_pass (refreshes integrity.json's production re-verification) and verify_attempt (consistency gate)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\scripts\\verify_attempt.py",
+    "--card",
+    "M27",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01",
+    "--plan-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "stdout": "recovery/post_restoration_verify_20260920.txt",
+   "note": "the accompanying final_pass output is in recovery/post_restoration_final_pass_20260920.txt; both are new filenames so the pre-restoration records stay readable"
   }
  ]
 }

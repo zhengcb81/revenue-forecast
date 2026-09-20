@@ -1,4 +1,4 @@
-﻿"""Generate handoff.json for one attempt from the evidence actually on disk.
+"""Generate handoff.json for one attempt from the evidence actually on disk.
 
 Nothing here is transcribed by hand: hashes come from the evidence files, exit codes come
 from the rc records, and the open questions come from oq_rulings.json.
@@ -239,6 +239,18 @@ def main() -> int:
                             "the batches' rc/qualification semantics in the batch handoff. formula "
                             "remains review_pending until the reviewer confirms the r2 fixes."),
         "process_history_pointer": "process_history.json",
+        "discipline": {
+            "production_hash_is_externally_changeable": True,
+            "rule": card_units.PRODUCTION_HASH_DISCIPLINE,
+            "incident_reference": card_units.INCIDENT_REFERENCE,
+            "why": ("the repository's pre-commit/pre-push gate exports unstaged changes to a patch, runs "
+                    "`git checkout -- .`, and replays the patch afterwards; one failed instance left the "
+                    "production working tree reset to HEAD and rewrote files that were being written "
+                    "concurrently, so every production-hash claim is time-scoped"),
+            "on_mismatch": ("record the drift with its timestamp, escalate to the orchestration layer, "
+                            "and re-bind before any NEW run; never adapt expectations or frozen files"),
+            "anchored_production_hashes": dict(card_units.ANCHORED_PRODUCTION_HASHES),
+        },
         "process_history_summary": {
             "measurement_pipeline_executions_declared": PROCESS[card]["measurement_executions"],
             "closing_executions_declared": PROCESS[card]["closing_executions"],

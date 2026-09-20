@@ -91,7 +91,8 @@ def main() -> int:
                      for k in b["production_repos"])
     same_keyfiles = b["key_files"] == af["key_files"]
     cmp_block = (af.get("capture_comparison") or b.get("capture_comparison") or {})
-    attempt_writes = cmp_block.get("porcelain_entries_naming_this_attempt", [])
+    audit_changes = cmp_block.get("porcelain_changes_inside_this_audits_execution_runs", [])
+    production_changes = cmp_block.get("porcelain_changes_outside_the_audit_tree_PROBLEM_IF_ANY", [])
     checks.append({
         "step": "state_captures",
         "captures_are_distinct": distinct,
@@ -99,13 +100,14 @@ def main() -> int:
         "capture_2_utc": af.get("captured_at_utc"),
         "heads_identical_between_captures": same_heads,
         "key_files_identical_between_captures": same_keyfiles,
-        "porcelain_entries_naming_this_attempt": attempt_writes,
+        "porcelain_changes_inside_the_audit_tree": len(audit_changes),
+        "porcelain_changes_outside_the_audit_tree": production_changes,
         "porcelain_diff": cmp_block.get("porcelain_diff"),
         "claim_boundary": ("the two captures were both taken during this attempt and porcelain is expected "
                            "to move while other actors commit; this is NOT a pre-work baseline comparison "
                            "and does not by itself prove that production was untouched by this card "
-                           "(finding P1-1). What it does show is that no porcelain entry naming this "
-                           "attempt's production files appeared, and that HEAD/key-file hashes are stable."),
+                           "(finding P1-1). What it does show is that no porcelain entry OUTSIDE this "
+                           "audit's execution_runs tree changed, and that HEAD/key-file hashes are stable."),
     })
     if not distinct:
         problems.append("the two state captures share one timestamp: they are not distinct captures")
@@ -113,8 +115,9 @@ def main() -> int:
         problems.append("HEAD moved between the two state captures (see porcelain_diff for who moved it)")
     if not same_keyfiles:
         problems.append("a key production file's sha256 changed between the two state captures")
-    if attempt_writes:
-        problems.append("a porcelain entry naming this attempt changed between captures: %s" % attempt_writes)
+    if production_changes:
+        problems.append("a porcelain entry OUTSIDE this audit tree changed between captures "
+                        "(a production-repo write happened): %s" % production_changes)
 
     # the reviews tree: report who is the newest file and how many were listed
     reviews = b.get("plan_reviews", {})

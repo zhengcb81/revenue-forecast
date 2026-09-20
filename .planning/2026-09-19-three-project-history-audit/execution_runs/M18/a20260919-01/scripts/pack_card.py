@@ -644,20 +644,40 @@ def main() -> int:
     dump(os.path.join(evidence, "oq_rulings.json"), oq)
 
     # ---- integrity ----
+    # The anchored values are CONSTANTS of the task; the observed values are what this pack saw on
+    # disk.  `anchored_hashes_match` is COMPUTED (it used to be a hard-coded True, which would have
+    # claimed a match even when the working tree had been reset to HEAD by an external git operation).
+    observed_matches_anchor = {
+        rel: (production_hashes.get(rel) == anchor)
+        for rel, anchor in card_units.ANCHORED_PRODUCTION_HASHES.items()
+    }
     integrity = {
         "card_id": card,
         "production_repos_untouched": True,
         "statement": ("no file under any production repository was created, modified, added, "
                       "committed, restored or stashed by this attempt"),
         "production_hashes_rechecked_after_the_run": production_hashes,
+        "anchored_hashes_as_given_by_the_task": dict(card_units.ANCHORED_PRODUCTION_HASHES),
+        "observed_matches_task_anchor_by_file": observed_matches_anchor,
+        "anchored_hashes_match": all(observed_matches_anchor.values()),
+        "anchored_hashes_match_rule": ("COMPUTED by comparing the observed production hashes with the "
+                                       "task anchors; never asserted as a constant"),
         "anchored_hashes": production_hashes,
-        "anchored_hashes_as_given_by_the_task": {
-            "scripts/model_registry.py": ("9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6"
-                                          "ee2d17f"),
-            "scripts/model_extensions.py": ("9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c856"
-                                            "2089b911"),
+        "anchored_hash_claim_is_time_scoped": {
+            "observed_at_pack_utc": now,
+            "rule": card_units.PRODUCTION_HASH_DISCIPLINE,
+            "incident_reference": card_units.INCIDENT_REFERENCE,
+            "known_external_risk": ("the repository's own pre-commit/pre-push gate exports unstaged "
+                                    "changes to a patch, runs `git checkout -- .`, and replays the "
+                                    "patch afterwards; if the replay step is skipped (observed once: "
+                                    "`git checkout -- .` returned 255 on files held by concurrent "
+                                    "writers) the production working tree is left reset to HEAD, so a "
+                                    "hash check taken inside that window legitimately reads a "
+                                    "different revision"),
+            "if_false_then": ("record the drift with its timestamp, escalate to the orchestration "
+                              "layer, and re-bind before any NEW run; never adjust the frozen "
+                              "expectations to accommodate the drifted tree"),
         },
-        "anchored_hashes_match": True,
         "product_runs_used": ("--code-root <attempt>/iso/checkout_scripts (byte-identical read-only "
                               "snapshot); the production scripts directory was never on sys.path for "
                               "any card run"),

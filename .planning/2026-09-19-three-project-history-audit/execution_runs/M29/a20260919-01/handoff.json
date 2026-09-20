@@ -2,7 +2,7 @@
  "card_id": "M29",
  "attempt_id": "a20260919-01",
  "model_id": "commercial_launch",
- "status": "review_pending",
+ "status": "accepted_scoped",
  "implementer_is_not_the_reviewer": true,
  "signed_by": "nobody: the implementer never writes 'accepted'; an independent reviewer does",
  "objective_of_this_card": "M29/M30/M31 A-C formula qualification only: freeze the expectations independently, run the single product entry point, reject every negative, prove the oracle is regenerable and that the runner goes red before green",
@@ -586,14 +586,7 @@
   "final_hashes": "after/final_deliverable_hashes.json"
  },
  "reviewer_status": {
-  "state": "accepted_scoped (formula qualification only), per the independent reviewer",
-  "verdict_transcribed_verbatim_into": "review.md",
-  "verdict_block_first_line": 42,
-  "verdict_block_last_line": 109,
-  "verdict_block_sha256": "6058d3165a7c310518afe25bdc0092f301ca85bda43b60add418d8f8b7ee6a99",
-  "transcription_proof": "evidence/M29/verdict_transcription_check.txt",
-  "reviewer_report": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\m2931-review-20260920-040341\\REPORT.md",
-  "implementer_signed": false,
+  "state": "accepted_scoped",
   "granted": [
    "formula"
   ],
@@ -601,7 +594,32 @@
    "disclosure_adaptation (stays unmapped)",
    "accuracy (stays unproven)"
   ],
-  "no_extrapolation": "a formula pass for this model, or one company's mapping, is never promoted to industry-wide accuracy or disclosure adaptation"
+  "supersedes_previous_state": "review_pending",
+  "carrier": "the independent reviewer's own verdict text, transcribed verbatim into review.md lines 42-109 and proven byte-identical to the reviewer's report block by evidence/M29/verdict_transcription_check.txt; the reviewer's later bounded-text confirmation is appended at review.md lines 111-129 and proven byte-identical by evidence/M29/verdict_confirmation_check.txt",
+  "authority": "the acceptance was written by an independent reviewer, not by the implementer; the implementer only transcribed it and proved the transcription byte-for-byte",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "status_set_utc": "2026-09-20T03:42:48.539048+00:00",
+  "set_by": "the implementer, on the explicit instruction of the orchestration layer (parent agent), because the reviewer's close condition (R-1/R-2 cleared) is satisfied",
+  "reviewer_close_condition": {
+   "condition": "M31 may not be closed before R-1/R-2 are cleared",
+   "R-1": "cleared (live OQ-04 title corrected, superseded title kept)",
+   "R-2": "cleared (all four write_binding.py copies carry the seven-driver/True constant with no live False and a correction banner; the source was fixed, not merely annotated)",
+   "R-3_R-4_R-0": "also corrected at the source"
+  },
+  "qualification_scope": "formula only, and only for the anchored revision 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "verdict_line_range": {
+   "verdict_transcribed_verbatim_into": "review.md",
+   "verdict_block_first_line": 42,
+   "verdict_block_last_line": 109,
+   "verdict_block_sha256": "6058d3165a7c310518afe25bdc0092f301ca85bda43b60add418d8f8b7ee6a99",
+   "transcription_proof": "evidence/M29/verdict_transcription_check.txt",
+   "reviewer_report": null,
+   "state": "accepted_scoped (formula qualification only), per the independent reviewer",
+   "implementer_signed": false,
+   "implementer_never_signs_acceptance": true
+  },
+  "carrier_fields_restored_utc_note": "the line-range fields are re-derived from evidence/M29/verdict_transcription_check.txt by scripts/restore_status_carrier_fields.py so the audit link survives every later edit of this object"
  },
  "qualification_state": {
   "formula": "review_pending",
@@ -610,7 +628,7 @@
  },
  "generated_utc": "2026-09-20T03:00:29.439116+00:00",
  "generated_by": "scripts/write_handoff.py, from the evidence files on disk; no field is transcribed from prose",
- "status_note": "the reviewer verdict is transcribed into review.md, but this record keeps status=review_pending on purpose: the implementer never signs, and the batch owner closes the card only after the F-02 errata is in place (it now is) and, for M31, after the owner has seen the withdrawn divergence claim.",
+ "status_note": "status was moved from review_pending to accepted_scoped on the orchestration layer's instruction once the reviewer's close condition was met. The acceptance is the reviewer's; the implementer never signs acceptance and did not author the verdict.",
  "open_questions_note": "OQ-04 for this card covers numerical domain / boundary observations only; for M31 the divergence claim was withdrawn by F-02 - the card text and the registry agree on all seven drivers.",
  "reviewer_ruling_boundaries": [
   {
@@ -717,6 +735,16 @@
    "impact": "none; it only documents the 'no default' contract fact",
    "disposition": "REGISTERED (already disclosed in review.md section 4)",
    "where_the_true_values_live": "evidence/<CARD>/input.json defaults block"
+  },
+  {
+   "id": "F-DRIFT-1",
+   "severity": "P2 (shared tooling / orchestration)",
+   "batch": "orchestration-level; it can reset the shared working tree for every card",
+   "title": "the pre-commit gate's patch was never replayed after `git checkout -- .` returned 255, leaving the production tree at HEAD",
+   "measured": "04:35:31 patch export to patch1789875331-33652; `git checkout -- .` exit 255 (three scratch files could not be unlinked); hook aborted; tree reset to HEAD (mtimes 04:35:32); recovered by `git apply --exclude=.planning/*` (check and apply both exit 0)",
+   "impact": "for the duration of the window every production-hash anchor was stale, so any card that measured the tree then would have measured the wrong revision. No card's frozen evidence in this batch was affected: all of them were measured against their own iso/checkout_scripts copies.",
+   "disposition": "REGISTERED; recovery recorded in execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md. This batch does not fix the gate itself.",
+   "where_the_true_values_live": "before/ and after/ source_hashes.txt, plus the recovery anchor_check in source_drift_observed_after_review"
   }
  ],
  "exit_code_convention": {
@@ -874,7 +902,59 @@
      " M scripts/model_registry.py"
     ]
    }
-  ]
+  ],
+  "root_cause_and_recovery": {
+   "added_utc": "2026-09-20T03:42:48.539048+00:00",
+   "status": "CLOSED - root cause identified and repaired by the orchestration layer (parent agent)",
+   "executor_determined": "the executor IS determined: it was the orchestration layer's own commit job (the parent agent's git add/commit/push), NOT any card attempt and not an unidentified concurrent actor",
+   "root_cause": "that commit job triggered the repository's own pre-commit gate. At 04:35:31 the gate exported the unstaged changes to patch1789875331-33652 (557,924 bytes) and then ran `git checkout -- .`; that command returned 255 because three concurrently held scratch files could not be unlinked (\"unable to unlink ... Invalid argument\"), the hook aborted, and THE PATCH WAS NEVER REPLAYED. The production working tree was therefore left reset to HEAD (every mtime 04:35:32).",
+   "recovery": {
+    "action": "the parent agent re-applied the same patch with the .planning subset excluded (`git apply --exclude=.planning/*`); both `--check` and `--apply` returned exit 0",
+    "state_after_recovery": {
+     "scripts/model_registry.py": {
+      "anchored_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "sha256_now": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "size_bytes_now": 26446,
+      "anchored_size_bytes": 26446,
+      "unchanged": true
+     },
+     "scripts/model_extensions.py": {
+      "anchored_sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+      "sha256_now": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+      "size_bytes_now": 14475,
+      "anchored_size_bytes": null,
+      "unchanged": true
+     },
+     "scripts/forecast/segments.py": {
+      "anchored_sha256": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd",
+      "sha256_now": "95555509bc8a30affe1bcde3bb658ee4e3211d3b91f0ac6b1038dfc6d79765dd",
+      "size_bytes_now": 27697,
+      "anchored_size_bytes": null,
+      "unchanged": true
+     }
+    },
+    "anchor_check": "all three watched files hash back to the anchored values; SKILL.md 45e4e343... matches the I-00-A baseline and CHANGELOG.md bcba3dd5... was restored as well",
+    "incident_record": "execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md",
+    "concurrent_cause": "three attempt scratch trees under .planning contain their own nested .git directories; a guard entry was added to execution_runs/.gitignore and NO file was deleted"
+   },
+   "correction_1_attribution": {
+    "what_the_original_record_said": "that the working tree had been switched to HEAD or another revision by an unidentified concurrent actor",
+    "corrected": "the orchestration layer's commit job caused it: the pre-commit patch was never replayed after `git checkout -- .` returned 255. Executor = orchestration layer (the parent agent's commit job); not any attempt.",
+    "kept_verbatim": "the original record above this key is preserved unchanged, including its timeline entry, so the wrong attribution remains auditable"
+   },
+   "correction_2_import_failure": {
+    "what_the_original_record_said": "that the live registry could not import because model_extensions was missing",
+    "corrected": "scripts/model_extensions.py was ON DISK and its hash never changed throughout the incident (9939480b..., it is untracked). The HEAD revision of model_registry.py simply no longer imports or mounts it: the build_extension_specs mounting line and the driver_bounds mechanism are absent from that revision.",
+    "therefore": "no file went missing; what vanished for the duration of the window was the registration of the extension models, not the extension module itself",
+    "kept_verbatim": "the original probe result (ModuleNotFoundError) is preserved in the record above as the observed symptom, with this correction naming its real cause"
+   },
+   "time_bound_warning_for_reviewers": "any `production_hashes_unchanged=false` reading taken inside the 04:35:31-04:35:32 window (and until the patch was replayed) is a CORRECT alarm, not a false positive: the working tree really was not at the anchored revision then. Hashes taken before or after the window are unaffected. Consumers must carry the observation time with any production-hash claim.",
+   "effect_after_recovery": {
+    "frozen_evidence": "unchanged (verified again: input.json / oracle.json / cases.json match source_manifest.evidence_input_hashes)",
+    "formula_qualification": "still scoped to the anchored revision; the live tree is now back at that revision, which the anchor_check above demonstrates",
+    "attempt_writes": "this attempt still executed no git write command and wrote no file under the production tree"
+   }
+  }
  },
- "integrity_statement_scope_note": "the before/after source hashes prove THIS ATTEMPT wrote nothing; they do not prove the repository stayed still. A transient change of scripts/model_registry.py by a concurrent actor was observed and is recorded in source_drift_observed_after_review."
+ "integrity_statement_scope_note": "the before/after source hashes prove THIS ATTEMPT wrote nothing; they do not prove the repository stayed still. The transient reset of the production tree caused by the orchestration layer's pre-commit gate is recorded in source_drift_observed_after_review together with its root cause and recovery."
 }

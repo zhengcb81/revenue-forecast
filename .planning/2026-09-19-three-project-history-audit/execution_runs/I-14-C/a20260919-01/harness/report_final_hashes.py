@@ -48,7 +48,7 @@ HARNESS = (
     "verify_git_apply.py", "tests/test_i14c_real_exit_redaction.py",
 )
 PIP_PACKAGES = ("pytest", "PyYAML", "requests")
-CATALOG = Path(r"C:\Users\郑曾波\Projects\company-wiki\companies\_catalog\catalog.sqlite3")
+CATALOG = Path(r"C:\Users\郑曾波\Projects\company-wiki\.source_catalog\catalog.sqlite3")
 
 
 def sha256_file(path: Path) -> str | None:
@@ -164,10 +164,13 @@ def main(argv: list[str] | None = None) -> int:
 
     attempt_entries = git(repo, "status", "--porcelain", "--", str(attempt)).splitlines()
     by_directory: dict[str, int] = {}
-    prefix = str(attempt.relative_to(repo)).replace("\\", "/") + "/"
+    # git reports paths relative to the REPO root, so locate the attempt's own directory name in
+    # the path instead of assuming a prefix: that also survives quoted paths.
+    marker = attempt.name + "/"
     for entry in attempt_entries:
         path = entry[3:].strip().strip('"')
-        rel = path[len(prefix):] if path.startswith(prefix) else path
+        index = path.find(marker)
+        rel = path[index + len(marker):] if index >= 0 else path
         head = rel.split("/")[0] if "/" in rel else "(attempt root)"
         by_directory[head] = by_directory.get(head, 0) + 1
     catalog = {
@@ -182,13 +185,13 @@ def main(argv: list[str] | None = None) -> int:
     }
     if CATALOG.is_file():
         import datetime
-        catalog["mtime_utc"] = datetime.datetime.utcfromtimestamp(
-            CATALOG.stat().st_mtime).isoformat() + "Z"
+        catalog["mtime_utc"] = datetime.datetime.fromtimestamp(
+            CATALOG.stat().st_mtime, datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     shm = CATALOG.parent / "catalog.sqlite3-shm"
     if shm.is_file():
         import datetime
-        catalog["shm_mtime_utc"] = datetime.datetime.utcfromtimestamp(
-            shm.stat().st_mtime).isoformat() + "Z"
+        catalog["shm_mtime_utc"] = datetime.datetime.fromtimestamp(
+            shm.stat().st_mtime, datetime.timezone.utc).isoformat().replace("+00:00", "Z")
     control = CATALOG.parent / "worker_control.json"
 
     payload = {

@@ -40,7 +40,7 @@
    "no re-snapshot of iso/checkout_scripts was taken",
    "no production file was written by this attempt at any point"
   ],
-  "current_state": "after the restoration, `final_verify.py` reports production_hashes_unchanged = True (see after/final_verify_restored.txt); the False reading from inside the window is kept at recovery/final_verify_during_drift.txt"
+  "current_state": "after the restoration, final_verify.py reports production_hashes_unchanged = True. HONEST NOTE: the transient False reading was NOT preserved as a file, because every later rebuild of recovery/final_verify.txt and evidence/<card>/integrity.json was executed after the restoration and therefore legitimately reads True. The first-hand record of the warning is THIS attempt's recovery/production_drift.json, which captured the diverted hash 1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86, the anchored hash, both mtimes and the behavioural probe at detection time. recovery/production_drift_resolution.json (this file) records the other end of the event."
  },
  "batch_wide_note": "the diversion affected every attempt whose acceptance chain cites the production hash 9ec65295... , not only M21-M24; this attempt reports only its own four cards"
 }

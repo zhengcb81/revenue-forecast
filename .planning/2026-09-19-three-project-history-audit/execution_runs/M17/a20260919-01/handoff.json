@@ -5,7 +5,7 @@
  "card_title": "commercial sales and licensing revenue",
  "status": "review_pending",
  "implementer_is_not_the_reviewer": true,
- "generated_utc": "2026-09-20T03:40:29.982599+00:00",
+ "generated_utc": "2026-09-20T03:44:35.335422+00:00",
  "completed_steps": {
   "A_binding": "done - binding.json binds the attempt-local interpreter, the read-only isolated snapshot, the model contract read back from that snapshot and the write allowlist",
   "B_positive_run": "done - positive [110.0] vs independent oracle [110.0]; continuity [110.0, 169.0] vs [110.0, 169.0]; defaults [80.0] vs [80.0] (defaults are recorded, not gating)",
@@ -30,7 +30,7 @@
   "scripts/run_card.py": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252"
  },
  "current_source_hashes": {
-  "scripts/model_registry.py": "1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86",
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
   "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
   "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
   "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
@@ -89,7 +89,7 @@
   "T-transcribe-review-verdict": 0,
   "H-write-handoff": 0,
   "Z-close-attempt": 0,
-  "V-verify-hash-tables": 0
+  "V-verify-hash-tables": 3
  },
  "expected_exit_codes": {
   "A0-iso-venv-create": 0,
@@ -358,6 +358,17 @@
  ],
  "reviewer_status": "r1 reviewed by an independent session; verdict accepted_scoped (formula qualification only). The implementer has NOT signed anything as accepted. Post-review P2/P3 dispositions are recorded in review.md (r2 section) and the batches' rc/qualification semantics in the batch handoff. formula remains review_pending until the reviewer confirms the r2 fixes.",
  "process_history_pointer": "process_history.json",
+ "discipline": {
+  "production_hash_is_externally_changeable": true,
+  "rule": "A production file hash is an EXTERNALLY CHANGEABLE quantity, not a constant of this attempt: git operations run by other sessions/agents (stash, checkout, pre-commit patch export/replay) can change the working tree between the binding and any later check. Therefore: (1) every claim about a production hash is time-scoped and carries its observation time; (2) an observed mismatch is recorded as drift with its timestamp and escalated to the orchestration layer - it is a CORRECT warning and is never suppressed; (3) expectations, frozen oracle files and rejection criteria are NEVER adjusted to accommodate a drifted production tree; a drifted tree means new runs must re-bind, not that the oracle must move.",
+  "incident_reference": "execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md",
+  "why": "the repository's pre-commit/pre-push gate exports unstaged changes to a patch, runs `git checkout -- .`, and replays the patch afterwards; one failed instance left the production working tree reset to HEAD and rewrote files that were being written concurrently, so every production-hash claim is time-scoped",
+  "on_mismatch": "record the drift with its timestamp, escalate to the orchestration layer, and re-bind before any NEW run; never adapt expectations or frozen files",
+  "anchored_production_hashes": {
+   "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+  }
+ },
  "process_history_summary": {
   "measurement_pipeline_executions_declared": 3,
   "closing_executions_declared": 7,

@@ -759,8 +759,23 @@ def main() -> int:
     review.append("7. Adjudicate the DEC items in `evidence/%s/accounting_decision.md` and the OQ "
                   "items in `evidence/%s/oq_rulings.json`." % (card, card))
     review.append("")
-    with open(os.path.join(attempt, "review.md"), "w", encoding="utf-8") as handle:
+    # The BASE part of review.md goes to review_base.md ONLY. review.md itself is assembled by
+    # scripts/apply_review_r3.py (base + the reviewer's appended block) so that the reviewer block
+    # is never truncated by a doc regeneration and the append stays provable and idempotent.
+    with open(os.path.join(attempt, "review_base.md"), "w", encoding="utf-8") as handle:
         handle.write("\n".join(review))
+    review_path = os.path.join(attempt, "review.md")
+    if not os.path.exists(review_path):
+        with open(review_path, "w", encoding="utf-8") as handle:
+            handle.write("\n".join(review))
+        print("  NOTE: review.md did not exist; seeded it from the base. Run "
+              "scripts/apply_review_r3.py to append the reviewer block.")
+    else:
+        with open(review_path, "rb") as handle:
+            existing = handle.read()
+        if existing != "\n".join(review).encode("utf-8"):
+            print("  review.md left untouched (base written to review_base.md); run "
+                  "scripts/apply_review_r3.py to (re)assemble review.md deterministically.")
 
     # ------------------------------------------------------------------ handoff.json
     handoff = {

@@ -103,14 +103,15 @@ repeating) and reports each pass separately. Final recorded run
 
 | pass | T0 pristine | T4 fixed |
 |---|---|---|
-| pass 1 (12 runs each, interleaved) | 1/12 failed | 2/12 failed |
-| pass 2 (12 runs each, interleaved) | 5/12 failed | 3/12 failed |
-| pooled (24 runs each) | **6/24 failed** | **5/24 failed** |
+| pass 1 (12 runs each, interleaved) | 3/12 failed | 2/12 failed |
+| pass 2 (12 runs each, interleaved) | 3/12 failed | 4/12 failed |
+| pooled (24 runs each) | **6/24 failed** | **6/24 failed** |
 
 Every failure is the same `assert 3 == 2` on `child_started`, and **the tree with more failures
-flips between passes** (and flipped the other way in the preceding pass: T0 2/12 vs T4 4/12) —
-which is exactly what a noise-dominated ~25 % flake looks like. So the node is timing-flaky in
-the product's own test at roughly that rate on both trees, and the card cannot have caused it:
+flips between passes** (and flipped the other way in a preceding pass: T0 2/12 vs T4 4/12) —
+which is exactly what a noise-dominated ~25 % flake looks like. Pooled over 24 interleaved runs
+per tree the two trees are indistinguishable (6 vs 6). So the node is timing-flaky in the
+product's own test at roughly that rate on both trees, and the card cannot have caused it:
 the only `worker.py` hunks in this diff are the `observability` import line and
 `_write_unhandled_exception_event` (see `r5-changes.diff`), neither of which is on that node's
 path. Evidence: `r5/flake-evidence/summary.json` and
@@ -120,28 +121,28 @@ path. Evidence: `r5/flake-evidence/summary.json` and
 
 r4's compat control claimed "both trees: 4 failed / 27 passed with the IDENTICAL failure set".
 r5 ran the same suite five times (twice on T0, twice on T4, plus the plain delivered run). In the
-final recorded pass every one of the five runs failed exactly 4 of 31, and the four stable node
-ids were the same on both trees:
+final recorded pass the four control runs each failed exactly 4 of 31 with the same four node
+ids on both trees, and the plain T4 run failed 3:
 
-| run | failing node ids |
-|---|---|
-| T0-1, T0-2, T4-1, T4-2 (4 each) | `read_desired_state…`, `stderr_exit_zero…`, `stale_child_heartbeat…`, `logon_wrapper…quoted_paths` |
-| T4 plain (4) | the same four |
-| an earlier pass (not the recorded one) | counts 3, 4, 4, 5, 5 — the extra/missing node was always `child_without_runtime…` |
+| run | count | failing node ids |
+|---|---|---|
+| T0-1, T0-2, T4-1, T4-2 | 4 each | `read_desired_state…`, `stderr_exit_zero…`, `stale_child_heartbeat…`, `logon_wrapper…quoted_paths` |
+| T4 plain | 3 | the same minus `logon_wrapper…quoted_paths` |
+| an earlier pass (not the recorded one) | 3, 4, 4, 5, 5 | the extra/missing node was always `child_without_runtime…` |
 
-So in this pass the T0 and T4 unions *are* equal; but an earlier pass produced a T4-only node
-(`test_child_without_runtime_session_is_terminated_and_restarted`) purely because the flaky nodes
-drop in and out. Two runs per tree are far too few samples for a ~25 % flake, so
-`harness/analyze_compat_control.py` (`r5/compat-control-analysis.json`) checks every T4-only node
-against the dedicated interleaved T0 evidence instead of trusting the union: that node fails on
-the **pristine T0 tree in 6 of 24 runs** with the identical `assert 3 == 2` on `child_started`.
-Recorded verdict: *"no card-specific compat failure: every T4 failure also occurs on T0"*,
-`unproven_t4_only_nodes` empty, rc 0.
+So the unions are equal in the recorded pass, and the counts are not stable across passes — the
+flake band observed at r5 is 3–5 failures out of 31. `harness/analyze_compat_control.py`
+(`r5/compat-control-analysis.json`) therefore does not rest on the union alone: it also checks
+every node that failed *only* on T4 in the current pass against the dedicated interleaved T0
+frequency evidence, which is how the earlier pass's T4-only node was resolved (it fails on the
+pristine T0 tree in 6 of 24 runs with the identical `assert 3 == 2` on `child_started`). Recorded
+verdict: *"no card-specific compat failure: every T4 failure also occurs on T0"*,
+`unproven_t4_only_nodes` empty, `only_on_T4` empty, rc 0.
 
-Three notes for the reviewer: (1) the per-run count `4 failed / 27 passed` should not be quoted
-as a fixed expectation — the flake band observed at r5 is 3–5 failures; (2) two of the varying
-nodes are restart-timing nodes and one of the stable four is the path-length node above, i.e. the
-same environment classes; (3) no compat failure has a fixed-tree-only signature in any pass.
+Notes for the reviewer: (1) `4 failed / 27 passed` must not be quoted as a fixed expectation —
+the observed band is 3–5; (2) two of the varying nodes are restart-timing nodes and the one that
+comes and goes in the plain run is the path-length node above, i.e. the same environment classes;
+(3) no compat failure had a fixed-tree-only signature in any pass.
 
 ### F-I14C-R4-04 (P3, patch not consumable) — FIXED and verified by `git apply`
 
@@ -207,9 +208,11 @@ re-ran the same tables on the line-ending-normalised tree (27 / 13 failures, sti
 | #4 other bench shapes not re-computed | unchanged; the reviewer's one-shape spot check agreed with the order of magnitude |
 | #5 `2f5c5740…` provenance | stays "untraceable" (F-I14C-04) |
 | #6 `iso/product_r3` provenance | unchanged; it is now additionally hashed in `r5/final_hashes.json` |
-| #7 controlled cwd scan | partially addressed: the flake evidence captures the deep-vs-short basetemp comparison on both trees |
-| #8 venv contents unverified | **fixed**: venv evidence added to `r5/final_hashes.json` |
+| #7 controlled cwd scan | **fixed**: `r5/flake-evidence/summary.json` (deep, cwd 166/167 chars), `short-basetemp/summary.json` (short, cwd 74/75) and `frequency-child_without_runtime.json` (24 interleaved runs per tree) together separate the path-length limit from the timing flake on both trees |
+| #8 venv contents unverified | **fixed**: venv evidence added to `r5/final_hashes.json` (`python.exe`, `pyvenv.cfg`, the three `RECORD` files, captured `pip list`) |
 | #9 no product-side timeout wrapper exists | unchanged by design; C12 remains a hard precondition (C9: the test is not promoted) |
+| #10 (r5's own) are the r5 commands reproducible in one pass? | **yes**: `harness/run_r5_commands.py` executed all 29 invocations in a single pass and recorded every raw rc in `r5/commands-r5-rc.json` with `all_as_expected=true`; `harness/sync_commands_json.py` folded them into `commands.json` mechanically, so no return code in the ledger was typed by hand |
+| #11 (r5's own) is the flake/attribution reasoning stable? | **yes, and it is stated as a band, not a point**: the compat failure count moves in a 3–5 band and the T0/T4 frequency difference flips between passes; the analysis therefore checks T4-only nodes against interleaved T0 evidence instead of trusting one comparison |
 
 ## r4 — disposition of the r3 review findings
 
@@ -416,7 +419,7 @@ The r2 review confirmed F-I14C-02/03/04/05/06 closed and opened one new P2 regre
 | **E5a** real CLI, `run_real_cli_exit.py --shape E5a` | rc=1, `stderr hits 0`, envelope, `traceback False`, `catalogs_created 0` |
 | E5b / E5c | unchanged carries (1 hit each, as declared) |
 | E4a order-swap control | still leaks → R3 remains load-bearing |
-| product contract tests on `iso/product_fixed/src` | 28 passed / 3 failed — the same 3 pre-existing failures |
+| product contract tests on `iso/product_fixed/src` | 28 passed / 3 failed — the same 3 pre-existing failures (r3 measurement; **superseded in r5**: the count is not stable run to run, it moves in a 3–5 band — see the r5 compat section) |
 
 ### C8 reason corrected (reviewer item 1)
 

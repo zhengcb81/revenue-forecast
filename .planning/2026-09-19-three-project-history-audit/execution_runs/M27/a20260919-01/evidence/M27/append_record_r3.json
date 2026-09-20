@@ -42,5 +42,23 @@
   "production scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
  },
  "not_signed_by_the_implementer": true,
- "implementer_note": "transcription only; the verdict is the reviewer's. status remains review_pending and the implementer does not sign accepted."
+ "implementer_note": "transcription only; the verdict is the reviewer's. status remains review_pending and the implementer does not sign accepted.",
+ "reassembly_r3": {
+  "why": "the doc generator once rewrote review.md and truncated the reviewer block; the base was recovered byte-exactly and the append replayed deterministically",
+  "base_source": "review_base.md on disk",
+  "base_sha256": "03ce281b293a37d2f81dd3313e2c273d0493591bbf6b54eb4a5c2e8eb92214b3",
+  "base_size_bytes": 10500,
+  "block_sha256": "39946c515394eabc77d2fb80ef1c1d5bf8b99464dd3479421eefd7d6c04e72ae",
+  "block_size_bytes": 7279,
+  "review_md_sha256_after_reassembly": "70e88a39dbad7e93ab4db5d582634b8c7b04aa3af6c57ac734fdb8556fb33dad",
+  "review_md_size_bytes_after_reassembly": 17779,
+  "state_of_review_md_before_reassembly": "OTHER (will be replaced by the canonical base+block)",
+  "canonical_has_base_as_exact_prefix": true,
+  "appended_block_lines": [
+   83,
+   144
+  ],
+  "generator_fix": "write_docs.py now writes the base to review_base.md ONLY and leaves review.md alone; review.md is assembled by apply_review_r3.py / this script, so the append cannot be truncated again",
+  "frozen_artefacts_touched": false
+ }
 }

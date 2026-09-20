@@ -78,14 +78,18 @@ def main() -> int:
             "disappeared_between_captures": sorted(pb - pa)[:20],
             "identical": pb == pa,
         }
-    # any porcelain entry that names this attempt is, by construction, caused by
-    # this attempt; it must never be a PRODUCTION file write (only the untracked
-    # attempt directory itself may appear)
-    attempt_writes = []
+    # Any changed porcelain entry whose path lies INSIDE this audit's execution_runs
+    # tree is this card's own artifact surface (the attempt directory is tracked in
+    # git since commit ddc81ab). Entries OUTSIDE that tree are production files and
+    # must never be touched by this card.
+    ATTEMPT_SCOPE = ".planning/2026-09-19-three-project-history-audit/execution_runs/"
+    attempt_path_changes = []
+    production_path_changes = []
     for name, d in porcelain_diff.items():
         for entry in d["appeared_between_captures"] + d["disappeared_between_captures"]:
-            if "I-11-A" in entry:
-                attempt_writes.append({name: entry})
+            path = entry[3:].strip() if len(entry) > 3 else entry
+            (attempt_path_changes if path.startswith(ATTEMPT_SCOPE) else
+             production_path_changes).append({name: entry})
 
     comparison = {
         "captures_are_distinct": not same_ts,
@@ -96,7 +100,8 @@ def main() -> int:
         "key_files_identical": key_files_identical,
         "plan_reviews_identical": reviews_identical,
         "porcelain_diff": porcelain_diff,
-        "porcelain_entries_naming_this_attempt": attempt_writes,
+        "porcelain_changes_inside_this_audits_execution_runs": attempt_path_changes,
+        "porcelain_changes_outside_the_audit_tree_PROBLEM_IF_ANY": production_path_changes,
         "production_repos_interesting_identity": ("head + key_files (porcelain is expected to move: the "
                                                   "owner/parent commit concurrently - see the review "
                                                   "finding P1-1 and decision.md DEC-13)"),
@@ -121,7 +126,10 @@ def main() -> int:
         print("  %-18s porcelain %d -> %d (appeared %d, disappeared %d)"
               % (name, d["count_capture_1"], d["count_capture_2"],
                  len(d["appeared_between_captures"]), len(d["disappeared_between_captures"])))
-    print("porcelain entries naming this attempt:", comparison["porcelain_entries_naming_this_attempt"])
+    print("porcelain entries inside the audit's execution_runs:",
+          len(comparison["porcelain_changes_inside_this_audits_execution_runs"]))
+    print("porcelain entries OUTSIDE the audit tree (must be none):",
+          comparison["porcelain_changes_outside_the_audit_tree_PROBLEM_IF_ANY"])
     print("wrote", b_path, "and", a_path)
     return 0
 

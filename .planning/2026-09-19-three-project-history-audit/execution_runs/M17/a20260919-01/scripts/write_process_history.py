@@ -70,6 +70,35 @@ UNNAMED_GENERATION = {
     "remediation": ("pass 7 regenerated every derived artefact; both hash tables now carry "
                     "drift_count/verified_utc, and the post-closing unit V-verify-hash-tables measures "
                     "them again"),
+    "mechanism_confirmed_appended": {
+        "mechanism": ("CONFIRMED by the orchestration layer: the repository's pre-commit/pre-push gate "
+                      "exports the unstaged changes to a patch, runs `git checkout -- .`, then replays "
+                      "the patch. One instance failed at the checkout step (255, `unable to unlink ... "
+                      "Invalid argument` on scratch files held by concurrent writers), the hook aborted "
+                      "and the replay never ran, leaving the production working tree reset to HEAD and "
+                      "rewriting/truncating files that were being written concurrently."),
+        "not_fully_attributed": ("the mechanism is confirmed; which concrete execution triggered each "
+                                 "affected instance, and the exact per-file list of that instance, were "
+                                 "NOT individually forensically established by this session"),
+        "time_window_qualification": ("inside that window any `production_hashes_unchanged=false` or "
+                                      "hash-mismatch reading is a CORRECT warning, not a checker error; "
+                                      "it must be reported with its timestamp and never suppressed"),
+        "restored_state": {
+            "restored_by": ("the orchestrating parent agent: the patch was re-applied with "
+                            "--exclude=.planning/* (--check and --apply both exit 0)"),
+            "scripts/model_registry.py": ("9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6"
+                                          "ee2d17f"),
+            "scripts/model_extensions.py": ("9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c856"
+                                            "2089b911"),
+            "anchor_equals_this_attempts_binding": True,
+        },
+        "incident_record": ("execution_runs/_isolation_incidents/"
+                           "20260920-precommit-stash-production-rollback/INCIDENT.md"),
+        "discipline": ("a production file hash is an EXTERNALLY CHANGEABLE quantity: time-scope every "
+                       "claim, record drift with its timestamp, escalate to the orchestration layer, and "
+                       "NEVER adjust frozen expectations or rejection criteria to accommodate a drifted "
+                       "tree"),
+    },
 }
 
 def atomic_dump(path, doc):

@@ -129,12 +129,25 @@ BLOCK_TEMPLATE = """
 - 本裁决**不**覆盖：D 披露映射（`unmapped`）、E 历史对账、F 精度/回测（`unproven`），也不得据此外推为行业级准确度。
 
 ### 实现者补充（非裁决的一部分；只作对本次转录与 P3 更正的定位说明）
+- **阅读顺序提示（只追加，不撤回任何既有行）**：本文件上方的正文写于 r1 时点，其中
+  "PENDING independent review" 横幅与第 1 节表格里的 `D mapping = NOT delivered`、`E probe =
+  not_applicable_with_reason` 等行，都是**该时点**的记录，按 append-only 规则**保持原样、不修改**。
+  本文件末尾的"独立复核 r2"节及其 `verdict: accepted_scoped —— 仅 formula` 是**在它们之后**出现的
+  更晚事实；两者并存不是矛盾，而是时间顺序。任何引用本文件的状态时，须引用**最后**那一节。
+  （本卡 `formula` 仍记为 `review_pending`：实现者不自签，与裁决并存不冲突。）
 - 本次追加不含任何期望值、阈值或判定条件的改动；四卡冻结件（`input.json`/`oracle.json`/
   `cases.json`/`run_result.json`）**未触碰**，哈希见 `evidence/<CARD>/append_record_r3.json` 的
   `frozen_four_piece_unchanged_after_append`。
 - 对遗留观察 1–4 的**只追加更正**落在 `evidence/<CARD>/revision_r3.json`（含 P3-A 两类 rc 归类、
   P3-B 自指条目与 `files_with_crlf` 口径、P3-C 字段命名更正、P3-D LF 覆盖边界），并在
   `evidence/<CARD>/revision_r3.json` 中给出改前→改后对照与仍存缺口。
+- **生产漂移窗口（追加事实）**：本文件组装期间，生产 `scripts/model_registry.py` 曾在
+  `2026-09-20 04:35:31–04:40:53` 窗口内**不是**锚定态（编排层 git 门的 `git checkout -- .`
+  返回 255 导致补丁未回放），随后由 owner 用同一补丁 `--exclude=.planning/*` 恢复；
+  恢复后该文件 sha256 回到锚定值 `9ec65295…`，四卡 `iso/checkout_scripts/*` 与生产重新逐字节一致。
+  窗口内的"生产哈希未变 = false"是**正确告警**，未被用来改动任何期望或冻结件。详见
+  `recovery/production_drift_and_restoration_r3.json` 与
+  `execution_runs/_isolation_incidents/20260920-model-registry-extension-rollback/INCIDENT.md`。
 - 四卡通用：`status` 保持 `review_pending`（本文件不构成实现者签名）；
   `disclosure_adaptation = unmapped`、`accuracy = unproven` 不外推。
 """
@@ -199,6 +212,13 @@ def main() -> int:
         print("  declared", fill["prefix_sha"], fill["prefix_size"], "B")
         print("  actual  ", old_sha, len(old_bytes), "B")
         return 1
+
+    # The reviewer block quotes the reviewer's DECLARED prefix, so the whole file is a pure
+    # function of the base document. Preserve that base under a stable name so the append can be
+    # replayed identically after write_docs.py regenerates the base (this keeps the append
+    # provable and idempotent instead of one-shot).
+    with open(base_path, "wb") as handle:
+        handle.write(old_bytes)
 
     # BINARY APPEND: the existing bytes can not be rewritten.
     with open(review_path, "ab") as handle:

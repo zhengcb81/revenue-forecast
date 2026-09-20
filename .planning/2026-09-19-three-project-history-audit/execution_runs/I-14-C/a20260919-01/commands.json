@@ -10,11 +10,25 @@
       "id": "CMD-I14C-A1",
       "purpose": "post-fix acceptance: real worker exception exit + CLI stderr envelope (E1,E2a,E2a-deep,E2b,E2b-residual,E3,E4,E1-no-cli)",
       "cwd": "<attempt>/after/cmd-A4",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/after/cmd-A4/pytest", "-q",
-               "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/after/cmd-A4/pytest",
+        "-q",
+        "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"
+      ],
       "config_paths": [],
-      "allowed_write_roots": ["<attempt>/after/cmd-A4", "<attempt>/after/cmd-A4/pytest"],
+      "allowed_write_roots": [
+        "<attempt>/after/cmd-A4",
+        "<attempt>/after/cmd-A4/pytest"
+      ],
       "network": "disabled",
       "timeout_seconds": 500,
       "expected_returncode": 0,
@@ -26,12 +40,28 @@
       "id": "CMD-I14C-B1",
       "purpose": "pre-fix counterexample: the SAME suite against the reconstructed pre-image modules must fail on the real exit",
       "cwd": "<attempt>/before/cmd-B1",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/before/cmd-B1/pytest", "-q",
-               "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"],
-      "env": {"I14C_PRODUCT_SRC": "<attempt>/before/prefix_src/src"},
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/before/cmd-B1/pytest",
+        "-q",
+        "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"
+      ],
+      "env": {
+        "I14C_PRODUCT_SRC": "<attempt>/before/prefix_src/src"
+      },
       "config_paths": [],
-      "allowed_write_roots": ["<attempt>/before/cmd-B1", "<attempt>/before/cmd-B1/pytest"],
+      "allowed_write_roots": [
+        "<attempt>/before/cmd-B1",
+        "<attempt>/before/cmd-B1/pytest"
+      ],
       "network": "disabled",
       "timeout_seconds": 500,
       "expected_returncode": 1,
@@ -43,12 +73,29 @@
       "id": "CMD-I14C-A2",
       "purpose": "probe suite (raw rc + marker grep per case) on the live post-fix product",
       "cwd": "<attempt>/after",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_exit_probe.py",
-               "--label", "pass2-after", "--out", "<attempt>/after",
-               "--run-root", "<attempt>/after/runs-pass2-after",
-               "--python", "<iso-python>", "--src", "CW/src", "--tests-dir", "CW/tests/contract"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_exit_probe.py",
+        "--label",
+        "pass2-after",
+        "--out",
+        "<attempt>/after",
+        "--run-root",
+        "<attempt>/after/runs-pass2-after",
+        "--python",
+        "<iso-python>",
+        "--src",
+        "CW/src",
+        "--tests-dir",
+        "CW/tests/contract"
+      ],
       "config_paths": [],
-      "allowed_write_roots": ["<attempt>/after"],
+      "allowed_write_roots": [
+        "<attempt>/after"
+      ],
       "network": "disabled",
       "timeout_seconds": 400,
       "expected_returncode": 0,
@@ -60,13 +107,29 @@
       "id": "CMD-I14C-B2",
       "purpose": "probe suite on the reconstructed pre-image modules (before-pass)",
       "cwd": "<attempt>/before",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_exit_probe.py",
-               "--label", "pass1-prefix", "--out", "<attempt>/before",
-               "--run-root", "<attempt>/before/runs-pass1-prefix",
-               "--python", "<iso-python>", "--src", "<attempt>/before/prefix_src/src",
-               "--tests-dir", "CW/tests/contract"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_exit_probe.py",
+        "--label",
+        "pass1-prefix",
+        "--out",
+        "<attempt>/before",
+        "--run-root",
+        "<attempt>/before/runs-pass1-prefix",
+        "--python",
+        "<iso-python>",
+        "--src",
+        "<attempt>/before/prefix_src/src",
+        "--tests-dir",
+        "CW/tests/contract"
+      ],
       "config_paths": [],
-      "allowed_write_roots": ["<attempt>/before"],
+      "allowed_write_roots": [
+        "<attempt>/before"
+      ],
       "network": "disabled",
       "timeout_seconds": 400,
       "expected_returncode": 0,
@@ -78,12 +141,25 @@
       "id": "CMD-I14C-A3",
       "purpose": "backward compatibility: the product's own worker-bootstrap + observability contract tests",
       "cwd": "<attempt>/after/cmd-A5",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/after/cmd-A5/pytest", "-q",
-               "CW/tests/contract/test_source_catalog_worker_bootstrap.py",
-               "CW/tests/contract/test_observability.py"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/after/cmd-A5/pytest",
+        "-q",
+        "CW/tests/contract/test_source_catalog_worker_bootstrap.py",
+        "CW/tests/contract/test_observability.py"
+      ],
       "config_paths": [],
-      "allowed_write_roots": ["<attempt>/after/cmd-A5"],
+      "allowed_write_roots": [
+        "<attempt>/after/cmd-A5"
+      ],
       "network": "disabled",
       "timeout_seconds": 500,
       "expected_returncode": 1,
@@ -95,12 +171,27 @@
       "id": "CMD-I14C-B3",
       "purpose": "control for CMD-I14C-A3: same product test file against the pre-image modules",
       "cwd": "<attempt>/before/cmd-B2",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/before/cmd-B2/pytest", "-q",
-               "CW/tests/contract/test_source_catalog_worker_bootstrap.py"],
-      "env": {"PYTHONPATH": "<attempt>/before/prefix_src/src"},
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/before/cmd-B2/pytest",
+        "-q",
+        "CW/tests/contract/test_source_catalog_worker_bootstrap.py"
+      ],
+      "env": {
+        "PYTHONPATH": "<attempt>/before/prefix_src/src"
+      },
       "config_paths": [],
-      "allowed_write_roots": ["<attempt>/before/cmd-B2"],
+      "allowed_write_roots": [
+        "<attempt>/before/cmd-B2"
+      ],
       "network": "disabled",
       "timeout_seconds": 500,
       "expected_returncode": 1,
@@ -112,12 +203,28 @@
       "id": "CMD-I14C-R2-BUILD",
       "purpose": "r2: rebuild T1 (the r1-fixed tree the r1 review saw) from changes.diff, hash-verified; and T3 (order-swap control)",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/apply_card_diff.py",
-               "--diff", "<attempt>/changes.diff", "--cw", "CW",
-               "--out", "<attempt>/iso/product_r1", "--python", "<iso-python>"],
-      "allowed_write_roots": ["<attempt>/iso"],
-      "network": "disabled", "timeout_seconds": 300,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/apply_card_diff.py",
+        "--diff",
+        "<attempt>/changes.diff",
+        "--cw",
+        "CW",
+        "--out",
+        "<attempt>/iso/product_r1",
+        "--python",
+        "<iso-python>"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/iso"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "all_ok=true: all three modules equal the recorded r1 hashes (worker 39971d05..., observability afbaa68f..., cli af3aa91a...)",
       "evidence": "r2/product_r1_build.json"
     },
@@ -125,12 +232,26 @@
       "id": "CMD-I14C-R2-RULETABLE",
       "purpose": "r2/F-I14C-02: the frozen rule table against T0, T1 and T2",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_rule_table.py",
-               "--src", "<attempt>/iso/<tree>/src", "--label", "<tree>",
-               "--out", "<attempt>/r2/rule_table_<tree>.json"],
-      "allowed_write_roots": ["<attempt>/r2"],
-      "network": "disabled", "timeout_seconds": 180,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_rule_table.py",
+        "--src",
+        "<attempt>/iso/<tree>/src",
+        "--label",
+        "<tree>",
+        "--out",
+        "<attempt>/r2/rule_table_<tree>.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r2"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 180,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "T0 helper_present=false; T1 leak_count=9 of 20 positives (F-02 reproduced); T2 leak_count=0 and over_redaction_count=0",
       "evidence": "r2/rule_table_product{,_r1,_fixed}.json"
     },
@@ -138,12 +259,28 @@
       "id": "CMD-I14C-R2-CLI",
       "purpose": "r2/F-I14C-03: drive the PRODUCT'S OWN CLI entry point for E5a/E5b/E5c on T0, T1, T2",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_real_cli_exit.py",
-               "--shape", "E5a|E5b|E5c", "--run-dir", "<attempt>/r2/cli-<tree>-<shape>",
-               "--src", "<attempt>/iso/<tree>/src", "--python", "<iso-python>"],
-      "allowed_write_roots": ["<attempt>/r2"],
-      "network": "disabled", "timeout_seconds": 180,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_real_cli_exit.py",
+        "--shape",
+        "E5a|E5b|E5c",
+        "--run-dir",
+        "<attempt>/r2/cli-<tree>-<shape>",
+        "--src",
+        "<attempt>/iso/<tree>/src",
+        "--python",
+        "<iso-python>"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r2"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 180,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "E5a: T0/T1 bare traceback + 1 stderr hit, T2 envelope + 0 hits; E5b: T2 envelope but 1 hit (R5 residual); E5c: rc=2 + 1 hit on every tree (argparse carry); catalogs_created=[] in all runs",
       "evidence": "r2/cli-*/result.json, r2/cli-*/stderr.txt"
     },
@@ -151,13 +288,32 @@
       "id": "CMD-I14C-R2-PROBE",
       "purpose": "r2: full per-file probe (E1..E4b, E1-no-cli) on T0, T2 and the T3 order-swap control",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_exit_probe.py",
-               "--label", "r2-before|r2-after|r2-swapped", "--out", "<attempt>/r2",
-               "--run-root", "<attempt>/r2/runs-<label>", "--python", "<iso-python>",
-               "--src", "<attempt>/iso/<tree>/src", "--tests-dir", "CW/tests/contract"],
-      "allowed_write_roots": ["<attempt>/r2"],
-      "network": "disabled", "timeout_seconds": 400,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_exit_probe.py",
+        "--label",
+        "r2-before|r2-after|r2-swapped",
+        "--out",
+        "<attempt>/r2",
+        "--run-root",
+        "<attempt>/r2/runs-<label>",
+        "--python",
+        "<iso-python>",
+        "--src",
+        "<attempt>/iso/<tree>/src",
+        "--tests-dir",
+        "CW/tests/contract"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r2"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 400,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "before leaks (E1 1/1, E2b 1/1, E4a 9/15, E4b 0/1, E1-no-cli 1/0); after all 0 except the declared E2b-residual 1/1; swapped shows E4a event=9 (control leaks)",
       "evidence": "r2/probe_results_r2-{before,after,swapped}.json"
     },
@@ -165,13 +321,30 @@
       "id": "CMD-I14C-R2-SUITE",
       "purpose": "r2: the frozen suite (incl. E4a/E4b/E5 and the order-swap control) before and after",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/r2/cmd-r2-{before,after}/pytest", "-q",
-               "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"],
-      "env": {"I14C_PRODUCT_SRC": "iso/product/src for the before run; unset (= iso/product_fixed/src) for the after run"},
-      "allowed_write_roots": ["<attempt>/r2"],
-      "network": "disabled", "timeout_seconds": 600,
-      "expected_returncode": 1, "raw_returncode": 1,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/r2/cmd-r2-{before,after}/pytest",
+        "-q",
+        "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"
+      ],
+      "env": {
+        "I14C_PRODUCT_SRC": "iso/product/src for the before run; unset (= iso/product_fixed/src) for the after run"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r2"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 600,
+      "expected_returncode": 1,
+      "raw_returncode": 1,
       "expected_business_result": "before: rc=1 35 failed / 9 passed (rule-table failures are ImportError = helper absent, accounted separately); after: rc=0 45 passed",
       "evidence": "r2/cmd-r2-before/stdout.txt, r2/cmd-r2-after/stdout.txt"
     },
@@ -179,14 +352,31 @@
       "id": "CMD-I14C-R2-COMPAT",
       "purpose": "r2 backward compatibility: the product's own worker-bootstrap + observability tests against iso/product_fixed",
       "cwd": "<attempt>/r2/cmd-compat",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/r2/cmd-compat/pytest", "-q",
-               "CW/tests/contract/test_source_catalog_worker_bootstrap.py",
-               "CW/tests/contract/test_observability.py"],
-      "env": {"PYTHONPATH": "<attempt>/iso/product_fixed/src"},
-      "allowed_write_roots": ["<attempt>/r2/cmd-compat"],
-      "network": "disabled", "timeout_seconds": 600,
-      "expected_returncode": 1, "raw_returncode": 1,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/r2/cmd-compat/pytest",
+        "-q",
+        "CW/tests/contract/test_source_catalog_worker_bootstrap.py",
+        "CW/tests/contract/test_observability.py"
+      ],
+      "env": {
+        "PYTHONPATH": "<attempt>/iso/product_fixed/src"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r2/cmd-compat"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 600,
+      "expected_returncode": 1,
+      "raw_returncode": 1,
       "expected_business_result": "28 passed / 3 failed - the same 3 pre-existing environment/timing failures already reproduced on T0 in r1; module under test confirmed to be iso/product_fixed/src/.../observability.py",
       "evidence": "r2/cmd-compat/stdout.txt, r2/cmd-compat/stderr.txt"
     },
@@ -194,8 +384,17 @@
       "id": "CMD-I14C-A4",
       "purpose": "rule probe: redaction table + leak localisation",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/probe_rule.py",
-               "--src", "CW/src", "--runs", "<attempt>/after/runs-pass2-after"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/probe_rule.py",
+        "--src",
+        "CW/src",
+        "--runs",
+        "<attempt>/after/runs-pass2-after"
+      ],
       "config_paths": [],
       "allowed_write_roots": [],
       "network": "disabled",
@@ -209,9 +408,21 @@
       "id": "CMD-I14C-NEG1",
       "purpose": "negative binding case: a run dir outside execution_runs must be refused",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/drive_real_exit.py",
-               "--scenario", "plain", "--run-dir", "<system temp>/i14c-outside",
-               "--src", "CW/src", "--tests-dir", "CW/tests/contract"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/drive_real_exit.py",
+        "--scenario",
+        "plain",
+        "--run-dir",
+        "<system temp>/i14c-outside",
+        "--src",
+        "CW/src",
+        "--tests-dir",
+        "CW/tests/contract"
+      ],
       "config_paths": [],
       "allowed_write_roots": [],
       "network": "disabled",
@@ -225,11 +436,25 @@
       "id": "CMD-I14C-REBUILD",
       "purpose": "rebuild + verify the pre-image tree used by every before-pass",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/build_prefix_tree.py",
-               "--cw", "CW", "--snap", "<attempt>/before/prefix_src",
-               "--diff", "<attempt>/changes.diff", "--python", "<iso-python>"],
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/build_prefix_tree.py",
+        "--cw",
+        "CW",
+        "--snap",
+        "<attempt>/before/prefix_src",
+        "--diff",
+        "<attempt>/changes.diff",
+        "--python",
+        "<iso-python>"
+      ],
       "config_paths": [],
-      "allowed_write_roots": ["<attempt>/before"],
+      "allowed_write_roots": [
+        "<attempt>/before"
+      ],
       "network": "disabled",
       "timeout_seconds": 300,
       "expected_returncode": 0,
@@ -241,12 +466,28 @@
       "id": "CMD-I14C-R3-BENCH",
       "purpose": "r3/F-I14C-07: timing table for the redactor on long `_`/`-` separated keys, 20 s per-case subprocess cap, run for r1 (control), r2 (regressed specimen) and r3 (fix)",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/bench_redact.py",
-               "--src", "<attempt>/iso/<tree>/src", "--label", "<tree>",
-               "--out", "<attempt>/r3/bench_<tree>.json", "--timeout", "20"],
-      "allowed_write_roots": ["<attempt>/r3"],
-      "network": "disabled", "timeout_seconds": 1200,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/bench_redact.py",
+        "--src",
+        "<attempt>/iso/<tree>/src",
+        "--label",
+        "<tree>",
+        "--out",
+        "<attempt>/r3/bench_<tree>.json",
+        "--timeout",
+        "20"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r3"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 1200,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "r1 linear (40000 = 0.0028 s); r2 quadratic (8000 = 10.6 s, 16000/40000 = TIMEOUT on underscore-segments, dash-segments, segments-no-separator, quoted-never-closed); r3 linear (worst case 0.0619 s at k=40000)",
       "evidence": "r3/bench_T1-r1.json, r3/bench_T2-r2-regressed.json, r3/bench_T2-r3-scanner.json, r3/timing_three_way.json"
     },
@@ -254,11 +495,25 @@
       "id": "CMD-I14C-R3-VARIANTS",
       "purpose": "r3/F-I14C-07: measure the candidate designs (r2 nested star, A1 linear-candidate+python, A2 scanner, B bounded {0,8}) before choosing",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/redact_variants.py",
-               "--bench", "--out", "<attempt>/r3/variants.json", "--timeout", "20"],
-      "allowed_write_roots": ["<attempt>/r3"],
-      "network": "disabled", "timeout_seconds": 1800,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/redact_variants.py",
+        "--bench",
+        "--out",
+        "<attempt>/r3/variants.json",
+        "--timeout",
+        "20"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r3"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 1800,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "A1 (the reviewer's literal option (a)) is ALSO quadratic: 8000 = 2.66 s, 16000/40000 = TIMEOUT; A2 scanner and B-bounded are linear -> the scanner was chosen",
       "evidence": "r3/variants.json"
     },
@@ -266,12 +521,26 @@
       "id": "CMD-I14C-R3-RULETABLE",
       "purpose": "r3: the frozen rule table (20 credential positives + 8 must-not-redact) against the scanner",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_rule_table.py",
-               "--src", "<attempt>/iso/product_fixed/src", "--label", "T2-r3",
-               "--out", "<attempt>/r3/rule_table_T2-r3.json"],
-      "allowed_write_roots": ["<attempt>/r3"],
-      "network": "disabled", "timeout_seconds": 300,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_rule_table.py",
+        "--src",
+        "<attempt>/iso/product_fixed/src",
+        "--label",
+        "T2-r3",
+        "--out",
+        "<attempt>/r3/rule_table_T2-r3.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r3"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "helper_present=true, leak_count=0, over_redaction_count=0",
       "evidence": "r3/rule_table_T2-r3.json"
     },
@@ -279,12 +548,26 @@
       "id": "CMD-I14C-R3-DIAG",
       "purpose": "r3/reviewer item 2: 15-entry diagnostic corpus per tree, to state over-redaction scope honestly and to register C10",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_diagnostic_table.py",
-               "--src", "<attempt>/iso/<tree>/src", "--label", "<tree>",
-               "--out", "<attempt>/r3/diagnostics_<tree>.json"],
-      "allowed_write_roots": ["<attempt>/r3"],
-      "network": "disabled", "timeout_seconds": 300,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_diagnostic_table.py",
+        "--src",
+        "<attempt>/iso/<tree>/src",
+        "--label",
+        "<tree>",
+        "--out",
+        "<attempt>/r3/diagnostics_<tree>.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r3"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "r1: 4 credential leaks + 3 over-redactions; r2 and r3: 0 leaks + 4 over-redactions (pwd= is the r2-new one); residuals confirmed: digest=, --api-key <value>, JSON quoted key",
       "evidence": "r3/diagnostics_product_r1.json, r3/diagnostics_product_r2.json, r3/diagnostics_product_fixed.json"
     },
@@ -292,12 +575,27 @@
       "id": "CMD-I14C-R3-SUITE",
       "purpose": "r3: full frozen suite including the new F-07 deadline cases, the E4a order-swap control, E4b and E5a/E5b/E5c",
       "cwd": "<attempt>/r3/cmd-r3-suite",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/r3/cmd-r3-suite/pytest", "-q",
-               "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"],
-      "allowed_write_roots": ["<attempt>/r3"],
-      "network": "disabled", "timeout_seconds": 900,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/r3/cmd-r3-suite/pytest",
+        "-q",
+        "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r3"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "50 passed (was 45 before the F-07 cases)",
       "evidence": "r3/cmd-r3-suite/stdout.txt, r3/cmd-r3-suite/stderr.txt"
     },
@@ -305,13 +603,32 @@
       "id": "CMD-I14C-R3-PROBE",
       "purpose": "r3: per-file probe (E1..E4b, E1-no-cli) confirming E4a/E4b stay green after the F-07 rewrite",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_exit_probe.py",
-               "--label", "r3-after", "--out", "<attempt>/r3",
-               "--run-root", "<attempt>/r3/runs-r3-after", "--python", "<iso-python>",
-               "--src", "<attempt>/iso/product_fixed/src", "--tests-dir", "CW/tests/contract"],
-      "allowed_write_roots": ["<attempt>/r3"],
-      "network": "disabled", "timeout_seconds": 400,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_exit_probe.py",
+        "--label",
+        "r3-after",
+        "--out",
+        "<attempt>/r3",
+        "--run-root",
+        "<attempt>/r3/runs-r3-after",
+        "--python",
+        "<iso-python>",
+        "--src",
+        "<attempt>/iso/product_fixed/src",
+        "--tests-dir",
+        "CW/tests/contract"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r3"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 400,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "every acceptance case 0/0/0; E2b-residual 1/1 by design",
       "evidence": "r3/probe_results_r3-after.json"
     },
@@ -319,12 +636,28 @@
       "id": "CMD-I14C-R3-CLI",
       "purpose": "r3: real CLI exit E5a/E5b/E5c against the r3 tree (E5a must stay at 0 stderr hits)",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_real_cli_exit.py",
-               "--shape", "E5a|E5b|E5c", "--run-dir", "<attempt>/r3/cli-r3-<shape>",
-               "--src", "<attempt>/iso/product_fixed/src", "--python", "<iso-python>"],
-      "allowed_write_roots": ["<attempt>/r3"],
-      "network": "disabled", "timeout_seconds": 180,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_real_cli_exit.py",
+        "--shape",
+        "E5a|E5b|E5c",
+        "--run-dir",
+        "<attempt>/r3/cli-r3-<shape>",
+        "--src",
+        "<attempt>/iso/product_fixed/src",
+        "--python",
+        "<iso-python>"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r3"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 180,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "E5a rc=1 stderr hits 0 envelope true traceback false catalogs_created []; E5b rc=1 hits 1; E5c rc=2 hits 1 (declared carries)",
       "evidence": "r3/cli-r3-E5a/result.json, r3/cli-r3-E5b/result.json, r3/cli-r3-E5c/result.json"
     },
@@ -332,14 +665,31 @@
       "id": "CMD-I14C-R3-COMPAT",
       "purpose": "r3 backward compatibility after the observability rewrite",
       "cwd": "<attempt>/r3/cmd-compat",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/r3/cmd-compat/pytest", "-q",
-               "CW/tests/contract/test_source_catalog_worker_bootstrap.py",
-               "CW/tests/contract/test_observability.py"],
-      "env": {"PYTHONPATH": "<attempt>/iso/product_fixed/src"},
-      "allowed_write_roots": ["<attempt>/r3/cmd-compat"],
-      "network": "disabled", "timeout_seconds": 600,
-      "expected_returncode": 1, "raw_returncode": 1,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/r3/cmd-compat/pytest",
+        "-q",
+        "CW/tests/contract/test_source_catalog_worker_bootstrap.py",
+        "CW/tests/contract/test_observability.py"
+      ],
+      "env": {
+        "PYTHONPATH": "<attempt>/iso/product_fixed/src"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r3/cmd-compat"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 600,
+      "expected_returncode": 1,
+      "raw_returncode": 1,
       "expected_business_result": "28 passed / 3 failed - the same 3 pre-existing environment/timing failures",
       "evidence": "r3/cmd-compat/stdout.txt"
     },
@@ -347,13 +697,31 @@
       "id": "CMD-I14C-R4-RULETABLE",
       "purpose": "r4/F-I14C-08: the rule table WITH exact-output fidelity (41 entries; exits 2 on any mismatch) across r1 / r2 / r3-specimen / r4",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_rule_table.py",
-               "--src", "<attempt>/iso/<tree>/src", "--label", "<tree>",
-               "--out", "<attempt>/r4/rule_table_<tree>.json"],
-      "allowed_write_roots": ["<attempt>/r4"],
-      "network": "disabled", "timeout_seconds": 300,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_rule_table.py",
+        "--src",
+        "<attempt>/iso/<tree>/src",
+        "--label",
+        "<tree>",
+        "--out",
+        "<attempt>/r4/rule_table_<tree>.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r4"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
       "expected_returncode": "0 for a fidelity-clean tree, 2 on any fidelity failure",
-      "raw_returncode": {"product_r1": 2, "product_r2": 0, "product_r3": 2, "product_fixed": 0},
+      "raw_returncode": {
+        "product_r1": 2,
+        "product_r2": 0,
+        "product_r3": 2,
+        "product_fixed": 0
+      },
       "expected_business_result": "r1: 11 leaks + 11 fidelity failures; r2: 0/0; r3 specimen: 0 leaks BUT 24 fidelity failures (the F-I14C-08 signature); r4: 0/0",
       "evidence": "r4/rule_table_product{,_r1,_r2,_r3,_fixed}.json + .stdout.txt"
     },
@@ -361,13 +729,31 @@
       "id": "CMD-I14C-R4-DIAG",
       "purpose": "r4: diagnostic corpus with fidelity; the four C11 over-redactions are classified known_over_redaction so the criterion still bites on everything else",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_diagnostic_table.py",
-               "--src", "<attempt>/iso/<tree>/src", "--label", "<tree>",
-               "--out", "<attempt>/r4/diagnostics_<tree>.json"],
-      "allowed_write_roots": ["<attempt>/r4"],
-      "network": "disabled", "timeout_seconds": 300,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_diagnostic_table.py",
+        "--src",
+        "<attempt>/iso/<tree>/src",
+        "--label",
+        "<tree>",
+        "--out",
+        "<attempt>/r4/diagnostics_<tree>.json"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r4"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 300,
       "expected_returncode": "0 for a fidelity-clean tree, 2 on any fidelity failure",
-      "raw_returncode": {"product_r1": 2, "product_r2": 0, "product_r3": 2, "product_fixed": 0},
+      "raw_returncode": {
+        "product_r1": 2,
+        "product_r2": 0,
+        "product_r3": 2,
+        "product_fixed": 0
+      },
       "expected_business_result": "known over-redacted 3/4/4/4; NEW over-redaction 0 in every tree; fidelity failures 5/0/12/0",
       "evidence": "r4/diagnostics_product{,_r1,_r2,_r3,_fixed}.json"
     },
@@ -375,12 +761,27 @@
       "id": "CMD-I14C-R4-SUITE",
       "purpose": "r4: full suite including the 23 exact-pair fidelity cases and the two real-exit fidelity cases",
       "cwd": "<attempt>/r4/cmd-r4-suite",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/r4/cmd-r4-suite/pytest", "-q",
-               "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"],
-      "allowed_write_roots": ["<attempt>/r4"],
-      "network": "disabled", "timeout_seconds": 900,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/r4/cmd-r4-suite/pytest",
+        "-q",
+        "<attempt>/harness/tests/test_i14c_real_exit_redaction.py"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r4"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "76 passed (was 50 before the fidelity cases)",
       "evidence": "r4/cmd-r4-suite/stdout.txt"
     },
@@ -388,13 +789,32 @@
       "id": "CMD-I14C-R4-PROBE",
       "purpose": "r4: confirm the probe baselines are restored (message strings and lengths)",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_exit_probe.py",
-               "--label", "r4-after", "--out", "<attempt>/r4",
-               "--run-root", "<attempt>/r4/runs-r4-after", "--python", "<iso-python>",
-               "--src", "<attempt>/iso/product_fixed/src", "--tests-dir", "CW/tests/contract"],
-      "allowed_write_roots": ["<attempt>/r4"],
-      "network": "disabled", "timeout_seconds": 400,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_exit_probe.py",
+        "--label",
+        "r4-after",
+        "--out",
+        "<attempt>/r4",
+        "--run-root",
+        "<attempt>/r4/runs-r4-after",
+        "--python",
+        "<iso-python>",
+        "--src",
+        "<attempt>/iso/product_fixed/src",
+        "--tests-dir",
+        "CW/tests/contract"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r4"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 400,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "E2b = 'upload failed for token=<redacted>' len 34; E4a = 'password: <redacted>' len 20; E4b len 193; every acceptance case 0 hits; E2b-residual 1/1 by design",
       "evidence": "r4/probe_results_r4-after.json"
     },
@@ -402,12 +822,28 @@
       "id": "CMD-I14C-R4-CLI",
       "purpose": "r4: real CLI E5a/E5b/E5c; the E5a envelope must again identify the missing config file",
       "cwd": "<attempt>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "<attempt>/harness/run_real_cli_exit.py",
-               "--shape", "E5a|E5b|E5c", "--run-dir", "<attempt>/r4/cli-r4-<shape>",
-               "--src", "<attempt>/iso/product_fixed/src", "--python", "<iso-python>"],
-      "allowed_write_roots": ["<attempt>/r4"],
-      "network": "disabled", "timeout_seconds": 180,
-      "expected_returncode": 0, "raw_returncode": 0,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>/harness/run_real_cli_exit.py",
+        "--shape",
+        "E5a|E5b|E5c",
+        "--run-dir",
+        "<attempt>/r4/cli-r4-<shape>",
+        "--src",
+        "<attempt>/iso/product_fixed/src",
+        "--python",
+        "<iso-python>"
+      ],
+      "allowed_write_roots": [
+        "<attempt>/r4"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 180,
+      "expected_returncode": 0,
+      "raw_returncode": 0,
       "expected_business_result": "E5a: stderr hits 0, envelope true, no traceback, catalogs_created [], stderr contains 'token=<redacted>' and no 'tokentoken'; E5b/E5c 1 hit each (declared carries)",
       "evidence": "r4/cli-r4-E5a/result.json, r4/cli-r4-E5a/stderr.txt"
     },
@@ -415,16 +851,1039 @@
       "id": "CMD-I14C-R4-COMPAT-CONTROL",
       "purpose": "r4: control for the compat suite - the same full-file run twice on pristine T0 and twice on r4 from the same cwd pattern",
       "cwd": "<attempt>/r4/compat-control-<tree>-<n>",
-      "argv": ["<iso-python>", "-X", "utf8", "-B", "-m", "pytest", "-p", "no:cacheprovider",
-               "--basetemp", "<attempt>/r4/compat-control-<tree>-<n>/pytest", "-q",
-               "CW/tests/contract/test_source_catalog_worker_bootstrap.py",
-               "CW/tests/contract/test_observability.py"],
-      "env": {"PYTHONPATH": "<attempt>/iso/<tree>/src"},
-      "allowed_write_roots": ["<attempt>/r4"],
-      "network": "disabled", "timeout_seconds": 600,
-      "expected_returncode": 1, "raw_returncode": 1,
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>/r4/compat-control-<tree>-<n>/pytest",
+        "-q",
+        "CW/tests/contract/test_source_catalog_worker_bootstrap.py",
+        "CW/tests/contract/test_observability.py"
+      ],
+      "env": {
+        "PYTHONPATH": "<attempt>/iso/<tree>/src"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r4"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 600,
+      "expected_returncode": 1,
+      "raw_returncode": 1,
       "expected_business_result": "both trees: 4 failed / 27 passed with the IDENTICAL failure set, proving the 4th entry is cwd/environment-dependent and not card-caused",
       "evidence": "r4/compat-control-product-{1,2}/stdout.txt, r4/compat-control-product_fixed-{1,2}/stdout.txt"
+    },
+    {
+      "id": "CMD-I14C-R5-RULETABLE",
+      "purpose": "r5: rule table with exact-output fidelity, 44 entries, 0/2/3 convention",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\run_rule_table.py",
+        "--src",
+        "<attempt>\\iso\\product\\src",
+        "--label",
+        "product",
+        "--out",
+        "<attempt>\\r5\\rule_table_product.json"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": {
+        "product": 2,
+        "product_r1": 3,
+        "product_r2": 0,
+        "product_r3": 3,
+        "product_fixed": 0
+      },
+      "evidence": [
+        "r5\\rule_table_product.stdout.txt",
+        "r5\\rule_table_product_fixed.stdout.txt",
+        "r5\\rule_table_product_r1.stdout.txt",
+        "r5\\rule_table_product_r2.stdout.txt",
+        "r5\\rule_table_product_r3.stdout.txt"
+      ],
+      "variants": {
+        "product": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_rule_table.py",
+            "--src",
+            "<attempt>\\iso\\product\\src",
+            "--label",
+            "product",
+            "--out",
+            "<attempt>\\r5\\rule_table_product.json"
+          ],
+          "seconds": 1.19
+        },
+        "product_r1": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_rule_table.py",
+            "--src",
+            "<attempt>\\iso\\product_r1\\src",
+            "--label",
+            "product_r1",
+            "--out",
+            "<attempt>\\r5\\rule_table_product_r1.json"
+          ],
+          "seconds": 1.04
+        },
+        "product_r2": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_rule_table.py",
+            "--src",
+            "<attempt>\\iso\\product_r2\\src",
+            "--label",
+            "product_r2",
+            "--out",
+            "<attempt>\\r5\\rule_table_product_r2.json"
+          ],
+          "seconds": 0.86
+        },
+        "product_r3": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_rule_table.py",
+            "--src",
+            "<attempt>\\iso\\product_r3\\src",
+            "--label",
+            "product_r3",
+            "--out",
+            "<attempt>\\r5\\rule_table_product_r3.json"
+          ],
+          "seconds": 0.85
+        },
+        "product_fixed": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_rule_table.py",
+            "--src",
+            "<attempt>\\iso\\product_fixed\\src",
+            "--label",
+            "product_fixed",
+            "--out",
+            "<attempt>\\r5\\rule_table_product_fixed.json"
+          ],
+          "seconds": 0.81
+        }
+      },
+      "expected_returncode": {
+        "product": 2,
+        "product_r1": 3,
+        "product_r2": 0,
+        "product_r3": 3,
+        "product_fixed": 0
+      },
+      "expected_business_result": "rc 0/2/3 by the run_card convention: T0 cannot_adjudicate (no helper), T1 negative (leaks+fidelity), T2 pass, T3 specimen negative (0 leaks but fidelity failures), T4 pass - a green line now requires exact output fidelity, not just marker absence",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-DIAG",
+      "purpose": "r5: 30-entry diagnostic corpus (over-redaction scope), 0/2/3 convention",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\run_diagnostic_table.py",
+        "--src",
+        "<attempt>\\iso\\product\\src",
+        "--label",
+        "product",
+        "--out",
+        "<attempt>\\r5\\diagnostics_product.json"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": {
+        "product": 2,
+        "product_r1": 3,
+        "product_r2": 0,
+        "product_r3": 3,
+        "product_fixed": 0
+      },
+      "evidence": [
+        "r5\\diagnostics_product.stdout.txt",
+        "r5\\diagnostics_product_fixed.stdout.txt",
+        "r5\\diagnostics_product_r1.stdout.txt",
+        "r5\\diagnostics_product_r2.stdout.txt",
+        "r5\\diagnostics_product_r3.stdout.txt"
+      ],
+      "variants": {
+        "product": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_diagnostic_table.py",
+            "--src",
+            "<attempt>\\iso\\product\\src",
+            "--label",
+            "product",
+            "--out",
+            "<attempt>\\r5\\diagnostics_product.json"
+          ],
+          "seconds": 1.23
+        },
+        "product_r1": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_diagnostic_table.py",
+            "--src",
+            "<attempt>\\iso\\product_r1\\src",
+            "--label",
+            "product_r1",
+            "--out",
+            "<attempt>\\r5\\diagnostics_product_r1.json"
+          ],
+          "seconds": 0.83
+        },
+        "product_r2": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_diagnostic_table.py",
+            "--src",
+            "<attempt>\\iso\\product_r2\\src",
+            "--label",
+            "product_r2",
+            "--out",
+            "<attempt>\\r5\\diagnostics_product_r2.json"
+          ],
+          "seconds": 0.86
+        },
+        "product_r3": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_diagnostic_table.py",
+            "--src",
+            "<attempt>\\iso\\product_r3\\src",
+            "--label",
+            "product_r3",
+            "--out",
+            "<attempt>\\r5\\diagnostics_product_r3.json"
+          ],
+          "seconds": 0.8
+        },
+        "product_fixed": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_diagnostic_table.py",
+            "--src",
+            "<attempt>\\iso\\product_fixed\\src",
+            "--label",
+            "product_fixed",
+            "--out",
+            "<attempt>\\r5\\diagnostics_product_fixed.json"
+          ],
+          "seconds": 0.9
+        }
+      },
+      "expected_returncode": {
+        "product": 2,
+        "product_r1": 3,
+        "product_r2": 0,
+        "product_r3": 3,
+        "product_fixed": 0
+      },
+      "expected_business_result": "same convention on the 30-entry diagnostic corpus: registered pre-existing over-redactions are measured (known_over_redaction), a NEW over-redaction or a leak is negative; T0 cannot_adjudicate, T1 negative, T2/T4 pass, T3 negative via fidelity",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-COUNTS",
+      "purpose": "r5: derive every reported count from the artefacts (single source of truth)",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\report_counts.py",
+        "--attempt",
+        "<attempt>",
+        "--python",
+        "<iso-python>",
+        "--out",
+        "<attempt>\\r5\\counts.json"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\counts.stdout.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "mechanical counts written to r5/counts.json (rule table 44, diagnostics 30, fidelity cases 28, exact nodeids 28, total nodeids 82); exits 3 if the two pair counts disagree",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-PROBE",
+      "purpose": "r5: per-file probe E1..E4b with per-case marker and length baselines",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\run_exit_probe.py",
+        "--label",
+        "r5-after",
+        "--out",
+        "<attempt>\\r5",
+        "--run-root",
+        "<attempt>\\r5\\runs-r5-20260920-033743",
+        "--python",
+        "<iso-python>",
+        "--src",
+        "<attempt>\\iso\\product_fixed\\src",
+        "--tests-dir",
+        "CW/tests/contract"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\probe-r5-after.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "all acceptance cases 0 marker hits; E2b/E4a/E4b message lengths and E2b-residual unchanged by the line-ending normalisation",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-SUITE",
+      "purpose": "r5: full 82-case suite (fidelity, F-07 deadline, E5a/b/c, order-swap control)",
+      "cwd": "<attempt>\\r5\\cmd-r5-suite",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>\\r5\\cmd-r5-suite\\pytest",
+        "-q",
+        "<attempt>\\harness\\tests\\test_i14c_real_exit_redaction.py"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\cmd-r5-suite\\stderr.txt",
+        "r5\\cmd-r5-suite\\stdout.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "82 passed (fidelity pairs, F-07 deadline, E5a/b/c, order-swap control)",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-SUITE-OUTSIDE",
+      "purpose": "r5: the same suite from a %TEMP% cwd with NO I14C_RUN_ROOT (independent re-run)",
+      "cwd": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i14c-r5-outside-bk8e474t",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\i14c-r5-outside-bk8e474t\\pytest",
+        "-q",
+        "<attempt>\\harness\\tests\\test_i14c_real_exit_redaction.py"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\cmd-r5-outside-execution-runs.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "82 passed from a %TEMP% cwd with NO I14C_RUN_ROOT declared: the reviewer can re-run the 17 subprocess-backed cases themselves",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-CLI",
+      "purpose": "r5: real CLI exit E5a against the fixed tree",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\run_real_cli_exit.py",
+        "--shape",
+        "E5a",
+        "--run-dir",
+        "<attempt>\\r5\\cli-r5-E5a",
+        "--src",
+        "<attempt>\\iso\\product_fixed\\src",
+        "--python",
+        "<iso-python>"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": {
+        "E5a": 0,
+        "E5b": 0,
+        "E5c": 0
+      },
+      "evidence": [
+        "r5\\cli-r5-E5a\\driver_stderr.txt",
+        "r5\\cli-r5-E5a\\driver_stdout.txt",
+        "r5\\cli-r5-E5b\\driver_stderr.txt",
+        "r5\\cli-r5-E5b\\driver_stdout.txt",
+        "r5\\cli-r5-E5c\\driver_stderr.txt",
+        "r5\\cli-r5-E5c\\driver_stdout.txt"
+      ],
+      "variants": {
+        "E5a": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_real_cli_exit.py",
+            "--shape",
+            "E5a",
+            "--run-dir",
+            "<attempt>\\r5\\cli-r5-E5a",
+            "--src",
+            "<attempt>\\iso\\product_fixed\\src",
+            "--python",
+            "<iso-python>"
+          ],
+          "seconds": 0.83
+        },
+        "E5b": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_real_cli_exit.py",
+            "--shape",
+            "E5b",
+            "--run-dir",
+            "<attempt>\\r5\\cli-r5-E5b",
+            "--src",
+            "<attempt>\\iso\\product_fixed\\src",
+            "--python",
+            "<iso-python>"
+          ],
+          "seconds": 0.88
+        },
+        "E5c": {
+          "cwd": "<attempt>",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "<attempt>\\harness\\run_real_cli_exit.py",
+            "--shape",
+            "E5c",
+            "--run-dir",
+            "<attempt>\\r5\\cli-r5-E5c",
+            "--src",
+            "<attempt>\\iso\\product_fixed\\src",
+            "--python",
+            "<iso-python>"
+          ],
+          "seconds": 0.87
+        }
+      },
+      "expected_returncode": 0,
+      "expected_business_result": "E5a: rc=1, stderr marker hits 0, envelope identifies the config file; E5b: rc=1, 1 hit (C7 residual); E5c: rc=2, 1 hit (C6 residual); catalogs_created [] everywhere",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-COMPAT",
+      "purpose": "r5: backward compatibility of the worker bootstrap + observability contracts",
+      "cwd": "<attempt>\\r5\\cmd-compat",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>\\r5\\cmd-compat\\pytest",
+        "-q",
+        "CW/tests/contract\\test_source_catalog_worker_bootstrap.py",
+        "CW/tests/contract\\test_observability.py"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 1,
+      "evidence": [
+        "r5\\cmd-compat\\stderr.txt",
+        "r5\\cmd-compat\\stdout.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 1,
+      "expected_business_result": "backward compatibility: rc=1 with the enumerated environment/timing failures, all of which also fail on the pristine tree (see CMD-I14C-R5-COMPAT-ANALYSIS)",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-COMPAT-CONTROL",
+      "purpose": "r5: control - identical failure SET on T0 and T4 proves the failures are cwd/environment-dependent, not card-caused",
+      "cwd": "<attempt>\\r5\\compat-control-product-1",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp",
+        "<attempt>\\r5\\compat-control-product-1\\pytest",
+        "-q",
+        "CW/tests/contract\\test_source_catalog_worker_bootstrap.py",
+        "CW/tests/contract\\test_observability.py"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": {
+        "product-1": 1,
+        "product-2": 1,
+        "product_fixed-1": 1,
+        "product_fixed-2": 1
+      },
+      "evidence": [
+        "r5\\compat-control-product-1\\stderr.txt",
+        "r5\\compat-control-product-1\\stdout.txt",
+        "r5\\compat-control-product-2\\stderr.txt",
+        "r5\\compat-control-product-2\\stdout.txt",
+        "r5\\compat-control-product_fixed-1\\stderr.txt",
+        "r5\\compat-control-product_fixed-1\\stdout.txt",
+        "r5\\compat-control-product_fixed-2\\stderr.txt",
+        "r5\\compat-control-product_fixed-2\\stdout.txt"
+      ],
+      "variants": {
+        "product-1": {
+          "cwd": "<attempt>\\r5\\compat-control-product-1",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "-m",
+            "pytest",
+            "-p",
+            "no:cacheprovider",
+            "--basetemp",
+            "<attempt>\\r5\\compat-control-product-1\\pytest",
+            "-q",
+            "CW/tests/contract\\test_source_catalog_worker_bootstrap.py",
+            "CW/tests/contract\\test_observability.py"
+          ],
+          "seconds": 16.96
+        },
+        "product-2": {
+          "cwd": "<attempt>\\r5\\compat-control-product-2",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "-m",
+            "pytest",
+            "-p",
+            "no:cacheprovider",
+            "--basetemp",
+            "<attempt>\\r5\\compat-control-product-2\\pytest",
+            "-q",
+            "CW/tests/contract\\test_source_catalog_worker_bootstrap.py",
+            "CW/tests/contract\\test_observability.py"
+          ],
+          "seconds": 17.1
+        },
+        "product_fixed-1": {
+          "cwd": "<attempt>\\r5\\compat-control-product_fixed-1",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "-m",
+            "pytest",
+            "-p",
+            "no:cacheprovider",
+            "--basetemp",
+            "<attempt>\\r5\\compat-control-product_fixed-1\\pytest",
+            "-q",
+            "CW/tests/contract\\test_source_catalog_worker_bootstrap.py",
+            "CW/tests/contract\\test_observability.py"
+          ],
+          "seconds": 16.17
+        },
+        "product_fixed-2": {
+          "cwd": "<attempt>\\r5\\compat-control-product_fixed-2",
+          "argv": [
+            "<iso-python>",
+            "-X",
+            "utf8",
+            "-B",
+            "-m",
+            "pytest",
+            "-p",
+            "no:cacheprovider",
+            "--basetemp",
+            "<attempt>\\r5\\compat-control-product_fixed-2\\pytest",
+            "-q",
+            "CW/tests/contract\\test_source_catalog_worker_bootstrap.py",
+            "CW/tests/contract\\test_observability.py"
+          ],
+          "seconds": 16.55
+        }
+      },
+      "expected_returncode": 1,
+      "expected_business_result": "same suite twice per tree: the failing COUNT is not stable (timing nodes drop in and out), which is why the verdict uses the union criterion, not the per-run set",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-GUARD",
+      "purpose": "r5: binding-guard refusal matrix (product paths refused, declared scratch allowed)",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\run_guard_matrix.py"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\guard\\matrix.stdout.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "all 8 cases as expected: product paths (src, .source_catalog, revenue-forecast outside .planning) refused with 97 even when a scratch root is declared; declared scratch runs proceed (rc 3 = the driver's RE_RAISED sentinel); undeclared %TEMP% refused with 97",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-DIFF",
+      "purpose": "r5: regenerate the deliverable diff with git-native POSIX paths",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\make_posix_diff.py",
+        "--before",
+        "<attempt>\\iso\\product",
+        "--after",
+        "<attempt>\\iso\\product_fixed",
+        "--out",
+        "<attempt>\\r5-changes.diff",
+        "--scratch",
+        "<attempt>\\r5\\diff-repo"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\posix-diff.stdout.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "6 hunks, 15083 bytes, POSIX paths only",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-GITAPPLY",
+      "purpose": "r5: prove the diff applies with git apply -p1 and reproduces the fixed tree",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\verify_git_apply.py",
+        "--repo",
+        "<attempt>\\r5\\diff-apply-check\\tree",
+        "--before",
+        "<attempt>\\iso\\product",
+        "--after",
+        "<attempt>\\iso\\product_fixed",
+        "--diff",
+        "<attempt>\\r5-changes.diff",
+        "--out",
+        "<attempt>\\r5\\git_apply_verification.json"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\git_apply_verification.stdout.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "git apply --check and apply -p1 succeed and the three files are byte-identical to iso/product_fixed (GIT_APPLY_REPRODUCES_T4 true)",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-FLAKE",
+      "purpose": "r5: flake evidence at the deep attempt basetemp (per-run stdout and exit code)",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\run_flake_evidence.py",
+        "--attempt",
+        "<attempt>",
+        "--python",
+        "<iso-python>",
+        "--repo",
+        "CW"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\flake-evidence.stdout.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "deep attempt-path basetemp (cwd 166/167 chars): both nodes fail on BOTH trees (WinError 206 / FileNotFoundError) - an environment limit, not a code difference",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-FLAKE-SHORT",
+      "purpose": "r5: flake control at a short %TEMP% basetemp (cwd 74/75 chars)",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\run_flake_evidence.py",
+        "--attempt",
+        "<attempt>",
+        "--python",
+        "<iso-python>",
+        "--repo",
+        "CW",
+        "--basetemp-root",
+        "%TEMP%/i14c-flake-short",
+        "--out-root",
+        "<attempt>\\r5\\flake-evidence\\short-basetemp"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\flake-evidence\\short-basetemp.stdout.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "the control: at a short %TEMP% basetemp (cwd 74/75 chars) both nodes pass on BOTH trees, which is what separates 'path too long' from 'the card broke something'",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-FLAKE-FREQ",
+      "purpose": "r5: interleaved frequency estimate (12 runs per tree x 2 passes) of the restart node",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\run_flake_frequency.py",
+        "--attempt",
+        "<attempt>",
+        "--python",
+        "<iso-python>",
+        "--repo",
+        "CW",
+        "--node",
+        "child_without_runtime",
+        "--runs",
+        "12",
+        "--passes",
+        "2",
+        "--basetemp-root",
+        "%TEMP%/i14c-flake-freq",
+        "--out",
+        "<attempt>\\r5\\flake-evidence\\frequency-child_without_runtime.json"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\flake-evidence\\frequency-child_without_runtime.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "interleaved frequency estimate (12 runs per tree x 2 passes): the tree with more failures flips between passes, i.e. a load-dependent flake on the product's own test, not a tree difference",
+      "observed_as_expected": true
+    },
+    {
+      "id": "CMD-I14C-R5-COMPAT-ANALYSIS",
+      "purpose": "r5: attribute the compat failures - per-run sets, unions, and T0 evidence for any T4-only node taken from the interleaved frequency measurement above",
+      "cwd": "<attempt>",
+      "argv": [
+        "<iso-python>",
+        "-X",
+        "utf8",
+        "-B",
+        "<attempt>\\harness\\analyze_compat_control.py",
+        "--attempt",
+        "<attempt>",
+        "--out",
+        "<attempt>\\r5\\compat-control-analysis.json",
+        "--frequency",
+        "<attempt>\\r5\\flake-evidence\\frequency-child_without_runtime.json"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "allowed_write_roots": [
+        "<attempt>/r5"
+      ],
+      "network": "disabled",
+      "timeout_seconds": 900,
+      "raw_returncode": 0,
+      "evidence": [
+        "r5\\compat-control-analysis.txt"
+      ],
+      "variants": {},
+      "expected_returncode": 0,
+      "expected_business_result": "T4's failing-node union is a subset of T0's and only_on_T4 is empty: no compat failure is card-specific",
+      "observed_as_expected": true
     }
-  ]
+  ],
+  "r5_run_script": "harness/run_r5_commands.py",
+  "r5_exit_code_convention": {
+    "0": "pass",
+    "2": "cannot_adjudicate",
+    "3": "negative_verdict"
+  },
+  "r5_all_as_expected": true,
+  "r5_compat_control": {
+    "failure_sets": {
+      "product-1": [
+        "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
+        "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
+        "test_stale_child_heartbeat_is_terminated_and_restarted",
+        "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
+      ],
+      "product-2": [
+        "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
+        "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
+        "test_stale_child_heartbeat_is_terminated_and_restarted",
+        "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
+      ],
+      "product_fixed-1": [
+        "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
+        "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
+        "test_stale_child_heartbeat_is_terminated_and_restarted",
+        "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
+      ],
+      "product_fixed-2": [
+        "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
+        "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
+        "test_stale_child_heartbeat_is_terminated_and_restarted",
+        "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
+      ]
+    },
+    "per_run_counts": {
+      "product-1": 4,
+      "product-2": 4,
+      "product_fixed-1": 4,
+      "product_fixed-2": 4
+    },
+    "union_T0": [
+      "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
+      "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
+      "test_stale_child_heartbeat_is_terminated_and_restarted",
+      "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
+    ],
+    "union_T4": [
+      "test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths",
+      "test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory",
+      "test_stale_child_heartbeat_is_terminated_and_restarted",
+      "test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8"
+    ],
+    "unions_equal": true,
+    "only_on_T4": [],
+    "analysis": "r5/compat-control-analysis.json"
+  }
 }

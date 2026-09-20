@@ -89,6 +89,55 @@ def main() -> int:
         "oracle.md sections 0-12: M24's frozen section 5 is stale in three places (see the "
         "appended run section's section 9), and this attempt's round-2 disclosure about the "
         "FY2027 balance guard was too strong (section 10). Both need an owner ruling.")
+    handoff["production_drift"] = {
+        "detected_at": "2026-09-20 04:38 (local), during round-3 close-out, by "
+                       "final_verify.production_hashes_unchanged reading False",
+        "window": {
+            "from": "2026-09-20 04:35:31",
+            "until": "2026-09-20 04:40:53",
+            "diverted_hash": "1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86",
+            "diverted_bytes": 19703,
+            "anchored_hash": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+            "anchored_bytes": 26446,
+        },
+        "root_cause": "an orchestration-layer commit job: the repository pre-commit gate exported "
+                      "the un-staged changes to C:\\Users\\郑曾波\\.cache\\pre-commit"
+                      "\\patch1789875331-33652 and then ran `git checkout -- .`, which failed with "
+                      "exit 255 on three concurrently-locked scratch files, so the patch was never "
+                      "re-applied and the worktree stayed reset to HEAD. NOT caused by this attempt.",
+        "resolved": True,
+        "resolution": "the parent agent applied the same patch to its non-.planning subset "
+                      "(git apply --check and git apply both exit 0); the anchored hash is restored "
+                      "and was re-measured by this attempt",
+        "rehashed_after_recovery_by_this_attempt": {
+            "scripts/model_registry.py":
+                "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+            "scripts/model_extensions.py":
+                "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+        },
+        "first_hand_records": [
+            "recovery/production_drift.json (captured at detection time, with the behaviour probe)",
+            "recovery/production_drift_resolution.json (the other end of the event)",
+        ],
+        "time_qualification": "the False warning produced inside the window was CORRECT and is not "
+                              "a defect; it was never used to change an expectation, tolerance, "
+                              "case, rejection condition or frozen artifact, and no re-snapshot was "
+                              "taken",
+        "honest_note": "the transient False reading is not preserved as its own file, because every "
+                       "later rebuild of final_verify.txt and integrity.json happened after the "
+                       "restoration and legitimately reads True; the diverted hash survives in "
+                       "recovery/production_drift.json",
+        "batch_wide": "the same event affected every attempt whose acceptance chain cites the "
+                      "production hash 9ec65295...; this attempt reports only its own four cards",
+    }
+    handoff["lesson_registered"] = (
+        "When a card's acceptance chain depends on a PRODUCTION FILE HASH, that hash must be "
+        "treated as a quantity an external git operation can change underneath the attempt. On a "
+        "mismatch: first record the drift and its time window, then let the orchestration layer "
+        "decide whether to restore or re-anchor - NEVER adapt by editing an expectation, a "
+        "tolerance, a case or a frozen artifact. This attempt followed that rule: it recorded the "
+        "drift, kept running against its own byte-identical isolated snapshot, and changed nothing "
+        "frozen.")
     with open(handoff_path, "w", encoding="utf-8") as fh:
         json.dump(handoff, fh, ensure_ascii=False, indent=1)
     print("handoff round2 lines", b2["begin_line"], b2["end_line"],

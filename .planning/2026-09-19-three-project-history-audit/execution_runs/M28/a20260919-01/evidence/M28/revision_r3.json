@@ -16,7 +16,20 @@
    131
   ],
   "new_file_has_old_file_as_exact_prefix": true,
-  "prefix_proof": "measured predicate new_bytes.startswith(old_bytes) on the bytes read before and after a binary append (open(path,'ab'))"
+  "prefix_proof": "measured predicate new_bytes.startswith(old_bytes) on the bytes read before and after a binary append (open(path,'ab'))",
+  "base_document_history": {
+   "what_the_reviewer_certified": "the bytes of review.md BEFORE the append hashed to the reviewer's declared prefix value; the append was verified against exactly that value",
+   "exception_that_occurred_once": "the doc generator (write_docs.py) rewrote the BASE part of review.md once during r3 closeout (when the production-drift facts were added to sections 5/8). That truncated the appended block in the three cards whose base text changed (M26/M27/M28); M25 was unaffected because its base text did not change.",
+   "how_it_was_repaired": "the append was REPLAYED deterministically: scripts/reassemble_review.py rebuilds review.md as (byte-exact base recovered from review_base.md, verified against the reviewer's declared hash) + (the identical reviewer block). The repaired file == the original append output byte-for-byte (sha256 feca9121ab0c9f4bf6d5ee5b941dc0de83f872c73352af01e5907d69fd040925).",
+   "generator_fix": "write_docs.py now writes the base to review_base.md ONLY and leaves review.md alone, so this cannot recur",
+   "base_now_contains_drift_era_text": true,
+   "consequence_for_a_future_git_operation": "a later `git checkout -- .` / `reset --hard` would restore the COMMITTED review.md (base-only at the r2 state) and drop the appended block, just as it dropped the production worktree state earlier; this is recorded as a known fragility, not as a defect of the evidence",
+   "appended_block_sha256": "dfa9a60fa5419581dcf3cbb5826041e758d0bd26d86f2cd10d53968656f228b1",
+   "appended_block_lines": [
+    83,
+    131
+   ]
+  }
  },
  "reviewer_verdict_transcribed": {
   "verdict": "accepted_scoped",
@@ -102,7 +115,7 @@
   },
   "P3_B_self_referential_entries": {
    "reviewer_finding": "3 of the 25 probe entries are self-referential and not reproducible; the frozen four-piece is fully reproducible.",
-   "measured_reproducible_entries_here": 17,
+   "measured_reproducible_entries_here": 16,
    "measured_total_entries": 20,
    "independently_recomputed_entries_by_the_reviewer": 22,
    "self_referential_entries": [
@@ -182,7 +195,7 @@
   "production scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
  },
  "production_source_reverified": {
-  "scripts/model_registry.py": "1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86",
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
   "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
  }
 }

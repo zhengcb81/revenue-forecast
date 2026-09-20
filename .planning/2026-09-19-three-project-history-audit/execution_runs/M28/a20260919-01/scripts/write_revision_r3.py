@@ -165,6 +165,40 @@ def main() -> int:
                 append_record["review_md"]["new_file_has_old_file_as_exact_prefix"],
             "prefix_proof": ("measured predicate new_bytes.startswith(old_bytes) on the bytes read "
                              "before and after a binary append (open(path,'ab'))"),
+            "base_document_history": {
+                "what_the_reviewer_certified": ("the bytes of review.md BEFORE the append hashed to "
+                                                "the reviewer's declared prefix value; the append "
+                                                "was verified against exactly that value"),
+                "exception_that_occurred_once": ("the doc generator (write_docs.py) rewrote the BASE "
+                                                 "part of review.md once during r3 closeout (when "
+                                                 "the production-drift facts were added to sections "
+                                                 "5/8). That truncated the appended block in the "
+                                                 "three cards whose base text changed (M26/M27/"
+                                                 "M28); M25 was unaffected because its base text did "
+                                                 "not change."),
+                "how_it_was_repaired": ("the append was REPLAYED deterministically: "
+                                        "scripts/reassemble_review.py rebuilds review.md as "
+                                        "(byte-exact base recovered from review_base.md, verified "
+                                        "against the reviewer's declared hash) + (the identical "
+                                        "reviewer block). The repaired file == the original "
+                                        "append output byte-for-byte (sha256 "
+                                        "%s)." % append_record["review_md"]["sha256_after"]),
+                "generator_fix": ("write_docs.py now writes the base to review_base.md ONLY and "
+                                  "leaves review.md alone, so this cannot recur"),
+                "base_now_contains_drift_era_text": True,
+                "consequence_for_a_future_git_operation": ("a later `git checkout -- .` / "
+                                                           "`reset --hard` would restore the "
+                                                           "COMMITTED review.md (base-only at the r2 "
+                                                           "state) and drop the appended block, just "
+                                                           "as it dropped the production worktree "
+                                                           "state earlier; this is recorded as a "
+                                                           "known fragility, not as a defect of the "
+                                                           "evidence"),
+                "appended_block_sha256": append_record["review_md"]["appended_bytes_sha256"],
+                "appended_block_lines": [append_record["review_md"]["append_started_at_line"],
+                                         append_record["review_md"]["append_started_at_line"]
+                                         + append_record["review_md"]["appended_block_lines"] - 1],
+            },
         },
         "reviewer_verdict_transcribed": {
             "verdict": "accepted_scoped",

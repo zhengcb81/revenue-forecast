@@ -204,3 +204,51 @@ sha256 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f   (26446
 - 本批的 hash 清单表（`after/final_deliverable_hashes.json`、`evidence/<CARD>/evidence_hashes.json`）
   只覆盖**本 attempt 目录内**的文件，**不**覆盖生产仓；生产仓的状态由本节与各卡
   `before/`+`after/state.json` 记录。
+
+### 9.2 机制更正与新纪律（编排层已查明；append-only 追加）
+
+本节**追加**并更正 §9/§9.1 的"触发者本 session 无法确定"表述；上文一字未改。
+
+**机制（已确认）**：仓库自带的 pre-commit/pre-push 门在每次提交时 ①把未暂存改动导出为补丁
+（`…\.cache\pre-commit\patch<epoch>-<pid>`）；②执行 `git checkout -- .` 清空未暂存改动；③hook 跑完后
+**回放**该补丁。**2026-09-20 04:35:31（本地）** 那一次第 ② 步因 3 个被并发占用的 scratch 文件
+`unable to unlink … Invalid argument` **返回 255**，hook 抛错退出 ⇒ 第 ③ 步从未执行 ⇒ **生产工作树被重置到
+HEAD**。这同时解释了：`scripts/model_registry.py` 由锚点 `9ec65295…`/26446 B 变为 HEAD 版
+`1f2639e1…`/19703 B；`revenue_core.py` / `contracts/constants.py` / `revenue_report.py` /
+`tests/test_backtest.py` / `SKILL.md` / `CHANGELOG.md` / `assurance/runs/*` / `e2e/expected/*` /
+`references/backtesting.md` 同时"变干净"；以及**本 attempt 树内**出现的"我未触发的改写与截断"
+（stash/checkout 会重写被并发写入的文件，表现为 size 变小/截断）——03:17:53 那一代与 04:35:32 属同一机制的
+更早/后续实例。
+**措辞限定**：机制已确认；**具体某个实例的执行者与受影响文件清单未逐条取证**。
+
+**时点限定（重要）**：在该窗口内，任何 `production_hashes_unchanged=false` 或 hash 不一致读数都是**正确告警**，
+不是校验器错误；必须带时点记录并上报，**不得压制**。
+
+**恢复后的锚点（编排层复算，逐文件一致）**：
+
+```
+scripts/model_registry.py    9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f   26446 B
+scripts/model_extensions.py  9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911
+revenue_core.py 1821fd2a…   contracts/constants.py 278e3e02…   revenue_report.py a85fb484…
+tests/test_backtest.py d0972e23…   SKILL.md 45e4e343…（与 I-00-A 基线一致）   CHANGELOG.md bcba3dd5…
+```
+
+恢复方式：用该次补丁的 `--exclude=.planning/*` 子集 `git apply`（`--check`/`--apply` 均 exit 0）。
+并发诱因同源：`.planning` 下 3 个 attempt scratch 仓库内嵌 `.git`（使父仓库 `fatal: bad object HEAD`），
+已在 `execution_runs/.gitignore` 兜底（**未删除任何文件**）。完整记录：
+`execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md`。
+
+**新纪律（已写入各卡 `handoff.json.discipline`、`process_history.json` 的
+`additional_unnamed_generations.mechanism_confirmed_appended`、`integrity.json` 的
+`anchored_hash_claim_is_time_scoped`，并在此登记）**：凡验收依据含"生产文件 hash"的卡，必须把它当作
+**可被外部 git 操作改变的量**：
+
+1. 每一条生产 hash 主张都是**时点限定**的，必须带观察时间；
+2. 发现不一致时**先记录漂移与时点并上报编排层**（本批正是如此）；
+3. **永不靠改期望/冻结件/拒绝条件去适配漂移**——漂移意味着**新运行必须重新绑定**，不意味着 oracle 该动；
+4. 引用本批结论时必须同时写明**被测副本**的 hash（本批 = `9ec65295…` 的隔离副本）。
+
+**同批自查中发现并已修的一处相关缺陷**：`integrity.json` 的 `anchored_hashes_match` 原为**硬编码 True**，
+而 03:40Z 那几次 pack 记录的观察值恰是 HEAD 版 `1f2639e1…`（即字段会与自身内容矛盾）。现已改为
+**由观察值与任务锚点比较得出**，并新增 `observed_matches_task_anchor_by_file`、
+`anchored_hashes_match_rule`、`anchored_hash_claim_is_time_scoped`；重跑后四卡该字段为 True 且观察值 = 锚点。

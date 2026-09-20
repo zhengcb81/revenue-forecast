@@ -1,5 +1,5 @@
 {
- "archived_at_utc": "2026-09-20T03:40:07+00:00",
+ "archived_at_utc": "2026-09-20T03:47:06+00:00",
  "attempt_id": "a20260919-01",
  "card_id": "I-11-A",
  "commands": [
@@ -66,41 +66,65 @@
   {
    "expected_returncode": 0,
    "id": "I11A-11-validate-hypotheses",
-   "matches": true,
-   "observed_returncode": 0
+   "matches": false,
+   "observed_returncode": 1
   },
   {
    "expected_returncode": 0,
    "id": "I11A-12-state-before",
-   "matches": true,
-   "observed_returncode": 0
+   "matches": false,
+   "observed_returncode": null
   },
   {
    "expected_returncode": 0,
    "id": "I11A-13-state-after",
-   "matches": true,
-   "observed_returncode": 0
+   "matches": false,
+   "observed_returncode": null
   },
   {
    "expected_returncode": 0,
    "id": "I11A-15-changes-diff",
-   "matches": true,
-   "observed_returncode": 0
+   "matches": false,
+   "observed_returncode": null
   },
   {
    "expected_returncode": 0,
    "id": "I11A-16-hash-attempt-final",
+   "matches": false,
+   "observed_returncode": null
+  },
+  {
+   "expected_returncode": 0,
+   "id": "I11A-17-final-selfcheck",
+   "matches": false,
+   "observed_returncode": null
+  },
+  {
+   "expected_returncode": 0,
+   "id": "I11A-18-finalize-state",
+   "matches": false,
+   "observed_returncode": null
+  },
+  {
+   "expected_returncode": 0,
+   "id": "I11A-19-probe-xiaomi",
    "matches": true,
    "observed_returncode": 0
   },
   {
    "expected_returncode": 0,
-   "id": "I11A-17-final-selfcheck",
+   "id": "I11A-20-apply-review-fixes",
    "matches": true,
    "observed_returncode": 0
+  },
+  {
+   "expected_returncode": 0,
+   "id": "I11A-21-archive-run-log",
+   "matches": false,
+   "observed_returncode": null
   }
  ],
- "commands_all_match": true,
+ "commands_all_match": false,
  "generated_by": "tools/archive_run_log.py",
  "log_count": 21,
  "logs": [
@@ -110,9 +134,9 @@
    "sha256": "a3f3a546a4b10c402662faa95a76403c7e489f3c06cd70197ce1c22bdd7aebcd"
   },
   {
-   "byte_size": 3861,
+   "byte_size": 22120,
    "path": "evidence/I-11-A/commands_run.log",
-   "sha256": "da53384e07b0c6eb0e5d2df90966e6f5ea36e1d1f429cfbc032c92397cfd4f94"
+   "sha256": "5c49210538733efdf8a46e9a44e965df47002cbabd349580ff0757980fd4c0e6"
   },
   {
    "byte_size": 0,
@@ -219,8 +243,10 @@
    "pass": 7,
    "rejected": 0
   },
-  "final_selfcheck_problems": [],
-  "final_selfcheck_verdict": "complete_for_review",
+  "final_selfcheck_problems": [
+   "validate_hypotheses.py returned 1"
+  ],
+  "final_selfcheck_verdict": "incomplete",
   "validation_counterexamples": {
    "accepted_by_mistake": 0,
    "cases": 21,
@@ -249,10 +275,9 @@
    },
    "threshold_bases": {
     "arithmetic_identity": 4,
-    "disclosure_definition": 1,
-    "professional_judgement_required": 3
+    "professional_judgement_required": 4
    }
   },
-  "validation_positive_case": "pass"
+  "validation_positive_case": "fail"
  }
 }

@@ -77,14 +77,26 @@ def main() -> int:
     # -- V2
     handoff = json.load(open(os.path.join(attempt, "handoff.json"), "r", encoding="utf-8"))
     status = handoff.get("reviewer_status", {})
-    check("V2", status.get("verdict_block_first_line") == first
-          and status.get("verdict_block_last_line") == last,
-          "handoff.reviewer_status lines %s-%s, state=%s"
-          % (status.get("verdict_block_first_line"), status.get("verdict_block_last_line"),
+    carrier = status.get("verdict_line_range", status)
+    check("V2", carrier.get("verdict_block_first_line") == first
+          and carrier.get("verdict_block_last_line") == last,
+          "handoff reviewer-status carrier lines %s-%s, state=%s"
+          % (carrier.get("verdict_block_first_line"), carrier.get("verdict_block_last_line"),
              status.get("state")))
-    check("V2b", handoff.get("status") == "review_pending" and status.get("implementer_signed") is False,
-          "status=%s implementer_signed=%s" % (handoff.get("status"),
-                                               status.get("implementer_signed")))
+    check("V2b", handoff.get("status") in ("review_pending", "accepted_scoped")
+          and status.get("implementer_signed") is False,
+          "status=%s implementer_signed=%s (accepted_scoped is carried by the reviewer's transcribed "
+          "verdict, never by the implementer)" % (handoff.get("status"),
+                                                  status.get("implementer_signed")))
+    qualification = json.load(open(os.path.join(evidence, "qualification.json"), "r",
+                                   encoding="utf-8"))
+    check("V2c", qualification["formula"]["state"] in ("review_pending", "accepted_scoped")
+          and qualification["disclosure_adaptation"]["state"] == "unmapped"
+          and qualification["accuracy"]["state"] == "unproven"
+          and qualification["formula"].get("implementer_signed") is not True,
+          "qualification.formula=%s, disclosure=%s, accuracy=%s"
+          % (qualification["formula"]["state"], qualification["disclosure_adaptation"]["state"],
+             qualification["accuracy"]["state"]))
 
     # -- V3 (M31)
     binding = json.load(open(os.path.join(attempt, "binding.json"), "r", encoding="utf-8"))
