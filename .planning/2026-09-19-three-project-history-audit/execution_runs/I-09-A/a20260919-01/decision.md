@@ -13,8 +13,8 @@
 | 本 attempt 的协议条目 C-01…C-13 | **提案已冻结**（`oracle.md` §5，写于任何运行之前；`C-13` 为独立对抗式复核后**追加**，见 `errata.md`）；**待独立 transaction reviewer 裁定** |
 | 新增错误码 `I09-E01…E10` | 提案；与 I-08-A 的 E01–E32 **不共用命名空间**（隔离声明见 `oracle.md` §5.1）。**不得**因勘误而改动 |
 | 实现者是否签署 accepted | **否**。本文件不含任何 accepted/passed 自签 |
-| 是否需要 owner 裁定 | **是**：OPEN-I09A-1…6（§7 与 `open_items.md`）；其中 **4 项**（-1/-2/-3/-5）阻塞 I-09-B 的绑定 |
-| 勘误 | 独立复核 verdict = `changes_required`（文档/勘误层，证据层不需重跑）；逐条处置见 `errata.md`。**勘误不构成重新验收** |
+| 是否需要 owner 裁定 | **是**：OPEN-I09A-1…6（§7 与 `open_items.md`）；其中 **5 项**（-1/-2/-3/-5/**-6**）阻塞 I-09-B 的绑定。本行是本文件**唯一**的阻塞项计数表述（第二轮复核实测：`grep 阻塞 I-09-B` 在本文件只命中本行） |
+| 勘误 | 第一轮独立复核 verdict = `changes_required`（文档/勘误层，证据层不需重跑）；第二轮复评 verdict 同为 `changes_required`（仅勘误文本），其 4 项闭合见 `errata.md` 的 **E-10…E-13**。**勘误不构成重新验收**；`handoff.json.status` 保持 `review_pending` |
 
 **本卡不实施产品**（卡执行门 + `START_HERE.md` 第 5 行「先写 decision.md…之后再实施」）。产品仓改动 = **0**。
 
@@ -433,7 +433,7 @@ commit_status(publication_id, member_paths) == "committed"
 | # | I-08-A 冻结项 | 本卡如何消费 | 冲突？ |
 |---|---|---|---|
 | A1 | 错误码 E01–E32 单一来源 | 只引用 `E31`；新增码一律 `I09-E**`（10 个，不同前缀） | 无 |
-| A2 | `classify()` G1/G2/G3a/G3b/G4 | 提交状态**独立**（§5.5 矩阵）；G1/G4 **不可能是** committed | 无 |
+| A2 | `classify()` G1/G2/G3a/G3b/G4 | 提交状态**独立**（§5.5 矩阵）；G1/G4 **不可能是** committed（**见 §5.5 降级说明**：该断言仅在本协议自身的身份/提交规则内成立；对 I-08-A `classify()` 的 G3b/G4 分支，生产里**没有实现落点**，属未兑现的断言，由 I-08-B 的 attestation 门实现，落地前不得声称已闭） | 无（**但含一处未兑现断言**，见 §5.5 与 `C-13`） |
 | A3 | `host_signed` 只能由 L3 验签产出（R-PROV-1） | 提交动作**不产生** `host_signed`；`attestation_status` 仍由 L3 决定 | 无 |
 | A4 | 信任域键名 `public_keys` | 不触碰信任域加载 | 无 |
 | A5 | R-LEGACY-1 / E29（3.8 属 G3a，无自动旁路） | 3.8 **不获得**任何提交便利；G1 集合无提交路径 | 无 |

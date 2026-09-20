@@ -8,11 +8,11 @@
  "completed_steps": {
   "A_binding": "done (binding.json: read-only production hashes + attempt-local isolated snapshot)",
   "B_positive_run": "done (positive [215.0], continuity [215.0, 250.0], defaults [210.0]; all within 1e-9*max(1,|e|))",
-  "C_negative_run": "done (11/11 negatives rejected with ModelRegistryError; card-specific negative + N01-N05 + continuity break)",
+  "C_negative_run": "done (12/12 negatives rejected with ModelRegistryError; card-specific negative + N01-N05 + continuity break)",
   "D_disclosure_mapping": "NOT done - needs a signed industry/accounting review; nothing is claimed",
   "E_historical_mapping_probe": "NOT done - belongs to I-10-A",
   "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist",
-  "oracle_freeze": "oracle.md frozen body 11525 bytes sha256 fbef9d5493d56e96e9a14808f1570ffcec4871ab6296c9ca9ff000038f88693c; oracle.json byte-identical on regeneration",
+  "oracle_freeze": "oracle.md frozen body 13382 bytes sha256 9c8f6b238d38841704acd7de305038190b18b93062eaff55fe74bb6bf41b3e9f; oracle.json byte-identical on regeneration",
   "mutation_proof": "4 probes per card, all four exit codes observed as expected (0/3/3/2 then 0 on restore); frozen evidence hashes unchanged",
   "oq_enumeration": "31 models / 165 driver slots enumerated; counts in evidence/M24/oq_rulings.json"
  },
@@ -25,14 +25,14 @@
   "oq-enum"
  ],
  "next_step_number": 4,
- "next_action": "Independent reviewer: re-run scripts/oracle_M24.py in a scratch tree and diff against the frozen oracle.json, re-run scripts/run_card.py against iso/checkout_scripts and confirm [215.0] / [215.0, 250.0] / [210.0] with 11/11 negatives rejected, re-run scripts/verify_prefix_chain.py, then adjudicate the OQ items in decision.md and the attack list in review.md section 5. After that I-10-A owns D/E.",
+ "next_action": "Independent reviewer: re-run scripts/oracle_M24.py in a scratch tree and diff against the frozen oracle.json, re-run scripts/run_card.py against iso/checkout_scripts and confirm [215.0] / [215.0, 250.0] / [210.0] with 12/12 negatives rejected, re-run scripts/verify_prefix_chain.py, then adjudicate the OQ items in decision.md and the attack list in review.md section 5. After that I-10-A owns D/E.",
  "input_hashes": {
   "evidence/M24/input.json": "ccfc2f8ef8215e15565d5e3ad463a3fda270b2aa3f9c9ee7e75ef8b16981e881",
-  "evidence/M24/oracle.json": "870a9a6da1a0a89a1cad5b14aeaa1a74d67c74bdf4065ab1d4ae2ac24491a04f",
-  "evidence/M24/cases.json": "24e5aa6210200e430cb3576fef52bee6b77204a58fc61b5d87305e1f8aead673",
-  "oracle.md_frozen_body": "fbef9d5493d56e96e9a14808f1570ffcec4871ab6296c9ca9ff000038f88693c",
-  "scripts/oracle_M24.py": "6f177b6ff87cbc4daeef0fa1642d83aea92e4cfa5057beed83ecbcaefec0da9d",
-  "scripts/run_card.py": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a"
+  "evidence/M24/oracle.json": "e791ab5739aad384be08e0f21f1c15e02884acaaf33d7d7e26294acfc25229f9",
+  "evidence/M24/cases.json": "0fad54a968991d21a21138dd9cf5fc877f4c958c817c02ee1436db7f1c398f90",
+  "oracle.md_frozen_body": "9c8f6b238d38841704acd7de305038190b18b93062eaff55fe74bb6bf41b3e9f",
+  "scripts/oracle_M24.py": "6326d72f64e9c6c99e0c6083a32a48a4df04c6d69570b8ad5e185cd2dbb11fd1",
+  "scripts/run_card.py": "d02057debe8d34df8a472e83aa3771f5c90fb77d58b3c0eee2237e35593b2953"
  },
  "current_source_hashes": {
   "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
@@ -109,9 +109,16 @@
   210.0
  ],
  "negative_case_summary": {
-  "total": 11,
-  "passed": 11,
-  "failed": []
+  "total": 12,
+  "passed": 12,
+  "failed": [],
+  "expected_type_mismatch_cases": [],
+  "message_mismatch_cases": [],
+  "message_requirements_checked": [
+   "CONT-BREAK-CROSSYEAR",
+   "NEG-CARD"
+  ],
+  "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message"
  },
  "negative_ids": [
   "NEG-CARD",
@@ -124,7 +131,8 @@
   "N04",
   "N05a",
   "N05b",
-  "CONT-BREAK"
+  "CONT-BREAK",
+  "CONT-BREAK-CROSSYEAR"
  ],
  "observations": [
   {
@@ -148,6 +156,18 @@
     215.0,
     250.0
    ]
+  },
+  {
+   "id": "OBS-BRIDGE-TOL-1E-7",
+   "raised": null,
+   "actual": [
+    215.0
+   ]
+  },
+  {
+   "id": "OBS-BRIDGE-TOL-1E-6",
+   "raised": "ModelRegistryError",
+   "actual": null
   }
  ],
  "open_questions": [
@@ -196,7 +216,18 @@
   "review.md",
   "scripts/"
  ],
- "reviewer_status": "not yet reviewed; implementer never writes 'accepted'",
- "revision": "r1 (no revision r2 section; revision_r2.json records state=not_started)",
+ "reviewer_status": "r1 reviewed: M21 accepted_scoped; M22/M23/M24 changes_required (all six required items implemented in revision r2 and returned for point review); implementer never writes 'accepted'",
+ "reviews_mtime_conventions": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\reviews",
+  "directory_mtime_epoch": 1789805660.0835266,
+  "directory_mtime_note": "this is the mtime of the DIRECTORY entry itself; it changes when an entry is added or removed directly in that folder",
+  "newest_file_inside_epoch": 1789808732.2732253,
+  "newest_file_inside": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\reviews\\second_wave\\final_review_checks.json",
+  "newest_file_note": "this is the mtime of the newest file anywhere under reviews/, recursively; it changes when that file is rewritten",
+  "task_statement_value": "the task statement quoted 2026-09-19 10:05 for this directory; that value corresponds to the NEWEST-FILE convention (reviews/second_wave/final_review_checks.json), while the DIRECTORY mtime is 2026-09-19 09:14:20. Both are recorded here because the two conventions measure different things (review item P3-3).",
+  "written_by_this_attempt": false
+ },
+ "revision": "r2 (independent review: M21 accepted_scoped, M22/M23/M24 changes_required. This revision implements review items P2-1, P2-2, P2-3, P3-1, P3-2, P3-3. The verdict for the REVISED attempt has NOT yet been received, so every qualification stays review_pending / unmapped / unproven.)",
+ "revision_r2_detail": "evidence/M24/revision_r2.json",
  "disclosure_impact_note": "not applicable to this card"
 }

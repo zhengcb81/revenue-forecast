@@ -1,0 +1,36 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\郑曾波\Projects\company-wiki
+configfile: pytest.ini
+collected 1 item
+
+..\..\..\..\..\..\..\..\..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py F [100%]
+
+================================== FAILURES ===================================
+_______ test_child_without_runtime_session_is_terminated_and_restarted ________
+C:\Users\郑曾波\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:910: in test_child_without_runtime_session_is_terminated_and_restarted
+    events = _launcher_events(project)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\郑曾波\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:752: in _launcher_events
+    text = path.read_text(encoding="utf-8-sig")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\pathlib\_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\pathlib\_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\pathlib\_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\r5\\flake-evidence\\T4-child_without_runtime-3\\pytest\\test_child_without_runtime_ses0\\fake-project\\.source_catalog\\worker_launcher_events.jsonl'
+============================== warnings summary ===============================
+..\..\..\iso\venv\Lib\site-packages\_pytest\config\__init__.py:1464
+  C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-C\a20260919-01\iso\venv\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED ..\..\..\..\..\..\..\..\..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_child_without_runtime_session_is_terminated_and_restarted
+======================== 1 failed, 1 warning in 2.67s =========================

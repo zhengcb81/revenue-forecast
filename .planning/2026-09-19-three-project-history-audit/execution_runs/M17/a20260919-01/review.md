@@ -122,9 +122,10 @@ attempt `execution_runs/M17/a20260919-01`。标题/卡号/model_id 与 `oracle.m
 | B | `cases.json` 的 N04 驱动名换成已注册的 `milestone_revenue` | **3** | 3 | 未被拒绝的负例会被判为负 |
 | C | `oracle.json` 的 `positive.expected_float`/`tolerances` 各多一项 | **2** | 2 | 保真不符时 runner 拒绝给判定 |
 | D | scratch 副本删除 `cases.json` | **1** | 1 | harness 失败与判定失败可区分 |
+| F | `cases.json` 中 N02 的 `expected` 改成 `ValueError`（该例仍抛 `ModelRegistryError`） | **3** | 3 | 声明期望被**按精确类型名**强制：`ModelRegistryError` 是 `ValueError` 子类，若用 isinstance 就会漏过（`declared_expectation_mismatch=1`） |
 | E | 未篡改副本 | **0** | 0 | 绿是可恢复的，不是一次性侥幸 |
 
-冻结件在 A–E 之后重新 hash，与运行前一致（`frozen_evidence_unchanged: true`）。
+冻结件在 A–F 之后重新 hash，与运行前一致（`frozen_evidence_unchanged: true`）。
 
 ### 记录收尾单元（不产生任何产品行为）
 
@@ -140,4 +141,110 @@ Z 的 `raw_rc`（当前为 0）来自**同 argv 的上一次执行**，该口径
 
 ---
 
-状态：`formula = review_pending`；`disclosure_adaptation = unmapped`；`accuracy = unproven`。
+## revision r2 — response to the independent review
+
+Independent review of r1: **accepted_scoped（仅 formula 资格）**，并给出 2 项 P2、4 项 P3、1 项
+明确要求的追加动作。本节**只追加**：上方正文（r1）除自检表新增 F 行外未改；**冻结期望、容差、
+负例清单、拒绝条件一律未改**；产品仓零改动。除明确标注的 M17 `oracle.md` 追加节外，没有改任何冻结件。
+
+### P2-1（runner 不比较 `cases.json` 的逐例 `expected`）→ 已按 (b) 修
+
+- `scripts/run_card.py` 现在对每个负例比较**异常精确类型名**与 `cases.json` 的 `expected`：
+  `declared_ok = isinstance(declared, str) and type(exc).__name__ == declared`；
+  **不用 isinstance 做该比较**（`ModelRegistryError` 是 `ValueError` 子类，用 isinstance 会让
+  `expected="ValueError"` 的篡改漏过）。判定优先级：不是目标类型 → `FAIL_wrong_exception_type`；
+  是目标类型但声明不符 → `FAIL_declared_expectation_mismatch`；两者都成立 → `PASS_rejected`。
+- 新增计数 `negative_counts.declared_expectation_mismatch`，`negative_summary` 增加
+  `declared_expectations_in_cases_json` 与 `declared_expectation_comparison`；
+  `negative_results.json` 的 `frozen_expectation` 不再是硬编码字符串，而是从冻结 `cases.json`
+  逐例声明的集合导出，并标 `declared_expectations_enforced: true`。
+- 第 11 节 rc=3 的口径同步改为"未被**按声明期望**拒绝"，并在 `run_result.json` 的
+  `exit_code_semantics` 里写明；runner sha256 由 `9ea69c72…` 变为 **`5307d2cc…`**（四卡字节相同）。
+- 新增第 6 个变异臂 **F**（篡改 N02 的 `expected` → `ValueError`）：实测 **rc=3**、
+  `declared_expectation_mismatch=1`；B 臂现在也同时给出 `declared_expectation_mismatch=1`
+  （未抛异常即声明未满足）。A/B/C/D/F 全红、E 恢复绿，`frozen_evidence_unchanged=true`。
+- 真实运行（未篡改）：`declared_expectation_mismatch=0`、11/11 `PASS_rejected`、
+  `verdict=pass`、`exit_code=0`；每条负例消息逐条记录在 `negative_results.json`。
+
+### P2-2（`handoff.json` 的 OQ-05 是跨卡常量，与 M18–M20 的 review.md 自相矛盾）→ 已按卡参数化
+
+- 复核人的**文件系统法证结论被采纳为事实基线**：M18/19/20 各只跑**1 趟**测量流水线；
+  M17 的目录创建/文件写入时间差与"第 14 个目录晚创建"指纹成立。
+- 但 G 时间戳只能区分"被重写过的世代数"，不能区分"argv 相同的多次执行"。实施 session 的记录是：
+  **M17 = 3 趟测量执行**（13 单元 → 14 单元[探针常量仍 105.0] → 14 单元[常量更正为 90.0]），
+  **M18/19/20 = 1 趟测量执行**（14 单元）；四卡另有 **6 趟收尾执行**（含本节所在的这一趟）。
+  两个数字都写进 `process_history.json`：`measurement_pipeline_executions_declared` 与
+  `rewritten_generations_forensically_visible`，并在 `forensic_explanation` 里说明何时二者会不同。
+- **不采用"2 趟测量"作为执行次数**：它是可观测的**重写世代数**，与 session 记录的执行次数不是
+  同一口径；若按 2 写会与本 session 的实际命令记录不符。两个口径都明示，读者可自行核对。
+- **C2 单元的来源按卡区分**：M17 是"首趟之后新增"；M18/19/20 是"随模板交付的既有单元"。
+  OQ-05 文本由 `scripts/write_handoff.py` 按卡生成（不再是常量字符串），并指向 `process_history.json`。
+- 本节所在收尾趟之后，B/C2/E/G 四个单元各被**重新执行一次**（P2-1 与 P3-2 的修复），
+  同样记入 `process_history.json` 的 `post_review_unit_reexecutions_declared`。
+
+### P3-1（`oq_rulings.json` 无 OQ-05 条目）→ 已补
+
+`evidence/M17/oq_rulings.json` 的 `rulings` 现为 `['OQ-01','OQ-02','OQ-03','OQ-04','OQ-05']`；
+OQ-05 含 `requires_ruling_from: independent reviewer` 与 `pointer: process_history.json`。
+`decision.md §3` 与 `review.md §7.5` 的引用因此成立。
+
+### P3-2（M20 的容差探针举例低估 5 个数量级）→ M20 已修，M17 不适用
+
+M17 的探针列表未变（该问题属 M20）。M20 的表述改为公式化并给出**实测**边界，见该卡 r2 节。
+
+### P3-3（`pipeline_run.json` 无 passes/run_history）→ 已补 `process_history.json`
+
+新增单元 **P-write-process-history** 产出 `process_history.json`：把"**观测到的**每个单元最后一次
+执行（rc/开始/结束/stdout sha256）"与"**声明的**历史趟次（含被覆盖的更早执行）"分开记录，
+并列出 `honest_gaps`（被覆盖的 stdout/rc、本文件自身所在趟只能算声明）。`handoff.json` 增加
+`process_history_pointer` 与 `process_history_summary`。`pipeline_run.json` 保持原样（它只描述
+最后一趟流水线，这一点现在由上述指针补齐）。
+
+### P3-4（`review.md §7.5` 要求裁定不存在的 OQ-05）→ 随 P3-1 消解
+
+### 复核人明确要求的追加动作（M17 `oracle.md`）→ 已执行，append-only
+
+- 新增单元 **R2-append-oracle-addendum**，在**复核结论之后**作为独立命令执行，rc/stdout 单独留档：
+  `evidence/M17/runs/R2-append-oracle-addendum/`。
+- `oracle.md` **只追加** `## 13. 修订 r2（仅更正描述行，不动任何期望值）`；**§1 一个字符未改**，
+  冻结期望、容差、判据一律未改；追加前 sha256 =
+  `9c8021eebd01aa27a9963db8ac869ac6a067eb24af17439164f3cb61bc42fa69`，
+  可在**真实行边界**（首个追加字节偏移 11768）截断复现：`truncated_prefix_equals_pre_append_hash=true`、
+  `boundary_is_a_real_line_boundary=true`（记录见 `evidence/M17/oracle_addendum_record.json`）。
+  节内写死三件事：错在何处 / 正确域与源码出处（`model_registry.py:265-269`、`:289-290`）/
+  实测证据（`PROBE-NEG-MILESTONE`=90.0 被接受、`PROBE-NEG-TOTAL-REVENUE`=ModelRegistryError），
+  并声明冻结期望未受影响、范围**仅限 M17**（M18/19/20 的 §1 行经复核正确）。
+- `evidence/M17/revision_r2.json` 现为 `revision=r2`、`r2_sections_in_oracle_md=1`、
+  `oracle_md_sha256_before_addendum=9c8021ee…`、`mechanism_proof` 为**对当前文件实时复验**
+  （截断到 11768 后与追加前 hash 相等）。
+- **一次失败执行也如实留档**：本单元**第一次**执行时追加正确（截断可复现追加前 hash），但边界
+  判断比较了错误的字节范围，导致 rc=3；随后用 `--repair-restore`（双向 hash 校验：当前文件等于
+  记录的追加后 hash、截断结果等于记录的追加前 hash）把 `oracle.md` **字节级还原**，修正比较后重新
+  追加，rc=0。失败那一趟的原始 rc/stdout/stderr 与旧记录保存在
+  `evidence/M17/runs/R2-append-oracle-addendum/first_execution_failed/`，并写进
+  `oracle_addendum_record.json` 的 `repair_history`。因此 `oracle.md` 的
+  `unchanged_since_generation=false` 是**预期**结果，其含义由
+  `frozen_body_reproducible_by_truncation=true` 精确限定。
+
+### 批次级两项（已在批次交接件落地）
+
+- `execution_runs/M17-M20/a20260919-01/rc_namespace.json` + `batch_handoff.md`：
+  按"卡 → runner sha256 → rc 语义"给出命名空间表（M17–M20 修复后 sha256 `5307d2cc…`：
+  `1=harness`、`2=无判定`；M05–M08 `fd3a11c9…`：`2=harness`、未定义 1），并明文**禁止未标注命名空间的
+  跨卡 rc 聚合**。
+- 两处显眼位置写明"**`unmapped` 的含义是零产出，不是部分完成**"。
+
+### 本次仍未验证 / 原样承接（不得当已证）
+
+①M17 第 1 趟（13 单元）的原始输出已被后续执行覆盖，"首跑 13 单元全绿"只有本 session 的声明与
+`process_history.json` 的声明口径；②`probe_extra.py` 常量曾为 105.0 无法由字节证据证明（只能给出
+mtime 关系与声明）；③`oracle.md` 在各趟之间未被改写只能由"同字节改写 + 伪造 mtime"不可排除的方式
+证明（r2 追加节额外提供了截断复现证据）；④M05–M08 结论未评估；⑤其它并发 session 未评估（本批
+porcelain 行数与 M05–M08 目录内并发写入未归因）；⑥`PLAN\reviews` 全树扫描受权限限制；
+⑦披露采集项与真实公司披露的对应关系未评估；⑧`_SIGNED_DRIVERS` 其余名字的业务正当性未评估；
+⑨`oracle_M17.py` 未逐行审阅（独立性证据是行为层）；⑩`iso\venv` 未与模板做全树 hash 比对。
+
+---
+
+状态：`formula = review_pending`；`disclosure_adaptation = unmapped`（= **零产出**，不是部分完成）；
+`accuracy = unproven`（完全未做评估）。实现者**未**自签 accepted。

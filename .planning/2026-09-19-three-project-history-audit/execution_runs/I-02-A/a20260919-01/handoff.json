@@ -1,8 +1,9 @@
 {
   "card_id": "I-02-A",
   "attempt_id": "a20260919-01",
-  "status": "review_pending",
-  "reviewer_status": "pending (independent reviewer must verify against review_and_handoff.md; implementer does not self-accept)",
+  "status": "accepted_scoped",
+  "reviewer_status_before_bookkeeping_fix": "pending (independent reviewer must verify against review_and_handoff.md; implementer does not self-accept)",
+  "reviewer_status": "accepted_scoped - verdict written by the independent reviewer in review.md:3: \"\u7ed3\u8bba\uff1a**accepted_scoped**\". Transcribed for bookkeeping by the implementer on 2026-09-20; the implementer did not and does not sign acceptance. JSON HYGIENE: this file carried TWO \"reviewer_status\" keys (handoff.json:5 and handoff.json:70, with different values) - a duplicate key, which makes the file ambiguous to ordinary JSON parsers. Both old values are preserved verbatim in reviewer_status_merged_history and the duplicate at line 70 was removed, leaving exactly one reviewer_status key. No other field changed. The reviewer reviewed the scope stated in that section; the implementer changed no verdict word and no scope, and this transcription transfers no qualification beyond what the reviewer wrote.",
   "completed_steps": [
     "D-W02 design freeze in decision.md (ScanReport completion_status / per_root_results / target_files + frozen enums + compatibility + recovery rules + rejected alternatives B/C/D/E/F/G)",
     "Isolated override tree built (models.py / scanner.py / canonical_writer.py modified; config/adapter_dispatch/config_doctor reused unchanged from I-01-A; service.py zero-diff — forwarding passthrough verified)",
@@ -67,5 +68,5 @@
     "after/case_results.json",
     "after/before/case_results.json"
   ],
-  "reviewer_status": "review_pending"
+  "reviewer_status_merged_history": {"handoff.json:5": "pending (independent reviewer must verify against review_and_handoff.md; implementer does not self-accept)", "handoff.json:70": "review_pending", "disposition": "These two DIFFERENT values were both present as the SAME JSON key \"reviewer_status\" in one object (handoff.json:5 and handoff.json:70). A duplicate object key makes the file ambiguous to ordinary JSON parsers (last-one-wins is not portable), so this field was parsed by hand and the duplicate at line 70 was removed, leaving exactly one reviewer_status key. Both old values are preserved verbatim above; neither was deleted."}
 }

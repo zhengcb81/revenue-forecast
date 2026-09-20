@@ -60,8 +60,34 @@ WHY = {
     "N05a": "common negative N05a: years = [] (fiscal-year domain)",
     "N05b": "common negative N05b: first year replaced by True (True is not a fiscal year)",
     "CONT-BREAK": "continuity break for this card (oracle.md section 4)",
+    "CONT-BREAK-CROSSYEAR": "cross-year anchoring break added at the request of the "
+                            "independent review: only the FY2028 opening/closing ARR move, "
+                            "so FY2027 still balances and the continuity guard must fire",
     "CARD-NEG-GAP": "card-listed second negative kept as a NON-GATING observation so that NEG-CARD "
                     "exercises the value-domain guard on a 2-year path (oracle.md section 6)",
+}
+
+# Frozen MESSAGE requirement per case id, when a type-only assertion would be too weak.
+# The runner fails a case whose ModelRegistryError message does not contain this substring.
+# Deliberately MINIMAL, so that the frozen oracle body changes as little as possible:
+#   * M22 / M23 NEG-CARD - required by review item P2-2: the card's literal 1-element-list
+#     replacement must reach the VALUE-domain guard, not the length guard.
+#   * M24 NEG-CARD       - the value/bridge guard, not the length guard.
+#   * M24 CONT-BREAK-CROSSYEAR - required by review item P2-3: the CROSS-YEAR anchoring
+#     guard, not the FY2027 balance guard.
+# Not used for CONT-BREAK on M21 / M22 / M23 / M24, because for M22/M23 no guard
+# substitution is possible (only the fiscal-year guard can raise there), on M21 the
+# continuity guard is the only reachable refusal on a 2-year path, and on M24 the
+# cross-year requirement is already frozen on the dedicated CROSSYEAR case.
+EXPECT_MESSAGE_CONTAINS = {
+    "NEG-CARD": {
+        "M22": "must be between 0.0 and 1.0: FY2027",
+        "M23": "must be between 0.0 and 1.0: FY2027",
+        "M24": "stock-flow balance failed: FY2027",
+    },
+    "CONT-BREAK-CROSSYEAR": {
+        "M24": "continuity failed: FY2028",
+    },
 }
 
 
@@ -220,9 +246,14 @@ def m22():
                 "years": [2027],
             },
         },
+        # NEG-CARD is the CARD'S LITERAL negative: replace the whole `royalty_rate`
+        # driver by the 1-element list [1.01] (card_M22.md L38). The list form is what
+        # reaches the VALUE-domain guard; a scalar would be refused earlier by the
+        # length guard. Frozen requirement: the refusal MESSAGE must contain
+        # "must be between 0.0 and 1.0: FY2027" (see cases.json expect_message_contains).
         "cases": common_cases(
             "eligible_sales",
-            ("set_driver", "positive", "royalty_rate", None, {"__float__": 1.01}),
+            ("set_driver", "positive", "royalty_rate", None, [1.01]),
             ("set_years", None, None, [2027, 2029]),
         ),
         "observations": [
@@ -283,9 +314,14 @@ def m23():
                 "years": [2027],
             },
         },
+        # NEG-CARD is the CARD'S LITERAL negative: replace the whole `timing_factor`
+        # driver by the 1-element list [1.1] (card_M23.md L38). The list form is what
+        # reaches the VALUE-domain guard; a scalar would be refused earlier by the
+        # length guard. Frozen requirement: the refusal MESSAGE must contain
+        # "must be between 0.0 and 1.0: FY2027" (see cases.json expect_message_contains).
         "cases": common_cases(
             "coverage_units",
-            ("set_driver", "positive", "timing_factor", None, {"__float__": 1.1}),
+            ("set_driver", "positive", "timing_factor", None, [1.1]),
             ("set_years", None, None, [2027, 2029]),
         ),
         "observations": [
@@ -371,12 +407,21 @@ def m24():
                 "years": [2027],
             },
         },
+        # CONT-BREAK is the CARD'S LITERAL patch (card_M24.md L115-124) and, as the card
+        # itself notes, its numbers also move FY2027's closing, so the FY2027 stock-flow
+        # BALANCE guard fires first. CONT-BREAK-CROSSYEAR is the additional case the
+        # independent review required: ONLY year-2 opening/closing move (251), so FY2027
+        # still balances on its own and the CROSS-YEAR ANCHORING guard is the one that
+        # must fire. Frozen requirement for that case: the refusal MESSAGE must contain
+        # "continuity failed: FY2028".
         "cases": common_cases(
             "opening_arr",
             ("set_driver", "positive", "closing_arr", None, [251]),
             ("set_driver_multi", None, None,
              {"opening_arr": [200, 251], "closing_arr": [250, 251]}),
-        ),
+        ) + [case_tuple("CONT-BREAK-CROSSYEAR", "set_driver_multi", "continuity_positive",
+                        None, None,
+                        {"opening_arr": [200, 251], "closing_arr": [250, 251]})],
         "observations": [
             {"id": "OBS-BASE-IGNORED", "kind": "set_base_revenue", "value": 999,
              "base_input": "positive", "compare_to": "positive", "expect_equal": True,
@@ -388,6 +433,14 @@ def m24():
             {"id": "OBS-GRR-ONE-SECOND-YEAR", "kind": "input_replay", "input": "continuity_positive",
              "compare_to": "continuity_positive", "expect_equal": True,
              "why": "records whether gross_retention_rate = 1 on the FY2028 slot is accepted (the retained-ARR guard: opening_arr * grr == 0 and expansion_arr > 0); NO expectation and NO verdict is asserted"},
+            {"id": "OBS-BRIDGE-TOL-1E-7", "kind": "set_driver_element", "driver": "closing_arr",
+             "index": 0, "value": {"__float__": 250.0000001}, "base_input": "positive",
+             "expect_equal": None,
+             "why": "effective-resolution probe required by the review (P3-2): the bridge compares with math.isclose(rel_tol=1e-9, abs_tol=1e-9), whose effective absolute tolerance at |closing_arr| = 250 is about 2.5e-7, so +1e-7 is expected to be INSIDE tolerance and the call to return a value; NO verdict is asserted, the observed outcome is recorded"},
+            {"id": "OBS-BRIDGE-TOL-1E-6", "kind": "set_driver_element", "driver": "closing_arr",
+             "index": 0, "value": {"__float__": 250.000001}, "base_input": "positive",
+             "expect_equal": None,
+             "why": "second effective-resolution probe (P3-2): +1e-6 is expected to be OUTSIDE the ~2.5e-7 effective tolerance and be refused with a stock-flow balance ModelRegistryError; NO verdict is asserted, the observed outcome is recorded"},
         ],
         "hand_notes": {
             "positive": "lost = 200 x (1 - 0.9) = 20; closing = 200 - 20 + 30 + 40 = 250 (bridge closes); revenue = 200 - 20 x 0.75 + 30 x 0.5 + 40 x 0.25 + 5 = 200 - 15 + 15 + 10 + 5 = 215",
@@ -420,6 +473,15 @@ def main() -> int:
         case_id, kind, driver, index, value, base_input = entry
         case = {"id": case_id, "kind": kind, "expected": "ModelRegistryError",
                 "base_input": base_input, "why": WHY[case_id], "driver": driver}
+        if case_id in EXPECT_MESSAGE_CONTAINS:
+            requirement = EXPECT_MESSAGE_CONTAINS[case_id].get(card)
+            if requirement:
+                case["expect_message_contains"] = requirement
+                case["expect_message_basis"] = (
+                    "the type-only assertion is too weak for this case: a length/lookup guard "
+                    "could raise the same exception class for the wrong reason, so the refusal "
+                    "MESSAGE is frozen too and the runner fails the case if the message does "
+                    "not contain this substring")
         if kind == "set_driver_element":
             case["index"] = index
             case["value"] = value

@@ -69,22 +69,53 @@ def main() -> int:
     spec = model_registry.MODEL_REGISTRY[model_id]
     signed = sorted(getattr(model_registry, "_SIGNED_DRIVERS", frozenset()))
 
+    # AUTHORITATIVE ratio predicate (F-02, independent review 2026-09-20): a driver is a ratio
+    # driver when its DIMENSION is "ratio". Filtering on ModelSpec.ratio_drivers instead
+    # structurally misses direct_growth.growth_rate (dimension "ratio", domain (-1, inf) hard-coded
+    # at model_registry.py:287-288, while direct_growth.ratio_drivers is empty). Both predicates are
+    # counted and every disagreement is listed, so the gap is visible instead of silent.
     registry_totals = {"models": len(model_registry.MODEL_REGISTRY), "drivers": 0,
-                       "ratio_drivers": 0}
+                       "ratio_drivers_by_dimension": 0,
+                       "ratio_drivers_by_registry_ratio_set": 0}
     ratio_not_in_0_1 = []
+    predicate_disagreements = []
+    optional_slots_without_default = 0
+    optional_models_without_default = 0
     for other_id, other in sorted(model_registry.MODEL_REGISTRY.items()):
         drivers = list(other.required) + list(other.optional)
         registry_totals["drivers"] += len(drivers)
+        slots_without_default = [d for d in other.optional if d not in other.defaults]
+        optional_slots_without_default += len(slots_without_default)
+        if slots_without_default:
+            optional_models_without_default += 1
         for driver in drivers:
-            if driver not in other.ratio_drivers:
-                continue
-            registry_totals["ratio_drivers"] += 1
+            dimension_is_ratio = other.dimensions.get(driver) == "ratio"
+            set_is_ratio = driver in other.ratio_drivers
             lower, upper = model_registry.driver_value_bounds(other_id, driver)
+            if dimension_is_ratio != set_is_ratio:
+                predicate_disagreements.append({
+                    "driver": "%s.%s" % (other_id, driver),
+                    "dimension": other.dimensions.get(driver),
+                    "in_registry_ratio_drivers_set": set_is_ratio,
+                    "bounds": jsonable([lower, upper]),
+                    "note": "counted as a ratio driver by the dimension predicate"
+                            if dimension_is_ratio else
+                            "declared in the ratio_drivers set but its dimension is not ratio",
+                })
+            if set_is_ratio:
+                registry_totals["ratio_drivers_by_registry_ratio_set"] += 1
+            if not dimension_is_ratio:
+                continue
+            registry_totals["ratio_drivers_by_dimension"] += 1
             if not (lower == 0.0 and upper == 1.0):
-                ratio_not_in_0_1.append({"driver": "%s.%s" % (other_id, driver),
-                                         "bounds": [lower, upper],
-                                         "explicit_bound_tuple": list(other.driver_bounds[driver])
-                                         if driver in other.driver_bounds else None})
+                ratio_not_in_0_1.append({
+                    "driver": "%s.%s" % (other_id, driver),
+                    "bounds": jsonable([lower, upper]),
+                    "explicit_bound_tuple": jsonable(list(other.driver_bounds[driver]))
+                    if driver in other.driver_bounds else None,
+                    "domain_is_hard_coded_in_the_module":
+                        other_id == "direct_growth" and driver == "growth_rate",
+                })
 
     drivers = list(spec.required) + list(spec.optional)
     effective_bounds = {}
@@ -113,8 +144,25 @@ def main() -> int:
         "registry_totals": {
             "models": registry_totals["models"],
             "drivers": registry_totals["drivers"],
-            "ratio_drivers": registry_totals["ratio_drivers"],
+            "ratio_drivers_by_dimension": registry_totals["ratio_drivers_by_dimension"],
+            "ratio_drivers_by_registry_ratio_set":
+                registry_totals["ratio_drivers_by_registry_ratio_set"],
             "ratio_drivers_whose_bounds_are_not_0_1": len(ratio_not_in_0_1),
+            "optional_drivers_without_an_explicit_default_slots_total":
+                optional_slots_without_default,
+            "optional_drivers_without_an_explicit_default_models_total":
+                optional_models_without_default,
+        },
+        "ratio_driver_predicate": {
+            "authoritative": "spec.dimensions[driver] == 'ratio'",
+            "also_counted": "driver in spec.ratio_drivers (the narrower declared set)",
+            "why": "the two predicates disagree for at least one driver; the dimension predicate is "
+                   "the one used by driver_value_bounds' default ratio domain",
+            "authoritative_source": "M05-M08 r3 correction (docfix_r3.json: ratio_drivers_total "
+                                    "40 -> 41, missing_driver_added direct_growth.growth_rate with "
+                                    "domain (-1, inf)); f07_enumerate.py:60 uses spec.dimensions",
+            "disagreements": predicate_disagreements,
+            "disagreement_count": len(predicate_disagreements),
         },
         "ratio_drivers_whose_bounds_are_not_0_1": ratio_not_in_0_1,
         "signed_driver_names_in_the_module": signed,

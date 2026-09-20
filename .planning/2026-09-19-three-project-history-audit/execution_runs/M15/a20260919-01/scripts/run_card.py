@@ -14,20 +14,33 @@ Isolation contract
 Exit codes (verdict-carrying; a bookkeeping-only rc=0 is not allowed)
 --------------------------------------------------------------------
   0 = pass: the positive path and the continuity positive are faithful to the frozen
-      oracle within ``1e-9 * max(1, |expected|)`` AND every negative case was rejected
-      with the target exception type (``ModelRegistryError``)
+      oracle within ``1e-9 * max(1, |expected|)`` AND the frozen negative-case set is
+      internally consistent AND every negative case was rejected with the target exception
+      type (``ModelRegistryError``)
   1 = harness error: the runner could not even set up the observation (missing or
       unreadable evidence file, product import failure, unexpected internal exception).
       A harness error is NEVER reported as a pass and never as a case failure.
-  2 = no verdict (期望缺失 / 保真不符): an expectation is missing from the frozen oracle
-      (``positive.expected_float``, ``expected_output_shape``, tolerances), or the
-      observed output is not faithful to it - wrong container, wrong length, wrong
-      element type, non-finite element, year mismatch, or a value outside tolerance.
+  2 = no verdict (expectation missing / not faithful / expectation declaration inconsistent):
+      an expectation is missing from the frozen oracle (``positive.expected_float``,
+      ``expected_output_shape``, tolerances, ``negative_count``, ``negative_ids``), or the
+      observed output is not faithful to it - wrong container, wrong length, wrong element
+      type, non-finite element, year mismatch, or a value outside tolerance - or the frozen
+      case set contradicts its own declared expectations (a case whose ``expected`` names
+      something other than the verdict type the runner actually applies, a case count or id
+      set that disagrees with the oracle, a duplicate case id, an unknown case kind, or a
+      ``base_input`` that does not exist).
   3 = verdict is negative on the refusal side: at least one negative case was NOT
       rejected with the target exception type.
 
 Precedence when several conditions hold: 1 > 2 > 3. Every triggered condition is listed
 verbatim in ``exit_code_semantics.triggered``, so an rc=2 never hides an rc=3 condition.
+
+Why the expectation-consistency block exists (independent review finding F-01, 2026-09-20):
+revision r1 of this runner decided a negative case purely by ``isinstance(exc,
+ModelRegistryError)`` and never read ``case["expected"]``, so ``cases.json``'s ``expected``
+field was decorative metadata: renaming it to a different type, or deleting a whole negative
+case, still produced rc=0. Both are now expectation gaps that yield rc=2, and the case count
+and id set are cross-checked against ``oracle.json``.
 
 The ``observations`` block is deliberately NOT part of the exit code: those entries are
 design observations whose expectation is sometimes "no expectation asserted" (the
@@ -50,6 +63,8 @@ RC_PASS = 0
 RC_HARNESS = 1
 RC_NO_VERDICT = 2
 RC_NEGATIVES = 3
+KNOWN_CASE_KINDS = ("set_driver_element", "set_driver", "set_driver_multi", "delete_driver",
+                    "add_driver", "set_years", "set_base_revenue")
 
 
 class HarnessError(Exception):
@@ -127,6 +142,71 @@ def within(values, expected):
     if len(values) != len(expected):
         return False
     return all(abs(a - e) <= 1e-9 * max(1.0, abs(e)) for a, e in zip(values, expected))
+
+
+def expectation_gaps(cases_doc, oracle_doc, input_doc):
+    """Consistency of the frozen case set with its own declared expectations.
+
+    Independent review finding F-01: the runner used to decide a negative case purely by
+    ``isinstance(exc, ModelRegistryError)`` and never read ``case["expected"]``, and it never
+    checked the case count or the id set. Renaming a case's ``expected`` to another type, or
+    deleting a whole negative case, therefore still produced rc=0. Every such inconsistency is
+    an expectation gap and yields rc=2 (no verdict) instead of a silent pass.
+
+    Returns (gaps, facts) where gaps is a list of human-readable strings.
+    """
+    gaps = []
+    cases = cases_doc.get("cases")
+    if not isinstance(cases, list) or not cases:
+        gaps.append("cases.json carries no negative case list")
+        return gaps, {"case_count": 0}
+
+    ids = [case.get("id") for case in cases]
+    duplicated = sorted(set(i for i in ids if ids.count(i) > 1))
+    if duplicated:
+        gaps.append("duplicate case ids in cases.json: %s" % duplicated)
+
+    declared_count = oracle_doc.get("negative_count")
+    if declared_count is None:
+        gaps.append("oracle.json carries no negative_count (expectation missing)")
+    elif declared_count != len(cases):
+        gaps.append("cases.json has %d cases but oracle.json.negative_count is %r"
+                    % (len(cases), declared_count))
+
+    declared_ids = oracle_doc.get("negative_ids")
+    if declared_ids is None:
+        gaps.append("oracle.json carries no negative_ids (expectation missing)")
+    else:
+        missing = sorted(set(declared_ids) - set(ids))
+        extra = sorted(set(ids) - set(declared_ids))
+        if missing:
+            gaps.append("cases.json is MISSING cases that oracle.json declares: %s" % missing)
+        if extra:
+            gaps.append("cases.json carries cases that oracle.json does not declare: %s" % extra)
+
+    for case in cases:
+        case_id = case.get("id")
+        declared = case.get("expected")
+        if declared != TARGET_EXCEPTION:
+            gaps.append("case %s declares expected=%r but this runner only counts %s as a "
+                        "refusal verdict" % (case_id, declared, TARGET_EXCEPTION))
+        kind = case.get("kind")
+        if kind not in KNOWN_CASE_KINDS:
+            gaps.append("case %s uses unknown mutation kind %r" % (case_id, kind))
+        base_key = case.get("base_input", "positive")
+        if base_key not in input_doc:
+            gaps.append("case %s references base_input %r which input.json does not contain"
+                        % (case_id, base_key))
+
+    facts = {
+        "case_count": len(cases),
+        "case_ids": ids,
+        "oracle_negative_count": declared_count,
+        "oracle_negative_ids": declared_ids,
+        "declared_expectations": sorted(set(str(case.get("expected")) for case in cases)),
+        "target_exception": TARGET_EXCEPTION,
+    }
+    return gaps, facts
 
 
 def fidelity(value, years, shape):
@@ -331,12 +411,24 @@ def run_all(args, result, emit):
             entry["traceback"] = ascii_text(traceback.format_exc())
         result["observations"].append(entry)
 
+    # ---------------- expectation consistency of the frozen case set (F-01) ----------------
+    gaps, gap_facts = expectation_gaps(cases_doc, oracle_doc, input_doc)
+    result["expectation_consistency"] = {
+        "ok": not gaps,
+        "gaps": gaps,
+        "facts": gap_facts,
+        "rule": "a case whose declared expected type is not the verdict type this runner applies, "
+                "or a case count / id set that disagrees with oracle.json, is an expectation gap "
+                "and yields rc=2 - never a silent pass",
+    }
+
     # ---------------- negatives ----------------
     for case in cases_doc["cases"]:
         base_key = case.get("base_input", "positive")
         base = copy.deepcopy(input_doc[base_key])
         entry = {"id": case["id"], "kind": case["kind"], "why": case["why"],
-                 "expected": case["expected"], "base_input": base_key}
+                 "expected": case["expected"], "base_input": base_key,
+                 "declared_expected": case.get("expected")}
         try:
             mutated = apply_case(base, case)
             entry["mutated_input_repr"] = ascii_text(
@@ -365,6 +457,8 @@ def run_all(args, result, emit):
         "target_exception": TARGET_EXCEPTION,
         "counting_rule": "only isinstance(exc, ModelRegistryError) counts as PASS; "
                          "ImportError/ModuleNotFoundError/FileNotFoundError are recorded as FAIL",
+        "expectation_consistency_ok": not gaps,
+        "expectation_gaps": gaps,
     }
 
 
@@ -396,6 +490,9 @@ def decide(result):
 
     if result.get("harness_error"):
         triggered.append("harness_error")
+    consistency = result.get("expectation_consistency") or {}
+    if consistency and not consistency.get("ok", True):
+        triggered.append("expectation_declaration_inconsistent")
     if missing:
         triggered.append("expectation_missing")
     if fidelity_problems:
@@ -423,6 +520,7 @@ def decide(result):
         "precedence": "1 > 2 > 3",
         "triggered": triggered,
         "expectation_missing": missing,
+        "expectation_declaration_gaps": consistency.get("gaps", []),
         "fidelity_problems": fidelity_problems,
         "value_problems": value_problems,
         "negative_failures": negatives.get("failed", []),
@@ -465,9 +563,16 @@ def emit_result_lines(result, emit):
              % (obs.get("id"), obs.get("raised"), obs.get("actual"), obs.get("matches_compared"),
                 obs.get("expect_equal"), obs.get("matches_expected_relation"),
                 obs.get("matches_expected"), obs.get("message", "")))
+    consistency = result.get("expectation_consistency") or {}
+    emit("expectation_consistency: ok=%s gap_count=%d facts=%s"
+         % (consistency.get("ok"), len(consistency.get("gaps") or []),
+            ascii_text(consistency.get("facts"))))
+    for gap in consistency.get("gaps") or []:
+        emit("expectation_gap: %s" % ascii_text(gap))
     for entry in result.get("negatives", []):
-        emit("negative: %s %s %s - %s" % (entry["id"], entry["verdict"], entry.get("raised"),
-                                          entry.get("message", "")))
+        emit("negative: %s declared_expected=%s verdict=%s raised=%s - %s"
+             % (entry["id"], entry.get("declared_expected"), entry["verdict"],
+                entry.get("raised"), entry.get("message", "")))
     summary = result.get("negative_summary") or {}
     emit("negative summary: total=%s passed=%s failed=%s"
          % (summary.get("total"), summary.get("passed"), summary.get("failed")))

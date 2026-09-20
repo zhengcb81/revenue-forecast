@@ -26,6 +26,35 @@
    "effect_on_results": "none - the exit code and every printed value were identical; only the file encoding changed"
   }
  },
+ "review_items_r2": {
+  "P2-1": {
+   "requirement": "run_card.py must CHECK cases.json `expected`, not merely copy it; add a mutation probe that turns red when `expected` is tampered with",
+   "disposition": "implemented in scripts/run_card.py (FAIL_expected_type_mismatch) plus probe F_corrupted_expected_type, which now yields rc=3",
+   "scope_note": "the same defect exists in the byte-identical runner held by the M05-M20 and M25-M31 attempts; this batch fixed ONLY its own copies and did not touch any other card's frozen runner. Registered as a cross-batch harness gap for the parent agent."
+  },
+  "P2-2": {
+   "requirement": "M22/M23 NEG-CARD must be the card's literal 1-element LIST replacement so the value-domain guard is what refuses it",
+   "disposition": "implemented; cases.json NEG-CARD value is now a 1-element list and the refusal message requirement is frozen as 'must be between 0.0 and 1.0: FY2027'"
+  },
+  "P2-3": {
+   "requirement": "M24 must add a 2-year case whose failure is the CROSS-YEAR anchoring guard (message must contain 'continuity failed: FY2028')",
+   "disposition": "implemented as CONT-BREAK-CROSSYEAR on the continuity_positive base with only FY2028 opening/closing moved to 251"
+  },
+  "P3-1": {
+   "requirement": "handoff.json.revision contradicted revision_r2.json",
+   "disposition": "handoff.json now records r2 and states that the review verdict for the revised attempt has not yet been received"
+  },
+  "P3-3": {
+   "requirement": "state which `reviews` mtime convention is used",
+   "disposition": "after/reviews_mtime.txt and handoff.json now record BOTH the directory mtime (2026-09-19 09:14:20) and the newest file inside it, and name the two conventions"
+  },
+  "review_verdict_r1": "accepted_scoped (formula qualification only)",
+  "card_specific": "the review's P2-2/P2-3 wording did not require a change on M21; the reviewer explicitly accepted the M21 value-domain NEG-CARD on its 2-year `card_neg` base, which is retained unchanged",
+  "P3-2": {
+   "requirement": "state the effective resolution of the bridge balance comparison",
+   "disposition": "new frozen sub-section 12 added (math.isclose rel_tol=1e-9 / abs_tol=1e-9); M21 records that its compared magnitude is ~35 and that no numeric probe was run on this card"
+  }
+ },
  "items": {},
  "note": "the frozen body of oracle.md (sections 0-11) is byte-unchanged since it was written before the product run; the run-reconciliation section was APPENDED afterwards"
 }

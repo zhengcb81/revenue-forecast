@@ -207,3 +207,109 @@ All product-code copies live under `iso/`:
 `iso/product_swapped` = T2 with only `redact_and_truncate`'s two operations exchanged
 (order-swap control for E4a). The production tree is read-only from here on; every run uses
 `--src iso/<tree>/src`. Any assignment (not copy) of a real product file is a card failure.
+
+---
+
+# R3 addendum
+
+## Provenance of the r3 expectations
+
+Unlike r1/r2, the r3 expectations were **not invented by the implementer**: they are the
+r2 review's own wording, received before any r3 run. Quoted verbatim from the review
+message:
+
+- F-I14C-07: `_CREDENTIAL_KEY` is "~O(n²)"; pick one of (a) linear candidate + atom-table
+  validation in Python, (b) `{0,8}` bounds, (c) a hard input cap; and whichever is chosen
+  must add "长 `_` 分隔串" cases covering the chosen boundary (k=1000/2000/40000) that
+  assert a bounded return time, give a k=200…40000 timing table with the r1 control, and
+  confirm E4a/E4b/E5a stay green;
+- C8's stated reason is wrong and must be rewritten;
+- the over-redaction table must gain `pwd=` and distinguish r2-new from r1-existing;
+- C10 (JSON quoted-key form `{"key": "value"}`) is to be registered as pre-existing.
+  Registered: `r3/diagnostics_*.json` → `residuals_confirmed` contains `res-json-quoted`
+  in all three trees, i.e. the marker survives `{"api_key": "<marker>"}`.
+
+## Items the implementer chose AFTER measuring (declared, not pre-frozen)
+
+1. **The design.** Option (a) as literally worded was measured first and is **also
+   quadratic** (`[A-Za-z0-9_-]+` still backtracks once per start position when the value
+   cannot match: `r3/variants.json` → A1 8000 segments = 2.66 s, 16000/40000 = TIMEOUT).
+   Option (b) `{0,8}` is linear (40000 = 0.065 s) but silently stops covering keys with
+   more than 8 qualifier segments. Option (c) leaves the regex super-linear just below any
+   cap. Chosen: a **single-pass scanner** (variant A2), measured linear on every shape
+   (`r3/bench_T2-r3-scanner.json`, worst case 0.0619 s at k=40000). The scanner keeps the
+   reviewer's intent — no nesting-dependent quantifier sees the message, and the atom
+   decision is an explicit Python table lookup.
+2. **Deadline = 5.0 s** for the new cases (`F07_DEADLINE_SECONDS`). Chosen after measuring
+   (r3 worst case 0.062 s, r2 >20 s), i.e. it is a regression detector, not a frozen
+   service-level objective.
+3. **Declared behavioural change:** a rejected key no longer consumes the whole
+   `key=value` span, so a genuine credential later in the same text is now redacted
+   (`url=https://x?token=…`, `cmd: --token=…`). This was NOT requested; it is a
+   consequence of the scanner and is measured as an improvement against the r1/r2 regex,
+   with the "no credential inside the rejected key" cases asserted unchanged.
+
+---
+
+# R4 addendum
+
+Expectations again come from the r3 review message (received before any r4 run), not from the
+implementer: fix the duplicated key; add an OUTPUT FIDELITY assertion to both tables so that
+"value replaced, everything else byte-identical" is part of the criteria and a mangled key
+cannot pass; restore the probe baselines (E2b len 34, E4a len 20, E4b len 193) and make the
+E5a envelope identify the file again; raise C12 to a hard promotion precondition; register C13
+if the fidelity table exposes one.
+
+Frozen before the r4 runs:
+
+- **Fidelity is exact, not approximate.** Every credential entry must equal `expected`
+  character for character; every untouched entry must equal its input; residuals must equal
+  `expected`. The table scripts exit 2 on any mismatch, so a green "0 leaks" line is impossible
+  without fidelity.
+- **C13 (new, discovered by the table while writing it):** `"a=1 token=<marker> b=2"` is
+  expected to become `"a=1 token=<redacted>"`, because the value is the whole space/tab
+  separated run (r1 `_BARE_VALUE` semantics). This is frozen as the accepted behaviour rather
+  than "fixed", because the reviewer's E4b acceptance length (193) is derived from it.
+- **Flake control:** a compat failure that reproduces identically on the pristine T0 tree is
+  environment-dependent, not card-caused; both trees must be run from the same cwd pattern
+  before any such claim is made.
+
+Declared after measurement (not pre-frozen): the 5 s F-07 deadline stays as it is, and the
+`iso/product_r3` specimen exists only so the fidelity criterion can be shown to catch F-I14C-08.
+
+---
+
+# R5 addendum
+
+**No new expectation was invented at r5.** Every r5 expectation is either (a) the r4 review's
+own wording, (b) already-frozen behaviour that had to be written down because the review exposed
+it, or (c) mechanically derived. The freeze is recorded here because two of the corrections
+change what a green run means.
+
+Frozen before the r5 runs (from the r4 review message, received before any r5 command):
+
+1. **Exit-code convention:** `0 = pass`, `2 = cannot adjudicate` (helper absent / tree not
+   importable — never "fine"), `3 = negative verdict` (credential leak, fidelity failure, or a
+   **new** over-redaction). Registered pre-existing over-redactions are measured, not verdicts.
+2. **Fidelity stays exact and extends to multi-line input.** Every `FIDELITY_CASES` pair must
+   match character for character, including pairs whose input contains `\n`.
+3. **C13's real consequence is frozen as CURRENT behaviour, with the loss asserted:** an
+   unquoted credential value runs to the next `,;&"'|` or whitespace *including across
+   newlines*, so `token=<marker> doc=17\nstage=…` loses everything after the value. Frozen
+   because E4b's 193-char baseline derives from it; **not** fixed, and not to be "tidied up"
+   without a new oracle.
+4. **Flake claims require captured per-run evidence and both trees from the same cwd pattern**;
+   a claim without captured output is retracted, not restated.
+5. **Patch consumability:** the deliverable diff must apply with `git apply` and reproduce the
+   fixed tree byte for byte; a diff that only `difflib` can consume is not a deliverable.
+
+Derived after measurement (declared, not pre-frozen):
+
+- `r5/counts.json` is the source of truth for every count in this attempt (rule table 44,
+  diagnostics 30, `FIDELITY_CASES` 28, collected nodeids 82); prose numbers must cite it.
+- The F-07 deadline stays 5.0 s and C12 stays a hard precondition: the F-07 case is **not**
+  promoted to the product test until `pytest-timeout` or a subprocess wrapper exists, because
+  the assertion fires only after the call returns.
+- The C13 magnitudes are as measured with two independent markers (this attempt's 21-char
+  marker and the review's 24-char `ZQ7_REVIEWER_MARKER_9f3c` → 112 in / 34 out); a length
+  difference between markers is not a discrepancy.

@@ -1,0 +1,86 @@
+{
+ "card_id": "M24",
+ "model_id": "subscription_arr_bridge",
+ "generated_by": "scripts/oracle_M24.py (stdlib only, no product import)",
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "215.000"
+  ],
+  "expected_float": [
+   215.0
+  ],
+  "tolerances": [
+   2.15e-07
+  ],
+  "hand_work": [
+   "200 - 200*(1-0.9)*0.75 + 30*0.5 + 40*0.25 + 5"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "215.000",
+   "250.00"
+  ],
+  "expected_float": [
+   215.0,
+   250.0
+  ],
+  "tolerances": [
+   2.15e-07,
+   2.5e-07
+  ],
+  "hand_work": [
+   "200 - 200*(1-0.9)*0.75 + 30*0.5 + 40*0.25 + 5",
+   "250 - 250*(1-1)*0.75 + 0*0.5 + 0*0.25 + 0"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "210.000"
+  ],
+  "expected_float": [
+   210.0
+  ],
+  "tolerances": [
+   2.1e-07
+  ],
+  "hand_work": [
+   "200 - 200*(1-0.9)*0.75 + 30*0.5 + 40*0.25 + 0"
+  ]
+ },
+ "defaults_expected_float": [
+  210.0
+ ],
+ "observation_expected": {},
+ "hand_notes": {
+  "positive": "lost = 200 x (1 - 0.9) = 20; closing = 200 - 20 + 30 + 40 = 250 (bridge closes); revenue = 200 - 20 x 0.75 + 30 x 0.5 + 40 x 0.25 + 5 = 200 - 15 + 15 + 10 + 5 = 215",
+  "continuity_fy2028": "grr = 1 -> lost = 0; closing = 250 + 0 + 0 = 250; revenue = 250 - 0 + 0 + 0 + 0 = 250",
+  "defaults": "usage_revenue omitted -> 0; 200 - 15 + 15 + 10 + 0 = 210",
+  "continuity_negative_note": "the card's CONT patch also moves FY2027 closing_arr to 251, so the FY2027 balance check fires before the FY2028 continuity check; both are ModelRegistryError, the frozen requirement is the exception TYPE"
+ },
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))"
+}

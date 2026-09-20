@@ -1,0 +1,45 @@
+{
+  "batch_id": "M17-M20",
+  "attempt_id": "a20260919-01",
+  "purpose": "rc namespace table: the exit codes of the M-card runners are NOT comparable across runner versions",
+  "hard_rule": "Never aggregate, average, count or compare raw rc values across cards without naming the runner sha256 that produced them. The same integer has different meanings in different runner generations (2 = harness failure in one, 2 = 'no verdict could be issued' in another).",
+  "namespaces": {
+    "M17-M20 a20260919-01": {
+      "runner_script": "scripts/run_card.py",
+      "runner_sha256_before_post_review_fix": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+      "runner_sha256_after_post_review_fix": "5307d2cc31bad5731585d2f503341fe2b3d61425f369289eed261568883cbf05",
+      "runner_sha256_note": ("both values are byte-identical across the four attempts; the change was "
+                             "the P2-1 fix (per-case declared expectation enforced by exact type "
+                             "name). See evidence/<CARD>/source_manifest.json card_script_hashes and "
+                             "handoff.json negative_declared_expectation_enforcement.runner_sha256"),
+      "exit_codes": {
+        "0": "pass",
+        "1": "harness error (the runner itself could not produce a verdict)",
+        "2": "no verdict: the frozen expectation is missing, or the observed output cannot be faithfully compared with the frozen shape",
+        "3": "negative verdict: positive raised/out of tolerance, continuity positive did not match, or at least one negative case was not rejected as its DECLARED expectation requires"
+      },
+      "declared_expectation_enforcement": "yes (post-review P2-1): the raised exception's EXACT type name must equal cases.json's per-case 'expected' string; compared by type name, never by isinstance, because ModelRegistryError is a ValueError subclass",
+      "precedence": "1 > 2 > 3 > 0"
+    },
+    "M05-M08 a20260919-01": {
+      "runner_script": "scripts/run_card.py",
+      "runner_sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+      "exit_codes": {
+        "0": "pass",
+        "2": "harness/bookkeeping failure - no verdict exists",
+        "3": "negative verdict (positive mismatch, continuity failure or unrejected negative)",
+        "1": "not defined by that runner; a bare 1 there is not a harness-error signal"
+      },
+      "declared_expectation_enforcement": "no: that runner recorded cases.json's 'expected' but did not compare it",
+      "note": "read from that attempt's own artefacts; this batch did not modify it"
+    },
+    "M21-M31": {
+      "runner_script": "scripts/run_card.py",
+      "runner_sha256": "unknown to this batch; the same shared-harness gap (declared expectation not enforced) was reported independently by the M21-M24 review",
+      "exit_codes": "NOT VERIFIED BY THIS BATCH - do not infer them from either namespace above"
+    }
+  },
+  "why_this_table_exists": "the independent review of M17-M20 found that the same defect (per-case declared expectation never compared) had been found independently in M21-M24, i.e. the harness is shared across batches; without a namespace table a cross-card rc aggregate would silently misclassify harness failures as negative verdicts",
+  "written_by": "the implementing session of M17-M20 attempt a20260919-01",
+  "adjudicated_by": "PENDING - owner/dispatcher; this table states facts about artefacts, it does not rule on how other batches must be re-run"
+}

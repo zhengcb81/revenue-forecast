@@ -23,7 +23,7 @@
    "pytest (no third-party package is required by this card)"
   ]
  },
- "oracle_md_sha256": "7d47fc6ed9d4f5b19c2efd1a7259a3d6de55eacaed9e44327af3e61adb7d390e",
+ "oracle_md_sha256": "3b4937be7a9432e208b1cc2a10a887e54050599c157deaa03a0f75e0beb06d70",
  "oracle_md_note": "oracle.md is NOT embedded here; only its sha256 is recorded. The verifiable ordering chain is the mtime pair in evidence/M22/source_manifest.json (oracle.json mtime < stdout.txt mtime) plus the byte-identical regeneration of oracle.json.",
  "units": [
   {
@@ -171,7 +171,7 @@
    ],
    "binding_status": "bound",
    "note": "oracle.md mtime precedes evidence/M22/stdout.txt; the mtime pair is recorded in evidence/M22/source_manifest.json",
-   "oracle_md_sha256": "7d47fc6ed9d4f5b19c2efd1a7259a3d6de55eacaed9e44327af3e61adb7d390e"
+   "oracle_md_sha256": "3b4937be7a9432e208b1cc2a10a887e54050599c157deaa03a0f75e0beb06d70"
   },
   {
    "unit_id": "A5-M22-oracle-regeneration-check",
@@ -258,7 +258,13 @@
    "negative_summary": {
     "total": 11,
     "passed": 11,
-    "failed": []
+    "failed": [],
+    "expected_type_mismatch_cases": [],
+    "message_mismatch_cases": [],
+    "message_requirements_checked": [
+     "NEG-CARD"
+    ],
+    "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message"
    }
   },
   {
@@ -353,6 +359,9 @@
     "A_corrupted_positive_expectation": 3,
     "B_corrupted_negative_assertion": 3,
     "C_corrupted_positive_input": 2,
+    "F_corrupted_expected_type": 3,
+    "G_corrupted_message_requirement": 3,
+    "H_message_requirement_points_at_another_guard": 3,
     "D_restored_uncorrupted": 0
    },
    "expected_rc_by_tag": {
@@ -360,6 +369,9 @@
     "A_corrupted_positive_expectation": 3,
     "B_corrupted_negative_assertion": 3,
     "C_corrupted_positive_input": 2,
+    "F_corrupted_expected_type": 3,
+    "G_corrupted_message_requirement": 3,
+    "H_message_requirement_points_at_another_guard": 3,
     "D_restored_uncorrupted": 0
    }
   },

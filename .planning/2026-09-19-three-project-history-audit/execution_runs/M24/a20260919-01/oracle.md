@@ -144,7 +144,7 @@ Attempt: `execution_runs/M24/a20260919-01`。
 
 | 例 | 变换（在冻结输入基础上只改这一处） | 冻结预期 |
 |---|---|---|
-| NEG-CARD | `closing_arr = [251]`（基于 `positive`） | `ModelRegistryError` |
+| NEG-CARD | `closing_arr = [251]`（基于 `positive`） | `ModelRegistryError 且消息须含 `stock-flow balance failed: FY2027`` |
 | N01a | `opening_arr[0] = True`（基于 `positive`） | `ModelRegistryError` |
 | N01b | `opening_arr[0] = float('nan')`（基于 `positive`） | `ModelRegistryError` |
 | N01c | `opening_arr[0] = float('inf')`（基于 `positive`） | `ModelRegistryError` |
@@ -155,8 +155,9 @@ Attempt: `execution_runs/M24/a20260919-01`。
 | N05a | `years = []`（基于 `positive`） | `ModelRegistryError` |
 | N05b | `years = [True, ...]`（基于 `positive`） | `ModelRegistryError` |
 | CONT-BREAK | {"opening_arr": [200, 251], "closing_arr": [250, 251]}（基于 `continuity_positive`） | `ModelRegistryError` |
+| CONT-BREAK-CROSSYEAR | {"opening_arr": [200, 251], "closing_arr": [250, 251]}（基于 `continuity_positive`） | `ModelRegistryError 且消息须含 `continuity failed: FY2028`` |
 
-合计 **11 个负例**。通过判据：目标异常类型必须是 `ModelRegistryError`；`ImportError`/`ModuleNotFoundError`/`FileNotFoundError` **不得**计为通过。
+合计 **12 个负例**。通过判据：目标异常类型必须是 `ModelRegistryError`；`ImportError`/`ModuleNotFoundError`/`FileNotFoundError` **不得**计为通过。
 
 NEG-CARD 语义：`closing_arr` 是必填对账项；改成 `[251]` 使 FY2027 桥不平衡，冻结预期为 `ModelRegistryError`（桥平衡守卫）。
 
@@ -167,6 +168,8 @@ NEG-CARD 语义：`closing_arr` 是必填对账项；改成 `[251]` 使 FY2027 �
 | OBS-BASE-IGNORED | `base_revenue = 999`（基于 `positive`） | 与 `positive` 相同 | the ARR bridge ignores base_revenue at this entry point; design observation only, not a pass condition |
 | OBS-DEFAULT-EQUIV | `usage_revenue = [0]`（基于 `defaults`） | 与 `defaults` 相同 | explicit 0 equals the omitted optional usage_revenue; makes the documented default falsifiable |
 | OBS-GRR-ONE-SECOND-YEAR | 重放 `continuity_positive` | 与 `continuity_positive` 相同 | records whether gross_retention_rate = 1 on the FY2028 slot is accepted (the retained-ARR guard: opening_arr * grr == 0 and expansion_arr > 0); NO expectation and NO verdict is asserted |
+| OBS-BRIDGE-TOL-1E-7 | `closing_arr[0] = float('250.0000001')`（基于 `positive`） | 不设预期 | effective-resolution probe required by the review (P3-2): the bridge compares with math.isclose(rel_tol=1e-9, abs_tol=1e-9), whose effective absolute tolerance at |closing_arr| = 250 is about 2.5e-7, so +1e-7 is expected to be INSIDE tolerance and the call to return a value; NO verdict is asserted, the observed outcome is recorded |
+| OBS-BRIDGE-TOL-1E-6 | `closing_arr[0] = float('250.000001')`（基于 `positive`） | 不设预期 | second effective-resolution probe (P3-2): +1e-6 is expected to be OUTSIDE the ~2.5e-7 effective tolerance and be refused with a stock-flow balance ModelRegistryError; NO verdict is asserted, the observed outcome is recorded |
 
 ## 7. 卡片文字 vs 实现公式串（须核对，不得为对齐而改预期）
 
@@ -209,6 +212,14 @@ R8-BIZ–R10-BIZ 是**业务拒绝**条件（卡片「专业决策/业务负例�
 - 存量桥：本卡适用，落地为第 4/5 节。
 - 准确性：`STOP_ACCURACY`（无 I-12 冻结设计）。
 
+## 12. 桥平衡的有效分辨率（独立复核要求补记；见文末追加节的来源说明）
+
+存量桥的平衡与跨年锚定不是精确等号比较，而是 `math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-9)`（`model_extensions.py:27-38` 的 `_equal` / `_bridge`（桥平衡 + 跨年 continuity））。
+
+- **有效绝对容差 = `max(abs_tol, rel_tol × max(|a|, |b|))` = `max(1e-9, 1e-9 × max(|closing|, |expected_closing|))`**；相对项非负，故下界为 1e-9。
+- 本卡合成例的被比较量级 |closing_arr| ≈ 250，故有效绝对容差 ≈ **2.5e-7**（比 1e-9 宽约 3 个量级）。
+- 实测（本 attempt scratch 探针，**非判定性**）：正例 `closing_arr` 加 **+1e-7 → 通过**；加 **+1e-6 → 被拒绝**（`opening_arr stock-flow balance failed: FY2027`）。即 1e-7 在容差内、1e-6 在容差外。
+
 ---
 
 （以下为运行后追记节，由 `scripts/append_oracle_run_section.py` 追加；
@@ -228,10 +239,10 @@ R8-BIZ–R10-BIZ 是**业务拒绝**条件（卡片「专业决策/业务负例�
 | positive | `['215.000']` | `[215.0]` | within tolerance |
 | continuity positive | `['215.000', '250.00']` | `[215.0, 250.0]` | ok |
 | defaults（非判定） | `['210.000']` | `[210.0]` | ok |
-| 负例 | 11 个全部 `ModelRegistryError` | 11/11 rejected | ok |
+| 负例 | 12 个全部 `ModelRegistryError` | 12/12 rejected | ok |
 
 原始退出码 = **0**（0=pass / 2=no-verdict / 3=negative 未按期望拒绝 / 1=harness error）。
-stdout / stderr 原文：`evidence/M24/stdout.txt`（2786 字节）、`evidence/M24/stderr.txt`（0 字节）。
+stdout / stderr 原文：`evidence/M24/stdout.txt`（4469 字节）、`evidence/M24/stderr.txt`（0 字节）。
 
 ### 2. 卡片文字 vs 实现公式串（第 7 节的核对结论）
 
@@ -255,6 +266,7 @@ stdout / stderr 原文：`evidence/M24/stdout.txt`（2786 字节）、`evidence/
 | N05a | `ModelRegistryError` | `subscription_arr_bridge.years must contain fiscal years` |
 | N05b | `ModelRegistryError` | `subscription_arr_bridge.years must contain fiscal years` |
 | CONT-BREAK | `ModelRegistryError` | `opening_arr continuity failed: FY2028` |
+| CONT-BREAK-CROSSYEAR | `ModelRegistryError` | `opening_arr continuity failed: FY2028` |
 
 ### 4. 观察项实际值（非判定）
 
@@ -263,6 +275,8 @@ stdout / stderr 原文：`evidence/M24/stdout.txt`（2786 字节）、`evidence/
 | OBS-BASE-IGNORED | `None` | `[215.0]` |  |
 | OBS-DEFAULT-EQUIV | `None` | `[210.0]` |  |
 | OBS-GRR-ONE-SECOND-YEAR | `None` | `[215.0, 250.0]` |  |
+| OBS-BRIDGE-TOL-1E-7 | `None` | `[215.0]` |  |
+| OBS-BRIDGE-TOL-1E-6 | `ModelRegistryError` | `None` | opening_arr stock-flow balance failed: FY2027 |
 
 ### 5. 退出码变异自检（先红后绿）
 
@@ -272,13 +286,16 @@ stdout / stderr 原文：`evidence/M24/stdout.txt`（2786 字节）、`evidence/
 | A_corrupted_positive_expectation | `oracle.json` 正例 `expected_float += 999` | 3 | 3 | 被篡改的期望不能藏在 rc=0 后面 |
 | B_corrupted_negative_assertion | `cases.json` 追加一个产品**不会**拒绝的负例 | 3 | 3 | 负例断言被篡改会变红 |
 | C_corrupted_positive_input | `input.json` 正例删除首个必填 driver | 2 | 2 | rc=2 可达：确实无法产生判定 |
+| F_corrupted_expected_type | `cases.json` 某负例 `expected` 改成 `ValueError` | 3 | 3 | **复核 P2-1**：`expected` 字段被真正校验，不再只是抄写 |
+| G_corrupted_message_requirement | `cases.json` 的 `expect_message_contains` 改成不可能出现的子串 | 3 | 3 | **复核 P2-2/P2-3**：消息要求被真正校验 |
+| H_message_requirement_points_at_another_guard | 把 `expect_message_contains` 指向长度守卫的措辞 | 3 | 3 | 消息控制具有区分度：别的守卫的措辞不能冒充值域/连续守卫 |
 | D_restored_uncorrupted | 恢复 scratch 副本 | 0 | 0 | 修复后退出码回到 0 |
 
 冻结证据在探针前后 **hash 未变**：`True`。完整记录见 `recovery/selfcheck/selfcheck_result.json`。
 
 ### 6. 本节追加前后的 hash 账（可复现）
 
-- 追加前 `oracle.md`（= 运行前冻结的完整正文，只归一化末尾的换行/`-` 分隔字符）**字节数** = 11525，sha256 = `fbef9d5493d56e96e9a14808f1570ffcec4871ab6296c9ca9ff000038f88693c`
+- 追加前 `oracle.md`（= 运行前冻结的完整正文，只归一化末尾的换行/`-` 分隔字符）**字节数** = 13382，sha256 = `9c8f6b238d38841704acd7de305038190b18b93062eaff55fe74bb6bf41b3e9f`
 - 该值由**二进制读**取得（`open(path, 'rb')`），且 `frozen_body` 是真字节前缀：`oracle.md == frozen_body + b"\n---\n\n" + run_section`。复核方式：取 `oracle.md` 中第一次出现本节标题 `## 运行后对账（追加节，不改动上方任何期望值）` 之前的全部字节、去掉末尾换行后求 sha256。
 - 追加时是否归一化了末尾分隔块：`True`（归一化后 `frozen_body` 是真字节前缀）。
 - 追加后完整文件 sha256 见 `evidence/M24/source_manifest.json` 的 `oracle_document.sha256_full_file_now` 与 `after/rerun_sha256.json`。

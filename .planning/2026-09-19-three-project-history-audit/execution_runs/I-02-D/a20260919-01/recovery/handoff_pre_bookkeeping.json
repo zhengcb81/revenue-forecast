@@ -1,0 +1,87 @@
+{
+  "card_id": "I-02-D",
+  "attempt_id": "a20260919-01",
+  "status": "review_pending",
+  "reviewer_status": "review_pending",
+  "completed_steps": [
+    "decision.md：冻结逻辑完成键(content_sha256→唯一 source version/location) vs 审计 attempt 键(完整outcome内容hash, 87行现行实现)区别；同 bytes 多身份处置=选项C(dedup前身份资格检查, 不匹配拒绝+留证)，非 first-row-wins",
+    "oracle.md 于修改/运行前冻结（P1/P2/N1/N2a-c/N3a-b 独立预期；独立 sqlite SQL + 文件清单 oracle）",
+    "隔离副本：I-02-A 契约链 + I-02-C 全部 4 文件副本 + 本卡修正；samples byte-identical 复制并修改前重算核对",
+    "实施（仅 canonical_writer.py import_staged dedup 分支）：exact resolve 改为按 receipt/candidate 下载身份构建（与 import 成功路径同语义）；REUSED_EXACT + match hash/path 校验通过后才删 staging；失败保留 staging 并抛 I-02-A 冻结短语；acquisition_service.py / acquisition_journal.py 本卡零差异",
+    "验证：w02d_cases.py 全部 8 case 组（P1 四次调用 / N1 / N2a/b/c / N3a/b / P2 两进程）通过，failed_cases=[] rc=0；P2 worker1=0(reused 幂等) worker2=2(CatalogOperationLockedError 可重试)，共享 catalog sources/documents/locations 各 1"
+  ],
+  "next_step_number": 1,
+  "next_action": "Independent reviewer: 重跑 commands.json w02d-after-suite（rc=0, failed_cases=[]），复算 N1（同bytes异identity 不得 DEDUPLICATED 成功且 staging 保留——读 idempotency-matrix.json N1 error/staging_kept）、P2（two-process-trace.json 两 worker exit/status + shared_logical_counts 各 1）、logical-rows-vs-attempts.json（SQL 行数 vs journal 行数）；核对 canonical_writer.py 改动未扩 R1-R7/四道门授权（changes.diff Part 2 仅 dedup 分支）；接受后 I-02-E 续接",
+  "input_hashes": {
+    "I-02-A_decision": "execution_runs/I-02-A/a20260919-01/decision.md",
+    "I-02-C_decision": "execution_runs/I-02-C/a20260919-01/decision.md",
+    "I-02-C_changes": "execution_runs/I-02-C/a20260919-01/changes.diff",
+    "card": "execution_v2/card_I-02-D.md"
+  },
+  "current_source_hashes": {
+    "iso/override/canonical_writer.py": "d89e81e75fcf0ecfff224457f831133caa721b7879cca7d9dde67ff82c30c4bb",
+    "iso/override/acquisition_service.py": "df9a16899e96b464c39fd2a8badd5e8eff4b9a5fcdb86b4fb80cc4c52efe0211",
+    "iso/override/acquisition_journal.py": "d61de1943d8408450b7311ae9ad84022076f5dbe60e04a6b601a5c4214759af4",
+    "iso/override/cli.py": "77a2eba13ee5fbce71b38e667b6af8ea9421bee034d852c8a06788d3b8135f66",
+    "iso/override/models.py": "f5ac11fe2b8a228dfcc9124664bb41cc01209a4a68ffcf6536f09f7afe4fc9ff",
+    "iso/override/scanner.py": "a0f0a72597581a275d2853aebb07ed54dfe798fcefcac4f8f169334713f97d3b",
+    "iso/override/service.py": "32b76e6d7f9879a2c7280f20180a8584c61ec11d706dbd70e3d019fd8cb48fa5",
+    "iso/override/config.py": "f0dbeda0a6a9aba07d526daeae01a66e27e5dc4143b29af2d4a1bf99b636076c",
+    "iso/override/adapter_dispatch.py": "6a72e7c552d791f23cec595fe885dd79cfbb1cc4efc082d1acebb04cd4ffbdbe",
+    "iso/override/config_doctor.py": "4da85046c46c950c94fe26aea71d8c953186c32a3d3dff2178ea01c27857405f",
+    "iso/override/lock.py": "2303d3e5a4a790070b253cbf3a319b38be25d4d412da8f8e067726d0553d5b4c",
+    "iso/override/resolver.py": "783460a9f21679b439073fc6b82f4d5a43f583423d59e9ee627b0c9f149be21a",
+    "iso/override/store.py": "1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615",
+    "iso/override/policy.py": "78320c429e4b7bc92e257c87bbee3dd97b1a384111cb1bd059828713b54763df",
+    "iso/override/acquisition.py": "c68a1c14b8bc2117fb89c6a46283116d6792c26a8278fbde9c3b141dccb24067",
+    "iso/override/acquisition_config.py": "d725ac5ecdd9f032e98b29459f8a36d2cb317f8c827bd76e42801b15a33e85ae",
+    "scripts/w02d_bootstrap.py": "5096b5cf130ea3da28a3ae6205b37b5a2de029bc3291b8a08cf582eb2cace263",
+    "scripts/w02d_cases.py": "b49e5657ac4d84f8b687a61bd92de004f7a2e3dc400e50f62f151509ddd98c5d",
+    "scripts/w02d_worker.py": "bbde6a136426bf0398894d09fcf4dada7209d1b9fe3fd7d1e7ad9af2c81957db"
+  },
+  "changed_paths": [
+    "iso/override/canonical_writer.py (唯一产品改动：import_staged dedup 分支 exact-resolve 资格 + staging 时点)",
+    "iso/override/acquisition_service.py (零差异，逐字节 == I-02-C 副本)",
+    "iso/override/acquisition_journal.py (零差异，逐字节 == I-02-C 副本)",
+    "scripts/w02d_bootstrap.py, scripts/w02d_cases.py, scripts/w02d_worker.py (harness，非产品)"
+  ],
+  "commands_executed": [
+    "w02d-after-suite (exit 0; failed_cases == [])",
+    "w02d-two-process-barrier (worker1 exit 0 reused; worker2 exit 2 lock contention retryable)"
+  ],
+  "raw_exit_codes": [
+    0,
+    0,
+    2
+  ],
+  "expected_exit_codes": [
+    0,
+    "0|2 per oracle P2.2",
+    "0|2 per oracle P2.2"
+  ],
+  "open_questions": [
+    "跨进程锁 owner-scope（是否需要 acquisition 级独立锁）→ I-04 owner scope（本卡用现行 canonical_import 单锁语义，未新增锁）",
+    "CLI 层并发 harness 不在本卡（服务级两进程 barrier 已证 P2；CLI 并发属 I-02-E/I-04）",
+    "N2a 中 staging 变体文件名固定 same.pdf 与既有 canonical 无碰撞（新 hash 走 hash-suffix 纠偏），未单独测同路径冲突；属 I-02-A 既有契约范围"
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "decision.md",
+    "oracle.md",
+    "binding.json",
+    "commands.json",
+    "iso_patching.md",
+    "changes.diff",
+    "after/idempotency-matrix.json",
+    "after/two-process-trace.json",
+    "after/logical-rows-vs-attempts.json",
+    "after/case_results.json",
+    "after/case_scratch_retained/",
+    "after/hashes.json",
+    "raw-cli-logs/worker1.log",
+    "raw-cli-logs/worker2.log",
+    "raw-cli-logs/worker1.result.json",
+    "raw-cli-logs/worker2.result.json",
+    "samples/real_roots/"
+  ]
+}

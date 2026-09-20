@@ -80,6 +80,18 @@ def case_tuple(case_id, kind, base_input, driver=None, index=None, value=None):
     return (case_id, kind, driver, index, value, base_input)
 
 
+def dump_json(path, doc):
+    """Write JSON with LF line endings only.
+
+    The repository declares `*.json text eol=lf` in .gitattributes, so a CRLF worktree copy
+    and the LF git blob are different byte sequences. Writing LF makes the worktree bytes
+    equal to the blob bytes, so the sha256 recorded in the evidence is reproducible from a
+    clean clone (review finding P3-3).
+    """
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
+        json.dump(doc, handle, ensure_ascii=False, indent=1)
+
+
 def common_cases(first_required_driver, card_negative, continuity_break):
     """Build the frozen NEG-CARD + N01-N05 + CONT-BREAK list (11 cases)."""
     card_kind, card_base, card_driver, card_index, card_value = card_negative
@@ -183,6 +195,10 @@ def m25():
             "driver": None,
             "declared_default_present": None,
             "why": "M25 has optional = () and defaults = {}, so there is no declared optional default to check"},
+        "neg_card_mechanism": ("retired_units=[201] exceeds opening_installed_units=[200]; the bridge "
+                              "200+40-201=39 is deliberately kept consistent, so the ONLY guard that "
+                              "can refuse this case is the retired-cohort upper bound, which raises "
+                              "`retired_units exceeds opening installed cohort: FY2027`"),
     }
 
 
@@ -247,7 +263,13 @@ def m26():
         },
         "cases": common_cases(
             "opening_stores",
-            ("set_driver", "positive", "closing_stores", None, {"__float__": 24}),
+            # NOTE (review finding P2-1): the value MUST be a one-element LIST. `set_driver`
+            # assigns the value as a whole, so the {"__float__": X} envelope used by
+            # set_driver_element would be assigned verbatim, the driver value would become a
+            # dict, and the length/type guard ("must contain one value per forecast year")
+            # would reject the case before the store-count bridge was ever evaluated - making
+            # the oracle.md claim "R1 is exercised by NEG-CARD" false.
+            ("set_driver", "positive", "closing_stores", None, [24]),
             ("set_driver_multi", None, None,
              {"opening_stores": [20, 24], "closing_stores": [23, 24]}),
         ),
@@ -266,6 +288,9 @@ def m26():
             "driver": None,
             "declared_default_present": None,
             "why": "M26 has optional = () and defaults = {}, so there is no declared optional default to check"},
+        "neg_card_mechanism": ("closing_stores=[24] makes the store-count bridge fail: "
+                              "opening_stores + new_stores - closed_stores = 20 + 5 - 2 = 23 != 24, "
+                              "so `opening_stores stock-flow balance failed: FY2027` is raised"),
     }
 
 
@@ -333,7 +358,12 @@ def m27():
         },
         "cases": common_cases(
             "average_commissioned_mw",
-            ("set_driver", "positive", "period_hours", None, {"__float__": 0}),
+            # NOTE (review finding P2-1): a one-element LIST, not the {"__float__": 0} envelope.
+            # period_hours is dimension `activity`, so driver_value_bounds gives the CLOSED
+            # interval [0, inf) and 0 passes the bound check (:342 uses `lower <= number`);
+            # the refusal therefore comes from the calculator's own positivity check, which is
+            # what oracle.md section 5 claims. The envelope would have short-circuited that.
+            ("set_driver", "positive", "period_hours", None, [0]),
             ("set_years", None, None, [2027, 2029]),
         ),
         "observations": [
@@ -357,6 +387,10 @@ def m27():
         "extra_expected": {
             "OBS-EQUIV-DEFAULT": float(e1[0]),
         },
+        "neg_card_mechanism": ("period_hours=[0]: the activity dimension gets the CLOSED interval "
+                              "[0, inf) from driver_value_bounds, so 0 passes the bound check and the "
+                              "refusal comes from the calculator's own positivity check "
+                              "(`period_hours must be positive: FY2027`)"),
     }
 
 
@@ -424,7 +458,9 @@ def m28():
         },
         "cases": common_cases(
             "opening_aum",
-            ("set_driver", "positive", "closing_aum", None, {"__float__": 1051}),
+            # NOTE (review finding P2-1): a one-element LIST, not the {"__float__": 1051}
+            # envelope, so the AUM bridge is really evaluated (1000+200-100-50 = 1050 != 1051).
+            ("set_driver", "positive", "closing_aum", None, [1051]),
             ("set_driver_multi", None, None,
              {"opening_aum": [1000, 1051], "closing_aum": [1050, 1051]}),
         ),
@@ -443,6 +479,10 @@ def m28():
             "why": "card_M28.md L9 declares recognized_performance_fees default 0; the registry keeps the "
                    "driver optional with defaults = {}, so the library zero-fills it. Recorded to keep the "
                    "omission visible; the probe is non-gating."},
+        "neg_card_mechanism": ("closing_aum=[1051] makes the AUM bridge fail: "
+                              "opening_aum + inflows - outflows + market_change = "
+                              "1000 + 200 - 100 - 50 = 1050 != 1051, so "
+                              "`opening_aum stock-flow balance failed: FY2027` is raised"),
     }
 
 
@@ -499,6 +539,17 @@ def main() -> int:
         "continuity_first_positive": "continuity_positive",
         "cases": cases,
         "extra_observations": data["observations"],
+        # Frozen contract the runner must verify (review finding P3-2: the runner used to
+        # ignore cases.json[].expected and the case count entirely).
+        "case_contract": {
+            "expected_count": len(cases),
+            "expected_ids": [c["id"] for c in cases],
+            "declared_expected_exception": "ModelRegistryError",
+            "neg_card_declared_mechanism": data["neg_card_mechanism"],
+            "rule": ("every case's `expected` must equal declared_expected_exception and the id "
+                     "list must equal expected_ids, otherwise the harness refuses to issue a "
+                     "verdict (rc=1)"),
+        },
     }
 
     oracle = {
@@ -523,8 +574,7 @@ def main() -> int:
 
     def dump(name, doc):
         path = os.path.join(target, name)
-        with open(path, "w", encoding="utf-8") as handle:
-            json.dump(doc, handle, ensure_ascii=False, indent=1)
+        dump_json(path, doc)
         return path
 
     dump("input.json", input_doc)

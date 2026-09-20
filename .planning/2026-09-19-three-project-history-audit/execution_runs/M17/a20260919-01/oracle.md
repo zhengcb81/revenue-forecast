@@ -181,3 +181,34 @@ Attempt: `execution_runs/M17/a20260919-01`。model_id：`licensing_commercial`�
 
 状态：`formula` = review_pending（待独立 reviewer）；`disclosure_adaptation` = unmapped；
 `accuracy` = unproven。本文件不构成任何 acceptance。
+
+
+## 13. 修订 r2（仅更正描述行，不动任何期望值）
+
+本节由**独立复核结论之后**的一次独立命令追加；该命令的 argv / raw rc / stdout 单独留档在
+`evidence/M17/runs/R2-append-oracle-addendum/`。**上方正文（r1 冻结版）逐字未改**：
+正例/连续性/默认值期望、容差、负例清单、拒绝条件、停止条件与 runner 判定口径**一律未改**。
+
+### 更正内容
+
+- **错在何处**：第 1 节「有效域（枚举取得）」一行的来源列指向
+  `evidence/M17/registry_enumeration.json`，但该行把 `milestone_revenue` / `royalty_revenue` /
+  `service_revenue` 写成 `[0, inf)`；枚举文件记录的实测值是 `['-inf', 'inf']`，
+  即**该行与它自己标注的出处相反**。
+- **正确域与源码出处**：这三个金额 driver 属于 `_SIGNED_DRIVERS`（`scripts/model_registry.py:265-269`），
+  而 `driver_value_bounds` 对 signed driver 返回 `(-inf, inf)`（同文件 `:289-290`），
+  故三个金额项的有效域是 `(-inf, inf)`，**不是**非负域；`treated_units` 与
+  `net_revenue_per_unit` 仍为 `[0, inf)`（本卡 NEG-CARD 的成立条件未变）。
+- **实测证据**（`evidence/M17/extra_probes.json`，非判定性探针）：
+  `PROBE-NEG-MILESTONE`（`milestone_revenue=[-5]`）实测 `[90.0]`（= 40×2−5+5+10），**被接受**；
+  `PROBE-NEG-TOTAL-REVENUE`（`milestone_revenue=[-200]`）实测 `ModelRegistryError`——
+  实现里唯一的负值守卫是"总收入不得为负"，单笔负数冲回可静默通过。
+- **为何"只在别处登记"不充分**：`oracle.md` 是本卡的规范文件。只在 `oq_rulings.json` /
+  `review.md` 登记，会让只读 oracle.md 的读者在 **D 阶段**把 signed 域误当非负域，
+  从而误判"负数冲回不可能发生"——而这正是 D 需要判断的那类问题。
+- **冻结期望未受影响**：没有任何期望值、容差或判据依赖该描述行，因此本节**不含任何数值变更**。
+  追加前 `oracle.md` sha256 = `9c8021eebd01aa27a9963db8ac869ac6a067eb24af17439164f3cb61bc42fa69`，该值可在**真实行边界**（本节首行 `## 13.` 的字节偏移
+  处）截断复现；证明见 `evidence/M17/oracle_addendum_record.json` 与
+  `evidence/M17/revision_r2.json`。
+- **范围限定**：本次更正**只**针对 M17。M18 / M19 / M20 的第 1 节有效域行经复核是正确的，
+  不得由本节外推为"四卡都有描述错误"。

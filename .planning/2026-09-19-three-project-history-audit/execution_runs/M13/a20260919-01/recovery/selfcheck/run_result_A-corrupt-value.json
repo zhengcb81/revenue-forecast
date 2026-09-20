@@ -178,7 +178,7 @@
    "gating": false,
    "raised": "KeyError",
    "message": "'performance_fee_revenue'",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 311, in run_all\n    mutated = apply_case(copy.deepcopy(input_doc[obs.get(\"base_input\", \"positive\")]), obs)\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 95, in apply_case\n    base[\"drivers\"][case[\"driver\"]][case[\"index\"]] = build_mutation_value(case[\"value\"])\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\nKeyError: 'performance_fee_revenue'\n"
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 391, in run_all\n    mutated = apply_case(copy.deepcopy(input_doc[obs.get(\"base_input\", \"positive\")]), obs)\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 110, in apply_case\n    base[\"drivers\"][case[\"driver\"]][case[\"index\"]] = build_mutation_value(case[\"value\"])\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^\nKeyError: 'performance_fee_revenue'\n"
   }
  ],
  "negatives": [
@@ -188,10 +188,11 @@
    "why": "card-specific negative (card_M13.md L38): the management fee rate leaves the ratio domain",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [2000], 'management_fee_rate': [1.1], 'performance_fee_revenue': [3], 'other_revenue': [2]} years=[2027] base=0",
    "raised": "ModelRegistryError",
    "message": "driver asset_management.management_fee_rate must be between 0.0 and 1.0: FY2027",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver asset_management.management_fee_rate must be between 0.0 and 1.0: FY2027\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 343, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must be between {lower} and {upper}: FY{year}\")\nmodel_registry.ModelRegistryError: driver asset_management.management_fee_rate must be between 0.0 and 1.0: FY2027\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -202,10 +203,11 @@
    "why": "common negative N01a: bool is not a numeric driver value",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [True], 'management_fee_rate': [0.01], 'performance_fee_revenue': [3], 'other_revenue': [2]} years=[2027] base=0",
    "raised": "ModelRegistryError",
    "message": "asset_management.average_aum.FY2027 must be numeric",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: asset_management.average_aum.FY2027 must be numeric\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: asset_management.average_aum.FY2027 must be numeric\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -216,10 +218,11 @@
    "why": "common negative N01b: non-finite value nan",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [nan], 'management_fee_rate': [0.01], 'performance_fee_revenue': [3], 'other_revenue': [2]} years=[2027] base=0",
    "raised": "ModelRegistryError",
    "message": "asset_management.average_aum.FY2027 must be finite",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: asset_management.average_aum.FY2027 must be finite\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: asset_management.average_aum.FY2027 must be finite\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -230,10 +233,11 @@
    "why": "common negative N01c: non-finite value inf",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [inf], 'management_fee_rate': [0.01], 'performance_fee_revenue': [3], 'other_revenue': [2]} years=[2027] base=0",
    "raised": "ModelRegistryError",
    "message": "asset_management.average_aum.FY2027 must be finite",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: asset_management.average_aum.FY2027 must be finite\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: asset_management.average_aum.FY2027 must be finite\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -244,10 +248,11 @@
    "why": "common negative N01d: non-finite value -inf",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [-inf], 'management_fee_rate': [0.01], 'performance_fee_revenue': [3], 'other_revenue': [2]} years=[2027] base=0",
    "raised": "ModelRegistryError",
    "message": "asset_management.average_aum.FY2027 must be finite",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: asset_management.average_aum.FY2027 must be finite\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: asset_management.average_aum.FY2027 must be finite\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -258,10 +263,11 @@
    "why": "common negative N02: first required driver array is empty, so its length != len(years)",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [], 'management_fee_rate': [0.01], 'performance_fee_revenue': [3], 'other_revenue': [2]} years=[2027] base=0",
    "raised": "ModelRegistryError",
    "message": "driver asset_management.average_aum must contain one value per forecast year",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver asset_management.average_aum must contain one value per forecast year\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver asset_management.average_aum must contain one value per forecast year\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -272,10 +278,11 @@
    "why": "common negative N03: first required driver deleted (missing required field)",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'management_fee_rate': [0.01], 'performance_fee_revenue': [3], 'other_revenue': [2]} years=[2027] base=0",
    "raised": "ModelRegistryError",
    "message": "missing drivers for asset_management: average_aum",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for asset_management: average_aum\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for asset_management: average_aum\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -286,10 +293,11 @@
    "why": "common negative N04: unknown_driver added (unsupported driver)",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [2000], 'management_fee_rate': [0.01], 'performance_fee_revenue': [3], 'other_revenue': [2], 'unknown_driver': [1]} years=[2027] base=0",
    "raised": "ModelRegistryError",
    "message": "unsupported drivers for asset_management: unknown_driver",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for asset_management: unknown_driver\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for asset_management: unknown_driver\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -300,10 +308,11 @@
    "why": "common negative N05a: years = [] (fiscal-year domain)",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [2000], 'management_fee_rate': [0.01], 'performance_fee_revenue': [3], 'other_revenue': [2]} years=[] base=0",
    "raised": "ModelRegistryError",
    "message": "asset_management.years must contain fiscal years",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: asset_management.years must contain fiscal years\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: asset_management.years must contain fiscal years\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -314,10 +323,11 @@
    "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
    "expected": "ModelRegistryError",
    "base_input": "positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [2000], 'management_fee_rate': [0.01], 'performance_fee_revenue': [3], 'other_revenue': [2]} years=[True] base=0",
    "raised": "ModelRegistryError",
    "message": "asset_management.years must contain fiscal years",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: asset_management.years must contain fiscal years\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: asset_management.years must contain fiscal years\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -328,10 +338,11 @@
    "why": "continuity break for this card: FY2028 is missing, so the years are not consecutive (the two-year positive is run first)",
    "expected": "ModelRegistryError",
    "base_input": "continuity_positive",
+   "declared_expected": "ModelRegistryError",
    "mutated_input_repr": "{'average_aum': [2000, 2500], 'management_fee_rate': [0.01, 0.012], 'performance_fee_revenue': [3, 4], 'other_revenue': [2, 1]} years=[2027, 2029] base=0",
    "raised": "ModelRegistryError",
    "message": "asset_management.years must be consecutive and increasing",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 345, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 121, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 324, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must be consecutive and increasing\")\nmodel_registry.ModelRegistryError: asset_management.years must be consecutive and increasing\n",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 437, in run_all\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\scripts\\run_card.py\", line 136, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 324, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must be consecutive and increasing\")\nmodel_registry.ModelRegistryError: asset_management.years must be consecutive and increasing\n",
    "is_target_type": true,
    "is_import_or_file_error": false,
    "verdict": "PASS_rejected"
@@ -342,7 +353,7 @@
  "frozen_input_sha256": {
   "input.json": "f4700cc24dd8d3f8df2660ff614bd7a6e92b44068c71f326a50fd4f03ce4e64d",
   "oracle.json": "c7199f1d8f64afb75c38a06f6fb9e6bc82671365cd91e2a87d58aec9903ae9a9",
-  "cases.json": "0353e544234eb8ea2557c055d99e1feafd962d771f127c46f4bda0ad10ac06f9"
+  "cases.json": "54399cd26596421ebae22b6efbdf7be19ea1af576ae0f69b8c193ba524702fb0"
  },
  "model_registry_file": "C:\\Users\\\u90d1\u66fe\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
  "imported_module_sha256": {
@@ -350,12 +361,53 @@
   "model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
  },
  "code_root_on_sys_path": true,
+ "expectation_consistency": {
+  "ok": true,
+  "gaps": [],
+  "facts": {
+   "case_count": 11,
+   "case_ids": [
+    "NEG-CARD",
+    "N01a",
+    "N01b",
+    "N01c",
+    "N01d",
+    "N02",
+    "N03",
+    "N04",
+    "N05a",
+    "N05b",
+    "CONT-BREAK"
+   ],
+   "oracle_negative_count": 11,
+   "oracle_negative_ids": [
+    "NEG-CARD",
+    "N01a",
+    "N01b",
+    "N01c",
+    "N01d",
+    "N02",
+    "N03",
+    "N04",
+    "N05a",
+    "N05b",
+    "CONT-BREAK"
+   ],
+   "declared_expectations": [
+    "ModelRegistryError"
+   ],
+   "target_exception": "ModelRegistryError"
+  },
+  "rule": "a case whose declared expected type is not the verdict type this runner applies, or a case count / id set that disagrees with oracle.json, is an expectation gap and yields rc=2 - never a silent pass"
+ },
  "negative_summary": {
   "total": 11,
   "passed": 11,
   "failed": [],
   "target_exception": "ModelRegistryError",
-  "counting_rule": "only isinstance(exc, ModelRegistryError) counts as PASS; ImportError/ModuleNotFoundError/FileNotFoundError are recorded as FAIL"
+  "counting_rule": "only isinstance(exc, ModelRegistryError) counts as PASS; ImportError/ModuleNotFoundError/FileNotFoundError are recorded as FAIL",
+  "expectation_consistency_ok": true,
+  "expectation_gaps": []
  },
  "verdict": {
   "verdict": "fail",
@@ -372,6 +424,7 @@
    "value_out_of_tolerance"
   ],
   "expectation_missing": [],
+  "expectation_declaration_gaps": [],
   "fidelity_problems": [],
   "value_problems": [
    "positive: value 0: |25.0 - 999.0| > 2.5e-08"
@@ -384,7 +437,7 @@
   "code_root: C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts",
   "model_registry_file: C:\\Users\\\\u90d1\\u66fe\\u6ce2\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
   "imported_module_sha256: {'model_registry.py': '9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f', 'model_extensions.py': '9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911'}",
-  "frozen_input_sha256: {'input.json': 'f4700cc24dd8d3f8df2660ff614bd7a6e92b44068c71f326a50fd4f03ce4e64d', 'oracle.json': 'c7199f1d8f64afb75c38a06f6fb9e6bc82671365cd91e2a87d58aec9903ae9a9', 'cases.json': '0353e544234eb8ea2557c055d99e1feafd962d771f127c46f4bda0ad10ac06f9'}",
+  "frozen_input_sha256: {'input.json': 'f4700cc24dd8d3f8df2660ff614bd7a6e92b44068c71f326a50fd4f03ce4e64d', 'oracle.json': 'c7199f1d8f64afb75c38a06f6fb9e6bc82671365cd91e2a87d58aec9903ae9a9', 'cases.json': '54399cd26596421ebae22b6efbdf7be19ea1af576ae0f69b8c193ba524702fb0'}",
   "registry formula: revenue = average_aum * management_fee_rate + performance_fee_revenue + other_revenue",
   "registry required: ['average_aum', 'management_fee_rate']",
   "registry optional: ['performance_fee_revenue', 'other_revenue']",
@@ -413,21 +466,22 @@
   "observation: OBS-BASE-IGNORED raised=None actual=[25.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None ",
   "observation: OBS-BOUND-INCLUSIVE raised=None actual=[2005.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True ",
   "observation: OBS-SIGNED-PERF-FEE raised=KeyError actual=None matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=None 'performance_fee_revenue'",
-  "negative: NEG-CARD PASS_rejected ModelRegistryError - driver asset_management.management_fee_rate must be between 0.0 and 1.0: FY2027",
-  "negative: N01a PASS_rejected ModelRegistryError - asset_management.average_aum.FY2027 must be numeric",
-  "negative: N01b PASS_rejected ModelRegistryError - asset_management.average_aum.FY2027 must be finite",
-  "negative: N01c PASS_rejected ModelRegistryError - asset_management.average_aum.FY2027 must be finite",
-  "negative: N01d PASS_rejected ModelRegistryError - asset_management.average_aum.FY2027 must be finite",
-  "negative: N02 PASS_rejected ModelRegistryError - driver asset_management.average_aum must contain one value per forecast year",
-  "negative: N03 PASS_rejected ModelRegistryError - missing drivers for asset_management: average_aum",
-  "negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for asset_management: unknown_driver",
-  "negative: N05a PASS_rejected ModelRegistryError - asset_management.years must contain fiscal years",
-  "negative: N05b PASS_rejected ModelRegistryError - asset_management.years must contain fiscal years",
-  "negative: CONT-BREAK PASS_rejected ModelRegistryError - asset_management.years must be consecutive and increasing",
+  "expectation_consistency: ok=True gap_count=0 facts={'case_count': 11, 'case_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'oracle_negative_count': 11, 'oracle_negative_ids': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N02', 'N03', 'N04', 'N05a', 'N05b', 'CONT-BREAK'], 'declared_expectations': ['ModelRegistryError'], 'target_exception': 'ModelRegistryError'}",
+  "negative: NEG-CARD declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - driver asset_management.management_fee_rate must be between 0.0 and 1.0: FY2027",
+  "negative: N01a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.average_aum.FY2027 must be numeric",
+  "negative: N01b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.average_aum.FY2027 must be finite",
+  "negative: N01c declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.average_aum.FY2027 must be finite",
+  "negative: N01d declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.average_aum.FY2027 must be finite",
+  "negative: N02 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - driver asset_management.average_aum must contain one value per forecast year",
+  "negative: N03 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - missing drivers for asset_management: average_aum",
+  "negative: N04 declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - unsupported drivers for asset_management: unknown_driver",
+  "negative: N05a declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.years must contain fiscal years",
+  "negative: N05b declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.years must contain fiscal years",
+  "negative: CONT-BREAK declared_expected=ModelRegistryError verdict=PASS_rejected raised=ModelRegistryError - asset_management.years must be consecutive and increasing",
   "negative summary: total=11 passed=11 failed=[]",
   "exit_code triggered: ['value_out_of_tolerance']",
   "verdict: fail exit_code: 2"
  ],
- "printed_sha256": "d890863cf3343bdc3a21c36a723f34c2f49775df3c55c2cebf95699628f070bf",
+ "printed_sha256": "e6dc98169d0fb44acd243b9beecede9bb1e579d1dce6b8f64a8e38ebb854e265",
  "print_vs_file_rule": "stdout.txt is the raw OS-level capture of this process's stdout; scripts/verify_card.py re-reads this file and asserts that its lines equal printed_lines and that printed_sha256 matches, so a printed number can never disagree with the recorded evidence."
 }

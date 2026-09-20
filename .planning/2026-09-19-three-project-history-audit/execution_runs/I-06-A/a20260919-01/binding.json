@@ -1,0 +1,123 @@
+{
+  "card_id": "I-06-A",
+  "parent": "I-06",
+  "attempt_id": "a20260919-01",
+  "binding_status": "bound",
+  "date": "2026-09-19",
+  "card_title": "安全阻断前登记可持久恢复的需求",
+  "owner": "RF 消费实施者（本 attempt）",
+  "reviewer": "独立 reviewer（wiki 来源审核 owner + 安全 reviewer + RF 消费 owner 角色）",
+  "design_gate": {
+    "decision": "D-W06",
+    "status": "UNSIGNED",
+    "effect": "产品仓改动 = 0。本 attempt 只在 attempt 内交付反例证据、UNRATIFIED 候选实现与 OPEN 决策清单。",
+    "reference": "execution_runs/I-06-A/a20260919-01/decision.md"
+  },
+  "source_readonly_repos": {
+    "CW": "C:/Users/郑曾波/Projects/company-wiki",
+    "RF": "C:/Users/郑曾波/Projects/revenue-forecast"
+  },
+  "prod_git_baselines": {
+    "CW": {
+      "HEAD": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
+      "porcelain": [
+        " M CLAUDE.md",
+        " M README.md"
+      ],
+      "note": "两个 pre-existing user-modified 文件；本 attempt 未触碰"
+    },
+    "RF": {
+      "HEAD": "7d7ea1edc5e0371ffefee0d2ab3c4a34643199d5",
+      "porcelain_after": "after/prod-porcelain-after.json",
+      "note": "本 attempt 只新增 .planning/.../execution_runs/I-06-A/ 目录"
+    }
+  },
+  "prod_source_hashes_pre_edit": {
+    "RF/scripts/source_preparation.py": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46",
+    "RF/scripts/processing_demand.py": "fcdfcad8ebd1fc20febf3c157dcd20ad92708fd69d00373ef9a943e5a820afc1",
+    "CW/src/company_wiki/source_catalog/processing_demand.py": "90f232edb7804f78a16c6b4e865255cd607a1d0dc30384fc1cd6faa1833ac88b",
+    "RF/scripts/company_wiki_source.py": "read-only anchor (handle -> RevenueSourceRecord contract)",
+    "RF/scripts/filing_fetch_client.py": "read-only anchor (calling convention the stand-in reproduces)",
+    "CW/tests/contract/test_zr507_processing_demand.py": "existing in-memory contract test (14 cases)",
+    "CW/src/company_wiki/source_catalog/store.py": "catalog SQLite schema (candidate owner OPEN-1 option A)"
+  },
+  "prod_source_hashes_post_run": {
+    "note": "见 after/prod-anchor-hashes-after.json；与 pre_edit 逐项一致即证明生产仓未被写入"
+  },
+  "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "interpreter_provenance": {
+    "built_from": "PLAN/execution_runs/I-00-A/a20260919-01/iso/venv (template interpreter, sha256 0e818a1f9a0b8fbd4e7cc458a07cb7de2ea02ea326e387699a33b92f151242cd)",
+    "method": "directory copy of the I-05-A attempt venv (itself a copy of the I-15-A venv created from the I-00-A template)",
+    "python_version": "3.13.9 (C:\\Miniconda base)"
+  },
+  "python_flags": [
+    "-X",
+    "utf8",
+    "-B"
+  ],
+  "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01",
+  "module_loading": {
+    "baseline_tree": "iso/rf (byte copy of revenue-forecast scripts/ + SKILL.md + CHANGELOG.md; source_preparation.py sha256 = production)",
+    "candidate_tree": "iso/rf_fixed (clone of iso/rf with the UNRATIFIED overlay applied; hashes in iso/candidate-manifest.json)",
+    "wiki_import": "PYTHONPATH includes iso/cw/src so company_wiki_source can import artifact_dag",
+    "stand_in": "iso/ff is a TEST-ONLY filing-fetch root (no network, no provider, no worker)"
+  },
+  "allowed_write_roots": [
+    "PLAN/execution_runs/I-06-A/a20260919-01/**",
+    "C:/Users/郑曾波/AppData/Local/Temp/w06a/** (per-case demand DB, worker-control fixture, changed source bytes)"
+  ],
+  "network": "disabled — the stand-in returns bytes that already exist on disk; no provider call, no worker start",
+  "forbidden": [
+    "any write to the product repos outside .planning/.../execution_runs/I-06-A/**",
+    "git add/commit/restore/stash/checkout in any product repo",
+    "editing PLAN/reviews/**",
+    "touching the production catalog DB or the real worker_control / runtime_policy",
+    "starting/resuming any worker",
+    "writing a second persistent queue implementation into any product tree"
+  ],
+  "fixed_samples": {
+    "samples/source_bytes.txt": "80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71",
+    "samples/request.json": "see after/request-to-demand-binding.json.request_file_sha256",
+    "samples/handle.json": "see after/request-to-demand-binding.json.handle_sha256",
+    "changed_source_bytes": "generated per run; hash recorded in before/after case_results_*.json.changed_source_bytes_sha256",
+    "worker_control_fixture": "generated per run under %TEMP%\\w06a\\... with desired_state=paused; bytes+sha256 before/after in paused-before-after.json"
+  },
+  "harness": {
+    "fixture": "scripts/w06a_make_fixture.py",
+    "driver": "scripts/w06a_cases.py <tag> <baseline|candidate>",
+    "candidate_apply": "scripts/w06a_apply_candidate.py",
+    "evidence": "scripts/w06a_evidence.py <tag> <baseline|candidate>",
+    "diff": "scripts/w06a_make_diff.py",
+    "logical_cases": [
+      "b1/b2 baseline: two independent processes, pristine product",
+      "c1 register-before-block",
+      "c2/c4 third-process query (idempotency)",
+      "c3 repeated request from a new process",
+      "c5/c6 changed source hash",
+      "c7 store write failure",
+      "c8/c9 same source+policy+roles with a DIFFERENT request (OPEN-2 probe)"
+    ]
+  },
+  "input_dependencies": {
+    "I-02-E": {
+      "verdict": "accepted_scoped",
+      "review": "execution_runs/I-02-E/a20260919-01/review.md",
+      "scope_used": "persistence-boundary recovery; not modified here"
+    },
+    "I-05-A": {
+      "note": "same attempt family; I-05-A's iso/cw/src is reused for the artifact_dag import only"
+    },
+    "D-W06_common": "execution_v2/common_wiki_cards.md D-W06 (six fields; UNSIGNED)"
+  },
+  "external_references": [
+    "audit_review/2026-09-18_real_company_skill_audit/runs/02_zijin_source_reuse/run.json (exit_code 3)",
+    "audit_review/2026-09-18_real_company_skill_audit/runs/02_zijin_source_reuse/stderr.txt (the not_reviewed block)"
+  ],
+  "r2_candidate_hashes": {
+    "iso/candidate/processing_demand_store.py": "7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f",
+    "iso/candidate/w06a_candidate_patch.py": "113e90b0855400f6563ace77ca2fb16729d1b6b06631deceeeddf1c8991fc87b",
+    "iso/rf_fixed/scripts/source_preparation.py": "1a837fc0047f31a68d14d9ca1b4487d30b9dc33529cb332c905bd0affe75469e",
+    "iso/rf/scripts/source_preparation.py": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46 (pristine, unchanged)"
+  },
+  "r2_note": "r2 修改仅在 attempt 内：iso/candidate/w06a_candidate_patch.py 更新为“登记失败挂在同一条安全阻断上”；新增 c10/c11 探针；产品仓仍零改动。"
+}

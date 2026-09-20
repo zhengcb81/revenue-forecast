@@ -255,6 +255,32 @@ def render(card: str, oracle: dict, attempt: str) -> str:
                           else "**not_applicable_with_reason**（第 1 节）。"))
     add("- 准确性：`STOP_ACCURACY`（无 I-12 冻结设计）。")
     add("")
+    add("## 12. 桥平衡的有效分辨率（独立复核要求补记；见文末追加节的来源说明）")
+    add("")
+    if card in ("M21", "M24"):
+        add("存量桥的平衡与跨年锚定不是精确等号比较，而是 "
+            "`math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-9)`"
+            "（%s）。"
+            % ("`model_registry.py:154-157`：桥平衡 + 跨年 continuity" if card == "M21"
+               else "`model_extensions.py:27-38` 的 `_equal` / `_bridge`（桥平衡 + 跨年 continuity）"))
+        add("")
+        add("- **有效绝对容差 = `max(abs_tol, rel_tol × max(|a|, |b|))` = "
+            "`max(1e-9, 1e-9 × max(|closing|, |expected_closing|))`**；相对项非负，故下界为 1e-9。")
+        if card == "M24":
+            add("- 本卡合成例的被比较量级 |closing_arr| ≈ 250，故有效绝对容差 ≈ **2.5e-7**"
+                "（比 1e-9 宽约 3 个量级）。")
+            add("- 实测（本 attempt scratch 探针，**非判定性**）：正例 `closing_arr` 加 **+1e-7 → 通过**；"
+                "加 **+1e-6 → 被拒绝**（`opening_arr stock-flow balance failed: FY2027`）。"
+                "即 1e-7 在容差内、1e-6 在容差外。")
+        else:
+            add("- 本卡合成例的被比较量级 |ending_orders| ≈ 35，故有效绝对容差由 1e-9 的绝对项决定"
+                "（相对项 3.5e-8 更大时以相对项为准）。")
+            add("- 本卡未对该分辨率做数值探针；M24 同源比较的探针结果（1e-7 通过 / 1e-6 拒绝）在 M24 "
+                "attempt 内记录，本卡不复制其结论。")
+    else:
+        add("本卡**不是存量桥**（第 1 节：not_applicable_with_reason），故桥平衡比较不适用；"
+            "本卡的数值比较只有第 2/3 节的 `1e-9 × max(1, |expected|)` 容差。")
+    add("")
     add("---")
     add("")
     add("（以下为运行后追记节，由 `scripts/append_oracle_run_section.py` 追加；")
@@ -291,8 +317,11 @@ def main() -> int:
 
     rows = []
     for case in cases_doc["cases"]:
+        expected = case["expected"]
+        if case.get("expect_message_contains"):
+            expected = "%s 且消息须含 `%s`" % (expected, case["expect_message_contains"])
         rows.append({"id": case["id"], "mutation": _mutation_text(case),
-                     "expected": case["expected"]})
+                     "expected": expected})
     oracle["_case_rows"] = rows
 
     obs_rows = []

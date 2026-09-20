@@ -51,14 +51,24 @@ D 动作在卡片中是 `[professional_decision_required]`，下列判断需要�
 | OQ-02 省缺可选 driver 被静默补 0 | owner（改产品需另立卡） |
 | OQ-03 卡片业务负例（单位错配、潜在里程碑）无法运行时拒绝 | 行业/会计 reviewer（I-10-A / D） |
 | OQ-04 数值域与边界观测 | 独立 reviewer（accept / amend / reject） |
-| OQ-05 本卡 attempt 重跑与探针常量更正的流程声明 | 独立 reviewer |
+| OQ-05 本卡 attempt 的流程历史（3 趟测量 + 6 趟收尾） | 独立 reviewer（r2 后已成为 `oq_rulings.json` 的真实条目，指向 `process_history.json`） |
 
-## 4. 本 attempt 的一个已登记更正（不是"为过审而改"）
+## 4. 本 attempt 的一个已更正项（r2，经独立复核后执行）
 
-`oracle.md` 第 1 节有一行**描述性**表述把三个金额项的有效域写成 `[0, inf)`；运行后的枚举与实测
+r1 时 `oracle.md` 第 1 节有一行**描述性**表述把三个金额 driver 的有效域写成 `[0, inf)`；枚举与实测
 （`evidence/M17/registry_enumeration.json`、`evidence/M17/extra_probes.json`）表明它们是
-`(-inf, inf)`。该行不是期望值，且 `oracle.md` 已冻结，故**有意不改**，只在
-`evidence/M17/oq_rulings.json`（OQ-04）与 `review.md` 中登记更正。冻结的期望值未受任何影响。
+`(-inf, inf)`（`model_registry.py:265-269` 的 `_SIGNED_DRIVERS`、`:289-290`）。r1 只登记不改；
+独立复核判"登记而非修补**可接受但不充分**"——`oracle.md` 是本卡规范文件，只读它会在 D 阶段误判
+"负数冲回不可能发生"。
 
-状态：`formula = review_pending`（待独立 reviewer，实现者不自签）；
-`disclosure_adaptation = unmapped`；`accuracy = unproven`。
+**r2 因此执行了本批唯一一次对冻结件的追加**：新增单元 `R2-append-oracle-addendum`（在复核结论之后
+作为独立命令执行，rc/stdout 单独留档），**只追加** `## 13. 修订 r2（仅更正描述行，不动任何期望值）`；
+**§1 一个字符未改，冻结期望/容差/判据一律未改**。追加前 sha256 = `9c8021ee…`，可在真实行边界
+（首个追加字节偏移 11768）截断复现（`evidence/M17/oracle_addendum_record.json`、
+`evidence/M17/revision_r2.json`，后者对当前文件做实时复验）。第一次执行因边界判断写错而 rc=3，
+经 `--repair-restore` 双向 hash 校验还原后重新追加（rc=0），全过程写进记录的 `repair_history`，
+失败那趟的原始产物保存在 `evidence/M17/runs/R2-append-oracle-addendum/first_execution_failed/`。
+范围**仅限 M17**：M18/M19/20 的 §1 行经复核正确，不得外推为"四卡都有描述错误"。
+
+状态：`formula = review_pending`（独立复核 r1 已给 accepted_scoped，但 r2 处置须点审，实现者不自签）；
+`disclosure_adaptation = unmapped`（= **零产出**，不是部分完成）；`accuracy = unproven`（完全未做评估）。

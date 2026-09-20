@@ -1,0 +1,169 @@
+{
+ "card_id": "M27",
+ "first_required_driver": "average_commissioned_mw",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver",
+   "expected": "ValueError",
+   "base_input": "positive",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "driver": "period_hours",
+   "value": [
+    0
+   ]
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "driver": "average_commissioned_mw",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   }
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01b: non-finite value nan",
+   "driver": "average_commissioned_mw",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   }
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01c: non-finite value inf",
+   "driver": "average_commissioned_mw",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   }
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01d: non-finite value -inf",
+   "driver": "average_commissioned_mw",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   }
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "driver": "average_commissioned_mw",
+   "value": []
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "driver": "average_commissioned_mw"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ]
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "driver": null,
+   "value": []
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "driver": null,
+   "value": {
+    "__bool__first__": true
+   }
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "driver": null,
+   "value": [
+    2027,
+    2029
+   ]
+  }
+ ],
+ "extra_observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "value": 999,
+   "base_input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "why": "rowwise calculator discards base_revenue; design observation only, not a pass condition"
+  },
+  {
+   "id": "OBS-NEG-PRICE",
+   "kind": "set_driver_element",
+   "driver": "merchant_price_per_mwh",
+   "index": 0,
+   "value": {
+    "__float__": -20
+   },
+   "base_input": "positive",
+   "expect_equal": null,
+   "why": "card_M27.md L54 says a negative power price may be entered; the registry declares merchant_price_per_mwh = (None, None). The probe records whether the blended price path accepts it, with NO expectation and NO verdict asserted on the price."
+  }
+ ],
+ "case_contract": {
+  "expected_count": 11,
+  "expected_ids": [
+   "NEG-CARD",
+   "N01a",
+   "N01b",
+   "N01c",
+   "N01d",
+   "N02",
+   "N03",
+   "N04",
+   "N05a",
+   "N05b",
+   "CONT-BREAK"
+  ],
+  "declared_expected_exception": "ModelRegistryError",
+  "neg_card_declared_mechanism": "period_hours=[0]: the activity dimension gets the CLOSED interval [0, inf) from driver_value_bounds, so 0 passes the bound check and the refusal comes from the calculator's own positivity check (`period_hours must be positive: FY2027`)",
+  "rule": "every case's `expected` must equal declared_expected_exception and the id list must equal expected_ids, otherwise the harness refuses to issue a verdict (rc=1)"
+ }
+}

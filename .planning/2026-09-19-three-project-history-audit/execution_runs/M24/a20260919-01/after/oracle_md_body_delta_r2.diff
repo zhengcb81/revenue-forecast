@@ -1,0 +1,22 @@
+# oracle.md frozen-body delta, revision r2 (M24)
+# pre-r2 body sha256 fbef9d5493d56e96e9a14808f1570ffcec4871ab6296c9ca9ff000038f88693c (11525 bytes)
+# post-r2 body sha256 9c8f6b238d38841704acd7de305038190b18b93062eaff55fe74bb6bf41b3e9f (13382 bytes)
+# every '+'/'-' line below must contain a review-mandated token; the whitelist is enforced by scripts/splice_oracle_md_r2.py
+# changed lines: 17; lines outside the whitelist: 0
+-| NEG-CARD | `closing_arr = [251]`（基于 `positive`） | `ModelRegistryError` |
++| NEG-CARD | `closing_arr = [251]`（基于 `positive`） | `ModelRegistryError 且消息须含 `stock-flow balance failed: FY2027`` |
+-
+-合计 **11 个负例**。通过判据：目标异常类型必须是 `ModelRegistryError`；`ImportError`/`ModuleNotFoundError`/`FileNotFoundError` **不得**计为通过。
++| CONT-BREAK-CROSSYEAR | {"opening_arr": [200, 251], "closing_arr": [250, 251]}（基于 `continuity_positive`） | `ModelRegistryError 且消息须含 `continuity failed: FY2028`` |
++
++合计 **12 个负例**。通过判据：目标异常类型必须是 `ModelRegistryError`；`ImportError`/`ModuleNotFoundError`/`FileNotFoundError` **不得**计为通过。
++| OBS-BRIDGE-TOL-1E-7 | `closing_arr[0] = float('250.0000001')`（基于 `positive`） | 不设预期 | effective-resolution probe required by the review (P3-2): the bridge compares with math.isclose(rel_tol=1e-9, abs_tol=1e-9), whose effective absolute tolerance at |closing_arr| = 250 is about 2.5e-7, so +1e-7 is expected to be INSIDE tolerance and the call to return a value; NO verdict is asserted, the observed outcome is recorded |
++| OBS-BRIDGE-TOL-1E-6 | `closing_arr[0] = float('250.000001')`（基于 `positive`） | 不设预期 | second effective-resolution probe (P3-2): +1e-6 is expected to be OUTSIDE the ~2.5e-7 effective tolerance and be refused with a stock-flow balance ModelRegistryError; NO verdict is asserted, the observed outcome is recorded |
++## 12. 桥平衡的有效分辨率（独立复核要求补记；见文末追加节的来源说明）
++
++存量桥的平衡与跨年锚定不是精确等号比较，而是 `math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-9)`（`model_extensions.py:27-38` 的 `_equal` / `_bridge`（桥平衡 + 跨年 continuity））。
++
++- **有效绝对容差 = `max(abs_tol, rel_tol × max(|a|, |b|))` = `max(1e-9, 1e-9 × max(|closing|, |expected_closing|))`**；相对项非负，故下界为 1e-9。
++- 本卡合成例的被比较量级 |closing_arr| ≈ 250，故有效绝对容差 ≈ **2.5e-7**（比 1e-9 宽约 3 个量级）。
++- 实测（本 attempt scratch 探针，**非判定性**）：正例 `closing_arr` 加 **+1e-7 → 通过**；加 **+1e-6 → 被拒绝**（`opening_arr stock-flow balance failed: FY2027`）。即 1e-7 在容差内、1e-6 在容差外。
++

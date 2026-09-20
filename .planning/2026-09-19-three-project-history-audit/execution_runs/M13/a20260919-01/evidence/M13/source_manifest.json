@@ -30,22 +30,25 @@
  },
  "card_script_hashes": {
   "scripts/append_r2.py": "5ff0dbf6c4005a6ffe6e8c4c0b8c6860cb16ba484af167fd55981eeea2873055",
-  "scripts/build_oq_rulings.py": "7c0f531fc2c56520e5b4abfece88f7f8644ccfc6ff040dc6cc888c27c3fc8950",
-  "scripts/enumerate_driver_bounds.py": "3f5ce1f5315ebac4c7d46018586baaf6645c2ddfde76721c001d022d930841e2",
-  "scripts/finalize_hashes.py": "e0f494eed366c4fbbeb413906db0ec6906021398b1528590c1c6ebd4223a07ca",
+  "scripts/append_r3.py": "f5ae80309c96e870a5393aaf56a17675a8ecfa8136003c0bd29400655a0ddfe3",
+  "scripts/audit_doc_pointers.py": "ded05cf652576546ef185961b45b40b61ce26b38a854bbe6cbfe4a25cc834356",
+  "scripts/build_cases_annotation_repack.py": "c53d01754e00031bd0a747f5208ff83f098552cb721af93356913c9a12990d8d",
+  "scripts/build_oq_rulings.py": "e3d8ca9ea4167a2e0bc69ac91dc0de3946e02baca10fdc9091391434a6ac6769",
+  "scripts/enumerate_driver_bounds.py": "eaf9626ceadf62fc703cd34cb8e5b6c0b5f69ca3a657b6f90ee96ee1287b2dda",
+  "scripts/finalize_hashes.py": "66a7bc8f1f65df6aee08263579ab2cc9bbe2307882eea801a686aa068713b32a",
   "scripts/freeze_oracle_md.py": "c8574a369419013babad33e5ab82e49dfa11923e49bdc462e7303b3baaa66dff",
-  "scripts/oracle_M13.py": "eaf290bf5cf8a9ad0e00de655e2889098865c80ac86c89739005bfef91278b4c",
+  "scripts/oracle_M13.py": "ff5108f956507bf8717e5557c5ab1fffadd5a90572e6aeb1f7a7ad62b4b476ed",
   "scripts/pack_evidence.py": "06800d7197b25801cb72a6573e8d6ed72874e0b287eea0c21dc5092d91fdeeee",
-  "scripts/patch_commands_M13.py": "ec6a7865fa559c96daa7542dc1e8a8ec12d917bd02c524e9a4b9fb93160027dc",
+  "scripts/patch_commands_M13.py": "d9d726b0277728b36daf17349ecdad50e08b120d877c3946401916b661c2dbf4",
   "scripts/probe_signed_driver.py": "4b0e50694da5ef0363828f8480e341374a76df557ef47b2ad996d82cc284649b",
   "scripts/repair_r2_boundary.py": "39d32423cf9294b6258670eb0ec0db0aa6c5eaca613911d5d2ab7c31b9ca96ab",
-  "scripts/run_card.py": "e709408f7f6518be63fc00d5c4c444c8738dbf1ba7a53383c3821882c9054c9e",
+  "scripts/run_card.py": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
   "scripts/run_product.ps1": "6f4a33094bba680ab62007b02cdf4172000487dbf4ca168294d476e019d959c0",
-  "scripts/selfcheck_mutation.py": "aa735bad32253a2ec7fcfc0e29aa60ddb92597b50f347c7a1c9c9d89f94c982d",
+  "scripts/selfcheck_mutation.py": "73e5f44d4fd4540463155091ddffd8c4ce0b3f9f7a3f3b3946567eb0a4141d01",
   "scripts/setup_isolation.ps1": "49bc73fd2c0769d31c4f9b4b3149a95aaf136348dda38a86ceb98dc60a722637",
   "scripts/validate_json_tree.py": "2bc976723195a780558eec142d9f1a93b8211fd0210f00d801baa0a59cd1a3fa",
   "scripts/verify_card.py": "e54c570628db2cf8310eb40968f9653142596291bf1c2cbb862181490ce86464",
-  "scripts/verify_r2_boundary.py": "063f902d2a8ccea2c0b783de5f761c9026d19524ea6d40a99145dde818ffbdd5"
+  "scripts/verify_r2_boundary.py": "c96fb6ee85630dd754440c871fe29e43b4d814ccd06bcbedf63429853ac7833d"
  },
  "oracle_document": {
   "path": "oracle.md",
@@ -56,7 +59,7 @@
    "lines": 163,
    "written_at_utc": null
   },
-  "whole_file_sha256_now": "4e71f45c2032a555e450da6cb2e20f28083bd95a48bab1ddf3a50b1be61d47ce",
+  "whole_file_sha256_now": "054f1e59e559cef0d6f1080d42cc176e80f3809fc25b5257465d1b6bd7d8582f",
   "r2_boundary": {
    "boundary_marker_line": "<!-- R2-APPEND-BOUNDARY: everything above this line is the frozen oracle body (v1) -->",
    "boundary_byte_offset": 10692,
@@ -67,10 +70,10 @@
   "freeze_rule": "oracle.md was written before any product run and is not modified afterwards; exactly ONE r2 section is appended below the boundary marker after the run, and the bytes above the marker still hash to the single recorded frozen-body value (there is no second, competing baseline)",
   "honest_gap": "commands.json records argv and raw exit codes ONLY and does NOT carry an oracle.md hash. The verifiable chain is: (a) evidence/<CARD>/oracle_selfcheck.json carries the freeze-time sha256 of input/cases/oracle plus the generator's import list; (b) the mtime ordering below; (c) scripts/verify_card.py re-checks both, and scripts/verify_r2_boundary.py re-derives the oracle.md boundary hash.",
   "mtime_ordering": {
-   "input_json_mtime": 1789871887.6304429,
-   "cases_json_mtime": 1789871887.6314554,
-   "oracle_json_mtime": 1789871887.632766,
-   "product_stdout_mtime": 1789871908.9173386,
+   "input_json_mtime": 1789873943.4734683,
+   "cases_json_mtime": 1789873943.4744854,
+   "oracle_json_mtime": 1789873943.4754875,
+   "product_stdout_mtime": 1789874193.668289,
    "oracle_json_precedes_run": true,
    "input_json_precedes_run": true,
    "cases_json_precedes_run": true
@@ -80,7 +83,7 @@
  "evidence_input_hashes": {
   "evidence/M13/input.json": "f4700cc24dd8d3f8df2660ff614bd7a6e92b44068c71f326a50fd4f03ce4e64d",
   "evidence/M13/oracle.json": "ab3a1f30fbad93da34a8786cdf3b4d532bca394ffc7ca1beb7214d6703a0e7b3",
-  "evidence/M13/cases.json": "0353e544234eb8ea2557c055d99e1feafd962d771f127c46f4bda0ad10ac06f9"
+  "evidence/M13/cases.json": "54399cd26596421ebae22b6efbdf7be19ea1af576ae0f69b8c193ba524702fb0"
  },
  "registry_metadata_observed_from_the_isolated_copy": {
   "model_id": "asset_management",

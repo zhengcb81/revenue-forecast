@@ -68,12 +68,18 @@
   },
   "changed_paths": {
     "scope": "iso/rf ONLY -- the production tree was NOT written to",
+    "counts": {
+      "total": 13,
+      "edited": 9,
+      "added": 4
+    },
     "edited": [
       "iso/rf/scripts/contracts/constants.py",
       "iso/rf/scripts/contracts/evidence.py",
       "iso/rf/scripts/publication_registry.py",
       "iso/rf/scripts/revenue_core.py",
       "iso/rf/scripts/revenue_publication.py",
+      "iso/rf/scripts/trust_anchor.py",
       "iso/rf/tests/test_attestation.py",
       "iso/rf/tests/test_single_owner_guard.py",
       "iso/rf/tests/golden_behavior_hashes.json"
@@ -82,11 +88,13 @@
       "iso/rf/scripts/attestation_protocol.py",
       "iso/rf/tests/test_attestation_provider_protocol.py",
       "iso/rf/tests/test_attestation_legacy.py",
+      "iso/rf/tests/test_publication_attestation_contract.py",
       "iso/rf/tests/e2e_support/i08b_fake_provider.py"
     ],
+    "added_note": "the four test/support files plus the new protocol module: attestation_protocol.py, test_attestation_provider_protocol.py, test_attestation_legacy.py, test_publication_attestation_contract.py and tests/e2e_support/i08b_fake_provider.py",
     "diff": "changes.diff",
     "production_patch_required_later": [
-      "the same 12 files must be applied to the product repo by a card/owner authorised to write it",
+      "the SAME 13 files (9 edited + 4 added) must be applied to the product repo by a card/owner authorised to write it",
       "tests/golden_behavior_hashes.json requires the same reviewed refresh that this attempt performed"
     ]
   },
@@ -305,14 +313,14 @@
   },
   "changes_diff": {
     "path": "changes.diff",
-    "files": 12,
-    "edited": 8,
+    "files": 13,
+    "edited": 9,
     "added": 4,
-    "bytes": 193558,
-    "note": "the diff is production-tree -> isolated-edited-copy; it is NOT applied to the product tree by this attempt"
+    "bytes": 207171,
+    "note": "the diff is production-tree -> isolated-edited-copy; it is NOT applied to the product tree by this attempt. This block said 12/8/4/193558 before the round-2 correction."
   },
   "reviewer_status": "pending",
-  "reviewer_must_do": "review.md sections 5 and 6: rule on the two architectural conflicts, recompute the code table from the design, add one undisclosed variant, re-run the eight bound commands, and decide the empty-commitment and unsigned-appendix questions. The reviewer may only return accepted_scoped / changes_required / blocked / not_applicable_with_reason, and must state which qualifications were and were not earned.",
+  "reviewer_must_do": "review.md sections 5, 7 and 8, plus the round-2/round-3 items: re-verify that the attestation commitment is actually CONSUMED on a real artifact (the round-2 finding), recompute the code table from the design, add one undisclosed variant, re-run the bound commands (14 entries in commands.json), and decide the remaining OPEN items. The reviewer may only return accepted_scoped / changes_required / blocked / not_applicable_with_reason, and must state which qualifications were and were not earned.",
   "commands_executed_note": "commands.json holds 12 bound entries (8 verification commands plus the two RED commands, the census and the diff generator); c14/c15/c16 are packaging-time measurements recorded here and under after/. A previous revision of this file said 'eight bound commands', which was wrong: it counted only the verification subset.",
   "projection_change": {
     "finding": "the independent review measured that changing sources / parameter_trace / data_gaps / disconfirming_indicators produced NO attestation finding",
@@ -327,9 +335,10 @@
   "outcome_appendix_prohibition": "MUST NOT draw any conclusion from result['publication_attestation_outcome']: it is outside the signed projection and can be rewritten verbatim without any verification failure (measured by the reviewer). The trust decision is carried ONLY by result['publication_attestation'] plus the trust-domain verification plus the receipt's attestation_status.",
   "provider_argv_env_scope": "REVENUE_ATTESTATION_PROVIDER_ARGV is TEST/OPS-ONLY (optional JSON array appended after argv[0], no shell). Unset means the behaviour is unchanged, and it does not replace or relax the design's 'absolute path to an executable' contract.",
   "byte_level_reproduction": {
-    "finding": "applying changes.diff to before/baseline_tree/rf leaves 9 of 12 files with different line endings (CRLF vs LF)",
+    "finding": "applying changes.diff to before/baseline_tree/rf leaves 9 of 13 files with different line endings (CRLF vs LF); measured in after/c15_line_endings.stdout.txt",
     "conclusion": "content-level reproduction holds; raw-byte reproduction does NOT",
-    "reviewer_recompute_hint": "compare after normalising LF, or compare binding.json.post_run_measurements.artifact_hashes for the iso/rf files"
+    "reviewer_recompute_hint": "compare after normalising LF, or compare binding.json.post_run_measurements.artifact_hashes for the iso/rf files",
+    "note_round2": "round 2 added scripts/trust_anchor.py, so the count moved from 12 to 13 files"
   },
   "mtime_not_evidence": {
     "finding": "61 non-.planning product files carried mtimes inside this card's window",
@@ -376,5 +385,22 @@
     ],
     "housekeeping": "57 stray .pyc files removed from iso/rf and before/baseline_tree/rf; the 4 edited sources re-hashed unchanged",
     "production_repos_touched": false
+  },
+  "round2_fix": {
+    "finding": "P2-2 was only half closed: the projection was correct, but verify_publication_attestation compared the record against result.get('payload_sha256'), a key a real artifact does not carry, so on a real artifact the rule never ran",
+    "fix": "the verifier now compares record['payload_sha256'] against payload_sha256(result) -- the record's own commitment against the artifact recomputed now",
+    "new_tests": [
+      "iso/rf/tests/test_publication_attestation_contract.py::RealArtifactVerifierTests (real run_forecast artifacts)",
+      "iso/rf/tests/test_publication_attestation_contract.py::SingleProjectionGuardTests (AST guards)"
+    ],
+    "red_proof": "after/c22_red_verifier.stdout.txt: with the pre-fix comparison restored in a scratch copy, the new module reports 13 failed / 6 passed, rc=1 -- so the test has real force",
+    "coverage_now": "12 covered fields (confidence, theme_analysis, historical_accuracy_records, sources, parameter_trace, data_gaps, disconfirming_indicators, input_document, evidence_claims, management_target_coverage, growth_driver_analysis, forecast_version) each asserted to produce exactly [E16] when mutated on a REAL artifact",
+    "empty_commitment_condition": "the reviewer's conditional acceptance required P2-2 to be fixed first; the verifier now consumes the commitment, so the condition is met as far as this card can establish"
+  },
+  "documentation_edit_provenance": {
+    "ledger": "binding.json.documentation_edit_ledger (append-only)",
+    "fact": "oracle.md WAS edited after the first test runs (review round 1 errata). binding.json was then re-finalised, so the recorded hash was the post-edit value; the earlier value (8d6dc81b) is now registered in the ledger as well.",
+    "expectations_changed": false,
+    "governance": "OWNER DECISION REQUIRED on whether post-hoc oracle edits are acceptable; the implementer does not rule on it"
   }
 }

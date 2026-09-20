@@ -1,0 +1,37 @@
+card: M20 model_id: cohort_subscription
+code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M20\a20260919-01\iso\checkout_scripts
+model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M20\a20260919-01\iso\checkout_scripts\model_registry.py
+registry formula: revenue = (opening_customers + new_customers * new_customer_revenue_fraction - churned_customers * churned_customer_lost_fraction) * revenue_per_customer * timing_factor + usage_revenue
+registry required: ['opening_customers', 'new_customers', 'churned_customers', 'ending_customers', 'revenue_per_customer']
+registry optional: ['timing_factor', 'usage_revenue', 'new_customer_revenue_fraction', 'churned_customer_lost_fraction']
+registry defaults: {'timing_factor': 1.0, 'new_customer_revenue_fraction': 0.5, 'churned_customer_lost_fraction': 0.5}
+registry declared_driver_bounds: {}
+registry effective_bounds: {'opening_customers': [0.0, 'inf'], 'new_customers': [0.0, 'inf'], 'churned_customers': [0.0, 'inf'], 'ending_customers': [0.0, 'inf'], 'revenue_per_customer': [0.0, 'inf'], 'timing_factor': [0.0, 1.0], 'usage_revenue': [0.0, 'inf'], 'new_customer_revenue_fraction': [0.0, 1.0], 'churned_customer_lost_fraction': [0.0, 1.0]}
+positive raised: None
+positive actual: [195.0]
+positive expected: [195.0]
+positive tolerances: [1.95e-07]
+positive fidelity: {'python_type': 'list', 'is_flat_sequence': True, 'length': 1, 'element_types': ['float'], 'all_elements_plain_number': True, 'all_elements_finite': True, 'container_has_extra_fields': False, 'year_labels_observable': False, 'year_linked_observable': 'length only: len(output) must equal len(years)', 'expected_length': 1, 'years_length': 1, 'length_equals_years': True, 'length_equals_expected': True, 'expectations_present': True, 'structure_ok': True, 'fidelity_ok': True}
+per_value_checks: [{'index': 0, 'year': 2027, 'actual': 195.0, 'expected': 195.0, 'tolerance': 1.95e-07, 'abs_diff': 0.0, 'ok': True}]
+tolerances_ok: True
+continuity_positive raised: None actual: [195.0, 240.0] expected: [195.0, 240.0] ok: True
+defaults (not gating) ok: True actual: [220.0] expected: [220.0]
+observation: OBS-BASE-IGNORED raised=None actual=[195.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None
+observation: OBS-DEFAULT-EQUIV raised=None actual=[220.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None
+observation: OBS-ZERO-CUSTOMERS raised=None actual=[7.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True
+negative: NEG-CARD PASS_rejected ModelRegistryError - cohort customer bridge failed: FY2027
+negative: N01a PASS_rejected ModelRegistryError - cohort_subscription.opening_customers.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - cohort_subscription.opening_customers.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - cohort_subscription.opening_customers.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - cohort_subscription.opening_customers.FY2027 must be finite
+negative: N02 FAIL_declared_expectation_mismatch ModelRegistryError - driver cohort_subscription.opening_customers must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for cohort_subscription: opening_customers
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for cohort_subscription: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - cohort_subscription.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - cohort_subscription.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - cohort customer continuity failed: FY2028
+negative declared-expectation comparison: exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)
+negative declared-expectation mismatches: 1
+negative summary: {'total': 11, 'passed': 10, 'failed': ['N02'], 'target_exception': 'model_registry.ModelRegistryError', 'declared_expectations_in_cases_json': ['ModelRegistryError', 'ValueError'], 'declared_expectation_comparison': "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)", 'declared_expectations_enforced': True, 'import_or_file_errors_never_pass': True}
+verdict: fail exit_code: 3
+printed_matches_evidence_file: True (re-read run_result_F_tampered_declared_expectation.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)

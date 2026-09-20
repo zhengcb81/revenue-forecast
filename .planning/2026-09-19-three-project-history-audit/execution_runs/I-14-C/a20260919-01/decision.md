@@ -59,10 +59,139 @@ attempt dir per the card's recovery clause.
 3. *Install a `sys.excepthook`* — new global mechanism, needs its own design + reviewer.
 4. *Redact every string inside `_write_process_event`* — would also rewrite `catalog_dir`
    and `reason`, changing a persisted diagnostic contract for no security gain on this path.
-5. **(new)** *Widen the credential rule's separator to bare whitespace so `--api-key <value>`
-   is covered* — rejected: it would redact ordinary diagnostics such as
-   `"token expired for doc-1"`, which oracle R4 forbids. The flag form is carried as a
-   measured residual instead (`harness/run_rule_table.py` NOT_REDACTED list).
+5. **(new in r2, reason corrected in r3)** *Widen the credential rule's separator to bare
+   whitespace so `--api-key <value>` is covered* — rejected because **the flag form needs new
+   separator semantics whose false-positive cost on ordinary `key value` prose exceeds its
+   benefit**, not for the reason first written here. The r2 wording claimed widening would
+   redact `token expired for doc-1`; the r3 review measured that claim and it is **wrong** —
+   the colon-less form is unchanged in both trees (`r3/diagnostics_product_r1.json`,
+   `r3/diagnostics_product_fixed.json`), while `token: expired` is redacted and already was in
+   r1. The flag form stays a measured residual (`run_diagnostic_table.py` → `res-flag`;
+   `run_rule_table.py` NOT_REDACTED entry). This is the third correction recorded in this
+   attempt rather than edited away.
+
+## D2-r3 (F-I14C-07: the redactor must be linear)
+
+The r2 fix introduced a quadratic rule in `observability._CREDENTIAL_KEY`
+(`(?:[A-Za-z0-9]+[_-])*<atom>(?:[_-][A-Za-z0-9]+)*`), and `redact_and_truncate` feeds it the
+**whole untruncated exception message**. Measured: 20 s per-case cap exceeded at 16000
+segments.
+
+**Chosen: option (a)'s INTENT, implemented as a single-pass scanner.** Note the reviewer's
+literal wording of (a) was measured first and does **not** fix it: a key-candidate regex
+`[A-Za-z0-9_-]+` still backtracks once per start position when the value cannot match
+(`r3/variants.json`: 8000 → 2.66 s, 16000/40000 → TIMEOUT). Option (b) `{0,8}` is linear but
+silently drops coverage for keys with more than 8 qualifier segments — a coverage cliff in a
+security path, the same class of failure this card exists to remove. Option (c) leaves the
+regex super-linear just below any cap and changes the redaction semantics of over-cap input.
+`A2-scanner` is linear on all ten adversarial shapes (`r3/timing_three_way.json`, worst case
+0.0619 s at k=40000).
+
+Cost of the choice, declared: a hand-written scanner is more code than one regex (about 70
+lines), so it is pinned by the same frozen rule table (20 positives + 8 guards: 0 leaks /
+0 over-redaction), by a 15-entry diagnostic corpus, and by the full exit suite (50 passed).
+The `authorization`/`bearer` regex is retained because its keys are fixed literals with no
+nesting over the key, and its timing is measured as well.
+
+Also declared: the scanner changes one behaviour — a rejected key no longer consumes the
+whole `key=value` span, so a genuine pair later in the same text is now redacted
+(`url=https://x?token=…`, `cmd: --token=…`). This is an improvement, not a regression, and
+it is frozen by a test together with the cases that must stay untouched.
+
+## D3-r4 (F-I14C-08: correctness criteria must include output fidelity)
+
+The r3 scanner wrote the key twice (`tokentoken=<redacted>`). The code defect was one line,
+but it survived every r2/r3 check — rule table "0 leaks", diagnostics "0 over-redaction",
+50 green suite tests, E5a stderr 0 hits — because **every criterion asked only whether the
+marker had disappeared, never whether the output was still faithful to the input**.
+
+**Decision: output fidelity is now part of the acceptance criteria, not an optional extra.**
+
+- `harness/run_rule_table.py` and `harness/run_diagnostic_table.py` carry a hand-written exact
+  expected output for every entry and **exit 2** on any mismatch, so a run can no longer report
+  "0 leaks" without also passing fidelity. On the r3 specimen this yields `0 leaks` **and 24
+  fidelity failures** — the exact blindness is now visible.
+- The suite adds `test_f08_output_fidelity_exact` (**24** exact pairs at r4 — this line said
+  "23" until F-I14C-R4-01; r5 extends the block to 28, `r5/counts.json`) plus two real-exit
+  fidelity cases (event string + length; E5a envelope must still identify the config file).
+- Consequence for the reviewer: "the marker is gone" is no longer sufficient evidence for any
+  redaction claim in this card.
+
+**C12 is a hard precondition.** The r4 review retested and the F-07 case hangs (>90 s, then
+>300 s killed) instead of failing when the redactor blocks, because the 5 s assertion runs
+after the call returns. The promoted product test **must** add `pytest-timeout` or run the call
+in a subprocess with a hard timeout. This is not advice: the case stays in the harness until
+that wrapper exists (the harness's own discriminator is `harness/bench_redact.py`, which caps
+each measurement at 20 s in a subprocess).
+
+### C13 (corrected at r5 — the consequence was understated by ~an order of magnitude)
+
+**The value's stop set is `,;&"'|` plus whitespace, and an unquoted value CROSSES NEWLINES.**
+So the value is not "the whole space/tab separated run" — it is everything up to the next
+comma/semicolon/quote/pipe, however many lines that spans. Measured (F-I14C-R4-02):
+
+| input | output |
+|---|---|
+| `a=1 token=<marker> b=2` | `a=1 token=<redacted>` |
+| `'upload failed for token=<marker> doc=17\nstage=summarize code=llm_global_failure request_id=req-1'` | `'upload failed for token=<redacted>'` (reviewer's 24-char marker: **112 chars in → 34 out**; `doc=17`, `stage=summarize`, `code=llm_global_failure`, `request_id=req-1` all lost) |
+
+It is **not truncation** (34 ≪ 200, the truncation cap) and **not r3/r4-introduced**:
+`iso/product_r2` reproduces it identically, i.e. it is inherited from r1's `_BARE_VALUE`
+(`X+(?:\s+X+)*`, whose `\s` matches `\n`).
+
+**Decision: registered and frozen, not changed.** No code change was made, because (a) E4b's
+193-char acceptance length is derived from exactly this behaviour, and (b) narrowing the value
+to a single token changes the E4b baseline and the envelope width, so it needs its own oracle
+and its own card. What r5 adds is that the loss is now **explicit and asserted** rather than
+invisible: rule table `cred-multiline-swallow` / `cred-multiline-stopped-by-semicolon` /
+`cred-multiline-then-key`, diagnostic corpus `cred-multiline-swallow` +
+`diag-multiline-no-credential`, three multi-line `FIDELITY_CASES` pairs and one untouched
+multi-line diagnostic, and `test_f08_c13_multiline_loss_is_frozen_not_hidden`. If anyone
+narrows the value later, that test fails and the oracle has to be rewritten — which is the
+point of freezing it.
+
+## D4-r5 (r4 review's five mechanical findings: exit codes, guard, hashes, counts, guard scope)
+
+Four of the six r5 items are mechanical and were fixed by making the harness *derive* what it
+previously asserted by hand. Two of them are decisions, recorded here.
+
+**(1) Exit-code convention adopted from `run_card.py`: `0 = pass`, `2 = cannot adjudicate`,
+`3 = negative verdict`.** Both tables now follow it. `2` is reserved for "the thing under test
+could not be exercised" (helper absent / tree not importable) and never means "fine"; `3` means
+a measured negative (credential leak, fidelity failure, or a **new** over-redaction). Registered
+pre-existing over-redactions (`known_over_redaction`: `pwd=`, `token: expired`, `secret:
+rotated`, `password: ********`) are what the diagnostic corpus *measures* and do not by
+themselves make a verdict negative — otherwise the corpus could never report a green baseline
+and the F-I14C-08 defect would have been invisible again. Consequence on the five trees:
+
+| tree | rule rc | diag rc | reading |
+|---|---|---|---|
+| T0 pristine | 2 | 2 | cannot adjudicate (no helper) |
+| T1 (r1) | 3 | 3 | 11 leaks / 4 leaks — negative |
+| T2 (r2) | 0 | 0 | pass (with 11 fidelity failures hidden by the old scheme; see D3-r4) |
+| T3 (r3 specimen) | 3 | 3 | **0 leaks but 27 / 13 fidelity failures** — negative |
+| T4 (r5 fixed) | 0 | 0 | pass |
+
+**(2) The guard is a scope guard, not an evidence guard.** `harness/run_guard.py` refuses any
+product path *unconditionally* (`company-wiki`/`revenue-forecast`/`filing-fetch` sources,
+`.source_catalog`, the production catalog file) and otherwise accepts any scratch root declared
+via `I14C_RUN_ROOT`; the test helpers declare the pytest basetemp. Reason for the change: the
+r4 review could not run the 17 subprocess-backed cases at all, because the guard rejected a
+`%TEMP%` basetemp and its driver exited 97 — an evidence guard that *prevents independent
+verification* is worse than the risk it mitigates, and the risk it actually mitigates (writing
+into the three production repositories) is fully preserved by the unconditional product-path
+refusal. Re-tested refusals: product src → 97; `.source_catalog` → 97; revenue-forecast outside
+`.planning` → 97; undeclared `%TEMP%` → 97; declared `%TEMP%` **plus** a product path → 97.
+The full 82-case suite now runs both inside the attempt directory and from `%TEMP%` with no
+environment variable set (`r5/cmd-r5-outside-execution-runs.txt`).
+
+**(3) Derived counts are the single source of truth.** `harness/report_counts.py` computes the
+rule-table entry count, the diagnostic-corpus count, `len(FIDELITY_CASES)`, the collected
+nodeid count and the fidelity nodeid count from the source files and writes `r5/counts.json`;
+it exits 3 if the two independently derived pair counts disagree. All prose numbers in this
+attempt now cite that file (`rule_table_entries 44`, `diagnostics 30`, `fidelity_cases 28`,
+`exact_nodeids 28`, `total_nodeids 82`). The hand-written "23" was wrong in five places even
+though the code said 24 — the lesson recorded in D3-r4, applied to prose.
 
 ## D1-r1 (historical; kept for the record)
 

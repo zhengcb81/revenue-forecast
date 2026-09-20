@@ -1,0 +1,24 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\郑曾波\Projects\company-wiki
+configfile: pytest.ini
+collected 1 item
+
+..\..\..\..\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py F [100%]
+
+================================== FAILURES ===================================
+_______ test_child_without_runtime_session_is_terminated_and_restarted ________
+..\..\..\..\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:917: in test_child_without_runtime_session_is_terminated_and_restarted
+    assert len([event for event in events if event["status"] == "child_started"]) == 2
+E   AssertionError: assert 3 == 2
+E    +  where 3 = len([{'schema_version': '1.1', 'recorded_at': '2026-09-20T02:52:12.2752515Z', 'status': 'child_started', 'message': '', .....'schema_version': '1.1', 'recorded_at': '2026-09-20T02:52:13.4520827Z', 'status': 'child_started', 'message': '', ...}])
+============================== warnings summary ===============================
+..\..\..\..\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-C\a20260919-01\iso\venv\Lib\site-packages\_pytest\config\__init__.py:1464
+  C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-C\a20260919-01\iso\venv\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED ..\..\..\..\Projects\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_child_without_runtime_session_is_terminated_and_restarted
+======================== 1 failed, 1 warning in 3.39s =========================

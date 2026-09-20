@@ -26,32 +26,34 @@
   "global_python_used_for": "nothing in this card (no PDF extraction was needed)"
  },
  "card_script_hashes": {
-  "scripts/run_card.py": "93d88d4e49c214fdc3bcfcd0afb3b3296c4c2efdb5b549d6c94d4541e3173e4b",
-  "scripts/oracle_M25_M28.py": "1dd52eb9e0a3a3416e809965b6e2b0c52289912d0ec9233f3fdcda74d691b5f9",
+  "scripts/run_card.py": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+  "scripts/oracle_M25_M28.py": "d092ab16f050401ea05931cda34dc01251ef729f3123d65ec8385a101aa0f0de",
   "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
   "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
-  "recovery/selfcheck/make_mutations.py": "8180ead2833c4c3edf0850680c44f6b86058acbb6b9746e90bd4a473bcc2d199",
+  "recovery/selfcheck/make_mutations.py": "ace6d72002fb871ad18401a4f6c4bd94149f39a37755910d6f143a6100996dc3",
   "recovery/selfcheck/naive_oracle.py": "c81b682f9091850d52c954e1abf03c32badaad8d05b8d44c5898544f9e43f1fa"
  },
  "oracle_document": {
   "path": "oracle.md",
-  "sha256_now": "03b7d4d8fdf66b690033ab27c3bfed74d066ce8489f0103067bbcebc42b3f4cb",
-  "sha256_before_any_product_run": "03b7d4d8fdf66b690033ab27c3bfed74d066ce8489f0103067bbcebc42b3f4cb",
-  "honest_gap": "oracle.md was written before any product run and its frozen body (sections 0-11) was NOT modified afterwards. The expected values were frozen in evidence/<card>/oracle.json by the independent stdlib generator BEFORE the first product invocation; the generator is reproducible byte-for-byte (proved by the case-E regeneration in evidence/<card>/oracle_selfcheck.json). NOTE: the FIRST generation had a defect (a wrong defaults expectation for M25 and a crash on M27) which was corrected BEFORE the oracle.md was written and before the definitive product run; the pre-correction files are preserved under recovery/precorrection/ and the whole ledger is in evidence/<card>/revision_r2.json. commands.json records argv and raw exit codes ONLY and does NOT carry an oracle.md hash.",
+  "sha256_now": "f4e78c09c66ddceb7af488bc197c5951017897a52be0ff75a1d7fc33eedbd1bd",
+  "sha256_before_the_definitive_product_run": null,
+  "honest_gap": "oracle.md was written before the DEFINITIVE product run and its frozen body (sections 0-11) was NOT modified afterwards; only APPENDED revision sections were added (the r2 section). The expected values were frozen in evidence/<card>/oracle.json by the independent stdlib generator. The generator is reproducible byte-for-byte (proved by the self-check G regeneration in evidence/<card>/oracle_selfcheck.json). Three provenance facts are recorded rather than hidden: (1) the v1 generation had a defect which was corrected before the definitive run - the only expectation that ever changed is M25's NON-GATING defaults block, and the timeline is in evidence/<card>/revision_r2.json; (2) the v1 generator SOURCE and the M27 crash traceback were never persisted, so that accident is not reproducible (provenance gap); (3) the M26/M27/M28 NEG-CARD patch was corrected under review finding P2-1 and cases.json was re-frozen before the definitive run. commands.json records argv and raw exit codes ONLY and does NOT carry an oracle.md hash.",
   "mtime_ordering": {
-   "oracle_json_mtime": 1789872222.546088,
-   "input_json_mtime": 1789872222.545087,
-   "oracle_md_mtime": 1789872157.566919,
-   "product_stdout_mtime": 1789872615.972979,
-   "oracle_json_precedes_run": true,
-   "oracle_md_precedes_run": true
+   "oracle_json_mtime": 1789874272.358318,
+   "input_json_mtime": 1789874272.356046,
+   "oracle_md_mtime": 1789874273.369785,
+   "first_ever_product_run_stdout_mtime": 1789872192.249423,
+   "definitive_product_stdout_mtime": 1789874273.36852,
+   "oracle_json_precedes_the_definitive_run": true,
+   "oracle_json_precedes_the_first_ever_run": false,
+   "note": "r2 re-froze cases.json and re-ran the product, so the ORACLE.JSON mtime is later than the first ever run of this attempt. What the mtime ordering does establish is the pair that matters for the verdict: the frozen evidence and oracle.md both precede the DEFINITIVE run that produced evidence/<card>/stdout.txt."
   },
   "oracle_script_selfcheck": "evidence/M26/oracle_selfcheck.json records the generator's import list, product_import_present=false and the byte-identical regeneration hashes"
  },
  "evidence_input_hashes": {
-  "evidence/M26/input.json": "317a452c49adfb452536efc68cfa9f88fd880668bcc6c527accde6d782efd38d",
-  "evidence/M26/oracle.json": "1d6fad18c38734fc1f85ecbf766abba11f754c5f5e52055c0eaa32a05e7183d4",
-  "evidence/M26/cases.json": "5bc6666d1f34255c557b17347c50f2be838b5712c44b87272c68cf03b34d3173"
+  "evidence/M26/input.json": "72045bf780034e63cb1f813d1c77aff887912f7e610ae9333ea40aa8b9d4fbc0",
+  "evidence/M26/oracle.json": "90e99bc2f32e18cfd8a847b39c6e62c29327af3ba3d3469c77cfb7147b074d10",
+  "evidence/M26/cases.json": "f3e86ef0eed59fd9a4e2cc4ace408859458c793a1b15fd52deadb926d241b1e1"
  },
  "registry_metadata_observed_from_the_isolated_copy": {
   "model_id": "store_cohorts",

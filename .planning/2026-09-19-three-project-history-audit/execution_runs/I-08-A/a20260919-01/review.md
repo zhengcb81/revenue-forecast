@@ -108,11 +108,11 @@
 |---|---|---|
 | **F-I08A-01** G3/G4 对同一输入相反 | G3 拆为 **G3a（不作签名声明 → 保留）** 与 **G3b（声称 host_signed 却无记录 → 归 G4 拒绝）**；新增 §6.1 单一分类判据 `classify()`（按「是否作出签名声明」判，不看版本号）；G3b 唯一归属 = G4，码 **E27**；`oracle.md` NEG-LEGACY-3/4 对齐 | `decision.md:275`（§6.0）、`decision.md:278`（§6.1）、`decision.md:293`（§6.2）、`decision.md:110`（E26）、`decision.md:111`（E27）；`oracle.md:96`、`oracle.md:97` |
 | **F-I08A-02** 错误码集合不相交 | 新增 **§2.5 规范错误码表（E01–E31，唯一来源）**；§2.4 改为只写限额并引用码值；§2.3/§4.2/§5/§6.2/§7 全部引用码值；原 `provider_key_untrusted` 大合并拆为 E20/E21/E22/E23/E24；补入原缺失的 `provider_invalid_json`（E04）与 `provider_absent`（E01）；`oracle.md` §2 表头声明唯一来源，第 4 列全量换成 `E**` 码 | `decision.md:76`–`decision.md:113`（§2.5）、`decision.md:139`（§2.4）、`decision.md:119`（一致性规则）；`oracle.md:53`–`oracle.md:97` |
-| **F-I08A-03** 900 s 无依据却写死 | 撤下所有具体秒数：发布窗改参数 **`W`**、provider 超时改参数 **`T`**，语义与失败码（E18/E07）保留，数值登记为 **OPEN-D7（参数待证据）** 并列出三种候选依据；明确「不得据此宣称无未决」 | `decision.md:74`（§2.2）、`decision.md:148`（§2.4）、`decision.md:251`（§5）、`decision.md:372`（§8 OPEN-D7）；`oracle.md:79` |
-| **F-I08A-04** schema 3.8 未归类 | **冻结归属：3.8 属 G3a**（可保留、只读、不得新建下游 artifact），**不获得任何自动旁路**；G1 版本集收窄为显式 {"3.0"…"3.6"}；新增硬规则 **R-LEGACY-1**（禁止用 `schema_version != FORECAST_SCHEMA_VERSION` 判豁免）+ 码 **E29**；同时登记 **OPEN-D6**（规则落地须改跨仓消费者，超出本卡 scope，**不得宣称已闭**） | `decision.md:305`（§6.3）、`decision.md:113`（E29）、`decision.md:317`（§6.4）、`decision.md:315`/`decision.md:391`（OPEN-D6）；`oracle.md:99`、`oracle.md:123` |
-| **F-I08A-05** 信任域键名冲突 + 静默吞异常 | **键名冻结为 `public_keys`**（沿用现有加载器读的键，新增字段加在条目内部，废弃初稿顶层 `"keys"`）；顶层与条目字段集**封闭**，未知字段即报错；加载语义改为「文件缺失 = 合法零受信；文件非法 = **E25 报错并中止**，MUST NOT `return {}`」；新增负例 **NEG-TRUST-1…4** | `decision.md:172`–`decision.md:194`（§3）、`decision.md:109`（E25）；`oracle.md:78`–`oracle.md:81`、`oracle.md:122` |
+| **F-I08A-03** 900 s 无依据却写死 | 撤下所有具体秒数：发布窗改参数 **`W`**、provider 超时改参数 **`T`**，语义与失败码（E18/E07）保留，数值登记为 **OPEN-D7（参数待证据）** 并列出三种候选依据；明确「不得据此宣称无未决」 | `decision.md:74`（§2.2）、`decision.md:145`（§2.4 超时行）、`decision.md:263`（§5）、`decision.md:397`（§8 OPEN-D7）；`oracle.md:92` |
+| **F-I08A-04** schema 3.8 未归类 | **冻结归属：3.8 属 G3a**（可保留、只读、不得新建下游 artifact），**不获得任何自动旁路**；G1 版本集收窄为显式 {"3.0"…"3.6"}；新增硬规则 **R-LEGACY-1**（禁止用 `schema_version != FORECAST_SCHEMA_VERSION` 判豁免）+ 码 **E29**；同时登记 **OPEN-D6**（规则落地须改跨仓消费者，超出本卡 scope，**不得宣称已闭**） | `decision.md:305`（§6.3）、`decision.md:113`（E29）、`decision.md:317`（§6.4）、`decision.md:315`/`decision.md:391`（OPEN-D6）；`oracle.md:99`、`oracle.md:127` |
+| **F-I08A-05** 信任域键名冲突 + 静默吞异常 | **键名冻结为 `public_keys`**（沿用现有加载器读的键，新增字段加在条目内部，废弃初稿顶层 `"keys"`）；顶层与条目字段集**封闭**，未知字段即报错；加载语义改为「文件缺失 = 合法零受信；文件非法 = **E25 报错并中止**，MUST NOT `return {}`」；新增负例 **NEG-TRUST-1…4** | `decision.md:172`–`decision.md:194`（§3）、`decision.md:109`（E25）；`oracle.md:81`–`oracle.md:84`（NEG-TRUST-1…4）、`oracle.md:126` |
 | **F-I08A-06** test_attestation 假绿（须转 I-08-B） | 新增 **§7.1「I-08-B 的验收前置：先失败，再改」**：点名 `tests/test_attestation.py:71` 是全仓唯一设置该 env 处；要求先用同一断言证明变 **RED**（E02）并留 raw rc/stdout，**不得**直接改写断言变绿，必须把测试意图改为「成功握手 + 隔离 bounded fake provider + 隔离信任域」，并补一条反向用例 | `decision.md:355`（§7.1 四条前置）、`decision.md:323`（§7）、`decision.md:472`（§10 第 8 项） |
-| **F-I08A-07** probe 从生产 tests 树取 fixture | 补绑定：`RF/tests/test_recognition_bridge.py` = `187ea01e45d144031d34b11e3a76c551b2029556c4d26b0b34983f7d59bcc1a5`；新增 `unbound_dependency_closed_in_r2` 说明 fixture 符号（`forecast_document`，第 32 行）、它是**合成** fixture、reviewer 复跑前置（哈希不符则停止并记录漂移）、I-08-B 不得隐式继承 | `binding.json:92`、`binding.json:100`；`decision.md:496`（§11.1）；`oracle.md:144` |
+| **F-I08A-07** probe 从生产 tests 树取 fixture | 补绑定：`RF/tests/test_recognition_bridge.py` = `187ea01e45d144031d34b11e3a76c551b2029556c4d26b0b34983f7d59bcc1a5`；新增 `unbound_dependency_closed_in_r2` 说明 fixture 符号（`forecast_document`，第 32 行）、它是**合成** fixture、reviewer 复跑前置（哈希不符则停止并记录漂移）、I-08-B 不得隐式继承 | `binding.json:92`、`binding.json:100`；`decision.md:496`（§11.1）；`oracle.md:146` |
 | **F-I08A-08** c3 绑定 argv 与实际重定向方式不同一 | `I08A-c3-probe` 拆为 `argv_frozen_as`（初稿相对形式）与 `argv_as_recorded`（实际绝对路径 argv），加 `argv_discrepancy_note` 说明语义等价、仅路径形式与重定向通道不同；`raw_returncode` 与原始证据**未重写** | `commands.json:68`–`commands.json:83`；`decision.md:496`（§11.1） |
 | **F-I08A-09** `read_bytes==0` 措辞偏差 | `oracle.md` 新增 **§6 措辞修订**：统一为「不得**以读取/执行/import 该文件作为能力或签名依据**」；区分观测值与生产要求；目标实现下 `provider_calls==0` 与 `spawn_witness_calls==[]` 必须恒成立 | `oracle.md:150`（§6）、`oracle.md:113`（A-D1 行）；`decision.md:109`（E02 备注） |
 
@@ -133,12 +133,12 @@
 | 复审条目 | 处置 | 位置（file:line，r3 后实测） |
 |---|---|---|
 | **R-BIND-1（P1）** `revoked_at` 未在字段清单，与 §3 撤销条款互斥 | §3 示例条目加入 `"revoked_at": null`；字段集改为**点名式封闭集合**：无条件必填 10 项（含 `revoked_at`）+ 可选 `name`；`revoked_at` **无条件必填但允许 `null`**（`active` ⇒ 必须 `null`；`revoked` ⇒ 必须 RFC3339 且 ≥ `not_before`）；**明确以点名字段集为准、不以计数为准**（消除「11 vs 12」的二次歧义）；撤销条款改写为与字段集一致的两条件表述，**不新增任何字段** | `decision.md:186`（示例条目 `revoked_at`）、`decision.md:193`（字段集 12 项）、`decision.md:194`（无条件必填 10 项）、`decision.md:209`（撤销条款改写） |
-| **R-BIND-2（P1）** E02 不可达 | **E02 收窄**为 `provider_path_unopenable`（路径不存在 / 不可作为文件打开）；**新增 E32** `provider_capability_unproven`（存在且可打开但**未被证明具备签名能力**，明确涵盖 `sys.executable`、裸 `.py`、`.txt`）；§2.4 末两行按 E01/E02/E32 分流；§7.1 前置 1 改为引用 **E32**，前置 3 换成分情形断言表；`oracle.md` §1 目标判定、A-D1 行、NEG-PROV-1/1a/1b 同步 | `decision.md:85`（E02 收窄）、`decision.md:86`（E32 新增）、`decision.md:153`–`decision.md:154`（§2.4 分流）、`decision.md:361`–`decision.md:368`（§7.1）；`oracle.md:42`、`oracle.md:57`–`oracle.md:59`、`oracle.md:113` |
+| **R-BIND-2（P1）** E02 不可达 | **E02 收窄**为 `provider_path_unopenable`（路径不存在 / 不可作为文件打开）；**新增 E32** `provider_capability_unproven`（存在且可打开但**未被证明具备签名能力**，明确涵盖 `sys.executable`、裸 `.py`、`.txt`）；§2.4 末两行按 E01/E02/E32 分流；§7.1 前置 1 改为引用 **E32**，前置 3 换成分情形断言表；`oracle.md` §1 目标判定、A-D1 行、NEG-PROV-1/1a/1b 同步 | `decision.md:85`（E02 收窄）、`decision.md:86`（E32 新增）、`decision.md:153`–`decision.md:154`（§2.4 分流）、`decision.md:361`–`decision.md:375`（§7.1）；`oracle.md:42`、`oracle.md:57`–`oracle.md:59`（含 `NEG-PROV-1a`/`1b` 在 :58/:59）、`oracle.md:113` |
 | **N-R2-04（P2）** 65536 仍硬编码 | 新增参数 **`L`**（provider stdout 上限，E06 判据）并入 **OPEN-D7**；规范文本内所有具体字节数撤下：§2.4 行改为 `L`、§2.5 E06 行改为 `L`、§10 第 2 项改为 `L`、`oracle.md` NEG-PROV-4 改为 `L`、`review.md` §2 第 3 条改为 `L`、`handoff.json` 摘要改为 `L`（全文仅保留「初稿 65536 已撤下」这类**说明性**提及） | `decision.md:90`（E06）、`decision.md:117`（三参数说明）、`decision.md:146`（§2.4）、`decision.md:472`（§10）；`oracle.md:63`；`review.md:40`；`handoff.json`（`frozen_design_summary`） |
 | **N-R2-05（低）** OPEN-D6 命名借位 | §2.5 E29 行改指「**§6.3**」而非易被读成 OPEN-D6 的「§6」；§2.5 新增**编号规则**说明（按语义连续、新码追加末尾）；OPEN-D6 表内加「编号在本表内稳定，不受 §6.3 标题影响」；新增 **§8.0 OPEN 归属与批次表**，把复审建议的裁决方逐项固化（含 **D1/D2/D3 建议同批裁定**） | `decision.md:79`（编号规则）、`decision.md:113`（E29 行）、`decision.md:391`（OPEN-D6）、`decision.md:406`–`decision.md:418`（§8.0） |
 | **N-R2-06（低）** `oracle.md:32` 残留旧措辞 | EXP-BASE-2 行改写：`provider_file_read_bytes` 由错误的 `== 0` 改为实测的 **`null`**，并补齐 `provider_calls == 0`、`spawn_witness_calls == []`；§6 措辞修订扩到 **E02/E32** 并注明实测为 `null` | `oracle.md:32`、`oracle.md:150`（§6） |
-| **N-R2-07（低）** `review.md` 重复编号「6.」 | §6 列表重新编号为 1–8：原重复的两个「6.」改为「6.」（fail-loud 与 OPEN-D1）与「7.」（L1/L2 issuer 绑定），并新增「8.」（两个校验脚本的能力边界） | `review.md:221`–`review.md:224` |
-| **限制声明（复审实测，必须接受）** | `check_r2_consistency.py` 的边界写入 §4 第 8 条与 §5.1；新增 **`check_r3_pairs.py`**（编号↔码值配对校验 + 两处变异自测），以**独立方式**重跑取得 raw rc | `review.md:221`（§4 第 8 条）、`review.md:104`（§5.1）、`decision.md:444`（§8.2）、`commands.json`（I08A-c13 + I08A-c10 的 `capability_limit`） |
+| **N-R2-07（低）** `review.md` 重复编号「6.」 | §6 列表重新编号为 1–8：原重复的两个「6.」改为「6.」（fail-loud 与 OPEN-D1）与「7.」（L1/L2 issuer 绑定），并新增「8.」（两个校验脚本的能力边界） | `review.md:246`–`review.md:249` |
+| **限制声明（复审实测，必须接受）** | `check_r2_consistency.py` 的边界写入 §4 第 8 条与 §5.1；新增 **`check_r3_pairs.py`**（编号↔码值配对校验 + 两处变异自测），以**独立方式**重跑取得 raw rc | `review.md:246`（§4 第 8 条）、`review.md:104`（§5.1）、`decision.md:444`（§8.2）、`commands.json`（I08A-c13 + I08A-c10 的 `capability_limit`） |
 
 **r3 的三处自检**（主动登记）：
 1. 新增 `check_r3_pairs.py` 的**变异自测**用独立副本运行，未修改真实文本；变异副本留在 `iso/scratch/r3_mutations/`，属隔离 scratch。
@@ -184,7 +184,7 @@
 ### 不授予什么
 
 1. 不授予「已验证 35 条观测」这一计数的规范地位：实测为 35 行 / **32 个不同观测 id**（`EXP-BASE-2b` 按探针构造重复 4 次）。
-2. 不授予 `review.md` §5.1 表内 20 处 `file:line` 定位（r3 插入 §5.3 后整体位移约 23 行而未被自检发现），§5.3 表的 `decision.md:368` 与 `oracle.md:113` 亦需修正；修订记录的**可独立核对性**本轮不予授予。
+2. 不授予 `review.md` §5.1 表内 20 处 `file:line` 定位（r3 插入 §5.3 后整体位移约 23 行而未被自检发现），§5.3 表的 `decision.md:375` 与 `oracle.md:110` 亦需修正；修订记录的**可独立核对性**本轮不予授予。
 3. 不授予「I-08-A 已被接受」的任何表述权：`handoff.json.status` 仍为 `review_pending`、`implementer_self_acceptance=false`；计划层已出现的超前记账（提交 `7d7ea1e` 的提交信息与 `progress.md`）须由父 agent 撤回，以 `task_plan.md` 的 TBD 口径为准。
 4. 不授予「provider 协议/信任域无未决」（OPEN-D6/D7 与三个数值参数未裁）、「旧包兼容已定案」、「§3 schema 与 §7.1 可直接实现」。
 5. 不授予「每个错误码都能在当前产品中触发」：设计卡定义契约与判定路径，不承担实现可达性的举证义务（口径见下）。
@@ -223,10 +223,12 @@
 
 ### 签后文本改动登记（供后续引用者校正）
 
-- 裁决 §5.5 记录的六个 sha256 是**裁决时点**的盘上版本。r4 因执行裁决自身的必修项，以下文件字节发生变化：**`decision.md`（必修项 5）**、**`review.md`（粘贴 §5.5 + 必修项 1/2 + 本节）**。
-- **未变**：`oracle.md`（本次未被改动）；`commands.json` 与 `handoff.json` 的变动限于必修项 3/4 所指字段；两者与 `binding.json` 的冻结结论/数值内容未动。
+> **§5.5 是冻结块**：其 34 行与来源报告的 ````markdown` 代码块**逐行一致**（机器比对 `verdict_block_verbatim=True`）；后续任何引用重定位**不得**修改该块内的 `file:line` 文本。已发生过一次并已回滚：r4 的引用批量替换一度把 §5.5 第 2 条不授予项中的 `oracle.md:110` 改成 `113`，已按来源报告恢复为 `oracle.md:110`（该引用是**裁决原文**，其精度由裁决人负责；本卡在 §5.3 表中另行给出重定位后的正确值 `oracle.md:113`）。
+
+- 裁决 §5.5 记录的六个 sha256 是**裁决时点**的盘上版本。r4 因执行裁决自身的必修项，以下文件字节发生变化：**`decision.md`（必修项 5）**、**`review.md`（粘贴 §5.5 + 必修项 1/2 + 本节）**、**`commands.json`（必修项 4）**、**`handoff.json`（必修项 3）**。
+- **逐字未变**：`oracle.md` 与 `binding.json` 的 sha256 与裁决时点**完全相同**（`08281f2d…` / `9b19b93b…`）；`iso/probe_attestation.py` 与全部 before/after 探针证据亦未变。
 - 后续引用必须同时给出「裁决时点 sha256」与「r4 后 sha256」，不得用后者覆盖前者，也不得据此声称裁决对象被改动过实质内容。
-- r4 机器校验入口：`check_r4_citations.py`（引用锚点审计 + 观测普查）、`check_r4_citation_targets.py`（15 行结构行校验）、`apply_r4_citation_round3.py`（43 项最终校验）。
+- r4 机器校验入口：`check_r4_citations.py`（引用锚点审计 + 观测普查）、`check_r4_citation_targets.py`（结构行校验）、`check_r4_anchors.py`（**68/68** 锚点校验，`failures=0`）。
 
 ---
 

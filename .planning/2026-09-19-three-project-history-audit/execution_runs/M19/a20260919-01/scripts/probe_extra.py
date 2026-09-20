@@ -69,14 +69,28 @@ PROBES = {
          "expectation_source": "inclusive lower edge of the ratio domain",
          "expected_if_inclusive": 5.0,
          "expected_if_exclusive": "ModelRegistryError"},
-        {"id": "PROBE-CONTINUITY-TOLERANCE",
-         "why": ("the cross-year continuity check uses math.isclose(rel_tol=1e-9, abs_tol=1e-9) on the "
-                 "two-year case, so a 1e-12 imbalance must be tolerated while a 1.0 imbalance is "
-                 "rejected (CONT-BREAK); this measures the tolerant side"),
+        {"id": "PROBE-CONTINUITY-TOLERANCE-BAND-INSIDE",
+         "why": ("the cross-year continuity and intra-year bridge checks use "
+                 "math.isclose(rel_tol=1e-9, abs_tol=1e-9), so the admissible imbalance is "
+                 "delta <= max(1e-9 * max(|a|,|b|), 1e-9); at the 120-customer magnitude that is about "
+                 "1.2e-7 customers, NOT the 1e-12 that the first draft of this probe implied. This "
+                 "probe feeds delta = 1.2e-7 (inside the band): the run must be ACCEPTED and the "
+                 "year-2 revenue must be 2 x 120.00000012 = 240.00000024"),
          "base_input": "continuity_positive",
-         "patch": {"opening_customers": [100, 120.000000000001]},
-         "expectation_source": "math.isclose(rel_tol=1e-9, abs_tol=1e-9)",
+         "patch": {"opening_customers": [100, 120.00000012], "ending_customers": [120, 120.00000012]},
+         "expectation_source": "math.isclose(rel_tol=1e-9, abs_tol=1e-9) evaluated at magnitude 120",
          "expected_if_tolerant": "accepted",
+         "expected_if_exact": "ModelRegistryError"},
+        {"id": "PROBE-CONTINUITY-TOLERANCE-BAND-OUTSIDE",
+         "base_input": "continuity_positive",
+         "why": ("the other side of the same band: delta = 1.201e-7 exceeds "
+                 "1e-9 * 120.0000001201 = 1.2000000012e-7, so the cross-year continuity check must "
+                 "REJECT with 'cohort customer continuity failed: FY2028' - the same failure mode as "
+                 "the frozen CONT-BREAK case, only six orders of magnitude smaller"),
+         "patch": {"opening_customers": [100, 120.0000001201],
+                   "ending_customers": [120, 120.0000001201]},
+         "expectation_source": "math.isclose(rel_tol=1e-9, abs_tol=1e-9) evaluated at magnitude 120",
+         "expected_if_tolerant": "ModelRegistryError",
          "expected_if_exact": "ModelRegistryError"},
     ],
 }

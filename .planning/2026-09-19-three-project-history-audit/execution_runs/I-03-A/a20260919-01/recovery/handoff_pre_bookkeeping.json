@@ -1,0 +1,57 @@
+{
+  "card_id": "I-03-A",
+  "attempt_id": "a20260919-01",
+  "parent": "I-03",
+  "status": "review_pending",
+  "completed_steps": [
+    "1. 读取四个源锚点（gap_plan.py 95/214、authorization.py 23、close_gap.py 55、acquisition.py 74）并重算 sha256，与卡内冻结值一致",
+    "2. 写 decision.md 第一部分：现状字段表（含 acquisition 实际调用、persisting defect——以 provider ID 字典序推断披露时间——正式陈述与四个 probe 对应）",
+    "3. 写 decision.md 第二部分：冻结契约 D1 期间键（三元组 kind|period_start|period_end、FY2025 非日历键、缺 period explicit_unknown）、D2 日期语义（filed_at 主/accepted_at 校验、ordered/ambiguous_same_day/conflicting/unknown_missing_date 四态）、D3 修订最新性（日期定新近、反向不降级+latest_status=unknown_if_remote_confirmed_newer）、D4 exact/latest_as_of 分离+三态禁布尔+future+空成功、D5 有界批次 max_batch_size=8+completed_partial 保留、D6 canonical JSON/hash_schema_version=1/全资格字段/policy epoch/失效规则",
+    "4. 写 compat-matrix.md：M1—M10 行为迁移表 + 旧授权/旧 gap_hash 失效迁移表 + fail-closed 底线",
+    "5. 写 oracle-inputs.csv：15 格（C01—C15）抽象列 entity/market/kind/period_start/period_end/fiscal_year/provider/id/filed_at/accepted_at/amended/url，固定 ACME/US/annual_report/FY2025/as_of=2026-07-31",
+    "6. 写 oracle.md：每格唯一输出+理由+消费行为；无 TBD；未决依赖单列"
+  ],
+  "next_step_number": 7,
+  "next_action": "独立 reviewer 读 decision.md/oracle.md/compat-matrix.md/oracle-inputs.csv，复算 C01—C15 与 G-D1—D4 对应关系（C01↔newer_date_lower_id、C02↔older_only_remote、C03/C04↔missing_same_period_two_revisions、hash 断言↔url_and_date_changed_same_gap_hash），确认无 TBD 残留后由高级 reviewer 定案签署；冲突以更保守方为准",
+  "input_hashes": {
+    "card_I-03-A.md": "7178fc51fa868e9054b92219bca6c3aa84645d14bb9133dabb3cc6f072528179",
+    "current_recheck.json": "183352a226ee8c903258ebc78b314cf5e33c59f4dbd9d24f6f43de028ae8aec4",
+    "gap_plan.py": "d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f",
+    "authorization.py": "f858a369ed556d1b110be5ba7be7fa25ae3519fda94296cfe1c4f9e367d55f43",
+    "close_gap.py": "117c8166a6c26f3462574b787e0db79c419e00c8b18287f25738948032f475c3",
+    "acquisition.py": "c68a1c14b8bc2117fb89c6a46283116d6792c26a8278fbde9c3b141dccb24067"
+  },
+  "current_source_hashes": {
+    "decision.md": "sha256-pending-reviewer-verification",
+    "compat-matrix.md": "sha256-pending-reviewer-verification",
+    "oracle-inputs.csv": "sha256-pending-reviewer-verification",
+    "oracle.md": "sha256-pending-reviewer-verification",
+    "handoff.json": "self (excluded)"
+  },
+  "changed_paths": [
+    "decision.md",
+    "compat-matrix.md",
+    "oracle-inputs.csv",
+    "oracle.md",
+    "handoff.json"
+  ],
+  "commands_executed": [],
+  "raw_exit_codes": [],
+  "expected_exit_codes": [],
+  "open_questions": [
+    "not_published=true 所需的 provider 穷尽知识声明字段当前 adapter 契约不存在；I-03-B/C 落地前 not_published 保守保持 false（D4 推论，非 TBD）"
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "decision.md",
+    "compat-matrix.md",
+    "oracle-inputs.csv",
+    "oracle.md"
+  ],
+  "reviewer_status": "review_pending",
+  "blocked_downstream": {
+    "I-03-B": "未按 D1—D6 实施（period 键三元组、日期四态、新近性、三态输出、字段映射）即 blocked",
+    "I-03-C": "未按 D6 重建哈希/授权/有界批次（canonical JSON、全资格字段、max_batch_size=8、completed_partial）即 blocked",
+    "I-03-D": "消费端未按 D4 latest_status 枚举与 oracle C01—C15 行为读取即 blocked"
+  }
+}

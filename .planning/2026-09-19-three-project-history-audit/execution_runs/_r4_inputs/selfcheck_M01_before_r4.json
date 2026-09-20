@@ -1,0 +1,76 @@
+{
+ "purpose": "F-M01-02 self-check: does the exit code carry the verdict?",
+ "scratch": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M01\\a20260919-01\\recovery\\r2_exit_code_selfcheck",
+ "frozen_evidence_touched": false,
+ "cases": [
+  {
+   "id": "A_corrupted_oracle_expectation",
+   "mutation": "oracle.json positive.expected_float replaced with [999,999,999]",
+   "raw_returncode": 3,
+   "expected_returncode": 3,
+   "verdict_field": "fail",
+   "negative_summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": []
+   },
+   "product_positive_actual": [
+    220.00000000000003,
+    110.00000000000001,
+    0.0
+   ],
+   "interpretation": "the product still returns the correct path, but the harness now exits 3 instead of claiming success"
+  },
+  {
+   "id": "B_corrupted_case_plan",
+   "mutation": "cases.json first case base_input -> 'no_such_block'",
+   "raw_returncode": 1,
+   "expected_returncode": "non-zero (the harness raises before any verdict)",
+   "traceback_excerpt": [
+    "    base = copy.deepcopy(input_doc[base_key])",
+    "                         ~~~~~~~~~^^^^^^^^^^",
+    "KeyError: 'no_such_block'"
+   ],
+   "interpretation": "a harness defect cannot masquerade as a pass: it raises and exits non-zero"
+  },
+  {
+   "id": "C_uncorrupted_card",
+   "mutation": "none",
+   "raw_returncode": 0,
+   "expected_returncode": 0,
+   "verdict_field": {
+    "harness_incomplete": false,
+    "positive_ok": true,
+    "continuity_ok": true,
+    "negatives_ok": true,
+    "verdict": "pass",
+    "exit_code": 0
+   },
+   "interpretation": "the repaired exit code stays 0 for a genuinely passing card"
+  },
+  {
+   "id": "D_corrupted_positive_input",
+   "mutation": "input.json positive.drivers.growth_rate deleted (required driver missing)",
+   "raw_returncode": 2,
+   "expected_returncode": 2,
+   "positive_raised": "ModelRegistryError",
+   "positive_message": "missing drivers for direct_growth: growth_rate",
+   "verdict_field": {
+    "harness_incomplete": true,
+    "positive_ok": false,
+    "continuity_ok": true,
+    "negatives_ok": false,
+    "verdict": "fail",
+    "exit_code": 2
+   },
+   "interpretation": "a corrupted POSITIVE INPUT makes the product raise, so no verdict exists; the harness reports rc=2 ('harness incomplete') instead of a bookkeeping-only rc=0. This is the reachable rc=2 path, distinct from case B (a case-plan defect outside the guard, which raises and exits 1)."
+  }
+ ],
+ "reachability_summary": {
+  "rc_0": "the uncorrupted card (case C)",
+  "rc_1": "a defect outside the guarded block, e.g. a corrupted case plan (case B)",
+  "rc_2": "REACHABLE: a corrupted positive input makes the product raise, so no verdict exists (case D)",
+  "rc_3": "a corrupted oracle expectation produces a negative verdict (case A)",
+  "corrected_claim": "the r2 note said rc=2 was 'not yet reachable in practice'. The point review disproved that by deleting growth_rate from the positive input; the claim is corrected in revision r3 and the D case now records the rc=2 path."
+ }
+}

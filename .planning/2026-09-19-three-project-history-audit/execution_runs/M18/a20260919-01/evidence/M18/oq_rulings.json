@@ -143,6 +143,19 @@
    ],
    "probe_provenance": "evidence/M18/extra_probes.json; the probes are NON-GATING and sit outside oracle.json and outside the runner's exit code",
    "requires_ruling_from": "independent reviewer (accept / amend / reject)"
+  },
+  {
+   "id": "OQ-05",
+   "title": "process history of this attempt (repeated executions of one argv)",
+   "status": "registered_not_fixed",
+   "finding": "this card's measurement pipeline was executed 1 time(s) and the closing sequence 6 time(s); the capture wrapper overwrites runs/<UNIT>/rc.json on every execution, so the byte-level records can only prove the LAST execution of each unit. The C2 extra-boundary-probe unit is an EXISTING unit of this attempt's unit list, delivered byte-identically from the M17 attempt (it was not added after a first pass).",
+   "declared_versus_observed": {
+    "declared": "the pass structure in process_history.json, declared by the implementer",
+    "observed": "the surviving rc.json records (last execution per unit) and the run-directory creation timestamps",
+    "honest_gap": "superseded stdout/rc were overwritten in place; only the declared history and directory timestamps distinguish the passes"
+   },
+   "pointer": "process_history.json",
+   "requires_ruling_from": "independent reviewer (accept / amend / reject)"
   }
  ],
  "counts_provenance_rule": "every number in enumeration_counts comes from the raw output of scripts/enumerate_registry.py; none is transcribed from prose"

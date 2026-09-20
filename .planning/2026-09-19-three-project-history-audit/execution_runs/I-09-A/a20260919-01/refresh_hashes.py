@@ -1,6 +1,12 @@
 """Recompute the sha256 of every deliverable of this attempt (run last).
 
 Writes a UTF-8 receipt so the reviewer can re-hash the package with one command.
+
+Self-reference rule (round-2 finding 4.1): a file cannot declare its own hash.
+This inventory therefore prints `SELF-REFERENCE (not declarable here)` instead
+of a hex for itself and for changes.diff (which declares the other files), so no
+stale self-declared value can ever be mistaken for a downstream anchor.
+
 argv: <out.txt> [--root <attempt>]
 exit: 0 = receipt written, 2 = usage
 """
@@ -12,6 +18,7 @@ import sys
 from pathlib import Path
 
 SKIP_DIRS = {"venv", "__pycache__", "scratch"}
+SELF_REFERENTIAL = {"after/product_hashes.txt", "changes.diff"}
 
 
 def sha256(path: Path) -> str:
@@ -44,9 +51,23 @@ def main() -> int:
             continue
         files.append((rel.as_posix(), path))
     for rel, path in files:
-        lines.append("%s  %s  %d" % (sha256(path), rel, path.stat().st_size))
+        # prefix-agnostic: the rule must hold whether --root is the attempt dir
+        # itself or its parent (both invocations exist in this attempt's history).
+        own = rel.split("/", 1)[1] if "/" in rel else rel
+        if rel in SELF_REFERENTIAL or own in SELF_REFERENTIAL:
+            lines.append(
+                "SELF-REFERENCE (not declarable here)  %s  %d"
+                % (rel, path.stat().st_size)
+            )
+        else:
+            lines.append("%s  %s  %d" % (sha256(path), rel, path.stat().st_size))
     lines.append("")
     lines.append("files=%d" % len(files))
+    lines.append(
+        "self_referential=%s (their true hashes must be taken from the filesystem "
+        "by the reviewer, never from a declaration inside themselves)"
+        % ",".join(sorted(SELF_REFERENTIAL))
+    )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print("wrote %s files=%d" % (out.name, len(files)))

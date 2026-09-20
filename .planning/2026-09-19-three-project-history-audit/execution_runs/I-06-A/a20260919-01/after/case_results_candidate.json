@@ -1,0 +1,577 @@
+{
+  "tag": "after",
+  "tree": "candidate",
+  "tree_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\iso\\rf_fixed",
+  "python": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "demand_store": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\processing_demands.sqlite3",
+  "worker_control": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\worker_control.json",
+  "paused_before": {
+    "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\worker_control.json",
+    "exists": true,
+    "sha256": "8f58b5e13105c382666078a7a3a0fd770762f9c2e80d24febe32772f4845b7e3",
+    "bytes": "{\n  \"schema_version\": \"1.0\",\n  \"desired_state\": \"paused\",\n  \"updated_at\": \"2026-09-19T00:00:00Z\",\n  \"updated_by\": \"I-06-A/a20260919-01 fixture\"\n}"
+  },
+  "source_bytes_sha256": "80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71",
+  "changed_source_bytes_sha256": "d6820ddf55b9b4dbc4e5abbc9e8cbf5f4de5941fbdf29a1efa012f0cbb23f1b9",
+  "handle_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\samples\\handle.json",
+  "changed_handle_path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\handle_changed.json",
+  "cases": {
+    "c1_first_run": {
+      "case": "c1-first-run",
+      "returncode": 3,
+      "stdout": "",
+      "stderr": "{\"error_code\": \"upstream\", \"error\": \"prompt injection not reviewed \\u2014 source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-84179f79057143d4 source=7ed04c40c5aa20dc gaps=4 next_action=run the approved review method for this source; worker desired_state is 'paused' \\u2014 resume requires an explicit authorised action; this call does not resume it\"}\r\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "dcc3e63ec525b9b416bb84f7be44ad13e96e3959fca3ec4c4b9727352326ae50",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\cli-logs\\c1-first-run",
+      "env_extra": [
+        "RF_W06_DEMAND_STORE",
+        "RF_W06_ROLE_SET",
+        "RF_W06_WORKER_CONTROL"
+      ]
+    },
+    "c2_second_process_query": {
+      "case": "c2-second-process-query",
+      "returncode": 0,
+      "payload": {
+        "demands": [
+          {
+            "demand_id": "demand-84179f79057143d4",
+            "demand_key": "7ed04c40c5aa20dc0cdfc1866fd164b3848a57c7f84b1e009e8a1b7f70447569",
+            "kind": "source_review_and_production",
+            "status": "pending",
+            "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+            "source_sha256": "80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71",
+            "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+            "role_set": "normalized,sections",
+            "gaps": [
+              {
+                "detail": "prompt_injection_status is not reviewed",
+                "gap": "review_required",
+                "observed": "not_reviewed",
+                "resolves_by": "run the approved review method for this source"
+              },
+              {
+                "detail": "no reusable markdown artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "markdown",
+                "resolves_by": "produce the markdown artifact, then retry"
+              },
+              {
+                "detail": "no reusable sections artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "sections",
+                "resolves_by": "produce the sections artifact, then retry"
+              },
+              {
+                "detail": "no reusable summary artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "summary",
+                "resolves_by": "produce the summary artifact, then retry"
+              }
+            ],
+            "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+            "attempts": 0,
+            "lease_owner": null,
+            "lease_until": null,
+            "created_at": 1789870694.6933897,
+            "updated_at": 1789870694.6933897,
+            "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+          }
+        ],
+        "store": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\processing_demands.sqlite3"
+      },
+      "stderr": "",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\query-logs\\c2-second-process-query"
+    },
+    "c3_repeated_request": {
+      "case": "c3-repeated-request",
+      "returncode": 3,
+      "stdout": "",
+      "stderr": "{\"error_code\": \"upstream\", \"error\": \"prompt injection not reviewed \\u2014 source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-84179f79057143d4 source=7ed04c40c5aa20dc gaps=4 next_action=run the approved review method for this source; worker desired_state is 'paused' \\u2014 resume requires an explicit authorised action; this call does not resume it\"}\r\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "dcc3e63ec525b9b416bb84f7be44ad13e96e3959fca3ec4c4b9727352326ae50",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\cli-logs\\c3-repeated-request",
+      "env_extra": [
+        "RF_W06_DEMAND_STORE",
+        "RF_W06_ROLE_SET",
+        "RF_W06_WORKER_CONTROL"
+      ]
+    },
+    "c4_query_after_repeat": {
+      "case": "c4-query-after-repeat",
+      "returncode": 0,
+      "payload": {
+        "demands": [
+          {
+            "demand_id": "demand-84179f79057143d4",
+            "demand_key": "7ed04c40c5aa20dc0cdfc1866fd164b3848a57c7f84b1e009e8a1b7f70447569",
+            "kind": "source_review_and_production",
+            "status": "pending",
+            "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+            "source_sha256": "80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71",
+            "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+            "role_set": "normalized,sections",
+            "gaps": [
+              {
+                "detail": "prompt_injection_status is not reviewed",
+                "gap": "review_required",
+                "observed": "not_reviewed",
+                "resolves_by": "run the approved review method for this source"
+              },
+              {
+                "detail": "no reusable markdown artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "markdown",
+                "resolves_by": "produce the markdown artifact, then retry"
+              },
+              {
+                "detail": "no reusable sections artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "sections",
+                "resolves_by": "produce the sections artifact, then retry"
+              },
+              {
+                "detail": "no reusable summary artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "summary",
+                "resolves_by": "produce the summary artifact, then retry"
+              }
+            ],
+            "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+            "attempts": 0,
+            "lease_owner": null,
+            "lease_until": null,
+            "created_at": 1789870694.6933897,
+            "updated_at": 1789870695.5084596,
+            "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+          }
+        ],
+        "store": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\processing_demands.sqlite3"
+      },
+      "stderr": "",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\query-logs\\c4-query-after-repeat"
+    },
+    "c5_changed_source_hash": {
+      "case": "c5-changed-source-hash",
+      "returncode": 3,
+      "stdout": "",
+      "stderr": "{\"error_code\": \"upstream\", \"error\": \"prompt injection not reviewed \\u2014 source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-bdf82dc9c11d4363 source=3286a02d485b0b3c gaps=4 next_action=run the approved review method for this source; worker desired_state is 'paused' \\u2014 resume requires an explicit authorised action; this call does not resume it\"}\r\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8d63afbdb8b295a64c5f5f0e3bb3e80384bcc57f669ece17b7da8baf7e8f7461",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\cli-logs\\c5-changed-source-hash",
+      "env_extra": [
+        "RF_W06_DEMAND_STORE",
+        "RF_W06_ROLE_SET",
+        "RF_W06_WORKER_CONTROL"
+      ]
+    },
+    "c6_query_after_change": {
+      "case": "c6-query-after-change",
+      "returncode": 0,
+      "payload": {
+        "demands": [
+          {
+            "demand_id": "demand-84179f79057143d4",
+            "demand_key": "7ed04c40c5aa20dc0cdfc1866fd164b3848a57c7f84b1e009e8a1b7f70447569",
+            "kind": "source_review_and_production",
+            "status": "pending",
+            "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+            "source_sha256": "80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71",
+            "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+            "role_set": "normalized,sections",
+            "gaps": [
+              {
+                "detail": "prompt_injection_status is not reviewed",
+                "gap": "review_required",
+                "observed": "not_reviewed",
+                "resolves_by": "run the approved review method for this source"
+              },
+              {
+                "detail": "no reusable markdown artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "markdown",
+                "resolves_by": "produce the markdown artifact, then retry"
+              },
+              {
+                "detail": "no reusable sections artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "sections",
+                "resolves_by": "produce the sections artifact, then retry"
+              },
+              {
+                "detail": "no reusable summary artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "summary",
+                "resolves_by": "produce the summary artifact, then retry"
+              }
+            ],
+            "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+            "attempts": 0,
+            "lease_owner": null,
+            "lease_until": null,
+            "created_at": 1789870694.6933897,
+            "updated_at": 1789870695.5084596,
+            "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+          },
+          {
+            "demand_id": "demand-bdf82dc9c11d4363",
+            "demand_key": "3286a02d485b0b3cf746b97ce1a7829a3b978f6bb2a79b862b774c4979e68b42",
+            "kind": "source_review_and_production",
+            "status": "pending",
+            "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+            "source_sha256": "d6820ddf55b9b4dbc4e5abbc9e8cbf5f4de5941fbdf29a1efa012f0cbb23f1b9",
+            "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+            "role_set": "normalized,sections",
+            "gaps": [
+              {
+                "detail": "prompt_injection_status is not reviewed",
+                "gap": "review_required",
+                "observed": "not_reviewed",
+                "resolves_by": "run the approved review method for this source"
+              },
+              {
+                "detail": "no reusable markdown artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "markdown",
+                "resolves_by": "produce the markdown artifact, then retry"
+              },
+              {
+                "detail": "no reusable sections artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "sections",
+                "resolves_by": "produce the sections artifact, then retry"
+              },
+              {
+                "detail": "no reusable summary artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "summary",
+                "resolves_by": "produce the summary artifact, then retry"
+              }
+            ],
+            "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+            "attempts": 0,
+            "lease_owner": null,
+            "lease_until": null,
+            "created_at": 1789870696.3846905,
+            "updated_at": 1789870696.3846905,
+            "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+          }
+        ],
+        "store": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\processing_demands.sqlite3"
+      },
+      "stderr": "",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\query-logs\\c6-query-after-change"
+    },
+    "c7_store_unwritable": {
+      "case": "c7-store-unwritable",
+      "returncode": 3,
+      "stdout": "",
+      "stderr": "{\"error_code\": \"upstream\", \"error\": \"prompt injection not reviewed \\u2014 source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_store_error=demand_store_unavailable: demand store unavailable: FileExistsError: [WinError 183] \\u5f53\\u6587\\u4ef6\\u5df2\\u5b58\\u5728\\u65f6\\uff0c\\u65e0\\u6cd5\\u521b\\u5efa\\u8be5\\u6587\\u4ef6\\u3002: 'C:\\\\\\\\Users\\\\\\\\\\u90d1\\u66fe\\u6ce2\\\\\\\\Projects\\\\\\\\revenue-forecast\\\\\\\\.planning\\\\\\\\2026-09-19-three-project-history-audit\\\\\\\\execution_runs\\\\\\\\I-06-A\\\\\\\\a20260919-01\\\\\\\\samples\\\\\\\\handle.json'; gaps=4 next_action=run the approved review method for this source; worker desired_state is 'paused' \\u2014 resume requires an explicit authorised action; this call does not resume it\"}\r\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "6dfc77dcd51c6953ae2bd3b512403320ae266f3df7f75d1179c759d7da223f5d",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\cli-logs\\c7-store-unwritable",
+      "env_extra": [
+        "RF_W06_DEMAND_STORE",
+        "RF_W06_ROLE_SET",
+        "RF_W06_WORKER_CONTROL"
+      ]
+    },
+    "c8_same_source_different_request": {
+      "case": "c8-same-source-different-request",
+      "returncode": 3,
+      "stdout": "",
+      "stderr": "{\"error_code\": \"upstream\", \"error\": \"prompt injection not reviewed \\u2014 source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-84179f79057143d4 source=7ed04c40c5aa20dc gaps=4 next_action=run the approved review method for this source; worker desired_state is 'paused' \\u2014 resume requires an explicit authorised action; this call does not resume it\"}\r\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "dcc3e63ec525b9b416bb84f7be44ad13e96e3959fca3ec4c4b9727352326ae50",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\cli-logs\\c8-same-source-different-request",
+      "env_extra": [
+        "RF_W06_DEMAND_STORE",
+        "RF_W06_ROLE_SET",
+        "RF_W06_WORKER_CONTROL"
+      ]
+    },
+    "c9_query_after_different_request": {
+      "case": "c9-query-after-different-request",
+      "returncode": 0,
+      "payload": {
+        "demands": [
+          {
+            "demand_id": "demand-84179f79057143d4",
+            "demand_key": "7ed04c40c5aa20dc0cdfc1866fd164b3848a57c7f84b1e009e8a1b7f70447569",
+            "kind": "source_review_and_production",
+            "status": "pending",
+            "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+            "source_sha256": "80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71",
+            "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+            "role_set": "normalized,sections",
+            "gaps": [
+              {
+                "detail": "prompt_injection_status is not reviewed",
+                "gap": "review_required",
+                "observed": "not_reviewed",
+                "resolves_by": "run the approved review method for this source"
+              },
+              {
+                "detail": "no reusable markdown artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "markdown",
+                "resolves_by": "produce the markdown artifact, then retry"
+              },
+              {
+                "detail": "no reusable sections artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "sections",
+                "resolves_by": "produce the sections artifact, then retry"
+              },
+              {
+                "detail": "no reusable summary artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "summary",
+                "resolves_by": "produce the summary artifact, then retry"
+              }
+            ],
+            "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+            "attempts": 0,
+            "lease_owner": null,
+            "lease_until": null,
+            "created_at": 1789870694.6933897,
+            "updated_at": 1789870698.1837788,
+            "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+          },
+          {
+            "demand_id": "demand-bdf82dc9c11d4363",
+            "demand_key": "3286a02d485b0b3cf746b97ce1a7829a3b978f6bb2a79b862b774c4979e68b42",
+            "kind": "source_review_and_production",
+            "status": "pending",
+            "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+            "source_sha256": "d6820ddf55b9b4dbc4e5abbc9e8cbf5f4de5941fbdf29a1efa012f0cbb23f1b9",
+            "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+            "role_set": "normalized,sections",
+            "gaps": [
+              {
+                "detail": "prompt_injection_status is not reviewed",
+                "gap": "review_required",
+                "observed": "not_reviewed",
+                "resolves_by": "run the approved review method for this source"
+              },
+              {
+                "detail": "no reusable markdown artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "markdown",
+                "resolves_by": "produce the markdown artifact, then retry"
+              },
+              {
+                "detail": "no reusable sections artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "sections",
+                "resolves_by": "produce the sections artifact, then retry"
+              },
+              {
+                "detail": "no reusable summary artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "summary",
+                "resolves_by": "produce the summary artifact, then retry"
+              }
+            ],
+            "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+            "attempts": 0,
+            "lease_owner": null,
+            "lease_until": null,
+            "created_at": 1789870696.3846905,
+            "updated_at": 1789870696.3846905,
+            "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+          }
+        ],
+        "store": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\processing_demands.sqlite3"
+      },
+      "stderr": "",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\query-logs\\c9-query-after-different-request"
+    },
+    "c10_same_source_asof_only_changed": {
+      "case": "c10-same-source-asof-only-changed",
+      "returncode": 3,
+      "stdout": "",
+      "stderr": "{\"error_code\": \"upstream\", \"error\": \"prompt injection not reviewed \\u2014 source preparation blocked per policy (prompt_injection_status=not_reviewed); demand_queued demand_id=demand-84179f79057143d4 source=7ed04c40c5aa20dc gaps=4 next_action=run the approved review method for this source; worker desired_state is 'paused' \\u2014 resume requires an explicit authorised action; this call does not resume it\"}\r\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "dcc3e63ec525b9b416bb84f7be44ad13e96e3959fca3ec4c4b9727352326ae50",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\cli-logs\\c10-same-source-asof-only-changed",
+      "env_extra": [
+        "RF_W06_DEMAND_STORE",
+        "RF_W06_ROLE_SET",
+        "RF_W06_WORKER_CONTROL"
+      ]
+    },
+    "c11_query_after_asof_change": {
+      "case": "c11-query-after-asof-change",
+      "returncode": 0,
+      "payload": {
+        "demands": [
+          {
+            "demand_id": "demand-84179f79057143d4",
+            "demand_key": "7ed04c40c5aa20dc0cdfc1866fd164b3848a57c7f84b1e009e8a1b7f70447569",
+            "kind": "source_review_and_production",
+            "status": "pending",
+            "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+            "source_sha256": "80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71",
+            "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+            "role_set": "normalized,sections",
+            "gaps": [
+              {
+                "detail": "prompt_injection_status is not reviewed",
+                "gap": "review_required",
+                "observed": "not_reviewed",
+                "resolves_by": "run the approved review method for this source"
+              },
+              {
+                "detail": "no reusable markdown artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "markdown",
+                "resolves_by": "produce the markdown artifact, then retry"
+              },
+              {
+                "detail": "no reusable sections artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "sections",
+                "resolves_by": "produce the sections artifact, then retry"
+              },
+              {
+                "detail": "no reusable summary artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "summary",
+                "resolves_by": "produce the summary artifact, then retry"
+              }
+            ],
+            "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+            "attempts": 0,
+            "lease_owner": null,
+            "lease_until": null,
+            "created_at": 1789870694.6933897,
+            "updated_at": 1789870699.0854716,
+            "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+          },
+          {
+            "demand_id": "demand-bdf82dc9c11d4363",
+            "demand_key": "3286a02d485b0b3cf746b97ce1a7829a3b978f6bb2a79b862b774c4979e68b42",
+            "kind": "source_review_and_production",
+            "status": "pending",
+            "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+            "source_sha256": "d6820ddf55b9b4dbc4e5abbc9e8cbf5f4de5941fbdf29a1efa012f0cbb23f1b9",
+            "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+            "role_set": "normalized,sections",
+            "gaps": [
+              {
+                "detail": "prompt_injection_status is not reviewed",
+                "gap": "review_required",
+                "observed": "not_reviewed",
+                "resolves_by": "run the approved review method for this source"
+              },
+              {
+                "detail": "no reusable markdown artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "markdown",
+                "resolves_by": "produce the markdown artifact, then retry"
+              },
+              {
+                "detail": "no reusable sections artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "sections",
+                "resolves_by": "produce the sections artifact, then retry"
+              },
+              {
+                "detail": "no reusable summary artifact in the envelope bundle",
+                "gap": "artifact_missing",
+                "observed": "summary",
+                "resolves_by": "produce the summary artifact, then retry"
+              }
+            ],
+            "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+            "attempts": 0,
+            "lease_owner": null,
+            "lease_until": null,
+            "created_at": 1789870696.3846905,
+            "updated_at": 1789870696.3846905,
+            "candidate_marker": "candidate-unratified-I-06-A-a20260919-01"
+          }
+        ],
+        "store": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\processing_demands.sqlite3"
+      },
+      "stderr": "",
+      "stdout_encoding": "utf-8",
+      "stderr_encoding": "utf-8",
+      "log_dir": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\after\\query-logs\\c11-query-after-asof-change"
+    }
+  },
+  "request_hashes": {
+    "original": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+    "entity_and_asof_changed": "f3746e3bfb9a6968c15d9700883cf7dfe42692f1a3ca2c68ed8277f08bea2144",
+    "asof_only_changed": "4bddf9e6963e7d0474e754a89a1a184d8315b059410e98d34dd3e02375e10b84"
+  },
+  "store_rows_after": [
+    {
+      "demand_id": "demand-84179f79057143d4",
+      "demand_key": "7ed04c40c5aa20dc0cdfc1866fd164b3848a57c7f84b1e009e8a1b7f70447569",
+      "kind": "source_review_and_production",
+      "status": "pending",
+      "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+      "source_sha256": "80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71",
+      "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+      "role_set": "normalized,sections",
+      "gaps_json": "[{\"detail\": \"prompt_injection_status is not reviewed\", \"gap\": \"review_required\", \"observed\": \"not_reviewed\", \"resolves_by\": \"run the approved review method for this source\"}, {\"detail\": \"no reusable markdown artifact in the envelope bundle\", \"gap\": \"artifact_missing\", \"observed\": \"markdown\", \"resolves_by\": \"produce the markdown artifact, then retry\"}, {\"detail\": \"no reusable sections artifact in the envelope bundle\", \"gap\": \"artifact_missing\", \"observed\": \"sections\", \"resolves_by\": \"produce the sections artifact, then retry\"}, {\"detail\": \"no reusable summary artifact in the envelope bundle\", \"gap\": \"artifact_missing\", \"observed\": \"summary\", \"resolves_by\": \"produce the summary artifact, then retry\"}]",
+      "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+      "request_json": "{\"as_of_date\": \"2026-09-19\", \"document_kind\": \"annual_report\", \"entity\": \"翡翠矿业\"}",
+      "candidate_marker": "candidate-unratified-I-06-A-a20260919-01",
+      "attempts": 0,
+      "lease_owner": null,
+      "lease_until": null,
+      "created_at": 1789870694.6933897,
+      "updated_at": 1789870699.0854716
+    },
+    {
+      "demand_id": "demand-bdf82dc9c11d4363",
+      "demand_key": "3286a02d485b0b3cf746b97ce1a7829a3b978f6bb2a79b862b774c4979e68b42",
+      "kind": "source_review_and_production",
+      "status": "pending",
+      "source_id": "urn:cw:source:sha256:emerald-2025-annual",
+      "source_sha256": "d6820ddf55b9b4dbc4e5abbc9e8cbf5f4de5941fbdf29a1efa012f0cbb23f1b9",
+      "review_policy": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+      "role_set": "normalized,sections",
+      "gaps_json": "[{\"detail\": \"prompt_injection_status is not reviewed\", \"gap\": \"review_required\", \"observed\": \"not_reviewed\", \"resolves_by\": \"run the approved review method for this source\"}, {\"detail\": \"no reusable markdown artifact in the envelope bundle\", \"gap\": \"artifact_missing\", \"observed\": \"markdown\", \"resolves_by\": \"produce the markdown artifact, then retry\"}, {\"detail\": \"no reusable sections artifact in the envelope bundle\", \"gap\": \"artifact_missing\", \"observed\": \"sections\", \"resolves_by\": \"produce the sections artifact, then retry\"}, {\"detail\": \"no reusable summary artifact in the envelope bundle\", \"gap\": \"artifact_missing\", \"observed\": \"summary\", \"resolves_by\": \"produce the summary artifact, then retry\"}]",
+      "request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62",
+      "request_json": "{\"as_of_date\": \"2026-09-19\", \"document_kind\": \"annual_report\", \"entity\": \"翡翠矿业\"}",
+      "candidate_marker": "candidate-unratified-I-06-A-a20260919-01",
+      "attempts": 0,
+      "lease_owner": null,
+      "lease_until": null,
+      "created_at": 1789870696.3846905,
+      "updated_at": 1789870696.3846905
+    }
+  ],
+  "paused_after": {
+    "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\w06a\\a20260919-01\\candidate-after\\worker_control.json",
+    "exists": true,
+    "sha256": "8f58b5e13105c382666078a7a3a0fd770762f9c2e80d24febe32772f4845b7e3",
+    "bytes": "{\n  \"schema_version\": \"1.0\",\n  \"desired_state\": \"paused\",\n  \"updated_at\": \"2026-09-19T00:00:00Z\",\n  \"updated_by\": \"I-06-A/a20260919-01 fixture\"\n}"
+  },
+  "paused_unchanged": true
+}

@@ -1,4 +1,4 @@
-﻿"""Mutation self-check for one M-card attempt: prove the runner actually goes red.
+"""Mutation self-check for one M-card attempt: prove the runner actually goes red.
 
 The frozen evidence is NEVER modified. Every scenario runs the real
 ``scripts/run_card.py`` against a SCRATCH copy of the frozen input/oracle/cases placed in
@@ -108,6 +108,33 @@ def mutation_negative(scratch_evidence):
     return mutate
 
 
+def mutation_expected_name(scratch_evidence):
+    """F-01: rename the first case's declared expected type to a non-verdict name."""
+    def mutate(_):
+        path = os.path.join(scratch_evidence, "cases.json")
+        doc = load_json(path)
+        case = doc["cases"][0]
+        before = case.get("expected")
+        case["expected"] = "PythonBuiltinValueError"
+        dump_json(path, doc)
+        return ["cases.json:%s expected %r -> %r (a type this runner never counts as a refusal "
+                "verdict)" % (case["id"], before, case["expected"])]
+    return mutate
+
+
+def mutation_drop_case(scratch_evidence):
+    """F-01: delete a whole negative case so the case set no longer matches the oracle."""
+    def mutate(_):
+        path = os.path.join(scratch_evidence, "cases.json")
+        doc = load_json(path)
+        dropped = doc["cases"].pop()
+        dump_json(path, doc)
+        return ["cases.json: dropped case %s (case count %d -> %d while oracle.json still "
+                "declares %d)" % (dropped["id"], len(doc["cases"]) + 1, len(doc["cases"]),
+                                  len(doc["cases"]) + 1)]
+    return mutate
+
+
 def run_child(venv_python, run_card, scratch_root, card, code_root, out_path, stdout_path,
               stderr_path):
     argv = [venv_python, "-X", "utf8", "-B", run_card,
@@ -131,6 +158,7 @@ def main() -> int:
     attempt = os.path.abspath(args.attempt)
     evidence = os.path.join(attempt, "evidence", args.card)
     run_card = os.path.join(attempt, "scripts", "run_card.py")
+    before_f01_runner = os.path.join(attempt, "recovery", "runner_before_F01_fix.py")
     scratch_root = os.path.join(attempt, "recovery", "selfcheck")
     scratch_evidence = os.path.join(scratch_root, "evidence", args.card)
     os.makedirs(scratch_root, exist_ok=True)
@@ -140,29 +168,47 @@ def main() -> int:
     hashes_before = hash_frozen(evidence, args.card)
 
     scenarios = [
-        ("C-control", None, 0, "frozen copies verbatim"),
-        ("A-corrupt-value", mutation_value(scratch_evidence), 2,
+        ("C-control", None, 0, "current", "frozen copies verbatim"),
+        ("A-corrupt-value", mutation_value(scratch_evidence), 2, "current",
          "corrupted positive expected value must not be able to hide behind a passing rc"),
-        ("F-corrupt-shape", mutation_shape(scratch_evidence), 2,
+        ("F-corrupt-shape", mutation_shape(scratch_evidence), 2, "current",
          "corrupted expected output length must be caught by the fidelity check"),
-        ("D-missing-expectation", mutation_missing(scratch_evidence), 2,
+        ("D-missing-expectation", mutation_missing(scratch_evidence), 2, "current",
          "a missing expectation yields no verdict, never a pass"),
-        ("B-corrupt-negative-case", mutation_negative(scratch_evidence), 3,
+        ("B-corrupt-negative-case", mutation_negative(scratch_evidence), 3, "current",
          "a negative case that is no longer refused must produce rc=3"),
-        ("E-harness-error", None, 1,
+        ("E-harness-error", None, 1, "current",
          "an unusable --code-root is a harness error, not a case failure"),
+        ("G-corrupt-case-expected", mutation_expected_name(scratch_evidence), 2, "current",
+         "F-01: a case whose declared expected type is renamed must yield rc=2, never a silent "
+         "rc=0 pass"),
+        ("H-drop-negative-case", mutation_drop_case(scratch_evidence), 2, "current",
+         "F-01: dropping a whole negative case (11 -> 10 against a frozen oracle that still "
+         "declares 11) must yield rc=2, never a silent rc=0 pass"),
+        ("G-pre-fix-runner-corrupt-case-expected", mutation_expected_name(scratch_evidence), 0,
+         "before_f01",
+         "F-01 defect demonstration: the pre-fix runner revision (sha256 e709408f...) returned "
+         "rc=0 on the same corrupted scratch copy, which is exactly the defect the independent "
+         "review reported"),
+        ("H-pre-fix-runner-drop-negative-case", mutation_drop_case(scratch_evidence), 0,
+         "before_f01",
+         "F-01 defect demonstration: the pre-fix runner revision returned rc=0 with a negative "
+         "case deleted"),
     ]
 
     results = []
-    for name, mutate, expected_rc, purpose in scenarios:
+    for name, mutate, expected_rc, runner_revision, purpose in scenarios:
         notes = prepare_scratch(scratch_evidence, evidence, mutate)
         code_root = args.code_root
+        runner_path = run_card if runner_revision == "current" else before_f01_runner
+        if runner_revision == "before_f01" and not os.path.isfile(runner_path):
+            raise SystemExit("missing pre-fix runner revision: " + runner_path)
         if name == "E-harness-error":
             code_root = os.path.join(attempt, "iso", "does_not_exist_on_purpose")
         out_path = os.path.join(scratch_root, "run_result_%s.json" % name)
         stdout_path = os.path.join(scratch_root, "stdout_%s.txt" % name)
         stderr_path = os.path.join(scratch_root, "stderr_%s.txt" % name)
-        raw_rc, argv = run_child(args.venv_python, run_card, scratch_root, args.card, code_root,
+        raw_rc, argv = run_child(args.venv_python, runner_path, scratch_root, args.card, code_root,
                                  out_path, stdout_path, stderr_path)
         triggered = None
         if os.path.isfile(out_path):
@@ -171,6 +217,9 @@ def main() -> int:
         results.append({
             "scenario": name,
             "purpose": purpose,
+            "runner_revision": runner_revision,
+            "runner_path": os.path.relpath(runner_path, attempt).replace("\\", "/"),
+            "runner_sha256": sha256_file(runner_path),
             "mutations_applied_to_the_scratch_copy": notes,
             "argv": argv,
             "raw_rc": raw_rc,
@@ -186,14 +235,28 @@ def main() -> int:
     unchanged = (hashes_before == hashes_after)
     matches_freeze_time = (hashes_after == freeze_time_hashes)
 
+    matrix = {}
+    for entry in results:
+        matrix.setdefault(str(entry["raw_rc"]), []).append(entry["scenario"])
+    current_rcs = sorted(set(entry["raw_rc"] for entry in results
+                             if entry["runner_revision"] == "current"))
+
     doc = {
         "card_id": args.card,
         "attempt_id": os.path.basename(attempt),
         "purpose": "prove that the verdict-carrying runner really turns red under a corrupted "
-                   "expectation or a negative case that is no longer refused, and that the "
-                   "frozen oracle was not touched while doing so",
+                   "expectation, a corrupted expectation DECLARATION (F-01) or a negative case "
+                   "that is no longer refused, and that the frozen oracle was not touched while "
+                   "doing so",
         "runner": os.path.relpath(run_card, attempt).replace("\\", "/"),
         "runner_sha256": sha256_file(run_card),
+        "pre_fix_runner_revision": {
+            "path": "recovery/runner_before_F01_fix.py",
+            "sha256": sha256_file(before_f01_runner) if os.path.isfile(before_f01_runner) else None,
+            "kept_because": "the F-01 defect (a case's declared expected type, or a whole missing "
+                            "negative case, did not affect the verdict) is demonstrated by running "
+                            "this pre-fix revision on the same corrupted scratch copy",
+        },
         "scratch_root": os.path.relpath(scratch_root, attempt).replace("\\", "/"),
         "frozen_evidence_never_modified_by_this_script": True,
         "frozen_hashes_before_selfcheck": hashes_before,
@@ -202,6 +265,10 @@ def main() -> int:
         "frozen_unchanged_by_the_selfcheck": unchanged,
         "frozen_still_equals_freeze_time_hashes": matches_freeze_time,
         "scenarios": results,
+        "exit_code_matrix": matrix,
+        "exit_code_matrix_scope": "all scenarios, including the two pre-fix-runner defect "
+                                  "demonstrations whose expected rc is 0",
+        "current_runner_observed_rc_set": current_rcs,
         "all_expected_rcs_observed": all(r["rc_as_expected"] for r in results),
         "observed_rc_set": sorted(set(r["raw_rc"] for r in results)),
         "completed_at_unix": time.time(),
@@ -211,9 +278,10 @@ def main() -> int:
     dump_json(out, doc)
 
     for entry in results:
-        print("scenario %-24s raw_rc=%s expected_rc=%s ok=%s triggered=%s"
-              % (entry["scenario"], entry["raw_rc"], entry["expected_rc"],
+        print("scenario %-40s runner=%-11s raw_rc=%s expected_rc=%s ok=%s triggered=%s"
+              % (entry["scenario"], entry["runner_revision"], entry["raw_rc"], entry["expected_rc"],
                  entry["rc_as_expected"], entry["triggered_conditions"]))
+    print("exit_code_matrix: %s" % matrix)
     print("frozen unchanged by selfcheck: %s" % unchanged)
     print("frozen still equals freeze-time hashes: %s" % matches_freeze_time)
     print("all expected rcs observed: %s" % doc["all_expected_rcs_observed"])

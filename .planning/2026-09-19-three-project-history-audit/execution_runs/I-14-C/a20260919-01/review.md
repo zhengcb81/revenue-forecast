@@ -5,10 +5,450 @@
 > A separate session must independently re-derive at least one oracle value and attack the
 > cases listed under "reviewer: attack first". The implementer has not signed this card.
 >
-> **r2 status: `changes_required` items addressed; still PENDING independent review.**
-> The r1 implementation was withdrawn by the reviewer (product tree restored to HEAD); the
-> fix now lives only in `iso/product_fixed` + `r2-changes.diff`. See "## r2" below for the
-> per-item disposition with file:line.
+> **r2 status (legacy note):** the original r2 review returned `changes_required`; those items
+> were addressed, then superseded by r3 and r4. Kept only so the history stays readable.
+
+> **r4 status: F-I14C-08 fixed and the missing output-fidelity criterion is now in place;
+> still PENDING independent review.** The r3 tree duplicated the key in the output
+> (`tokentoken=<redacted>`). The fix and the exact-output assertions live in the r4 tree
+> `iso/product_fixed` (hashes in `r4/final_hashes.json`); the r3 tree is preserved as the
+> specimen `iso/product_r3/` so the new criterion can be shown to catch it, and the r2 tree
+> as `iso/product_r2/`. The r1 after-tree remains withdrawn.
+>
+> **r3 status (superseded):** F-I14C-07 fixed; the r2 tree is superseded and its numbers are
+> kept only for the regression comparison.
+>
+> **r2 status (superseded):** the r1 `changes_required` items were addressed at the time.
+> The r1 implementation was withdrawn by the reviewer (product tree restored to HEAD); from
+> r2 onward the fix exists only under `iso/`.
+
+> **r5 status: all six r5 action items closed; still PENDING independent review.**
+> The r4 review returned `changes_required` for a narrow scope and stated that **F-I14C-08
+> itself can be closed** (its basis is recorded below and in `handoff.json`). Every number in
+> this section comes from `r5/counts.json` or a captured command output; the r1/r2/r3/r4
+> trees remain as specimens. The r4 review's own "unable to verify" list is answered in
+> "r5 — what the reviewer could not verify" below, including the two items this round changed
+> so that they CAN be verified next time.
+
+## r5 — disposition of the r4 review findings
+
+### F-I14C-R4-01 (P3, pair count wrong in five places) — FIXED, mechanically
+
+`harness/report_counts.py` now derives every reportable number from the artefacts themselves
+and writes `r5/counts.json`: rule table **44** entries (32 credential / 9 untouched /
+3 residual), diagnostic corpus **30**, `FIDELITY_CASES` **28**, `exact_nodeids` **28**, total
+collected **82** — the two independently derived pair counts agree, and the script exits 3 if
+they ever disagree. The wrong "23" is corrected in all five places
+(`harness/tests/test_i14c_real_exit_redaction.py:219` block → points at `counts.json`,
+`review.md:76`, `decision.md:114`, `handoff.json:8/103`, `commands.json`
+`CMD-I14C-R4-SUITE.purpose`), each with a note that r4's own value was 24 and r5's is 28.
+My first r5 draft of the C13 test also hard-coded the reviewer's `112` against this attempt's
+shorter marker and went red — same failure mode, now replaced by computed lengths.
+
+### F-I14C-R4-02 (P2, C13 understated by ~an order of magnitude) — FIXED
+
+Reproduced independently with this attempt's marker and with the reviewer's:
+`'upload failed for token=<marker> doc=17\nstage=summarize code=llm_global_failure
+request_id=req-1'` → `'upload failed for token=<redacted>'`; the reviewer's 24-char marker
+gives exactly **112 chars in, 34 out**, and `doc=17`, `stage=summarize`,
+`code=llm_global_failure`, `request_id=req-1` are all gone. The cause is the value's stop set
+(`,;&"'|` + whitespace): an unquoted value **crosses the newline** and keeps consuming. It is
+not truncation (34 ≪ 200) and **not introduced by r3/r4** — `iso/product_r2` behaves the same.
+
+- The consequence text is corrected in four places: `oracle.md` §R5 addendum, the carries
+  list in this file (C13), `decision.md` D3-r4/D4-r5, and `handoff.json` `open_questions` +
+  `r4_disposition.C13`.
+- The blind direction is closed with explicit expectations frozen as CURRENT behaviour:
+  rule table `cred-multiline-swallow`, `cred-multiline-stopped-by-semicolon`,
+  `cred-multiline-then-key`; diagnostic corpus `cred-multiline-swallow` plus
+  `diag-multiline-no-credential`; `FIDELITY_CASES` gains three multi-line pairs (the swallow,
+  the `;`-protected tail, and the plain `token=<marker>\nnext=1` case) and one untouched
+  multi-line diagnostic. `test_f08_c13_multiline_loss_is_frozen_not_hidden` asserts the loss
+  explicitly (and would go red if the behaviour changed without the text being updated).
+- No code change was needed and **E4b's 193 baseline is untouched** (the greedy value is what
+  produces it), as the reviewer required.
+
+### F-I14C-R4-03 (P3, flake claims unverifiable) — FIXED, and the retracted claim replaced
+
+`harness/run_flake_evidence.py` now writes stdout, the raw return code and a verdict per run.
+The captured result **contradicts** the r4 sentence, which is therefore retracted:
+
+| node | basetemp | T0 pristine | T4 fixed |
+|---|---|---|---|
+| `child_without_runtime_session...` | deep attempt path (`r5/flake-evidence/...`, cwd ≈167 chars) | **failed 3/3** | **failed 3/3** |
+| `logon_wrapper_detaches_a_live_supervisor_with_quoted_paths` | same | **failed 3/3** | **failed 3/3** |
+| both nodes | short basetemp (`%TEMP%\i14c-flake-short\...`) | **6/6 passed** | **4/6 passed** |
+
+Captured failure text: deep path → `WinError 206 文件名或扩展名太长` (path too long) and a
+downstream `FileNotFoundError` for `worker_launcher_events.jsonl`; short basetemp → T4
+`child_without_runtime` runs 1 and 2 fail on
+`assert len([e for e in events if e["status"] == "child_started"]) == 2` with **`assert 3 == 2`**
+(a third `child_started` event, i.e. the supervisor restarted the child once more) and run 3
+passes.
+
+The 2-of-3 asymmetry is noise, and r5 measured it instead of reporting it as a finding. A first
+frequency pass (`harness/run_flake_frequency.py`, 12 runs per tree, short basetemp
+`%TEMP%\i14c-flake-freq`) gave T0 6/12 failed vs T4 5/12; an immediate re-run of the same command
+gave T0 0/12 vs T4 7/12. Because that first version ran all T0 runs and then all T4 runs, a
+change in machine load mid-pass could masquerade as a tree difference, so the script now
+**interleaves** (one T0 run, one T4 run, repeating) and reports each pass separately:
+
+| pass | T0 pristine | T4 fixed |
+|---|---|---|
+| pass 1 (12 runs each, interleaved) | 6/12 failed | 2/12 failed |
+| pass 2 (12 runs each, interleaved) | 2/12 failed | 4/12 failed |
+| pooled (24 runs each) | **8/24 failed** | **6/24 failed** |
+
+Every failure is the same `assert 3 == 2` on `child_started`, and **the tree with more failures
+flips between passes** — which is what a noise-dominated ~30 % flake looks like. So the node is
+timing-flaky in the product's own test at roughly that rate on both trees, and the card cannot
+have caused it: the only `worker.py` hunks in this diff are the `observability` import line and
+`_write_unhandled_exception_event` (see `r5-changes.diff`), neither of which is on that node's
+path. Evidence: `r5/flake-evidence/summary.json` and
+`r5/flake-evidence/frequency-child_without_runtime.json`.
+
+### The compat suite does not fail with a stable set either — the criterion is the union
+
+r4's compat control claimed "both trees: 4 failed / 27 passed with the IDENTICAL failure set".
+r5 re-ran the same suite five times (twice on T0, twice on T4, plus the plain delivered run) and
+the failing **count** was 3, 4, 4, 5, 5, because two restart nodes are timing-flaky. Per-run set
+identity is therefore the wrong criterion, and r4's claim is not reproducible as stated. The
+criterion that survives flakiness is **set equality of the unions**, computed mechanically by
+`harness/analyze_compat_control.py` (`r5/compat-control-analysis.json`):
+
+| run | failing node ids |
+|---|---|
+| T0-1 (4) | `read_desired_state…`, `stderr_exit_zero…`, `stale_child_heartbeat…`, `logon_wrapper…quoted_paths` |
+| T0-2 (5) | the same four **plus** `child_without_runtime…` |
+| T4-1 (4) | `read_desired_state…`, `stderr_exit_zero…`, `stale_child_heartbeat…`, `logon_wrapper…quoted_paths` |
+| T4-2 (5) | the same four **plus** `child_without_runtime…` |
+| T4 plain (3) | `read_desired_state…`, `stderr_exit_zero…`, `stale_child_heartbeat…` |
+
+**Union T0 == Union T4 (5 node ids), `only_on_T4` empty**: every node that fails on the fixed
+tree also fails on the pristine tree, and three of them fail in *every* run. Two of the five are
+the restart-timing nodes above and one is the path-length node, i.e. the same environment
+classes as the flake family. No compat failure is attributable to this card.
+
+### F-I14C-R4-04 (P3, patch not consumable) — FIXED and verified by `git apply`
+
+`harness/make_posix_diff.py` now produces the patch the way git itself would (scratch repo,
+`core.autocrlf=false`), giving `--- a/src/...` / `+++ b/src/...` with no backslashes:
+`r5-changes.diff`, 6 hunks, 15,083 bytes. Verified: `git apply --check -p1` and
+`git apply -p1` inside a scratch repo return 0 and the three files become **byte-identical**
+to `iso/product_fixed` (`r5/git_apply_verification.json`, `GIT_APPLY_REPRODUCES_T4 true`).
+Note for the reviewer: `git apply` outside a repository reports "Skipped patch" for these
+files (whitespace/non-repo handling); run it inside a repo or with `git apply --directory`.
+One prerequisite was found and fixed: `iso/product_fixed/.../observability.py` was LF while its
+pristine counterpart is CRLF, which made the patch a whole-file rewrite; normalising the line
+endings reduced it to a single hunk. Only that file was affected, and the content is unchanged
+(the post-normalisation suite is still 82 passed).
+
+### F-I14C-R4-05 (P3, diagnostic table had no helper fallback) — FIXED
+
+`run_diagnostic_table.py` now mirrors `run_rule_table.py`: a missing helper writes
+`helper_present: false`, `verdict: cannot_adjudicate` and exits **2**. Verified on the pristine
+tree: diagnostics on `iso/product` → rc=2, `helper_present false` (no traceback).
+
+### F-I14C-R4-06 (P3, exit-code drift) — FIXED by adopting the `run_card.py` convention
+
+Both tables now use `0 = pass`, `2 = cannot adjudicate` (helper absent), `3 = negative verdict`
+(fidelity failure, credential leak, or a NEW over-redaction). Registered over-redaction
+(`known_over_redaction`) is what the diagnostic table measures and does not by itself make the
+verdict negative. Re-run results:
+
+| tree | rule rc | diag rc | note |
+|---|---|---|---|
+| T0 pristine | 2 | 2 | helper absent |
+| T1 (r1) | **3** | **3** | 11 leaks / 4 leaks |
+| T2 (r2) | 0 | 0 | pass |
+| T3 (r3 specimen) | **3** | **3** | 0 leaks, 27 / 13 fidelity failures |
+| T4 (r5) | 0 | 0 | pass |
+
+### F-I14C-R4-07 (P3, hash snapshot gaps) — FIXED
+
+`r5/final_hashes.json` restores the attempt-directory porcelain summary (both the entry set and
+a per-directory roll-up) and adds hashes for `iso/product_r3` (the r3 comparison tree) and for
+the `iso/venv` evidence (`python.exe`, `pyvenv.cfg`, the three installed distributions'
+`RECORD` files and a `pip list` capture) so the binding's `pytest==9.1.1` / `pyyaml==6.0.3` /
+`requests==2.34.2` claims are checkable.
+
+### F-I14C-08 — CLOSED (the r4 review's own basis, recorded as required)
+
+`handoff.json` records: **closed on the strength of the independent review's mutation proof and
+its self-chosen marker reproduction**, not on the implementer's summary. The reviewer
+independently reproduced `token=<their own marker>` → `tokentoken=<redacted>` on
+`iso/product_r3` and → `token=<redacted>` on the fixed tree; injected the defect into a
+byte-copy of the fixed tree and observed both tables exit negative (2 under the old scheme)
+with 24 / 12 fidelity failures while `credential_leaks` stayed **0** — i.e. the criterion, not
+the old leak check, is what catches it. This attempt did not re-litigate that; it only
+re-ran the same tables on the line-ending-normalised tree (27 / 13 failures, still 0 leaks).
+
+### r5 — what the reviewer could not verify, and what changed to fix that
+
+| reviewer item | r5 action |
+|---|---|
+| #1 the 17 subprocess-backed cases could not be run outside `execution_runs` (driver refused with 97) | **fixed**: the guard now refuses product paths unconditionally and otherwise accepts a declared scratch root; the test helpers declare the pytest basetemp, so **the full 82-case suite runs from `%TEMP%` with no env var at all** (`r5/cmd-r5-outside-execution-runs.txt`, 82 passed). Refusals re-tested: product src, `.source_catalog`, revenue-forecast outside `.planning`, undeclared TEMP → 97 each; declared TEMP + product path → 97 |
+| #2 flake conclusions unverifiable | **fixed**: `r5/flake-evidence/` with per-run stdout/rc/verdict, and the r4 claim retracted |
+| #3 34/20/193 baselines not re-run | still only self-produced; the probe evidence is now `r5/probe_results_r5-after.json` and the lengths are re-derived on the normalised tree |
+| #4 other bench shapes not re-computed | unchanged; the reviewer's one-shape spot check agreed with the order of magnitude |
+| #5 `2f5c5740…` provenance | stays "untraceable" (F-I14C-04) |
+| #6 `iso/product_r3` provenance | unchanged; it is now additionally hashed in `r5/final_hashes.json` |
+| #7 controlled cwd scan | partially addressed: the flake evidence captures the deep-vs-short basetemp comparison on both trees |
+| #8 venv contents unverified | **fixed**: venv evidence added to `r5/final_hashes.json` |
+| #9 no product-side timeout wrapper exists | unchanged by design; C12 remains a hard precondition (C9: the test is not promoted) |
+
+## r4 — disposition of the r3 review findings
+
+### F-I14C-08 (P1, new in r3) — FIXED, and the process gap that allowed it is closed
+
+- **Root cause** confirmed exactly as reported:
+  `iso/product_fixed/src/company_wiki/source_catalog/observability.py:378` (r3 numbering)
+  appended `text[cursor:index]` **after** the character loop had already emitted the key, so
+  the key appeared twice. Removed; the loop now emits only the separator, the whitespace after
+  it and `REDACT` (the code comment names F-I14C-08 so it cannot silently return).
+  The specimen `iso/product_r3/` reproduces the reported outputs verbatim
+  (`token=` → `tokentoken=<redacted>`, `GITHUB_TOKEN=` → `GITHUB_TOKENGITHUB_TOKEN=<redacted>`,
+  `password: '…'` → `passwordpassword: <redacted>`, `db.passwd=` → `db.passwdpasswd=<redacted>`).
+- **The real defect was my criterion, not only the code.** Every r2/r3 check asked only "is
+  the marker gone?" / "did the text change?", so a mangled key passed:
+  `rule_table` 0 leaks, `diagnostics` 0 over-redaction, 50 suite tests green, E5a stderr 0 hits.
+  Now both tables and the suite pin an **exact expected output per entry**, and the table
+  scripts **exit 2** on any fidelity failure, so "0 leaks" can no longer be reported without
+  also passing fidelity:
+
+  | tree | rule table rc | credential leaks | fidelity failures |
+  |---|---|---|---|
+  | T0 pristine | 0 (helper absent — reported as such, not as a leak) | n/a | n/a |
+  | T1 (r1) | **2** | 11 | 11 |
+  | T2 (r2) | 0 | 0 | 0 |
+  | **T3 (r3, duplicate key)** | **2** | **0** | **24** |
+  | **T4 (r4, the fix)** | **0** | **0** | **0** |
+
+  The 41-entry fidelity table is the evidence that the new criterion is load-bearing: the r3
+  specimen shows `0 leaks` **and** 24 fidelity failures, i.e. exactly the blindness the
+  reviewer identified.
+- **Diagnostic table** (`run_diagnostic_table.py`, now also fidelity-checked, rc 2 on any
+  mismatch) with the four C11 over-redactions classified as `known_over_redaction`
+  (expected = the measured redacted form) and a `new_over_redaction` list for strict
+  diagnostic entries:
+
+  | tree | rc | leaks | known over-redacted | NEW over-redaction | fidelity |
+  |---|---|---|---|---|---|
+  | T1 (r1) | 2 | 4 | 3 | 0 | 5 failures |
+  | T2 (r2) | 0 | 0 | 4 | 0 | OK |
+  | T3 (r3 spec.) | 2 | 0 | 4 | 0 | 12 failures |
+  | T4 (r4) | 0 | 0 | 4 | 0 | OK |
+- **Baselines restored at the real exits** (`r4/probe_results_r4-after.json`):
+
+  | case | r2 | r3 (defect) | **r4** |
+  |---|---|---|---|
+  | E2b `message_redacted` | `upload failed for token=<redacted>` (34) | `…tokentoken=<redacted>` (39) | **`upload failed for token=<redacted>` (34)** |
+  | E4a | `password: <redacted>` (20) | `passwordpassword: <redacted>` (28) | **`password: <redacted>` (20)** |
+  | E4b | len 193 | len 198 | **len 193** |
+
+  and E5a's envelope again identifies the file: `…\config\token=<redacted>'` with no
+  `tokentoken` (`r4/cli-r4-E5a/stderr.txt`), stderr marker hits 0, `catalogs_created == []`.
+- **New tests**: `test_f08_output_fidelity_exact` (**24** exact pairs at r4 — corrected here by
+  F-I14C-R4-01 from the "23" this line used to say; r5 extends the block to 28, see
+  `r5/counts.json`),
+  `test_f08_persisted_event_keeps_the_key_verbatim` (event string + the 34 length),
+  `test_f08_e5a_envelope_still_identifies_the_config_file`
+  (`harness/tests/test_i14c_real_exit_redaction.py:218-292`). Suite on r4: **76 passed**
+  (was 50).
+
+### C12 raised from advice to a hard precondition (reviewer item 4)
+
+The reviewer's independent runs hung twice on `-k f07` against `iso/product_r2` (>90 s, then
+>300 s killed), reproducing what this attempt measured (>60 s, killed). Confirmed consequence:
+the 5 s assertion fires only **after** `redact_text` returns, so a blocking implementation
+hangs the session instead of failing.
+
+**Hard precondition for promotion** (not a recommendation): the promoted test MUST add
+`pytest-timeout` with a per-test cap, or run the call in a subprocess with a hard timeout, so a
+super-linear regressor produces a FAILURE. Until then the case stays in the harness, where
+`harness/bench_redact.py` (20 s per-case subprocess cap) is the discriminator.
+
+### C13 registered (found by the new fidelity table itself)
+
+`"a=1 token=<marker> b=2"` → `a=1 token=<redacted>`: the value is the whole space/tab
+separated run, not one token — the r1 `_BARE_VALUE` semantics (`X+(?:\s+X+)*`), which the
+scanner reproduces. Consequence: **prose after a credential on the same line is redacted too**
+(diagnostic loss, not a leak).
+
+- **Kept deliberately**, for two reasons: (a) the reviewer's E4b acceptance number (193) is
+  computed from that greedy behaviour, and (b) a quoted value already takes precedence and real
+  credential values do not contain spaces.
+- Narrowing it to a single token would change the E4b baseline and the observable envelope
+  width, so it needs its own oracle; registered rather than changed. Frozen in the tables as
+  `cred-line-middle-greedy-value` (expected `a=1 token=<redacted>`) plus
+  `cred-line-middle-trailing-punct` (`…; b=2` survives, because `;` is a value delimiter).
+
+### Carries C1–C12 retained; C8/C10/C11 unchanged (reviewer item 5)
+
+C8's corrected reason stands; C10 (JSON quoted-key) and C11 (4 over-redactions incl. the
+r2-new `pwd=`) are unchanged and still measured. C12 is now a promotion precondition and C13
+is new.
+
+### Reviewer item 6 — semantics do not need reverting
+
+The reviewer compared r2 and r3 on five shapes and found the redaction verdicts identical, with
+every observable difference caused by the duplicate-key defect. r4 keeps the scanner (no
+revert) and re-freezes it **with the fidelity assertions**, which is the basis the reviewer
+asked for to distinguish "improved" from "broken": T2 and T4 are fidelity-clean and leak-free;
+T3 is red on fidelity only; T1 is red on leaks.
+
+### Reviewer item 7 — workspace-level footprint attribution (recorded)
+
+`catalog.sqlite3-shm` was touched at **02:33:45** and **03:08:06**; both are attributed to
+**concurrently running other cards** (I-04-C / I-05-A / I-07-A / I-08-B / M05–M08), **not to
+I-14-C**, and no write was committed. Measured state after all r4 work:
+
+| artifact | value |
+|---|---|
+| `catalog.sqlite3` | 49,677,344,768 bytes, mtime 2026-09-19T06:31:35.406919Z (pre-dates every shm touch → no write since) |
+| `catalog.sqlite3-wal` | 0 bytes (no uncommitted transaction) |
+| `catalog.sqlite3-shm` | 32,768 bytes, mtime 2026-09-20T02:25:33.257649Z (another concurrent touch; the 02:33:45 / 03:08:06 entries are the reviewer's observations) |
+| `worker_control.json` | sha256 `9fcbe233efe76222a32316c07b9273b9c5128da3af6db27d706b1759680ac7bd` (unchanged, `desired_state: paused`) |
+
+I-14-C's own r4 runs never open a production catalog: every run's `result.json` records
+`catalogs_created == []`, and the E5 harness fails at config resolution inside the attempt dir.
+
+### Product contract tests on r4 — the failure set is environment-dependent, not card-caused
+
+Full-file compat runs (worker bootstrap + observability, against `iso/product_fixed/src`):
+
+| tree | runs | result |
+|---|---|---|
+| T0 pristine | 2 | 4 failed / 27 passed — {read_desired_state, stderr_exit_zero, stale_child_heartbeat, logon_wrapper_quoted_paths} |
+| T4 (r4) | 2 | **4 failed / 27 passed — the identical set** |
+
+The fourth entry (`test_logon_wrapper_detaches_a_live_supervisor_with_quoted_paths`) is
+**cwd-dependent**: it passes in some cwds (the r2/r3 compat runs) and fails in others, and it
+fails identically on the pristine tree, so it is not caused by this card. The observability
+tests pass in every run. Evidence: `r4/compat-control-*`.
+
+## r3 — disposition of the r2 review findings
+
+The r2 review confirmed F-I14C-02/03/04/05/06 closed and opened one new P2 regression.
+
+### F-I14C-07 (P2, new regression) — FIXED, with the design chosen by measurement
+
+- **Regression reproduced** (`r3/bench_T2-r2-regressed.json` via `harness/bench_redact.py`,
+  20 s per-case subprocess cap). The regressed r2 tree is preserved as the specimen
+  `iso/product_r2/` (observability.py `af0a90a1…`). Seconds, r1 control included:
+
+  | shape | k | T1 (r1) | T2 (r2 nested star) | **T3 (r3 scanner)** |
+  |---|---|---|---|---|
+  | `"a_"*k+"="` | 200 | 0.0000 | 0.0036 | **0.0001** |
+  | " | 500 | 0.0000 | 0.0266 | **0.0006** |
+  | " | 1000 | 0.0001 | 0.0873 | **0.0007** |
+  | " | 2000 | 0.0001 | 0.3551 | **0.0014** |
+  | " | 4000 | 0.0003 | 1.4784 | **0.0026** |
+  | " | 8000 | 0.0008 | 10.5557 | **0.0054** |
+  | " | 16000 | 0.0011 | **TIMEOUT** | **0.0103** |
+  | " | 40000 | 0.0028 | **TIMEOUT** | **0.0253** |
+  | `"a-"*k+"="` | 40000 | 0.0128 | TIMEOUT | **0.0271** |
+  | `("a_"*k)[:-1]` (no separator) | 40000 | 0.0027 | TIMEOUT | **0.0108** |
+  | `("a_"*k)+'="'+b*200` | 40000 | 0.0028 | TIMEOUT | **0.0255** |
+  | `"k="*k` | 40000 | 0.0128 | 0.0120 | **0.0619** |
+  | `"authorization: "*k` | 40000 | 0.0217 | 0.0159 | **0.0191** |
+  | `"bearer "*k` | 40000 | 0.0171 | 0.0156 | **0.0146** |
+
+  Full 10-shape × 8-k matrix: `r3/timing_three_way.json`. r2 grows ~×4 per doubling and hits
+  the cap at 16000 on four shapes; r3 is linear, worst case 0.0619 s at k=40000.
+- **Choice and why — option (a) as literally worded does NOT fix it, measured**:
+  `r3/variants.json` compares four implementations on the same shapes.
+  `A1-candidate+python` (`[A-Za-z0-9_-]+` + Python validation) is **also quadratic**
+  (8000 → 2.66 s, 16000/40000 → TIMEOUT) because the key quantifier still backtracks once
+  per start position when the value cannot match. `B-bounded` (`{0,8}`) is linear
+  (40000 → 0.065 s) but silently stops covering keys with more than 8 qualifier segments — a
+  coverage cliff in a security path. Option (c) leaves the regex super-linear just below any
+  cap and changes what is redacted for over-cap input. **Chosen: a single-pass scanner**
+  (`A2-scanner`), linear on every shape.
+- **Implementation**: `iso/product_fixed/src/company_wiki/source_catalog/observability.py` —
+  `_redact_assignments()` (~line 330) visits each `:`/`=` once, walks back over the key, and
+  validates with `key_is_credential()` (~line 246) against `_SINGLE_ATOMS` (~206) /
+  `_PAIR_ATOMS` (~220); `_find_closing_quote()` (~404) preserves the quoted-value semantics.
+  The `authorization`/`bearer` pattern stays a regex because its keys are fixed literals with
+  no nesting over the key, and its cost is in the table above.
+- **Declared behavioural change** (not requested; measured as an improvement): a rejected key
+  no longer consumes the whole `key=value` span, so a later genuine pair is still redacted
+  (`url=https://x?token=…`, `cmd: --token=…`). Frozen in
+  `test_f07_rejected_key_does_not_swallow_a_later_pair`
+  (`harness/tests/test_i14c_real_exit_redaction.py:203-215`) together with the unchanged
+  cases (`url=…?page=2`, `digest=<marker>`).
+- **New cases** (`harness/tests/test_i14c_real_exit_redaction.py:172-201`): k=1000/2000/40000
+  over four adversarial shapes with a 5.0 s deadline, asserting the text is unchanged, plus
+  `test_f07_auth_regex_path_stays_linear` at k=20000. The deadline is a regression detector
+  (r3 worst case 0.062 s vs r2 >20 s), not a service objective — recorded in `oracle.md`
+  § R3 addendum.
+- **The new case can actually go red** — demonstrated, not asserted: running only
+  `test_f07_long_separator_run_finishes_within_the_deadline` against the regressed tree
+  (`I14C_PRODUCT_SRC=iso/product_r2/src`) was **still running after 60 s and had to be
+  killed** (`r3/cmd-f07-vs-r2/stdout.txt`).
+  **Honest limitation of that case**: the 5 s assertion fires only *after* `redact_text`
+  returns, so a full hang presents as a hung test session rather than a clean failure. The
+  subprocess-capped `harness/bench_redact.py` is therefore the real discriminator, and if
+  this test is promoted into the product repo it should wrap the call in a
+  subprocess/timeout (or add `pytest-timeout`) so it fails fast. Recorded as carry **C12**.
+
+### Regression check on r3 (nothing self-harmed)
+
+| check | result |
+|---|---|
+| rule table (20 positives + 8 guards), `run_rule_table.py` | rc=0, **0 leaks, 0 over-redaction** |
+| full suite, `pytest harness/tests/test_i14c_real_exit_redaction.py` | **rc=0, 50 passed** |
+| probe per file, `run_exit_probe.py --label r3-after` | E1/E2a/E2a-deep/E2b/E3/**E4a**/**E4b**/E1-no-cli = 0/0/0; E2b-residual 1/1 by design |
+| **E5a** real CLI, `run_real_cli_exit.py --shape E5a` | rc=1, `stderr hits 0`, envelope, `traceback False`, `catalogs_created 0` |
+| E5b / E5c | unchanged carries (1 hit each, as declared) |
+| E4a order-swap control | still leaks → R3 remains load-bearing |
+| product contract tests on `iso/product_fixed/src` | 28 passed / 3 failed — the same 3 pre-existing failures |
+
+### C8 reason corrected (reviewer item 1)
+
+The r2 reason ("widening to whitespace would redact `token expired for doc-1`") was
+**wrong**: `r3/diagnostics_product_r1.json` and `…_product_fixed.json` show the colon-less
+form is unchanged in **both** trees; what is redacted is `token: expired`, already redacted
+in **r1**. Rewritten in `decision.md` rejected-alternative 5 as: *the flag form needs new
+separator semantics whose false-positive cost on ordinary `key value` prose exceeds its
+benefit*.
+
+### Over-redaction table, honest scope (reviewer item 2)
+
+`harness/run_diagnostic_table.py` runs a 15-entry diagnostic corpus against each tree
+(`r3/diagnostics_*.json`):
+
+| entry | r1 | r2 | r3 | classification |
+|---|---|---|---|---|
+| `token: expired` | redacted | redacted | redacted | **pre-existing (r1) over-redaction** |
+| `secret: rotated at …` | redacted | redacted | redacted | pre-existing (r1) |
+| `password: ********` | redacted | redacted | redacted | pre-existing (r1) |
+| `pwd=/home/user/project` | untouched | **redacted** | **redacted** | **r2-new over-redaction** |
+| `key=value`, `stage=…`, `files_seen=0 …`, `elapsed_seconds=…`, `GET /v1/status returned 503`, `document not in catalog: doc-1`, `monkey=`, `oauth=`, `secretary=`, `tokenizer=`, `keyboard=` | untouched | untouched | untouched | no over-redaction |
+
+So "0 over-redaction" holds only for the 5 guards in the rule table; the diagnostic corpus
+shows **4** over-redactions, 3 pre-existing and 1 new in r2 (`pwd=`). `pwd` is **kept**
+deliberately (password parameter in Oracle/SQL\*Plus-style connection strings) and registered
+rather than removed — the tradeoff is explicit instead of hidden behind a "0" claim.
+
+### C10 registered (reviewer item 3)
+
+`{"api_key": "<marker>"}` — the JSON quoted-key form — is **not** covered. Measured as
+surviving in all three trees (`r3/diagnostics_*.json` → `residuals_confirmed` includes
+`res-json-quoted`). Pre-existing, not a regression.
+
+### Carries after r3
+
+C1 `digest=` · C2 `store._redact_message` · C3 `error_taxonomy.structured_error` +
+`identity_cli.py:70-73` · C4 BaseException/interpreter traceback · C5 `_write_process_event`
+not a gateway · C6 argparse (`cli.py:865`) · C7 non-credential-shaped marker · C8
+`--api-key <value>` (reason corrected) · C9 acceptance test not promoted · **C10 JSON
+quoted-key form** · **C11 four known over-redactions (`pwd=`, `token: expired`,
+`secret: rotated`, `password: ********`)** · **C12 the F-07 deadline assertion only fires
+after the call returns — a HARD precondition for promotion: add `pytest-timeout` or wrap the
+call in a subprocess, otherwise a regressor hangs instead of failing** · **C13 the value is
+the whole space/tab separated run, so prose after a credential on the same line is redacted
+too (kept; E4b's 193 baseline depends on it)**.
 
 ## r2 — disposition of the r1 review findings
 

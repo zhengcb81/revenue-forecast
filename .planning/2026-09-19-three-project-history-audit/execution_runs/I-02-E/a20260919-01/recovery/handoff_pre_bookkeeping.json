@@ -1,0 +1,62 @@
+{
+  "card_id": "I-02-E",
+  "attempt_id": "a20260919-01",
+  "card_title": "在每个持久化边界中断后只恢复缺失阶段",
+  "status": "review_pending",
+  "date": "2026-09-19",
+  "owner": "company-wiki 来源系统实施者",
+  "reviewer_status": "pending (independent reviewer must read evidence; implementer cannot self-accept)",
+  "completed_steps": [
+    "senior 禁区-恢复表冻结（decision.md，5 边界 B1..B5 × 持久证据/允许恢复/禁止/blocked 条件）",
+    "oracle.md 修改前冻结（P1 五边界 / N1 / N2×4 / N3 以常量与样本文件为基准，未调用被测函数生成 expected）",
+    "iso/override 四文件（canonical_writer/acquisition_service/acquisition_journal/scanner）阶段持久化 + resume 判定 + env-gated 注入 seam（ast.parse 通过）",
+    "journal 增 5 个 stage outcome + AcquisitionAttempt.payload_json（additive，旧行容缺）",
+    "writer 注入 seam（W02E_INJECT staged_verified/raw_saved/provenance_saved/register_gates/qualified × raise/pause）与 scanner W02E_SCAN_PAUSE_DOC scan-partial 崩溃窗",
+    "13 个 case 全部单跑通过后再全量串跑（EXP + 4 raise + 4 Popen kill + N1a/N1b/N2a/N2b/N2c/N2d/N3a/N3b）",
+    "Popen 硬 kill 仅作用于本驱动 spawn 并记录的 scratch 子进程（evidence: after/recovery-and-paused-proof.json scratch_pids+kill_events；raw-cli-logs/orphan_pids_cleaned.json 留痕）"
+  ],
+  "next_step_number": 1,
+  "next_action": "独立 reviewer 按 review_and_handoff.md 流程读写入证据（decision.md/oracle.md/after/*），复算至少一个专属 oracle（建议 K4 scan_partial：interrupted scan_run 行→新鲜 completed；以及 B2 resume sidecar==S1 payload 字节）并产出 review.md",
+  "input_hashes": {
+    "note": "见 binding.json prod_source_hashes_pre_edit 与 fixed_samples"
+  },
+  "current_source_hashes": "见 binding.json attempt_override_hashes_post_run（四文件最终哈希）",
+  "changed_paths": [
+    "execution_runs/I-02-E/a20260919-01/iso/override/canonical_writer.py",
+    "execution_runs/I-02-E/a20260919-01/iso/override/acquisition_service.py",
+    "execution_runs/I-02-E/a20260919-01/iso/override/acquisition_journal.py",
+    "execution_runs/I-02-E/a20260919-01/iso/override/scanner.py",
+    "execution_runs/I-02-E/a20260919-01/scripts/w02e_bootstrap.py",
+    "execution_runs/I-02-E/a20260919-01/scripts/w02e_cases.py",
+    "execution_runs/I-02-E/a20260919-01/samples/runner_child.py",
+    "execution_runs/I-02-E/a20260919-01/samples/lock_holder.py"
+  ],
+  "commands_executed": "见 commands.json（EXP oracle / 4 raise cases / 4 Popen kill cases / 8 negative cases），全部以 --case 增量运行 after 簿册",
+  "raw_exit_codes": "raw-cli-logs 每子进程 stdout/stderr/returncode 全量留痕（recorded per case per tag）",
+  "expected_exit_codes": "driver overall rc=0（全部 case 均 oracle 符合或明确 blocked）",
+  "open_questions": [
+    "跨进程 canonical_import 锁 owner-scope/重试策略归 I-04（I-02-D 已移交），本卡复用现行 CatalogOperationLockedError 可重试竞争语义",
+    "journal 损坏尾行的自动修复被冻结拒绝（本卡仅 block + 人工对账通道：acquisition_attempts.jsonl.corrupt-tail 字节留证）；真实运维修复流程滞留运维 owner 名下",
+    "vendor 还原后 resumed sidecar == S1 payload 的形式关系（canonical_path 占位注释保留）需要 reviewer 复核 resume 语义冻结解释与生产一致"
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "execution_runs/I-02-E/a20260919-01/decision.md",
+    "execution_runs/I-02-E/a20260919-01/oracle.md",
+    "execution_runs/I-02-E/a20260919-01/binding.json",
+    "execution_runs/I-02-E/a20260919-01/commands.json",
+    "execution_runs/I-02-E/a20260919-01/iso_patching.md",
+    "execution_runs/I-02-E/a20260919-01/changes.diff",
+    "after/crash-boundary-matrix.json",
+    "after/before-restart/",
+    "after/after-restart/",
+    "after/recovery-and-paused-proof.json",
+    "after/case_results.json",
+    "raw-cli-logs/"
+  ],
+  "START_HERE_fields": {
+    "recorded_status_transition": "planned -> implementing -> review_pending",
+    "cannot_replace": "未完成独立 reviewer 复验；reviewer_status=pending",
+    "九步执行法位置": "第 8 步交审完成（证据齐全），第 9 步待 reviewer accepted 后更新"
+  }
+}

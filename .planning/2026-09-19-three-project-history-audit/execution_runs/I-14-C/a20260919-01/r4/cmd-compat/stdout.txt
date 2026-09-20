@@ -1,0 +1,64 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\郑曾波\Projects\company-wiki
+configfile: pytest.ini
+collected 31 items
+
+..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py . [  3%]
+.......F.....F....FF...                                                  [ 77%]
+..\company-wiki\tests\contract\test_observability.py .......             [100%]
+
+================================== FAILURES ===================================
+_ test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory _
+..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:476: in test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory
+    controller._write_control(desired_state="paused")
+..\company-wiki\src\company_wiki\source_catalog\control.py:724: in _write_control
+    _atomic_write_json(self.control_path, value)
+..\company-wiki\src\company_wiki\source_catalog\control.py:381: in _atomic_write_json
+    temporary.write_text(
+C:\Miniconda\Lib\pathlib\_local.py:555: in write_text
+    return PathBase.write_text(self, data, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\pathlib\_abc.py:651: in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\pathlib\_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\r4\\cmd-compat\\pytest\\test_read_desired_state_reads_0\\project\\.source_catalog\\worker_control.json.14536.78bdfa8e30c34866b997b2facff9a834.tmp'
+_______ test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8 ________
+..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:787: in test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8
+    raw_stderr = stderr_log.read_bytes()
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\pathlib\_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+C:\Miniconda\Lib\pathlib\_local.py:537: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-14-C\\a20260919-01\\r4\\cmd-compat\\pytest\\test_stderr_exit_zero_does_not0\\fake-project\\.source_catalog\\worker_stderr-50516414cf2d4b88963f32189a851e1e-attempt-0001.log'
+_______ test_child_without_runtime_session_is_terminated_and_restarted ________
+..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:917: in test_child_without_runtime_session_is_terminated_and_restarted
+    assert len([event for event in events if event["status"] == "child_started"]) == 2
+E   AssertionError: assert 3 == 2
+E    +  where 3 = len([{'schema_version': '1.1', 'recorded_at': '2026-09-20T02:22:09.9382454Z', 'status': 'child_started', 'message': '', .....'schema_version': '1.1', 'recorded_at': '2026-09-20T02:22:11.1416764Z', 'status': 'child_started', 'message': '', ...}])
+___________ test_stale_child_heartbeat_is_terminated_and_restarted ____________
+..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py:952: in test_stale_child_heartbeat_is_terminated_and_restarted
+    assert unresponsive["reason"] == "heartbeat_timeout"
+E   AssertionError: assert 'session_start_timeout' == 'heartbeat_timeout'
+E     
+E     - heartbeat_timeout
+E     + session_start_timeout
+============================== warnings summary ===============================
+.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-C\a20260919-01\iso\venv\Lib\site-packages\_pytest\config\__init__.py:1464
+  C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-14-C\a20260919-01\iso\venv\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED ..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_read_desired_state_reads_persistent_pause_without_runtime_or_inventory
+FAILED ..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_stderr_exit_zero_does_not_fail_launcher_and_logs_are_utf8
+FAILED ..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_child_without_runtime_session_is_terminated_and_restarted
+FAILED ..\company-wiki\tests\contract\test_source_catalog_worker_bootstrap.py::test_stale_child_heartbeat_is_terminated_and_restarted
+================== 4 failed, 27 passed, 1 warning in 28.43s ===================

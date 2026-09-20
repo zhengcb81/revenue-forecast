@@ -213,3 +213,65 @@ NEG-CARD 语义：`management_fee_rate=1.1` 使年化费率越出比例域，卡
 - 产品仓零改动；`changes.diff` 为 NO PRODUCT CHANGE 声明。
 - `formula` 状态仍为 `review_pending`（实现者不自签），`disclosure_adaptation` 仍为 `unmapped`，
   `accuracy` 仍为 `unproven`。
+<!-- R3-APPEND-BOUNDARY: everything above this line is the r2-reviewed frozen oracle body -->
+
+## 修订 r3（对独立复核 F-01…F-05 的处置，非重写）
+
+本节由修订 r3 **追加**，是 `oracle.md` 中**唯一**的一节「修订 r3」。
+上方正文（v1 冻结版）与 r2 节逐字未改；产品仓库一行未动。r3 节的追加前 hash 记录在
+`evidence/M13/revision_r3.json` 的 `boundary.sha256_of_bytes_before_the_marker`，并可由
+`scripts/verify_r2_boundary.py` 在**真实行边界**（本标记行处）重新复现。本文件对每个修订只有
+一个基准，不存在互斥的"追加前 hash"。
+
+### 触发：独立复核（2026-09-20）判定 `accepted_scoped`（仅 formula）+ 5 项整改
+
+独立复核者自写脚本、未调用本 attempt 的任何脚本，独立复算正例、自造 35 条负例（应拒而被接受 0 例）、
+自建 harness replay、独立复现本 attempt 的验证脚本、逐字节复核冻结前缀 hash 与 1 字节边界修复，
+并给出 **F-01…F-05 + 观察项 (c) + 计数单位** 整改清单。r3 逐条处置如下（工具层与证据层改动，
+**不改任何冻结期望/容差/拒绝条件**）：
+
+| 编号 | 处置 |
+|---|---|
+| F-01 | `run_card.py` 增加 **期望声明一致性**：逐 case 校验 `expected` 是否等于本 runner 实际据以判定的类型、case 数量与 id 集合是否与 `oracle.json` 的 `negative_count`/`negative_ids` 一致，并校验 kind/base_input；任何不一致 → `expectation_declaration_inconsistent` → **rc=2**，不再静默 rc=0。rev r1（只 `isinstance` 判定）保留在 `recovery/runner_before_F01_fix.py` 作为对照。 |
+| F-02 | `enumerate_driver_bounds.py` 的 ratio 谓词改为**权威**的 `spec.dimensions[driver] == "ratio"`（并同时记录旧谓词 `ratio_drivers` 集合的计数与两者全部分歧条目），注册表口径由 40/3 更正为 **41/4**，与 M05–M08 r3 更正口径一致；`oq_enumeration.json` / `oq_rulings.json` 已重生成。 |
+| F-03 | `oq_rulings.json` 的 OQ 列表改为**与 `handoff.json:open_questions` 一一对应**（编号同源），`decision.md`/`review.md` 的编号同步；并对全部文档指针做了可执行审计（`scripts/audit_doc_pointers.py` → `evidence/M13/doc_pointer_audit.json`）。 |
+| F-04 | `finalize_hashes.py` 先写自产物再清点，且**把 `after/rerun_sha256.json` 自身排除**在清单与 combined digest 之外，新增 `self_reference_note` 与 `combined_digest_scope`，并对并发的 `after/git_status_*.txt` 标记 `concurrently_mutable`。 |
+| F-05 | `recovery/README.md` 显式声明：首次 rc=1 调用（runner 的 `NameError`）与 `setup_isolation.ps1` 早期修订的**原始字节未留存**，只有 `raw_rc` 与叙述为证；今后首次失败调用一律把 stdout/stderr 原样另存。 |
+| (c) | 观察项 `OBS-SIGNED-PERF-FEE` 按复核建议做**追加式标注**（不改语义）。`evidence/M13/cases.json` 追加了**只增不改**的标注字段（观察项 (c)）：旧 sha256 `0353e544234eb8ea2557c055d99e1feafd962d771f127c46f4bda0ad10ac06f9` → 新 sha256 `54399cd26596421ebae22b6efbdf7be19ea1af576ae0f69b8c193ba524702fb0`，差异经脚本 `build_cases_annotation_repack.py` 证明**仅为该字段**；`input.json` / `oracle.json` 逐字节未变，所有期望值/容差/拒绝条件未变。 |
+| 计数单位 | `oq_rulings.json` 新增 `enumerated_counts_with_units`，把 registry 级计数标成 slot（(model,driver) 对）与 model 两种单位：31 slot / 24 model。 |
+
+### 变异自检矩阵（先红后绿；冻结件未动）
+
+| 实测 rc | 场景 |
+|---|---|
+| 0 | C-control, G-pre-fix-runner-corrupt-case-expected, H-pre-fix-runner-drop-negative-case |
+| 1 | E-harness-error |
+| 2 | A-corrupt-value, F-corrupt-shape, D-missing-expectation, G-corrupt-case-expected, H-drop-negative-case |
+| 3 | B-corrupt-negative-case |
+
+其中 `G/H-...` 为 F-01 新增场景；`G/H-pre-fix-runner-...` 是**修复前** runner 修订在同一份被污染副本上的
+实测结果（rc=0，即复核报告所述缺陷的可复现证据）。详见 `recovery/selfcheck_result.json`
+（含 `exit_code_matrix`、`pre_fix_runner_revision` 与冻结件前后 hash）。
+
+### 本次改动的旧→新 hash（工具层与证据层）
+
+| 文件 | 旧 sha256 | 新 sha256 |
+|---|---|---|
+| `scripts/run_card.py` | `e709408f7f6518be63fc00d5c4c444c8738dbf1ba7a53383c3821882c9054c9e` | `9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194` |
+| `evidence/M13/oq_enumeration.json` | `093f9657d5d934f59fa1665927883e4dbc0fb489f2934f7be553b0e5f51c6f2d` | `814019ef6b7b6e7e65ee79324f2ab95028b01cb3b340450dcf3ac2990ee54541` |
+| `evidence/M13/oq_rulings.json` | `186120a8c398367f9da2ec85abcfa40318a06153bdb3b3f1ec54011260056510` | `1f5be1b78e305d3d9566bb47434d99ebfd7e76f0c7bd6e78fac499fc438d79a9` |
+| `evidence/M13/input.json` | `f4700cc24dd8d3f8df2660ff614bd7a6e92b44068c71f326a50fd4f03ce4e64d` | `f4700cc24dd8d3f8df2660ff614bd7a6e92b44068c71f326a50fd4f03ce4e64d` |
+| `evidence/M13/oracle.json` | `ab3a1f30fbad93da34a8786cdf3b4d532bca394ffc7ca1beb7214d6703a0e7b3` | `ab3a1f30fbad93da34a8786cdf3b4d532bca394ffc7ca1beb7214d6703a0e7b3` |
+| `evidence/M13/cases.json` | `0353e544234eb8ea2557c055d99e1feafd962d771f127c46f4bda0ad10ac06f9` | `54399cd26596421ebae22b6efbdf7be19ea1af576ae0f69b8c193ba524702fb0` |
+| `evidence/M13/run_result.json` | `2b3bc8465a5eb811d2b7f6ce79345b93a3814bb6f29bf2492340fb64f9b7098d` | `e798caf7c1cf25c5fc78fb4e94a968a771efb55025bae464da5be8c19a56a55e` |
+| `evidence/M13/stdout.txt` | `c051fabbf035800a35d7d4e4c0af5303804c9a2f976f926dedde2b1596dc1940` | `57f21bc8df6ff37e1a5eac439dfb1ed344d9c2dbb2984c6ecd3468cdc04819ad` |
+| `after/rerun_sha256.json` | `fa1f4a2a5603f7735dfa6366bc0f929f7ad689de9e487e232b0173398bf93f70` | `fa1f4a2a5603f7735dfa6366bc0f929f7ad689de9e487e232b0173398bf93f70` |
+| `oracle.md` | `4e71f45c2032a555e450da6cb2e20f28083bd95a48bab1ddf3a50b1be61d47ce` | `4e71f45c2032a555e450da6cb2e20f28083bd95a48bab1ddf3a50b1be61d47ce` |
+
+### 未改动的内容（防止误读为"为过审而改"）
+
+- **正例/连续性/默认值期望值、容差、11 个负例及其期望错误、拒绝条件、停止条件一律未改**；
+  上述表中 `input.json` / `oracle.json` 两行若显示旧=新，即为证据。
+- 产品仓零改动；`changes.diff` 仍为 NO PRODUCT CHANGE 声明。
+- `formula` 仍为 `review_pending`（实现者不自签，r3 后交回复核者点验），
+  `disclosure_adaptation` 仍为 `unmapped`，`accuracy` 仍为 `unproven`。

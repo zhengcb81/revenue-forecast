@@ -1,5 +1,6 @@
 code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M23\a20260919-01\iso\checkout_scripts
 model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M23\a20260919-01\iso\checkout_scripts\model_registry.py
+cases_path: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M23\a20260919-01\recovery\selfcheck\evidence\M23\cases.json
 registry formula: revenue = coverage_units * revenue_per_coverage_unit * timing_factor + other_revenue
 registry required: ['coverage_units', 'revenue_per_coverage_unit']
 registry optional: ['timing_factor', 'other_revenue']
@@ -14,16 +15,16 @@ defaults ok: True actual: [200.0] expected: [200.0]
 observation: OBS-BASE-IGNORED raised= ModelRegistryError actual= None matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None missing drivers for insurance_service: coverage_units
 observation: OBS-DEFAULT-EQUIV raised= None actual= [200.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
 observation: OBS-TIMING-BOUND-11 raised= ModelRegistryError actual= None matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None driver insurance_service.timing_factor must be between 0.0 and 1.0: FY2027
-negative: NEG-CARD PASS_rejected ModelRegistryError - missing drivers for insurance_service: coverage_units
-negative: N01a FAIL_wrong_exception_type KeyError - 'coverage_units'
-negative: N01b FAIL_wrong_exception_type KeyError - 'coverage_units'
-negative: N01c FAIL_wrong_exception_type KeyError - 'coverage_units'
-negative: N01d FAIL_wrong_exception_type KeyError - 'coverage_units'
-negative: N02 PASS_rejected ModelRegistryError - driver insurance_service.coverage_units must contain one value per forecast year
-negative: N03 FAIL_wrong_exception_type KeyError - 'coverage_units'
-negative: N04 PASS_rejected ModelRegistryError - missing drivers for insurance_service: coverage_units
-negative: N05a PASS_rejected ModelRegistryError - insurance_service.years must contain fiscal years
-negative: N05b PASS_rejected ModelRegistryError - insurance_service.years must contain fiscal years
-negative: CONT-BREAK PASS_rejected ModelRegistryError - insurance_service.years must be consecutive and increasing
-negative summary: {'total': 11, 'passed': 6, 'failed': ['N01a', 'N01b', 'N01c', 'N01d', 'N03']}
+negative: NEG-CARD FAIL_message_mismatch ModelRegistryError expected_type_checked= True message_requirement_met= False - missing drivers for insurance_service: coverage_units
+negative: N01a FAIL_wrong_exception_type KeyError expected_type_checked= False message_requirement_met= None - 'coverage_units'
+negative: N01b FAIL_wrong_exception_type KeyError expected_type_checked= False message_requirement_met= None - 'coverage_units'
+negative: N01c FAIL_wrong_exception_type KeyError expected_type_checked= False message_requirement_met= None - 'coverage_units'
+negative: N01d FAIL_wrong_exception_type KeyError expected_type_checked= False message_requirement_met= None - 'coverage_units'
+negative: N02 PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - driver insurance_service.coverage_units must contain one value per forecast year
+negative: N03 FAIL_wrong_exception_type KeyError expected_type_checked= False message_requirement_met= None - 'coverage_units'
+negative: N04 PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - missing drivers for insurance_service: coverage_units
+negative: N05a PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - insurance_service.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - insurance_service.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - insurance_service.years must be consecutive and increasing
+negative summary: {'total': 11, 'passed': 5, 'failed': ['NEG-CARD', 'N01a', 'N01b', 'N01c', 'N01d', 'N03'], 'expected_type_mismatch_cases': [], 'message_mismatch_cases': ['NEG-CARD'], 'message_requirements_checked': ['NEG-CARD'], 'verdict_rule': 'PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message'}
 verdict: fail exit_code: 2

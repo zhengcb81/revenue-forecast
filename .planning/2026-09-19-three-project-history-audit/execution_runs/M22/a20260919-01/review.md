@@ -30,8 +30,8 @@ expected / 1=harness error). stderr is 0 bytes.
   `hashlib`, `json`, `os`, `sys` and `decimal` - see the `import_lines` list inside
   `evidence/M22/oracle_selfcheck.json`; `product_import_present` is `false`.
 - The oracle document `oracle.md` (sections 0-11) was written **before** any product run. Its
-  frozen body is 9693 bytes, sha256
-  `d83ce2961186c324a445985bc3b569a87183642b5a68e9abce6332d0f5f83d76`; the exact reconstruction identity
+  frozen body is 10026 bytes, sha256
+  `88de6bf9b8012bac6c6e05ee836977e9b54cc08c75287af66d7e55e92275b0da`; the exact reconstruction identity
   `oracle.md == frozen_body + b"\n---\n\n" + run_section` is verified by
   `scripts/verify_prefix_chain.py` in all four attempts of this batch.
 - `evidence/M22/oracle.json` is **byte-identical when regenerated** (re-run performed).
@@ -43,7 +43,7 @@ expected / 1=harness error). stderr is 0 bytes.
   (N01a uses a real `bool`, N01b-d use real `float('nan'/'inf'/'-inf')`).
 - `PASS_rejected` requires `isinstance(exc, ModelRegistryError)`. `ImportError`,
   `ModuleNotFoundError` and `FileNotFoundError` are recorded as **FAIL**, never as pass.
-- The same `run_card.py` (sha256 `fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a`) was used for
+- The same `run_card.py` (sha256 `d02057debe8d34df8a472e83aa3771f5c90fb77d58b3c0eee2237e35593b2953`) was used for
   M05-M08 and for all four attempts of this batch; there is no card-specific runner to drift.
 
 ## 3. Results in detail
@@ -51,7 +51,7 @@ expected / 1=harness error). stderr is 0 bytes.
 - Registry formula observed from the isolated copy: `revenue = eligible_sales * royalty_rate + milestone_revenue + service_revenue`
 - Registry required: `['eligible_sales', 'royalty_rate']`; optional: `['milestone_revenue', 'service_revenue']`; defaults: `{}`
 - Rejections and their messages:
-- `NEG-CARD`: ModelRegistryError - `driver milestone_royalty.royalty_rate must contain one value per forecast year`
+- `NEG-CARD`: ModelRegistryError - `driver milestone_royalty.royalty_rate must be between 0.0 and 1.0: FY2027`
 - `N01a`: ModelRegistryError - `milestone_royalty.eligible_sales.FY2027 must be numeric`
 - `N01b`: ModelRegistryError - `milestone_royalty.eligible_sales.FY2027 must be finite`
 - `N01c`: ModelRegistryError - `milestone_royalty.eligible_sales.FY2027 must be finite`
@@ -107,7 +107,21 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 | A_corrupted_positive_expectation | 3 | 3 |
 | B_corrupted_negative_assertion | 3 | 3 |
 | C_corrupted_positive_input | 2 | 2 |
+| F_corrupted_expected_type | 3 | 3 |
+| G_corrupted_message_requirement | 3 | 3 |
+| H_message_requirement_points_at_another_guard | 3 | 3 |
 | D_restored_uncorrupted | 0 | 0 |
 
 `frozen_hashes_unchanged` = `True`. Full record:
 `recovery/selfcheck/selfcheck_result.json`.
+<!-- BEGIN independent-review verdict (round 2, transcribed verbatim) -->
+
+> **独立复核裁决（revision r2 后）：`accepted_scoped`（仅 formula）。由 `changes_required` 转正。**
+> 上轮唯一的阻塞项（无判定性值域负例）已关闭，并经我独立验证：`cases.json` 的 NEG-CARD 现为 `royalty_rate = [1.01]`（= 卡片 `card_M22.md:38` 原文的"替换整个 driver"），我自行构造并调用隔离快照得到 **`driver milestone_royalty.royalty_rate must be between 0.0 and 1.0: FY2027`**——**值域守卫**，不再是长度守卫。
+> 通过判据已冻结进 `cases.json`（`expect_message_contains = "must be between 0.0 and 1.0: FY2027"`），且 runner 现按**消息子串**判定。我做了三个独立变异探针：把 `expected` 改成 `ValueError` → rc=3；把消息要求改成不可能子串 → rc=3；把消息要求指向长度守卫措辞 `must contain one value per forecast year` → rc=3。**该控制有区分度，不是"非空即过"。**
+> 公式本身无回归：`rc=0`、`stderr` 0 字节、正例 `[55.0]`、连续性 `[55.0, 4.0]`、defaults `[40.0]`、11/11 负例；我自造输入另证 `royalty` 与 `milestone` 可分离（`1000×0.05+0+0=50.0`；`0×0.5+77+11=88.0`）。
+> 正文改动经我逐节复算：只改 NEG-CARD 行 1 行（+新增第 12 节），`## 2./3./4./8./10.` 与正例/连续性/defaults 的期望与容差、每个既有负例的 `expected` 值**逐字节未变**；前像 = 上轮冻结体（sha256 `d83ce296…`），变更行数 6 = 我独立重算值，白名单外 0 行。
+> 签收边界：**仅 `formula`**。`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`。
+> 遗留（时间性，不阻塞）：消息要求目前可被"删除字段"绕过（我实测删掉后 rc 回到 0）；建议加 `required_message_ids` 使闸门闭合。第 12 节关于本卡的 `not_applicable_with_reason` 判断正确。
+
+<!-- END independent-review verdict -->

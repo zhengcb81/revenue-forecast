@@ -591,8 +591,16 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
             + ["evidence/%s/%s" % (card, name)
                for name in sorted(os.listdir(ev))
                if os.path.isfile(os.path.join(ev, name))]),
-        "reviewer_status": "not yet reviewed; implementer never writes 'accepted'",
-        "revision": "r1 (no revision r2 section; revision_r2.json records state=not_started)",
+        "reviewer_status": "r1 reviewed: M21 accepted_scoped; M22/M23/M24 changes_required "
+                           "(all six required items implemented in revision r2 and returned for "
+                           "point review); implementer never writes 'accepted'",
+        "reviews_mtime_conventions": load(os.path.join(ev, "integrity.json"))[
+            "reviews_directory_untouched"],
+        "revision": "r2 (independent review: M21 accepted_scoped, M22/M23/M24 changes_required. "
+                    "This revision implements review items P2-1, P2-2, P2-3, P3-1, P3-2, P3-3. "
+                    "The verdict for the REVISED attempt has NOT yet been received, so every "
+                    "qualification stays review_pending / unmapped / unproven.)",
+        "revision_r2_detail": "evidence/%s/revision_r2.json" % card,
         "disclosure_impact_note": "not applicable to this card",
     })
 

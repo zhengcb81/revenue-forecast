@@ -1,0 +1,87 @@
+{
+ "card_id": "M28",
+ "model_id": "aum_fee_bridge",
+ "generated_by": "scripts/oracle_M25_M28.py --card M28 (stdlib only, no product import)",
+ "continuity_case": true,
+ "continuity_note": "two-year continuity example taken verbatim from card_M28.md; the negative_patch keeps both years individually balanced (1000+200-100-50=1050 and 1051+0-0+0=1051) and breaks only the year-over-year opening=prior closing identity.",
+ "positive": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "11.5"
+  ],
+  "expected_float": [
+   11.5
+  ],
+  "tolerances": [
+   1.15e-08
+  ],
+  "hand_work": [
+   "(1000 + 200*0.25 - 100*0.75 + -50*0.5) * 0.01 + 2"
+  ]
+ },
+ "continuity_positive": {
+  "years": [
+   2027,
+   2028
+  ],
+  "expected": [
+   "11.5",
+   "10.5"
+  ],
+  "expected_float": [
+   11.5,
+   10.5
+  ],
+  "tolerances": [
+   1.15e-08,
+   1.05e-08
+  ],
+  "hand_work": [
+   "(1000 + 200*0.25 - 100*0.75 + -50*0.5) * 0.01 + 2",
+   "(1050 + 0*0.25 - 0*0.75 + 0*0.5) * 0.01 + 0"
+  ]
+ },
+ "defaults": {
+  "years": [
+   2027
+  ],
+  "expected": [
+   "9.5"
+  ],
+  "expected_float": [
+   9.5
+  ],
+  "tolerances": [
+   9.5e-09
+  ],
+  "hand_work": [
+   "(1000 + 200*0.25 - 100*0.75 + -50*0.5) * 0.01 + 0"
+  ]
+ },
+ "defaults_expected_float": [
+  9.5
+ ],
+ "defaults_declared_expectation": {
+  "driver": "recognized_performance_fees",
+  "declared_default_present": false,
+  "why": "card_M28.md L9 declares recognized_performance_fees default 0; the registry keeps the driver optional with defaults = {}, so the library zero-fills it. Recorded to keep the omission visible; the probe is non-gating."
+ },
+ "observation_expected": {},
+ "negative_count": 11,
+ "negative_ids": [
+  "NEG-CARD",
+  "N01a",
+  "N01b",
+  "N01c",
+  "N01d",
+  "N02",
+  "N03",
+  "N04",
+  "N05a",
+  "N05b",
+  "CONT-BREAK"
+ ],
+ "tolerance_rule": "abs(actual-expected) <= 1e-9 * max(1, abs(expected))"
+}

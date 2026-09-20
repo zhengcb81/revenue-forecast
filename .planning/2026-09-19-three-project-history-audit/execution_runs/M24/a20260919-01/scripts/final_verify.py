@@ -117,6 +117,33 @@ def main() -> int:
     checks["structure_checks_all_true"] = all(run["structure_checks"].values())
     checks["cases_use_new_deepcopy_flag"] = load(
         os.path.join(ev, "cases.json"))["independent_deepcopy_per_case"] is True
+    # revision r2, review item P2-1: the frozen `expected` field must be CHECKED
+    checks["expected_type_checked_for_every_negative"] = all(
+        e.get("expected_type_matches_raised") is True for e in run["negatives"])
+    checks["no_expected_type_mismatch_failure"] = not run["negative_summary"][
+        "expected_type_mismatch_cases"]
+    # revision r2, review items P2-2 / P2-3: the frozen refusal MESSAGE must be checked
+    checks["message_requirements_all_met"] = all(
+        e.get("message_requirement_met") is not False for e in run["negatives"])
+    checks["message_requirements_checked"] = run["negative_summary"][
+        "message_requirements_checked"]
+    # revision r2, review item P2-2: M22/M23 NEG-CARD must fail in the VALUE domain
+    negcard = next((e for e in run["negatives"] if e["id"] == "NEG-CARD"), {})
+    if card in ("M22", "M23"):
+        checks["negcard_reaches_value_domain"] = bool(
+            "must be between 0.0 and 1.0: FY2027" in (negcard.get("message") or ""))
+    else:
+        checks["negcard_reaches_value_domain"] = "not_applicable_for_%s" % card
+    # revision r2, review item P2-3: M24 must carry the cross-year anchoring case
+    ids = [e["id"] for e in run["negatives"]]
+    if card == "M24":
+        crossyear = next((e for e in run["negatives"]
+                          if e["id"] == "CONT-BREAK-CROSSYEAR"), {})
+        checks["crossyear_case_present_and_green"] = bool(
+            "CONT-BREAK-CROSSYEAR" in ids
+            and "continuity failed: FY2028" in (crossyear.get("message") or ""))
+    else:
+        checks["crossyear_case_present_and_green"] = "not_applicable_for_%s" % card
 
     # pinned convention 6: mutation proof
     probe = load(os.path.join(attempt, "recovery", "selfcheck", "selfcheck_result.json"))

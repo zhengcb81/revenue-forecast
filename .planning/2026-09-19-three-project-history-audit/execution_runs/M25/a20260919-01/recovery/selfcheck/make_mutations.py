@@ -83,11 +83,26 @@ def main() -> int:
         "D": copy.deepcopy(oracle_doc),
         "E": plant(naive),
     }
+    # Case F (review finding P3-2): two corruptions of cases.json that a verdict-carrying
+    # runner must notice - a rewritten `expected` declaration and a DELETED negative case.
+    f1 = copy.deepcopy(cases_doc)
+    for case in f1["cases"]:
+        if case["id"] == "NEG-CARD":
+            case["expected"] = "ValueError"
+    f2 = copy.deepcopy(cases_doc)
+    f2["cases"] = [c for c in f2["cases"] if c["id"] != "N04"]
+    fmut = {"F1": f1, "F2": f2}
+
     for name, doc in variants.items():
         base = os.path.join(scratch, "cases", name, "evidence", args.card)
         dump(os.path.join(base, "input.json"), copy.deepcopy(input_doc))
         dump(os.path.join(base, "cases.json"), copy.deepcopy(cases_doc))
         dump(os.path.join(base, "oracle.json"), doc)
+    for name, doc in fmut.items():
+        base = os.path.join(scratch, "cases", name, "evidence", args.card)
+        dump(os.path.join(base, "input.json"), copy.deepcopy(input_doc))
+        dump(os.path.join(base, "cases.json"), doc)
+        dump(os.path.join(base, "oracle.json"), copy.deepcopy(oracle_doc))
 
     first = cases_doc["first_required_driver"]
     identity = input_doc["positive"]["drivers"][first][0]
@@ -101,6 +116,8 @@ def main() -> int:
     print("case A planted: [999.0]")
     print("case B/E planted naive value:", [naive])
     print("case D override (identity, must be accepted):", json.dumps(d_override))
+    print("case F1: NEG-CARD expected declaration rewritten to 'ValueError'")
+    print("case F2: the N04 negative case deleted (10 cases left)")
     print("scratch case trees under:", os.path.join(scratch, "cases"))
     return 0
 

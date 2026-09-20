@@ -1,0 +1,92 @@
+{
+  "card_id": "I-03-B",
+  "attempt_id": "a20260919-01",
+  "parent": "I-03",
+  "status": "review_pending",
+  "controller_stipulation": "隔离实施：禁止修改三仓源码/测试/配置；只写 attempt 目录 A；禁止网络。三仓源码经复核零改动（生产 gap_plan.py 仍为冻结锚点 d18391b7…）。",
+  "completed_steps": [
+    "1. 读取 card_I-03-B / common_filing_cards / START_HERE / review_and_handoff / I-03-A 五件套（decision、oracle、oracle-inputs.csv、compat-matrix、handoff.json）并记录全部 sha256；重算生产 gap_plan.py = d18391b7… 与锚点一致",
+    "2. 建立 A/ 目录骨架；复制生产 gap_plan.py 至 iso/baseline（最小依赖壳：全 stdlib，单文件自洽）；验证解释器 -X utf8 就绪",
+    "3. 写 binding.json（绑定解释器/cwd/允许写目录/输入 hash；网络=disabled；测试层级=pure fixture）与本卡 oracle.md（per-case expected 继承 I-03-A oracle 引用 hash dd5a5769…，全部固定字面量 expected，未调用被测函数生成）",
+    "4. 写修前独立断言组 iso/pre/pre_fix_assertions.py（固定 expected ID/类别，含 G-B1..B5c 与 order_invariance）；对 baseline 运行并保存 A/before/pre_fix_assertions.json：7/7 fail（B5a/B5b 的 fail 仅因新增审计字段 latest_status/unusable_local 缺失，其字典序无影响域如实标注；其余为字典序缺陷 RED）",
+    "5. 最小修改：仅 iso/override/gap_plan.py——删除 accession/provider ID 字典序（旧 L167-170 max 字典序、L228-242 hash 同源排序）；接入冻结规则：三元组期间键 (kind,period_start,period_end)、fiscal_year 降级、filed_at 新近主键+accepted_at 校验/回退、四态 ordered/ambiguous_same_day/conflicting/unknown_missing_date、future 显式桶、capture_ready=False→unusable_local、同 FY 不同期间独立、D5 批次序（period_start DESC, filed_at DESC, id）、D6 canonical-JSON hash(hashSchema_version=1, 全资格字段)；调用者唯一输出且不改调用者；未增默认日期修",
+    "6. 写 scripts/w03b_cases.py（G-B1..B5 全实现 + I-03-A 可复用纯选择子集 C01-C14 planner 面 + C15 声明 out_of_scope→I-03-C + HASH-D6 组 + 三市场四样本同规则引擎含字段来源模拟声明 JSON + 远端逆序等价断言）",
+    "7. 运行：before 21 例 20 fail/1 pass（C05 集合撞中等价如实标注 not_applicable 域）；after 21/21 pass；合并 A/after/gapbefore-after-results.json（per-case 修前/修后对比，fixed_red_to_green=20）",
+    "8. 证据：changes.diff（926 行，副本 vs 生产锚点）、outcome/selection_diff.md（调用图差异+字典序删除证明）、commands.json、iso_patching.md（单文件映射批注）、oracle.md、binding.json"
+  ],
+  "next_step_number": 9,
+  "next_action": "独立 reviewer（filing 侧，非实施者）复验：核对 binding/oracle/commands/pre_fix_assertions.json/gapbefore-after-results.json/changes.diff/selection_diff.md；抽查至少一个卡片专属 oracle 格（建议 C01 或 C09）与一个保留案例（另一 root 名或不同修订 id 重放 G-B2）后出具 accepted_scoped 或 changes_required；C15 批次执行面遗留移交 I-03-C",
+  "input_hashes": {
+    "card_I-03-B.md": "7178fc51fa868e9054b92219bca6c3aa84645d14bb9133dabb3cc6f072528179",
+    "I-03-A_decision.md": "963229846b06ed3b4f48d0d3192b444101b5e16e5a4989d53abdbd1a983e910d",
+    "I-03-A_oracle.md": "dd5a57692a74f8bb664ef4b83b5a97dafad94cb519698037c4578a3cf8ec6358",
+    "I-03-A_oracle-inputs.csv": "6b070c8eb979390bf455094713d2a59815c29dcbe01fa50cdfa31a832822bc18",
+    "I-03-A_compat-matrix.md": "09040e469efd870bee12c436228536db9bb523af03a907bd4932c093a2161d2a",
+    "gap_plan.py_production_anchor": "d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f",
+    "test_source_catalog_gap_plan.py": "789e0b50aff4a7298f841f8f82ae2b8249d91a1292f286515bba31e4530ca01b"
+  },
+  "current_source_hashes": {
+    "iso/override/gap_plan.py (the only modified file)": "f0452bea4a5ca9701947582c6bdf7cd76ffd6501bbaef1f2ca3bcbf642076547",
+    "after/gapbefore-after-results.json": "13316585bc16bb43be7210865797d4f82e68afaa59798cb5147b2b76d04854e9",
+    "before/pre_fix_assertions.json": "sha256-recomputable-before-after-pair-via-scripts",
+    "changes.diff": "926 lines, diff -u iso/baseline/gap_plan.py iso/override/gap_plan.py"
+  },
+  "changed_paths": [
+    "binding.json",
+    "oracle.md",
+    "binding.json.inherited_oracle.json",
+    "commands.json",
+    "iso_patching.md",
+    "iso/baseline/gap_plan.py (copy, unmodified)",
+    "iso/override/gap_plan.py (patched copy)",
+    "iso/pre/pre_fix_assertions.py",
+    "scripts/w03b_cases.py",
+    "scripts/samples/sample_cn_annual.json",
+    "scripts/samples/sample_cn_interim.json",
+    "scripts/samples/sample_hk_annual.json",
+    "scripts/samples/sample_us_noncalendar.json",
+    "before/pre_fix_assertions.json",
+    "after/post_fix_assertions.json",
+    "after/w03b-before.json",
+    "after/w03b-after.json",
+    "after/gapbefore-after-results.json",
+    "outcome/selection_diff.md",
+    "changes.diff",
+    "handoff.json"
+  ],
+  "commands_executed": [
+    "w03b-prefix-baseline (exit 0, RED 满覆盖)",
+    "w03b-postfix-override (exit 0, G-B1..B5c 全 pass)",
+    "w03b-before-harness (exit 0, 20 fail/1 巧合 pass)",
+    "w03b-after-harness (exit 0, 21/21 pass)",
+    "w03b-merge-diff (exit 0)"
+  ],
+  "raw_exit_codes": [0, 0, 0, 0, 0],
+  "expected_exit_codes": [0, 0, 0, 0, 0],
+  "open_questions": [
+    "I-03-A 未定义情况（本卡命中 1 项，保守处理并待高级裁决）：本地句柄存在但无任何受信日期，同期远端有不同 accession 的已日期候选 → 副本落 unknown_candidates(reason=local_date_missing)，不进 missing/newer（更保守 = 更多显式 unknown，符合 I-03-A 冲突规则'以更保守一方为准'）；需 filing 端 reviewer 确认或 I-03-A 补格",
+    "not_published 恒 false：adapter 无穷尽知识声明字段不存在（I-03-A 已记录的遗留依赖，非 TBD）",
+    "C15 批次截断/completed_partial/remaining 属执行面（close_gap），本卡只产出确定性排序的完整 missing，移交 I-03-C",
+    "ambiguous 组下 already_covered 的边界（D4 'capture_ready 句柄即成立' vs D2 'ambiguous 不宣称 covered'）：副本采取【reuse 保留 + 组级 unconfirmed + latest_status=unknown_if_remote_confirmed_newer】的保守折中，留 reviewer 复核"
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "oracle.md",
+    "binding.json",
+    "commands.json",
+    "iso_patching.md",
+    "before/pre_fix_assertions.json",
+    "after/gapbefore-after-results.json",
+    "after/post_fix_assertions.json",
+    "changes.diff",
+    "outcome/selection_diff.md",
+    "scripts/samples/ (三市场样本 + 字段来源模拟声明)"
+  ],
+  "reviewer_status": "review_pending",
+  "START_HERE_fields": {
+    "run_cwd_policy": "执行 cwd 由 attempt 目录 A 充当（纯函数副本实施，无 checkout 执行）；生产三仓 cwd 未被写入或运行",
+    "interpreter": "A/iso/venv/Scripts/python.exe (-X utf8 -B)",
+    "isolation": "只写 A/；生产 raw/catalog/registry/worker 零触碰；network=disabled",
+    "scope_note": "T-GAP 生产 pytest 未运行（生产文件未修改，运行其测试只能复验旧行为）；等价断言已在 isolate 中全量复现，T-GAP 绑定仍归 I-00-B"
+  }
+}

@@ -120,7 +120,7 @@
 
 ### C-C（不阻塞，但影响证据解释）：同一棵树里有并发卡在运行
 
-本 attempt 期间 `revenue-forecast` 的 `git status --porcelain` 行数从 148（before）变为 124（首次 after）、再到 132（最终 after），且差异集中在 **I-04-C** 与若干 **M09–M28 / I-11-A / _m2931_build** 的 attempt 目录 —— **本卡从未触碰这些路径**。同期 `company-wiki`、`filing-fetch` 前后零差异。
+本 attempt 期间 `revenue-forecast` 的 `git status --porcelain` 行数从 148（before 快照）变为 124（**首次 after 快照，未保留 ⇒ 该数字不作证据**）、再到 132（当时保留的 after 快照；**该文件其后在勘误轮被就地重抓为 270 行、旧内容不可复验**，见 `errata.md` E-11），且差异集中在 **I-04-C** 与若干 **M09–M28 / I-11-A / _m2931_build** 的 attempt 目录 —— **本卡从未触碰这些路径**。同期 `company-wiki`、`filing-fetch` 前后零差异。
 
 因此**「无改动」不能靠 git 状态快照证明**。本卡改用**更强的证据**：
 

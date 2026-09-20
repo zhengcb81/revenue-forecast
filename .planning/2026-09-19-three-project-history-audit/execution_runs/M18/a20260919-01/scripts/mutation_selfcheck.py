@@ -111,16 +111,25 @@ def main() -> int:
             handle.write(completed.stderr or "")
         verdict = None
         exit_code_in_file = None
+        negative_counts = None
+        failed_negatives = None
+        verdict_reasons = None
         if os.path.isfile(out):
             doc = read_json(out)
             verdict = doc.get("verdict")
             exit_code_in_file = doc.get("exit_code")
+            negative_counts = doc.get("negative_counts")
+            failed_negatives = (doc.get("negative_summary") or {}).get("failed")
+            verdict_reasons = doc.get("verdict_reasons")
         return {
             "label": label,
             "argv": argv,
             "raw_returncode": completed.returncode,
             "verdict_in_result_file": verdict,
             "exit_code_in_result_file": exit_code_in_file,
+            "negative_counts_in_result_file": negative_counts,
+            "failed_negatives_in_result_file": failed_negatives,
+            "verdict_reasons_in_result_file": verdict_reasons,
             "stdout_tail": (completed.stdout or "").splitlines()[-3:],
             "stdout_path": os.path.join(scratch, "stdout_%s.txt" % label),
             "stderr_path": os.path.join(scratch, "stderr_%s.txt" % label),
@@ -193,6 +202,32 @@ def main() -> int:
     runs.append(entry_d)
 
     # E: uncorrupted copy -> green restored
+    # F: tamper the DECLARED expectation of a negative case (the isinstance trap).
+    # The case still raises ModelRegistryError, but the frozen cases.json declares "ValueError".
+    # Because ModelRegistryError IS a ValueError subclass, an isinstance-based comparison would
+    # silently pass; the runner must compare the EXACT type name and go red.
+    reset_copies()
+    cases = read_json(cases_path)
+    declared_target = None
+    for case in cases["cases"]:
+        if case["id"] == "N02":
+            declared_target = case
+            break
+    if declared_target is None:
+        raise SystemExit("SELFCHECK ERROR: no N02 case in the frozen cases.json")
+    original_declared = declared_target["expected"]
+    declared_target["expected"] = "ValueError"
+    write_json(cases_path, cases)
+    entry_f = run("F_tampered_declared_expectation")
+    entry_f["mutation"] = {"file": "evidence/%s/cases.json" % card, "case": "N02",
+                           "field": "expected", "from": original_declared, "to": "ValueError",
+                           "why": ("the case still raises ModelRegistryError, but the declaration "
+                                   "says ValueError; ModelRegistryError is a ValueError subclass, so "
+                                   "an isinstance comparison would pass silently. The runner must "
+                                   "compare the EXACT type name and report the mismatch")}
+    entry_f["expected_rc"] = 3
+    runs.append(entry_f)
+
     reset_copies()
     entry_e = run("E_uncorrupted_copy")
     entry_e["mutation"] = {"action": "none; byte copy of the frozen evidence"}
@@ -207,21 +242,22 @@ def main() -> int:
         "card_id": card,
         "model_id": CARDS[card],
         "purpose": ("prove the runner's exit code carries the verdict: corrupt a COPY of the frozen "
-                    "expectation or of a negative assertion and show the runner turns red, then show "
-                    "green returns on the uncorrupted copy"),
+                    "expectation, of a negative assertion, or of a declared expectation, and show the "
+                    "runner turns red, then show green returns on the uncorrupted copy"),
         "scratch_root": scratch,
         "scratch_scope": "recovery/selfcheck only; the frozen evidence was never written to",
         "runner_sha256": sha256(os.path.join(attempt, "scripts", "run_card.py")),
         "exit_code_contract": {"0": "pass", "1": "harness error",
                                "2": "no verdict (missing expectation or fidelity mismatch)",
-                               "3": "negative verdict"},
+                               "3": ("negative verdict, including a negative case that was not "
+                                     "rejected with the exact type name declared in cases.json")},
         "valid_optional_driver_used_to_neuter_N04": valid_driver,
         "frozen_evidence_sha256_before_mutations": frozen_before,
         "frozen_evidence_sha256_after_mutations": frozen_after,
         "frozen_evidence_unchanged": frozen_unchanged,
         "runs": runs,
         "all_mutations_produced_the_expected_exit_code": all_as_expected,
-        "red_then_green": ("A/B/C/D are red (rc != 0) and E is green (rc = 0) only if "
+        "red_then_green": ("A/B/C/D/F are red (rc != 0) and E is green (rc = 0) only if "
                            "all_mutations_produced_the_expected_exit_code is true"),
     }
     out = os.path.join(evidence, "mutation_selfcheck.json")

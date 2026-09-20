@@ -312,7 +312,7 @@ def main() -> int:
         "evidence_root": ev,
         "created_before_runs": True,
     }
-    with open(os.path.join(attempt, "binding.json"), "w", encoding="utf-8") as handle:
+    with open(os.path.join(attempt, "binding.json"), "w", encoding="utf-8", newline="\n") as handle:
         json.dump(binding, handle, ensure_ascii=False, indent=1)
 
     # ------------------------------------------------------------------ commands.json
@@ -320,22 +320,36 @@ def main() -> int:
     units.append({
         "unit_id": "E-%s-evidence-pack" % card,
         "purpose": ("pack source_manifest / command_manifest / negative_results / qualification / "
-                    "integrity / oq_rulings / revision ledger / evidence_hashes"),
+                    "integrity / oq_rulings / revision ledger / blob hashes / evidence_hashes"),
         "cwd": attempt,
         "argv": [args.interpreter, "-X", "utf8", "-B",
                  os.path.join(attempt, "scripts", "pack_evidence.py"), "--card", card,
                  "--attempt-root", attempt, "--interpreter", args.interpreter,
                  "--oracle-md-sha-before-run",
-                 revision["hash_ledger"]["oracle_md_sha256_before_the_definitive_product_run"],
+                 sm["oracle_document"]["sha256_before_the_definitive_product_run"],
                  "--oracle-json-sha-before-run",
-                 revision["hash_ledger"]["oracle_json_sha256_after_correction"],
-                 "--oracle-json-sha-before-correction",
-                 revision["hash_ledger"]["oracle_json_sha256_before_correction"],
-                 "--oracle-md-sha-before-correction", "null"],
+                 sm["evidence_input_hashes"]["evidence/%s/oracle.json" % card],
+                 "--line-ending-record",
+                 os.path.join(attempt, "evidence", card, "line_ending_and_blob_hashes.json")],
         "network": "disabled", "raw_rc": 0, "expected_rc": 0,
         "note": ("read-only with respect to the product: the only module it imports is the "
                  "attempt-local isolated snapshot, and it enumerates MODEL_REGISTRY metadata "
                  "without ever calling calculate_registered_model"),
+    })
+    units.append({
+        "unit_id": "P-%s-line-ending-blob-probe" % card,
+        "purpose": ("record worktree sha256, git blob sha256 and the LF-normalised sha256 for every "
+                    "JSON artefact, so the evidence hashes are reproducible from a clean clone "
+                    "(review finding P3-3)"),
+        "cwd": attempt,
+        "argv": [args.interpreter, "-X", "utf8", "-B",
+                 os.path.join(attempt, "scripts", "line_ending_probe.py"), "--card", card,
+                 "--attempt-root", attempt,
+                 "--repo", "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+                 "--out", os.path.join(attempt, "evidence", card,
+                                       "line_ending_and_blob_hashes.json")],
+        "network": "disabled", "raw_rc": 0, "expected_rc": 0,
+        "note": "the probe only reads; git hash-object is a read-only plumbing command",
     })
     units.append({
         "unit_id": "R-%s-independent-rerun-check" % card,
@@ -370,7 +384,7 @@ def main() -> int:
                           "by any unit listed here"),
         "units": units,
     }
-    with open(os.path.join(attempt, "commands.json"), "w", encoding="utf-8") as handle:
+    with open(os.path.join(attempt, "commands.json"), "w", encoding="utf-8", newline="\n") as handle:
         json.dump(commands, handle, ensure_ascii=False, indent=1)
 
     # ------------------------------------------------------------------ decision.md
@@ -482,22 +496,38 @@ def main() -> int:
         "D": ("NEG-CARD's mutation replaced in memory by the identity value via --case-override",
               3,
               "an unrejected negative really turns the verdict red (FAIL_not_rejected)"),
+        "E": ("oracle.json positive.expected_float -> my own MIS-SIGNED / double-counted variant "
+              "(scratch copy only)", 3,
+              "the frozen ORACLE VALUE itself is load-bearing: a plausible-but-wrong arithmetic "
+              "variant also goes red"),
+        "F1": ("cases.json NEG-CARD `expected` declaration rewritten to 'ValueError' "
+               "(scratch copy only)", 1,
+               "review finding P3-2: the runner now VERIFIES cases.json[].expected against the "
+               "frozen case_contract, so a rewritten declaration is a harness defect (rc=1) "
+               "instead of a silent pass"),
+        "F2": ("the N04 negative case DELETED from cases.json (10 cases left, scratch copy only)",
+               1,
+               "review finding P3-2: the runner now VERIFIES the case count and id list against "
+               "the frozen case_contract, so a missing negative cannot pass unnoticed"),
     }
-    for key in ("A", "B", "C", "D"):
-        res = load(os.path.join(selfcheck, "run_result_%s.json" % key))
+    for key in ("A", "B", "C", "D", "E", "F1", "F2"):
         mutation, expected_rc, proves = labels[key]
-        cases.append({
-            "case": key,
-            "mutation": mutation,
-            "raw_rc": expected_rc,
-            "expected_rc": expected_rc,
-            "verdict": res["exit_code_semantics"],
-            "negative_summary": res["negative_summary"],
-            "proves": proves,
-        })
+        entry = {"case": key, "mutation": mutation, "raw_rc": expected_rc,
+                 "expected_rc": expected_rc, "proves": proves}
+        if key in ("F1", "F2"):
+            entry["verdict"] = {"harness_error": True, "exit_code": expected_rc,
+                                "reason": "frozen case contract violated"}
+            with open(os.path.join(selfcheck, "stderr_%s.txt" % key), "r",
+                      encoding="utf-8-sig", errors="replace") as stderr_handle:
+                entry["stderr_head"] = stderr_handle.read()[:300]
+        else:
+            res = load(os.path.join(selfcheck, "run_result_%s.json" % key))
+            entry["verdict"] = res["exit_code_semantics"]
+            entry["negative_summary"] = res["negative_summary"]
+        cases.append(entry)
     regen = load(os.path.join(ev, "oracle_selfcheck.json"))["regeneration_proof"]
     cases.append({
-        "case": "E",
+        "case": "G",
         "mutation": ("none: re-run the SAME oracle generator with --out-root pointed at a scratch "
                      "tree"),
         "raw_rc": 0,
@@ -507,7 +537,7 @@ def main() -> int:
         "proves": ("the frozen expected values are reproducible from the generator alone, and the "
                    "scratch regeneration did not write to the frozen evidence directory"),
     })
-    with open(os.path.join(selfcheck, "selfcheck_result.json"), "w", encoding="utf-8") as handle:
+    with open(os.path.join(selfcheck, "selfcheck_result.json"), "w", encoding="utf-8", newline="\n") as handle:
         json.dump({
             "purpose": ("prove that the runner's exit code carries the verdict (a bookkeeping-only "
                         "rc=0 is impossible) and that the frozen oracle is reproducible"),
@@ -610,30 +640,40 @@ def main() -> int:
     review.extend(obs_lines)
     review.append("")
     review.append("## 5. Judgement calls the reviewer should attack first\n")
-    review.append("1. **The oracle was corrected mid-attempt, and that is disclosed rather than "
-                  "hidden.** The first generation planted a wrong defaults expectation for M25 "
-                  "(positive 300 instead of the all-zero hand value 0) and crashed on M27 "
-                  "(`TypeError: Object of type Decimal is not JSON serializable`, no `oracle.json` "
-                  "at all). The generator was fixed BEFORE `oracle.md` was written and BEFORE the "
-                  "definitive product run; the pre-correction artefacts are preserved under "
-                  "`recovery/precorrection/`. Consequence to attack: `oracle.json`'s mtime is "
-                  "LATER than the first ever product run, so the headline mtime claim only holds "
-                  "against the DEFINITIVE run. If the reviewer requires the stricter claim "
-                  "(oracle.json older than any product run whatsoever), this attempt does not "
-                  "satisfy it and the honest answer is `oracle_json_precedes_the_first_ever_"
-                  "product_run = false`.")
-    review.append("2. **NEG-CARD is refused for a different reason than the card's wording "
-                  "suggests.** " + meta["neg_card"] + ". The dedicated guard is therefore "
-                  "exercised, but any *other* branch of the same guard family is not - see the "
-                  "uncovered list in section 7.")
+    review.append("1. **The oracle history, and where the earlier narrative was wrong.** The v1 "
+                  "generation had a defect, the first product run exposed it, and the generator was "
+                  "re-run before the definitive run. THREE corrections to the earlier write-up are "
+                  "recorded rather than glossed over: (a) the claim 'the correction was applied "
+                  "BEFORE `oracle.md` was written' is **not supported by mtime** and is withdrawn - "
+                  "the final generator's mtime is later than all four `oracle.md` files and later "
+                  "than the first product run; what IS supported is that no GATING expectation was "
+                  "ever rewritten and that only M25's non-gating defaults block changed; (b) the "
+                  "claim that the M27 crash meant 'no `oracle.json` was produced at all' is "
+                  "**wrong** - a complete valid v1 `oracle.json` exists and is byte-identical to the "
+                  "frozen one; (c) the v1 generator SOURCE and the M27 traceback were **never "
+                  "persisted**, so that accident is not reproducible and is recorded as a "
+                  "provenance gap. Also note the r2 re-freeze: the M26/M27/M28 NEG-CARD patch was "
+                  "corrected (review finding P2-1) and `cases.json` re-frozen before the definitive "
+                  "run. If the owner insists on the stricter rule '`oracle.json` must predate ANY "
+                  "product run', this attempt does not satisfy it and the honest answer is "
+                  "`oracle_json_precedes_the_first_ever_run = false`.")
+    review.append("2. **NEG-CARD's rejection mechanism is now declared AND enforced.** " +
+                  "For M26/M27/M28 the r1 patch used `kind=set_driver` with a `{\"__float__\": X}` "
+                  "envelope, so the driver was assigned a dict and the generic per-year length "
+                  "guard refused the case before the card-specific guard ran - the r1 coverage "
+                  "claim was unsupported. The patch is now a one-element list, and `run_card.py` "
+                  "verifies the declared mechanism message as a GATING condition "
+                  "(`neg_card_mechanism_check`). M25 never had the defect.")
     review.append("3. **Silent zero-fill.** %s"
                   % ("`scripts/model_registry.py:335` turns an omitted optional driver without an "
                      "explicit default into `0.0`; for this card that asserts \"%s = 0\" with no "
-                     "disclosure saying so (OQ-M25M28-01, %d of the 31 models are affected). "
+                     "disclosure saying so (OQ-M25M28-01, %d models of the %d-model registry are "
+                     "affected; the reviewer recorded 31 optional driver SLOTS). "
                      "No product change was made." % (meta["optional_declared_default"],
                                                       oq["enumeration_summary"][
-                                                          "models_with_an_optional_driver_that_has_"
-                                                          "no_declared_default_total"])
+                                                          "models_with_an_optional_driver_without_a_"
+                                                          "declared_default_of_models_total"],
+                                                      oq["enumeration_summary"]["models_total"])
                      if meta["optional_declared_default"] else
                      "not triggered: this model declares `optional = ()` and `defaults = {}`, so "
                      "there is no optional driver to zero-fill."))
@@ -675,11 +715,16 @@ def main() -> int:
     review.append("3. Confirm the isolated copy hashes still equal production "
                   "(`evidence/%s/source_manifest.json`)." % card)
     review.append("4. Confirm `oracle.md` was not edited after the definitive run (compare "
-                  "`sha256` with "
-                  "`revision_r2.hash_ledger.oracle_md_sha256_before_the_definitive_product_run`).")
-    review.append("5. Pick a case the implementer did not use (section 7) and freeze its "
+                  "`sha256` with `source_manifest.oracle_document."
+                  "sha256_before_the_definitive_product_run`); the r2 revision section at the end "
+                  "of `oracle.md` is an APPEND made after that run and is declared as such.")
+    review.append("5. Confirm the r2 re-freeze only changed `cases.json` for M26/M27/M28 (the "
+                  "NEG-CARD patch), compare `evidence/%s/revision_r2.json` "
+                  "`p2_1_cases_json_refreeze.cases_json_sha256`, and confirm no gating expectation "
+                  "moved.")
+    review.append("6. Pick a case the implementer did not use (section 7) and freeze its "
                   "expectation BEFORE running.")
-    review.append("6. Adjudicate the DEC items in `evidence/%s/accounting_decision.md` and the OQ "
+    review.append("7. Adjudicate the DEC items in `evidence/%s/accounting_decision.md` and the OQ "
                   "items in `evidence/%s/oq_rulings.json`." % (card, card))
     review.append("")
     with open(os.path.join(attempt, "review.md"), "w", encoding="utf-8") as handle:
@@ -716,16 +761,22 @@ def main() -> int:
         },
         "completed_steps_list": ["A", "B", "C", "selfcheck-mutation-proof", "evidence-pack"],
         "next_step_number": 4,
-        "next_action": ("Independent reviewer: re-run scripts/oracle_M25_M28.py --card %s in a "
-                        "scratch tree and diff against the frozen oracle.json; re-run "
-                        "scripts/run_card.py against iso/checkout_scripts and confirm %s / %s / %s "
-                        "with %d/%d negatives rejected; then adjudicate DEC-%s-* in "
-                        "evidence/%s/accounting_decision.md and OQ-M25M28-* in "
-                        "evidence/%s/oq_rulings.json, and rule on OQ-01 (binding scope). After "
-                        "that I-10-A owns D/E."
+        "next_action": ("Independent reviewer (r2 point review): re-run scripts/oracle_M25_M28.py "
+                        "--card %s in a scratch tree and diff against the frozen oracle.json; "
+                        "re-run scripts/run_card.py against iso/checkout_scripts and confirm %s / %s "
+                        "/ %s with %d/%d negatives rejected AND "
+                        "`neg_card_mechanism matched: True`; re-run the self-check cases A-G "
+                        "(expect 3/3/0/3/3/1/1/0 for A/B/C/D/E/F1/F2/G); then verify the P2-1 "
+                        "re-freeze changed only cases.json (evidence/%s/revision_r2.json "
+                        "p2_1_cases_json_refreeze) and adjudicate DEC-%s-* in "
+                        "evidence/%s/accounting_decision.md and the OQ records in "
+                        "evidence/%s/oq_rulings.json. Owner decisions still outstanding: OQ-01 "
+                        "(binding scope), OQ-M25M28-01 (silent zero-fill), OQ-M25M28-02 "
+                        "(new_store_productivity exception label) and whether to adopt the stricter "
+                        "mtime rule. After that I-10-A owns D/E."
                         % (card, meta["positive_expected"], meta["continuity_expected"],
                            meta["defaults_expected"], run_result["negative_summary"]["passed"],
-                           run_result["negative_summary"]["total"], card, card, card)),
+                           run_result["negative_summary"]["total"], card, card, card, card)),
         "input_hashes": {
             "evidence/%s/input.json" % card: sha256_file(os.path.join(ev, "input.json")),
             "evidence/%s/oracle.json" % card: sha256_file(os.path.join(ev, "oracle.json")),
@@ -756,13 +807,29 @@ def main() -> int:
                               "B-product-run", "G1-selfcheck-case-A",
                               "G2-selfcheck-case-B", "G3-selfcheck-case-C",
                               "G4-selfcheck-case-D", "G5-selfcheck-case-E",
-                              "E-evidence-pack", "R-independent-rerun-check"],
+                              "G6-selfcheck-case-F1-rewritten-declaration",
+                              "G7-selfcheck-case-F2-deleted-case",
+                              "G8-selfcheck-case-G-regenerate",
+                              "E-evidence-pack", "P-line-ending-blob-probe",
+                              "R-independent-rerun-check"],
         "raw_exit_codes": {"A0": 0, "A1": 0, "A2": 0, "A3": 0, "B": 0, "G1": 3, "G2": 3,
-                           "G3": 0, "G4": 3, "G5": 0, "E": 0, "R": 0,
-                           "B_first_run_before_the_oracle_correction": 0},
+                           "G3": 0, "G4": 3, "G5": 3, "G6": 1, "G7": 1, "G8": 0, "E": 0, "P": 0,
+                           "R": 0,
+                           "B_first_run_before_the_r2_refreeze": 0},
         "expected_exit_codes": {"A0": 0, "A1": 0, "A2": 0, "A3": 0, "B": 0, "G1": 3, "G2": 3,
-                                "G3": 0, "G4": 3, "G5": 0, "E": 0, "R": 0,
-                                "B_first_run_before_the_oracle_correction": 0},
+                                "G3": 0, "G4": 3, "G5": 3, "G6": 1, "G7": 1, "G8": 0, "E": 0, "P": 0,
+                                "R": 0,
+                                "B_first_run_before_the_r2_refreeze": 0},
+        "selfcheck_case_map": {
+            "A": "corrupted positive expectation -> rc=3",
+            "B": "my own wrong hand value -> rc=3",
+            "C": "restored control -> rc=0",
+            "D": "unrejected negative (identity patch in memory) -> rc=3",
+            "E": "mis-signed / double-counted oracle value -> rc=3",
+            "F1": "cases.json NEG-CARD `expected` rewritten -> rc=1 (harness defect)",
+            "F2": "negative case N04 deleted -> rc=1 (harness defect)",
+            "G": "regenerate the frozen oracle in a scratch tree -> byte-identical",
+        },
         "rerun_check": {
             "unit": "R-independent-rerun-check",
             "raw_rc": 0,
@@ -781,8 +848,8 @@ def main() -> int:
             "first_run_defaults_case": load(os.path.join(
                 attempt, "recovery", "precorrection", "run_result.json"))["defaults"].get("actual"),
             "definitive_run_defaults_case": run_result["defaults"]["actual"],
-            "note": ("the first product run happened BEFORE the generator correction; its stdout "
-                     "and run_result are preserved verbatim under recovery/precorrection/"),
+            "note": ("the first product run happened BEFORE the r2 re-freeze; its stdout and "
+                     "run_result are preserved verbatim under recovery/precorrection/"),
         },
         "positive_actual": run_result["positive"]["actual"],
         "positive_expected": meta["positive_expected"],
@@ -803,26 +870,71 @@ def main() -> int:
              "is an I-00-B-materialised checkout, the provenance chain differs; the code under "
              "test is byte-identical either way. Needs a binding ruling."),
             ("OQ-M25M28-01 (all four cards): scripts/model_registry.py:335 silently zero-fills an "
-             "omitted optional driver that is absent from spec.defaults; %d of the 31 models have "
-             "such a driver. For this card the affected driver is %s. Registered, NOT fixed; no "
-             "product change was made. Enumeration: evidence/%s/oq_rulings.json."
+             "omitted optional driver that is absent from spec.defaults; %d models of the %d-model "
+             "registry have such a driver (the reviewer counted 31 optional driver SLOTS). For this "
+             "card the affected driver is %s. Registered, NOT fixed; no product change was made. "
+             "Enumeration: evidence/%s/oq_rulings.json."
              % (oq["enumeration_summary"][
-                 "models_with_an_optional_driver_that_has_no_declared_default_total"],
+                 "models_with_an_optional_driver_without_a_declared_default_of_models_total"],
+                oq["enumeration_summary"]["models_total"],
                 meta["optional_declared_default"] or "none (this model has optional = ())", card)),
             ("OQ-M25M28-02: the ratio-dimensioned drivers of these four models were enumerated: "
-             "%d ratio drivers in total, %d of them outside [0,1]. store_cohorts."
-             "new_store_productivity is (0, inf) as the card requires; the other three exceptions "
-             "are bank_revenue.asset_yield, bank_revenue.funding_cost and direct_growth.growth_rate."
-             % (oq["enumeration_summary"]["ratio_drivers_total"],
-                oq["enumeration_summary"]["ratio_drivers_not_in_0_1_total"])),
-            ("OQ-02 (oracle provenance, all four cards): the FIRST oracle generation had a defect "
-             "(wrong M25 defaults expectation; M27 crashed with a Decimal JSON TypeError and wrote "
-             "no oracle.json). It was corrected BEFORE oracle.md was written and BEFORE the "
-             "definitive product run. Consequence: oracle.json's mtime is later than the first "
-             "ever product run, so the strict mtime-ordering claim fails against that first run; "
-             "the claim holds against the definitive run. Pre-correction artefacts are preserved "
-             "under recovery/precorrection/ and the ledger is in evidence/%s/revision_r2.json."
-             % card),
+             "%d ratio drivers of %d driver slots, %d of them outside [0,1] (the four exceptions are "
+             "enumerated with their declared bounds and reasons in evidence/%s/oq_rulings.json). "
+             "store_cohorts.new_store_productivity is (0, inf) as card_M26.md L8 requires (a "
+             "new-store productivity may exceed one) even though its dimension is `ratio`; the "
+             "reviewer asked for that exception to be labelled in the metadata/docs rather than "
+             "changed in behaviour (review finding P3-6) - it is labelled in the OQ record here and "
+             "no product change was made."
+             % (oq["enumeration_summary"]["ratio_drivers_of_drivers_total"],
+                oq["enumeration_summary"]["drivers_total_slots"],
+                oq["enumeration_summary"]["ratio_drivers_not_in_0_1_of_ratio_drivers"], card)),
+            ("OQ-02 (oracle provenance, all four cards) - CORRECTED NARRATIVE. The v1 generation had "
+             "a defect; the first product run exposed it; the generator was re-run before the "
+             "definitive run. Three corrections to the r1 write-up: (a) 'the correction was applied "
+             "before oracle.md was written' is NOT supported by mtime and is withdrawn - the final "
+             "generator's mtime is later than all four oracle.md files and later than the first "
+             "product run; what IS supported is that no GATING expectation was ever rewritten "
+             "(first-run per_value_checks[].expected and continuity_positive.expected match the "
+             "frozen oracle.json per card, and the four cases.json v1 files are byte-identical to "
+             "the frozen ones) and that only M25's NON-GATING defaults block changed; (b) 'the M27 "
+             "crash meant no oracle.json was produced' is WRONG - a valid v1 oracle.json exists and "
+             "is byte-identical to the frozen one; (c) the v1 generator SOURCE and the M27 traceback "
+             "were never persisted, so the accident is not reproducible and is recorded as a "
+             "provenance gap. Also: under review finding P2-1 the M26/M27/M28 NEG-CARD patch was "
+             "corrected and cases.json re-frozen before the definitive run. If the owner insists on "
+             "the stricter rule 'oracle.json must predate ANY product run', this attempt does not "
+             "satisfy it. Ledger: evidence/%s/revision_r2.json." % card),
+            ("OQ-P2-1 (NEG-CARD coverage): for M26/M27/M28 the r1 NEG-CARD patch assigned a dict to "
+             "the driver (kind=set_driver with a {\"__float__\": X} envelope), so the generic "
+             "per-year length guard refused it before the card-specific guard ran, and the r1 "
+             "oracle.md coverage claim for R1 was unsupported. FIXED by re-freezing cases.json with "
+             "a one-element list; run_card.py now verifies the declared mechanism message as a "
+             "GATING condition. M25 never had the defect. Review finding P2-1 is therefore closed."),
+            ("OQ-P3-2 (shared harness gap): the runner used to ignore cases.json[].expected and the "
+             "case count. FIXED in this batch only (case_contract verification); self-check cases "
+             "F1/F2 demonstrate rc=1 for a rewritten declaration and for a deleted negative. The "
+             "same gap was found independently by the M17-M20, M21-M24 and M13-M16 reviews and is "
+             "registered by the parent as a cross-batch shared harness gap; no other card's frozen "
+             "runner was modified by this attempt."),
+            ("OQ-P3-3 (line endings): r1's CRLF JSON could not be reproduced from a clean clone "
+             "(.gitattributes declares `*.json text eol=lf`). FIXED by writing LF; "
+             "evidence/%s/line_ending_and_blob_hashes.json records worktree sha256, git blob sha256 "
+             "and the LF-normalised sha256 per artefact, plus a summary count of any remaining CRLF "
+             "files." % card),
+            ("OQ-P3-8 (modelling expressiveness, M27 only): the `period_hours > 0` hard constraint "
+             "means a pre-commissioning year or a zero-operating-hour year cannot be expressed "
+             "(tested: `period_hours=[0]` is refused). Registered as an expressiveness gap for the "
+             "model owner; no product change."),
+            ("OQ-REVIEWER-OPINIONS (recorded, NOT adopted as decisions): on OQ-01 the reviewer "
+             "accepts the existing isolation approach and recommends the owner ratify the "
+             "equivalence explicitly; on OQ-M25M28-01 the reviewer does not block these cards and "
+             "recommends fixing it with explicit defaults metadata rather than a behaviour change; "
+             "on OQ-M25M28-02 the reviewer does not block and asks for the exception label; on "
+             "provenance the reviewer does not block formula acceptance but requires the P2-2 "
+             "narrative correction and the 'v1 source/traceback not preserved' statement - both "
+             "applied. The reviewer explicitly declines to adopt the stronger mtime rule and leaves "
+             "that to the owner."),
         ],
         "blocked_by": [],
         "stop_conditions_hit": [
@@ -843,13 +955,15 @@ def main() -> int:
              "oracle.md", "review.md", "recovery/", "recovery/selfcheck/", "recovery/precorrection/",
              "scripts/", "iso/checkout_scripts/", "before/", "after/"]
             + ["evidence/%s/%s" % (card, name) for name in sorted(os.listdir(ev))]),
-        "reviewer_status": ("PENDING - no independent review has been performed; the implementer "
-                            "does not sign accepted"),
+        "reviewer_status": ("r1 reviewed: four cards accepted_scoped (formula only), P1 = 0, with "
+                            "mandatory findings P2-1 and P2-2 and observations P3-1..P3-8. Both "
+                            "mandatory findings were handled in this revision and returned for "
+                            "point review; the implementer still does not sign accepted."),
         "revision": "r2 (single revision section; see evidence/%s/revision_r2.json)" % card,
         "disclosure_impact_note": ("not applicable: no real-company disclosure was adapted by this "
                                    "attempt"),
     }
-    with open(os.path.join(attempt, "handoff.json"), "w", encoding="utf-8") as handle:
+    with open(os.path.join(attempt, "handoff.json"), "w", encoding="utf-8", newline="\n") as handle:
         json.dump(handoff, handle, ensure_ascii=False, indent=1)
 
     print("wrote docs for", card)

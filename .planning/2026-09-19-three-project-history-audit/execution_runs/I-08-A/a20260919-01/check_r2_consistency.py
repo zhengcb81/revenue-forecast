@@ -16,7 +16,7 @@ ORACLE = (ATTEMPT / "oracle.md").read_text(encoding="utf-8")
 
 # --- 1. canonical codes: the E## rows of the section 2.5 table -------------
 start = DECISION.index("### 2.5 规范错误码表")
-end = DECISION.index("**两个参数、一个未决**")
+end = DECISION.index("个参数、一个未决")
 section = DECISION[start:end]
 canonical_rows = re.findall(r"\|\s*(E\d\d)\s*\|\s*`([a-z0-9_]+)`\s*\|", section)
 canonical = {code: name for code, name in canonical_rows}

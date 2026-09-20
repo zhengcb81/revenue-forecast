@@ -41,7 +41,8 @@ def main() -> int:
 
     card = args.card
     attempt = os.path.abspath(args.attempt_root)
-    units = card_units.build_units(card, attempt) + card_units.closing_units(card, attempt)
+    units = (card_units.build_units(card, attempt) + card_units.r2_units(card, attempt)
+             + card_units.closing_units(card, attempt))
 
     checked = 0
     declared = 0

@@ -1,0 +1,13 @@
+# oracle.md frozen-body delta, revision r2 (M23)
+# pre-r2 body sha256 d27cfbda9d748987b887b33393533daa39fafe75fbb5410e899ccab3ede1486b (10075 bytes)
+# post-r2 body sha256 ccd6fb673607521bbd524e9de08bd0e1e7f6d1335af35cf41cfa74a912a4b64f (10481 bytes)
+# every '+'/'-' line below must contain a review-mandated token; the whitelist is enforced by scripts/splice_oracle_md_r2.py
+# changed lines: 8; lines outside the whitelist: 0
+-| NEG-CARD | `timing_factor = float('1.1')`（基于 `positive`） | `ModelRegistryError` |
++| NEG-CARD | `timing_factor = [1.1]`（基于 `positive`） | `ModelRegistryError 且消息须含 `must be between 0.0 and 1.0: FY2027`` |
+-| OBS-TIMING-BOUND-ONE | `timing_factor = [1]`（基于 `continuity_positive`） | 不设预期 | records whether timing_factor = 1 (the inclusive upper edge of the ratio domain, and the documented default) is accepted on a 2-year path; NO expectation and NO verdict is asserted |
++| OBS-TIMING-BOUND-11 | `timing_factor = [1.1, 0.5]`（基于 `continuity_positive`） | 不设预期 | records whether timing_factor = 1.1 on a 2-year path is refused by the VALUE-domain guard rather than by a length guard; the frozen gating case NEG-CARD is on the 1-year card input where no index 1 exists; NO expectation and NO verdict is asserted |
++## 12. 桥平衡的有效分辨率（独立复核要求补记；见文末追加节的来源说明）
++
++本卡**不是存量桥**（第 1 节：not_applicable_with_reason），故桥平衡比较不适用；本卡的数值比较只有第 2/3 节的 `1e-9 × max(1, |expected|)` 容差。
++

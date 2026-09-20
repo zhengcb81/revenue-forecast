@@ -50,7 +50,7 @@ D 动作在卡片中是 `[professional_decision_required]`，本 attempt **没�
 | OQ-02 省缺可选 driver 被静默补 0（本模型：`other_revenue`） | owner（改产品需另立卡） |
 | OQ-03 卡片业务负例（DAU×年度 ARPPU、流水≠收入）不可运行时拒绝 | 行业/会计 reviewer（I-10-A / D） |
 | OQ-04 数值域与边界观测（含 `OBS-PAYER-BOUNDARY` = 20010） | 独立 reviewer（accept / amend / reject） |
-| OQ-05 流程声明 | 独立 reviewer |
+| OQ-05 本卡 attempt 的流程历史（1 趟测量 + 6 趟收尾） | 独立 reviewer（r2 后已成为 `oq_rulings.json` 的真实条目，指向 `process_history.json`） |
 
 ## 4. 本 attempt 未出现"为过审而改"
 

@@ -30,8 +30,8 @@ expected / 1=harness error). stderr is 0 bytes.
   `hashlib`, `json`, `os`, `sys` and `decimal` - see the `import_lines` list inside
   `evidence/M23/oracle_selfcheck.json`; `product_import_present` is `false`.
 - The oracle document `oracle.md` (sections 0-11) was written **before** any product run. Its
-  frozen body is 10075 bytes, sha256
-  `d27cfbda9d748987b887b33393533daa39fafe75fbb5410e899ccab3ede1486b`; the exact reconstruction identity
+  frozen body is 10481 bytes, sha256
+  `ccd6fb673607521bbd524e9de08bd0e1e7f6d1335af35cf41cfa74a912a4b64f`; the exact reconstruction identity
   `oracle.md == frozen_body + b"\n---\n\n" + run_section` is verified by
   `scripts/verify_prefix_chain.py` in all four attempts of this batch.
 - `evidence/M23/oracle.json` is **byte-identical when regenerated** (re-run performed).
@@ -43,7 +43,7 @@ expected / 1=harness error). stderr is 0 bytes.
   (N01a uses a real `bool`, N01b-d use real `float('nan'/'inf'/'-inf')`).
 - `PASS_rejected` requires `isinstance(exc, ModelRegistryError)`. `ImportError`,
   `ModuleNotFoundError` and `FileNotFoundError` are recorded as **FAIL**, never as pass.
-- The same `run_card.py` (sha256 `fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a`) was used for
+- The same `run_card.py` (sha256 `d02057debe8d34df8a472e83aa3771f5c90fb77d58b3c0eee2237e35593b2953`) was used for
   M05-M08 and for all four attempts of this batch; there is no card-specific runner to drift.
 
 ## 3. Results in detail
@@ -51,7 +51,7 @@ expected / 1=harness error). stderr is 0 bytes.
 - Registry formula observed from the isolated copy: `revenue = coverage_units * revenue_per_coverage_unit * timing_factor + other_revenue`
 - Registry required: `['coverage_units', 'revenue_per_coverage_unit']`; optional: `['timing_factor', 'other_revenue']`; defaults: `{'timing_factor': 1.0}`
 - Rejections and their messages:
-- `NEG-CARD`: ModelRegistryError - `driver insurance_service.timing_factor must contain one value per forecast year`
+- `NEG-CARD`: ModelRegistryError - `driver insurance_service.timing_factor must be between 0.0 and 1.0: FY2027`
 - `N01a`: ModelRegistryError - `insurance_service.coverage_units.FY2027 must be numeric`
 - `N01b`: ModelRegistryError - `insurance_service.coverage_units.FY2027 must be finite`
 - `N01c`: ModelRegistryError - `insurance_service.coverage_units.FY2027 must be finite`
@@ -109,7 +109,21 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 | A_corrupted_positive_expectation | 3 | 3 |
 | B_corrupted_negative_assertion | 3 | 3 |
 | C_corrupted_positive_input | 2 | 2 |
+| F_corrupted_expected_type | 3 | 3 |
+| G_corrupted_message_requirement | 3 | 3 |
+| H_message_requirement_points_at_another_guard | 3 | 3 |
 | D_restored_uncorrupted | 0 | 0 |
 
 `frozen_hashes_unchanged` = `True`. Full record:
 `recovery/selfcheck/selfcheck_result.json`.
+<!-- BEGIN independent-review verdict (round 2, transcribed verbatim) -->
+
+> **独立复核裁决（revision r2 后）：`accepted_scoped`（仅 formula）。由 `changes_required` 转正。**
+> 同 M22：NEG-CARD 现为 `timing_factor = [1.1]`，我独立构造并调用隔离快照得到 **`driver insurance_service.timing_factor must be between 0.0 and 1.0: FY2027`**（值域守卫），消息要求已冻结；三个变异探针（expected 翻转 / 消息要求不可能 / 消息要求指向长度守卫）全部 rc=3。
+> 我另在 2 年路径上双向证实值域守卫可达：`timing_factor=[1.1,0.5]` → `... must be between 0.0 and 1.0: FY2027`；`[0.5,1.1]` → `... FY2028`；`[1,1]`（含端点的文档默认值）→ 通过 `[210.0, 300.0]`。原 `OBS-TIMING-BOUND-11` 保留为非判定性交叉核对，定位不变。
+> 无回归：`rc=0`、`stderr` 0 字节、正例 `[110.0]`、连续性 `[110.0, 300.0]`、defaults `[200.0]`、11/11 负例；我自造输入另证 coverage×rpc×timing 边界（`7×13×1=91.0`；`coverage=0` → `42.0`；`timing=0` → `0.0`；总收入为负 → 拒绝）。
+> 正文改动经我逐节复算：改 NEG-CARD 行 + 改观察项行（`OBS-TIMING-BOUND-ONE` → `OBS-TIMING-BOUND-11`，与上一轮 obsfix 快照一致）+ 新增第 12 节，共 8 行；`## 2./3./4./8./10.` 与全部既有期望值逐字节未变；前像 sha256 `d27cfbda…`。
+> 签收边界：**仅 `formula`**。`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`。第 12 节写"本卡不是存量桥，桥平衡比较不适用"——与第 1 节 `not_applicable_with_reason` 自洽 ✓。
+> 遗留（时间性）：同 M22 的消息闸门完整性。
+
+<!-- END independent-review verdict -->

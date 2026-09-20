@@ -256,14 +256,27 @@ classify(artifact):
 4. 核对三仓 `git status --porcelain` 与 `before/git_status_*.txt` 的 ` M `/`??` **集合**一致（`scripts/`、`config/`、`artifacts/registry/`、`.planning/reviews/` 下零变化）。
 5. 核对 `iso/rf/**` 被改文件的 sha256 与 `changes.diff` 一致，且生产同路径文件 sha256 **仍等于** `before/source_hashes.txt`。
 6. 核对 `T-N52`/`T-N51` 未被悄悄算作通过；`iso/` 外零写入。
-7. **`changes.diff` 的字节级口径（独立复核 P3-1 修订）**：把 `changes.diff` 施加到
-   `before/baseline_tree/rf` 后，12 个文件中 **9 个的行尾与 `iso/rf` 不同（CRLF vs LF）**，
-   因此"**裸字节**逐字节重现"**不成立**；把行尾归一为 LF 后 **12/12 内容相同**。
+7. **`changes.diff` 的字节级口径（独立复核 P3-1 / N2 修订）**：把 `changes.diff` 施加到
+   `before/baseline_tree/rf` 后，**13 个文件中 9 个的行尾与 `iso/rf` 不同（CRLF vs LF）**
+   （第二轮新增 `scripts/trust_anchor.py`，总数由 12 变 13；实测见 `after/c15_line_endings.stdout.txt`：
+   13 文件、0 裸字节相同、4 仅行尾不同、9 为刻意编辑）。
+   因此"**裸字节**逐字节重现"**不成立**；把行尾归一为 LF 后 **13/13 内容相同**。
    正确表述是：**内容级可重现，字节级因行尾不成立**。reviewer 复算时请用归一 LF 后的比较，
    或直接比对 `binding.json.post_run_measurements.artifact_hashes` 里 `iso/rf/**` 的 sha256。
 8. **mtime 不可作准（P3-2）**：本卡窗口内曾有 61 个非 `.planning` 产品文件 mtime 落在同一分钟，
-   但 `before/source_hashes.txt` 的 24 个锚点**重算 drift=0**、生产 registry/默认信任域均未变，
+   但 `before/source_hashes.txt` 的锚点**重算 drift=0**、生产 registry/默认信任域均未变，
    即**内容零变化、mtime 变化与 git 操作时点相关**。任何"文件被动过"的推断必须基于内容哈希，不得基于 mtime。
+9. **本文件的编辑 provenance（独立复核 N2，如实登记）**：`oracle.md` 在**首轮测试运行之后**被编辑过——
+   第 7/8/9 条（以及 §7.1 的 `sys.executable` 例外措辞）是**复核驱动的勘误**，**不是**运行前冻结内容。
+   全部编辑事件按时间与哈希登记在 `binding.json.documentation_edit_ledger`，**不掩饰**该事实。
+   该治理问题（事后编辑冻结文本）**本卡无权自行裁定**，已登记为待 owner 裁决事项。
+   两点限定：**(a)** 第 7/8/9 条**不改变任何断言的期望值**（期望值见 §1、§3–§6），只修正对复现精度与
+   环境事实的**表述**；**(b)** 新措辞比旧措辞**更弱**（明确承认字节级不成立），所以它不可能把任何
+   失败"解释成"通过。
+10. **E30 异常首段变化（独立复核 N5，登记即可）**：`AttestationError` 的字符串形式是 `"<code>: <detail>"`
+   （沿用设计"保留原文"的约定），因此 E30 的 `str()` 首段由 `"input binding mismatch: …"` 变为
+   `"input_binding_mismatch: input binding mismatch: …"`；**历史文本仍是子串**，且
+   `exc.detail` 就是**逐字原消息**。当前无消费者按首段匹配（c6/c7 复跑全绿）。
 
 ## 9. 冻结的“不做”
 

@@ -72,12 +72,14 @@
 
 ## E-5 陈旧哈希（P2-4）
 
-| 位置 | 我声明的 | 实测（本次） | 原因 |
+| 位置 | 我声明的 | 实测（第一轮勘误时） | 原因 |
 |---|---|---|---|
 | `handoff.json.product_hashes["after/git_status_after.txt"]` | `7afc49a8…`（9159 B） | `c6faa500…`（9942 B，132 行） | 该文件在 03:46 被**重抓**（并发卡继续改动该树）后我未刷新声明 |
-| `handoff.json.product_hashes["changes.diff"]` | `ce43c6a6…` | 以本次重新生成后的值为准 | 打包顺序更新 |
+| `handoff.json.product_hashes["changes.diff"]` | `ce43c6a6…` | 以重新生成后的值为准 | 打包顺序更新 |
 
-**处置**：`handoff.json.product_hashes` 全部改为**本次重新生成后的实测值**，并对 `handoff.json` 自身、`changes.diff`、`after/product_hashes.txt` 三者显式标注 **`self-reference：不可声明`**（自己不能包含自己的 hash），指向"以后打包生成的 `after/product_hashes.txt` 为准"。
+**第二轮更正（E-11）**：上表"实测"栏的 `c6faa500…`（9942 B / 132 行）**已在本轮勘误中被就地重抓覆盖**（现为 25955 B / 270 行 / `f3ef8287…`），**该旧快照未保留、`c6faa500…` 永久不可复验**。因此本表该格应读作「**第一轮勘误时的实测值，现已不可复验**」，不得作为当前锚点。
+
+**处置**：`handoff.json.product_hashes` 不再逐文件声明 hex（避免每轮再产生陈旧值），统一指向最后生成的 `after/product_hashes.txt`；并对 `handoff.json` 自身、`changes.diff`、`after/product_hashes.txt` 三者标 **`SELF-REFERENCE`**（第二轮进一步要求：**不输出具体 hex**，见 E-13-1）。
 
 ---
 
@@ -123,7 +125,74 @@
 
 ---
 
-## 需要补的规格（复核 P2-3 已给实测反证）
+# 第二轮复评（verdict `changes_required`，仅勘误文本）—— E-10 与四项闭合
+
+复评**背书**：E-1…E-9 全部真落地；独立重数 registry 与更正后声明一致；E-9 机械复现 `177 = 91 + 86`、未声明文件 0；**证据层零重跑**（11/11 探针脚本与原始证据哈希与第一轮完全相同、`commands.json` 未变）；规格补充写法正确（是**规格**而非"已修好"）。以下 4 条为必须闭合项。
+
+## E-10 `oracle.md` §9 末行被**就地改写**（未事先声明）—— P1
+
+**事实（复核实测，我复核确认）**：`oracle.md` §9 末行由
+`- 未裁决 OPEN-D1—D7（I-08-A）与 OPEN-I09A-1—**5**（本卡）。`
+改为
+`- 未裁决 OPEN-D1—D7（I-08-A）与 OPEN-I09A-1—**6**（本卡）。`
+（第一轮 160 行 → 本轮 178 行；§10 是追加，**这一行是唯一一处就地改写**。）
+
+**为什么是错的**：它推翻了四处明文承诺——`errata.md:3`、`oracle.md:166`、`open_items.md:32`、以及派单陈述的「冻结正文一字未改」。成因是我把"新增 `OPEN-I09A-6`"顺手回填到了 §9 的冻结清单行，而没有意识到那属于**冻结正文**。
+
+**加重情节（必须一并承认）**：`iso/check_errata_integrity.py` 的输出被我表述为"**证明修正确实是追加而非改写**"，**该推论不成立**——脚本只检查 *C-id 集合*、*I09-E id 集合*、*两行 marker 是否存在*、*`C-13` 是否不在 oracle*、*§10 指针是否存在*。**两行存在 ≠ 其余行未被改**；本轮实测恰好存在一处就地改写，而脚本仍全 True。该脚本已在文件头写入 **`capability_limit`**。
+
+**处置（按复核要求，不回改那一行）**：
+
+1. **不回退**该行（回退会造成第二次就地改写）；
+2. **撤回**「`oracle.md` 冻结正文一字未改」这一措辞——正确表述是：**冻结正文有且仅有 1 处就地改写（§9 末行 `-5`→`-6`，因新增 -6），其余 177 行未动，§10 为追加**；
+3. 该改写**未事先声明**，属本勘误轮的方法缺陷，登记为 **E-10**；
+4. `iso/check_errata_integrity.py` 加 `capability_limit`（见下）；
+5. 「冻结正文只追加」的可核验性**依赖复核侧的副本**，**不构成独立第三方证明**（承接未验证项①）。
+
+**脚本能力边界（已写入脚本文件头与 `errata.md` 本行）**：
+
+> `check_errata_integrity.py` 只证明：**被点名的** frozen 行仍在、C-id/`I09-E` id 集合未变、`C-13` 不在 `oracle.md`、§10 指针存在。它**不证明**其余冻结行未被就地改写，也**不构成**"只追加"的证明。
+
+## E-11 `after/git_status_after.txt` 在勘误轮被**就地重抓**（已声明产物被覆盖）—— P2
+
+**事实**：该文件第一轮 9942 B / 132 行 / `c6faa50068bb…` → 本轮 **25955 B / 270 行 / `f3ef8287ff07…`**，**旧快照未保留**。
+
+**后果与处置**：
+
+| 后果 | 处置 |
+|---|---|
+| `c6faa500…` **永久不可复验**（复核第一轮曾核它为真） | 登记为**未验证项⑨（新增）**：该文件的旧（132 行 / 9942 B）内容现已不可获得 |
+| E-5 表仍把它列为"实测（本次）`c6faa500…`（9942 B，132 行）"，与脚注矛盾 | 已改写为：「第一轮实测值 `c6faa500…`（9942 B / 132 行），**该快照已在本轮被就地覆盖、不可复验**；现文件为 25955 B / 270 行」 |
+| `review.md` 以该文件为出处声明"after 快照 = 132 行/126 真实条目"，出处与数值不再对应 | 出处改为「**本 attempt 期间的一次**快照读数（该文件其后被重抓，现为 270 行）；数值仅对该次读数成立」 |
+| 今后纪律 | **快照一律另存新名**，不再覆盖任何已被声明过的产物 |
+
+## E-12 阻塞项计数不一致（4 vs 5）—— P2
+
+`decision.md:16` 写「其中 **4 项**（-1/-2/-3/-5）」，而 `open_items.md`（-1/-2/-3/-5/**-6** 全为"是"）与 `handoff.json`（"…-1, -2, -3, -5 **and -6** block…"）都是 **5 项**；同一行已写 `OPEN-I09A-1…6` 却只列 4 项。
+**处置**：改为「其中 **5 项**（-1/-2/-3/-5/**-6**）阻塞 I-09-B 的绑定」。复核另指出派单所称"分别表述"并未发生（`grep 阻塞 I-09-B` 在 `decision.md` 只命中第 16 行）—— 本行即**唯一**表述处，已如实说明。
+
+## E-13 三项 P3—— 处置
+
+1. **自引用 hash 不再输出具体 hex**：`refresh_hashes.py` 与 `iso/gen_changes_diff.py` 已改，对 `after/product_hashes.txt` 与 `changes.diff` 一律输出 `SELF-REFERENCE (not declarable here)`，**不给 hex**；`product_hashes.txt` 文件内自身那一行同样标注（此前文件内 `grep SELF` = 0 命中）。
+   **复核更正我派单中的错值**：`after/product_hashes.txt` 的**实际** sha256 是 `49df7f25e1269a39be9756c6be7cfa351c05f2618eb02ddcb10916656c79c1bb`（10729 B），**不是**它自声明的 `a126badf…`；**自声明值不得当下游锚点**。gen_changes_diff 的第一轮还曾为「自身」输出过一行 hex（`L128`/`L173`），本次已一并消除。
+2. `decision.md` §8 A2 行（仍写 `G1/G4 **不可能是** committed`）→ 追加「（见 §5.5 降级说明）」；`review.md` §6-C 的 `148→**124**→132` 叙事补上「124 未保留、不作证据」限定（E-6 的统一此前只落到 §4 表格）。
+3. `oracle_addendum.md` §7 末行写错 c04 的 reader 结果 → 按 **c04（嵌套路径**存在**且已写入 ⇒ reader `is_registered=true`）** 与 **c04b（ACL 拒绝 ⇒ 路径不存在、0 行）** 分列更正。
+
+## 复核对 `C-13` 与 §7 改序的裁定意见（**接受**，三条要求已写入文档）
+
+**`C-13`（接受，附三条）**：
+1. 错误码在 I-08-B 定案前保持**未分配**——**不得**借用任何 `I09-E` 号（本卡不占用、不新造）；
+2. `C-13` 必须绑定一条 I-09-B 的**可失败负例**（receipt 声称 `host_signed` 且无记录 ⇒ 提交前拒绝、不得落 committed 行）；
+3. 「**兼容缺口未闭**」必须出现在 `handoff.json` 的**未关闭清单**里（而非仅正文），以免下游误读为已闭。
+
+**§7 改序（批准，附三条条件）**：
+1. 孤儿成员五条（一律不可消费、不得自动删除、重试必须复用同一 `package_target` 与角色名、判定可复算、**不写 prepare 行**）——已在 `decision.md §5.6b`；
+2. `E31` 触发语义必须是「**已 append 的 committed 行**所声明的必需成员缺失或 hash 不符」——**孤儿、prepare 失败、成员写盘失败但 C3 未发生，都不得触发 `E31`**；
+3. 该上游文本改动**必须由 I-08-A 的 owner 落笔**，本卡**不得**代改。
+
+**`OPEN-I09A-1…6` 的逐项裁决建议**：已抄入计划层 `OWNER_DECISIONS.md`。本卡文档只登记它们是**待裁建议**（见 `open_items.md`），**不作为已生效决定**。
+
+## §U 未验证项（原样承接复核清单）
 
 **反证事实**（复核人自造边界输入，源码依据 `revenue_publication.py:222-226` 只校验 `attestation_status` 的**取值合法性**；全产品 grep `publication_attestation|attestation_record` **0 命中**）：**一个 receipt 声称 `host_signed` 却没有任何 attestation 记录，验证器照样接受**（`validator_accepts_host_signed_without_record=true`、`register_rc=0`、`rows=2`、`validation_status=["validated","validated"]`）。
 
@@ -152,13 +221,15 @@
 **C-01 的强制条款增补（不改 -01 正文，作为附注）**：
 > **C-01-附注（强制）**：`identity_payload` 的字段集**封闭**；I-08-B 的 attestation 锚（以及任何未来行内键）**不得**进入 `identity_payload`。当 `receipt_schema_version`（I-08-A OPEN-D4）或行 schema 升版时，**历史行的身份一律不重算**——旧行保留其原 `publication_id`，新行使用新版本；「不重算」是**强制条款**，不再是倾向。
 
-**机械核验（新增脚本，供第二轮复核定点复跑）**：`iso/check_errata_integrity.py` → `after/errata_integrity_check.stdout.txt`。它证明三件事：
+**机械核验（新增脚本，供第二轮复核定点复跑）**：`iso/check_errata_integrity.py` → `after/errata_integrity_check.stdout.txt`。**能力边界（第二轮复核已纠正我的过度表述，见 E-10）**：它只证明
 
 1. `oracle.md` 仍含 **C-01…C-12 十二行**（表行数=12）与 **I09-E01…E10 十个码**；
-2. 勘误所声明"错"的两行**仍逐字存在**（`artifact_id` 非空行数=1 那行、c02 冻结行含 `registry 行数=1` 与 `` `out.json` **不存在** `` 两个标记）→ 证明修正确实是**追加**而非改写；
+2. 勘误所声明"错"的**被点名两行**仍逐字存在（`artifact_id` 非空行数=1 那行、c02 冻结行含 `registry 行数=1` 与 `` `out.json` **不存在** `` 两个标记）；
 3. `oracle.md` 中**没有** `C-13` 字样（`C-13` 是 `decision.md` 的**新增**条目），且 `oracle.md` 末尾存在勘误指针节。
 
-脚本首次运行曾报 `C-13_in_oracle=True`，原因是 `oracle.md §10` 的勘误指针行当时**内嵌了 `C-13` 字样**；已把该行改为「追加提案（编号落在 §5 的 C-12 之后）」的中性表述，使机械检查恢复为 `False`。这是**指针文字**的改动，**未触碰任何冻结契约行**（第 1/2 项检查在两次运行中均为真）。
+**它不证明**「其余冻结行未被改写」，**也不构成"只追加"的证明**——本轮实测恰有一处就地改写（§9 末行，E-10）而脚本仍全 True。**原表述「证明修正确实是追加而非改写」已撤回。**
+
+脚本首次运行曾报 `C-13_in_oracle=True`，原因是 `oracle.md §10` 的勘误指针行当时**内嵌了 `C-13` 字样**；已把该行改为「追加提案（编号落在 §5 的 C-12 之后）」的中性表述，使机械检查恢复为 `False`。这是**指针文字**的改动；**但注意**：同一轮里 §9 末行也被就地改写了（E-10），当时**未**被这一检查发现。
 
 ---
 
@@ -166,16 +237,17 @@
 
 以下各项**本 attempt 未能验证**，一字不改地承接：
 
-1. `oracle.md` 的"只追加"无法逐行核验（PLAN 内无实现前副本；本 attempt 的 `before/baseline_hashes.txt` 也未对 `oracle.md` 取 hash）。
+1. `oracle.md` 的"只追加"无法逐行核验（PLAN 内无实现前副本；本 attempt 的 `before/baseline_hashes.txt` 也未对 `oracle.md` 取 hash）。**第二轮补充**：该核验依赖复核侧的副本，**不构成独立第三方证明**；且本卡已承认一处就地改写（E-10）。
 2. `C:\i09a` 是否曾被用于写入（本次复核经 `fsutil` 确认它是 Junction 且只指向本 attempt；最终探针不依赖它）。
 3. 跨卷 `I09-E09` **未实测**（本机仅 `C:/Recovery`）。
 4. I-08-A 的 `classify()` 语义**只引用未复核**（生产 grep 无 `classify`/`G3a`/`R-LEGACY` 落点）。
 5. attempt1 的 argv 缺陷**未重放**。
-6. `OPEN-I09A-5` 中「计划 owner 是否知悉」未验证。
+6. `OPEN-I09A-5` / **`-6`** 的「裁定人是否知悉」未验证。
 7. 14 条脏路径的完整历史：能证 **I-09-A 未改**，**不能**证是谁改的。
 8. **G2 × committed 组合未测**。
 9. **3.8 消费者侧未测**。
 10. **`E31` 补偿行机制未测**。
+11. **（第二轮新增）** `after/git_status_after.txt` 的**旧内容（132 行 / 9942 B / `c6faa500…`）现已不可获得**（被本轮就地重抓覆盖，见 E-11）。
 
 ## §C 勘误后的状态
 
@@ -202,4 +274,27 @@
 | `iso/check_errata_integrity.py` | （不存在） | `4271cd88e38b5d423ab6a0a16a1e3a4d701b7a74c901b7f886dbe3844a7ab272` |
 | `after/errata_integrity_check.stdout.txt` | （不存在） | `334dc0a381c88bb83b271ba7ef67c310bbdf65274f52750feeb37102dea239f4` |
 | `after/product_hashes.txt` | `b8523dce86762a09c4bdb4ca271b592bb26dcc5b7bc0c54bfe7fa28cae43d2a2` | **自引用**（最后打包生成，权威清单；它不能包含自身 hash） |
-| 全部探针脚本与原始证据（`iso/probe_*.py`、`after/probe_*.stdout.txt`、`after/probe_*_report*.json`、`before/baseline_hashes.txt`、`before/git_status_before.txt`） | — | **全部未变**（勘误层未重跑任何探针、未改写任何原始证据） |
+| 全部探针脚本与原始证据（`iso/probe_*.py`、`after/probe_*.stdout.txt`、`after/probe_*_report*.json`、`before/baseline_hashes.txt`、`before/git_status_before.txt`） | — | **全部未变**（两轮勘误均未重跑任何探针、未改写任何原始证据） |
+
+### 第二轮闭合后的 hash（**最终值，取自文件系统；自引用文件不给 hex**）
+
+| 文件 | 第二轮闭合后 sha256 |
+|---|---|
+| `errata.md`（含 E-10…E-13 与本节） | **自引用**：本表每写一次本文件就变一次 ⇒ **不给 hex**；第二轮闭合时点真实值 = `886619dd1403df4a0ec925f33507ef53b5ba6427ff06e3bc394623cd6aaee59f`（28471 B），审查者请自行 `Get-FileHash` |
+| `oracle.md`（178 行；**唯一就地改写 = §9 末行**，见 E-10，**未回退**） | `d7f6b102ecc99a564ff6977b69a7b5e8fe6af9edcc4ae356c041426891e6dc8d` |
+| `oracle_addendum.md`（§7 末行按 c04/c04b 分列更正） | `de7fa1f335e4c4054e6cccdb7d8c25160518bee0efc50bc1091de9392715bcb5` |
+| `decision.md`（阻塞项 **5**；A2 加降级指引） | `4a8cc048c7977d914b378cfcee9b5974befb49e1f53e5cb1333e2184b75c8667` |
+| `open_items.md`（未变） | `adfd00a64d5ec3ef061c5f601e6692ca6f690ff59ee6eb015fb08f1174f3c629` |
+| `review.md`（124 限定 + provenance 更正） | `9faa0990d7ffd4e2504af96c6eb4fa62d3f333e41dc58117fc8460fe063e541d` |
+| `binding.json`（未变） | `71995ed3e3771f95dabbf99d8b1ebe7faeb13e84a7443a6b46f0580956d5b5b9` |
+| `commands.json`（**未变**） | `60aa3a99a5db0392e2b6c4164dbd5e284da6baf07a2c951d842d3ddbdc8b5644` |
+| `handoff.json`（新增 `unclosed_gaps` + `review_round_2`） | `f7eece9086e16469d9a0e6f0f4398147d0412cb2b9d2fbe18a3088bbf7466c49` |
+| `iso/check_errata_integrity.py`（加 `capability_limit`） | `a8aaef4d28a556d94b6d019d15d30146c4424932cfffd952ae49bd0bc3e7870a` |
+| `iso/gen_changes_diff.py`（自引用不给 hex） | `a1841cabddfe3d0a121ed026c1e6655857c4f13b8f57ae1b39f60198c89a4b98` |
+| `refresh_hashes.py`（自引用不给 hex，前缀无关） | `da0ead736229ab277516a80f2f5aab4274fe154d3772dce2ef7bd63eb89abe21` |
+| `after/errata_integrity_check.stdout.txt`（含 CAPABILITY_LIMIT 行） | `2ab1f283a2360cd275a094ff8d0859aa39bef6be03b7b90b4c28c36fa5514c9f` |
+| `recovery/README.md`（未变） | `f94f3b9a9922f954bee4ad03644704ba6271ea5d00708b1a2cd57e8eee618a87` |
+| `changes.diff` | **SELF-REFERENCE（不给 hex）** |
+| `after/product_hashes.txt` | **SELF-REFERENCE（不给 hex）**：真实值 = 文件系统读数 `569d76ffa2e00411bf4a3a6e6334ab0ec579e79387362e7727268f15bd6362c7`（**仅为第二轮闭合时点读数，写回本文件会再次失效**；审查者应自行 `Get-FileHash`） |
+
+**纪律（E-11 之后）**：任何快照/清单**另存新名**，不再就地覆盖已声明产物；生成物（`changes.diff`、`after/product_hashes.txt`）在每次改动后按 `changes.diff → product_hashes.txt` 顺序**最后重生成**。

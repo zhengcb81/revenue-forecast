@@ -233,6 +233,12 @@ def main() -> int:
     probes = load_json(os.path.join(evidence, "extra_probes.json"))
     rc_b = load_json(os.path.join(evidence, "runs", "B-product-run", "rc.json"))
     rc_c = load_json(os.path.join(evidence, "runs", "C-registry-enumeration", "rc.json"))
+    # The r2 analysis is needed by the source_manifest block below, so it is computed here.
+    addendum_record_path = os.path.join(evidence, "oracle_addendum_record.json")
+    r2 = r2_analysis(os.path.join(attempt, "oracle.md"),
+                     os.path.join(attempt, "recovery", "line_boundary_demo"),
+                     addendum_record_path)
+    addendum = load_json(addendum_record_path) if os.path.isfile(addendum_record_path) else None
 
     # ---- verified line anchors for the card's cited entry point and registration ----
     with open(os.path.join(code_root, "model_registry.py"), "r", encoding="utf-8") as handle:
@@ -456,6 +462,21 @@ def main() -> int:
         "third_qualification_rule": ("formula, disclosure adaptation and accuracy are three "
                                      "independent qualifications; passing A-C grants only the "
                                      "formula qualification and is not evidence of the other two"),
+        "review": {
+            "independent_review_performed": True,
+            "verdict_received": "accepted_scoped (formula qualification only)",
+            "implementer_signature": None,
+            "formula_state_reason": ("the reviewer accepted r1 scoped, but the post-review r2 fixes "
+                                     "(declared-expectation enforcement in the runner, OQ-05 "
+                                     "parameterisation, OQ-05 ruling entry, process history, and for "
+                                     "M17 the oracle.md section 13 append) must be point-reviewed, so "
+                                     "formula remains review_pending and is NOT self-signed"),
+            "unmapped_means_zero_output": ("disclosure_adaptation = unmapped means no disclosure "
+                                           "artefact of any kind exists for this card, not that it is "
+                                           "partially done"),
+            "unproven_means_no_evaluation": ("accuracy = unproven means no out-of-sample evaluation "
+                                             "was run at all (no I-12 design exists)"),
+        },
     }
     dump(os.path.join(evidence, "qualification.json"), qualification)
 
@@ -620,28 +641,38 @@ def main() -> int:
     }
     dump(os.path.join(evidence, "integrity.json"), integrity)
 
-    # ---- revision r2 discipline ----
-    r2 = r2_analysis(os.path.join(attempt, "oracle.md"),
-                     os.path.join(attempt, "recovery", "line_boundary_demo"))
+    # ---- revision r2 discipline (r2 / addendum computed above, before source_manifest) ----
     revision = {
         "card_id": card,
         "model_id": info["model_id"],
-        "revision": "r1",
-        "independent_review_received": False,
+        "revision": "r2" if r2["r2_sections_in_oracle_md"] else "r1",
+        "independent_review_received": True,
+        "independent_review_verdict_received": "accepted_scoped (formula qualification only)",
         "r2_append_performed": r2["r2_sections_in_oracle_md"] > 0,
         "r2_sections_in_oracle_md": r2["r2_sections_in_oracle_md"],
         "r2_section_locations": r2["r2_section_locations"],
         "oracle_md_sha256_now": r2["oracle_md_sha256"],
-        "oracle_md_sha256_before_addendum": None,
+        "oracle_md_sha256_before_addendum": (addendum["oracle_md_sha256_before_addendum"]
+                                             if addendum else None),
+        "oracle_md_sha256_after_addendum": (addendum["oracle_md_sha256_after_addendum"]
+                                            if addendum else None),
         "pre_append_hash_policy": r2["rule"],
         "mutually_inconsistent_baselines_present": False,
-        "provenance_gap_declaration": ("no pre-append hash exists because no r2 section has been "
-                                       "appended; if one is ever appended, exactly ONE r2 section may "
-                                       "exist and its pre-append hash must be reproducible at a real "
-                                       "line boundary"),
+        "provenance_gap_declaration": (
+            "no pre-append hash exists because no r2 section has been appended; if one is ever "
+            "appended, exactly ONE r2 section may exist and its pre-append hash must be reproducible "
+            "at a real line boundary" if not addendum else
+            "the single pre-append hash is the generation-time hash recorded BEFORE oracle generation "
+            "and re-verified live by truncation at the recorded real line boundary"),
         "mechanism_proof": r2["mechanism_proof"],
+        "r2_change_scope": (addendum["scope_note"] if addendum
+                            else "not applicable: no r2 section exists in this attempt"),
+        "expectation_values_touched": (addendum["expectation_values_touched"] if addendum else []),
         "frozen_expectations_unchanged": True,
         "frozen_evidence_unchanged_by_selfcheck": mutation.get("frozen_evidence_unchanged"),
+        "review_dispositions": (
+            "review.md section 'revision r2 - response to the independent review' records the P2/P3 "
+            "dispositions; this file records the hash/boundary discipline only"),
         "product_files_changed": [],
     }
     dump(os.path.join(evidence, "revision_r2.json"), revision)
@@ -669,12 +700,25 @@ def main() -> int:
     dump(os.path.join(attempt, "after", "rerun_sha256.json"), rerun)
 
     # ---- evidence_hashes.json (written last so it covers the finished pack) ----
+    # The capture records of the units that run AT OR AFTER this pack must not be listed here: their
+    # rc.json/stdout.txt are rewritten when those units execute, which would leave a stale hash in a
+    # file whose whole purpose is to be checkable.  They are covered by
+    # after/final_deliverable_hashes.json (written by the closing unit, last of all), except the
+    # closing unit's own records, which are excluded there too and self-describe their hashes.
+    post_pack_run_dirs = tuple(
+        os.path.normcase(os.path.join("evidence", card, "runs", unit))
+        for unit in ("G-pack-evidence", "P-write-process-history", "H-write-handoff",
+                     "Z-close-attempt"))
     hashes = {}
+    excluded_post_pack = []
     for root, _dirs, files in os.walk(evidence):
         for name in sorted(files):
             path = os.path.join(root, name)
             rel = os.path.relpath(path, attempt).replace("\\", "/")
             if rel.endswith("evidence_hashes.json"):
+                continue
+            if os.path.normcase(rel).startswith(post_pack_run_dirs):
+                excluded_post_pack.append(rel)
                 continue
             hashes[rel] = sha256(path)
     for rel in ("oracle.md", "binding.json"):
@@ -695,6 +739,14 @@ def main() -> int:
           "rule": ("sha256 of every evidence file, plus oracle.md, binding.json, scripts/ and the "
                    "before/after state files; written after everything else so the hashes describe "
                    "the finished pack"),
+          "excluded_from_this_table": {
+              "rule": ("capture records of units that execute at or after this pack are excluded, "
+                       "because they are rewritten after this file is written"),
+              "paths": sorted(excluded_post_pack),
+              "covered_instead_by": ("after/final_deliverable_hashes.json (all of them except the "
+                                     "closing unit's own records, whose rc.json self-describes the "
+                                     "sha256 of its stdout/stderr)"),
+          },
           "files": hashes})
 
     print("packed evidence for", card, "->", evidence)

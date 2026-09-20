@@ -1,5 +1,6 @@
 code_root: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M24\a20260919-01\iso\checkout_scripts
 model_registry_file: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M24\a20260919-01\iso\checkout_scripts\model_registry.py
+cases_path: C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M24\a20260919-01\recovery\selfcheck\evidence\M24\cases.json
 registry formula: revenue = opening_arr - opening_arr*(1-gross_retention_rate)*lost_arr_revenue_fraction + expansion_arr*expansion_revenue_fraction + new_arr*new_arr_revenue_fraction + usage_revenue
 registry required: ['opening_arr', 'expansion_arr', 'new_arr', 'closing_arr', 'gross_retention_rate', 'lost_arr_revenue_fraction', 'expansion_revenue_fraction', 'new_arr_revenue_fraction']
 registry optional: ['usage_revenue']
@@ -14,17 +15,20 @@ defaults ok: True actual: [210.0] expected: [210.0]
 observation: OBS-BASE-IGNORED raised= None actual= [215.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
 observation: OBS-DEFAULT-EQUIV raised= None actual= [210.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
 observation: OBS-GRR-ONE-SECOND-YEAR raised= None actual= [215.0, 250.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
-negative: NEG-CARD PASS_rejected ModelRegistryError - opening_arr stock-flow balance failed: FY2027
-negative: N01a PASS_rejected ModelRegistryError - subscription_arr_bridge.opening_arr.FY2027 must be numeric
-negative: N01b PASS_rejected ModelRegistryError - subscription_arr_bridge.opening_arr.FY2027 must be finite
-negative: N01c PASS_rejected ModelRegistryError - subscription_arr_bridge.opening_arr.FY2027 must be finite
-negative: N01d PASS_rejected ModelRegistryError - subscription_arr_bridge.opening_arr.FY2027 must be finite
-negative: N02 PASS_rejected ModelRegistryError - driver subscription_arr_bridge.opening_arr must contain one value per forecast year
-negative: N03 PASS_rejected ModelRegistryError - missing drivers for subscription_arr_bridge: opening_arr
-negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for subscription_arr_bridge: unknown_driver
-negative: N05a PASS_rejected ModelRegistryError - subscription_arr_bridge.years must contain fiscal years
-negative: N05b PASS_rejected ModelRegistryError - subscription_arr_bridge.years must contain fiscal years
-negative: CONT-BREAK PASS_rejected ModelRegistryError - opening_arr continuity failed: FY2028
-negative: G-B-BOGUS FAIL_not_rejected None - 
-negative summary: {'total': 12, 'passed': 11, 'failed': ['G-B-BOGUS']}
+observation: OBS-BRIDGE-TOL-1E-7 raised= None actual= [215.0] matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None 
+observation: OBS-BRIDGE-TOL-1E-6 raised= ModelRegistryError actual= None matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None opening_arr stock-flow balance failed: FY2027
+negative: NEG-CARD PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= True - opening_arr stock-flow balance failed: FY2027
+negative: N01a PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - subscription_arr_bridge.opening_arr.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - subscription_arr_bridge.opening_arr.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - subscription_arr_bridge.opening_arr.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - subscription_arr_bridge.opening_arr.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - driver subscription_arr_bridge.opening_arr must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - missing drivers for subscription_arr_bridge: opening_arr
+negative: N04 PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - unsupported drivers for subscription_arr_bridge: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - subscription_arr_bridge.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - subscription_arr_bridge.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= None - opening_arr continuity failed: FY2028
+negative: CONT-BREAK-CROSSYEAR PASS_rejected ModelRegistryError expected_type_checked= True message_requirement_met= True - opening_arr continuity failed: FY2028
+negative: G-B-BOGUS FAIL_not_rejected None expected_type_checked= None message_requirement_met= None - 
+negative summary: {'total': 13, 'passed': 12, 'failed': ['G-B-BOGUS'], 'expected_type_mismatch_cases': [], 'message_mismatch_cases': [], 'message_requirements_checked': ['CONT-BREAK-CROSSYEAR', 'NEG-CARD'], 'verdict_rule': 'PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message'}
 verdict: fail exit_code: 3

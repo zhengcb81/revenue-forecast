@@ -109,17 +109,6 @@
    },
    "expected": "ModelRegistryError",
    "why": "common negative N05b: first year replaced by True (True is not a fiscal year)"
-  },
-  {
-   "id": "CONT-BREAK",
-   "kind": "set_years",
-   "base_input": "continuity_positive",
-   "value": [
-    2027,
-    2029
-   ],
-   "expected": "ModelRegistryError",
-   "why": "continuity break for this card: FY2028 is missing, so the years are not consecutive (the two-year positive is run first)"
   }
  ],
  "extra_observations": [
@@ -152,6 +141,8 @@
     "__float__": -100
    },
    "base_input": "defaults",
+   "not_executable_as_frozen": true,
+   "construction_error": "base_input=defaults does not contain the key performance_fee_revenue, so the set_driver_element mutation raises KeyError while the case is constructed and the product is never called. This observation is therefore NOT executable as frozen; the runner records the KeyError verbatim instead of a contract fact (oracle.md r3 section, item observation-c). The factual question it was meant to answer is answered by recovery/probes/signed_driver_probe.json, which is a labelled post-hoc probe and not part of this frozen case set. No expectation, tolerance or refusal condition was changed when this annotation was added.",
    "why": "performance_fee_revenue is a signed driver with no lower bound, so a clawback-style negative fee passes the driver guard and is then stopped by the final non-negative-revenue guard; records the contract boundary, does not gate"
   }
  ]

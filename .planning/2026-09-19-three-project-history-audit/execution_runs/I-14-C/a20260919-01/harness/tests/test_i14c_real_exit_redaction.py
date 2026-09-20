@@ -14,6 +14,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -56,7 +57,11 @@ def run_case(tmp_path: Path, scenario: str, *, cli_exit: bool,
     # child is explicitly put in UTF-8 mode (PYTHONUTF8 also drives its argv
     # decoding), while its own stdout/stderr stay ASCII-only by construction.
     env["PYTHONUTF8"] = "1"
-    env["I14C_RUN_ROOT"] = str(ATTEMPT_ROOT)
+    # r5: declare the pytest basetemp as the scratch root, whatever it is.  The driver's
+    # guard refuses product paths unconditionally, so this lets an independent reviewer run
+    # the subprocess-backed cases from their own directory (previously I14C_RUN_ROOT was
+    # forced to the attempt root and the reviewer's %TEMP% runs were refused with 97).
+    env["I14C_RUN_ROOT"] = str(tmp_path.parent)
     argv = [
         sys.executable, "-X", "utf8", "-B", str(DRIVER),
         "--scenario", scenario,
@@ -154,6 +159,202 @@ def test_e4b_unquoted_truncation_regression_only(tmp_path):
     assert len(event["message_redacted"]) <= 200
     assert MARKER not in event["message_redacted"]
     assert MARKER[:8] not in event["message_redacted"]
+
+
+# ---------------------------------------------------------------------------
+# F-I14C-07 (r3): the redactor must stay LINEAR on the message it is handed
+#
+# `redact_and_truncate` runs on the WHOLE untruncated message of every unhandled
+# exception, so a super-linear rule is an availability regression in a security
+# path.  r2 was quadratic in the `_`/`-` separated segment count; these cases have
+# a deadline, so a return to nested quantifiers fails loudly instead of hanging.
+# ---------------------------------------------------------------------------
+
+F07_DEADLINE_SECONDS = 5.0
+
+
+@pytest.mark.parametrize("segments", [1000, 2000, 40000])
+def test_f07_long_separator_run_finishes_within_the_deadline(segments):
+    sys.path.insert(0, str(PRODUCT_SRC))
+    from company_wiki.source_catalog.observability import redact_text
+
+    for text in (("a_" * segments) + "=", ("a-" * segments) + "=",
+                 ("a_" * segments)[:-1], ("a_" * segments) + '="' + ("b" * 200)):
+        started = time.perf_counter()
+        out = redact_text(text)
+        elapsed = time.perf_counter() - started
+        assert elapsed < F07_DEADLINE_SECONDS, (
+            f"redact_text took {elapsed:.2f}s on {len(text)} chars "
+            f"({segments} segments): the rule is super-linear again")
+        assert out == text, "a non-credential key must not be redacted"
+
+
+def test_f07_auth_regex_path_stays_linear():
+    sys.path.insert(0, str(PRODUCT_SRC))
+    from company_wiki.source_catalog.observability import redact_text
+
+    for text in (("authorization: " * 20000), ("bearer " * 20000)):
+        started = time.perf_counter()
+        redact_text(text)
+        elapsed = time.perf_counter() - started
+        assert elapsed < F07_DEADLINE_SECONDS, f"auth path took {elapsed:.2f}s"
+
+
+def test_f07_rejected_key_does_not_swallow_a_later_pair():
+    """Declared behavioural change vs r1/r2, and an improvement.
+
+    The old regex consumed the whole `key=value` span when the key was rejected, so
+    a genuine credential later in the same text was never seen.  The scanner must
+    still redact it.
+    """
+    sys.path.insert(0, str(PRODUCT_SRC))
+    from company_wiki.source_catalog.observability import redact_text
+
+    url = redact_text("url=https://example/x?token=" + MARKER)
+    assert MARKER not in url and "<redacted>" in url
+    cmd = redact_text("cmd: --token=" + MARKER)
+    assert MARKER not in cmd and "<redacted>" in cmd
+    # ... while a rejected key with NO credential inside it is left untouched
+    assert redact_text("url=https://example/x?page=2") == "url=https://example/x?page=2"
+    assert redact_text("digest=" + MARKER) == "digest=" + MARKER
+
+
+# ---------------------------------------------------------------------------
+# F-I14C-08 (r4): OUTPUT FIDELITY
+#
+# r3 lesson: every earlier criterion asked only "is the marker gone?" / "did the text
+# change?", so a redactor that emitted `tokentoken=<redacted>` passed all of them.  These
+# cases pin the exact output string: the value is replaced and nothing else moves.
+#
+# r5 (F-I14C-R4-01/R4-02): the number of pairs is NOT written here by hand any more - it is
+# produced mechanically by harness/report_counts.py (r5/counts.json).  The r4 text said "23"
+# for a 24-entry table, and the same wrong number had been copied into four other documents.
+# The block also gained multi-line cases (C13), which was the direction the fidelity
+# criterion was blind to.
+# ---------------------------------------------------------------------------
+
+FIDELITY_CASES = [
+    ("token=" + MARKER, "token=<redacted>"),
+    ("GITHUB_TOKEN=" + MARKER, "GITHUB_TOKEN=<redacted>"),
+    ("my_access_token=" + MARKER, "my_access_token=<redacted>"),
+    ("SLACK_BOT_TOKEN=" + MARKER, "SLACK_BOT_TOKEN=<redacted>"),
+    ("AWS_SECRET_ACCESS_KEY=" + MARKER, "AWS_SECRET_ACCESS_KEY=<redacted>"),
+    ("AWS_ACCESS_KEY_ID=" + MARKER, "AWS_ACCESS_KEY_ID=<redacted>"),
+    ("export GITHUB_TOKEN=" + MARKER, "export GITHUB_TOKEN=<redacted>"),
+    ("db.passwd=" + MARKER, "db.passwd=<redacted>"),
+    ("api_key=" + MARKER, "api_key=<redacted>"),
+    ("client_secret=" + MARKER, "client_secret=<redacted>"),
+    ("password: '" + MARKER + "'", "password: <redacted>"),
+    ("token = " + MARKER, "token = <redacted>"),
+    # greedy value (r1 `_BARE_VALUE` semantics, kept - see carry C13):
+    ("a=1 token=" + MARKER + " b=2", "a=1 token=<redacted>"),
+    ("a=1 token=" + MARKER + "; b=2", "a=1 token=<redacted>; b=2"),
+    # C13, the real worst case: the value crosses the newline, so the whole remaining
+    # diagnostic block is deleted (112 chars in, 34 out).  Frozen as CURRENT BEHAVIOUR so
+    # the criterion is not blind in this direction any more.
+    ("upload failed for token=" + MARKER
+     + " doc=17\nstage=summarize code=llm_global_failure request_id=req-1",
+     "upload failed for token=<redacted>"),
+    # ... and the boundary: a value delimiter before the newline protects the tail
+    ("failed for token=" + MARKER + "; see log\nstage=summarize code=llm_global_failure",
+     "failed for token=<redacted>; see log\nstage=summarize code=llm_global_failure"),
+    ("token=" + MARKER + "\nnext=1", "token=<redacted>"),
+    ("GET /x?token=" + MARKER + "&page=2", "GET /x?token=<redacted>&page=2"),
+    ("Authorization: Bearer " + MARKER, "Authorization: <redacted>"),
+    ("upload failed for token=" + MARKER, "upload failed for token=<redacted>"),
+    ("url=https://example/x?token=" + MARKER,
+     "url=https://example/x?token=<redacted>"),
+    # untouched entries must be byte-identical
+    ("monkey=banana", "monkey=banana"),
+    ("key=value", "key=value"),
+    ("stage=summarize code=llm_global_failure request_id=req-SYNTH-0001",
+     "stage=summarize code=llm_global_failure request_id=req-SYNTH-0001"),
+    ("stage=summarize\ncode=llm_global_failure\nrequest_id=req-1",
+     "stage=summarize\ncode=llm_global_failure\nrequest_id=req-1"),
+    ("url=https://example/x?page=2", "url=https://example/x?page=2"),
+    # declared residuals
+    ("digest=" + MARKER, "digest=" + MARKER),
+    ('{"api_key": "' + MARKER + '"}', '{"api_key": "' + MARKER + '"}'),
+]
+
+
+def test_f08_fidelity_pair_count_matches_the_mechanical_count():
+    """F-I14C-R4-01: the pair count must not be hand-written anywhere.
+
+    `harness/report_counts.py` computes this number from the table itself and writes
+    `r5/counts.json`; the r4 documents said "23" for a 24-entry table.
+    """
+    counts_path = ATTEMPT_ROOT / "r5" / "counts.json"
+    assert counts_path.is_file(), "run harness/report_counts.py to produce r5/counts.json"
+    counts = json.loads(counts_path.read_text(encoding="utf-8"))
+    assert counts["fidelity_cases"] == len(FIDELITY_CASES)
+    assert counts["fidelity_cases"] == counts["exact_nodeids"]
+
+
+def test_f08_c13_multiline_loss_is_frozen_not_hidden():
+    """C13, r5: the criterion must not be blind to multi-line inputs.
+
+    This asserts the CURRENT (accepted) behaviour explicitly, including that the loss is
+    silent diagnostic deletion and NOT a truncation artefact.  Lengths are computed from the
+    inputs, not transcribed: the r5 draft of this test hard-coded the reviewer's 112 and
+    failed with this attempt's shorter marker - the same hand-typed-number failure mode as
+    F-I14C-R4-01.
+    """
+    sys.path.insert(0, str(PRODUCT_SRC))
+    from company_wiki.source_catalog.observability import redact_and_truncate
+
+    review_marker = "ZQ7_REVIEWER_MARKER_9f3c"          # the reviewer's own marker
+    tail = " doc=17\nstage=summarize code=llm_global_failure request_id=req-1"
+    for marker in (MARKER, review_marker):
+        text = "upload failed for token=" + marker + tail
+        out = redact_and_truncate(text)
+        assert out == "upload failed for token=<redacted>"
+        assert len(out) == 34, "well below the 200-char limit, so this is not truncation"
+        assert len(text) > len(out) + 60, "most of the message is gone"
+        for lost in ("doc=17", "stage=summarize", "code=llm_global_failure",
+                     "request_id=req-1"):
+            assert lost not in out, f"C13 no longer deletes {lost!r}: update the carry text"
+    # the reviewer's exact reproduction: 24-char marker -> 112 chars in, 34 out
+    assert len("upload failed for token=" + review_marker + tail) == 112
+
+
+@pytest.mark.parametrize("text,expected", FIDELITY_CASES)
+def test_f08_output_fidelity_exact(text, expected):
+    sys.path.insert(0, str(PRODUCT_SRC))
+    from company_wiki.source_catalog.observability import redact_text
+
+    out = redact_text(text)
+    assert out == expected, (
+        f"output fidelity broken: {text!r} -> {out!r}, expected {expected!r}")
+
+
+def test_f08_persisted_event_keeps_the_key_verbatim(tmp_path):
+    """Fidelity at the REAL exit, not only in the helper.
+
+    The r3 defect was visible in the persisted event (`upload failed for
+    tokentoken=<redacted>`, len 39 instead of 34) and in the CLI envelope, where the
+    missing config file name was rewritten and stopped identifying the file.
+    """
+    case = run_case(tmp_path, "unknown-key-with-token", cli_exit=True)
+    event = unhandled(case["events"])
+    assert event["message_redacted"] == "upload failed for token=<redacted>"
+    assert len(event["message_redacted"]) == 34, (
+        "length must match the r2 baseline; a duplicated key inflates it")
+    assert "tokentoken" not in event["message_redacted"]
+    assert '"error": "upload failed for token=<redacted>"' in case["stderr"]
+
+
+def test_f08_e5a_envelope_still_identifies_the_config_file(tmp_path):
+    """The r3 defect rewrote the missing file name to `tokentoken=<redacted>`."""
+    result = run_real_cli(tmp_path, "E5a", TREE_FIXED)
+    assert result["marker_hits"]["stderr"] == 0
+    assert result["bare_traceback_on_stderr"] is False
+    stderr_path = (tmp_path / "realcli" / "E5a" / TREE_FIXED.parent.name
+                   / "stderr.txt")
+    stderr = stderr_path.read_text(encoding="utf-8")
+    assert "tokentoken" not in stderr, "the key was duplicated in the envelope"
+    assert "token=<redacted>" in stderr, (
+        "the envelope must still show which name pattern failed to resolve")
 
 
 def test_e4a_order_swap_control_leaks(tmp_path):
@@ -268,6 +469,7 @@ def run_real_cli(tmp_path: Path, shape: str, src: Path) -> dict:
     env = dict(os.environ)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     env["PYTHONUTF8"] = "1"
+    env["I14C_RUN_ROOT"] = str(tmp_path.parent)      # r5: same rule as run_case
     argv = [
         sys.executable, "-X", "utf8", "-B", str(CLI_DRIVER),
         "--shape", shape, "--run-dir", str(run_dir),

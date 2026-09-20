@@ -40,6 +40,12 @@ def main() -> int:
     card = args.card
     attempt = os.path.abspath(args.attempt_root)
     closing_run_dir = os.path.normcase(os.path.join("evidence", card, "runs", "Z-close-attempt"))
+    # Records written by the closing DRIVERS after the last unit returns; they cannot be inside a
+    # table that the last unit writes.
+    closing_driver_records = {
+        os.path.normcase("recovery/closing_run.json"),
+        os.path.normcase("recovery/r2_run.json"),
+    }
     files = {}
     excluded = []
     for root, dirs, names in os.walk(attempt):
@@ -58,6 +64,9 @@ def main() -> int:
             if os.path.normcase(rel).startswith(closing_run_dir):
                 excluded.append(rel)
                 continue
+            if os.path.normcase(rel) in closing_driver_records:
+                excluded.append(rel)
+                continue
             files[rel] = {"absolute_path": path, "sha256": sha256(path),
                           "size_bytes": os.path.getsize(path)}
 
@@ -74,6 +83,9 @@ def main() -> int:
              "capture wrapper writes them after the unit returns, i.e. after this table; "
              "evidence/%s/runs/Z-close-attempt/rc.json self-describes the sha256 of its own "
              "stdout/stderr, and commands.json records that unit's rc_record_sha256)" % (card, card)),
+            ("recovery/closing_run.json and recovery/r2_run.json (written by the closing DRIVERS "
+             "after the last unit returns; closing_run.json lists the units and their failures, and "
+             "the per-unit rc.json records carry the raw rc)"),
         ] + excluded,
         "excluded_paths_present": sorted(set(excluded)),
         "file_count": len(files),

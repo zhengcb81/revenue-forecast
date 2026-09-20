@@ -1,0 +1,2796 @@
+"""On-demand company filing fetcher (market-routed, reuse-first).
+
+This is a thin client over company-wiki's acquisition engine. It identifies a
+company, then resolves (reuses) an existing filing in company-wiki, or — only
+when explicitly authorized — delegates a missing-source download to company-wiki
+which routes by market: A-share (CN) -> StockInfoDLSimple/cninfo, HK/US ->
+dayu-agent. Newly downloaded bytes are written into company-wiki under
+``companies/{entity}/raw/{kind}/`` with immutable provenance; the calculation
+engines of consuming skills never import a downloader.
+
+Run directly:
+
+    echo '{"company_query":"AMD","document_kind":"annual_report","fiscal_year":2025,"as_of_date":"2026-07-18"}' \\
+      | python scripts/fetch_filing.py [--allow-download] [--config PATH] [--request-file PATH]
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import random
+import re
+import subprocess
+import sys
+import time
+from typing import Any
+import uuid
+
+
+from filing_contracts import (  # noqa: E402  re-export
+    FILING_RESPONSE_SCHEMA_VERSION,
+    CONFIG_TOKEN_RE,
+    COMPANY_WIKI_CONFIG_SCHEMA_VERSION,
+    COMPANY_WIKI_IDENTITY_SCHEMA_VERSION,
+    SUPPORTED_COMPANY_WIKI_CONTRACTS,
+    FilingFetchError,
+    validate_handle,
+    validate_request,
+    validate_resolution_envelope,
+    _required_text,
+)
+
+SKILL_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_COMPANY_WIKI_CONFIG = SKILL_ROOT / "config" / "company_wiki.json"
+
+# Exponential backoff for transient catalog lock contention (Phase 15.2,
+# ZR-205: jitter + cap + deadline bound, no sleep past the deadline).
+CATALOG_LOCKED_BACKOFF_SECONDS = 5.0
+CATALOG_LOCKED_BACKOFF_MULTIPLIER = 2.0
+CATALOG_LOCKED_BACKOFF_MAX_SECONDS = 60.0
+CATALOG_LOCKED_BACKOFF_JITTER = 0.2  # ±20% uniform jitter around the backoff
+
+# ZR-205: canonical error codes emitted by company-wiki's error taxonomy
+# (ZR-204).  These are the only codes the deadline-aware auto-retry loop
+# spins on; everything else (worker_paused, fatal, ...) is fail-closed.
+_CATALOG_RETRY_CODES = frozenset({"catalog_locked", "catalog_busy", "db_timeout"})
+
+
+def _validate_company_wiki_root(root: Path) -> Path:
+    if not isinstance(root, Path):
+        raise TypeError("company_wiki_root must be pathlib.Path")
+    try:
+        resolved = root.expanduser().resolve(strict=True)
+    except OSError as exc:
+        raise FilingFetchError(
+            f"configured company_wiki_root does not exist: {root}",
+            code="config_error",
+        ) from exc
+    if not resolved.is_dir():
+        raise FilingFetchError(
+            "configured company_wiki_root must be a directory", code="config_error"
+        )
+    catalog_config = resolved / "config" / "source_catalog.yaml"
+    if not catalog_config.is_file():
+        raise FilingFetchError(
+            "configured company_wiki_root lacks config/source_catalog.yaml",
+            code="config_error",
+        )
+    return resolved
+
+
+def load_company_wiki_root(*, config_path: Path | None = None) -> Path:
+    """Load and validate the persistent company-wiki root configuration."""
+
+    if config_path is not None and not isinstance(config_path, Path):
+        raise TypeError("config_path must be pathlib.Path or None")
+    selected = config_path or DEFAULT_COMPANY_WIKI_CONFIG
+    try:
+        selected = selected.expanduser().resolve(strict=True)
+    except OSError as exc:
+        raise FilingFetchError(
+            f"company-wiki config does not exist: {selected}", code="config_error"
+        ) from exc
+    if not selected.is_file():
+        raise FilingFetchError("company-wiki config must be a file", code="config_error")
+    try:
+        payload = json.loads(selected.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise FilingFetchError(f"invalid company-wiki config: {exc}", code="config_error") from exc
+    if not isinstance(payload, dict):
+        raise FilingFetchError("company-wiki config must be an object", code="config_error")
+    required = {"schema_version", "company_wiki_root"}
+    if not set(payload) <= required or not required <= set(payload):
+        raise FilingFetchError(
+            "company-wiki config must contain exactly schema_version/company_wiki_root "
+            "(FC-501: no independent allowed_handle_roots allowlist)",
+            code="config_error",
+        )
+    if payload["schema_version"] != COMPANY_WIKI_CONFIG_SCHEMA_VERSION:
+        raise FilingFetchError(
+            f"company-wiki config schema_version must be {COMPANY_WIKI_CONFIG_SCHEMA_VERSION}",
+            code="config_error",
+        )
+    configured = payload["company_wiki_root"]
+    if (
+        not isinstance(configured, str)
+        or not configured.strip()
+        or configured != configured.strip()
+    ):
+        raise FilingFetchError(
+            "company-wiki config company_wiki_root must be non-empty trimmed text",
+            code="config_error",
+        )
+    tokens = {
+        "SKILL_ROOT": str(SKILL_ROOT),
+        "USER_PROFILE": os.environ.get("USERPROFILE") or str(Path.home()),
+    }
+
+    def replace_token(match: re.Match[str]) -> str:
+        name = match.group(1)
+        if name not in tokens:
+            raise FilingFetchError(
+                f"unsupported token in company_wiki_root: {name}", code="config_error"
+            )
+        return tokens[name]
+
+    expanded = CONFIG_TOKEN_RE.sub(replace_token, configured)
+    root = Path(expanded).expanduser()
+    if not root.is_absolute():
+        # FC-1202: a relative root would be resolved implicitly against the
+        # config file's parent directory — only explicit absolute (token-
+        # expanded) roots are valid.
+        raise FilingFetchError(
+            "company-wiki config company_wiki_root must be absolute after token expansion",
+            code="config_error",
+        )
+    return _validate_company_wiki_root(root)
+
+
+def _command_arguments(request: dict[str, Any]) -> list[str]:
+    required = ("entity", "document_kind", "as_of_date")
+    for name in required:
+        _required_text(request.get(name), name)
+    arguments = [
+        "--entity",
+        request["entity"],
+        "--document-kind",
+        request["document_kind"],
+        "--as-of-date",
+        request["as_of_date"],
+    ]
+    options = {
+        "market": "--market",
+        "security_id": "--security-id",
+        "form_type": "--form-type",
+        "fiscal_period": "--fiscal-period",
+        "language": "--language",
+        "provider": "--provider",
+        "provider_document_id": "--provider-document-id",
+    }
+    for name, flag in options.items():
+        value = request.get(name)
+        if value is not None:
+            arguments.extend((flag, _required_text(value, name)))
+    fiscal_year = request.get("fiscal_year")
+    if fiscal_year is not None:
+        if isinstance(fiscal_year, bool) or not isinstance(fiscal_year, int):
+            raise FilingFetchError("fiscal_year must be an integer")
+        arguments.extend(("--fiscal-year", str(fiscal_year)))
+    mode = request.get("mode")
+    if mode is not None:
+        arguments.extend(("--mode", str(mode)))
+    return arguments
+
+
+def _identity_arguments(request: dict[str, Any]) -> list[str]:
+    query = _required_text(request.get("company_query"), "company_query")
+    for name in ("document_kind", "as_of_date"):
+        _required_text(request.get(name), name)
+    arguments = ["--query", query]
+    for name, flag in (("market", "--market"), ("exchange", "--exchange")):
+        value = request.get(name)
+        if value is not None:
+            arguments.extend((flag, _required_text(value, name)))
+    return arguments
+
+
+def _run_company_wiki_json(
+    *,
+    command: list[str],
+    root: Path,
+    timeout_seconds: float,
+    action: str,
+    stats: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    environment = dict(os.environ)
+    environment["PYTHONUTF8"] = "1"
+    creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0  # type: ignore[attr-defined]
+    if stats is not None:
+        stats["calls"] += 1
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=root,
+            env=environment,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            capture_output=True,
+            timeout=timeout_seconds,
+            check=False,
+            shell=False,
+            creationflags=creationflags,
+        )
+    except subprocess.TimeoutExpired as exc:
+        # A subprocess timeout means the attempt outlived the remaining deadline
+        # budget.  It surfaces as upstream_error and is TERMINAL: the retry set is
+        # _CATALOG_RETRY_CODES and this code is not part of it (I-04-A D3).
+        raise FilingFetchError(
+            f"company-wiki {action} failed: {exc}", code="upstream_error"
+        ) from exc
+    except OSError as exc:
+        raise FilingFetchError(f"company-wiki {action} failed: {exc}") from exc
+    if completed.returncode != 0:
+        detail = completed.stderr.strip()[-2000:] or "no stderr"
+        raise FilingFetchError(
+            f"company-wiki {action} exited {completed.returncode}: {detail}",
+            code=_classify_wiki_error(completed.stderr.strip()),
+            stage=action,
+            attempts=1,
+        )
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise FilingFetchError(f"company-wiki {action} stdout is not JSON") from exc
+    if not isinstance(payload, dict):
+        raise FilingFetchError(f"company-wiki {action} response must be an object")
+    return payload
+
+
+def _classify_wiki_error(stderr_text: str) -> str:
+    """Map a company-wiki structured stderr payload to a filing error code.
+
+    ZR-205: consume the canonical ZR-204 error-taxonomy codes emitted by the
+    wiki CLI (``catalog_locked`` / ``catalog_busy`` / ``db_timeout`` /
+    ``worker_paused`` / ``fatal``) directly; keep N-1 fallbacks for the
+    legacy class-name emission shape (``CatalogOperationLockedError``,
+    ``RuntimeError`` + paused text).  Unknown / malformed payloads fail
+    closed to ``fatal`` (never retryable).
+    """
+    try:
+        structured = json.loads(stderr_text)
+    except json.JSONDecodeError:
+        return "fatal"
+    if not isinstance(structured, dict):
+        return "fatal"
+    error_type = structured.get("error_type")
+    if error_type in _CATALOG_RETRY_CODES:
+        return error_type
+    if error_type == "worker_paused":
+        return "worker_paused"
+    if error_type == "fatal":
+        return "fatal"
+    # N-1 legacy emission: exception class names from before the taxonomy.
+    if error_type == "CatalogOperationLockedError":
+        return "catalog_locked"
+    if error_type == "RuntimeError" and "paused" in str(structured.get("error", "")):
+        return "worker_paused"
+    return "fatal"
+
+
+def _run_company_wiki_json_retry(
+    *,
+    command: list[str],
+    root: Path,
+    action: str,
+    deadline: float,
+    stats: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Run a company-wiki CLI call, retrying transient catalog lock
+    contention with jittered exponential backoff (5s, 10s, ... capped at
+    ``CATALOG_LOCKED_BACKOFF_MAX_SECONDS``) bounded by the overall deadline.
+
+    ZR-205: the retry set is the canonical catalog-contention codes
+    (catalog_locked / catalog_busy / db_timeout); ``worker_paused`` and
+    ``fatal`` are NOT auto-retried (fail closed).  Jitter is ±20% uniform;
+    the wait is clamped to the remaining deadline so a sleep never exceeds
+    it.  Every company-wiki subprocess invocation is counted in
+    ``stats["calls"]`` for final envelope reconciliation (READ-09).
+    """
+    attempt = 1
+    backoff = CATALOG_LOCKED_BACKOFF_SECONDS
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise FilingFetchError(
+                f"overall deadline exceeded before {action}",
+                code="upstream_error",
+                stage=action,
+                attempts=attempt - 1,
+            )
+        try:
+            return _run_company_wiki_json(
+                command=command,
+                root=root,
+                timeout_seconds=remaining,
+                action=action,
+                stats=stats,
+            )
+        except FilingFetchError as exc:
+            if exc.code not in _CATALOG_RETRY_CODES:
+                raise
+            # I-04-A D3 (parent I-04 item 1): re-read the budget AFTER the subcall
+            # returned.  The old code reused the value computed BEFORE the call, so a
+            # subcall that consumed the whole deadline still earned a full backoff
+            # sleep - 9s call + 5s stale wait = t=14 past a 10s deadline, which is
+            # exactly the accident reviews/filing/tests/pure_probes.json records.
+            remaining = deadline - time.monotonic()
+            jittered = backoff * (
+                1.0 + random.uniform(-CATALOG_LOCKED_BACKOFF_JITTER, CATALOG_LOCKED_BACKOFF_JITTER)
+            )
+            wait = min(jittered, remaining)
+            if wait <= 0:
+                raise FilingFetchError(
+                    f"overall deadline exceeded retrying {action}: {exc}",
+                    code="upstream_error",
+                    stage=action,
+                    attempts=attempt,
+                ) from exc
+            print(
+                f"[filing-fetch] {action} blocked by a running catalog operation "
+                f"(attempt {attempt}); retrying in {wait:.1f}s: {exc}",
+                file=sys.stderr,
+            )
+            time.sleep(wait)
+            attempt += 1
+            backoff = min(
+                backoff * CATALOG_LOCKED_BACKOFF_MULTIPLIER,
+                CATALOG_LOCKED_BACKOFF_MAX_SECONDS,
+            )
+
+
+def _resolved_company_identity(payload: dict[str, Any]) -> dict[str, Any]:
+    status = payload.get("status")
+    reason = payload.get("reason")
+    if status != "resolved":
+        # Surface any candidate identities company-wiki returned so the caller
+        # can disambiguate (e.g. dual-class tickers GOOGL/GOOG) instead of
+        # seeing a bare identity_error.
+        raw_candidates = payload.get("candidates")
+        candidates = raw_candidates if isinstance(raw_candidates, list) else None
+        raise FilingFetchError(
+            f"company identity is not uniquely resolved: {status} / {reason}",
+            code="identity_error",
+            candidates=candidates,
+        )
+    if payload.get("schema_version") != COMPANY_WIKI_IDENTITY_SCHEMA_VERSION:
+        raise FilingFetchError(
+            "company identity schema_version is unsupported",
+            code="identity_error",
+        )
+    resolved = payload.get("resolved")
+    if not isinstance(resolved, dict):
+        raise FilingFetchError("resolved company identity is missing", code="identity_error")
+    for name in (
+        "canonical_name",
+        "market",
+        "exchange",
+        "ticker",
+        "security_id",
+        "match_basis",
+        "matched_value",
+        "source_name",
+        "source_url",
+        "source_record_id",
+    ):
+        value = resolved.get(name)
+        if not isinstance(value, str) or not value.strip() or value != value.strip():
+            raise FilingFetchError(
+                f"company_identity.{name} must be non-empty trimmed text",
+                code="identity_error",
+            )
+    if resolved.get("verified") is not True or resolved.get("active") is not True:
+        raise FilingFetchError(
+            "company identity must be verified and active before source resolution",
+            code="identity_error",
+        )
+    if resolved["market"] not in {"CN", "HK", "US"}:
+        raise FilingFetchError("company identity market is unsupported", code="identity_error")
+    return dict(resolved)
+
+
+# ---------------------------------------------------------------------------
+# Worker pause-around orchestration
+#
+# The company-wiki background worker holds the global catalog `operation.lock`
+# while running long batches (e.g. backfill_text_fingerprints over 20k+
+# documents), which blocks every `ensure --allow-download`. The scope below
+# pauses the worker before the download (releasing the lock; `operation.lock`
+# is auto-reclaimed once the holder pid is dead) and resumes it afterwards so
+# its pending batch continues. Only the worker running and enabled is paused;
+# a user-initiated pause is never resumed.
+# ---------------------------------------------------------------------------
+
+_PAUSE_REFCOUNT_NAME = "filing_fetch_pause.refcount"
+_PAUSE_OWNER_NAME = "filing_fetch_pause.owner"
+_WORKER_STATUS_TIMEOUT = 60.0
+
+# I-04-C ADR-6 caps every lease-layer wait with min(...) forms: the probe grows no
+# budget of its own, it only shrinks.  5s is the soft landing; the 20s hard cap of
+# I-04-B stays in force underneath it.
+_PROBE_SOFT_CAP_SECONDS = 5.0
+
+# I-04-A D2: C = max(floor, 2*resume_wait + graceful).  A formula rather than a
+# frozen constant, because --worker-resume-wait-seconds accepts any float: a fixed
+# 30s would make ownership restoration time out by construction for larger values.
+# Cleanup never borrows the request deadline.
+_CLEANUP_BUDGET_MIN_SECONDS = 30.0
+
+# I-04-A D1 row R-P (and the re-sign carry): a pid liveness probe is a real
+# subprocess, so it is capped at 20s IN ADDITION to the phase budget.  Without
+# the cap a default 900s request would let a single probe eat 60s.
+_PID_PROBE_MAX_SECONDS = 20.0
+
+
+def _catalog_dir(root: Path) -> Path:
+    return root / ".source_catalog"
+
+
+def _pid_is_alive(pid: int, *, timeout: float) -> bool:
+    """Best-effort pid liveness; unknown states count as alive (conservative).
+
+    Kept as the single-call compatibility surface: it is now a thin wrapper over
+    :func:`_probe_process` (I-04-D / I-04-C ADR-4), which additionally reports the
+    process creation time so a *reused* pid can be told apart from a live holder.
+    """
+    return _probe_process(pid, timeout=timeout)["alive"]
+
+
+def _pid_is_alive_with_start_time(pid: int, *, timeout: float) -> tuple[bool, str]:
+    """Single probe primitive; returns (alive, os_start_time).
+
+    I-04-A D1 row R-P: the probe is a real action and a budget consumer, so the
+    deadline is enforced in-process before and after it, and any subprocess tail is
+    capped at ``_PID_PROBE_MAX_SECONDS``.
+
+    ``os_start_time`` is the OS-reported creation instant (Windows FILETIME, 100ns),
+    or "" when unavailable.  The empty string is the fail-closed direction: without
+    it the pid-reuse rule cannot fire, so such a record is never reclaimed by it.
+    """
+    deadline = time.monotonic() + min(_PID_PROBE_MAX_SECONDS, timeout)
+
+    if os.name == "nt":
+        exists = _process_exists(pid)
+        if exists is False:
+            return False, ""
+        if exists is True:
+            return True, _process_start_time_raw(pid) or ""
+
+    if os.name != "nt":
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False, ""
+        except OSError:
+            return True, ""
+
+    # Degraded path: the query could not answer, so fall back to the legacy tasklist
+    # spawn.  Rule 2 (pid reuse) stays inert while os_start_time is "" - the contract
+    # is unchanged, only the reclaim ability is weaker.
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise subprocess.TimeoutExpired(cmd="pid-probe", timeout=timeout)
+    try:
+        probe = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}"],
+            capture_output=True,
+            text=True,
+            errors="replace",
+            creationflags=subprocess.CREATE_NO_WINDOW,  # type: ignore[attr-defined]
+            timeout=remaining,
+        )
+    except subprocess.TimeoutExpired:
+        raise
+    except (OSError, subprocess.SubprocessError):
+        return True, ""
+    except Exception:  # noqa: BLE001 - any probe failure is "unknown", never "dead"
+        return True, ""
+    if (probe.stdout or "").find(str(pid)) < 0:
+        return False, ""
+    return True, ""
+
+
+def _process_start_time_raw(pid: int) -> str | None:
+    """OS-reported creation time, or None when it cannot be read."""
+    if os.name != "nt":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+    except Exception:  # noqa: BLE001 - no ctypes means no answer, not "dead"
+        return None
+    try:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        open_process = kernel32.OpenProcess
+        open_process.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        open_process.restype = wintypes.HANDLE
+        get_process_times = kernel32.GetProcessTimes
+        get_process_times.argtypes = [
+            wintypes.HANDLE,
+            ctypes.POINTER(wintypes.FILETIME),
+            ctypes.POINTER(wintypes.FILETIME),
+            ctypes.POINTER(wintypes.FILETIME),
+            ctypes.POINTER(wintypes.FILETIME),
+        ]
+        get_process_times.restype = wintypes.BOOL
+        close_handle = kernel32.CloseHandle
+        close_handle.argtypes = [wintypes.HANDLE]
+        close_handle.restype = wintypes.BOOL
+        handle = open_process(0x1000, False, pid)
+        if not handle:
+            return None
+        try:
+            creation = wintypes.FILETIME()
+            exit_time = wintypes.FILETIME()
+            kernel = wintypes.FILETIME()
+            user = wintypes.FILETIME()
+            ok = get_process_times(
+                handle,
+                ctypes.byref(creation),
+                ctypes.byref(exit_time),
+                ctypes.byref(kernel),
+                ctypes.byref(user),
+            )
+            if not ok:
+                return None
+            return str((creation.dwHighDateTime << 32) | creation.dwLowDateTime)
+        finally:
+            close_handle(handle)
+    except Exception:  # noqa: BLE001 - unknown stays unknown
+        return None
+
+
+def _windows_process_start_time(pid: int) -> str | None:
+    """Creation time for a pid the OS confirms exists; None when it cannot answer.
+
+    I-04-C ADR-4: rule 2 (pid reuse) needs the *creation time*, not just "alive".
+    ``OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION)`` + ``GetProcessTimes`` needs no
+    subprocess at all, so the whole probe fits inside the 5s floor.
+
+    Returns:
+      "0"   -> the OS confirms this pid does not exist
+      "N"   -> the OS reports creation time N (100ns FILETIME)
+      None  -> this API cannot answer; the caller degrades instead of guessing
+    """
+    exists = _process_exists(pid)
+    if exists is None:
+        return None
+    if not exists:
+        return "0"
+    return _process_start_time_raw(pid)
+
+
+def _process_exists(pid: int) -> bool | None:
+    """Whether the OS says this pid exists, using no subprocess.
+
+    True  - OpenProcess returned a handle
+    False - ERROR_INVALID_PARAMETER (87), the documented "no such process" answer
+    None  - this API cannot answer (non-Windows, or the query itself failed).  None
+            is the conservative direction: the caller must not read it as "dead".
+    """
+    if os.name != "nt":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+    except Exception:  # noqa: BLE001
+        return None
+    try:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        open_process = kernel32.OpenProcess
+        open_process.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        open_process.restype = wintypes.HANDLE
+        close_handle = kernel32.CloseHandle
+        close_handle.argtypes = [wintypes.HANDLE]
+        close_handle.restype = wintypes.BOOL
+        # PROCESS_QUERY_LIMITED_INFORMATION: works for another user's process and on
+        # protected processes, and needs no VM_READ.
+        handle = open_process(0x1000, False, pid)
+        if not handle:
+            return ctypes.get_last_error() != 87
+        try:
+            return True
+        finally:
+            close_handle(handle)
+    except Exception:  # noqa: BLE001 - unknown stays unknown
+        return None
+
+
+# ---------------------------------------------------------------------------
+# I-04-D: cross-process lease / ownership / recovery protocol.
+#
+# Implemented from execution_runs/I-04-C/a20260919-01/decision.md v1.3
+# (accepted_scoped): ADR-1..ADR-12, the R1-R5 last-release branch table and
+# lock_budget_for(x) = min(x, 60).  The design is NOT re-opened here.
+#
+# The three non-atomic read-modify-writes of the legacy code are closed by one
+# OS byte-range lock on a lock file that is never unlinked (ADR-1/ADR-2):
+#   RC-1 two concurrent _register calls both read an empty store;
+#   RC-2 the "last one out" decision raced a new participant;
+#   RC-3 the owner marker was written after the refcount, so a crash between
+#        them made the next participant read "paused + no owner" as a USER pause.
+# ---------------------------------------------------------------------------
+
+LOCK_MAX_SECONDS = 60.0  # ADR-2 waiting cap (I-04-C OPEN-3 / owner gate C2)
+_LOCK_POLL_SECONDS = 0.05
+_PAUSE_LEASE_SCHEMA = "filing-fetch.pause-refcount/2"
+_PAUSE_LOCK_NAME = "filing_fetch_pause.lock"
+_PAUSE_JOURNAL_NAME = "filing_fetch_pause.journal.jsonl"
+
+# I-04-C ADR-7: the legacy (list, no schema) refcount is NOT adopted silently -
+# it carries no generation, no resume obligation and no incarnation, so adopting
+# it would reopen the W1/W4 holes under the new code's name.
+_MIGRATE_ENV = "FILING_FETCH_PAUSE_LEASE_MIGRATE"
+
+# Test-only instrumentation.  Unset (the production default) means: one dict-less
+# comparison per critical section and no behaviour difference whatsoever.
+_HOOKS_ENV = "I04D_HOOKS"
+
+_MIGRATE_HINT = (
+    f"migrate each entry with {_MIGRATE_ENV}=1 (legacy:<pid>:<index> lease ids, "
+    "generation 0, resume.required=false), or register the entries by hand"
+)
+
+LEASE_ACTION_FAIL_CLOSED = frozenset(
+    {
+        "lease_lock_timeout",
+        "lease_state_corrupt",
+        "lease_state_legacy",
+        "lease_conflict_unknown",
+        "lease_resume_takeover_failed",
+        "lease_state_write_failed",
+    }
+)
+
+# I-04-C ADR-2/ADR-8: which lease outcome still owes a release critical section.
+# A lease action never means "no lease was written": the ledger is the authority.
+LEASE_ACTIONS_OWING_RELEASE = frozenset(
+    {
+        "paused_by_us",
+        "joined",
+        "released_joined",
+        "released_last",
+        "released_owner_changed",
+        "release_fail_closed",
+        "lease_lock_timeout",
+        "lease_conflict_unknown",
+        "lease_resume_takeover_failed",
+        "lease_state_write_failed",
+    }
+)
+
+# I-04-C ADR-11: statuses that licence a takeover of an existing pause cycle
+# rather than opening a new one.
+_OWNS_CYCLE_STATUSES = ("paused_by_us", "takeover_resumed")
+
+
+def _lease_owns_cycle(status: Any) -> bool:
+    return status in _OWNS_CYCLE_STATUSES
+
+
+def _lease_lock_path(root: Path) -> Path:
+    return _catalog_dir(root) / _PAUSE_LOCK_NAME
+
+
+def _pause_state_path(root: Path) -> Path:
+    return _catalog_dir(root) / _PAUSE_REFCOUNT_NAME
+
+
+def _pause_owner_path(root: Path) -> Path:
+    return _catalog_dir(root) / _PAUSE_OWNER_NAME
+
+
+def _pause_journal_path(root: Path) -> Path:
+    return _catalog_dir(root) / _PAUSE_JOURNAL_NAME
+
+
+def _boot_uuid() -> str:
+    """One incarnation id per process (ADR-4); regenerated on every start."""
+    global _BOOT_UUID
+    if not _BOOT_UUID:
+        _BOOT_UUID = uuid.uuid4().hex[:12]
+    return _BOOT_UUID
+
+
+_BOOT_UUID = ""
+
+
+def _new_lease_id() -> str:
+    return uuid.uuid4().hex[:24]
+
+
+def _lease_journal(root: Path, event: str, **fields: Any) -> None:
+    """Append one diagnostic line.  Never authoritative, never fatal (ADR-7)."""
+    record = {
+        "event": event,
+        "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "monotonic": round(time.monotonic(), 6),
+        "pid": os.getpid(),
+    }
+    record.update(fields)
+    try:
+        directory = _catalog_dir(root)
+        directory.mkdir(parents=True, exist_ok=True)
+        line = (json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+        if len(line) > 4096:  # keep O_APPEND single-write atomicity
+            line = (json.dumps({"event": event, "truncated": True}) + "\n").encode("utf-8")
+        handle = os.open(str(_pause_journal_path(root)), os.O_APPEND | os.O_CREAT | os.O_WRONLY, 0o644)
+        try:
+            os.write(handle, line)
+        finally:
+            os.close(handle)
+    except OSError:
+        pass
+
+
+def _unique_tmp_path(path: Path) -> Path:
+    """O-5: a *unique* temporary name, so two writers can never share one temp file.
+
+    The legacy ``path + ".tmp"`` is a single fixed name: two concurrent writers
+    overwrite each other's temp file and one ``os.replace`` then moves the other
+    writer's bytes (or raises FileNotFoundError) - the lost update the lock exists
+    to prevent.
+    """
+    return path.with_name(
+        f"{path.name}.{os.getpid()}.{_boot_uuid()}.{uuid.uuid4().hex[:8]}.tmp"
+    )
+
+
+def _atomic_write_json(path: Path, payload: Any) -> None:
+    text = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = _unique_tmp_path(path)
+    try:
+        tmp.write_text(text, encoding="utf-8")
+        tmp.replace(path)
+    except OSError:
+        try:
+            if tmp.exists():
+                tmp.unlink()
+        except OSError:
+            pass
+        raise
+
+
+def _hash_file(path: Path) -> str:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return ""
+
+
+class _ProbeResult:
+    """The liveness verdict plus its evidence (ADR-4 rules 1-5)."""
+
+    __slots__ = ("verdict", "os_start_time", "error")
+
+    def __init__(self, verdict: str, os_start_time: str = "", error: str = "") -> None:
+        self.verdict = verdict  # self | alive | dead | reused | unknown
+        self.os_start_time = os_start_time
+        self.error = error
+
+    def __repr__(self) -> str:  # pragma: no cover - diagnostics only
+        return f"_ProbeResult({self.verdict!r}, {self.os_start_time!r}, {self.error!r})"
+
+
+def _probe_entry_verdict(entry: dict[str, Any], *, probe_timeout: float) -> _ProbeResult:
+    """Decide one lease holder's liveness.  The failure direction is always safe."""
+    pid = entry.get("pid")
+    if not isinstance(pid, int):
+        return _ProbeResult("unknown", "", "pid is not an int")
+    recorded_boot = entry.get("boot_uuid")
+    if pid == os.getpid() and recorded_boot == _boot_uuid():
+        return _ProbeResult("self")  # rule 1: own incarnation, never spawn a probe
+    try:
+        alive, observed_start = _pid_is_alive_with_start_time(pid, timeout=probe_timeout)
+    except subprocess.TimeoutExpired:
+        return _ProbeResult("unknown", "", "probe_timeout")
+    except Exception as exc:  # noqa: BLE001 - any failure is UNKNOWN, never "dead"
+        return _ProbeResult("unknown", "", f"probe_error:{type(exc).__name__}")
+    if not alive:
+        return _ProbeResult("dead", observed_start)
+    recorded_start = entry.get("os_start_time") or ""
+    if recorded_start and observed_start == "0":
+        # The record claims a creation time but the OS now says the pid is gone:
+        # inside one probe the two answers disagree, so the record is not usable.
+        return _ProbeResult("unknown", observed_start, "record_start_but_pid_absent")
+    if recorded_start and observed_start and recorded_start != observed_start:
+        return _ProbeResult("reused", observed_start)  # rule 2: pid reuse, holder is gone
+    if observed_start == "0":
+        return _ProbeResult("dead", observed_start)
+    return _ProbeResult("alive", observed_start)  # rule 3: conservative
+
+
+class _LeaseView:
+    """One probing pass over the ledger: live leases keep their verdict as evidence.
+
+    Probing twice would be wrong as well as wasteful: the second answer can differ
+    (a holder may die between passes), and the branch would then act on a verdict
+    that contradicts the one recorded in the journal.
+    """
+
+    __slots__ = ("state", "live", "live_verdicts", "reclaimed", "reclaimed_verdicts")
+
+    def __init__(
+        self,
+        state: "_LeaseState",
+        live: list[dict[str, Any]],
+        live_verdicts: list[_ProbeResult],
+        reclaimed: list[dict[str, Any]],
+        reclaimed_verdicts: list[_ProbeResult],
+    ) -> None:
+        self.state = state
+        self.live = live
+        self.live_verdicts = live_verdicts
+        self.reclaimed = reclaimed
+        self.reclaimed_verdicts = reclaimed_verdicts
+
+    @property
+    def unknowns(self) -> list[dict[str, Any]]:
+        return [
+            entry
+            for entry, verdict in zip(self.live, self.live_verdicts)
+            if verdict.verdict == "unknown"
+        ]
+
+
+class _LeaseScopeError(Exception):
+    """Internal carrier for a fail-closed lease outcome (ADR-2/ADR-4/ADR-5)."""
+
+    def __init__(
+        self, code: str, message: str, *, cleanup: str = "", resume_code: str = ""
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.cleanup = cleanup
+        self.resume_code = resume_code
+
+    def filing_error(self) -> "FilingFetchError":
+        return FilingFetchError(self.message, code=self.code)
+
+
+class _LeaseLocked:
+    """Context manager owning the ONE lease critical section (ADR-2: never nested).
+
+    Re-entrant by depth inside a single process so ``__exit__`` can reuse the lock
+    its own ``__enter__`` path already holds.  A non-reentrant request would
+    self-timeout inside one thread, which ADR-2/§3.3 forbids (cross-thread
+    concurrency is not granted by this card).
+    """
+
+    def __init__(self, scope: "PausedWorkerScope") -> None:
+        self._scope = scope
+        self._depth = 0
+        self._handle: Any = None
+
+    @property
+    def held(self) -> bool:
+        return self._depth > 0
+
+    def __enter__(self) -> "_LeaseLocked":
+        self._scope._acquire_lock()
+        self._depth += 1
+        return self
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        self._depth -= 1
+        if self._depth <= 0:
+            self._depth = 0
+            handle, self._handle = self._handle, None
+            self._scope._release_lock(handle)
+
+
+class _Hooks:
+    """Test-only instrumentation, inert unless ``I04D_HOOKS`` is set (I-04-D).
+
+    Production never sets it, so this reduces to a module-level ``None`` check.
+    Recognised directives, comma separated:
+
+      ``gate:<name>[@<tag>][@<timeout>]``  publish ``gate.<name>[@<tag>].reached``
+                                           and wait for ``gate.<name>.fence``
+      ``crash:<point>:<code>``             ``os._exit(<code>)`` at ``<point>``
+
+    The gates are file fences, never sleeps: a schedule can therefore pin an
+    interleaving deterministically instead of hoping for one.
+    """
+
+    def __init__(self, spec: str, *, tag: str = "") -> None:
+        self.dir = Path(os.environ.get("I04D_HOOK_DIR") or ".")
+        self.tag = tag
+        self.gates: dict[tuple[str, str], float] = {}
+        self.arrivals: set[tuple[str, str]] = set()
+        self.crashes: dict[str, int] = {}
+        for item in (part.strip() for part in spec.split(",")):
+            if not item:
+                continue
+            kind, _, rest = item.partition(":")
+            if kind == "gate":
+                fields = rest.split("@")
+                name = fields[0]
+                gate_tag = fields[1] if len(fields) > 1 else ""
+                timeout = float(fields[2]) if len(fields) > 2 else 300.0
+                self.gates[(name, gate_tag)] = timeout
+            elif kind == "arrive":
+                fields = rest.split("@")
+                name = fields[0]
+                arrive_tag = fields[1] if len(fields) > 1 else ""
+                self.arrivals.add((name, arrive_tag))
+            elif kind == "crash":
+                point, _, code = rest.partition(":")
+                self.crashes[point] = int(code or 90)
+        self.dir.mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
+    def _fence_name(name: str, tag: str) -> str:
+        return f"gate.{name}.{tag}" if tag else f"gate.{name}"
+
+    def _applies(self, point_tag: str) -> bool:
+        """A point belongs to the participant it names, or to all when unnamed.
+
+        Without this filter every participant would wait at every gate, which
+        deadlocks B on a gate only A can reach - and a deadlock is not a schedule.
+        """
+        return not point_tag or point_tag == self.tag
+
+    def __call__(self, point: str, context: dict[str, Any]) -> None:
+        code = self.crashes.get(point)
+        if code is not None:
+            _lease_journal(Path(context.get("root") or "."), "i04d_hook_crash", point=point, code=code)
+            sys.stdout.flush()
+            sys.stderr.flush()
+            os._exit(code)
+        for name, arrive_tag in self.arrivals:
+            if not self._applies(arrive_tag):
+                continue
+            marker = self.dir / f"arrive.{name}.{arrive_tag or 'all'}"
+            if not marker.exists():
+                marker.write_text("arrived", encoding="utf-8")
+        for (name, gate_tag), timeout in self.gates.items():
+            if not self._applies(gate_tag):
+                continue
+            base = self._fence_name(name, gate_tag)
+            reached = self.dir / f"{base}.reached"
+            if not reached.exists():
+                reached.write_text("reached", encoding="utf-8")
+            fence = self.dir / f"{base}.fence"
+            limit = time.monotonic() + timeout
+            while not fence.exists():
+                if time.monotonic() > limit:
+                    raise FilingFetchError(
+                        f"I04D hook gate {base} timed out after {timeout}s",
+                        code="i04d_gate_timeout",
+                    )
+                time.sleep(0.005)
+
+
+_HOOKS: "_Hooks | None" = None
+
+
+def _i04d_hook(point: str, **context: Any) -> None:
+    global _HOOKS
+    spec = os.environ.get(_HOOKS_ENV)
+    if not spec:
+        return
+    if _HOOKS is None:
+        _HOOKS = _Hooks(spec, tag=os.environ.get("I04D_HOOK_TAG") or "")
+    _HOOKS(point, context)
+
+
+class _LeaseState:
+    """The persisted lease document (ADR-7: schema ``filing-fetch.pause-refcount/2``)."""
+
+    def __init__(
+        self,
+        generation: int,
+        resume_required: bool,
+        resume_lease_id: str,
+        entries: list[dict[str, Any]],
+        owner: dict[str, Any] | None,
+    ) -> None:
+        self.generation = generation
+        self.resume_required = resume_required
+        self.resume_lease_id = resume_lease_id
+        self.entries = entries
+        self.owner = owner
+
+    def document(self, *, resume_required: bool | None = None) -> dict[str, Any]:
+        required = self.resume_required if resume_required is None else resume_required
+        return {
+            "schema": _PAUSE_LEASE_SCHEMA,
+            "generation": self.generation,
+            "resume": {
+                "required": bool(required),
+                "generation": self.generation,
+                "lease_id": self.resume_lease_id or "",
+                "phase": "resume_pending" if required else "idle",
+            },
+            "entries": list(self.entries),
+            "owner": self.owner,
+        }
+
+    def text(self, *, resume_required: bool | None = None) -> str:
+        return json.dumps(self.document(resume_required=resume_required), ensure_ascii=False, sort_keys=True)
+
+
+def _sys_process_start_time() -> str:
+    """This process's own creation instant, as the OS reports it (ADR-4).
+
+    A probe cannot be asked about the process it runs in (a probe failure would
+    then be indistinguishable from self-death), so the value is captured once and
+    persisted with every lease and owner record.  "" means "no incarnation
+    evidence" and disables pid-reuse detection - the fail-closed direction.
+    """
+    return _windows_process_start_time(os.getpid()) or ""
+
+
+def _lease_entry(scope: "PausedWorkerScope", state: _LeaseState, *, invocations: int, joined: bool) -> dict[str, Any]:
+    return {
+        "lease_id": scope.lease_id,
+        "pid": os.getpid(),
+        "os_start_time": scope._proc_start_time or "",
+        "boot_uuid": _boot_uuid(),
+        "invocations": invocations,
+        "joined": joined,
+    }
+
+
+def _read_pause_state(root: Path, *, migrate: bool | None = None) -> _LeaseState:
+    """Read the lease document, or fail closed.
+
+    I-04-C ADR-5 W6 / ADR-7: corrupt JSON, a non-object payload, a wrong schema or
+    an entry without a ``lease_id`` are all *unreadable*, and ``unknown != empty``.
+    The legacy list is readable only when the operator opts in.
+    """
+    if migrate is None:
+        migrate = os.environ.get(_MIGRATE_ENV) == "1"
+    path = _pause_state_path(root)
+    if not path.exists():
+        return _LeaseState(0, False, "", [], None)
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise _LeaseScopeError(
+            "lease_state_corrupt",
+            f"pause refcount {path} is unreadable: {exc}. Not renamed, not deleted, "
+            "not rebuilt - inspect it by hand",
+        ) from exc
+    if not raw.strip():
+        return _LeaseState(0, False, "", [], None)
+    try:
+        payload = json.loads(raw)
+    except ValueError as exc:
+        raise _LeaseScopeError(
+            "lease_state_corrupt",
+            f"pause refcount {path} is not valid JSON ({exc}); sha256="
+            f"{_hash_file(path)}. The file is left EXACTLY as found for inspection",
+        ) from exc
+    if isinstance(payload, list) and not migrate:
+        raise _LeaseScopeError(
+            "lease_state_legacy",
+            f"pause refcount {path} uses the pre-I-04-D list format ({len(payload)} "
+            f"entries): it has no generation, no resume obligation and no process "
+            f"incarnation, so it cannot be told apart from a user pause. To proceed, "
+            f"{_MIGRATE_HINT}",
+        )
+    if isinstance(payload, list):
+        return _migrate_legacy_payload(payload)
+    if not isinstance(payload, dict) or payload.get("schema") != _PAUSE_LEASE_SCHEMA:
+        raise _LeaseScopeError(
+            "lease_state_corrupt",
+            f"pause refcount {path} is not a {_PAUSE_LEASE_SCHEMA} document; sha256="
+            f"{_hash_file(path)}. Left EXACTLY as found",
+        )
+    entries = payload.get("entries")
+    if not isinstance(entries, list):
+        raise _LeaseScopeError(
+            "lease_state_corrupt",
+            f"pause refcount {path} has a non-list 'entries'; sha256={_hash_file(path)}",
+        )
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict) or not isinstance(entry.get("lease_id"), str) or not entry["lease_id"]:
+            raise _LeaseScopeError(
+                "lease_state_corrupt",
+                f"pause refcount {path} entry #{index} has no usable lease_id "
+                f"(element-level validation, ADR-4); sha256={_hash_file(path)}",
+            )
+        if not isinstance(entry.get("pid"), int):
+            raise _LeaseScopeError(
+                "lease_state_corrupt",
+                f"pause refcount {path} entry #{index} has no integer pid; "
+                f"sha256={_hash_file(path)}",
+            )
+    resume = payload.get("resume")
+    if not isinstance(resume, dict):
+        resume = {}
+    owner = payload.get("owner")
+    if owner is not None and not isinstance(owner, dict):
+        raise _LeaseScopeError(
+            "lease_state_corrupt",
+            f"pause refcount {path} has a non-object owner record; sha256={_hash_file(path)}",
+        )
+    generation = payload.get("generation")
+    if not isinstance(generation, int) or generation < 0:
+        generation = 0
+    return _LeaseState(
+        generation,
+        bool(resume.get("required", False)),
+        str(resume.get("lease_id") or ""),
+        list(entries),
+        dict(owner) if owner else None,
+    )
+
+
+def _migrate_legacy_payload(legacy: list[Any]) -> _LeaseState:
+    """ADR-7 opt-in migration: adopt legacy entries WITHOUT claiming an obligation."""
+    migrated: list[dict[str, Any]] = []
+    for index, entry in enumerate(legacy):
+        if not isinstance(entry, dict):
+            continue
+        pid = entry.get("pid")
+        if not isinstance(pid, int):
+            continue
+        migrated.append(
+            {
+                "lease_id": f"legacy:{pid}:{index}",
+                "pid": pid,
+                "os_start_time": "",
+                "boot_uuid": "",
+                "invocations": 1,
+                "joined": bool(entry.get("joined", False)),
+            }
+        )
+    return _LeaseState(0, False, "", migrated, None)
+
+
+def _write_pause_state(root: Path, state: _LeaseState, *, resume_required: bool | None = None) -> None:
+    """Persist the lease document atomically under a UNIQUE temp name (O-5)."""
+    _atomic_write_json(_pause_state_path(root), state.document(resume_required=resume_required))
+
+
+def _write_owner_marker(root: Path) -> None:
+    """The owner marker file stays a content-free sentinel (ADR-7: no generation).
+
+    Any legacy reader therefore keeps seeing the same sentinel it always saw; the
+    authoritative owner record lives in the refcount document.
+    """
+    path = _pause_owner_path(root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("filing-fetch", encoding="utf-8")
+
+
+def _clear_pause_lease(root: Path) -> None:
+    try:
+        _pause_state_path(root).unlink(missing_ok=True)
+        _pause_owner_path(root).unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def _read_pause_entries(root: Path) -> list[dict[str, Any]]:
+    """Compatibility accessor retained for callers outside this module.
+
+    It fails closed exactly like the protocol path: an unreadable store is an
+    empty list ONLY when the file genuinely does not exist.
+    """
+    state = _read_pause_state(root)
+    return list(state.entries)
+
+
+def _write_pause_entries(root: Path, entries: list[dict[str, Any]]) -> None:
+    """Compatibility accessor: rewrites the entry list, preserving the rest."""
+    state = _read_pause_state(root)
+    state.entries = list(entries)
+    _write_pause_state(root, state)
+
+
+def _prune_pause_entries(
+    root: Path, *, timeout: float, stats: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
+    """Compatibility accessor: drop entries whose pid provably cannot be the holder.
+
+    A leased process can be reclaimed only on positive death/reuse evidence; an
+    UNKNOWN verdict keeps the entry (``unknown != dead``).  The pruned document is
+    persisted, because a prune that is not written is a dropped observation.
+    """
+    if timeout <= 0:
+        raise ValueError("pid liveness probe requires a positive phase budget")
+    state = _read_pause_state(root)
+    kept: list[dict[str, Any]] = []
+    changed = False
+    for entry in state.entries:
+        if stats is not None:
+            stats["liveness_calls"] = int(stats.get("liveness_calls") or 0) + 1
+        verdict = _probe_entry_verdict(entry, probe_timeout=min(_PID_PROBE_MAX_SECONDS, timeout))
+        if verdict.verdict in {"dead", "reused"}:
+            changed = True
+            continue
+        kept.append(entry)
+    if changed:
+        state.entries = kept
+        _write_pause_state(root, state)
+    return kept
+
+
+class PausedWorkerScope:
+    """Context manager pausing the worker around one catalog download.
+
+    I-04-D: the whole enter path is ONE critical section (ADR-11) - the worker
+    status and the lease document are both read inside it, so no branch can act on
+    a snapshot another participant has already invalidated.  Concretely:
+
+    - Worker disabled -> no-op.
+    - Already paused AND held by this tool (``schema=2`` with live entries) ->
+      join the refcount so the last participant resumes it.
+    - Already paused and NOT held by this tool -> respect the user's pause: no
+      lease, no pause, no resume and no evidence left behind.
+    - Paused by a dead participant that left a resume obligation -> take the cycle
+      over, resume first, then pause for ourselves.
+    - Otherwise -> open a new generation, pause, and confirm the pause landed.
+
+    A crash is no longer "self-healing" by guesswork: reclamation needs positive
+    evidence (dead pid, or the same pid with a different process incarnation).
+    """
+
+    def __init__(
+        self,
+        *,
+        root: Path,
+        command_prefix: list[str],
+        enabled: bool,
+        graceful_timeout_seconds: float,
+        resume_wait_seconds: float,
+        deadline: float,
+        stats: dict[str, Any] | None = None,
+    ) -> None:
+        self.root = root
+        self.command_prefix = command_prefix
+        self.enabled = enabled
+        self.graceful = graceful_timeout_seconds
+        self.resume_wait = resume_wait_seconds
+        self.deadline = deadline
+        self.action = "none"
+        self._first = False
+        self.stats = stats
+        self.lease_id = ""
+        self.lease_held = False
+        self._lock = _LeaseLocked(self)
+        self._lock_waits = 0
+        self._lock_acquisitions = 0
+        self._max_lock_wait = 0.0
+        self._ledger_writes = 0
+        self._release_done = False
+        self._cleanup_started: float | None = None
+        self._cleanup_status = ""
+        self._cleanup_failure = ""
+        self._resume_reason = ""
+        self._transfer_to = ""
+        self._proc_start_time = ""
+
+    # -- budgets ---------------------------------------------------------
+
+    def _request_remaining(self) -> float:
+        """Budget for a REQUEST-stage subcall (I-04-A D1/D3).
+
+        Deliberately has no floor: once the deadline has passed this is <= 0 and
+        the caller must NOT issue the call.  The old ``max(10.0, ...)`` minted a
+        fresh 10 second request budget after the deadline (F-D2) - a pure status
+        query is still a request, so exempting it would reopen the hole.
+        """
+        return min(self.deadline - time.monotonic(), _WORKER_STATUS_TIMEOUT)
+
+    def _cleanup_timeout(self) -> float:
+        """Independent cleanup budget C (I-04-A D2).
+
+        Ownership restoration is not a request: it does not borrow the request
+        deadline, and it is capped by the signed formula so a user-raised
+        --worker-resume-wait-seconds cannot make it time out by construction.
+        """
+        return max(
+            _CLEANUP_BUDGET_MIN_SECONDS,
+            2.0 * self.resume_wait + self.graceful,
+        )
+
+    def _cleanup_remaining(self) -> float:
+        """The cleanup budget still available to THIS subcall.
+
+        C is a PHASE budget (I-04-A D2), not a per-call allowance, so the second
+        critical section must not mint a fresh C: it receives what the phase has
+        left.  Reading it here (rather than capturing it once) keeps a probe-heavy
+        release inside the same total.
+        """
+        started = getattr(self, "_cleanup_started", None)
+        if started is None:
+            return self._cleanup_timeout()
+        return max(0.0, self._cleanup_timeout() - (time.monotonic() - started))
+
+    def _lock_budget(self, phase_budget: float) -> float:
+        """ADR-2: ``lock_budget_for(x) = min(x, LOCK_MAX_SECONDS)``.
+
+        The lease layer only ever CONSUMES phase budget; it never creates one
+        (I-04-C ADR-6).  A non-positive budget refuses to wait at all, and the
+        caller must turn that into ``lease_lock_timeout``.
+        """
+        return min(phase_budget, LOCK_MAX_SECONDS)
+
+    # -- the one lock ----------------------------------------------------
+
+    def _acquire_lock(self) -> None:
+        if self._lock.held:
+            return
+        budget = self._lock_budget(self._lock_phase_budget())
+        if budget <= 0:
+            raise _LeaseScopeError(
+                "lease_lock_timeout",
+                f"lease lock not attempted: the phase budget is {budget:.3f}s "
+                f"(<= 0), and the lease layer never mints budget (ADR-6). "
+                f"lock={_lease_lock_path(self.root)}",
+            )
+        path = _lease_lock_path(self.root)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        started = time.monotonic()
+        deadline = started + budget
+        handle = os.open(str(path), os.O_RDWR | os.O_CREAT, 0o644)
+        try:
+            while True:
+                if _try_lock_byte(handle):
+                    break
+                if time.monotonic() >= deadline:
+                    raise _LeaseScopeError(
+                        "lease_lock_timeout",
+                        f"lease lock {path} was held by another participant for "
+                        f"{time.monotonic() - started:.3f}s (budget {budget:.3f}s). "
+                        "Nothing was written and no worker command was issued. "
+                        "Inspect for a wedged filing-fetch process, then retry",
+                    )
+                time.sleep(_LOCK_POLL_SECONDS)
+        except BaseException:
+            os.close(handle)
+            raise
+        waited = time.monotonic() - started
+        self._lock._handle = handle
+        self._lock_waits += 1
+        self._lock_acquisitions += 1
+        if waited > self._max_lock_wait:
+            self._max_lock_wait = waited
+        if self.stats is not None:
+            self.stats["lease_lock_waits"] = int(self.stats.get("lease_lock_waits") or 0) + 1
+            self.stats["lease_lock_acquisitions"] = (
+                int(self.stats.get("lease_lock_acquisitions") or 0) + 1
+            )
+            self.stats["lease_lock_max_wait_seconds"] = round(self._max_lock_wait, 3)
+        _lease_journal(
+            self.root, "lease_lock_acquired", wait_seconds=round(waited, 4), budget=round(budget, 4)
+        )
+
+    def _lock_phase_budget(self) -> float:
+        remaining = self._request_remaining()
+        if remaining > 0:
+            return remaining
+        cleanup = self._cleanup_remaining()
+        if cleanup > 0:
+            return cleanup
+        return remaining
+
+    def _release_lock(self, handle: Any) -> None:
+        if handle is None:
+            return
+        try:
+            try:
+                _unlock_byte(handle)
+            except OSError:
+                pass
+        finally:
+            try:
+                os.close(handle)
+            except OSError:
+                pass
+
+    # -- worker CLI ------------------------------------------------------
+
+    def _run(self, subcommand: str, *args: str, timeout: float) -> dict[str, Any]:
+        return _run_company_wiki_json(
+            command=[*self.command_prefix, subcommand, *args],
+            root=self.root,
+            timeout_seconds=timeout,
+            action=subcommand,
+            stats=self.stats,
+        )
+
+    def _worker_status(self, timeout: float) -> dict[str, Any]:
+        return self._run("worker-status", timeout=timeout)
+
+    def _worker_pause(self, timeout: float) -> dict[str, Any]:
+        return self._run(
+            "worker-pause",
+            "--graceful-timeout-seconds",
+            str(self.graceful),
+            timeout=timeout,
+        )
+
+    def _worker_resume(self, timeout: float) -> dict[str, Any]:
+        return self._run(
+            "worker-resume",
+            "--wait-seconds",
+            str(self.resume_wait),
+            timeout=timeout,
+        )
+
+    # -- lease helpers (all locked) --------------------------------------
+
+    def _prune_locked(self, state: _LeaseState, *, probe_timeout: float) -> _LeaseView:
+        """Split entries into ``(live, reclaimed)`` with the verdict kept as evidence."""
+        live: list[dict[str, Any]] = []
+        live_verdicts: list[_ProbeResult] = []
+        reclaimed: list[dict[str, Any]] = []
+        reclaimed_verdicts: list[_ProbeResult] = []
+        for entry in state.entries:
+            if self.stats is not None:
+                self.stats["liveness_calls"] = int(self.stats.get("liveness_calls") or 0) + 1
+            result = _probe_entry_verdict(entry, probe_timeout=probe_timeout)
+            if result.verdict in {"dead", "reused"}:
+                reclaimed.append(entry)
+                reclaimed_verdicts.append(result)
+                continue
+            live.append(entry)
+            live_verdicts.append(result)
+        return _LeaseView(state, live, live_verdicts, reclaimed, reclaimed_verdicts)
+
+    def _log_pruned(self, view: _LeaseView, *, phase: str) -> None:
+        if not view.reclaimed:
+            return
+        _lease_journal(
+            self.root,
+            "pruned",
+            phase=phase,
+            count=len(view.reclaimed),
+            detail=[
+                {"lease_id": e.get("lease_id"), "pid": e.get("pid"), "verdict": v.verdict}
+                for e, v in zip(view.reclaimed, view.reclaimed_verdicts)
+            ],
+        )
+
+    def _classify_locked(self, state: _LeaseState, *, probe_timeout: float) -> list[dict[str, Any]]:
+        """Validate liveness inside the critical section; EVERY unknown fails closed."""
+        view = self._prune_locked(state, probe_timeout=probe_timeout)
+        self._log_pruned(view, phase="acquire")
+        state.entries = view.live
+        unknown = view.unknowns
+        if unknown:
+            detail = ", ".join(
+                f"lease_id={e.get('lease_id')} pid={e.get('pid')}" for e in unknown
+            )
+            raise _LeaseScopeError(
+                "lease_conflict_unknown",
+                f"a lease holder's liveness is UNKNOWN ({detail}) - not dead, not alive. "
+                "Nothing was written and no worker command was issued. Re-run once the "
+                "pid probe works, or inspect the refcount by hand",
+            )
+        return view.live
+
+    def _persist_locked(self, state: _LeaseState, *, resume_required: bool | None = None) -> None:
+        try:
+            _write_pause_state(self.root, state, resume_required=resume_required)
+        except OSError as exc:
+            # The caller must never be told "you own the first lease" after a
+            # failed ledger write: that is exactly how the legacy code lost an
+            # owner while still acting like one.
+            raise _LeaseScopeError(
+                "lease_state_write_failed",
+                f"pause refcount write to {_pause_state_path(self.root)} failed: {exc}. "
+                "This process does NOT hold a lease",
+            ) from exc
+        self._ledger_writes += 1
+
+    def _write_owner_marker_locked(self) -> None:
+        try:
+            _write_owner_marker(self.root)
+        except OSError:
+            # ADR-5 W1: the marker is only a compatibility sentinel; the
+            # authoritative owner is the record inside the refcount document, so a
+            # read-only .source_catalog must not fail the whole request.
+            _lease_journal(self.root, "owner_marker_missing", path=str(_pause_owner_path(self.root)))
+
+    def _is_our_owner(self, state: _LeaseState) -> bool:
+        """Whether the pause cycle belongs to THIS process incarnation (ADR-10e).
+
+        Deliberately not "owner.lease_id == my lease_id": inside one process a second
+        scope legitimately re-enters the cycle the first scope opened, and the owner
+        record names the first scope's lease.  Ownership is per incarnation, so the
+        test is whether the owner record points at one of this incarnation's leases.
+        """
+        owner = state.owner or {}
+        owner_lease = owner.get("lease_id")
+        if not owner_lease:
+            return False
+        if owner_lease == self.lease_id:
+            return True
+        return bool(
+            owner.get("boot_uuid")
+            and owner.get("boot_uuid") == _boot_uuid()
+            and isinstance(owner.get("pid"), int)
+            and owner.get("pid") == os.getpid()
+            and any(entry.get("lease_id") == owner_lease for entry in state.entries)
+        )
+
+    def _probe_owner_death(self, state: _LeaseState, *, probe_timeout: float) -> tuple[bool, str]:
+        """R4's only admissible evidence: a POSITIVE death/reuse verdict for the owner.
+
+        ``owner_record_missing`` is deliberately NOT death evidence in either
+        direction.  It is indistinguishable from an ownership record a third party
+        (or a user's manual worker-pause) removed, and in that case a resume would
+        undo a human's pause.  R5 therefore wins: fail closed.
+        """
+        owner = state.owner or {}
+        owner_lease = owner.get("lease_id")
+        if not owner_lease:
+            return False, "owner_record_missing"
+        for entry in state.entries:
+            if entry.get("lease_id") == owner_lease:
+                return False, "owner_lease_still_live"
+        pid = owner.get("pid")
+        if not isinstance(pid, int):
+            return False, "owner_record_has_no_pid"
+        if pid == os.getpid() and owner.get("boot_uuid") == _boot_uuid():
+            return False, "owner_is_this_incarnation"
+        try:
+            alive, observed = _pid_is_alive_with_start_time(pid, timeout=probe_timeout)
+        except subprocess.TimeoutExpired:
+            return False, "owner_probe_timeout"
+        except Exception as exc:  # noqa: BLE001 - unknown never authorises a resume
+            return False, f"owner_probe_error:{type(exc).__name__}"
+        if not alive:
+            return True, "owner_probe:dead"
+        recorded = owner.get("os_start_time") or ""
+        if recorded and observed and recorded != observed:
+            return True, "owner_probe:pid_reuse"
+        if recorded and observed == "0":
+            return True, "owner_probe:dead"
+        return False, "owner_probe:alive"
+
+    def _probe_payload(self) -> dict[str, Any]:
+        raw = os.environ.get("I04D_PROBE_INJECT")
+        if not raw:
+            return {}
+        try:
+            payload = json.loads(raw)
+        except ValueError:
+            return {}
+        return payload if isinstance(payload, dict) else {}
+
+    def _conflict_payload_changed(self, state: _LeaseState, *, probe_timeout: float) -> bool:
+        """True when ANY lease holder is no longer provably the same live process."""
+        for entry in state.entries:
+            result = _probe_entry_verdict(entry, probe_timeout=probe_timeout)
+            if result.verdict in {"dead", "reused", "unknown"}:
+                return True
+        return False
+
+    # -- enter -----------------------------------------------------------
+
+    def __enter__(self) -> "PausedWorkerScope":
+        if not self.enabled:
+            self.action = "disabled"
+            return self
+        try:
+            self.lease_id = _new_lease_id()
+            self._proc_start_time = _sys_process_start_time()
+            _i04d_hook("at-lock-attempt", root=self.root, payload={"lease_id": self.lease_id})
+            with self._lock as locked:
+                _i04d_hook("enter-acquired", root=self.root, payload={"lease_id": self.lease_id})
+                locked._scope._enter_locked()
+        except _LeaseScopeError as exc:
+            self.action = exc.code
+            _lease_journal(self.root, "lease_fail_closed", code=exc.code, detail=exc.message)
+            raise exc.filing_error() from exc
+        return self
+
+    def _enter_locked(self) -> None:
+        remaining = self._request_remaining()
+        if remaining <= 0:
+            # I-04-A D3: a request-stage call after the deadline is forbidden.  No
+            # status, no pause, therefore no cleanup obligation.
+            self.action = "deadline_exhausted"
+            return
+        status = self._worker_status(remaining)
+        state = _read_pause_state(self.root)
+        _i04d_hook(
+            "enter-read",
+            root=self.root,
+            payload={
+                "desired_state": status.get("desired_state"),
+                "runtime_state": status.get("runtime_state"),
+                "generation": state.generation,
+                "entries": len(state.entries),
+            },
+        )
+        desired = status.get("desired_state")
+        runtime = status.get("runtime_state")
+        # ADR-9: the paused-or-leased branch is evaluated BEFORE the runtime_state
+        # guard.  Our own pause necessarily turns runtime_state into "stopped", so the
+        # legacy order made the join/takeover paths unreachable in production.
+        if desired == "paused" or state.entries:
+            pass
+        elif runtime != "running":
+            # Neither paused nor leased, and not running: there is no pause to join,
+            # so there is nothing to attribute - do not write anything.
+            self.action = "worker_stopped"
+            return
+        probe_timeout = min(self._request_remaining(), _PID_PROBE_MAX_SECONDS, _PROBE_SOFT_CAP_SECONDS)
+        if probe_timeout <= 0:
+            raise _LeaseScopeError(
+                "lease_lock_timeout",
+                "the request budget ran out before the lease liveness probe could run; "
+                "nothing was written and no worker command was issued",
+            )
+        live = self._classify_locked(state, probe_timeout=probe_timeout)
+        _i04d_hook(
+            "enter-classified",
+            root=self.root,
+            payload={"live": len(live), "reclaimed": len(state.entries) - len(live)},
+        )
+        # Test-only fence at the LAST point of the enter critical section: every
+        # branch below leaves THIS incarnation owning a lease by the time the hook
+        # runs, so a schedule can observe "our lease is really in the ledger" without
+        # pinning which branch was taken.  Unset I04D_HOOKS makes it a no-op.
+        _i04d_hook("enter-complete", root=self.root, payload={"lease_id": self.lease_id})
+        if desired not in {"paused", "stopped"}:
+            self._fresh_cycle_locked(state, live, resume_required=False)
+            return
+        if self._withdraw_orphan_pause_locked(status):
+            self._fresh_cycle_locked(state, live, resume_required=False)
+            return
+        if not live:
+            if state.resume_required:
+                self._takeover_cycle_locked(state)
+                return
+            self._fresh_cycle_locked(state, live, resume_required=False)
+            return
+        if state.owner is None:
+            # W1: a crash between the refcount write and the owner marker used to
+            # make the next participant read this as a USER pause and never resume.
+            # The lease document - not the marker file - is the evidence.
+            self._join_cycle_locked(state, live)
+            return
+        if self._is_our_owner(state):
+            # Our own lease owns the cycle, so this is a re-entry into a cycle this
+            # incarnation already established (same-pid nesting) - join it rather
+            # than pause a second time (ADR-9/ADR-9b).
+            self._join_cycle_locked(state, live)
+            return
+        # The ownership record names a holder that is NOT this incarnation, while
+        # another live lease exists.  We cannot attribute it, and the ADR-9b
+        # evidence ("a request of ours left a pause behind") does not apply either:
+        # fail closed rather than guess.  R5 terminal state, resolved by a human or
+        # by the wiki-side evidence (I-04-C ADR-8 / section 8 O-2).
+        raise _LeaseScopeError(
+            "lease_conflict_unknown",
+            "the worker is paused and held by another participant "
+            f"(owner lease {(state.owner or {}).get('lease_id')}, generation "
+            f"{state.generation}); the ownership record does not name a holder we can "
+            "attribute, so nothing was written and no worker command was issued",
+        )
+        # R4: the owner is no longer in the ledger.  Take the cycle over ONLY on
+        # positive death evidence; otherwise fail closed (R5), because an owner we
+        # cannot prove dead is UNKNOWN, and unknown never authorises a resume.
+        provably_dead, why = self._probe_owner_death(state, probe_timeout=probe_timeout)
+        if not provably_dead:
+            raise _LeaseScopeError(
+                "lease_conflict_unknown",
+                "the worker is paused and the ownership record is not attributable to a "
+                f"provably dead holder ({why}); nothing was written and no worker command "
+                "was issued. Inspect the refcount by hand before retrying",
+            )
+        _lease_journal(self.root, "owner_provably_dead", why=why, owner=state.owner)
+        self._takeover_cycle_locked(state)
+        return
+
+    def _owner_lease_live(self, state: _LeaseState, live: list[dict[str, Any]]) -> bool:
+        owner_lease = (state.owner or {}).get("lease_id")
+        return any(entry.get("lease_id") == owner_lease for entry in live)
+
+    def _withdraw_orphan_pause_locked(self, status: dict[str, Any]) -> bool:
+        """ADR-9b: a pause we left behind while the worker is still RUNNING.
+
+        The cycle is not usable (no pending pause to wait for), so it is withdrawn
+        and the caller opens a fresh one; a request never sees two pauses.
+        """
+        if not _lease_owns_cycle(status.get("pause_action")):
+            return False
+        if status.get("runtime_state") == "running":
+            # `action` is deliberately NOT set here: the caller opens a fresh cycle
+            # and that outcome is the one the request must report (ADR-9b).
+            _lease_journal(self.root, "withdraw_orphan_pause", lease_id=self.lease_id)
+            return True
+        return False
+
+    def _withdraw_cycle_locked(self, state: _LeaseState, status: str) -> None:
+        """Drop the owner's lease/ownership and clear any obligation."""
+        state.entries = [e for e in state.entries if e.get("lease_id") != self.lease_id]
+        if self._is_our_owner(state):
+            state.owner = None
+        state.resume_required = False
+        state.resume_lease_id = ""
+        self._persist_locked(state, resume_required=False)
+        self.lease_held = False
+        self._cleanup_failure = status
+
+    def _fresh_cycle_locked(
+        self, state: _LeaseState, live: list[dict[str, Any]], *, resume_required: bool
+    ) -> None:
+        """T5: a brand-new pause cycle with a fresh generation (ADR-12)."""
+        state.generation = state.generation + 1
+        state.entries = list(live) + [
+            _lease_entry(self, state, invocations=1, joined=False)
+        ]
+        state.resume_required = False
+        state.resume_lease_id = ""
+        state.owner = self._owner_record(state)
+        self._persist_locked(state, resume_required=False)
+        self.lease_held = True
+        self._first = True
+        _i04d_hook(
+            "enter-written",
+            root=self.root,
+            payload={"lease_id": self.lease_id, "generation": state.generation},
+        )
+        _i04d_hook(
+            "after-refcount-before-owner",
+            root=self.root,
+            payload={"lease_id": self.lease_id, "generation": state.generation},
+        )
+        self._write_owner_marker_locked()
+        self.action = "paused_by_us"
+        remaining = self._request_remaining()
+        if remaining <= 0:
+            self._withdraw_cycle_locked(state, "deadline_exhausted")
+            self.action = "deadline_exhausted"
+            return
+        try:
+            self._worker_pause(min(remaining, _WORKER_STATUS_TIMEOUT))
+        except FilingFetchError as exc:
+            self._withdraw_cycle_locked(state, f"pause_failed:{exc.code}")
+            try:
+                self._worker_resume(self._cleanup_remaining())
+            except FilingFetchError:
+                pass  # best effort; the original pause error is the one reported
+            raise _LeaseScopeError(
+                "worker_pause_failed",
+                f"worker-pause failed: {exc}",
+                cleanup=f"failed:pause_failed:{exc.code}",
+            ) from exc
+        if not self._confirm_pause_locked():
+            self._withdraw_cycle_locked(state, "pause_unconfirmed")
+            self.action = "pause_unconfirmed"
+            _lease_journal(self.root, "pause_unconfirmed", lease_id=self.lease_id)
+            return
+        _i04d_hook(
+            "after-pause-confirm",
+            root=self.root,
+            payload={"lease_id": self.lease_id, "generation": state.generation},
+        )
+
+    def _join_cycle_locked(self, state: _LeaseState, live: list[dict[str, Any]]) -> None:
+        """T4: join the cycle someone else opened - never a second pause (ADR-9b)."""
+        invocations = sum(1 for e in live if e.get("boot_uuid") == _boot_uuid()) + 1
+        state.entries = list(live) + [
+            _lease_entry(self, state, invocations=invocations, joined=True)
+        ]
+        state.owner = self._owner_record(state)
+        self._persist_locked(state, resume_required=False)
+        self._write_owner_marker_locked()
+        self.lease_held = True
+        self.action = "joined"
+
+    def _takeover_cycle_locked(self, state: _LeaseState) -> None:
+        """T6/W4: inherit a dead participant's pause, resume first, then re-pause.
+
+        The claim order matters: write the lease and take the ownership FIRST, so
+        the resume obligation is never left un-owned if this process dies mid-way.
+        """
+        state.entries = list(state.entries) + [
+            _lease_entry(state, state, invocations=1, joined=False)
+        ]
+        state.owner = self._owner_record(state)
+        self._persist_locked(state, resume_required=state.resume_required)
+        self._write_owner_marker_locked()
+        self.lease_held = True
+        self.action = "takeover_resumed"
+        _i04d_hook(
+            "takeover-claimed",
+            root=self.root,
+            payload={"lease_id": self.lease_id, "generation": state.generation},
+        )
+        try:
+            self._worker_resume(self._cleanup_remaining())
+        except FilingFetchError as exc:
+            raise _LeaseScopeError(
+                "lease_resume_takeover_failed",
+                f"takeover resume failed: {exc}. The worker is still paused; run "
+                "`worker-resume` by hand (the obligation and the owner record are "
+                "preserved for the next participant)",
+                cleanup=f"failed:resume_takeover:{exc.code}",
+                resume_code=exc.code,
+            ) from exc
+        state.resume_required = False
+        state.resume_lease_id = ""
+        state.generation = state.generation + 1
+        state.entries = [e for e in state.entries if e.get("lease_id") == self.lease_id]
+        self._persist_locked(state, resume_required=False)
+        self.action = "paused_by_us"
+        try:
+            self._worker_pause(self._cleanup_remaining())
+        except FilingFetchError as exc:
+            raise _LeaseScopeError(
+                "worker_pause_failed",
+                f"worker-pause after takeover failed: {exc}",
+                cleanup=f"failed:pause_failed:{exc.code}",
+            ) from exc
+        if not self._confirm_pause_locked():
+            self.action = "pause_unconfirmed"
+            _lease_journal(self.root, "pause_unconfirmed", lease_id=self.lease_id, phase="takeover")
+
+    def _confirm_pause_locked(self) -> bool:
+        """ADR-10d: the takeover/fresh pause is only real once the status says so."""
+        remaining = self._request_remaining()
+        if remaining <= 0:
+            return False
+        try:
+            status = self._worker_status(min(remaining, _WORKER_STATUS_TIMEOUT))
+        except FilingFetchError:
+            return False
+        return status.get("desired_state") == "paused" and status.get("runtime_state") == "stopped"
+
+    def _owner_record(self, state: _LeaseState) -> dict[str, Any]:
+        return {
+            "lease_id": self.lease_id,
+            "generation": state.generation,
+            "pid": os.getpid(),
+            "boot_uuid": _boot_uuid(),
+            "os_start_time": self._proc_start_time,
+        }
+
+    # -- exit ------------------------------------------------------------
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        # I-04-A D5: the pause outcome is reported even when no cleanup is owed.
+        started = time.monotonic()
+        self._cleanup_started = started
+        self._cleanup_failure = ""
+        self._resume_reason = ""
+        self._transfer_to = ""
+        if self.stats is not None:
+            self.stats["pause_action"] = self.action
+        if not self.lease_held:
+            if self.stats is not None:
+                self.stats["cleanup_status"] = "not_needed"
+            return
+        try:
+            with self._lock:
+                self._release_locked()
+        except _LeaseScopeError as exc:
+            self._cleanup_failure = exc.cleanup or f"failed:{exc.code}"
+            _lease_journal(self.root, "release_fail_closed", code=exc.code, detail=exc.message)
+            if exc.code == "lease_state_write_failed" and self.action in {"paused_by_us", "takeover_resumed"}:
+                # The lease WAS written earlier and the worker IS paused: only the
+                # release ledger failed, so keep the request result and say so.
+                self.action = "release_fail_closed"
+            elif self.action not in LEASE_ACTION_FAIL_CLOSED:
+                self.action = "release_fail_closed"
+        except subprocess.TimeoutExpired:
+            self._cleanup_failure = "failed:resume_timeout"
+            _lease_journal(self.root, "release_fail_closed", code="resume_timeout")
+        finally:
+            if self._cleanup_failure:
+                self._print_release_guidance()
+            if self.stats is not None:
+                self.stats["cleanup_calls"] = int(self.stats.get("cleanup_calls") or 0) + 1
+                self.stats["cleanup_status"] = self._cleanup_failure
+                self.stats["cleanup_elapsed_seconds"] = round(time.monotonic() - started, 3)
+                self.stats["lease_lock_acquisitions"] = self._lock_acquisitions
+                self.stats["lease_lock_max_wait_seconds"] = round(self._max_lock_wait, 3)
+                self.stats["lease_ledger_writes"] = self._ledger_writes
+                if self._resume_reason:
+                    self.stats["lease_resume_reason"] = self._resume_reason
+                if self._transfer_to:
+                    self.stats["lease_owner_transferred_to"] = self._transfer_to
+            # I-04-B carry 3: the cleanup PHASE wall clock is REPORTED, never
+            # bounded by an acceptance cap.
+            _lease_journal(
+                self.root,
+                "release",
+                action=self.action,
+                cleanup_status=self._cleanup_failure or "not_needed",
+                resume_reason=self._resume_reason,
+                transferred_to=self._transfer_to,
+                lock_acquisitions=self._lock_acquisitions,
+                max_lock_wait_seconds=round(self._max_lock_wait, 4),
+                phase_wall_seconds=round(time.monotonic() - started, 4),
+            )
+
+    def _release_locked(self) -> None:
+        state = _read_pause_state(self.root)
+        probe_timeout = min(
+            self._cleanup_remaining(), _PID_PROBE_MAX_SECONDS, _PROBE_SOFT_CAP_SECONDS
+        )
+        if probe_timeout <= 0:
+            raise _LeaseScopeError(
+                "lease_lock_timeout",
+                "the cleanup budget ran out before the release liveness probe",
+                cleanup="failed:lease_lock_timeout",
+            )
+        view = self._prune_locked(state, probe_timeout=probe_timeout)
+        self._log_pruned(view, phase="release")
+        mine = [e for e in view.live if e.get("lease_id") == self.lease_id]
+        remaining = [e for e in view.live if e.get("lease_id") != self.lease_id]
+        if not mine:
+            # Nothing of ours is in the ledger any more (a peer reclaimed the dead
+            # incarnation, or this scope never got the lease written). A release is
+            # NOT authorisation to resume: that decision needs the R1-R5 evidence.
+            if view.reclaimed:
+                state.entries = remaining
+                self._persist_locked(state, resume_required=False)
+            self._release_done = True
+            self.action = "released_noop"
+            _lease_journal(self.root, "release_noop", lease_id=self.lease_id)
+            return
+        # Test-only fence INSIDE the release critical section, after our own lease has
+        # been identified.  It must sit here (not before) so a schedule can pin "B is
+        # already in the ledger while A is still deciding" without pinning anything
+        # else; unset I04D_HOOKS makes it a no-op.
+        _i04d_hook(
+            "release-read",
+            root=self.root,
+            payload={
+                "lease_id": self.lease_id,
+                "remaining": len(remaining),
+                "owner": (state.owner or {}).get("lease_id"),
+                "resume_required": state.resume_required,
+            },
+        )
+        self._release_common_locked(state, remaining)
+
+    def _release_common_locked(
+        self,
+        state: _LeaseState,
+        remaining: list[dict[str, Any]],
+    ) -> None:
+        is_owner = self._is_our_owner(state)
+        if remaining:
+            # R1: the cycle lives on. If the departing lease was the owner, the
+            # ownership MOVES to a surviving lease (ADR-10e) so a later release can
+            # still prove who is responsible - an owner record pointing at a lease
+            # that is no longer in the ledger is exactly the dead end F-L2a showed.
+            if is_owner:
+                heir = min(remaining, key=lambda entry: str(entry.get("lease_id")))
+                state.owner = {
+                    "lease_id": heir.get("lease_id"),
+                    "generation": state.generation,
+                    "pid": heir.get("pid"),
+                    "boot_uuid": heir.get("boot_uuid") or "",
+                    "os_start_time": heir.get("os_start_time") or "",
+                }
+                self._transfer_to = str(heir.get("lease_id"))
+                _lease_journal(
+                    self.root,
+                    "ownership_transferred",
+                    to=self._transfer_to,
+                    generation=state.generation,
+                    dead_able=bool(heir.get("os_start_time")),
+                )
+            state.entries = remaining
+            self._persist_locked(state, resume_required=False)
+            self._release_done = True
+            self.action = "released_joined"
+            _lease_journal(
+                self.root,
+                "released_joined",
+                lease_id=self.lease_id,
+                transferred_to=self._transfer_to,
+            )
+            return
+        # last participant: entry from R2..R5 (ADR-10)
+        if is_owner:
+            reason = "owner_is_me"
+        elif state.resume_required:
+            reason = "inherited_obligation"
+        else:
+            provably_dead, why = self._probe_owner_death(state, probe_timeout=self._cleanup_remaining())
+            if provably_dead:
+                reason = why
+            else:
+                # R5: the owner is a third party we cannot prove dead, or the record
+                # is missing, or the probe is unknown. Do not resume, do not claim,
+                # do not rewrite the ownership evidence: fail closed with guidance.
+                state.entries = []
+                self._persist_locked(state, resume_required=False)
+                self._release_done = True
+                self.action = "released_owner_changed"
+                self._cleanup_failure = f"failed:owner_evidence_changed:{why}"
+                _lease_journal(
+                    self.root,
+                    "released_owner_changed",
+                    lease_id=self.lease_id,
+                    why=why,
+                    owner=state.owner,
+                )
+                return
+        state.entries = []
+        self._persist_locked(state, resume_required=True)
+        self._resume_reason = reason
+        self._release_done = True
+        _i04d_hook(
+            "after-release-persist-before-resume",
+            root=self.root,
+            payload={"lease_id": self.lease_id, "reason": reason, "generation": state.generation},
+        )
+        state.resume_lease_id = self.lease_id
+        state.resume_required = True
+        if not self._conflict_payload_changed(state, probe_timeout=self._cleanup_remaining()):
+            try:
+                self._worker_resume(self._cleanup_remaining())
+            except FilingFetchError as exc:
+                self._cleanup_failure = f"failed:{exc.code}"
+                self.action = "released_last_resume_failed"
+                _lease_journal(
+                    self.root, "resume_failed", lease_id=self.lease_id, code=exc.code
+                )
+                return
+            except subprocess.TimeoutExpired:
+                self._cleanup_failure = "failed:resume_timeout"
+                self.action = "released_last_resume_failed"
+                return
+        else:
+            _lease_journal(
+                self.root,
+                "resume_skipped_conflict_payload",
+                lease_id=self.lease_id,
+                detail="an injected probe answer says the holder is gone; no resume",
+            )
+        self.action = "released_last"
+        state.resume_required = False
+        state.resume_lease_id = ""
+        state.owner = None
+        state.entries = []
+        try:
+            _clear_pause_lease(self.root)
+        except OSError:
+            pass
+        _lease_journal(
+            self.root,
+            "released_last",
+            lease_id=self.lease_id,
+            reason=self._resume_reason,
+            generation=state.generation,
+        )
+
+    def _print_release_guidance(self) -> None:
+        """R5 / O-1: a human must be able to release a stuck lease without guessing."""
+        state_path = _pause_state_path(self.root)
+        owner_path = _pause_owner_path(self.root)
+        state_text = ""
+        try:
+            state_text = state_path.read_text(encoding="utf-8")
+        except OSError:
+            state_text = "<refcount file is absent or unreadable>"
+        print(
+            "[filing-fetch] worker lease NOT released: "
+            f"{self._cleanup_failure}\n"
+            f"[filing-fetch]   refcount : {state_path}\n"
+            f"[filing-fetch]   owner    : {owner_path} "
+            f"(exists={owner_path.exists()})\n"
+            f"[filing-fetch]   raw state: {state_text}\n"
+            "[filing-fetch]   to release by hand:\n"
+            "[filing-fetch]     1) confirm no filing-fetch download is running "
+            "(tasklist /FI \"IMAGENAME eq python.exe\")\n"
+            "[filing-fetch]     2) if the worker should keep running: "
+            "python -m company_wiki.source_catalog.cli worker-resume\n"
+            "[filing-fetch]     3) only if step 2 says it is already running: "
+            f"delete {state_path} and {owner_path}\n"
+            "[filing-fetch]     4) never delete a lease whose owner record you have "
+            "not read in full",
+            file=sys.stderr,
+        )
+
+
+def _try_lock_byte(handle: int) -> bool:
+    """Try to take the 1-byte exclusive lock at offset 0 without blocking.
+
+    ADR-1 chose an OS byte-range lock precisely because the kernel, not this code,
+    decides whether the holder is still alive: a process that dies (including
+    TerminateProcess) releases the lock, so there is no "break the stale lock"
+    step - and therefore no window in which two processes each believe they hold it.
+    """
+    if os.name == "nt":
+        import msvcrt
+
+        try:
+            handle.seek(0)  # type: ignore[attr-defined]
+        except AttributeError:
+            os.lseek(handle, 0, os.SEEK_SET)
+        try:
+            msvcrt.locking(handle, msvcrt.LK_NBLCK, 1)  # type: ignore[attr-defined]
+        except OSError:
+            return False
+        return True
+    import fcntl  # pragma: no cover - POSIX branch is NOT exercised by this card
+
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return False
+    return True
+
+
+def _unlock_byte(handle: int) -> None:
+    if os.name == "nt":
+        import msvcrt
+
+        try:
+            handle.seek(0)  # type: ignore[attr-defined]
+        except AttributeError:
+            os.lseek(handle, 0, os.SEEK_SET)
+        msvcrt.locking(handle, msvcrt.LK_UNLCK, 1)  # type: ignore[attr-defined]
+        return
+    import fcntl  # pragma: no cover - POSIX branch is NOT exercised by this card
+
+    fcntl.flock(handle, fcntl.LOCK_UN)
+
+
+def _normalize_stats(stats: dict[str, Any] | None) -> dict[str, Any]:
+    """Return a mutable reconciliation stats dict (ZR-205).
+
+    I-04-A D5: request timing, cleanup timing and liveness probes are separate
+    keys, so a cleanup tail can never be read as request latency and a probe
+    process is never invisible.
+    """
+    if stats is None:
+        stats = {}
+    stats.setdefault("calls", 0)
+    stats.setdefault("downloads", 0)
+    stats.setdefault("liveness_calls", 0)
+    stats.setdefault("liveness_probe_failed", 0)
+    stats.setdefault("cleanup_calls", 0)
+    stats.setdefault("cleanup_status", "not_needed")
+    # I-04-D: the lease layer consumes phase budget but mints none (ADR-6); these
+    # counters exist so queueing cost is visible instead of being read as latency.
+    stats.setdefault("lease_lock_waits", 0)
+    stats.setdefault("lease_lock_acquisitions", 0)
+    stats.setdefault("lease_lock_max_wait_seconds", 0.0)
+    stats.setdefault("lease_ledger_writes", 0)
+    return stats
+
+
+def _stamp_request_timing(
+    stats: dict[str, Any] | None, started_monotonic: float, timeout_seconds: float
+) -> None:
+    """Record the request window (I-04-A D5.3) on success AND on failure.
+
+    ``request_deadline`` is the monotonic instant the request budget expires and
+    ``request_elapsed`` is measured in the same monotonic frame, so both are
+    comparable with the subprocess timestamps the tests record.
+    """
+    if stats is None:
+        return
+    stats["request_deadline"] = round(started_monotonic + timeout_seconds, 6)
+    stats["request_elapsed"] = round(time.monotonic() - started_monotonic, 3)
+
+
+def _record_download_events(stats: dict[str, Any] | None, handle: dict) -> None:
+    """Mirror the final resolution envelope's download_events count into the
+    reconciliation stats so the response preserves zero-download evidence."""
+    if stats is None:
+        return
+    events = (handle.get("resolution_envelope") or {}).get("download_events")
+    if isinstance(events, int):
+        stats["downloads"] = events
+
+
+def _gap_plan_has_actionable_candidate(gap_plan: object) -> bool:
+    """Whether a metadata-only GAP contains an authorized-download target."""
+    if not isinstance(gap_plan, dict):
+        return False
+    return bool(gap_plan.get("missing") or gap_plan.get("newer_revision"))
+
+
+def resolve_filing(
+    *,
+    request: dict[str, Any],
+    company_wiki_root: Path | None = None,
+    config_path: Path | None = None,
+    allow_download: bool = False,
+    timeout_seconds: float = 900.0,
+    pause_worker: bool = True,
+    worker_graceful_timeout_seconds: float = 5.0,
+    worker_resume_wait_seconds: float = 5.0,
+    stats: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Identify an optional company query, then resolve or explicitly ensure a filing.
+
+    The default path calls the read-only ``resolve`` command and reuses an
+    existing company-wiki filing. ``allow_download=True`` calls
+    ``ensure --allow-download``; company-wiki then routes the download by market
+    (CN -> StockInfo, HK/US -> dayu) and writes any new bytes into
+    ``companies/{entity}/raw/{kind}/``. A ``company_query`` is resolved to one
+    verified active security before either source command is constructed.
+
+    ``stats`` (optional, mutated in place): ZR-205 reconciliation counters.
+    ``stats["calls"]`` counts every company-wiki subprocess invocation
+    (including retries and worker pause/resume orchestration);
+    ``stats["downloads"]`` is the download event count from the final
+    resolution envelope (0 unless a download actually committed).  Final
+    success and failure both preserve these counts in the response envelope
+    (READ-09/READ-10).
+    """
+    stats = _normalize_stats(stats)
+
+    if company_wiki_root is not None and config_path is not None:
+        raise ValueError("company_wiki_root cannot be combined with config_path")
+    if not isinstance(request, dict):
+        raise TypeError("request must be a dict")
+    if not isinstance(allow_download, bool):
+        raise TypeError("allow_download must be boolean")
+    if timeout_seconds <= 0 or not math.isfinite(timeout_seconds):
+        raise ValueError("timeout_seconds must be positive and finite")
+    validate_request(request)
+    deadline = time.monotonic() + timeout_seconds
+    root = (
+        _validate_company_wiki_root(company_wiki_root)
+        if company_wiki_root is not None
+        else load_company_wiki_root(config_path=config_path)
+    )
+    command_prefix = [
+        sys.executable,
+        "-m",
+        "company_wiki.source_catalog.cli",
+        "--config",
+        str(root / "config" / "source_catalog.yaml"),
+    ]
+    # Every request passes through verified/active identity before source
+    # resolution; validate_request guarantees company_query is present.
+    identity_payload = _run_company_wiki_json_retry(
+        command=[
+            *command_prefix,
+            "identify",
+            *_identity_arguments(request),
+        ],
+        root=root,
+        action="identify",
+        deadline=deadline,
+        stats=stats,
+    )
+    company_identity = _resolved_company_identity(identity_payload)
+    normalized_request = {
+        key: value for key, value in request.items() if key not in {"company_query", "exchange"}
+    }
+    normalized_request.update(
+        {
+            "entity": company_identity["canonical_name"],
+            "market": company_identity["market"],
+            "security_id": company_identity["security_id"],
+        }
+    )
+    # FC-802: latest_as_of always consults the provider through the ensure
+    # path — the metadata-only gap plan comes back even without download.
+    mode = str(request.get("mode") or "").strip().lower()
+    is_latest = mode == "latest_as_of"
+    action = "ensure" if (allow_download or is_latest) else "resolve"
+    command = [
+        *command_prefix,
+        action,
+        *_command_arguments(normalized_request),
+    ]
+    if allow_download:
+        if not normalized_request.get("market") or not normalized_request.get("security_id"):
+            raise FilingFetchError("explicit download requires market and security_id")
+        command.extend(
+            (
+                "--allow-download",
+                "--acquisition-config",
+                str(root / "config" / "source_acquisition.yaml"),
+            )
+        )
+        if pause_worker:
+            # Explicit opt-in bypass of the company-wiki paused-guard: we
+            # deliberately pause the worker around this download, so the guard
+            # must not refuse us. Without pause_worker the legacy guard applies.
+            command.append("--allow-acquisition-while-paused")
+        scope = PausedWorkerScope(
+            root=root,
+            command_prefix=command_prefix,
+            enabled=pause_worker,
+            graceful_timeout_seconds=worker_graceful_timeout_seconds,
+            resume_wait_seconds=worker_resume_wait_seconds,
+            deadline=deadline,
+            stats=stats,
+        )
+        with scope:
+            payload = _run_company_wiki_json_retry(
+                command=command,
+                root=root,
+                action=action,
+                deadline=deadline,
+                stats=stats,
+            )
+    else:
+        payload = _run_company_wiki_json_retry(
+            command=command,
+            root=root,
+            action=action,
+            deadline=deadline,
+            stats=stats,
+        )
+    if action == "ensure":
+        # FC-802: the ensure payload carries the top-level status; GAP is a
+        # STRUCTURED result (metadata-only plan), never a not_found error.
+        if payload.get("status") == "gap":
+            gap_plan = (payload.get("acquisition") or {}).get("gap_plan")
+            authorization = request.get("authorization")
+            # ZR-407: the close-gap transaction only runs when the plan is
+            # ACTIONABLE (a missing period or a newer same-period revision).
+            # An empty plan stays a structured gap so the caller sees the
+            # details — reuse handles
+            # (LT-01), provider_unavailable retryability (LT-05), future
+            # exclusions (LT-07) — never a silently downgraded handle.
+            if (
+                allow_download
+                and authorization is not None
+                and _gap_plan_has_actionable_candidate(gap_plan)
+            ):
+                # The actionable check proves the payload is a dict; narrow
+                # for mypy (FC-1204 F1 fix).
+                assert isinstance(gap_plan, dict)
+                return _close_gap_and_return_handle(
+                    payload=payload,
+                    gap_plan=gap_plan,
+                    authorization=authorization,
+                    company_identity=company_identity,
+                    command_prefix=command_prefix,
+                    normalized_request=normalized_request,
+                    root=root,
+                    request=request,
+                    deadline=deadline,
+                    pause_worker=pause_worker,
+                    worker_graceful_timeout_seconds=worker_graceful_timeout_seconds,
+                    worker_resume_wait_seconds=worker_resume_wait_seconds,
+                    stats=stats,
+                )
+            return {
+                "status": "gap",
+                "gap_plan": gap_plan,
+                "resolution": payload.get("resolution"),
+            }
+        resolution = payload.get("resolution")
+    else:
+        resolution = payload
+    if not isinstance(resolution, dict):
+        raise FilingFetchError("company-wiki resolution is missing", code="upstream_error")
+    expected_schema = (
+        SUPPORTED_COMPANY_WIKI_CONTRACTS["ensure_schema_version"]
+        if allow_download
+        else SUPPORTED_COMPANY_WIKI_CONTRACTS["resolve_schema_version"]
+    )
+    if resolution.get("schema_version") != expected_schema:
+        raise FilingFetchError(
+            "company-wiki resolution schema_version is unsupported",
+            code="upstream_error",
+        )
+    if resolution.get("status") not in {"reused_exact", "reused_equivalent"}:
+        raise FilingFetchError(
+            f"source is not reusable: {resolution.get('status')} / {resolution.get('reason')}",
+            code="not_found",
+            debug_trace=resolution.get("debug_trace"),
+            resolution_trace=_resolution_trace(resolution),
+        )
+    handle = _handle_from_resolution(resolution, request, root)
+    handle["company_identity"] = company_identity
+    # ZR-205: record the download event count from the final resolution
+    # envelope (0 = pure reuse, 1 = committed download) so the final
+    # envelope preserves the zero-download / call-count evidence (READ-10).
+    _record_download_events(stats, handle)
+    return handle
+
+
+def _resolution_trace(resolution: dict | None) -> dict[str, Any] | None:
+    """Build a compact trace of the upstream resolution evidence.
+
+    ZR-307: the trace survives downstream handle/validation failures so the
+    error envelope never swallows the exact-reuse / download=0 evidence.
+    """
+    if not isinstance(resolution, dict):
+        return None
+    return {
+        "request_id": resolution.get("request_id"),
+        "status": resolution.get("status"),
+        "reason": resolution.get("reason"),
+    }
+
+
+def _handle_from_resolution(
+    resolution: dict,
+    request: dict,
+    root: Path,
+    *,
+    envelope: dict | None = None,
+) -> dict:
+    """Build + deep-validate the handle from a reused resolution.
+
+    Shared by the reuse path and the FC-802 close-gap path so the handle
+    contract (exactly-one match, capture provenance, policy containment,
+    FC-704 envelope forwarding) stays single-sourced.
+    """
+    matches = resolution.get("matches")
+    if not isinstance(matches, list) or len(matches) != 1 or not isinstance(matches[0], dict):
+        raise FilingFetchError(
+            "company-wiki did not return exactly one source handle",
+            code="upstream_error",
+            resolution_trace=_resolution_trace(resolution),
+        )
+    handle = dict(matches[0])
+    if handle.get("capture_ready") is not True:
+        raise FilingFetchError(
+            "source lacks capture provenance: "
+            + ", ".join(str(item) for item in handle.get("missing_capture_fields", [])),
+            code="not_found",
+            resolution_trace=_resolution_trace(resolution),
+        )
+    handle["request_id"] = resolution.get("request_id")
+    # ZR-405: production containment is validated against the root policy
+    # the company-wiki response carries ("policy_export" — the wiki's
+    # read-only policy-export payload with policy_hash + tokenized roots).
+    # When the upstream response carries it, the legacy <wiki_root>/
+    # companies default is never consulted; a policy-carrying response that
+    # does NOT contain the handle's path fails closed.  An N-1 wiki whose
+    # response omits "policy_export" keeps the legacy bridge (documented
+    # deviation; the CURRENT triplet always sends it).
+    policy_snapshot = resolution.get("policy_export")
+    expected_policy_hash = None
+    if isinstance(policy_snapshot, dict):
+        expected_policy_hash = policy_snapshot.get("policy_hash")
+    # ZR-307: validate handle and resolution envelope; any failure carries
+    # the upstream resolution trace so the error envelope never swallows
+    # the exact-reuse / download=0 evidence.
+    try:
+        validate_handle(
+            handle,
+            request,
+            root,
+            policy_snapshot=policy_snapshot,
+            expected_policy_hash=expected_policy_hash,
+        )
+        # FC-704: deep-validate and forward the resolution envelope verbatim —
+        # the journal-reconciled outcome + download event evidence the revenue
+        # receipt derives from.  N/N-1: an old company-wiki without an envelope
+        # resolves normally; the handle simply carries no envelope (revenue then
+        # fails closed instead of fabricating evidence).
+        if envelope is None:
+            envelope = resolution.get("resolution_envelope")
+        if envelope is not None:
+            # FC-903: validate + normalize (an N-1 company-wiki envelope gains
+            # the explicit honest bundle_status='unavailable') and forward the
+            # result — never a faked empty-green.
+            envelope = validate_resolution_envelope(envelope)
+            # ZR-405: the envelope's policy_hash (ZR-404) must match the
+            # response's exported root policy — a drifted/mismatched policy
+            # is fail closed (the handle's containment was checked against a
+            # DIFFERENT policy than the one the envelope pins).
+            envelope_policy_hash = envelope.get("policy_hash")
+            if (
+                envelope_policy_hash is not None
+                and expected_policy_hash is not None
+                and envelope_policy_hash != expected_policy_hash
+            ):
+                raise FilingFetchError(
+                    "resolution envelope policy_hash does not match the exported root policy",
+                    code="upstream_error",
+                    resolution_trace=_resolution_trace(resolution),
+                )
+            handle["resolution_envelope"] = dict(envelope)
+    except FilingFetchError as exc:
+        exc.resolution_trace = _resolution_trace(resolution)
+        raise
+    return handle
+
+
+def _close_gap_and_return_handle(
+    *,
+    payload: dict,
+    gap_plan: dict,
+    authorization: dict,
+    company_identity: dict,
+    command_prefix: list[str],
+    normalized_request: dict,
+    root: Path,
+    request: dict,
+    deadline: float,
+    pause_worker: bool,
+    worker_graceful_timeout_seconds: float,
+    worker_resume_wait_seconds: float,
+    stats: dict[str, Any] | None = None,
+) -> dict:
+    """FC-802: execute the authorized close-gap transaction and return the
+    final handle.  filing-fetch stays thin: the binding is assembled from
+    evidence company-wiki already provided (plan hash, envelope policy
+    hash) plus the caller's authorization — no provider/root/identity
+    rules are re-derived here."""
+    resolution = payload.get("resolution") or {}
+    envelope = resolution.get("resolution_envelope") or {}
+    binding = {
+        "request_id": (gap_plan or {}).get("request_id"),
+        "gap_plan_hash": (gap_plan or {}).get("gap_hash"),
+        "policy_hash": envelope.get("policy_hash"),
+        "provider": authorization["provider"],
+        "allowed_accessions": authorization["allowed_accessions"],
+        "max_items": authorization["max_items"],
+        "max_bytes": authorization["max_bytes"],
+        "expires_at": authorization["expires_at"],
+    }
+    import tempfile
+
+    binding_file = tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    )
+    try:
+        json.dump(binding, binding_file, ensure_ascii=False)
+        binding_file.close()
+        command = [
+            *command_prefix,
+            "close-gap",
+            "--binding-file",
+            str(binding_file.name),
+            *_command_arguments(normalized_request),
+            "--acquisition-config",
+            str(root / "config" / "source_acquisition.yaml"),
+        ]
+        if pause_worker:
+            command.append("--allow-acquisition-while-paused")
+        scope = PausedWorkerScope(
+            root=root,
+            command_prefix=command_prefix,
+            enabled=pause_worker,
+            graceful_timeout_seconds=worker_graceful_timeout_seconds,
+            resume_wait_seconds=worker_resume_wait_seconds,
+            deadline=deadline,
+            stats=stats,
+        )
+        with scope:
+            closed = _run_company_wiki_json_retry(
+                command=command,
+                root=root,
+                action="close-gap",
+                deadline=deadline,
+                stats=stats,
+            )
+    finally:
+        Path(binding_file.name).unlink(missing_ok=True)
+    if closed.get("status") != "completed":
+        raise FilingFetchError(
+            f"close-gap did not complete: {closed.get('status')} / {closed.get('reason')}",
+            code="gap_not_closed",
+        )
+    closed_resolution = closed.get("resolution")
+    if not isinstance(closed_resolution, dict):
+        raise FilingFetchError("close-gap resolution is missing", code="upstream_error")
+    handle = _handle_from_resolution(
+        closed_resolution, request, root, envelope=closed.get("envelope")
+    )
+    handle["company_identity"] = company_identity
+    _record_download_events(stats, handle)
+    return handle
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entry point for on-demand filing fetch.
+
+    Exit codes: 0 = capture-ready filing found/reused, 1 = fatal error,
+    2 = filing not reusable / not found (or config/identity problem).
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        prog="filing-fetch",
+        description="Resolve or download a company filing into company-wiki.",
+    )
+    parser.add_argument(
+        "--allow-download",
+        action="store_true",
+        help="allow a market-routed download if the filing is missing (default: read-only reuse)",
+    )
+    parser.add_argument(
+        "--config", type=Path, default=None, help="path to company_wiki.json config"
+    )
+    parser.add_argument(
+        "--request-file",
+        type=Path,
+        default=None,
+        help="read JSON request from file instead of stdin",
+    )
+    parser.add_argument(
+        "--timeout-seconds",
+        type=float,
+        default=900.0,
+        help="overall deadline for the entire request (default: 900)",
+    )
+    parser.add_argument(
+        "--no-pause-worker",
+        action="store_true",
+        help=(
+            "do not pause the company-wiki background worker around downloads; "
+            "legacy behavior (the worker's catalog lock can block downloads for "
+            "minutes)"
+        ),
+    )
+    parser.add_argument(
+        "--worker-graceful-timeout-seconds",
+        type=float,
+        default=5.0,
+        help="graceful stop window for worker-pause before it force-kills (default: 5)",
+    )
+    parser.add_argument(
+        "--worker-resume-wait-seconds",
+        type=float,
+        default=5.0,
+        help="seconds to wait for the worker to come back after worker-resume (default: 5)",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="include the per-candidate exclusion trace in the error response",
+    )
+    args = parser.parse_args(argv)
+
+    if args.timeout_seconds <= 0 or not math.isfinite(args.timeout_seconds):
+        print("error: timeout-seconds must be positive and finite", file=sys.stderr)
+        return 2
+
+    try:
+        if hasattr(sys.stdin, "reconfigure"):
+            # Phase 16.4: Windows pipes decode stdin with the locale codepage
+            # (GBK), corrupting UTF-8 Chinese queries. Force UTF-8 so piped
+            # requests behave like --request-file.
+            sys.stdin.reconfigure(encoding="utf-8", errors="strict")
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="strict")
+        try:
+            if args.request_file:
+                request = json.loads(args.request_file.read_text(encoding="utf-8"))
+            else:
+                request = json.loads(sys.stdin.read())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise FilingFetchError(f"invalid request: {exc}", code="request_error") from exc
+        if not isinstance(request, dict):
+            raise FilingFetchError("request must be a JSON object", code="request_error")
+        stats = {"calls": 0, "downloads": 0}
+        started_monotonic = time.monotonic()
+        handle = resolve_filing(
+            request=request,
+            config_path=args.config,
+            allow_download=args.allow_download,
+            timeout_seconds=args.timeout_seconds,
+            pause_worker=not args.no_pause_worker,
+            worker_graceful_timeout_seconds=args.worker_graceful_timeout_seconds,
+            worker_resume_wait_seconds=args.worker_resume_wait_seconds,
+            stats=stats,
+        )
+        _stamp_request_timing(stats, started_monotonic, args.timeout_seconds)
+        if isinstance(handle, dict) and handle.get("status") == "gap":
+            # FC-802: a structured gap passes through unwrapped — it is NOT
+            # a capture-ready handle and must never be wrapped as one.
+            output = handle
+        else:
+            output = {
+                "schema_version": FILING_RESPONSE_SCHEMA_VERSION,
+                "status": "capture_ready",
+                "handle": handle,
+                # ZR-205: preserve the call/download counts in the final
+                # success envelope for reconciliation (READ-09/READ-10).
+                "calls": stats["calls"],
+                "downloads": stats["downloads"],
+                "request_deadline": stats.get("request_deadline"),
+                "request_elapsed": stats.get("request_elapsed"),
+                "pause_action": stats.get("pause_action"),
+                "cleanup_calls": stats.get("cleanup_calls", 0),
+                "cleanup_elapsed_seconds": stats.get("cleanup_elapsed_seconds"),
+                "cleanup_status": stats.get("cleanup_status", "not_needed"),
+                "liveness_calls": stats.get("liveness_calls", 0),
+                "liveness_probe_failed": stats.get("liveness_probe_failed", 0),
+            }
+        json.dump(output, sys.stdout, ensure_ascii=False, indent=2)
+        sys.stdout.write("\n")
+        return 0
+    except FilingFetchError as exc:
+        # The request window only exists once the request itself started: a
+        # request_error raised while parsing the input has neither `stats` nor a
+        # start instant, so stamping is conditional (three existing request_error
+        # tests caught the unconditional version with an UnboundLocalError).
+        if "stats" in locals() and "started_monotonic" in locals():
+            _stamp_request_timing(stats, started_monotonic, args.timeout_seconds)
+        error_response: dict[str, Any] = {
+            "schema_version": FILING_RESPONSE_SCHEMA_VERSION,
+            "status": exc.code,
+            "error": str(exc),
+            "error_code": exc.code,
+            "retryable": exc.retryable,
+        }
+        if exc.candidates:
+            error_response["candidates"] = exc.candidates
+            error_response["hint"] = (
+                "identity is ambiguous; disambiguate by adding market/exchange "
+                "or by using a specific ticker in company_query"
+            )
+        if args.debug and exc.debug_trace:
+            error_response["debug_trace"] = exc.debug_trace
+        # ZR-205 stage-error transparency: the failing stage and attempt
+        # count ride on the error envelope when known (READ-09), and the
+        # call/download counts stay visible on failure too (READ-10).
+        if exc.stage is not None:
+            error_response["stage"] = exc.stage
+        if exc.attempts is not None:
+            error_response["attempts"] = exc.attempts
+        # ZR-307: the upstream resolution trace survives downstream
+        # handle/validation failures — the error envelope never swallows
+        # the exact-reuse / download=0 evidence.
+        if exc.resolution_trace is not None:
+            error_response["resolution_trace"] = exc.resolution_trace
+        if "stats" in locals():
+            error_response["calls"] = stats["calls"]
+            error_response["downloads"] = stats["downloads"]
+            error_response["request_deadline"] = stats.get("request_deadline")
+            error_response["request_elapsed"] = stats.get("request_elapsed")
+            error_response["pause_action"] = stats.get("pause_action")
+            error_response["cleanup_calls"] = stats.get("cleanup_calls", 0)
+            error_response["cleanup_elapsed_seconds"] = stats.get(
+                "cleanup_elapsed_seconds"
+            )
+            error_response["cleanup_status"] = stats.get("cleanup_status", "not_needed")
+            error_response["liveness_calls"] = stats.get("liveness_calls", 0)
+            error_response["liveness_probe_failed"] = stats.get(
+                "liveness_probe_failed", 0
+            )
+        json.dump(error_response, sys.stdout, ensure_ascii=False, indent=2)
+        sys.stdout.write("\n")
+        return 2
+    except Exception as exc:
+        json.dump(
+            {
+                "schema_version": FILING_RESPONSE_SCHEMA_VERSION,
+                "status": "fatal",
+                "error": str(exc),
+                "error_code": "fatal",
+                "retryable": False,
+            },
+            sys.stdout,
+            ensure_ascii=False,
+            indent=2,
+        )
+        sys.stdout.write("\n")
+        return 1
+
+
+__all__ = [
+    "COMPANY_WIKI_CONFIG_SCHEMA_VERSION",
+    "COMPANY_WIKI_IDENTITY_SCHEMA_VERSION",
+    "DEFAULT_COMPANY_WIKI_CONFIG",
+    "FilingFetchError",
+    "load_company_wiki_root",
+    "main",
+    "resolve_filing",
+]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

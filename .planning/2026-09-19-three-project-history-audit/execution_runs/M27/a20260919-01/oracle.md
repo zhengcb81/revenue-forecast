@@ -101,7 +101,7 @@ Attempt: `execution_runs/M27/a20260919-01`。
 
 | 例 | 变换（在正例基础上只改这一处） | 冻结预期 | 说明 |
 |---|---|---|---|
-| NEG-CARD | `period_hours = [0]`（卡片 L50 原文负例） | `ModelRegistryError` | 期间小时必须为正；0 小时不产生电量 |
+| NEG-CARD | `period_hours = [0]`（卡片 L50 原文负例） | `ModelRegistryError` | 期间小时必须为正 → 实测 `period_hours must be positive: FY2027`。注意 `period_hours` 是 `activity` 维，`driver_value_bounds` 给出**闭区间 `[0, ∞)`**，0 能通过 bound 检查（`:342` 用 `lower <= number`），拒绝来自 calculator 自身的正数检查。**修订 r2**：patch 值由 `{"__float__": 0}` 改为单元素列表 `[0]`，见文末修订节 |
 | N01a | `average_commissioned_mw[0] = True` | `ModelRegistryError` | bool 不是数值 |
 | N01b | `average_commissioned_mw[0] = float('nan')` | `ModelRegistryError` | 非有限 |
 | N01c | `average_commissioned_mw[0] = float('inf')` | `ModelRegistryError` | 非有限 |
@@ -134,7 +134,7 @@ Attempt: `execution_runs/M27/a20260919-01`。
 
 | ID | 拒绝条件 | 冻结预期 | 本卡是否可运行时执行 |
 |---|---|---|---|
-| R1 | `period_hours <= 0` | `ModelRegistryError` | 是（NEG-CARD） |
+| R1 | `period_hours <= 0` | `ModelRegistryError` | 是（NEG-CARD，**修订 r2 后**由 calculator 的正数检查真正拒绝；bound 为闭区间故 0 不是被 bound 拦下） |
 | R2 | 必填 driver 长度 ≠ `len(years)`（含 `[]`） | `ModelRegistryError` | 是（N02） |
 | R3 | 缺必填 driver / 未知 driver | `ModelRegistryError` | 是（N03、N04） |
 | R4 | `years` 为空/非连续/非整数财年 | `ModelRegistryError` | 是（N05a/b、CONT-BREAK） |
@@ -166,3 +166,44 @@ Attempt: `execution_runs/M27/a20260919-01`。
 - 披露缺出处/单位/期间/总净额不明或 `special_review` 未决 → `STOP_DISCLOSURE_ADAPTATION`。
 - 存量桥：**not_applicable_with_reason**（第 4 节）。
 - 准确性：`STOP_ACCURACY`（无 I-12 冻结设计）。
+
+---
+
+## 修订 r2（独立复核 P2-1 / P2-2 / P3-1 的处置；追加节，非重写）
+
+### P2-1：NEG-CARD 覆盖声明与证据不符（同 M26/M28）
+
+- **缺陷**：NEG-CARD 的 patch 原为 `{"kind": "set_driver", "value": {"__float__": 0}}`。
+  `apply_case` 对 `set_driver` 是整体深拷贝赋值（只有 `set_driver_element` 解包
+  `build_mutation_value`），驱动值变成 **dict**，先被 `model_registry.py:336` 的
+  "one value per forecast year" 守卫拦下，**calculator 的正数检查从未被求值**。
+  第 5 节"期间小时必须为正"与第 8 节 "R1 = 是（NEG-CARD）"因此不被证据支持。
+- **处置**：`value` 改为单元素列表 `[0]`，重新冻结 `cases.json`，重跑一次产品。
+  **无任何期望值改动**：正例仍 `[264000]`、连续性仍 `[264000, 564100.2]`、defaults 仍 `[262800]`、
+  11 个负例 `expected` 仍全为 `ModelRegistryError`。
+- **重跑实测机制**：`period_hours must be positive: FY2027`（rc 仍 0，11/11 仍全拒）。
+  runner 现强制校验该消息子串（`cases.json.case_contract.neg_card_declared_mechanism`）。
+
+### P3-1：`period_hours` 的域是**闭区间**，不是开区间
+
+- 复核指出本节早期版本的转述有误，已更正：`driver_value_bounds` 对非 ratio/非 signed 维返回
+  `(0.0, inf)`，`model_registry.py:342` 判 `lower <= number <= upper`，故 **0 落在域内**并进入
+  calculator，再由 `_renewable` 的 `period_hours must be positive` 拒绝。实质结论（拒绝来自
+  calculator）正确，措辞已按闭区间改写。第 5、8 节已同步。
+
+### P3-8：建模表达力观察（登记，不改结论）
+
+- 由于 `period_hours > 0` 是硬约束，"投运前/零运行小时年度"（例如年内投产但当年不计发电量、
+  或整年停机的机组）**无法用本模型表达**——实测 `period_hours=[0]` 被拒。这是表达力缺口，
+  登记给 I-10-A/模型 owner，不在本卡修（本卡不重写公式）。
+
+### P3：口径与留档（详见 `evidence/M27/revision_r2.json`）
+
+- `recovery/precorrection/` 在**本卡不是"改前原样"**：`input.json`/`cases.json`/`oracle.json`/
+  `oracle_selfcheck.json` 与冻结件**逐字节相同**（本卡 oracle 未变），故它们只是"首次生成快照"。
+  唯一真正的改前差异在本批的 M25（其 v1 oracle.json 的 defaults 期望为错值 300）。
+- v1 生成器**源码已不可得**：现盘 `scripts/oracle_M25_M28.py` 的 sha256 为最终版
+  `1dd52eb9…`，而 v1 自检记录的 `d443b5d5…` 在 `PLAN\execution_runs` 全树（除 `iso\venv`）
+  按 hash 穷举**无任何文件命中**；M27 的 `TypeError` traceback 也从未落盘。该事故因此
+  **不可复现、不可独立审计**，本文只保留可核事实（v1 与最终版不同、v1 写全 16 个产物、
+  首次运行的闸门期望与冻结件一致）。

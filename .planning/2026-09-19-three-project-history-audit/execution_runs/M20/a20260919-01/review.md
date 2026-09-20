@@ -118,9 +118,10 @@ attempt `execution_runs/M20/a20260919-01`。标题/卡号/model_id 与 `oracle.m
 | B | `cases.json` 的 N04 驱动名换成已注册的 `usage_revenue` | **3** | 3 | 未被拒绝的负例会被判为负 |
 | C | 正例 `expected_float`/`tolerances` 各多一项 | **2** | 2 | 保真不符 → 拒绝给判定 |
 | D | scratch 副本删除 `cases.json` | **1** | 1 | harness 失败与判定失败可区分 |
+| F | `cases.json` 中 N02 的 `expected` 改成 `ValueError`（该例仍抛 `ModelRegistryError`） | **3** | 3 | 声明期望被**按精确类型名**强制：`ModelRegistryError` 是 `ValueError` 子类，若用 isinstance 就会漏过（`declared_expectation_mismatch=1`） |
 | E | 未篡改副本 | **0** | 0 | 绿可恢复 |
 
-冻结件在 A–E 之后重新 hash，与运行前一致（`frozen_evidence_unchanged: true`）。
+冻结件在 A–F 之后重新 hash，与运行前一致（`frozen_evidence_unchanged: true`）。
 
 ### 记录收尾单元（不产生任何产品行为）
 
@@ -137,4 +138,35 @@ stdout/stderr 的 sha256）与 `pipeline_run.json`。
 
 ---
 
-状态：`formula = review_pending`；`disclosure_adaptation = unmapped`；`accuracy = unproven`。
+## revision r2 — response to the independent review
+
+Independent review of r1: **accepted_scoped（仅 formula 资格）**，附 2 项 P2、4 项 P3、1 项仅针对 M17
+的追加动作。本节**只追加**（自检表新增 F 行）；冻结期望、容差、负例清单、拒绝条件一律未改；
+产品仓零改动；**本卡的 `oracle.md` 未追加任何节**（复核确认其 §1 有效域行正确）。
+
+- **P2-1 已修**：`scripts/run_card.py` 现在按**异常精确类型名**比较 `cases.json` 的逐例 `expected`
+  （**不用 isinstance**），新增 `negative_counts.declared_expectation_mismatch`，
+  `negative_results.json` 的 `frozen_expectation` 改为从冻结 `cases.json` 导出；
+  rc=3 口径同步改为"未被**按声明期望**拒绝"；runner sha256 `9ea69c72…` → **`5307d2cc…`**。
+  新变异臂 **F** 实测 rc=3 且 `declared_expectation_mismatch=1`；本卡真实运行
+  `declared_expectation_mismatch=0`、11/11 `PASS_rejected`、`verdict=pass`、rc=0。
+- **P2-2 已按卡参数化**：本卡 **1 趟测量执行**（14 单元）+ **6 趟收尾执行**，与复核人的文件系统
+  法证一致；C2 是**随模板交付的既有单元**（不是首趟之后新增）。两种口径都写在 `process_history.json`。
+  本 r2 节所在的收尾趟之后，B/C2/E/G 因 P2-1 与 P3-2 的修复各**重新执行一次**。
+- **P3-1 已补**（OQ-05 进入 `oq_rulings.json`，`requires_ruling_from: independent reviewer`）；
+  **P3-3 已补**（`process_history.json` + handoff 指针）；**P3-4 随 P3-1 消解**。
+- **P3-2（本卡专有）已修**：`PROBE-CONTINUITY-TOLERANCE` 的"1e-12 失衡被容忍"举例改为**公式化 +
+  实测边界**，并拆成两个探针：`…-BAND-INSIDE`（`opening=[100, 120.00000012]`，即 delta=1.2e-7，
+  恰在 `rel_tol=1e-9 × 120 ≈ 1.2e-7` 带内）实测**被接受**、2028 收入 `240.00000024`；
+  `…-BAND-OUTSIDE`（delta=1.201e-7）实测 `ModelRegistryError`（`cohort customer continuity
+  failed: FY2028`）。两者都写明"在 120 户量级上容差带≈1.2e-7，而非 1e-12"。
+- **批次级两项**已在 `execution_runs/M17-M20/a20260919-01/` 落地：rc 命名空间表 +
+  **禁止未标注命名空间的跨卡 rc 聚合**；明示 `unmapped` = **零产出**。
+- **本次仍未验证 / 原样承接**：M17 首趟与探针常量历史、`oracle.md` 跨趟未改写、M05–M08 与其它
+  并发 session、`PLAN\reviews` 全树、真实披露对应关系、`_SIGNED_DRIVERS` 其余名字的业务正当性、
+  `oracle_M20.py` 的逐行审阅、`iso\venv` 全树比对——均**未**由本批证实。
+
+---
+
+状态：`formula = review_pending`；`disclosure_adaptation = unmapped`（= **零产出**，不是部分完成）；
+`accuracy = unproven`（完全未做评估）。实现者**未**自签 accepted。

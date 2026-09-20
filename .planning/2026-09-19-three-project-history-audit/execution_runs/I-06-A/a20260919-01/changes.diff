@@ -1,0 +1,531 @@
+--- a/revenue-forecast/scripts/source_preparation.py
++++ b/revenue-forecast/scripts/source_preparation.py
+@@ -141,13 +141,25 @@
+     # FC-905-b: capture/safety evidence comes from the envelope — never
+     # hardcoded.  An unreviewed source is blocked per policy; absent parser/
+     # llm counts fail closed (never fabricated as 0).
++    # ---- I-06-A CANDIDATE (UNRATIFIED) ----------------------------------
++    # Register the durable demand BEFORE the not_reviewed safety verdict is
++    # applied: the block must be recoverable, and the verdict itself is
++    # unchanged.  Any store failure raises, so `demand_queued` is never
++    # reported for a demand that was not persisted.
+     prompt_injection_status = envelope.get("prompt_injection_status")
+     if prompt_injection_status is None:
+         prompt_injection_status = "not_reviewed"  # defensive N-1 default
++    from w06a_candidate_patch import _register_demand, block_message
++
++    registration = _register_demand(request=request, handle=handle, envelope=envelope)
+     if prompt_injection_status == "not_reviewed":
+         raise RuntimeError(
+-            "prompt injection not reviewed — source preparation blocked "
+-            "per policy (prompt_injection_status=not_reviewed)")
++            block_message(
++                prompt_injection_status=prompt_injection_status,
++                registration=registration,
++            )
++        )
++    # ---- end I-06-A CANDIDATE -------------------------------------------
+     parser_calls = envelope.get("parser_calls")
+     llm_calls = envelope.get("llm_calls")
+     if parser_calls is None or llm_calls is None:
+--- /dev/null
++++ b/revenue-forecast/scripts/processing_demand_store.py
+@@ -0,0 +1,331 @@
++"""CANDIDATE (UNRATIFIED) — durable processing-demand store for I-06-A.
++
++*** THIS FILE IS NOT A PRODUCT DECISION. ***
++
++D-W06 requires the wiki source-review owner + security reviewer + RF consumer
++owner to freeze the single persistent owner, its schema/migration/API and the
++demand idempotency key BEFORE any implementation.  That signature does not
++exist (see decision.md), so this reference implementation lives ONLY in the
++attempt directory and exists to show that the frozen requirements are
++implementable and observable:
++
++  * one durable owner shared by every process (SQLite, stdlib only);
++  * idempotency key = (source bytes sha256, review policy, role set);
++  * registered BEFORE the safety verdict is applied, so the block is
++    recoverable;
++  * a structured failure (never a silent in-memory fallback) when the store
++    cannot be written;
++  * a paused worker is REPORTED, never resumed or started.
++
++Key derivation, columns, file name and CLI surface are CANDIDATE choices and
++must be replaced by whatever D-W06 freezes.
++"""
++
++from __future__ import annotations
++
++import argparse
++import hashlib
++import json
++import sqlite3
++import sys
++import time
++import uuid
++from dataclasses import dataclass
++from pathlib import Path
++
++CANDIDATE_MARKER = "candidate-unratified-I-06-A-a20260919-01"
++
++DEMAND_SCHEMA_VERSION = "1.0.0"
++
++DEMAND_SCHEMA = """
++CREATE TABLE IF NOT EXISTS processing_demands (
++    demand_id TEXT PRIMARY KEY,
++    demand_key TEXT NOT NULL,
++    kind TEXT NOT NULL,
++    status TEXT NOT NULL,
++    source_id TEXT NOT NULL,
++    source_sha256 TEXT NOT NULL,
++    review_policy TEXT NOT NULL,
++    role_set TEXT NOT NULL,
++    gaps_json TEXT NOT NULL,
++    request_sha256 TEXT NOT NULL,
++    request_json TEXT NOT NULL,
++    candidate_marker TEXT NOT NULL,
++    attempts INTEGER NOT NULL DEFAULT 0,
++    lease_owner TEXT,
++    lease_until REAL,
++    created_at REAL NOT NULL,
++    updated_at REAL NOT NULL
++);
++CREATE INDEX IF NOT EXISTS idx_processing_demands_key
++    ON processing_demands(demand_key, status);
++"""
++
++
++class DemandStoreError(RuntimeError):
++    """The durable store could not be used — never fall back to memory."""
++
++
++class DemandStoreUnavailable(DemandStoreError):
++    """Writing/reading the durable store failed (permissions, disk, schema)."""
++
++
++class ProcessingDemandRecord:
++    def __init__(self, row: sqlite3.Row):
++        self._row = row
++
++    def to_dict(self) -> dict:
++        row = self._row
++        return {
++            "demand_id": row["demand_id"],
++            "demand_key": row["demand_key"],
++            "kind": row["kind"],
++            "status": row["status"],
++            "source_id": row["source_id"],
++            "source_sha256": row["source_sha256"],
++            "review_policy": row["review_policy"],
++            "role_set": row["role_set"],
++            "gaps": json.loads(row["gaps_json"]),
++            "request_sha256": row["request_sha256"],
++            "attempts": row["attempts"],
++            "lease_owner": row["lease_owner"],
++            "lease_until": row["lease_until"],
++            "created_at": row["created_at"],
++            "updated_at": row["updated_at"],
++            "candidate_marker": row["candidate_marker"],
++        }
++
++
++def canonical_sha256(value: object) -> str:
++    encoded = json.dumps(
++        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
++    ).encode("utf-8")
++    return hashlib.sha256(encoded).hexdigest()
++
++
++def demand_key(*, source_sha256: str, review_policy: str, role_set: str) -> str:
++    """The frozen idempotency triple: bytes identity + policy + roles."""
++    return canonical_sha256(
++        {
++            "source_sha256": source_sha256,
++            "review_policy": review_policy,
++            "role_set": role_set,
++        }
++    )
++
++
++class DurableDemandStore:
++    """Single durable owner of the demand queue (CANDIDATE)."""
++
++    def __init__(self, database_path: Path):
++        self.database_path = Path(database_path)
++
++    def _connect(self) -> sqlite3.Connection:
++        connection = sqlite3.connect(str(self.database_path), timeout=10.0)
++        connection.row_factory = sqlite3.Row
++        connection.execute("PRAGMA busy_timeout=10000")
++        return connection
++
++    def _initialize(self) -> None:
++        parent = self.database_path.parent
++        try:
++            parent.mkdir(parents=True, exist_ok=True)
++            connection = self._connect()
++        except (OSError, sqlite3.Error) as exc:
++            raise DemandStoreUnavailable(
++                f"demand store unavailable: {type(exc).__name__}: {exc}"
++            ) from exc
++        try:
++            connection.executescript(DEMAND_SCHEMA)
++            connection.commit()
++        except sqlite3.Error as exc:
++            raise DemandStoreUnavailable(
++                f"demand store schema failed: {type(exc).__name__}: {exc}"
++            ) from exc
++        finally:
++            connection.close()
++
++    def register(
++        self,
++        *,
++        kind: str,
++        source_id: str,
++        source_sha256: str,
++        review_policy: str,
++        role_set: str,
++        gaps: list[dict],
++        request: dict,
++        now: float | None = None,
++    ) -> tuple[dict, bool]:
++        """Idempotent registration; returns (demand, created)."""
++        self._initialize()
++        stamp = time.time() if now is None else now
++        key = demand_key(
++            source_sha256=source_sha256,
++            review_policy=review_policy,
++            role_set=role_set,
++        )
++        request_sha = canonical_sha256(request)
++        try:
++            connection = self._connect()
++        except (OSError, sqlite3.Error) as exc:
++            raise DemandStoreUnavailable(
++                f"demand store unavailable: {type(exc).__name__}: {exc}"
++            ) from exc
++        try:
++            connection.execute("BEGIN IMMEDIATE")
++            existing = connection.execute(
++                "SELECT * FROM processing_demands WHERE demand_key=? "
++                "AND status IN ('pending','running','failed') "
++                "ORDER BY created_at, demand_id LIMIT 1",
++                (key,),
++            ).fetchone()
++            if existing is not None:
++                connection.execute(
++                    "UPDATE processing_demands SET updated_at=? WHERE demand_id=?",
++                    (stamp, existing["demand_id"]),
++                )
++                connection.commit()
++                refreshed = connection.execute(
++                    "SELECT * FROM processing_demands WHERE demand_id=?",
++                    (existing["demand_id"],),
++                ).fetchone()
++                return ProcessingDemandRecord(refreshed).to_dict(), False
++            demand_id = f"demand-{uuid.uuid4().hex[:16]}"
++            connection.execute(
++                "INSERT INTO processing_demands(demand_id,demand_key,kind,status,"
++                "source_id,source_sha256,review_policy,role_set,gaps_json,"
++                "request_sha256,request_json,candidate_marker,attempts,created_at,"
++                "updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
++                (
++                    demand_id,
++                    key,
++                    kind,
++                    "pending",
++                    source_id,
++                    source_sha256,
++                    review_policy,
++                    role_set,
++                    json.dumps(gaps, ensure_ascii=False, sort_keys=True),
++                    request_sha,
++                    json.dumps(request, ensure_ascii=False, sort_keys=True),
++                    CANDIDATE_MARKER,
++                    0,
++                    stamp,
++                    stamp,
++                ),
++            )
++            connection.commit()
++            created = connection.execute(
++                "SELECT * FROM processing_demands WHERE demand_id=?", (demand_id,)
++            ).fetchone()
++            return ProcessingDemandRecord(created).to_dict(), True
++        except sqlite3.Error as exc:
++            raise DemandStoreUnavailable(
++                f"demand store write failed: {type(exc).__name__}: {exc}"
++            ) from exc
++        finally:
++            connection.close()
++
++    def list_active(self) -> list[dict]:
++        self._initialize()
++        try:
++            connection = self._connect()
++        except (OSError, sqlite3.Error) as exc:
++            raise DemandStoreUnavailable(
++                f"demand store unavailable: {type(exc).__name__}: {exc}"
++            ) from exc
++        try:
++            rows = connection.execute(
++                "SELECT * FROM processing_demands ORDER BY created_at, demand_id"
++            ).fetchall()
++        except sqlite3.Error as exc:
++            raise DemandStoreUnavailable(
++                f"demand store read failed: {type(exc).__name__}: {exc}"
++            ) from exc
++        finally:
++            connection.close()
++        return [ProcessingDemandRecord(row).to_dict() for row in rows]
++
++    def claim(self, *, owner: str, lease_seconds: float = 300.0) -> dict | None:
++        """Explicit single consumption grant (never automatic)."""
++        self._initialize()
++        stamp = time.time()
++        connection = self._connect()
++        try:
++            connection.execute("BEGIN IMMEDIATE")
++            row = connection.execute(
++                "SELECT * FROM processing_demands WHERE status IN ('pending','failed') "
++                "AND (lease_until IS NULL OR lease_until < ?) "
++                "ORDER BY created_at, demand_id LIMIT 1",
++                (stamp,),
++            ).fetchone()
++            if row is None:
++                connection.commit()
++                return None
++            connection.execute(
++                "UPDATE processing_demands SET status='running', lease_owner=?, "
++                "lease_until=?, updated_at=? WHERE demand_id=?",
++                (owner, stamp + lease_seconds, stamp, row["demand_id"]),
++            )
++            connection.commit()
++            claimed = connection.execute(
++                "SELECT * FROM processing_demands WHERE demand_id=?",
++                (row["demand_id"],),
++            ).fetchone()
++            return ProcessingDemandRecord(claimed).to_dict()
++        finally:
++            connection.close()
++
++
++def read_worker_control(path: Path) -> dict:
++    """Read-only view of the worker control file (never resumes anything)."""
++    if not path.is_file():
++        return {"path": str(path), "exists": False, "desired_state": None}
++    try:
++        payload = json.loads(path.read_text(encoding="utf-8"))
++    except (OSError, json.JSONDecodeError) as exc:
++        return {
++            "path": str(path),
++            "exists": True,
++            "desired_state": None,
++            "error": f"{type(exc).__name__}",
++        }
++    return {
++        "path": str(path),
++        "exists": True,
++        "desired_state": payload.get("desired_state"),
++    }
++
++
++def main(argv: list[str] | None = None) -> int:
++    parser = argparse.ArgumentParser(
++        description=f"candidate durable demand store ({CANDIDATE_MARKER})"
++    )
++    parser.add_argument("command", choices=("list", "claim"))
++    parser.add_argument("--database", required=True, type=Path)
++    parser.add_argument("--owner", default="cli")
++    args = parser.parse_args(argv)
++    store = DurableDemandStore(args.database)
++    try:
++        if args.command == "list":
++            payload = {"demands": store.list_active(), "store": str(args.database)}
++        else:
++            claimed = store.claim(owner=args.owner)
++            payload = {"claimed": claimed, "store": str(args.database)}
++    except DemandStoreUnavailable as exc:
++        sys.stdout.write(
++            json.dumps(
++                {"error": "demand_store_unavailable", "detail": str(exc)},
++                ensure_ascii=False,
++            )
++        )
++        sys.stdout.write("\n")
++        return 4
++    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2))
++    sys.stdout.write("\n")
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+--- /dev/null
++++ b/revenue-forecast/scripts/w06a_candidate_patch.py
+@@ -0,0 +1,164 @@
++"""W06A candidate overlay: the only change source_preparation.py would need.
++
++*** CANDIDATE, UNRATIFIED — lives in iso/candidate, never in a product tree. ***
++
++It restructures `prepare_source` so that:
++
++  1. the request is validated enough to have a durable identity;
++  2. a demand is REGISTERED before the not_reviewed safety verdict is applied;
++  3. a store failure raises (no silent in-memory fallback) so `demand_queued`
++     is never reported when the demand was not persisted;
++  4. the block message carries demand_id + next_action, so the block is
++     recoverable and observable;
++  5. a paused worker is reported, never resumed.
++
++Wiring choice (also a CANDIDATE): the store path, worker-control path and role
++set come from the environment (RF_W06_DEMAND_STORE / RF_W06_WORKER_CONTROL /
++RF_W06_ROLE_SET).  D-W06 must freeze the real injection point.
++"""
++
++from __future__ import annotations
++
++import os
++from pathlib import Path
++
++_CANDIDATE = True
++_CANDIDATE_MARKER = "candidate-unratified-I-06-A-a20260919-01"
++
++
++def _demand_gaps(envelope: dict, handle: dict) -> list[dict]:
++    """The structured gap of THIS request (never a fabricated review)."""
++    bundle = envelope.get("bundle")
++    roles_needing_production: list[str] = []
++    if isinstance(bundle, dict):
++        valid = bundle.get("valid_handles")
++        if isinstance(valid, dict):
++            roles_needing_production = sorted(
++                role for role in ("normalized", "summary", "sections", "markdown")
++                if role not in valid
++            )
++    gaps: list[dict] = []
++    status = envelope.get("prompt_injection_status")
++    if status in (None, "not_reviewed"):
++        gaps.append(
++            {
++                "gap": "review_required",
++                "detail": "prompt_injection_status is not reviewed",
++                "observed": status,
++                "resolves_by": "run the approved review method for this source",
++            }
++        )
++    for role in roles_needing_production:
++        gaps.append(
++            {
++                "gap": "artifact_missing",
++                "detail": f"no reusable {role} artifact in the envelope bundle",
++                "observed": role,
++                "resolves_by": f"produce the {role} artifact, then retry",
++            }
++        )
++    return gaps
++
++
++def _register_demand(*, request: dict, handle: dict, envelope: dict) -> dict:
++    """Register the durable demand; never raise away the SAFETY verdict.
++
++    F-I06A-02 (review): when the store cannot be written, the security block
++    (`prompt injection not reviewed`) must still be the message the caller
++    sees.  The store failure is attached to it as structured detail instead of
++    replacing it, so a broken store can never hide the safety verdict.
++    """
++    from processing_demand_store import (
++        DemandStoreUnavailable,
++        DurableDemandStore,
++        read_worker_control,
++    )
++
++    worker = read_worker_control(
++        Path(os.environ.get("RF_W06_WORKER_CONTROL", ""))
++    )
++    database = os.environ.get("RF_W06_DEMAND_STORE")
++    if not database:
++        return {
++            "demand_id": None,
++            "demand_key": None,
++            "created": False,
++            "status": "not_registered",
++            "gaps": _demand_gaps(envelope, handle),
++            "worker": worker,
++            "store_error": (
++                "demand_store_unavailable: RF_W06_DEMAND_STORE is not "
++                "configured (the candidate refuses to fall back to memory)"
++            ),
++            "candidate_marker": _CANDIDATE_MARKER,
++        }
++    role_set = os.environ.get("RF_W06_ROLE_SET", "normalized,sections")
++    review_policy = str(envelope.get("policy_hash") or "unset-policy")
++    try:
++        store = DurableDemandStore(Path(database))
++        demand, created = store.register(
++            kind="source_review_and_production",
++            source_id=str(handle.get("source_id") or ""),
++            source_sha256=str(handle.get("snapshot_sha256") or ""),
++            review_policy=review_policy,
++            role_set=role_set,
++            gaps=_demand_gaps(envelope, handle),
++            request=request,
++        )
++    except DemandStoreUnavailable as exc:
++        return {
++            "demand_id": None,
++            "demand_key": None,
++            "created": False,
++            "status": "not_registered",
++            "gaps": _demand_gaps(envelope, handle),
++            "worker": worker,
++            "store_error": f"demand_store_unavailable: {exc}",
++            "candidate_marker": _CANDIDATE_MARKER,
++        }
++    return {
++        "demand_id": demand["demand_id"],
++        "demand_key": demand["demand_key"],
++        "created": created,
++        "status": demand["status"],
++        "gaps": demand["gaps"],
++        "worker": worker,
++        "store_error": None,
++        "candidate_marker": _CANDIDATE_MARKER,
++    }
++
++
++def block_message(*, prompt_injection_status: str, registration: dict | None) -> str:
++    """The refusal text: the SECURITY verdict first, always present.
++
++    A store failure is an ADDITIONAL structured clause of the same block
++    (F-I06A-02), never a replacement: the caller must always be able to see
++    that the source is unreviewed, and separately that the demand was not
++    persisted (`demand_queued` is absent in that case).
++    """
++    base = (
++        "prompt injection not reviewed — source preparation blocked per policy "
++        f"(prompt_injection_status={prompt_injection_status})"
++    )
++    if registration is None:
++        return base
++    worker = registration.get("worker") or {}
++    resume = (
++        "worker desired_state is 'paused' — resume requires an explicit "
++        "authorised action; this call does not resume it"
++        if worker.get("desired_state") == "paused"
++        else "worker is not paused"
++    )
++    gaps = registration.get("gaps") or []
++    first = gaps[0].get("resolves_by") if gaps else "review the source"
++    store_error = registration.get("store_error")
++    if store_error:
++        return (
++            f"{base}; demand_store_error={store_error}; gaps={len(gaps)} "
++            f"next_action={first}; {resume}"
++        )
++    return (
++        f"{base}; demand_queued demand_id={registration['demand_id']} "
++        f"source={registration['demand_key'][:16]} gaps={len(gaps)} "
++        f"next_action={first}; {resume}"
++    )

@@ -12,7 +12,7 @@
   "D_disclosure_mapping": "NOT done - needs a signed industry/accounting review; nothing is claimed",
   "E_historical_mapping_probe": "NOT done - belongs to I-10-A",
   "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist",
-  "oracle_freeze": "oracle.md frozen body 9693 bytes sha256 d83ce2961186c324a445985bc3b569a87183642b5a68e9abce6332d0f5f83d76; oracle.json byte-identical on regeneration",
+  "oracle_freeze": "oracle.md frozen body 10026 bytes sha256 88de6bf9b8012bac6c6e05ee836977e9b54cc08c75287af66d7e55e92275b0da; oracle.json byte-identical on regeneration",
   "mutation_proof": "4 probes per card, all four exit codes observed as expected (0/3/3/2 then 0 on restore); frozen evidence hashes unchanged",
   "oq_enumeration": "31 models / 165 driver slots enumerated; counts in evidence/M22/oq_rulings.json"
  },
@@ -29,10 +29,10 @@
  "input_hashes": {
   "evidence/M22/input.json": "9e3185e80f47ca9859db7a708a0bed809843d5f97001580cd1f27dba678d897b",
   "evidence/M22/oracle.json": "247fa3dc31b9bd0b57161ceb9bb9d73fffca9fe87fd5f2e2b5350a41d12fad87",
-  "evidence/M22/cases.json": "be1353f5034649c2bd0662e3ff761be65d843da2d4395194fd51a8d2316e4f15",
-  "oracle.md_frozen_body": "d83ce2961186c324a445985bc3b569a87183642b5a68e9abce6332d0f5f83d76",
-  "scripts/oracle_M22.py": "6f177b6ff87cbc4daeef0fa1642d83aea92e4cfa5057beed83ecbcaefec0da9d",
-  "scripts/run_card.py": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a"
+  "evidence/M22/cases.json": "0bed0128eafcd5dd44b57c4aac9e94dcc1fa49ae10d8b07b6266dfec0224493b",
+  "oracle.md_frozen_body": "88de6bf9b8012bac6c6e05ee836977e9b54cc08c75287af66d7e55e92275b0da",
+  "scripts/oracle_M22.py": "6326d72f64e9c6c99e0c6083a32a48a4df04c6d69570b8ad5e185cd2dbb11fd1",
+  "scripts/run_card.py": "d02057debe8d34df8a472e83aa3771f5c90fb77d58b3c0eee2237e35593b2953"
  },
  "current_source_hashes": {
   "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
@@ -111,7 +111,13 @@
  "negative_case_summary": {
   "total": 11,
   "passed": 11,
-  "failed": []
+  "failed": [],
+  "expected_type_mismatch_cases": [],
+  "message_mismatch_cases": [],
+  "message_requirements_checked": [
+   "NEG-CARD"
+  ],
+  "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised type name equal to cases.json `expected` AND, when present, expect_message_contains to be a substring of the message"
  },
  "negative_ids": [
   "NEG-CARD",
@@ -188,7 +194,18 @@
   "review.md",
   "scripts/"
  ],
- "reviewer_status": "not yet reviewed; implementer never writes 'accepted'",
- "revision": "r1 (no revision r2 section; revision_r2.json records state=not_started)",
+ "reviewer_status": "r1 reviewed: M21 accepted_scoped; M22/M23/M24 changes_required (all six required items implemented in revision r2 and returned for point review); implementer never writes 'accepted'",
+ "reviews_mtime_conventions": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\reviews",
+  "directory_mtime_epoch": 1789805660.0835266,
+  "directory_mtime_note": "this is the mtime of the DIRECTORY entry itself; it changes when an entry is added or removed directly in that folder",
+  "newest_file_inside_epoch": 1789808732.2732253,
+  "newest_file_inside": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\reviews\\second_wave\\final_review_checks.json",
+  "newest_file_note": "this is the mtime of the newest file anywhere under reviews/, recursively; it changes when that file is rewritten",
+  "task_statement_value": "the task statement quoted 2026-09-19 10:05 for this directory; that value corresponds to the NEWEST-FILE convention (reviews/second_wave/final_review_checks.json), while the DIRECTORY mtime is 2026-09-19 09:14:20. Both are recorded here because the two conventions measure different things (review item P3-3).",
+  "written_by_this_attempt": false
+ },
+ "revision": "r2 (independent review: M21 accepted_scoped, M22/M23/M24 changes_required. This revision implements review items P2-1, P2-2, P2-3, P3-1, P3-2, P3-3. The verdict for the REVISED attempt has NOT yet been received, so every qualification stays review_pending / unmapped / unproven.)",
+ "revision_r2_detail": "evidence/M22/revision_r2.json",
  "disclosure_impact_note": "not applicable to this card"
 }

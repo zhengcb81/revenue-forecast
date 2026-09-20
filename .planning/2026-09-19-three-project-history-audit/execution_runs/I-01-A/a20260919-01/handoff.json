@@ -1,64 +1,65 @@
 {
-  "card_id": "I-01-A",
-  "attempt_id": "a20260919-01",
-  "status": "review_pending",
-  "completed_steps": [
-    "D-W01 frozen in decision.md (candidate A: shared effective_root_profile in existing config.py; no new module; no new allowlist)",
-    "isolated copies + sys.path override loader (iso/override, w01_bootstrap.py), offline dependency copies recorded in iso_patching.md",
-    "CFG-REAL/CFG-GOOD/CFG-FIFTH/N2x4/N3x2 samples built under samples/",
-    "oracle.md frozen before any run of the judged functions",
-    "BEFORE phase (production source): 9 cases + effective-config.before.json + per-root baseline",
-    "minimal modifications: config_doctor.py per-root effective checks; config.py effective_root_profile/effective_policy_profile/canonical_write_target pass-through; scanner.py per-root fail-closed wiring; service/adapter_dispatch/models unchanged copies",
-    "AFTER: 9 cases + 2 correction reruns; after/effective-config.after.json, per-root-scan-and-resolve.json, config-copy-hashes.json",
-    "changes.diff vs production originals (5 file pairs; 3 changed, 2 identical)"
-  ],
-  "next_step_number": 4,
-  "next_action": "submit to the independent reviewer: re-read binding/oracle/decision/commands + changes.diff; recompute at least one N2 negative and the P2 resolve mapping from the stored case JSON; then decide accepted_scoped or changes_required (use review_and_handoff.md reviewer steps)",
-  "input_hashes": {
-    "scripts/config_doctor.py": "7351cec4084af50c70049b006a0522c672c79e97b08fc20a943a3d09f3ce1459",
-    "src/company_wiki/source_catalog/config.py": "beb07a6d0e97942c81c0ab7a1f82904d0fdcb3ef5447f01659773431b2839064",
-    "src/company_wiki/source_catalog/adapter_dispatch.py": "6a72e7c552d791f23cec595fe885dd79cfbb1cc4efc082d1acebb04cd4ffbdbe",
-    "src/company_wiki/source_catalog/scanner.py": "f039d5f8d1360bd0e87898c059b7cce68d7ec5d0fad31c9a0196a57a6425e45e",
-    "src/company_wiki/source_catalog/service.py": "32b76e6d7f9879a2c7280f20180a8584c61ec11d706dbd70e3d019fd8cb48fa5",
-    "src/company_wiki/source_catalog/models.py": "65230572d355031d9634c9355939034d1dd8cb386bb98d1555e05184d4eb5087",
-    "config/source_catalog.yaml": "f9eb72a6c37c2dfeacf18a10df9b983dac104276efaf55b0a55b2c5c15f655df",
-    ".source_catalog/runtime_policy.json": "a0ce50c99bee075d3f0a873dc92288b623dc4aa44d8d0180092d3b5feebb01e1"
-  },
-  "changed_paths": [
-    "iso/override/config.py",
-    "iso/override/scanner.py",
-    "iso/override/config_doctor.py",
-    "iso/override/adapter_dispatch.py (identical)",
-    "iso/override/service.py (identical)",
-    "iso/override/models.py (identical)",
-    "samples/",
-    "scripts/"
-  ],
-  "commands_executed": [
-    "build-samples",
-    "before-9-cases",
-    "after-9-cases",
-    "after-correction-reruns",
-    "after-P1-refresh"
-  ],
-  "raw_exit_codes": 0,
-  "expected_exit_codes": 0,
-  "open_questions": [
-    "dropbox_stock root left WITHOUT adapter in all samples (stop rule: cannot prove the real Dropbox layout against sidecar_filing_v1/company_raw_v1 inside this attempt; production doctor's dropbox path complaint is redirected-path noise in both before/after)",
-    "old tests/contract & test_config_doctor.py name-allowlist assertion (test_e2e_f03_second_directory_root_fails_fast) contradicts the new capability contract by design; per card it must be realigned to the frozen capability contract in a later isolated-test step (not deleted, not done here)",
-    "scanner per-root error_details cap (<5) kept unchanged by design; CFG-REAL shows all three roots (3<5)"
-  ],
-  "blocked_by": [],
-  "reviewer_status": "pending",
-  "evidence_paths": [
-    "decision.md",
-    "oracle.md",
-    "before/",
-    "after/",
-    "after2/",
-    "changes.diff",
-    "binding.json",
-    "commands.json",
-    "iso_patching.md"
-  ]
+ "card_id": "I-01-A",
+ "attempt_id": "a20260919-01",
+ "status": "accepted_scoped",
+ "completed_steps": [
+  "D-W01 frozen in decision.md (candidate A: shared effective_root_profile in existing config.py; no new module; no new allowlist)",
+  "isolated copies + sys.path override loader (iso/override, w01_bootstrap.py), offline dependency copies recorded in iso_patching.md",
+  "CFG-REAL/CFG-GOOD/CFG-FIFTH/N2x4/N3x2 samples built under samples/",
+  "oracle.md frozen before any run of the judged functions",
+  "BEFORE phase (production source): 9 cases + effective-config.before.json + per-root baseline",
+  "minimal modifications: config_doctor.py per-root effective checks; config.py effective_root_profile/effective_policy_profile/canonical_write_target pass-through; scanner.py per-root fail-closed wiring; service/adapter_dispatch/models unchanged copies",
+  "AFTER: 9 cases + 2 correction reruns; after/effective-config.after.json, per-root-scan-and-resolve.json, config-copy-hashes.json",
+  "changes.diff vs production originals (5 file pairs; 3 changed, 2 identical)"
+ ],
+ "next_step_number": 4,
+ "next_action": "submit to the independent reviewer: re-read binding/oracle/decision/commands + changes.diff; recompute at least one N2 negative and the P2 resolve mapping from the stored case JSON; then decide accepted_scoped or changes_required (use review_and_handoff.md reviewer steps)",
+ "input_hashes": {
+  "scripts/config_doctor.py": "7351cec4084af50c70049b006a0522c672c79e97b08fc20a943a3d09f3ce1459",
+  "src/company_wiki/source_catalog/config.py": "beb07a6d0e97942c81c0ab7a1f82904d0fdcb3ef5447f01659773431b2839064",
+  "src/company_wiki/source_catalog/adapter_dispatch.py": "6a72e7c552d791f23cec595fe885dd79cfbb1cc4efc082d1acebb04cd4ffbdbe",
+  "src/company_wiki/source_catalog/scanner.py": "f039d5f8d1360bd0e87898c059b7cce68d7ec5d0fad31c9a0196a57a6425e45e",
+  "src/company_wiki/source_catalog/service.py": "32b76e6d7f9879a2c7280f20180a8584c61ec11d706dbd70e3d019fd8cb48fa5",
+  "src/company_wiki/source_catalog/models.py": "65230572d355031d9634c9355939034d1dd8cb386bb98d1555e05184d4eb5087",
+  "config/source_catalog.yaml": "f9eb72a6c37c2dfeacf18a10df9b983dac104276efaf55b0a55b2c5c15f655df",
+  ".source_catalog/runtime_policy.json": "a0ce50c99bee075d3f0a873dc92288b623dc4aa44d8d0180092d3b5feebb01e1"
+ },
+ "changed_paths": [
+  "iso/override/config.py",
+  "iso/override/scanner.py",
+  "iso/override/config_doctor.py",
+  "iso/override/adapter_dispatch.py (identical)",
+  "iso/override/service.py (identical)",
+  "iso/override/models.py (identical)",
+  "samples/",
+  "scripts/"
+ ],
+ "commands_executed": [
+  "build-samples",
+  "before-9-cases",
+  "after-9-cases",
+  "after-correction-reruns",
+  "after-P1-refresh"
+ ],
+ "raw_exit_codes": 0,
+ "expected_exit_codes": 0,
+ "open_questions": [
+  "dropbox_stock root left WITHOUT adapter in all samples (stop rule: cannot prove the real Dropbox layout against sidecar_filing_v1/company_raw_v1 inside this attempt; production doctor's dropbox path complaint is redirected-path noise in both before/after)",
+  "old tests/contract & test_config_doctor.py name-allowlist assertion (test_e2e_f03_second_directory_root_fails_fast) contradicts the new capability contract by design; per card it must be realigned to the frozen capability contract in a later isolated-test step (not deleted, not done here)",
+  "scanner per-root error_details cap (<5) kept unchanged by design; CFG-REAL shows all three roots (3<5)"
+ ],
+ "blocked_by": [],
+ "reviewer_status_before_bookkeeping_fix": "pending",
+ "reviewer_status": "accepted_scoped - verdict written by the independent reviewer in review.md:3: \"结论：**accepted_scoped**（附 3 项记录性发现，均非阻断）\". Transcribed for bookkeeping by the implementer on 2026-09-20; the implementer did not and does not sign acceptance. The reviewer reviewed the scope stated in that section; the implementer changed no verdict word and no scope, and this transcription transfers no qualification beyond what the reviewer wrote.",
+ "evidence_paths": [
+  "decision.md",
+  "oracle.md",
+  "before/",
+  "after/",
+  "after2/",
+  "changes.diff",
+  "binding.json",
+  "commands.json",
+  "iso_patching.md"
+ ]
 }

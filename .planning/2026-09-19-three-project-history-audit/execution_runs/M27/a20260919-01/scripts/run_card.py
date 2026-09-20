@@ -101,6 +101,22 @@ def declared_defaults_of(model_registry, model_id):
         return {}
 
 
+def mechanism_prefix(text):
+    """Extract the message prefix a declared mechanism claims, delimited by backticks.
+
+    The frozen declaration reads e.g. "closing_stores=[24] makes the store-count bridge fail:
+    ... so `opening_stores stock-flow balance failed: FY2027` is raised"; the backticked
+    fragment is the product message we require to appear. Returns None if the declaration does
+    not carry exactly one backticked fragment.
+    """
+    if not text:
+        return None
+    parts = text.split("`")
+    if len(parts) != 3 or not parts[1].strip():
+        return None
+    return parts[1].strip()
+
+
 def run(args) -> int:
     attempt_dir = args.attempt_dir or args.attempt
     evidence = os.path.join(attempt_dir, "evidence", args.card)
@@ -115,6 +131,41 @@ def run(args) -> int:
             for case in cases_doc["cases"]:
                 if case["id"] == override["id"]:
                     case.update(copy.deepcopy(override["set"]))
+
+    # ---------------- frozen case-contract gate (review finding P3-2) ----------------
+    # Before this gate the runner ignored cases.json[].expected and the case COUNT, so
+    # rewriting a declaration or deleting a whole negative still produced rc=0. A harness
+    # whose bookkeeping cannot notice a missing case is not verdict-carrying, so a violated
+    # contract is a harness defect: fail loud with rc=1 instead of issuing a verdict.
+    contract = cases_doc.get("case_contract") or {}
+    contract_problems = []
+    if not contract:
+        contract_problems.append("cases.json has no case_contract block")
+    else:
+        declared = contract.get("declared_expected_exception")
+        wrong_declaration = [case["id"] for case in cases_doc["cases"]
+                             if case.get("expected") != declared]
+        if wrong_declaration:
+            contract_problems.append(
+                "cases whose `expected` is not %r: %s" % (declared, wrong_declaration))
+        ids = [case["id"] for case in cases_doc["cases"]]
+        if len(ids) != contract.get("expected_count"):
+            contract_problems.append("case count %d != declared %s"
+                                     % (len(ids), contract.get("expected_count")))
+        if ids != list(contract.get("expected_ids") or []):
+            contract_problems.append("case id list %s != declared %s"
+                                     % (ids, contract.get("expected_ids")))
+        unknown = [i for i in ids if i not in ("NEG-CARD", "N01a", "N01b", "N01c", "N01d",
+                                               "N02", "N03", "N04", "N05a", "N05b",
+                                               "CONT-BREAK")]
+        if unknown:
+            contract_problems.append("unexpected negative ids: %s" % unknown)
+    if contract_problems:
+        sys.stderr.write("HARNESS ERROR (rc=1): frozen case contract violated:\n")
+        for problem in contract_problems:
+            sys.stderr.write("  - " + problem + "\n")
+        sys.stderr.flush()
+        return 1
 
     sys.path.insert(0, args.code_root)
     import model_registry  # noqa: E402
@@ -294,8 +345,30 @@ def run(args) -> int:
         "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
     }
 
+    # ---------------- NEG-CARD mechanism check (review finding P2-1) ----------------
+    # Being rejected is not enough: a negative that is refused by an UNRELATED generic guard
+    # (here the length/type guard) does not exercise the card-specific rule the oracle claims.
+    # The frozen contract declares the mechanism; we only assert the declared MESSAGE PREFIX
+    # appears, which is stable and does not compare against a product-generated expectation.
+    neg_card_mechanism = contract.get("neg_card_declared_mechanism")
+    neg_card = next((e for e in result["negatives"] if e["id"] == "NEG-CARD"), None)
+    prefix = mechanism_prefix(neg_card_mechanism)
+    message = (neg_card or {}).get("message") or ""
+    mechanism_ok = bool(prefix) and prefix in message
+    result["neg_card_mechanism_check"] = {
+        "declared": neg_card_mechanism,
+        "observed_message": (neg_card or {}).get("message"),
+        "expected_substring": prefix,
+        "matched": mechanism_ok,
+        "gating": True,
+        "why": ("the card-specific negative must be refused by the CARD-SPECIFIC guard, not by "
+                "the generic per-year length/type guard; otherwise the oracle.md coverage claim "
+                "is unsupported. A declaration without exactly one backticked message fragment is "
+                "itself a contract violation."),
+    }
+
     def dump(path):
-        with open(path, "w", encoding="utf-8") as handle:
+        with open(path, "w", encoding="utf-8", newline="\n") as handle:
             json.dump(result, handle, ensure_ascii=False, indent=1)
 
     dump(args.out)
@@ -331,12 +404,17 @@ def run(args) -> int:
         print("negative:", entry["id"], entry["verdict"], entry.get("raised"),
               "-", entry.get("message", ""))
     print("negative summary:", result["negative_summary"])
+    print("neg_card_mechanism matched:", result["neg_card_mechanism_check"]["matched"],
+          "expected_substring=", result["neg_card_mechanism_check"]["expected_substring"],
+          "observed=", result["neg_card_mechanism_check"]["observed_message"])
 
     harness_incomplete = result["positive"].get("raised") is not None
     negatives_ok = result["negative_summary"]["passed"] == result["negative_summary"]["total"]
     positive_ok = bool(result.get("tolerances_ok"))
     continuity_ok = bool(result["continuity_positive"].get("ok"))
-    verdict = "pass" if (positive_ok and negatives_ok and continuity_ok and not harness_incomplete) else "fail"
+    mechanism_ok = bool(result["neg_card_mechanism_check"]["matched"])
+    verdict = "pass" if (positive_ok and negatives_ok and continuity_ok and mechanism_ok
+                         and not harness_incomplete) else "fail"
     if harness_incomplete:
         exit_code = 2
     elif verdict == "pass":
@@ -349,6 +427,7 @@ def run(args) -> int:
         "positive_ok": positive_ok,
         "continuity_ok": continuity_ok,
         "negatives_ok": negatives_ok,
+        "neg_card_mechanism_ok": mechanism_ok,
         "defaults_ok_not_gating": result.get("defaults_ok"),
         "defaults_declared_check_not_gating": result["defaults_declared_check"].get("matches_expected"),
         "verdict": verdict,

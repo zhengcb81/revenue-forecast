@@ -1,0 +1,103 @@
+{
+  "card_id": "I-03-D",
+  "attempt_id": "a20260919-01",
+  "parent": "I-03",
+  "status": "review_pending",
+  "completed_steps": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "completed_steps_summary": [
+    "1 事件类型表冻结（decision.md §1：provider_fetch_attempt/bytes_received/raw_saved/registration_succeeded，字段与 I-02 信封共享；fetch_events 数字不作事件替代）",
+    "2 iso 副本（close_gap.py 计划/额度边界 + authorization.py validate_stream_budget；MAX_BATCH_SIZE=8 语义单据化；barrier seam 仅 iso 副本，产品码零改动）",
+    "3 fake provider（samples/fake_provider.py，chunks/谎报/异常/空列表/消费计数，A-internal）",
+    "4 oracle.md 冻结 G-D5..D9（先于实施与运行）",
+    "5 验证脚本 scripts/w03d_cases.py → after/{close-gap-matrix.json,provider-events-ledger.json,remaining-gap-semantic.json,catalog-before-after.json}，36/36 pass",
+    "6 交付齐：binding.json/commands.json/changes.diff/iso_patching.md/raw-cli-logs/before 锚点复验/after 快照"
+  ],
+  "next_step_number": 7,
+  "next_action": "独立 reviewer 按 review_and_handoff.md 固定操作复算 G-D5..D9（特别：gd7 事件累计 120 与 over_cap 标记；gd8 run2 R1-R7 门与 fetch=0；gd5 authorization_probe 真实校验出口拒绝），并保留一个实现者未用变化案例（如 max_items=3 三缺期批选择或 remote_size 超 caps 的预拒）做复验；随后 filing 消费者复核事件信封字段与 I-02 journal 行 schema 的一致性",
+  "input_hashes": {
+    "close_gap.py(production,unchanged)": "117c8166a6c26f3462574b787e0db79c419e00c8b18287f25738948032f475c3",
+    "authorization.py(production,unchanged)": "f858a369ed556d1b110be5ba7be7fa25ae3519fda94296cfe1c4f9e367d55f43",
+    "gap_plan.py(production,unchanged)": "d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f",
+    "inherited_I-03-C-gap_plan.py-override": "f0452bea4a5ca9701947582c6bdf7cd76ffd6501bbaef1f2ca3bcbf642076547",
+    "P0.SHA": "b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24",
+    "POLICY_HASH_P": "7b94b34cbb0596ed87c97f06ff1a337ea55d56fce839a19ee805f91cd58f3ea0"
+  },
+  "current_source_hashes": {
+    "iso/override/close_gap.py": "SEE binding.json (current)",
+    "iso/override/authorization.py": "SEE binding.json (current)",
+    "iso/override/gap_plan.py": "SEE binding.json (current)"
+  },
+  "changed_paths": [
+    "iso/override/close_gap.py",
+    "iso/override/authorization.py",
+    "samples/fake_provider.py",
+    "scripts/w03d_cases.py",
+    "after/*",
+    "raw-cli-logs/*",
+    "binding.json",
+    "commands.json",
+    "changes.diff",
+    "iso_patching.md",
+    "before/*"
+  ],
+  "unchanged_inherited": [
+    "iso/override/gap_plan.py (I-03-C byte-consistent)"
+  ],
+  "commands_executed": [
+    "w03d-run-01 (see commands.json; raw logs in raw-cli-logs/)"
+  ],
+  "raw_exit_codes": [
+    0
+  ],
+  "expected_exit_codes": [
+    0
+  ],
+  "open_questions": [
+    "C15(9-缺口属 max_items>=9) 的 8-截断用同一 min(max_items,8) 选择器实现（未在本卡由独立场景证明，记录于 decision §2 与 iso_patching §2）",
+    "G-D9 空成功/绝本地场景 harness 以名义 allowed_accessions('none-actionable') 顶层收据执行；真实码路径应为 pre-lock 提前复用分支（.行为一致，静态模拟记录）",
+    ".policy epoch 'Q' 变体处理：policy 变更通过 plan-level policy_hash 传播（I-03-C 冻结面），未新增第二策略源"
+  ],
+  "blocked_by": [
+    "I-02 owner：G-D8 的真实生产重试注册（register_existing_raw 生产接线/CLI）未完成 → 本卡按关闭标准不得宣布完全关闭",
+    "I-03-A 遗留：provider 穷尽知识声明字段未落地 → not_published 恒保守 false",
+    "I-07：真实 provider / 生产写入验证不在本卡范围（fake 通过不覆盖 live 资格）"
+  ],
+  "evidence_paths": [
+    "decision.md",
+    "oracle.md",
+    "binding.json",
+    "commands.json",
+    "iso_patching.md",
+    "changes.diff",
+    "after/close-gap-matrix.json",
+    "after/provider-events-ledger.json",
+    "after/remaining-gap-semantic.json",
+    "after/catalog-before-after.json",
+    "before/anchor-hash.txt",
+    "raw-cli-logs/harness-run1.stdout.log",
+    "raw-cli-logs/harness-run1.stderr.log",
+    "../I-03-A/a20260919-01/decision.md",
+    "../I-03-A/a20260919-01/oracle.md",
+    "../I-03-B/a20260919-01/outcome/selection_diff.md",
+    "../I-03-C/a20260919-01/oracle.md",
+    "../I-03-C/a20260919-01/changes.diff",
+    "../I-02-C/a20260919-01/review.md(R1-R7)",
+    "../I-02-C/a20260919-01/iso/override/canonical_writer.py",
+    "%TEMP%\\w03d_a20260919-01\\gd8_raw_saved_then_retry_registration\raw_root\u0007-reg_*.pdf(.source.json)"
+  ],
+  "reviewer_status": "pending review by independent reviewer; do not inherit PASS beyond scope",
+  "case_results": {
+    "G-D5": "PASS x3 (url/filed/policy) — rejected stale_gap_hash, fetch=0, plan hashes documented, auth probe refused at real validation exit",
+    "G-D6": "PASS — 1 fetched / 1 pending_next_batch, remaining_count=1, completed_partial",
+    "G-D7": "PASS x2 — cumulative 120 recorded faithfully, 2 bytes_received events, no raw_saved/registration, commit=0, single-chunk over-cap separately flagged",
+    "G-D8": "PASS — run1 fetch=1 raw=1 reg=0 failed, raw retained; run2 registration_recovered fetch=0 / R1..R7 / registration_succeeded",
+    "G-D9": "PASS x3 — all fetch=0; provider-error keeps local with unknown_provider_failed; empty success → unknown_empty_success; no not_published claims; zero unauthorized"
+  }
+}

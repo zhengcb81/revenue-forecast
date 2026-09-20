@@ -1,29 +1,43 @@
 """Card-agnostic, verdict-carrying product runner for the M-card formula oracles.
 
 Isolation contract
-------------------
+-----------------
 * The product scripts directory comes from --code-root, which MUST be the
   attempt-local isolated snapshot whose sha256 is recorded in source_manifest.json.
 * The only product entry point invoked is ``calculate_registered_model(**spec)``.
-* Expected values come exclusively from evidence/<CARD>/oracle.json, produced by
-  scripts/oracle_<CARD>.py (stdlib only, which never imports the product).
+* Expected values come exclusively from evidence/<CARD>/oracle.json and
+  evidence/<CARD>/cases.json, produced by scripts/oracle_<CARD>.py (stdlib only,
+  which never imports the product).
 * Every negative case gets a NEW deepcopy of the frozen base input, built in
   memory (never round-tripped through a JSON parser).
+
+Frozen-assertion contract for negatives (revision r2, review item P2-1)
+----------------------------------------------------------------------
+A negative case is a PASS only when ALL of the following hold:
+
+  1. an instance of ``ModelRegistryError`` was raised (an ImportError or a file
+     error is a FAIL, never a pass);
+  2. the raised type's NAME equals the case's frozen ``expected`` field, i.e. the
+     runner actually CHECKS that field instead of only copying it into the result.
+     A case whose ``expected`` was edited to e.g. "ValueError" therefore FAILS with
+     FAIL_expected_type_mismatch, which makes the assertion falsifiable by mutation
+     (probe F of scripts/selfcheck_mutations.py);
+  3. when the case carries ``expect_message_contains``, the refusal MESSAGE must
+     contain that substring, so a length or lookup guard cannot stand in for the
+     value-domain or bridge guard that the case is meant to exercise.
 
 Exit codes (verdict-carrying; a bookkeeping-only rc=0 is not allowed)
 --------------------------------------------------------------------
   0 = the positive path matched the independent oracle within tolerance AND the
-      continuity positive passed AND every negative case was rejected with
-      ModelRegistryError
+      continuity positive passed AND every negative case satisfied 1-3 above
   2 = harness/bookkeeping could not produce a verdict (e.g. the positive path
       raised, so there is nothing to compare)
-  3 = the verdict is negative (positive mismatch, continuity failure, or an
-      unrejected negative)
+  3 = the verdict is negative (positive mismatch, continuity failure, an
+      unrejected negative, an expected-type mismatch, or a message mismatch)
 
 The observation block (extra_observations) is deliberately NOT part of the exit
 code: those entries are design observations whose expected value is sometimes
-"no expectation asserted" (e.g. the M08 sign probes, which exist to record which
-formula convention the implementation uses, not to pass or fail it).
+"no expectation asserted".
 """
 
 from __future__ import annotations
@@ -97,12 +111,15 @@ def main():
     parser.add_argument("--code-root", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--run-result-out", default=None)
+    parser.add_argument("--cases", default=None,
+                        help="override the cases.json path (used by the mutation probe)")
     args = parser.parse_args()
 
     evidence = os.path.join(args.attempt, "evidence", args.card)
     input_doc = load_json(os.path.join(evidence, "input.json"))
     oracle_doc = load_json(os.path.join(evidence, "oracle.json"))
-    cases_doc = load_json(os.path.join(evidence, "cases.json"))
+    cases_path = args.cases or os.path.join(evidence, "cases.json")
+    cases_doc = load_json(cases_path)
 
     sys.path.insert(0, args.code_root)
     import model_registry  # noqa: E402
@@ -112,6 +129,7 @@ def main():
         "model_id": oracle_doc["model_id"],
         "code_root": args.code_root,
         "model_registry_file": model_registry.__file__,
+        "cases_path": cases_path,
         "entry_point": "model_registry.calculate_registered_model(**input)",
         "registry_metadata": {},
         "positive": {},
@@ -230,7 +248,8 @@ def main():
         base_key = case.get("base_input", "positive")
         base = copy.deepcopy(input_doc[base_key])
         entry = {"id": case["id"], "kind": case["kind"], "why": case["why"],
-                 "expected": case["expected"], "base_input": base_key}
+                 "expected": case["expected"], "base_input": base_key,
+                 "expect_message_contains": case.get("expect_message_contains")}
         try:
             mutated = apply_case(base, case)
             entry["mutated_input_repr"] = (repr(mutated["drivers"])[:400]
@@ -247,15 +266,36 @@ def main():
             is_import_or_file = isinstance(exc, (ImportError, ModuleNotFoundError, FileNotFoundError))
             entry["is_target_type"] = is_target
             entry["is_import_or_file_error"] = is_import_or_file
-            entry["verdict"] = ("PASS_rejected" if is_target
-                                else ("FAIL_wrong_exception_type" if not is_import_or_file
-                                      else "FAIL_import_or_file_error"))
+            # (2) the frozen `expected` field must actually be CHECKED, not merely copied
+            entry["expected_type_matches_raised"] = (entry["raised"] == case["expected"])
+            # (3) the frozen message requirement, when the case carries one
+            requirement = case.get("expect_message_contains")
+            entry["message_requirement_met"] = (
+                None if requirement is None else bool(requirement in (entry.get("message") or "")))
+            if not is_target:
+                entry["verdict"] = ("FAIL_import_or_file_error" if is_import_or_file
+                                    else "FAIL_wrong_exception_type")
+            elif not entry["expected_type_matches_raised"]:
+                entry["verdict"] = "FAIL_expected_type_mismatch"
+            elif entry["message_requirement_met"] is False:
+                entry["verdict"] = "FAIL_message_mismatch"
+            else:
+                entry["verdict"] = "PASS_rejected"
         result["negatives"].append(entry)
 
     result["negative_summary"] = {
         "total": len(result["negatives"]),
         "passed": sum(1 for e in result["negatives"] if e["verdict"] == "PASS_rejected"),
         "failed": [e["id"] for e in result["negatives"] if e["verdict"] != "PASS_rejected"],
+        "expected_type_mismatch_cases": [e["id"] for e in result["negatives"]
+                                         if e["verdict"] == "FAIL_expected_type_mismatch"],
+        "message_mismatch_cases": [e["id"] for e in result["negatives"]
+                                   if e["verdict"] == "FAIL_message_mismatch"],
+        "message_requirements_checked": sorted(
+            e["id"] for e in result["negatives"] if e.get("expect_message_contains")),
+        "verdict_rule": "PASS_rejected requires isinstance(ModelRegistryError) AND the raised "
+                        "type name equal to cases.json `expected` AND, when present, "
+                        "expect_message_contains to be a substring of the message",
     }
 
     def dump(path):
@@ -266,6 +306,7 @@ def main():
 
     print("code_root:", result["code_root"])
     print("model_registry_file:", result["model_registry_file"])
+    print("cases_path:", result["cases_path"])
     print("registry formula:", result["registry_metadata"].get("formula"))
     print("registry required:", result["registry_metadata"].get("required"))
     print("registry optional:", result["registry_metadata"].get("optional"))
@@ -288,6 +329,8 @@ def main():
               obs.get("message", ""))
     for entry in result["negatives"]:
         print("negative:", entry["id"], entry["verdict"], entry.get("raised"),
+              "expected_type_checked=", entry.get("expected_type_matches_raised"),
+              "message_requirement_met=", entry.get("message_requirement_met"),
               "-", entry.get("message", ""))
     print("negative summary:", result["negative_summary"])
 

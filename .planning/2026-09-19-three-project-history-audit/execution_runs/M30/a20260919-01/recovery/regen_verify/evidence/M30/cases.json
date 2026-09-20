@@ -1,0 +1,173 @@
+{
+ "card_id": "M30",
+ "model_id": "finite_adoption",
+ "first_required_driver": "opening_unserved_market",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "driver": "closing_unserved_market",
+   "index": 0,
+   "value": {
+    "__float__": 351
+   }
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "driver": "opening_unserved_market",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   }
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01b: non-finite value nan",
+   "driver": "opening_unserved_market",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   }
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01c: non-finite value inf",
+   "driver": "opening_unserved_market",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   }
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01d: non-finite value -inf",
+   "driver": "opening_unserved_market",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   }
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "driver": "opening_unserved_market",
+   "value": []
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "driver": "opening_unserved_market"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ]
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "driver": null,
+   "value": []
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "driver": null,
+   "value": {
+    "__bool__first__": true
+   }
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_driver_multi",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "why": "stock-flow continuity break for this card (oracle.md section 4)",
+   "driver": null,
+   "value": {
+    "opening_unserved_market": [
+     500,
+     351
+    ],
+    "closing_unserved_market": [
+     350,
+     351
+    ]
+   }
+  }
+ ],
+ "extra_observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "value": 999,
+   "base_input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "why": "the bridge calculator deletes base_revenue; design observation only, not a pass condition"
+  },
+  {
+   "id": "OBS-RATE-ONE",
+   "kind": "input_replay",
+   "input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "expectation": "replays the frozen card input so the runner's own reading is reproducible: 200 x 3 = 600",
+   "why": "finite_adoption has no adoption_rate driver at all (the card's own negative edits closing_unserved_market); this replay re-reads the frozen input instead of inventing a driver"
+  },
+  {
+   "id": "OBS-TOLERANCE-2Y",
+   "kind": "set_driver",
+   "driver": "opening_unserved_market",
+   "value": [
+    500,
+    350.0000000001
+   ],
+   "base_input": "continuity_positive",
+   "also_set_driver": {
+    "closing_unserved_market": [
+     350,
+     350.0000000001
+    ]
+   },
+   "expectation": "the continuity check uses math.isclose(rel_tol=1e-9, abs_tol=1e-9), so a 1e-10 imbalance in a balancing year must be accepted: revenue stays [600, 0]",
+   "why": "probes the tolerant side of the continuity rule whose strict side is CONT-BREAK"
+  }
+ ]
+}

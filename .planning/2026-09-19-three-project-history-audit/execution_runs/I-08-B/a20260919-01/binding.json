@@ -212,5 +212,85 @@
       "disappeared_failures": 0,
       "note": "the numbers are PARSED from the two transcripts rather than typed in, so they cannot drift from the runs; the nodeid-level comparison lives in after/c8_failure_diff.txt"
     }
+  },
+  "documentation_edit_ledger": {
+    "added_because": "independent review round 2, N2: oracle.md was edited after the first test runs and binding.json had been re-finalised, so the post-edit hash was the recorded one. This ledger makes every documentation edit, its timing and its hash traceable instead of leaving the earlier value untraceable.",
+    "append_only": true,
+    "chronology_source": "file mtimes, captured in after/c23_chronology.stdout.txt",
+    "key_timeline": {
+      "02:35:13": "before/cmd-run-red1-pytest.stdout.txt (RED evidence captured)",
+      "02:35:30": "before/cmd-run-red2-probe.stdout.txt (RED evidence captured)",
+      "03:21:15": "last implementation write to revenue_core.py",
+      "03:45:38": "round-1 code fix: trust_anchor.py (E30)",
+      "03:49:26": "round-1 errata: oracle.md EDITED AFTER THE RUNS",
+      "03:55:04": "after/c8_full_suite.stdout.txt (post-round-1 census)",
+      "03:58:32": "binding.json re-finalised",
+      "04:09:50": "round-2 code fix: attestation_protocol.py (verifier commitment)",
+      "04:10:45": "after/c22_red_verifier.stdout.txt (RED proof for the round-2 fix)"
+    },
+    "edits": [
+      {
+        "document": "oracle.md",
+        "frozen_before_implementation": true,
+        "first_freeze_hash": "08281f2d80ac83c1ef23f801e097b5089fd096af23d372dd7f4d2852b576047a",
+        "note_on_first_hash": "this is the value the I-08-A handoff recorded for the I-08-A oracle; the I-08-B oracle's own first hash was measured by review round 1 as 8d6dc81b (its pre-round-1 value). Both are listed so no earlier value is lost.",
+        "review_round_1_measured_hash": "8d6dc81b",
+        "edited_after_first_runs": true,
+        "current_hash": "60a86ef8aabc05b8b4dc807396776d6dbe1012ce7c2e212d7441682dc069c56f",
+        "current_mtime": "2026-09-20T04:11:51",
+        "what_changed": "round 1 errata: the sys.executable provider_calls==0 exception, the CRLF/LF precision of changes.diff reproduction, and mtime-is-not-evidence. Round 2 added: the 13-file count, this provenance note, and the E30 leading-segment note.",
+        "expectations_changed": false,
+        "why_not_a_weakened_oracle": "the edits changed DESCRIPTION only: no assertion's expected value moved, and the new wording is WEAKER than the old (it admits the byte-level claim does not hold)",
+        "governance_status": "OWNER DECISION REQUIRED: whether post-hoc editing of a frozen oracle is acceptable. The implementer registers the event and does NOT rule on it."
+      },
+      {
+        "document": "decision.md",
+        "frozen_before_implementation": false,
+        "edited_after_first_runs": true,
+        "current_hash": "5d7a9669da3d4026f74d6aa07b4379a9fad3d33b9db1953f2f5f44b2f629591f",
+        "current_mtime": "2026-09-20T03:50:48",
+        "what_changed": "round 1: the outcome-appendix prohibition, the provider-argv scope, the widened projection, E29/E30 reachability, both conflict resolutions. Round 2: the E30 leading-segment note, and the round-2 P2-2 finding and its fix.",
+        "expectations_changed": false,
+        "note": "decision.md is the implementer's own narrative; it is expected to grow after review"
+      },
+      {
+        "document": "review.md",
+        "frozen_before_implementation": false,
+        "edited_after_first_runs": true,
+        "current_hash": "9f397969dd7d7d415df1fd12d2bf6c5542d668f3d4a6cb2a9faa14a6f9334347",
+        "current_mtime": "2026-09-20T03:57:48",
+        "what_changed": "round 1: the withdrawn 32/32 coverage claim replaced by a per-code table, section 7 dispositions. Round 2: the same table extended, and the round-2 dispositions.",
+        "expectations_changed": false
+      },
+      {
+        "document": "handoff.json",
+        "frozen_before_implementation": false,
+        "edited_after_first_runs": true,
+        "current_hash": "42c07d3595c4f80e42d49793f4b918552c2a35c9b38febaa36d0cc13e5670972",
+        "current_mtime": "2026-09-20T03:56:27",
+        "what_changed": "round 1 and round 2 corrections (command count, coverage, census, file counts)",
+        "expectations_changed": false
+      },
+      {
+        "document": "commands.json",
+        "frozen_before_implementation": true,
+        "edited_after_first_runs": true,
+        "current_hash": "42613244eab481f10839ce4b09d3126b401f8e9affa8d8a4a0be7042a8cac80c",
+        "current_mtime": "2026-09-20T03:56:27",
+        "what_changed": "the bound commands and their FROZEN expected return codes were written before implementation; afterwards only the recorded raw results, the actual business results and two additional checks (c15, c16) were added. No expected value was changed to match an observation.",
+        "expectations_changed": false,
+        "expected_values_frozen_before_runs": true
+      },
+      {
+        "document": "changes.diff",
+        "frozen_before_implementation": false,
+        "edited_after_first_runs": true,
+        "current_hash": "44f742bcaf1ff8389647a2ac87440a6a10cfb2a3267035aa73c3abf489dd4e7c",
+        "current_mtime": "2026-09-20T03:52:20",
+        "what_changed": "regenerated after each source edit so it always mirrors iso/rf",
+        "expectations_changed": false
+      }
+    ],
+    "implementer_ruling": "NOT MADE. Whether a frozen oracle may be edited after runs is an owner decision; the implementer only records that it happened, what changed, and that no expected value moved."
   }
 }

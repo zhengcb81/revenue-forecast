@@ -1,0 +1,57 @@
+ROUND-5 ASSERTION MUTATION EVIDENCE (closeout erratum E2)
+generated_by: sim/verify_r5_assertions.py
+the CURRENT expressions below are extracted from sim/cases_timeout.py, not retyped
+
+EXTRACTED FROM THE SHIPPED SOURCE
+  [winners]
+      set(winners) | set(joiners) == set(succeeded)
+                                and not (set(winners) & set(joiners))
+  [refcount]
+      all(lease in successful_ids for lease in view["entries"])
+                                and all(lease not in timed_out_ids for lease in view["entries"])
+                                and view["entries"] != []
+  [wait]
+      all(envelopes[tag].get("lock_wait") is not None for tag in succeeded)
+                                and all(0.0 <= value <= budget + 0.001
+                                        for value in wait_seconds.values())
+
+MUTATION 1a - the historical SUB-CLAUSE asserts nothing (chained comparison)
+  the sub-clause reads like 'no foreign lease in the refcount', but evaluates to a
+  constant: `lease in successful_ids is False` == `(lease in successful_ids) and
+  (successful_ids is False)`, and `successful_ids is False` is never True.
+  -> 4/4 scenarios returned True: the sub-clause can never fail
+
+MUTATION 1b - the historical WHOLE clause has a blind spot the repaired one closes
+  the old conjunct 2 (`all(lease in successful_ids ...)`) only catches a stray lease
+  while `succeeded` and `timed_out` stay disjoint.  If the classification ever puts a
+  timed-out participant into `succeeded` too, the old clause passes:
+  historical=True  repaired=False
+
+
+MUTATION 2 - the queue-wait reporter stops emitting lock_wait
+  historical=True  repaired=False
+
+MUTATION 3 - the reported wait exceeds the lock budget
+
+MUTATION 4 - action bookkeeping double-counts and hides a third action
+  historical=True  repaired=False
+
+SUMMARY: 16/16 expectations held
+  [OK] sub-clause returns True even when a timed-out lease (L3) is in the refcount (vacuous) (expected True, got True)
+  [OK] sub-clause returns True even when the refcount is empty (vacuous) (expected True, got True)
+  [OK] sub-clause returns True even when a nonsense lease id is in the refcount (vacuous) (expected True, got True)
+  [OK] sub-clause returns True even when every participant is in the refcount (vacuous) (expected True, got True)
+  [OK] historical WHOLE clause stays GREEN although a timed-out lease (L3) is in the refcount (blind spot) (expected True, got True)
+  [OK] repaired explicit quantifier turns RED on the same view (expected False, got False)
+  [OK] repaired clause is GREEN on the healthy view (expected True, got True)
+  [OK] repaired clause turns RED on an empty refcount (entries != [] conjunct) (expected False, got False)
+  [OK] historical literal True stays GREEN (a recorder, not an assertion) (expected True, got True)
+  [OK] repaired clause turns RED when lock_wait is missing (expected False, got False)
+  [OK] repaired clause turns RED when the wait exceeds the budget (expected False, got False)
+  [OK] repaired clause is GREEN on the healthy report (expected True, got True)
+  [OK] historical length-only clause stays GREEN on the miscounted set (2+1 == 3, but P2's action is unrecognised) (expected True, got True)
+  [OK] repaired set clause turns RED on the miscounted set (expected False, got False)
+  [OK] repaired set clause is GREEN on the healthy set (expected True, got True)
+  [OK] repaired set clause turns RED when a tag is in both winners and joiners (expected False, got False)
+
+VERDICT: ASSERTIONS ARE NOW FALSIFIABLE (every injected defect turns the shipped clause red)

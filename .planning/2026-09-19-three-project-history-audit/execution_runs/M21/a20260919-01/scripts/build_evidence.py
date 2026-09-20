@@ -222,7 +222,11 @@ def main() -> int:
         "runner": "scripts/run_card.py",
         "runner_sha256": sha256(os.path.join(attempt, "scripts", "run_card.py")),
         "shared_with": "the same byte-identical runner is used by all four attempts of this "
-                       "batch; sha256 identical across M21/M22/M23/M24",
+                       "batch; sha256 identical across M21/M22/M23/M24. Revision r2 changed this "
+                       "runner for review item P2-1 (frozen `expected` is now checked), so it no "
+                       "longer matches the runner held by the M05-M20 / M25-M31 attempts; the "
+                       "pre-r2 runner of THIS batch is preserved unmodified as "
+                       "before/run_card_prereview.py",
         "exit_code_selfcheck": os.path.join("recovery", "selfcheck", "selfcheck_result.json"),
     }
     dump(os.path.join(ev, "run_result.json"), run)
@@ -461,6 +465,7 @@ def main() -> int:
         "oracle_md_full_sha256_now": previous_revision.get("oracle_md_full_sha256_now"),
         "hashes_are_over_raw_bytes": previous_revision.get("hashes_are_over_raw_bytes"),
         "self_corrections": previous_revision.get("self_corrections", {}),
+        "review_items_r2": previous_revision.get("review_items_r2", {}),
         "items": previous_revision.get("items", {}),
         "note": "the frozen body of oracle.md (sections 0-11) is byte-unchanged since it was "
                 "written before the product run; the run-reconciliation section was APPENDED "

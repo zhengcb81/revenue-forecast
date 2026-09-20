@@ -120,3 +120,111 @@ W1：观测 00:00–00:29（30 个 60 s 样本）+ 结束后 quick_check 00:29�
 ## 11. 状态
 
 `review_pending`。未自签 accepted；未授予 formula / disclosure_adaptation / accuracy 之外的任何额外资格，且本卡本身**不授予**真实自然观察资格。
+
+---
+
+# §5 独立 reviewer 裁决（独立 reviewer session）
+
+> 本节由**独立 reviewer session**（DSH agent session `session-b0e4a430ca7d`，由父 session `session-bfecd191-fbc3-4a66-8ed1-6562479bf102` 委派；
+> 审阅时刻 `2026-09-20T03:15Z` 前后）在尝试封存后追加。本节的插入不改动本文 §1–§11 任何一字
+> （写入前副本 `review.md` sha256 = `5f6e5887…`，追加后见 `handoff.json` 之外的 reviewer 记录）。
+> 完整武器化证据、命令与原始输出见 reviewer 报告 `REPORT.md`（sha256 `fdb93aa2f7706b46b104192b094458d220d0b528ea6ca67e87de7c0416a517eb`）。
+
+## 结论：`changes_required`
+
+**授予（仅记录性，不构成 accepted 资格）：** 计时/时间字段**分列口径**与"重叠取并集、不相加"的算法，
+在冻结的 W1–W7 上正确且可独立复现；合成输入 1740/480/2220（29≠37）的算术与判定正确；
+`R-SUM-OVERLAP` / `R-NO-SAMPLES` / `R-SAMPLE-OUTSIDE`（含 ±1 s 严格边界）行为正确；
+容差在 tol ∈ [1 s, 86 s] 稳定区间内行为正确；日历 17 行映射与全部 pending 正确；
+生产零改动、冻结时序、变异 15/15 单行回退、CA-206 生产侧外锚点均经独立复核成立；
+实现者自述与弱项披露**诚实**（`handoff.json` 仍 `review_pending`、未自签、FIXCYCLE 覆盖事件已如实登记）。
+
+**不授予：** ①计时/分类器在冻结输入**之外**的正确性（下述 P1/P2 反例已实测被 accept）；
+②任何真实自然观察资格；③真实 UI 即时性资格；④formula / disclosure_adaptation / accuracy；⑤产物进入生产树。
+
+## 阻断项（must fix）
+
+**P1（严重）`claim.basis` 未做枚举校验 ⇒ 计时判据整体可被绕过。**
+`iso/natural_window.py:157-178` 的 `if/elif` 链没有 `else`，当 `basis` 取未知值 / `""` / `null` / 缺失时 `allowed` 保持 `None`，
+第 177 行的 J11 一并失效。独立实测（我在 attempt 之外自造 case，不在冻结 20 内）：
+`B1 basis='wall_clock' claim=2220 → accept_claim（refusals=[]）`；
+`B2 basis='' claim=99999 → accept_claim`；`B3 basis 缺失 claim=99999 → accept_claim`；`B4 basis=None claim=2220 → accept_claim`；
+负对照 `B5 basis='command_total' → reject（R-TOTAL-AS-OBS）`（证明不是 SUT 整体失效，而是取值域未校验）。
+**修法：** 显式校验 `basis ∈ {sample_span, command_total, observation_plus_quick_check, sum_of_windows, union_of_windows}`，
+未知/缺失即拒（建议新增 `R-BASIS-UNKNOWN`）；并在 `harness/cases.json` 增 2 条反例。
+
+**P2（严重）`union_of_windows` / `sum_of_windows` 把 quick_check 计入自然观察时长。**
+`iso/natural_window.py:137-147`：无显式 `windows[]` 时 `intervals = [观察窗] + [quick_check 窗]`，
+`union = _measure_union(intervals)`；而 J3 只在 `basis == "observation_plus_quick_check"` 时触发 ⇒ 换 basis 名即可绕过。独立实测：
+`P1（无 windows[]，主张 2220 union_of_windows）→ accept`；
+`P2（同事实、诚实主张 1740）→ reject（R-CLAIM-EXCEEDS）`（**方向反了：诚实值被判不合规**）；
+`P4/P5（把 quick_check 时段改名为第二个观察窗）→ accept`；`P6（同事实、basis=sample_span）→ reject`（负对照）。
+再以 attempt 自带 runner + reviewer 自写期望跑 8 条新 case：
+`{"ok": false, "case_count": 8, "mismatch_count": 2, "accepted_ineligible_count": 1, "sut_raw_returncode": 0, "sut_sha256": "495a4411…"}`，
+命中 `X6: expected=reject_claim got=accept_claim`。
+**此漏洞已烧进冻结期望：** W1 冻结的 `union_seconds = 2220` 与 J3 的严格读法冲突（严格读法下应为 1740），
+故修 P2 必须**同时改 oracle 期望**，不能只改实现。
+**修法（二选一，须显式选定并写入 oracle）：** 甲）并集只由观察区间构成，W1 的 `union_seconds` 期望改 1740；
+乙）保留机械并集，但新增"并集不得覆盖任何 quick_check 区间"的判据（触发 `R-QC-IN-OBS`）并加 2 条反例。
+
+## 记录项（不阻断）
+
+- **P3-a** `R-SAME-INSTANT`(J10a) 对"同一 UTC 日、不同 run_id、不同瞬时"静默断链：实测 11:00 与 12:00 两条
+  → `daily_count=1`、**无拒绝码**。不会误拒，但会把真实同日两次运行降级计数。**保守失败，非阻断**；
+  建议在链规则补诊断字段使其可见。
+- **P3-b** weekly / monthly"全过期"无独立反例（实现者自报准确）。reviewer 补跑 Q3（weekly 最新 6.9 天前）/ Q4（monthly 40 天前）
+  证明**代码路径存在且行为符合 oracle**，但冻结集缺反例；建议补 2 条**带 `status="complete"` 主张**的 case，
+  否则只能证明"不崩"而非"会拒"。
+- **P3-c** `R-CLAIM-EXCEEDS` 跨 timer / calendar 复用：oracle §2 已预登记，`handoff.json:126` 主动请打，**不判缺陷**；建议后续拆码。
+- **P3-d** `after/cmd-CASES` 目录 mtime `03:05:02Z` 高于内部报告内嵌 `generated_at_utc 03:00:12Z`，
+  系事后写 `FIXCYCLE.md` 抬高目录 mtime；在 FIXCYCLE 成因链下时间线自洽。
+- **P3-e** 口径澄清：`PLAN\reviews` **目录** mtime = `2026-09-19T08:14:20.0835265Z`（本地 09:14:20），
+  目录内**最新文件** `second_wave\final_review_checks.json` = `2026-09-19T09:05:32Z`（本地 10:05:32）。两个值都对，是不同对象。
+- **P3-f** RF HEAD 在审阅期间由 `e9544495…` 推进到 `ddc81ab6…`（owner `2026-09-20T04:09:31+01:00` 提交，含 120 个 I-14-B attempt 路径）。
+  复核 attempt 内 8 个关键文件哈希**逐字节未变**，该 commit 只作留档。**副作用**：attempt 目录的 `??` porcelain 足迹已被该 commit 吸收，
+  现在查该路径 porcelain 为空 —— 后人不得据此推断"没有足迹"。
+
+## D-1 —— **已由本 reviewer 填写：`frozen_tolerance_seconds = 5`**
+
+按"合法下界 / 危险上界"两处独立约束定值，而非照抄实现者提议：
+L1（诚实锚点，捕获延迟 1 s）实测 `tol=0.9 拒 / tol=1.0 起通过` ⇒ 容差 <1 s 会误杀**合法**即时截图（下界 1 s）；
+L2（历史累计等待 29/88/207，手算 max error 87 落在标签 120）实测 `tol ≤ 86 拒 / tol = 87 起通过`
+⇒ tol ≥ 87 s 会让**已复现的历史缺陷**通过（上界 86 s）。**合法区间 [1 s, 86 s]，取 5 s。**
+`capture_latency_tolerance_seconds` 同为 5。判据为 `max_error > tol`（严格），tol=5 放行误差 ≤5 s，与整数秒标签语义一致。
+
+填写行：`oracle.md` L128–L131（`frozen_by` / `frozen_at_utc = 2026-09-20T03:15:44Z` / `frozen_tolerance_seconds = 5` / `reviewer_signature_line`）。
+改动脉络：`oracle.md` sha256 `093899bc…` → `f8082205…`，18794 → 18858 字节，**行数 209 → 209**，
+逐行比对 `identical = 205`、`differing = [128,129,130,131]`（恰好 4 行）；`proposed` 两行（L126/L127）保留原文未动。
+填前副本留档于 reviewer 报告目录（sha256 = 原 `093899bc…`）。
+
+**签字不等于可以开真实窗口。** D-1 恢复规则三条件中：(a) reviewer 冻结容差 ✅ 本次已签；
+(b) 预布置记录器就位并产出带 hash 的登录锚点事件 ❌（探测 0/4002 候选）；
+(c) owner 显式授权在该窗口启动 worker/UI ❌。另加两条 reviewer 前置：**先修 P1**；
+真实窗口须**另开 attempt + 另开 binding**，**不得**改写本 attempt 的 blocked 记录。
+⇒ **真实 30/60/120 格维持 `blocked`；签字只把它从"blocked"变为"可开卡"，不等于已运行。**
+
+## 其余 decision 项处置
+
+- **D-2**：**维持 blocked，不授权**。独立确认 `ffmpeg.exe`（`C:\Users\郑曾波\ffmpeg\ffmpeg-8.1.2-essentials_build\bin\ffmpeg.exe`）
+  与 `playwright.exe`（`C:\Miniconda\Scripts\playwright.exe`）存在，而隔离解释器内 `playwright` **不可导入**
+  （该 exe 是 Miniconda 的 CLI，缺对应 Python 包）。用它们建捕获路径属 owner 的专业决定 + 新卡。
+- **D-3**：**不裁**，归 I-17-A 的 reviewer。17 行全 pending 是正确处置；`latest daily manifest ok=false` 未被计入。
+- **D-4**：**复核通过，维持**。BEFORE 版本 `sut_raw_returncode = 0` 却接受 12 个不合规主张，自指契约的论证成立。
+- **D-5**：**复核通过，维持**。实测单样本 + 主张 0 s → `R-NO-SAMPLES`。
+- **D-6**：**复核通过，维持**。`RF/tools/` 下只有 `slo_probe.py`（mtime 2026-08-13，早于本 attempt）；
+  `slo_probe_patched.py` 仅存在于 I-14-A attempt 的两个目录内，**未提升**。
+
+## 待 owner / 其他 reviewer
+
+1. **owner**：D-2 是否投入建设 UI 捕获路径（含显式授权启动 worker/UI 窗口）。
+2. **本卡实现者**：修 **P1**（必做）、**P2**（必做，且需同步改 W1 的 `union_seconds` 期望或新增 J3 判据）。
+3. **I-17-A reviewer**：D-3，哪些原自然窗口保留；`assurance/runs/*` 现存产物不得当周期完成。
+4. **owner / 后续卡**：P3-a/b/c 记录项；`RF/tests/test_ca206_soak_window.py` 的可攻击性已复现但**未修**（属 I-17-A 范围）。
+
+## reviewer 未能验证
+
+物理机真实截图能力（未运行 ffmpeg/playwright、非交互会话）；`catalog.sqlite3` 完整 sha256
+（46.3 GB 超出 `Get-FileHash` 时限，仅核尺寸 `49,677,344,768 B` / mtime `2026-09-19T06:31:35Z` / `-wal` 0 B）；
+被覆盖的第一次 AFTER 报告原文（已不存在，故无法逐字节复核 `mismatch_count = 3`）；
+`oracle.md` 之前那次写入是否"只追加"（无改动前副本，仅能证 mtime 时序自洽）；
+runner 两版之间除 `REQUIRED_KEYS` 外是否还有差异（无旧版源码；但可逻辑证明新增检查只会变严或不变）。

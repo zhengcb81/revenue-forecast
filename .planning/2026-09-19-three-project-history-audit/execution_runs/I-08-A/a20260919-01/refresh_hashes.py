@@ -37,13 +37,14 @@ PRODUCTS = [
     "check_r3_pairs.py",
     "check_r4_citations.py",
     "check_r4_citation_targets.py",
+    "check_r4_final_citations.py",
+    "check_r4_anchors.py",
 ]
 HELPERS = [
     "iso/probe_attestation.py",
     "iso/c2_source_hashes.py",
     "iso/c7_baseline_recompute.py",
     "iso/c9_compare.py",
-    "iso/r4_citation_audit.py",
 ]
 ANCHORS = [
     "iso/rf/scripts/revenue_core.py",

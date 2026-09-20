@@ -1,0 +1,2782 @@
+{
+ "card_id": "M31",
+ "enumerated_by": "scripts/enumerate_registry.py",
+ "enumeration_rule": "counts below are produced by this script from the isolated snapshot; no count is copied from prose",
+ "card_model_map": {
+  "M29": "commercial_launch",
+  "M30": "finite_adoption",
+  "M31": "inventory_sellthrough"
+ },
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts",
+ "registry_module_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "source_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "totals": {
+  "models": 31,
+  "required_drivers": 125,
+  "optional_drivers": 40,
+  "ratio_drivers": 41,
+  "revenue_per_activity_and_per_unit_drivers": 23,
+  "optional_drivers_absent_from_declared_defaults": 31
+ },
+ "signed_drivers": [
+  "ancillary_revenue",
+  "contract_changes",
+  "fee_revenue",
+  "fixed_revenue",
+  "milestone_revenue",
+  "other_revenue",
+  "performance_fee_revenue",
+  "royalty_revenue",
+  "service_revenue"
+ ],
+ "models_with_explicit_driver_bounds": [
+  "aum_fee_bridge",
+  "bank_revenue",
+  "project_backlog",
+  "renewable_generation",
+  "reserve_depletion",
+  "store_cohorts"
+ ],
+ "ratio_drivers_whose_effective_bound_is_not_0_1": [
+  {
+   "driver": "bank_revenue.asset_yield",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "declared_bounds": [
+    null,
+    null
+   ],
+   "signed_driver": false,
+   "mechanism": "explicit declared bounds"
+  },
+  {
+   "driver": "bank_revenue.funding_cost",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "declared_bounds": [
+    null,
+    null
+   ],
+   "signed_driver": false,
+   "mechanism": "explicit declared bounds"
+  },
+  {
+   "driver": "direct_growth.growth_rate",
+   "effective_bounds": [
+    -1.0,
+    "inf"
+   ],
+   "declared_bounds": null,
+   "signed_driver": false,
+   "mechanism": "other"
+  },
+  {
+   "driver": "store_cohorts.new_store_productivity",
+   "effective_bounds": [
+    0.0,
+    "inf"
+   ],
+   "declared_bounds": [
+    0.0,
+    null
+   ],
+   "signed_driver": false,
+   "mechanism": "explicit declared bounds"
+  }
+ ],
+ "revenue_per_activity_and_per_unit_default_bound": [
+  0.0,
+  "inf"
+ ],
+ "revenue_per_activity_and_per_unit_exceptions": [
+  {
+   "driver": "renewable_generation.contract_price_per_mwh",
+   "dimension": "revenue_per_unit",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "declared_bounds": [
+    null,
+    null
+   ]
+  },
+  {
+   "driver": "renewable_generation.merchant_price_per_mwh",
+   "dimension": "revenue_per_unit",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "declared_bounds": [
+    null,
+    null
+   ]
+  }
+ ],
+ "optional_drivers_silently_defaulted_to_zero": [
+  {
+   "driver": "advertising.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "asset_management.performance_fee_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "asset_management.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "aum_fee_bridge.recognized_performance_fees",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "bank_revenue.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "capacity_utilization.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "cohort_subscription.usage_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    0.0,
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "delivery_pipeline.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "gaming.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "infrastructure.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "insurance_service.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "licensing_commercial.milestone_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "licensing_commercial.royalty_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "licensing_commercial.service_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "milestone_royalty.milestone_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "milestone_royalty.service_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "project_backlog.backlog_remeasurements",
+   "dimension": "backlog",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "real_estate_rental.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "renewable_generation.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "reserve_depletion.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "reserve_depletion.reserve_revisions",
+   "dimension": "reserve_volume",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "resource.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "retail_franchise.franchise_system_sales",
+   "dimension": "revenue",
+   "effective_bounds": [
+    0.0,
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "retail_franchise.recognized_fee_rate",
+   "dimension": "ratio",
+   "effective_bounds": [
+    0.0,
+    1.0
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "retail_franchise.supply_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    0.0,
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "services.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "subscription.usage_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    0.0,
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "subscription_arr_bridge.usage_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    0.0,
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "transport.ancillary_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "unit_sales.other_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  },
+  {
+   "driver": "usage_platform.fixed_revenue",
+   "dimension": "revenue",
+   "effective_bounds": [
+    "-inf",
+    "inf"
+   ],
+   "mechanism": "drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)) in calculate_registered_model -> an omitted value becomes 0.0, and 'no such item' becomes indistinguishable from 'item not found'"
+  }
+ ],
+ "card_focus": {
+  "model_id": "inventory_sellthrough",
+  "required": [
+   "opening_inventory",
+   "saleable_production",
+   "purchased_units",
+   "scrapped_units",
+   "sold_units",
+   "closing_inventory",
+   "net_revenue_per_unit"
+  ],
+  "optional": [],
+  "defaults": {},
+  "ratio_drivers": [],
+  "formula": "revenue = sold_units * net_revenue_per_unit; closing_inventory = opening_inventory + saleable_production + purchased_units - scrapped_units - sold_units",
+  "drivers": {
+   "opening_inventory": {
+    "dimension": "quantity",
+    "declared_bounds": null,
+    "effective_bounds": [
+     0.0,
+     "inf"
+    ],
+    "in_declared_defaults": false,
+    "declared_default": null
+   },
+   "saleable_production": {
+    "dimension": "quantity",
+    "declared_bounds": null,
+    "effective_bounds": [
+     0.0,
+     "inf"
+    ],
+    "in_declared_defaults": false,
+    "declared_default": null
+   },
+   "purchased_units": {
+    "dimension": "quantity",
+    "declared_bounds": null,
+    "effective_bounds": [
+     0.0,
+     "inf"
+    ],
+    "in_declared_defaults": false,
+    "declared_default": null
+   },
+   "scrapped_units": {
+    "dimension": "quantity",
+    "declared_bounds": null,
+    "effective_bounds": [
+     0.0,
+     "inf"
+    ],
+    "in_declared_defaults": false,
+    "declared_default": null
+   },
+   "sold_units": {
+    "dimension": "quantity",
+    "declared_bounds": null,
+    "effective_bounds": [
+     0.0,
+     "inf"
+    ],
+    "in_declared_defaults": false,
+    "declared_default": null
+   },
+   "closing_inventory": {
+    "dimension": "quantity",
+    "declared_bounds": null,
+    "effective_bounds": [
+     0.0,
+     "inf"
+    ],
+    "in_declared_defaults": false,
+    "declared_default": null
+   },
+   "net_revenue_per_unit": {
+    "dimension": "revenue_per_unit",
+    "declared_bounds": null,
+    "effective_bounds": [
+     0.0,
+     "inf"
+    ],
+    "in_declared_defaults": false,
+    "declared_default": null
+   }
+  }
+ },
+ "per_model": [
+  {
+   "model_id": "advertising",
+   "required": [
+    "eligible_impressions",
+    "fill_rate",
+    "revenue_per_thousand_impressions"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "fill_rate"
+   ],
+   "formula": "revenue = eligible_impressions / 1000 * fill_rate * revenue_per_thousand_impressions + other_revenue",
+   "drivers": {
+    "eligible_impressions": {
+     "dimension": "activity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "fill_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "revenue_per_thousand_impressions": {
+     "dimension": "revenue_per_activity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "asset_management",
+   "required": [
+    "average_aum",
+    "management_fee_rate"
+   ],
+   "optional": [
+    "performance_fee_revenue",
+    "other_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "management_fee_rate"
+   ],
+   "formula": "revenue = average_aum * management_fee_rate + performance_fee_revenue + other_revenue",
+   "drivers": {
+    "average_aum": {
+     "dimension": "monetary_balance",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "management_fee_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "performance_fee_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "aum_fee_bridge",
+   "required": [
+    "opening_aum",
+    "inflows",
+    "outflows",
+    "market_change",
+    "closing_aum",
+    "inflow_revenue_fraction",
+    "outflow_lost_fraction",
+    "market_change_revenue_fraction",
+    "management_fee_rate"
+   ],
+   "optional": [
+    "recognized_performance_fees"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "inflow_revenue_fraction",
+    "management_fee_rate",
+    "market_change_revenue_fraction",
+    "outflow_lost_fraction"
+   ],
+   "formula": "revenue = (opening_aum + inflows*inflow_revenue_fraction - outflows*outflow_lost_fraction + market_change*market_change_revenue_fraction) * management_fee_rate + recognized_performance_fees",
+   "drivers": {
+    "opening_aum": {
+     "dimension": "monetary_balance",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "inflows": {
+     "dimension": "monetary_balance",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "outflows": {
+     "dimension": "monetary_balance",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "market_change": {
+     "dimension": "monetary_balance",
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closing_aum": {
+     "dimension": "monetary_balance",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "inflow_revenue_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "outflow_lost_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "market_change_revenue_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "management_fee_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "recognized_performance_fees": {
+     "dimension": "revenue",
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "bank_revenue",
+   "required": [
+    "average_earning_assets",
+    "asset_yield",
+    "average_interest_bearing_liabilities",
+    "funding_cost",
+    "fee_revenue"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "asset_yield",
+    "funding_cost"
+   ],
+   "formula": "revenue = average_earning_assets * asset_yield - average_interest_bearing_liabilities * funding_cost + fee_revenue + other_revenue",
+   "drivers": {
+    "average_earning_assets": {
+     "dimension": "monetary_balance",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "asset_yield": {
+     "dimension": "ratio",
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "average_interest_bearing_liabilities": {
+     "dimension": "monetary_balance",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "funding_cost": {
+     "dimension": "ratio",
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "fee_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "capacity_utilization",
+   "required": [
+    "capacity",
+    "utilization",
+    "yield",
+    "unit_revenue"
+   ],
+   "optional": [
+    "timing_factor",
+    "other_revenue"
+   ],
+   "defaults": {
+    "timing_factor": 1.0
+   },
+   "ratio_drivers": [
+    "timing_factor",
+    "utilization",
+    "yield"
+   ],
+   "formula": "revenue = capacity * utilization * yield * unit_revenue * timing_factor + other_revenue",
+   "drivers": {
+    "capacity": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "utilization": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "yield": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "unit_revenue": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "timing_factor": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": true,
+     "declared_default": 1.0
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "cohort_subscription",
+   "required": [
+    "opening_customers",
+    "new_customers",
+    "churned_customers",
+    "ending_customers",
+    "revenue_per_customer"
+   ],
+   "optional": [
+    "timing_factor",
+    "usage_revenue",
+    "new_customer_revenue_fraction",
+    "churned_customer_lost_fraction"
+   ],
+   "defaults": {
+    "timing_factor": 1.0,
+    "new_customer_revenue_fraction": 0.5,
+    "churned_customer_lost_fraction": 0.5
+   },
+   "ratio_drivers": [
+    "churned_customer_lost_fraction",
+    "new_customer_revenue_fraction",
+    "timing_factor"
+   ],
+   "formula": "revenue = (opening_customers + new_customers * new_customer_revenue_fraction - churned_customers * churned_customer_lost_fraction) * revenue_per_customer * timing_factor + usage_revenue",
+   "drivers": {
+    "opening_customers": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_customers": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "churned_customers": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "ending_customers": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "revenue_per_customer": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "timing_factor": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": true,
+     "declared_default": 1.0
+    },
+    "usage_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_customer_revenue_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": true,
+     "declared_default": 0.5
+    },
+    "churned_customer_lost_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": true,
+     "declared_default": 0.5
+    }
+   }
+  },
+  {
+   "model_id": "commercial_launch",
+   "required": [
+    "eligible_units",
+    "annual_supply_capacity",
+    "adoption_rate",
+    "commercial_year_fraction",
+    "net_revenue_per_unit"
+   ],
+   "optional": [],
+   "defaults": {},
+   "ratio_drivers": [
+    "adoption_rate",
+    "commercial_year_fraction"
+   ],
+   "formula": "conditional_revenue = min(eligible_units*adoption_rate, annual_supply_capacity) * commercial_year_fraction * net_revenue_per_unit",
+   "drivers": {
+    "eligible_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "annual_supply_capacity": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "adoption_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "commercial_year_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "net_revenue_per_unit": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "delivery_pipeline",
+   "required": [
+    "opening_orders",
+    "new_orders",
+    "cancellations",
+    "deliveries",
+    "ending_orders",
+    "unit_revenue"
+   ],
+   "optional": [
+    "timing_factor",
+    "other_revenue"
+   ],
+   "defaults": {
+    "timing_factor": 1.0
+   },
+   "ratio_drivers": [
+    "timing_factor"
+   ],
+   "formula": "revenue = deliveries * unit_revenue * timing_factor + other_revenue",
+   "drivers": {
+    "opening_orders": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_orders": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "cancellations": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "deliveries": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "ending_orders": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "unit_revenue": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "timing_factor": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": true,
+     "declared_default": 1.0
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "direct_growth",
+   "required": [
+    "growth_rate"
+   ],
+   "optional": [],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue[t] = revenue[t-1] * (1 + growth_rate[t])",
+   "drivers": {
+    "growth_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      -1.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "direct_revenue",
+   "required": [
+    "revenue"
+   ],
+   "optional": [],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue[t] = direct_revenue[t]",
+   "drivers": {
+    "revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "finite_adoption",
+   "required": [
+    "opening_unserved_market",
+    "new_eligible_units",
+    "removed_eligible_units",
+    "adopted_units",
+    "closing_unserved_market",
+    "net_revenue_per_unit"
+   ],
+   "optional": [],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue = adopted_units * net_revenue_per_unit; closing_unserved_market = opening_unserved_market + new_eligible_units - removed_eligible_units - adopted_units",
+   "drivers": {
+    "opening_unserved_market": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_eligible_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "removed_eligible_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "adopted_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closing_unserved_market": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "net_revenue_per_unit": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "gaming",
+   "required": [
+    "active_users",
+    "payer_conversion",
+    "revenue_per_payer"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "payer_conversion"
+   ],
+   "formula": "revenue = active_users * payer_conversion * revenue_per_payer + other_revenue",
+   "drivers": {
+    "active_users": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "payer_conversion": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "revenue_per_payer": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "infrastructure",
+   "required": [
+    "billable_volume",
+    "tariff"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue = billable_volume * tariff + other_revenue",
+   "drivers": {
+    "billable_volume": {
+     "dimension": "activity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "tariff": {
+     "dimension": "revenue_per_activity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "installed_base_aftermarket",
+   "required": [
+    "opening_installed_units",
+    "new_installed_units",
+    "retired_units",
+    "closing_installed_units",
+    "new_unit_revenue_fraction",
+    "retirement_lost_fraction",
+    "attach_rate",
+    "annual_revenue_per_attached_unit"
+   ],
+   "optional": [],
+   "defaults": {},
+   "ratio_drivers": [
+    "attach_rate",
+    "new_unit_revenue_fraction",
+    "retirement_lost_fraction"
+   ],
+   "formula": "revenue = (opening_installed_units + new_installed_units*new_unit_revenue_fraction - retired_units*retirement_lost_fraction) * attach_rate * annual_revenue_per_attached_unit",
+   "drivers": {
+    "opening_installed_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_installed_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "retired_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closing_installed_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_unit_revenue_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "retirement_lost_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "attach_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "annual_revenue_per_attached_unit": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "insurance_service",
+   "required": [
+    "coverage_units",
+    "revenue_per_coverage_unit"
+   ],
+   "optional": [
+    "timing_factor",
+    "other_revenue"
+   ],
+   "defaults": {
+    "timing_factor": 1.0
+   },
+   "ratio_drivers": [
+    "timing_factor"
+   ],
+   "formula": "revenue = coverage_units * revenue_per_coverage_unit * timing_factor + other_revenue",
+   "drivers": {
+    "coverage_units": {
+     "dimension": "coverage_units",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "revenue_per_coverage_unit": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "timing_factor": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": true,
+     "declared_default": 1.0
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "inventory_sellthrough",
+   "required": [
+    "opening_inventory",
+    "saleable_production",
+    "purchased_units",
+    "scrapped_units",
+    "sold_units",
+    "closing_inventory",
+    "net_revenue_per_unit"
+   ],
+   "optional": [],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue = sold_units * net_revenue_per_unit; closing_inventory = opening_inventory + saleable_production + purchased_units - scrapped_units - sold_units",
+   "drivers": {
+    "opening_inventory": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "saleable_production": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "purchased_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "scrapped_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "sold_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closing_inventory": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "net_revenue_per_unit": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "licensing_commercial",
+   "required": [
+    "treated_units",
+    "net_revenue_per_unit"
+   ],
+   "optional": [
+    "milestone_revenue",
+    "royalty_revenue",
+    "service_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue = treated_units * net_revenue_per_unit + milestone_revenue + royalty_revenue + service_revenue",
+   "drivers": {
+    "treated_units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "net_revenue_per_unit": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "milestone_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "royalty_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "service_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "milestone_royalty",
+   "required": [
+    "eligible_sales",
+    "royalty_rate"
+   ],
+   "optional": [
+    "milestone_revenue",
+    "service_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "royalty_rate"
+   ],
+   "formula": "revenue = eligible_sales * royalty_rate + milestone_revenue + service_revenue",
+   "drivers": {
+    "eligible_sales": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "royalty_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "milestone_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "service_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "project_backlog",
+   "required": [
+    "opening_backlog",
+    "bookings",
+    "cancellations",
+    "contract_changes",
+    "closing_backlog"
+   ],
+   "optional": [
+    "backlog_remeasurements"
+   ],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue = opening_backlog + bookings - cancellations + contract_changes + backlog_remeasurements - closing_backlog",
+   "drivers": {
+    "opening_backlog": {
+     "dimension": "backlog",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "bookings": {
+     "dimension": "backlog",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "cancellations": {
+     "dimension": "backlog",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "contract_changes": {
+     "dimension": "backlog",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closing_backlog": {
+     "dimension": "backlog",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "backlog_remeasurements": {
+     "dimension": "backlog",
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "real_estate_rental",
+   "required": [
+    "average_occupied_area",
+    "rent_per_area"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue = average_occupied_area * rent_per_area + other_revenue",
+   "drivers": {
+    "average_occupied_area": {
+     "dimension": "area",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "rent_per_area": {
+     "dimension": "revenue_per_area",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "renewable_generation",
+   "required": [
+    "average_commissioned_mw",
+    "period_hours",
+    "pre_curtailment_capacity_factor",
+    "curtailment_rate",
+    "contracted_share",
+    "contract_price_per_mwh",
+    "merchant_price_per_mwh"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "contracted_share",
+    "curtailment_rate",
+    "pre_curtailment_capacity_factor"
+   ],
+   "formula": "revenue = average_commissioned_mw * period_hours * pre_curtailment_capacity_factor * (1-curtailment_rate) * (contracted_share*contract_price_per_mwh + (1-contracted_share)*merchant_price_per_mwh) + other_revenue",
+   "drivers": {
+    "average_commissioned_mw": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "period_hours": {
+     "dimension": "activity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "pre_curtailment_capacity_factor": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "curtailment_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "contracted_share": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "contract_price_per_mwh": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "merchant_price_per_mwh": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "reserve_depletion",
+   "required": [
+    "opening_reserves",
+    "additions",
+    "depletion",
+    "closing_reserves",
+    "recovery_rate",
+    "realized_price"
+   ],
+   "optional": [
+    "other_revenue",
+    "reserve_revisions"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "recovery_rate"
+   ],
+   "formula": "revenue = depletion * recovery_rate * realized_price + other_revenue",
+   "drivers": {
+    "opening_reserves": {
+     "dimension": "reserve_volume",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "additions": {
+     "dimension": "reserve_volume",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "depletion": {
+     "dimension": "reserve_volume",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closing_reserves": {
+     "dimension": "reserve_volume",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "recovery_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "realized_price": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "reserve_revisions": {
+     "dimension": "reserve_volume",
+     "declared_bounds": [
+      null,
+      null
+     ],
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "resource",
+   "required": [
+    "saleable_volume",
+    "realized_price"
+   ],
+   "optional": [
+    "other_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue = saleable_volume * realized_price + other_revenue",
+   "drivers": {
+    "saleable_volume": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "realized_price": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "retail_franchise",
+   "required": [
+    "average_owned_stores",
+    "revenue_per_owned_store"
+   ],
+   "optional": [
+    "franchise_system_sales",
+    "recognized_fee_rate",
+    "supply_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "recognized_fee_rate"
+   ],
+   "formula": "revenue = average_owned_stores * revenue_per_owned_store + franchise_system_sales * recognized_fee_rate + supply_revenue",
+   "drivers": {
+    "average_owned_stores": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "revenue_per_owned_store": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "franchise_system_sales": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "recognized_fee_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "supply_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "services",
+   "required": [
+    "billable_capacity",
+    "utilization",
+    "billing_rate"
+   ],
+   "optional": [
+    "timing_factor",
+    "other_revenue"
+   ],
+   "defaults": {
+    "timing_factor": 1.0
+   },
+   "ratio_drivers": [
+    "timing_factor",
+    "utilization"
+   ],
+   "formula": "revenue = billable_capacity * utilization * billing_rate * timing_factor + other_revenue",
+   "drivers": {
+    "billable_capacity": {
+     "dimension": "activity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "utilization": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "billing_rate": {
+     "dimension": "revenue_per_activity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "timing_factor": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": true,
+     "declared_default": 1.0
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "store_cohorts",
+   "required": [
+    "opening_stores",
+    "new_stores",
+    "closed_stores",
+    "closing_stores",
+    "new_store_revenue_fraction",
+    "closure_lost_fraction",
+    "new_store_productivity",
+    "annual_revenue_per_mature_store"
+   ],
+   "optional": [],
+   "defaults": {},
+   "ratio_drivers": [
+    "closure_lost_fraction",
+    "new_store_productivity",
+    "new_store_revenue_fraction"
+   ],
+   "formula": "revenue = (opening_stores - closed_stores*closure_lost_fraction + new_stores*new_store_revenue_fraction*new_store_productivity) * annual_revenue_per_mature_store",
+   "drivers": {
+    "opening_stores": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_stores": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closed_stores": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closing_stores": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_store_revenue_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closure_lost_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_store_productivity": {
+     "dimension": "ratio",
+     "declared_bounds": [
+      0.0,
+      null
+     ],
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "annual_revenue_per_mature_store": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "subscription",
+   "required": [
+    "average_customers",
+    "revenue_per_customer"
+   ],
+   "optional": [
+    "timing_factor",
+    "usage_revenue"
+   ],
+   "defaults": {
+    "timing_factor": 1.0
+   },
+   "ratio_drivers": [
+    "timing_factor"
+   ],
+   "formula": "revenue = average_customers * revenue_per_customer * timing_factor + usage_revenue",
+   "drivers": {
+    "average_customers": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "revenue_per_customer": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "timing_factor": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": true,
+     "declared_default": 1.0
+    },
+    "usage_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "subscription_arr_bridge",
+   "required": [
+    "opening_arr",
+    "expansion_arr",
+    "new_arr",
+    "closing_arr",
+    "gross_retention_rate",
+    "lost_arr_revenue_fraction",
+    "expansion_revenue_fraction",
+    "new_arr_revenue_fraction"
+   ],
+   "optional": [
+    "usage_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "expansion_revenue_fraction",
+    "gross_retention_rate",
+    "lost_arr_revenue_fraction",
+    "new_arr_revenue_fraction"
+   ],
+   "formula": "revenue = opening_arr - opening_arr*(1-gross_retention_rate)*lost_arr_revenue_fraction + expansion_arr*expansion_revenue_fraction + new_arr*new_arr_revenue_fraction + usage_revenue",
+   "drivers": {
+    "opening_arr": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "expansion_arr": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_arr": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "closing_arr": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "gross_retention_rate": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "lost_arr_revenue_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "expansion_revenue_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "new_arr_revenue_fraction": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "usage_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "transport",
+   "required": [
+    "capacity",
+    "utilization",
+    "yield"
+   ],
+   "optional": [
+    "ancillary_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [
+    "utilization"
+   ],
+   "formula": "revenue = capacity * utilization * yield + ancillary_revenue",
+   "drivers": {
+    "capacity": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "utilization": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "yield": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "ancillary_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "unit_sales",
+   "required": [
+    "units",
+    "unit_revenue"
+   ],
+   "optional": [
+    "timing_factor",
+    "other_revenue"
+   ],
+   "defaults": {
+    "timing_factor": 1.0
+   },
+   "ratio_drivers": [
+    "timing_factor"
+   ],
+   "formula": "revenue = units * unit_revenue * timing_factor + other_revenue",
+   "drivers": {
+    "units": {
+     "dimension": "quantity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "unit_revenue": {
+     "dimension": "revenue_per_unit",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "timing_factor": {
+     "dimension": "ratio",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      1.0
+     ],
+     "in_declared_defaults": true,
+     "declared_default": 1.0
+    },
+    "other_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  },
+  {
+   "model_id": "usage_platform",
+   "required": [
+    "eligible_activity",
+    "monetization_rate"
+   ],
+   "optional": [
+    "fixed_revenue"
+   ],
+   "defaults": {},
+   "ratio_drivers": [],
+   "formula": "revenue = eligible_activity * monetization_rate + fixed_revenue",
+   "drivers": {
+    "eligible_activity": {
+     "dimension": "activity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "monetization_rate": {
+     "dimension": "revenue_per_activity",
+     "declared_bounds": null,
+     "effective_bounds": [
+      0.0,
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    },
+    "fixed_revenue": {
+     "dimension": "revenue",
+     "declared_bounds": null,
+     "effective_bounds": [
+      "-inf",
+      "inf"
+     ],
+     "in_declared_defaults": false,
+     "declared_default": null
+    }
+   }
+  }
+ ]
+}

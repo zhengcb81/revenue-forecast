@@ -1,0 +1,28 @@
+{
+  "label": "product_r1",
+  "credential_leaks": [
+    "cred-env-github",
+    "cred-env-slack",
+    "cred-env-aws-secret",
+    "cred-env-aws-keyid"
+  ],
+  "over_redacted": [
+    "diag-token-expired",
+    "diag-secret-rotated",
+    "diag-password-prompt"
+  ],
+  "new_over_redaction": [],
+  "diagnostic_corpus_size": 12,
+  "residuals_confirmed": [
+    "res-digest",
+    "res-flag",
+    "res-json-quoted"
+  ],
+  "fidelity_ok": false,
+  "verdict": "negative"
+}
+FIDELITY-FAIL cred-env-github expected 'GITHUB_TOKEN=<redacted>' got 'GITHUB_TOKEN=SYNTHETIC_AUDIT_TOKEN'
+FIDELITY-FAIL cred-env-slack expected 'SLACK_BOT_TOKEN=<redacted>' got 'SLACK_BOT_TOKEN=SYNTHETIC_AUDIT_TOKEN'
+FIDELITY-FAIL cred-env-aws-secret expected 'AWS_SECRET_ACCESS_KEY=<redacted>' got 'AWS_SECRET_ACCESS_KEY=SYNTHETIC_AUDIT_TOKEN'
+FIDELITY-FAIL cred-env-aws-keyid expected 'AWS_ACCESS_KEY_ID=<redacted>' got 'AWS_ACCESS_KEY_ID=SYNTHETIC_AUDIT_TOKEN'
+FIDELITY-FAIL diag-pwd-dir expected 'pwd=<redacted>' got 'pwd=/home/user/project'

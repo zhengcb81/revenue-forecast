@@ -1,0 +1,48 @@
+card_id: M13
+model_id: asset_management
+code_root: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M13\a20260919-01\iso\checkout_scripts
+model_registry_file: C:\Users\\u90d1\u66fe\u6ce2\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\M13\a20260919-01\iso\checkout_scripts\model_registry.py
+imported_module_sha256: {'model_registry.py': '9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f', 'model_extensions.py': '9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911'}
+frozen_input_sha256: {'input.json': 'f4700cc24dd8d3f8df2660ff614bd7a6e92b44068c71f326a50fd4f03ce4e64d', 'oracle.json': 'ab3a1f30fbad93da34a8786cdf3b4d532bca394ffc7ca1beb7214d6703a0e7b3', 'cases.json': '2e981510bf32935e0abffe3d7a11b20fddb086e78c5fbea79fec6dac2453d281'}
+registry formula: revenue = average_aum * management_fee_rate + performance_fee_revenue + other_revenue
+registry required: ['average_aum', 'management_fee_rate']
+registry optional: ['performance_fee_revenue', 'other_revenue']
+registry defaults: {}
+registry ratio_drivers: ['management_fee_rate']
+registry driver_bounds: {}
+positive raised: None
+positive actual: [25.0]
+positive expected: [25.0]
+positive tolerances: [2.5e-08]
+positive value_ok: True
+positive fidelity_ok: True
+positive fidelity_problems: []
+positive years_match_frozen: True
+continuity_positive raised: None
+continuity_positive actual: [25.0, 35.0]
+continuity_positive expected: [25.0, 35.0]
+continuity_positive tolerances: [2.5e-08, 3.5e-08]
+continuity_positive value_ok: True
+continuity_positive fidelity_ok: True
+continuity_positive fidelity_problems: []
+continuity_positive years_match_frozen: True
+defaults actual: [20.0]
+defaults expected: [20.0]
+defaults ok (not gating): True
+observation: OBS-BASE-IGNORED raised=None actual=[25.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=None 
+observation: OBS-BOUND-INCLUSIVE raised=None actual=[2005.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True 
+observation: OBS-SIGNED-PERF-FEE raised=KeyError actual=None matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=None 'performance_fee_revenue'
+negative: NEG-CARD PASS_rejected ModelRegistryError - driver asset_management.management_fee_rate must be between 0.0 and 1.0: FY2027
+negative: N01a PASS_rejected ModelRegistryError - asset_management.average_aum.FY2027 must be numeric
+negative: N01b PASS_rejected ModelRegistryError - asset_management.average_aum.FY2027 must be finite
+negative: N01c PASS_rejected ModelRegistryError - asset_management.average_aum.FY2027 must be finite
+negative: N01d PASS_rejected ModelRegistryError - asset_management.average_aum.FY2027 must be finite
+negative: N02 PASS_rejected ModelRegistryError - driver asset_management.average_aum must contain one value per forecast year
+negative: N03 PASS_rejected ModelRegistryError - missing drivers for asset_management: average_aum
+negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for asset_management: unknown_driver
+negative: N05a PASS_rejected ModelRegistryError - asset_management.years must contain fiscal years
+negative: N05b PASS_rejected ModelRegistryError - asset_management.years must contain fiscal years
+negative: CONT-BREAK PASS_rejected ModelRegistryError - asset_management.years must be consecutive and increasing
+negative summary: total=11 passed=11 failed=[]
+exit_code triggered: []
+verdict: pass exit_code: 0

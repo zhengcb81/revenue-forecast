@@ -1,0 +1,277 @@
+{
+  "card_id": "I-06-A",
+  "attempt_id": "a20260919-01",
+  "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01",
+  "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-06-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "binding_status": "bound",
+  "design_gate": "D-W06 UNSIGNED -> zero product changes; the candidate lives only in iso/candidate + iso/rf_fixed",
+  "network": "disabled (the filing-fetch stand-in returns bytes already on disk; no provider)",
+  "env": {
+    "W06A_HANDLE_JSON": "<attempt>/samples/handle.json (or the changed-source handle)",
+    "PYTHONPATH": "<tree>/scripts;<attempt>/iso/cw/src",
+    "RF_W06_DEMAND_STORE": "<%TEMP%>/w06a/a20260919-01/<work>/processing_demands.sqlite3 (candidate only)",
+    "RF_W06_WORKER_CONTROL": "<%TEMP%>/w06a/a20260919-01/<work>/worker_control.json (candidate only, fixture)",
+    "RF_W06_ROLE_SET": "normalized,sections (candidate only)",
+    "PYTHONUTF8": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "commands": [
+    {
+      "id": "CMD-I06A-C1",
+      "purpose": "freeze the request, the source bytes, the capture-ready handle and the TEST-ONLY filing-fetch stand-in",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_make_fixture.py"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "source_bytes sha256=80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71; iso/ff/scripts/fetch_filing.py written",
+      "raw_returncode": 0,
+      "evidence": [
+        "samples/request.json",
+        "samples/handle.json",
+        "samples/source_bytes.txt",
+        "iso/ff/scripts/fetch_filing.py"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C2",
+      "purpose": "BEFORE: two independent processes run the REAL source-preparation CLI against the PRISTINE product bytes",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_cases.py",
+        "before",
+        "baseline"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "both processes rc=3 with the not_reviewed block; zero durable demands; paused fixture unchanged",
+      "raw_returncode": 0,
+      "evidence": [
+        "before/case_results_baseline.json",
+        "before/cli-logs/b1-first-run/*",
+        "before/cli-logs/b2-second-process/*"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C3",
+      "purpose": "BEFORE: build the three card-required evidence JSONs from the baseline run",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_evidence.py",
+        "before",
+        "baseline"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "database_exists=false, 0 rows, paused_unchanged=true",
+      "raw_returncode": 0,
+      "evidence": [
+        "before/demand.cross-process.json",
+        "before/request-to-demand-binding.json",
+        "before/paused-before-after.json"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C4",
+      "purpose": "apply the UNRATIFIED candidate overlay to a clone (iso/rf -> iso/rf_fixed)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_apply_candidate.py"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "iso/rf stays pristine (sha 5ec16eaf...ce46); iso/rf_fixed patched (1a837fc0...469e)",
+      "raw_returncode": 0,
+      "evidence": [
+        "iso/candidate-manifest.json"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C5",
+      "purpose": "AFTER: candidate cases C1..C7 (register-before-block, cross-process, changed hash, store failure, paused)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_cases.py",
+        "after",
+        "candidate"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "CLI runs rc=3 with demand_queued; queries rc=0; 1 demand after the repeat; 2 after the changed hash; paused unchanged",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/case_results_candidate.json",
+        "after/cli-logs/*",
+        "after/query-logs/*"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C6",
+      "purpose": "AFTER: build the three evidence JSONs from the candidate run (plain sqlite3, independent key recompute)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_evidence.py",
+        "after",
+        "candidate"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "2 active demands, 2/2 keys recomputed equal, request_sha256 matches, paused_unchanged=true",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/demand.cross-process.json",
+        "after/request-to-demand-binding.json",
+        "after/paused-before-after.json"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C7",
+      "purpose": "existing in-memory demand contract test on the isolated wiki copy (must keep passing; no second persistent implementation is added to any product)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "-m",
+        "pytest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "<attempt>/after/cmd-tests/pytest-demand",
+        "tests/contract/test_zr507_processing_demand.py"
+      ],
+      "cwd": "<attempt>/iso/cw",
+      "expected_returncode": 0,
+      "expected_business_result": "14 passed",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/cmd-tests-demand.stdout.txt"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C8",
+      "purpose": "generate changes.diff (pristine product -> candidate clone) and the changed-file manifest",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_make_diff.py"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "494 diff lines; candidate file hashes in iso/candidate and iso/rf_fixed identical",
+      "raw_returncode": 0,
+      "evidence": [
+        "changes.diff",
+        "after/changes-manifest.json"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C9",
+      "purpose": "r2: re-apply the candidate (store failure now attaches to the safety block instead of replacing it)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_apply_candidate.py"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "iso/rf stays pristine (5ec16eaf...ce46); iso/rf_fixed patched; candidate patch hash 113e90b0...c87b",
+      "raw_returncode": 0,
+      "evidence": [
+        "iso/candidate-manifest.json"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C10",
+      "purpose": "r2: candidate cases incl. the reviewer's as-of-only probe (c10/c11) and the strengthened store-failure assertion",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_cases.py",
+        "after",
+        "candidate"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "6 product CLI calls rc=3 (c1/c3/c5/c7/c8/c10); 5 query processes rc=0; 2 store rows; paused unchanged",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/case_results_candidate.json",
+        "after/cli-logs/*",
+        "after/query-logs/*"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C11",
+      "purpose": "r2: rebuild the three evidence JSONs (rows now carry request_json + independent request hashes)",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_evidence.py",
+        "after",
+        "candidate"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "2 active demands; keys recomputed equal; request_hashes recorded for original / entity+asof / asof-only",
+      "raw_returncode": 0,
+      "evidence": [
+        "after/demand.cross-process.json",
+        "after/request-to-demand-binding.json",
+        "after/paused-before-after.json"
+      ]
+    },
+    {
+      "id": "CMD-I06A-C12",
+      "purpose": "r2: regenerate changes.diff and the manifest",
+      "argv": [
+        "<attempt>/iso/venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "scripts/w06a_make_diff.py"
+      ],
+      "cwd": "<attempt>",
+      "expected_returncode": 0,
+      "expected_business_result": "529 diff lines; candidate files identical in iso/candidate and iso/rf_fixed",
+      "raw_returncode": 0,
+      "evidence": [
+        "changes.diff",
+        "after/changes-manifest.json"
+      ]
+    }
+  ],
+  "notes": [
+    "Every CLI invocation is a REAL source-preparation process; only filing-fetch is a stand-in, and it performs no network IO.",
+    "raw_returncode is the outer driver exit code; per-case rc=3 is the product's own upstream-block code and is recorded per case.",
+    "The candidate is NOT a product change: decision.md OPEN-1..OPEN-6 remain unsigned."
+  ]
+}

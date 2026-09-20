@@ -1,0 +1,127 @@
+{
+ "card_id": "I-04-D",
+ "attempt_id": "a20260919-01",
+ "role": "implementer (implementation card; NOT the reviewer)",
+ "status": "implementing",
+ "deliverable_type": "isolated implementation of the I-04-C frozen lease protocol + cross-process verification evidence",
+ "scope": "Port the I-04-C signed protocol (ADR-1..ADR-12, R1-R5, lock_budget_for(x)=min(x,60)) into the ISOLATED copy of filing-fetch/scripts/fetch_filing.py and verify it with real multi-process barrier-scheduled cases. The production repos are read-only in this card; no production file is written.",
+
+ "plan_root": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit",
+ "attempt_root": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-D/a20260919-01",
+
+ "rebinding": {
+  "reason": "The I-04-C carry recorded that the downstream binding pinned revenue-forecast at 4753fda must be REBOUND; this card binds the CURRENT checkout/HEAD instead of reusing the stale pin.",
+  "upstream_stale_pin": "revenue-forecast 4753fda (recorded in I-04-C handoff.json carries[7])",
+  "current_heads": {
+   "revenue-forecast": "1ac01f029c16b90adba92dd0f1bc3a1825ff9552",
+   "company-wiki": "f39bd5a64224cd0c7aa098f23f64bf3811fa8939",
+   "filing-fetch": "d35b6f5b09f1a7dad37d226504bf998802a852d7"
+  },
+  "basis": "git -C <repo> rev-parse HEAD, captured 2026-09-20 in this attempt (evidence/hashes.txt, before/00-git-heads.txt). The current HEADs are the authority for this attempt; no upstream recorded pin is reused.",
+  "filing_fetch_head_note": "filing-fetch HEAD d35b6f5 is UNCHANGED from the I-04-C design binding, so the protocol design's source anchor still holds.",
+  "porcelain_at_binding": {
+   "filing-fetch": "clean (empty porcelain)",
+   "company-wiki": "M CLAUDE.md, M README.md (pre-existing user edits; NOT touched by this card)",
+   "revenue-forecast": "pre-existing dirty tree (see before/00-git-heads.txt); this card only ADDS files under execution_runs/I-04-D/a20260919-01/"
+  }
+ },
+
+ "read_only_anchors": {
+  "production_filing_fetch_scripts_fetch_filing.py": {
+   "path": "C:/Users/郑曾波/Projects/filing-fetch/scripts/fetch_filing.py",
+   "sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088",
+   "bytes": 48392,
+   "card_anchors_verified": {
+    "L515 __enter__": {"sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088", "present_in_file": true},
+    "L565 _register": {"sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088", "present_in_file": true},
+    "L579 _unregister": {"sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088", "present_in_file": true},
+    "L592 __exit__": {"sha256": "046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088", "present_in_file": true}
+   },
+   "note": "The four card anchors are all inside this one file; the card lists the file sha256 (not a per-function hash), and it matches the I-04-C binding and I-04-A basis. Anchor LINES are re-located at implementation time (START_HERE step 3 drift rule); see evidence/anchor-relocation.txt."
+  },
+  "iso_baseline_is_I_04_B_output": {
+   "path": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-B/a20260919-01/iso/filing-fetch/scripts/fetch_filing.py",
+   "sha256": "dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c",
+   "bytes": 56405,
+   "why": "I-04-C ADR-6 records that the I-04-B fix for the probe cap and the request/cleanup split currently exists ONLY in the I-04-B iso tree, while production still has max(10.0, ...). The lease layer must not re-implement _remaining(); it must sit on the I-04-B version (ADR-6 dependency declaration). I-04-D therefore uses the I-04-B accepted output as the iso/ baseline, and it is the 'iso/ baseline' that changes.diff is taken against.",
+   "dependency_status": "I-04-B accepted_scoped (execution_runs/I-04-B/a20260919-01/review.md, handoff.json)"
+  },
+  "production_dependency": {
+   "label": "I-04-B dependency receipt",
+   "code_location": "execution_runs/I-04-B/a20260919-01/iso/filing-fetch/** (copy), evidence in before/after",
+   "why_not_production": "I-04-B never wrote production; the dependency is a signed iso artifact. I-04-D consumes that artifact, it does not re-derive it."
+  }
+ },
+
+ "isolated_copy": {
+  "cwd": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-D/a20260919-01/iso/filing-fetch",
+  "created_from": "execution_runs/I-04-B/a20260919-01/iso/filing-fetch (robocopy /E, __pycache__ excluded)",
+  "source_under_test_after_edit": "iso/filing-fetch/scripts/fetch_filing.py (this card's delta)",
+  "new_files": [
+   "iso/filing-fetch/scripts/i04d_fake_worker.py",
+   "iso/filing-fetch/scripts/i04d_participant.py",
+   "iso/filing-fetch/scripts/i04d_schedule.py",
+   "iso/filing-fetch/scripts/i04d_mutants.py",
+   "iso/filing-fetch/tests/test_fetch_filing_lease.py"
+  ]
+ },
+
+ "interpreter": {
+  "path": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-D/a20260919-01/iso/venv/Scripts/python.exe",
+  "created_from_template": "execution_runs/I-00-A/a20260919-01/iso/venv/Scripts/python.exe",
+  "version": "3.13.9 (conda-packaged base, venv-isolated)",
+  "pytest": "9.1.1",
+  "pytest_install_method": "OFFLINE by local-module copy from execution_runs/I-04-C/a20260919-01/iso/venv/Lib/site-packages (the same signed venv that I-04-A/I-04-B/I-04-C used). Modules copied: _pytest, pytest, py.py, pluggy, iniconfig, packaging, colorama, pygments + their .dist-info + Scripts/pytest.exe, Scripts/py.test.exe. No network, no index.",
+  "pip_offline_limitation": "`pip install --no-index --find-links` could NOT be used: no local wheelhouse exists anywhere under PLAN and %LOCALAPPDATA%/pip/cache holds no pytest/pluggy/iniconfig/packaging wheels. Recorded in decision.md rather than silently switching to an online index.",
+  "global_interpreter_used": false,
+  "probe": "iso/venv/Scripts/python.exe -c 'import sys; print(sys.version)' -> 3.13.9"
+ },
+
+ "allowed_write_roots": [
+  "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-04-D/a20260919-01"
+ ],
+ "forbidden": [
+  "any write to filing-fetch, company-wiki or revenue-forecast tracked sources (byte-identical requirement)",
+  "any write under PLAN/reviews (read-only; its mtime must stay as recorded)",
+  "git add / commit / restore / stash in any repo",
+  "network access; any real provider, real company-wiki worker or real catalog",
+  "pointing any command path at the production catalog .source_catalog/catalog.sqlite3",
+  "using the global Miniconda interpreter for card runs",
+  "killing any process other than a PID this card itself recorded",
+  "re-signing / self-accepting this card (review.md verdict field stays empty)"
+ ],
+
+ "production_read_only_invariants": {
+  "company_wiki_source_catalog_catalog.sqlite3": {"bytes": 49677344768, "mtime_utc": "2026-09-19T06:31:35Z"},
+  "company_wiki_source_catalog_catalog.sqlite3-wal": {"bytes": 0},
+  "checked_at": "binding time (before any edit), re-checked at delivery time",
+  "method": "Get-Item Length + LastWriteTimeUtc; full sha256 of a 49.7 GB file is not computed (would take hours and would read a live DB) - the size+mtime+wal invariant is the one the card states"
+ },
+
+ "upstream_contract": {
+  "authority": "execution_runs/I-04-C/a20260919-01/decision.md v1.3 (accepted_scoped)",
+  "frozen_rules": ["ADR-1 OS byte-range lock on a never-unlinked lock file",
+                   "ADR-2 one non-nested lock; lock_budget_for(x)=min(x,60); timeout => fail closed => lease_lock_timeout",
+                   "ADR-3 last release + resume decision inside ONE critical section; empty refcount never authorises resume",
+                   "ADR-4 lease_id + process incarnation; removal only by lease_id; unknown liveness => fail closed",
+                   "ADR-5 crash windows W1-W8 fail closed",
+                   "ADR-6 no new budget; lease layer only consumes phase budget",
+                   "ADR-7 owner marker unchanged; refcount schema filing-fetch.pause-refcount/2; legacy list => fail closed unless FILING_FETCH_PAUSE_LEASE_MIGRATE=1",
+                   "ADR-8 user pause intent wins when not attributable to us",
+                   "ADR-9/9b/9c paused-or-lease branch before the runtime_state guard; one pause per cycle; reclaim dead first",
+                   "ADR-10 R1-R5 branch table for the last release",
+                   "ADR-10e a leaving owner transfers ownership to a surviving lease",
+                   "ADR-11 the whole acquire path is ONE critical section",
+                   "ADR-12 generation is a per-file counter, restarts at 1"],
+  "code_reference": "execution_runs/I-04-C/a20260919-01/sim/kernel.py (simulation kernel; a REFERENCE, not the thing under test here)",
+  "do_not_change": "The design is not re-opened by this card. Any real conflict must be written to decision.md and registered as an owner ruling item."
+ },
+
+ "dependencies": {
+  "I-04-A": "accepted (v2 signed): C = max(30, 2*resume_wait + graceful); request budget has no floor; probe capped at 20; request/cleanup accounting split",
+  "I-04-B": "accepted_scoped: probe cap min(20, phase budget), budget read once at the call site, cleanup PHASE wall clock reported never bounded",
+  "I-04-C": "accepted_scoped: the protocol implemented here"
+ },
+
+ "reviewer_status": "PENDING (the implementer writes no verdict)"
+}

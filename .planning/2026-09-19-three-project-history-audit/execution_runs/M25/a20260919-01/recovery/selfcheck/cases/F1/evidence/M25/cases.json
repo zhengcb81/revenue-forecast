@@ -1,0 +1,176 @@
+{
+ "card_id": "M25",
+ "first_required_driver": "opening_installed_units",
+ "independent_deepcopy_per_case": true,
+ "continuity_first_positive": "continuity_positive",
+ "cases": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_multi",
+   "expected": "ValueError",
+   "base_input": "positive",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "driver": null,
+   "value": {
+    "retired_units": [
+     201
+    ],
+    "closing_installed_units": [
+     39
+    ]
+   }
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "driver": "opening_installed_units",
+   "index": 0,
+   "value": {
+    "__bool__": true
+   }
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01b: non-finite value nan",
+   "driver": "opening_installed_units",
+   "index": 0,
+   "value": {
+    "__float__": "nan"
+   }
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01c: non-finite value inf",
+   "driver": "opening_installed_units",
+   "index": 0,
+   "value": {
+    "__float__": "inf"
+   }
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N01d: non-finite value -inf",
+   "driver": "opening_installed_units",
+   "index": 0,
+   "value": {
+    "__float__": "-inf"
+   }
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "driver": "opening_installed_units",
+   "value": []
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "driver": "opening_installed_units"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "driver": "unknown_driver",
+   "value": [
+    1
+   ]
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "driver": null,
+   "value": []
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "driver": null,
+   "value": {
+    "__bool__first__": true
+   }
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_driver_multi",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "why": "continuity break for this card (oracle.md section 4)",
+   "driver": null,
+   "value": {
+    "opening_installed_units": [
+     200,
+     221
+    ],
+    "closing_installed_units": [
+     220,
+     221
+    ]
+   }
+  }
+ ],
+ "extra_observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "kind": "set_base_revenue",
+   "value": 999,
+   "base_input": "positive",
+   "compare_to": "positive",
+   "expect_equal": true,
+   "why": "rowwise calculator discards base_revenue; design observation only, not a pass condition"
+  },
+  {
+   "id": "OBS-DEFAULT-ZERO",
+   "kind": "input_replay",
+   "input": "defaults",
+   "compare_to": null,
+   "expect_equal": null,
+   "why": "all eight required drivers explicitly zero, no optional driver exists; the mechanism is the rowwise calculator, which starts from zero for every year"
+  }
+ ],
+ "case_contract": {
+  "expected_count": 11,
+  "expected_ids": [
+   "NEG-CARD",
+   "N01a",
+   "N01b",
+   "N01c",
+   "N01d",
+   "N02",
+   "N03",
+   "N04",
+   "N05a",
+   "N05b",
+   "CONT-BREAK"
+  ],
+  "declared_expected_exception": "ModelRegistryError",
+  "neg_card_declared_mechanism": "retired_units=[201] exceeds opening_installed_units=[200]; the bridge 200+40-201=39 is deliberately kept consistent, so the ONLY guard that can refuse this case is the retired-cohort upper bound, which raises `retired_units exceeds opening installed cohort: FY2027`",
+  "rule": "every case's `expected` must equal declared_expected_exception and the id list must equal expected_ids, otherwise the harness refuses to issue a verdict (rc=1)"
+ }
+}

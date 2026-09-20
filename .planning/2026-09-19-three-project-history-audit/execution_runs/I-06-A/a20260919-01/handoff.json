@@ -1,0 +1,191 @@
+{
+  "card_id": "I-06-A",
+  "parent": "I-06",
+  "attempt_id": "a20260919-01",
+  "card_title": "安全阻断前登记可持久恢复的需求",
+  "status": "blocked",
+  "blocked_reason": "D-W06 未签：卡片按序执行第 1 条要求先指定单一持久 owner 与迁移及 API（没有 schema 不得由执行者自选 SQLite/文件队列）。本 attempt 因此未做任何产品改动，只交付 (a) 原始产品的实测反例（阻断不可恢复）、(b) attempt 内的 UNRATIFIED 候选实现与跨进程证据、(c) decision.md 的 OPEN-1..OPEN-6。",
+  "owner": "wiki 持久需求 owner（签署）/ RF 消费实施者（本 attempt）",
+  "reviewer_status": "PENDING independent review — 实现者未自签；产品仓改动为 0，故本卡无可接受的产品实现",
+  "objective": "证明 not_reviewed 安全阻断当前不可恢复，并证明'先登记持久需求再阻断、请求幂等、跨进程可查'的要求可实现且可观察；不实施未签的 D-W06 决策。",
+  "completed_steps": [
+    "1 领取: card_I-06-A + parent I-06 原文 + audit_report 表格行 + audit_review runs/02 的 run.json/stderr 已读",
+    "2 绑定: binding 信息见 commands.json + iso/candidate-manifest.json（生产锚点 hash、隔离副本、禁用项）",
+    "3 读证据: source_preparation.py / 两个 processing_demand.py / company_wiki_source.py / filing_fetch_client.py 现行字节；ZR-507 合同测试；历史 not_reviewed 阻断记录",
+    "4 冻结预期: oracle.md（B1/B2 基线反例 + C1..C7 候选判据 + 附加探针 c8/c9）",
+    "5 修改前检查: 真实 CLI 两进程实测 rc=3、零持久需求（反例成立）",
+    "6 最小修改: 未改产品（D-W06 未签）。仅在 iso/candidate 写 UNRATIFIED 候选并克隆到 iso/rf_fixed",
+    "7 修改后检查: 候选 C1..C7 全部按 oracle 通过；现有 ZR-507 内存合同 14 passed；paused 字节不变",
+    "8 交审: changes.diff（494 行，仅克隆内）+ before/after 证据 + decision.md（OPEN-1..6）",
+    "9 接续: 待 D-W06 签署后才可实施；签署前 I-06-A 保持 blocked/planned",
+    "r2-1 F-I06A-02: 候选改为'登记失败挂在同一条安全阻断上'（demand_store_error=…，不出现 demand_queued）",
+    "r2-2 F-I06A-01: 新增 c10/c11 探针（仅 as_of_date 变），与 c8/c9 一并写成 decision.md 的 OPEN-2 必答依据",
+    "r2-3 F-I06A-04: 候选 role_set 默认值统一为 normalized,sections 并写入待裁项",
+    "r2-4 F-I06A-03: 文档不再硬写会漂移的 demand ID，改为引用 after/demand.cross-process.json",
+    "r2-5 F-I06A-05: 补 recovery/README.md（NA + 理由）"
+  ],
+  "next_step_number": 4,
+  "next_action": "由 wiki 来源审核 owner + 安全 reviewer + RF 消费 owner 签署或替换 decision.md 的 D-W06 OPEN-1..OPEN-6，其中 OPEN-2 的必答依据已由 c8/c9/c10 三个真机探针写全（键是否含请求身份 / role_set 权威来源 / c7 错误文案契约）；签署前 I-06-A 保持 blocked，候选保持 UNRATIFIED 且不得被后续卡直接提升为产品实现。",
+  "frozen_vs_measured": {
+    "B1_B2_baseline": {
+      "expected": "rc=3 + not_reviewed block + zero durable demand",
+      "measured": "rc=3 both processes, byte-identical block message, database_exists=false, 0 rows",
+      "verdict": "counterexample confirmed (the block is not recoverable)"
+    },
+    "C1_register_before_block": {
+      "expected": "rc=3 with demand_queued before the block",
+      "measured": "rc=3, demand_queued demand_id=demand-9892a84494194365, gaps=4, next_action present",
+      "verdict": "PASS (candidate only)"
+    },
+    "C2_C4_cross_process_query": {
+      "expected": "third process sees exactly 1 active demand",
+      "measured": "query rc=0, 1 row, unchanged after the repeat",
+      "verdict": "PASS (candidate only)"
+    },
+    "C3_repeat_same_request": {
+      "expected": "same active demand id",
+      "measured": "same demand id as C1",
+      "verdict": "PASS (candidate only)"
+    },
+    "C5_C6_changed_source_hash": {
+      "expected": "new demand, old demand stays open",
+      "measured": "2 rows, different demand_key, both active",
+      "verdict": "PASS (candidate only)"
+    },
+    "C7_store_write_failure": {
+      "expected": "no demand_queued, structured failure, no memory fallback",
+      "measured": "rc=3, 'demand could not be registered durably', no demand_queued, row count unchanged",
+      "verdict": "PASS (candidate only)"
+    },
+    "N3_paused": {
+      "expected": "worker control bytes unchanged everywhere",
+      "measured": "unchanged (content + sha256) in every case",
+      "verdict": "PASS (candidate only)"
+    },
+    "c8_c9_same_source_different_request": {
+      "expected": "record-only probe (no pass/fail)",
+      "measured": "the candidate returned the SAME demand id as C1 and kept request_sha256 of the ORIGINAL request, i.e. the new request was silently absorbed",
+      "verdict": "OPEN-2 finding - the idempotency key does not bind the request identity"
+    },
+    "C7_store_write_failure_r2": {
+      "expected": "rc=3; stderr contains BOTH the safety verdict and demand_store_error=; NO demand_queued; 0 rows",
+      "measured": {
+        "returncode": 3,
+        "contains_security_verdict": true,
+        "contains_store_error": true,
+        "contains_demand_queued": false,
+        "store_rows_after": 2
+      },
+      "verdict": "PASS (r2 candidate only)"
+    },
+    "c10_asof_only_changed": {
+      "expected": "record-only probe for OPEN-2 (the reviewer supplied this construction)",
+      "measured": {
+        "returncode": 3,
+        "reused_demand_id": true,
+        "asof_only_request_sha256": "4bddf9e6963e7d0474e754a89a1a184d8315b059410e98d34dd3e02375e10b84",
+        "original_request_sha256": "d8afcf319185da071bd364c5d2ef6dfa9264e8bbc929ee737b9cefab963bdd62"
+      },
+      "verdict": "OPEN-2 finding: the new request was absorbed into the existing demand"
+    }
+  },
+  "input_hashes": {
+    "RF/scripts/source_preparation.py": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46",
+    "RF/scripts/processing_demand.py": "fcdfcad8ebd1fc20febf3c157dcd20ad92708fd69d00373ef9a943e5a820afc1",
+    "CW/src/company_wiki/source_catalog/processing_demand.py": "90f232edb7804f78a16c6b4e865255cd607a1d0dc30384fc1cd6faa1833ac88b",
+    "samples/source_bytes.txt": "80a76889bdafda4ae14d66429082ca33f41cfd3174fe61ef8f2a40d2bc643d71"
+  },
+  "current_source_hashes": {
+    "iso/rf/scripts/source_preparation.py": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46 (pristine copy)",
+    "iso/rf_fixed/scripts/source_preparation.py": "1a837fc0047f31a68d14d9ca1b4487d30b9dc33529cb332c905bd0affe75469e (candidate clone)",
+    "iso/candidate/processing_demand_store.py": "7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f",
+    "iso/candidate/w06a_candidate_patch.py": "e1cd7176b9a29fdf30317155dbc317f151e7e72b05403857f04297c19f338c6d",
+    "prod_repos": "UNCHANGED (see after/prod-anchor-hashes-after.json)"
+  },
+  "changed_paths": [
+    "execution_runs/I-06-A/a20260919-01/iso/candidate/processing_demand_store.py (UNRATIFIED candidate)",
+    "execution_runs/I-06-A/a20260919-01/iso/candidate/w06a_candidate_patch.py (UNRATIFIED candidate)",
+    "execution_runs/I-06-A/a20260919-01/iso/rf_fixed/** (clone with the candidate applied)",
+    "execution_runs/I-06-A/a20260919-01/scripts/* (harness)",
+    "execution_runs/I-06-A/a20260919-01/iso/ff/scripts/fetch_filing.py (TEST-ONLY stand-in)"
+  ],
+  "prod_repos_modified": "NONE (CW porcelain = [' M CLAUDE.md',' M README.md'] pre-existing; RF porcelain adds only this attempt directory)",
+  "commands_executed": "见 commands.json（CMD-I06A-C1..C8）",
+  "raw_exit_codes": {
+    "CMD-I06A-C1": 0,
+    "CMD-I06A-C2": 0,
+    "CMD-I06A-C3": 0,
+    "CMD-I06A-C4": 0,
+    "CMD-I06A-C5": 0,
+    "CMD-I06A-C6": 0,
+    "CMD-I06A-C7": 0,
+    "CMD-I06A-C8": 0,
+    "product_cli_baseline_b1_b2": 3,
+    "product_cli_candidate_c1_c3_c5_c7_c8": 3,
+    "query_processes_c2_c4_c6_c9": 0
+  },
+  "expected_exit_codes": {
+    "CMD-I06A-C1": 0,
+    "CMD-I06A-C2": 0,
+    "CMD-I06A-C3": 0,
+    "CMD-I06A-C4": 0,
+    "CMD-I06A-C5": 0,
+    "CMD-I06A-C6": 0,
+    "CMD-I06A-C7": 0,
+    "CMD-I06A-C8": 0,
+    "product_cli_baseline_b1_b2": 3,
+    "product_cli_candidate_c1_c3_c5_c7_c8": 3,
+    "query_processes_c2_c4_c6_c9": 0
+  },
+  "open_questions": [
+    "OPEN-2 键定义（请求身份是否入键）——c8/c9/c10 实测会把不同请求静默并入同一 demand",
+    "OPEN-2b role_set 的权威来源与规范化形式（当前只有 RF_W06_ROLE_SET 环境变量）",
+    "OPEN-1 单一持久 owner 位置；OPEN-3 claim/lease/完成规则；OPEN-4 审核方法与失效条件",
+    "OPEN-5 消费/恢复命令与原请求恢复接口（当前不存在）",
+    "OPEN-6 detected_and_ignored 的归属",
+    "阻断文案（安全判定 + demand_store_error 附加子句）的跨仓文本断言未排查",
+    "候选未验证 additive migration / 并发 claim / lease 过期",
+    "filing-fetch 为 TEST-ONLY 替身；真实 provider/路由属 I-07"
+  ],
+  "blocked_by": [
+    "D-W06 六项专业决策未签（decision.md OPEN-1..OPEN-6，含新增的 OPEN-2 必答依据）；签署前不得实施 I-06-A，I-06-B 亦不得开工",
+    "候选为 UNRATIFIED：不得被任何后续卡直接提升为产品实现"
+  ],
+  "evidence_paths": [
+    "execution_runs/I-06-A/a20260919-01/after/case_results_candidate.json",
+    "execution_runs/I-06-A/a20260919-01/after/changes-manifest.json",
+    "execution_runs/I-06-A/a20260919-01/after/cli-logs/",
+    "execution_runs/I-06-A/a20260919-01/after/cli-logs/c10-same-source-asof-only-changed/stderr.txt",
+    "execution_runs/I-06-A/a20260919-01/after/cli-logs/c7-store-unwritable/stderr.txt",
+    "execution_runs/I-06-A/a20260919-01/after/cmd-tests-demand.stdout.txt",
+    "execution_runs/I-06-A/a20260919-01/after/demand.cross-process.json",
+    "execution_runs/I-06-A/a20260919-01/after/paused-before-after.json",
+    "execution_runs/I-06-A/a20260919-01/after/query-logs/",
+    "execution_runs/I-06-A/a20260919-01/after/request-to-demand-binding.json",
+    "execution_runs/I-06-A/a20260919-01/before/case_results_baseline.json",
+    "execution_runs/I-06-A/a20260919-01/before/cli-logs/b1-first-run/stderr.txt",
+    "execution_runs/I-06-A/a20260919-01/before/demand.cross-process.json",
+    "execution_runs/I-06-A/a20260919-01/before/paused-before-after.json",
+    "execution_runs/I-06-A/a20260919-01/before/request-to-demand-binding.json",
+    "execution_runs/I-06-A/a20260919-01/changes.diff",
+    "execution_runs/I-06-A/a20260919-01/commands.json",
+    "execution_runs/I-06-A/a20260919-01/decision.md",
+    "execution_runs/I-06-A/a20260919-01/iso/candidate-manifest.json",
+    "execution_runs/I-06-A/a20260919-01/oracle.md",
+    "execution_runs/I-06-A/a20260919-01/recovery/README.md",
+    "execution_runs/I-06-A/a20260919-01/review.md",
+    "execution_runs/I-06-A/a20260919-01/review_r2_disposition.md"
+  ],
+  "START_HERE_fields": {
+    "recorded_status_transition": "planned -> implementing -> blocked (design gate D-W06 unsigned)",
+    "cannot_replace": "D-W06 签署；任何产品实施资格；I-06-B 的前置",
+    "九步执行法位置": "第 4 步（冻结预期）完成；第 5/7 步在隔离内完成；第 6 步按设计**未执行**"
+  },
+  "r2_status": "复审 = blocked（保持 blocked）。F-I06A-01 写成 OPEN-2 必答依据；F-I06A-02/03/04/05 已处置（候选内 + 文档）；F-I06A-06/07 复审 PASSED。",
+  "r2_hashes": {
+    "iso/candidate/processing_demand_store.py": "7bc5feb0cb5e50227a49ac7322c654f84b04f4b71d9d6578571f0899405b8f7f",
+    "iso/candidate/w06a_candidate_patch.py": "113e90b0855400f6563ace77ca2fb16729d1b6b06631deceeeddf1c8991fc87b",
+    "iso/rf_fixed/scripts/source_preparation.py": "1a837fc0047f31a68d14d9ca1b4487d30b9dc33529cb332c905bd0affe75469e",
+    "iso/rf/scripts/source_preparation.py": "5ec16eaf0fe480126b680f6e069717ebfc218ae39531372a380cfcc9b91bce46 (pristine, unchanged)"
+  }
+}

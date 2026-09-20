@@ -1,0 +1,22 @@
+# I-04-D oracle freeze record
+
+oracle.md was written BEFORE any modification to iso/filing-fetch/scripts/fetch_filing.py.
+
+iso baseline (I-04-B output, unmodified at freeze time):
+  sha256 = dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c
+  bytes  = 56405
+
+captured at freeze time (see before/01-anchor-hashes.txt for the full set):
+  production filing-fetch/scripts/fetch_filing.py = 046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088
+  production company-wiki source_catalog/control.py = 553a35607be39c57460c8e781d697a60bcb627eaace0e85ad61810d3e1326bbb
+  production company-wiki source_catalog/store.py   = 1a7832404c39da858400a99d2f7e9495e8b169498dacad591fda5447b2da9615
+  production company-wiki source_catalog/cli.py     = fad88c60294a7fb7fa87bbdbe2bbd7effe3ce1a2dbcc11fce96cd44afb36344b
+  production company-wiki source_catalog/lock.py    = 2303d3e5a4a790070b253cbf3a319b38be25d4d412da8f8e067726d0553d5b4c
+  iso baseline test_fetch_filing.py                = b2d5fd84911e368dfdd8d7654b9dfb26c2b1368a96b30974ce08e872c857b42c
+
+No expected value in oracle.md was produced by running the implementation under test
+(the implementation did not exist at freeze time) and none was copied from a run of
+the I-04-C simulation kernel: every number is hand-derived from the I-04-C frozen
+state machine (T0-T13, R1-R5) or read directly from the current production source.
+
+Append-only rule: after this point oracle.md may only gain "# 追加" sections.

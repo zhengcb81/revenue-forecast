@@ -37,7 +37,7 @@ def load(path):
 
 
 def dump(path, doc):
-    with open(path, "w", encoding="utf-8") as handle:
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(doc, handle, ensure_ascii=False, indent=1)
     return path
 
@@ -127,9 +127,9 @@ def enumerate_registry(code_root):
         "model_registry_file": model_registry.__file__,
         "model_registry_sha256": sha256_file(model_registry.__file__),
         "models_total": len(model_registry.MODEL_REGISTRY),
-        "drivers_total": 0,
-        "ratio_drivers_total": 0,
-        "ratio_drivers_taking_the_0_1_default": 0,
+        "drivers_total_slots": 0,
+        "ratio_drivers_of_drivers_total": 0,
+        "ratio_drivers_taking_the_0_1_default_of_ratio_drivers": 0,
         "ratio_drivers_not_in_0_1": [],
         "models": {},
     }
@@ -146,14 +146,14 @@ def enumerate_registry(code_root):
         }
         ratio_bounds = {}
         for driver, dimension in spec.dimensions.items():
-            out["drivers_total"] += 1
+            out["drivers_total_slots"] += 1
             lower, upper = model_registry.driver_value_bounds(model_id, driver)
             if dimension == "ratio":
-                out["ratio_drivers_total"] += 1
+                out["ratio_drivers_of_drivers_total"] += 1
                 ratio_bounds[driver] = [None if lower == float("-inf") else lower,
                                         None if upper == float("inf") else upper]
                 if lower == 0.0 and upper == 1.0:
-                    out["ratio_drivers_taking_the_0_1_default"] += 1
+                    out["ratio_drivers_taking_the_0_1_default_of_ratio_drivers"] += 1
                 else:
                     out["ratio_drivers_not_in_0_1"].append({
                         "driver": model_id + "." + driver,
@@ -175,10 +175,17 @@ def main() -> int:
     parser.add_argument("--card", required=True, choices=sorted(CARD_META))
     parser.add_argument("--attempt-root", required=True)
     parser.add_argument("--interpreter", required=True)
-    parser.add_argument("--oracle-md-sha-before-run", required=True)
-    parser.add_argument("--oracle-json-sha-before-run", required=True)
-    parser.add_argument("--oracle-json-sha-before-correction", required=True)
-    parser.add_argument("--oracle-md-sha-before-correction", required=True)
+    parser.add_argument("--oracle-md-sha-before-run", default=None,
+                        help="oracle.md sha256 just before the definitive product run")
+    parser.add_argument("--oracle-json-sha-before-run", default=None,
+                        help="oracle.json sha256 just before the definitive product run")
+    parser.add_argument("--oracle-json-sha-before-correction", default=None,
+                        help="legacy: superseded by the v1 comparison computed at pack time")
+    parser.add_argument("--oracle-md-sha-before-correction", default=None,
+                        help="legacy: oracle.md did not exist before the correction, so this is null")
+    parser.add_argument("--line-ending-record", default=None,
+                        help=("JSON object recording the worktree-byte and git-blob sha256 of the "
+                              "JSON evidence, produced by scripts/line_ending_probe.py"))
     args = parser.parse_args()
 
     card = args.card
@@ -244,27 +251,39 @@ def main() -> int:
         "oracle_document": {
             "path": "oracle.md",
             "sha256_now": sha256_file(oracle_md_path),
-            "sha256_before_any_product_run": args.oracle_md_sha_before_run,
+            "sha256_before_the_definitive_product_run": args.oracle_md_sha_before_run,
             "honest_gap": (
-                "oracle.md was written before any product run and its frozen body (sections 0-11) "
-                "was NOT modified afterwards. The expected values were frozen in "
-                "evidence/<card>/oracle.json by the independent stdlib generator BEFORE the first "
-                "product invocation; the generator is reproducible byte-for-byte (proved by the "
-                "case-E regeneration in evidence/<card>/oracle_selfcheck.json). NOTE: the FIRST "
-                "generation had a defect (a wrong defaults expectation for M25 and a crash on M27) "
-                "which was corrected BEFORE the oracle.md was written and before the definitive "
-                "product run; the pre-correction files are preserved under recovery/precorrection/ "
-                "and the whole ledger is in evidence/<card>/revision_r2.json. commands.json records "
-                "argv and raw exit codes ONLY and does NOT carry an oracle.md hash."),
+                "oracle.md was written before the DEFINITIVE product run and its frozen body "
+                "(sections 0-11) was NOT modified afterwards; only APPENDED revision sections were "
+                "added (the r2 section). The expected values were frozen in "
+                "evidence/<card>/oracle.json by the independent stdlib generator. The generator is "
+                "reproducible byte-for-byte (proved by the self-check G regeneration in "
+                "evidence/<card>/oracle_selfcheck.json). Three provenance facts are recorded "
+                "rather than hidden: (1) the v1 generation had a defect which was corrected before "
+                "the definitive run - the only expectation that ever changed is M25's NON-GATING "
+                "defaults block, and the timeline is in evidence/<card>/revision_r2.json; (2) the "
+                "v1 generator SOURCE and the M27 crash traceback were never persisted, so that "
+                "accident is not reproducible (provenance gap); (3) the M26/M27/M28 NEG-CARD patch "
+                "was corrected under review finding P2-1 and cases.json was re-frozen before the "
+                "definitive run. commands.json records argv and raw exit codes ONLY and does NOT "
+                "carry an oracle.md hash."),
             "mtime_ordering": {
                 "oracle_json_mtime": mtime(os.path.join(ev, "oracle.json")),
                 "input_json_mtime": mtime(os.path.join(ev, "input.json")),
                 "oracle_md_mtime": mtime(oracle_md_path),
-                "product_stdout_mtime": mtime(os.path.join(ev, "stdout.txt")),
-                "oracle_json_precedes_run": mtime(os.path.join(ev, "oracle.json")) < mtime(
-                    os.path.join(ev, "stdout.txt")),
-                "oracle_md_precedes_run": mtime(oracle_md_path) < mtime(
-                    os.path.join(ev, "stdout.txt")),
+                "first_ever_product_run_stdout_mtime": mtime(os.path.join(
+                    attempt, "recovery", "precorrection", "stdout.txt")),
+                "definitive_product_stdout_mtime": mtime(os.path.join(ev, "stdout.txt")),
+                "oracle_json_precedes_the_definitive_run": mtime(os.path.join(ev, "oracle.json")) <
+                mtime(os.path.join(ev, "stdout.txt")),
+                "oracle_json_precedes_the_first_ever_run": mtime(
+                    os.path.join(ev, "oracle.json")) < mtime(os.path.join(
+                        attempt, "recovery", "precorrection", "stdout.txt")),
+                "note": ("r2 re-froze cases.json and re-ran the product, so the ORACLE.JSON mtime is "
+                         "later than the first ever run of this attempt. What the mtime ordering "
+                         "does establish is the pair that matters for the verdict: the frozen "
+                         "evidence and oracle.md both precede the DEFINITIVE run that produced "
+                         "evidence/<card>/stdout.txt."),
             },
             "oracle_script_selfcheck": ("evidence/%s/oracle_selfcheck.json records the generator's "
                                         "import list, product_import_present=false and the "
@@ -507,71 +526,187 @@ def main() -> int:
     dump(os.path.join(ev, "oracle_selfcheck.json"), selfcheck_doc)
 
     # ---------------- revision_r2 (single revision section) ----------------
+    # Timeline facts (all verified by mtime + frozen hashes; see the ledger below).
+    pre = os.path.join(attempt, "recovery", "precorrection")
+    v1_oracle = os.path.join(pre, "v1_postgen_oracle.json")
+    v1_cases = os.path.join(pre, "v1_postgen_cases.json")
+    v1_input = os.path.join(pre, "v1_postgen_input.json")
+    v1_oracle_sha = sha256_file(v1_oracle) if os.path.exists(v1_oracle) else None
+    v1_cases_sha = sha256_file(v1_cases) if os.path.exists(v1_cases) else None
+    v1_input_sha = sha256_file(v1_input) if os.path.exists(v1_input) else None
+
     corrections = {
-        "M25": ("the FIRST oracle generation set the defaults expectation to the positive value "
-                "(300) while the frozen defaults INPUT was the all-zero identity case, whose hand "
-                "value is 0; the generator was corrected and the defaults expectation is now 0"),
-        "M26": "no correction was needed for this card (the first generation already emitted 0)",
-        "M27": ("the FIRST oracle generation crashed with TypeError: Object of type Decimal is not "
-                "JSON serializable, so no oracle.json was produced at all; the generator was "
-                "corrected to coerce the one auxiliary value to float"),
-        "M28": "no correction was needed for this card (the first generation already emitted 9.5)",
+        "M25": ("THE ONLY CARD WITH A REAL PRE-CORRECTION DIFFERENCE. The v1 generation set the "
+                "defaults expectation to the positive value 300 while the frozen defaults INPUT "
+                "was the all-zero identity case whose hand value is 0. The first product run then "
+                "reported `defaults ok: False actual: [0.0] expected: [300.0]` - the mismatch was "
+                "caught by the run itself, NOT by a frozen gate - and the generator was re-run so "
+                "the defaults expectation became 0."),
+        "M26": ("NO CHANGE AT ALL. The v1 oracle.json is byte-identical to the frozen file "
+                "(see v1_vs_frozen below)."),
+        "M27": ("The v1 GENERATION raised `TypeError: Object of type Decimal is not JSON "
+                "serializable` on the auxiliary `extra_expected` value. CORRECTION OF THE EARLIER "
+                "CLAIM: a complete, valid v1 oracle.json DOES exist (2480 B, valid JSON) and is "
+                "byte-identical to the frozen file; the crash therefore did NOT prevent "
+                "oracle.json from being written for this card, and the earlier wording 'no "
+                "oracle.json was produced at all' was WRONG and has been removed. What the crash "
+                "did prevent is unknown in detail, because the v1 generator SOURCE and the "
+                "traceback were never persisted (see v1_generator_source below)."),
+        "M28": ("NO CHANGE AT ALL. The v1 oracle.json is byte-identical to the frozen file."),
     }
     dump(os.path.join(ev, "revision_r2.json"), {
         "card_id": card,
         "revision": "r2",
-        "trigger": ("correction of a generator defect found by the first product run, applied "
-                    "BEFORE oracle.md was written and BEFORE the definitive product run"),
+        "structure_note": ("exactly ONE revision section is recorded in this file (the r2 section "
+                           "of oracle.md); the r1 pass and the P2/P3 response are both described "
+                           "inside it rather than as separate sections"),
+        "trigger": ("independent review of attempt a20260919-01 returned accepted_scoped (formula "
+                    "only) with mandatory findings P2-1 (NEG-CARD coverage claim) and P2-2 "
+                    "(self-contradictory oracle-accident narrative), plus P3 observations"),
+        "review_verdict_received": "accepted_scoped (formula qualification only)",
         "frozen_expectations_final": {
             "positive_expected_float": oracle_doc["positive"]["expected_float"],
             "continuity_positive_expected_float": oracle_doc["continuity_positive"]["expected_float"],
             "defaults_expected_float": oracle_doc["defaults_expected_float"],
         },
-        "frozen_expectations_unchanged_after_that_point": True,
+        "no_gate_expectation_was_ever_rewritten": {
+            "statement": ("no expectation that gates the verdict (positive, continuity_positive, "
+                          "cases[].expected) was changed after it was first written. The only "
+                          "expectation ever changed is M25's NON-GATING defaults block."),
+            "evidence": ("the first product run's run_result.json "
+                         "(recovery/precorrection/run_result.json) carries per_value_checks[].expected "
+                         "and continuity_positive.expected; the reviewer compared them against the "
+                         "frozen oracle.json per card and found them identical, and the four "
+                         "cases.json v1 files are byte-identical to the frozen ones"),
+        },
         "product_files_changed": [],
         "correction": corrections[card],
-        "hash_ledger": {
-            "oracle_json_sha256_before_correction": args.oracle_json_sha_before_correction,
-            "oracle_json_sha256_after_correction": sha256_file(os.path.join(ev, "oracle.json")),
-            "oracle_md_sha256_before_correction": args.oracle_md_sha_before_correction,
-            "oracle_md_sha256_before_the_definitive_product_run": args.oracle_md_sha_before_run,
-            "oracle_md_sha256_now": sha256_file(oracle_md_path),
-            "generator_sha256_first": load(os.path.join(
-                attempt, "recovery", "precorrection", "oracle_selfcheck.json"))["script_sha256"]
-            if os.path.exists(os.path.join(attempt, "recovery", "precorrection",
-                                           "oracle_selfcheck.json")) else None,
-            "generator_sha256_final": scripts["scripts/oracle_M25_M28.py"],
-            "commands_json_contains_oracle_md_hash": False,
-            "honest_note": ("oracle.md did not exist before the correction, so "
-                            "oracle_md_sha256_before_correction is null for every card; the "
-                            "pre-correction oracle.json is preserved under recovery/precorrection/ "
-                            "and is NOT used as a baseline anywhere"),
-            "mtime_ordering_proof": {
-                "oracle_json_mtime": mtime(os.path.join(ev, "oracle.json")),
-                "first_ever_product_stdout_mtime": mtime(os.path.join(
-                    attempt, "recovery", "precorrection", "stdout.txt")),
-                "definitive_product_stdout_mtime": mtime(os.path.join(ev, "stdout.txt")),
-                "oracle_json_precedes_the_first_ever_product_run": mtime(
-                    os.path.join(ev, "oracle.json")) < mtime(os.path.join(
-                        attempt, "recovery", "precorrection", "stdout.txt")),
-                "oracle_json_precedes_the_definitive_product_run": mtime(
-                    os.path.join(ev, "oracle.json")) < mtime(os.path.join(ev, "stdout.txt")),
-                "caveat": ("HONEST STATEMENT: the oracle.json mtime is LATER than the very first "
-                           "product run of this attempt, because that first run exposed the "
-                           "generator defect and the generator was then re-run to correct it. The "
-                           "requirement that matters is satisfied for the DEFINITIVE run: "
-                           "oracle.json (and oracle.md) were written before the definitive product "
-                           "run that produced evidence/<card>/stdout.txt, and their frozen sha256 "
-                           "values were unchanged between that run and this pack (verified by "
-                           "re-hashing at pack time). The pre-correction stdout is preserved under "
-                           "recovery/precorrection/stdout.txt together with the pre-correction "
-                           "oracle.json, so the ordering claim can be checked by the reviewer "
-                           "directly. This card therefore reports "
-                           "oracle_json_precedes_the_first_ever_product_run = "
-                           + str(mtime(os.path.join(ev, "oracle.json")) < mtime(os.path.join(
-                               attempt, "recovery", "precorrection", "stdout.txt"))).lower()
-                           + " rather than claiming otherwise."),
+        "timeline_as_observed": {
+            "v1_generation_input_cases_oracle_mtime": mtime(v1_oracle) if os.path.exists(v1_oracle)
+            else None,
+            "oracle_md_mtime": mtime(oracle_md_path),
+            "first_ever_product_run_stdout_mtime": mtime(os.path.join(pre, "stdout.txt")),
+            "v2_frozen_evidence_mtime": mtime(os.path.join(ev, "oracle.json")),
+            "definitive_product_run_stdout_mtime": mtime(os.path.join(ev, "stdout.txt")),
+            "what_is_actually_supported": (
+                "1) the GATING expectations were in place before the FIRST product run (see "
+                "no_gate_expectation_was_ever_rewritten); 2) the M25 DEFAULTS block (non-gating) "
+                "was corrected AFTER the first product run and BEFORE the definitive run; 3) the "
+                "definitive run happened after the frozen evidence was written. The earlier claim "
+                "'the correction was applied BEFORE oracle.md was written' is NOT supported by "
+                "mtime and has been withdrawn: the final generator's mtime (03:43:34) is LATER "
+                "than all four oracle.md files (03:42:24-03:43:07) and later than the first "
+                "product run (03:43:11-12)."),
+            "v1_run_used_the_frozen_gating_expectations": (
+                "the precorrection stdout.txt records `positive expected [264000.0]`, "
+                "`defaults [262800.0]`, 11/11 negatives and rc=0 for M27, matching the frozen "
+                "oracle.json"),
+        },
+        "p2_1_cases_json_refreeze": {
+            "status": ("applied to M26, M27 and M28; NOT needed for M25 (its NEG-CARD uses "
+                       "set_driver_multi and never had the defect - the reviewer confirmed M25's "
+                       "documentation was already accurate)"),
+            "defect": ("NEG-CARD used kind=set_driver with value={\"__float__\": X}. apply_case "
+                       "assigns the value as a whole for set_driver (only set_driver_element "
+                       "unwraps build_mutation_value), so the driver became a dict and the generic "
+                       "per-year length/type guard at model_registry.py:336 refused the case "
+                       "before the card-specific guard was evaluated"),
+            "fix": ("value -> one-element list; kind unchanged; cases.json re-frozen; product "
+                    "re-run once"),
+            "expectations_changed": False,
+            "rerun_mechanism_observed": run_result.get("neg_card_mechanism_check"),
+            "cases_json_sha256": {
+                "v1_before_the_fix": v1_cases_sha,
+                "frozen_after_the_fix": sha256_file(os.path.join(ev, "cases.json")),
+                "changed": (v1_cases_sha != sha256_file(os.path.join(ev, "cases.json"))),
             },
+            "runner_gate_added": ("cases.json.case_contract.neg_card_declared_mechanism is now "
+                                  "verified by run_card.py at verdict time; a mismatch or a missing "
+                                  "declaration is a harness defect (rc=1). Validated by self-check "
+                                  "cases F1/F2 and by mutation-proof case D."),
+        },
+        "p3_2_runner_case_contract": {
+            "finding": ("the runner used to ignore cases.json[].expected and the case count: "
+                        "rewriting a declaration or deleting a negative still returned rc=0"),
+            "fix": ("run_card.py now verifies declared_expected_exception, expected_count and "
+                    "expected_ids before issuing a verdict"),
+            "self_check": {"F1_rewritten_declaration": 1, "F2_deleted_case_N04": 1},
+            "scope": "fixed in this batch only; no other card's frozen runner was touched",
+        },
+        "p3_3_line_endings": {
+            "finding": (".gitattributes declares `*.json text eol=lf`, so r1's CRLF worktree JSON "
+                        "did not hash like its git blob"),
+            "fix": ("every JSON artefact of this attempt is now written with newline=\"\\n\""),
+            "consequence": ("the JSON evidence hashes changed from r1; the NUMBERS did not"),
+            "sidecar": "evidence/%s/line_ending_and_blob_hashes.json" % card,
+        },
+        "p3_5_pack_reruns": {
+            "finding": ("only one pack_stdout.txt survived (03:50:24) while pack_stderr.txt showed "
+                        "an earlier 03:46:39 stamp, so at least two packs happened and the earlier "
+                        "stdout is not visible"),
+            "fix": ("pack stdout is now kept under recovery/precorrection/pack_runs/ with an "
+                    "explicit run index and the inference is written down"),
+        },
+        "p3_7_precorrection_is_not_uniform": {
+            "this_card": ("REAL pre-correction content" if card == "M25" else
+                          "NOT a pre-correction difference: the v1 files are byte-identical to the "
+                          "frozen ones; they are the first-generation snapshot only"),
+            "v1_vs_frozen": {
+                "evidence/%s/oracle.json" % card: {
+                    "v1_sha256": v1_oracle_sha,
+                    "frozen_sha256": sha256_file(os.path.join(ev, "oracle.json")),
+                    "identical": v1_oracle_sha == sha256_file(os.path.join(ev, "oracle.json")),
+                },
+                "evidence/%s/cases.json" % card: {
+                    "v1_sha256": v1_cases_sha,
+                    "frozen_sha256": sha256_file(os.path.join(ev, "cases.json")),
+                    "identical": v1_cases_sha == sha256_file(os.path.join(ev, "cases.json")),
+                },
+                "evidence/%s/input.json" % card: {
+                    "v1_sha256": v1_input_sha,
+                    "frozen_sha256": sha256_file(os.path.join(ev, "input.json")),
+                    "identical": v1_input_sha == sha256_file(os.path.join(ev, "input.json")),
+                },
+            },
+        },
+        "v1_generator_source": {
+            "script_sha256_recorded_by_v1_selfcheck": "d443b5d5bcf5f49f8f442df71b99f774a74422d393f038b9dca14bbe9a6a6e5e",
+            "script_sha256_of_the_version_on_disk_now": scripts["scripts/oracle_M25_M28.py"],
+            "v1_source_persisted": False,
+            "v1_traceback_persisted": False,
+            "search_performed": ("a sha256 sweep of every *.py under PLAN\\execution_runs "
+                                 "(excluding iso\\venv) found NO file with the v1 hash; a text "
+                                 "search found no file containing the TypeError traceback"),
+            "consequence": ("the v1 generator source and the M27 crash traceback are NOT "
+                            "reproducible and NOT independently auditable. Only these facts remain "
+                            "checkable: v1 differed from the final version (different selfcheck "
+                            "hash), v1 wrote all 16 artefacts for the four cards, and M25's v1 "
+                            "oracle.json carried the wrong non-gating defaults expectation."),
+            "status": "recorded as a provenance gap, not as an explained event",
+        },
+        "reviewer_opinions_received_not_adopted_as_decisions": {
+            "note": ("the independent reviewer gave positions on the open questions. They are "
+                     "RECORDED here for the owner; the implementer does not adopt them as "
+                     "decisions."),
+            "OQ-01_binding_scope": ("reviewer ACCEPTS the existing approach (isolation contract = "
+                                    "deterministic bytes under test + cwd outside the repo root; "
+                                    "snapshot 8/8 byte-identical to production) and recommends the "
+                                    "owner explicitly ratify that equivalence"),
+            "OQ-M25M28-01_silent_zero_fill": ("reviewer: does NOT block these four cards (only M27 "
+                                              "other_revenue and M28 recognized_performance_fees "
+                                              "are hit, and 0 is semantically neutral / the card "
+                                              "text declares 0); recommends the registry owner fix "
+                                              "it with explicit defaults metadata rather than a "
+                                              "behaviour change"),
+            "OQ-M25M28-02_productivity_bound": ("reviewer: does NOT block; asks for the exception "
+                                                "to be labelled in the metadata/docs (P3-6)"),
+            "provenance": ("reviewer: does NOT block formula acceptance, but requires the P2-2 "
+                           "narrative correction and an explicit 'v1 source / traceback not "
+                           "preserved' statement - both applied here"),
+            "stronger_mtime_rule": ("reviewer explicitly does NOT adopt the stronger rule "
+                                    "'oracle.json must predate ANY product run'; if the owner "
+                                    "insists on it, the owner rules on it - the reviewer does not "
+                                    "treat it as a technical blocker"),
         },
         "precorrection_preserved_at": "recovery/precorrection/",
         "first_product_run_preserved_at": "recovery/precorrection/stdout.txt",
@@ -627,15 +762,15 @@ def main() -> int:
             os.path.join(ev, "oq_rulings_enumeration.json")),
         "enumeration_summary": {
             "models_total": enum["models_total"],
-            "drivers_total": enum["drivers_total"],
-            "ratio_drivers_total": enum["ratio_drivers_total"],
-            "ratio_drivers_taking_the_0_1_default": enum[
-                "ratio_drivers_taking_the_0_1_default"],
-            "ratio_drivers_not_in_0_1_total": len(enum["ratio_drivers_not_in_0_1"]),
+            "drivers_total_slots": enum["drivers_total_slots"],
+            "ratio_drivers_of_drivers_total": enum["ratio_drivers_of_drivers_total"],
+            "ratio_drivers_taking_the_0_1_default_of_ratio_drivers": enum[
+                "ratio_drivers_taking_the_0_1_default_of_ratio_drivers"],
+            "ratio_drivers_not_in_0_1_of_ratio_drivers": len(enum["ratio_drivers_not_in_0_1"]),
             "ratio_drivers_not_in_0_1": enum["ratio_drivers_not_in_0_1"],
-            "models_with_an_optional_driver_that_has_no_declared_default": [
+            "models_with_an_optional_driver_without_a_declared_default_of_models": [
                 row["model_id"] for row in silent_zero_fill],
-            "models_with_an_optional_driver_that_has_no_declared_default_total":
+            "models_with_an_optional_driver_without_a_declared_default_of_models_total":
                 len(silent_zero_fill),
         },
         "OQ-M25M28-01": {
@@ -670,7 +805,22 @@ def main() -> int:
             "observed": ("store_cohorts.new_store_productivity is (0.0, inf) as the card requires "
                          "(new-store productivity may exceed one), while every other ratio driver "
                          "of these four models takes the conservative [0,1] default"),
+            "labelled_exception_p3_6": {
+                "driver": "store_cohorts.new_store_productivity",
+                "dimension": "ratio",
+                "effective_bounds": [0.0, None],
+                "why_it_is_not_a_contradiction": ("explicit spec.driver_bounds metadata takes "
+                                                  "precedence over the conservative ratio default in "
+                                                  "driver_value_bounds, and card_M26.md L8 explicitly "
+                                                  "allows a new-store productivity above one"),
+                "all_ratio_drivers_outside_0_1": enum["ratio_drivers_not_in_0_1"],
+                "review_finding": "P3-6 (label the exception; do not change behaviour)",
+                "action_taken": ("labelled here and in evidence/%s/disclosure_mapping.json; "
+                                 "NO product change" % card),
+            },
             "implementer_position": "recorded, NOT fixed; no product change was made",
+            "reviewer_opinion_recorded_not_adopted": ("does NOT block; asks for the exception label "
+                                                      "(P3-6), which is applied above"),
         },
         "OQ-M25M28-03": {
             "question": ("may market_change be negative? (card_M28.md L8 says a signed market move "
@@ -756,6 +906,12 @@ def main() -> int:
         else:
             handle.write("- this model has no opening-balance anchor "
                          "(`EXTENSION_OPENING_BALANCES` has no entry for it).\n")
+
+    # ---------------- line endings / blob hashes (review finding P3-3) ----------------
+    if args.line_ending_record:
+        dump(os.path.join(ev, "line_ending_and_blob_hashes.json"),
+             load(args.line_ending_record) if os.path.exists(args.line_ending_record)
+             else json.loads(args.line_ending_record))
 
     # ---------------- evidence_hashes ----------------
     hashes = {}

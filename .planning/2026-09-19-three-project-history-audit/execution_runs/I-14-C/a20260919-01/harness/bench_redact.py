@@ -29,9 +29,15 @@ TIMEOUT_SECONDS = 20
 SHAPES = {
     "underscore-segments": lambda k: ("a_" * k) + "=",
     "dash-segments": lambda k: ("a-" * k) + "=",
+    "segments-no-separator": lambda k: ("a_" * k)[:-1],
     "segments-then-atom": lambda k: ("a_" * k) + "token=ZZZ",
+    "quoted-never-closed": lambda k: ("a_" * k) + '="' + ("b" * 500),
     "long-single-token": lambda k: ("a" * k) + "=",
-    "many-empty-pairs": lambda k: ("k=" * k),
+    "many-empty-pairs": lambda k: "k=" * k,
+    # the remaining regex path (`authorization` / `bearer`) must be stressed too
+    "auth-words": lambda k: "authorization: " * k,
+    "bearer-words": lambda k: "bearer " * k,
+    "url-with-token": lambda k: "url=https://x/" + ("a" * k) + "?token=ZZZ",
 }
 
 

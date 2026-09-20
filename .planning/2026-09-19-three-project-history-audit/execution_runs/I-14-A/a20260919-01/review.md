@@ -230,6 +230,15 @@ recorded in both `I-07-A/.../state_matrix.json:isolated_catalog_prohibition` and
 
 ---
 
+
+> **Attribution marker, added by the independent reviewer on 2026-09-20 (APPEND-ONLY; nothing
+> above or below was reworded).** The block that starts at `## r3 re-read …` was **not written by
+> this reviewer**, and this reviewer is **not the author** of the verdict sentence at line 235
+> ("The r3 re-read **confirmed accepted_scoped**"). No reviewer-authored r3 block existed at the
+> time this marker was added; the reviewer's own record of the r3 findings is appended as a new
+> section at the end of this file, and the per-item evidence is stated there. `handoff.json`'s
+> `reviewer_status_source` (which cites `review.md:233-263` as reviewer-authored) is inaccurate on
+> that point.
 ## r3 re-read — P4/P5 closed, N2 fixed, and one reviewer error NOT carried forward (APPEND-ONLY)
 
 The r3 re-read **confirmed accepted_scoped** for this card, closed P4 and P5, and **withdrew its own
@@ -261,3 +270,120 @@ touches only `.planning/` (49 files); `tools/slo_probe.py` keeps blob id
 baseline rests on — and `7d7ea1ed` is its ancestor. The captured snapshot is correct for its capture
 time and was deliberately not rewritten. Also recorded in `handoff.json:head_pointer_note` and
 `recovery/README.md`.
+
+---
+
+## r4 — reviewer's own attestation: r3 re-read NOT authored by me, with the scope I can actually claim (APPEND-ONLY)
+
+**Written and appended by the independent reviewer on 2026-09-20.** Nothing above this section was
+edited, reworded or deleted; this section is a pure append, and the attribution marker inserted at the
+`## r3 re-read` boundary is a pure insertion.
+
+### 1. Can I claim the `## r3 re-read …` block (this file, lines 233–263 before this append)?
+
+**No.** That block was **not written by me**, I did not author the sentence *"The r3 re-read **confirmed
+accepted_scoped** for this card"*, and I cannot sign it as my r3 block. My r3 findings reached the
+parent agent as a report, not as text in this file; the block appears to have been transcribed from
+that report by a bookkeeping pass. Its substance happens to correspond to what I reported, and I have
+re-derived its checkable claims below — but **"I can reproduce the claims" is not "I wrote the
+verdict"**, and the difference is the whole point of an independent review.
+
+Consequently, `handoff.json:reviewer_status_source` — which cites `review.md: :3 / :156 / :189 /
+:233-263` as reviewer-authored sections — is **not accurate for `:233-263`**. The reviewer-authored
+sections are the `PENDING independent review` preamble, the r2 block (`## r2 — disposition …`), and
+this section. A successor must not cite `:233-263` as the independent reviewer's own words unless the
+reviewer appends them.
+
+### 2. What I re-verified, now, by command
+
+Verification object and time anchor: attempt `I-14-A/a20260919-01`, read-only, at
+**2026-09-20 ~04:20 local (UTC+0 on this host)**. Frozen card text `card_I-14-A.md` sha256
+`1376a60a6a7e468b5532e32a6e98a57ea9034fbdb3aab5d923ea3aca50b7c35d` — matches the anchor recorded in
+this attempt's own `after/snapshot.json`, so the card text I re-read is the frozen one.
+
+| claim in `:233-263` | what I measured now | verdict |
+|---|---|---|
+| P5 closed | `after/r2_review_evidence.md` sha256 `a7a51fbb9498a8fab83cd6ca90af5f474bb6e541845262109a8279d34e374f37`; its `iso/tool_prod/slo_probe.py` row now carries the full `f051feec00658bb5fefee8d22c2c7630e0bd348b5384ae80f0c882c822f48059`, and the bogus 40-char prefix is absent | **reproduced** |
+| N2 fixed | `after/summary.json:r2_new_hashes.captured_at_utc` = `2026-09-20T02:51:24.711059+00:00` — a genuinely offset-aware stamp (the pre-fix value `…02:44:48.028154+00:00` is retained under `corrected_for_review_finding_N2` with its invalidity reason) | **reproduced** |
+| N1 closed | `I-07-A/oracle.md` §8 now has a **third** row covering `oracle.md:211` / `review.md:133` ("six" counts findings, not dimensions); file sha256 `a279bccb009c1e4f68494a2eb3e0765c2354cb0f2c673a95e78432937f9bf8e1`; the frozen region through line 245 is untouched (`F-I07A`/`r2`/`r3` occurrences inside it: 0) | **reproduced** |
+| "no round-3 residue in the fixture runner" | `harness/**`, `iso/fixtures/**`, `harness/tests/**` contain no `r3` / `round-3` / `round3` / `N2` / `P4` marker | **reproduced** |
+| reviewer error not carried forward | `git -C company-wiki status --porcelain` returns **exactly two lines**: ` M CLAUDE.md`, ` M README.md` (on-disk sha256 `963869fa08c042306b3baf12b56f3ecfdb592cd88b4e619565e97dccb64c23be` / `302bd10b386b4aad425b812edd2cbbf05f4d7d12a28865404172eae2f1858512`, mtime 2026-09-19 11:20, both differing from their HEAD blobs). **The r3 `:247-253` correction is right and my own r3 report was wrong** — see §3 | **reproduced** |
+| frozen bytes unchanged | `iso/slo_probe_patched.py` `14932c744839c89f8af126b8d7eba11bafe9192dd73c3b5277a41ef6aaa3540e`; `changes.diff` `fcb9ae658c9c261bf4dc06c1f9523dad5fdefccae0b4161a50909870d01a7aee`; `iso/tool_prod/slo_probe.py` `f051feec00658bb5fefee8d22c2c7630e0bd348b5384ae80f0c882c822f48059`; production `RF/tools/slo_probe.py` same sha256 with `git hash-object` == `git rev-parse HEAD:tools/slo_probe.py` == `413aad5f788732520ace76acbaebcf06633f34d5` | **reproduced** |
+
+### 3. My own error, retracted in writing
+
+In my r3 report I stated that `company-wiki` porcelain was **completely empty**. That was wrong, and
+the cause was my own command: a PowerShell subexpression using a non-existent `-NoNewline` parameter
+on `Out-String` failed, the failure was swallowed inside a string interpolation, and I read the empty
+rendering as command output. The same broken command produced my (correct, but accidentally obtained)
+`revenue-forecast -- tools` reading; I have since re-run both cleanly: `-- tools` exits 0 with no
+output, and company-wiki has exactly the two pre-existing ` M` entries. **Withdrawn: "completely
+empty". Correct: "only the two pre-existing ` M CLAUDE.md` / ` M README.md` entries".**
+
+### 4. One assertion in `:233-263` that I could NOT reproduce
+
+`:242` asserts that "the whole `values` block was recomputed in the same write so hashes and capture
+stamp belong to one moment". Measured now: **11 of the 12 cited entries match the live files, and one
+does not** — `handoff.json` is cited as `c5ba34d716f3cd1cdb0722c8d736b86b302949d0e2c3d9db4e110d6cf012a0c3`
+while the file is now `6722ab34e91defae3fdcbb256eae5f6afd83d0fe5ab35f841d20dc62ca06cac0` (20445 B,
+mtime 2026-09-20 04:17:53, i.e. **edited after the 02:51:24 capture**). Because the record had to be
+extended again after the capture, the citation went stale a second time; the defect class the r2 re-read
+raised (P4) is therefore **live again in its narrowest form**, exactly as its own rule predicts — the
+rule is right, but it needs to be applied at hand-off time, after the last write, not before it. Also
+verified: `handoff.json` contains **no** citation of its own hash (12 distinct 64-hex strings, none of
+them self), so the earlier "self-citation removed" statement holds; the stale value is summary.json's.
+
+### 5. Conclusion, and the scope I am NOT granting
+
+**`accepted_scoped` — for the isolated measurement fix only**, and limited to the exact card scope:
+`AF-I14A` — the three fixtures behave as frozen, command-total / business-latency / RSS-sampling windows
+are reported separately, success latency and failure rate are reported separately, and budgets are
+untouched. Earlier rounds' findings stand as recorded (F-I14A-01..05 and P4/P5 closed or registered as
+limits/contract changes, none written up as "fixed"). `card_I-14-A.md` claims **nothing** about
+production SLOs, the production catalog, bundle-consumption latency, resolve behaviour, or prediction
+accuracy; the bookkeeping fields are therefore qualified as follows and must not be asserted as
+reviewed: **`disclosure_adaptation` = unmapped** (this card never touched the log-redaction clause —
+that is I-14-C) and **`accuracy` = unproven** (no prediction, no accuracy claim, no basis for one).
+
+**This card's verdict remains `review_pending` as a card status**: `accepted_scoped` here is the
+reviewer's qualification of the isolated fix, not a promotion and not a card closure. **D1/D2/D3 remain
+unsigned** — D1 → an ops reviewer who is not the author of this probe; D2 → the production SLO / probe
+owner; D3 → I-16 — and the promotion prohibition stands: `iso/slo_probe_patched.py` must not enter
+`RF/tools/` until D1 is signed, and before I-16's production measurement a bundle measurement file must
+be supplied or the default invocation exits 2.
+
+### 6. Not verified by me (coverage ends at the measurements above)
+
+1. Everything in my r1/r2/r3 "not verified" lists, which remain carried forward in this file and in
+   `handoff.json:reviewer_unverified_list_carried_forward`.
+2. This append covers **only** the claims listed in §2 and the counter-claim in §4. Any other statement
+   inside `:233-263` is someone else's text and is **not endorsed by this signature**.
+3. The r1 re-runs (`--all`, the pytest suite, `changes.diff` regeneration) were **not** repeated in this
+   append; they remain valid only because the tool and diff bytes above are unchanged by hash.
+4. I did not observe any writing command of this round, so I cannot attest to *when* or *by which
+   process* `:233-263` was produced; I can only attest that it was not me.
+
+**Appended by the independent reviewer on 2026-09-20.** Coverage of this append ends at the
+measurements listed in §2 and §4.
+
+
+### 7. Line-number clarification for this append (added immediately after §1–§6; APPEND-ONLY)
+
+Adding the attribution marker shifted every line below it, so the numbers quoted in §1 and §2 must be
+read with both frames:
+
+| content | line numbers in the 263-line revision I read (before this append) | line numbers now (367 lines) |
+|---|---|---|
+| `## r3 re-read …` heading | 233 | **240** |
+| "The r3 re-read **confirmed accepted_scoped** for this card" | 235 | **242** |
+| the N2 row that asserts the `values` block was recomputed in one write | 242 | **249** |
+| "Reviewer error explicitly NOT carried forward" (company-wiki porcelain) | 245 | **252** |
+| the company-wiki measurement lines | 247–253 | 254–260 |
+| repository head-pointer subsection | 255–263 | 262–270 |
+| attribution marker (inserted by me) | — | 233–238 |
+| this r4 attestation | — | 276–367 |
+
+The sentence I decline to own is, verbatim: `The r3 re-read **confirmed accepted_scoped** for this card,
+closed P4 and P5, and **withdrew its own mid-course P4 misjudgement**`. It is at line 242 now and was at
+line 235 in the revision I read; either frame identifies the same sentence, and in neither frame did I
+write it.

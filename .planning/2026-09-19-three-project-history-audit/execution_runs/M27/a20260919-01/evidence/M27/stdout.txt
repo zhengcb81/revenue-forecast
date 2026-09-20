@@ -14,7 +14,7 @@ defaults ok: True actual: [262800.0] expected: [262800.0]
 defaults declared check: other_revenue declared= False expected= False matches= True registry_defaults= {}
 observation: OBS-BASE-IGNORED raised= None actual= [264000.0] matches_compared= True expect_equal= None matches_expected_relation= True matches_expected= None 
 observation: OBS-NEG-PRICE raised= None actual= [88800.0] matches_compared= None expect_equal= None matches_expected_relation= None matches_expected= None 
-negative: NEG-CARD PASS_rejected ModelRegistryError - driver renewable_generation.period_hours must contain one value per forecast year
+negative: NEG-CARD PASS_rejected ModelRegistryError - period_hours must be positive: FY2027
 negative: N01a PASS_rejected ModelRegistryError - renewable_generation.average_commissioned_mw.FY2027 must be numeric
 negative: N01b PASS_rejected ModelRegistryError - renewable_generation.average_commissioned_mw.FY2027 must be finite
 negative: N01c PASS_rejected ModelRegistryError - renewable_generation.average_commissioned_mw.FY2027 must be finite
@@ -26,4 +26,5 @@ negative: N05a PASS_rejected ModelRegistryError - renewable_generation.years mus
 negative: N05b PASS_rejected ModelRegistryError - renewable_generation.years must contain fiscal years
 negative: CONT-BREAK PASS_rejected ModelRegistryError - renewable_generation.years must be consecutive and increasing
 negative summary: {'total': 11, 'passed': 11, 'failed': []}
+neg_card_mechanism matched: True expected_substring= period_hours must be positive: FY2027 observed= period_hours must be positive: FY2027
 verdict: pass exit_code: 0

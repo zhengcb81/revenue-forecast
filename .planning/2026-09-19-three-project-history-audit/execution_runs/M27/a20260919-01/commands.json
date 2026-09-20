@@ -240,7 +240,7 @@
   },
   {
    "unit_id": "E-M27-evidence-pack",
-   "purpose": "pack source_manifest / command_manifest / negative_results / qualification / integrity / oq_rulings / revision ledger / evidence_hashes",
+   "purpose": "pack source_manifest / command_manifest / negative_results / qualification / integrity / oq_rulings / revision ledger / blob hashes / evidence_hashes",
    "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01",
    "argv": [
     "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
@@ -255,18 +255,40 @@
     "--interpreter",
     "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
     "--oracle-md-sha-before-run",
-    "0f0ff55faf104b449136857504d37989b26a1dd1ee15dd0051b3c993d185b8e4",
+    null,
     "--oracle-json-sha-before-run",
-    "09f603aa87ab89575a008d9b1d721ce44883af6558f32e470f004f455b3c9c18",
-    "--oracle-json-sha-before-correction",
-    "09f603aa87ab89575a008d9b1d721ce44883af6558f32e470f004f455b3c9c18",
-    "--oracle-md-sha-before-correction",
-    "null"
+    "00cbaab6992ad1da5e572052fbb78db1515707406bfec57d41d7c40e31fd531e",
+    "--line-ending-record",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\evidence\\M27\\line_ending_and_blob_hashes.json"
    ],
    "network": "disabled",
    "raw_rc": 0,
    "expected_rc": 0,
    "note": "read-only with respect to the product: the only module it imports is the attempt-local isolated snapshot, and it enumerates MODEL_REGISTRY metadata without ever calling calculate_registered_model"
+  },
+  {
+   "unit_id": "P-M27-line-ending-blob-probe",
+   "purpose": "record worktree sha256, git blob sha256 and the LF-normalised sha256 for every JSON artefact, so the evidence hashes are reproducible from a clean clone (review finding P3-3)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\scripts\\line_ending_probe.py",
+    "--card",
+    "M27",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01",
+    "--repo",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M27\\a20260919-01\\evidence\\M27\\line_ending_and_blob_hashes.json"
+   ],
+   "network": "disabled",
+   "raw_rc": 0,
+   "expected_rc": 0,
+   "note": "the probe only reads; git hash-object is a read-only plumbing command"
   },
   {
    "unit_id": "R-M27-independent-rerun-check",

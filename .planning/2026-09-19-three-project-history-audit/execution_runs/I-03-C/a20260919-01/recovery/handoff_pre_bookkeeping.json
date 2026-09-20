@@ -1,0 +1,96 @@
+{
+  "card_id": "I-03-C",
+  "attempt_id": "a20260919-01",
+  "parent": "I-03",
+  "status": "review_pending",
+  "controller_stipulation": "隔离实施：禁止修改三仓源码/测试/配置；只写 attempt 目录 A；禁止网络；禁止改真实 raw/catalog。三仓源码经执行前后复验零改动（gap_plan d18391b7…、authorization f858a369…、close_gap 117c8166… 全部保持冻结值）。",
+  "completed_steps": [
+    "1. 先读五件套：card_I-03-C / common_filing_cards / START_HERE / review_and_handoff + I-03-A（decision/oracle/compat-matrix/handoff）+ I-03-B（outcome/changes.diff/handoff）；锚点源码只读重算 hash 与一致；current_recheck.json url_and_date_changed_same_gap_hash 反例域已读",
+    "2. 建立 attempt 目录骨架；复制三文件 → iso/baseline（逐字节复验与生产锚点一致）；解释器 -X utf8 就绪（3.13.9）",
+    "3. 步骤1（先于实施）：scripts/canonical_p0_ref.py 用**独立序列化代码**（自写 canonical-JSON sorted-keys walker + 叶级转义，非生产 helper 路径，并自校验与 stdlib canonical 形式逐字节相等）冻结 P0 canonical bytes=786B、SHA=b9c1847975c88dd226ef061d72630bb498be5374f80ac9c4553120583c84ba24 → canonical/p0.expected.json；未调用被测 _hash_gap 生成 expected",
+    "4. 冻结 oracle.md（P0/A0 逐字段映射表 + 修前 RED 域 + 修后正反例 29 例）与 decision.md（接口映射 + provider 裁决）",
+    "5. 修前独立断言：iso/pre/pre_fix_assertions.py → before/pre_fix_assertions.json（5 真实 RED：URL/date 同 hash + 授权仍通过 + 缺provider放行 + 旧版收据放行；过期/额度 2 项已正确面如实 not_applicable）",
+    "6. 最小修改（仅 iso/override 三副本）：gap_plan.py = I-03-B override + policy epoch 接入 _hash_gap/build_gap_plan（D6 计划级 policy_hash 字段，唯一策略源）；authorization.py = schema 1.1 + hash_schema_version + build fail-closed（缺provider报错/64hex/canonical 时点/真额度）+ canonical-JSON receipt（accession 集内排 → 重排不变）+ validate fail-closed 有序门（版本显式失效不 auto-upgrade → receipt 自检 → stale_gap_hash → 过期1秒 → provider 必填 → accession → 额度）；close_gap.py = CloseGapBinding + hash_schema_version + validate_close_gap_binding（同一值+同版）",
+    "7. 验证：scripts/w03c_cases.py → after/{binding-variants.json, authorization-refusals.json, canonical-bytes-vs-ref.json, w03c-all-cases.json}；29/29 pass（含一次 oracle 侧 fixture 构造错误修正后复跑）",
+    "8. changes.diff（三文件 baseline vs override，1689 行差异）+ iso_patching.md + binding.json + commands.json + handoff.json"
+  ],
+  "next_step_number": 9,
+  "next_action": "独立 reviewer（filing 侧，非实施者）复验：核对 binding/oracle/decision/commands/before+after 四 JSON/changes.diff/iso_patching；复算至少一个专属 oracle（建议：用独立序列化器重跑 scripts/canonical_p0_ref.py 比对 P0 SHA=b9c18479…，并重放 G-C2 中任一变异得 hash 变+拒绝）；抽一个保留案例（如另一 URL https://fixture.invalid/z 或另一 policy epoch Q 的变体）后出具 accepted_scoped 或 changes_required；C15 执行面遗留保持移交声明",
+  "input_hashes": {
+    "card_I-03-C.md": "同目录执行手册冻结文本（execution_v2）",
+    "I-03-A_decision.md": "963229846b06ed3b4f48d0d3192b444101b5e16e5a4989d53abdbd1a983e910d",
+    "I-03-A_oracle.md": "dd5a57692a74f8bb664ef4b83b5a97dafad94cb519698037c4578a3cf8ec6358",
+    "I-03-A_compat-matrix.md": "09040e469efd870bee12c436228536db9bb523af03a907bd4932c093a2161d2a",
+    "current_recheck.json": "183352a226ee8c903258ebc78b314cf5e33c59f4dbd9d24f6f43de028ae8aec4",
+    "gap_plan.py_production": "d18391b7fa7adf06bf882d013cd9ccae48b9fad24429c3ac66d61b68d907c79f",
+    "authorization.py_production": "f858a369ed556d1b110be5ba7be7fa25ae3519fda94296cfe1c4f9e367d55f43",
+    "close_gap.py_production": "117c8166a6c26f3462574b787e0db79c419e00c8b18287f25738948032f475c3",
+    "I-03-B_override_gap_plan.py": "f0452bea4a5ca9701947582c6bdf7cd76ffd6501bbaef1f2ca3bcbf642076547"
+  },
+  "current_source_hashes": {
+    "iso/override/gap_plan.py": "diff vs baseline（唯一改动 = policy epoch）——复算见 changes.diff",
+    "iso/override/authorization.py": "diff vs baseline（schema 1.1 canonical receipt 面）",
+    "iso/override/close_gap.py": "diff vs baseline（绑定校验壳）",
+    "canonical/p0.expected.json": "84268f4ae1bf998cdae1219abb4c6060f2a02c20585b3ee8ae10a8aad1787420",
+    "before/pre_fix_assertions.json": "a052cf8fdddf42d89e98b985ea45efb000263a7c08a860e9d3d95c4fe555e796",
+    "after/canonical-bytes-vs-ref.json": "2325a40201bb52238fe344e929c8dba62efae799f01b7bd48d51fdcbf76b469a",
+    "after/authorization-refusals.json": "9697da2437260f17efcab289584b932ab3910916eb930f475febde052cdc3e56",
+    "after/binding-variants.json": "6055ef60b5e93b7b915fd5f24f74e15a6b0db913679d88025e9889fb5446e6df",
+    "after/w03c-all-cases.json": "7dbaeddc29825eae94561aab5ee77b8ba07caf747d0bab40c97c3ae58ab6034d"
+  },
+  "changed_paths": [
+    "binding.json",
+    "decision.md",
+    "oracle.md",
+    "commands.json",
+    "iso_patching.md",
+    "iso/pre/pre_fix_assertions.py",
+    "iso/baseline/{gap_plan,authorization,close_gap}.py（原样副本）",
+    "iso/override/{gap_plan,authorization,close_gap}.py（允许面副本）",
+    "scripts/canonical_p0_ref.py",
+    "scripts/w03c_cases.py",
+    "canonical/p0.expected.json",
+    "before/pre_fix_assertions.json",
+    "after/binding-variants.json",
+    "after/authorization-refusals.json",
+    "after/canonical-bytes-vs-ref.json",
+    "after/w03c-all-cases.json",
+    "changes.diff",
+    "handoff.json"
+  ],
+  "commands_executed": [
+    "w03c-canonical-ref (exit 0)",
+    "w03c-prefix-baseline (exit 0; 5 real RED)",
+    "w03c-after-harness (exit 0; 28/29 第一次 → 修正 oracle fixture 后 29/29)",
+    "w03c-changes-diff (exit 0)"
+  ],
+  "raw_exit_codes": [0, 0, 0, 0],
+  "expected_exit_codes": [0, 0, 0, 0],
+  "open_questions": [
+    "执行串输入歧义（decision.md §1 裁决）：执行串写 P0 'provider=a-new、id=a-new'，而卡 I-03-C 固定 A0 provider=test、allowed_accessions=[a-new]。已按保守解释取 id(provider_document_id)=a-new 且 P0 candidate provider=test（使卡内 A0-P0 正例可成立）；若 reviewer 改判 provider=a-new，则 P0 canonical bytes/SHA 需按 decision.md 的显式重签流程重冻（不得静默替换）",
+    "not_published 恒 false：adapter 穷尽知识声明字段不存在（I-03-A 遗留依赖，非 TBD）",
+    "C15 批次截断/completed_partial/全 close-gap 事务（resolver/journal/lock）属执行面，未在本卡（close_gap.py 仅绑定校验边界）；本卡 validate_close_gap_binding 已可直接被该执行面消费"
+  ],
+  "blocked_by": [],
+  "evidence_paths": [
+    "canonical/p0.expected.json",
+    "oracle.md",
+    "decision.md",
+    "binding.json",
+    "commands.json",
+    "iso_patching.md",
+    "before/pre_fix_assertions.json",
+    "after/canonical-bytes-vs-ref.json",
+    "after/authorization-refusals.json",
+    "after/binding-variants.json",
+    "after/w03c-all-cases.json",
+    "changes.diff"
+  ],
+  "reviewer_status": "review_pending",
+  "START_HERE_fields": {
+    "run_cwd_policy": "执行 cwd = attempt 目录 A（纯函数副本实施；三仓 cwd 未被写入或运行）",
+    "interpreter": "A/iso/venv/Scripts/python.exe (-X utf8 -B)",
+    "isolation": "只写 A/；生产 raw/catalog/registry/worker 零触碰；network=disabled；URL 仅字符串",
+    "scope_note": "T-GAP 生产 pytest 未运行（生产文件未改动）；等价断言已 isolate 全量复现（修前 5 RED + 修后 29/29）；C15 执行面遗留移交；新测试节点绑定仍归 I-00-B"
+  }
+}

@@ -252,8 +252,31 @@ def build_units(card, attempt_root):
     return units
 
 
+def r2_units(card, attempt_root):
+    """The sanctioned r2 addendum command (M17 only; M18/M19/M20 section-1 rows are correct)."""
+    if card != "M17":
+        return []
+    p = paths(card, attempt_root)
+    py = [p["interpreter"], "-X", "utf8", "-B"]
+    return [
+        _run(
+            p, "R2-append-oracle-addendum",
+            py + [os.path.join(p["scripts"], "append_oracle_addendum.py"), "--card", card,
+                  "--attempt-root", p["attempt"],
+                  "--expected-pre-append-sha256",
+                  "9c8021eebd01aa27a9963db8ac869ac6a067eb24af17439164f3cb61bc42fa69"],
+            0,
+            ("append-only correction of ONE descriptive row in oracle.md section 1 (the three amount "
+             "drivers are signed, not non-negative), executed AFTER the independent review verdict"),
+            creates=[os.path.join(p["evidence"], "oracle_addendum_record.json")],
+            note=("refuses to run unless the declared pre-append sha256 matches and no r2 section "
+                  "exists; the r1 body above the boundary is not edited by one byte; the pre-append "
+                  "hash is proven reproducible by truncation at the appended section's first line")),
+    ]
+
+
 def closing_units(card, attempt_root):
-    """Units executed after the pack: handoff generation, then the closing recorder.
+    """Units executed after the pack: process history, handoff, then the closing recorder.
 
     They are separate from build_units() because run_pipeline.py runs the measurement chain and
     stops there; the closing units only read evidence and write records, and they are executed
@@ -265,12 +288,20 @@ def closing_units(card, attempt_root):
     py = [interp, "-X", "utf8", "-B"]
     return [
         _run(
+            p, "P-write-process-history",
+            py + [os.path.join(p["scripts"], "write_process_history.py"), "--card", card,
+                  "--attempt-root", p["attempt"]],
+            0,
+            ("record the pass structure of this attempt (observed last-execution records plus the "
+             "DECLARED earlier passes) so that repeated executions of one argv are visible"),
+            creates=[os.path.join(p["attempt"], "process_history.json")]),
+        _run(
             p, "H-write-handoff",
             py + [os.path.join(p["scripts"], "write_handoff.py"), "--card", card,
                   "--attempt-root", p["attempt"]],
             0,
             ("generate handoff.json from the evidence on disk: hashes, raw exit codes, open "
-             "questions and the first unfinished card action"),
+             "questions, the first unfinished card action and the process/batch pointers"),
             creates=[os.path.join(p["attempt"], "handoff.json")]),
         _run(
             p, "Z-close-attempt",

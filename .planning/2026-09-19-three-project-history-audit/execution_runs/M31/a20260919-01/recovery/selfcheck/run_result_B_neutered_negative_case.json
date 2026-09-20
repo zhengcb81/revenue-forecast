@@ -1,0 +1,424 @@
+{
+ "card_id": "M31",
+ "attempt_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck",
+ "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts",
+ "product_entry_point": "model_registry.calculate_registered_model(**input)",
+ "only_product_function_called": "calculate_registered_model",
+ "registry_metadata": {
+  "model_id": "inventory_sellthrough",
+  "required": [
+   "opening_inventory",
+   "saleable_production",
+   "purchased_units",
+   "scrapped_units",
+   "sold_units",
+   "closing_inventory",
+   "net_revenue_per_unit"
+  ],
+  "optional": [],
+  "defaults": {},
+  "dimensions": {
+   "opening_inventory": "quantity",
+   "saleable_production": "quantity",
+   "purchased_units": "quantity",
+   "scrapped_units": "quantity",
+   "sold_units": "quantity",
+   "closing_inventory": "quantity",
+   "net_revenue_per_unit": "revenue_per_unit"
+  },
+  "ratio_drivers": [],
+  "declared_driver_bounds": {},
+  "formula": "revenue = sold_units * net_revenue_per_unit; closing_inventory = opening_inventory + saleable_production + purchased_units - scrapped_units - sold_units",
+  "effective_bounds": {
+   "opening_inventory": [
+    0.0,
+    "inf"
+   ],
+   "saleable_production": [
+    0.0,
+    "inf"
+   ],
+   "purchased_units": [
+    0.0,
+    "inf"
+   ],
+   "scrapped_units": [
+    0.0,
+    "inf"
+   ],
+   "sold_units": [
+    0.0,
+    "inf"
+   ],
+   "closing_inventory": [
+    0.0,
+    "inf"
+   ],
+   "net_revenue_per_unit": [
+    0.0,
+    "inf"
+   ]
+  }
+ },
+ "positive": {
+  "raised": null,
+  "actual": [
+   160.0
+  ],
+  "actual_repr": [
+   "160.0"
+  ],
+  "length": 1
+ },
+ "continuity_positive": {
+  "raised": null,
+  "actual": [
+   160.0,
+   0.0
+  ],
+  "actual_repr": [
+   "160.0",
+   "0.0"
+  ],
+  "expected": [
+   160.0,
+   0.0
+  ],
+  "expectation_present": true,
+  "ok": true
+ },
+ "defaults": {
+  "raised": null,
+  "actual": [
+   160.0
+  ],
+  "expected": [
+   160.0
+  ],
+  "ok": true
+ },
+ "observations": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "expectation": null,
+   "kind": "set_base_revenue",
+   "why": "the bridge calculator deletes base_revenue; design observation only, not a pass condition",
+   "raised": null,
+   "actual": [
+    160.0
+   ],
+   "compared_to": "positive",
+   "compared_actual": [
+    160.0
+   ],
+   "matches_compared": true,
+   "expected_equal": true,
+   "matches_expected_relation": true,
+   "expected": [
+    160.0
+   ],
+   "matches_expected": true
+  },
+  {
+   "id": "OBS-SCRAP-NOT-REVENUE",
+   "expectation": "revenue follows sold_units only, and scrapped units are not negative revenue: 0 x 2 = 0 while the bridge balances at 100 + 0 + 0 - 85 - 0 = 15",
+   "kind": "set_driver_multi",
+   "why": "the card states that scrapping is not negative revenue; this probe makes that statement falsifiable with a balancing input (recorded under observation_expected)",
+   "raised": null,
+   "actual": [
+    0.0
+   ],
+   "expected": [
+    0.0
+   ],
+   "matches_expected": true
+  },
+  {
+   "id": "OBS-SOLD-ONLY",
+   "expectation": "revenue is sold_units x net price with the bridge rebalanced: 100 x 2 = 200",
+   "kind": "set_driver",
+   "why": "probes the revenue line at a different sold quantity with a balancing bridge",
+   "raised": null,
+   "actual": [
+    200.0
+   ],
+   "expected": [
+    200.0
+   ],
+   "matches_expected": true
+  }
+ ],
+ "negatives": [
+  {
+   "id": "NEG-CARD",
+   "kind": "set_driver_element",
+   "why": "card-specific negative (oracle.md sections 5 and 8)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_inventory': [100], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [86.0], 'net_revenue_per_unit': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "opening_inventory stock-flow balance failed: FY2027",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 346, in calculate_registered_model\n    result = spec.calculator(base, normalized, years)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 156, in calculate\n    output = calculator(rows, years, error)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 128, in _inventory\n    _bridge(rows, index, year, \"opening_inventory\", \"closing_inventory\",\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            d[\"opening_inventory\"] + d[\"saleable_production\"] + d[\"purchased_units\"]\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            - d[\"scrapped_units\"] - d[\"sold_units\"], error)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 34, in _bridge\n    _equal(rows[index][closing], expected_closing,\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n           f\"{opening} stock-flow balance failed: FY{year}\", error)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py\", line 29, in _equal\n    raise error(message)\nmodel_registry.ModelRegistryError: opening_inventory stock-flow balance failed: FY2027\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01a",
+   "kind": "set_driver_element",
+   "why": "common negative N01a: bool is not a numeric driver value",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_inventory': [True], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [85], 'net_revenue_per_unit': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "inventory_sellthrough.opening_inventory.FY2027 must be numeric",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 298, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be numeric\")\nmodel_registry.ModelRegistryError: inventory_sellthrough.opening_inventory.FY2027 must be numeric\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01b",
+   "kind": "set_driver_element",
+   "why": "common negative N01b: non-finite value nan",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_inventory': [nan], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [85], 'net_revenue_per_unit': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "inventory_sellthrough.opening_inventory.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: inventory_sellthrough.opening_inventory.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01c",
+   "kind": "set_driver_element",
+   "why": "common negative N01c: non-finite value inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_inventory': [inf], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [85], 'net_revenue_per_unit': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "inventory_sellthrough.opening_inventory.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: inventory_sellthrough.opening_inventory.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N01d",
+   "kind": "set_driver_element",
+   "why": "common negative N01d: non-finite value -inf",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_inventory': [-inf], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [85], 'net_revenue_per_unit': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "inventory_sellthrough.opening_inventory.FY2027 must be finite",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 341, in calculate_registered_model\n    number = _finite_model_number(value, f\"{model_id}.{driver}.FY{year}\")\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 304, in _finite_model_number\n    raise ModelRegistryError(f\"{field_name} must be finite\")\nmodel_registry.ModelRegistryError: inventory_sellthrough.opening_inventory.FY2027 must be finite\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N02",
+   "kind": "set_driver",
+   "why": "common negative N02: first required driver array is empty, so its length != len(years)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_inventory': [], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [85], 'net_revenue_per_unit': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "driver inventory_sellthrough.opening_inventory must contain one value per forecast year",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 337, in calculate_registered_model\n    raise ModelRegistryError(f\"driver {model_id}.{driver} must contain one value per forecast year\")\nmodel_registry.ModelRegistryError: driver inventory_sellthrough.opening_inventory must contain one value per forecast year\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N03",
+   "kind": "delete_driver",
+   "why": "common negative N03: first required driver deleted (missing required field)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [85], 'net_revenue_per_unit': [2]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "missing drivers for inventory_sellthrough: opening_inventory",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 329, in calculate_registered_model\n    raise ModelRegistryError(f\"missing drivers for {model_id}: {', '.join(sorted(missing))}\")\nmodel_registry.ModelRegistryError: missing drivers for inventory_sellthrough: opening_inventory\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N04",
+   "kind": "add_driver",
+   "why": "common negative N04: unknown_driver added (unsupported driver)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_inventory': [100], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [85], 'net_revenue_per_unit': [2], 'unknown_driver': [1]} years=[2027] base=0",
+   "raised": "ModelRegistryError",
+   "message": "unsupported drivers for inventory_sellthrough: unknown_driver",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 332, in calculate_registered_model\n    raise ModelRegistryError(f\"unsupported drivers for {model_id}: {', '.join(sorted(extra))}\")\nmodel_registry.ModelRegistryError: unsupported drivers for inventory_sellthrough: unknown_driver\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05a",
+   "kind": "set_years",
+   "why": "common negative N05a: years = [] (fiscal-year domain)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_inventory': [100], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [85], 'net_revenue_per_unit': [2]} years=[] base=0",
+   "raised": "ModelRegistryError",
+   "message": "inventory_sellthrough.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: inventory_sellthrough.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "N05b",
+   "kind": "set_years",
+   "why": "common negative N05b: first year replaced by True (True is not a fiscal year)",
+   "expected": "ModelRegistryError",
+   "base_input": "positive",
+   "mutated_input_repr": "{'opening_inventory': [100], 'saleable_production': [60], 'purchased_units': [10], 'scrapped_units': [5], 'sold_units': [80], 'closing_inventory': [85], 'net_revenue_per_unit': [2]} years=[True] base=0",
+   "raised": "ModelRegistryError",
+   "message": "inventory_sellthrough.years must contain fiscal years",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 385, in main\n    call_product(model_registry, mutated)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\recovery\\selfcheck\\scripts\\run_card.py\", line 115, in call_product\n    return model_registry.calculate_registered_model(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 322, in calculate_registered_model\n    raise ModelRegistryError(f\"{model_id}.years must contain fiscal years\")\nmodel_registry.ModelRegistryError: inventory_sellthrough.years must contain fiscal years\n",
+   "is_target_type": true,
+   "is_import_or_file_error": false,
+   "verdict": "PASS_rejected"
+  },
+  {
+   "id": "CONT-BREAK",
+   "kind": "set_driver_multi",
+   "why": "stock-flow continuity break for this card (oracle.md section 4)",
+   "expected": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "mutated_input_repr": "{'opening_inventory': [100, 85], 'saleable_production': [60, 0], 'purchased_units': [10, 0], 'scrapped_units': [5, 0], 'sold_units': [80, 0], 'closing_inventory': [85, 85], 'net_revenue_per_unit': [2, 2]} years=[2027, 2028] base=0",
+   "raised": null,
+   "verdict": "FAIL_not_rejected"
+  }
+ ],
+ "fidelity": {
+  "python_type": "list",
+  "is_flat_sequence": true,
+  "length": 1,
+  "element_types": [
+   "float"
+  ],
+  "all_elements_plain_number": true,
+  "all_elements_finite": true,
+  "container_has_extra_fields": false,
+  "year_labels_observable": false,
+  "year_linked_observable": "length only: len(output) must equal len(years)",
+  "expected_length": 1,
+  "years_length": 1,
+  "length_equals_years": true,
+  "length_equals_expected": true,
+  "expectations_present": true,
+  "structure_ok": true,
+  "fidelity_ok": true
+ },
+ "tolerances_ok": true,
+ "defaults_ok": true,
+ "exit_code_semantics": {
+  "0": "pass",
+  "1": "harness error",
+  "2": "no verdict (missing expectation or fidelity mismatch)",
+  "3": "negative verdict (mismatch or unrejected negative)",
+  "precedence": "1 > 2 > 3 > 0",
+  "delta_vs_M05_M08_runner": "M05-M08 used 2=harness failure and 3=negative verdict; this runner moves harness failure to 1 and reserves 2 for 'no verdict could be issued'",
+  "positive_raised": false,
+  "expectations_present": true,
+  "fidelity_ok": true,
+  "positive_ok": true,
+  "continuity_ok": true,
+  "negatives_ok": false,
+  "defaults_ok_not_gating": true,
+  "verdict": "fail",
+  "exit_code": 3
+ },
+ "model_id": "inventory_sellthrough",
+ "input_hashes_source": {
+  "evidence/M31/input.json": "0c4e09a78cae332259e5912e4748757417d7b43ba927a21f09be4f2315a07313",
+  "evidence/M31/oracle.json": "83f7bcc573841dcd755dffe7a57c715fadc56a84ab66f592187f02fc20790703",
+  "evidence/M31/cases.json": "3a2b355615d1e3080d2905391c70f9b39e2b2dfd9686f46e4394b2b5c0a55b16"
+ },
+ "model_registry_file": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+ "expectations_present": true,
+ "per_value_checks": [
+  {
+   "index": 0,
+   "year": 2027,
+   "actual": 160.0,
+   "expected": 160.0,
+   "tolerance": 1.6e-07,
+   "abs_diff": 0.0,
+   "ok": true
+  }
+ ],
+ "defaults_gating": false,
+ "negative_summary": {
+  "total": 11,
+  "passed": 10,
+  "failed": [
+   "CONT-BREAK"
+  ],
+  "target_exception": "model_registry.ModelRegistryError",
+  "import_or_file_errors_never_pass": true
+ },
+ "negative_counts": {
+  "total": 11,
+  "rejected_with_ModelRegistryError": 10,
+  "not_rejected": 1,
+  "wrong_exception_type": 0,
+  "import_or_file_error": 0
+ },
+ "verdict": "fail",
+ "exit_code": 3,
+ "verdict_reasons": [
+  "negatives_not_rejected:CONT-BREAK"
+ ],
+ "printed_summary": {
+  "lines": [
+   "card: M31 model_id: inventory_sellthrough",
+   "code_root: C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts",
+   "model_registry_file: C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M31\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+   "registry formula: revenue = sold_units * net_revenue_per_unit; closing_inventory = opening_inventory + saleable_production + purchased_units - scrapped_units - sold_units",
+   "registry required: ['opening_inventory', 'saleable_production', 'purchased_units', 'scrapped_units', 'sold_units', 'closing_inventory', 'net_revenue_per_unit']",
+   "registry optional: []",
+   "registry defaults: {}",
+   "registry declared_driver_bounds: {}",
+   "registry effective_bounds: {'opening_inventory': [0.0, 'inf'], 'saleable_production': [0.0, 'inf'], 'purchased_units': [0.0, 'inf'], 'scrapped_units': [0.0, 'inf'], 'sold_units': [0.0, 'inf'], 'closing_inventory': [0.0, 'inf'], 'net_revenue_per_unit': [0.0, 'inf']}",
+   "positive raised: None",
+   "positive actual: [160.0]",
+   "positive expected: [160.0]",
+   "positive tolerances: [1.6e-07]",
+   "positive fidelity: {'python_type': 'list', 'is_flat_sequence': True, 'length': 1, 'element_types': ['float'], 'all_elements_plain_number': True, 'all_elements_finite': True, 'container_has_extra_fields': False, 'year_labels_observable': False, 'year_linked_observable': 'length only: len(output) must equal len(years)', 'expected_length': 1, 'years_length': 1, 'length_equals_years': True, 'length_equals_expected': True, 'expectations_present': True, 'structure_ok': True, 'fidelity_ok': True}",
+   "per_value_checks: [{'index': 0, 'year': 2027, 'actual': 160.0, 'expected': 160.0, 'tolerance': 1.6e-07, 'abs_diff': 0.0, 'ok': True}]",
+   "tolerances_ok: True",
+   "continuity_positive raised: None actual: [160.0, 0.0] expected: [160.0, 0.0] ok: True",
+   "defaults (not gating) ok: True actual: [160.0] expected: [160.0]",
+   "observation: OBS-BASE-IGNORED raised=None actual=[160.0] matches_compared=True expect_equal=None matches_expected_relation=True matches_expected=True",
+   "observation: OBS-SCRAP-NOT-REVENUE raised=None actual=[0.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True",
+   "observation: OBS-SOLD-ONLY raised=None actual=[200.0] matches_compared=None expect_equal=None matches_expected_relation=None matches_expected=True",
+   "negative: NEG-CARD PASS_rejected ModelRegistryError - opening_inventory stock-flow balance failed: FY2027",
+   "negative: N01a PASS_rejected ModelRegistryError - inventory_sellthrough.opening_inventory.FY2027 must be numeric",
+   "negative: N01b PASS_rejected ModelRegistryError - inventory_sellthrough.opening_inventory.FY2027 must be finite",
+   "negative: N01c PASS_rejected ModelRegistryError - inventory_sellthrough.opening_inventory.FY2027 must be finite",
+   "negative: N01d PASS_rejected ModelRegistryError - inventory_sellthrough.opening_inventory.FY2027 must be finite",
+   "negative: N02 PASS_rejected ModelRegistryError - driver inventory_sellthrough.opening_inventory must contain one value per forecast year",
+   "negative: N03 PASS_rejected ModelRegistryError - missing drivers for inventory_sellthrough: opening_inventory",
+   "negative: N04 PASS_rejected ModelRegistryError - unsupported drivers for inventory_sellthrough: unknown_driver",
+   "negative: N05a PASS_rejected ModelRegistryError - inventory_sellthrough.years must contain fiscal years",
+   "negative: N05b PASS_rejected ModelRegistryError - inventory_sellthrough.years must contain fiscal years",
+   "negative: CONT-BREAK FAIL_not_rejected None - ",
+   "negative summary: {'total': 11, 'passed': 10, 'failed': ['CONT-BREAK'], 'target_exception': 'model_registry.ModelRegistryError', 'import_or_file_errors_never_pass': True}",
+   "verdict: fail exit_code: 3",
+   "printed_matches_evidence_file: True (re-read run_result_B_neutered_negative_case.json and compared positive/continuity/negative_summary/tolerances_ok/verdict/exit_code)"
+  ],
+  "note": "printed lines are byte-identical to stdout.txt"
+ },
+ "printed_values_match_evidence_file": true
+}

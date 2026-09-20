@@ -28,6 +28,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from run_guard import REFUSAL_EXIT, guard_run_dir
+
 MARKER = "SYNTHETIC_AUDIT_TOKEN"
 
 SHAPES = {
@@ -44,10 +46,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--python", required=True)
     args = parser.parse_args(argv)
 
-    run_dir = Path(args.run_dir).resolve()
-    if "execution_runs" not in run_dir.parts:
-        print("BINDING-REFUSED:" + str(run_dir), file=sys.stderr)
-        return 97
+    run_dir = guard_run_dir(args.run_dir)
+    if run_dir is None:
+        return REFUSAL_EXIT
     project = run_dir / "scratch-project"
     (project / "config").mkdir(parents=True, exist_ok=True)
 

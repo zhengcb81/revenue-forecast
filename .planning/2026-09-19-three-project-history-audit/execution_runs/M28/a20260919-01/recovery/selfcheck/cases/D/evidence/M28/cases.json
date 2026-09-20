@@ -11,9 +11,9 @@
    "base_input": "positive",
    "why": "card-specific negative (oracle.md sections 5 and 8)",
    "driver": "closing_aum",
-   "value": {
-    "__float__": 1051
-   }
+   "value": [
+    1051
+   ]
   },
   {
    "id": "N01a",
@@ -148,5 +148,24 @@
    "expect_equal": false,
    "why": "omitting recognized_performance_fees changes the result, so the recognised performance fee term is really used and its omission is not free"
   }
- ]
+ ],
+ "case_contract": {
+  "expected_count": 11,
+  "expected_ids": [
+   "NEG-CARD",
+   "N01a",
+   "N01b",
+   "N01c",
+   "N01d",
+   "N02",
+   "N03",
+   "N04",
+   "N05a",
+   "N05b",
+   "CONT-BREAK"
+  ],
+  "declared_expected_exception": "ModelRegistryError",
+  "neg_card_declared_mechanism": "closing_aum=[1051] makes the AUM bridge fail: opening_aum + inflows - outflows + market_change = 1000 + 200 - 100 - 50 = 1050 != 1051, so `opening_aum stock-flow balance failed: FY2027` is raised",
+  "rule": "every case's `expected` must equal declared_expected_exception and the id list must equal expected_ids, otherwise the harness refuses to issue a verdict (rc=1)"
+ }
 }

@@ -1,0 +1,157 @@
+{
+ "card_id": "M29",
+ "model_id": "commercial_launch",
+ "document_author": "the implementing session of attempt a20260919-01, which also wrote oracle.md, run_card.py and this record",
+ "adjudicated_by": "PENDING - no entry below has been ruled on by the independent reviewer; the reviewer is a separate party who may accept, amend or reject each entry",
+ "no_first_person_authorship_claim": true,
+ "enumerated_by": "scripts/enumerate_registry.py",
+ "enumeration_raw_output": {
+  "path": "evidence/M29/registry_enumeration.json",
+  "sha256": "28ebab35ad351fd07c28565c6ec2ff5c9beca1f852dad73436d9865ad85776b2",
+  "script_sha256": "9457e003e540d06945dba7d29278321a3b687d81db480bce3216073bcf30c5c9",
+  "raw_stdout": "evidence/M29/runs/C-registry-enumeration/stdout.txt",
+  "raw_stdout_sha256": "c563c199bf1709ec1922ccc051411c19968b9749a8bc5c86dee8ccc9db67bf35",
+  "raw_returncode": 0,
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M29\\a20260919-01\\iso\\checkout_scripts"
+ },
+ "enumeration_counts": {
+  "models": 31,
+  "required_drivers": 125,
+  "optional_drivers": 40,
+  "ratio_drivers": 41,
+  "revenue_per_activity_and_per_unit_drivers": 23,
+  "optional_drivers_absent_from_declared_defaults": 31
+ },
+ "card_registry_facts": {
+  "model_id": "commercial_launch",
+  "card_document": "execution_v2/card_M29.md",
+  "required_as_enumerated_from_the_isolated_copy": [
+   "eligible_units",
+   "annual_supply_capacity",
+   "adoption_rate",
+   "commercial_year_fraction",
+   "net_revenue_per_unit"
+  ],
+  "optional_as_enumerated_from_the_isolated_copy": [],
+  "defaults_as_enumerated_from_the_isolated_copy": {},
+  "ratio_drivers": [
+   "adoption_rate",
+   "commercial_year_fraction"
+  ],
+  "driver_effective_bounds": {
+   "eligible_units": [
+    0.0,
+    "inf"
+   ],
+   "annual_supply_capacity": [
+    0.0,
+    "inf"
+   ],
+   "adoption_rate": [
+    0.0,
+    1.0
+   ],
+   "commercial_year_fraction": [
+    0.0,
+    1.0
+   ],
+   "net_revenue_per_unit": [
+    0.0,
+    "inf"
+   ]
+  },
+  "card_text_required_list": [
+   "eligible_units",
+   "annual_supply_capacity",
+   "adoption_rate",
+   "commercial_year_fraction",
+   "net_revenue_per_unit"
+  ]
+ },
+ "rulings": [
+  {
+   "id": "OQ-01",
+   "scope": "shared by all three cards of this batch (M29-M31)",
+   "title": "isolation binding provenance",
+   "status": "registered_not_fixed",
+   "observation": "the cards require the run cwd to come from I-00-B, while I-00-B binds the isolation plan and the two-stage command rule rather than materialising a checkout tree",
+   "what_this_attempt_did": "materialised its own read-only snapshot at iso/checkout_scripts and recorded that its two files hash equal to the production files",
+   "consequence": "if the intended binding is an I-00-B-materialised checkout, the provenance chain differs; the code under test is byte-identical either way",
+   "requires_ruling_from": "owner (dispatch/binding)"
+  },
+  {
+   "id": "OQ-02",
+   "scope": "shared by all three cards of this batch (M29-M31)",
+   "title": "these three models declare NO optional driver and NO default, so the silent zero-fill path cannot be reached through them",
+   "status": "registered_not_fixed",
+   "mechanism": "calculate_registered_model resolves a missing driver as drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years)); the three cards of this batch declare optional=() and defaults={}, so every one of their drivers is required and an omitted driver is refused instead of being filled with 0.0",
+   "enumerated_registry_wide_count": 31,
+   "enumerated_for_this_model": [],
+   "enumerated_this_model_optional_drivers": [],
+   "consequence": "the N03 case (delete the first required driver) is refused for these models by the missing-driver check, and the card's own 'no optional default' text agrees with the enumerated contract",
+   "action_this_attempt": "registered, NOT fixed; no product file was modified",
+   "requires_ruling_from": "independent reviewer (accept / amend / reject)"
+  },
+  {
+   "id": "OQ-03",
+   "title": "card business negative that the calculator cannot fully enforce",
+   "status": "registered_not_fixed",
+   "card_text": "card_M29.md L45: the output is a conditional revenue, not a probability-weighted expectation of approval, and a demand ramp that is out of step with the supply ramp needs a professional time model",
+   "finding": "NOT runtime-enforceable by this calculator: min(demand, capacity) is arithmetic on two declared quantities, so no approval probability and no ramp shape is representable in the frozen driver set",
+   "consequence": "STOP_DISCLOSURE_ADAPTATION remains in force; a number is not an adaptation",
+   "requires_ruling_from": "industry/accounting reviewer (I-10-A / D)"
+  },
+  {
+   "id": "OQ-04",
+   "title": "numerical domain / boundary observations of this model",
+   "status": "registered_not_fixed",
+   "finding": "adoption_rate and commercial_year_fraction carry the ratio domain [0,1]; 1.1 is rejected (card-specific negative) while 1.0 is admissible by the same domain, so a fully saturated adoption rate or a full commercial year is not refused (measured by OBS-FULL-YEAR-FRACTION and PROBE-RATIO-EDGE-ONE)",
+   "derived_from": "the effective bounds enumerated by scripts/enumerate_registry.py (evidence/M29/registry_enumeration.json)",
+   "measured_probes": [
+    {
+     "id": "PROBE-RATIO-EDGE-ONE",
+     "raised": null,
+     "actual": [
+      300.0
+     ],
+     "measured_matches": {
+      "matches_expected_if_inclusive": true
+     }
+    },
+    {
+     "id": "PROBE-QUANTITY-EDGE-ZERO",
+     "raised": null,
+     "actual": [
+      0.0
+     ],
+     "measured_matches": {
+      "matches_expected_if_inclusive": true
+     }
+    },
+    {
+     "id": "PROBE-CAPACITY-EDGE-ZERO",
+     "raised": null,
+     "actual": [
+      0.0
+     ],
+     "measured_matches": {
+      "matches_expected_if_inclusive": true
+     }
+    },
+    {
+     "id": "PROBE-NET-PRICE-EDGE-ZERO",
+     "raised": null,
+     "actual": [
+      0.0
+     ],
+     "measured_matches": {
+      "matches_expected_if_inclusive": true
+     }
+    }
+   ],
+   "probe_provenance": "evidence/M29/extra_probes.json; the probes are NON-GATING and sit outside oracle.json and outside the runner's exit code",
+   "requires_ruling_from": "independent reviewer (accept / amend / reject)"
+  }
+ ],
+ "counts_provenance_rule": "every number in enumeration_counts comes from the raw output of scripts/enumerate_registry.py; none is transcribed from prose"
+}

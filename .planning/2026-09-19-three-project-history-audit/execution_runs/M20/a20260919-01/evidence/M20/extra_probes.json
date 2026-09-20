@@ -26,24 +26,50 @@
    "matches_expected_if_inclusive": true
   },
   {
-   "id": "PROBE-CONTINUITY-TOLERANCE",
-   "why": "the cross-year continuity check uses math.isclose(rel_tol=1e-9, abs_tol=1e-9) on the two-year case, so a 1e-12 imbalance must be tolerated while a 1.0 imbalance is rejected (CONT-BREAK); this measures the tolerant side",
-   "expectation_source": "math.isclose(rel_tol=1e-9, abs_tol=1e-9)",
+   "id": "PROBE-CONTINUITY-TOLERANCE-BAND-INSIDE",
+   "why": "the cross-year continuity and intra-year bridge checks use math.isclose(rel_tol=1e-9, abs_tol=1e-9), so the admissible imbalance is delta <= max(1e-9 * max(|a|,|b|), 1e-9); at the 120-customer magnitude that is about 1.2e-7 customers, NOT the 1e-12 that the first draft of this probe implied. This probe feeds delta = 1.2e-7 (inside the band): the run must be ACCEPTED and the year-2 revenue must be 2 x 120.00000012 = 240.00000024",
+   "expectation_source": "math.isclose(rel_tol=1e-9, abs_tol=1e-9) evaluated at magnitude 120",
    "expected_if_tolerant": "accepted",
    "expected_if_exact": "ModelRegistryError",
    "base_input": "continuity_positive",
    "patch": {
     "opening_customers": [
      100,
-     120.000000000001
+     120.00000012
+    ],
+    "ending_customers": [
+     120,
+     120.00000012
     ]
    },
-   "mutated_input_repr": "{'opening_customers': [100, 120.000000000001], 'new_customers': [40, 0], 'churned_customers': [20, 0], 'ending_customers': [120, 120], 'revenue_per_customer': [2, 2], 'new_customer_revenue_fraction': [0.25, 0.25], 'churned_customer_lost_fraction': [0.75, 0.75], 'timing_factor': [1, 1], 'usage_revenue': [5, 0]} years=[2027, 2028]",
+   "mutated_input_repr": "{'opening_customers': [100, 120.00000012], 'new_customers': [40, 0], 'churned_customers': [20, 0], 'ending_customers': [120, 120.00000012], 'revenue_per_customer': [2, 2], 'new_customer_revenue_fraction': [0.25, 0.25], 'churned_customer_lost_fraction': [0.75, 0.75], 'timing_factor': [1, 1], 'usage_revenue': [5, 0]} years=[2027, 2028]",
    "raised": null,
    "actual": [
     195.0,
-    240.000000000002
+    240.00000024
    ]
+  },
+  {
+   "id": "PROBE-CONTINUITY-TOLERANCE-BAND-OUTSIDE",
+   "why": "the other side of the same band: delta = 1.201e-7 exceeds 1e-9 * 120.0000001201 = 1.2000000012e-7, so the cross-year continuity check must REJECT with 'cohort customer continuity failed: FY2028' - the same failure mode as the frozen CONT-BREAK case, only six orders of magnitude smaller",
+   "expectation_source": "math.isclose(rel_tol=1e-9, abs_tol=1e-9) evaluated at magnitude 120",
+   "expected_if_tolerant": "ModelRegistryError",
+   "expected_if_exact": "ModelRegistryError",
+   "base_input": "continuity_positive",
+   "patch": {
+    "opening_customers": [
+     100,
+     120.0000001201
+    ],
+    "ending_customers": [
+     120,
+     120.0000001201
+    ]
+   },
+   "mutated_input_repr": "{'opening_customers': [100, 120.0000001201], 'new_customers': [40, 0], 'churned_customers': [20, 0], 'ending_customers': [120, 120.0000001201], 'revenue_per_customer': [2, 2], 'new_customer_revenue_fraction': [0.25, 0.25], 'churned_customer_lost_fraction': [0.75, 0.75], 'timing_factor': [1, 1], 'usage_revenue': [5, 0]} years=[2027, 2028]",
+   "raised": "ModelRegistryError",
+   "message": "cohort customer continuity failed: FY2028",
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M20\\a20260919-01\\scripts\\probe_extra.py\", line 132, in main\n    value = model_registry.calculate_registered_model(\n        model_id=spec[\"model_id\"], base_revenue=spec[\"base_revenue\"],\n        drivers=spec[\"drivers\"], years=spec[\"years\"])\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M20\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 346, in calculate_registered_model\n    result = spec.calculator(base, normalized, years)\n  File \"C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M20\\a20260919-01\\iso\\checkout_scripts\\model_registry.py\", line 130, in _cohort_subscription\n    raise ModelRegistryError(f\"cohort customer continuity failed: FY{year}\")\nmodel_registry.ModelRegistryError: cohort customer continuity failed: FY2028\n"
   }
  ]
 }

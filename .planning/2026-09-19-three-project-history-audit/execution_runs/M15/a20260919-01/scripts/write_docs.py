@@ -122,6 +122,25 @@ UNIT_TEMPLATE = [
       "--card", "{card}", "--attempt", "{attempt}"], 0,
      "all JSON files parse; formula=review_pending, disclosure_adaptation=unmapped, "
      "accuracy=unproven; negatives all rejected"),
+    ("D3-append-r3",
+     "append the SINGLE r3 section (response to the independent review F-01..F-05) to oracle.md "
+     "below its own boundary marker and write revision_r3.json",
+     ["{venv_python}", "-X", "utf8", "-B", "{attempt}\\scripts\\append_r3.py",
+      "--card", "{card}", "--attempt", "{attempt}"], 0,
+     "refuses to append when an r3 marker already exists, so no second r3 baseline can appear"),
+    ("I1-audit-doc-pointers",
+     "audit every <file>.py:<line> document pointer of the attempt and record the search result "
+     "for the residue tokens the reviewer listed",
+     ["{venv_python}", "-X", "utf8", "-B", "{attempt}\\scripts\\audit_doc_pointers.py",
+      "--card", "{card}", "--attempt", "{attempt}", "--production-root", "{production_root}"], 0,
+     "evidence/{card}/doc_pointer_audit.json all_pointers_resolve true"),
+    ("J1-cases-annotation-repack-check",
+     "prove that the regenerated cases.json is byte-identical to the frozen revision (or differs "
+     "only by the declared append-only annotation)",
+     ["{venv_python}", "-X", "utf8", "-B",
+      "{attempt}\\scripts\\build_cases_annotation_repack.py", "--card", "{card}",
+      "--attempt", "{attempt}", "--expect-observation", "NONE"], 0,
+     "evidence/{card}/cases_annotation_repack.json: difference_is_only_the_declared_annotation"),
 ]
 
 
@@ -176,6 +195,10 @@ def main() -> int:
     facts = load_json(args.facts)
     card = facts["card"]
     model_id = facts["model_id"]
+    open_questions = facts["open_questions"]
+    oq_list = "\n".join("%d. %s" % (index, question)
+                        for index, question in enumerate(open_questions, start=1))
+    oq_range = "OQ-01..OQ-%02d" % len(open_questions)
     evidence = os.path.join(attempt, "evidence", card)
 
     run = load_json(os.path.join(evidence, "run_result.json"))
@@ -428,32 +451,20 @@ payability 归属、不可识别模型参数、样本与统计阈值、部署迁
 
 ## 升级给 owner 的开放项（本卡不自行裁定）
 
-以下事项已写入 `handoff.json` 的 `open_questions`，并指向 owner 的接续动作，不在本卡内部决定：
+以下事项与 `handoff.json` 的 `open_questions` **逐条一一对应**（同一编号、同一顺序），并镜像到
+`evidence/%s/oq_rulings.json` 的 `open_questions_mirroring_handoff`；三者编号同源，owner 按任一处的
+编号核对都不会漏看（F-03 之后不再出现"decision 只写到 OQ-04、handoff 有 5 条"的错位）：
 
-1. **OQ-01（绑定口径）**：卡片要求"运行 cwd 由 I-00-B 绑定"，但 I-00-B 绑定的是隔离方案与两阶段
-   命令规则，并未物化 checkout 树。本 attempt 自行物化只读快照 `iso/checkout_scripts`（与生产逐字节
-   相同）。若 owner 期望 I-00-B 物化 checkout，provenance 链不同；被测代码字节相同。**需要裁定。**
-2. **OQ-02（静默补零）**：`scripts/model_registry.py:335` 对"有 optional 登记但无显式默认"的 driver
-   在省略时补 `0.0`。本模型有 %s 个此类 optional driver（%s），省略即断言"没有该项收入"，
-   与"披露里没找到"不可区分。已登记，**未改产品**。
-3. **OQ-03（带符号 driver 与负收入终检）**：本模型带符号且无下界的 driver 为 %s；
-   事后探针（`recovery/probes/signed_driver_probe.json`）实测 `%s = %s` → raised=`%s`。
-   相关会计口径属 D/E 阶段与会计 reviewer 的决定。
-4. **OQ-04（披露适配阶段尚未开始）**：`disclosure_adaptation` 保持 `unmapped`；D 的逐字段映射与
-   已结束期间对账由 I-10-A 执行，本卡不产出、也不虚填。
+%s
 
 ## 与 handoff 的对应关系
 
-`handoff.json` 的 `next_step_number = 4`、`next_action` 指向"独立 reviewer 复验本卡 A–C 证据"，
-`open_questions` 列出的 OQ-01…OQ-04 即本节升级给 owner 的事项；`blocked_by` 为空（本卡无被阻断项），
-`stop_conditions_hit` 记录 `STOP_DISCLOSURE_ADAPTATION` 与 `STOP_ACCURACY`（均按卡片要求停在该资格，
-不改成整体 PASS）。
-""" % (card, card, card, model_id, card, card, facts["card_line_refs"]["hand_calc"],
-       facts["decision_judgements"], counts["card_optional_drivers_without_an_explicit_default"],
-       ", ".join("`%s`" % n for n in
-                 counts["card_optional_drivers_without_an_explicit_default_names"]),
-       ", ".join("`%s`" % n for n in counts["card_drivers_signed_and_unbounded_names"]) or "无",
-       probe["driver_probed"], probe["probe_value"], probe["outcome"]["raised"])
+`handoff.json` 的 `next_step_number = 4`、`next_action` 指向"独立 reviewer 复验本卡 A–C 证据 + r3 点验"，
+`open_questions` 列出的 OQ-01…OQ-%02d（共 %d 条）即本节升级给 owner 的事项；`blocked_by` 为空（本卡无被
+阻断项），`stop_conditions_hit` 记录 `STOP_DISCLOSURE_ADAPTATION` 与 `STOP_ACCURACY`（均按卡片要求停在
+该资格，不改成整体 PASS）。
+""" % (card, card, card, model_id, card, facts["card_line_refs"]["hand_calc"],
+       facts["decision_judgements"], card, oq_list, len(oq), len(oq))
     dump_text(os.path.join(attempt, "decision.md"), decision)
 
     # ------------------------------------------------------------------ recovery/README.md
@@ -471,8 +482,9 @@ What IS covered instead:
 
 - `selfcheck_result.json` proves the runner's exit code carries the verdict
   (0 pass / 1 harness error / 2 no verdict / 3 negative not refused) and that a corrupted
-  **scratch** copy cannot pass: six scenarios were run and every one returned its expected code
-  (%s).
+  **scratch** copy cannot pass: ten scenarios were run (including the two F-01 expectation-
+  declaration scenarios and their pre-fix-runner counterparts) and every one returned its
+  expected code (%s).
 - Every negative case is built from a fresh `deepcopy`, so failures cannot contaminate later
   cases.
 - The frozen evidence was hash-verified before and after the self-check
@@ -480,6 +492,17 @@ What IS covered instead:
   `frozen_still_equals_freeze_time_hashes = %s`).
 - The two declared non-oracle product units (the metadata enumeration and the labelled post-hoc
   probe) write only inside `evidence/%s/` and `recovery/probes/`.
+- **First-invocation raw bytes (review finding F-05):** the raw stdout/stderr of the FIRST failed
+  invocation of a command are NOT retained in this attempt. For the M13 sibling attempt that was
+  the runner's `NameError` first run; here no first invocation failed. What exists is the raw exit
+  code plus the narrative in `commands.json`; every later self-check scenario DOES keep its raw
+  stdout/stderr under `recovery/selfcheck/stdout_*.txt` / `stderr_*.txt`. From revision r3 on, any
+  first failed invocation is saved verbatim as `recovery/first_invocation_*.<stdout|stderr>.txt`
+  and referenced from `commands.json`.
+- **Pre-fix runner revision:** `recovery/runner_before_F01_fix.py` (sha256
+  `e709408f7f6518be63fc00d5c4c444c8738dbf1ba7a53383c3821882c9054c9e`) is kept because the F-01
+  defect is demonstrated by running that revision against the same corrupted scratch copy and
+  observing rc=0 where the current revision returns rc=2.
 
 No disclosure extraction, no download and no provider call happens in this attempt at all.
 """ % (card, card, model_id, model_id,
@@ -511,7 +534,8 @@ No disclosure extraction, no download and no provider call happens in this attem
 # after/git_status_revenue-forecast.txt so it cannot be attributed to this attempt.
 #
 # Files this attempt DID create or write, all inside this attempt directory:
-#   oracle.md (frozen body + exactly one appended r2 section), binding.json, commands.json,
+#   oracle.md (frozen body + exactly one appended r2 section + exactly one appended r3 section),
+#   binding.json, commands.json,
 #   decision.md, review.md, handoff.json, changes.diff, recovery/README.md
 #   scripts/ (the isolated-card scripts, listed with sha256 in evidence/%s/source_manifest.json)
 #   evidence/%s/*  (input, oracle, cases, manifests, run results, negatives, qualification,
@@ -626,13 +650,23 @@ observed.
 `scripts/enumerate_driver_bounds.py` -> `evidence/{card}/oq_enumeration.json` ->
 `scripts/build_oq_rulings.py` -> `evidence/{card}/oq_rulings.json`.
 Enumerated by the implementer session by running that script against the isolated read-only copy
-(automated; no human counting); **no independent reviewer has examined it yet**, and no reviewer
-is named as an author. Counts: 31 registered models / {reg_drivers} drivers / {reg_ratio} ratio
-drivers / {reg_ratio_bad} ratio drivers whose bounds are not [0,1]; for this model:
-{card_required} required, {card_optional} optional,
+(automated; no human counting). The independent reviewer of 2026-09-20 re-implemented the
+enumeration and corrected the predicate: a driver is a ratio driver when
+`spec.dimensions[driver] == "ratio"` (the narrower `ModelSpec.ratio_drivers` set structurally
+misses `direct_growth.growth_rate`, domain `(-1, inf)`, hard-coded at
+`scripts/model_registry.py:287-288`). The authoritative registry totals are therefore
+**{reg_ratio}/4** (41 ratio drivers, 4 of them not bounded [0,1]), consistent with the M05-M08 r3
+correction; the narrower predicate's numbers ({reg_ratio_set}/3) are still recorded side by side,
+and every predicate disagreement is listed in `oq_enumeration.json`.
+Counts for this model: {card_required} required, {card_optional} optional,
 **{card_optional_no_default} optional drivers without an explicit default**
 ({card_optional_no_default_names}), **{card_signed} signed & unbounded drivers**
 ({card_signed_names}), {card_zero_lower} drivers with a lower bound of exactly 0.0.
+Registry-wide, the silent-zero-fill surface is {reg_no_default_slots} optional driver slots
+across {reg_no_default_models} models (unit labels are recorded in
+`oq_rulings.json.enumerated_counts_with_units`). The OQ list in `oq_rulings.json` mirrors
+`handoff.json:open_questions` one-to-one ({oq_range}), so the numbering cannot diverge between the
+two files.
 
 ## 7. Judgement calls the reviewer should attack first
 
@@ -642,6 +676,27 @@ drivers / {reg_ratio_bad} ratio drivers whose bounds are not [0,1]; for this mod
 
 {not_claimed}
 
+## 10. Revision r3 - response to the independent review (2026-09-20)
+
+The independent reviewer returned **accepted_scoped (formula qualification only)** for this card
+and listed findings F-01..F-05 plus two notes. Revision r3 handles them in the tool and evidence
+layers only - **no frozen expectation, tolerance, case or refusal condition was changed**:
+
+| Finding | What r3 did |
+|---|---|
+| F-01 | `scripts/run_card.py` now cross-checks every case's declared `expected` against the type the runner actually counts, plus the case count / id set against `oracle.json`; any inconsistency is an expectation gap and yields **rc=2**. The pre-fix revision is kept at `recovery/runner_before_F01_fix.py` and demonstrated red (rc=0 -> rc=2) on the same corrupted scratch copy. |
+| F-02 | ratio predicate corrected to `spec.dimensions[driver] == "ratio"`; registry totals 40/3 -> **41/4** (`direct_growth.growth_rate (-1, inf)` recovered); `oq_enumeration.json` / `oq_rulings.json` regenerated. |
+| F-03 | `oq_rulings.json` OQ list now mirrors `handoff.json:open_questions` one-to-one ({oq_range}); `decision.md` / `review.md` numbering aligned; document pointers audited by `scripts/audit_doc_pointers.py` -> `evidence/{card}/doc_pointer_audit.json` (including an explicit search for the residue tokens the reviewer listed). |
+| F-04 | `scripts/finalize_hashes.py` writes its own by-products before the inventory, excludes the manifest itself from `files`, and adds `self_reference_note`, `combined_digest_scope` and `concurrently_mutable` marks, so the inventory is now reproducible. |
+| F-05 | `recovery/README.md` states explicitly that the first failed invocation's raw bytes are not retained; from r3 on, first failed invocations are saved under `recovery/first_invocation_*.{stdout,stderr}.txt`. |
+| note (c) | not applicable to this card: every observation here is constructible as frozen (`evidence/{card}/cases_annotation_repack.json` proves `cases.json` is byte-identical to the frozen revision). |
+| note (units) | `oq_rulings.json` carries `enumerated_counts_with_units` (slots vs models). |
+
+The exit-code matrix observed by the mutation self-check is in
+`recovery/selfcheck_result.json` -> `exit_code_matrix`. Status after r3: `formula` remains
+`review_pending` (the implementer never self-signs; r3 goes back for a point review),
+`disclosure_adaptation` remains `unmapped`, `accuracy` remains `unproven`.
+
 ## 9. Reviewer checklist (suggested)
 
 1. Re-run `scripts/oracle_{card}.py --out-root <scratch attempt>` and diff the generated
@@ -650,11 +705,15 @@ drivers / {reg_ratio_bad} ratio drivers whose bounds are not [0,1]; for this mod
 2. Run `scripts/verify_card.py` and `scripts/verify_r2_boundary.py`; both must exit 0.
 3. Confirm the isolated copy still hashes equal to production (`evidence/{card}/source_manifest.json`,
    `after/source_hashes.txt`).
-4. Confirm the frozen-body boundary: `before/oracle_md_v1.json` sha256 == sha256(oracle.md bytes
-   before the single marker) (byte offset {boundary_offset}), and that exactly one r2 section exists.
-5. Read `evidence/{card}/oq_rulings.json` and re-run the enumeration script to check the quoted counts.
+4. Confirm BOTH frozen-body boundaries: `before/oracle_md_v1.json` sha256 == sha256(oracle.md
+   bytes before the single r2 marker) (r2 byte offset {boundary_offset}) and
+   `revision_r2.json`'s recorded post-append hash == sha256(oracle.md bytes before the single r3
+   marker); exactly one r2 and one r3 section must exist.
+5. Read `evidence/{card}/oq_rulings.json` and re-run the enumeration script to check the quoted
+   counts (predicate: `spec.dimensions[driver] == "ratio"`).
 6. Pick a case the implementer did not use and freeze its expectation **before** running it.
-7. Adjudicate the OQ-01..OQ-04 items in `handoff.json` / `decision.md`.
+7. Adjudicate the {oq_range} items in `handoff.json` / `decision.md` (same numbering in
+   `oq_rulings.json`) and point-check revision r3.
 """.format(
         card=card, model_id=model_id, title=facts["card_title"],
         positive_actual=json.dumps(run["positive"]["actual"]),
@@ -669,8 +728,14 @@ drivers / {reg_ratio_bad} ratio drivers whose bounds are not [0,1]; for this mod
         defaults_expected=json.dumps(run["defaults"]["expected"]),
         neg_passed=neg["passed"], neg_total=neg["total"],
         reg_drivers=enum["registry_totals"]["drivers"],
-        reg_ratio=enum["registry_totals"]["ratio_drivers"],
+        reg_ratio=enum["registry_totals"]["ratio_drivers_by_dimension"],
+        reg_ratio_set=enum["registry_totals"]["ratio_drivers_by_registry_ratio_set"],
         reg_ratio_bad=enum["registry_totals"]["ratio_drivers_whose_bounds_are_not_0_1"],
+        reg_no_default_slots=enum["registry_totals"][
+            "optional_drivers_without_an_explicit_default_slots_total"],
+        reg_no_default_models=enum["registry_totals"][
+            "optional_drivers_without_an_explicit_default_models_total"],
+        oq_range=oq_range,
         verdict=run["verdict"]["verdict"], runner_rc=run["exit_code"],
         triggered=json.dumps(run["exit_code_semantics"]["triggered"]),
         run_card_sha=sha256_file(os.path.join(attempt, "scripts", "run_card.py")),
@@ -779,7 +844,15 @@ drivers / {reg_ratio_bad} ratio drivers whose bounds are not [0,1]; for this mod
         "observations": [{"id": o["id"], "actual": o.get("actual"), "raised": o.get("raised"),
                           "matches_expected": o.get("matches_expected")}
                          for o in run["observations"]],
-        "open_questions": facts["open_questions"],
+        "open_questions": open_questions,
+        "review_history": {
+            "r1_review_2026_09_20": "accepted_scoped (formula qualification only); findings "
+                                    "F-01..F-05 plus the observation-(c) and unit-labelling notes",
+            "r3_response": "handled in oracle.md's single r3 section and "
+                           "evidence/%s/revision_r3.json; no frozen expectation, tolerance, case "
+                           "or refusal condition was changed" % card,
+            "formula_state_after_r3": "review_pending (point review of r3 by the reviewer)",
+        },
         "blocked_by": [],
         "stop_conditions_hit": [
             "STOP_DISCLOSURE_ADAPTATION (no real-company disclosure mapping; D not started, "
@@ -801,15 +874,23 @@ drivers / {reg_ratio_bad} ratio drivers whose bounds are not [0,1]; for this mod
             "evidence/%s/oq_enumeration.json" % card, "evidence/%s/oq_rulings.json" % card,
             "evidence/%s/oracle.json" % card, "evidence/%s/oracle_selfcheck.json" % card,
             "evidence/%s/qualification.json" % card, "evidence/%s/r2_boundary_check.json" % card,
-            "evidence/%s/revision_r2.json" % card, "evidence/%s/run_result.json" % card,
+            "evidence/%s/revision_r2.json" % card,
+            "evidence/%s/revision_r3.json" % card,
+            "evidence/%s/doc_pointer_audit.json" % card,
+            "evidence/%s/cases_annotation_repack.json" % card,
+            "evidence/%s/run_result.json" % card,
             "evidence/%s/source_manifest.json" % card, "evidence/%s/stderr.txt" % card,
             "evidence/%s/stdout.txt" % card, "evidence/%s/verify_report.json" % card,
             "recovery/selfcheck_result.json", "recovery/probes/signed_driver_probe.json",
+            "recovery/runner_before_F01_fix.py", "recovery/before_fixes/",
         ],
-        "reviewer_status": "not reviewed yet; formula = review_pending, implemented by this "
-                           "attempt and handed to an independent reviewer",
-        "revision": "r2 (exactly one r2 section in oracle.md, single reproducible baseline at "
-                    "byte offset %s)" % revision["boundary"]["byte_offset"],
+        "reviewer_status": "reviewed 2026-09-20: accepted_scoped (formula qualification only) with "
+                           "findings F-01..F-05 + two notes; handled in revision r3 and returned "
+                           "for a point review. formula = review_pending; the implementer never "
+                           "self-signs.",
+        "revision": "r3 (oracle.md carries exactly one r2 section at byte offset %s and exactly "
+                    "one r3 section; each revision has a single reproducible boundary hash, no "
+                    "competing baseline)" % revision["boundary"]["byte_offset"],
     }
     dump_json(os.path.join(attempt, "handoff.json"), handoff)
 

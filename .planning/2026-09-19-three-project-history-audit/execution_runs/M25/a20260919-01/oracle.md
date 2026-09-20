@@ -171,3 +171,24 @@ Attempt: `execution_runs/M25/a20260919-01`。
 - 披露缺出处/单位/期间/总净额不明或 `special_review` 未决 → `STOP_DISCLOSURE_ADAPTATION`。
 - 存量桥（本卡适用）：连续性不成立 → `STOP_BRIDGE`。
 - 准确性：`STOP_ACCURACY`（无 I-12 冻结设计）。
+
+---
+
+## 修订 r2（独立复核后的口径核对；追加节，非重写）
+
+独立复核 **P2-1 不适用于本卡**：复核明确指出"**M25 的文档反而准确**"。核对如下，不改正文：
+
+- NEG-CARD 的 patch 是 `kind="set_driver_multi"`（同时改 `retired_units=[201]` 与
+  `closing_installed_units=[39]`），**不使用** `{"__float__": …}` 信封，因此不存在
+  M26/M27/M28 那种"值被赋成 dict、被通用长度守卫提前拦下"的缺陷；
+  实测消息为 `retired_units exceeds opening installed cohort: FY2027`，与第 5 节的
+  "拒绝只可能来自退役群组上限"一致。
+- 复核 P3-1 指出我此前的**转述**把 `period_hours` 的域说成开区间 `(0, inf)`；
+  实际是闭区间 `[0, ∞)`（`:342` 用 `lower <= number`）。该转述出现在**口头报告**中，
+  本文件从未这样写；已在本卡记录中一并更正，实质结论未变。
+- 本卡在 **P3-3** 之后按 LF 重写 JSON 证据（原为 CRLF），故 `evidence/M25/*.json` 的 sha256
+  与 r1 记录不同；数值与期望**一律未改**。详见 `evidence/M25/revision_r2.json` 与
+  `evidence/M25/line_ending_and_blob_hashes.json`。
+- 本批唯一真正"改前原样"的 `recovery/precorrection/` 就在本卡：
+  `recovery/precorrection/oracle.json`（sha256 `bbe21218…`）的 defaults 期望是**错值 300**，
+  与冻结件 `bbaf00ea…` 不同；其余三卡的 v1 与冻结件逐字节相同（复核 P3-7）。

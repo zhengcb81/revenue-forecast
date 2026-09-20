@@ -109,7 +109,7 @@ Attempt: `execution_runs/M28/a20260919-01`。
 
 | 例 | 变换（在正例基础上只改这一处） | 冻结预期 | 说明 |
 |---|---|---|---|
-| NEG-CARD | `closing_aum = [1051]`（卡片 L56 原文负例） | `ModelRegistryError` | 桥 1000+200−100−50 = 1050 ≠ 1051 |
+| NEG-CARD | `closing_aum = [1051]`（卡片 L56 原文负例） | `ModelRegistryError` | 桥 1000+200−100−50 = 1050 ≠ 1051 → 实测 `opening_aum stock-flow balance failed: FY2027`。**修订 r2**：patch 值由 `{"__float__": 1051}` 改为单元素列表 `[1051]`，见文末修订节 |
 | N01a | `opening_aum[0] = True` | `ModelRegistryError` | bool 不是数值 |
 | N01b | `opening_aum[0] = float('nan')` | `ModelRegistryError` | 非有限 |
 | N01c | `opening_aum[0] = float('inf')` | `ModelRegistryError` | 非有限 |
@@ -142,7 +142,7 @@ Attempt: `execution_runs/M28/a20260919-01`。
 
 | ID | 拒绝条件 | 冻结预期 | 本卡是否可运行时执行 |
 |---|---|---|---|
-| R1 | AUM 桥 `期初+流入−流出+市场变化 ≠ 期末` | `ModelRegistryError` | 是（NEG-CARD） |
+| R1 | AUM 桥 `期初+流入−流出+市场变化 ≠ 期末` | `ModelRegistryError` | 是（NEG-CARD，**修订 r2 后**真正被该桥守卫拒绝） |
 | R2 | 跨年 `期初(t) ≠ 期末(t−1)` | `ModelRegistryError` | 是（CONT-BREAK） |
 | R3 | 时间加权平均 AUM 为负 | `ModelRegistryError` | 否（本卡未设例；见第 9 节） |
 | R4 | 必填 driver 长度 ≠ `len(years)`（含 `[]`） | `ModelRegistryError` | 是（N02） |
@@ -175,3 +175,25 @@ Attempt: `execution_runs/M28/a20260919-01`。
 - 披露缺出处/单位/期间/总净额不明或 `special_review` 未决 → `STOP_DISCLOSURE_ADAPTATION`。
 - 存量桥（本卡适用）：连续性不成立 → `STOP_BRIDGE`。
 - 准确性：`STOP_ACCURACY`（无 I-12 冻结设计）。
+
+---
+
+## 修订 r2（独立复核 P2-1 的处置；追加节，非重写）
+
+本节只处置独立复核的 **P2-1**：本卡 `cases.json` 的 NEG-CARD 覆盖声明与冻结证据不符。
+
+- **缺陷**：NEG-CARD 的 patch 原为 `{"kind": "set_driver", "value": {"__float__": 1051}}`。
+  `run_card.apply_case` 对 `set_driver` 是**整体深拷贝赋值**（只有 `set_driver_element` 才解包
+  `build_mutation_value`），驱动值被赋成 **dict**，先被 `model_registry.py:336` 的
+  "one value per forecast year" 长度/类型守卫拦下，**AUM 桥从未被求值**。于是第 5 节
+  "桥不成立"与第 8 节 "R1 = 是（NEG-CARD）"两处声明**不被证据支持**（真正打到的是通用长度守卫）。
+- **处置**：只把 `value` 改为**单元素列表 `[1051]`**（`kind` 仍为 `set_driver`），重新冻结
+  `cases.json`，重跑一次产品。**没有任何期望值被改动**：正例仍 `[11.5]`、连续性仍 `[11.5, 10.5]`、
+  defaults 仍 `[9.5]`、11 个负例的 `expected` 仍全为 `ModelRegistryError`。
+- **重跑实测机制**：`opening_aum stock-flow balance failed: FY2027`（rc 仍 0，11/11 仍全拒）。
+  runner 现在把该声明写进 `cases.json.case_contract.neg_card_declared_mechanism` 并在判定时
+  **强制校验**该消息子串（`neg_card_mechanism_check.matched`），缺失或不匹配一律 rc=1。
+- **覆盖结论（修正后）**：第 8 节 R1 现在**确实**被 NEG-CARD 打到；第 9 节 R3/R9 的"未覆盖"
+  结论不变。正例用 `market_change = −50` 通过这一点不变，故第 8 节 R8 仍由正例覆盖。
+- 改前/改后 `cases.json` sha256 记于 `evidence/M28/revision_r2.json`；改前副本见
+  `recovery/precorrection/v1_postgen_cases.json`。

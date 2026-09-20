@@ -213,6 +213,11 @@ B 退出时 `empty=True` ⇒ `resume_calls` 最终 **2**（多一次 resume）�
   F-L2d 的 8 并发实测最大等待 9.87 s、整相位墙 13.2 s。**这是协议的真实代价**，
   **不得**通过放宽锁或跳过互斥来规避（缓解手段是重试/降并发）。
 
+  （**E1 更正，收尾复核 2026-09-20 追加**：上面这条 bullet 里的 "9.87 s / 13.2 s" 是转录错误；`evidence/phase-wall.txt` 的
+  F-L2d 记录为 `max_lock_wait_seconds = 9.782719`、`phase_wall_seconds = 13.386` ⇒ 9.78 s / 13.4 s。
+  只更正数字，R3-2 的模型与结论不变；同一更正同步到 `decision.md` §14 F-I04C-12、`review.md` §6
+  与 `handoff.json.results.queue_cost`。本注记插在该 bullet 结束之后，不改动上面的任何一行。）
+
 ## R3-3 OPEN-3 的读法（采纳复核建议，待 owner 确认）
 
 `LOCK_MAX_SECONDS = 60` 是**本卡新增的等待上限常数**（防病态等待），**不是新预算**：

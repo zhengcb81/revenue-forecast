@@ -88,7 +88,7 @@
 | `I08B-c9-independent-recompute` | 独立复算（不调用被测代码） | 0 failures | 0 | 0 |
 | `I08B-c10-hash-inventory` | iso vs 产品源 hash | 产品改动 **0** | 0 | 0 |
 | `I08B-c11-git-status` | 三仓前后集合差 | 本卡新增条目 **0** | 0 | 0 |
-| `I08B-c13-changes-diff` | 生成 `changes.diff`（产品树 → 隔离副本） | 12 文件（8 改 4 增） | 0 | 0 |
+| `I08B-c13-changes-diff` | 生成 `changes.diff`（产品树 → 隔离副本） | **13 文件（9 改 4 增）** | 0 | 0 |
 
 **E 码逐条真实状态（独立复核 P1-1/P2-1 后按事实重列；已删除"32/32 由失败用例覆盖"的字面主张）**
 
@@ -218,6 +218,27 @@
 ⑤ P3-2 的 mtime 成因无法确定；
 ⑥ golden 5 个值是否仍代表"行为"只证自洽与差异来源，未独立重算每场景期望语义；
 ⑦ 复核方自查：其 pytest 在 attempt 内留下 10 个 `.pyc`（本文件 §5 第 11 条已承接并处理）。
+
+---
+
+## 7b. 第二轮定点复评（verdict `changes_required`，P1-1/P2-1 已闭合）的处置
+
+复核结论：**P1-1 与 P2-1 已真正闭合**、CONFLICT-1 加固已满足、全部计数与证据复现；
+只剩 **P2-2 的一半** + 3 处陈旧数字 + 1 处元数据。
+
+| 条目 | 处置 | 证据 |
+|---|---|---|
+| **P2-2 未闭合的一半（唯一阻塞项）** | 复核实测：`verify_publication_attestation` 读 `result.get("payload_sha256")`，而**真实 artifact 顶层没有该键**（`isinstance(None,str)` 为假）⇒ 变异后仍 `findings=[]`。**已改为比较记录自己的承诺** `record["payload_sha256"] != payload_sha256(result)`。**未**采用"一行级"最小改法：因为它无法在**真实产物**上被观测（真实记录的哈希必然等于投影）——本卡改为**从顶层导出 `payload_sha256`**（`run_forecast` 在记录与结果哈希都确定后写出），于是"真实产物 → 篡改 → 断言 `[E16]`"成为可观测、可复算的用例 | `iso/rf/scripts/attestation_protocol.py::verify_publication_attestation`、`iso/rf/scripts/revenue_core.py`（顶层 `payload_sha256`）、`iso/rf/tests/test_publication_attestation_contract.py` |
+| **新增"真实产物"用例** | `RealArtifactVerifierTests`：产物来自**真实 `run_forecast`**，逐个篡改 **12 个被覆盖字段**（confidence / theme_analysis / historical_accuracy_records / sources / parameter_trace / data_gaps / disconfirming_indicators / input_document / evidence_claims / management_target_coverage / growth_driver_analysis / forecast_version），每个都断言**恰好** `[E16]`，并断言 `classify` 落 **G4**；另断言合法产物 `[]` + `("G2", None)`、删记录 `E26`→G4/E27、三处哈希一致 | `after/I08B-c21-…`（7 passed, 12 subtests） |
+| **RED 证明（本卡自证用例有约束力）** | `iso/check_red_verifier.py`：在 scratch 副本里**恢复修前的比较**，同一 test 模块 **13 failed / 6 passed，rc=1** ⇒ 用例不是同义反复 | `after/c22_red_verifier.stdout.txt` |
+| **防回归 AST 守卫** | 新增 `SingleProjectionGuardTests`：①除 `attestation_protocol.py` 外**不得**有第二个手写投影（检出含两个自指字面量的 dict comprehension）；②`verify_publication_attestation` **不得**从 artifact 参数读 `payload_sha256`（按接收者名判定，允许读 `record`） | 同上 |
+| **N2 oracle 事后编辑** | **按追加式 provenance 如实登记**：新增 `binding.json.documentation_edit_ledger`（哪些文档、何时、改了什么、期望值是否变化、治理状态），并在 `oracle.md` 新增 §8.9 说明"第 7/8/9 条是复核驱动的勘误、非运行前冻结内容"；**不粉饰为从未发生**。治理裁定（事后编辑冻结文本是否可接受）**本卡无权作出**，标为 **OWNER DECISION REQUIRED** | `binding.json.documentation_edit_ledger`、`oracle.md` §8.9、`after/c23_chronology.stdout.txt`（时间线）、`after/c24_edit_ledger.stdout.txt` |
+| **N2 陈旧数字** | `oracle.md` §8.7 的"12 个文件中 9 个"改为 **"13 个文件中 9 个"**（第二轮新增 `trust_anchor.py`）；`handoff.json.byte_level_reproduction.finding` 同步 | `oracle.md:259`、`handoff.json`、`after/c15_line_endings.stdout.txt` |
+| **N3 `handoff.json` 陈旧** | `changes_diff` → **13/9/4/207171**；`changed_paths.edited` **补入 `iso/rf/scripts/trust_anchor.py`** 并加 `counts`；`production_patch_required_later` 改为"The SAME 13 files"；`reviewer_must_do` 删除"eight bound commands"（与同文件 `commands_executed_note` 不再自相矛盾），改为"commands.json 里的 14 条" | `handoff.json` |
+| **N4 `review.md` 陈旧** | c13 行改为 **13 文件（9 改 4 增）** | 本文件 §3 |
+| **N5 E30 首段变化** | 登记即可：`AttestationError` 的字符串形式为 `"<code>: <detail>"`，故 E30 的 `str()` 首段变为 `"input_binding_mismatch: input binding mismatch: …"`，**历史文本仍是子串**且 `exc.detail` 是逐字原消息；当前无消费者按首段匹配（c6/c7 复跑全绿） | `oracle.md` §8.10 |
+| **N6 `.pyc` 口径** | 两棵树现均 **0**（本卡自己的调用也曾产生 24 个，已清）；审计口径为非 `__pycache__` | `after/c20_clean_bytecode.stdout.txt` |
+| **对上游 E29/E30 口径（复核要求双向登记）** | **E29**：采纳"无任何生产调用方 ⇒ 是库入口可达 + 有用例，**不是运行链路可触发**"的限定，本卡不主张运行链路可触发。**E30**：接受复核的**部分反驳**——修前基线 `trust_anchor.py:26-40` 三条路径抛的是**裸 `ForecastInputError`，异常上没有任何 code**，全基线 `scripts/` 搜 `input_binding_mismatch`/`E30` **零命中**；故精确表述是"**E30 的码值从不被 raise**（拒绝行为存在但异常不带码，调用方无法按码匹配）"。已在 `review.md` §3 逐码表与 `decision.md` D-08B-04d 按此措辞登记 | 本文件 §3、`decision.md` D-08B-04d |下 10 个 `.pyc`（本文件 §5 第 11 条已承接并处理）。
 
 ---
 

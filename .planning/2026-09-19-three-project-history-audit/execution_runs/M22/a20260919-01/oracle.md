@@ -111,7 +111,7 @@ Attempt: `execution_runs/M22/a20260919-01`。
 
 | 例 | 变换（在冻结输入基础上只改这一处） | 冻结预期 |
 |---|---|---|
-| NEG-CARD | `royalty_rate = float('1.01')`（基于 `positive`） | `ModelRegistryError` |
+| NEG-CARD | `royalty_rate = [1.01]`（基于 `positive`） | `ModelRegistryError 且消息须含 `must be between 0.0 and 1.0: FY2027`` |
 | N01a | `eligible_sales[0] = True`（基于 `positive`） | `ModelRegistryError` |
 | N01b | `eligible_sales[0] = float('nan')`（基于 `positive`） | `ModelRegistryError` |
 | N01c | `eligible_sales[0] = float('inf')`（基于 `positive`） | `ModelRegistryError` |
@@ -175,6 +175,10 @@ R8-BIZ–R10-BIZ 是**业务拒绝**条件（卡片「专业决策/业务负例�
 - 存量桥：**not_applicable_with_reason**（第 1 节）。
 - 准确性：`STOP_ACCURACY`（无 I-12 冻结设计）。
 
+## 12. 桥平衡的有效分辨率（独立复核要求补记；见文末追加节的来源说明）
+
+本卡**不是存量桥**（第 1 节：not_applicable_with_reason），故桥平衡比较不适用；本卡的数值比较只有第 2/3 节的 `1e-9 × max(1, |expected|)` 容差。
+
 ---
 
 （以下为运行后追记节，由 `scripts/append_oracle_run_section.py` 追加；
@@ -197,7 +201,7 @@ R8-BIZ–R10-BIZ 是**业务拒绝**条件（卡片「专业决策/业务负例�
 | 负例 | 11 个全部 `ModelRegistryError` | 11/11 rejected | ok |
 
 原始退出码 = **0**（0=pass / 2=no-verdict / 3=negative 未按期望拒绝 / 1=harness error）。
-stdout / stderr 原文：`evidence/M22/stdout.txt`（2411 字节）、`evidence/M22/stderr.txt`（0 字节）。
+stdout / stderr 原文：`evidence/M22/stdout.txt`（3524 字节）、`evidence/M22/stderr.txt`（0 字节）。
 
 ### 2. 卡片文字 vs 实现公式串（第 7 节的核对结论）
 
@@ -210,7 +214,7 @@ stdout / stderr 原文：`evidence/M22/stdout.txt`（2411 字节）、`evidence/
 
 | 例 | raised | message |
 |---|---|---|
-| NEG-CARD | `ModelRegistryError` | `driver milestone_royalty.royalty_rate must contain one value per forecast year` |
+| NEG-CARD | `ModelRegistryError` | `driver milestone_royalty.royalty_rate must be between 0.0 and 1.0: FY2027` |
 | N01a | `ModelRegistryError` | `milestone_royalty.eligible_sales.FY2027 must be numeric` |
 | N01b | `ModelRegistryError` | `milestone_royalty.eligible_sales.FY2027 must be finite` |
 | N01c | `ModelRegistryError` | `milestone_royalty.eligible_sales.FY2027 must be finite` |
@@ -237,13 +241,16 @@ stdout / stderr 原文：`evidence/M22/stdout.txt`（2411 字节）、`evidence/
 | A_corrupted_positive_expectation | `oracle.json` 正例 `expected_float += 999` | 3 | 3 | 被篡改的期望不能藏在 rc=0 后面 |
 | B_corrupted_negative_assertion | `cases.json` 追加一个产品**不会**拒绝的负例 | 3 | 3 | 负例断言被篡改会变红 |
 | C_corrupted_positive_input | `input.json` 正例删除首个必填 driver | 2 | 2 | rc=2 可达：确实无法产生判定 |
+| F_corrupted_expected_type | `cases.json` 某负例 `expected` 改成 `ValueError` | 3 | 3 | **复核 P2-1**：`expected` 字段被真正校验，不再只是抄写 |
+| G_corrupted_message_requirement | `cases.json` 的 `expect_message_contains` 改成不可能出现的子串 | 3 | 3 | **复核 P2-2/P2-3**：消息要求被真正校验 |
+| H_message_requirement_points_at_another_guard | 把 `expect_message_contains` 指向长度守卫的措辞 | 3 | 3 | 消息控制具有区分度：别的守卫的措辞不能冒充值域/连续守卫 |
 | D_restored_uncorrupted | 恢复 scratch 副本 | 0 | 0 | 修复后退出码回到 0 |
 
 冻结证据在探针前后 **hash 未变**：`True`。完整记录见 `recovery/selfcheck/selfcheck_result.json`。
 
 ### 6. 本节追加前后的 hash 账（可复现）
 
-- 追加前 `oracle.md`（= 运行前冻结的完整正文，只归一化末尾的换行/`-` 分隔字符）**字节数** = 9693，sha256 = `d83ce2961186c324a445985bc3b569a87183642b5a68e9abce6332d0f5f83d76`
+- 追加前 `oracle.md`（= 运行前冻结的完整正文，只归一化末尾的换行/`-` 分隔字符）**字节数** = 10026，sha256 = `88de6bf9b8012bac6c6e05ee836977e9b54cc08c75287af66d7e55e92275b0da`
 - 该值由**二进制读**取得（`open(path, 'rb')`），且 `frozen_body` 是真字节前缀：`oracle.md == frozen_body + b"\n---\n\n" + run_section`。复核方式：取 `oracle.md` 中第一次出现本节标题 `## 运行后对账（追加节，不改动上方任何期望值）` 之前的全部字节、去掉末尾换行后求 sha256。
 - 追加时是否归一化了末尾分隔块：`True`（归一化后 `frozen_body` 是真字节前缀）。
 - 追加后完整文件 sha256 见 `evidence/M22/source_manifest.json` 的 `oracle_document.sha256_full_file_now` 与 `after/rerun_sha256.json`。

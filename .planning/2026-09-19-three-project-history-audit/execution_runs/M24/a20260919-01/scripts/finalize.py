@@ -73,8 +73,14 @@ def main() -> int:
         fh.write(".planning/2026-09-19-three-project-history-audit/reviews\n")
         fh.write("mtime_epoch = %.6f\n" % st.st_mtime)
         fh.write("mtime_local = %s\n" % _fmt(st.st_mtime))
-        fh.write("note = this attempt never wrote under reviews/; the mtime above is the "
-                 "pre-existing value observed after all of this attempt's runs\n")
+        fh.write("note = this attempt never wrote under reviews/; the DIRECTORY mtime above is "
+                 "the pre-existing value observed after all of this attempt's runs\n")
+        fh.write("convention_note (review item P3-3) = the task statement quoted 2026-09-19 "
+                 "10:05 for this directory. That value matches the NEWEST FILE anywhere inside "
+                 "it (reviews/second_wave/final_review_checks.json, epoch 1789808732.27), while "
+                 "the DIRECTORY entry mtime is 2026-09-19 09:14:20 (epoch 1789805660.08). The "
+                 "two conventions measure different things and both are recorded in "
+                 "evidence/<card>/integrity.json and handoff.json under reviews_mtime_conventions\n")
     print("wrote after/reviews_mtime.txt", _fmt(st.st_mtime))
 
     # --- 3. rebuild every derived document ---------------------------------

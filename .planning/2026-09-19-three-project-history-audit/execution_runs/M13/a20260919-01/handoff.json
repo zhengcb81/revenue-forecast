@@ -54,7 +54,12 @@
   "E1-pack-evidence",
   "F1-verify-card",
   "G1-finalize-hashes",
-  "H1-validate-json-tree"
+  "H1-validate-json-tree",
+  "K1-oracle-regenerate-with-annotation (r3)",
+  "K2-cases-annotation-repack-proof (r3)",
+  "J1-cases-annotation-repack-check (r3)",
+  "D4-append-r3",
+  "I1-audit-doc-pointers (r3)"
  ],
  "raw_exit_codes": {
   "A0": 0,
@@ -76,12 +81,21 @@
   "F1": 0,
   "G1": 0,
   "H1": 0,
+  "K1_oracle_regenerate_with_annotation": 0,
+  "K2_cases_annotation_repack_proof": 0,
+  "J1_cases_annotation_repack_check": 0,
+  "D4_append_r3": 0,
+  "I1_audit_doc_pointers": 0,
   "C1_scenario_C_control": 0,
   "C1_scenario_A_corrupt_value": 2,
   "C1_scenario_F_corrupt_shape": 2,
   "C1_scenario_D_missing_expectation": 2,
   "C1_scenario_B_corrupt_negative": 3,
-  "C1_scenario_E_harness_error": 1
+  "C1_scenario_E_harness_error": 1,
+  "C1_scenario_G_corrupt_case_expected": 2,
+  "C1_scenario_H_drop_negative_case": 2,
+  "C1_scenario_G_pre_fix_runner": 0,
+  "C1_scenario_H_pre_fix_runner": 0
  },
  "expected_exit_codes": {
   "A0": 0,
@@ -100,6 +114,11 @@
   "F1": 0,
   "G1": 0,
   "H1": 0,
+  "K1_oracle_regenerate_with_annotation": 0,
+  "K2_cases_annotation_repack_proof": 0,
+  "J1_cases_annotation_repack_check": 0,
+  "D4_append_r3": 0,
+  "I1_audit_doc_pointers": 0,
   "runner_contract": {"0": "pass", "1": "harness error", "2": "no verdict", "3": "negative case not refused"}
  },
  "positive_actual": [25.0],
@@ -159,14 +178,24 @@
   "evidence/M13/qualification.json",
   "evidence/M13/r2_boundary_check.json",
   "evidence/M13/revision_r2.json",
+  "evidence/M13/revision_r3.json",
+  "evidence/M13/doc_pointer_audit.json",
+  "evidence/M13/cases_annotation_repack.json",
   "evidence/M13/run_result.json",
   "evidence/M13/source_manifest.json",
   "evidence/M13/stderr.txt",
   "evidence/M13/stdout.txt",
   "evidence/M13/verify_report.json",
   "recovery/selfcheck_result.json",
-  "recovery/probes/signed_driver_probe.json"
+  "recovery/probes/signed_driver_probe.json",
+  "recovery/runner_before_F01_fix.py",
+  "recovery/before_fixes/"
  ],
- "reviewer_status": "not reviewed yet; formula = review_pending, implemented by this attempt and handed to an independent reviewer",
- "revision": "r2 (exactly one r2 section in oracle.md, single reproducible baseline at byte offset 10692)"
+ "review_history": {
+  "r1_review_2026_09_20": "accepted_scoped (formula qualification only); findings F-01..F-05 plus the observation-(c) and unit-labelling notes",
+  "r3_response": "handled in oracle.md's single r3 section and evidence/M13/revision_r3.json; no frozen expectation, tolerance, case or refusal condition was changed (cases.json gained an append-only annotation on the one invalid observation, proven by evidence/M13/cases_annotation_repack.json)",
+  "formula_state_after_r3": "review_pending (point review of r3 by the reviewer)"
+ },
+ "reviewer_status": "reviewed 2026-09-20: accepted_scoped (formula qualification only) with findings F-01..F-05 + two notes; handled in revision r3 and returned for a point review. formula = review_pending; the implementer never self-signs.",
+ "revision": "r3 (oracle.md carries exactly one r2 section at byte offset 10692 and exactly one r3 section; each revision has a single reproducible boundary hash, no competing baseline)"
 }

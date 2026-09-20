@@ -22,7 +22,7 @@
     }
   ],
   "next_step_number": 9,
-  "next_action": "ROUND 2 (targeted re-check only; the evidence layer must NOT be re-run). The independent adversarial review round 1 returned changes_required at the documentation/errata level and endorsed the contract body (C-01..C-12, I09-E01..E10, F-IDEM, E31 point, c02/c03/c05/c06/c07/c08/c11/c12). The implementer has now landed the errata pass (see errata.md for E-1..E-9 and the spec additions). The reviewer's next action is: (1) verify each errata disposition against errata.md, (2) decide the two recommended rulings already accepted as conditions - approve the I-08-A section 7 reorder WITH the orphan-member rule and the restated E31 semantics (OPEN-I09A-6, upstream text to be written by the I-08-A owner), and accept the single registry-row schema bump WITH the constraint that the attestation anchor never enters identity_payload (OPEN-I09A-3) adjudicated in the same batch as OPEN-D4, (3) adjudicate OPEN-I09A-1/-2/-4/-5, and (4) re-freeze the deliverable hashes from after/product_hashes.txt (regenerated last). Do NOT accept anything until I-08-A is genuinely independently accepted (OPEN-I09A-5 / conflict C-A). If the verdict is again changes_required, the highest-value remaining item is OPEN-I09A-1 (package_target semantics + the OPEN-D4 coupling), because it is the one item that prevents freezing any production identity value.",
+  "next_action": "ROUND 3 IS NOT REQUIRED. The independent reviewer made a precommitment in round 2: if the 4 remaining items land as appended errata (no evidence touched, no re-run, no C-item edited), this card's design/contract record completeness may be judged accepted_scoped WITHOUT a third adversarial round. That is exactly what this pass did - see errata.md sections E-10..E-13 plus the round-2 block in this file. Reviewer action now: (1) read E-10 (the one in-place edit to oracle.md section 9, disclosed and NOT reverted) and E-11 (the in-place re-capture of after/git_status_after.txt, whose old bytes are unrecoverable), (2) confirm decision.md now says 5 blocking items, (3) confirm the self-reference rule prints no hex, (4) rule accepted_scoped on the DESIGN/CONTRACT RECORD ONLY. Do NOT accept anything until I-08-A is genuinely independently accepted (OPEN-I09A-5 / conflict C-A), and do NOT extrapolate the acceptance to I-09-B/C implementation, transaction or signature qualifications. I-09-B remains blocked on OPEN-I09A-1/-2/-3/-5/-6 (and must include the OPEN-I09A-4 fail-closed fix plus the C-13 negative test in its allowlist).",
 
   "input_hashes": {
     "note": "full receipt in before/baseline_hashes.txt (67 lines, 1 legitimately ABSENT); key values repeated here",
@@ -195,6 +195,59 @@
       "the E31 compensation-line mechanism untested"
     ],
     "status_after_errata": "review_pending (unchanged); this errata pass is NOT a re-acceptance and the reviewer section stays empty"
+  },
+
+  "unclosed_gaps": {
+    "note": "REQUIRED BY THE ROUND-2 REVIEW (C-13 requirement 3): these gaps must be visible HERE, not only in prose, so no downstream card reads them as closed.",
+    "items": [
+      {
+        "id": "GAP-C13-attestation-record",
+        "statement": "A publication receipt that CLAIMS host_signed but carries NO attestation record is currently accepted and registered. I-08-A's G3b/G4 branch therefore has NO implementation site in production (source: revenue_publication.py:222-226 checks only that attestation_status holds a legal value; a product-wide grep for publication_attestation|attestation_record returns 0 hits).",
+        "status": "OPEN - compatibility gap NOT closed",
+        "closed_by": "I-08-B's attestation gate",
+        "rule": "C-13 (decision.md section 5.5): once that gate lands, this shape MUST be rejected before commit and MUST NOT count as committed.",
+        "error_code": "UNASSIGNED BY DESIGN - the code belongs to I-08-B's gate; this card neither borrows any I09-E number nor invents one",
+        "required_negative_test_for_I-09-B": "receipt claims host_signed with no publication_attestation record => the commit must be refused and NO committed row may be appended (a failable negative case, not merely an assertion about a helper)",
+        "reviewer_counterexample": "validator_accepts_host_signed_without_record=true; register_rc=0; rows=2; validation_status=[\"validated\",\"validated\"]"
+      },
+      {
+        "id": "GAP-3.8-consumer-gate",
+        "statement": "I-08-A OPEN-D6: the consumer-side gate for opt-in schema 3.8 (R-LEGACY-1 / E29) is not implemented in the cross-repo consumer.",
+        "status": "OPEN - inherited from I-08-A, not touched by this card"
+      },
+      {
+        "id": "GAP-e09-cross-volume",
+        "statement": "I09-E09 (cross-volume package target) is specified but NOT measured: this machine has only C:/Recovery as an alternative volume and no such case was run.",
+        "status": "OPEN - unmeasured"
+      },
+      {
+        "id": "GAP-e31-compensation",
+        "statement": "The E31 append-only compensation-line mechanism is specified (decision.md section 5.6b) but NOT implemented or measured.",
+        "status": "OPEN - unmeasured (I-09-B/I-09-C)"
+      }
+    ]
+  },
+
+  "review_round_2": {
+    "verdict": "changes_required (narrow: errata TEXT only; the evidence layer and the contract body both PASSED)",
+    "reviewer_precommitment": "if these 4 items land as appended errata (no evidence touched, no re-run, no C-item edited), this card's design/contract record completeness may be judged accepted_scoped WITHOUT a third adversarial round",
+    "endorsed": [
+      "E-1..E-9 all genuinely landed (E-1 four corrections with the oracle_addendum checkmark retracted; E-2 self-incrimination retracted and reduced to one wording issue; oracle.md lines 62/76 untouched verbatim)",
+      "independent recount of the production registry: total=60 / non-empty artifact_id=3 / null=57 / distinct=1 / all non-empty are snapshot / forecast with id=0 - matches the corrected declaration",
+      "E-9 machine-reproduced: 177 = 91 + 86 with 0 undeclared files",
+      "ZERO evidence re-runs: all 11 probe scripts and raw evidence hashes identical to round 1; commands.json unchanged (60aa3a99...)",
+      "the spec additions are written as SPEC rather than as 'fixed': C-13, the section 5.5 G4 downgrade, the C-01 mandatory note, section 5.6b orphan rules + E31 restatement, -2 derived from -1, -4 in the I-09-B allowlist, c02/c03/c05/V2 as acceptance cases"
+    ],
+    "findings": {
+      "E-10": "P1 - DISCLOSED, NOT REVERTED: the LAST LINE of oracle.md section 9 was edited IN PLACE (-5 -> -6, because -6 was added). It is the ONLY in-place change to the frozen body. The four places that promised 'the frozen body is untouched' are withdrawn; the claim is now 'exactly one in-place edit, the other 177 lines untouched, section 10 appended'. Per the reviewer's instruction the line was NOT reverted (that would be a second in-place edit). The integrity script's over-claim ('proves the correction was an append') is withdrawn and its capability_limit is recorded in the script header, in errata.md, and in review.md.",
+      "E-11": "P2 - DISCLOSED: after/git_status_after.txt was re-captured IN PLACE during the errata pass (9942 B / 132 lines / c6faa500... -> 25955 B / 270 lines / f3ef8287...). The old snapshot was NOT retained, so c6faa500... is permanently unverifiable; review.md's 132/126 provenance now reads 'one snapshot reading during this attempt (the file was later re-captured)'; the E-5 table cell is re-labelled 'measured during the round-1 errata pass, now unverifiable'. DISCIPLINE GOING FORWARD: snapshots are written under NEW names and never over a declared artifact.",
+      "E-12": "P2 - FIXED: decision.md said '4 items block' while open_items.md and this file say 5 (-1/-2/-3/-5/-6); decision.md now says 5 and notes that this is its ONLY blocking-count statement (the reviewer measured that grep '阻塞 I-09-B' hits only that line).",
+      "E-13": "P3 x3 - FIXED: (1) refresh_hashes.py and gen_changes_diff.py now print 'SELF-REFERENCE (not declarable here)' with NO hex for after/product_hashes.txt and changes.diff; the earlier self-declared a126badf... was WRONG (the real hash was 49df7f25e1269a39be9756c6be7cfa351c05f2618eb02ddcb10916656c79c1bb, 10729 B) and must never be used as a downstream anchor; (2) decision.md section 8 row A2 now carries '(see the section 5.5 downgrade)' and review.md section 6-C qualifies the 124 figure as unretained; (3) oracle_addendum.md now separates c04 (nested path EXISTS and was written => reader is_registered=TRUE) from c04b (ACL deny, path absent => false).",
+      "C-13_requirements": "accepted with 3 requirements, all recorded: the error code stays UNASSIGNED until I-08-B rules; a failable negative test is bound for I-09-B; the 'compatibility gap NOT closed' statement is listed in this file's unclosed_gaps rather than only in prose.",
+      "section7_reorder": "APPROVED with 3 conditions recorded: the five orphan-member rules; E31 triggers ONLY when a member declared by an ALREADY-APPENDED committed row is missing or hash-mismatched (orphans / prepare failure / member write failure with no C3 must NOT trigger it); the upstream text must be written by the I-08-A owner - this card must not edit I-08-A.",
+      "owner_decision_suggestions": "the reviewer's per-OPEN recommendations (-1 logical name + closed identity + no historical recomputation; -2 derived from -1; -3 one schema bump with the anchor outside the identity, batched with OPEN-D4; -4 into the I-09-B allowlist with fail-closed + negative test; -5 stays blocking pending a dispatch/index update; -6 written by the I-08-A owner with countersignature) were copied to the plan-level OWNER_DECISIONS.md. They are recorded here as PENDING SUGGESTIONS, not as effective decisions."
+    },
+    "status_after_round_2": "review_pending (unchanged); no third adversarial round is required per the reviewer's precommitment, provided the 4 items landed as appended errata - which is what this pass did"
   },
 
   "evidence_paths": [

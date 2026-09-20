@@ -1,0 +1,166 @@
+{
+ "card_id": "M30",
+ "attempt_id": "a20260919-01",
+ "model_id": "finite_adoption",
+ "card_title": "finite market adoption",
+ "binding_status": "bound",
+ "written_utc": "2026-09-20T02:59:11.942994+00:00",
+ "written_before_any_product_run": true,
+ "binding_sources": {
+  "I-00-B": {
+   "path": "execution_runs/I-00-B/a20260919-01/binding.json",
+   "rule_read": "run cwd must be a per-attempt isolation directory, never the repo root; the global Miniconda python is FORBIDDEN for card runs",
+   "note": "I-00-B binds the isolation plan and the two-stage command rule; it does not materialise a checkout tree, so this attempt materialises its own read-only snapshot (iso/checkout_scripts) and records the production hashes it was copied from"
+  },
+  "I-00-C": {
+   "path": "execution_runs/I-00-C/a20260919-01/",
+   "role": "dependency receipt: source/config fingerprint rehash for the three repos",
+   "status_as_read": "present, used as a receipt reference only; this attempt re-hashed the files it actually used instead of trusting it"
+  },
+  "I-00-A": {
+   "path": "execution_runs/I-00-A/a20260919-01/baseline.json",
+   "role": "template interpreter and isolation finding (the global python loads an editable dayu-agent finder, so isolated venvs are mandatory)"
+  }
+ },
+ "three_repo_paths": {
+  "revenue-forecast": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+  "company-wiki": "C:\\Users\\郑曾波\\Projects\\company-wiki",
+  "filing-fetch": "C:\\Users\\郑曾波\\Projects\\filing-fetch"
+ },
+ "interpreter": {
+  "path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "session_flags": [
+   "-X",
+   "utf8",
+   "-B"
+  ],
+  "created_from_template": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "isolation": "attempt-local venv created with `python -m venv` from the I-00-A template venv",
+  "global_python_used_for": "nothing in this card; the global Miniconda interpreter was never invoked (no PDF extraction happens in this card)",
+  "binding_written_by_interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "pipeline_orchestrator_interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+  "pipeline_orchestrator_note": "the orchestrator only creates the attempt venv and starts each unit as a subprocess; every card command, including the product run, names the bound attempt-venv interpreter in its own argv"
+ },
+ "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01",
+ "python_path": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\checkout_scripts"
+ ],
+ "run_code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\checkout_scripts",
+ "production_source_root_readonly": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+ "production_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "isolated_copy_hashes": {
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "model_contract_as_read_from_the_isolated_copy": {
+  "model_id": "finite_adoption",
+  "required": [
+   "opening_unserved_market",
+   "new_eligible_units",
+   "removed_eligible_units",
+   "adopted_units",
+   "closing_unserved_market",
+   "net_revenue_per_unit"
+  ],
+  "optional": [],
+  "defaults": {},
+  "dimensions": {
+   "opening_unserved_market": "quantity",
+   "new_eligible_units": "quantity",
+   "removed_eligible_units": "quantity",
+   "adopted_units": "quantity",
+   "closing_unserved_market": "quantity",
+   "net_revenue_per_unit": "revenue_per_unit"
+  },
+  "ratio_drivers": [],
+  "declared_driver_bounds": {},
+  "effective_bounds": {
+   "opening_unserved_market": [
+    0.0,
+    "inf"
+   ],
+   "new_eligible_units": [
+    0.0,
+    "inf"
+   ],
+   "removed_eligible_units": [
+    0.0,
+    "inf"
+   ],
+   "adopted_units": [
+    0.0,
+    "inf"
+   ],
+   "closing_unserved_market": [
+    0.0,
+    "inf"
+   ],
+   "net_revenue_per_unit": [
+    0.0,
+    "inf"
+   ]
+  },
+  "formula": "revenue = adopted_units * net_revenue_per_unit; closing_unserved_market = opening_unserved_market + new_eligible_units - removed_eligible_units - adopted_units"
+ },
+ "declared_drivers_match_registry_contract": true,
+ "card_text_required_list_vs_registry": {
+  "card_text_required_list": [
+   "opening_unserved_market",
+   "new_eligible_units",
+   "removed_eligible_units",
+   "adopted_units",
+   "closing_unserved_market",
+   "net_revenue_per_unit"
+  ],
+  "registry_required": [
+   "opening_unserved_market",
+   "new_eligible_units",
+   "removed_eligible_units",
+   "adopted_units",
+   "closing_unserved_market",
+   "net_revenue_per_unit"
+  ],
+  "card_text_matches_registry": true,
+  "divergence_note": null
+ },
+ "card_anchors_verified_before_the_run": {
+  "entry_point_line_claimed_by_card": 308,
+  "entry_point_line_text": "def calculate_registered_model(",
+  "entry_point_anchor_ok": true,
+  "registration_file": "model_extensions.py",
+  "registration_line_claimed_by_card": 216,
+  "registration_line_text": "make(\"finite_adoption\", {",
+  "registration_anchor_ok": true,
+  "anchor_rule": "the line numbers cited by the card are re-checked against the isolated copy in THIS step, before the product run; a mismatch aborts the binding instead of being carried forward silently"
+ },
+ "module_paths": {
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\iso\\checkout_scripts",
+  "imports_used": [
+   "model_registry"
+  ]
+ },
+ "config_paths": [],
+ "allowed_write_roots": [
+  "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01"
+ ],
+ "forbidden": [
+  "writing anywhere outside the attempt directory",
+  "writing under Projects/revenue-forecast outside .planning",
+  "writing under Projects/company-wiki or Projects/filing-fetch",
+  "editing .planning/reviews (frozen audit evidence)",
+  "git add/commit/restore/stash in any of the three repos",
+  "network calls, real providers, LLM calls, publication",
+  "calling any product function other than calculate_registered_model for the formula oracle"
+ ],
+ "network": "disabled",
+ "input_hashes": {
+  "evidence/M30/input.json": "6b236d1db43b058bc1f5698fb78cee6bd4f189fc8a9a322dc3d032d57e5938cb",
+  "evidence/M30/oracle.json": "ac773e16e6ffdc59cd71122ed7a2a6817b89c3f74a05e1244bd11659ecfb03d1",
+  "evidence/M30/cases.json": "a1b3cc0eade9c1ff65b8baa7af5674651c9ae58f64b2821aa9ccce400a958e86"
+ },
+ "evidence_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M30\\a20260919-01\\evidence\\M30",
+ "created_before_runs": true
+}

@@ -92,25 +92,39 @@ Runner verdict: `pass`, exit code `0`, triggered conditions `[]`
 | D-missing-expectation | `oracle.json` `positive.expected_float` deleted | 2 | 2 |
 | B-corrupt-negative-case | `cases.json` NEG-CARD value 1.1 → 0.5 (now legal) | 3 | 3 |
 | E-harness-error | `--code-root` points at a non-existent directory | 1 | 1 |
+| G-corrupt-case-expected | `cases.json` NEG-CARD `expected` → `PythonBuiltinValueError` | 2 | 2 |
+| H-drop-negative-case | `cases.json` last case dropped (11 → 10 vs a frozen oracle declaring 11) | 2 | 2 |
+| G-pre-fix-runner-... | same corruption, run with `recovery/runner_before_F01_fix.py` | 0 | 0 |
+| H-pre-fix-runner-... | same deletion, run with `recovery/runner_before_F01_fix.py` | 0 | 0 |
 
 `frozen_unchanged_by_the_selfcheck = true` and `frozen_still_equals_freeze_time_hashes = true`, so the
-corruption never touched the frozen oracle.
+corruption never touched the frozen oracle. The last two rows are the F-01 defect demonstration: the
+pre-fix runner revision returned rc=0 on exactly the copies that now yield rc=2.
+`recovery/selfcheck_result.json` carries the full `exit_code_matrix` (rc 0/1/2/3 all reachable).
 
 Two real harness/plumbing defects were found and are kept in the record instead of being replayed away:
 the first `run_card.py` invocation returned **rc=1** (`NameError: name 'key' is not defined`, a runner
 defect), and the first r2 append put one separating newline before the boundary marker, which was repaired
 by removing exactly that byte (`recovery/oracle_md_before_boundary_repair.bin`, `revision_r2.json` R2-06).
+The raw bytes of that first failed invocation were **not retained** (see `recovery/README.md`, F-05).
 
 ## 6. oq_rulings enumeration (script-derived counts)
 
 `scripts/enumerate_driver_bounds.py` → `evidence/M13/oq_enumeration.json` →
 `scripts/build_oq_rulings.py` → `evidence/M13/oq_rulings.json`.
 Enumerated by the implementer session by running that script against the isolated read-only copy
-(automated; no human counting); **no independent reviewer has examined it yet**, and no reviewer is named
-as an author. Counts: 31 registered models / 165 drivers / 40 ratio drivers / 3 ratio drivers whose bounds
-are not [0,1]; for this model: 2 required, 2 optional, **2 optional drivers without an explicit default**
-(both silently filled with 0.0 when omitted), **2 signed & unbounded drivers**
+(automated; no human counting). The independent reviewer of 2026-09-20 re-implemented the enumeration and
+corrected the predicate: a driver is a ratio driver when `spec.dimensions[driver] == "ratio"` (the narrower
+`ModelSpec.ratio_drivers` set structurally misses `direct_growth.growth_rate`, domain `(-1, inf)`,
+hard-coded at `scripts/model_registry.py:287-288`). The authoritative registry totals are therefore
+**41/4** (41 ratio drivers, 4 of them not bounded [0,1]), consistent with the M05–M08 r3 correction; the
+narrower predicate's numbers (40/3) are recorded side by side and every disagreement is listed in
+`oq_enumeration.json`. Counts for this model: 2 required, 2 optional, **2 optional drivers without an
+explicit default** (both silently filled with 0.0 when omitted), **2 signed & unbounded drivers**
 (`performance_fee_revenue`, `other_revenue`), 1 driver with an inclusive upper bound of 1.0.
+Registry-wide the silent-zero-fill surface is **31 optional driver slots across 24 models**
+(`oq_rulings.json.enumerated_counts_with_units` labels the units).
+The OQ list in `oq_rulings.json` mirrors `handoff.json:open_questions` one-to-one (OQ-01..OQ-05).
 
 ## 7. Judgement calls the reviewer should attack first
 
@@ -163,8 +177,31 @@ are not [0,1]; for this model: 2 required, 2 optional, **2 optional drivers with
    read-only production root passed to the verifier.
 3. Confirm the isolated copy still hashes equal to production (`evidence/M13/source_manifest.json`,
    `after/source_hashes.txt`).
-4. Confirm the frozen-body boundary: `before/oracle_md_v1.json` sha256 == sha256(oracle.md bytes before
-   the single marker) (byte offset 10692), and that exactly one r2 section exists.5. Read `evidence/M13/oq_rulings.json` and re-run the enumeration script to check the quoted counts.
+4. Confirm BOTH frozen-body boundaries: `before/oracle_md_v1.json` sha256 == sha256(oracle.md bytes
+   before the single r2 marker) (r2 byte offset 10692), and `revision_r2.json`'s recorded post-append
+   hash == sha256(oracle.md bytes before the single r3 marker); exactly one r2 and one r3 section.
+5. Read `evidence/M13/oq_rulings.json` and re-run the enumeration script to check the quoted counts
+   (predicate: `spec.dimensions[driver] == "ratio"`).
 6. Pick a case the implementer did not use (e.g. `management_fee_rate = 0.0`, or a two-year path with a
    fractional AUM) and freeze its expectation **before** running it.
-7. Adjudicate the OQ-01…OQ-04 items in `handoff.json` / `decision.md`.
+7. Adjudicate the OQ-01…OQ-05 items in `handoff.json` / `decision.md` (same numbering in
+   `oq_rulings.json.open_questions_mirroring_handoff`) and point-check revision r3.
+
+## 10. Revision r3 — response to the independent review (2026-09-20)
+
+The independent reviewer returned **accepted_scoped (formula qualification only)** for this card and
+listed findings F-01..F-05 plus two notes. Revision r3 handles them in the tool and evidence layers only
+— **no frozen expectation, tolerance, case or refusal condition was changed**:
+
+| Finding | What r3 did |
+|---|---|
+| F-01 | `scripts/run_card.py` now cross-checks each case's declared `expected` against the type the runner actually counts, plus the case count / id set against `oracle.json`; any inconsistency is an expectation gap and yields **rc=2** (previously rc=0). The pre-fix revision is kept at `recovery/runner_before_F01_fix.py` and demonstrated red on the same corrupted scratch copy (see the two extra rows in section 5). |
+| F-02 | ratio predicate corrected to `spec.dimensions[driver] == "ratio"`; registry totals 40/3 → **41/4** (`direct_growth.growth_rate (-1, inf)` recovered); `oq_enumeration.json` / `oq_rulings.json` regenerated; section 6 rewritten. |
+| F-03 | `oq_rulings.json` OQ list now mirrors `handoff.json:open_questions` one-to-one (OQ-01..OQ-05); `decision.md` and this file renumbered; all `<file>.py:<line>` pointers audited by `scripts/audit_doc_pointers.py` → `evidence/M13/doc_pointer_audit.json`, which also records the explicit search for the five residue tokens the reviewer listed (**none of them exists anywhere in this attempt outside the audit script's own data**; the line pointers that are present are the verified product ones - `model_registry.py:233/308/335/352-353` - plus the M05–M08 r3 artifacts, which this attempt opened read-only and re-checked: `f07_enumerate.py:60` really is `dim = spec.dimensions[driver]`, and `docfix_r3.json` really records `ratio_drivers_total_was 40` → `now 41` with `missing_driver_added = direct_growth.growth_rate, domain (-1, inf)`). |
+| F-04 | `scripts/finalize_hashes.py` writes its own by-products before the inventory, excludes `after/rerun_sha256.json` itself from `files`, and adds `self_reference_note`, `combined_digest_scope` and `concurrently_mutable` marks, so the inventory and the combined digest are now reproducible. |
+| F-05 | `recovery/README.md` states explicitly that the first failed invocation's raw bytes are not retained; the r3 pipeline saves every self-check scenario's stdout/stderr, and future first failed invocations go to `recovery/first_invocation_*.{stdout,stderr}.txt`. |
+| note (c) | the invalid observation `OBS-SIGNED-PERF-FEE` now carries an **append-only** annotation in `cases.json` (`not_executable_as_frozen`, `construction_error`, pointing at the labelled probe) — no expectation changed; `evidence/M13/cases_annotation_repack.json` proves the only difference from the frozen revision is those two added keys. |
+| note (units) | `oq_rulings.json` now separates slots from models: **31 optional slots without an explicit default across 24 models**, with unit labels. |
+
+Status after r3: `formula` remains `review_pending` (the implementer never self-signs; r3 goes back for a
+point review), `disclosure_adaptation` remains `unmapped`, `accuracy` remains `unproven`.

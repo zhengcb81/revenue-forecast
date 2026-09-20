@@ -40,7 +40,7 @@ REF = re.compile(r"\*\*(E\d\d)\*\*\s*`([a-z0-9_]+)`")
 
 def canonical_pairs(decision_text: str) -> dict[str, str]:
     start = decision_text.index("### 2.5 规范错误码表")
-    end = decision_text.index("**两个参数、一个未决**")
+    end = decision_text.index("个参数、一个未决")
     return {code: name for code, name in CODE_ROW.findall(decision_text[start:end])}
 
 
@@ -68,7 +68,7 @@ def check(decision_text: str, oracle_text: str, label: str) -> list[str]:
 
     # duplicate E-numbers inside the canonical table
     nums = CODE_ROW.findall(decision_text[decision_text.index("### 2.5 规范错误码表"):
-                                                decision_text.index("**两个参数、一个未决**")])
+                                                decision_text.index("个参数、一个未决")])
     seen: set[str] = set()
     for num, _ in nums:
         if num in seen:
@@ -112,7 +112,7 @@ def mutate_a(decision_text: str, oracle_text: str) -> tuple[str, str]:
 def mutate_b(decision_text: str, oracle_text: str) -> tuple[str, str]:
     """Swap the code strings of two canonical rows inside section 2.5."""
     start = decision_text.index("### 2.5 规范错误码表")
-    end = decision_text.index("**两个参数、一个未决**")
+    end = decision_text.index("个参数、一个未决")
     section = decision_text[start:end]
     swapped = (
         section.replace("`provider_key_untrusted`", "`__TMP__`", 1)

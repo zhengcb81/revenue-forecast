@@ -199,21 +199,37 @@ def case_f_t4(root, verbose=False):
                           len(winners) >= 1,
                           json.dumps({t: envelopes[t]["action"] for t in tags})))
     checks.append(h.check("the winners plus joiners are exactly the non-timed-out ones",
-                          len(winners) + len(joiners) == len(succeeded),
+                          set(winners) | set(joiners) == set(succeeded)
+                          and not (set(winners) & set(joiners)),
                           json.dumps({t: envelopes[t]["action"] for t in tags})))
     view = h.lease_view()
     successful_ids = {payloads[tag]["lease_id"] for tag in succeeded}
+    timed_out_ids = {payloads[tag]["lease_id"] for tag in timed_out}
+    # r5 E2: the two conjuncts below are explicit universal quantifiers over the
+    # refcount view.  The previous sub-clause `not any(lease in successful_ids is
+    # False ...)` was a CHAINED COMPARISON in Python -- it evaluates as
+    # `(lease in successful_ids) and (successful_ids is False)`, never True, so the
+    # `not any(...)` was vacuously True and could never fail (the closeout review
+    # found it).  A timed-out lease entering the refcount must turn this red.
     checks.append(h.check("no timed-out participant ever appears in the refcount",
-                          not any(lease in successful_ids is False
-                                  for lease in view["entries"])
-                          and all(lease in successful_ids for lease in view["entries"])
+                          all(lease in successful_ids for lease in view["entries"])
+                          and all(lease not in timed_out_ids for lease in view["entries"])
                           and view["entries"] != [],
-                          json.dumps({"view": view, "succeeded": succeeded})))
+                          json.dumps({"view": view, "succeeded": succeeded,
+                                      "timed_out": timed_out})))
     wait_seconds = {tag: round(envelopes[tag].get("lock_wait") or 0.0, 3) for tag in succeeded}
+    # r5 E2: this used to assert a literal `True` (a recorder, not an assertion).
+    # Now it asserts the reporter really emitted `lock_wait` for every successful
+    # participant and that the reported wait is a real number inside the lock
+    # budget (1 ms allowance = the reporting resolution).  A missing field or an
+    # out-of-budget number turns it red.
     checks.append(h.check("the queue wait is reported (the download budget it consumed)",
-                          True, json.dumps({"holds_seconds": hold, "budget": budget,
-                                            "waited_seconds": wait_seconds,
-                                            "timed_out": timed_out})))
+                          all(envelopes[tag].get("lock_wait") is not None for tag in succeeded)
+                          and all(0.0 <= value <= budget + 0.001
+                                  for value in wait_seconds.values()),
+                          json.dumps({"holds_seconds": hold, "budget": budget,
+                                      "waited_seconds": wait_seconds,
+                                      "timed_out": timed_out})))
     checks.append(h.check("no gate timeouts",
                           not h.journal_events("gate_timeout"),
                           json.dumps(h.journal_events("gate_timeout"))))

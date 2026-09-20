@@ -125,10 +125,10 @@ W4 手算：重叠区 00:20–00:29 = 9 min = 540 s；并集 00:00–00:40 = 40 
 TOLERANCE PRE-REGISTRATION (I-14-B §6)
   label_offset_tolerance_seconds   : proposed = 5      (implementer proposal, NOT frozen)
   capture_latency_tolerance_seconds: proposed = 5      (implementer proposal, NOT frozen)
-  frozen_by                        : null   <-- reviewer 在此行填写身份
-  frozen_at_utc                    : null   <-- reviewer 在此行填写冻结时刻
-  frozen_tolerance_seconds         : null   <-- reviewer 在此行填写唯一冻结值
-  reviewer_signature_line          : "frozen_tolerance_seconds = ______   reviewer=______   utc=______"
+  frozen_by                        : independent reviewer session (DSH agent session-b0e4a430ca7d), delegated by parent session-bfecd191-fbc3-4a66-8ed1-6562479bf102
+  frozen_at_utc                    : 2026-09-20T03:15:44Z
+  frozen_tolerance_seconds         : 5
+  reviewer_signature_line          : "frozen_tolerance_seconds = 5   reviewer=independent reviewer session (session-b0e4a430ca7d)   utc=2026-09-20T03:15:44Z"
 ```
 
 **截至本 attempt，没有任何 reviewer 冻结容差 ⇒ 真实 30/60/120 秒检查未运行，状态 blocked。** 实现者**不得**自签该值。

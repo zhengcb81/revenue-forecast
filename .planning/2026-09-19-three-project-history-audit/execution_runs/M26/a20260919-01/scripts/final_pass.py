@@ -84,7 +84,7 @@ def main() -> int:
                           "has no baseline hash and does not claim byte-equality."),
         },
     }
-    with open(os.path.join(ev, "integrity.json"), "w", encoding="utf-8") as handle:
+    with open(os.path.join(ev, "integrity.json"), "w", encoding="utf-8", newline="\n") as handle:
         json.dump(integrity, handle, ensure_ascii=False, indent=1)
 
     # ---- revision_r2.json: record the stdout re-encoding and the rerun proof ----
@@ -105,7 +105,7 @@ def main() -> int:
         "rerun_check": "recovery/rerun_check/rerun_check.json",
         "rerun_check_unit": "R-%s-independent-rerun-check" % card,
     }
-    with open(revision_path, "w", encoding="utf-8") as handle:
+    with open(revision_path, "w", encoding="utf-8", newline="\n") as handle:
         json.dump(revision, handle, ensure_ascii=False, indent=1)
 
     # ---- after/rerun_sha256.json ----
@@ -135,7 +135,7 @@ def main() -> int:
         path = os.path.join(attempt, name)
         if os.path.exists(path):
             rerun["documents"][name] = sha256_file(path)
-    with open(os.path.join(attempt, "after", "rerun_sha256.json"), "w", encoding="utf-8") as handle:
+    with open(os.path.join(attempt, "after", "rerun_sha256.json"), "w", encoding="utf-8", newline="\n") as handle:
         json.dump(rerun, handle, ensure_ascii=False, indent=1)
 
     # ---- refresh evidence_hashes.json (it must exclude its own self-reference) ----
@@ -152,7 +152,7 @@ def main() -> int:
     for name in sorted(os.listdir(os.path.join(attempt, "scripts"))):
         if name.endswith(".py"):
             hashes["scripts/" + name] = sha256_file(os.path.join(attempt, "scripts", name))
-    with open(os.path.join(ev, "evidence_hashes.json"), "w", encoding="utf-8") as handle:
+    with open(os.path.join(ev, "evidence_hashes.json"), "w", encoding="utf-8", newline="\n") as handle:
         json.dump({
             "card_id": card,
             "note": ("hashes of the receipt set at pack time; evidence_hashes.json itself is "

@@ -25,6 +25,15 @@
 | **必修 3**：正文旧值与 F-LK2 数字（三处三组）不一致 | ① `decision.md` §ADR-6 表与 §6 摘要第 1 条 → `lock_budget_for(x)=min(x,60)` + v1.3 更正注记；② §10 的 ADR-10 行标注**已被 §12 R1–R5 取代**（`released_took_ownership` 在 r2 已删除）；③ §10 末段追认"任何情况下都不留下 paused 且无人有义务"**已正式放弃**（R5 允许该终态）；④ `oracle.md` §0 → **每文件计数器、收尾后从 1 重来**（非单调）+ owner 记录字段扩展；⑤ `oracle.md` §7 → `min(相位预算,60)`；⑥ **F-LK2 统一为实测组** finals `[16,35,10,56,18]` ⇒ lost `[184,165,190,144,182]`（来源 `evidence/lock-and-legacy.txt` 的 F-LK2 记录，与 finals 相容；复审复跑 34 与更早一轮 261/200 作为调度依赖的旁证保留） | `sim/patch_r3_docs.py`（可复算的替换脚本，全部替换都成功） | 三处文本对齐后重跑全部证据（见下方计数） |
 | **OPEN-3**（复核建议，已采纳） | **保留 60，重命名为"本卡新增的等待上限常数"**：请求段默认 900 s 下不构成额外约束；真实作用是给**清理段（C≤85 s）与短 deadline** 封顶，属防病态等待而非新预算，`≤0` 时拒绝等待（F-T2 已证）；与 I-04-A v2 三条已签值无冲突。**并把"是否允许 `worker-pause` 在锁内"一并列为 owner 待裁** | `decision.md` §14（OPEN-3 段）+ §8 O-3；`oracle.md` R3-3；`handoff.json.next_action` | F-T2 + F-T4 + F-L2d 的 `max_lock_wait` |
 
+> **E1 更正（收尾复核；2026-09-20 追加，原行一字未删）**：上表"必修 2"行的证据栏写 “`evidence/phase-wall.txt`（F-L2d 8 并发最大等待
+> 9.87 s、相位墙 13.2 s）”，与该文件的实际内容不符：`evidence/phase-wall.txt` 的 F-L2d 记录是
+> `max_lock_wait_seconds = 9.782719`、`phase_wall_seconds = 13.386`，即 **9.78 s / 13.4 s**
+> （9.87 是把 9.782719 末两位换位的转录错误）。该数字的权威来源只有 `evidence/phase-wall.txt`
+> 一处一行一条记录；本行原文保留，取值以更正块为准。
+> 同一过时数字还出现在 `decision.md` §14 F-I04C-12 段与 `oracle.md` R3-2 段（两处均已追加同一更正），
+> 以及 `handoff.json.results.queue_cost`（已就地追加 erratum 标注）。**设计结论不变**：
+> "8 并发的锁等待接近 10 s、相位墙约 13 s、排队会吃掉下载预算"的量级结论与 ADR-2 的取舍都不受影响。
+
 ### r3 的真实计数（重跑后）
 
 - 协议套件（含 F-T1..F-T4）：`cases_in_log=28 pass=28 fail=0 harness_error=0 failing_checks=0`
@@ -113,8 +122,69 @@ F-W4b=**断言与 ADR-12 不符**（收尾 unlink ⇒ 新周期 gen=1）。
 
 ## 5. reviewer 结论（**留空 —— 由独立 reviewer 填写，实施者不得代填**）
 
+> **本节已填写（2026-09-20）**：独立 reviewer 的裁决正文在本文件**末尾逐字粘贴**
+> （标题为 `## 5. reviewer 结论（独立 reviewer session，2026-09-20）`）。上面的 "留空 —— 由独立 reviewer 填写" 是 r3 的状态说明，
+> 下面五行是当时的模板：作为历史保留，不要当作已填写的版本。
+
 - 第二轮结论：`<accepted_scoped | changes_required | blocked | not_applicable_with_reason>`
 - 复算过的 oracle：
 - 未复现/未验证项：
 - 授予的资格与明确不授予的资格：
 - reviewer（agent id / 时间）：
+
+> **本节已由独立 reviewer 填写（2026-09-20）；上面的 "留空" 抬头与五行模板是 r3 状态，作为历史保留。**
+> 下面是 reviewer 报告里"可原样粘贴进 `review.md §5`"的裁决正文，由 `sim/patch_r5_docs.py` 从 `evidence/r5-reviewer-closeout-report.md` 的代码块中**逐字读出并粘贴，实施者未改一字**
+> （源文件 sha256 `9dafd6cf566418cf4b5e1e9c21cb9147902fbe83dccd47147a5d66c20ef678d0`，副本来自 reviewer 的 `%TEMP%\closeout-review-20260920-035508\REPORT.md`）。
+
+## 5. reviewer 结论（独立 reviewer session，2026-09-20）
+
+- 第二轮结论：`accepted_scoped`（**限定：仅本 attempt 的设计文本与模拟结果**；不含任何产品实现/部署资格）
+- 复算过的 oracle：
+  ① 我在隔离副本（%TEMP%，不写生产仓）重跑协议套件：`cases_in_log=28 pass=28 fail=0 harness_error=0
+     failing_checks=0`，其中 F-T1/F-T2/F-T3/F-T4 = 7/3/6/8 checks 全 PASS；`sim/static_check.py` S1–S4
+     全 PASS；锁与 legacy 套件 `7 pass / 0 fail`。
+  ② F-LK2：我复算 `200 − finals == lost_updates` 恒成立；`evidence/flk2-recompute.txt` 的真值组
+     `[16,35,10,56,18] ⇒ [184,165,190,144,182]`（range [144,190]，expected 200）逐项自洽；旧组
+     `[12,19,7,26,43] ⇒ [197,185,191,198,14]` 与之矛盾（C1 证伪）。我这一轮的实测组为
+     `[16,6,25,115,8] ⇒ [184,194,175,85,192]`，与记录组不同但同守 `lost = 200 − finals`，且
+     `determinism = NOT deterministic` ⇒ 该量只能定性断言，卡片口径正确。
+  ③ 追加性：我亲自运行 `sim/verify_r4_appendonly.py` ⇒ `APPEND-ONLY CONFIRMED`（decision.md 重建
+     sha256 `bb9bb0f4…`、review.md `8cc116bc…` 与改前快照逐字相等）；旧文本 `[12,19,7,26,43]`、
+     `min(10.0, 相位预算)` 在 `decision.md:69/245/410` 与 `review.md:49` 均**原样保留**，更正在其后追加。
+- 三项 still-required 的逐条处置结论：
+  ① 错误码/超时用例 —— **关闭**。请求段 `code/action = lease_lock_timeout` 且 `writes=0`（F-T1，预算
+     0.05 s，真外部持锁）；预算 0 时不尝试加锁（F-T2，journal 无 `lock_acq`）；清理段
+     `cleanup_status=failed:lease_lock_timeout` + `action=release_fail_closed`，义务与 owner 证据保留、
+     worker 仍 paused（F-T3）。
+  ② 队列跨预算边界 + 队列成本 —— **关闭**。F-T4（6 参与者 × H=0.4 s，锁预算 1.0 s）⇒ 4 人超时零写、
+     成功者 {P0,P2}、超时者绝不入 refcount、收尾 entries=[] 且 resume_required=false；队列代价以
+     `budget_consumed_by_queueing` 记录（本次 {P0:0.0,P2:0.593}，attempt 记录 0.572，属调度浮动）；
+     `(N−1)·H` 模型与"排队消耗下载预算"已写入 ADR-2 正文/§5 码表/§14 F-I04C-12 与 oracle R3-2。
+  ③ 陈旧文本与 F-LK2 数字 —— **关闭**。见上"追加性"与"F-LK2"两条；正文旧值保留、更正追加，未删改。
+- C1（§13.5 与 review §1 的 F-LK2 过时值）：**关闭**（真值 `[16,35,10,56,18] ⇒
+  [184,165,190,144,182]`；`verify_flk2.py` 13/13；追加性证明见上）。其中"父代理已复算"与本次独立复算
+  结论一致。
+- C2 = OPEN-3：**仍为 owner 裁定项，且不阻塞本次签收**。待裁两项：(a) 上限常数 60（
+  `lock_budget_for(x)=min(x,60)`）的命名与边界验收；(b) `worker-pause` 是否允许留在锁内。三处登记一致
+  （`decision.md:396` 及 §8 O-3、`handoff.json.owner_gates[0]`「OWNER RULING item…
+  does_not_block: does not block the accepted_scoped sign-off」、本文件 §6 OPEN-3 行）；
+  `handoff.json.blocked_by = []`。owner 未裁前实现继续使用冻结值 60。
+- 生产仓零改动：**确认**。`filing-fetch` porcelain 为空；`iso/filing-fetch` 的 118 个文件与生产同路径文件
+  SHA256 全部相同且无 iso 独有文件（生产多出的 270 个文件均为缓存/e2e/CI/规划文档，代码与内容目录下无
+  生产独有文件）；生产 `scripts/fetch_filing.py` = `046cc7dc…`（与卡片锚点相同）；`company-wiki`
+  porcelain 仅 ` M CLAUDE.md` / ` M README.md`（既有用户改动 + I-00-D，非本卡）。
+- 未复现/未验证项：真实 provider/worker/wiki 并发；DECLARED 判活与真实探针的等价性（I-04-D 前置）；
+  POSIX/SMB 锁语义；真实 PID 复用检测；同进程多线程 scope；`worker-pause` 锁内位置的取舍（=C2）；
+  `I04C-08` 的原始日志缺失（该声明已由我在 TEMP 副本复现 `8 passed, 109 deselected`，但 attempt 内
+  无 raw log）。
+- 需实现者同轮做的文字性 erratum（**不改变本裁决**）：
+  E1 `review.md:24` 的 "最大等待 9.87 s、相位墙 13.2 s" 与所引 `evidence/phase-wall.txt` 不符，该文件
+     记录为 `max_lock_wait_seconds=9.782719`、`phase_wall_seconds=13.386`，应改为 9.78 s / 13.4 s；
+  E2 `sim/cases_timeout.py:206-211` 的 `lease in successful_ids is False` 是链式比较、恒为 False，该子句
+     永不失败；`:213-216` 的"queue wait is reported"断言传 `True`。建议加强（本轮不影响结论，因为
+     F-T4 的实质合取项与我的复跑一致）。
+- 授予的资格：本 attempt 的设计文本与模拟结果（ADR-1..12 + R1–R5 分支表 + 错误码/超时与队列边界口径 +
+  F-T1..F-T4 与既有 28 例的模拟通过事实）。
+- **明确不授予**：任何产品实现/合并/部署资格；真实并发、真实锁语义与真实判活的等价性；生产 pause
+  refcount 的任何写入；I-04-D/E 及以后的实现资格。
+- reviewer：独立 reviewer session（本次收尾复核），2026-09-20。

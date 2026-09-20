@@ -100,10 +100,13 @@ if env: path = Path(env); return path / REGISTRY_FILE if path.is_dir() else path
 ## 7. 未被本 oracle 覆盖、但已实测的其他事实
 
 - **并发**：两个真实进程过同一 gate 后同时 `register_publication`，本次两 worker **都成功**（`rc=0`）、registry 2 行、链自洽、`audit=0`。**这不能证明无锁是安全的**（单次运行、无强制重叠），I-09-C 必须做重复与高重叠压测。证据：`after/probe_summary.stdout.txt` 的 `concurrency` 段。
-- **`is_registered` 在 registry 不可读时的行为**：c04 的 reader 在「代码解析出的嵌套路径不存在」时返回 `is_registered=false`；而 `oracle.md` §2 F-2 的判据（只看 anchor 是否出现过）不变。
+- **`is_registered` 在两种"不可读/不可达"下的行为（第二轮复核更正，原写法把两者混为一谈）**：
+  - **c04**（registry env 指向目录被 `registry_file()` 当**目录根**）：解析出的**嵌套路径存在且已被写入** ⇒ reader 返回 **`is_registered=true`**（0 行只是因为我按**外层**故障路径去数，见 §4）。证据：`after/probe_summary.stdout.txt` 的 c04 行 `is_reg=True`；`oracle_addendum.md` 原写"返回 `is_registered=false`"**是错的，已更正**。
+  - **c04b**（真实 ACL 拒绝，路径**不存在**）：reader 返回 `is_registered=false`、0 行。
+  - 两种情形都不改变 `oracle.md` §2 F-2 的判据（只看 anchor 是否出现过）。
 
 ## 8. 本 addendum 不改变的三件事
 
-1. `oracle.md` 的 C-01…C-12 候选契约与 `I09-E01…E10` 错误码**一字未改**；
+1. `oracle.md` 的 C-01…C-12 候选契约与 `I09-E01…E10` 错误码**一字未改**（第二轮复核实测确认；**注意** `oracle.md` §9 末行的 `-5`→`-6` 属**非契约清单行**的就地改写，已登记为 `errata.md` E-10，不属本节第 1 项范围，但同属"冻结正文"，见该条）；
 2. 本卡**没有任何产品代码改动**（生产仓零写入，见 `before/`、`after/` 的 git 状态）；
 3. 本卡**未自签**任何 accepted / passed。

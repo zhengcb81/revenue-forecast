@@ -5,7 +5,7 @@
  "card_title": "commercial sales and licensing revenue",
  "status": "review_pending",
  "implementer_is_not_the_reviewer": true,
- "generated_utc": "2026-09-20T02:49:24.933440+00:00",
+ "generated_utc": "2026-09-20T03:16:24.274036+00:00",
  "completed_steps": {
   "A_binding": "done - binding.json binds the attempt-local interpreter, the read-only isolated snapshot, the model contract read back from that snapshot and the write allowlist",
   "B_positive_run": "done - positive [110.0] vs independent oracle [110.0]; continuity [110.0, 169.0] vs [110.0, 169.0]; defaults [80.0] vs [80.0] (defaults are recorded, not gating)",
@@ -25,9 +25,9 @@
   "evidence/M17/input.json": "9bb97f5f69afc3c0f92cf3bf5fefe6c3a76d0c5f087030ddb166940ee218995a",
   "evidence/M17/oracle.json": "8dbcece9b1aebf46f2fb32e65b448392c2f2d6ec2215190e5b9b4b6ed3a5c724",
   "evidence/M17/cases.json": "0af2f9f15712da3bf89916060959df2ad7b7fb86f69ce4cc74aab1ba4f721fd5",
-  "oracle.md": "9c8021eebd01aa27a9963db8ac869ac6a067eb24af17439164f3cb61bc42fa69",
+  "oracle.md": "c99714285fe031301d9e46c2bd4e179f21a5d850866f6ce10683fd83fb780b9f",
   "scripts/oracle_M17.py": "495573f90fa85907e8c27639684c5e2538573afe9bdfe24ea355bee7197b271a",
-  "scripts/run_card.py": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd"
+  "scripts/run_card.py": "5307d2cc31bad5731585d2f503341fe2b3d61425f369289eed261568883cbf05"
  },
  "current_source_hashes": {
   "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
@@ -58,6 +58,8 @@
   "G1-state-after",
   "F-write-commands",
   "G-pack-evidence",
+  "R2-append-oracle-addendum",
+  "P-write-process-history",
   "H-write-handoff",
   "Z-close-attempt"
  ],
@@ -76,6 +78,8 @@
   "G1-state-after": 0,
   "F-write-commands": 0,
   "G-pack-evidence": 0,
+  "R2-append-oracle-addendum": 0,
+  "P-write-process-history": 0,
   "H-write-handoff": 0,
   "Z-close-attempt": 0
  },
@@ -94,6 +98,8 @@
   "G1-state-after": 0,
   "F-write-commands": 0,
   "G-pack-evidence": 0,
+  "R2-append-oracle-addendum": 0,
+  "P-write-process-history": 0,
   "H-write-handoff": 0,
   "Z-close-attempt": 0
  },
@@ -116,6 +122,11 @@
   "passed": 11,
   "failed": [],
   "target_exception": "model_registry.ModelRegistryError",
+  "declared_expectations_in_cases_json": [
+   "ModelRegistryError"
+  ],
+  "declared_expectation_comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
+  "declared_expectations_enforced": true,
   "import_or_file_errors_never_pass": true
  },
  "observation_summary": [
@@ -181,6 +192,12 @@
     "verdict": "harness_error"
    },
    {
+    "label": "F_tampered_declared_expectation",
+    "raw_rc": 3,
+    "expected_rc": 3,
+    "verdict": "fail"
+   },
+   {
     "label": "E_uncorrupted_copy",
     "raw_rc": 0,
     "expected_rc": 0,
@@ -191,12 +208,22 @@
   "red_then_green": true
  },
  "oracle_regeneration_byte_identical": true,
+ "negative_declared_expectation_enforcement": {
+  "declared_expectations_in_cases_json": [
+   "ModelRegistryError"
+  ],
+  "comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
+  "declared_expectation_mismatches": 0,
+  "runner_sha256": "5307d2cc31bad5731585d2f503341fe2b3d61425f369289eed261568883cbf05",
+  "independent_review_basis": "independent review P2-1: the previous runner did not compare cases.json's per-case 'expected'; this runner compares the raised exception's exact type name and refuses the case on mismatch (never by isinstance, because ModelRegistryError is a ValueError subclass)"
+ },
  "open_questions": [
   "OQ-01 (isolation binding provenance) - the cards require the run cwd to come from I-00-B, while I-00-B binds the isolation plan and the two-stage command rule rather than materialising a checkout tree; status=registered_not_fixed; requires_ruling_from=owner (dispatch/binding)",
   "OQ-02 (an omitted optional driver that has no declared default is silently 0.0) - ; status=registered_not_fixed; requires_ruling_from=owner (product change would need its own card)",
   "OQ-03 (card business negative that the calculator cannot enforce) - NOT runtime-enforceable by this calculator: treated_units is a quantity with effective bounds [0, inf) and any unit mismatch is invisible to arithmetic; status=registered_not_fixed; requires_ruling_from=industry/accounting reviewer (I-10-A / D)",
   "OQ-04 (numerical domain / boundary observations of this model) - the card-specific negative (treated_units = -1) is rejected because the quantity domain starts at 0; there is no upper bound and no cross-driver consistency check between treated_units and net_revenue_per_unit. CORRECTION TO A DESCRIPTIVE ROW OF oracle.md: the frozen oracle.md was written before the enumeration and its section 1 row asserted that the three amount drivers share the [0, inf) bounds; the enumeration and the measured probes show they are SIGNED drivers with (-inf, inf) bounds (model_registry.py:265-269), so a small negative confirmed amount is accepted (PROBE-NEG-MILESTONE), and only a TOTAL-revenue negative is refused (PROBE-NEG-TOTAL-REVENUE). No frozen EXPECTATION depended on that row, so oracle.md was deliberately NOT rewritten; the error is recorded here and in review.md instead; status=registered_not_fixed; requires_ruling_from=independent reviewer (accept / amend / reject)",
-  "OQ-05 (process, this batch): the attempt pipeline was executed more than once for this card while a non-gating probe unit was added (C2) and one probe constant was corrected; the frozen oracle.md was never modified between passes and oracle.json is byte-identical across them (evidence/M17/oracle_regen_proof.json). review.md records this explicitly."
+  "OQ-05 (process history of this attempt (repeated executions of one argv)) - this card's measurement pipeline was executed 3 time(s) and the closing sequence 6 time(s); the capture wrapper overwrites runs/<UNIT>/rc.json on every execution, so the byte-level records can only prove the LAST execution of each unit. The C2 extra-boundary-probe unit is a unit ADDED during this attempt after measurement pass 1 (it did not exist in the first pass).; status=registered_not_fixed; requires_ruling_from=independent reviewer (accept / amend / reject)",
+  "OQ-05 (process, per card, parameterised after independent review P2-2): THIS card's measurement pipeline was executed 3 time(s) and the closing sequence was executed 6 times. The C2 extra-boundary-probe unit is a unit ADDED during this attempt after measurement pass 1 (it did not exist in the first pass). Superseded executions rewrote the same files, so the byte-level records only prove the LAST execution of each unit; the declared pass structure and the honest gaps are in process_history.json, and review.md states the same facts for this card. The frozen oracle expectations were never modified by any later pass"
  ],
  "blocked_by": [],
  "stop_conditions_hit": [
@@ -207,6 +234,10 @@
   "formula": "review_pending",
   "disclosure_adaptation": "unmapped",
   "accuracy": "unproven"
+ },
+ "qualification_semantics": {
+  "disclosure_adaptation_unmapped_means": "ZERO output, not partial progress: no disclosure_mapping.json, no accounting_decision.md, no historical_reconciliation.json and no forecast_integration.json exist for this card",
+  "accuracy_unproven_means": "no I-12 frozen design exists, so no out-of-sample evaluation was run at all; the formula pass must never be read as accuracy evidence"
  },
  "evidence_paths": [
   "evidence/M17/cases.json",
@@ -220,6 +251,7 @@
   "evidence/M17/negative_results.json",
   "evidence/M17/oq_rulings.json",
   "evidence/M17/oracle.json",
+  "evidence/M17/oracle_addendum_record.json",
   "evidence/M17/oracle_document_freeze.json",
   "evidence/M17/oracle_regen_proof.json",
   "evidence/M17/oracle_selfcheck.json",
@@ -271,6 +303,16 @@
   "evidence/M17/runs/H-write-handoff/rc.json",
   "evidence/M17/runs/H-write-handoff/stderr.txt",
   "evidence/M17/runs/H-write-handoff/stdout.txt",
+  "evidence/M17/runs/P-write-process-history/rc.json",
+  "evidence/M17/runs/P-write-process-history/stderr.txt",
+  "evidence/M17/runs/P-write-process-history/stdout.txt",
+  "evidence/M17/runs/R2-append-oracle-addendum/first_execution_failed/oracle_addendum_record.json",
+  "evidence/M17/runs/R2-append-oracle-addendum/first_execution_failed/rc.json",
+  "evidence/M17/runs/R2-append-oracle-addendum/first_execution_failed/stderr.txt",
+  "evidence/M17/runs/R2-append-oracle-addendum/first_execution_failed/stdout.txt",
+  "evidence/M17/runs/R2-append-oracle-addendum/rc.json",
+  "evidence/M17/runs/R2-append-oracle-addendum/stderr.txt",
+  "evidence/M17/runs/R2-append-oracle-addendum/stdout.txt",
   "evidence/M17/runs/Z-close-attempt/rc.json",
   "evidence/M17/runs/Z-close-attempt/stderr.txt",
   "evidence/M17/runs/Z-close-attempt/stdout.txt",
@@ -278,6 +320,15 @@
   "evidence/M17/stderr.txt",
   "evidence/M17/stdout.txt"
  ],
- "reviewer_status": "r1 awaiting independent review; the implementer has NOT signed anything as accepted and must not",
- "revision": "r1"
+ "reviewer_status": "r1 reviewed by an independent session; verdict accepted_scoped (formula qualification only). The implementer has NOT signed anything as accepted. Post-review P2/P3 dispositions are recorded in review.md (r2 section) and the batches' rc/qualification semantics in the batch handoff. formula remains review_pending until the reviewer confirms the r2 fixes.",
+ "process_history_pointer": "process_history.json",
+ "process_history_summary": {
+  "measurement_pipeline_executions_declared": 3,
+  "closing_executions_declared": 6,
+  "c2_unit_origin": "a unit ADDED during this attempt after measurement pass 1 (it did not exist in the first pass)",
+  "detail": "pass 1 = 13 units before C2 existed; pass 2 = 14 units with the probe constant still 105.0; pass 3 = 14 units after it was corrected to 90.0. The post-review fixes re-executed B, C2, E and the pack for this card once more.",
+  "observed_records_prove": "only the LAST execution of each unit (see process_history.json)"
+ },
+ "batch_handoff_pointer": "../M17-M20/a20260919-01/batch_handoff.md and ../M17-M20/a20260919-01/rc_namespace.json (dedicated batch-level documentation; contains no card artefacts)",
+ "revision": "r2"
 }

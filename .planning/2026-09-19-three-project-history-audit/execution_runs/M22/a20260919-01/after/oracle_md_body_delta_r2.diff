@@ -1,0 +1,11 @@
+# oracle.md frozen-body delta, revision r2 (M22)
+# pre-r2 body sha256 d83ce2961186c324a445985bc3b569a87183642b5a68e9abce6332d0f5f83d76 (9693 bytes)
+# post-r2 body sha256 88de6bf9b8012bac6c6e05ee836977e9b54cc08c75287af66d7e55e92275b0da (10026 bytes)
+# every '+'/'-' line below must contain a review-mandated token; the whitelist is enforced by scripts/splice_oracle_md_r2.py
+# changed lines: 6; lines outside the whitelist: 0
+-| NEG-CARD | `royalty_rate = float('1.01')`（基于 `positive`） | `ModelRegistryError` |
++| NEG-CARD | `royalty_rate = [1.01]`（基于 `positive`） | `ModelRegistryError 且消息须含 `must be between 0.0 and 1.0: FY2027`` |
++## 12. 桥平衡的有效分辨率（独立复核要求补记；见文末追加节的来源说明）
++
++本卡**不是存量桥**（第 1 节：not_applicable_with_reason），故桥平衡比较不适用；本卡的数值比较只有第 2/3 节的 `1e-9 × max(1, |expected|)` 容差。
++

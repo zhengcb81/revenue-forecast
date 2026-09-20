@@ -11,9 +11,9 @@
    "base_input": "positive",
    "why": "card-specific negative (oracle.md sections 5 and 8)",
    "driver": "closing_stores",
-   "value": {
-    "__float__": 24
-   }
+   "value": [
+    24
+   ]
   },
   {
    "id": "N01a",
@@ -152,5 +152,24 @@
    "expect_equal": null,
    "why": "card_M26.md L8 says new-store productivity may exceed one; the registry declares store_cohorts.new_store_productivity = (0.0, inf) while this driver's dimension is ratio. The probe records black-box behaviour with NO expectation and NO verdict asserted."
   }
- ]
+ ],
+ "case_contract": {
+  "expected_count": 11,
+  "expected_ids": [
+   "NEG-CARD",
+   "N01a",
+   "N01b",
+   "N01c",
+   "N01d",
+   "N02",
+   "N03",
+   "N04",
+   "N05a",
+   "N05b",
+   "CONT-BREAK"
+  ],
+  "declared_expected_exception": "ModelRegistryError",
+  "neg_card_declared_mechanism": "closing_stores=[24] makes the store-count bridge fail: opening_stores + new_stores - closed_stores = 20 + 5 - 2 = 23 != 24, so `opening_stores stock-flow balance failed: FY2027` is raised",
+  "rule": "every case's `expected` must equal declared_expected_exception and the id list must equal expected_ids, otherwise the harness refuses to issue a verdict (rc=1)"
+ }
 }

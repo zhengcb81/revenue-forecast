@@ -48,6 +48,60 @@ def main() -> int:
                     "accuracy=unproven; negatives all rejected",
         })
 
+    production_root = os.path.join(os.environ["USERPROFILE"], "Projects", "revenue-forecast")
+    revision_units = [
+        ("K1-oracle-regenerate-with-annotation",
+         "re-run the card's own oracle generator so cases.json carries the append-only annotation "
+         "on the one observation that is not constructible as frozen (review note (c))",
+         [venv_python, "-X", "utf8", "-B",
+          os.path.join(attempt, "scripts", "oracle_M13.py"), "--out-root", attempt], 0,
+         "input.json and oracle.json came out byte-identical (f4700cc2... / ab3a1f30...); only "
+         "cases.json changed"),
+        ("K2-cases-annotation-repack-proof",
+         "prove that the only difference between the frozen cases.json revision and the "
+         "regenerated one is the declared append-only annotation",
+         [venv_python, "-X", "utf8", "-B",
+          os.path.join(attempt, "scripts", "build_cases_annotation_repack.py"),
+          "--card", "M13", "--attempt", attempt,
+          "--expect-observation", "OBS-SIGNED-PERF-FEE"], 0,
+         "two key additions on extra_observations[2]; every pre-existing key kept its value"),
+        ("D4-append-r3",
+         "append the SINGLE r3 section (response to the independent review F-01..F-05) to "
+         "oracle.md below its own boundary marker and write revision_r3.json",
+         [venv_python, "-X", "utf8", "-B",
+          os.path.join(attempt, "scripts", "append_r3.py"),
+          "--card", "M13", "--attempt", attempt], 0,
+         "refuses to append when an r3 marker already exists, so no second r3 baseline can appear"),
+        ("I1-audit-doc-pointers",
+         "audit every <file>.py:<line> document pointer of the attempt and record the search result "
+         "for the residue tokens the reviewer listed",
+         [venv_python, "-X", "utf8", "-B",
+          os.path.join(attempt, "scripts", "audit_doc_pointers.py"),
+          "--card", "M13", "--attempt", attempt, "--production-root", production_root], 0,
+         "evidence/M13/doc_pointer_audit.json all_pointers_resolve true; none of the five residue "
+         "tokens exists in this attempt"),
+    ]
+    for unit_id, purpose, argv, rc, note in revision_units:
+        if unit_id not in ids:
+            doc["units"].append({"unit_id": unit_id, "purpose": purpose, "cwd": attempt,
+                                 "argv": argv, "network": "disabled", "raw_rc": rc,
+                                 "expected_rc": rc, "note": note})
+
+    for unit in doc["units"]:
+        if unit["unit_id"] == "B-product-run":
+            unit["runner_revision_note"] = (
+                "the recorded run_result.json / formula_result.json / stdout.txt were regenerated "
+                "by run_card.py revision r2 (sha256 9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52"
+                "cabc59c44e777ac0194), which adds the expectation-declaration consistency check "
+                "(F-01). The product code and the frozen fixtures are unchanged (only cases.json "
+                "gained the append-only annotation, proven by K2); the verdict values are identical "
+                "(positive [25.0], continuity [25.0, 35.0], defaults [20.0], 11/11 negatives, rc=0) "
+                "and the previous evidence bytes are kept under recovery/before_fixes/.")
+        if unit["unit_id"] in ("D2-verify-r2-boundary", "D3-verify-r2-boundary"):
+            unit["note"] = ("evidence/M13/r2_boundary_check.json all_checks_passed true; the "
+                            "verifier now re-derives BOTH the r2 and the r3 boundary and checks "
+                            "that each revision has exactly one section and one baseline")
+
     checked, missing, outside = [], [], []
     for unit in doc["units"]:
         for piece in unit["argv"]:

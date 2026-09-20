@@ -30,11 +30,28 @@ FROZEN = ("input.json", "oracle.json", "cases.json", "oracle_selfcheck.json",
           "negative_results.json", "stdout.txt", "stderr.txt", "registry_enumeration.json",
           "oracle_regen_proof.json", "mutation_selfcheck.json", "command_manifest.json")
 
+# Per-card process history (must agree with scripts/write_process_history.py and review.md).
+PROCESS = {
+    "M17": {
+        "measurement_executions": 3,
+        "closing_executions": 6,
+        "c2_origin": ("a unit ADDED during this attempt after measurement pass 1 (it did not exist in "
+                      "the first pass)"),
+    },
+    "M18": {
+        "measurement_executions": 1,
+        "closing_executions": 6,
+        "c2_origin": ("an EXISTING unit of this attempt's unit list, delivered byte-identically from "
+                      "the M17 attempt (it was not added after a first pass)"),
+    },
+}
+PROCESS["M19"] = PROCESS["M18"]
+PROCESS["M20"] = PROCESS["M18"]
+
 # Card-specific open questions.  Wording is objective and third-person on purpose:
 # the implementer authors this record, and the independent reviewer is a SEPARATE party
 # who has not yet ruled on any entry (see "adjudicated_by" below).
-CARD_OQ = {
-    "M17": {
+CARD_OQ = {    "M17": {
         "business_negative": ("card_M17.md L45: patients may not be multiplied directly by a price "
                               "per dose, and a potential milestone may not be counted as recognised "
                               "revenue"),
@@ -111,8 +128,13 @@ def dump(path, doc):
         json.dump(doc, handle, ensure_ascii=False, indent=1)
 
 
-def r2_analysis(oracle_md, scratch_dir):
-    """Count r2 sections and demonstrate the line-boundary-reproducible hash rule."""
+def r2_analysis(oracle_md, scratch_dir, addendum_record_path):
+    """Count r2 sections and prove the line-boundary-reproducible hash rule.
+
+    If a real r2 addendum exists, the proof is taken from the RECORDED append and re-verified live
+    against the current file (truncate at the recorded boundary and compare with the recorded
+    pre-append hash).  If no addendum exists, the rule is demonstrated on a scratch copy.
+    """
     with open(oracle_md, "rb") as handle:
         raw = handle.read()
     text = raw.decode("utf-8")
@@ -123,8 +145,35 @@ def r2_analysis(oracle_md, scratch_dir):
             offsets.append({"line_number": number, "byte_offset": position, "line_text": line.strip()})
         position += len(line.encode("utf-8"))
 
-    # Mechanism proof on a scratch copy: append a section, then show that truncating the
-    # appended file at the recorded line boundary reproduces the recorded pre-append hash.
+    rule = ("at most ONE 'revision r2' section may exist in oracle.md; if a pre-append hash is "
+            "recorded it must be reproducible at a REAL LINE BOUNDARY, i.e. by truncating the "
+            "appended file at the byte offset where the appended section's first line begins")
+
+    if offsets and os.path.isfile(addendum_record_path):
+        record = load_json(addendum_record_path)
+        boundary = record["boundary_byte_offset"]
+        prefix_hash = hashlib.sha256(raw[:boundary]).hexdigest()
+        proof = {
+            "source": "the real append recorded in evidence/%s/oracle_addendum_record.json" % os.path.basename(
+                os.path.dirname(addendum_record_path)),
+            "boundary_byte_offset": boundary,
+            "line_boundary_is_real": raw[boundary:boundary + 3] == b"## ",
+            "recorded_pre_append_sha256": record["oracle_md_sha256_before_addendum"],
+            "live_truncated_prefix_sha256": prefix_hash,
+            "prefix_hash_equals_base_hash": (prefix_hash
+                                             == record["oracle_md_sha256_before_addendum"]),
+            "recorded_post_append_sha256": record["oracle_md_sha256_after_addendum"],
+            "current_file_sha256": hashlib.sha256(raw).hexdigest(),
+            "current_file_equals_recorded_post_append": (
+                hashlib.sha256(raw).hexdigest() == record["oracle_md_sha256_after_addendum"]),
+            "note": ("re-verified live: truncating the CURRENT oracle.md at the recorded real line "
+                     "boundary reproduces the pre-append hash, so the r1 body is byte-unchanged"),
+        }
+        return {"rule": rule, "r2_sections_in_oracle_md": len(offsets),
+                "r2_section_locations": offsets, "oracle_md_sha256": hashlib.sha256(raw).hexdigest(),
+                "mechanism_proof": proof}
+
+    # No addendum: demonstrate the rule on a scratch copy.
     os.makedirs(scratch_dir, exist_ok=True)
     demo_base = os.path.join(scratch_dir, "demo_oracle.md")
     demo_appended = os.path.join(scratch_dir, "demo_oracle_appended.md")
@@ -142,13 +191,12 @@ def r2_analysis(oracle_md, scratch_dir):
     prefix = appended[:marker_offset]
     prefix_hash = hashlib.sha256(prefix).hexdigest()
     return {
-        "rule": ("at most ONE 'revision r2' section may exist in oracle.md; if a pre-append hash is "
-                 "recorded it must be reproducible at a REAL LINE BOUNDARY, i.e. by truncating the "
-                 "appended file at the byte offset where the appended section's first line begins"),
+        "rule": rule,
         "r2_sections_in_oracle_md": len(offsets),
         "r2_section_locations": offsets,
         "oracle_md_sha256": sha256(oracle_md),
         "mechanism_proof": {
+            "source": "scratch demonstration (no r2 addendum exists in this attempt)",
             "scratch_base": demo_base,
             "scratch_appended": demo_appended,
             "base_sha256": base_hash,
@@ -185,6 +233,12 @@ def main() -> int:
     probes = load_json(os.path.join(evidence, "extra_probes.json"))
     rc_b = load_json(os.path.join(evidence, "runs", "B-product-run", "rc.json"))
     rc_c = load_json(os.path.join(evidence, "runs", "C-registry-enumeration", "rc.json"))
+    # The r2 analysis is needed by the source_manifest block below, so it is computed here.
+    addendum_record_path = os.path.join(evidence, "oracle_addendum_record.json")
+    r2 = r2_analysis(os.path.join(attempt, "oracle.md"),
+                     os.path.join(attempt, "recovery", "line_boundary_demo"),
+                     addendum_record_path)
+    addendum = load_json(addendum_record_path) if os.path.isfile(addendum_record_path) else None
 
     # ---- verified line anchors for the card's cited entry point and registration ----
     with open(os.path.join(code_root, "model_registry.py"), "r", encoding="utf-8") as handle:
@@ -203,19 +257,28 @@ def main() -> int:
 
     ordering = {
         "oracle_md_mtime": mtime("oracle.md"),
+        "oracle_md_mtime_at_generation": freeze["oracle_document"]["oracle_md_mtime"],
         "input_json_mtime": mtime(os.path.join("evidence", card, "input.json")),
         "oracle_json_mtime": mtime(os.path.join("evidence", card, "oracle.json")),
         "cases_json_mtime": mtime(os.path.join("evidence", card, "cases.json")),
         "binding_json_mtime": mtime("binding.json"),
         "product_stdout_mtime": mtime(os.path.join("evidence", card, "stdout.txt")),
         "product_run_started_utc": rc_b.get("started_utc"),
+        "note": ("the freeze order is asserted from the mtime RECORDED BEFORE oracle generation "
+                 "(oracle_document_freeze.json), not from the file's current mtime: for M17 the "
+                 "current oracle.md mtime is later because of the declared r2 addendum, and that "
+                 "later mtime is never used as freeze evidence"),
     }
     ordering["oracle_json_precedes_product_stdout"] = (
         ordering["oracle_json_mtime"] is not None and ordering["product_stdout_mtime"] is not None
         and ordering["oracle_json_mtime"] < ordering["product_stdout_mtime"])
     ordering["oracle_md_precedes_product_stdout"] = (
-        ordering["oracle_md_mtime"] is not None and ordering["product_stdout_mtime"] is not None
-        and ordering["oracle_md_mtime"] < ordering["product_stdout_mtime"])
+        ordering["oracle_md_mtime_at_generation"] is not None
+        and ordering["product_stdout_mtime"] is not None
+        and ordering["oracle_md_mtime_at_generation"] < ordering["product_stdout_mtime"])
+    ordering["oracle_md_mtime_is_later_due_to_r2_append"] = bool(
+        ordering["oracle_md_mtime"] is not None and ordering["oracle_md_mtime_at_generation"] is not None
+        and ordering["oracle_md_mtime"] > ordering["oracle_md_mtime_at_generation"])
     ordering["binding_precedes_product_stdout"] = (
         ordering["binding_json_mtime"] is not None and ordering["product_stdout_mtime"] is not None
         and ordering["binding_json_mtime"] < ordering["product_stdout_mtime"])
@@ -283,10 +346,21 @@ def main() -> int:
                 freeze["oracle_document"]["oracle_md_sha256"]
                 == sha256(os.path.join(attempt, "oracle.md"))),
             "frozen_before_any_product_run": ordering["oracle_md_precedes_product_stdout"],
-            "honest_gap": ("no r2 addendum has been appended to this attempt's oracle.md, so the "
-                           "pre-generation hash recorded in evidence/%s/oracle_document_freeze.json is "
-                           "the only baseline; the r2 discipline is recorded in revision_r2.json"
-                           % card),
+            "r2_addendum_appended": r2["r2_sections_in_oracle_md"] > 0,
+            "r2_sections_in_oracle_md": r2["r2_sections_in_oracle_md"],
+            "frozen_body_reproducible_by_truncation": (
+                r2["mechanism_proof"]["prefix_hash_equals_base_hash"]
+                if r2["r2_sections_in_oracle_md"] else None),
+            "honest_gap": ("%s The file-level hash therefore differs from the generation-time hash "
+                           "ONLY because of the declared append; the r1 body's byte-identity is "
+                           "asserted by truncating the current file at the appended section's first "
+                           "line and comparing with the generation-time hash "
+                           "(evidence/%s/oracle_addendum_record.json). M18/M19/M20 have no r2 section "
+                           "and keep file-level identity."
+                           % ("An r2 addendum WAS appended to this file after the independent review "
+                              "verdict." if r2["r2_sections_in_oracle_md"]
+                              else "No r2 addendum has been appended to this attempt's oracle.md.",
+                              card)),
         },
         "mtime_ordering": ordering,
         "oracle_regeneration": {
@@ -388,6 +462,21 @@ def main() -> int:
         "third_qualification_rule": ("formula, disclosure adaptation and accuracy are three "
                                      "independent qualifications; passing A-C grants only the "
                                      "formula qualification and is not evidence of the other two"),
+        "review": {
+            "independent_review_performed": True,
+            "verdict_received": "accepted_scoped (formula qualification only)",
+            "implementer_signature": None,
+            "formula_state_reason": ("the reviewer accepted r1 scoped, but the post-review r2 fixes "
+                                     "(declared-expectation enforcement in the runner, OQ-05 "
+                                     "parameterisation, OQ-05 ruling entry, process history, and for "
+                                     "M17 the oracle.md section 13 append) must be point-reviewed, so "
+                                     "formula remains review_pending and is NOT self-signed"),
+            "unmapped_means_zero_output": ("disclosure_adaptation = unmapped means no disclosure "
+                                           "artefact of any kind exists for this card, not that it is "
+                                           "partially done"),
+            "unproven_means_no_evaluation": ("accuracy = unproven means no out-of-sample evaluation "
+                                             "was run at all (no I-12 design exists)"),
+        },
     }
     dump(os.path.join(evidence, "qualification.json"), qualification)
 
@@ -492,6 +581,26 @@ def main() -> int:
                                      % card),
                 "requires_ruling_from": "independent reviewer (accept / amend / reject)",
             },
+            {
+                "id": "OQ-05",
+                "title": "process history of this attempt (repeated executions of one argv)",
+                "status": "registered_not_fixed",
+                "finding": ("this card's measurement pipeline was executed %d time(s) and the closing "
+                            "sequence %d time(s); the capture wrapper overwrites runs/<UNIT>/rc.json on "
+                            "every execution, so the byte-level records can only prove the LAST "
+                            "execution of each unit. The C2 extra-boundary-probe unit is %s."
+                            % (PROCESS[card]["measurement_executions"],
+                               PROCESS[card]["closing_executions"], PROCESS[card]["c2_origin"])),
+                "declared_versus_observed": {
+                    "declared": "the pass structure in process_history.json, declared by the implementer",
+                    "observed": ("the surviving rc.json records (last execution per unit) and the "
+                                 "run-directory creation timestamps"),
+                    "honest_gap": ("superseded stdout/rc were overwritten in place; only the declared "
+                                   "history and directory timestamps distinguish the passes"),
+                },
+                "pointer": "process_history.json",
+                "requires_ruling_from": "independent reviewer (accept / amend / reject)",
+            },
         ],
         "counts_provenance_rule": ("every number in enumeration_counts comes from the raw output of "
                                    "scripts/enumerate_registry.py; none is transcribed from prose"),
@@ -532,28 +641,38 @@ def main() -> int:
     }
     dump(os.path.join(evidence, "integrity.json"), integrity)
 
-    # ---- revision r2 discipline ----
-    r2 = r2_analysis(os.path.join(attempt, "oracle.md"),
-                     os.path.join(attempt, "recovery", "line_boundary_demo"))
+    # ---- revision r2 discipline (r2 / addendum computed above, before source_manifest) ----
     revision = {
         "card_id": card,
         "model_id": info["model_id"],
-        "revision": "r1",
-        "independent_review_received": False,
+        "revision": "r2" if r2["r2_sections_in_oracle_md"] else "r1",
+        "independent_review_received": True,
+        "independent_review_verdict_received": "accepted_scoped (formula qualification only)",
         "r2_append_performed": r2["r2_sections_in_oracle_md"] > 0,
         "r2_sections_in_oracle_md": r2["r2_sections_in_oracle_md"],
         "r2_section_locations": r2["r2_section_locations"],
         "oracle_md_sha256_now": r2["oracle_md_sha256"],
-        "oracle_md_sha256_before_addendum": None,
+        "oracle_md_sha256_before_addendum": (addendum["oracle_md_sha256_before_addendum"]
+                                             if addendum else None),
+        "oracle_md_sha256_after_addendum": (addendum["oracle_md_sha256_after_addendum"]
+                                            if addendum else None),
         "pre_append_hash_policy": r2["rule"],
         "mutually_inconsistent_baselines_present": False,
-        "provenance_gap_declaration": ("no pre-append hash exists because no r2 section has been "
-                                       "appended; if one is ever appended, exactly ONE r2 section may "
-                                       "exist and its pre-append hash must be reproducible at a real "
-                                       "line boundary"),
+        "provenance_gap_declaration": (
+            "no pre-append hash exists because no r2 section has been appended; if one is ever "
+            "appended, exactly ONE r2 section may exist and its pre-append hash must be reproducible "
+            "at a real line boundary" if not addendum else
+            "the single pre-append hash is the generation-time hash recorded BEFORE oracle generation "
+            "and re-verified live by truncation at the recorded real line boundary"),
         "mechanism_proof": r2["mechanism_proof"],
+        "r2_change_scope": (addendum["scope_note"] if addendum
+                            else "not applicable: no r2 section exists in this attempt"),
+        "expectation_values_touched": (addendum["expectation_values_touched"] if addendum else []),
         "frozen_expectations_unchanged": True,
         "frozen_evidence_unchanged_by_selfcheck": mutation.get("frozen_evidence_unchanged"),
+        "review_dispositions": (
+            "review.md section 'revision r2 - response to the independent review' records the P2/P3 "
+            "dispositions; this file records the hash/boundary discipline only"),
         "product_files_changed": [],
     }
     dump(os.path.join(evidence, "revision_r2.json"), revision)
@@ -581,12 +700,25 @@ def main() -> int:
     dump(os.path.join(attempt, "after", "rerun_sha256.json"), rerun)
 
     # ---- evidence_hashes.json (written last so it covers the finished pack) ----
+    # The capture records of the units that run AT OR AFTER this pack must not be listed here: their
+    # rc.json/stdout.txt are rewritten when those units execute, which would leave a stale hash in a
+    # file whose whole purpose is to be checkable.  They are covered by
+    # after/final_deliverable_hashes.json (written by the closing unit, last of all), except the
+    # closing unit's own records, which are excluded there too and self-describe their hashes.
+    post_pack_run_dirs = tuple(
+        os.path.normcase(os.path.join("evidence", card, "runs", unit))
+        for unit in ("G-pack-evidence", "P-write-process-history", "H-write-handoff",
+                     "Z-close-attempt"))
     hashes = {}
+    excluded_post_pack = []
     for root, _dirs, files in os.walk(evidence):
         for name in sorted(files):
             path = os.path.join(root, name)
             rel = os.path.relpath(path, attempt).replace("\\", "/")
             if rel.endswith("evidence_hashes.json"):
+                continue
+            if os.path.normcase(rel).startswith(post_pack_run_dirs):
+                excluded_post_pack.append(rel)
                 continue
             hashes[rel] = sha256(path)
     for rel in ("oracle.md", "binding.json"):
@@ -607,6 +739,14 @@ def main() -> int:
           "rule": ("sha256 of every evidence file, plus oracle.md, binding.json, scripts/ and the "
                    "before/after state files; written after everything else so the hashes describe "
                    "the finished pack"),
+          "excluded_from_this_table": {
+              "rule": ("capture records of units that execute at or after this pack are excluded, "
+                       "because they are rewritten after this file is written"),
+              "paths": sorted(excluded_post_pack),
+              "covered_instead_by": ("after/final_deliverable_hashes.json (all of them except the "
+                                     "closing unit's own records, whose rc.json self-describes the "
+                                     "sha256 of its stdout/stderr)"),
+          },
           "files": hashes})
 
     print("packed evidence for", card, "->", evidence)

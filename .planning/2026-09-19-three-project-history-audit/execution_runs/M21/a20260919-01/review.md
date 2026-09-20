@@ -116,3 +116,13 @@ Scratch tree: `recovery/selfcheck/` (the frozen evidence is never mutated).
 
 `frozen_hashes_unchanged` = `True`. Full record:
 `recovery/selfcheck/selfcheck_result.json`.
+<!-- BEGIN independent-review verdict (round 2, transcribed verbatim) -->
+
+> **独立复核裁决（revision r2 后）：`accepted_scoped`（仅 formula）。维持不变。**
+> 我独立重跑本 attempt 的冻结夹具：`rc=0`、`stderr` 0 字节、正例 `[122.0]`、连续性 `[122.0, 0.0]`、defaults `[120.0]`、11/11 负例 `ModelRegistryError`、`tolerances_ok=True`。我自造的桥/收入分离输入（`deliveries=7, unit_revenue=11, timing=0.5, other=3` → `41.5`；仅改 `unit_revenue` → `80.0`；改 `deliveries` 破坏桥 → `delivery order bridge failed: FY2027`）确认桥约束与收入计算相互独立且各自生效。本卡 NEG-CARD 原本即落在**值域守卫**（2 年 `card_neg` 上 `timing_factor[1]=1.5` → `must be between 0.0 and 1.0: FY2028`），无需升级。
+> 本轮正文改动为**纯增量**：只有新增第 12 节 8 行，0 行既有内容被改；`## 2./3./4./8./10.` 逐字节未变；前像 = 上轮冻结体。第 12 节明确写"本卡未对该分辨率做数值探针，不复制 M24 结论"，未越界外推。
+> 我复算了冻结链：`oracle.md` 冻结体自 0–11 节起逐字节未变（11454 → 12234 字节，增量全在第 12 节），`prefix_sha`、`reconstruction_identity`、`oracle_json_mtime` 三项仍为 true。
+> 签收边界：**仅 `formula`**。`disclosure_adaptation` 保持 `unmapped`，`accuracy` 保持 `unproven`；不得由此外推到其他 30 个模型。
+> 遗留时间性事项（不阻塞签收）：P3-1 建议在第 12 节标题下补一句"本节于运行后加入，0–11 节未改"；P3-2 建议把"未对本分辨率做数值探针"保留为显式限制。
+
+<!-- END independent-review verdict -->

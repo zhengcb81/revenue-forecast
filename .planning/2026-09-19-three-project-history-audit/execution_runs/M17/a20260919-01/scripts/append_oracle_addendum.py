@@ -60,6 +60,39 @@ ADDENDUM = """
 """
 
 
+def repair_restore(oracle_md: str, record_path: str) -> int:
+    """Undo a VERIFIED append: truncate back to the recorded boundary, hash-checked both ways.
+
+    Purpose (this batch): the first execution of this script appended correctly but computed its
+    boundary flag with the wrong comparison, so the unit returned rc=3.  The append itself is
+    recorded with a pre-append hash and a boundary offset, and truncating there reproduces the
+    pre-append bytes; that makes a byte-exact restore possible instead of hand-editing the file.
+    """
+    if not os.path.isfile(record_path):
+        print("REFUSED: no addendum record at", record_path)
+        return 3
+    with open(record_path, "r", encoding="utf-8") as handle:
+        record = json.load(handle)
+    with open(oracle_md, "rb") as handle:
+        raw = handle.read()
+    if hashlib.sha256(raw).hexdigest() != record["oracle_md_sha256_after_addendum"]:
+        print("REFUSED: current oracle.md is not the recorded post-append file")
+        return 3
+    boundary = record["boundary_byte_offset"]
+    truncated = raw[:boundary]
+    truncated_hash = hashlib.sha256(truncated).hexdigest()
+    if truncated_hash != record["oracle_md_sha256_before_addendum"]:
+        print("REFUSED: truncation does not reproduce the recorded pre-append hash")
+        return 3
+    with open(oracle_md, "wb") as handle:
+        handle.write(truncated)
+    print("restored oracle.md to the recorded pre-append bytes")
+    print("boundary_byte_offset:", boundary)
+    print("restored sha256:", truncated_hash)
+    print("equals recorded pre-append hash:", truncated_hash == record["oracle_md_sha256_before_addendum"])
+    return 0
+
+
 def sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
@@ -68,13 +101,24 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--card", required=True, choices=sorted(CARDS))
     parser.add_argument("--attempt-root", required=True)
-    parser.add_argument("--expected-pre-append-sha256", required=True)
+    parser.add_argument("--expected-pre-append-sha256", default=None,
+                        help="required unless --repair-restore is used")
+    parser.add_argument("--repair-restore", action="store_true",
+                        help=("verified undo of a previously recorded append: truncate oracle.md at "
+                              "the recorded boundary and check the hash in both directions"))
     args = parser.parse_args()
 
     card = args.card
     attempt = os.path.abspath(args.attempt_root)
     oracle_md = os.path.join(attempt, "oracle.md")
     evidence = os.path.join(attempt, "evidence", card)
+
+    if args.repair_restore:
+        return repair_restore(oracle_md, os.path.join(evidence, "oracle_addendum_record.json"))
+
+    if not args.expected_pre_append_sha256:
+        print("REFUSED: --expected-pre-append-sha256 is required for an append")
+        return 3
 
     with open(oracle_md, "rb") as handle:
         raw = handle.read()
@@ -101,33 +145,60 @@ def main() -> int:
     post_hash = sha256_bytes(appended)
     truncated_prefix = appended[:boundary_offset]
     truncated_hash = sha256_bytes(truncated_prefix)
-    first_line = appended[boundary_offset:].decode("utf-8").splitlines()[0]
-    line_number = appended[:boundary_offset].decode("utf-8").count("\n") + 2  # +1 for the blank line
+    # The boundary is the offset of the FIRST APPENDED BYTE.  Because the pre-append file ended with
+    # a newline (checked above), that offset is the start of a line in the resulting file - it is the
+    # blank separator line that precedes the appended section header.
+    boundary_is_line_start = boundary_offset == 0 or appended[boundary_offset - 1:boundary_offset] == b"\n"
+    header_line = next((line for line in appended[boundary_offset:].decode("utf-8").splitlines()
+                        if line.startswith("## ")), "")
+    header_offset = appended.index(header_line.encode("utf-8")) if header_line else None
+    line_number = appended[:boundary_offset].decode("utf-8").count("\n") + 1
 
     record = {
         "card_id": card,
         "model_id": CARDS[card],
         "action": "append-only r2 correction of one descriptive row in section 1",
-        "executed_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        "oracle_md_path": oracle_md,
+        "executed_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),        "oracle_md_path": oracle_md,
         "oracle_md_sha256_before_addendum": pre_hash,
         "oracle_md_sha256_after_addendum": post_hash,
         "declared_pre_append_hash_matched": True,
         "r2_sections_before": 0,
         "r2_sections_after": 1,
-        "added_section_first_line": first_line,
-        "added_section_first_line_number": line_number,
+        "added_section_header_line": header_line,
+        "added_section_header_byte_offset": header_offset,
+        "added_section_header_line_number": line_number,
         "boundary_byte_offset": boundary_offset,
-        "boundary_is_a_real_line_boundary": bool(appended[boundary_offset:boundary_offset + 3] == b"## "),
+        "boundary_is_a_real_line_boundary": bool(boundary_is_line_start),
+        "boundary_semantics": ("boundary_byte_offset is the offset of the FIRST APPENDED BYTE; since "
+                              "the pre-append file ended with a newline, that offset is the start of "
+                              "the blank separator line preceding the appended section header"),
         "truncated_prefix_sha256": truncated_hash,
         "truncated_prefix_equals_pre_append_hash": truncated_hash == pre_hash,
         "frozen_expectations_unchanged": True,
         "expectation_values_touched": [],
+        "repair_history": None,
         "scope_note": ("only M17; the section-1 domain rows of M18/M19/M20 were verified correct and "
                        "are not modified"),
         "product_files_changed": [],
     }
     os.makedirs(evidence, exist_ok=True)
+    preserved = os.path.join(evidence, "runs", "R2-append-oracle-addendum",
+                             "first_execution_failed")
+    if os.path.isfile(os.path.join(preserved, "rc.json")):
+        with open(os.path.join(preserved, "rc.json"), "r", encoding="utf-8") as handle:
+            failed_rc = json.load(handle)
+        record["repair_history"] = {
+            "first_execution_raw_rc": failed_rc.get("raw_returncode"),
+            "first_execution_stdout": os.path.join(preserved, "stdout.txt"),
+            "reason": ("the first execution appended correctly (truncation reproduced the pre-append "
+                       "hash) but compared the wrong byte range when computing the line-boundary flag, "
+                       "so it returned rc=3; the append was undone with --repair-restore, which "
+                       "verifies the current file against the recorded post-append hash and the "
+                       "truncated prefix against the recorded pre-append hash, and then this second "
+                       "execution re-appended with the corrected comparison"),
+            "restore_verified_by_hashes": True,
+            "preserved_failure_artifacts": preserved,
+        }
     out = os.path.join(evidence, "oracle_addendum_record.json")
     with open(out, "w", encoding="utf-8") as handle:
         json.dump(record, handle, ensure_ascii=False, indent=1)
@@ -135,8 +206,9 @@ def main() -> int:
     print("oracle_md_sha256_before_addendum:", pre_hash)
     print("oracle_md_sha256_after_addendum:", post_hash)
     print("r2_sections_before: 0 r2_sections_after: 1")
-    print("added_section_first_line:", first_line)
-    print("added_section_first_line_number:", line_number)
+    print("added_section_header_line:", header_line)
+    print("added_section_header_byte_offset:", header_offset)
+    print("added_section_header_line_number:", line_number)
     print("boundary_byte_offset:", boundary_offset)
     print("boundary_is_a_real_line_boundary:", record["boundary_is_a_real_line_boundary"])
     print("truncated_prefix_equals_pre_append_hash:", record["truncated_prefix_equals_pre_append_hash"])

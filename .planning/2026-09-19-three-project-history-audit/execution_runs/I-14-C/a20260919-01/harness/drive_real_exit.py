@@ -21,6 +21,8 @@ import os
 import sys
 from pathlib import Path
 
+from run_guard import REFUSAL_EXIT, guard_run_dir
+
 RE_RAISED_SENTINEL = 3
 MISSING_CAUSE_SENTINEL = 4
 
@@ -78,24 +80,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cli-exit", action="store_true")
     args = parser.parse_args(argv)
 
-    # Binding guard: this driver only ever runs inside an attempt scratch dir.
-    # The default rule requires "execution_runs" in the path; pytest's tmp_path is
-    # redirected under the attempt dir, so the caller may instead declare the
-    # attempt's own scratch root through I14C_RUN_ROOT (an absolute path that must
-    # itself live under execution_runs).  A run outside both is refused with 97.
-    run_dir = Path(args.run_dir).resolve()
-    declared_root = os.environ.get("I14C_RUN_ROOT")
-    allowed = "execution_runs" in run_dir.parts
-    if declared_root:
-        root = Path(declared_root).resolve()
-        allowed = allowed or (
-            "execution_runs" in root.parts
-            and root == run_dir
-            or root in run_dir.parents
-        )
-    if not allowed:
-        print("BINDING-REFUSED:" + str(run_dir), file=sys.stderr)
-        return 97
+    # Binding guard (r5: shared with run_real_cli_exit.py, see run_guard.py).
+    # Product paths are ALWAYS refused; a non-product scratch root may be declared through
+    # I14C_RUN_ROOT so that an independent reviewer can run the subprocess-backed cases from
+    # their own directory.  Refusal exit code stays 97.
+    run_dir = guard_run_dir(args.run_dir)
+    if run_dir is None:
+        return REFUSAL_EXIT
     run_dir.mkdir(parents=True, exist_ok=True)
 
     sys.path.insert(0, args.src)
