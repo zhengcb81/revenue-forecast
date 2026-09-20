@@ -70,11 +70,10 @@
     "scope": "iso/rf ONLY -- the production tree was NOT written to",
     "counts": {
       "total": 14,
-      "edited": 10,
-      "added": 4
+      "edited": 9,
+      "added": 5
     },
     "edited": [
-      "iso/rf/scripts/attestation_protocol.py",
       "iso/rf/scripts/contracts/constants.py",
       "iso/rf/scripts/contracts/evidence.py",
       "iso/rf/scripts/publication_registry.py",
@@ -86,7 +85,7 @@
       "iso/rf/tests/golden_behavior_hashes.json"
     ],
     "added": [
-      "iso/rf/scripts/attestation_protocol.py (new module)",
+      "iso/rf/scripts/attestation_protocol.py",
       "iso/rf/tests/test_attestation_provider_protocol.py",
       "iso/rf/tests/test_attestation_legacy.py",
       "iso/rf/tests/test_publication_attestation_contract.py",
@@ -95,10 +94,10 @@
     "added_note": "the four test/support files plus the new protocol module: attestation_protocol.py, test_attestation_provider_protocol.py, test_attestation_legacy.py, test_publication_attestation_contract.py and tests/e2e_support/i08b_fake_provider.py",
     "diff": "changes.diff",
     "production_patch_required_later": [
-      "the SAME 13 files (9 edited + 4 added) must be applied to the product repo by a card/owner authorised to write it",
+      "the SAME 14 files (9 edited + 5 added) must be applied to the product repo by a card/owner authorised to write it",
       "tests/golden_behavior_hashes.json requires the same reviewed refresh that this attempt performed"
     ],
-    "counts_note": "13 diff FILES = 9 pre-existing files edited + 4 newly added FILES (attestation_protocol.py, the three new test modules are 4 files: provider protocol, legacy, contract, plus the fake provider). The 14 entries above list attestation_protocol.py under 'added' and the other 9 edited files, i.e. 9 edited + 5 added paths, of which one (attestation_protocol.py) is the module whose file is counted once."
+    "counts_note": "14 differing files = 9 pre-existing files edited + 5 new files, and that is now exactly what changes.diff contains (verified by the generator's completeness check, which fails when a differing file is absent from the diff)."
   },
   "commands_executed": [
     "I08B-c1-red-pytest",
@@ -318,15 +317,16 @@
   },
   "changes_diff": {
     "path": "changes.diff",
-    "files": 13,
+    "files": 14,
     "edited": 9,
-    "added": 4,
-    "bytes": 216023,
-    "note": "production-tree -> isolated-edited-copy; NOT applied to the product tree by this attempt. Earlier revisions of this block said 12/8/4/193558."
+    "added": 5,
+    "bytes": 232931,
+    "sha256": "92637c099e6b9bd56d7438fe4036786a52930211b10324855371d55fd1374a82",
+    "note": "production-tree -> isolated-edited-copy; NOT applied to the product tree by this attempt. Round 3 shipped only 13 files: tests/test_publication_attestation_contract.py (the round-2 regression test) was missing while the header still claimed completeness (review R3-1). The header now lists every differing file AND the generator fails if one is missing."
   },
   "reviewer_status": "pending",
-  "reviewer_must_do": "review.md sections 5, 7 and 8, plus the round-2/round-3 items: re-verify that the attestation commitment is actually CONSUMED on a real artifact (the round-2 finding), recompute the code table from the design, add one undisclosed variant, re-run the bound commands (14 entries in commands.json), and decide the remaining OPEN items. The reviewer may only return accepted_scoped / changes_required / blocked / not_applicable_with_reason, and must state which qualifications were and were not earned.",
-  "commands_executed_note": "commands.json holds 15 bound entries. commands_executed lists 18 ids because it also names the packaging/measurement steps recorded under after/ (edit ledger, line endings, golden delta, RED proofs, final packaging).",
+  "reviewer_must_do": "review.md sections 5, 7 and 8, plus the round-2/round-3 items: re-verify that the attestation commitment is actually CONSUMED on a real artifact (the round-2 finding), recompute the code table from the design, add one undisclosed variant, re-run the bound commands (15 entries in commands.json), and decide the remaining OPEN items. The reviewer may only return accepted_scoped / changes_required / blocked / not_applicable_with_reason, and must state which qualifications were and were not earned.",
+  "commands_executed_note": "commands.json holds 15 BOUND entries. commands_executed lists 18 ids because it also names the packaging/measurement steps recorded under after/ (edit ledger, line-endings check, golden delta, RED proofs, final packaging) that are not part of the bound command set. Both numbers are stated so the two files cannot contradict each other.",
   "projection_change": {
     "finding": "the independent review measured that changing sources / parameter_trace / data_gaps / disconfirming_indicators produced NO attestation finding",
     "fix": "payload_sha256 is now an INCLUSIVE projection: every result key is committed to except result_sha256, publication_receipt, publication_attestation (the record contains the hash) and the unsigned outcome appendix",
@@ -349,7 +349,8 @@
     "finding": "61 non-.planning product files carried mtimes inside this card's window",
     "counter_evidence": "before/source_hashes.txt recomputed 24/24 with drift=0; registry and default trust domain unchanged",
     "conclusion": "content unchanged; mtime moved with git activity and MUST NOT be used to infer writes",
-    "cross_reference": "execution_runs/_isolation_incidents/20260920-prereg-expectations-leak/INCIDENT.md"
+    "cross_reference": "execution_runs/_isolation_incidents/20260920-prereg-expectations-leak/INCIDENT.md",
+    "attribution": "TWO separate events are now on record. (1) The 61-file mtime batch earlier in the window: content drift 0, attribution to git activity. (2) The 04:35:31-04:40:53 rollback of five files: ROOT CAUSE FOUND (the orchestrator's commit job lost its exported patch after `git checkout -- .` returned 255) and RECOVERED (patch re-applied with --exclude=.planning/*, all five files re-hashed back to the I-00-A baseline). Inside that window, production_hashes_unchanged=false is a CORRECT WARNING. This card issued no git write command."
   },
   "conflict_1_resolution": "ACCEPTED WITH HARDENING: the named exemption NON_DOWNLOAD_SUBPROCESS_USERS stays, and tests/test_single_owner_guard.py gained two AST assertions -- the exempted file may not define FORBIDDEN_SYMBOLS, and may not import a download/network module (FORBIDDEN_EXEMPT_IMPORTS). Both assertions also check the file still exists, so a rename cannot silently void the exemption.",
   "conflict_2_resolution": "ACCEPTED: the golden refresh is legitimate. Supporting evidence added: the old and new golden files each make test_golden_behavior_lock.py pass on their OWN tree, and the delta is 5 values with an unchanged key set (after/c16_golden_delta.stdout.txt).",
@@ -408,5 +409,23 @@
     "fact": "oracle.md WAS edited after the first test runs (review round 1 errata). binding.json was then re-finalised, so the recorded hash was the post-edit value; the earlier value (8d6dc81b) is now registered in the ledger as well.",
     "expectations_changed": false,
     "governance": "OWNER DECISION REQUIRED on whether post-hoc oracle edits are acceptable; the implementer does not rule on it"
-  }
+  },
+  "iso_runtime_artefacts": {
+    "finding": "independent review R3-2: iso/rf/artifacts/registry/publications.jsonl (10 lines) is a write by the ISOLATED run, not a deliverable",
+    "production_impact": "none: the production registry is unchanged (bc3256bb..., 60 lines)",
+    "disposition": "kept in place (it is legitimate isolated runtime output) but now listed under SECTION 2 'runtime artefacts' in after/product_hashes.txt, declared as a write root in commands.json, and explicitly excluded from changes.diff by the generator's NON_DELIVERABLE_ISO_PATHS list"
+  },
+  "isolation_incidents": [
+    {
+      "id": "20260920-precommit-stash-production-rollback",
+      "window": "2026-09-20T04:35:31 - 2026-09-20T04:40:53",
+      "observed": "five product files were reset to HEAD and git status became empty: scripts/revenue_core.py (7d4c2487...), scripts/contracts/constants.py (46983370...), scripts/revenue_report.py (c7e23770...), tests/test_backtest.py (d3fcd802...), SKILL.md (44e91406...), all mtime 04:35:32",
+      "root_cause": "FOUND (orchestrator): the commit job's pre-commit gate exported the working patch, then `git checkout -- .` returned exit 255 and the patch was never replayed, so the tree stayed at HEAD",
+      "recovery": "DONE: the same patch was re-applied with --exclude=.planning/* and each file was re-hashed: revenue_core.py 1821fd2a..., constants.py 278e3e02..., revenue_report.py a85fb484..., test_backtest.py d0972e23..., SKILL.md 45e4e343... -- i.e. exactly the I-00-A baseline values this attempt bound",
+      "incident_record": "execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md",
+      "impact_on_this_card": "NONE on this card's own comparisons: every one of this card's production hash checks (c10, and the round-1/round-2/round-3 spot checks) either ran outside the window or was re-run afterwards and reports drift 0 against before/source_hashes.txt. No file this card touches was among the five.",
+      "REQUIRED_TIME_QUALIFIER": "Inside the window 04:35:31-04:40:53, ANY observation of production_hashes_unchanged=false is a CORRECT WARNING, not a tool bug and not evidence of this card writing to the product tree. A reviewer re-running a hash check must therefore either (a) run outside that window, or (b) expect and explain a false reading inside it. This qualifier is part of the record and must not be dropped when citing the window.",
+      "not_this_card": "this card issued no git write command of any kind (no add/commit/checkout/reset/stash/restore); the rollback came from the orchestrator's commit job"
+    }
+  ]
 }

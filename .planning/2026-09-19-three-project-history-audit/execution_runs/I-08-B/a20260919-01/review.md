@@ -170,11 +170,22 @@
 8. **`changes.diff` 的字节级口径不成立（复核 P3-1）**：施加到 `before/baseline_tree/rf` 后 12 个文件里
    **9 个行尾不同（CRLF vs LF）**，`raw_equal=False`；归一 LF 后 **12/12 相同**。
    正确表述：**内容级可重现，裸字节级不成立**（已同步写入 `oracle.md` §8 第 7 条）。
-9. **mtime 不可作准（复核 P3-2）**：卡窗口内 61 个非 `.planning` 产品文件 mtime 落在同一分钟，
-   但 `before/source_hashes.txt` 24/24 重算 **drift=0**，registry 与默认信任域均未变 ⇒
-   **内容零变化**；mtime 变化与 git 操作时点相关（父 agent 另有隔离巡检记录
-   `execution_runs/_isolation_incidents/20260920-prereg-expectations-leak/INCIDENT.md`，
-   并观察到同一批量 mtime 现象在 03:41:57 再次出现）。
+9. **mtime 不可作准 + 两次隔离事件（复核 P3-2 与 R3-5，归因已更正为"已查明并已恢复"）**：
+   **(a) 61 文件 mtime 批量**：卡窗口内 61 个非 `.planning` 产品文件 mtime 落在同一分钟，但
+   `before/source_hashes.txt` 重算 **drift=0**、registry 与默认信任域均未变 ⇒ **内容零变化**；
+   成因与 git 操作时点相关（父 agent 记录 `_isolation_incidents/20260920-prereg-expectations-leak/INCIDENT.md`，
+   同一批量现象在 03:41:57 再次出现）。
+   **(b) 生产回退事件（R3-5，根因已查明、已恢复）**：窗口 **04:35:31–04:40:53** 内 5 个产品文件
+   (`revenue_core.py 7d4c2487…`、`contracts/constants.py 46983370…`、`revenue_report.py c7e23770…`、
+   `tests/test_backtest.py d3fcd802…`、`SKILL.md 44e91406…`，mtime 全 04:35:32) 被回退到 HEAD，
+   `git status` 一度为空。**根因（父 agent 查明）**：编排层提交作业的 pre-commit 门导出补丁后
+   `git checkout -- .` 返回 255、补丁未回放。**恢复（已完成）**：同一补丁以 `--exclude=.planning/*`
+   重新施加，5 个文件逐条复算回 I-00-A 基线（`1821fd2a…`/`278e3e02…`/`a85fb484…`/`d0972e23…`/`45e4e343…`）。
+   记录 `_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md`。
+   **时点限定（必须随窗口一并引用）**：在窗口 **04:35:31–04:40:53** 内，任何
+   `production_hashes_unchanged=false` 都是**正确告警**，既不是本卡写入、也不是工具缺陷；
+   复核者要么在该窗口之外复算，要么在窗口内预期并解释该读数。
+   **本卡未执行任何 git 写命令**（无 add/commit/checkout/reset/stash/restore），回退来自编排层提交作业。
    本卡据此声明：**任何"文件被动过"的推断必须基于内容哈希，不得基于 mtime**。
 10. **`REVENUE_ATTESTATION_PROVIDER_ARGV` 是测试/运维专用契约（复核 P3-4）**：它是可选 env（JSON 字符串数组，
     拼在 `argv[0]` 之后、无 shell），用于"provider = 解释器 + 脚本"的真实部署形态；
@@ -201,7 +212,7 @@
 | **P2-2** E16 绑定弱于其同名承诺 | **统一投影口径**：`payload_sha256` 改为**包含式投影**（除 `result_sha256`/`publication_receipt`/`publication_attestation`/outcome 附录外**全键参与**），`sources`/`parameter_trace`/`data_gaps`/`disconfirming_indicators` 现被承诺覆盖；`revenue_publication._payload_sha256` 委派同一实现，二者不可能漂移。新增 `ProjectionCoverageTests`（7 个内容键必须改变承诺；4 个不可承诺键必须不改变；两者哈希必须一致） | `iso/rf/scripts/attestation_protocol.py::payload_sha256`、`iso/rf/tests/test_attestation_legacy.py::ProjectionCoverageTests` |
 | **P3-1** `changes.diff` 字节级重现不成立 | 按事实改写 `oracle.md` §8（新增第 7 条）与本文件 §5 第 8 条：**内容级成立、裸字节级因 CRLF/LF 不成立**，并给出归一 LF 的复算口径 | `oracle.md` §8.7、本文件 §5.8 |
 | **P3-2** mtime 事件 | 写入本文件 §5 第 9 条与 `oracle.md` §8 第 8 条：**内容零变化、mtime 不可作准**，并引用父 agent 的 INCIDENT 记录 | 同上 |
-| **P3-3** "eight bound commands" 与 12 条不符 | 更正 `handoff.json`：`commands_executed` **12** 条（8 条 pytest/校验 + c1/c2 RED + c8 普查 + c13 diff），并写明 bound 命令为 8 条、另有 4 条 RED/普查/打包记录 | `handoff.json.commands_executed`、本文件 §3 计数表（现列全部 12 条） |
+| **P3-3** "eight bound commands" 与 12 条不符 | 更正 `handoff.json`：`commands_executed` 现为 **18** 条记录，其中 `commands.json` 的 **bound 条目 = 15** 条（8 条 pytest/校验 + c1/c2 RED + c8 普查 + c13 diff + c15/c16 + c36 契约）；两个数字都写明，以免两份文件再互相矛盾（R3-4 一并处置） | `handoff.json.commands_executed`、`handoff.json.commands_executed_note`、`commands.json.bound_entry_count`、本文件 §3 |
 | **P3-4** `REVENUE_ATTESTATION_PROVIDER_ARGV` 未标注用途 | 在 `decision.md` D-08B-06 与 `handoff.json` 明确标注为**测试/运维专用**、可选、不设时行为不变、不改变"绝对路径可执行文件"主契约 | `decision.md` §1 D-08B-06 |
 | **P3-5** `provider_calls==0` 与 `sys.executable` 例外冲突 | 保留登记并**明确它是已披露例外而非反例**（`oracle.md` §7.1 与 §5 偏离 2 已按此改写） | `oracle.md` §7.1、本文件 §5.2 |
 | **CONFLICT-1 加固** | 按裁决在守卫里**追加两条 AST 断言**：①豁免文件不得定义 `FORBIDDEN_SYMBOLS`；②豁免文件不得 import 下载/网络模块（`FORBIDDEN_EXEMPT_IMPORTS`）。两条都按**文件名精确匹配**豁免集合，原 `FORBIDDEN_SYMBOLS` 检查对全体非 canonical 文件继续生效 | `iso/rf/tests/test_single_owner_guard.py::test_exempted_subprocess_user_defines_no_filing_owner_symbol`、`::test_exempted_subprocess_user_imports_no_download_or_network_module` |
@@ -279,3 +290,48 @@
 9. **真实产物用例的时间口径**：`real_signed_artifact()` 使用生产墙钟窗（`W` 未裁决 ⇒ 约 1 小时），
    因此那两条重放用例**不再**断言"窗口已过期"（早期版本曾在真实路径上因此误报）。窗口是否已过期的性质由
    `T-N28/T-N29/T-R8` 的**固定锚**用例承担。请确认这一分工可接受。
+
+---
+
+## 9. 独立复核裁决正文（第三轮，逐字节转录）
+
+> **转录说明（实现者撰写，非裁决内容）**：以下裁决正文由**独立 reviewer session** 撰写，经父 agent 转达并授权逐字节转录。**未做任何改写、删减、摘要或重排**；仅追加本说明与下方起止标记。
+>
+> - 来源：`C:\Users\郑曾波\AppData\Local\Temp\i08b-r3review-20260920-043327\REPORT-ROUND3.md`
+> - 来源文件 sha256：`fb39727ad1f637f435d660c41e93e2022512d061803ba59520f0b109cefc57e0`
+> - 转录区间：自 `## 13.` 标题行起至文件末（含）
+> - 转录块 sha256：`d6388028638fc4f73014213fb5ffa1d59fdd2abf6ecff030f93bd6f0d128c696`
+> - 追加前 `review.md` sha256：`770d9960f702c80410bbc56e4f5d46932897f1b9fea14e121834669e127c229d`
+> - 本体 `review.md` 在本轮转录中**未被改写**：前缀哈希在追加前后相同（见 `after/c43_verdict_transcription.json`）
+>
+> **实现者不自行宣布 accepted**；本卡的 `status` 仍为 `review_pending`。
+
+<<<BEGIN REVIEWER VERDICT (verbatim, round 3)>>>
+## 13. 可直接粘贴进 `review.md` 的裁决正文（第三轮）
+
+> ### I-08-B 第三轮独立复核裁决（独立 reviewer session，2026-09-20）
+>
+> **verdict：`changes_required`** —— 技术阻塞已全部闭合，仅剩交付面 2 项 + 文档 3 项。
+>
+> **已闭合（我独立复算，不采信实现者结论）**
+> 1. **P2-2（第二轮唯一阻塞）确认闭合**：真实 `host_signed` 产物上 `artifact_states == record_commitment == receipt.validated_payload_sha256 == 实现投影 == 我独立重算投影`；**12 个被覆盖字段逐个篡改均恰好返回 `[E16]` 且 `classify → G4`**；伪造顶层承诺 → `[E16]`；删记录 → `E26`/`G4`；未签名附录仍可改写且不触发判定（与既有裁决一致）。**关键补充：删掉顶层导出后再篡改仍被抓** → 第②层（记录承诺 vs 现算投影）本身即可闭合缺陷，顶层导出是**增强**而非必需；据此"空承诺的接受条件"**已满足**。
+> 2. **RED 证明复现**：在第②层退回修前写法并移除导出后，`test_publication_attestation_contract.py` `1 failed, 9 passed`（rc=1）。
+> 3. **P1-1（E29）**：`require_legacy_exemption` 真可达且有用例；删掉其 raise → `test_tl7b` 失败（`5 failed, 20 passed`）。**限定采纳**：本仓**无生产调用方**，属"库入口可达 + 有用例"，非运行链路可触发；跨仓接线仍 **OPEN-D6 未闭**。
+> 4. **P2-1（E30）**：三路径均 `AttestationError` 且 `code=input_binding_mismatch`，历史原文逐字保留，`except ForecastInputError` 仍捕获。**限定采纳**：修前基线抛的是**裸 `ForecastInputError`（无 code）**，全基线搜 `input_binding_mismatch`/`E30` 零命中 → 精确表述为"**E30 的码值从不被 raise**"。
+> 5. **CONFLICT-1 加固**：两条 AST 断言经反例验证（注入 `import requests` → 1 failed；注入 `def resolve_filing` → 2 failed）。
+> 6. **计数**：c3 68 / c4 18 / c5 **22+22 subtests** / c6 6 / c7 48 / 契约 **10+12** / 守卫 5 / golden 1，rc 全 0；普查 before `128F/819P/315` → after `128F/932P/349`，`new=[] gone=[]`；`.pyc` 两树 0；本卡 7 个生产文件 sha256 仍等于修前绑定；registry `bc3256bb…`/60 行；默认信任域 ABSENT。
+> 7. **隔离复述（按时点限定）**：本卡对三仓**内容级零写入**；`PLAN\...\reviews` mtime 仍 2026-09-19 09:14:20、无增删；编排层在本窗口于 `.planning` 范围提交 `66bd75f1`/`cc78c529`（非 `.planning` 改动 0 / 2，且那 2 个路径在本卡 `scratch/` 内）。
+>
+> **未闭合（拒收理由）**
+> - **R3-1（P2）**：`changes.diff` **缺** `tests/test_publication_attestation_contract.py`（iso 树内 `306407ec…` 存在，diff 内 0 处提及；header 仍写 13 files，实际 14 个文件差异）。→ 重新生成 diff 并同步 `handoff.changes_diff`。
+> - **R3-2（P2/P3）**：`iso/rf/artifacts/registry/publications.jsonl`（10 行/`519c0500…`，生产未受影响）是隔离副本内未登记的产物写入，既不在 diff 内又被 `product_hashes.txt` 收录。→ 移除或显式登记为非交付物。
+> - **R3-3/R3-4（P3）**：`review.md §7` 仍写"12 条"（与 §3 的 15 条自相矛盾）；`handoff.reviewer_must_do` 写 "14 entries"，`commands.json` 实为 **15** 条 bound。
+> - **R3-5（P3，非本卡）**：生产树已有 5 个文件（`revenue_core.py`/`constants.py`/`revenue_report.py`/`test_backtest.py`/`SKILL.md`，mtime 04:35:32）被 git 操作回退到 HEAD → **"产品树等于冻结基线"这一全局前提在本窗口内失效**，本卡归因 0，须在计划层登记。
+>
+> **未验证（不得视为已证）**：跨仓消费者面；R3-5 的成因与影响半径；26 个 ignore 模块在 before 的收集行为；128 个既有失败的性质；`iso/rf/artifacts/registry` 的写入来源；oracle 事后编辑的治理裁定（owner）；契约测试在非 Windows/无 argv 路由环境下的可移植性；AST 守卫判据的绕过面。
+>
+> **OPEN 保持**：E31、D1/D2/D3/D5/D6/D7、registry 锚字段名 —— 全部仍 OPEN，本轮无一项被关闭。
+>
+> **签收结论**：**不签收**。按 §11 完成 1–3（建议连带 4–5）后，本卡达到 `accepted_scoped` 条件；技术面我已无未闭合项。
+
+<<<END REVIEWER VERDICT (verbatim, round 3)>>>

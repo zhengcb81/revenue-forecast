@@ -6,7 +6,29 @@
 #   .planning/.../execution_runs/I-08-B/a20260919-01/iso/rf/
 # and the production files are byte-identical to before/source_hashes.txt.
 #
-# Files touched: 13 (9 edited, 4 added)
+# Files touched: 14 (9 edited, 5 added)
+#
+# The header counts NOMINAL targets.  Independently, every file that really
+# differs between the two trees is listed:
+#   - scripts/contracts/constants.py
+#   - scripts/contracts/evidence.py
+#   - scripts/publication_registry.py
+#   - scripts/revenue_core.py
+#   - scripts/revenue_publication.py
+#   - scripts/trust_anchor.py
+#   - tests/test_attestation.py
+#   - tests/test_single_owner_guard.py
+#   - tests/golden_behavior_hashes.json
+#   - scripts/attestation_protocol.py
+#   - tests/test_attestation_provider_protocol.py
+#   - tests/test_attestation_legacy.py
+#   - tests/test_publication_attestation_contract.py
+#   - tests/e2e_support/i08b_fake_provider.py
+#
+# Files present under iso/rf but deliberately NOT in this diff (not deliverables):
+#   - artifacts/registry/publications.jsonl
+#
+# Completeness check: differing files missing from this diff = 0
 
 --- a/scripts/contracts/constants.py
 +++ b/scripts/contracts/constants.py
@@ -4856,6 +4878,367 @@
 +
 +        artifact = {key: "original" for key in self.COVERED_KEYS}
 +        self.assertEqual(_payload_sha256(artifact), ap.payload_sha256(artifact))
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- a/tests/test_publication_attestation_contract.py
++++ b/tests/test_publication_attestation_contract.py
+@@ -0,0 +1,358 @@
++"""I-08-B contract tests for the publication attestation verifier.
++
++The independent review (round 2) measured that ``verify_publication_attestation``
++compared the record against ``result.get("payload_sha256")`` — a key a REAL
++artifact does not carry — so on a real artifact the comparison never ran and a
++mutation of a covered field still produced no finding.  The three
++``ProjectionCoverageTests`` in ``test_attestation_legacy.py`` only exercised the
++projection function on synthetic dicts, which is why they could not catch it.
++
++This module closes that hole by testing the verifier against artifacts that come
++from the REAL publication path (``run_forecast``) and by forbidding a second,
++drifted copy of the check from growing back in production code.
++"""
++
++from __future__ import annotations
++
++import ast
++import base64
++import copy
++import hashlib
++import json
++import os
++import sys
++import tempfile
++import unittest
++from datetime import datetime, timedelta, timezone
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++
++import attestation_protocol as ap  # noqa: E402
++from revenue_core import run_forecast  # noqa: E402
++from test_recognition_bridge import forecast_document  # noqa: E402
++
++SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
++FAKE_PROVIDER = Path(__file__).resolve().parent / "e2e_support" / "i08b_fake_provider.py"
++ISSUER = "revenue-forecast/host-a"
++KEY_ID = "i08b-real-artifact-key"
++#: keys whose mutation MUST be caught by the attestation commitment
++COVERED_MUTATIONS = (
++    "confidence",
++    "theme_analysis",
++    "historical_accuracy_records",
++    "sources",
++    "parameter_trace",
++    "data_gaps",
++    "disconfirming_indicators",
++    "input_document",
++    "evidence_claims",
++    "management_target_coverage",
++    "growth_driver_analysis",
++    "forecast_version",
++)
++
++
++def _rfc3339(moment: datetime) -> str:
++    return moment.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
++
++
++class RealArtifactVerifierTests(unittest.TestCase):
++    """Verified against artifacts produced by ``run_forecast``, not by hand."""
++
++    def setUp(self) -> None:
++        self._env: dict[str, str | None] = {}
++        for name in (
++            ap.PROVIDER_ENV_VAR,
++            ap.PROVIDER_ARGV_ENV_VAR,
++            ap.TRUST_DOMAIN_ENV_VAR,
++            ap.TIMEOUT_ENV_VAR,
++            ap.STDOUT_LIMIT_ENV_VAR,
++            ap.MAX_WINDOW_ENV_VAR,
++            "REVENUE_PUBLICATION_REGISTRY",
++            "I08B_FAKE_LOG",
++        ):
++            self._env[name] = os.environ.get(name)
++            os.environ.pop(name, None)
++        self._temporary = tempfile.TemporaryDirectory()
++        self.tmp = Path(self._temporary.name)
++        # keep the publication registry inside the attempt
++        os.environ["REVENUE_PUBLICATION_REGISTRY"] = str(self.tmp / "publications.jsonl")
++        os.environ[ap.MAX_WINDOW_ENV_VAR] = "3600"
++
++    def tearDown(self) -> None:
++        for name, value in self._env.items():
++            os.environ.pop(name, None)
++            if value is not None:
++                os.environ[name] = value
++        self._temporary.cleanup()
++
++    # -- helpers -----------------------------------------------------------
++    def _real_artifact(self) -> dict:
++        """A REAL artifact: the draft from run_forecast, before any record exists."""
++        return copy.deepcopy(run_forecast(forecast_document()))
++
++    def _install_signer(self) -> None:
++        from cryptography.hazmat.primitives import serialization
++        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
++
++        private_key = Ed25519PrivateKey.generate()
++        public_bytes = private_key.public_key().public_bytes(
++            encoding=serialization.Encoding.Raw,
++            format=serialization.PublicFormat.Raw,
++        )
++        fingerprint = hashlib.sha256(public_bytes).hexdigest()[:32]
++        now = datetime.now(timezone.utc)
++        domain = {
++            "trust_domain_schema_version": "1.0",
++            "domain_separator": ap.DOMAIN_SEPARATOR,
++            "public_keys": [
++                {
++                    "name": "i08b-real-artifact-signer",
++                    "public_key": base64.b64encode(public_bytes).decode("ascii"),
++                    "fingerprint": fingerprint,
++                    "issuer": ISSUER,
++                    "key_id": KEY_ID,
++                    "algorithm": "ed25519",
++                    "environment": "production",
++                    "not_before": _rfc3339(now - timedelta(days=1)),
++                    "not_after": _rfc3339(now + timedelta(days=1)),
++                    "status": "active",
++                    "revoked_at": None,
++                }
++            ],
++        }
++        path = self.tmp / "trust_domain.json"
++        path.write_text(json.dumps(domain), encoding="utf-8")
++        os.environ[ap.TRUST_DOMAIN_ENV_VAR] = str(path)
++        os.environ[ap.PROVIDER_ENV_VAR] = sys.executable
++        os.environ[ap.PROVIDER_ARGV_ENV_VAR] = json.dumps([str(FAKE_PROVIDER)])
++        os.environ[ap.TIMEOUT_ENV_VAR] = "20"
++        os.environ[ap.STDOUT_LIMIT_ENV_VAR] = "65536"
++        os.environ["I08B_FAKE_KEY_HEX"] = private_key.private_bytes(
++            encoding=serialization.Encoding.Raw,
++            format=serialization.PrivateFormat.Raw,
++            encryption_algorithm=serialization.NoEncryption(),
++        ).hex()
++        os.environ["I08B_FAKE_ISSUER"] = ISSUER
++        os.environ["I08B_FAKE_KEY_ID"] = KEY_ID
++        os.environ["I08B_FAKE_MODE"] = "ok"
++        os.environ["I08B_FAKE_SIGNED_AT"] = "+1"
++
++    def _sign_real_artifact(self, artifact: dict) -> dict:
++        """Sign THAT artifact through the production funnel and attach the record."""
++        self._install_signer()
++        commitment = ap.payload_sha256(artifact)
++        outcome = ap.attest_publication(
++            payload_sha256=commitment,
++            input_sha256=artifact["input_sha256"],
++            result_sha256="",
++            receipt_sha256="",
++            gate_ids=("output_recomputation", "sensitivity_shock_recomputation"),
++            requested_issuer=ISSUER,
++        )
++        self.assertEqual(outcome.status, "host_signed", outcome.detail)
++        assert outcome.record is not None
++        signed = copy.deepcopy(artifact)
++        signed["publication_attestation"] = outcome.record
++        # mirror what run_forecast does for a signed publication: state the
++        # commitment at the top level as well (see the end-to-end test below)
++        signed["payload_sha256"] = outcome.record["payload_sha256"]
++        self.assertEqual(
++            ap.payload_sha256(signed),
++            outcome.record["payload_sha256"],
++            "attaching the record and the stated commitment must not move the projection",
++        )
++        return signed
++
++    # -- the regression the review found ----------------------------------
++    def test_real_artifact_states_its_commitment(self) -> None:
++        """A signed publication exports the commitment it was signed under.
++
++        Documents BOTH halves of the round-2 finding: the record carries the
++        commitment, and ``run_forecast`` now also exports it so an artifact can be
++        checked without trusting either side alone.
++        """
++        artifact = self._real_artifact()
++        signed = self._sign_real_artifact(artifact)
++        record = signed["publication_attestation"]
++        self.assertEqual(signed["payload_sha256"], record["payload_sha256"])
++        self.assertEqual(signed["payload_sha256"], ap.payload_sha256(signed))
++
++    def test_unsalted_artifact_has_no_commitment(self) -> None:
++        """An unsigned artifact states nothing — there is no record to commit to."""
++        artifact = self._real_artifact()
++        self.assertNotIn("publication_attestation", artifact)
++        self.assertNotIn("payload_sha256", artifact)
++
++    def test_a_forged_top_level_commitment_is_detected(self) -> None:
++        signed = self._sign_real_artifact(self._real_artifact())
++        forged = copy.deepcopy(signed)
++        forged["payload_sha256"] = "0" * 64
++        self.assertEqual(
++            ap.verify_publication_attestation(forged),
++            [ap.E16_ATTESTATION_PAYLOAD_HASH_MISMATCH],
++        )
++
++    def test_signed_artifact_from_run_forecast_exports_the_commitment(self) -> None:
++        """End-to-end: a REAL signed run_forecast publication carries the key.
++
++        This needs the fake provider to be the configured provider, so the
++        production funnel itself performs the handshake.
++        """
++        self._install_signer()
++        result = run_forecast(forecast_document())
++        receipt = result["publication_receipt"]
++        self.assertEqual(receipt["attestation_status"], "host_signed")
++        record = result["publication_attestation"]
++        self.assertEqual(result["payload_sha256"], record["payload_sha256"])
++        self.assertEqual(result["payload_sha256"], ap.payload_sha256(result))
++        self.assertEqual(receipt["validated_payload_sha256"], result["payload_sha256"])
++        self.assertEqual(ap.verify_publication_attestation(result), [])
++
++    def test_legitimate_real_artifact_verifies(self) -> None:
++        signed = self._sign_real_artifact(self._real_artifact())
++        self.assertEqual(ap.verify_publication_attestation(signed), [])
++        self.assertEqual(ap.classify(signed), ("G2", None))
++
++    def test_every_covered_field_mutation_is_detected_on_a_real_artifact(self) -> None:
++        signed = self._sign_real_artifact(self._real_artifact())
++        for key in COVERED_MUTATIONS:
++            with self.subTest(key=key):
++                tampered = copy.deepcopy(signed)
++                original = tampered.get(key)
++                if isinstance(original, (dict, list)):
++                    tampered[key] = {"i08b-tamper": True}
++                elif isinstance(original, str):
++                    tampered[key] = original + "-tamper"
++                else:
++                    tampered[key] = "i08b-tamper"
++                self.assertEqual(
++                    ap.verify_publication_attestation(tampered),
++                    [ap.E16_ATTESTATION_PAYLOAD_HASH_MISMATCH],
++                    f"mutating {key} was NOT detected by the attestation commitment",
++                )
++                self.assertEqual(
++                    ap.classify(tampered),
++                    ("G4", ap.E16_ATTESTATION_PAYLOAD_HASH_MISMATCH),
++                    f"mutating {key} did not move the artifact into G4",
++                )
++
++    def test_removing_the_record_is_e27(self) -> None:
++        signed = self._sign_real_artifact(self._real_artifact())
++        without = {key: value for key, value in signed.items() if key != "publication_attestation"}
++        without["publication_receipt"] = {
++            **signed["publication_receipt"],
++            "attestation_status": "host_signed",
++        }
++        self.assertEqual(
++            ap.verify_publication_attestation(without),
++            [ap.E26_ATTESTATION_ABSENT],
++        )
++        self.assertEqual(
++            ap.classify(without), ("G4", ap.E27_ATTESTATION_MISSING_RECORD)
++        )
++
++    def test_the_three_hashes_agree_on_a_real_artifact(self) -> None:
++        """The record's commitment, the receipt's projection and the projection agree."""
++        from revenue_publication import _payload_sha256
++
++        artifact = self._real_artifact()
++        signed = self._sign_real_artifact(artifact)
++        record_commitment = signed["publication_attestation"]["payload_sha256"]
++        self.assertEqual(record_commitment, ap.payload_sha256(signed))
++        self.assertEqual(record_commitment, _payload_sha256(signed))
++        self.assertEqual(
++            signed["publication_receipt"]["validated_payload_sha256"],
++            ap.payload_sha256(signed),
++        )
++
++
++class SingleProjectionGuardTests(unittest.TestCase):
++    """There must be exactly ONE implementation of the commitment projection.
++
++    The round-2 finding was a drifted second copy of the check.  This guard fails
++    the build if a module other than ``attestation_protocol`` recomputes the
++    projection by hand.
++    """
++
++    ALLOWED = {"attestation_protocol.py"}
++    PROJECTION_MARKERS = ("payload_sha256", "validated_payload_sha256")
++    EXCLUDED_LITERALS = ("result_sha256", "publication_receipt")
++
++    def test_no_module_reimplements_the_commitment_projection(self) -> None:
++        offenders: list[str] = []
++        for path in sorted(SCRIPTS.rglob("*.py")):
++            if path.name in self.ALLOWED or path.name == "__init__.py":
++                continue
++            source = path.read_text(encoding="utf-8")
++            tree = ast.parse(source)
++            for node in ast.walk(tree):
++                # a dict comprehension that filters the two self-referential keys
++                if not isinstance(node, ast.DictComp):
++                    continue
++                literal_keys = {
++                    item.value
++                    for item in node.generators
++                    for item in ast.walk(item.iter)
++                    if isinstance(item, ast.Constant) and isinstance(item.value, str)
++                }
++                if set(self.EXCLUDED_LITERALS) <= literal_keys:
++                    offenders.append(f"{path.name}:{node.lineno}")
++        self.assertEqual(
++            offenders,
++            [],
++            "a second implementation of the commitment projection exists; "
++            "delegate to attestation_protocol.payload_sha256 instead: "
++            f"{offenders}",
++        )
++
++    def test_the_verifier_does_not_TRUST_a_top_level_commitment_alone(self) -> None:
++        """The artifact's stated commitment is checked, never trusted.
++
++        The verifier MAY read ``result["payload_sha256"]`` (``run_forecast`` exports
++        it for signed publications) but only as an ADDITIONAL statement that must
++        agree with the projection recomputed here.  What it must NOT do is read that
++        key with a type guard that silently skips the comparison when the key is
++        absent — that is the round-2 defect.
++        """
++        source = (SCRIPTS / "attestation_protocol.py").read_text(encoding="utf-8")
++        tree = ast.parse(source)
++        function = next(
++            node
++            for node in ast.walk(tree)
++            if isinstance(node, ast.FunctionDef)
++            and node.name == "verify_publication_attestation"
++        )
++        # the mandatory comparison is against the RECORD's commitment
++        compares_record_commitment = any(
++            isinstance(node, ast.Attribute)
++            and node.attr == "get"
++            and isinstance(node.value, ast.Name)
++            and "record" in node.value.id
++            for node in ast.walk(function)
++        ) or any(
++            isinstance(node, ast.Compare)
++            and any(
++                isinstance(sub, ast.Subscript)
++                and isinstance(sub.value, ast.Name)
++                and "record" in sub.value.id
++                for sub in node.left.elts if isinstance(node.left, ast.Tuple)
++            )
++            for node in ast.walk(function)
++        )
++        self.assertTrue(
++            compares_record_commitment,
++            "verify_publication_attestation must compare the RECORD's payload_sha256",
++        )
++        # and the projection must be recomputed inside the function (not assumed)
++        self.assertIn(
++            "payload_sha256(result)",
++            source.split("def verify_publication_attestation")[1].split("\ndef ")[0],
++            "verify_publication_attestation must recompute payload_sha256(result)",
++        )
 +
 +
 +if __name__ == "__main__":

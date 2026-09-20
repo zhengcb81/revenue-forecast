@@ -11,7 +11,8 @@
     "All TWELVE verification commands in this file were executed after the edit (eight pytest/validation commands plus the two RED commands, the census and the diff generator; c15/c16 were added in the round-1 revision and c22 is a packaging check whose raw output is in after/) and every raw return code matched its frozen expectation (0/0).",
     "TEST VALUES ARE NOT NORMATIVE: 20 s (T), 65536 B (L) and 3600 s (W) appear only in tests/bindings and are injected explicitly. OPEN-D7 is not adjudicated.",
     "A previous revision of handoff.json said 'eight bound commands'; commands.json has 15 bound entries (the original 12 plus c15, c16 and the round-2 contract command). The count was wrong in the handoff text, not in this file.",
-    "ROUND 2: the attestation commitment is now CONSUMED on a real artifact. verify_publication_attestation compares record['payload_sha256'] against payload_sha256(result) AND against the artifact's own exported statement; run_forecast exports result['payload_sha256'] for signed publications; the key is excluded from the projection (a self-referential key would make the commitment depend on itself). Test: tests/test_publication_attestation_contract.py."
+    "ROUND 2: the attestation commitment is now CONSUMED on a real artifact. verify_publication_attestation compares record['payload_sha256'] against payload_sha256(result) AND against the artifact's own exported statement; run_forecast exports result['payload_sha256'] for signed publications; the key is excluded from the projection (a self-referential key would make the commitment depend on itself). Test: tests/test_publication_attestation_contract.py.",
+    "ROUND 4 (R3-6): every command that can run product code against iso/rf now declares <attempt>/iso/rf/artifacts/ as a write root. The pytest commands redirect REVENUE_PUBLICATION_REGISTRY under --basetemp, but a DIRECT run_forecast call (as in the contract tests) writes the isolated copy's own artifacts/registry/publications.jsonl, which is a RUNTIME ARTEFACT and is listed as such in after/product_hashes.txt section 2 -- never as a deliverable."
   ],
   "commands": [
     {
@@ -107,7 +108,8 @@
         "<attempt>/scratch/c3-pytest/**"
       ],
       "allowed_write_roots": [
-        "<attempt>/scratch/c3-pytest"
+        "<attempt>/scratch/c3-pytest",
+        "<attempt>/iso/rf/artifacts/"
       ],
       "network": "disabled",
       "timeout_seconds": 540,
@@ -144,7 +146,8 @@
         "<attempt>/scratch/c4-pytest/**"
       ],
       "allowed_write_roots": [
-        "<attempt>/scratch/c4-pytest"
+        "<attempt>/scratch/c4-pytest",
+        "<attempt>/iso/rf/artifacts/"
       ],
       "network": "disabled",
       "timeout_seconds": 540,
@@ -180,7 +183,8 @@
         "<attempt>/iso/rf/tests"
       ],
       "allowed_write_roots": [
-        "<attempt>/scratch/c5-pytest"
+        "<attempt>/scratch/c5-pytest",
+        "<attempt>/iso/rf/artifacts/"
       ],
       "network": "disabled",
       "timeout_seconds": 540,
@@ -216,7 +220,8 @@
         "<attempt>/iso/rf/tests"
       ],
       "allowed_write_roots": [
-        "<attempt>/scratch/c6-pytest"
+        "<attempt>/scratch/c6-pytest",
+        "<attempt>/iso/rf/artifacts/"
       ],
       "network": "disabled",
       "timeout_seconds": 540,
@@ -521,7 +526,8 @@
         "<attempt>/iso/rf/tests"
       ],
       "allowed_write_roots": [
-        "<attempt>/scratch/c36-pytest"
+        "<attempt>/scratch/c36-pytest",
+        "<attempt>/iso/rf/artifacts/"
       ],
       "network": "disabled",
       "timeout_seconds": 540,
@@ -554,5 +560,6 @@
       "reason": "No real provider exists and no network is used. Live qualification belongs to I-16/I-17. The implementation fails closed when no provider is configured."
     }
   ],
-  "binding_status": "bound"
+  "binding_status": "bound",
+  "bound_entry_count": 15
 }
