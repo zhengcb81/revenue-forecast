@@ -1,0 +1,9 @@
+[filing-fetch] worker lease NOT released: failed:owner_evidence_changed:owner_probe:dead:foreign_lineage
+[filing-fetch]   refcount : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-04-D\runs11748\I04D-CASE-F-L8d\wiki\.source_catalog\filing_fetch_pause.refcount
+[filing-fetch]   owner    : C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-04-D\runs11748\I04D-CASE-F-L8d\wiki\.source_catalog\filing_fetch_pause.owner (exists=True)
+[filing-fetch]   raw state: {"entries": [], "generation": 1, "owner": {"boot_uuid": "ffffffffffff", "generation": 1, "lease_id": "third-party-owner", "os_start_time": "", "pid": 999999}, "resume": {"generation": 1, "lease_id": "", "phase": "idle", "required": false}, "schema": "filing-fetch.pause-refcount/2"}
+[filing-fetch]   to release by hand:
+[filing-fetch]     1) confirm no filing-fetch download is running (tasklist /FI "IMAGENAME eq python.exe")
+[filing-fetch]     2) if the worker should keep running: python -m company_wiki.source_catalog.cli worker-resume
+[filing-fetch]     3) only if step 2 says it is already running: delete C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-04-D\runs11748\I04D-CASE-F-L8d\wiki\.source_catalog\filing_fetch_pause.refcount and C:\Users\郑曾波\Projects\revenue-forecast\.planning\2026-09-19-three-project-history-audit\execution_runs\I-04-D\runs11748\I04D-CASE-F-L8d\wiki\.source_catalog\filing_fetch_pause.owner
+[filing-fetch]     4) never delete a lease whose owner record you have not read in full

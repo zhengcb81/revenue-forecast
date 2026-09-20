@@ -57,7 +57,7 @@ powershell -NoProfile -Command "(Get-FileHash -LiteralPath '<A>\iso\filing-fetch
 
 - **幂等**：重复执行得到同一份输出。
 - **拒绝条款**：**基线的 sha256 不匹配它就拒跑**（这是脚本的硬校验，不是提示）。所以第 1 步的回滚必须精确到 `dc593a75…af1c`；如果你手上的基线 hash 不同（例如 I-04-B 产物被换过），patch 会拒绝执行——这时**不要**绕过校验去手改源码，应先把差异报给 owner。
-- 施加后的期望结果：`<A>\iso\filing-fetch\scripts\fetch_filing.py` = sha256 `5ac2a50a847c62a066fe1984aae6c4e30b593ff674b67b3cb618cacc8e66a436`（125054 bytes），并落盘 §3 列出的三个 helper 与一个测试文件。
+- 施加后的期望结果：`<A>\iso\filing-fetch\scripts\fetch_filing.py` = sha256 `a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198`（126274 bytes），并落盘 §3 列出的三个 helper 与一个测试文件。
 
 ---
 
@@ -72,7 +72,7 @@ powershell -NoProfile -Command "(Get-FileHash -LiteralPath '<A>\iso\filing-fetch
 ```
 
 - 在**基线**（回滚后、未 patch）上跑：期望 `rc = 1`，`17 failed, 2 passed, 2 skipped in 14.59s`（原始日志 `before/i04d-red.txt`，sha256 `ff6e526fd260b343dd8af24ff777a80c2b2f4f56665c4bd98f9499dd67b0e92f`；那次调用的 basetemp 是 `before/lease-pytest`）。
-- 在**本卡输出**（patch 后）上跑：`rc = 1`，`18 passed, 3 failed`（原始日志 `after/i04d-green.txt`，sha256 `019a08830ac53cabe2f00b184a192926fe35e5ccb8f67273b5c897345620063c`；那次调用的 basetemp 是 `after/lease-basetemp` —— `after/` 下另有 `lease-pytest-green/`、`lease-basetemp2/3/4/` 等同名旧 basetemp，**不要**用目录名推断是哪一次运行，以 `commands.json` 的 `I04D-06-t-filing-green` 与日志内容为准）。**这 3 个失败是已知的 harness 顺序敏感断言，不是全绿**；性质与处置见 `review.md` §3 与 §5(a)。
+- 在**本卡输出**（patch 后）上跑：`rc = 1`，`18 passed, 3 failed`（原始日志 `after/i04d-green.txt`，sha256 `fd9497716293a35d12967cadee52ca33493fa8efedbb31e15b928bed25e56127`；那次调用的 basetemp 是 `after/lease-basetemp` —— `after/` 下另有 `lease-pytest-green/`、`lease-basetemp2/3/4/` 等同名旧 basetemp，**不要**用目录名推断是哪一次运行，以 `commands.json` 的 `I04D-06-t-filing-green` 与日志内容为准）。**这 3 个失败是已知的 harness 顺序敏感断言，不是全绿**；性质与处置见 `review.md` §3 与 §5(a)。
 - `--basetemp` 必须指向**本次新建的空目录**（临时目录或 `<A>\recovery\` 下的新目录）。**绝不能**指向 attempt 根、`evidence/` 根、`before/`、`after/` 或上一次的 basetemp：pytest 会清理 basetemp 目标（本卡构建期就踩过一次 case 根被 basetemp 清掉的坑）。
 - 失败案例的测试节点名（供 `-k` 单点复现，取自 basetemp 目录名，前 30 字符）：`test_f_l5_ownership_transfer_i0`、`test_f_l5_two_processes_one_pa0`、`test_f_l6_sequential_cycles_ea0`、`test_f_l6b_exactly_one_resume_0`、`test_f_l7_inner_release_remove0`、`test_f_l7b_and_l7c_nesting_var0`、`test_f_l8d_owner_evidence_chan0`、`test_f_l9a_user_pause_is_respe0`、`test_f_l9c_user_pause_during_o0`、`test_l8a_w1_no_owner_marker_is0`、`test_l8b_w2_takeover_resumes_b0`。单点复现示例：
 
@@ -159,7 +159,7 @@ powershell -NoProfile -Command "(Get-FileHash -LiteralPath '<A>\iso\filing-fetch
 powershell -NoProfile -Command "(Get-FileHash -LiteralPath '<A>\iso\filing-fetch\scripts\fetch_filing.py' -Algorithm SHA256).Hash.ToLower()"
 ```
 
-必须仍是 `5ac2a50a847c62a066fe1984aae6c4e30b593ff674b67b3cb618cacc8e66a436`。**不相等 = 变异污染了主副本**，立即停止并保留现场。
+必须仍是 `a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198`。**不相等 = 变异污染了主副本**，立即停止并保留现场。
 6. 前置缺口（不要跳过）：M9 引用的 N14（两进程同时持久化）案例目前**不存在**，需先补；M3/M4/M5/M7/M8/M10/M11 在 `oracle.md` §7 只给了期望，没有可运行 argv，需先补齐或记为 blocked。**不得**声称任何变异结果。
 
 ---

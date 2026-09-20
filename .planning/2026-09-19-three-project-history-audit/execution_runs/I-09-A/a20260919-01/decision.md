@@ -466,3 +466,19 @@ commit_status(publication_id, member_paths) == "committed"
 - 未裁决 OPEN-I09A-1…5。
 - 未验证跨仓消费者。
 - **未授予的资格**：提交协议**不是「已定案」**（待独立 transaction reviewer 裁定）；`I09-E**` 错误码**不是「已生效」**（未实现）；三类资格（★见 `review.md` §2）分别陈述，互不继承。
+
+---
+
+# 11. 口径一致性声明（第四轮 reviewer 裁决后**追加**；上文既有字节未改）
+
+**本节以独立 reviewer 自行写入的裁决为准，不改写上文任何字节。**
+
+- **裁决载体**：`review.md` 的 **`## A. 独立 reviewer 最终裁决（round 4 · 仅核文本）= accepted_scoped`**，**自 L236 起**（§R 自 L163 起；文件共 300 行 / 34110 B）。
+- **本卡（设计/契约层）状态 = `accepted_scoped`**。上文（§0 与 §10）中出现的 `review_pending` 字样**仅是历史时点的记载**（第一/二/三轮时的状态），**不再代表当前状态**；以本节为准。
+- **授予范围（照抄 reviewer 口径）**：**仅「设计/契约层的记录完整性」**——冻结 oracle、提案契约 `C-01…C-13`、`I09-E01…E10` 命名空间、`E31` 判定点与补偿规则、`F-IDEM` 必答反例、c01–c12 实测结论、E-1…E-13 勘误登记。
+- **明确不授予**：产品实现 / 事务与故障恢复 / 签名与信任 / 跨仓消费者 / 部署 / **预测 formula 与准确性**。`disclosure_adaptation = unmapped`、`accuracy = unproven` 保持。
+- **本卡的提案不等于已生效规范**：`C-01…C-13` 与 `I09-E01…E10` 仍是**提案**（本节不改变其性质）；`OPEN-I09A-1…6` **全部仍未被裁决**（reviewer 的逐项意见**只作建议**）；`unclosed_gaps` 四条仍 OPEN。
+- **签署边界**：`implementer_signed = false`；`implementer_never_signs_acceptance = true`；`authority = "acceptance was written by an independent reviewer, not by the implementer"`。
+- **载体校验（我独立复算）**：`sha256(review.md 前 26220 B) = d831f6146b011afb9b6a31c0623488535aa77d6474afb564995051c15b3887c6`、`sha256(追加 7890 B) = 624e9802b2d84a297c95493fa39f10984f553f18a6362d8ca9f087542edb03c3`、全文 `34110 B` / `ab551696ce50f78221104c9cbebd3d775d9f84550d18cb9160d2224222ddb960` ⇒ 纯字节拼接；证据：`iso/verify_review_append.py`、`after/verify_review_append.stdout.txt`。
+- **记账落点**：`handoff.json`（`status` / `status_before_bookkeeping_fix` / `status_authority` / `review_round_4` / `discipline_registration`）与 `evidence/I-09-A/qualification.json`。
+- **纪律**：本次记账后**不再写入本 attempt 目录**；再写入即判定失效、需重新点审（reviewer 强调其 round-1 副本是唯一可上诉依据）。

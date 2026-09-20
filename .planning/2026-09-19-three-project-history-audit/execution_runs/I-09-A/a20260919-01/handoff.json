@@ -4,9 +4,35 @@
   "plan": "2026-09-19-three-project-history-audit",
   "attempt_id": "a20260919-01",
   "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-A\\a20260919-01",
-  "status": "review_pending",
+  "status": "accepted_scoped",
+  "status_before_bookkeeping_fix": "review_pending",
+  "status_semantics": "accepted_scoped here means ONLY 'design/contract-layer record completeness'. It grants no implementation, transaction/fault-recovery, signature/trust, cross-repo-consumer, deployment, forecast-formula or accuracy qualification. disclosure_adaptation stays unmapped; accuracy stays unproven.",
+  "status_authority": {
+    "declarations": {
+      "implementer_signed": false,
+      "implementer_never_signs_acceptance": true,
+      "authority": "acceptance was written by an independent reviewer, not by the implementer"
+    },
+    "carrier": {
+      "file": "review.md",
+      "section": "## A. 独立 reviewer 最终裁决（round 4 · 仅核文本）= accepted_scoped",
+      "line_range": "L236 onward (§R from the round-3 ruling starts at L163; file total 300 lines / 34110 B)",
+      "reviewer_append_proof": {
+        "pre_bytes": 26220,
+        "pre_sha256": "d831f6146b011afb9b6a31c0623488535aa77d6474afb564995051c15b3887c6",
+        "append_bytes": 7890,
+        "append_sha256": "624e9802b2d84a297c95493fa39f10984f553f18a6362d8ca9f087542edb03c3",
+        "post_bytes": 34110,
+        "post_sha256": "ab551696ce50f78221104c9cbebd3d775d9f84550d18cb9160d2224222ddb960"
+      },
+      "implementer_independent_recheck": "iso/verify_review_append.py -> after/verify_review_append.stdout.txt: post_bytes match=True, post_sha256 match=True, sha256(first 26220 B)=d831f614... match_pre=True, sha256(appended 7890 B)=624e9802... match_append=True => pure byte concatenation; the implementer touched none of the reviewer's bytes",
+      "reviewer_report_paths": ["%TEMP%\\i09a-review-20260920-034835\\REPORT4.md", "%TEMP%\\i09a-review-20260920-034835\\accept_append.md"]
+    },
+    "transcribing_qualification_file": "evidence/I-09-A/qualification.json",
+    "note": "this handoff TRANSCRIBES the reviewer's verdict; it is not a signature"
+  },
   "implementer_self_acceptance": false,
-  "implementer_note": "the implementer declares NOTHING accepted. review.md is the implementer's account plus the reviewer's TODO list; the only file a reviewer may turn into a verdict is theirs to write.",
+  "implementer_note": "the implementer signs NOTHING. The accepted_scoped status above is transcribed from the independent reviewer's own section A in review.md; the implementer never writes acceptance.",
 
   "completed_steps": [1, 2, 3, 4, 5, 7, 8],
   "steps_not_applicable": [
@@ -228,6 +254,48 @@
     ]
   },
 
+  "review_round_4": {
+    "verdict": "accepted_scoped (TEXT-ONLY final ruling; no fifth round required)",
+    "carrier": "review.md section A, L236 onward (transcribed above in status_authority.carrier; the same transcription lives in evidence/I-09-A/qualification.json)",
+    "scope_granted": "design/contract-layer RECORD COMPLETENESS only: frozen oracle, proposed contract C-01..C-13, I09-E01..E10 namespace, E31 determination point and compensation rule, F-IDEM mandatory counterexample, measured conclusions of c01-c12, and the E-1..E-13 errata register",
+    "scope_NOT_granted": [
+      "product implementation",
+      "transaction and fault recovery",
+      "signature and trust",
+      "cross-repo consumer",
+      "deployment",
+      "forecast formula",
+      "forecast accuracy"
+    ],
+    "disclosure_adaptation": "unmapped (unchanged)",
+    "accuracy": "unproven (unchanged)",
+    "known_gaps": [
+      "review.md:80 still UNFIXED: '132 lines / 126 real entries' is still sourced to after/git_status_after.txt, which now holds 270 lines; source and value cannot corroborate each other. Handed to the owner (fixing it means editing reviewer-owned bytes).",
+      "errata.md:195 still carries a misplaced '## §U' heading; the authoritative reading is errata.md section R-2, and errata.md:236 is the only valid section U.",
+      "OPEN-I09A-1..6 are ALL still UNADJUDICATED; the reviewer's per-item opinions are PENDING SUGGESTIONS only (-1/-2/-3/-5/-6 still block I-09-B; -4 must fold into I-09-B's allowlist as a fail-closed fix with a negative test).",
+      "unclosed_gaps remains 4 items (GAP-C13-attestation-record with the error code UNASSIGNED and the failable negative test bound to I-09-B, GAP-3.8-consumer-gate, GAP-e09-cross-volume, GAP-e31-compensation)."
+    ],
+    "reviewer_unverified_carried_forward": "11 items unchanged (oracle append-only not line-verifiable; after/git_status_after.txt's old bytes permanently unrecoverable; C:\\i09a write history; cross-volume I09-E09; classify() semantics; attempt1 argv replay; G2 x committed; opt-in 3.8 consumer side; E31 compensation mechanism; -5/-6 adjudicator awareness; the 14 dirty paths' history)"
+  },
+
+  "discipline_registration": {
+    "declaration": "With this bookkeeping fix the implementer STOPS writing to this attempt directory. Any further write invalidates the declared completion and requires re-audit.",
+    "rule": "declare completion, then do not write again; a further write to this attempt directory invalidates the completion and requires a fresh point audit",
+    "reviewer_note": "the reviewer restated that its round-1 copy of this attempt's files is the ONLY basis for an appeal",
+    "exceptions_granted_for_this_pass": [
+      "handoff.json (status transcription + this registration)",
+      "evidence/I-09-A/qualification.json (new transcription file)",
+      "decision.md (appended consistency section)",
+      "iso/verify_review_append.py + after/verify_review_append.stdout.txt (the carrier recheck the ruling asked for)",
+      "changes.diff + after/product_hashes.txt (generated-last bookkeeping, regenerated after the edits above)"
+    ],
+    "frozen_and_untouched_by_this_pass": [
+      "review.md (all 34110 bytes, including the reviewer's sections R and A)",
+      "oracle.md, oracle_addendum.md, open_items.md, binding.json, commands.json, errata.md, recovery/README.md",
+      "every probe script and every raw evidence file"
+    ]
+  },
+
   "review_round_2": {
     "verdict": "changes_required (narrow: errata TEXT only; the evidence layer and the contract body both PASSED)",
     "reviewer_precommitment": "if these 4 items land as appended errata (no evidence touched, no re-run, no C-item edited), this card's design/contract record completeness may be judged accepted_scoped WITHOUT a third adversarial round",
@@ -251,7 +319,6 @@
   },
 
   "review_round_3": {
-    "verdict": "changes_required (narrow: exactly 2 TEXT items, R-1 and R-2, closable by appended errata; no re-run, no in-place edit of any frozen line)",
     "reviewer_wrote_the_ruling_into_review_md": {
       "section": "## R. 独立 reviewer 最终裁决（round 3，2026-09-20）, subsections R.0..R.5, starting at review.md line 163",
       "review_md_sha256_before": "9faa0990d7ffd4e2504af96c6eb4fa62d3f333e41dc58117fc8460fe063e541d (16292 B)",

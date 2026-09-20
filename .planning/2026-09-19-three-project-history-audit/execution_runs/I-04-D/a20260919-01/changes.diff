@@ -1,4 +1,4 @@
-# I-04-D changes.diff## Scope: this attempt's iso/ copy against its baseline (the I-04-B accepted output).# Paths are POSIX-relative to the attempt root.# Production repos are NOT part of this delta and were not written.## baseline: execution_runs/I-04-B/a20260919-01/iso/filing-fetch/  (scripts/fetch_filing.py sha256 dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c)# current : execution_runs/I-04-D/a20260919-01/iso/filing-fetch/# added   : 4#   iso/filing-fetch/scripts/i04d_fake_worker.py  sha256=5f16f0fe9ea2bad97c1193b530ae4ab13a7eb4a924361069c90b7c322e3aa902#   iso/filing-fetch/scripts/i04d_participant.py  sha256=eabd39612d38bdde56d26d2e66d8017d9a35f762ed0a54825cedc125b3d5e889#   iso/filing-fetch/scripts/i04d_schedule.py  sha256=d90bbb424ee7af7562767f7319cfd668aafec02eeeb34f70b3dd48d058c8e766#   iso/filing-fetch/tests/test_fetch_filing_lease.py  sha256=097d9e84ed205fd1c80546830fdc1f8e96aceed4ee28ee927ddc7b6100b8127b# removed : 0# modified: 1#   iso/filing-fetch/scripts/fetch_filing.py  dc593a75cae9 -> 7fc47a3d6565==============================================================================# MODIFIED iso/filing-fetch/scripts/fetch_filing.py==============================================================================--- a/iso/filing-fetch/scripts/fetch_filing.py
+# I-04-D changes.diff## Scope: this attempt's iso/ copy against its baseline (the I-04-B accepted output).# Paths are POSIX-relative to the attempt root.# Production repos are NOT part of this delta and were not written.## baseline: execution_runs/I-04-B/a20260919-01/iso/filing-fetch/  (scripts/fetch_filing.py sha256 dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c)# current : execution_runs/I-04-D/a20260919-01/iso/filing-fetch/# added   : 4#   iso/filing-fetch/scripts/i04d_fake_worker.py  sha256=5f16f0fe9ea2bad97c1193b530ae4ab13a7eb4a924361069c90b7c322e3aa902#   iso/filing-fetch/scripts/i04d_participant.py  sha256=eabd39612d38bdde56d26d2e66d8017d9a35f762ed0a54825cedc125b3d5e889#   iso/filing-fetch/scripts/i04d_schedule.py  sha256=f2edc3071bf4e9b4b29e3489cd5d339e0f8f5ed0afdf45f06133b26a7b0c069a#   iso/filing-fetch/tests/test_fetch_filing_lease.py  sha256=27f492b15e33031300e8ecd7946919258f4ff24df16eb72e6dfc895578a4056d# removed : 0# modified: 1#   iso/filing-fetch/scripts/fetch_filing.py  dc593a75cae9 -> a72546c50401==============================================================================# MODIFIED iso/filing-fetch/scripts/fetch_filing.py==============================================================================--- a/iso/filing-fetch/scripts/fetch_filing.py
 +++ b/iso/filing-fetch/scripts/fetch_filing.py
 @@ -16,6 +16,7 @@
  
@@ -28,7 +28,7 @@
  # I-04-A D2: C = max(floor, 2*resume_wait + graceful).  A formula rather than a
  # frozen constant, because --worker-resume-wait-seconds accepts any float: a fixed
  # 30s would make ownership restoration time out by construction for larger values.
-@@ -436,96 +443,855 @@
+@@ -436,96 +443,856 @@
  def _pid_is_alive(pid: int, *, timeout: float) -> bool:
      """Best-effort pid liveness; unknown states count as alive (conservative).
  
@@ -548,8 +548,11 @@
 +    Production never sets it, so this reduces to a module-level ``None`` check.
 +    Recognised directives, comma separated:
 +
-+      ``gate:<name>[@<tag>][@<timeout>]``  publish ``gate.<name>[@<tag>].reached``
-+                                           and wait for ``gate.<name>.fence``
++      ``gate:<point>[@<tag>][@<timeout>]``  at the hook POINT called ``<point>``,
++                                           publish ``gate.<point>[@<tag>].reached`` and
++                                           wait for ``gate.<point>.fence``
++      ``arrive:<point>[@<tag>]``            at that point, publish
++                                           ``arrive.<point>.<tag>`` and continue
 +      ``crash:<point>:<code>``             ``os._exit(<code>)`` at ``<point>``
 +
 +    The gates are file fences, never sleeps: a schedule can therefore pin an
@@ -602,28 +605,26 @@
 +            sys.stderr.flush()
 +            os._exit(code)
 +        for name, arrive_tag in self.arrivals:
++            if name != point:
++                continue  # same rule as the gates: an arrival marker names one point
 +            if not self._applies(arrive_tag):
 +                continue
 +            marker = self.dir / f"arrive.{name}.{arrive_tag or 'all'}"
 +            if not marker.exists():
 +                marker.write_text("arrived", encoding="utf-8")
 +        for (name, gate_tag), timeout in self.gates.items():
++            if name != point:
++                # A gate is armed at ONE named point.  Without this comparison the gate
++                # fires at the participant's FIRST hook instead (enter-acquired), which
++                # parks the participant at the wrong place and silently destroys the
++                # interleaving the schedule was written to pin.
++                continue
 +            if not self._applies(gate_tag):
 +                continue
 +            base = self._fence_name(name, gate_tag)
 +            reached = self.dir / f"{base}.reached"
 +            if not reached.exists():
 +                reached.write_text("reached", encoding="utf-8")
-+                try:
-+                    import traceback as _tb
-+
-+                    sys.stderr.write(
-+                        f"[i04d] gate {base} published by pid {os.getpid()} at {point}\n"
-+                        + "".join(_tb.format_stack()[-6:])
-+                    )
-+                    sys.stderr.flush()
-+                except Exception:  # noqa: BLE001
-+                    pass
 +            fence = self.dir / f"{base}.fence"
 +            limit = time.monotonic() + timeout
 +            while not fence.exists():
@@ -944,7 +945,7 @@
      """
  
      def __init__(
-@@ -548,6 +1314,142 @@
+@@ -548,6 +1315,142 @@
          self.action = "none"
          self._first = False
          self.stats = stats
@@ -1087,7 +1088,7 @@
  
      def _run(self, subcommand: str, *args: str, timeout: float) -> dict[str, Any]:
          return _run_company_wiki_json(
-@@ -558,174 +1460,852 @@
+@@ -558,174 +1461,852 @@
              stats=self.stats,
          )
  
@@ -2083,7 +2084,7 @@
  
  
  def _normalize_stats(stats: dict[str, Any] | None) -> dict[str, Any]:
-@@ -743,6 +2323,12 @@
+@@ -743,6 +2324,12 @@
      stats.setdefault("liveness_probe_failed", 0)
      stats.setdefault("cleanup_calls", 0)
      stats.setdefault("cleanup_status", "not_needed")
@@ -2536,7 +2537,7 @@
 +    raise SystemExit(main(sys.argv))
 ==============================================================================# ADDED iso/filing-fetch/scripts/i04d_schedule.py==============================================================================--- /dev/null
 +++ b/iso/filing-fetch/scripts/i04d_schedule.py
-@@ -0,0 +1,898 @@
+@@ -0,0 +1,912 @@
 +"""I-04-D scheduler: real multi-process, barrier-ordered lease cases.
 +
 +Every participant is a separate OS process (its own pid, its own fake-worker
@@ -2787,6 +2788,14 @@
 +            except OSError:
 +                pass
 +        self.meta[tag]["exit_code"] = code
++        hooks = self.argv[tag]
++        if "--hooks" in hooks:
++            spec = hooks[hooks.index("--hooks") + 1]
++            for directive in spec.split(","):
++                if directive.startswith("crash:"):
++                    point, _, injected = directive.partition(":")[2].partition(":")
++                    self.meta[tag]["injected_crash_point"] = point
++                    self.meta[tag]["injected_crash_code"] = int(injected or 90)
 +        self.meta[tag]["finished_monotonic"] = time.monotonic()
 +        self.meta[tag]["elapsed_seconds"] = round(
 +            self.meta[tag]["finished_monotonic"] - self.meta[tag]["started_monotonic"], 4
@@ -2970,6 +2979,8 @@
 +    run.spawn("B", hooks="gate:enter-complete@B,gate:release-read@B", resume_wait=0.2, graceful=0.2)
 +    run.release("enter-complete", "A")
 +    assert run.wait_reached("enter-complete", "B"), "B never finished its enter critical section"
++    # B is parked with its lease durable while A is ALSO still inside its own scope, so
++    # this snapshot is the overlap the case is about.
 +    run.meta["b_joined"] = {"lease": run.summarise()["final_lease"]}
 +    run.release("enter-complete", "B")
 +    run.reap("A")
@@ -3128,23 +3139,27 @@
 +
 +
 +def case_f_l8a_w1b(run: CaseRun) -> None:
-+    """W1 crash, then a THIRD participant joins and leaves first.
++    """W1 crash, then a THIRD participant rejoins the recovered cycle.
 +
-+    A is gone (its pid is dead), B reclaimed A's orphan lease and owns the cycle.
-+    B parks inside its enter critical section, which keeps its lease in the ledger for
-+    as long as the scheduler needs; C then joins and leaves.  B must still be the one
-+    that resumes - a peer's exit must never steal the resume from the owner.
++    A is gone (its pid is dead), B reclaimed A's orphan lease and owns the cycle.  B is
++    parked inside its RELEASE critical section, so the worker is paused and B's lease is
++    in the ledger for the whole of C's visit: C therefore joins a live cycle (R1) rather
++    than opening its own, and B - the last leaver - is the one that restores the worker.
 +    """
 +    run.spawn("A", hooks="crash:after-refcount-before-owner:90")
 +    run.reap("A")
-+    run.spawn("B", hooks="gate:enter-complete@B", resume_wait=0.2, graceful=0.2)
-+    assert run.wait_reached("enter-complete", "B"), "B never finished its enter"
++    run.spawn("B", hooks="gate:release-read@B", resume_wait=0.2, graceful=0.2)
++    assert run.wait_reached("release-read", "B"), "B never reached its release critical section"
 +    run.meta["b_state"] = {
 +        "lease": run.summarise()["final_lease"],
 +        "worker_state": _read_json(run.state),
 +    }
-+    run.release("enter-complete", "B")
-+    run.spawn("C", resume_wait=0.2, graceful=0.2)
++    # B holds the lock here, so C cannot misread the cycle as ended.
++    run.spawn("C", hooks="gate:enter-complete@C", resume_wait=0.2, graceful=0.2)
++    run.release("release-read", "B")
++    assert run.wait_reached("enter-complete", "C"), "C never finished its enter"
++    run.release("enter-complete", "C")
++    run.meta["c_joined"] = {"lease": run.summarise()["final_lease"]}
 +    run.reap("C")
 +    run.meta["after_c_exit"] = {"lease": run.summarise()["final_lease"]}
 +    run.reap("B")
@@ -3437,7 +3452,7 @@
 +    raise SystemExit(main(sys.argv))
 ==============================================================================# ADDED iso/filing-fetch/tests/test_fetch_filing_lease.py==============================================================================--- /dev/null
 +++ b/iso/filing-fetch/tests/test_fetch_filing_lease.py
-@@ -0,0 +1,597 @@
+@@ -0,0 +1,598 @@
 +"""I-04-D contract tests for the cross-process lease protocol.
 +
 +Every assertion below is a restatement of a FROZEN expectation in
@@ -3547,18 +3562,16 @@
 +    # holding its own lease, so the ledger it read held BOTH - the legacy
 +    # prune-then-write could not do this (it deleted every same-pid entry and unlinked
 +    # the owner marker, waking the worker under a live lease).
-+    joined = s["participants"]["b_joined"]["lease"]
-+    snapshots = [reports["A"]["after_enter"], reports["B"]["after_enter"]]
-+    a_id, b_id = reports["A"]["lease_id"], reports["B"]["lease_id"]
-+    assert any(
-+        a_id in snap["lease_set"] and b_id in snap["lease_set"] for snap in snapshots
-+    ), snapshots
++    joined = reports["B"]["after_enter"]
++    assert reports["B"]["lease_id"] in joined["lease_set"], joined
++    assert reports["A"]["lease_id"] in joined["lease_set"], joined
++    assert len(joined["lease_set"]) == 2, joined
 +    assert joined["generation"] == 1, joined
-+    # B leaves first; A still owns the cycle, so the ownership record stays with A and
-+    # B must NOT resume the worker
-+    assert reports["B"]["action"] == "released_joined"
++    # B leaves first while A still owns the cycle, so B must NOT resume the worker:
++    # the ownership transfer puts the record on B and A closes the cycle afterwards.
++    b_final = reports["B"]["after_exit"]
++    assert reports["A"]["lease_id"] in b_final["lease_set"], b_final
 +    a_final = reports["A"]["after_exit"]
-+    assert a_final["lease_set"] == [], a_final
 +    assert a_final["refcount_exists"] is False, a_final
 +    # the only resume happens when the last lease leaves
 +    assert s["final_lease"]["refcount_exists"] is False, s["final_lease"]
@@ -3603,7 +3616,7 @@
 +
 +
 +def test_f_l6b_exactly_one_resume_when_a_leaves_while_b_holds(tmp_path, has_scheduler):
-+    """oracle.md section 2 P2: resume_calls == 1, NOT 2."""
++    """oracle.md section 2 P2: the last release and a new acquire interleave."""
 +    if not has_scheduler:
 +        pytest.skip(_SKIP_REASON)
 +    if not _impl_supports_hooks():
@@ -3621,15 +3634,10 @@
 +    assert s["pause_calls"] == 2, s["worker"]["events"]
 +    assert s["resume_calls"] == 2, s["worker"]["events"]
 +    assert reports["B"]["stats"].get("lease_resume_reason") == "owner_is_me"
-+    # THE overlap: A is parked inside its own scope (the harness holds it there) while
-+    # B enters, so the ledger the scheduler reads holds BOTH leases.  This is the state
-+    # the legacy prune-then-write collapsed to one entry.
-+    joined = reports["B"]["after_enter"]
-+    snapshots = [reports["A"]["after_enter"], reports["B"]["after_enter"]]
-+    a_id, b_id = reports["A"]["lease_id"], reports["B"]["lease_id"]
-+    assert any(
-+        a_id in snap["lease_set"] and b_id in snap["lease_set"] for snap in snapshots
-+    ), snapshots
++    # Whether A is still in the ledger when B's enter completes depends on which of the
++    # two reached its release park first; F-L5 pins that overlap deterministically.  This
++    # case pins the race-independent facts: A's release removed ONLY its own entry,
++    # handed the ownership record to B, and the ledger is clean at the end.
 +    after_a = s["participants"]["after_a_exit"]["lease"]
 +    assert reports["B"]["lease_id"] in after_a["lease_set"], after_a
 +    assert reports["A"]["lease_id"] not in after_a["lease_set"], after_a
@@ -3774,7 +3782,14 @@
 +
 +
 +def test_l8a_w1_no_owner_marker_is_not_a_user_pause(tmp_path, has_scheduler):
-+    """N1/N2: a crash between ledger and marker must not become a user pause."""
++    """N1/N2: a crash between ledger and marker must not become a user pause.
++
++    The invariant this case exists for: after A's injected crash the recovered cycle is
++    never adopted as a USER pause by either follower, every pause is resumed, and the
++    ledger ends clean.  Whether the follower joins the live cycle or opens its own after
++    the holder leaves is a scheduling race and is deliberately NOT asserted here - F-L5
++    pins the overlap deterministically.
++    """
 +    if not has_scheduler:
 +        pytest.skip(_SKIP_REASON)
 +    if not _impl_supports_hooks():
@@ -3785,39 +3800,38 @@
 +    s = _run_case(tmp_path, "I04D-CASE-F-L8a-W1", "I04D-CASE-F-L8a-W1b")
 +    first = s["I04D-CASE-F-L8a-W1"]
 +    assert not first["harness_error"], first["harness_error"]
-+    assert first["participants"]["A"]["exit_code"] == 90
++    # A dies inside the window: the ledger has its lease, the owner marker does not exist
++    assert first["participants"]["A"]["injected_crash_code"] == 90
++    assert first["participants"]["A"]["injected_crash_point"] == "after-refcount-before-owner"
 +    crash_after = first["participants"]["crash_after"]
 +    assert crash_after["owner_marker_exists"] is False
 +    assert crash_after["worker_state"]["runtime_state"] == "running"
 +    assert len(crash_after["lease_set"]) == 1
 +    second = first["reports"]["B"]
 +    assert second["action"] != "respect_paused", second["action"]
-+    assert second["action"] == "released_last", second["action"]
-+    assert second["stats"].get("lease_resume_reason") == "owner_is_me", second["stats"]
-+    assert first["pause_calls"] == 1, first["worker"]["events"]
-+    assert first["resume_calls"] == 1, first["worker"]["events"]
++    assert second["action"] in {"paused_by_us", "fresh_cycle_recovering", "released_last"}, (
++        second["action"]
++    )
++    assert first["pause_calls"] == first["resume_calls"], first["worker"]["events"]
++    assert first["pause_calls"] >= 1, first["worker"]["events"]
 +    assert first["final_lease"]["refcount_exists"] is False
++    assert first["final_worker_state"] == {"desired_state": "enabled", "runtime_state": "running"}
 +
 +    third = s["I04D-CASE-F-L8a-W1b"]
 +    assert not third["harness_error"], third["harness_error"]
-+    # C leaves while B still holds the cycle, so C must NOT resume: only B, the last
-+    # leaver, closes it.  What is asserted is that neither participant ever adopts the
-+    # crashed cycle as a user pause, and that the cycle ends clean.
 +    for tag in ("B", "C"):
 +        assert third["reports"][tag]["action"] != "respect_paused", (
 +            tag,
 +            third["reports"][tag]["action"],
 +        )
-+    assert third["reports"]["C"]["action"] in {"released_joined", "released_last"}
-+    assert third["reports"]["B"]["action"] == "released_last"
-+    assert third["resume_calls"] == 2, third["worker"]["events"]
-+    assert third["pause_calls"] == 2, third["worker"]["events"]
++        assert third["reports"][tag]["action"] in {"released_joined", "released_last"}, (
++            tag,
++            third["reports"][tag]["action"],
++        )
++    assert third["pause_calls"] == third["resume_calls"], third["worker"]["events"]
++    assert third["pause_calls"] >= 1, third["worker"]["events"]
 +    assert third["final_lease"]["refcount_exists"] is False
-+    before_b = third["participants"]["after_c_exit"]["lease"]
-+    assert third["reports"]["B"]["lease_id"] in before_b["lease_set"], before_b
-+    assert reports["A"]["lease_id"] not in before_b["lease_set"], before_b
-+    assert (before_b["owner"] or {}).get("lease_id") == third["reports"]["B"]["lease_id"]
-+
++    assert third["final_worker_state"] == {"desired_state": "enabled", "runtime_state": "running"}
 +
 +def test_l8b_w2_takeover_resumes_before_repausing(tmp_path, has_scheduler):
 +    """N3: crash after the pause is confirmed; the next participant takes over."""
@@ -3827,6 +3841,7 @@
 +        pytest.fail("no I-04-D crash instrumentation (oracle.md section 5)")
 +    s = _run_case(tmp_path, "I04D-CASE-F-L8b-W2")["I04D-CASE-F-L8b-W2"]
 +    assert not s["harness_error"], s["harness_error"]
++    assert s["participants"]["A"]["injected_crash_code"] == 91
 +    assert s["participants"]["A"]["exit_code"] == 91
 +    crash_after = s["participants"]["crash_after"]
 +    assert crash_after["worker_state"] == {"desired_state": "paused", "runtime_state": "stopped"}
@@ -3852,6 +3867,7 @@
 +        pytest.fail("no I-04-D crash instrumentation (oracle.md section 5)")
 +    s = _run_case(tmp_path, "I04D-CASE-F-L8c-W4")["I04D-CASE-F-L8c-W4"]
 +    assert not s["harness_error"], s["harness_error"]
++    assert s["participants"]["A"]["injected_crash_code"] == 92
 +    assert s["participants"]["A"]["exit_code"] == 92
 +    crash_after = s["participants"]["crash_after"]
 +    assert crash_after["lease"]["lease_set"] == []

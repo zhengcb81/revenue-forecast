@@ -8,7 +8,7 @@
 
 - **本卡是实施卡（IMPLEMENTATION card），不是设计卡。** 上游设计 I-04-C v1.3（状态 `accepted_scoped`）在本卡**不被重开**：ADR-1…ADR-12、R1–R5、`lock_budget_for(x)=min(x,60)` 一律按原文执行；本卡只把它们落成代码，并把实施中暴露的缺口登记在此（§2、§6）。
 - **改动范围仅限隔离副本 `iso/`。** 唯一的实现产物是 `<A>\iso\filing-fetch\scripts\fetch_filing.py`，由 `<A>\scratch\patch_i04d.py --apply` 确定性生成（幂等；基线 hash 不匹配则拒绝打补丁）；新增辅助文件 `scripts\i04d_fake_worker.py`、`scripts\i04d_participant.py`、`scripts\i04d_schedule.py`、`tests\test_fetch_filing_lease.py`（FACTS §1）。
-- 基线（输入）= I-04-B `accepted` 产物，sha256 `dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c`；输出 sha256 `5ac2a50a847c62a066fe1984aae6c4e30b593ff674b67b3cb618cacc8e66a436`（125054 字节）（FACTS §1）。
+- 基线（输入）= I-04-B `accepted` 产物，sha256 `dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c`；输出 sha256 `a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198`（126274 字节）（FACTS §1）。
 - **生产仓库字节未动**：`filing-fetch\scripts\fetch_filing.py` 仍为 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`；company-wiki `catalog.sqlite3` 仍为 49,677,344,768 字节 @ `2026-09-19T06:31:35Z`、`-wal` 0 字节（FACTS §8）。
 - **状态 `review_pending`；实施者不签署任何资格**（FACTS 头部）。本文件不主张验收。
 - 证据状态（如实）：末次 pytest 运行为 `18 passed, 3 failed`（RED 时为 `17 failed, 2 passed, 2 skipped`）；**3 个失败登记为 harness 时序债务（§6e），本文件不声称该项全绿**。19 个 scheduler case 全部 GREEN，其原始 `summary.json` 位于 `<A>\evidence\run\<case>\`，是**主要证据**（FACTS §2、§4、§5）。

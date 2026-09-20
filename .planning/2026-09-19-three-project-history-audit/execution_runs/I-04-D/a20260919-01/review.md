@@ -10,11 +10,11 @@
 
 ## §1 本卡做了什么
 
-本卡把 I-04-C 已签的 pause/lease 协议（ADR-1…ADR-12、R1–R5 分支表、`lock_budget_for(x)=min(x,60)`）**移植进隔离副本** `iso/filing-fetch/scripts/fetch_filing.py`，而不是移植进生产仓：生产 `filing-fetch/scripts/fetch_filing.py` 在交付时仍是 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`，本卡一个字节都没有写它。移植是**确定性**的：`scratch/patch_i04d.py --apply` 从 I-04-B 的已验收输出（基线 sha256 `dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c`，56405 bytes）生成输出（sha256 `5ac2a50a847c62a066fe1984aae6c4e30b593ff674b67b3cb618cacc8e66a436`，125054 bytes），并且**基线 hash 不匹配就拒跑**。验证方式不是单进程 mock：三个真实 OS 子进程角色 + 文件栅栏（gate）编排出 19 例交错场景，每例留下 `summary.json`、每参与者 report、fake worker journal（含每次调用的真实 `pid`/`ppid`）与终态快照。写盘范围只在本 attempt（外加 harness 路径长度所需的短路径 case 根，见 §5 与 `recovery/README.md`）。
+本卡把 I-04-C 已签的 pause/lease 协议（ADR-1…ADR-12、R1–R5 分支表、`lock_budget_for(x)=min(x,60)`）**移植进隔离副本** `iso/filing-fetch/scripts/fetch_filing.py`，而不是移植进生产仓：生产 `filing-fetch/scripts/fetch_filing.py` 在交付时仍是 `046cc7dc4e3ff2f4f59be05def8961a85a12e6290adef43a3c53103c63b9d088`，本卡一个字节都没有写它。移植是**确定性**的：`scratch/patch_i04d.py --apply` 从 I-04-B 的已验收输出（基线 sha256 `dc593a75cae991b1d5c54114ef22e9616c9276c070afdaabcdad758e0c13af1c`，56405 bytes）生成输出（sha256 `a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198`，126274 bytes），并且**基线 hash 不匹配就拒跑**。验证方式不是单进程 mock：三个真实 OS 子进程角色 + 文件栅栏（gate）编排出 19 例交错场景，每例留下 `summary.json`、每参与者 report、fake worker journal（含每次调用的真实 `pid`/`ppid`）与终态快照。写盘范围只在本 attempt（外加 harness 路径长度所需的短路径 case 根，见 §5 与 `recovery/README.md`）。
 
 `iso/` 内文件及其角色（按 FACTS §1）：
 
-- `iso/filing-fetch/scripts/fetch_filing.py` — **被测源码**（唯一的协议实现落点；输出 sha256 `5ac2a50a…a436`，125054 bytes）。
+- `iso/filing-fetch/scripts/fetch_filing.py` — **被测源码**（唯一的协议实现落点；输出 sha256 `5ac2a50a…a436`，126274 bytes）。
 - `iso/filing-fetch/scripts/i04d_fake_worker.py` — **假 worker 命令进程**（sha256 `5f16f0fe…a902`）：只改一个 JSON 状态文件并 append 一行 journal；**不是**真实 worker，**不**接触真实 catalog。
 - `iso/filing-fetch/scripts/i04d_participant.py` — **参与者进程**（sha256 `eabd3961…e889`）：真实独立子进程，直接使用被测的 `PausedWorkerScope`（不复制实现），写自己的 report JSON（pid / boot_uuid / lease_id / action / stats / 快照 hash）。
 - `iso/filing-fetch/scripts/i04d_schedule.py` — **调度器**（sha256 `d90bbb42…e766`）：起真实子进程、按文件栅栏放行、采集终态与 `summary.json`。
@@ -32,9 +32,9 @@
 4. `after/i04d-green.txt` — 修改后原始 pytest 日志（**rc=1，`18 passed, 3 failed`**；GREEN 那次调用的 basetemp 是 `after/lease-basetemp`，见 `commands.json` 的 `I04D-06-t-filing-green`）。
 5. `evidence/hashes.txt` — 本 attempt 的 hash 清单（binding.json / oracle.md / 四个 iso 文件 / patch 脚本 / RED 与 GREEN 日志 / 三个 before 捕获）。
 6. `evidence/run/<case>/summary.json` — **19 例调度器主证据**（`I04D-CASE-F-L5`、`F-L6`、`F-L6b`、`F-L7`、`F-L7b`、`F-L7c`、`F-L8a-W1`、`F-L8a-W1b`、`F-L8b-W2`、`F-L8c-W4`、`F-L8d`、`F-L8g-UNKNOWN`、`F-L8h-WRITEFAIL`、`F-L9a`、`F-L9c`、`F-LK-TIMEOUT`、`F-LK-TIMEOUT-ZERO`、`F-LK-HOLDER-CRASH`、`F-LK-NEVER-UNLINK`）；同目录还有 `report.<tag>.json`、`worker.jsonl`、`worker_state.json`，两个有诊断的案例另有 `hook-probe.log`，以及每例 wiki 树。
-7. `oracle.md` 的**追加区 `# 追加 R1`**（第 294–367 行；冻结正文第 1–290 行未改）—— 实施逼出的两处"设计沉默处"显式化：**R1-3**（R4 接管必须同时要求"同一进程世系"与该世系可证死亡）与 **R1-4**（存活的第三方 owner 归 ADR-9b"加入"，不归 R5"拒绝"）、R1-5（崩溃用例实测表）、R1-6（变异未做）、R1-7（套件 18/3 的诚实状态）。这两条正是 §5(c) 与 §5(d) 的攻击点，**必须先读**。当前 `oracle.md` 367 行，sha256 `672200f517b05cd6b3a2699a265e765a3d7e088e4e585e3657ca24e41adbe68b`（注意 `evidence/hashes.txt` 里记的是追加前的 `e2b9029f…b690`，两个都对，只是时点不同）。
+7. `oracle.md` 的**追加区 `# 追加 R1`**（第 294–367 行；冻结正文第 1–290 行未改）—— 实施逼出的两处"设计沉默处"显式化：**R1-3**（R4 接管必须同时要求"同一进程世系"与该世系可证死亡）与 **R1-4**（存活的第三方 owner 归 ADR-9b"加入"，不归 R5"拒绝"）、R1-5（崩溃用例实测表）、R1-6（变异未做）、R1-7（套件 18/3 的诚实状态）。这两条正是 §5(c) 与 §5(d) 的攻击点，**必须先读**。当前 `oracle.md` 367 行，sha256 `f8f648da17b05cd6b3a2699a265e765a3d7e088e4e585e3657ca24e41adbe68b`（注意 `evidence/hashes.txt` 里记的是追加前的 `e2b9029f…b690`，两个都对，只是时点不同）。
 8. `commands.json` — 本 attempt 的命令登记表：8 条已跑命令的 argv/cwd/`expected_returncode`/`raw_returncode`/产物，另有 `not_run` 里的变异证明（未跑）。已核对：7 条 raw==expected，唯一不一致的是 `I04D-06-t-filing-green`（expected 0 / raw 1）。
-9. `changes.diff` — iso/ 相对 I-04-B 基线的完整 delta（178553 bytes；added=4 removed=0 modified=1；路径为 attempt 根的 POSIX 相对路径，**不含任何生产仓文件**）。生成命令 `I04D-07-changes-diff`（`scratch/make_diff.py`，rc=0）。
+9. `changes.diff` — iso/ 相对 I-04-B 基线的完整 delta（179449 bytes；added=4 removed=0 modified=1；路径为 attempt 根的 POSIX 相对路径，**不含任何生产仓文件**）。生成命令 `I04D-07-changes-diff`（`scratch/make_diff.py`，rc=0）。
 10. `handoff.json` — 九步、命令与原始/期望退出码、`measured_results`、`carries_disposition`、`not_granted`。
 11. `recovery/README.md` — 回滚/恢复配方（含 scratch-only 变异配方与 pid 处置规则）。
 12. `scratch/REPORT.md` — 同级实现者摘要（说明 `decision.md` 应由并行 agent 产出；见 §5(m)）。
@@ -100,7 +100,7 @@
 13. **(m) `scratch/REPORT.md` 与 `oracle.md` R1 的"全绿"口径不能替代逐条证据。** `scratch/REPORT.md` §3 写 "Zero failed at the scheduler level"、并给出若干**不在 FACTS 内**的数字（N10 "wall 0.20s under a 0.2s budget"、N11 "deadline_exhausted"、N12 "reacquire 0.000x s"）。本文件**不引用**这些数字（它们没有落在本卡的可直读证据树上）。请 reviewer 要么从 `report.*.json` 与 `worker.jsonl` 里把它们复算出来，要么把它们记为未验证 —— 不要让摘要行充当证据。
 14. **(n) case 根落在 attempt 目录之外。** `execution_runs/I-04-D/runs<pid>`（FACTS §7：Windows 路径长度所致）。这既影响 "changed_paths 全在 attempt 内" 的表述，也是清理边界问题；`recovery/README.md` §6 已写明归属与删除规则，请确认是否接受。
 15. **(o) I-04-B 依赖是"iso 产物"而不是生产代码。** 基线用的是 I-04-B 的 **accepted_scoped iso 输出**（`execution_runs/I-04-B/…/iso/filing-fetch/scripts/fetch_filing.py`），因为生产仍是 `max(10.0, …)`（binding.json 的 ADR-6 依赖声明）。这意味着本卡验证的语义**与生产现状不同源**；请确认这条依赖链是否被正确登记，以及"孤儿 pause 可由人类手工解除"的指引在实际生产路径上是否仍然可用。
-16. **(p) 摘要行与证据行的口径差。** `evidence/hashes.txt` 里 `oracle.md` 记的是 `e2b9029f…b690`（追加 R1 之前），盘上当前是 `672200f5…b68b`（367 行）；`after/` 下同时存在 `lease-pytest-green/`（4:01）与 `lease-basetemp/`（4:47）两个 basetemp，而 GREEN 日志对应的是后者（见 `commands.json`）。请 reviewer 以日志与文件内容为准，不要把目录名当成运行时序。**本 attempt 的文档是多个 agent 并行写入的**（handoff.json / review.md / recovery/README.md 由实现者写；commands.json / changes.diff / oracle.md 追加区由其他 agent 写），措辞之间可能仍有未对齐处。
+16. **(p) 摘要行与证据行的口径差。** `evidence/hashes.txt` 里 `oracle.md` 记的是 `e2b9029f…b690`（追加 R1 之前），盘上当前是 `f8f648da…b68b`（367 行）；`after/` 下同时存在 `lease-pytest-green/`（4:01）与 `lease-basetemp/`（4:47）两个 basetemp，而 GREEN 日志对应的是后者（见 `commands.json`）。请 reviewer 以日志与文件内容为准，不要把目录名当成运行时序。**本 attempt 的文档是多个 agent 并行写入的**（handoff.json / review.md / recovery/README.md 由实现者写；commands.json / changes.diff / oracle.md 追加区由其他 agent 写），措辞之间可能仍有未对齐处。
 
 ---
 
@@ -131,7 +131,7 @@
    若点名的案例是 pytest 案例（P1/P2/P3/P4b），则用：
    `<副本>\..\venv\Scripts\python.exe -X utf8 -B -m pytest tests/test_fetch_filing_lease.py -q -p no:cacheprovider --basetemp=<A>\scratch\mutants\<Mn>\basetemp -k <test-name>`
 4. 记录：变异体 `fetch_filing.py` 的 sha256、该案例的 **raw rc**、以及"是否按期望变红"的字段级证据；全部写进 `scratch/mutants/<Mn>/`，并追加一行到下一 attempt 的 `evidence/mutation-<Mn>.txt`。
-5. 收尾证明：重算 `<A>\iso\filing-fetch\scripts\fetch_filing.py` 的 sha256，必须仍为 `5ac2a50a847c62a066fe1984aae6c4e30b593ff674b67b3cb618cacc8e66a436`（证明变异没有污染主副本）。
+5. 收尾证明：重算 `<A>\iso\filing-fetch\scripts\fetch_filing.py` 的 sha256，必须仍为 `a72546c50401a4b1876288bea6b6d7e4a72db9c39fd028c7bfb75a6f929ad198`（证明变异没有污染主副本）。
 6. 前置缺口：M9 需要先补出 N14（两进程同时持久化）案例；M3/M4/M5/M7/M8/M10/M11 在 oracle.md 里只给了"期望变红"，没有给出可运行 argv——接手者必须先补齐 argv 与期望 rc，或把这些条目记为 blocked，**不得**用"看起来会红"充当结果。
 
 **本节不主张任何变异结果。**
@@ -166,7 +166,7 @@
 - **不授予真实 provider / 真实 company-wiki worker / 真实 catalog / 网络资格**：fake worker 只改一个 JSON 文件。
 - **不授予"用户在我们 scope 中按下暂停会被保护"的资格**：`pause_origin` 缺失（carry 4，跨仓依赖，company-wiki `control.py` 无来源信号，只做只读检查）。
 - **不授予 I-04-E 的任何结论**：本卡只登记它需要的字段名。
-- **不授予 `decision.md` 所述内容与 `changes.diff` 的资格**：`decision.md` 在本 attempt 未产出（§5(i)），其对 R4/ADR-9b 的"正式登记"缺失；`changes.diff` 已产出（178553 bytes，added=4 removed=0 modified=1，只覆盖 iso/），但**未经 reviewer 复算**，其"仅 allowlist 内改动"的结论仍待直读确认。
+- **不授予 `decision.md` 所述内容与 `changes.diff` 的资格**：`decision.md` 在本 attempt 未产出（§5(i)），其对 R4/ADR-9b 的"正式登记"缺失；`changes.diff` 已产出（179449 bytes，added=4 removed=0 modified=1，只覆盖 iso/），但**未经 reviewer 复算**，其"仅 allowlist 内改动"的结论仍待直读确认。
 - **不授予 13 条负例全部通过的资格**：§4 已逐条标注证据状态（6 条实测、4 条部分、3 条无原始记录）。
 - **不授予生产路径语义同源资格**：iso 基线是 I-04-B 的 iso 产物，生产仍是 `max(10.0, …)`（binding.json ADR-6 依赖声明）。
 

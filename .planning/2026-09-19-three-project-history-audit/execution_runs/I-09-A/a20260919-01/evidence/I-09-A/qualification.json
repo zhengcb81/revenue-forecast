@@ -1,0 +1,104 @@
+{
+  "card_id": "I-09-A",
+  "parent_card": "I-09",
+  "plan": "2026-09-19-three-project-history-audit",
+  "attempt_id": "a20260919-01",
+  "attempt_path": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-09-A\\a20260919-01",
+  "implementer_is_not_the_reviewer": true,
+
+  "status_marker_field_note": "This card has NO forecast formula. The instruction was to mark the card's design/contract status in the 'formula' marker field; that is what the field below carries. It is a STATUS MARKER ONLY and grants no formula qualification. Forecast formula qualification is reserved for the I-10 / M01-M31 cards.",
+
+  "formula": {
+    "status": "accepted_scoped",
+    "status_before_bookkeeping_fix": "review_pending",
+    "marker_field_semantics": "For I-09-A this field carries the card-level design/contract status, not a formula status. See status_marker_field_note.",
+    "implementer_claim": "none - the implementer signed nothing",
+    "basis": "independent reviewer verdict written by the reviewer into review.md section A (line 236 onward): accepted_scoped, strictly scoped to 'design/contract-layer record completeness'",
+    "not_yet_independently_reviewed": false,
+    "independent_review": {
+      "reviewer": "independent adversarial reviewer session (four rounds: R0 changes_required, R1 changes_required, R2 changes_required, R3 changes_required narrow, R4 accepted_scoped on TEXT ONLY)",
+      "reviewed_at": "2026-09-20",
+      "scope": "design/contract-layer record completeness ONLY",
+      "verdict": "accepted_scoped",
+      "rounds": [
+        {"round": 1, "verdict": "changes_required", "findings": "E-1..E-9 (documentation/errata layer; evidence layer not re-run)"},
+        {"round": 2, "verdict": "changes_required (narrow: errata text only)", "findings": "E-10..E-13"},
+        {"round": 3, "verdict": "changes_required (narrow: exactly 2 text items)", "findings": "R-1, R-2"},
+        {"round": 4, "verdict": "accepted_scoped", "findings": "R-1/R-2 verified as correctly closed by appended errata; no new text-level contradiction found; no fifth round required"}
+      ],
+      "basis": "reviewer re-computed every declared hash and read value: errata.md 285114cf.../33104 B/341 lines with the first 28630 B hashing to 08b94980... (= the round-3 errata hash, proving pure append); handoff.json ab4ea333.../37927 B; review.md untouchable; oracle.md d7f6f102.../23302 B/178 lines with section 9's last line NOT reverted; decision.md/oracle_addendum.md/open_items.md/binding.json/commands.json all SAME; stale_hex_or_size_leaks=0; 177 = 91 + 86 accounting; 175 non-self-referential declarations byte-identical with mismatches=0 and undeclared_real_files=0; 10/10 probe and raw-evidence hashes identical to round 1 (zero evidence re-runs); production anchors same=8 diff=0; PLAN/reviews mtime unchanged"
+    }
+  },
+
+  "carrier": {
+    "note": "This file TRANSCRIBES the reviewer's verdict. It is not a signature; the implementer never signs acceptance.",
+    "carrier_file": "review.md",
+    "section": "## A. 独立 reviewer 最终裁决（round 4 · 仅核文本）= accepted_scoped",
+    "line_range": "L236 onward (previous reviewer section §R starts at L163; file total 300 lines / 34110 B)",
+    "reviewer_append_proof": {
+      "pre_bytes": 26220,
+      "pre_sha256": "d831f6146b011afb9b6a31c0623488535aa77d6474afb564995051c15b3887c6",
+      "append_bytes": 7890,
+      "append_sha256": "624e9802b2d84a297c95493fa39f10984f553f18a6362d8ca9f087542edb03c3",
+      "post_bytes": 34110,
+      "post_sha256": "ab551696ce50f78221104c9cbebd3d775d9f84550d18cb9160d2224222ddb960",
+      "implementer_independent_recheck": {
+        "command": "iso/verify_review_append.py",
+        "evidence": "after/verify_review_append.stdout.txt",
+        "result": "post_bytes match=True; post_sha256 match=True; sha256(first 26220 bytes)=d831f614... match_pre=True; sha256(appended 7890 bytes)=624e9802... match_append=True => pure byte concatenation, the implementer touched none of it"
+      },
+      "reviewer_report_paths": [
+        "%TEMP%\\i09a-review-20260920-034835\\REPORT4.md",
+        "%TEMP%\\i09a-review-20260920-034835\\accept_append.md"
+      ]
+    }
+  },
+
+  "declarations": {
+    "implementer_signed": false,
+    "implementer_never_signs_acceptance": true,
+    "authority": "acceptance was written by an independent reviewer, not by the implementer"
+  },
+
+  "scope": {
+    "granted": "design/contract-layer RECORD COMPLETENESS only: the frozen oracle, the proposed contract C-01..C-13, the I09-E01..E10 error-code namespace, the E31 determination point and compensation rule, the F-IDEM mandatory counterexample, the measured conclusions of c01-c12, and the E-1..E-13 errata register",
+    "not_granted": [
+      "product implementation",
+      "transaction and fault recovery",
+      "signature and trust",
+      "cross-repo consumer",
+      "deployment",
+      "forecast formula",
+      "forecast accuracy"
+    ],
+    "disclosure_adaptation": {
+      "status": "unmapped",
+      "why_not_granted": "this card maps no company disclosure and produces no model output; disclosure adaptation belongs to the I-10 / M01-M31 cards"
+    },
+    "accuracy": {
+      "status": "unproven",
+      "why_not_granted": "no out-of-sample evaluation exists (I-12 scope); a design-contract acceptance can never be escalated into accuracy"
+    }
+  },
+
+  "known_gaps": [
+    "review.md:80 (the section 4 data-table row) is still UNFIXED: it pairs '132 lines / 126 real entries' with after/git_status_after.txt, which now holds 270 lines, so source and value still cannot corroborate each other. Handed to the owner; fixing it requires editing reviewer-owned bytes, which this card must not do.",
+    "errata.md:195 still carries a misplaced '## §U' heading; the authoritative reading is given by errata.md section R-2, and errata.md:236 is the only valid section U.",
+    "OPEN-I09A-1..6 are ALL still UNADJUDICATED (the reviewer's per-item opinions are suggestions only; -1/-2/-3/-5/-6 still block I-09-B, and -4 must fold into I-09-B's allowlist as a fail-closed fix with a negative test).",
+    "unclosed_gaps remains 4 items: GAP-C13-attestation-record (I-08-A's G3b/G4 branch has no implementation site; the error code stays UNASSIGNED and the failable negative test is bound to I-09-B), GAP-3.8-consumer-gate, GAP-e09-cross-volume, GAP-e31-compensation."
+  ],
+
+  "reviewer_unverified_items_carried_forward": [
+    "oracle.md's append-only nature cannot be verified line by line (depends on the reviewer's own copy; not independent third-party proof)",
+    "the old contents of after/git_status_after.txt (132 lines / 9942 B / c6faa500...) are permanently unrecoverable",
+    "whether C:\\i09a was ever used for writing",
+    "cross-volume I09-E09 was never measured",
+    "I-08-A's classify() semantics were referenced, not re-verified",
+    "the attempt1 argv defect was never replayed",
+    "G2 x committed was never measured",
+    "the opt-in schema 3.8 consumer side was never measured",
+    "the E31 compensation-line mechanism was never measured"
+  ],
+
+  "raw_exit_codes": "all bound commands matched their frozen expected return codes; see commands.json"
+}
