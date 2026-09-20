@@ -1,0 +1,173 @@
+{
+ "attempt": "a20260920-01",
+ "card": "T1-7",
+ "card_creation_register": [
+  {
+   "blocked": false,
+   "card_id_proposed": "I-18-A",
+   "item": 1,
+   "kind": "NEW CARD (product test tree)",
+   "material_for_the_card": {
+    "baseline_to_be_moved": 193,
+    "companion_case": "cred-line-middle-trailing-punct (the `; b=2` survivor)",
+    "current_semantics": "multi-token greedy run (X+(?:\\s+X+)*)",
+    "frozen_case_that_pins_today_behaviour": "cred-line-middle-greedy-value",
+    "target_semantics": "single token"
+   },
+   "owner_choice": "authorise a separate card that narrows the redaction value semantics to a single token, accepting that E4b's 193 baseline and the envelope width move, and requiring a NEW oracle",
+   "precondition_verified": "P-1",
+   "ruling": "C13 单独立卡",
+   "why_not_now": "the card must be built by whoever owns the product test tree, and it REQUIRES a new oracle by the ruling's own terms; this card can only register it, not author it"
+  },
+  {
+   "blocked": false,
+   "card_id_proposed": "I-18-B",
+   "item": 2,
+   "kind": "NEW CARD (product test tree)",
+   "material_for_the_card": {
+    "discriminating_observation": "the tree that fails more flips between rounds",
+    "observed_rate": "T0 6/24 and T4 6/24, i.e. about one in four",
+    "what_must_NOT_be_concluded": "a tree defect -- the reviewer checked the only diff's worker.py hunks and they are not on this node's path"
+   },
+   "owner_choice": "authorise a separate card to fix the PRODUCT TEST's timing assumption, on the basis that the flake is load-related rather than a tree difference",
+   "precondition_verified": "P-2",
+   "ruling": "~25% 重启抖动另立卡",
+   "why_not_now": "same ownership boundary as item 1"
+  },
+  {
+   "blocked": false,
+   "card_id_proposed": "I-18-C",
+   "item": 3,
+   "kind": "PRODUCT-SIDE CONVENTION CHANGE",
+   "material_for_the_card": {
+    "evidence_that_it_is_a_convention_not_a_defect": "both trees fail for the same cause",
+    "secondary_symptom": "a downstream FileNotFoundError",
+    "threshold": "166/167 characters trips the Windows path limit"
+   },
+   "owner_choice": "authorise a product-side change to a short-path basetemp convention",
+   "precondition_verified": "P-3",
+   "ruling": "深层 cwd 的 WinError 206 -> 产品侧改短路径 basetemp 约定",
+   "why_not_now": "this card holds no authority over the product test tree, and the convention must be applied where the tests run"
+  },
+  {
+   "blocked": false,
+   "card_id_proposed": null,
+   "item": 4,
+   "kind": "FORM DECISION for a promotion precondition (C9)",
+   "material_for_the_card": {
+    "acceptance_test": "blocked => FAIL must be DEMONSTRATED, not asserted",
+    "existing_asset_to_reuse": "harness/bench_redact.py (subprocess-capped)",
+    "precondition_unblocked": "C12 was the hard precondition for promoting the C9 test"
+   },
+   "owner_choice": "the form is a SUBPROCESS hard-timeout wrap; do NOT add pytest-timeout, to avoid introducing a new dependency into the product tests",
+   "precondition_verified": "P-4",
+   "ruling": "C12 形式：子进程硬超时包裹（不新增 pytest-timeout）",
+   "why_not_now": "the wrap lands in the product test tree together with the promoted test; the ORDER is: implement the wrap, demonstrate blocked=>FAIL, and only then may the C9 test be promoted"
+  }
+ ],
+ "kind": "ruling_landing_and_card_creation_register",
+ "overall": "PASS",
+ "propositions": {
+  "P-1_C13_moves_the_E4b_193_baseline_and_the_envelope_width": {
+   "193_is_stated_to_be_derived_from_the_greedy_value": true,
+   "baseline_193_present_and_attached_to_E4b": true,
+   "baseline_row_as_written": "E4b | len 193 | len 198 | **len 193**",
+   "greedy_fidelity_case_as_written": "cred-line-middle-greedy-value` (expected `a=1 token=<redacted>`) plus `cred-line-middle-trailing-punct` (`…; b=2` survives, because `;` is a value de",
+   "greedy_fidelity_case_is_frozen": true,
+   "holds": true,
+   "narrowing_is_stated_to_move_the_baseline": true,
+   "semantics_is_multi_token_not_single_token": true
+  },
+  "P-2_the_flake_is_load_related_and_quantified": {
+   "attributed_away_from_this_card": true,
+   "flip_between_rounds_is_observed": true,
+   "holds": true,
+   "per_run_evidence_dir_exists": true,
+   "per_run_evidence_run_count": 14,
+   "per_run_evidence_run_dirs": [
+    "T0-child_without_runtime-1",
+    "T0-child_without_runtime-2",
+    "T0-child_without_runtime-3",
+    "T0-logon_wrapper_quoted-1",
+    "T0-logon_wrapper_quoted-2",
+    "T0-logon_wrapper_quoted-3",
+    "T4-child_without_runtime-1",
+    "T4-child_without_runtime-2",
+    "T4-child_without_runtime-3",
+    "T4-logon_wrapper_quoted-1",
+    "T4-logon_wrapper_quoted-2",
+    "T4-logon_wrapper_quoted-3",
+    "frequency-captures",
+    "short-basetemp"
+   ],
+   "rate_as_written": "T0 6/24、T4 6/24、翻转、两轮翻转），且已证明**非本卡所致**（唯一 diff 的两处 `worker.py` 改动不在该节点路径上；我复核了 `r5-changes.diff` 的 worker.py 3 个 hunk：import 行 + `_write_unhandled_exception_event`）。是否修产品测试时序，属 owner 决策。 - **深层 cwd 的 WinErro",
+   "rate_is_quantified": true
+  },
+  "P-3_the_206_is_a_path_length_convention_issue": {
+   "character_limit_as_written": "166/167 chars), `short-basetemp/summary.json` (short, cwd 74/75) and `frequency-child_w",
+   "character_limit_is_quoted": true,
+   "holds": true,
+   "observed_failure_text_present": true,
+   "shown_to_be_same_cause_on_both_trees": true,
+   "winerror_206_is_named": true
+  },
+  "P-4_C12_form_is_decidable_without_a_new_dependency": {
+   "c12_is_a_promotion_precondition": true,
+   "ci_install_lines": [
+    "run: python -m pip install pytest cryptography \"ruff==0.15.18\" pytest-cov pyyaml requests \"mypy==1.19.0\"",
+    "python -m pip install --upgrade pip",
+    "python -m pip install pytest pyyaml requests"
+   ],
+   "dependency_declaration_exists": true,
+   "dependency_declaration_lives_in": ".github/workflows/quality.yml",
+   "hang_duration_evidence": [
+    ">90 s, then >300 s killed), reproducing what this attempt measure",
+    ">90 s）；本卡不授权改产品测试，故必须由下一轮产品侧实现落地其一。属 owner 决策（但任一形式都必须实测\"阻塞 ⇒ FAI"
+   ],
+   "hang_mode_is_stated": true,
+   "hang_mode_quotes": [
+    "the 5 s assertion fires only *after* `redact_text` returns, so a full hang presents as a hung test session rather than a clean failure",
+    "the 5 s assertion fires only **after** `redact_text` returns, so a blocking implementation hangs the session instead of failing"
+   ],
+   "hang_observations": [
+    "advice to a hard precondition (reviewer item 4) The reviewer's independent runs hung twice on `-k f07` against `iso/product_r2` (>90 s, then >300 s killed), reproducing what this attempt measured (>60 s, killed)"
+   ],
+   "hang_was_observed": true,
+   "holds": true,
+   "holds_basis": "positive claims AND-ed; the negative assertion is wanted FALSE and is written that way on purpose, so it must not be folded into the AND",
+   "pytest_timeout_already_declared": false,
+   "scope_guard_not_vacuous": true,
+   "scope_was_non_empty": true,
+   "subprocess_capped_harness_bytes": 4533,
+   "subprocess_capped_harness_exists": true,
+   "subprocess_capped_harness_sha16": "ed9c9c308d4fb5ba"
+  }
+ },
+ "ruling_source": "OWNER_DECISIONS.md section 13, T1-7",
+ "subject_under_test": {
+  "decision.md": {
+   "bytes": 16954,
+   "sha16": "b0dd2c5dd41a3a68"
+  },
+  "handoff.json": {
+   "bytes": 42744,
+   "sha16": "818c620beea9a36e"
+  },
+  "oracle.md": {
+   "bytes": 18776,
+   "sha16": "edbd0a93da9a197c"
+  },
+  "review.md": {
+   "bytes": 94889,
+   "sha16": "f4dc61668267db10"
+  }
+ },
+ "what_this_card_did_NOT_do": [
+  "did not create any of the four product-side cards (ownership boundary)",
+  "did not edit review.md, oracle.md, decision.md or handoff.json (0 bytes written)",
+  "did not add pytest-timeout or any other dependency",
+  "did not change any product test",
+  "did not perform any status transition, and did not sign on any other party's behalf"
+ ],
+ "why_owner_authority": "the I-14-C r5 reviewer wrote, for all four items, that they are owner decisions the reviewer will not decide on behalf -- so these are not blocked on another party, they are simply unexecuted"
+}

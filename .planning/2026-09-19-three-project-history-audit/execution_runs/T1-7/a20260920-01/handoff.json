@@ -1,0 +1,157 @@
+{
+ "artifacts": [
+  {
+   "bytes": 12346,
+   "path": "decision.md",
+   "sha256": "45b094061fdd99f785875c7fa5f0fcb3a50ada7172fee1703c9f3bd491afaf36"
+  },
+  {
+   "bytes": 18748,
+   "path": "scripts/verify_t17.py",
+   "sha256": "d5949c6a383ca9a9ae3def27b7b1b1d3818332339c6396e4d3428f7458c424aa"
+  },
+  {
+   "bytes": 8468,
+   "path": "t17_ruling_landing.json",
+   "sha256": "a6353411b4fddb6571b4260bdac975bfdc45c8a1ad76242ed8bd7fd2b955b677"
+  }
+ ],
+ "attempt": "a20260920-01",
+ "authority": {
+  "card": "T1-7",
+  "owner_decisions_section": "section 13",
+  "ruling": "I-14-C r5's four open questions: (1) card C13 separately, accepting that E4b's 193 baseline and the envelope width move and requiring a new oracle; (2) card the ~25% restart flake separately, to fix the PRODUCT TEST's timing assumption; (3) change the product side to a short-path basetemp convention; (4) take the subprocess hard-timeout wrap for C12, WITHOUT adding pytest-timeout",
+  "why_this_is_owner_authority": "for all four items the I-14-C r5 reviewer wrote that they are owner decisions and that the reviewer will not decide on their behalf; so these items are not blocked on another party, they are simply unexecuted"
+ },
+ "boundaries": {
+  "deletions": 0,
+  "frozen_artifacts_written": 0,
+  "frozen_hashes_reverified": {
+   "binding.json": "a5e8ca1290df9100",
+   "decision.md": "b0dd2c5dd41a3a68",
+   "handoff.json": "818c620beea9a36e",
+   "oracle.md": "edbd0a93da9a197c",
+   "review.md": "f4dc61668267db10"
+  },
+  "new_dependencies_added": 0,
+  "product_files_changed": 0,
+  "product_tests_changed": 0,
+  "production_anchor": {
+   "path": "scripts/model_registry.py",
+   "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "unchanged": true
+  },
+  "signatures_made_on_behalf_of_others": 0,
+  "status_transitions": 0
+ },
+ "card": "T1-7",
+ "card_creation_register": [
+  {
+   "blocked": false,
+   "card_id_proposed": "I-18-A",
+   "item": 1,
+   "kind": "NEW CARD (product test tree)",
+   "must_carry": [
+    "the baseline being moved: 193",
+    "current semantics: multi-token greedy run",
+    "target semantics: single token",
+    "frozen case pinning today's behaviour: cred-line-middle-greedy-value",
+    "its companion: cred-line-middle-trailing-punct",
+    "a NEW oracle, required by the ruling's own terms"
+   ],
+   "precondition_verified": "P-1",
+   "ruling": "C13 单独立卡",
+   "why_not_built_here": "the landing site is the product test tree, owned by the batches/test owners; building it here would author work this card does not own"
+  },
+  {
+   "blocked": false,
+   "card_id_proposed": "I-18-B",
+   "item": 2,
+   "kind": "NEW CARD (product test tree)",
+   "must_carry": [
+    "the rate: T0 6/24 and T4 6/24, about one in four",
+    "the discriminating observation: the worse-failing tree flips between rounds",
+    "what must NOT be concluded: a tree defect (the only diff's worker.py hunks are off this node's path)",
+    "the per-run evidence at r5/flake-evidence/ (12 run directories)"
+   ],
+   "precondition_verified": "P-2",
+   "ruling": "~25% 重启抖动另立卡",
+   "why_not_built_here": "same ownership boundary as item 1"
+  },
+  {
+   "blocked": false,
+   "card_id_proposed": "I-18-C",
+   "item": 3,
+   "kind": "PRODUCT-SIDE CONVENTION CHANGE",
+   "must_carry": [
+    "the threshold: 166/167 characters trips the Windows path limit",
+    "the evidence that this is a convention and not a defect: both trees fail for the same cause",
+    "the secondary symptom: a downstream FileNotFoundError"
+   ],
+   "precondition_verified": "P-3",
+   "ruling": "深层 cwd 的 WinError 206 -> 产品侧改短路径 basetemp 约定",
+   "why_not_built_here": "this card holds no authority over the product test tree"
+  },
+  {
+   "blocked": false,
+   "card_id_proposed": null,
+   "item": 4,
+   "kind": "FORM DECISION for a promotion precondition (C9)",
+   "must_carry": [
+    "C12 is the hard precondition for promoting the C9 test",
+    "the acceptance test must DEMONSTRATE blocked => FAIL, not assert it",
+    "an existing asset to reuse: harness/bench_redact.py (subprocess-capped, 4533 bytes)",
+    "the order: implement the wrap, measure, and only then promote the C9 test"
+   ],
+   "precondition_verified": "P-4",
+   "ruling": "C12 形式：子进程硬超时包裹（不新增 pytest-timeout）",
+   "why_no_card_id": "it is not a standalone card but the form of a promotion precondition; it lands in the product side together with the promoted C9 test"
+  }
+ ],
+ "deletions": 0,
+ "idempotence": {
+  "evidence_json_env_derived_values": "none (no temp paths, timestamps or random names)",
+  "reruns_give_identical_sha256": "a6353411b4fddb6571b4260bdac975bfdc45c8a1ad76242ed8bd7fd2b955b677"
+ },
+ "judge_errors_made_and_fixed_in_this_card": [
+  {
+   "error": "the check for 'pytest-timeout is not already declared' iterated over requirements.txt / pyproject.toml / setup.cfg / pytest.ini / tox.ini -- NONE of which exist in this repository -- so it searched zero files and reported False",
+   "fix": "look where the fact actually lives: the CI install line in .github/workflows/quality.yml. Also add a hard gate so that if nothing was searched the proposition FAILS instead of passing vacuously.",
+   "kind": "project lesson #20",
+   "note": "the corrected check confirms the dependency really is absent, so the ruling's premise holds -- but the first False reached that answer by luck, from a judge pointed at nothing",
+   "why_it_is_bad": "an empty scope reported as a negative finding. 'I did not look' and 'I looked and it was not there' have the SAME shape in the output."
+  },
+  {
+   "error": "p4['holds'] folded every boolean into one all(), including the deliberately NEGATIVE assertion `pytest_timeout_already_declared`, which we WANT to be False",
+   "fix": "name the required polarity explicitly and record why the negative one must not be folded in",
+   "generalisation": "the value we WANT and the value that is TRUE are not the same thing; a proposition mixing negative assertions cannot be summarised as 'all booleans true'",
+   "symptom": "every individual fact was True and correct while `holds` stayed False",
+   "why_it_is_bad": "the proposition became structurally unsatisfiable: it demanded both that the dependency be absent (the premise) and that this absence count as satisfied"
+  },
+  {
+   "error": "the text matcher required single spaces, but the reviewer's prose hard-wraps mid-sentence, so it failed to cross the line break",
+   "fix": "re.sub(r'\\s+', ' ', text) -- newlines included",
+   "kind": "project lesson #17, reproduced exactly",
+   "note": "this is the same trap this card's predecessor wrote into the skill one round earlier; the skill said 'normalise whitespace' and I normalised only [ \\t]+, forgetting \\n. Writing a lesson down is not the same as applying it."
+  }
+ ],
+ "kind": "ruling_landing_and_card_creation_register",
+ "overall": "PASS",
+ "propositions": {
+  "P-1_C13_moves_the_E4b_193_baseline_and_the_envelope_width": "HOLDS",
+  "P-2_the_flake_is_load_related_and_quantified": "HOLDS",
+  "P-3_the_206_is_a_path_length_convention_issue": "HOLDS",
+  "P-4_C12_form_is_decidable_without_a_new_dependency": "HOLDS"
+ },
+ "self_hash_note": "this file does not record its own sha256 (self-reference); it is recorded in task_plan.md",
+ "status": "planned",
+ "status_note": "this card lands the ruling and registers the cards it authorises; it does NOT create them and does NOT self-promote",
+ "title": "T1-7 裁定落地：I-14-C r5 四个开放问题的立卡登记与前提核对",
+ "what_this_card_did_NOT_do": [
+  "did not create the four product-side cards (ownership boundary)",
+  "did not edit review.md / oracle.md / decision.md / handoff.json (0 bytes written; all five hashes re-verified MATCH)",
+  "did not add pytest-timeout or any other dependency",
+  "did not change any product test or any production file",
+  "did not perform any status transition and did not sign on any other party's behalf"
+ ]
+}
