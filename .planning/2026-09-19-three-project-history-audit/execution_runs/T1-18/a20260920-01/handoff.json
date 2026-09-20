@@ -1,0 +1,136 @@
+{
+  "card": "T1-18",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_confirmation",
+  "date": "2026-09-20",
+  "authority": {
+    "source": "OWNER_DECISIONS.md section 13 (TIER-1 owner ruling)",
+    "tier": 1,
+    "ruling_verbatim": "T1-18 | section 4: I-14-B D-1 | CONFIRMED: frozen_tolerance_seconds = 5 and capture_latency_tolerance_seconds = 5 (legal band [1, 86] s). BUT the signature is NOT permission to open a real window: the real 30/60/120 stays blocked (see T1-9).",
+    "nature": "a JOINT confirmation: it ratifies the freeze AND re-affirms the limit that keeps the qualification from being claimed"
+  },
+  "why_two_affirmative_halves_must_both_hold": {
+    "half_1": "confirms the frozen tolerance values -- ratifies the reviewer's freeze as correct and in force",
+    "half_2": "confirms a LIMIT -- the signature does not authorise running the real window; it stays blocked",
+    "why_checking_only_half_1_is_dangerous": "it could 'prove' the qualification ready while the boundary that keeps it from being claimed had eroded",
+    "why_checking_only_half_2_is_insufficient": "it would ignore the actual values being ratified",
+    "consequence": "both halves are separate legs, and half 2 is tested against the ORIGINAL standard the ruling cites (T1-9), not a weakened restatement"
+  },
+  "origin": {
+    "item": "D-1",
+    "card_under_ruling": "I-14-B",
+    "attempt_under_ruling": "a20260919-01",
+    "registered_carriers": [
+      "oracle.md section 6.1 (the TOLERANCE PRE-REGISTRATION block; lines 126-131)",
+      "oracle.md section 11.2 (states lines 128-131 govern and the implementer must not edit them)",
+      "review.md section D-1 (the reviewer's fill, including the two-bound derivation)",
+      "decision.md section D-1 (the implementer's un-signed proposal)",
+      "handoff.json blocked_by / reviewer_status / qualifications"
+    ]
+  },
+  "deliverable": {
+    "conclusion": "the freeze is in force with exactly the ratified values, its band is DERIVED from two independent bounds rather than chosen, the frozen value sits inside the band, the limit is fully intact (the real window is still blocked with its preconditions named), no signature was converted into a run, and this card wrote nothing.",
+    "why_no_write": "both halves of the ruling already hold on disk; the pre-freeze text that still says 'NOT frozen' is intentionally preserved (oracle.md section 11.2 forbids editing it), so the correct action is to preserve, not to edit.",
+    "artifacts": [
+      {"path": "scripts/verify_t18.py", "bytes": 18121, "sha256": "008268a3cb7110325dab17fa1c1bd7b6c44b4ea5a01eb8c1d3a198b438bbff0a"},
+      {"path": "decision.md", "bytes": 7179, "sha256": "927525d25a248ffc032cc50743c8c14913cb363cc4ca0d45c6712454ff6f14eb"},
+      {"path": "t18_i14b_d1_tolerance_scope.json", "bytes": 4023, "sha256": "e6be51ca9d2bda1c969bdb438e101ef1d1d9da4dc574871b54cf41ae905b2bff"}
+    ],
+    "registered_artifact_count": 3,
+    "self_hash_note": "handoff.json does not register its own hash (it cannot contain it); it registers the three artifacts above. Its own hash is recorded in task_plan.md and the memory log only."
+  },
+  "verification_summary": {
+    "overall": "PASS",
+    "exit_code": 0,
+    "propositions": {
+      "U-1": {
+        "claim": "the freeze is in force with the ratified values (5 / 5), signed by an independent reviewer, not the implementer",
+        "holds": true,
+        "evidence": {
+          "frozen_tolerance_seconds": "5",
+          "capture_latency_tolerance": "review.md: '`capture_latency_tolerance_seconds` 同为 5'",
+          "frozen_by": "independent reviewer session (DSH agent session-b0e4a430ca7d), delegated by parent session-bfecd191-...",
+          "frozen_at_utc": "2026-09-20T03:15:44Z",
+          "signature_line_present": true
+        }
+      },
+      "U-2": {
+        "claim": "the legal band [1, 86] s is DERIVED from two independent bounds, not chosen by preference, and the frozen 5 sits inside it",
+        "holds": true,
+        "evidence": {
+          "lower_bound": "1 s -- from L1 (an honest 1 s capture delay must not be killed): tol=0.9 rejects / tol=1.0 passes",
+          "upper_bound": "86 s -- from L2 (the reproduced historical defect must stay rejected): tol<=86 rejects / tol=87 passes",
+          "band_stated_in_review": true,
+          "band_also_stated_in_the_ruling": true,
+          "frozen_value_inside_band": true,
+          "why_two_sided": "a band is a claim that values below 1 are wrong AND values at/above 87 are wrong; one bound alone cannot support it"
+        }
+      },
+      "U-3": {
+        "claim": "the LIMIT is intact: the real window is still blocked with its preconditions named, and no signature was converted into a run",
+        "holds": true,
+        "evidence": {
+          "blocked_by_names_the_window": true,
+          "blocked_by_says_BLOCKED": true,
+          "blocked_by_names_missing_preconditions": true,
+          "real_window_needs_new_attempt_and_binding": true,
+          "reviewer_status_says_ui_immediacy_stays_blocked": true,
+          "natural_observation_still_not_granted": true,
+          "no_evidence_the_real_window_was_run": true
+        }
+      },
+      "U-4": {
+        "claim": "the rejected forms are absent: the implementer's 5 s is still marked NOT frozen, nothing claims the freeze opened the window, and the ruling's negation is present",
+        "holds": true,
+        "evidence": {
+          "unmarked_proposal_sites": [],
+          "window_opening_claims": [],
+          "explicit_negation_present": true
+        }
+      },
+      "U-5": {
+        "claim": "the ruling orders no write: this card touched nothing in I-14-B and the frozen four lines are byte-intact",
+        "holds": true,
+        "evidence": {
+          "i14b_card_files_changed": [],
+          "product_files_changed": [],
+          "frozen_four_lines_byte_intact": true
+        },
+        "shape_note": "oracle.md was NOT append-only across history (the reviewer filled four lines), so byte-prefix is the wrong criterion for it; the meaningful claim is that THIS card wrote nothing"
+      }
+    }
+  },
+  "why_u2_is_not_decorative": "the ruling cites a BAND. A band is the two-sided claim 'below 1 is wrong AND 87-and-above is wrong' -- it needs TWO bounds, derived independently. Checking only 'the value is 5 and 5 is inside [1,86]' would assume the band it was asked to verify. The object is a band, so the criterion must be the two bounds, not a single point. The bounds come from OPPOSITE concerns (an honest sample must not be killed vs. a reproduced defect must not be let through), which is what makes the band meaningful.",
+  "error_made_and_corrected_in_this_card": [
+    {
+      "error": "U-1 first run FAIL: the criterion demanded the wrong surface FORM. review.md states the value as '`capture_latency_tolerance_seconds` 同为 5' ('likewise 5'), while the probe searched for 'capture_latency_tolerance_seconds = 5'.",
+      "fixed_by": "searching for the field name followed by the value within a short window, rather than a specific '= 5' spelling",
+      "lesson": "a criterion that requires one specific spelling reports a value that IS present as missing"
+    },
+    {
+      "error": "U-3 first run FAIL: the criterion could not tell a STATEMENT from a DENIAL. The text '签字只把它从 blocked 变为可开卡，不等于已运行' contains the word 运行 inside a NEGATION; the probe grepped for 运行/ran and matched the denial, reporting the opposite of the truth.",
+      "fixed_by": "counting only affirmative run-statements and excluding any line carrying a negation (不等于/并非/未/没有/not/never)",
+      "lesson": "same root as T1-24 Q-4: a denial that contains the keyword gets read as an assertion -- as harmful as a missed detection"
+    }
+  ],
+  "boundaries": {
+    "ruled_on_carriers_written": 0,
+    "ruled_on_carrier_files": ["I-14-B oracle.md", "review.md", "decision.md", "handoff.json", "binding.json", "evidence/*"],
+    "status_transitions_performed": 0,
+    "card_status_preserved": "I-14-B remains accepted_scoped",
+    "real_window_status_preserved": "blocked (unchanged; this card does NOT authorise opening it)",
+    "signatures_forged": false,
+    "product_files_changed": [],
+    "production_anchor": {
+      "path": "scripts/model_registry.py",
+      "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+      "matches": true
+    },
+    "all_json_parseable": true
+  },
+  "what_this_card_does_NOT_authorise": {
+    "real_30_60_120_window": "STAYS BLOCKED. The ruling's second half is exactly this; the card verifies the limit rather than lifting it.",
+    "ui_capture_path": "T1-9 remains not authorised (building a capture path from the mere presence of ffmpeg.exe/playwright.exe was forbidden by the reviewer; it is an owner decision plus a new card)."
+  },
+  "next_action": "No follow-up is required for T1-18 itself. The pre-freeze 'NOT frozen' proposal lines stay as-is by design (oracle.md section 11.2 explicitly forbids editing them, and T1-12 form (1) requires the old values to be preserved). If downstream readers find the coexistence of 'NOT frozen' (pre-freeze proposal) and the frozen four lines ambiguous, the correct remedy is an appended registration note per T1-12 form (1) -- NOT an in-place edit."
+}

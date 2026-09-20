@@ -1,0 +1,81 @@
+{
+  "card": "T1-18",
+  "attempt": "a20260920-01",
+  "kind": "interpretation_confirmation",
+  "ruling": "OWNER_DECISIONS.md section 13 T1-18: CONFIRMED frozen_tolerance_seconds = 5 and capture_latency_tolerance_seconds = 5 (legal band [1, 86] s). BUT the signature is NOT permission to open a real window: the real 30/60/120 stays blocked (see T1-9).",
+  "why_two_affirmative_halves": "the ruling ratifies the freeze AND re-affirms the limit. Checking only the freeze could 'prove' the qualification ready while the boundary that keeps it from being claimed had eroded; checking only the limit would ignore the values being ratified. Both are separate legs.",
+  "propositions": {
+    "U-1": {
+      "claim": "the freeze is in force with the ratified values (5 / 5), signed by an independent reviewer, not the implementer",
+      "holds": true,
+      "evidence": {
+        "frozen_tolerance_seconds_value": "5",
+        "frozen_tolerance_is_5": true,
+        "capture_latency_tolerance_is_5": true,
+        "frozen_by_is_independent_reviewer": true,
+        "frozen_by_is_not_the_implementer": true,
+        "frozen_at_recorded": true,
+        "signature_line_present": true,
+        "signature_names_a_reviewer_session": true
+      }
+    },
+    "U-2": {
+      "claim": "the legal band [1, 86] s is DERIVED from two independent bounds, not chosen by preference, and the frozen 5 sits inside it",
+      "holds": true,
+      "evidence": {
+        "lower_bound_derivation_present": true,
+        "upper_bound_derivation_present": true,
+        "band_stated_in_review": true,
+        "band_also_stated_in_the_ruling": true,
+        "lower_anchor_measurement_present": true,
+        "upper_anchor_measurement_present": true,
+        "frozen_value_inside_band": true,
+        "derivation_is_two_sided": true,
+        "why_two_sided": "a band is a claim that values below 1 are wrong AND values at/above 87 are wrong; one bound alone cannot support it"
+      }
+    },
+    "U-3": {
+      "claim": "the LIMIT is intact: the real 30/60/120 window is still blocked with its preconditions named, and no signature was converted into a run",
+      "holds": true,
+      "evidence": {
+        "blocked_by_names_the_30_60_120_window": true,
+        "blocked_by_says_BLOCKED": true,
+        "blocked_by_names_missing_preconditions": true,
+        "real_window_needs_new_attempt_and_binding": true,
+        "status_never_claims_ui_immediacy_granted": true,
+        "reviewer_status_says_ui_immediacy_stays_blocked": true,
+        "natural_observation_still_not_granted": true,
+        "no_evidence_the_real_window_was_run": true
+      }
+    },
+    "U-4": {
+      "claim": "the rejected forms are absent: the implementer's 5 s is still marked NOT frozen, nothing claims the freeze opened the window, and the ruling's negation is present",
+      "holds": true,
+      "evidence": {
+        "no_unmarked_implementer_proposal_as_final": true,
+        "unmarked_proposal_sites": [],
+        "nothing_claims_freeze_opens_the_window": true,
+        "window_opening_claims": [],
+        "explicit_negation_present": true
+      }
+    },
+    "U-5": {
+      "claim": "the ruling orders no write: this card touched nothing in I-14-B and the frozen four lines are byte-intact",
+      "holds": true,
+      "evidence": {
+        "i14b_card_untouched_by_this_card": true,
+        "i14b_files": [],
+        "product_files_changed": [],
+        "frozen_four_lines_byte_intact": true
+      },
+      "shape_note": "oracle.md was NOT append-only across history (the reviewer filled four lines), so byte-prefix is the wrong criterion for it; the meaningful claim is that THIS card wrote nothing"
+    }
+  },
+  "production_anchor": {
+    "path": "scripts/model_registry.py",
+    "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "expected": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "matches": true
+  },
+  "overall": "PASS"
+}
