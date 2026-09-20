@@ -86,7 +86,8 @@ def main() -> int:
     # pre-work/post-work proof (finding P1-1).
     b = json.load(open(os.path.join(ev, "state_before.json"), encoding="utf-8"))
     af = json.load(open(os.path.join(ev, "state_after.json"), encoding="utf-8"))
-    distinct = b.get("captured_at_utc") != af.get("captured_at_utc")
+    distinct = (b.get("captured_at_utc") != af.get("captured_at_utc")
+                or b.get("sequence") != af.get("sequence"))
     same_heads = all(b["production_repos"][k]["head"] == af["production_repos"][k]["head"]
                      for k in b["production_repos"])
     same_keyfiles = b["key_files"] == af["key_files"]

@@ -1,0 +1,170 @@
+{
+ "note_id": "production_drift_20260920_043531_044053",
+ "card_id": "M13",
+ "model_id": "asset_management",
+ "attempt": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M13\\a20260919-01",
+ "kind": "time-scoped production-drift declaration (carried finding F-r3-02, P2 declaration layer); append-only, it does not rewrite any historical value",
+ "declared_by": "the r3 bookkeeping/transcription executor session, transcribing the orchestration layer's incident record for this card",
+ "authority": "the drift, its root cause and its recovery were established by the orchestration layer; this file records and attributes them, it does not re-adjudicate them",
+ "window": {
+  "local_start": "2026-09-20 04:35:31",
+  "local_end": "2026-09-20 04:40:53",
+  "local_window_text": "2026-09-20 04:35:31-04:40:53 (local)",
+  "timezone": "the machine's local time (Asia/Shanghai)",
+  "applies_inside_this_window_only": true
+ },
+ "drift": {
+  "file": "scripts/model_registry.py",
+  "production_was_not_the_anchored_revision": true,
+  "observed_sha256": "1f2639e1d44df6794a1478e7c3ed3400b5cf9d70cc994d3804e933bd6b020a86",
+  "observed_bytes": 19703,
+  "anchor_sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "anchor_bytes": 26446,
+  "effects": "the pre-extension revision lacked the driver_bounds / driver_value_bounds / _SIGNED_DRIVERS surface and carried 23 models instead of 31; scripts/model_extensions.py was untracked"
+ },
+ "root_cause": {
+  "summary": "the orchestration layer's commit job triggered the repository's pre-commit gate, which exported the unstaged changes to a patch file and then ran `git checkout -- .`; that command returned 255, the hook aborted, and the patch was never replayed, so the working tree was reset to HEAD",
+  "patch_file": "C:\\Users\\郑曾波\\.cache\\pre-commit\\patch1789875331-33652",
+  "git_checkout_exit_code": 255,
+  "git_checkout_error": "unable to unlink ... Invalid argument, on 3 concurrently-written scratch files",
+  "consequence": "working tree reset to HEAD (the pre-extension revision)"
+ },
+ "recovery": {
+  "action": "the parent applied the same patch's non-.planning subset with `git apply --check --exclude=.planning/*` and `git apply --exclude=.planning/*`; both exited 0",
+  "performed_by": "the parent orchestration layer",
+  "anchors_reverified_after_recovery": true,
+  "anchors_reverified": {
+   "scripts/model_registry.py": {
+    "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "bytes": 26446,
+    "declared_anchor_bytes": 26446
+   },
+   "scripts/model_extensions.py": {
+    "sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+    "bytes": 14475,
+    "declared_anchor_bytes": 14475
+   },
+   "scripts/revenue_core.py": {
+    "sha256": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae",
+    "bytes": 14136,
+    "declared_anchor_bytes": 14136
+   },
+   "scripts/contracts/constants.py": {
+    "sha256": "278e3e02df15e556f4851b46711a2f36aac5b7e6a9820c27e0ca31b02858d0ae",
+    "bytes": 5063,
+    "declared_anchor_bytes": 5063
+   },
+   "scripts/revenue_report.py": {
+    "sha256": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+    "bytes": 69765,
+    "declared_anchor_bytes": 69765
+   },
+   "tests/test_backtest.py": {
+    "sha256": "d0972e238066f40e4c52d25806683749ddfa2c84e7f6652f38ff44f3b7efc16e",
+    "bytes": 17665,
+    "declared_anchor_bytes": 17665
+   },
+   "SKILL.md": {
+    "sha256": "45e4e343eba4f6e766cdb163d21c35a7f7beeb603d3c8b237339de440dc47806",
+    "bytes": 26378,
+    "declared_anchor_bytes": 26378
+   },
+   "CHANGELOG.md": {
+    "sha256": "bcba3dd50278b677ef0af63725a5d635763a40bd9f92089dfc37ff17529c0a8e",
+    "bytes": 19601,
+    "declared_anchor_bytes": 19601
+   }
+  },
+  "anchors_reverified_by_this_pass_from_disk": {
+   "scripts/model_registry.py": {
+    "present_at_production_root": true,
+    "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+    "bytes": 26446,
+    "bytes_match_the_declared_anchor_value": true
+   },
+   "scripts/model_extensions.py": {
+    "present_at_production_root": true,
+    "sha256": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+    "bytes": 14475,
+    "bytes_match_the_declared_anchor_value": true
+   },
+   "scripts/revenue_core.py": {
+    "present_at_production_root": true,
+    "sha256": "1821fd2a8a4efa2b7a63c3430d310f18e1f797e2ec2635254abb7761c4bfbeae",
+    "bytes": 14136,
+    "bytes_match_the_declared_anchor_value": true
+   },
+   "scripts/contracts/constants.py": {
+    "present_at_production_root": true,
+    "sha256": "278e3e02df15e556f4851b46711a2f36aac5b7e6a9820c27e0ca31b02858d0ae",
+    "bytes": 5063,
+    "bytes_match_the_declared_anchor_value": true
+   },
+   "scripts/revenue_report.py": {
+    "present_at_production_root": true,
+    "sha256": "a85fb48482216dca3f9269ee81b6d8204f419b454b64aaac14412151f00d971f",
+    "bytes": 69765,
+    "bytes_match_the_declared_anchor_value": true
+   },
+   "tests/test_backtest.py": {
+    "present_at_production_root": true,
+    "sha256": "d0972e238066f40e4c52d25806683749ddfa2c84e7f6652f38ff44f3b7efc16e",
+    "bytes": 17665,
+    "bytes_match_the_declared_anchor_value": true
+   },
+   "SKILL.md": {
+    "present_at_production_root": true,
+    "sha256": "45e4e343eba4f6e766cdb163d21c35a7f7beeb603d3c8b237339de440dc47806",
+    "bytes": 26378,
+    "bytes_match_the_declared_anchor_value": true
+   },
+   "CHANGELOG.md": {
+    "present_at_production_root": true,
+    "sha256": "bcba3dd50278b677ef0af63725a5d635763a40bd9f92089dfc37ff17529c0a8e",
+    "bytes": 19601,
+    "bytes_match_the_declared_anchor_value": true
+   }
+  },
+  "anchor_list_note": "the orchestration layer's list truncated every value with a trailing ellipsis; the values above were recomputed from the production tree by this pass and all match. One declared truncation was imprecise: the list showed `9ec652950...` where the full value is `9ec6529550f1...` (the full value appears correctly elsewhere in the same record and matches disk).",
+  "production_root_used": "C:\\Users\\郑曾波\\Projects\\revenue-forecast"
+ },
+ "time_bound_rule": {
+  "rule": "inside the window 2026-09-20 04:35:31-04:40:53, any reading of `production_hashes_unchanged = false` or `isolated_snapshot_still_equals_production: false` is a CORRECT WARNING about the environment and NOT a defect of the card",
+  "must_never_be_fixed_by": [
+   "editing expectations",
+   "editing tolerances",
+   "editing frozen artifacts",
+   "editing the verification logic so that an rc=5 disappears"
+  ],
+  "escalation": "record the drift and its observation time, keep the historical values, escalate to the orchestration layer"
+ },
+ "line_335_correspondence": {
+  "statement": "inside the window the production revision that the tree had been reset to lacked the silent zero-fill behaviour at model_registry.py:335, so this card's `defaults` case and OQ-02's reference to that line did not correspond to production during the window; they do again after the restoration",
+  "clarification": "`pre-drift` here means the 1f2639e1... revision that production had been rolled back to during the window",
+  "model_registry_py_335_after_restoration": "values = drivers.get(driver, [spec.defaults.get(driver, 0.0)] * len(years))",
+  "card_oq_02_as_recorded_in_handoff_json": "OQ-02 (silent zero-fill): model_registry.py:335 fills an omitted optional driver that has no explicit default with 0.0. This model has 2 such drivers (performance_fee_revenue, other_revenue), so omitting them asserts 'no such revenue' and is indistinguishable from 'the disclosure was not found'. Registered, NOT fixed.",
+  "frozen_artifacts_changed_by_this_note": false
+ },
+ "pointer": {
+  "incident_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\_isolation_incidents\\20260920-precommit-stash-production-rollback\\INCIDENT.md",
+  "incident_record_exists_at_transcription_time": true,
+  "sibling_notes": "the same declaration is written for M13, M14, M15 and M16"
+ },
+ "boundaries_respected": {
+  "historical_values_of_production_source_hashes_now_not_rewritten": true,
+  "historical_values_of_isolated_copy_still_equals_production_not_rewritten": true,
+  "verification_logic_changed_to_hide_an_rc_5": false,
+  "expectations_tolerances_frozen_artifacts_touched": false
+ },
+ "current_state_at_bookkeeping_time": {
+  "production_source_hashes_now": {
+   "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+   "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+  },
+  "note": "production was restored to the anchored revision before this pass; the regenerated after/rerun_sha256.json therefore records the same `production_source_hashes_now` values it recorded at 03:28-03:30Z (before the window), so no historical value is rewritten"
+ },
+ "written_at_unix": 1789876361.8464594,
+ "written_at_utc": "2026-09-20T03:52:41Z"
+}

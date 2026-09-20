@@ -85,6 +85,12 @@ def main() -> int:
     manifest["stale_at_manifest_time"] = {
         "entries": stale,
         "count": len(stale),
+        "how_to_read_this": ("entries[] lists files that were already stale WHEN THIS MANIFEST WAS "
+                             "BUILT, so it is normally empty (the manifest matches the files as they are). "
+                             "The durable signed statement is expected[]: compare it against a fresh "
+                             "recomputation - any stale path OUTSIDE expected[] is an unexpected change. "
+                             "expected[] is not self-fulfilling: the audit above would have reported a "
+                             "stale by-design path if one had been stale at build time."),
         "expected": ["evidence/I-11-A/attempt_hashes.json",
                      "evidence/I-11-A/commands_run.log",
                      "evidence/I-11-A/final_selfcheck.json",
@@ -92,8 +98,7 @@ def main() -> int:
         "explanation": ("these files are written after (or by) this run by design: the manifest cannot "
                         "hash itself, the canonical run log records this run's own rc line, "
                         "final_selfcheck.json is regenerated after the manifest it validates, and "
-                        "commands.json is regenerated last from the archived logs. Any OTHER path "
-                        "appearing here is an unexpected change and must be investigated."),
+                        "commands.json is regenerated last from the archived logs."),
     }
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, ensure_ascii=False, indent=1, sort_keys=True)

@@ -32,6 +32,9 @@ KEY_FILES = [
 ]
 REVIEWS = (r"C:\Users\郑曾波\Projects\revenue-forecast\.planning"
            r"\2026-09-19-three-project-history-audit\reviews")
+# a monotonically increasing marker written into each capture, so that two captures
+# taken in the same clock tick are still distinguishable (finding P1-1)
+SEQUENCE_FILE_COUNTER = None
 
 
 def sha256(path: str) -> str:
@@ -84,9 +87,25 @@ def reviews_listing(root: str):
 
 def main() -> int:
     attempt, phase = sys.argv[1], sys.argv[2]
+    global SEQUENCE_FILE_COUNTER
+    seq_path = os.path.join(attempt, "evidence", "I-11-A", "capture_sequence.txt")
+    previous = 0
+    if os.path.exists(seq_path):
+        try:
+            previous = int(open(seq_path, encoding="utf-8").read().strip() or 0)
+        except ValueError:
+            previous = 0
+    SEQUENCE_FILE_COUNTER = previous + 1
+    os.makedirs(os.path.dirname(seq_path), exist_ok=True)
+    with open(seq_path, "w", encoding="utf-8") as fh:
+        fh.write("%d\n" % SEQUENCE_FILE_COUNTER)
     record = {
         "phase": phase,
-        "captured_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "sequence": SEQUENCE_FILE_COUNTER,
+        # microsecond resolution: the first version used whole seconds, and two
+        # captures inside the same second were then indistinguishable (which the
+        # reviewer correctly read as "one capture echoed twice", finding P1-1)
+        "captured_at_utc": datetime.now(timezone.utc).isoformat(timespec="microseconds"),
         "card_id": "I-11-A",
         "attempt_id": "a20260919-01",
         "production_repos": {},

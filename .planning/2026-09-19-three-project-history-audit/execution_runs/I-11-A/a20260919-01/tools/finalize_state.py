@@ -56,7 +56,8 @@ def main() -> int:
     a["attempt_inventory_scope"] = ("close-out inventory of this attempt's own files (iso/venv excluded); "
                                     "informational, not part of any before/after comparison")
 
-    same_ts = b.get("captured_at_utc") == a.get("captured_at_utc")
+    same_ts = (b.get("captured_at_utc") == a.get("captured_at_utc")
+               and b.get("sequence") == a.get("sequence"))
     heads = {k: (b["production_repos"][k]["head"], a["production_repos"][k]["head"])
              for k in b["production_repos"]}
     heads_identical = all(x == y for x, y in heads.values())

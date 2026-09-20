@@ -288,3 +288,132 @@ A enter（`paused_by_us`），停在 `release_lock_held` 之前，调度者把 r
 - 不授予 POSIX（`fcntl.flock`）与 SMB/NFS 锁资格（未实测）。
 - 不授予"用户在我们 scope 中按下暂停能被保护"资格（`pause_origin` 缺失，见 carry 4）。
 - 不授予 I-04-E 的任何结论；本卡只按 carry 6 列出需要的字段。
+
+---
+
+# 追加 R1（实施后，只追加；上面任何冻结正文未改）
+
+本区记录**实施逼出来的**期望修订。规则：不改写任何已冻结期望的语义，只把实测到的
+"设计沉默处"写成显式期望，并注明是哪条用例把它暴露出来的。
+
+## R1-1 期望值修订：`respect_paused` -> `worker_stopped`（F-L9a）
+
+冻结 §2 P4b 写 "action = `respect_paused`"。实施后实测：`desired_state=paused` 且
+`runtime_state=stopped` 时，实现先过 "没有任何暂停可加入、也没有东西可归因" 的守卫，
+得 `worker_stopped`。**语义要求未变**（零写、零 pause、零 resume、不留下任何"我们持有过"
+的证据），只有动作名不同。修订后 F-L9a 期望 `respect_paused`——见下的 R1-2，因为
+实施把 ADR-8 的守卫补齐了，实测已经回到 `respect_paused`。
+
+## R1-2 ADR-8 的守卫被补齐（这是实施缺陷，不是设计缺口）
+
+冻结文本只写了"paused 且非本工具持有 ⇒ respect_paused"，没有写"ledger 为空且无义务"
+时从哪里判定。实施初版漏了这一格，于是把**用户的暂停**当成自己的新周期：对一个已经
+停下的 worker 再发一次 `worker-pause`，退出时又 `worker-resume`。F-L9a 抓到了它
+（实测 pause_calls=1 / resume_calls=1，期望 0/0）。补上 `_respect_user_pause_locked`
+之后实测回到 0/0、`respect_paused`、refcount 与 owner 文件全程不存在。
+
+## R1-3 R4 必须要求"同一进程世系"（F-L8d）
+
+冻结 §12 的 R4 只要求 "owner 可证死亡"。实施初版照此实现，结果 **F-L8d 变成了一次
+resume**：第三方 owner 记录（`pid=999999`）确实可证死亡，于是最后的释放者接管并
+resume 了——那可能是**用户**的暂停。修订后的期望（与本卡实现一致）：
+
+> R4 的接管需要**两个**条件同时成立：(a) owner 记录属于**本进程世系**
+> （同 `boot_uuid` + 同 `pid`），或该记录是在本次 prune 中被回收的；
+> (b) 该世系可证死亡。否则一律 R5：不改写 owner 证据、不 resume、
+> `released_owner_changed` / `lease_conflict_unknown` + `cleanup_status=failed:owner_evidence_changed:*`。
+
+这是本卡唯一一处相对"字面读法"改变了可观察行为的解释，已登记为待 reviewer 确认项
+（`decision.md` 第 2b / 第 6 节）。
+
+## R1-4 "存活第三方 owner" 归 ADR-9b（加入），不归 R5（拒绝）
+
+冻结 §12 的 ADR-9b 说 "live leases route to the same branch（加入）"，而 R5 说
+"不可归因的 owner ⇒ fail closed"。两条在一个场景上重叠：**存活的第三方 owner 持有周期**。
+实测（F-L5）表明"拒绝"会让两个**同一工具**的真实参与者互相 fail closed，于是实现选择
+**加入**：只追加自己一条 lease，不动 owner 记录，不发 pause；一个周期仍只有一次 pause。
+
+## R1-5 崩溃用例的实测结果（诚实记录，未放宽断言）
+
+| 用例 | 冻结期望 | 实测 | 说明 |
+|---|---|---|---|
+| F-L8a-W1 | 崩溃后 `lease_set={A}`、无 owner、worker running；B 进入后回收并自己 pause | 一致：崩溃后 1 条 lease + 无 owner 标记 + running；B `released_last`、pause=1 resume=1、终态清空 | 关键断言"B 不得读成用户暂停"成立 |
+| F-L8b-W2 | 崩溃后 paused；B 接管并 resume 一次后自己 pause | 崩溃后 paused + owner=A；B 回收后**开了自己的新周期**（pause=2 resume=1），不是接管 | 崩溃点落在确认之前/之后取决于调度时序；"绝不读成用户暂停 + 终态清空"成立 |
+| F-L8c-W4 | 崩溃后 `entries=[] resume.required=True`；B 补齐 resume 再自己 pause | 崩溃后**完全一致**（`entries=[]`、`resume.required=True`、owner=已死 A）；B 完成 2 pause / 2 resume 且终态清空、无残留义务 | 义务未被静默丢弃 |
+| F-L8d | `released_owner_changed`、resume=0、owner 记录字节不变 | 一致：owner 记录写回后与改写值逐字节相同，`cleanup_status=failed:owner_evidence_changed:owner_probe:dead:foreign_lineage`，resume=0 | R1-3 的直接证据 |
+| F-L9c | 用户的暂停不被解除 | 一致：`released_owner_changed`、`cleanup_status=failed:owner_evidence_changed:owner_record_missing`、resume=0、worker 保持 paused | 可区分形态 |
+
+## R1-6 变异证明：**未做**
+
+冻结 §7 列出的 11 条变异候选原样保留为下一 attempt 的队列。本卡**没有**执行任何一条，
+因此**不主张**任何变异结果。配方见 `review.md` 第 6 节与 `recovery/README.md`。
+
+## R1-7 契约套件的诚实状态
+
+`tests/test_fetch_filing_lease.py` 最后一次实测 **18 passed / 3 failed**。三条失败是
+**调度侧快照的时序敏感断言**（`test_f_l5_*`、`test_f_l6b_*`、`test_l8a_w1_*` 各一条），
+不是协议失败：同样的用例在调度器层（`evidence/run/<case>/summary.json`）逐条通过，
+且真正的不变量（两条 lease 同时存在、peer 存活期间不 resume、崩溃不被读成用户暂停）
+都有断言。修法写在 `review.md` 第 5 节。
+
+## R1-8 环境偏差（照实登记）
+
+- `pip install --no-index --find-links` **无法使用**：PLAN 下没有 wheelhouse，pip cache 里
+  也没有 pytest/pluggy/iniconfig/packaging 的 wheel。pytest 9.1.1 通过**从已签收的
+  I-04-C venv 复制模块**离线装入；未联网。
+- 本机只有 Windows PowerShell 5.1（无 `pwsh`）；`.ps1` 需要 UTF-8 BOM 才能正确解码含
+  中文的路径。
+- 用例根目录刻意取短（`<PLAN>/execution_runs/I-04-D/runs<pid>`）：lease 的唯一临时名会
+  追加在用例路径之后，过深的根会撞上 Windows 经典路径上限。这是 harness 约束，不是协议约束。
+
+## R1-9 R5 的第二格被补齐（释放路径；由 reviewer 侧读码发现，非用例覆盖）
+
+冻结 §12 的 R5 表只写了"owner 为第三方且不可证死亡 / owner 记录缺失 / 探针 unknown"。
+实施初版的释放路径有一个兜底 `else: reason = why`，它把
+`owner_probe:alive` / `owner_probe_timeout` / `owner_probe_error:*` 也算作可 resume——
+即"**存活的**第三方 owner（其 lease 已不在账本里）会被 resume"，R5 的逐字读法不允许。
+
+修订后的期望（与本卡实现一致）：
+
+> 释放路径只有在 **(a)** owner 就是本进程世系、或 `resume.required=True`（R2/R3），
+> 或 **(b)** owner 属于本进程世系**且**可证死亡（R4）时才 resume。
+> 其余一切情况——记录缺失、记录无 pid、探针 alive/timeout/error、第三方世系——
+> 一律 R5：写回 `entries=[]`、**不 resume**、保留 owner 证据、
+> `released_owner_changed` + `cleanup_status=failed:owner_evidence_changed:<why>[:not_provably_dead|foreign_lineage]`。
+
+修订后重跑：19/19 scheduler case 仍全绿；契约套件仍为 18 passed / 3 failed（同样三条
+时序敏感断言，无新增失败）。本格**尚无专用用例**，登记为下一 attempt 的第一批用例之一：
+"第三方 owner 指向一个**存活** pid"应与 F-L8d 的"已死 pid"配对。
+
+**实施输出 hash 因此更新为** `7fc47a3d656540e8ec45c86a21cb4610c86a95b3ca4c824b197a0e5b2573c8b2`
+（125934 字节）。交付 hash 清单见 `evidence/hashes.txt`。
+
+## R1-10 负例证据台账的更正（**更正我在中间报告里过宽的措辞**）
+
+我在中间报告里写过"13 条冻结负例 … scheduler 层全绿"。**这个说法过宽，现更正**。
+按 oracle §4 的 N 编号逐条核对 `evidence/run/` 后（脚本
+`scratch/check_negatives.py`，输出 `evidence/negative-case-ledger.txt`）：
+
+| 编号 | 调度器用例 | 证据等级 | 实测判据 |
+|---|---|---|---|
+| N1 | F-L8a-W1 | 有完整调度器实测 | 崩溃后 `lease_set` 1 条 + **无 owner 标记** + worker running（`meta.crash_after`）；B `exit=0`、`action=released_last`、pause=1 resume=1、终态清空 |
+| N2 | F-L8a-W1b | 有完整调度器实测 | pause=2 resume=2；B/C 均 `released_last`、均非 `respect_paused`；终态清空 |
+| N3 | F-L8b-W2 | 有完整调度器实测 | 崩溃后 `worker_state=paused` + owner 标记存在；pause=2 resume=1；终态清空 |
+| N4 | F-L8c-W4 | 有完整调度器实测 | 崩溃后 `entries=[]`、`resume.required=True`、owner=已死 A、worker paused；pause=2 resume=2；终态清空 |
+| N5 | **无调度器用例** | 仅 pytest 断言 | `lease_state_corrupt`；损坏文件字节不变（同一次 enter/exit 走失败即关闭） |
+| N6 | **无调度器用例** | 仅 pytest 断言 | `lease_state_legacy`；字节不变 |
+| N7 | **无调度器用例** | 仅 pytest 断言 | 条目级 `lease_state_corrupt`；字节不变 |
+| N8 | F-L8g-UNKNOWN | 有完整调度器实测 | `lease_conflict_unknown`、rc=2、账本 sha256 前后相同、pause=0 |
+| N9 | F-L8h-WRITEFAIL | 有完整调度器实测 | rc=2、`action=lease_state_corrupt`（目录占位导致读取失败）、refcount 仍为目录、pause=0 |
+| N10 | F-LK-TIMEOUT | 有完整调度器实测 | `lease_lock_timeout`、rc=2、零写零 CLI、wall 0.20s（预算 0.2s） |
+| N11 | F-LK-TIMEOUT-ZERO | 有完整调度器实测 | `action=deadline_exhausted`、**`error_code` 为空**（这是正常返回、不是异常出口）、pause=0 resume=0、账本不存在 |
+| N12 | F-LK-HOLDER-CRASH | 有完整调度器实测 | 持锁者 `exit_code=90`（调度器直接 wait 得到，不是参与者 report）、`reacquire.stdout="0.0000"`、锁 0 字节 |
+| N13 | F-LK-NEVER-UNLINK | 有完整调度器实测 | 锁文件存在且 0 字节、可再次加锁、`lock_acquisitions`≥4、pause=2 resume=2 |
+
+**准确计数**：13 条负例中，
+- **10 条有调度器级实测**（N1–N4、N8–N13）；
+- **3 条只有 pytest 断言**（N5/N6/N7：进程在 enter 阶段就失败即关闭，没有可写的报告，因此没有调度器级原始记录）——这是**证据缺口**，登记为下一 attempt 的待补项（把三条损坏/旧格式用例改成"先由调度器预置损坏账本，再 spawn 参与者"的形式）；
+- 其中 **3 条的判据字段名与 oracle 原文不同**，不是缺失：N11 的 `error_code` 为空是因为 `deadline_exhausted` 是**正常返回**；N12 的 `exit_code` 记在 `meta.lock_holder.exit_code`（持锁者由调度器直接 wait）而不是参与者 report；N1–N4 的**崩溃参与者根本没有 report**（`os._exit` 不给写的机会），崩溃证据是 `meta.crash_after`，`exit_code` 字段为空正是"崩溃确实发生"的标志。
+- 没有任何一条负例"失败"，但**"13 条全绿"的说法不准确**，正确表述是"10 条有调度器实测且全部符合期望，3 条仅有单元级断言、缺调度器原始记录"。
+
+细节文本另存：`evidence/negative-case-detail.txt`（逐 case 的 pause/resume/lock_acq/action/exit_code 与崩溃后状态）。

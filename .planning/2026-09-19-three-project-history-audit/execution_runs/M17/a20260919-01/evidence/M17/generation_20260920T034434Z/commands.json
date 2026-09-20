@@ -1,0 +1,1245 @@
+{
+ "card_id": "M17",
+ "attempt_id": "a20260919-01",
+ "model_id": "licensing_commercial",
+ "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+ "interpreter": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+ "isolation": {
+  "code_root": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+  "never_used": [
+   "the global Miniconda interpreter for any card command",
+   "the production scripts directory on sys.path",
+   "network",
+   "provider",
+   "LLM"
+  ]
+ },
+ "rules": [
+  "every product invocation used --code-root <attempt>/iso/checkout_scripts",
+  "raw exit codes are the child's own return codes; expected codes are separate fields",
+  "skip / timeout / not-collected is never recorded as pass",
+  "every absolute path in every argv exists or is declared as an output of that unit"
+ ],
+ "path_check": {
+  "rule": "each absolute-path argv token must exist now or be declared in the unit's creates",
+  "path_tokens_checked": 83,
+  "tokens_declared_as_not_yet_created_outputs": 0,
+  "undeclared_missing_tokens": []
+ },
+ "units": [
+  {
+   "unit_id": "A0-iso-venv-create",
+   "purpose": "create (or refresh) the attempt-local isolated interpreter from the I-00-A template venv; no global Miniconda python is used anywhere in this card",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "venv",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A0-iso-venv-create\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A0-iso-venv-create\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A0-iso-venv-create\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "note": "the template interpreter is itself an isolated venv; it is used for this creation step and for nothing else in the card",
+   "rc_record_sha256": "147353edd5f17c5353995204edeb7bed5e3377ec0a40bdb753bb846ba006d66d",
+   "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T02:40:50.500728+00:00"
+  },
+  {
+   "unit_id": "A0b-pytest-offline-availability",
+   "purpose": "record whether pytest can be installed offline from the local cache; --no-index touches no network",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-m",
+    "pip",
+    "download",
+    "pytest",
+    "--no-index",
+    "--no-cache-dir",
+    "-d",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\wheels_probe"
+   ],
+   "network": "disabled",
+   "expected_rc": 1,
+   "raw_rc": 1,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A0b-pytest-offline-availability\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A0b-pytest-offline-availability\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A0b-pytest-offline-availability\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\wheels_probe"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\wheels_probe",
+     "exists_now": true,
+     "declared_as_created_output": true
+    }
+   ],
+   "stdout_exists": true,
+   "note": "expected_rc 1 means the offline probe failed, i.e. no local wheel is available; no card command requires pytest and the historical 97 tests / 216 subtests are explicitly not a substitute for this card's results",
+   "rc_record_sha256": "4ea438774ea5a02e4e93d70ee72869d8c0fc5dbf48694d966ae0d0142af80b37",
+   "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "stderr_sha256": "16020a0994a3359783a79db1cb978a45bbad63ec9656d2d5e0b111cfca0840c4",
+   "rc_recorded_utc": "2026-09-20T02:40:52.193700+00:00"
+  },
+  {
+   "unit_id": "A1-isolated-snapshot",
+   "purpose": "copy scripts/model_registry.py and scripts/model_extensions.py read-only from production into this attempt and verify the copies are byte-identical",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\snapshot_copy.py",
+    "--production-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+    "--dest",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+    "--record",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A1-isolated-snapshot\\snapshot.json"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A1-isolated-snapshot\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A1-isolated-snapshot\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A1-isolated-snapshot\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A1-isolated-snapshot\\snapshot.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts\\model_registry.py",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts\\model_extensions.py"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\snapshot_copy.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A1-isolated-snapshot\\snapshot.json",
+     "exists_now": true,
+     "declared_as_created_output": true
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "76f9c5927270a87e90b340948b4a2c6e768386bf709d600b27dd697ac41ba9e4",
+   "stdout_sha256": "363b8c848c8414c96bd3322c95815504979487480c0f55510e26ffa2e9ab5f93",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T02:40:52.385956+00:00"
+  },
+  {
+   "unit_id": "G0-state-before",
+   "purpose": "capture git status --porcelain and watched source hashes for the three repos (read-only)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\hash_state.py",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\before",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\G0-state-before\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\G0-state-before\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\G0-state-before\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\before\\state.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\before\\source_hashes.txt"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\hash_state.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\before",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "d2c8facc35c81606cc93e80ab835b31b473b0ed6e1bedc19041b1c9436923f5f",
+   "stdout_sha256": "eb7dda1da533b55c819656ad36d6ab35f8177f802699b3d237a9ff39f58bf7ac",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T02:40:52.865289+00:00"
+  },
+  {
+   "unit_id": "A2-oracle-generate",
+   "purpose": "record oracle.md's sha256/mtime BEFORE generating, then generate the frozen input.json / oracle.json / cases.json with the independent stdlib oracle script",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\gen_oracle.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A2-oracle-generate\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A2-oracle-generate\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A2-oracle-generate\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\input.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\oracle.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\cases.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\oracle_selfcheck.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\oracle_document_freeze.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\gen_oracle.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "note": "the oracle script never imports the product; it is the only source of expectations",
+   "rc_record_sha256": "2ca509a41beeea75bc3c9e5da8324bf704dfff874330da6d743e094db6aa58d3",
+   "stdout_sha256": "f0441f93af940a665374c1f72b0e8c322ddfc3a3d9f59031ab02a67676d31d5a",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T02:40:53.080054+00:00"
+  },
+  {
+   "unit_id": "A3-write-binding",
+   "purpose": "write binding.json: absolute paths, production and isolated hashes, the model contract read back from the isolated snapshot, and the write allowlist",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\write_binding.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "--orchestrator-interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A3-write-binding\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A3-write-binding\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\A3-write-binding\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\binding.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\write_binding.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\I-00-A\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "4c73a11571542713a53db315f2306e426c52699dc7e00eb5d75088d37a466241",
+   "stdout_sha256": "b0ec5bab1bbc39165d0f2ed9371b7c3bf14e332d04e19ee2fa87f441feb2fe7f",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T02:40:53.217457+00:00"
+  },
+  {
+   "unit_id": "B-product-run",
+   "purpose": "run the ONLY product entry point calculate_registered_model against the isolated snapshot: positive, continuity positive, defaults case, observations and 11 negative cases",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\run_card.py",
+    "--card",
+    "M17",
+    "--attempt",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\run_result.json",
+    "--run-result-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\formula_result.json",
+    "--negative-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\negative_results.json"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\B-product-run\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\run_result.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\formula_result.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\negative_results.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\run_card.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\run_result.json",
+     "exists_now": true,
+     "declared_as_created_output": true
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\formula_result.json",
+     "exists_now": true,
+     "declared_as_created_output": true
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\negative_results.json",
+     "exists_now": true,
+     "declared_as_created_output": true
+    }
+   ],
+   "stdout_exists": true,
+   "expected_business_result": "verdict pass: the positive value is within 1e-9*max(1,|expected|), the output length equals len(years), the continuity positive matches and all 11 negatives are rejected with ModelRegistryError",
+   "rc_record_sha256": "de824aad1ec388c5147667b696e4c418bf6f724b712dc93d3c48be280d1374ee",
+   "stdout_sha256": "9e4d8b3de8d6a9669774937da3fd6dab26881a05490c5895d4eacd5d53760daf",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:35:01.194296+00:00"
+  },
+  {
+   "unit_id": "C-registry-enumeration",
+   "purpose": "enumerate the whole registry from the isolated copy so every count in oq_rulings.json comes from a script rather than from prose",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\enumerate_registry.py",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+    "--card",
+    "M17",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\registry_enumeration.json"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\C-registry-enumeration\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\C-registry-enumeration\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\C-registry-enumeration\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\registry_enumeration.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\enumerate_registry.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\registry_enumeration.json",
+     "exists_now": true,
+     "declared_as_created_output": true
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "30b65c595ff2b232d32e0b8145a36dd143c1aca449627cfc341bce0317797030",
+   "stdout_sha256": "78260c8764d4af191d7add43fe19c1a45c3632f4a4f7944ce6ec3f58d5735b01",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:33:38.898697+00:00"
+  },
+  {
+   "unit_id": "C2-extra-boundary-probes",
+   "purpose": "measure the edges of the enumerated domains (signed amount driver, total-revenue guard, ratio/quantity edges, bridge tolerance) as NON-GATING observations",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\probe_extra.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--code-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\C2-extra-boundary-probes\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\C2-extra-boundary-probes\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\C2-extra-boundary-probes\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\extra_probes.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\probe_extra.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\checkout_scripts",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "note": "these probes are not part of oracle.json and do not enter the runner's exit code; each expectation is computed in probe_extra.py before the call",
+   "rc_record_sha256": "ce7fd04ad8c8e1cac9c6393bc8721191cf9e57c402638956545c0745ec2262e2",
+   "stdout_sha256": "72fbacd4eea0a9d237065f3f8e387b39aad19c906c2bd71ec1a6ba5469bd8cc6",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:33:39.177273+00:00"
+  },
+  {
+   "unit_id": "D-oracle-regen-verify",
+   "purpose": "regenerate input.json / oracle.json / cases.json into an empty scratch tree and compare sha256 against the frozen files",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\verify_oracle_regen.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\D-oracle-regen-verify\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\D-oracle-regen-verify\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\D-oracle-regen-verify\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\oracle_regen_proof.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\verify_oracle_regen.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "20460ff72a7c2f426cbdc78c9caef69a980aaa0361d5af07b296aef2961dbd80",
+   "stdout_sha256": "d8a71a3b31c0008711f34222661c45868c1a7d113577b9b6e78315bc3efb1214",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:33:40.174525+00:00"
+  },
+  {
+   "unit_id": "E-mutation-selfcheck",
+   "purpose": "corrupt COPIES of the frozen expectation and of a negative assertion and show the runner turns red (rc 3 / rc 2 / rc 1), then show green (rc 0) returns on the uncorrupted copy",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\mutation_selfcheck.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\E-mutation-selfcheck\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\E-mutation-selfcheck\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\E-mutation-selfcheck\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\mutation_selfcheck.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\recovery\\selfcheck_result.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\mutation_selfcheck.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "68cad5bd1e3cbe42de87fe42381b825a4897f4c3847df1fa7b6e47fb5800f137",
+   "stdout_sha256": "5d31fb64a9b6ca3d33084a1e261bde7231902e1b0c5f816caf3804ac13c3d1d4",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:35:03.149343+00:00"
+  },
+  {
+   "unit_id": "G1-state-after",
+   "purpose": "capture the same repository state again to prove no production file changed",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\hash_state.py",
+    "--out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\after",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\G1-state-after\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\G1-state-after\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\G1-state-after\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\after\\state.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\after\\source_hashes.txt"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\hash_state.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\after",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "e47fdfa77fd7d4ea8a7d0a6bc68b11282e2cb7c9a57525669c4db4fe9bfbf564",
+   "stdout_sha256": "e674f98e15138cdb011d3ce2bf43b12e602dadf12cbfb16c2cada347e0877a24",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T02:40:55.870985+00:00"
+  },
+  {
+   "unit_id": "F-write-commands",
+   "purpose": "record every unit's real argv, raw rc and outputs into commands.json and command_manifest.json",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\write_commands.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "--phase",
+    "post"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\F-write-commands\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\F-write-commands\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\F-write-commands\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\commands.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\command_manifest.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\write_commands.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "dfdd12cf8155b340f3407d07d00d7b145e560ba946a6d9c620588ad8fc1c0094",
+   "stdout_sha256": "d4aa051d6add4dae1f23f851cf545c32208df4778ac12b457f63ea1be0092950",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T02:40:56.166396+00:00"
+  },
+  {
+   "unit_id": "G-pack-evidence",
+   "purpose": "pack source_manifest / qualification / oq_rulings / integrity / revision_r2 and hash every evidence file (hashes written last, so they cover the finished pack)",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\pack_card.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\G-pack-evidence\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\G-pack-evidence\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\G-pack-evidence\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\source_manifest.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\qualification.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\oq_rulings.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\integrity.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\revision_r2.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\evidence_hashes.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\after\\rerun_sha256.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\pack_card.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "3027b3cdc0b368ec24014fb34d4d15dfb5ed6feff58aa80922c4746ea94b64c6",
+   "stdout_sha256": "5a6419183e1a9839f37c58d287d68675ea16634257605bf1c099afbfc75ad504",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:44:34.604039+00:00"
+  },
+  {
+   "unit_id": "R2-append-oracle-addendum",
+   "purpose": "append-only correction of ONE descriptive row in oracle.md section 1 (the three amount drivers are signed, not non-negative), executed AFTER the independent review verdict",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\append_oracle_addendum.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--expected-pre-append-sha256",
+    "9c8021eebd01aa27a9963db8ac869ac6a067eb24af17439164f3cb61bc42fa69"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2-append-oracle-addendum\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2-append-oracle-addendum\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2-append-oracle-addendum\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\oracle_addendum_record.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\append_oracle_addendum.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "note": "refuses to run unless the declared pre-append sha256 matches and no r2 section exists; the r1 body above the boundary is not edited by one byte; the pre-append hash is proven reproducible by truncation at the appended section's first line",
+   "rc_record_sha256": "425a66f3b63f6709ccfa246085d0a5c3f68cf7dcb74994fb65f4267336ba974e",
+   "stdout_sha256": "7c077f85859848196135b64a0adb36bac7cd84a88bea577b153168c3e2982147",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:11:42.658608+00:00"
+  },
+  {
+   "unit_id": "R2b-repair-restore-dry-run",
+   "purpose": "record the lossless round trip of the r2 append WITHOUT writing: performs both hash checks, prints WOULD RESTORE, and exits non-zero if the round trip is not lossless",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\append_oracle_addendum.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--repair-restore",
+    "--dry-run"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2b-repair-restore-dry-run\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2b-repair-restore-dry-run\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2b-repair-restore-dry-run\\rc.json",
+   "creates": [],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\append_oracle_addendum.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "note": "P3-1/P2-C: the ORIGINAL --repair-restore invocation was destructive-on-success and ran before this unit existed, so its own argv/rc/stdout were never captured; that is declared as an honest gap in commands.json.declared_unrecorded_commands and in evidence/<card>/oracle_addendum_record.json.repair_history",
+   "rc_record_sha256": "7422884055945517fd244633d8c4e00e362602cb23895908cf7fda42462338e9",
+   "stdout_sha256": "a4c1e9cedc2b7151714a9f071576ee7a68d314dbbbea144b74b82208e0bbc7c0",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:33:42.140576+00:00"
+  },
+  {
+   "unit_id": "R2c-rebuild-addendum-record",
+   "purpose": "recompute oracle_addendum_record.json's boundary metadata from the CURRENT oracle.md (P2-C): corrects the header line number and the real-line-boundary flag without appending to or truncating oracle.md",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\append_oracle_addendum.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--rebuild-record-only"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2c-rebuild-addendum-record\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2c-rebuild-addendum-record\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\R2c-rebuild-addendum-record\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\oracle_addendum_record.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\append_oracle_addendum.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "18bc43624ac70cc58f178087ede954e0dd5d469f5a77c4b647526fb65c52ed5b",
+   "stdout_sha256": "1e8a332efcbf5bcbbc384fa412a24ad053958e29bcd69955380e0308976ed18c",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:33:42.394945+00:00"
+  },
+  {
+   "unit_id": "P-write-process-history",
+   "purpose": "record the pass structure of this attempt (observed last-execution records plus the DECLARED earlier passes) so that repeated executions of one argv are visible",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\write_process_history.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\P-write-process-history\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\P-write-process-history\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\P-write-process-history\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\process_history.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\write_process_history.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "7347084ff213a921d2aa987c00ff8ee6a63913bf7c705b58bd87dbf012a8381a",
+   "stdout_sha256": "ddd950f7295e6a264a04224e6b0f25dcd3d57a9b4fbb7d907acee54928280deb",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:44:34.858951+00:00"
+  },
+  {
+   "unit_id": "T-transcribe-review-verdict",
+   "purpose": "append the independent reviewer's r2 verdict to review.md BYTE-FOR-BYTE (the reviewer authorised transcription on the condition that nothing is rewritten, shortened or summarised), then append an explicitly labelled implementer note",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\transcribe_review_verdict.py",
+    "--card",
+    "M17",
+    "--report",
+    "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\m17m20-review-r2-20260920-041815\\REPORT_r2.md",
+    "--block-index",
+    "0",
+    "--target",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\review.md",
+    "--note-mode",
+    "card",
+    "--proof-out",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\transcription_proof.json"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\T-transcribe-review-verdict\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\T-transcribe-review-verdict\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\T-transcribe-review-verdict\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\transcription_proof.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\transcribe_review_verdict.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\m17m20-review-r2-20260920-041815\\REPORT_r2.md",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\review.md",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\transcription_proof.json",
+     "exists_now": true,
+     "declared_as_created_output": true
+    }
+   ],
+   "stdout_exists": true,
+   "note": "refuses to run if the block is already present, so the verdict cannot be transcribed twice; the proof records the sha256 of the source block and of the copied region",
+   "rc_record_sha256": "4d8bf555e6ab62803285f307e9d9e327a47d35d64c1da2bd3c168ccd45c92d8c",
+   "stdout_sha256": "b0f0c8a1c213f3cdfd50cf58c0b76eeea4ab6a2501034e00558fff6f842afc30",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:44:34.979905+00:00"
+  },
+  {
+   "unit_id": "H-write-handoff",
+   "purpose": "generate handoff.json from the evidence on disk: hashes, raw exit codes, open questions, the first unfinished card action and the process/batch pointers",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\write_handoff.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\H-write-handoff\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\H-write-handoff\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\H-write-handoff\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\handoff.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\write_handoff.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "rc_record_sha256": "84b01361dc8fb8f5c4fe8854e26f168fe85f4ec2ce4fb57f96f85db1622d258c",
+   "stdout_sha256": "01b55facc30433c38aeaadb63d474b2ea6f331086e8ba10a9387387212d2dd71",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:44:35.123189+00:00"
+  },
+  {
+   "unit_id": "Z-close-attempt",
+   "purpose": "record the completed command list into commands.json and write after/final_deliverable_hashes.json as the last artefact of the attempt",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\close_attempt.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+    "--interpreter",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\Z-close-attempt\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\Z-close-attempt\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\Z-close-attempt\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\commands.json",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\after\\final_deliverable_hashes.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\close_attempt.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "note": "the rc recorded for this unit in commands.json, if present, comes from a PREVIOUS execution of the identical argv, because this unit's rc.json is only refreshed after it returns; the most recent execution's raw rc is always in evidence/<card>/runs/Z-close-attempt/rc.json",
+   "rc_record_sha256": "4ccd1f978b022a528173988349b0160ed091bc9602894089637b63a2a27e9cfb",
+   "stdout_sha256": "d4a07bfd322c6196c226f88da43162e667558bf8095924a86b8692c2b3e71772",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:40:30.446072+00:00",
+   "rc_is_from_previous_execution_of_identical_argv": true,
+   "rc_provenance_note": "P3-4: this unit writes the record file you are reading (or is its own last writer), and the capture wrapper refreshes its rc.json only after it returns, so the value here is from the previous execution of the identical argv; the most recent execution's rc is in the rc.json named by rc_record and in pipeline_run.json / recovery/closing_run.json"
+  },
+  {
+   "unit_id": "V-verify-hash-tables",
+   "purpose": "re-read BOTH hash tables entry by entry after the closing unit returned and publish the measurement (after/hash_table_verification.json); non-zero exit on drift or missing entries",
+   "cwd": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+   "argv": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-B",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\verify_hash_tables.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01"
+   ],
+   "network": "disabled",
+   "expected_rc": 0,
+   "raw_rc": 0,
+   "stdout": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\V-verify-hash-tables\\stdout.txt",
+   "stderr": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\V-verify-hash-tables\\stderr.txt",
+   "rc_record": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\evidence\\M17\\runs\\V-verify-hash-tables\\rc.json",
+   "creates": [
+    "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\after\\hash_table_verification.json"
+   ],
+   "path_check": [
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\iso\\venv\\Scripts\\python.exe",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01\\scripts\\verify_hash_tables.py",
+     "exists_now": true,
+     "declared_as_created_output": false
+    },
+    {
+     "token": "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M17\\a20260919-01",
+     "exists_now": true,
+     "declared_as_created_output": false
+    }
+   ],
+   "stdout_exists": true,
+   "note": "this unit's own capture records and its output file are excluded from the final table because they are written after it (P2-A)",
+   "rc_record_sha256": "852ddf85eaef58331ec64192a31f950290b7882a5414a57d54b6786280ad4e77",
+   "stdout_sha256": "fbafc41f0a4bdb4a0be9850f65a87008be0cb5650533310aa9c74efdb65d329a",
+   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "rc_recorded_utc": "2026-09-20T03:40:30.757972+00:00",
+   "rc_is_from_previous_execution_of_identical_argv": true,
+   "rc_provenance_note": "P3-4: this unit writes the record file you are reading (or is its own last writer), and the capture wrapper refreshes its rc.json only after it returns, so the value here is from the previous execution of the identical argv; the most recent execution's rc is in the rc.json named by rc_record and in pipeline_run.json / recovery/closing_run.json"
+  }
+ ],
+ "declared_unrecorded_commands": [
+  {
+   "id": "R2-repair-restore-original",
+   "purpose": "truncate oracle.md back to the recorded pre-append bytes after the first R2 execution appended correctly but returned rc=3 for a mis-computed metadata flag",
+   "argv": [
+    "<attempt venv python>",
+    "-X",
+    "utf8",
+    "-B",
+    "<attempt>/scripts/append_oracle_addendum.py",
+    "--card",
+    "M17",
+    "--attempt-root",
+    "<attempt>",
+    "--repair-restore"
+   ],
+   "observed_raw_rc": 0,
+   "captured": false,
+   "honest_gap": "run in the interactive session before R2 units were captured, so no rc.json / stdout exists for it; the RESULT state is verifiable (truncation at the recorded boundary reproduces the pre-append hash) and a safe non-writing replay is recorded as the unit R2b-repair-restore-dry-run",
+   "result_verification": "evidence/M17/oracle_addendum_record.json.repair_history"
+  }
+ ],
+ "phase": "final",
+ "created_before_card_runs": false,
+ "scope": "this card only; no unit of this file belongs to another card attempt",
+ "note": "argv were fixed before the product run; this record is (re)written afterwards so that raw_rc values are read back from the rc.json files produced while each command ran"
+}

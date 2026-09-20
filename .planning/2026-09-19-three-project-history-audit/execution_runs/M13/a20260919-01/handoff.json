@@ -3,7 +3,8 @@
  "attempt_id": "a20260919-01",
  "model_id": "asset_management",
  "card_title": "M13 · asset_management · 平均资管规模收费",
- "status": "review_pending",
+ "status": "accepted_scoped",
+ "status_before_bookkeeping_fix": "review_pending",
  "implementer_is_not_the_reviewer": true,
  "completed_steps": {
   "A_binding": "done (binding.json + before/setup_receipt.json: read-only production hashes, attempt-local isolated snapshot, interpreter hash)",
@@ -191,7 +192,8 @@
   "STOP_BRIDGE not applicable with reason (flow model, no opening/closing reconciliation)"
  ],
  "qualifications": {
-  "formula": "review_pending",
+  "formula": "accepted_scoped",
+  "formula_before_bookkeeping_fix": "review_pending",
   "disclosure_adaptation": "unmapped",
   "accuracy": "unproven"
  },
@@ -240,7 +242,8 @@
   "r3_response": "handled in oracle.md's single r3 section and evidence/M13/revision_r3.json; no frozen expectation, tolerance, case or refusal condition was changed (cases.json gained an append-only annotation on the one invalid observation, proven by evidence/M13/cases_annotation_repack.json)",
   "formula_state_after_r3": "review_pending (point review of r3 by the reviewer)"
  },
- "reviewer_status": "reviewed 2026-09-20: accepted_scoped (formula qualification only) with findings F-01..F-05 + two notes; handled in revision r3 and returned for a point review. formula = review_pending; the implementer never self-signs.",
+ "reviewer_status": "r3 point review by the independent reviewer, transcribed: the reviewer issued accepted_scoped (formula qualification only) for this card. The verbatim verdict was appended to review.md by a bookkeeping/transcription executor and its byte-exact transcription is proved by evidence/M13/verdict_transcription_r3.json. disclosure_adaptation stays unmapped, accuracy stays unproven, and stages D/E/F were not performed. The implementer never self-signs, and the executor transcribed the reviewer's words instead of signing.",
+ "reviewer_status_before_bookkeeping_fix": "reviewed 2026-09-20: accepted_scoped (formula qualification only) with findings F-01..F-05 + two notes; handled in revision r3 and returned for a point review. formula = review_pending; the implementer never self-signs.",
  "revision": "r3 (oracle.md carries exactly one r2 section at byte offset 10692 and exactly one r3 section; each revision has a single reproducible boundary hash, no competing baseline)",
  "reviewer_opinions_on_open_questions": [
   "OQ-01 (binding): the independent reviewer accepted this attempt's handling - the code under test is byte-identical to production and the isolation semantics were measured to hold - and characterises the residual question as provenance DOCUMENTATION: the owner should state in writing either (a) that a self-built read-only snapshot byte-identical to production is accepted as equivalent to the I-00-B binding, or (b) that I-00-B must add a materialisation step and later cards must reference its output. The implementer does NOT adopt this as a decision; it is the reviewer's opinion, carried for the owner.",
@@ -249,5 +252,57 @@
   "OQ-04 (invalid frozen observation OBS-SIGNED-PERF-FEE): the reviewer judged the handling ACCEPTABLE - do not repack the frozen fixture, keep the invalid observation and answer the factual question with a labelled post-hoc probe - and asked for the invalid observation to be marked inside cases.json, which revision r3 did with an append-only annotation whose only difference is proven by evidence/M13/cases_annotation_repack.json.",
   "OQ-05 (pytest / historical suite): the reviewer AGREES that this card does not need it: the batch's evidence chain is a single standard-library-only runner plus frozen JSON, and the historical 97 tests / 216 subtests are not part of it. If the owner requires a re-run it should be registered as a SEPARATE regression gate, not folded into the formula sign-off conditions."
  ],
- "reviewer_opinions_note": "recorded from the relayed independent review of 2026-09-20; these are the REVIEWER's positions and were NOT adopted as decisions by the implementer"
+ "reviewer_opinions_note": "recorded from the relayed independent review of 2026-09-20; these are the REVIEWER's positions and were NOT adopted as decisions by the implementer",
+ "bookkeeping": {
+  "recorded_by": "the r3 bookkeeping/transcription executor session (delegated subagent), 2026-09-20",
+  "implementer_signed": false,
+  "implementer_never_signs_acceptance": true,
+  "authority": "acceptance was written by an independent reviewer, not by the implementer",
+  "acceptance_author": "the independent reviewer session of 2026-09-20 (see review.md)",
+  "transcribed_verdict": "accepted_scoped",
+  "verdict_scope": "formula only; disclosure_adaptation stays unmapped and accuracy stays unproven; stages D, E and F were not performed and are not covered",
+  "verdict_block_in_review_md": {
+   "path": "review.md",
+   "line_start": 208,
+   "line_end": 326,
+   "lines": 119,
+   "line_numbering": "1-based, inclusive"
+  },
+  "transcription_proof_file": {
+   "path": "evidence/M13/verdict_transcription_r3.json",
+   "sha256": "88f6660c08c351a2f267ee1e3c49faaaf76ca0d9d757b3cd0aaf0b63a4b859d1"
+  },
+  "verdict_source_file": {
+   "path": "C:\\Users\\郑曾波\\AppData\\Local\\Temp\\m13m16-review-20260920-035325\\r3\\verdicts\\review_verdict_M13.md",
+   "sha256": "46d52996d4df1039c14c69da8eb5b434f3f088aea049aa3a744f98704c5050d3",
+   "bytes": 9108
+  },
+  "transcription_is_byte_exact": true,
+  "status_before_bookkeeping_fix": "review_pending",
+  "scope_unchanged_by_this_bookkeeping_pass": {
+   "disclosure_adaptation": "unmapped",
+   "accuracy": "unproven",
+   "D_disclosure_mapping": "NOT done",
+   "E_historical_mapping_probe": "NOT done",
+   "F_accuracy": "NOT done"
+  },
+  "carried_findings_r3": {
+   "F-r3-01": "M14/M15/M16 only: cases_annotation_repack.json repack_scope wording corrected; M13 has a real annotation and is unchanged",
+   "F-r3-02": "cross-card time-scoped production-drift declaration written to recovery/production_drift_note.json; historical hash fields NOT rewritten",
+   "F-r3-03": "oq_rulings.json attribution gains an authorised_transcription provenance line",
+   "F-r3-04": "inventory generator excludes __pycache__/** and the ledger is regenerated",
+   "F-r3-05": "NO CHANGE - the reviewer explicitly accepted the current rc precedence (1 > 2 > 3); the runner was not modified"
+  },
+  "executor_statement": "this pass transcribed and recorded; it did not review, re-adjudicate or accept anything in its own voice"
+ },
+ "discipline": {
+  "rule": "a production file hash used as acceptance evidence must be treated as a quantity that external git operations can change; on mismatch, record the drift and its observation time and escalate to the orchestration layer - never adapt expectations or frozen artifacts.",
+  "why": "the 2026-09-20 04:35:31-04:40:53 window showed that the production revision behind an anchored hash can be changed by an external git operation (pre-commit gate exporting unstaged work, then `git checkout -- .`); a hash mismatch in that situation is a correct warning about the environment, not a defect of the card",
+  "on_mismatch": "record the drift and the observation time, keep the historical values, and escalate to the orchestration layer; never adapt expectations, tolerances or frozen artifacts to make a check pass",
+  "evidence": [
+   "recovery/production_drift_note.json",
+   "after/rerun_sha256.json",
+   "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\_isolation_incidents\\20260920-precommit-stash-production-rollback\\INCIDENT.md"
+  ]
+ }
 }

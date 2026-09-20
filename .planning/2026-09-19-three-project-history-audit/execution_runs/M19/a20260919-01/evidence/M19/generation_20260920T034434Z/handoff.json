@@ -1,0 +1,362 @@
+{
+ "card_id": "M19",
+ "attempt_id": "a20260919-01",
+ "model_id": "gaming",
+ "card_title": "active-user payer monetisation",
+ "status": "review_pending",
+ "implementer_is_not_the_reviewer": true,
+ "generated_utc": "2026-09-20T03:44:40.137833+00:00",
+ "completed_steps": {
+  "A_binding": "done - binding.json binds the attempt-local interpreter, the read-only isolated snapshot, the model contract read back from that snapshot and the write allowlist",
+  "B_positive_run": "done - positive [1010.0] vs independent oracle [1010.0]; continuity [1010.0, 1584.0] vs [1010.0, 1584.0]; defaults [1000.0] vs [1000.0] (defaults are recorded, not gating)",
+  "C_negative_run": "done - 11/11 negatives rejected with ModelRegistryError; each case ran on a fresh in-memory deepcopy",
+  "D_disclosure_mapping": "NOT done - the card marks D [professional_decision_required]; no disclosure mapping, accounting_decision.md, historical_reconciliation.json or forecast_integration.json was produced. The card states these do not block the A-C formula dispatch and must not be filled in speculatively",
+  "E_historical_mapping_probe": "NOT done - E is [executable_after_D] and belongs to the I-10-A鍏堣 work; inventing a probe here would be a fabricated scenario set",
+  "F_accuracy": "NOT done - requires the I-12 frozen design, which does not exist"
+ },
+ "completed_steps_list": [
+  "A",
+  "B",
+  "C"
+ ],
+ "next_step_number": 4,
+ "next_action": "Independent reviewer: re-run scripts/run_card.py against the isolated snapshot and compare with evidence/M19/run_result.json (positive [1010.0], continuity [1010.0, 1584.0], negatives 11/11, raw rc 0), then adjudicate the entries in evidence/M19/oq_rulings.json. After that, the FIRST unfinished card action is step D, which needs a professional (industry/accounting) decision before any mapping may be written; step E then depends on I-10-A.",
+ "input_hashes": {
+  "evidence/M19/input.json": "d11e3391e04fce907c28b2bfe0244c614347633669b3b9e42a75a53d9fbc3328",
+  "evidence/M19/oracle.json": "5100627ea7ddbfeb6b14a344a033544e2a3911104e0d96a908f17b4f4e415b5f",
+  "evidence/M19/cases.json": "96401bec8cedf4406e319ec899a613755224b0362da07bdcebd346e7bebb4983",
+  "oracle.md": "a55fa54d440493c84133e504082db4c96e2a0c3ee139817f80c17c4accee3331",
+  "scripts/oracle_M19.py": "495573f90fa85907e8c27639684c5e2538573afe9bdfe24ea355bee7197b271a",
+  "scripts/run_card.py": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252"
+ },
+ "current_source_hashes": {
+  "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911",
+  "iso/checkout_scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "iso/checkout_scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ },
+ "changed_paths": {
+  "production_repos": [],
+  "note": "no production file was created, modified, added, committed, restored or stashed in any of the three repos; the pre-existing dirty state is captured in before/ and after/",
+  "attempt_paths_created": [
+   "C:\\Users\\郑曾波\\Projects\\revenue-forecast\\.planning\\2026-09-19-three-project-history-audit\\execution_runs\\M19\\a20260919-01"
+  ],
+  "other_attempts_created_or_overwritten": []
+ },
+ "commands_executed": [
+  "A0-iso-venv-create",
+  "A0b-pytest-offline-availability",
+  "A1-isolated-snapshot",
+  "G0-state-before",
+  "A2-oracle-generate",
+  "A3-write-binding",
+  "B-product-run",
+  "C-registry-enumeration",
+  "C2-extra-boundary-probes",
+  "D-oracle-regen-verify",
+  "E-mutation-selfcheck",
+  "G1-state-after",
+  "F-write-commands",
+  "G-pack-evidence",
+  "P-write-process-history",
+  "T-transcribe-review-verdict",
+  "H-write-handoff",
+  "Z-close-attempt",
+  "V-verify-hash-tables"
+ ],
+ "raw_exit_codes": {
+  "A0-iso-venv-create": 0,
+  "A0b-pytest-offline-availability": 1,
+  "A1-isolated-snapshot": 0,
+  "G0-state-before": 0,
+  "A2-oracle-generate": 0,
+  "A3-write-binding": 0,
+  "B-product-run": 0,
+  "C-registry-enumeration": 0,
+  "C2-extra-boundary-probes": 0,
+  "D-oracle-regen-verify": 0,
+  "E-mutation-selfcheck": 0,
+  "G1-state-after": 0,
+  "F-write-commands": 0,
+  "G-pack-evidence": 0,
+  "P-write-process-history": 0,
+  "T-transcribe-review-verdict": 0,
+  "H-write-handoff": 0,
+  "Z-close-attempt": 0,
+  "V-verify-hash-tables": 3
+ },
+ "expected_exit_codes": {
+  "A0-iso-venv-create": 0,
+  "A0b-pytest-offline-availability": 1,
+  "A1-isolated-snapshot": 0,
+  "G0-state-before": 0,
+  "A2-oracle-generate": 0,
+  "A3-write-binding": 0,
+  "B-product-run": 0,
+  "C-registry-enumeration": 0,
+  "C2-extra-boundary-probes": 0,
+  "D-oracle-regen-verify": 0,
+  "E-mutation-selfcheck": 0,
+  "G1-state-after": 0,
+  "F-write-commands": 0,
+  "G-pack-evidence": 0,
+  "P-write-process-history": 0,
+  "T-transcribe-review-verdict": 0,
+  "H-write-handoff": 0,
+  "Z-close-attempt": 0,
+  "V-verify-hash-tables": 0
+ },
+ "product_run_returncode": 0,
+ "positive_actual": [
+  1010.0
+ ],
+ "positive_expected": [
+  1010.0
+ ],
+ "continuity_actual": [
+  1010.0,
+  1584.0
+ ],
+ "defaults_actual": [
+  1000.0
+ ],
+ "negative_case_summary": {
+  "total": 11,
+  "passed": 11,
+  "not_judged": [],
+  "failed": [],
+  "verdicts_are_mutually_exclusive": true,
+  "target_exception": "model_registry.ModelRegistryError",
+  "declared_expectations_in_cases_json": [
+   "ModelRegistryError"
+  ],
+  "declared_expectation_comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
+  "declared_expectations_enforced": true,
+  "declared_expectations_usable": true,
+  "classification_is_mutually_exclusive": true,
+  "import_or_file_errors_never_pass": true
+ },
+ "observation_summary": [
+  {
+   "id": "OBS-BASE-IGNORED",
+   "raised": null,
+   "actual": [
+    1010.0
+   ],
+   "matches_expected": null,
+   "matches_compared": true
+  },
+  {
+   "id": "OBS-DEFAULT-EQUIV",
+   "raised": null,
+   "actual": [
+    1000.0
+   ],
+   "matches_expected": null,
+   "matches_compared": true
+  },
+  {
+   "id": "OBS-PAYER-BOUNDARY",
+   "raised": null,
+   "actual": [
+    20010.0
+   ],
+   "matches_expected": true,
+   "matches_compared": null
+  }
+ ],
+ "extra_boundary_probes": [
+  {
+   "id": "PROBE-ACTIVE-ZERO",
+   "raised": null,
+   "actual": [
+    10.0
+   ],
+   "gating": false
+  }
+ ],
+ "mutation_selfcheck": {
+  "runs": [
+   {
+    "label": "A_corrupted_positive_expectation",
+    "raw_rc": 3,
+    "expected_rc": 3,
+    "verdict": "fail"
+   },
+   {
+    "label": "B_neutered_negative_case",
+    "raw_rc": 3,
+    "expected_rc": 3,
+    "verdict": "fail"
+   },
+   {
+    "label": "C_corrupted_expectation_length",
+    "raw_rc": 2,
+    "expected_rc": 2,
+    "verdict": "no_verdict"
+   },
+   {
+    "label": "D_missing_cases_file",
+    "raw_rc": 1,
+    "expected_rc": 1,
+    "verdict": "harness_error"
+   },
+   {
+    "label": "F_tampered_declared_expectation",
+    "raw_rc": 3,
+    "expected_rc": 3,
+    "verdict": "fail"
+   },
+   {
+    "label": "G_missing_declared_expectation",
+    "raw_rc": 2,
+    "expected_rc": 2,
+    "verdict": "no_verdict"
+   },
+   {
+    "label": "E_uncorrupted_copy",
+    "raw_rc": 0,
+    "expected_rc": 0,
+    "verdict": "pass"
+   }
+  ],
+  "frozen_evidence_unchanged": true,
+  "red_then_green": true
+ },
+ "oracle_regeneration_byte_identical": true,
+ "negative_declared_expectation_enforcement": {
+  "declared_expectations_in_cases_json": [
+   "ModelRegistryError"
+  ],
+  "comparison": "exact exception type name == cases.json's per-case 'expected' string (NOT isinstance)",
+  "declared_expectation_mismatches": 0,
+  "runner_sha256": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252",
+  "independent_review_basis": "independent review P2-1: the previous runner did not compare cases.json's per-case 'expected'; this runner compares the raised exception's exact type name and refuses the case on mismatch (never by isinstance, because ModelRegistryError is a ValueError subclass)"
+ },
+ "open_questions": [
+  "OQ-01 (isolation binding provenance) - the cards require the run cwd to come from I-00-B, while I-00-B binds the isolation plan and the two-stage command rule rather than materialising a checkout tree; status=registered_not_fixed; requires_ruling_from=owner (dispatch/binding)",
+  "OQ-02 (an omitted optional driver that has no declared default is silently 0.0) - ; status=registered_not_fixed; requires_ruling_from=owner (product change would need its own card)",
+  "OQ-03 (card business negative that the calculator cannot enforce) - NOT runtime-enforceable: active_users, payer_conversion and revenue_per_payer are checked only for domain and finiteness; the period of each driver is a disclosure question, not a calculator question; status=registered_not_fixed; requires_ruling_from=industry/accounting reviewer (I-10-A / D)",
+  "OQ-04 (numerical domain / boundary observations of this model) - payer_conversion carries the ratio domain [0,1]; 1.1 is rejected (card-specific negative) and the upper edge 1.0 is accepted, with the numeric consequence recorded by OBS-PAYER-BOUNDARY (20010); status=registered_not_fixed; requires_ruling_from=independent reviewer (accept / amend / reject)",
+  "OQ-05 (process history of this attempt (repeated executions of one argv)) - this card's measurement pipeline was executed 1 time(s) and the closing sequence 6 time(s); the capture wrapper overwrites runs/<UNIT>/rc.json on every execution, so the byte-level records can only prove the LAST execution of each unit. The C2 extra-boundary-probe unit is an EXISTING unit of this attempt's unit list, delivered byte-identically from the M17 attempt (it was not added after a first pass).; status=registered_not_fixed; requires_ruling_from=independent reviewer (accept / amend / reject)",
+  "OQ-05 (process, per card, parameterised after independent review P2-2): THIS card's measurement pipeline was executed 1 time(s) and the closing sequence was executed 7 times. The C2 extra-boundary-probe unit is an EXISTING unit of this attempt's unit list, delivered byte-identically from the M17 attempt (it was not added after a first pass). Superseded executions rewrote the same files, so the byte-level records only prove the LAST execution of each unit; the declared pass structure and the honest gaps are in process_history.json, and review.md states the same facts for this card. The frozen oracle expectations were never modified by any later pass"
+ ],
+ "blocked_by": [],
+ "stop_conditions_hit": [
+  "STOP_DISCLOSURE_ADAPTATION (no disclosure mapping; professional decision not taken)",
+  "STOP_ACCURACY (no I-12 frozen design)"
+ ],
+ "qualifications": {
+  "formula": "review_pending",
+  "disclosure_adaptation": "unmapped",
+  "accuracy": "unproven"
+ },
+ "qualification_semantics": {
+  "disclosure_adaptation_unmapped_means": "ZERO output, not partial progress: no disclosure_mapping.json, no accounting_decision.md, no historical_reconciliation.json and no forecast_integration.json exist for this card",
+  "accuracy_unproven_means": "no I-12 frozen design exists, so no out-of-sample evaluation was run at all; the formula pass must never be read as accuracy evidence"
+ },
+ "evidence_paths": [
+  "evidence/M19/cases.json",
+  "evidence/M19/command_manifest.json",
+  "evidence/M19/evidence_hashes.json",
+  "evidence/M19/extra_probes.json",
+  "evidence/M19/formula_result.json",
+  "evidence/M19/hash_table_selfcheck.json",
+  "evidence/M19/input.json",
+  "evidence/M19/integrity.json",
+  "evidence/M19/mutation_selfcheck.json",
+  "evidence/M19/negative_results.json",
+  "evidence/M19/oq_rulings.json",
+  "evidence/M19/oracle.json",
+  "evidence/M19/oracle_document_freeze.json",
+  "evidence/M19/oracle_regen_proof.json",
+  "evidence/M19/oracle_selfcheck.json",
+  "evidence/M19/qualification.json",
+  "evidence/M19/registry_enumeration.json",
+  "evidence/M19/revision_r2.json",
+  "evidence/M19/run_result.json",
+  "evidence/M19/runs/A0-iso-venv-create/rc.json",
+  "evidence/M19/runs/A0-iso-venv-create/stderr.txt",
+  "evidence/M19/runs/A0-iso-venv-create/stdout.txt",
+  "evidence/M19/runs/A0b-pytest-offline-availability/rc.json",
+  "evidence/M19/runs/A0b-pytest-offline-availability/stderr.txt",
+  "evidence/M19/runs/A0b-pytest-offline-availability/stdout.txt",
+  "evidence/M19/runs/A1-isolated-snapshot/rc.json",
+  "evidence/M19/runs/A1-isolated-snapshot/snapshot.json",
+  "evidence/M19/runs/A1-isolated-snapshot/stderr.txt",
+  "evidence/M19/runs/A1-isolated-snapshot/stdout.txt",
+  "evidence/M19/runs/A2-oracle-generate/rc.json",
+  "evidence/M19/runs/A2-oracle-generate/stderr.txt",
+  "evidence/M19/runs/A2-oracle-generate/stdout.txt",
+  "evidence/M19/runs/A3-write-binding/rc.json",
+  "evidence/M19/runs/A3-write-binding/stderr.txt",
+  "evidence/M19/runs/A3-write-binding/stdout.txt",
+  "evidence/M19/runs/B-product-run/rc.json",
+  "evidence/M19/runs/C-registry-enumeration/rc.json",
+  "evidence/M19/runs/C-registry-enumeration/stderr.txt",
+  "evidence/M19/runs/C-registry-enumeration/stdout.txt",
+  "evidence/M19/runs/C2-extra-boundary-probes/rc.json",
+  "evidence/M19/runs/C2-extra-boundary-probes/stderr.txt",
+  "evidence/M19/runs/C2-extra-boundary-probes/stdout.txt",
+  "evidence/M19/runs/D-oracle-regen-verify/rc.json",
+  "evidence/M19/runs/D-oracle-regen-verify/stderr.txt",
+  "evidence/M19/runs/D-oracle-regen-verify/stdout.txt",
+  "evidence/M19/runs/E-mutation-selfcheck/rc.json",
+  "evidence/M19/runs/E-mutation-selfcheck/stderr.txt",
+  "evidence/M19/runs/E-mutation-selfcheck/stdout.txt",
+  "evidence/M19/runs/F-write-commands/rc.json",
+  "evidence/M19/runs/F-write-commands/stderr.txt",
+  "evidence/M19/runs/F-write-commands/stdout.txt",
+  "evidence/M19/runs/G-pack-evidence/rc.json",
+  "evidence/M19/runs/G-pack-evidence/stderr.txt",
+  "evidence/M19/runs/G-pack-evidence/stdout.txt",
+  "evidence/M19/runs/G0-state-before/rc.json",
+  "evidence/M19/runs/G0-state-before/stderr.txt",
+  "evidence/M19/runs/G0-state-before/stdout.txt",
+  "evidence/M19/runs/G1-state-after/rc.json",
+  "evidence/M19/runs/G1-state-after/stderr.txt",
+  "evidence/M19/runs/G1-state-after/stdout.txt",
+  "evidence/M19/runs/H-write-handoff/rc.json",
+  "evidence/M19/runs/H-write-handoff/stderr.txt",
+  "evidence/M19/runs/H-write-handoff/stdout.txt",
+  "evidence/M19/runs/P-write-process-history/rc.json",
+  "evidence/M19/runs/P-write-process-history/stderr.txt",
+  "evidence/M19/runs/P-write-process-history/stdout.txt",
+  "evidence/M19/runs/T-transcribe-review-verdict/rc.json",
+  "evidence/M19/runs/T-transcribe-review-verdict/stderr.txt",
+  "evidence/M19/runs/T-transcribe-review-verdict/stdout.txt",
+  "evidence/M19/runs/V-verify-hash-tables.stderr.txt",
+  "evidence/M19/runs/V-verify-hash-tables/rc.json",
+  "evidence/M19/runs/V-verify-hash-tables/stderr.txt",
+  "evidence/M19/runs/V-verify-hash-tables/stdout.txt",
+  "evidence/M19/runs/Z-close-attempt/rc.json",
+  "evidence/M19/runs/Z-close-attempt/stderr.txt",
+  "evidence/M19/runs/Z-close-attempt/stdout.txt",
+  "evidence/M19/source_manifest.json",
+  "evidence/M19/stderr.txt",
+  "evidence/M19/stdout.txt",
+  "evidence/M19/transcription_proof.json"
+ ],
+ "reviewer_status": "r1 reviewed by an independent session; verdict accepted_scoped (formula qualification only). The implementer has NOT signed anything as accepted. Post-review P2/P3 dispositions are recorded in review.md (r2 section) and the batches' rc/qualification semantics in the batch handoff. formula remains review_pending until the reviewer confirms the r2 fixes.",
+ "process_history_pointer": "process_history.json",
+ "discipline": {
+  "production_hash_is_externally_changeable": true,
+  "rule": "A production file hash is an EXTERNALLY CHANGEABLE quantity, not a constant of this attempt: git operations run by other sessions/agents (stash, checkout, pre-commit patch export/replay) can change the working tree between the binding and any later check. Therefore: (1) every claim about a production hash is time-scoped and carries its observation time; (2) an observed mismatch is recorded as drift with its timestamp and escalated to the orchestration layer - it is a CORRECT warning and is never suppressed; (3) expectations, frozen oracle files and rejection criteria are NEVER adjusted to accommodate a drifted production tree; a drifted tree means new runs must re-bind, not that the oracle must move.",
+  "incident_reference": "execution_runs/_isolation_incidents/20260920-precommit-stash-production-rollback/INCIDENT.md",
+  "why": "the repository's pre-commit/pre-push gate exports unstaged changes to a patch, runs `git checkout -- .`, and replays the patch afterwards; one failed instance left the production working tree reset to HEAD and rewrote files that were being written concurrently, so every production-hash claim is time-scoped",
+  "on_mismatch": "record the drift with its timestamp, escalate to the orchestration layer, and re-bind before any NEW run; never adapt expectations or frozen files",
+  "anchored_production_hashes": {
+   "scripts/model_registry.py": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "scripts/model_extensions.py": "9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+  }
+ },
+ "process_history_summary": {
+  "measurement_pipeline_executions_declared": 1,
+  "closing_executions_declared": 7,
+  "c2_unit_origin": "an EXISTING unit of this attempt's unit list, delivered byte-identically from the M17 attempt (it was not added after a first pass)",
+  "detail": "the single measurement pass ran 14 units; the post-review fixes re-executed B, C2, E and the pack for this card once more.",
+  "observed_records_prove": "only the LAST execution of each unit (see process_history.json)"
+ },
+ "batch_handoff_pointer": "../M17-M20/a20260919-01/batch_handoff.md and ../M17-M20/a20260919-01/rc_namespace.json (dedicated batch-level documentation; contains no card artefacts)",
+ "revision": "r1"
+}
