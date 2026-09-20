@@ -1,0 +1,179 @@
+{
+ "card": "T1-10",
+ "attempt": "a20260920-01",
+ "batch": "TIER-1 (owner-ruled)",
+ "authority": "OWNER_DECISIONS.md section 13 T1-10 (TIER-1)",
+ "status": "review_pending",
+ "self_signed": false,
+ "nature_of_card": "verification + residual closure. This card does NOT modify any frozen artefact: not the subject, not cases.json, not the expectations, not oracle.md, not the runner. It measures and registers.",
+ "ruling_excerpt": "authorise a card to fix, on both the product and plan sides, the two product-level defects of natural_window.py: (1) add an enumeration check for `claim.basis`; (2) correct union_of_windows/sum_of_windows so they stop counting the quick_check interval as natural observation time. Note (2) is already baked into the frozen expectation (W1 union_seconds=2220), so the fix must ALSO correct the expectation by append-only provenance and must NOT rewrite the frozen body.",
+ "one_observable_result": "The same frozen CLI, given a batch that contains one case whose `basis` is a list or a dict, returns rc=4 and writes no report at all, leaving all 13 cases in the batch undecided; the same batch with that one basis written as an unregistered string returns rc=0 with 13/13 decided and only that case refused.",
+ "subject": {
+  "path": "execution_runs/I-14-B/a20260919-01/iso/natural_window.py",
+  "sha256": "7fff6f0c1e8ab202d3034540ca3b2b6cb6be17b4661bc726f7f5261159e4e796",
+  "is_the_reviewed_r2_revision": true,
+  "written_by_this_card": false
+ },
+ "conclusion": {
+  "defect_2": "ALREADY FIXED and already landed in exactly the append-only shape the ruling demands. The natural observation intervals are built from the observation phase only (iso/natural_window.py:174-185), quick_check never enters, and J15 additionally refuses a declared window that copies the quick_check span. W1's union_seconds expectation reads 1740 with the old 2220 retained in `expected_superseded` against pre_image_sha256 3ba2bb17..., and errata[0] carries the mechanical r1->r2 expected-map diff. The r2 revision was independently reviewed and closed `accepted_scoped` on P1 and P2. Nothing remains to do for (2).",
+  "defect_1": "The enumeration check EXISTS and holds over the scalar domain, but it is NOT total over the domain it claims to police: `BASIS_REGISTRY` is a `set` (line 60), so `basis not in BASIS_REGISTRY` raises TypeError for an unhashable `basis`. `main()`'s handler turns that into rc=4 and writes NO report, so one container `basis` in one case leaves every other case in the batch undecided, across class boundaries too.",
+  "is_the_residual_a_new_discovery": false,
+  "who_already_recorded_it": "the independent reviewer, as the non-blocking finding P4 in review.md, with a prescribed one-line remedy",
+  "why_it_is_still_open": "the remedy was never applied (BASIS_REGISTRY is still a set) and oracle.md section 11 never answers the question P4 raised about whether a field type error is a schema-level rc 2 or a per-case refusal",
+  "reachable_from_todays_fixtures": false,
+  "why_latency_is_not_a_reason_to_leave_it": "cases.json is the INPUT, and J16's whole job is to police the input domain. Arguing that the check is adequate because no fixture happens to contain a container basis is arguing from sample coverage, not from totality."
+ },
+ "harm_shape": {
+  "it_is_a_denial_of_verdict_not_a_refusal": "R-BASIS-UNKNOWN judges that one case and fails it. rc=4 does not judge it -- and by writing no report at all it also refuses to judge every sibling case.",
+  "measured_blast_radius": {
+   "arm_A_one_list_basis_among_12_good": {
+    "cases_submitted": 13,
+    "rc": 4,
+    "report_written": false,
+    "cases_decided": null,
+    "undecided_collateral": 13,
+    "stdout": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"unhashable type: 'list'\"}"
+   },
+   "arm_B_one_unregistered_str_basis_among_12_good": {
+    "cases_submitted": 13,
+    "rc": 0,
+    "report_written": true,
+    "cases_decided": 13,
+    "undecided_collateral": 0,
+    "stdout": "{\n  \"ok\": true,\n  \"report\": \"C:\\\\Users\\\\\\u90d1\\u66fe\\u6ce2\\\\AppData\\\\Local\\\\Temp\\\\<tmp>\\\\report.json\",\n  \"case_count\": 13,\n  \"accepted_claim_count\": 12,\n  \"sut_"
+   },
+   "arm_C_one_dict_basis_among_mixed_classes": {
+    "cases_submitted": 8,
+    "rc": 4,
+    "report_written": false,
+    "cases_decided": null,
+    "undecided_collateral": 8,
+    "stdout": "{\"ok\": false, \"error\": \"internal_error\", \"detail\": \"unhashable type: 'dict'\"}"
+   }
+  },
+  "guardrail_lesson": "a guardrail must fail fatally rather than misfire; here the guardrail itself becomes a single point of failure -- one malformed case can stop a whole batch of conforming cases from being accepted"
+ },
+ "propositions": {
+  "P-1": {
+   "claim": "defect (2) is fixed and its expectation correction already carries append-only provenance (old value retained)",
+   "holds": true,
+   "evidence": "W1 union_seconds new=1740, superseded old=2220, pre-image recorded"
+  },
+  "P-2": {
+   "claim": "defect (1)'s enum check exists and refuses every out-of-enum SCALAR shape (str, empty str, null, non-str scalar)",
+   "holds": true,
+   "evidence": "SWEEP rows for str/empty/null/5 all read reject + R-BASIS-UNKNOWN"
+  },
+  "P-3": {
+   "claim": "the enum check is NOT total: a CONTAINER basis (list/dict) escapes the check by raising, so the run returns rc=4 and writes no report",
+   "holds": true,
+   "evidence": "rc=4 / no report for basis=[...] and basis={...}"
+  },
+  "P-4": {
+   "claim": "the failure is a denial of verdict, not a refusal: one container basis leaves every OTHER case in the batch undecided",
+   "holds": true,
+   "evidence": "13-case batch -> no report at all; collateral = 13"
+  },
+  "P-5": {
+   "claim": "the contrast arm proves the blast radius belongs to the SHAPE, not to 'being refused': an unregistered str refuses only itself (rc=0, other cases still decided)",
+   "holds": true,
+   "evidence": "str arm: rc=0, 13/13 decided, 0 collateral"
+  },
+  "P-6": {
+   "claim": "the blast crosses class boundaries: a window_accounting case with a container basis also destroys a well-formed calendar case",
+   "holds": true,
+   "evidence": "mixed-class batch -> no report at all"
+  },
+  "P-7": {
+   "claim": "the residual is latent with respect to today's frozen fixtures (no fixture carries a container basis)",
+   "holds": true,
+   "evidence": "container_basis_occurrences == [] over cases.r2.json and cases.json"
+  },
+  "P-8": {
+   "claim": "the reviewer recorded this residual as P4, prescribed a one-line remedy, and the oracle never answered the ownership question it raised",
+   "holds": true,
+   "evidence": "review.md P4 present; oracle section 11 has no type-error discussion"
+  },
+  "P-9": {
+   "claim": "the r2-authored expectation pair carries hashes that are only reproducible after an LF->CRLF transform, so they do not reproduce from the committed bytes",
+   "holds": true,
+   "evidence": "2 CRLF-only files, exactly the r2 new pair; the 5 other recorded hashes reproduce as committed"
+  },
+  "P-10": {
+   "claim": "the hash-domain defect is NOT a tamper finding: the committed blob equals the disk bytes, so the content is unchanged; what is mis-stated is the byte domain",
+   "holds": true,
+   "evidence": "HEAD blob == disk for both files; content intact"
+  }
+ },
+ "proposition_grid_overall": "PASS",
+ "secondary_finding": {
+  "id": "F",
+  "summary": "two recorded sha256 values in the I-14-B evidence chain are not reproducible from the committed bytes; they reproduce only after an LF->CRLF transform",
+  "files": [
+   "harness/frozen_expectations.r2.json",
+   "harness/cases.r2.json"
+  ],
+  "root_cause": "the repo sets core.autocrlf=true; these two files were authored in the r2 pass as NEW files and their sha256 was computed on the CRLF working copy, then written into binding.json / commands.json / handoff.json. The committed blob is LF, so the recorded value is not reproducible from the committed bytes.",
+  "not_a_tamper_finding": "the HEAD blob hashes to the same a24d8ab3... as the disk file, so the content has not changed since the commit; what is wrong is the byte DOMAIN the recorded hash was taken over, not the content",
+  "same_as": "the T1-13 lesson (criterion must match the compared object's form)",
+  "classification": "new, non-blocking, no value is rewritten",
+  "correct_disposition": "an APPEND-ONLY note under binding.json / commands.json / handoff.json recording the CRLF byte domain and the LF blob sha256; do not rewrite the original values",
+  "executed_by_this_card": false
+ },
+ "what_this_card_did_not_do": {
+  "modify_the_subject": "the subject is the r2 frozen artefact and its hash is cited in five evidence files; changing it requires a whole re-run and re-freeze recorded as a new rN (the T1-11 interlock discipline). T1-10 authorises opening a card to fix; this card verifies and registers.",
+  "create_a_production_natural_window_py": "no production instance exists anywhere outside .planning; D-6 of I-14-B forbids promotion, and promotion is another card that T1-9 does not authorise",
+  "edit_oracle_md": "the T1-12 form (1) erratum belongs to the orchestration layer",
+  "rewrite_the_crlf_hashes": "frozen artefacts; register append-only instead",
+  "any_status_transition": "this card is review_pending and grants no qualification"
+ },
+ "handoffs": [
+  {
+   "to": "orchestration layer",
+   "what": "authorise a new revision card that inherits I-14-B r2 and makes the basis membership test container-safe, AND append a ruling to oracle.md section 11 on whether a field type error is a schema-level rc 2 or a per-case refusal",
+   "why": "the code change alone does not answer the ownership question the reviewer raised; and determining it is a professional call by that card's reviewer, not something the implementer may self-fill (T1-24 / T1-21 discipline)"
+  },
+  {
+   "to": "orchestration layer",
+   "what": "append, in the T1-12 form (1) style, a note to the I-14-B binding.json / commands.json / handoff.json recording that cases.r2.json and frozen_expectations.r2.json carry CRLF-domain hashes (23d89fb2... and a24d8ab3... are the committed-blob values)",
+   "why": "frozen artefacts; register append-only, do not rewrite the original values"
+  }
+ ],
+ "artefacts": {
+  "verifier": {
+   "path": "execution_runs/T1-10/a20260920-01/scripts/verify_t1_10.py",
+   "bytes": 24335,
+   "sha256": "544ae0adb3a969209eee5ab5ddbdb781a63a5a6a2b615d8025386b22223ab983"
+  },
+  "evidence": {
+   "path": "execution_runs/T1-10/a20260920-01/t1_10_defect_verification.json",
+   "bytes": 12763,
+   "sha256": "22ead5c549311acea517bdf9819fcf97ad04c24c48edfb82cfc5451cabcb413c"
+  },
+  "decision": {
+   "path": "execution_runs/T1-10/a20260920-01/decision.md",
+   "bytes": 14031,
+   "sha256": "d7fe3ebb8dcc68689f876f7cd7fa03ab09ae13119a72d61c1f54afcecf30e232"
+  },
+  "append_only_proof_round57": {
+   "path": "execution_runs/T1-10/a20260920-01/append_only_proof_round57.json",
+   "bytes": 676,
+   "sha256": "c0bc84cfedad79741eca280928bbdf35e6714ce0beb4e48ea28709551fb0a08a"
+  },
+  "handoff_self_hash_not_registered": "self-reference is unsatisfiable; recompute with sha256sum if needed"
+ },
+ "process_disclosure": [
+  "first run of verify_t1_10.py raised TypeError: window_case() missing 1 required positional argument: 'basis' -- a bug in my own script (the well-formed arm called window_case without a basis and the parameter had no default). Fixed by giving it a default. Caught by the interpreter; no evidence was written from the broken run.",
+  "the evidence file was initially non-idempotent (three runs, three hashes) because the captured stdout echoes the random temp report path. Two rounds of fix were needed: dropping the temp path itself, then a regex redaction, because the path appears JSON-encoded with doubled backslashes and the mkdtemp suffix can contain an underscore. Final state: four consecutive runs share hash 22ead5c5c549311acea517bdf9819fcf97ad04c24c48edfb82cfc5451cabcb413c with no residual temp reference. This is the same family of lesson as the secondary finding: replacing one spelling of a path does not mean the path no longer appears -- the encoded form is a different compared object.",
+  "two intermediate comparison files from the idempotence debugging (run_a.json, run_b.json) remain on disk. The user has forbidden deletion, so they were left in place and are NOT registered as artefacts of this card. The orchestration layer decides whether to keep them; this card does not delete them."
+ ],
+ "boundary_checks": {
+  "product_files_changed_by_this_card": 0,
+  "frozen_artefacts_written_by_this_card": 0,
+  "deletions_performed_by_this_card": 0,
+  "status_transitions": 0,
+  "signatures_forged": 0,
+  "production_anchor_scripts_model_registry_py": "must still be 9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+  "production_anchor_scripts_model_extensions_py": "must still be 9939480b717d5a49523b0d5af73211e5813a78e8436d08864ae6c8562089b911"
+ }
+}

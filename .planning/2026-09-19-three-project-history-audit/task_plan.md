@@ -583,3 +583,75 @@ M13 PRE-FIX shape-violated          -> rc = 0     <- 修复前：完全看不见
 **产物**：`scripts/verify_t8.py`（**19341 B** / `32a7baf01ec5523532ea74c85e7c028a0fde7dfd4bea44ff0b6f866e6743ae64`）、`t8_precondition3_rc_classification.json`（**19934 B** / `f2253b3566b86cb40205092427ca84996d780bf76f97289e5221dcf880d10f65`）、`decision.md`（**9464 B** / `1e183e9bc91c0e723badb7eaf7ad64c0577c3fe0be0859a16de50520e04c2644`）、`handoff.json`（**7867 B** / `c00d4a9b9dd3b5a709cf805d1b62b25ea7a4dad198ca2f169588bc023bf1b34d`）。**边界**：runner 编辑 **0**；**回改历史 rc 0**；冻结证据写入 **0**；`START_HERE.md` 写入 **0**；`rc_namespace.json` 写入 **0**；产品文件 **0 条**；生产锚点 `9ec6529550f189a4…` **一致**；`status` 转移 **0**；代签 **0**；全部 JSON 可解析且登记哈希 **3/3 MATCH**。
 
 > **`handoff.json` 不登记自身哈希（自指）**；其 sha256 只记于本文件与 memory。
+
+---
+
+## Round 57（2026-09-20）新增：T1-10 卡内完成 —— `natural_window.py` 两个产品级缺陷，**结论为「②早已修好且追加式 provenance 已按裁定落地；①的枚举校验已加但**不是全函数**，留下一个**未闭合的残留**」**（**未改任何冻结件、未建生产文件、未做删除**）。落点 `execution_runs/T1-10/a20260920-01/`
+
+**裁定**（`OWNER_DECISIONS.md` §13 **T1-10**）：**授权立卡修复**（产品 + 计划双侧）①`claim.basis` 补**枚举校验**；②修正 `union_of_windows`/`sum_of_windows` 把 quick_check 计入自然观察时长。**②已烧进冻结期望**（W1 `union_seconds=2220`）⇒ 修复须同时以**追加式 provenance** 更正期望，**不得回改冻结正文**。
+
+**先厘清一件事：这是「产品级缺陷」，但不是「生产树里的文件」**。全仓（排除 `.planning/`）**不存在** `natural_window.py`；唯一实例是被测件 `I-14-B/a20260919-01/iso/natural_window.py`，且 **I-14-B 的 D-6 明写该产物刻意不进入生产树**。⇒「产品级」指**产品级形态的缺陷**（该分类器若晋升进生产树会带走的缺陷），**不是**"某个生产文件里的缺陷"。故本卡**不创建、不修改任何生产文件**；按 **T1-9**，**晋升进生产树**属另一张卡、当前无授权。
+
+**缺陷 ② —— 早已修好（P-1 PASS）**。被测件 sha256 = `7fff6f0c1e8ab2…`（= I-14-B 记录的 r2 修订；该轮为回应独立 reviewer 的 `changes_required`，已由该 reviewer **`accepted_scoped`** 结案，P1/P2 两个阻断项确认闭合）。②在代码里的落点：观察区间**只由观察阶段**构成、quick_check **永不进入**（`iso/natural_window.py:174-185`），并另加 **J15** 拒「把 quick_check 改名成第二个窗」的变体（`R-QC-IN-OBS`）。裁定要求的「追加式更正、不回改正文」**盘上已经是这个形态**：
+
+| 要素 | 实测 |
+|---|---|
+| 新值 | `expected.W1.computed.union_seconds = 1740` |
+| 旧值**保留** | `expected_superseded["W1"][…]["old"] = 2220`（**正是裁定引用的数**） |
+| 前像 | `pre_image_sha256 = 3ba2bb17…`；r1 期望在 `harness/archive/` **逐字节可读** |
+| 勘误条目 | `errata[0] = ERR-I14B-R2-01`，含 r1→r2 期望的**机械 unified diff**（182 行） |
+| r1 原位文件 | `oracle.md`/`cases.json` **未被覆盖**；17 个 r1 文件全量归档 |
+
+⇒ **②不存在未完成项**；本卡只确认并登记，**不得重复"修"**。
+
+**缺陷 ① —— 枚举校验已加，但非全函数（P-2 PASS / P-3–P-6 暴露完全性缺口）**。盘上确已有 `BASIS_REGISTRY = {…}`（**set**）+ `if basis not in BASIS_REGISTRY: refusals.append("R-BASIS-UNKNOWN")`（`:60` / `:202`）。**标量域上工作**：`'wall_clock'`/`''`/`None`/`5`（非串标量）**全部** `reject_claim` + `R-BASIS-UNKNOWN`；登记值 `accept_claim`。**容器域上崩塌**——`set` 成员测试对**不可哈希**值**抛异常**：
+
+| 探针 | `basis` 类型 | rc | 报告 | 结果 |
+|---|---|---:|---|---|
+| `registered_str` | `str` | 0 | 有 | `accept_claim` |
+| `unregistered_str` / `empty_str` / `null` / `scalar_non_str` | `str`/`null`/`int` | 0 | 有 | `reject_claim` / `R-BASIS-UNKNOWN` |
+| **`list_of_registered`** | **`list`** | **4** | **无** | `internal_error: unhashable type: 'list'` |
+| **`dict_object`** | **`dict`** | **4** | **无** | `internal_error: unhashable type: 'dict'` |
+
+`main()` 的异常处理器把整个进程变成 **rc=4 且不写任何报告**（`:468-473`）。
+
+**危害形态：这是「剥夺裁决」，不是「拒绝主张」（P-4/P-6）**。`R-BASIS-UNKNOWN` 是**对该 case 判负**；rc=4 是**对该 case 判不了**——且**连带把同批所有 case 一起判不了**。实测爆炸半径：
+
+| 臂 | 批次 | rc | 已裁决 | 连带未裁决 |
+|---|---|---:|---:|---:|
+| **A** 12 良构 + 1 个 `basis=[list]` | 13 | **4** | **0** | **13** |
+| **B** 12 良构 + 1 个 `basis='wall_clock'`（串） | 13 | 0 | 13 | **0** |
+| **C** 1 calendar + 6 window 良构 + 1 个 `basis={dict}` | 8 | **4** | **0** | **8** |
+
+**对照臂 B** 证明：爆炸半径属于**值的形态**（容器），**不属于「被拒绝」本身**。**臂 C** 证明伤害**跨 class**——一个 `window_accounting` case 的容器 `basis` 会把**与之无关的 `calendar` case** 一起打成「判不了」。**J16 存在的全部理由就是「把 `basis` 输入域锁死在封闭枚举内」，而恰在输入域最坏一侧（结构错误的 `basis`），J16 不开火，而是把整个裁决机关炸掉** ⇒ 护栏本身成了**单点故障**（SKILL 陷阱 13「护栏要致命不要误报」的反面：**一个畸形用例可以让整批合规用例无法被验收**）。
+
+**该缺口已由 reviewer 登记但从未闭合（P-8）**：`review.md`「新增发现」**P4**（标注**非阻断**）已记同一现象并给最小修法（`set` 改 `tuple`，或 J16 前加 `isinstance(basis, str)` 守卫；并在 oracle §11 明确「字段类型错误」属 schema 级 rc 2 还是 per-case 拒绝）。**实测**：`oracle.md` §11 **未回答**该问题（`字段类型`/`unhashable`/`rc 4`/`internal_error`/`isinstance` 五词**全部缺席**）；`BASIS_REGISTRY` 至今**仍是 `set`**。⇒ 残留是**reviewer 已指出、实现者未采纳、oracle 未定口径**的**敞口**。
+
+**今天打不到，但正是 J16 管的那个面（P-7）**：31 个负例（`cases.r2.json` + `cases.json`）中 **0 个** `basis` 是容器类型 ⇒ 残留**潜伏**。**但不构成「可以不管」**：`cases.json` 是**输入**，J16 的**职责**就是**管输入域**。「今天恰好没人这么写」是**样例覆盖**论证，不是**全函数性**论证。
+
+**F 段附带发现（P-9/P-10，新增、非阻断、不改任何值）**：复算 I-14-B 记录的 7 个关键哈希，**5 个逐字节可复算，2 个不行**：
+
+| 文件 | 记录值 | 盘上（= HEAD blob） | 复算条件 |
+|---|---|---|---|
+| `harness/frozen_expectations.r2.json` | `6f814d0a…` | `a24d8ab3…` | **仅 `LF→CRLF` 变换后**才等于记录值 |
+| `harness/cases.r2.json` | `c00a3a00…` | `23d89fb2…` | **仅 `LF→CRLF` 变换后**才等于记录值 |
+| 其余 5 个（r1 期望 / `cases.json` / `oracle.md` / SUT / `run_cases.py`） | — | 同记录值 | **原样** ✅ |
+
+**根因**：本仓 `core.autocrlf = true`。那两个文件是 **r2 轮新建**的，sha256 在 **CRLF 工作副本**上算得并写进 `binding.json`/`commands.json`/`handoff.json`；**提交进 git 的 blob 是 LF**。⇒ 记录值**不是提交字节的 sha256**，而是**另一个字节域**的。**关键限定**：HEAD blob 与盘上文件**同**为 `a24d8ab3…` ⇒ **内容自提交以来未变**；坏的**不是内容**，是**「哈希取在哪个字节域上」没写明**。⇒ **本项目第 6 次同源教训重演**（判据须匹配被比对量的形态；这里"比对面"是**行尾规范化前/后**），**且恰好命中 T1-13 的同一条**。
+
+**本卡没有做的事**：改 `iso/natural_window.py`（是 r2 冻结件、其 hash 被 5 处 evidence 引用；改它须**整体重跑重冻记为新 rN**，同 **T1-11** 互锁对纪律——T1-10 授权的是"立卡修复"，本卡性质是核验）；建生产 `natural_window.py`（D-6 明禁 + T1-9 未授权）；改 `oracle.md` §11（T1-12 ① 属编排层）；改 CRLF 哈希（冻结件，按 T1-12 ① 追加式登记，不回改原值）；任何 `status` 转移。
+
+**⚠️ 移交编排层（本卡不做）**：
+1. **①的残留**：授权一张**继承 I-14-B r2** 的新修订卡，把成员测试改为**对容器安全**的写法（reviewer 已给最小修法），**并同时**在 `oracle.md` §11 追加**「字段类型错误属 schema 级 rc 2 还是 per-case 拒绝」**的裁定 —— **该口径属专业判断，须由该卡 reviewer 出具，不可由实现者自填**（同 T1-24/T1-21 纪律）。
+2. **F 段哈希域缺口**：按 **T1-12 ①** 在 I-14-B 的 `binding.json`/`commands.json`/`handoff.json` **追加**一行，写明「`cases.r2.json` 与 `frozen_expectations.r2.json` 的记录 sha256 取自 **CRLF 工作副本**；提交 blob 为 LF，其 sha256 分别为 `23d89fb2…`/`a24d8ab3…`」。**不回改原值。**
+3. **②** 无需移交：已由 I-14-B r2 自轮闭合并经 reviewer `accepted_scoped`。
+
+**本卡自身的过程披露（如实）**：①`verify_t1_10.py` 首跑 `TypeError: window_case() missing 1 required positional argument: 'basis'` —— **我自己的脚本 bug**（良构臂省略了该参数而参数无默认值）；已修，**未污染证据**。②证据文件**首版非幂等**（三次运行三个哈希）—— 根因：捕获的 stdout 回显了**随机 temp 目录**的报告路径；**两轮修正**（弃记 temp 路径 → 仅替换字面路径**不够**，因 stdout 是 **JSON 编码**过的、反斜杠**已加倍**，且 `mkdtemp` 后缀可能含 `_`，故改为**按 `t1_10_<随机>` 形状正则脱敏**）；**终态连跑 4 次同哈希**。⇒ **又一次同族教训**：**「我替换了那个路径」≠「那个路径不再出现」——编码后的形态是另一个被比对面**（与 F 段 CRLF 缺口**同源**）。③幂等调试遗留的 `run_a.json`/`run_b.json` **原样保留**（用户明令不删），**非本卡交付物、handoff 不登记**，由编排层决定去留。
+
+**产物**：`scripts/verify_t1_10.py`（**24335 B** / `544ae0adb3a969209eee5ab5ddbdb781a63a5a6a2b615d8025386b22223ab983`）、`t1_10_defect_verification.json`（**12763 B** / `22ead5c549311acea517bdf9819fcf97ad04c24c48edfb82cfc5451cabcb413c`）、`decision.md`（**14031 B** / `d7fe3ebb8dcc6868…`）、`handoff.json`（**12934 B** / `cb18c036e85af238abf30cf682a7b94173172752c489f6fbd339ea6f595515ec`）。**边界**：产品文件 **0 条**；生产锚点 `9ec6529550f189a4…` / `9939480b717d5a49…` **一致**；**被核验件写入 0 次**（SUT/`cases*.json`/`frozen_expectations.*`/`oracle.md`/`review.md`/`run_cases.py`/`binding.json`/`commands.json`/`handoff.json` 全只读）；**删除 0 次**；`status` 转移 **0**；代签 **0**；**十命题全 PASS**（`overall = PASS` / exit 0）；两 JSON 可解析；登记哈希 **3/3 MATCH**。
+
+> **`handoff.json` 不登记自身哈希（自指）**；其 sha256 只记于本文件与 memory。
+
+**Round 57 补记（**追加**，不改上文）**：上述证据在落笔后**新增一个交付件**并**重生成了 `handoff.json`**（因原 handoff 未登记该件），故**两个哈希以上文为准需更正**：`handoff.json` 现为 **12934 → 13086 B**、sha256 **`cb18c036e85af238abf30cf682a7b94173172752c489f6fbd339ea6f595515ec` → `ed206347b00b86d96629e917a2c33f8054f9e323accc40f2d2d2ab0934501306`**。新增件 `append_only_proof_round57.json`（**676 B** / `fb7bf6a0a8e9e602…`，**完整 sha256 见 `handoff.json` 的 `artefacts` 表**）是本次 `task_plan.md` 追加的**机械证明**：以 HEAD blob（`e76138cb…`，与登记的**前像常量一致**）为基准，`prefix_bytes_preserved = True`、opcodes = `['equal','insert']`、**`deleted_chars = 0`**、`inserted_chars = 6436` ⇒ **`APPEND_ONLY = True`**。`verify_t1_10.py` / `t1_10_defect_verification.json` / `decision.md` 三者哈希**未变**（与上文一致）。**handoff.json 自身哈希仍不登记（自指）**。
+
+**Round 57 再补记（**追加**，上文补记里的两个**字节数**我写错了，以此处为准）**：`handoff.json` 实测 **13153 B**（不是 13086 B），sha256 `ed206347b00b86d96629e917a2c33f8054f9e323accc40f2d2d2ab0934501306`（**该值上文写对了**）。`append_only_proof_round57.json` 实测 **676 B**（上文写对），sha256 **`fb7bf6a0a8e9e602d89abbffa8d2116e4f2391cdaa82c18c3b02345dcb9918a4`**。**记录哈希一律以 `handoff.json` 的 `artefacts` 表为权威**（该表在写盘后逐条回读复算，**4/4 MATCH**）；本文件的散文数字仅为提示，**不得用作比对依据**。⇒ 又一次同族提醒：**字节数这类"我顺手写下的数字"必须先量再写**（本项目第 13/14 次同源教训的轻量变体）。
