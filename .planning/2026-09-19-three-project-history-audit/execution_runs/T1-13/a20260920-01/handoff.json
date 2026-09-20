@@ -1,0 +1,174 @@
+{
+  "card": "T1-13",
+  "attempt": "a20260920-01",
+  "kind": "boundary verification + provenance (no new edit authored)",
+  "title": "I-09-A review.md:80 出处列修复 —— 已存在的工作树编辑经边界核验与合法性论证",
+  "status": "planned",
+  "status_note": "本 attempt 交付的是**核验 + 合法性论证 + owner 要求的附件**（前像 hash + diff）。**未新做任何编辑**；**未写入任何冻结件**；**未做任何状态转移**。",
+
+  "authority": {
+    "source": "OWNER_DECISIONS.md §13 T1-13（TIER-1 可裁）",
+    "ruling": "授权改该行出处列以实现闭合。边界：只改该行的**出处列**，不动任何数值、不动 reviewer 其余字节，改动须附前像 hash + diff。",
+    "boundaries": [
+      {"id": "B-1", "text": "只改该行的**出处列**"},
+      {"id": "B-2", "text": "**不动任何数值**"},
+      {"id": "B-3", "text": "**不动 reviewer 其余字节**"},
+      {"id": "B-4", "text": "改动须附**前像 hash + diff**"}
+    ]
+  },
+
+  "state_on_arrival": {
+    "finding": "该编辑**已在工作树中，但未提交、无 attempt 记录**，且**缺 T1-13 明文要求的前像 hash + diff**。",
+    "consequence": "本卡**补上该文书**，并确立**该编辑为何被许可**（合法性论证，见 licence_chain）。",
+    "no_new_edit": "本卡**未新做任何编辑**。工作树中既有的编辑是被**核验**，不是被**撰写**。若 reviewer 希望改措辞，那是需要另行授权的**新**编辑。"
+  },
+
+  "licence_chain": {
+    "question": "改 reviewer 的字节，凭什么算合法？",
+    "answer": "只有当**前像已知有缺陷**时才成立。此处由三个独立的盘上来源确立。",
+    "evidence": [
+      {
+        "source": "errata.md section R-1",
+        "quote": "| **`review.md:80`（§4 数据表行）** | **仍是旧措辞**… **该行保持原样、未修**（其行末「注」已披露 270 行的后续读数，但**出处与数值仍不可互证**）| **未修理由**：本轮边界为「**只许追加**」，且 `review.md` 的既有字节（含 reviewer 自行追加的 §R）**不得改动**；**若 owner 允许改 `review.md`，最小修法是仅改 `:80` 的出处列**（改为「本 attempt 期间一次快照读数，该文件其后被重抓」）。"
+      },
+      {
+        "source": "handoff.json review_round_3.known_gaps[0]",
+        "quote": "review.md:80 still pairs '132 lines / 126 real entries' with a source file that now holds 270 lines; declared UNFIXED by errata.md section R-1 and left to the owner (fixing it would require editing bytes the reviewer owns)"
+      },
+      {
+        "source": "前像逐字",
+        "quote": "`before/git_status_before.txt`、`after/git_status_after.txt`",
+        "reading": "以 `after/git_status_after.txt`（现 270 行）作为 `132 / 126` 的出处，而该文件**不再复现**该读数 ⇒ 出处与数值不可互证，缺陷确在。"
+      }
+    ],
+    "chain": [
+      "① errata.md:319 说该修复**仅在 owner 允许时**才可做，且说最小修法是『仅改 :80 的出处列』；",
+      "② handoff.json 把该项记为『left to the owner』；",
+      "③ **T1-13 正是那个允许**，且其边界**就是同一处最小修法** —— 仅改出处列。",
+      "⇒ 这是**对已声明缺陷的许可式修复**，不是无来由的改动。"
+    ]
+  },
+
+  "verification": {
+    "script": "scripts/verify_t13.py",
+    "script_bytes": 11463,
+    "script_sha256": "e3d291fb3bf03417eb6f20a3952bb5626fc724309d7db70a24284424dd03e1ec",
+    "result_file": "t13_line80_verification.json",
+    "propositions": [
+      {
+        "id": "B-1",
+        "claim": "只改该行的出处列；其余 cell 逐字节相同",
+        "holds": true,
+        "evidence": {"cells_identical": [0, 1], "cells_changed": [2], "cell_count": 3},
+        "reading": "该行是 markdown 表格行，含 3 个 ` | ` 分隔的 cell：[0] 行标签、[1] 实测数值、[2] 出处。仅 [2] 变。"
+      },
+      {
+        "id": "B-2",
+        "claim": "不动任何数值 —— 承载实测值的 **metric cell** 逐字节相同，且其数字多重集不变",
+        "holds": true,
+        "evidence": {
+          "metric_cell_byte_identical": true,
+          "metric_numbers_pre": ["148", "142", "132", "126", "124", "270"],
+          "metric_numbers_post": ["148", "142", "132", "126", "124", "270"],
+          "metric_number_multiset_preserved": true
+        },
+        "why_separate_from_B1": "『只改出处列』与『没动数值』可以**各自独立地失败** —— 出处列里可以**被引入**一个新数字，而列级检查仍然通过。B-2 通过断言 **metric** cell 逐字节相同 + 数字多重集不变来封住这个缺口。",
+        "reading": "实测主张 148/142/132/126/124/270 **分毫未动**。"
+      },
+      {
+        "id": "B-3",
+        "claim": "不动 reviewer 其余字节；行数不变",
+        "holds": true,
+        "evidence": {"changed_line_numbers": [80], "line_count_pre": 300, "line_count_post": 300},
+        "reading": "300 行中**恰一行**不同，且是第 80 行。"
+      },
+      {
+        "id": "B-4",
+        "claim": "该编辑修复的是 errata.md 已声明并留给 owner 的缺陷；不是无来由的改动",
+        "holds": true,
+        "evidence": {
+          "errata_has_R1_section": true,
+          "errata_R1_names_line_80": true,
+          "errata_R1_declares_unfixed": true,
+          "errata_R1_names_this_exact_minimal_fix": true,
+          "handoff_known_gaps_records_it_as_UNFIXED": true,
+          "pre_image_carries_the_defective_citation": true
+        },
+        "note": "B-4 是**方向性信任**检查：编辑 reviewer 字节的正当性**完全取决于前像确有缺陷**；故前像必须被证明仍携带 R-1 所声明的缺陷。"
+      }
+    ],
+    "overall": "PASS",
+    "all_hold": true
+  },
+
+  "hashes": {
+    "pre_image": {
+      "source": "git show HEAD:.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-A/a20260919-01/review.md",
+      "bytes": 34110,
+      "sha256": "ab551696ce50f78221104c9cbebd3d775d9f84550d18cb9160d2224222ddb960"
+    },
+    "post_image": {
+      "source": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-09-A/a20260919-01/review.md",
+      "bytes": 34555,
+      "sha256": "9fafca93adf8820fabe60d0425dec71057f6417a35785c57506e33320d98d45c",
+      "delta_bytes": 445
+    },
+    "note": "owner 明文要求『改动须附前像 hash + diff』⇒ 两者均已随本卡交付。"
+  },
+
+  "error_made_and_corrected": {
+    "symptom": "`verify_t13.py` 首跑打印 `FATAL: line count changed` —— **误报**。",
+    "root_cause": "`REPO = EXEC.parents[1]` 解析到 `<root>/.planning`，**高了一级**（应为 `EXEC.parents[2]`）。相对路径因此以错误基准计算，而 cwd 是真正的仓库根 ⇒ `git show HEAD:<错误路径>` 返回**空 stdout**，空前像随后触发行数护栏，报出一个**并不存在的内容问题**。",
+    "fixes": [
+      "`REPO = EXEC.parents[2]`，并把该 off-by-one 写进注释；",
+      "新增**路径健全性护栏**（`git rev-parse --show-toplevel` 必须等于 `REPO`）；",
+      "新增**空前像护栏**：`rc != 0` 或前像为空即**显式失败（rc=2）**，不再落入误导性判定。"
+    ],
+    "same_class_as": "**与 T1-6 的路径层级错误同类**（`RUN.parent / \"M24\"` 得到 `T1-6/M24`）。两张卡两次命中 ⇒ 是**模式**，不是运气。",
+    "lesson": "**空结果与否定结果绝不能共用一条代码路径。** 护栏现在区分『我读不到输入』与『输入说不』。",
+    "why_structural": "护栏是**结构性**的（拒绝在错误根下运行），而不是一个已改正的常量 —— 后者会让下一支脚本重新踩一次。"
+  },
+
+  "artifacts": {
+    "scripts/verify_t13.py": {"bytes": 11463, "sha256": "e3d291fb3bf03417eb6f20a3952bb5626fc724309d7db70a24284424dd03e1ec"},
+    "decision.md": {"bytes": 9174, "sha256": "3ee8892bc65ba9b8448b4ca6d0d7416efb21e9a0430f3089da4bc0d6489065dc"},
+    "t13_changes.diff": {"bytes": 1817, "sha256": "6f513476340eae21a6ebec4b6db3fae179ada004207fd566e2c7cb2ad4bb6806"},
+    "t13_line80_verification.json": {"bytes": -1, "sha256": "self"},
+    "review_under_test": {
+      "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/I-09-A/a20260919-01/review.md",
+      "pre_image_sha256": "ab551696ce50f78221104c9cbebd3d775d9f84550d18cb9160d2224222ddb960",
+      "post_image_sha256": "9fafca93adf8820fabe60d0425dec71057f6417a35785c57506e33320d98d45c",
+      "written_by_this_attempt": false
+    }
+  },
+
+  "boundaries": {
+    "new_edits_authored": 0,
+    "frozen_artifacts_written": 0,
+    "errata_handoff_binding_oracle_written": 0,
+    "product_files_written": 0,
+    "status_transitions_made": 0,
+    "signatures_made_on_behalf_of_others": 0,
+    "own_attempt_writes_only": true,
+    "emitted_json_parses": true,
+    "git_diff": "全部位于 .planning/ 内；产品文件 0 条"
+  },
+
+  "qualifications": {
+    "card_status": "planned",
+    "acceptance": "NOT granted — acceptance is TIER-2, not the owner's to grant",
+    "existing_edit_verified_against_all_boundaries": true,
+    "required_attachments_supplied": true,
+    "licence_chain_established": true,
+    "self_upgrade": false
+  },
+
+  "next_action": {
+    "owner": "独立 reviewer",
+    "steps": [
+      "① 独立 reviewer 确认 B-1…B-4 并接受 §licence_chain 的许可链。",
+      "② 该 `review.md` 编辑**应当被提交** —— 它一直**未提交**，这本身就是 T1-27 所警示的暴露面。",
+      "③ **给 reviewer 的提示**：`errata.md §R-1` 的 known-gap 条目与 `handoff.json.review_round_3.known_gaps[0]` 现描述的是一个**已被修复**的缺陷。按 **T1-12 ①** 形态，这两处应以**追加式 note 取代**（*superseded*），**不得回改**。本卡**不做**该变更（不属 T1-13 授权范围）。"
+    ]
+  }
+}

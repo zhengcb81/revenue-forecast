@@ -77,7 +77,7 @@
 | 生产锚点前后重算 | 8/8 SAME（含 registry） | `commands.json` 与本节 |
 | 隔离副本 vs 生产 `.py` | 43/43 SAME | 同上 |
 | 复跑后并发两 worker rc | run1 `[0,0]`、run2 `[0,0]`（**仍未构成锁的证明**） | 比对输出 |
-| revenue-forecast `git status` 行数（**两个保留的快照文件**，勘误 E-6 统一口径） | before 快照 = **148 行 / 142 真实条目**；after 快照（重抓于本 attempt 期间）= **132 行 / 126 真实条目**；**首次 after 快照（124 行）未保留，明确排除、不作证据**。**注**：该树此后仍在被并发卡改动（本勘误阶段收尾时再测已到 **270 行**），故上述两值只是**快照时点**的读数，不是"最终状态" | `before/git_status_before.txt`、`after/git_status_after.txt` |
+| revenue-forecast `git status` 行数（**两个保留的快照文件**，勘误 E-6 统一口径） | before 快照 = **148 行 / 142 真实条目**；after 快照（重抓于本 attempt 期间）= **132 行 / 126 真实条目**；**首次 after 快照（124 行）未保留，明确排除、不作证据**。**注**：该树此后仍在被并发卡改动（本勘误阶段收尾时再测已到 **270 行**），故上述两值只是**快照时点**的读数，不是"最终状态" | `before/git_status_before.txt`（148/142，快照时点）—— **after 侧出处已勘误**：本行数值 132 行 / 126 真实条目取自 **本 attempt 重抓时刻**的 `after/git_status_after.txt`，但该文件此后被并发卡持续改动、现为 270 行 （sha256 `f3ef8287ff07741ce0f31ed3…`），**不再复现本行数值**；故本行出处以 `commands.json` 的 `CMD-I09A-*` 重抓记录为准，`after/git_status_after.txt` 只作**该时刻读数**的旁证（勘误 E-6 口径统一） |
 | company-wiki / filing-fetch 前后 | 0 差异 / 0 差异 | `before/`、`after/` |
 
 ---

@@ -248,3 +248,28 @@ Phase 1–6 complete。**Phase 7 实施推进 started**，已建 65/86 卡。**�
 ## 完成标准与范围说明
 
 本计划勾选仅表示历史审查和计划材料完成，不代表产品修复、三家正式预测或预测准确性通过。766路径全文、2混合清单工程部分、1raw排除对应master_coverage，无工程历史正文pending；另252业务页已初筛排除。历史运行不具备可重建环境时保留historical_only/insufficient_evidence。第二波更正和并发normalizer版本边界见reviews/second_wave/root_cross_review.md。
+
+**Round 46（2026-09-20）新增：T1-13 卡内完成 —— `review.md:80` 出处列勘误的**核验 + 合法性论证**（**未新撰编辑**；所核验的编辑**此前已存在于工作树**）。落点 `execution_runs/T1-13/a20260920-01/`：
+
+**裁定**（`OWNER_DECISIONS.md` §13 **T1-13**，TIER-1）：**授权改该行出处列**以实现闭合。**边界**：只改该行的**出处列**，不动任何数值、不动 reviewer 其余字节，改动须附**前像 hash + diff**。⇒ 本卡的三件事即：**核验边界被守住**、**补上前像 hash + diff**、**论证该改写为何被许可**。
+
+**卡的状态从一开始就与预期不同（先查、不假设）**：该编辑**早已在工作树中，但从未提交、也没有任何 attempt 记录** —— 即它是一次**已发生、未记账**的改动；T1-13 明文要求的**前像 hash + diff 附件当时并不存在**。⇒ 本卡的角色**不是执行一次修改**，而是**追认并设围栏**。
+
+**被核验的编辑（I-09-A/a20260919-01/review.md 第 80 行）**：前像（`git show HEAD:`）= **34110 B / `ab551696ce50f78221104c9cbebd3d775d9f84550d18cb9160d2224222ddb960`**；后像（盘上）= **34555 B / `9fafca93adf8820fabe60d0425dec71057f6417a35785c57506e33320d98d45c`**；`delta = +445 B`。只改**出处列**：前 `` `before/git_status_before.txt`、`after/git_status_after.txt` `` → 后 `before/git_status_before.txt`（148/142，快照时点）+ 一处勘误说明（现为 270 行、sha256 `f3ef8287ff07741ce0f31ed3…`，**不再复现本行数值**）。
+
+**四条边界命题全成立（`scripts/verify_t13.py`，任一失败即 FAIL，`overall = PASS` / exit 0）**：
+
+| # | 命题 | 结果 | 证据 |
+|---|---|---|---|
+| **B-1** | 只改**出处列**，其余列逐字节不动 | **holds** | 行以 `" | "` 切为 3 cell；`cells_identical = [0, 1]`、`cells_changed = [2]` |
+| **B-2** | **不动任何数值** | **holds** | metric cell **逐字节相同**，且 `re.findall(r"\d+")` 数字多重集 `['148','142','132','126','124','270']` **前后完全相同** |
+| **B-3** | **不动 reviewer 其余字节** | **holds** | `changed_line_numbers = [80]`、**300 → 300 行**（行数不变，无增删行） |
+| **B-4** | 所修的是 errata 已声明并**留给 owner** 的缺陷，**不是静默改写** | **holds** | 六个子检查全 True（见下方 licence chain） |
+
+**B-1 与 B-2 为何必须分开**：「只改出处列」与「没动数值」**可以各自独立地失败** —— **出处列里本身可以被引入一个新数字**（勘误说明天然要引用行数），而列级检查**仍然通过**。⇒ B-2 断言 **metric** cell 逐字节相同 + 数字多重集不变，才封住这条缝。**判据必须匹配被判定对象的形态**（本项目第 9 次同源教训）。
+
+**licence chain —— 为何这次改写是「许可式修复」而非越权（B-4 的「方向性信任」）**：编辑 reviewer 字节的正当性**完全取决于前像确有缺陷**。三环闭合：①`errata.md` section **R-1** 明文声明该行为 **「该行保持原样、未修」**，并写明**「若 owner 允许改 `review.md`，最小修法是仅改 `:80` 的出处列」**（理由：本轮边界为**只许追加**，且 reviewer 自有字节不得动）；②`handoff.json > review_round_3 > known_gaps[0]` 记为 ***"declared UNFIXED … left to the owner"***；③**前像确实仍携带缺陷** —— 它以 `after/git_status_after.txt` 作为 `132/126` 的出处，而**该文件现已是 270 行、不再复现该读数**。⇒ **T1-13 正是那个允许，且其边界恰好就是同一处最小修法。**
+
+**产物**：`decision.md`（9174 B / `3ee8892b…`）、`t13_changes.diff`（1817 B / `6f513476…`，**owner 明文要求的附件**）、`t13_line80_verification.json`（3263 B / `5f97d54f…`）、`handoff.json`（10020 B / `ba4da2ce…`）、`scripts/verify_t13.py`（11463 B / `e3d291fb…`）。**边界**：**未新撰任何编辑**（所核验编辑系既存）；**未回改冻结证据**；未做任何 `status` 转移；未代签；`git diff HEAD --name-only` **全部在 `.planning/` 内、0 条产品文件**。
+
+**⚠️ 给 reviewer 的提示（本卡不做，因超 T1-13 授权范围）**：`errata.md §R-1` 的 known-gap 条目与 `handoff.json.review_round_3.known_gaps[0]` 现描述的是一个**已被修复**的缺陷 ⇒ 二者均已过时。按 **T1-12 ① 形态**应以**追加式 note 取代**（`superseded_*` 标记、**不得回改**原字节）。

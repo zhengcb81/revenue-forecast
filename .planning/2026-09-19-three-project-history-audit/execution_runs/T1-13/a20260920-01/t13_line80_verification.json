@@ -1,0 +1,86 @@
+{
+ "pre_image": {
+  "source": "git show HEAD:.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-A/a20260919-01/review.md",
+  "bytes": 34110,
+  "sha256": "ab551696ce50f78221104c9cbebd3d775d9f84550d18cb9160d2224222ddb960",
+  "lines": 300
+ },
+ "post_image": {
+  "source": "C:/Users/郑曾波/Projects/revenue-forecast/.planning/2026-09-19-three-project-history-audit/execution_runs/I-09-A/a20260919-01/review.md",
+  "bytes": 34555,
+  "sha256": "9fafca93adf8820fabe60d0425dec71057f6417a35785c57506e33320d98d45c",
+  "lines": 300,
+  "delta_bytes": 445
+ },
+ "attachments": {
+  "t13_changes.diff": {
+   "bytes": 1810,
+   "sha256": "76ef3e16cc67e78cc943174310cfc269e239750c7283c35cc84dba96c7682696"
+  },
+  "pre_image_sha256": "ab551696ce50f78221104c9cbebd3d775d9f84550d18cb9160d2224222ddb960",
+  "post_image_sha256": "9fafca93adf8820fabe60d0425dec71057f6417a35785c57506e33320d98d45c"
+ },
+ "verdicts": {
+  "B-1": {
+   "claim": "only the citation cell of the row changed; other cells are byte-identical",
+   "cell_count_pre": 3,
+   "cell_count_post": 3,
+   "cells_identical": [
+    0,
+    1
+   ],
+   "cells_changed": [
+    2
+   ],
+   "holds": true,
+   "reading": "3 cells: [0]=row label, [1]=measured values, [2]=citation. Only [2] changed."
+  },
+  "B-2": {
+   "claim": "no number changed in the metric cell (the cell carrying the measured values)",
+   "metric_cell_byte_identical": true,
+   "metric_numbers_pre": [
+    "148",
+    "142",
+    "132",
+    "126",
+    "124",
+    "270"
+   ],
+   "metric_numbers_post": [
+    "148",
+    "142",
+    "132",
+    "126",
+    "124",
+    "270"
+   ],
+   "metric_number_multiset_preserved": true,
+   "holds": true,
+   "reading": "the measured claims 148/142/132/126/124/270 live in cell [1], which is untouched."
+  },
+  "B-3": {
+   "claim": "no other reviewer byte changed; line count unchanged",
+   "changed_line_numbers": [
+    80
+   ],
+   "line_count_pre": 300,
+   "line_count_post": 300,
+   "holds": true,
+   "reading": "exactly one line differs, and it is line 80."
+  },
+  "B-4": {
+   "claim": "the edit repairs a defect that errata.md had declared and left to the owner; it is not a silent rewrite",
+   "errata_has_R1_section": true,
+   "errata_R1_names_line_80": true,
+   "errata_R1_declares_unfixed": true,
+   "errata_R1_names_this_exact_minimal_fix": true,
+   "handoff_known_gaps_records_it_as_UNFIXED": true,
+   "pre_image_carries_the_defective_citation": true,
+   "holds": true,
+   "reading": "errata.md section R-1 declares the defect, names 'change only line 80's citation column' as the minimal fix, and states the reason it was not applied (the round's boundary was append-only, and the reviewer's bytes were not the implementer's to edit). handoff.json records it as a known gap 'left to the owner'. T1-13 is the owner supplying exactly that authorisation — so this is a licensed repair of a declared defect."
+  },
+  "all_hold": true
+ },
+ "overall": "PASS",
+ "conclusion": "T1-13's edit satisfies all three of its stated boundaries, and its legitimacy is demonstrated: the pre-image carries the defect that errata.md section R-1 declared and left to the owner, and the edit changes only the citation cell of line 80."
+}
