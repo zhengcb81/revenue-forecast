@@ -1,0 +1,119 @@
+{
+ "card": "T1-8",
+ "attempt": "a20260920-01",
+ "batch": "TIER-1 (owner-ruled)",
+ "authority": "OWNER_DECISIONS.md section 13 T1-8 (TIER-1)",
+ "scope_of_this_card": "T1-8 preconditions (3) only: the rc classification and the 'expectation missing' reading. This card does NOT promote the runner fix across batches; promotion still requires preconditions (1) and (4).",
+ "ruling_excerpt": "promotion is authorised, but four preconditions must be satisfied first: (1) do not regress to isinstance; (2) register the schema constraint that `expected` must be a bare type name; (3) fix the rc classification and the 'expectation missing' reading first; (4) register an rc namespace per batch keyed by runner sha256.",
+ "claim_under_test": "START_HERE.md lines 111-115 state: 'the current classification of a cases.json case missing `expected` is rc=3, while the registered reading says rc=2; unify to rc=2 before promoting the runner.'",
+ "conclusion": "The claim is not true as stated, and the action it demands is a no-op with respect to product code. A case whose `expected` is unusable (absent / non-string / empty) is ALREADY rc=2 in every runner generation that can reach the branch. rc=3 belongs to a declaration that is PRESENT BUT WRONG, which is the correct semantic and must NOT be unified to rc=2.",
+ "what_the_measurement_found": {
+  "generations_that_can_reach_the_branch": {
+   "M13-M16 / M17-M20 / M25-M28": "carry an explicit unusable-declaration rule and classify it rc=2",
+   "M01-M04 / M05-M08 / M09-M12 / M21-M24 / M29-M31": "read `expected` by subscript, so a missing key raises KeyError; these generations have no such classification to unify"
+  },
+  "rc3_attributions_found_for_a_missing_expected": 0,
+  "cases_json_files_scanned": 31,
+  "negative_cases_scanned": 347,
+  "cases_without_expected": 0,
+  "so_the_divergence_has_never_been_realised_in_an_observed_rc": true
+ },
+ "why_unifying_to_rc2_would_be_harmful_not_merely_redundant": "rc=3 means 'a judgement was possible and did not hold'; rc=2 means 'no judgement could be issued'. A declaration that is present but wrong is a JUDGED mismatch and belongs in rc=3. Forcing it to rc=2 would erase the distinction between 'we could not judge' and 'we judged and it failed', and would let a TAMPERED declaration read as 'undecidable' rather than 'failed'.",
+ "the_real_gap_is_textual": {
+  "where": ".planning/2026-09-19-three-project-history-audit/execution_v2/START_HERE.md lines 111-115",
+  "what": "the sentence 'current classification ... is rc=3' is false; the correct statement is that an unusable `expected` is rc=2 and an incorrect one is rc=3",
+  "correct_disposition": "an APPEND-ONLY erratum in the T1-12 form (add a new section plus a line-level 'line X is superseded, see this section' note); do NOT rewrite the frozen bytes",
+  "executed_by_this_card": false,
+  "why_not": "T1-8 authorises promotion of the runner fix and lists preconditions; it does not authorise editing START_HERE.md. That file is the orchestration layer's own navigation document, so the erratum needs its own ruling. This card registers the need instead."
+ },
+ "secondary_finding": {
+  "where": "execution_runs/M17-M20/a20260919-01/rc_namespace.json",
+  "what": "its `runner_sha256_by_batch` map carries values that do not match the on-disk runners for M21-M24 (records d02057de with a note that it moved to a5ee7599; the disk value is a5ee7599c37e)",
+  "mitigating": "the table itself says of that block 'NOT VERIFIED BY THIS BATCH' and the file's adjudicated_by is PENDING, so this is a self-declared unverified claim rather than a misstatement presented as measured",
+  "correct_disposition": "an APPEND-ONLY note recording that precondition (3) verified the shas by measurement; do not rewrite the original values",
+  "executed_by_this_card": false
+ },
+ "propositions": {
+  "P-1": {
+   "claim": "no runner classifies a cases.json case whose `expected` key is absent as rc=3",
+   "holds": true,
+   "evidence": "rc3_classification_observed == []"
+  },
+  "P-2": {
+   "claim": "no runner code path maps a missing `expected` onto rc=3",
+   "holds": true,
+   "evidence": "paths_to_rc3_for_missing_expected == [] across 68 copies"
+  },
+  "P-3": {
+   "claim": "the rc vocabularies differ per runner sha256 and every batch is nameable by its sha, as T1-19 requires",
+   "holds": true,
+   "evidence": "8 families, 8 distinct runner sha256 values"
+  },
+  "P-4": {
+   "claim": "the frozen evidence separates 'unusable declaration' (no verdict, rc=2) from 'declared but wrong' (judged mismatch, rc=3), and the pre-fix runners hid both",
+   "holds": true,
+   "evidence": "M17 G missing -> rc=2 / not_judged=[N02] / usable=False; M17 F wrong -> rc=3 / mismatch=[N02] / usable=True; M13 pre-fix both arms -> rc=0"
+  },
+  "P-5": {
+   "claim": "no cases.json omits the `expected` key today",
+   "holds": true,
+   "evidence": "31 cases.json files, 347 cases, 0 without `expected`"
+  },
+  "P-6": {
+   "claim": "unifying to rc=2 is a no-op with respect to product code, and this card performed no write",
+   "holds": true,
+   "evidence": "product files changed == []; production anchor 9ec6529550f189a4... matches; runner edits 0"
+  }
+ },
+ "overall": "PASS",
+ "error_made_and_corrected_in_this_card": {
+  "what": "the first draft of P-4 asserted that both M17 arms would share the integer 2 and be separable only by vocabulary, and it FAILED because a present-but-wrong declaration is rc=3, not rc=2",
+  "root_cause": "I inferred 'same code, different vocabulary' from 'the vocabulary can separate them'. Separability does not imply equal codes. I did not measure the integer before writing the comparison.",
+  "fix": "rewrote P-4 against the measured values and recorded the rejected reading in the evidence JSON under `reading_that_was_tested_and_rejected`",
+  "class": "same family as T1-26 V-4 and T1-17: a criterion that does not match the shape of the object it judges. The new variant is that the error was a DIRECTION, not a type: not an incomparable quantity, but an assumed equality."
+ },
+ "boundaries": {
+  "runner_files_edited": 0,
+  "historical_rc_rewritten": false,
+  "frozen_evidence_written": 0,
+  "start_here_md_written": 0,
+  "rc_namespace_written": 0,
+  "product_files_changed": [],
+  "production_anchor": {
+   "path": "scripts/model_registry.py",
+   "sha256": "9ec6529550f189a435aed2eaba9b915bc104736f3d660049b9e3999f6ee2d17f",
+   "matches": true
+  },
+  "status_transitions": 0,
+  "signatures_issued_on_behalf_of_others": 0,
+  "promotions_performed": 0,
+  "promotion_note": "T1-8 authorises promotion of the runner fix, but preconditions (1) and (4) remain. This card does not promote and does not rule that promotion may proceed."
+ },
+ "deliverable": {
+  "artifacts": [
+   {
+    "path": "execution_runs/T1-8/a20260920-01/scripts/verify_t8.py",
+    "bytes": 19341,
+    "sha256": "32a7baf01ec5523532ea74c85e7c028a0fde7dfd4bea44ff0b6f866e6743ae64"
+   },
+   {
+    "path": "execution_runs/T1-8/a20260920-01/t8_precondition3_rc_classification.json",
+    "bytes": 19934,
+    "sha256": "f2253b3566b86cb40205092427ca84996d780bf76f97289e5221dcf880d10f65"
+   },
+   {
+    "path": "execution_runs/T1-8/a20260920-01/decision.md",
+    "bytes": 9464,
+    "sha256": "1e183e9bc91c0e723badb7eaf7ad64c0577c3fe0be0859a16de50520e04c2644"
+   }
+  ],
+  "registered_artifact_count": 3,
+  "registry_matches_disk": 3,
+  "self_hash_note": "handoff.json does not register its own sha256 (self-reference); that value is recorded in task_plan.md and outside this directory."
+ },
+ "next_actions_for_the_orchestration_layer": [
+  "append an erratum to START_HERE.md (T1-12 form) correcting the rc=3 attribution and naming which generations can reach the branch",
+  "append a note to rc_namespace.json recording that precondition (3) verified the shas by measurement",
+  "settle preconditions (1) and (4) before promoting the runner fix"
+ ]
+}

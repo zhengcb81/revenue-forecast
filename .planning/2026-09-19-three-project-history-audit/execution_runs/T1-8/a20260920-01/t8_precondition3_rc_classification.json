@@ -1,0 +1,540 @@
+{
+ "card": "T1-8",
+ "attempt": "a20260920-01",
+ "authority": "OWNER_DECISIONS.md section 13 T1-8 (TIER-1), precondition (3)",
+ "ruling_excerpt": "precondition (3): fix the rc classification and the 'expectation missing' reading BEFORE promoting the cross-batch runner fix",
+ "propositions": {
+  "P-1": {
+   "question": "does any runner classify a cases.json case whose `expected` key is ABSENT as rc=3?",
+   "holds": true
+  },
+  "P-2": {
+   "question": "is there ANY runner code path that maps a MISSING `expected` onto rc=3?",
+   "holds": true
+  },
+  "P-3": {
+   "question": "do the rc vocabularies differ per runner sha256, and is each batch nameable by sha (as T1-19 requires)?",
+   "holds": true
+  },
+  "P-4": {
+   "question": "does the frozen evidence separate 'unusable declaration' (no verdict, rc=2) from 'declared but wrong' (judged mismatch, rc=3), and did the pre-fix runners hide both?",
+   "holds": true
+  },
+  "P-5": {
+   "question": "does any cases.json omit the `expected` key today?",
+   "holds": true
+  },
+  "P-6": {
+   "question": "is unifying-to-rc=2 a no-op with respect to product code, and has this card written anything?",
+   "holds": true
+  }
+ },
+ "overall": "PASS",
+ "evidence": {
+  "P-1": {
+   "question": "does any runner classify a cases.json case whose `expected` key is ABSENT as rc=3?",
+   "families_total": 8,
+   "rc3_classification_observed": [],
+   "rc2_or_undefined_classification": [
+    "M01-M04 (KeyError: `expected` is not optional in this generation)",
+    "M05-M08 (KeyError: `expected` is not optional in this generation)",
+    "M09-M12 (KeyError: `expected` is not optional in this generation)",
+    "M21-M24 (KeyError: `expected` is not optional in this generation)",
+    "M29-M31 (KeyError: `expected` is not optional in this generation)",
+    "M13-M16 (missing declaration handled -> no-verdict family)",
+    "M17-M20 (missing declaration handled -> no-verdict family)",
+    "M25-M28 (missing declaration handled -> no-verdict family)"
+   ],
+   "holds": true,
+   "detail": {
+    "M01-M04": {
+     "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/M01/a20260919-01/scripts/run_card.py",
+     "sha256": "b5fcc68563f563924529e06e2aeeba06938dcf51bd48b14f553f580191601816",
+     "git_blob": "5ac198a3ebaf229c16c969232b43ad90b3f7fdf7",
+     "head_blob": "5ac198a3ebaf229c16c969232b43ad90b3f7fdf7",
+     "subscript_reads_expected": 1,
+     "get_reads_expected": 0,
+     "defines_missing_expected_rule": false
+    },
+    "M05-M08": {
+     "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/M05/a20260919-01/scripts/run_card.py",
+     "sha256": "fd3a11c9226a7bb14ea9ac91b00148a174219087e44f3cf18bb52d914e6f448a",
+     "git_blob": "f90efe00928277034887632cefb994a9617cfd31",
+     "head_blob": "f90efe00928277034887632cefb994a9617cfd31",
+     "subscript_reads_expected": 1,
+     "get_reads_expected": 0,
+     "defines_missing_expected_rule": false
+    },
+    "M09-M12": {
+     "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/M09/a20260919-01/scripts/run_card.py",
+     "sha256": "997c553b0b9e6452e9edfeb8bfec3a40ff55d10f2646e562456913feb9332fce",
+     "git_blob": "293c1e0089ae07f73f36c166472e27e3b70eab80",
+     "head_blob": "293c1e0089ae07f73f36c166472e27e3b70eab80",
+     "subscript_reads_expected": 2,
+     "get_reads_expected": 0,
+     "defines_missing_expected_rule": false
+    },
+    "M13-M16": {
+     "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/M13/a20260919-01/scripts/run_card.py",
+     "sha256": "9e4a6450d6ab6ad39230d2c409e4cce2f23c42ddcfd52cabc59c44e777ac0194",
+     "git_blob": "63df6d9a8af71b40230eda1df3d21c5855ffadc1",
+     "head_blob": "63df6d9a8af71b40230eda1df3d21c5855ffadc1",
+     "subscript_reads_expected": 3,
+     "get_reads_expected": 3,
+     "defines_missing_expected_rule": true
+    },
+    "M17-M20": {
+     "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/M17/a20260919-01/scripts/run_card.py",
+     "sha256": "94619a98f5761752ec12f7bcca43e9ab4d1d11fe49800ea05f868e5c49f4a252",
+     "git_blob": "664044f78c9c910d98584e1299529ca09759c404",
+     "head_blob": "664044f78c9c910d98584e1299529ca09759c404",
+     "subscript_reads_expected": 0,
+     "get_reads_expected": 1,
+     "defines_missing_expected_rule": true
+    },
+    "M21-M24": {
+     "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/M21/a20260919-01/scripts/run_card.py",
+     "sha256": "a5ee7599c37e1e8ed5a2f3e212df22cae936fd1c1da29b9db0d44232f406b1a3",
+     "git_blob": "045287f293b208cf28185da723689eca5054d91d",
+     "head_blob": "045287f293b208cf28185da723689eca5054d91d",
+     "subscript_reads_expected": 2,
+     "get_reads_expected": 0,
+     "defines_missing_expected_rule": false
+    },
+    "M25-M28": {
+     "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/M25/a20260919-01/scripts/run_card.py",
+     "sha256": "eab0116220df3f3c925551183b65144ea2ffbdbebdfa33a57f155adda21b4fd6",
+     "git_blob": "5fa58c265e5e48939641e45b21e7abfd91334bcb",
+     "head_blob": "5fa58c265e5e48939641e45b21e7abfd91334bcb",
+     "subscript_reads_expected": 1,
+     "get_reads_expected": 1,
+     "defines_missing_expected_rule": true
+    },
+    "M29-M31": {
+     "path": ".planning/2026-09-19-three-project-history-audit/execution_runs/M29/a20260919-01/scripts/run_card.py",
+     "sha256": "9ea69c72dced41580aaf8c06481d766cd80dcc4b9fccac78b843d7d6095f42dd",
+     "git_blob": "6ef3a5453f987fdd26ae601be15523c4884acc43",
+     "head_blob": "6ef3a5453f987fdd26ae601be15523c4884acc43",
+     "subscript_reads_expected": 1,
+     "get_reads_expected": 0,
+     "defines_missing_expected_rule": false
+    }
+   }
+  },
+  "P-5": {
+   "question": "does any cases.json omit the `expected` key today?",
+   "cases_json_files": 31,
+   "negative_cases_total": 347,
+   "cases_without_expected": [],
+   "expected_value_types": {
+    "str": 347
+   },
+   "holds": true
+  },
+  "P-2": {
+   "question": "is there ANY runner code path that maps a MISSING `expected` onto rc=3?",
+   "unguarded_subscript_reads": [
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M09/a20260919-01/recovery/selfcheck/A/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M09/a20260919-01/recovery/selfcheck/B/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M09/a20260919-01/recovery/selfcheck/C/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M09/a20260919-01/recovery/selfcheck/D/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M09/a20260919-01/recovery/selfcheck/E/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M09/a20260919-01/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M10/a20260919-01/recovery/selfcheck/A/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M10/a20260919-01/recovery/selfcheck/B/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M10/a20260919-01/recovery/selfcheck/C/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M10/a20260919-01/recovery/selfcheck/D/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M10/a20260919-01/recovery/selfcheck/E/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M10/a20260919-01/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M11/a20260919-01/recovery/selfcheck/A/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M11/a20260919-01/recovery/selfcheck/B/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M11/a20260919-01/recovery/selfcheck/C/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M11/a20260919-01/recovery/selfcheck/D/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M11/a20260919-01/recovery/selfcheck/E/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M11/a20260919-01/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M12/a20260919-01/recovery/selfcheck/A/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M12/a20260919-01/recovery/selfcheck/B/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M12/a20260919-01/recovery/selfcheck/C/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M12/a20260919-01/recovery/selfcheck/D/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M12/a20260919-01/recovery/selfcheck/E/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M12/a20260919-01/scripts/run_card.py",
+     "line": 427,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M13/a20260919-01/scripts/run_card.py",
+     "line": 40,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M13/a20260919-01/scripts/run_card.py",
+     "line": 151,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M14/a20260919-01/scripts/run_card.py",
+     "line": 40,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M14/a20260919-01/scripts/run_card.py",
+     "line": 151,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M15/a20260919-01/scripts/run_card.py",
+     "line": 40,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M15/a20260919-01/scripts/run_card.py",
+     "line": 151,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M16/a20260919-01/scripts/run_card.py",
+     "line": 40,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M16/a20260919-01/scripts/run_card.py",
+     "line": 151,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M21/a20260919-01/recovery/selfcheck/scripts/run_card.py",
+     "line": 304,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M21/a20260919-01/scripts/run_card.py",
+     "line": 304,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M22/a20260919-01/recovery/selfcheck/scripts/run_card.py",
+     "line": 304,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M22/a20260919-01/scripts/run_card.py",
+     "line": 304,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M23/a20260919-01/recovery/selfcheck/scripts/run_card.py",
+     "line": 304,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M23/a20260919-01/scripts/run_card.py",
+     "line": 304,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M24/a20260919-01/recovery/selfcheck/scripts/run_card.py",
+     "line": 304,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    },
+    {
+     "runner": ".planning/2026-09-19-three-project-history-audit/execution_runs/M24/a20260919-01/scripts/run_card.py",
+     "line": 304,
+     "in_try": false,
+     "guarded_toward_rc3": false
+    }
+   ],
+   "paths_to_rc3_for_missing_expected": [],
+   "holds": true
+  },
+  "P-3": {
+   "question": "do the rc vocabularies differ per runner sha256, and is each batch nameable by sha (as T1-19 requires)?",
+   "distinct_runner_sha256": 8,
+   "families_sharing_a_sha": {
+    "b5fcc68563f5": [
+     "M01-M04"
+    ],
+    "fd3a11c9226a": [
+     "M05-M08"
+    ],
+    "997c553b0b9e": [
+     "M09-M12"
+    ],
+    "9e4a6450d6ab": [
+     "M13-M16"
+    ],
+    "94619a98f576": [
+     "M17-M20"
+    ],
+    "a5ee7599c37e": [
+     "M21-M24"
+    ],
+    "eab0116220df": [
+     "M25-M28"
+    ],
+    "9ea69c72dced": [
+     "M29-M31"
+    ]
+   },
+   "frozen_deviation_statements": [
+    "M05-M08 use 2 = harness",
+    "M09-M16 etc. use 1 = harness / 2 = no-verdict / 3 = negative"
+   ],
+   "every_family_named_by_sha": true,
+   "holds": true
+  },
+  "P-4": {
+   "question": "does the frozen evidence separate 'unusable declaration' (no verdict, rc=2) from 'declared but wrong' (judged mismatch, rc=3), and did the pre-fix runners hide both?",
+   "separation": {
+    "M13 declares-nothing-usable -> rc": 2,
+    "M13 declares-nothing-usable triggered": [
+     "expectation_declaration_inconsistent"
+    ],
+    "M13 shape-violated triggered": [
+     "expectation_declaration_inconsistent"
+    ],
+    "M13 PRE-FIX declares-nothing-usable -> rc": 0,
+    "M13 PRE-FIX shape-violated -> rc": 0,
+    "M17 MISSING declaration -> rc": 2,
+    "M17 MISSING declaration not_judged": [
+     "N02"
+    ],
+    "M17 MISSING declaration mismatch": [],
+    "M17 MISSING declaration usable_flag": false,
+    "M17 DIFFERENT declaration -> rc": 3,
+    "M17 DIFFERENT declaration not_judged": [],
+    "M17 DIFFERENT declaration mismatch_ids": [
+     "N02"
+    ],
+    "M17 DIFFERENT declaration usable_flag": true
+   },
+   "arms": {
+    "M13::G-corrupt-case-expected": {
+     "exit_code": 2,
+     "triggered": [
+      "expectation_declaration_inconsistent"
+     ],
+     "not_judged_case_ids": null,
+     "declared_expectation_mismatch_case_ids": null,
+     "expectation_declaration_gaps": [
+      "case NEG-CARD declares expected='PythonBuiltinValueError' but this runner only counts ModelRegistryError as a refusal verdict"
+     ],
+     "cases_json_declared_expectations_usable": null,
+     "fidelity_ok": null
+    },
+    "M13::H-drop-negative-case": {
+     "exit_code": 2,
+     "triggered": [
+      "expectation_declaration_inconsistent"
+     ],
+     "not_judged_case_ids": null,
+     "declared_expectation_mismatch_case_ids": null,
+     "expectation_declaration_gaps": [
+      "cases.json has 10 cases but oracle.json.negative_count is 11",
+      "cases.json is MISSING cases that oracle.json declares: ['CONT-BREAK']"
+     ],
+     "cases_json_declared_expectations_usable": null,
+     "fidelity_ok": null
+    },
+    "M13::G-pre-fix-runner-corrupt-case-expected": {
+     "exit_code": 0,
+     "triggered": [],
+     "not_judged_case_ids": null,
+     "declared_expectation_mismatch_case_ids": null,
+     "expectation_declaration_gaps": null,
+     "cases_json_declared_expectations_usable": null,
+     "fidelity_ok": null
+    },
+    "M13::H-pre-fix-runner-drop-negative-case": {
+     "exit_code": 0,
+     "triggered": [],
+     "not_judged_case_ids": null,
+     "declared_expectation_mismatch_case_ids": null,
+     "expectation_declaration_gaps": null,
+     "cases_json_declared_expectations_usable": null,
+     "fidelity_ok": null
+    },
+    "M17::G_missing_declared_expectation": {
+     "exit_code": 2,
+     "triggered": null,
+     "not_judged_case_ids": [
+      "N02"
+     ],
+     "declared_expectation_mismatch_case_ids": [],
+     "expectation_declaration_gaps": null,
+     "cases_json_declared_expectations_usable": false,
+     "fidelity_ok": true
+    },
+    "M17::F_tampered_declared_expectation": {
+     "exit_code": 3,
+     "triggered": null,
+     "not_judged_case_ids": [],
+     "declared_expectation_mismatch_case_ids": [
+      "N02"
+     ],
+     "expectation_declaration_gaps": null,
+     "cases_json_declared_expectations_usable": true,
+     "fidelity_ok": true
+    },
+    "M17::C_corrupted_expectation_length": {
+     "exit_code": 2,
+     "triggered": null,
+     "not_judged_case_ids": [],
+     "declared_expectation_mismatch_case_ids": [],
+     "expectation_declaration_gaps": null,
+     "cases_json_declared_expectations_usable": true,
+     "fidelity_ok": false
+    }
+   },
+   "sub_checks": {
+    "missing_declaration_is_unusable_rc2": true,
+    "wrong_declaration_is_a_judged_mismatch_rc3": true,
+    "the_two_codes_are_separated_2_vs_3": true,
+    "pre_fix_arms_show_both_defects_were_invisible": true,
+    "M13_family_tells_its_two_defects_apart_by_gaps": true
+   },
+   "reading_that_was_tested_and_rejected": "that both M17 arms would share the integer 2 and be separable only by vocabulary; measured result: a present-but-wrong declaration is rc=3",
+   "holds": true
+  },
+  "P-6": {
+   "question": "is unifying-to-rc=2 a no-op with respect to product code, and has this card written anything?",
+   "product_files_changed": [],
+   "production_anchor_matches": true,
+   "runner_files_edited_by_this_card": [],
+   "historical_rc_rewritten": false,
+   "writes_performed_by_this_card": 0,
+   "holds": true
+  }
+ }
+}
